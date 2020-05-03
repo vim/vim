@@ -387,7 +387,7 @@ INTERNAL void vterm_state_setpen(VTermState *state, const long args[], int argco
 
     if (!done)
     {
-      DEBUG_LOG1("libvterm: Unhandled CSI SGR %lu\n", arg);
+      DEBUG_LOG1("libvterm: Unhandled CSI SGR %ld\n", arg);
     }
 
     while (CSI_ARG_HAS_MORE(args[argi++]))

@@ -17,7 +17,7 @@
  *		- the Vim entry in the Start Menu
  */
 
-/* Include common code for dosinst.c and uninstall.c. */
+// Include common code for dosinst.c and uninstall.c.
 #include "dosinst.h"
 
 /*
@@ -41,9 +41,9 @@ reg_delete_key(HKEY hRootKey, const char *key, DWORD flag)
 
     if (!did_load)
     {
-	/* The RegDeleteKeyEx() function is only available on new systems.  It
-	 * is required for 64-bit registry access.  For other systems fall
-	 * back to RegDeleteKey(). */
+	// The RegDeleteKeyEx() function is only available on new systems.  It
+	// is required for 64-bit registry access.  For other systems fall
+	// back to RegDeleteKey().
 	did_load = TRUE;
 	advapi_lib = LoadLibrary("ADVAPI32.DLL");
 	if (advapi_lib != NULL)
@@ -66,14 +66,14 @@ popup_gvim_path(char *buf, DWORD bufsize)
     DWORD	value_type;
     int		r;
 
-    /* Open the key where the path to gvim.exe is stored. */
+    // Open the key where the path to gvim.exe is stored.
     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\Vim\\Gvim", 0,
 		    KEY_WOW64_64KEY | KEY_READ, &key_handle) != ERROR_SUCCESS)
 	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\Vim\\Gvim", 0,
 		    KEY_WOW64_32KEY | KEY_READ, &key_handle) != ERROR_SUCCESS)
 	    return 0;
 
-    /* get the DisplayName out of it to show the user */
+    // get the DisplayName out of it to show the user
     r = RegQueryValueEx(key_handle, "path", 0,
 					  &value_type, (LPBYTE)buf, &bufsize);
     RegCloseKey(key_handle);
@@ -92,13 +92,13 @@ openwith_gvim_path(char *buf, DWORD bufsize)
     DWORD	value_type;
     int		r;
 
-    /* Open the key where the path to gvim.exe is stored. */
+    // Open the key where the path to gvim.exe is stored.
     if (RegOpenKeyEx(HKEY_CLASSES_ROOT,
 		"Applications\\gvim.exe\\shell\\edit\\command", 0,
 		    KEY_WOW64_64KEY | KEY_READ, &key_handle) != ERROR_SUCCESS)
 	return 0;
 
-    /* get the DisplayName out of it to show the user */
+    // get the DisplayName out of it to show the user
     r = RegQueryValueEx(key_handle, "", 0, &value_type, (LPBYTE)buf, &bufsize);
     RegCloseKey(key_handle);
 
@@ -200,8 +200,7 @@ batfile_thisversion(char *path)
 {
     FILE	*fd;
     char	line[BUFSIZE];
-    char	*p;
-    int		ver_len = strlen(VIM_VERSION_NODOT);
+    int		key_len = strlen(VIMBAT_UNINSTKEY);
     int		found = FALSE;
 
     fd = fopen(path, "r");
@@ -209,17 +208,11 @@ batfile_thisversion(char *path)
     {
 	while (fgets(line, sizeof(line), fd) != NULL)
 	{
-	    for (p = line; *p != 0; ++p)
-		/* don't accept "vim60an" when looking for "vim60". */
-		if (strnicmp(p, VIM_VERSION_NODOT, ver_len) == 0
-			&& !isdigit(p[ver_len])
-			&& !isalpha(p[ver_len]))
-		{
-		    found = TRUE;
-		    break;
-		}
-	    if (found)
+	    if (strncmp(line, VIMBAT_UNINSTKEY, key_len) == 0)
+	    {
+		found = TRUE;
 		break;
+	    }
 	}
 	fclose(fd);
     }
@@ -232,6 +225,10 @@ remove_batfiles(int doit)
     char *batfile_path;
     int	 i;
     int	 found = 0;
+
+    // avoid looking in the "installdir" by chdir to system root
+    mch_chdir(sysdrive);
+    mch_chdir("\\");
 
     for (i = 1; i < TARGET_COUNT; ++i)
     {
@@ -249,6 +246,8 @@ remove_batfiles(int doit)
 	    free(batfile_path);
 	}
     }
+
+    mch_chdir(installdir);
     return found;
 }
 
@@ -293,7 +292,7 @@ remove_start_menu(void)
 	    remove_if_exists(path, targets[i].lnkname);
 	remove_if_exists(path, "uninstall.lnk");
 	remove_if_exists(path, "Help.lnk");
-	/* Win95 uses .pif, WinNT uses .lnk */
+	// Win95 uses .pif, WinNT uses .lnk
 	remove_if_exists(path, "Vim tutor.pif");
 	remove_if_exists(path, "Vim tutor.lnk");
 	remove_if_exists(path, "Vim online.url");
@@ -322,13 +321,13 @@ main(int argc, char *argv[])
     char	path[MAX_PATH];
     char	popup_path[MAX_PATH];
 
-    /* The nsis uninstaller calls us with a "-nsis" argument. */
+    // The nsis uninstaller calls us with a "-nsis" argument.
     if (argc == 2 && stricmp(argv[1], "-nsis") == 0)
 	interactive = FALSE;
     else
 	interactive = TRUE;
 
-    /* Initialize this program. */
+    // Initialize this program.
     do_inits(argv);
 
     printf("This program will remove the following items:\n");
@@ -342,8 +341,8 @@ main(int argc, char *argv[])
 	if (!interactive || confirm())
 	{
 	    remove_popup();
-	    /* Assume the "Open With" entry can be removed as well, don't
-	     * bother the user with asking him again. */
+	    // Assume the "Open With" entry can be removed as well, don't
+	    // bother the user with asking him again.
 	    remove_openwith();
 	}
     }

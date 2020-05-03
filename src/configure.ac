@@ -154,6 +154,12 @@ case `uname` in
     *)		BEOS=no; AC_MSG_RESULT(no);;
 esac
 
+AC_MSG_CHECKING(for Haiku)
+case `uname` in
+    Haiku) HAIKU=yes; AC_MSG_RESULT(yes);;
+    *)     HAIKU=no; AC_MSG_RESULT(no);;
+esac
+
 dnl If QNX is found, assume we don't want to use Xphoton
 dnl unless it was specifically asked for (--with-x)
 AC_MSG_CHECKING(for QNX)
@@ -619,7 +625,26 @@ if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
 	  LUA_INC=/lua$vi_cv_version_lua
 	else
 	  AC_MSG_RESULT(no)
-	  vi_cv_path_lua_pfx=
+
+	  # Detect moonjit:
+	  # https://groups.google.com/forum/#!topic/vim_use/O0vek60WuTk
+	  lua_suf=/moonjit-2.3
+	  inc_path="$vi_cv_path_lua_pfx/include"
+	  for dir in "$inc_path"/moonjit-[[0-9]]* ; do
+	    if test -d "$dir" ; then
+	      lua_suf=`basename '$dir'`
+	      lua_suf="/$lua_suf"
+	      break
+	    fi
+	  done
+	  AC_MSG_CHECKING(if lua.h can be found in $inc_path$lua_suf)
+	  if test -f "$inc_path$lua_suf/lua.h"; then
+	    AC_MSG_RESULT(yes)
+	    LUA_INC=$lua_suf
+	  else
+	    AC_MSG_RESULT(no)
+	    vi_cv_path_lua_pfx=
+	  fi
 	fi
       fi
     fi
@@ -1966,7 +1991,7 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
 	    libruby_soname=`$vi_cv_path_ruby -r rbconfig -e "puts $ruby_rbconfig::CONFIG[['LIBRUBY_SO']]"`
 	  fi
 	  AC_DEFINE(DYNAMIC_RUBY)
-	  RUBY_CFLAGS="-DDYNAMIC_RUBY_DLL=\\\"$libruby_soname\\\" -DDYNAMIC_RUBY_VER=$rubyversion $RUBY_CFLAGS"
+	  RUBY_CFLAGS="-DDYNAMIC_RUBY_DLL=\\\"$libruby_soname\\\" $RUBY_CFLAGS"
 	  RUBY_LIBS=
 	fi
       else
@@ -2032,11 +2057,51 @@ else
 fi
 
 if test "$enable_channel" = "yes"; then
-  dnl On Solaris we need the socket and nsl library.
-  AC_CHECK_LIB(socket, socket)
-  AC_CHECK_LIB(nsl, gethostbyname)
-  AC_MSG_CHECKING(whether compiling with process communication is possible)
-  AC_TRY_LINK([
+  dnl On Solaris we need the socket library, or on Haiku the network library.
+  if test "x$HAIKU" = "xyes"; then
+	AC_CHECK_LIB(network, socket)
+  else
+	AC_CHECK_LIB(socket, socket)
+  fi
+
+  AC_CACHE_CHECK([whether compiling with IPv6 networking is possible], [vim_cv_ipv6_networking],
+    [AC_TRY_LINK([
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+	/* Check bitfields */
+	struct nbbuf {
+	unsigned int  initDone:1;
+	unsigned short signmaplen;
+	};
+	    ], [
+		/* Check creating a socket. */
+		struct sockaddr_in server;
+		struct addrinfo *res;
+		(void)socket(AF_INET, SOCK_STREAM, 0);
+		(void)htons(100);
+		(void)getaddrinfo("microsoft.com", NULL, NULL, &res);
+		if (errno == ECONNREFUSED)
+		  (void)connect(1, (struct sockaddr *)&server, sizeof(server));
+		(void)freeaddrinfo(res);
+	    ],
+	[vim_cv_ipv6_networking="yes"],
+	[vim_cv_ipv6_networking="no"])])
+
+  if test "x$vim_cv_ipv6_networking" = "xyes"; then
+    AC_DEFINE(FEAT_IPV6)
+    AC_CHECK_FUNCS(inet_ntop)
+  else
+    dnl On Solaris we need the nsl library.
+    AC_CHECK_LIB(nsl, gethostbyname)
+    AC_CACHE_CHECK([whether compiling with IPv4 networking is possible], [vim_cv_ipv4_networking],
+      [AC_TRY_LINK([
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -2060,8 +2125,9 @@ if test "$enable_channel" = "yes"; then
 		if (errno == ECONNREFUSED)
 		  (void)connect(1, (struct sockaddr *)&server, sizeof(server));
 	    ],
-	AC_MSG_RESULT(yes),
-	AC_MSG_RESULT(no); enable_netbeans="no"; enable_channel="no")
+	[vim_cv_ipv4_networking="yes"],
+	[vim_cv_ipv4_networking="no"; enable_netbeans="no"; enable_channel="no"])])
+  fi
 fi
 if test "$enable_netbeans" = "yes"; then
   AC_DEFINE(FEAT_NETBEANS_INTG)
@@ -2195,7 +2261,7 @@ else
   fi
 
   dnl On my HPUX system the X include dir is found, but the lib dir not.
-  dnl This is a desparate try to fix this.
+  dnl This is a desperate try to fix this.
 
   if test -d "$x_includes" && test ! -d "$x_libraries"; then
     x_libraries=`echo "$x_includes" | sed s/include/lib/`
@@ -2311,11 +2377,11 @@ if test "x$with_x" = xno -a "x$with_x_arg" = xyes; then
     AC_MSG_ERROR([could not configure X])
 fi
 
-test "x$with_x" = xno -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" && enable_gui=no
+test "x$with_x" = xno -a "x$HAIKU" != "xyes" -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" && enable_gui=no
 
 AC_MSG_CHECKING(--enable-gui argument)
 AC_ARG_ENABLE(gui,
- [  --enable-gui[=OPTS]       X11 GUI. [default=auto] [OPTS=auto/no/gtk2/gnome2/gtk3/motif/athena/neXtaw/photon/carbon]], , enable_gui="auto")
+ [  --enable-gui[=OPTS]       X11 GUI. [default=auto] [OPTS=auto/no/gtk2/gnome2/gtk3/motif/athena/neXtaw/haiku/photon/carbon]], , enable_gui="auto")
 
 dnl Canonicalize the --enable-gui= argument so that it can be easily compared.
 dnl Do not use character classes for portability with old tools.
@@ -2330,10 +2396,22 @@ SKIP_MOTIF=YES
 SKIP_ATHENA=YES
 SKIP_NEXTAW=YES
 SKIP_PHOTON=YES
+SKIP_HAIKU=YES
 SKIP_CARBON=YES
 GUITYPE=NONE
 
-if test "x$QNX" = "xyes" -a "x$with_x" = "xno" ; then
+if test "x$HAIKU" = "xyes"; then
+  SKIP_HAIKU=
+  case "$enable_gui_canon" in
+    no)     AC_MSG_RESULT(no GUI support)
+            SKIP_HAIKU=YES ;;
+    yes|"") AC_MSG_RESULT(yes - automatic GUI support) ;;
+    auto)   AC_MSG_RESULT(auto - automatic GUI support) ;;
+    haiku)  AC_MSG_RESULT(Haiku GUI support) ;;
+    *)      AC_MSG_RESULT([Sorry, $enable_gui GUI is not supported])
+            SKIP_HAIKU=YES ;;
+    esac
+elif test "x$QNX" = "xyes" -a "x$with_x" = "xno" ; then
   SKIP_PHOTON=
   case "$enable_gui_canon" in
     no)		AC_MSG_RESULT(no GUI support)
@@ -2499,6 +2577,7 @@ if test "x$MACOS_X" = "xyes" -a -z "$SKIP_CARBON" -a "x$CARBON" = "xyes"; then
   SKIP_ATHENA=YES;
   SKIP_NEXTAW=YES;
   SKIP_PHOTON=YES;
+  SKIP_HAIKU=YES;
   SKIP_CARBON=YES
 fi
 
@@ -3112,6 +3191,11 @@ if test "x$GUITYPE:$enable_fontset" = "xGTK:yes"; then
   enable_fontset="no"
 fi
 
+dnl There is no test for the Haiku GUI, if it's selected it's used
+if test -z "$SKIP_HAIKU"; then
+  GUITYPE=HAIKUGUI
+fi
+
 if test -z "$SKIP_PHOTON"; then
   GUITYPE=PHOTONGUI
 fi
@@ -3587,77 +3671,6 @@ if test "$ptys" != "$pdir/pty??" ; then
   AC_MSG_RESULT([$p0 / $p1])
 else
   AC_MSG_RESULT([don't know])
-fi
-
-dnl    ****  pty mode/group handling ****
-dnl
-dnl support provided by Luke Mewburn <lm@rmit.edu.au>, 931222
-rm -f conftest_grp
-AC_CACHE_CHECK([default tty permissions/group], [vim_cv_tty_group],
-  [
-    AC_RUN_IFELSE([AC_LANG_SOURCE([[
-#include "confdefs.h"
-#include <sys/types.h>
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#endif
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-#include <sys/stat.h>
-#include <stdio.h>
-main()
-{
-  struct stat sb;
-  char *x,*ttyname();
-  int om, m;
-  FILE *fp;
-
-  if (!(x = ttyname(0))) exit(1);
-  if (stat(x, &sb)) exit(1);
-  om = sb.st_mode;
-  if (om & 002) exit(0);
-  m = system("mesg y");
-  if (m == -1 || m == 127) exit(1);
-  if (stat(x, &sb)) exit(1);
-  m = sb.st_mode;
-  if (chmod(x, om)) exit(1);
-  if (m & 002) exit(0);
-  if (sb.st_gid == getgid()) exit(1);
-  if (!(fp=fopen("conftest_grp", "w")))
-    exit(1);
-  fprintf(fp, "%d\n", sb.st_gid);
-  fclose(fp);
-  exit(0);
-}
-    ]])],[
-      if test -f conftest_grp; then
-	vim_cv_tty_group=`cat conftest_grp`
-	if test "x$vim_cv_tty_mode" = "x" ; then
-	  vim_cv_tty_mode=0620
-	fi
-	AC_MSG_RESULT([pty mode: $vim_cv_tty_mode, group: $vim_cv_tty_group])
-      else
-	vim_cv_tty_group=world
-	AC_MSG_RESULT([ptys are world accessible])
-      fi
-    ],[
-      vim_cv_tty_group=world
-      AC_MSG_RESULT([can't determine - assume ptys are world accessible])
-    ],[
-      AC_MSG_ERROR(cross-compiling: please set 'vim_cv_tty_group' and 'vim_cv_tty_mode')
-    ])
-  ])
-rm -f conftest_grp
-
-if test "x$vim_cv_tty_group" != "xworld" ; then
-  AC_DEFINE_UNQUOTED(PTYGROUP,$vim_cv_tty_group)
-  if test "x$vim_cv_tty_mode" = "x" ; then
-    AC_MSG_ERROR([It seems you're cross compiling and have 'vim_cv_tty_group' set, please also set the environment variable 'vim_cv_tty_mode' to the correct mode (probably 0620)])
-  else
-    AC_DEFINE(PTYMODE, 0620)
-  fi
 fi
 
 dnl Checks for library functions. ===================================
@@ -4236,11 +4249,11 @@ dnl -i+m to test for older Exuberant ctags
 AC_MSG_CHECKING(how to create tags)
 test -f tags && mv tags tags.save
 if (eval ctags --version /dev/null | grep Exuberant) < /dev/null 1>&AC_FD_CC 2>&1; then
-  TAGPRG="ctags -I INIT+ --fields=+S"
+  TAGPRG="ctags -I INIT+,INIT2+,INIT3+,INIT4+,INIT5+ --fields=+S"
 elif (eval exctags --version /dev/null | grep Exuberant) < /dev/null 1>&AC_FD_CC 2>&1; then
-  TAGPRG="exctags -I INIT+ --fields=+S"
+  TAGPRG="exctags -I INIT+,INIT2+,INIT3+,INIT4+,INIT5+ --fields=+S"
 elif (eval exuberant-ctags --version /dev/null | grep Exuberant) < /dev/null 1>&AC_FD_CC 2>&1; then
-  TAGPRG="exuberant-ctags -I INIT+ --fields=+S"
+  TAGPRG="exuberant-ctags -I INIT+,INIT2+,INIT3+,INIT4+,INIT5+ --fields=+S"
 else
   TAGPRG="ctags"
   (eval etags	   /dev/null) < /dev/null 1>&AC_FD_CC 2>&1 && TAGPRG="etags"
@@ -4447,7 +4460,7 @@ dnl the number before the version number.
 DEPEND_CFLAGS_FILTER=
 if test "$GCC" = yes; then
   AC_MSG_CHECKING(for GCC 3 or later)
-  gccmajor=`echo "$gccversion" | sed -e 's/^\([[1-9]]\)\..*$/\1/g'`
+  gccmajor=`echo "$gccversion" | sed -e 's/^\([[1-9]][[0-9]]*\)\..*$/\1/g'`
   if test "$gccmajor" -gt "2"; then
     DEPEND_CFLAGS_FILTER="| sed 's+-I */+-isystem /+g'"
     AC_MSG_RESULT(yes)

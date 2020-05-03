@@ -1,4 +1,4 @@
-*os_win32.txt*  For Vim version 8.1.  Last change: 2017 Mar 21
+*os_win32.txt*  For Vim version 8.2.  Last change: 2017 Mar 21
 
 
 		  VIM REFERENCE MANUAL    by George Reilly
@@ -171,7 +171,7 @@ you will need to get a version older than that.
 
 				*win32s* *windows-3.1* *gui-w32s* *win16*
 There was a special version of gvim that runs under Windows 3.1 and 3.11.
-Support was removed in patch 7.4.1363.
+Support was removed in patch 7.4.1364.
 
 ==============================================================================
 7. Win32 mini FAQ					*win32-faq*
@@ -230,7 +230,7 @@ A. VisionFS can't handle certain dot (.) three letter extension file names.
    SCO declares this behavior required for backwards compatibility with 16bit
    DOS/Windows environments.  The two commands below demonstrate the behavior:
 >
-	echo Hello > file.bat~ 
+	echo Hello > file.bat~
 	dir > file.bat
 <
    The result is that the "dir" command updates the "file.bat~" file, instead

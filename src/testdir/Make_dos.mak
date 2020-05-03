@@ -107,12 +107,13 @@ nolog:
 	-if exist test_result.log del test_result.log
 	-if exist messages del messages
 
-benchmark:
-	bench_re_freeze.out
+benchmark: test_bench_regexp.res
 
-bench_re_freeze.out: bench_re_freeze.vim
+test_bench_regexp.res: test_bench_regexp.vim
 	-if exist benchmark.out del benchmark.out
-	$(VIMPROG) -u dos.vim $(NO_INITS) $*.in
+	@echo $(VIMPROG) > vimcmd
+	$(VIMPROG) -u NONE $(NO_INITS) -S runtest.vim $*.vim
+	@del vimcmd
 	@IF EXIST benchmark.out ( type benchmark.out )
 
 # New style of tests uses Vim script with assert calls.  These are easier

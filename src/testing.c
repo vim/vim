@@ -21,22 +21,24 @@
     static void
 prepare_assert_error(garray_T *gap)
 {
-    char buf[NUMBUFLEN];
+    char    buf[NUMBUFLEN];
+    char_u  *sname = estack_sfile();
 
     ga_init2(gap, 1, 100);
-    if (sourcing_name != NULL)
+    if (sname != NULL)
     {
-	ga_concat(gap, sourcing_name);
-	if (sourcing_lnum > 0)
+	ga_concat(gap, sname);
+	if (SOURCING_LNUM > 0)
 	    ga_concat(gap, (char_u *)" ");
     }
-    if (sourcing_lnum > 0)
+    if (SOURCING_LNUM > 0)
     {
-	sprintf(buf, "line %ld", (long)sourcing_lnum);
+	sprintf(buf, "line %ld", (long)SOURCING_LNUM);
 	ga_concat(gap, (char_u *)buf);
     }
-    if (sourcing_name != NULL || sourcing_lnum > 0)
+    if (sname != NULL || SOURCING_LNUM > 0)
 	ga_concat(gap, (char_u *)": ");
+    vim_free(sname);
 }
 
 /*
@@ -220,7 +222,7 @@ assert_bool(typval_T *argvars, int isTrue)
     int		error = FALSE;
     garray_T	ga;
 
-    if (argvars[0].v_type == VAR_SPECIAL
+    if (argvars[0].v_type == VAR_BOOL
 	    && argvars[0].vval.v_number == (isTrue ? VVAL_TRUE : VVAL_FALSE))
 	return 0;
     if (argvars[0].v_type != VAR_NUMBER
@@ -424,15 +426,15 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
     char_u	*cmd = tv_get_string_chk(&argvars[0]);
     garray_T	ga;
     int		save_trylevel = trylevel;
+    int		called_emsg_before = called_emsg;
 
     // trylevel must be zero for a ":throw" command to be considered failed
     trylevel = 0;
-    called_emsg = FALSE;
     suppress_errthrow = TRUE;
     emsg_silent = TRUE;
 
     do_cmdline_cmd(cmd);
-    if (!called_emsg)
+    if (called_emsg == called_emsg_before)
     {
 	prepare_assert_error(&ga);
 	ga_concat(&ga, (char_u *)"command did not fail: ");
@@ -461,7 +463,6 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
     }
 
     trylevel = save_trylevel;
-    called_emsg = FALSE;
     suppress_errthrow = FALSE;
     emsg_silent = FALSE;
     emsg_on_display = FALSE;
@@ -639,6 +640,12 @@ f_test_feedinput(typval_T *argvars, typval_T *rettv UNUSED)
 #ifdef USE_INPUT_BUF
     char_u	*val = tv_get_string_chk(&argvars[0]);
 
+# ifdef VIMDLL
+    // this doesn't work in the console
+    if (!gui.in_use)
+	return;
+# endif
+
     if (val != NULL)
     {
 	trash_input_buf();
@@ -757,7 +764,10 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
     switch (argvars[0].v_type)
     {
 	case VAR_UNKNOWN:
+	case VAR_ANY:
+	case VAR_VOID:
 	case VAR_NUMBER:
+	case VAR_BOOL:
 	case VAR_FLOAT:
 	case VAR_SPECIAL:
 	case VAR_STRING:
@@ -779,7 +789,7 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
 	    {
 		ufunc_T *fp;
 
-		fp = find_func(argvars[0].vval.v_string);
+		fp = find_func(argvars[0].vval.v_string, FALSE, NULL);
 		if (fp != NULL)
 		    retval = fp->uf_refcount;
 	    }
@@ -813,8 +823,8 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
     void
 f_test_garbagecollect_now(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-    /* This is dangerous, any Lists and Dicts used internally may be freed
-     * while still in use. */
+    // This is dangerous, any Lists and Dicts used internally may be freed
+    // while still in use.
     garbage_collect(TRUE);
 }
 
@@ -874,6 +884,13 @@ f_test_null_list(typval_T *argvars UNUSED, typval_T *rettv)
 }
 
     void
+f_test_null_function(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_FUNC;
+    rettv->vval.v_string = NULL;
+}
+
+    void
 f_test_null_partial(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_PARTIAL;
@@ -885,6 +902,18 @@ f_test_null_string(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
+}
+
+    void
+f_test_unknown(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_UNKNOWN;
+}
+
+    void
+f_test_void(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_VOID;
 }
 
 #ifdef FEAT_GUI

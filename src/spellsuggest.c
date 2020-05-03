@@ -540,14 +540,10 @@ spell_suggest(int count)
     else if (count > 0)
     {
 	if (count > sug.su_ga.ga_len)
-	    smsg(_("Sorry, only %ld suggestions"),
-						      (long)sug.su_ga.ga_len);
+	    smsg(_("Sorry, only %ld suggestions"), (long)sug.su_ga.ga_len);
     }
     else
     {
-	VIM_CLEAR(repl_from);
-	VIM_CLEAR(repl_to);
-
 #ifdef FEAT_RIGHTLEFT
 	// When 'rightleft' is set the list is drawn right-left.
 	cmdmsg_rl = curwin->w_p_rl;
@@ -641,6 +637,9 @@ spell_suggest(int count)
     if (selected > 0 && selected <= sug.su_ga.ga_len && u_save_cursor() == OK)
     {
 	// Save the from and to text for :spellrepall.
+	VIM_CLEAR(repl_from);
+	VIM_CLEAR(repl_to);
+
 	stp = &SUG(sug.su_ga, selected - 1);
 	if (sug.su_badlen > stp->st_orglen)
 	{
@@ -761,7 +760,7 @@ spell_find_suggest(
     langp_T	*lp;
 
     // Set the info in "*su".
-    vim_memset(su, 0, sizeof(suginfo_T));
+    CLEAR_POINTER(su);
     ga_init2(&su->su_ga, (int)sizeof(suggest_T), 10);
     ga_init2(&su->su_sga, (int)sizeof(suggest_T), 10);
     if (*badptr == NUL)
@@ -888,7 +887,7 @@ spell_suggest_expr(suginfo_T *su, char_u *expr)
     if (list != NULL)
     {
 	// Loop over the items in the list.
-	for (li = list->lv_first; li != NULL; li = li->li_next)
+	FOR_ALL_LIST_ITEMS(list, li)
 	    if (li->li_tv.v_type == VAR_LIST)
 	    {
 		// Get the word and the score from the items.
@@ -1267,7 +1266,7 @@ suggest_trie_walk(
     // word).
     depth = 0;
     sp = &stack[0];
-    vim_memset(sp, 0, sizeof(trystate_T));
+    CLEAR_POINTER(sp);
     sp->ts_curi = 1;
 
     if (soundfold)
@@ -3720,16 +3719,22 @@ cleanup_suggestions(
     suggest_T   *stp = &SUG(*gap, 0);
     int		i;
 
-    // Sort the list.
-    qsort(gap->ga_data, (size_t)gap->ga_len, sizeof(suggest_T), sug_compare);
-
-    // Truncate the list to the number of suggestions that will be displayed.
-    if (gap->ga_len > keep)
+    if (gap->ga_len > 0)
     {
-	for (i = keep; i < gap->ga_len; ++i)
-	    vim_free(stp[i].st_word);
-	gap->ga_len = keep;
-	return stp[keep - 1].st_score;
+	// Sort the list.
+	qsort(gap->ga_data, (size_t)gap->ga_len, sizeof(suggest_T),
+								  sug_compare);
+
+	// Truncate the list to the number of suggestions that will be
+	// displayed.
+	if (gap->ga_len > keep)
+	{
+	    for (i = keep; i < gap->ga_len; ++i)
+		vim_free(stp[i].st_word);
+	    gap->ga_len = keep;
+	    if (keep >= 1)
+		return stp[keep - 1].st_score;
+	}
     }
     return maxscore;
 }

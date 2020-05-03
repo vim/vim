@@ -38,7 +38,7 @@ test49.out: test49.vim
 
 test_options.res test_alot.res: opt_test.vim
 
-SCRIPTS_BENCH = bench_re_freeze.out
+SCRIPTS_BENCH = test_bench_regexp.res
 
 .SUFFIXES: .in .out .res .vim
 
@@ -73,8 +73,18 @@ $(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS_RES): $(SCRIPTS_FIRST)
 # 	make test_largefile
 $(NEW_TESTS):
 	rm -f $@.res test.log messages
-	@MAKEFLAGS=--no-print-directory $(MAKE) -f Makefile $@.res
+	@MAKEFLAGS=--no-print-directory $(MAKE) -f Makefile $@.res VIMPROG=$(VIMPROG) XXDPROG=$(XXDPROG) SCRIPTSOURCE=$(SCRIPTSOURCE)
 	@cat messages
+	@if test -f test.log; then \
+		exit 1; \
+	fi
+
+# Run only tests specific for Vim9 script
+test_vim9:
+	rm -f test_vim9_*.res test.log messages
+	@MAKEFLAGS=--no-print-directory $(MAKE) -f Makefile $(TEST_VIM9_RES) VIMPROG=$(VIMPROG) XXDPROG=$(XXDPROG) SCRIPTSOURCE=$(SCRIPTSOURCE)
+	@cat messages
+	@MAKEFLAGS=--no-print-directory $(MAKE) -f Makefile report VIMPROG=$(VIMPROG) XXDPROG=$(XXDPROG) SCRIPTSOURCE=$(SCRIPTSOURCE)
 	@if test -f test.log; then \
 		exit 1; \
 	fi
@@ -90,6 +100,7 @@ clean:
 	-rm -f opt_test.vim test.log test_result.log messages
 	-rm -f $(RM_ON_RUN) $(RM_ON_START)
 	-rm -f valgrind.*
+	-rm -f asan.*
 
 test1.out: test1.in
 	-rm -rf $*.failed $(RM_ON_RUN) $(RM_ON_START) wrongtermsize
@@ -136,15 +147,6 @@ test1.out: test1.in
 		fi"
 	-rm -rf X* test.ok viminfo
 
-bench_re_freeze.out: bench_re_freeze.vim
-	-rm -rf benchmark.out $(RM_ON_RUN)
-	# Sleep a moment to avoid that the xterm title is messed up.
-	# 200 msec is sufficient, but only modern sleep supports a fraction of
-	# a second, fall back to a second if it fails.
-	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
-	$(RUN_VIM) $*.in $(REDIR_TEST_TO_NULL)
-	@/bin/sh -c "if test -f benchmark.out; then cat benchmark.out; fi"
-
 nolog:
 	-rm -f test.log messages
 
@@ -183,3 +185,12 @@ opt_test.vim: ../optiondefs.h gen_opt_test.vim
 
 test_xxd.res:
 	XXD=$(XXDPROG); export XXD; $(RUN_VIMTEST) $(NO_INITS) -S runtest.vim test_xxd.vim
+
+test_bench_regexp.res: test_bench_regexp.vim
+	-rm -rf benchmark.out $(RM_ON_RUN)
+	# Sleep a moment to avoid that the xterm title is messed up.
+	# 200 msec is sufficient, but only modern sleep supports a fraction of
+	# a second, fall back to a second if it fails.
+	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
+	$(RUN_VIMTEST) $(NO_INITS) -S runtest.vim $*.vim $(REDIR_TEST_TO_NULL)
+	@/bin/sh -c "if test -f benchmark.out; then cat benchmark.out; fi"

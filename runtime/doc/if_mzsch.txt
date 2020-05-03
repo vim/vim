@@ -1,4 +1,4 @@
-*if_mzsch.txt*  For Vim version 8.1.  Last change: 2019 Jul 21
+*if_mzsch.txt*  For Vim version 8.2.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Sergey Khorev
@@ -39,7 +39,7 @@ To speed up the process, you might also want to use --disable-gracket and
 :[range]mz[scheme] {stmt}
 			Execute MzScheme statement {stmt}.
 
-:[range]mz[scheme] << [endmarker]
+:[range]mz[scheme] << [trim] [{endmarker}]
 {script}
 {endmarker}
 			Execute inlined MzScheme script {script}.
@@ -47,12 +47,11 @@ To speed up the process, you might also want to use --disable-gracket and
 			feature wasn't compiled in.  To avoid errors, see
 			|script-here|.
 
-			The {endmarker} below the {script} must NOT be
-			preceded by any white space.
-
 			If [endmarker] is omitted from after the "<<", a dot
 			'.' must be used after {script}, like for the
-			|:append| and |:insert| commands.
+			|:append| and |:insert| commands.  Refer to
+			|:let-heredoc| for more information.
+
 
 							*:mzfile* *:mzf*
 :[range]mzf[ile] {file}	Execute the MzScheme script in {file}.
@@ -87,7 +86,7 @@ To avoid clashes with MzScheme, consider using prefix when requiring module,
 e.g.: >
 	:mzscheme (require (prefix vim- vimext))
 <
-All the examples below assume this naming scheme. 
+All the examples below assume this naming scheme.
 
 							*mzscheme-sandbox*
 When executed in the |sandbox|, access to some filesystem and Vim interface

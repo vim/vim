@@ -123,6 +123,11 @@ func Test_global_local_undolevels()
   call assert_equal(50, &g:undolevels)
   call assert_equal(-123456, &l:undolevels)
 
+  " Resetting the local 'undolevels' value to use the global value
+  setlocal undolevels=5
+  setlocal undolevels<
+  call assert_equal(-123456, &l:undolevels)
+
   " Drop created windows
   set ul&
   new
@@ -249,6 +254,26 @@ func Test_undojoin_redo()
   bwipe!
 endfunc
 
+" undojoin not allowed after undo
+func Test_undojoin_after_undo()
+  new
+  call feedkeys("ixx\<Esc>u", 'xt')
+  call assert_fails(':undojoin', 'E790:')
+  bwipe!
+endfunc
+
+" undojoin is a noop when no change yet, or when 'undolevels' is negative
+func Test_undojoin_noop()
+  new
+  call feedkeys(":undojoin\<CR>", 'xt')
+  call assert_equal([''], getline(1, '$'))
+  setlocal undolevels=-1
+  call feedkeys("ixx\<Esc>u", 'xt')
+  call feedkeys(":undojoin\<CR>", 'xt')
+  call assert_equal(['xx'], getline(1, '$'))
+  bwipe!
+endfunc
+
 func Test_undo_write()
   call delete('Xtest')
   split Xtest
@@ -275,6 +300,8 @@ func Test_undo_write()
   close!
   call delete('Xtest')
   bwipe! Xtest
+
+  call assert_fails('earlier xyz', 'E475:')
 endfunc
 
 func Test_insert_expr()
@@ -335,7 +362,14 @@ func Test_undofile_earlier()
   call delete('Xundofile')
 endfunc
 
-" Check that reading a truncted undo file doesn't hang.
+func Test_wundo_errors()
+  new
+  call setline(1, 'hello')
+  call assert_fails('wundo! Xdoesnotexist/Xundofile', 'E828:')
+  bwipe!
+endfunc
+
+" Check that reading a truncated undo file doesn't hang.
 func Test_undofile_truncated()
   new
   call setline(1, 'hello')
@@ -350,6 +384,15 @@ func Test_undofile_truncated()
   endfor
 
   bwipe!
+  call delete('Xundofile')
+endfunc
+
+func Test_rundo_errors()
+  call assert_fails('rundo XfileDoesNotExist', 'E822:')
+
+  call writefile(['abc'], 'Xundofile')
+  call assert_fails('rundo Xundofile', 'E823:')
+
   call delete('Xundofile')
 endfunc
 
@@ -422,6 +465,24 @@ func Test_undo_0()
   bwipe!
 endfunc
 
+" undo or redo are noop if there is nothing to undo or redo
+func Test_undo_redo_noop()
+  new
+  call assert_fails('undo 2', 'E830:')
+
+  message clear
+  undo
+  let messages = split(execute('message'), "\n")
+  call assert_equal('Already at oldest change', messages[-1])
+
+  message clear
+  redo
+  let messages = split(execute('message'), "\n")
+  call assert_equal('Already at newest change', messages[-1])
+
+  bwipe!
+endfunc
+
 func Test_redo_empty_line()
   new
   exe "norm\x16r\x160"
@@ -469,3 +530,187 @@ funct Test_undofile()
 
   set undodir&
 endfunc
+
+" Tests for the undo file
+" Explicitly break changes up in undo-able pieces by setting 'undolevels'.
+func Test_undofile_2()
+  set undolevels=100 undofile
+  edit Xtestfile
+  call append(0, 'this is one line')
+  call cursor(1, 1)
+
+  " first a simple one-line change.
+  set undolevels=100
+  s/one/ONE/
+  set undolevels=100
+  write
+  bwipe!
+  edit Xtestfile
+  undo
+  call assert_equal('this is one line', getline(1))
+
+  " change in original file fails check
+  set noundofile
+  edit! Xtestfile
+  s/line/Line/
+  write
+  set undofile
+  bwipe!
+  edit Xtestfile
+  undo
+  call assert_equal('this is ONE Line', getline(1))
+
+  " add 10 lines, delete 6 lines, undo 3
+  set undofile
+  call setbufline(0, 1, ['one', 'two', 'three', 'four', 'five', 'six',
+	      \ 'seven', 'eight', 'nine', 'ten'])
+  set undolevels=100
+  normal 3Gdd
+  set undolevels=100
+  normal dd
+  set undolevels=100
+  normal dd
+  set undolevels=100
+  normal dd
+  set undolevels=100
+  normal dd
+  set undolevels=100
+  normal dd
+  set undolevels=100
+  write
+  bwipe!
+  edit Xtestfile
+  normal uuu
+  call assert_equal(['one', 'two', 'six', 'seven', 'eight', 'nine', 'ten'],
+	      \ getline(1, '$'))
+
+  " Test that reading the undofiles when setting undofile works
+  set noundofile undolevels=0
+  exe "normal i\n"
+  undo
+  edit! Xtestfile
+  set undofile undolevels=100
+  normal uuuuuu
+  call assert_equal(['one', 'two', 'three', 'four', 'five', 'six', 'seven',
+	      \ 'eight', 'nine', 'ten'], getline(1, '$'))
+
+  bwipe!
+  call delete('Xtestfile')
+  let ufile = has('vms') ? '_un_Xtestfile' : '.Xtestfile.un~'
+  call delete(ufile)
+  set undofile& undolevels&
+endfunc
+
+" Test 'undofile' using a file encrypted with 'zip' crypt method
+func Test_undofile_cryptmethod_zip()
+  edit Xtestfile
+  set undofile cryptmethod=zip
+  call append(0, ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'])
+  call cursor(5, 1)
+
+  set undolevels=100
+  normal kkkdd
+  set undolevels=100
+  normal dd
+  set undolevels=100
+  normal dd
+  set undolevels=100
+  " encrypt the file using key 'foobar'
+  call feedkeys("foobar\nfoobar\n")
+  X
+  write!
+  bwipe!
+
+  call feedkeys("foobar\n")
+  edit Xtestfile
+  set key=
+  normal uu
+  call assert_equal(['monday', 'wednesday', 'thursday', 'friday', ''],
+                    \ getline(1, '$'))
+
+  bwipe!
+  call delete('Xtestfile')
+  let ufile = has('vms') ? '_un_Xtestfile' : '.Xtestfile.un~'
+  call delete(ufile)
+  set undofile& undolevels& cryptmethod&
+endfunc
+
+" Test 'undofile' using a file encrypted with 'blowfish' crypt method
+func Test_undofile_cryptmethod_blowfish()
+  edit Xtestfile
+  set undofile cryptmethod=blowfish
+  call append(0, ['jan', 'feb', 'mar', 'apr', 'jun'])
+  call cursor(5, 1)
+
+  set undolevels=100
+  exe 'normal kk0ifoo '
+  set undolevels=100
+  normal dd
+  set undolevels=100
+  exe 'normal ibar '
+  set undolevels=100
+  " encrypt the file using key 'foobar'
+  call feedkeys("foobar\nfoobar\n")
+  X
+  write!
+  bwipe!
+
+  call feedkeys("foobar\n")
+  edit Xtestfile
+  set key=
+  call search('bar')
+  call assert_equal('bar apr', getline('.'))
+  undo
+  call assert_equal('apr', getline('.'))
+  undo
+  call assert_equal('foo mar', getline('.'))
+  undo
+  call assert_equal('mar', getline('.'))
+
+  bwipe!
+  call delete('Xtestfile')
+  let ufile = has('vms') ? '_un_Xtestfile' : '.Xtestfile.un~'
+  call delete(ufile)
+  set undofile& undolevels& cryptmethod&
+endfunc
+
+" Test 'undofile' using a file encrypted with 'blowfish2' crypt method
+func Test_undofile_cryptmethod_blowfish2()
+  edit Xtestfile
+  set undofile cryptmethod=blowfish2
+  call append(0, ['jan', 'feb', 'mar', 'apr', 'jun'])
+  call cursor(5, 1)
+
+  set undolevels=100
+  exe 'normal kk0ifoo '
+  set undolevels=100
+  normal dd
+  set undolevels=100
+  exe 'normal ibar '
+  set undolevels=100
+  " encrypt the file using key 'foo2bar'
+  call feedkeys("foo2bar\nfoo2bar\n")
+  X
+  write!
+  bwipe!
+
+  call feedkeys("foo2bar\n")
+  edit Xtestfile
+  set key=
+  call search('bar')
+  call assert_equal('bar apr', getline('.'))
+  normal u
+  call assert_equal('apr', getline('.'))
+  normal u
+  call assert_equal('foo mar', getline('.'))
+  normal u
+  call assert_equal('mar', getline('.'))
+
+  bwipe!
+  call delete('Xtestfile')
+  let ufile = has('vms') ? '_un_Xtestfile' : '.Xtestfile.un~'
+  call delete(ufile)
+  set undofile& undolevels& cryptmethod&
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

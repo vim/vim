@@ -1,19 +1,17 @@
 " Tests for :messages, :echomsg, :echoerr
 
 source shared.vim
+source term_util.vim
 
-function Test_messages()
+func Test_messages()
   let oldmore = &more
   try
     set nomore
-    " Avoid the "message maintainer" line.
-    let $LANG = ''
 
     let arr = map(range(10), '"hello" . v:val')
     for s in arr
       echomsg s | redraw
     endfor
-    let result = ''
 
     " get last two messages
     redir => result
@@ -24,22 +22,19 @@ function Test_messages()
 
     " clear messages without last one
     1messages clear
-    redir => result
-    redraw | messages
-    redir END
-    let msg_list = split(result, "\n")
+    let msg_list = GetMessages()
     call assert_equal(['hello9'], msg_list)
 
     " clear all messages
     messages clear
-    redir => result
-    redraw | messages
-    redir END
-    call assert_equal('', result)
+    let msg_list = GetMessages()
+    call assert_equal([], msg_list)
   finally
     let &more = oldmore
   endtry
-endfunction
+
+  call assert_fails('message 1', 'E474:')
+endfunc
 
 " Patch 7.4.1696 defined the "clearmode()" function for clearing the mode
 " indicator (e.g., "-- INSERT --") when ":stopinsert" is invoked.  Message
@@ -73,6 +68,7 @@ func Test_echomsg()
   call assert_equal("\n12345", execute(':echomsg 12345'))
   call assert_equal("\n[]", execute(':echomsg []'))
   call assert_equal("\n[1, 2, 3]", execute(':echomsg [1, 2, 3]'))
+  call assert_equal("\n[1, 2, []]", execute(':echomsg [1, 2, test_null_list()]'))
   call assert_equal("\n{}", execute(':echomsg {}'))
   call assert_equal("\n{'a': 1, 'b': 2}", execute(':echomsg {"a": 1, "b": 2}'))
   if has('float')
@@ -113,7 +109,7 @@ func Test_mode_message_at_leaving_insert_by_ctrl_c()
 
   let rows = 10
   let buf = term_start([GetVimProg(), '--clean', '-S', testfile], {'term_rows': rows})
-  call term_wait(buf, 200)
+  call TermWait(buf, 100)
   call assert_equal('run', job_status(term_getjob(buf)))
 
   call term_sendkeys(buf, "i")
@@ -142,7 +138,7 @@ func Test_mode_message_at_leaving_insert_with_esc_mapped()
 
   let rows = 10
   let buf = term_start([GetVimProg(), '--clean', '-S', testfile], {'term_rows': rows})
-  call term_wait(buf, 200)
+  call WaitForAssert({-> assert_match('0,0-1\s*All$', term_getline(buf, rows - 1))})
   call assert_equal('run', job_status(term_getjob(buf)))
 
   call term_sendkeys(buf, "i")
@@ -172,3 +168,141 @@ func Test_echospace()
 
   set ruler& showcmd&
 endfunc
+
+" Test more-prompt (see :help more-prompt).
+func Test_message_more()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot run vim in terminal'
+  endif
+  let buf = RunVimInTerminal('', {'rows': 6})
+  call term_sendkeys(buf, ":call setline(1, range(1, 100))\n")
+
+  call term_sendkeys(buf, ":%p#\n")
+  call WaitForAssert({-> assert_equal('  5 5', term_getline(buf, 5))})
+  call WaitForAssert({-> assert_equal('-- More --', term_getline(buf, 6))})
+
+  call term_sendkeys(buf, '?')
+  call WaitForAssert({-> assert_equal('  5 5', term_getline(buf, 5))})
+  call WaitForAssert({-> assert_equal('-- More -- SPACE/d/j: screen/page/line down, b/u/k: up, q: quit ', term_getline(buf, 6))})
+
+  " Down a line with j, <CR>, <NL> or <Down>.
+  call term_sendkeys(buf, "j")
+  call WaitForAssert({-> assert_equal('  6 6', term_getline(buf, 5))})
+  call WaitForAssert({-> assert_equal('-- More --', term_getline(buf, 6))})
+  call term_sendkeys(buf, "\<NL>")
+  call WaitForAssert({-> assert_equal('  7 7', term_getline(buf, 5))})
+  call term_sendkeys(buf, "\<CR>")
+  call WaitForAssert({-> assert_equal('  8 8', term_getline(buf, 5))})
+  call term_sendkeys(buf, "\<Down>")
+  call WaitForAssert({-> assert_equal('  9 9', term_getline(buf, 5))})
+
+  " Down a screen with <Space>, f, or <PageDown>.
+  call term_sendkeys(buf, 'f')
+  call WaitForAssert({-> assert_equal(' 14 14', term_getline(buf, 5))})
+  call WaitForAssert({-> assert_equal('-- More --', term_getline(buf, 6))})
+  call term_sendkeys(buf, ' ')
+  call WaitForAssert({-> assert_equal(' 19 19', term_getline(buf, 5))})
+  call term_sendkeys(buf, "\<PageDown>")
+  call WaitForAssert({-> assert_equal(' 24 24', term_getline(buf, 5))})
+
+  " Down a page (half a screen) with d.
+  call term_sendkeys(buf, 'd')
+  call WaitForAssert({-> assert_equal(' 27 27', term_getline(buf, 5))})
+
+  " Down all the way with 'G'.
+  call term_sendkeys(buf, 'G')
+  call WaitForAssert({-> assert_equal('100 100', term_getline(buf, 5))})
+  call WaitForAssert({-> assert_equal('Press ENTER or type command to continue', term_getline(buf, 6))})
+
+  " Up a line k, <BS> or <Up>.
+  call term_sendkeys(buf, 'k')
+  call WaitForAssert({-> assert_equal(' 99 99', term_getline(buf, 5))})
+  call term_sendkeys(buf, "\<BS>")
+  call WaitForAssert({-> assert_equal(' 98 98', term_getline(buf, 5))})
+  call term_sendkeys(buf, "\<Up>")
+  call WaitForAssert({-> assert_equal(' 97 97', term_getline(buf, 5))})
+
+  " Up a screen with b or <PageUp>.
+  call term_sendkeys(buf, 'b')
+  call WaitForAssert({-> assert_equal(' 92 92', term_getline(buf, 5))})
+  call term_sendkeys(buf, "\<PageUp>")
+  call WaitForAssert({-> assert_equal(' 87 87', term_getline(buf, 5))})
+
+  " Up a page (half a screen) with u.
+  call term_sendkeys(buf, 'u')
+  call WaitForAssert({-> assert_equal(' 84 84', term_getline(buf, 5))})
+
+  " Up all the way with 'g'.
+  call term_sendkeys(buf, 'g')
+  call WaitForAssert({-> assert_equal('  5 5', term_getline(buf, 5))})
+  call WaitForAssert({-> assert_equal('-- More --', term_getline(buf, 6))})
+
+  " All the way down. Pressing f should do nothing but pressing
+  " space should end the more prompt.
+  call term_sendkeys(buf, 'G')
+  call WaitForAssert({-> assert_equal('100 100', term_getline(buf, 5))})
+  call WaitForAssert({-> assert_equal('Press ENTER or type command to continue', term_getline(buf, 6))})
+  call term_sendkeys(buf, 'f')
+  call WaitForAssert({-> assert_equal('100 100', term_getline(buf, 5))})
+  call term_sendkeys(buf, ' ')
+  call WaitForAssert({-> assert_equal('100', term_getline(buf, 5))})
+
+  " Pressing g< shows the previous command output.
+  call term_sendkeys(buf, 'g<')
+  call WaitForAssert({-> assert_equal('100 100', term_getline(buf, 5))})
+  call WaitForAssert({-> assert_equal('Press ENTER or type command to continue', term_getline(buf, 6))})
+
+  call term_sendkeys(buf, ":%p#\n")
+  call WaitForAssert({-> assert_equal('  5 5', term_getline(buf, 5))})
+  call WaitForAssert({-> assert_equal('-- More --', term_getline(buf, 6))})
+
+  " Stop command output with q, <Esc> or CTRL-C.
+  call term_sendkeys(buf, 'q')
+  call WaitForAssert({-> assert_equal('100', term_getline(buf, 5))})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_ask_yesno()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot run vim in terminal'
+  endif
+  let buf = RunVimInTerminal('', {'rows': 6})
+  call term_sendkeys(buf, ":call setline(1, range(1, 2))\n")
+
+  call term_sendkeys(buf, ":2,1s/^/n/\n")
+  call WaitForAssert({-> assert_equal('Backwards range given, OK to swap (y/n)?', term_getline(buf, 6))})
+  call term_sendkeys(buf, "n")
+  call WaitForAssert({-> assert_match('^Backwards range given, OK to swap (y/n)?n *1,1 *All$', term_getline(buf, 6))})
+  call WaitForAssert({-> assert_equal('1', term_getline(buf, 1))})
+
+  call term_sendkeys(buf, ":2,1s/^/Esc/\n")
+  call WaitForAssert({-> assert_equal('Backwards range given, OK to swap (y/n)?', term_getline(buf, 6))})
+  call term_sendkeys(buf, "\<Esc>")
+  call WaitForAssert({-> assert_match('^Backwards range given, OK to swap (y/n)?n *1,1 *All$', term_getline(buf, 6))})
+  call WaitForAssert({-> assert_equal('1', term_getline(buf, 1))})
+
+  call term_sendkeys(buf, ":2,1s/^/y/\n")
+  call WaitForAssert({-> assert_equal('Backwards range given, OK to swap (y/n)?', term_getline(buf, 6))})
+  call term_sendkeys(buf, "y")
+  call WaitForAssert({-> assert_match('^Backwards range given, OK to swap (y/n)?y *2,1 *All$', term_getline(buf, 6))})
+  call WaitForAssert({-> assert_equal('y1', term_getline(buf, 1))})
+  call WaitForAssert({-> assert_equal('y2', term_getline(buf, 2))})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_null()
+  echom test_null_list()
+  echom test_null_dict()
+  echom test_null_blob()
+  echom test_null_string()
+  echom test_null_function()
+  echom test_null_partial()
+  if has('job')
+    echom test_null_job()
+    echom test_null_channel()
+  endif
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

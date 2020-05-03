@@ -1,5 +1,5 @@
 " Test for python 3 commands.
-" TODO: move tests from test88.in here.
+" TODO: move tests from test87.in here.
 
 source check.vim
 CheckFeature python3
@@ -167,3 +167,192 @@ func Test_Catch_Exception_Message()
     call assert_match( '^Vim(.*):RuntimeError: TEST$', v:exception )
   endtry
 endfunc
+
+func Test_unicode()
+  " this crashed Vim once
+  if &tenc != ''
+    throw "Skipped: 'termencoding' is not empty"
+  endif
+
+  set encoding=utf32
+  py3 print('hello')
+
+  if !has('win32')
+    set encoding=debug
+    py3 print('hello')
+
+    set encoding=euc-tw
+    py3 print('hello')
+  endif
+
+  set encoding=utf8
+endfunc
+
+" Test vim.eval() with various types.
+func Test_python3_vim_val()
+  call assert_equal("\n8",             execute('py3 print(vim.eval("3+5"))'))
+  if has('float')
+    call assert_equal("\n3.140000",    execute('py3 print(vim.eval("1.01+2.13"))'))
+    call assert_equal("\n0.000000",    execute('py3 print(vim.eval("0.0/(1.0/0.0)"))'))
+    call assert_equal("\n0.000000",    execute('py3 print(vim.eval("0.0/(1.0/0.0)"))'))
+    call assert_equal("\n-0.000000",   execute('py3 print(vim.eval("0.0/(-1.0/0.0)"))'))
+    " Commented out: output of infinity and nan depend on platforms.
+    " call assert_equal("\ninf",         execute('py3 print(vim.eval("1.0/0.0"))'))
+    " call assert_equal("\n-inf",        execute('py3 print(vim.eval("-1.0/0.0"))'))
+    " call assert_equal("\n-nan",        execute('py3 print(vim.eval("0.0/0.0"))'))
+  endif
+  call assert_equal("\nabc",           execute('py3 print(vim.eval("\"abc\""))'))
+  call assert_equal("\n['1', '2']",    execute('py3 print(vim.eval("[1, 2]"))'))
+  call assert_equal("\n{'1': '2'}",    execute('py3 print(vim.eval("{1:2}"))'))
+  call assert_equal("\nTrue",          execute('py3 print(vim.eval("v:true"))'))
+  call assert_equal("\nFalse",         execute('py3 print(vim.eval("v:false"))'))
+  call assert_equal("\nNone",          execute('py3 print(vim.eval("v:null"))'))
+  call assert_equal("\nNone",          execute('py3 print(vim.eval("v:none"))'))
+  call assert_equal("\nb'\\xab\\x12'", execute('py3 print(vim.eval("0zab12"))'))
+
+  call assert_fails('py3 vim.eval("1+")', 'vim.error: invalid expression')
+endfunc
+
+" Test range objects, see :help python-range
+func Test_python3_range()
+  new
+  py3 b = vim.current.buffer
+
+  call setline(1, range(1, 6))
+  py3 r = b.range(2, 4)
+  call assert_equal(6, py3eval('len(b)'))
+  call assert_equal(3, py3eval('len(r)'))
+  call assert_equal('3', py3eval('b[2]'))
+  call assert_equal('4', py3eval('r[2]'))
+
+  call assert_fails('py3 r[3] = "x"', 'IndexError: line number out of range')
+  call assert_fails('py3 x = r[3]', 'IndexError: line number out of range')
+  call assert_fails('py3 r["a"] = "x"', 'TypeError')
+  call assert_fails('py3 x = r["a"]', 'TypeError')
+
+  py3 del r[:]
+  call assert_equal(['1', '5', '6'], getline(1, '$'))
+
+  %d | call setline(1, range(1, 6))
+  py3 r = b.range(2, 5)
+  py3 del r[2]
+  call assert_equal(['1', '2', '3', '5', '6'], getline(1, '$'))
+
+  %d | call setline(1, range(1, 6))
+  py3 r = b.range(2, 4)
+  py3 vim.command("%d,%dnorm Ax" % (r.start + 1, r.end + 1))
+  call assert_equal(['1', '2x', '3x', '4x', '5', '6'], getline(1, '$'))
+
+  %d | call setline(1, range(1, 4))
+  py3 r = b.range(2, 3)
+  py3 r.append(['a', 'b'])
+  call assert_equal(['1', '2', '3', 'a', 'b', '4'], getline(1, '$'))
+  py3 r.append(['c', 'd'], 0)
+  call assert_equal(['1', 'c', 'd', '2', '3', 'a', 'b', '4'], getline(1, '$'))
+
+  %d | call setline(1, range(1, 5))
+  py3 r = b.range(2, 4)
+  py3 r.append('a')
+  call assert_equal(['1', '2', '3', '4', 'a', '5'], getline(1, '$'))
+  py3 r.append('b', 1)
+  call assert_equal(['1', '2', 'b', '3', '4', 'a', '5'], getline(1, '$'))
+
+  bwipe!
+endfunc
+
+" Test for resetting options with local values to global values
+func Test_python3_opt_reset_local_to_global()
+  new
+
+  py3 curbuf = vim.current.buffer
+  py3 curwin = vim.current.window
+
+  " List of buffer-local options. Each list item has [option name, global
+  " value, buffer-local value, buffer-local value after reset] to use in the
+  " test.
+  let bopts = [
+        \ ['autoread', 1, 0, -1],
+        \ ['equalprg', 'geprg', 'leprg', ''],
+        \ ['keywordprg', 'gkprg', 'lkprg', ''],
+        \ ['path', 'gpath', 'lpath', ''],
+        \ ['backupcopy', 'yes', 'no', ''],
+        \ ['tags', 'gtags', 'ltags', ''],
+        \ ['tagcase', 'ignore', 'match', ''],
+        \ ['define', 'gdef', 'ldef', ''],
+        \ ['include', 'ginc', 'linc', ''],
+        \ ['dict', 'gdict', 'ldict', ''],
+        \ ['thesaurus', 'gtsr', 'ltsr', ''],
+        \ ['formatprg', 'gfprg', 'lfprg', ''],
+        \ ['errorformat', '%f:%l:%m', '%s-%l-%m', ''],
+        \ ['grepprg', 'ggprg', 'lgprg', ''],
+        \ ['makeprg', 'gmprg', 'lmprg', ''],
+        \ ['balloonexpr', 'gbexpr', 'lbexpr', ''],
+        \ ['cryptmethod', 'blowfish2', 'zip', ''],
+        \ ['lispwords', 'abc', 'xyz', ''],
+        \ ['makeencoding', 'utf-8', 'latin1', ''],
+        \ ['undolevels', 100, 200, -123456]]
+
+  " Set the global and buffer-local option values and then clear the
+  " buffer-local option value.
+  for opt in bopts
+    py3 << trim END
+      pyopt = vim.bindeval("opt")
+      vim.options[pyopt[0]] = pyopt[1]
+      curbuf.options[pyopt[0]] = pyopt[2]
+    END
+    exe "call assert_equal(opt[2], &" .. opt[0] .. ")"
+    exe "call assert_equal(opt[1], &g:" .. opt[0] .. ")"
+    exe "call assert_equal(opt[2], &l:" .. opt[0] .. ")"
+    py3 del curbuf.options[pyopt[0]]
+    exe "call assert_equal(opt[1], &" .. opt[0] .. ")"
+    exe "call assert_equal(opt[1], &g:" .. opt[0] .. ")"
+    exe "call assert_equal(opt[3], &l:" .. opt[0] .. ")"
+    exe "set " .. opt[0] .. "&"
+  endfor
+
+  " Set the global and window-local option values and then clear the
+  " window-local option value.
+  let wopts = [
+        \ ['scrolloff', 5, 10, -1],
+        \ ['sidescrolloff', 6, 12, -1],
+        \ ['statusline', '%<%f', '%<%F', '']]
+  for opt in wopts
+    py3 << trim
+      pyopt = vim.bindeval("opt")
+      vim.options[pyopt[0]] = pyopt[1]
+      curwin.options[pyopt[0]] = pyopt[2]
+    .
+    exe "call assert_equal(opt[2], &" .. opt[0] .. ")"
+    exe "call assert_equal(opt[1], &g:" .. opt[0] .. ")"
+    exe "call assert_equal(opt[2], &l:" .. opt[0] .. ")"
+    py3 del curwin.options[pyopt[0]]
+    exe "call assert_equal(opt[1], &" .. opt[0] .. ")"
+    exe "call assert_equal(opt[1], &g:" .. opt[0] .. ")"
+    exe "call assert_equal(opt[3], &l:" .. opt[0] .. ")"
+    exe "set " .. opt[0] .. "&"
+  endfor
+
+  close!
+endfunc
+
+" Test for various heredoc syntax
+func Test_python3_heredoc()
+  python3 << END
+s='A'
+END
+  python3 <<
+s+='B'
+.
+  python3 << trim END
+    s+='C'
+  END
+  python3 << trim
+    s+='D'
+  .
+  python3 << trim eof
+    s+='E'
+  eof
+  call assert_equal('ABCDE', pyxeval('s'))
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -12,22 +12,22 @@
  */
 #include "vim.h"
 
-static pumitem_T *pum_array = NULL;	/* items of displayed pum */
-static int pum_size;			/* nr of items in "pum_array" */
-static int pum_selected;		/* index of selected item or -1 */
-static int pum_first = 0;		/* index of top item */
+static pumitem_T *pum_array = NULL;	// items of displayed pum
+static int pum_size;			// nr of items in "pum_array"
+static int pum_selected;		// index of selected item or -1
+static int pum_first = 0;		// index of top item
 
 static int call_update_screen = FALSE;
 
-static int pum_height;			/* nr of displayed pum items */
-static int pum_width;			/* width of displayed pum items */
-static int pum_base_width;		/* width of pum items base */
-static int pum_kind_width;		/* width of pum items kind column */
-static int pum_extra_width;		/* width of extra stuff */
-static int pum_scrollbar;		/* TRUE when scrollbar present */
+static int pum_height;			// nr of displayed pum items
+static int pum_width;			// width of displayed pum items
+static int pum_base_width;		// width of pum items base
+static int pum_kind_width;		// width of pum items kind column
+static int pum_extra_width;		// width of extra stuff
+static int pum_scrollbar;		// TRUE when scrollbar present
 
-static int pum_row;			/* top row of pum */
-static int pum_col;			/* left column of pum */
+static int pum_row;			// top row of pum
+static int pum_col;			// left column of pum
 
 static win_T *pum_window = NULL;
 static int pum_win_row;
@@ -36,8 +36,13 @@ static int pum_win_col;
 static int pum_win_wcol;
 static int pum_win_width;
 
-static int pum_do_redraw = FALSE;	// do redraw anyway
-static int pum_skip_redraw = FALSE;	// skip redraw
+// Some parts are not updated when a popup menu is visible.  Setting this flag
+// makes pum_visible() return FALSE even when there is a popup menu.
+static int pum_pretend_not_visible = FALSE;
+
+// When set the popup menu will redraw soon using the pum_win_ values. Do not
+// draw over the poup menu area to avoid flicker.
+static int pum_will_redraw = FALSE;
 
 static int pum_set_selected(int n, int repeat);
 
@@ -49,15 +54,18 @@ pum_compute_size(void)
     int	i;
     int	w;
 
-    /* Compute the width of the widest match and the widest extra. */
+    // Compute the width of the widest match and the widest extra.
     pum_base_width = 0;
     pum_kind_width = 0;
     pum_extra_width = 0;
     for (i = 0; i < pum_size; ++i)
     {
-	w = vim_strsize(pum_array[i].pum_text);
-	if (pum_base_width < w)
-	    pum_base_width = w;
+	if (pum_array[i].pum_text != NULL)
+	{
+	    w = vim_strsize(pum_array[i].pum_text);
+	    if (pum_base_width < w)
+		pum_base_width = w;
+	}
 	if (pum_array[i].pum_kind != NULL)
 	{
 	    w = vim_strsize(pum_array[i].pum_kind) + 1;
@@ -83,8 +91,8 @@ pum_compute_size(void)
 pum_display(
     pumitem_T	*array,
     int		size,
-    int		selected)	/* index of initially selected item, none if
-				   out of range */
+    int		selected)	// index of initially selected item, none if
+				// out of range
 {
     int		def_width;
     int		max_width;
@@ -103,8 +111,8 @@ pum_display(
 	above_row = 0;
 	below_row = cmdline_row;
 
-	/* Pretend the pum is already there to avoid that must_redraw is set
-	 * when 'cuc' is on. */
+	// Pretend the pum is already there to avoid that must_redraw is set
+	// when 'cuc' is on.
 	pum_array = (pumitem_T *)1;
 	validate_cursor_col();
 	pum_array = NULL;
@@ -141,14 +149,14 @@ pum_display(
 	if (p_ph > 0 && pum_height > p_ph)
 	    pum_height = p_ph;
 
-	/* Put the pum below "pum_win_row" if possible.  If there are few lines
-	 * decide on where there is more room. */
+	// Put the pum below "pum_win_row" if possible.  If there are few lines
+	// decide on where there is more room.
 	if (pum_win_row + 2 >= below_row - pum_height
 		      && pum_win_row - above_row > (below_row - above_row) / 2)
 	{
-	    /* pum above "pum_win_row" */
+	    // pum above "pum_win_row"
 
-	    /* Leave two lines of context if possible */
+	    // Leave two lines of context if possible
 	    if (curwin->w_wrow - curwin->w_cline_row >= 2)
 		context_lines = 2;
 	    else
@@ -172,9 +180,10 @@ pum_display(
 	}
 	else
 	{
-	    /* pum below "pum_win_row" */
+	    // pum below "pum_win_row"
 
-	    /* Leave two lines of context if possible */
+	    // Leave two lines of context if possible
+	    validate_cheight();
 	    if (curwin->w_cline_row
 				+ curwin->w_cline_height - curwin->w_wrow >= 3)
 		context_lines = 3;
@@ -191,7 +200,7 @@ pum_display(
 		pum_height = p_ph;
 	}
 
-	/* don't display when we only have room for one line */
+	// don't display when we only have room for one line
 	if (pum_height < 1 || (pum_height == 1 && size > 1))
 	    return;
 
@@ -209,7 +218,7 @@ pum_display(
 	pum_compute_size();
 	max_width = pum_base_width;
 
-	/* Calculate column */
+	// Calculate column
 #ifdef FEAT_RIGHTLEFT
 	if (curwin->w_p_rl)
 	    cursor_col = curwin->w_wincol + curwin->w_width
@@ -218,7 +227,7 @@ pum_display(
 #endif
 	    cursor_col = curwin->w_wincol + curwin->w_wcol;
 
-	/* if there are more items than room we need a scrollbar */
+	// if there are more items than room we need a scrollbar
 	if (pum_height < size)
 	{
 	    pum_scrollbar = 1;
@@ -239,10 +248,10 @@ pum_display(
 #endif
 	   ))
 	{
-	    /* align pum with "cursor_col" */
+	    // align pum with "cursor_col"
 	    pum_col = cursor_col;
 
-	    /* start with the maximum space available */
+	    // start with the maximum space available
 #ifdef FEAT_RIGHTLEFT
 	    if (curwin->w_p_rl)
 		pum_width = pum_col - pum_scrollbar + 1;
@@ -253,8 +262,8 @@ pum_display(
 	    if (pum_width > max_width + pum_kind_width + pum_extra_width + 1
 						&& pum_width > p_pw)
 	    {
-		/* the width is more than needed for the items, make it
-		 * narrower */
+		// the width is more than needed for the items, make it
+		// narrower
 		pum_width = max_width + pum_kind_width + pum_extra_width + 1;
 		if (pum_width < p_pw)
 		    pum_width = p_pw;
@@ -267,7 +276,7 @@ pum_display(
 #endif
 		    ))
 	    {
-		/* align pum edge with "cursor_col" */
+		// align pum edge with "cursor_col"
 #ifdef FEAT_RIGHTLEFT
 		if (curwin->w_p_rl
 			&& W_ENDCOL(curwin) < max_width + pum_scrollbar + 1)
@@ -282,7 +291,7 @@ pum_display(
 		    if (curwin->w_wincol > Columns - max_width - pum_scrollbar
 							  && max_width <= p_pw)
 		    {
-			/* use full width to end of the screen */
+			// use full width to end of the screen
 			pum_col = Columns - max_width - pum_scrollbar;
 			if (pum_col < 0)
 			    pum_col = 0;
@@ -326,7 +335,7 @@ pum_display(
 	}
 	else if (Columns < def_width)
 	{
-	    /* not enough room, will use what we have */
+	    // not enough room, will use what we have
 #ifdef FEAT_RIGHTLEFT
 	    if (curwin->w_p_rl)
 		pum_col = Columns - 1;
@@ -338,7 +347,7 @@ pum_display(
 	else
 	{
 	    if (max_width > p_pw)
-		max_width = p_pw;	/* truncate */
+		max_width = p_pw;	// truncate
 #ifdef FEAT_RIGHTLEFT
 	    if (curwin->w_p_rl)
 		pum_col = max_width - 1;
@@ -348,9 +357,9 @@ pum_display(
 	    pum_width = max_width - pum_scrollbar;
 	}
 
-	/* Set selected item and redraw.  If the window size changed need to
-	 * redo the positioning.  Limit this to two times, when there is not
-	 * much room the window size will keep changing. */
+	// Set selected item and redraw.  If the window size changed need to
+	// redo the positioning.  Limit this to two times, when there is not
+	// much room the window size will keep changing.
     } while (pum_set_selected(selected, redo_count) && ++redo_count <= 2);
 }
 
@@ -377,7 +386,7 @@ pum_call_update_screen()
     int
 pum_under_menu(int row, int col)
 {
-    return pum_skip_redraw
+    return pum_will_redraw
 	    && row >= pum_row
 	    && row < pum_row + pum_height
 	    && col >= pum_col - 1
@@ -410,9 +419,11 @@ pum_redraw(void)
     if (call_update_screen)
     {
 	call_update_screen = FALSE;
-	pum_skip_redraw = TRUE;  // do not redraw in pum_may_redraw().
+	// Do not redraw in pum_may_redraw() and don't draw in the area where
+	// the popup menu will be.
+	pum_will_redraw = TRUE;
 	update_screen(0);
-	pum_skip_redraw = FALSE;
+	pum_will_redraw = FALSE;
     }
 
     // never display more than we have
@@ -440,7 +451,7 @@ pum_redraw(void)
 	idx = i + pum_first;
 	attr = (idx == pum_selected) ? attr_select : attr_norm;
 
-	/* prepend a space if there is room */
+	// prepend a space if there is room
 #ifdef FEAT_RIGHTLEFT
 	if (curwin->w_p_rl)
 	{
@@ -452,8 +463,8 @@ pum_redraw(void)
 	    if (pum_col > 0)
 		screen_putchar(' ', row, pum_col - 1, attr);
 
-	/* Display each entry, use two spaces for a Tab.
-	 * Do this 3 times: For the main text, kind and extra info */
+	// Display each entry, use two spaces for a Tab.
+	// Do this 3 times: For the main text, kind and extra info
 	col = pum_col;
 	totwidth = 0;
 	for (round = 1; round <= 3; ++round)
@@ -474,8 +485,8 @@ pum_redraw(void)
 		    w = ptr2cells(p);
 		    if (*p == NUL || *p == TAB || totwidth + w > pum_width)
 		    {
-			/* Display the text that fits or comes before a Tab.
-			 * First convert it to printable characters. */
+			// Display the text that fits or comes before a Tab.
+			// First convert it to printable characters.
 			char_u	*st;
 			int	saved = *p;
 
@@ -508,11 +519,11 @@ pum_redraw(void)
 
 					if (size < pum_width)
 					{
-					    /* Most left character requires
-					     * 2-cells but only 1 cell is
-					     * available on screen.  Put a
-					     * '<' on the left of the pum
-					     * item */
+					    // Most left character requires
+					    // 2-cells but only 1 cell is
+					    // available on screen.  Put a
+					    // '<' on the left of the pum
+					    // item
 					    *(--rt) = '<';
 					    size++;
 					}
@@ -540,7 +551,7 @@ pum_redraw(void)
 			if (*p != TAB)
 			    break;
 
-			/* Display two spaces for a Tab. */
+			// Display two spaces for a Tab.
 #ifdef FEAT_RIGHTLEFT
 			if (curwin->w_p_rl)
 			{
@@ -555,7 +566,7 @@ pum_redraw(void)
 			    col += 2;
 			}
 			totwidth += 2;
-			s = NULL;	    /* start text at next char */
+			s = NULL;	    // start text at next char
 			width = 0;
 		    }
 		    else
@@ -567,7 +578,7 @@ pum_redraw(void)
 	    else
 		n = 1;
 
-	    /* Stop when there is nothing more to display. */
+	    // Stop when there is nothing more to display.
 	    if (round == 3
 		    || (round == 2 && pum_array[idx].pum_extra == NULL)
 		    || (round == 1 && pum_array[idx].pum_kind == NULL
@@ -661,7 +672,13 @@ pum_position_info_popup(win_T *wp)
 	// align with the selected item
 	row += pum_selected - pum_first + 1;
 
-    popup_set_wantpos_rowcol(wp, row, col);
+    wp->w_popup_flags &= ~POPF_HIDDEN;
+    if (wp->w_maxwidth < 10)
+	// The popup is not going to fit or will overlap with the cursor
+	// position, hide the popup.
+	wp->w_popup_flags |= POPF_HIDDEN;
+    else
+	popup_set_wantpos_rowcol(wp, row, col);
 }
 #endif
 
@@ -693,8 +710,8 @@ pum_set_selected(int n, int repeat UNUSED)
     {
 	if (pum_first > pum_selected - 4)
 	{
-	    /* scroll down; when we did a jump it's probably a PageUp then
-	     * scroll a whole page */
+	    // scroll down; when we did a jump it's probably a PageUp then
+	    // scroll a whole page
 	    if (pum_first > pum_selected - 2)
 	    {
 		pum_first -= pum_height - 2;
@@ -708,8 +725,8 @@ pum_set_selected(int n, int repeat UNUSED)
 	}
 	else if (pum_first < pum_selected - pum_height + 5)
 	{
-	    /* scroll up; when we did a jump it's probably a PageDown then
-	     * scroll a whole page */
+	    // scroll up; when we did a jump it's probably a PageDown then
+	    // scroll a whole page
 	    if (pum_first < pum_selected - pum_height + 1 + 2)
 	    {
 		pum_first += pum_height - 2;
@@ -720,21 +737,21 @@ pum_set_selected(int n, int repeat UNUSED)
 		pum_first = pum_selected - pum_height + 1;
 	}
 
-	/* Give a few lines of context when possible. */
+	// Give a few lines of context when possible.
 	if (context > 3)
 	    context = 3;
 	if (pum_height > 2)
 	{
 	    if (pum_first > pum_selected - context)
 	    {
-		/* scroll down */
+		// scroll down
 		pum_first = pum_selected - context;
 		if (pum_first < 0)
 		    pum_first = 0;
 	    }
 	    else if (pum_first < pum_selected + context - pum_height + 1)
 	    {
-		/* scroll up */
+		// scroll up
 		pum_first = pum_selected + context - pum_height + 1;
 	    }
 	}
@@ -845,8 +862,8 @@ pum_set_selected(int n, int repeat UNUSED)
 		    // delete the empty last line
 		    ml_delete(curbuf->b_ml.ml_line_count, FALSE);
 
-		    /* Increase the height of the preview window to show the
-		     * text, but no more than 'previewheight' lines. */
+		    // Increase the height of the preview window to show the
+		    // text, but no more than 'previewheight' lines.
 		    if (repeat == 0 && use_popup == USEPOPUP_NONE)
 		    {
 			if (lnum > p_pvh)
@@ -886,20 +903,20 @@ pum_set_selected(int n, int repeat UNUSED)
 			if (curtab != curtab_save && valid_tabpage(curtab_save))
 			    goto_tabpage_tp(curtab_save, FALSE, FALSE);
 
-			/* When the first completion is done and the preview
-			 * window is not resized, skip the preview window's
-			 * status line redrawing. */
+			// When the first completion is done and the preview
+			// window is not resized, skip the preview window's
+			// status line redrawing.
 			if (ins_compl_active() && !resized)
 			    curwin->w_redr_status = FALSE;
 
-			/* Return cursor to where we were */
+			// Return cursor to where we were
 			validate_cursor();
 			redraw_later(SOME_VALID);
 
-			/* When the preview window was resized we need to
-			 * update the view on the buffer.  Only go back to
-			 * the window when needed, otherwise it will always be
-			 * redraw. */
+			// When the preview window was resized we need to
+			// update the view on the buffer.  Only go back to
+			// the window when needed, otherwise it will always be
+			// redrawn.
 			if (resized && win_valid(curwin_save))
 			{
 			    ++no_u_sync;
@@ -908,11 +925,16 @@ pum_set_selected(int n, int repeat UNUSED)
 			    update_topline();
 			}
 
-			/* Update the screen before drawing the popup menu.
-			 * Enable updating the status lines. */
-			pum_do_redraw = TRUE;
+			// Update the screen before drawing the popup menu.
+			// Enable updating the status lines.
+			pum_pretend_not_visible = TRUE;
+			// But don't draw text at the new popup menu position,
+			// it causes flicker.  When resizing we need to draw
+			// anyway, the position may change later.
+			pum_will_redraw = !resized;
 			update_screen(0);
-			pum_do_redraw = FALSE;
+			pum_pretend_not_visible = FALSE;
+			pum_will_redraw = FALSE;
 
 			if (!resized && win_valid(curwin_save))
 			{
@@ -928,11 +950,13 @@ pum_set_selected(int n, int repeat UNUSED)
 # endif
 			}
 
-			/* May need to update the screen again when there are
-			 * autocommands involved. */
-			pum_do_redraw = TRUE;
+			// May need to update the screen again when there are
+			// autocommands involved.
+			pum_pretend_not_visible = TRUE;
+			pum_will_redraw = !resized;
 			update_screen(0);
-			pum_do_redraw = FALSE;
+			pum_pretend_not_visible = FALSE;
+			pum_will_redraw = FALSE;
 			call_update_screen = FALSE;
 		    }
 		}
@@ -984,13 +1008,14 @@ pum_clear(void)
 }
 
 /*
- * Return TRUE if the popup menu is displayed.
- * Overruled when "pum_do_redraw" is set, used to redraw the status lines.
+ * Return TRUE if the popup menu is displayed. Used to avoid some redrawing
+ * that could overwrite it.  Overruled when "pum_pretend_not_visible" is set,
+ * used to redraw the status lines.
  */
     int
 pum_visible(void)
 {
-    return !pum_do_redraw && pum_array != NULL;
+    return !pum_pretend_not_visible && pum_array != NULL;
 }
 
 /*
@@ -1003,7 +1028,7 @@ pum_may_redraw(void)
     int		len = pum_size;
     int		selected = pum_selected;
 
-    if (!pum_visible() || pum_skip_redraw)
+    if (!pum_visible() || pum_will_redraw)
 	return;  // nothing to do
 
     if (pum_window != curwin
@@ -1049,12 +1074,13 @@ pum_set_event_info(dict_T *dict)
 {
     if (!pum_visible())
 	return;
-    dict_add_number(dict, "height", pum_height);
-    dict_add_number(dict, "width", pum_width);
-    dict_add_number(dict, "row", pum_row);
-    dict_add_number(dict, "col", pum_col);
-    dict_add_number(dict, "size", pum_size);
-    dict_add_special(dict, "scrollbar", pum_scrollbar ? VVAL_TRUE : VVAL_FALSE);
+    (void)dict_add_number(dict, "height", pum_height);
+    (void)dict_add_number(dict, "width", pum_width);
+    (void)dict_add_number(dict, "row", pum_row);
+    (void)dict_add_number(dict, "col", pum_col);
+    (void)dict_add_number(dict, "size", pum_size);
+    (void)dict_add_bool(dict, "scrollbar",
+				       pum_scrollbar ? VVAL_TRUE : VVAL_FALSE);
 }
 #endif
 
@@ -1064,14 +1090,14 @@ pum_position_at_mouse(int min_width)
 {
     if (Rows - mouse_row > pum_size)
     {
-	/* Enough space below the mouse row. */
+	// Enough space below the mouse row.
 	pum_row = mouse_row + 1;
 	if (pum_height > Rows - pum_row)
 	    pum_height = Rows - pum_row;
     }
     else
     {
-	/* Show above the mouse row, reduce height if it does not fit. */
+	// Show above the mouse row, reduce height if it does not fit.
 	pum_row = mouse_row - pum_size;
 	if (pum_row < 0)
 	{
@@ -1081,10 +1107,10 @@ pum_position_at_mouse(int min_width)
     }
     if (Columns - mouse_col >= pum_base_width
 	    || Columns - mouse_col > min_width)
-	/* Enough space to show at mouse column. */
+	// Enough space to show at mouse column.
 	pum_col = mouse_col;
     else
-	/* Not enough space, right align with window. */
+	// Not enough space, right align with window.
 	pum_col = Columns - (pum_base_width > min_width
 						 ? min_width : pum_base_width);
 
@@ -1158,7 +1184,7 @@ split_message(char_u *mesg, pumitem_T **array)
 	    {
 		if ((*p == ',' && p[1] == ' ') || *p == '{' || *p == '}')
 		{
-		    /* Looks like a good point to break. */
+		    // Looks like a good point to break.
 		    if (*p == '{')
 			++indent;
 		    else if (*p == '}' && indent > 0)
@@ -1181,22 +1207,22 @@ split_message(char_u *mesg, pumitem_T **array)
 
     height = 2 + ga.ga_len;
 
-    /* If there are long items and the height is below the limit: split lines */
+    // If there are long items and the height is below the limit: split lines
     if (long_item_count > 0 && height + long_item_count <= max_height)
     {
 	split_long_items = TRUE;
 	height += long_item_count;
     }
 
-    /* Limit to half the window height, it has to fit above or below the mouse
-     * position. */
+    // Limit to half the window height, it has to fit above or below the mouse
+    // position.
     if (height > max_height)
 	height = max_height;
     *array = ALLOC_CLEAR_MULT(pumitem_T, height);
     if (*array == NULL)
 	goto failed;
 
-    /* Add an empty line above and below, looks better. */
+    // Add an empty line above and below, looks better.
     (*array)->pum_text = vim_strsave((char_u *)"");
     (*array + height - 1)->pum_text = vim_strsave((char_u *)"");
 
@@ -1246,7 +1272,7 @@ split_message(char_u *mesg, pumitem_T **array)
 
 		vim_strncpy(p + ind, item->start + skip, copylen);
 		(*array)[line].pum_text = p;
-		item->indent = 0;  /* wrapped line has no indent */
+		item->indent = 0;  // wrapped line has no indent
 		++line;
 	    }
     }
@@ -1292,6 +1318,7 @@ ui_post_balloon(char_u *mesg, list_T *list)
 	balloon_array = ALLOC_CLEAR_MULT(pumitem_T, list->lv_len);
 	if (balloon_array == NULL)
 	    return;
+	range_list_materialize(list);
 	for (idx = 0, li = list->lv_first; li != NULL; li = li->li_next, ++idx)
 	{
 	    char_u *text = tv_get_string_chk(&li->li_tv);
@@ -1355,10 +1382,10 @@ pum_execute_menu(vimmenu_T *menu, int mode)
     int		idx = 0;
     exarg_T	ea;
 
-    for (mp = menu->children; mp != NULL; mp = mp->next)
+    FOR_ALL_CHILD_MENUS(menu, mp)
 	if ((mp->modes & mp->enabled & mode) && idx++ == pum_selected)
 	{
-	    vim_memset(&ea, 0, sizeof(ea));
+	    CLEAR_FIELD(ea);
 	    execute_menu(&ea, mp, -1);
 	    break;
 	}
@@ -1383,7 +1410,7 @@ pum_show_popupmenu(vimmenu_T *menu)
     pum_size = 0;
     mode = get_menu_mode_flag();
 
-    for (mp = menu->children; mp != NULL; mp = mp->next)
+    FOR_ALL_CHILD_MENUS(menu, mp)
 	if (menu_is_separator(mp->dname)
 		|| (mp->modes & mp->enabled & mode))
 	    ++pum_size;
@@ -1400,7 +1427,7 @@ pum_show_popupmenu(vimmenu_T *menu)
     if (array == NULL)
 	return;
 
-    for (mp = menu->children; mp != NULL; mp = mp->next)
+    FOR_ALL_CHILD_MENUS(menu, mp)
 	if (menu_is_separator(mp->dname))
 	    array[idx++].pum_text = (char_u *)"";
 	else if (mp->modes & mp->enabled & mode)
@@ -1415,7 +1442,7 @@ pum_show_popupmenu(vimmenu_T *menu)
     pum_selected = -1;
     pum_first = 0;
 # ifdef FEAT_BEVAL_TERM
-    p_bevalterm = TRUE;  /* track mouse movement */
+    p_bevalterm = TRUE;  // track mouse movement
     mch_setmouse(TRUE);
 # endif
 
@@ -1435,13 +1462,13 @@ pum_show_popupmenu(vimmenu_T *menu)
 	    break;
 	else if (c == CAR || c == NL)
 	{
-	    /* enter: select current item, if any, and close */
+	    // enter: select current item, if any, and close
 	    pum_execute_menu(menu, mode);
 	    break;
 	}
 	else if (c == 'k' || c == K_UP || c == K_MOUSEUP)
 	{
-	    /* cursor up: select previous item */
+	    // cursor up: select previous item
 	    while (pum_selected > 0)
 	    {
 		--pum_selected;
@@ -1451,7 +1478,7 @@ pum_show_popupmenu(vimmenu_T *menu)
 	}
 	else if (c == 'j' || c == K_DOWN || c == K_MOUSEDOWN)
 	{
-	    /* cursor down: select next item */
+	    // cursor down: select next item
 	    while (pum_selected < pum_size - 1)
 	    {
 		++pum_selected;
@@ -1461,19 +1488,19 @@ pum_show_popupmenu(vimmenu_T *menu)
 	}
 	else if (c == K_RIGHTMOUSE)
 	{
-	    /* Right mouse down: reposition the menu. */
+	    // Right mouse down: reposition the menu.
 	    vungetc(c);
 	    break;
 	}
 	else if (c == K_LEFTDRAG || c == K_RIGHTDRAG || c == K_MOUSEMOVE)
 	{
-	    /* mouse moved: select item in the mouse row */
+	    // mouse moved: select item in the mouse row
 	    pum_select_mouse_pos();
 	}
 	else if (c == K_LEFTMOUSE || c == K_LEFTMOUSE_NM || c == K_RIGHTRELEASE)
 	{
-	    /* left mouse click: select clicked item, if any, and close;
-	     * right mouse release: select clicked item, close if any */
+	    // left mouse click: select clicked item, if any, and close;
+	    // right mouse release: select clicked item, close if any
 	    pum_select_mouse_pos();
 	    if (pum_selected >= 0)
 	    {
@@ -1500,8 +1527,8 @@ pum_make_popup(char_u *path_name, int use_mouse_pos)
 
     if (!use_mouse_pos)
     {
-	/* Hack: set mouse position at the cursor so that the menu pops up
-	 * around there. */
+	// Hack: set mouse position at the cursor so that the menu pops up
+	// around there.
 	mouse_row = curwin->w_winrow + curwin->w_wrow;
 	mouse_col = curwin->w_wincol + curwin->w_wcol;
     }

@@ -22,7 +22,7 @@ if &cp
 endif
 if v:version < 702
  echohl WarningMsg
- echo "***warning*** this version of getscript needs vim 7.2"
+ echo "***warning*** this version of GetLatestVimScripts needs vim 7.2"
  echohl Normal
  finish
 endif

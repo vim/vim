@@ -62,7 +62,8 @@ endfunc
 function Test_lambda_fails()
   call assert_equal(3, {a, b -> a + b}(1, 2))
   call assert_fails('echo {a, a -> a + a}(1, 2)', 'E853:')
-  call assert_fails('echo {a, b -> a + b)}(1, 2)', 'E15:')
+  call assert_fails('echo {a, b -> a + b)}(1, 2)', 'E451:')
+  echo assert_fails('echo 10->{a -> a + 2}', 'E107:')
 endfunc
 
 func Test_not_lamda()
@@ -216,7 +217,9 @@ endfunc
 func Test_lambda_combination()
   call assert_equal(2, {x -> {x -> x}}(1)(2))
   call assert_equal(10, {y -> {x -> x(y)(10)}({y -> y})}({z -> z}))
-  call assert_equal(5.0, {x -> {y -> x / y}}(10)(2.0))
+  if has('float')
+    call assert_equal(5.0, {x -> {y -> x / y}}(10)(2.0))
+  endif
   call assert_equal(6, {x -> {y -> {z -> x + y + z}}}(1)(2)(3))
 
   call assert_equal(6, {x -> {f -> f(x)}}(3)({x -> x * 2}))
@@ -302,3 +305,26 @@ func Test_lambda_with_index()
   let Extract = {-> function(List, ['foobar'])()[0]}
   call assert_equal('foobar', Extract())
 endfunc
+
+func Test_lambda_error()
+  " This was causing a crash
+  call assert_fails('ec{@{->{d->()()', 'E15')
+endfunc
+
+func Test_closure_error()
+  let l =<< trim END
+    func F1() closure
+      return 1
+    endfunc
+  END
+  call writefile(l, 'Xscript')
+  let caught_932 = 0
+  try
+    source Xscript
+  catch /E932:/
+    let caught_932 = 1
+  endtry
+  call assert_equal(1, caught_932)
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

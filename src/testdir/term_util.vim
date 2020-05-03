@@ -24,6 +24,21 @@ func StopShellInTerminal(buf)
   call WaitFor({-> job_status(job) == "dead"})
 endfunc
 
+" Wrapper around term_wait() to allow more time for re-runs of flaky tests
+" The second argument is the minimum time to wait in msec, 10 if omitted.
+func TermWait(buf, ...)
+  let wait_time = a:0 ? a:1 : 10
+  if g:run_nr == 2
+    let wait_time *= 4
+  elseif g:run_nr > 2
+    let wait_time *= 10
+  endif
+  call term_wait(a:buf, wait_time)
+
+  " In case it wasn't set yet.
+  let g:test_is_flaky = 1
+endfunc
+
 " Run Vim with "arguments" in a new terminal window.
 " By default uses a size of 20 lines and 75 columns.
 " Returns the buffer number of the terminal.
@@ -82,6 +97,8 @@ func RunVimInTerminal(arguments, options)
     let cols = term_getsize(buf)[1]
   endif
 
+  call TermWait(buf)
+
   " Wait for "All" or "Top" of the ruler to be shown in the last line or in
   " the status line of the last window. This can be quite slow (e.g. when
   " using valgrind).
@@ -93,11 +110,17 @@ func RunVimInTerminal(arguments, options)
     call assert_report('RunVimInTerminal() failed, screen contents: ' . join(lines, "<NL>"))
   endtry
 
+  " Starting a terminal to run Vim is always considered flaky.
+  let g:test_is_flaky = 1
+
   return buf
 endfunc
 
 " Stop a Vim running in terminal buffer "buf".
 func StopVimInTerminal(buf)
+  " Using a terminal to run Vim is always considered flaky.
+  let g:test_is_flaky = 1
+
   call assert_equal("running", term_getstatus(a:buf))
 
   " CTRL-O : works both in Normal mode and Insert mode to start a command line.
@@ -107,3 +130,5 @@ func StopVimInTerminal(buf)
   call WaitForAssert({-> assert_equal("finished", term_getstatus(a:buf))})
   only!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

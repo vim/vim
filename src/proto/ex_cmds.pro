@@ -9,7 +9,6 @@ void do_bang(int addr_count, exarg_T *eap, int forceit, int do_in, int do_out);
 void do_shell(char_u *cmd, int flags);
 char_u *make_filter_cmd(char_u *cmd, char_u *itmp, char_u *otmp);
 void append_redir(char_u *buf, int buflen, char_u *opt, char_u *fname);
-time_T vim_time(void);
 void do_fixdel(exarg_T *eap);
 void print_line_no_prefix(linenr_T lnum, int use_number, int list);
 void print_line(linenr_T lnum, int use_number, int list);

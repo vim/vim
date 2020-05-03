@@ -4743,6 +4743,8 @@ is_cjk_font(PangoFontDescription *font_desc)
 	PangoCoverage	*coverage;
 	gunichar	uc;
 
+	// Valgrind reports a leak for pango_language_from_string(), but the
+	// documentation says "This is owned by Pango and should not be freed".
 	coverage = pango_font_get_coverage(
 		font, pango_language_from_string(cjk_langs[i]));
 

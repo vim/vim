@@ -16,23 +16,23 @@ function Test_maparg()
   map foo<C-V> is<F4>foo
   vnoremap <script> <buffer> <expr> <silent> bar isbar
   call assert_equal("is<F4>foo", maparg('foo<C-V>'))
-  call assert_equal({'silent': 0, 'noremap': 0, 'lhs': 'foo<C-V>',
+  call assert_equal({'silent': 0, 'noremap': 0, 'script': 0, 'lhs': 'foo<C-V>',
         \ 'mode': ' ', 'nowait': 0, 'expr': 0, 'sid': sid, 'lnum': lnum + 1, 
 	\ 'rhs': 'is<F4>foo', 'buffer': 0},
 	\ maparg('foo<C-V>', '', 0, 1))
-  call assert_equal({'silent': 1, 'noremap': 1, 'lhs': 'bar', 'mode': 'v',
+  call assert_equal({'silent': 1, 'noremap': 1, 'script': 1, 'lhs': 'bar', 'mode': 'v',
         \ 'nowait': 0, 'expr': 1, 'sid': sid, 'lnum': lnum + 2,
 	\ 'rhs': 'isbar', 'buffer': 1},
         \ 'bar'->maparg('', 0, 1))
   let lnum = expand('<sflnum>')
   map <buffer> <nowait> foo bar
-  call assert_equal({'silent': 0, 'noremap': 0, 'lhs': 'foo', 'mode': ' ',
+  call assert_equal({'silent': 0, 'noremap': 0, 'script': 0, 'lhs': 'foo', 'mode': ' ',
         \ 'nowait': 1, 'expr': 0, 'sid': sid, 'lnum': lnum + 1, 'rhs': 'bar',
 	\ 'buffer': 1},
         \ maparg('foo', '', 0, 1))
   let lnum = expand('<sflnum>')
   tmap baz foo
-  call assert_equal({'silent': 0, 'noremap': 0, 'lhs': 'baz', 'mode': 't',
+  call assert_equal({'silent': 0, 'noremap': 0, 'script': 0, 'lhs': 'baz', 'mode': 't',
         \ 'nowait': 0, 'expr': 0, 'sid': sid, 'lnum': lnum + 1, 'rhs': 'foo',
 	\ 'buffer': 0},
         \ maparg('baz', 't', 0, 1))
@@ -42,9 +42,39 @@ function Test_maparg()
   map abc y<S-char-114>y
   call assert_equal("yRy", maparg('abc'))
 
+  omap { w
+  let d = maparg('{', 'o', 0, 1)
+  call assert_equal(['{', 'w', 'o'], [d.lhs, d.rhs, d.mode])
+  ounmap {
+
+  lmap { w
+  let d = maparg('{', 'l', 0, 1)
+  call assert_equal(['{', 'w', 'l'], [d.lhs, d.rhs, d.mode])
+  lunmap {
+
+  nmap { w
+  let d = maparg('{', 'n', 0, 1)
+  call assert_equal(['{', 'w', 'n'], [d.lhs, d.rhs, d.mode])
+  nunmap {
+
+  xmap { w
+  let d = maparg('{', 'x', 0, 1)
+  call assert_equal(['{', 'w', 'x'], [d.lhs, d.rhs, d.mode])
+  xunmap {
+
+  smap { w
+  let d = maparg('{', 's', 0, 1)
+  call assert_equal(['{', 'w', 's'], [d.lhs, d.rhs, d.mode])
+  sunmap {
+
   map abc <Nop>
   call assert_equal("<Nop>", maparg('abc'))
   unmap abc
+
+  call feedkeys(":abbr esc \<C-V>\<C-V>\<C-V>\<C-V>\<C-V>\<Esc>\<CR>", "xt")
+  let d = maparg('esc', 'i', 1, 1)
+  call assert_equal(['esc', "\<C-V>\<C-V>\<Esc>", '!'], [d.lhs, d.rhs, d.mode])
+  abclear
 endfunction
 
 func Test_mapcheck()
@@ -102,3 +132,5 @@ function Test_range_map()
   execute "normal a\uf040\<Esc>"
   call assert_equal("abcd", getline(1))
 endfunction
+
+" vim: shiftwidth=2 sts=2 expandtab

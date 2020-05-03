@@ -235,8 +235,16 @@ func Test_get_register()
   call assert_equal('', getreg("\<C-F>"))
   call assert_equal('', getreg("\<C-W>"))
   call assert_equal('', getreg("\<C-L>"))
+  " Change the last used register to '"' for the next test
+  normal! ""yy
+  let @" = 'happy'
+  call assert_equal('happy', getreg())
+  call assert_equal('happy', getreg(''))
 
   call assert_equal('', getregtype('!'))
+  call assert_fails('echo getregtype([])', 'E730:')
+  call assert_equal('v', getregtype())
+  call assert_equal('v', getregtype(''))
 
   " Test for inserting an invalid register content
   call assert_beeps('exe "normal i\<C-R>!"')
@@ -251,6 +259,8 @@ func Test_get_register()
   call feedkeys(":\<C-R>r\<Esc>", 'xt')
   call assert_equal("a\rb\r", histget(':', -1))
 
+  call assert_fails('let r = getreg("=", [])', 'E745:')
+  call assert_fails('let r = getreg("=", 1, [])', 'E745:')
   enew!
 endfunc
 
@@ -274,7 +284,7 @@ func Test_set_register()
   call setreg('=', 'b', 'a')
   call assert_equal('regwrite', getreg('='))
 
-  " Test for settting a list of lines to special registers
+  " Test for setting a list of lines to special registers
   call setreg('/', [])
   call assert_equal('', @/)
   call setreg('=', [])
@@ -315,6 +325,12 @@ func Test_set_register()
   call assert_equal('abcabc', getline(1))
   normal 0".gP
   call assert_equal('abcabcabc', getline(1))
+
+  let @"=''
+  call setreg('', '1')
+  call assert_equal('1', @")
+  call setreg('@', '2')
+  call assert_equal('2', @")
 
   enew!
 endfunc
@@ -384,6 +400,20 @@ func Test_put_reg_restart_mode()
   call assert_equal('vimReditor', getline(1))
 
   bwipe!
+endfunc
+
+" Test for executing a register using :@ command
+func Test_execute_register()
+  call setreg('r', [])
+  call assert_beeps('@r')
+  let i = 1
+  let @q = 'let i+= 1'
+  @q
+  @
+  call assert_equal(3, i)
+
+  " cannot execute a register in operator pending mode
+  call assert_beeps('normal! c@r')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

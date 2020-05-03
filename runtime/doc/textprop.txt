@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 8.1.  Last change: 2019 Nov 12
+*textprop.txt*  For Vim version 8.2.  Last change: 2020 Mar 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -45,7 +45,7 @@ A text property has these fields:
 
 Property Types ~
 							*E971*
-A text property normally has the name of a property type, which defines 
+A text property normally has the name of a property type, which defines
 how to highlight the text.  The property type can have these entries:
 	"highlight"	name of the highlight group to use
 	"combine"	when omitted or TRUE the text property highlighting is
@@ -101,7 +101,7 @@ Manipulating text property types:
 prop_type_add({name}, {props})		define a new property type
 prop_type_change({name}, {props})	change an existing property type
 prop_type_delete({name} [, {props}])	delete a property type
-prop_type_get([{name} [, {props}])	get property type values
+prop_type_get([{name} [, {props}]])	get property type values
 prop_type_list([{props}])		get list of property types
 
 
@@ -111,7 +111,7 @@ prop_add({lnum}, {col}, {props})  	add a text property
 prop_clear({lnum} [, {lnum-end} [, {bufnr}]])
 					remove all text properties
 prop_find({props} [, {direction}])	search for a text property
-prop_list({lnum} [, {props})  		text properties in {lnum}
+prop_list({lnum} [, {props}])  		text properties in {lnum}
 prop_remove({props} [, {lnum} [, {lnum-end}]])
 					remove a text property
 
@@ -133,8 +133,8 @@ prop_add({lnum}, {col}, {props})
 				to {lnum}, this is a zero-width text property
 		   bufnr	buffer to add the property to; when omitted
 				the current buffer is used
-		   id		user defined ID for the property; when omitted
-				zero is used
+		   id		user defined ID for the property; must be a
+				number; when omitted zero is used
 		   type		name of the text property type
 		All fields except "type" are optional.
 
@@ -143,8 +143,9 @@ prop_add({lnum}, {col}, {props})
 		within one line, or use "end_lnum" and "end_col" for a
 		property that spans more than one line.
 		When neither "length" nor "end_col" are given the property
-		will be zero-width.  That means it will not be highlighted but
-		will move with the text, as a kind of mark.
+		will be zero-width.  That means it will move with the text, as
+		a kind of mark.  One character will be highlighted, if the
+		type specifies highlighting.
 		The property can end exactly at the last character of the
 		text, or just after it.  In the last case, if text is appended
 		to the line, the text property size will increase, also when
@@ -153,8 +154,6 @@ prop_add({lnum}, {col}, {props})
 		"type" will first be looked up in the buffer the property is
 		added to. When not found, the global property types are used.
 		If not found an error is given.
-
-		See |text-properties| for information about text properties.
 
 		Can also be used as a |method|: >
 			GetLnum()->prop_add(col, props)
@@ -168,14 +167,11 @@ prop_clear({lnum} [, {lnum-end} [, {props}]])		*prop_clear()*
 		When {props} contains a "bufnr" item use this buffer,
 		otherwise use the current buffer.
 
-		See |text-properties| for information about text properties.
-
 		Can also be used as a |method|: >
 			GetLnum()->prop_clear()
 <
 							*prop_find()*
 prop_find({props} [, {direction}])
-		{not implemented yet}
 		Search for a text property as specified with {props}:
 		   id		property with this ID
 		   type		property with this type name
@@ -197,8 +193,6 @@ prop_find({props} [, {direction}])
 		If a match is found then a Dict is returned with the entries
 		as with prop_list(), and additionally an "lnum" entry.
 		If no match is found then an empty Dict is returned.
-
-		See |text-properties| for information about text properties.
 
 
 prop_list({lnum} [, {props}])				*prop_list()*
@@ -223,8 +217,6 @@ prop_list({lnum} [, {props}])				*prop_list()*
 		When "end" is zero the property continues in the next line.
 		The line break after this line is included.
 
-		See |text-properties| for information about text properties.
-
 		Can also be used as a |method|: >
 			GetLnum()->prop_list()
 <
@@ -239,6 +231,7 @@ prop_remove({props} [, {lnum} [, {lnum-end}]])
 		{props} is a dictionary with these fields:
 		   id		remove text properties with this ID
 		   type		remove text properties with this type name
+		   both		"id" and "type" must both match
 		   bufnr	use this buffer instead of the current one
 		   all		when TRUE remove all matching text properties,
 				not just the first one
@@ -247,8 +240,6 @@ prop_remove({props} [, {lnum} [, {lnum-end}]])
 		If buffer "bufnr" is not loaded then nothing happens.
 
 		Returns the number of properties that were removed.
-
-		See |text-properties| for information about text properties.
 
 		Can also be used as a |method|: >
 			GetProps()->prop_remove()
@@ -275,8 +266,6 @@ prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
 		   end_incl	when TRUE inserts at the end position will be
 				included in the text property
 
-		See |text-properties| for information about text properties.
-
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_add(props)
 
@@ -284,8 +273,6 @@ prop_type_change({name}, {props})			*prop_type_change()*
 		Change properties of an existing text property type.  If a
 		property with this name does not exist an error is given.
 		The {props} argument is just like |prop_type_add()|.
-
-		See |text-properties| for information about text properties.
 
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_change(props)
@@ -301,12 +288,10 @@ prop_type_delete({name} [, {props}])			*prop_type_delete()*
 
 		When text property type {name} is not found there is no error.
 
-		See |text-properties| for information about text properties.
-
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_delete()
 
-prop_type_get([{name} [, {props}])			*prop_type_get()*
+prop_type_get([{name} [, {props}]])			*prop_type_get()*
 		Returns the properties of property type {name}.  This is a
 		dictionary with the same fields as was given to
 		prop_type_add().
@@ -316,8 +301,6 @@ prop_type_get([{name} [, {props}])			*prop_type_get()*
 		{props} can contain a "bufnr" item.  When it is given, use
 		this buffer instead of the global property types.
 
-		See |text-properties| for information about text properties.
-
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_get()
 
@@ -326,8 +309,6 @@ prop_type_list([{props}])				*prop_type_list()*
 
 		{props} can contain a "bufnr" item.  When it is given, use
 		this buffer instead of the global property types.
-
-		See |text-properties| for information about text properties.
 
 
 ==============================================================================
@@ -356,10 +337,11 @@ properties below the changed text, so that they still highlight the same text,
 thus you don't need to update these.
 
 
-Text property columns are not updated: ~
+Text property columns are not updated or copied: ~
 
 - When setting the line with |setline()| or through an interface, such as Lua,
   Tcl or Python.  Vim does not know what text got inserted or deleted.
+- With a command like `:move`, which takes a line of text out of context.
 
 
  vim:tw=78:ts=8:noet:ft=help:norl:

@@ -207,6 +207,11 @@ func Test_listener_args()
 
   call listener_remove(id)
   bwipe!
+
+  " Invalid arguments
+  call assert_fails('call listener_add([])', 'E921:')
+  call assert_fails('call listener_add("s:StoreListArgs", [])', 'E158:')
+  call assert_fails('call listener_flush([])', 'E158:')
 endfunc
 
 func s:StoreBufList(buf, start, end, added, list)
@@ -294,4 +299,73 @@ func Test_listener_undo_line_number()
   delfunc DoIt
   delfunc EchoChanges
   call listener_remove(lid)
+endfunc
+
+func Test_listener_undo_delete_all()
+  new
+  call setline(1, [1, 2, 3, 4])
+  let s:changes = []
+  func s:ExtendList(bufnr, start, end, added, changes)
+    call extend(s:changes, a:changes)
+  endfunc
+  let id = listener_add('s:ExtendList')
+
+  set undolevels&  " start new undo block
+  normal! ggdG
+  undo
+  call listener_flush()
+  call assert_equal(2, s:changes->len())
+  " delete removes four lines, empty line remains
+  call assert_equal({'lnum': 1, 'end': 5, 'col': 1, 'added': -4}, s:changes[0])
+  " undo replaces empty line and adds 3 lines
+  call assert_equal({'lnum': 1, 'end': 2, 'col': 1, 'added': 3}, s:changes[1])
+
+  call listener_remove(id)
+  delfunc s:ExtendList
+  unlet s:changes
+  bwipe!
+endfunc
+
+func Test_listener_cleared_newbuf()
+  func Listener(bufnr, start, end, added, changes)
+    let g:gotCalled += 1
+  endfunc
+  new
+  " check that listening works
+  let g:gotCalled = 0
+  let lid = listener_add("Listener")
+  call feedkeys("axxx\<Esc>", 'xt')
+  call listener_flush(bufnr())
+  call assert_equal(1, g:gotCalled)
+  %bwipe!
+  let bufnr = bufnr()
+  let b:testing = 123
+  let lid = listener_add("Listener")
+  enew!
+  " check buffer is reused
+  call assert_equal(bufnr, bufnr())
+  call assert_false(exists('b:testing'))
+
+  " check that listening stops when reusing the buffer
+  let g:gotCalled = 0
+  call feedkeys("axxx\<Esc>", 'xt')
+  call listener_flush(bufnr())
+  call assert_equal(0, g:gotCalled)
+  unlet g:gotCalled
+
+  bwipe!
+  delfunc Listener
+endfunc
+
+func Test_col_after_deletion_moved_cur()
+	func Listener(bufnr, start, end, added, changes)
+    call assert_equal([#{lnum: 1, end: 2, added: 0, col: 2}], a:changes)
+	endfunc
+	new
+	call setline(1, ['foo'])
+	let lid = listener_add('Listener')
+	call feedkeys("lD", 'xt')
+  call listener_flush()
+	bwipe!
+	delfunc Listener
 endfunc

@@ -424,6 +424,30 @@ func Test_format_align()
 	      \ ], getline(1, '$'))
   enew!
 
+  " align text with 'wrapmargin'
+  50vnew
+  call setline(1, ['Vim'])
+  setl textwidth=0
+  setl wrapmargin=30
+  right
+  call assert_equal("\t\t Vim", getline(1))
+  q!
+
+  " align text with 'rightleft'
+  if has('rightleft')
+    new
+    call setline(1, 'Vim')
+    setlocal rightleft
+    left 20
+    setlocal norightleft
+    call assert_equal("\t\t Vim", getline(1))
+    setlocal rightleft
+    right
+    setlocal norightleft
+    call assert_equal("Vim", getline(1))
+    close!
+  endif
+
   set tw&
 endfunc
 
@@ -509,3 +533,584 @@ func Test_crash_github_issue_5095()
   augroup END
   augroup! testing
 endfunc
+
+" Test for formatting multi-byte text with 'fo=t'
+func Test_tw_2_fo_t()
+  new
+  let t =<< trim END
+    {
+    ＸＹＺ
+    abc ＸＹＺ
+    }
+  END
+  call setline(1, t)
+  call cursor(2, 1)
+
+  set tw=2 fo=t
+  let t =<< trim END
+    ＸＹＺ
+    abc ＸＹＺ
+  END
+  exe "normal gqgqjgqgq"
+  exe "normal o\n" . join(t, "\n")
+
+  let expected =<< trim END
+    {
+    ＸＹＺ
+    abc
+    ＸＹＺ
+
+    ＸＹＺ
+    abc
+    ＸＹＺ
+    }
+  END
+  call assert_equal(expected, getline(1, '$'))
+
+  set tw& fo&
+  bwipe!
+endfunc
+
+" Test for formatting multi-byte text with 'fo=tm' and 'tw=1'
+func Test_tw_1_fo_tm()
+  new
+  let t =<< trim END
+    {
+    Ｘ
+    Ｘa
+    Ｘ a
+    ＸＹ
+    Ｘ Ｙ
+    }
+  END
+  call setline(1, t)
+  call cursor(2, 1)
+
+  set tw=1 fo=tm
+  let t =<< trim END
+    Ｘ
+    Ｘa
+    Ｘ a
+    ＸＹ
+    Ｘ Ｙ
+  END
+  exe "normal gqgqjgqgqjgqgqjgqgqjgqgq"
+  exe "normal o\n" . join(t, "\n")
+
+  let expected =<< trim END
+    {
+    Ｘ
+    Ｘ
+    a
+    Ｘ
+    a
+    Ｘ
+    Ｙ
+    Ｘ
+    Ｙ
+
+    Ｘ
+    Ｘ
+    a
+    Ｘ
+    a
+    Ｘ
+    Ｙ
+    Ｘ
+    Ｙ
+    }
+  END
+  call assert_equal(expected, getline(1, '$'))
+
+  set tw& fo&
+  bwipe!
+endfunc
+
+" Test for formatting multi-byte text with 'fo=tm' and 'tw=2'
+func Test_tw_2_fo_tm()
+  new
+  let t =<< trim END
+    {
+    Ｘ
+    Ｘa
+    Ｘ a
+    ＸＹ
+    Ｘ Ｙ
+    aＸ
+    abＸ
+    abcＸ
+    abＸ c
+    abＸＹ
+    }
+  END
+  call setline(1, t)
+  call cursor(2, 1)
+
+  set tw=2 fo=tm
+  let t =<< trim END
+    Ｘ
+    Ｘa
+    Ｘ a
+    ＸＹ
+    Ｘ Ｙ
+    aＸ
+    abＸ
+    abcＸ
+    abＸ c
+    abＸＹ
+  END
+  exe "normal gqgqjgqgqjgqgqjgqgqjgqgqjgqgqjgqgqjgqgqjgqgqjgqgq"
+  exe "normal o\n" . join(t, "\n")
+
+  let expected =<< trim END
+    {
+    Ｘ
+    Ｘ
+    a
+    Ｘ
+    a
+    Ｘ
+    Ｙ
+    Ｘ
+    Ｙ
+    a
+    Ｘ
+    ab
+    Ｘ
+    abc
+    Ｘ
+    ab
+    Ｘ
+    c
+    ab
+    Ｘ
+    Ｙ
+
+    Ｘ
+    Ｘ
+    a
+    Ｘ
+    a
+    Ｘ
+    Ｙ
+    Ｘ
+    Ｙ
+    a
+    Ｘ
+    ab
+    Ｘ
+    abc
+    Ｘ
+    ab
+    Ｘ
+    c
+    ab
+    Ｘ
+    Ｙ
+    }
+  END
+  call assert_equal(expected, getline(1, '$'))
+
+  set tw& fo&
+  bwipe!
+endfunc
+
+" Test for formatting multi-byte text with 'fo=tm', 'tw=2' and 'autoindent'.
+func Test_tw_2_fo_tm_ai()
+  new
+  let t =<< trim END
+    {
+      Ｘ
+      Ｘa
+    }
+  END
+  call setline(1, t)
+  call cursor(2, 1)
+
+  set ai tw=2 fo=tm
+  let t =<< trim END
+    Ｘ
+    Ｘa
+  END
+  exe "normal gqgqjgqgq"
+  exe "normal o\n" . join(t, "\n")
+
+  let expected =<< trim END
+    {
+      Ｘ
+      Ｘ
+      a
+
+      Ｘ
+      Ｘ
+      a
+    }
+  END
+  call assert_equal(expected, getline(1, '$'))
+
+  set tw& fo& ai&
+  bwipe!
+endfunc
+
+" Test for formatting multi-byte text with 'fo=tm', 'tw=2' and 'noai'.
+func Test_tw_2_fo_tm_noai()
+  new
+  let t =<< trim END
+    {
+      Ｘ
+      Ｘa
+    }
+  END
+  call setline(1, t)
+  call cursor(2, 1)
+
+  set noai tw=2 fo=tm
+  exe "normal gqgqjgqgqo\n  Ｘ\n  Ｘa"
+
+  let expected =<< trim END
+    {
+      Ｘ
+      Ｘ
+    a
+
+      Ｘ
+      Ｘ
+    a
+    }
+  END
+  call assert_equal(expected, getline(1, '$'))
+
+  set tw& fo& ai&
+  bwipe!
+endfunc
+
+func Test_tw_2_fo_cqm_com()
+  new
+  let t =<< trim END
+    {
+    Ｘ
+    Ｘa
+    ＸaＹ
+    ＸＹ
+    ＸＹＺ
+    Ｘ Ｙ
+    Ｘ ＹＺ
+    ＸＸ
+    ＸＸa
+    ＸＸＹ
+    }
+  END
+  call setline(1, t)
+  call cursor(2, 1)
+
+  set tw=2 fo=cqm comments=n:Ｘ
+  exe "normal gqgqjgqgqjgqgqjgqgqjgqgqjgqgqjgqgqjgqgqjgqgqjgqgq"
+  let t =<< trim END
+    Ｘ
+    Ｘa
+    ＸaＹ
+    ＸＹ
+    ＸＹＺ
+    Ｘ Ｙ
+    Ｘ ＹＺ
+    ＸＸ
+    ＸＸa
+    ＸＸＹ
+  END
+  exe "normal o\n" . join(t, "\n")
+
+  let expected =<< trim END
+    {
+    Ｘ
+    Ｘa
+    Ｘa
+    ＸＹ
+    ＸＹ
+    ＸＹ
+    ＸＺ
+    Ｘ Ｙ
+    Ｘ Ｙ
+    Ｘ Ｚ
+    ＸＸ
+    ＸＸa
+    ＸＸＹ
+
+    Ｘ
+    Ｘa
+    Ｘa
+    ＸＹ
+    ＸＹ
+    ＸＹ
+    ＸＺ
+    Ｘ Ｙ
+    Ｘ Ｙ
+    Ｘ Ｚ
+    ＸＸ
+    ＸＸa
+    ＸＸＹ
+    }
+  END
+  call assert_equal(expected, getline(1, '$'))
+
+  set tw& fo& comments&
+  bwipe!
+endfunc
+
+func Test_tw_2_fo_tm_replace()
+  new
+  let t =<< trim END
+    {
+
+    }
+  END
+  call setline(1, t)
+  call cursor(2, 1)
+
+  set tw=2 fo=tm
+  exe "normal RＸa"
+
+  let expected =<< trim END
+    {
+    Ｘ
+    a
+    }
+  END
+  call assert_equal(expected, getline(1, '$'))
+
+  set tw& fo&
+  bwipe!
+endfunc
+
+" Test for 'matchpairs' with multibyte chars
+func Test_mps_multibyte()
+  new
+  let t =<< trim END
+    {
+    ‘ two three ’ four
+    }
+  END
+  call setline(1, t)
+  call cursor(2, 1)
+
+  exe "set mps+=\u2018:\u2019"
+  normal d%
+
+  let expected =<< trim END
+    {
+     four
+    }
+  END
+  call assert_equal(expected, getline(1, '$'))
+
+  set mps&
+  bwipe!
+endfunc
+
+" Test for 'matchpairs' in latin1 encoding
+func Test_mps_latin1()
+  new
+  let save_enc = &encoding
+  set encoding=latin1
+  call setline(1, 'abc(def)ghi')
+  normal %
+  call assert_equal(8, col('.'))
+  normal %
+  call assert_equal(4, col('.'))
+  call cursor(1, 6)
+  normal [(
+  call assert_equal(4, col('.'))
+  normal %
+  call assert_equal(8, col('.'))
+  call cursor(1, 6)
+  normal ])
+  call assert_equal(8, col('.'))
+  normal %
+  call assert_equal(4, col('.'))
+  let &encoding = save_enc
+  close!
+endfunc
+
+" Test for ra on multi-byte characters
+func Test_ra_multibyte()
+  new
+  let t =<< trim END
+    ra test
+    ａbbａ
+    ａａb
+  END
+  call setline(1, t)
+  call cursor(1, 1)
+
+  normal jVjra
+
+  let expected =<< trim END
+    ra test
+    aaaa
+    aaa
+  END
+  call assert_equal(expected, getline(1, '$'))
+
+  bwipe!
+endfunc
+
+" Test for 'whichwrap' with multi-byte character
+func Test_whichwrap_multi_byte()
+  new
+  let t =<< trim END
+    á
+    x
+  END
+  call setline(1, t)
+  call cursor(2, 1)
+
+  set whichwrap+=h
+  normal dh
+  set whichwrap&
+
+  let expected =<< trim END
+    áx
+  END
+  call assert_equal(expected, getline(1, '$'))
+
+  bwipe!
+endfunc
+
+" Test for the 'f' flag in 'comments' (only the first line has the comment
+" string)
+func Test_firstline_comment()
+  new
+  setlocal comments=f:- fo+=ro
+  exe "normal i- B\nD\<C-C>ggoC\<C-C>ggOA\<C-C>"
+  call assert_equal(['A', '- B', '  C', '  D'], getline(1, '$'))
+  %d
+  setlocal comments=:-
+  exe "normal i- B\nD\<C-C>ggoC\<C-C>ggOA\<C-C>"
+  call assert_equal(['- A', '- B', '- C', '- D'], getline(1, '$'))
+  %bw!
+endfunc
+
+" Test for the 'r' flag in 'comments' (right align comment)
+func Test_comment_rightalign()
+  new
+  setlocal comments=sr:/***,m:**,ex-2:******/ fo+=ro
+  exe "normal i=\<C-C>o\t  /***\nD\n/"
+  exe "normal 2GOA\<C-C>joB\<C-C>jOC\<C-C>joE\<C-C>GOF\<C-C>joG"
+  let expected =<< trim END
+    =
+    A
+    	  /***
+    	    ** B
+    	    ** C
+    	    ** D
+    	    ** E
+    	    **     F
+    	    ******/
+    G
+  END
+  call assert_equal(expected, getline(1, '$'))
+  %bw!
+endfunc
+
+" Test for the 'b' flag in 'comments'
+func Test_comment_blank()
+  new
+  setlocal comments=b:* fo+=ro
+  exe "normal i* E\nF\n\<BS>G\nH\<C-C>ggOC\<C-C>O\<BS>B\<C-C>OA\<C-C>2joD"
+  let expected =<< trim END
+    A
+    *B
+    * C
+    * D
+    * E
+    * F
+    *G
+    H
+  END
+  call assert_equal(expected, getline(1, '$'))
+  %bw!
+endfunc
+
+" Test for the 'n' flag in comments
+func Test_comment_nested()
+  new
+  setlocal comments=n:> fo+=ro
+  exe "normal i> B\nD\<C-C>ggOA\<C-C>joC\<C-C>Go\<BS>>>> F\nH"
+  exe "normal 5GOE\<C-C>6GoG"
+  let expected =<< trim END
+    > A
+    > B
+    > C
+    > D
+    >>>> E
+    >>>> F
+    >>>> G
+    >>>> H
+  END
+  call assert_equal(expected, getline(1, '$'))
+  %bw!
+endfunc
+
+" Test for a space character in 'comments' setting
+func Test_comment_space()
+  new
+  setlocal comments=b:\ > fo+=ro
+  exe "normal i> B\nD\<C-C>ggOA\<C-C>joC"
+  exe "normal Go > F\nH\<C-C>kOE\<C-C>joG"
+  let expected =<< trim END
+    A
+    > B
+    C
+    D
+     > E
+     > F
+     > G
+     > H
+  END
+  call assert_equal(expected, getline(1, '$'))
+  %bw!
+endfunc
+
+" Test for the 'O' flag in 'comments'
+func Test_comment_O()
+  new
+  setlocal comments=Ob:* fo+=ro
+  exe "normal i* B\nD\<C-C>kOA\<C-C>joC"
+  let expected =<< trim END
+    A
+    * B
+    * C
+    * D
+  END
+  call assert_equal(expected, getline(1, '$'))
+  %bw!
+endfunc
+
+" Test for 'a' and 'w' flags in 'formatoptions'
+func Test_fo_a_w()
+  new
+  setlocal fo+=aw tw=10
+  call feedkeys("iabc abc a abc\<Esc>k0weade", 'xt')
+  call assert_equal(['abc abcde ', 'a abc'], getline(1, '$'))
+  %bw!
+endfunc
+
+" Test for 'j' flag in 'formatoptions'
+func Test_fo_j()
+  new
+  setlocal fo+=j comments=://
+  call setline(1, ['i++; // comment1', '           // comment2'])
+  normal J
+  call assert_equal('i++; // comment1 comment2', getline(1))
+  setlocal fo-=j
+  call setline(1, ['i++; // comment1', '           // comment2'])
+  normal J
+  call assert_equal('i++; // comment1 // comment2', getline(1))
+  " Test with nested comments
+  setlocal fo+=j comments=n:>,n:)
+  call setline(1, ['i++; > ) > ) comment1', '           > ) comment2'])
+  normal J
+  call assert_equal('i++; > ) > ) comment1 comment2', getline(1))
+  %bw!
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

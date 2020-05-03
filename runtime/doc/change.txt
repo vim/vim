@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 8.1.  Last change: 2019 Sep 28
+*change.txt*    For Vim version 8.2.  Last change: 2020 Apr 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -209,7 +209,7 @@ gR			Enter Virtual Replace mode: Each character you type
 			start insert (for {Visual} see |Visual-mode|).
 
 							*v_r*
-{Visual}["x]r{char}	Replace all selected characters by {char}.
+{Visual}r{char}		Replace all selected characters by {char}.
 
 							*v_C*
 {Visual}["x]C		Delete the highlighted lines [into register x] and
@@ -611,7 +611,7 @@ attack or other people reading your file).  When Vim exits the directory and
 all files in it are deleted.  When Vim has the setuid bit set this may cause
 problems, the temp file is owned by the setuid user but the filter command
 probably runs as the original user.
-On MS-DOS and OS/2 the first of these directories that works is used: $TMP,
+On MS-Windows the first of these directories that works is used: $TMP,
 $TEMP, c:\TMP, c:\TEMP.
 For Unix the list of directories is: $TMPDIR, /tmp, current-dir, $HOME.
 For MS-Windows the GetTempFileName() system function is used.
@@ -636,6 +636,8 @@ For other systems the tmpnam() library function is used.
 			|cmdline-ranges|.
 
 			See |:s_flags| for [flags].
+			The delimiter doesn't need to be /, see
+			|pattern-delimiter|.
 
 :[range]s[ubstitute] [flags] [count]
 :[range]&[&][flags] [count]					*:&*
@@ -775,7 +777,7 @@ This deletes "TESTING" from all lines, but only one per line.
 For compatibility with Vi these two exceptions are allowed:
 "\/{string}/" and "\?{string}?" do the same as "//{string}/r".
 "\&{string}&" does the same as "//{string}/".
-							*E146*
+						*pattern-delimiter* *E146*
 Instead of the '/' which surrounds the pattern and replacement string, you
 can use any other single-byte character, but not an alphanumeric character,
 '\', '"' or '|'.  This is useful if you want to include a '/' in the search
@@ -994,9 +996,9 @@ inside of strings can change!  Also see 'softtabstop' option. >
 5. Copying and moving text				*copy-move*
 
 							*quote*
-"{a-zA-Z0-9.%#:-"}	Use register {a-zA-Z0-9.%#:-"} for next delete, yank
-			or put (use uppercase character to append with
-			delete and yank) ({.%#:} only work with put).
+"{register}		Use {register} for next delete, yank or put.  Use
+			an uppercase character to append with delete and yank.
+			Registers ".", "%", "#" and ":" only work with put.
 
 							*:reg* *:registers*
 :reg[isters]		Display the type and contents of all numbered and
@@ -1456,7 +1458,7 @@ text.  Put it in your autoload directory, e.g. ~/.vim/autoload/format.vim: >
   func! format#Format()
     " only reformat on explicit gq command
     if mode() != 'n'
-      " fall back to Vims internal reformatting
+      " fall back to Vim's internal reformatting
       return 1
     endif
     let lines = getline(v:lnum, v:lnum + v:count - 1)

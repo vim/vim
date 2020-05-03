@@ -41,6 +41,9 @@ func Test_mkdir_p()
   call assert_fails('call mkdir("Xfile", "p")', 'E739')
   call delete('Xfile')
   call delete('Xmkdir', 'rf')
+  call assert_equal(0, mkdir(test_null_string()))
+  call assert_fails('call mkdir([])', 'E730')
+  call assert_fails('call mkdir("abc", [], [])', 'E745')
 endfunc
 
 func Test_line_continuation()
@@ -216,3 +219,316 @@ func Test_scriptversion_fail()
   call assert_fails('source Xversionscript', 'E999:')
   call delete('Xversionscript')
 endfunc
+
+func Test_execute_cmd_with_null()
+  call assert_fails('execute test_null_list()', 'E730:')
+  call assert_fails('execute test_null_dict()', 'E731:')
+  call assert_fails('execute test_null_blob()', 'E976:')
+  execute test_null_string()
+  call assert_fails('execute test_null_partial()', 'E729:')
+  call assert_fails('execute test_unknown()', 'E908:')
+  if has('job')
+    call assert_fails('execute test_null_job()', 'E908:')
+    call assert_fails('execute test_null_channel()', 'E908:')
+  endif
+endfunc
+
+func Test_numbersize()
+  " This will fail on systems without 64 bit int support or when not configured
+  " correctly.
+  call assert_equal(64, v:numbersize)
+endfunc
+
+func Assert_reg(name, type, value, valuestr, expr, exprstr)
+  call assert_equal(a:type, getregtype(a:name))
+  call assert_equal(a:value, getreg(a:name))
+  call assert_equal(a:valuestr, string(getreg(a:name, 0, 1)))
+  call assert_equal(a:expr, getreg(a:name, 1))
+  call assert_equal(a:exprstr, string(getreg(a:name, 1, 1)))
+endfunc
+
+func Test_let_register()
+  let @" = 'abc'
+  call Assert_reg('"', 'v', "abc", "['abc']", "abc", "['abc']")
+  let @" = "abc\n"
+  call Assert_reg('"', 'V', "abc\n", "['abc']", "abc\n", "['abc']")
+  let @" = "abc\<C-m>"
+  call Assert_reg('"', 'V', "abc\r\n", "['abc\r']", "abc\r\n", "['abc\r']")
+  let @= = '"abc"'
+  call Assert_reg('=', 'v', "abc", "['abc']", '"abc"', "['\"abc\"']")
+endfunc
+
+func Assert_regput(name, result)
+  new
+  execute "silent normal! o==\n==\e\"" . a:name . "P"
+  call assert_equal(a:result, getline(2, line('$')))
+  bwipe!
+endfunc
+
+func Test_setreg_basic()
+  call setreg('a', 'abcA', 'c')
+  call Assert_reg('a', 'v', "abcA", "['abcA']", "abcA", "['abcA']")
+  call Assert_regput('a', ['==', '=abcA='])
+
+  call setreg('A', 'abcAc', 'c')
+  call Assert_reg('A', 'v', "abcAabcAc", "['abcAabcAc']", "abcAabcAc", "['abcAabcAc']")
+  call Assert_regput('a', ['==', '=abcAabcAc='])
+
+  call setreg('A', 'abcAl', 'l')
+  call Assert_reg('A', 'V', "abcAabcAcabcAl\n", "['abcAabcAcabcAl']", "abcAabcAcabcAl\n", "['abcAabcAcabcAl']")
+  call Assert_regput('a', ['==', 'abcAabcAcabcAl', '=='])
+
+  call setreg('A', 'abcAc2','c')
+  call Assert_reg('A', 'v', "abcAabcAcabcAl\nabcAc2", "['abcAabcAcabcAl', 'abcAc2']", "abcAabcAcabcAl\nabcAc2", "['abcAabcAcabcAl', 'abcAc2']")
+  call Assert_regput('a', ['==', '=abcAabcAcabcAl', 'abcAc2='])
+
+  call setreg('b', 'abcB', 'v')
+  call Assert_reg('b', 'v', "abcB", "['abcB']", "abcB", "['abcB']")
+  call Assert_regput('b', ['==', '=abcB='])
+
+  call setreg('b', 'abcBc', 'ca')
+  call Assert_reg('b', 'v', "abcBabcBc", "['abcBabcBc']", "abcBabcBc", "['abcBabcBc']")
+  call Assert_regput('b', ['==', '=abcBabcBc='])
+
+  call setreg('b', 'abcBb', 'ba')
+  call Assert_reg('b', "\<C-V>5", "abcBabcBcabcBb", "['abcBabcBcabcBb']", "abcBabcBcabcBb", "['abcBabcBcabcBb']")
+  call Assert_regput('b', ['==', '=abcBabcBcabcBb='])
+
+  call setreg('b', 'abcBc2','ca')
+  call Assert_reg('b', "v", "abcBabcBcabcBb\nabcBc2", "['abcBabcBcabcBb', 'abcBc2']", "abcBabcBcabcBb\nabcBc2", "['abcBabcBcabcBb', 'abcBc2']")
+  call Assert_regput('b', ['==', '=abcBabcBcabcBb', 'abcBc2='])
+
+  call setreg('b', 'abcBb2','b50a')
+  call Assert_reg('b', "\<C-V>50", "abcBabcBcabcBb\nabcBc2abcBb2", "['abcBabcBcabcBb', 'abcBc2abcBb2']", "abcBabcBcabcBb\nabcBc2abcBb2", "['abcBabcBcabcBb', 'abcBc2abcBb2']")
+  call Assert_regput('b', ['==', '=abcBabcBcabcBb                                    =', ' abcBc2abcBb2'])
+
+  call setreg('c', 'abcC', 'l')
+  call Assert_reg('c', 'V', "abcC\n", "['abcC']", "abcC\n", "['abcC']")
+  call Assert_regput('c', ['==', 'abcC', '=='])
+
+  call setreg('C', 'abcCl', 'l')
+  call Assert_reg('C', 'V', "abcC\nabcCl\n", "['abcC', 'abcCl']", "abcC\nabcCl\n", "['abcC', 'abcCl']")
+  call Assert_regput('c', ['==', 'abcC', 'abcCl', '=='])
+
+  call setreg('C', 'abcCc', 'c')
+  call Assert_reg('C', 'v', "abcC\nabcCl\nabcCc", "['abcC', 'abcCl', 'abcCc']", "abcC\nabcCl\nabcCc", "['abcC', 'abcCl', 'abcCc']")
+  call Assert_regput('c', ['==', '=abcC', 'abcCl', 'abcCc='])
+
+  call setreg('d', 'abcD', 'V')
+  call Assert_reg('d', 'V', "abcD\n", "['abcD']", "abcD\n", "['abcD']")
+  call Assert_regput('d', ['==', 'abcD', '=='])
+
+  call setreg('D', 'abcDb', 'b')
+  call Assert_reg('d', "\<C-V>5", "abcD\nabcDb", "['abcD', 'abcDb']", "abcD\nabcDb", "['abcD', 'abcDb']")
+  call Assert_regput('d', ['==', '=abcD =', ' abcDb'])
+
+  call setreg('e', 'abcE', 'b')
+  call Assert_reg('e', "\<C-V>4", "abcE", "['abcE']", "abcE", "['abcE']")
+  call Assert_regput('e', ['==', '=abcE='])
+
+  call setreg('E', 'abcEb', 'b')
+  call Assert_reg('E', "\<C-V>5", "abcE\nabcEb", "['abcE', 'abcEb']", "abcE\nabcEb", "['abcE', 'abcEb']")
+  call Assert_regput('e', ['==', '=abcE =', ' abcEb'])
+
+  call setreg('E', 'abcEl', 'l')
+  call Assert_reg('E', "V", "abcE\nabcEb\nabcEl\n", "['abcE', 'abcEb', 'abcEl']", "abcE\nabcEb\nabcEl\n", "['abcE', 'abcEb', 'abcEl']")
+  call Assert_regput('e', ['==', 'abcE', 'abcEb', 'abcEl', '=='])
+
+  call setreg('f', 'abcF', "\<C-v>")
+  call Assert_reg('f', "\<C-V>4", "abcF", "['abcF']", "abcF", "['abcF']")
+  call Assert_regput('f', ['==', '=abcF='])
+
+  call setreg('F', 'abcFc', 'c')
+  call Assert_reg('F', "v", "abcF\nabcFc", "['abcF', 'abcFc']", "abcF\nabcFc", "['abcF', 'abcFc']")
+  call Assert_regput('f', ['==', '=abcF', 'abcFc='])
+
+  call setreg('g', 'abcG', 'b10')
+  call Assert_reg('g', "\<C-V>10", "abcG", "['abcG']", "abcG", "['abcG']")
+  call Assert_regput('g', ['==', '=abcG      ='])
+
+  call setreg('h', 'abcH', "\<C-v>10")
+  call Assert_reg('h', "\<C-V>10", "abcH", "['abcH']", "abcH", "['abcH']")
+  call Assert_regput('h', ['==', '=abcH      ='])
+
+  call setreg('I', 'abcI')
+  call Assert_reg('I', "v", "abcI", "['abcI']", "abcI", "['abcI']")
+  call Assert_regput('I', ['==', '=abcI='])
+
+  " Appending NL with setreg()
+  call setreg('a', 'abcA2', 'c')
+  call setreg('b', 'abcB2', 'v')
+  call setreg('c', 'abcC2', 'l')
+  call setreg('d', 'abcD2', 'V')
+  call setreg('e', 'abcE2', 'b')
+  call setreg('f', 'abcF2', "\<C-v>")
+  call setreg('g', 'abcG2', 'b10')
+  call setreg('h', 'abcH2', "\<C-v>10")
+  call setreg('I', 'abcI2')
+
+  call setreg('A', "\n")
+  call Assert_reg('A', 'V', "abcA2\n", "['abcA2']", "abcA2\n", "['abcA2']")
+  call Assert_regput('A', ['==', 'abcA2', '=='])
+
+  call setreg('B', "\n", 'c')
+  call Assert_reg('B', 'v', "abcB2\n", "['abcB2', '']", "abcB2\n", "['abcB2', '']")
+  call Assert_regput('B', ['==', '=abcB2', '='])
+
+  call setreg('C', "\n")
+  call Assert_reg('C', 'V', "abcC2\n\n", "['abcC2', '']", "abcC2\n\n", "['abcC2', '']")
+  call Assert_regput('C', ['==', 'abcC2', '', '=='])
+
+  call setreg('D', "\n", 'l')
+  call Assert_reg('D', 'V', "abcD2\n\n", "['abcD2', '']", "abcD2\n\n", "['abcD2', '']")
+  call Assert_regput('D', ['==', 'abcD2', '', '=='])
+
+  call setreg('E', "\n")
+  call Assert_reg('E', 'V', "abcE2\n\n", "['abcE2', '']", "abcE2\n\n", "['abcE2', '']")
+  call Assert_regput('E', ['==', 'abcE2', '', '=='])
+
+  call setreg('F', "\n", 'b')
+  call Assert_reg('F', "\<C-V>0", "abcF2\n", "['abcF2', '']", "abcF2\n", "['abcF2', '']")
+  call Assert_regput('F', ['==', '=abcF2=', ' '])
+
+  " Setting lists with setreg()
+  call setreg('a', ['abcA3'], 'c')
+  call Assert_reg('a', 'v', "abcA3", "['abcA3']", "abcA3", "['abcA3']")
+  call Assert_regput('a', ['==', '=abcA3='])
+
+  call setreg('b', ['abcB3'], 'l')
+  call Assert_reg('b', 'V', "abcB3\n", "['abcB3']", "abcB3\n", "['abcB3']")
+  call Assert_regput('b', ['==', 'abcB3', '=='])
+
+  call setreg('c', ['abcC3'], 'b')
+  call Assert_reg('c', "\<C-V>5", "abcC3", "['abcC3']", "abcC3", "['abcC3']")
+  call Assert_regput('c', ['==', '=abcC3='])
+
+  call setreg('d', ['abcD3'])
+  call Assert_reg('d', 'V', "abcD3\n", "['abcD3']", "abcD3\n", "['abcD3']")
+  call Assert_regput('d', ['==', 'abcD3', '=='])
+
+  call setreg('e', [1, 2, 'abc', 3])
+  call Assert_reg('e', 'V', "1\n2\nabc\n3\n", "['1', '2', 'abc', '3']", "1\n2\nabc\n3\n", "['1', '2', 'abc', '3']")
+  call Assert_regput('e', ['==', '1', '2', 'abc', '3', '=='])
+
+  call setreg('f', [1, 2, 3])
+  call Assert_reg('f', 'V', "1\n2\n3\n", "['1', '2', '3']", "1\n2\n3\n", "['1', '2', '3']")
+  call Assert_regput('f', ['==', '1', '2', '3', '=='])
+
+  " Appending lists with setreg()
+  call setreg('A', ['abcA3c'], 'c')
+  call Assert_reg('A', 'v', "abcA3\nabcA3c", "['abcA3', 'abcA3c']", "abcA3\nabcA3c", "['abcA3', 'abcA3c']")
+  call Assert_regput('A', ['==', '=abcA3', 'abcA3c='])
+
+  call setreg('b', ['abcB3l'], 'la')
+  call Assert_reg('b', 'V', "abcB3\nabcB3l\n", "['abcB3', 'abcB3l']", "abcB3\nabcB3l\n", "['abcB3', 'abcB3l']")
+  call Assert_regput('b', ['==', 'abcB3', 'abcB3l', '=='])
+
+  call setreg('C', ['abcC3b'], 'lb')
+  call Assert_reg('C', "\<C-V>6", "abcC3\nabcC3b", "['abcC3', 'abcC3b']", "abcC3\nabcC3b", "['abcC3', 'abcC3b']")
+  call Assert_regput('C', ['==', '=abcC3 =', ' abcC3b'])
+
+  call setreg('D', ['abcD32'])
+  call Assert_reg('D', 'V', "abcD3\nabcD32\n", "['abcD3', 'abcD32']", "abcD3\nabcD32\n", "['abcD3', 'abcD32']")
+  call Assert_regput('D', ['==', 'abcD3', 'abcD32', '=='])
+
+  call setreg('A', ['abcA32'])
+  call Assert_reg('A', 'V', "abcA3\nabcA3c\nabcA32\n", "['abcA3', 'abcA3c', 'abcA32']", "abcA3\nabcA3c\nabcA32\n", "['abcA3', 'abcA3c', 'abcA32']")
+  call Assert_regput('A', ['==', 'abcA3', 'abcA3c', 'abcA32', '=='])
+
+  call setreg('B', ['abcB3c'], 'c')
+  call Assert_reg('B', 'v', "abcB3\nabcB3l\nabcB3c", "['abcB3', 'abcB3l', 'abcB3c']", "abcB3\nabcB3l\nabcB3c", "['abcB3', 'abcB3l', 'abcB3c']")
+  call Assert_regput('B', ['==', '=abcB3', 'abcB3l', 'abcB3c='])
+
+  call setreg('C', ['abcC3l'], 'l')
+  call Assert_reg('C', 'V', "abcC3\nabcC3b\nabcC3l\n", "['abcC3', 'abcC3b', 'abcC3l']", "abcC3\nabcC3b\nabcC3l\n", "['abcC3', 'abcC3b', 'abcC3l']")
+  call Assert_regput('C', ['==', 'abcC3', 'abcC3b', 'abcC3l', '=='])
+
+  call setreg('D', ['abcD3b'], 'b')
+  call Assert_reg('D', "\<C-V>6", "abcD3\nabcD32\nabcD3b", "['abcD3', 'abcD32', 'abcD3b']", "abcD3\nabcD32\nabcD3b", "['abcD3', 'abcD32', 'abcD3b']")
+  call Assert_regput('D', ['==', '=abcD3 =', ' abcD32', ' abcD3b'])
+
+  " Appending lists with NL with setreg()
+  call setreg('A', ["\n", 'abcA3l2'], 'l')
+  call Assert_reg('A', "V", "abcA3\nabcA3c\nabcA32\n\n\nabcA3l2\n", "['abcA3', 'abcA3c', 'abcA32', '\n', 'abcA3l2']", "abcA3\nabcA3c\nabcA32\n\n\nabcA3l2\n", "['abcA3', 'abcA3c', 'abcA32', '\n', 'abcA3l2']")
+  call Assert_regput('A', ['==', 'abcA3', 'abcA3c', 'abcA32', "\n", 'abcA3l2', '=='])
+
+  call setreg('B', ["\n", 'abcB3c2'], 'c')
+  call Assert_reg('B', "v", "abcB3\nabcB3l\nabcB3c\n\n\nabcB3c2", "['abcB3', 'abcB3l', 'abcB3c', '\n', 'abcB3c2']", "abcB3\nabcB3l\nabcB3c\n\n\nabcB3c2", "['abcB3', 'abcB3l', 'abcB3c', '\n', 'abcB3c2']")
+  call Assert_regput('B', ['==', '=abcB3', 'abcB3l', 'abcB3c', "\n", 'abcB3c2='])
+
+  call setreg('C', ["\n", 'abcC3b2'], 'b')
+  call Assert_reg('C', "7", "abcC3\nabcC3b\nabcC3l\n\n\nabcC3b2", "['abcC3', 'abcC3b', 'abcC3l', '\n', 'abcC3b2']", "abcC3\nabcC3b\nabcC3l\n\n\nabcC3b2", "['abcC3', 'abcC3b', 'abcC3l', '\n', 'abcC3b2']")
+  call Assert_regput('C', ['==', '=abcC3  =', ' abcC3b', ' abcC3l', " \n", ' abcC3b2'])
+
+  call setreg('D', ["\n", 'abcD3b50'],'b50')
+  call Assert_reg('D', "50", "abcD3\nabcD32\nabcD3b\n\n\nabcD3b50", "['abcD3', 'abcD32', 'abcD3b', '\n', 'abcD3b50']", "abcD3\nabcD32\nabcD3b\n\n\nabcD3b50", "['abcD3', 'abcD32', 'abcD3b', '\n', 'abcD3b50']")
+  call Assert_regput('D', ['==', '=abcD3                                             =', ' abcD32', ' abcD3b', " \n", ' abcD3b50'])
+
+  " Setting lists with NLs with setreg()
+  call setreg('a', ['abcA4-0', "\n", "abcA4-2\n", "\nabcA4-3", "abcA4-4\nabcA4-4-2"])
+  call Assert_reg('a', "V", "abcA4-0\n\n\nabcA4-2\n\n\nabcA4-3\nabcA4-4\nabcA4-4-2\n", "['abcA4-0', '\n', 'abcA4-2\n', '\nabcA4-3', 'abcA4-4\nabcA4-4-2']", "abcA4-0\n\n\nabcA4-2\n\n\nabcA4-3\nabcA4-4\nabcA4-4-2\n", "['abcA4-0', '\n', 'abcA4-2\n', '\nabcA4-3', 'abcA4-4\nabcA4-4-2']")
+  call Assert_regput('a', ['==', 'abcA4-0', "\n", "abcA4-2\n", "\nabcA4-3", "abcA4-4\nabcA4-4-2", '=='])
+
+  call setreg('b', ['abcB4c-0', "\n", "abcB4c-2\n", "\nabcB4c-3", "abcB4c-4\nabcB4c-4-2"], 'c')
+  call Assert_reg('b', "v", "abcB4c-0\n\n\nabcB4c-2\n\n\nabcB4c-3\nabcB4c-4\nabcB4c-4-2", "['abcB4c-0', '\n', 'abcB4c-2\n', '\nabcB4c-3', 'abcB4c-4\nabcB4c-4-2']", "abcB4c-0\n\n\nabcB4c-2\n\n\nabcB4c-3\nabcB4c-4\nabcB4c-4-2", "['abcB4c-0', '\n', 'abcB4c-2\n', '\nabcB4c-3', 'abcB4c-4\nabcB4c-4-2']")
+  call Assert_regput('b', ['==', '=abcB4c-0', "\n", "abcB4c-2\n", "\nabcB4c-3", "abcB4c-4\nabcB4c-4-2="])
+
+  call setreg('c', ['abcC4l-0', "\n", "abcC4l-2\n", "\nabcC4l-3", "abcC4l-4\nabcC4l-4-2"], 'l')
+  call Assert_reg('c', "V", "abcC4l-0\n\n\nabcC4l-2\n\n\nabcC4l-3\nabcC4l-4\nabcC4l-4-2\n", "['abcC4l-0', '\n', 'abcC4l-2\n', '\nabcC4l-3', 'abcC4l-4\nabcC4l-4-2']", "abcC4l-0\n\n\nabcC4l-2\n\n\nabcC4l-3\nabcC4l-4\nabcC4l-4-2\n", "['abcC4l-0', '\n', 'abcC4l-2\n', '\nabcC4l-3', 'abcC4l-4\nabcC4l-4-2']")
+  call Assert_regput('c', ['==', 'abcC4l-0', "\n", "abcC4l-2\n", "\nabcC4l-3", "abcC4l-4\nabcC4l-4-2", '=='])
+
+  call setreg('d', ['abcD4b-0', "\n", "abcD4b-2\n", "\nabcD4b-3", "abcD4b-4\nabcD4b-4-2"], 'b')
+  call Assert_reg('d', "19", "abcD4b-0\n\n\nabcD4b-2\n\n\nabcD4b-3\nabcD4b-4\nabcD4b-4-2", "['abcD4b-0', '\n', 'abcD4b-2\n', '\nabcD4b-3', 'abcD4b-4\nabcD4b-4-2']", "abcD4b-0\n\n\nabcD4b-2\n\n\nabcD4b-3\nabcD4b-4\nabcD4b-4-2", "['abcD4b-0', '\n', 'abcD4b-2\n', '\nabcD4b-3', 'abcD4b-4\nabcD4b-4-2']")
+  call Assert_regput('d', ['==', '=abcD4b-0           =', " \n", " abcD4b-2\n", " \nabcD4b-3", " abcD4b-4\nabcD4b-4-2"])
+
+  call setreg('e', ['abcE4b10-0', "\n", "abcE4b10-2\n", "\nabcE4b10-3", "abcE4b10-4\nabcE4b10-4-2"], 'b10')
+  call Assert_reg('e', "10", "abcE4b10-0\n\n\nabcE4b10-2\n\n\nabcE4b10-3\nabcE4b10-4\nabcE4b10-4-2", "['abcE4b10-0', '\n', 'abcE4b10-2\n', '\nabcE4b10-3', 'abcE4b10-4\nabcE4b10-4-2']", "abcE4b10-0\n\n\nabcE4b10-2\n\n\nabcE4b10-3\nabcE4b10-4\nabcE4b10-4-2", "['abcE4b10-0', '\n', 'abcE4b10-2\n', '\nabcE4b10-3', 'abcE4b10-4\nabcE4b10-4-2']")
+  call Assert_regput('e', ['==', '=abcE4b10-0=', " \n", " abcE4b10-2\n", " \nabcE4b10-3", " abcE4b10-4\nabcE4b10-4-2"])
+
+  " Search and expressions
+  call setreg('/', ['abc/'])
+  call Assert_reg('/', 'v', "abc/", "['abc/']", "abc/", "['abc/']")
+  call Assert_regput('/', ['==', '=abc/='])
+
+  call setreg('/', ["abc/\n"])
+  call Assert_reg('/', 'v', "abc/\n", "['abc/\n']", "abc/\n", "['abc/\n']")
+  call Assert_regput('/', ['==', "=abc/\n="])
+
+  call setreg('=', ['"abc/"'])
+  call Assert_reg('=', 'v', "abc/", "['abc/']", '"abc/"', "['\"abc/\"']")
+
+  call setreg('=', ["\"abc/\n\""])
+  call Assert_reg('=', 'v', "abc/\n", "['abc/\n']", "\"abc/\n\"", "['\"abc/\n\"']")
+
+  " System clipboard
+  if has('clipboard')
+    new | only!
+    call setline(1, ['clipboard contents', 'something else'])
+    " Save and restore system clipboard.
+    " If no connection to X-Server is possible, test should succeed.
+    let _clipreg = ['*', getreg('*'), getregtype('*')]
+    let _clipopt = &cb
+    let &cb='unnamed'
+    1y
+    call Assert_reg('*', 'V', "clipboard contents\n", "['clipboard contents']", "clipboard contents\n", "['clipboard contents']")
+    tabdo :windo :echo "hi"
+    2y
+    call Assert_reg('*', 'V', "something else\n", "['something else']", "something else\n", "['something else']")
+    let &cb=_clipopt
+    call call('setreg', _clipreg)
+    enew!
+  endif
+
+  " Error cases
+  call assert_fails('call setreg()', 'E119:')
+  call assert_fails('call setreg(1)', 'E119:')
+  call assert_fails('call setreg(1, 2, 3, 4)', 'E118:')
+  call assert_fails('call setreg([], 2)', 'E730:')
+  call assert_fails('call setreg(1, {})', 'E731:')
+  call assert_fails('call setreg(1, 2, [])', 'E730:')
+  call assert_fails('call setreg("/", ["1", "2"])', 'E883:')
+  call assert_fails('call setreg("=", ["1", "2"])', 'E883:')
+  call assert_fails('call setreg(1, ["", "", [], ""])', 'E730:')
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

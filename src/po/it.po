@@ -6011,8 +6011,8 @@ msgstr "E799: ID non valido: %d (dev'essere maggiore o uguale a 1)"
 msgid "E801: ID already taken: %d"
 msgstr "E801: ID già utilizzato: %d"
 
-msgid "List or number required"
-msgstr "È necessaria una Lista o un Numero"
+msgid "E290: List or number required"
+msgstr "E290: È necessaria una Lista o un Numero"
 
 msgid "E802: Invalid ID: %d (must be greater than or equal to 1)"
 msgstr "E802: ID non valido: %d (dev'essere maggiore o uguale a 1)"

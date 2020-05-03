@@ -30,6 +30,8 @@ buffer.c	| manipulating buffers (loaded files)
 bufwrite.c	| writing a buffer to file
 change.c	| handling changes to text
 cindent.c	| C and Lisp indentation
+clientserver.c	| client server functionality
+clipboard.c	| handling the clipboard
 cmdexpand.c	| command-line completion
 cmdhist.c	| command-line history
 debugger.c	| vim script debugger
@@ -78,7 +80,10 @@ syntax.c	| syntax and other highlighting
 tag.c		| tags
 term.c		| terminal handling, termcap codes
 testing.c	| testing: assert and test functions
+textformat.c	| text formatting
+textobject.c	| text objects
 textprop.c	| text properties
+time.c		| time and timer functions
 undo.c		| undo and redo
 usercmd.c	| user defined commands
 userfunc.c	| user defined functions
@@ -220,4 +225,4 @@ If you would like to help making Vim better, see the
 file.
 
 
-This is `README.md` for version 8.1 of the Vim source code.
+This is `README.md` for version 8.2 of the Vim source code.

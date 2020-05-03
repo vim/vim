@@ -100,7 +100,7 @@ func XlistTests(cchar)
   " Populate the list and then try
   Xgetexpr ['non-error 1', 'Xtestfile1:1:3:Line1',
 		  \ 'non-error 2', 'Xtestfile2:2:2:Line2',
-		  \ 'non-error 3', 'Xtestfile3:3:1:Line3']
+		  \ 'non-error| 3', 'Xtestfile3:3:1:Line3']
 
   " List only valid entries
   let l = split(execute('Xlist', ''), "\n")
@@ -112,7 +112,7 @@ func XlistTests(cchar)
   let l = split(execute('Xlist!', ''), "\n")
   call assert_equal([' 1: non-error 1', ' 2 Xtestfile1:1 col 3: Line1',
 		   \ ' 3: non-error 2', ' 4 Xtestfile2:2 col 2: Line2',
-		   \ ' 5: non-error 3', ' 6 Xtestfile3:3 col 1: Line3'], l)
+		   \ ' 5: non-error| 3', ' 6 Xtestfile3:3 col 1: Line3'], l)
 
   " List a range of errors
   let l = split(execute('Xlist 3,6', ''), "\n")
@@ -484,6 +484,7 @@ func Xtest_browse(cchar)
 		\ 'RegularLine2']
 
   Xfirst
+  call assert_fails('-5Xcc', 'E16:')
   call assert_fails('Xprev', 'E553')
   call assert_fails('Xpfile', 'E553')
   Xnfile
@@ -538,6 +539,15 @@ func Xtest_browse(cchar)
   10Xcc
   call assert_equal(11, line('.'))
   call assert_equal('Xqftestfile2', bufname('%'))
+  Xopen
+  call cursor(2, 1)
+  if a:cchar == 'c'
+    .cc
+  else
+    .ll
+  endif
+  call assert_equal(6, line('.'))
+  call assert_equal('Xqftestfile1', bufname('%'))
 
   " Jumping to an error from the error window (when only the error window is
   " present)
@@ -556,7 +566,7 @@ func Xtest_browse(cchar)
   Xexpr ""
   call assert_equal(0, g:Xgetlist({'idx' : 0}).idx)
   call assert_equal(0, g:Xgetlist({'size' : 0}).size)
-  Xaddexpr ['foo', 'bar', 'baz', 'quux', 'shmoo']
+  Xaddexpr ['foo', 'bar', 'baz', 'quux', 'sh|moo']
   call assert_equal(5, g:Xgetlist({'size' : 0}).size)
   Xlast
   call assert_equal(5, g:Xgetlist({'idx' : 0}).idx)
@@ -1478,6 +1488,7 @@ func SetXlistTests(cchar, bnum)
 	      \ " {'bufnr':999, 'lnum':5}])", 'E92:')
   call g:Xsetlist([[1, 2,3]])
   call assert_equal(0, len(g:Xgetlist()))
+  call assert_fails('call g:Xsetlist([], [])', 'E928:')
 endfunc
 
 func Test_setqflist()
@@ -1626,6 +1637,13 @@ endfunc
 func Test_setqflist_invalid_nr()
   " The following command used to crash Vim
   eval []->setqflist(' ', {'nr' : $XXX_DOES_NOT_EXIST})
+endfunc
+
+func Test_setqflist_user_sets_buftype()
+  call setqflist([{'text': 'foo'}, {'text': 'bar'}])
+  set buftype=quickfix
+  call setqflist([], 'a')
+  enew
 endfunc
 
 func Test_quickfix_set_list_with_act()
@@ -2141,6 +2159,18 @@ func Xproperty_tests(cchar)
     call g:Xsetlist([], 'a', {'context':246})
     let d = g:Xgetlist({'context':1})
     call assert_equal(246, d.context)
+    " set other Vim data types as context
+    call g:Xsetlist([], 'a', {'context' : test_null_blob()})
+    if has('channel')
+      call g:Xsetlist([], 'a', {'context' : test_null_channel()})
+    endif
+    if has('job')
+      call g:Xsetlist([], 'a', {'context' : test_null_job()})
+    endif
+    call g:Xsetlist([], 'a', {'context' : test_null_function()})
+    call g:Xsetlist([], 'a', {'context' : test_null_partial()})
+    call g:Xsetlist([], 'a', {'context' : ''})
+    call test_garbagecollect_now()
     if a:cchar == 'l'
 	" Test for copying context across two different location lists
 	new | only
@@ -2629,7 +2659,7 @@ func Test_cwindow_jump()
   call assert_equal('quickfix', getwinvar(1, '&buftype'))
   call assert_equal('quickfix', getwinvar(3, '&buftype'))
 
-  " Jumping to a file from the location list window should find a usuable
+  " Jumping to a file from the location list window should find a usable
   " window by wrapping around the window list.
   enew | only
   call setloclist(0, [], 'f')
@@ -2741,6 +2771,21 @@ func Test_vimgrep_incsearch()
 
   call test_override("ALL", 0)
   set noincsearch
+endfunc
+
+" Test vimgrep with the last search pattern not set
+func Test_vimgrep_with_no_last_search_pat()
+  let lines =<< trim [SCRIPT]
+    call assert_fails('vimgrep // *', 'E35:')
+    call writefile(v:errors, 'Xresult')
+    qall!
+  [SCRIPT]
+  call writefile(lines, 'Xscript')
+  if RunVim([], [], '--clean -S Xscript')
+    call assert_equal([], readfile('Xresult'))
+  endif
+  call delete('Xscript')
+  call delete('Xresult')
 endfunc
 
 func XfreeTests(cchar)
@@ -3652,6 +3697,14 @@ func Test_lvimgrep_crash()
   enew | only
 endfunc
 
+func Test_lvimgrep_crash2()
+  au BufNewFile x sfind
+  call assert_fails('lvimgrep x x', 'E480:')
+  call assert_fails('lvimgrep x x x', 'E480:')
+
+  au! BufNewFile
+endfunc
+
 " Test for the position of the quickfix and location list window
 func Test_qfwin_pos()
   " Open two windows
@@ -4164,6 +4217,20 @@ func Test_splitview()
   call assert_equal(0, getloclist(0, {'winid' : 0}).winid)
   new | only
 
+  " Using :split or :vsplit from a quickfix window should behave like a :new
+  " or a :vnew command
+  copen
+  split
+  call assert_equal(3, winnr('$'))
+  let l = getwininfo()
+  call assert_equal([0, 0, 1], [l[0].quickfix, l[1].quickfix, l[2].quickfix])
+  close
+  copen
+  vsplit
+  let l = getwininfo()
+  call assert_equal([0, 0, 1], [l[0].quickfix, l[1].quickfix, l[2].quickfix])
+  new | only
+
   call delete('Xtestfile1')
   call delete('Xtestfile2')
 endfunc
@@ -4650,13 +4717,13 @@ func Test_search_in_dirstack()
 	      \ "Xfile3:1:X3_L1\n" .
 	      \ "Entering dir c\n" .
 	      \ "Xfile4:2:X4_L2\n" .
-	      \ "Leaving dir c\n" .
-	      \ "Leaving dir Xtestdir\n"
+	      \ "Leaving dir c\n"
   set efm=%DEntering\ dir\ %f,%XLeaving\ dir\ %f,%f:%l:%m
-  cexpr lines
+  cexpr lines .. "Leaving dir Xtestdir|\n" | let next = 1
   call assert_equal(11, getqflist({'size' : 0}).size)
   call assert_equal(4, getqflist({'idx' : 0}).idx)
   call assert_equal('X2_L2', getline('.'))
+  call assert_equal(1, next)
   cnext
   call assert_equal(6, getqflist({'idx' : 0}).idx)
   call assert_equal('X1_L2', getline('.'))
@@ -4672,6 +4739,31 @@ func Test_search_in_dirstack()
   set efm&
   exe 'cd ' . save_cwd
   call delete('Xtestdir', 'rf')
+endfunc
+
+" Test for :cquit
+func Test_cquit()
+  " Exit Vim with a non-zero value
+  if RunVim([], ["cquit 7"], '')
+    call assert_equal(7, v:shell_error)
+  endif
+
+  if RunVim([], ["50cquit"], '')
+    call assert_equal(50, v:shell_error)
+  endif
+
+  " Exit Vim with default value
+  if RunVim([], ["cquit"], '')
+    call assert_equal(1, v:shell_error)
+  endif
+
+  " Exit Vim with zero value
+  if RunVim([], ["cquit 0"], '')
+    call assert_equal(0, v:shell_error)
+  endif
+
+  " Exit Vim with negative value
+  call assert_fails('-3cquit', 'E16:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

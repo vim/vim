@@ -1,6 +1,7 @@
 " Test the :compiler command
 
 source check.vim
+source shared.vim
 
 func Test_compiler()
   if !executable('perl')
@@ -48,6 +49,15 @@ func Test_compiler_without_arg()
   call assert_match(runtime .. '/compiler/xmlwf.vim$', a[-1])
 endfunc
 
+" Test executing :compiler from the command line, not from a script
+func Test_compiler_commandline()
+  call system(GetVimCommandClean() .. ' --not-a-term -c "compiler gcc" -c "call writefile([b:current_compiler], ''XcompilerOut'')" -c "quit"')
+  call assert_equal(0, v:shell_error)
+  call assert_equal(["gcc"], readfile('XcompilerOut'))
+
+  call delete('XcompilerOut')
+endfunc
+
 func Test_compiler_completion()
   call feedkeys(":compiler \<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_match('^"compiler ant bcc .* xmlwf$', @:)
@@ -60,5 +70,9 @@ func Test_compiler_completion()
 endfunc
 
 func Test_compiler_error()
+  let g:current_compiler = 'abc'
   call assert_fails('compiler doesnotexist', 'E666:')
+  call assert_equal('abc', g:current_compiler)
+  call assert_fails('compiler! doesnotexist', 'E666:')
+  unlet! g:current_compiler
 endfunc

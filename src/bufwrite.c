@@ -2080,6 +2080,10 @@ restore_backup:
 	    // structures end with a newline (carriage return) character, and
 	    // if they don't it adds one.
 	    // With other RMS structures it works perfect without this fix.
+# ifndef MIN
+// Older DECC compiler for VAX doesn't define MIN()
+#  define MIN(a, b) ((a) < (b) ? (a) : (b))
+# endif
 	    if (buf->b_fab_rfm == FAB$C_VFC
 		    || ((buf->b_fab_rat & (FAB$M_FTN | FAB$M_CR)) != 0))
 	    {

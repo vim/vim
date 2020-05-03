@@ -6,8 +6,6 @@ CheckFeature textprop
 
 source screendump.vim
 
-" test length zero
-
 func Test_proptype_global()
   call prop_type_add('comment', {'highlight': 'Directory', 'priority': 123, 'start_incl': 1, 'end_incl': 1})
   let proptypes = prop_type_list()
@@ -103,6 +101,129 @@ func Get_expected_props()
       \ ]
 endfunc
 
+func Test_prop_find()
+  new
+  call setline(1, ['one one one', 'twotwo', 'three', 'fourfour', 'five', 'sixsix'])
+ 
+  " Add two text props on lines 1 and 5, and one spanning lines 2 to 4. 
+  call prop_type_add('prop_name', {'highlight': 'Directory'})
+  call prop_add(1, 5, {'type': 'prop_name', 'id': 10, 'length': 3})
+  call prop_add(2, 4, {'type': 'prop_name', 'id': 11, 'end_lnum': 4, 'end_col': 9})
+  call prop_add(5, 4, {'type': 'prop_name', 'id': 12, 'length': 1})
+
+  let expected = [
+    \ {'lnum': 1, 'col': 5, 'length': 3, 'id': 10, 'type': 'prop_name', 'start': 1, 'end': 1},
+    \ {'lnum': 2, 'col': 4, 'id': 11, 'type': 'prop_name', 'start': 1, 'end': 0},
+    \ {'lnum': 5, 'col': 4, 'length': 1, 'id': 12, 'type': 'prop_name', 'start': 1, 'end': 1}
+    \ ]
+
+  " Starting at line 5 col 1 this should find the prop at line 5 col 4.
+  call cursor(5,1)
+  let result = prop_find({'type': 'prop_name'}, 'f')
+  call assert_equal(expected[2], result)
+
+  " With skipstart left at false (default), this should find the prop at line
+  " 5 col 4.
+  let result = prop_find({'type': 'prop_name', 'lnum': 5, 'col': 4}, 'b')
+  call assert_equal(expected[2], result)
+
+  " With skipstart set to true, this should skip the prop at line 5 col 4.
+  let result = prop_find({'type': 'prop_name', 'lnum': 5, 'col': 4, 'skipstart': 1}, 'b')
+  unlet result.length
+  call assert_equal(expected[1], result)
+
+  " Search backwards from line 1 col 10 to find the prop on the same line.
+  let result = prop_find({'type': 'prop_name', 'lnum': 1, 'col': 10}, 'b')
+  call assert_equal(expected[0], result)
+
+  " with skipstart set to false, if the start position is anywhere between the
+  " start and end lines of a text prop (searching forward or backward), the
+  " result should be the prop on the first line (the line with 'start' set to 1).
+  call cursor(3,1)
+  let result = prop_find({'type': 'prop_name'}, 'f')
+  unlet result.length
+  call assert_equal(expected[1], result)
+  let result = prop_find({'type': 'prop_name'}, 'b')
+  unlet result.length
+  call assert_equal(expected[1], result)
+
+  " with skipstart set to true, if the start position is anywhere between the
+  " start and end lines of a text prop (searching forward or backward), all lines
+  " of the prop will be skipped.
+  let result = prop_find({'type': 'prop_name', 'skipstart': 1}, 'b')
+  call assert_equal(expected[0], result)
+  let result = prop_find({'type': 'prop_name', 'skipstart': 1}, 'f')
+  call assert_equal(expected[2], result)
+
+  " Use skipstart to search through all props with type name 'prop_name'.
+  " First forward...
+  let lnum = 1
+  let col = 1
+  let i = 0
+  for exp in expected
+    let result = prop_find({'type': 'prop_name', 'lnum': lnum, 'col': col, 'skipstart': 1}, 'f')
+    if !has_key(exp, "length")
+      unlet result.length
+    endif
+    call assert_equal(exp, result)
+    let lnum = result.lnum
+    let col = result.col
+    let i = i + 1
+  endfor
+
+  " ...then backwards.
+  let lnum = 6
+  let col = 4
+  let i = 2
+  while i >= 0
+    let result = prop_find({'type': 'prop_name', 'lnum': lnum, 'col': col, 'skipstart': 1}, 'b')
+    if !has_key(expected[i], "length")
+      unlet result.length
+    endif
+    call assert_equal(expected[i], result)
+    let lnum = result.lnum
+    let col = result.col
+    let i = i - 1
+  endwhile 
+
+  " Starting from line 6 col 1 search backwards for prop with id 10.
+  call cursor(6,1)
+  let result = prop_find({'id': 10, 'skipstart': 1}, 'b')
+  call assert_equal(expected[0], result)
+
+  " Starting from line 1 col 1 search forwards for prop with id 12.
+  call cursor(1,1)
+  let result = prop_find({'id': 12}, 'f')
+  call assert_equal(expected[2], result)
+
+  " Search for a prop with an unknown id.
+  let result = prop_find({'id': 999}, 'f')
+  call assert_equal({}, result)
+
+  " Search backwards from the proceeding position of the prop with id 11
+  " (at line num 2 col 4). This should return an empty dict.
+  let result = prop_find({'id': 11, 'lnum': 2, 'col': 3}, 'b')
+  call assert_equal({}, result)
+
+  " When lnum is given and col is omitted, use column 1.
+  let result = prop_find({'type': 'prop_name', 'lnum': 1}, 'f')
+  call assert_equal(expected[0], result)
+
+  call prop_clear(1,6)
+  call prop_type_delete('prop_name')
+endfunc
+
+func Test_prop_find_smaller_len_than_match_col()
+  new
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call setline(1, ['xxxx', 'x'])
+  call prop_add(1, 4, {'type': 'test'})
+  call assert_equal({'id': 0, 'lnum': 1, 'col': 4, 'type': 'test', 'length': 0, 'start': 1, 'end': 1},
+        \ prop_find({'type': 'test', 'lnum': 2, 'col': 1}, 'b'))
+  bwipe!
+  call prop_type_delete('test')
+endfunc
+
 func Test_prop_add()
   new
   call AddPropTypes()
@@ -121,13 +242,20 @@ func Test_prop_add()
 
   " Prop without length or end column is zero length
   call prop_clear(1)
-  call prop_add(1, 5, {'type': 'two'})
-  let expected = [{'col': 5, 'length': 0, 'type': 'two', 'id': 0, 'start': 1, 'end': 1}]
+  call prop_type_add('included', {'start_incl': 1, 'end_incl': 1})
+  call prop_add(1, 5, #{type: 'included'})
+  let expected = [#{col: 5, length: 0, type: 'included', id: 0, start: 1, end: 1}]
+  call assert_equal(expected, prop_list(1))
+
+  " Inserting text makes the prop bigger.
+  exe "normal 5|ixx\<Esc>"
+  let expected = [#{col: 5, length: 2, type: 'included', id: 0, start: 1, end: 1}]
   call assert_equal(expected, prop_list(1))
 
   call assert_fails("call prop_add(1, 5, {'type': 'two', 'bufnr': 234343})", 'E158:')
 
   call DeletePropTypes()
+  call prop_type_delete('included')
   bwipe!
 endfunc
 
@@ -150,6 +278,23 @@ func Test_prop_remove()
 
   " remove from unknown buffer
   call assert_fails("call prop_remove({'type': 'one', 'bufnr': 123456}, 1)", 'E158:')
+
+  call DeletePropTypes()
+  bwipe!
+
+  new
+  call AddPropTypes()
+  call SetupPropsInFirstLine()
+  call prop_add(1, 6, {'length': 2, 'id': 11, 'type': 'three'})
+  let props = Get_expected_props()
+  call insert(props, {'col': 6, 'length': 2, 'id': 11, 'type': 'three', 'start': 1, 'end': 1}, 3)
+  call assert_equal(props, prop_list(1))
+  call assert_equal(1, prop_remove({'type': 'three', 'id': 11, 'both': 1, 'all': 1}, 1))
+  unlet props[3]
+  call assert_equal(props, prop_list(1))
+
+  call assert_fails("call prop_remove({'id': 11, 'both': 1})", 'E860')
+  call assert_fails("call prop_remove({'type': 'three', 'both': 1})", 'E860')
 
   call DeletePropTypes()
   bwipe!
@@ -552,7 +697,7 @@ func Test_prop_multiline()
   call prop_type_delete('comment')
 endfunc
 
-func Test_prop_byteoff()
+func Test_prop_line2byte()
   call prop_type_add('comment', {'highlight': 'Directory'})
   new
   call setline(1, ['line1', 'second line', ''])
@@ -563,6 +708,22 @@ func Test_prop_byteoff()
 
   bwipe!
   call prop_type_delete('comment')
+endfunc
+
+func Test_prop_byte2line()
+  new
+  set ff=unix
+  call setline(1, ['one one', 'two two', 'three three', 'four four', 'five'])
+  call assert_equal(4, byte2line(line2byte(4)))
+  call assert_equal(5, byte2line(line2byte(5)))
+
+  call prop_type_add('prop', {'highlight': 'Directory'})
+  call prop_add(3, 1, {'length': 5, 'type': 'prop'})
+  call assert_equal(4, byte2line(line2byte(4)))
+  call assert_equal(5, byte2line(line2byte(5)))
+
+  bwipe!
+  call prop_type_delete('prop')
 endfunc
 
 func Test_prop_undo()
@@ -925,3 +1086,146 @@ func Test_proptype_substitute2()
   call assert_equal(expected, prop_list(1))
   bwipe!
 endfunc
+
+func SaveOptions()
+  let d = #{tabstop: &tabstop,
+	  \ softtabstop: &softtabstop,
+	  \ shiftwidth: &shiftwidth,
+	  \ expandtab: &expandtab,
+	  \ foldmethod: '"' .. &foldmethod .. '"',
+	  \ }
+  return d
+endfunc
+
+func RestoreOptions(dict)
+  for name in keys(a:dict)
+    exe 'let &' .. name .. ' = ' .. a:dict[name]
+  endfor
+endfunc
+
+func Test_textprop_noexpandtab()
+  new
+  let save_dict = SaveOptions()
+
+  set tabstop=8
+  set softtabstop=4
+  set shiftwidth=4
+  set noexpandtab
+  set foldmethod=marker
+
+  call feedkeys("\<esc>\<esc>0Ca\<cr>\<esc>\<up>", "tx")
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call prop_add(1, 1, {'end_col': 2, 'type': 'test'})
+  call feedkeys("0i\<tab>", "tx")
+  call prop_remove({'type': 'test'})
+  call prop_add(1, 2, {'end_col': 3, 'type': 'test'})
+  call feedkeys("A\<left>\<tab>", "tx")
+  call prop_remove({'type': 'test'})
+  try
+    " It is correct that this does not pass
+    call prop_add(1, 6, {'end_col': 7, 'type': 'test'})
+    " Has already collapsed here, start_col:6 does not result in an error
+    call feedkeys("A\<left>\<tab>", "tx")
+  catch /^Vim\%((\a\+)\)\=:E964/
+  endtry
+  call prop_remove({'type': 'test'})
+  call prop_type_delete('test')
+
+  call RestoreOptions(save_dict)
+  bwipe!
+endfunc
+
+func Test_textprop_noexpandtab_redraw()
+  new
+  let save_dict = SaveOptions()
+
+  set tabstop=8
+  set softtabstop=4
+  set shiftwidth=4
+  set noexpandtab
+  set foldmethod=marker
+
+  call feedkeys("\<esc>\<esc>0Ca\<cr>\<space>\<esc>\<up>", "tx")
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call prop_add(1, 1, {'end_col': 2, 'type': 'test'})
+  call feedkeys("0i\<tab>", "tx")
+  " Internally broken at the next line
+  call feedkeys("A\<left>\<tab>", "tx")
+  redraw
+  " Index calculation failed internally on next line
+  call prop_add(1, 1, {'end_col': 2, 'type': 'test'})
+  call prop_remove({'type': 'test', 'all': v:true})
+  call prop_type_delete('test')
+  call prop_type_delete('test')
+
+  call RestoreOptions(save_dict)
+  bwipe!
+endfunc
+
+func Test_textprop_ins_str()
+  new
+  call setline(1, 'just some text')
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call prop_add(1, 1, {'end_col': 2, 'type': 'test'})
+  call assert_equal([{'id': 0, 'col': 1, 'end': 1, 'type': 'test', 'length': 1, 'start': 1}], prop_list(1))
+
+  call feedkeys("foi\<F8>\<Esc>", "tx")
+  call assert_equal('just s<F8>ome text', getline(1))
+  call assert_equal([{'id': 0, 'col': 1, 'end': 1, 'type': 'test', 'length': 1, 'start': 1}], prop_list(1))
+
+  bwipe!
+  call prop_remove({'type': 'test'})
+  call prop_type_delete('test')
+endfunc
+
+func Test_find_prop_later_in_line()
+  new
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call setline(1, 'just some text')
+  call prop_add(1, 1, {'length': 4, 'type': 'test'})
+  call prop_add(1, 10, {'length': 3, 'type': 'test'})
+
+  call assert_equal({'id': 0, 'lnum': 1, 'col': 10, 'end': 1, 'type': 'test', 'length': 3, 'start': 1},
+			  \ prop_find(#{type: 'test', lnum: 1, col: 6}))
+
+  bwipe!
+  call prop_type_delete('test')
+endfunc
+
+func Test_find_zerowidth_prop_sol()
+  new
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call setline(1, 'just some text')
+  call prop_add(1, 1, {'length': 0, 'type': 'test'})
+
+  call assert_equal({'id': 0, 'lnum': 1, 'col': 1, 'end': 1, 'type': 'test', 'length': 0, 'start': 1},
+			  \ prop_find(#{type: 'test', lnum: 1}))
+
+  bwipe!
+  call prop_type_delete('test')
+endfunc
+
+" Test for passing invalid arguments to prop_xxx() functions
+func Test_prop_func_invalid_args()
+  call assert_fails('call prop_clear(1, 2, [])', 'E715:')
+  call assert_fails('call prop_clear(-1, 2)', 'E16:')
+  call assert_fails('call prop_find(test_null_dict())', 'E474:')
+  call assert_fails('call prop_find({"bufnr" : []})', 'E158:')
+  call assert_fails('call prop_find({})', 'E968:')
+  call assert_fails('call prop_find({}, "x")', 'E474:')
+  call assert_fails('call prop_find({"lnum" : -2})', 'E16:')
+  call assert_fails('call prop_list(1, [])', 'E715:')
+  call assert_fails('call prop_list(-1 , {})', 'E16:')
+  call assert_fails('call prop_remove([])', 'E474:')
+  call assert_fails('call prop_remove({}, -2)', 'E16:')
+  call assert_fails('call prop_remove({})', 'E968:')
+  call assert_fails('call prop_type_add([], {})', 'E474:')
+  call assert_fails("call prop_type_change('long', {'xyz' : 10})", 'E971:')
+  call assert_fails("call prop_type_delete([])", 'E474:')
+  call assert_fails("call prop_type_delete('xyz', [])", 'E715:')
+  call assert_fails("call prop_type_get([])", 'E474:')
+  call assert_fails("call prop_type_get('', [])", 'E474:')
+  call assert_fails("call prop_type_list([])", 'E715:')
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

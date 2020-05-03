@@ -156,7 +156,7 @@ endfunc
 func s:WaitForCommon(expr, assert, timeout)
   " using reltime() is more accurate, but not always available
   let slept = 0
-  if has('reltime')
+  if exists('*reltimefloat')
     let start = reltime()
   endif
 
@@ -181,7 +181,7 @@ func s:WaitForCommon(expr, assert, timeout)
     endif
 
     sleep 10m
-    if has('reltime')
+    if exists('*reltimefloat')
       let slept = float2nr(reltimefloat(reltime(start)) * 1000)
     else
       let slept += 10
@@ -197,7 +197,7 @@ endfunc
 " feeds key-input and resumes process. Return time waited in milliseconds.
 " Without +timers it uses simply :sleep.
 func Standby(msec)
-  if has('timers')
+  if has('timers') && exists('*reltimefloat')
     let start = reltime()
     let g:_standby_timer = timer_start(a:msec, function('s:feedkeys'))
     call getchar()
@@ -315,6 +315,9 @@ func RunVimPiped(before, after, arguments, pipecmd)
     let args .= ' -S Xafter.vim'
   endif
 
+  " Optionally run Vim under valgrind
+  " let cmd = 'valgrind --tool=memcheck --leak-check=yes --num-callers=25 --log-file=valgrind ' . cmd
+
   exe "silent !" . a:pipecmd . cmd . args . ' ' . a:arguments
 
   if len(a:before) > 0
@@ -334,3 +337,17 @@ func IsRoot()
   endif
   return v:false
 endfunc
+
+" Get all messages but drop the maintainer entry.
+func GetMessages()
+  redir => result
+  redraw | messages
+  redir END
+  let msg_list = split(result, "\n")
+  if msg_list->len() > 0 && msg_list[0] =~ 'Messages maintainer:'
+    return msg_list[1:]
+  endif
+  return msg_list
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -1,16 +1,14 @@
-/* this file contains the actual definitions of */
-/* the IIDs and CLSIDs */
+// this file contains the actual definitions of
+// the IIDs and CLSIDs
 
-/* link this file in with the server and any clients */
+// link this file in with the server and any clients
 
 
-/* File created by MIDL compiler version 3.00.44 */
-/* at Sat Jan 03 16:34:55 1998
- */
-/* Compiler settings for if_ole.idl:
-    Os (OptLev=s), W1, Zp8, env=Win32, ms_ext, c_ext
-    error checks: none
-*/
+// File created by MIDL compiler version 3.00.44
+// at Sat Jan 03 16:34:55 1998
+// Compiler settings for if_ole.idl:
+// Os (OptLev=s), W1, Zp8, env=Win32, ms_ext, c_ext
+// error checks: none
 //@@MIDL_FILE_HEADING(  )
 #ifdef __cplusplus
 extern "C"{
@@ -20,8 +18,8 @@ extern "C"{
 # include <w32api.h>
 
 # if __W32API_MAJOR_VERSION == 3 && __W32API_MINOR_VERSION < 10
-   /* This define is missing from older MingW versions of w32api, even though
-    * IID is defined. */
+   // This define is missing from older MingW versions of w32api, even though
+   // IID is defined.
 #  define __IID_DEFINED__
 # endif
 #endif

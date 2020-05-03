@@ -47,6 +47,9 @@
 /* Work around for using MSVC and ActivePerl 5.18. */
 #ifdef _MSC_VER
 # define __inline__ __inline
+
+// Work around for using MSVC and Strawberry Perl 5.30.
+# define __builtin_expect(expr, val) (expr)
 #endif
 
 #ifdef __GNUC__
@@ -192,7 +195,9 @@ typedef int perl_key;
 #  define Perl_croak_xs_usage dll_Perl_croak_xs_usage
 # endif
 # ifndef PROTO
-#  define Perl_croak_nocontext dll_Perl_croak_nocontext
+#  ifdef PERL_IMPLICIT_CONTEXT
+#   define Perl_croak_nocontext dll_Perl_croak_nocontext
+#  endif
 #  define Perl_call_argv dll_Perl_call_argv
 #  define Perl_call_pv dll_Perl_call_pv
 #  define Perl_eval_sv dll_Perl_eval_sv
@@ -342,7 +347,9 @@ static void (*Perl_croak_xs_usage)(pTHX_ const CV *const, const char *const para
 						    __attribute__noreturn__;
 #  endif
 # endif
+# ifdef PERL_IMPLICIT_CONTEXT
 static void (*Perl_croak_nocontext)(const char*, ...) __attribute__noreturn__;
+# endif
 static I32 (*Perl_dowantarray)(pTHX);
 static void (*Perl_free_tmps)(pTHX);
 static HV* (*Perl_gv_stashpv)(pTHX_ const char*, I32);
@@ -759,7 +766,7 @@ perl_init(void)
 }
 
 /*
- * perl_end(): clean up after ourselves
+ * Clean up after ourselves.
  */
     void
 perl_end(void)
@@ -774,13 +781,6 @@ perl_end(void)
 	Perl_sys_term();
 #endif
     }
-#ifdef DYNAMIC_PERL
-    if (hPerlLib)
-    {
-	close_dll(hPerlLib);
-	hPerlLib = NULL;
-    }
-#endif
 }
 
 /*
@@ -927,7 +927,7 @@ I32 cur_val(IV iv, SV *sv)
 
     if (SvRV(sv) != SvRV(rv))
 	// XXX: This magic variable is a bit confusing...
-	// Is curently refcounted ?
+	// Is currently refcounted ?
 	sv_setsv(sv, rv);
 
     SvREFCNT_dec(rv);

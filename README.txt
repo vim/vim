@@ -1,4 +1,4 @@
-README.txt for version 8.1 of Vim: Vi IMproved.
+README.txt for version 8.2 of Vim: Vi IMproved.
 
 
 WHAT IS VIM?
@@ -16,10 +16,10 @@ All commands are given with normal keyboard characters, so those who can type
 with ten fingers can work very fast.  Additionally, function keys can be
 mapped to commands by the user, and the mouse can be used.
 
-Vim runs under MS-Windows (NT, 2000, XP, Vista, 7, 8, 10), Macintosh, VMS and
-almost all flavours of UNIX.  Porting to other systems should not be very
-difficult.  Older versions of Vim run on MS-DOS, MS-Windows 95/98/Me, Amiga
-DOS, Atari MiNT, BeOS, RISC OS and OS/2.  These are no longer maintained.
+Vim runs under MS-Windows (XP, Vista, 7, 8, 10), macOS, VMS and almost all
+flavours of UNIX.  Porting to other systems should not be very difficult.
+Older versions of Vim run on MS-DOS, MS-Windows 95/98/Me/NT/2000, Amiga DOS,
+Atari MiNT, BeOS, RISC OS and OS/2.  These are no longer maintained.
 
 
 DISTRIBUTION

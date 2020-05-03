@@ -524,7 +524,7 @@ static int color_numbers_88[28] = {0, 4, 2, 6,
 				 75, 11, 78, 15, -1};
 // for xterm with 256 colors...
 static int color_numbers_256[28] = {0, 4, 2, 6,
-				 1, 5, 130, 130,
+				 1, 5, 130, 3,
 				 248, 248, 7, 7,
 				 242, 242,
 				 12, 81, 10, 121,
@@ -559,10 +559,12 @@ lookup_color(int idx, int foreground, int *boldp)
     {
 	// t_Co is 8: use the 8 colors table
 #if defined(__QNXNTO__)
-	color = color_numbers_8_qansi[idx];
-#else
-	color = color_numbers_8[idx];
+	// On qnx, the 8 & 16 color arrays are the same
+	if (STRNCMP(T_NAME, "qansi", 5) == 0)
+	    color = color_numbers_16[idx];
+	else
 #endif
+	    color = color_numbers_8[idx];
 	if (foreground)
 	{
 	    // set/reset bold attribute to get light foreground
@@ -656,7 +658,7 @@ do_highlight(
     /*
      * If no argument, list current highlighting.
      */
-    if (ends_excmd(*line))
+    if (!init && ends_excmd2(line - 1, line))
     {
 	for (i = 1; i <= highlight_ga.ga_len && !got_int; ++i)
 	    // TODO: only call when the group has attributes set
@@ -692,7 +694,7 @@ do_highlight(
     /*
      * ":highlight {group-name}": list highlighting for one group.
      */
-    if (!doclear && !dolink && ends_excmd(*linep))
+    if (!doclear && !dolink && ends_excmd2(line, linep))
     {
 	id = syn_namen2id(line, (int)(name_end - line));
 	if (id == 0)
@@ -718,14 +720,14 @@ do_highlight(
 	to_start = skipwhite(from_end);
 	to_end	 = skiptowhite(to_start);
 
-	if (ends_excmd(*from_start) || ends_excmd(*to_start))
+	if (ends_excmd2(line, from_start) || ends_excmd2(line, to_start))
 	{
 	    semsg(_("E412: Not enough arguments: \":highlight link %s\""),
 								  from_start);
 	    return;
 	}
 
-	if (!ends_excmd(*skipwhite(to_end)))
+	if (!ends_excmd2(line, skipwhite(to_end)))
 	{
 	    semsg(_("E413: Too many arguments: \":highlight link %s\""), from_start);
 	    return;
@@ -746,7 +748,7 @@ do_highlight(
 	    if (to_id > 0 && !forceit && !init
 				   && hl_has_settings(from_id - 1, dodefault))
 	    {
-		if (sourcing_name == NULL && !dodefault)
+		if (SOURCING_NAME == NULL && !dodefault)
 		    emsg(_("E414: group has settings, highlight link ignored"));
 	    }
 	    else if (HL_TABLE()[from_id - 1].sg_link != to_id
@@ -761,7 +763,7 @@ do_highlight(
 		HL_TABLE()[from_id - 1].sg_link = to_id;
 #ifdef FEAT_EVAL
 		HL_TABLE()[from_id - 1].sg_script_ctx = current_sctx;
-		HL_TABLE()[from_id - 1].sg_script_ctx.sc_lnum += sourcing_lnum;
+		HL_TABLE()[from_id - 1].sg_script_ctx.sc_lnum += SOURCING_LNUM;
 #endif
 		HL_TABLE()[from_id - 1].sg_cleared = FALSE;
 		redraw_all_later(SOME_VALID);
@@ -779,8 +781,7 @@ do_highlight(
 	/*
 	 * ":highlight clear [group]" command.
 	 */
-	line = linep;
-	if (ends_excmd(*line))
+	if (ends_excmd2(line, linep))
 	{
 #ifdef FEAT_GUI
 	    // First, we do not destroy the old values, but allocate the new
@@ -824,7 +825,7 @@ do_highlight(
 	    // It is now Ok to clear out the old data.
 #endif
 #ifdef FEAT_EVAL
-	    do_unlet((char_u *)"colors_name", TRUE);
+	    do_unlet((char_u *)"g:colors_name", TRUE);
 #endif
 	    restore_cterm_colors();
 
@@ -843,6 +844,7 @@ do_highlight(
 	    redraw_later_clear();
 	    return;
 	}
+	line = linep;
 	name_end = skiptowhite(line);
 	linep = skipwhite(name_end);
     }
@@ -886,7 +888,7 @@ do_highlight(
     }
 
     if (!doclear)
-      while (!ends_excmd(*linep))
+      while (!ends_excmd2(line, linep))
       {
 	key_start = linep;
 	if (*linep == '=')
@@ -1135,13 +1137,6 @@ do_highlight(
 	    else
 	    {
 		int bold = MAYBE;
-
-#if defined(__QNXNTO__)
-		static int *color_numbers_8_qansi = color_numbers_8;
-		// On qnx, the 8 & 16 color arrays are the same
-		if (STRNCMP(T_NAME, "qansi", 5) == 0)
-		    color_numbers_8_qansi = color_numbers_16;
-#endif
 
 		// reduce calls to STRICMP a bit, it can be slow
 		off = TOUPPER_ASC(*arg);
@@ -1490,6 +1485,9 @@ do_highlight(
 		redraw_all_later(NOT_VALID);
 	    }
 #endif
+#ifdef FEAT_VTP
+	    control_console_color_rgb();
+#endif
 	}
 #ifdef FEAT_TERMINAL
 	else if (is_terminal_group)
@@ -1523,7 +1521,7 @@ do_highlight(
 	    set_hl_attr(idx);
 #ifdef FEAT_EVAL
 	HL_TABLE()[idx].sg_script_ctx = current_sctx;
-	HL_TABLE()[idx].sg_script_ctx.sc_lnum += sourcing_lnum;
+	HL_TABLE()[idx].sg_script_ctx.sc_lnum += SOURCING_LNUM;
 #endif
     }
 
@@ -2143,7 +2141,7 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 	return 0;
 
     taep = &(((attrentry_T *)table->ga_data)[table->ga_len]);
-    vim_memset(taep, 0, sizeof(attrentry_T));
+    CLEAR_POINTER(taep);
     taep->ae_attr = aep->ae_attr;
 #ifdef FEAT_GUI
     if (table == &gui_attr_table)
@@ -2191,7 +2189,7 @@ get_cterm_attr_idx(int attr, int fg, int bg)
 {
     attrentry_T		at_en;
 
-    vim_memset(&at_en, 0, sizeof(attrentry_T));
+    CLEAR_FIELD(at_en);
 #ifdef FEAT_TERMGUICOLORS
     at_en.ae_u.cterm.fg_rgb = INVALCOLOR;
     at_en.ae_u.cterm.bg_rgb = INVALCOLOR;
@@ -2213,7 +2211,7 @@ get_tgc_attr_idx(int attr, guicolor_T fg, guicolor_T bg)
 {
     attrentry_T		at_en;
 
-    vim_memset(&at_en, 0, sizeof(attrentry_T));
+    CLEAR_FIELD(at_en);
     at_en.ae_attr = attr;
     if (fg == INVALCOLOR && bg == INVALCOLOR)
     {
@@ -2241,7 +2239,7 @@ get_gui_attr_idx(int attr, guicolor_T fg, guicolor_T bg)
 {
     attrentry_T		at_en;
 
-    vim_memset(&at_en, 0, sizeof(attrentry_T));
+    CLEAR_FIELD(at_en);
     at_en.ae_attr = attr;
     at_en.ae_u.gui.fg_color = fg;
     at_en.ae_u.gui.bg_color = bg;
@@ -2300,7 +2298,7 @@ hl_combine_attr(int char_attr, int prim_attr)
 	    new_en = *char_aep;
 	else
 	{
-	    vim_memset(&new_en, 0, sizeof(new_en));
+	    CLEAR_FIELD(new_en);
 	    new_en.ae_u.gui.fg_color = INVALCOLOR;
 	    new_en.ae_u.gui.bg_color = INVALCOLOR;
 	    new_en.ae_u.gui.sp_color = INVALCOLOR;
@@ -2343,7 +2341,7 @@ hl_combine_attr(int char_attr, int prim_attr)
 	    new_en = *char_aep;
 	else
 	{
-	    vim_memset(&new_en, 0, sizeof(new_en));
+	    CLEAR_FIELD(new_en);
 #ifdef FEAT_TERMGUICOLORS
 	    new_en.ae_u.cterm.bg_rgb = INVALCOLOR;
 	    new_en.ae_u.cterm.fg_rgb = INVALCOLOR;
@@ -2395,7 +2393,7 @@ hl_combine_attr(int char_attr, int prim_attr)
 	new_en = *char_aep;
     else
     {
-	vim_memset(&new_en, 0, sizeof(new_en));
+	CLEAR_FIELD(new_en);
 	if (char_attr <= HL_ALL)
 	    new_en.ae_attr = char_attr;
     }
@@ -3064,7 +3062,7 @@ syn_add_group(char_u *name)
 	return 0;
     }
 
-    vim_memset(&(HL_TABLE()[highlight_ga.ga_len]), 0, sizeof(hl_group_T));
+    CLEAR_POINTER(&(HL_TABLE()[highlight_ga.ga_len]));
     HL_TABLE()[highlight_ga.ga_len].sg_name = name;
     HL_TABLE()[highlight_ga.ga_len].sg_name_u = name_up;
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
@@ -3139,8 +3137,9 @@ syn_id2colors(int hl_id, guicolor_T *fgp, guicolor_T *bgp)
 #endif
 
 #if (defined(MSWIN) \
-	&& (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL)) \
-	&& defined(FEAT_TERMGUICOLORS)) || defined(PROTO)
+	    && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL)) \
+	    && defined(FEAT_TERMGUICOLORS)) \
+	|| defined(FEAT_TERMINAL) || defined(PROTO)
     void
 syn_id2cterm_bg(int hl_id, int *fgp, int *bgp)
 {
@@ -3263,7 +3262,7 @@ combine_stl_hlt(
 
     if (id_alt == 0)
     {
-	vim_memset(&hlt[hlcnt + i], 0, sizeof(hl_group_T));
+	CLEAR_POINTER(&hlt[hlcnt + i]);
 	hlt[hlcnt + i].sg_term = highlight_attr[hlf];
 	hlt[hlcnt + i].sg_cterm = highlight_attr[hlf];
 #  if defined(FEAT_GUI) || defined(FEAT_EVAL)
@@ -3378,7 +3377,7 @@ highlight_changed(void)
 	     * bold-underlined.
 	     */
 	    attr = 0;
-	    for ( ; *p && *p != ','; ++p)	    // parse upto comma
+	    for ( ; *p && *p != ','; ++p)	    // parse up to comma
 	    {
 		if (VIM_ISWHITE(*p))		    // ignore white space
 		    continue;
@@ -3458,7 +3457,7 @@ highlight_changed(void)
     {
 	// Make sure id_S is always valid to simplify code below. Use the last
 	// entry.
-	vim_memset(&HL_TABLE()[hlcnt + 27], 0, sizeof(hl_group_T));
+	CLEAR_POINTER(&HL_TABLE()[hlcnt + 27]);
 	HL_TABLE()[hlcnt + 18].sg_term = highlight_attr[HLF_S];
 	id_S = hlcnt + 19;
     }
@@ -3744,6 +3743,7 @@ match_add(
 	listitem_T	*li;
 	int		i;
 
+	range_list_materialize(pos_list);
 	for (i = 0, li = pos_list->lv_first; li != NULL && i < MAXPOSMATCH;
 							i++, li = li->li_next)
 	{
@@ -3801,7 +3801,7 @@ match_add(
 	    }
 	    else
 	    {
-		emsg(_("List or number required"));
+		emsg(_("E290: List or number required"));
 		goto fail;
 	    }
 	    if (toplnum == 0 || lnum < toplnum)
@@ -4060,7 +4060,7 @@ next_search_hl(
     linenr_T	l;
     colnr_T	matchcol;
     long	nmatched;
-    int		save_called_emsg = called_emsg;
+    int		called_emsg_before = called_emsg;
 
     // for :{range}s/pat only highlight inside the range
     if (lnum < search_first_line || lnum > search_last_line)
@@ -4086,7 +4086,6 @@ next_search_hl(
      * Repeat searching for a match until one is found that includes "mincol"
      * or none is found in this line.
      */
-    called_emsg = FALSE;
     for (;;)
     {
 # ifdef FEAT_RELTIME
@@ -4148,7 +4147,7 @@ next_search_hl(
 	    if (regprog_is_copy)
 		cur->match.regprog = cur->hl.rm.regprog;
 
-	    if (called_emsg || got_int || timed_out)
+	    if (called_emsg > called_emsg_before || got_int || timed_out)
 	    {
 		// Error while handling regexp: stop using this regexp.
 		if (shl == search_hl)
@@ -4181,9 +4180,6 @@ next_search_hl(
 	    break;			// useful match found
 	}
     }
-
-    // Restore called_emsg for assert_fails().
-    called_emsg = save_called_emsg;
 }
 
 /*
@@ -4950,10 +4946,11 @@ ex_match(exarg_T *eap)
     if (!eap->skip)
 	match_delete(curwin, id, FALSE);
 
-    if (ends_excmd(*eap->arg))
+    if (ends_excmd2(eap->cmd, eap->arg))
 	end = eap->arg;
     else if ((STRNICMP(eap->arg, "none", 4) == 0
-		&& (VIM_ISWHITE(eap->arg[4]) || ends_excmd(eap->arg[4]))))
+		&& (VIM_ISWHITE(eap->arg[4])
+				      || ends_excmd2(eap->arg, eap->arg + 4))))
 	end = eap->arg + 4;
     else
     {
@@ -4968,10 +4965,10 @@ ex_match(exarg_T *eap)
 	    semsg(_(e_invarg2), eap->arg);
 	    return;
 	}
-	end = skip_regexp(p + 1, *p, TRUE, NULL);
+	end = skip_regexp(p + 1, *p, TRUE);
 	if (!eap->skip)
 	{
-	    if (*end != NUL && !ends_excmd(*skipwhite(end + 1)))
+	    if (*end != NUL && !ends_excmd2(end, skipwhite(end + 1)))
 	    {
 		vim_free(g);
 		eap->errmsg = e_trailing;

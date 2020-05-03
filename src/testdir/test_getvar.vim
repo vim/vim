@@ -83,6 +83,7 @@ func Test_var()
 
   unlet def_dict
 
+  call assert_equal("", gettabwinvar(9, 2020, ''))
   call assert_equal('', gettabwinvar(2, 3, '&nux'))
   call assert_equal(1, gettabwinvar(2, 3, '&nux', 1))
   tabonly
@@ -141,6 +142,11 @@ func Test_get_func()
   call assert_equal({'func has': 'no dict'}, get(l:F, 'dict', {'func has': 'no dict'}))
   call assert_equal(0, get(l:F, 'dict'))
   call assert_equal([], get(l:F, 'args'))
+  let NF = test_null_function()
+  call assert_equal('', get(NF, 'name'))
+  call assert_equal(NF, get(NF, 'func'))
+  call assert_equal(0, get(NF, 'dict'))
+  call assert_equal([], get(NF, 'args'))
 endfunc
 
 " get({partial}, {what} [, {default}]) - in test_partial.vim

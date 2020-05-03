@@ -28,8 +28,6 @@ static void ins_ctrl_v(void);
 static void init_prompt(int cmdchar_todo);
 #endif
 static void insert_special(int, int, int);
-static void internal_format(int textwidth, int second_indent, int flags, int format_only, int c);
-static void check_auto_format(int);
 static void redo_literal(int c);
 static void start_arrow_common(pos_T *end_insert_pos, int change);
 #ifdef FEAT_SPELL
@@ -104,8 +102,6 @@ static int	ins_need_undo;		// call u_save() before inserting a
 					// char.  Set when edit() is called.
 					// after that arrow_used is used.
 
-static int	did_add_space = FALSE;	// auto_format() added an extra space
-					// under the cursor
 static int	dont_sync_undo = FALSE;	// CTRL-G U prevents syncing undo for
 					// the next left/right cursor key
 
@@ -175,16 +171,11 @@ edit(
 #endif
     // Don't allow changes in the buffer while editing the cmdline.  The
     // caller of getcmdline() may get confused.
-    if (textlock != 0)
-    {
-	emsg(_(e_secure));
-	return FALSE;
-    }
-
     // Don't allow recursive insert mode when busy with completion.
-    if (ins_compl_active() || compl_busy || pum_visible())
+    if (textwinlock != 0 || textlock != 0
+			  || ins_compl_active() || compl_busy || pum_visible())
     {
-	emsg(_(e_secure));
+	emsg(_(e_textwinlock));
 	return FALSE;
     }
     ins_compl_clear();	    // clear stuff for CTRL-X mode
@@ -1612,6 +1603,10 @@ decodeModifyOtherKeys(int c)
 	    // Match, consume the code.
 	    typebuf.tb_off += idx + 1;
 	    typebuf.tb_len -= idx + 1;
+#if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
+	    if (typebuf.tb_len == 0)
+		typebuf_was_filled = FALSE;
+#endif
 
 	    mod_mask = decode_modifiers(arg[!form]);
 	    c = merge_modifyOtherKeys(arg[form]);
@@ -2064,8 +2059,6 @@ insert_special(
 # define ISSPECIAL(c)	((c) < ' ' || (c) >= DEL || (c) == '0' || (c) == '^')
 #endif
 
-#define WHITECHAR(cc) (VIM_ISWHITE(cc) && (!enc_utf8 || !utf_iscomposing(utf_ptr2char(ml_get_cursor() + 1))))
-
 /*
  * "flags": INSCHAR_FORMAT - force formatting
  *	    INSCHAR_CTRLV  - char typed just after CTRL-V
@@ -2300,633 +2293,6 @@ insertchar(
 		AppendCharToRedobuff(c);
 	}
     }
-}
-
-/*
- * Format text at the current insert position.
- *
- * If the INSCHAR_COM_LIST flag is present, then the value of second_indent
- * will be the comment leader length sent to open_line().
- */
-    static void
-internal_format(
-    int		textwidth,
-    int		second_indent,
-    int		flags,
-    int		format_only,
-    int		c) // character to be inserted (can be NUL)
-{
-    int		cc;
-    int		skip_pos;
-    int		save_char = NUL;
-    int		haveto_redraw = FALSE;
-    int		fo_ins_blank = has_format_option(FO_INS_BLANK);
-    int		fo_multibyte = has_format_option(FO_MBYTE_BREAK);
-    int		fo_rigor_tw  = has_format_option(FO_RIGOROUS_TW);
-    int		fo_white_par = has_format_option(FO_WHITE_PAR);
-    int		first_line = TRUE;
-    colnr_T	leader_len;
-    int		no_leader = FALSE;
-    int		do_comments = (flags & INSCHAR_DO_COM);
-#ifdef FEAT_LINEBREAK
-    int		has_lbr = curwin->w_p_lbr;
-
-    // make sure win_lbr_chartabsize() counts correctly
-    curwin->w_p_lbr = FALSE;
-#endif
-
-    /*
-     * When 'ai' is off we don't want a space under the cursor to be
-     * deleted.  Replace it with an 'x' temporarily.
-     */
-    if (!curbuf->b_p_ai && !(State & VREPLACE_FLAG))
-    {
-	cc = gchar_cursor();
-	if (VIM_ISWHITE(cc))
-	{
-	    save_char = cc;
-	    pchar_cursor('x');
-	}
-    }
-
-    /*
-     * Repeat breaking lines, until the current line is not too long.
-     */
-    while (!got_int)
-    {
-	int	startcol;		// Cursor column at entry
-	int	wantcol;		// column at textwidth border
-	int	foundcol;		// column for start of spaces
-	int	end_foundcol = 0;	// column for start of word
-	colnr_T	len;
-	colnr_T	virtcol;
-	int	orig_col = 0;
-	char_u	*saved_text = NULL;
-	colnr_T	col;
-	colnr_T	end_col;
-	int	wcc;			// counter for whitespace chars
-
-	virtcol = get_nolist_virtcol()
-		+ char2cells(c != NUL ? c : gchar_cursor());
-	if (virtcol <= (colnr_T)textwidth)
-	    break;
-
-	if (no_leader)
-	    do_comments = FALSE;
-	else if (!(flags & INSCHAR_FORMAT)
-				       && has_format_option(FO_WRAP_COMS))
-	    do_comments = TRUE;
-
-	// Don't break until after the comment leader
-	if (do_comments)
-	    leader_len = get_leader_len(ml_get_curline(), NULL, FALSE, TRUE);
-	else
-	    leader_len = 0;
-
-	// If the line doesn't start with a comment leader, then don't
-	// start one in a following broken line.  Avoids that a %word
-	// moved to the start of the next line causes all following lines
-	// to start with %.
-	if (leader_len == 0)
-	    no_leader = TRUE;
-	if (!(flags & INSCHAR_FORMAT)
-		&& leader_len == 0
-		&& !has_format_option(FO_WRAP))
-
-	    break;
-	if ((startcol = curwin->w_cursor.col) == 0)
-	    break;
-
-	// find column of textwidth border
-	coladvance((colnr_T)textwidth);
-	wantcol = curwin->w_cursor.col;
-
-	curwin->w_cursor.col = startcol;
-	foundcol = 0;
-	skip_pos = 0;
-
-	/*
-	 * Find position to break at.
-	 * Stop at first entered white when 'formatoptions' has 'v'
-	 */
-	while ((!fo_ins_blank && !has_format_option(FO_INS_VI))
-		    || (flags & INSCHAR_FORMAT)
-		    || curwin->w_cursor.lnum != Insstart.lnum
-		    || curwin->w_cursor.col >= Insstart.col)
-	{
-	    if (curwin->w_cursor.col == startcol && c != NUL)
-		cc = c;
-	    else
-		cc = gchar_cursor();
-	    if (WHITECHAR(cc))
-	    {
-		// remember position of blank just before text
-		end_col = curwin->w_cursor.col;
-
-		// find start of sequence of blanks
-		wcc = 0;
-		while (curwin->w_cursor.col > 0 && WHITECHAR(cc))
-		{
-		    dec_cursor();
-		    cc = gchar_cursor();
-
-		    // Increment count of how many whitespace chars in this
-		    // group; we only need to know if it's more than one.
-		    if (wcc < 2)
-		        wcc++;
-		}
-		if (curwin->w_cursor.col == 0 && WHITECHAR(cc))
-		    break;		// only spaces in front of text
-
-		// Don't break after a period when 'formatoptions' has 'p' and
-		// there are less than two spaces.
-		if (has_format_option(FO_PERIOD_ABBR) && cc == '.' && wcc < 2)
-		    continue;
-
-		// Don't break until after the comment leader
-		if (curwin->w_cursor.col < leader_len)
-		    break;
-		if (has_format_option(FO_ONE_LETTER))
-		{
-		    // do not break after one-letter words
-		    if (curwin->w_cursor.col == 0)
-			break;	// one-letter word at begin
-		    // do not break "#a b" when 'tw' is 2
-		    if (curwin->w_cursor.col <= leader_len)
-			break;
-		    col = curwin->w_cursor.col;
-		    dec_cursor();
-		    cc = gchar_cursor();
-
-		    if (WHITECHAR(cc))
-			continue;	// one-letter, continue
-		    curwin->w_cursor.col = col;
-		}
-
-		inc_cursor();
-
-		end_foundcol = end_col + 1;
-		foundcol = curwin->w_cursor.col;
-		if (curwin->w_cursor.col <= (colnr_T)wantcol)
-		    break;
-	    }
-	    else if ((cc >= 0x100 || !utf_allow_break_before(cc)) && fo_multibyte)
-	    {
-		int ncc;
-		int allow_break;
-
-		// Break after or before a multi-byte character.
-		if (curwin->w_cursor.col != startcol)
-		{
-		    // Don't break until after the comment leader
-		    if (curwin->w_cursor.col < leader_len)
-			break;
-		    col = curwin->w_cursor.col;
-		    inc_cursor();
-		    ncc = gchar_cursor();
-
-		    allow_break =
-			(enc_utf8 && utf_allow_break(cc, ncc))
-			|| enc_dbcs;
-
-		    // If we have already checked this position, skip!
-		    if (curwin->w_cursor.col != skip_pos && allow_break)
-		    {
-			foundcol = curwin->w_cursor.col;
-			end_foundcol = foundcol;
-			if (curwin->w_cursor.col <= (colnr_T)wantcol)
-			    break;
-		    }
-		    curwin->w_cursor.col = col;
-		}
-
-		if (curwin->w_cursor.col == 0)
-		    break;
-
-		ncc = cc;
-		col = curwin->w_cursor.col;
-
-		dec_cursor();
-		cc = gchar_cursor();
-
-		if (WHITECHAR(cc))
-		    continue;		// break with space
-		// Don't break until after the comment leader
-		if (curwin->w_cursor.col < leader_len)
-		    break;
-
-		curwin->w_cursor.col = col;
-		skip_pos = curwin->w_cursor.col;
-
-		allow_break =
-		    (enc_utf8 && utf_allow_break(cc, ncc))
-		    || enc_dbcs;
-
-		/* must handle this to respect line break prohibition */
-		if (allow_break)
-		{
-		    foundcol = curwin->w_cursor.col;
-		    end_foundcol = foundcol;
-		}
-		if (curwin->w_cursor.col <= (colnr_T)wantcol) {
-		    int ncc_allow_break =
-			(enc_utf8 && utf_allow_break_before(ncc))
-			|| enc_dbcs;
-
-		    if (allow_break)
-			break;
-		    else if (!ncc_allow_break && !fo_rigor_tw)
-		    {
-			/* enable at most 1 punct hang outside of textwidth. */
-
-			if (curwin->w_cursor.col == startcol)
-			{
-			    /* we are inserting a non-breakable char, postpone
-			     * line break check to next insert */
-			    end_foundcol = foundcol = 0;
-			    break;
-			}
-			else
-			{
-			    /* neither cc nor ncc is NUL if we are here, so it's
-			     * safe to inc_cursor. */
-			    col = curwin->w_cursor.col;
-
-			    inc_cursor();
-			    cc  = ncc;
-			    ncc = gchar_cursor();
-			    /* handle insert */
-			    ncc = (ncc != NUL) ? ncc : c;
-
-			    allow_break =
-				(enc_utf8 && utf_allow_break(cc, ncc))
-				|| enc_dbcs;
-
-			    if (allow_break)
-			    {
-				/* Break only when we are not at end of line */
-				end_foundcol = foundcol =
-				    ncc == NUL? 0 : curwin->w_cursor.col;
-				break;
-			    }
-			    else
-				curwin->w_cursor.col = col;
-			}
-		    }
-		}
-	    }
-	    if (curwin->w_cursor.col == 0)
-		break;
-	    dec_cursor();
-	}
-
-	if (foundcol == 0)		// no spaces, cannot break line
-	{
-	    curwin->w_cursor.col = startcol;
-	    break;
-	}
-
-	// Going to break the line, remove any "$" now.
-	undisplay_dollar();
-
-	/*
-	 * Offset between cursor position and line break is used by replace
-	 * stack functions.  VREPLACE does not use this, and backspaces
-	 * over the text instead.
-	 */
-	if (State & VREPLACE_FLAG)
-	    orig_col = startcol;	// Will start backspacing from here
-	else
-	    replace_offset = startcol - end_foundcol;
-
-	/*
-	 * adjust startcol for spaces that will be deleted and
-	 * characters that will remain on top line
-	 */
-	curwin->w_cursor.col = foundcol;
-	while ((cc = gchar_cursor(), WHITECHAR(cc))
-		    && (!fo_white_par || curwin->w_cursor.col < startcol))
-	    inc_cursor();
-	startcol -= curwin->w_cursor.col;
-	if (startcol < 0)
-	    startcol = 0;
-
-	if (State & VREPLACE_FLAG)
-	{
-	    /*
-	     * In VREPLACE mode, we will backspace over the text to be
-	     * wrapped, so save a copy now to put on the next line.
-	     */
-	    saved_text = vim_strsave(ml_get_cursor());
-	    curwin->w_cursor.col = orig_col;
-	    if (saved_text == NULL)
-		break;	// Can't do it, out of memory
-	    saved_text[startcol] = NUL;
-
-	    // Backspace over characters that will move to the next line
-	    if (!fo_white_par)
-		backspace_until_column(foundcol);
-	}
-	else
-	{
-	    // put cursor after pos. to break line
-	    if (!fo_white_par)
-		curwin->w_cursor.col = foundcol;
-	}
-
-	/*
-	 * Split the line just before the margin.
-	 * Only insert/delete lines, but don't really redraw the window.
-	 */
-	open_line(FORWARD, OPENLINE_DELSPACES + OPENLINE_MARKFIX
-		+ (fo_white_par ? OPENLINE_KEEPTRAIL : 0)
-		+ (do_comments ? OPENLINE_DO_COM : 0)
-		+ ((flags & INSCHAR_COM_LIST) ? OPENLINE_COM_LIST : 0)
-		, ((flags & INSCHAR_COM_LIST) ? second_indent : old_indent));
-	if (!(flags & INSCHAR_COM_LIST))
-	    old_indent = 0;
-
-	replace_offset = 0;
-	if (first_line)
-	{
-	    if (!(flags & INSCHAR_COM_LIST))
-	    {
-		/*
-		 * This section is for auto-wrap of numeric lists.  When not
-		 * in insert mode (i.e. format_lines()), the INSCHAR_COM_LIST
-		 * flag will be set and open_line() will handle it (as seen
-		 * above).  The code here (and in get_number_indent()) will
-		 * recognize comments if needed...
-		 */
-		if (second_indent < 0 && has_format_option(FO_Q_NUMBER))
-		    second_indent =
-				 get_number_indent(curwin->w_cursor.lnum - 1);
-		if (second_indent >= 0)
-		{
-		    if (State & VREPLACE_FLAG)
-			change_indent(INDENT_SET, second_indent,
-							    FALSE, NUL, TRUE);
-		    else
-			if (leader_len > 0 && second_indent - leader_len > 0)
-		    {
-			int i;
-			int padding = second_indent - leader_len;
-
-			// We started at the first_line of a numbered list
-			// that has a comment.  the open_line() function has
-			// inserted the proper comment leader and positioned
-			// the cursor at the end of the split line.  Now we
-			// add the additional whitespace needed after the
-			// comment leader for the numbered list.
-			for (i = 0; i < padding; i++)
-			    ins_str((char_u *)" ");
-		    }
-		    else
-		    {
-			(void)set_indent(second_indent, SIN_CHANGED);
-		    }
-		}
-	    }
-	    first_line = FALSE;
-	}
-
-	if (State & VREPLACE_FLAG)
-	{
-	    /*
-	     * In VREPLACE mode we have backspaced over the text to be
-	     * moved, now we re-insert it into the new line.
-	     */
-	    ins_bytes(saved_text);
-	    vim_free(saved_text);
-	}
-	else
-	{
-	    /*
-	     * Check if cursor is not past the NUL off the line, cindent
-	     * may have added or removed indent.
-	     */
-	    curwin->w_cursor.col += startcol;
-	    len = (colnr_T)STRLEN(ml_get_curline());
-	    if (curwin->w_cursor.col > len)
-		curwin->w_cursor.col = len;
-	}
-
-	haveto_redraw = TRUE;
-#ifdef FEAT_CINDENT
-	can_cindent = TRUE;
-#endif
-	// moved the cursor, don't autoindent or cindent now
-	did_ai = FALSE;
-#ifdef FEAT_SMARTINDENT
-	did_si = FALSE;
-	can_si = FALSE;
-	can_si_back = FALSE;
-#endif
-	line_breakcheck();
-    }
-
-    if (save_char != NUL)		// put back space after cursor
-	pchar_cursor(save_char);
-
-#ifdef FEAT_LINEBREAK
-    curwin->w_p_lbr = has_lbr;
-#endif
-    if (!format_only && haveto_redraw)
-    {
-	update_topline();
-	redraw_curbuf_later(VALID);
-    }
-}
-
-/*
- * Called after inserting or deleting text: When 'formatoptions' includes the
- * 'a' flag format from the current line until the end of the paragraph.
- * Keep the cursor at the same position relative to the text.
- * The caller must have saved the cursor line for undo, following ones will be
- * saved here.
- */
-    void
-auto_format(
-    int		trailblank,	// when TRUE also format with trailing blank
-    int		prev_line)	// may start in previous line
-{
-    pos_T	pos;
-    colnr_T	len;
-    char_u	*old;
-    char_u	*new, *pnew;
-    int		wasatend;
-    int		cc;
-
-    if (!has_format_option(FO_AUTO))
-	return;
-
-    pos = curwin->w_cursor;
-    old = ml_get_curline();
-
-    // may remove added space
-    check_auto_format(FALSE);
-
-    // Don't format in Insert mode when the cursor is on a trailing blank, the
-    // user might insert normal text next.  Also skip formatting when "1" is
-    // in 'formatoptions' and there is a single character before the cursor.
-    // Otherwise the line would be broken and when typing another non-white
-    // next they are not joined back together.
-    wasatend = (pos.col == (colnr_T)STRLEN(old));
-    if (*old != NUL && !trailblank && wasatend)
-    {
-	dec_cursor();
-	cc = gchar_cursor();
-	if (!WHITECHAR(cc) && curwin->w_cursor.col > 0
-					  && has_format_option(FO_ONE_LETTER))
-	    dec_cursor();
-	cc = gchar_cursor();
-	if (WHITECHAR(cc))
-	{
-	    curwin->w_cursor = pos;
-	    return;
-	}
-	curwin->w_cursor = pos;
-    }
-
-    // With the 'c' flag in 'formatoptions' and 't' missing: only format
-    // comments.
-    if (has_format_option(FO_WRAP_COMS) && !has_format_option(FO_WRAP)
-				&& get_leader_len(old, NULL, FALSE, TRUE) == 0)
-	return;
-
-    /*
-     * May start formatting in a previous line, so that after "x" a word is
-     * moved to the previous line if it fits there now.  Only when this is not
-     * the start of a paragraph.
-     */
-    if (prev_line && !paragraph_start(curwin->w_cursor.lnum))
-    {
-	--curwin->w_cursor.lnum;
-	if (u_save_cursor() == FAIL)
-	    return;
-    }
-
-    /*
-     * Do the formatting and restore the cursor position.  "saved_cursor" will
-     * be adjusted for the text formatting.
-     */
-    saved_cursor = pos;
-    format_lines((linenr_T)-1, FALSE);
-    curwin->w_cursor = saved_cursor;
-    saved_cursor.lnum = 0;
-
-    if (curwin->w_cursor.lnum > curbuf->b_ml.ml_line_count)
-    {
-	// "cannot happen"
-	curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
-	coladvance((colnr_T)MAXCOL);
-    }
-    else
-	check_cursor_col();
-
-    // Insert mode: If the cursor is now after the end of the line while it
-    // previously wasn't, the line was broken.  Because of the rule above we
-    // need to add a space when 'w' is in 'formatoptions' to keep a paragraph
-    // formatted.
-    if (!wasatend && has_format_option(FO_WHITE_PAR))
-    {
-	new = ml_get_curline();
-	len = (colnr_T)STRLEN(new);
-	if (curwin->w_cursor.col == len)
-	{
-	    pnew = vim_strnsave(new, len + 2);
-	    pnew[len] = ' ';
-	    pnew[len + 1] = NUL;
-	    ml_replace(curwin->w_cursor.lnum, pnew, FALSE);
-	    // remove the space later
-	    did_add_space = TRUE;
-	}
-	else
-	    // may remove added space
-	    check_auto_format(FALSE);
-    }
-
-    check_cursor();
-}
-
-/*
- * When an extra space was added to continue a paragraph for auto-formatting,
- * delete it now.  The space must be under the cursor, just after the insert
- * position.
- */
-    static void
-check_auto_format(
-    int		end_insert)	    // TRUE when ending Insert mode
-{
-    int		c = ' ';
-    int		cc;
-
-    if (did_add_space)
-    {
-	cc = gchar_cursor();
-	if (!WHITECHAR(cc))
-	    // Somehow the space was removed already.
-	    did_add_space = FALSE;
-	else
-	{
-	    if (!end_insert)
-	    {
-		inc_cursor();
-		c = gchar_cursor();
-		dec_cursor();
-	    }
-	    if (c != NUL)
-	    {
-		// The space is no longer at the end of the line, delete it.
-		del_char(FALSE);
-		did_add_space = FALSE;
-	    }
-	}
-    }
-}
-
-/*
- * Find out textwidth to be used for formatting:
- *	if 'textwidth' option is set, use it
- *	else if 'wrapmargin' option is set, use curwin->w_width - 'wrapmargin'
- *	if invalid value, use 0.
- *	Set default to window width (maximum 79) for "gq" operator.
- */
-    int
-comp_textwidth(
-    int		ff)	// force formatting (for "gq" command)
-{
-    int		textwidth;
-
-    textwidth = curbuf->b_p_tw;
-    if (textwidth == 0 && curbuf->b_p_wm)
-    {
-	// The width is the window width minus 'wrapmargin' minus all the
-	// things that add to the margin.
-	textwidth = curwin->w_width - curbuf->b_p_wm;
-#ifdef FEAT_CMDWIN
-	if (cmdwin_type != 0)
-	    textwidth -= 1;
-#endif
-#ifdef FEAT_FOLDING
-	textwidth -= curwin->w_p_fdc;
-#endif
-#ifdef FEAT_SIGNS
-	if (signcolumn_on(curwin))
-	    textwidth -= 1;
-#endif
-	if (curwin->w_p_nu || curwin->w_p_rnu)
-	    textwidth -= 8;
-    }
-    if (textwidth < 0)
-	textwidth = 0;
-    if (ff && textwidth == 0)
-    {
-	textwidth = curwin->w_width - 1;
-	if (textwidth > 79)
-	    textwidth = 79;
-    }
-    return textwidth;
 }
 
 /*
@@ -4946,8 +4312,10 @@ ins_bs(
 		    revins_on ||
 #endif
 		    (curwin->w_cursor.col > mincol
-		    && (curwin->w_cursor.lnum != Insstart_orig.lnum
-			|| curwin->w_cursor.col != Insstart_orig.col)));
+		    &&  (can_bs(BS_NOSTOP)
+			|| (curwin->w_cursor.lnum != Insstart_orig.lnum
+			|| curwin->w_cursor.col != Insstart_orig.col)
+		    )));
 	}
 	did_backspace = TRUE;
     }
@@ -5008,7 +4376,7 @@ bracketed_paste(paste_mode_T mode, int drop, garray_T *gap)
     int		save_paste = p_paste;
 
     // If the end code is too long we can't detect it, read everything.
-    if (STRLEN(end) >= NUMBUFLEN)
+    if (end != NULL && STRLEN(end) >= NUMBUFLEN)
 	end = NULL;
     ++no_mapping;
     allow_keys = 0;
@@ -5025,9 +4393,9 @@ bracketed_paste(paste_mode_T mode, int drop, garray_T *gap)
 	do
 	    c = vgetc();
 	while (c == K_IGNORE || c == K_VER_SCROLLBAR || c == K_HOR_SCROLLBAR);
-	if (c == NUL || got_int)
+	if (c == NUL || got_int || (ex_normal_busy > 0 && c == Ctrl_C))
 	    // When CTRL-C was encountered the typeahead will be flushed and we
-	    // won't get the end sequence.
+	    // won't get the end sequence.  Except when using ":normal".
 	    break;
 
 	if (has_mbyte)
@@ -5667,14 +5035,36 @@ ins_tab(void)
 	    i = cursor->col - fpos.col;
 	    if (i > 0)
 	    {
-		STRMOVE(ptr, ptr + i);
+#ifdef FEAT_PROP_POPUP
+		if (!(State & VREPLACE_FLAG))
+		{
+		    char_u  *newp;
+		    int	    col;
+
+		    newp = alloc(curbuf->b_ml.ml_line_len - i);
+		    if (newp == NULL)
+			return FALSE;
+
+		    col = ptr - curbuf->b_ml.ml_line_ptr;
+		    if (col > 0)
+			mch_memmove(newp, ptr - col, col);
+		    mch_memmove(newp + col, ptr + i,
+					   curbuf->b_ml.ml_line_len - col - i);
+
+		    if (curbuf->b_ml.ml_flags & ML_LINE_DIRTY)
+			vim_free(curbuf->b_ml.ml_line_ptr);
+		    curbuf->b_ml.ml_line_ptr = newp;
+		    curbuf->b_ml.ml_line_len -= i;
+		    curbuf->b_ml.ml_flags =
+			   (curbuf->b_ml.ml_flags | ML_LINE_DIRTY) & ~ML_EMPTY;
+		}
+		else
+#endif
+		    STRMOVE(ptr, ptr + i);
 		// correct replace stack.
 		if ((State & REPLACE_FLAG) && !(State & VREPLACE_FLAG))
 		    for (temp = i; --temp >= 0; )
 			replace_join(repl_off);
-#ifdef FEAT_PROP_POPUP
-		curbuf->b_ml.ml_line_len -= i;
-#endif
 	    }
 #ifdef FEAT_NETBEANS_INTG
 	    if (netbeans_active())
@@ -5988,7 +5378,7 @@ do_insert_char_pre(int c)
     }
 
     // Lock the text to avoid weird things from happening.
-    ++textlock;
+    ++textwinlock;
     set_vim_var_string(VV_CHAR, buf, -1);  // set v:char
 
     res = NULL;
@@ -6002,7 +5392,7 @@ do_insert_char_pre(int c)
     }
 
     set_vim_var_string(VV_CHAR, NULL, -1);  // clear v:char
-    --textlock;
+    --textwinlock;
 
     // Restore the State, it may have been changed.
     State = save_State;
@@ -6038,7 +5428,8 @@ ins_apply_autocmds(event_T event)
 
     // If u_savesub() was called then we are not prepared to start
     // a new line.  Call u_save() with no contents to fix that.
-    if (tick != CHANGEDTICK(curbuf))
+    // Except when leaving Insert mode.
+    if (event != EVENT_INSERTLEAVE && tick != CHANGEDTICK(curbuf))
 	u_save(curwin->w_cursor.lnum, (linenr_T)(curwin->w_cursor.lnum + 1));
 
     return r;

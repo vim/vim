@@ -37,10 +37,11 @@
 #define LTOREQ_POS(a, b) (LT_POS(a, b) || EQUAL_POS(a, b))
 
 /*
- * VIM_ISWHITE() is used for "^" and the like. It differs from isspace()
- * because it doesn't include <CR> and <LF> and the like.
+ * VIM_ISWHITE() differs from isspace() because it doesn't include <CR> and
+ * <LF> and the like.
  */
-#define VIM_ISWHITE(x)	((x) == ' ' || (x) == '\t')
+#define VIM_ISWHITE(x)		((x) == ' ' || (x) == '\t')
+#define IS_WHITE_OR_NUL(x)	((x) == ' ' || (x) == '\t' || (x) == NUL)
 
 /*
  * LINEEMPTY() - return TRUE if the line is empty
@@ -302,6 +303,10 @@
 # endif
 #endif
 
+#ifdef FEAT_EVAL
+# define FUNCARG(fp, j)	((char_u **)(fp->uf_args.ga_data))[j]
+#endif
+
 /*
  * In a hashtab item "hi_key" points to "di_key" in a dictitem.
  * This avoids adding a pointer to the hashtab item.
@@ -340,7 +345,31 @@
 
 // Give an error in curwin is a popup window and evaluate to TRUE.
 #ifdef FEAT_PROP_POPUP
-# define ERROR_IF_POPUP_WINDOW error_if_popup_window()
+# define WIN_IS_POPUP(wp) ((wp)->w_popup_flags != 0)
+# define ERROR_IF_POPUP_WINDOW error_if_popup_window(FALSE)
+# define ERROR_IF_ANY_POPUP_WINDOW error_if_popup_window(TRUE)
 #else
+# define WIN_IS_POPUP(wp) 0
 # define ERROR_IF_POPUP_WINDOW 0
+# define ERROR_IF_ANY_POPUP_WINDOW 0
+#endif
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_TERMINAL)
+# define ERROR_IF_TERM_POPUP_WINDOW error_if_term_popup_window()
+#else
+# define ERROR_IF_TERM_POPUP_WINDOW 0
+#endif
+
+
+#ifdef ABORT_ON_INTERNAL_ERROR
+# define ESTACK_CHECK_DECLARATION int estack_len_before;
+# define ESTACK_CHECK_SETUP estack_len_before = exestack.ga_len;
+# define ESTACK_CHECK_NOW if (estack_len_before != exestack.ga_len) \
+	siemsg("Exestack length expected: %d, actual: %d", estack_len_before, exestack.ga_len);
+# define CHECK_CURBUF if (curwin != NULL && curwin->w_buffer != curbuf) \
+		iemsg("curbuf != curwin->w_buffer")
+#else
+# define ESTACK_CHECK_DECLARATION
+# define ESTACK_CHECK_SETUP
+# define ESTACK_CHECK_NOW
+# define CHECK_CURBUF
 #endif

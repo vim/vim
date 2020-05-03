@@ -193,11 +193,17 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 
     switch (val->v_type)
     {
-	case VAR_SPECIAL:
-	    switch (val->vval.v_number)
+	case VAR_BOOL:
+	    switch ((long)val->vval.v_number)
 	    {
 		case VVAL_FALSE: ga_concat(gap, (char_u *)"false"); break;
 		case VVAL_TRUE: ga_concat(gap, (char_u *)"true"); break;
+	    }
+	    break;
+
+	case VAR_SPECIAL:
+	    switch ((long)val->vval.v_number)
+	    {
 		case VVAL_NONE: if ((options & JSON_JS) != 0
 					     && (options & JSON_NO_NONE) == 0)
 				    // empty item
@@ -209,7 +215,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 
 	case VAR_NUMBER:
 	    vim_snprintf((char *)numbuf, NUMBUFLEN, "%lld",
-						(long_long_T)val->vval.v_number);
+					      (varnumber_T)val->vval.v_number);
 	    ga_concat(gap, numbuf);
 	    break;
 
@@ -259,6 +265,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 
 		    l->lv_copyID = copyID;
 		    ga_append(gap, '[');
+		    range_list_materialize(l);
 		    for (li = l->lv_first; li != NULL && !got_int; )
 		    {
 			if (json_encode_item(gap, &li->li_tv, copyID,
@@ -344,7 +351,9 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	    break;
 #endif
 	case VAR_UNKNOWN:
-	    internal_error("json_encode_item()");
+	case VAR_ANY:
+	case VAR_VOID:
+	    internal_error_no_abort("json_encode_item()");
 	    return FAIL;
     }
     return OK;
@@ -754,9 +763,9 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		    break;
 
 		default:
-		    if (VIM_ISDIGIT(*p) || (*p == '-' && VIM_ISDIGIT(p[1])))
+		    if (VIM_ISDIGIT(*p) || (*p == '-'
+					&& (VIM_ISDIGIT(p[1]) || p[1] == NUL)))
 		    {
-#ifdef FEAT_FLOAT
 			char_u  *sp = p;
 
 			if (*sp == '-')
@@ -775,6 +784,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			    }
 			}
 			sp = skipdigits(sp);
+#ifdef FEAT_FLOAT
 			if (*sp == '.' || *sp == 'e' || *sp == 'E')
 			{
 			    if (cur_item == NULL)
@@ -818,7 +828,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			reader->js_used += 5;
 			if (cur_item != NULL)
 			{
-			    cur_item->v_type = VAR_SPECIAL;
+			    cur_item->v_type = VAR_BOOL;
 			    cur_item->vval.v_number = VVAL_FALSE;
 			}
 			retval = OK;
@@ -829,7 +839,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			reader->js_used += 4;
 			if (cur_item != NULL)
 			{
-			    cur_item->v_type = VAR_SPECIAL;
+			    cur_item->v_type = VAR_BOOL;
 			    cur_item->vval.v_number = VVAL_TRUE;
 			}
 			retval = OK;
@@ -882,7 +892,8 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		    }
 #endif
 		    // check for truncated name
-		    len = (int)(reader->js_end - (reader->js_buf + reader->js_used));
+		    len = (int)(reader->js_end
+					 - (reader->js_buf + reader->js_used));
 		    if (
 			    (len < 5 && STRNICMP((char *)p, "false", len) == 0)
 #ifdef FEAT_FLOAT

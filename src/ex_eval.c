@@ -15,8 +15,7 @@
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 
-static int	throw_exception(void *, except_type_T, char_u *);
-static char	*get_end_emsg(struct condstack *cstack);
+static char	*get_end_emsg(cstack_T *cstack);
 
 /*
  * Exception handling terms:
@@ -330,7 +329,7 @@ free_global_msglist(void)
  * has returned (see do_one_cmd()).
  */
     void
-do_errthrow(struct condstack *cstack, char_u *cmdname)
+do_errthrow(cstack_T *cstack, char_u *cmdname)
 {
     /*
      * Ensure that all commands in nested function calls and sourced files
@@ -365,7 +364,7 @@ do_errthrow(struct condstack *cstack, char_u *cmdname)
  * FALSE otherwise.
  */
     int
-do_intthrow(struct condstack *cstack)
+do_intthrow(cstack_T *cstack)
 {
     /*
      * If no interrupt occurred or no try conditional is active and no exception
@@ -498,7 +497,7 @@ get_exception_string(
  * user or interrupt exception, or points to a message list in case of an
  * error exception.
  */
-    static int
+    int
 throw_exception(void *value, except_type_T type, char_u *cmdname)
 {
     except_T	*excp;
@@ -534,15 +533,16 @@ throw_exception(void *value, except_type_T type, char_u *cmdname)
 	goto nomem;
 
     excp->type = type;
-    excp->throw_name = vim_strsave(sourcing_name == NULL
-					      ? (char_u *)"" : sourcing_name);
+    excp->throw_name = estack_sfile();
+    if (excp->throw_name == NULL)
+	excp->throw_name = vim_strsave((char_u *)"");
     if (excp->throw_name == NULL)
     {
 	if (should_free)
 	    vim_free(excp->value);
 	goto nomem;
     }
-    excp->throw_lnum = sourcing_lnum;
+    excp->throw_lnum = SOURCING_LNUM;
 
     if (p_verbose >= 13 || debug_break_level > 0)
     {
@@ -648,7 +648,7 @@ discard_current_exception(void)
 /*
  * Put an exception on the caught stack.
  */
-    static void
+    void
 catch_exception(except_T *excp)
 {
     excp->caught = caught_stack;
@@ -892,7 +892,7 @@ ex_if(exarg_T *eap)
     int		error;
     int		skip;
     int		result;
-    struct condstack	*cstack = eap->cstack;
+    cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_idx == CSTACK_LEN - 1)
 	eap->errmsg = N_("E579: :if nesting too deep");
@@ -931,7 +931,7 @@ ex_endif(exarg_T *eap)
     if (eap->cstack->cs_idx < 0
 	    || (eap->cstack->cs_flags[eap->cstack->cs_idx]
 					   & (CSF_WHILE | CSF_FOR | CSF_TRY)))
-	eap->errmsg = N_("E580: :endif without :if");
+	eap->errmsg = N_(e_endif_without_if);
     else
     {
 	/*
@@ -960,7 +960,7 @@ ex_else(exarg_T *eap)
     int		error;
     int		skip;
     int		result;
-    struct condstack	*cstack = eap->cstack;
+    cstack_T	*cstack = eap->cstack;
 
     /*
      * Don't do something after an error, interrupt, or throw, or when there is
@@ -975,10 +975,10 @@ ex_else(exarg_T *eap)
     {
 	if (eap->cmdidx == CMD_else)
 	{
-	    eap->errmsg = N_("E581: :else without :if");
+	    eap->errmsg = N_(e_else_without_if);
 	    return;
 	}
-	eap->errmsg = N_("E582: :elseif without :if");
+	eap->errmsg = N_(e_elseif_without_if);
 	skip = TRUE;
     }
     else if (cstack->cs_flags[cstack->cs_idx] & CSF_ELSE)
@@ -1021,12 +1021,12 @@ ex_else(exarg_T *eap)
     if (eap->cmdidx == CMD_elseif)
     {
 	result = eval_to_bool(eap->arg, &error, &eap->nextcmd, skip);
+
 	// When throwing error exceptions, we want to throw always the first
 	// of several errors in a row.  This is what actually happens when
 	// a conditional error was detected above and there is another failure
 	// when parsing the expression.  Since the skip flag is set in this
 	// case, the parsing error will be ignored by emsg().
-
 	if (!skip && !error)
 	{
 	    if (result)
@@ -1051,7 +1051,7 @@ ex_while(exarg_T *eap)
     int		error;
     int		skip;
     int		result;
-    struct condstack	*cstack = eap->cstack;
+    cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_idx == CSTACK_LEN - 1)
 	eap->errmsg = N_("E585: :while/:for nesting too deep");
@@ -1148,10 +1148,10 @@ ex_while(exarg_T *eap)
 ex_continue(exarg_T *eap)
 {
     int		idx;
-    struct condstack	*cstack = eap->cstack;
+    cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_looplevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = N_("E586: :continue without :while or :for");
+	eap->errmsg = N_(e_continue);
     else
     {
 	// Try to find the matching ":while".  This might stop at a try
@@ -1186,10 +1186,10 @@ ex_continue(exarg_T *eap)
 ex_break(exarg_T *eap)
 {
     int		idx;
-    struct condstack	*cstack = eap->cstack;
+    cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_looplevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = N_("E587: :break without :while or :for");
+	eap->errmsg = N_(e_break);
     else
     {
 	// Inactivate conditionals until the matching ":while" or a try
@@ -1211,11 +1211,11 @@ ex_break(exarg_T *eap)
     void
 ex_endwhile(exarg_T *eap)
 {
-    struct condstack	*cstack = eap->cstack;
-    int			idx;
-    char		*err;
-    int			csf;
-    int			fl;
+    cstack_T	*cstack = eap->cstack;
+    int		idx;
+    char	*err;
+    int		csf;
+    int		fl;
 
     if (eap->cmdidx == CMD_endwhile)
     {
@@ -1325,7 +1325,7 @@ ex_throw(exarg_T *eap)
  * used for rethrowing an uncaught exception.
  */
     void
-do_throw(struct condstack *cstack)
+do_throw(cstack_T *cstack)
 {
     int		idx;
     int		inactivate_try = FALSE;
@@ -1409,7 +1409,7 @@ do_throw(struct condstack *cstack)
 ex_try(exarg_T *eap)
 {
     int		skip;
-    struct condstack	*cstack = eap->cstack;
+    cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_idx == CSTACK_LEN - 1)
 	eap->errmsg = N_("E601: :try nesting too deep");
@@ -1486,12 +1486,12 @@ ex_catch(exarg_T *eap)
     char_u	*save_cpo;
     regmatch_T	regmatch;
     int		prev_got_int;
-    struct condstack	*cstack = eap->cstack;
+    cstack_T	*cstack = eap->cstack;
     char_u	*pat;
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
     {
-	eap->errmsg = N_("E603: :catch without :try");
+	eap->errmsg = e_catch;
 	give_up = TRUE;
     }
     else
@@ -1518,7 +1518,7 @@ ex_catch(exarg_T *eap)
 						       &cstack->cs_looplevel);
     }
 
-    if (ends_excmd(*eap->arg))	// no argument, catch all errors
+    if (ends_excmd2(eap->cmd, eap->arg))   // no argument, catch all errors
     {
 	pat = (char_u *)".*";
 	end = NULL;
@@ -1527,7 +1527,9 @@ ex_catch(exarg_T *eap)
     else
     {
 	pat = eap->arg + 1;
-	end = skip_regexp(pat, *eap->arg, TRUE, NULL);
+	end = skip_regexp_err(pat, *eap->arg, TRUE);
+	if (end == NULL)
+	    give_up = TRUE;
     }
 
     if (!give_up)
@@ -1548,7 +1550,8 @@ ex_catch(exarg_T *eap)
 	if (!skip && (cstack->cs_flags[idx] & CSF_THROWN)
 		&& !(cstack->cs_flags[idx] & CSF_CAUGHT))
 	{
-	    if (end != NULL && *end != NUL && !ends_excmd(*skipwhite(end + 1)))
+	    if (end != NULL && *end != NUL
+				      && !ends_excmd2(end, skipwhite(end + 1)))
 	    {
 		emsg(_(e_trailing));
 		return;
@@ -1644,10 +1647,10 @@ ex_finally(exarg_T *eap)
     int		idx;
     int		skip = FALSE;
     int		pending = CSTP_NONE;
-    struct condstack	*cstack = eap->cstack;
+    cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = N_("E606: :finally without :try");
+	eap->errmsg = e_finally;
     else
     {
 	if (!(cstack->cs_flags[cstack->cs_idx] & CSF_TRY))
@@ -1667,7 +1670,7 @@ ex_finally(exarg_T *eap)
 	if (cstack->cs_flags[idx] & CSF_FINALLY)
 	{
 	    // Give up for a multiple ":finally" and ignore it.
-	    eap->errmsg = N_("E607: multiple :finally");
+	    eap->errmsg = e_finally_dup;
 	    return;
 	}
 	rewind_conditionals(cstack, idx, CSF_WHILE | CSF_FOR,
@@ -1773,10 +1776,10 @@ ex_endtry(exarg_T *eap)
     int		rethrow = FALSE;
     int		pending = CSTP_NONE;
     void	*rettv = NULL;
-    struct condstack	*cstack = eap->cstack;
+    cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = N_("E602: :endtry without :try");
+	eap->errmsg = e_no_endtry;
     else
     {
 	/*
@@ -2113,7 +2116,7 @@ leave_cleanup(cleanup_T *csp)
  */
     int
 cleanup_conditionals(
-    struct condstack   *cstack,
+    cstack_T   *cstack,
     int		searched_cond,
     int		inclusive)
 {
@@ -2235,7 +2238,7 @@ cleanup_conditionals(
  * Return an appropriate error message for a missing endwhile/endfor/endif.
  */
    static char *
-get_end_emsg(struct condstack *cstack)
+get_end_emsg(cstack_T *cstack)
 {
     if (cstack->cs_flags[cstack->cs_idx] & CSF_WHILE)
 	return e_endwhile;
@@ -2254,7 +2257,7 @@ get_end_emsg(struct condstack *cstack)
  */
     void
 rewind_conditionals(
-    struct condstack   *cstack,
+    cstack_T   *cstack,
     int		idx,
     int		cond_type,
     int		*cond_level)
@@ -2273,9 +2276,12 @@ rewind_conditionals(
  * ":endfunction" when not after a ":function"
  */
     void
-ex_endfunction(exarg_T *eap UNUSED)
+ex_endfunction(exarg_T *eap)
 {
-    emsg(_("E193: :endfunction not inside a function"));
+    if (eap->cmdidx == CMD_enddef)
+	emsg(_("E193: :enddef not inside a function"));
+    else
+	emsg(_("E193: :endfunction not inside a function"));
 }
 
 /*

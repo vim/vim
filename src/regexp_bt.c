@@ -470,7 +470,7 @@ regcomp_start(
 
     num_complex_braces = 0;
     regnpar = 1;
-    vim_memset(had_endbrace, 0, sizeof(had_endbrace));
+    CLEAR_FIELD(had_endbrace);
 #ifdef FEAT_SYN_HL
     regnzpar = 1;
     re_has_z = 0;
@@ -4568,6 +4568,8 @@ regtry(
 
 	cleanup_zsubexpr();
 	re_extmatch_out = make_extmatch();
+	if (re_extmatch_out == NULL)
+	    return 0;
 	for (i = 0; i < NSUBEXP; i++)
 	{
 	    if (REG_MULTI)
@@ -4852,17 +4854,7 @@ bt_regexec_multi(
     proftime_T	*tm,		// timeout limit or NULL
     int		*timed_out)	// flag set on timeout or NULL
 {
-    rex.reg_match = NULL;
-    rex.reg_mmatch = rmp;
-    rex.reg_buf = buf;
-    rex.reg_win = win;
-    rex.reg_firstlnum = lnum;
-    rex.reg_maxline = rex.reg_buf->b_ml.ml_line_count - lnum;
-    rex.reg_line_lbr = FALSE;
-    rex.reg_ic = rmp->rmm_ic;
-    rex.reg_icombine = FALSE;
-    rex.reg_maxcol = rmp->rmm_maxcol;
-
+    init_regexec_multi(rmp, win, buf, lnum);
     return bt_regexec_both(NULL, col, tm, timed_out);
 }
 

@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 8.1.  Last change: 2019 Oct 27
+*term.txt*      For Vim version 8.2.  Last change: 2020 Apr 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -25,8 +25,9 @@ NOTE: Most of this is not used when running the |GUI|.
 1. Startup						*startup-terminal*
 
 When Vim is started a default terminal type is assumed.  For the Amiga this is
-a standard CLI window, for MS-DOS the pc terminal, for Unix an ansi terminal.
-A few other terminal types are always available, see below |builtin-terms|.
+a standard CLI window, for MS-Windows the pc terminal, for Unix an ansi
+terminal.  A few other terminal types are always available, see below
+|builtin-terms|.
 
 You can give the terminal name with the '-T' Vim argument.  If it is not given
 Vim will try to get the name from the TERM environment variable.
@@ -505,7 +506,7 @@ Vim has started, the escape sequences may not be recognized anymore.
 
 							*xterm-true-color*
 Vim supports using true colors in the terminal (taken from |highlight-guifg|
-and |highlight-guibg|), given that the terminal supports this. To make this 
+and |highlight-guibg|), given that the terminal supports this. To make this
 work the 'termguicolors' option needs to be set.
 See https://gist.github.com/XVilka/8346728 for a list of terminals that
 support true colors.
@@ -544,6 +545,7 @@ Note about colors: The 't_Co' option tells Vim the number of colors available.
 When it is non-zero, the 't_AB' and 't_AF' options are used to set the color.
 If one of these is not available, 't_Sb' and 't_Sf' are used.  't_me' is used
 to reset to the default colors.  Also see 'termguicolors'.
+When the GUI is running 't_Co' is set to 16777216.
 
 				*termcap-cursor-shape* *termcap-cursor-color*
 When Vim enters Insert mode the 't_SI' escape sequence is sent.  When Vim
@@ -578,7 +580,7 @@ remove highlighting from a line.  This is required for "hpterm".  Setting the
 versa.
 
 							*scroll-region*
-Some termcaps do not include an entry for 'cs' (scroll region), although the
+Some termcaps do not include an entry for "cs" (scroll region), although the
 terminal does support it.  For example: xterm on a Sun.  You can use the
 builtin_xterm or define t_cs yourself.  For example: >
 	:set t_cs=^V^[[%i%d;%dr
@@ -595,11 +597,9 @@ cleared when scrolling).
 Unfortunately it is not possible to deduce from the termcap how cursor
 positioning should be done when using a scrolling region: Relative to the
 beginning of the screen or relative to the beginning of the scrolling region.
-Most terminals use the first method.  A known exception is the MS-DOS console
-(pcterm).  The 't_CS' option should be set to any string when cursor
-positioning is relative to the start of the scrolling region.  It should be
-set to an empty string otherwise.  It defaults to "yes" when 'term' is
-"pcterm".
+Most terminals use the first method.  The 't_CS' option should be set to any
+string when cursor positioning is relative to the start of the scrolling
+region.  It should be set to an empty string otherwise.
 
 Note for xterm users: The shifted cursor keys normally don't work.  You can
 	make them work with the xmodmap command and some mappings in Vim.
@@ -651,15 +651,7 @@ One command can be used to set the screen size:
 :mod[e] [mode]
 
 Without argument this only detects the screen size and redraws the screen.
-With MS-DOS it is possible to switch screen mode.  [mode] can be one of these
-values:
-	"bw40"		40 columns black&white
-	"c40"		40 columns color
-	"bw80"		80 columns black&white
-	"c80"		80 columns color (most people use this)
-	"mono"		80 columns monochrome
-	"c4350"		43 or 50 lines EGA/VGA mode
-	number		mode number to use, depends on your video card
+[mode] was used on MS-DOS, but it doesn't work anymore.
 
 ==============================================================================
 4. Slow and fast terminals			*slow-fast-terminal*
@@ -699,10 +691,10 @@ If you are using Vim over a slow serial line, you might want to try running
 Vim inside the "screen" program.  Screen will optimize the terminal I/O quite
 a bit.
 
-If you are testing termcap options, but you cannot see what is happening,
-you might want to set the 'writedelay' option.  When non-zero, one character
-is sent to the terminal at a time (does not work for MS-DOS).  This makes the
-screen updating a lot slower, making it possible to see what is happening.
+If you are testing termcap options, but you cannot see what is happening, you
+might want to set the 'writedelay' option.  When non-zero, one character is
+sent to the terminal at a time.  This makes the screen updating a lot slower,
+making it possible to see what is happening.
 
 ==============================================================================
 5. Using the mouse					*mouse-using*
@@ -716,8 +708,8 @@ Don't forget to enable the mouse with this command: >
 Otherwise Vim won't recognize the mouse in all modes (See 'mouse').
 
 Currently the mouse is supported for Unix in an xterm window, in a *BSD
-console with |sysmouse|, in a Linux console (with GPM |gpm-mouse|), for
-MS-DOS and in a Windows console.
+console with |sysmouse|, in a Linux console (with GPM |gpm-mouse|), and
+in a Windows console.
 Mouse clicks can be used to position the cursor, select an area and paste.
 
 These characters in the 'mouse' option tell in which situations the mouse will
@@ -881,10 +873,9 @@ border, the text is scrolled.
 A selection can be started by pressing the left mouse button on the first
 character, moving the mouse to the last character, then releasing the mouse
 button.  You will not always see the selection until you release the button,
-only in some versions (GUI, MS-DOS, WIN32) will the dragging be shown
-immediately.  Note that you can make the text scroll by moving the mouse at
-least one character in the first/last line in the window when 'scrolloff' is
-non-zero.
+only in some versions (GUI, Win32) will the dragging be shown immediately.
+Note that you can make the text scroll by moving the mouse at least one
+character in the first/last line in the window when 'scrolloff' is non-zero.
 
 In Normal, Visual and Select mode clicking the right mouse button causes the
 Visual area to be extended.  When 'mousemodel' is "popup", the left button has
@@ -898,9 +889,9 @@ work on systems where the window manager consumes the mouse events when the
 alt key is pressed (it may move the window).
 
 							*double-click*
-Double, triple and quadruple clicks are supported when the GUI is active,
-for MS-DOS and Win32, and for an xterm (if the gettimeofday() function is
-available).  For selecting text, extra clicks extend the selection:
+Double, triple and quadruple clicks are supported when the GUI is active, for
+Win32, and for an xterm (if the gettimeofday() function is available).  For
+selecting text, extra clicks extend the selection:
 	click		select ~
 	double		word or % match		*<2-LeftMouse>*
 	triple		line			*<3-LeftMouse>*
@@ -911,9 +902,8 @@ A double click on a word selects that word.  'iskeyword' is used to specify
 which characters are included in a word.  A double click on a character
 that has a match selects until that match (like using "v%").  If the match is
 an #if/#else/#endif block, the selection becomes linewise.
-For MS-DOS and xterm the time for double clicking can be set with the
-'mousetime' option.  For the other systems this time is defined outside of
-Vim.
+For MS-Windows and xterm the time for double clicking can be set with the
+'mousetime' option.  For the other systems this time is defined outside of Vim.
 An example, for using a double click to jump to the tag under the cursor: >
 	:map <2-LeftMouse> :exe "tag ". expand("<cword>")<CR>
 

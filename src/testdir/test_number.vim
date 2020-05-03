@@ -280,14 +280,14 @@ func Test_relativenumber_colors()
 
   " Check that the balloon shows up after a mouse move
   let buf = RunVimInTerminal('-S XTest_relnr', {'rows': 10, 'cols': 50})
-  call term_wait(buf, 100)
+  call TermWait(buf, 50)
   " Default colors
   call VerifyScreenDump(buf, 'Test_relnr_colors_1', {})
 
-  call term_sendkeys(buf, ":hi LineNrAbove ctermfg=blue\<CR>")
+  call term_sendkeys(buf, ":hi LineNrAbove ctermfg=blue\<CR>:\<CR>")
   call VerifyScreenDump(buf, 'Test_relnr_colors_2', {})
 
-  call term_sendkeys(buf, ":hi LineNrBelow ctermfg=green\<CR>")
+  call term_sendkeys(buf, ":hi LineNrBelow ctermfg=green\<CR>:\<CR>")
   call VerifyScreenDump(buf, 'Test_relnr_colors_3', {})
 
   call term_sendkeys(buf, ":hi clear LineNrAbove\<CR>")

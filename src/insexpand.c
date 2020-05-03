@@ -20,7 +20,7 @@
  */
 # define CTRL_X_WANT_IDENT	0x100
 
-# define CTRL_X_NORMAL		0  /* CTRL-N CTRL-P completion, default */
+# define CTRL_X_NORMAL		0  // CTRL-N CTRL-P completion, default
 # define CTRL_X_NOT_DEFINED_YET	1
 # define CTRL_X_SCROLL		2
 # define CTRL_X_WHOLE_LINE	3
@@ -32,11 +32,11 @@
 # define CTRL_X_DICTIONARY	(9 + CTRL_X_WANT_IDENT)
 # define CTRL_X_THESAURUS	(10 + CTRL_X_WANT_IDENT)
 # define CTRL_X_CMDLINE		11
-# define CTRL_X_FUNCTION		12
+# define CTRL_X_FUNCTION	12
 # define CTRL_X_OMNI		13
 # define CTRL_X_SPELL		14
-# define CTRL_X_LOCAL_MSG	15	/* only used in "ctrl_x_msgs" */
-# define CTRL_X_EVAL		16	/* for builtin function complete() */
+# define CTRL_X_LOCAL_MSG	15	// only used in "ctrl_x_msgs"
+# define CTRL_X_EVAL		16	// for builtin function complete()
 
 # define CTRL_X_MSG(i) ctrl_x_msgs[(i) & ~CTRL_X_WANT_IDENT]
 
@@ -91,8 +91,7 @@ static char *ctrl_x_mode_names[] = {
 #define CPT_MENU	1	// "menu"
 #define CPT_KIND	2	// "kind"
 #define CPT_INFO	3	// "info"
-#define CPT_USER_DATA	4	// "user data"
-#define CPT_COUNT	5	// Number of entries
+#define CPT_COUNT	4	// Number of entries
 
 /*
  * Structure used to store one match for insert completion.
@@ -104,6 +103,9 @@ struct compl_S
     compl_T	*cp_prev;
     char_u	*cp_str;	// matched text
     char_u	*(cp_text[CPT_COUNT]);	// text for the menu
+#ifdef FEAT_EVAL
+    typval_T	cp_user_data;
+#endif
     char_u	*cp_fname;	// file containing the match, allocated when
 				// cp_flags has CP_FREE_FNAME
     int		cp_flags;	// CP_ values
@@ -187,7 +189,7 @@ static expand_T	  compl_xp;
 static int	  compl_opt_refresh_always = FALSE;
 static int	  compl_opt_suppress_empty = FALSE;
 
-static int ins_compl_add(char_u *str, int len, char_u *fname, char_u **cptext, int cdir, int flags, int adup);
+static int ins_compl_add(char_u *str, int len, char_u *fname, char_u **cptext, typval_T *user_data, int cdir, int flags, int adup);
 static void ins_compl_longest_match(compl_T *match);
 static void ins_compl_del_pum(void);
 static void ins_compl_files(int count, char_u **files, int thesaurus, int flags, regmatch_T *regmatch, char_u *buf, int *dir);
@@ -560,7 +562,7 @@ ins_compl_add_infercase(
     if (icase)
 	flags |= CP_ICASE;
 
-    return ins_compl_add(str, len, fname, NULL, dir, flags, FALSE);
+    return ins_compl_add(str, len, fname, NULL, NULL, dir, flags, FALSE);
 }
 
 /*
@@ -574,10 +576,11 @@ ins_compl_add(
     char_u	*str,
     int		len,
     char_u	*fname,
-    char_u	**cptext,   // extra text for popup menu or NULL
+    char_u	**cptext,	    // extra text for popup menu or NULL
+    typval_T	*user_data UNUSED,  // "user_data" entry or NULL
     int		cdir,
     int		flags_arg,
-    int		adup)	    // accept duplicate match
+    int		adup)		// accept duplicate match
 {
     compl_T	*match;
     int		dir = (cdir == 0 ? compl_direction : cdir);
@@ -646,6 +649,10 @@ ins_compl_add(
 	    if (cptext[i] != NULL && *cptext[i] != NUL)
 		match->cp_text[i] = vim_strsave(cptext[i]);
     }
+#ifdef FEAT_EVAL
+    if (user_data != NULL)
+	match->cp_user_data = *user_data;
+#endif
 
     // Link the new match structure in the list of matches.
     if (compl_first_match == NULL)
@@ -783,7 +790,7 @@ ins_compl_add_matches(
     int		dir = compl_direction;
 
     for (i = 0; i < num_matches && add_r != FAIL; i++)
-	if ((add_r = ins_compl_add(matches[i], -1, NULL, NULL, dir,
+	if ((add_r = ins_compl_add(matches[i], -1, NULL, NULL, NULL, dir,
 					   icase ? CP_ICASE : 0, FALSE)) == OK)
 	    // if dir was BACKWARD then honor it just once
 	    dir = FORWARD;
@@ -952,7 +959,10 @@ ins_compl_dict_alloc(compl_T *match)
 	dict_add_string(dict, "menu", match->cp_text[CPT_MENU]);
 	dict_add_string(dict, "kind", match->cp_text[CPT_KIND]);
 	dict_add_string(dict, "info", match->cp_text[CPT_INFO]);
-	dict_add_string(dict, "user_data", match->cp_text[CPT_USER_DATA]);
+	if (match->cp_user_data.v_type == VAR_UNKNOWN)
+	    dict_add_string(dict, "user_data", (char_u *)"");
+	else
+	    dict_add_tv(dict, "user_data", &match->cp_user_data);
     }
     return dict;
 }
@@ -979,9 +989,9 @@ trigger_complete_changed_event(int cur)
     dict_set_items_ro(v_event);
 
     recursive = TRUE;
-    textlock++;
+    textwinlock++;
     apply_autocmds(EVENT_COMPLETECHANGED, NULL, NULL, FALSE, curbuf);
-    textlock--;
+    textwinlock--;
     recursive = FALSE;
 
     dict_free_contents(v_event);
@@ -1453,6 +1463,9 @@ ins_compl_free(void)
 	    vim_free(match->cp_fname);
 	for (i = 0; i < CPT_COUNT; ++i)
 	    vim_free(match->cp_text[i]);
+#ifdef FEAT_EVAL
+	clear_tv(&match->cp_user_data);
+#endif
 	vim_free(match);
     } while (compl_curr_match != NULL && compl_curr_match != compl_first_match);
     compl_first_match = compl_curr_match = NULL;
@@ -1800,6 +1813,7 @@ ins_compl_prep(int c)
     int		want_cindent;
 #endif
     int		retval = FALSE;
+    int		prev_mode = ctrl_x_mode;
 
     // Forget any previous 'special' messages if this is actually
     // a ^X mode key - bar ^R, in which case we wait to see what it gives us.
@@ -2047,6 +2061,12 @@ ins_compl_prep(int c)
 
 	    auto_format(FALSE, TRUE);
 
+	    // Trigger the CompleteDonePre event to give scripts a chance to
+	    // act upon the completion before clearing the info, and restore
+	    // ctrl_x_mode, so that complete_info() can be used.
+	    ctrl_x_mode = prev_mode;
+	    ins_apply_autocmds(EVENT_COMPLETEDONEPRE);
+
 	    ins_compl_free();
 	    compl_started = FALSE;
 	    compl_matches = 0;
@@ -2072,7 +2092,7 @@ ins_compl_prep(int c)
 		do_c_expr_indent();
 #endif
 	    // Trigger the CompleteDone event to give scripts a chance to act
-	    // upon the completion.
+	    // upon the end of completion.
 	    ins_apply_autocmds(EVENT_COMPLETEDONE);
 	}
     }
@@ -2197,6 +2217,9 @@ expand_by_function(
     pos = curwin->w_cursor;
     curwin_save = curwin;
     curbuf_save = curbuf;
+    // Lock the text to avoid weird things from happening.  Do allow switching
+    // to another window temporarily.
+    ++textlock;
 
     // Call a function, which returns a list or dict.
     if (call_vim_function(funcname, 2, args, &rettv) == OK)
@@ -2219,6 +2242,7 @@ expand_by_function(
 		break;
 	}
     }
+    --textlock;
 
     if (curwin_save != curwin || curbuf_save != curbuf)
     {
@@ -2264,7 +2288,9 @@ ins_compl_add_tv(typval_T *tv, int dir)
     int		empty = FALSE;
     int		flags = 0;
     char_u	*(cptext[CPT_COUNT]);
+    typval_T	user_data;
 
+    user_data.v_type = VAR_UNKNOWN;
     if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
     {
 	word = dict_get_string(tv->vval.v_dict, (char_u *)"word", FALSE);
@@ -2276,8 +2302,7 @@ ins_compl_add_tv(typval_T *tv, int dir)
 						     (char_u *)"kind", FALSE);
 	cptext[CPT_INFO] = dict_get_string(tv->vval.v_dict,
 						     (char_u *)"info", FALSE);
-	cptext[CPT_USER_DATA] = dict_get_string(tv->vval.v_dict,
-						 (char_u *)"user_data", FALSE);
+	dict_get_tv(tv->vval.v_dict, (char_u *)"user_data", &user_data);
 	if (dict_get_string(tv->vval.v_dict, (char_u *)"icase", FALSE) != NULL
 			&& dict_get_number(tv->vval.v_dict, (char_u *)"icase"))
 	    flags |= CP_ICASE;
@@ -2292,11 +2317,11 @@ ins_compl_add_tv(typval_T *tv, int dir)
     else
     {
 	word = tv_get_string_chk(tv);
-	vim_memset(cptext, 0, sizeof(cptext));
+	CLEAR_FIELD(cptext);
     }
     if (word == NULL || (!empty && *word == NUL))
 	return FAIL;
-    return ins_compl_add(word, -1, NULL, cptext, dir, flags, dup);
+    return ins_compl_add(word, -1, NULL, cptext, &user_data, dir, flags, dup);
 }
 
 /*
@@ -2309,7 +2334,8 @@ ins_compl_add_list(list_T *list)
     int		dir = compl_direction;
 
     // Go through the List with matches and add each of them.
-    for (li = list->lv_first; li != NULL; li = li->li_next)
+    range_list_materialize(list);
+    FOR_ALL_LIST_ITEMS(list, li)
     {
 	if (ins_compl_add_tv(&li->li_tv, dir) == OK)
 	    // if dir was BACKWARD then honor it just once
@@ -2373,7 +2399,7 @@ set_completion(colnr_T startcol, list_T *list)
     if (p_ic)
 	flags |= CP_ICASE;
     if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
-					-1, NULL, NULL, 0, flags, FALSE) != OK)
+				  -1, NULL, NULL, NULL, 0, flags, FALSE) != OK)
 	return;
 
     ctrl_x_mode = CTRL_X_EVAL;
@@ -2409,6 +2435,7 @@ set_completion(colnr_T startcol, list_T *list)
 f_complete(typval_T *argvars, typval_T *rettv UNUSED)
 {
     int	    startcol;
+    int	    save_textlock = textlock;
 
     if ((State & INSERT) == 0)
     {
@@ -2416,22 +2443,24 @@ f_complete(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     }
 
+    // "textlock" is set when evaluating 'completefunc' but we can change
+    // text here.
+    textlock = 0;
+
     // Check for undo allowed here, because if something was already inserted
     // the line was already saved for undo and this check isn't done.
     if (!undo_allowed())
 	return;
 
     if (argvars[1].v_type != VAR_LIST || argvars[1].vval.v_list == NULL)
-    {
 	emsg(_(e_invarg));
-	return;
+    else
+    {
+	startcol = (int)tv_get_number_chk(&argvars[0], NULL);
+	if (startcol > 0)
+	    set_completion(startcol - 1, argvars[1].vval.v_list);
     }
-
-    startcol = (int)tv_get_number_chk(&argvars[0], NULL);
-    if (startcol <= 0)
-	return;
-
-    set_completion(startcol - 1, argvars[1].vval.v_list);
+    textlock = save_textlock;
 }
 
 /*
@@ -2490,7 +2519,8 @@ get_complete_info(list_T *what_list, dict_T *retdict)
     else
     {
 	what_flag = 0;
-	for (item = what_list->lv_first; item != NULL; item = item->li_next)
+	range_list_materialize(what_list);
+	FOR_ALL_LIST_ITEMS(what_list, item)
 	{
 	    char_u *what = tv_get_string(&item->li_tv);
 
@@ -2541,8 +2571,11 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 		    dict_add_string(di, "menu", match->cp_text[CPT_MENU]);
 		    dict_add_string(di, "kind", match->cp_text[CPT_KIND]);
 		    dict_add_string(di, "info", match->cp_text[CPT_INFO]);
-		    dict_add_string(di, "user_data",
-					    match->cp_text[CPT_USER_DATA]);
+		    if (match->cp_user_data.v_type == VAR_UNKNOWN)
+			// Add an empty string for backwards compatibility
+			dict_add_string(di, "user_data", (char_u *)"");
+		    else
+			dict_add_tv(di, "user_data", &match->cp_user_data);
 		}
 		match = match->cp_next;
 	    }
@@ -3893,7 +3926,7 @@ ins_complete(int c, int enable_pum)
 	if (p_ic)
 	    flags |= CP_ICASE;
 	if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
-					-1, NULL, NULL, 0, flags, FALSE) != OK)
+				  -1, NULL, NULL, NULL, 0, flags, FALSE) != OK)
 	{
 	    VIM_CLEAR(compl_pattern);
 	    VIM_CLEAR(compl_orig_text);

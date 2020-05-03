@@ -1927,7 +1927,7 @@ window_new(win_T *win)
 
     MZ_GC_REG();
     self = scheme_malloc_fail_ok(scheme_malloc_tagged, sizeof(vim_mz_window));
-    vim_memset(self, 0, sizeof(vim_mz_window));
+    CLEAR_POINTER(self);
 #ifndef MZ_PRECISE_GC
     scheme_dont_gc_ptr(self);	// because win isn't visible to GC
 #else
@@ -2311,7 +2311,7 @@ buffer_new(buf_T *buf)
 
     MZ_GC_REG();
     self = scheme_malloc_fail_ok(scheme_malloc_tagged, sizeof(vim_mz_buffer));
-    vim_memset(self, 0, sizeof(vim_mz_buffer));
+    CLEAR_POINTER(self);
 #ifndef MZ_PRECISE_GC
     scheme_dont_gc_ptr(self);	// because buf isn't visible to GC
 #else
@@ -2634,8 +2634,7 @@ set_buffer_line_list(void *data, int argc, Scheme_Object **argv)
 	    MZ_GC_VAR_IN_REG(1, rest);
 	    MZ_GC_REG();
 
-	    array = ALLOC_MULT(char *, new_len + 1);
-	    vim_memset(array, 0, (new_len+1) * sizeof(char *));
+	    array = ALLOC_CLEAR_MULT(char *, new_len + 1);
 
 	    rest = line_list;
 	    for (i = 0; i < new_len; ++i)
@@ -2818,8 +2817,7 @@ insert_buffer_line_list(void *data, int argc, Scheme_Object **argv)
 	MZ_GC_VAR_IN_REG(1, rest);
 	MZ_GC_REG();
 
-	array = ALLOC_MULT(char *, size + 1);
-	vim_memset(array, 0, (size+1) * sizeof(char *));
+	array = ALLOC_CLEAR_MULT(char *, size + 1);
 
 	rest = list;
 	for (i = 0; i < size; ++i)
@@ -3044,7 +3042,7 @@ vim_to_mzscheme_impl(typval_T *vim_value, int depth, Scheme_Hash_Table *visited)
 	    MZ_GC_VAR_IN_REG(0, obj);
 	    MZ_GC_REG();
 
-	    curr = list->lv_last;
+	    curr = list->lv_u.mat.lv_last;
 	    obj = vim_to_mzscheme_impl(&curr->li_tv, depth + 1, visited);
 	    result = scheme_make_pair(obj, scheme_null);
 	    MZ_GC_CHECK();
@@ -3136,7 +3134,7 @@ vim_to_mzscheme_impl(typval_T *vim_value, int depth, Scheme_Hash_Table *visited)
 	    MZ_GC_UNREG();
 	}
     }
-    else if (vim_value->v_type == VAR_SPECIAL)
+    else if (vim_value->v_type == VAR_BOOL || vim_value->v_type == VAR_SPECIAL)
     {
 	if (vim_value->vval.v_number <= VVAL_TRUE)
 	    result = scheme_make_integer((long)vim_value->vval.v_number);
@@ -3218,7 +3216,7 @@ mzscheme_to_vim_impl(Scheme_Object *obj, typval_T *tv, int depth,
     }
     else if (SCHEME_BOOLP(obj))
     {
-	tv->v_type = VAR_SPECIAL;
+	tv->v_type = VAR_BOOL;
 	tv->vval.v_number = SCHEME_TRUEP(obj);
     }
 # ifdef FEAT_FLOAT

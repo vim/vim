@@ -18,6 +18,11 @@ if test -z "$srcdir"; then
   srcdir=.
 fi
 
+# Make sure collation works as expected
+# swedish range [a-z] does not match 'w'
+export LC_COLLATE=C
+export LC_ALL=
+
 rm -f core* *.core
 
 cat << EOF > osdef0.c

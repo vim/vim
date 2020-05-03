@@ -47,13 +47,13 @@
 #endif // !USE_SYSTEM
 
 #ifdef HAVE_STROPTS_H
-#ifdef sinix
-#define buf_T __system_buf_t__
-#endif
+# ifdef sinix
+#  define buf_T __system_buf_t__
+# endif
 # include <stropts.h>
-#ifdef sinix
-#undef buf_T
-#endif
+# ifdef sinix
+#  undef buf_T
+# endif
 #endif
 
 #ifdef HAVE_STRING_H

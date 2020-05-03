@@ -469,6 +469,24 @@ find_type_by_id(hashtab_T *ht, int id)
 }
 
 /*
+ * Fill 'dict' with text properties in 'prop'.
+ */
+    static void
+prop_fill_dict(dict_T *dict, textprop_T *prop, buf_T *buf)
+{
+    proptype_T *pt;
+
+    dict_add_number(dict, "col", prop->tp_col);
+    dict_add_number(dict, "length", prop->tp_len);
+    dict_add_number(dict, "id", prop->tp_id);
+    dict_add_number(dict, "start", !(prop->tp_flags & TP_FLAG_CONT_PREV));
+    dict_add_number(dict, "end", !(prop->tp_flags & TP_FLAG_CONT_NEXT));
+    pt = text_prop_type_by_id(buf, prop->tp_type);
+    if (pt != NULL)
+	dict_add_string(dict, "type", pt->pt_name);
+}
+
+/*
  * Find a property type by ID in "buf" or globally.
  * Returns NULL if not found.
  */
@@ -537,6 +555,181 @@ f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
 }
 
 /*
+ * prop_find({props} [, {direction}])
+ */
+    void
+f_prop_find(typval_T *argvars, typval_T *rettv)
+{
+    pos_T       *cursor = &curwin->w_cursor;
+    dict_T      *dict;
+    buf_T       *buf = curbuf;
+    dictitem_T  *di;
+    int         lnum_start;
+    int         start_pos_has_prop = 0;
+    int         seen_end = 0;
+    int         id = -1;
+    int         type_id = -1;
+    int         skipstart = 0;
+    int         lnum = -1;
+    int         col = -1;
+    int         dir = 1;    // 1 = forward, -1 = backward
+
+    if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
+    {
+	emsg(_(e_invarg));
+	return;
+    }
+    dict = argvars[0].vval.v_dict;
+
+    if (get_bufnr_from_arg(&argvars[0], &buf) == FAIL)
+	return;
+    if (buf->b_ml.ml_mfp == NULL)
+	return;
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	char_u      *dir_s = tv_get_string(&argvars[1]);
+
+	if (*dir_s == 'b')
+	    dir = -1;
+	else if (*dir_s != 'f')
+	{
+	    emsg(_(e_invarg));
+	    return;
+	}
+    }
+
+    di = dict_find(dict, (char_u *)"lnum", -1);
+    if (di != NULL)
+	lnum = tv_get_number(&di->di_tv);
+
+    di = dict_find(dict, (char_u *)"col", -1);
+    if (di != NULL)
+	col = tv_get_number(&di->di_tv);
+
+    if (lnum == -1)
+    {
+	lnum = cursor->lnum;
+	col = cursor->col + 1;
+    }
+    else if (col == -1)
+	col = 1;
+
+    if (lnum < 1 || lnum > buf->b_ml.ml_line_count)
+    {
+	emsg(_(e_invrange));
+	return;
+    }
+
+    di = dict_find(dict, (char_u *)"skipstart", -1);
+    if (di != NULL)
+	skipstart = tv_get_number(&di->di_tv);
+
+    if (dict_find(dict, (char_u *)"id", -1) != NULL)
+	id = dict_get_number(dict, (char_u *)"id");
+    if (dict_find(dict, (char_u *)"type", -1))
+    {
+	char_u	    *name = dict_get_string(dict, (char_u *)"type", FALSE);
+	proptype_T  *type = lookup_prop_type(name, buf);
+
+	if (type == NULL)
+	    return;
+	type_id = type->pt_id;
+    }
+    if (id == -1 && type_id == -1)
+    {
+	emsg(_("E968: Need at least one of 'id' or 'type'"));
+	return;
+    }
+
+    lnum_start = lnum;
+
+    if (rettv_dict_alloc(rettv) == FAIL)
+	return;
+
+    while (1)
+    {
+	char_u	*text = ml_get_buf(buf, lnum, FALSE);
+	size_t	textlen = STRLEN(text) + 1;
+	int	count = (int)((buf->b_ml.ml_line_len - textlen)
+                                / sizeof(textprop_T));
+	int	    i;
+	textprop_T  prop;
+	int	    prop_start;
+	int	    prop_end;
+
+	for (i = 0; i < count; ++i)
+	{
+	    mch_memmove(&prop, text + textlen + i * sizeof(textprop_T),
+			    sizeof(textprop_T));
+
+	    if (lnum == lnum_start)
+	    {
+		if (dir < 0)
+		{
+		    if (col < prop.tp_col)
+			break;
+		}
+		else if (prop.tp_col + prop.tp_len - (prop.tp_len != 0) < col)
+		    continue;
+	    }
+	    if (prop.tp_id == id || prop.tp_type == type_id)
+	    {
+		// Check if the starting position has text props.
+		if (lnum_start == lnum
+			&& col >= prop.tp_col
+			&& (col <= prop.tp_col + prop.tp_len
+							 - (prop.tp_len != 0)))
+		    start_pos_has_prop = 1;
+
+		prop_start = !(prop.tp_flags & TP_FLAG_CONT_PREV);
+		prop_end = !(prop.tp_flags & TP_FLAG_CONT_NEXT);
+		if (!prop_start && prop_end && dir > 0)
+		    seen_end = 1;
+
+		// Skip lines without the start flag.
+		if (!prop_start)
+		{
+		    // Always search backwards for start when search started
+		    // on a prop and we're not skipping.
+		    if (start_pos_has_prop && !skipstart)
+			dir = -1;
+		    break;
+		}
+
+		// If skipstart is true, skip the prop at start pos (even if
+		// continued from another line).
+		if (start_pos_has_prop && skipstart && !seen_end)
+		{
+		    start_pos_has_prop = 0;
+		    break;
+		}
+
+		prop_fill_dict(rettv->vval.v_dict, &prop, buf);
+		dict_add_number(rettv->vval.v_dict, "lnum", lnum);
+
+		return;
+	    }
+	}
+
+	if (dir > 0)
+	{
+	    if (lnum >= buf->b_ml.ml_line_count)
+		break;
+	    lnum++;
+	}
+	else
+	{
+	    if (lnum <= 1)
+		break;
+	    lnum--;
+	}
+	// Adjust col to indicate that we're continuing from prev/next line.
+	col = dir < 0 ? buf->b_ml.ml_line_len : 1;
+    }
+}
+
+/*
  * prop_list({lnum} [, {bufnr}])
  */
     void
@@ -564,7 +757,6 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
 							 / sizeof(textprop_T));
 	int	    i;
 	textprop_T  prop;
-	proptype_T  *pt;
 
 	for (i = 0; i < count; ++i)
 	{
@@ -574,15 +766,7 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
 		break;
 	    mch_memmove(&prop, text + textlen + i * sizeof(textprop_T),
 							   sizeof(textprop_T));
-	    dict_add_number(d, "col", prop.tp_col);
-	    dict_add_number(d, "length", prop.tp_len);
-	    dict_add_number(d, "id", prop.tp_id);
-	    dict_add_number(d, "start", !(prop.tp_flags & TP_FLAG_CONT_PREV));
-	    dict_add_number(d, "end", !(prop.tp_flags & TP_FLAG_CONT_NEXT));
-	    pt = text_prop_type_by_id(buf, prop.tp_type);
-	    if (pt != NULL)
-		dict_add_string(d, "type", pt->pt_name);
-
+	    prop_fill_dict(d, &prop, buf);
 	    list_append_dict(rettv->vval.v_list, d);
 	}
     }
@@ -603,6 +787,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     int		do_all = FALSE;
     int		id = -1;
     int		type_id = -1;
+    int		both = FALSE;
 
     rettv->vval.v_number = 0;
     if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
@@ -645,9 +830,16 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 	    return;
 	type_id = type->pt_id;
     }
+    if (dict_find(dict, (char_u *)"both", -1) != NULL)
+	both = dict_get_number(dict, (char_u *)"both");
     if (id == -1 && type_id == -1)
     {
 	emsg(_("E968: Need at least one of 'id' or 'type'"));
+	return;
+    }
+    if (both && (id == -1 || type_id == -1))
+    {
+	emsg(_("E860: Need 'id' and 'type' with 'both'"));
 	return;
     }
 
@@ -675,7 +867,8 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 		size_t	taillen;
 
 		mch_memmove(&textprop, cur_prop, sizeof(textprop_T));
-		if (textprop.tp_id == id || textprop.tp_type == type_id)
+		if (both ? textprop.tp_id == id && textprop.tp_type == type_id
+			 : textprop.tp_id == id || textprop.tp_type == type_id)
 		{
 		    if (!(buf->b_ml.ml_flags & ML_LINE_DIRTY))
 		    {
@@ -885,7 +1078,7 @@ f_prop_type_delete(typval_T *argvars, typval_T *rettv UNUSED)
  * prop_type_get({name} [, {bufnr}])
  */
     void
-f_prop_type_get(typval_T *argvars, typval_T *rettv UNUSED)
+f_prop_type_get(typval_T *argvars, typval_T *rettv)
 {
     char_u *name = tv_get_string(&argvars[0]);
 
@@ -1039,7 +1232,6 @@ adjust_prop_columns(
 {
     int		proplen;
     char_u	*props;
-    textprop_T	tmp_prop;
     proptype_T  *pt;
     int		dirty = FALSE;
     int		ri, wi;
@@ -1056,62 +1248,80 @@ adjust_prop_columns(
     wi = 0; // write index
     for (ri = 0; ri < proplen; ++ri)
     {
-	int start_incl;
+	textprop_T	prop;
+	int		start_incl, end_incl;
+	int		can_drop;
 
-	mch_memmove(&tmp_prop, props + ri * sizeof(textprop_T),
-							   sizeof(textprop_T));
-	pt = text_prop_type_by_id(curbuf, tmp_prop.tp_type);
-	start_incl = (flags & APC_SUBSTITUTE) ||
-		       (pt != NULL && (pt->pt_flags & PT_FLAG_INS_START_INCL));
+	mch_memmove(&prop, props + ri * sizeof(textprop_T), sizeof(textprop_T));
+	pt = text_prop_type_by_id(curbuf, prop.tp_type);
+	start_incl = (pt != NULL && (pt->pt_flags & PT_FLAG_INS_START_INCL))
+						   || (flags & APC_SUBSTITUTE);
+	end_incl = (pt != NULL && (pt->pt_flags & PT_FLAG_INS_END_INCL));
+	// Do not drop zero-width props if they later can increase in size
+	can_drop = !(start_incl || end_incl);
 
-	if (bytes_added > 0
-		&& (tmp_prop.tp_col >= col + (start_incl ? 2 : 1)))
+	if (bytes_added > 0)
 	{
-	    tmp_prop.tp_col += bytes_added;
-	    // Save for undo if requested and not done yet.
-	    if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
-		u_savesub(lnum);
-	    dirty = TRUE;
+	    if (col + 1 <= prop.tp_col
+			      - (start_incl || (prop.tp_len == 0 && end_incl)))
+	    {
+		// Change is entirely before the text property: Only shift
+		prop.tp_col += bytes_added;
+		// Save for undo if requested and not done yet.
+		if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
+		    u_savesub(lnum);
+		dirty = TRUE;
+	    }
+	    else if (col + 1 < prop.tp_col + prop.tp_len + end_incl)
+	    {
+		// Insertion was inside text property
+		prop.tp_len += bytes_added;
+		// Save for undo if requested and not done yet.
+		if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
+		    u_savesub(lnum);
+		dirty = TRUE;
+	    }
 	}
-	else if (bytes_added <= 0 && (tmp_prop.tp_col > col + 1))
+	else if (prop.tp_col > col + 1)
 	{
 	    int len_changed = FALSE;
 
-	    if (tmp_prop.tp_col + bytes_added < col + 1)
+	    if (prop.tp_col + bytes_added < col + 1)
 	    {
-		tmp_prop.tp_len += (tmp_prop.tp_col - 1 - col) + bytes_added;
-		tmp_prop.tp_col = col + 1;
+		prop.tp_len += (prop.tp_col - 1 - col) + bytes_added;
+		prop.tp_col = col + 1;
 		len_changed = TRUE;
 	    }
 	    else
-		tmp_prop.tp_col += bytes_added;
+		prop.tp_col += bytes_added;
 	    // Save for undo if requested and not done yet.
 	    if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
 		u_savesub(lnum);
 	    dirty = TRUE;
-	    if (len_changed && tmp_prop.tp_len <= 0)
-		continue;  // drop this text property
+	    if (len_changed && prop.tp_len <= 0)
+	    {
+		prop.tp_len = 0;
+		if (can_drop)
+		    continue;  // drop this text property
+	    }
 	}
-	else if (tmp_prop.tp_len > 0
-		&& tmp_prop.tp_col + tmp_prop.tp_len > col
-		       + ((pt != NULL && (pt->pt_flags & PT_FLAG_INS_END_INCL))
-								      ? 0 : 1))
+	else if (prop.tp_len > 0 && prop.tp_col + prop.tp_len > col)
 	{
-	    int after = col - bytes_added
-				     - (tmp_prop.tp_col - 1 + tmp_prop.tp_len);
+	    int after = col - bytes_added - (prop.tp_col - 1 + prop.tp_len);
+
 	    if (after > 0)
-		tmp_prop.tp_len += bytes_added + after;
+		prop.tp_len += bytes_added + after;
 	    else
-		tmp_prop.tp_len += bytes_added;
+		prop.tp_len += bytes_added;
 	    // Save for undo if requested and not done yet.
 	    if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
 		u_savesub(lnum);
 	    dirty = TRUE;
-	    if (tmp_prop.tp_len <= 0)
+	    if (prop.tp_len <= 0 && can_drop)
 		continue;  // drop this text property
 	}
-	mch_memmove(props + wi * sizeof(textprop_T), &tmp_prop,
-							   sizeof(textprop_T));
+
+	mch_memmove(props + wi * sizeof(textprop_T), &prop, sizeof(textprop_T));
 	++wi;
     }
     if (dirty)

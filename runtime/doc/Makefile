@@ -64,6 +64,7 @@ DOCS = \
 	os_amiga.txt \
 	os_beos.txt \
 	os_dos.txt \
+	os_haiku.txt \
 	os_mac.txt \
 	os_mint.txt \
 	os_msdos.txt \
@@ -149,6 +150,7 @@ DOCS = \
 	version7.txt \
 	version8.txt \
 	vi_diff.txt \
+	vim9.txt \
 	visual.txt \
 	windows.txt \
 	workshop.txt
@@ -203,6 +205,7 @@ HTMLS = \
 	os_amiga.html \
 	os_beos.html \
 	os_dos.html \
+	os_haiku.html \
 	os_mac.html \
 	os_mint.html \
 	os_msdos.html \
@@ -289,6 +292,7 @@ HTMLS = \
 	version8.html \
 	vi_diff.html \
 	vimindex.html \
+	vim9.html \
 	visual.html \
 	windows.html \
 	workshop.html
@@ -323,10 +327,7 @@ all: tags vim.man evim.man vimdiff.man vimtutor.man xxd.man $(CONVERTED)
 # Use Vim to generate the tags file.  Can only be used when Vim has been
 # compiled and installed.  Supports multiple languages.
 vimtags: $(DOCS)
-	@if command -v $(VIMEXE); then \
-	    $(VIMEXE) --clean -eX -u doctags.vim >/dev/null && \
-	      echo "help tags updated"; \
-	  else echo "vim executable $(VIMEXE) not found; help tags not updated"; fi
+	@$(VIMEXE) --clean -esX -V1 -u doctags.vim
 
 # Use "doctags" to generate the tags file.  Only works for English!
 tags: doctags $(DOCS)
@@ -422,6 +423,9 @@ os_beos.txt:
 
 os_dos.txt:
 	touch os_dos.txt
+
+os_haiku.txt:
+	touch os_haiku.txt
 
 os_mac.txt:
 	touch os_mac.txt

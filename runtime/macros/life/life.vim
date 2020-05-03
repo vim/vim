@@ -108,8 +108,9 @@ map ,o oPut 'X's in the left box, then hit 'C' or 'R'
 map ,R 03stop
 "
 " Write a new line (used by 'I'nitialize board)
+" In remembrance of John Conway, 26 December 1937 – 11 April 2020.
 map )0 o-                    --....................--....................-
-map )1 o-        VIM         --....................--....................-
+map )1 o-    JOHN CONWAY     --....................--....................-
 map )2 o-       LIVES        --....................--....................-
 "
 "

@@ -11,19 +11,19 @@
 
 #include	"vim.h"
 
-/* define _generic_64 for use in time functions */
+// define _generic_64 for use in time functions
 #if !defined(VAX) && !defined(PROTO)
 #   include <gen64def.h>
 #else
-/* based on Alpha's gen64def.h; the file is absent on VAX */
+// based on Alpha's gen64def.h; the file is absent on VAX
 typedef struct _generic_64 {
 #   pragma __nomember_alignment
-    __union  {				/* You can treat me as...  */
-	/* long long is not available on VAXen */
-	/* unsigned __int64 gen64$q_quadword; ...a single 64-bit value, or */
+    __union  {				// You can treat me as...
+	// long long is not available on VAXen
+	// unsigned __int64 gen64$q_quadword; ...a single 64-bit value, or
 
-	unsigned int gen64$l_longword [2]; /* ...two 32-bit values, or */
-	unsigned short int gen64$w_word [4]; /* ...four 16-bit values */
+	unsigned int gen64$l_longword [2]; // ...two 32-bit values, or
+	unsigned short int gen64$w_word [4]; // ...four 16-bit values
     } gen64$r_quad_overlay;
 } GENERIC_64;
 #endif
@@ -67,13 +67,13 @@ typedef struct
 }	ITMLST2;
 
 static TT_MODE	orgmode;
-static short	iochan;			/* TTY I/O channel */
-static short	iosb[4];		/* IO status block */
+static short	iochan;			// TTY I/O channel
+static short	iosb[4];		// IO status block
 
 static int vms_match_num = 0;
 static int vms_match_free = 0;
 static char_u **vms_fmatch = NULL;
-static char *Fspec_Rms;		       /* rms file spec, passed implicitly between routines */
+static char *Fspec_Rms;		       // rms file spec, passed implicitly between routines
 
 
 
@@ -139,7 +139,7 @@ mch_settmode(int tmode)
 set_tty(int row, int col)
 {
     int		    status;
-    TT_MODE	    newmode;		/* New TTY mode bits		*/
+    TT_MODE	    newmode;		// New TTY mode bits
     static short    first_time = TRUE;
 
     if (first_time)
@@ -165,7 +165,7 @@ set_tty(int row, int col)
 get_tty(void)
 {
 
-    static $DESCRIPTOR(odsc,"SYS$OUTPUT");   /* output descriptor */
+    static $DESCRIPTOR(odsc,"SYS$OUTPUT");   // output descriptor
 
     int		status;
     TT_MODE	tt_mode;
@@ -195,7 +195,7 @@ mch_get_shellsize(void)
 {
     TT_MODE	tmode;
 
-    tmode = get_tty();			/* get size from VMS	*/
+    tmode = get_tty();			// get size from VMS
     Columns = tmode.width;
     Rows = tmode.x.y.length;
     return OK;
@@ -262,7 +262,7 @@ mch_setenv(char *var, char *value, int x)
 {
     int		res, dum;
     long	attrib = 0L;
-    char	acmode = PSL$C_SUPER;	/* needs SYSNAM privilege */
+    char	acmode = PSL$C_SUPER;	// needs SYSNAM privilege
     DESC	tabnam, lognam;
     ITMLST1	itmlst;
 
@@ -288,9 +288,9 @@ vms_sys(char *cmd, char *out, char *inp)
     if (inp)
 	vul_desc(&idsc, inp);
 
-    lib$spawn(cmd ? &cdsc : NULL,		/* command string */
-	      inp ? &idsc : NULL,		/* input file */
-	      out ? &odsc : NULL,		/* output file */
+    lib$spawn(cmd ? &cdsc : NULL,		// command string
+	      inp ? &idsc : NULL,		// input file
+	      out ? &odsc : NULL,		// output file
 	      0, 0, 0, &status, 0, 0, 0, 0, 0, 0);
     return status;
 }
@@ -314,7 +314,7 @@ vms_tolower( char *name )
 vms_sys_status(int status)
 {
     if (status != SS$_NORMAL && (status & STS$M_SUCCESS) == 0)
-	return status;		/* Command failed. */
+	return status;		// Command failed.
     return 0;
 }
 
@@ -329,35 +329,35 @@ vms_read(char *inbuf, size_t nbytes)
 {
     int		status, function, len;
     TT_MODE	tt_mode;
-    ITEM	itmlst[2];     /* terminates on everything */
+    ITEM	itmlst[2];     // terminates on everything
     static long trm_mask[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
 
-    /* whatever happened earlier we need an iochan here */
+    // whatever happened earlier we need an iochan here
     if (!iochan)
 	tt_mode = get_tty();
 
-    /* important: clean the inbuf */
+    // important: clean the inbuf
     memset(inbuf, 0, nbytes);
 
-    /* set up the itemlist for the first read */
+    // set up the itemlist for the first read
     vul_item(&itmlst[0], 0, TRM$_MODIFIERS,
 	 (char *)( TRM$M_TM_NOECHO  | TRM$M_TM_NOEDIT	 |
 		   TRM$M_TM_NOFILTR | TRM$M_TM_TRMNOECHO |
 		   TRM$M_TM_NORECALL) , 0);
     vul_item(&itmlst[1], sizeof(trm_mask), TRM$_TERM, (char *)&trm_mask, 0);
 
-    /* wait forever for a char */
+    // wait forever for a char
     function = (IO$_READLBLK | IO$M_EXTEND);
     status = sys$qiow(0, iochan, function, &iosb, 0, 0,
 			 inbuf, nbytes-1, 0, 0, &itmlst, sizeof(itmlst));
-    len = strlen(inbuf); /* how many chars we got? */
+    len = strlen(inbuf); // how many chars we got?
 
-    /* read immediately the rest in the IO queue   */
+    // read immediately the rest in the IO queue
     function = (IO$_READLBLK | IO$M_TIMED | IO$M_ESCAPE | IO$M_NOECHO | IO$M_NOFILTR);
     status = sys$qiow(0, iochan, function, &iosb, 0, 0,
 			 inbuf+len, nbytes-1-len, 0, 0, 0, 0);
 
-    len = strlen(inbuf); /* return the total length */
+    len = strlen(inbuf); // return the total length
 
     return len;
 }
@@ -375,12 +375,12 @@ vms_wproc(char *name, int val)
     int i;
     static int vms_match_alloced = 0;
 
-    if (val == DECC$K_FOREIGN ) /* foreign non VMS files are not counting */
+    if (val == DECC$K_FOREIGN ) // foreign non VMS files are not counting
 	return 1;
 
-    /* accept all DECC$K_FILE and DECC$K_DIRECTORY */
+    // accept all DECC$K_FILE and DECC$K_DIRECTORY
     if (vms_match_num == 0) {
-	/* first time through, setup some things */
+	// first time through, setup some things
 	if (NULL == vms_fmatch) {
 	    vms_fmatch = ALLOC_MULT(char_u *, EXPL_ALLOC_INC);
 	    if (!vms_fmatch)
@@ -389,16 +389,16 @@ vms_wproc(char *name, int val)
 	    vms_match_free = EXPL_ALLOC_INC;
 	}
 	else {
-	    /* re-use existing space */
+	    // re-use existing space
 	    vms_match_free = vms_match_alloced;
 	}
     }
 
-    /* make matches look uniform */
+    // make matches look uniform
     vms_remove_version(name);
     name=vms_tolower(name);
 
-    /* if name already exists, don't add it */
+    // if name already exists, don't add it
     for (i = 0; i<vms_match_num; i++) {
 	if (0 == STRCMP((char_u *)name,vms_fmatch[i]))
 	    return 1;
@@ -406,7 +406,7 @@ vms_wproc(char *name, int val)
     if (--vms_match_free == 0) {
 	char_u **old_vms_fmatch = vms_fmatch;
 
-	/* add more space to store matches */
+	// add more space to store matches
 	vms_match_alloced += EXPL_ALLOC_INC;
 	vms_fmatch = vim_realloc(old_vms_fmatch,
 		sizeof(char **) * vms_match_alloced);
@@ -445,7 +445,7 @@ mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, i
     int		dir;
     int files_alloced, files_free;
 
-    *num_file = 0;			/* default: no files found	*/
+    *num_file = 0;			// default: no files found
     files_alloced = EXPL_ALLOC_INC;
     files_free = EXPL_ALLOC_INC;
     *file = ALLOC_MULT(char_u *, files_alloced);
@@ -456,13 +456,13 @@ mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, i
     }
     for (i = 0; i < num_pat; i++)
     {
-	/* expand environment var or home dir */
+	// expand environment var or home dir
 	if (vim_strchr(pat[i],'$') || vim_strchr(pat[i],'~'))
 	    expand_env(pat[i],buf,MAXPATHL);
 	else
 	    STRCPY(buf,pat[i]);
 
-	vms_match_num = 0; /* reset collection counter */
+	vms_match_num = 0; // reset collection counter
 	result = decc$translate_vms(vms_fixfilename(buf));
 	if ( (int) result == 0 || (int) result == -1  ) {
 	    cnt = 0;
@@ -477,21 +477,21 @@ mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, i
 
 	for (i = 0; i < cnt; i++)
 	{
-	    /* files should exist if expanding interactively */
+	    // files should exist if expanding interactively
 	    if (!(flags & EW_NOTFOUND) && mch_getperm(vms_fmatch[i]) < 0)
 		continue;
 
-	    /* do not include directories */
+	    // do not include directories
 	    dir = (mch_isdir(vms_fmatch[i]));
 	    if (( dir && !(flags & EW_DIR)) || (!dir && !(flags & EW_FILE)))
 		continue;
 
-	    /* Skip files that are not executable if we check for that. */
+	    // Skip files that are not executable if we check for that.
 	    if (!dir && (flags & EW_EXEC)
 		 && !mch_can_exe(vms_fmatch[i], NULL, !(flags & EW_SHELLCMD)))
 		continue;
 
-	    /* allocate memory for pointers */
+	    // allocate memory for pointers
 	    if (--files_free < 1)
 	    {
 		char_u **old_file = *file;
@@ -521,8 +521,8 @@ mch_expandpath(garray_T *gap, char_u *path, int flags)
     char       *result;
 
     vms_match_num = 0;
-    /* the result from the decc$translate_vms needs to be handled */
-    /* otherwise it might create ACCVIO error in decc$to_vms      */
+    // the result from the decc$translate_vms needs to be handled
+    // otherwise it might create ACCVIO error in decc$to_vms
     result = decc$translate_vms(vms_fixfilename(path));
     if ( (int) result == 0 || (int) result == -1  ) {
 	cnt = 0;
@@ -533,7 +533,7 @@ mch_expandpath(garray_T *gap, char_u *path, int flags)
 	cnt = vms_match_num;
     for (i = 0; i < cnt; i++)
     {
-	if (mch_getperm(vms_fmatch[i]) >= 0) /* add existing file */
+	if (mch_getperm(vms_fmatch[i]) >= 0) // add existing file
 	    addfile(gap, vms_fmatch[i], flags);
     }
     return cnt;
@@ -551,10 +551,9 @@ vms_unix_mixed_filespec(char *in, char *out)
     int len;
     char *out_str=out;
 
-    /* copy vms filename portion up to last colon
-     * (node and/or disk)
-     */
-    lastcolon = strrchr(in, ':');   /* find last colon */
+    // copy vms filename portion up to last colon
+    // (node and/or disk)
+    lastcolon = strrchr(in, ':');   // find last colon
     if (lastcolon != NULL) {
 	len = lastcolon - in + 1;
 	strncpy(out, in, len);
@@ -562,49 +561,49 @@ vms_unix_mixed_filespec(char *in, char *out)
 	in += len;
     }
 
-    end_of_dir = NULL;	/* default: no directory */
+    end_of_dir = NULL;	// default: no directory
 
-    /* start of directory portion */
+    // start of directory portion
     ch = *in;
-    if ((ch == '[') || (ch == '/') || (ch == '<')) {	/* start of directory(s) ? */
+    if ((ch == '[') || (ch == '/') || (ch == '<')) {	// start of directory(s) ?
 	ch = '[';
 	SKIP_FOLLOWING_SLASHES(in);
-    } else if (EQN(in, "../", 3)) { /* Unix parent directory? */
+    } else if (EQN(in, "../", 3)) { // Unix parent directory?
 	*out++ = '[';
 	*out++ = '-';
 	end_of_dir = out;
 	ch = '.';
 	in += 2;
 	SKIP_FOLLOWING_SLASHES(in);
-    } else {		    /* not a special character */
-	while (EQN(in, "./", 2)) {	/* Ignore Unix "current dir" */
+    } else {		    // not a special character
+	while (EQN(in, "./", 2)) {	// Ignore Unix "current dir"
 	    in += 2;
 	    SKIP_FOLLOWING_SLASHES(in);
     }
-    if (strchr(in, '/') == NULL) {  /* any more Unix directories ? */
-	strcpy(out, in);	/* No - get rest of the spec */
+    if (strchr(in, '/') == NULL) {  // any more Unix directories ?
+	strcpy(out, in);	// No - get rest of the spec
 	return;
     } else {
-	*out++ = '[';	    /* Yes, denote a Vms subdirectory */
+	*out++ = '[';	    // Yes, denote a Vms subdirectory
 	ch = '.';
 	--in;
 	}
     }
 
-    /* if we get here, there is a directory part of the filename */
+    // if we get here, there is a directory part of the filename
 
-    /* initialize output file spec */
+    // initialize output file spec
     *out++ = ch;
     ++in;
 
     while (*in != '\0') {
 	ch = *in;
-	if ((ch == ']') || (ch == '/') || (ch == '>') ) {	/* end of (sub)directory ? */
+	if ((ch == ']') || (ch == '/') || (ch == '>') ) {	// end of (sub)directory ?
 	    end_of_dir = out;
 	    ch = '.';
 	    SKIP_FOLLOWING_SLASHES(in);
 	    }
-	else if (EQN(in, "../", 3)) {	/* Unix parent directory? */
+	else if (EQN(in, "../", 3)) {	// Unix parent directory?
 	    *out++ = '-';
 	    end_of_dir = out;
 	    ch = '.';
@@ -612,7 +611,7 @@ vms_unix_mixed_filespec(char *in, char *out)
 	    SKIP_FOLLOWING_SLASHES(in);
 	    }
 	else {
-	    while (EQN(in, "./", 2)) {  /* Ignore Unix "current dir" */
+	    while (EQN(in, "./", 2)) {  // Ignore Unix "current dir"
 	    end_of_dir = out;
 	    in += 2;
 	    SKIP_FOLLOWING_SLASHES(in);
@@ -620,14 +619,14 @@ vms_unix_mixed_filespec(char *in, char *out)
 	    }
 	}
 
-    /* Place next character into output file spec */
+    // Place next character into output file spec
 	*out++ = ch;
 	++in;
     }
 
-    *out = '\0';    /* Terminate output file spec */
+    *out = '\0';    // Terminate output file spec
 
-    if (end_of_dir != NULL) /* Terminate directory portion */
+    if (end_of_dir != NULL) // Terminate directory portion
 	*end_of_dir = ']';
 }
 
@@ -651,7 +650,7 @@ vms_fixfilename(void *instring)
     static size_t	buflen = 0;
     size_t		len;
 
-    /* get a big-enough buffer */
+    // get a big-enough buffer
     len = strlen(instring) + 1;
     if (len > buflen)
     {
@@ -665,22 +664,22 @@ vms_fixfilename(void *instring)
      strcpy(tmpbuf, instring);
 #endif
 
-    Fspec_Rms = buf;				/* for decc$to_vms */
+    Fspec_Rms = buf;				// for decc$to_vms
 
     if (strchr(instring,'/') == NULL)
-	/* It is already a VMS file spec */
+	// It is already a VMS file spec
 	strcpy(buf, instring);
-    else if (strchr(instring,'"') == NULL)	/* password in the path? */
+    else if (strchr(instring,'"') == NULL)	// password in the path?
     {
-	/* Seems it is a regular file, let guess that it is pure Unix fspec */
+	// Seems it is a regular file, let guess that it is pure Unix fspec
 	if (decc$to_vms(instring, vms_fspec_proc, 0, 0) <= 0)
-	    /* No... it must be mixed */
+	    // No... it must be mixed
 	    vms_unix_mixed_filespec(instring, buf);
     }
     else
-	/* we have a password in the path   */
-	/* decc$ functions can not handle   */
-	/* this is our only hope to resolv  */
+	// we have a password in the path
+	// decc$ functions can not handle
+	// this is our only hope to resolv
 	vms_unix_mixed_filespec(instring, buf);
 
     return buf;
@@ -697,7 +696,7 @@ vms_remove_version(void * fname)
     char_u	*cp;
     char_u	*fp;
 
-    if ((cp = vim_strchr( fname, ';')) != NULL) /* remove version */
+    if ((cp = vim_strchr( fname, ';')) != NULL) // remove version
 	*cp = '\0';
     else if ((cp = vim_strrchr( fname, '.')) != NULL )
     {
@@ -726,7 +725,7 @@ struct typeahead_st {
  */
     int
 RealWaitForChar(
-    int		fd UNUSED, /* always read from iochan */
+    int		fd UNUSED, // always read from iochan
     long	msec,
     int		*check_for_gpm UNUSED,
     int		*interrupted)
@@ -738,71 +737,71 @@ RealWaitForChar(
     unsigned int convert_operation = LIB$K_DELTA_SECONDS_F;
     float sec =(float) msec/1000;
 
-    /* make sure the iochan is set */
+    // make sure the iochan is set
     if (!iochan)
 	get_tty();
 
     if (sec > 0) {
-	/* time-out specified; convert it to absolute time */
-	/* sec>0 requirement of lib$cvtf_to_internal_time()*/
+	// time-out specified; convert it to absolute time
+	// sec>0 requirement of lib$cvtf_to_internal_time()
 
-	/* get current time (number of 100ns ticks since the VMS Epoch) */
+	// get current time (number of 100ns ticks since the VMS Epoch)
 	status = sys$gettim(&time_curr);
 	if (status != SS$_NORMAL)
-	    return 0; /* error */
-	/* construct the delta time */
+	    return 0; // error
+	// construct the delta time
 #if __G_FLOAT==0
 # ifndef VAX
-	/* IEEE is default on IA64, but can be used on Alpha too - but not on VAX */
+	// IEEE is default on IA64, but can be used on Alpha too - but not on VAX
 	status = lib$cvts_to_internal_time(
 		&convert_operation, &sec, &time_diff);
 # endif
-#else   /* default on Alpha and VAX  */
+#else   // default on Alpha and VAX
 	status = lib$cvtf_to_internal_time(
 		&convert_operation, &sec, &time_diff);
 #endif
 	if (status != LIB$_NORMAL)
-	    return 0; /* error */
-	/* add them up */
+	    return 0; // error
+	// add them up
 	status = lib$add_times(
 		&time_curr,
 		&time_diff,
 		&time_out);
 	if (status != LIB$_NORMAL)
-	    return 0; /* error */
+	    return 0; // error
     }
 
     while (TRUE) {
-	/* select() */
+	// select()
 	status = sys$qiow(0, iochan, IO$_SENSEMODE | IO$M_TYPEAHDCNT, iosb,
 		0, 0, &typeahead, 8, 0, 0, 0, 0);
 	if (status != SS$_NORMAL || (iosb[0] & 0xFFFF) != SS$_NORMAL)
-	    return 0; /* error */
+	    return 0; // error
 
 	if (typeahead.numchars)
-	    return 1; /* ready to read */
+	    return 1; // ready to read
 
-	/* there's nothing to read; what now? */
+	// there's nothing to read; what now?
 	if (msec == 0) {
-	    /* immediate time-out; return impatiently */
+	    // immediate time-out; return impatiently
 	    return 0;
 	} else if (msec < 0) {
-	    /* no time-out; wait on indefinitely */
-	    return 1; /* fakeout to force a wait in vms_read() */
+	    // no time-out; wait on indefinitely
+	    return 1; // fakeout to force a wait in vms_read()
 	} else {
-	    /* time-out needs to be checked */
+	    // time-out needs to be checked
 	    status = sys$gettim(&time_curr);
 	    if (status != SS$_NORMAL)
-		return 0; /* error */
+		return 0; // error
 
 	    status = lib$sub_times(
 		    &time_out,
 		    &time_curr,
 		    &time_diff);
 	    if (status != LIB$_NORMAL)
-		return 0; /* error, incl. time_diff < 0 (i.e. time-out) */
+		return 0; // error, incl. time_diff < 0 (i.e. time-out)
 
-	    /* otherwise wait some more */
+	    // otherwise wait some more
 	}
     }
 }

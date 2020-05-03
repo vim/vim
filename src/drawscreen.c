@@ -69,6 +69,11 @@ static void win_update(win_T *wp);
 #ifdef FEAT_STL_OPT
 static void redraw_custom_statusline(win_T *wp);
 #endif
+#if defined(FEAT_SEARCH_EXTRA) || defined(FEAT_CLIPBOARD)
+static int  did_update_one_window;
+#endif
+
+static void win_redr_status(win_T *wp, int ignore_pum);
 
 /*
  * Based on the current value of curwin->w_topline, transfer a screenfull
@@ -81,10 +86,8 @@ update_screen(int type_arg)
     int		type = type_arg;
     win_T	*wp;
     static int	did_intro = FALSE;
-#if defined(FEAT_SEARCH_EXTRA) || defined(FEAT_CLIPBOARD)
-    int		did_one;
-#endif
 #ifdef FEAT_GUI
+    int		did_one = FALSE;
     int		did_undraw = FALSE;
     int		gui_cursor_col = 0;
     int		gui_cursor_row = 0;
@@ -276,7 +279,7 @@ update_screen(int type_arg)
     // Go from top to bottom through the windows, redrawing the ones that need
     // it.
 #if defined(FEAT_SEARCH_EXTRA) || defined(FEAT_CLIPBOARD)
-    did_one = FALSE;
+    did_update_one_window = FALSE;
 #endif
 #ifdef FEAT_SEARCH_EXTRA
     screen_search_hl.rm.regprog = NULL;
@@ -286,21 +289,11 @@ update_screen(int type_arg)
 	if (wp->w_redr_type != 0)
 	{
 	    cursor_off();
-#if defined(FEAT_SEARCH_EXTRA) || defined(FEAT_CLIPBOARD)
+#ifdef FEAT_GUI
 	    if (!did_one)
 	    {
 		did_one = TRUE;
-# ifdef FEAT_SEARCH_EXTRA
-		start_search_hl();
-# endif
-# ifdef FEAT_CLIPBOARD
-		// When Visual area changed, may have to update selection.
-		if (clip_star.available && clip_isautosel_star())
-		    clip_update_selection(&clip_star);
-		if (clip_plus.available && clip_isautosel_plus())
-		    clip_update_selection(&clip_plus);
-# endif
-#ifdef FEAT_GUI
+
 		// Remove the cursor before starting to do anything, because
 		// scrolling may make it difficult to redraw the text under
 		// it.
@@ -311,9 +304,9 @@ update_screen(int type_arg)
 		    gui_undraw_cursor();
 		    did_undraw = TRUE;
 		}
-#endif
 	    }
 #endif
+
 	    win_update(wp);
 	}
 
@@ -391,7 +384,7 @@ update_screen(int type_arg)
  * If "ignore_pum" is TRUE, also redraw statusline when the popup menu is
  * displayed.
  */
-    void
+    static void
 win_redr_status(win_T *wp, int ignore_pum UNUSED)
 {
     int		row;
@@ -650,14 +643,12 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 #ifdef FEAT_STL_OPT
     if (*p_ruf)
     {
-	int	save_called_emsg = called_emsg;
+	int	called_emsg_before = called_emsg;
 
-	called_emsg = FALSE;
 	win_redr_custom(wp, TRUE);
-	if (called_emsg)
+	if (called_emsg > called_emsg_before)
 	    set_string_option_direct((char_u *)"rulerformat", -1,
 					   (char_u *)"", OPT_FREE, SID_ERROR);
-	called_emsg |= save_called_emsg;
 	return;
     }
 #endif
@@ -972,7 +963,7 @@ redraw_win_toolbar(win_T *wp)
     int		button_attr = syn_name2attr((char_u *)"ToolbarButton");
 
     vim_free(wp->w_winbar_items);
-    for (menu = wp->w_winbar->children; menu != NULL; menu = menu->next)
+    FOR_ALL_CHILD_MENUS(wp->w_winbar, menu)
 	++item_count;
     wp->w_winbar_items = ALLOC_CLEAR_MULT(winbar_item_T, item_count + 1);
 
@@ -1422,6 +1413,25 @@ win_update(win_T *wp)
 #endif
 #ifdef SYN_TIME_LIMIT
     proftime_T	syntax_tm;
+#endif
+
+#if defined(FEAT_SEARCH_EXTRA) || defined(FEAT_CLIPBOARD)
+    // This needs to be done only for the first window when update_screen() is
+    // called.
+    if (!did_update_one_window)
+    {
+	did_update_one_window = TRUE;
+# ifdef FEAT_SEARCH_EXTRA
+	start_search_hl();
+# endif
+# ifdef FEAT_CLIPBOARD
+	// When Visual area changed, may have to update selection.
+	if (clip_star.available && clip_isautosel_star())
+	    clip_update_selection(&clip_star);
+	if (clip_plus.available && clip_isautosel_plus())
+	    clip_update_selection(&clip_plus);
+# endif
+    }
 #endif
 
     type = wp->w_redr_type;
@@ -2429,7 +2439,8 @@ win_update(win_T *wp)
 
 #ifdef FEAT_VTP
     // Rewrite the character at the end of the screen line.
-    if (use_vtp())
+    // See the version that was fixed.
+    if (use_vtp() && get_conpty_fix_type() < 1)
     {
 	int i;
 
@@ -3027,6 +3038,11 @@ redraw_buf_later(buf_T *buf, int type)
 	if (wp->w_buffer == buf)
 	    redraw_win_later(wp, type);
     }
+#if defined(FEAT_TERMINAL) && defined(FEAT_PROP_POPUP)
+    // terminal in popup window is not in list of windows
+    if (curwin->w_buffer == buf)
+	redraw_win_later(curwin, type);
+#endif
 }
 
 #if defined(FEAT_SIGNS) || defined(PROTO)

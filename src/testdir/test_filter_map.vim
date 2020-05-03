@@ -89,7 +89,32 @@ func Test_filter_map_dict_expr_funcref()
   call assert_equal({"foo": "f", "bar": "b", "baz": "b"}, map(copy(dict), function('s:filter4')))
 endfunc
 
-func Test_map_fails()
+func Test_map_filter_fails()
   call assert_fails('call map([1], "42 +")', 'E15:')
   call assert_fails('call filter([1], "42 +")', 'E15:')
+  call assert_fails("let l = map('abc', '\"> \" . v:val')", 'E712:')
+  call assert_fails("let l = filter('abc', '\"> \" . v:val')", 'E712:')
+  call assert_fails("let l = filter([1, 2, 3], '{}')", 'E728:')
+  call assert_fails("let l = filter({'k' : 10}, '{}')", 'E728:')
+  call assert_fails("let l = filter([1, 2], {})", 'E731:')
+  call assert_equal(0, filter(test_null_list(), 0))
+  call assert_equal(0, filter(test_null_dict(), 0))
+  call assert_equal(0, map(test_null_list(), '"> " .. v:val'))
+  call assert_equal(0, map(test_null_dict(), '"> " .. v:val'))
+  call assert_equal([1, 2, 3], filter([1, 2, 3], test_null_function()))
+  call assert_fails("let l = filter([1, 2], function('min'))", 'E118:')
+  call assert_equal([1, 2, 3], filter([1, 2, 3], test_null_partial()))
+  call assert_fails("let l = filter([1, 2], {a, b, c -> 1})", 'E119:')
 endfunc
+
+func Test_map_and_modify()
+  let l = ["abc"]
+  " cannot change the list halfway a map()
+  call assert_fails('call map(l, "remove(l, 0)[0]")', 'E741:')
+
+  let d = #{a: 1, b: 2, c: 3}
+  call assert_fails('call map(d, "remove(d, v:key)[0]")', 'E741:')
+  call assert_fails('echo map(d, {k,v -> remove(d, k)})', 'E741:')
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

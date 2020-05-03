@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.1.  Last change: 2019 Nov 03
+*terminal.txt*	For Vim version 8.2.  Last change: 2020 Apr 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -72,7 +72,7 @@ CTRL-W can be used to navigate between windows and other CTRL-W commands, e.g.:
 	CTRL-W :	enter an Ex command
 See |CTRL-W| for more commands.
 
-Special in the terminal window:			*t_CTRL-W_.*  *t_CTRL-W_N* 
+Special in the terminal window:			*t_CTRL-W_.*  *t_CTRL-W_N*
 	CTRL-W .	send a CTRL-W to the job in the terminal
 	CTRL-W CTRL-\	send a CTRL-\ to the job in the terminal
 	CTRL-W N	go to Terminal-Normal mode, see |Terminal-mode|
@@ -120,7 +120,7 @@ break (cursor keys start with an Esc, so they may break): >
 You can also create menus similar to terminal mode mappings, but you have to
 use |:tlmenu| instead of |:tmenu|.
 
-<							*options-in-terminal*
+							*options-in-terminal*
 After opening the terminal window and setting 'buftype' to "terminal" the
 TerminalOpen autocommand event is triggered.  This makes it possible to set
 options specifically for the window and buffer.  Example: >
@@ -148,7 +148,12 @@ terminal window will start with a white or black background.
 To use a different color the Terminal highlight group can be used, for
 example: >
     hi Terminal ctermbg=lightgrey ctermfg=blue guibg=lightgrey guifg=blue
-<
+The highlight needs to be defined before the terminal is created.  Doing it
+later, or setting 'wincolor', will only have effect when the program running
+in the terminal displays text or clears the terminal.
+Instead of Terminal another group can be specified with the "term_highlight"
+option for `term_start()`.
+
 							*g:terminal_ansi_colors*
 In GUI mode or with 'termguicolors', the 16 ANSI colors used by default in new
 terminal windows may be configured using the variable
@@ -177,6 +182,10 @@ Command syntax ~
 			If [command] is present the default behavior is to
 			keep the terminal open in Terminal-Normal mode.  This
 			can be changed with the ++close argument.
+
+			No Vim command can follow, any | is included in
+			[command].  Use `:execute` if you must have a Vim
+			command following in the same line.
 
 			A new buffer will be created, using [command] or
 			'shell' as the name, prefixed with a "!".  If a buffer
@@ -641,8 +650,8 @@ term_getsize({buf})					*term_getsize()*
 
 
 term_getstatus({buf})					*term_getstatus()*
-		Get the status of terminal {buf}. This returns a comma
-		separated list of these items:
+		Get the status of terminal {buf}. This returns a String with
+		a comma separated list of these items:
 			running		job is running
 			finished	job has finished
 			normal		in Terminal-Normal mode
@@ -857,6 +866,8 @@ term_start({cmd} [, {options}])			*term_start()*
 				     have "%d" where the buffer number goes,
 				     e.g. "10split|buffer %d"; when not
 				     specified "botright sbuf %d" is used
+		   "term_highlight"  highlight group to use instead of
+				     "Terminal"
 		   "eof_chars"	     Text to send after all buffer lines were
 				     written to the terminal.  When not set
 				     CTRL-D is used on MS-Windows. For Python
@@ -926,7 +937,7 @@ Currently supported commands:
 
 		Call a user defined function with {argument}.
 		The function is called with two arguments: the buffer number
-		of the terminal and {argument}, the decoded JSON argument. 
+		of the terminal and {argument}, the decoded JSON argument.
 		By default, the function name must start with "Tapi_" to avoid
 		accidentally calling a function not meant to be used for the
 		terminal API.  This can be changed with |term_setapi()|.
@@ -953,7 +964,7 @@ Currently supported commands:
 		directory, thus it's best to use the full path.
 
 		[options] is only used when opening a new window.  If present,
-		it must be a Dict.  Similarly to |++opt|, These entries are
+		it must be a Dict.  Similarly to |++opt|, these entries are
 		recognized:
 		  "ff"		file format: "dos", "mac" or "unix"
 		  "fileformat"	idem
@@ -1025,7 +1036,7 @@ Writing a screen dump test for Vim ~
 For an example see the Test_syntax_c() function in
 src/testdir/test_syntax.vim.  The main parts are:
 - Write a file you want to test with. This is useful for testing syntax
-  highlighting.  You can also start Vim with en empty buffer.
+  highlighting.  You can also start Vim with an empty buffer.
 - Run Vim in a terminal with a specific size.  The default is 20 lines of 75
   characters.  This makes sure the dump is always this size.  The function
   RunVimInTerminal() takes care of this.  Pass it the arguments for the Vim
@@ -1140,7 +1151,7 @@ program window	A terminal window for the executed program.  When "run" is
 
 The current window is used to show the source code.  When gdb pauses the
 source file location will be displayed, if possible.  A sign is used to
-highlight the current position, using highlight group debugPC.	 
+highlight the current position, using highlight group debugPC.
 
 If the buffer in the current window is modified, another window will be opened
 to display the current gdb position.  You can use `:Winbar` to add a window
@@ -1197,7 +1208,7 @@ Put focus on the gdb window and type: >
 	run
 Vim will start running in the program window. Put focus there and type: >
 	:help gui
-Gdb will run into the ex_help breakpoint.  The source window now shows the 
+Gdb will run into the ex_help breakpoint.  The source window now shows the
 ex_cmds.c file.  A red "1 " marker will appear in the signcolumn where the
 breakpoint was set.  The line where the debugger stopped is highlighted.  You
 can now step through the program.  Let's use the mouse: click on the "Next"

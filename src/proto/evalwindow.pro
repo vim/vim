@@ -20,6 +20,8 @@ void f_win_id2tabwin(typval_T *argvars, typval_T *rettv);
 void f_win_id2win(typval_T *argvars, typval_T *rettv);
 void f_win_screenpos(typval_T *argvars, typval_T *rettv);
 void f_win_splitmove(typval_T *argvars, typval_T *rettv);
+void f_win_gettype(typval_T *argvars, typval_T *rettv);
+void f_getcmdwintype(typval_T *argvars, typval_T *rettv);
 void f_winbufnr(typval_T *argvars, typval_T *rettv);
 void f_wincol(typval_T *argvars, typval_T *rettv);
 void f_winheight(typval_T *argvars, typval_T *rettv);

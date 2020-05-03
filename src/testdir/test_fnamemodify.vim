@@ -3,8 +3,10 @@
 func Test_fnamemodify()
   let save_home = $HOME
   let save_shell = &shell
+  let save_shellslash = &shellslash
   let $HOME = fnamemodify('.', ':p:h:h')
   set shell=sh
+  set shellslash
 
   call assert_equal('/', fnamemodify('.', ':p')[-1:])
   call assert_equal('r', fnamemodify('.', ':p:h')[-1:])
@@ -28,6 +30,17 @@ func Test_fnamemodify()
   call assert_equal('fb2.tar.gz', fnamemodify('abc.fb2.tar.gz', ':e:e:e:e'))
   call assert_equal('tar', fnamemodify('abc.fb2.tar.gz', ':e:e:r'))
 
+  let cwd = getcwd()
+  call mkdir($HOME . '/XXXXXXXX/a', 'p')
+  call mkdir($HOME . '/XXXXXXXX/b', 'p')
+  call chdir($HOME . '/XXXXXXXX/a/')
+  call assert_equal('foo', fnamemodify($HOME . '/XXXXXXXX/a/foo', ':p:~:.'))
+  call assert_equal('~/XXXXXXXX/b/foo', fnamemodify($HOME . '/XXXXXXXX/b/foo', ':p:~:.'))
+  call mkdir($HOME . '/XXXXXXXX/a.ext', 'p')
+  call assert_equal('~/XXXXXXXX/a.ext/foo', fnamemodify($HOME . '/XXXXXXXX/a.ext/foo', ':p:~:.'))
+  call chdir(cwd)
+  call delete($HOME . '/XXXXXXXX', 'rf')
+
   call assert_equal('''abc def''', fnamemodify('abc def', ':S'))
   call assert_equal('''abc" "def''', fnamemodify('abc" "def', ':S'))
   call assert_equal('''abc"%"def''', fnamemodify('abc"%"def', ':S'))
@@ -44,6 +57,7 @@ func Test_fnamemodify()
 
   let $HOME = save_home
   let &shell = save_shell
+  let &shellslash = save_shellslash
 endfunc
 
 func Test_fnamemodify_er()
@@ -72,4 +86,8 @@ func Test_fnamemodify_er()
   " :e never includes the whole filename, so "a.b":e:e:e --> "b"
   call assert_equal('b.c', fnamemodify('a.b.c.d.e', ':r:r:e:e:e'))
   call assert_equal('b.c', fnamemodify('a.b.c.d.e', ':r:r:e:e:e:e'))
+
+  call assert_equal('', fnamemodify(test_null_string(), test_null_string()))
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

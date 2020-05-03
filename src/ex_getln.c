@@ -184,7 +184,7 @@ set_search_match(pos_T *t)
  * May change the last search pattern.
  */
     static int
-do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
+do_incsearch_highlighting(int firstc, int *search_delim, incsearch_state_T *is_state,
 						     int *skiplen, int *patlen)
 {
     char_u	*cmd;
@@ -210,12 +210,15 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
     search_last_line = MAXLNUM;
 
     if (firstc == '/' || firstc == '?')
+    {
+	*search_delim = firstc;
 	return TRUE;
+    }
     if (firstc != ':')
 	return FALSE;
 
     ++emsg_off;
-    vim_memset(&ea, 0, sizeof(ea));
+    CLEAR_FIELD(ea);
     ea.line1 = 1;
     ea.line2 = 1;
     ea.cmd = ccline.cmdbuff;
@@ -246,7 +249,9 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
     }
     else if (STRNCMP(cmd, "sort", MAX(p - cmd, 3)) == 0)
     {
-	// skip over flags
+	// skip over ! and flags
+	if (*p == '!')
+	    p = skipwhite(p + 1);
 	while (ASCII_ISALPHA(*(p = skipwhite(p))))
 	    ++p;
 	if (*p == NUL)
@@ -273,7 +278,8 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
 
     p = skipwhite(p);
     delim = (delim_optional && vim_isIDc(*p)) ? ' ' : *p++;
-    end = skip_regexp(p, delim, p_magic, NULL);
+    *search_delim = delim;
+    end = skip_regexp(p, delim, p_magic);
 
     use_last_pat = end == p && *end == delim;
 
@@ -385,12 +391,13 @@ may_do_incsearch_highlighting(
     int		next_char;
     int		use_last_pat;
     int		did_do_incsearch = is_state->did_incsearch;
+    int		search_delim;
 
     // Parsing range may already set the last search pattern.
     // NOTE: must call restore_last_search_pattern() before returning!
     save_last_search_pattern();
 
-    if (!do_incsearch_highlighting(firstc, is_state, &skiplen, &patlen))
+    if (!do_incsearch_highlighting(firstc, &search_delim, is_state, &skiplen, &patlen))
     {
 	restore_last_search_pattern();
 	finish_incsearch_highlighting(FALSE, is_state, TRUE);
@@ -454,10 +461,10 @@ may_do_incsearch_highlighting(
 	    search_flags += SEARCH_START;
 	ccline.cmdbuff[skiplen + patlen] = NUL;
 #ifdef FEAT_RELTIME
-	vim_memset(&sia, 0, sizeof(sia));
+	CLEAR_FIELD(sia);
 	sia.sa_tm = &tm;
 #endif
-	found = do_search(NULL, firstc == ':' ? '/' : firstc,
+	found = do_search(NULL, firstc == ':' ? '/' : firstc, search_delim,
 				 ccline.cmdbuff + skiplen, count, search_flags,
 #ifdef FEAT_RELTIME
 		&sia
@@ -565,12 +572,13 @@ may_adjust_incsearch_highlighting(
     int	    search_flags = SEARCH_NOOF;
     int	    i;
     int	    save;
+    int	    search_delim;
 
     // Parsing range may already set the last search pattern.
     // NOTE: must call restore_last_search_pattern() before returning!
     save_last_search_pattern();
 
-    if (!do_incsearch_highlighting(firstc, is_state, &skiplen, &patlen))
+    if (!do_incsearch_highlighting(firstc, &search_delim, is_state, &skiplen, &patlen))
     {
 	restore_last_search_pattern();
 	return OK;
@@ -581,7 +589,7 @@ may_adjust_incsearch_highlighting(
 	return FAIL;
     }
 
-    if (firstc == ccline.cmdbuff[skiplen])
+    if (search_delim == ccline.cmdbuff[skiplen])
     {
 	pat = last_search_pattern();
 	skiplen = 0;
@@ -668,13 +676,13 @@ may_adjust_incsearch_highlighting(
     static int
 may_add_char_to_search(int firstc, int *c, incsearch_state_T *is_state)
 {
-    int		skiplen, patlen;
+    int		skiplen, patlen, search_delim;
 
     // Parsing range may already set the last search pattern.
     // NOTE: must call restore_last_search_pattern() before returning!
     save_last_search_pattern();
 
-    if (!do_incsearch_highlighting(firstc, is_state, &skiplen, &patlen))
+    if (!do_incsearch_highlighting(firstc, &search_delim, is_state, &skiplen, &patlen))
     {
 	restore_last_search_pattern();
 	return FAIL;
@@ -693,7 +701,7 @@ may_add_char_to_search(int firstc, int *c, incsearch_state_T *is_state)
 	    // the character to lowercase.
 	    if (p_ic && p_scs && !pat_has_uppercase(ccline.cmdbuff + skiplen))
 		*c = MB_TOLOWER(*c);
-	    if (*c == firstc || vim_strchr((char_u *)(
+	    if (*c == search_delim || vim_strchr((char_u *)(
 			       p_magic ? "\\~^$.*[" : "\\^$"), *c) != NULL)
 	    {
 		// put a backslash before special characters
@@ -752,7 +760,7 @@ cmdline_has_arabic(int start, int len)
     void
 cmdline_init(void)
 {
-    vim_memset(&ccline, 0, sizeof(cmdline_info_T));
+    CLEAR_FIELD(ccline);
 }
 
 /*
@@ -828,7 +836,7 @@ getcmdline_int(
 	did_save_ccline = TRUE;
     }
     if (init_ccline)
-	vim_memset(&ccline, 0, sizeof(cmdline_info_T));
+	CLEAR_FIELD(ccline);
 
 #ifdef FEAT_EVAL
     if (firstc == -1)
@@ -1310,12 +1318,12 @@ getcmdline_int(
 		c = get_expr_register();
 		if (c == '=')
 		{
-		    // Need to save and restore ccline.  And set "textlock"
+		    // Need to save and restore ccline.  And set "textwinlock"
 		    // to avoid nasty things like going to another buffer when
 		    // evaluating an expression.
-		    ++textlock;
+		    ++textwinlock;
 		    p = get_expr_line();
-		    --textlock;
+		    --textwinlock;
 
 		    if (p != NULL)
 		    {
@@ -2458,7 +2466,7 @@ getcmdline_prompt(
 	did_save_ccline = TRUE;
     }
 
-    vim_memset(&ccline, 0, sizeof(cmdline_info_T));
+    CLEAR_FIELD(ccline);
     ccline.cmdprompt = prompt;
     ccline.cmdattr = attr;
 # ifdef FEAT_EVAL
@@ -2540,17 +2548,17 @@ check_opt_wim(void)
 
 /*
  * Return TRUE when the text must not be changed and we can't switch to
- * another window or buffer.  Used when editing the command line, evaluating
+ * another window or buffer.  TRUE when editing the command line, evaluating
  * 'balloonexpr', etc.
  */
     int
-text_locked(void)
+text_and_win_locked(void)
 {
 #ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
 	return TRUE;
 #endif
-    return textlock != 0;
+    return textwinlock != 0;
 }
 
 /*
@@ -2570,7 +2578,19 @@ get_text_locked_msg(void)
     if (cmdwin_type != 0)
 	return e_cmdwin;
 #endif
-    return e_secure;
+    if (textwinlock != 0)
+	return e_textwinlock;
+    return e_textlock;
+}
+
+/*
+ * Return TRUE when the text must not be changed and/or we cannot switch to
+ * another window.  TRUE while evaluating 'completefunc'.
+ */
+    int
+text_locked(void)
+{
+    return text_and_win_locked() || textlock != 0;
 }
 
 /*
@@ -3498,7 +3518,7 @@ save_cmdline(cmdline_info_T *ccp)
 {
     if (!prev_ccline_used)
     {
-	vim_memset(&prev_ccline, 0, sizeof(cmdline_info_T));
+	CLEAR_FIELD(prev_ccline);
 	prev_ccline_used = TRUE;
     }
     *ccp = prev_ccline;
@@ -3552,11 +3572,11 @@ cmdline_paste(
     regname = may_get_selection(regname);
 #endif
 
-    // Need to  set "textlock" to avoid nasty things like going to another
+    // Need to  set "textwinlock" to avoid nasty things like going to another
     // buffer when evaluating an expression.
-    ++textlock;
+    ++textwinlock;
     i = get_spec_reg(regname, &arg, &allocated, TRUE);
-    --textlock;
+    --textwinlock;
 
     if (i)
     {
@@ -4182,13 +4202,16 @@ open_cmdwin(void)
     if (win_split((int)p_cwh, WSP_BOT) == FAIL)
     {
 	beep_flush();
+	ga_clear(&winsizes);
 	return K_IGNORE;
     }
     cmdwin_type = get_cmdline_type();
 
     // Create the command-line buffer empty.
     (void)do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE, NULL);
+    apply_autocmds(EVENT_BUFFILEPRE, NULL, NULL, FALSE, curbuf);
     (void)setfname(curbuf, (char_u *)"[Command Line]", NULL, TRUE);
+    apply_autocmds(EVENT_BUFFILEPOST, NULL, NULL, FALSE, curbuf);
     set_option_value((char_u *)"bt", 0L, (char_u *)"nofile", OPT_LOCAL);
     curbuf->b_p_ma = TRUE;
 #ifdef FEAT_FOLDING
@@ -4372,7 +4395,7 @@ open_cmdwin(void)
 	// win_close() may have already wiped the buffer when 'bh' is
 	// set to 'wipe'
 	if (bufref_valid(&bufref))
-	    close_buffer(NULL, bufref.br_buf, DOBUF_WIPE, FALSE);
+	    close_buffer(NULL, bufref.br_buf, DOBUF_WIPE, FALSE, FALSE);
 
 	// Restore window sizes.
 	win_size_restore(&winsizes);
@@ -4399,44 +4422,37 @@ open_cmdwin(void)
  * Returns a pointer to allocated memory with {script} or NULL.
  */
     char_u *
-script_get(exarg_T *eap, char_u *cmd)
+script_get(exarg_T *eap UNUSED, char_u *cmd UNUSED)
 {
-    char_u	*theline;
-    char	*end_pattern = NULL;
-    char	dot[] = ".";
+#ifdef FEAT_EVAL
+    list_T	*l;
+    listitem_T	*li;
+    char_u	*s;
     garray_T	ga;
 
     if (cmd[0] != '<' || cmd[1] != '<' || eap->getline == NULL)
 	return NULL;
+    cmd += 2;
+
+    l = heredoc_get(eap, cmd, TRUE);
+    if (l == NULL)
+	return NULL;
 
     ga_init2(&ga, 1, 0x400);
 
-    if (cmd[2] != NUL)
-	end_pattern = (char *)skipwhite(cmd + 2);
-    else
-	end_pattern = dot;
-
-    for (;;)
+    FOR_ALL_LIST_ITEMS(l, li)
     {
-	theline = eap->getline(
-#ifdef FEAT_EVAL
-	    eap->cstack->cs_looplevel > 0 ? -1 :
-#endif
-	    NUL, eap->cookie, 0, TRUE);
-
-	if (theline == NULL || STRCMP(end_pattern, theline) == 0)
-	{
-	    vim_free(theline);
-	    break;
-	}
-
-	ga_concat(&ga, theline);
+	s = tv_get_string(&li->li_tv);
+	ga_concat(&ga, s);
 	ga_append(&ga, '\n');
-	vim_free(theline);
     }
     ga_append(&ga, NUL);
 
+    list_free(l);
     return (char_u *)ga.ga_data;
+#else
+    return NULL;
+#endif
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
@@ -4464,6 +4480,8 @@ get_user_input(
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
+    if (input_busy)
+	return;  // this doesn't work recursively.
 
 #ifdef NO_CONSOLE_INPUT
     // While starting up, there is no place to enter text. When running tests
@@ -4524,12 +4542,18 @@ get_user_input(
 	if (defstr != NULL)
 	{
 	    int save_ex_normal_busy = ex_normal_busy;
+	    int save_vgetc_busy = vgetc_busy;
+	    int save_input_busy = input_busy;
 
+	    input_busy |= vgetc_busy;
 	    ex_normal_busy = 0;
+	    vgetc_busy = 0;
 	    rettv->vval.v_string =
 		getcmdline_prompt(secret ? NUL : '@', p, get_echo_attr(),
 							      xp_type, xp_arg);
 	    ex_normal_busy = save_ex_normal_busy;
+	    vgetc_busy = save_vgetc_busy;
+	    input_busy = save_input_busy;
 	}
 	if (inputdialog && rettv->vval.v_string == NULL
 		&& argvars[1].v_type != VAR_UNKNOWN

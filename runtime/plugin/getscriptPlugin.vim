@@ -30,7 +30,7 @@ set cpo&vim
 "  Public Interface: {{{1
 com!        -nargs=0 GetLatestVimScripts call getscript#GetLatestVimScripts()
 com!        -nargs=0 GetScripts          call getscript#GetLatestVimScripts()
-silent! com -nargs=0 GLVS                call getscript#GetLatestVimScripts()
+sil! com    -nargs=0 GLVS                call getscript#GetLatestVimScripts()
 
 " ---------------------------------------------------------------------
 " Restore Options: {{{1

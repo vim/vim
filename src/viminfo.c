@@ -26,6 +26,21 @@ typedef struct
     garray_T	vir_barlines;	// lines starting with |
 } vir_T;
 
+typedef enum {
+    BVAL_NR,
+    BVAL_STRING,
+    BVAL_EMPTY
+} btype_T;
+
+typedef struct {
+    btype_T	bv_type;
+    long	bv_nr;
+    char_u	*bv_string;
+    char_u	*bv_tofree;	// free later when not NULL
+    int		bv_len;		// length of bv_string
+    int		bv_allocated;	// bv_string was allocated
+} bval_T;
+
 #if defined(FEAT_VIMINFO) || defined(PROTO)
 
 static int  viminfo_errcnt;
@@ -1087,22 +1102,24 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 	    s[len] = NUL;
 
 	    converted = FALSE;
+	    value->bv_tofree = NULL;
 	    if (virp->vir_conv.vc_type != CONV_NONE && *s != NUL)
 	    {
 		sconv = string_convert(&virp->vir_conv, s, NULL);
 		if (sconv != NULL)
 		{
 		    if (s == buf)
-			vim_free(s);
+			// the converted string is stored in bv_string and
+			// freed later, also need to free "buf" later
+			value->bv_tofree = buf;
 		    s = sconv;
-		    buf = s;
 		    converted = TRUE;
 		}
 	    }
 
 	    // Need to copy in allocated memory if the string wasn't allocated
 	    // above and we did allocate before, thus vir_line may change.
-	    if (s != buf && allocated)
+	    if (s != buf && allocated && !converted)
 		s = vim_strsave(s);
 	    value->bv_string = s;
 	    value->bv_type = BVAL_STRING;
@@ -1233,7 +1250,12 @@ read_viminfo_varlist(vir_T *virp, int writing)
 		    (void)string2float(tab + 1, &tv.vval.v_float);
 #endif
 		else
+		{
 		    tv.vval.v_number = atol((char *)tab + 1);
+		    if (type == VAR_SPECIAL && (tv.vval.v_number == VVAL_FALSE
+					     || tv.vval.v_number == VVAL_TRUE))
+			tv.v_type = VAR_BOOL;
+		}
 		if (type == VAR_DICT || type == VAR_LIST)
 		{
 		    typval_T *etv = eval_expr(tv.vval.v_string, NULL);
@@ -1312,15 +1334,18 @@ write_viminfo_varlist(FILE *fp)
 	    {
 		switch (this_var->di_tv.v_type)
 		{
-		    case VAR_STRING: s = "STR"; break;
-		    case VAR_NUMBER: s = "NUM"; break;
-		    case VAR_FLOAT:  s = "FLO"; break;
-		    case VAR_DICT:   s = "DIC"; break;
-		    case VAR_LIST:   s = "LIS"; break;
-		    case VAR_BLOB:   s = "BLO"; break;
+		    case VAR_STRING:  s = "STR"; break;
+		    case VAR_NUMBER:  s = "NUM"; break;
+		    case VAR_FLOAT:   s = "FLO"; break;
+		    case VAR_DICT:    s = "DIC"; break;
+		    case VAR_LIST:    s = "LIS"; break;
+		    case VAR_BLOB:    s = "BLO"; break;
+		    case VAR_BOOL:    s = "XPL"; break;  // backwards compat.
 		    case VAR_SPECIAL: s = "XPL"; break;
 
 		    case VAR_UNKNOWN:
+		    case VAR_ANY:
+		    case VAR_VOID:
 		    case VAR_FUNC:
 		    case VAR_PARTIAL:
 		    case VAR_JOB:
@@ -1328,8 +1353,10 @@ write_viminfo_varlist(FILE *fp)
 				     continue;
 		}
 		fprintf(fp, "!%s\t%s\t", this_var->di_key, s);
-		if (this_var->di_tv.v_type == VAR_SPECIAL)
+		if (this_var->di_tv.v_type == VAR_BOOL
+				      || this_var->di_tv.v_type == VAR_SPECIAL)
 		{
+		    // do not use "v:true" but "1"
 		    sprintf((char *)numbuf, "%ld",
 					  (long)this_var->di_tv.vval.v_number);
 		    p = numbuf;
@@ -2055,8 +2082,7 @@ write_viminfo_filemarks(FILE *fp)
     for (i = 0; i < NMARKS; i++)
     {
 	if (vi_namedfm != NULL
-			&& (vi_namedfm[i].time_set > namedfm_p[i].time_set
-			    || namedfm_p[i].fmark.mark.lnum == 0))
+			&& (vi_namedfm[i].time_set > namedfm_p[i].time_set))
 	    fm = &vi_namedfm[i];
 	else
 	    fm = &namedfm_p[i];
@@ -2739,6 +2765,7 @@ read_viminfo_barline(vir_T *virp, int got_encoding, int force, int writing)
 	    vp = (bval_T *)values.ga_data + i;
 	    if (vp->bv_type == BVAL_STRING && vp->bv_allocated)
 		vim_free(vp->bv_string);
+	    vim_free(vp->bv_tofree);
 	}
 	ga_clear(&values);
     }
@@ -2966,7 +2993,7 @@ read_viminfo(
     if (p_verbose > 0)
     {
 	verbose_enter();
-	smsg(_("Reading viminfo file \"%s\"%s%s%s"),
+	smsg(_("Reading viminfo file \"%s\"%s%s%s%s"),
 		fname,
 		(flags & VIF_WANT_INFO) ? _(" info") : "",
 		(flags & VIF_WANT_MARKS) ? _(" marks") : "",

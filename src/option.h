@@ -10,6 +10,9 @@
  * option.h: definition of global variables for settable options
  */
 
+#ifndef _OPTION_H_
+#define _OPTION_H_
+
 //
 // Flags
 //
@@ -342,9 +345,14 @@
 #define WIM_BUFLASTUSED	0x08
 
 // arguments for can_bs()
+// each defined char should be unique over all values
+// except for BS_START, that intentionally also matches BS_NOSTOP
+// because BS_NOSTOP behaves exactly the same except it
+// does not stop at the start of the insert point
 #define BS_INDENT	'i'	// "Indent"
-#define BS_EOL		'o'	// "eOl"
+#define BS_EOL		'l'	// "eoL"
 #define BS_START	's'	// "Start"
+#define BS_NOSTOP	'p'	// "nostoP
 
 // flags for the 'culopt' option
 #define CULOPT_LINE	0x01	// Highlight complete line
@@ -401,7 +409,7 @@ EXTERN char_u	*p_bex;		// 'backupext'
 EXTERN char_u	*p_bo;		// 'belloff'
 EXTERN unsigned	bo_flags;
 
-// values for the 'beepon' option
+// values for the 'belloff' option
 #define BO_ALL		0x0001
 #define BO_BS		0x0002
 #define BO_CRSR		0x0004
@@ -1067,7 +1075,7 @@ EXTERN int	p_wb;		// 'writebackup'
 EXTERN long	p_wd;		// 'writedelay'
 
 /*
- * "indir" values for buffer-local opions.
+ * "indir" values for buffer-local options.
  * These need to be defined globally, so that the BV_COUNT can be used with
  * b_p_scriptID[].
  */
@@ -1291,3 +1299,5 @@ enum
 
 // Value for b_p_ul indicating the global value must be used.
 #define NO_LOCAL_UNDOLEVEL -123456
+
+#endif // _OPTION_H_

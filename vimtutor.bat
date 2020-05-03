@@ -10,7 +10,20 @@
 :: When that also fails, it uses the English version.
 
 :: Use Vim to copy the tutor, it knows the value of $VIMRUNTIME
-FOR %%d in (. "%TMP%" "%TEMP%") DO IF EXIST %%d\nul SET TUTORCOPY=%%d\$tutor$
+FOR %%d in (. %TMP% %TEMP%) DO (
+    call :test_dir_writable %0 %%d
+    IF NOT ERRORLEVEL 1 GOTO dir_ok
+)
+
+echo No working directory is found
+GOTO end
+
+:test_dir_writable
+SET TUTORCOPY=%2\$tutor$
+COPY %1 %TUTORCOPY% >nul 2>nul
+GOTO end
+
+:dir_ok
 
 SET xx=%1
 
@@ -25,23 +38,11 @@ GOTO use_vim
 :: installation.
 
 :: The script tutor.vim tells Vim which file to copy.
-:: For Windows NT "start" works a bit differently.
-IF .%OS%==.Windows_NT GOTO ntaction
-
-start /w gvim -u NONE -c "so $VIMRUNTIME/tutor/tutor.vim"
+start "dummy" /b /w "%~dp0gvim.exe" -u NONE -c "so $VIMRUNTIME/tutor/tutor.vim"
 IF ERRORLEVEL 1 GOTO use_vim
 
 :: Start gvim without any .vimrc, set 'nocompatible'
-start /w gvim -u NONE -c "set nocp" %TUTORCOPY%
-
-GOTO end
-
-:ntaction
-start "dummy" /b /w gvim -u NONE -c "so $VIMRUNTIME/tutor/tutor.vim"
-IF ERRORLEVEL 1 GOTO use_vim
-
-:: Start gvim without any .vimrc, set 'nocompatible'
-start "dummy" /b /w gvim -u NONE -c "set nocp" %TUTORCOPY%
+start "dummy" /b /w "%~dp0gvim.exe" -u NONE -c "set nocp" %TUTORCOPY%
 
 GOTO end
 

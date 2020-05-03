@@ -1,4 +1,5 @@
 source view_util.vim
+source check.vim
 
 let s:imactivatefunc_called = 0
 let s:imstatusfunc_called = 0
@@ -31,7 +32,12 @@ func Test_iminsert2()
   call assert_equal(expected, s:imstatusfunc_called)
 endfunc
 
-func Test_imgetstatus()
+func Test_getimstatus()
+  if has('win32')
+    CheckFeature multi_byte_ime
+  elseif !has('gui_mac')
+    CheckFeature xim
+  endif
   if has('gui_running')
     if !has('win32')
       throw 'Skipped: running in the GUI, only works on MS-Windows'
@@ -56,3 +62,25 @@ func Test_imgetstatus()
   set imactivatefunc=
   set imstatusfunc=
 endfunc
+
+" Test for using an lmap in insert mode
+func Test_lmap_in_insert_mode()
+  new
+  call setline(1, 'abc')
+  lmap { w
+  set iminsert=1
+  call feedkeys('r{', 'xt')
+  call assert_equal('wbc', getline(1))
+  set iminsert=2
+  call feedkeys('$r{', 'xt')
+  call assert_equal('wb{', getline(1))
+  call setline(1, 'vim web')
+  set iminsert=1
+  call feedkeys('0f{', 'xt')
+  call assert_equal(5, col('.'))
+  set iminsert&
+  lunmap {
+  close!
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

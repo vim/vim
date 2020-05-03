@@ -80,7 +80,7 @@ func Test_digraphs()
   call Put_Dig(".e")
   call Put_Dig("a.") " not defined
   call assert_equal(['ḃ', 'ė', '.'], getline(line('.')-2,line('.')))
-  " Diaresis
+  " Diaeresis
   call Put_Dig("a:")
   call Put_Dig(":u")
   call Put_Dig("b:") " not defined
@@ -210,6 +210,10 @@ func Test_digraphs()
   call Put_Dig("00")
   call Put_Dig("el")
   call assert_equal(['␀', 'ü', '∞', 'l'], getline(line('.')-3,line('.')))
+  call assert_fails('exe "digraph a\<Esc> 100"', 'E104:')
+  call assert_fails('exe "digraph \<Esc>a 100"', 'E104:')
+  call assert_fails('digraph xy z', 'E39:')
+  call assert_fails('digraph x', 'E474:')
   bw!
 endfunc
 
@@ -285,7 +289,7 @@ func Test_digraphs_option()
   call Put_Dig_BS(".","e")
   call Put_Dig_BS("a",".") " not defined
   call assert_equal(['ḃ', 'ė', '.'], getline(line('.')-2,line('.')))
-  " Diaresis
+  " Diaeresis
   call Put_Dig_BS("a",":")
   call Put_Dig_BS(":","u")
   call Put_Dig_BS("b",":") " not defined
@@ -432,6 +436,18 @@ func Test_digraphs_output()
   call assert_equal('Z% Ж  1046',  matchstr(out, '\C\<Z%\D*1046\>'))
   call assert_equal('u- ū  363',   matchstr(out, '\C\<u-\D*363\>'))
   call assert_equal('SH ^A   1',   matchstr(out, '\C\<SH\D*1\>'))
+  call assert_notmatch('Latin supplement', out)
+
+  let out_bang_without_custom = execute(':digraph!')
+  digraph lt 60
+  let out_bang_with_custom = execute(':digraph!')
+  call assert_notmatch('lt', out_bang_without_custom)
+  call assert_match("^\n"
+        \        .. "NU ^@  10 .*\n"
+        \        .. "Latin supplement\n"
+        \        .. "!I ¡  161 .*\n"
+        \        .. ".*\n"
+        \        .. 'Custom\n.*\<lt <   60\>', out_bang_with_custom)
   bw!
 endfunc
 
@@ -451,10 +467,12 @@ endfunc
 
 func Test_digraph_cmndline()
   " Create digraph on commandline
-  " This is a hack, to let Vim create the digraph in commandline mode
-  let s = ''
-  exe "sil! norm! :let s.='\<c-k>Eu'\<cr>"
-  call assert_equal("€", s)
+  call feedkeys(":\"\<c-k>Eu\<cr>", 'xt')
+  call assert_equal('"€', @:)
+
+  " Canceling a CTRL-K on the cmdline
+  call feedkeys(":\"a\<c-k>\<esc>b\<cr>", 'xt')
+  call assert_equal('"ab', @:)
 endfunc
 
 func Test_show_digraph()
@@ -471,6 +489,17 @@ func Test_show_digraph_cp1251()
   call assert_equal("\n<\xfa>  <|z>  <M-z>  250,  Hex fa,  Oct 372, Digr ='", execute('ascii'))
   set encoding=utf-8
   bwipe!
+endfunc
+
+" Test for error in a keymap file
+func Test_loadkeymap_error()
+  if !has('keymap')
+    return
+  endif
+  call assert_fails('loadkeymap', 'E105:')
+  call writefile(['loadkeymap', 'a'], 'Xkeymap')
+  call assert_fails('source Xkeymap', 'E791:')
+  call delete('Xkeymap')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

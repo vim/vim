@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.1.  Last change: 2019 Dec 01
+*various.txt*   For Vim version 8.2.  Last change: 2020 Apr 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -53,7 +53,7 @@ ga			Print the ascii value of the character under the
 			When the character is a non-standard ASCII character,
 			but printable according to the 'isprint' option, the
 			non-printable version is also given.
-			
+
 			When the character is larger than 127, the <M-x> form
 			is also printed.  For example:
 				<~A>  <M-^A>  129,  Hex 81,  Octal 201 ~
@@ -317,6 +317,7 @@ g8			Print the hex values of the bytes used in the
    *+acl*		|ACL| support included
    *+ARP*		Amiga only: ARP support included
 B  *+arabic*		|Arabic| language support
+B  *+autochdir*		support 'autochdir' option
 T  *+autocmd*		|:autocmd|, automatic commands
 H  *+autoservername*	Automatically enable |clientserver|
 m  *+balloon_eval*	|balloon-eval| support in the GUI. Included when
@@ -374,6 +375,7 @@ m  *+hangul_input*	Hangul input support |hangul|
    *+iconv*		Compiled with the |iconv()| function
    *+iconv/dyn*		Likewise |iconv-dynamic| |/dyn|
 T  *+insert_expand*	|insert_expand| Insert mode completion
+m  *+ipv6*		Support for IPv6 networking |channel|
 m  *+job*		starting and stopping jobs |job|
 S  *+jumplist*		|jumplist|
 B  *+keymap*		|'keymap'|
@@ -407,7 +409,9 @@ N  *+multi_lang*	non-English language support |multi-lang|
 m  *+mzscheme*		Mzscheme interface |mzscheme|
 m  *+mzscheme/dyn*	Mzscheme interface |mzscheme-dynamic| |/dyn|
 m  *+netbeans_intg*	|netbeans|
-   *+num64*		64-bit Number support |Number|
+   *+num64*		64-bit Number support |Number| 
+   			Always enabled since 8.2.0271, use v:numbersize to
+			check the actual size of a Number.
 m  *+ole*		Win32 GUI only: |ole-interface|
 N  *+packages*		Loading |packages|
 N  *+path_extra*	Up/downwards search in 'path' and 'tags'
@@ -518,11 +522,11 @@ N  *+X11*		Unix only: can restore window title |X11|
 			optional.
 :redi[r] @{a-z}>>	Append messages to register {a-z}.
 
-:redi[r] @*>		
+:redi[r] @*>
 :redi[r] @+>		Redirect messages to the selection or clipboard. For
 			backward compatibility, the ">" after the register
 			name can be omitted. See |quotestar| and |quoteplus|.
-:redi[r] @*>>		
+:redi[r] @*>>
 :redi[r] @+>>		Append messages to the selection or clipboard.
 
 :redi[r] @">		Redirect messages to the unnamed register. For
@@ -539,7 +543,7 @@ N  *+X11*		Unix only: can restore window title |X11|
 			locked or the variable type is changed, then further
 			command output messages will cause errors.
 			To get the output of one command the |execute()|
-			function can be used.
+			function can be used instead of redirection.
 
 :redi[r] =>> {var}	Append messages to an existing variable.  Only string
 			variables can be used.
@@ -702,8 +706,8 @@ K			Run a program to lookup the keyword under the
 			     :5sleep	     "sleep for five seconds
 			     :sleep 100m     "sleep for a hundred milliseconds
 			     10gs	     "sleep for ten seconds
-<			Can be interrupted with CTRL-C (CTRL-Break on MS-DOS).
-			"gs" stands for "goto sleep".
+<			Can be interrupted with CTRL-C (CTRL-Break on
+			MS-Windows).  "gs" stands for "goto sleep".
 			While sleeping the cursor is positioned in the text,
 			if at a visible position.
 			Also process the received netbeans messages. {only
@@ -715,7 +719,7 @@ K			Run a program to lookup the keyword under the
 			after the X server restarts, e.g. when running Vim for
 			long time inside screen/tmux and connecting from
 			different machines.
-			[display] should be in the format of the $DISPLAY 
+			[display] should be in the format of the $DISPLAY
 			environment variable (e.g. "localhost:10.0")
 			If [display] is	omitted, then it reinitializes the
 			connection to the X11 server using the same value as
@@ -723,7 +727,7 @@ K			Run a program to lookup the keyword under the
 			If the value was never specified, then it uses the
 			value of $DISPLAY environment variable as it was when
 			Vim was started.
-			{only available when compiled with the |+clipboard| 
+			{only available when compiled with the |+clipboard|
 			feature}
 
 							*g_CTRL-A*

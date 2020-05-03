@@ -398,16 +398,6 @@ static const luaV_Reg luaV_dll[] = {
 
 static HANDLE hinstLua = NULL;
 
-    static void
-end_dynamic_lua(void)
-{
-    if (hinstLua)
-    {
-	close_dll(hinstLua);
-	hinstLua = 0;
-    }
-}
-
     static int
 lua_link_init(char *libname, int verbose)
 {
@@ -535,6 +525,7 @@ luaV_pushtypval(lua_State *L, typval_T *tv)
 	case VAR_DICT:
 	    luaV_pushdict(L, tv->vval.v_dict);
 	    break;
+	case VAR_BOOL:
 	case VAR_SPECIAL:
 	    if (tv->vval.v_number <= VVAL_TRUE)
 		lua_pushinteger(L, (int) tv->vval.v_number);
@@ -564,7 +555,7 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
     switch (lua_type(L, pos))
     {
 	case LUA_TBOOLEAN:
-	    tv->v_type = VAR_SPECIAL;
+	    tv->v_type = VAR_BOOL;
 	    tv->vval.v_number = (varnumber_T) lua_toboolean(L, pos);
 	    break;
 	case LUA_TNIL:
@@ -840,8 +831,7 @@ luaV_list_newindex(lua_State *L)
     if (lua_isnil(L, 3)) // remove?
     {
 	vimlist_remove(l, li, li);
-	clear_tv(&li->li_tv);
-	vim_free(li);
+	listitem_free(l, li);
     }
     else
     {
@@ -1148,7 +1138,7 @@ luaV_blob_add(lua_State *L)
 	size_t i, l = 0;
 	const char *s = lua_tolstring(L, 2, &l);
 
-	if (ga_grow(&b->bv_ga, l) == OK)
+	if (ga_grow(&b->bv_ga, (int)l) == OK)
 	    for (i = 0; i < l; ++i)
 		ga_append(&b->bv_ga, s[i]);
     }
@@ -1781,7 +1771,7 @@ luaV_blob(lua_State *L)
 	    size_t i, l = 0;
 	    const char *s = lua_tolstring(L, 1, &l);
 
-	    if (ga_grow(&b->bv_ga, l) == OK)
+	    if (ga_grow(&b->bv_ga, (int)l) == OK)
 		for (i = 0; i < l; ++i)
 		    ga_append(&b->bv_ga, s[i]);
 	}
@@ -2121,9 +2111,6 @@ lua_end(void)
     {
 	lua_close(L);
 	L = NULL;
-#ifdef DYNAMIC_LUA
-	end_dynamic_lua();
-#endif
     }
 }
 

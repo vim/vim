@@ -1742,18 +1742,27 @@ func Test_sign_cursor_position()
 	call setline(1, [repeat('x', 75), 'mmmm', 'yyyy'])
 	call cursor(2,1)
    	sign define s1 texthl=Search text==>
+   	sign define s2 linehl=Pmenu
 	redraw
    	sign place 10 line=2 name=s1
   END
   call writefile(lines, 'XtestSigncolumn')
   let buf = RunVimInTerminal('-S XtestSigncolumn', {'rows': 6})
-  call VerifyScreenDump(buf, 'Test_sign_cursor_01', {})
+  call VerifyScreenDump(buf, 'Test_sign_cursor_1', {})
+
+  " Change the sign text
+  call term_sendkeys(buf, ":sign define s1 text=-)\<CR>")
+  call VerifyScreenDump(buf, 'Test_sign_cursor_2', {})
+
+  " Also place a line HL sign
+  call term_sendkeys(buf, ":sign place 11 line=2 name=s2\<CR>")
+  call VerifyScreenDump(buf, 'Test_sign_cursor_3', {})
 
   " update cursor position calculation
   call term_sendkeys(buf, "lh")
+  call term_sendkeys(buf, ":sign unplace 11\<CR>")
   call term_sendkeys(buf, ":sign unplace 10\<CR>")
-  call VerifyScreenDump(buf, 'Test_sign_cursor_02', {})
-
+  call VerifyScreenDump(buf, 'Test_sign_cursor_4', {})
 
   " clean up
   call StopVimInTerminal(buf)

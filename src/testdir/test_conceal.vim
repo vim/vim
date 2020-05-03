@@ -1,5 +1,4 @@
 " Tests for 'conceal'.
-" Also see test88.in (should be converted to a test function here).
 
 source check.vim
 CheckFeature conceal
@@ -148,10 +147,111 @@ func Test_conceal_resize_term()
   call VerifyScreenDump(buf, 'Test_conceal_resize_01', {})
 
   call win_execute(buf->win_findbuf()[0], 'wincmd +')
-  call term_wait(buf)
+  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_conceal_resize_02', {})
 
   " clean up
   call StopVimInTerminal(buf)
   call delete('XTest_conceal_resize')
 endfunc
+
+" Tests for correct display (cursor column position) with +conceal and
+" tabulators.  Need to run this test in a separate Vim instance. Otherwise the
+" screen is not updated (lazy redraw) and the cursor position is wrong.
+func Test_conceal_cursor_pos()
+  let code =<< trim [CODE]
+    :let l = ['start:', '.concealed.     text', "|concealed|\ttext"]
+    :let l += ['', "\t.concealed.\ttext", "\t|concealed|\ttext", '']
+    :let l += [".a.\t.b.\t.c.\t.d.", "|a|\t|b|\t|c|\t|d|"]
+    :call append(0, l)
+    :call cursor(1, 1)
+    :" Conceal settings.
+    :set conceallevel=2
+    :set concealcursor=nc
+    :syntax match test /|/ conceal
+    :" Save current cursor position. Only works in <expr> mode, can't be used
+    :" with :normal because it moves the cursor to the command line. Thanks
+    :" to ZyX <zyx.vim@gmail.com> for the idea to use an <expr> mapping.
+    :let curpos = []
+    :nnoremap <expr> GG ":let curpos += ['".screenrow().":".screencol()."']\n"
+    :normal ztj
+    GGk
+    :" We should end up in the same column when running these commands on the
+    :" two lines.
+    :normal ft
+    GGk
+    :normal $
+    GGk
+    :normal 0j
+    GGk
+    :normal ft
+    GGk
+    :normal $
+    GGk
+    :normal 0j0j
+    GGk
+    :" Same for next test block.
+    :normal ft
+    GGk
+    :normal $
+    GGk
+    :normal 0j
+    GGk
+    :normal ft
+    GGk
+    :normal $
+    GGk
+    :normal 0j0j
+    GGk
+    :" And check W with multiple tabs and conceals in a line.
+    :normal W
+    GGk
+    :normal W
+    GGk
+    :normal W
+    GGk
+    :normal $
+    GGk
+    :normal 0j
+    GGk
+    :normal W
+    GGk
+    :normal W
+    GGk
+    :normal W
+    GGk
+    :normal $
+    GGk
+    :set lbr
+    :normal $
+    GGk
+    :set list listchars=tab:>-
+    :normal 0
+    GGk
+    :normal W
+    GGk
+    :normal W
+    GGk
+    :normal W
+    GGk
+    :normal $
+    GGk
+    :call writefile(curpos, 'Xconceal_curpos.out')
+    :q!
+
+  [CODE]
+  call writefile(code, 'XTest_conceal_curpos')
+
+  if RunVim([], [], '-s XTest_conceal_curpos')
+    call assert_equal([
+          \ '2:1', '2:17', '2:20', '3:1', '3:17', '3:20', '5:8', '5:25',
+          \ '5:28', '6:8', '6:25', '6:28', '8:1', '8:9', '8:17', '8:25',
+          \ '8:27', '9:1', '9:9', '9:17', '9:25', '9:26', '9:26', '9:1',
+          \ '9:9', '9:17', '9:25', '9:26'], readfile('Xconceal_curpos.out'))
+  endif
+
+  call delete('Xconceal_curpos.out')
+  call delete('XTest_conceal_curpos')
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

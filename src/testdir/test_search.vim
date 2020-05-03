@@ -5,9 +5,8 @@ source screendump.vim
 source check.vim
 
 func Test_search_cmdline()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   " need to disable char_avail,
   " so that expansion of commandline works
   call test_override("char_avail", 1)
@@ -18,9 +17,9 @@ func Test_search_cmdline()
   set noincsearch
   :1
   call feedkeys("/foobar\<cr>", 'tx')
-  call feedkeys("/the\<cr>",'tx')
+  call feedkeys("/the\<cr>", 'tx')
   call assert_equal('the', @/)
-  call feedkeys("/thes\<C-P>\<C-P>\<cr>",'tx')
+  call feedkeys("/thes\<C-P>\<C-P>\<cr>", 'tx')
   call assert_equal('foobar', @/)
 
   " Test 2
@@ -57,7 +56,7 @@ func Test_search_cmdline()
   call feedkeys("/the".repeat("\<C-G>", 6)."\<cr>", 'tx')
   call assert_equal('  8 them', getline('.'))
   :1
-  " eigth match
+  " eighth match
   call feedkeys("/the".repeat("\<C-G>", 7)."\<cr>", 'tx')
   call assert_equal('  9 these', getline('.'))
   :1
@@ -99,7 +98,7 @@ func Test_search_cmdline()
   call feedkeys("/the".repeat("\<C-G>", 6)."\<cr>", 'tx')
   call assert_equal('  8 them', getline('.'))
   :1
-  " eigth match
+  " eighth match
   call feedkeys("/the".repeat("\<C-G>", 7)."\<cr>", 'tx')
   call assert_equal('  9 these', getline('.'))
   :1
@@ -202,9 +201,8 @@ func Test_search_cmdline()
 endfunc
 
 func Test_search_cmdline2()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   " need to disable char_avail,
   " so that expansion of commandline works
   call test_override("char_avail", 1)
@@ -290,15 +288,84 @@ endfunc
 
 func Test_searchpair()
   new
-  call setline(1, ['other code here', '', '[', '" cursor here', ']'])
+  call setline(1, ['other code', 'here [', ' [', ' " cursor here', ' ]]'])
+
   4
-  let a = searchpair('\[','',']','bW')
-  call assert_equal(3, a)
+  call assert_equal(3, searchpair('\[', '', ']', 'bW'))
+  call assert_equal([0, 3, 2, 0], getpos('.'))
+  4
+  call assert_equal(2, searchpair('\[', '', ']', 'bWr'))
+  call assert_equal([0, 2, 6, 0], getpos('.'))
+  4
+  call assert_equal(1, searchpair('\[', '', ']', 'bWm'))
+  call assert_equal([0, 3, 2, 0], getpos('.'))
+  4|norm ^
+  call assert_equal(5, searchpair('\[', '', ']', 'Wn'))
+  call assert_equal([0, 4, 2, 0], getpos('.'))
+  4
+  call assert_equal(2, searchpair('\[', '', ']', 'bW',
+        \                         'getline(".") =~ "^\\s*\["'))
+  call assert_equal([0, 2, 6, 0], getpos('.'))
   set nomagic
   4
-  let a = searchpair('\[','',']','bW')
-  call assert_equal(3, a)
+  call assert_equal(3, searchpair('\[', '', ']', 'bW'))
+  call assert_equal([0, 3, 2, 0], getpos('.'))
   set magic
+  4|norm ^
+  call assert_equal(0, searchpair('{', '', '}', 'bW'))
+  call assert_equal([0, 4, 2, 0], getpos('.'))
+
+  %d
+  call setline(1, ['if 1', '  if 2', '  else', '  endif 2', 'endif 1'])
+
+  /\<if 1
+  call assert_equal(5, searchpair('\<if\>', '\<else\>', '\<endif\>', 'W'))
+  call assert_equal([0, 5, 1, 0], getpos('.'))
+  /\<if 2
+  call assert_equal(3, searchpair('\<if\>', '\<else\>', '\<endif\>', 'W'))
+  call assert_equal([0, 3, 3, 0], getpos('.'))
+
+  q!
+endfunc
+
+func Test_searchpairpos()
+  new
+  call setline(1, ['other code', 'here [', ' [', ' " cursor here', ' ]]'])
+
+  4
+  call assert_equal([3, 2], searchpairpos('\[', '', ']', 'bW'))
+  call assert_equal([0, 3, 2, 0], getpos('.'))
+  4
+  call assert_equal([2, 6], searchpairpos('\[', '', ']', 'bWr'))
+  call assert_equal([0, 2, 6, 0], getpos('.'))
+  4|norm ^
+  call assert_equal([5, 2], searchpairpos('\[', '', ']', 'Wn'))
+  call assert_equal([0, 4, 2, 0], getpos('.'))
+  4
+  call assert_equal([2, 6], searchpairpos('\[', '', ']', 'bW',
+        \                                 'getline(".") =~ "^\\s*\["'))
+  call assert_equal([0, 2, 6, 0], getpos('.'))
+  4
+  call assert_equal([2, 6], searchpairpos('\[', '', ']', 'bWr'))
+  call assert_equal([0, 2, 6, 0], getpos('.'))
+  set nomagic
+  4
+  call assert_equal([3, 2], searchpairpos('\[', '', ']', 'bW'))
+  call assert_equal([0, 3, 2, 0], getpos('.'))
+  set magic
+  4|norm ^
+  call assert_equal([0, 0], searchpairpos('{', '', '}', 'bW'))
+  call assert_equal([0, 4, 2, 0], getpos('.'))
+
+  %d
+  call setline(1, ['if 1', '  if 2', '  else', '  endif 2', 'endif 1'])
+  /\<if 1
+  call assert_equal([5, 1], searchpairpos('\<if\>', '\<else\>', '\<endif\>', 'W'))
+  call assert_equal([0, 5, 1, 0], getpos('.'))
+  /\<if 2
+  call assert_equal([3, 3], searchpairpos('\<if\>', '\<else\>', '\<endif\>', 'W'))
+  call assert_equal([0, 3, 3, 0], getpos('.'))
+
   q!
 endfunc
 
@@ -310,14 +377,28 @@ func Test_searchpair_errors()
   call assert_fails("call searchpair('start', 'middle', 'end', 'bW', 0, 99, 100)", 'E475: Invalid argument: 0')
   call assert_fails("call searchpair('start', 'middle', 'end', 'bW', 'func', -99, 100)", 'E475: Invalid argument: -99')
   call assert_fails("call searchpair('start', 'middle', 'end', 'bW', 'func', 99, -100)", 'E475: Invalid argument: -100')
+  call assert_fails("call searchpair('start', 'middle', 'end', 'e')", 'E475: Invalid argument: e')
+  call assert_fails("call searchpair('start', 'middle', 'end', 'sn')", 'E475: Invalid argument: sn')
+endfunc
+
+func Test_searchpairpos_errors()
+  call assert_fails("call searchpairpos([0], 'middle', 'end', 'bW', 'skip', 99, 100)", 'E730: using List as a String')
+  call assert_fails("call searchpairpos('start', {-> 0}, 'end', 'bW', 'skip', 99, 100)", 'E729: using Funcref as a String')
+  call assert_fails("call searchpairpos('start', 'middle', {'one': 1}, 'bW', 'skip', 99, 100)", 'E731: using Dictionary as a String')
+  call assert_fails("call searchpairpos('start', 'middle', 'end', 'flags', 'skip', 99, 100)", 'E475: Invalid argument: flags')
+  call assert_fails("call searchpairpos('start', 'middle', 'end', 'bW', 0, 99, 100)", 'E475: Invalid argument: 0')
+  call assert_fails("call searchpairpos('start', 'middle', 'end', 'bW', 'func', -99, 100)", 'E475: Invalid argument: -99')
+  call assert_fails("call searchpairpos('start', 'middle', 'end', 'bW', 'func', 99, -100)", 'E475: Invalid argument: -100')
+  call assert_fails("call searchpairpos('start', 'middle', 'end', 'e')", 'E475: Invalid argument: e')
+  call assert_fails("call searchpairpos('start', 'middle', 'end', 'sn')", 'E475: Invalid argument: sn')
 endfunc
 
 func Test_searchpair_skip()
     func Zero()
-	return 0
+      return 0
     endfunc
     func Partial(x)
-	return a:x
+      return a:x
     endfunc
     new
     call setline(1, ['{', 'foo', 'foo', 'foo', '}'])
@@ -363,9 +444,8 @@ func Incsearch_cleanup()
 endfunc
 
 func Test_search_cmdline3()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   call Cmdline3_prep()
   1
   " first match
@@ -376,9 +456,8 @@ func Test_search_cmdline3()
 endfunc
 
 func Test_search_cmdline3s()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   call Cmdline3_prep()
   1
   call feedkeys(":%s/the\<c-l>/xxx\<cr>", 'tx')
@@ -402,9 +481,8 @@ func Test_search_cmdline3s()
 endfunc
 
 func Test_search_cmdline3g()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   call Cmdline3_prep()
   1
   call feedkeys(":g/the\<c-l>/d\<cr>", 'tx')
@@ -425,9 +503,8 @@ func Test_search_cmdline3g()
 endfunc
 
 func Test_search_cmdline3v()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   call Cmdline3_prep()
   1
   call feedkeys(":v/the\<c-l>/d\<cr>", 'tx')
@@ -442,9 +519,8 @@ func Test_search_cmdline3v()
 endfunc
 
 func Test_search_cmdline4()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   " need to disable char_avail,
   " so that expansion of commandline works
   call test_override("char_avail", 1)
@@ -476,9 +552,8 @@ func Test_search_cmdline4()
 endfunc
 
 func Test_search_cmdline5()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   " Do not call test_override("char_avail", 1) so that <C-g> and <C-t> work
   " regardless char_avail.
   new
@@ -498,9 +573,8 @@ endfunc
 func Test_search_cmdline6()
   " Test that consecutive matches
   " are caught by <c-g>/<c-t>
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   " need to disable char_avail,
   " so that expansion of commandline works
   call test_override("char_avail", 1)
@@ -538,9 +612,8 @@ endfunc
 func Test_search_cmdline7()
   " Test that an pressing <c-g> in an empty command line
   " does not move the cursor
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   " need to disable char_avail,
   " so that expansion of commandline works
   call test_override("char_avail", 1)
@@ -599,7 +672,7 @@ func Test_search_cmdline8()
   call term_sendkeys(buf, "/vim\<cr>")
   call term_sendkeys(buf, "/b\<esc>")
   call term_sendkeys(buf, "gg0")
-  call term_wait(buf, 500)
+  call TermWait(buf, 250)
   let screen_line = term_scrape(buf, 1)
   let [a0,a1,a2,a3] = [screen_line[3].attr, screen_line[4].attr,
         \ screen_line[18].attr, screen_line[19].attr]
@@ -615,9 +688,7 @@ func Test_search_cmdline8()
 endfunc
 
 " Tests for regexp with various magic settings
-func Test_search_regexp()
-  enew!
-
+func Run_search_regexp_magic_opt()
   put ='1 a aa abb abbccc'
   exe 'normal! /a*b\{2}c\+/e' . "\<CR>"
   call assert_equal([0, 2, 17, 0], getpos('.'))
@@ -652,6 +723,18 @@ func Test_search_regexp()
   exe 'normal! /\V[ab]\(\[xy]\)\1' . "\<CR>"
   call assert_equal([0, 9, 7, 0], getpos('.'))
 
+  %d
+endfunc
+
+func Test_search_regexp()
+  enew!
+
+  set regexpengine=1
+  call Run_search_regexp_magic_opt()
+  set regexpengine=2
+  call Run_search_regexp_magic_opt()
+  set regexpengine&
+
   set undolevels=100
   put ='9 foobar'
   put =''
@@ -659,21 +742,20 @@ func Test_search_regexp()
   normal G
   exe 'normal! dv?bar?' . "\<CR>"
   call assert_equal('9 foo', getline('.'))
-  call assert_equal([0, 10, 5, 0], getpos('.'))
-  call assert_equal(10, line('$'))
+  call assert_equal([0, 2, 5, 0], getpos('.'))
+  call assert_equal(2, line('$'))
   normal u
   call assert_equal('9 foobar', getline('.'))
-  call assert_equal([0, 10, 6, 0], getpos('.'))
-  call assert_equal(11, line('$'))
+  call assert_equal([0, 2, 6, 0], getpos('.'))
+  call assert_equal(3, line('$'))
 
   set undolevels&
   enew!
 endfunc
 
 func Test_search_cmdline_incsearch_highlight()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   set incsearch hlsearch
   " need to disable char_avail,
   " so that expansion of commandline works
@@ -720,12 +802,12 @@ func Test_search_cmdline_incsearch_highlight_attr()
 
   call WaitForAssert({-> assert_equal(lines, [term_getline(buf, 1), term_getline(buf, 2)])})
   " wait for vim to complete initialization
-  call term_wait(buf)
+  call TermWait(buf)
 
   " Get attr of normal(a0), incsearch(a1), hlsearch(a2) highlight
   call term_sendkeys(buf, ":set incsearch hlsearch\<cr>")
   call term_sendkeys(buf, '/b')
-  call term_wait(buf, 200)
+  call TermWait(buf, 100)
   let screen_line1 = term_scrape(buf, 1)
   call assert_true(len(screen_line1) > 2)
   " a0: attr_normal
@@ -741,7 +823,7 @@ func Test_search_cmdline_incsearch_highlight_attr()
 
   " Test incremental highlight search
   call term_sendkeys(buf, "/vim")
-  call term_wait(buf, 200)
+  call TermWait(buf, 100)
   " Buffer:
   " abb vim vim vi
   " vimvivim
@@ -753,7 +835,7 @@ func Test_search_cmdline_incsearch_highlight_attr()
 
   " Test <C-g>
   call term_sendkeys(buf, "\<C-g>\<C-g>")
-  call term_wait(buf, 200)
+  call TermWait(buf, 100)
   let attr_line1 = [a0,a0,a0,a0,a2,a2,a2,a0,a2,a2,a2,a0,a0,a0]
   let attr_line2 = [a1,a1,a1,a0,a0,a2,a2,a2]
   call assert_equal(attr_line1, map(term_scrape(buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
@@ -761,7 +843,7 @@ func Test_search_cmdline_incsearch_highlight_attr()
 
   " Test <C-t>
   call term_sendkeys(buf, "\<C-t>")
-  call term_wait(buf, 200)
+  call TermWait(buf, 100)
   let attr_line1 = [a0,a0,a0,a0,a2,a2,a2,a0,a1,a1,a1,a0,a0,a0]
   let attr_line2 = [a2,a2,a2,a0,a0,a2,a2,a2]
   call assert_equal(attr_line1, map(term_scrape(buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
@@ -769,7 +851,7 @@ func Test_search_cmdline_incsearch_highlight_attr()
 
   " Type Enter and a1(incsearch highlight) should become a2(hlsearch highlight)
   call term_sendkeys(buf, "\<cr>")
-  call term_wait(buf, 200)
+  call TermWait(buf, 100)
   let attr_line1 = [a0,a0,a0,a0,a2,a2,a2,a0,a2,a2,a2,a0,a0,a0]
   let attr_line2 = [a2,a2,a2,a0,a0,a2,a2,a2]
   call assert_equal(attr_line1, map(term_scrape(buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
@@ -779,7 +861,7 @@ func Test_search_cmdline_incsearch_highlight_attr()
   call term_sendkeys(buf, ":1\<cr>")
   call term_sendkeys(buf, ":set nohlsearch\<cr>")
   call term_sendkeys(buf, "/vim")
-  call term_wait(buf, 200)
+  call TermWait(buf, 100)
   let attr_line1 = [a0,a0,a0,a0,a1,a1,a1,a0,a0,a0,a0,a0,a0,a0]
   let attr_line2 = [a0,a0,a0,a0,a0,a0,a0,a0]
   call assert_equal(attr_line1, map(term_scrape(buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
@@ -791,9 +873,8 @@ func Test_search_cmdline_incsearch_highlight_attr()
 endfunc
 
 func Test_incsearch_cmdline_modifier()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   call test_override("char_avail", 1)
   new
   call setline(1, ['foo'])
@@ -835,12 +916,9 @@ func Test_incsearch_scrolling()
 endfunc
 
 func Test_incsearch_search_dump()
-  if !exists('+incsearch')
-    return
-  endif
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckOption incsearch
+  CheckScreendump
+
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
 	\ 'for n in range(1, 8)',
@@ -868,9 +946,8 @@ func Test_incsearch_search_dump()
 endfunc
 
 func Test_incsearch_substitute()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   call test_override("char_avail", 1)
   new
   set incsearch
@@ -890,12 +967,9 @@ endfunc
 
 " Similar to Test_incsearch_substitute() but with a screendump halfway.
 func Test_incsearch_substitute_dump()
-  if !exists('+incsearch')
-    return
-  endif
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckOption incsearch
+  CheckScreendump
+
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
 	\ 'for n in range(1, 10)',
@@ -1001,10 +1075,33 @@ func Test_incsearch_substitute_dump()
   call delete('Xis_subst_script')
 endfunc
 
+func Test_incsearch_highlighting()
+  CheckOption incsearch
+  CheckScreendump
+
+  call writefile([
+	\ 'set incsearch hlsearch',
+	\ 'call setline(1, "hello/there")',
+	\ ], 'Xis_subst_hl_script')
+  let buf = RunVimInTerminal('-S Xis_subst_hl_script', {'rows': 4, 'cols': 20})
+  " Give Vim a chance to redraw to get rid of the spaces in line 2 caused by
+  " the 'ambiwidth' check.
+  sleep 300m
+
+  " Using a different search delimiter should still highlight matches
+  " that contain a '/'.
+  call term_sendkeys(buf, ":%s;ello/the")
+  call VerifyScreenDump(buf, 'Test_incsearch_substitute_15', {})
+  call term_sendkeys(buf, "<Esc>")
+
+  call StopVimInTerminal(buf)
+  call delete('Xis_subst_hl_script')
+endfunc
+
 func Test_incsearch_with_change()
-  if !has('timers') || !exists('+incsearch') || !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps and/or timers feature and/or incsearch option missing'
-  endif
+  CheckFeature timers
+  CheckOption incsearch
+  CheckScreendump
 
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
@@ -1027,12 +1124,9 @@ endfunc
 
 " Similar to Test_incsearch_substitute_dump() for :sort
 func Test_incsearch_sort_dump()
-  if !exists('+incsearch')
-    return
-  endif
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckOption incsearch
+  CheckScreendump
+
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
 	\ 'call setline(1, ["another one 2", "that one 3", "the one 1"])',
@@ -1042,9 +1136,12 @@ func Test_incsearch_sort_dump()
   " the 'ambiwidth' check.
   sleep 100m
 
-  " Need to send one key at a time to force a redraw.
   call term_sendkeys(buf, ':sort ni u /on')
   call VerifyScreenDump(buf, 'Test_incsearch_sort_01', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  call term_sendkeys(buf, ':sort! /on')
+  call VerifyScreenDump(buf, 'Test_incsearch_sort_02', {})
   call term_sendkeys(buf, "\<Esc>")
 
   call StopVimInTerminal(buf)
@@ -1053,12 +1150,9 @@ endfunc
 
 " Similar to Test_incsearch_substitute_dump() for :vimgrep famiry
 func Test_incsearch_vimgrep_dump()
-  if !exists('+incsearch')
-    return
-  endif
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckOption incsearch
+  CheckScreendump
+
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
 	\ 'call setline(1, ["another one 2", "that one 3", "the one 1"])',
@@ -1094,9 +1188,8 @@ func Test_incsearch_vimgrep_dump()
 endfunc
 
 func Test_keep_last_search_pattern()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   new
   call setline(1, ['foo', 'foo', 'foo'])
   set incsearch
@@ -1115,9 +1208,8 @@ func Test_keep_last_search_pattern()
 endfunc
 
 func Test_word_under_cursor_after_match()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   new
   call setline(1, 'foo bar')
   set incsearch
@@ -1134,9 +1226,8 @@ func Test_word_under_cursor_after_match()
 endfunc
 
 func Test_subst_word_under_cursor()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   new
   call setline(1, ['int SomeLongName;', 'for (xxx = 1; xxx < len; ++xxx)'])
   set incsearch
@@ -1151,9 +1242,8 @@ func Test_subst_word_under_cursor()
 endfunc
 
 func Test_search_undefined_behaviour()
-  if !has("terminal")
-    return
-  endif
+  CheckFeature terminal
+
   let h = winheight(0)
   if h < 3
     return
@@ -1184,7 +1274,7 @@ endfunc
 " This was causing E874.  Also causes an invalid read?
 func Test_look_behind()
   new
-  call setline(1, '0\|\&\n\@<=') 
+  call setline(1, '0\|\&\n\@<=')
   call search(getline("."))
   bwipe!
 endfunc
@@ -1213,15 +1303,14 @@ endfunc
 func Test_search_Ctrl_L_combining()
   " Make sure, that Ctrl-L works correctly with combining characters.
   " It uses an artificial example of an 'a' with 4 combining chars:
-    " 'a' U+0061 Dec:97 LATIN SMALL LETTER A &#x61; /\%u61\Z "\u0061" 
+    " 'a' U+0061 Dec:97 LATIN SMALL LETTER A &#x61; /\%u61\Z "\u0061"
     " ' ̀' U+0300 Dec:768 COMBINING GRAVE ACCENT &#x300; /\%u300\Z "\u0300"
     " ' ́' U+0301 Dec:769 COMBINING ACUTE ACCENT &#x301; /\%u301\Z "\u0301"
     " ' ̇' U+0307 Dec:775 COMBINING DOT ABOVE &#x307; /\%u307\Z "\u0307"
-    " ' ̣' U+0323 Dec:803 COMBINING DOT BELOW &#x323; /\%u323 "\u0323" 
+    " ' ̣' U+0323 Dec:803 COMBINING DOT BELOW &#x323; /\%u323 "\u0323"
   " Those should also appear on the commandline
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   call Cmdline3_prep()
   1
   let bufcontent = ['', 'Miạ̀́̇m']
@@ -1265,14 +1354,13 @@ func Test_large_hex_chars2()
 endfunc
 
 func Test_one_error_msg()
-  " This  was also giving an internal error
+  " This was also giving an internal error
   call assert_fails('call search(" \\((\\v[[=P=]]){185}+             ")', 'E871:')
 endfunc
 
 func Test_incsearch_add_char_under_cursor()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   set incsearch
   new
   call setline(1, ['find match', 'anything'])
@@ -1308,6 +1396,20 @@ func Test_search_match_at_curpos()
   call assert_equal([3, 5], [line('.'), col('.')])
 
   close!
+endfunc
+
+" Test for error cases with the search() function
+func Test_search_errors()
+  call assert_fails("call search('pat', [])", 'E730:')
+  call assert_fails("call search('pat', 'b', {})", 'E728:')
+  call assert_fails("call search('pat', 'b', 1, [])", 'E745:')
+  call assert_fails("call search('pat', 'ns')", 'E475:')
+  call assert_fails("call search('pat', 'mr')", 'E475:')
+
+  new
+  call setline(1, ['foo', 'bar'])
+  call assert_fails('call feedkeys("/foo/;/bar/;\<CR>", "tx")', 'E386:')
+  bwipe!
 endfunc
 
 func Test_search_display_pattern()
@@ -1366,3 +1468,280 @@ func Test_searchdecl()
 
   bwipe!
 endfunc
+
+func Test_search_special()
+  " this was causing illegal memory access and an endless loop
+  set t_PE=
+  exe "norm /\x80PS"
+endfunc
+
+" Test for command failures when the last search pattern is not set.
+" Need to run this in a new vim instance where last search pattern is not set.
+func Test_search_with_no_last_pat()
+  let lines =<< trim [SCRIPT]
+    call assert_fails("normal i\<C-R>/\e", 'E35:')
+    call assert_fails("exe '/'", 'E35:')
+    call assert_fails("exe '?'", 'E35:')
+    call assert_fails("/", 'E35:')
+    call assert_fails("?", 'E35:')
+    call assert_fails("normal n", 'E35:')
+    call assert_fails("normal N", 'E35:')
+    call assert_fails("normal gn", 'E35:')
+    call assert_fails("normal gN", 'E35:')
+    call assert_fails("normal cgn", 'E35:')
+    call assert_fails("normal cgN", 'E35:')
+    let p = []
+    let p = @/
+    call assert_equal('', p)
+    call assert_fails("normal :\<C-R>/", 'E35:')
+    call assert_fails("//p", 'E35:')
+    call assert_fails(";//p", 'E35:')
+    call assert_fails("??p", 'E35:')
+    call assert_fails(";??p", 'E35:')
+    call assert_fails('g//p', 'E476:')
+    call assert_fails('v//p', 'E476:')
+    call writefile(v:errors, 'Xresult')
+    qall!
+  [SCRIPT]
+  call writefile(lines, 'Xscript')
+
+  if RunVim([], [], '--clean -S Xscript')
+    call assert_equal([], readfile('Xresult'))
+  endif
+  call delete('Xscript')
+  call delete('Xresult')
+endfunc
+
+" Test for using tilde (~) atom in search. This should use the last used
+" substitute pattern
+func Test_search_tilde_pat()
+  let lines =<< trim [SCRIPT]
+    set regexpengine=1
+    call assert_fails('exe "normal /~\<CR>"', 'E33:')
+    call assert_fails('exe "normal ?~\<CR>"', 'E33:')
+    set regexpengine=2
+    call assert_fails('exe "normal /~\<CR>"', 'E383:')
+    call assert_fails('exe "normal ?~\<CR>"', 'E383:')
+    set regexpengine&
+    call writefile(v:errors, 'Xresult')
+    qall!
+  [SCRIPT]
+  call writefile(lines, 'Xscript')
+  if RunVim([], [], '--clean -S Xscript')
+    call assert_equal([], readfile('Xresult'))
+  endif
+  call delete('Xscript')
+  call delete('Xresult')
+endfunc
+
+" Test for searching a pattern that is not present with 'nowrapscan'
+func Test_search_pat_not_found()
+  new
+  set nowrapscan
+  let @/ = '1abcxyz2'
+  call assert_fails('normal n', 'E385:')
+  call assert_fails('normal N', 'E384:')
+  set wrapscan&
+  close
+endfunc
+
+" Test for v:searchforward variable
+func Test_searchforward_var()
+  new
+  call setline(1, ['foo', '', 'foo'])
+  call cursor(2, 1)
+  let @/ = 'foo'
+  let v:searchforward = 0
+  normal N
+  call assert_equal(3, line('.'))
+  call cursor(2, 1)
+  let v:searchforward = 1
+  normal N
+  call assert_equal(1, line('.'))
+  close!
+endfunc
+
+" Test for invalid regular expressions
+func Test_invalid_regexp()
+  set regexpengine=1
+  call assert_fails("call search(repeat('\\(.\\)', 10))", 'E51:')
+  call assert_fails("call search('\\%(')", 'E53:')
+  call assert_fails("call search('\\(')", 'E54:')
+  call assert_fails("call search('\\)')", 'E55:')
+  call assert_fails("call search('x\\@#')", 'E59:')
+  call assert_fails('call search(''\v%(%(%(%(%(%(%(%(%(%(%(a){1}){1}){1}){1}){1}){1}){1}){1}){1}){1}){1}'')', 'E60:')
+  call assert_fails("call search('a\\+*')", 'E61:')
+  call assert_fails("call search('\\_m')", 'E63:')
+  call assert_fails("call search('\\+')", 'E64:')
+  call assert_fails("call search('\\1')", 'E65:')
+  call assert_fails("call search('\\z\\(\\)')", 'E66:')
+  call assert_fails("call search('\\z2')", 'E67:')
+  call assert_fails("call search('\\zx')", 'E68:')
+  call assert_fails("call search('\\%[ab')", 'E69:')
+  call assert_fails("call search('\\%[]')", 'E70:')
+  call assert_fails("call search('\\%a')", 'E71:')
+  call assert_fails("call search('ab\\%[\\(cd\\)]')", 'E369:')
+  call assert_fails("call search('ab\\%[\\%(cd\\)]')", 'E369:')
+  set regexpengine=2
+  call assert_fails("call search('\\_')", 'E865:')
+  call assert_fails("call search('\\+')", 'E866:')
+  call assert_fails("call search('\\zx')", 'E867:')
+  call assert_fails("call search('\\%a')", 'E867:')
+  call assert_fails("call search('x\\@#')", 'E869:')
+  call assert_fails("call search(repeat('\\(.\\)', 10))", 'E872:')
+  call assert_fails("call search('\\_m')", 'E877:')
+  call assert_fails("call search('\\%(')", 'E53:')
+  call assert_fails("call search('\\(')", 'E54:')
+  call assert_fails("call search('\\)')", 'E55:')
+  call assert_fails("call search('\\z\\(\\)')", 'E66:')
+  call assert_fails("call search('\\%[ab')", 'E69:')
+  call assert_fails("call search('\\%[]')", 'E70:')
+  call assert_fails("call search('\\%9999999999999999999999999999v')", 'E951:')
+  set regexpengine&
+  call assert_fails("call search('\\%#=3ab')", 'E864:')
+endfunc
+
+" Test for searching a very complex pattern in a string. Should switch the
+" regexp engine from NFA to the old engine.
+func Test_regexp_switch_engine()
+  let l = readfile('samples/re.freeze.txt')
+  let v = substitute(l[4], '..\@<!', '', '')
+  call assert_equal(l[4], v)
+endfunc
+
+" Test for the \%V atom to search within visually selected text
+func Test_search_in_visual_area()
+  new
+  call setline(1, ['foo bar1', 'foo bar2', 'foo bar3', 'foo bar4'])
+  exe "normal 2GVjo/\\%Vbar\<CR>\<Esc>"
+  call assert_equal([2, 5], [line('.'), col('.')])
+  exe "normal 2GVj$?\\%Vbar\<CR>\<Esc>"
+  call assert_equal([3, 5], [line('.'), col('.')])
+  close!
+endfunc
+
+" Test for searching with 'smartcase' and 'ignorecase'
+func Test_search_smartcase()
+  new
+  call setline(1, ['', 'Hello'])
+  set noignorecase nosmartcase
+  call assert_fails('exe "normal /\\a\\_.\\(.*\\)O\<CR>"', 'E486:')
+
+  set ignorecase nosmartcase
+  exe "normal /\\a\\_.\\(.*\\)O\<CR>"
+  call assert_equal([2, 1], [line('.'), col('.')])
+
+  call cursor(1, 1)
+  set ignorecase smartcase
+  call assert_fails('exe "normal /\\a\\_.\\(.*\\)O\<CR>"', 'E486:')
+
+  exe "normal /\\a\\_.\\(.*\\)o\<CR>"
+  call assert_equal([2, 1], [line('.'), col('.')])
+
+  " Test for using special atoms with 'smartcase'
+  call setline(1, ['', '    Hello\ '])
+  call cursor(1, 1)
+  call feedkeys('/\_.\%(\uello\)\' .. "\<CR>", 'xt')
+  call assert_equal([2, 4], [line('.'), col('.')])
+
+  set ignorecase& smartcase&
+  close!
+endfunc
+
+" Test searching past the end of a file
+func Test_search_past_eof()
+  new
+  call setline(1, ['Line'])
+  exe "normal /\\n\\zs\<CR>"
+  call assert_equal([1, 4], [line('.'), col('.')])
+  close!
+endfunc
+
+" Test for various search offsets
+func Test_search_offset()
+  " With /e, for a match in the first column of a line, the cursor should be
+  " placed at the end of the previous line.
+  new
+  call setline(1, ['one two', 'three four'])
+  call search('two\_.', 'e')
+  call assert_equal([1, 7], [line('.'), col('.')])
+
+  " with cursor at the beginning of the file, use /s+1
+  call cursor(1, 1)
+  exe "normal /two/s+1\<CR>"
+  call assert_equal([1, 6], [line('.'), col('.')])
+
+  " with cursor at the end of the file, use /e-1
+  call cursor(2, 10)
+  exe "normal ?three?e-1\<CR>"
+  call assert_equal([2, 4], [line('.'), col('.')])
+
+  " line offset - after the last line
+  call cursor(1, 1)
+  exe "normal /three/+1\<CR>"
+  call assert_equal([2, 1], [line('.'), col('.')])
+
+  " line offset - before the first line
+  call cursor(2, 1)
+  exe "normal ?one?-1\<CR>"
+  call assert_equal([1, 1], [line('.'), col('.')])
+
+  " character offset - before the first character in the file
+  call cursor(2, 1)
+  exe "normal ?one?s-1\<CR>"
+  call assert_equal([1, 1], [line('.'), col('.')])
+  call cursor(2, 1)
+  exe "normal ?one?e-3\<CR>"
+  call assert_equal([1, 1], [line('.'), col('.')])
+
+  " character offset - after the last character in the file
+  call cursor(1, 1)
+  exe "normal /four/s+4\<CR>"
+  call assert_equal([2, 10], [line('.'), col('.')])
+  call cursor(1, 1)
+  exe "normal /four/e+1\<CR>"
+  call assert_equal([2, 10], [line('.'), col('.')])
+
+  close!
+endfunc
+
+" Test for searching for matching parenthesis using %
+func Test_search_match_paren()
+  new
+  call setline(1, "abc(def')'ghi'('jk'\\t'lm)no")
+  " searching for a matching parenthesis should skip single quoted characters
+  call cursor(1, 4)
+  normal %
+  call assert_equal([1, 25], [line('.'), col('.')])
+  normal %
+  call assert_equal([1, 4], [line('.'), col('.')])
+  call cursor(1, 5)
+  normal ])
+  call assert_equal([1, 25], [line('.'), col('.')])
+  call cursor(1, 24)
+  normal [(
+  call assert_equal([1, 4], [line('.'), col('.')])
+
+  " matching parenthesis in 'virtualedit' mode with cursor after the eol
+  call setline(1, 'abc(defgh)')
+  set virtualedit=all
+  normal 20|%
+  call assert_equal(4, col('.'))
+  set virtualedit&
+  close!
+endfunc
+
+" Test for searching a pattern and stopping before a specified line
+func Test_search_stopline()
+  new
+  call setline(1, ['', '', '', 'vim'])
+  call assert_equal(0, search('vim', 'n', 3))
+  call assert_equal(4, search('vim', 'n', 4))
+  call setline(1, ['vim', '', '', ''])
+  call cursor(4, 1)
+  call assert_equal(0, search('vim', 'bn', 2))
+  call assert_equal(1, search('vim', 'bn', 1))
+  close!
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

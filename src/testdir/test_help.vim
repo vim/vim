@@ -12,6 +12,18 @@ endfunc
 func Test_help_errors()
   call assert_fails('help doesnotexist', 'E149:')
   call assert_fails('help!', 'E478:')
+  if has('multi_lang')
+    call assert_fails('help help@xy', 'E661:')
+  endif
+
+  let save_hf = &helpfile
+  set helpfile=help_missing
+  help
+  call assert_equal(1, winnr('$'))
+  call assert_notequal('help', &buftype)
+  let &helpfile = save_hf
+
+  call assert_fails('help ' . repeat('a', 1048), 'E149:')
 
   new
   set keywordprg=:help
@@ -55,3 +67,54 @@ func Test_help_local_additions()
   call delete('Xruntime', 'rf')
   let &rtp = rtp_save
 endfunc
+
+func Test_help_completion()
+  call feedkeys(":help :undo\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"help :undo :undoj :undol :undojoin :undolist', @:)
+endfunc
+
+" Test for the :helptags command
+func Test_helptag_cmd()
+  call mkdir('Xdir/a/doc', 'p')
+
+  " No help file to process in the directory
+  call assert_fails('helptags Xdir', 'E151:')
+
+  call writefile([], 'Xdir/a/doc/sample.txt')
+
+  " Test for ++t argument
+  helptags ++t Xdir
+  call assert_equal(["help-tags\ttags\t1"], readfile('Xdir/tags'))
+  call delete('Xdir/tags')
+
+  " The following tests fail on FreeBSD for some reason
+  if has('unix') && !has('bsd')
+    " Read-only tags file
+    call mkdir('Xdir/doc', 'p')
+    call writefile([''], 'Xdir/doc/tags')
+    call writefile([], 'Xdir/doc/sample.txt')
+    call setfperm('Xdir/doc/tags', 'r-xr--r--')
+    call assert_fails('helptags Xdir/doc', 'E152:', getfperm('Xdir/doc/tags'))
+
+    let rtp = &rtp
+    let &rtp = 'Xdir'
+    helptags ALL
+    let &rtp = rtp
+
+    call delete('Xdir/doc/tags')
+
+    " No permission to read the help file
+    call setfperm('Xdir/a/doc/sample.txt', '-w-------')
+    call assert_fails('helptags Xdir', 'E153:', getfperm('Xdir/a/doc/sample.txt'))
+    call delete('Xdir/a/doc/sample.txt')
+    call delete('Xdir/tags')
+  endif
+
+  " Duplicate tags in the help file
+  call writefile(['*tag1*', '*tag1*', '*tag2*'], 'Xdir/a/doc/sample.txt')
+  call assert_fails('helptags Xdir', 'E154:')
+
+  call delete('Xdir', 'rf')
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

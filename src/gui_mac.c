@@ -2919,7 +2919,7 @@ gui_mch_prepare(int *argc, char **argv)
 
     (void)FSGetCatalogInfo(&applFSRef, kFSCatInfoNone, NULL, NULL, &applDir, NULL);
 
-    // This technic return NIL when we disallow_gui
+    // This technique returns NIL when we disallow_gui
 # endif
     exe_name = FullPathFromFSSpec_save(applDir);
 #endif
@@ -5451,7 +5451,7 @@ gui_mch_dialog(
     button = 0;
 
     // initialize the hotkey mapping
-    vim_memset(hotKeys, 0, sizeof(hotKeys));
+    CLEAR_FIELD(hotKeys);
 
     for (;*buttonChar != 0;)
     {

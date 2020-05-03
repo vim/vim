@@ -8,13 +8,13 @@ source check.vim
 " If the expected output argument is supplied, then check for it.
 func RunDbgCmd(buf, cmd, ...)
   call term_sendkeys(a:buf, a:cmd . "\r")
-  call term_wait(a:buf)
+  call TermWait(a:buf)
 
   if a:0 != 0
     " Verify the expected output
     let lnum = 20 - len(a:1)
     for l in a:1
-      call WaitForAssert({-> assert_equal(l, term_getline(a:buf, lnum))})
+      call WaitForAssert({-> assert_equal(l, term_getline(a:buf, lnum))}, 200)
       let lnum += 1
     endfor
   endif

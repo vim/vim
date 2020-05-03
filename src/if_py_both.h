@@ -19,7 +19,8 @@ static char_u e_py_systemexit[]	= "E880: Can't handle SystemExit of %s exception
 typedef int Py_ssize_t;  // Python 2.4 and earlier don't have this type.
 #endif
 
-#define ENC_OPT ((char *)p_enc)
+// Use values that are known to work, others may make Vim crash.
+#define ENC_OPT (enc_utf8 ? "utf-8" : enc_dbcs ? "euc-jp" : (char *)p_enc)
 #define DOPY_FUNC "_vim_pydo"
 
 static const char *vim_special_path = "_vim_path_";
@@ -784,7 +785,8 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 	    return NULL;
 	}
 
-	for (curr = list->lv_first; curr != NULL; curr = curr->li_next)
+	range_list_materialize(list);
+	FOR_ALL_LIST_ITEMS(list, curr)
 	{
 	    if (!(newObj = VimToPython(&curr->li_tv, depth + 1, lookup_dict)))
 	    {
@@ -843,23 +845,24 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 	    }
 	}
     }
-    else if (our_tv->v_type == VAR_SPECIAL)
+    else if (our_tv->v_type == VAR_BOOL)
     {
 	if (our_tv->vval.v_number == VVAL_FALSE)
 	{
 	    ret = Py_False;
 	    Py_INCREF(ret);
 	}
-	else if (our_tv->vval.v_number == VVAL_TRUE)
+	else
 	{
 	    ret = Py_True;
 	    Py_INCREF(ret);
 	}
-	else
-	{
-	    Py_INCREF(Py_None);
-	    ret = Py_None;
-	}
+	return ret;
+    }
+    else if (our_tv->v_type == VAR_SPECIAL)
+    {
+	Py_INCREF(Py_None);
+	ret = Py_None;
 	return ret;
     }
     else if (our_tv->v_type == VAR_BLOB)
@@ -2253,6 +2256,7 @@ ListNew(PyTypeObject *subtype, list_T *list)
 	return NULL;
     self->list = list;
     ++list->lv_refcount;
+    range_list_materialize(list);
 
     pyll_add((PyObject *)(self), &self->ref, &lastlist);
 
@@ -2300,7 +2304,7 @@ list_py_concat(list_T *l, PyObject *obj, PyObject *lookup_dict)
 	{
 	    Py_DECREF(item);
 	    Py_DECREF(iterator);
-	    listitem_free(li);
+	    listitem_free(l, li);
 	    return -1;
 	}
 
@@ -2624,7 +2628,7 @@ ListAssSlice(ListObject *self, Py_ssize_t first,
 	    if (li)
 		lastaddedli = li->li_prev;
 	    else
-		lastaddedli = l->lv_last;
+		lastaddedli = l->lv_u.mat.lv_last;
 	    numadded++;
 	}
 	clear_tv(&v);
@@ -2660,7 +2664,7 @@ ListAssSlice(ListObject *self, Py_ssize_t first,
     }
 
     for (i = 0; i < numreplaced; i++)
-	listitem_free(lis[i]);
+	listitem_free(l, lis[i]);
     if (step == 1)
 	for (i = numreplaced; i < slicelen; i++)
 	    listitem_remove(l, lis[i]);
@@ -2820,6 +2824,7 @@ ListIter(ListObject *self)
 	return NULL;
     }
 
+    range_list_materialize(l);
     list_add_watch(l, &lii->lw);
     lii->lw.lw_item = l->lv_first;
     lii->list = l;
@@ -2929,7 +2934,7 @@ FunctionNew(PyTypeObject *subtype, char_u *name, int argc, typval_T *argv,
 
     if (isdigit(*name))
     {
-	if (!translated_function_exists(name))
+	if (!translated_function_exists(name, FALSE))
 	{
 	    PyErr_FORMAT(PyExc_ValueError,
 		    N_("unnamed function %s does not exist"), name);
@@ -3016,6 +3021,7 @@ FunctionConstructor(PyTypeObject *subtype, PyObject *args, PyObject *kwargs)
 		return NULL;
 	    }
 	    argslist = argstv.vval.v_list;
+	    range_list_materialize(argslist);
 
 	    argc = argslist->lv_len;
 	    if (argc != 0)
@@ -3029,7 +3035,7 @@ FunctionConstructor(PyTypeObject *subtype, PyObject *args, PyObject *kwargs)
 		    return NULL;
 		}
 		curtv = argv;
-		for (li = argslist->lv_first; li != NULL; li = li->li_next)
+		FOR_ALL_LIST_ITEMS(argslist, li)
 		    copy_tv(&li->li_tv, curtv++);
 	    }
 	    list_unref(argslist);
@@ -3194,7 +3200,7 @@ FunctionCall(FunctionObject *self, PyObject *argsObject, PyObject *kwargs)
 
     if (self->argv || self->self)
     {
-	vim_memset(&pt, 0, sizeof(partial_T));
+	CLEAR_FIELD(pt);
 	set_partial(self, &pt, FALSE);
 	pt_ptr = &pt;
     }
@@ -6351,8 +6357,8 @@ ConvertToPyObject(typval_T *tv)
 					    ? "" : (char *)tv->vval.v_string);
 	case VAR_NUMBER:
 	    return PyLong_FromLong((long) tv->vval.v_number);
-#ifdef FEAT_FLOAT
 	case VAR_FLOAT:
+#ifdef FEAT_FLOAT
 	    return PyFloat_FromDouble((double) tv->vval.v_float);
 #endif
 	case VAR_LIST:
@@ -6384,10 +6390,13 @@ ConvertToPyObject(typval_T *tv)
 		(char*) tv->vval.v_blob->bv_ga.ga_data,
 		(Py_ssize_t) tv->vval.v_blob->bv_ga.ga_len);
 	case VAR_UNKNOWN:
+	case VAR_ANY:
+	case VAR_VOID:
 	case VAR_CHANNEL:
 	case VAR_JOB:
 	    Py_INCREF(Py_None);
 	    return Py_None;
+	case VAR_BOOL:
 	case VAR_SPECIAL:
 	    switch (tv->vval.v_number)
 	    {
@@ -6411,7 +6420,7 @@ static PyTypeObject CurrentType;
     static void
 init_structs(void)
 {
-    vim_memset(&OutputType, 0, sizeof(OutputType));
+    CLEAR_FIELD(OutputType);
     OutputType.tp_name = "vim.message";
     OutputType.tp_basicsize = sizeof(OutputObject);
     OutputType.tp_flags = Py_TPFLAGS_DEFAULT;
@@ -6431,7 +6440,7 @@ init_structs(void)
     // OutputType.tp_base = &PyFile_Type;
 #endif
 
-    vim_memset(&IterType, 0, sizeof(IterType));
+    CLEAR_FIELD(IterType);
     IterType.tp_name = "vim.iter";
     IterType.tp_basicsize = sizeof(IterObject);
     IterType.tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_GC;
@@ -6442,7 +6451,7 @@ init_structs(void)
     IterType.tp_traverse = (traverseproc)IterTraverse;
     IterType.tp_clear = (inquiry)IterClear;
 
-    vim_memset(&BufferType, 0, sizeof(BufferType));
+    CLEAR_FIELD(BufferType);
     BufferType.tp_name = "vim.buffer";
     BufferType.tp_basicsize = sizeof(BufferType);
     BufferType.tp_dealloc = (destructor)BufferDestructor;
@@ -6463,7 +6472,7 @@ init_structs(void)
     BufferType.tp_setattr = (setattrfunc)BufferSetattr;
 #endif
 
-    vim_memset(&WindowType, 0, sizeof(WindowType));
+    CLEAR_FIELD(WindowType);
     WindowType.tp_name = "vim.window";
     WindowType.tp_basicsize = sizeof(WindowObject);
     WindowType.tp_dealloc = (destructor)WindowDestructor;
@@ -6484,7 +6493,7 @@ init_structs(void)
     WindowType.tp_setattr = (setattrfunc)WindowSetattr;
 #endif
 
-    vim_memset(&TabPageType, 0, sizeof(TabPageType));
+    CLEAR_FIELD(TabPageType);
     TabPageType.tp_name = "vim.tabpage";
     TabPageType.tp_basicsize = sizeof(TabPageObject);
     TabPageType.tp_dealloc = (destructor)TabPageDestructor;
@@ -6501,7 +6510,7 @@ init_structs(void)
     TabPageType.tp_getattr = (getattrfunc)TabPageGetattr;
 #endif
 
-    vim_memset(&BufMapType, 0, sizeof(BufMapType));
+    CLEAR_FIELD(BufMapType);
     BufMapType.tp_name = "vim.bufferlist";
     BufMapType.tp_basicsize = sizeof(BufMapObject);
     BufMapType.tp_as_mapping = &BufMapAsMapping;
@@ -6509,7 +6518,7 @@ init_structs(void)
     BufMapType.tp_iter = BufMapIter;
     BufferType.tp_doc = "vim buffer list";
 
-    vim_memset(&WinListType, 0, sizeof(WinListType));
+    CLEAR_FIELD(WinListType);
     WinListType.tp_name = "vim.windowlist";
     WinListType.tp_basicsize = sizeof(WinListType);
     WinListType.tp_as_sequence = &WinListAsSeq;
@@ -6517,14 +6526,14 @@ init_structs(void)
     WinListType.tp_doc = "vim window list";
     WinListType.tp_dealloc = (destructor)WinListDestructor;
 
-    vim_memset(&TabListType, 0, sizeof(TabListType));
+    CLEAR_FIELD(TabListType);
     TabListType.tp_name = "vim.tabpagelist";
     TabListType.tp_basicsize = sizeof(TabListType);
     TabListType.tp_as_sequence = &TabListAsSeq;
     TabListType.tp_flags = Py_TPFLAGS_DEFAULT;
     TabListType.tp_doc = "vim tab page list";
 
-    vim_memset(&RangeType, 0, sizeof(RangeType));
+    CLEAR_FIELD(RangeType);
     RangeType.tp_name = "vim.range";
     RangeType.tp_basicsize = sizeof(RangeObject);
     RangeType.tp_dealloc = (destructor)RangeDestructor;
@@ -6545,7 +6554,7 @@ init_structs(void)
     RangeType.tp_getattr = (getattrfunc)RangeGetattr;
 #endif
 
-    vim_memset(&CurrentType, 0, sizeof(CurrentType));
+    CLEAR_FIELD(CurrentType);
     CurrentType.tp_name = "vim.currentdata";
     CurrentType.tp_basicsize = sizeof(CurrentObject);
     CurrentType.tp_flags = Py_TPFLAGS_DEFAULT;
@@ -6559,7 +6568,7 @@ init_structs(void)
     CurrentType.tp_setattr = (setattrfunc)CurrentSetattr;
 #endif
 
-    vim_memset(&DictionaryType, 0, sizeof(DictionaryType));
+    CLEAR_FIELD(DictionaryType);
     DictionaryType.tp_name = "vim.dictionary";
     DictionaryType.tp_basicsize = sizeof(DictionaryObject);
     DictionaryType.tp_dealloc = (destructor)DictionaryDestructor;
@@ -6579,7 +6588,7 @@ init_structs(void)
     DictionaryType.tp_setattr = (setattrfunc)DictionarySetattr;
 #endif
 
-    vim_memset(&ListType, 0, sizeof(ListType));
+    CLEAR_FIELD(ListType);
     ListType.tp_name = "vim.list";
     ListType.tp_dealloc = (destructor)ListDestructor;
     ListType.tp_basicsize = sizeof(ListObject);
@@ -6599,7 +6608,7 @@ init_structs(void)
     ListType.tp_setattr = (setattrfunc)ListSetattr;
 #endif
 
-    vim_memset(&FunctionType, 0, sizeof(FunctionType));
+    CLEAR_FIELD(FunctionType);
     FunctionType.tp_name = "vim.function";
     FunctionType.tp_basicsize = sizeof(FunctionObject);
     FunctionType.tp_dealloc = (destructor)FunctionDestructor;
@@ -6616,7 +6625,7 @@ init_structs(void)
     FunctionType.tp_getattr = (getattrfunc)FunctionGetattr;
 #endif
 
-    vim_memset(&OptionsType, 0, sizeof(OptionsType));
+    CLEAR_FIELD(OptionsType);
     OptionsType.tp_name = "vim.options";
     OptionsType.tp_basicsize = sizeof(OptionsObject);
     OptionsType.tp_as_sequence = &OptionsAsSeq;
@@ -6629,7 +6638,7 @@ init_structs(void)
     OptionsType.tp_clear = (inquiry)OptionsClear;
 
 #if PY_VERSION_HEX < 0x030700f0
-    vim_memset(&LoaderType, 0, sizeof(LoaderType));
+    CLEAR_FIELD(LoaderType);
     LoaderType.tp_name = "vim.Loader";
     LoaderType.tp_basicsize = sizeof(LoaderObject);
     LoaderType.tp_flags = Py_TPFLAGS_DEFAULT;
@@ -6639,7 +6648,7 @@ init_structs(void)
 #endif
 
 #if PY_MAJOR_VERSION >= 3
-    vim_memset(&vimmodule, 0, sizeof(vimmodule));
+    CLEAR_FIELD(vimmodule);
     vimmodule.m_name = "vim";
     vimmodule.m_doc = "Vim Python interface\n";
     vimmodule.m_size = -1;

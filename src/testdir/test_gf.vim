@@ -58,6 +58,14 @@ func Test_gF()
   call assert_equal('Xfile', bufname('%'))
   call assert_equal(3, getcurpos()[1])
 
+  enew!
+  call setline(1, ['one', 'the Xfile line 2, and more', 'three'])
+  w! Xfile2
+  normal 2GfX
+  normal gF
+  call assert_equal('Xfile', bufname('%'))
+  call assert_equal(2, getcurpos()[1])
+
   set isfname&
   call delete('Xfile')
   call delete('Xfile2')
@@ -122,5 +130,20 @@ func Test_gf_error()
   call setline(1, '/doesnotexist')
   call assert_fails('normal gf', 'E447:')
   call assert_fails('normal gF', 'E447:')
+  call assert_fails('normal [f', 'E447:')
+
+  " gf is not allowed when text is locked
+  au InsertCharPre <buffer> normal! gF<CR>
+  let caught_e565 = 0
+  try
+    call feedkeys("ix\<esc>", 'xt')
+  catch /^Vim\%((\a\+)\)\=:E565/ " catch E565
+    let caught_e565 = 1
+  endtry
+  call assert_equal(1, caught_e565)
+  au! InsertCharPre
+
   bwipe!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

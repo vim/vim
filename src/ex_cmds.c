@@ -451,12 +451,9 @@ ex_sort(exarg_T *eap)
 	}
 	else if (!ASCII_ISALPHA(*p) && regmatch.regprog == NULL)
 	{
-	    s = skip_regexp(p + 1, *p, TRUE, NULL);
-	    if (*s != *p)
-	    {
-		emsg(_(e_invalpat));
+	    s = skip_regexp_err(p + 1, *p, TRUE);
+	    if (s == NULL)
 		goto sortend;
-	    }
 	    *s = NUL;
 	    // Use last search pattern if sort pattern is empty.
 	    if (s == p + 1)
@@ -1679,20 +1676,6 @@ append_redir(
 }
 
 /*
- * Return the current time in seconds.  Calls time(), unless test_settime()
- * was used.
- */
-    time_T
-vim_time(void)
-{
-# ifdef FEAT_EVAL
-    return time_for_testing == 0 ? time(NULL) : time_for_testing;
-# else
-    return time(NULL);
-# endif
-}
-
-/*
  * Implementation of ":fixdel", also used by get_stty().
  *  <BS>    resulting <Del>
  *   ^?		^H
@@ -2088,8 +2071,8 @@ check_overwrite(
     int		other)	    // writing under other name
 {
     /*
-     * write to other file or b_flags set or not writing the whole file:
-     * overwriting only allowed with '!'
+     * Write to another file or b_flags set or not writing the whole file:
+     * overwriting only allowed with '!'.
      */
     if (       (other
 		|| (buf->b_flags & BF_NOTEDITED)
@@ -2097,9 +2080,6 @@ check_overwrite(
 		    && vim_strchr(p_cpo, CPO_OVERNEW) == NULL)
 		|| (buf->b_flags & BF_READERR))
 	    && !p_wa
-#ifdef FEAT_QUICKFIX
-	    && !bt_nofilename(buf)
-#endif
 	    && vim_fexists(ffname))
     {
 	if (!eap->forceit && !eap->append)
@@ -2742,7 +2722,7 @@ do_ecmd(
 		// oldwin->w_buffer to NULL.
 		u_sync(FALSE);
 		close_buffer(oldwin, curbuf,
-			       (flags & ECMD_HIDE) ? 0 : DOBUF_UNLOAD, FALSE);
+			 (flags & ECMD_HIDE) ? 0 : DOBUF_UNLOAD, FALSE, FALSE);
 
 		the_curwin->w_closing = FALSE;
 		--buf->b_locked;
@@ -3643,7 +3623,7 @@ do_sub(exarg_T *eap)
 	    which_pat = RE_LAST;	    // use last used regexp
 	    delimiter = *cmd++;		    // remember delimiter character
 	    pat = cmd;			    // remember start of search pat
-	    cmd = skip_regexp(cmd, delimiter, p_magic, &eap->arg);
+	    cmd = skip_regexp_ex(cmd, delimiter, p_magic, &eap->arg, NULL);
 	    if (cmd[0] == delimiter)	    // end delimiter found
 		*cmd++ = NUL;		    // replace it with a NUL
 	}
@@ -4818,7 +4798,7 @@ ex_global(exarg_T *eap)
 	if (delim)
 	    ++cmd;		// skip delimiter if there is one
 	pat = cmd;		// remember start of pattern
-	cmd = skip_regexp(cmd, delim, p_magic, &eap->arg);
+	cmd = skip_regexp_ex(cmd, delim, p_magic, &eap->arg, NULL);
 	if (cmd[0] == delim)		    // end delimiter found
 	    *cmd++ = NUL;		    // replace it with a NUL
     }
@@ -5288,7 +5268,7 @@ check_help_lang(char_u *arg)
  * Return a heuristic indicating how well the given string matches.  The
  * smaller the number, the better the match.  This is the order of priorities,
  * from best match to worst match:
- *	- Match with least alpha-numeric characters is better.
+ *	- Match with least alphanumeric characters is better.
  *	- Match with least total characters is better.
  *	- Match towards the start is better.
  *	- Match starting with "+" is worse (feature instead of command)
@@ -5341,10 +5321,18 @@ help_compare(const void *s1, const void *s2)
 {
     char    *p1;
     char    *p2;
+    int	    cmp;
 
     p1 = *(char **)s1 + strlen(*(char **)s1) + 1;
     p2 = *(char **)s2 + strlen(*(char **)s2) + 1;
-    return strcmp(p1, p2);
+
+    // Compare by help heuristic number first.
+    cmp = strcmp(p1, p2);
+    if (cmp != 0)
+	return cmp;
+
+    // Compare by strings as tie-breaker when same heuristic number.
+    return strcmp(*(char **)s1, *(char **)s2);
 }
 
 /*
@@ -5926,7 +5914,8 @@ helptags_one(
     char_u	*dir,		// doc directory
     char_u	*ext,		// suffix, ".txt", ".itx", ".frx", etc.
     char_u	*tagfname,	// "tags" for English, "tags-fr" for French.
-    int		add_help_tags)	// add "help-tags" tag
+    int		add_help_tags,	// add "help-tags" tag
+    int		ignore_writeerr)    // ignore write error
 {
     FILE	*fd_tags;
     FILE	*fd;
@@ -5970,7 +5959,8 @@ helptags_one(
     fd_tags = mch_fopen((char *)NameBuff, "w");
     if (fd_tags == NULL)
     {
-	semsg(_("E152: Cannot open %s for writing"), NameBuff);
+	if (!ignore_writeerr)
+	    semsg(_("E152: Cannot open %s for writing"), NameBuff);
 	FreeWild(filecount, files);
 	return;
     }
@@ -6171,7 +6161,7 @@ helptags_one(
  * Generate tags in one help directory, taking care of translations.
  */
     static void
-do_helptags(char_u *dirname, int add_help_tags)
+do_helptags(char_u *dirname, int add_help_tags, int ignore_writeerr)
 {
 #ifdef FEAT_MULTI_LANG
     int		len;
@@ -6257,7 +6247,7 @@ do_helptags(char_u *dirname, int add_help_tags)
 	    ext[1] = fname[5];
 	    ext[2] = fname[6];
 	}
-	helptags_one(dirname, ext, fname, add_help_tags);
+	helptags_one(dirname, ext, fname, add_help_tags, ignore_writeerr);
     }
 
     ga_clear(&ga);
@@ -6265,14 +6255,15 @@ do_helptags(char_u *dirname, int add_help_tags)
 
 #else
     // No language support, just use "*.txt" and "tags".
-    helptags_one(dirname, (char_u *)".txt", (char_u *)"tags", add_help_tags);
+    helptags_one(dirname, (char_u *)".txt", (char_u *)"tags", add_help_tags,
+							    ignore_writeerr);
 #endif
 }
 
     static void
 helptags_cb(char_u *fname, void *cookie)
 {
-    do_helptags(fname, *(int *)cookie);
+    do_helptags(fname, *(int *)cookie, TRUE);
 }
 
 /*
@@ -6306,7 +6297,7 @@ ex_helptags(exarg_T *eap)
 	if (dirname == NULL || !mch_isdir(dirname))
 	    semsg(_("E150: Not a directory: %s"), eap->arg);
 	else
-	    do_helptags(dirname, add_help_tags);
+	    do_helptags(dirname, add_help_tags, FALSE);
 	vim_free(dirname);
     }
 }
@@ -6447,7 +6438,7 @@ skip_vimgrep_pat(char_u *p, char_u **s, int *flags)
 	if (s != NULL)
 	    *s = p + 1;
 	c = *p;
-	p = skip_regexp(p + 1, c, TRUE, NULL);
+	p = skip_regexp(p + 1, c, TRUE);
 	if (*p != c)
 	    return NULL;
 

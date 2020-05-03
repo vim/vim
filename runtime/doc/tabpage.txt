@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 8.1.  Last change: 2019 May 05
+*tabpage.txt*   For Vim version 8.2.  Last change: 2020 Feb 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -138,7 +138,7 @@ something else.
 		    :+tabclose	    " close the next tab page
 		    :1tabclose	    " close the first tab page
 		    :$tabclose	    " close the last tab page
-		    :tabclose -2    " close the two previous tab page
+		    :tabclose -2    " close the 2nd previous tab page 
 		    :tabclose +	    " close the next tab page
 		    :tabclose 3	    " close the third tab page
 		    :tabclose $	    " close the last tab page

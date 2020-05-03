@@ -1,5 +1,5 @@
 " Test for python 2 commands.
-" TODO: move tests from test87.in here.
+" TODO: move tests from test86.in here.
 
 source check.vim
 CheckFeature python
@@ -167,3 +167,25 @@ func Test_Catch_Exception_Message()
     call assert_match( '^Vim(.*):RuntimeError: TEST$', v:exception )
   endtry
 endfunc
+
+" Test for various heredoc syntax
+func Test_python_heredoc()
+  python << END
+s='A'
+END
+  python <<
+s+='B'
+.
+  python << trim END
+    s+='C'
+  END
+  python << trim
+    s+='D'
+  .
+  python << trim eof
+    s+='E'
+  eof
+  call assert_equal('ABCDE', pyxeval('s'))
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

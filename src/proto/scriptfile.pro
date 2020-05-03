@@ -1,9 +1,14 @@
 /* scriptfile.c */
+void estack_init(void);
+estack_T *estack_push(etype_T type, char_u *name, long lnum);
+void estack_push_ufunc(etype_T type, ufunc_T *ufunc, long lnum);
+void estack_pop(void);
+char_u *estack_sfile(void);
 void ex_runtime(exarg_T *eap);
 int do_in_path(char_u *path, char_u *name, int flags, void (*callback)(char_u *fname, void *ck), void *cookie);
 int do_in_runtimepath(char_u *name, int flags, void (*callback)(char_u *fname, void *ck), void *cookie);
 int source_runtime(char_u *name, int flags);
-int source_in_path(char_u *path, char_u *name, int flags);
+int source_in_path(char_u *path, char_u *name, int flags, int *ret_sid);
 void add_pack_start_dirs(void);
 void load_start_packages(void);
 void ex_packloadall(exarg_T *eap);
@@ -16,7 +21,7 @@ void ex_options(exarg_T *eap);
 linenr_T *source_breakpoint(void *cookie);
 int *source_dbg_tick(void *cookie);
 int source_level(void *cookie);
-int do_source(char_u *fname, int check_other, int is_vimrc);
+int do_source(char_u *fname, int check_other, int is_vimrc, int *ret_sid);
 void ex_scriptnames(exarg_T *eap);
 void scriptnames_slash_adjust(void);
 char_u *get_scriptname(scid_T id);

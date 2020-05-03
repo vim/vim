@@ -4,63 +4,95 @@
 function Test_cmdmods()
   let g:mods = ''
 
-  command! -nargs=* MyCmd let g:mods .= '<mods> '
+  command! -nargs=* MyCmd let g:mods = '<mods>'
 
   MyCmd
+  call assert_equal('', g:mods)
   aboveleft MyCmd
+  call assert_equal('aboveleft', g:mods)
   abo MyCmd
+  call assert_equal('aboveleft', g:mods)
   belowright MyCmd
+  call assert_equal('belowright', g:mods)
   bel MyCmd
+  call assert_equal('belowright', g:mods)
   botright MyCmd
+  call assert_equal('botright', g:mods)
   bo MyCmd
+  call assert_equal('botright', g:mods)
   browse MyCmd
+  call assert_equal('browse', g:mods)
   bro MyCmd
+  call assert_equal('browse', g:mods)
   confirm MyCmd
+  call assert_equal('confirm', g:mods)
   conf MyCmd
+  call assert_equal('confirm', g:mods)
   hide MyCmd
+  call assert_equal('hide', g:mods)
   hid MyCmd
+  call assert_equal('hide', g:mods)
   keepalt MyCmd
+  call assert_equal('keepalt', g:mods)
   keepa MyCmd
+  call assert_equal('keepalt', g:mods)
   keepjumps MyCmd
+  call assert_equal('keepjumps', g:mods)
   keepj MyCmd
+  call assert_equal('keepjumps', g:mods)
   keepmarks MyCmd
+  call assert_equal('keepmarks', g:mods)
   kee MyCmd
+  call assert_equal('keepmarks', g:mods)
   keeppatterns MyCmd
+  call assert_equal('keeppatterns', g:mods)
   keepp MyCmd
+  call assert_equal('keeppatterns', g:mods)
   leftabove MyCmd  " results in :aboveleft
+  call assert_equal('aboveleft', g:mods)
   lefta MyCmd
+  call assert_equal('aboveleft', g:mods)
   lockmarks MyCmd
+  call assert_equal('lockmarks', g:mods)
   loc MyCmd
+  call assert_equal('lockmarks', g:mods)
   " noautocmd MyCmd
   noswapfile MyCmd
+  call assert_equal('noswapfile', g:mods)
   nos MyCmd
+  call assert_equal('noswapfile', g:mods)
   rightbelow MyCmd " results in :belowright
+  call assert_equal('belowright', g:mods)
   rightb MyCmd
+  call assert_equal('belowright', g:mods)
   " sandbox MyCmd
   silent MyCmd
+  call assert_equal('silent', g:mods)
   sil MyCmd
+  call assert_equal('silent', g:mods)
   tab MyCmd
+  call assert_equal('tab', g:mods)
   topleft MyCmd
+  call assert_equal('topleft', g:mods)
   to MyCmd
+  call assert_equal('topleft', g:mods)
   " unsilent MyCmd
   verbose MyCmd
+  call assert_equal('verbose', g:mods)
   verb MyCmd
+  call assert_equal('verbose', g:mods)
   vertical MyCmd
+  call assert_equal('vertical', g:mods)
   vert MyCmd
+  call assert_equal('vertical', g:mods)
 
   aboveleft belowright botright browse confirm hide keepalt keepjumps
 	      \ keepmarks keeppatterns lockmarks noswapfile silent tab
 	      \ topleft verbose vertical MyCmd
 
-  call assert_equal(' aboveleft aboveleft belowright belowright botright ' .
-      \ 'botright browse browse confirm confirm hide hide ' .
-      \ 'keepalt keepalt keepjumps keepjumps keepmarks keepmarks ' .
-      \ 'keeppatterns keeppatterns aboveleft aboveleft lockmarks lockmarks noswapfile ' .
-      \ 'noswapfile belowright belowright silent silent tab topleft topleft verbose verbose ' .
-      \ 'vertical vertical ' .
-      \ 'aboveleft belowright botright browse confirm hide keepalt keepjumps ' .
-      \ 'keepmarks keeppatterns lockmarks noswapfile silent tab topleft ' .
-      \ 'verbose vertical ', g:mods)
+  call assert_equal('browse confirm hide keepalt keepjumps ' .
+      \ 'keepmarks keeppatterns lockmarks noswapfile silent ' .
+      \ 'verbose aboveleft belowright botright tab topleft vertical', g:mods)
 
   let g:mods = ''
   command! -nargs=* MyQCmd let g:mods .= '<q-mods> '
@@ -262,7 +294,7 @@ func CustomComplete(A, L, P)
 endfunc
 
 func CustomCompleteList(A, L, P)
-  return [ "Monday", "Tuesday", "Wednesday" ]
+  return [ "Monday", "Tuesday", "Wednesday", {}]
 endfunc
 
 func Test_CmdCompletion()
@@ -327,6 +359,16 @@ func Test_CmdCompletion()
 
   com! -complete=customlist,CustomComp DoCmd :
   call assert_fails("call feedkeys(':DoCmd \<C-D>', 'tx')", 'E117:')
+
+  " custom completion without a function
+  com! -complete=custom, DoCmd
+  call assert_beeps("call feedkeys(':DoCmd \t', 'tx')")
+
+  " custom completion failure with the wrong function
+  com! -complete=custom,min DoCmd
+  call assert_fails("call feedkeys(':DoCmd \t', 'tx')", 'E118:')
+
+  delcom DoCmd
 endfunc
 
 func CallExecute(A, L, P)
@@ -542,3 +584,26 @@ func Test_command_list()
   call assert_equal("\nNo user-defined commands found", execute(':command Xxx'))
   call assert_equal("\nNo user-defined commands found", execute('command'))
 endfunc
+
+" Test for a custom user completion returning the wrong value type
+func Test_usercmd_custom()
+  func T1(a, c, p)
+    return "a\nb\n"
+  endfunc
+  command -nargs=* -complete=customlist,T1 TCmd1
+  call feedkeys(":TCmd1 \<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"TCmd1 ', @:)
+  delcommand TCmd1
+  delfunc T1
+
+  func T2(a, c, p)
+    return {}
+  endfunc
+  command -nargs=* -complete=customlist,T2 TCmd2
+  call feedkeys(":TCmd2 \<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"TCmd2 ', @:)
+  delcommand TCmd2
+  delfunc T2
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

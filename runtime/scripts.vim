@@ -1,7 +1,7 @@
 " Vim support file to detect file types in scripts
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2019 Jun 25
+" Last change:	2020 Mar 06
 
 " This file is called by an autocommand for every file that has just been
 " loaded into a buffer.  It checks if the type of file can be recognized by
@@ -375,6 +375,10 @@ else
   " (See also: http://www.gnu.org/software/emacs/manual/html_node/emacs/Choosing-Modes.html#Choosing-Modes)
   elseif s:line1 =~? '-\*-.*erlang.*-\*-'
     set ft=erlang
+
+  " YAML
+  elseif s:line1 =~# '^%YAML'
+    set ft=yaml
 
   " CVS diff
   else

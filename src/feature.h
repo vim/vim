@@ -285,15 +285,11 @@
  * +eval		Built-in script language and expression evaluation,
  *			":let", ":if", etc.
  * +float		Floating point variables.
- * +num64		64-bit Number.
  */
 #ifdef FEAT_NORMAL
 # define FEAT_EVAL
 # if defined(HAVE_FLOAT_FUNCS) || defined(MSWIN) || defined(MACOS_X)
 #  define FEAT_FLOAT
-# endif
-# if defined(HAVE_STDINT_H) || defined(MSWIN) || (VIM_SIZEOF_LONG >= 8)
-#  define FEAT_NUM64
 # endif
 #endif
 
@@ -518,7 +514,11 @@
  */
 #if defined(FEAT_GUI_MSWIN) && !defined(FEAT_MBYTE_IME)
 // #define FEAT_MBYTE_IME
-# endif
+#endif
+
+#if defined(FEAT_BIG) && defined(FEAT_GUI_HAIKU) && !defined(FEAT_MBYTE_IME)
+# define FEAT_MBYTE_IME
+#endif
 
 // Use iconv() when it's available.
 #if (defined(HAVE_ICONV_H) && defined(HAVE_ICONV)) || defined(DYNAMIC_ICONV)
@@ -608,7 +608,9 @@
 		|| defined(FEAT_GUI_MSWIN) \
 		|| ((defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)) \
 			&& defined(HAVE_XPM)) \
-		|| defined(FEAT_GUI_PHOTON))
+		|| defined(FEAT_GUI_PHOTON) \
+		|| defined(FEAT_GUI_HAIKU))
+
 # define FEAT_TOOLBAR
 #endif
 
@@ -631,6 +633,7 @@
     && (defined(FEAT_GUI_GTK) \
 	|| (defined(FEAT_GUI_MOTIF) && defined(HAVE_XM_NOTEBOOK_H)) \
 	|| defined(FEAT_GUI_MAC) \
+	|| defined(FEAT_GUI_HAIKU) \
 	|| (defined(FEAT_GUI_MSWIN) \
 	    && (!defined(_MSC_VER) || _MSC_VER > 1020)))
 # define FEAT_GUI_TABLINE
@@ -642,7 +645,9 @@
  */
 #if defined(FEAT_NORMAL)
 # define FEAT_BROWSE_CMD
-# if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC)
+# if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) \
+	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_HAIKU) || defined(FEAT_GUI_PHOTON) \
+	|| defined(FEAT_GUI_MAC)
 #  define FEAT_BROWSE
 # endif
 #endif
@@ -667,6 +672,7 @@
 		&& defined(HAVE_X11_XPM_H)) \
 	|| defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_GUI_PHOTON) \
+	|| defined(FEAT_GUI_HAIKU) \
 	|| defined(FEAT_GUI_MSWIN) \
 	|| defined(FEAT_GUI_MAC)
 #  define FEAT_CON_DIALOG
@@ -684,7 +690,8 @@
 #if defined(FEAT_GUI_DIALOG) && \
 	(defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) \
 	 || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN) \
-	 || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC))
+	 || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC) \
+	 || defined(FEAT_GUI_HAIKU))
 # define FEAT_GUI_TEXTDIALOG
 # ifndef ALWAYS_USE_GUI
 #  define FEAT_CON_DIALOG
@@ -944,7 +951,7 @@
  *			Always included, since either FEAT_MOUSE_XTERM or
  *			DOS_MOUSE is defined.
  */
-// OS/2 and Amiga console have no mouse support
+// Amiga console has no mouse support
 #if defined(UNIX) || defined(VMS)
 # define FEAT_MOUSE_XTERM
 # ifdef FEAT_BIG

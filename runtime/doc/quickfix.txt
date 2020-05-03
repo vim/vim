@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 8.1.  Last change: 2019 Oct 22
+*quickfix.txt*  For Vim version 8.2.  Last change: 2020 Jan 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -229,8 +229,16 @@ processing a quickfix or location list command, it will be aborted.
 			current window is used instead of the quickfix list.
 
 							*:cq* *:cquit*
-:cq[uit][!]		Quit Vim with an error code, so that the compiler
-			will not compile the same file again.
+:cq[uit][!]
+:{N}cq[uit][!]
+:cq[uit][!] {N}		Quit Vim with error code {N}.  {N} defaults to one.
+			Useful when Vim is called from another program:
+			e.g., a compiler will not compile the same file again,
+			`git commit` will abort the committing process, `fc`
+			(built-in for shells like bash and zsh) will not
+			execute the command, etc.
+			{N} can also be zero, in which case Vim exits
+			normally.
 			WARNING: All changes in files are lost!  Also when the
 			[!] is not used.  It works like ":qall!" |:qall|,
 			except that Vim returns a non-zero exit code.
@@ -313,7 +321,7 @@ processing a quickfix or location list command, it will be aborted.
 							*:cex* *:cexpr* *E777*
 :cex[pr][!] {expr}	Create a quickfix list using the result of {expr} and
 			jump to the first error.
-			If {expr} is a String, then each new-line terminated
+			If {expr} is a String, then each newline terminated
 			line in the String is processed using the global value
 			of 'errorformat' and the result is added to the
 			quickfix list.
@@ -935,10 +943,10 @@ or simpler >
 "$*" can be given multiple times, for example: >
    :set makeprg=gcc\ -o\ $*\ $*
 
-The 'shellpipe' option defaults to ">" for the Amiga, MS-DOS and Win32.  This
-means that the output of the compiler is saved in a file and not shown on the
-screen directly.  For Unix "| tee" is used.  The compiler output is shown on
-the screen and saved in a file the same time.  Depending on the shell used
+The 'shellpipe' option defaults to ">" for the Amiga and ">%s 2>&1" for Win32.
+This means that the output of the compiler is saved in a file and not shown on
+the screen directly.  For Unix "| tee" is used.  The compiler output is shown
+on the screen and saved in a file the same time.  Depending on the shell used
 "|& tee" or "2>&1| tee" is the default, so stderr output will be included.
 
 If 'shellpipe' is empty, the {errorfile} part will be omitted.  This is useful
@@ -1099,7 +1107,7 @@ id-utils) in a similar way to its compiler integration (see |:make| above).
 			allowed with |:bufdo|.
 			An example that uses the argument list and avoids
 			errors for files without matches: >
-                                :silent argdo try 
+				:silent argdo try
 				  \ | grepadd! something %
 				  \ | catch /E480:/
 				  \ | endtry"
@@ -1302,7 +1310,7 @@ You can force the compiler to ignore makefiles by defining
 b:tex_ignore_makefile or g:tex_ignore_makefile variable (they are checked for
 existence only).
 
-If the compiler chose not to use make, it need to choose a right program for
+If the compiler chose not to use make, it needs to choose a right program for
 processing your input.  If b:tex_flavor or g:tex_flavor (in this precedence)
 variable exists, it defines TeX flavor for :make (actually, this is the name
 of executed command), and if both variables do not exist, it defaults to
@@ -1384,9 +1392,9 @@ normally happens by matching following characters and items.  When nothing is
 following the rest of the line is matched.  If "%f" is followed by a '%' or a
 backslash, it will look for a sequence of 'isfname' characters.
 
-On MS-DOS, MS-Windows and OS/2 a leading "C:" will be included in "%f", even
-when using "%f:".  This means that a file name which is a single alphabetical
-letter will not be detected.
+On MS-Windows a leading "C:" will be included in "%f", even when using "%f:".
+This means that a file name which is a single alphabetical letter will not be
+detected.
 
 The "%p" conversion is normally followed by a "^".  It's used for compilers
 that output a line like: >

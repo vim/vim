@@ -323,6 +323,23 @@ func Test_viminfo_marks()
   call assert_equal([bufb, 22, 1, 0], getpos("'3")) " time 30
   call assert_equal([bufb, 12, 1, 0], getpos("'4")) " time 25
 
+  " deleted file marks are removed from viminfo
+  delmark C
+  wviminfo Xviminfo
+  rviminfo Xviminfo
+  call assert_equal([0, 0, 0, 0], getpos("'C"))
+
+  " deleted file marks stay in viminfo if defined in another vim later
+  call test_settime(70)
+  call setpos("'D", [bufb, 8, 1, 0])
+  wviminfo Xviminfo
+  call test_settime(65)
+  delmark D
+  call assert_equal([0, 0, 0, 0], getpos("'D"))
+  call test_settime(75)
+  rviminfo Xviminfo
+  call assert_equal([bufb, 8, 1, 0], getpos("'D"))
+
   call delete('Xviminfo')
   exe 'bwipe ' . bufa
   exe 'bwipe ' . bufb
@@ -743,6 +760,11 @@ func Test_viminfo_perm()
   call setfperm('Xviminfo', '--x------')
   call assert_fails('rviminfo Xviminfo', 'E195:')
   call delete('Xviminfo')
+
+  " Try to write the viminfo to a directory
+  call mkdir('Xdir')
+  call assert_fails('wviminfo Xdir', 'E886:')
+  call delete('Xdir', 'rf')
 endfunc
 
 " Test for writing to an existing viminfo file merges the file marks
@@ -793,3 +815,24 @@ func XTest_viminfo_marks_merge()
   call test_settime(0)
   let &viminfo=save_viminfo
 endfunc
+
+" Test for errors in setting 'viminfo'
+func Test_viminfo_option_error()
+  " Missing number
+  call assert_fails('set viminfo=\"', 'E526:')
+  for c in split("'/:<@s", '\zs')
+    call assert_fails('set viminfo=' .. c, 'E526:')
+  endfor
+
+  " Missing comma
+  call assert_fails('set viminfo=%10!', 'E527:')
+  call assert_fails('set viminfo=!%10', 'E527:')
+  call assert_fails('set viminfo=h%10', 'E527:')
+  call assert_fails('set viminfo=c%10', 'E527:')
+  call assert_fails('set viminfo=:10%10', 'E527:')
+
+  " Missing ' setting
+  call assert_fails('set viminfo=%10', 'E528:')
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

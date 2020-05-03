@@ -8,7 +8,7 @@
  */
 
 /*
- * filepath.c: dealing with file names ant paths.
+ * filepath.c: dealing with file names and paths.
  */
 
 #include "vim.h"
@@ -64,6 +64,7 @@ get_short_pathname(char_u **fnamep, char_u **bufp, int *fnamelen)
     if (l != 0)
     {
 	char_u *p = utf16_to_enc(newbuf, NULL);
+
 	if (p != NULL)
 	{
 	    vim_free(*bufp);
@@ -301,6 +302,7 @@ modify_fname(
     char_u	dirname[MAXPATHL];
     int		c;
     int		has_fullname = 0;
+    int		has_homerelative = 0;
 #ifdef MSWIN
     char_u	*fname_start = *fnamep;
     int		has_shortname = 0;
@@ -412,7 +414,7 @@ repeat:
 	}
 	pbuf = NULL;
 	// Need full path first (use expand_env() to remove a "~/")
-	if (!has_fullname)
+	if (!has_fullname && !has_homerelative)
 	{
 	    if (c == '.' && **fnamep == '~')
 		p = pbuf = expand_env_save(*fnamep);
@@ -428,16 +430,37 @@ repeat:
 	{
 	    if (c == '.')
 	    {
+		size_t	namelen;
+
 		mch_dirname(dirname, MAXPATHL);
-		s = shorten_fname(p, dirname);
-		if (s != NULL)
+		if (has_homerelative)
 		{
-		    *fnamep = s;
-		    if (pbuf != NULL)
+		    s = vim_strsave(dirname);
+		    if (s != NULL)
 		    {
-			vim_free(*bufp);   // free any allocated file name
-			*bufp = pbuf;
-			pbuf = NULL;
+			home_replace(NULL, s, dirname, MAXPATHL, TRUE);
+			vim_free(s);
+		    }
+		}
+		namelen = STRLEN(dirname);
+
+		// Do not call shorten_fname() here since it removes the prefix
+		// even though the path does not have a prefix.
+		if (fnamencmp(p, dirname, namelen) == 0)
+		{
+		    p += namelen;
+		    if (vim_ispathsep(*p))
+		    {
+			while (*p && vim_ispathsep(*p))
+			    ++p;
+			*fnamep = p;
+			if (pbuf != NULL)
+			{
+			    // free any allocated file name
+			    vim_free(*bufp);
+			    *bufp = pbuf;
+			    pbuf = NULL;
+			}
 		    }
 		}
 	    }
@@ -453,6 +476,7 @@ repeat:
 			*fnamep = s;
 			vim_free(*bufp);
 			*bufp = s;
+			has_homerelative = TRUE;
 		    }
 		}
 	    }
@@ -701,6 +725,7 @@ f_chdir(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_string = NULL;
 
     if (argvars[0].v_type != VAR_STRING)
+	// Returning an empty string means it failed.
 	return;
 
     // Return the current directory
@@ -1236,41 +1261,6 @@ f_isdirectory(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * Evaluate "expr" (= "context") for readdir().
- */
-    static int
-readdir_checkitem(void *context, char_u *name)
-{
-    typval_T	*expr = (typval_T *)context;
-    typval_T	save_val;
-    typval_T	rettv;
-    typval_T	argv[2];
-    int		retval = 0;
-    int		error = FALSE;
-
-    if (expr->v_type == VAR_UNKNOWN)
-	return 1;
-
-    prepare_vimvar(VV_VAL, &save_val);
-    set_vim_var_string(VV_VAL, name, -1);
-    argv[0].v_type = VAR_STRING;
-    argv[0].vval.v_string = name;
-
-    if (eval_expr_typval(expr, argv, 1, &rettv) == FAIL)
-	goto theend;
-
-    retval = tv_get_number_chk(&rettv, &error);
-    if (error)
-	retval = -1;
-    clear_tv(&rettv);
-
-theend:
-    set_vim_var_string(VV_VAL, NULL, 0);
-    restore_vimvar(VV_VAL, &save_val);
-    return retval;
-}
-
-/*
  * Create the directory in which "dir" is located, and higher levels when
  * needed.
  * Return OK or FAIL.
@@ -1366,6 +1356,41 @@ f_pathshorten(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * Evaluate "expr" (= "context") for readdir().
+ */
+    static int
+readdir_checkitem(void *context, char_u *name)
+{
+    typval_T	*expr = (typval_T *)context;
+    typval_T	save_val;
+    typval_T	rettv;
+    typval_T	argv[2];
+    int		retval = 0;
+    int		error = FALSE;
+
+    if (expr->v_type == VAR_UNKNOWN)
+	return 1;
+
+    prepare_vimvar(VV_VAL, &save_val);
+    set_vim_var_string(VV_VAL, name, -1);
+    argv[0].v_type = VAR_STRING;
+    argv[0].vval.v_string = name;
+
+    if (eval_expr_typval(expr, argv, 1, &rettv) == FAIL)
+	goto theend;
+
+    retval = tv_get_number_chk(&rettv, &error);
+    if (error)
+	retval = -1;
+    clear_tv(&rettv);
+
+theend:
+    set_vim_var_string(VV_VAL, NULL, 0);
+    restore_vimvar(VV_VAL, &save_val);
+    return retval;
+}
+
+/*
  * "readdir()" function
  */
     void
@@ -1428,20 +1453,18 @@ f_readfile(typval_T *argvars, typval_T *rettv)
 	    maxline = (long)tv_get_number(&argvars[2]);
     }
 
-    if (blob)
-    {
-	if (rettv_blob_alloc(rettv) == FAIL)
-	    return;
-    }
-    else
-    {
-	if (rettv_list_alloc(rettv) == FAIL)
-	    return;
-    }
+    if ((blob ? rettv_blob_alloc(rettv) : rettv_list_alloc(rettv)) == FAIL)
+	return;
 
     // Always open the file in binary mode, library functions have a mind of
     // their own about CR-LF conversion.
     fname = tv_get_string(&argvars[0]);
+
+    if (mch_isdir(fname))
+    {
+	semsg(_(e_isadir2), fname);
+	return;
+    }
     if (*fname == NUL || (fd = mch_fopen((char *)fname, READBIN)) == NULL)
     {
 	semsg(_(e_notopen), *fname == NUL ? (char_u *)_("<empty>") : fname);
@@ -1452,8 +1475,10 @@ f_readfile(typval_T *argvars, typval_T *rettv)
     {
 	if (read_blob(fd, rettv->vval.v_blob) == FAIL)
 	{
-	    emsg("cannot read file");
+	    semsg(_(e_notread), fname);
+	    // An empty blob is returned on error.
 	    blob_free(rettv->vval.v_blob);
+	    rettv->vval.v_blob = NULL;
 	}
 	fclose(fd);
 	return;
@@ -1658,7 +1683,8 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 	int	limit = 100;
 
 	p = vim_strsave(p);
-
+	if (p == NULL)
+	    goto fail;
 	if (p[0] == '.' && (vim_ispathsep(p[1])
 				   || (p[1] == '.' && (vim_ispathsep(p[2])))))
 	    is_relative_to_current = TRUE;
@@ -1681,7 +1707,10 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 
 	buf = alloc(MAXPATHL + 1);
 	if (buf == NULL)
+	{
+	    vim_free(p);
 	    goto fail;
+	}
 
 	for (;;)
 	{
@@ -1888,7 +1917,8 @@ f_writefile(typval_T *argvars, typval_T *rettv)
 	list = argvars[0].vval.v_list;
 	if (list == NULL)
 	    return;
-	for (li = list->lv_first; li != NULL; li = li->li_next)
+	range_list_materialize(list);
+	FOR_ALL_LIST_ITEMS(list, li)
 	    if (tv_get_string_chk(&li->li_tv) == NULL)
 		return;
     }
@@ -1900,7 +1930,8 @@ f_writefile(typval_T *argvars, typval_T *rettv)
     }
     else
     {
-	semsg(_(e_invarg2), "writefile()");
+	semsg(_(e_invarg2),
+		_("writefile() first argument must be a List or a Blob"));
 	return;
     }
 
@@ -3017,6 +3048,7 @@ dos_expandpath(
     WCHAR		*wn = NULL;	// UCS-2 name, NULL when not used.
     char_u		*matchname;
     int			ok;
+    char_u		*p_alt;
 
     // Expanding "**" may take a long time, check for CTRL-C.
     if (stardepth > 0)
@@ -3131,8 +3163,14 @@ dos_expandpath(
     while (ok)
     {
 	p = utf16_to_enc(wfb.cFileName, NULL);   // p is allocated here
+
 	if (p == NULL)
 	    break;  // out of memory
+
+	if (*wfb.cAlternateFileName == NUL)
+	    p_alt = NULL;
+	else
+	    p_alt = utf16_to_enc(wfb.cAlternateFileName, NULL);
 
 	// Ignore entries starting with a dot, unless when asked for.  Accept
 	// all entries found with "matchname".
@@ -3141,14 +3179,17 @@ dos_expandpath(
 			     && p[1] != NUL && (p[1] != '.' || p[2] != NUL)))
 		&& (matchname == NULL
 		  || (regmatch.regprog != NULL
-				     && vim_regexec(&regmatch, p, (colnr_T)0))
+		      && (vim_regexec(&regmatch, p, (colnr_T)0)
+			 || (p_alt != NULL
+				&& vim_regexec(&regmatch, p_alt, (colnr_T)0))))
 		  || ((flags & EW_NOTWILD)
 		     && fnamencmp(path + (s - buf), p, e - s) == 0)))
 	{
 	    STRCPY(s, p);
 	    len = (int)STRLEN(buf);
 
-	    if (starstar && stardepth < 100)
+	    if (starstar && stardepth < 100
+			  && (wfb.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 	    {
 		// For "**" in the pattern first go deeper in the tree to
 		// find matches.
@@ -3177,24 +3218,9 @@ dos_expandpath(
 	    }
 	}
 
+	vim_free(p_alt);
 	vim_free(p);
 	ok = FindNextFileW(hFind, &wfb);
-
-	// If no more matches and no match was used, try expanding the name
-	// itself.  Finds the long name of a short filename.
-	if (!ok && matchname != NULL && gap->ga_len == start_len)
-	{
-	    STRCPY(s, matchname);
-	    FindClose(hFind);
-	    vim_free(wn);
-	    wn = enc_to_utf16(buf, NULL);
-	    if (wn != NULL)
-		hFind = FindFirstFileW(wn, &wfb);
-	    else
-		hFind =	INVALID_HANDLE_VALUE;
-	    ok = (hFind != INVALID_HANDLE_VALUE);
-	    VIM_CLEAR(matchname);
-	}
     }
 
     FindClose(hFind);

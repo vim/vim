@@ -345,14 +345,14 @@ dict_add(dict_T *d, dictitem_T *item)
  * Returns FAIL when out of memory and when key already exists.
  */
     static int
-dict_add_number_special(dict_T *d, char *key, varnumber_T nr, int special)
+dict_add_number_special(dict_T *d, char *key, varnumber_T nr, vartype_T vartype)
 {
     dictitem_T	*item;
 
     item = dictitem_alloc((char_u *)key);
     if (item == NULL)
 	return FAIL;
-    item->di_tv.v_type = special ? VAR_SPECIAL : VAR_NUMBER;
+    item->di_tv.v_type = vartype;
     item->di_tv.vval.v_number = nr;
     if (dict_add(d, item) == FAIL)
     {
@@ -369,7 +369,7 @@ dict_add_number_special(dict_T *d, char *key, varnumber_T nr, int special)
     int
 dict_add_number(dict_T *d, char *key, varnumber_T nr)
 {
-    return dict_add_number_special(d, key, nr, FALSE);
+    return dict_add_number_special(d, key, nr, VAR_NUMBER);
 }
 
 /*
@@ -377,9 +377,9 @@ dict_add_number(dict_T *d, char *key, varnumber_T nr)
  * Returns FAIL when out of memory and when key already exists.
  */
     int
-dict_add_special(dict_T *d, char *key, varnumber_T nr)
+dict_add_bool(dict_T *d, char *key, varnumber_T nr)
 {
-    return dict_add_number_special(d, key, nr, TRUE);
+    return dict_add_number_special(d, key, nr, VAR_BOOL);
 }
 
 /*
@@ -439,6 +439,27 @@ dict_add_list(dict_T *d, char *key, list_T *list)
     item->di_tv.v_type = VAR_LIST;
     item->di_tv.vval.v_list = list;
     ++list->lv_refcount;
+    if (dict_add(d, item) == FAIL)
+    {
+	dictitem_free(item);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Add a typval_T entry to dictionary "d".
+ * Returns FAIL when out of memory and when key already exists.
+ */
+    int
+dict_add_tv(dict_T *d, char *key, typval_T *tv)
+{
+    dictitem_T	*item;
+
+    item = dictitem_alloc((char_u *)key);
+    if (item == NULL)
+	return FAIL;
+    copy_tv(tv, &item->di_tv);
     if (dict_add(d, item) == FAIL)
     {
 	dictitem_free(item);
@@ -587,6 +608,22 @@ dict_find(dict_T *d, char_u *key, int len)
     if (HASHITEM_EMPTY(hi))
 	return NULL;
     return HI2DI(hi);
+}
+
+/*
+ * Get a typval_T item from a dictionary and copy it into "rettv".
+ * Returns FAIL if the entry doesn't exist or out of memory.
+ */
+    int
+dict_get_tv(dict_T *d, char_u *key, typval_T *rettv)
+{
+    dictitem_T	*di;
+
+    di = dict_find(d, key, -1);
+    if (di == NULL)
+	return FAIL;
+    copy_tv(&di->di_tv, rettv);
+    return OK;
 }
 
 /*
@@ -745,7 +782,7 @@ get_literal_key(char_u **arg, typval_T *tv)
  * Return OK or FAIL.  Returns NOTDONE for {expr}.
  */
     int
-dict_get_tv(char_u **arg, typval_T *rettv, int evaluate, int literal)
+eval_dict(char_u **arg, typval_T *rettv, int evaluate, int literal)
 {
     dict_T	*d = NULL;
     typval_T	tvkey;
@@ -789,7 +826,8 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate, int literal)
 
 	if (**arg != ':')
 	{
-	    semsg(_("E720: Missing colon in Dictionary: %s"), *arg);
+	    if (evaluate)
+		semsg(_(e_missing_dict_colon), *arg);
 	    clear_tv(&tvkey);
 	    goto failret;
 	}
@@ -816,7 +854,8 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate, int literal)
 	    item = dict_find(d, key, -1);
 	    if (item != NULL)
 	    {
-		semsg(_("E721: Duplicate key in Dictionary: \"%s\""), key);
+		if (evaluate)
+		    semsg(_(e_duplicate_key), key);
 		clear_tv(&tvkey);
 		clear_tv(&tv);
 		goto failret;
@@ -836,7 +875,8 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate, int literal)
 	    break;
 	if (**arg != ',')
 	{
-	    semsg(_("E722: Missing comma in Dictionary: %s"), *arg);
+	    if (evaluate)
+		semsg(_(e_missing_dict_comma), *arg);
 	    goto failret;
 	}
 	*arg = skipwhite(*arg + 1);
@@ -844,7 +884,8 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate, int literal)
 
     if (**arg != '}')
     {
-	semsg(_("E723: Missing end of Dictionary '}': %s"), *arg);
+	if (evaluate)
+	    semsg(_(e_missing_dict_end), *arg);
 failret:
 	if (d != NULL)
 	    dict_free(d);
@@ -936,13 +977,14 @@ dict_equal(
     dictitem_T	*item2;
     int		todo;
 
-    if (d1 == NULL && d2 == NULL)
-	return TRUE;
-    if (d1 == NULL || d2 == NULL)
-	return FALSE;
     if (d1 == d2)
 	return TRUE;
     if (dict_len(d1) != dict_len(d2))
+	return FALSE;
+    if (dict_len(d1) == 0)
+	// empty and NULL dicts are considered equal
+	return TRUE;
+    if (d1 == NULL || d2 == NULL)
 	return FALSE;
 
     todo = (int)d1->dv_hashtab.ht_used;

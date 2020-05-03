@@ -655,19 +655,6 @@ static struct
 };
 
 /*
- * Free python.dll
- */
-    static void
-end_dynamic_python(void)
-{
-    if (hinstPython)
-    {
-	close_dll(hinstPython);
-	hinstPython = 0;
-    }
-}
-
-/*
  * Load library and get all pointers.
  * Parameter 'libname' provides name of DLL.
  * Return OK or FAIL.
@@ -889,7 +876,6 @@ python_end(void)
 # endif
 	Py_Finalize();
     }
-    end_dynamic_python();
 #else
     if (Py_IsInitialized())
     {

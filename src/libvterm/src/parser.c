@@ -65,7 +65,7 @@ static void append_strbuffer(VTerm *vt, const char *str, size_t len)
 {
   if(len > vt->parser.strbuffer_len - vt->parser.strbuffer_cur) {
     len = vt->parser.strbuffer_len - vt->parser.strbuffer_cur;
-    DEBUG_LOG1("Truncating strbuffer preserve to %zd bytes\n", len);
+    DEBUG_LOG1("Truncating strbuffer preserve to %zu bytes\n", len);
   }
 
   if(len > 0) {
