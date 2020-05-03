@@ -228,7 +228,7 @@ do_in_path(
     buf = alloc(MAXPATHL);
     if (buf != NULL && rtp_copy != NULL)
     {
-	if (p_verbose > 1 && name != NULL)
+	if (p_verbose > 10 && name != NULL)
 	{
 	    verbose_enter();
 	    smsg(_("Searching for \"%s\" in \"%s\""),
@@ -276,7 +276,7 @@ do_in_path(
 		    copy_option_part(&np, tail, (int)(MAXPATHL - (tail - buf)),
 								       "\t ");
 
-		    if (p_verbose > 2)
+		    if (p_verbose > 10)
 		    {
 			verbose_enter();
 			smsg(_("Searching for \"%s\""), buf);
