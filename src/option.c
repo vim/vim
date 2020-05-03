@@ -2460,7 +2460,9 @@ set_option_sctx_idx(int opt_idx, int opt_flags, sctx_T script_ctx)
     int		indir = (int)options[opt_idx].indir;
     sctx_T	new_script_ctx = script_ctx;
 
-    new_script_ctx.sc_lnum += SOURCING_LNUM;
+    // Modeline already has the line number set.
+    if (!(opt_flags & OPT_MODELINE))
+	new_script_ctx.sc_lnum += SOURCING_LNUM;
 
     // Remember where the option was set.  For local options need to do that
     // in the buffer or window structure.
