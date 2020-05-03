@@ -894,7 +894,6 @@ func Test_terminal_wqall()
 endfunc
 
 func Test_terminal_composing_unicode()
-  CheckNotBSD
   let save_enc = &encoding
   set encoding=utf-8
 
@@ -909,7 +908,7 @@ func Test_terminal_composing_unicode()
   enew
   let buf = term_start(cmd, {'curwin': bufnr('')})
   let g:job = term_getjob(buf)
-  call TermWait(buf, 25)
+  call WaitFor({-> term_getline(buf, 1) !=# ''}, 1000)
 
   if has('win32')
     call assert_equal('cmd', job_info(g:job).cmd[0])
@@ -919,10 +918,11 @@ func Test_terminal_composing_unicode()
 
   " ascii + composing
   let txt = "a\u0308bc"
-  call term_sendkeys(buf, "echo " . txt . "\r")
+  call term_sendkeys(buf, "echo " . txt)
   call TermWait(buf, 25)
   call assert_match("echo " . txt, term_getline(buf, lnum[0]))
-  call assert_equal(txt, term_getline(buf, lnum[0] + 1))
+  call term_sendkeys(buf, "\<cr>")
+  call WaitForAssert({-> assert_equal(txt, term_getline(buf, lnum[0] + 1))}, 1000)
   let l = term_scrape(buf, lnum[0] + 1)
   call assert_equal("a\u0308", l[0].chars)
   call assert_equal("b", l[1].chars)
@@ -930,10 +930,11 @@ func Test_terminal_composing_unicode()
 
   " multibyte + composing
   let txt = "\u304b\u3099\u304e\u304f\u3099\u3052\u3053\u3099"
-  call term_sendkeys(buf, "echo " . txt . "\r")
+  call term_sendkeys(buf, "echo " . txt)
   call TermWait(buf, 25)
   call assert_match("echo " . txt, term_getline(buf, lnum[1]))
-  call assert_equal(txt, term_getline(buf, lnum[1] + 1))
+  call term_sendkeys(buf, "\<cr>")
+  call WaitForAssert({-> assert_equal(txt, term_getline(buf, lnum[1] + 1))}, 1000)
   let l = term_scrape(buf, lnum[1] + 1)
   call assert_equal("\u304b\u3099", l[0].chars)
   call assert_equal("\u304e", l[1].chars)
@@ -943,10 +944,11 @@ func Test_terminal_composing_unicode()
 
   " \u00a0 + composing
   let txt = "abc\u00a0\u0308"
-  call term_sendkeys(buf, "echo " . txt . "\r")
+  call term_sendkeys(buf, "echo " . txt)
   call TermWait(buf, 25)
   call assert_match("echo " . txt, term_getline(buf, lnum[2]))
-  call assert_equal(txt, term_getline(buf, lnum[2] + 1))
+  call term_sendkeys(buf, "\<cr>")
+  call WaitForAssert({-> assert_equal(txt, term_getline(buf, lnum[2] + 1))}, 1000)
   let l = term_scrape(buf, lnum[2] + 1)
   call assert_equal("\u00a0\u0308", l[3].chars)
 
