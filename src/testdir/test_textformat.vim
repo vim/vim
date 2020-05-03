@@ -1258,4 +1258,51 @@ func Test_fo_2()
   close!
 endfunc
 
+" Test for formatting lines where only the first line has a comment.
+func Test_fo_gq_with_firstline_comment()
+  new
+  setlocal formatoptions=tcq
+  call setline(1, ['- one two', 'three'])
+  normal gggqG
+  call assert_equal(['- one two three'], getline(1, '$'))
+
+  %d
+  call setline(1, ['- one', '- two'])
+  normal gggqG
+  call assert_equal(['- one', '- two'], getline(1, '$'))
+  close!
+endfunc
+
+" Test for trying to join a comment line with a non-comment line
+func Test_join_comments()
+  new
+  call setline(1, ['one', '/* two */', 'three'])
+  normal gggqG
+  call assert_equal(['one', '/* two */', 'three'], getline(1, '$'))
+  close!
+endfunc
+
+" Test for using 'a' in 'formatoptions' with comments
+func Test_autoformat_comments()
+  new
+  setlocal formatoptions+=a
+  call feedkeys("a- one\n- two\n", 'xt')
+  call assert_equal(['- one', '- two', ''], getline(1, '$'))
+
+  %d
+  call feedkeys("a\none\n", 'xt')
+  call assert_equal(['', 'one', ''], getline(1, '$'))
+
+  setlocal formatoptions+=aw
+  %d
+  call feedkeys("aone \ntwo\n", 'xt')
+  call assert_equal(['one two', ''], getline(1, '$'))
+
+  %d
+  call feedkeys("aone\ntwo\n", 'xt')
+  call assert_equal(['one', 'two', ''], getline(1, '$'))
+
+  close!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
