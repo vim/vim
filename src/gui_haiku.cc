@@ -4438,15 +4438,16 @@ gui_mch_wait_for_chars(
 	int	wtime)
 {
     int		focus;
-    bigtime_t	    until, timeout;
-    status_t	    st;
+    bigtime_t	until, timeout;
+    status_t	st;
 
-    if (wtime >= 0) {
+    if (wtime >= 0)
+    {
 	timeout = wtime * 1000;
 	until = system_time() + timeout;
-    } else {
-	timeout = B_INFINITE_TIMEOUT;
     }
+    else
+	timeout = B_INFINITE_TIMEOUT;
 
     focus = gui.in_focus;
     for (;;)
@@ -4462,6 +4463,28 @@ gui_mch_wait_for_chars(
 	}
 
 	gui_mch_flush();
+
+#ifdef MESSAGE_QUEUE
+# ifdef FEAT_TIMERS
+	did_add_timer = FALSE;
+# endif
+	parse_queued_messages();
+# ifdef FEAT_TIMERS
+	if (did_add_timer)
+	    // Need to recompute the waiting time.
+	    break;
+# endif
+# ifdef FEAT_JOB_CHANNEL
+	if (has_any_channel())
+	{
+	    if (wtime < 0 || timeout > 20000)
+		timeout = 20000;
+	}
+	else if (wtime < 0)
+	    timeout = B_INFINITE_TIMEOUT;
+# endif
+#endif
+
 	/*
 	 * Don't use gui_mch_update() because then we will spin-lock until a
 	 * char arrives, instead we use gui_haiku_process_event() to hang until
@@ -4479,7 +4502,8 @@ gui_mch_wait_for_chars(
 	 * Calculate how much longer we're willing to wait for the
 	 * next event.
 	 */
-	if (wtime >= 0) {
+	if (wtime >= 0)
+	{
 	    timeout = until - system_time();
 	    if (timeout < 0)
 		break;
