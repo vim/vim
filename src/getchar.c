@@ -2147,7 +2147,7 @@ parse_queued_messages(void)
     for (i = 0; i < MAX_REPEAT_PARSE; ++i)
     {
 	// For Win32 mch_breakcheck() does not check for input, do it here.
-# if defined(MSWIN) && defined(FEAT_JOB_CHANNEL)
+# if (defined(MSWIN) || defined(__HAIKU__)) && defined(FEAT_JOB_CHANNEL)
 	channel_handle_events(FALSE);
 # endif
 
