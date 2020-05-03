@@ -1016,16 +1016,17 @@ func_clear(ufunc_T *fp, int force)
 /*
  * Free a function and remove it from the list of functions.  Does not free
  * what a function contains, call func_clear() first.
+ * When "force" is TRUE we are exiting.
  */
     static void
-func_free(ufunc_T *fp)
+func_free(ufunc_T *fp, int force)
 {
     // Only remove it when not done already, otherwise we would remove a newer
     // version of the function with the same name.
     if ((fp->uf_flags & (FC_DELETED | FC_REMOVED)) == 0)
 	func_remove(fp);
 
-    if ((fp->uf_flags & FC_DEAD) == 0)
+    if ((fp->uf_flags & FC_DEAD) == 0 || force)
 	vim_free(fp);
 }
 
@@ -1037,7 +1038,7 @@ func_free(ufunc_T *fp)
 func_clear_free(ufunc_T *fp, int force)
 {
     func_clear(fp, force);
-    func_free(fp);
+    func_free(fp, force);
 }
 
 
@@ -1664,7 +1665,7 @@ free_all_functions(void)
 		    ++skipped;
 		else
 		{
-		    func_free(fp);
+		    func_free(fp, FALSE);
 		    skipped = 0;
 		    break;
 		}
@@ -4392,8 +4393,6 @@ set_ref_in_functions(int copyID)
 	    fp = HI2UF(hi);
 	    if (!func_name_refcount(fp->uf_name))
 		abort = abort || set_ref_in_func(NULL, fp, copyID);
-	    else if (fp->uf_dfunc_idx >= 0)
-		abort = abort || set_ref_in_dfunc(fp, copyID);
 	}
     }
     return abort;
@@ -4441,8 +4440,6 @@ set_ref_in_func(char_u *name, ufunc_T *fp_in, int copyID)
     {
 	for (fc = fp->uf_scoped; fc != NULL; fc = fc->func->uf_scoped)
 	    abort = abort || set_ref_in_funccal(fc, copyID);
-	if (fp->uf_dfunc_idx >= 0)
-	    abort = abort || set_ref_in_dfunc(fp, copyID);
     }
 
     vim_free(tofree);

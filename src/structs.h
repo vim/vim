@@ -1777,6 +1777,21 @@ typedef struct {
     typval_T	*basetv;	// base for base->method()
 } funcexe_T;
 
+/*
+ * Structure to hold the context of a compiled function, used by closures
+ * defined in that function.
+ */
+typedef struct funcstack_S
+{
+    garray_T	fs_ga;		// contains the stack, with:
+				// - arguments
+				// - frame
+				// - local variables
+
+    int		fs_refcount;	// nr of closures referencing this funcstack
+    int		fs_copyID;	// for garray_T collection
+} funcstack_T;
+
 struct partial_S
 {
     int		pt_refcount;	// reference count
@@ -1786,8 +1801,16 @@ struct partial_S
 				// with pt_name
     int		pt_auto;	// when TRUE the partial was created for using
 				// dict.member in handle_subscript()
+
+    // For a compiled closure: the arguments and local variables.
+    garray_T	*pt_ectx_stack;	    // where to find local vars
+    int		pt_ectx_frame;	    // index of function frame in uf_ectx_stack
+    funcstack_T	*pt_funcstack;	    // copy of stack, used after context
+				    // function returns
+
     int		pt_argc;	// number of arguments
     typval_T	*pt_argv;	// arguments in allocated array
+
     dict_T	*pt_dict;	// dict for "self"
 };
 

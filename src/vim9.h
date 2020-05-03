@@ -260,21 +260,6 @@ struct isn_S {
 };
 
 /*
- * Structure to hold the context of a compiled function, used by closures
- * defined in that function.
- */
-typedef struct funcstack_S
-{
-    garray_T	fs_ga;		// contains the stack, with:
-				// - arguments
-				// - frame
-				// - local variables
-
-    int		fs_refcount;	// nr of closures referencing this funcstack
-    int		fs_copyID;	// for garray_T collection
-} funcstack_T;
-
-/*
  * Info about a function defined with :def.  Used in "def_functions".
  */
 struct dfunc_S {
@@ -285,11 +270,6 @@ struct dfunc_S {
     garray_T	df_def_args_isn;    // default argument instructions
     isn_T	*df_instr;	    // function body to be executed
     int		df_instr_count;
-
-    garray_T	*df_ectx_stack;	    // where compiled closure finds local vars
-    int		df_ectx_frame;	    // index of function frame in uf_ectx_stack
-    funcstack_T	*df_funcstack;	    // copy of stack for closure, used after
-				    // closure context function returns
 
     int		df_varcount;	    // number of local variables
     int		df_closure_count;   // number of closures created

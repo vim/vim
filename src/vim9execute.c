@@ -232,10 +232,6 @@ call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
     ectx->ec_instr = dfunc->df_instr;
     estack_push_ufunc(ETYPE_UFUNC, dfunc->df_ufunc, 1);
 
-    // used for closures
-    ectx->ec_outer_stack = dfunc->df_ectx_stack;
-    ectx->ec_outer_frame = dfunc->df_ectx_frame;
-
     // Decide where to start execution, handles optional arguments.
     init_instr_idx(ufunc, argcount, ectx);
 
@@ -269,7 +265,10 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 	tv = STACK_TV(ectx->ec_frame_idx + STACK_FRAME_SIZE
 						   + dfunc->df_varcount + idx);
 	if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial->pt_refcount > 1)
+	{
 	    closure_in_use = TRUE;
+	    break;
+	}
     }
 
     if (closure_in_use)
@@ -315,15 +314,17 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 	{
 	    tv = STACK_TV(ectx->ec_frame_idx + STACK_FRAME_SIZE
 						   + dfunc->df_varcount + idx);
-	    if (tv->v_type == VAR_PARTIAL
-					&& tv->vval.v_partial->pt_refcount > 1)
+	    if (tv->v_type == VAR_PARTIAL)
 	    {
-		dfunc_T	*pt_dfunc = ((dfunc_T *)def_functions.ga_data)
-				   + tv->vval.v_partial->pt_func->uf_dfunc_idx;
-		++funcstack->fs_refcount;
-		pt_dfunc->df_funcstack = funcstack;
-		pt_dfunc->df_ectx_stack = &funcstack->fs_ga;
-		pt_dfunc->df_ectx_frame = ectx->ec_frame_idx - top;
+		partial_T *partial = tv->vval.v_partial;
+
+		if (partial->pt_refcount > 1)
+		{
+		    ++funcstack->fs_refcount;
+		    partial->pt_funcstack = funcstack;
+		    partial->pt_ectx_stack = &funcstack->fs_ga;
+		    partial->pt_ectx_frame = ectx->ec_frame_idx - top;
+		}
 	    }
 	}
     }
@@ -515,7 +516,15 @@ call_partial(typval_T *tv, int argcount, ectx_T *ectx)
 	partial_T *pt = tv->vval.v_partial;
 
 	if (pt->pt_func != NULL)
-	    return call_ufunc(pt->pt_func, argcount, ectx, NULL);
+	{
+	    int ret = call_ufunc(pt->pt_func, argcount, ectx, NULL);
+
+	    // closure may need the function context where it was defined
+	    ectx->ec_outer_stack = pt->pt_ectx_stack;
+	    ectx->ec_outer_frame = pt->pt_ectx_frame;
+
+	    return ret;
+	}
 	name = pt->pt_name;
     }
     else if (tv->v_type == VAR_FUNC)
@@ -1434,8 +1443,8 @@ call_def_function(
 
 			// The closure needs to find arguments and local
 			// variables in the current stack.
-			pt_dfunc->df_ectx_stack = &ectx.ec_stack;
-			pt_dfunc->df_ectx_frame = ectx.ec_frame_idx;
+			pt->pt_ectx_stack = &ectx.ec_stack;
+			pt->pt_ectx_frame = ectx.ec_frame_idx;
 
 			// If this function returns and the closure is still
 			// used, we need to make a copy of the context
@@ -2674,26 +2683,6 @@ check_not_string(typval_T *tv)
 	return FAIL;
     }
     return OK;
-}
-
-/*
- * Mark items in a def function as used.
- */
-    int
-set_ref_in_dfunc(ufunc_T *ufunc, int copyID)
-{
-    dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data) + ufunc->uf_dfunc_idx;
-    int	    abort = FALSE;
-
-    if (dfunc->df_funcstack != NULL)
-    {
-	typval_T    *stack = dfunc->df_funcstack->fs_ga.ga_data;
-	int	    idx;
-
-	for (idx = 0; idx < dfunc->df_funcstack->fs_ga.ga_len; ++idx)
-	    abort = abort || set_ref_in_item(stack + idx, copyID, NULL, NULL);
-    }
-    return abort;
 }
 
 

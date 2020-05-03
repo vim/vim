@@ -3703,6 +3703,24 @@ partial_free(partial_T *pt)
     }
     else
 	func_ptr_unref(pt->pt_func);
+
+    if (pt->pt_funcstack != NULL)
+    {
+	// Decrease the reference count for the context of a closure.  If down
+	// to zero free it and clear the variables on the stack.
+	if (--pt->pt_funcstack->fs_refcount == 0)
+	{
+	    garray_T	*gap = &pt->pt_funcstack->fs_ga;
+	    typval_T	*stack = gap->ga_data;
+
+	    for (i = 0; i < gap->ga_len; ++i)
+		clear_tv(stack + i);
+	    ga_clear(gap);
+	    vim_free(pt->pt_funcstack);
+	}
+	pt->pt_funcstack = NULL;
+    }
+
     vim_free(pt);
 }
 
@@ -4336,6 +4354,15 @@ set_ref_in_item(
 	    for (i = 0; i < pt->pt_argc; ++i)
 		abort = abort || set_ref_in_item(&pt->pt_argv[i], copyID,
 							ht_stack, list_stack);
+	    if (pt->pt_funcstack != NULL)
+	    {
+		typval_T    *stack = pt->pt_funcstack->fs_ga.ga_data;
+
+		for (i = 0; i < pt->pt_funcstack->fs_ga.ga_len; ++i)
+		    abort = abort || set_ref_in_item(stack + i, copyID,
+							 ht_stack, list_stack);
+	    }
+
 	}
     }
 #ifdef FEAT_JOB_CHANNEL
