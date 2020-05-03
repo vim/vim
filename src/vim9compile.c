@@ -3905,6 +3905,9 @@ compile_expr1(char_u **arg,  cctx_T *cctx)
 {
     char_u	*p;
 
+    // TODO: Try parsing as a constant.  If that works just one PUSH
+    // instruction needs to be generated.
+
     // evaluate the first expression
     if (compile_expr2(arg, cctx) == FAIL)
 	return FAIL;
@@ -6633,23 +6636,6 @@ delete_def_function_contents(dfunc_T *dfunc)
 	for (idx = 0; idx < dfunc->df_instr_count; ++idx)
 	    delete_instr(dfunc->df_instr + idx);
 	VIM_CLEAR(dfunc->df_instr);
-    }
-    if (dfunc->df_funcstack != NULL)
-    {
-	// Decrease the reference count for the context of a closure.  If down
-	// to zero free it and clear the variables on the stack.
-	if (--dfunc->df_funcstack->fs_refcount == 0)
-	{
-	    garray_T	*gap = &dfunc->df_funcstack->fs_ga;
-	    typval_T	*stack = gap->ga_data;
-	    int		i;
-
-	    for (i = 0; i < gap->ga_len; ++i)
-		clear_tv(stack + i);
-	    ga_clear(gap);
-	    vim_free(dfunc->df_funcstack);
-	}
-	dfunc->df_funcstack = NULL;
     }
 
     dfunc->df_deleted = TRUE;
