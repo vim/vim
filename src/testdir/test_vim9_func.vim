@@ -2,19 +2,7 @@
 
 source check.vim
 source view_util.vim
-
-" Check that "lines" inside ":def" results in an "error" message.
-func CheckDefFailure(lines, error)
-  call writefile(['def Func()'] + a:lines + ['enddef'], 'Xdef')
-  call assert_fails('so Xdef', a:error, a:lines)
-  call delete('Xdef')
-endfunc
-
-func CheckScriptFailure(lines, error)
-  call writefile(a:lines, 'Xdef')
-  call assert_fails('so Xdef', a:error, a:lines)
-  call delete('Xdef')
-endfunc
+source vim9.vim
 
 func Test_def_basic()
   def SomeFunc(): string
@@ -95,8 +83,17 @@ def Test_call_default_args()
   assert_equal('one', MyDefaultArgs('one'))
   assert_fails('call MyDefaultArgs("one", "two")', 'E118:')
 
-  call CheckScriptFailure(['def Func(arg: number = asdf)', 'enddef'], 'E1001:')
-  call CheckScriptFailure(['def Func(arg: number = "text")', 'enddef'], 'E1013: argument 1: type mismatch, expected number but got string')
+  CheckScriptFailure(['def Func(arg: number = asdf)', 'enddef'], 'E1001:')
+  CheckScriptFailure(['def Func(arg: number = "text")', 'enddef'], 'E1013: argument 1: type mismatch, expected number but got string')
+enddef
+
+def Test_nested_function()
+  def Nested(arg: string): string
+    return 'nested ' .. arg
+  enddef
+  assert_equal('nested function', Nested('function'))
+
+  CheckDefFailure(['func Nested()', 'endfunc'], 'E1086:')
 enddef
 
 func Test_call_default_args_from_func()
@@ -719,6 +716,14 @@ def Test_closure_using_argument()
 
   unlet g:UseArg
   unlet g:UseVararg
+enddef
+
+def Test_nested_closure()
+  let local = 'text'
+  def Closure(arg: string): string
+    return local .. arg
+  enddef
+  assert_equal('text!!!', Closure('!!!'))
 enddef
 
 

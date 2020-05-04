@@ -2,6 +2,7 @@
 void func_init(void);
 hashtab_T *func_tbl_get(void);
 int get_function_args(char_u **argp, char_u endchar, garray_T *newargs, garray_T *argtypes, int *varargs, garray_T *default_args, int skip, exarg_T *eap, char_u **line_to_free);
+char_u *get_lambda_name(void);
 int get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate);
 char_u *deref_func_name(char_u *name, int *lenp, partial_T **partialp, int no_autoload);
 void emsg_funcname(char *ermsg, char_u *name);
@@ -22,6 +23,7 @@ void user_func_error(int error, char_u *name);
 int call_func(char_u *funcname, int len, typval_T *rettv, int argcount_in, typval_T *argvars_in, funcexe_T *funcexe);
 char_u *trans_function_name(char_u **pp, int *is_global, int skip, int flags, funcdict_T *fdp, partial_T **partial);
 char_u *untrans_function_name(char_u *name);
+ufunc_T *def_function(exarg_T *eap, char_u *name_arg, void *context);
 void ex_function(exarg_T *eap);
 int eval_fname_script(char_u *p);
 int translated_function_exists(char_u *name, int is_global);

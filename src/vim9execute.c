@@ -206,6 +206,11 @@ call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
 		       + dfunc->df_varcount + dfunc->df_closure_count) == FAIL)
 	return FAIL;
 
+    // Closure may need the function context where it was defined.
+    // TODO: assuming current context.
+    ectx->ec_outer_stack = &ectx->ec_stack;
+    ectx->ec_outer_frame = ectx->ec_frame_idx;
+
     // Move the vararg-list to below the missing optional arguments.
     if (vararg_count > 0 && arg_to_add > 0)
 	*STACK_TV_BOT(arg_to_add - 1) = *STACK_TV_BOT(-1);

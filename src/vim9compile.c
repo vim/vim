@@ -101,6 +101,7 @@ typedef struct {
     int		lv_from_outer;	// when TRUE using ctx_outer scope
     int		lv_const;	// when TRUE cannot be assigned to
     int		lv_arg;		// when TRUE this is an argument
+    int		lv_func_idx;	// for nested function
 } lvar_T;
 
 /*
@@ -2615,6 +2616,7 @@ compile_call(char_u **arg, size_t varlen, cctx_T *cctx, int argcount_init)
     int		error = FCERR_NONE;
     ufunc_T	*ufunc;
     int		res = FAIL;
+    lvar_T	*lvar;
 
     if (varlen >= sizeof(namebuf))
     {
@@ -2638,6 +2640,16 @@ compile_call(char_u **arg, size_t varlen, cctx_T *cctx, int argcount_init)
 	    res = generate_BCALL(cctx, idx, argcount);
 	else
 	    semsg(_(e_unknownfunc), namebuf);
+	goto theend;
+    }
+
+    // Check if the name is a nested function.
+    lvar = lookup_local(namebuf, varlen, cctx);
+    if (lvar != NULL && lvar->lv_func_idx > 0)
+    {
+	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
+							   + lvar->lv_func_idx;
+	res = generate_CALL(cctx, dfunc->df_ufunc, argcount);
 	goto theend;
     }
 
@@ -4049,6 +4061,64 @@ compile_return(char_u *arg, int set_return_type, cctx_T *cctx)
 }
 
 /*
+ * Get a line from the compilation context, compatible with exarg_T getline().
+ * Return a pointer to the line in allocated memory.
+ * Return NULL for end-of-file or some error.
+ */
+    static char_u *
+exarg_getline(
+	int c UNUSED,
+	void *cookie,
+	int indent UNUSED,
+	int do_concat UNUSED)
+{
+    cctx_T  *cctx = (cctx_T *)cookie;
+
+    if (cctx->ctx_lnum == cctx->ctx_ufunc->uf_lines.ga_len)
+    {
+	iemsg("Heredoc got to end");
+	return NULL;
+    }
+    ++cctx->ctx_lnum;
+    return vim_strsave(((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)
+							     [cctx->ctx_lnum]);
+}
+
+/*
+ * Compile a nested :def command.
+ */
+    static char_u *
+compile_nested_function(exarg_T *eap, cctx_T *cctx)
+{
+    char_u	*name_start = eap->arg;
+    char_u	*name_end = to_name_end(eap->arg, FALSE);
+    char_u	*name = get_lambda_name();
+    lvar_T	*lvar;
+    ufunc_T	*ufunc;
+
+    eap->arg = name_end;
+    eap->getline = exarg_getline;
+    eap->cookie = cctx;
+    eap->skip = cctx->ctx_skip == TRUE;
+    eap->forceit = FALSE;
+    ufunc = def_function(eap, name, cctx);
+
+    if (ufunc == NULL)
+	return NULL;
+
+    // Define a local variable for the function, but change the index to -1 to
+    // mark it as a function name.
+    lvar = reserve_local(cctx, name_start, name_end - name_start,
+						       TRUE, &t_func_unknown);
+    lvar->lv_idx = 0;
+    ++cctx->ctx_locals_count;  // doesn't count as a local variable
+    lvar->lv_func_idx = ufunc->uf_dfunc_idx;
+
+    // TODO: warning for trailing?
+    return (char_u *)"";
+}
+
+/*
  * Return the length of an assignment operator, or zero if there isn't one.
  */
     int
@@ -4076,30 +4146,6 @@ static char *reserved[] = {
     "false",
     NULL
 };
-
-/*
- * Get a line for "=<<".
- * Return a pointer to the line in allocated memory.
- * Return NULL for end-of-file or some error.
- */
-    static char_u *
-heredoc_getline(
-	int c UNUSED,
-	void *cookie,
-	int indent UNUSED,
-	int do_concat UNUSED)
-{
-    cctx_T  *cctx = (cctx_T *)cookie;
-
-    if (cctx->ctx_lnum == cctx->ctx_ufunc->uf_lines.ga_len)
-    {
-	iemsg("Heredoc got to end");
-	return NULL;
-    }
-    ++cctx->ctx_lnum;
-    return vim_strsave(((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)
-							     [cctx->ctx_lnum]);
-}
 
 typedef enum {
     dest_local,
@@ -4394,7 +4440,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	listitem_T *li;
 
 	// [let] varname =<< [trim] {end}
-	eap->getline = heredoc_getline;
+	eap->getline = exarg_getline;
 	eap->cookie = cctx;
 	l = heredoc_get(eap, op + 3, FALSE);
 
@@ -6299,9 +6345,12 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	switch (ea.cmdidx)
 	{
 	    case CMD_def:
+		    ea.arg = p;
+		    line = compile_nested_function(&ea, &cctx);
+		    break;
+
 	    case CMD_function:
-		    // TODO: Nested function
-		    emsg("Nested function not implemented yet");
+		    emsg(_("E1086: Cannot use :function inside :def"));
 		    goto erret;
 
 	    case CMD_return:

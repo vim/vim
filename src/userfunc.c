@@ -329,6 +329,19 @@ set_ufunc_name(ufunc_T *fp, char_u *name)
 }
 
 /*
+ * Get a name for a lambda.  Returned in static memory.
+ */
+    char_u *
+get_lambda_name(void)
+{
+    static char_u   name[30];
+    static int	    lambda_no = 0;
+
+    sprintf((char*)name, "<lambda>%d", ++lambda_no);
+    return name;
+}
+
+/*
  * Parse a lambda expression and get a Funcref from "*arg".
  * Return OK or FAIL.  Returns NOTDONE for dict or {expr}.
  */
@@ -344,7 +357,6 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
     int		ret;
     char_u	*start = skipwhite(*arg + 1);
     char_u	*s, *e;
-    static int	lambda_no = 0;
     int		*old_eval_lavars = eval_lavars_used;
     int		eval_lavars = FALSE;
 
@@ -392,9 +404,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
     {
 	int	    len, flags = 0;
 	char_u	    *p;
-	char_u	    name[20];
-
-	sprintf((char*)name, "<lambda>%d", ++lambda_no);
+	char_u	    *name = get_lambda_name();
 
 	fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
 	if (fp == NULL)
@@ -2364,10 +2374,11 @@ untrans_function_name(char_u *name)
 }
 
 /*
- * ":function"
+ * ":function" also supporting nested ":def".
+ * Returns a pointer to the function or NULL if no function defined.
  */
-    void
-ex_function(exarg_T *eap)
+    ufunc_T *
+def_function(exarg_T *eap, char_u *name_arg, void *context)
 {
     char_u	*theline;
     char_u	*line_to_free = NULL;
@@ -2375,7 +2386,7 @@ ex_function(exarg_T *eap)
     int		c;
     int		saved_did_emsg;
     int		saved_wait_return = need_wait_return;
-    char_u	*name = NULL;
+    char_u	*name = name_arg;
     int		is_global = FALSE;
     char_u	*p;
     char_u	*arg;
@@ -2387,7 +2398,7 @@ ex_function(exarg_T *eap)
     int		varargs = FALSE;
     int		flags = 0;
     char_u	*ret_type = NULL;
-    ufunc_T	*fp;
+    ufunc_T	*fp = NULL;
     int		overwrite = FALSE;
     int		indent;
     int		nesting;
@@ -2429,7 +2440,7 @@ ex_function(exarg_T *eap)
 	    }
 	}
 	eap->nextcmd = check_nextcmd(eap->arg);
-	return;
+	return NULL;
     }
 
     /*
@@ -2469,7 +2480,7 @@ ex_function(exarg_T *eap)
 	if (*p == '/')
 	    ++p;
 	eap->nextcmd = check_nextcmd(p);
-	return;
+	return NULL;
     }
 
     ga_init(&newargs);
@@ -2493,25 +2504,34 @@ ex_function(exarg_T *eap)
      * g:func	    global function name, same as "func"
      */
     p = eap->arg;
-    name = trans_function_name(&p, &is_global, eap->skip,
-						 TFN_NO_AUTOLOAD, &fudi, NULL);
-    paren = (vim_strchr(p, '(') != NULL);
-    if (name == NULL && (fudi.fd_dict == NULL || !paren) && !eap->skip)
+    if (name_arg != NULL)
     {
-	/*
-	 * Return on an invalid expression in braces, unless the expression
-	 * evaluation has been cancelled due to an aborting error, an
-	 * interrupt, or an exception.
-	 */
-	if (!aborting())
+	// nested function, argument is (args).
+	paren = TRUE;
+	CLEAR_FIELD(fudi);
+    }
+    else
+    {
+	name = trans_function_name(&p, &is_global, eap->skip,
+						 TFN_NO_AUTOLOAD, &fudi, NULL);
+	paren = (vim_strchr(p, '(') != NULL);
+	if (name == NULL && (fudi.fd_dict == NULL || !paren) && !eap->skip)
 	{
-	    if (!eap->skip && fudi.fd_newkey != NULL)
-		semsg(_(e_dictkey), fudi.fd_newkey);
-	    vim_free(fudi.fd_newkey);
-	    return;
+	    /*
+	     * Return on an invalid expression in braces, unless the expression
+	     * evaluation has been cancelled due to an aborting error, an
+	     * interrupt, or an exception.
+	     */
+	    if (!aborting())
+	    {
+		if (!eap->skip && fudi.fd_newkey != NULL)
+		    semsg(_(e_dictkey), fudi.fd_newkey);
+		vim_free(fudi.fd_newkey);
+		return NULL;
+	    }
+	    else
+		eap->skip = TRUE;
 	}
-	else
-	    eap->skip = TRUE;
     }
 
     // An error in a function call during evaluation of an expression in magic
@@ -2596,7 +2616,7 @@ ex_function(exarg_T *eap)
 
     ga_init2(&newlines, (int)sizeof(char_u *), 3);
 
-    if (!eap->skip)
+    if (!eap->skip && name_arg == NULL)
     {
 	// Check the name of the function.  Unless it's a dictionary function
 	// (that we are overwriting).
@@ -3255,7 +3275,7 @@ ex_function(exarg_T *eap)
 
     // ":def Func()" needs to be compiled
     if (eap->cmdidx == CMD_def)
-	compile_def_function(fp, FALSE, NULL);
+	compile_def_function(fp, FALSE, context);
 
     goto ret_free;
 
@@ -3269,10 +3289,22 @@ ret_free:
     vim_free(skip_until);
     vim_free(line_to_free);
     vim_free(fudi.fd_newkey);
-    vim_free(name);
+    if (name != name_arg)
+	vim_free(name);
     vim_free(ret_type);
     did_emsg |= saved_did_emsg;
     need_wait_return |= saved_wait_return;
+
+    return fp;
+}
+
+/*
+ * ":function"
+ */
+    void
+ex_function(exarg_T *eap)
+{
+    def_function(eap, NULL, NULL);
 }
 
 /*
