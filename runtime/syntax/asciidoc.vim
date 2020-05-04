@@ -1,11 +1,13 @@
 " Vim syntax file
-" Language:     AsciiDoc
-" Author:       Stuart Rackham <srackham@gmail.com> (inspired by Felix
-"               Obenhuber's original asciidoc.vim script).
-" URL:          http://asciidoc.org/
-" Licence:      GPL (http://www.gnu.org)
-" Remarks:      Vim 6 or greater
-" Last Update:  2014 Aug 29 (see Issue 240)
+" Language:        AsciiDoc
+" Maintainer:      @aerostitch on GitHub (tag me in your issue in the
+"                  github/vim/vim repository and I'll answer when available)
+" Original author: Stuart Rackham <srackham@gmail.com> (inspired by Felix
+"                  Obenhuber's original asciidoc.vim script).
+" URL:             http://asciidoc.org/
+" Licence:         GPL (http://www.gnu.org)
+" Remarks:         Vim 6 or greater
+" Last Update:     2020 May 03 (see Issue 240)
 " Limitations:
 "
 " - Nested quoted text formatting is highlighted according to the outer
