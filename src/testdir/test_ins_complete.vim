@@ -493,9 +493,40 @@ func Test_completefunc_error()
   call setline(1, ['', 'abcd', ''])
   call assert_fails('exe "normal 2G$a\<C-X>\<C-U>"', 'E578:')
 
+  " Jump to a different window from the complete function
+  " TODO: The following test causes an ASAN failure. Once this issue is
+  " addressed, enable the following test.
+  "func! CompleteFunc(findstart, base)
+  "  if a:findstart == 1
+  "    return col('.') - 1
+  "  endif
+  "  wincmd p
+  "  return ['a', 'b']
+  "endfunc
+  "set completefunc=CompleteFunc
+  "new
+  "call assert_fails('exe "normal a\<C-X>\<C-U>"', 'E839:')
+  "close!
+
   set completefunc&
   delfunc CompleteFunc
   delfunc CompleteFunc2
+  close!
+endfunc
+
+" Test for returning non-string values from 'completefunc'
+func Test_completefunc_invalid_data()
+  new
+  func! CompleteFunc(findstart, base)
+    if a:findstart == 1
+      return col('.') - 1
+    endif
+    return [{}, '', 'moon']
+  endfunc
+  set completefunc=CompleteFunc
+  exe "normal i\<C-X>\<C-U>"
+  call assert_equal('moon', getline(1))
+  set completefunc&
   close!
 endfunc
 
@@ -513,6 +544,7 @@ func Test_complete_func_error()
   delfunc ListColors
   delfunc ListMonths
   call assert_fails('call complete_info({})', 'E714:')
+  call assert_equal([], complete_info(['items']).items)
 endfunc
 
 " Test for completing words following a completed word in a line
@@ -532,6 +564,73 @@ func Test_complete_wrapscan()
   call cursor(2, 1)
   call feedkeys("ion\<C-N>\<C-X>\<C-N>\<C-X>\<C-N>\<C-X>\<C-N>", 'xt')
   call assert_equal('one two one two', getline(2))
+  close!
+endfunc
+
+" Test for completing special characters
+func Test_complete_special_chars()
+  new
+  call setline(1, 'int .*[-\^$ func float')
+  call feedkeys("oin\<C-X>\<C-P>\<C-X>\<C-P>\<C-X>\<C-P>", 'xt')
+  call assert_equal('int .*[-\^$ func float', getline(2))
+  close!
+endfunc
+
+" Test for completion when text is wrapped across lines.
+func Test_complete_across_line()
+  new
+  call setline(1, ['red green blue', 'one two three'])
+  setlocal textwidth=20
+  exe "normal 2G$a re\<C-X>\<C-P>\<C-X>\<C-P>\<C-X>\<C-P>\<C-X>\<C-P>"
+  call assert_equal(['one two three red', 'green blue one'], getline(2, '$'))
+  close!
+endfunc
+
+" Test for using CTRL-L to add one character when completing matching
+func Test_complete_add_onechar()
+  new
+  call setline(1, ['wool', 'woodwork'])
+  call feedkeys("Gowoo\<C-P>\<C-P>\<C-P>\<C-L>f", 'xt')
+  call assert_equal('woof', getline(3))
+
+  " use 'ignorecase' and backspace to erase characters from the prefix string
+  " and then add letters using CTRL-L
+  %d
+  set ignorecase backspace=2
+  setlocal complete=.
+  call setline(1, ['workhorse', 'workload'])
+  normal Go
+  exe "normal aWOR\<C-P>\<bs>\<bs>\<bs>\<bs>\<bs>\<bs>\<C-L>r\<C-L>\<C-L>"
+  call assert_equal('workh', getline(3))
+  set ignorecase& backspace&
+  close!
+endfunc
+
+" Test insert completion with 'cindent' (adjust the indent)
+func Test_complete_with_cindent()
+  new
+  setlocal cindent
+  call setline(1, ['if (i == 1)', "    j = 2;"])
+  exe "normal Go{\<CR>i\<C-X>\<C-L>\<C-X>\<C-L>\<CR>}"
+  call assert_equal(['{', "\tif (i == 1)", "\t\tj = 2;", '}'], getline(3, '$'))
+
+  %d
+  call setline(1, ['when while', '{', ''])
+  setlocal cinkeys+==while
+  exe "normal Giwh\<C-P> "
+  call assert_equal("\twhile ", getline('$'))
+  close!
+endfunc
+
+" Test for <CTRL-X> <CTRL-V> completion. Complete commands and functions
+func Test_complete_cmdline()
+  new
+  exe "normal icaddb\<C-X>\<C-V>"
+  call assert_equal('caddbuffer', getline(1))
+  exe "normal ocall getqf\<C-X>\<C-V>"
+  call assert_equal('call getqflist(', getline(2))
+  exe "normal oabcxyz(\<C-X>\<C-V>"
+  call assert_equal('abcxyz(', getline(3))
   close!
 endfunc
 
