@@ -466,19 +466,21 @@ def Test_try_catch_fails()
   call CheckDefFailure(['throw xxx'], 'E1001:')
 enddef
 
-let someJob = test_null_job()
+if has('channel')
+  let someJob = test_null_job()
 
-def FuncWithError()
-  echomsg g:someJob
-enddef
+  def FuncWithError()
+    echomsg g:someJob
+  enddef
 
-func Test_convert_emsg_to_exception()
-  try
-    call FuncWithError()
-  catch
-    call assert_match('Vim:E908:', v:exception)
-  endtry
-endfunc
+  func Test_convert_emsg_to_exception()
+    try
+      call FuncWithError()
+    catch
+      call assert_match('Vim:E908:', v:exception)
+    endtry
+  endfunc
+endif
 
 let s:export_script_lines =<< trim END
   vim9script
