@@ -25,8 +25,6 @@ if exists("b:current_syntax")
   finish
 endif
 
-syn clear
-
 " Run :help syn-priority to review syntax matching priority.
 syn keyword asciidocToDo TODO FIXME CHECK TEST XXX ZZZ DEPRECATED
 syn match asciidocBackslash /\\/
