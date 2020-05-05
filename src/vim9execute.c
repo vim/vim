@@ -432,6 +432,7 @@ call_bfunc(int func_idx, int argcount, ectx_T *ectx)
 {
     typval_T	argvars[MAX_FUNC_ARGS];
     int		idx;
+    int		called_emsg_before = called_emsg;
 
     if (call_prepare(argcount, argvars, ectx) == FAIL)
 	return FAIL;
@@ -442,6 +443,9 @@ call_bfunc(int func_idx, int argcount, ectx_T *ectx)
     // Clear the arguments.
     for (idx = 0; idx < argcount; ++idx)
 	clear_tv(&argvars[idx]);
+
+    if (called_emsg != called_emsg_before)
+	return FAIL;
     return OK;
 }
 
@@ -549,7 +553,8 @@ call_partial(typval_T *tv, int argcount, ectx_T *ectx)
     if (name == NULL || call_by_name(name, argcount, ectx, NULL) == FAIL)
     {
 	if (called_emsg == called_emsg_before)
-	    semsg(_(e_unknownfunc), name);
+	    semsg(_(e_unknownfunc),
+				  name == NULL ? (char_u *)"[unknown]" : name);
 	return FAIL;
     }
     return OK;

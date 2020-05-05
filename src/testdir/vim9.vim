@@ -7,6 +7,14 @@ func CheckDefFailure(lines, error)
   call delete('Xdef')
 endfunc
 
+" Check that "lines" inside ":def" results in an "error" message when executed.
+func CheckDefExecFailure(lines, error)
+  call writefile(['def Func()'] + a:lines + ['enddef'], 'Xdef')
+  so Xdef
+  call assert_fails('call Func()', a:error, a:lines)
+  call delete('Xdef')
+endfunc
+
 def CheckScriptFailure(lines: list<string>, error: string)
   writefile(lines, 'Xdef')
   assert_fails('so Xdef', error, lines)
@@ -18,11 +26,3 @@ def CheckScriptSuccess(lines: list<string>)
   so Xdef
   delete('Xdef')
 enddef
-
-" Check that "line" inside ":def" results in an "error" message when executed.
-func CheckDefExecFailure(line, error)
-  call writefile(['def! Func()', a:line, 'enddef'], 'Xdef')
-  so Xdef
-  call assert_fails('call Func()', a:error, a:line)
-  call delete('Xdef')
-endfunc

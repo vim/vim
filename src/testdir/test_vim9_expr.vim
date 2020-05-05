@@ -759,11 +759,11 @@ def Test_expr7_list()
   assert_equal(g:list_mixed, [1, 'b', false])
   assert_equal('b', g:list_mixed[1])
 
-  call CheckDefExecFailure("let x = g:anint[3]", 'E714:')
+  call CheckDefExecFailure(["let x = g:anint[3]"], 'E714:')
   call CheckDefFailure(["let x = g:list_mixed[xxx]"], 'E1001:')
-  call CheckDefExecFailure("let x = g:list_mixed['xx']", 'E39:')
+  call CheckDefExecFailure(["let x = g:list_mixed['xx']"], 'E39:')
   call CheckDefFailure(["let x = g:list_mixed[0"], 'E111:')
-  call CheckDefExecFailure("let x = g:list_empty[3]", 'E684:')
+  call CheckDefExecFailure(["let x = g:list_empty[3]"], 'E684:')
 enddef
 
 def Test_expr7_lambda()
@@ -792,8 +792,8 @@ def Test_expr7_dict()
   call CheckDefFailure(["let x = #"], 'E1015:')
   call CheckDefFailure(["let x += 1"], 'E1020:')
   call CheckDefFailure(["let x = x + 1"], 'E1001:')
-  call CheckDefExecFailure("let x = g:anint.member", 'E715:')
-  call CheckDefExecFailure("let x = g:dict_empty.member", 'E716:')
+  call CheckDefExecFailure(["let x = g:anint.member"], 'E715:')
+  call CheckDefExecFailure(["let x = g:dict_empty.member"], 'E716:')
 enddef
 
 def Test_expr_member()
@@ -899,8 +899,8 @@ func Test_expr7_fails()
   call CheckDefFailure(["let x = -'xx'"], "E1030:")
   call CheckDefFailure(["let x = +'xx'"], "E1030:")
   call CheckDefFailure(["let x = -0z12"], "E974:")
-  call CheckDefExecFailure("let x = -[8]", "E39:")
-  call CheckDefExecFailure("let x = -{'a': 1}", "E39:")
+  call CheckDefExecFailure(["let x = -[8]"], "E39:")
+  call CheckDefExecFailure(["let x = -{'a': 1}"], "E39:")
 
   call CheckDefFailure(["let x = @"], "E1002:")
   call CheckDefFailure(["let x = @<"], "E354:")
@@ -914,23 +914,23 @@ func Test_expr7_fails()
   call CheckDefFailure(["let x = &notexist"], 'E113:')
   call CheckDefFailure(["&grepprg = [343]"], 'E1013:')
 
-  call CheckDefExecFailure("echo s:doesnt_exist", 'E121:')
-  call CheckDefExecFailure("echo g:doesnt_exist", 'E121:')
+  call CheckDefExecFailure(["echo s:doesnt_exist"], 'E121:')
+  call CheckDefExecFailure(["echo g:doesnt_exist"], 'E121:')
 
   call CheckDefFailure(["echo a:somevar"], 'E1075:')
   call CheckDefFailure(["echo l:somevar"], 'E1075:')
   call CheckDefFailure(["echo x:somevar"], 'E1075:')
 
-  call CheckDefExecFailure("let x = +g:astring", 'E1030:')
-  call CheckDefExecFailure("let x = +g:ablob", 'E974:')
-  call CheckDefExecFailure("let x = +g:alist", 'E745:')
-  call CheckDefExecFailure("let x = +g:adict", 'E728:')
+  call CheckDefExecFailure(["let x = +g:astring"], 'E1030:')
+  call CheckDefExecFailure(["let x = +g:ablob"], 'E974:')
+  call CheckDefExecFailure(["let x = +g:alist"], 'E745:')
+  call CheckDefExecFailure(["let x = +g:adict"], 'E728:')
 
   call CheckDefFailure(["let x = ''", "let y = x.memb"], 'E715:')
 
-  call CheckDefExecFailure("[1, 2->len()", 'E492:')
-  call CheckDefExecFailure("#{a: 1->len()", 'E488:')
-  call CheckDefExecFailure("{'a': 1->len()", 'E492:')
+  call CheckDefExecFailure(["[1, 2->len()"], 'E492:')
+  call CheckDefExecFailure(["#{a: 1->len()"], 'E488:')
+  call CheckDefExecFailure(["{'a': 1->len()"], 'E492:')
 endfunc
 
 let g:Funcrefs = [function('add')]
@@ -986,7 +986,7 @@ func Test_expr_fails()
   call CheckDefFailure(["let x = '1'is2"], 'E488:')
   call CheckDefFailure(["let x = '1'isnot2"], 'E488:')
 
-  call CheckDefExecFailure("CallMe ('yes')", 'E492:')
+  call CheckDefExecFailure(["CallMe ('yes')"], 'E492:')
   call CheckDefFailure(["CallMe2('yes','no')"], 'E1069:')
   call CheckDefFailure(["CallMe2('yes' , 'no')"], 'E1068:')
 

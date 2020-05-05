@@ -642,6 +642,23 @@ func Test_E1056_1059()
   call assert_equal(1, caught_1059)
 endfunc
 
+func DelMe()
+  echo 'DelMe'
+endfunc
+
+def Test_deleted_function()
+  CheckDefExecFailure([
+      'let RefMe: func = function("g:DelMe")',
+      'delfunc g:DelMe',
+      'echo RefMe()'], 'E117:')
+enddef
+
+def Test_unknown_function()
+  CheckDefExecFailure([
+      'let Ref: func = function("NotExist")',
+      'delfunc g:NotExist'], 'E700:')
+enddef
+
 def RefFunc(Ref: func(string): string): string
   return Ref('more')
 enddef
