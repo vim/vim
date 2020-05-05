@@ -6629,6 +6629,14 @@ delete_instr(isn_T *isn)
 	    vim_free(isn->isn_arg.ufunc.cuf_name);
 	    break;
 
+	case ISN_FUNCREF:
+	    {
+		dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
+					       + isn->isn_arg.funcref.fr_func;
+		func_ptr_unref(dfunc->df_ufunc);
+	    }
+	    break;
+
 	case ISN_2BOOL:
 	case ISN_2STRING:
 	case ISN_ADDBLOB:
@@ -6657,7 +6665,6 @@ delete_instr(isn_T *isn)
 	case ISN_EXECCONCAT:
 	case ISN_EXECUTE:
 	case ISN_FOR:
-	case ISN_FUNCREF:
 	case ISN_INDEX:
 	case ISN_JUMP:
 	case ISN_LOAD:

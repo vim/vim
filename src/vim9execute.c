@@ -264,10 +264,27 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
     {
 	tv = STACK_TV(ectx->ec_frame_idx + STACK_FRAME_SIZE
 						   + dfunc->df_varcount + idx);
-	if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial->pt_refcount > 1)
+	if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial != NULL
+					&& tv->vval.v_partial->pt_refcount > 1)
 	{
-	    closure_in_use = TRUE;
-	    break;
+	    int refcount = tv->vval.v_partial->pt_refcount;
+	    int i;
+
+	    // A Reference in a local variables doesn't count, its get
+	    // unreferenced on return.
+	    for (i = 0; i < dfunc->df_varcount; ++i)
+	    {
+		typval_T *stv = STACK_TV(ectx->ec_frame_idx
+						       + STACK_FRAME_SIZE + i);
+		if (stv->v_type == VAR_PARTIAL
+				  && tv->vval.v_partial == stv->vval.v_partial)
+		    --refcount;
+	    }
+	    if (refcount > 1)
+	    {
+		closure_in_use = TRUE;
+		break;
+	    }
 	}
     }
 
