@@ -898,14 +898,8 @@ call_def_function(
 			    }
 			    else
 			    {
-				int		save_did_emsg = did_emsg;
-
 				SOURCING_LNUM = iptr->isn_lnum;
 				emsg(ga.ga_data);
-				if (!force_abort)
-				    // We don't want to abort following
-				    // commands, restore did_emsg.
-				    did_emsg = save_did_emsg;
 			    }
 			}
 		    }

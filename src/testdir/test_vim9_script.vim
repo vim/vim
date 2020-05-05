@@ -466,6 +466,20 @@ def Test_try_catch_fails()
   call CheckDefFailure(['throw xxx'], 'E1001:')
 enddef
 
+let someJob = test_null_job()
+
+def FuncWithError()
+  echomsg g:someJob
+enddef
+
+func Test_convert_emsg_to_exception()
+  try
+    call FuncWithError()
+  catch
+    call assert_match('Vim:E908:', v:exception)
+  endtry
+endfunc
+
 let s:export_script_lines =<< trim END
   vim9script
   let name: string = 'bob'
@@ -1058,7 +1072,11 @@ def Test_echomsg_cmd()
 enddef
 
 def Test_echoerr_cmd()
-  # TODO: write this test
+  try
+    echoerr 'something' 'wrong' # comment
+  catch
+    assert_match('something wrong', v:exception)
+  endtry
 enddef
 
 def Test_for_outside_of_function()
