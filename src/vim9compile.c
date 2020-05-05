@@ -101,7 +101,6 @@ typedef struct {
     int		lv_from_outer;	// when TRUE using ctx_outer scope
     int		lv_const;	// when TRUE cannot be assigned to
     int		lv_arg;		// when TRUE this is an argument
-    int		lv_func_idx;	// for nested function
 } lvar_T;
 
 /*
@@ -1504,7 +1503,24 @@ generate_PCALL(
     if (type->tt_type == VAR_ANY)
 	ret_type = &t_any;
     else if (type->tt_type == VAR_FUNC || type->tt_type == VAR_PARTIAL)
+    {
+	if (type->tt_argcount != -1)
+	{
+	    int	    varargs = (type->tt_flags & TTFLAG_VARARGS) ? 1 : 0;
+
+	    if (argcount < type->tt_min_argcount - varargs)
+	    {
+		semsg(_(e_toofewarg), "[reference]");
+		return FAIL;
+	    }
+	    if (!varargs && argcount > type->tt_argcount)
+	    {
+		semsg(_(e_toomanyarg), "[reference]");
+		return FAIL;
+	    }
+	}
 	ret_type = type->tt_member;
+    }
     else
     {
 	semsg(_("E1085: Not a callable type: %s"), name);
@@ -2616,7 +2632,6 @@ compile_call(char_u **arg, size_t varlen, cctx_T *cctx, int argcount_init)
     int		error = FCERR_NONE;
     ufunc_T	*ufunc;
     int		res = FAIL;
-    lvar_T	*lvar;
 
     if (varlen >= sizeof(namebuf))
     {
@@ -2640,16 +2655,6 @@ compile_call(char_u **arg, size_t varlen, cctx_T *cctx, int argcount_init)
 	    res = generate_BCALL(cctx, idx, argcount);
 	else
 	    semsg(_(e_unknownfunc), namebuf);
-	goto theend;
-    }
-
-    // Check if the name is a nested function.
-    lvar = lookup_local(namebuf, varlen, cctx);
-    if (lvar != NULL && lvar->lv_func_idx > 0)
-    {
-	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
-							   + lvar->lv_func_idx;
-	res = generate_CALL(cctx, dfunc->df_ufunc, argcount);
 	goto theend;
     }
 
@@ -2807,7 +2812,6 @@ compile_list(char_u **arg, cctx_T *cctx)
     static int
 compile_lambda(char_u **arg, cctx_T *cctx)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     typval_T	rettv;
     ufunc_T	*ufunc;
 
@@ -2825,12 +2829,7 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     compile_def_function(ufunc, TRUE, cctx);
 
     if (ufunc->uf_dfunc_idx >= 0)
-    {
-	if (ga_grow(instr, 1) == FAIL)
-	    return FAIL;
-	generate_FUNCREF(cctx, ufunc->uf_dfunc_idx);
-	return OK;
-    }
+	return generate_FUNCREF(cctx, ufunc->uf_dfunc_idx);
     return FAIL;
 }
 
@@ -4103,16 +4102,16 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
     eap->forceit = FALSE;
     ufunc = def_function(eap, name, cctx);
 
-    if (ufunc == NULL)
+    if (ufunc == NULL || ufunc->uf_dfunc_idx < 0)
 	return NULL;
 
-    // Define a local variable for the function, but change the index to -1 to
-    // mark it as a function name.
+    // Define a local variable for the function reference.
     lvar = reserve_local(cctx, name_start, name_end - name_start,
-						       TRUE, &t_func_unknown);
-    lvar->lv_idx = 0;
-    ++cctx->ctx_locals_count;  // doesn't count as a local variable
-    lvar->lv_func_idx = ufunc->uf_dfunc_idx;
+						    TRUE, ufunc->uf_func_type);
+
+    if (generate_FUNCREF(cctx, ufunc->uf_dfunc_idx) == FAIL
+	    || generate_STORE(cctx, ISN_STORE, lvar->lv_idx, NULL) == FAIL)
+	return NULL;
 
     // TODO: warning for trailing?
     return (char_u *)"";

@@ -93,6 +93,9 @@ def Test_nested_function()
   enddef
   assert_equal('nested function', Nested('function'))
 
+  CheckDefFailure(['def Nested()', 'enddef', 'Nested(66)'], 'E118:')
+  CheckDefFailure(['def Nested(arg: string)', 'enddef', 'Nested()'], 'E119:')
+
   CheckDefFailure(['func Nested()', 'endfunc'], 'E1086:')
 enddef
 
