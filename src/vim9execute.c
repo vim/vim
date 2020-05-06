@@ -270,7 +270,7 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 	    int refcount = tv->vval.v_partial->pt_refcount;
 	    int i;
 
-	    // A Reference in a local variables doesn't count, its get
+	    // A Reference in a local variables doesn't count, it gets
 	    // unreferenced on return.
 	    for (i = 0; i < dfunc->df_varcount; ++i)
 	    {
@@ -323,6 +323,32 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 	for (idx = 0; idx < dfunc->df_varcount; ++idx)
 	{
 	    tv = STACK_TV(ectx->ec_frame_idx + STACK_FRAME_SIZE + idx);
+
+	    // Do not copy a partial created for a local function.
+	    // TODO: this won't work if the closure actually uses it.  But when
+	    // keeping it it gets complicated: it will create a reference cycle
+	    // inside the partial, thus needs special handling for garbage
+	    // collection.
+	    if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial != NULL)
+	    {
+		int i;
+		typval_T *ctv;
+
+		for (i = 0; i < dfunc->df_closure_count; ++i)
+		{
+		    ctv = STACK_TV(ectx->ec_frame_idx + STACK_FRAME_SIZE
+						     + dfunc->df_varcount + i);
+		    if (tv->vval.v_partial == ctv->vval.v_partial)
+			break;
+		}
+		if (i < dfunc->df_closure_count)
+		{
+		    (stack + argcount + STACK_FRAME_SIZE + idx)->v_type =
+								   VAR_UNKNOWN;
+		    continue;
+		}
+	    }
+
 	    *(stack + argcount + STACK_FRAME_SIZE + idx) = *tv;
 	    tv->v_type = VAR_UNKNOWN;
 	}
