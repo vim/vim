@@ -336,7 +336,7 @@ static int on_text(const char bytes[], size_t len, void *user)
 
     for( ; i < glyph_ends; i++) {
       int this_width;
-      if(vterm_get_special_pty_type() == 2) {
+      if(vterm_get_special_pty_type() >= 2) {
         state->vt->in_backspace -= (state->vt->in_backspace > 0) ? 1 : 0;
         if(state->vt->in_backspace == 1)
           codepoints[i] = 0; // codepoints under this condition must be 0
@@ -445,7 +445,7 @@ static int on_control(unsigned char control, void *user)
   case 0x08: // BS - ECMA-48 8.3.5
     if(state->pos.col > 0)
       state->pos.col--;
-    if(vterm_get_special_pty_type() == 2) {
+    if(vterm_get_special_pty_type() >= 2) {
       // In 2 cell letters, go back 2 cells
       vterm_screen_get_cell(state->vt->screen, leadpos, &cell);
       if(vterm_unicode_width(cell.chars[0]) == 2)
@@ -730,6 +730,16 @@ static int on_escape(const char *bytes, size_t len, void *user)
 
 static void set_mode(VTermState *state, int num, int val)
 {
+  // Wrong DECTCEM, originally meaningless code
+  // The cursor cannot be erased without processing
+  if(vterm_get_special_pty_type() == 3 && num == 25) {
+    settermprop_bool(state, VTERM_PROP_CURSORVISIBLE, 0);
+    // Part 1 for the current backspace behavior
+    if(state->vt->in_erasechars == 0)
+      state->vt->in_erasechars++;
+    return;
+  }
+
   switch(num) {
   case 4: // IRM - ECMA-48 7.2.10
     state->mode.insert = val;
@@ -963,6 +973,8 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
 
   oldpos = state->pos;
 
+  state->vt->in_saveerasechars = state->vt->in_erasechars;
+
 #define LBOUND(v,min) if((v) < (min)) (v) = (min)
 #define UBOUND(v,max) if((v) > (max)) (v) = (max)
 
@@ -1003,6 +1015,26 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
   case 0x43: // CUF - ECMA-48 8.3.20
     count = CSI_ARG_COUNT(args[0]);
     state->pos.col += count;
+    if(vterm_get_special_pty_type() == 3) {
+      // Since it always advances one cell for ambiguous characters, decide the
+      // number of cells here.
+      VTermPos p;
+      VTermScreenCell c0, c1;
+      int cnt = 0, adv;
+      state->pos.col -= count;
+      while(cnt < count) {
+	p = state->pos;
+        vterm_screen_get_cell(state->vt->screen, p, &c0);
+	p.col++;
+        vterm_screen_get_cell(state->vt->screen, p, &c1);
+	adv = (c1.chars[0] == (uint32_t)-1)
+	   ? (vterm_unicode_is_ambiguous(c0.chars[0]))
+	   ? vterm_unicode_width(0x00a1) : 1
+	   : 1;
+	cnt += adv;
+	state->pos.col += adv;
+      }
+    }
     state->at_phantom = 0;
     break;
 
@@ -1036,7 +1068,7 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
     row = CSI_ARG_OR(args[0], 1);
     col = argcount < 2 || CSI_ARG_IS_MISSING(args[1]) ? 1 : CSI_ARG(args[1]);
     // zero-based
-    if(vterm_get_special_pty_type() == 2) {
+    if(vterm_get_special_pty_type() >= 2) {
       // Fix a sequence that is not correct right now
       if(state->pos.row == row - 1) {
         int cnt, ptr = 0;
@@ -1054,6 +1086,71 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
 	     : 1;					    // not ambiguous
         }
         col = ptr + 1;
+      }
+    }
+    if(vterm_get_special_pty_type() == 3)
+    {
+      // Part 3 Immediately after overwriting with blanks, the number of blanks
+      // is insufficient by the number of ambiguous characters, and additional
+      // blanks are output.
+      if(state->vt->in_erasechars == 2) {
+	uint32_t *line = state->vt->in_eraseline;
+	int i, cnt = 0;
+	VTermPos p = state->pos;
+	VTermScreenCell c0, c1;
+	uint32_t chars[] = { ' ', 0 };
+	// Count double-cell ambiguous characters in overwritten content
+	for(i = state->vt->in_eraseheadptr; i < state->vt->in_erasetailptr;) {
+	  cnt += (line[i + 1] == (uint32_t)-1)
+	     ? (vterm_unicode_is_ambiguous(line[i]))
+	     ? vterm_unicode_width(0x00a1) - 1 : 0
+	     : 0;
+	  i += (line[i + 1] == (uint32_t)-1)
+	     ? (vterm_unicode_is_ambiguous(line[i]))
+	     ? vterm_unicode_width(0x00a1) : 2
+	     : 1;
+	}
+	// Count double-cell ambiguous characters in updated string
+	for(i = state->vt->in_eraseheadptr; i < state->vt->in_erasetailptr;) {
+	  p.col = i;
+	  vterm_screen_get_cell(state->vt->screen, p, &c0);
+	  p.col++;
+	  vterm_screen_get_cell(state->vt->screen, p, &c1);
+	  cnt += (c1.chars[0] == (uint32_t)-1)
+	     ? (vterm_unicode_is_ambiguous(c0.chars[0]))
+	     ? vterm_unicode_width(0x00a1) - 1 : 0
+	     : 0;
+	  i += (c1.chars[0] == (uint32_t)-1)
+	     ? (vterm_unicode_is_ambiguous(c0.chars[0]))
+	     ? vterm_unicode_width(0x00a1) : 2
+	     : 1;
+	}
+	// If the overwritten string is short, overwrite the unerased
+	// characters with blanks
+	for(i = 0; i < cnt; i++) {
+	  putglyph(state, chars, 1, state->pos);
+	  state->pos.col++;
+	}
+      }
+      // Part 2 for the current backspace behavior
+      if(state->vt->in_erasechars == 1) {
+	int i;
+	VTermPos p = state->pos;
+	VTermScreenCell cell;
+	// Save the displayed content because it may be overwritten with
+	// whitespace.
+	uint32_t *line = vterm_allocator_malloc(state->vt, ROWWIDTH(state, row-1) * sizeof(line[0]));
+	for(i = 0; i < ROWWIDTH(state, row-1); i++) {
+	  p.col = i;
+	  vterm_screen_get_cell(state->vt->screen, p, &cell);
+	  line[i] = cell.chars[0];
+	}
+	if(state->vt->in_eraseline != NULL)
+	  vterm_allocator_free(state->vt, state->vt->in_eraseline);
+	state->vt->in_eraseline = line;
+        state->vt->in_eraseheadptr = col-1;
+	state->vt->in_erasetailptr = state->pos.col;
+	state->vt->in_erasechars++;
       }
     }
     state->pos.row = row-1;
@@ -1215,7 +1312,25 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
     rect.end_row   = state->pos.row + 1;
     rect.start_col = state->pos.col;
     rect.end_col   = state->pos.col + count;
-    UBOUND(rect.end_col, THISROWWIDTH(state));
+    if(vterm_get_special_pty_type() == 3 && state->vt->in_erasechars == 2) {
+      // Part 3 count and compensate for the lack of characters to erase
+      int i;
+      uint32_t *line = state->vt->in_eraseline;
+      for(i = state->vt->in_eraseheadptr; i < state->vt->in_erasetailptr;) {
+	// Determine ambiguous width, double-cell ambiguous at 1
+        rect.end_col += (line[i + 1] == (uint32_t)-1)
+           ? (vterm_unicode_is_ambiguous(line[i]))
+	   ? vterm_unicode_width(0x00a1) - 1 : 0
+	   : 0;
+	// Get cell width, consider ambiguous width, 1 or 2
+        i += (line[i + 1] == (uint32_t)-1)
+           ? (vterm_unicode_is_ambiguous(line[i]))
+	   ? vterm_unicode_width(0x00a1) : 2
+	   : 1;
+      }
+    }
+    else
+      UBOUND(rect.end_col, THISROWWIDTH(state));
 
     erase(state, rect, 0);
     break;
@@ -1501,6 +1616,10 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
     handled = 0;
     break;
   }
+
+  // Reset if there is no change
+  if(state->vt->in_erasechars == state->vt->in_saveerasechars)
+    state->vt->in_erasechars = 0;
 
   if (!handled) {
     if(state->fallbacks && state->fallbacks->csi)

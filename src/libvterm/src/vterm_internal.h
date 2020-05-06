@@ -215,6 +215,11 @@ struct VTerm
   VTermScreen *screen;
 
   int in_backspace;
+  int in_erasechars;
+  int in_saveerasechars;
+  int in_eraseheadptr;
+  int in_erasetailptr;
+  uint32_t *in_eraseline;
 };
 
 struct VTermEncoding {

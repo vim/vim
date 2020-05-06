@@ -129,6 +129,7 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
 
   vt->in_backspace = 0;		    // Count down with BS key and activate when
 				    // it reaches 1
+  vt->in_erasechars = 0;            // Sequence progress value
 
   switch(vt->parser.state) {
   case NORMAL:
@@ -175,7 +176,7 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
       // fallthrough
     }
     else if(c < 0x20) { // other C0
-      if(vterm_get_special_pty_type() == 2) {
+      if(vterm_get_special_pty_type() >= 2) {
         if(c == 0x08) // BS
           // Set the trick for BS output after a sequence, to delay backspace
           // activation
