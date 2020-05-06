@@ -4496,7 +4496,11 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    generate_LOADV(cctx, name + 2, TRUE);
 		    break;
 		case dest_local:
-		    generate_LOAD(cctx, ISN_LOAD, lvar->lv_idx, NULL, type);
+		    if (lvar->lv_from_outer)
+			generate_LOAD(cctx, ISN_LOADOUTER, lvar->lv_idx,
+								   NULL, type);
+		    else
+			generate_LOAD(cctx, ISN_LOAD, lvar->lv_idx, NULL, type);
 		    break;
 	    }
 	}
@@ -4713,8 +4717,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 
 		// optimization: turn "var = 123" from ISN_PUSHNR + ISN_STORE
 		// into ISN_STORENR
-		if (instr->ga_len == instr_count + 1
-						&& isn->isn_type == ISN_PUSHNR)
+		if (!lvar->lv_from_outer && instr->ga_len == instr_count + 1
+					 && isn->isn_type == ISN_PUSHNR)
 		{
 		    varnumber_T val = isn->isn_arg.number;
 		    garray_T	*stack = &cctx->ctx_type_stack;
@@ -4725,6 +4729,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    if (stack->ga_len > 0)
 			--stack->ga_len;
 		}
+		else if (lvar->lv_from_outer)
+		    generate_STORE(cctx, ISN_STOREOUTER, lvar->lv_idx, NULL);
 		else
 		    generate_STORE(cctx, ISN_STORE, lvar->lv_idx, NULL);
 	    }
@@ -6686,6 +6692,7 @@ delete_instr(isn_T *isn)
 	case ISN_PUSHSPEC:
 	case ISN_RETURN:
 	case ISN_STORE:
+	case ISN_STOREOUTER:
 	case ISN_STOREV:
 	case ISN_STORENR:
 	case ISN_STOREREG:

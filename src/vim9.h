@@ -40,8 +40,9 @@ typedef enum {
     ISN_STOREW,	    // pop into window-local variable isn_arg.string
     ISN_STORET,	    // pop into tab-local variable isn_arg.string
     ISN_STORES,	    // pop into script variable isn_arg.loadstore
+    ISN_STOREOUTER,  // pop variable into outer scope isn_arg.number
     ISN_STORESCRIPT, // pop into script variable isn_arg.script
-    ISN_STOREOPT,   // pop into option isn_arg.string
+    ISN_STOREOPT,    // pop into option isn_arg.string
     ISN_STOREENV,    // pop into environment variable isn_arg.string
     ISN_STOREREG,    // pop into register isn_arg.number
     // ISN_STOREOTHER, // pop into other script variable isn_arg.other.

@@ -738,6 +738,32 @@ def Test_closure_using_argument()
   unlet g:UseVararg
 enddef
 
+def MakeGetAndAppendRefs()
+  let local = 'a'
+
+  def Append(arg: string)
+    local ..= arg
+  enddef
+  g:Append = Append
+
+  def Get(): string
+    return local
+  enddef
+  g:Get = Get
+enddef
+
+def Test_closure_append_get()
+  MakeGetAndAppendRefs()
+  assert_equal('a', g:Get())
+  g:Append('-b')
+  assert_equal('a-b', g:Get())
+  g:Append('-c')
+  assert_equal('a-b-c', g:Get())
+
+  unlet g:Append
+  unlet g:Get
+enddef
+
 def Test_nested_closure()
   let local = 'text'
   def Closure(arg: string): string

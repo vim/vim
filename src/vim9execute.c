@@ -1070,6 +1070,14 @@ call_def_function(
 		*tv = *STACK_TV_BOT(0);
 		break;
 
+	    // store variable or argument in outer scope
+	    case ISN_STOREOUTER:
+		--ectx.ec_stack.ga_len;
+		tv = STACK_OUT_TV_VAR(iptr->isn_arg.number);
+		clear_tv(tv);
+		*tv = *STACK_TV_BOT(0);
+		break;
+
 	    // store s: variable in old script
 	    case ISN_STORES:
 		{
@@ -2133,7 +2141,7 @@ ex_disassemble(exarg_T *eap)
     int		is_global = FALSE;
 
     fname = trans_function_name(&arg, &is_global, FALSE,
-	     TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD | TFN_NO_DEREF, NULL, NULL);
+			    TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD, NULL, NULL);
     if (fname == NULL)
     {
 	semsg(_(e_invarg2), eap->arg);
@@ -2275,12 +2283,17 @@ ex_disassemble(exarg_T *eap)
 		break;
 
 	    case ISN_STORE:
+	    case ISN_STOREOUTER:
+		{
+		    char *add = iptr->isn_type == ISN_STORE ? "" : "OUTER";
+
 		if (iptr->isn_arg.number < 0)
-		    smsg("%4d STORE arg[%lld]", current,
+		    smsg("%4d STORE%s arg[%lld]", current, add,
 			 (long long)(iptr->isn_arg.number + STACK_FRAME_SIZE));
 		else
-		    smsg("%4d STORE $%lld", current,
+		    smsg("%4d STORE%s $%lld", current, add,
 					    (long long)(iptr->isn_arg.number));
+		}
 		break;
 	    case ISN_STOREV:
 		smsg("%4d STOREV v:%s", current,

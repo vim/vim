@@ -291,6 +291,42 @@ def Test_disassemble_call()
         res)
 enddef
 
+def s:CreateRefs()
+  let local = 'a'
+  def Append(arg: string)
+    local ..= arg
+  enddef
+  g:Append = Append
+  def Get(): string
+    return local
+  enddef
+  g:Get = Get
+enddef
+
+def Test_disassemble_closure()
+  CreateRefs()
+  let res = execute('disass g:Append')
+  assert_match('<lambda>\d.*' ..
+        'local ..= arg.*' ..
+        '\d LOADOUTER $0.*' ..
+        '\d LOAD arg\[-1\].*' ..
+        '\d CONCAT.*' ..
+        '\d STOREOUTER $0.*' ..
+        '\d PUSHNR 0.*' ..
+        '\d RETURN.*',
+        res)
+
+  res = execute('disass g:Get')
+  assert_match('<lambda>\d.*' ..
+        'return local.*' ..
+        '\d LOADOUTER $0.*' ..
+        '\d RETURN.*',
+        res)
+
+  unlet g:Append
+  unlet g:Get
+enddef
+
 
 def EchoArg(arg: string): string
   return arg

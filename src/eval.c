@@ -4337,9 +4337,11 @@ set_ref_in_item(
 	partial_T	*pt = tv->vval.v_partial;
 	int		i;
 
-	// A partial does not have a copyID, because it cannot contain itself.
-	if (pt != NULL)
+	if (pt != NULL && pt->pt_copyID != copyID)
 	{
+	    // Didn't see this partial yet.
+	    pt->pt_copyID = copyID;
+
 	    abort = set_ref_in_func(pt->pt_name, pt->pt_func, copyID);
 
 	    if (pt->pt_dict != NULL)

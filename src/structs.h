@@ -1812,6 +1812,7 @@ struct partial_S
     typval_T	*pt_argv;	// arguments in allocated array
 
     dict_T	*pt_dict;	// dict for "self"
+    int		pt_copyID;	// funcstack may contain pointer to partial
 };
 
 typedef struct AutoPatCmd_S AutoPatCmd;
