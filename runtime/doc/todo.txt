@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Apr 30
+*todo.txt*      For Vim version 8.2.  Last change: 2020 May 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,22 +39,22 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 Vim9 script:
-Big changes, need design:
+Big changes, may need design:
 - Make closures work:
-  Grab the part of the stack that has the arguments and local vars.
-  Pass a pointer and offset to the closure where this stack fragment is (frame
-  pointer).
-  When a closure disappears at end of the function - nothing to do.
-  When a closure remains at end of the function: copy frame, attach to closure.
+  - call closure from not compiled context
+  - Create closure in a loop.  Need to make a list of them.
+- Having constant expr evaluation separate does not scale.
+  First parse the expression, then simplify, then generate code.
 - At the vim9 script level: Allow using a function that is defined later.
   Requires compiling functions only when the whole script has been sourced.
   Like Javascript "hoisting", but only at the script level:
+  0. If script was sourced before, clear all script-local functions and
+     variables. (variables still to be implemented)
   1. Discovery phase: Read the file to find all functions, variable
      declarations and imports If a variable has a constant expression we get
      the type, otherwise it will be "any".  Follow imports recursively.
   2. Compilation phase: compile :def function bodies, using declared types
   3. Execution phase: Execute imports when encountered. (skip over functions)
-- When sourcing a script again, also delete script-local variables.
 Making everything work:
 - Test that a script-local function in Vim9 script cannot be deleted.
 - Test that a function defined inside a :def function is local to that
@@ -80,10 +80,6 @@ Making everything work:
 - eval_expr() in ex_cexpr()
 - eval_expr() call in dbg_parsearg() and debuggy_find()
 New syntax and functionality:
-- define function and create funcref in one step:
-	let ref = def(arg: type): rettype
-	    body
-	enddef
 Improve error checking:
 - "echo Func()" is an error if Func() does not return anything.
 Also:
@@ -118,6 +114,10 @@ Further improvements:
 - compile options that are an expression, e.g. "expr:" in 'spellsuggest',
   'foldexpr', 'foldtext', 'printexpr', 'diffexpr', 'patchexpr', 'charconvert',
   'balloonexpr', 'includeexpr', 'indentexpr', 'formatexpr'.
+- Make inline function work, to be used as a funcref:
+	let ref = def(arg: type): rettype
+	    body
+	enddef
 - compile get_lambda_tv() in popup_add_timeout()
 - compile "skip" argument of searchpair()
 - compile "expr" and "call" expression of a channel in channel_exe_cmd()?
@@ -254,8 +254,13 @@ Patch for the Haiku port: #5961
 
 Patch to add Turkish manual. (Emir Sarı, #5641)
 
+Patch to add getmarklist() (Yegappan, #6032)
+
 Patch to support different color for undercurl in cterm.
 (Timur Celik, #6011)
+
+When SIGTSTP is ignored, don't let CTRL-Z suspend Vim? (Kurtis Rader, #5990)
+Fixed by patch #6026.  Makes tests fail...
 
 Patch to support cindent option to handle pragmas differently.
 (Max Rumpf, #5468)
@@ -355,8 +360,6 @@ goes to any buffer, and then :bnext skips help buffers, since they are
 unlisted. (#4478)
 
 Patch to include reduce() function. (#5481)
-
-When SIGTSTP is ignored, don't let CTRL-Z suspend Vim? (Kurtis Rader, #5990)
 
 Statusline highlighting error, off by one. (#5599)
 

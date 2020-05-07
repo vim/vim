@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Apr 30
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 May 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -125,10 +125,56 @@ The result is that functions and variables without a namespace can always be
 found in the script, either defined there or imported.  Global functions and
 variables could be defined anywhere (good luck finding where!).
 
-Global functions can be defined and deleted at nearly any time.  In Vim9
-script script-local functions are defined once when the script is sourced and
-cannot be deleted.  Except that when the same script is sourced again all
-existing script-local functions and variables are deleted.
+Global functions can be still be defined and deleted at nearly any time.  In
+Vim9 script script-local functions are defined once when the script is sourced
+and cannot be deleted.
+
+
+Four phases when loading a Vim9 script ~
+
+In legacy script the functions are created when encountered, but parsed only
+when used.  This allows for defining functions in any order and having them
+call each other: >
+	func One()
+	   call Two()
+	endfunc
+	func Two()
+	   if cond
+	      call One()  " recursive call
+	   endif
+	endfunc
+	call One()
+
+In Vim9 script the functions are compiled.  If using the same functions as the
+above example it is not possible to compile function One without knowing that
+function Two exists. Or this would require a runtime check, which is slow and
+does not allow for compile time type checking.
+
+When sourcing a Vim9 script this happens in four phases:
+1. Cleanup: If the script was sourced before all script-local variables,
+   imports and functions are deleted.
+2. Discovery: The script is read and encountered functions, imports and
+   variables are recognized.  The type is parsed.  Variable initializers that
+   are a constant are evaluated, this can give the type of the variable.
+3. Compilation: Functions are compiled.  The script-local functions, imports
+   and variables from the discovery phase are recognized and types are
+   checked.
+4. Execution: the commands in the script are executed. Functions are skipped
+   over.  Variable initializers are evaluated, unless they are a constant.
+
+The result is that items defined at the script level can be used anywhere in
+the script. This allows for putting the main function at the top: >
+	def Main()
+	  SubOne()
+	  SubTwo()
+	enddef
+	def SubOne()
+	  ...
+	def SubTwo()
+	  ...
+
+Note that script-local variables should either have a type defined or have a
+constant initializer.  Otherwise an error is given for the type being unknown.
 
 
 Variable declarations with :let and :const ~
