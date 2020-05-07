@@ -4074,12 +4074,16 @@ compile_expr7(
 	    return FAIL;
     }
 
+    // Handle following "[]", ".member", etc.
+    // Then deal with prefixed '-', '+' and '!', if not done already.
     if (compile_subscript(arg, cctx, &start_leader, end_leader,
-					     bef1_tv, bef2_tv, new_tv) == FAIL)
+					     bef1_tv, bef2_tv, new_tv) == FAIL
+	    || compile_leader(cctx, start_leader, end_leader) == FAIL)
+    {
+	clear_tv(new_tv);
 	return FAIL;
-
-    // Now deal with prefixed '-', '+' and '!', if not done already.
-    return compile_leader(cctx, start_leader, end_leader);
+    }
+    return OK;
 }
 
 /*
@@ -4187,6 +4191,7 @@ compile_expr5(char_u **arg, cctx_T *cctx)
 	{
 	    char_u buf[3];
 
+	    clear_tv(&tv1);
 	    vim_strncpy(buf, op, oplen);
 	    semsg(_(e_white_both), buf);
 	    return FAIL;
@@ -4194,12 +4199,18 @@ compile_expr5(char_u **arg, cctx_T *cctx)
 
 	*arg = skipwhite(op + oplen);
 	if (may_get_next_line(op + oplen, arg, cctx) == FAIL)
+	{
+	    clear_tv(&tv1);
 	    return FAIL;
+	}
 
 	// get the second expression
 	tv2.v_type = VAR_UNKNOWN;
 	if (compile_expr6(arg, cctx, &tv1, &tv2) == FAIL)
+	{
+	    clear_tv(&tv1);
 	    return FAIL;
+	}
 
 	if (*op == '+' && tv1.v_type == VAR_NUMBER && tv2.v_type == VAR_NUMBER)
 	{
