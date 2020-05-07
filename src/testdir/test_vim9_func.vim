@@ -656,7 +656,7 @@ enddef
 def Test_unknown_function()
   CheckDefExecFailure([
       'let Ref: func = function("NotExist")',
-      'delfunc g:NotExist'], 'E700:')
+      'delfunc g:NotExist'], 'E130:')
 enddef
 
 def RefFunc(Ref: func(string): string): string
