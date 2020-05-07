@@ -371,7 +371,7 @@ func Test_set_errors()
   call assert_fails('set statusline=%{', 'E540:')
   call assert_fails('set statusline=' . repeat("%p", 81), 'E541:')
   call assert_fails('set statusline=%(', 'E542:')
-  if has('cursorshape')
+  if has('gui')
     " This invalid value for 'guicursor' used to cause Vim to crash.
     call assert_fails('set guicursor=i-ci,r-cr:h', 'E545:')
     call assert_fails('set guicursor=i-ci', 'E545:')
