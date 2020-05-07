@@ -996,9 +996,7 @@ def Test_disassemble_echomsg()
         '\d PUSHS "message".*' ..
         '\d ECHOMSG 2.*' ..
         "echoerr 'went' .. 'wrong'.*" ..
-        '\d PUSHS "went".*' ..
-        '\d PUSHS "wrong".*' ..
-        '\d CONCAT.*' ..
+        '\d PUSHS "wentwrong".*' ..
         '\d ECHOERR 1.*' ..
         '\d PUSHNR 0.*' ..
         '\d RETURN',
@@ -1035,6 +1033,18 @@ def Test_display_func()
         '  return arg.*' ..
         '  enddef',
         res3)
+enddef
+
+def s:ConcatStrings(): string
+  return 'one' .. 'two' .. 'three'
+enddef
+
+def Test_simplify_const_expr()
+  let res = execute('disass s:ConcatStrings')
+  assert_match('\<SNR>\d*_ConcatStrings.*' ..
+        '\d PUSHS "onetwothree".*' ..
+        '\d RETURN',
+        res)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
