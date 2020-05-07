@@ -4620,6 +4620,42 @@ delete_recursive(char_u *name)
 #if defined(TEMPDIRNAMES) || defined(PROTO)
 static long	temp_count = 0;		// Temp filename counter.
 
+# if defined(UNIX) && defined(HAVE_FLOCK) && defined(HAVE_DIRFD)
+/*
+ * Open temporary directory and take file lock to prevent
+ * to be auto-cleaned.
+ */
+   void
+vim_opentempdir(void)
+{
+    DIR *dp = NULL;
+
+    if (vim_tempdir_dp != NULL)
+	return;
+
+    dp = opendir((const char*)vim_tempdir);
+
+    if (dp != NULL)
+    {
+	vim_tempdir_dp = dp;
+	flock(dirfd(vim_tempdir_dp), LOCK_SH);
+    }
+}
+
+/*
+ * Close temporary directory - it automatically release file lock.
+ */
+   void
+vim_closetempdir(void)
+{
+    if (vim_tempdir_dp != NULL)
+    {
+	closedir(vim_tempdir_dp);
+	vim_tempdir_dp = NULL;
+    }
+}
+# endif
+
 /*
  * Delete the temp directory and all files it contains.
  */
@@ -4628,6 +4664,9 @@ vim_deltempdir(void)
 {
     if (vim_tempdir != NULL)
     {
+# if defined(UNIX) && defined(HAVE_FLOCK) && defined(HAVE_DIRFD)
+	vim_closetempdir();
+# endif
 	// remove the trailing path separator
 	gettail(vim_tempdir)[-1] = NUL;
 	delete_recursive(vim_tempdir);
@@ -4652,6 +4691,9 @@ vim_settempdir(char_u *tempdir)
 	    STRCPY(buf, tempdir);
 	add_pathsep(buf);
 	vim_tempdir = vim_strsave(buf);
+# if defined(UNIX) && defined(HAVE_FLOCK) && defined(HAVE_DIRFD)
+	vim_opentempdir();
+# endif
 	vim_free(buf);
     }
 }
@@ -4724,7 +4766,9 @@ vim_tempname(
 		    // Leave room for filename
 		    STRCAT(itmp, "vXXXXXX");
 		    if (mkdtemp((char *)itmp) != NULL)
+		    {
 			vim_settempdir(itmp);
+		    }
 #  if defined(UNIX) || defined(VMS)
 		    (void)umask(umask_save);
 #  endif

@@ -484,5 +484,11 @@
 /* Define if we have isnan() */
 #undef HAVE_ISNAN
 
+/* Define if we have dirfd() */
+#undef HAVE_DIRFD
+
+/* Define if we have flock() */
+#undef HAVE_FLOCK
+
 /* Define to inline symbol or empty */
 #undef inline

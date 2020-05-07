@@ -758,6 +758,9 @@ EXTERN int	ru_wid;		// 'rulerfmt' width of ruler when non-zero
 EXTERN int	sc_col;		// column for shown command
 
 #ifdef TEMPDIRNAMES
+# if defined(UNIX) && defined(HAVE_FLOCK) && defined(HAVE_DIRFD)
+EXTERN DIR	*vim_tempdir_dp INIT(= NULL); //File descriptor of temp dir
+# endif
 EXTERN char_u	*vim_tempdir INIT(= NULL); // Name of Vim's own temp dir.
 					   // Ends in a slash.
 #endif
