@@ -485,9 +485,8 @@ def Test_expr5()
   assert_equal(-6, g:alsoint - g:anint)
 
   assert_equal('hello', 'hel' .. 'lo')
-  " TODO: a line break here doesn't work
-"  assert_equal('hello 123', 'hello ' ..
-"					123)
+  assert_equal('hello 123', 'hello ' ..
+					123)
   assert_equal('hello 123', 'hello ' ..  123)
   assert_equal('123 hello', 123 .. ' hello')
   assert_equal('123456', 123 .. 456)

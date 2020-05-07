@@ -1042,37 +1042,45 @@ generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type)
 
 /*
  * Generate a PUSH instruction for "tv".
+ * "tv" will be consumed or cleared.  "tv" may be NULL;
  */
     static int
 generate_tv_PUSH(cctx_T *cctx, typval_T *tv)
 {
-    switch (tv->v_type)
+    if (tv != NULL)
     {
-	case VAR_BOOL:
-	    generate_PUSHBOOL(cctx, tv->vval.v_number);
-	    break;
-	case VAR_SPECIAL:
-	    generate_PUSHSPEC(cctx, tv->vval.v_number);
-	    break;
-	case VAR_NUMBER:
-	    generate_PUSHNR(cctx, tv->vval.v_number);
-	    break;
+	switch (tv->v_type)
+	{
+	    case VAR_UNKNOWN:
+		break;
+	    case VAR_BOOL:
+		generate_PUSHBOOL(cctx, tv->vval.v_number);
+		break;
+	    case VAR_SPECIAL:
+		generate_PUSHSPEC(cctx, tv->vval.v_number);
+		break;
+	    case VAR_NUMBER:
+		generate_PUSHNR(cctx, tv->vval.v_number);
+		break;
 #ifdef FEAT_FLOAT
-	case VAR_FLOAT:
-	    generate_PUSHF(cctx, tv->vval.v_float);
-	    break;
+	    case VAR_FLOAT:
+		generate_PUSHF(cctx, tv->vval.v_float);
+		break;
 #endif
-	case VAR_BLOB:
-	    generate_PUSHBLOB(cctx, tv->vval.v_blob);
-	    tv->vval.v_blob = NULL;
-	    break;
-	case VAR_STRING:
-	    generate_PUSHS(cctx, tv->vval.v_string);
-	    tv->vval.v_string = NULL;
-	    break;
-	default:
-	    iemsg("constant type not supported");
-	    return FAIL;
+	    case VAR_BLOB:
+		generate_PUSHBLOB(cctx, tv->vval.v_blob);
+		tv->vval.v_blob = NULL;
+		break;
+	    case VAR_STRING:
+		generate_PUSHS(cctx, tv->vval.v_string);
+		tv->vval.v_string = NULL;
+		break;
+	    default:
+		iemsg("constant type not supported");
+		clear_tv(tv);
+		return FAIL;
+	}
+	tv->v_type = VAR_UNKNOWN;
     }
     return OK;
 }
@@ -3719,7 +3727,10 @@ compile_subscript(
 	char_u **arg,
 	cctx_T *cctx,
 	char_u **start_leader,
-	char_u *end_leader)
+	char_u *end_leader,
+	typval_T *bef1_tv,
+	typval_T *bef2_tv,
+	typval_T *new_tv)
 {
     for (;;)
     {
@@ -3728,6 +3739,11 @@ compile_subscript(
 	    garray_T    *stack = &cctx->ctx_type_stack;
 	    type_T	*type;
 	    int		argcount = 0;
+
+	    if (generate_tv_PUSH(cctx, bef1_tv) == FAIL
+		    || generate_tv_PUSH(cctx, bef2_tv) == FAIL
+		    || generate_tv_PUSH(cctx, new_tv) == FAIL)
+		return FAIL;
 
 	    // funcref(arg)
 	    type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
@@ -3741,6 +3757,11 @@ compile_subscript(
 	else if (**arg == '-' && (*arg)[1] == '>')
 	{
 	    char_u *p;
+
+	    if (generate_tv_PUSH(cctx, bef1_tv) == FAIL
+		    || generate_tv_PUSH(cctx, bef2_tv) == FAIL
+		    || generate_tv_PUSH(cctx, new_tv) == FAIL)
+		return FAIL;
 
 	    // something->method()
 	    // Apply the '!', '-' and '+' first:
@@ -3779,6 +3800,11 @@ compile_subscript(
 	    garray_T	*stack;
 	    type_T	**typep;
 
+	    if (generate_tv_PUSH(cctx, bef1_tv) == FAIL
+		    || generate_tv_PUSH(cctx, bef2_tv) == FAIL
+		    || generate_tv_PUSH(cctx, new_tv) == FAIL)
+		return FAIL;
+
 	    // list index: list[123]
 	    // TODO: more arguments
 	    // TODO: dict member  dict['name']
@@ -3809,6 +3835,11 @@ compile_subscript(
 	{
 	    char_u *p;
 
+	    if (generate_tv_PUSH(cctx, bef1_tv) == FAIL
+		    || generate_tv_PUSH(cctx, bef2_tv) == FAIL
+		    || generate_tv_PUSH(cctx, new_tv) == FAIL)
+		return FAIL;
+
 	    ++*arg;
 	    p = *arg;
 	    // dictionary member: dict.name
@@ -3837,10 +3868,13 @@ compile_subscript(
 }
 
 /*
- * Compile an expression at "*p" and add instructions to "instr".
- * "p" is advanced until after the expression, skipping white space.
+ * Compile an expression at "*arg" and add instructions to "cctx->ctx_instr".
+ * "arg" is advanced until after the expression, skipping white space.
  *
- * This is the equivalent of eval1(), eval2(), etc.
+ * If the value is a constant "new_tv" will be set.
+ * Before instructions are generated, any "bef_tv" will generated.
+ *
+ * This is the compiling equivalent of eval1(), eval2(), etc.
  */
 
 /*
@@ -3868,7 +3902,12 @@ compile_subscript(
  *  trailing ->name()	method call
  */
     static int
-compile_expr7(char_u **arg, cctx_T *cctx)
+compile_expr7(
+	char_u **arg,
+	cctx_T *cctx,
+	typval_T *bef1_tv,
+	typval_T *bef2_tv,
+	typval_T *new_tv)
 {
     typval_T	rettv;
     char_u	*start_leader, *end_leader;
@@ -4007,14 +4046,17 @@ compile_expr7(char_u **arg, cctx_T *cctx)
 	}
 	start_leader = end_leader;   // don't apply again below
 
-	// push constant
-	if (generate_tv_PUSH(cctx, &rettv) == FAIL)
-	    return FAIL;
+	// A constant expression can possibly be handled compile time.
+	*new_tv = rettv;
     }
     else if (ret == NOTDONE)
     {
 	char_u	    *p;
 	int	    r;
+
+	if (generate_tv_PUSH(cctx, bef1_tv) == FAIL
+		|| generate_tv_PUSH(cctx, bef2_tv) == FAIL)
+	    return FAIL;
 
 	if (!eval_isnamec1(**arg))
 	{
@@ -4032,7 +4074,8 @@ compile_expr7(char_u **arg, cctx_T *cctx)
 	    return FAIL;
     }
 
-    if (compile_subscript(arg, cctx, &start_leader, end_leader) == FAIL)
+    if (compile_subscript(arg, cctx, &start_leader, end_leader,
+					     bef1_tv, bef2_tv, new_tv) == FAIL)
 	return FAIL;
 
     // Now deal with prefixed '-', '+' and '!', if not done already.
@@ -4045,12 +4088,16 @@ compile_expr7(char_u **arg, cctx_T *cctx)
  *	%	number modulo
  */
     static int
-compile_expr6(char_u **arg, cctx_T *cctx)
+compile_expr6(
+	char_u **arg,
+	cctx_T *cctx,
+	typval_T *bef_tv,
+	typval_T *new_tv)
 {
     char_u	*op;
 
-    // get the first variable
-    if (compile_expr7(arg, cctx) == FAIL)
+    // get the first expression
+    if (compile_expr7(arg, cctx, NULL, bef_tv, new_tv) == FAIL)
 	return FAIL;
 
     /*
@@ -4058,9 +4105,12 @@ compile_expr6(char_u **arg, cctx_T *cctx)
      */
     for (;;)
     {
+	typval_T	tv2;
+
 	op = skipwhite(*arg);
 	if (*op != '*' && *op != '/' && *op != '%')
 	    break;
+
 	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(op[1]))
 	{
 	    char_u buf[3];
@@ -4073,11 +4123,32 @@ compile_expr6(char_u **arg, cctx_T *cctx)
 	if (may_get_next_line(op + 1, arg, cctx) == FAIL)
 	    return FAIL;
 
-	// get the second variable
-	if (compile_expr7(arg, cctx) == FAIL)
+	// get the second expression
+	tv2.v_type = VAR_UNKNOWN;
+	if (compile_expr7(arg, cctx, bef_tv, new_tv, &tv2) == FAIL)
 	    return FAIL;
+	if (new_tv->v_type == VAR_NUMBER && tv2.v_type == VAR_NUMBER)
+	{
+	    varnumber_T res = 0;
 
-	generate_two_op(cctx, op);
+	    // both are numbers: compute the result
+	    switch (*op)
+	    {
+		case '*': res = new_tv->vval.v_number * tv2.vval.v_number;
+			  break;
+		case '/': res = new_tv->vval.v_number / tv2.vval.v_number;
+			  break;
+		case '%': res = new_tv->vval.v_number % tv2.vval.v_number;
+			  break;
+	    }
+	    new_tv->vval.v_number = res;
+	}
+	else
+	{
+	    generate_tv_PUSH(cctx, new_tv);
+	    generate_tv_PUSH(cctx, &tv2);
+	    generate_two_op(cctx, op);
+	}
     }
 
     return OK;
@@ -4091,11 +4162,13 @@ compile_expr6(char_u **arg, cctx_T *cctx)
     static int
 compile_expr5(char_u **arg, cctx_T *cctx)
 {
+    typval_T	tv1;
     char_u	*op;
     int		oplen;
 
     // get the first variable
-    if (compile_expr6(arg, cctx) == FAIL)
+    tv1.v_type = VAR_UNKNOWN;
+    if (compile_expr6(arg, cctx, NULL, &tv1) == FAIL)
 	return FAIL;
 
     /*
@@ -4103,6 +4176,8 @@ compile_expr5(char_u **arg, cctx_T *cctx)
      */
     for (;;)
     {
+	typval_T	tv2;
+
 	op = skipwhite(*arg);
 	if (*op != '+' && *op != '-' && !(*op == '.' && (*(*arg + 1) == '.')))
 	    break;
@@ -4121,20 +4196,58 @@ compile_expr5(char_u **arg, cctx_T *cctx)
 	if (may_get_next_line(op + oplen, arg, cctx) == FAIL)
 	    return FAIL;
 
-	// get the second variable
-	if (compile_expr6(arg, cctx) == FAIL)
+	// get the second expression
+	tv2.v_type = VAR_UNKNOWN;
+	if (compile_expr6(arg, cctx, &tv1, &tv2) == FAIL)
 	    return FAIL;
 
-	if (*op == '.')
+	if (*op == '+' && tv1.v_type == VAR_NUMBER && tv2.v_type == VAR_NUMBER)
 	{
-	    if (may_generate_2STRING(-2, cctx) == FAIL
-		    || may_generate_2STRING(-1, cctx) == FAIL)
+	    // add constant numbers
+	    tv1.vval.v_number = tv1.vval.v_number + tv2.vval.v_number;
+	}
+	else if (*op == '-' && tv1.v_type == VAR_NUMBER
+						   && tv2.v_type == VAR_NUMBER)
+	{
+	    // subtract constant numbers
+	    tv1.vval.v_number = tv1.vval.v_number - tv2.vval.v_number;
+	}
+	else if (*op == '.' && tv1.v_type == VAR_STRING
+						   && tv2.v_type == VAR_STRING)
+	{
+	    // concatenate constant strings
+	    char_u *s1 = tv1.vval.v_string;
+	    char_u *s2 = tv2.vval.v_string;
+	    size_t len1 = STRLEN(s1);
+
+	    tv1.vval.v_string = alloc((int)(len1 + STRLEN(s2) + 1));
+	    if (tv1.vval.v_string == NULL)
+	    {
+		vim_free(s1);
+		vim_free(s2);
 		return FAIL;
-	    generate_instr_drop(cctx, ISN_CONCAT, 1);
+	    }
+	    mch_memmove(tv1.vval.v_string, s1, len1);
+	    STRCPY(tv1.vval.v_string + len1, s2);
 	}
 	else
-	    generate_two_op(cctx, op);
+	{
+	    generate_tv_PUSH(cctx, &tv1);
+	    generate_tv_PUSH(cctx, &tv2);
+	    if (*op == '.')
+	    {
+		if (may_generate_2STRING(-2, cctx) == FAIL
+			|| may_generate_2STRING(-1, cctx) == FAIL)
+		    return FAIL;
+		generate_instr_drop(cctx, ISN_CONCAT, 1);
+	    }
+	    else
+		generate_two_op(cctx, op);
+	}
     }
+
+    // TODO: move to caller
+    generate_tv_PUSH(cctx, &tv1);
 
     return OK;
 }
@@ -4342,19 +4455,9 @@ compile_expr2(char_u **arg, cctx_T *cctx)
 compile_expr1(char_u **arg,  cctx_T *cctx)
 {
     char_u	*p;
-    typval_T	tv;
 
     // Evaluate the first expression.
-    // First try parsing as a constant.  If that works just one PUSH
-    // instruction needs to be generated.
-    tv.v_type = VAR_UNKNOWN;
-    p = *arg;
-    if (evaluate_const_expr2(&p, cctx, &tv) == OK)
-    {
-	*arg = p;
-	generate_tv_PUSH(cctx, &tv);
-    }
-    else if (compile_expr2(arg, cctx) == FAIL)
+    if (compile_expr2(arg, cctx) == FAIL)
 	return FAIL;
 
     p = skipwhite(*arg);
