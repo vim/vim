@@ -4229,6 +4229,8 @@ compile_expr5(char_u **arg, cctx_T *cctx)
 	    }
 	    mch_memmove(tv1.vval.v_string, s1, len1);
 	    STRCPY(tv1.vval.v_string + len1, s2);
+	    vim_free(s1);
+	    vim_free(s2);
 	}
 	else
 	{
