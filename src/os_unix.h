@@ -204,6 +204,10 @@
 # endif
 #endif
 
+#ifdef HAVE_FLOCK
+# include <sys/file.h>
+#endif
+
 #endif // PROTO
 
 #ifdef VMS
