@@ -321,7 +321,7 @@ let s:filename_checks = {
     \ 'omnimark': ['file.xom', 'file.xin'],
     \ 'openroad': ['file.or'],
     \ 'ora': ['file.ora'],
-    \ 'pamconf': ['/etc/pam.conf'],
+    \ 'pamconf': ['/etc/pam.conf', '.pam_environment'],
     \ 'papp': ['file.papp', 'file.pxml', 'file.pxsl'],
     \ 'pascal': ['file.pas', 'file.dpr'],
     \ 'passwd': ['any/etc/passwd', 'any/etc/passwd-', 'any/etc/passwd.edit', 'any/etc/shadow', 'any/etc/shadow-', 'any/etc/shadow.edit', 'any/var/backups/passwd.bak', 'any/var/backups/shadow.bak'],

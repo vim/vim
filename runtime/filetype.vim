@@ -1131,7 +1131,7 @@ au BufNewFile,BufRead *.ora			setf ora
 au BufNewFile,BufRead pf.conf			setf pf
 
 " Pam conf
-au BufNewFile,BufRead */etc/pam.conf		setf pamconf
+au BufNewFile,BufRead */etc/pam.conf,.pam_environment		setf pamconf
 
 " PApp
 au BufNewFile,BufRead *.papp,*.pxml,*.pxsl	setf papp
