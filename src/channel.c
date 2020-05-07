@@ -1037,7 +1037,7 @@ channel_open(
 	if (waittime == 0)
 	    waittime = 1;
 
-	sd = channel_connect(channel, addr->ai_addr, addr->ai_addrlen,
+	sd = channel_connect(channel, addr->ai_addr, (int)addr->ai_addrlen,
 								   &waittime);
 	if (sd >= 0)
 	    break;
