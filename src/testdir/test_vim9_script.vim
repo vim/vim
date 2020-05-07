@@ -1311,13 +1311,6 @@ def Test_vim9_comment()
       'catch /pat/# comment',
       'endtry',
       ], 'E488:')
-  CheckScriptFailure([
-      'vim9script',
-      'try',
-      '  throw "pat"',
-      'catch /pat/# comment',
-      'endtry',
-      ], 'E605:')
   CheckDefFailure([
       'try',
       'echo "yes"',

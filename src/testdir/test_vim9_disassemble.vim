@@ -17,6 +17,7 @@ def s:ScriptFuncLoad(arg: string)
   buffers
   echo arg
   echo local
+  echo &lines
   echo v:version
   echo s:scriptvar
   echo g:globalvar
@@ -42,6 +43,7 @@ def Test_disassemble_load()
         ' EXEC \+buffers.*' ..
         ' LOAD arg\[-1\].*' ..
         ' LOAD $0.*' ..
+        ' LOADOPT &lines.*' ..
         ' LOADV v:version.*' ..
         ' LOADS s:scriptvar from .*test_vim9_disassemble.vim.*' ..
         ' LOADG g:globalvar.*' ..
