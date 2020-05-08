@@ -1039,10 +1039,20 @@ def s:ConcatStrings(): string
   return 'one' .. 'two' .. 'three'
 enddef
 
+def s:ComputeConst(): number
+  return 2 + 3 * 4 / 6 + 7
+enddef
+
 def Test_simplify_const_expr()
   let res = execute('disass s:ConcatStrings')
   assert_match('\<SNR>\d*_ConcatStrings.*' ..
         '\d PUSHS "onetwothree".*' ..
+        '\d RETURN',
+        res)
+
+  res = execute('disass s:ComputeConst')
+  assert_match('\<SNR>\d*_ComputeConst.*' ..
+        '\d PUSHNR 11.*' ..
         '\d RETURN',
         res)
 enddef
