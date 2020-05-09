@@ -1544,10 +1544,15 @@ x_error_handler(Display *dpy, XErrorEvent *error_event)
     XGetErrorText(dpy, error_event->error_code, (char *)IObuff, IOSIZE);
     STRCAT(IObuff, _("\nVim: Got X error\n"));
 
-    // We cannot print a message and continue, because no X calls are allowed
-    // here (causes my system to hang).  Silently continuing might be an
-    // alternative...
-    preserve_exit();		    // preserve files and exit
+    // In the GUI we cannot print a message and continue, because no X calls
+    // are allowed here (causes my system to hang).  Silently continuing seems
+    // like the best alternative.  Do preserve files, in case we crash.
+    ml_sync_all(FALSE, FALSE);
+
+#ifdef FEAT_GUI
+    if (!gui.in_use)
+#endif
+	msg((char *)IObuff);
 
     return 0;		// NOTREACHED
 }
