@@ -1053,6 +1053,10 @@ def s:ComputeConst(): number
   return 2 + 3 * 4 / 6 + 7
 enddef
 
+def s:ComputeConstParen(): number
+  return ((2 + 4) * (8 / 2)) / (3 + 4)
+enddef
+
 def Test_simplify_const_expr()
   let res = execute('disass s:ConcatStrings')
   assert_match('\<SNR>\d*_ConcatStrings.*' ..
@@ -1063,6 +1067,12 @@ def Test_simplify_const_expr()
   res = execute('disass s:ComputeConst')
   assert_match('\<SNR>\d*_ComputeConst.*' ..
         '\d PUSHNR 11.*' ..
+        '\d RETURN',
+        res)
+
+  res = execute('disass s:ComputeConstParen')
+  assert_match('\<SNR>\d*_ComputeConstParen.*' ..
+        '\d PUSHNR 3\>.*' ..
         '\d RETURN',
         res)
 enddef
