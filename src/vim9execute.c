@@ -665,10 +665,6 @@ call_def_function(
 // Like STACK_TV_VAR but use the outer scope
 #define STACK_OUT_TV_VAR(idx) (((typval_T *)ectx.ec_outer_stack->ga_data) + ectx.ec_outer_frame + STACK_FRAME_SIZE + idx)
 
-    CLEAR_FIELD(ectx);
-    ga_init2(&ectx.ec_stack, sizeof(typval_T), 500);
-    if (ga_grow(&ectx.ec_stack, 20) == FAIL)
-	return FAIL;
     {
 	// Check the function was compiled, it is postponed in ex_vim9script().
 	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
@@ -676,8 +672,12 @@ call_def_function(
 	if (dfunc->df_instr == NULL)
 	    return FAIL;
     }
-    ectx.ec_dfunc_idx = ufunc->uf_dfunc_idx;
 
+    CLEAR_FIELD(ectx);
+    ectx.ec_dfunc_idx = ufunc->uf_dfunc_idx;
+    ga_init2(&ectx.ec_stack, sizeof(typval_T), 500);
+    if (ga_grow(&ectx.ec_stack, 20) == FAIL)
+	return FAIL;
     ga_init2(&ectx.ec_trystack, sizeof(trycmd_T), 10);
 
     // Put arguments on the stack.
