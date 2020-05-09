@@ -3310,205 +3310,6 @@ get_vim_constant(char_u **arg, typval_T *rettv)
     }
 }
 
-/*
- * Evaluate an expression that is a constant:
- *  has(arg)
- *
- * Also handle:
- *  ! in front		logical NOT
- *
- * Return FAIL if the expression is not a constant.
- */
-    static int
-evaluate_const_expr7(char_u **arg, cctx_T *cctx UNUSED, typval_T *tv)
-{
-    typval_T	argvars[2];
-    char_u	*start_leader, *end_leader;
-    int		has_call = FALSE;
-
-    /*
-     * Skip '!' characters.  They are handled later.
-     * TODO: '-' and '+' characters
-     */
-    start_leader = *arg;
-    while (**arg == '!')
-	*arg = skipwhite(*arg + 1);
-    end_leader = *arg;
-
-    /*
-     * Recognize only a few types of constants for now.
-     */
-    if (STRNCMP("true", *arg, 4) == 0 && !ASCII_ISALNUM((*arg)[4]))
-    {
-	tv->v_type = VAR_BOOL;
-	tv->vval.v_number = VVAL_TRUE;
-	*arg += 4;
-	return OK;
-    }
-    if (STRNCMP("false", *arg, 5) == 0 && !ASCII_ISALNUM((*arg)[5]))
-    {
-	tv->v_type = VAR_BOOL;
-	tv->vval.v_number = VVAL_FALSE;
-	*arg += 5;
-	return OK;
-    }
-
-    if (STRNCMP("has(", *arg, 4) == 0)
-    {
-	has_call = TRUE;
-	*arg = skipwhite(*arg + 4);
-    }
-
-    if (**arg == '"')
-    {
-	if (get_string_tv(arg, tv, TRUE) == FAIL)
-	    return FAIL;
-    }
-    else if (**arg == '\'')
-    {
-	if (get_lit_string_tv(arg, tv, TRUE) == FAIL)
-	    return FAIL;
-    }
-    else
-	return FAIL;
-
-    if (has_call)
-    {
-	*arg = skipwhite(*arg);
-	if (**arg != ')')
-	    return FAIL;
-	*arg = *arg + 1;
-
-	argvars[0] = *tv;
-	argvars[1].v_type = VAR_UNKNOWN;
-	tv->v_type = VAR_NUMBER;
-	tv->vval.v_number = 0;
-	f_has(argvars, tv);
-	clear_tv(&argvars[0]);
-
-	while (start_leader < end_leader)
-	{
-	    if (*start_leader == '!')
-		tv->vval.v_number = !tv->vval.v_number;
-	    ++start_leader;
-	}
-    }
-    else if (end_leader > start_leader)
-    {
-	clear_tv(tv);
-	return FAIL;
-    }
-
-    return OK;
-}
-
-/*
- *	*	number multiplication
- *	/	number division
- *	%	number modulo
- */
-    static int
-evaluate_const_expr6(char_u **arg, cctx_T *cctx, typval_T *tv)
-{
-    char_u	*op;
-
-    // get the first variable
-    if (evaluate_const_expr7(arg, cctx, tv) == FAIL)
-	return FAIL;
-
-    /*
-     * Repeat computing, until no "*", "/" or "%" is following.
-     */
-    for (;;)
-    {
-	op = skipwhite(*arg);
-	if (*op != '*' && *op != '/' && *op != '%')
-	    break;
-	// TODO: not implemented yet.
-	clear_tv(tv);
-	return FAIL;
-    }
-    return OK;
-}
-
-/*
- *      +	number addition
- *      -	number subtraction
- *      ..	string concatenation
- */
-    static int
-evaluate_const_expr5(char_u **arg, cctx_T *cctx, typval_T *tv)
-{
-    char_u	*op;
-    int		oplen;
-
-    // get the first variable
-    if (evaluate_const_expr6(arg, cctx, tv) == FAIL)
-	return FAIL;
-
-    /*
-     * Repeat computing, until no "+", "-" or ".." is following.
-     */
-    for (;;)
-    {
-	op = skipwhite(*arg);
-	if (*op != '+' && *op != '-' && !(*op == '.' && (*(*arg + 1) == '.')))
-	    break;
-	oplen = (*op == '.' ? 2 : 1);
-
-	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(op[oplen]))
-	{
-	    clear_tv(tv);
-	    return FAIL;
-	}
-
-	if (*op == '.' && tv->v_type == VAR_STRING)
-	{
-	    typval_T	tv2;
-	    size_t	len1;
-	    char_u	*s1, *s2;
-
-	    tv2.v_type = VAR_UNKNOWN;
-	    *arg = skipwhite(op + oplen);
-
-	    // TODO: what if we fail???
-	    if (may_get_next_line(op + oplen, arg, cctx) == FAIL)
-		return FAIL;
-
-	    // get the second variable
-	    if (evaluate_const_expr6(arg, cctx, &tv2) == FAIL)
-	    {
-		clear_tv(tv);
-		return FAIL;
-	    }
-	    if (tv2.v_type != VAR_STRING)
-	    {
-		clear_tv(tv);
-		clear_tv(&tv2);
-		return FAIL;
-	    }
-	    s1 = tv->vval.v_string;
-	    len1 = STRLEN(s1);
-	    s2 = tv2.vval.v_string;
-	    tv->vval.v_string = alloc((int)(len1 + STRLEN(s2) + 1));
-	    if (tv->vval.v_string == NULL)
-	    {
-		vim_free(s1);
-		vim_free(s2);
-		return FAIL;
-	    }
-	    mch_memmove(tv->vval.v_string, s1, len1);
-	    STRCPY(tv->vval.v_string + len1, s2);
-	    continue;
-	}
-
-	// TODO: Not implemented yet.
-	clear_tv(tv);
-	return FAIL;
-    }
-    return OK;
-}
-
     static exptype_T
 get_compare_type(char_u *p, int *len, int *type_is)
 {
@@ -3559,204 +3360,6 @@ get_compare_type(char_u *p, int *len, int *type_is)
     }
     return type;
 }
-
-/*
- * Only comparing strings is supported right now.
- * expr5a == expr5b
- */
-    static int
-evaluate_const_expr4(char_u **arg, cctx_T *cctx UNUSED, typval_T *tv)
-{
-    exptype_T	type = EXPR_UNKNOWN;
-    char_u	*p;
-    int		len = 2;
-    int		type_is = FALSE;
-
-    // get the first variable
-    if (evaluate_const_expr5(arg, cctx, tv) == FAIL)
-	return FAIL;
-
-    p = skipwhite(*arg);
-    type = get_compare_type(p, &len, &type_is);
-
-    /*
-     * If there is a comparative operator, use it.
-     */
-    if (type != EXPR_UNKNOWN)
-    {
-	typval_T    tv2;
-	char_u	    *s1, *s2;
-	char_u	    buf1[NUMBUFLEN], buf2[NUMBUFLEN];
-	int	    n;
-
-	// TODO:  Only string == string is supported now
-	if (tv->v_type != VAR_STRING)
-	    return FAIL;
-	if (type != EXPR_EQUAL)
-	    return FAIL;
-
-	// get the second variable
-	init_tv(&tv2);
-	*arg = skipwhite(p + len);
-	if (evaluate_const_expr5(arg, cctx, &tv2) == FAIL
-						   || tv2.v_type != VAR_STRING)
-	{
-	    clear_tv(&tv2);
-	    return FAIL;
-	}
-	s1 = tv_get_string_buf(tv, buf1);
-	s2 = tv_get_string_buf(&tv2, buf2);
-	n = STRCMP(s1, s2);
-	clear_tv(tv);
-	clear_tv(&tv2);
-	tv->v_type = VAR_BOOL;
-	tv->vval.v_number = n == 0 ? VVAL_TRUE : VVAL_FALSE;
-    }
-
-    return OK;
-}
-
-static int evaluate_const_expr3(char_u **arg, cctx_T *cctx, typval_T *tv);
-
-/*
- * Compile constant || or &&.
- */
-    static int
-evaluate_const_and_or(char_u **arg, cctx_T *cctx, char *op, typval_T *tv)
-{
-    char_u	*p = skipwhite(*arg);
-    int		opchar = *op;
-
-    if (p[0] == opchar && p[1] == opchar)
-    {
-	int	val = tv2bool(tv);
-
-	/*
-	 * Repeat until there is no following "||" or "&&"
-	 */
-	while (p[0] == opchar && p[1] == opchar)
-	{
-	    typval_T	tv2;
-
-	    if (!VIM_ISWHITE(**arg) || !VIM_ISWHITE(p[2]))
-		return FAIL;
-
-	    // eval the next expression
-	    *arg = skipwhite(p + 2);
-	    tv2.v_type = VAR_UNKNOWN;
-	    tv2.v_lock = 0;
-	    if ((opchar == '|' ? evaluate_const_expr3(arg, cctx, &tv2)
-			       : evaluate_const_expr4(arg, cctx, &tv2)) == FAIL)
-	    {
-		clear_tv(&tv2);
-		return FAIL;
-	    }
-	    if ((opchar == '&') == val)
-	    {
-		// false || tv2  or true && tv2: use tv2
-		clear_tv(tv);
-		*tv = tv2;
-		val = tv2bool(tv);
-	    }
-	    else
-		clear_tv(&tv2);
-	    p = skipwhite(*arg);
-	}
-    }
-
-    return OK;
-}
-
-/*
- * Evaluate an expression that is a constant: expr4 && expr4 && expr4
- * Return FAIL if the expression is not a constant.
- */
-    static int
-evaluate_const_expr3(char_u **arg, cctx_T *cctx, typval_T *tv)
-{
-    // evaluate the first expression
-    if (evaluate_const_expr4(arg, cctx, tv) == FAIL)
-	return FAIL;
-
-    // || and && work almost the same
-    return evaluate_const_and_or(arg, cctx, "&&", tv);
-}
-
-/*
- * Evaluate an expression that is a constant: expr3 || expr3 || expr3
- * Return FAIL if the expression is not a constant.
- */
-    static int
-evaluate_const_expr2(char_u **arg, cctx_T *cctx, typval_T *tv)
-{
-    // evaluate the first expression
-    if (evaluate_const_expr3(arg, cctx, tv) == FAIL)
-	return FAIL;
-
-    // || and && work almost the same
-    return evaluate_const_and_or(arg, cctx, "||", tv);
-}
-
-/*
- * Evaluate an expression that is a constant: expr2 ? expr1 : expr1
- * E.g. for "has('feature')".
- * This does not produce error messages.  "tv" should be cleared afterwards.
- * Return FAIL if the expression is not a constant.
- */
-    static int
-evaluate_const_expr1(char_u **arg, cctx_T *cctx, typval_T *tv)
-{
-    char_u	*p;
-
-    // evaluate the first expression
-    if (evaluate_const_expr2(arg, cctx, tv) == FAIL)
-	return FAIL;
-
-    p = skipwhite(*arg);
-    if (*p == '?')
-    {
-	int		val = tv2bool(tv);
-	typval_T	tv2;
-
-	// require space before and after the ?
-	if (!VIM_ISWHITE(**arg) || !VIM_ISWHITE(p[1]))
-	    return FAIL;
-
-	// evaluate the second expression; any type is accepted
-	clear_tv(tv);
-	*arg = skipwhite(p + 1);
-	if (evaluate_const_expr1(arg, cctx, tv) == FAIL)
-	    return FAIL;
-
-	// Check for the ":".
-	p = skipwhite(*arg);
-	if (*p != ':' || !VIM_ISWHITE(**arg) || !VIM_ISWHITE(p[1]))
-	    return FAIL;
-
-	// evaluate the third expression
-	*arg = skipwhite(p + 1);
-	tv2.v_type = VAR_UNKNOWN;
-	if (evaluate_const_expr1(arg, cctx, &tv2) == FAIL)
-	{
-	    clear_tv(&tv2);
-	    return FAIL;
-	}
-	if (val)
-	{
-	    // use the expr after "?"
-	    clear_tv(&tv2);
-	}
-	else
-	{
-	    // use the expr after ":"
-	    clear_tv(tv);
-	    *tv = tv2;
-	}
-    }
-    return OK;
-}
-
-static int compile_expr3(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst);
 
 /*
  * Compile code to apply '-', '+' and '!'.
@@ -4470,6 +4073,8 @@ compile_expr4(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 
     return OK;
 }
+
+static int compile_expr3(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst);
 
 /*
  * Compile || or &&.
@@ -5727,9 +5332,10 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 {
     char_u	*p = arg;
     garray_T	*instr = &cctx->ctx_instr;
+    int		instr_count = instr->ga_len;
     isn_T	*isn;
     scope_T	*scope = cctx->ctx_scope;
-    typval_T	tv;
+    ppconst_T	ppconst;
 
     if (scope == NULL || scope->se_type != IF_SCOPE)
     {
@@ -5749,24 +5355,31 @@ compile_elseif(char_u *arg, cctx_T *cctx)
     }
 
     // compile "expr"; if we know it evaluates to FALSE skip the block
-    tv.v_type = VAR_UNKNOWN;
-    if (evaluate_const_expr1(&p, cctx, &tv) == OK)
-	cctx->ctx_skip = tv2bool(&tv) ? FALSE : TRUE;
-    else
-	cctx->ctx_skip = MAYBE;
-    clear_tv(&tv);
-    if (cctx->ctx_skip == MAYBE)
+    CLEAR_FIELD(ppconst);
+    if (compile_expr1(&p, cctx, &ppconst) == FAIL)
     {
-	p = arg;
-	if (compile_expr0(&p, cctx) == FAIL)
+	clear_ppconst(&ppconst);
+	return NULL;
+    }
+    if (instr->ga_len == instr_count && ppconst.pp_used == 1)
+    {
+	// The expression results in a constant.
+	// TODO: how about nesting?
+	cctx->ctx_skip = tv2bool(&ppconst.pp_tv[0]) ? FALSE : TRUE;
+	clear_ppconst(&ppconst);
+	scope->se_u.se_if.is_if_label = -1;
+    }
+    else
+    {
+	// Not a constant, generate instructions for the expression.
+	cctx->ctx_skip = MAYBE;
+	if (generate_ppconst(cctx, &ppconst) == FAIL)
 	    return NULL;
 
 	// "where" is set when ":elseif", "else" or ":endif" is found
 	scope->se_u.se_if.is_if_label = instr->ga_len;
 	generate_JUMP(cctx, JUMP_IF_FALSE, 0);
     }
-    else
-	scope->se_u.se_if.is_if_label = -1;
 
     return p;
 }
