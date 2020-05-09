@@ -135,18 +135,24 @@ def Test_assignment_local()
       assert_equal('yes', b:existing)
       b:existing = 'no'
       assert_equal('no', b:existing)
+      b:existing ..= 'NO'
+      assert_equal('noNO', b:existing)
 
       w:newvar = 'new'
       assert_equal('new', w:newvar)
       assert_equal('yes', w:existing)
       w:existing = 'no'
       assert_equal('no', w:existing)
+      w:existing ..= 'NO'
+      assert_equal('noNO', w:existing)
 
       t:newvar = 'new'
       assert_equal('new', t:newvar)
       assert_equal('yes', t:existing)
       t:existing = 'no'
       assert_equal('no', t:existing)
+      t:existing ..= 'NO'
+      assert_equal('noNO', t:existing)
     enddef
     call Test_assignment_local_internal()
   END
