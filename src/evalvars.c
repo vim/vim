@@ -2510,6 +2510,7 @@ lookup_scriptvar(char_u *name, size_t len, cctx_T *dummy UNUSED)
 	return NULL;
     if (len < sizeof(buffer) - 1)
     {
+	// avoid an alloc/free for short names
 	vim_strncpy(buffer, name, len);
 	p = buffer;
     }
@@ -2529,7 +2530,8 @@ lookup_scriptvar(char_u *name, size_t len, cctx_T *dummy UNUSED)
 
     if (p != buffer)
 	vim_free(p);
-    return res;
+    // Don't return "buffer", gcc complains.
+    return res == NULL ? NULL : IObuff;
 }
 
 /*
