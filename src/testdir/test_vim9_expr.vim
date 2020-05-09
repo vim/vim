@@ -429,7 +429,7 @@ func Test_expr4_fails()
 
   call CheckDefFailure(["let x = 1 == '2'"], 'Cannot compare number with string')
   call CheckDefFailure(["let x = '1' == 2"], 'Cannot compare string with number')
-  call CheckDefFailure(["let x = 1 == RetVoid()"], 'Cannot use void value')
+  call CheckDefFailure(["let x = 1 == RetVoid()"], 'Cannot compare number with void')
   call CheckDefFailure(["let x = RetVoid() == 1"], 'Cannot compare void with number')
 
   call CheckDefFailure(["let x = true > false"], 'Cannot compare bool with bool')

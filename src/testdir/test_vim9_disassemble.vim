@@ -814,46 +814,45 @@ def Test_disassemble_invert_bool()
 enddef
 
 def Test_disassemble_compare()
-  " TODO: COMPAREFUNC
   let cases = [
-        ['true == false', 'COMPAREBOOL =='],
-        ['true != false', 'COMPAREBOOL !='],
-        ['v:none == v:null', 'COMPARESPECIAL =='],
-        ['v:none != v:null', 'COMPARESPECIAL !='],
+        ['true == isFalse', 'COMPAREBOOL =='],
+        ['true != isFalse', 'COMPAREBOOL !='],
+        ['v:none == isNull', 'COMPARESPECIAL =='],
+        ['v:none != isNull', 'COMPARESPECIAL !='],
 
-        ['111 == 222', 'COMPARENR =='],
-        ['111 != 222', 'COMPARENR !='],
-        ['111 > 222', 'COMPARENR >'],
-        ['111 < 222', 'COMPARENR <'],
-        ['111 >= 222', 'COMPARENR >='],
-        ['111 <= 222', 'COMPARENR <='],
-        ['111 =~ 222', 'COMPARENR =\~'],
-        ['111 !~ 222', 'COMPARENR !\~'],
+        ['111 == aNumber', 'COMPARENR =='],
+        ['111 != aNumber', 'COMPARENR !='],
+        ['111 > aNumber', 'COMPARENR >'],
+        ['111 < aNumber', 'COMPARENR <'],
+        ['111 >= aNumber', 'COMPARENR >='],
+        ['111 <= aNumber', 'COMPARENR <='],
+        ['111 =~ aNumber', 'COMPARENR =\~'],
+        ['111 !~ aNumber', 'COMPARENR !\~'],
 
-        ['"xx" != "yy"', 'COMPARESTRING !='],
-        ['"xx" > "yy"', 'COMPARESTRING >'],
-        ['"xx" < "yy"', 'COMPARESTRING <'],
-        ['"xx" >= "yy"', 'COMPARESTRING >='],
-        ['"xx" <= "yy"', 'COMPARESTRING <='],
-        ['"xx" =~ "yy"', 'COMPARESTRING =\~'],
-        ['"xx" !~ "yy"', 'COMPARESTRING !\~'],
-        ['"xx" is "yy"', 'COMPARESTRING is'],
-        ['"xx" isnot "yy"', 'COMPARESTRING isnot'],
+        ['"xx" != aString', 'COMPARESTRING !='],
+        ['"xx" > aString', 'COMPARESTRING >'],
+        ['"xx" < aString', 'COMPARESTRING <'],
+        ['"xx" >= aString', 'COMPARESTRING >='],
+        ['"xx" <= aString', 'COMPARESTRING <='],
+        ['"xx" =~ aString', 'COMPARESTRING =\~'],
+        ['"xx" !~ aString', 'COMPARESTRING !\~'],
+        ['"xx" is aString', 'COMPARESTRING is'],
+        ['"xx" isnot aString', 'COMPARESTRING isnot'],
 
-        ['0z11 == 0z22', 'COMPAREBLOB =='],
-        ['0z11 != 0z22', 'COMPAREBLOB !='],
-        ['0z11 is 0z22', 'COMPAREBLOB is'],
-        ['0z11 isnot 0z22', 'COMPAREBLOB isnot'],
+        ['0z11 == aBlob', 'COMPAREBLOB =='],
+        ['0z11 != aBlob', 'COMPAREBLOB !='],
+        ['0z11 is aBlob', 'COMPAREBLOB is'],
+        ['0z11 isnot aBlob', 'COMPAREBLOB isnot'],
 
-        ['[1,2] == [3,4]', 'COMPARELIST =='],
-        ['[1,2] != [3,4]', 'COMPARELIST !='],
-        ['[1,2] is [3,4]', 'COMPARELIST is'],
-        ['[1,2] isnot [3,4]', 'COMPARELIST isnot'],
+        ['[1, 2] == aList', 'COMPARELIST =='],
+        ['[1, 2] != aList', 'COMPARELIST !='],
+        ['[1, 2] is aList', 'COMPARELIST is'],
+        ['[1, 2] isnot aList', 'COMPARELIST isnot'],
 
-        ['#{a:1} == #{x:2}', 'COMPAREDICT =='],
-        ['#{a:1} != #{x:2}', 'COMPAREDICT !='],
-        ['#{a:1} is #{x:2}', 'COMPAREDICT is'],
-        ['#{a:1} isnot #{x:2}', 'COMPAREDICT isnot'],
+        ['#{a: 1} == aDict', 'COMPAREDICT =='],
+        ['#{a: 1} != aDict', 'COMPAREDICT !='],
+        ['#{a: 1} is aDict', 'COMPAREDICT is'],
+        ['#{a: 1} isnot aDict', 'COMPAREDICT isnot'],
 
         ['{->33} == {->44}', 'COMPAREFUNC =='],
         ['{->33} != {->44}', 'COMPAREFUNC !='],
@@ -871,22 +870,33 @@ def Test_disassemble_compare()
         ['77 is g:xx', 'COMPAREANY is'],
         ['77 isnot g:xx', 'COMPAREANY isnot'],
         ]
+  let floatDecl = ''
   if has('float')
     cases->extend([
-        ['1.1 == 2.2', 'COMPAREFLOAT =='],
-        ['1.1 != 2.2', 'COMPAREFLOAT !='],
-        ['1.1 > 2.2', 'COMPAREFLOAT >'],
-        ['1.1 < 2.2', 'COMPAREFLOAT <'],
-        ['1.1 >= 2.2', 'COMPAREFLOAT >='],
-        ['1.1 <= 2.2', 'COMPAREFLOAT <='],
-        ['1.1 =~ 2.2', 'COMPAREFLOAT =\~'],
-        ['1.1 !~ 2.2', 'COMPAREFLOAT !\~'],
+        ['1.1 == aFloat', 'COMPAREFLOAT =='],
+        ['1.1 != aFloat', 'COMPAREFLOAT !='],
+        ['1.1 > aFloat', 'COMPAREFLOAT >'],
+        ['1.1 < aFloat', 'COMPAREFLOAT <'],
+        ['1.1 >= aFloat', 'COMPAREFLOAT >='],
+        ['1.1 <= aFloat', 'COMPAREFLOAT <='],
+        ['1.1 =~ aFloat', 'COMPAREFLOAT =\~'],
+        ['1.1 !~ aFloat', 'COMPAREFLOAT !\~'],
         ])
+    floatDecl = 'let aFloat = 2.2'
   endif
 
   let nr = 1
   for case in cases
+    " declare local variables to get a non-constant with the right type
     writefile(['def TestCase' .. nr .. '()',
+             '  let isFalse = false',
+             '  let isNull = v:null',
+             '  let aNumber = 222',
+             '  let aString = "yy"',
+             '  let aBlob = 0z22',
+             '  let aList = [3, 4]',
+             '  let aDict = #{x: 2}',
+             floatDecl,
              '  if ' .. case[0],
              '    echo 42'
              '  endif',
@@ -896,7 +906,7 @@ def Test_disassemble_compare()
     assert_match('TestCase' .. nr .. '.*' ..
         'if ' .. substitute(case[0], '[[~]', '\\\0', 'g') .. '.*' ..
         '\d \(PUSH\|FUNCREF\).*' ..
-        '\d \(PUSH\|FUNCREF\|LOADG\).*' ..
+        '\d \(PUSH\|FUNCREF\|LOAD\).*' ..
         '\d ' .. case[1] .. '.*' ..
         '\d JUMP_IF_FALSE -> \d\+.*',
         instr)
