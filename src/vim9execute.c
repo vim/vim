@@ -669,6 +669,13 @@ call_def_function(
     ga_init2(&ectx.ec_stack, sizeof(typval_T), 500);
     if (ga_grow(&ectx.ec_stack, 20) == FAIL)
 	return FAIL;
+    {
+	// Check the function was compiled, it is postponed in ex_vim9script().
+	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
+							 + ufunc->uf_dfunc_idx;
+	if (dfunc->df_instr == NULL)
+	    return FAIL;
+    }
     ectx.ec_dfunc_idx = ufunc->uf_dfunc_idx;
 
     ga_init2(&ectx.ec_trystack, sizeof(trycmd_T), 10);

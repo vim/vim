@@ -1045,6 +1045,31 @@ def Test_display_func()
         res3)
 enddef
 
+def Test_vim9script_forward_func()
+  let lines =<< trim END
+    vim9script
+    def FuncOne(): string
+      return FuncTwo()
+    enddef
+    def FuncTwo(): string
+      return 'two'
+    enddef
+    let g:res_FuncOne = execute('disass FuncOne')
+  END
+  writefile(lines, 'Xdisassemble')
+  source Xdisassemble
+
+  " check that the first function calls the second with DCALL
+  assert_match('\<SNR>\d*_FuncOne.*' ..
+        'return FuncTwo().*' ..
+        '\d DCALL <SNR>\d\+_FuncTwo(argc 0).*' ..
+        '\d RETURN',
+        g:res_FuncOne)
+
+  delete('Xdisassemble')
+  unlet g:res_FuncOne
+enddef
+
 def s:ConcatStrings(): string
   return 'one' .. 'two' .. 'three'
 enddef

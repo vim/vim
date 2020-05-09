@@ -16,6 +16,7 @@ void restore_vimvar(int idx, typval_T *save_tv);
 list_T *heredoc_get(exarg_T *eap, char_u *cmd, int script_get);
 void ex_let(exarg_T *eap);
 void ex_const(exarg_T *eap);
+void ex_let_const(exarg_T *eap, int redefine);
 int ex_let_vars(char_u *arg_start, typval_T *tv, int copy, int semicolon, int var_count, int flags, char_u *op);
 char_u *skip_var_list(char_u *arg, int include_type, int *var_count, int *semicolon);
 void list_hashtable_vars(hashtab_T *ht, char *prefix, int empty, int *first);

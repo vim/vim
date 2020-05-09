@@ -9,6 +9,7 @@ imported_T *find_imported(char_u *name, size_t len, cctx_T *cctx);
 char_u *to_name_const_end(char_u *arg);
 int assignment_len(char_u *p, int *heredoc);
 int check_vim9_unlet(char_u *name);
+int add_def_function(ufunc_T *ufunc);
 void compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx);
 void delete_instr(isn_T *isn);
 void delete_def_function(ufunc_T *ufunc);

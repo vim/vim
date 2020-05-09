@@ -4441,7 +4441,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
     eap->cookie = cctx;
     eap->skip = cctx->ctx_skip == TRUE;
     eap->forceit = FALSE;
-    ufunc = def_function(eap, name, cctx);
+    ufunc = def_function(eap, name, cctx, TRUE);
 
     if (ufunc == NULL || ufunc->uf_dfunc_idx < 0)
 	return NULL;
@@ -6131,6 +6131,27 @@ theend:
 }
 
 /*
+ * Add a function to the list of :def functions.
+ * This "sets ufunc->uf_dfunc_idx" but the function isn't compiled yet.
+ */
+    int
+add_def_function(ufunc_T *ufunc)
+{
+    dfunc_T *dfunc;
+
+    // Add the function to "def_functions".
+    if (ga_grow(&def_functions, 1) == FAIL)
+	return FAIL;
+    dfunc = ((dfunc_T *)def_functions.ga_data) + def_functions.ga_len;
+    CLEAR_POINTER(dfunc);
+    dfunc->df_idx = def_functions.ga_len;
+    ufunc->uf_dfunc_idx = dfunc->df_idx;
+    dfunc->df_ufunc = ufunc;
+    ++def_functions.ga_len;
+    return OK;
+}
+
+/*
  * After ex_function() has collected all the function lines: parse and compile
  * the lines into instructions.
  * Adds the function to "def_functions".
@@ -6154,30 +6175,16 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
     sctx_T	save_current_sctx = current_sctx;
     int		emsg_before = called_emsg;
 
+    if (ufunc->uf_dfunc_idx >= 0)
     {
-	dfunc_T	*dfunc;  // may be invalidated by compile_lambda()
-
-	if (ufunc->uf_dfunc_idx >= 0)
-	{
-	    // Redefining a function that was compiled before.
-	    dfunc = ((dfunc_T *)def_functions.ga_data) + ufunc->uf_dfunc_idx;
-
-	    // Free old instructions.
-	    delete_def_function_contents(dfunc);
-	}
-	else
-	{
-	    // Add the function to "def_functions".
-	    if (ga_grow(&def_functions, 1) == FAIL)
-		return;
-	    dfunc = ((dfunc_T *)def_functions.ga_data) + def_functions.ga_len;
-	    CLEAR_POINTER(dfunc);
-	    dfunc->df_idx = def_functions.ga_len;
-	    ufunc->uf_dfunc_idx = dfunc->df_idx;
-	    dfunc->df_ufunc = ufunc;
-	    ++def_functions.ga_len;
-	}
+	// Redefining a function that was compiled before.
+	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
+							 + ufunc->uf_dfunc_idx;
+	// Free old instructions.
+	delete_def_function_contents(dfunc);
     }
+    else if (add_def_function(ufunc) == FAIL)
+	return;
 
     CLEAR_FIELD(cctx);
     cctx.ctx_ufunc = ufunc;

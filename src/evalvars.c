@@ -164,7 +164,6 @@ static dict_T		vimvardict;		// Dictionary with v: variables
 // for VIM_VERSION_ defines
 #include "version.h"
 
-static void ex_let_const(exarg_T *eap, int is_const);
 static char_u *skip_var_one(char_u *arg, int include_type);
 static void list_glob_vars(int *first);
 static void list_buf_vars(int *first);
@@ -698,11 +697,15 @@ ex_let(exarg_T *eap)
     void
 ex_const(exarg_T *eap)
 {
-    ex_let_const(eap, TRUE);
+    ex_let_const(eap, FALSE);
 }
 
-    static void
-ex_let_const(exarg_T *eap, int is_const)
+/*
+ * When "redefine" is TRUE the command will be executed again, redefining the
+ * variable is OK then.
+ */
+    void
+ex_let_const(exarg_T *eap, int redefine)
 {
     char_u	*arg = eap->arg;
     char_u	*expr = NULL;
@@ -714,11 +717,13 @@ ex_let_const(exarg_T *eap, int is_const)
     char_u	*argend;
     int		first = TRUE;
     int		concat;
-    int		flags = is_const ? LET_IS_CONST : 0;
+    int		flags = eap->cmdidx == CMD_const ? LET_IS_CONST : 0;
 
     // detect Vim9 assignment without ":let" or ":const"
     if (eap->arg == eap->cmd)
 	flags |= LET_NO_COMMAND;
+    if (redefine)
+	flags |= LET_REDEFINE;
 
     argend = skip_var_list(arg, TRUE, &var_count, &semicolon);
     if (argend == NULL)
@@ -2976,6 +2981,8 @@ set_var_const(
 
     if (flags & LET_IS_CONST)
 	di->di_tv.v_lock |= VAR_LOCKED;
+    if (flags & LET_REDEFINE)
+	di->di_flags |= DI_FLAGS_RELOAD;
 }
 
 /*

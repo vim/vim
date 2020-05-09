@@ -2378,7 +2378,7 @@ untrans_function_name(char_u *name)
  * Returns a pointer to the function or NULL if no function defined.
  */
     ufunc_T *
-def_function(exarg_T *eap, char_u *name_arg, void *context)
+def_function(exarg_T *eap, char_u *name_arg, void *context, int compile)
 {
     char_u	*theline;
     char_u	*line_to_free = NULL;
@@ -3241,6 +3241,7 @@ def_function(exarg_T *eap, char_u *name_arg, void *context)
 	    p = ret_type;
 	    fp->uf_ret_type = parse_type(&p, &fp->uf_type_list);
 	}
+	SOURCING_LNUM = lnum_save;
     }
 
     fp->uf_lines = newlines;
@@ -3273,8 +3274,8 @@ def_function(exarg_T *eap, char_u *name_arg, void *context)
 	is_export = FALSE;
     }
 
-    // ":def Func()" needs to be compiled
-    if (eap->cmdidx == CMD_def)
+    // ":def Func()" may need to be compiled
+    if (eap->cmdidx == CMD_def && compile)
 	compile_def_function(fp, FALSE, context);
 
     goto ret_free;
@@ -3304,7 +3305,7 @@ ret_free:
     void
 ex_function(exarg_T *eap)
 {
-    def_function(eap, NULL, NULL);
+    (void)def_function(eap, NULL, NULL, TRUE);
 }
 
 /*

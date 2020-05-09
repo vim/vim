@@ -19,6 +19,8 @@ int ExpandPackAddDir(char_u *pat, int *num_file, char_u ***file);
 void ex_source(exarg_T *eap);
 void ex_options(exarg_T *eap);
 linenr_T *source_breakpoint(void *cookie);
+garray_T *source_get_line_ga(void *cookie);
+void source_use_line_ga(void *cookie);
 int *source_dbg_tick(void *cookie);
 int source_level(void *cookie);
 int do_source(char_u *fname, int check_other, int is_vimrc, int *ret_sid);
