@@ -1773,7 +1773,11 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
 
     // Only concatenate lines starting with a \ when 'cpoptions' doesn't
     // contain the 'C' flag.
-    if (line != NULL && do_concat && vim_strchr(p_cpo, CPO_CONCAT) == NULL)
+    if (line != NULL && do_concat && vim_strchr(p_cpo, CPO_CONCAT) == NULL
+#ifdef FEAT_EVAL
+	    && sp->use_lines_ga < 0
+#endif
+	    )
     {
 	// compensate for the one line read-ahead
 	--sp->sourcing_lnum;
