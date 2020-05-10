@@ -644,9 +644,9 @@ func Test_expr6_fails()
   call CheckDefFailure(["let x = #{one: 1} / #{two: 2}"], 'E1036:')
   call CheckDefFailure(["let x = #{one: 1} % #{two: 2}"], 'E1035:')
 
-  call CheckDefFailure(["let x = 0xff[1]"], 'E714:')
+  call CheckDefFailure(["let x = 0xff[1]"], 'E1090:')
   if has('float')
-    call CheckDefFailure(["let x = 0.7[1]"], 'E714:')
+    call CheckDefFailure(["let x = 0.7[1]"], 'E1090:')
   endif
 endfunc
 

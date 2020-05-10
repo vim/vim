@@ -38,7 +38,7 @@ def Test_assignment()
 
   call CheckDefFailure(['let x:string'], 'E1069:')
   call CheckDefFailure(['let x:string = "x"'], 'E1069:')
-  call CheckDefFailure(['let a:string = "x"'], 'E1082:')
+  call CheckDefFailure(['let a:string = "x"'], 'E1069:')
 
   let a: number = 6
   assert_equal(6, a)

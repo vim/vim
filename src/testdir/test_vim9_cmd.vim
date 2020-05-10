@@ -44,5 +44,27 @@ def Test_syn_include_wildcards()
   delete('Xthemine.vim')
 enddef
 
+def Test_assign_list()
+  let l: list<string> = []
+  l[0] = 'value'
+  assert_equal('value', l[0])
+
+  l[1] = 'asdf'
+  assert_equal('value', l[0])
+  assert_equal('asdf', l[1])
+  assert_equal('asdf', l[-1])
+  assert_equal('value', l[-2])
+enddef
+
+def Test_assign_dict()
+  let d: dict<string> = {}
+  d['key'] = 'value'
+  assert_equal('value', d['key'])
+
+  d[123] = 'qwerty'
+  assert_equal('qwerty', d[123])
+  assert_equal('qwerty', d['123'])
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

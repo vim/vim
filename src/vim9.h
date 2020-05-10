@@ -48,6 +48,8 @@ typedef enum {
     // ISN_STOREOTHER, // pop into other script variable isn_arg.other.
 
     ISN_STORENR,    // store number into local variable isn_arg.storenr.stnr_idx
+    ISN_STORELIST,	// store into list, value/index/varable on stack
+    ISN_STOREDICT,	// store into dictionary, value/index/variable on stack
 
     ISN_UNLET,		// unlet variable isn_arg.unlet.ul_name
     ISN_UNLETENV,	// unlet environment variable isn_arg.unlet.ul_name
@@ -110,7 +112,8 @@ typedef enum {
     // expression operations
     ISN_CONCAT,
     ISN_INDEX,	    // [expr] list index
-    ISN_MEMBER,	    // dict.member using isn_arg.string
+    ISN_MEMBER,	    // dict[member]
+    ISN_STRINGMEMBER, // dict.member using isn_arg.string
     ISN_2BOOL,	    // convert value to bool, invert if isn_arg.number != 0
     ISN_2STRING,    // convert value to string at isn_arg.number on stack
     ISN_NEGATENR,   // apply "-" to number

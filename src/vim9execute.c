@@ -1252,6 +1252,76 @@ call_def_function(
 		tv->vval.v_number = iptr->isn_arg.storenr.stnr_val;
 		break;
 
+	    // store value in list variable
+	    case ISN_STORELIST:
+		{
+		    typval_T	*tv_idx = STACK_TV_BOT(-2);
+		    varnumber_T	lidx = tv_idx->vval.v_number;
+		    typval_T	*tv_list = STACK_TV_BOT(-1);
+		    list_T	*list = tv_list->vval.v_list;
+
+		    if (lidx < 0 && list->lv_len + lidx >= 0)
+			// negative index is relative to the end
+			lidx = list->lv_len + lidx;
+		    if (lidx < 0 || lidx > list->lv_len)
+		    {
+			semsg(_(e_listidx), lidx);
+			goto failed;
+		    }
+		    tv = STACK_TV_BOT(-3);
+		    if (lidx < list->lv_len)
+		    {
+			listitem_T *li = list_find(list, lidx);
+
+			// overwrite existing list item
+			clear_tv(&li->li_tv);
+			li->li_tv = *tv;
+		    }
+		    else
+		    {
+			// append to list
+			if (list_append_tv(list, tv) == FAIL)
+			    goto failed;
+			clear_tv(tv);
+		    }
+		    clear_tv(tv_idx);
+		    clear_tv(tv_list);
+		}
+		break;
+
+	    // store value in dict variable
+	    case ISN_STOREDICT:
+		{
+		    typval_T	*tv_key = STACK_TV_BOT(-2);
+		    char_u	*key = tv_key->vval.v_string;
+		    typval_T	*tv_dict = STACK_TV_BOT(-1);
+		    dict_T	*dict = tv_dict->vval.v_dict;
+		    dictitem_T	*di;
+
+		    if (key == NULL || *key == NUL)
+		    {
+			emsg(_(e_emptykey));
+			goto failed;
+		    }
+		    tv = STACK_TV_BOT(-3);
+		    di = dict_find(dict, key, -1);
+		    if (di != NULL)
+		    {
+			clear_tv(&di->di_tv);
+			di->di_tv = *tv;
+		    }
+		    else
+		    {
+			// add to dict
+			if (dict_add_tv(dict, (char *)key, tv) == FAIL)
+			    goto failed;
+			clear_tv(tv);
+		    }
+		    clear_tv(tv_key);
+		    clear_tv(tv_dict);
+		}
+		break;
+
 	    // push constant
 	    case ISN_PUSHNR:
 	    case ISN_PUSHBOOL:
@@ -2019,8 +2089,42 @@ call_def_function(
 		}
 		break;
 
-	    // dict member with string key
 	    case ISN_MEMBER:
+		{
+		    dict_T	*dict;
+		    char_u	*key;
+		    dictitem_T	*di;
+
+		    // dict member: dict is at stack-2, key at stack-1
+		    tv = STACK_TV_BOT(-2);
+		    if (tv->v_type != VAR_DICT)
+		    {
+			emsg(_(e_dictreq));
+			goto failed;
+		    }
+		    dict = tv->vval.v_dict;
+
+		    tv = STACK_TV_BOT(-1);
+		    if (tv->v_type != VAR_STRING)
+		    {
+			emsg(_(e_stringreq));
+			goto failed;
+		    }
+		    key = tv->vval.v_string;
+		    if ((di = dict_find(dict, key, -1)) == NULL)
+		    {
+			semsg(_(e_dictkey), key);
+			goto failed;
+		    }
+		    --ectx.ec_stack.ga_len;
+		    clear_tv(tv);
+		    clear_tv(STACK_TV_BOT(-1));
+		    copy_tv(&di->di_tv, STACK_TV_BOT(-1));
+		}
+		break;
+
+	    // dict member with string key
+	    case ISN_STRINGMEMBER:
 		{
 		    dict_T	*dict;
 		    dictitem_T	*di;
@@ -2380,6 +2484,14 @@ ex_disassemble(exarg_T *eap)
 				iptr->isn_arg.storenr.stnr_idx);
 		break;
 
+	    case ISN_STORELIST:
+		smsg("%4d STORELIST", current);
+		break;
+
+	    case ISN_STOREDICT:
+		smsg("%4d STOREDICT", current);
+		break;
+
 	    // constants
 	    case ISN_PUSHNR:
 		smsg("%4d PUSHNR %lld", current,
@@ -2656,7 +2768,8 @@ ex_disassemble(exarg_T *eap)
 	    // expression operations
 	    case ISN_CONCAT: smsg("%4d CONCAT", current); break;
 	    case ISN_INDEX: smsg("%4d INDEX", current); break;
-	    case ISN_MEMBER: smsg("%4d MEMBER %s", current,
+	    case ISN_MEMBER: smsg("%4d MEMBER", current); break;
+	    case ISN_STRINGMEMBER: smsg("%4d MEMBER %s", current,
 						  iptr->isn_arg.string); break;
 	    case ISN_NEGATENR: smsg("%4d NEGATENR", current); break;
 
