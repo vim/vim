@@ -1083,10 +1083,10 @@ deathtrap SIGDEFARG(sigarg)
 
     // No translation, it may call malloc().
 #ifdef SIGHASARG
-    sprintf((char *)IObuff, "Vim: Caught deadly signal %s\n",
+    sprintf((char *)IObuff, "Vim: Caught deadly signal %s\r\n",
 							 signal_info[i].name);
 #else
-    sprintf((char *)IObuff, "Vim: Caught deadly signal\n");
+    sprintf((char *)IObuff, "Vim: Caught deadly signal\r\n");
 #endif
 
     // Preserve files and exit.  This sets the really_exiting flag to prevent
