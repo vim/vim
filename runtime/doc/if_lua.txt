@@ -199,6 +199,9 @@ Vim evaluation and command execution, and others.
 				returns it. Note that the buffer is not set as
 				current.
 
+	vim.has({features} [, {check}])
+				See |has()|
+
 
 ==============================================================================
 3. List userdata					*lua-list*

@@ -1903,6 +1903,37 @@ luaV_type(lua_State *L)
     return 1;
 }
 
+    static int
+luaV_has(lua_State *L)
+{
+    int argcount = lua_gettop(L);
+
+    if (argcount == 0) {
+	lua_pushinteger(L, 0);
+	return 1;
+    }
+
+    typval_T *argvars = (typval_T*)alloc(argcount * sizeof(typval_T));
+    for(int i = 1; i <= argcount; i++) {
+	if (i == 2) {
+	    // luaV_totypeval returns float instead of integer so special handle 2nd arg
+	    argvars[i - 1].v_type = VAR_NUMBER;
+	    argvars[i - 1].vval.v_number = (varnumber_T) lua_tointeger(L, i);
+	} else if (luaV_totypval(L, i, &argvars[i-1]) == FAIL)
+	    emsg("lua: cannot convert value");
+    }
+
+    typval_T rettv;
+    f_has(argvars, &rettv);
+
+    lua_pushinteger(L, (int) rettv.vval.v_number);
+
+    clear_tv(argvars);
+    clear_tv(&rettv);
+
+    return 1;
+}
+
 static const luaL_Reg luaV_module[] = {
     {"command", luaV_command},
     {"eval", luaV_eval},
@@ -1916,6 +1947,7 @@ static const luaL_Reg luaV_module[] = {
     {"window", luaV_window},
     {"open", luaV_open},
     {"type", luaV_type},
+    {"has", luaV_has},
     {NULL, NULL}
 };
 
