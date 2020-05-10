@@ -540,6 +540,16 @@ func Test_lua_beep()
   call assert_beeps('lua vim.beep()')
 endfunc
 
+" Test vim.has()
+func Test_lua_has()
+  call assert_equal(has("unknown_feature"), luaeval("vim.has('unknown_feature')"))
+  call assert_equal(has("lua"), luaeval("vim.has('lua')"))
+  call assert_equal(has("lua", 1), luaeval("vim.has('lua', 1)"))
+  call assert_equal(has("lua", 0), luaeval("vim.has('lua', 0)"))
+  call assert_equal(0, luaeval("vim.has()"))
+  call assert_equal(0, luaeval("vim.has(nil)"))
+endfunc
+
 " Test errors in luaeval()
 func Test_luaeval_error()
   " Compile error
