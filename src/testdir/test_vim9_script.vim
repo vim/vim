@@ -610,7 +610,6 @@ def Test_vim9_import_export()
   let import_star_lines =<< trim END
     vim9script
     import * from './Xexport.vim'
-    g:imported = exported
   END
   writefile(import_star_lines, 'Ximport.vim')
   assert_fails('source Ximport.vim', 'E1045:')
@@ -807,6 +806,28 @@ def Test_vim9script_reload_delfunc()
   delete('Xreloaded.vim')
 enddef
 
+def Test_vim9script_reload_delvar()
+  # write the script with a script-local variable
+  let lines =<< trim END
+    vim9script
+    let var = 'string'
+  END
+  writefile(lines, 'XreloadVar.vim')
+  source XreloadVar.vim
+
+  # now write the script using the same variable locally - works
+  lines =<< trim END
+    vim9script
+    def Func()
+      let var = 'string'
+    enddef
+  END
+  writefile(lines, 'XreloadVar.vim')
+  source XreloadVar.vim
+
+  delete('XreloadVar.vim')
+enddef
+
 def Test_import_absolute()
   let import_lines = [
         'vim9script',
@@ -862,8 +883,7 @@ def Test_import_rtp()
   unlet g:imported_rtp
 
   delete('Ximport_rtp.vim')
-  delete('import/Xexport_rtp.vim')
-  delete('import', 'd')
+  delete('import', 'rf')
 enddef
 
 def Test_fixed_size_list()

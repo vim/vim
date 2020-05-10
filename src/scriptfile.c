@@ -1295,9 +1295,6 @@ do_source(
     if (sid > 0)
     {
 	hashtab_T	*ht;
-	hashitem_T	*hi;
-	dictitem_T	*di;
-	int		todo;
 	int		is_vim9 = si->sn_version == SCRIPT_VERSION_VIM9;
 
 	// loading the same script again
@@ -1306,14 +1303,22 @@ do_source(
 	current_sctx.sc_sid = sid;
 
 	ht = &SCRIPT_VARS(sid);
-	todo = (int)ht->ht_used;
-	for (hi = ht->ht_array; todo > 0; ++hi)
-	    if (!HASHITEM_EMPTY(hi))
-	    {
-		--todo;
-		di = HI2DI(hi);
-		di->di_flags |= DI_FLAGS_RELOAD;
-	    }
+	if (is_vim9)
+	    hashtab_free_contents(ht);
+	else
+	{
+	    int		todo = (int)ht->ht_used;
+	    hashitem_T	*hi;
+	    dictitem_T	*di;
+
+	    for (hi = ht->ht_array; todo > 0; ++hi)
+		if (!HASHITEM_EMPTY(hi))
+		{
+		    --todo;
+		    di = HI2DI(hi);
+		    di->di_flags |= DI_FLAGS_RELOAD;
+		}
+	}
 
 	// old imports are no longer valid
 	free_imports(sid);

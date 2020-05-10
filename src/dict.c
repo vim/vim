@@ -105,28 +105,37 @@ rettv_dict_set(typval_T *rettv, dict_T *d)
     void
 dict_free_contents(dict_T *d)
 {
+    hashtab_free_contents(&d->dv_hashtab);
+}
+
+/*
+ * Clear hashtab "ht" and dict items it contains.
+ */
+    void
+hashtab_free_contents(hashtab_T *ht)
+{
     int		todo;
     hashitem_T	*hi;
     dictitem_T	*di;
 
     // Lock the hashtab, we don't want it to resize while freeing items.
-    hash_lock(&d->dv_hashtab);
-    todo = (int)d->dv_hashtab.ht_used;
-    for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
+    hash_lock(ht);
+    todo = (int)ht->ht_used;
+    for (hi = ht->ht_array; todo > 0; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
 	    // Remove the item before deleting it, just in case there is
 	    // something recursive causing trouble.
 	    di = HI2DI(hi);
-	    hash_remove(&d->dv_hashtab, hi);
+	    hash_remove(ht, hi);
 	    dictitem_free(di);
 	    --todo;
 	}
     }
 
-    // The hashtab is still locked, it has to be re-initialized anyway
-    hash_clear(&d->dv_hashtab);
+    // The hashtab is still locked, it has to be re-initialized anyway.
+    hash_clear(ht);
 }
 
     static void
