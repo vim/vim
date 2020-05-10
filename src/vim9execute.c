@@ -1286,6 +1286,7 @@ call_def_function(
 		    }
 		    clear_tv(tv_idx);
 		    clear_tv(tv_list);
+		    ectx.ec_stack.ga_len -= 3;
 		}
 		break;
 
@@ -1319,6 +1320,7 @@ call_def_function(
 		    }
 		    clear_tv(tv_key);
 		    clear_tv(tv_dict);
+		    ectx.ec_stack.ga_len -= 3;
 		}
 		break;
 

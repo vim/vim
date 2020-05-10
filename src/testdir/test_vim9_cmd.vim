@@ -54,6 +54,12 @@ def Test_assign_list()
   assert_equal('asdf', l[1])
   assert_equal('asdf', l[-1])
   assert_equal('value', l[-2])
+
+  let nrl: list<number> = []
+  for i in range(5)
+    nrl[i] = i
+  endfor
+  assert_equal([0, 1, 2, 3, 4], nrl)
 enddef
 
 def Test_assign_dict()
@@ -64,6 +70,12 @@ def Test_assign_dict()
   d[123] = 'qwerty'
   assert_equal('qwerty', d[123])
   assert_equal('qwerty', d['123'])
+
+  let nrd: dict<number> = {}
+  for i in range(3)
+    nrd[i] = i
+  endfor
+  assert_equal({'0': 0, '1': 1, '2': 2}, nrd)
 enddef
 
 
