@@ -195,6 +195,18 @@ Vim evaluation and command execution, and others.
 
 	vim.beep()		Beeps.
 
+	vim.sleep({N})		Sleep for {N} milliseconds.
+
+				Can be interrupted with CTRL-C (CTRL-Break on
+				MS-Windows).
+				While sleeping the cursor is positioned in the text,
+				if at a visible position.
+				Also process the received netbeans messages. {only
+				available when compiled with the |+netbeans_intg|
+				feature}
+				Examples: >
+					:lua vim.sleep(5000)
+<
 	vim.open({fname})	Opens a new buffer for file {fname} and
 				returns it. Note that the buffer is not set as
 				current.

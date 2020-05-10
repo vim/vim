@@ -540,6 +540,11 @@ func Test_lua_beep()
   call assert_beeps('lua vim.beep()')
 endfunc
 
+" Test vim.sleep()
+func Test_lua_beep()
+  lua vim.sleep(100)
+endfunc
+
 " Test errors in luaeval()
 func Test_luaeval_error()
   " Compile error

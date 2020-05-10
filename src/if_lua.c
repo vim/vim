@@ -1903,6 +1903,21 @@ luaV_type(lua_State *L)
     return 1;
 }
 
+    static int
+luaV_sleep(lua_State *L)
+{
+    if (lua_gettop(L) != 1)
+	return luaL_error(L, "lua: 1 argument required");
+
+    if (!lua_isnumber(L, 1))
+	return luaL_error(L, "lua: invalid number");
+
+    long msec = (long)lua_tointeger(L, 1);
+    do_sleep(msec);
+
+    return 0;
+}
+
 static const luaL_Reg luaV_module[] = {
     {"command", luaV_command},
     {"eval", luaV_eval},
@@ -1916,6 +1931,7 @@ static const luaL_Reg luaV_module[] = {
     {"window", luaV_window},
     {"open", luaV_open},
     {"type", luaV_type},
+    {"sleep", luaV_sleep},
     {NULL, NULL}
 };
 
