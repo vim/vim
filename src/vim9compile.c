@@ -4762,18 +4762,20 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		}
 
 	    lvar = lookup_local(arg, varlen, cctx);
-	    if (lvar == NULL
-		    && lookup_arg(arg, varlen,
+	    if (lvar == NULL)
+	    {
+		CLEAR_FIELD(arg_lvar);
+		if (lookup_arg(arg, varlen,
 			    &arg_lvar.lv_idx, &arg_lvar.lv_type,
 			    &arg_lvar.lv_from_outer, cctx) == OK)
-	    {
-		if (is_decl)
 		{
-		    semsg(_(e_used_as_arg), name);
-		    goto theend;
+		    if (is_decl)
+		    {
+			semsg(_(e_used_as_arg), name);
+			goto theend;
+		    }
+		    lvar = &arg_lvar;
 		}
-		arg_lvar.lv_const = 0;
-		lvar = &arg_lvar;
 	    }
 	    if (lvar != NULL)
 	    {
