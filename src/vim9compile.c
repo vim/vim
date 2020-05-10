@@ -135,6 +135,7 @@ struct cctx_S {
 
 static char e_var_notfound[] = N_("E1001: variable not found: %s");
 static char e_syntax_at[] = N_("E1002: Syntax error at %s");
+static char e_used_as_arg[] = N_("E1006: %s is used as an argument");
 
 static void delete_def_function_contents(dfunc_T *dfunc);
 static void arg_type_mismatch(type_T *expected, type_T *actual, int argidx);
@@ -1652,7 +1653,7 @@ reserve_local(cctx_T *cctx, char_u *name, size_t len, int isConst, type_T *type)
 
     if (lookup_arg(name, len, NULL, NULL, NULL, cctx) == OK)
     {
-	emsg_namelen(_("E1006: %s is used as an argument"), name, (int)len);
+	emsg_namelen(_(e_used_as_arg), name, (int)len);
 	return NULL;
     }
 
@@ -4592,6 +4593,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     type_T	*type = &t_any;
     type_T	*member_type = &t_any;
     lvar_T	*lvar = NULL;
+    lvar_T	arg_lvar;
     char_u	*name;
     char_u	*sp;
     int		has_type = FALSE;
@@ -4760,6 +4762,19 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		}
 
 	    lvar = lookup_local(arg, varlen, cctx);
+	    if (lvar == NULL
+		    && lookup_arg(arg, varlen,
+			    &arg_lvar.lv_idx, &arg_lvar.lv_type,
+			    &arg_lvar.lv_from_outer, cctx) == OK)
+	    {
+		if (is_decl)
+		{
+		    semsg(_(e_used_as_arg), name);
+		    goto theend;
+		}
+		arg_lvar.lv_const = 0;
+		lvar = &arg_lvar;
+	    }
 	    if (lvar != NULL)
 	    {
 		if (is_decl)
@@ -4861,13 +4876,13 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     member_type = type;
     if (var_end > arg + varlen)
     {
+	// Something follows after the variable: "var[idx]".
 	if (is_decl)
 	{
 	    emsg(_("E1087: cannot use an index when declaring a variable"));
 	    goto theend;
 	}
 
-	// Something follows after the variable: "var[idx]".
 	if (arg[varlen] == '[')
 	{
 	    has_index = TRUE;
@@ -4883,6 +4898,11 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    semsg("Not supported yet: %s", arg);
 	    goto theend;
 	}
+    }
+    else if (lvar == &arg_lvar)
+    {
+	semsg(_("E1090: Cannot assign to argument %s"), name);
+	goto theend;
     }
 
     if (heredoc)
@@ -6515,6 +6535,8 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 		oplen = assignment_len(skipwhite(var_end), &heredoc);
 		if (oplen > 0)
 		{
+		    size_t len = p - ea.cmd;
+
 		    // Recognize an assignment if we recognize the variable
 		    // name:
 		    // "g:var = expr"
@@ -6527,10 +6549,12 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 		    if (*ea.cmd == '&'
 			    || *ea.cmd == '$'
 			    || *ea.cmd == '@'
-			    || ((p - ea.cmd) > 2 && ea.cmd[1] == ':')
-			    || lookup_local(ea.cmd, p - ea.cmd, &cctx) != NULL
-			    || lookup_script(ea.cmd, p - ea.cmd) == OK
-			    || find_imported(ea.cmd, p - ea.cmd, &cctx) != NULL)
+			    || ((len) > 2 && ea.cmd[1] == ':')
+			    || lookup_local(ea.cmd, len, &cctx) != NULL
+			    || lookup_arg(ea.cmd, len, NULL, NULL,
+							     NULL, &cctx) == OK
+			    || lookup_script(ea.cmd, len) == OK
+			    || find_imported(ea.cmd, len, &cctx) != NULL)
 		    {
 			line = compile_assignment(ea.cmd, &ea, CMD_SIZE, &cctx);
 			if (line == NULL)

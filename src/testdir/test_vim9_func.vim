@@ -193,6 +193,26 @@ def Test_using_var_as_arg()
   call delete('Xdef')
 enddef
 
+def DictArg(arg: dict<string>)
+  arg['key'] = 'value'
+enddef
+
+def ListArg(arg: list<string>)
+  arg[0] = 'value'
+enddef
+
+def Test_assign_to_argument()
+  " works for dict and list
+  let d: dict<string> = {}
+  DictArg(d)
+  assert_equal('value', d['key'])
+  let l: list<string> = []
+  ListArg(l)
+  assert_equal('value', l[0])
+
+  call CheckScriptFailure(['def Func(arg: number)', 'arg = 3', 'enddef'], 'E1090:')
+enddef
+
 def Test_call_func_defined_later()
   call assert_equal('one', g:DefinedLater('one'))
   call assert_fails('call NotDefined("one")', 'E117:')
