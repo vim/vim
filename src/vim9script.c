@@ -130,6 +130,12 @@ ex_vim9script(exarg_T *eap)
 	    vim_free(((char_u **)(gap->ga_data))[--gap->ga_len]);
 	    ((char_u **)(gap->ga_data))[gap->ga_len++] = NULL;
 	}
+	else if (checkforcmd(&p, "finish", 4))
+	{
+	    // TODO: this should not happen below "if false".
+	    // Use "if cond | finish | endif as a workaround.
+	    break;
+	}
     }
 
     // Compile the :def functions.

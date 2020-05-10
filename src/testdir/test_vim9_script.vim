@@ -1705,6 +1705,23 @@ def Test_vim9_comment_not_compiled()
       ], 'E488:')
 enddef
 
+def Test_finish()
+  let lines =<< trim END
+    vim9script
+    let g:res = 'one'
+    if v:false | finish | endif
+    let g:res = 'two'
+    finish
+    let g:res = 'three'
+  END
+  writefile(lines, 'Xfinished')
+  source Xfinished
+  assert_equal('two', g:res)
+
+  unlet g:res
+  delete('Xfinished')
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new
