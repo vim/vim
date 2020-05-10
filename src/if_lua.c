@@ -1909,7 +1909,7 @@ luaV_has(lua_State *L)
     int argcount = lua_gettop(L);
 
     if (argcount == 0) {
-	lua_pushinteger(L, 0);
+	lua_pushboolean(L, 0);
 	return 1;
     }
 
@@ -1926,7 +1926,7 @@ luaV_has(lua_State *L)
     typval_T rettv;
     f_has(argvars, &rettv);
 
-    lua_pushinteger(L, (int) rettv.vval.v_number);
+    lua_pushboolean(L, rettv.vval.v_number == 1);
 
     clear_tv(argvars);
     clear_tv(&rettv);
