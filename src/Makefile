@@ -686,8 +686,10 @@ LINT_OPTIONS = -beprxzF
 # 7. Open the objects/index.html file in a web browser to view the coverage
 #    information.
 #
-# PROFILE_CFLAGS=-g -O0 -fprofile-arcs -ftest-coverage
 # LDFLAGS=--coverage
+# PROFILE_CFLAGS=-g -O0 -fprofile-arcs -ftest-coverage -DWE_ARE_PROFILING -DUSE_GCOV_FLUSH
+# Alternate flags
+# PROFILE_CFLAGS=-g -O0 --coverage -DWE_ARE_PROFILING -DUSE_GCOV_FLUSH
 
 
 # Uncomment one of the next two lines to compile Vim with the

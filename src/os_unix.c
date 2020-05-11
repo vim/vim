@@ -3312,6 +3312,10 @@ exit_scroll(void)
     }
 }
 
+#ifdef USE_GCOV_FLUSH
+extern void __gcov_flush();
+#endif
+
     void
 mch_exit(int r)
 {
@@ -3358,6 +3362,12 @@ mch_exit(int r)
     }
     out_flush();
     ml_close_all(TRUE);		// remove all memfiles
+
+#ifdef USE_GCOV_FLUSH
+    // Flush coverage info before possibly being killed by a deadly signal.
+    __gcov_flush();
+#endif
+
     may_core_dump();
 #ifdef FEAT_GUI
     if (gui.in_use)
