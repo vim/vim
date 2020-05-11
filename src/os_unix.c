@@ -129,6 +129,8 @@ Window	    x11_window = 0;
 Display	    *x11_display = NULL;
 #endif
 
+static int ignore_sigtstp = FALSE;
+
 #ifdef FEAT_TITLE
 static int get_x11_title(int);
 
@@ -1237,6 +1239,9 @@ restore_clipboard(void)
     void
 mch_suspend(void)
 {
+    if (ignore_sigtstp)
+	return;
+
     // BeOS does have SIGTSTP, but it doesn't work.
 #if defined(SIGTSTP) && !defined(__BEOS__)
     in_mch_suspend = TRUE;
@@ -1286,6 +1291,14 @@ mch_init(void)
     Rows = 24;
 
     out_flush();
+
+#ifdef SIGTSTP
+    // Check whether we were invoked with SIGTSTP set to be ignored. If it is
+    // that indicates the shell (or program) that launched us does not support
+    // tty job control and thus we should ignore that signal. If invoked as a
+    // restricted editor (e.g., as "rvim") SIGTSTP is always ignored.
+    ignore_sigtstp = restricted || SIG_IGN == signal(SIGTSTP, SIG_ERR);
+#endif
     set_signals();
 
 #ifdef MACOS_CONVERT
@@ -1306,17 +1319,13 @@ set_signals(void)
     signal(SIGWINCH, (RETSIGTYPE (*)())sig_winch);
 #endif
 
-    /*
-     * We want the STOP signal to work, to make mch_suspend() work.
-     * For "rvim" the STOP signal is ignored.
-     */
 #ifdef SIGTSTP
-    signal(SIGTSTP, restricted ? SIG_IGN : SIG_DFL);
+    // See mch_init() for the conditions under which we ignore SIGTSTP.
+    signal(SIGTSTP, ignore_sigtstp ? SIG_IGN : SIG_DFL);
 #endif
 #if defined(SIGCONT)
     signal(SIGCONT, sigcont_handler);
 #endif
-
     /*
      * We want to ignore breaking of PIPEs.
      */
@@ -1386,6 +1395,7 @@ catch_signals(
     int	    i;
 
     for (i = 0; signal_info[i].sig != -1; i++)
+    {
 	if (signal_info[i].deadly)
 	{
 #if defined(HAVE_SIGALTSTACK) && defined(HAVE_SIGACTION)
@@ -1420,7 +1430,17 @@ catch_signals(
 #endif
 	}
 	else if (func_other != SIG_ERR)
+	{
+	    // Deal with non-deadly signals.
+#ifdef SIGTSTP
+	    signal(signal_info[i].sig,
+		    signal_info[i].sig == SIGTSTP && ignore_sigtstp
+						       ? SIG_IGN : func_other);
+#else
 	    signal(signal_info[i].sig, func_other);
+#endif
+	}
+    }
 }
 
 #ifdef HAVE_SIGPROCMASK
