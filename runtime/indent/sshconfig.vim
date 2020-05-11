@@ -2,7 +2,7 @@
 " Language: ssh config file
 " Maintainer: Bram Moolenaar <Bram@vim.org>
 " Original Author: Jason Kim <git@jasonk.me>
-" Last Change: 2020-05-10 23:34:17 -0700
+" Last Change: 2020-05-10 23:35:06 -0700
 
 if exists("b:did_indent")
   finish
@@ -30,6 +30,6 @@ function GetSshconfigIndent(lnum)
   elseif prev_line =~? '^\s*\(host\|match\)\s'
     return sw
   else
-    return -1
+    return indent(prev_lnum)
   endif
 endfunction
