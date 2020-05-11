@@ -838,4 +838,22 @@ func Test_gui_dash_y()
   call delete('Xtestgui')
 endfunc
 
+" Test for "!" option in 'guioptions'. Use a terminal for running external
+" commands
+func Test_gui_run_cmd_in_terminal()
+  let save_guioptions = &guioptions
+  set guioptions+=!
+  if has('win32')
+    let cmd = 'type'
+  else
+    " assume all the other systems have a cat command
+    let cmd = 'cat'
+  endif
+  let cmd = ':silent !' . cmd . " test_gui.vim\<CR>\<CR>"
+  call feedkeys(cmd, 'xt')
+  " TODO: how to check that the command ran in a separate terminal?
+  " Maybe check for $TERM (dumb vs xterm) in the spawned shell?
+  let &guioptions = save_guioptions
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

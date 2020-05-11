@@ -5,6 +5,7 @@ CheckFeature terminal
 
 source shared.vim
 source screendump.vim
+source mouse.vim
 
 let s:python = PythonProg()
 let $PROMPT_COMMAND=''
@@ -1206,6 +1207,26 @@ func Test_terminal_dumpwrite_composing()
   let &encoding = save_enc
 endfunc
 
+" Tests for failures in the term_dumpwrite() function
+func Test_terminal_dumpwrite_errors()
+  CheckRunVimInTerminal
+  call assert_fails("call term_dumpwrite({}, 'Xtest.dump')", 'E728:')
+  let buf = RunVimInTerminal('', {})
+  call term_wait(buf)
+  call assert_fails("call term_dumpwrite(buf, 'Xtest.dump', '')", 'E715:')
+  call assert_fails("call term_dumpwrite(buf, [])", 'E730:')
+  call writefile([], 'Xtest.dump')
+  call assert_fails("call term_dumpwrite(buf, 'Xtest.dump')", 'E953:')
+  call delete('Xtest.dump')
+  call assert_fails("call term_dumpwrite(buf, '')", 'E482:')
+  call assert_fails("call term_dumpwrite(buf, test_null_string())", 'E482:')
+  call StopVimInTerminal(buf)
+  call term_wait(buf)
+  call assert_fails("call term_dumpwrite(buf, 'Xtest.dump')", 'E958:')
+  call assert_fails('call term_sendkeys([], ":q\<CR>")', 'E745:')
+  call assert_equal(0, term_sendkeys(buf, ":q\<CR>"))
+endfunc
+
 " just testing basic functionality.
 func Test_terminal_dumpload()
   let curbuf = winbufnr('')
@@ -1231,6 +1252,8 @@ func Test_terminal_dumpload()
   let closedbuf = winbufnr('')
   quit
   call assert_fails("call term_dumpload('dumps/Test_popup_command_01.dump', {'bufnr': closedbuf})", 'E475:')
+  call assert_fails('call term_dumpload([])', 'E474:')
+  call assert_fails('call term_dumpload("xabcy.dump")', 'E485:')
 
   quit
 endfunc
@@ -1258,6 +1281,12 @@ func Test_terminal_dumpdiff()
   call Check_dump01(42)
   call assert_equal('           bbbbbbbbbbbbbbbbbb ', getline(26)[0:29])
   quit
+
+  call assert_fails('call term_dumpdiff("X1.dump", [])', 'E474:')
+  call assert_fails('call term_dumpdiff("X1.dump", "X2.dump")', 'E485:')
+  call writefile([], 'X1.dump')
+  call assert_fails('call term_dumpdiff("X1.dump", "X2.dump")', 'E485:')
+  call delete('X1.dump')
 endfunc
 
 func Test_terminal_dumpdiff_swap()
@@ -2650,6 +2679,202 @@ func Test_term_func_invalid_arg()
   call assert_fails('call term_setapi([], "")', 'E745:')
   call assert_fails('call term_setrestore([], "")', 'E745:')
   call assert_fails('call term_setkill([], "")', 'E745:')
+endfunc
+
+" Test for sending various special keycodes to a terminal
+func Test_term_keycode_translation()
+  CheckRunVimInTerminal
+
+  let buf = RunVimInTerminal('', {})
+  call term_sendkeys(buf, ":set nocompatible\<CR>")
+
+  let keys = ["\<F1>", "\<F2>", "\<F3>", "\<F4>", "\<F5>", "\<F6>", "\<F7>",
+        \ "\<F8>", "\<F9>", "\<F10>", "\<F11>", "\<F12>", "\<Home>",
+        \ "\<S-Home>", "\<C-Home>", "\<End>", "\<S-End>", "\<C-End>",
+	\ "\<Ins>", "\<Del>", "\<Left>", "\<S-Left>", "\<C-Left>", "\<Right>",
+        \ "\<S-Right>", "\<C-Right>", "\<Up>", "\<S-Up>", "\<Down>",
+        \ "\<S-Down>"]
+  let output = ['<F1>', '<F2>', '<F3>', '<F4>', '<F5>', '<F6>', '<F7>',
+        \ '<F8>', '<F9>', '<F10>', '<F11>', '<F12>', '<Home>', '<S-Home>',
+        \ '<C-Home>', '<End>', '<S-End>', '<C-End>', '<Insert>', '<Del>',
+        \ '<Left>', '<S-Left>', '<C-Left>', '<Right>', '<S-Right>',
+        \ '<C-Right>', '<Up>', '<S-Up>', '<Down>', '<S-Down>',
+        \ '0123456789', "\t\t.+-*/"]
+
+  for k in keys
+    call term_sendkeys(buf, "i\<C-K>" .. k .. "\<CR>\<C-\>\<C-N>")
+  endfor
+  call term_sendkeys(buf, "i\<K0>\<K1>\<K2>\<K3>\<K4>\<K5>\<K6>\<K7>")
+  call term_sendkeys(buf, "\<K8>\<K9>\<kEnter>\<kPoint>\<kPlus>")
+  call term_sendkeys(buf, "\<kMinus>\<kMultiply>\<kDivide>\<C-\>\<C-N>")
+  call term_sendkeys(buf, "\<Home>\<Ins>\<Tab>\<S-Tab>\<C-\>\<C-N>")
+
+  call term_sendkeys(buf, ":write Xkeycodes\<CR>")
+  call term_wait(buf)
+  call StopVimInTerminal(buf)
+  call assert_equal(output, readfile('Xkeycodes'))
+  call delete('Xkeycodes')
+endfunc
+
+" Test for using the mouse in a terminal
+func Test_term_mouse()
+  CheckNotGui
+  CheckRunVimInTerminal
+
+  let save_mouse = &mouse
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  let save_clipboard = &clipboard
+  call test_override('no_query_mouse', 1)
+  set mouse=a term=xterm ttymouse=sgr mousetime=200 clipboard=
+
+  let lines =<< trim END
+    one two three four five
+    red green yellow red blue
+    vim emacs sublime nano
+  END
+  call writefile(lines, 'Xtest_mouse')
+
+  let buf = RunVimInTerminal('Xtest_mouse -n', {})
+  call term_sendkeys(buf, ":set nocompatible\<CR>")
+  call term_sendkeys(buf, ":set mouse=a term=xterm ttymouse=sgr\<CR>")
+  call term_sendkeys(buf, ":set clipboard=\<CR>")
+  call term_sendkeys(buf, ":set mousemodel=extend\<CR>")
+  call term_wait(buf)
+  redraw!
+
+  " Test for <LeftMouse> click/release
+  call test_setmouse(2, 5)
+  call feedkeys("\<LeftMouse>\<LeftRelease>", 'xt')
+  call test_setmouse(3, 8)
+  call term_sendkeys(buf, "\<LeftMouse>\<LeftRelease>")
+  call term_wait(buf, 50)
+  call term_sendkeys(buf, ":call writefile([json_encode(getpos('.'))], 'Xbuf')\<CR>")
+  call term_wait(buf, 50)
+  let pos = json_decode(readfile('Xbuf')[0])
+  call assert_equal([3, 8], pos[1:2])
+
+  " Test for selecting text using mouse
+  call delete('Xbuf')
+  call test_setmouse(2, 11)
+  call term_sendkeys(buf, "\<LeftMouse>")
+  call test_setmouse(2, 16)
+  call term_sendkeys(buf, "\<LeftRelease>y")
+  call term_wait(buf, 50)
+  call term_sendkeys(buf, ":call writefile([@\"], 'Xbuf')\<CR>")
+  call term_wait(buf, 50)
+  call assert_equal('yellow', readfile('Xbuf')[0])
+
+  " Test for selecting text using doubleclick
+  call delete('Xbuf')
+  call test_setmouse(1, 11)
+  call term_sendkeys(buf, "\<LeftMouse>\<LeftRelease>\<LeftMouse>")
+  call test_setmouse(1, 17)
+  call term_sendkeys(buf, "\<LeftRelease>y")
+  call term_wait(buf, 50)
+  call term_sendkeys(buf, ":call writefile([@\"], 'Xbuf')\<CR>")
+  call term_wait(buf, 50)
+  call assert_equal('three four', readfile('Xbuf')[0])
+
+  " Test for selecting a line using triple click
+  call delete('Xbuf')
+  call test_setmouse(3, 2)
+  call term_sendkeys(buf, "\<LeftMouse>\<LeftRelease>\<LeftMouse>\<LeftRelease>\<LeftMouse>\<LeftRelease>y")
+  call term_wait(buf, 50)
+  call term_sendkeys(buf, ":call writefile([@\"], 'Xbuf')\<CR>")
+  call term_wait(buf, 50)
+  call assert_equal("vim emacs sublime nano\n", readfile('Xbuf')[0])
+
+  " Test for selecting a block using qudraple click
+  call delete('Xbuf')
+  call test_setmouse(1, 11)
+  call term_sendkeys(buf, "\<LeftMouse>\<LeftRelease>\<LeftMouse>\<LeftRelease>\<LeftMouse>\<LeftRelease>\<LeftMouse>")
+  call test_setmouse(3, 13)
+  call term_sendkeys(buf, "\<LeftRelease>y")
+  call term_wait(buf, 50)
+  call term_sendkeys(buf, ":call writefile([@\"], 'Xbuf')\<CR>")
+  call term_wait(buf, 50)
+  call assert_equal("ree\nyel\nsub", readfile('Xbuf')[0])
+
+  " Test for extending a selection using right click
+  call delete('Xbuf')
+  call test_setmouse(2, 9)
+  call term_sendkeys(buf, "\<LeftMouse>\<LeftRelease>")
+  call test_setmouse(2, 16)
+  call term_sendkeys(buf, "\<RightMouse>\<RightRelease>y")
+  call term_wait(buf, 50)
+  call term_sendkeys(buf, ":call writefile([@\"], 'Xbuf')\<CR>")
+  call term_wait(buf, 50)
+  call assert_equal("n yellow", readfile('Xbuf')[0])
+
+  " Test for pasting text using middle click
+  call delete('Xbuf')
+  call term_sendkeys(buf, ":let @r='bright '\<CR>")
+  call test_setmouse(2, 22)
+  call term_sendkeys(buf, "\"r\<MiddleMouse>\<MiddleRelease>")
+  call term_wait(buf, 50)
+  call term_sendkeys(buf, ":call writefile([getline(2)], 'Xbuf')\<CR>")
+  call term_wait(buf, 50)
+  call assert_equal("red bright blue", readfile('Xbuf')[0][-15:])
+
+  " cleanup
+  call term_wait(buf)
+  call StopVimInTerminal(buf)
+  let &mouse = save_mouse
+  let &term = save_term
+  let &ttymouse = save_ttymouse
+  let &clipboard = save_clipboard
+  set mousetime&
+  call test_override('no_query_mouse', 0)
+  call delete('Xtest_mouse')
+  call delete('Xbuf')
+endfunc
+
+" Test for modeless selection in a terminal
+func Test_term_modeless_selection()
+  CheckUnix
+  CheckNotGui
+  CheckRunVimInTerminal
+  CheckFeature clipboard_working
+
+  let save_mouse = &mouse
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  call test_override('no_query_mouse', 1)
+  set mouse=a term=xterm ttymouse=sgr mousetime=200
+  set clipboard=autoselectml
+
+  let lines =<< trim END
+    one two three four five
+    red green yellow red blue
+    vim emacs sublime nano
+  END
+  call writefile(lines, 'Xtest_modeless')
+
+  let buf = RunVimInTerminal('Xtest_modeless -n', {})
+  call term_sendkeys(buf, ":set nocompatible\<CR>")
+  call term_sendkeys(buf, ":set mouse=\<CR>")
+  call term_wait(buf)
+  redraw!
+
+  " Test for copying a modeless selection to clipboard
+  let @* = 'clean'
+  " communicating with X server may take a little time
+  sleep 100m
+  call feedkeys(MouseLeftClickCode(2, 3), 'x')
+  call feedkeys(MouseLeftDragCode(2, 11), 'x')
+  call feedkeys(MouseLeftReleaseCode(2, 11), 'x')
+  call assert_equal("d green y", @*)
+
+  " cleanup
+  call term_wait(buf)
+  call StopVimInTerminal(buf)
+  let &mouse = save_mouse
+  let &term = save_term
+  let &ttymouse = save_ttymouse
+  set mousetime& clipboard&
+  call test_override('no_query_mouse', 0)
+  call delete('Xtest_modeless')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
