@@ -3562,7 +3562,7 @@ usage(void)
 #endif
 #if (defined(UNIX) || defined(VMS)) && defined(FEAT_X11)
 # if defined(FEAT_GUI_X11) && !defined(FEAT_GUI_GTK)
-    main_msg(_("-display <display>\tConnect vim to this particular X-server"));
+    main_msg(_("-display <display>\tConnect Vim to this particular X-server"));
 # endif
     main_msg(_("-X\t\t\tDo not connect to X server"));
 #endif
@@ -3599,7 +3599,7 @@ usage(void)
 #   endif
 #  endif
 # endif
-    main_msg(_("-display <display>\tRun vim on <display>"));
+    main_msg(_("-display <display>\tRun Vim on <display>"));
     main_msg(_("-iconic\t\tStart vim iconified"));
     main_msg(_("-background <color>\tUse <color> for the background (also: -bg)"));
     main_msg(_("-foreground <color>\tUse <color> for normal text (also: -fg)"));
@@ -3621,7 +3621,7 @@ usage(void)
     main_msg(_("-font <font>\t\tUse <font> for normal text (also: -fn)"));
     main_msg(_("-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"));
     main_msg(_("-reverse\t\tUse reverse video (also: -rv)"));
-    main_msg(_("-display <display>\tRun vim on <display> (also: --display)"));
+    main_msg(_("-display <display>\tRun Vim on <display> (also: --display)"));
     main_msg(_("--role <role>\tSet a unique role to identify the main window"));
     main_msg(_("--socketid <xid>\tOpen Vim inside another GTK widget"));
     main_msg(_("--echo-wid\t\tMake gvim echo the Window ID on stdout"));

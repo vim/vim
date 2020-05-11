@@ -1403,7 +1403,7 @@ vimerror(Tcl_Interp *interp)
     }
     else if (did_emsg)
     {
-	Tcl_SetResult(interp, _("vim error"), TCL_STATIC);
+	Tcl_SetResult(interp, _("Vim error"), TCL_STATIC);
 	return TCL_ERROR;
     }
     return TCL_OK;

@@ -652,7 +652,7 @@ VimTryEnd(void)
     }
     else if (!did_throw)
 	return (PyErr_Occurred() ? -1 : 0);
-    // Python exception is preferred over vim one; unlikely to occur though
+    // Python exception is preferred over Vim one; unlikely to occur though
     else if (PyErr_Occurred())
     {
 	discard_current_exception();
@@ -1406,7 +1406,7 @@ static struct PyMethodDef VimMethods[] = {
     // name,	    function,			calling,			documentation
     {"command",	    VimCommand,			METH_O,				"Execute a Vim ex-mode command" },
     {"eval",	    VimEval,			METH_VARARGS,			"Evaluate an expression using Vim evaluator" },
-    {"bindeval",    VimEvalPy,			METH_O,				"Like eval(), but returns objects attached to vim ones"},
+    {"bindeval",    VimEvalPy,			METH_O,				"Like eval(), but returns objects attached to Vim ones"},
     {"strwidth",    VimStrwidth,		METH_O,				"Screen string width, counts <Tab> as having width 1"},
     {"chdir",	    (PyCFunction)VimChdir,	METH_VARARGS|METH_KEYWORDS,	"Change directory"},
     {"fchdir",	    (PyCFunction)VimFchdir,	METH_VARARGS|METH_KEYWORDS,	"Change directory"},
@@ -2393,7 +2393,7 @@ ListIndex(ListObject *self, Py_ssize_t index)
     if (li == NULL)
     {
 	// No more suitable format specifications in python-2.3
-	PyErr_VIM_FORMAT(N_("internal error: failed to get vim list item %d"),
+	PyErr_VIM_FORMAT(N_("internal error: failed to get Vim list item %d"),
 		(int) index);
 	return NULL;
     }
@@ -2555,7 +2555,7 @@ ListAssSlice(ListObject *self, Py_ssize_t first,
 	li = list_find(l, (long) first);
 	if (li == NULL)
 	{
-	    PyErr_VIM_FORMAT(N_("internal error: no vim list item %d"),
+	    PyErr_VIM_FORMAT(N_("internal error: no Vim list item %d"),
 		    (int)first);
 	    if (obj != NULL)
 		PyMem_Free(lis);
@@ -4267,7 +4267,7 @@ StringToLine(PyObject *obj)
 
     /*
      * Create a copy of the string, with internal nulls replaced by
-     * newline characters, as is the vim convention.
+     * newline characters, as is the Vim convention.
      */
     save = alloc(len+1);
     if (save == NULL)
@@ -4614,7 +4614,7 @@ SetBufferLineList(
 
 	// Now we may need to insert the remaining new old_len. If we do, we
 	// must free the strings as we finish with them (we can't pass the
-	// responsibility to vim in this case).
+	// responsibility to Vim in this case).
 	if (!PyErr_Occurred())
 	{
 	    while (i < new_len)
@@ -5825,7 +5825,7 @@ run_eval(const char *cmd, typval_T *rettv
     else
     {
 	if (ConvertFromPyObject(run_ret, rettv) == -1)
-	    emsg(_("E859: Failed to convert returned python object to vim value"));
+	    emsg(_("E859: Failed to convert returned python object to a Vim value"));
 	Py_DECREF(run_ret);
     }
     PyErr_Clear();
@@ -6159,7 +6159,7 @@ ConvertFromPyMapping(PyObject *obj, typval_T *tv)
     else
     {
 	PyErr_FORMAT(PyExc_TypeError,
-		N_("unable to convert %s to vim dictionary"),
+		N_("unable to convert %s to a Vim dictionary"),
 		Py_TYPE_NAME(obj));
 	ret = -1;
     }
@@ -6188,7 +6188,7 @@ ConvertFromPySequence(PyObject *obj, typval_T *tv)
     else
     {
 	PyErr_FORMAT(PyExc_TypeError,
-		N_("unable to convert %s to vim list"),
+		N_("unable to convert %s to a Vim list"),
 		Py_TYPE_NAME(obj));
 	ret = -1;
     }
@@ -6333,7 +6333,7 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
     else
     {
 	PyErr_FORMAT(PyExc_TypeError,
-		N_("unable to convert %s to vim structure"),
+		N_("unable to convert %s to a Vim structure"),
 		Py_TYPE_NAME(obj));
 	return -1;
     }
@@ -6575,7 +6575,7 @@ init_structs(void)
     DictionaryType.tp_as_sequence = &DictionaryAsSeq;
     DictionaryType.tp_as_mapping = &DictionaryAsMapping;
     DictionaryType.tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE;
-    DictionaryType.tp_doc = "dictionary pushing modifications to vim structure";
+    DictionaryType.tp_doc = "dictionary pushing modifications to Vim structure";
     DictionaryType.tp_methods = DictionaryMethods;
     DictionaryType.tp_iter = (getiterfunc)DictionaryIter;
     DictionaryType.tp_new = (newfunc)DictionaryConstructor;
@@ -6595,7 +6595,7 @@ init_structs(void)
     ListType.tp_as_sequence = &ListAsSeq;
     ListType.tp_as_mapping = &ListAsMapping;
     ListType.tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE;
-    ListType.tp_doc = "list pushing modifications to vim structure";
+    ListType.tp_doc = "list pushing modifications to Vim structure";
     ListType.tp_methods = ListMethods;
     ListType.tp_iter = (getiterfunc)ListIter;
     ListType.tp_new = (newfunc)ListConstructor;
@@ -6614,7 +6614,7 @@ init_structs(void)
     FunctionType.tp_dealloc = (destructor)FunctionDestructor;
     FunctionType.tp_call = (ternaryfunc)FunctionCall;
     FunctionType.tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_BASETYPE;
-    FunctionType.tp_doc = "object that calls vim function";
+    FunctionType.tp_doc = "object that calls Vim function";
     FunctionType.tp_methods = FunctionMethods;
     FunctionType.tp_repr = (reprfunc)FunctionRepr;
     FunctionType.tp_new = (newfunc)FunctionConstructor;
