@@ -1903,6 +1903,50 @@ luaV_type(lua_State *L)
     return 1;
 }
 
+    static int
+luaV_call(lua_State *L)
+{
+    int argc = lua_gettop(L) - 1;
+
+    if (argc > MAX_FUNC_ARGS)
+	return luaL_error(L, "Function called with too many arguments");
+
+    size_t funcname_len;
+    char_u *funcname = (char_u *)luaL_checklstring(L, 1, &funcname_len);
+
+    char *error = NULL;
+
+    typval_T rettv;
+    typval_T argv[MAX_FUNC_ARGS + 1];
+
+    int i = 0;
+    for(; i < argc; i++) {
+	if (luaV_totypval(L, i + 2, &argv[i]) == FAIL) {
+	    error = "lua: cannot convert value";
+	    goto free_vim_args;
+	}
+    }
+
+    argv[argc].v_type = VAR_UNKNOWN;
+
+    if (call_vim_function(funcname, argc, argv, &rettv) == FAIL) {
+	error = "lua: call_vim_function failed";
+	goto free_vim_args;
+    }
+
+    luaV_pushtypval(L, &rettv);
+    clear_tv(&rettv);
+
+free_vim_args:
+    while (i > 0)
+	clear_tv(&argv[--i]);
+
+    if (error == NULL)
+	return 1;
+    else
+	return luaL_error(L, error);
+}
+
 static const luaL_Reg luaV_module[] = {
     {"command", luaV_command},
     {"eval", luaV_eval},
@@ -1916,6 +1960,7 @@ static const luaL_Reg luaV_module[] = {
     {"window", luaV_window},
     {"open", luaV_open},
     {"type", luaV_type},
+    {"call", luaV_call},
     {NULL, NULL}
 };
 
