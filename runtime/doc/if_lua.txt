@@ -195,6 +195,11 @@ Vim evaluation and command execution, and others.
 
 	vim.beep()		Beeps.
 
+	vim.timer_stop({timer}) Stop a timer. (see |timer_stop|)
+				{timer} is an ID returned by timer_start().
+
+				{only available when compiled with the |+timers| feature}
+
 	vim.open({fname})	Opens a new buffer for file {fname} and
 				returns it. Note that the buffer is not set as
 				current.

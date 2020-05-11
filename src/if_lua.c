@@ -1903,6 +1903,28 @@ luaV_type(lua_State *L)
     return 1;
 }
 
+#ifdef FEAT_TIMERS
+    static int
+luaV_timer_stop(lua_State *L)
+{
+    if (lua_gettop(L) != 1)
+	return luaL_error(L, "lua: 1 argugment required");
+
+    if (!lua_isnumber(L, 1))
+	return luaL_error(L, "lua: invalid number");
+
+    typval_T tv;
+    tv.v_type = VAR_NUMBER;
+    tv.vval.v_number = (varnumber_T) lua_tointeger(L, 1);
+
+    f_timer_stop(&tv, NULL);
+
+    clear_tv(&tv);
+
+    return 0;
+}
+#endif
+
 static const luaL_Reg luaV_module[] = {
     {"command", luaV_command},
     {"eval", luaV_eval},
@@ -1916,6 +1938,9 @@ static const luaL_Reg luaV_module[] = {
     {"window", luaV_window},
     {"open", luaV_open},
     {"type", luaV_type},
+#ifdef FEAT_TIMERS
+    {"timer_stop", luaV_timer_stop},
+#endif
     {NULL, NULL}
 };
 
