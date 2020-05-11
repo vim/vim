@@ -24,7 +24,7 @@ function GetSshconfigIndent(lnum)
   let curr_line = getline(a:lnum)
   if curr_line =~? '^\s*\(host\|match\)\s'
     return 0
-  elseif curr_line == '' && prev_line =~? '^\s*\(host\|match\)\s'
+  elseif prev_line =~? '^\s*\(host\|match\)\s'
     return sw
   else
     return -1
