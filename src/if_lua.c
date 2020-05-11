@@ -568,8 +568,17 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	    break;
 	case LUA_TNUMBER:
 #ifdef FEAT_FLOAT
-	    tv->v_type = VAR_FLOAT;
-	    tv->vval.v_float = (float_T) lua_tonumber(L, pos);
+	{
+	    const lua_Number n = lua_tonumber(L, pos);
+	    if (n > (lua_Number)INT64_MAX || n < (lua_Number)INT64_MIN
+		|| ((lua_Number)((varnumber_T)n)) != n) {
+		tv->v_type = VAR_FLOAT;
+		tv->vval.v_float = (float_T)n;
+	    } else {
+		tv->v_type = VAR_NUMBER;
+		tv->vval.v_number = (varnumber_T)n;
+	    }
+	}
 #else
 	    tv->v_type = VAR_NUMBER;
 	    tv->vval.v_number = (varnumber_T) lua_tointeger(L, pos);
