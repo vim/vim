@@ -2042,6 +2042,17 @@ luaV_setref(lua_State *L)
     return 1;
 }
 
+#define LUA_VIM_FN_CODE \
+    "vim.fn = setmetatable({}, {"\
+    "  __index = function (t, key)"\
+    "    local function _fn(...)"\
+    "      return vim.call(key, ...)"\
+    "    end"\
+    "    t[key] = _fn"\
+    "    return _fn"\
+    "  end"\
+    "})"
+
     static int
 luaopen_vim(lua_State *L)
 {
@@ -2097,6 +2108,8 @@ luaopen_vim(lua_State *L)
     lua_pushvalue(L, 1); // cache table
     luaV_openlib(L, luaV_module, 1);
     lua_setglobal(L, LUAVIM_NAME);
+    // custom code
+    luaL_dostring(L, LUA_VIM_FN_CODE);
     return 0;
 }
 
