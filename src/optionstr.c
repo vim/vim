@@ -1157,8 +1157,11 @@ did_set_string_option(
 
 	if (STRCMP(curbuf->b_p_key, oldval) != 0)
 	    // Need to update the swapfile.
+	{
 	    ml_set_crypt_key(curbuf, oldval,
 			      *curbuf->b_p_cm == NUL ? p_cm : curbuf->b_p_cm);
+	    changed_internal();
+	}
     }
 
     else if (gvarp == &p_cm)
