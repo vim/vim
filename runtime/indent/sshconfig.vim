@@ -10,7 +10,7 @@ let b:did_indent = 1
 
 setlocal autoindent
 setlocal indentexpr=GetSshconfigIndent(v:lnum)
-setlocal indentkeys=o,O,*<Return>,=~host\ ,=~match\ ,0#,!^F
+setlocal indentkeys=o,O,*<Return>,0=~host\ ,0=~match\ ,0#,!^F
 
 let b:undo_indent = "setlocal autoindent< indentexpr< indentkeys<"
 
