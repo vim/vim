@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 May 06
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 May 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -134,7 +134,7 @@ Four phases when loading a Vim9 script ~
 
 In legacy script the functions are created when encountered, but parsed only
 when used.  This allows for defining functions in any order and having them
-call each other: >
+call each other, so long as the function is defined when it is called: >
 	func One()
 	   call Two()
 	endfunc
@@ -145,22 +145,25 @@ call each other: >
 	endfunc
 	call One()
 
-In Vim9 script the functions are compiled.  If using the same functions as the
-above example it is not possible to compile function One without knowing that
-function Two exists. Or this would require a runtime check, which is slow and
-does not allow for compile time type checking.
+In Vim9 script the functions are compiled.  When using the same functions as
+the above example it is not possible to compile function One without knowing
+that function Two exists. Or this would require a runtime check, which is slow
+and does not allow for compile time type checking.
 
 When sourcing a Vim9 script this happens in four phases:
 1. Cleanup: If the script was sourced before all script-local variables,
    imports and functions are deleted.
-2. Discovery: The script is read and encountered functions, imports and
-   variables are recognized.  The type is parsed.  Variable initializers that
-   are a constant are evaluated, this can give the type of the variable.
+2. Discovery: The script is read and declarations of functions, imports and
+   variables are recognized and the type is parsed.  Variable initializers
+   that are a constant are evaluated, this can also give the type of the
+   variable.
 3. Compilation: Functions are compiled.  The script-local functions, imports
-   and variables from the discovery phase are recognized and types are
-   checked.
-4. Execution: the commands in the script are executed. Functions are skipped
-   over.  Variable initializers are evaluated, unless they are a constant.
+   and variables from the discovery phase are found and types are checked.
+4. Execution: the commands in the script are executed, top to bottom.
+   Functions are skipped over, they do do not need to be processed again.
+   Variable initializers are evaluated when encountered.  Note that if a
+   function called earlier has set the value this will be over-written. It is
+   best to declare variables before where they are used to avoid confusion.
 
 The result is that items defined at the script level can be used anywhere in
 the script. This allows for putting the main function at the top: >

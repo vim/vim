@@ -6127,6 +6127,7 @@ edit-files	editing.txt	/*edit-files*
 edit-intro	editing.txt	/*edit-intro*
 edit-no-break	usr_25.txt	/*edit-no-break*
 edit-paragraph-join	usr_25.txt	/*edit-paragraph-join*
+edit-window	windows.txt	/*edit-window*
 editing.txt	editing.txt	/*editing.txt*
 efm-%>	quickfix.txt	/*efm-%>*
 efm-entries	quickfix.txt	/*efm-entries*

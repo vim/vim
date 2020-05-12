@@ -2448,9 +2448,6 @@ msgstr "neznáma voµba (vimOption)"
 msgid "keyboard interrupt"
 msgstr "preru¹enie z klávesnice"
 
-msgid "vim error"
-msgstr "chyba Vim"
-
 msgid "cannot create buffer/window command: object is being deleted"
 msgstr "nedá sa vytvori» príkaz bufferu/okna: objekt bude vymazaný"
 
@@ -2740,8 +2737,8 @@ msgstr "-W <skript>\t\tUlo¾í v¹etky napísané príkazy do súboru <skript>"
 msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\tÚprava za¹ifrovaných súborov"
 
-msgid "-display <display>\tConnect vim to this particular X-server"
-msgstr "-display <displej>\tPripojí vim na príslu¹ný X-server"
+msgid "-display <display>\tConnect Vim to this particular X-server"
+msgstr "-display <displej>\tPripojí Vim na príslu¹ný X-server"
 
 msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\tNepripojí sa k X serveru"
@@ -2803,11 +2800,11 @@ msgstr ""
 "\n"
 "Argumenty dostupné pre gvim (Athena verzia):\n"
 
-msgid "-display <display>\tRun vim on <display>"
-msgstr "-display <displej>\tSpustí vim na <displej>"
+msgid "-display <display>\tRun Vim on <display>"
+msgstr "-display <displej>\tSpustí Vim na <displej>"
 
-msgid "-iconic\t\tStart vim iconified"
-msgstr "-iconic\t\tSpustí vim minimalizované"
+msgid "-iconic\t\tStart Vim iconified"
+msgstr "-iconic\t\tSpustí Vim minimalizované"
 
 msgid "-name <name>\t\tUse resource as if vim was <name>"
 msgstr "-name <názov>\t\tPou¾ije resource ako by vim mal <názov>"
@@ -2872,8 +2869,8 @@ msgstr ""
 "\n"
 "Argumenty dostupné pre gvim (GTK+ verzia):\n"
 
-msgid "-display <display>\tRun vim on <display> (also: --display)"
-msgstr "-display <displej>\tSpustí vim na <displej> (tie¾ --display)"
+msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgstr "-display <displej>\tSpustí Vim na <displej> (tie¾ --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"
 msgstr "-role <rola>\tNastaví unikátnu rolu pre identifikáciu hlavného okna"
@@ -2897,8 +2894,8 @@ msgstr "-tip\t\t\tZobraz tip pri ¹tarte"
 msgid "-notip\t\tDisable the tip dialog"
 msgstr "-notip\t\tNezobrazuj tip pri ¹tarte"
 
-msgid "--display <display>\tRun vim on <display>"
-msgstr "-display <displej>\tSpustí vim na <displej>"
+msgid "--display <display>\tRun Vim on <display>"
+msgstr "-display <displej>\tSpustí Vim na <displej>"
 
 msgid "-P <parent title>\tOpen Vim inside parent application"
 msgstr "-P <titulok rodièa>\tOtvor Vim vnútri materskej aplikácie"

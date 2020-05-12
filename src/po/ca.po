@@ -2760,9 +2760,6 @@ msgstr "opció del Vim desconeguda"
 msgid "keyboard interrupt"
 msgstr "interrupció de teclat"
 
-msgid "vim error"
-msgstr "error de vim"
-
 msgid "cannot create buffer/window command: object is being deleted"
 msgstr "no es pot crear l'ordre Tcl: l'objecte està sent eliminant"
 
@@ -3080,7 +3077,7 @@ msgstr "-W <script>\t\tEscriu totes les ordres entrades al fitxer <script>"
 msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\tEdita fitxers amb xifrat"
 
-msgid "-display <display>\tConnect vim to this particular X-server"
+msgid "-display <display>\tConnect Vim to this particular X-server"
 msgstr "-display <pantalla>\tConnecta el Vim a un servidor X particular"
 
 msgid "-X\t\t\tDo not connect to X server"
@@ -3151,10 +3148,10 @@ msgstr ""
 "\n"
 "Arguments reconeguts pel gvim (versió Athena):\n"
 
-msgid "-display <display>\tRun vim on <display>"
-msgstr "-display <pantalla>\tExecuta vim a <pantalla>"
+msgid "-display <display>\tRun Vim on <display>"
+msgstr "-display <pantalla>\tExecuta Vim a <pantalla>"
 
-msgid "-iconic\t\tStart vim iconified"
+msgid "-iconic\t\tStart Vim iconified"
 msgstr "-iconic\t\tComença iconificat"
 
 msgid "-background <color>\tUse <color> for the background (also: -bg)"
@@ -3200,14 +3197,14 @@ msgstr ""
 "\n"
 "Arguments reconeguts pel gvim (versió GTK+):\n"
 
-msgid "-display <display>\tRun vim on <display> (also: --display)"
-msgstr "-display <pantalla>\tExecuta vim a <pantalla> (també: --display)"
+msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgstr "-display <pantalla>\tExecuta Vim a <pantalla> (també: --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"
 msgstr "--role <rol>\t\tUsa un únic rol per a identificar la finestra principal"
 
 msgid "--socketid <xid>\tOpen Vim inside another GTK widget"
-msgstr "--socketid <xid>\tObre el vim dins d'un altre giny GTK"
+msgstr "--socketid <xid>\tObre el Vim dins d'un altre giny GTK"
 
 msgid "--echo-wid\t\tMake gvim echo the Window ID on stdout"
 msgstr "--echo-wid\t\tEscriu el Window ID a la sortida estàndard"
@@ -6774,8 +6771,8 @@ msgid "list index out of range"
 msgstr "índex de llista fora de l'interval"
 
 #, c-format
-msgid "internal error: failed to get vim list item %d"
-msgstr "error intern: error en obtenir l'element %d de la llista vim"
+msgid "internal error: failed to get Vim list item %d"
+msgstr "error intern: error en obtenir l'element %d de la llista Vim"
 
 msgid "slice step cannot be zero"
 msgstr "l'increment de l'interval no pot ser zero"
@@ -6785,8 +6782,8 @@ msgid "attempt to assign sequence of size greater than %d to extended slice"
 msgstr "intent d'assignar una seqüència de més de %d elements a un interval estès"
 
 #, c-format
-msgid "internal error: no vim list item %d"
-msgstr "error intern: no existeix l'element %d a la llista vim"
+msgid "internal error: no Vim list item %d"
+msgstr "error intern: no existeix l'element %d a la llista Vim"
 
 msgid "internal error: not enough list items"
 msgstr "error intern: no hi ha prou elements a la llista"
@@ -6894,19 +6891,19 @@ msgstr "error en executar el codi"
 msgid "E858: Eval did not return a valid python object"
 msgstr "E858: Eval no ha retornat un objecte Python vàlid"
 
-msgid "E859: Failed to convert returned python object to vim value"
+msgid "E859: Failed to convert returned python object to a Vim value"
 msgstr "E859: Error en convertir l'objecte Python retornat a un valor Vim"
 
 #, c-format
-msgid "unable to convert %s to vim dictionary"
+msgid "unable to convert %s to a Vim dictionary"
 msgstr "error en convertir %s en un diccionari Vim"
 
 #, c-format
-msgid "unable to convert %s to vim list"
+msgid "unable to convert %s to a Vim list"
 msgstr "error en convertir %s en una llista Vim"
 
 #, c-format
-msgid "unable to convert %s to vim structure"
+msgid "unable to convert %s to a Vim structure"
 msgstr "error en convertir %s en una estructura Vim"
 
 msgid "internal error: NULL reference passed"

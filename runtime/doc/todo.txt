@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 May 07
+*todo.txt*      For Vim version 8.2.  Last change: 2020 May 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,23 +38,22 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Patch to test TERM signal. (Dominique, #6055)
+
+Include src/po/vim.pot
+
 Vim9 script:
-Big changes, may need design:
-- Make closures work:
+Make closures work:
   - call closure from not compiled context
   - Create closure in a loop.  Need to make a list of them.
-- Having constant expr evaluation separate does not scale.
-  First parse the expression, then simplify, then generate code.
-- At the vim9 script level: Allow using a function that is defined later.
-  Requires compiling functions only when the whole script has been sourced.
-  Like Javascript "hoisting", but only at the script level:
-  0. If script was sourced before, clear all script-local functions and
-     variables. (variables still to be implemented)
-  1. Discovery phase: Read the file to find all functions, variable
-     declarations and imports If a variable has a constant expression we get
-     the type, otherwise it will be "any".  Follow imports recursively.
-  2. Compilation phase: compile :def function bodies, using declared types
-  3. Execution phase: Execute imports when encountered. (skip over functions)
+Forward declarations:
+  - Cleanup when sourcing a script again: all script-local variables, imports
+    and functions are deleted.
+  - make sure only constants in declarations are executed, no function calls.
+  - Declare a variable at script level without an assignment.
+	let var: string
+    Error without a type or assignment
+	let var  # error!
 Making everything work:
 - Test that a script-local function in Vim9 script cannot be deleted.
 - Test that a function defined inside a :def function is local to that
@@ -62,7 +61,13 @@ Making everything work:
   defined.
 - Check that when using a user function name without prefix, it does not find
   a global function.  Prefixing g: is required.
-- Compile let [var, var] = expr
+- Compile: let [var, var] = expr
+- Compile: for [key, value] in items(map)
+- Assignment to dict doesn't work:
+      let ret: dict<string> = #{}
+      ret[i] = string(i)
+- Appending to dict item doesn't work:
+    let d[i] ..= value
 - Compile replacement of :s command: s/pat/\=expr/
 - Compile redir to local variable: var_redir_start().
 - Compile builtin functions that access local variables:
@@ -79,6 +84,7 @@ Making everything work:
 - expandcmd() with `=expr` in filename uses legacy expression.
 - eval_expr() in ex_cexpr()
 - eval_expr() call in dbg_parsearg() and debuggy_find()
+- Make "true" and "false" work in vim9script
 New syntax and functionality:
 Improve error checking:
 - "echo Func()" is an error if Func() does not return anything.
@@ -254,13 +260,13 @@ Patch for the Haiku port: #5961
 
 Patch to add Turkish manual. (Emir Sarı, #5641)
 
+Patch to add lua sleep function. (Prabir Shrestha, #6057)
+Alternative: use vim.call and vim.fn: #6063
+
 Patch to add getmarklist() (Yegappan, #6032)
 
 Patch to support different color for undercurl in cterm.
 (Timur Celik, #6011)
-
-When SIGTSTP is ignored, don't let CTRL-Z suspend Vim? (Kurtis Rader, #5990)
-Fixed by patch #6026.  Makes tests fail...
 
 Patch to support cindent option to handle pragmas differently.
 (Max Rumpf, #5468)
@@ -293,6 +299,10 @@ Patch to delete BeOS code. (#5817)  Anyone who wants to keep it?
 
 With bash ":make" does not set v:shell_error.  Possible solution: set
 'shellpipe' to "2>&1| tee %s; exit ${PIPESTATUS[0]}"  #5994
+
+When changing the crypt key the buffer should be considered modified.
+Like when changing 'fileformat'.  Save the old key in save_file_ff().
+(Ninu-Ciprian Marginean)
 
 Strange sequence of BufWipeout and BufNew events while doing omni-complete.
 (Paul Jolly, #5656)

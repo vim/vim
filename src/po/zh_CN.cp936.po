@@ -2569,9 +2569,6 @@ msgstr "未知的 vim 选项"
 msgid "keyboard interrupt"
 msgstr "键盘中断"
 
-msgid "vim error"
-msgstr "vim 错误"
-
 msgid "cannot create buffer/window command: object is being deleted"
 msgstr "无法创建缓冲区/窗口命令: 对象将被删除"
 
@@ -2855,8 +2852,8 @@ msgstr "-W <scriptout>\t将所有输入的命令写入到文件 <scriptout>"
 msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\t编辑加密的文件"
 
-msgid "-display <display>\tConnect vim to this particular X-server"
-msgstr "-display <display>\t将 vim 与指定的 X-server 连接"
+msgid "-display <display>\tConnect Vim to this particular X-server"
+msgstr "-display <display>\t将 Vim 与指定的 X-server 连接"
 
 msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\t不连接到 X Server"
@@ -2921,10 +2918,10 @@ msgstr ""
 "\n"
 "gvim (Athena 版本) 可识别的参数:\n"
 
-msgid "-display <display>\tRun vim on <display>"
+msgid "-display <display>\tRun Vim on <display>"
 msgstr "-display <display>\t在 <display> 上运行 vim"
 
-msgid "-iconic\t\tStart vim iconified"
+msgid "-iconic\t\tStart Vim iconified"
 msgstr "-iconic\t\t启动后最小化"
 
 msgid "-name <name>\t\tUse resource as if vim was <name>"
@@ -2989,8 +2986,8 @@ msgstr ""
 "\n"
 "gvim (GTK+ 版本) 可识别的参数:\n"
 
-msgid "-display <display>\tRun vim on <display> (also: --display)"
-msgstr "-display <display>\t在 <display> 上运行 vim (也可用 --display)"
+msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgstr "-display <display>\t在 <display> 上运行 Vim (也可用 --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"
 msgstr "--role <role>\t设置用于区分主窗口的窗口角色名"
