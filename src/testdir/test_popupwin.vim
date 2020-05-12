@@ -2425,8 +2425,16 @@ func Test_popupwin_terminal_buffer()
   call assert_equal(winnr(), winnr('k'))
   call assert_equal(winnr(), winnr('h'))
   call assert_equal(winnr(), winnr('l'))
+
   " Cannot quit while job is running
   call assert_fails('call feedkeys("\<C-W>:quit\<CR>", "xt")', 'E948:')
+
+  " Cannot enter Terminal-Normal mode.
+  call feedkeys("xxx\<C-W>N", 'xt')
+  call assert_fails('call feedkeys("gf", "xt")', 'E863:')
+  call feedkeys("a\<C-U>", 'xt')
+
+  " Exiting shell closes popup window
   call feedkeys("exit\<CR>", 'xt')
   " Wait for shell to exit
   sleep 100m

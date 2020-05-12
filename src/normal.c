@@ -4169,6 +4169,10 @@ nv_gotofile(cmdarg_T *cap)
 	clearop(cap->oap);
 	return;
     }
+#ifdef FEAT_PROP_POPUP
+    if (ERROR_IF_TERM_POPUP_WINDOW)
+	return;
+#endif
 
     ptr = grab_file_name(cap->count1, &lnum);
 
