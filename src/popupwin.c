@@ -2531,8 +2531,9 @@ error_if_popup_window(int also_with_term UNUSED)
 /*
  * Close a popup window by Window-id.
  * Does not invoke the callback.
+ * Return OK if the popup was closed, FAIL otherwise.
  */
-    void
+    int
 popup_close(int id)
 {
     win_T	*wp;
@@ -2546,25 +2547,27 @@ popup_close(int id)
 	    if (wp == curwin)
 	    {
 		error_for_popup_window();
-		return;
+		return FAIL;
 	    }
 	    if (prev == NULL)
 		first_popupwin = wp->w_next;
 	    else
 		prev->w_next = wp->w_next;
 	    popup_free(wp);
-	    return;
+	    return OK;
 	}
 
     // go through tab-local popups
     FOR_ALL_TABPAGES(tp)
-	popup_close_tabpage(tp, id);
+	if (popup_close_tabpage(tp, id) == OK)
+	    return OK;
+    return FAIL;
 }
 
 /*
  * Close a popup window with Window-id "id" in tabpage "tp".
  */
-    void
+    int
 popup_close_tabpage(tabpage_T *tp, int id)
 {
     win_T	*wp;
@@ -2577,15 +2580,16 @@ popup_close_tabpage(tabpage_T *tp, int id)
 	    if (wp == curwin)
 	    {
 		error_for_popup_window();
-		return;
+		return FAIL;
 	    }
 	    if (prev == NULL)
 		*root = wp->w_next;
 	    else
 		prev->w_next = wp->w_next;
 	    popup_free(wp);
-	    return;
+	    return OK;
 	}
+    return FAIL;
 }
 
     void
@@ -2594,9 +2598,11 @@ close_all_popups(void)
     if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
     while (first_popupwin != NULL)
-	popup_close(first_popupwin->w_id);
+	if (popup_close(first_popupwin->w_id) == FAIL)
+	    return;
     while (curtab->tp_first_popupwin != NULL)
-	popup_close(curtab->tp_first_popupwin->w_id);
+	if (popup_close(curtab->tp_first_popupwin->w_id) == FAIL)
+	    return;
 }
 
 /*
