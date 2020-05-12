@@ -3600,7 +3600,7 @@ usage(void)
 #  endif
 # endif
     main_msg(_("-display <display>\tRun Vim on <display>"));
-    main_msg(_("-iconic\t\tStart vim iconified"));
+    main_msg(_("-iconic\t\tStart Vim iconified"));
     main_msg(_("-background <color>\tUse <color> for the background (also: -bg)"));
     main_msg(_("-foreground <color>\tUse <color> for normal text (also: -fg)"));
     main_msg(_("-font <font>\t\tUse <font> for normal text (also: -fn)"));
