@@ -2422,12 +2422,15 @@ endfunc
 func Test_popupwin_terminal_buffer()
   CheckFeature terminal
   CheckUnix
+  " Starting a terminal to run a shell in is considered flaky.
+  let g:test_is_flaky = 1
 
   let origwin = win_getid()
   let ptybuf = term_start(&shell, #{hidden: 1})
   let winid = popup_create(ptybuf, #{minwidth: 40, minheight: 10})
   " Wait for shell to start
-  sleep 200m
+  call WaitForAssert({-> assert_equal("run", job_status(term_getjob(ptybuf)))})
+  sleep 100m
   " Check this doesn't crash
   call assert_equal(winnr(), winnr('j'))
   call assert_equal(winnr(), winnr('k'))
