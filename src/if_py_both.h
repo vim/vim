@@ -785,7 +785,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 	    return NULL;
 	}
 
-	range_list_materialize(list);
+	CHECK_LIST_MATERIALIZE(list);
 	FOR_ALL_LIST_ITEMS(list, curr)
 	{
 	    if (!(newObj = VimToPython(&curr->li_tv, depth + 1, lookup_dict)))
@@ -2256,7 +2256,7 @@ ListNew(PyTypeObject *subtype, list_T *list)
 	return NULL;
     self->list = list;
     ++list->lv_refcount;
-    range_list_materialize(list);
+    CHECK_LIST_MATERIALIZE(list);
 
     pyll_add((PyObject *)(self), &self->ref, &lastlist);
 
@@ -2824,7 +2824,7 @@ ListIter(ListObject *self)
 	return NULL;
     }
 
-    range_list_materialize(l);
+    CHECK_LIST_MATERIALIZE(l);
     list_add_watch(l, &lii->lw);
     lii->lw.lw_item = l->lv_first;
     lii->list = l;
@@ -3021,7 +3021,7 @@ FunctionConstructor(PyTypeObject *subtype, PyObject *args, PyObject *kwargs)
 		return NULL;
 	    }
 	    argslist = argstv.vval.v_list;
-	    range_list_materialize(argslist);
+	    CHECK_LIST_MATERIALIZE(argslist);
 
 	    argc = argslist->lv_len;
 	    if (argc != 0)

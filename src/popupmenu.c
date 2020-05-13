@@ -1318,7 +1318,7 @@ ui_post_balloon(char_u *mesg, list_T *list)
 	balloon_array = ALLOC_CLEAR_MULT(pumitem_T, list->lv_len);
 	if (balloon_array == NULL)
 	    return;
-	range_list_materialize(list);
+	CHECK_LIST_MATERIALIZE(list);
 	for (idx = 0, li = list->lv_first; li != NULL; li = li->li_next, ++idx)
 	{
 	    char_u *text = tv_get_string_chk(&li->li_tv);

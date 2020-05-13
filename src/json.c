@@ -265,7 +265,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 
 		    l->lv_copyID = copyID;
 		    ga_append(gap, '[');
-		    range_list_materialize(l);
+		    CHECK_LIST_MATERIALIZE(l);
 		    for (li = l->lv_first; li != NULL && !got_int; )
 		    {
 			if (json_encode_item(gap, &li->li_tv, copyID,

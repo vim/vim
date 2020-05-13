@@ -1449,7 +1449,7 @@ eval_for_line(
 		else
 		{
 		    // Need a real list here.
-		    range_list_materialize(l);
+		    CHECK_LIST_MATERIALIZE(l);
 
 		    // No need to increment the refcount, it's already set for
 		    // the list being used in "tv".

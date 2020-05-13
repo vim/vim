@@ -2399,7 +2399,7 @@ channel_get_json(
 	list_T	    *l = item->jq_value->vval.v_list;
 	typval_T    *tv;
 
-	range_list_materialize(l);
+	CHECK_LIST_MATERIALIZE(l);
 	tv = &l->lv_first->li_tv;
 
 	if ((without_callback || !item->jq_no_callback)
@@ -5302,7 +5302,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		    return FAIL;
 		}
 
-		range_list_materialize(item->vval.v_list);
+		CHECK_LIST_MATERIALIZE(item->vval.v_list);
 		li = item->vval.v_list->lv_first;
 		for (; li != NULL && n < 16; li = li->li_next, n++)
 		{
@@ -5729,7 +5729,7 @@ win32_build_cmd(list_T *l, garray_T *gap)
     listitem_T  *li;
     char_u	*s;
 
-    range_list_materialize(l);
+    CHECK_LIST_MATERIALIZE(l);
     FOR_ALL_LIST_ITEMS(l, li)
     {
 	s = tv_get_string_chk(&li->li_tv);

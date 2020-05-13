@@ -1718,7 +1718,7 @@ func_call(
     int		argc = 0;
     int		r = 0;
 
-    range_list_materialize(l);
+    CHECK_LIST_MATERIALIZE(l);
     FOR_ALL_LIST_ITEMS(l, item)
     {
 	if (argc == MAX_FUNC_ARGS - (partial == NULL ? 0 : partial->pt_argc))

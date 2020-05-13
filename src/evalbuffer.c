@@ -183,7 +183,7 @@ set_buffer_lines(
 		rettv->vval.v_number = 1;	// FAIL
 	    goto done;
 	}
-	range_list_materialize(l);
+	CHECK_LIST_MATERIALIZE(l);
 	li = l->lv_first;
     }
     else

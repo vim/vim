@@ -98,7 +98,7 @@ set_padding_border(dict_T *dict, int *array, char *name, int max_val)
 		array[i] = 1;
 	    if (list != NULL)
 	    {
-		range_list_materialize(list);
+		CHECK_LIST_MATERIALIZE(list);
 		for (i = 0, li = list->lv_first; i < 4 && i < list->lv_len;
 							 ++i, li = li->li_next)
 		{
@@ -516,7 +516,7 @@ handle_moved_argument(win_T *wp, dictitem_T *di, int mousemoved)
 	int	    mincol;
 	int	    maxcol;
 
-	range_list_materialize(l);
+	CHECK_LIST_MATERIALIZE(l);
 	li = l->lv_first;
 	if (l->lv_len == 3)
 	{
@@ -756,7 +756,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    listitem_T	*li;
 	    int		i;
 
-	    range_list_materialize(list);
+	    CHECK_LIST_MATERIALIZE(list);
 	    for (i = 0, li = list->lv_first; i < 4 && i < list->lv_len;
 						     ++i, li = li->li_next)
 	    {
@@ -790,7 +790,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 
 	    if (list != NULL)
 	    {
-		range_list_materialize(list);
+		CHECK_LIST_MATERIALIZE(list);
 		for (i = 0, li = list->lv_first; i < 8 && i < list->lv_len;
 							 ++i, li = li->li_next)
 		{
@@ -845,7 +845,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 		    break;
 		}
 		else
-		    range_list_materialize(li->li_tv.vval.v_list);
+		    CHECK_LIST_MATERIALIZE(li->li_tv.vval.v_list);
 	    }
 	}
 	if (ok)

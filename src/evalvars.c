@@ -863,7 +863,7 @@ ex_let_vars(
 	return FAIL;
     }
 
-    range_list_materialize(l);
+    CHECK_LIST_MATERIALIZE(l);
     item = l->lv_first;
     while (*arg != ']')
     {
