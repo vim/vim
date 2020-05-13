@@ -715,6 +715,7 @@ static funcentry_T global_functions[] =
     {"popup_getoptions", 1, 1, FEARG_1,	  ret_dict_any,	PROP_FUNC(f_popup_getoptions)},
     {"popup_getpos",	1, 1, FEARG_1,	  ret_dict_any,	PROP_FUNC(f_popup_getpos)},
     {"popup_hide",	1, 1, FEARG_1,	  ret_void,	PROP_FUNC(f_popup_hide)},
+    {"popup_list",	0, 0, 0,	  ret_list_number, PROP_FUNC(f_popup_list)},
     {"popup_locate",	2, 2, 0,	  ret_number,	PROP_FUNC(f_popup_locate)},
     {"popup_menu",	2, 2, FEARG_1,	  ret_number,	PROP_FUNC(f_popup_menu)},
     {"popup_move",	2, 2, FEARG_1,	  ret_void,	PROP_FUNC(f_popup_move)},

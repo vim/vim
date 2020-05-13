@@ -188,8 +188,9 @@ func RunTheTest(test)
   au!
   au SwapExists * call HandleSwapExists()
 
-  " Close any stray popup windows.
+  " Check for and close any stray popup windows.
   if has('popupwin')
+    call assert_equal([], popup_list())
     call popup_clear(1)
   endif
 

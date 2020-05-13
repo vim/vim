@@ -428,7 +428,7 @@ func Test_popup_nospace()
   call delete('XtestPopupNospace')
 endfunc
 
-func Test_popup_firstline()
+func Test_popup_firstline_dump()
   CheckScreendump
 
   let lines =<< trim END
@@ -449,7 +449,9 @@ func Test_popup_firstline()
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestPopupFirstline')
+endfunc
 
+func Test_popup_firstline()
   let winid = popup_create(['1111', '222222', '33333', '44444'], #{
 	\ maxheight: 2,
 	\ firstline: 3,
@@ -491,6 +493,7 @@ func Test_popup_firstline()
   call popup_setoptions(winid, #{line: 3})
   call assert_equal(0, popup_getoptions(winid).firstline)
   call assert_equal(10, popup_getpos(winid).firstline)
+  call popup_close(winid)
 
   " CTRL-D scrolls down half a page
   let winid = popup_create(['xxx']->repeat(50), #{
@@ -826,10 +829,13 @@ func Test_popup_in_tab()
 endfunc
 
 func Test_popup_valid_arguments()
+  call assert_equal(0, len(popup_list()))
+
   " Zero value is like the property wasn't there
   let winid = popup_create("text", #{col: 0})
   let pos = popup_getpos(winid)
   call assert_inrange(&columns / 2 - 1, &columns / 2 + 1, pos.col)
+  call assert_equal([winid], popup_list())
   call popup_clear()
 
   " using cursor column has minimum value of 1
@@ -1619,12 +1625,14 @@ func Test_popup_empty()
   let pos = popup_getpos(winid)
   call assert_equal(5, pos.width)
   call assert_equal(5, pos.height)
+  call popup_close(winid)
 
   let winid = popup_create([], #{border: []})
   redraw
   let pos = popup_getpos(winid)
   call assert_equal(3, pos.width)
   call assert_equal(3, pos.height)
+  call popup_close(winid)
 endfunc
 
 func Test_popup_never_behind()
@@ -3323,8 +3331,9 @@ func Test_popupwin_atcursor_far_right()
   set signcolumn=yes
   call setline(1, repeat('=', &columns))
   normal! ggg$
-  call popup_atcursor(repeat('x', 500), #{moved: 'any', border: []})
+  let winid = popup_atcursor(repeat('x', 500), #{moved: 'any', border: []})
 
+  call popup_close(winid)
   bwipe!
   set signcolumn&
 endfunc

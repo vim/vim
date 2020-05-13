@@ -198,6 +198,7 @@ Other:
 	|popup_getoptions()|	get current options for a popup
 	|popup_getpos()|	get actual position and size of a popup
 	|popup_locate()|	find popup window at a screen position
+	|popup_list()|		get list of all popups
 
 
 DETAILS						*popup-function-details*
@@ -422,6 +423,10 @@ popup_hide({id})						*popup_hide()*
 
 		Can also be used as a |method|: >
 			GetPopup()->popup_hide()
+
+popup_list()						 *popup_list()*
+		Return a List with the |window-ID| of all existing popups.
+
 
 popup_locate({row}, {col})				 *popup_locate()*
 		Return the |window-ID| of the popup at screen position {row}

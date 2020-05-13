@@ -40,6 +40,7 @@ void close_all_popups(int force);
 void f_popup_move(typval_T *argvars, typval_T *rettv);
 void f_popup_setoptions(typval_T *argvars, typval_T *rettv);
 void f_popup_getpos(typval_T *argvars, typval_T *rettv);
+void f_popup_list(typval_T *argvars, typval_T *rettv);
 void f_popup_locate(typval_T *argvars, typval_T *rettv);
 void f_popup_getoptions(typval_T *argvars, typval_T *rettv);
 int error_if_term_popup_window(void);

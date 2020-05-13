@@ -2720,6 +2720,25 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
 	hash_unlock(&dict->dv_hashtab);
     }
 }
+
+/*
+ * popup_list()
+ */
+    void
+f_popup_list(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    win_T	*wp;
+    tabpage_T	*tp;
+
+    if (rettv_list_alloc(rettv) != OK)
+	return;
+    FOR_ALL_POPUPWINS(wp)
+	list_append_number(rettv->vval.v_list, wp->w_id);
+    FOR_ALL_TABPAGES(tp)
+	FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
+	    list_append_number(rettv->vval.v_list, wp->w_id);
+}
+
 /*
  * popup_locate({row}, {col})
  */
