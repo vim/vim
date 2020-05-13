@@ -236,8 +236,15 @@ popup_beval({what}, {options})			*popup_beval()*
 			GetText()->popup_beval({})
 <
 							*popup_clear()*
-popup_clear()	Emergency solution to a misbehaving plugin: close all popup
+popup_clear([{force}])
+		Emergency solution to a misbehaving plugin: close all popup
 		windows for the current tab and global popups.
+		Close callbacks are not invoked.
+		When {force} is not present this will fail if the current
+		window is a popup.
+		When {force} is present and |TRUE| the popup is also closed
+		when it is the current window.  If a terminal is running in a
+		popup it is killed.
 
 
 popup_close({id} [, {result}])				*popup_close()*

@@ -1069,13 +1069,9 @@ free_all_mem(void)
 # if defined(FEAT_BEVAL_TERM)
     ui_remove_balloon();
 # endif
-# if defined(FEAT_PROP_POPUP)
+# ifdef FEAT_PROP_POPUP
     if (curwin != NULL)
-    {
-	while (popup_is_popup(curwin))
-	    popup_close_with_retval(curwin, 0);
-	close_all_popups();
-    }
+	close_all_popups(TRUE);
 # endif
 
     // Clear user commands (before deleting buffers).

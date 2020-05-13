@@ -3684,7 +3684,7 @@ jumpto_tag(
 
 	    if (win_valid(curwin_save))
 		win_enter(curwin_save, TRUE);
-	    popup_close(wp->w_id);
+	    popup_close(wp->w_id, FALSE);
 	}
 #endif
     }

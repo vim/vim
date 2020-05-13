@@ -704,7 +704,7 @@ static funcentry_T global_functions[] =
 			},
     {"popup_atcursor",	2, 2, FEARG_1,	  ret_number,	PROP_FUNC(f_popup_atcursor)},
     {"popup_beval",	2, 2, FEARG_1,	  ret_number,	PROP_FUNC(f_popup_beval)},
-    {"popup_clear",	0, 0, 0,	  ret_void,	PROP_FUNC(f_popup_clear)},
+    {"popup_clear",	0, 1, 0,	  ret_void,	PROP_FUNC(f_popup_clear)},
     {"popup_close",	1, 2, FEARG_1,	  ret_void,	PROP_FUNC(f_popup_close)},
     {"popup_create",	2, 2, FEARG_1,	  ret_number,	PROP_FUNC(f_popup_create)},
     {"popup_dialog",	2, 2, FEARG_1,	  ret_number,	PROP_FUNC(f_popup_dialog)},

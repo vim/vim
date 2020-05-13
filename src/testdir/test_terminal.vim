@@ -2617,27 +2617,15 @@ endfunc
 
 func Test_term_nasty_callback()
   CheckExecutable sh
-  func OpenTerms()
-    set hidden
-    let g:buf0 = term_start('sh', #{hidden: 1})
-    call popup_create(g:buf0, {})
-    let g:buf1 = term_start('sh', #{hidden: 1, term_finish: 'close'})
-    call popup_create(g:buf1, {})
-    let g:buf2 = term_start(['sh', '-c'], #{curwin: 1, exit_cb: function('TermExit')})
-    call TermWait(g:buf2, 50)
-    call popup_close(win_getid())
-  endfunc
-  func TermExit(...)
-    let altbuf = bufnr('#')
-    call term_sendkeys(altbuf, "exit\<CR>")
-    call TermWait(altbuf)
-    call popup_close(win_getid())
-  endfunc
-  call OpenTerms()
 
-  call term_sendkeys(g:buf0, "exit\<CR>")
-  call TermWait(g:buf0, 50)
-  exe g:buf0 .. 'bwipe!'
+  set hidden
+  let g:buf0 = term_start('sh', #{hidden: 1})
+  call popup_create(g:buf0, {})
+  let g:buf1 = term_start('sh', #{hidden: 1, term_finish: 'close'})
+  call popup_create(g:buf1, {})
+  call assert_fails("call term_start(['sh', '-c'], #{curwin: 1})", 'E863:')
+
+  call popup_clear(1)
   set hidden&
 endfunc
 

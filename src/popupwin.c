@@ -2054,9 +2054,13 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
  * popup_clear()
  */
     void
-f_popup_clear(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+f_popup_clear(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    close_all_popups();
+    int force = FALSE;
+
+    if (argvars[0].v_type != VAR_UNKNOWN)
+	force = (int)tv_get_number(&argvars[0]);
+    close_all_popups(force);
 }
 
 /*
@@ -2163,7 +2167,7 @@ popup_close_and_callback(win_T *wp, typval_T *arg)
 	// Careful: This may make "wp" invalid.
 	invoke_popup_callback(wp, arg);
 
-    popup_close(id);
+    popup_close(id, FALSE);
     CHECK_CURBUF;
 }
 
@@ -2250,7 +2254,7 @@ filter_handle_drag(win_T *wp, int c, typval_T *rettv)
 }
 
 /*
- * popup_filter_menu({text}, {options})
+ * popup_filter_menu({id}, {key})
  */
     void
 f_popup_filter_menu(typval_T *argvars, typval_T *rettv)
@@ -2305,7 +2309,7 @@ f_popup_filter_menu(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * popup_filter_yesno({text}, {options})
+ * popup_filter_yesno({id}, {key})
  */
     void
 f_popup_filter_yesno(typval_T *argvars, typval_T *rettv)
@@ -2534,7 +2538,7 @@ error_if_popup_window(int also_with_term UNUSED)
  * Return OK if the popup was closed, FAIL otherwise.
  */
     int
-popup_close(int id)
+popup_close(int id, int force)
 {
     win_T	*wp;
     tabpage_T	*tp;
@@ -2546,8 +2550,12 @@ popup_close(int id)
 	{
 	    if (wp == curwin)
 	    {
-		error_for_popup_window();
-		return FAIL;
+		if (!force)
+		{
+		    error_for_popup_window();
+		    return FAIL;
+		}
+		win_enter(firstwin, FALSE);
 	    }
 	    if (prev == NULL)
 		first_popupwin = wp->w_next;
@@ -2559,7 +2567,7 @@ popup_close(int id)
 
     // go through tab-local popups
     FOR_ALL_TABPAGES(tp)
-	if (popup_close_tabpage(tp, id) == OK)
+	if (popup_close_tabpage(tp, id, force) == OK)
 	    return OK;
     return FAIL;
 }
@@ -2568,7 +2576,7 @@ popup_close(int id)
  * Close a popup window with Window-id "id" in tabpage "tp".
  */
     int
-popup_close_tabpage(tabpage_T *tp, int id)
+popup_close_tabpage(tabpage_T *tp, int id, int force)
 {
     win_T	*wp;
     win_T	**root = &tp->tp_first_popupwin;
@@ -2579,8 +2587,12 @@ popup_close_tabpage(tabpage_T *tp, int id)
 	{
 	    if (wp == curwin)
 	    {
-		error_for_popup_window();
-		return FAIL;
+		if (!force)
+		{
+		    error_for_popup_window();
+		    return FAIL;
+		}
+		win_enter(firstwin, FALSE);
 	    }
 	    if (prev == NULL)
 		*root = wp->w_next;
@@ -2593,15 +2605,15 @@ popup_close_tabpage(tabpage_T *tp, int id)
 }
 
     void
-close_all_popups(void)
+close_all_popups(int force)
 {
-    if (ERROR_IF_ANY_POPUP_WINDOW)
+    if (!force && ERROR_IF_ANY_POPUP_WINDOW)
 	return;
     while (first_popupwin != NULL)
-	if (popup_close(first_popupwin->w_id) == FAIL)
+	if (popup_close(first_popupwin->w_id, force) == FAIL)
 	    return;
     while (curtab->tp_first_popupwin != NULL)
-	if (popup_close(curtab->tp_first_popupwin->w_id) == FAIL)
+	if (popup_close(curtab->tp_first_popupwin->w_id, force) == FAIL)
 	    return;
 }
 

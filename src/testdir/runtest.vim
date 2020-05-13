@@ -188,9 +188,9 @@ func RunTheTest(test)
   au!
   au SwapExists * call HandleSwapExists()
 
-  " Close any stray popup windows
+  " Close any stray popup windows.
   if has('popupwin')
-    call popup_clear()
+    call popup_clear(1)
   endif
 
   " Close any extra tab pages and windows and make the current one not modified.
