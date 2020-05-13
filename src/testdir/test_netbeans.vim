@@ -339,8 +339,8 @@ func Nb_basic(port)
   let l = readfile('Xnetbeans')
   call assert_equal('send: 2:defineAnnoType!60 1 "s1" "x" "=>" blue none', l[-1])
   sleep 1m
-  call assert_equal([{'name': '1', 'texthl': 'NB_s1', 'text': '=>'}],
-        \ sign_getdefined())
+  call assert_equal({'name': '1', 'texthl': 'NB_s1', 'text': '=>'},
+        \ sign_getdefined()[0])
   let g:last += 3
 
   " defineAnnoType with a long color name
@@ -610,10 +610,9 @@ func Nb_basic(port)
   " detach
   call appendbufline(cmdbufnr, '$', 'detach_Test')
   call WaitFor('len(readfile("Xnetbeans")) >= (g:last + 6)')
-  let l = readfile('Xnetbeans')
-  call assert_equal('0:disconnect=91', l[-1])
+  call WaitForAssert({-> assert_equal('0:disconnect=91', readfile("Xnetbeans")[-1])})
 
-  " close the connection
+  " the connection was closed
   call assert_false(has("netbeans_enabled"))
 
   call delete("Xnetbeans")
