@@ -1732,6 +1732,7 @@ def Test_let_func_call()
   END
   writefile(lines, 'Xfinished')
   source Xfinished
+  " GetValue() is not called during discovery phase
   assert_equal(1, g:count)
 
   unlet g:count
@@ -1751,6 +1752,28 @@ def Test_let_missing_type()
 
   delete('Xfinished')
 enddef
+
+def Test_forward_declaration()
+  let lines =<< trim END
+    vim9script
+    g:initVal = GetValue()
+    def GetValue(): string
+      return theVal
+    enddef
+    let theVal = 'something'
+    theVal = 'else'
+    g:laterVal = GetValue()
+  END
+  writefile(lines, 'Xforward')
+  source Xforward
+  assert_equal('something', g:initVal)
+  assert_equal('else', g:laterVal)
+
+  unlet g:initVal
+  unlet g:laterVal
+  delete('Xforward')
+enddef
+
 
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
