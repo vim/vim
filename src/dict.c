@@ -791,8 +791,9 @@ get_literal_key(char_u **arg, typval_T *tv)
  * Return OK or FAIL.  Returns NOTDONE for {expr}.
  */
     int
-eval_dict(char_u **arg, typval_T *rettv, int evaluate, int literal)
+eval_dict(char_u **arg, typval_T *rettv, int flags, int literal)
 {
+    int		evaluate = flags & EVAL_EVALUATE;
     dict_T	*d = NULL;
     typval_T	tvkey;
     typval_T	tv;
@@ -800,6 +801,7 @@ eval_dict(char_u **arg, typval_T *rettv, int evaluate, int literal)
     dictitem_T	*item;
     char_u	*start = skipwhite(*arg + 1);
     char_u	buf[NUMBUFLEN];
+    int		vim9script = current_sctx.sc_version == SCRIPT_VERSION_VIM9;
 
     /*
      * First check if it's not a curly-braces thing: {expr}.
@@ -808,9 +810,9 @@ eval_dict(char_u **arg, typval_T *rettv, int evaluate, int literal)
      * first item.
      * But {} is an empty Dictionary.
      */
-    if (*start != '}')
+    if (!vim9script && *start != '}')
     {
-	if (eval1(&start, &tv, FALSE) == FAIL)	// recursive!
+	if (eval1(&start, &tv, 0) == FAIL)	// recursive!
 	    return FAIL;
 	if (*start == '}')
 	    return NOTDONE;
@@ -830,7 +832,7 @@ eval_dict(char_u **arg, typval_T *rettv, int evaluate, int literal)
     {
 	if ((literal
 		? get_literal_key(arg, &tvkey)
-		: eval1(arg, &tvkey, evaluate)) == FAIL)	// recursive!
+		: eval1(arg, &tvkey, flags)) == FAIL)	// recursive!
 	    goto failret;
 
 	if (**arg != ':')
@@ -852,7 +854,7 @@ eval_dict(char_u **arg, typval_T *rettv, int evaluate, int literal)
 	}
 
 	*arg = skipwhite(*arg + 1);
-	if (eval1(arg, &tv, evaluate) == FAIL)	// recursive!
+	if (eval1(arg, &tv, flags) == FAIL)	// recursive!
 	{
 	    if (evaluate)
 		clear_tv(&tvkey);

@@ -239,7 +239,7 @@ get_function_args(
 		whitep = p;
 		p = skipwhite(p);
 		expr = p;
-		if (eval1(&p, &rettv, FALSE) != FAIL)
+		if (eval1(&p, &rettv, 0) != FAIL)
 		{
 		    if (ga_grow(default_args, 1) == FAIL)
 			goto err_ret;
@@ -572,7 +572,8 @@ get_func_tv(
 	argp = skipwhite(argp + 1);	    // skip the '(' or ','
 	if (*argp == ')' || *argp == ',' || *argp == NUL)
 	    break;
-	if (eval1(&argp, &argvars[argcount], funcexe->evaluate) == FAIL)
+	if (eval1(&argp, &argvars[argcount],
+				funcexe->evaluate ? EVAL_EVALUATE : 0) == FAIL)
 	{
 	    ret = FAIL;
 	    break;
@@ -1223,7 +1224,7 @@ call_user_func(
 
 		default_expr = ((char_u **)(fp->uf_def_args.ga_data))
 						 [ai + fp->uf_def_args.ga_len];
-		if (eval1(&default_expr, &def_rettv, TRUE) == FAIL)
+		if (eval1(&default_expr, &def_rettv, EVAL_EVALUATE) == FAIL)
 		{
 		    default_arg_err = 1;
 		    break;
@@ -1368,7 +1369,7 @@ call_user_func(
 	// A Lambda always has the command "return {expr}".  It is much faster
 	// to evaluate {expr} directly.
 	++ex_nesting_level;
-	(void)eval1(&p, rettv, TRUE);
+	(void)eval1(&p, rettv, EVAL_EVALUATE);
 	--ex_nesting_level;
     }
     else
@@ -3623,7 +3624,8 @@ ex_return(exarg_T *eap)
 
     eap->nextcmd = NULL;
     if ((*arg != NUL && *arg != '|' && *arg != '\n')
-	    && eval0(arg, &rettv, &eap->nextcmd, !eap->skip) != FAIL)
+	    && eval0(arg, &rettv, &eap->nextcmd, eap->skip ? 0 : EVAL_EVALUATE)
+								       != FAIL)
     {
 	if (!eap->skip)
 	    returning = do_return(eap, FALSE, TRUE, &rettv);
@@ -3680,7 +3682,7 @@ ex_call(exarg_T *eap)
 	// instead to skip to any following command, e.g. for:
 	//   :if 0 | call dict.foo().bar() | endif
 	++emsg_skip;
-	if (eval0(eap->arg, &rettv, &eap->nextcmd, FALSE) != FAIL)
+	if (eval0(eap->arg, &rettv, &eap->nextcmd, 0) != FAIL)
 	    clear_tv(&rettv);
 	--emsg_skip;
 	return;
@@ -3768,8 +3770,8 @@ ex_call(exarg_T *eap)
 	    dbg_check_breakpoint(eap);
 
 	// Handle a function returning a Funcref, Dictionary or List.
-	if (handle_subscript(&arg, &rettv, !eap->skip, TRUE,
-							  name, &name) == FAIL)
+	if (handle_subscript(&arg, &rettv, eap->skip ? 0 : EVAL_EVALUATE,
+						    TRUE, name, &name) == FAIL)
 	{
 	    failed = TRUE;
 	    break;

@@ -2132,7 +2132,7 @@ f_eval(typval_T *argvars, typval_T *rettv)
 	s = skipwhite(s);
 
     p = s;
-    if (s == NULL || eval1(&s, rettv, TRUE) == FAIL)
+    if (s == NULL || eval1(&s, rettv, EVAL_EVALUATE) == FAIL)
     {
 	if (p != NULL && !aborting())
 	    semsg(_(e_invexpr2), p);

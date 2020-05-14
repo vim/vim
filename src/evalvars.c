@@ -433,7 +433,7 @@ eval_spell_expr(char_u *badword, char_u *expr)
     if (p_verbose == 0)
 	++emsg_off;
 
-    if (eval1(&p, &rettv, TRUE) == OK)
+    if (eval1(&p, &rettv, EVAL_EVALUATE) == OK)
     {
 	if (rettv.v_type != VAR_LIST)
 	    clear_tv(&rettv);
@@ -701,11 +701,14 @@ ex_const(exarg_T *eap)
 }
 
 /*
- * When "redefine" is TRUE the command will be executed again, redefining the
- * variable is OK then.
+ * When "discovery" is TRUE the ":let" or ":const" is encountered during the
+ * discovery phase of vim9script:
+ * - The command will be executed again, redefining the variable is OK then.
+ * - The expresion argument must be a constant.
+ * - If no constant expression a type must be specified.
  */
     void
-ex_let_const(exarg_T *eap, int redefine)
+ex_let_const(exarg_T *eap, int discovery)
 {
     char_u	*arg = eap->arg;
     char_u	*expr = NULL;
@@ -717,13 +720,14 @@ ex_let_const(exarg_T *eap, int redefine)
     char_u	*argend;
     int		first = TRUE;
     int		concat;
+    int		has_assign;
     int		flags = eap->cmdidx == CMD_const ? LET_IS_CONST : 0;
 
     // detect Vim9 assignment without ":let" or ":const"
     if (eap->arg == eap->cmd)
 	flags |= LET_NO_COMMAND;
-    if (redefine)
-	flags |= LET_REDEFINE;
+    if (discovery)
+	flags |= LET_DISCOVERY;
 
     argend = skip_var_list(arg, TRUE, &var_count, &semicolon);
     if (argend == NULL)
@@ -734,8 +738,9 @@ ex_let_const(exarg_T *eap, int redefine)
     concat = expr[0] == '.'
 	&& ((expr[1] == '=' && current_sctx.sc_version < 2)
 		|| (expr[1] == '.' && expr[2] == '='));
-    if (*expr != '=' && !((vim_strchr((char_u *)"+-*/%", *expr) != NULL
-						 && expr[1] == '=') || concat))
+    has_assign =  *expr == '=' || (vim_strchr((char_u *)"+-*/%", *expr) != NULL
+							    && expr[1] == '=');
+    if (!has_assign && !concat && !discovery)
     {
 	// ":let" without "=": list variables
 	if (*arg == '[')
@@ -779,32 +784,45 @@ ex_let_const(exarg_T *eap, int redefine)
     }
     else
     {
-	op[0] = '=';
-	op[1] = NUL;
-	if (*expr != '=')
-	{
-	    if (vim_strchr((char_u *)"+-*/%.", *expr) != NULL)
-	    {
-		op[0] = *expr;   // +=, -=, *=, /=, %= or .=
-		if (expr[0] == '.' && expr[1] == '.') // ..=
-		    ++expr;
-	    }
-	    expr = skipwhite(expr + 2);
-	}
-	else
-	    expr = skipwhite(expr + 1);
+	int eval_flags;
+	int save_called_emsg = called_emsg;
 
-	if (eap->skip)
-	    ++emsg_skip;
-	i = eval0(expr, &rettv, &eap->nextcmd, !eap->skip);
+	rettv.v_type = VAR_UNKNOWN;
+	i = FAIL;
+	if (has_assign || concat)
+	{
+	    op[0] = '=';
+	    op[1] = NUL;
+	    if (*expr != '=')
+	    {
+		if (vim_strchr((char_u *)"+-*/%.", *expr) != NULL)
+		{
+		    op[0] = *expr;   // +=, -=, *=, /=, %= or .=
+		    if (expr[0] == '.' && expr[1] == '.') // ..=
+			++expr;
+		}
+		expr = skipwhite(expr + 2);
+	    }
+	    else
+		expr = skipwhite(expr + 1);
+
+	    if (eap->skip)
+		++emsg_skip;
+	    eval_flags = eap->skip ? 0 : EVAL_EVALUATE;
+	    if (discovery)
+		eval_flags |= EVAL_CONSTANT;
+	    i = eval0(expr, &rettv, &eap->nextcmd, eval_flags);
+	}
 	if (eap->skip)
 	{
 	    if (i != FAIL)
 		clear_tv(&rettv);
 	    --emsg_skip;
 	}
-	else if (i != FAIL)
+	else if (i != FAIL || (discovery && save_called_emsg == called_emsg))
 	{
+	    // In Vim9 script discovery "let v: bool = Func()" fails but is
+	    // still a valid declaration.
 	    (void)ex_let_vars(eap->arg, &rettv, FALSE, semicolon, var_count,
 								 flags, op);
 	    clear_tv(&rettv);
@@ -1112,7 +1130,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 		{
 		    // handle d.key, l[idx], f(expr)
 		    arg_subsc = arg;
-		    if (handle_subscript(&arg, &tv, TRUE, TRUE,
+		    if (handle_subscript(&arg, &tv, EVAL_EVALUATE, TRUE,
 							  name, &name) == FAIL)
 			error = TRUE;
 		    else
@@ -1353,7 +1371,12 @@ ex_let_one(
 	lval_T	lv;
 
 	p = get_lval(arg, tv, &lv, FALSE, FALSE, 0, FNE_CHECK_START);
-	if (p != NULL && lv.ll_name != NULL)
+	if ((flags & LET_DISCOVERY) && tv->v_type == VAR_UNKNOWN
+							 && lv.ll_type == NULL)
+	{
+	    semsg(_("E1091: type missing for %s"), arg);
+	}
+	else if (p != NULL && lv.ll_name != NULL)
 	{
 	    if (endchars != NULL && vim_strchr(endchars,
 					   *skipwhite(lv.ll_name_end)) == NULL)
@@ -2981,7 +3004,7 @@ set_var_const(
 
     if (flags & LET_IS_CONST)
 	di->di_tv.v_lock |= VAR_LOCKED;
-    if (flags & LET_REDEFINE)
+    if (flags & LET_DISCOVERY)
 	di->di_flags |= DI_FLAGS_RELOAD;
 }
 
@@ -3288,7 +3311,8 @@ var_exists(char_u *var)
 	if (n)
 	{
 	    // handle d.key, l[idx], f(expr)
-	    n = (handle_subscript(&var, &tv, TRUE, FALSE, name, &name) == OK);
+	    n = (handle_subscript(&var, &tv, EVAL_EVALUATE,
+						    FALSE, name, &name) == OK);
 	    if (n)
 		clear_tv(&tv);
 	}

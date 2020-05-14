@@ -1046,8 +1046,9 @@ f_join(typval_T *argvars, typval_T *rettv)
  * Return OK or FAIL.
  */
     int
-get_list_tv(char_u **arg, typval_T *rettv, int evaluate, int do_error)
+get_list_tv(char_u **arg, typval_T *rettv, int flags, int do_error)
 {
+    int		evaluate = flags & EVAL_EVALUATE;
     list_T	*l = NULL;
     typval_T	tv;
     listitem_T	*item;
@@ -1062,7 +1063,7 @@ get_list_tv(char_u **arg, typval_T *rettv, int evaluate, int do_error)
     *arg = skipwhite(*arg + 1);
     while (**arg != ']' && **arg != NUL)
     {
-	if (eval1(arg, &tv, evaluate) == FAIL)	// recursive!
+	if (eval1(arg, &tv, flags) == FAIL)	// recursive!
 	    goto failret;
 	if (evaluate)
 	{

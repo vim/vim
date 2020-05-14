@@ -879,7 +879,8 @@ ex_eval(exarg_T *eap)
 {
     typval_T	tv;
 
-    if (eval0(eap->arg, &tv, &eap->nextcmd, !eap->skip) == OK)
+    if (eval0(eap->arg, &tv, &eap->nextcmd, eap->skip ? 0 : EVAL_EVALUATE)
+									 == OK)
 	clear_tv(&tv);
 }
 

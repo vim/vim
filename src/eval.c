@@ -48,12 +48,12 @@ typedef struct
 } forinfo_T;
 
 static int tv_op(typval_T *tv1, typval_T *tv2, char_u  *op);
-static int eval2(char_u **arg, typval_T *rettv, int evaluate);
-static int eval3(char_u **arg, typval_T *rettv, int evaluate);
-static int eval4(char_u **arg, typval_T *rettv, int evaluate);
-static int eval5(char_u **arg, typval_T *rettv, int evaluate);
-static int eval6(char_u **arg, typval_T *rettv, int evaluate, int want_string);
-static int eval7(char_u **arg, typval_T *rettv, int evaluate, int want_string);
+static int eval2(char_u **arg, typval_T *rettv, int flags);
+static int eval3(char_u **arg, typval_T *rettv, int flags);
+static int eval4(char_u **arg, typval_T *rettv, int flags);
+static int eval5(char_u **arg, typval_T *rettv, int flags);
+static int eval6(char_u **arg, typval_T *rettv, int flags, int want_string);
+static int eval7(char_u **arg, typval_T *rettv, int flags, int want_string);
 static int eval7_leader(typval_T *rettv, char_u *start_leader, char_u **end_leaderp);
 
 static int free_unref_items(int copyID);
@@ -173,7 +173,7 @@ eval_to_bool(
 
     if (skip)
 	++emsg_skip;
-    if (eval0(arg, &tv, nextcmd, !skip) == FAIL)
+    if (eval0(arg, &tv, nextcmd, skip ? 0 : EVAL_EVALUATE) == FAIL)
 	*error = TRUE;
     else
     {
@@ -201,7 +201,7 @@ eval1_emsg(char_u **arg, typval_T *rettv, int evaluate)
     int		did_emsg_before = did_emsg;
     int		called_emsg_before = called_emsg;
 
-    ret = eval1(arg, rettv, evaluate);
+    ret = eval1(arg, rettv, evaluate ? EVAL_EVALUATE : 0);
     if (ret == FAIL)
     {
 	// Report the invalid expression unless the expression evaluation has
@@ -315,7 +315,7 @@ eval_to_string_skip(
 
     if (skip)
 	++emsg_skip;
-    if (eval0(arg, &tv, nextcmd, !skip) == FAIL || skip)
+    if (eval0(arg, &tv, nextcmd, skip ? 0 : EVAL_EVALUATE) == FAIL || skip)
 	retval = NULL;
     else
     {
@@ -338,7 +338,7 @@ skip_expr(char_u **pp)
     typval_T	rettv;
 
     *pp = skipwhite(*pp);
-    return eval1(pp, &rettv, FALSE);
+    return eval1(pp, &rettv, 0);
 }
 
 /*
@@ -360,7 +360,7 @@ eval_to_string(
     char_u	numbuf[NUMBUFLEN];
 #endif
 
-    if (eval0(arg, &tv, nextcmd, TRUE) == FAIL)
+    if (eval0(arg, &tv, nextcmd, EVAL_EVALUATE) == FAIL)
 	retval = NULL;
     else
     {
@@ -430,7 +430,7 @@ eval_to_number(char_u *expr)
 
     ++emsg_off;
 
-    if (eval1(&p, &rettv, TRUE) == FAIL)
+    if (eval1(&p, &rettv, EVAL_EVALUATE) == FAIL)
 	retval = -1;
     else
     {
@@ -453,7 +453,7 @@ eval_expr(char_u *arg, char_u **nextcmd)
     typval_T	*tv;
 
     tv = ALLOC_ONE(typval_T);
-    if (tv != NULL && eval0(arg, tv, nextcmd, TRUE) == FAIL)
+    if (tv != NULL && eval0(arg, tv, nextcmd, EVAL_EVALUATE) == FAIL)
 	VIM_CLEAR(tv);
 
     return tv;
@@ -578,7 +578,7 @@ eval_foldexpr(char_u *arg, int *cp)
 	++sandbox;
     ++textwinlock;
     *cp = NUL;
-    if (eval0(arg, &tv, NULL, TRUE) == FAIL)
+    if (eval0(arg, &tv, NULL, EVAL_EVALUATE) == FAIL)
 	retval = 0;
     else
     {
@@ -766,7 +766,7 @@ get_lval(
 	    else
 	    {
 		empty1 = FALSE;
-		if (eval1(&p, &var1, TRUE) == FAIL)	// recursive!
+		if (eval1(&p, &var1, EVAL_EVALUATE) == FAIL)  // recursive!
 		    return NULL;
 		if (tv_get_string_chk(&var1) == NULL)
 		{
@@ -803,7 +803,8 @@ get_lval(
 		else
 		{
 		    lp->ll_empty2 = FALSE;
-		    if (eval1(&p, &var2, TRUE) == FAIL)	// recursive!
+		    // recursive!
+		    if (eval1(&p, &var2, EVAL_EVALUATE) == FAIL)
 		    {
 			clear_tv(&var1);
 			return NULL;
@@ -1433,7 +1434,8 @@ eval_for_line(
 
     if (skip)
 	++emsg_skip;
-    if (eval0(skipwhite(expr + 2), &tv, nextcmdp, !skip) == OK)
+    if (eval0(skipwhite(expr + 2), &tv, nextcmdp, skip ? 0 : EVAL_EVALUATE)
+									 == OK)
     {
 	*errp = FALSE;
 	if (!skip)
@@ -1694,9 +1696,10 @@ eval_func(
 	char_u	    *name,
 	int	    name_len,
 	typval_T    *rettv,
-	int	    evaluate,
+	int	    flags,
 	typval_T    *basetv)	// "expr" for "expr->name(arg)"
 {
+    int		evaluate = flags & EVAL_EVALUATE;
     char_u	*s = name;
     int		len = name_len;
     partial_T	*partial;
@@ -1712,7 +1715,7 @@ eval_func(
     // Need to make a copy, in case evaluating the arguments makes
     // the name invalid.
     s = vim_strsave(s);
-    if (s == NULL)
+    if (s == NULL || (flags & EVAL_CONSTANT))
 	ret = FAIL;
     else
     {
@@ -1761,6 +1764,7 @@ eval_func(
  * This calls eval1() and handles error message and nextcmd.
  * Put the result in "rettv" when returning OK and "evaluate" is TRUE.
  * Note: "rettv.v_lock" is not set.
+ * "flags" has EVAL_EVALUATE and similar flags.
  * Return OK or FAIL.
  */
     int
@@ -1768,7 +1772,7 @@ eval0(
     char_u	*arg,
     typval_T	*rettv,
     char_u	**nextcmd,
-    int		evaluate)
+    int		flags)
 {
     int		ret;
     char_u	*p;
@@ -1776,7 +1780,7 @@ eval0(
     int		called_emsg_before = called_emsg;
 
     p = skipwhite(arg);
-    ret = eval1(&p, rettv, evaluate);
+    ret = eval1(&p, rettv, flags);
     if (ret == FAIL || !ends_excmd2(arg, p))
     {
 	if (ret != FAIL)
@@ -1787,8 +1791,10 @@ eval0(
 	 * exception, or we already gave a more specific error.
 	 * Also check called_emsg for when using assert_fails().
 	 */
-	if (!aborting() && did_emsg == did_emsg_before
-					  && called_emsg == called_emsg_before)
+	if (!aborting()
+		&& did_emsg == did_emsg_before
+		&& called_emsg == called_emsg_before
+		&& (flags & EVAL_CONSTANT) == 0)
 	    semsg(_(e_invexpr2), arg);
 	ret = FAIL;
     }
@@ -1810,7 +1816,7 @@ eval0(
  * Return OK or FAIL.
  */
     int
-eval1(char_u **arg, typval_T *rettv, int evaluate)
+eval1(char_u **arg, typval_T *rettv, int flags)
 {
     int		result;
     typval_T	var2;
@@ -1818,13 +1824,15 @@ eval1(char_u **arg, typval_T *rettv, int evaluate)
     /*
      * Get the first variable.
      */
-    if (eval2(arg, rettv, evaluate) == FAIL)
+    if (eval2(arg, rettv, flags) == FAIL)
 	return FAIL;
 
     if ((*arg)[0] == '?')
     {
+	int evaluate = flags & EVAL_EVALUATE;
+
 	result = FALSE;
-	if (evaluate)
+	if (flags & EVAL_EVALUATE)
 	{
 	    int		error = FALSE;
 
@@ -1836,10 +1844,10 @@ eval1(char_u **arg, typval_T *rettv, int evaluate)
 	}
 
 	/*
-	 * Get the second variable.
+	 * Get the second variable.  Recursive!
 	 */
 	*arg = skipwhite(*arg + 1);
-	if (eval1(arg, rettv, evaluate && result) == FAIL) // recursive!
+	if (eval1(arg, rettv, result ? flags : flags & ~EVAL_EVALUATE) == FAIL)
 	    return FAIL;
 
 	/*
@@ -1854,10 +1862,10 @@ eval1(char_u **arg, typval_T *rettv, int evaluate)
 	}
 
 	/*
-	 * Get the third variable.
+	 * Get the third variable.  Recursive!
 	 */
 	*arg = skipwhite(*arg + 1);
-	if (eval1(arg, &var2, evaluate && !result) == FAIL) // recursive!
+	if (eval1(arg, &var2, !result ? flags : flags & ~EVAL_EVALUATE) == FAIL)
 	{
 	    if (evaluate && result)
 		clear_tv(rettv);
@@ -1880,7 +1888,7 @@ eval1(char_u **arg, typval_T *rettv, int evaluate)
  * Return OK or FAIL.
  */
     static int
-eval2(char_u **arg, typval_T *rettv, int evaluate)
+eval2(char_u **arg, typval_T *rettv, int flags)
 {
     typval_T	var2;
     long	result;
@@ -1890,7 +1898,7 @@ eval2(char_u **arg, typval_T *rettv, int evaluate)
     /*
      * Get the first variable.
      */
-    if (eval3(arg, rettv, evaluate) == FAIL)
+    if (eval3(arg, rettv, flags) == FAIL)
 	return FAIL;
 
     /*
@@ -1900,6 +1908,8 @@ eval2(char_u **arg, typval_T *rettv, int evaluate)
     result = FALSE;
     while ((*arg)[0] == '|' && (*arg)[1] == '|')
     {
+	int evaluate = flags & EVAL_EVALUATE;
+
 	if (evaluate && first)
 	{
 	    if (tv_get_number_chk(rettv, &error) != 0)
@@ -1914,7 +1924,8 @@ eval2(char_u **arg, typval_T *rettv, int evaluate)
 	 * Get the second variable.
 	 */
 	*arg = skipwhite(*arg + 2);
-	if (eval3(arg, &var2, evaluate && !result) == FAIL)
+	if (eval3(arg, &var2, !result ? flags : flags & ~EVAL_EVALUATE)
+								       == FAIL)
 	    return FAIL;
 
 	/*
@@ -1948,7 +1959,7 @@ eval2(char_u **arg, typval_T *rettv, int evaluate)
  * Return OK or FAIL.
  */
     static int
-eval3(char_u **arg, typval_T *rettv, int evaluate)
+eval3(char_u **arg, typval_T *rettv, int flags)
 {
     typval_T	var2;
     long	result;
@@ -1958,7 +1969,7 @@ eval3(char_u **arg, typval_T *rettv, int evaluate)
     /*
      * Get the first variable.
      */
-    if (eval4(arg, rettv, evaluate) == FAIL)
+    if (eval4(arg, rettv, flags) == FAIL)
 	return FAIL;
 
     /*
@@ -1968,6 +1979,8 @@ eval3(char_u **arg, typval_T *rettv, int evaluate)
     result = TRUE;
     while ((*arg)[0] == '&' && (*arg)[1] == '&')
     {
+	int evaluate = flags & EVAL_EVALUATE;
+
 	if (evaluate && first)
 	{
 	    if (tv_get_number_chk(rettv, &error) == 0)
@@ -1982,7 +1995,7 @@ eval3(char_u **arg, typval_T *rettv, int evaluate)
 	 * Get the second variable.
 	 */
 	*arg = skipwhite(*arg + 2);
-	if (eval4(arg, &var2, evaluate && result) == FAIL)
+	if (eval4(arg, &var2, result ? flags : flags & ~EVAL_EVALUATE) == FAIL)
 	    return FAIL;
 
 	/*
@@ -2025,7 +2038,7 @@ eval3(char_u **arg, typval_T *rettv, int evaluate)
  * Return OK or FAIL.
  */
     static int
-eval4(char_u **arg, typval_T *rettv, int evaluate)
+eval4(char_u **arg, typval_T *rettv, int flags)
 {
     typval_T	var2;
     char_u	*p;
@@ -2037,7 +2050,7 @@ eval4(char_u **arg, typval_T *rettv, int evaluate)
     /*
      * Get the first variable.
      */
-    if (eval5(arg, rettv, evaluate) == FAIL)
+    if (eval5(arg, rettv, flags) == FAIL)
 	return FAIL;
 
     p = *arg;
@@ -2105,12 +2118,12 @@ eval4(char_u **arg, typval_T *rettv, int evaluate)
 	 * Get the second variable.
 	 */
 	*arg = skipwhite(p + len);
-	if (eval5(arg, &var2, evaluate) == FAIL)
+	if (eval5(arg, &var2, flags) == FAIL)
 	{
 	    clear_tv(rettv);
 	    return FAIL;
 	}
-	if (evaluate)
+	if (flags & EVAL_EVALUATE)
 	{
 	    int ret = typval_compare(rettv, &var2, type, ic);
 
@@ -2172,7 +2185,7 @@ eval_addlist(typval_T *tv1, typval_T *tv2)
  * Return OK or FAIL.
  */
     static int
-eval5(char_u **arg, typval_T *rettv, int evaluate)
+eval5(char_u **arg, typval_T *rettv, int flags)
 {
     typval_T	var2;
     int		op;
@@ -2188,7 +2201,7 @@ eval5(char_u **arg, typval_T *rettv, int evaluate)
     /*
      * Get the first variable.
      */
-    if (eval6(arg, rettv, evaluate, FALSE) == FAIL)
+    if (eval6(arg, rettv, flags, FALSE) == FAIL)
 	return FAIL;
 
     /*
@@ -2217,7 +2230,7 @@ eval5(char_u **arg, typval_T *rettv, int evaluate)
 	    // we know that the first operand needs to be a string or number
 	    // without evaluating the 2nd operand.  So check before to avoid
 	    // side effects after an error.
-	    if (evaluate && tv_get_string_chk(rettv) == NULL)
+	    if ((flags & EVAL_EVALUATE) && tv_get_string_chk(rettv) == NULL)
 	    {
 		clear_tv(rettv);
 		return FAIL;
@@ -2230,13 +2243,13 @@ eval5(char_u **arg, typval_T *rettv, int evaluate)
 	if (op == '.' && *(*arg + 1) == '.')  // .. string concatenation
 	    ++*arg;
 	*arg = skipwhite(*arg + 1);
-	if (eval6(arg, &var2, evaluate, op == '.') == FAIL)
+	if (eval6(arg, &var2, flags, op == '.') == FAIL)
 	{
 	    clear_tv(rettv);
 	    return FAIL;
 	}
 
-	if (evaluate)
+	if (flags & EVAL_EVALUATE)
 	{
 	    /*
 	     * Compute the result.
@@ -2358,7 +2371,7 @@ eval5(char_u **arg, typval_T *rettv, int evaluate)
 eval6(
     char_u	**arg,
     typval_T	*rettv,
-    int		evaluate,
+    int		flags,
     int		want_string)  // after "." operator
 {
     typval_T	var2;
@@ -2373,7 +2386,7 @@ eval6(
     /*
      * Get the first variable.
      */
-    if (eval7(arg, rettv, evaluate, want_string) == FAIL)
+    if (eval7(arg, rettv, flags, want_string) == FAIL)
 	return FAIL;
 
     /*
@@ -2385,7 +2398,7 @@ eval6(
 	if (op != '*' && op != '/' && op != '%')
 	    break;
 
-	if (evaluate)
+	if (flags & EVAL_EVALUATE)
 	{
 #ifdef FEAT_FLOAT
 	    if (rettv->v_type == VAR_FLOAT)
@@ -2408,10 +2421,10 @@ eval6(
 	 * Get the second variable.
 	 */
 	*arg = skipwhite(*arg + 1);
-	if (eval7(arg, &var2, evaluate, FALSE) == FAIL)
+	if (eval7(arg, &var2, flags, FALSE) == FAIL)
 	    return FAIL;
 
-	if (evaluate)
+	if (flags & EVAL_EVALUATE)
 	{
 #ifdef FEAT_FLOAT
 	    if (var2.v_type == VAR_FLOAT)
@@ -2528,9 +2541,10 @@ eval6(
 eval7(
     char_u	**arg,
     typval_T	*rettv,
-    int		evaluate,
+    int		flags,
     int		want_string)	// after "." operator
 {
+    int		evaluate = flags & EVAL_EVALUATE;
     int		len;
     char_u	*s;
     char_u	*start_leader, *end_leader;
@@ -2595,7 +2609,7 @@ eval7(
     /*
      * List: [expr, expr]
      */
-    case '[':	ret = get_list_tv(arg, rettv, evaluate, TRUE);
+    case '[':	ret = get_list_tv(arg, rettv, flags, TRUE);
 		break;
 
     /*
@@ -2604,7 +2618,7 @@ eval7(
     case '#':	if ((*arg)[1] == '{')
 		{
 		    ++*arg;
-		    ret = eval_dict(arg, rettv, evaluate, TRUE);
+		    ret = eval_dict(arg, rettv, flags, TRUE);
 		}
 		else
 		    ret = NOTDONE;
@@ -2616,7 +2630,7 @@ eval7(
      */
     case '{':	ret = get_lambda_tv(arg, rettv, evaluate);
 		if (ret == NOTDONE)
-		    ret = eval_dict(arg, rettv, evaluate, FALSE);
+		    ret = eval_dict(arg, rettv, flags, FALSE);
 		break;
 
     /*
@@ -2649,7 +2663,7 @@ eval7(
      * nested expression: (expression).
      */
     case '(':	*arg = skipwhite(*arg + 1);
-		ret = eval1(arg, rettv, evaluate);	// recursive!
+		ret = eval1(arg, rettv, flags);	// recursive!
 		if (**arg == ')')
 		    ++*arg;
 		else if (ret == OK)
@@ -2680,7 +2694,7 @@ eval7(
 	else
 	{
 	    if (**arg == '(')		// recursive!
-		ret = eval_func(arg, s, len, rettv, evaluate, NULL);
+		ret = eval_func(arg, s, len, rettv, flags, NULL);
 	    else if (evaluate)
 		ret = get_var_tv(s, len, rettv, NULL, TRUE, FALSE);
 	    else
@@ -2697,7 +2711,7 @@ eval7(
     // Handle following '[', '(' and '.' for expr[expr], expr.name,
     // expr(expr), expr->name(expr)
     if (ret == OK)
-	ret = handle_subscript(arg, rettv, evaluate, TRUE,
+	ret = handle_subscript(arg, rettv, flags, TRUE,
 						    start_leader, &end_leader);
 
     /*
@@ -2919,7 +2933,8 @@ eval_method(
 	    ret = FAIL;
 	}
 	else
-	    ret = eval_func(arg, name, len, rettv, evaluate, &base);
+	    ret = eval_func(arg, name, len, rettv,
+					  evaluate ? EVAL_EVALUATE : 0, &base);
     }
 
     // Clear the funcref afterwards, so that deleting it while
@@ -2939,9 +2954,10 @@ eval_method(
 eval_index(
     char_u	**arg,
     typval_T	*rettv,
-    int		evaluate,
+    int		flags,
     int		verbose)	// give error messages
 {
+    int		evaluate = flags & EVAL_EVALUATE;
     int		empty1 = FALSE, empty2 = FALSE;
     typval_T	var1, var2;
     long	i;
@@ -3010,7 +3026,7 @@ eval_index(
 	*arg = skipwhite(*arg + 1);
 	if (**arg == ':')
 	    empty1 = TRUE;
-	else if (eval1(arg, &var1, evaluate) == FAIL)	// recursive!
+	else if (eval1(arg, &var1, flags) == FAIL)	// recursive!
 	    return FAIL;
 	else if (evaluate && tv_get_string_chk(&var1) == NULL)
 	{
@@ -3028,7 +3044,7 @@ eval_index(
 	    *arg = skipwhite(*arg + 1);
 	    if (**arg == ']')
 		empty2 = TRUE;
-	    else if (eval1(arg, &var2, evaluate) == FAIL)	// recursive!
+	    else if (eval1(arg, &var2, flags) == FAIL)	// recursive!
 	    {
 		if (!empty1)
 		    clear_tv(&var1);
@@ -5310,11 +5326,12 @@ eval_isnamec1(int c)
 handle_subscript(
     char_u	**arg,
     typval_T	*rettv,
-    int		evaluate,	// do more than finding the end
+    int		flags,		// do more than finding the end
     int		verbose,	// give error messages
     char_u	*start_leader,	// start of '!' and '-' prefixes
     char_u	**end_leaderp)  // end of '!' and '-' prefixes
 {
+    int		evaluate = flags & EVAL_EVALUATE;
     int		ret = OK;
     dict_T	*selfdict = NULL;
 
@@ -5374,7 +5391,7 @@ handle_subscript(
 	    }
 	    else
 		selfdict = NULL;
-	    if (eval_index(arg, rettv, evaluate, verbose) == FAIL)
+	    if (eval_index(arg, rettv, flags, verbose) == FAIL)
 	    {
 		clear_tv(rettv);
 		ret = FAIL;
@@ -6108,7 +6125,7 @@ ex_echo(exarg_T *eap)
 	need_clr_eos = needclr;
 
 	p = arg;
-	if (eval1(&arg, &rettv, !eap->skip) == FAIL)
+	if (eval1(&arg, &rettv, eap->skip ? 0 : EVAL_EVALUATE) == FAIL)
 	{
 	    /*
 	     * Report the invalid expression unless the expression evaluation

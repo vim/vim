@@ -2133,7 +2133,7 @@ typedef enum {
 // Flags for assignment functions.
 #define LET_IS_CONST	1   // ":const"
 #define LET_NO_COMMAND	2   // "var = expr" without ":let" or ":const"
-#define LET_REDEFINE	4   // variable can be redefined later
+#define LET_DISCOVERY	4   // discovery phase: variable can be redefined later
 
 #include "ex_cmds.h"	    // Ex command defines
 #include "spell.h"	    // spell checking stuff
@@ -2661,5 +2661,9 @@ long elapsed(DWORD start_tick);
 #define REPTERM_DO_LT		2
 #define REPTERM_SPECIAL		4
 #define REPTERM_NO_SIMPLIFY	8
+
+// Flags for expression evaluation.
+#define EVAL_EVALUATE	    1	    // when missing don't actually evaluate
+#define EVAL_CONSTANT	    2	    // when not a constant return FAIL
 
 #endif // VIM__H
