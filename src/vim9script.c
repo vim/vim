@@ -37,6 +37,7 @@ ex_vim9script(exarg_T *eap)
     garray_T	    func_ga;
     int		    idx;
     ufunc_T	    *ufunc;
+    int		    start_called_emsg = called_emsg;
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
     {
@@ -66,7 +67,7 @@ ex_vim9script(exarg_T *eap)
     // The types are recognized, so that they can be used when compiling a
     // function.
     gap = source_get_line_ga(eap->cookie);
-    for (;;)
+    while (called_emsg == start_called_emsg)
     {
 	char_u	    *line;
 	char_u	    *p;
@@ -132,22 +133,29 @@ ex_vim9script(exarg_T *eap)
 	}
 	else if (checkforcmd(&p, "finish", 4))
 	{
-	    // TODO: this should not happen below "if false".
-	    // Use "if cond | finish | endif as a workaround.
 	    break;
 	}
     }
 
     // Compile the :def functions.
-    for (idx = 0; idx < func_ga.ga_len; ++idx)
+    for (idx = 0; idx < func_ga.ga_len && called_emsg == start_called_emsg; ++idx)
     {
 	ufunc = ((ufunc_T **)(func_ga.ga_data))[idx];
 	compile_def_function(ufunc, FALSE, NULL);
     }
     ga_clear(&func_ga);
 
-    // Return to process the commands at the script level.
-    source_use_line_ga(eap->cookie);
+    if (called_emsg == start_called_emsg)
+    {
+	// Return to process the commands at the script level.
+	source_use_line_ga(eap->cookie);
+    }
+    else
+    {
+	// If there was an error in the first or second phase then don't
+	// execute the script lines.
+	do_finish(eap, FALSE);
+    }
 }
 
 /*

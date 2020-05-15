@@ -2695,6 +2695,8 @@ eval7(
 	{
 	    if (**arg == '(')		// recursive!
 		ret = eval_func(arg, s, len, rettv, flags, NULL);
+	    else if (flags & EVAL_CONSTANT)
+		ret = FAIL;
 	    else if (evaluate)
 		ret = get_var_tv(s, len, rettv, NULL, TRUE, FALSE);
 	    else

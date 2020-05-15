@@ -494,8 +494,8 @@ let s:export_script_lines =<< trim END
   def Concat(arg: string): string
     return name .. arg
   enddef
-  let g:result: string = Concat('bie')
-  let g:localname = name
+  g:result = Concat('bie')
+  g:localname = name
 
   export const CONST = 1234
   export let exported = 9876
@@ -1747,10 +1747,34 @@ def Test_let_missing_type()
     endfunc
     let val = GetValue() 
   END
-  writefile(lines, 'Xfinished')
-  assert_fails('source Xfinished', 'E1091:')
+  CheckScriptFailure(lines, 'E1091:')
 
-  delete('Xfinished')
+  lines =<< trim END
+    vim9script
+    let var = g:unkown
+  END
+  CheckScriptFailure(lines, 'E1091:')
+
+  " TODO: eventually this would work
+  lines =<< trim END
+    vim9script
+    let var = has('eval')
+  END
+  CheckScriptFailure(lines, 'E1091:')
+
+  " TODO: eventually this would work
+  lines =<< trim END
+    vim9script
+    let var = len('string')
+  END
+  CheckScriptFailure(lines, 'E1091:')
+
+  lines =<< trim END
+    vim9script
+    let nr: number = 123
+    let var = nr
+  END
+  CheckScriptFailure(lines, 'E1091:')
 enddef
 
 def Test_forward_declaration()
