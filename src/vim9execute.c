@@ -2104,20 +2104,13 @@ call_def_function(
 
 		    // dict member: dict is at stack-2, key at stack-1
 		    tv = STACK_TV_BOT(-2);
-		    if (tv->v_type != VAR_DICT)
-		    {
-			emsg(_(e_dictreq));
-			goto failed;
-		    }
+		    // no need to check for VAR_DICT, CHECKTYPE will check.
 		    dict = tv->vval.v_dict;
 
 		    tv = STACK_TV_BOT(-1);
-		    if (tv->v_type != VAR_STRING)
-		    {
-			emsg(_(e_stringreq));
-			goto failed;
-		    }
+		    // no need to check for VAR_STRING, 2STRING will check.
 		    key = tv->vval.v_string;
+
 		    if ((di = dict_find(dict, key, -1)) == NULL)
 		    {
 			semsg(_(e_dictkey), key);

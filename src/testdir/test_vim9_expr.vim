@@ -799,8 +799,12 @@ enddef
 
 def Test_expr_member()
   assert_equal(1, g:dict_one.one)
+  let d: dict<number> = g:dict_one
+  assert_equal(1, d['one'])
 
   call CheckDefFailure(["let x = g:dict_one.#$!"], 'E1002:')
+  call CheckDefExecFailure(["let d: dict<any>", "echo d['a']"], 'E716:')
+  call CheckDefExecFailure(["let d: dict<number>", "d = g:list_empty"], 'E1029: Expected dict but got list')
 enddef
 
 def Test_expr7_option()
