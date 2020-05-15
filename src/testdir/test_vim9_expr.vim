@@ -170,15 +170,18 @@ def Test_expr4_equal()
   assert_equal(false, 61 == g:anint)
 
   if has('float')
-    assert_equal(true, 0.3 == 0.3)
-    assert_equal(false, 0.4 == 0.3)
+    let ff = 0.3
+    assert_equal(true, ff == 0.3)
+    assert_equal(false, 0.4 == ff)
     assert_equal(true, 0.1 == g:afloat)
     assert_equal(false, g:afloat == 0.3)
 
-    assert_equal(true, 3.0 == 3)
-    assert_equal(true, 3 == 3.0)
-    assert_equal(false, 3.1 == 3)
-    assert_equal(false, 3 == 3.1)
+    ff = 3.0
+    assert_equal(true, ff == 3)
+    assert_equal(true, 3 == ff)
+    ff = 3.1
+    assert_equal(false, ff == 3)
+    assert_equal(false, 3 == ff)
   endif
 
   assert_equal(true, 'abc' == 'abc')
@@ -198,8 +201,9 @@ def Test_expr4_equal()
 
   call CheckDefFailure(["let x = 'a' == xxx"], 'E1001:')
 
-  assert_equal(true, 0z3f == 0z3f)
-  assert_equal(false, 0z3f == 0z4f)
+  let bb = 0z3f
+  assert_equal(true, 0z3f == bb)
+  assert_equal(false, bb == 0z4f)
   assert_equal(true, g:ablob == 0z01ab)
   assert_equal(false, 0z3f == g:ablob)
 
@@ -250,15 +254,18 @@ def Test_expr4_notequal()
   assert_equal(true, 61 != g:anint)
 
   if has('float')
-    assert_equal(false, 0.3 != 0.3)
-    assert_equal(true, 0.4 != 0.3)
+    let ff = 0.3
+    assert_equal(false, 0.3 != ff)
+    assert_equal(true, 0.4 != ff)
     assert_equal(false, 0.1 != g:afloat)
     assert_equal(true, g:afloat != 0.3)
 
-    assert_equal(false, 3.0 != 3)
-    assert_equal(false, 3 != 3.0)
-    assert_equal(true, 3.1 != 3)
-    assert_equal(true, 3 != 3.1)
+    ff = 3.0
+    assert_equal(false, ff != 3)
+    assert_equal(false, 3 != ff)
+    ff = 3.1
+    assert_equal(true, ff != 3)
+    assert_equal(true, 3 != ff)
   endif
 
   assert_equal(false, 'abc' != 'abc')
@@ -271,8 +278,9 @@ def Test_expr4_notequal()
   assert_equal(true, 'abc' != 'ABC')
   set noignorecase
 
-  assert_equal(false, 0z3f != 0z3f)
-  assert_equal(true, 0z3f != 0z4f)
+  let bb = 0z3f
+  assert_equal(false, 0z3f != bb)
+  assert_equal(true, bb != 0z4f)
   assert_equal(false, g:ablob != 0z01ab)
   assert_equal(true, 0z3f != g:ablob)
 
@@ -306,10 +314,11 @@ def Test_expr4_greater()
   assert_false(2 > 2)
   assert_false(2 > 3)
   if has('float')
-    assert_true(2.0 > 0.0)
-    assert_true(2.0 > 1.0)
-    assert_false(2.0 > 2.0)
-    assert_false(2.0 > 3.0)
+    let ff = 2.0
+    assert_true(ff > 0.0)
+    assert_true(ff > 1.0)
+    assert_false(ff > 2.0)
+    assert_false(ff > 3.0)
   endif
 enddef
 
@@ -320,9 +329,10 @@ def Test_expr4_greaterequal()
 			2)
   assert_false(2 >= 3)
   if has('float')
-    assert_true(2.0 >= 0.0)
-    assert_true(2.0 >= 2.0)
-    assert_false(2.0 >= 3.0)
+    let ff = 2.0
+    assert_true(ff >= 0.0)
+    assert_true(ff >= 2.0)
+    assert_false(ff >= 3.0)
   endif
 enddef
 
@@ -333,9 +343,10 @@ def Test_expr4_smaller()
 			2)
   assert_true(2 < 3)
   if has('float')
-    assert_false(2.0 < 0.0)
-    assert_false(2.0 < 2.0)
-    assert_true(2.0 < 3.0)
+    let ff = 2.0
+    assert_false(ff < 0.0)
+    assert_false(ff < 2.0)
+    assert_true(ff < 3.0)
   endif
 enddef
 
@@ -347,10 +358,11 @@ def Test_expr4_smallerequal()
   assert_true(2 <= 2)
   assert_true(2 <= 3)
   if has('float')
-    assert_false(2.0 <= 0.0)
-    assert_false(2.0 <= 1.0)
-    assert_true(2.0 <= 2.0)
-    assert_true(2.0 <= 3.0)
+    let ff = 2.0
+    assert_false(ff <= 0.0)
+    assert_false(ff <= 1.0)
+    assert_true(ff <= 2.0)
+    assert_true(ff <= 3.0)
   endif
 enddef
 
