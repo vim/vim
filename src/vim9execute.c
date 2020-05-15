@@ -128,7 +128,7 @@ exe_newlist(int count, ectx_T *ectx)
 
     if (count > 0)
 	ectx->ec_stack.ga_len -= count - 1;
-    else if (ga_grow(&ectx->ec_stack, 1) == FAIL)
+    else if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
 	return FAIL;
     else
 	++ectx->ec_stack.ga_len;
@@ -437,7 +437,7 @@ call_prepare(int argcount, typval_T *argvars, ectx_T *ectx)
     // Result replaces the arguments on the stack.
     if (argcount > 0)
 	ectx->ec_stack.ga_len -= argcount - 1;
-    else if (ga_grow(&ectx->ec_stack, 1) == FAIL)
+    else if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
 	return FAIL;
     else
 	++ectx->ec_stack.ga_len;
@@ -651,6 +651,7 @@ call_def_function(
     int		ret = FAIL;
     int		defcount = ufunc->uf_args.ga_len - argc;
     int		save_sc_version = current_sctx.sc_version;
+    int		breakcheck_count = 0;
 
 // Get pointer to item in the stack.
 #define STACK_TV(idx) (((typval_T *)ectx.ec_stack.ga_data) + idx)
@@ -749,7 +750,11 @@ call_def_function(
     {
 	isn_T	    *iptr;
 
-	veryfast_breakcheck();
+	if (++breakcheck_count >= 100)
+	{
+	    line_breakcheck();
+	    breakcheck_count = 0;
+	}
 	if (got_int)
 	{
 	    // Turn CTRL-C into an exception.
@@ -790,7 +795,7 @@ call_def_function(
 		if (ectx.ec_frame_idx == initial_frame_idx)
 		{
 		    // At the toplevel we are done.  Push a dummy return value.
-		    if (ga_grow(&ectx.ec_stack, 1) == FAIL)
+		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
 		    tv = STACK_TV_BOT(0);
 		    tv->v_type = VAR_NUMBER;
@@ -942,7 +947,7 @@ call_def_function(
 
 	    // load local variable or argument
 	    case ISN_LOAD:
-		if (ga_grow(&ectx.ec_stack, 1) == FAIL)
+		if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 		    goto failed;
 		copy_tv(STACK_TV_VAR(iptr->isn_arg.number), STACK_TV_BOT(0));
 		++ectx.ec_stack.ga_len;
@@ -950,7 +955,7 @@ call_def_function(
 
 	    // load variable or argument from outer scope
 	    case ISN_LOADOUTER:
-		if (ga_grow(&ectx.ec_stack, 1) == FAIL)
+		if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 		    goto failed;
 		copy_tv(STACK_OUT_TV_VAR(iptr->isn_arg.number),
 							      STACK_TV_BOT(0));
@@ -959,7 +964,7 @@ call_def_function(
 
 	    // load v: variable
 	    case ISN_LOADV:
-		if (ga_grow(&ectx.ec_stack, 1) == FAIL)
+		if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 		    goto failed;
 		copy_tv(get_vim_var_tv(iptr->isn_arg.number), STACK_TV_BOT(0));
 		++ectx.ec_stack.ga_len;
@@ -974,7 +979,7 @@ call_def_function(
 
 		    sv = ((svar_T *)si->sn_var_vals.ga_data)
 					     + iptr->isn_arg.script.script_idx;
-		    if (ga_grow(&ectx.ec_stack, 1) == FAIL)
+		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
 		    copy_tv(sv->sv_tv, STACK_TV_BOT(0));
 		    ++ectx.ec_stack.ga_len;
@@ -996,7 +1001,7 @@ call_def_function(
 		    }
 		    else
 		    {
-			if (ga_grow(&ectx.ec_stack, 1) == FAIL)
+			if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 			    goto failed;
 			copy_tv(&di->di_tv, STACK_TV_BOT(0));
 			++ectx.ec_stack.ga_len;
@@ -1044,7 +1049,7 @@ call_def_function(
 		    }
 		    else
 		    {
-			if (ga_grow(&ectx.ec_stack, 1) == FAIL)
+			if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 			    goto failed;
 			copy_tv(&di->di_tv, STACK_TV_BOT(0));
 			++ectx.ec_stack.ga_len;
@@ -1060,7 +1065,7 @@ call_def_function(
 
 		    // This is not expected to fail, name is checked during
 		    // compilation: don't set SOURCING_LNUM.
-		    if (ga_grow(&ectx.ec_stack, 1) == FAIL)
+		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
 		    if (get_option_tv(&name, &optval, TRUE) == FAIL)
 			goto failed;
@@ -1075,7 +1080,7 @@ call_def_function(
 		    typval_T	optval;
 		    char_u	*name = iptr->isn_arg.string;
 
-		    if (ga_grow(&ectx.ec_stack, 1) == FAIL)
+		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
 		    // name is always valid, checked when compiling
 		    (void)get_env_tv(&name, &optval, TRUE);
@@ -1086,7 +1091,7 @@ call_def_function(
 
 	    // load @register
 	    case ISN_LOADREG:
-		if (ga_grow(&ectx.ec_stack, 1) == FAIL)
+		if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 		    goto failed;
 		tv = STACK_TV_BOT(0);
 		tv->v_type = VAR_STRING;
@@ -1334,7 +1339,7 @@ call_def_function(
 	    case ISN_PUSHFUNC:
 	    case ISN_PUSHCHANNEL:
 	    case ISN_PUSHJOB:
-		if (ga_grow(&ectx.ec_stack, 1) == FAIL)
+		if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 		    goto failed;
 		tv = STACK_TV_BOT(0);
 		++ectx.ec_stack.ga_len;
@@ -1434,7 +1439,7 @@ call_def_function(
 
 		    if (count > 0)
 			ectx.ec_stack.ga_len -= 2 * count - 1;
-		    else if (ga_grow(&ectx.ec_stack, 1) == FAIL)
+		    else if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
 		    else
 			++ectx.ec_stack.ga_len;
@@ -1554,7 +1559,7 @@ call_def_function(
 		    pt = ALLOC_CLEAR_ONE(partial_T);
 		    if (pt == NULL)
 			goto failed;
-		    if (ga_grow(&ectx.ec_stack, 1) == FAIL)
+		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 		    {
 			vim_free(pt);
 			goto failed;
@@ -1632,7 +1637,7 @@ call_def_function(
 				   STACK_TV_VAR(iptr->isn_arg.forloop.for_idx);
 
 		    // push the next item from the list
-		    if (ga_grow(&ectx.ec_stack, 1) == FAIL)
+		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
 		    if (++idxtv->vval.v_number >= list->lv_len)
 			// past the end of the list, jump to "endfor"
@@ -1663,7 +1668,7 @@ call_def_function(
 		{
 		    trycmd_T    *trycmd = NULL;
 
-		    if (ga_grow(&ectx.ec_trystack, 1) == FAIL)
+		    if (GA_GROW(&ectx.ec_trystack, 1) == FAIL)
 			goto failed;
 		    trycmd = ((trycmd_T *)ectx.ec_trystack.ga_data)
 						     + ectx.ec_trystack.ga_len;
@@ -1682,7 +1687,7 @@ call_def_function(
 		    iemsg("Evaluating catch while current_exception is NULL");
 		    goto failed;
 		}
-		if (ga_grow(&ectx.ec_stack, 1) == FAIL)
+		if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 		    goto failed;
 		tv = STACK_TV_BOT(0);
 		++ectx.ec_stack.ga_len;
