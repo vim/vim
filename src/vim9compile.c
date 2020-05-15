@@ -3490,7 +3490,7 @@ compile_subscript(
 	    type_T	**typep;
 
 	    // list index: list[123]
-	    // list member: dict[key]
+	    // dict member: dict[key]
 	    // TODO: blob index
 	    // TODO: more arguments
 	    // TODO: recognize list or dict at runtime
@@ -4999,8 +4999,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			goto theend;
 		}
 	    }
-	    else if (*p != '=' && check_type(member_type, stacktype, TRUE)
-								       == FAIL)
+	    else if (*p != '=' && need_type(stacktype, member_type, -1,
+								 cctx) == FAIL)
 		goto theend;
 	}
     }

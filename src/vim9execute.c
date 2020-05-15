@@ -1164,13 +1164,9 @@ call_def_function(
 			if (s == NULL)
 			    s = (char_u *)"";
 		    }
-		    else if (tv->v_type == VAR_NUMBER)
-			n = tv->vval.v_number;
 		    else
-		    {
-			emsg(_("E1051: Expected string or number"));
-			goto failed;
-		    }
+			// must be VAR_NUMBER, CHECKTYPE makes sure
+			n = tv->vval.v_number;
 		    msg = set_option_value(iptr->isn_arg.storeopt.so_name,
 					n, s, iptr->isn_arg.storeopt.so_flags);
 		    if (msg != NULL)
