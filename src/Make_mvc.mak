@@ -675,9 +675,6 @@ CFLAGS = $(CFLAGS) $(WP64CHECK)
 
 CFLAGS = $(CFLAGS) $(OPTFLAG) -DNDEBUG $(CPUARG)
 RCFLAGS = $(rcflags) $(rcvars) -DNDEBUG
-! if "$(CL)" == "/D_USING_V110_SDK71_"
-RCFLAGS = $(RCFLAGS) /D_USING_V110_SDK71_
-! endif
 ! ifdef USE_MSVCRT
 CFLAGS = $(CFLAGS) /MD
 LIBC = msvcrt.lib
@@ -706,6 +703,10 @@ LIBC = $(LIBC) libcmtd.lib
 CFLAGS = $(CFLAGS) /Zl /MTd
 ! endif
 !endif # DEBUG
+
+!if "$(CL)" == "/D_USING_V110_SDK71_"
+RCFLAGS = $(RCFLAGS) /D_USING_V110_SDK71_
+!endif
 
 !if $(MSVC_MAJOR) >= 8
 # Visual Studio 2005 has 'deprecated' many of the standard CRT functions
