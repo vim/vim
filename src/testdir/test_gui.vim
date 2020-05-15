@@ -841,6 +841,7 @@ endfunc
 " Test for "!" option in 'guioptions'. Use a terminal for running external
 " commands
 func Test_gui_run_cmd_in_terminal()
+  CheckFeature terminal
   let save_guioptions = &guioptions
   set guioptions+=!
   if has('win32')
