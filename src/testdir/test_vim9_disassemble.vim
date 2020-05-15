@@ -726,18 +726,18 @@ enddef
 
 def Test_disassemble_list_index()
   let instr = execute('disassemble ListIndex')
-  assert_match('ListIndex.*' ..
-        'let l = \[1, 2, 3].*' ..
-        '\d PUSHNR 1.*' ..
-        '\d PUSHNR 2.*' ..
-        '\d PUSHNR 3.*' ..
-        '\d NEWLIST size 3.*' ..
-        '\d STORE $0.*' ..
-        'let res = l\[1].*' ..
-        '\d LOAD $0.*' ..
-        '\d PUSHNR 1.*' ..
-        '\d INDEX.*' ..
-        '\d STORE $1.*',
+  assert_match('ListIndex\_s*' ..
+        'let l = \[1, 2, 3]\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d PUSHNR 2\_s*' ..
+        '\d PUSHNR 3\_s*' ..
+        '\d NEWLIST size 3\_s*' ..
+        '\d STORE $0\_s*' ..
+        'let res = l\[1]\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d INDEX\_s*' ..
+        '\d STORE $1\_s*',
         instr)
   assert_equal(2, ListIndex())
 enddef
@@ -745,21 +745,27 @@ enddef
 def DictMember(): number
   let d = #{item: 1}
   let res = d.item
+  res = d["item"]
   return res
 enddef
 
 def Test_disassemble_dict_member()
   let instr = execute('disassemble DictMember')
-  assert_match('DictMember.*' ..
-        'let d = #{item: 1}.*' ..
-        '\d PUSHS "item".*' ..
-        '\d PUSHNR 1.*' ..
-        '\d NEWDICT size 1.*' ..
-        '\d STORE $0.*' ..
-        'let res = d.item.*' ..
-        '\d LOAD $0.*' ..
-        '\d MEMBER item.*' ..
-        '\d STORE $1.*',
+  assert_match('DictMember\_s*' ..
+        'let d = #{item: 1}\_s*' ..
+        '\d PUSHS "item"\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d NEWDICT size 1\_s*' ..
+        '\d STORE $0\_s*' ..
+        'let res = d.item\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ MEMBER item\_s*' ..
+        '\d\+ STORE $1\_s*' ..
+        'res = d\["item"\]\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ PUSHS "item"\_s*' ..
+        '\d\+ MEMBER\_s*' ..
+        '\d\+ STORE $1\_s*',
         instr)
   call assert_equal(1, DictMember())
 enddef
@@ -773,17 +779,17 @@ enddef
 
 def Test_disassemble_negate_number()
   let instr = execute('disassemble NegateNumber')
-  assert_match('NegateNumber.*' ..
-        'let nr = 9.*' ..
-        '\d STORE 9 in $0.*' ..
-        'let plus = +nr.*' ..
-        '\d LOAD $0.*' ..
-        '\d CHECKNR.*' ..
-        '\d STORE $1.*' ..
-        'let res = -nr.*' ..
-        '\d LOAD $0.*' ..
-        '\d NEGATENR.*' ..
-        '\d STORE $2.*',
+  assert_match('NegateNumber\_s*' ..
+        'let nr = 9\_s*' ..
+        '\d STORE 9 in $0\_s*' ..
+        'let plus = +nr\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d CHECKNR\_s*' ..
+        '\d STORE $1\_s*' ..
+        'let res = -nr\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d NEGATENR\_s*' ..
+        '\d STORE $2\_s*',
         instr)
   call assert_equal(-9, NegateNumber())
 enddef
@@ -797,18 +803,18 @@ enddef
 
 def Test_disassemble_invert_bool()
   let instr = execute('disassemble InvertBool')
-  assert_match('InvertBool.*' ..
-        'let flag = true.*' ..
-        '\d PUSH v:true.*' ..
-        '\d STORE $0.*' ..
-        'let invert = !flag.*' ..
-        '\d LOAD $0.*' ..
-        '\d INVERT (!val).*' ..
-        '\d STORE $1.*' ..
-        'let res = !!flag.*' ..
-        '\d LOAD $0.*' ..
-        '\d 2BOOL (!!val).*' ..
-        '\d STORE $2.*',
+  assert_match('InvertBool\_s*' ..
+        'let flag = true\_s*' ..
+        '\d PUSH v:true\_s*' ..
+        '\d STORE $0\_s*' ..
+        'let invert = !flag\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d INVERT (!val)\_s*' ..
+        '\d STORE $1\_s*' ..
+        'let res = !!flag\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d 2BOOL (!!val)\_s*' ..
+        '\d STORE $2\_s*',
         instr)
   call assert_equal(true, InvertBool())
 enddef
@@ -970,26 +976,26 @@ enddef
 
 def Test_disassemble_execute()
   let res = execute('disass s:Execute')
-  assert_match('\<SNR>\d*_Execute.*' ..
-        "execute 'help vim9.txt'.*" ..
-        '\d PUSHS "help vim9.txt".*' ..
-        '\d EXECUTE 1.*' ..
-        "let cmd = 'help vim9.txt'.*" ..
-        '\d PUSHS "help vim9.txt".*' ..
-        '\d STORE $0.*' ..
-        'execute cmd.*' ..
-        '\d LOAD $0.*' ..
-        '\d EXECUTE 1.*' ..
-        "let tag = 'vim9.txt'.*" ..
-        '\d PUSHS "vim9.txt".*' ..
-        '\d STORE $1.*' ..
-        "execute 'help ' .. tag.*" ..
-        '\d PUSHS "help ".*' ..
-        '\d LOAD $1.*' ..
-        '\d CONCAT.*' ..
-        '\d EXECUTE 1.*' ..
-        '\d PUSHNR 0.*' ..
-        '\d RETURN',
+  assert_match('\<SNR>\d*_Execute\_s*' ..
+        "execute 'help vim9.txt'\\_s*" ..
+        '\d PUSHS "help vim9.txt"\_s*' ..
+        '\d EXECUTE 1\_s*' ..
+        "let cmd = 'help vim9.txt'\\_s*" ..
+        '\d PUSHS "help vim9.txt"\_s*' ..
+        '\d STORE $0\_s*' ..
+        'execute cmd\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d EXECUTE 1\_s*' ..
+        "let tag = 'vim9.txt'\\_s*" ..
+        '\d PUSHS "vim9.txt"\_s*' ..
+        '\d STORE $1\_s*' ..
+        "execute 'help ' .. tag\\_s*" ..
+        '\d\+ PUSHS "help "\_s*' ..
+        '\d\+ LOAD $1\_s*' ..
+        '\d\+ CONCAT\_s*' ..
+        '\d\+ EXECUTE 1\_s*' ..
+        '\d\+ PUSHNR 0\_s*' ..
+        '\d\+ RETURN',
         res)
 enddef
 
@@ -1000,15 +1006,15 @@ enddef
 
 def Test_disassemble_echomsg()
   let res = execute('disass s:Echomsg')
-  assert_match('\<SNR>\d*_Echomsg.*' ..
-        "echomsg 'some' 'message'.*" ..
-        '\d PUSHS "some".*' ..
-        '\d PUSHS "message".*' ..
-        '\d ECHOMSG 2.*' ..
-        "echoerr 'went' .. 'wrong'.*" ..
-        '\d PUSHS "wentwrong".*' ..
-        '\d ECHOERR 1.*' ..
-        '\d PUSHNR 0.*' ..
+  assert_match('\<SNR>\d*_Echomsg\_s*' ..
+        "echomsg 'some' 'message'\\_s*" ..
+        '\d PUSHS "some"\_s*' ..
+        '\d PUSHS "message"\_s*' ..
+        '\d ECHOMSG 2\_s*' ..
+        "echoerr 'went' .. 'wrong'\\_s*" ..
+        '\d PUSHS "wentwrong"\_s*' ..
+        '\d ECHOERR 1\_s*' ..
+        '\d PUSHNR 0\_s*' ..
         '\d RETURN',
         res)
 enddef
@@ -1027,21 +1033,21 @@ enddef
 
 def Test_display_func()
   let res1 = execute('function SomeStringArg')
-  assert_match('.* def SomeStringArg(arg: string).*' ..
-        '  echo arg.*' ..
-        '  enddef',
+  assert_match('.* def SomeStringArg(arg: string)\_s*' ..
+        '\d *echo arg.*' ..
+        ' *enddef',
         res1)
 
   let res2 = execute('function SomeAnyArg')
-  assert_match('.* def SomeAnyArg(arg: any).*' ..
-        '  echo arg.*' ..
-        '  enddef',
+  assert_match('.* def SomeAnyArg(arg: any)\_s*' ..
+        '\d *echo arg\_s*' ..
+        ' *enddef',
         res2)
 
   let res3 = execute('function SomeStringArgAndReturn')
-  assert_match('.* def SomeStringArgAndReturn(arg: string): string.*' ..
-        '  return arg.*' ..
-        '  enddef',
+  assert_match('.* def SomeStringArgAndReturn(arg: string): string\_s*' ..
+        '\d *return arg\_s*' ..
+        ' *enddef',
         res3)
 enddef
 
@@ -1060,9 +1066,9 @@ def Test_vim9script_forward_func()
   source Xdisassemble
 
   " check that the first function calls the second with DCALL
-  assert_match('\<SNR>\d*_FuncOne.*' ..
-        'return FuncTwo().*' ..
-        '\d DCALL <SNR>\d\+_FuncTwo(argc 0).*' ..
+  assert_match('\<SNR>\d*_FuncOne\_s*' ..
+        'return FuncTwo()\_s*' ..
+        '\d DCALL <SNR>\d\+_FuncTwo(argc 0)\_s*' ..
         '\d RETURN',
         g:res_FuncOne)
 
@@ -1084,20 +1090,23 @@ enddef
 
 def Test_simplify_const_expr()
   let res = execute('disass s:ConcatStrings')
-  assert_match('\<SNR>\d*_ConcatStrings.*' ..
-        '\d PUSHS "onetwothree".*' ..
+  assert_match('<SNR>\d*_ConcatStrings\_s*' ..
+        "return 'one' .. 'two' .. 'three'\\_s*" ..
+        '\d PUSHS "onetwothree"\_s*' ..
         '\d RETURN',
         res)
 
   res = execute('disass s:ComputeConst')
-  assert_match('\<SNR>\d*_ComputeConst.*' ..
-        '\d PUSHNR 11.*' ..
+  assert_match('<SNR>\d*_ComputeConst\_s*' ..
+        'return 2 + 3 \* 4 / 6 + 7\_s*' ..
+        '\d PUSHNR 11\_s*' ..
         '\d RETURN',
         res)
 
   res = execute('disass s:ComputeConstParen')
-  assert_match('\<SNR>\d*_ComputeConstParen.*' ..
-        '\d PUSHNR 3\>.*' ..
+  assert_match('<SNR>\d*_ComputeConstParen\_s*' ..
+        'return ((2 + 4) \* (8 / 2)) / (3 + 4)\_s*' ..
+        '\d PUSHNR 3\>\_s*' ..
         '\d RETURN',
         res)
 enddef
