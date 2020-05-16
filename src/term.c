@@ -3474,10 +3474,16 @@ settmode(int tmode)
 	    if (termcap_active)
 	    {
 		if (tmode != TMODE_RAW)
+		{
 		    out_str(T_BD);	// disable bracketed paste mode
+		    out_str(T_CTE);	// possibly disables modifyOtherKeys
+		}
 		else
+		{
 		    out_str(T_BE);	// enable bracketed paste mode (should
 					// be before mch_settmode().
+		    out_str(T_CTI);	// possibly enables modifyOtherKeys
+		}
 	    }
 	    out_flush();
 	    mch_settmode(tmode);	// machine specific function
