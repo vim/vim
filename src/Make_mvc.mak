@@ -1,7 +1,6 @@
-# Makefile for Vim on Win32 (Windows XP/2003/Vista/7/8/10) and Win64,
-# using the Microsoft Visual C++ compilers. Known to work with VC10 (VS2010),
-# VC11 (VS2012), VC12 (VS2013), VC14 (VS2015), VC14.1 (VS2017) and
-# VC14.2 (VS2019).
+# Makefile for Vim on Win32 (Windows 7/8/10) and Win64, using the Microsoft
+# Visual C++ compilers. Known to work with VC10 (VS2010), VC11 (VS2012), VC12
+# (VS2013), VC14 (VS2015), VC14.1 (VS2017) and VC14.2 (VS2019).
 #
 # To build using other Windows compilers, see INSTALLpc.txt
 #
@@ -124,13 +123,13 @@
 #
 #	Optimization: OPTIMIZE=[SPACE, SPEED, MAXSPEED] (default is MAXSPEED)
 #
-#	Processor Version: CPUNR=[any, i586, i686, sse, sse2, avx, avx2] (default is
-#	any)
+#	Processor Version: CPUNR=[any, i686, sse, sse2, avx, avx2] (default is
+#	sse2)
 #	  avx is available on Visual C++ 2010 and after.
 #	  avx2 is available on Visual C++ 2013 Update 2 and after.
 #
-#	Version Support: WINVER=[0x0501, 0x0502, 0x0600, 0x0601, 0x0602,
-#	0x0603, 0x0A00] (default is 0x0501)
+#	Version Support: WINVER=[0x0601, 0x0602, 0x0603, 0x0A00] (default is
+#	0x0601)
 #	Supported versions depends on your target SDK, check SDKDDKVer.h
 #	See https://docs.microsoft.com/en-us/cpp/porting/modifying-winver-and-win32-winnt
 #
@@ -317,9 +316,9 @@ MSVCRT_NAME = vcruntime$(MSVCRT_VER)
 CPU = ix86
 !endif
 
-### Set the default $(WINVER) to make it work with VC++7.0 (VS.NET)
+### Set the default $(WINVER) to make it work with Windows 7
 !ifndef WINVER
-WINVER = 0x0501
+WINVER = 0x0601
 !endif
 
 # Flag to turn on Win64 compatibility warnings for VC7.x and VC8.
@@ -520,29 +519,27 @@ OUTDIR=$(OBJDIR)
 
 ### Validate CPUNR
 !ifndef CPUNR
-# default to untargeted code
-CPUNR = any
-!elseif "$(CPUNR)" == "i386" || "$(CPUNR)" == "i486"
-# alias i386 and i486 to i586
+# default to SSE2
+CPUNR = sse2
+!elseif "$(CPUNR)" == "i386" || "$(CPUNR)" == "i486" || "$(CPUNR)" == "i586"
+# alias i386, i486 and i586 to i686
 ! message *** WARNING CPUNR=$(CPUNR) is not a valid target architecture.
-! message Windows XP is the minimum target OS, with a minimum target
-! message architecture of i586.
-! message Retargeting to i586
-CPUNR = i586
+! message Windows 7 is the minimum target OS, with a minimum target
+! message architecture of i686.
+! message Retargeting to i686
+CPUNR = i686
 !elseif "$(CPUNR)" == "pentium4"
 # alias pentium4 to sse2
 ! message *** WARNING CPUNR=pentium4 is deprecated in favour of sse2.
 ! message Retargeting to sse2.
 CPUNR = sse2
-!elseif "$(CPUNR)" != "any" && "$(CPUNR)" != "i586" && "$(CPUNR)" != "i686" && "$(CPUNR)" != "sse" && "$(CPUNR)" != "sse2" && "$(CPUNR)" != "avx" && "$(CPUNR)" != "avx2"
+!elseif "$(CPUNR)" != "any" && "$(CPUNR)" != "i686" && "$(CPUNR)" != "sse" && "$(CPUNR)" != "sse2" && "$(CPUNR)" != "avx" && "$(CPUNR)" != "avx2"
 ! error *** ERROR Unknown target architecture "$(CPUNR)". Make aborted.
 !endif
 
 # Convert processor ID to MVC-compatible number
 !if $(MSVC_MAJOR) < 8
-! if "$(CPUNR)" == "i586"
-CPUARG = /G5
-! elseif "$(CPUNR)" == "i686"
+! if "$(CPUNR)" == "i686"
 CPUARG = /G6
 ! elseif "$(CPUNR)" == "sse"
 CPUARG = /G6 /arch:SSE
@@ -557,7 +554,7 @@ CPUARG =
 ! endif
 !else
 # IA32/SSE/SSE2 are only supported on x86
-! if "$(ASSEMBLY_ARCHITECTURE)" == "i386" && ("$(CPUNR)" == "i586" || "$(CPUNR)" == "i686" || "$(CPUNR)" == "any")
+! if "$(ASSEMBLY_ARCHITECTURE)" == "i386" && ("$(CPUNR)" == "i686" || "$(CPUNR)" == "any")
 # VC<11 generates fp87 code by default
 !  if $(MSVC_MAJOR) < 11
 CPUARG =
@@ -652,6 +649,7 @@ CFLAGS = $(CFLAGS) /analyze
 !endif
 
 !ifdef NODEBUG
+
 VIM = vim
 ! if "$(OPTIMIZE)" == "SPACE"
 OPTFLAG = /O1
@@ -682,7 +680,9 @@ LIBC = msvcrt.lib
 LIBC = libcmt.lib
 CFLAGS = $(CFLAGS) /Zl /MT
 ! endif
+
 !else  # DEBUG
+
 VIM = vimd
 ! if ("$(CPU)" == "i386") || ("$(CPU)" == "ix86")
 DEBUGINFO = /ZI
@@ -702,6 +702,7 @@ LIBC = $(LIBC) msvcrtd.lib
 LIBC = $(LIBC) libcmtd.lib
 CFLAGS = $(CFLAGS) /Zl /MTd
 ! endif
+
 !endif # DEBUG
 
 !if "$(CL)" == "/D_USING_V110_SDK71_"
