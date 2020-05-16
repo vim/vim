@@ -1576,6 +1576,7 @@ getout(int exitval)
 	tabpage_T	*next_tp;
 	buf_T		*buf;
 	win_T		*wp;
+	int		unblock = 0;
 
 	// Trigger BufWinLeave for all windows, but only once per buffer.
 	for (tp = first_tabpage; tp != NULL; tp = next_tp)
@@ -1617,7 +1618,17 @@ getout(int exitval)
 		    // autocmd deleted the buffer
 		    break;
 	    }
+
+	// deathtrap() blocks autocommands, but we do want to trigger
+	// VimLeavePre.
+	if (is_autocmd_blocked())
+	{
+	    unblock_autocmds();
+	    ++unblock;
+	}
 	apply_autocmds(EVENT_VIMLEAVEPRE, NULL, NULL, FALSE, curbuf);
+	if (unblock)
+	    block_autocmds();
     }
 
 #ifdef FEAT_VIMINFO
