@@ -1169,12 +1169,12 @@ call_def_function(
 			n = tv->vval.v_number;
 		    msg = set_option_value(iptr->isn_arg.storeopt.so_name,
 					n, s, iptr->isn_arg.storeopt.so_flags);
+		    clear_tv(tv);
 		    if (msg != NULL)
 		    {
 			emsg(_(msg));
 			goto failed;
 		    }
-		    clear_tv(tv);
 		}
 		break;
 
