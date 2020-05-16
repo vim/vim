@@ -2168,9 +2168,9 @@ gui_mac_unicode_key_event(
 	    // taken liberally from gui_w48.c
 	    key_char = simplify_key(key_char, (int *)&vimModifiers);
 
-	    // Interpret META, include SHIFT, etc.
+	    // Unify modifiers somewhat.  No longer use ALT to set the 8th bit.
 	    key_char = extract_modifiers(key_char, (int *)&vimModifiers,
-		    TRUE, NULL);
+								  FALSE, NULL);
 	    if (key_char == CSI)
 		key_char = K_CSI;
 

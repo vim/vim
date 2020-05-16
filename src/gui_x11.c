@@ -771,8 +771,8 @@ gui_x11_key_hit_cb(
 #else
     char_u		string[4], string2[3];
 #endif
-    KeySym		key_sym, key_sym2;
-    int			len, len2;
+    KeySym		key_sym;
+    int			len;
     int			i;
     int			modifiers;
     int			key;
@@ -883,57 +883,9 @@ gui_x11_key_hit_cb(
     }
 #endif
 
-    // Check for Alt/Meta key (Mod1Mask), but not for a BS, DEL or character
-    // that already has the 8th bit set.  And not when using a double-byte
-    // encoding, setting the 8th bit may make it the lead byte of a
-    // double-byte character.
-    if (len == 1
-	    && (ev_press->state & Mod1Mask)
-	    && !(key_sym == XK_BackSpace || key_sym == XK_Delete)
-	    && (string[0] & 0x80) == 0
-	    && !enc_dbcs)
-    {
-#if defined(FEAT_MENU) && defined(FEAT_GUI_MOTIF)
-	// Ignore ALT keys when they are used for the menu only
-	if (gui.menu_is_active
-		&& (p_wak[0] == 'y'
-		    || (p_wak[0] == 'm' && gui_is_menu_shortcut(string[0]))))
-	    goto theend;
-#endif
-	/*
-	 * Before we set the 8th bit, check to make sure the user doesn't
-	 * already have a mapping defined for this sequence. We determine this
-	 * by checking to see if the input would be the same without the
-	 * Alt/Meta key.
-	 * Don't do this for <S-M-Tab>, that should become K_S_TAB with ALT.
-	 */
-	ev_press->state &= ~Mod1Mask;
-	len2 = XLookupString(ev_press, (char *)string2, sizeof(string2),
-							     &key_sym2, NULL);
-	if (key_sym2 == XK_space)
-	    string2[0] = ' ';	    // Otherwise Meta-Ctrl-Space doesn't work
-	if (	   len2 == 1
-		&& string[0] == string2[0]
-		&& !(key_sym == XK_Tab && (ev_press->state & ShiftMask)))
-	{
-	    string[0] |= 0x80;
-	    if (enc_utf8) // convert to utf-8
-	    {
-		string[1] = string[0] & 0xbf;
-		string[0] = ((unsigned)string[0] >> 6) + 0xc0;
-		if (string[1] == CSI)
-		{
-		    string[2] = KS_EXTRA;
-		    string[3] = (int)KE_CSI;
-		    len = 4;
-		}
-		else
-		    len = 2;
-	    }
-	}
-	else
-	    ev_press->state |= Mod1Mask;
-    }
+    // We used to apply Alt/Meta to the key here (Mod1Mask), but that is now
+    // done later, the same as it happens for the terminal.  Hopefully that
+    // works for everybody...
 
     if (len == 1 && string[0] == CSI)
     {
@@ -963,54 +915,47 @@ gui_x11_key_hit_cb(
     if (len == 0)
 	goto theend;
 
-    // Special keys (and a few others) may have modifiers.  Also when using a
-    // double-byte encoding (can't set the 8th bit).
-    if (len == -3 || key_sym == XK_space || key_sym == XK_Tab
-	    || key_sym == XK_Return || key_sym == XK_Linefeed
-	    || key_sym == XK_Escape
-	    || (enc_dbcs && len == 1 && (ev_press->state & Mod1Mask)))
+    // Handle modifiers.
+    modifiers = 0;
+    if (ev_press->state & ShiftMask)
+	modifiers |= MOD_MASK_SHIFT;
+    if (ev_press->state & ControlMask)
+	modifiers |= MOD_MASK_CTRL;
+    if (ev_press->state & Mod1Mask)
+	modifiers |= MOD_MASK_ALT;
+    if (ev_press->state & Mod4Mask)
+	modifiers |= MOD_MASK_META;
+
+    /*
+     * For some keys a shift modifier is translated into another key
+     * code.
+     */
+    if (len == -3)
+	key = TO_SPECIAL(string[1], string[2]);
+    else
+	key = string[0];
+    key = simplify_key(key, &modifiers);
+    if (key == CSI)
+	key = K_CSI;
+    if (IS_SPECIAL(key))
     {
-	modifiers = 0;
-	if (ev_press->state & ShiftMask)
-	    modifiers |= MOD_MASK_SHIFT;
-	if (ev_press->state & ControlMask)
-	    modifiers |= MOD_MASK_CTRL;
-	if (ev_press->state & Mod1Mask)
-	    modifiers |= MOD_MASK_ALT;
-	if (ev_press->state & Mod4Mask)
-	    modifiers |= MOD_MASK_META;
+	string[0] = CSI;
+	string[1] = K_SECOND(key);
+	string[2] = K_THIRD(key);
+	len = 3;
+    }
+    else
+    {
+	string[0] = key;
+	len = 1;
+    }
 
-	/*
-	 * For some keys a shift modifier is translated into another key
-	 * code.
-	 */
-	if (len == -3)
-	    key = TO_SPECIAL(string[1], string[2]);
-	else
-	    key = string[0];
-	key = simplify_key(key, &modifiers);
-	if (key == CSI)
-	    key = K_CSI;
-	if (IS_SPECIAL(key))
-	{
-	    string[0] = CSI;
-	    string[1] = K_SECOND(key);
-	    string[2] = K_THIRD(key);
-	    len = 3;
-	}
-	else
-	{
-	    string[0] = key;
-	    len = 1;
-	}
-
-	if (modifiers != 0)
-	{
-	    string2[0] = CSI;
-	    string2[1] = KS_MODIFIER;
-	    string2[2] = modifiers;
-	    add_to_input_buf(string2, 3);
-	}
+    if (modifiers != 0)
+    {
+	string2[0] = CSI;
+	string2[1] = KS_MODIFIER;
+	string2[2] = modifiers;
+	add_to_input_buf(string2, 3);
     }
 
     if (len == 1 && ((string[0] == Ctrl_C && ctrl_c_interrupts)
