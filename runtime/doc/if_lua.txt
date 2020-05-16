@@ -199,6 +199,13 @@ Vim evaluation and command execution, and others.
 				returns it. Note that the buffer is not set as
 				current.
 
+	vim.fn			Proxy to call vim functions. Proxy methods are
+				created on demand.
+				Examples: >
+					:lua print(vim.fn.has('timers'))
+<
+
+
 
 ==============================================================================
 3. List userdata					*lua-list*
