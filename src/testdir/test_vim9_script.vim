@@ -1736,6 +1736,8 @@ def Test_let_func_call()
       return 'this'
     endfunc
     let val: string = GetValue() 
+    " env var is always a string
+    let env = $TERM
   END
   writefile(lines, 'Xfinished')
   source Xfinished
@@ -1752,13 +1754,40 @@ def Test_let_missing_type()
     func GetValue()
       return 'this'
     endfunc
-    let val = GetValue() 
+    let val = GetValue()
   END
   CheckScriptFailure(lines, 'E1091:')
 
   lines =<< trim END
     vim9script
-    let var = g:unkown
+    func GetValue()
+      return 'this'
+    endfunc
+    let val = [GetValue()]
+  END
+  CheckScriptFailure(lines, 'E1091:')
+
+  lines =<< trim END
+    vim9script
+    func GetValue()
+      return 'this'
+    endfunc
+    let val = {GetValue(): 123}
+  END
+  CheckScriptFailure(lines, 'E1091:')
+
+  lines =<< trim END
+    vim9script
+    func GetValue()
+      return 'this'
+    endfunc
+    let val = {'a': GetValue()}
+  END
+  CheckScriptFailure(lines, 'E1091:')
+
+  lines =<< trim END
+    vim9script
+    let var = g:unknown
   END
   CheckScriptFailure(lines, 'E1091:')
 
