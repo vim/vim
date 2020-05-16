@@ -1269,44 +1269,6 @@ non_zero_arg(typval_T *argvars)
 		&& *argvars[0].vval.v_string != NUL));
 }
 
-/*
- * Get the lnum from the first argument.
- * Also accepts ".", "$", etc., but that only works for the current buffer.
- * Returns -1 on error.
- */
-    linenr_T
-tv_get_lnum(typval_T *argvars)
-{
-    linenr_T	lnum;
-
-    lnum = (linenr_T)tv_get_number_chk(&argvars[0], NULL);
-    if (lnum == 0)  // no valid number, try using arg like line()
-    {
-	int	fnum;
-	pos_T	*fp = var2fpos(&argvars[0], TRUE, &fnum);
-
-	if (fp != NULL)
-	    lnum = fp->lnum;
-    }
-    return lnum;
-}
-
-/*
- * Get the lnum from the first argument.
- * Also accepts "$", then "buf" is used.
- * Returns 0 on error.
- */
-    linenr_T
-tv_get_lnum_buf(typval_T *argvars, buf_T *buf)
-{
-    if (argvars[0].v_type == VAR_STRING
-	    && argvars[0].vval.v_string != NULL
-	    && argvars[0].vval.v_string[0] == '$'
-	    && buf != NULL)
-	return buf->b_ml.ml_line_count;
-    return (linenr_T)tv_get_number_chk(&argvars[0], NULL);
-}
-
 #ifdef FEAT_FLOAT
 /*
  * Get the float value of "argvars[0]" into "f".
@@ -1499,33 +1461,6 @@ f_balloon_split(typval_T *argvars, typval_T *rettv UNUSED)
 }
 # endif
 #endif
-
-/*
- * Get buffer by number or pattern.
- */
-    buf_T *
-tv_get_buf(typval_T *tv, int curtab_only)
-{
-    char_u	*name = tv->vval.v_string;
-    buf_T	*buf;
-
-    if (tv->v_type == VAR_NUMBER)
-	return buflist_findnr((int)tv->vval.v_number);
-    if (tv->v_type != VAR_STRING)
-	return NULL;
-    if (name == NULL || *name == NUL)
-	return curbuf;
-    if (name[0] == '$' && name[1] == NUL)
-	return lastbuf;
-
-    buf = buflist_find_by_name(name, curtab_only);
-
-    // If not found, try expanding the name, like done for bufexists().
-    if (buf == NULL)
-	buf = find_buffer(tv);
-
-    return buf;
-}
 
 /*
  * Get the buffer from "arg" and give an error and return NULL if it is not
@@ -5103,22 +5038,6 @@ f_interrupt(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 f_invert(typval_T *argvars, typval_T *rettv)
 {
     rettv->vval.v_number = ~tv_get_number_chk(&argvars[0], NULL);
-}
-
-/*
- * Return TRUE if typeval "tv" is locked: Either that value is locked itself
- * or it refers to a List or Dictionary that is locked.
- */
-    static int
-tv_islocked(typval_T *tv)
-{
-    return (tv->v_lock & VAR_LOCKED)
-	|| (tv->v_type == VAR_LIST
-		&& tv->vval.v_list != NULL
-		&& (tv->vval.v_list->lv_lock & VAR_LOCKED))
-	|| (tv->v_type == VAR_DICT
-		&& tv->vval.v_dict != NULL
-		&& (tv->vval.v_dict->dv_lock & VAR_LOCKED));
 }
 
 /*

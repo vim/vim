@@ -107,6 +107,7 @@ SRC =	arabic.c						\
 	textobject.c						\
 	textprop.c						\
 	time.c							\
+	typval.c						\
 	ui.c							\
 	undo.c							\
 	usercmd.c						\
