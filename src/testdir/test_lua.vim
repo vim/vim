@@ -121,6 +121,12 @@ func Test_lua_window_line_col()
   bwipe!
 endfunc
 
+" Test vim.call
+func Test_lua_call()
+  call assert_equal(has('lua'), luaeval('vim.call("has", "lua")'))
+  call assert_equal(printf("Hello %s", "vim"), luaeval('vim.call("printf", "Hello %s", "vim")'))
+endfunc
+
 " Test vim.fn.*
 func Test_lua_fn()
   call assert_equal(has('lua'), luaeval('vim.fn.has("lua")'))
