@@ -792,5 +792,15 @@ def Test_nested_closure()
   assert_equal('text!!!', Closure('!!!'))
 enddef
 
+func GetResult(Ref)
+  return a:Ref('some')
+endfunc
+
+def Test_call_closure_not_compiled()
+  let text = 'text'
+  g:Ref = {s ->  s .. text}
+  assert_equal('sometext', GetResult(g:Ref))
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

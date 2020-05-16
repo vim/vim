@@ -246,7 +246,8 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 
 	if (partial->pt_func != NULL && partial->pt_func->uf_dfunc_idx >= 0)
 	{
-	    if (call_def_function(partial->pt_func, argc, argv, rettv) == FAIL)
+	    if (call_def_function(partial->pt_func, argc, argv,
+						       partial, rettv) == FAIL)
 		return FAIL;
 	}
 	else

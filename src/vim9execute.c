@@ -641,6 +641,7 @@ call_def_function(
     ufunc_T	*ufunc,
     int		argc_arg,	// nr of arguments
     typval_T	*argv,		// arguments
+    partial_T	*partial,	// optional partial for context
     typval_T	*rettv)		// return value
 {
     ectx_T	ectx;		// execution context
@@ -719,6 +720,12 @@ call_def_function(
     // Frame pointer points to just after arguments.
     ectx.ec_frame_idx = ectx.ec_stack.ga_len;
     initial_frame_idx = ectx.ec_frame_idx;
+
+    if (partial != NULL)
+    {
+	ectx.ec_outer_stack = partial->pt_ectx_stack;
+	ectx.ec_outer_frame = partial->pt_ectx_frame;
+    }
 
     // dummy frame entries
     for (idx = 0; idx < STACK_FRAME_SIZE; ++idx)
@@ -1468,7 +1475,7 @@ call_def_function(
 		{
 		    cpfunc_T	*pfunc = &iptr->isn_arg.pfunc;
 		    int		r;
-		    typval_T	partial;
+		    typval_T	partial_tv;
 
 		    SOURCING_LNUM = iptr->isn_lnum;
 		    if (pfunc->cpf_top)
@@ -1480,12 +1487,12 @@ call_def_function(
 		    {
 			// Get the funcref from the stack.
 			--ectx.ec_stack.ga_len;
-			partial = *STACK_TV_BOT(0);
-			tv = &partial;
+			partial_tv = *STACK_TV_BOT(0);
+			tv = &partial_tv;
 		    }
 		    r = call_partial(tv, pfunc->cpf_argcount, &ectx);
-		    if (tv == &partial)
-			clear_tv(&partial);
+		    if (tv == &partial_tv)
+			clear_tv(&partial_tv);
 		    if (r == FAIL)
 			goto failed;
 		}

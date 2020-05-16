@@ -1062,8 +1062,7 @@ call_user_func(
     int		argcount,	// nr of args
     typval_T	*argvars,	// arguments
     typval_T	*rettv,		// return value
-    linenr_T	firstline,	// first line of range
-    linenr_T	lastline,	// last line of range
+    funcexe_T	*funcexe,	// context
     dict_T	*selfdict)	// Dictionary for "self"
 {
     sctx_T	save_current_sctx;
@@ -1120,7 +1119,7 @@ call_user_func(
 	current_sctx = fp->uf_script_ctx;
 
 	// Execute the compiled function.
-	call_def_function(fp, argcount, argvars, rettv);
+	call_def_function(fp, argcount, argvars, funcexe->partial, rettv);
 	--depth;
 	current_funccal = fc->caller;
 
@@ -1194,9 +1193,9 @@ call_user_func(
     if ((fp->uf_flags & FC_NOARGS) == 0)
     {
 	add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "firstline",
-						      (varnumber_T)firstline);
+					      (varnumber_T)funcexe->firstline);
 	add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "lastline",
-						       (varnumber_T)lastline);
+					       (varnumber_T)funcexe->lastline);
     }
     for (i = 0; i < argcount || i < fp->uf_args.ga_len; ++i)
     {
@@ -1515,9 +1514,8 @@ call_user_func_check(
 	    did_save_redo = TRUE;
 	}
 	++fp->uf_calls;
-	call_user_func(fp, argcount, argvars, rettv,
-			     funcexe->firstline, funcexe->lastline,
-		      (fp->uf_flags & FC_DICT) ? selfdict : NULL);
+	call_user_func(fp, argcount, argvars, rettv, funcexe,
+				   (fp->uf_flags & FC_DICT) ? selfdict : NULL);
 	if (--fp->uf_calls <= 0 && fp->uf_refcount <= 0)
 	    // Function was unreferenced while being used, free it now.
 	    func_clear_free(fp, FALSE);
@@ -4293,7 +4291,7 @@ find_hi_in_scoped_ht(char_u *name, hashtab_T **pht)
     if (current_funccal == NULL || current_funccal->func->uf_scoped == NULL)
       return NULL;
 
-    // Search in parent scope which is possible to reference from lambda
+    // Search in parent scope, which can be referenced from a lambda.
     current_funccal = current_funccal->func->uf_scoped;
     while (current_funccal != NULL)
     {
