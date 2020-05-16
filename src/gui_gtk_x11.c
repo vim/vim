@@ -1023,7 +1023,7 @@ focus_out_event(GtkWidget *widget UNUSED,
  * http://developer.gnome.org/doc/API/2.0/gdk/gdk-Event-Structures.html#GdkEventKey
  */
     static int
-keyval_to_string(unsigned int keyval, unsigned int state, char_u *string)
+keyval_to_string(unsigned int keyval, unsigned int *state, char_u *string)
 {
     int	    len;
     guint32 uc;
@@ -1031,8 +1031,8 @@ keyval_to_string(unsigned int keyval, unsigned int state, char_u *string)
     uc = gdk_keyval_to_unicode(keyval);
     if (uc != 0)
     {
-	// Check for CTRL-foo
-	if ((state & GDK_CONTROL_MASK) && uc >= 0x20 && uc < 0x80)
+	// Check for CTRL-char
+	if ((*state & GDK_CONTROL_MASK) && uc >= 0x20 && uc < 0x80)
 	{
 	    // These mappings look arbitrary at the first glance, but in fact
 	    // resemble quite exactly the behaviour of the GTK+ 1.2 GUI on my
@@ -1051,6 +1051,10 @@ keyval_to_string(unsigned int keyval, unsigned int state, char_u *string)
 	    else
 		string[0] = uc;
 	    len = 1;
+
+	    if (string[0] != uc)
+		// The modifier was used, remove it.
+		*state = *state & ~GDK_CONTROL_MASK;
 	}
 	else
 	{
@@ -1169,7 +1173,7 @@ key_press_event(GtkWidget *widget UNUSED,
     else
 #endif
     {
-	len = keyval_to_string(key_sym, state, string2);
+	len = keyval_to_string(key_sym, &state, string2);
 
 	// Careful: convert_input() doesn't handle the NUL character.
 	// No need to convert pure ASCII anyway, thus the len > 1 check.
