@@ -609,7 +609,7 @@ func Nb_basic(port)
 
   " detach
   call appendbufline(cmdbufnr, '$', 'detach_Test')
-  call WaitFor('len(readfile("Xnetbeans")) >= (g:last + 6)')
+  call WaitFor('len(readfile("Xnetbeans")) >= (g:last + 8)')
   call WaitForAssert({-> assert_equal('0:disconnect=91', readfile("Xnetbeans")[-1])})
 
   " the connection was closed
