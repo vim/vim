@@ -4521,7 +4521,11 @@ mch_call_shell_system(
     }
 
     if (tmode == TMODE_RAW)
+    {
+	// The shell may have messed with the mode, always set it.
+	cur_tmode = TMODE_UNKNOWN;
 	settmode(TMODE_RAW);	// set to raw mode
+    }
 # ifdef FEAT_TITLE
     resettitle();
 # endif
@@ -4571,6 +4575,9 @@ mch_call_shell_fork(
     out_flush();
     if (options & SHELL_COOKED)
 	settmode(TMODE_COOK);		// set to normal mode
+    if (tmode == TMODE_RAW)
+	// The shell may have messed with the mode, always set it later.
+	cur_tmode = TMODE_UNKNOWN;
 
     if (unix_build_argv(cmd, &argv, &tofree1, &tofree2) == FAIL)
 	goto error;

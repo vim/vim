@@ -4899,7 +4899,11 @@ mch_call_shell(
     }
 
     if (tmode == TMODE_RAW)
+    {
+	// The shell may have messed with the mode, always set it.
+	cur_tmode = TMODE_UNKNOWN;
 	settmode(TMODE_RAW);	// set to raw mode
+    }
 
     // Print the return value, unless "vimrun" was used.
     if (x != 0 && !(options & SHELL_SILENT) && !emsg_silent

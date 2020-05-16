@@ -1387,7 +1387,11 @@ mch_call_shell(
     if ((mydir = CurrentDir(mydir)) != 0) // make sure we stay in the same directory
 	UnLock(mydir);
     if (tmode == TMODE_RAW)
+    {
+	// The shell may have messed with the mode, always set it.
+	cur_tmode = TMODE_UNKNOWN;
 	settmode(TMODE_RAW);		// set to raw mode
+    }
 #ifdef FEAT_TITLE
     resettitle();
 #endif
