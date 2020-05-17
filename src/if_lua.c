@@ -2124,7 +2124,7 @@ luaopen_vim(lua_State *L)
     luaV_openlib(L, luaV_module, 1);
     lua_setglobal(L, LUAVIM_NAME);
     // custom code
-    luaL_dostring(L, LUA_VIM_FN_CODE);
+    (void)luaL_dostring(L, LUA_VIM_FN_CODE);
     return 0;
 }
 
