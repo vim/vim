@@ -41,7 +41,7 @@ void win_new_shellsize(void);
 void shell_resized(void);
 void shell_resized_check(void);
 void set_shellsize(int width, int height, int mustset);
-void settmode(int tmode);
+void settmode(tmode_T tmode);
 void starttermcap(void);
 void stoptermcap(void);
 void may_req_termresponse(void);

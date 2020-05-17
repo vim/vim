@@ -3436,7 +3436,7 @@ set_shellsize(int width, int height, int mustset)
  * commands and Ex mode).
  */
     void
-settmode(int tmode)
+settmode(tmode_T tmode)
 {
 #ifdef FEAT_GUI
     // don't set the term where gvim was started to any mode
