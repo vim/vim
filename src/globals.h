@@ -1171,7 +1171,7 @@ EXTERN volatile sig_atomic_t got_int INIT(= FALSE); // set to TRUE when interrup
 EXTERN int	term_console INIT(= FALSE); // set to TRUE when console used
 #endif
 EXTERN int	termcap_active INIT(= FALSE);	// set by starttermcap()
-EXTERN int	cur_tmode INIT(= TMODE_COOK);	// input terminal mode
+EXTERN tmode_T	cur_tmode INIT(= TMODE_COOK);	// input terminal mode
 EXTERN int	bangredo INIT(= FALSE);	    // set to TRUE with ! command
 EXTERN int	searchcmdlen;		    // length of previous search cmd
 #ifdef FEAT_SYN_HL

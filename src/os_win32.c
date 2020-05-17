@@ -3600,7 +3600,7 @@ handler_routine(
  * set the tty in (raw) ? "raw" : "cooked" mode
  */
     void
-mch_settmode(int tmode)
+mch_settmode(tmode_T tmode)
 {
     DWORD cmodein;
     DWORD cmodeout;

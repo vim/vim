@@ -977,7 +977,7 @@ mch_exit(int r)
  *	it sends a 0 to the console to make it back into a CON: from a RAW:
  */
     void
-mch_settmode(int tmode)
+mch_settmode(tmode_T tmode)
 {
 #if defined(__AROS__) || defined(__amigaos4__)
     if (!SetMode(raw_in, tmode == TMODE_RAW ? 1 : 0))

@@ -39,7 +39,7 @@ int mch_nodetype(char_u *name);
 vim_acl_T mch_get_acl(char_u *fname);
 void mch_set_acl(char_u *fname, vim_acl_T acl);
 void mch_free_acl(vim_acl_T acl);
-void mch_settmode(int tmode);
+void mch_settmode(tmode_T tmode);
 int mch_get_shellsize(void);
 void mch_set_shellsize(void);
 void mch_new_shellsize(void);

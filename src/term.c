@@ -3471,7 +3471,12 @@ settmode(int tmode)
 #endif
 	    if (tmode != TMODE_RAW)
 		mch_setmouse(FALSE);	// switch mouse off
-	    if (termcap_active)
+
+	    // Disable bracketed paste and modifyOtherKeys in cooked mode.
+	    // Avoid doing this too often, on some terminals the codes are not
+	    // handled properly.
+	    if (termcap_active && tmode != TMODE_SLEEP
+						   && cur_tmode != TMODE_SLEEP)
 	    {
 		if (tmode != TMODE_RAW)
 		{

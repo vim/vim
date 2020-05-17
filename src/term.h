@@ -209,7 +209,9 @@ extern char_u *(term_strings[]);    // current terminal strings
 #define T_SSI	(TERM_STR(KS_SSI))	// save icon text
 #define T_SRI	(TERM_STR(KS_SRI))	// restore icon text
 
-#define TMODE_COOK	0   // terminal mode for external cmds and Ex mode
-#define TMODE_SLEEP	1   // terminal mode for sleeping (cooked but no echo)
-#define TMODE_RAW	2   // terminal mode for Normal and Insert mode
-#define TMODE_UNKNOWN   9   // after executing a shell
+typedef enum {
+    TMODE_COOK,	    // terminal mode for external cmds and Ex mode
+    TMODE_SLEEP,    // terminal mode for sleeping (cooked but no echo)
+    TMODE_RAW,	    // terminal mode for Normal and Insert mode
+    TMODE_UNKNOWN   // after executing a shell
+} tmode_T;
