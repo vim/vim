@@ -11,6 +11,9 @@ Modifications:
 - Convert from C99 to C90.
 - Other changes to support embedding in Vim.
 
+To find the diff of a libvterm patch edit this URL, changing "999" to the patch
+number:
+    https://bazaar.launchpad.net/~libvterm/libvterm/trunk/diff/999?context=3
 
 To merge in changes from Github, do this:
 - Commit any pending changes.

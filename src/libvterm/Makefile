@@ -66,6 +66,9 @@ src/%.lo: src/%.c $(HFILES_INT)
 src/encoding/%.inc: src/encoding/%.tbl
 	perl -CSD tbl2inc_c.pl $< >$@
 
+src/fullwidth.inc:
+	@perl find-wide-chars.pl >$@
+
 src/encoding.lo: $(INCFILES)
 
 bin/%: bin/%.c $(LIBRARY)

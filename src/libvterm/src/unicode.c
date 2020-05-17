@@ -591,8 +591,15 @@ vterm_get_special_pty_type_placeholder(void)
 // ################################
 // ### The rest added by Paul Evans
 
+static const struct interval fullwidth[] = {
+#include "fullwidth.inc"
+};
+
 INTERNAL int vterm_unicode_width(uint32_t codepoint)
 {
+  if(bisearch(codepoint, fullwidth, sizeof(fullwidth) / sizeof(fullwidth[0]) - 1))
+    return 2;
+
   return WCWIDTH_FUNCTION(codepoint);
 }
 
