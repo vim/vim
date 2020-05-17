@@ -3537,6 +3537,7 @@ Makefile:
 # prefix vterm_ to avoid name clashes.
 CCCTERM = $(CCC_NF) $(VTERM_CFLAGS) $(ALL_CFLAGS) -DINLINE="" \
 	  -DVSNPRINTF=vim_vsnprintf \
+	  -DSNPRINTF=vim_snprintf \
 	  -DIS_COMBINING_FUNCTION=utf_iscomposing_uint \
 	  -DWCWIDTH_FUNCTION=utf_uint2cells
 

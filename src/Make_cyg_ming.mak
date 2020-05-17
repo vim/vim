@@ -1246,6 +1246,7 @@ $(OUTDIR)/pathdef.o:	$(PATHDEF_SRC) $(INCL)
 
 CCCTERM = $(CC) -c $(CFLAGS) -Ilibvterm/include -DINLINE="" \
 	  -DVSNPRINTF=vim_vsnprintf \
+	  -DSNPRINTF=vim_snprintf \
 	  -DIS_COMBINING_FUNCTION=utf_iscomposing_uint \
 	  -DWCWIDTH_FUNCTION=utf_uint2cells \
 	  -DGET_SPECIAL_PTY_TYPE_FUNCTION=get_special_pty_type

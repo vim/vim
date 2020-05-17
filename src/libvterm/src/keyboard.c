@@ -102,10 +102,10 @@ static keycodes_s keycodes[] = {
 
 static keycodes_s keycodes_fn[] = {
   { KEYCODE_NONE,       0, 0 },   // F0 - shouldn't happen
-  { KEYCODE_CSI_CURSOR, 'P', 0 }, // F1
-  { KEYCODE_CSI_CURSOR, 'Q', 0 }, // F2
-  { KEYCODE_CSI_CURSOR, 'R', 0 }, // F3
-  { KEYCODE_CSI_CURSOR, 'S', 0 }, // F4
+  { KEYCODE_SS3,	'P', 0 }, // F1
+  { KEYCODE_SS3,	'Q', 0 }, // F2
+  { KEYCODE_SS3,	'R', 0 }, // F3
+  { KEYCODE_SS3,	'S', 0 }, // F4
   { KEYCODE_CSINUM,     '~', 15 }, // F5
   { KEYCODE_CSINUM,     '~', 17 }, // F6
   { KEYCODE_CSINUM,     '~', 18 }, // F7

@@ -47,6 +47,7 @@ static VTermKey strp_key(char *str)
     { "Tab",   VTERM_KEY_TAB },
     { "Enter", VTERM_KEY_ENTER },
     { "KP0",   VTERM_KEY_KP_0 },
+    { "F1",    VTERM_KEY_FUNCTION(1) },
     { NULL,    VTERM_KEY_NONE },
   };
   int i;
