@@ -167,6 +167,7 @@ between states.
 123   SGR 1            = Bold on
       SGR 3            = Italic on
 123   SGR 4            = Underline single
+      SGR 4:x          = Underline style
 123   SGR 5            = Blink on
 123   SGR 7            = Reverse on
       SGR 9            = Strikethrough on

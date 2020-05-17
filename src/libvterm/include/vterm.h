@@ -19,6 +19,12 @@ extern "C" {
 typedef unsigned char		uint8_t;
 typedef unsigned int		uint32_t;
 
+#define VTERM_VERSION_MAJOR 0
+#define VTERM_VERSION_MINOR 1
+
+#define VTERM_CHECK_VERSION \
+        vterm_check_version(VTERM_VERSION_MAJOR, VTERM_VERSION_MINOR)
+
 typedef struct VTerm VTerm;
 typedef struct VTermState VTermState;
 typedef struct VTermScreen VTermScreen;
@@ -175,6 +181,8 @@ typedef struct {
   void  (*free)(void *ptr, void *allocdata);
 } VTermAllocatorFunctions;
 
+void vterm_check_version(int major, int minor);
+
 // Allocate and initialize a new terminal with default allocators.
 VTerm *vterm_new(int rows, int cols);
 
@@ -329,6 +337,13 @@ typedef struct {
     unsigned int dwl       : 1; // On a DECDWL or DECDHL line
     unsigned int dhl       : 2; // On a DECDHL line (1=top 2=bottom)
 } VTermScreenCellAttrs;
+
+enum {
+  VTERM_UNDERLINE_OFF,
+  VTERM_UNDERLINE_SINGLE,
+  VTERM_UNDERLINE_DOUBLE,
+  VTERM_UNDERLINE_CURLY,
+};
 
 typedef struct {
 #define VTERM_MAX_CHARS_PER_CELL 6

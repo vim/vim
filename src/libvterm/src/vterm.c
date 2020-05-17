@@ -406,3 +406,20 @@ void vterm_copy_cells(VTermRect dest,
       (*copycell)(pos, srcpos, user);
     }
 }
+
+void vterm_check_version(int major, int minor)
+{
+  if(major != VTERM_VERSION_MAJOR) {
+    fprintf(stderr, "libvterm major version mismatch; %d (wants) != %d (library)\n",
+        major, VTERM_VERSION_MAJOR);
+    exit(1);
+  }
+
+  if(minor > VTERM_VERSION_MINOR) {
+    fprintf(stderr, "libvterm minor version mismatch; %d (wants) > %d (library)\n",
+        minor, VTERM_VERSION_MINOR);
+    exit(1);
+  }
+
+  // Happy
+}

@@ -28,6 +28,14 @@ PUSH "\e[21m"
   ?pen underline = 2
 PUSH "\e[24m"
   ?pen underline = 0
+PUSH "\e[4m\e[4:0m"
+  ?pen underline = 0
+PUSH "\e[4:1m"
+  ?pen underline = 1
+PUSH "\e[4:2m"
+  ?pen underline = 2
+PUSH "\e[4:3m"
+  ?pen underline = 3
 PUSH "\e[4m\e[m"
   ?pen underline = 0
 

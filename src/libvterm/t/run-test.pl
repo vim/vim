@@ -177,9 +177,11 @@ open my $test, "<", $ARGV[0] or die "Cannot open test script $ARGV[0] - $!";
 
 while( my $line = <$test> ) {
    $line =~ s/^\s+//;
-   next if $line =~ m/^(?:#|$)/;
-
    chomp $line;
+
+   next if $line =~ m/^(?:#|$)/;
+   last if $line eq "__END__";
+
    do_line( $line );
 }
 

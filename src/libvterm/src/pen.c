@@ -261,9 +261,26 @@ INTERNAL void vterm_state_setpen(VTermState *state, const long args[], int argco
       setpenattr_bool(state, VTERM_ATTR_ITALIC, 1);
       break;
 
-    case 4: // Underline single
-      state->pen.underline = 1;
-      setpenattr_int(state, VTERM_ATTR_UNDERLINE, 1);
+    case 4: // Underline
+      state->pen.underline = VTERM_UNDERLINE_SINGLE;
+      if(CSI_ARG_HAS_MORE(args[argi])) {
+        argi++;
+        switch(CSI_ARG(args[argi])) {
+          case 0:
+            state->pen.underline = 0;
+            break;
+          case 1:
+            state->pen.underline = VTERM_UNDERLINE_SINGLE;
+            break;
+          case 2:
+            state->pen.underline = VTERM_UNDERLINE_DOUBLE;
+            break;
+          case 3:
+            state->pen.underline = VTERM_UNDERLINE_CURLY;
+            break;
+        }
+      }
+      setpenattr_int(state, VTERM_ATTR_UNDERLINE, state->pen.underline);
       break;
 
     case 5: // Blink
@@ -288,8 +305,8 @@ INTERNAL void vterm_state_setpen(VTermState *state, const long args[], int argco
       break;
 
     case 21: // Underline double
-      state->pen.underline = 2;
-      setpenattr_int(state, VTERM_ATTR_UNDERLINE, 2);
+      state->pen.underline = VTERM_UNDERLINE_DOUBLE;
+      setpenattr_int(state, VTERM_ATTR_UNDERLINE, state->pen.underline);
       break;
 
     case 22: // Bold off
@@ -405,8 +422,10 @@ INTERNAL int vterm_state_getpen(VTermState *state, long args[], int argcount UNU
   if(state->pen.italic)
     args[argi++] = 3;
 
-  if(state->pen.underline == 1)
+  if(state->pen.underline == VTERM_UNDERLINE_SINGLE)
     args[argi++] = 4;
+  if(state->pen.underline == VTERM_UNDERLINE_CURLY)
+    args[argi++] = 4 | CSI_ARG_FLAG_MORE, args[argi++] = 3;
 
   if(state->pen.blink)
     args[argi++] = 5;
@@ -420,7 +439,7 @@ INTERNAL int vterm_state_getpen(VTermState *state, long args[], int argcount UNU
   if(state->pen.font)
     args[argi++] = 10 + state->pen.font;
 
-  if(state->pen.underline == 2)
+  if(state->pen.underline == VTERM_UNDERLINE_DOUBLE)
     args[argi++] = 21;
 
   if(state->fg_index >= 0 && state->fg_index < 8)
