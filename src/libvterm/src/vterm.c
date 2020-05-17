@@ -64,6 +64,9 @@ VTerm *vterm_new_with_allocator(int rows, int cols, VTermAllocatorFunctions *fun
     return NULL;
   }
 
+  vt->outfunc = NULL;
+  vt->outdata = NULL;
+
   vt->outbuffer_len = 200;
   vt->outbuffer_cur = 0;
   vt->outbuffer = vterm_allocator_malloc(vt, vt->outbuffer_len);
@@ -135,8 +138,19 @@ void vterm_set_utf8(VTerm *vt, int is_utf8)
   vt->mode.utf8 = is_utf8;
 }
 
+void vterm_output_set_callback(VTerm *vt, VTermOutputCallback *func, void *user)
+{
+  vt->outfunc = func;
+  vt->outdata = user;
+}
+
 INTERNAL void vterm_push_output_bytes(VTerm *vt, const char *bytes, size_t len)
 {
+  if(vt->outfunc) {
+    (vt->outfunc)(bytes, len, vt->outdata);
+    return;
+  }
+
   if(len > vt->outbuffer_len - vt->outbuffer_cur) {
     DEBUG_LOG("vterm_push_output_bytes(): buffer overflow; dropping output\n");
     return;
@@ -145,24 +159,6 @@ INTERNAL void vterm_push_output_bytes(VTerm *vt, const char *bytes, size_t len)
   memcpy(vt->outbuffer + vt->outbuffer_cur, bytes, len);
   vt->outbuffer_cur += len;
 }
-
-#if (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE >= 500) \
-	|| defined(_ISOC99_SOURCE) || defined(_BSD_SOURCE)
-# undef VSNPRINTF
-# define VSNPRINTF vsnprintf
-# undef SNPRINTF
-# define SNPRINTF snprintf
-#else
-# ifdef VSNPRINTF
-// Use a provided vsnprintf() function.
-int VSNPRINTF(char *str, size_t str_m, const char *fmt, va_list ap);
-# endif
-# ifdef SNPRINTF
-// Use a provided snprintf() function.
-int SNPRINTF(char *str, size_t str_m, const char *fmt, ...);
-# endif
-#endif
-
 
 INTERNAL void vterm_push_output_vsprintf(VTerm *vt, const char *format, va_list args)
 {
@@ -214,12 +210,9 @@ INTERNAL void vterm_push_output_sprintf_dcs(VTerm *vt, const char *fmt, ...)
   size_t cur;
   va_list args;
 
-  if(!vt->mode.ctrl8bit)
-    cur = SNPRINTF(vt->tmpbuffer, vt->tmpbuffer_len,
-        ESC_S "%c", C1_DCS - 0x40);
-  else
-    cur = SNPRINTF(vt->tmpbuffer, vt->tmpbuffer_len,
-        "%c", C1_DCS);
+  cur = SNPRINTF(vt->tmpbuffer, vt->tmpbuffer_len,
+      vt->mode.ctrl8bit ? "\x90" : ESC_S "P"); // DCS
+
   if(cur >= vt->tmpbuffer_len)
     return;
   vterm_push_output_bytes(vt, vt->tmpbuffer, cur);
@@ -228,12 +221,8 @@ INTERNAL void vterm_push_output_sprintf_dcs(VTerm *vt, const char *fmt, ...)
   vterm_push_output_vsprintf(vt, fmt, args);
   va_end(args);
 
-  if(!vt->mode.ctrl8bit)
-    cur = SNPRINTF(vt->tmpbuffer, vt->tmpbuffer_len,
-        ESC_S "%c", C1_ST - 0x40);
-  else
-    cur = SNPRINTF(vt->tmpbuffer, vt->tmpbuffer_len,
-        "%c", C1_ST);
+  cur = SNPRINTF(vt->tmpbuffer, vt->tmpbuffer_len,
+      vt->mode.ctrl8bit ? "\x9C" : ESC_S "\\"); // ST
   if(cur >= vt->tmpbuffer_len)
     return;
   vterm_push_output_bytes(vt, vt->tmpbuffer, cur);

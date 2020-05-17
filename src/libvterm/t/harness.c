@@ -483,6 +483,9 @@ int main(int argc UNUSED, char **argv UNUSED)
     if(streq(line, "INIT")) {
       if(!vt)
         vt = vterm_new(25, 80);
+
+      // Somehow this makes tests fail
+      // vterm_output_set_callback(vt, term_output, NULL);
     }
 
     else if(streq(line, "WANTPARSER")) {

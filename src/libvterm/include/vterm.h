@@ -194,10 +194,17 @@ void vterm_set_utf8(VTerm *vt, int is_utf8);
 
 size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len);
 
+/* Setting output callback will override the buffer logic */
+typedef void VTermOutputCallback(const char *s, size_t len, void *user);
+void vterm_output_set_callback(VTerm *vt, VTermOutputCallback *func, void *user);
+
+/* These buffer functions only work if output callback is NOT set
+ * These are deprecated and will be removed in a later version */
 size_t vterm_output_get_buffer_size(const VTerm *vt);
 size_t vterm_output_get_buffer_current(const VTerm *vt);
 size_t vterm_output_get_buffer_remaining(const VTerm *vt);
 
+/* This too */
 size_t vterm_output_read(VTerm *vt, char *buffer, size_t len);
 
 int vterm_is_modify_other_keys(VTerm *vt);

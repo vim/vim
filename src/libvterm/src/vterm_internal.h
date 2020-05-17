@@ -207,6 +207,9 @@ struct VTerm
 
   // len == malloc()ed size; cur == number of valid bytes
 
+  VTermOutputCallback *outfunc;
+  void                *outdata;
+
   char  *outbuffer;
   size_t outbuffer_len;
   size_t outbuffer_cur;
@@ -267,5 +270,25 @@ int vterm_unicode_width(uint32_t codepoint);
 int vterm_unicode_is_combining(uint32_t codepoint);
 int vterm_unicode_is_ambiguous(uint32_t codepoint);
 int vterm_get_special_pty_type(void);
+
+#if (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE >= 500) \
+	|| defined(_ISOC99_SOURCE) || defined(_BSD_SOURCE)
+# undef VSNPRINTF
+# define VSNPRINTF vsnprintf
+# undef SNPRINTF
+#else
+# ifdef VSNPRINTF
+// Use a provided vsnprintf() function.
+int VSNPRINTF(char *str, size_t str_m, const char *fmt, va_list ap);
+# endif
+# ifdef SNPRINTF
+// Use a provided snprintf() function.
+int SNPRINTF(char *str, size_t str_m, const char *fmt, ...);
+# endif
+#endif
+#ifndef SNPRINTF
+# define SNPRINTF snprintf
+#endif
+
 
 #endif
