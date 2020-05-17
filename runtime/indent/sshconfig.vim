@@ -1,8 +1,7 @@
 " Vim indent file
 " Language: ssh config file
 " Maintainer: JasonKim <git@jasonk.me>
-" Original Author: Jason Kim <git@jasonk.me>
-" Last Change: 2020-05-12 14:18:36 -0700
+" Last Change: 2020 May 16
 
 if exists("b:did_indent")
   finish
