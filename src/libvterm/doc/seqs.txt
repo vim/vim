@@ -97,6 +97,7 @@ between states.
       CSI Z            = CBT
       CSI `            = HPA
       CSI a            = HPR
+      CSI b            = REP
 123   CSI   c          = DA, device attributes
 123       0            =   DA
  23   CSI >   c        = DECSDA
