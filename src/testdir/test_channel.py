@@ -21,6 +21,9 @@ except ImportError:
 
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
+    def setup(self):
+        self.request.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+
     def handle(self):
         print("=== socket opened ===")
         while True:
