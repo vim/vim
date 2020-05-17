@@ -8,14 +8,16 @@ use IPC::Open2 qw( open2 );
 use POSIX qw( WIFEXITED WEXITSTATUS WIFSIGNALED WTERMSIG );
 
 my $VALGRIND = 0;
+my $EXECUTABLE = "t/.libs/harness";
 GetOptions(
    'valgrind|v+' => \$VALGRIND,
+   'executable|e=s' => \$EXECUTABLE
 ) or exit 1;
 
 my ( $hin, $hout, $hpid );
 {
    local $ENV{LD_LIBRARY_PATH} = ".libs";
-   my @command = "t/.libs/harness";
+   my @command = $EXECUTABLE;
    unshift @command, "valgrind", "--tool=memcheck", "--leak-check=yes", "--num-callers=25", "--log-file=valgrind.out", "--error-exitcode=126" if $VALGRIND;
 
    $hpid = open2 $hout, $hin, @command or die "Cannot open2 harness - $!";

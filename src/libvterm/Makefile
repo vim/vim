@@ -118,7 +118,7 @@ distdir: $(INCFILES)
 	mkdir __distdir
 	cp LICENSE __distdir
 	mkdir __distdir/src
-	cp src/*.c src/*.h __distdir/src
+	cp src/*.c src/*.h src/*.inc __distdir/src
 	mkdir __distdir/src/encoding
 	cp src/encoding/*.inc __distdir/src/encoding
 	mkdir __distdir/include

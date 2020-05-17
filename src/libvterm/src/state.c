@@ -922,6 +922,7 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
   VTermState *state = user;
   int leader_byte = 0;
   int intermed_byte = 0;
+  int cancel_phantom = 1;
   VTermPos oldpos = state->pos;
   int handled = 1;
 
@@ -1237,6 +1238,24 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
     state->at_phantom = 0;
     break;
 
+  case 0x62: { // REP - ECMA-48 8.3.103
+    const int row_width = THISROWWIDTH(state);
+    count = CSI_ARG_COUNT(args[0]);
+    col = state->pos.col + count;
+    UBOUND(col, row_width);
+    while (state->pos.col < col) {
+      putglyph(state, state->combine_chars, state->combine_width, state->pos);
+      state->pos.col += state->combine_width;
+    }
+    if (state->pos.col + state->combine_width >= row_width) {
+      if (state->mode.autowrap) {
+        state->at_phantom = 1;
+        cancel_phantom = 0;
+      }
+    }
+    break;
+  }
+
   case 0x63: // DA - ECMA-48 8.3.24
     val = CSI_ARG_OR(args[0], 0);
     if(val == 0)
@@ -1523,7 +1542,7 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
     UBOUND(state->pos.col, THISROWWIDTH(state)-1);
   }
 
-  updatecursor(state, &oldpos, 1);
+  updatecursor(state, &oldpos, cancel_phantom);
 
 #ifdef DEBUG
   if(state->pos.row < 0 || state->pos.row >= state->rows ||
