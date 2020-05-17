@@ -79,6 +79,13 @@ VTerm *vterm_new_with_allocator(int rows, int cols, VTermAllocatorFunctions *fun
 
   vt->tmpbuffer_len = 64;
   vt->tmpbuffer = vterm_allocator_malloc(vt, vt->tmpbuffer_len);
+  if (vt->tmpbuffer == NULL)
+  {
+    vterm_allocator_free(vt, vt->parser.strbuffer);
+    vterm_allocator_free(vt, vt);
+    vterm_allocator_free(vt, vt->outbuffer);
+    return NULL;
+  }
 
   return vt;
 }
@@ -93,6 +100,7 @@ void vterm_free(VTerm *vt)
 
   vterm_allocator_free(vt, vt->parser.strbuffer);
   vterm_allocator_free(vt, vt->outbuffer);
+  vterm_allocator_free(vt, vt->tmpbuffer);
 
   vterm_allocator_free(vt, vt);
 }
