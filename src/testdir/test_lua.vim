@@ -33,7 +33,7 @@ func Test_lua_eval()
   " lua.eval with a number
   lua v = vim.eval('123')
   call assert_equal('number', luaeval('vim.type(v)'))
-  call assert_equal(123.0, luaeval('v'))
+  call assert_equal(123, luaeval('v'))
 
   " lua.eval with a string
   lua v = vim.eval('"abc"')
@@ -119,6 +119,18 @@ func Test_lua_window_line_col()
   call assert_fails('lua vim.window().line = 10',
         \           '[string "vim chunk"]:1: line out of range')
   bwipe!
+endfunc
+
+" Test vim.call
+func Test_lua_call()
+  call assert_equal(has('lua'), luaeval('vim.call("has", "lua")'))
+  call assert_equal(printf("Hello %s", "vim"), luaeval('vim.call("printf", "Hello %s", "vim")'))
+endfunc
+
+" Test vim.fn.*
+func Test_lua_fn()
+  call assert_equal(has('lua'), luaeval('vim.fn.has("lua")'))
+  call assert_equal(printf("Hello %s", "vim"), luaeval('vim.fn.printf("Hello %s", "vim")'))
 endfunc
 
 " Test setting the current window
@@ -252,7 +264,7 @@ endfunc
 func Test_lua_buffer_number_lines()
   new
   call setline(1, ['a', 'b', 'c'])
-  call assert_equal(3.0, luaeval('#vim.buffer()'))
+  call assert_equal(3, luaeval('#vim.buffer()'))
   bwipe!
 endfunc
 
@@ -311,15 +323,15 @@ func Test_lua_list()
   lua l:add(nil)
   lua l:add(vim.eval("[1, 2, 3]"))
   lua l:add(vim.eval("{'a':1, 'b':2, 'c':3}"))
-  call assert_equal([123.0, 'abc', v:true, v:false, v:null, [1, 2, 3], {'a': 1, 'b': 2, 'c': 3}], l)
-  call assert_equal(7.0, luaeval('#l'))
+  call assert_equal([123, 'abc', v:true, v:false, v:null, [1, 2, 3], {'a': 1, 'b': 2, 'c': 3}], l)
+  call assert_equal(7, luaeval('#l'))
   call assert_match('^list: \%(0x\)\?\x\+$', luaeval('tostring(l)'))
 
   lua l[0] = 124
   lua l[5] = nil
   lua l:insert('first')
   lua l:insert('xx', 3)
-  call assert_equal(['first', 124.0, 'abc', 'xx', v:true, v:false, v:null, {'a': 1, 'b': 2, 'c': 3}], l)
+  call assert_equal(['first', 124, 'abc', 'xx', v:true, v:false, v:null, {'a': 1, 'b': 2, 'c': 3}], l)
 
   lockvar 1 l
   call assert_fails('lua l:add("x")', '[string "vim chunk"]:1: list is locked')
@@ -355,16 +367,16 @@ func Test_lua_recursive_list()
   lua l = vim.list():add(1):add(2)
   lua l = l:add(l)
 
-  call assert_equal(1.0, luaeval('l[0]'))
-  call assert_equal(2.0, luaeval('l[1]'))
+  call assert_equal(1, luaeval('l[0]'))
+  call assert_equal(2, luaeval('l[1]'))
 
-  call assert_equal(1.0, luaeval('l[2][0]'))
-  call assert_equal(2.0, luaeval('l[2][1]'))
+  call assert_equal(1, luaeval('l[2][0]'))
+  call assert_equal(2, luaeval('l[2][1]'))
 
-  call assert_equal(1.0, luaeval('l[2][2][0]'))
-  call assert_equal(2.0, luaeval('l[2][2][1]'))
+  call assert_equal(1, luaeval('l[2][2][0]'))
+  call assert_equal(2, luaeval('l[2][2][1]'))
 
-  call assert_equal('[1.0, 2.0, [...]]', string(luaeval('l')))
+  call assert_equal('[1, 2, [...]]', string(luaeval('l')))
 
   call assert_match('^list: \%(0x\)\?\x\+$', luaeval('tostring(l)'))
   call assert_equal(luaeval('tostring(l)'), luaeval('tostring(l[2])'))
@@ -386,15 +398,15 @@ func Test_lua_dict()
   lua d[3] = false
   lua d[4] = vim.eval("[1, 2, 3]")
   lua d[5] = vim.eval("{'a':1, 'b':2, 'c':3}")
-  call assert_equal({'0':123.0, '1':'abc', '2':v:true, '3':v:false, '4': [1, 2, 3], '5': {'a':1, 'b':2, 'c':3}}, d)
-  call assert_equal(6.0, luaeval('#d'))
+  call assert_equal({'0':123, '1':'abc', '2':v:true, '3':v:false, '4': [1, 2, 3], '5': {'a':1, 'b':2, 'c':3}}, d)
+  call assert_equal(6, luaeval('#d'))
   call assert_match('^dict: \%(0x\)\?\x\+$', luaeval('tostring(d)'))
 
   call assert_equal('abc', luaeval('d[1]'))
 
   lua d[0] = 124
   lua d[4] = nil
-  call assert_equal({'0':124.0, '1':'abc', '2':v:true, '3':v:false, '5': {'a':1, 'b':2, 'c':3}}, d)
+  call assert_equal({'0':124, '1':'abc', '2':v:true, '3':v:false, '5': {'a':1, 'b':2, 'c':3}}, d)
 
   lockvar 1 d
   call assert_fails('lua d[6] = 1', '[string "vim chunk"]:1: dict is locked')
@@ -441,16 +453,16 @@ func Test_lua_blob()
 
   lua b = vim.blob("\x00\x00\x00\x00")
   call assert_equal(0z00000000, luaeval('b'))
-  call assert_equal(4.0, luaeval('#b'))
+  call assert_equal(4, luaeval('#b'))
   lua b[0], b[1], b[2], b[3] = 1, 32, 256, 0xff
   call assert_equal(0z012000ff, luaeval('b'))
   lua b[4] = string.byte("z", 1)
   call assert_equal(0z012000ff.7a, luaeval('b'))
-  call assert_equal(5.0, luaeval('#b'))
+  call assert_equal(5, luaeval('#b'))
   call assert_fails('lua b[#b+1] = 0x80', '[string "vim chunk"]:1: index out of range')
   lua b:add("12ab")
   call assert_equal(0z012000ff.7a313261.62, luaeval('b'))
-  call assert_equal(9.0, luaeval('#b'))
+  call assert_equal(9, luaeval('#b'))
   call assert_fails('lua b:add(nil)', '[string "vim chunk"]:1: string expected, got nil')
   call assert_fails('lua b:add(true)', '[string "vim chunk"]:1: string expected, got boolean')
   call assert_fails('lua b:add({})', '[string "vim chunk"]:1: string expected, got table')
@@ -552,12 +564,12 @@ endfunc
 " Test :luafile foo.lua
 func Test_luafile()
   call delete('Xlua_file')
-  call writefile(["str = 'hello'", "num = 123.0" ], 'Xlua_file')
+  call writefile(["str = 'hello'", "num = 123" ], 'Xlua_file')
   call setfperm('Xlua_file', 'r-xr-xr-x')
 
   luafile Xlua_file
   call assert_equal('hello', luaeval('str'))
-  call assert_equal(123.0, luaeval('num'))
+  call assert_equal(123, luaeval('num'))
 
   lua str, num = nil
   call delete('Xlua_file')
