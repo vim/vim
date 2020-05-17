@@ -301,6 +301,7 @@ SRC_ALL =	\
 		src/libvterm/LICENSE \
 		src/libvterm/Makefile \
 		src/libvterm/README \
+		src/libvterm/CONTRIBUTING \
 		src/libvterm/tbl2inc_c.pl \
 		src/libvterm/vterm.pc.in \
 		src/libvterm/doc/URLs \
