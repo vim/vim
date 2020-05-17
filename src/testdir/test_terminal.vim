@@ -938,10 +938,10 @@ func Test_terminal_composing_unicode()
   call WaitForAssert({-> assert_equal(txt, term_getline(buf, lnum[1] + 1))}, 1000)
   let l = term_scrape(buf, lnum[1] + 1)
   call assert_equal("\u304b\u3099", l[0].chars)
-  call assert_equal("\u304e", l[1].chars)
-  call assert_equal("\u304f\u3099", l[2].chars)
-  call assert_equal("\u3052", l[3].chars)
-  call assert_equal("\u3053\u3099", l[4].chars)
+  call assert_equal("\u304e", l[2].chars)
+  call assert_equal("\u304f\u3099", l[3].chars)
+  call assert_equal("\u3052", l[5].chars)
+  call assert_equal("\u3053\u3099", l[6].chars)
 
   " \u00a0 + composing
   let txt = "abc\u00a0\u0308"
