@@ -153,9 +153,13 @@ let adict = #{aaa: 2, bbb: 8}
 
 " test == comperator
 def Test_expr4_equal()
+  let trueVar = true
+  let falseVar = false
   assert_equal(true, true == true)
   assert_equal(false, true ==
 			false)
+  assert_equal(true, true == trueVar)
+  assert_equal(false, true == falseVar)
   assert_equal(true, true == g:atrue)
   assert_equal(false, g:atrue == false)
 
@@ -164,8 +168,12 @@ def Test_expr4_equal()
   assert_equal(true, g:anone == v:none)
   assert_equal(false, v:none == g:anull)
 
+  let nr0 = 0
+  let nr61 = 61
   assert_equal(false, 2 == 0)
+  assert_equal(false, 2 == nr0)
   assert_equal(true, 61 == 61)
+  assert_equal(true, 61 == nr61)
   assert_equal(true, g:anint == 10)
   assert_equal(false, 61 == g:anint)
 
@@ -237,9 +245,13 @@ enddef
 
 " test != comperator
 def Test_expr4_notequal()
+  let trueVar = true
+  let falseVar = false
   assert_equal(false, true != true)
   assert_equal(true, true !=
 			false)
+  assert_equal(false, true != trueVar)
+  assert_equal(true, true != falseVar)
   assert_equal(false, true != g:atrue)
   assert_equal(true, g:atrue != false)
 
@@ -248,8 +260,12 @@ def Test_expr4_notequal()
   assert_equal(false, g:anone != v:none)
   assert_equal(true, v:none != g:anull)
 
+  let nr55 = 55
+  let nr0 = 55
   assert_equal(true, 2 != 0)
+  assert_equal(true, 2 != nr0)
   assert_equal(false, 55 != 55)
+  assert_equal(false, 55 != nr55)
   assert_equal(false, g:anint != 10)
   assert_equal(true, 61 != g:anint)
 
@@ -313,6 +329,12 @@ def Test_expr4_greater()
 		1)
   assert_false(2 > 2)
   assert_false(2 > 3)
+  let nr2 = 2
+  assert_true(nr2 > 0)
+  assert_true(nr2 >
+		1)
+  assert_false(nr2 > 2)
+  assert_false(nr2 > 3)
   if has('float')
     let ff = 2.0
     assert_true(ff > 0.0)
@@ -328,6 +350,10 @@ def Test_expr4_greaterequal()
   assert_true(2 >=
 			2)
   assert_false(2 >= 3)
+  let nr2 = 2
+  assert_true(nr2 >= 0)
+  assert_true(nr2 >= 2)
+  assert_false(nr2 >= 3)
   if has('float')
     let ff = 2.0
     assert_true(ff >= 0.0)
@@ -342,6 +368,10 @@ def Test_expr4_smaller()
   assert_false(2 <
 			2)
   assert_true(2 < 3)
+  let nr2 = 2
+  assert_false(nr2 < 0)
+  assert_false(nr2 < 2)
+  assert_true(nr2 < 3)
   if has('float')
     let ff = 2.0
     assert_false(ff < 0.0)
@@ -357,6 +387,11 @@ def Test_expr4_smallerequal()
 			1)
   assert_true(2 <= 2)
   assert_true(2 <= 3)
+  let nr2 = 2
+  assert_false(nr2 <= 0)
+  assert_false(nr2 <= 1)
+  assert_true(nr2 <= 2)
+  assert_true(nr2 <= 3)
   if has('float')
     let ff = 2.0
     assert_false(ff <= 0.0)
