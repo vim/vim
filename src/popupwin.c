@@ -1757,6 +1757,7 @@ add_border_left_right_padding(win_T *wp)
     }
 }
 
+#ifdef FEAT_TERMINAL
 /*
  * Return TRUE if there is any popup window with a terminal buffer.
  */
@@ -1775,6 +1776,7 @@ popup_terminal_exists(void)
 		return TRUE;
     return FALSE;
 }
+#endif
 
 /*
  * popup_create({text}, {options})
