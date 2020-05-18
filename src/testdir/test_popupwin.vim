@@ -2426,10 +2426,10 @@ func Test_popupwin_terminal_buffer()
   let g:test_is_flaky = 1
 
   let origwin = win_getid()
-  let ptybuf = term_start(&shell, #{hidden: 1})
-  let winid = popup_create(ptybuf, #{minwidth: 40, minheight: 10})
+  let termbuf = term_start(&shell, #{hidden: 1})
+  let winid = popup_create(termbuf, #{minwidth: 40, minheight: 10})
   " Wait for shell to start
-  call WaitForAssert({-> assert_equal("run", job_status(term_getjob(ptybuf)))})
+  call WaitForAssert({-> assert_equal("run", job_status(term_getjob(termbuf)))})
   sleep 100m
   " Check this doesn't crash
   call assert_equal(winnr(), winnr('j'))
@@ -2440,10 +2440,15 @@ func Test_popupwin_terminal_buffer()
   " Cannot quit while job is running
   call assert_fails('call feedkeys("\<C-W>:quit\<CR>", "xt")', 'E948:')
 
-  " Cannot enter Terminal-Normal mode.
+  " Cannot enter Terminal-Normal mode. (TODO: but it works...)
   call feedkeys("xxx\<C-W>N", 'xt')
   call assert_fails('call feedkeys("gf", "xt")', 'E863:')
   call feedkeys("a\<C-U>", 'xt')
+
+  " Cannot open a second one.
+  let termbuf2 = term_start(&shell, #{hidden: 1})
+  call assert_fails('call popup_create(termbuf2, #{})', 'E861:')
+  call term_sendkeys(termbuf2, "exit\<CR>")
 
   " Exiting shell closes popup window
   call feedkeys("exit\<CR>", 'xt')

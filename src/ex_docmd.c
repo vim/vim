@@ -2918,8 +2918,12 @@ parse_cmd_address(exarg_T *eap, char **errormsg, int silent)
 	{
 	    case ADDR_LINES:
 	    case ADDR_OTHER:
-		// default is current line number
-		eap->line2 = curwin->w_cursor.lnum;
+		// Default is the cursor line number.  Avoid using an invalid
+		// line number though.
+		if (curwin->w_cursor.lnum > curbuf->b_ml.ml_line_count)
+		    eap->line2 = curbuf->b_ml.ml_line_count;
+		else
+		    eap->line2 = curwin->w_cursor.lnum;
 		break;
 	    case ADDR_WINDOWS:
 		eap->line2 = CURRENT_WIN_NR;

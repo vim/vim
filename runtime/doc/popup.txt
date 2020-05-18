@@ -150,7 +150,7 @@ different:						*E863*
 - When the job ends, the popup window closes.
 - The popup window can be closed with `popup_close()`, the terminal buffer
   then becomes hidden.
-- It is not possible to enter Terminal-Normal mode.
+- It is not possible to open a second popup window with a terminal. *E861*
 - The default Pmenu color is only used for the border and padding.  To change
   the color of the terminal itself set the Terminal highlight group before
   creating the terminal.  Setting 'wincolor' later can work but requires the

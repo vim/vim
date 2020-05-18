@@ -1758,6 +1758,25 @@ add_border_left_right_padding(win_T *wp)
 }
 
 /*
+ * Return TRUE if there is any popup window with a terminal buffer.
+ */
+    static int
+popup_terminal_exists(void)
+{
+    win_T	*wp;
+    tabpage_T	*tp;
+
+    FOR_ALL_POPUPWINS(wp)
+	if (wp->w_buffer->b_term != NULL)
+	    return TRUE;
+    FOR_ALL_TABPAGES(tp)
+	FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
+	    if (wp->w_buffer->b_term != NULL)
+		return TRUE;
+    return FALSE;
+}
+
+/*
  * popup_create({text}, {options})
  * popup_atcursor({text}, {options})
  * etc.
@@ -1786,6 +1805,13 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 		semsg(_(e_nobufnr), argvars[0].vval.v_number);
 		return NULL;
 	    }
+#ifdef FEAT_TERMINAL
+	    if (buf->b_term != NULL && popup_terminal_exists())
+	    {
+		emsg(_("E861: Cannot open a second popup with a terminal"));
+		return NULL;
+	    }
+#endif
 	}
 	else if (!(argvars[0].v_type == VAR_STRING
 			&& argvars[0].vval.v_string != NULL)

@@ -2587,9 +2587,8 @@ func Test_double_popup_terminal()
   let buf1 = term_start(&shell, #{hidden: 1})
   let win1 = popup_create(buf1, {})
   let buf2 = term_start(&shell, #{hidden: 1})
-  let win2 = popup_create(buf2, {})
+  call assert_fails('call popup_create(buf2, {})', 'E861:')
   call popup_close(win1)
-  call popup_close(win2)
   exe buf1 .. 'bwipe!'
   exe buf2 .. 'bwipe!'
 endfunc
@@ -2619,10 +2618,8 @@ func Test_term_nasty_callback()
   CheckExecutable sh
 
   set hidden
-  let g:buf0 = term_start('sh', #{hidden: 1})
+  let g:buf0 = term_start('sh', #{hidden: 1, term_finish: 'close'})
   call popup_create(g:buf0, {})
-  let g:buf1 = term_start('sh', #{hidden: 1, term_finish: 'close'})
-  call popup_create(g:buf1, {})
   call assert_fails("call term_start(['sh', '-c'], #{curwin: 1})", 'E863:')
 
   call popup_clear(1)
