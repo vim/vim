@@ -822,7 +822,7 @@ win32_enable_privilege(LPTSTR lpszPrivilege, BOOL bEnable)
 #endif
 
 /*
- * Set "win8_or_later" and fill in "windowsVersion".
+ * Set "win8_or_later" and fill in "windowsVersion" if possible.
  */
     void
 PlatformId(void)
@@ -836,9 +836,10 @@ PlatformId(void)
 	ovi.dwOSVersionInfoSize = sizeof(ovi);
 	GetVersionEx(&ovi);
 
+#ifdef FEAT_EVAL
 	vim_snprintf(windowsVersion, sizeof(windowsVersion), "%d.%d",
 		(int)ovi.dwMajorVersion, (int)ovi.dwMinorVersion);
-
+#endif
 	if ((ovi.dwMajorVersion == 6 && ovi.dwMinorVersion >= 2)
 		|| ovi.dwMajorVersion > 6)
 	    win8_or_later = TRUE;
