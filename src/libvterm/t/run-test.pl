@@ -140,14 +140,14 @@ sub do_line
       }
    }
    # Assertions start with '?'
-   elsif( $line =~ s/^\?([a-z]+.*?=)\s+// ) {
+   elsif( $line =~ s/^\?([a-z]+.*?=)\s*// ) {
       do_onetest if defined $command;
 
       my ( $assertion ) = $1 =~ m/^(.*)\s+=/;
 
       $hin->print( "\?$assertion\n" );
       my $response = <$hout>; defined $response or wait, die "Test harness failed - $?\n";
-      chomp $response;
+      chomp $response; $response =~ s/^\s+|\s+$//g;
 
       if( $response ne $line ) {
          print "# Assert $assertion failed:\n" .

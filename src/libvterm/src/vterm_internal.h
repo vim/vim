@@ -32,6 +32,9 @@
 #define CSI_ARGS_MAX 16
 #define CSI_LEADER_MAX 16
 
+#define BUFIDX_PRIMARY   0
+#define BUFIDX_ALTSCREEN 1
+
 typedef struct VTermEncoding VTermEncoding;
 
 typedef struct {
@@ -92,6 +95,10 @@ struct VTermState
   // Bitvector of tab stops
   unsigned char *tabstops;
 
+  /* Primary and Altscreen; lineinfos[1] is lazily allocated as needed */
+  VTermLineInfo *lineinfos[2];
+
+  /* lineinfo will == lineinfos[0] or lineinfos[1], depending on altscreen */
   VTermLineInfo *lineinfo;
 #define ROWWIDTH(state,row) ((state)->lineinfo[(row)].doublewidth ? ((state)->cols / 2) : (state)->cols)
 #define THISROWWIDTH(state) ROWWIDTH(state, (state)->pos.row)

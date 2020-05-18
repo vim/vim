@@ -73,13 +73,27 @@ static VTermState *vterm_state_new(VTerm *vt)
 
   state->bold_is_highbright = 0;
 
+  state->combine_chars_size = 16;
+  state->combine_chars = vterm_allocator_malloc(state->vt, state->combine_chars_size * sizeof(state->combine_chars[0]));
+
+  state->tabstops = vterm_allocator_malloc(state->vt, (state->cols + 7) / 8);
+
+  state->lineinfos[BUFIDX_PRIMARY] = vterm_allocator_malloc(state->vt, state->rows * sizeof(VTermLineInfo));
+  state->lineinfo = state->lineinfos[BUFIDX_PRIMARY];
+
+  state->encoding_utf8.enc = vterm_lookup_encoding(ENC_UTF8, 'u');
+  if(*state->encoding_utf8.enc->init)
+    (*state->encoding_utf8.enc->init)(state->encoding_utf8.enc, state->encoding_utf8.data);
+
   return state;
 }
 
 INTERNAL void vterm_state_free(VTermState *state)
 {
   vterm_allocator_free(state->vt, state->tabstops);
-  vterm_allocator_free(state->vt, state->lineinfo);
+  vterm_allocator_free(state->vt, state->lineinfos[BUFIDX_PRIMARY]);
+  if(state->lineinfos[BUFIDX_ALTSCREEN])
+    vterm_allocator_free(state->vt, state->lineinfos[BUFIDX_ALTSCREEN]);
   vterm_allocator_free(state->vt, state->combine_chars);
   vterm_allocator_free(state->vt, state);
 }
@@ -106,15 +120,22 @@ static void scroll(VTermState *state, VTermRect rect, int downward, int rightwar
   // Update lineinfo if full line
   if(rect.start_col == 0 && rect.end_col == state->cols && rightward == 0) {
     int height = rect.end_row - rect.start_row - abs(downward);
+    int row;
 
-    if(downward > 0)
+    if(downward > 0) {
       memmove(state->lineinfo + rect.start_row,
               state->lineinfo + rect.start_row + downward,
               height * sizeof(state->lineinfo[0]));
-    else
+      for(row = rect.end_row - downward; row < rect.end_row; row++)
+        state->lineinfo[row] = (VTermLineInfo){ 0 };
+    }
+    else {
       memmove(state->lineinfo + rect.start_row - downward,
               state->lineinfo + rect.start_row,
               height * sizeof(state->lineinfo[0]));
+      for(row = rect.start_row; row < rect.start_row - downward; row++)
+        state->lineinfo[row] = (VTermLineInfo){ 0 };
+    }
   }
 
   if(state->callbacks && state->callbacks->scrollrect)
@@ -1701,7 +1722,7 @@ static int on_resize(int rows, int cols, void *user)
 {
   VTermState *state = user;
   VTermPos oldpos = state->pos;
-  VTermPos delta = { 0, 0 };
+  VTermStateFields fields;
 
   if(cols != state->cols) {
     int col;
@@ -1731,22 +1752,29 @@ static int on_resize(int rows, int cols, void *user)
   }
 
   if(rows != state->rows) {
-    int row;
-    VTermLineInfo *newlineinfo = vterm_allocator_malloc(state->vt, rows * sizeof(VTermLineInfo));
-    if (newlineinfo == NULL)
-      return 0;
+    for(int bufidx = BUFIDX_PRIMARY; bufidx <= BUFIDX_ALTSCREEN; bufidx++) {
+      int row;
+      VTermLineInfo *oldlineinfo = state->lineinfos[bufidx];
+      if(!oldlineinfo)
+        continue;
 
-    for(row = 0; row < state->rows && row < rows; row++) {
-      newlineinfo[row] = state->lineinfo[row];
+      VTermLineInfo *newlineinfo = vterm_allocator_malloc(state->vt, rows * sizeof(VTermLineInfo));
+
+      for(row = 0; row < state->rows && row < rows; row++) {
+        newlineinfo[row] = oldlineinfo[row];
+      }
+
+      for( ; row < rows; row++) {
+        newlineinfo[row] = (VTermLineInfo){
+          .doublewidth = 0,
+        };
+      }
+
+      vterm_allocator_free(state->vt, state->lineinfos[bufidx]);
+      state->lineinfos[bufidx] = newlineinfo;
     }
 
-    for( ; row < rows; row++) {
-      newlineinfo[row].doublewidth = 0;
-      newlineinfo[row].doubleheight = 0;
-    }
-
-    vterm_allocator_free(state->vt, state->lineinfo);
-    state->lineinfo = newlineinfo;
+    state->lineinfo = state->lineinfos[state->mode.alt_screen ? BUFIDX_ALTSCREEN : BUFIDX_PRIMARY];
   }
 
   state->rows = rows;
@@ -1757,16 +1785,17 @@ static int on_resize(int rows, int cols, void *user)
   if(state->scrollregion_right > -1)
     UBOUND(state->scrollregion_right, state->cols);
 
+  fields.pos = state->pos;
+
   if(state->callbacks && state->callbacks->resize)
-    (*state->callbacks->resize)(rows, cols, &delta, state->cbdata);
+    (*state->callbacks->resize)(rows, cols, &fields, state->cbdata);
+
+  state->pos = fields.pos;
 
   if(state->at_phantom && state->pos.col < cols-1) {
     state->at_phantom = 0;
     state->pos.col++;
   }
-
-  state->pos.row += delta.row;
-  state->pos.col += delta.col;
 
   if(state->pos.row >= rows)
     state->pos.row = rows - 1;
@@ -1802,17 +1831,6 @@ VTermState *vterm_obtain_state(VTerm *vt)
   if (state == NULL)
     return NULL;
   vt->state = state;
-
-  state->combine_chars_size = 16;
-  state->combine_chars = vterm_allocator_malloc(state->vt, state->combine_chars_size * sizeof(state->combine_chars[0]));
-
-  state->tabstops = vterm_allocator_malloc(state->vt, (state->cols + 7) / 8);
-
-  state->lineinfo = vterm_allocator_malloc(state->vt, state->rows * sizeof(VTermLineInfo));
-
-  state->encoding_utf8.enc = vterm_lookup_encoding(ENC_UTF8, 'u');
-  if(*state->encoding_utf8.enc->init != NULL)
-    (*state->encoding_utf8.enc->init)(state->encoding_utf8.enc, state->encoding_utf8.data);
 
   vterm_parser_set_callbacks(vt, &parser_callbacks, state);
 
@@ -1976,6 +1994,9 @@ int vterm_state_set_termprop(VTermState *state, VTermProp prop, VTermValue *val)
     return 1;
   case VTERM_PROP_ALTSCREEN:
     state->mode.alt_screen = val->boolean;
+    if(state->mode.alt_screen && !state->lineinfos[BUFIDX_ALTSCREEN])
+      state->lineinfos[BUFIDX_ALTSCREEN] = vterm_allocator_malloc(state->vt, state->rows * sizeof(VTermLineInfo));
+    state->lineinfo = state->lineinfos[state->mode.alt_screen ? BUFIDX_ALTSCREEN : BUFIDX_PRIMARY];
     if(state->mode.alt_screen) {
       VTermRect rect = {0, 0, 0, 0};
       rect.end_row = state->rows;

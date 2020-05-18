@@ -268,6 +268,15 @@ void *vterm_parser_get_cbdata(VTerm *vt);
 // State layer
 // -----------
 
+/* Copies of VTermState fields that the 'resize' callback might have reason to
+ * edit. 'resize' callback gets total control of these fields and may
+ * free-and-reallocate them if required. They will be copied back from the
+ * struct after the callback has returned.
+ */
+typedef struct {
+  VTermPos pos;                /* current cursor position */
+} VTermStateFields;
+
 typedef struct {
   int (*putglyph)(VTermGlyphInfo *info, VTermPos pos, void *user);
   int (*movecursor)(VTermPos pos, VTermPos oldpos, int visible, void *user);
@@ -280,7 +289,7 @@ typedef struct {
   // was accepted, 0 otherwise.
   int (*settermprop)(VTermProp prop, VTermValue *val, void *user);
   int (*bell)(void *user);
-  int (*resize)(int rows, int cols, VTermPos *delta, void *user);
+  int (*resize)(int rows, int cols, VTermStateFields *fields, void *user);
   int (*setlineinfo)(int row, const VTermLineInfo *newinfo, const VTermLineInfo *oldinfo, void *user);
 } VTermStateCallbacks;
 
