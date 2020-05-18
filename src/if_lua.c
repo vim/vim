@@ -2061,15 +2061,73 @@ luaV_setref(lua_State *L)
 }
 
 #define LUA_VIM_FN_CODE \
-    "vim.fn = setmetatable({}, {"\
-    "  __index = function (t, key)"\
-    "    local function _fn(...)"\
-    "      return vim.call(key, ...)"\
-    "    end"\
-    "    t[key] = _fn"\
-    "    return _fn"\
-    "  end"\
-    "})"
+    "vim.fn = setmetatable({}, {\n"\
+    "  __index = function (t, key)\n"\
+    "    local function _fn(...)\n"\
+    "      return vim.call(key, ...)\n"\
+    "    end\n"\
+    "    t[key] = _fn\n"\
+    "    return _fn\n"\
+    "  end\n"\
+    " })"
+
+#define LUA_VIM_UPDATE_PACKAGE_PATHS \
+    "local last_vim_paths = {}\n"\
+    "vim._update_package_paths = function ()\n"\
+    "  local cur_vim_paths = {}\n"\
+    "  local rtps = vim.eval('split(&runtimepath, \",\")')\n"\
+    "  local sep = package.config:sub(1, 1)\n"\
+    "  for _, key in ipairs({'path', 'cpath'}) do\n"\
+    "    local orig_str = package[key] .. ';'\n"\
+    "    local pathtrails_ordered = {}\n"\
+    "    -- Note: ignores trailing item without trailing `;`. Not using something\n"\
+    "    -- simpler in order to preserve empty items (stand for default path).\n"\
+    "    local orig = {}\n"\
+    "    for s in orig_str:gmatch('[^;]*;') do\n"\
+    "      s = s:sub(1, -2)  -- Strip trailing semicolon\n"\
+    "      orig[#orig + 1] = s\n"\
+    "    end\n"\
+    "    if key == 'path' then\n"\
+    "      -- /?.lua and /?/init.lua\n"\
+    "      pathtrails_ordered = {sep .. '?.lua', sep .. '?' .. sep .. 'init.lua'}\n"\
+    "    else\n"\
+    "      local pathtrails = {}\n"\
+    "      for _, s in ipairs(orig) do\n"\
+    "        -- Find out path patterns. pathtrail should contain something like\n"\
+    "        -- /?.so, \?.dll. This allows not to bother determining what correct\n"\
+    "        -- suffixes are.\n"\
+    "        local pathtrail = s:match('[/\\\\][^/\\\\]*%?.*$')\n"\
+    "        if pathtrail and not pathtrails[pathtrail] then\n"\
+    "          pathtrails[pathtrail] = true\n"\
+    "          pathtrails_ordered[#pathtrails_ordered + 1] = pathtrail\n"\
+    "        end\n"\
+    "      end\n"\
+    "    end\n"\
+    "    local new = {}\n"\
+    "    for _, rtp in ipairs(rtps) do\n"\
+    "      if not rtp:match(';') then\n"\
+    "        for _, pathtrail in pairs(pathtrails_ordered) do\n"\
+    "          local new_path = rtp .. sep .. 'lua' .. pathtrail\n"\
+    "          -- Always keep paths from &runtimepath at the start:\n"\
+    "          -- append them here disregarding orig possibly containing one of them.\n"\
+    "          new[#new + 1] = new_path\n"\
+    "          cur_vim_paths[new_path] = true\n"\
+    "        end\n"\
+    "      end\n"\
+    "    end\n"\
+    "    for _, orig_path in ipairs(orig) do\n"\
+    "      -- Handle removing obsolete paths originating from &runtimepath: such\n"\
+    "      -- paths either belong to cur_nvim_paths and were already added above or\n"\
+    "      -- to last_nvim_paths and should not be added at all if corresponding\n"\
+    "      -- entry was removed from &runtimepath list.\n"\
+    "      if not (cur_vim_paths[orig_path] or last_vim_paths[orig_path]) then\n"\
+    "        new[#new + 1] = orig_path\n"\
+    "      end\n"\
+    "    end\n"\
+    "    package[key] = table.concat(new, ';')\n"\
+    "  end\n"\
+    "  last_vim_paths = cur_vim_paths\n"\
+    "end"
 
     static int
 luaopen_vim(lua_State *L)
@@ -2128,6 +2186,14 @@ luaopen_vim(lua_State *L)
     lua_setglobal(L, LUAVIM_NAME);
     // custom code
     (void)luaL_dostring(L, LUA_VIM_FN_CODE);
+    (void)luaL_dostring(L, LUA_VIM_UPDATE_PACKAGE_PATHS);
+
+    lua_getglobal(L, "vim");
+    lua_getfield(L, -1, "_update_package_paths");
+
+    if (lua_pcall(L, 0, 0, 0))
+	luaV_emsg(L);
+
     return 0;
 }
 
