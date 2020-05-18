@@ -23,21 +23,6 @@ def Test_assignment()
   let bool2: bool = false
   assert_equal(v:false, bool2)
 
-  let list1: list<bool> = [false, true, false]
-  let list2: list<number> = [1, 2, 3]
-  let list3: list<string> = ['sdf', 'asdf']
-  let list4: list<any> = ['yes', true, 1234]
-  let list5: list<blob> = [0z01, 0z02]
-
-  let listS: list<string> = []
-  let listN: list<number> = []
-
-  let dict1: dict<bool> = #{one: false, two: true}
-  let dict2: dict<number> = #{one: 1, two: 2}
-  let dict3: dict<string> = #{key: 'value'}
-  let dict4: dict<any> = #{one: 1, two: '2'}
-  let dict5: dict<blob> = #{one: 0z01, tw: 0z02}
-
   call CheckDefFailure(['let x:string'], 'E1069:')
   call CheckDefFailure(['let x:string = "x"'], 'E1069:')
   call CheckDefFailure(['let a:string = "x"'], 'E1069:')
@@ -56,11 +41,6 @@ def Test_assignment()
   let Funky1: func
   let Funky2: func = function('len')
   let Party2: func = funcref('g:Test_syntax')
-
-  # type becomes list<any>
-  let somelist = rand() > 0 ? [1, 2, 3] : ['a', 'b', 'c']
-  # type becomes dict<any>
-  let somedict = rand() > 0 ? #{a: 1, b: 2} : #{a: 'a', b: 'b'}
 
   g:newvar = 'new'
   assert_equal('new', g:newvar)
@@ -126,6 +106,42 @@ def Test_assignment()
   assert_equal('noneagain', v:errmsg)
   call CheckDefFailure(['v:errmsg += "more"'], 'E1013:')
   call CheckDefFailure(['v:errmsg += 123'], 'E1013:')
+enddef
+
+def Test_assignment_list()
+  let list1: list<bool> = [false, true, false]
+  let list2: list<number> = [1, 2, 3]
+  let list3: list<string> = ['sdf', 'asdf']
+  let list4: list<any> = ['yes', true, 1234]
+  let list5: list<blob> = [0z01, 0z02]
+
+  let listS: list<string> = []
+  let listN: list<number> = []
+
+  assert_equal([1, 2, 3], list2)
+  list2[-1] = 99
+  assert_equal([1, 2, 99], list2)
+  list2[-2] = 88
+  assert_equal([1, 88, 99], list2)
+  list2[-3] = 77
+  assert_equal([77, 88, 99], list2)
+  call CheckDefExecFailure(['let ll = [1, 2, 3]', 'll[-4] = 6'], 'E684:')
+
+  # type becomes list<any>
+  let somelist = rand() > 0 ? [1, 2, 3] : ['a', 'b', 'c']
+enddef
+
+def Test_assignment_dict()
+  let dict1: dict<bool> = #{one: false, two: true}
+  let dict2: dict<number> = #{one: 1, two: 2}
+  let dict3: dict<string> = #{key: 'value'}
+  let dict4: dict<any> = #{one: 1, two: '2'}
+  let dict5: dict<blob> = #{one: 0z01, tw: 0z02}
+
+  call CheckDefExecFailure(['let dd = {}', 'dd[""] = 6'], 'E713:')
+
+  # type becomes dict<any>
+  let somedict = rand() > 0 ? #{a: 1, b: 2} : #{a: 'a', b: 'b'}
 enddef
 
 def Test_assignment_local()
