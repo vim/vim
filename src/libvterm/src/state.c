@@ -1780,9 +1780,9 @@ static int on_resize(int rows, int cols, void *user)
       }
 
       for( ; row < rows; row++) {
-        newlineinfo[row] = (VTermLineInfo){
-          .doublewidth = 0,
-        };
+	VTermLineInfo lineInfo = (VTermLineInfo){0};
+	lineInfo.doublewidth = 0;
+	newlineinfo[row] = lineInfo;
       }
 
       vterm_allocator_free(state->vt, state->lineinfos[bufidx]);
