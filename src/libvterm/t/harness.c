@@ -540,7 +540,6 @@ int main(int argc UNUSED, char **argv UNUSED)
       int sense = 1;
       if(!screen)
         screen = vterm_obtain_screen(vt);
-      vterm_screen_enable_altscreen(screen, 1);
       vterm_screen_set_callbacks(screen, &screen_cbs, NULL);
 
       while(line[i] == ' ')
@@ -549,6 +548,9 @@ int main(int argc UNUSED, char **argv UNUSED)
         switch(line[i]) {
         case '-':
           sense = 0;
+          break;
+        case 'a':
+          vterm_screen_enable_altscreen(screen, 1);
           break;
         case 'd':
           want_screen_damage = sense;
@@ -804,6 +806,25 @@ int main(int argc UNUSED, char **argv UNUSED)
         }
         else
           printf("?\n");
+      }
+      else if(strstartswith(line, "?lineinfo ")) {
+        char *linep = line + 10;
+        int row;
+        const VTermLineInfo *info;
+        while(linep[0] == ' ')
+          linep++;
+        if(sscanf(linep, "%d", &row) < 1) {
+          printf("! lineinfo unrecognised input\n");
+          goto abort_line;
+        }
+        info = vterm_state_get_lineinfo(state, row);
+        if(info->doublewidth)
+          printf("dwl ");
+        if(info->doubleheight)
+          printf("dhl ");
+        if(info->continuation)
+          printf("cont ");
+        printf("\n");
       }
       else if(strstartswith(line, "?screen_chars ")) {
         char *linep = line + 13;

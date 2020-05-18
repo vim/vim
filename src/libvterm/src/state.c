@@ -44,6 +44,15 @@ static void updatecursor(VTermState *state, VTermPos *oldpos, int cancel_phantom
 
 static void erase(VTermState *state, VTermRect rect, int selective)
 {
+  if(rect.end_col == state->cols) {
+    int row;
+    /* If we're erasing the final cells of any lines, cancel the continuation
+     * marker on the subsequent line
+     */
+    for(row = rect.start_row + 1; row < rect.end_row + 1 && row < state->rows; row++)
+      state->lineinfo[row].continuation = 0;
+  }
+
   if(state->callbacks && state->callbacks->erase)
     if((*state->callbacks->erase)(rect, selective, state->cbdata))
       return;
@@ -78,11 +87,13 @@ static VTermState *vterm_state_new(VTerm *vt)
 
   state->tabstops = vterm_allocator_malloc(state->vt, (state->cols + 7) / 8);
 
-  state->lineinfos[BUFIDX_PRIMARY] = vterm_allocator_malloc(state->vt, state->rows * sizeof(VTermLineInfo));
+  state->lineinfos[BUFIDX_PRIMARY]   = vterm_allocator_malloc(state->vt, state->rows * sizeof(VTermLineInfo));
+  /* TODO: Make an 'enable' function */
+  state->lineinfos[BUFIDX_ALTSCREEN] = vterm_allocator_malloc(state->vt, state->rows * sizeof(VTermLineInfo));
   state->lineinfo = state->lineinfos[BUFIDX_PRIMARY];
 
   state->encoding_utf8.enc = vterm_lookup_encoding(ENC_UTF8, 'u');
-  if(*state->encoding_utf8.enc->init)
+  if(state->encoding_utf8.enc->init)
     (*state->encoding_utf8.enc->init)(state->encoding_utf8.enc, state->encoding_utf8.data);
 
   return state;
@@ -121,20 +132,21 @@ static void scroll(VTermState *state, VTermRect rect, int downward, int rightwar
   if(rect.start_col == 0 && rect.end_col == state->cols && rightward == 0) {
     int height = rect.end_row - rect.start_row - abs(downward);
     int row;
+    VTermLineInfo zeroLineInfo = { 0 };
 
     if(downward > 0) {
       memmove(state->lineinfo + rect.start_row,
               state->lineinfo + rect.start_row + downward,
               height * sizeof(state->lineinfo[0]));
       for(row = rect.end_row - downward; row < rect.end_row; row++)
-        state->lineinfo[row] = (VTermLineInfo){ 0 };
+        state->lineinfo[row] = zeroLineInfo;
     }
     else {
       memmove(state->lineinfo + rect.start_row - downward,
               state->lineinfo + rect.start_row,
               height * sizeof(state->lineinfo[0]));
       for(row = rect.start_row; row < rect.start_row - downward; row++)
-        state->lineinfo[row] = (VTermLineInfo){ 0 };
+        state->lineinfo[row] = zeroLineInfo;
     }
   }
 
@@ -388,6 +400,7 @@ static int on_text(const char bytes[], size_t len, void *user)
       linefeed(state);
       state->pos.col = 0;
       state->at_phantom = 0;
+      state->lineinfo[state->pos.row].continuation = 1;
     }
 
     if(state->mode.insert) {
@@ -1752,13 +1765,15 @@ static int on_resize(int rows, int cols, void *user)
   }
 
   if(rows != state->rows) {
-    for(int bufidx = BUFIDX_PRIMARY; bufidx <= BUFIDX_ALTSCREEN; bufidx++) {
+    int bufidx;
+    for(bufidx = BUFIDX_PRIMARY; bufidx <= BUFIDX_ALTSCREEN; bufidx++) {
       int row;
       VTermLineInfo *oldlineinfo = state->lineinfos[bufidx];
+      VTermLineInfo *newlineinfo;
       if(!oldlineinfo)
         continue;
 
-      VTermLineInfo *newlineinfo = vterm_allocator_malloc(state->vt, rows * sizeof(VTermLineInfo));
+      newlineinfo = vterm_allocator_malloc(state->vt, rows * sizeof(VTermLineInfo));
 
       for(row = 0; row < state->rows && row < rows; row++) {
         newlineinfo[row] = oldlineinfo[row];
@@ -1994,8 +2009,6 @@ int vterm_state_set_termprop(VTermState *state, VTermProp prop, VTermValue *val)
     return 1;
   case VTERM_PROP_ALTSCREEN:
     state->mode.alt_screen = val->boolean;
-    if(state->mode.alt_screen && !state->lineinfos[BUFIDX_ALTSCREEN])
-      state->lineinfos[BUFIDX_ALTSCREEN] = vterm_allocator_malloc(state->vt, state->rows * sizeof(VTermLineInfo));
     state->lineinfo = state->lineinfos[state->mode.alt_screen ? BUFIDX_ALTSCREEN : BUFIDX_PRIMARY];
     if(state->mode.alt_screen) {
       VTermRect rect = {0, 0, 0, 0};

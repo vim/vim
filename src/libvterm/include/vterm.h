@@ -170,8 +170,9 @@ typedef struct {
 } VTermGlyphInfo;
 
 typedef struct {
-  unsigned int    doublewidth:1;     // DECDWL or DECDHL line
-  unsigned int    doubleheight:2;    // DECDHL line (1=top 2=bottom)
+  unsigned int    doublewidth:1;     /* DECDWL or DECDHL line */
+  unsigned int    doubleheight:2;    /* DECDHL line (1=top 2=bottom) */
+  unsigned int    continuation:1;    /* Line is a flow continuation of the previous */
 } VTermLineInfo;
 
 typedef struct {
