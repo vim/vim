@@ -802,5 +802,42 @@ def Test_call_closure_not_compiled()
   assert_equal('sometext', GetResult(g:Ref))
 enddef
 
+def Test_def_with_bang()
+  let script =<< trim END
+    vim9script
+
+    def! FuncWithBang(): void
+    enddef
+  END
+  CheckScriptSuccess(script)
+
+  script =<< trim END
+    vim9script
+
+    def! Func(): string
+      return 'first'
+    enddef
+    def! Func(): string
+      return 'replaced'
+    enddef
+
+    assert_equal('replaced', Func())
+  END
+  CheckScriptSuccess(script)
+
+  script =<< trim END
+    vim9script
+
+    def! Func(): string
+      return 'first'
+    enddef
+    def! Func(arg: string): string
+      return 'replaced ' .. arg
+    enddef
+
+    assert_equal('replaced arg', Func('arg'))
+  END
+  CheckScriptSuccess(script)
+enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

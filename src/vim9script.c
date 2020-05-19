@@ -88,8 +88,14 @@ ex_vim9script(exarg_T *eap)
 	    // It will read upto the matching :endded or :endfunction.
 	    eap->cmdidx = *line == 'f' ? CMD_function : CMD_def;
 	    eap->cmd = line;
+	    if (*p == '!')
+	    {
+		eap->forceit = TRUE;
+		p = skipwhite(++p);
+	    }
+	    else
+		eap->forceit = FALSE;
 	    eap->arg = p;
-	    eap->forceit = FALSE;
 	    ufunc = def_function(eap, NULL, NULL, FALSE);
 
 	    if (ufunc != NULL && *line == 'd' && ga_grow(&func_ga, 1) == OK)
