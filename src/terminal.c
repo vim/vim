@@ -162,6 +162,7 @@ struct terminal_S {
     char_u	*tl_cursor_color; // NULL or allocated
 
     int		tl_using_altscreen;
+    garray_T	tl_osc_buf;	    // incomplete OSC string
 };
 
 #define TMODE_ONCE 1	    // CTRL-\ CTRL-N used
@@ -445,6 +446,7 @@ term_start(
 #endif
     ga_init2(&term->tl_scrollback, sizeof(sb_line_T), 300);
     ga_init2(&term->tl_scrollback_postponed, sizeof(sb_line_T), 300);
+    ga_init2(&term->tl_osc_buf, sizeof(char), 300);
 
     CLEAR_FIELD(split_ea);
     if (opt->jo_curwin)
@@ -1015,6 +1017,7 @@ free_unused_terminals()
 	terminals_to_free = term->tl_next;
 
 	free_scrollback(term);
+	ga_clear(&term->tl_osc_buf);
 
 	term_free_vterm(term);
 	vim_free(term->tl_api);
@@ -4202,14 +4205,25 @@ parse_osc(int command, VTermStringFragment frag, void *user)
     typval_T	tv;
     channel_T	*channel = term->tl_job == NULL ? NULL
 						    : term->tl_job->jv_channel;
+    garray_T	*gap = &term->tl_osc_buf;
 
     // We recognize only OSC 5 1 ; {command}
     if (command != 51)
 	return 0;
 
-    reader.js_buf = vim_strnsave((char_u *)frag.str, (int)(frag.len));
-    if (reader.js_buf == NULL)
+    // Concatenate what was received until the final piece is found.
+    if (ga_grow(gap, (int)frag.len + 1) == FAIL)
+    {
+	ga_clear(gap);
 	return 1;
+    }
+    mch_memmove((char *)gap->ga_data + gap->ga_len, frag.str, frag.len);
+    gap->ga_len += frag.len;
+    if (!frag.final)
+	return 1;
+
+    ((char *)gap->ga_data)[gap->ga_len] = 0;
+    reader.js_buf = gap->ga_data;
     reader.js_fill = NULL;
     reader.js_used = 0;
     if (json_decode(&reader, &tv, 0) == OK
@@ -4243,7 +4257,7 @@ parse_osc(int command, VTermStringFragment frag, void *user)
     else
 	ch_log(channel, "Invalid JSON received");
 
-    vim_free(reader.js_buf);
+    ga_clear(gap);
     clear_tv(&tv);
     return 1;
 }
