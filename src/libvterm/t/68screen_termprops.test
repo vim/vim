@@ -14,4 +14,4 @@ PUSH "\e[?25l"
 
 !Title
 PUSH "\e]2;Here is my title\a"
-  settermprop 4 "Here is my title"
+  settermprop 4 ["Here is my title"]

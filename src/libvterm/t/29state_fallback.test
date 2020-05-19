@@ -12,8 +12,8 @@ PUSH "\e[?15;2z"
 
 !Unrecognised OSC
 PUSH "\e]27;Something\e\\"
-  osc "27;Something"
+  osc [27 "Something"]
 
 !Unrecognised DCS
 PUSH "\ePz123\e\\"
-  dcs "z123"
+  dcs ["z123"]

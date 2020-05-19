@@ -153,21 +153,44 @@ static int parser_csi(const char *leader, const long args[], int argcount, const
   return 1;
 }
 
-static int parser_osc(const char *command, size_t cmdlen, void *user UNUSED)
+static int parser_osc(int command, VTermStringFragment frag, void *user UNUSED)
 {
 
   printf("osc ");
-  printhex(command, cmdlen);
+
+  if(frag.initial) {
+    if(command == -1)
+      printf("[");
+    else
+      printf("[%d;", command);
+  }
+
+  printhex(frag.str, frag.len);
+
+  if(frag.final)
+    printf("]");
+
   printf("\n");
 
   return 1;
 }
 
-static int parser_dcs(const char *command, size_t cmdlen, void *user UNUSED)
+static int parser_dcs(const char *command, size_t commandlen, VTermStringFragment frag, void *user UNUSED)
 {
-
   printf("dcs ");
-  printhex(command, cmdlen);
+
+  if(frag.initial) {
+    size_t i;
+    printf("[");
+    for(i = 0; i < commandlen; i++)
+      printf("%02x", command[i]);
+  }
+
+  printhex(frag.str, frag.len);
+
+  if(frag.final)
+    printf("]");
+
   printf("\n");
 
   return 1;
@@ -239,7 +262,8 @@ static int settermprop(VTermProp prop, VTermValue *val, void *user UNUSED)
     printf("settermprop %d %d\n", prop, val->number);
     return 1;
   case VTERM_VALUETYPE_STRING:
-    printf("settermprop %d \"%s\"\n", prop, val->string);
+    printf("settermprop %d %s\"%.*s\"%s\n", prop,
+        val->string.initial ? "[" : "", val->string.len, val->string.str, val->string.final ? "]" : "");
     return 1;
   case VTERM_VALUETYPE_COLOR:
     printf("settermprop %d rgb(%d,%d,%d)\n", prop, val->color.red, val->color.green, val->color.blue);
@@ -262,7 +286,7 @@ static int state_putglyph(VTermGlyphInfo *info, VTermPos pos, void *user UNUSED)
     return 1;
 
   printf("putglyph ");
-  for(i = 0; info->chars[i]; i++)
+  for(i = 0; i < VTERM_MAX_CHARS_PER_CELL && info->chars[i]; i++)
     printf(i ? ",%x" : "%x", info->chars[i]);
   printf(" %d %d,%d", info->width, pos.row, pos.col);
   if(info->protected_cell)

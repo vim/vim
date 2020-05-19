@@ -533,7 +533,7 @@ static void resize_buffer(VTermScreen *screen, int bufidx, int new_rows, int new
         ScreenCell *dst = &new_buffer[pos.row * new_cols + pos.col];
 	int i;
 
-        for(i = 0; ; i++) {
+        for(i = 0; i < VTERM_MAX_CHARS_PER_CELL; i++) {
           dst->chars[i] = src->chars[i];
           if(!src->chars[i])
             break;
@@ -804,7 +804,7 @@ int vterm_screen_get_cell(const VTermScreen *screen, VTermPos pos, VTermScreenCe
   if(!intcell)
     return 0;
 
-  for(i = 0; ; i++) {
+  for(i = 0; i < VTERM_MAX_CHARS_PER_CELL; i++) {
     cell->chars[i] = intcell->chars[i];
     if(!intcell->chars[i])
       break;

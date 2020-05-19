@@ -582,19 +582,12 @@ static int settermprop_int(VTermState *state, VTermProp prop, int v)
   return vterm_state_set_termprop(state, prop, &val);
 }
 
-static int settermprop_string(VTermState *state, VTermProp prop, const char *str, size_t len)
+static int settermprop_string(VTermState *state, VTermProp prop, VTermStringFragment frag)
 {
-  char *strvalue;
-  int r;
   VTermValue val;
-  strvalue = vterm_allocator_malloc(state->vt, (len+1) * sizeof(char));
-  strncpy(strvalue, str, len);
-  strvalue[len] = 0;
 
-  val.string = strvalue;
-  r = vterm_state_set_termprop(state, prop, &val);
-  vterm_allocator_free(state->vt, strvalue);
-  return r;
+  val.string = frag;
+  return vterm_state_set_termprop(state, prop, &val);
 }
 
 static void savecursor(VTermState *state, int save)
@@ -1602,100 +1595,121 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
   return 1;
 }
 
-static int on_osc(const char *command, size_t cmdlen, void *user)
+static int on_osc(int command, VTermStringFragment frag, void *user)
 {
   VTermState *state = user;
 
-  if(cmdlen < 2)
-    return 0;
-
-  if(strneq(command, "0;", 2)) {
-    settermprop_string(state, VTERM_PROP_ICONNAME, command + 2, cmdlen - 2);
-    settermprop_string(state, VTERM_PROP_TITLE, command + 2, cmdlen - 2);
-    return 1;
-  }
-  else if(strneq(command, "1;", 2)) {
-    settermprop_string(state, VTERM_PROP_ICONNAME, command + 2, cmdlen - 2);
-    return 1;
-  }
-  else if(strneq(command, "2;", 2)) {
-    settermprop_string(state, VTERM_PROP_TITLE, command + 2, cmdlen - 2);
-    return 1;
-  }
-  else if(strneq(command, "10;", 3)) {
-    // request foreground color: <Esc>]10;?<0x07>
-    int red = state->default_fg.red;
-    int blue = state->default_fg.blue;
-    int green = state->default_fg.green;
-    vterm_push_output_sprintf_ctrl(state->vt, C1_OSC, "10;rgb:%02x%02x/%02x%02x/%02x%02x\x07", red, red, green, green, blue, blue);
-    return 1;
-  }
-  else if(strneq(command, "11;", 3)) {
-    // request background color: <Esc>]11;?<0x07>
-    int red = state->default_bg.red;
-    int blue = state->default_bg.blue;
-    int green = state->default_bg.green;
-    vterm_push_output_sprintf_ctrl(state->vt, C1_OSC, "11;rgb:%02x%02x/%02x%02x/%02x%02x\x07", red, red, green, green, blue, blue);
-    return 1;
-  }
-  else if(strneq(command, "12;", 3)) {
-    settermprop_string(state, VTERM_PROP_CURSORCOLOR, command + 3, cmdlen - 3);
-    return 1;
-  }
-  else if(state->fallbacks && state->fallbacks->osc)
-    if((*state->fallbacks->osc)(command, cmdlen, state->fbdata))
+  switch(command) {
+    case 0:
+      settermprop_string(state, VTERM_PROP_ICONNAME, frag);
+      settermprop_string(state, VTERM_PROP_TITLE, frag);
       return 1;
+
+    case 1:
+      settermprop_string(state, VTERM_PROP_ICONNAME, frag);
+      return 1;
+
+    case 2:
+      settermprop_string(state, VTERM_PROP_TITLE, frag);
+      return 1;
+
+    case 10:
+      {
+        // request foreground color: <Esc>]10;?<0x07>
+        int red = state->default_fg.red;
+        int blue = state->default_fg.blue;
+        int green = state->default_fg.green;
+        vterm_push_output_sprintf_ctrl(state->vt, C1_OSC, "10;rgb:%02x%02x/%02x%02x/%02x%02x\x07", red, red, green, green, blue, blue);
+        return 1;
+      }
+
+    case 11:
+      {
+	// request background color: <Esc>]11;?<0x07>
+	int red = state->default_bg.red;
+	int blue = state->default_bg.blue;
+	int green = state->default_bg.green;
+	vterm_push_output_sprintf_ctrl(state->vt, C1_OSC, "11;rgb:%02x%02x/%02x%02x/%02x%02x\x07", red, red, green, green, blue, blue);
+	return 1;
+      }
+    case 12:
+      settermprop_string(state, VTERM_PROP_CURSORCOLOR, frag);
+      return 1;
+
+    default:
+      if(state->fallbacks && state->fallbacks->osc)
+        if((*state->fallbacks->osc)(command, frag, state->fbdata))
+          return 1;
+  }
 
   return 0;
 }
 
-static void request_status_string(VTermState *state, const char *command, size_t cmdlen)
+static void request_status_string(VTermState *state, VTermStringFragment frag)
 {
   VTerm *vt = state->vt;
 
-  if(cmdlen == 1)
-    switch(command[0]) {
-      case 'm': // Query SGR
-        {
-          long args[20];
-          int argc = vterm_state_getpen(state, args, sizeof(args)/sizeof(args[0]));
-	  int argi;
-          size_t cur = 0;
+  char *tmp = state->tmp.decrqss;
+  size_t i = 0;
 
-          cur += SNPRINTF(vt->tmpbuffer + cur, vt->tmpbuffer_len - cur,
-              vt->mode.ctrl8bit ? "\x90" "1$r" : ESC_S "P" "1$r"); // DCS 1$r ...
-          if(cur >= vt->tmpbuffer_len)
-            return;
+  if(frag.initial)
+    tmp[0] = tmp[1] = tmp[2] = tmp[3] = 0;
 
-          for(argi = 0; argi < argc; argi++) {
-            cur += SNPRINTF(vt->tmpbuffer + cur, vt->tmpbuffer_len - cur,
-                argi == argc - 1             ? "%ld" :
-                CSI_ARG_HAS_MORE(args[argi]) ? "%ld:" :
-                                               "%ld;",
-                 CSI_ARG(args[argi]));
+  while(i < sizeof(state->tmp.decrqss)-1 && tmp[i])
+    i++;
+  while(i < sizeof(state->tmp.decrqss)-1 && frag.len--)
+    tmp[i++] = (frag.str++)[0];
+  tmp[i] = 0;
 
-            if(cur >= vt->tmpbuffer_len)
-              return;
-          }
+  if(!frag.final)
+    return;
 
-          cur += SNPRINTF(vt->tmpbuffer + cur, vt->tmpbuffer_len - cur,
-              vt->mode.ctrl8bit ? "m" "\x9C" : "m" ESC_S "\\"); // ... m ST
-          if(cur >= vt->tmpbuffer_len)
-            return;
+  fprintf(stderr, "DECRQSS on <%s>\n", tmp);
 
-          vterm_push_output_bytes(vt, vt->tmpbuffer, cur);
-        }
+  switch(tmp[0] | tmp[1]<<8 | tmp[2]<<16) {
+    case 'm': {
+      // Query SGR
+      long args[20];
+      int argc = vterm_state_getpen(state, args, sizeof(args)/sizeof(args[0]));
+      size_t cur = 0;
+      int argi;
+
+      cur += snprintf(vt->tmpbuffer + cur, vt->tmpbuffer_len - cur,
+          vt->mode.ctrl8bit ? "\x90" "1$r" : ESC_S "P" "1$r"); // DCS 1$r ...
+      if(cur >= vt->tmpbuffer_len)
         return;
-      case 'r': // Query DECSTBM
-        vterm_push_output_sprintf_dcs(vt, "1$r%d;%dr", state->scrollregion_top+1, SCROLLREGION_BOTTOM(state));
+
+      for(argi = 0; argi < argc; argi++) {
+        cur += snprintf(vt->tmpbuffer + cur, vt->tmpbuffer_len - cur,
+            argi == argc - 1             ? "%ld" :
+            CSI_ARG_HAS_MORE(args[argi]) ? "%ld:" :
+                                           "%ld;",
+            CSI_ARG(args[argi]));
+        if(cur >= vt->tmpbuffer_len)
+          return;
+      }
+
+      cur += snprintf(vt->tmpbuffer + cur, vt->tmpbuffer_len - cur,
+          vt->mode.ctrl8bit ? "m" "\x9C" : "m" ESC_S "\\"); // ... m ST
+      if(cur >= vt->tmpbuffer_len)
         return;
-      case 's': // Query DECSLRM
-        vterm_push_output_sprintf_dcs(vt, "1$r%d;%ds", SCROLLREGION_LEFT(state)+1, SCROLLREGION_RIGHT(state));
-        return;
+
+      vterm_push_output_bytes(vt, vt->tmpbuffer, cur);
+      return;
     }
 
-  if(cmdlen == 2) {
-    if(strneq(command, " q", 2)) {
+    case 'r':
+      // Query DECSTBM
+      vterm_push_output_sprintf_dcs(vt, "1$r%d;%dr", state->scrollregion_top+1, SCROLLREGION_BOTTOM(state));
+      return;
+
+    case 's':
+      // Query DECSLRM
+      vterm_push_output_sprintf_dcs(vt, "1$r%d;%ds", SCROLLREGION_LEFT(state)+1, SCROLLREGION_RIGHT(state));
+      return;
+
+    case ' '|('q'<<8): {
+      // Query DECSCUSR
       int reply;
       switch(state->mode.cursor_shape) {
         case VTERM_PROP_CURSORSHAPE_BLOCK:     reply = 2; break;
@@ -1707,27 +1721,29 @@ static void request_status_string(VTermState *state, const char *command, size_t
       vterm_push_output_sprintf_dcs(vt, "1$r%d q", reply);
       return;
     }
-    else if(strneq(command, "\"q", 2)) {
+
+    case '\"'|('q'<<8):
+      // Query DECSCA
       vterm_push_output_sprintf_dcs(vt, "1$r%d\"q", state->protected_cell ? 1 : 2);
       return;
-    }
   }
 
-  vterm_push_output_sprintf_dcs(state->vt, "0$r%.s", (int)cmdlen, command);
+  vterm_push_output_sprintf_dcs(state->vt, "0$r%s", tmp);
 }
 
-static int on_dcs(const char *command, size_t cmdlen, void *user)
+static int on_dcs(const char *command, size_t commandlen, VTermStringFragment frag, void *user)
 {
   VTermState *state = user;
 
-  if(cmdlen >= 2 && strneq(command, "$q", 2)) {
-    request_status_string(state, command+2, cmdlen-2);
+  if(commandlen == 2 && strneq(command, "$q", 2)) {
+    request_status_string(state, frag);
     return 1;
   }
   else if(state->fallbacks && state->fallbacks->dcs)
-    if((*state->fallbacks->dcs)(command, cmdlen, state->fbdata))
+    if((*state->fallbacks->dcs)(command, commandlen, frag, state->fbdata))
       return 1;
 
+  DEBUG_LOG2("libvterm: Unhandled DCS %.*s\n", (int)commandlen, command);
   return 0;
 }
 

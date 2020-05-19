@@ -2998,22 +2998,27 @@ handle_settermprop(
 	void *user)
 {
     term_T	*term = (term_T *)user;
+    char_u	*strval = NULL;
 
     switch (prop)
     {
 	case VTERM_PROP_TITLE:
+	    strval = vim_strnsave((char_u *)value->string.str,
+						       (int)value->string.len);
+	    if (strval == NULL)
+		break;
 	    vim_free(term->tl_title);
 	    // a blank title isn't useful, make it empty, so that "running" is
 	    // displayed
-	    if (*skipwhite((char_u *)value->string) == NUL)
+	    if (*skipwhite(strval) == NUL)
 		term->tl_title = NULL;
 	    // Same as blank
 	    else if (term->tl_arg0_cmd != NULL
-		    && STRNCMP(term->tl_arg0_cmd, (char_u *)value->string,
+		    && STRNCMP(term->tl_arg0_cmd, strval,
 					  (int)STRLEN(term->tl_arg0_cmd)) == 0)
 		term->tl_title = NULL;
 	    // Empty corrupted data of winpty
-	    else if (STRNCMP("  - ", (char_u *)value->string, 4) == 0)
+	    else if (STRNCMP("  - ", strval, 4) == 0)
 		term->tl_title = NULL;
 #ifdef MSWIN
 	    else if (!enc_utf8 && enc_codepage > 0)
@@ -3022,8 +3027,8 @@ handle_settermprop(
 		int	length = 0;
 
 		MultiByteToWideChar_alloc(CP_UTF8, 0,
-			(char*)value->string, (int)STRLEN(value->string),
-								&ret, &length);
+			(char*)value->string.str,
+					(int)value->string.len, &ret, &length);
 		if (ret != NULL)
 		{
 		    WideCharToMultiByte_alloc(enc_codepage, 0,
@@ -3034,7 +3039,10 @@ handle_settermprop(
 	    }
 #endif
 	    else
-		term->tl_title = vim_strsave((char_u *)value->string);
+	    {
+		term->tl_title = vim_strsave(strval);
+		strval = NULL;
+	    }
 	    VIM_CLEAR(term->tl_status_text);
 	    if (term == curbuf->b_term)
 		maketitle();
@@ -3057,7 +3065,11 @@ handle_settermprop(
 	    break;
 
 	case VTERM_PROP_CURSORCOLOR:
-	    cursor_color_copy(&term->tl_cursor_color, (char_u*)value->string);
+	    strval = vim_strnsave((char_u *)value->string.str,
+						       (int)value->string.len);
+	    if (strval == NULL)
+		break;
+	    cursor_color_copy(&term->tl_cursor_color, strval);
 	    may_set_cursor_props(term);
 	    break;
 
@@ -3069,6 +3081,8 @@ handle_settermprop(
 	default:
 	    break;
     }
+    vim_free(strval);
+
     // Always return 1, otherwise vterm doesn't store the value internally.
     return 1;
 }
@@ -4181,7 +4195,7 @@ handle_call_command(term_T *term, channel_T *channel, listitem_T *item)
  * We recognize a terminal API command.
  */
     static int
-parse_osc(const char *command, size_t cmdlen, void *user)
+parse_osc(int command, VTermStringFragment frag, void *user)
 {
     term_T	*term = (term_T *)user;
     js_read_T	reader;
@@ -4190,10 +4204,10 @@ parse_osc(const char *command, size_t cmdlen, void *user)
 						    : term->tl_job->jv_channel;
 
     // We recognize only OSC 5 1 ; {command}
-    if (cmdlen < 3 || STRNCMP(command, "51;", 3) != 0)
-	return 0; // not handled
+    if (command != 51)
+	return 0;
 
-    reader.js_buf = vim_strnsave((char_u *)command + 3, (int)(cmdlen - 3));
+    reader.js_buf = vim_strnsave((char_u *)frag.str, (int)(frag.len));
     if (reader.js_buf == NULL)
 	return 1;
     reader.js_fill = NULL;

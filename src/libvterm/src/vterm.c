@@ -55,35 +55,23 @@ VTerm *vterm_new_with_allocator(int rows, int cols, VTermAllocatorFunctions *fun
   vt->parser.callbacks = NULL;
   vt->parser.cbdata    = NULL;
 
-  vt->parser.strbuffer_len = 500; // should be able to hold an OSC string
-  vt->parser.strbuffer_cur = 0;
-  vt->parser.strbuffer = vterm_allocator_malloc(vt, vt->parser.strbuffer_len);
-  if (vt->parser.strbuffer == NULL)
-  {
-    vterm_allocator_free(vt, vt);
-    return NULL;
-  }
-
   vt->outfunc = NULL;
   vt->outdata = NULL;
 
   vt->outbuffer_len = 200;
   vt->outbuffer_cur = 0;
   vt->outbuffer = vterm_allocator_malloc(vt, vt->outbuffer_len);
-  if (vt->outbuffer == NULL)
-  {
-    vterm_allocator_free(vt, vt->parser.strbuffer);
-    vterm_allocator_free(vt, vt);
-    return NULL;
-  }
 
   vt->tmpbuffer_len = 64;
   vt->tmpbuffer = vterm_allocator_malloc(vt, vt->tmpbuffer_len);
-  if (vt->tmpbuffer == NULL)
+
+  if (vt->tmpbuffer == NULL
+      || vt->outbuffer == NULL
+      || vt->tmpbuffer == NULL)
   {
-    vterm_allocator_free(vt, vt->parser.strbuffer);
-    vterm_allocator_free(vt, vt);
     vterm_allocator_free(vt, vt->outbuffer);
+    vterm_allocator_free(vt, vt->tmpbuffer);
+    vterm_allocator_free(vt, vt);
     return NULL;
   }
 
@@ -98,7 +86,6 @@ void vterm_free(VTerm *vt)
   if(vt->state)
     vterm_state_free(vt->state);
 
-  vterm_allocator_free(vt, vt->parser.strbuffer);
   vterm_allocator_free(vt, vt->outbuffer);
   vterm_allocator_free(vt, vt->tmpbuffer);
 

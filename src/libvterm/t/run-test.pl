@@ -11,7 +11,8 @@ my $VALGRIND = 0;
 my $EXECUTABLE = "t/.libs/harness";
 GetOptions(
    'valgrind|v+' => \$VALGRIND,
-   'executable|e=s' => \$EXECUTABLE
+   'executable|e=s' => \$EXECUTABLE,
+   'fail-early|F' => \(my $FAIL_EARLY),
 ) or exit 1;
 
 my ( $hin, $hout, $hpid );
@@ -65,6 +66,7 @@ sub do_onetest
    }
 
    $exitcode = 1 if $fail_printed;
+   exit $exitcode if $exitcode and $FAIL_EARLY;
 }
 
 sub do_line
@@ -105,8 +107,15 @@ sub do_line
       elsif( $line =~ m/^csi (\S+) (.*)$/ ) {
          $line = sprintf "csi %02x %s", eval($1), $2; # TODO
       }
-      elsif( $line =~ m/^(escape|osc|dcs) (.*)$/ ) {
-         $line = "$1 " . join "", map sprintf("%02x", $_), unpack "C*", eval($2);
+      elsif( $line =~ m/^(osc) (\[\d+)? *(.*?)(\]?)$/ ) {
+         my ( $cmd, $initial, $data, $final ) = ( $1, $2, $3, $4 );
+         $initial //= "";
+         $initial .= ";" if $initial =~ m/\d+/;
+
+         $line = "$cmd $initial" . join( "", map sprintf("%02x", $_), unpack "C*", eval($data) ) . "$final";
+      }
+      elsif( $line =~ m/^(escape|dcs) (\[?)(.*?)(\]?)$/ ) {
+         $line = "$1 $2" . join( "", map sprintf("%02x", $_), unpack "C*", eval($3) ) . "$4";
       }
       elsif( $line =~ m/^putglyph (\S+) (.*)$/ ) {
          $line = "putglyph " . join( ",", map sprintf("%x", $_), eval($1) ) . " $2";
@@ -139,6 +148,7 @@ sub do_line
                "# Expected: $want\n" .
                "# Actual:   $response\n";
          $exitcode = 1;
+         exit $exitcode if $exitcode and $FAIL_EARLY;
       }
    }
    # Assertions start with '?'
@@ -162,6 +172,7 @@ sub do_line
                "# Expected: $expectation\n" .
                "# Actual:   $response\n";
          $exitcode = 1;
+         exit $exitcode if $exitcode and $FAIL_EARLY;
       }
    }
    # Test controls start with '$'

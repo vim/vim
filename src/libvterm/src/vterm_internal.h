@@ -160,14 +160,12 @@ struct VTermState
       unsigned int cursor_shape:2;
     } mode;
   } saved;
+
+  /* Temporary state for DECRQSS parsing */
+  union {
+    char decrqss[4];
+  } tmp;
 };
-
-typedef enum {
-  VTERM_PARSER_OSC,
-  VTERM_PARSER_DCS,
-
-  VTERM_N_PARSER_TYPES
-} VTermParserStringType;
 
 struct VTerm
 {
@@ -188,28 +186,39 @@ struct VTerm
       CSI_LEADER,
       CSI_ARGS,
       CSI_INTERMED,
-      ESC,
+      OSC_COMMAND,
+      DCS_COMMAND,
       // below here are the "string states"
-      STRING,
-      ESC_IN_STRING,
+      OSC,
+      DCS,
     } state;
+
+    unsigned int in_esc : 1;
 
     int intermedlen;
     char intermed[INTERMED_MAX];
 
-    int csi_leaderlen;
-    char csi_leader[CSI_LEADER_MAX];
+    union {
+      struct {
+        int leaderlen;
+        char leader[CSI_LEADER_MAX];
 
-    int csi_argi;
-    long csi_args[CSI_ARGS_MAX];
+        int argi;
+        long args[CSI_ARGS_MAX];
+      } csi;
+      struct {
+        int command;
+      } osc;
+      struct {
+        int commandlen;
+        char command[CSI_LEADER_MAX];
+      } dcs;
+    } v;
 
     const VTermParserCallbacks *callbacks;
     void *cbdata;
 
-    VTermParserStringType stringtype;
-    char  *strbuffer;
-    size_t strbuffer_len;
-    size_t strbuffer_cur;
+    int string_initial;
   } parser;
 
   // len == malloc()ed size; cur == number of valid bytes

@@ -33,4 +33,10 @@ PUSH "\e[3 q"
 
 !Title
 PUSH "\e]2;Here is my title\a"
-  settermprop 4 "Here is my title"
+  settermprop 4 ["Here is my title"]
+
+!Title split write
+PUSH "\e]2;Here is"
+  settermprop 4 ["Here is"
+PUSH " another title\a"
+  settermprop 4 " another title"]
