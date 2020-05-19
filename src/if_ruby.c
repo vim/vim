@@ -113,6 +113,11 @@
 # include <st.h>  // for ST_STOP and ST_CONTINUE
 #endif
 
+// See above.
+#ifdef SIZEOF_TIME_T
+# undef SIZEOF_TIME_T
+#endif
+
 #undef off_t	// ruby defines off_t as _int64, Mingw uses long
 #undef EXTERN
 #undef _
