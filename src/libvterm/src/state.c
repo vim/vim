@@ -1780,8 +1780,7 @@ static int on_resize(int rows, int cols, void *user)
       }
 
       for( ; row < rows; row++) {
-	VTermLineInfo lineInfo = (VTermLineInfo){0};
-	lineInfo.doublewidth = 0;
+	VTermLineInfo lineInfo = {0};
 	newlineinfo[row] = lineInfo;
       }
 
