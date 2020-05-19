@@ -1674,13 +1674,13 @@ static void request_status_string(VTermState *state, VTermStringFragment frag)
       size_t cur = 0;
       int argi;
 
-      cur += snprintf(vt->tmpbuffer + cur, vt->tmpbuffer_len - cur,
+      cur += SNPRINTF(vt->tmpbuffer + cur, vt->tmpbuffer_len - cur,
           vt->mode.ctrl8bit ? "\x90" "1$r" : ESC_S "P" "1$r"); // DCS 1$r ...
       if(cur >= vt->tmpbuffer_len)
         return;
 
       for(argi = 0; argi < argc; argi++) {
-        cur += snprintf(vt->tmpbuffer + cur, vt->tmpbuffer_len - cur,
+        cur += SNPRINTF(vt->tmpbuffer + cur, vt->tmpbuffer_len - cur,
             argi == argc - 1             ? "%ld" :
             CSI_ARG_HAS_MORE(args[argi]) ? "%ld:" :
                                            "%ld;",
@@ -1689,7 +1689,7 @@ static void request_status_string(VTermState *state, VTermStringFragment frag)
           return;
       }
 
-      cur += snprintf(vt->tmpbuffer + cur, vt->tmpbuffer_len - cur,
+      cur += SNPRINTF(vt->tmpbuffer + cur, vt->tmpbuffer_len - cur,
           vt->mode.ctrl8bit ? "m" "\x9C" : "m" ESC_S "\\"); // ... m ST
       if(cur >= vt->tmpbuffer_len)
         return;
