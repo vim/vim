@@ -53,6 +53,7 @@ struct VTermPen
   unsigned int italic:1;
   unsigned int blink:1;
   unsigned int reverse:1;
+  unsigned int conceal:1;
   unsigned int strike:1;
   unsigned int font:4; // To store 0-9
 };
@@ -73,7 +74,7 @@ struct VTermState
   const VTermStateCallbacks *callbacks;
   void *cbdata;
 
-  const VTermParserCallbacks *fallbacks;
+  const VTermStateFallbacks *fallbacks;
   void *fbdata;
 
   int rows;

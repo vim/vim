@@ -40,8 +40,8 @@ PUSH "\n"
   ?cursor = 20,0
 
 !Index in DECSTBM
-PUSH "\e[10H"
 PUSH "\e[9;10r"
+PUSH "\e[10H"
 PUSH "\eM"
   ?cursor = 8,0
 PUSH "\eM"
@@ -147,4 +147,10 @@ PUSH "\e[T"
 PUSH "\e[2T"
   moverect 0..23,0..80 -> 2..25,0..80
   erase 0..2,0..80
+  ?cursor = 0,0
+
+!DECSTBM resets cursor position
+PUSH "\e[5;5H"
+  ?cursor = 4,4
+PUSH "\e[r"
   ?cursor = 0,0

@@ -170,6 +170,7 @@ between states.
       SGR 4:x          = Underline style
 123   SGR 5            = Blink on
 123   SGR 7            = Reverse on
+      SGR 8            = Conceal on
       SGR 9            = Strikethrough on
       SGR 10-19        = Select font
       SGR 21           = Underline double
@@ -178,6 +179,7 @@ between states.
  23   SGR 24           = Underline off
  23   SGR 25           = Blink off
  23   SGR 27           = Reverse off
+      SGR 28           = Conceal off
       SGR 29           = Strikethrough off
       SGR 30-37        = Foreground ANSI
       SGR 38           = Foreground alternative palette

@@ -4321,14 +4321,11 @@ parse_csi(
     return 1;
 }
 
-static VTermParserCallbacks parser_fallbacks = {
-  NULL,		// text
+static VTermStateFallbacks state_fallbacks = {
   NULL,		// control
-  NULL,		// escape
   parse_csi,	// csi
   parse_osc,	// osc
-  NULL,		// dcs
-  NULL		// resize
+  NULL		// dcs
 };
 
 /*
@@ -4411,7 +4408,7 @@ create_vterm(term_T *term, int rows, int cols)
     value.boolean = 0;
 #endif
     vterm_state_set_termprop(state, VTERM_PROP_CURSORBLINK, &value);
-    vterm_state_set_unrecognised_fallbacks(state, &parser_fallbacks, term);
+    vterm_state_set_unrecognised_fallbacks(state, &state_fallbacks, term);
 
     return OK;
 }

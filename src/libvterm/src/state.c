@@ -1478,6 +1478,14 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
       state->scrollregion_bottom = -1;
     }
 
+    // Setting the scrolling region restores the cursor to the home position
+    state->pos.row = 0;
+    state->pos.col = 0;
+    if(state->mode.origin) {
+      state->pos.row += state->scrollregion_top;
+      state->pos.col += SCROLLREGION_LEFT(state);
+    }
+
     break;
 
   case 0x73: // DECSLRM - DEC custom
@@ -1497,6 +1505,14 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
       // Invalid
       state->scrollregion_left  = 0;
       state->scrollregion_right = -1;
+    }
+
+    // Setting the scrolling region restores the cursor to the home position
+    state->pos.row = 0;
+    state->pos.col = 0;
+    if(state->mode.origin) {
+      state->pos.row += state->scrollregion_top;
+      state->pos.col += SCROLLREGION_LEFT(state);
     }
 
     break;
@@ -1979,7 +1995,7 @@ void *vterm_state_get_cbdata(VTermState *state)
   return state->cbdata;
 }
 
-void vterm_state_set_unrecognised_fallbacks(VTermState *state, const VTermParserCallbacks *fallbacks, void *user)
+void vterm_state_set_unrecognised_fallbacks(VTermState *state, const VTermStateFallbacks *fallbacks, void *user)
 {
   if(fallbacks) {
     state->fallbacks = fallbacks;

@@ -128,6 +128,7 @@ typedef enum {
   VTERM_ATTR_ITALIC,     // bool:   3, 23
   VTERM_ATTR_BLINK,      // bool:   5, 25
   VTERM_ATTR_REVERSE,    // bool:   7, 27
+  VTERM_ATTR_CONCEAL,    // bool:   8, 28
   VTERM_ATTR_STRIKE,     // bool:   9, 29
   VTERM_ATTR_FONT,       // number: 10-19
   VTERM_ATTR_FOREGROUND, // color:  30-39 90-97
@@ -314,13 +315,19 @@ typedef struct {
   // useful to add protocol?
 } VTermMouseState;
 
+typedef struct {
+  int (*control)(unsigned char control, void *user);
+  int (*csi)(const char *leader, const long args[], int argcount, const char *intermed, char command, void *user);
+  int (*osc)(int command, VTermStringFragment frag, void *user);
+  int (*dcs)(const char *command, size_t commandlen, VTermStringFragment frag, void *user);
+} VTermStateFallbacks;
+
 VTermState *vterm_obtain_state(VTerm *vt);
 
 void  vterm_state_set_callbacks(VTermState *state, const VTermStateCallbacks *callbacks, void *user);
 void *vterm_state_get_cbdata(VTermState *state);
 
-// Only invokes control, csi, osc, dcs
-void  vterm_state_set_unrecognised_fallbacks(VTermState *state, const VTermParserCallbacks *fallbacks, void *user);
+void  vterm_state_set_unrecognised_fallbacks(VTermState *state, const VTermStateFallbacks *fallbacks, void *user);
 void *vterm_state_get_unrecognised_fbdata(VTermState *state);
 
 // Initialize the state.
@@ -349,6 +356,7 @@ typedef struct {
     unsigned int italic    : 1;
     unsigned int blink     : 1;
     unsigned int reverse   : 1;
+    unsigned int conceal   : 1;
     unsigned int strike    : 1;
     unsigned int font      : 4; // 0 to 9
     unsigned int dwl       : 1; // On a DECDWL or DECDHL line
@@ -395,8 +403,7 @@ VTermScreen *vterm_obtain_screen(VTerm *vt);
 void  vterm_screen_set_callbacks(VTermScreen *screen, const VTermScreenCallbacks *callbacks, void *user);
 void *vterm_screen_get_cbdata(VTermScreen *screen);
 
-// Only invokes control, csi, osc, dcs
-void  vterm_screen_set_unrecognised_fallbacks(VTermScreen *screen, const VTermParserCallbacks *fallbacks, void *user);
+void  vterm_screen_set_unrecognised_fallbacks(VTermScreen *screen, const VTermStateFallbacks *fallbacks, void *user);
 void *vterm_screen_get_unrecognised_fbdata(VTermScreen *screen);
 
 // Enable support for using the alternate screen if "altscreen" is non-zero.
@@ -438,8 +445,9 @@ typedef enum {
   VTERM_ATTR_FONT_MASK       = 1 << 6,
   VTERM_ATTR_FOREGROUND_MASK = 1 << 7,
   VTERM_ATTR_BACKGROUND_MASK = 1 << 8,
+  VTERM_ATTR_CONCEAL_MASK    = 1 << 9,
 
-  VTERM_ALL_ATTRS_MASK = (1 << 9) - 1
+  VTERM_ALL_ATTRS_MASK = (1 << 10) - 1
 } VTermAttrMask;
 
 int vterm_screen_get_attrs_extent(const VTermScreen *screen, VTermRect *extent, VTermPos pos, VTermAttrMask attrs);

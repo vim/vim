@@ -206,7 +206,14 @@ static VTermParserCallbacks parser_cbs = {
   NULL // resize
 };
 
-// These callbacks are shared by State and Screen
+static VTermStateFallbacks fallbacks = {
+  parser_control, // control
+  parser_csi, // csi
+  parser_osc, // osc
+  parser_dcs // dcs
+};
+
+/* These callbacks are shared by State and Screen */
 
 static int want_movecursor = 0;
 static VTermPos state_pos;
@@ -319,6 +326,7 @@ static struct {
   int italic;
   int blink;
   int reverse;
+  int conceal;
   int strike;
   int font;
   VTermColor foreground;
@@ -341,6 +349,9 @@ static int state_setpenattr(VTermAttr attr, VTermValue *val, void *user UNUSED)
     break;
   case VTERM_ATTR_REVERSE:
     state_pen.reverse = val->boolean;
+    break;
+  case VTERM_ATTR_CONCEAL:
+    state_pen.conceal = val->boolean;
     break;
   case VTERM_ATTR_STRIKE:
     state_pen.strike = val->boolean;
@@ -552,7 +563,7 @@ int main(int argc UNUSED, char **argv UNUSED)
           want_settermprop = sense;
           break;
         case 'f':
-          vterm_state_set_unrecognised_fallbacks(state, sense ? &parser_cbs : NULL, NULL);
+          vterm_state_set_unrecognised_fallbacks(state, sense ? &fallbacks : NULL, NULL);
           break;
         default:
           fprintf(stderr, "Unrecognised WANTSTATE flag '%c'\n", line[i]);

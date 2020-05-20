@@ -170,6 +170,7 @@ INTERNAL void vterm_state_resetpen(VTermState *state)
   state->pen.italic = 0;    setpenattr_bool(state, VTERM_ATTR_ITALIC, 0);
   state->pen.blink = 0;     setpenattr_bool(state, VTERM_ATTR_BLINK, 0);
   state->pen.reverse = 0;   setpenattr_bool(state, VTERM_ATTR_REVERSE, 0);
+  state->pen.conceal = 0;   setpenattr_bool(state, VTERM_ATTR_CONCEAL, 0);
   state->pen.strike = 0;    setpenattr_bool(state, VTERM_ATTR_STRIKE, 0);
   state->pen.font = 0;      setpenattr_int( state, VTERM_ATTR_FONT, 0);
 
@@ -192,6 +193,7 @@ INTERNAL void vterm_state_savepen(VTermState *state, int save)
     setpenattr_bool(state, VTERM_ATTR_ITALIC,     state->pen.italic);
     setpenattr_bool(state, VTERM_ATTR_BLINK,      state->pen.blink);
     setpenattr_bool(state, VTERM_ATTR_REVERSE,    state->pen.reverse);
+    setpenattr_bool(state, VTERM_ATTR_CONCEAL,    state->pen.conceal);
     setpenattr_bool(state, VTERM_ATTR_STRIKE,     state->pen.strike);
     setpenattr_int( state, VTERM_ATTR_FONT,       state->pen.font);
     setpenattr_col( state, VTERM_ATTR_FOREGROUND, state->pen.fg);
@@ -293,6 +295,11 @@ INTERNAL void vterm_state_setpen(VTermState *state, const long args[], int argco
       setpenattr_bool(state, VTERM_ATTR_REVERSE, 1);
       break;
 
+    case 8: // Conceal on
+      state->pen.conceal = 1;
+      setpenattr_bool(state, VTERM_ATTR_CONCEAL, 1);
+      break;
+
     case 9: // Strikethrough on
       state->pen.strike = 1;
       setpenattr_bool(state, VTERM_ATTR_STRIKE, 1);
@@ -332,6 +339,11 @@ INTERNAL void vterm_state_setpen(VTermState *state, const long args[], int argco
     case 27: // Reverse off
       state->pen.reverse = 0;
       setpenattr_bool(state, VTERM_ATTR_REVERSE, 0);
+      break;
+
+    case 28: // Conceal off (Reveal)
+      state->pen.conceal = 0;
+      setpenattr_bool(state, VTERM_ATTR_CONCEAL, 0);
       break;
 
     case 29: // Strikethrough off
@@ -433,6 +445,9 @@ INTERNAL int vterm_state_getpen(VTermState *state, long args[], int argcount UNU
   if(state->pen.reverse)
     args[argi++] = 7;
 
+  if(state->pen.conceal)
+    args[argi++] = 8;
+
   if(state->pen.strike)
     args[argi++] = 9;
 
@@ -510,6 +525,10 @@ int vterm_state_get_penattr(const VTermState *state, VTermAttr attr, VTermValue 
 
   case VTERM_ATTR_REVERSE:
     val->boolean = state->pen.reverse;
+    return 1;
+
+  case VTERM_ATTR_CONCEAL:
+    val->boolean = state->pen.conceal;
     return 1;
 
   case VTERM_ATTR_STRIKE:

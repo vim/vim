@@ -21,6 +21,7 @@ typedef struct
   unsigned int italic    : 1;
   unsigned int blink     : 1;
   unsigned int reverse   : 1;
+  unsigned int conceal   : 1;
   unsigned int strike    : 1;
   unsigned int font      : 4; // 0 to 9
 
@@ -420,6 +421,9 @@ static int setpenattr(VTermAttr attr, VTermValue *val, void *user)
   case VTERM_ATTR_REVERSE:
     screen->pen.reverse = val->boolean;
     return 1;
+  case VTERM_ATTR_CONCEAL:
+    screen->pen.conceal = val->boolean;
+    return 1;
   case VTERM_ATTR_STRIKE:
     screen->pen.strike = val->boolean;
     return 1;
@@ -544,6 +548,7 @@ static void resize_buffer(VTermScreen *screen, int bufidx, int new_rows, int new
         dst->pen.italic    = src->attrs.italic;
         dst->pen.blink     = src->attrs.blink;
         dst->pen.reverse   = src->attrs.reverse ^ screen->global_reverse;
+        dst->pen.conceal   = src->attrs.conceal;
         dst->pen.strike    = src->attrs.strike;
         dst->pen.font      = src->attrs.font;
 
@@ -553,6 +558,8 @@ static void resize_buffer(VTermScreen *screen, int bufidx, int new_rows, int new
         if(src->width == 2 && pos.col < (new_cols-1))
           (dst + 1)->chars[0] = (uint32_t) -1;
       }
+      for( ; pos.col < new_cols; pos.col++)
+        clearcell(screen, &new_buffer[pos.row * new_cols + pos.col]);
       new_row--;
 
       if(active)
@@ -815,6 +822,7 @@ int vterm_screen_get_cell(const VTermScreen *screen, VTermPos pos, VTermScreenCe
   cell->attrs.italic    = intcell->pen.italic;
   cell->attrs.blink     = intcell->pen.blink;
   cell->attrs.reverse   = intcell->pen.reverse ^ screen->global_reverse;
+  cell->attrs.conceal   = intcell->pen.conceal;
   cell->attrs.strike    = intcell->pen.strike;
   cell->attrs.font      = intcell->pen.font;
 
@@ -890,7 +898,7 @@ void *vterm_screen_get_cbdata(VTermScreen *screen)
   return screen->cbdata;
 }
 
-void vterm_screen_set_unrecognised_fallbacks(VTermScreen *screen, const VTermParserCallbacks *fallbacks, void *user)
+void vterm_screen_set_unrecognised_fallbacks(VTermScreen *screen, const VTermStateFallbacks *fallbacks, void *user)
 {
   vterm_state_set_unrecognised_fallbacks(screen->state, fallbacks, user);
 }
@@ -934,6 +942,8 @@ static int attrs_differ(VTermAttrMask attrs, ScreenCell *a, ScreenCell *b)
   if((attrs & VTERM_ATTR_BLINK_MASK)      && (a->pen.blink != b->pen.blink))
     return 1;
   if((attrs & VTERM_ATTR_REVERSE_MASK)    && (a->pen.reverse != b->pen.reverse))
+    return 1;
+  if((attrs & VTERM_ATTR_CONCEAL_MASK)    && (a->pen.conceal != b->pen.conceal))
     return 1;
   if((attrs & VTERM_ATTR_STRIKE_MASK)     && (a->pen.strike != b->pen.strike))
     return 1;
