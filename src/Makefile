@@ -3562,7 +3562,7 @@ objects/vterm_screen.o: libvterm/src/screen.c $(TERM_DEPS)
 objects/vterm_state.o: libvterm/src/state.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/state.c
 
-objects/vterm_unicode.o: libvterm/src/unicode.c $(TERM_DEPS)
+objects/vterm_unicode.o: libvterm/src/unicode.c $(TERM_DEPS) libvterm/src/fullwidth.inc
 	$(CCCTERM) -o $@ libvterm/src/unicode.c
 
 objects/vterm_vterm.o: libvterm/src/vterm.c $(TERM_DEPS)

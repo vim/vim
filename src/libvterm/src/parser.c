@@ -119,13 +119,15 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
 #define ENTER_STATE(st)        do { vt->parser.state = st; string_start = NULL; } while(0)
 #define ENTER_NORMAL_STATE()   ENTER_STATE(NORMAL)
 
+#define IS_STRING_STATE()      (vt->parser.state >= OSC_COMMAND)
+
   for( ; pos < len; pos++) {
     unsigned char c = bytes[pos];
     int c1_allowed = !vt->mode.utf8;
     size_t string_len;
 
     if(c == 0x00 || c == 0x7f) { // NUL, DEL
-      if(vt->parser.state >= OSC) {
+      if(IS_STRING_STATE()) {
         string_fragment(vt, string_start, bytes + pos - string_start, FALSE);
         string_start = bytes + pos + 1;
       }
@@ -138,13 +140,13 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
     }
     else if(c == 0x1b) { // ESC
       vt->parser.intermedlen = 0;
-      if(vt->parser.state < OSC)
+      if(!IS_STRING_STATE())
         vt->parser.state = NORMAL;
       vt->parser.in_esc = TRUE;
       continue;
     }
     else if(c == 0x07 &&  // BEL, can stand for ST in OSC or DCS state
-            vt->parser.state >= OSC) {
+            IS_STRING_STATE()) {
       // fallthrough
     }
     else if(c < 0x20) { // other C0
@@ -155,10 +157,10 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
           if(pos + 2 < len && bytes[pos + 1] == 0x20 && bytes[pos + 2] == 0x08)
             vt->in_backspace = 2; // Trigger when count down to 1
       }
-      if(vt->parser.state >= OSC)
+      if(IS_STRING_STATE())
         string_fragment(vt, string_start, bytes + pos - string_start, FALSE);
       do_control(vt, c);
-      if(vt->parser.state >= OSC)
+      if(IS_STRING_STATE())
         string_start = bytes + pos + 1;
       continue;
     }
@@ -171,7 +173,7 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
       // Always accept ESC \ == ST even in string mode
       if(!vt->parser.intermedlen &&
           c >= 0x40 && c < 0x60 &&
-          ((vt->parser.state < OSC || c == 0x5c))) {
+          ((!IS_STRING_STATE() || c == 0x5c))) {
         c += 0x40;
         c1_allowed = TRUE;
         string_len -= 1;
@@ -260,6 +262,7 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
 
       /* else fallthrough */
       string_start = bytes + pos;
+      string_len   = 0;
       vt->parser.state = OSC;
       goto string_state;
 
@@ -312,6 +315,7 @@ string_state:
         case 0x9d: // OSC
           vt->parser.v.osc.command = -1;
           vt->parser.string_initial = TRUE;
+          string_start = bytes + pos + 1;
           ENTER_STATE(OSC_COMMAND);
           break;
         default:

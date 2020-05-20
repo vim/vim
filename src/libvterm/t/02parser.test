@@ -150,6 +150,14 @@ PUSH "def"
 PUSH "ghi\e\\"
   osc "ghi"]
 
+!OSC BEL without semicolon 
+PUSH "\e]1234\x07"
+  osc [1234 ]
+
+!OSC ST without semicolon 
+PUSH "\e]1234\e\\"
+  osc [1234 ]
+
 !Escape cancels OSC, starts Escape
 PUSH "\e]Something\e9"
   escape "9"

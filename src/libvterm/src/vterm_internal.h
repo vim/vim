@@ -187,9 +187,9 @@ struct VTerm
       CSI_LEADER,
       CSI_ARGS,
       CSI_INTERMED,
-      OSC_COMMAND,
       DCS_COMMAND,
-      // below here are the "string states"
+      /* below here are the "string states" */
+      OSC_COMMAND,
       OSC,
       DCS,
     } state;

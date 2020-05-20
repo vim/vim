@@ -112,7 +112,7 @@ sub do_line
          $initial //= "";
          $initial .= ";" if $initial =~ m/\d+/;
 
-         $line = "$cmd $initial" . join( "", map sprintf("%02x", $_), unpack "C*", eval($data) ) . "$final";
+         $line = "$cmd $initial" . join( "", map sprintf("%02x", $_), unpack "C*", length $data ? eval($data) : "" ) . "$final";
       }
       elsif( $line =~ m/^(escape|dcs) (\[?)(.*?)(\]?)$/ ) {
          $line = "$1 $2" . join( "", map sprintf("%02x", $_), unpack "C*", eval($3) ) . "$4";

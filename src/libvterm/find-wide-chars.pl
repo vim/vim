@@ -3,16 +3,12 @@
 use strict;
 use warnings;
 
-use Unicode::UCD qw( charprop );
-
 STDOUT->autoflush(1);
 
 sub iswide
 {
    my ( $cp ) = @_;
-
-   my $width = charprop( $cp, "East_Asian_Width" ) or return;
-   return $width eq "Wide" || $width eq "Fullwidth";
+   return chr($cp) =~ m/\p{East_Asian_Width=Wide}|\p{East_Asian_Width=Fullwidth}/;
 }
 
 my ( $start, $end );
