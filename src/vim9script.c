@@ -84,6 +84,12 @@ ex_vim9script(exarg_T *eap)
 	{
 	    int		    lnum_start = SOURCING_LNUM - 1;
 
+	    if (*p == '!')
+	    {
+		emsg(_(e_nobang));
+		break;
+	    }
+
 	    // Handle :function and :def by calling def_function().
 	    // It will read upto the matching :endded or :endfunction.
 	    eap->cmdidx = *line == 'f' ? CMD_function : CMD_def;

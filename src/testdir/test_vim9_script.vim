@@ -136,7 +136,7 @@ def Test_assignment_dict()
   let dict2: dict<number> = #{one: 1, two: 2}
   let dict3: dict<string> = #{key: 'value'}
   let dict4: dict<any> = #{one: 1, two: '2'}
-  let dict5: dict<blob> = #{one: 0z01, tw: 0z02}
+  let dict5: dict<blob> = #{one: 0z01, two: 0z02}
 
   call CheckDefExecFailure(['let dd = {}', 'dd[""] = 6'], 'E713:')
 
@@ -1721,6 +1721,11 @@ def Test_vim9_comment_not_compiled()
       'dsearch /pat/#comment',
       'bwipe!',
       ], 'E488:')
+
+  CheckScriptFailure([
+      'vim9script',
+      'func! SomeFunc()',
+      ], 'E477:')
 enddef
 
 def Test_finish()
