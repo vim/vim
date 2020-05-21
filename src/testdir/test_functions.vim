@@ -1198,6 +1198,19 @@ func Test_Executable()
     call assert_equal(1, executable(notepadcmd))
     call assert_equal(driveroot .. notepadcmd, notepadcmd->exepath())
     bwipe
+
+    " create "notepad.bat"
+    call mkdir('Xdir')
+    let notepadbat = fnamemodify('Xdir/notepad.bat', ':p')
+    call writefile([], notepadbat)
+    new
+    " check that the path and the pathext order is valid
+    lcd Xdir
+    let [pathext, $PATHEXT] = [$PATHEXT, '.com;.exe;.bat;.cmd']
+    call assert_equal(notepadbat, exepath('notepad'))
+    let $PATHEXT = pathext
+    bwipe
+    eval 'Xdir'->delete('rf')
   elseif has('unix')
     call assert_equal(1, 'cat'->executable())
     call assert_equal(0, executable('nodogshere'))
