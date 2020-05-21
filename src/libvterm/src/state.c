@@ -1680,8 +1680,6 @@ static void request_status_string(VTermState *state, VTermStringFragment frag)
   if(!frag.final)
     return;
 
-  fprintf(stderr, "DECRQSS on <%s>\n", tmp);
-
   switch(tmp[0] | tmp[1]<<8 | tmp[2]<<16) {
     case 'm': {
       // Query SGR

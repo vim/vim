@@ -949,9 +949,9 @@ static int attrs_differ(VTermAttrMask attrs, ScreenCell *a, ScreenCell *b)
     return 1;
   if((attrs & VTERM_ATTR_FONT_MASK)       && (a->pen.font != b->pen.font))
     return 1;
-  if((attrs & VTERM_ATTR_FOREGROUND_MASK) && !vterm_color_equal(a->pen.fg, b->pen.fg))
+  if((attrs & VTERM_ATTR_FOREGROUND_MASK) && !vterm_color_is_equal(&a->pen.fg, &b->pen.fg))
     return 1;
-  if((attrs & VTERM_ATTR_BACKGROUND_MASK) && !vterm_color_equal(a->pen.bg, b->pen.bg))
+  if((attrs & VTERM_ATTR_BACKGROUND_MASK) && !vterm_color_is_equal(&a->pen.bg, &b->pen.bg))
     return 1;
 
   return 0;
@@ -983,4 +983,9 @@ int vterm_screen_get_attrs_extent(const VTermScreen *screen, VTermRect *extent, 
   extent->end_col = col - 1;
 
   return 1;
+}
+
+void vterm_screen_convert_color_to_rgb(const VTermScreen *screen, VTermColor *col)
+{
+  vterm_state_convert_color_to_rgb(screen->state, col);
 }

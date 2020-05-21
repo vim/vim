@@ -1626,7 +1626,8 @@ cell2cellattr(const VTermScreenCell *cell, cellattr_T *attr)
     static int
 equal_celattr(cellattr_T *a, cellattr_T *b)
 {
-    // Comparing the colors should be sufficient.
+    // We only compare the RGB colors, ignoring the ANSI index and type.
+    // Thus black set explicitly is equal the background black.
     return a->fg.red == b->fg.red
 	&& a->fg.green == b->fg.green
 	&& a->fg.blue == b->fg.blue
@@ -2692,10 +2693,13 @@ color2index(VTermColor *color, int fg, int *boldp)
     int blue = color->blue;
     int green = color->green;
 
-    if (color->ansi_index != VTERM_ANSI_INDEX_NONE)
+    if (VTERM_COLOR_IS_DEFAULT_FG(color)
+	    || VTERM_COLOR_IS_DEFAULT_BG(color))
+	return 0;
+    if (VTERM_COLOR_IS_INDEXED(color))
     {
 	// The first 16 colors and default: use the ANSI index.
-	switch (color->ansi_index)
+	switch (color->index + 1)
 	{
 	    case  0: return 0;
 	    case  1: return lookup_color( 0, fg, boldp) + 1; // black
@@ -3832,7 +3836,14 @@ term_get_attr(win_T *wp, linenr_T lnum, int col)
     static void
 cterm_color2vterm(int nr, VTermColor *rgb)
 {
-    cterm_color2rgb(nr, &rgb->red, &rgb->green, &rgb->blue, &rgb->ansi_index);
+    cterm_color2rgb(nr, &rgb->red, &rgb->green, &rgb->blue, &rgb->index);
+    if (rgb->index == 0)
+	rgb->type = VTERM_COLOR_RGB;
+    else
+    {
+	rgb->type = VTERM_COLOR_INDEXED;
+	--rgb->index;
+    }
 }
 
 /*
@@ -3864,7 +3875,8 @@ init_default_colors(term_T *term, win_T *wp)
     }
     fg->red = fg->green = fg->blue = fgval;
     bg->red = bg->green = bg->blue = bgval;
-    fg->ansi_index = bg->ansi_index = VTERM_ANSI_INDEX_DEFAULT;
+    fg->type = VTERM_COLOR_RGB | VTERM_COLOR_DEFAULT_FG;
+    bg->type = VTERM_COLOR_RGB | VTERM_COLOR_DEFAULT_BG;
 
     // The 'wincolor' or the highlight group overrules the defaults.
     if (wp != NULL && *wp->w_p_wcr != NUL)
@@ -4509,21 +4521,30 @@ term_get_buf(typval_T *argvars, char *where)
     return buf;
 }
 
-    static int
-same_color(VTermColor *a, VTermColor *b)
+    static void
+clear_cell(VTermScreenCell *cell)
 {
-    return a->red == b->red
-	&& a->green == b->green
-	&& a->blue == b->blue
-	&& a->ansi_index == b->ansi_index;
+    CLEAR_FIELD(*cell);
+    cell->fg.type = VTERM_COLOR_DEFAULT_FG;
+    cell->bg.type = VTERM_COLOR_DEFAULT_BG;
 }
 
     static void
 dump_term_color(FILE *fd, VTermColor *color)
 {
+    int index;
+
+    if (VTERM_COLOR_IS_INDEXED(color))
+	index = color->index + 1;
+    else if (color->type == 0)
+	// use RGB values
+	index = 255;
+    else
+	// default color
+	index = 0;
     fprintf(fd, "%02x%02x%02x%d",
 	    (int)color->red, (int)color->green, (int)color->blue,
-	    (int)color->ansi_index);
+	    index);
 }
 
 /*
@@ -4607,7 +4628,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     }
 
-    CLEAR_FIELD(prev_cell);
+    clear_cell(&prev_cell);
 
     screen = vterm_obtain_screen(term->tl_vterm);
     state = vterm_obtain_state(term->tl_vterm);
@@ -4629,7 +4650,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 						 && pos.row == cursor_pos.row);
 
 	    if (vterm_screen_get_cell(screen, pos, &cell) == 0)
-		CLEAR_FIELD(cell);
+		clear_cell(&cell);
 
 	    for (i = 0; i < VTERM_MAX_CHARS_PER_CELL; ++i)
 	    {
@@ -4649,8 +4670,8 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 	    }
 	    same_attr = vtermAttr2hl(cell.attrs)
 					       == vtermAttr2hl(prev_cell.attrs)
-			&& same_color(&cell.fg, &prev_cell.fg)
-			&& same_color(&cell.bg, &prev_cell.bg);
+			&& vterm_color_is_equal(&cell.fg, &prev_cell.fg)
+			&& vterm_color_is_equal(&cell.bg, &prev_cell.bg);
 	    if (same_chars && cell.width == prev_cell.width && same_attr
 							     && !is_cursor_pos)
 	    {
@@ -4697,14 +4718,14 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 		    else
 		    {
 			fprintf(fd, "%d", vtermAttr2hl(cell.attrs));
-			if (same_color(&cell.fg, &prev_cell.fg))
+			if (vterm_color_is_equal(&cell.fg, &prev_cell.fg))
 			    fputs("&", fd);
 			else
 			{
 			    fputs("#", fd);
 			    dump_term_color(fd, &cell.fg);
 			}
-			if (same_color(&cell.bg, &prev_cell.bg))
+			if (vterm_color_is_equal(&cell.bg, &prev_cell.bg))
 			    fputs("&", fd);
 			else
 			{
@@ -4747,6 +4768,14 @@ append_cell(garray_T *gap, cellattr_T *cell)
     }
 }
 
+    static void
+clear_cellattr(cellattr_T *cell)
+{
+    CLEAR_FIELD(*cell);
+    cell->fg.type = VTERM_COLOR_DEFAULT_FG;
+    cell->bg.type = VTERM_COLOR_DEFAULT_BG;
+}
+
 /*
  * Read the dump file from "fd" and append lines to the current buffer.
  * Return the cell width of the longest line.
@@ -4767,8 +4796,8 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
 
     ga_init2(&ga_text, 1, 90);
     ga_init2(&ga_cell, sizeof(cellattr_T), 90);
-    CLEAR_FIELD(cell);
-    CLEAR_FIELD(empty_cell);
+    clear_cellattr(&cell);
+    clear_cellattr(&empty_cell);
     cursor_pos->row = -1;
     cursor_pos->col = -1;
 
@@ -4878,7 +4907,7 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
 			}
 			else if (c == '#')
 			{
-			    int red, green, blue, index = 0;
+			    int red, green, blue, index = 0, type;
 
 			    c = fgetc(fd);
 			    red = hex2nr(c);
@@ -4900,20 +4929,37 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
 				index = index * 10 + (c - '0');
 				c = fgetc(fd);
 			    }
-
-			    if (is_bg)
+			    if (index == 0 || index == 255)
 			    {
-				cell.bg.red = red;
-				cell.bg.green = green;
-				cell.bg.blue = blue;
-				cell.bg.ansi_index = index;
+				type = VTERM_COLOR_RGB;
+				if (index == 0)
+				{
+				    if (is_bg)
+					type |= VTERM_COLOR_DEFAULT_BG;
+				    else
+					type |= VTERM_COLOR_DEFAULT_FG;
+				}
 			    }
 			    else
 			    {
+				type = VTERM_COLOR_INDEXED;
+				index -= 1;
+			    }
+			    if (is_bg)
+			    {
+				cell.bg.type = type;
+				cell.bg.red = red;
+				cell.bg.green = green;
+				cell.bg.blue = blue;
+				cell.bg.index = index;
+			    }
+			    else
+			    {
+				cell.fg.type = type;
 				cell.fg.red = red;
 				cell.fg.green = green;
 				cell.fg.blue = blue;
-				cell.fg.ansi_index = index;
+				cell.fg.index = index;
 			    }
 			}
 			else
@@ -5226,10 +5272,10 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 			if ((cellattr1 + col)->width
 						   != (cellattr2 + col)->width)
 			    textline[col] = 'w';
-			else if (!same_color(&(cellattr1 + col)->fg,
+			else if (!vterm_color_is_equal(&(cellattr1 + col)->fg,
 						   &(cellattr2 + col)->fg))
 			    textline[col] = 'f';
-			else if (!same_color(&(cellattr1 + col)->bg,
+			else if (!vterm_color_is_equal(&(cellattr1 + col)->bg,
 						   &(cellattr2 + col)->bg))
 			    textline[col] = 'b';
 			else if (vtermAttr2hl((cellattr1 + col)->attrs)
@@ -5808,6 +5854,7 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 	else
 	{
 	    VTermScreenCell cell;
+
 	    if (vterm_screen_get_cell(screen, pos, &cell) == 0)
 		break;
 	    for (i = 0; i < VTERM_MAX_CHARS_PER_CELL; ++i)

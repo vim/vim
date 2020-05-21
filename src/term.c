@@ -6357,12 +6357,6 @@ static int grey_ramp[] = {
     0x80, 0x8A, 0x94, 0x9E, 0xA8, 0xB2, 0xBC, 0xC6, 0xD0, 0xDA, 0xE4, 0xEE
 };
 
-# ifdef FEAT_TERMINAL
-#  include "libvterm/include/vterm.h"  // for VTERM_ANSI_INDEX_NONE
-# else
-#  define VTERM_ANSI_INDEX_NONE 0
-# endif
-
 static char_u ansi_table[16][4] = {
 //   R    G    B   idx
   {  0,   0,   0,  1}, // black
@@ -6384,6 +6378,8 @@ static char_u ansi_table[16][4] = {
   {255, 255, 255, 16}, // white
 };
 
+#define ANSI_INDEX_NONE 0
+
     void
 cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
 {
@@ -6403,7 +6399,7 @@ cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
 	*r = cube_value[idx / 36 % 6];
 	*g = cube_value[idx / 6  % 6];
 	*b = cube_value[idx      % 6];
-	*ansi_idx = VTERM_ANSI_INDEX_NONE;
+	*ansi_idx = ANSI_INDEX_NONE;
     }
     else if (nr < 256)
     {
@@ -6412,14 +6408,14 @@ cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
 	*r = grey_ramp[idx];
 	*g = grey_ramp[idx];
 	*b = grey_ramp[idx];
-	*ansi_idx = VTERM_ANSI_INDEX_NONE;
+	*ansi_idx = ANSI_INDEX_NONE;
     }
     else
     {
 	*r = 0;
 	*g = 0;
 	*b = 0;
-	*ansi_idx = 0;
+	*ansi_idx = ANSI_INDEX_NONE;
     }
 }
 #endif

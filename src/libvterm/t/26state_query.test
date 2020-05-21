@@ -41,10 +41,10 @@ PUSH "\e[0;93;104m"
 PUSH "\eP\$qm\e\\"
   output "\eP1\$r93;104m\e\\"
 
-!DECRQSS on SGR 256-palette colours
-PUSH "\e[0;38:5:56;48:5:78m"
-PUSH "\eP\$qm\e\\"
-  output "\eP1\$r38:5:56;48:5:78m\e\\"
+##!DECRQSS on SGR 256-palette colours
+#PUSH "\e[0;38:5:56;48:5:78m"
+#PUSH "\eP\$qm\e\\"
+#  output "\eP1\$r38:5:56;48:5:78m\e\\"
 
 !DECRQSS on SGR RGB8 colours
 PUSH "\e[0;38:2:24:68:112;48:2:13:57:101m"
