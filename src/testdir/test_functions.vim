@@ -1187,6 +1187,17 @@ func Test_Executable()
     call assert_equal(0, executable('notepad.exe.exe'))
     call assert_equal(0, executable('shell32.dll'))
     call assert_equal(0, executable('win.ini'))
+
+    " get "notepad" path and remove the leading drive and sep. (ex. 'C:\')
+    let notepadcmd = exepath('notepad.exe')
+    let driveroot = notepadcmd[:2]
+    let notepadcmd = notepadcmd[3:]
+    new
+    " check that the relative path works in /
+    execute 'lcd' driveroot
+    call assert_equal(1, executable(notepadcmd))
+    call assert_equal(driveroot .. notepadcmd, notepadcmd->exepath())
+    bwipe
   elseif has('unix')
     call assert_equal(1, 'cat'->executable())
     call assert_equal(0, executable('nodogshere'))
