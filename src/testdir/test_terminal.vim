@@ -2493,6 +2493,7 @@ func Test_terminal_in_popup()
   call term_sendkeys(buf, ":call OpenTerm(1)\<CR>")
   call TermWait(buf, 150)
   call term_sendkeys(buf, ":set hlsearch\<CR>")
+  call TermWait(buf, 100)
   call term_sendkeys(buf, "/edit\<CR>")
   call VerifyScreenDump(buf, 'Test_terminal_popup_3', {})
  
@@ -2517,7 +2518,7 @@ func Test_terminal_in_popup()
 
   call TermWait(buf, 50)
   call term_sendkeys(buf, ":q\<CR>")
-  call TermWait(buf, 100)  " wait for terminal to vanish
+  call TermWait(buf, 150)  " wait for terminal to vanish
 
   call StopVimInTerminal(buf)
   call delete('Xtext')
@@ -2704,8 +2705,7 @@ func Test_term_keycode_translation()
   call term_sendkeys(buf, "i")
   for i in range(len(keys))
     call term_sendkeys(buf, "\<C-U>\<C-K>" .. keys[i])
-    call term_wait(buf)
-    call assert_equal(output[i], term_getline(buf, 1))
+    call WaitForAssert({-> assert_equal(output[i], term_getline(buf, 1))})
   endfor
 
   let keypad_keys = ["\<k0>", "\<k1>", "\<k2>", "\<k3>", "\<k4>", "\<k5>",
@@ -2720,13 +2720,11 @@ func Test_term_keycode_translation()
       continue
     endif
     call term_sendkeys(buf, "\<C-U>" .. keypad_keys[i])
-    call term_wait(buf)
-    call assert_equal(keypad_output[i], term_getline(buf, 1))
+    call WaitForAssert({-> assert_equal(keypad_output[i], term_getline(buf, 1))})
   endfor
 
   call feedkeys("\<C-U>\<kEnter>\<BS>one\<C-W>.two", 'xt')
-  call term_wait(buf)
-  call assert_equal('two', term_getline(buf, 1))
+  call WaitForAssert({-> assert_equal('two', term_getline(buf, 1))})
 
   call StopVimInTerminal(buf)
 endfunc
