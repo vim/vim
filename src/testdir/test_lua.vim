@@ -536,6 +536,12 @@ func Test_lua_open()
   %bwipe!
 endfunc
 
+func Test_update_package_paths()
+  set runtimepath+=./testluaplugin
+  lua vim._update_package_paths()
+  call assert_equal("hello from lua", luaeval("require('testluaplugin').hello()"))
+endfunc
+
 " Test vim.line()
 func Test_lua_line()
   new
