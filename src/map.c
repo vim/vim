@@ -204,6 +204,86 @@ showmap(
     out_flush();			// show one line at a time
 }
 
+    static int
+map_add(
+	mapblock_T  **map_table,
+	mapblock_T  **abbr_table,
+	char_u	    *keys,
+	char_u	    *rhs,
+	char_u	    *orig_rhs,
+	int	    expr,
+	int	    noremap,
+	int	    nowait,
+	int	    silent,
+	int	    mode,
+	int	    is_abbr,
+#ifdef FEAT_EVAL
+	scid_T	    sid,	    // -1 to use current_sctx
+	linenr_T    lnum,
+#endif
+	int	    simplified)
+{
+    mapblock_T	*mp = ALLOC_ONE(mapblock_T);
+
+    if (mp == NULL)
+	return FAIL;
+
+    // If CTRL-C has been mapped, don't always use it for Interrupting.
+    if (*keys == Ctrl_C)
+    {
+	if (map_table == curbuf->b_maphash)
+	    curbuf->b_mapped_ctrl_c |= mode;
+	else
+	    mapped_ctrl_c |= mode;
+    }
+
+    mp->m_keys = vim_strsave(keys);
+    mp->m_str = vim_strsave(rhs);
+    mp->m_orig_str = vim_strsave(orig_rhs);
+    if (mp->m_keys == NULL || mp->m_str == NULL)
+    {
+	vim_free(mp->m_keys);
+	vim_free(mp->m_str);
+	vim_free(mp->m_orig_str);
+	vim_free(mp);
+	return FAIL;
+    }
+    mp->m_keylen = (int)STRLEN(mp->m_keys);
+    mp->m_noremap = noremap;
+    mp->m_nowait = nowait;
+    mp->m_silent = silent;
+    mp->m_mode = mode;
+    mp->m_simplified = simplified;
+#ifdef FEAT_EVAL
+    mp->m_expr = expr;
+    if (sid >= 0)
+    {
+	mp->m_script_ctx.sc_sid = sid;
+	mp->m_script_ctx.sc_lnum = lnum;
+    }
+    else
+    {
+	mp->m_script_ctx = current_sctx;
+	mp->m_script_ctx.sc_lnum += SOURCING_LNUM;
+    }
+#endif
+
+    // add the new entry in front of the abbrlist or maphash[] list
+    if (is_abbr)
+    {
+	mp->m_next = *abbr_table;
+	*abbr_table = mp;
+    }
+    else
+    {
+	int n = MAP_HASH(mp->m_mode, mp->m_keys[0]);
+
+	mp->m_next = map_table[n];
+	map_table[n] = mp;
+    }
+    return OK;
+}
+
 /*
  * map[!]		    : show all key mappings
  * map[!] {lhs}		    : show key mapping for {lhs}
@@ -501,7 +581,8 @@ do_map(
 	    msg_start();
 
 	// Check if a new local mapping wasn't already defined globally.
-	if (map_table == curbuf->b_maphash && haskey && hasarg && maptype != 1)
+	if (unique && map_table == curbuf->b_maphash
+					   && haskey && hasarg && maptype != 1)
 	{
 	    // need to loop over all global hash lists
 	    for (hash = 0; hash < 256 && !got_int; ++hash)
@@ -519,7 +600,6 @@ do_map(
 		    // check entries with the same mode
 		    if ((mp->m_mode & mode) != 0
 			    && mp->m_keylen == len
-			    && unique
 			    && STRNCMP(mp->m_keys, keys, (size_t)len) == 0)
 		    {
 			if (abbrev)
@@ -759,57 +839,16 @@ do_map(
 	    continue;	// have added the new entry already
 
 	// Get here when adding a new entry to the maphash[] list or abbrlist.
-	mp = ALLOC_ONE(mapblock_T);
-	if (mp == NULL)
+	if (map_add(map_table, abbr_table, keys, rhs, orig_rhs, expr,
+		    noremap, nowait, silent, mode,
+		    abbrev,
+#ifdef FEAT_EVAL
+		    /* sid */ -1, /* lnum */ 0,
+#endif
+		    did_simplify && keyround == 1) == FAIL)
 	{
 	    retval = 4;	    // no mem
 	    goto theend;
-	}
-
-	// If CTRL-C has been mapped, don't always use it for Interrupting.
-	if (*keys == Ctrl_C)
-	{
-	    if (map_table == curbuf->b_maphash)
-		curbuf->b_mapped_ctrl_c |= mode;
-	    else
-		mapped_ctrl_c |= mode;
-	}
-
-	mp->m_keys = vim_strsave(keys);
-	mp->m_str = vim_strsave(rhs);
-	mp->m_orig_str = vim_strsave(orig_rhs);
-	if (mp->m_keys == NULL || mp->m_str == NULL)
-	{
-	    vim_free(mp->m_keys);
-	    vim_free(mp->m_str);
-	    vim_free(mp->m_orig_str);
-	    vim_free(mp);
-	    retval = 4;	// no mem
-	    goto theend;
-	}
-	mp->m_keylen = (int)STRLEN(mp->m_keys);
-	mp->m_noremap = noremap;
-	mp->m_nowait = nowait;
-	mp->m_silent = silent;
-	mp->m_mode = mode;
-	mp->m_simplified = did_simplify && keyround == 1;
-#ifdef FEAT_EVAL
-	mp->m_expr = expr;
-	mp->m_script_ctx = current_sctx;
-	mp->m_script_ctx.sc_lnum += SOURCING_LNUM;
-#endif
-
-	// add the new entry in front of the abbrlist or maphash[] list
-	if (abbrev)
-	{
-	    mp->m_next = *abbr_table;
-	    *abbr_table = mp;
-	}
-	else
-	{
-	    n = MAP_HASH(mp->m_mode, mp->m_keys[0]);
-	    mp->m_next = map_table[n];
-	    map_table[n] = mp;
 	}
     }
 
@@ -2209,12 +2248,95 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 	dict_add_number(dict, "buffer", (long)buffer_local);
 	dict_add_number(dict, "nowait", mp->m_nowait ? 1L : 0L);
 	dict_add_string(dict, "mode", mapmode);
+	dict_add_number(dict, "simplified", mp->m_simplified);
 
 	vim_free(lhs);
 	vim_free(mapmode);
     }
 }
+
+/*
+ * "mapset()" function
+ */
+    void
+f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    char_u	*keys;
+    char_u	*keys_buf = NULL;
+    char_u	*which;
+    int		mode;
+    char_u	buf[NUMBUFLEN];
+    int		is_abbr;
+    dict_T	*d;
+    char_u	*lhs;
+    char_u	*rhs;
+    int		noremap;
+    int		expr;
+    int		silent;
+    scid_T	sid;
+    linenr_T	lnum;
+    mapblock_T	**map_table = maphash;
+    mapblock_T  **abbr_table = &first_abbr;
+    int		nowait;
+    int		simplified;
+    char_u	*arg;
+
+    which = tv_get_string_buf_chk(&argvars[0], buf);
+    mode = get_map_mode(&which, 0);
+    is_abbr = (int)tv_get_number(&argvars[1]);
+
+    if (argvars[2].v_type != VAR_DICT)
+    {
+	emsg(_(e_dictkey));
+	return;
+    }
+    d = argvars[2].vval.v_dict;
+
+    // Get the values in the same order as above in get_maparg().
+    lhs = dict_get_string(d, (char_u *)"lhs", FALSE);
+    if (lhs == NULL)
+    {
+	emsg(_("E99: lhs entry missing in mapset() dict argument"));
+	return;
+    }
+    rhs = dict_get_string(d, (char_u *)"rhs", FALSE);
+    if (rhs == NULL)
+    {
+	emsg(_("E99: rhs entry missing in mapset() dict argument"));
+	return;
+    }
+
+    noremap = dict_get_number(d, (char_u *)"noremap") ? REMAP_NONE: 0;
+    if (dict_get_number(d, (char_u *)"script") != 0)
+	noremap = REMAP_SCRIPT;
+    expr = dict_get_number(d, (char_u *)"expr") != 0;
+    silent = dict_get_number(d, (char_u *)"silent") != 0;
+    sid = dict_get_number(d, (char_u *)"sid");
+    lnum = dict_get_number(d, (char_u *)"lnum");
+    if (dict_get_number(d, (char_u *)"buffer"))
+    {
+	map_table = curbuf->b_maphash;
+	abbr_table = &curbuf->b_first_abbr;
+    }
+    nowait = dict_get_number(d, (char_u *)"nowait") != 0;
+    // mode from the dict is not used
+    simplified = dict_get_number(d, (char_u *)"simplified") != 0;
+
+    // Delete any existing mapping for this lhs and mode.
+    arg = vim_strsave(lhs);
+    if (arg == NULL)
+	return;
+    do_map(1, arg, mode, is_abbr);
+    vim_free(arg);
+
+    keys = replace_termcodes(lhs, &keys_buf,
+				      REPTERM_FROM_PART | REPTERM_DO_LT, NULL);
+    (void)map_add(map_table, abbr_table, keys, rhs, rhs, expr,
+		noremap, nowait, silent, mode, is_abbr, sid, lnum, simplified);
+    vim_free(keys_buf);
+}
 #endif
+
 
 #if defined(MSWIN) || defined(MACOS_X)
 

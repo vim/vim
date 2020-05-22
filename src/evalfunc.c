@@ -664,6 +664,7 @@ static funcentry_T global_functions[] =
     {"map",		2, 2, FEARG_1,	  ret_any,	f_map},
     {"maparg",		1, 4, FEARG_1,	  ret_string,	f_maparg},
     {"mapcheck",	1, 3, FEARG_1,	  ret_string,	f_mapcheck},
+    {"mapset",		3, 3, FEARG_1,	  ret_void,	f_mapset},
     {"match",		2, 4, FEARG_1,	  ret_any,	f_match},
     {"matchadd",	2, 5, FEARG_1,	  ret_number,	f_matchadd},
     {"matchaddpos",	2, 5, FEARG_1,	  ret_number,	f_matchaddpos},
