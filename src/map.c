@@ -211,13 +211,13 @@ map_add(
 	char_u	    *keys,
 	char_u	    *rhs,
 	char_u	    *orig_rhs,
-	int	    expr,
 	int	    noremap,
 	int	    nowait,
 	int	    silent,
 	int	    mode,
 	int	    is_abbr,
 #ifdef FEAT_EVAL
+	int	    expr,
 	scid_T	    sid,	    // -1 to use current_sctx
 	linenr_T    lnum,
 #endif
@@ -839,11 +839,10 @@ do_map(
 	    continue;	// have added the new entry already
 
 	// Get here when adding a new entry to the maphash[] list or abbrlist.
-	if (map_add(map_table, abbr_table, keys, rhs, orig_rhs, expr,
-		    noremap, nowait, silent, mode,
-		    abbrev,
+	if (map_add(map_table, abbr_table, keys, rhs, orig_rhs,
+		    noremap, nowait, silent, mode, abbrev,
 #ifdef FEAT_EVAL
-		    /* sid */ -1, /* lnum */ 0,
+		    expr, /* sid */ -1, /* lnum */ 0,
 #endif
 		    did_simplify && keyround == 1) == FAIL)
 	{
@@ -2331,8 +2330,8 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 
     keys = replace_termcodes(lhs, &keys_buf,
 				      REPTERM_FROM_PART | REPTERM_DO_LT, NULL);
-    (void)map_add(map_table, abbr_table, keys, rhs, rhs, expr,
-		noremap, nowait, silent, mode, is_abbr, sid, lnum, simplified);
+    (void)map_add(map_table, abbr_table, keys, rhs, rhs, noremap,
+	    nowait, silent, mode, is_abbr, expr, sid, lnum, simplified);
     vim_free(keys_buf);
 }
 #endif
