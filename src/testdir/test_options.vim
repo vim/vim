@@ -60,6 +60,13 @@ func Test_wildchar()
   set wildchar&
 endfunc
 
+func Test_wildoptions()
+  set wildoptions=
+  set wildoptions+=tagfile
+  set wildoptions+=tagfile
+  call assert_equal('tagfile', &wildoptions)
+endfunc
+
 func Test_options_command()
   let caught = 'ok'
   try
