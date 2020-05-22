@@ -2269,6 +2269,8 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
     dict_T	*d;
     char_u	*lhs;
     char_u	*rhs;
+    char_u	*orig_rhs;
+    char_u	*arg_buf = NULL;
     int		noremap;
     int		expr;
     int		silent;
@@ -2304,6 +2306,9 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 	emsg(_("E99: rhs entry missing in mapset() dict argument"));
 	return;
     }
+    orig_rhs = rhs;
+    rhs = replace_termcodes(rhs, &arg_buf,
+					REPTERM_DO_LT | REPTERM_SPECIAL, NULL);
 
     noremap = dict_get_number(d, (char_u *)"noremap") ? REMAP_NONE: 0;
     if (dict_get_number(d, (char_u *)"script") != 0)
@@ -2330,9 +2335,10 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 
     keys = replace_termcodes(lhs, &keys_buf,
 				      REPTERM_FROM_PART | REPTERM_DO_LT, NULL);
-    (void)map_add(map_table, abbr_table, keys, rhs, rhs, noremap,
+    (void)map_add(map_table, abbr_table, keys, rhs, orig_rhs, noremap,
 	    nowait, silent, mode, is_abbr, expr, sid, lnum, simplified);
     vim_free(keys_buf);
+    vim_free(arg_buf);
 }
 #endif
 
