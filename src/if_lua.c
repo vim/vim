@@ -2395,4 +2395,17 @@ set_ref_in_lua(int copyID)
     return aborted;
 }
 
+    void
+update_package_paths_in_lua()
+{
+    if (lua_isopen())
+    {
+	lua_getglobal(L, "vim");
+	lua_getfield(L, -1, "_update_package_paths");
+
+	if (lua_pcall(L, 0, 0, 0))
+	    luaV_emsg(L);
+    }
+}
+
 #endif
