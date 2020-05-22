@@ -10,9 +10,9 @@
 
 #include "utf8.h"
 
-///////////////////
-// API functions //
-///////////////////
+/*****************
+ * API functions *
+ *****************/
 
 static void *default_malloc(size_t size, void *allocdata UNUSED)
 {
@@ -39,7 +39,7 @@ VTerm *vterm_new(int rows, int cols)
 
 VTerm *vterm_new_with_allocator(int rows, int cols, VTermAllocatorFunctions *funcs, void *allocdata)
 {
-  // Need to bootstrap using the allocator function directly
+  /* Need to bootstrap using the allocator function directly */
   VTerm *vt = (*funcs->malloc)(sizeof(VTerm), allocdata);
 
   if (vt == NULL)
@@ -269,7 +269,7 @@ VTermValueType vterm_get_attr_type(VTermAttr attr)
 
     case VTERM_N_ATTRS: return 0;
   }
-  return 0; // UNREACHABLE
+  return 0; /* UNREACHABLE */
 }
 
 VTermValueType vterm_get_prop_type(VTermProp prop)
@@ -287,7 +287,7 @@ VTermValueType vterm_get_prop_type(VTermProp prop)
 
     case VTERM_N_PROPS: return 0;
   }
-  return 0; // UNREACHABLE
+  return 0; /* UNREACHABLE */
 }
 
 void vterm_scroll_rect(VTermRect rect,
@@ -302,24 +302,26 @@ void vterm_scroll_rect(VTermRect rect,
 
   if(abs(downward)  >= rect.end_row - rect.start_row ||
      abs(rightward) >= rect.end_col - rect.start_col) {
-    // Scroll more than area; just erase the lot
+    /* Scroll more than area; just erase the lot */
     (*eraserect)(rect, 0, user);
     return;
   }
 
   if(rightward >= 0) {
-    // rect: [XXX................]
-    // src:     [----------------]
-    // dest: [----------------]
+    /* rect: [XXX................]
+     * src:     [----------------]
+     * dest: [----------------]
+     */
     dest.start_col = rect.start_col;
     dest.end_col   = rect.end_col   - rightward;
     src.start_col  = rect.start_col + rightward;
     src.end_col    = rect.end_col;
   }
   else {
-    // rect: [................XXX]
-    // src:  [----------------]
-    // dest:    [----------------]
+    /* rect: [................XXX]
+     * src:  [----------------]
+     * dest:    [----------------]
+     */
     int leftward = -rightward;
     dest.start_col = rect.start_col + leftward;
     dest.end_col   = rect.end_col;
@@ -375,8 +377,7 @@ void vterm_copy_cells(VTermRect dest,
     test_row = dest.start_row - 1;
     inc_row = -1;
   }
-  else {
-    // downward >= 0
+  else /* downward >= 0 */ {
     init_row = dest.start_row;
     test_row = dest.end_row;
     inc_row = +1;
@@ -387,8 +388,7 @@ void vterm_copy_cells(VTermRect dest,
     test_col = dest.start_col - 1;
     inc_col = -1;
   }
-  else {
-    // rightward >= 0
+  else /* rightward >= 0 */ {
     init_col = dest.start_col;
     test_col = dest.end_col;
     inc_col = +1;

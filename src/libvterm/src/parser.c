@@ -34,7 +34,7 @@ static void do_csi(VTerm *vt, char command)
 
   if(vt->parser.callbacks && vt->parser.callbacks->csi)
     if((*vt->parser.callbacks->csi)(
-          vt->parser.v.csi.leaderlen ? vt->parser.v.csi.leader : NULL,
+          vt->parser.v.csi.leaderlen ? vt->parser.v.csi.leader : NULL, 
           vt->parser.v.csi.args,
           vt->parser.v.csi.argi,
           vt->parser.intermedlen ? vt->parser.intermed : NULL,
@@ -187,23 +187,23 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
 
     switch(vt->parser.state) {
     case CSI_LEADER:
-      // Extract leader bytes 0x3c to 0x3f
+      /* Extract leader bytes 0x3c to 0x3f */
       if(c >= 0x3c && c <= 0x3f) {
         if(vt->parser.v.csi.leaderlen < CSI_LEADER_MAX-1)
           vt->parser.v.csi.leader[vt->parser.v.csi.leaderlen++] = c;
         break;
       }
 
-      // else fallthrough
+      /* else fallthrough */
       vt->parser.v.csi.leader[vt->parser.v.csi.leaderlen] = 0;
 
       vt->parser.v.csi.argi = 0;
       vt->parser.v.csi.args[0] = CSI_ARG_MISSING;
       vt->parser.state = CSI_ARGS;
 
-      // fallthrough
+      /* fallthrough */
     case CSI_ARGS:
-      // Numerical value of argument
+      /* Numerical value of argument */
       if(c >= '0' && c <= '9') {
         if(vt->parser.v.csi.args[vt->parser.v.csi.argi] == CSI_ARG_MISSING)
           vt->parser.v.csi.args[vt->parser.v.csi.argi] = 0;
@@ -221,7 +221,7 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
         break;
       }
 
-      // else fallthrough
+      /* else fallthrough */
       vt->parser.v.csi.argi++;
       vt->parser.intermedlen = 0;
       vt->parser.state = CSI_INTERMED;
@@ -233,13 +233,13 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
         break;
       }
       else if(c == 0x1b) {
-        // ESC in CSI cancels
+        /* ESC in CSI cancels */
       }
       else if(c >= 0x40 && c <= 0x7e) {
         vt->parser.intermed[vt->parser.intermedlen] = 0;
         do_csi(vt, c);
       }
-      // else was invalid CSI
+      /* else was invalid CSI */
 
       ENTER_NORMAL_STATE();
       break;
@@ -330,7 +330,7 @@ string_state:
 
         if(!eaten) {
           DEBUG_LOG("libvterm: Text callback did not consume any input\n");
-          // force it to make progress
+          /* force it to make progress */
           eaten = 1;
         }
 

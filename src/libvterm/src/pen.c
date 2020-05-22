@@ -11,7 +11,7 @@ typedef struct {
 } VTermRGB;
 
 static const VTermRGB ansi_colors[] = {
-  // R    G    B
+  /* R    G    B */
   {   0,   0,   0 }, // black
   { 224,   0,   0 }, // red
   {   0, 224,   0 }, // green
@@ -465,12 +465,12 @@ INTERNAL void vterm_state_setpen(VTermState *state, const long args[], int argco
       break;
     }
 
-    if (!done)
+    if(!done)
     {
       DEBUG_LOG1("libvterm: Unhandled CSI SGR %ld\n", arg);
     }
 
-    while (CSI_ARG_HAS_MORE(args[argi++]))
+    while(CSI_ARG_HAS_MORE(args[argi++]))
       ;
   }
 }

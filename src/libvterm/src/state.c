@@ -11,7 +11,7 @@
 
 static int on_resize(int rows, int cols, void *user);
 
-// Some convenient wrappers to make callback functions easier
+/* Some convenient wrappers to make callback functions easier */
 
 static void putglyph(VTermState *state, const uint32_t chars[], int width, VTermPos pos)
 {
@@ -299,8 +299,9 @@ static int on_text(const char bytes[], size_t len, void *user)
       codepoints, &npoints, state->gsingle_set ? 1 : (int)len,
       bytes, &eaten, len);
 
-  // There's a chance an encoding (e.g. UTF-8) hasn't found enough bytes yet
-  // for even a single codepoint
+  /* There's a chance an encoding (e.g. UTF-8) hasn't found enough bytes yet
+   * for even a single codepoint
+   */
   if(!npoints)
   {
     vterm_allocator_free(state->vt, codepoints);
@@ -310,10 +311,10 @@ static int on_text(const char bytes[], size_t len, void *user)
   if(state->gsingle_set && npoints)
     state->gsingle_set = 0;
 
-  // This is a combining char. that needs to be merged with the previous
-  // glyph output
+  /* This is a combining char. that needs to be merged with the previous
+   * glyph output */
   if(vterm_unicode_is_combining(codepoints[i])) {
-    // See if the cursor has moved since
+    /* See if the cursor has moved since */
     if(state->pos.row == state->combine_pos.row && state->pos.col == state->combine_pos.col + state->combine_width) {
 #ifdef DEBUG_GLYPH_COMBINE
       int printpos;
@@ -323,12 +324,12 @@ static int on_text(const char bytes[], size_t len, void *user)
       printf("} + {");
 #endif
 
-      // Find where we need to append these combining chars
+      /* Find where we need to append these combining chars */
       int saved_i = 0;
       while(state->combine_chars[saved_i])
         saved_i++;
 
-      // Add extra ones
+      /* Add extra ones */
       while(i < npoints && vterm_unicode_is_combining(codepoints[i])) {
         if(saved_i >= (int)state->combine_chars_size)
           grow_combine_buffer(state);
@@ -344,7 +345,7 @@ static int on_text(const char bytes[], size_t len, void *user)
       printf("}\n");
 #endif
 
-      // Now render it
+      /* Now render it */
       putglyph(state, state->combine_chars, state->combine_width, state->combine_pos);
     }
     else {
@@ -418,8 +419,8 @@ static int on_text(const char bytes[], size_t len, void *user)
     putglyph(state, chars, width, state->pos);
 
     if(i == npoints - 1) {
-      // End of the buffer. Save the chars in case we have to combine with
-      // more on the next call
+      /* End of the buffer. Save the chars in case we have to combine with
+       * more on the next call */
       int save_i;
       for(save_i = 0; chars[save_i]; save_i++) {
         if(save_i >= (int)state->combine_chars_size)
@@ -619,8 +620,9 @@ static int on_escape(const char *bytes, size_t len, void *user)
 {
   VTermState *state = user;
 
-  // Easier to decode this from the first byte, even though the final
-  // byte terminates it
+  /* Easier to decode this from the first byte, even though the final
+   * byte terminates it
+   */
   switch(bytes[0]) {
   case ' ':
     if(len != 2)
@@ -1338,7 +1340,7 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
     case 2:
     case 4:
       break;
-    // TODO: 1, 2 and 4 aren't meaningful yet without line tab stops
+    /* TODO: 1, 2 and 4 aren't meaningful yet without line tab stops */
     default:
       return 0;
     }
@@ -1773,7 +1775,7 @@ static int on_resize(int rows, int cols, void *user)
     if (newtabstops == NULL)
       return 0;
 
-    // TODO: This can all be done much more efficiently bytewise
+    /* TODO: This can all be done much more efficiently bytewise */
     for(col = 0; col < state->cols && col < cols; col++) {
       unsigned char mask = 1 << (col & 7);
       if(state->tabstops[col >> 3] & mask)
@@ -2012,8 +2014,8 @@ void *vterm_state_get_unrecognised_fbdata(VTermState *state)
 
 int vterm_state_set_termprop(VTermState *state, VTermProp prop, VTermValue *val)
 {
-  // Only store the new value of the property if usercode said it was happy.
-  // This is especially important for altscreen switching
+  /* Only store the new value of the property if usercode said it was happy.
+   * This is especially important for altscreen switching */
   if(state->callbacks && state->callbacks->settermprop)
     if(!(*state->callbacks->settermprop)(prop, val, state->cbdata))
       return 0;

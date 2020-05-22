@@ -35,9 +35,7 @@ typedef struct {
   int col;
 } VTermPos;
 
-/*
- * Some small utility functions; we can just keep these static here.
- */
+/* some small utility functions; we can just keep these static here */
 
 /*
  * Order points by on-screen flow order:
@@ -62,7 +60,7 @@ typedef struct {
   int end_col;
 } VTermRect;
 
-// Return true if the rect "r" contains the point "p".
+/* true if the rect contains the point */
 int vterm_rect_contains(VTermRect r, VTermPos p);
 
 #if defined(DEFINE_INLINES) || USE_INLINE
@@ -73,6 +71,7 @@ INLINE int vterm_rect_contains(VTermRect r, VTermPos p)
 }
 #endif
 
+/* move a rect */
 // Move "rect" "row_delta" down and "col_delta" right.
 // Does not check boundaries.
 void vterm_rect_move(VTermRect *rect, int row_delta, int col_delta);
@@ -185,9 +184,8 @@ void vterm_color_indexed(VTermColor *col, uint8_t idx);
  */
 int vterm_color_is_equal(const VTermColor *a, const VTermColor *b);
 
-
 typedef enum {
-  // VTERM_VALUETYPE_NONE = 0
+  /* VTERM_VALUETYPE_NONE = 0 */
   VTERM_VALUETYPE_BOOL = 1,
   VTERM_VALUETYPE_INT,
   VTERM_VALUETYPE_STRING,
@@ -211,7 +209,7 @@ typedef union {
 } VTermValue;
 
 typedef enum {
-  // VTERM_ATTR_NONE = 0
+  /* VTERM_ATTR_NONE = 0 */
   VTERM_ATTR_BOLD = 1,   // bool:   1, 22
   VTERM_ATTR_UNDERLINE,  // number: 4, 21, 24
   VTERM_ATTR_ITALIC,     // bool:   3, 23
@@ -227,7 +225,7 @@ typedef enum {
 } VTermAttr;
 
 typedef enum {
-  // VTERM_PROP_NONE = 0
+  /* VTERM_PROP_NONE = 0 */
   VTERM_PROP_CURSORVISIBLE = 1, // bool
   VTERM_PROP_CURSORBLINK,       // bool
   VTERM_PROP_ALTSCREEN,         // bool
@@ -261,9 +259,9 @@ enum {
 typedef struct {
   const uint32_t *chars;
   int             width;
-  unsigned int    protected_cell:1;  // DECSCA-protected against DECSEL/DECSED
-  unsigned int    dwl:1;             // DECDWL or DECDHL double-width line
-  unsigned int    dhl:2;             // DECDHL double-height line (1=top 2=bottom)
+  unsigned int    protected_cell:1;  /* DECSCA-protected against DECSEL/DECSED */
+  unsigned int    dwl:1;             /* DECDWL or DECDHL double-width line */
+  unsigned int    dhl:2;             /* DECDHL double-height line (1=top 2=bottom) */
 } VTermGlyphInfo;
 
 typedef struct {
@@ -272,9 +270,18 @@ typedef struct {
   unsigned int    continuation:1;    /* Line is a flow continuation of the previous */
 } VTermLineInfo;
 
+/* Copies of VTermState fields that the 'resize' callback might have reason to
+ * edit. 'resize' callback gets total control of these fields and may
+ * free-and-reallocate them if required. They will be copied back from the
+ * struct after the callback has returned.
+ */
 typedef struct {
-  // libvterm relies on the allocated memory to be zeroed out before it is
-  // returned by the allocator.
+  VTermPos pos;                /* current cursor position */
+} VTermStateFields;
+
+typedef struct {
+  /* libvterm relies on this memory to be zeroed out before it is returned
+   * by the allocator. */
   void *(*malloc)(size_t size, void *allocdata);
   void  (*free)(void *ptr, void *allocdata);
 } VTermAllocatorFunctions;
@@ -329,20 +336,21 @@ void vterm_mouse_button(VTerm *vt, int button, int pressed, VTermModifier mod);
 // Parser layer
 // ------------
 
-// Flag to indicate non-final subparameters in a single CSI parameter.
-// Consider
-//   CSI 1;2:3:4;5a
-// 1 4 and 5 are final.
-// 2 and 3 are non-final and will have this bit set
-//
-// Don't confuse this with the final byte of the CSI escape; 'a' in this case.
+/* Flag to indicate non-final subparameters in a single CSI parameter.
+ * Consider
+ *   CSI 1;2:3:4;5a
+ * 1 4 and 5 are final.
+ * 2 and 3 are non-final and will have this bit set
+ *
+ * Don't confuse this with the final byte of the CSI escape; 'a' in this case.
+ */
 #define CSI_ARG_FLAG_MORE (1U<<31)
 #define CSI_ARG_MASK      (~(1U<<31))
 
 #define CSI_ARG_HAS_MORE(a) ((a) & CSI_ARG_FLAG_MORE)
 #define CSI_ARG(a)          ((a) & CSI_ARG_MASK)
 
-// Can't use -1 to indicate a missing argument; use this instead
+/* Can't use -1 to indicate a missing argument; use this instead */
 #define CSI_ARG_MISSING ((1<<30)-1)
 
 #define CSI_ARG_IS_MISSING(a) (CSI_ARG(a) == CSI_ARG_MISSING)
@@ -365,15 +373,6 @@ void *vterm_parser_get_cbdata(VTerm *vt);
 // -----------
 // State layer
 // -----------
-
-/* Copies of VTermState fields that the 'resize' callback might have reason to
- * edit. 'resize' callback gets total control of these fields and may
- * free-and-reallocate them if required. They will be copied back from the
- * struct after the callback has returned.
- */
-typedef struct {
-  VTermPos pos;                /* current cursor position */
-} VTermStateFields;
 
 typedef struct {
   int (*putglyph)(VTermGlyphInfo *info, VTermPos pos, void *user);
@@ -459,9 +458,9 @@ typedef struct {
     unsigned int reverse   : 1;
     unsigned int conceal   : 1;
     unsigned int strike    : 1;
-    unsigned int font      : 4; // 0 to 9
-    unsigned int dwl       : 1; // On a DECDWL or DECDHL line
-    unsigned int dhl       : 2; // On a DECDHL line (1=top 2=bottom)
+    unsigned int font      : 4; /* 0 to 9 */
+    unsigned int dwl       : 1; /* On a DECDWL or DECDHL line */
+    unsigned int dhl       : 2; /* On a DECDHL line (1=top 2=bottom) */
 } VTermScreenCellAttrs;
 
 enum {
@@ -513,10 +512,10 @@ void *vterm_screen_get_unrecognised_fbdata(VTermScreen *screen);
 void vterm_screen_enable_altscreen(VTermScreen *screen, int altscreen);
 
 typedef enum {
-  VTERM_DAMAGE_CELL,    // every cell
-  VTERM_DAMAGE_ROW,     // entire rows
-  VTERM_DAMAGE_SCREEN,  // entire screen
-  VTERM_DAMAGE_SCROLL,  // entire screen + scrollrect
+  VTERM_DAMAGE_CELL,    /* every cell */
+  VTERM_DAMAGE_ROW,     /* entire rows */
+  VTERM_DAMAGE_SCREEN,  /* entire screen */
+  VTERM_DAMAGE_SCROLL,  /* entire screen + scrollrect */
 
   VTERM_N_DAMAGES
 } VTermDamageSize;
@@ -532,7 +531,7 @@ void vterm_screen_set_damage_merge(VTermScreen *screen, VTermDamageSize size);
  */
 void   vterm_screen_reset(VTermScreen *screen, int hard);
 
-// Neither of these functions NUL-terminate the buffer
+/* Neither of these functions NUL-terminate the buffer */
 size_t vterm_screen_get_chars(const VTermScreen *screen, uint32_t *chars, size_t len, const VTermRect rect);
 size_t vterm_screen_get_text(const VTermScreen *screen, char *str, size_t len, const VTermRect rect);
 
