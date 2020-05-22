@@ -850,8 +850,7 @@ func Test_gui_run_cmd_in_terminal()
     " assume all the other systems have a cat command
     let cmd = 'cat'
   endif
-  let cmd = ':silent !' . cmd . " test_gui.vim\<CR>\<CR>"
-  call feedkeys(cmd, 'xt')
+  exe "silent !" . cmd . " test_gui.vim"
   " TODO: how to check that the command ran in a separate terminal?
   " Maybe check for $TERM (dumb vs xterm) in the spawned shell?
   let &guioptions = save_guioptions

@@ -3047,7 +3047,7 @@ handle_settermprop(
 #endif
 	    else
 	    {
-		term->tl_title = vim_strsave(strval);
+		term->tl_title = strval;
 		strval = NULL;
 	    }
 	    VIM_CLEAR(term->tl_status_text);
