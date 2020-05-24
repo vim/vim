@@ -560,8 +560,7 @@ def Test_func_type_part()
   RefVoid = FuncNoArgNoRet
   RefVoid = FuncOneArgNoRet
   CheckDefFailure(['let RefVoid: func: void', 'RefVoid = FuncNoArgRetNumber'], 'E1013: type mismatch, expected func() but got func(): number')
-"  TODO: these should fail
-"  CheckDefFailure(['let RefVoid: func: void', 'RefVoid = FuncNoArgRetString'], 'E1013: type mismatch, expected func() but got func(): string')
+  CheckDefFailure(['let RefVoid: func: void', 'RefVoid = FuncNoArgRetString'], 'E1013: type mismatch, expected func() but got func(): string')
 
   let RefAny: func(): any
   RefAny = FuncNoArgRetNumber
@@ -573,8 +572,7 @@ def Test_func_type_part()
   RefNr = FuncNoArgRetNumber
   RefNr = FuncOneArgRetNumber
   CheckDefFailure(['let RefNr: func: number', 'RefNr = FuncNoArgNoRet'], 'E1013: type mismatch, expected func(): number but got func()')
-"  TODO: should fail
-"  CheckDefFailure(['let RefNr: func: number', 'RefNr = FuncNoArgRetString'], 'E1013: type mismatch, expected func(): number but got func(): string')
+  CheckDefFailure(['let RefNr: func: number', 'RefNr = FuncNoArgRetString'], 'E1013: type mismatch, expected func(): number but got func(): string')
 
   let RefStr: func: string
   RefStr = FuncNoArgRetString
@@ -589,10 +587,9 @@ def Test_func_type_fails()
   CheckDefFailure(['let Ref1: func()', 'Ref1 = FuncNoArgRetNumber'], 'E1013: type mismatch, expected func() but got func(): number')
   CheckDefFailure(['let Ref1: func()', 'Ref1 = FuncOneArgNoRet'], 'E1013: type mismatch, expected func() but got func(number)')
   CheckDefFailure(['let Ref1: func()', 'Ref1 = FuncOneArgRetNumber'], 'E1013: type mismatch, expected func() but got func(number): number')
-"  TODO: these don't fail
-"  CheckDefFailure(['let Ref1: func(bool)', 'Ref1 = FuncTwoArgNoRet'], 'E1013: type mismatch, expected func(bool) but got func(bool, number)')
-"  CheckDefFailure(['let Ref1: func(?bool)', 'Ref1 = FuncTwoArgNoRet'], 'E1013: type mismatch, expected func(?bool) but got func(bool, number)')
-"  CheckDefFailure(['let Ref1: func(...bool)', 'Ref1 = FuncTwoArgNoRet'], 'E1013: type mismatch, expected func(...bool) but got func(bool, number)')
+  CheckDefFailure(['let Ref1: func(bool)', 'Ref1 = FuncTwoArgNoRet'], 'E1013: type mismatch, expected func(bool) but got func(bool, number)')
+  CheckDefFailure(['let Ref1: func(?bool)', 'Ref1 = FuncTwoArgNoRet'], 'E1013: type mismatch, expected func(?bool) but got func(bool, number)')
+  CheckDefFailure(['let Ref1: func(...bool)', 'Ref1 = FuncTwoArgNoRet'], 'E1013: type mismatch, expected func(...bool) but got func(bool, number)')
 
   call CheckDefFailure(['let RefWrong: func(string ,number)'], 'E1068:')
   call CheckDefFailure(['let RefWrong: func(string,number)'], 'E1069:')

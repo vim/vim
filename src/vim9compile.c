@@ -6763,54 +6763,6 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	    ufunc->uf_flags |= FC_CLOSURE;
     }
 
-    {
-	int varargs = ufunc->uf_va_name != NULL;
-	int argcount = ufunc->uf_args.ga_len;
-
-	// Create a type for the function, with the return type and any
-	// argument types.
-	// A vararg is included in uf_args.ga_len but not in uf_arg_types.
-	// The type is included in "tt_args".
-	if (argcount > 0 || varargs)
-	{
-	    ufunc->uf_func_type = alloc_func_type(ufunc->uf_ret_type,
-					       argcount, &ufunc->uf_type_list);
-	    // Add argument types to the function type.
-	    if (func_type_add_arg_types(ufunc->uf_func_type,
-					argcount + varargs,
-					&ufunc->uf_type_list) == FAIL)
-	    {
-		ret = FAIL;
-		goto erret;
-	    }
-	    ufunc->uf_func_type->tt_argcount = argcount + varargs;
-	    ufunc->uf_func_type->tt_min_argcount =
-					  argcount - ufunc->uf_def_args.ga_len;
-	    if (ufunc->uf_arg_types == NULL)
-	    {
-		int i;
-
-		// lambda does not have argument types.
-		for (i = 0; i < argcount; ++i)
-		    ufunc->uf_func_type->tt_args[i] = &t_any;
-	    }
-	    else
-		mch_memmove(ufunc->uf_func_type->tt_args,
-			     ufunc->uf_arg_types, sizeof(type_T *) * argcount);
-	    if (varargs)
-	    {
-		ufunc->uf_func_type->tt_args[argcount] =
-			ufunc->uf_va_type == NULL ? &t_any : ufunc->uf_va_type;
-		ufunc->uf_func_type->tt_flags = TTFLAG_VARARGS;
-	    }
-	}
-	else
-	    // No arguments, can use a predefined type.
-	    ufunc->uf_func_type = get_func_type(ufunc->uf_ret_type,
-					       argcount, &ufunc->uf_type_list);
-
-    }
-
     ret = OK;
 
 erret:
@@ -6846,6 +6798,53 @@ erret:
     ga_clear(&cctx.ctx_type_stack);
     return ret;
 }
+
+    void
+set_function_type(ufunc_T *ufunc)
+{
+    int varargs = ufunc->uf_va_name != NULL;
+    int argcount = ufunc->uf_args.ga_len;
+
+    // Create a type for the function, with the return type and any
+    // argument types.
+    // A vararg is included in uf_args.ga_len but not in uf_arg_types.
+    // The type is included in "tt_args".
+    if (argcount > 0 || varargs)
+    {
+	ufunc->uf_func_type = alloc_func_type(ufunc->uf_ret_type,
+					   argcount, &ufunc->uf_type_list);
+	// Add argument types to the function type.
+	if (func_type_add_arg_types(ufunc->uf_func_type,
+				    argcount + varargs,
+				    &ufunc->uf_type_list) == FAIL)
+	    return;
+	ufunc->uf_func_type->tt_argcount = argcount + varargs;
+	ufunc->uf_func_type->tt_min_argcount =
+				      argcount - ufunc->uf_def_args.ga_len;
+	if (ufunc->uf_arg_types == NULL)
+	{
+	    int i;
+
+	    // lambda does not have argument types.
+	    for (i = 0; i < argcount; ++i)
+		ufunc->uf_func_type->tt_args[i] = &t_any;
+	}
+	else
+	    mch_memmove(ufunc->uf_func_type->tt_args,
+			 ufunc->uf_arg_types, sizeof(type_T *) * argcount);
+	if (varargs)
+	{
+	    ufunc->uf_func_type->tt_args[argcount] =
+		    ufunc->uf_va_type == NULL ? &t_any : ufunc->uf_va_type;
+	    ufunc->uf_func_type->tt_flags = TTFLAG_VARARGS;
+	}
+    }
+    else
+	// No arguments, can use a predefined type.
+	ufunc->uf_func_type = get_func_type(ufunc->uf_ret_type,
+					   argcount, &ufunc->uf_type_list);
+}
+
 
 /*
  * Delete an instruction, free what it contains.

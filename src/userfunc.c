@@ -3284,6 +3284,9 @@ def_function(exarg_T *eap, char_u *name_arg)
 	is_export = FALSE;
     }
 
+    if (eap->cmdidx == CMD_def)
+	set_function_type(fp);
+
     goto ret_free;
 
 erret:
