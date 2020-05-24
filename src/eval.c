@@ -3503,6 +3503,7 @@ get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
     char_u	*p;
     char_u	*name;
     int		extra = 0;
+    int		len;
 
     /*
      * Find the end of the string, skipping backslashed characters.
@@ -3513,9 +3514,10 @@ get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 	{
 	    ++p;
 	    // A "\<x>" form occupies at least 4 characters, and produces up
-	    // to 6 characters: reserve space for 2 extra
+	    // to 9 characters (6 for the char and 3 for a modifier): reserve
+	    // space for 5 extra.
 	    if (*p == '<')
-		extra += 2;
+		extra += 5;
 	}
     }
 
@@ -3536,7 +3538,8 @@ get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
      * Copy the string into allocated memory, handling backslashed
      * characters.
      */
-    name = alloc(p - *arg + extra);
+    len = (int)(p - *arg + extra);
+    name = alloc(len);
     if (name == NULL)
 	return FAIL;
     rettv->v_type = VAR_STRING;
@@ -3610,6 +3613,8 @@ get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 			  if (extra != 0)
 			  {
 			      name += extra;
+			      if (name >= rettv->vval.v_string + len)
+				  iemsg("get_string_tv() used more space than allocated");
 			      break;
 			  }
 			  // FALLTHROUGH
