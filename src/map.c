@@ -2176,15 +2176,20 @@ check_map(
 get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 {
     char_u	*keys;
+    char_u	*keys_simplified;
     char_u	*which;
     char_u	buf[NUMBUFLEN];
     char_u	*keys_buf = NULL;
+    char_u	*alt_keys_buf = NULL;
+    int		did_simplify = FALSE;
     char_u	*rhs;
     int		mode;
     int		abbr = FALSE;
     int		get_dict = FALSE;
     mapblock_T	*mp;
+    mapblock_T	*mp_simplified;
     int		buffer_local;
+    int		flags = REPTERM_FROM_PART | REPTERM_DO_LT;
 
     // return empty string for failure
     rettv->v_type = VAR_STRING;
@@ -2211,10 +2216,20 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 
     mode = get_map_mode(&which, 0);
 
-    keys = replace_termcodes(keys, &keys_buf,
-				      REPTERM_FROM_PART | REPTERM_DO_LT, NULL);
-    rhs = check_map(keys, mode, exact, FALSE, abbr, &mp, &buffer_local);
-    vim_free(keys_buf);
+    keys_simplified = replace_termcodes(keys, &keys_buf, flags, &did_simplify);
+    rhs = check_map(keys_simplified, mode, exact, FALSE, abbr,
+							   &mp, &buffer_local);
+    if (did_simplify)
+    {
+	// When the lhs is being simplified the not-simplified keys are
+	// preferred for priting, like in do_map().
+	// The "rhs" and "buffer_local" values are not expected to change.
+	mp_simplified = mp;
+	(void)replace_termcodes(keys, &alt_keys_buf,
+					flags | REPTERM_NO_SIMPLIFY, NULL);
+	rhs = check_map(alt_keys_buf, mode, exact, FALSE, abbr, &mp,
+								&buffer_local);
+    }
 
     if (!get_dict)
     {
@@ -2236,6 +2251,11 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 	dict_T	    *dict = rettv->vval.v_dict;
 
 	dict_add_string(dict, "lhs", lhs);
+	vim_free(lhs);
+	dict_add_string(dict, "lhsraw", mp->m_keys);
+	if (did_simplify)
+	    // Also add the value for the simplified entry.
+	    dict_add_string(dict, "lhsrawalt", mp_simplified->m_keys);
 	dict_add_string(dict, "rhs", mp->m_orig_str);
 	dict_add_number(dict, "noremap", mp->m_noremap ? 1L : 0L);
 	dict_add_number(dict, "script", mp->m_noremap == REMAP_SCRIPT
@@ -2247,11 +2267,12 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 	dict_add_number(dict, "buffer", (long)buffer_local);
 	dict_add_number(dict, "nowait", mp->m_nowait ? 1L : 0L);
 	dict_add_string(dict, "mode", mapmode);
-	dict_add_number(dict, "simplified", mp->m_simplified);
 
-	vim_free(lhs);
 	vim_free(mapmode);
     }
+
+    vim_free(keys_buf);
+    vim_free(alt_keys_buf);
 }
 
 /*
@@ -2260,7 +2281,6 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
     void
 f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    char_u	*keys;
     char_u	*keys_buf = NULL;
     char_u	*which;
     int		mode;
@@ -2268,6 +2288,8 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
     int		is_abbr;
     dict_T	*d;
     char_u	*lhs;
+    char_u	*lhsraw;
+    char_u	*lhsrawalt;
     char_u	*rhs;
     char_u	*orig_rhs;
     char_u	*arg_buf = NULL;
@@ -2279,7 +2301,6 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
     mapblock_T	**map_table = maphash;
     mapblock_T  **abbr_table = &first_abbr;
     int		nowait;
-    int		simplified;
     char_u	*arg;
 
     which = tv_get_string_buf_chk(&argvars[0], buf);
@@ -2295,15 +2316,12 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
 
     // Get the values in the same order as above in get_maparg().
     lhs = dict_get_string(d, (char_u *)"lhs", FALSE);
-    if (lhs == NULL)
-    {
-	emsg(_("E99: lhs entry missing in mapset() dict argument"));
-	return;
-    }
+    lhsraw = dict_get_string(d, (char_u *)"lhsraw", FALSE);
+    lhsrawalt = dict_get_string(d, (char_u *)"lhsrawalt", FALSE);
     rhs = dict_get_string(d, (char_u *)"rhs", FALSE);
-    if (rhs == NULL)
+    if (lhs == NULL || lhsraw == NULL || rhs == NULL)
     {
-	emsg(_("E99: rhs entry missing in mapset() dict argument"));
+	emsg(_("E460: entries missing in mapset() dict argument"));
 	return;
     }
     orig_rhs = rhs;
@@ -2324,7 +2342,6 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
     }
     nowait = dict_get_number(d, (char_u *)"nowait") != 0;
     // mode from the dict is not used
-    simplified = dict_get_number(d, (char_u *)"simplified") != 0;
 
     // Delete any existing mapping for this lhs and mode.
     arg = vim_strsave(lhs);
@@ -2333,10 +2350,11 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
     do_map(1, arg, mode, is_abbr);
     vim_free(arg);
 
-    keys = replace_termcodes(lhs, &keys_buf,
-				      REPTERM_FROM_PART | REPTERM_DO_LT, NULL);
-    (void)map_add(map_table, abbr_table, keys, rhs, orig_rhs, noremap,
-	    nowait, silent, mode, is_abbr, expr, sid, lnum, simplified);
+    (void)map_add(map_table, abbr_table, lhsraw, rhs, orig_rhs, noremap,
+	    nowait, silent, mode, is_abbr, expr, sid, lnum, 0);
+    if (lhsrawalt != NULL)
+	(void)map_add(map_table, abbr_table, lhsrawalt, rhs, orig_rhs, noremap,
+		nowait, silent, mode, is_abbr, expr, sid, lnum, 1);
     vim_free(keys_buf);
     vim_free(arg_buf);
 }
