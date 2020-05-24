@@ -5,7 +5,7 @@
 
 if exists("b:did_ftplugin") | finish | endif
 
-setl comments=:;
+setl comments=:;,s1:/*,mb:*,ex:*/,://
 setl commentstring=;%s
 
 let b:did_ftplugin = 1
