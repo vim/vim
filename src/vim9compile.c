@@ -1443,7 +1443,7 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 	    }
 	}
 	if (ufunc->uf_dfunc_idx == UF_TO_BE_COMPILED)
-	    if (compile_def_function(ufunc, TRUE, cctx) == FAIL)
+	    if (compile_def_function(ufunc, TRUE, NULL) == FAIL)
 		return FAIL;
     }
 
@@ -6776,9 +6776,11 @@ erret:
 	    delete_instr(((isn_T *)instr->ga_data) + idx);
 	ga_clear(instr);
 
-	ufunc->uf_dfunc_idx = UF_NOT_COMPILED;
-	if (!dfunc->df_deleted)
+	// if using the last entry in the table we might as well remove it
+	if (!dfunc->df_deleted
+			    && ufunc->uf_dfunc_idx == def_functions.ga_len - 1)
 	    --def_functions.ga_len;
+	ufunc->uf_dfunc_idx = UF_NOT_COMPILED;
 
 	while (cctx.ctx_scope != NULL)
 	    drop_scope(&cctx);
