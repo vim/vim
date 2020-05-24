@@ -777,7 +777,6 @@ ex_let_const(exarg_T *eap)
     else
     {
 	int eval_flags;
-	int save_called_emsg = called_emsg;
 
 	rettv.v_type = VAR_UNKNOWN;
 	i = FAIL;
