@@ -1009,13 +1009,17 @@ func Test_terminal_term_start_empty_command()
   call assert_fails(cmd, 'E475:')
   let cmd = "call term_start('', {'term_highlight' : []})"
   call assert_fails(cmd, 'E475:')
-  if has('gui')
+  if has('gui') || has('termguicolors')
     let cmd = "call term_start('', {'ansi_colors' : 'abc'})"
     call assert_fails(cmd, 'E475:')
     let cmd = "call term_start('', {'ansi_colors' : [[]]})"
     call assert_fails(cmd, 'E730:')
     let cmd = "call term_start('', {'ansi_colors' : repeat(['blue'], 18)})"
-    call assert_fails(cmd, 'E475:')
+    if has('gui_running') || has('termguicolors')
+      call assert_fails(cmd, 'E475:')
+    else
+      call assert_fails(cmd, 'E254:')
+    endif
   endif
 endfunc
 
@@ -2668,7 +2672,6 @@ endfunc
 " Test for passing invalid arguments to terminal functions
 func Test_term_func_invalid_arg()
   call assert_fails('let b = term_getaltscreen([])', 'E745:')
-  call assert_fails('let p = term_getansicolors([])', 'E745:')
   call assert_fails('let a = term_getattr(1, [])', 'E730:')
   call assert_fails('let c = term_getcursor([])', 'E745:')
   call assert_fails('let l = term_getline([], 1)', 'E745:')
@@ -2677,10 +2680,13 @@ func Test_term_func_invalid_arg()
   call assert_fails('let s = term_getstatus([])', 'E745:')
   call assert_fails('let s = term_scrape([], 1)', 'E745:')
   call assert_fails('call term_sendkeys([], "a")', 'E745:')
-  call assert_fails('call term_setansicolors([], [])', 'E745:')
   call assert_fails('call term_setapi([], "")', 'E745:')
   call assert_fails('call term_setrestore([], "")', 'E745:')
   call assert_fails('call term_setkill([], "")', 'E745:')
+  if has('gui') || has('termguicolors')
+    call assert_fails('let p = term_getansicolors([])', 'E745:')
+    call assert_fails('call term_setansicolors([], [])', 'E745:')
+  endif
 endfunc
 
 " Test for sending various special keycodes to a terminal

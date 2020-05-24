@@ -1381,7 +1381,7 @@ termgui_get_color(char_u *name)
     t = termgui_mch_get_color(name);
 
     if (t == INVALCOLOR)
-	semsg(_("E254: Cannot allocate color %s"), name);
+	semsg(_(e_alloc_color), name);
     return t;
 }
 
@@ -1587,9 +1587,9 @@ may_adjust_color_count(int val)
 
 	    log_tr("Received t_Co, redraw_asap(): %d", r);
 	}
-#else
+# else
 	redraw_asap(CLEAR);
-#endif
+# endif
     }
 }
 #endif
@@ -1597,10 +1597,10 @@ may_adjust_color_count(int val)
 #ifdef HAVE_TGETENT
 static char *(key_names[]) =
 {
-#ifdef FEAT_TERMRESPONSE
+# ifdef FEAT_TERMRESPONSE
     // Do this one first, it may cause a screen redraw.
     "Co",
-#endif
+# endif
     "ku", "kd", "kr", "kl",
     "#2", "#4", "%i", "*7",
     "k1", "k2", "k3", "k4", "k5", "k6",

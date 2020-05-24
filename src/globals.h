@@ -1767,6 +1767,9 @@ EXTERN char e_no_white_before[] INIT(= N_("E1068: No white space allowed before 
 
 EXTERN char e_lock_unlock[]	INIT(= N_("E940: Cannot lock or unlock variable %s"));
 #endif
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+EXTERN char e_alloc_color[]	INIT(= N_("E254: Cannot allocate color %s"));
+#endif
 
 #ifdef FEAT_GUI_MAC
 EXTERN short disallow_gui	INIT(= FALSE);

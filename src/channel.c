@@ -5308,6 +5308,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		{
 		    char_u	*color_name;
 		    guicolor_T	guicolor;
+		    int		called_emsg_before = called_emsg;
 
 		    color_name = tv_get_string_chk(&li->li_tv);
 		    if (color_name == NULL)
@@ -5315,7 +5316,12 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 
 		    guicolor = GUI_GET_COLOR(color_name);
 		    if (guicolor == INVALCOLOR)
+		    {
+			if (called_emsg_before == called_emsg)
+			    // may not get the error if the GUI didn't start
+			    semsg(_(e_alloc_color), color_name);
 			return FAIL;
+		    }
 
 		    rgb[n] = GUI_MCH_GET_RGB(guicolor);
 		}

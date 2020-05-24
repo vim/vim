@@ -4741,7 +4741,7 @@ gui_get_color(char_u *name)
 	    && gui.in_use
 #endif
 	    )
-	semsg(_("E254: Cannot allocate color %s"), name);
+	semsg(_(e_alloc_color), name);
     return t;
 }
 
