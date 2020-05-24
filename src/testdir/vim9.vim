@@ -2,7 +2,7 @@
 
 " Check that "lines" inside ":def" results in an "error" message.
 func CheckDefFailure(lines, error)
-  call writefile(['def Func()'] + a:lines + ['enddef'], 'Xdef')
+  call writefile(['def Func()'] + a:lines + ['enddef', 'defcompile'], 'Xdef')
   call assert_fails('so Xdef', a:error, a:lines)
   call delete('Xdef')
 endfunc

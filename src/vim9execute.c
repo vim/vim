@@ -487,6 +487,9 @@ call_ufunc(ufunc_T *ufunc, int argcount, ectx_T *ectx, isn_T *iptr)
     int		error;
     int		idx;
 
+    if (ufunc->uf_dfunc_idx == UF_TO_BE_COMPILED
+	    && compile_def_function(ufunc, FALSE, NULL) == FAIL)
+	return FAIL;
     if (ufunc->uf_dfunc_idx >= 0)
     {
 	// The function has been compiled, can call it quickly.  For a function
@@ -667,8 +670,13 @@ call_def_function(
 // Like STACK_TV_VAR but use the outer scope
 #define STACK_OUT_TV_VAR(idx) (((typval_T *)ectx.ec_outer_stack->ga_data) + ectx.ec_outer_frame + STACK_FRAME_SIZE + idx)
 
+    if (ufunc->uf_dfunc_idx == UF_NOT_COMPILED
+	    || (ufunc->uf_dfunc_idx == UF_TO_BE_COMPILED
+			  && compile_def_function(ufunc, FALSE, NULL) == FAIL))
+	return FAIL;
+
     {
-	// Check the function was compiled, it is postponed in ex_vim9script().
+	// Check the function was really compiled.
 	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
 							 + ufunc->uf_dfunc_idx;
 	if (dfunc->df_instr == NULL)
@@ -2303,6 +2311,9 @@ ex_disassemble(exarg_T *eap)
 	semsg(_("E1061: Cannot find function %s"), eap->arg);
 	return;
     }
+    if (ufunc->uf_dfunc_idx == UF_TO_BE_COMPILED
+	    && compile_def_function(ufunc, FALSE, NULL) == FAIL)
+	return;
     if (ufunc->uf_dfunc_idx < 0)
     {
 	semsg(_("E1062: Function %s is not compiled"), eap->arg);

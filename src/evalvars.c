@@ -164,6 +164,7 @@ static dict_T		vimvardict;		// Dictionary with v: variables
 // for VIM_VERSION_ defines
 #include "version.h"
 
+static void ex_let_const(exarg_T *eap);
 static char_u *skip_var_one(char_u *arg, int include_type);
 static void list_glob_vars(int *first);
 static void list_buf_vars(int *first);
@@ -685,7 +686,7 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
     void
 ex_let(exarg_T *eap)
 {
-    ex_let_const(eap, FALSE);
+    ex_let_const(eap);
 }
 
 /*
@@ -697,18 +698,11 @@ ex_let(exarg_T *eap)
     void
 ex_const(exarg_T *eap)
 {
-    ex_let_const(eap, FALSE);
+    ex_let_const(eap);
 }
 
-/*
- * When "discovery" is TRUE the ":let" or ":const" is encountered during the
- * discovery phase of vim9script:
- * - The command will be executed again, redefining the variable is OK then.
- * - The expresion argument must be a constant.
- * - If no constant expression a type must be specified.
- */
-    void
-ex_let_const(exarg_T *eap, int discovery)
+    static void
+ex_let_const(exarg_T *eap)
 {
     char_u	*arg = eap->arg;
     char_u	*expr = NULL;
@@ -726,8 +720,6 @@ ex_let_const(exarg_T *eap, int discovery)
     // detect Vim9 assignment without ":let" or ":const"
     if (eap->arg == eap->cmd)
 	flags |= LET_NO_COMMAND;
-    if (discovery)
-	flags |= LET_DISCOVERY;
 
     argend = skip_var_list(arg, TRUE, &var_count, &semicolon);
     if (argend == NULL)
@@ -740,7 +732,7 @@ ex_let_const(exarg_T *eap, int discovery)
 		|| (expr[1] == '.' && expr[2] == '='));
     has_assign =  *expr == '=' || (vim_strchr((char_u *)"+-*/%", *expr) != NULL
 							    && expr[1] == '=');
-    if (!has_assign && !concat && !discovery)
+    if (!has_assign && !concat)
     {
 	// ":let" without "=": list variables
 	if (*arg == '[')
@@ -809,8 +801,6 @@ ex_let_const(exarg_T *eap, int discovery)
 	    if (eap->skip)
 		++emsg_skip;
 	    eval_flags = eap->skip ? 0 : EVAL_EVALUATE;
-	    if (discovery)
-		eval_flags |= EVAL_CONSTANT;
 	    i = eval0(expr, &rettv, &eap->nextcmd, eval_flags);
 	}
 	if (eap->skip)
@@ -819,10 +809,8 @@ ex_let_const(exarg_T *eap, int discovery)
 		clear_tv(&rettv);
 	    --emsg_skip;
 	}
-	else if (i != FAIL || (discovery && save_called_emsg == called_emsg))
+	else if (i != FAIL)
 	{
-	    // In Vim9 script discovery "let v: bool = Func()" fails but is
-	    // still a valid declaration.
 	    (void)ex_let_vars(eap->arg, &rettv, FALSE, semicolon, var_count,
 								 flags, op);
 	    clear_tv(&rettv);
@@ -1371,12 +1359,7 @@ ex_let_one(
 	lval_T	lv;
 
 	p = get_lval(arg, tv, &lv, FALSE, FALSE, 0, FNE_CHECK_START);
-	if ((flags & LET_DISCOVERY) && tv->v_type == VAR_UNKNOWN
-							 && lv.ll_type == NULL)
-	{
-	    semsg(_("E1091: type missing for %s"), arg);
-	}
-	else if (p != NULL && lv.ll_name != NULL)
+	if (p != NULL && lv.ll_name != NULL)
 	{
 	    if (endchars != NULL && vim_strchr(endchars,
 					   *skipwhite(lv.ll_name_end)) == NULL)
@@ -2621,7 +2604,7 @@ find_var_ht(char_u *name, char_u **varname)
     if (*name == 'v')				// v: variable
 	return &vimvarht;
     if (get_current_funccal() != NULL
-			      && get_current_funccal()->func->uf_dfunc_idx < 0)
+	       && get_current_funccal()->func->uf_dfunc_idx == UF_NOT_COMPILED)
     {
 	// a: and l: are only used in functions defined with ":function"
 	if (*name == 'a')			// a: function argument
@@ -3004,8 +2987,6 @@ set_var_const(
 
     if (flags & LET_IS_CONST)
 	di->di_tv.v_lock |= VAR_LOCKED;
-    if (flags & LET_DISCOVERY)
-	di->di_flags |= DI_FLAGS_RELOAD;
 }
 
 /*

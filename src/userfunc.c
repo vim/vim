@@ -409,7 +409,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 	fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
 	if (fp == NULL)
 	    goto errret;
-	fp->uf_dfunc_idx = -1;
+	fp->uf_dfunc_idx = UF_NOT_COMPILED;
 	pt = ALLOC_CLEAR_ONE(partial_T);
 	if (pt == NULL)
 	    goto errret;
@@ -1112,7 +1112,7 @@ call_user_func(
     ga_init2(&fc->fc_funcs, sizeof(ufunc_T *), 1);
     func_ptr_ref(fp);
 
-    if (fp->uf_dfunc_idx >= 0)
+    if (fp->uf_dfunc_idx != UF_NOT_COMPILED)
     {
 	estack_push_ufunc(ETYPE_UFUNC, fp, 1);
 	save_current_sctx = current_sctx;
@@ -1637,7 +1637,7 @@ free_all_functions(void)
 		// clear the def function index now
 		fp = HI2UF(hi);
 		fp->uf_flags &= ~FC_DEAD;
-		fp->uf_dfunc_idx = -1;
+		fp->uf_dfunc_idx = UF_NOT_COMPILED;
 
 		// Only free functions that are not refcounted, those are
 		// supposed to be freed when no longer referenced.
@@ -2033,7 +2033,7 @@ list_func_head(ufunc_T *fp, int indent)
     msg_start();
     if (indent)
 	msg_puts("   ");
-    if (fp->uf_dfunc_idx >= 0)
+    if (fp->uf_dfunc_idx != UF_NOT_COMPILED)
 	msg_puts("def ");
     else
 	msg_puts("function ");
@@ -2082,7 +2082,7 @@ list_func_head(ufunc_T *fp, int indent)
     }
     msg_putchar(')');
 
-    if (fp->uf_dfunc_idx >= 0)
+    if (fp->uf_dfunc_idx != UF_NOT_COMPILED)
     {
 	if (fp->uf_ret_type != &t_void)
 	{
@@ -2377,7 +2377,7 @@ untrans_function_name(char_u *name)
  * Returns a pointer to the function or NULL if no function defined.
  */
     ufunc_T *
-def_function(exarg_T *eap, char_u *name_arg, void *context, int compile)
+def_function(exarg_T *eap, char_u *name_arg)
 {
     char_u	*theline;
     char_u	*line_to_free = NULL;
@@ -2415,6 +2415,12 @@ def_function(exarg_T *eap, char_u *name_arg, void *context, int compile)
     int		is_heredoc = FALSE;
     char_u	*skip_until = NULL;
     char_u	*heredoc_trimmed = NULL;
+
+    if (in_vim9script() && eap->forceit)
+    {
+	emsg(_(e_nobang));
+	return NULL;
+    }
 
     /*
      * ":function" without argument: list functions.
@@ -2584,7 +2590,7 @@ def_function(exarg_T *eap, char_u *name_arg, void *context, int compile)
 		if (!got_int)
 		{
 		    msg_putchar('\n');
-		    if (fp->uf_dfunc_idx >= 0)
+		    if (fp->uf_dfunc_idx != UF_NOT_COMPILED)
 			msg_puts("   enddef");
 		    else
 			msg_puts("   endfunction");
@@ -3122,7 +3128,8 @@ def_function(exarg_T *eap, char_u *name_arg, void *context, int compile)
 	fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
 	if (fp == NULL)
 	    goto erret;
-	fp->uf_dfunc_idx = -1;
+	fp->uf_dfunc_idx = eap->cmdidx == CMD_def ? UF_TO_BE_COMPILED
+							     : UF_NOT_COMPILED;
 
 	if (fudi.fd_dict != NULL)
 	{
@@ -3174,6 +3181,8 @@ def_function(exarg_T *eap, char_u *name_arg, void *context, int compile)
     if (eap->cmdidx == CMD_def)
     {
 	int	lnum_save = SOURCING_LNUM;
+
+	fp->uf_dfunc_idx = UF_TO_BE_COMPILED;
 
 	// error messages are for the first function line
 	SOURCING_LNUM = sourcing_lnum_top;
@@ -3242,6 +3251,8 @@ def_function(exarg_T *eap, char_u *name_arg, void *context, int compile)
 	}
 	SOURCING_LNUM = lnum_save;
     }
+    else
+	fp->uf_dfunc_idx = UF_NOT_COMPILED;
 
     fp->uf_lines = newlines;
     if ((flags & FC_CLOSURE) != 0)
@@ -3273,10 +3284,6 @@ def_function(exarg_T *eap, char_u *name_arg, void *context, int compile)
 	is_export = FALSE;
     }
 
-    // ":def Func()" may need to be compiled
-    if (eap->cmdidx == CMD_def && compile)
-	compile_def_function(fp, FALSE, context);
-
     goto ret_free;
 
 erret:
@@ -3304,7 +3311,30 @@ ret_free:
     void
 ex_function(exarg_T *eap)
 {
-    (void)def_function(eap, NULL, NULL, TRUE);
+    (void)def_function(eap, NULL);
+}
+
+/*
+ * :defcompile - compile all :def functions in the current script.
+ */
+    void
+ex_defcompile(exarg_T *eap UNUSED)
+{
+    int		todo = (int)func_hashtab.ht_used;
+    hashitem_T	*hi;
+    ufunc_T	*ufunc;
+
+    for (hi = func_hashtab.ht_array; todo > 0 && !got_int; ++hi)
+    {
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    --todo;
+	    ufunc = HI2UF(hi);
+	    if (ufunc->uf_script_ctx.sc_sid == current_sctx.sc_sid
+		    && ufunc->uf_dfunc_idx == UF_TO_BE_COMPILED)
+		compile_def_function(ufunc, FALSE, NULL);
+	}
+    }
 }
 
 /*

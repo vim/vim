@@ -1516,6 +1516,9 @@ struct blobvar_S
 #if defined(FEAT_EVAL) || defined(PROTO)
 typedef struct funccall_S funccall_T;
 
+# define UF_NOT_COMPILED -2
+# define UF_TO_BE_COMPILED -1
+
 /*
  * Structure to hold info for a user function.
  */
@@ -1525,7 +1528,7 @@ typedef struct
     int		uf_flags;	// FC_ flags
     int		uf_calls;	// nr of active calls
     int		uf_cleared;	// func_clear() was already called
-    int		uf_dfunc_idx;	// >= 0 for :def function only
+    int		uf_dfunc_idx;	// UF_NOT_COMPILED, UF_TO_BE_COMPILED or >= 0
     garray_T	uf_args;	// arguments, including optional arguments
     garray_T	uf_def_args;	// default argument expressions
 

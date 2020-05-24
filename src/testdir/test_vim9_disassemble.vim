@@ -423,8 +423,7 @@ def Test_disassemble_update_instr()
   assert_match('FuncWithForwardCall\_s*' ..
         'return g:DefinedLater("yes")\_s*' ..
         '\d PUSHS "yes"\_s*' ..
-        '\d UCALL g:DefinedLater(argc 1)\_s*' ..
-        '\d CHECKTYPE string stack\[-1]\_s*' ..
+        '\d DCALL DefinedLater(argc 1)\_s*' ..
         '\d RETURN',
         res)
 
@@ -436,7 +435,6 @@ def Test_disassemble_update_instr()
         'return g:DefinedLater("yes")\_s*' ..
         '\d PUSHS "yes"\_s*' ..
         '\d DCALL DefinedLater(argc 1)\_s*' ..
-        '\d CHECKTYPE string stack\[-1]\_s*' ..
         '\d RETURN',
         res)
 enddef
@@ -604,7 +602,7 @@ def Test_disassemble_lambda()
         '\d PUSHS "x"\_s*' ..
         '\d LOAD $0\_s*' ..
         '\d PCALL (argc 1)\_s*' ..
-        '\d CHECKTYPE string stack\[-1]',
+        '\d RETURN',
         instr)
 enddef
 

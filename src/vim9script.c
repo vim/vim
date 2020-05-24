@@ -33,11 +33,6 @@ in_vim9script(void)
 ex_vim9script(exarg_T *eap)
 {
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
-    garray_T	    *gap;
-    garray_T	    func_ga;
-    int		    idx;
-    ufunc_T	    *ufunc;
-    int		    start_called_emsg = called_emsg;
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
     {
@@ -52,115 +47,11 @@ ex_vim9script(exarg_T *eap)
     current_sctx.sc_version = SCRIPT_VERSION_VIM9;
     si->sn_version = SCRIPT_VERSION_VIM9;
     si->sn_had_command = TRUE;
-    ga_init2(&func_ga, sizeof(ufunc_T *), 20);
 
     if (STRCMP(p_cpo, CPO_VIM) != 0)
     {
 	si->sn_save_cpo = p_cpo;
 	p_cpo = vim_strsave((char_u *)CPO_VIM);
-    }
-
-    // Make a pass through the script to find:
-    // - function declarations
-    // - variable and constant declarations
-    // - imports
-    // The types are recognized, so that they can be used when compiling a
-    // function.
-    gap = source_get_line_ga(eap->cookie);
-    while (called_emsg == start_called_emsg)
-    {
-	char_u	    *line;
-	char_u	    *p;
-
-	if (ga_grow(gap, 1) == FAIL)
-	    return;
-	line = eap->getline(':', eap->cookie, 0, TRUE);
-	if (line == NULL)
-	    break;
-	((char_u **)(gap->ga_data))[gap->ga_len++] = line;
-	line = skipwhite(line);
-	p = line;
-	if (checkforcmd(&p, "function", 2) || checkforcmd(&p, "def", 3))
-	{
-	    int		    lnum_start = SOURCING_LNUM - 1;
-
-	    if (*p == '!')
-	    {
-		emsg(_(e_nobang));
-		break;
-	    }
-
-	    // Handle :function and :def by calling def_function().
-	    // It will read upto the matching :endded or :endfunction.
-	    eap->cmdidx = *line == 'f' ? CMD_function : CMD_def;
-	    eap->cmd = line;
-	    eap->arg = p;
-	    eap->forceit = FALSE;
-	    ufunc = def_function(eap, NULL, NULL, FALSE);
-
-	    if (ufunc != NULL && *line == 'd' && ga_grow(&func_ga, 1) == OK)
-	    {
-		// Add the function to the list of :def functions, so that it
-		// can be referenced by index.  It's compiled below.
-		add_def_function(ufunc);
-		((ufunc_T **)(func_ga.ga_data))[func_ga.ga_len++] = ufunc;
-	    }
-
-	    // Store empty lines in place of the function, we don't need to
-	    // process it again.
-	    vim_free(((char_u **)(gap->ga_data))[--gap->ga_len]);
-	    if (ga_grow(gap, SOURCING_LNUM - lnum_start) == OK)
-		while (lnum_start < SOURCING_LNUM)
-		{
-		    // getsourceline() will skip over NULL lines.
-		    ((char_u **)(gap->ga_data))[gap->ga_len++] = NULL;
-		    ++lnum_start;
-		}
-	}
-	else if (checkforcmd(&p, "let", 3) || checkforcmd(&p, "const", 4))
-	{
-	    eap->cmd = line;
-	    eap->arg = p;
-	    eap->forceit = FALSE;
-	    eap->cmdidx = *line == 'l' ? CMD_let: CMD_const;
-
-	    // The command will be executed again, it's OK to redefine the
-	    // variable then.
-	    ex_let_const(eap, TRUE);
-	}
-	else if (checkforcmd(&p, "import", 3))
-	{
-	    eap->arg = p;
-	    ex_import(eap);
-
-	    // Store empty line, we don't need to process the command again.
-	    vim_free(((char_u **)(gap->ga_data))[--gap->ga_len]);
-	    ((char_u **)(gap->ga_data))[gap->ga_len++] = NULL;
-	}
-	else if (checkforcmd(&p, "finish", 4))
-	{
-	    break;
-	}
-    }
-
-    // Compile the :def functions.
-    for (idx = 0; idx < func_ga.ga_len && called_emsg == start_called_emsg; ++idx)
-    {
-	ufunc = ((ufunc_T **)(func_ga.ga_data))[idx];
-	compile_def_function(ufunc, FALSE, NULL);
-    }
-    ga_clear(&func_ga);
-
-    if (called_emsg == start_called_emsg)
-    {
-	// Return to process the commands at the script level.
-	source_use_line_ga(eap->cookie);
-    }
-    else
-    {
-	// If there was an error in the first or second phase then don't
-	// execute the script lines.
-	do_finish(eap, FALSE);
     }
 }
 

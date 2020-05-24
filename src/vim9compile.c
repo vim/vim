@@ -1418,7 +1418,7 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 	return FAIL;
     }
 
-    if (ufunc->uf_dfunc_idx >= 0)
+    if (ufunc->uf_dfunc_idx != UF_NOT_COMPILED)
     {
 	int		i;
 
@@ -1442,12 +1442,16 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 		return FAIL;
 	    }
 	}
+	if (ufunc->uf_dfunc_idx == UF_TO_BE_COMPILED)
+	    if (compile_def_function(ufunc, TRUE, cctx) == FAIL)
+		return FAIL;
     }
 
     if ((isn = generate_instr(cctx,
-		    ufunc->uf_dfunc_idx >= 0 ? ISN_DCALL : ISN_UCALL)) == NULL)
+		    ufunc->uf_dfunc_idx != UF_NOT_COMPILED ? ISN_DCALL
+							 : ISN_UCALL)) == NULL)
 	return FAIL;
-    if (ufunc->uf_dfunc_idx >= 0)
+    if (ufunc->uf_dfunc_idx != UF_NOT_COMPILED)
     {
 	isn->isn_arg.dfunc.cdf_idx = ufunc->uf_dfunc_idx;
 	isn->isn_arg.dfunc.cdf_argcount = argcount;
@@ -4454,9 +4458,12 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
     eap->cookie = cctx;
     eap->skip = cctx->ctx_skip == TRUE;
     eap->forceit = FALSE;
-    ufunc = def_function(eap, name, cctx, TRUE);
+    ufunc = def_function(eap, name);
 
-    if (ufunc == NULL || ufunc->uf_dfunc_idx < 0)
+    if (ufunc == NULL)
+	return NULL;
+    if (ufunc->uf_dfunc_idx == UF_TO_BE_COMPILED
+	    && compile_def_function(ufunc, TRUE, cctx) == FAIL)
 	return NULL;
 
     // Define a local variable for the function reference.
@@ -6302,7 +6309,7 @@ theend:
  * Add a function to the list of :def functions.
  * This "sets ufunc->uf_dfunc_idx" but the function isn't compiled yet.
  */
-    int
+    static int
 add_def_function(ufunc_T *ufunc)
 {
     dfunc_T *dfunc;
@@ -6328,8 +6335,9 @@ add_def_function(ufunc_T *ufunc)
  * "outer_cctx" is set for a nested function.
  * This can be used recursively through compile_lambda(), which may reallocate
  * "def_functions".
+ * Returns OK or FAIL.
  */
-    void
+    int
 compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 {
     char_u	*line = NULL;
@@ -6352,7 +6360,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	delete_def_function_contents(dfunc);
     }
     else if (add_def_function(ufunc) == FAIL)
-	return;
+	return FAIL;
 
     CLEAR_FIELD(cctx);
     cctx.ctx_ufunc = ufunc;
@@ -6816,7 +6824,7 @@ erret:
 	    delete_instr(((isn_T *)instr->ga_data) + idx);
 	ga_clear(instr);
 
-	ufunc->uf_dfunc_idx = -1;
+	ufunc->uf_dfunc_idx = UF_NOT_COMPILED;
 	if (!dfunc->df_deleted)
 	    --def_functions.ga_len;
 
@@ -6836,6 +6844,7 @@ erret:
     free_imported(&cctx);
     free_locals(&cctx);
     ga_clear(&cctx.ctx_type_stack);
+    return ret;
 }
 
 /*
