@@ -164,7 +164,6 @@ static dict_T		vimvardict;		// Dictionary with v: variables
 // for VIM_VERSION_ defines
 #include "version.h"
 
-static void ex_let_const(exarg_T *eap);
 static char_u *skip_var_one(char_u *arg, int include_type);
 static void list_glob_vars(int *first);
 static void list_buf_vars(int *first);
@@ -682,27 +681,14 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
  * ":let [var1, var2] = expr"	unpack list.
  * ":let var =<< ..."		heredoc
  * ":let var: string"		Vim9 declaration
- */
-    void
-ex_let(exarg_T *eap)
-{
-    ex_let_const(eap);
-}
-
-/*
+ *
  * ":const"			list all variable values
  * ":const var1 var2"		list variable values
  * ":const var = expr"		assignment command.
  * ":const [var1, var2] = expr"	unpack list.
  */
     void
-ex_const(exarg_T *eap)
-{
-    ex_let_const(eap);
-}
-
-    static void
-ex_let_const(exarg_T *eap)
+ex_let(exarg_T *eap)
 {
     char_u	*arg = eap->arg;
     char_u	*expr = NULL;
