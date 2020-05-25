@@ -828,7 +828,7 @@ tag		char	      note action in Normal mode	~
 |zD|		zD		   delete folds recursively
 |zE|		zE		   eliminate all folds
 |zF|		zF		   create a fold for N lines
-|zG|		zG		   mark word as good spelled word
+|zG|		zG		   internally mark word as good spelled word
 |zH|		zH		   when 'wrap' off scroll half a screenwidth
 				   to the right
 |zL|		zL		   when 'wrap' off scroll half a screenwidth
@@ -837,7 +837,7 @@ tag		char	      note action in Normal mode	~
 |zN|		zN		   set 'foldenable'
 |zO|		zO		   open folds recursively
 |zR|		zR		   set 'foldlevel' to the deepest fold
-|zW|		zW		   mark word as wrong (bad) spelled word
+|zW|		zW		   internally mark word as bad spelled word
 |zX|		zX		   re-apply 'foldlevel'
 |z^|		z^		   cursor on line N (default line above
 				   window), otherwise like "z-"
