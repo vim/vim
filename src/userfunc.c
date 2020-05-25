@@ -3140,12 +3140,14 @@ def_function(exarg_T *eap, char_u *name_arg)
 		if (fudi.fd_di == NULL)
 		{
 		    vim_free(fp);
+		    fp = NULL;
 		    goto erret;
 		}
 		if (dict_add(fudi.fd_dict, fudi.fd_di) == FAIL)
 		{
 		    vim_free(fudi.fd_di);
 		    vim_free(fp);
+		    fp = NULL;
 		    goto erret;
 		}
 	    }
@@ -3169,6 +3171,7 @@ def_function(exarg_T *eap, char_u *name_arg)
 	else if (hash_add(&func_hashtab, UF2HIKEY(fp)) == FAIL)
 	{
 	    vim_free(fp);
+	    fp = NULL;
 	    goto erret;
 	}
 	fp->uf_refcount = 1;
