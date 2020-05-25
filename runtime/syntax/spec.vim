@@ -128,6 +128,7 @@ syn case match
 "sh-like comment stile, only valid in script part
 syn match shComment contained '#.*$'
 
+syn region dnlComment matchgroup=specComment start=+%dnl+ end=+$+
 syn region shQuote1 contained matchgroup=shQuoteDelim start=+'+ skip=+\\'+ end=+'+ contains=specMacroIdentifier
 syn region shQuote2 contained matchgroup=shQuoteDelim start=+"+ skip=+\\"+ end=+"+ contains=specVariables,specMacroIdentifier
 
@@ -173,6 +174,7 @@ endif
 
 "sh colors
 hi def link shComment			Comment
+hi def link dnlComment			Comment
 hi def link shIf				Statement
 hi def link shOperator			Special
 hi def link shQuote1			String
