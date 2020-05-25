@@ -344,7 +344,7 @@ EXTERN int force_abort INIT(= FALSE);
  * field of a later list element, when the "emsg_severe" flag was set when the
  * emsg() call was made.
  */
-EXTERN struct msglist **msg_list INIT(= NULL);
+EXTERN msglist_T **msg_list INIT(= NULL);
 
 /*
  * suppress_errthrow: When TRUE, don't convert an error to an exception.  Used

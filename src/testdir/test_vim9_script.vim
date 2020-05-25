@@ -745,9 +745,6 @@ def Test_vim9script_fails()
 enddef
 
 def Test_vim9script_reload_import()
-  " TODO: make it work to compile when not in the script context anymore
-  return
-
   let lines =<< trim END
     vim9script
     const var = ''
@@ -797,9 +794,6 @@ def Test_vim9script_reload_import()
 enddef
 
 def Test_vim9script_reload_delfunc()
-  " TODO: make it work to compile when not in the script context anymore
-  return
-
   let first_lines =<< trim END
     vim9script
     def FuncYes(): string
@@ -918,6 +912,37 @@ def Test_import_rtp()
 
   delete('Ximport_rtp.vim')
   delete('import', 'rf')
+enddef
+
+def Test_import_compile_error()
+  let export_lines = [
+        'vim9script',
+        'export def ExpFunc(): string',
+        '  return notDefined',
+        'enddef',
+        ]
+  writefile(export_lines, 'Xexported.vim')
+
+  let import_lines = [
+        'vim9script',
+        'import ExpFunc from "./Xexported.vim"',
+        'def ImpFunc()',
+        '  echo ExpFunc()',
+        'enddef',
+        'defcompile',
+        ]
+  writefile(import_lines, 'Ximport.vim')
+
+  try
+    source Ximport.vim
+  catch /E1001/
+    " Error should be fore the Xexported.vim file.
+    assert_match('E1001: variable not found: notDefined', v:exception)
+    assert_match('function <SNR>\d\+_ImpFunc\[1\]..<SNR>\d\+_ExpFunc, line 1', v:throwpoint)
+  endtry
+
+  delete('Xexported.vim')
+  delete('Ximport.vim')
 enddef
 
 def Test_fixed_size_list()

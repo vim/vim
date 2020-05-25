@@ -146,8 +146,8 @@ cause_errthrow(
     int		severe,
     int		*ignore)
 {
-    struct msglist *elem;
-    struct msglist **plist;
+    msglist_T	*elem;
+    msglist_T	**plist;
 
     /*
      * Do nothing when displaying the interrupt message or reporting an
@@ -251,7 +251,7 @@ cause_errthrow(
 	    while (*plist != NULL)
 		plist = &(*plist)->next;
 
-	    elem = ALLOC_ONE(struct msglist);
+	    elem = ALLOC_CLEAR_ONE(msglist_T);
 	    if (elem == NULL)
 	    {
 		suppress_errthrow = TRUE;
@@ -287,6 +287,11 @@ cause_errthrow(
 			else
 			    (*msg_list)->throw_msg = tmsg;
 		    }
+
+		    // Get the source name and lnum now, it may change before
+		    // reaching do_errthrow().
+		    elem->sfile = estack_sfile();
+		    elem->slnum = SOURCING_LNUM;
 		}
 	    }
 	}
@@ -298,15 +303,16 @@ cause_errthrow(
  * Free a "msg_list" and the messages it contains.
  */
     static void
-free_msglist(struct msglist *l)
+free_msglist(msglist_T *l)
 {
-    struct msglist  *messages, *next;
+    msglist_T  *messages, *next;
 
     messages = l;
     while (messages != NULL)
     {
 	next = messages->next;
 	vim_free(messages->msg);
+	vim_free(messages->sfile);
 	vim_free(messages);
 	messages = next;
     }
@@ -428,7 +434,7 @@ get_exception_string(
     if (type == ET_ERROR)
     {
 	*should_free = TRUE;
-	mesg = ((struct msglist *)value)->throw_msg;
+	mesg = ((msglist_T *)value)->throw_msg;
 	if (cmdname != NULL && *cmdname != NUL)
 	{
 	    cmdlen = (int)STRLEN(cmdname);
@@ -526,23 +532,34 @@ throw_exception(void *value, except_type_T type, char_u *cmdname)
     if (type == ET_ERROR)
 	// Store the original message and prefix the exception value with
 	// "Vim:" or, if a command name is given, "Vim(cmdname):".
-	excp->messages = (struct msglist *)value;
+	excp->messages = (msglist_T *)value;
 
     excp->value = get_exception_string(value, type, cmdname, &should_free);
     if (excp->value == NULL && should_free)
 	goto nomem;
 
     excp->type = type;
-    excp->throw_name = estack_sfile();
-    if (excp->throw_name == NULL)
-	excp->throw_name = vim_strsave((char_u *)"");
-    if (excp->throw_name == NULL)
+    if (type == ET_ERROR && ((msglist_T *)value)->sfile != NULL)
     {
-	if (should_free)
-	    vim_free(excp->value);
-	goto nomem;
+	msglist_T *entry = (msglist_T *)value;
+
+	excp->throw_name = entry->sfile;
+	entry->sfile = NULL;
+	excp->throw_lnum = entry->slnum;
     }
-    excp->throw_lnum = SOURCING_LNUM;
+    else
+    {
+	excp->throw_name = estack_sfile();
+	if (excp->throw_name == NULL)
+	    excp->throw_name = vim_strsave((char_u *)"");
+	if (excp->throw_name == NULL)
+	{
+	    if (should_free)
+		vim_free(excp->value);
+	    goto nomem;
+	}
+	excp->throw_lnum = SOURCING_LNUM;
+    }
 
     if (p_verbose >= 13 || debug_break_level > 0)
     {

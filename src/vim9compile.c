@@ -2323,8 +2323,7 @@ next_line_from_context(cctx_T *cctx)
 	}
 	line = ((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)[cctx->ctx_lnum];
 	cctx->ctx_line_start = line;
-	SOURCING_LNUM = cctx->ctx_ufunc->uf_script_ctx.sc_lnum
-							  + cctx->ctx_lnum + 1;
+	SOURCING_LNUM = cctx->ctx_lnum + 1;
     } while (line == NULL || *skipwhite(line) == NUL);
     return line;
 }
@@ -6349,14 +6348,15 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
     int		called_emsg_before = called_emsg;
     int		ret = FAIL;
     sctx_T	save_current_sctx = current_sctx;
+    int		do_estack_push;
     int		emsg_before = called_emsg;
 
+    // When using a function that was compiled before: Free old instructions.
+    // Otherwise add a new entry in "def_functions".
     if (ufunc->uf_dfunc_idx >= 0)
     {
-	// Redefining a function that was compiled before.
 	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
 							 + ufunc->uf_dfunc_idx;
-	// Free old instructions.
 	delete_def_function_contents(dfunc);
     }
     else if (add_def_function(ufunc) == FAIL)
@@ -6373,8 +6373,16 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
     ga_init2(&cctx.ctx_instr, sizeof(isn_T), 50);
     instr = &cctx.ctx_instr;
 
-    // Most modern script version.
+    // Set the context to the function, it may be compiled when called from
+    // another script.  Set the script version to the most modern one.
+    // The line number will be set in next_line_from_context().
+    current_sctx = ufunc->uf_script_ctx;
     current_sctx.sc_version = SCRIPT_VERSION_VIM9;
+
+    // Make sure error messages are OK.
+    do_estack_push = !estack_top_is_ufunc(ufunc, 1);
+    if (do_estack_push)
+	estack_push_ufunc(ufunc, 1);
 
     if (ufunc->uf_def_args.ga_len > 0)
     {
@@ -6795,6 +6803,9 @@ erret:
     }
 
     current_sctx = save_current_sctx;
+    if (do_estack_push)
+	estack_pop();
+
     free_imported(&cctx);
     free_locals(&cctx);
     ga_clear(&cctx.ctx_type_stack);

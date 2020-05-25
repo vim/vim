@@ -1114,11 +1114,11 @@ call_user_func(
 
     if (fp->uf_dfunc_idx != UF_NOT_COMPILED)
     {
-	estack_push_ufunc(ETYPE_UFUNC, fp, 1);
+	estack_push_ufunc(fp, 1);
 	save_current_sctx = current_sctx;
 	current_sctx = fp->uf_script_ctx;
 
-	// Execute the compiled function.
+	// Execute the function, possibly compiling it first.
 	call_def_function(fp, argcount, argvars, funcexe->partial, rettv);
 	--depth;
 	current_funccal = fc->caller;
@@ -1288,7 +1288,7 @@ call_user_func(
 	++sandbox;
     }
 
-    estack_push_ufunc(ETYPE_UFUNC, fp, 1);
+    estack_push_ufunc(fp, 1);
     ESTACK_CHECK_SETUP
     if (p_verbose >= 12)
     {

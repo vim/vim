@@ -927,13 +927,16 @@ typedef struct {
  * A list of error messages that can be converted to an exception.  "throw_msg"
  * is only set in the first element of the list.  Usually, it points to the
  * original message stored in that element, but sometimes it points to a later
- * message in the list.  See cause_errthrow() below.
+ * message in the list.  See cause_errthrow().
  */
+typedef struct msglist msglist_T;
 struct msglist
 {
-    char		*msg;		// original message
-    char		*throw_msg;	// msg to throw: usually original one
-    struct msglist	*next;		// next of several messages in a row
+    char	*msg;		// original message, allocated
+    char	*throw_msg;	// msg to throw: usually original one
+    char_u	*sfile;		// value from estack_sfile(), allocated
+    long	slnum;		// line number for "sfile"
+    msglist_T	*next;		// next of several messages in a row
 };
 
 /*
@@ -1516,6 +1519,7 @@ struct blobvar_S
 #if defined(FEAT_EVAL) || defined(PROTO)
 typedef struct funccall_S funccall_T;
 
+// values used for "uf_dfunc_idx"
 # define UF_NOT_COMPILED -2
 # define UF_TO_BE_COMPILED -1
 

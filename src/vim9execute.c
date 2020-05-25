@@ -230,7 +230,7 @@ call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
     // Set execution state to the start of the called function.
     ectx->ec_dfunc_idx = cdf_idx;
     ectx->ec_instr = dfunc->df_instr;
-    estack_push_ufunc(ETYPE_UFUNC, dfunc->df_ufunc, 1);
+    estack_push_ufunc(dfunc->df_ufunc, 1);
 
     // Decide where to start execution, handles optional arguments.
     init_instr_idx(ufunc, argcount, ectx);
@@ -656,6 +656,7 @@ call_def_function(
     int		defcount = ufunc->uf_args.ga_len - argc;
     int		save_sc_version = current_sctx.sc_version;
     int		breakcheck_count = 0;
+    int		called_emsg_before = called_emsg;
 
 // Get pointer to item in the stack.
 #define STACK_TV(idx) (((typval_T *)ectx.ec_stack.ga_data) + idx)
@@ -673,7 +674,13 @@ call_def_function(
     if (ufunc->uf_dfunc_idx == UF_NOT_COMPILED
 	    || (ufunc->uf_dfunc_idx == UF_TO_BE_COMPILED
 			  && compile_def_function(ufunc, FALSE, NULL) == FAIL))
+    {
+	if (called_emsg == called_emsg_before)
+	    semsg(_("E1091: Function is not compiled: %s"),
+		    ufunc->uf_name_exp == NULL
+					? ufunc->uf_name : ufunc->uf_name_exp);
 	return FAIL;
+    }
 
     {
 	// Check the function was really compiled.
