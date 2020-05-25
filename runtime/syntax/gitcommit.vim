@@ -30,6 +30,9 @@ else
   syn match gitcommitComment	"^#.*"
 endif
 
+" list extracted from https://www.kernel.org/doc/html/latest/process/submitting-patches.html#when-to-use-acked-by-cc-and-co-developed-by
+syn match   gitcommitPseudoHeader "^\(Signed-off-by\|Acked-by\|Cc\|Co-Developed-by\|Co-authored-by\|Fixes\|Reported-by\|Reviewed-by\|Suggested-by\|Tested-by\): .*$"
+
 syn match   gitcommitHead	"^\%(#   .*\n\)\+#$" contained transparent
 syn match   gitcommitOnBranch	"\%(^# \)\@<=On branch" contained containedin=gitcommitComment nextgroup=gitcommitBranch skipwhite
 syn match   gitcommitOnBranch	"\%(^# \)\@<=Your branch .\{-\} '" contained containedin=gitcommitComment nextgroup=gitcommitBranch skipwhite
@@ -63,6 +66,7 @@ syn match   gitcommitWarning		"^\%(no changes added to commit\|nothing \%(added 
 
 hi def link gitcommitSummary		Keyword
 hi def link gitcommitComment		Comment
+hi def link gitcommitPseudoHeader	Type
 hi def link gitcommitUntracked		gitcommitComment
 hi def link gitcommitDiscarded		gitcommitComment
 hi def link gitcommitSelected		gitcommitComment

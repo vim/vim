@@ -17,7 +17,10 @@ syn case match
 
 syn match   gitsendemailComment "\%^From.*#.*"
 syn match   gitsendemailComment "^GIT:.*"
+" list extracted from https://www.kernel.org/doc/html/latest/process/submitting-patches.html#when-to-use-acked-by-cc-and-co-developed-by
+syn match   gitsendemailPseudoHeader "^\(Signed-off-by\|Acked-by\|Cc\|Co-Developed-by\|Co-authored-by\|Fixes\|Reported-by\|Reviewed-by\|Suggested-by\|Tested-by\): .*$"
 
 hi def link gitsendemailComment Comment
+hi def link gitsendemailPseudoHeader mailHeaderKey
 
 let b:current_syntax = "gitsendemail"
