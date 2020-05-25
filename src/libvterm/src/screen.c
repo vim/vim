@@ -169,7 +169,6 @@ static void damagescreen(VTermScreen *screen)
 static int putglyph(VTermGlyphInfo *info, VTermPos pos, void *user)
 {
   int i;
-  int col;
   VTermRect rect;
 
   VTermScreen *screen = user;
@@ -185,8 +184,10 @@ static int putglyph(VTermGlyphInfo *info, VTermPos pos, void *user)
   if(i < VTERM_MAX_CHARS_PER_CELL)
     cell->chars[i] = 0;
 
-  for(col = 1; col < info->width; col++)
-    getcell(screen, pos.row, pos.col + col)->chars[0] = (uint32_t)-1;
+  for (int col = 1; col < info->width; col++) {
+    ScreenCell * const temp_cell = getcell(screen, pos.row, pos.col + col);
+    if (temp_cell != NULL) temp_cell->chars[0] = (uint32_t)-1;
+  }
 
   rect.start_row = pos.row;
   rect.end_row   = pos.row+1;
@@ -229,7 +230,6 @@ static int moverect_internal(VTermRect dest, VTermRect src, void *user)
     int cols = src.end_col - src.start_col;
     int downward = src.start_row - dest.start_row;
     int init_row, test_row, inc_row;
-    int row;
 
     if(downward < 0) {
       init_row = dest.end_row - 1;
@@ -242,10 +242,12 @@ static int moverect_internal(VTermRect dest, VTermRect src, void *user)
       inc_row  = +1;
     }
 
-    for(row = init_row; row != test_row; row += inc_row)
-      memmove(getcell(screen, row, dest.start_col),
-	      getcell(screen, row + downward, src.start_col),
-	      cols * sizeof(ScreenCell));
+    for (int row = init_row; row != test_row; row += inc_row) {
+      ScreenCell * const dest_cell = getcell(screen, row, dest.start_col);
+      const ScreenCell * const src_cell = getcell(screen, row + downward, src.start_col);
+      if ((dest_cell != NULL) && (src_cell != NULL))
+        memmove(dest_cell, src_cell, cols * sizeof(ScreenCell));
+    }
   }
 
   return 1;
@@ -280,7 +282,7 @@ static int erase_internal(VTermRect rect, int selective, void *user)
     for(col = rect.start_col; col < rect.end_col; col++) {
       ScreenCell *cell = getcell(screen, row, col);
 
-      if(selective && cell->pen.protected_cell)
+      if ((cell == NULL) || (selective && cell->pen.protected_cell))
         continue;
 
       cell->chars[0] = 0;
@@ -639,7 +641,8 @@ static int setlineinfo(int row, const VTermLineInfo *newinfo, const VTermLineInf
   if(newinfo->doublewidth != oldinfo->doublewidth ||
      newinfo->doubleheight != oldinfo->doubleheight) {
     for(col = 0; col < screen->cols; col++) {
-      ScreenCell *cell = getcell(screen, row, col);
+      ScreenCell * const cell = getcell(screen, row, col);
+      if (cell == NULL) continue;
       cell->pen.dwl = newinfo->doublewidth;
       cell->pen.dhl = newinfo->doubleheight;
     }
@@ -764,7 +767,8 @@ static size_t _get_chars(const VTermScreen *screen, const int utf8, void *buffer
 
   for(row = rect.start_row; row < rect.end_row; row++) {
     for(col = rect.start_col; col < rect.end_col; col++) {
-      ScreenCell *cell = getcell(screen, row, col);
+      const ScreenCell * const cell = getcell(screen, row, col);
+      if (cell == NULL) continue;
       int i;
 
       if(cell->chars[0] == 0)
@@ -804,9 +808,9 @@ size_t vterm_screen_get_text(const VTermScreen *screen, char *str, size_t len, c
 }
 
 /* Copy internal to external representation of a screen cell */
-int vterm_screen_get_cell(const VTermScreen *screen, VTermPos pos, VTermScreenCell *cell)
+int vterm_screen_get_cell(const VTermScreen * const screen, const VTermPos pos, VTermScreenCell * const cell)
 {
-  ScreenCell *intcell = getcell(screen, pos.row, pos.col);
+  ScreenCell * const intcell = getcell(screen, pos.row, pos.col);
   int i;
 
   if(!intcell)
@@ -833,27 +837,26 @@ int vterm_screen_get_cell(const VTermScreen *screen, VTermPos pos, VTermScreenCe
   cell->fg = intcell->pen.fg;
   cell->bg = intcell->pen.bg;
 
-  if(vterm_get_special_pty_type() == 2) {
+  cell->width = 1;
+  ScreenCell * const next_intcell = getcell(screen, pos.row, pos.col + 1);
+  if (next_intcell == NULL) return 1;
+  if (vterm_get_special_pty_type() == 2) {
     // Get correct cell width from cell information contained in line buffer
-    if(pos.col < (screen->cols - 1) &&
-       getcell(screen, pos.row, pos.col + 1)->chars[0] == (uint32_t)-1) {
-      if(getcell(screen, pos.row, pos.col)->chars[0] == 0x20) {
-        getcell(screen, pos.row, pos.col)->chars[0] = 0;
+    if (pos.col < (screen->cols - 1) &&
+       next_intcell->chars[0] == (uint32_t)-1) {
+      if (intcell->chars[0] == 0x20) {
+        intcell->chars[0] = 0;
         cell->width = 2;
-      } else if(getcell(screen, pos.row, pos.col)->chars[0] == 0) {
-        getcell(screen, pos.row, pos.col + 1)->chars[0] = 0;
-        cell->width = 1;
+      } else if (intcell->chars[0] == 0) {
+        next_intcell->chars[0] = 0;
       } else {
         cell->width = 2;
       }
-    } else
-      cell->width = 1;
+    }
   } else {
-    if(pos.col < (screen->cols - 1) &&
-       getcell(screen, pos.row, pos.col + 1)->chars[0] == (uint32_t)-1)
+    if (pos.col < (screen->cols - 1) &&
+       next_intcell->chars[0] == (uint32_t)-1)
       cell->width = 2;
-    else
-      cell->width = 1;
   }
 
   return 1;
@@ -863,8 +866,8 @@ int vterm_screen_is_eol(const VTermScreen *screen, VTermPos pos)
 {
   /* This cell is EOL if this and every cell to the right is black */
   for(; pos.col < screen->cols; pos.col++) {
-    ScreenCell *cell = getcell(screen, pos.row, pos.col);
-    if(cell->chars[0] != 0)
+    const ScreenCell * const cell = getcell(screen, pos.row, pos.col);
+    if ((cell != NULL) && (cell->chars[0] != 0))
       return 0;
   }
 
@@ -962,7 +965,8 @@ int vterm_screen_get_attrs_extent(const VTermScreen *screen, VTermRect *extent, 
 {
   int col;
 
-  ScreenCell *target = getcell(screen, pos.row, pos.col);
+  ScreenCell *const target = getcell(screen, pos.row, pos.col);
+  if (target == NULL) return 0;
 
   // TODO: bounds check
   extent->start_row = pos.row;
@@ -973,14 +977,20 @@ int vterm_screen_get_attrs_extent(const VTermScreen *screen, VTermRect *extent, 
   if(extent->end_col < 0)
     extent->end_col = screen->cols;
 
-  for(col = pos.col - 1; col >= extent->start_col; col--)
-    if(attrs_differ(attrs, target, getcell(screen, pos.row, col)))
+  for (col = pos.col - 1; col >= extent->start_col; col--) {
+    ScreenCell * const cell = getcell(screen, pos.row, col);
+    if (cell == NULL) return 0;
+    if (attrs_differ(attrs, target, cell))
       break;
+  }
   extent->start_col = col + 1;
 
-  for(col = pos.col + 1; col < extent->end_col; col++)
-    if(attrs_differ(attrs, target, getcell(screen, pos.row, col)))
+  for (col = pos.col + 1; col < extent->end_col; col++) {
+    ScreenCell * const cell = getcell(screen, pos.row, col);
+    if (cell == NULL) return 0;
+    if (attrs_differ(attrs, target, cell))
       break;
+  }
   extent->end_col = col - 1;
 
   return 1;
