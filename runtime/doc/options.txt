@@ -5430,8 +5430,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	unsigned    If included, numbers is recognized to be unsigned number.
 		Thus the numbers does not contained negative sign('-').
 		Example: Using CTRL-X on "0" subtracts one, resulting in
-		"18446744073709551615"(Maximum number).  Using CTRL-A on
-		"18446744073709551615" adds one, resulting in "0".
+		"18446744073709551615".  Using CTRL-A on "18446744073709551615"
+		adds one, resulting in "0".
+		NOTE: "18446744073709551615" is the maximum number on 64 bit
+		system.
 	Numbers which simply begin with a digit in the range 1-9 are always
 	considered decimal.  This also happens for numbers that are not
 	recognized as octal or hex.
