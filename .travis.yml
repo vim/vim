@@ -125,7 +125,12 @@ script:
       # Append various warning flags to CFLAGS.
       # BSD sed needs backup extension specified.
       sed -i.bak -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
-      sed -i.bak -f ci/config.mk.${CC}.sed ${SRCDIR}/auto/config.mk
+      if [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
+        # On macOS, the entity of gcc is clang.
+        sed -i.bak -f ci/config.mk.clang.sed ${SRCDIR}/auto/config.mk
+      else
+        sed -i.bak -f ci/config.mk.${CC}.sed ${SRCDIR}/auto/config.mk
+      fi
       make ${SHADOWOPT} -j${NPROC}
     fi
   - echo -en "travis_fold:end:build\\r\\033[0K"
@@ -141,11 +146,10 @@ script:
   - do_test make ${SHADOWOPT} ${TEST} && FOLD_MARKER=travis_fold
   - echo -en "${FOLD_MARKER}:end:test\\r\\033[0K"
 
-
-# instead of a 2*2*8 matrix (2*os + 2*compiler + 8*env),
-# exclude some builds on mac os x and linux
-# on mac os x "tiny" is always without GUI
-# linux: 2*compiler + 5*env + mac: 2*compiler + 2*env
+# Instead of using all environments with both compilers on both systems,
+# exclude some builds on mac os x and linux.
+# On mac os x "tiny" is always without GUI, use 2 compilers in 2 environments.
+# Linux: 2 compilers on some of the environments + gcc on os390
 jobs:
   include:
     - <<: *osx

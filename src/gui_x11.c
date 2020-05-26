@@ -948,6 +948,11 @@ gui_x11_key_hit_cb(
     {
 	string[0] = key;
 	len = 1;
+
+	// Remove the SHIFT modifier for keys where it's already included,
+	// e.g., '(', '!' and '*'.
+	if (!ASCII_ISALPHA(key) && key > 0x20 && key < 0x7f)
+	    modifiers &= ~MOD_MASK_SHIFT;
     }
 
     if (modifiers != 0)

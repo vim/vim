@@ -1,4 +1,4 @@
-*os_haiku.txt*	For Vim version 8.2.  Last change: 2020 Apr 30
+*os_haiku.txt*	For Vim version 8.2.  Last change: 2020 May 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -84,9 +84,6 @@ Stuff that does not work yet:
   in when the window is activated or deactivated (so it works best with focus-
   follows-mouse turned on).
 - The cursor does not flash.
-- Built-in terminal is not available in GUI, and does not work reliably on
-  console version as well; e.g. it is not possible to exit using the 'exit'
-  command.  If you need to use it, enable at your own risk.
 
 
 4. The $VIM directory					*haiku-vimdir*

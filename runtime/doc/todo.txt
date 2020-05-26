@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 May 11
+*todo.txt*      For Vim version 8.2.  Last change: 2020 May 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,27 +38,19 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Patch to test TERM signal. (Dominique, #6055)
-
-Include src/po/vim.pot
+Include src/po/vim.pot ?
 
 Vim9 script:
-Make closures work:
-  - call closure from not compiled context
-  - Create closure in a loop.  Need to make a list of them.
-Forward declarations:
-  - Cleanup when sourcing a script again: all script-local variables, imports
-    and functions are deleted.
-  - make sure only constants in declarations are executed, no function calls.
-  - Declare a variable at script level without an assignment.
-	let var: string
-    Error without a type or assignment
-	let var  # error!
 Making everything work:
+- possible memory leak in test_vim9_func through compile_nested_function.
+- memory leaks in test_vim9_expr
+- memory leaks in test_vim9_script
 - Test that a script-local function in Vim9 script cannot be deleted.
+- Make "true" and "false" work in vim9script
 - Test that a function defined inside a :def function is local to that
   function, g: functions can be defined and script-local functions cannot be
   defined.
+- make 0 == 'string' fail on the script level, like inside :def.
 - Check that when using a user function name without prefix, it does not find
   a global function.  Prefixing g: is required.
 - Compile: let [var, var] = expr
@@ -75,16 +67,21 @@ Making everything work:
 - Expand `=expr` in :next, :argedit, :argadd, :argdelete, :drop
 - Expand `=expr` in :vimgrep, :vimgrepadd, :lvimgrep, :lvimgrepadd
 - Expand `=expr` in :mkspell
+- When evaluating constants for script variables, some functions could work:
+    has('asdf'), len('string')
 - Support type for ":let"/":const" at script level for Vim9 script.
     (Ben Jackson, #5671)
     Can we share the code from ex_let_const() between direct execution and
     compiling?
 - Disallow unlet for local/script/imported vars
 - Make "++nr" work.
+- Make closures work:
+  - Create closure in a loop.  Need to make a list of them.
 - expandcmd() with `=expr` in filename uses legacy expression.
 - eval_expr() in ex_cexpr()
 - eval_expr() call in dbg_parsearg() and debuggy_find()
-- Make "true" and "false" work in vim9script
+- has() is compiled as a constant, but some checks are dynamic.
+  Check for dynamic values, such as "gui_running".
 New syntax and functionality:
 Improve error checking:
 - "echo Func()" is an error if Func() does not return anything.
@@ -113,6 +110,7 @@ Also:
 - implement class
 - implement interface
 - predefined class: Promise<T>
+- implement enum
 - Make accessing varargs faster: arg[expr]
 	EVAL expr
 	LOADVARARG (varags idx)
@@ -125,10 +123,12 @@ Further improvements:
 	    body
 	enddef
 - compile get_lambda_tv() in popup_add_timeout()
+- inline call to map() and filter()
 - compile "skip" argument of searchpair()
 - compile "expr" and "call" expression of a channel in channel_exe_cmd()?
 
 Popup windows:
+- Can put focus in another window using API and "drop". (#6077)
 - With some sequence get get hidden finished terminal buffer. (#5768)
     Cannot close popup terminal (#5744)
     Buffer can't be wiped, gets status "aF". (#5764)
@@ -201,8 +201,12 @@ Terminal emulator window:
   background process, the window remains open, because the channel still
   exists (and output still shows).  Perhaps close the window when an explicit
   ++close was used? (#5931)
+- Using "CTRL-W :confirm quite" and selecting "yes" should work like ":quit!".
+    (Harm te Hennepe, #6129)
 - When the job in the terminal doesn't use mouse events, let the scroll wheel
   scroll the scrollback, like a terminal does at the shell prompt. #2490
+  A bit like using CTRL-W N first.
+  Jump back like with "a" when any key is typed.
   And use modeless selection.  #2962
 - Use CTRL-W CTRL-K to enter a digraph? #5371
 - When Vim runs in the terminal and changes the title, the statusline needs to
@@ -232,8 +236,10 @@ Terminal emulator window:
   conversions.
 
 Error numbers available:
-E453, E454, E460, E489, E491, E610, E611, E653,
-E856, E857, E861, E900
+E453, E454, E489, E610, E611, E653, E856, E857, E861, E900
+
+Patch to fix that typval related code is spread out. (Yegappan Lakshmanan,
+#6093)
 
 Buffer autocommands are a bit inconsistent.  Add a separate set of
 autocommands for the buffer lifecycle:
@@ -254,6 +260,10 @@ Patch to explain use of "%" in :!.  (David Briscoe, #5591)
 Patch to improve Windows terminal support. (Nobuhiro Takasaki, #5546)
 Ready to include.
 
+Patch to improve use of Lua path. (Prabir Shrestha, #6098)
+
+Patch to make exepath() work better on MS-Windows. (#6115)
+
 Patch to add "-d" to xxd. (#5616)
 
 Patch for the Haiku port: #5961
@@ -271,12 +281,17 @@ Patch to support different color for undercurl in cterm.
 Patch to support cindent option to handle pragmas differently.
 (Max Rumpf, #5468)
 
+Patch to add ":syn foldlevel" to use fold level further down the line.
+(Brad King, 2016 Oct 19, update 2017 Jan 30, now in #6087)
+
 File marks merging has duplicates since 7.4.1925. (Ingo Karkat, #5733)
 
-Running test_gui and test_gui_init with Motif sometimes kills the window
-manager.  Problem with Motif? Now test_gui crashes in submenu_change().
+"make test_gui" crashed in submenu_change(). Fix and remove workaround in
+add_pixmap_args().
 Athena is OK.
 Motif: Build on Ubuntu can't enter any text in dialog text fields.
+Running test_gui and test_gui_init with Motif sometimes kills the window
+manager.  Problem with Motif?
 
 :map output does not clear the reset of the command line.
 (#5623, also see #5962)
@@ -286,6 +301,9 @@ Flag in 'formatoptions' is not used in the tests.
 
 Patch to add 'vtp' option. (#5344)
 Needs better docs.  Is there a better name?
+
+Patch to add argument to trim() to only trim start or end of a string.
+(Yegappan, #6126)
 
 undo result wrong: Masato Nishihata, #4798
 
@@ -299,6 +317,14 @@ Patch to delete BeOS code. (#5817)  Anyone who wants to keep it?
 
 With bash ":make" does not set v:shell_error.  Possible solution: set
 'shellpipe' to "2>&1| tee %s; exit ${PIPESTATUS[0]}"  #5994
+
+Using mode() when "/pat" is used in Visual mode returns "v" instead of "c",
+which is not useful.  Return "c/v" instead.  And "c/o" when using "d/pat".
+#6127
+
+When 'fileignorecase' is set ":e testfile.c" works to edit TestFile.c, but
+":find testfile.c" does not ignore case.
+Might be related to #6088.
 
 When changing the crypt key the buffer should be considered modified.
 Like when changing 'fileformat'.  Save the old key in save_file_ff().
@@ -318,6 +344,8 @@ Patch to add function to return the text used in the quickfix window.
 (Yegappan, #5465)
 
 Patch to add readdirex() (Ken Takata, #5619)
+
+Wrong error when using local arglist. (Harm te Hennepe, #6133)
 
 Request to support <Cmd> in mappings, similar to how Neovim does this.
 (Daniel Hahler, #4784)
@@ -388,6 +416,9 @@ support combining characters. (Charles Campbell)  Also #4687
 "--cleanFOO" does not result in an error. (#5537)
 
 Add "t" action to settagstack(): truncate and add new entries. (#5405)
+
+When 'relativenumber' is set the line just below a diff change doesn't get
+updated. (#6138)
 
 Result of synID() sometimes wrong in help files. (#5252)
 
@@ -1329,6 +1360,8 @@ sort() is not stable when using numeric/float sort (Nikolay Pavlov, 2016 Sep
 - Add ch_readlines(): for a channel in NL mode, reads as many lines as are
   available.  Should be more efficient than looping over ch_read() with
   ch_status() to check for more.
+- If buffer contents is changed in a callback, set w_redr_status so that it
+  gets redrawn in redraw_after_callback(). #6120
 - Add a separate timeout for opening a socket.  Currently it's fixed at 50
   msec, which is too small for a remote connection. (tverniquet, #2130)
 - Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)
@@ -1451,9 +1484,6 @@ ml_get errors when reloading file. (Chris Desjardins, 2016 Apr 19)
 Also with latest version.
 
 Cannot delete a file with square brackets with delete(). (#696)
-
-Patch to add ":syn foldlevel" to use fold level further down the line.
-(Brad King, 2016 Oct 19, update 2017 Jan 30)
 
 Completion for input() does not expand environment variables. (chdiza, 2016
 Jul 25, #948)
