@@ -2441,6 +2441,7 @@ do_addsub(
     int		dooct;
     int		dobin;
     int		doalp;
+    int		douns;
     int		firstdigit;
     int		subtract;
     int		negative = FALSE;
@@ -2456,6 +2457,7 @@ do_addsub(
     dooct = (vim_strchr(curbuf->b_p_nf, 'o') != NULL);	// "Octal"
     dobin = (vim_strchr(curbuf->b_p_nf, 'b') != NULL);	// "Bin"
     doalp = (vim_strchr(curbuf->b_p_nf, 'p') != NULL);	// "alPha"
+    douns = (vim_strchr(curbuf->b_p_nf, 'u') != NULL);	// "Unsigned"
 
     curwin->w_cursor = *pos;
     ptr = ml_get(pos->lnum);
@@ -2569,7 +2571,8 @@ do_addsub(
 	    goto theend;
 
 	if (col > pos->col && ptr[col - 1] == '-'
-		&& (!has_mbyte || !(*mb_head_off)(ptr, ptr + col - 1)))
+		&& (!has_mbyte || !(*mb_head_off)(ptr, ptr + col - 1))
+		&& !douns)
 	{
 	    negative = TRUE;
 	    was_positive = FALSE;
@@ -2635,7 +2638,8 @@ do_addsub(
 	if (col > 0 && ptr[col - 1] == '-'
 		&& (!has_mbyte ||
 		    !(*mb_head_off)(ptr, ptr + col - 1))
-		&& !visual)
+		&& !visual
+		&& !douns)
 	{
 	    // negative number
 	    --col;
@@ -2677,7 +2681,7 @@ do_addsub(
 	{
 	    if (subtract)
 	    {
-		if (n > oldn)
+		if (!douns && n > oldn)
 		{
 		    n = 1 + (n ^ (uvarnumber_T)-1);
 		    negative ^= TRUE;
@@ -2686,7 +2690,7 @@ do_addsub(
 	    else
 	    {
 		// add
-		if (n < oldn)
+		if (!douns && n < oldn)
 		{
 		    n = (n ^ (uvarnumber_T)-1);
 		    negative ^= TRUE;
