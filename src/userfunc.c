@@ -3348,6 +3348,7 @@ ex_defcompile(exarg_T *eap UNUSED)
 		    hi = func_hashtab.ht_array;
 		    ht_used = func_hashtab.ht_used;
 		    todo = (int)ht_used;
+		    --hi;
 		}
 	    }
 	}
