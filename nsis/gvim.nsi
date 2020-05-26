@@ -17,7 +17,7 @@ Unicode true
   !define VIMRT ".."
 !endif
 
-# Location of extra tools: diff.exe
+# Location of extra tools: diff.exe, winpty, lua
 !ifndef VIMTOOLS
   !define VIMTOOLS ..\..
 !endif
@@ -27,6 +27,14 @@ Unicode true
 # See README.txt for detail.
 !ifndef GETTEXT
   !define GETTEXT ${VIMRT}
+!endif
+
+# Comment the next line if you don't want to include Lua.
+!define HAVE_LUA
+
+# Lua version
+!ifndef LUA_VER
+  !define LUA_VER 53
 !endif
 
 # Comment the next line if you don't have UPX.
@@ -355,6 +363,9 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMTOOLS}\diff.exe
 	File ${VIMTOOLS}\winpty${BIT}.dll
 	File ${VIMTOOLS}\winpty-agent.exe
+!ifdef HAVE_LUA
+	File ${VIMTOOLS}\lua${LUA_VER}.dll
+!endif
 
 	SetOutPath $0\colors
 	File ${VIMRT}\colors\*.*
