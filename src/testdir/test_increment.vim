@@ -797,7 +797,7 @@ func Test_increment_special_char()
 endfunc
 
 " Try incrementing/decrementing a number when nrformats contains unsigned
-func Test_unsigned()
+func Test_increment_unsigned()
   set nrformats+=unsigned
 
   " 18446744073709551615 == pow(2, 64) - 1
