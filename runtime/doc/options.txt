@@ -5427,8 +5427,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	bin	If included, numbers starting with "0b" or "0B" will be
 		considered to be binary.  Example: Using CTRL-X on
 		"0b1000" subtracts one, resulting in "0b0111".
-	unsigned    If included, numbers is recognized to be unsigned number.
-		Thus the numbers does not contained negative sign('-').
+	unsigned    If included, numbers are recognized as unsigned. Thus a
+		leading negative sign won't be considered as part of the number.
 		Example: Using CTRL-X on "0" subtracts one, resulting in
 		"18446744073709551615".  Using CTRL-A on "18446744073709551615"
 		adds one, resulting in "0".

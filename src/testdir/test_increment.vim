@@ -842,6 +842,8 @@ func Test_increment_unsigned()
   call setline(1, '-3')
   exec "norm! gg0\<C-A>"
   call assert_equal('-4', getline(1))
+
+  set nrformats-=unsigned
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
