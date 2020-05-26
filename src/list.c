@@ -1768,7 +1768,7 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
     }
     else
     {
-	semsg(_(e_listdictarg), ermsg);
+	semsg(_(e_listdictblobarg), ermsg);
 	return;
     }
 
