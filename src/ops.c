@@ -2707,7 +2707,7 @@ do_addsub(
 		n = (uvarnumber_T)0;
 	    else
 		// going down from large number to zero if op_type is add.
-		n = -((uvarnumber_T)n) - 1;
+		n = (uvarnumber_T)(-((varnumber_T)n) - 1);
 	    negative = FALSE;
 	}
 
