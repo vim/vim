@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Apr 19
+*eval.txt*	For Vim version 8.2.  Last change: 2020 May 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -584,6 +584,8 @@ adict.
 Weeding out entries from a Dictionary can be done with |filter()|: >
 	:call filter(dict, 'v:val =~ "x"')
 This removes all entries from "dict" with a value not matching 'x'.
+This can also be used to remove all entries: >
+	call filter(dict, 0)
 
 
 Dictionary function ~
@@ -1485,7 +1487,7 @@ the function returns: >
 	:echo Bar(6)
 <	5
 
-Note that the variables must exist in the outer scope before the lamba is
+Note that the variables must exist in the outer scope before the lambda is
 defined for this to work.  See also |:func-closure|.
 
 Lambda and closure support can be checked with: >
@@ -2916,6 +2918,7 @@ win_splitmove({nr}, {target} [, {options}])
 				Number	move window {nr} to split of {target}
 winbufnr({nr})			Number	buffer number of window {nr}
 wincol()			Number	window column of the cursor
+windowsversion()		String	MS-Windows OS version
 winheight({nr})			Number	height of window {nr}
 winlayout([{tabnr}])		List	layout of windows in tab {tabnr}
 winline()			Number	window line of the cursor
@@ -10221,7 +10224,7 @@ tr({src}, {fromstr}, {tostr})				*tr()*
 
 trim({text} [, {mask}])						*trim()*
 		Return {text} as a String where any character in {mask} is
-		removed from the beginning and  end of {text}.
+		removed from the beginning and end of {text}.
 		If {mask} is not given, {mask} is all characters up to 0x20,
 		which includes Tab, space, NL and CR, plus the non-breaking
 		space character 0xa0.
@@ -11144,6 +11147,8 @@ See |:verbose-cmd| for more information.
 			NOTE: Use ! wisely.  If used without care it can cause
 			an existing function to be replaced unexpectedly,
 			which is hard to debug.
+			NOTE: In Vim9 script script-local functions cannot be
+			deleted or redefined.
 
 			For the {arguments} see |function-argument|.
 

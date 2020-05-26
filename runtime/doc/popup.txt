@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.2.  Last change: 2020 May 12
+*popup.txt*  For Vim version 8.2.  Last change: 2020 May 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
