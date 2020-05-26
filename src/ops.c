@@ -2681,7 +2681,7 @@ do_addsub(
 	{
 	    if (subtract)
 	    {
-		if (!douns && n > oldn)
+		if (n > oldn)
 		{
 		    n = 1 + (n ^ (uvarnumber_T)-1);
 		    negative ^= TRUE;
@@ -2690,7 +2690,7 @@ do_addsub(
 	    else
 	    {
 		// add
-		if (!douns && n < oldn)
+		if (n < oldn)
 		{
 		    n = (n ^ (uvarnumber_T)-1);
 		    negative ^= TRUE;
@@ -2698,6 +2698,17 @@ do_addsub(
 	    }
 	    if (n == 0)
 		negative = FALSE;
+	}
+
+	if (douns && negative)
+	{
+	    if (subtract)
+		// sticking at zero.
+		n = (uvarnumber_T)0;
+	    else
+		// going down from large number to zero if op_type is add.
+		n = -((uvarnumber_T)n) - 1;
+	    negative = FALSE;
 	}
 
 	if (visual && !was_positive && !negative && col > 0)

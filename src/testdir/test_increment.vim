@@ -800,48 +800,42 @@ endfunc
 func Test_increment_unsigned()
   set nrformats+=unsigned
 
-  " 18446744073709551615 == pow(2, 64) - 1
-  if 64 == v:numbersize
-    call setline(1, '0')
-    exec "norm! gg0\<C-X>"
-    call assert_equal('18446744073709551615', getline(1))
-
-    call setline(1, '3')
-    exec "norm! gg010\<C-X>"
-    call assert_equal('18446744073709551609', getline(1))
-
-    call setline(1, '-0')
-    exec "norm! gg0\<C-X>"
-    call assert_equal("-18446744073709551615", getline(1))
-
-    call setline(1, '18446744073709551615')
-    exec "norm! gg0\<C-A>"
-    call assert_equal('0', getline(1))
-
-    call setline(1, '18446744073709551613')
-    exec "norm! gg010\<C-A>"
-    call assert_equal('7', getline(1))
-
-    call setline(1, '-18446744073709551615')
-    exec "norm! gg0\<C-A>"
-    call assert_equal('-0', getline(1))
-  endif
-
-  call setline(1, '-1')
+  call setline(1, '0')
   exec "norm! gg0\<C-X>"
+  call assert_equal('0', getline(1))
+
+  call setline(1, '3')
+  exec "norm! gg010\<C-X>"
+  call assert_equal('0', getline(1))
+
+  call setline(1, '-0')
+  exec "norm! gg0\<C-X>"
+  call assert_equal("-0", getline(1))
+
+  call setline(1, '-11')
+  exec "norm! gg08\<C-X>"
+  call assert_equal('-3', getline(1))
+
+  " NOTE: 18446744073709551615 == pow(2, 64) - 1
+  call setline(1, '18446744073709551615')
+  exec "norm! gg0\<C-A>"
+  call assert_equal('0', getline(1))
+
+  call setline(1, '-18446744073709551615')
+  exec "norm! gg0\<C-A>"
   call assert_equal('-0', getline(1))
 
-  call setline(1, '-3')
-  exec "norm! gg0\<C-X>"
-  call assert_equal('-2', getline(1))
+  call setline(1, '-18446744073709551614')
+  exec "norm! gg08\<C-A>"
+  call assert_equal('-6', getline(1))
 
   call setline(1, '-1')
   exec "norm! gg0\<C-A>"
   call assert_equal('-2', getline(1))
 
   call setline(1, '-3')
-  exec "norm! gg0\<C-A>"
-  call assert_equal('-4', getline(1))
+  exec "norm! gg08\<C-A>"
+  call assert_equal('-11', getline(1))
 
   set nrformats-=unsigned
 endfunc
