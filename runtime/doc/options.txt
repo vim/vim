@@ -5435,7 +5435,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    in "18446744073709551615" which equals 2^64 - 1 on 64 bit
 		    system.
 		    Using CTRL-X on "9-2020" subtracts one, resulting in
-		    "9-2020".
+		    "9-2019".
 		    Using CTRL-A on "9-2020" adds one, resulting in "9-2021".
 	Numbers which simply begin with a digit in the range 1-9 are always
 	considered decimal.  This also happens for numbers that are not
