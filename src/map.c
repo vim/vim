@@ -2187,7 +2187,7 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
     int		abbr = FALSE;
     int		get_dict = FALSE;
     mapblock_T	*mp;
-    mapblock_T	*mp_simplified;
+    mapblock_T	*mp_simplified = NULL;
     int		buffer_local;
     int		flags = REPTERM_FROM_PART | REPTERM_DO_LT;
 
