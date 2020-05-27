@@ -816,18 +816,18 @@ func Test_increment_unsigned()
   exec "norm! gg08\<C-X>"
   call assert_equal('-3', getline(1))
 
-  " NOTE: 18446744073709551615 == pow(2, 64) - 1
+  " NOTE: 18446744073709551615 == 2^64 - 1
   call setline(1, '18446744073709551615')
   exec "norm! gg0\<C-A>"
-  call assert_equal('0', getline(1))
+  call assert_equal('18446744073709551615', getline(1))
 
   call setline(1, '-18446744073709551615')
   exec "norm! gg0\<C-A>"
-  call assert_equal('-0', getline(1))
+  call assert_equal('-18446744073709551615', getline(1))
 
   call setline(1, '-18446744073709551614')
   exec "norm! gg08\<C-A>"
-  call assert_equal('-6', getline(1))
+  call assert_equal('-18446744073709551615', getline(1))
 
   call setline(1, '-1')
   exec "norm! gg0\<C-A>"
