@@ -803,6 +803,8 @@ gui_init(void)
 	if (!p_beval)
 	    gui_mch_disable_beval_area(balloonEval);
 #endif
+	// In case the terminal was used before ":gui".
+	seenModifyOtherKeys = FALSE;
 
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 	if (!im_xim_isvalid_imactivate())
