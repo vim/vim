@@ -47,7 +47,7 @@ static void lookup_default_colour_ansi(long idx, VTermColor *col)
   vterm_color_rgb(
       col,
       ansi_colors[idx].red, ansi_colors[idx].green, ansi_colors[idx].blue);
-  col->index = idx;
+  col->index = (uint8_t)idx;
   col->type = VTERM_COLOR_INDEXED;
 }
 
@@ -96,7 +96,7 @@ static int lookup_colour(const VTermState *state, int palette, const long args[]
     if(argcount < 3)
       return argcount;
 
-    vterm_color_rgb(col, CSI_ARG(args[0]), CSI_ARG(args[1]), CSI_ARG(args[2]));
+    vterm_color_rgb(col, (uint8_t)CSI_ARG(args[0]), (uint8_t)CSI_ARG(args[1]), (uint8_t)CSI_ARG(args[2]));
 
     return 3;
 

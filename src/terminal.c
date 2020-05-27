@@ -4230,7 +4230,7 @@ parse_osc(int command, VTermStringFragment frag, void *user)
 	return 1;
     }
     mch_memmove((char *)gap->ga_data + gap->ga_len, frag.str, frag.len);
-    gap->ga_len += frag.len;
+    gap->ga_len += (int)frag.len;
     if (!frag.final)
 	return 1;
 
