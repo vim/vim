@@ -2445,6 +2445,9 @@ func Test_popupwin_terminal_buffer()
   call assert_fails('call feedkeys("gf", "xt")', 'E863:')
   call feedkeys("a\<C-U>", 'xt')
 
+  " Cannot escape from terminal window
+  call assert_fails('tab drop xxx', 'E863:')
+
   " Cannot open a second one.
   let termbuf2 = term_start(&shell, #{hidden: 1})
   call assert_fails('call popup_create(termbuf2, #{})', 'E861:')
