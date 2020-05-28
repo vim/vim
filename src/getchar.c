@@ -2279,6 +2279,15 @@ handle_mapping(
 		    || ((compl_cont_status & CONT_LOCAL)
 			&& (tb_c1 == Ctrl_N || tb_c1 == Ctrl_P))))
     {
+#ifdef FEAT_GUI
+	if (gui.in_use && tb_c1 == CSI && typebuf.tb_len >= 2
+		&& typebuf.tb_buf[typebuf.tb_off + 1] == KS_MODIFIER)
+	{
+	    // The GUI code sends CSI KS_MODIFIER {flags}, but mappings expect
+	    // K_SPECIAL KS_MODIFIER {flags}.
+	    tb_c1 = K_SPECIAL;
+	}
+#endif
 #ifdef FEAT_LANGMAP
 	if (tb_c1 == K_SPECIAL)
 	    nolmaplen = 2;
@@ -2337,7 +2346,7 @@ handle_mapping(
 		    if (mp->m_keys[mlen] != c2)
 #else
 		    if (mp->m_keys[mlen] !=
-			typebuf.tb_buf[typebuf.tb_off + mlen])
+					 typebuf.tb_buf[typebuf.tb_off + mlen])
 #endif
 			break;
 		}
