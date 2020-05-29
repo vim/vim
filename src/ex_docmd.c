@@ -967,7 +967,7 @@ do_cmdline(
 	    }
 	}
 
-	if (p_verbose >= 15 && SOURCING_NAME != NULL)
+	if ((p_verbose >= 15 && SOURCING_NAME != NULL) || p_verbose >= 16)
 	    msg_verbose_cmd(SOURCING_LNUM, cmdline_copy);
 
 	/*
@@ -1690,9 +1690,6 @@ do_one_cmd(
     // "#!anything" is handled like a comment.
     if ((*cmdlinep)[0] == '#' && (*cmdlinep)[1] == '!')
 	goto doend;
-
-    if (p_verbose >= 16)
-	msg_verbose_cmd(0, *cmdlinep);
 
 /*
  * 1. Skip comment lines and leading white space and colons.
