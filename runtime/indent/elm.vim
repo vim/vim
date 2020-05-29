@@ -1,4 +1,8 @@
-" indentation for Elm (https://elm-lang.org/)
+" Elm indent plugin file
+" Language: Elm
+" Maintainer: Andreas Scharf <as@99n.de>
+" Previous Maintainer: Joseph Hager <ajhager@gmail.com>
+" Latest Revision: 2020-05-29
 
 " Only load this indent file when no other was loaded.
 if exists('b:did_indent')
@@ -12,10 +16,6 @@ setlocal indentexpr=GetElmIndent()
 setlocal indentkeys+=0=else,0=if,0=of,0=import,0=then,0=type,0\|,0},0\],0),=-},0=in
 setlocal nolisp
 setlocal nosmartindent
-
-" Comment formatting
-setlocal comments=s1fl:{-,mb:\ ,ex:-},:--
-setlocal commentstring=--\ %s
 
 " Only define the function once.
 if exists('*GetElmIndent')

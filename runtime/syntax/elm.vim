@@ -1,4 +1,8 @@
-" syntax highlighting for Elm (https://elm-lang.org/)
+" Vim syntax file
+" Language: Elm
+" Maintainer: Andreas Scharf <as@99n.de>
+" Previous Maintainer: Joseph Hager <ajhager@gmail.com>
+" Latest Revision: 2020-05-29
 
 if exists('b:current_syntax')
   finish
