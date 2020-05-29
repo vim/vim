@@ -999,10 +999,9 @@ channel_open(
     for (addr = res; addr != NULL; addr = addr->ai_next)
     {
 	const char  *dst = hostname;
-	const void  *src = NULL;
 # ifdef HAVE_INET_NTOP
+	const void  *src = NULL;
 	char	    buf[NUMBUFLEN];
-# endif
 
 	if (addr->ai_family == AF_INET6)
 	{
@@ -1018,7 +1017,6 @@ channel_open(
 	    sai->sin_port = htons(port);
 	    src = &sai->sin_addr;
 	}
-# ifdef HAVE_INET_NTOP
 	if (src != NULL)
 	{
 	    dst = inet_ntop(addr->ai_family, src, buf, sizeof(buf));
