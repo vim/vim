@@ -3467,7 +3467,7 @@ term_channel_closed(channel_T *ch)
 	redraw_statuslines();
 
 	// Need to break out of vgetc().
-	ins_char_typebuf(K_IGNORE);
+	ins_char_typebuf(K_IGNORE, 0);
 	typebuf_was_filled = TRUE;
 
 	term = curbuf->b_term;

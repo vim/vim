@@ -120,7 +120,12 @@ EXTERN int	screen_Columns INIT(= 0);   // actual size of ScreenLines[]
  * When vgetc() is called, it sets mod_mask to the set of modifiers that are
  * held down based on the MOD_MASK_* symbols that are read first.
  */
-EXTERN int	mod_mask INIT(= 0x0);		// current key modifiers
+EXTERN int	mod_mask INIT(= 0);		// current key modifiers
+
+// The value of "mod_mask" and the unomdified character before calling
+// merge_modifyOtherKeys().
+EXTERN int	vgetc_mod_mask INIT(= 0);
+EXTERN int	vgetc_char INIT(= 0);
 
 /*
  * Cmdline_row is the row where the command line starts, just below the
