@@ -1882,7 +1882,7 @@ screen_stop_highlight(void)
 {
     int	    do_ME = FALSE;	    // output T_ME code
 #if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
-    int	    do_ME_fg, do_ME_bg;
+    int	    do_ME_fg = FALSE, do_ME_bg = FALSE;
 #endif
 
     if (screen_attr != 0
