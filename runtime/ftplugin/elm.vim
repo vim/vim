@@ -1,7 +1,6 @@
 " Elm filetype plugin file
 " Language: Elm
 " Maintainer: Andreas Scharf <as@99n.de>
-" Previous Maintainer: Joseph Hager <ajhager@gmail.com>
 " Latest Revision: 2020-05-29
 
 if exists("b:did_ftplugin")

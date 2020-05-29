@@ -1,7 +1,9 @@
 " Elm indent plugin file
 " Language: Elm
 " Maintainer: Andreas Scharf <as@99n.de>
-" Previous Maintainer: Joseph Hager <ajhager@gmail.com>
+" Original Author: Joseph Hager <ajhager@gmail.com>
+" Copyright: Joseph Hager <ajhager@gmail.com>
+" License: BSD3
 " Latest Revision: 2020-05-29
 
 " Only load this indent file when no other was loaded.
