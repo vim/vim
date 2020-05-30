@@ -5488,8 +5488,9 @@ replace_termcodes(
 	    }
 #endif
 
-	    slen = trans_special(&src, result + dlen, TRUE, FALSE,
-			     (flags & REPTERM_NO_SIMPLIFY) == 0, did_simplify);
+	    slen = trans_special(&src, result + dlen, FSK_KEYCODE
+			  | ((flags & REPTERM_NO_SIMPLIFY) ? 0 : FSK_SIMPLIFY),
+								 did_simplify);
 	    if (slen)
 	    {
 		dlen += slen;

@@ -2661,4 +2661,11 @@ long elapsed(DWORD start_tick);
 #define EVAL_EVALUATE	    1	    // when missing don't actually evaluate
 #define EVAL_CONSTANT	    2	    // when not a constant return FAIL
 
+// Flags for find_special_key()
+#define FSK_KEYCODE	0x01	// prefer key code, e.g. K_DEL instead of DEL
+#define FSK_KEEP_X_KEY	0x02	// don't translate xHome to Home key
+#define FSK_IN_STRING	0x04	// TRUE in string, double quote is escaped
+#define FSK_SIMPLIFY	0x08	// simplify <C-H> and <A-x>
+#define FSK_CURLY	0x10	// {C-x} instead of <C-x>
+
 #endif // VIM__H

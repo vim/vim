@@ -2703,20 +2703,17 @@ get_special_key_name(int c, int modifiers)
 trans_special(
     char_u	**srcp,
     char_u	*dst,
-    int		keycode,    // prefer key code, e.g. K_DEL instead of DEL
-    int		in_string,  // TRUE when inside a double quoted string
-    int		simplify,	// simplify <C-H> and <A-x>
-    int		*did_simplify)  // found <C-H> or <A-x>
+    int		flags,		// FSK_ values
+    int		*did_simplify)  // FSK_SIMPLIFY and found <C-H> or <A-x>
 {
     int		modifiers = 0;
     int		key;
 
-    key = find_special_key(srcp, &modifiers, keycode, FALSE, in_string,
-						       simplify, did_simplify);
+    key = find_special_key(srcp, &modifiers, flags, did_simplify);
     if (key == 0)
 	return 0;
 
-    return special_to_buf(key, modifiers, keycode, dst);
+    return special_to_buf(key, modifiers, flags & FSK_KEYCODE, dst);
 }
 
 /*
@@ -2764,24 +2761,23 @@ special_to_buf(int key, int modifiers, int keycode, char_u *dst)
 find_special_key(
     char_u	**srcp,
     int		*modp,
-    int		keycode,	// prefer key code, e.g. K_DEL instead of DEL
-    int		keep_x_key,	// don't translate xHome to Home key
-    int		in_string,	// TRUE in string, double quote is escaped
-    int		simplify,	// simplify <C-H> and <A-x>
+    int		flags,		// FSK_ values
     int		*did_simplify)  // found <C-H> or <A-x>
 {
     char_u	*last_dash;
     char_u	*end_of_name;
     char_u	*src;
     char_u	*bp;
+    int		in_string = flags & FSK_IN_STRING;
     int		modifiers;
     int		bit;
     int		key;
+    int		endchar = (flags & FSK_CURLY) ? '}' : '>';
     uvarnumber_T	n;
     int		l;
 
     src = *srcp;
-    if (src[0] != '<')
+    if (src[0] != ((flags & FSK_CURLY) ? '{' : '<'))
 	return 0;
 
     // Find end of modifier list
@@ -2800,15 +2796,15 @@ find_special_key(
 		// Anything accepted, like <C-?>.
 		// <C-"> or <M-"> are not special in strings as " is
 		// the string delimiter. With a backslash it works: <M-\">
-		if (!(in_string && bp[1] == '"') && bp[l + 1] == '>')
+		if (!(in_string && bp[1] == '"') && bp[l + 1] == endchar)
 		    bp += l;
 		else if (in_string && bp[1] == '\\' && bp[2] == '"'
-							       && bp[3] == '>')
+							   && bp[3] == endchar)
 		    bp += 2;
 	    }
 	}
 	if (bp[0] == 't' && bp[1] == '_' && bp[2] && bp[3])
-	    bp += 3;	// skip t_xx, xx may be '-' or '>'
+	    bp += 3;	// skip t_xx, xx may be '-' or '>'/'}'
 	else if (STRNICMP(bp, "char-", 5) == 0)
 	{
 	    vim_str2nr(bp + 5, NULL, &l, STR2NR_ALL, NULL, NULL, 0, TRUE);
@@ -2822,7 +2818,7 @@ find_special_key(
 	}
     }
 
-    if (*bp == '>')	// found matching '>'
+    if (*bp == endchar)	// found matching '>' or '}'
     {
 	end_of_name = bp + 1;
 
@@ -2868,12 +2864,12 @@ find_special_key(
 		    l = mb_ptr2len(last_dash + off);
 		else
 		    l = 1;
-		if (modifiers != 0 && last_dash[l + off] == '>')
+		if (modifiers != 0 && last_dash[l + off] == endchar)
 		    key = PTR2CHAR(last_dash + off);
 		else
 		{
 		    key = get_special_key_code(last_dash + off);
-		    if (!keep_x_key)
+		    if (!(flags & FSK_KEEP_X_KEY))
 			key = handle_x_keys(key);
 		}
 	    }
@@ -2890,7 +2886,7 @@ find_special_key(
 		 */
 		key = simplify_key(key, &modifiers);
 
-		if (!keycode)
+		if (!(flags & FSK_KEYCODE))
 		{
 		    // don't want keycode, use single byte code
 		    if (key == K_BS)
@@ -2902,7 +2898,7 @@ find_special_key(
 		// Normal Key with modifier: Try to make a single byte code.
 		if (!IS_SPECIAL(key))
 		    key = extract_modifiers(key, &modifiers,
-						       simplify, did_simplify);
+					   flags & FSK_SIMPLIFY, did_simplify);
 
 		*modp = modifiers;
 		*srcp = end_of_name;
