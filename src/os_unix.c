@@ -3482,11 +3482,9 @@ mch_settmode(tmode_T tmode)
     {
 	// ~ICRNL enables typing ^V^M
 	tnew.c_iflag &= ~ICRNL;
-# ifdef IXON_NOT_USED
 	// Do not make CTRL-S stop output, for most users it is unexpected and
 	// is hardly ever useful.
 	tnew.c_iflag |= IXON;
-# endif
 	tnew.c_lflag &= ~(ICANON | ECHO | ISIG | ECHOE
 # if defined(IEXTEN) && !defined(__MINT__)
 		    | IEXTEN	    // IEXTEN enables typing ^V on SOLARIS
