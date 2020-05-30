@@ -375,6 +375,7 @@ u_save_line(undoline_T *ul, linenr_T lnum)
     return ul->ul_line == NULL ? FAIL : OK;
 }
 
+#ifdef FEAT_PROP_POPUP
 /*
  * return TRUE if line "lnum" has text property "flags".
  */
@@ -395,6 +396,7 @@ has_prop_w_flags(linenr_T lnum, int flags)
     }
     return FALSE;
 }
+#endif
 
 /*
  * Common code for various ways to save text before a change.
