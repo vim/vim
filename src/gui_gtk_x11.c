@@ -1018,12 +1018,11 @@ focus_out_event(GtkWidget *widget UNUSED,
  * The output is written to string, which must have room for at least 6 bytes
  * plus the NUL terminator.  Returns the length in bytes.
  *
- * This function is used in the GTK+ 2 GUI only.  The GTK+ 1 code makes use
- * of GdkEventKey::string instead.  But event->string is evil; see here why:
+ * event->string is evil; see here why:
  * http://developer.gnome.org/doc/API/2.0/gdk/gdk-Event-Structures.html#GdkEventKey
  */
     static int
-keyval_to_string(unsigned int keyval, unsigned int *state, char_u *string)
+keyval_to_string(unsigned int keyval, char_u *string)
 {
     int	    len;
     guint32 uc;
@@ -1031,37 +1030,9 @@ keyval_to_string(unsigned int keyval, unsigned int *state, char_u *string)
     uc = gdk_keyval_to_unicode(keyval);
     if (uc != 0)
     {
-	// Check for CTRL-char
-	if ((*state & GDK_CONTROL_MASK) && uc >= 0x20 && uc < 0x80)
-	{
-	    // These mappings look arbitrary at the first glance, but in fact
-	    // resemble quite exactly the behaviour of the GTK+ 1.2 GUI on my
-	    // machine.  The only difference is BS vs. DEL for CTRL-8 (makes
-	    // more sense and is consistent with usual terminal behaviour).
-	    if (uc >= '@')
-		string[0] = uc & 0x1F;
-	    else if (uc == '2')
-		string[0] = NUL;
-	    else if (uc >= '3' && uc <= '7')
-		string[0] = uc ^ 0x28;
-	    else if (uc == '8')
-		string[0] = BS;
-	    else if (uc == '?')
-		string[0] = DEL;
-	    else
-		string[0] = uc;
-	    len = 1;
-
-	    if (string[0] != uc)
-		// The modifier was used, remove it.
-		*state = *state & ~GDK_CONTROL_MASK;
-	}
-	else
-	{
-	    // Translate a normal key to UTF-8.  This doesn't work for dead
-	    // keys of course, you _have_ to use an input method for that.
-	    len = utf_char2bytes((int)uc, string);
-	}
+	// Translate a normal key to UTF-8.  This doesn't work for dead
+	// keys of course, you _have_ to use an input method for that.
+	len = utf_char2bytes((int)uc, string);
     }
     else
     {
@@ -1173,7 +1144,7 @@ key_press_event(GtkWidget *widget UNUSED,
     else
 #endif
     {
-	len = keyval_to_string(key_sym, &state, string2);
+	len = keyval_to_string(key_sym, string2);
 
 	// Careful: convert_input() doesn't handle the NUL character.
 	// No need to convert pure ASCII anyway, thus the len > 1 check.
@@ -1261,6 +1232,9 @@ key_press_event(GtkWidget *widget UNUSED,
     }
     else
     {
+	// <C-H> and <C-h> mean the same thing, always use "H"
+	if ((modifiers & MOD_MASK_CTRL) && ASCII_ISALPHA(key))
+	    key = TOUPPER_ASC(key);
 	string[0] = key;
 	len = 1;
     }
