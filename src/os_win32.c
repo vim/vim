@@ -2080,57 +2080,200 @@ theend:
 #endif
 
 /*
- * If "use_path" is TRUE: Return TRUE if "name" is in $PATH.
- * If "use_path" is FALSE: Return TRUE if "name" exists.
+ * Return TRUE if "name" is an executable file, FALSE if not or it doesn't exist.
  * When returning TRUE and "path" is not NULL save the path and set "*path" to
  * the allocated memory.
  * TODO: Should somehow check if it's really executable.
  */
     static int
-executable_exists(char *name, char_u **path, int use_path)
+executable_file(char *name, char_u **path)
 {
-    WCHAR	*p;
-    WCHAR	fnamew[_MAX_PATH];
-    WCHAR	*dumw;
-    WCHAR	*wcurpath, *wnewpath;
-    long	n;
-
-    if (!use_path)
+    if (mch_getperm((char_u *)name) != -1 && !mch_isdir((char_u *)name))
     {
-	if (mch_getperm((char_u *)name) != -1 && !mch_isdir((char_u *)name))
-	{
-	    if (path != NULL)
-	    {
-		if (mch_isFullName((char_u *)name))
-		    *path = vim_strsave((char_u *)name);
-		else
-		    *path = FullName_save((char_u *)name, FALSE);
-	    }
-	    return TRUE;
-	}
+	if (path != NULL)
+	    *path = FullName_save((char_u *)name, FALSE);
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * If "use_path" is TRUE: Return TRUE if "name" is in $PATH.
+ * If "use_path" is FALSE: Return TRUE if "name" exists.
+ * If "use_pathext" is TRUE search "name" with extensions in $PATHEXT.
+ * When returning TRUE and "path" is not NULL save the path and set "*path" to
+ * the allocated memory.
+ */
+    static int
+executable_exists(char *name, char_u **path, int use_path, int use_pathext)
+{
+    // WinNT and later can use _MAX_PATH wide characters for a pathname, which
+    // means that the maximum pathname is _MAX_PATH * 3 bytes when 'enc' is
+    // UTF-8.
+    char_u	buf[_MAX_PATH * 3];
+    size_t	len = STRLEN(name);
+    size_t	tmplen;
+    char_u	*p, *e, *e2;
+    char_u	*pathbuf = NULL;
+    char_u	*pathext = NULL;
+    char_u	*pathextbuf = NULL;
+    int		noext = FALSE;
+    int		retval = FALSE;
+
+    if (len >= sizeof(buf))	// safety check
 	return FALSE;
+
+    // Using the name directly when a Unix-shell like 'shell'.
+    if (strstr((char *)gettail(p_sh), "sh") != NULL)
+	noext = TRUE;
+
+    if (use_pathext)
+    {
+	pathext = mch_getenv("PATHEXT");
+	if (pathext == NULL)
+	    pathext = (char_u *)".com;.exe;.bat;.cmd";
+
+	if (noext == FALSE)
+	{
+	    /*
+	     * Loop over all extensions in $PATHEXT.
+	     * Check "name" ends with extension.
+	     */
+	    p = pathext;
+	    while (*p)
+	    {
+		if (p[0] == ';'
+			    || (p[0] == '.' && (p[1] == NUL || p[1] == ';')))
+		{
+		    // Skip empty or single ".".
+		    ++p;
+		    continue;
+		}
+		e = vim_strchr(p, ';');
+		if (e == NULL)
+		    e = p + STRLEN(p);
+		tmplen = e - p;
+
+		if (_strnicoll(name + len - tmplen, (char *)p, tmplen) == 0)
+		{
+		    noext = TRUE;
+		    break;
+		}
+
+		p = e;
+	    }
+	}
     }
 
-    p = enc_to_utf16((char_u *)name, NULL);
-    if (p == NULL)
-	return FALSE;
+    // Prepend single "." to pathext, it's means no extension added.
+    if (pathext == NULL)
+	pathext = (char_u *)".";
+    else if (noext == TRUE)
+    {
+	if (pathextbuf == NULL)
+	    pathextbuf = alloc(STRLEN(pathext) + 3);
+	if (pathextbuf == NULL)
+	{
+	    retval = FALSE;
+	    goto theend;
+	}
+	STRCPY(pathextbuf, ".;");
+	STRCAT(pathextbuf, pathext);
+	pathext = pathextbuf;
+    }
 
-    wcurpath = _wgetenv(L"PATH");
-    wnewpath = ALLOC_MULT(WCHAR, wcslen(wcurpath) + 3);
-    if (wnewpath == NULL)
-	return FALSE;
-    wcscpy(wnewpath, L".;");
-    wcscat(wnewpath, wcurpath);
-    n = (long)SearchPathW(wnewpath, p, NULL, _MAX_PATH, fnamew, &dumw);
-    vim_free(wnewpath);
-    vim_free(p);
-    if (n == 0)
-	return FALSE;
-    if (GetFileAttributesW(fnamew) & FILE_ATTRIBUTE_DIRECTORY)
-	return FALSE;
-    if (path != NULL)
-	*path = utf16_to_enc(fnamew, NULL);
-    return TRUE;
+    // Use $PATH when "use_path" is TRUE and "name" is basename.
+    if (use_path && gettail((char_u *)name) == (char_u *)name)
+    {
+	p = mch_getenv("PATH");
+	if (p != NULL)
+	{
+	    pathbuf = alloc(STRLEN(p) + 3);
+	    if (pathbuf == NULL)
+	    {
+		retval = FALSE;
+		goto theend;
+	    }
+	    STRCPY(pathbuf, ".;");
+	    STRCAT(pathbuf, p);
+	}
+    }
+
+    /*
+     * Walk through all entries in $PATH to check if "name" exists there and
+     * is an executable file.
+     */
+    p = (pathbuf != NULL) ? pathbuf : (char_u *)".";
+    while (*p)
+    {
+	if (*p == ';') // Skip empty entry
+	{
+	    ++p;
+	    continue;
+	}
+	e = vim_strchr(p, ';');
+	if (e == NULL)
+	    e = p + STRLEN(p);
+
+	if (e - p + len + 2 > sizeof(buf))
+	{
+	    retval = FALSE;
+	    goto theend;
+	}
+	// A single "." that means current dir.
+	if (e - p == 1 && *p == '.')
+	    STRCPY(buf, name);
+	else
+	{
+	    vim_strncpy(buf, p, e - p);
+	    add_pathsep(buf);
+	    STRCAT(buf, name);
+	}
+	tmplen = STRLEN(buf);
+
+	/*
+	 * Loop over all extensions in $PATHEXT.
+	 * Check "name" with extension added.
+	 */
+	p = pathext;
+	while (*p)
+	{
+	    if (*p == ';')
+	    {
+		// Skip empty entry
+		++p;
+		continue;
+	    }
+	    e2 = vim_strchr(p, (int)';');
+	    if (e2 == NULL)
+		e2 = p + STRLEN(p);
+
+	    if (!(p[0] == '.' && (p[1] == NUL || p[1] == ';')))
+	    {
+		// Not a single "." that means no extension is added.
+		if (e2 - p + tmplen + 1 > sizeof(buf))
+		{
+		    retval = FALSE;
+		    goto theend;
+		}
+		vim_strncpy(buf + tmplen, p, e2 - p);
+	    }
+	    if (executable_file((char *)buf, path))
+	    {
+		retval = TRUE;
+		goto theend;
+	    }
+
+	    p = e2;
+	}
+
+	p = e;
+    }
+
+theend:
+    free(pathextbuf);
+    free(pathbuf);
+    return retval;
 }
 
 #if (defined(__MINGW32__) && __MSVCRT_VERSION__ >= 0x800) || \
@@ -2210,7 +2353,7 @@ mch_init_g(void)
 	    vimrun_path = (char *)vim_strsave(vimrun_location);
 	    s_dont_use_vimrun = FALSE;
 	}
-	else if (executable_exists("vimrun.exe", NULL, TRUE))
+	else if (executable_exists("vimrun.exe", NULL, TRUE, FALSE))
 	    s_dont_use_vimrun = FALSE;
 
 	// Don't give the warning for a missing vimrun.exe right now, but only
@@ -2224,7 +2367,7 @@ mch_init_g(void)
      * If "finstr.exe" doesn't exist, use "grep -n" for 'grepprg'.
      * Otherwise the default "findstr /n" is used.
      */
-    if (!executable_exists("findstr.exe", NULL, TRUE))
+    if (!executable_exists("findstr.exe", NULL, TRUE, FALSE))
 	set_option_value((char_u *)"grepprg", 0, (char_u *)"grep -n", 0);
 
 # ifdef FEAT_CLIPBOARD
@@ -3306,69 +3449,7 @@ mch_writable(char_u *name)
     int
 mch_can_exe(char_u *name, char_u **path, int use_path)
 {
-    // WinNT and later can use _MAX_PATH wide characters for a pathname, which
-    // means that the maximum pathname is _MAX_PATH * 3 bytes when 'enc' is
-    // UTF-8.
-    char_u	buf[_MAX_PATH * 3];
-    int		len = (int)STRLEN(name);
-    char_u	*p, *saved;
-
-    if (len >= sizeof(buf))	// safety check
-	return FALSE;
-
-    // Try using the name directly when a Unix-shell like 'shell'.
-    if (strstr((char *)gettail(p_sh), "sh") != NULL)
-	if (executable_exists((char *)name, path, use_path))
-	    return TRUE;
-
-    /*
-     * Loop over all extensions in $PATHEXT.
-     */
-    p = mch_getenv("PATHEXT");
-    if (p == NULL)
-	p = (char_u *)".com;.exe;.bat;.cmd";
-    saved = vim_strsave(p);
-    if (saved == NULL)
-	return FALSE;
-    p = saved;
-    while (*p)
-    {
-	char_u	*tmp = vim_strchr(p, ';');
-
-	if (tmp != NULL)
-	    *tmp = NUL;
-	if (_stricoll((char *)name + len - STRLEN(p), (char *)p) == 0
-			    && executable_exists((char *)name, path, use_path))
-	{
-	    vim_free(saved);
-	    return TRUE;
-	}
-	if (tmp == NULL)
-	    break;
-	p = tmp + 1;
-    }
-    vim_free(saved);
-
-    vim_strncpy(buf, name, sizeof(buf) - 1);
-    p = mch_getenv("PATHEXT");
-    if (p == NULL)
-	p = (char_u *)".com;.exe;.bat;.cmd";
-    while (*p)
-    {
-	if (p[0] == '.' && (p[1] == NUL || p[1] == ';'))
-	{
-	    // A single "." means no extension is added.
-	    buf[len] = NUL;
-	    ++p;
-	    if (*p)
-		++p;
-	}
-	else
-	    copy_option_part(&p, buf + len, sizeof(buf) - len, ";");
-	if (executable_exists((char *)buf, path, use_path))
-	    return TRUE;
-    }
-    return FALSE;
+    return executable_exists((char *)name, path, TRUE, TRUE);
 }
 
 /*
