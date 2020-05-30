@@ -1002,21 +1002,27 @@ channel_open(
 # ifdef HAVE_INET_NTOP
 	const void  *src = NULL;
 	char	    buf[NUMBUFLEN];
+# endif
 
 	if (addr->ai_family == AF_INET6)
 	{
 	    struct sockaddr_in6 *sai = (struct sockaddr_in6 *)addr->ai_addr;
 
 	    sai->sin6_port = htons(port);
+# ifdef HAVE_INET_NTOP
 	    src = &sai->sin6_addr;
+# endif
 	}
 	else if (addr->ai_family == AF_INET)
 	{
 	    struct sockaddr_in *sai = (struct sockaddr_in *)addr->ai_addr;
 
 	    sai->sin_port = htons(port);
+# ifdef HAVE_INET_NTOP
 	    src = &sai->sin_addr;
+#endif
 	}
+# ifdef HAVE_INET_NTOP
 	if (src != NULL)
 	{
 	    dst = inet_ntop(addr->ai_family, src, buf, sizeof(buf));
