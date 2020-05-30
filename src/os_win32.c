@@ -195,9 +195,11 @@ static void vtp_flag_init();
 static int vtp_working = 0;
 static void vtp_init();
 static void vtp_exit();
-static int vtp_printf(char *format, ...);
 static void vtp_sgr_bulk(int arg);
 static void vtp_sgr_bulks(int argc, int *argv);
+
+static int wt_working = 0;
+static void wt_init();
 
 static guicolor_T save_console_bg_rgb;
 static guicolor_T save_console_fg_rgb;
@@ -214,8 +216,10 @@ static int default_console_color_fg = 0xc0c0c0; // white
 
 # ifdef FEAT_TERMGUICOLORS
 #  define USE_VTP		(vtp_working && is_term_win32() && (p_tgc || (!p_tgc && t_colors >= 256)))
+#  define USE_WT		(wt_working)
 # else
 #  define USE_VTP		0
+#  define USE_WT		0
 # endif
 
 static void set_console_color_rgb(void);
@@ -235,6 +239,12 @@ static int suppress_winsize = 1;	// don't fiddle with console
 static char_u *exe_path = NULL;
 
 static BOOL win8_or_later = FALSE;
+
+# if defined(__GNUC__) && !defined(__MINGW32__)  && !defined(__CYGWIN__)
+#  define UChar UnicodeChar
+# else
+#  define UChar uChar.UnicodeChar
+# endif
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 // Dynamic loading for portability
@@ -286,6 +296,30 @@ get_build_number(void)
 }
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
+    static BOOL
+is_ambiwidth_event(
+    INPUT_RECORD *ir)
+{
+    return ir->EventType == KEY_EVENT
+		&& ir->Event.KeyEvent.bKeyDown
+		&& ir->Event.KeyEvent.wRepeatCount == 1
+		&& ir->Event.KeyEvent.wVirtualKeyCode == 0x12
+		&& ir->Event.KeyEvent.wVirtualScanCode == 0x38
+		&& ir->Event.KeyEvent.UChar == 0
+		&& ir->Event.KeyEvent.dwControlKeyState == 2;
+}
+
+    static void
+make_ambiwidth_event(
+    INPUT_RECORD *down,
+    INPUT_RECORD *up)
+{
+    down->Event.KeyEvent.wVirtualKeyCode = 0;
+    down->Event.KeyEvent.wVirtualScanCode = 0;
+    down->Event.KeyEvent.UChar = up->Event.KeyEvent.UChar;
+    down->Event.KeyEvent.dwControlKeyState = 0;
+}
+
 /*
  * Version of ReadConsoleInput() that works with IME.
  * Works around problems on Windows 8.
@@ -322,10 +356,12 @@ read_console_input(
 
     if (s_dwMax == 0)
     {
-	if (nLength == -1)
+	if (!USE_WT && nLength == -1)
 	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
-	if (!ReadConsoleInputW(hInput, s_irCache, IRSIZE, &dwEvents))
-	    return FALSE;
+	GetNumberOfConsoleInputEvents(hInput, &dwEvents);
+	if (dwEvents == 0 && nLength == -1)
+	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
+	ReadConsoleInputW(hInput, s_irCache, IRSIZE, &dwEvents);
 	s_dwIndex = 0;
 	s_dwMax = dwEvents;
 	if (dwEvents == 0)
@@ -333,6 +369,10 @@ read_console_input(
 	    *lpEvents = 0;
 	    return TRUE;
 	}
+
+	for (i = s_dwIndex; i < (int)s_dwMax - 1; ++i)
+	    if (is_ambiwidth_event(&s_irCache[i]))
+		make_ambiwidth_event(&s_irCache[i], &s_irCache[i + 1]);
 
 	if (s_dwMax > 1)
 	{
@@ -936,12 +976,6 @@ static const struct
     { VK_NUMPAD9,TRUE,  '\376',	'\377',	'|',	    '}', },
 };
 
-
-# if defined(__GNUC__) && !defined(__MINGW32__)  && !defined(__CYGWIN__)
-#  define UChar UnicodeChar
-# else
-#  define UChar uChar.UnicodeChar
-# endif
 
 /*
  * The return code indicates key code size.
@@ -2689,6 +2723,7 @@ mch_init_c(void)
 
     vtp_flag_init();
     vtp_init();
+    wt_init();
 }
 
 /*
@@ -5781,6 +5816,19 @@ insert_lines(unsigned cLines)
 	    clear_chars(coord, source.Right - source.Left + 1);
 	}
     }
+
+    if (USE_WT)
+    {
+	COORD coord;
+	int i;
+
+	coord.X = source.Left;
+	for (i = source.Top; i < dest.Y; ++i)
+	{
+	    coord.Y = i;
+	    clear_chars(coord, source.Right - source.Left + 1);
+	}
+    }
 }
 
 
@@ -5832,6 +5880,19 @@ delete_lines(unsigned cLines)
 
 	coord.X = source.Left;
 	for (i = nb; i < clip.Bottom; ++i)
+	{
+	    coord.Y = i;
+	    clear_chars(coord, source.Right - source.Left + 1);
+	}
+    }
+
+    if (USE_WT)
+    {
+	COORD coord;
+	int i;
+
+	coord.X = source.Left;
+	for (i = nb; i <= source.Bottom; ++i)
 	{
 	    coord.Y = i;
 	    clear_chars(coord, source.Right - source.Left + 1);
@@ -7587,7 +7648,7 @@ vtp_exit(void)
     restore_console_color_rgb();
 }
 
-    static int
+    int
 vtp_printf(
     char *format,
     ...)
@@ -7760,6 +7821,18 @@ vtp_sgr_bulks(
     }
 }
 
+    static void
+wt_init(void)
+{
+    wt_working = (mch_getenv("WT_SESSION") != NULL);
+}
+
+    int
+use_wt(void)
+{
+    return USE_WT;
+}
+
 # ifdef FEAT_TERMGUICOLORS
     static int
 ctermtoxterm(
@@ -7784,6 +7857,13 @@ set_console_color_rgb(void)
 	return;
 
     get_default_console_color(&ctermfg, &ctermbg, &fg, &bg);
+
+    if (USE_WT)
+    {
+	term_fg_rgb_color(fg);
+	term_bg_rgb_color(bg);
+	return;
+    }
 
     fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
     bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
@@ -7857,6 +7937,9 @@ reset_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
     DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+
+    if (USE_WT)
+	return;
 
     csbi.cbSize = sizeof(csbi);
     if (has_csbiex)
