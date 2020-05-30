@@ -146,14 +146,6 @@ fi
 
 OS_EXTRA_SRC=""; OS_EXTRA_OBJ=""
 
-dnl Check for BeOS, which needs an extra source file
-AC_MSG_CHECKING(for BeOS)
-case `uname` in
-    BeOS)	OS_EXTRA_SRC=os_beos.c; OS_EXTRA_OBJ=objects/os_beos.o
-		BEOS=yes; AC_MSG_RESULT(yes);;
-    *)		BEOS=no; AC_MSG_RESULT(no);;
-esac
-
 AC_MSG_CHECKING(for Haiku)
 case `uname` in
     Haiku) HAIKU=yes; AC_MSG_RESULT(yes);;

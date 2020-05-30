@@ -3387,13 +3387,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
-	{"beos",
-#ifdef __BEOS__
-		1
-#else
-		0
-#endif
-		},
 	{"haiku",
 #ifdef __HAIKU__
 		1

@@ -49,9 +49,6 @@ extern int _stricoll(char *a, char *b);
 # ifdef VMS
 #  include "os_vms.pro"
 # endif
-# ifdef __BEOS__
-#  include "os_beos.pro"
-# endif
 # ifdef __QNX__
 #  include "os_qnx.pro"
 # endif

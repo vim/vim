@@ -3868,19 +3868,6 @@ screen_del_lines(
 	type = USE_REDRAW;
     else if (can_clear(T_CD) && result_empty)
 	type = USE_T_CD;
-#if defined(__BEOS__) && defined(BEOS_DR8)
-    /*
-     * USE_NL does not seem to work in Terminal of DR8 so we set T_DB="" in
-     * its internal termcap... this works okay for tests which test *T_DB !=
-     * NUL.  It has the disadvantage that the user cannot use any :set t_*
-     * command to get T_DB (back) to empty_option, only :set term=... will do
-     * the trick...
-     * Anyway, this hack will hopefully go away with the next OS release.
-     * (Olaf Seibert)
-     */
-    else if (row == 0 && T_DB == empty_option
-					&& (line_count == 1 || *T_CDL == NUL))
-#else
     else if (row == 0 && (
 #ifndef AMIGA
 	// On the Amiga, somehow '\n' on the last line doesn't always scroll
@@ -3888,7 +3875,6 @@ screen_del_lines(
 			    line_count == 1 ||
 #endif
 						*T_CDL == NUL))
-#endif
 	type = USE_NL;
     else if (*T_CDL != NUL && line_count > 1 && can_delete)
 	type = USE_T_CDL;

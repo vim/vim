@@ -4533,16 +4533,6 @@ fi
 
 OS_EXTRA_SRC=""; OS_EXTRA_OBJ=""
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for BeOS" >&5
-$as_echo_n "checking for BeOS... " >&6; }
-case `uname` in
-    BeOS)	OS_EXTRA_SRC=os_beos.c; OS_EXTRA_OBJ=objects/os_beos.o
-		BEOS=yes; { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; };;
-    *)		BEOS=no; { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; };;
-esac
-
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Haiku" >&5
 $as_echo_n "checking for Haiku... " >&6; }
 case `uname` in
