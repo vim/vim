@@ -2075,7 +2075,14 @@ luaV_setref(lua_State *L)
     "local last_vim_paths = {}\n"\
     "vim._update_package_paths = function ()\n"\
     "  local cur_vim_paths = {}\n"\
-    "  local rtps = vim.eval('split(&runtimepath, \",\")')\n"\
+    "  local function split(s, delimiter)\n"\
+    "    result = {}\n"\
+    "    for match in (s..delimiter):gmatch(\"(.-)\"..delimiter) do\n"\
+    "      table.insert(result, match)\n"\
+    "    end\n"\
+    "    return result\n"\
+    "  end\n"\
+    "  local rtps = split(vim.eval('&runtimepath'), ',')\n"\
     "  local sep = package.config:sub(1, 1)\n"\
     "  for _, key in ipairs({'path', 'cpath'}) do\n"\
     "    local orig_str = package[key] .. ';'\n"\
