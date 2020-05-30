@@ -226,6 +226,7 @@ void mbyte_im_set_active(int active_arg);
 # include "textobject.pro"
 # include "textformat.pro"
 # include "time.pro"
+# include "typval.pro"
 # include "ui.pro"
 # include "undo.pro"
 # include "usercmd.pro"

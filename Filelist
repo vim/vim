@@ -133,6 +133,7 @@ SRC_ALL =	\
 		src/textobject.c \
 		src/textprop.c \
 		src/time.c \
+		src/typval.c \
 		src/ui.c \
 		src/undo.c \
 		src/usercmd.c \
@@ -285,6 +286,7 @@ SRC_ALL =	\
 		src/proto/textobject.pro \
 		src/proto/textprop.pro \
 		src/proto/time.pro \
+		src/proto/typval.pro \
 		src/proto/ui.pro \
 		src/proto/undo.pro \
 		src/proto/usercmd.pro \
@@ -347,6 +349,7 @@ SRC_ALL =	\
 		src/libvterm/t/29state_fallback.test \
 		src/libvterm/t/30state_pen.test \
 		src/libvterm/t/31state_rep.test \
+		src/libvterm/t/32state_flow.test \
 		src/libvterm/t/60screen_ascii.test \
 		src/libvterm/t/61screen_unicode.test \
 		src/libvterm/t/62screen_damage.test \

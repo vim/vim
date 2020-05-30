@@ -791,6 +791,7 @@ OBJ = \
 	$(OUTDIR)/textobject.o \
 	$(OUTDIR)/textprop.o \
 	$(OUTDIR)/time.o \
+	$(OUTDIR)/typval.o \
 	$(OUTDIR)/ui.o \
 	$(OUTDIR)/undo.o \
 	$(OUTDIR)/usercmd.o \

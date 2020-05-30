@@ -10,9 +10,6 @@ int call_internal_func(char_u *name, int argcount, typval_T *argvars, typval_T *
 void call_internal_func_by_idx(int idx, typval_T *argvars, typval_T *rettv);
 int call_internal_method(char_u *name, int argcount, typval_T *argvars, typval_T *rettv, typval_T *basetv);
 int non_zero_arg(typval_T *argvars);
-linenr_T tv_get_lnum(typval_T *argvars);
-linenr_T tv_get_lnum_buf(typval_T *argvars, buf_T *buf);
-buf_T *tv_get_buf(typval_T *tv, int curtab_only);
 buf_T *get_buf_arg(typval_T *arg);
 win_T *get_optional_window(typval_T *argvars, int idx);
 void execute_redir_str(char_u *value, int value_len);
