@@ -1887,6 +1887,7 @@ do_join(
     char_u      *curr_start = NULL;
     char_u	*cend;
     char_u	*newp;
+    size_t	newp_len;
     char_u	*spaces;	// number of spaces inserted before a line
     int		endcurr1 = NUL;
     int		endcurr2 = NUL;
@@ -1900,8 +1901,8 @@ do_join(
 				  && has_format_option(FO_REMOVE_COMS);
     int		prev_was_comment;
 #ifdef FEAT_PROP_POPUP
-    textprop_T	**prop_lines = NULL;
-    int		*prop_lengths = NULL;
+    int		propcount = 0;	// number of props over all joined lines
+    int		props_remaining;
 #endif
 
     if (save_undo && u_save((linenr_T)(curwin->w_cursor.lnum - 1),
@@ -1932,6 +1933,9 @@ do_join(
     for (t = 0; t < count; ++t)
     {
 	curr = curr_start = ml_get((linenr_T)(curwin->w_cursor.lnum + t));
+#ifdef FEAT_PROP_POPUP
+	propcount += count_props((linenr_T) (curwin->w_cursor.lnum + t), t > 0);
+#endif
 	if (t == 0 && setmark && !cmdmod.lockmarks)
 	{
 	    // Set the '[ mark.
@@ -2014,7 +2018,11 @@ do_join(
     col = sumsize - currsize - spaces[count - 1];
 
     // allocate the space for the new line
-    newp = alloc(sumsize + 1);
+    newp_len = sumsize + 1;
+#ifdef FEAT_PROP_POPUP
+    newp_len += propcount * sizeof(textprop_T);
+#endif
+    newp = alloc(newp_len);
     if (newp == NULL)
     {
 	ret = FAIL;
@@ -2022,20 +2030,6 @@ do_join(
     }
     cend = newp + sumsize;
     *cend = 0;
-
-#ifdef FEAT_PROP_POPUP
-    // We need to move properties of the lines that are going to be deleted to
-    // the new long one.
-    if (curbuf->b_has_textprop && !text_prop_frozen)
-    {
-	// Allocate an array to copy the text properties of joined lines into.
-	// And another array to store the number of properties in each line.
-	prop_lines = ALLOC_CLEAR_MULT(textprop_T *, count - 1);
-	prop_lengths = ALLOC_CLEAR_MULT(int, count - 1);
-	if (prop_lengths == NULL)
-	    VIM_CLEAR(prop_lines);
-    }
-#endif
 
     /*
      * Move affected lines to the new long one.
@@ -2045,12 +2039,16 @@ do_join(
      * column.  This is not Vi compatible, but Vi deletes the marks, thus that
      * should not really be a problem.
      */
+#ifdef FEAT_PROP_POPUP
+    props_remaining = propcount;
+#endif
     for (t = count - 1; ; --t)
     {
 	int spaces_removed;
 
 	cend -= currsize;
 	mch_memmove(cend, curr, (size_t)currsize);
+
 	if (spaces[t] > 0)
 	{
 	    cend -= spaces[t];
@@ -2063,15 +2061,14 @@ do_join(
 
 	mark_col_adjust(curwin->w_cursor.lnum + t, (colnr_T)0, (linenr_T)-t,
 			 (long)(cend - newp - spaces_removed), spaces_removed);
-	if (t == 0)
-	    break;
 #ifdef FEAT_PROP_POPUP
-	if (prop_lines != NULL)
-	    adjust_props_for_join(curwin->w_cursor.lnum + t,
-				      prop_lines + t - 1, prop_lengths + t - 1,
-			 (long)(cend - newp - spaces_removed), spaces_removed);
+	prepend_joined_props(newp + sumsize + 1, propcount, &props_remaining,
+		curwin->w_cursor.lnum + t, t == count - 1,
+		(long)(cend - newp), spaces_removed);
 #endif
 
+	if (t == 0)
+	    break;
 	curr = curr_start = ml_get((linenr_T)(curwin->w_cursor.lnum + t - 1));
 	if (remove_comments)
 	    curr += comments[t - 1];
@@ -2080,13 +2077,7 @@ do_join(
 	currsize = (int)STRLEN(curr);
     }
 
-#ifdef FEAT_PROP_POPUP
-    if (prop_lines != NULL)
-	join_prop_lines(curwin->w_cursor.lnum, newp,
-					      prop_lines, prop_lengths, count);
-    else
-#endif
-	ml_replace(curwin->w_cursor.lnum, newp, FALSE);
+    ml_replace_len(curwin->w_cursor.lnum, newp, newp_len, TRUE, FALSE);
 
     if (setmark && !cmdmod.lockmarks)
     {
