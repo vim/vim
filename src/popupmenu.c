@@ -817,7 +817,7 @@ pum_set_selected(int n, int repeat UNUSED)
 		{
 		    // Already a "wipeout" buffer, make it empty.
 		    while (!BUFEMPTY())
-			ml_delete((linenr_T)1, FALSE);
+			ml_delete((linenr_T)1);
 		}
 		else
 		{
@@ -860,7 +860,7 @@ pum_set_selected(int n, int repeat UNUSED)
 			}
 		    }
 		    // delete the empty last line
-		    ml_delete(curbuf->b_ml.ml_line_count, FALSE);
+		    ml_delete(curbuf->b_ml.ml_line_count);
 
 		    // Increase the height of the preview window to show the
 		    // text, but no more than 'previewheight' lines.

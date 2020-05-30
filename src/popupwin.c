@@ -1537,7 +1537,7 @@ popup_set_buffer_text(buf_T *buf, typval_T text)
     // Clear the buffer, then replace the lines.
     curbuf = buf;
     for (lnum = buf->b_ml.ml_line_count; lnum > 0; --lnum)
-	ml_delete(lnum, FALSE);
+	ml_delete(lnum);
     curbuf = curwin->w_buffer;
 
     // Add text to the buffer.
@@ -1563,7 +1563,7 @@ popup_set_buffer_text(buf_T *buf, typval_T text)
 
     // delete the line that was in the empty buffer
     curbuf = buf;
-    ml_delete(buf->b_ml.ml_line_count, FALSE);
+    ml_delete(buf->b_ml.ml_line_count);
     curbuf = curwin->w_buffer;
 }
 

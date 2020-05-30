@@ -7413,7 +7413,7 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	// line that needs to be deleted now.
 	if (empty && *ml_get(curbuf->b_ml.ml_line_count) == NUL)
 	{
-	    ml_delete(curbuf->b_ml.ml_line_count, TRUE);
+	    ml_delete_flags(curbuf->b_ml.ml_line_count, ML_DEL_MESSAGE);
 	    deleted_lines(curbuf->b_ml.ml_line_count + 1, 1);
 
 	    // If the cursor was in that line, move it to the end of the last

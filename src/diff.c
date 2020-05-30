@@ -2764,7 +2764,7 @@ ex_diffgetput(exarg_T *eap)
 	    {
 		// remember deleting the last line of the buffer
 		buf_empty = curbuf->b_ml.ml_line_count == 1;
-		ml_delete(lnum, FALSE);
+		ml_delete(lnum);
 		--added;
 	    }
 	    for (i = 0; i < dp->df_count[idx_from] - start_skip - end_skip; ++i)
@@ -2786,7 +2786,7 @@ ex_diffgetput(exarg_T *eap)
 			// Added the first line into an empty buffer, need to
 			// delete the dummy empty line.
 			buf_empty = FALSE;
-			ml_delete((linenr_T)2, FALSE);
+			ml_delete((linenr_T)2);
 		    }
 		}
 	    }

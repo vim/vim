@@ -862,7 +862,7 @@ retry:
 	}
 	// Delete the previously read lines.
 	while (lnum > from)
-	    ml_delete(lnum--, FALSE);
+	    ml_delete(lnum--);
 	file_rewind = FALSE;
 	if (set_options)
 	{
@@ -2292,7 +2292,7 @@ failed:
 #ifdef FEAT_NETBEANS_INTG
 	    netbeansFireChanges = 0;
 #endif
-	    ml_delete(curbuf->b_ml.ml_line_count, FALSE);
+	    ml_delete(curbuf->b_ml.ml_line_count);
 #ifdef FEAT_NETBEANS_INTG
 	    netbeansFireChanges = 1;
 #endif
@@ -3933,7 +3933,7 @@ move_lines(buf_T *frombuf, buf_T *tobuf)
     {
 	curbuf = frombuf;
 	for (lnum = curbuf->b_ml.ml_line_count; lnum > 0; --lnum)
-	    if (ml_delete(lnum, FALSE) == FAIL)
+	    if (ml_delete(lnum) == FAIL)
 	    {
 		// Oops!  We could try putting back the saved lines, but that
 		// might fail again...
@@ -4329,7 +4329,7 @@ buf_reload(buf_T *buf, int orig_mode)
 		    // Put the text back from the save buffer.  First
 		    // delete any lines that readfile() added.
 		    while (!BUFEMPTY())
-			if (ml_delete(buf->b_ml.ml_line_count, FALSE) == FAIL)
+			if (ml_delete(buf->b_ml.ml_line_count) == FAIL)
 			    break;
 		    (void)move_lines(savebuf, buf);
 		}

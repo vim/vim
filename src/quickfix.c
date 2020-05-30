@@ -4499,7 +4499,7 @@ qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last)
 
 	// delete all existing lines
 	while ((curbuf->b_ml.ml_flags & ML_EMPTY) == 0)
-	    (void)ml_delete((linenr_T)1, FALSE);
+	    (void)ml_delete((linenr_T)1);
     }
 
     // Check if there is anything to display
@@ -4533,7 +4533,7 @@ qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last)
 
 	if (old_last == NULL)
 	    // Delete the empty line which is now at the end
-	    (void)ml_delete(lnum + 1, FALSE);
+	    (void)ml_delete(lnum + 1);
     }
 
     // correct cursor position

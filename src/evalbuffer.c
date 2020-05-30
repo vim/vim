@@ -513,7 +513,7 @@ f_deletebufline(typval_T *argvars, typval_T *rettv)
     }
 
     for (lnum = first; lnum <= last; ++lnum)
-	ml_delete(first, TRUE);
+	ml_delete_flags(first, ML_DEL_MESSAGE);
 
     FOR_ALL_TAB_WINDOWS(tp, wp)
 	if (wp->w_buffer == buf)

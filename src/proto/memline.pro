@@ -26,7 +26,7 @@ int ml_append_flags(linenr_T lnum, char_u *line, colnr_T len, int flags);
 int ml_append_buf(buf_T *buf, linenr_T lnum, char_u *line, colnr_T len, int newfile);
 int ml_replace(linenr_T lnum, char_u *line, int copy);
 int ml_replace_len(linenr_T lnum, char_u *line_arg, colnr_T len_arg, int has_props, int copy);
-int ml_delete(linenr_T lnum, int message);
+int ml_delete(linenr_T lnum);
 int ml_delete_flags(linenr_T lnum, int flags);
 void ml_setmarked(linenr_T lnum);
 linenr_T ml_firstmarked(void);

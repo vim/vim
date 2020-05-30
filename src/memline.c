@@ -1386,7 +1386,7 @@ ml_recover(int checkext)
      * contents of the current buffer.
      */
     while (!(curbuf->b_ml.ml_flags & ML_EMPTY))
-	ml_delete((linenr_T)1, FALSE);
+	ml_delete((linenr_T)1);
 
     /*
      * Try reading the original file to obtain the values of 'fileformat',
@@ -1664,7 +1664,7 @@ ml_recover(int checkext)
      */
     while (curbuf->b_ml.ml_line_count > lnum
 				       && !(curbuf->b_ml.ml_flags & ML_EMPTY))
-	ml_delete(curbuf->b_ml.ml_line_count, FALSE);
+	ml_delete(curbuf->b_ml.ml_line_count);
     curbuf->b_flags |= BF_RECOVERED;
 
     recoverymode = FALSE;
@@ -3705,9 +3705,9 @@ theend:
  * return FAIL for failure, OK otherwise
  */
     int
-ml_delete(linenr_T lnum, int message)
+ml_delete(linenr_T lnum)
 {
-    return ml_delete_flags(lnum, message ? ML_DEL_MESSAGE : 0);
+    return ml_delete_flags(lnum, 0);
 }
 
 /*

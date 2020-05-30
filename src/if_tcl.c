@@ -735,7 +735,7 @@ bufselfcmd(
 		    i = n;
 		    do
 		    {
-			if (ml_delete((linenr_T)i, FALSE) != OK)
+			if (ml_delete((linenr_T)i) != OK)
 			    goto setListError;
 			++n;
 		    } while (n <= val2);
@@ -783,7 +783,7 @@ bufselfcmd(
 	    }
 	    for (i = 0; i < n; i++)
 	    {
-		ml_delete((linenr_T)val1, FALSE);
+		ml_delete((linenr_T)val1);
 		err = vimerror(interp);
 		if (err != TCL_OK)
 		    break;

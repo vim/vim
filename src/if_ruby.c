@@ -1442,7 +1442,7 @@ buffer_delete(VALUE self, VALUE num)
 
 	if (u_savedel(n, 1) == OK)
 	{
-	    ml_delete(n, 0);
+	    ml_delete(n);
 
 	    // Changes to non-active buffers should properly refresh
 	    //   SegPhault - 01/09/05

@@ -633,7 +633,7 @@ ex_sort(exarg_T *eap)
     // delete the original lines if appending worked
     if (i == count)
 	for (i = 0; i < count; ++i)
-	    ml_delete(eap->line1, FALSE);
+	    ml_delete(eap->line1);
     else
 	count = 0;
 
@@ -779,7 +779,7 @@ do_move(linenr_T line1, linenr_T line2, linenr_T dest)
 	return FAIL;
 
     for (l = line1; l <= line2; l++)
-	ml_delete(line1 + extra, TRUE);
+	ml_delete_flags(line1 + extra, ML_DEL_MESSAGE);
 
     if (!global_busy && num_lines > p_report)
 	smsg(NGETTEXT("%ld line moved", "%ld lines moved", num_lines),
@@ -3280,7 +3280,7 @@ ex_append(exarg_T *eap)
 
 	if (empty)
 	{
-	    ml_delete(2L, FALSE);
+	    ml_delete(2L);
 	    empty = FALSE;
 	}
     }
@@ -3331,7 +3331,7 @@ ex_change(exarg_T *eap)
     {
 	if (curbuf->b_ml.ml_flags & ML_EMPTY)	    // nothing to delete
 	    break;
-	ml_delete(eap->line1, FALSE);
+	ml_delete(eap->line1);
     }
 
     // make sure the cursor is not beyond the end of the file now
@@ -4531,7 +4531,7 @@ skip:
 			    if (u_savedel(lnum, nmatch_tl) != OK)
 				break;
 			    for (i = 0; i < nmatch_tl; ++i)
-				ml_delete(lnum, (int)FALSE);
+				ml_delete(lnum);
 			    mark_adjust(lnum, lnum + nmatch_tl - 1,
 						   (long)MAXLNUM, -nmatch_tl);
 			    if (subflags.do_ask)
