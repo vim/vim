@@ -2428,10 +2428,11 @@ do_addsub(
     char_u	*ptr;
     int		c;
     int		todel;
-    int		dohex;
-    int		dooct;
-    int		dobin;
-    int		doalp;
+    int		do_hex;
+    int		do_oct;
+    int		do_bin;
+    int		do_alpha;
+    int		do_unsigned;
     int		firstdigit;
     int		subtract;
     int		negative = FALSE;
@@ -2443,10 +2444,11 @@ do_addsub(
     pos_T	startpos;
     pos_T	endpos;
 
-    dohex = (vim_strchr(curbuf->b_p_nf, 'x') != NULL);	// "heX"
-    dooct = (vim_strchr(curbuf->b_p_nf, 'o') != NULL);	// "Octal"
-    dobin = (vim_strchr(curbuf->b_p_nf, 'b') != NULL);	// "Bin"
-    doalp = (vim_strchr(curbuf->b_p_nf, 'p') != NULL);	// "alPha"
+    do_hex = (vim_strchr(curbuf->b_p_nf, 'x') != NULL);	// "heX"
+    do_oct = (vim_strchr(curbuf->b_p_nf, 'o') != NULL);	// "Octal"
+    do_bin = (vim_strchr(curbuf->b_p_nf, 'b') != NULL);	// "Bin"
+    do_alpha = (vim_strchr(curbuf->b_p_nf, 'p') != NULL);	// "alPha"
+    do_unsigned = (vim_strchr(curbuf->b_p_nf, 'u') != NULL);	// "Unsigned"
 
     curwin->w_cursor = *pos;
     ptr = ml_get(pos->lnum);
@@ -2460,7 +2462,7 @@ do_addsub(
      */
     if (!VIsual_active)
     {
-	if (dobin)
+	if (do_bin)
 	    while (col > 0 && vim_isbdigit(ptr[col]))
 	    {
 		--col;
@@ -2468,7 +2470,7 @@ do_addsub(
 		    col -= (*mb_head_off)(ptr, ptr + col);
 	    }
 
-	if (dohex)
+	if (do_hex)
 	    while (col > 0 && vim_isxdigit(ptr[col]))
 	    {
 		--col;
@@ -2476,8 +2478,8 @@ do_addsub(
 		    col -= (*mb_head_off)(ptr, ptr + col);
 	    }
 
-	if (       dobin
-		&& dohex
+	if (       do_bin
+		&& do_hex
 		&& ! ((col > 0
 		    && (ptr[col] == 'X'
 			|| ptr[col] == 'x')
@@ -2499,7 +2501,7 @@ do_addsub(
 	    }
 	}
 
-	if ((       dohex
+	if ((       do_hex
 		&& col > 0
 		&& (ptr[col] == 'X'
 		    || ptr[col] == 'x')
@@ -2507,7 +2509,7 @@ do_addsub(
 		&& (!has_mbyte ||
 		    !(*mb_head_off)(ptr, ptr + col - 1))
 		&& vim_isxdigit(ptr[col + 1])) ||
-	    (       dobin
+	    (       do_bin
 		&& col > 0
 		&& (ptr[col] == 'B'
 		    || ptr[col] == 'b')
@@ -2530,12 +2532,12 @@ do_addsub(
 
 	    while (ptr[col] != NUL
 		    && !vim_isdigit(ptr[col])
-		    && !(doalp && ASCII_ISALPHA(ptr[col])))
+		    && !(do_alpha && ASCII_ISALPHA(ptr[col])))
 		col += mb_ptr2len(ptr + col);
 
 	    while (col > 0
 		    && vim_isdigit(ptr[col - 1])
-		    && !(doalp && ASCII_ISALPHA(ptr[col])))
+		    && !(do_alpha && ASCII_ISALPHA(ptr[col])))
 	    {
 		--col;
 		if (has_mbyte)
@@ -2548,7 +2550,7 @@ do_addsub(
     {
 	while (ptr[col] != NUL && length > 0
 		&& !vim_isdigit(ptr[col])
-		&& !(doalp && ASCII_ISALPHA(ptr[col])))
+		&& !(do_alpha && ASCII_ISALPHA(ptr[col])))
 	{
 	    int mb_len = mb_ptr2len(ptr + col);
 
@@ -2560,7 +2562,8 @@ do_addsub(
 	    goto theend;
 
 	if (col > pos->col && ptr[col - 1] == '-'
-		&& (!has_mbyte || !(*mb_head_off)(ptr, ptr + col - 1)))
+		&& (!has_mbyte || !(*mb_head_off)(ptr, ptr + col - 1))
+		&& !do_unsigned)
 	{
 	    negative = TRUE;
 	    was_positive = FALSE;
@@ -2571,13 +2574,13 @@ do_addsub(
      * If a number was found, and saving for undo works, replace the number.
      */
     firstdigit = ptr[col];
-    if (!VIM_ISDIGIT(firstdigit) && !(doalp && ASCII_ISALPHA(firstdigit)))
+    if (!VIM_ISDIGIT(firstdigit) && !(do_alpha && ASCII_ISALPHA(firstdigit)))
     {
 	beep_flush();
 	goto theend;
     }
 
-    if (doalp && ASCII_ISALPHA(firstdigit))
+    if (do_alpha && ASCII_ISALPHA(firstdigit))
     {
 	// decrement or increment alphabetic character
 	if (op_type == OP_NR_SUB)
@@ -2626,7 +2629,8 @@ do_addsub(
 	if (col > 0 && ptr[col - 1] == '-'
 		&& (!has_mbyte ||
 		    !(*mb_head_off)(ptr, ptr + col - 1))
-		&& !visual)
+		&& !visual
+		&& !do_unsigned)
 	{
 	    // negative number
 	    --col;
@@ -2639,9 +2643,9 @@ do_addsub(
 		    : length);
 
 	vim_str2nr(ptr + col, &pre, &length,
-		0 + (dobin ? STR2NR_BIN : 0)
-		    + (dooct ? STR2NR_OCT : 0)
-		    + (dohex ? STR2NR_HEX : 0),
+		0 + (do_bin ? STR2NR_BIN : 0)
+		    + (do_oct ? STR2NR_OCT : 0)
+		    + (do_hex ? STR2NR_HEX : 0),
 		NULL, &n, maxlen, FALSE);
 
 	// ignore leading '-' for hex and octal and bin numbers
@@ -2685,6 +2689,17 @@ do_addsub(
 	    }
 	    if (n == 0)
 		negative = FALSE;
+	}
+
+	if (do_unsigned && negative)
+	{
+	    if (subtract)
+		// sticking at zero.
+		n = (uvarnumber_T)0;
+	    else
+		// sticking at 2^64 - 1.
+		n = (uvarnumber_T)(-1);
+	    negative = FALSE;
 	}
 
 	if (visual && !was_positive && !negative && col > 0)
@@ -2780,7 +2795,7 @@ do_addsub(
 	 * Don't do this when
 	 * the result may look like an octal number.
 	 */
-	if (firstdigit == '0' && !(dooct && pre == 0))
+	if (firstdigit == '0' && !(do_oct && pre == 0))
 	    while (length-- > 0)
 		*ptr++ = '0';
 	*ptr = NUL;
