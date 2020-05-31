@@ -928,7 +928,9 @@ static struct builtin_term builtin_termcaps[] =
     // These are printf strings, not terminal codes.
     {(int)KS_8F,	IF_EB("\033[38;2;%lu;%lu;%lum", ESC_STR "[38;2;%lu;%lu;%lum")},
     {(int)KS_8B,	IF_EB("\033[48;2;%lu;%lu;%lum", ESC_STR "[48;2;%lu;%lu;%lum")},
+    {(int)KS_8U,	IF_EB("\033[58;2;%lu;%lu;%lum", ESC_STR "[58;2;%lu;%lu;%lum")},
 #  endif
+    {(int)KS_CAU,	IF_EB("\033[58;5;%dm", ESC_STR "[58;5;%dm")},
     {(int)KS_CBE,	IF_EB("\033[?2004h", ESC_STR "[?2004h")},
     {(int)KS_CBD,	IF_EB("\033[?2004l", ESC_STR "[?2004l")},
     {(int)KS_CST,	IF_EB("\033[22;2t", ESC_STR "[22;2t")},
@@ -1187,6 +1189,7 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_CSB,	"[CSB%d]"},
     {(int)KS_CSF,	"[CSF%d]"},
 #  endif
+    {(int)KS_CAU,	"[CAU%d]"},
     {(int)KS_OP,	"[OP]"},
     {(int)KS_LE,	"[LE]"},
     {(int)KS_CL,	"[CL]"},
@@ -1617,7 +1620,8 @@ get_term_entries(int *height, int *width)
 			{KS_KE, "ke"}, {KS_TI, "ti"}, {KS_TE, "te"},
 			{KS_CTI, "TI"}, {KS_CTE, "TE"},
 			{KS_BC, "bc"}, {KS_CSB,"Sb"}, {KS_CSF,"Sf"},
-			{KS_CAB,"AB"}, {KS_CAF,"AF"}, {KS_LE, "le"},
+			{KS_CAB,"AB"}, {KS_CAF,"AF"}, {KS_CAU,"AU"},
+			{KS_LE, "le"},
 			{KS_ND, "nd"}, {KS_OP, "op"}, {KS_CRV, "RV"},
 			{KS_VS, "vs"}, {KS_CVS, "VS"},
 			{KS_CIS, "IS"}, {KS_CIE, "IE"},
@@ -1626,7 +1630,7 @@ get_term_entries(int *height, int *width)
 			{KS_CWP, "WP"}, {KS_CWS, "WS"},
 			{KS_CSI, "SI"}, {KS_CEI, "EI"},
 			{KS_U7, "u7"}, {KS_RFG, "RF"}, {KS_RBG, "RB"},
-			{KS_8F, "8f"}, {KS_8B, "8b"},
+			{KS_8F, "8f"}, {KS_8B, "8b"}, {KS_8U, "8u"},
 			{KS_CBE, "BE"}, {KS_CBD, "BD"},
 			{KS_CPS, "PS"}, {KS_CPE, "PE"},
 			{KS_CST, "ST"}, {KS_CRT, "RT"},
@@ -2881,6 +2885,13 @@ term_bg_color(int n)
 	term_color(T_CSB, n);
 }
 
+    void
+term_ul_color(int n)
+{
+    if (*T_CAU)
+	term_color(T_CAU, n);
+}
+
 /*
  * Return "dark" or "light" depending on the kind of terminal.
  * This is just guessing!  Recognized are:
@@ -2951,6 +2962,12 @@ term_fg_rgb_color(guicolor_T rgb)
 term_bg_rgb_color(guicolor_T rgb)
 {
     term_rgb_color(T_8B, rgb);
+}
+
+    void
+term_ul_rgb_color(guicolor_T rgb)
+{
+    term_rgb_color(T_8U, rgb);
 }
 #endif
 

@@ -485,9 +485,11 @@ EXTERN char_u	*use_gvimrc INIT(= NULL);	// "-U" cmdline argument
 EXTERN int	cterm_normal_fg_color INIT(= 0);
 EXTERN int	cterm_normal_fg_bold INIT(= 0);
 EXTERN int	cterm_normal_bg_color INIT(= 0);
+EXTERN int	cterm_normal_ul_color INIT(= 0);
 #ifdef FEAT_TERMGUICOLORS
 EXTERN guicolor_T cterm_normal_fg_gui_color INIT(= INVALCOLOR);
 EXTERN guicolor_T cterm_normal_bg_gui_color INIT(= INVALCOLOR);
+EXTERN guicolor_T cterm_normal_ul_gui_color INIT(= INVALCOLOR);
 #endif
 #ifdef FEAT_TERMRESPONSE
 EXTERN int	is_mac_terminal INIT(= FALSE);  // recognized Terminal.app

@@ -50,14 +50,15 @@ typedef struct
     int		sg_cterm_bold;	// bold attr was set for light color
     int		sg_cterm_fg;	// terminal fg color number + 1
     int		sg_cterm_bg;	// terminal bg color number + 1
+    int		sg_cterm_ul;	// terminal ul color number + 1
     int		sg_cterm_attr;	// Screen attr for color term mode
 // for when using the GUI
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     guicolor_T	sg_gui_fg;	// GUI foreground color handle
     guicolor_T	sg_gui_bg;	// GUI background color handle
+    guicolor_T	sg_gui_sp;	// GUI special color handle
 #endif
 #ifdef FEAT_GUI
-    guicolor_T	sg_gui_sp;	// GUI special color handle
     GuiFont	sg_font;	// GUI font handle
 #ifdef FEAT_XFONTSET
     GuiFontset	sg_fontset;	// GUI fontset handle
@@ -1095,7 +1096,8 @@ do_highlight(
 	    }
 #endif
 	}
-	else if (STRCMP(key, "CTERMFG") == 0 || STRCMP(key, "CTERMBG") == 0)
+	else if (STRCMP(key, "CTERMFG") == 0 || STRCMP(key, "CTERMBG") == 0
+						|| STRCMP(key, "CTERMUL") == 0)
 	{
 	  if (!init || !(HL_TABLE()[idx].sg_set & SG_CTERM))
 	  {
@@ -1130,6 +1132,17 @@ do_highlight(
 		else
 		{
 		    emsg(_("E420: BG color unknown"));
+		    error = TRUE;
+		    break;
+		}
+	    }
+	    else if (STRICMP(arg, "ul") == 0)
+	    {
+		if (cterm_normal_ul_color > 0)
+		    color = cterm_normal_ul_color - 1;
+		else
+		{
+		    emsg(_("E453: UL color unknown"));
 		    error = TRUE;
 		    break;
 		}
@@ -1184,7 +1197,7 @@ do_highlight(
 		    }
 		}
 	    }
-	    else
+	    else if (key[5] == 'B')
 	    {
 		HL_TABLE()[idx].sg_cterm_bg = color + 1;
 		if (is_normal_group)
@@ -1218,6 +1231,23 @@ do_highlight(
 				reset_option_was_set((char_u *)"bg");
 			    }
 			}
+		    }
+		}
+	    }
+	    else // ctermul
+	    {
+		HL_TABLE()[idx].sg_cterm_ul = color + 1;
+		if (is_normal_group)
+		{
+		    cterm_normal_ul_color = color + 1;
+#ifdef FEAT_GUI
+		    // Don't do this if the GUI is used.
+		    if (!gui.in_use && !gui.starting)
+#endif
+		    {
+			must_redraw = CLEAR;
+			if (termcap_active && color >= 0)
+			    term_ul_color(color);
 		    }
 		}
 	    }
@@ -1335,9 +1365,10 @@ do_highlight(
 		if (!init)
 		    HL_TABLE()[idx].sg_set |= SG_GUI;
 
-# ifdef FEAT_GUI
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+		// In GUI guisp colors are only used when recognized
 		i = color_name2handle(arg);
-		if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !gui.in_use)
+		if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !USE_24BIT)
 		{
 		    HL_TABLE()[idx].sg_gui_sp = i;
 # endif
@@ -1350,7 +1381,7 @@ do_highlight(
 			    *namep = NULL;
 			did_change = TRUE;
 		    }
-# ifdef FEAT_GUI
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 		}
 # endif
 	    }
@@ -1587,6 +1618,7 @@ restore_cterm_colors(void)
 # ifdef FEAT_TERMGUICOLORS
     cterm_normal_fg_gui_color = INVALCOLOR;
     cterm_normal_bg_gui_color = INVALCOLOR;
+    cterm_normal_ul_gui_color = INVALCOLOR;
 # endif
 #endif
 }
@@ -1638,9 +1670,9 @@ highlight_clear(int idx)
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     HL_TABLE()[idx].sg_gui_fg = INVALCOLOR;
     HL_TABLE()[idx].sg_gui_bg = INVALCOLOR;
+    HL_TABLE()[idx].sg_gui_sp = INVALCOLOR;
 #endif
 #ifdef FEAT_GUI
-    HL_TABLE()[idx].sg_gui_sp = INVALCOLOR;
     gui_mch_free_font(HL_TABLE()[idx].sg_font);
     HL_TABLE()[idx].sg_font = NOFONT;
 # ifdef FEAT_XFONTSET
@@ -2098,11 +2130,15 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 						  == taep->ae_u.cterm.fg_color
 			    && aep->ae_u.cterm.bg_color
 						  == taep->ae_u.cterm.bg_color
+			    && aep->ae_u.cterm.ul_color
+						  == taep->ae_u.cterm.ul_color
 #ifdef FEAT_TERMGUICOLORS
 			    && aep->ae_u.cterm.fg_rgb
 						    == taep->ae_u.cterm.fg_rgb
 			    && aep->ae_u.cterm.bg_rgb
 						    == taep->ae_u.cterm.bg_rgb
+			    && aep->ae_u.cterm.ul_rgb
+						    == taep->ae_u.cterm.ul_rgb
 #endif
 		       )))
 
@@ -2169,9 +2205,11 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
     {
 	taep->ae_u.cterm.fg_color = aep->ae_u.cterm.fg_color;
 	taep->ae_u.cterm.bg_color = aep->ae_u.cterm.bg_color;
+	taep->ae_u.cterm.ul_color = aep->ae_u.cterm.ul_color;
 #ifdef FEAT_TERMGUICOLORS
 	taep->ae_u.cterm.fg_rgb = aep->ae_u.cterm.fg_rgb;
 	taep->ae_u.cterm.bg_rgb = aep->ae_u.cterm.bg_rgb;
+	taep->ae_u.cterm.ul_rgb = aep->ae_u.cterm.ul_rgb;
 #endif
     }
     ++table->ga_len;
@@ -2344,6 +2382,7 @@ hl_combine_attr(int char_attr, int prim_attr)
 #ifdef FEAT_TERMGUICOLORS
 	    new_en.ae_u.cterm.bg_rgb = INVALCOLOR;
 	    new_en.ae_u.cterm.fg_rgb = INVALCOLOR;
+	    new_en.ae_u.cterm.ul_rgb = INVALCOLOR;
 #endif
 	    if (char_attr <= HL_ALL)
 		new_en.ae_attr = char_attr;
@@ -2362,6 +2401,8 @@ hl_combine_attr(int char_attr, int prim_attr)
 		    new_en.ae_u.cterm.fg_color = spell_aep->ae_u.cterm.fg_color;
 		if (spell_aep->ae_u.cterm.bg_color > 0)
 		    new_en.ae_u.cterm.bg_color = spell_aep->ae_u.cterm.bg_color;
+		if (spell_aep->ae_u.cterm.ul_color > 0)
+		    new_en.ae_u.cterm.ul_color = spell_aep->ae_u.cterm.ul_color;
 #ifdef FEAT_TERMGUICOLORS
 		// If both fg and bg are not set fall back to cterm colors.
 		// Helps for SpellBad which uses undercurl in the GUI.
@@ -2380,6 +2421,8 @@ hl_combine_attr(int char_attr, int prim_attr)
 		    if (spell_aep->ae_u.cterm.bg_rgb != INVALCOLOR)
 			new_en.ae_u.cterm.bg_rgb = spell_aep->ae_u.cterm.bg_rgb;
 		}
+		if (spell_aep->ae_u.cterm.ul_rgb != INVALCOLOR)
+		    new_en.ae_u.cterm.ul_rgb = spell_aep->ae_u.cterm.ul_rgb;
 #endif
 	    }
 	}
@@ -2497,6 +2540,8 @@ highlight_list_one(int id)
 				    sgp->sg_cterm_fg, NULL, "ctermfg");
     didh = highlight_list_arg(id, didh, LIST_INT,
 				    sgp->sg_cterm_bg, NULL, "ctermbg");
+    didh = highlight_list_arg(id, didh, LIST_INT,
+				    sgp->sg_cterm_ul, NULL, "ctermul");
 
 #if defined(FEAT_GUI) || defined(FEAT_EVAL)
     didh = highlight_list_arg(id, didh, LIST_ATTR,
@@ -2662,11 +2707,7 @@ highlight_color(
 	    if (fg)
 		color = HL_TABLE()[id - 1].sg_gui_fg;
 	    else if (sp)
-#  ifdef FEAT_GUI
 		color = HL_TABLE()[id - 1].sg_gui_sp;
-#  else
-		color = INVALCOLOR;
-#  endif
 	    else
 		color = HL_TABLE()[id - 1].sg_gui_bg;
 	    if (color == INVALCOLOR)
@@ -2847,10 +2888,11 @@ set_hl_attr(
      * For the color term mode: If there are other than "normal"
      * highlighting attributes, need to allocate an attr number.
      */
-    if (sgp->sg_cterm_fg == 0 && sgp->sg_cterm_bg == 0
+    if (sgp->sg_cterm_fg == 0 && sgp->sg_cterm_bg == 0 && sgp->sg_cterm_ul == 0
 # ifdef FEAT_TERMGUICOLORS
 	    && sgp->sg_gui_fg == INVALCOLOR
 	    && sgp->sg_gui_bg == INVALCOLOR
+	    && sgp->sg_gui_sp == INVALCOLOR
 # endif
 	    )
 	sgp->sg_cterm_attr = sgp->sg_cterm;
@@ -2859,6 +2901,7 @@ set_hl_attr(
 	at_en.ae_attr = sgp->sg_cterm;
 	at_en.ae_u.cterm.fg_color = sgp->sg_cterm_fg;
 	at_en.ae_u.cterm.bg_color = sgp->sg_cterm_bg;
+	at_en.ae_u.cterm.ul_color = sgp->sg_cterm_ul;
 # ifdef FEAT_TERMGUICOLORS
 #  ifdef MSWIN
 #   ifdef VIMDLL
@@ -2883,6 +2926,7 @@ set_hl_attr(
 #  endif
 	at_en.ae_u.cterm.fg_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_fg);
 	at_en.ae_u.cterm.bg_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_bg);
+	at_en.ae_u.cterm.ul_rgb = GUI_MCH_GET_RGB2(sgp->sg_gui_sp);
 	if (at_en.ae_u.cterm.fg_rgb == INVALCOLOR
 		&& at_en.ae_u.cterm.bg_rgb == INVALCOLOR)
 	{
@@ -3067,9 +3111,7 @@ syn_add_group(char_u *name)
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     HL_TABLE()[highlight_ga.ga_len].sg_gui_bg = INVALCOLOR;
     HL_TABLE()[highlight_ga.ga_len].sg_gui_fg = INVALCOLOR;
-# ifdef FEAT_GUI
     HL_TABLE()[highlight_ga.ga_len].sg_gui_sp = INVALCOLOR;
-# endif
 #endif
     ++highlight_ga.ga_len;
 
@@ -3230,14 +3272,12 @@ gui_do_one_color(
 			    color_name2handle(HL_TABLE()[idx].sg_gui_bg_name);
 	didit = TRUE;
     }
-# ifdef FEAT_GUI
     if (HL_TABLE()[idx].sg_gui_sp_name != NULL)
     {
 	HL_TABLE()[idx].sg_gui_sp =
 			    color_name2handle(HL_TABLE()[idx].sg_gui_sp_name);
 	didit = TRUE;
     }
-# endif
     if (didit)	// need to get a new attr number
 	set_hl_attr(idx);
 }

@@ -4901,6 +4901,10 @@ cterm={attr-list}					*highlight-cterm*
 
 ctermfg={color-nr}				*highlight-ctermfg* *E421*
 ctermbg={color-nr}				*highlight-ctermbg*
+ctermul={color-nr}				*highlight-ctermul*
+	These give the foreground (ctermfg), background (ctermbg) and
+	underline (ctermul) color to use in the terminal.
+
 	The {color-nr} argument is a color number.  Its range is zero to
 	(not including) the number given by the termcap entry "Co".
 	The actual color with this number depends on the type of terminal
@@ -4978,11 +4982,11 @@ ctermbg={color-nr}				*highlight-ctermbg*
 	needs to reset the color when exiting.	This is done with the "op"
 	termcap entry |t_op|.  If this doesn't work correctly, try setting the
 	't_op' option in your .vimrc.
-							*E419* *E420*
-	When Vim knows the normal foreground and background colors, "fg" and
-	"bg" can be used as color names.  This only works after setting the
-	colors for the Normal group and for the MS-Windows console.  Example,
-	for reverse video: >
+							*E419* *E420* *E453*
+	When Vim knows the normal foreground, background and underline colors,
+	"fg", "bg" and "ul" can be used as color names.  This only works after
+	setting the colors for the Normal group and for the MS-Windows
+	console.  Example, for reverse video: >
 	    :highlight Visual ctermfg=bg ctermbg=fg
 <	Note that the colors are used that are valid at the moment this
 	command are given.  If the Normal group colors are changed later, the
