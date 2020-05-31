@@ -1,5 +1,6 @@
 " Tests for :messages, :echomsg, :echoerr
 
+source check.vim
 source shared.vim
 source term_util.vim
 source view_util.vim
@@ -172,9 +173,7 @@ endfunc
 
 " Test more-prompt (see :help more-prompt).
 func Test_message_more()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot run vim in terminal'
-  endif
+  CheckRunVimInTerminal
   let buf = RunVimInTerminal('', {'rows': 6})
   call term_sendkeys(buf, ":call setline(1, range(1, 100))\n")
 
@@ -265,9 +264,7 @@ func Test_message_more()
 endfunc
 
 func Test_ask_yesno()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot run vim in terminal'
-  endif
+  CheckRunVimInTerminal
   let buf = RunVimInTerminal('', {'rows': 6})
   call term_sendkeys(buf, ":call setline(1, range(1, 2))\n")
 
