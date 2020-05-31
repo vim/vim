@@ -4729,15 +4729,17 @@ gui_mch_adjust_charheight(void)
     PangoFontMetrics	*metrics;
     int			ascent;
     int			descent;
+    //int			line_height;
 
     metrics = pango_context_get_metrics(gui.text_context, gui.norm_font,
 				pango_context_get_language(gui.text_context));
     ascent  = pango_font_metrics_get_ascent(metrics);
     descent = pango_font_metrics_get_descent(metrics);
+    // line_height = pango_font_metrics_get_height(metrics); only since pango 1.44
 
     pango_font_metrics_unref(metrics);
 
-    gui.char_height = (ascent + descent + PANGO_SCALE - 1) / PANGO_SCALE
+    gui.char_height = (ascent + descent + PANGO_SCALE - 3) / PANGO_SCALE
 								+ p_linespace;
     // LINTED: avoid warning: bitwise operation on signed value
     gui.char_ascent = PANGO_PIXELS(ascent + p_linespace * PANGO_SCALE / 2);
