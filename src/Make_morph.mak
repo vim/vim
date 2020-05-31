@@ -61,6 +61,7 @@ SRC =	arabic.c						\
 	findfile.c						\
 	fold.c							\
 	getchar.c						\
+	gui_xim.c						\
 	hardcopy.c						\
 	hashtab.c						\
 	highlight.c						\
