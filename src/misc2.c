@@ -2772,13 +2772,14 @@ find_special_key(
     int		modifiers;
     int		bit;
     int		key;
-    int		endchar = (flags & FSK_CURLY) ? '}' : '>';
     uvarnumber_T	n;
     int		l;
 
     src = *srcp;
-    if (src[0] != ((flags & FSK_CURLY) ? '{' : '<'))
+    if (src[0] != '<')
 	return 0;
+    if (src[1] == '*')	    // <*xxx>: do not simplify
+	++src;
 
     // Find end of modifier list
     last_dash = src;
@@ -2796,15 +2797,15 @@ find_special_key(
 		// Anything accepted, like <C-?>.
 		// <C-"> or <M-"> are not special in strings as " is
 		// the string delimiter. With a backslash it works: <M-\">
-		if (!(in_string && bp[1] == '"') && bp[l + 1] == endchar)
+		if (!(in_string && bp[1] == '"') && bp[l + 1] == '>')
 		    bp += l;
 		else if (in_string && bp[1] == '\\' && bp[2] == '"'
-							   && bp[3] == endchar)
+							   && bp[3] == '>')
 		    bp += 2;
 	    }
 	}
 	if (bp[0] == 't' && bp[1] == '_' && bp[2] && bp[3])
-	    bp += 3;	// skip t_xx, xx may be '-' or '>'/'}'
+	    bp += 3;	// skip t_xx, xx may be '-' or '>'
 	else if (STRNICMP(bp, "char-", 5) == 0)
 	{
 	    vim_str2nr(bp + 5, NULL, &l, STR2NR_ALL, NULL, NULL, 0, TRUE);
@@ -2818,7 +2819,7 @@ find_special_key(
 	}
     }
 
-    if (*bp == endchar)	// found matching '>' or '}'
+    if (*bp == '>')	// found matching '>'
     {
 	end_of_name = bp + 1;
 
@@ -2864,7 +2865,7 @@ find_special_key(
 		    l = mb_ptr2len(last_dash + off);
 		else
 		    l = 1;
-		if (modifiers != 0 && last_dash[l + off] == endchar)
+		if (modifiers != 0 && last_dash[l + off] == '>')
 		    key = PTR2CHAR(last_dash + off);
 		else
 		{

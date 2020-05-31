@@ -2666,6 +2666,5 @@ long elapsed(DWORD start_tick);
 #define FSK_KEEP_X_KEY	0x02	// don't translate xHome to Home key
 #define FSK_IN_STRING	0x04	// TRUE in string, double quote is escaped
 #define FSK_SIMPLIFY	0x08	// simplify <C-H> and <A-x>
-#define FSK_CURLY	0x10	// {C-x} instead of <C-x>
 
 #endif // VIM__H
