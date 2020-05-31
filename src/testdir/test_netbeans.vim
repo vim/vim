@@ -607,10 +607,20 @@ func Nb_basic(port)
   call assert_equal('0:fileOpened=0 "" T F', l[-1])
   let g:last += 1
 
+  " Test for writing a netbeans buffer
+  call appendbufline(cmdbufnr, '$', 'nbbufwrite_Test')
+  call WaitFor('len(readfile("Xnetbeans")) >= (g:last + 5)')
+  call assert_fails('write', 'E656:')
+  call setline(1, ['one', 'two'])
+  call assert_fails('1write!', 'E657:')
+  write
+  call WaitFor('len(readfile("Xnetbeans")) >= (g:last + 10)')
+  let g:last += 10
+
   " detach
   call appendbufline(cmdbufnr, '$', 'detach_Test')
   call WaitFor('len(readfile("Xnetbeans")) >= (g:last + 8)')
-  call WaitForAssert({-> assert_equal('0:disconnect=91', readfile("Xnetbeans")[-1])})
+  call WaitForAssert({-> assert_equal('0:disconnect=93', readfile("Xnetbeans")[-1])})
 
   " the connection was closed
   call assert_false(has("netbeans_enabled"))

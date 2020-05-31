@@ -1,5 +1,6 @@
 " Test argument list commands
 
+source check.vim
 source shared.vim
 source term_util.vim
 
@@ -511,9 +512,7 @@ endfunc
 
 " Test for quiting Vim with unedited files in the argument list
 func Test_quit_with_arglist()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot run vim in terminal'
-  endif
+  CheckRunVimInTerminal
   let buf = RunVimInTerminal('', {'rows': 6})
   call term_sendkeys(buf, ":set nomore\n")
   call term_sendkeys(buf, ":args a b c\n")
