@@ -450,17 +450,21 @@ func Test_terminal_curwin()
   let cmd = Get_cat_123_cmd()
   call assert_equal(1, winnr('$'))
 
-  split dummy
+  split Xdummy
+  call setline(1, 'dummy')
+  write
+  call assert_equal(1, getbufinfo('Xdummy')[0].loaded)
   exe 'terminal ++curwin ' . cmd
   call assert_equal(2, winnr('$'))
+  call assert_equal(0, getbufinfo('Xdummy')[0].loaded)
   bwipe!
 
-  split dummy
+  split Xdummy
   call term_start(cmd, {'curwin': 1})
   call assert_equal(2, winnr('$'))
   bwipe!
 
-  split dummy
+  split Xdummy
   call setline(1, 'change')
   call assert_fails('terminal ++curwin ' . cmd, 'E37:')
   call assert_equal(2, winnr('$'))
@@ -468,15 +472,16 @@ func Test_terminal_curwin()
   call assert_equal(2, winnr('$'))
   bwipe!
 
-  split dummy
+  split Xdummy
   call setline(1, 'change')
   call assert_fails("call term_start(cmd, {'curwin': 1})", 'E37:')
   call assert_equal(2, winnr('$'))
   bwipe!
 
-  split dummy
+  split Xdummy
   bwipe!
   call delete('Xtext')
+  call delete('Xdummy')
 endfunc
 
 func s:get_sleep_cmd()

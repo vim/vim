@@ -459,9 +459,9 @@ term_start(
 	    return NULL;
 	}
 	if (do_ecmd(0, NULL, NULL, &split_ea, ECMD_ONE,
-		     ECMD_HIDE
-			   + ((flags & TERM_START_FORCEIT) ? ECMD_FORCEIT : 0),
-		     curwin) == FAIL)
+		      (buf_hide(curwin->w_buffer) ? ECMD_HIDE : 0)
+			  + ((flags & TERM_START_FORCEIT) ? ECMD_FORCEIT : 0),
+							       curwin) == FAIL)
 	{
 	    vim_free(term);
 	    return NULL;
