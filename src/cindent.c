@@ -1845,6 +1845,9 @@ parse_cino(buf_T *buf)
     // Handle C++ extern "C" or "C++"
     buf->b_ind_cpp_extern_c = 0;
 
+    // Handle C #pragma directives
+    buf->b_ind_pragma = 0;
+
     for (p = buf->b_p_cino; *p; )
     {
 	l = p++;
@@ -1920,6 +1923,7 @@ parse_cino(buf_T *buf)
 	    case 'N': buf->b_ind_cpp_namespace = n; break;
 	    case 'k': buf->b_ind_if_for_while = n; break;
 	    case 'E': buf->b_ind_cpp_extern_c = n; break;
+	    case 'P': buf->b_ind_pragma = n; break;
 	}
 	if (*p == ',')
 	    ++p;
@@ -2116,11 +2120,16 @@ get_c_indent(void)
 	goto laterend;
     }
 
-    // #defines and so on always go at the left when included in 'cinkeys'.
+    // #defines and so on go at the left when included in 'cinkeys',
+    // exluding pragmas when customized in 'cinoptions'
     if (*theline == '#' && (*linecopy == '#' || in_cinkeys('#', ' ', TRUE)))
     {
-	amount = curbuf->b_ind_hash_comment;
-	goto theend;
+	char_u *directive = skipwhite(theline + 1);
+	if (curbuf->b_ind_pragma == 0 || STRNCMP(directive, "pragma", 6) != 0)
+	{
+	    amount = curbuf->b_ind_hash_comment;
+	    goto theend;
+	}
     }
 
     // Is it a non-case label?	Then that goes at the left margin too unless:
