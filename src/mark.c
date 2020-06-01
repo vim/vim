@@ -1442,7 +1442,7 @@ add_mark(list_T *l, char_u *mname, pos_T *pos, int bufnr, char_u *fname)
 
     list_append_number(lpos, bufnr);
     list_append_number(lpos, pos->lnum);
-    list_append_number(lpos, pos->col);
+    list_append_number(lpos, pos->col + 1);
     list_append_number(lpos, pos->coladd);
 
     if (dict_add_string(d, "mark", mname) == FAIL

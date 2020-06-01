@@ -5385,6 +5385,8 @@ getmarklist([{expr}]					*getmarklist()*
 		Refer to |getpos()| for getting information about a specific
 		mark.
 
+		Can also be used as a |method|: >
+			GetBufnr()->getmarklist()
 
 getmatches([{win}])					*getmatches()*
 		Returns a |List| with all matches previously defined for the
