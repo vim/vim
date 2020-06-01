@@ -36,7 +36,7 @@ typedef struct searchstat
 static void cmdline_search_stat(int dirc, pos_T *pos, pos_T *cursor_pos, int show_top_bot_msg, char_u *msgbuf, int recompute, int maxcount, long timeout);
 static void update_search_stat(int dirc, pos_T *pos, pos_T *cursor_pos, searchstat_T *stat, int recompute, int maxcount, long timeout);
 
-#define SEARCH_STAT_DEF_TIMEOUT 20L
+#define SEARCH_STAT_DEF_TIMEOUT 40L
 #define SEARCH_STAT_DEF_MAX_COUNT 99
 #define SEARCH_STAT_BUF_LEN 12
 
