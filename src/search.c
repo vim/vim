@@ -3170,7 +3170,7 @@ update_search_stat(
     searchstat_T	*stat,
     int			recompute,
     int			maxcount,
-    long		timeout)
+    long		timeout UNUSED)
 {
     int		    save_ws = p_ws;
     int		    wraparound = FALSE;
