@@ -3463,12 +3463,17 @@ get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
      */
     ga_append(&current, quote);  // closing quotation
     to_eval_current = (char_u *) current.ga_data;
-    if (!eval1(&to_eval_current, &current_result, evaluate))
     {
-	ga_clear(&current);
-	ga_clear(&result);
-	clear_tv(&current_result);
-	return FAIL;
+	int eval_result = is_literal_string
+	    ? get_lit_string_tv(&to_eval_current, &current_result, evaluate)
+	    : get_string_tv(&to_eval_current, &current_result, evaluate);
+	if (!eval_result)
+	{
+	    ga_clear(&current);
+	    ga_clear(&result);
+	    clear_tv(&current_result);
+	    return FAIL;
+	}
     }
     ga_concat(&result, current_result.vval.v_string);
     clear_tv(&current_result);
