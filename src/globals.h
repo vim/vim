@@ -1690,6 +1690,7 @@ EXTERN char e_inval_string[]	INIT(= N_("E908: using an invalid value as a String
 EXTERN char e_const_option[]	INIT(= N_("E996: Cannot lock an option"));
 EXTERN char e_unknown_option[]	INIT(= N_("E113: Unknown option: %s"));
 EXTERN char e_letunexp[]	INIT(= N_("E18: Unexpected characters in :let"));
+EXTERN char e_reduceempty[]	INIT(= N_("E998: Reduce of an empty %s with no initial value"));
 #endif
 #ifdef FEAT_QUICKFIX
 EXTERN char e_readerrf[]	INIT(= N_("E47: Error while reading errorfile"));

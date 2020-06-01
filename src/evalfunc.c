@@ -769,6 +769,7 @@ static funcentry_T global_functions[] =
     {"readdir",		1, 2, FEARG_1,	  ret_list_string, f_readdir},
     {"readdirex",	1, 2, FEARG_1,	  ret_list_dict_any, f_readdirex},
     {"readfile",	1, 3, FEARG_1,	  ret_any,	f_readfile},
+    {"reduce",		2, 3, FEARG_1,	  ret_any,	f_reduce},
     {"reg_executing",	0, 0, 0,	  ret_string,	f_reg_executing},
     {"reg_recording",	0, 0, 0,	  ret_string,	f_reg_recording},
     {"reltime",		0, 2, FEARG_1,	  ret_list_any,	f_reltime},
