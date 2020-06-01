@@ -2077,7 +2077,7 @@ do_join(
 	currsize = (int)STRLEN(curr);
     }
 
-    ml_replace_len(curwin->w_cursor.lnum, newp, newp_len, TRUE, FALSE);
+    ml_replace_len(curwin->w_cursor.lnum, newp, (colnr_T)newp_len, TRUE, FALSE);
 
     if (setmark && !cmdmod.lockmarks)
     {
