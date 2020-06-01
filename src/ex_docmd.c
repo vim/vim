@@ -6619,9 +6619,10 @@ post_chdir(cdscope_T scope)
 
 /*
  * Change directory function used by :cd/:tcd/:lcd Ex commands and the
- * chdir() function. If 'winlocaldir' is TRUE, then changes the window-local
- * directory. If 'tablocaldir' is TRUE, then changes the tab-local directory.
- * Otherwise changes the global directory.
+ * chdir() function.
+ * scope == CDSCOPE_WINDOW: changes the window-local directory
+ * scope == CDSCOPE_TABPAGE: changes the tab-local directory
+ * Otherwise: changes the global directory
  * Returns TRUE if the directory is successfully changed.
  */
     int
@@ -6751,7 +6752,18 @@ ex_pwd(exarg_T *eap UNUSED)
 #ifdef BACKSLASH_IN_FILENAME
 	slash_adjust(NameBuff);
 #endif
-	msg((char *)NameBuff);
+	if (p_verbose > 0)
+	{
+	    char *context = "global";
+
+	    if (curwin->w_localdir != NULL)
+		context = "window";
+	    else if (curtab->tp_localdir != NULL)
+		context = "tabpage";
+	    smsg("[%s] %s", context, (char *)NameBuff);
+	}
+	else
+	    msg((char *)NameBuff);
     }
     else
 	emsg(_("E187: Unknown"));
