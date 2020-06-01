@@ -3367,6 +3367,14 @@ eval_template_current_into_result(
     return OK;
 }
 
+    static void
+ga_append_mbytes(garray_T *gap, char_u *c)
+{
+    char_u *current = (char_u *)(gap->ga_data + gap->ga_len);
+    MB_COPY_CHAR(c, current);
+    gap->ga_len = STRLEN(gap->ga_data);
+}
+
 /*
  * Allocate a variable for $"${expr}" and $'${expr}' constant.
  * Return OK or FAIL.
@@ -3395,12 +3403,12 @@ get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
     // Continue while it is not NULL and it is not a closing quote.
     for (; (**arg != NUL) &&
 	    !is_closing_quote(*arg, is_literal_string, &is_skipping_needed);
-	    ++*arg)
+	    MB_PTR_ADV(*arg))
     {
 	if (is_skipping_needed)
 	{
 	    ga_concatn(&current, *arg, 2);
-	    ++*arg;
+	    *arg += 1;
 	    continue;
 	}
 	else if (**arg == '$' && *(*arg + 1) == '{')
@@ -3433,10 +3441,10 @@ get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 		ga_clear(&result);
 		return FAIL;
 	    }
-
 	    continue;
 	}
-	ga_append(&current, (int) **arg);
+
+	ga_append_mbytes(&current, *arg);
     }
 
     /*
