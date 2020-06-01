@@ -1029,6 +1029,25 @@ f_getcwd(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * Convert "st" to file permission string.
+ */
+    char_u *
+getfpermst(stat_T *st, char_u *perm)
+{
+    char_u	    flags[] = "rwx";
+    int		    i;
+
+    for (i = 0; i < 9; i++)
+    {
+	if (st->st_mode & (1 << (8 - i)))
+	    perm[i] = flags[i % 3];
+	else
+	    perm[i] = '-';
+    }
+    return perm;
+}
+
+/*
  * "getfperm({fname})" function
  */
     void
@@ -1037,24 +1056,13 @@ f_getfperm(typval_T *argvars, typval_T *rettv)
     char_u	*fname;
     stat_T	st;
     char_u	*perm = NULL;
-    char_u	flags[] = "rwx";
-    int		i;
+    char_u	permbuf[] = "---------";
 
     fname = tv_get_string(&argvars[0]);
 
     rettv->v_type = VAR_STRING;
     if (mch_stat((char *)fname, &st) >= 0)
-    {
-	perm = vim_strsave((char_u *)"---------");
-	if (perm != NULL)
-	{
-	    for (i = 0; i < 9; i++)
-	    {
-		if (st.st_mode & (1 << (8 - i)))
-		    perm[i] = flags[i % 3];
-	    }
-	}
-    }
+	perm = vim_strsave(getfpermst(&st, permbuf));
     rettv->vval.v_string = perm;
 }
 
@@ -1106,6 +1114,33 @@ f_getftime(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * Convert "st" to file type string.
+ */
+    char_u *
+getftypest(stat_T *st)
+{
+    char    *t;
+
+    if (S_ISREG(st->st_mode))
+	t = "file";
+    else if (S_ISDIR(st->st_mode))
+	t = "dir";
+    else if (S_ISLNK(st->st_mode))
+	t = "link";
+    else if (S_ISBLK(st->st_mode))
+	t = "bdev";
+    else if (S_ISCHR(st->st_mode))
+	t = "cdev";
+    else if (S_ISFIFO(st->st_mode))
+	t = "fifo";
+    else if (S_ISSOCK(st->st_mode))
+	t = "socket";
+    else
+	t = "other";
+    return (char_u*)t;
+}
+
+/*
  * "getftype({fname})" function
  */
     void
@@ -1114,31 +1149,12 @@ f_getftype(typval_T *argvars, typval_T *rettv)
     char_u	*fname;
     stat_T	st;
     char_u	*type = NULL;
-    char	*t;
 
     fname = tv_get_string(&argvars[0]);
 
     rettv->v_type = VAR_STRING;
     if (mch_lstat((char *)fname, &st) >= 0)
-    {
-	if (S_ISREG(st.st_mode))
-	    t = "file";
-	else if (S_ISDIR(st.st_mode))
-	    t = "dir";
-	else if (S_ISLNK(st.st_mode))
-	    t = "link";
-	else if (S_ISBLK(st.st_mode))
-	    t = "bdev";
-	else if (S_ISCHR(st.st_mode))
-	    t = "cdev";
-	else if (S_ISFIFO(st.st_mode))
-	    t = "fifo";
-	else if (S_ISSOCK(st.st_mode))
-	    t = "socket";
-	else
-	    t = "other";
-	type = vim_strsave((char_u *)t);
-    }
+	type = vim_strsave(getftypest(&st));
     rettv->vval.v_string = type;
 }
 
@@ -1359,7 +1375,7 @@ f_pathshorten(typval_T *argvars, typval_T *rettv)
  * Evaluate "expr" (= "context") for readdir().
  */
     static int
-readdir_checkitem(void *context, char_u *name)
+readdir_checkitem(void *context, void *item)
 {
     typval_T	*expr = (typval_T *)context;
     typval_T	save_val;
@@ -1367,9 +1383,7 @@ readdir_checkitem(void *context, char_u *name)
     typval_T	argv[2];
     int		retval = 0;
     int		error = FALSE;
-
-    if (expr->v_type == VAR_UNKNOWN)
-	return 1;
+    char_u	*name = (char_u*)item;
 
     prepare_vimvar(VV_VAL, &save_val);
     set_vim_var_string(VV_VAL, name, -1);
@@ -1408,8 +1422,9 @@ f_readdir(typval_T *argvars, typval_T *rettv)
     path = tv_get_string(&argvars[0]);
     expr = &argvars[1];
 
-    ret = readdir_core(&ga, path, (void *)expr, readdir_checkitem);
-    if (ret == OK && rettv->vval.v_list != NULL && ga.ga_len > 0)
+    ret = readdir_core(&ga, path, FALSE, (void *)expr,
+	    (expr->v_type == VAR_UNKNOWN) ? NULL : readdir_checkitem);
+    if (ret == OK)
     {
 	for (i = 0; i < ga.ga_len; i++)
 	{
@@ -1418,6 +1433,70 @@ f_readdir(typval_T *argvars, typval_T *rettv)
 	}
     }
     ga_clear_strings(&ga);
+}
+
+/*
+ * Evaluate "expr" (= "context") for readdirex().
+ */
+    static int
+readdirex_checkitem(void *context, void *item)
+{
+    typval_T	*expr = (typval_T *)context;
+    typval_T	save_val;
+    typval_T	rettv;
+    typval_T	argv[2];
+    int		retval = 0;
+    int		error = FALSE;
+    dict_T	*dict = (dict_T*)item;
+
+    prepare_vimvar(VV_VAL, &save_val);
+    set_vim_var_dict(VV_VAL, dict);
+    argv[0].v_type = VAR_DICT;
+    argv[0].vval.v_dict = dict;
+
+    if (eval_expr_typval(expr, argv, 1, &rettv) == FAIL)
+	goto theend;
+
+    retval = tv_get_number_chk(&rettv, &error);
+    if (error)
+	retval = -1;
+    clear_tv(&rettv);
+
+theend:
+    set_vim_var_dict(VV_VAL, NULL);
+    restore_vimvar(VV_VAL, &save_val);
+    return retval;
+}
+
+/*
+ * "readdirex()" function
+ */
+    void
+f_readdirex(typval_T *argvars, typval_T *rettv)
+{
+    typval_T	*expr;
+    int		ret;
+    char_u	*path;
+    garray_T	ga;
+    int		i;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+    path = tv_get_string(&argvars[0]);
+    expr = &argvars[1];
+
+    ret = readdir_core(&ga, path, TRUE, (void *)expr,
+	    (expr->v_type == VAR_UNKNOWN) ? NULL : readdirex_checkitem);
+    if (ret == OK)
+    {
+	for (i = 0; i < ga.ga_len; i++)
+	{
+	    dict_T  *dict = ((dict_T**)ga.ga_data)[i];
+	    list_append_dict(rettv->vval.v_list, dict);
+	    dict_unref(dict);
+	}
+    }
+    ga_clear(&ga);
 }
 
 /*

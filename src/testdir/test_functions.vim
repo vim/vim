@@ -1834,7 +1834,7 @@ func Test_readdir()
   call assert_equal(['bar.txt', 'dir', 'foo.txt'], sort(files))
 
   " Only results containing "f"
-  let files = 'Xdir'->readdir({ x -> stridx(x, 'f') !=- 1 })
+  let files = 'Xdir'->readdir({ x -> stridx(x, 'f') != -1 })
   call assert_equal(['foo.txt'], sort(files))
 
   " Only .txt files
@@ -1852,6 +1852,45 @@ func Test_readdir()
 
   " Nested readdir() must not crash
   let files = readdir('Xdir', 'readdir("Xdir", "1") != []')
+  call sort(files)->assert_equal(['bar.txt', 'dir', 'foo.txt'])
+
+  eval 'Xdir'->delete('rf')
+endfunc
+
+func Test_readdirex()
+  call mkdir('Xdir')
+  call writefile([], 'Xdir/foo.txt')
+  call writefile([], 'Xdir/bar.txt')
+  call mkdir('Xdir/dir')
+
+  " All results
+  let files = readdirex('Xdir')->map({-> v:val.name})
+  call assert_equal(['bar.txt', 'dir', 'foo.txt'], sort(files))
+
+  " Only results containing "f"
+  let files = 'Xdir'->readdirex({ e -> stridx(e.name, 'f') != -1 })
+			  \ ->map({-> v:val.name})
+  call assert_equal(['foo.txt'], sort(files))
+
+  " Only .txt files
+  let files = readdirex('Xdir', { e -> e.name =~ '.txt$' })
+			  \ ->map({-> v:val.name})
+  call assert_equal(['bar.txt', 'foo.txt'], sort(files))
+
+  " Only .txt files with string
+  let files = readdirex('Xdir', 'v:val.name =~ ".txt$"')
+			  \ ->map({-> v:val.name})
+  call assert_equal(['bar.txt', 'foo.txt'], sort(files))
+
+  " Limit to 1 result.
+  let l = []
+  let files = readdirex('Xdir', {e -> len(add(l, e.name)) == 2 ? -1 : 1})
+			  \ ->map({-> v:val.name})
+  call assert_equal(1, len(files))
+
+  " Nested readdirex() must not crash
+  let files = readdirex('Xdir', 'readdirex("Xdir", "1") != []')
+			  \ ->map({-> v:val.name})
   call sort(files)->assert_equal(['bar.txt', 'dir', 'foo.txt'])
 
   eval 'Xdir'->delete('rf')

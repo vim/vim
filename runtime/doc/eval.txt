@@ -2676,6 +2676,7 @@ rand([{expr}])			Number	get pseudo-random number
 range({expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
 readdir({dir} [, {expr}])	List	file names in {dir} selected by {expr}
+readdirex({dir} [, {expr}])	List	file info in {dir} selected by {expr}
 readfile({fname} [, {type} [, {max}]])
 				List	get list of lines from file {fname}
 reg_executing()			String	get the executing register name
@@ -7840,11 +7841,11 @@ rand([{expr}])						*rand()* *random*
 			:echo rand(seed)
 			:echo rand(seed) % 16  " random number 0 - 15
 <
-							*readdir()*
-readdir({directory} [, {expr}])
+readdir({directory} [, {expr}])				*readdir()*
 		Return a list with file and directory names in {directory}.
 		You can also use |glob()| if you don't need to do complicated
 		things, such as limiting the number of matches.
+		The list will be sorted (case sensitive).
 
 		When {expr} is omitted all entries are included.
 		When {expr} is given, it is evaluated to check what to do:
@@ -7854,6 +7855,7 @@ readdir({directory} [, {expr}])
 			added to the list.
 			If {expr} results in 1 then this entry will be added
 			to the list.
+		The entries "." and ".." are always excluded.
 		Each time {expr} is evaluated |v:val| is set to the entry name.
 		When {expr} is a function the name is passed as the argument.
 		For example, to get a list of files ending in ".txt": >
@@ -7871,6 +7873,59 @@ readdir({directory} [, {expr}])
 <
 		Can also be used as a |method|: >
 			GetDirName()->readdir()
+<
+readdirex({directory} [, {expr}])			*readdirex()*
+		Extended version of |readdir()|.
+		Return a list of Dictionaries with file and directory
+		information in {directory}.
+		This is useful if you want to get the attributes of file and
+		directory at the same time as getting a list of a directory.
+		This is much faster than calling |readdir()| then calling
+		|getfperm()|, |getfsize()|, |getftime()| and |getftype()| for
+		each file and directory especially on MS-Windows.
+		The list will be sorted by name (case sensitive).
+
+		The Dictionary for file and directory information has the
+		following items:
+			group	Group name of the entry. (Only on Unix)
+			name	Name of the entry.
+			perm	Permissions of the entry. See |getfperm()|.
+			size	Size of the entry. See |getfsize()|.
+			time	Timestamp of the entry. See |getftime()|.
+			type	Type of the entry.
+				On Unix, almost same as |getftype()| except:
+				    Symlink to a dir	"linkd"
+				    Other symlink	"link"
+				On MS-Windows:
+				    Normal file		"file"
+				    Directory		"dir"
+				    Junction		"junction"
+				    Symlink to a dir	"linkd"
+				    Other symlink	"link"
+				    Other reparse point	"reparse"
+			user	User name of the entry's owner. (Only on Unix)
+		On Unix, if the entry is a symlink, the Dictionary includes
+		the information of the target (except the "type" item).
+		On MS-Windows, it includes the information of the symlink
+		itself because of performance reasons.
+
+		When {expr} is omitted all entries are included.
+		When {expr} is given, it is evaluated to check what to do:
+			If {expr} results in -1 then no further entries will
+			be handled.
+			If {expr} results in 0 then this entry will not be
+			added to the list.
+			If {expr} results in 1 then this entry will be added
+			to the list.
+		The entries "." and ".." are always excluded.
+		Each time {expr} is evaluated |v:val| is set to a Dictionary
+		of the entry.
+		When {expr} is a function the entry is passed as the argument.
+		For example, to get a list of files ending in ".txt": >
+		  readdirex(dirname, {e -> e.name =~ '.txt$'})
+<
+		Can also be used as a |method|: >
+			GetDirName()->readdirex()
 <
 							*readfile()*
 readfile({fname} [, {type} [, {max}]])
