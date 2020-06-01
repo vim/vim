@@ -130,8 +130,8 @@ func Test_deadly_signal_TERM()
   call delete('XsetupAucmd')
   call delete('XautoOut')
   let lines =<< trim END
-    au VimLeave * call writefile(["VimLeave triggered"], "XautoOut", "a")
-    au VimLeavePre * call writefile(["VimLeavePre triggered"], "XautoOut", "a")
+    au VimLeave * call writefile(["VimLeave triggered"], "XautoOut", "as")
+    au VimLeavePre * call writefile(["VimLeavePre triggered"], "XautoOut", "as")
   END
   call writefile(lines, 'XsetupAucmd')
 
