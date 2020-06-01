@@ -1400,29 +1400,24 @@ Note that either single quotes or double quotes are used.
 These strings support 'string-interpolations' by prefix $. That embeds any
 expressions by '${}' into a string. For example
 >
-	" Embedding literals
-	echo $'I have ${10}'          " I have 10
-	echo $'I ${{"love": 1000}}'   " I {'love': 1000}
+	let stuff = 10
+	echo $'I have ${stuff}'  " I have 10
+
+	function Func()
+	  return 10
+	endfunction
+	echo $'I have ${Func()}'
 <
 These are same as
 >
-	echo 'I have ' .. string(10)
-	echo 'I ' .. string({"love": 1000})
+	let stuff = 10
+	echo 'I have ' .. string(stuff)
 <
 Template string helps you to write complex string. Other rules:
 >
-	" Only strings or literal strings doesn't apply string()
-	echo $'I''m ${"000"}'   " I'm 000
-	                          " not: I'm '000'
-	echo $"I'm ${'000'}"    " I'm 000
-
-	" Escaping in template (non-literal) string
-	echo $"${10} \\ \""   " 10 \ "
-
-	" In Vim script variable expansions of $foo is not supported
-	let x = 10
-	echo $'$x'    " $x
-	echo $'${x}'  " 10
+	" Only strings doesn't apply string()
+	echo $'${"vim"}'   " vim
+	                   " not: 'vim'
 
 	" Quotes in quotes
 	echo $'${'*'}'  " *
@@ -1431,7 +1426,7 @@ Template string helps you to write complex string. Other rules:
 	echo $'${$UNDEFINED_ENV_VAR}' " (empty string)
 <
 
-Other exceptions:
+Exceptions:
 >
 	echo $'${var'
 	" E451: Unterminated template expression: $'${var'
