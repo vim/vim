@@ -1636,6 +1636,7 @@ BASIC_SRC = \
 	findfile.c \
 	fold.c \
 	getchar.c \
+	gui_xim.c \
 	hardcopy.c \
 	hashtab.c \
 	highlight.c \
@@ -1785,6 +1786,7 @@ OBJ_COMMON = \
 	objects/findfile.o \
 	objects/fold.o \
 	objects/getchar.o \
+	objects/gui_xim.o \
 	objects/hardcopy.o \
 	objects/hashtab.o \
 	objects/highlight.o \
@@ -1950,6 +1952,7 @@ PRO_AUTO = \
 	findfile.pro \
 	fold.pro \
 	getchar.pro \
+	gui_xim.pro \
 	gui_beval.pro \
 	hardcopy.pro \
 	hashtab.pro \
@@ -3301,6 +3304,9 @@ objects/gui_xmebw.o: gui_xmebw.c
 objects/gui_x11.o: gui_x11.c
 	$(CCC) -o $@ gui_x11.c
 
+objects/gui_xim.o: gui_xim.c
+	$(CCC) -o $@ gui_xim.c
+
 objects/gui_photon.o: gui_photon.c
 	$(CCC) -o $@ gui_photon.c
 
@@ -4235,6 +4241,11 @@ objects/gui_gtk_x11.o: gui_gtk_x11.c vim.h protodef.h auto/config.h feature.h \
  proto.h globals.h auto/gui_gtk_gresources.h gui_gtk_f.h \
  ../runtime/vim32x32.xpm ../runtime/vim16x16.xpm ../runtime/vim48x48.xpm
 objects/gui_x11.o: gui_x11.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h ../runtime/vim32x32.xpm ../runtime/vim16x16.xpm \
+ ../runtime/vim48x48.xpm
+objects/gui_xim.o: gui_xim.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h ../runtime/vim32x32.xpm ../runtime/vim16x16.xpm \

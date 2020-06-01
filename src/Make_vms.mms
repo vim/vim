@@ -334,6 +334,7 @@ SRC = \
 	findfile.c \
 	fold.c \
 	getchar.c \
+	gui_xim.c \
 	hardcopy.c \
 	hashtab.c \
 	highlight.c \
@@ -445,6 +446,7 @@ OBJ = \
 	findfile.obj \
 	fold.obj \
 	getchar.obj \
+	gui_xim.obj \
 	hardcopy.obj \
 	hashtab.obj \
 	highlight.obj \
@@ -815,6 +817,10 @@ fold.obj : fold.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h
 getchar.obj : getchar.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h term.h macros.h structs.h regexp.h \
+ gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
+ globals.h
+gui_xim.obj : gui_xim.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h
