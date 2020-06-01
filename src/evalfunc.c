@@ -801,6 +801,7 @@ static funcentry_T global_functions[] =
     {"screenrow",	0, 0, 0,	  ret_number,	f_screenrow},
     {"screenstring",	2, 2, FEARG_1,	  ret_string,	f_screenstring},
     {"search",		1, 4, FEARG_1,	  ret_number,	f_search},
+    {"searchcount",	0, 1, FEARG_1,	  ret_dict_any,	f_searchcount},
     {"searchdecl",	1, 3, FEARG_1,	  ret_number,	f_searchdecl},
     {"searchpair",	3, 7, 0,	  ret_number,	f_searchpair},
     {"searchpairpos",	3, 7, 0,	  ret_list_number, f_searchpairpos},
