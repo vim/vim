@@ -2311,7 +2311,7 @@ f_reverse(typval_T *argvars, typval_T *rettv)
     void
 f_reduce(typval_T *argvars, typval_T *rettv)
 {
-    typval_T	accum;
+    typval_T	initial;
     char_u	*func_name;
     partial_T   *partial = NULL;
     funcexe_T	funcexe;
@@ -2343,6 +2343,7 @@ f_reduce(typval_T *argvars, typval_T *rettv)
     {
 	list_T	    *l = argvars[0].vval.v_list;
 	listitem_T  *li = NULL;
+	int	    r;
 
 	CHECK_LIST_MATERIALIZE(l);
 	if (argvars[2].v_type == VAR_UNKNOWN)
@@ -2352,24 +2353,26 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 		semsg(_(e_reduceempty), "List");
 		return;
 	    }
-	    accum = l->lv_first->li_tv;
+	    initial = l->lv_first->li_tv;
 	    li = l->lv_first->li_next;
 	}
 	else
 	{
-	    accum = argvars[2];
+	    initial = argvars[2];
 	    if (l != NULL)
 		li = l->lv_first;
 	}
 
-	copy_tv(&accum, rettv);
+	copy_tv(&initial, rettv);
 	for ( ; li != NULL; li = li->li_next)
 	{
-	    argv[0] = accum;
+	    argv[0] = *rettv;
 	    argv[1] = li->li_tv;
-	    if (call_func(func_name, -1, rettv, 2, argv, &funcexe) == FAIL)
+	    rettv->v_type = VAR_UNKNOWN;
+	    r = call_func(func_name, -1, rettv, 2, argv, &funcexe);
+	    clear_tv(&argv[0]);
+	    if (r == FAIL)
 		return;
-	    accum = *rettv;
 	}
     }
     else
@@ -2384,27 +2387,31 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 		semsg(_(e_reduceempty), "Blob");
 		return;
 	    }
-	    accum.v_type = VAR_NUMBER;
-	    accum.vval.v_number = blob_get(b, 0);
+	    initial.v_type = VAR_NUMBER;
+	    initial.vval.v_number = blob_get(b, 0);
 	    i = 1;
+	}
+	else if (argvars[2].v_type != VAR_NUMBER)
+	{
+	    emsg(_(e_number_exp));
+	    return;
 	}
 	else
 	{
-	    accum = argvars[2];
+	    initial = argvars[2];
 	    i = 0;
 	}
 
-	copy_tv(&accum, rettv);
+	copy_tv(&initial, rettv);
 	if (b != NULL)
 	{
 	    for ( ; i < b->bv_ga.ga_len; i++)
 	    {
-		argv[0] = accum;
+		argv[0] = *rettv;
 		argv[1].v_type = VAR_NUMBER;
 		argv[1].vval.v_number = blob_get(b, i);
 		if (call_func(func_name, -1, rettv, 2, argv, &funcexe) == FAIL)
 		    return;
-		accum = *rettv;
 	    }
 	}
     }
