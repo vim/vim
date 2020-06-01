@@ -1278,6 +1278,7 @@ do_cmdline(
 		    next = messages->next;
 		    emsg(messages->msg);
 		    vim_free(messages->msg);
+		    vim_free(messages->sfile);
 		    vim_free(messages);
 		    messages = next;
 		}
