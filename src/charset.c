@@ -1764,6 +1764,8 @@ vim_isblankline(char_u *lbuf)
  * If "prep" is not NULL, returns a flag to indicate the type of the number:
  *  0	    decimal
  *  '0'	    octal
+ *  'O'	    octal
+ *  'o'	    octal
  *  'B'	    bin
  *  'b'	    bin
  *  'X'	    hex
@@ -1783,8 +1785,8 @@ vim_isblankline(char_u *lbuf)
 vim_str2nr(
     char_u		*start,
     int			*prep,	    // return: type of number 0 = decimal, 'x'
-				    // or 'X' is hex, '0' = octal, 'b' or 'B'
-				    // is bin
+				    // or 'X' is hex, '0', 'o' or 'O' is octal,
+				    // 'b' or 'B' is bin
     int			*len,	    // return: detected length of number
     int			what,	    // what numbers to recognize
     varnumber_T		*nptr,	    // return: signed result
@@ -1821,6 +1823,11 @@ vim_str2nr(
 		&& (pre == 'B' || pre == 'b') && vim_isbdigit(ptr[2])
 		&& (maxlen == 0 || maxlen > 2))
 	    // binary
+	    ptr += 2;
+	else if ((what & STR2NR_OOCT)
+		&& (pre == 'O' || pre == 'o') && vim_isbdigit(ptr[2])
+		&& (maxlen == 0 || maxlen > 2))
+	    // octal with prefix "0o"
 	    ptr += 2;
 	else
 	{
@@ -1869,9 +1876,12 @@ vim_str2nr(
 	    }
 	}
     }
-    else if (pre == '0' || ((what & STR2NR_OCT) && (what & STR2NR_FORCE)))
+    else if (pre == 'O' || pre == 'o' ||
+		pre == '0' || ((what & STR2NR_OCT) && (what & STR2NR_FORCE)))
     {
 	// octal
+	if (pre != 0 && pre != '0')
+	    n += 2;	    // skip over "0o"
 	while ('0' <= *ptr && *ptr <= '7')
 	{
 	    // avoid ubsan error for overflow

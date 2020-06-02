@@ -199,9 +199,12 @@ scriptversion 4
 func Test_vvar_scriptversion4()
   call assert_true(has('vimscript-4'))
   call assert_equal(17, 017)
+  call assert_equal(15, 0o17)
+  call assert_equal(15, 0O17)
   call assert_equal(18, 018)
   call assert_equal(64, 0b1'00'00'00)
   call assert_equal(1048576, 0x10'00'00)
+  call assert_equal(32768, 0o10'00'00)
   call assert_equal(1000000, 1'000'000)
   call assert_equal("1234", execute("echo 1'234")->trim())
   call assert_equal('1  234', execute("echo 1''234")->trim())
@@ -211,6 +214,8 @@ endfunc
 scriptversion 1
 func Test_vvar_scriptversion1()
   call assert_equal(15, 017)
+  call assert_equal(15, 0o17)
+  call assert_equal(15, 0O17)
   call assert_equal(18, 018)
 endfunc
 

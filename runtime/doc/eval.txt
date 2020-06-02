@@ -95,15 +95,17 @@ the Number.  Examples:
 	Number -1	-->	String "-1" ~
 							*octal*
 Conversion from a String to a Number is done by converting the first digits to
-a number.  Hexadecimal "0xf9", Octal "017", and Binary "0b10" numbers are
-recognized (NOTE: when using |scriptversion-4| octal is not recognized).  If
-the String doesn't start with digits, the result is zero.
+a number.  Hexadecimal "0xf9", Octal "017" or "0o17", and Binary "0b10"
+numbers are recognized (NOTE: when using |scriptversion-4| octal with a
+leading "0" is not recognized).  If the String doesn't start with digits, the
+result is zero.
 Examples:
 	String "456"	-->	Number 456 ~
 	String "6bar"	-->	Number 6 ~
 	String "foo"	-->	Number 0 ~
 	String "0xf1"	-->	Number 241 ~
 	String "0100"	-->	Number 64 ~
+	String "0o100"	-->	Number 64 ~
 	String "0b101"	-->	Number 5 ~
 	String "-8"	-->	Number -8 ~
 	String "+8"	-->	Number 0 ~
@@ -1264,7 +1266,7 @@ number			number constant			*expr-number*
 				*hex-number* *octal-number* *binary-number*
 
 Decimal, Hexadecimal (starting with 0x or 0X), Binary (starting with 0b or 0B)
-and Octal (starting with 0).
+and Octal (starting with 0, 0o or 0O).
 
 						*floating-point-format*
 Floating point numbers can be written in two forms:
@@ -9642,8 +9644,8 @@ str2nr({expr} [, {base} [, {quoted}]])				*str2nr()*
 <
 		When {base} is 16 a leading "0x" or "0X" is ignored.  With a
 		different base the result will be zero.  Similarly, when
-		{base} is 8 a leading "0" is ignored, and when {base} is 2 a
-		leading "0b" or "0B" is ignored.
+		{base} is 8 a leading "0", "0o" or "0O" is ignored, and when
+		{base} is 2 a leading "0b" or "0B" is ignored.
 		Text after the number is silently ignored.
 
 		Can also be used as a |method|: >
@@ -13593,13 +13595,16 @@ instead of failing in mysterious ways.
 <
 							*scriptversion-4*  >
  :scriptversion 4
-<	Numbers with a leading zero are not recognized as octal.  With the
+<	Numbers with a leading zero are not recognized as octal.  "0o" or "0O"
+	is still recognized as octal.  With the
 	previous version you get: >
-		echo 017   " displays 15
-		echo 018   " displays 18
+		echo 017   " displays 15 (octal)
+		echo 0o17  " displays 15 (octal)
+		echo 018   " displays 18 (decimal)
 <	with script version 4: >
-		echo 017   " displays 17
-		echo 018   " displays 18
+		echo 017   " displays 17 (decimal)
+		echo 0o17  " displays 15 (octal)
+		echo 018   " displays 18 (decimal)
 <	Also, it is possible to use single quotes inside numbers to make them
 	easier to read: >
 		echo 1'000'000
