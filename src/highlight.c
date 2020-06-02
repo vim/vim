@@ -2230,10 +2230,12 @@ get_cterm_attr_idx(int attr, int fg, int bg)
 #ifdef FEAT_TERMGUICOLORS
     at_en.ae_u.cterm.fg_rgb = INVALCOLOR;
     at_en.ae_u.cterm.bg_rgb = INVALCOLOR;
+    at_en.ae_u.cterm.ul_rgb = INVALCOLOR;
 #endif
     at_en.ae_attr = attr;
     at_en.ae_u.cterm.fg_color = fg;
     at_en.ae_u.cterm.bg_color = bg;
+    at_en.ae_u.cterm.ul_color = INVALCOLOR;
     return get_attr_entry(&cterm_attr_table, &at_en);
 }
 #endif
@@ -2262,6 +2264,7 @@ get_tgc_attr_idx(int attr, guicolor_T fg, guicolor_T bg)
 	at_en.ae_u.cterm.fg_rgb = fg;
 	at_en.ae_u.cterm.bg_rgb = bg;
     }
+    at_en.ae_u.cterm.ul_rgb = INVALCOLOR;
     return get_attr_entry(&cterm_attr_table, &at_en);
 }
 #endif
