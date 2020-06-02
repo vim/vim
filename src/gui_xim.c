@@ -661,13 +661,12 @@ im_preedit_changed_cb(GtkIMContext *context, gpointer data UNUSED)
 
 	im_delete_preedit();
 
-	/*
-	 * Compute the end of the preediting area: "preedit_end_col".
-	 * According to the documentation of gtk_im_context_get_preedit_string(),
-	 * the cursor_pos output argument returns the offset in bytes.  This is
-	 * unfortunately not true -- real life shows the offset is in characters,
-	 * and the GTK+ source code agrees with me.  Will file a bug later.
-	 */
+	// Compute the end of the preediting area: "preedit_end_col".
+	// According to the documentation of
+	// gtk_im_context_get_preedit_string(), the cursor_pos output argument
+	// returns the offset in bytes.  This is unfortunately not true -- real
+	// life shows the offset is in characters, and the GTK+ source code
+	// agrees with me.  Will file a bug later.
 	if (preedit_start_col != MAXCOL)
 	    preedit_end_col = preedit_start_col;
 	str = (char_u *)preedit_string;
@@ -675,12 +674,11 @@ im_preedit_changed_cb(GtkIMContext *context, gpointer data UNUSED)
 	{
 	    int is_composing;
 
-	    is_composing = ((*p & 0x80) != 0 && utf_iscomposing(utf_ptr2char(p)));
-	    /*
-	     * These offsets are used as counters when generating <BS> and <Del>
-	     * to delete the preedit string.  So don't count composing characters
-	     * unless 'delcombine' is enabled.
-	     */
+	    is_composing = ((*p & 0x80) != 0
+					  && utf_iscomposing(utf_ptr2char(p)));
+	    // These offsets are used as counters when generating <BS> and
+	    // <Del> to delete the preedit string.  So don't count composing
+	    // characters unless 'delcombine' is enabled.
 	    if (!is_composing || p_deco)
 	    {
 		if (i < cursor_index)
@@ -993,17 +991,15 @@ xim_queue_key_press_event(GdkEventKey *event, int down)
 {
     if (down)
     {
-	/*
-	 * Workaround GTK2 XIM 'feature' that always converts keypad keys to
-	 * chars., even when not part of an IM sequence (ref. feature of
-	 * gdk/gdkkeyuni.c).
-	 * Flag any keypad keys that might represent a single char.
-	 * If this (on its own - i.e., not part of an IM sequence) is
-	 * committed while we're processing one of these keys, we can ignore
-	 * that commit and go ahead & process it ourselves.  That way we can
-	 * still distinguish keypad keys for use in mappings.
-	 * Also add GDK_space to make <S-Space> work.
-	 */
+	// Workaround GTK2 XIM 'feature' that always converts keypad keys to
+	// chars., even when not part of an IM sequence (ref. feature of
+	// gdk/gdkkeyuni.c).
+	// Flag any keypad keys that might represent a single char.
+	// If this (on its own - i.e., not part of an IM sequence) is
+	// committed while we're processing one of these keys, we can ignore
+	// that commit and go ahead & process it ourselves.  That way we can
+	// still distinguish keypad keys for use in mappings.
+	// Also add GDK_space to make <S-Space> work.
 	switch (event->keyval)
 	{
 	    case GDK_KP_Add:      xim_expected_char = '+';  break;
@@ -1028,19 +1024,15 @@ xim_queue_key_press_event(GdkEventKey *event, int down)
 	xim_ignored_char = FALSE;
     }
 
-    /*
-     * When typing fFtT, XIM may be activated. Thus it must pass
-     * gtk_im_context_filter_keypress() in Normal mode.
-     * And while doing :sh too.
-     */
+    // When typing fFtT, XIM may be activated. Thus it must pass
+    // gtk_im_context_filter_keypress() in Normal mode.
+    // And while doing :sh too.
     if (xic != NULL && !p_imdisable
 		    && (State & (INSERT | CMDLINE | NORMAL | EXTERNCMD)) != 0)
     {
-	/*
-	 * Filter 'imactivatekey' and map it to CTRL-^.  This way, Vim is
-	 * always aware of the current status of IM, and can even emulate
-	 * the activation key for modules that don't support one.
-	 */
+	// Filter 'imactivatekey' and map it to CTRL-^.  This way, Vim is
+	// always aware of the current status of IM, and can even emulate
+	// the activation key for modules that don't support one.
 	if (event->keyval == im_activatekey_keyval
 	     && (event->state & im_activatekey_state) == im_activatekey_state)
 	{
@@ -1205,10 +1197,8 @@ xim_set_focus(int focus)
     if (xic == NULL)
 	return;
 
-    /*
-     * XIM only gets focus when the Vim window has keyboard focus and XIM has
-     * been set active for the current mode.
-     */
+    // XIM only gets focus when the Vim window has keyboard focus and XIM has
+    // been set active for the current mode.
     if (focus && xim_is_active)
     {
 	if (!xim_has_focus)
