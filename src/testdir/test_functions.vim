@@ -1864,13 +1864,15 @@ endfunc
 
 func Test_readdirex()
   call mkdir('Xdir')
-  call writefile([], 'Xdir/foo.txt')
-  call writefile([], 'Xdir/bar.txt')
+  call writefile(['foo'], 'Xdir/foo.txt')
+  call writefile(['barbar'], 'Xdir/bar.txt')
   call mkdir('Xdir/dir')
 
   " All results
   let files = readdirex('Xdir')->map({-> v:val.name})
   call assert_equal(['bar.txt', 'dir', 'foo.txt'], sort(files))
+  let sizes = readdirex('Xdir')->map({-> v:val.size})
+  call assert_equal([0, 4, 7], sort(sizes))
 
   " Only results containing "f"
   let files = 'Xdir'->readdirex({ e -> stridx(e.name, 'f') != -1 })

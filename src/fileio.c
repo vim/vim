@@ -4575,7 +4575,7 @@ create_readdirex_item(char_u *path, char_u *name)
 	if (S_ISDIR(st.st_mode))
 	    size = 0;
 	// non-perfect check for overflow
-	if ((off_T)size != (off_T)st.st_size)
+	else if ((off_T)size != (off_T)st.st_size)
 	    size = -2;
 	if (dict_add_number(item, "size", size) == FAIL)
 	    goto theend;
