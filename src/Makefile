@@ -2986,7 +2986,9 @@ shadow:	runtime pixmaps
 				 ../../testdir/samples \
 				 ../../testdir/dumps \
 				 ../../testdir/test83-tags? \
-				 ../../testdir/*.ok .
+				 ../../testdir/*.ok \
+				 ../../testdir/testluaplugin \
+				 .
 
 # After updating Vim new files may have been created, use this to refresh the
 # symbolic links in the shadow directory. This isn't guaranteed to catch all
