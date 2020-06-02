@@ -3252,7 +3252,7 @@ update_search_stat(
 	    if (LTOREQ_POS(lastpos, p))
 	    {
 		cur = cnt;
-		if (LTOREQ_POS(p, endpos))
+		if (LT_POS(p, endpos))
 		    exact_match = TRUE;
 	    }
 	    fast_breakcheck();
