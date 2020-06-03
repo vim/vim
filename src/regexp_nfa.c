@@ -1541,14 +1541,21 @@ nfa_regatom(void)
 
 		default:
 		    {
-			long	n = 0;
+			long_u	n = 0;
 			int	cmp = c;
 
 			if (c == '<' || c == '>')
 			    c = getchr();
 			while (VIM_ISDIGIT(c))
 			{
-			    n = n * 10 + (c - '0');
+			    long_u tmp = n * 10 + (c - '0');
+			    if (tmp <= n)
+			    {
+				// overflow.
+				emsg(_("E951: \\% value too large"));
+				return FAIL;
+			    }
+			    n = tmp;
 			    c = getchr();
 			}
 			if (c == 'l' || c == 'c' || c == 'v')
