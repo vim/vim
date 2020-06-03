@@ -1995,7 +1995,7 @@ static int tree_add_word(spellinfo_T *spin, char_u *word, wordnode_T *tree, int 
 static wordnode_T *get_wordnode(spellinfo_T *spin);
 static void free_wordnode(spellinfo_T *spin, wordnode_T *n);
 static void wordtree_compress(spellinfo_T *spin, wordnode_T *root);
-static int node_compress(spellinfo_T *spin, wordnode_T *node, hashtab_T *ht, int *tot);
+static long node_compress(spellinfo_T *spin, wordnode_T *node, hashtab_T *ht, long *tot);
 static int node_equal(wordnode_T *n1, wordnode_T *n2);
 static void clear_node(wordnode_T *node);
 static int put_node(FILE *fd, wordnode_T *node, int idx, int regionmask, int prefixtree);
@@ -2019,11 +2019,17 @@ static void init_spellfile(void);
 #define CONDIT_AFF	8	// word already has an affix
 
 /*
- * Tunable parameters for when the tree is compressed.  See 'mkspellmem'.
+ * Tunable parameters for when the tree is compressed.  Filled from the
+ * 'mkspellmem' option.
  */
 static long compress_start = 30000;	// memory / SBLOCKSIZE
 static long compress_inc = 100;		// memory / SBLOCKSIZE
 static long compress_added = 500000;	// word count
+
+// Actually used values.  These can change if compression doesn't result in
+// reducing the size.
+static long used_compress_inc;
+static long used_compress_added;
 
 /*
  * Check the 'mkspellmem' option.  Return FAIL if it's wrong.
@@ -4534,7 +4540,7 @@ tree_add_word(
     {
 	if (--spin->si_compress_cnt == 1)
 	    // Did enough words to lower the block count limit.
-	    spin->si_blocks_cnt += compress_inc;
+	    spin->si_blocks_cnt += used_compress_inc;
     }
 
     /*
@@ -4543,9 +4549,9 @@ tree_add_word(
      * need that room, thus only compress in the following situations:
      * 1. When not compressed before (si_compress_cnt == 0): when using
      *    "compress_start" blocks.
-     * 2. When compressed before and used "compress_inc" blocks before
-     *    adding "compress_added" words (si_compress_cnt > 1).
-     * 3. When compressed before, added "compress_added" words
+     * 2. When compressed before and used "used_compress_inc" blocks before
+     *    adding "used_compress_added" words (si_compress_cnt > 1).
+     * 3. When compressed before, added "used_compress_added" words
      *    (si_compress_cnt == 1) and the number of free nodes drops below the
      *    maximum word length.
      */
@@ -4556,11 +4562,11 @@ tree_add_word(
 #endif
     {
 	// Decrement the block counter.  The effect is that we compress again
-	// when the freed up room has been used and another "compress_inc"
-	// blocks have been allocated.  Unless "compress_added" words have
+	// when the freed up room has been used and another "used_compress_inc"
+	// blocks have been allocated.  Unless "used_compress_added" words have
 	// been added, then the limit is put back again.
-	spin->si_blocks_cnt -= compress_inc;
-	spin->si_compress_cnt = compress_added;
+	spin->si_blocks_cnt -= used_compress_inc;
+	spin->si_compress_cnt = used_compress_added;
 
 	if (spin->si_verbose)
 	{
@@ -4655,9 +4661,9 @@ free_wordnode(spellinfo_T *spin, wordnode_T *n)
 wordtree_compress(spellinfo_T *spin, wordnode_T *root)
 {
     hashtab_T	    ht;
-    int		    n;
-    int		    tot = 0;
-    int		    perc;
+    long	    n;
+    long	    tot = 0;
+    long	    perc;
 
     // Skip the root itself, it's not actually used.  The first sibling is the
     // start of the tree.
@@ -4665,6 +4671,14 @@ wordtree_compress(spellinfo_T *spin, wordnode_T *root)
     {
 	hash_init(&ht);
 	n = node_compress(spin, root->wn_sibling, &ht, &tot);
+
+	if (tot == 0)
+	{
+	    // Compression did not have effect.  Increase the limits by 20% to
+	    // avoid wasting time on compression, memory will be used anyway.
+	    used_compress_inc += used_compress_inc / 5;
+	    used_compress_added += used_compress_added / 5;
+	}
 
 #ifndef SPELL_PRINTTREE
 	if (spin->si_verbose || p_verbose > 2)
@@ -4677,7 +4691,7 @@ wordtree_compress(spellinfo_T *spin, wordnode_T *root)
 	    else
 		perc = (tot - n) * 100 / tot;
 	    vim_snprintf((char *)IObuff, IOSIZE,
-			  _("Compressed %d of %d nodes; %d (%d%%) remaining"),
+		       _("Compressed %ld of %ld nodes; %ld (%ld%%) remaining"),
 						       n, tot, tot - n, perc);
 	    spell_message(spin, IObuff);
 	}
@@ -4692,12 +4706,12 @@ wordtree_compress(spellinfo_T *spin, wordnode_T *root)
  * Compress a node, its siblings and its children, depth first.
  * Returns the number of compressed nodes.
  */
-    static int
+    static long
 node_compress(
     spellinfo_T	*spin,
     wordnode_T	*node,
     hashtab_T	*ht,
-    int		*tot)	    // total count of nodes before compressing,
+    long	*tot)	    // total count of nodes before compressing,
 			    // incremented while going through the tree
 {
     wordnode_T	*np;
@@ -4705,9 +4719,9 @@ node_compress(
     wordnode_T	*child;
     hash_T	hash;
     hashitem_T	*hi;
-    int		len = 0;
+    long	len = 0;
     unsigned	nr, n;
-    int		compressed = 0;
+    long	compressed = 0;
 
     /*
      * Go through the list of siblings.  Compress each child and then try
@@ -5899,6 +5913,8 @@ mkspell(
     ga_init2(&spin.si_prefcond, (int)sizeof(char_u *), 50);
     hash_init(&spin.si_commonwords);
     spin.si_newcompID = 127;	// start compound ID at first maximum
+    used_compress_inc = compress_inc;
+    used_compress_added = compress_added;
 
     // default: fnames[0] is output file, following are input files
     innames = &fnames[1];
