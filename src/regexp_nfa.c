@@ -246,6 +246,7 @@ static int nfa_classcodes[] = {
 static char_u e_nul_found[] = N_("E865: (NFA) Regexp end encountered prematurely");
 static char_u e_misplaced[] = N_("E866: (NFA regexp) Misplaced %c");
 static char_u e_ill_char_class[] = N_("E877: (NFA regexp) Invalid character class: %d");
+static char_u e_value_too_large[] = N_("E951: \\% value too large");
 
 // Variables only used in nfa_regcomp() and descendants.
 static int nfa_re_flags; // re_flags passed to nfa_regcomp()
@@ -1541,19 +1542,27 @@ nfa_regatom(void)
 
 		default:
 		    {
-			long	n = 0;
+			long_u	n = 0;
 			int	cmp = c;
 
 			if (c == '<' || c == '>')
 			    c = getchr();
 			while (VIM_ISDIGIT(c))
 			{
-			    n = n * 10 + (c - '0');
+			    long_u tmp = n * 10 + (c - '0');
+
+			    if (tmp < n)
+			    {
+				// overflow.
+				emsg(_(e_value_too_large));
+				return FAIL;
+			    }
+			    n = tmp;
 			    c = getchr();
 			}
 			if (c == 'l' || c == 'c' || c == 'v')
 			{
-			    int limit = INT_MAX;
+			    long_u limit = INT_MAX;
 
 			    if (c == 'l')
 			    {
@@ -1576,7 +1585,7 @@ nfa_regatom(void)
 			    }
 			    if (n >= limit)
 			    {
-				emsg(_("E951: \\% value too large"));
+				emsg(_(e_value_too_large));
 				return FAIL;
 			    }
 			    EMIT((int)n);
