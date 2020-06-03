@@ -1560,7 +1560,7 @@ nfa_regatom(void)
 			}
 			if (c == 'l' || c == 'c' || c == 'v')
 			{
-			    int limit = INT_MAX;
+			    long_u limit = INT_MAX;
 
 			    if (c == 'l')
 			    {
