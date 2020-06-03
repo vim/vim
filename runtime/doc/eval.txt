@@ -2324,11 +2324,12 @@ argidx()			Number	current index in the argument list
 arglistid([{winnr} [, {tabnr}]]) Number	argument list id
 argv({nr} [, {winid}])		String	{nr} entry of the argument list
 argv([-1, {winid}])		List	the argument list
+asin({expr})			Float	arc sine of {expr}
 assert_beeps({cmd})		Number	assert {cmd} causes a beep
 assert_equal({exp}, {act} [, {msg}])
 				Number	assert {exp} is equal to {act}
-assert_equalfile({fname-one}, {fname-two})
-				Number	assert file contents is equal
+assert_equalfile({fname-one}, {fname-two} [, {msg}])
+				Number	assert file contents are equal
 assert_exception({error} [, {msg}])
 				Number	assert {error} is in v:exception
 assert_fails({cmd} [, {error} [, {msg}]])

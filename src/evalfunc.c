@@ -419,7 +419,7 @@ static funcentry_T global_functions[] =
     {"asin",		1, 1, FEARG_1,	  ret_float,	FLOAT_FUNC(f_asin)},
     {"assert_beeps",	1, 2, FEARG_1,	  ret_number,	f_assert_beeps},
     {"assert_equal",	2, 3, FEARG_2,	  ret_number,	f_assert_equal},
-    {"assert_equalfile", 2, 2, FEARG_1,	  ret_number,	f_assert_equalfile},
+    {"assert_equalfile", 2, 3, FEARG_1,	  ret_number,	f_assert_equalfile},
     {"assert_exception", 1, 2, 0,	  ret_number,	f_assert_exception},
     {"assert_fails",	1, 3, FEARG_1,	  ret_number,	f_assert_fails},
     {"assert_false",	1, 2, FEARG_1,	  ret_number,	f_assert_false},
