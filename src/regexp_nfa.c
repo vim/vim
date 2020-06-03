@@ -1549,7 +1549,7 @@ nfa_regatom(void)
 			while (VIM_ISDIGIT(c))
 			{
 			    long_u tmp = n * 10 + (c - '0');
-			    if (tmp <= n)
+			    if (tmp < n)
 			    {
 				// overflow.
 				emsg(_("E951: \\% value too large"));
