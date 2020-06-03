@@ -3175,7 +3175,7 @@ update_search_stat(
     int		    save_ws = p_ws;
     int		    wraparound = FALSE;
     pos_T	    p = (*pos);
-    static  pos_T   lastpos = {0, 0, 0};
+    static pos_T    lastpos = {0, 0, 0};
     static int	    cur = 0;
     static int	    cnt = 0;
     static int	    exact_match = FALSE;
@@ -4072,11 +4072,17 @@ f_searchcount(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
-	dict_T		*dict = argvars[0].vval.v_dict;
+	dict_T		*dict;
 	dictitem_T	*di;
 	listitem_T	*li;
 	int		error = FALSE;
 
+	if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
+	{
+	    emsg(_(e_dictreq));
+	    return;
+	}
+	dict = argvars[0].vval.v_dict;
 	di = dict_find(dict, (char_u *)"timeout", -1);
 	if (di != NULL)
 	{
