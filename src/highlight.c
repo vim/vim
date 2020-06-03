@@ -2235,7 +2235,7 @@ get_cterm_attr_idx(int attr, int fg, int bg)
     at_en.ae_attr = attr;
     at_en.ae_u.cterm.fg_color = fg;
     at_en.ae_u.cterm.bg_color = bg;
-    at_en.ae_u.cterm.ul_color = INVALCOLOR;
+    at_en.ae_u.cterm.ul_color = 0;
     return get_attr_entry(&cterm_attr_table, &at_en);
 }
 #endif
