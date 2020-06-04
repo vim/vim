@@ -13,6 +13,15 @@ func Test_yank_put_clipboard()
   bwipe!
 endfunc
 
+func Test_global_set_clipboard()
+  new
+  set clipboard=unnamedplus
+  let @+='clipboard' | g/^/set cb=|let @"='unnamed'|put
+  call assert_equal(['','unnamed'], getline(1, '$'))
+  set clipboard&
+  bwipe!
+endfunc
+
 func Test_nested_global()
   new
   call setline(1, ['nothing', 'found', 'found bad', 'bad'])
