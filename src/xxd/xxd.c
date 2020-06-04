@@ -53,6 +53,7 @@
  * 2011 April  Formatting by Bram Moolenaar
  * 08.06.2013  Little-endian hexdump (-e) and offset (-o) by Vadim Vygonets.
  * 11.01.2019  Add full 64/32 bit range to -o and output by Christer Jensen.
+ * 04.02.2020  Add -d for decimal offsets by Aapo Rantalainen
  *
  * (c) 1990-1998 by Juergen Weigert (jnweiger@informatik.uni-erlangen.de)
  *
@@ -235,6 +236,7 @@ exit_with_usage(void)
   fprintf(stderr, "    -ps         output in postscript plain hexdump style.\n");
   fprintf(stderr, "    -r          reverse operation: convert (or patch) hexdump into binary.\n");
   fprintf(stderr, "    -r -s off   revert with <off> added to file positions found in hexdump.\n");
+  fprintf(stderr, "    -d          show offset in decimal instead of hex.\n");
   fprintf(stderr, "    -s %sseek  start at <seek> bytes abs. %sinfile offset.\n",
 #ifdef TRY_SEEK
 	  "[+][-]", "(or +: rel.) ");
@@ -458,7 +460,8 @@ main(int argc, char *argv[])
 {
   FILE *fp, *fpo;
   int c, e, p = 0, relseek = 1, negseek = 0, revert = 0;
-  int cols = 0, nonzero = 0, autoskip = 0, hextype = HEX_NORMAL, capitalize = 0;
+  int cols = 0, nonzero = 0, autoskip = 0, hextype = HEX_NORMAL;
+  int capitalize = 0, decimal_offset = 0;
   int ebcdic = 0;
   int octspergrp = -1;	/* number of octets grouped in output */
   int grplen;		/* total chars per octet group */
@@ -497,6 +500,7 @@ main(int argc, char *argv[])
       else if (!STRNCMP(pp, "-p", 2)) hextype = HEX_POSTSCRIPT;
       else if (!STRNCMP(pp, "-i", 2)) hextype = HEX_CINCLUDE;
       else if (!STRNCMP(pp, "-C", 2)) capitalize = 1;
+      else if (!STRNCMP(pp, "-d", 2)) decimal_offset = 1;
       else if (!STRNCMP(pp, "-r", 2)) revert++;
       else if (!STRNCMP(pp, "-E", 2)) ebcdic++;
       else if (!STRNCMP(pp, "-v", 2))
@@ -820,8 +824,12 @@ main(int argc, char *argv[])
     {
       if (p == 0)
 	{
-	  addrlen = sprintf(l, "%08lx:",
-	    ((unsigned long)(n + seekoff + displayoff)));
+	  if (decimal_offset)
+		addrlen = sprintf(l, "%08ld:",
+				  ((unsigned long)(n + seekoff + displayoff)));
+	  else
+		addrlen = sprintf(l, "%08lx:",
+				  ((unsigned long)(n + seekoff + displayoff)));
 	  for (c = addrlen; c < LLEN; l[c++] = ' ');
 	}
       if (hextype == HEX_NORMAL)

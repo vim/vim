@@ -8,14 +8,17 @@ use IPC::Open2 qw( open2 );
 use POSIX qw( WIFEXITED WEXITSTATUS WIFSIGNALED WTERMSIG );
 
 my $VALGRIND = 0;
+my $EXECUTABLE = "t/.libs/harness";
 GetOptions(
    'valgrind|v+' => \$VALGRIND,
+   'executable|e=s' => \$EXECUTABLE,
+   'fail-early|F' => \(my $FAIL_EARLY),
 ) or exit 1;
 
 my ( $hin, $hout, $hpid );
 {
    local $ENV{LD_LIBRARY_PATH} = ".libs";
-   my @command = "t/.libs/harness";
+   my @command = $EXECUTABLE;
    unshift @command, "valgrind", "--tool=memcheck", "--leak-check=yes", "--num-callers=25", "--log-file=valgrind.out", "--error-exitcode=126" if $VALGRIND;
 
    $hpid = open2 $hout, $hin, @command or die "Cannot open2 harness - $!";
@@ -25,6 +28,8 @@ my $exitcode = 0;
 
 my $command;
 my @expect;
+
+my $linenum = 0;
 
 sub do_onetest
 {
@@ -39,7 +44,7 @@ sub do_onetest
       chomp $outline;
 
       if( !@expect ) {
-         print "# Test failed\n" unless $fail_printed++;
+         print "# line $linenum: Test failed\n" unless $fail_printed++;
          print "#    expected nothing more\n" .
                "#   Actual:   $outline\n";
          next;
@@ -49,18 +54,19 @@ sub do_onetest
 
       next if $expectation eq $outline;
 
-      print "# Test failed\n" unless $fail_printed++;
+      print "# line $linenum: Test failed\n" unless $fail_printed++;
       print "#   Expected: $expectation\n" .
             "#   Actual:   $outline\n";
    }
 
    if( @expect ) {
-      print "# Test failed\n" unless $fail_printed++;
+      print "# line $linenum: Test failed\n" unless $fail_printed++;
       print "#   Expected: $_\n" .
             "#    didn't happen\n" for @expect;
    }
 
    $exitcode = 1 if $fail_printed;
+   exit $exitcode if $exitcode and $FAIL_EARLY;
 }
 
 sub do_line
@@ -101,8 +107,15 @@ sub do_line
       elsif( $line =~ m/^csi (\S+) (.*)$/ ) {
          $line = sprintf "csi %02x %s", eval($1), $2; # TODO
       }
-      elsif( $line =~ m/^(escape|osc|dcs) (.*)$/ ) {
-         $line = "$1 " . join "", map sprintf("%02x", $_), unpack "C*", eval($2);
+      elsif( $line =~ m/^(osc) (\[\d+)? *(.*?)(\]?)$/ ) {
+         my ( $cmd, $initial, $data, $final ) = ( $1, $2, $3, $4 );
+         $initial //= "";
+         $initial .= ";" if $initial =~ m/\d+/;
+
+         $line = "$cmd $initial" . join( "", map sprintf("%02x", $_), unpack "C*", length $data ? eval($data) : "" ) . "$final";
+      }
+      elsif( $line =~ m/^(escape|dcs) (\[?)(.*?)(\]?)$/ ) {
+         $line = "$1 $2" . join( "", map sprintf("%02x", $_), unpack "C*", eval($3) ) . "$4";
       }
       elsif( $line =~ m/^putglyph (\S+) (.*)$/ ) {
          $line = "putglyph " . join( ",", map sprintf("%x", $_), eval($1) ) . " $2";
@@ -131,27 +144,35 @@ sub do_line
 
       $response = pack "C*", map hex, split m/,/, $response;
       if( $response ne $want ) {
-         print "# Assert ?screen_row $row failed:\n" .
+         print "# line $linenum: Assert ?screen_row $row failed:\n" .
                "# Expected: $want\n" .
                "# Actual:   $response\n";
          $exitcode = 1;
+         exit $exitcode if $exitcode and $FAIL_EARLY;
       }
    }
    # Assertions start with '?'
-   elsif( $line =~ s/^\?([a-z]+.*?=)\s+// ) {
+   elsif( $line =~ s/^\?([a-z]+.*?=)\s*// ) {
       do_onetest if defined $command;
 
       my ( $assertion ) = $1 =~ m/^(.*)\s+=/;
+      my $expectation = $line;
 
       $hin->print( "\?$assertion\n" );
       my $response = <$hout>; defined $response or wait, die "Test harness failed - $?\n";
-      chomp $response;
+      chomp $response; $response =~ s/^\s+|\s+$//g;
 
-      if( $response ne $line ) {
-         print "# Assert $assertion failed:\n" .
-               "# Expected: $line\n" .
+      # Some convenience formatting
+      if( $assertion =~ m/^screen_chars/ and $expectation =~ m/^"/ ) {
+         $expectation = join ",", map sprintf("0x%02x", ord $_), split m//, eval($expectation);
+      }
+
+      if( $response ne $expectation ) {
+         print "# line $linenum: Assert $assertion failed:\n" .
+               "# Expected: $expectation\n" .
                "# Actual:   $response\n";
          $exitcode = 1;
+         exit $exitcode if $exitcode and $FAIL_EARLY;
       }
    }
    # Test controls start with '$'
@@ -174,10 +195,13 @@ sub do_line
 open my $test, "<", $ARGV[0] or die "Cannot open test script $ARGV[0] - $!";
 
 while( my $line = <$test> ) {
+   $linenum++;
    $line =~ s/^\s+//;
-   next if $line =~ m/^(?:#|$)/;
-
    chomp $line;
+
+   next if $line =~ m/^(?:#|$)/;
+   last if $line eq "__END__";
+
    do_line( $line );
 }
 

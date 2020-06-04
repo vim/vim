@@ -847,8 +847,8 @@ _OnSysChar(
     if (ch < 0x100 && !isalpha(ch) && isprint(ch))
 	modifiers &= ~MOD_MASK_SHIFT;
 
-    // Interpret the ALT key as making the key META, include SHIFT, etc.
-    ch = extract_modifiers(ch, &modifiers, TRUE, NULL);
+    // Unify modifiers somewhat.  No longer use ALT to set the 8th bit.
+    ch = extract_modifiers(ch, &modifiers, FALSE, NULL);
     if (ch == CSI)
 	ch = K_CSI;
 

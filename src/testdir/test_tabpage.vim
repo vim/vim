@@ -593,9 +593,7 @@ func Test_tabs()
 endfunc
 
 func Test_tabpage_cmdheight()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckRunVimInTerminal
   call writefile([
         \ 'set laststatus=2',
         \ 'set cmdheight=2',

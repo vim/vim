@@ -25,7 +25,7 @@ int start_redo_ins(void);
 void stop_redo_ins(void);
 int noremap_keys(void);
 int ins_typebuf(char_u *str, int noremap, int offset, int nottyped, int silent);
-void ins_char_typebuf(int c);
+void ins_char_typebuf(int c, int modifier);
 int typebuf_changed(int tb_change_cnt);
 int typebuf_typed(void);
 int typebuf_maplen(void);

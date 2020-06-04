@@ -2,19 +2,7 @@
 
 source check.vim
 source view_util.vim
-
-" Check that "lines" inside ":def" results in an "error" message.
-func CheckDefFailure(lines, error)
-  call writefile(['def Func()'] + a:lines + ['enddef'], 'Xdef')
-  call assert_fails('so Xdef', a:error, a:lines)
-  call delete('Xdef')
-endfunc
-
-func CheckScriptFailure(lines, error)
-  call writefile(a:lines, 'Xdef')
-  call assert_fails('so Xdef', a:error, a:lines)
-  call delete('Xdef')
-endfunc
+source vim9.vim
 
 func Test_def_basic()
   def SomeFunc(): string
@@ -95,8 +83,20 @@ def Test_call_default_args()
   assert_equal('one', MyDefaultArgs('one'))
   assert_fails('call MyDefaultArgs("one", "two")', 'E118:')
 
-  call CheckScriptFailure(['def Func(arg: number = asdf)', 'enddef'], 'E1001:')
-  call CheckScriptFailure(['def Func(arg: number = "text")', 'enddef'], 'E1013: argument 1: type mismatch, expected number but got string')
+  CheckScriptFailure(['def Func(arg: number = asdf)', 'enddef', 'defcompile'], 'E1001:')
+  CheckScriptFailure(['def Func(arg: number = "text")', 'enddef', 'defcompile'], 'E1013: argument 1: type mismatch, expected number but got string')
+enddef
+
+def Test_nested_function()
+  def Nested(arg: string): string
+    return 'nested ' .. arg
+  enddef
+  assert_equal('nested function', Nested('function'))
+
+  CheckDefFailure(['def Nested()', 'enddef', 'Nested(66)'], 'E118:')
+  CheckDefFailure(['def Nested(arg: string)', 'enddef', 'Nested()'], 'E119:')
+
+  CheckDefFailure(['func Nested()', 'endfunc'], 'E1086:')
 enddef
 
 func Test_call_default_args_from_func()
@@ -188,9 +188,29 @@ def Test_call_varargs_only()
 enddef
 
 def Test_using_var_as_arg()
-  call writefile(['def Func(x: number)',  'let x = 234', 'enddef'], 'Xdef')
+  call writefile(['def Func(x: number)',  'let x = 234', 'enddef', 'defcompile'], 'Xdef')
   call assert_fails('so Xdef', 'E1006:')
   call delete('Xdef')
+enddef
+
+def DictArg(arg: dict<string>)
+  arg['key'] = 'value'
+enddef
+
+def ListArg(arg: list<string>)
+  arg[0] = 'value'
+enddef
+
+def Test_assign_to_argument()
+  " works for dict and list
+  let d: dict<string> = {}
+  DictArg(d)
+  assert_equal('value', d['key'])
+  let l: list<string> = []
+  ListArg(l)
+  assert_equal('value', l[0])
+
+  call CheckScriptFailure(['def Func(arg: number)', 'arg = 3', 'enddef', 'defcompile'], 'E1090:')
 enddef
 
 def Test_call_func_defined_later()
@@ -241,16 +261,16 @@ enddef
 
 def Test_error_in_nested_function()
   " Error in called function requires unwinding the call stack.
-  assert_fails('call FuncWithForwardCall()', 'E1029')
+  assert_fails('call FuncWithForwardCall()', 'E1013')
 enddef
 
 def Test_return_type_wrong()
-  CheckScriptFailure(['def Func(): number', 'return "a"', 'enddef'], 'expected number but got string')
-  CheckScriptFailure(['def Func(): string', 'return 1', 'enddef'], 'expected string but got number')
-  CheckScriptFailure(['def Func(): void', 'return "a"', 'enddef'], 'expected void but got string')
-  CheckScriptFailure(['def Func()', 'return "a"', 'enddef'], 'expected void but got string')
+  CheckScriptFailure(['def Func(): number', 'return "a"', 'enddef', 'defcompile'], 'expected number but got string')
+  CheckScriptFailure(['def Func(): string', 'return 1', 'enddef', 'defcompile'], 'expected string but got number')
+  CheckScriptFailure(['def Func(): void', 'return "a"', 'enddef', 'defcompile'], 'expected void but got string')
+  CheckScriptFailure(['def Func()', 'return "a"', 'enddef', 'defcompile'], 'expected void but got string')
 
-  CheckScriptFailure(['def Func(): number', 'return', 'enddef'], 'E1003:')
+  CheckScriptFailure(['def Func(): number', 'return', 'enddef', 'defcompile'], 'E1003:')
 
   CheckScriptFailure(['def Func(): list', 'return []', 'enddef'], 'E1008:')
   CheckScriptFailure(['def Func(): dict', 'return {}', 'enddef'], 'E1008:')
@@ -321,6 +341,7 @@ def Test_vim9script_call_fail_decl()
     def MyFunc(arg: string)
        let var = 123
     enddef
+    defcompile
   END
   writefile(lines, 'Xcall_decl.vim')
   assert_fails('source Xcall_decl.vim', 'E1054:')
@@ -334,6 +355,7 @@ def Test_vim9script_call_fail_const()
     def MyFunc(arg: string)
        var = 'asdf'
     enddef
+    defcompile
   END
   writefile(lines, 'Xcall_const.vim')
   assert_fails('source Xcall_const.vim', 'E46:')
@@ -361,6 +383,7 @@ def Test_delfunc()
     def CallGoneSoon()
       GoneSoon()
     enddef
+    defcompile
 
     delfunc g:GoneSoon
     CallGoneSoon()
@@ -377,7 +400,7 @@ def Test_redef_failure()
   so Xdef
   call writefile(['def Func1(): string',  'return "Func1"', 'enddef'], 'Xdef')
   so Xdef
-  call writefile(['def! Func0(): string', 'enddef'], 'Xdef')
+  call writefile(['def! Func0(): string', 'enddef', 'defcompile'], 'Xdef')
   call assert_fails('so Xdef', 'E1027:')
   call writefile(['def Func2(): string',  'return "Func2"', 'enddef'], 'Xdef')
   so Xdef
@@ -451,6 +474,7 @@ func Test_internalfunc_arg_error()
     def! FArgErr(): float
       return ceil(1.1, 2)
     enddef
+    defcompile
   END
   call writefile(l, 'Xinvalidarg')
   call assert_fails('so Xinvalidarg', 'E118:')
@@ -458,6 +482,7 @@ func Test_internalfunc_arg_error()
     def! FArgErr(): float
       return ceil()
     enddef
+    defcompile
   END
   call writefile(l, 'Xinvalidarg')
   call assert_fails('so Xinvalidarg', 'E119:')
@@ -642,6 +667,23 @@ func Test_E1056_1059()
   call assert_equal(1, caught_1059)
 endfunc
 
+func DelMe()
+  echo 'DelMe'
+endfunc
+
+def Test_deleted_function()
+  CheckDefExecFailure([
+      'let RefMe: func = function("g:DelMe")',
+      'delfunc g:DelMe',
+      'echo RefMe()'], 'E117:')
+enddef
+
+def Test_unknown_function()
+  CheckDefExecFailure([
+      'let Ref: func = function("NotExist")',
+      'delfunc g:NotExist'], 'E130:')
+enddef
+
 def RefFunc(Ref: func(string): string): string
   return Ref('more')
 enddef
@@ -680,13 +722,6 @@ def Test_closure_two_refs()
   unlet g:Read
 enddef
 
-" TODO: fix memory leak when using same function again.
-def MakeTwoRefs_2()
-  let local = ['some']
-  g:Extend = {s -> local->add(s)}
-  g:Read = {-> local}
-enddef
-
 def ReadRef(Ref: func(): list<string>): string
   return join(Ref(), ' ')
 enddef
@@ -696,7 +731,7 @@ def ExtendRef(Ref: func(string), add: string)
 enddef
 
 def Test_closure_two_indirect_refs()
-  MakeTwoRefs_2()
+  MakeTwoRefs()
   assert_equal('some', ReadRef(g:Read))
   ExtendRef(g:Extend, 'more')
   assert_equal('some more', ReadRef(g:Read))
@@ -706,5 +741,71 @@ def Test_closure_two_indirect_refs()
   unlet g:Extend
   unlet g:Read
 enddef
+
+def MakeArgRefs(theArg: string)
+  let local = 'loc_val'
+  g:UseArg = {s -> theArg .. '/' .. local .. '/' .. s}
+enddef
+
+def MakeArgRefsVarargs(theArg: string, ...rest: list<string>)
+  let local = 'the_loc'
+  g:UseVararg = {s -> theArg .. '/' .. local .. '/' .. s .. '/' .. join(rest)}
+enddef
+
+def Test_closure_using_argument()
+  MakeArgRefs('arg_val')
+  assert_equal('arg_val/loc_val/call_val', g:UseArg('call_val'))
+
+  MakeArgRefsVarargs('arg_val', 'one', 'two')
+  assert_equal('arg_val/the_loc/call_val/one two', g:UseVararg('call_val'))
+
+  unlet g:UseArg
+  unlet g:UseVararg
+enddef
+
+def MakeGetAndAppendRefs()
+  let local = 'a'
+
+  def Append(arg: string)
+    local ..= arg
+  enddef
+  g:Append = Append
+
+  def Get(): string
+    return local
+  enddef
+  g:Get = Get
+enddef
+
+def Test_closure_append_get()
+  MakeGetAndAppendRefs()
+  assert_equal('a', g:Get())
+  g:Append('-b')
+  assert_equal('a-b', g:Get())
+  g:Append('-c')
+  assert_equal('a-b-c', g:Get())
+
+  unlet g:Append
+  unlet g:Get
+enddef
+
+def Test_nested_closure()
+  let local = 'text'
+  def Closure(arg: string): string
+    return local .. arg
+  enddef
+  assert_equal('text!!!', Closure('!!!'))
+enddef
+
+func GetResult(Ref)
+  return a:Ref('some')
+endfunc
+
+def Test_call_closure_not_compiled()
+  let text = 'text'
+  g:Ref = {s ->  s .. text}
+  assert_equal('sometext', GetResult(g:Ref))
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

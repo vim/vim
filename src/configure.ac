@@ -146,14 +146,6 @@ fi
 
 OS_EXTRA_SRC=""; OS_EXTRA_OBJ=""
 
-dnl Check for BeOS, which needs an extra source file
-AC_MSG_CHECKING(for BeOS)
-case `uname` in
-    BeOS)	OS_EXTRA_SRC=os_beos.c; OS_EXTRA_OBJ=objects/os_beos.o
-		BEOS=yes; AC_MSG_RESULT(yes);;
-    *)		BEOS=no; AC_MSG_RESULT(no);;
-esac
-
 AC_MSG_CHECKING(for Haiku)
 case `uname` in
     Haiku) HAIKU=yes; AC_MSG_RESULT(yes);;
@@ -4059,6 +4051,21 @@ AC_MSG_CHECKING(for rename)
 AC_TRY_LINK([#include <stdio.h>], [rename("this", "that")],
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_RENAME),
 	AC_MSG_RESULT(no))
+
+dnl check for dirfd()
+AC_MSG_CHECKING(for dirfd)
+AC_TRY_COMPILE(
+[#include <sys/types.h>
+#include <dirent.h>],
+[DIR * dir=opendir("dirname"); dirfd(dir);],
+AC_MSG_RESULT(yes); AC_DEFINE(HAVE_DIRFD), AC_MSG_RESULT(not usable))
+
+dnl check for flock()
+AC_MSG_CHECKING(for flock)
+AC_TRY_COMPILE(
+[#include <sys/file.h>],
+[flock(10, LOCK_SH);],
+AC_MSG_RESULT(yes); AC_DEFINE(HAVE_FLOCK), AC_MSG_RESULT(not usable))
 
 dnl sysctl() may exist but not the arguments we use
 AC_MSG_CHECKING(for sysctl)

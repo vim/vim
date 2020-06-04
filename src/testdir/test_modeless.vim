@@ -24,7 +24,7 @@ func Test_modeless_characterwise_selection()
     exe 'set ttymouse=' .. ttymouse_val
 
     " select multiple characters within a line
-    let @* = ''
+    let @* = 'clean'
     call MouseRightClick(1, 1)
     call MouseRightRelease(1, 1)
     let keys = ":"
@@ -36,7 +36,7 @@ func Test_modeless_characterwise_selection()
     call assert_equal("wo th", @*, msg)
 
     " select multiple characters including the end of line
-    let @* = ''
+    let @* = 'clean'
     call MouseRightClick(1, 1)
     call MouseRightRelease(1, 1)
     let keys = ":"
@@ -48,7 +48,7 @@ func Test_modeless_characterwise_selection()
     call assert_equal("ree\n", @*, msg)
 
     " extend a selection using right mouse click
-    let @* = ''
+    let @* = 'clean'
     call MouseRightClick(1, 1)
     call MouseRightRelease(1, 1)
     set mousemodel=extend
@@ -64,7 +64,7 @@ func Test_modeless_characterwise_selection()
     set mousemodel&
 
     " extend a selection backwards using right mouse click
-    let @* = ''
+    let @* = 'clean'
     call MouseRightClick(1, 1)
     call MouseRightRelease(1, 1)
     set mousemodel=extend
@@ -80,7 +80,7 @@ func Test_modeless_characterwise_selection()
     set mousemodel&
 
     " select multiple characters within a line backwards
-    let @* = ''
+    let @* = 'clean'
     call MouseRightClick(1, 1)
     call MouseRightRelease(1, 1)
     let keys = ":"
@@ -93,7 +93,7 @@ func Test_modeless_characterwise_selection()
 
     " select multiple characters across lines with (end row > start row) and
     " (end column < start column)
-    let @* = ''
+    let @* = 'clean'
     call MouseRightClick(1, 1)
     call MouseRightRelease(1, 1)
     let keys = ":"
@@ -106,7 +106,7 @@ func Test_modeless_characterwise_selection()
 
     " select multiple characters across lines with (end row > start row) and
     " (end column > start column)
-    let @* = ''
+    let @* = 'clean'
     call MouseRightClick(1, 1)
     call MouseRightRelease(1, 1)
     let keys = ":"
@@ -119,7 +119,7 @@ func Test_modeless_characterwise_selection()
 
     " select multiple characters across lines with (end row < start row) and
     " (end column < start column)
-    let @* = ''
+    let @* = 'clean'
     call MouseRightClick(1, 1)
     call MouseRightRelease(1, 1)
     let keys = ":"
@@ -132,7 +132,7 @@ func Test_modeless_characterwise_selection()
 
     " select multiple characters across lines with (end row < start row) and
     " (end column > start column)
-    let @* = ''
+    let @* = 'clean'
     call MouseRightClick(1, 1)
     call MouseRightRelease(1, 1)
     let keys = ":"
@@ -145,7 +145,7 @@ func Test_modeless_characterwise_selection()
 
     " select multiple characters across lines with (end row < start row) and
     " the end column is greater than the line length
-    let @* = ''
+    let @* = 'clean'
     call MouseRightClick(1, 1)
     call MouseRightRelease(1, 1)
     let keys = ":"
@@ -158,7 +158,7 @@ func Test_modeless_characterwise_selection()
 
     " select multiple characters across lines with start/end row and start/end
     " column outside the lines in the buffer
-    let @* = ''
+    let @* = 'clean'
     call MouseRightClick(1, 1)
     call MouseRightRelease(1, 1)
     let keys = ":"
@@ -170,7 +170,7 @@ func Test_modeless_characterwise_selection()
     call assert_equal("\n~  ", @*, msg)
 
     " change selection using right mouse click within the selected text
-    let @* = ''
+    let @* = 'clean'
     call MouseRightClick(1, 1)
     call MouseRightRelease(1, 1)
     set mousemodel=extend
@@ -188,7 +188,7 @@ func Test_modeless_characterwise_selection()
     set mousemodel&
 
     " select text multiple times at different places
-    let @* = ''
+    let @* = 'clean'
     call MouseRightClick(1, 1)
     call MouseRightRelease(1, 1)
     let keys = ":"
@@ -205,7 +205,7 @@ func Test_modeless_characterwise_selection()
     " Test for 'clipboard' set to 'autoselectml' to automatically copy the
     " modeless selection to the clipboard
     set clipboard=autoselectml
-    let @* = ''
+    let @* = 'clean'
     let keys = ":"
     let keys ..= MouseLeftClickCode(2, 5)
     let keys ..= MouseLeftDragCode(2, 7)
@@ -216,7 +216,7 @@ func Test_modeless_characterwise_selection()
     set clipboard&
 
     " quadruple click should start characterwise selectmode
-    let @* = ''
+    let @* = 'clean'
     call MouseRightClick(1, 1)
     call MouseRightRelease(1, 1)
     let keys = ":"
@@ -259,7 +259,7 @@ func Test_modeless_word_selection()
     exe 'set ttymouse=' .. ttymouse_val
 
     " select multiple words within a line
-    let @* = ''
+    let @* = 'clean'
     call MouseRightClick(1, 1)
     call MouseRightRelease(1, 1)
     let keys = ":"
@@ -273,7 +273,7 @@ func Test_modeless_word_selection()
     call assert_equal("two three", @*, msg)
 
     " select a single word
-    let @* = ''
+    let @* = 'clean'
     call MouseRightClick(1, 1)
     call MouseRightRelease(1, 1)
     let keys = ":"
@@ -286,7 +286,7 @@ func Test_modeless_word_selection()
     call assert_equal("bar", @*, msg)
 
     " select multiple words backwards within a line
-    let @* = ''
+    let @* = 'clean'
     call MouseRightClick(1, 1)
     call MouseRightRelease(1, 1)
     let keys = ":"
@@ -300,7 +300,7 @@ func Test_modeless_word_selection()
     call assert_equal("bar baz", @*, msg)
 
     " select multiple words backwards across lines
-    let @* = ''
+    let @* = 'clean'
     call MouseRightClick(1, 1)
     call MouseRightRelease(1, 1)
     let keys = ":"
@@ -339,7 +339,7 @@ func Test_modeless_line_selection()
     exe 'set ttymouse=' .. ttymouse_val
 
     " select single line
-    let @* = ''
+    let @* = 'clean'
     call MouseRightClick(1, 1)
     call MouseRightRelease(1, 1)
     let keys = ":"
@@ -354,7 +354,7 @@ func Test_modeless_line_selection()
     call assert_equal("foo bar baz\n", @*, msg)
 
     " select multiple lines
-    let @* = ''
+    let @* = 'clean'
     call MouseRightClick(1, 1)
     call MouseRightRelease(1, 1)
     let keys = ":"
@@ -370,7 +370,7 @@ func Test_modeless_line_selection()
     call assert_equal("one two three\nfoo bar baz\n", @*, msg)
 
     " select multiple lines backwards
-    let @* = ''
+    let @* = 'clean'
     call MouseRightClick(1, 1)
     call MouseRightRelease(1, 1)
     let keys = ":"

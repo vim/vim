@@ -362,11 +362,10 @@ static struct builtin_term builtin_termcaps[] =
     {TERMCAP2KEY('*', '7'), "\233\065\065~"},	// shifted end key
 # endif
 
-# if defined(__BEOS__) || defined(ALL_BUILTIN_TCAPS)
+# ifdef ALL_BUILTIN_TCAPS
 /*
- * almost standard ANSI terminal, default for bebox
+ * almost standard ANSI terminal
  */
-    {(int)KS_NAME,	"beos-ansi"},
     {(int)KS_CE,	"\033[K"},
     {(int)KS_CD,	"\033[J"},
     {(int)KS_AL,	"\033[L"},
@@ -381,13 +380,6 @@ static struct builtin_term builtin_termcaps[] =
 #  else
     {(int)KS_CDL,	"\033[%dM"},
 #  endif
-#ifdef BEOS_PR_OR_BETTER
-#  ifdef TERMINFO
-    {(int)KS_CS,	"\033[%i%p1%d;%p2%dr"},
-#  else
-    {(int)KS_CS,	"\033[%i%d;%dr"},	// scroll region
-#  endif
-#endif
     {(int)KS_CL,	"\033[H\033[2J"},
 #ifdef notyet
     {(int)KS_VI,	"[VI]"}, // cursor invisible, VT320: CSI ? 25 l
@@ -424,9 +416,6 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_CRI,	"\033[%p1%dC"},
 #  else
     {(int)KS_CRI,	"\033[%dC"},
-#  endif
-#  if defined(BEOS_DR8)
-    {(int)KS_DB,	""},		// hack! see screen.c
 #  endif
 
     {K_UP,		"\033[A"},
@@ -939,7 +928,9 @@ static struct builtin_term builtin_termcaps[] =
     // These are printf strings, not terminal codes.
     {(int)KS_8F,	IF_EB("\033[38;2;%lu;%lu;%lum", ESC_STR "[38;2;%lu;%lu;%lum")},
     {(int)KS_8B,	IF_EB("\033[48;2;%lu;%lu;%lum", ESC_STR "[48;2;%lu;%lu;%lum")},
+    {(int)KS_8U,	IF_EB("\033[58;2;%lu;%lu;%lum", ESC_STR "[58;2;%lu;%lu;%lum")},
 #  endif
+    {(int)KS_CAU,	IF_EB("\033[58;5;%dm", ESC_STR "[58;5;%dm")},
     {(int)KS_CBE,	IF_EB("\033[?2004h", ESC_STR "[?2004h")},
     {(int)KS_CBD,	IF_EB("\033[?2004l", ESC_STR "[?2004l")},
     {(int)KS_CST,	IF_EB("\033[22;2t", ESC_STR "[22;2t")},
@@ -1198,6 +1189,7 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_CSB,	"[CSB%d]"},
     {(int)KS_CSF,	"[CSF%d]"},
 #  endif
+    {(int)KS_CAU,	"[CAU%d]"},
     {(int)KS_OP,	"[OP]"},
     {(int)KS_LE,	"[LE]"},
     {(int)KS_CL,	"[CL]"},
@@ -1381,7 +1373,7 @@ termgui_get_color(char_u *name)
     t = termgui_mch_get_color(name);
 
     if (t == INVALCOLOR)
-	semsg(_("E254: Cannot allocate color %s"), name);
+	semsg(_(e_alloc_color), name);
     return t;
 }
 
@@ -1413,11 +1405,6 @@ termgui_mch_get_rgb(guicolor_T color)
 
 #ifdef VMS
 # define DEFAULT_TERM	(char_u *)"vt320"
-#endif
-
-#ifdef __BEOS__
-# undef DEFAULT_TERM
-# define DEFAULT_TERM	(char_u *)"beos-ansi"
 #endif
 
 #ifdef __HAIKU__
@@ -1587,9 +1574,9 @@ may_adjust_color_count(int val)
 
 	    log_tr("Received t_Co, redraw_asap(): %d", r);
 	}
-#else
+# else
 	redraw_asap(CLEAR);
-#endif
+# endif
     }
 }
 #endif
@@ -1597,10 +1584,10 @@ may_adjust_color_count(int val)
 #ifdef HAVE_TGETENT
 static char *(key_names[]) =
 {
-#ifdef FEAT_TERMRESPONSE
+# ifdef FEAT_TERMRESPONSE
     // Do this one first, it may cause a screen redraw.
     "Co",
-#endif
+# endif
     "ku", "kd", "kr", "kl",
     "#2", "#4", "%i", "*7",
     "k1", "k2", "k3", "k4", "k5", "k6",
@@ -1633,7 +1620,8 @@ get_term_entries(int *height, int *width)
 			{KS_KE, "ke"}, {KS_TI, "ti"}, {KS_TE, "te"},
 			{KS_CTI, "TI"}, {KS_CTE, "TE"},
 			{KS_BC, "bc"}, {KS_CSB,"Sb"}, {KS_CSF,"Sf"},
-			{KS_CAB,"AB"}, {KS_CAF,"AF"}, {KS_LE, "le"},
+			{KS_CAB,"AB"}, {KS_CAF,"AF"}, {KS_CAU,"AU"},
+			{KS_LE, "le"},
 			{KS_ND, "nd"}, {KS_OP, "op"}, {KS_CRV, "RV"},
 			{KS_VS, "vs"}, {KS_CVS, "VS"},
 			{KS_CIS, "IS"}, {KS_CIE, "IE"},
@@ -1642,7 +1630,7 @@ get_term_entries(int *height, int *width)
 			{KS_CWP, "WP"}, {KS_CWS, "WS"},
 			{KS_CSI, "SI"}, {KS_CEI, "EI"},
 			{KS_U7, "u7"}, {KS_RFG, "RF"}, {KS_RBG, "RB"},
-			{KS_8F, "8f"}, {KS_8B, "8b"},
+			{KS_8F, "8f"}, {KS_8B, "8b"}, {KS_8U, "8u"},
 			{KS_CBE, "BE"}, {KS_CBD, "BD"},
 			{KS_CPS, "PS"}, {KS_CPE, "PE"},
 			{KS_CST, "ST"}, {KS_CRT, "RT"},
@@ -2429,17 +2417,6 @@ termcapinit(char_u *name)
 	name = NULL;	    // empty name is equal to no name
     term = name;
 
-#ifdef __BEOS__
-    /*
-     * TERM environment variable is normally set to 'ansi' on the Bebox;
-     * Since the BeBox doesn't quite support full ANSI yet, we use our
-     * own custom 'ansi-beos' termcap instead, unless the -T option has
-     * been given on the command line.
-     */
-    if (term == NULL
-		 && strcmp((char *)mch_getenv((char_u *)"TERM"), "ansi") == 0)
-	term = DEFAULT_TERM;
-#endif
 #ifndef MSWIN
     if (term == NULL)
 	term = mch_getenv((char_u *)"TERM");
@@ -2862,7 +2839,7 @@ term_color(char_u *s, int n)
 #if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
 		  || (s[0] == ESC && s[1] == '|')
 #endif
-	          || (s[0] == CSI && (i = 1) == 1))
+		  || (s[0] == CSI && (i = 1) == 1))
 	      && s[i] != NUL
 	      && (STRCMP(s + i + 1, "%p1%dm") == 0
 		  || STRCMP(s + i + 1, "%dm") == 0)
@@ -2906,6 +2883,13 @@ term_bg_color(int n)
 	term_color(T_CAB, n);
     else if (*T_CSB)
 	term_color(T_CSB, n);
+}
+
+    void
+term_ul_color(int n)
+{
+    if (*T_CAU)
+	term_color(T_CAU, n);
 }
 
 /*
@@ -2956,7 +2940,16 @@ term_rgb_color(char_u *s, guicolor_T rgb)
 
     vim_snprintf(buf, MAX_COLOR_STR_LEN,
 				  (char *)s, RED(rgb), GREEN(rgb), BLUE(rgb));
-    OUT_STR(buf);
+#ifdef FEAT_VTP
+    if (use_wt())
+    {
+	out_flush();
+	buf[1] = '[';
+	vtp_printf(buf);
+    }
+    else
+#endif
+	OUT_STR(buf);
 }
 
     void
@@ -2969,6 +2962,12 @@ term_fg_rgb_color(guicolor_T rgb)
 term_bg_rgb_color(guicolor_T rgb)
 {
     term_rgb_color(T_8B, rgb);
+}
+
+    void
+term_ul_rgb_color(guicolor_T rgb)
+{
+    term_rgb_color(T_8U, rgb);
 }
 #endif
 
@@ -3436,7 +3435,7 @@ set_shellsize(int width, int height, int mustset)
  * commands and Ex mode).
  */
     void
-settmode(int tmode)
+settmode(tmode_T tmode)
 {
 #ifdef FEAT_GUI
     // don't set the term where gvim was started to any mode
@@ -3447,14 +3446,14 @@ settmode(int tmode)
     if (full_screen)
     {
 	/*
-	 * When returning after calling a shell we want to really set the
-	 * terminal to raw mode, even though we think it already is, because
-	 * the shell program may have reset the terminal mode.
+	 * When returning after calling a shell cur_tmode is TMODE_UNKNOWN,
+	 * set the terminal to raw mode, even though we think it already is,
+	 * because the shell program may have reset the terminal mode.
 	 * When we think the terminal is normal, don't try to set it to
 	 * normal again, because that causes problems (logout!) on some
 	 * machines.
 	 */
-	if (tmode != TMODE_COOK || cur_tmode != TMODE_COOK)
+	if (tmode != cur_tmode)
 	{
 #ifdef FEAT_TERMRESPONSE
 # ifdef FEAT_GUI
@@ -3471,13 +3470,24 @@ settmode(int tmode)
 #endif
 	    if (tmode != TMODE_RAW)
 		mch_setmouse(FALSE);	// switch mouse off
-	    if (termcap_active)
+
+	    // Disable bracketed paste and modifyOtherKeys in cooked mode.
+	    // Avoid doing this too often, on some terminals the codes are not
+	    // handled properly.
+	    if (termcap_active && tmode != TMODE_SLEEP
+						   && cur_tmode != TMODE_SLEEP)
 	    {
 		if (tmode != TMODE_RAW)
+		{
 		    out_str(T_BD);	// disable bracketed paste mode
+		    out_str(T_CTE);	// possibly disables modifyOtherKeys
+		}
 		else
+		{
 		    out_str(T_BE);	// enable bracketed paste mode (should
 					// be before mch_settmode().
+		    out_str(T_CTI);	// possibly enables modifyOtherKeys
+		}
 	    }
 	    out_flush();
 	    mch_settmode(tmode);	// machine specific function
@@ -5495,8 +5505,9 @@ replace_termcodes(
 	    }
 #endif
 
-	    slen = trans_special(&src, result + dlen, TRUE, FALSE,
-			     (flags & REPTERM_NO_SIMPLIFY) == 0, did_simplify);
+	    slen = trans_special(&src, result + dlen, FSK_KEYCODE
+			  | ((flags & REPTERM_NO_SIMPLIFY) ? 0 : FSK_SIMPLIFY),
+								 did_simplify);
 	    if (slen)
 	    {
 		dlen += slen;
@@ -6346,12 +6357,6 @@ static int grey_ramp[] = {
     0x80, 0x8A, 0x94, 0x9E, 0xA8, 0xB2, 0xBC, 0xC6, 0xD0, 0xDA, 0xE4, 0xEE
 };
 
-# ifdef FEAT_TERMINAL
-#  include "libvterm/include/vterm.h"  // for VTERM_ANSI_INDEX_NONE
-# else
-#  define VTERM_ANSI_INDEX_NONE 0
-# endif
-
 static char_u ansi_table[16][4] = {
 //   R    G    B   idx
   {  0,   0,   0,  1}, // black
@@ -6373,6 +6378,8 @@ static char_u ansi_table[16][4] = {
   {255, 255, 255, 16}, // white
 };
 
+#define ANSI_INDEX_NONE 0
+
     void
 cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
 {
@@ -6392,7 +6399,7 @@ cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
 	*r = cube_value[idx / 36 % 6];
 	*g = cube_value[idx / 6  % 6];
 	*b = cube_value[idx      % 6];
-	*ansi_idx = VTERM_ANSI_INDEX_NONE;
+	*ansi_idx = ANSI_INDEX_NONE;
     }
     else if (nr < 256)
     {
@@ -6401,14 +6408,14 @@ cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
 	*r = grey_ramp[idx];
 	*g = grey_ramp[idx];
 	*b = grey_ramp[idx];
-	*ansi_idx = VTERM_ANSI_INDEX_NONE;
+	*ansi_idx = ANSI_INDEX_NONE;
     }
     else
     {
 	*r = 0;
 	*g = 0;
 	*b = 0;
-	*ansi_idx = 0;
+	*ansi_idx = ANSI_INDEX_NONE;
     }
 }
 #endif

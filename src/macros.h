@@ -33,6 +33,7 @@
 		       : (a)->coladd < (b)->coladd)
 #define EQUAL_POS(a, b) (((a).lnum == (b).lnum) && ((a).col == (b).col) && ((a).coladd == (b).coladd))
 #define CLEAR_POS(a) do {(a)->lnum = 0; (a)->col = 0; (a)->coladd = 0;} while (0)
+#define EMPTY_POS(a) ((a).lnum == 0 && (a).col == 0 && (a).coladd == 0)
 
 #define LTOREQ_POS(a, b) (LT_POS(a, b) || EQUAL_POS(a, b))
 
@@ -373,3 +374,9 @@
 # define ESTACK_CHECK_NOW
 # define CHECK_CURBUF
 #endif
+
+// Inline the condition for performance.
+#define CHECK_LIST_MATERIALIZE(l) if ((l)->lv_first == &range_list_item) range_list_materialize(l)
+
+// Inlined version of ga_grow().  Especially useful if "n" is a constant.
+#define GA_GROW(gap, n) (((gap)->ga_maxlen - (gap)->ga_len < n) ? ga_grow_inner((gap), (n)) : OK)

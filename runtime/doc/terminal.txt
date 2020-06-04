@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.2.  Last change: 2020 Apr 23
+*terminal.txt*	For Vim version 8.2.  Last change: 2020 May 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -161,6 +161,7 @@ terminal windows may be configured using the variable
 hexadecimal color codes, similar to those accepted by |highlight-guifg|.  When
 not using GUI colors, the terminal window always uses the 16 ANSI colors of
 the underlying terminal.
+When using `term_start()` the colors can be set with the "ansi_colors" option.
 The |term_setansicolors()| function can be used to change the colors, and
 |term_getansicolors()| to get the currently used colors.
 
@@ -1305,7 +1306,7 @@ breakpoint, or use the "Clear breakpoint" right-click menu entry.
 Inspecting variables ~
 					*termdebug-variables* *:Evaluate*
  `:Evaluate`	    evaluate the expression under the cursor
- `K`		    same
+ `K`		    same (see |termdebug_map_K| to disable)
  `:Evaluate` {expr}   evaluate {expr}
  `:'<,'>Evaluate`     evaluate the Visually selected text
 
@@ -1336,6 +1337,10 @@ in a buffer with 'buftype' set to "prompt".  This works slightly differently:
 						*termdebug_use_prompt*
 Prompt mode can be used even when the |+terminal| feature is present with: >
 	let g:termdebug_use_prompt = 1
+<
+						*termdebug_map_K*
+The K key is normally mapped to :Evaluate. If you do not want this use: >
+	let g:termdebug_map_K = 0
 
 
 Communication ~

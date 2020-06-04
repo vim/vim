@@ -362,6 +362,15 @@ assert_equalfile(typval_T *argvars)
     if (IObuff[0] != NUL)
     {
 	prepare_assert_error(&ga);
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	{
+	    char_u	numbuf[NUMBUFLEN];
+	    char_u	*tofree;
+
+	    ga_concat(&ga, echo_string(&argvars[2], &tofree, numbuf, 0));
+	    vim_free(tofree);
+	    ga_concat(&ga, (char_u *)": ");
+	}
 	ga_concat(&ga, IObuff);
 	assert_error(&ga);
 	ga_clear(&ga);
@@ -371,7 +380,7 @@ assert_equalfile(typval_T *argvars)
 }
 
 /*
- * "assert_equalfile(fname-one, fname-two)" function
+ * "assert_equalfile(fname-one, fname-two[, msg])" function
  */
     void
 f_assert_equalfile(typval_T *argvars, typval_T *rettv)

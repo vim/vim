@@ -98,7 +98,7 @@ set_padding_border(dict_T *dict, int *array, char *name, int max_val)
 		array[i] = 1;
 	    if (list != NULL)
 	    {
-		range_list_materialize(list);
+		CHECK_LIST_MATERIALIZE(list);
 		for (i = 0, li = list->lv_first; i < 4 && i < list->lv_len;
 							 ++i, li = li->li_next)
 		{
@@ -516,7 +516,7 @@ handle_moved_argument(win_T *wp, dictitem_T *di, int mousemoved)
 	int	    mincol;
 	int	    maxcol;
 
-	range_list_materialize(l);
+	CHECK_LIST_MATERIALIZE(l);
 	li = l->lv_first;
 	if (l->lv_len == 3)
 	{
@@ -756,7 +756,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    listitem_T	*li;
 	    int		i;
 
-	    range_list_materialize(list);
+	    CHECK_LIST_MATERIALIZE(list);
 	    for (i = 0, li = list->lv_first; i < 4 && i < list->lv_len;
 						     ++i, li = li->li_next)
 	    {
@@ -790,7 +790,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 
 	    if (list != NULL)
 	    {
-		range_list_materialize(list);
+		CHECK_LIST_MATERIALIZE(list);
 		for (i = 0, li = list->lv_first; i < 8 && i < list->lv_len;
 							 ++i, li = li->li_next)
 		{
@@ -845,7 +845,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 		    break;
 		}
 		else
-		    range_list_materialize(li->li_tv.vval.v_list);
+		    CHECK_LIST_MATERIALIZE(li->li_tv.vval.v_list);
 	    }
 	}
 	if (ok)
@@ -1537,7 +1537,7 @@ popup_set_buffer_text(buf_T *buf, typval_T text)
     // Clear the buffer, then replace the lines.
     curbuf = buf;
     for (lnum = buf->b_ml.ml_line_count; lnum > 0; --lnum)
-	ml_delete(lnum, FALSE);
+	ml_delete(lnum);
     curbuf = curwin->w_buffer;
 
     // Add text to the buffer.
@@ -1563,7 +1563,7 @@ popup_set_buffer_text(buf_T *buf, typval_T text)
 
     // delete the line that was in the empty buffer
     curbuf = buf;
-    ml_delete(buf->b_ml.ml_line_count, FALSE);
+    ml_delete(buf->b_ml.ml_line_count);
     curbuf = curwin->w_buffer;
 }
 
@@ -1757,6 +1757,27 @@ add_border_left_right_padding(win_T *wp)
     }
 }
 
+#ifdef FEAT_TERMINAL
+/*
+ * Return TRUE if there is any popup window with a terminal buffer.
+ */
+    static int
+popup_terminal_exists(void)
+{
+    win_T	*wp;
+    tabpage_T	*tp;
+
+    FOR_ALL_POPUPWINS(wp)
+	if (wp->w_buffer->b_term != NULL)
+	    return TRUE;
+    FOR_ALL_TABPAGES(tp)
+	FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
+	    if (wp->w_buffer->b_term != NULL)
+		return TRUE;
+    return FALSE;
+}
+#endif
+
 /*
  * popup_create({text}, {options})
  * popup_atcursor({text}, {options})
@@ -1786,6 +1807,13 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 		semsg(_(e_nobufnr), argvars[0].vval.v_number);
 		return NULL;
 	    }
+#ifdef FEAT_TERMINAL
+	    if (buf->b_term != NULL && popup_terminal_exists())
+	    {
+		emsg(_("E861: Cannot open a second popup with a terminal"));
+		return NULL;
+	    }
+#endif
 	}
 	else if (!(argvars[0].v_type == VAR_STRING
 			&& argvars[0].vval.v_string != NULL)
@@ -2054,9 +2082,13 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
  * popup_clear()
  */
     void
-f_popup_clear(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+f_popup_clear(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    close_all_popups();
+    int force = FALSE;
+
+    if (argvars[0].v_type != VAR_UNKNOWN)
+	force = (int)tv_get_number(&argvars[0]);
+    close_all_popups(force);
 }
 
 /*
@@ -2163,7 +2195,7 @@ popup_close_and_callback(win_T *wp, typval_T *arg)
 	// Careful: This may make "wp" invalid.
 	invoke_popup_callback(wp, arg);
 
-    popup_close(id);
+    popup_close(id, FALSE);
     CHECK_CURBUF;
 }
 
@@ -2250,7 +2282,7 @@ filter_handle_drag(win_T *wp, int c, typval_T *rettv)
 }
 
 /*
- * popup_filter_menu({text}, {options})
+ * popup_filter_menu({id}, {key})
  */
     void
 f_popup_filter_menu(typval_T *argvars, typval_T *rettv)
@@ -2305,7 +2337,7 @@ f_popup_filter_menu(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * popup_filter_yesno({text}, {options})
+ * popup_filter_yesno({id}, {key})
  */
     void
 f_popup_filter_yesno(typval_T *argvars, typval_T *rettv)
@@ -2531,9 +2563,10 @@ error_if_popup_window(int also_with_term UNUSED)
 /*
  * Close a popup window by Window-id.
  * Does not invoke the callback.
+ * Return OK if the popup was closed, FAIL otherwise.
  */
-    void
-popup_close(int id)
+    int
+popup_close(int id, int force)
 {
     win_T	*wp;
     tabpage_T	*tp;
@@ -2545,27 +2578,33 @@ popup_close(int id)
 	{
 	    if (wp == curwin)
 	    {
-		error_for_popup_window();
-		return;
+		if (!force)
+		{
+		    error_for_popup_window();
+		    return FAIL;
+		}
+		win_enter(firstwin, FALSE);
 	    }
 	    if (prev == NULL)
 		first_popupwin = wp->w_next;
 	    else
 		prev->w_next = wp->w_next;
 	    popup_free(wp);
-	    return;
+	    return OK;
 	}
 
     // go through tab-local popups
     FOR_ALL_TABPAGES(tp)
-	popup_close_tabpage(tp, id);
+	if (popup_close_tabpage(tp, id, force) == OK)
+	    return OK;
+    return FAIL;
 }
 
 /*
  * Close a popup window with Window-id "id" in tabpage "tp".
  */
-    void
-popup_close_tabpage(tabpage_T *tp, int id)
+    int
+popup_close_tabpage(tabpage_T *tp, int id, int force)
 {
     win_T	*wp;
     win_T	**root = &tp->tp_first_popupwin;
@@ -2576,27 +2615,34 @@ popup_close_tabpage(tabpage_T *tp, int id)
 	{
 	    if (wp == curwin)
 	    {
-		error_for_popup_window();
-		return;
+		if (!force)
+		{
+		    error_for_popup_window();
+		    return FAIL;
+		}
+		win_enter(firstwin, FALSE);
 	    }
 	    if (prev == NULL)
 		*root = wp->w_next;
 	    else
 		prev->w_next = wp->w_next;
 	    popup_free(wp);
-	    return;
+	    return OK;
 	}
+    return FAIL;
 }
 
     void
-close_all_popups(void)
+close_all_popups(int force)
 {
-    if (ERROR_IF_ANY_POPUP_WINDOW)
+    if (!force && ERROR_IF_ANY_POPUP_WINDOW)
 	return;
     while (first_popupwin != NULL)
-	popup_close(first_popupwin->w_id);
+	if (popup_close(first_popupwin->w_id, force) == FAIL)
+	    return;
     while (curtab->tp_first_popupwin != NULL)
-	popup_close(curtab->tp_first_popupwin->w_id);
+	if (popup_close(curtab->tp_first_popupwin->w_id, force) == FAIL)
+	    return;
 }
 
 /*
@@ -2702,6 +2748,25 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
 	hash_unlock(&dict->dv_hashtab);
     }
 }
+
+/*
+ * popup_list()
+ */
+    void
+f_popup_list(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    win_T	*wp;
+    tabpage_T	*tp;
+
+    if (rettv_list_alloc(rettv) != OK)
+	return;
+    FOR_ALL_POPUPWINS(wp)
+	list_append_number(rettv->vval.v_list, wp->w_id);
+    FOR_ALL_TABPAGES(tp)
+	FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
+	    list_append_number(rettv->vval.v_list, wp->w_id);
+}
+
 /*
  * popup_locate({row}, {col})
  */

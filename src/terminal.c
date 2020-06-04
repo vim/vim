@@ -162,6 +162,7 @@ struct terminal_S {
     char_u	*tl_cursor_color; // NULL or allocated
 
     int		tl_using_altscreen;
+    garray_T	tl_osc_buf;	    // incomplete OSC string
 };
 
 #define TMODE_ONCE 1	    // CTRL-\ CTRL-N used
@@ -445,6 +446,7 @@ term_start(
 #endif
     ga_init2(&term->tl_scrollback, sizeof(sb_line_T), 300);
     ga_init2(&term->tl_scrollback_postponed, sizeof(sb_line_T), 300);
+    ga_init2(&term->tl_osc_buf, sizeof(char), 300);
 
     CLEAR_FIELD(split_ea);
     if (opt->jo_curwin)
@@ -457,9 +459,9 @@ term_start(
 	    return NULL;
 	}
 	if (do_ecmd(0, NULL, NULL, &split_ea, ECMD_ONE,
-		     ECMD_HIDE
-			   + ((flags & TERM_START_FORCEIT) ? ECMD_FORCEIT : 0),
-		     curwin) == FAIL)
+		      (buf_hide(curwin->w_buffer) ? ECMD_HIDE : 0)
+			  + ((flags & TERM_START_FORCEIT) ? ECMD_FORCEIT : 0),
+							       curwin) == FAIL)
 	{
 	    vim_free(term);
 	    return NULL;
@@ -1015,6 +1017,7 @@ free_unused_terminals()
 	terminals_to_free = term->tl_next;
 
 	free_scrollback(term);
+	ga_clear(&term->tl_osc_buf);
 
 	term_free_vterm(term);
 	vim_free(term->tl_api);
@@ -1606,7 +1609,7 @@ add_scrollback_line_to_buffer(term_T *term, char_u *text, int len)
     {
 	// Delete the empty line that was in the empty buffer.
 	curbuf = buf;
-	ml_delete(1, FALSE);
+	ml_delete(1);
 	curbuf = curwin->w_buffer;
     }
 }
@@ -1623,7 +1626,8 @@ cell2cellattr(const VTermScreenCell *cell, cellattr_T *attr)
     static int
 equal_celattr(cellattr_T *a, cellattr_T *b)
 {
-    // Comparing the colors should be sufficient.
+    // We only compare the RGB colors, ignoring the ANSI index and type.
+    // Thus black set explicitly is equal the background black.
     return a->fg.red == b->fg.red
 	&& a->fg.green == b->fg.green
 	&& a->fg.blue == b->fg.blue
@@ -1679,7 +1683,7 @@ cleanup_scrollback(term_T *term)
     while (curbuf->b_ml.ml_line_count > term->tl_scrollback_scrolled
 							    && gap->ga_len > 0)
     {
-	ml_delete(curbuf->b_ml.ml_line_count, FALSE);
+	ml_delete(curbuf->b_ml.ml_line_count);
 	line = (sb_line_T *)gap->ga_data + gap->ga_len - 1;
 	vim_free(line->sb_cells);
 	--gap->ga_len;
@@ -2689,10 +2693,13 @@ color2index(VTermColor *color, int fg, int *boldp)
     int blue = color->blue;
     int green = color->green;
 
-    if (color->ansi_index != VTERM_ANSI_INDEX_NONE)
+    if (VTERM_COLOR_IS_DEFAULT_FG(color)
+	    || VTERM_COLOR_IS_DEFAULT_BG(color))
+	return 0;
+    if (VTERM_COLOR_IS_INDEXED(color))
     {
 	// The first 16 colors and default: use the ANSI index.
-	switch (color->ansi_index)
+	switch (color->index + 1)
 	{
 	    case  0: return 0;
 	    case  1: return lookup_color( 0, fg, boldp) + 1; // black
@@ -2998,22 +3005,27 @@ handle_settermprop(
 	void *user)
 {
     term_T	*term = (term_T *)user;
+    char_u	*strval = NULL;
 
     switch (prop)
     {
 	case VTERM_PROP_TITLE:
+	    strval = vim_strnsave((char_u *)value->string.str,
+						       (int)value->string.len);
+	    if (strval == NULL)
+		break;
 	    vim_free(term->tl_title);
 	    // a blank title isn't useful, make it empty, so that "running" is
 	    // displayed
-	    if (*skipwhite((char_u *)value->string) == NUL)
+	    if (*skipwhite(strval) == NUL)
 		term->tl_title = NULL;
 	    // Same as blank
 	    else if (term->tl_arg0_cmd != NULL
-		    && STRNCMP(term->tl_arg0_cmd, (char_u *)value->string,
+		    && STRNCMP(term->tl_arg0_cmd, strval,
 					  (int)STRLEN(term->tl_arg0_cmd)) == 0)
 		term->tl_title = NULL;
 	    // Empty corrupted data of winpty
-	    else if (STRNCMP("  - ", (char_u *)value->string, 4) == 0)
+	    else if (STRNCMP("  - ", strval, 4) == 0)
 		term->tl_title = NULL;
 #ifdef MSWIN
 	    else if (!enc_utf8 && enc_codepage > 0)
@@ -3022,8 +3034,8 @@ handle_settermprop(
 		int	length = 0;
 
 		MultiByteToWideChar_alloc(CP_UTF8, 0,
-			(char*)value->string, (int)STRLEN(value->string),
-								&ret, &length);
+			(char*)value->string.str,
+					(int)value->string.len, &ret, &length);
 		if (ret != NULL)
 		{
 		    WideCharToMultiByte_alloc(enc_codepage, 0,
@@ -3034,7 +3046,10 @@ handle_settermprop(
 	    }
 #endif
 	    else
-		term->tl_title = vim_strsave((char_u *)value->string);
+	    {
+		term->tl_title = strval;
+		strval = NULL;
+	    }
 	    VIM_CLEAR(term->tl_status_text);
 	    if (term == curbuf->b_term)
 		maketitle();
@@ -3057,7 +3072,11 @@ handle_settermprop(
 	    break;
 
 	case VTERM_PROP_CURSORCOLOR:
-	    cursor_color_copy(&term->tl_cursor_color, (char_u*)value->string);
+	    strval = vim_strnsave((char_u *)value->string.str,
+						       (int)value->string.len);
+	    if (strval == NULL)
+		break;
+	    cursor_color_copy(&term->tl_cursor_color, strval);
 	    may_set_cursor_props(term);
 	    break;
 
@@ -3069,6 +3088,8 @@ handle_settermprop(
 	default:
 	    break;
     }
+    vim_free(strval);
+
     // Always return 1, otherwise vterm doesn't store the value internally.
     return 1;
 }
@@ -3121,7 +3142,7 @@ limit_scrollback(term_T *term, garray_T *gap, int update_buffer)
 	{
 	    vim_free(((sb_line_T *)gap->ga_data + i)->sb_cells);
 	    if (update_buffer)
-		ml_delete(1, FALSE);
+		ml_delete(1);
 	}
 	curbuf = curwin->w_buffer;
 
@@ -3446,7 +3467,7 @@ term_channel_closed(channel_T *ch)
 	redraw_statuslines();
 
 	// Need to break out of vgetc().
-	ins_char_typebuf(K_IGNORE);
+	ins_char_typebuf(K_IGNORE, 0);
 	typebuf_was_filled = TRUE;
 
 	term = curbuf->b_term;
@@ -3815,7 +3836,14 @@ term_get_attr(win_T *wp, linenr_T lnum, int col)
     static void
 cterm_color2vterm(int nr, VTermColor *rgb)
 {
-    cterm_color2rgb(nr, &rgb->red, &rgb->green, &rgb->blue, &rgb->ansi_index);
+    cterm_color2rgb(nr, &rgb->red, &rgb->green, &rgb->blue, &rgb->index);
+    if (rgb->index == 0)
+	rgb->type = VTERM_COLOR_RGB;
+    else
+    {
+	rgb->type = VTERM_COLOR_INDEXED;
+	--rgb->index;
+    }
 }
 
 /*
@@ -3847,7 +3875,8 @@ init_default_colors(term_T *term, win_T *wp)
     }
     fg->red = fg->green = fg->blue = fgval;
     bg->red = bg->green = bg->blue = bgval;
-    fg->ansi_index = bg->ansi_index = VTERM_ANSI_INDEX_DEFAULT;
+    fg->type = VTERM_COLOR_RGB | VTERM_COLOR_DEFAULT_FG;
+    bg->type = VTERM_COLOR_RGB | VTERM_COLOR_DEFAULT_BG;
 
     // The 'wincolor' or the highlight group overrules the defaults.
     if (wp != NULL && *wp->w_p_wcr != NUL)
@@ -4181,21 +4210,32 @@ handle_call_command(term_T *term, channel_T *channel, listitem_T *item)
  * We recognize a terminal API command.
  */
     static int
-parse_osc(const char *command, size_t cmdlen, void *user)
+parse_osc(int command, VTermStringFragment frag, void *user)
 {
     term_T	*term = (term_T *)user;
     js_read_T	reader;
     typval_T	tv;
     channel_T	*channel = term->tl_job == NULL ? NULL
 						    : term->tl_job->jv_channel;
+    garray_T	*gap = &term->tl_osc_buf;
 
     // We recognize only OSC 5 1 ; {command}
-    if (cmdlen < 3 || STRNCMP(command, "51;", 3) != 0)
-	return 0; // not handled
+    if (command != 51)
+	return 0;
 
-    reader.js_buf = vim_strnsave((char_u *)command + 3, (int)(cmdlen - 3));
-    if (reader.js_buf == NULL)
+    // Concatenate what was received until the final piece is found.
+    if (ga_grow(gap, (int)frag.len + 1) == FAIL)
+    {
+	ga_clear(gap);
 	return 1;
+    }
+    mch_memmove((char *)gap->ga_data + gap->ga_len, frag.str, frag.len);
+    gap->ga_len += (int)frag.len;
+    if (!frag.final)
+	return 1;
+
+    ((char *)gap->ga_data)[gap->ga_len] = 0;
+    reader.js_buf = gap->ga_data;
     reader.js_fill = NULL;
     reader.js_used = 0;
     if (json_decode(&reader, &tv, 0) == OK
@@ -4229,7 +4269,7 @@ parse_osc(const char *command, size_t cmdlen, void *user)
     else
 	ch_log(channel, "Invalid JSON received");
 
-    vim_free(reader.js_buf);
+    ga_clear(gap);
     clear_tv(&tv);
     return 1;
 }
@@ -4293,14 +4333,11 @@ parse_csi(
     return 1;
 }
 
-static VTermParserCallbacks parser_fallbacks = {
-  NULL,		// text
+static VTermStateFallbacks state_fallbacks = {
   NULL,		// control
-  NULL,		// escape
   parse_csi,	// csi
   parse_osc,	// osc
-  NULL,		// dcs
-  NULL		// resize
+  NULL		// dcs
 };
 
 /*
@@ -4383,7 +4420,7 @@ create_vterm(term_T *term, int rows, int cols)
     value.boolean = 0;
 #endif
     vterm_state_set_termprop(state, VTERM_PROP_CURSORBLINK, &value);
-    vterm_state_set_unrecognised_fallbacks(state, &parser_fallbacks, term);
+    vterm_state_set_unrecognised_fallbacks(state, &state_fallbacks, term);
 
     return OK;
 }
@@ -4484,21 +4521,30 @@ term_get_buf(typval_T *argvars, char *where)
     return buf;
 }
 
-    static int
-same_color(VTermColor *a, VTermColor *b)
+    static void
+clear_cell(VTermScreenCell *cell)
 {
-    return a->red == b->red
-	&& a->green == b->green
-	&& a->blue == b->blue
-	&& a->ansi_index == b->ansi_index;
+    CLEAR_FIELD(*cell);
+    cell->fg.type = VTERM_COLOR_DEFAULT_FG;
+    cell->bg.type = VTERM_COLOR_DEFAULT_BG;
 }
 
     static void
 dump_term_color(FILE *fd, VTermColor *color)
 {
+    int index;
+
+    if (VTERM_COLOR_IS_INDEXED(color))
+	index = color->index + 1;
+    else if (color->type == 0)
+	// use RGB values
+	index = 255;
+    else
+	// default color
+	index = 0;
     fprintf(fd, "%02x%02x%02x%d",
 	    (int)color->red, (int)color->green, (int)color->blue,
-	    (int)color->ansi_index);
+	    index);
 }
 
 /*
@@ -4582,7 +4628,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     }
 
-    CLEAR_FIELD(prev_cell);
+    clear_cell(&prev_cell);
 
     screen = vterm_obtain_screen(term->tl_vterm);
     state = vterm_obtain_state(term->tl_vterm);
@@ -4604,7 +4650,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 						 && pos.row == cursor_pos.row);
 
 	    if (vterm_screen_get_cell(screen, pos, &cell) == 0)
-		CLEAR_FIELD(cell);
+		clear_cell(&cell);
 
 	    for (i = 0; i < VTERM_MAX_CHARS_PER_CELL; ++i)
 	    {
@@ -4624,8 +4670,8 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 	    }
 	    same_attr = vtermAttr2hl(cell.attrs)
 					       == vtermAttr2hl(prev_cell.attrs)
-			&& same_color(&cell.fg, &prev_cell.fg)
-			&& same_color(&cell.bg, &prev_cell.bg);
+			&& vterm_color_is_equal(&cell.fg, &prev_cell.fg)
+			&& vterm_color_is_equal(&cell.bg, &prev_cell.bg);
 	    if (same_chars && cell.width == prev_cell.width && same_attr
 							     && !is_cursor_pos)
 	    {
@@ -4672,14 +4718,14 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 		    else
 		    {
 			fprintf(fd, "%d", vtermAttr2hl(cell.attrs));
-			if (same_color(&cell.fg, &prev_cell.fg))
+			if (vterm_color_is_equal(&cell.fg, &prev_cell.fg))
 			    fputs("&", fd);
 			else
 			{
 			    fputs("#", fd);
 			    dump_term_color(fd, &cell.fg);
 			}
-			if (same_color(&cell.bg, &prev_cell.bg))
+			if (vterm_color_is_equal(&cell.bg, &prev_cell.bg))
 			    fputs("&", fd);
 			else
 			{
@@ -4722,6 +4768,14 @@ append_cell(garray_T *gap, cellattr_T *cell)
     }
 }
 
+    static void
+clear_cellattr(cellattr_T *cell)
+{
+    CLEAR_FIELD(*cell);
+    cell->fg.type = VTERM_COLOR_DEFAULT_FG;
+    cell->bg.type = VTERM_COLOR_DEFAULT_BG;
+}
+
 /*
  * Read the dump file from "fd" and append lines to the current buffer.
  * Return the cell width of the longest line.
@@ -4742,8 +4796,8 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
 
     ga_init2(&ga_text, 1, 90);
     ga_init2(&ga_cell, sizeof(cellattr_T), 90);
-    CLEAR_FIELD(cell);
-    CLEAR_FIELD(empty_cell);
+    clear_cellattr(&cell);
+    clear_cellattr(&empty_cell);
     cursor_pos->row = -1;
     cursor_pos->col = -1;
 
@@ -4853,7 +4907,7 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
 			}
 			else if (c == '#')
 			{
-			    int red, green, blue, index = 0;
+			    int red, green, blue, index = 0, type;
 
 			    c = fgetc(fd);
 			    red = hex2nr(c);
@@ -4875,20 +4929,37 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
 				index = index * 10 + (c - '0');
 				c = fgetc(fd);
 			    }
-
-			    if (is_bg)
+			    if (index == 0 || index == 255)
 			    {
-				cell.bg.red = red;
-				cell.bg.green = green;
-				cell.bg.blue = blue;
-				cell.bg.ansi_index = index;
+				type = VTERM_COLOR_RGB;
+				if (index == 0)
+				{
+				    if (is_bg)
+					type |= VTERM_COLOR_DEFAULT_BG;
+				    else
+					type |= VTERM_COLOR_DEFAULT_FG;
+				}
 			    }
 			    else
 			    {
+				type = VTERM_COLOR_INDEXED;
+				index -= 1;
+			    }
+			    if (is_bg)
+			    {
+				cell.bg.type = type;
+				cell.bg.red = red;
+				cell.bg.green = green;
+				cell.bg.blue = blue;
+				cell.bg.index = index;
+			    }
+			    else
+			    {
+				cell.fg.type = type;
 				cell.fg.red = red;
 				cell.fg.green = green;
 				cell.fg.blue = blue;
-				cell.fg.ansi_index = index;
+				cell.fg.index = index;
 			    }
 			}
 			else
@@ -5077,7 +5148,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	{
 	    buf = curbuf;
 	    while (!(curbuf->b_ml.ml_flags & ML_EMPTY))
-		ml_delete((linenr_T)1, FALSE);
+		ml_delete((linenr_T)1);
 	    free_scrollback(curbuf->b_term);
 	    redraw_later(NOT_VALID);
 	}
@@ -5112,7 +5183,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	}
 
 	// Delete the empty line that was in the empty buffer.
-	ml_delete(1, FALSE);
+	ml_delete(1);
 
 	// For term_dumpload() we are done here.
 	if (!do_diff)
@@ -5201,10 +5272,10 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 			if ((cellattr1 + col)->width
 						   != (cellattr2 + col)->width)
 			    textline[col] = 'w';
-			else if (!same_color(&(cellattr1 + col)->fg,
+			else if (!vterm_color_is_equal(&(cellattr1 + col)->fg,
 						   &(cellattr2 + col)->fg))
 			    textline[col] = 'f';
-			else if (!same_color(&(cellattr1 + col)->bg,
+			else if (!vterm_color_is_equal(&(cellattr1 + col)->bg,
 						   &(cellattr2 + col)->bg))
 			    textline[col] = 'b';
 			else if (vtermAttr2hl((cellattr1 + col)->attrs)
@@ -5303,7 +5374,7 @@ term_swap_diff()
 	if (p == NULL)
 	    return OK;
 	ml_append(bot_start, p, 0, FALSE);
-	ml_delete(1, FALSE);
+	ml_delete(1);
 	vim_free(p);
     }
 
@@ -5313,7 +5384,7 @@ term_swap_diff()
 	p = vim_strsave(ml_get(bot_start + lnum));
 	if (p == NULL)
 	    return OK;
-	ml_delete(bot_start + lnum, FALSE);
+	ml_delete(bot_start + lnum);
 	ml_append(lnum - 1, p, 0, FALSE);
 	vim_free(p);
     }
@@ -5323,14 +5394,14 @@ term_swap_diff()
     if (p == NULL)
 	return OK;
     ml_append(line_count - top_rows - 1, p, 0, FALSE);
-    ml_delete(bot_rows + 1, FALSE);
+    ml_delete(bot_rows + 1);
     vim_free(p);
 
     // move bottom title to top
     p = vim_strsave(ml_get(line_count - top_rows));
     if (p == NULL)
 	return OK;
-    ml_delete(line_count - top_rows, FALSE);
+    ml_delete(line_count - top_rows);
     ml_append(bot_rows, p, 0, FALSE);
     vim_free(p);
 
@@ -5783,6 +5854,7 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 	else
 	{
 	    VTermScreenCell cell;
+
 	    if (vterm_screen_get_cell(screen, pos, &cell) == 0)
 		break;
 	    for (i = 0; i < VTERM_MAX_CHARS_PER_CELL; ++i)

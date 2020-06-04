@@ -2317,6 +2317,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :debugg	repeat.txt	/*:debugg*
 :debuggreedy	repeat.txt	/*:debuggreedy*
 :def	vim9.txt	/*:def*
+:defc	vim9.txt	/*:defc*
+:defcompile	vim9.txt	/*:defcompile*
 :del	change.txt	/*:del*
 :delc	map.txt	/*:delc*
 :delcommand	map.txt	/*:delcommand*
@@ -4253,6 +4255,7 @@ E457	print.txt	/*E457*
 E458	message.txt	/*E458*
 E459	message.txt	/*E459*
 E46	message.txt	/*E46*
+E460	eval.txt	/*E460*
 E461	eval.txt	/*E461*
 E462	editing.txt	/*E462*
 E463	netbeans.txt	/*E463*
@@ -4678,6 +4681,7 @@ E855	autocmd.txt	/*E855*
 E858	eval.txt	/*E858*
 E859	eval.txt	/*E859*
 E86	windows.txt	/*E86*
+E861	popup.txt	/*E861*
 E862	eval.txt	/*E862*
 E863	popup.txt	/*E863*
 E864	pattern.txt	/*E864*
@@ -6127,6 +6131,7 @@ edit-files	editing.txt	/*edit-files*
 edit-intro	editing.txt	/*edit-intro*
 edit-no-break	usr_25.txt	/*edit-no-break*
 edit-paragraph-join	usr_25.txt	/*edit-paragraph-join*
+edit-window	windows.txt	/*edit-window*
 editing.txt	editing.txt	/*editing.txt*
 efm-%>	quickfix.txt	/*efm-%>*
 efm-entries	quickfix.txt	/*efm-entries*
@@ -7699,6 +7704,7 @@ mapmode-v	map.txt	/*mapmode-v*
 mapmode-x	map.txt	/*mapmode-x*
 mapping	map.txt	/*mapping*
 mapping-functions	usr_41.txt	/*mapping-functions*
+mapset()	eval.txt	/*mapset()*
 mark	motion.txt	/*mark*
 mark-functions	usr_41.txt	/*mark-functions*
 mark-motions	motion.txt	/*mark-motions*
@@ -8382,6 +8388,7 @@ popup_findpreview()	popup.txt	/*popup_findpreview()*
 popup_getoptions()	popup.txt	/*popup_getoptions()*
 popup_getpos()	popup.txt	/*popup_getpos()*
 popup_hide()	popup.txt	/*popup_hide()*
+popup_list()	popup.txt	/*popup_list()*
 popup_locate()	popup.txt	/*popup_locate()*
 popup_menu()	popup.txt	/*popup_menu()*
 popup_menu-shortcut-example	popup.txt	/*popup_menu-shortcut-example*
@@ -9459,6 +9466,7 @@ termdebug-prompt	terminal.txt	/*termdebug-prompt*
 termdebug-starting	terminal.txt	/*termdebug-starting*
 termdebug-stepping	terminal.txt	/*termdebug-stepping*
 termdebug-variables	terminal.txt	/*termdebug-variables*
+termdebug_map_K	terminal.txt	/*termdebug_map_K*
 termdebug_popup	terminal.txt	/*termdebug_popup*
 termdebug_shortcuts	terminal.txt	/*termdebug_shortcuts*
 termdebug_use_prompt	terminal.txt	/*termdebug_use_prompt*

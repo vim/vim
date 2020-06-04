@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.2.  Last change: 2020 Apr 13
+*popup.txt*  For Vim version 8.2.  Last change: 2020 May 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -150,6 +150,7 @@ different:						*E863*
 - When the job ends, the popup window closes.
 - The popup window can be closed with `popup_close()`, the terminal buffer
   then becomes hidden.
+- It is not possible to open a second popup window with a terminal. *E861*
 - The default Pmenu color is only used for the border and padding.  To change
   the color of the terminal itself set the Terminal highlight group before
   creating the terminal.  Setting 'wincolor' later can work but requires the
@@ -197,6 +198,7 @@ Other:
 	|popup_getoptions()|	get current options for a popup
 	|popup_getpos()|	get actual position and size of a popup
 	|popup_locate()|	find popup window at a screen position
+	|popup_list()|		get list of all popups
 
 
 DETAILS						*popup-function-details*
@@ -235,8 +237,15 @@ popup_beval({what}, {options})			*popup_beval()*
 			GetText()->popup_beval({})
 <
 							*popup_clear()*
-popup_clear()	Emergency solution to a misbehaving plugin: close all popup
+popup_clear([{force}])
+		Emergency solution to a misbehaving plugin: close all popup
 		windows for the current tab and global popups.
+		Close callbacks are not invoked.
+		When {force} is not present this will fail if the current
+		window is a popup.
+		When {force} is present and |TRUE| the popup is also closed
+		when it is the current window.  If a terminal is running in a
+		popup it is killed.
 
 
 popup_close({id} [, {result}])				*popup_close()*
@@ -414,6 +423,10 @@ popup_hide({id})						*popup_hide()*
 
 		Can also be used as a |method|: >
 			GetPopup()->popup_hide()
+
+popup_list()						 *popup_list()*
+		Return a List with the |window-ID| of all existing popups.
+
 
 popup_locate({row}, {col})				 *popup_locate()*
 		Return the |window-ID| of the popup at screen position {row}

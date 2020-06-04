@@ -40,13 +40,16 @@ typedef enum {
     ISN_STOREW,	    // pop into window-local variable isn_arg.string
     ISN_STORET,	    // pop into tab-local variable isn_arg.string
     ISN_STORES,	    // pop into script variable isn_arg.loadstore
+    ISN_STOREOUTER,  // pop variable into outer scope isn_arg.number
     ISN_STORESCRIPT, // pop into script variable isn_arg.script
-    ISN_STOREOPT,   // pop into option isn_arg.string
+    ISN_STOREOPT,    // pop into option isn_arg.string
     ISN_STOREENV,    // pop into environment variable isn_arg.string
     ISN_STOREREG,    // pop into register isn_arg.number
     // ISN_STOREOTHER, // pop into other script variable isn_arg.other.
 
     ISN_STORENR,    // store number into local variable isn_arg.storenr.stnr_idx
+    ISN_STORELIST,	// store into list, value/index/varable on stack
+    ISN_STOREDICT,	// store into dictionary, value/index/variable on stack
 
     ISN_UNLET,		// unlet variable isn_arg.unlet.ul_name
     ISN_UNLETENV,	// unlet environment variable isn_arg.unlet.ul_name
@@ -109,7 +112,8 @@ typedef enum {
     // expression operations
     ISN_CONCAT,
     ISN_INDEX,	    // [expr] list index
-    ISN_MEMBER,	    // dict.member using isn_arg.string
+    ISN_MEMBER,	    // dict[member]
+    ISN_STRINGMEMBER, // dict.member using isn_arg.string
     ISN_2BOOL,	    // convert value to bool, invert if isn_arg.number != 0
     ISN_2STRING,    // convert value to string at isn_arg.number on stack
     ISN_NEGATENR,   // apply "-" to number
@@ -260,21 +264,6 @@ struct isn_S {
 };
 
 /*
- * Structure to hold the context of a compiled function, used by closures
- * defined in that function.
- */
-typedef struct funcstack_S
-{
-    garray_T	fs_ga;		// contains the stack, with:
-				// - arguments
-				// - frame
-				// - local variables
-
-    int		fs_refcount;	// nr of closures referencing this funcstack
-    int		fs_copyID;	// for garray_T collection
-} funcstack_T;
-
-/*
  * Info about a function defined with :def.  Used in "def_functions".
  */
 struct dfunc_S {
@@ -285,11 +274,6 @@ struct dfunc_S {
     garray_T	df_def_args_isn;    // default argument instructions
     isn_T	*df_instr;	    // function body to be executed
     int		df_instr_count;
-
-    garray_T	*df_ectx_stack;	    // where compiled closure finds local vars
-    int		df_ectx_frame;	    // index of function frame in uf_ectx_stack
-    funcstack_T	*df_funcstack;	    // copy of stack for closure, used after
-				    // closure context function returns
 
     int		df_varcount;	    // number of local variables
     int		df_closure_count;   // number of closures created

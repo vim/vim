@@ -1866,6 +1866,19 @@ screen_start_highlight(int attr)
 		    if (aep->ae_u.cterm.bg_color)
 			term_bg_color(aep->ae_u.cterm.bg_color - 1);
 		}
+#ifdef FEAT_TERMGUICOLORS
+		if (p_tgc && aep->ae_u.cterm.ul_rgb != CTERMCOLOR)
+		{
+		    if (aep->ae_u.cterm.ul_rgb != INVALCOLOR)
+			term_ul_rgb_color(aep->ae_u.cterm.ul_rgb);
+		}
+		else
+#endif
+		if (t_colors > 1)
+		{
+		    if (aep->ae_u.cterm.ul_color)
+			term_ul_color(aep->ae_u.cterm.ul_color - 1);
+		}
 
 		if (!IS_CTERM)
 		{
@@ -1882,7 +1895,7 @@ screen_stop_highlight(void)
 {
     int	    do_ME = FALSE;	    // output T_ME code
 #if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
-    int	    do_ME_fg, do_ME_bg;
+    int	    do_ME_fg = FALSE, do_ME_bg = FALSE;
 #endif
 
     if (screen_attr != 0
@@ -2021,6 +2034,8 @@ screen_stop_highlight(void)
 		    term_fg_rgb_color(cterm_normal_fg_gui_color);
 		if (cterm_normal_bg_gui_color != INVALCOLOR)
 		    term_bg_rgb_color(cterm_normal_bg_gui_color);
+		if (cterm_normal_ul_gui_color != INVALCOLOR)
+		    term_ul_rgb_color(cterm_normal_ul_gui_color);
 	    }
 	    else
 #endif
@@ -2032,6 +2047,8 @@ screen_stop_highlight(void)
 			term_fg_color(cterm_normal_fg_color - 1);
 		    if (cterm_normal_bg_color != 0)
 			term_bg_color(cterm_normal_bg_color - 1);
+		    if (cterm_normal_ul_color != 0)
+			term_ul_color(cterm_normal_ul_color - 1);
 		    if (cterm_normal_fg_bold)
 			out_str(T_MD);
 		}
@@ -3868,19 +3885,6 @@ screen_del_lines(
 	type = USE_REDRAW;
     else if (can_clear(T_CD) && result_empty)
 	type = USE_T_CD;
-#if defined(__BEOS__) && defined(BEOS_DR8)
-    /*
-     * USE_NL does not seem to work in Terminal of DR8 so we set T_DB="" in
-     * its internal termcap... this works okay for tests which test *T_DB !=
-     * NUL.  It has the disadvantage that the user cannot use any :set t_*
-     * command to get T_DB (back) to empty_option, only :set term=... will do
-     * the trick...
-     * Anyway, this hack will hopefully go away with the next OS release.
-     * (Olaf Seibert)
-     */
-    else if (row == 0 && T_DB == empty_option
-					&& (line_count == 1 || *T_CDL == NUL))
-#else
     else if (row == 0 && (
 #ifndef AMIGA
 	// On the Amiga, somehow '\n' on the last line doesn't always scroll
@@ -3888,7 +3892,6 @@ screen_del_lines(
 			    line_count == 1 ||
 #endif
 						*T_CDL == NUL))
-#endif
 	type = USE_NL;
     else if (*T_CDL != NUL && line_count > 1 && can_delete)
 	type = USE_T_CDL;

@@ -724,6 +724,7 @@ Cursor and mark position:		*cursor-functions* *mark-functions*
 	getcurpos()		get position of the cursor
 	getpos()		get position of cursor, mark, etc.
 	setpos()		set position of cursor, mark, etc.
+	getmarklist()		list of global/local marks
 	byte2line()		get line number at a specific byte count
 	line2byte()		byte count at a specific line
 	diff_filler()		get the number of filler lines above a line
@@ -790,6 +791,7 @@ System functions and manipulation of files:
 	hostname()		name of the system
 	readfile()		read a file into a List of lines
 	readdir()		get a List of file names in a directory
+	readdirex()		get a List of file information in a directory
 	writefile()		write a List of lines or Blob into a file
 
 Date and Time:				*date-functions* *time-functions*

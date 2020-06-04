@@ -2183,7 +2183,7 @@ msgstr "不正確的 VIM 選項"
 msgid "keyboard interrupt"
 msgstr "鍵盤中斷"
 
-msgid "vim error"
+msgid "Vim error"
 msgstr "vim 錯誤"
 
 msgid "cannot create buffer/window command: object is being deleted"
@@ -2456,8 +2456,8 @@ msgstr "-W <scriptout>\t對檔案 <scriptout> 寫入所有輸入的命令"
 msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\t編輯編碼過的檔案"
 
-msgid "-display <display>\tConnect vim to this particular X-server"
-msgstr "-display <display>\t將 vim 與指定的 X-server 連線"
+msgid "-display <display>\tConnect Vim to this particular X-server"
+msgstr "-display <display>\t將 Vim 與指定的 X-server 連線"
 
 msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\t不要連線到 X Server"
@@ -2518,10 +2518,10 @@ msgstr ""
 "\n"
 "gvim 認得的參數 (Athena 版):\n"
 
-msgid "-display <display>\tRun vim on <display>"
+msgid "-display <display>\tRun Vim on <display>"
 msgstr "-display <display>\t在視窗 <display> 執行 vim"
 
-msgid "-iconic\t\tStart vim iconified"
+msgid "-iconic\t\tStart Vim iconified"
 msgstr "-iconic\t\t啟動後圖示化(iconified)"
 
 msgid "-name <name>\t\tUse resource as if vim was <name>"
@@ -2586,8 +2586,8 @@ msgstr ""
 "\n"
 "gvim 認得的參數 (GTK+ 版):\n"
 
-msgid "-display <display>\tRun vim on <display> (also: --display)"
-msgstr "-display <display>\t在 <display> 執行 vim (也可用 --display)"
+msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgstr "-display <display>\t在 <display> 執行 Vim (也可用 --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"
 msgstr "--role <role>\t設定獨特的角色(role)以區分主視窗"

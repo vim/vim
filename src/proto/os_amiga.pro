@@ -31,7 +31,7 @@ int mch_can_exe(char_u *name, char_u **path, int use_path);
 int mch_nodetype(char_u *name);
 void mch_early_init(void);
 void mch_exit(int r);
-void mch_settmode(int tmode);
+void mch_settmode(tmode_T tmode);
 int mch_get_shellsize(void);
 void mch_set_shellsize(void);
 void mch_new_shellsize(void);

@@ -1,12 +1,12 @@
-" Tests for maparg().
+" Tests for maparg(), mapcheck() and mapset().
 " Also test utf8 map with a 0x80 byte.
 " Also test mapcheck()
 
-function s:SID()     
+func s:SID()     
   return str2nr(matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_SID$'))
-endfun
+endfunc
 
-function Test_maparg()
+func Test_maparg()
   new
   set cpo-=<
   set encoding=utf8
@@ -17,22 +17,26 @@ function Test_maparg()
   vnoremap <script> <buffer> <expr> <silent> bar isbar
   call assert_equal("is<F4>foo", maparg('foo<C-V>'))
   call assert_equal({'silent': 0, 'noremap': 0, 'script': 0, 'lhs': 'foo<C-V>',
+        \ 'lhsraw': "foo\x80\xfc\x04V", 'lhsrawalt': "foo\x16",
         \ 'mode': ' ', 'nowait': 0, 'expr': 0, 'sid': sid, 'lnum': lnum + 1, 
 	\ 'rhs': 'is<F4>foo', 'buffer': 0},
 	\ maparg('foo<C-V>', '', 0, 1))
-  call assert_equal({'silent': 1, 'noremap': 1, 'script': 1, 'lhs': 'bar', 'mode': 'v',
+  call assert_equal({'silent': 1, 'noremap': 1, 'script': 1, 'lhs': 'bar',
+        \ 'lhsraw': 'bar', 'mode': 'v',
         \ 'nowait': 0, 'expr': 1, 'sid': sid, 'lnum': lnum + 2,
 	\ 'rhs': 'isbar', 'buffer': 1},
         \ 'bar'->maparg('', 0, 1))
   let lnum = expand('<sflnum>')
   map <buffer> <nowait> foo bar
-  call assert_equal({'silent': 0, 'noremap': 0, 'script': 0, 'lhs': 'foo', 'mode': ' ',
+  call assert_equal({'silent': 0, 'noremap': 0, 'script': 0, 'lhs': 'foo',
+        \ 'lhsraw': 'foo', 'mode': ' ',
         \ 'nowait': 1, 'expr': 0, 'sid': sid, 'lnum': lnum + 1, 'rhs': 'bar',
 	\ 'buffer': 1},
         \ maparg('foo', '', 0, 1))
   let lnum = expand('<sflnum>')
   tmap baz foo
-  call assert_equal({'silent': 0, 'noremap': 0, 'script': 0, 'lhs': 'baz', 'mode': 't',
+  call assert_equal({'silent': 0, 'noremap': 0, 'script': 0, 'lhs': 'baz',
+        \ 'lhsraw': 'baz', 'mode': 't',
         \ 'nowait': 0, 'expr': 0, 'sid': sid, 'lnum': lnum + 1, 'rhs': 'foo',
 	\ 'buffer': 0},
         \ maparg('baz', 't', 0, 1))
@@ -75,7 +79,7 @@ function Test_maparg()
   let d = maparg('esc', 'i', 1, 1)
   call assert_equal(['esc', "\<C-V>\<C-V>\<Esc>", '!'], [d.lhs, d.rhs, d.mode])
   abclear
-endfunction
+endfunc
 
 func Test_mapcheck()
   call assert_equal('', mapcheck('a'))
@@ -116,7 +120,7 @@ func Test_mapcheck()
   unabbr ab
 endfunc
 
-function Test_range_map()
+func Test_range_map()
   new
   " Outside of the range, minimum
   inoremap <Char-0x1040> a
@@ -131,6 +135,124 @@ function Test_range_map()
   inoremap <Char-0xf040> d
   execute "normal a\uf040\<Esc>"
   call assert_equal("abcd", getline(1))
-endfunction
+endfunc
+
+func One_mapset_test(keys)
+  exe 'nnoremap ' .. a:keys .. ' original<CR>'
+  let orig = maparg(a:keys, 'n', 0, 1)
+  call assert_equal(a:keys, orig.lhs)
+  call assert_equal('original<CR>', orig.rhs)
+  call assert_equal('n', orig.mode)
+
+  exe 'nunmap ' .. a:keys
+  let d = maparg(a:keys, 'n', 0, 1)
+  call assert_equal({}, d)
+
+  call mapset('n', 0, orig)
+  let d = maparg(a:keys, 'n', 0, 1)
+  call assert_equal(a:keys, d.lhs)
+  call assert_equal('original<CR>', d.rhs)
+  call assert_equal('n', d.mode)
+
+  exe 'nunmap ' .. a:keys
+endfunc
+
+func Test_mapset()
+  call One_mapset_test('K')
+  call One_mapset_test('<F3>')
+
+  " Check <> key conversion
+  new
+  inoremap K one<Left>x
+  call feedkeys("iK\<Esc>", 'xt')
+  call assert_equal('onxe', getline(1))
+
+  let orig = maparg('K', 'i', 0, 1)
+  call assert_equal('K', orig.lhs)
+  call assert_equal('one<Left>x', orig.rhs)
+  call assert_equal('i', orig.mode)
+
+  iunmap K
+  let d = maparg('K', 'i', 0, 1)
+  call assert_equal({}, d)
+
+  call mapset('i', 0, orig)
+  call feedkeys("SK\<Esc>", 'xt')
+  call assert_equal('onxe', getline(1))
+
+  iunmap K
+
+  " Test literal <CR> using a backslash
+  let cpo_save = &cpo
+  set cpo-=B
+  inoremap K one\<CR>two
+  call feedkeys("SK\<Esc>", 'xt')
+  call assert_equal('one<CR>two', getline(1))
+
+  let orig = maparg('K', 'i', 0, 1)
+  call assert_equal('K', orig.lhs)
+  call assert_equal('one\<CR>two', orig.rhs)
+  call assert_equal('i', orig.mode)
+
+  iunmap K
+  let d = maparg('K', 'i', 0, 1)
+  call assert_equal({}, d)
+
+  call mapset('i', 0, orig)
+  call feedkeys("SK\<Esc>", 'xt')
+  call assert_equal('one<CR>two', getline(1))
+
+  iunmap K
+
+  " Test literal <CR> using CTRL-V
+  inoremap K one<CR>two
+  call feedkeys("SK\<Esc>", 'xt')
+  call assert_equal('one<CR>two', getline(1))
+
+  let orig = maparg('K', 'i', 0, 1)
+  call assert_equal('K', orig.lhs)
+  call assert_equal("one\x16<CR>two", orig.rhs)
+  call assert_equal('i', orig.mode)
+
+  iunmap K
+  let d = maparg('K', 'i', 0, 1)
+  call assert_equal({}, d)
+
+  call mapset('i', 0, orig)
+  call feedkeys("SK\<Esc>", 'xt')
+  call assert_equal('one<CR>two', getline(1))
+
+  iunmap K
+  let &cpo = cpo_save
+  bwipe!
+endfunc
+
+func Check_ctrlb_map(d, check_alt)
+  call assert_equal('<C-B>', a:d.lhs)
+  if a:check_alt
+    call assert_equal("\x80\xfc\x04B", a:d.lhsraw)
+    call assert_equal("\x02", a:d.lhsrawalt)
+  else
+    call assert_equal("\x02", a:d.lhsraw)
+  endif
+endfunc
+
+func Test_map_restore()
+  " Test restoring map with alternate keycode
+  nmap <C-B> back
+  let d = maparg('<C-B>', 'n', 0, 1)
+  call Check_ctrlb_map(d, 1)
+  let dsimp = maparg("\x02", 'n', 0, 1)
+  call Check_ctrlb_map(dsimp, 0)
+  nunmap <C-B>
+  call mapset('n', 0, d)
+  let d = maparg('<C-B>', 'n', 0, 1)
+  call Check_ctrlb_map(d, 1)
+  let dsimp = maparg("\x02", 'n', 0, 1)
+  call Check_ctrlb_map(dsimp, 0)
+
+  nunmap <C-B>
+
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

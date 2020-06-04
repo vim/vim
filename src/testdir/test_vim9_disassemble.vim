@@ -17,6 +17,7 @@ def s:ScriptFuncLoad(arg: string)
   buffers
   echo arg
   echo local
+  echo &lines
   echo v:version
   echo s:scriptvar
   echo g:globalvar
@@ -42,6 +43,7 @@ def Test_disassemble_load()
         ' EXEC \+buffers.*' ..
         ' LOAD arg\[-1\].*' ..
         ' LOAD $0.*' ..
+        ' LOADOPT &lines.*' ..
         ' LOADV v:version.*' ..
         ' LOADS s:scriptvar from .*test_vim9_disassemble.vim.*' ..
         ' LOADG g:globalvar.*' ..
@@ -152,6 +154,37 @@ def Test_disassemble_store()
         res)
 enddef
 
+def s:ScriptFuncStoreMember()
+  let locallist: list<number> = []
+  locallist[0] = 123
+  let localdict: dict<number> = {}
+  localdict["a"] = 456
+enddef
+
+def Test_disassemble_store_member()
+  let res = execute('disass s:ScriptFuncStoreMember')
+  assert_match('<SNR>\d*_ScriptFuncStoreMember\_s*' ..
+        'let locallist: list<number> = []\_s*' ..
+        '\d NEWLIST size 0\_s*' ..
+        '\d STORE $0\_s*' ..
+        'locallist\[0\] = 123\_s*' ..
+        '\d PUSHNR 123\_s*' ..
+        '\d PUSHNR 0\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d STORELIST\_s*' ..
+        'let localdict: dict<number> = {}\_s*' ..
+        '\d NEWDICT size 0\_s*' ..
+        '\d STORE $1\_s*' ..
+        'localdict\["a"\] = 456\_s*' ..
+        '\d\+ PUSHNR 456\_s*' ..
+        '\d\+ PUSHS "a"\_s*' ..
+        '\d\+ LOAD $1\_s*' ..
+        '\d\+ STOREDICT\_s*' ..
+        '\d\+ PUSHNR 0\_s*' ..
+        '\d\+ RETURN',
+        res)
+enddef
+
 def s:ScriptFuncUnlet()
   g:somevar = "value"
   unlet g:somevar
@@ -161,46 +194,53 @@ enddef
 
 def Test_disassemble_unlet()
   let res = execute('disass s:ScriptFuncUnlet')
-  assert_match('<SNR>\d*_ScriptFuncUnlet.*' ..
-        'g:somevar = "value".*' ..
-        '\d PUSHS "value".*' ..
-        '\d STOREG g:somevar.*' ..
-        'unlet g:somevar.*' ..
-        '\d UNLET g:somevar.*' ..
-        'unlet! g:somevar.*' ..
-        '\d UNLET! g:somevar.*' ..
-        'unlet $SOMEVAR.*' ..
-        '\d UNLETENV $SOMEVAR.*',
+  assert_match('<SNR>\d*_ScriptFuncUnlet\_s*' ..
+        'g:somevar = "value"\_s*' ..
+        '\d PUSHS "value"\_s*' ..
+        '\d STOREG g:somevar\_s*' ..
+        'unlet g:somevar\_s*' ..
+        '\d UNLET g:somevar\_s*' ..
+        'unlet! g:somevar\_s*' ..
+        '\d UNLET! g:somevar\_s*' ..
+        'unlet $SOMEVAR\_s*' ..
+        '\d UNLETENV $SOMEVAR\_s*',
         res)
 enddef
 
 def s:ScriptFuncTry()
   try
-    echo 'yes'
+    echo "yes"
   catch /fail/
-    echo 'no'
+    echo "no"
   finally
-    throw 'end'
+    throw "end"
   endtry
 enddef
 
 def Test_disassemble_try()
   let res = execute('disass s:ScriptFuncTry')
-  assert_match('<SNR>\d*_ScriptFuncTry.*' ..
-        'try.*' ..
-        'TRY catch -> \d\+, finally -> \d\+.*' ..
-        'catch /fail/.*' ..
-        ' JUMP -> \d\+.*' ..
-        ' PUSH v:exception.*' ..
-        ' PUSHS "fail".*' ..
-        ' COMPARESTRING =\~.*' ..
-        ' JUMP_IF_FALSE -> \d\+.*' ..
-        ' CATCH.*' ..
-        'finally.*' ..
-        ' PUSHS "end".*' ..
-        ' THROW.*' ..
-        'endtry.*' ..
-        ' ENDTRY.*',
+  assert_match('<SNR>\d*_ScriptFuncTry\_s*' ..
+        'try\_s*' ..
+        '\d TRY catch -> \d\+, finally -> \d\+\_s*' ..
+        'echo "yes"\_s*' ..
+        '\d PUSHS "yes"\_s*' ..
+        '\d ECHO 1\_s*' ..
+        'catch /fail/\_s*' ..
+        '\d JUMP -> \d\+\_s*' ..
+        '\d PUSH v:exception\_s*' ..
+        '\d PUSHS "fail"\_s*' ..
+        '\d COMPARESTRING =\~\_s*' ..
+        '\d JUMP_IF_FALSE -> \d\+\_s*' ..
+        '\d CATCH\_s*' ..
+        'echo "no"\_s*' ..
+        '\d\+ PUSHS "no"\_s*' ..
+        '\d\+ ECHO 1\_s*' ..
+        'finally\_s*' ..
+        'throw "end"\_s*' ..
+        '\d\+ PUSHS "end"\_s*' ..
+        '\d\+ THROW\_s*' ..
+        'endtry\_s*' ..
+        '\d\+ ENDTRY',
         res)
 enddef
 
@@ -211,18 +251,19 @@ enddef
 
 def Test_disassemble_new()
   let res = execute('disass s:ScriptFuncNew')
-  assert_match('<SNR>\d*_ScriptFuncNew.*' ..
-        'let ll = \[1, "two", 333].*' ..
-        'PUSHNR 1.*' ..
-        'PUSHS "two".*' ..
-        'PUSHNR 333.*' ..
-        'NEWLIST size 3.*' ..
-        'let dd = #{one: 1, two: "val"}.*' ..
-        'PUSHS "one".*' ..
-        'PUSHNR 1.*' ..
-        'PUSHS "two".*' ..
-        'PUSHS "val".*' ..
-        'NEWDICT size 2.*',
+  assert_match('<SNR>\d*_ScriptFuncNew\_s*' ..
+        'let ll = \[1, "two", 333\]\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d PUSHS "two"\_s*' ..
+        '\d PUSHNR 333\_s*' ..
+        '\d NEWLIST size 3\_s*' ..
+        '\d STORE $0\_s*' ..
+        'let dd = #{one: 1, two: "val"}\_s*' ..
+        '\d PUSHS "one"\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d PUSHS "two"\_s*' ..
+        '\d PUSHS "val"\_s*' ..
+        '\d NEWDICT size 2\_s*',
         res)
 enddef
 
@@ -256,39 +297,91 @@ enddef
 
 def Test_disassemble_call()
   let res = execute('disass s:ScriptFuncCall')
-  assert_match('<SNR>\d\+_ScriptFuncCall.*' ..
-        'changenr().*' ..
-        ' BCALL changenr(argc 0).*' ..
-        'char2nr("abc").*' ..
-        ' PUSHS "abc".*' ..
-        ' BCALL char2nr(argc 1).*' ..
-        'Test_disassemble_new().*' ..
-        ' DCALL Test_disassemble_new(argc 0).*' ..
-        'FuncWithArg(343).*' ..
-        ' PUSHNR 343.*' ..
-        ' DCALL FuncWithArg(argc 1).*' ..
-        'ScriptFuncNew().*' ..
-        ' DCALL <SNR>\d\+_ScriptFuncNew(argc 0).*' ..
-        's:ScriptFuncNew().*' ..
-        ' DCALL <SNR>\d\+_ScriptFuncNew(argc 0).*' ..
-        'UserFunc().*' ..
-        ' UCALL UserFunc(argc 0).*' ..
-        'UserFuncWithArg("foo").*' ..
-        ' PUSHS "foo".*' ..
-        ' UCALL UserFuncWithArg(argc 1).*' ..
-        'let FuncRef = function("UserFunc").*' ..
-        'FuncRef().*' ..
-        ' LOAD $\d.*' ..
-        ' PCALL (argc 0).*' ..
-        'let FuncRefWithArg = function("UserFuncWithArg").*' ..
-        'FuncRefWithArg("bar").*' ..
-        ' PUSHS "bar".*' ..
-        ' LOAD $\d.*' ..
-        ' PCALL (argc 1).*' ..
-        'return "yes".*' ..
-        ' PUSHS "yes".*' ..
-        ' RETURN.*',
+  assert_match('<SNR>\d\+_ScriptFuncCall\_s*' ..
+        'changenr()\_s*' ..
+        '\d BCALL changenr(argc 0)\_s*' ..
+        '\d DROP\_s*' ..
+        'char2nr("abc")\_s*' ..
+        '\d PUSHS "abc"\_s*' ..
+        '\d BCALL char2nr(argc 1)\_s*' ..
+        '\d DROP\_s*' ..
+        'Test_disassemble_new()\_s*' ..
+        '\d DCALL Test_disassemble_new(argc 0)\_s*' ..
+        '\d DROP\_s*' ..
+        'FuncWithArg(343)\_s*' ..
+        '\d\+ PUSHNR 343\_s*' ..
+        '\d\+ DCALL FuncWithArg(argc 1)\_s*' ..
+        '\d\+ DROP\_s*' ..
+        'ScriptFuncNew()\_s*' ..
+        '\d\+ DCALL <SNR>\d\+_ScriptFuncNew(argc 0)\_s*' ..
+        '\d\+ DROP\_s*' ..
+        's:ScriptFuncNew()\_s*' ..
+        '\d\+ DCALL <SNR>\d\+_ScriptFuncNew(argc 0)\_s*' ..
+        '\d\+ DROP\_s*' ..
+        'UserFunc()\_s*' ..
+        '\d\+ UCALL UserFunc(argc 0)\_s*' ..
+        '\d\+ DROP\_s*' ..
+        'UserFuncWithArg("foo")\_s*' ..
+        '\d\+ PUSHS "foo"\_s*' ..
+        '\d\+ UCALL UserFuncWithArg(argc 1)\_s*' ..
+        '\d\+ DROP\_s*' ..
+        'let FuncRef = function("UserFunc")\_s*' ..
+        '\d\+ PUSHS "UserFunc"\_s*' ..
+        '\d\+ BCALL function(argc 1)\_s*' ..
+        '\d\+ STORE $0\_s*' ..
+        'FuncRef()\_s*' ..
+        '\d\+ LOAD $\d\_s*' ..
+        '\d\+ PCALL (argc 0)\_s*' ..
+        '\d\+ DROP\_s*' ..
+        'let FuncRefWithArg = function("UserFuncWithArg")\_s*' ..
+        '\d\+ PUSHS "UserFuncWithArg"\_s*' ..
+        '\d\+ BCALL function(argc 1)\_s*' ..
+        '\d\+ STORE $1\_s*' ..
+        'FuncRefWithArg("bar")\_s*' ..
+        '\d\+ PUSHS "bar"\_s*' ..
+        '\d\+ LOAD $\d\_s*' ..
+        '\d\+ PCALL (argc 1)\_s*' ..
+        '\d\+ DROP\_s*' ..
+        'return "yes"\_s*' ..
+        '\d\+ PUSHS "yes"\_s*' ..
+        '\d\+ RETURN',
         res)
+enddef
+
+def s:CreateRefs()
+  let local = 'a'
+  def Append(arg: string)
+    local ..= arg
+  enddef
+  g:Append = Append
+  def Get(): string
+    return local
+  enddef
+  g:Get = Get
+enddef
+
+def Test_disassemble_closure()
+  CreateRefs()
+  let res = execute('disass g:Append')
+  assert_match('<lambda>\d\_s*' ..
+        'local ..= arg\_s*' ..
+        '\d LOADOUTER $0\_s*' ..
+        '\d LOAD arg\[-1\]\_s*' ..
+        '\d CONCAT\_s*' ..
+        '\d STOREOUTER $0\_s*' ..
+        '\d PUSHNR 0\_s*' ..
+        '\d RETURN',
+        res)
+
+  res = execute('disass g:Get')
+  assert_match('<lambda>\d\_s*' ..
+        'return local\_s*' ..
+        '\d LOADOUTER $0\_s*' ..
+        '\d RETURN',
+        res)
+
+  unlet g:Append
+  unlet g:Get
 enddef
 
 
@@ -304,15 +397,15 @@ enddef
 
 def Test_disassemble_pcall()
   let res = execute('disass s:ScriptPCall')
-  assert_match('<SNR>\d\+_ScriptPCall.*' ..
-        'RefThis()("text").*' ..
-        '\d DCALL RefThis(argc 0).*' ..
-        '\d PUSHS "text".*' ..
-        '\d PCALL top (argc 1).*' ..
-        '\d PCALL end.*' ..
-        '\d DROP.*' ..
-        '\d PUSHNR 0.*' ..
-        '\d RETURN.*',
+  assert_match('<SNR>\d\+_ScriptPCall\_s*' ..
+        'RefThis()("text")\_s*' ..
+        '\d DCALL RefThis(argc 0)\_s*' ..
+        '\d PUSHS "text"\_s*' ..
+        '\d PCALL top (argc 1)\_s*' ..
+        '\d PCALL end\_s*' ..
+        '\d DROP\_s*' ..
+        '\d PUSHNR 0\_s*' ..
+        '\d RETURN',
         res)
 enddef
 
@@ -327,24 +420,22 @@ enddef
 
 def Test_disassemble_update_instr()
   let res = execute('disass s:FuncWithForwardCall')
-  assert_match('FuncWithForwardCall.*' ..
-        'return g:DefinedLater("yes").*' ..
-        '\d PUSHS "yes".*' ..
-        '\d UCALL g:DefinedLater(argc 1).*' ..
-        '\d CHECKTYPE string stack\[-1].*' ..
-        '\d RETURN.*',
+  assert_match('FuncWithForwardCall\_s*' ..
+        'return g:DefinedLater("yes")\_s*' ..
+        '\d PUSHS "yes"\_s*' ..
+        '\d DCALL DefinedLater(argc 1)\_s*' ..
+        '\d RETURN',
         res)
 
   " Calling the function will change UCALL into the faster DCALL
   assert_equal('yes', FuncWithForwardCall())
 
   res = execute('disass s:FuncWithForwardCall')
-  assert_match('FuncWithForwardCall.*' ..
-        'return g:DefinedLater("yes").*' ..
-        '\d PUSHS "yes".*' ..
-        '\d DCALL DefinedLater(argc 1).*' ..
-        '\d CHECKTYPE string stack\[-1].*' ..
-        '\d RETURN.*',
+  assert_match('FuncWithForwardCall\_s*' ..
+        'return g:DefinedLater("yes")\_s*' ..
+        '\d PUSHS "yes"\_s*' ..
+        '\d DCALL DefinedLater(argc 1)\_s*' ..
+        '\d RETURN',
         res)
 enddef
 
@@ -355,12 +446,12 @@ enddef
 
 def Test_disassemble_call_default()
   let res = execute('disass FuncWithDefault')
-  assert_match('FuncWithDefault.*' ..
-        '\d PUSHS "default".*' ..
-        '\d STORE arg\[-1].*' ..
-        'return arg.*' ..
-        '\d LOAD arg\[-1].*' ..
-        '\d RETURN.*',
+  assert_match('FuncWithDefault\_s*' ..
+        '\d PUSHS "default"\_s*' ..
+        '\d STORE arg\[-1]\_s*' ..
+        'return arg\_s*' ..
+        '\d LOAD arg\[-1]\_s*' ..
+        '\d RETURN',
         res)
 enddef
 
@@ -396,18 +487,27 @@ enddef
 def Test_disassemble_const_expr()
   assert_equal("\nyes", execute('call HasEval()'))
   let instr = execute('disassemble HasEval')
-  assert_match('HasEval.*' ..
-        'if has("eval").*' ..
-        ' PUSHS "yes".*',
+  assert_match('HasEval\_s*' ..
+        'if has("eval")\_s*' ..
+        'echo "yes"\_s*' ..
+        '\d PUSHS "yes"\_s*' ..
+        '\d ECHO 1\_s*' ..
+        'else\_s*' ..
+        'echo "no"\_s*' ..
+        'endif\_s*',
         instr)
   assert_notmatch('JUMP', instr)
 
   assert_equal("\nno", execute('call HasNothing()'))
   instr = execute('disassemble HasNothing')
-  assert_match('HasNothing.*' ..
-        'if has("nothing").*' ..
-        'else.*' ..
-        ' PUSHS "no".*',
+  assert_match('HasNothing\_s*' ..
+        'if has("nothing")\_s*' ..
+        'echo "yes"\_s*' ..
+        'else\_s*' ..
+        'echo "no"\_s*' ..
+        '\d PUSHS "no"\_s*' ..
+        '\d ECHO 1\_s*' ..
+        'endif',
         instr)
   assert_notmatch('PUSHS "yes"', instr)
   assert_notmatch('JUMP', instr)
@@ -415,11 +515,17 @@ def Test_disassemble_const_expr()
   assert_equal("\neval", execute('call HasSomething()'))
   instr = execute('disassemble HasSomething')
   assert_match('HasSomething.*' ..
-        'if has("nothing").*' ..
-        'elseif has("something").*' ..
-        'elseif has("eval").*' ..
-        ' PUSHS "eval".*' ..
-        'elseif has("less").*',
+        'if has("nothing")\_s*' ..
+        'echo "nothing"\_s*' ..
+        'elseif has("something")\_s*' ..
+        'echo "something"\_s*' ..
+        'elseif has("eval")\_s*' ..
+        'echo "eval"\_s*' ..
+        '\d PUSHS "eval"\_s*' ..
+        '\d ECHO 1\_s*' ..
+        'elseif has("less").*' ..
+        'echo "less"\_s*' ..
+        'endif',
         instr)
   assert_notmatch('PUSHS "nothing"', instr)
   assert_notmatch('PUSHS "something"', instr)
@@ -435,20 +541,20 @@ enddef
 
 def Test_disassemble_function()
   let instr = execute('disassemble WithFunc')
-  assert_match('WithFunc.*' ..
-        'let Funky1: func.*' ..
-        '0 PUSHFUNC "\[none]".*' ..
-        '1 STORE $0.*' ..
-        'let Funky2: func = function("len").*' ..
-        '2 PUSHS "len".*' ..
-        '3 BCALL function(argc 1).*' ..
-        '4 STORE $1.*' ..
-        'let Party2: func = funcref("UserFunc").*' ..
-        '\d PUSHS "UserFunc".*' ..
-        '\d BCALL funcref(argc 1).*' ..
-        '\d STORE $2.*' ..
-        '\d PUSHNR 0.*' ..
-        '\d RETURN.*',
+  assert_match('WithFunc\_s*' ..
+        'let Funky1: func\_s*' ..
+        '0 PUSHFUNC "\[none]"\_s*' ..
+        '1 STORE $0\_s*' ..
+        'let Funky2: func = function("len")\_s*' ..
+        '2 PUSHS "len"\_s*' ..
+        '3 BCALL function(argc 1)\_s*' ..
+        '4 STORE $1\_s*' ..
+        'let Party2: func = funcref("UserFunc")\_s*' ..
+        '\d PUSHS "UserFunc"\_s*' ..
+        '\d BCALL funcref(argc 1)\_s*' ..
+        '\d STORE $2\_s*' ..
+        '\d PUSHNR 0\_s*' ..
+        '\d RETURN',
         instr)
 enddef
 
@@ -464,19 +570,19 @@ def Test_disassemble_channel()
   CheckFeature channel
 
   let instr = execute('disassemble WithChannel')
-  assert_match('WithChannel.*' ..
-        'let job1: job.*' ..
-        '\d PUSHJOB "no process".*' ..
-        '\d STORE $0.*' ..
-        'let job2: job = job_start("donothing").*' ..
-        '\d PUSHS "donothing".*' ..
-        '\d BCALL job_start(argc 1).*' ..
-        '\d STORE $1.*' ..
-        'let chan1: channel.*' ..
-        '\d PUSHCHANNEL 0.*' ..
-        '\d STORE $2.*' ..
-        '\d PUSHNR 0.*' ..
-        '\d RETURN.*',
+  assert_match('WithChannel\_s*' ..
+        'let job1: job\_s*' ..
+        '\d PUSHJOB "no process"\_s*' ..
+        '\d STORE $0\_s*' ..
+        'let job2: job = job_start("donothing")\_s*' ..
+        '\d PUSHS "donothing"\_s*' ..
+        '\d BCALL job_start(argc 1)\_s*' ..
+        '\d STORE $1\_s*' ..
+        'let chan1: channel\_s*' ..
+        '\d PUSHCHANNEL 0\_s*' ..
+        '\d STORE $2\_s*' ..
+        '\d PUSHNR 0\_s*' ..
+        '\d RETURN',
         instr)
 enddef
 
@@ -488,13 +594,15 @@ enddef
 def Test_disassemble_lambda()
   assert_equal("XxX", WithLambda())
   let instr = execute('disassemble WithLambda')
-  assert_match('WithLambda.*' ..
-        'let F = {a -> "X" .. a .. "X"}.*' ..
-        ' FUNCREF <lambda>\d\+.*' ..
-        'PUSHS "x".*' ..
-        ' LOAD $0.*' ..
-        ' PCALL (argc 1).*' ..
-        ' CHECKTYPE string stack\[-1].*',
+  assert_match('WithLambda\_s*' ..
+        'let F = {a -> "X" .. a .. "X"}\_s*' ..
+        '\d FUNCREF <lambda>\d\+ $1\_s*' ..
+        '\d STORE $0\_s*' ..
+        'return F("x")\_s*' ..
+        '\d PUSHS "x"\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d PCALL (argc 1)\_s*' ..
+        '\d RETURN',
         instr)
 enddef
 
@@ -510,20 +618,20 @@ def Test_disassemble_and_or()
   assert_equal("no", AndOr(2))
   assert_equal("yes", AndOr(4))
   let instr = execute('disassemble AndOr')
-  assert_match('AndOr.*' ..
-        'if arg == 1 && arg != 2 || arg == 4.*' ..
-        '\d LOAD arg\[-1].*' ..
-        '\d PUSHNR 1.*' ..
-        '\d COMPAREANY ==.*' ..
-        '\d JUMP_AND_KEEP_IF_FALSE -> \d\+.*' ..
-        '\d LOAD arg\[-1].*' ..
-        '\d PUSHNR 2.*' ..
-        '\d COMPAREANY !=.*' ..
-        '\d JUMP_AND_KEEP_IF_TRUE -> \d\+.*' ..
-        '\d LOAD arg\[-1].*' ..
-        '\d PUSHNR 4.*' ..
-        '\d COMPAREANY ==.*' ..
-        '\d JUMP_IF_FALSE -> \d\+.*',
+  assert_match('AndOr\_s*' ..
+        'if arg == 1 && arg != 2 || arg == 4\_s*' ..
+        '\d LOAD arg\[-1]\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d COMPAREANY ==\_s*' ..
+        '\d JUMP_AND_KEEP_IF_FALSE -> \d\+\_s*' ..
+        '\d LOAD arg\[-1]\_s*' ..
+        '\d PUSHNR 2\_s*' ..
+        '\d COMPAREANY !=\_s*' ..
+        '\d JUMP_AND_KEEP_IF_TRUE -> \d\+\_s*' ..
+        '\d LOAD arg\[-1]\_s*' ..
+        '\d\+ PUSHNR 4\_s*' ..
+        '\d\+ COMPAREANY ==\_s*' ..
+        '\d\+ JUMP_IF_FALSE -> \d\+',
         instr)
 enddef
 
@@ -538,24 +646,24 @@ enddef
 def Test_disassemble_for_loop()
   assert_equal([0, 1, 2], ForLoop())
   let instr = execute('disassemble ForLoop')
-  assert_match('ForLoop.*' ..
-        'let res: list<number>.*' ..
-        ' NEWLIST size 0.*' ..
-        '\d STORE $0.*' ..
-        'for i in range(3).*' ..
-        '\d STORE -1 in $1.*' ..
-        '\d PUSHNR 3.*' ..
-        '\d BCALL range(argc 1).*' ..
-        '\d FOR $1 -> \d\+.*' ..
-        '\d STORE $2.*' ..
-        'res->add(i).*' ..
-        '\d LOAD $0.*' ..
-        '\d LOAD $2.*' ..
-        '\d BCALL add(argc 2).*' ..
-        '\d DROP.*' ..
-        'endfor.*' ..
-        '\d JUMP -> \d\+.*' ..
-        '\d DROP.*',
+  assert_match('ForLoop\_s*' ..
+        'let res: list<number>\_s*' ..
+        '\d NEWLIST size 0\_s*' ..
+        '\d STORE $0\_s*' ..
+        'for i in range(3)\_s*' ..
+        '\d STORE -1 in $1\_s*' ..
+        '\d PUSHNR 3\_s*' ..
+        '\d BCALL range(argc 1)\_s*' ..
+        '\d FOR $1 -> \d\+\_s*' ..
+        '\d STORE $2\_s*' ..
+        'res->add(i)\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d LOAD $2\_s*' ..
+        '\d\+ BCALL add(argc 2)\_s*' ..
+        '\d\+ DROP\_s*' ..
+        'endfor\_s*' ..
+        '\d\+ JUMP -> \d\+\_s*' ..
+        '\d\+ DROP',
         instr)
 enddef
 
@@ -688,18 +796,18 @@ enddef
 
 def Test_disassemble_list_index()
   let instr = execute('disassemble ListIndex')
-  assert_match('ListIndex.*' ..
-        'let l = \[1, 2, 3].*' ..
-        '\d PUSHNR 1.*' ..
-        '\d PUSHNR 2.*' ..
-        '\d PUSHNR 3.*' ..
-        '\d NEWLIST size 3.*' ..
-        '\d STORE $0.*' ..
-        'let res = l\[1].*' ..
-        '\d LOAD $0.*' ..
-        '\d PUSHNR 1.*' ..
-        '\d INDEX.*' ..
-        '\d STORE $1.*',
+  assert_match('ListIndex\_s*' ..
+        'let l = \[1, 2, 3]\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d PUSHNR 2\_s*' ..
+        '\d PUSHNR 3\_s*' ..
+        '\d NEWLIST size 3\_s*' ..
+        '\d STORE $0\_s*' ..
+        'let res = l\[1]\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d INDEX\_s*' ..
+        '\d STORE $1\_s*',
         instr)
   assert_equal(2, ListIndex())
 enddef
@@ -707,21 +815,27 @@ enddef
 def DictMember(): number
   let d = #{item: 1}
   let res = d.item
+  res = d["item"]
   return res
 enddef
 
 def Test_disassemble_dict_member()
   let instr = execute('disassemble DictMember')
-  assert_match('DictMember.*' ..
-        'let d = #{item: 1}.*' ..
-        '\d PUSHS "item".*' ..
-        '\d PUSHNR 1.*' ..
-        '\d NEWDICT size 1.*' ..
-        '\d STORE $0.*' ..
-        'let res = d.item.*' ..
-        '\d LOAD $0.*' ..
-        '\d MEMBER item.*' ..
-        '\d STORE $1.*',
+  assert_match('DictMember\_s*' ..
+        'let d = #{item: 1}\_s*' ..
+        '\d PUSHS "item"\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d NEWDICT size 1\_s*' ..
+        '\d STORE $0\_s*' ..
+        'let res = d.item\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ MEMBER item\_s*' ..
+        '\d\+ STORE $1\_s*' ..
+        'res = d\["item"\]\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ PUSHS "item"\_s*' ..
+        '\d\+ MEMBER\_s*' ..
+        '\d\+ STORE $1\_s*',
         instr)
   call assert_equal(1, DictMember())
 enddef
@@ -735,17 +849,17 @@ enddef
 
 def Test_disassemble_negate_number()
   let instr = execute('disassemble NegateNumber')
-  assert_match('NegateNumber.*' ..
-        'let nr = 9.*' ..
-        '\d STORE 9 in $0.*' ..
-        'let plus = +nr.*' ..
-        '\d LOAD $0.*' ..
-        '\d CHECKNR.*' ..
-        '\d STORE $1.*' ..
-        'let res = -nr.*' ..
-        '\d LOAD $0.*' ..
-        '\d NEGATENR.*' ..
-        '\d STORE $2.*',
+  assert_match('NegateNumber\_s*' ..
+        'let nr = 9\_s*' ..
+        '\d STORE 9 in $0\_s*' ..
+        'let plus = +nr\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d CHECKNR\_s*' ..
+        '\d STORE $1\_s*' ..
+        'let res = -nr\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d NEGATENR\_s*' ..
+        '\d STORE $2\_s*',
         instr)
   call assert_equal(-9, NegateNumber())
 enddef
@@ -759,63 +873,62 @@ enddef
 
 def Test_disassemble_invert_bool()
   let instr = execute('disassemble InvertBool')
-  assert_match('InvertBool.*' ..
-        'let flag = true.*' ..
-        '\d PUSH v:true.*' ..
-        '\d STORE $0.*' ..
-        'let invert = !flag.*' ..
-        '\d LOAD $0.*' ..
-        '\d INVERT (!val).*' ..
-        '\d STORE $1.*' ..
-        'let res = !!flag.*' ..
-        '\d LOAD $0.*' ..
-        '\d 2BOOL (!!val).*' ..
-        '\d STORE $2.*',
+  assert_match('InvertBool\_s*' ..
+        'let flag = true\_s*' ..
+        '\d PUSH v:true\_s*' ..
+        '\d STORE $0\_s*' ..
+        'let invert = !flag\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d INVERT (!val)\_s*' ..
+        '\d STORE $1\_s*' ..
+        'let res = !!flag\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d 2BOOL (!!val)\_s*' ..
+        '\d STORE $2\_s*',
         instr)
   call assert_equal(true, InvertBool())
 enddef
 
 def Test_disassemble_compare()
-  " TODO: COMPAREFUNC
   let cases = [
-        ['true == false', 'COMPAREBOOL =='],
-        ['true != false', 'COMPAREBOOL !='],
-        ['v:none == v:null', 'COMPARESPECIAL =='],
-        ['v:none != v:null', 'COMPARESPECIAL !='],
+        ['true == isFalse', 'COMPAREBOOL =='],
+        ['true != isFalse', 'COMPAREBOOL !='],
+        ['v:none == isNull', 'COMPARESPECIAL =='],
+        ['v:none != isNull', 'COMPARESPECIAL !='],
 
-        ['111 == 222', 'COMPARENR =='],
-        ['111 != 222', 'COMPARENR !='],
-        ['111 > 222', 'COMPARENR >'],
-        ['111 < 222', 'COMPARENR <'],
-        ['111 >= 222', 'COMPARENR >='],
-        ['111 <= 222', 'COMPARENR <='],
-        ['111 =~ 222', 'COMPARENR =\~'],
-        ['111 !~ 222', 'COMPARENR !\~'],
+        ['111 == aNumber', 'COMPARENR =='],
+        ['111 != aNumber', 'COMPARENR !='],
+        ['111 > aNumber', 'COMPARENR >'],
+        ['111 < aNumber', 'COMPARENR <'],
+        ['111 >= aNumber', 'COMPARENR >='],
+        ['111 <= aNumber', 'COMPARENR <='],
+        ['111 =~ aNumber', 'COMPARENR =\~'],
+        ['111 !~ aNumber', 'COMPARENR !\~'],
 
-        ['"xx" != "yy"', 'COMPARESTRING !='],
-        ['"xx" > "yy"', 'COMPARESTRING >'],
-        ['"xx" < "yy"', 'COMPARESTRING <'],
-        ['"xx" >= "yy"', 'COMPARESTRING >='],
-        ['"xx" <= "yy"', 'COMPARESTRING <='],
-        ['"xx" =~ "yy"', 'COMPARESTRING =\~'],
-        ['"xx" !~ "yy"', 'COMPARESTRING !\~'],
-        ['"xx" is "yy"', 'COMPARESTRING is'],
-        ['"xx" isnot "yy"', 'COMPARESTRING isnot'],
+        ['"xx" != aString', 'COMPARESTRING !='],
+        ['"xx" > aString', 'COMPARESTRING >'],
+        ['"xx" < aString', 'COMPARESTRING <'],
+        ['"xx" >= aString', 'COMPARESTRING >='],
+        ['"xx" <= aString', 'COMPARESTRING <='],
+        ['"xx" =~ aString', 'COMPARESTRING =\~'],
+        ['"xx" !~ aString', 'COMPARESTRING !\~'],
+        ['"xx" is aString', 'COMPARESTRING is'],
+        ['"xx" isnot aString', 'COMPARESTRING isnot'],
 
-        ['0z11 == 0z22', 'COMPAREBLOB =='],
-        ['0z11 != 0z22', 'COMPAREBLOB !='],
-        ['0z11 is 0z22', 'COMPAREBLOB is'],
-        ['0z11 isnot 0z22', 'COMPAREBLOB isnot'],
+        ['0z11 == aBlob', 'COMPAREBLOB =='],
+        ['0z11 != aBlob', 'COMPAREBLOB !='],
+        ['0z11 is aBlob', 'COMPAREBLOB is'],
+        ['0z11 isnot aBlob', 'COMPAREBLOB isnot'],
 
-        ['[1,2] == [3,4]', 'COMPARELIST =='],
-        ['[1,2] != [3,4]', 'COMPARELIST !='],
-        ['[1,2] is [3,4]', 'COMPARELIST is'],
-        ['[1,2] isnot [3,4]', 'COMPARELIST isnot'],
+        ['[1, 2] == aList', 'COMPARELIST =='],
+        ['[1, 2] != aList', 'COMPARELIST !='],
+        ['[1, 2] is aList', 'COMPARELIST is'],
+        ['[1, 2] isnot aList', 'COMPARELIST isnot'],
 
-        ['#{a:1} == #{x:2}', 'COMPAREDICT =='],
-        ['#{a:1} != #{x:2}', 'COMPAREDICT !='],
-        ['#{a:1} is #{x:2}', 'COMPAREDICT is'],
-        ['#{a:1} isnot #{x:2}', 'COMPAREDICT isnot'],
+        ['#{a: 1} == aDict', 'COMPAREDICT =='],
+        ['#{a: 1} != aDict', 'COMPAREDICT !='],
+        ['#{a: 1} is aDict', 'COMPAREDICT is'],
+        ['#{a: 1} isnot aDict', 'COMPAREDICT isnot'],
 
         ['{->33} == {->44}', 'COMPAREFUNC =='],
         ['{->33} != {->44}', 'COMPAREFUNC !='],
@@ -833,22 +946,33 @@ def Test_disassemble_compare()
         ['77 is g:xx', 'COMPAREANY is'],
         ['77 isnot g:xx', 'COMPAREANY isnot'],
         ]
+  let floatDecl = ''
   if has('float')
     cases->extend([
-        ['1.1 == 2.2', 'COMPAREFLOAT =='],
-        ['1.1 != 2.2', 'COMPAREFLOAT !='],
-        ['1.1 > 2.2', 'COMPAREFLOAT >'],
-        ['1.1 < 2.2', 'COMPAREFLOAT <'],
-        ['1.1 >= 2.2', 'COMPAREFLOAT >='],
-        ['1.1 <= 2.2', 'COMPAREFLOAT <='],
-        ['1.1 =~ 2.2', 'COMPAREFLOAT =\~'],
-        ['1.1 !~ 2.2', 'COMPAREFLOAT !\~'],
+        ['1.1 == aFloat', 'COMPAREFLOAT =='],
+        ['1.1 != aFloat', 'COMPAREFLOAT !='],
+        ['1.1 > aFloat', 'COMPAREFLOAT >'],
+        ['1.1 < aFloat', 'COMPAREFLOAT <'],
+        ['1.1 >= aFloat', 'COMPAREFLOAT >='],
+        ['1.1 <= aFloat', 'COMPAREFLOAT <='],
+        ['1.1 =~ aFloat', 'COMPAREFLOAT =\~'],
+        ['1.1 !~ aFloat', 'COMPAREFLOAT !\~'],
         ])
+    floatDecl = 'let aFloat = 2.2'
   endif
 
   let nr = 1
   for case in cases
+    " declare local variables to get a non-constant with the right type
     writefile(['def TestCase' .. nr .. '()',
+             '  let isFalse = false',
+             '  let isNull = v:null',
+             '  let aNumber = 222',
+             '  let aString = "yy"',
+             '  let aBlob = 0z22',
+             '  let aList = [3, 4]',
+             '  let aDict = #{x: 2}',
+             floatDecl,
              '  if ' .. case[0],
              '    echo 42'
              '  endif',
@@ -858,7 +982,7 @@ def Test_disassemble_compare()
     assert_match('TestCase' .. nr .. '.*' ..
         'if ' .. substitute(case[0], '[[~]', '\\\0', 'g') .. '.*' ..
         '\d \(PUSH\|FUNCREF\).*' ..
-        '\d \(PUSH\|FUNCREF\|LOADG\).*' ..
+        '\d \(PUSH\|FUNCREF\|LOAD\).*' ..
         '\d ' .. case[1] .. '.*' ..
         '\d JUMP_IF_FALSE -> \d\+.*',
         instr)
@@ -922,26 +1046,26 @@ enddef
 
 def Test_disassemble_execute()
   let res = execute('disass s:Execute')
-  assert_match('\<SNR>\d*_Execute.*' ..
-        "execute 'help vim9.txt'.*" ..
-        '\d PUSHS "help vim9.txt".*' ..
-        '\d EXECUTE 1.*' ..
-        "let cmd = 'help vim9.txt'.*" ..
-        '\d PUSHS "help vim9.txt".*' ..
-        '\d STORE $0.*' ..
-        'execute cmd.*' ..
-        '\d LOAD $0.*' ..
-        '\d EXECUTE 1.*' ..
-        "let tag = 'vim9.txt'.*" ..
-        '\d PUSHS "vim9.txt".*' ..
-        '\d STORE $1.*' ..
-        "execute 'help ' .. tag.*" ..
-        '\d PUSHS "help ".*' ..
-        '\d LOAD $1.*' ..
-        '\d CONCAT.*' ..
-        '\d EXECUTE 1.*' ..
-        '\d PUSHNR 0.*' ..
-        '\d RETURN',
+  assert_match('\<SNR>\d*_Execute\_s*' ..
+        "execute 'help vim9.txt'\\_s*" ..
+        '\d PUSHS "help vim9.txt"\_s*' ..
+        '\d EXECUTE 1\_s*' ..
+        "let cmd = 'help vim9.txt'\\_s*" ..
+        '\d PUSHS "help vim9.txt"\_s*' ..
+        '\d STORE $0\_s*' ..
+        'execute cmd\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d EXECUTE 1\_s*' ..
+        "let tag = 'vim9.txt'\\_s*" ..
+        '\d PUSHS "vim9.txt"\_s*' ..
+        '\d STORE $1\_s*' ..
+        "execute 'help ' .. tag\\_s*" ..
+        '\d\+ PUSHS "help "\_s*' ..
+        '\d\+ LOAD $1\_s*' ..
+        '\d\+ CONCAT\_s*' ..
+        '\d\+ EXECUTE 1\_s*' ..
+        '\d\+ PUSHNR 0\_s*' ..
+        '\d\+ RETURN',
         res)
 enddef
 
@@ -952,17 +1076,15 @@ enddef
 
 def Test_disassemble_echomsg()
   let res = execute('disass s:Echomsg')
-  assert_match('\<SNR>\d*_Echomsg.*' ..
-        "echomsg 'some' 'message'.*" ..
-        '\d PUSHS "some".*' ..
-        '\d PUSHS "message".*' ..
-        '\d ECHOMSG 2.*' ..
-        "echoerr 'went' .. 'wrong'.*" ..
-        '\d PUSHS "went".*' ..
-        '\d PUSHS "wrong".*' ..
-        '\d CONCAT.*' ..
-        '\d ECHOERR 1.*' ..
-        '\d PUSHNR 0.*' ..
+  assert_match('\<SNR>\d*_Echomsg\_s*' ..
+        "echomsg 'some' 'message'\\_s*" ..
+        '\d PUSHS "some"\_s*' ..
+        '\d PUSHS "message"\_s*' ..
+        '\d ECHOMSG 2\_s*' ..
+        "echoerr 'went' .. 'wrong'\\_s*" ..
+        '\d PUSHS "wentwrong"\_s*' ..
+        '\d ECHOERR 1\_s*' ..
+        '\d PUSHNR 0\_s*' ..
         '\d RETURN',
         res)
 enddef
@@ -981,22 +1103,82 @@ enddef
 
 def Test_display_func()
   let res1 = execute('function SomeStringArg')
-  assert_match('.* def SomeStringArg(arg: string).*' ..
-        '  echo arg.*' ..
-        '  enddef',
+  assert_match('.* def SomeStringArg(arg: string)\_s*' ..
+        '\d *echo arg.*' ..
+        ' *enddef',
         res1)
 
   let res2 = execute('function SomeAnyArg')
-  assert_match('.* def SomeAnyArg(arg: any).*' ..
-        '  echo arg.*' ..
-        '  enddef',
+  assert_match('.* def SomeAnyArg(arg: any)\_s*' ..
+        '\d *echo arg\_s*' ..
+        ' *enddef',
         res2)
 
   let res3 = execute('function SomeStringArgAndReturn')
-  assert_match('.* def SomeStringArgAndReturn(arg: string): string.*' ..
-        '  return arg.*' ..
-        '  enddef',
+  assert_match('.* def SomeStringArgAndReturn(arg: string): string\_s*' ..
+        '\d *return arg\_s*' ..
+        ' *enddef',
         res3)
+enddef
+
+def Test_vim9script_forward_func()
+  let lines =<< trim END
+    vim9script
+    def FuncOne(): string
+      return FuncTwo()
+    enddef
+    def FuncTwo(): string
+      return 'two'
+    enddef
+    let g:res_FuncOne: string = execute('disass FuncOne')
+  END
+  writefile(lines, 'Xdisassemble')
+  source Xdisassemble
+
+  " check that the first function calls the second with DCALL
+  assert_match('\<SNR>\d*_FuncOne\_s*' ..
+        'return FuncTwo()\_s*' ..
+        '\d DCALL <SNR>\d\+_FuncTwo(argc 0)\_s*' ..
+        '\d RETURN',
+        g:res_FuncOne)
+
+  delete('Xdisassemble')
+  unlet g:res_FuncOne
+enddef
+
+def s:ConcatStrings(): string
+  return 'one' .. 'two' .. 'three'
+enddef
+
+def s:ComputeConst(): number
+  return 2 + 3 * 4 / 6 + 7
+enddef
+
+def s:ComputeConstParen(): number
+  return ((2 + 4) * (8 / 2)) / (3 + 4)
+enddef
+
+def Test_simplify_const_expr()
+  let res = execute('disass s:ConcatStrings')
+  assert_match('<SNR>\d*_ConcatStrings\_s*' ..
+        "return 'one' .. 'two' .. 'three'\\_s*" ..
+        '\d PUSHS "onetwothree"\_s*' ..
+        '\d RETURN',
+        res)
+
+  res = execute('disass s:ComputeConst')
+  assert_match('<SNR>\d*_ComputeConst\_s*' ..
+        'return 2 + 3 \* 4 / 6 + 7\_s*' ..
+        '\d PUSHNR 11\_s*' ..
+        '\d RETURN',
+        res)
+
+  res = execute('disass s:ComputeConstParen')
+  assert_match('<SNR>\d*_ComputeConstParen\_s*' ..
+        'return ((2 + 4) \* (8 / 2)) / (3 + 4)\_s*' ..
+        '\d PUSHNR 3\>\_s*' ..
+        '\d RETURN',
+        res)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

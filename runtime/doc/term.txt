@@ -322,6 +322,7 @@ OUTPUT CODES						*terminal-output-codes*
 	t_ZR	italics end					*t_ZR* *'t_ZR'*
 
 Added by Vim (there are no standard codes for these):
+	t_AU	set underline color (ANSI)			*t_AU* *'t_AU'*
 	t_Ce	undercurl end					*t_Ce* *'t_Ce'*
 	t_Cs	undercurl mode					*t_Cs* *'t_Cs'*
 	t_Te	strikethrough end				*t_Te* *'t_Te'*
@@ -350,6 +351,7 @@ Added by Vim (there are no standard codes for these):
 		|xterm-true-color|
 	t_8b	set background color (R, G, B)			*t_8b* *'t_8b'*
 		|xterm-true-color|
+	t_8u	set underline color (R, G, B)			*t_8u* *'t_8u'*
 	t_BE	enable bracketed paste mode			*t_BE* *'t_BE'*
 		|xterm-bracketed-paste|
 	t_BD	disable bracketed paste mode			*t_BD* *'t_BD'*

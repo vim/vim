@@ -977,7 +977,7 @@ mch_exit(int r)
  *	it sends a 0 to the console to make it back into a CON: from a RAW:
  */
     void
-mch_settmode(int tmode)
+mch_settmode(tmode_T tmode)
 {
 #if defined(__AROS__) || defined(__amigaos4__)
     if (!SetMode(raw_in, tmode == TMODE_RAW ? 1 : 0))
@@ -1387,7 +1387,11 @@ mch_call_shell(
     if ((mydir = CurrentDir(mydir)) != 0) // make sure we stay in the same directory
 	UnLock(mydir);
     if (tmode == TMODE_RAW)
+    {
+	// The shell may have messed with the mode, always set it.
+	cur_tmode = TMODE_UNKNOWN;
 	settmode(TMODE_RAW);		// set to raw mode
+    }
 #ifdef FEAT_TITLE
     resettitle();
 #endif

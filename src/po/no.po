@@ -2648,9 +2648,6 @@ msgstr "ukjent vimOption"
 msgid "keyboard interrupt"
 msgstr "tastaturavbrudd"
 
-msgid "vim error"
-msgstr "vim-feil"
-
 msgid "cannot create buffer/window command: object is being deleted"
 msgstr "kan ikke opprette buffer/vindukommando: Objektet slettes"
 
@@ -2946,8 +2943,8 @@ msgstr "-W <utskript>\tSkriv alle skrevne kommandoer til filen <utskript>"
 msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\tRediger krypterte filer"
 
-msgid "-display <display>\tConnect vim to this particular X-server"
-msgstr "-display <display>\tKoble vim til denne spesielle X-tjeneren"
+msgid "-display <display>\tConnect Vim to this particular X-server"
+msgstr "-display <display>\tKoble Vim til denne spesielle X-tjeneren"
 
 msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\tUnngå oppkobling til X-tjener"
@@ -3016,11 +3013,11 @@ msgstr ""
 "\n"
 "Parametere gjenkjent av gvim (Athena-versjon):\n"
 
-msgid "-display <display>\tRun vim on <display>"
-msgstr "-display <display>\tKjør vim på <display>"
+msgid "-display <display>\tRun Vim on <display>"
+msgstr "-display <display>\tKjør Vim på <display>"
 
-msgid "-iconic\t\tStart vim iconified"
-msgstr "-iconic\t\tStart vim som ikon"
+msgid "-iconic\t\tStart Vim iconified"
+msgstr "-iconic\t\tStart Vim som ikon"
 
 msgid "-name <name>\t\tUse resource as if vim was <name>"
 msgstr "-name <navn>\t\tBruk ressurs som om Vim var <navn>"
@@ -3089,8 +3086,8 @@ msgstr ""
 "\n"
 "Parametere gjenkjent av gvim (GTK+-versjon):\n"
 
-msgid "-display <display>\tRun vim on <display> (also: --display)"
-msgstr "-display <display>\tKjør vim på <display> (også: --display)"
+msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgstr "-display <display>\tKjør Vim på <display> (også: --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"
 msgstr "--role <role>\tSett en unik \"role\" for å identifisere hovedvinduet"
