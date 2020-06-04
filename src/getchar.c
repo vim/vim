@@ -2355,7 +2355,8 @@ handle_mapping(
 	    // Skip ":lmap" mappings if keys were mapped.
 	    if (mp->m_keys[0] == tb_c1
 		    && (mp->m_mode & local_State)
-		    && !(mp->m_simplified && seenModifyOtherKeys)
+		    && !(mp->m_simplified && seenModifyOtherKeys
+						     && typebuf.tb_maplen == 0)
 		    && ((mp->m_mode & LANGMAP) == 0 || typebuf.tb_maplen == 0))
 	    {
 #ifdef FEAT_LANGMAP

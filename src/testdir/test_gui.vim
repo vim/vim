@@ -856,4 +856,14 @@ func Test_gui_run_cmd_in_terminal()
   let &guioptions = save_guioptions
 endfunc
 
+func Test_gui_recursive_mapping()
+  nmap ' <C-W>
+  nmap <C-W>a :let didit = 1<CR>
+  call feedkeys("'a", 'xt')
+  call assert_equal(1, didit)
+
+  nunmap '
+  nunmap <C-W>a
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
