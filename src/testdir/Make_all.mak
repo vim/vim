@@ -139,6 +139,7 @@ NEW_TESTS = \
 	test_fnamemodify \
 	test_fold \
 	test_functions \
+	test_function_lists \
 	test_ga \
 	test_getcwd \
 	test_getvar \
@@ -374,6 +375,7 @@ NEW_TESTS_RES = \
 	test_fnameescape.res \
 	test_fold.res \
 	test_functions.res \
+	test_function_lists.res \
 	test_getcwd.res \
 	test_getvar.res \
 	test_gf.res \
