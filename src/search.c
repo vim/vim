@@ -356,10 +356,9 @@ static int	    saved_no_hlsearch = 0;
     void
 save_last_search_pattern(void)
 {
-    if (did_save_last_search_spat != 0)
-	iemsg("did_save_last_search_spat is not zero");
-    else
-	++did_save_last_search_spat;
+    if (++did_save_last_search_spat != 1)
+	// nested call, nothing to do
+	return;
 
     saved_last_search_spat = spats[RE_SEARCH];
     if (spats[RE_SEARCH].pat != NULL)
@@ -371,12 +370,14 @@ save_last_search_pattern(void)
     void
 restore_last_search_pattern(void)
 {
-    if (did_save_last_search_spat != 1)
+    if (--did_save_last_search_spat > 0)
+	// nested call, nothing to do
+	return;
+    if (did_save_last_search_spat != 0)
     {
-	iemsg("did_save_last_search_spat is not one");
+	iemsg("restore_last_search_pattern() called more often than save_last_search_pattern()");
 	return;
     }
-    --did_save_last_search_spat;
 
     vim_free(spats[RE_SEARCH].pat);
     spats[RE_SEARCH] = saved_last_search_spat;
