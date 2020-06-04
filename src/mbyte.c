@@ -3844,17 +3844,20 @@ utf_head_off(char_u *base, char_u *p)
 
 /*
  * whether space is allowed before/after 'c'
- * return  TRUE    if not allowed(eat space)
+ * return  TRUE    if not allowed (eat space)
  *	   FALSE   otherwise
  */
     int
 utf_eat_space(cc)
     int		cc;
 {
-    if ((cc >= 0x2000 && cc <= 0x206F)	      /* General punctuations */
+    if ((cc >= 0x2000 && cc <= 0x206F)	        /* General punctuations */
 	    || (cc >= 0x2e00 && cc <= 0x2e7f)   /* Supplemental punctuations */
 	    || (cc >= 0x3000 && cc <= 0x303f)   /* CJK symbols and punctuations */
-	    || (cc >= 0xff00 && cc <= 0xffef))  /* Full width ASCII punctuations */
+	    || (cc >= 0xff01 && cc <= 0xff0f)   /* Full width ASCII punctuations */
+	    || (cc >= 0xff1a && cc <= 0xff20)   // ..
+	    || (cc >= 0xff3b && cc <= 0xff40)   // ..
+	    || (cc >= 0xff5b && cc <= 0xff65))  // ..
 	return TRUE;
 
     return FALSE;
@@ -3880,7 +3883,7 @@ utf_allow_break_before(cc)
 	0x201d, /* ” right double quotation mark */
 	0x2020, /* † dagger */
 	0x2021, /* ‡ double dagger */
-	0x2026, /* … horizontal ellipis*/
+	0x2026, /* … horizontal ellipsis*/
 	0x2030, /* ‰ per mille sign */
 	0x2031, /* ‱ per then thousand sign */
 	0x203c, /* ‼ double exclamation mark */
@@ -3907,7 +3910,7 @@ utf_allow_break_before(cc)
 	0xff1a, /* ： fullwidth colon */
 	0xff1b, /* ； fullwidth semicolon */
 	0xff1f, /* ？ fullwidth question mark */
-	0xff3d, /* ］ fullwidth right squre bracket */
+	0xff3d, /* ］ fullwidth right square bracket */
 	0xff5d, /* ｝ fullwidth right curly bracket */
     };
 
@@ -3991,7 +3994,7 @@ utf_allow_break(cc, ncc)
     /* don't break between two-letter punctuations */
     if (cc == ncc
 	    && (cc == 0x2014 /* em dash */
-		|| cc == 0x2026 /* horizontal ellipis */))
+		|| cc == 0x2026 /* horizontal ellipsis */))
 	return FALSE;
 
     return utf_allow_break_after(cc) && utf_allow_break_before(ncc);
