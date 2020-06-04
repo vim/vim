@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.2.  Last change: 2020 Mar 15
+*usr_41.txt*	For Vim version 8.2.  Last change: 2020 Jun 01
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -40,6 +40,11 @@ prefer.  And you can use any colon command in it (commands that start with a
    Syntax files are also Vim scripts.  As are files that set options for a
 specific file type.  A complicated macro can be defined by a separate Vim
 script file.  You can think of other uses yourself.
+
+Note: if you are familiar with Python, you can find a comparison between
+Python and Vim script here, with pointers to other documents:
+   https://gist.github.com/yegappan/16d964a37ead0979b05e655aa036cad0
+
 
 Let's start with a simple example: >
 
@@ -631,6 +636,7 @@ List manipulation:					*list-functions*
 	deepcopy()		make a full copy of a List
 	filter()		remove selected items from a List
 	map()			change each List item
+	reduce()		reduce a List to a value
 	sort()			sort a List
 	reverse()		reverse the order of a List
 	uniq()			remove copies of repeated adjacent items
@@ -687,6 +693,7 @@ Floating point computation:				*float-functions*
 	sinh()			hyperbolic sine
 	cosh()			hyperbolic cosine
 	tanh()			hyperbolic tangent
+	isinf()			check for infinity
 	isnan()			check for not a number
 
 Other computation:					*bitwise-function*
@@ -695,6 +702,8 @@ Other computation:					*bitwise-function*
 	or()			bitwise OR
 	xor()			bitwise XOR
 	sha256()		SHA-256 hash
+	rand()			get a pseudo-random number
+	srand()			initialize seed used by rand()
 
 Variables:						*var-functions*
 	type()			type of a variable
@@ -744,6 +753,7 @@ Working with text in the current buffer:		*text-functions*
 	prevnonblank()		find previous non-blank line
 	search()		find a match for a pattern
 	searchpos()		find a match for a pattern
+	searchcount()		get number of matches before/after the cursor
 	searchpair()		find the other end of a start/skip/end
 	searchpairpos()		find the other end of a start/skip/end
 	searchdecl()		search for the declaration of a name
@@ -828,9 +838,11 @@ Buffers, windows and the argument list:
 	listener_remove()	remove a listener callback
 	win_findbuf()		find windows containing a buffer
 	win_getid()		get window ID of a window
+	win_gettype()		get type of window
 	win_gotoid()		go to window with ID
 	win_id2tabwin()		get tab and window nr from window ID
 	win_id2win()		get window nr from window ID
+	win_splitmove()		move window to a split of another window
 	getbufinfo()		get a list with buffer information
 	gettabinfo()		get a list with tab page information
 	getwininfo()		get a list with window information
@@ -907,6 +919,7 @@ Interactive:					*interactive-functions*
 	getchar()		get a character from the user
 	getcharmod()		get modifiers for the last typed character
 	getmousepos()		get last known mouse position
+	echoraw()		output characters as-is
 	feedkeys()		put characters in the typeahead queue
 	input()			get a line from the user
 	inputlist()		let the user pick an entry from a list
@@ -948,6 +961,7 @@ Mappings and Menus:			    *mapping-functions*
 	hasmapto()		check if a mapping exists
 	mapcheck()		check if a matching mapping exists
 	maparg()		get rhs of a mapping
+	mapset()		restore a mapping
 	menu_info()		get information about a menu item
 	wildmenumode()		check if the wildmode is active
 
@@ -968,11 +982,13 @@ Testing:				    *test-functions*
 	test_autochdir()	enable 'autochdir' during startup
 	test_override()		test with Vim internal overrides
 	test_garbagecollect_now()   free memory right now
+	test_garbagecollect_soon()  set a flag to free memory soon
 	test_getvalue()		get value of an internal variable
 	test_ignore_error()	ignore a specific error message
 	test_null_blob()	return a null Blob
 	test_null_channel()	return a null Channel
 	test_null_dict()	return a null Dict
+	test_null_function()	return a null Funcref
 	test_null_job()		return a null Job
 	test_null_list()	return a null List
 	test_null_partial()	return a null Partial function
@@ -982,6 +998,10 @@ Testing:				    *test-functions*
 	test_feedinput()	add key sequence to input buffer
 	test_option_not_set()	reset flag indicating option was set
 	test_scrollbar()	simulate scrollbar movement in the GUI
+	test_refcount()		return an expression's reference count
+	test_srand_seed()	set the seed value for srand()
+	test_unknown()		return a value with unknown type
+	test_void()		return a value with void type
 
 Inter-process communication:		    *channel-functions*
 	ch_canread()		check if there is something to read
@@ -993,8 +1013,8 @@ Inter-process communication:		    *channel-functions*
 	ch_readraw()		read a raw message from a channel
 	ch_sendexpr()		send a JSON message over a channel
 	ch_sendraw()		send a raw message over a channel
-	ch_evalexpr()		evaluates an expression over channel
-	ch_evalraw()		evaluates a raw string over channel
+	ch_evalexpr()		evaluate an expression over channel
+	ch_evalraw()		evaluate a raw string over channel
 	ch_status()		get status of a channel
 	ch_getbufnr()		get the buffer number of a channel
 	ch_getjob()		get the job associated with a channel
@@ -1007,7 +1027,7 @@ Inter-process communication:		    *channel-functions*
 	js_encode()		encode an expression to a JSON string
 	js_decode()		decode a JSON string to Vim types
 
-Jobs:		    			        *job-functions*
+Jobs:						*job-functions*
 	job_start()		start a job
 	job_stop()		stop a job
 	job_status()		get the status of a job
@@ -1050,6 +1070,7 @@ Terminal window:				*terminal-functions*
 	term_setkill()		set signal to stop job in a terminal
 	term_setrestore()	set command to restore a terminal
 	term_setsize()		set the size of a terminal
+	term_setapi()		set terminal JSON API function name prefix
 
 Popup window:					*popup-window-functions*
 	popup_create()		create popup centered in the screen
@@ -1068,9 +1089,13 @@ Popup window:					*popup-window-functions*
 	popup_close()		close one popup
 	popup_clear()		close all popups
 	popup_filter_menu()	select from a list of items
-	popup_filter_yesno()	blocks until 'y' or 'n' is pressed
+	popup_filter_yesno()	block until 'y' or 'n' is pressed
 	popup_getoptions()	get current options for a popup
 	popup_getpos()		get actual position and size of a popup
+	popup_findinfo()	get window ID for popup info window
+	popup_findpreview()	get window ID for popup preview window
+	popup_list()		get list of all popup window IDs
+	popup_locate()		get popup window ID from its screen position
 
 Timers:						*timer-functions*
 	timer_start()		create a timer
@@ -1090,8 +1115,27 @@ Prompt Buffer:					*promptbuffer-functions*
 	prompt_setinterrupt()	set interrupt callback for a buffer
 	prompt_setprompt()	set the prompt text for a buffer
 
+Text Properties:				*text-property-functions*
+	prop_add()		attach a property at a position
+	prop_clear()		remove all properties from a line or lines
+	prop_find()		search for a property
+	prop_list()		return a list of all properties in a line
+	prop_remove()		remove a property from a line
+	prop_type_add()		add/define a property type
+	prop_type_change()	change properties of a type
+	prop_type_delete()	remove a text property type
+	prop_type_get()		return the properties of a type
+	prop_type_list()	return a list of all property types
+
+Sound:							*sound-functions*
+	sound_clear()		stop playing all sounds
+	sound_playevent()	play an event's sound
+	sound_playfile()	play a sound file
+	sound_stop()		stop playing a sound
+
 Various:					*various-functions*
 	mode()			get current editing mode
+	state()			get current busy state
 	visualmode()		last visual mode used
 	exists()		check if a variable, function, etc. exists
 	has()			check if a feature is supported in Vim
@@ -1100,6 +1144,9 @@ Various:					*various-functions*
 	did_filetype()		check if a FileType autocommand was used
 	eventhandler()		check if invoked by an event handler
 	getpid()		get process ID of Vim
+	getimstatus()		check if IME status is active
+	interrupt()		interrupt script execution
+	windowsversion()	get MS-Windows version
 
 	libcall()		call a function in an external library
 	libcallnr()		idem, returning a number
@@ -1117,12 +1164,14 @@ Various:					*various-functions*
 
 	wordcount()		get byte/word/char count of buffer
 
-	luaeval()		evaluate Lua expression
+	luaeval()		evaluate |Lua| expression
 	mzeval()		evaluate |MzScheme| expression
 	perleval()		evaluate Perl expression (|+perl|)
 	py3eval()		evaluate Python expression (|+python3|)
 	pyeval()		evaluate Python expression (|+python|)
 	pyxeval()		evaluate |python_x| expression
+	rubyeval()		evaluate |Ruby| expression
+
 	debugbreak()		interrupt a program being debugged
 
 ==============================================================================

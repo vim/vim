@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 May 25
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Jun 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2346,7 +2346,6 @@ assert_notmatch({pat}, {text} [, {msg}])
 				Number	assert {pat} not matches {text}
 assert_report({msg})		Number	report a test failure
 assert_true({actual} [, {msg}])	Number	assert {actual} is true
-asin({expr})			Float	arc sine of {expr}
 atan({expr})			Float	arc tangent of {expr}
 atan2({expr1}, {expr2})		Float	arc tangent of {expr1} / {expr2}
 balloon_gettext()		String	current text in the balloon
@@ -2437,12 +2436,12 @@ executable({expr})		Number	1 if executable {expr} exists
 execute({command})		String	execute {command} and get the output
 exepath({expr})			String	full path of the command {expr}
 exists({expr})			Number	|TRUE| if {expr} exists
-extend({expr1}, {expr2} [, {expr3}])
-				List/Dict insert items of {expr2} into {expr1}
 exp({expr})			Float	exponential of {expr}
 expand({expr} [, {nosuf} [, {list}]])
 				any	expand special keywords in {expr}
 expandcmd({expr})		String	expand {expr} like with `:edit`
+extend({expr1}, {expr2} [, {expr3}])
+				List/Dict insert items of {expr2} into {expr1}
 feedkeys({string} [, {mode}])	Number	add key sequence to typeahead buffer
 filereadable({file})		Number	|TRUE| if {file} is a readable file
 filewritable({file})		Number	|TRUE| if {file} is a writable file
@@ -2537,8 +2536,8 @@ histadd({history}, {item})	Number	add an item to a history
 histdel({history} [, {item}])	Number	remove an item from a history
 histget({history} [, {index}])	String	get the item {index} from a history
 histnr({history})		Number	highest index of a history
-hlexists({name})		Number	|TRUE| if highlight group {name} exists
 hlID({name})			Number	syntax ID of highlight group {name}
+hlexists({name})		Number	|TRUE| if highlight group {name} exists
 hostname()			String	name of the machine Vim is running on
 iconv({expr}, {from}, {to})	String	convert encoding of {expr}
 indent({lnum})			Number	indent of line {lnum}
@@ -2638,16 +2637,16 @@ popup_findpreview()		Number	get window ID of preview popup window
 popup_getoptions({id})		Dict	get options of popup window {id}
 popup_getpos({id})		Dict	get position of popup window {id}
 popup_hide({id})		none	hide popup menu {id}
-popup_list()			List	get a list of window IDs of al popups
+popup_list()			List	get a list of window IDs of all popups
 popup_locate({row}, {col})	Number 	get window ID of popup at position
 popup_menu({what}, {options})	Number	create a popup window used as a menu
 popup_move({id}, {options})	none	set position of popup window {id}
 popup_notification({what}, {options})
 				Number	create a notification popup window
-popup_show({id})		none	unhide popup window {id}
 popup_setoptions({id}, {options})
 				none	set options for popup window {id}
 popup_settext({id}, {text})	none	set the text of popup window {id}
+popup_show({id})		none	unhide popup window {id}
 pow({x}, {y})			Float	{x} to the power of {y}
 prevnonblank({lnum})		Number	line nr of non-blank line <= {lnum}
 printf({fmt}, {expr1}...)	String	format text
@@ -2672,8 +2671,8 @@ prop_type_get([{name} [, {props}]])
 prop_type_list([{props}])	List	get list of property types
 pum_getpos()			Dict	position and size of pum if visible
 pumvisible()			Number	whether popup menu is visible
-pyeval({expr})			any	evaluate |Python| expression
 py3eval({expr})			any	evaluate |python3| expression
+pyeval({expr})			any	evaluate |Python| expression
 pyxeval({expr})			any	evaluate |python_x| expression
 rand([{expr}])			Number	get pseudo-random number
 range({expr} [, {max} [, {stride}]])
@@ -2800,9 +2799,9 @@ str2list({expr} [, {utf8}])	List	convert each character of {expr} to
 					ASCII/UTF8 value
 str2nr({expr} [, {base} [, {quoted}]])
 				Number	convert String to Number
-strchars({expr} [, {skipcc}])	Number	character length of the String {expr}
 strcharpart({str}, {start} [, {len}])
 				String	{len} characters of {str} at {start}
+strchars({expr} [, {skipcc}])	Number	character length of the String {expr}
 strdisplaywidth({expr} [, {col}]) Number display length of the String {expr}
 strftime({format} [, {time}])	String	format time with a specified format
 strgetchar({str}, {index})	Number	get char {index} from {str}
@@ -2835,8 +2834,8 @@ systemlist({expr} [, {input}])	List	output of shell command/filter {expr}
 tabpagebuflist([{arg}])		List	list of buffer numbers in tab page
 tabpagenr([{arg}])		Number	number of current or last tab page
 tabpagewinnr({tabarg} [, {arg}]) Number	number of current window in tab page
-taglist({expr} [, {filename}])	List	list of tags matching {expr}
 tagfiles()			List	tags files used
+taglist({expr} [, {filename}])	List	list of tags matching {expr}
 tan({expr})			Float	tangent of {expr}
 tanh({expr})			Float	hyperbolic tangent of {expr}
 tempname()			String	name for a temporary file
@@ -2860,9 +2859,9 @@ term_gettty({buf}, [{input}])	String	get the tty name of a terminal
 term_list()			List	get the list of terminal buffers
 term_scrape({buf}, {row})	List	get row of a terminal screen
 term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
-term_setapi({buf}, {expr})	none	set |terminal-api| function name prefix
 term_setansicolors({buf}, {colors})
 				none	set ANSI palette in GUI color mode
+term_setapi({buf}, {expr})	none	set |terminal-api| function name prefix
 term_setkill({buf}, {how})	none	set signal to stop job in terminal
 term_setrestore({buf}, {command}) none	set command to restore terminal
 term_setsize({buf}, {rows}, {cols})
@@ -2885,16 +2884,16 @@ test_null_job()			Job	null value for testing
 test_null_list()		List	null value for testing
 test_null_partial()		Funcref	null value for testing
 test_null_string()		String	null value for testing
-test_unknown()			any	unknown value for testing
-test_void()			any	void value for testing
 test_option_not_set({name})	none	reset flag indicating option was set
 test_override({expr}, {val})	none	test with Vim internal overrides
 test_refcount({expr})		Number	get the reference count of {expr}
 test_scrollbar({which}, {value}, {dragging})
 				none	scroll in the GUI for testing
 test_setmouse({row}, {col})	none	set the mouse position for testing
-test_srand_seed([seed])		none	set seed for testing srand()
 test_settime({expr})		none	set current time for testing
+test_srand_seed([seed])		none	set seed for testing srand()
+test_unknown()			any	unknown value for testing
+test_void()			any	void value for testing
 timer_info([{id}])		List	information about timers
 timer_pause({id}, {pause})	none	pause or unpause a timer
 timer_start({time}, {callback} [, {options}])
@@ -4397,7 +4396,7 @@ feedkeys({string} [, {mode}])				*feedkeys()*
 			script continues.
 			Note that if you manage to call feedkeys() while
 			executing commands, thus calling it recursively, then
-			all typehead will be consumed by the last call.
+			all typeahead will be consumed by the last call.
 		'!'	When used with 'x' will not end Insert mode. Can be
 			used in a test when a timer is set to exit Insert mode
 			a little later.  Useful for testing CursorHoldI.
@@ -4433,7 +4432,7 @@ filewritable({file})					*filewritable()*
 		directory, and we can write to it, the result is 2.
 
 		Can also be used as a |method|: >
-			GetName()->filewriteable()
+			GetName()->filewritable()
 
 
 filter({expr1}, {expr2})				*filter()*
@@ -5434,7 +5433,7 @@ getmousepos()						*getmousepos()*
 		"screenrow" and "screencol" are valid, the others are zero.
 
 		When on the status line below a window or the vertical
-		separater right of a window, the "line" and "column" values
+		separator right of a window, the "line" and "column" values
 		are zero.
 
 		When the position is after the text then "column" is the
@@ -6950,7 +6949,7 @@ mapset({mode}, {abbr}, {dict})				*mapset()*
 			call mapset('n', 0, save_map)
 <		Note that if you are going to replace a map in several modes,
 		e.g. with `:map!`, you need to save the mapping for all of
-		them, since they can differe.
+		them, since they can differ.
 
 
 match({expr}, {pat} [, {start} [, {count}]])			*match()*
@@ -8547,8 +8546,10 @@ searchcount([{options}])					*searchcount()*
 		  recompute	|Boolean|	if |TRUE|, recompute the count
 						like |n| or |N| was executed.
 						otherwise returns the last
-						result by |n|, |N|, or this
-						function is returned.
+						computed result (when |n| or
+						|N| was used when "S" is not
+						in 'shortmess', or this
+						function was called).
 						(default: |TRUE|)
 		  pattern	|String|	recompute if this was given
 						and different with |@/|.
