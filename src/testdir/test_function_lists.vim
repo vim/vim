@@ -50,7 +50,7 @@ func Test_function_lists()
   %s/^    {"//
   %s/".*//
   sort u
-  w! Xsorted_current_global_functions
+  w! ++ff=unix Xsorted_current_global_functions
 
   " Verify that the ":help functions" list is complete and in ASCII order.
 
@@ -84,7 +84,7 @@ func Test_function_lists()
   %s/(.*//
   %left
   sort u
-  w! Xfunction-list
+  w! ++ff=unix Xfunction-list
   let l:unequal = assert_equalfile("Xsorted_current_global_functions", "Xfunction-list",
       \ "\":help functions-list\" incomplete")
   if l:unequal && executable("diff")
@@ -92,7 +92,6 @@ func Test_function_lists()
   endif
 
   " Clean up.
-
   call delete("Xglobal_functions")
   call delete("Xsorted_global_functions")
   call delete("Xsorted_current_global_functions")
