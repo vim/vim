@@ -30,6 +30,9 @@
 /* Define when __DATE__ " " __TIME__ can be used */
 #undef HAVE_DATE_TIME
 
+/* Defined from $SOURCE_DATE_EPOCH, used as the build date */
+#undef BUILD_DATE
+
 /* Define when __attribute__((unused)) can be used */
 #undef HAVE_ATTRIBUTE_UNUSED
 

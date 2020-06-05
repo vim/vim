@@ -721,6 +721,7 @@ OS_EXTRA_SRC
 XCODE_SELECT
 CPP_MM
 CROSS_COMPILING
+BUILD_DATE_MSG
 STRIP
 AWK
 FGREP
@@ -4453,6 +4454,17 @@ $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
 as_fn_error $? "Compiler does not support C++ comments
 See \`config.log' for more details" "$LINENO" 5; }
   fi
+fi
+
+if test -n "$SOURCE_DATE_EPOCH"; then
+  DATE_FMT="%b %d %Y %H:%M:%S"
+  BUILD_DATE=$(LC_ALL=C date -u -d "@$SOURCE_DATE_EPOCH" "+$DATE_FMT" 2>/dev/null || LC_ALL=C date -u -r "$SOURCE_DATE_EPOCH" "+$DATE_FMT" 2>/dev/null || LC_ALL=C date -u "+$DATE_FMT")
+  cat >>confdefs.h <<_ACEOF
+#define BUILD_DATE "$BUILD_DATE"
+_ACEOF
+
+  BUILD_DATE_MSG=-"echo -e '=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\nNOTE: build date/time is fixed: $BUILD_DATE\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-='"
+
 fi
 
 

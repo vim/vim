@@ -44,9 +44,13 @@ init_longVersion(void)
      * VAX C can't concatenate strings in the preprocessor.
      */
     strcpy(longVersion, VIM_VERSION_LONG_DATE);
+#ifdef BUILD_DATE
+    strcat(longVersion, BUILD_DATE);
+#else
     strcat(longVersion, __DATE__);
     strcat(longVersion, " ");
     strcat(longVersion, __TIME__);
+#endif
     strcat(longVersion, ")");
 }
 
@@ -56,7 +60,15 @@ init_longVersion(void)
 {
     if (longVersion == NULL)
     {
+#ifdef BUILD_DATE
+	char *date_time = BUILD_DATE;
+#else
+#ifdef BUILD_DATE
+	char *date_time = BUILD_DATE;
+#else
 	char *date_time = __DATE__ " " __TIME__;
+#endif
+#endif
 	char *msg = _("%s (%s, compiled %s)");
 	size_t len = strlen(msg)
 		    + strlen(VIM_VERSION_LONG_ONLY)
