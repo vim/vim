@@ -1317,7 +1317,12 @@ check_clipboard_option(void)
     }
     if (errmsg == NULL)
     {
-	clip_unnamed = new_unnamed;
+	if (global_busy)
+	    // clip_unnamed will be reset to clip_unnamed_saved
+	    // at end_global_changes
+	    clip_unnamed_saved = new_unnamed;
+	else
+	    clip_unnamed = new_unnamed;
 	clip_autoselect_star = new_autoselect_star;
 	clip_autoselect_plus = new_autoselect_plus;
 	clip_autoselectml = new_autoselectml;
