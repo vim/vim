@@ -2994,6 +2994,8 @@ struct tabpage_S
 
     char_u	    *tp_localdir;	// absolute path of local directory or
 					// NULL
+    char_u	    *tp_prevdir;	// previous directory
+
 #ifdef FEAT_DIFF
     diff_T	    *tp_first_diff;
     buf_T	    *(tp_diffbuf[DB_COUNT]);
@@ -3397,6 +3399,7 @@ struct window_S
 
     char_u	*w_localdir;	    // absolute path of local directory or
 				    // NULL
+    char_u	*w_prevdir;	    // previous directory
 #ifdef FEAT_MENU
     vimmenu_T	*w_winbar;	    // The root of the WinBar menu hierarchy.
     winbar_item_T *w_winbar_items;  // list of items in the WinBar

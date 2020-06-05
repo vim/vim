@@ -1326,6 +1326,10 @@ present in 'cpoptions' and "!" is not used in the command.
 							*:tch* *:tchdir*
 :tch[dir][!]		Same as |:tcd|.
 
+							*:tcd-*
+:tcd[!] -		Change to the previous current directory, before the
+			last ":tcd {path}" command.
+
 							*:lc* *:lcd*
 :lc[d][!] {path}	Like |:cd|, but only set the current directory when
 			the cursor is in the current window.  The current
@@ -1334,6 +1338,10 @@ present in 'cpoptions' and "!" is not used in the command.
 
 							*:lch* *:lchdir*
 :lch[dir][!]		Same as |:lcd|.
+
+							*:lcd-*
+:lcd[!] -		Change to the previous current directory, before the
+			last ":lcd {path}" command.
 
 							*:pw* *:pwd* *E187*
 :pw[d]			Print the current directory name.
