@@ -1,3 +1,4 @@
+source check.vim
 
 func Test_yank_put_clipboard()
   new
@@ -14,6 +15,7 @@ func Test_yank_put_clipboard()
 endfunc
 
 func Test_global_set_clipboard()
+  CheckFeature clipboard_working
   new
   set clipboard=unnamedplus
   let @+='clipboard' | g/^/set cb=|let @"='unnamed'|put
