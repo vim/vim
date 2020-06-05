@@ -125,7 +125,7 @@ let s:filename_checks = {
     \ 'dart': ['file.dart', 'file.drt'],
     \ 'datascript': ['file.ds'],
     \ 'dcd': ['file.dcd'],
-    \ 'debcontrol': ['/debian/control'],
+    \ 'debcontrol': ['/debian/control', '/DEBIAN/control'],
     \ 'debsources': ['/etc/apt/sources.list', '/etc/apt/sources.list.d/file.list'],
     \ 'def': ['file.def'],
     \ 'denyhosts': ['denyhosts.conf'],

@@ -430,6 +430,7 @@ au BufRead,BufNewfile *.dart,*.drt		setf dart
 
 " Debian Control
 au BufNewFile,BufRead */debian/control		setf debcontrol
+au BufNewFile,BufRead */DEBIAN/control		setf debcontrol
 au BufNewFile,BufRead control
 	\  if getline(1) =~ '^Source:'
 	\|   setf debcontrol
