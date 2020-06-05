@@ -4819,6 +4819,11 @@ not_enough:
 			if (version < 95)
 			    is_not_xterm = TRUE;
 
+			// With the real Xterm setting the underline RGB color
+			// clears the background color, disable "t_8u".
+			if (!is_not_xterm && *T_8U != NUL)
+			    T_8U = empty_option;
+
 			// Only request the cursor style if t_SH and t_RS are
 			// set. Only supported properly by xterm since version
 			// 279 (otherwise it returns 0x18).
