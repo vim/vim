@@ -2373,6 +2373,44 @@ untrans_function_name(char_u *name)
 }
 
 /*
+ * List functions.  When "regmatch" is NULL all of then.
+ * Otherwise functions matching "regmatch".
+ */
+    static void
+list_functions(regmatch_T *regmatch)
+{
+    long_u	used = func_hashtab.ht_used;
+    long_u	todo = used;
+    hashitem_T	*ht_array = func_hashtab.ht_array;
+    hashitem_T	*hi;
+
+    for (hi = ht_array; todo > 0 && !got_int; ++hi)
+    {
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    ufunc_T	*fp = HI2UF(hi);
+
+	    --todo;
+	    if ((fp->uf_flags & FC_DEAD) == 0
+		    && (regmatch == NULL
+			? !message_filtered(fp->uf_name)
+			    && !func_name_refcount(fp->uf_name)
+			: !isdigit(*fp->uf_name)
+			    && vim_regexec(regmatch, fp->uf_name, 0)))
+	    {
+		list_func_head(fp, FALSE);
+		if (used != func_hashtab.ht_used
+			|| ht_array != func_hashtab.ht_array)
+		{
+		    emsg(_("E454: function list was modified"));
+		    return;
+		}
+	    }
+	}
+    }
+}
+
+/*
  * ":function" also supporting nested ":def".
  * Returns a pointer to the function or NULL if no function defined.
  */
@@ -2407,7 +2445,6 @@ def_function(exarg_T *eap, char_u *name_arg)
     funcdict_T	fudi;
     static int	func_nr = 0;	    // number for nameless function
     int		paren;
-    int		todo;
     hashitem_T	*hi;
     int		do_concat = TRUE;
     linenr_T	sourcing_lnum_off;
@@ -2428,22 +2465,7 @@ def_function(exarg_T *eap, char_u *name_arg)
     if (ends_excmd2(eap->cmd, eap->arg))
     {
 	if (!eap->skip)
-	{
-	    todo = (int)func_hashtab.ht_used;
-	    for (hi = func_hashtab.ht_array; todo > 0 && !got_int; ++hi)
-	    {
-		if (!HASHITEM_EMPTY(hi))
-		{
-		    --todo;
-		    fp = HI2UF(hi);
-		    if ((fp->uf_flags & FC_DEAD)
-					      || message_filtered(fp->uf_name))
-			continue;
-		    if (!func_name_refcount(fp->uf_name))
-			list_func_head(fp, FALSE);
-		}
-	    }
-	}
+	    list_functions(NULL);
 	eap->nextcmd = check_nextcmd(eap->arg);
 	return NULL;
     }
@@ -2465,20 +2487,7 @@ def_function(exarg_T *eap, char_u *name_arg)
 	    if (regmatch.regprog != NULL)
 	    {
 		regmatch.rm_ic = p_ic;
-
-		todo = (int)func_hashtab.ht_used;
-		for (hi = func_hashtab.ht_array; todo > 0 && !got_int; ++hi)
-		{
-		    if (!HASHITEM_EMPTY(hi))
-		    {
-			--todo;
-			fp = HI2UF(hi);
-			if ((fp->uf_flags & FC_DEAD) == 0
-				&& !isdigit(*fp->uf_name)
-				&& vim_regexec(&regmatch, fp->uf_name, 0))
-			    list_func_head(fp, FALSE);
-		    }
-		}
+		list_functions(&regmatch);
 		vim_regfree(regmatch.regprog);
 	    }
 	}
