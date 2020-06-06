@@ -3811,4 +3811,79 @@ free_callback(callback_T *callback)
     callback->cb_name = NULL;
 }
 
+/*
+ * Process a function argument that can be a string expression or a function
+ * reference.
+ * "tv" must remain valid until calling evalarg_clean()!
+ * Returns FAIL when the argument is invalid.
+ */
+    int
+evalarg_get(typval_T *tv, evalarg_T *eva)
+{
+    if (tv->v_type == VAR_STRING
+	    || tv->v_type == VAR_NUMBER
+	    || tv->v_type == VAR_BOOL
+	    || tv->v_type == VAR_SPECIAL)
+    {
+	eva->eva_string = tv_get_string_buf(tv, eva->eva_buf);
+	return OK;
+    }
+
+    eva->eva_callback = get_callback(tv);
+    return eva->eva_callback.cb_name == NULL ? FAIL : OK;
+}
+
+/*
+ * Return whether "eva" has a valid expression or callback.
+ */
+    int
+evalarg_valid(evalarg_T *eva)
+{
+    return eva->eva_string != NULL || eva->eva_callback.cb_name != NULL;
+}
+
+/*
+ * Invoke the expression or callback "eva" and return the result in "tv".
+ * Returns FAIL if something failed
+ */
+    int
+evalarg_call(evalarg_T *eva, typval_T *tv)
+{
+    typval_T	argv[1];
+
+    if (eva->eva_string != NULL)
+	return eval0(eva->eva_string, tv, NULL, EVAL_EVALUATE);
+
+    argv[0].v_type = VAR_UNKNOWN;
+    return call_callback(&eva->eva_callback, -1, tv, 0, argv);
+}
+
+/*
+ * Like evalarg_call(), but just return TRUE of FALSE.
+ * Sets "error" to TRUE if evaluation failed.
+ */
+    int
+evalarg_call_bool(evalarg_T *eva, int *error)
+{
+    typval_T	tv;
+    int		r;
+
+    if (evalarg_call(eva, &tv) == FAIL)
+    {
+	*error = TRUE;
+	return FALSE;
+    }
+    r = tv_get_number(&tv);
+    clear_tv(&tv);
+    *error = FALSE;
+    return r;
+}
+
+    void
+evalarg_clean(evalarg_T *eva)
+{
+    if (eva->eva_string == NULL)
+	free_callback(&eva->eva_callback);
+}
+
 #endif // FEAT_EVAL

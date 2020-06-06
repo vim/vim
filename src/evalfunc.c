@@ -801,12 +801,12 @@ static funcentry_T global_functions[] =
     {"screenpos",	3, 3, FEARG_1,	  ret_dict_number, f_screenpos},
     {"screenrow",	0, 0, 0,	  ret_number,	f_screenrow},
     {"screenstring",	2, 2, FEARG_1,	  ret_string,	f_screenstring},
-    {"search",		1, 4, FEARG_1,	  ret_number,	f_search},
+    {"search",		1, 5, FEARG_1,	  ret_number,	f_search},
     {"searchcount",	0, 1, FEARG_1,	  ret_dict_any,	f_searchcount},
     {"searchdecl",	1, 3, FEARG_1,	  ret_number,	f_searchdecl},
     {"searchpair",	3, 7, 0,	  ret_number,	f_searchpair},
     {"searchpairpos",	3, 7, 0,	  ret_list_number, f_searchpairpos},
-    {"searchpos",	1, 4, FEARG_1,	  ret_list_number, f_searchpos},
+    {"searchpos",	1, 5, FEARG_1,	  ret_list_number, f_searchpos},
     {"server2client",	2, 2, FEARG_1,	  ret_number,	f_server2client},
     {"serverlist",	0, 0, 0,	  ret_string,	f_serverlist},
     {"setbufline",	3, 3, FEARG_3,	  ret_number,	f_setbufline},
@@ -6399,6 +6399,10 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
     int		options = SEARCH_KEEP;
     int		subpatnum;
     searchit_arg_T sia;
+    evalarg_T	skip;
+    pos_T	firstpos;
+
+    CLEAR_FIELD(skip);
 
     pat = tv_get_string(&argvars[0]);
     dir = get_search_arg(&argvars[1], flagsp);	// may set p_ws
@@ -6412,20 +6416,23 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
     if (flags & SP_COLUMN)
 	options |= SEARCH_COL;
 
-    // Optional arguments: line number to stop searching and timeout.
+    // Optional arguments: line number to stop searching, timeout and skip.
     if (argvars[1].v_type != VAR_UNKNOWN && argvars[2].v_type != VAR_UNKNOWN)
     {
 	lnum_stop = (long)tv_get_number_chk(&argvars[2], NULL);
 	if (lnum_stop < 0)
 	    goto theend;
-#ifdef FEAT_RELTIME
 	if (argvars[3].v_type != VAR_UNKNOWN)
 	{
+#ifdef FEAT_RELTIME
 	    time_limit = (long)tv_get_number_chk(&argvars[3], NULL);
 	    if (time_limit < 0)
 		goto theend;
-	}
 #endif
+	    if (argvars[4].v_type != VAR_UNKNOWN
+		    && evalarg_get(&argvars[4], &skip) == FAIL)
+		goto theend;
+	}
     }
 
 #ifdef FEAT_RELTIME
@@ -6447,13 +6454,48 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
     }
 
     pos = save_cursor = curwin->w_cursor;
+    CLEAR_FIELD(firstpos);
     CLEAR_FIELD(sia);
     sia.sa_stop_lnum = (linenr_T)lnum_stop;
 #ifdef FEAT_RELTIME
     sia.sa_tm = &tm;
 #endif
-    subpatnum = searchit(curwin, curbuf, &pos, NULL, dir, pat, 1L,
+
+    // Repeat until {skip} returns FALSE.
+    for (;;)
+    {
+	subpatnum = searchit(curwin, curbuf, &pos, NULL, dir, pat, 1L,
 						     options, RE_SEARCH, &sia);
+	// finding the first match again means there is no match where {skip}
+	// evaluates to zero.
+	if (firstpos.lnum != 0 && EQUAL_POS(pos, firstpos))
+	    subpatnum = FAIL;
+
+	if (subpatnum == FAIL || !evalarg_valid(&skip))
+	    // didn't find it or no skip argument
+	    break;
+	firstpos = pos;
+
+	// If the skip pattern matches, ignore this match.
+	{
+	    int	    do_skip;
+	    int	    err;
+	    pos_T   save_pos = curwin->w_cursor;
+
+	    curwin->w_cursor = pos;
+	    do_skip = evalarg_call_bool(&skip, &err);
+	    curwin->w_cursor = save_pos;
+	    if (err)
+	    {
+		// Evaluating {skip} caused an error, break here.
+		subpatnum = FAIL;
+		break;
+	    }
+	    if (!do_skip)
+		break;
+	}
+    }
+
     if (subpatnum != FAIL)
     {
 	if (flags & SP_SUBPAT)
@@ -6481,6 +6523,7 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
 	curwin->w_set_curswant = TRUE;
 theend:
     p_ws = save_p_ws;
+    evalarg_clean(&skip);
 
     return retval;
 }

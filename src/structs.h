@@ -4130,6 +4130,21 @@ typedef struct
     int		sa_wrapped;	// search wrapped around
 } searchit_arg_T;
 
+/*
+ * Function argument that can be a string, funcref or partial.
+ * - declare:	evalarg_T name;
+ * - init:	CLEAR_FIELD(name);
+ * - set:	evalarg_get(&argvars[3], &name);
+ * - use:	if (evalarg_valid(&name)) res = evalarg_call(&name);
+ * - cleanup:	evalarg_clean(&name);
+ */
+typedef struct
+{
+    char_u	eva_buf[NUMBUFLEN];  // buffer for get_tv_string_buf()
+    char_u	*eva_string;
+    callback_T	eva_callback;
+} evalarg_T;
+
 #define WRITEBUFSIZE	8192	// size of normal write buffer
 
 #define FIO_LATIN1	0x01	// convert Latin1
