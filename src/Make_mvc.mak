@@ -23,6 +23,8 @@
 #
 #	Feature Set: FEATURES=[TINY, SMALL, NORMAL, BIG, HUGE] (default is HUGE)
 #
+#   	Name to add to the version: MODIFIED_BY=[name of modifier]
+#
 #	GUI interface: GUI=yes (default is no)
 #
 #	GUI with DirectWrite (DirectX): DIRECTX=yes
@@ -1245,6 +1247,13 @@ CFLAGS = $(CFLAGS) -DMSWINPS
 CFLAGS = $(CFLAGS) -DFEAT_$(FEATURES)
 
 #
+# MODIFIED_BY - Name of who modified a release version
+#
+!if "$(MODIFIED_BY)" != ""
+CFLAGS = $(CFLAGS) -DMODIFIED_BY=\"$(MODIFIED_BY)\"
+!endif
+
+#
 # Always generate the .pdb file, so that we get debug symbols that can be used
 # on a crash (doesn't add overhead to the executable).
 # Generate edit-and-continue debug info when no optimization - allows to
@@ -1852,14 +1861,18 @@ $(OUTDIR)/vterm_vterm.obj: $(OUTDIR) libvterm/src/vterm.c $(TERM_DEPS)
 	$(CCCTERM) /Fo$@ libvterm/src/vterm.c
 
 
-# $CFLAGS may contain backslashes and double quotes, escape them both.
+# $CFLAGS may contain backslashes, quotes and chevrons, escape them all.
 E0_CFLAGS = $(CFLAGS:\=\\)
-E_CFLAGS = $(E0_CFLAGS:"=\")
+E00_CFLAGS = $(E0_CFLAGS:"=\")
 # ") stop the string
-# $LINKARGS2 may contain backslashes and double quotes, escape them both.
+E000_CFLAGS = $(E00_CFLAGS:<=^^<)
+E_CFLAGS = $(E000_CFLAGS:>=^^>)
+# $LINKARGS2 may contain backslashes, quotes and chevrons, escape them all.
 E0_LINKARGS2 = $(LINKARGS2:\=\\)
-E_LINKARGS2 = $(E0_LINKARGS2:"=\")
+E00_LINKARGS2 = $(E0_LINKARGS2:"=\")
 # ") stop the string
+E000_LINKARGS2 = $(E00_LINKARGS2:<=^^<)
+E_LINKARGS2 = $(E000_LINKARGS2:>=^^>)
 
 $(PATHDEF_SRC): Make_mvc.mak
 	@echo creating $(PATHDEF_SRC)
