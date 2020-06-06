@@ -68,6 +68,7 @@ int get_termcode_len(int idx);
 void del_termcode(char_u *name);
 void set_mouse_topline(win_T *wp);
 int is_mouse_topline(win_T *wp);
+int put_string_in_typebuf(int offset, int slen, char_u *string, int new_slen, char_u *buf, int bufsize, int *buflen);
 int decode_modifiers(int n);
 int check_termcode(int max_offset, char_u *buf, int bufsize, int *buflen);
 void term_get_fg_color(char_u *r, char_u *g, char_u *b);

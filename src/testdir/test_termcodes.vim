@@ -1222,6 +1222,23 @@ func RunTest_mapping_shift(key, func)
   endif
 endfunc
 
+func Test_modifyOtherKeys_mapped()
+  set timeoutlen=10
+  imap ' <C-W>
+  imap <C-W><C-A> c-a
+  call setline(1, '')
+
+  " single quote is turned into single byte CTRL-W
+  " CTRL-A is added with a separate modifier, and needs to be simplified before
+  " the mapping can match.
+  call feedkeys("a'" .. GetEscCodeCSI27('A', 5) .. "\<Esc>", 'Lx!')
+  call assert_equal('c-a', getline(1))
+
+  iunmap '
+  iunmap <C-W><C-A>
+  set timeoutlen&
+endfunc
+
 func RunTest_mapping_works_with_shift(func)
   new
   set timeoutlen=10

@@ -4251,7 +4251,7 @@ is_mouse_topline(win_T *wp)
  * Remove "slen" bytes.
  * Returns FAIL for error.
  */
-    static int
+    int
 put_string_in_typebuf(
 	int	offset,
 	int	slen,
@@ -4342,7 +4342,7 @@ modifiers2keycode(int modifiers, int *key, char_u *string)
 /*
  * Check if typebuf.tb_buf[] contains a terminal key code.
  * Check from typebuf.tb_buf[typebuf.tb_off] to typebuf.tb_buf[typebuf.tb_off
- * + max_offset].
+ * + "max_offset"].
  * Return 0 for no match, -1 for partial match, > 0 for full match.
  * Return KEYLEN_REMOVED when a key code was deleted.
  * With a match, the match is removed, the replacement code is inserted in

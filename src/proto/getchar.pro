@@ -37,7 +37,7 @@ void openscript(char_u *name, int directly);
 void close_all_scripts(void);
 int using_script(void);
 void before_blocking(void);
-int merge_modifyOtherKeys(int c_arg);
+int merge_modifyOtherKeys(int c_arg, int *modifiers);
 int vgetc(void);
 int safe_vgetc(void);
 int plain_vgetc(void);
