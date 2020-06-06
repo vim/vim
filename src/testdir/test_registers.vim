@@ -416,26 +416,39 @@ func Test_execute_register()
   call assert_beeps('normal! c@r')
 endfunc
 
-func Test_reginfo()
+func Test_get_reginfo()
   enew
   call setline(1, ['foo', 'bar'])
+
   exe 'norm! "zyy'
   let info = getreginfo('"')
-  call assert_equal(info.points_to, 'z')
+  call assert_equal('z', info.points_to)
   call setreg('y', 'baz')
-  call assert_equal(getreginfo('').points_to, 'z')
+  call assert_equal('z', getreginfo('').points_to)
   call setreg('y', { 'isunnamed': v:true })
-  call assert_equal(getreginfo('"').points_to, 'y')
+  call assert_equal('y', getreginfo('"').points_to)
+
   exe '$put'
-  call assert_equal(getline(3), getreg('y'))
+  call assert_equal(getreg('y'), getline(3))
   call setreg('', 'qux')
-  call assert_equal(getreginfo('').points_to, '0')
+  call assert_equal('0', getreginfo('').points_to)
   call setreg('x', 'quux')
-  call assert_equal(getreginfo('').points_to, '0')
+  call assert_equal('0', getreginfo('').points_to)
+
   let info = getreginfo('')
-  call assert_equal(info.regcontents, getreg('', 1, 1))
-  call assert_equal(info.regtype, getregtype(''))
-  bwipe!
+  call assert_equal(getreg('', 1, 1), info.regcontents)
+  call assert_equal(getregtype(''), info.regtype)
+
+  exe "norm! 0\<c-v>e" .. '"zy'
+  let info = getreginfo('z')
+  call assert_equal(getreg('z', 1, 1), info.regcontents)
+  call assert_equal(getregtype('z'), info.regtype)
+  call assert_equal(1, +info.isunnamed)
+
+  let info = getreginfo('"')
+  call assert_equal('z', info.points_to)
+
+  " bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
