@@ -44,6 +44,34 @@ typedef struct
     blob_T	*fi_blob;	// blob being used
 } forinfo_T;
 
+/*
+ * A string. But using the length instead of '\0'.
+ * To convert to a finite char_u*, use vim_strnsave(s->value, s->length) please.
+ */
+typedef struct
+{
+    /*
+     * A pointer to the head of char*. This char* is possible to infinite by '\0'.
+     */
+    char_u *value;
+
+    size_t length;
+} string_like;
+
+/*
+ * A interval for 'lead', expr, and 'tail' of $'lead${expr}tail'.
+ * The is_expr is true if the interval is in ${..} (such as above 'expr').
+ */
+typedef struct
+{
+    int is_expr;
+    string_like* s;
+} template_string_interval;
+
+static template_string_interval* make_interval_between_not_expr(char_u *begin, char_u *end);
+static void interval_free(template_string_interval *x);
+static void intervals_free(garray_T *xs);
+
 static int tv_op(typval_T *tv1, typval_T *tv2, char_u  *op);
 static int eval2(char_u **arg, typval_T *rettv, int flags);
 static int eval3(char_u **arg, typval_T *rettv, int flags);
@@ -3375,126 +3403,27 @@ ga_append_mbytes(garray_T *gap, char_u *c)
     gap->ga_len = STRLEN(gap->ga_data);
 }
 
-/*
- * Allocate a variable for $"${expr}" and $'${expr}' constant.
- * Return OK or FAIL.
- */
-    static int
-get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
+    static void
+interval_free(template_string_interval *x)
 {
-    garray_T	result;  // a string that is not a template string
-    garray_T	current;
-    char_u	*to_eval_current;
-    typval_T	current_result;
-    char_u	*arg_orig = *arg;
-    char_u	quote = *(*arg + 1);
-    int		is_literal_string = (quote == '\'');
-    int		is_skipping_needed;
+    vim_free(x->s);
+    vim_free(x);
+}
 
-    *arg += 2;  // $'
+/*
+ * Free for garray_t of template_string_interval*.
+ */
+    static void
+intervals_free(garray_T *xs)
+{
+    int i;
 
-    ga_init2(&result, 1, 80);
-
-    ga_init2(&current, 1, 80);
-    ga_append(&current, quote);
-
-    init_tv(&current_result);
-
-    // Continue while it is not NULL and it is not a closing quote.
-    for (; (**arg != NUL) &&
-	    !is_closing_quote(*arg, is_literal_string, &is_skipping_needed);
-	    MB_PTR_ADV(*arg))
+    for (i = 0; i < xs->ga_len; ++i)
     {
-	if (is_skipping_needed)
-	{
-	    ga_concatn(&current, *arg, 2);
-	    *arg += 1;
-	    continue;
-	}
-	else if (**arg == '$' && *(*arg + 1) == '{')
-	{
-	    int is_eval_expr_success;
-	    int is_eval_current_success;
-
-	    ga_append(&current, quote);  // close quotation
-	    is_eval_current_success = eval_template_current_into_result(
-		    &current,
-		    &result,
-		    evaluate);
-	    ga_clear(&current);
-
-	    if (!is_eval_current_success)
-	    {
-		ga_clear(&result);
-		return FAIL;
-	    }
-	    ga_append(&current, quote);  // open quotation
-
-	    is_eval_expr_success =
-		eval_next_template_expr_into_result(
-			&result,
-			arg,
-			evaluate);
-	    if (!is_eval_expr_success)
-	    {
-		ga_clear(&current);
-		ga_clear(&result);
-		return FAIL;
-	    }
-	    continue;
-	}
-
-	ga_append_mbytes(&current, *arg);
+	template_string_interval *x =
+	    ((template_string_interval **)xs->ga_data)[i];
+	interval_free(x);
     }
-
-    /*
-     * Return FAIL if this template string is missing closing quote.
-     */
-    if (**arg == NUL)
-    {
-	ga_clear(&current);
-	ga_clear(&result);
-	semsg(_("E115: Missing quote: %s"), arg_orig);
-	return FAIL;
-    }
-    MB_PTR_ADV(*arg);
-
-    if (!evaluate)
-    {
-	ga_clear(&current);
-	ga_clear(&result);
-	return OK;
-    }
-
-    /*
-     * Consume the last current.
-     */
-    ga_append(&current, quote);  // closing quotation
-    to_eval_current = (char_u *) current.ga_data;
-    {
-	int eval_result = is_literal_string
-	    ? get_lit_string_tv(&to_eval_current, &current_result, evaluate)
-	    : get_string_tv(&to_eval_current, &current_result, evaluate);
-	if (!eval_result)
-	{
-	    ga_clear(&current);
-	    ga_clear(&result);
-	    clear_tv(&current_result);
-	    return FAIL;
-	}
-    }
-    ga_concat(&result, current_result.vval.v_string);
-    clear_tv(&current_result);
-
-    /*
-     * Return the result.
-     */
-    rettv->v_type = VAR_STRING;
-    rettv->v_lock = 0;
-    rettv->vval.v_string = (char_u *) result.ga_data;
-
-    ga_clear(&current);
-    return OK;
 }
 
 /*
@@ -3522,14 +3451,6 @@ refresh_pair_of_quote(char_u *previous_quote, char_u source)
 	*previous_quote = NUL;
     else if (*previous_quote == '"' && source == '"')
 	*previous_quote = NUL;
-}
-
-    static int
-is_escaped_quote(int is_literal_string, char_u *p)
-{
-    return
-	(is_literal_string && *p == '\'' && *(p + 1) == '\'') ||
-	(!is_literal_string && *p == '\\' && *(p + 1) == '"');
 }
 
 /*
@@ -3580,6 +3501,239 @@ forward_to_end_of_template_expr(char_u **expr)
     return OK;
 }
 
+    static int
+read_template_string_intervals(
+	garray_T *result,
+	int is_literal_string,
+	char_u **arg)
+{
+    char_u			*arg_orig = *arg;
+    int				is_skipping_needed;
+    char_u			*current;
+    template_string_interval	**intervals;
+
+    *arg += 2;  // $' or $"
+
+    ga_init2(result, sizeof(template_string_interval*), 80);
+    current = *arg;
+
+    // Continue while it is not NULL and it is not a closing quote.
+    for (; (**arg != NUL) &&
+	    !is_closing_quote(*arg, is_literal_string, &is_skipping_needed);
+	    MB_PTR_ADV(*arg))
+    {
+	if (is_skipping_needed)
+	{
+	    *arg += 1;
+	    continue;
+	}
+	else if (**arg == '$' && *(*arg + 1) == '{')
+	{
+	    ga_grow(result, 2);
+	    result->ga_len += 2;
+
+	    /*
+	     * Get a current item that is not an expr.
+	     */
+	    ((template_string_interval **)result->ga_data)[result->ga_len - 2] =
+		make_interval_between_not_expr(
+		    current,
+		    *arg);
+
+	    /*
+	     * Get a next item that is a ${ expr }.
+	     */
+	    *arg += 2;
+	    current = *arg;
+	    forward_to_end_of_template_expr(arg);
+
+	    ((template_string_interval **)result->ga_data)[result->ga_len - 1] =
+		make_interval_between_not_expr(
+		    current,
+		    *arg);
+	    ((template_string_interval **)result->ga_data)[result->ga_len - 1]
+		->is_expr = 1;
+
+	    /*
+	     * Go to a next item
+	     */
+	    current = *arg + 1;  // '$' of '${'
+	}
+    }
+
+    /*
+     * Add a last item
+     */
+    {
+	ga_grow(result, 1);
+	result->ga_len += 1;
+
+	((template_string_interval **)result->ga_data)[result->ga_len - 1] =
+	    make_interval_between_not_expr(
+		current,
+		*arg);
+    }
+
+    /*
+     * Return FAIL if this template string is missing closing quote.
+     */
+    if (**arg == NUL)
+    {
+	intervals_free(result);
+	semsg(_("E115: Missing quote: %s"), arg_orig);
+	return FAIL;
+    }
+
+    return OK;
+}
+
+    static template_string_interval*
+make_interval_between_not_expr(char_u *start, char_u *end)
+{
+    string_like			*s;
+    template_string_interval	*x;
+
+    s = alloc(sizeof(string_like));
+    s->value = start;
+    s->length = end - start;
+
+    x = alloc(sizeof(template_string_interval));
+    x->is_expr = 0;
+    x->s = s;
+
+    return x;
+}
+
+    static char_u*
+stringify_expr(char_u *expr)
+{
+    typval_T result, string_result;
+
+    if (eval1(&expr, &result, TRUE) == FAIL)
+	return NULL;
+
+    if (result.v_type != VAR_STRING)
+    {
+	f_string(&result, &string_result);
+	clear_tv(&result);
+	result = string_result;
+    }
+    else if (result.vval.v_string == NULL)  // If $UNDEFINED_ENV_VAR evaluated
+	result.vval.v_string = ALLOC_CLEAR_ONE(char_u);  // meaning success of this function
+
+    return result.vval.v_string;
+}
+
+/*
+ * Allocate a variable for $"${expr}" and $'${expr}' constant.
+ * Return OK or FAIL.
+ */
+    static int
+get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
+{
+    char_u	quote = *(*arg + 1);
+    int		i;
+    int		is_reading_intervals_succeed;
+    int		is_literal_string = (quote == '\'');
+    garray_T	intervals;  // garray of template_string_interval*
+    garray_T	result;  // a string that is a literal string or a string (not a template string).
+    typval_T	interval_val;
+
+    is_reading_intervals_succeed = read_template_string_intervals(
+	    &intervals,
+	    is_literal_string,
+	    arg);
+    if (!is_reading_intervals_succeed)
+    {
+	return FAIL;
+    }
+
+    ++*arg;  // a closing quotion
+    if (!evaluate)
+    {
+	intervals_free(&intervals);
+	return OK;
+    }
+
+    ga_init2(&result, sizeof(char_u), 80);
+    clear_tv(&interval_val);
+
+    for (i = 0; i < intervals.ga_len; ++i)
+    {
+	template_string_interval *x =
+	    ((template_string_interval **)intervals.ga_data)[i];
+
+	if (x->is_expr)
+	{
+	    char_u *expr = vim_strnsave(x->s->value, x->s->length);
+	    char_u *stringified = stringify_expr(expr);
+
+	    if (stringified == NULL)
+	    {
+		vim_free(expr);
+		ga_clear(&result);
+		intervals_free(&intervals);
+		return FAIL;
+	    }
+
+	    ga_concat(&result, stringified);
+	    vim_free(expr);
+	    vim_free(stringified);
+	}
+	else
+	{
+	    garray_T	interval;
+	    char_u	*to_eval;
+	    int		is_evaluating_success;
+
+	    ga_init2(&interval, sizeof(char_u), 80);
+	    ga_append(&interval, quote);
+	    ga_concatn(&interval, x->s->value, x->s->length);
+	    ga_append(&interval, quote);
+	    to_eval = (char_u *)interval.ga_data;
+
+	    is_evaluating_success = is_literal_string
+		? get_lit_string_tv(&to_eval, &interval_val, evaluate)
+		: get_string_tv(&to_eval, &interval_val, evaluate);
+	    ga_clear(&interval);
+
+	    if (!is_evaluating_success)
+	    {
+		clear_tv(&interval_val);
+		ga_clear(&result);
+		intervals_free(&intervals);
+		return FAIL;
+	    }
+
+	    ga_concat(&result, interval_val.vval.v_string);
+	    clear_tv(&interval_val);
+	}
+    }
+    intervals_free(&intervals);
+
+    if (!evaluate)
+    {
+	ga_clear(&result);
+	return OK;
+    }
+
+    /*
+     * Return the result.
+     */
+    rettv->v_type = VAR_STRING;
+    rettv->v_lock = 0;
+    rettv->vval.v_string = (char_u *)result.ga_data;
+    return OK;
+}
+
+    static int
+is_escaped_quote(int is_literal_string, char_u *p)
+{
+    return
+	(is_literal_string && *p == '\'' && *(p + 1) == '\'') ||
+	(!is_literal_string && *p == '\\' && *(p + 1) == '"');
+}
+
 /*
  * Get expr of "${" expr  "}" of source,
  * and forward source.
@@ -3596,27 +3750,6 @@ read_template_expr(char_u **source)
 	return NULL;
 
     return vim_strnsave(expr_head, (int)(*source - expr_head));
-}
-
-    static char_u*
-stringify_expr(char_u *expr)
-{
-    typval_T result, string_result;
-
-    if (eval1(&expr, &result, TRUE) == FAIL)
-	return NULL;
-
-    // If $UNDEFINED_ENV_VAR evaluated
-    if (result.v_type != VAR_STRING)
-    {
-	f_string(&result, &string_result);
-	clear_tv(&result);
-	result = string_result;
-    }
-    else if (result.vval.v_string == NULL)
-	result.vval.v_string = ALLOC_CLEAR_ONE(char_u);  // meaning success of this function
-
-    return result.vval.v_string;
 }
 
 /*
