@@ -244,7 +244,9 @@ evalvars_init(void)
 
     set_vim_var_nr(VV_ECHOSPACE,    sc_col - 1);
 
-    set_reg_var(0);  // default for v:register is not 0 but '"'
+    // Default for v:register is not 0 but '"'.  This is adjusted once the
+    // clipboard has been setup by calling reset_reg_var().
+    set_reg_var(0);
 }
 
 #if defined(EXITFREE) || defined(PROTO)
@@ -2189,6 +2191,22 @@ set_argv_var(char **argv, int argc)
 	l->lv_u.mat.lv_last->li_tv.v_lock = VAR_FIXED;
     }
     set_vim_var_list(VV_ARGV, l);
+}
+
+/*
+ * Reset v:register, taking the 'clipboard' setting into account.
+ */
+    void
+reset_reg_var(void)
+{
+    int regname = 0;
+
+    // Adjust the register according to 'clipboard', so that when
+    // "unnamed" is present it becomes '*' or '+' instead of '"'.
+#ifdef FEAT_CLIPBOARD
+    adjust_clip_reg(&regname);
+#endif
+    set_reg_var(regname);
 }
 
 /*

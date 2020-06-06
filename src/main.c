@@ -826,12 +826,7 @@ vim_main2(void)
     // done after the clipboard is available and all initial commands that may
     // modify the 'clipboard' setting have run; i.e. just before entering the
     // main loop.
-    {
-	int default_regname = 0;
-
-	adjust_clip_reg(&default_regname);
-	set_reg_var(default_regname);
-    }
+    reset_reg_var();
 #endif
 
 #if defined(FEAT_DIFF)
