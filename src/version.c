@@ -63,11 +63,7 @@ init_longVersion(void)
 #ifdef BUILD_DATE
 	char *date_time = BUILD_DATE;
 #else
-#ifdef BUILD_DATE
-	char *date_time = BUILD_DATE;
-#else
 	char *date_time = __DATE__ " " __TIME__;
-#endif
 #endif
 	char *msg = _("%s (%s, compiled %s)");
 	size_t len = strlen(msg)
