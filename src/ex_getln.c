@@ -682,7 +682,8 @@ may_add_char_to_search(int firstc, int *c, incsearch_state_T *is_state)
     // NOTE: must call restore_last_search_pattern() before returning!
     save_last_search_pattern();
 
-    if (!do_incsearch_highlighting(firstc, &search_delim, is_state, &skiplen, &patlen))
+    if (!do_incsearch_highlighting(firstc, &search_delim, is_state,
+							    &skiplen, &patlen))
     {
 	restore_last_search_pattern();
 	return FAIL;
@@ -4205,10 +4206,19 @@ open_cmdwin(void)
 	ga_clear(&winsizes);
 	return K_IGNORE;
     }
-    cmdwin_type = get_cmdline_type();
+    // Don't let quitting the More prompt make this fail.
+    got_int = FALSE;
 
     // Create the command-line buffer empty.
-    (void)do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE, NULL);
+    if (do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE, NULL) == FAIL)
+    {
+	// Some autocommand messed it up?
+	win_close(curwin, TRUE);
+	ga_clear(&winsizes);
+	return Ctrl_C;
+    }
+    cmdwin_type = get_cmdline_type();
+
     apply_autocmds(EVENT_BUFFILEPRE, NULL, NULL, FALSE, curbuf);
     (void)setfname(curbuf, (char_u *)"[Command Line]", NULL, TRUE);
     apply_autocmds(EVENT_BUFFILEPOST, NULL, NULL, FALSE, curbuf);
