@@ -416,6 +416,7 @@ func Test_execute_register()
   call assert_beeps('normal! c@r')
 endfunc
 
+" Test for getting register info
 func Test_get_reginfo()
   enew
   call setline(1, ['foo', 'bar'])
@@ -448,7 +449,43 @@ func Test_get_reginfo()
   let info = getreginfo('"')
   call assert_equal('z', info.points_to)
 
-  " bwipe!
+  bwipe!
+endfunc
+
+" Test for restoring register with dict from getreginfo
+func Test_set_register_dict()
+  enew!
+
+  call setreg('"', #{ regcontents: ['one', 'two'],
+        \ regtype: 'V', points_to: 'z' })
+  call assert_equal(['one', 'two'], getreg('"', 1, 1))
+  let info = getreginfo('"')
+  call assert_equal('z', info.points_to)
+  call assert_equal('V', info.regtype)
+  call assert_equal(1, +getreginfo('z').isunnamed)
+
+  call setreg('x', #{ regcontents: ['three', 'four'],
+        \ regtype: 'v', isunnamed: v:true })
+  call assert_equal(['three', 'four'], getreg('"', 1, 1))
+  let info = getreginfo('"')
+  call assert_equal('x', info.points_to)
+  call assert_equal('v', info.regtype)
+  call assert_equal(1, +getreginfo('x').isunnamed)
+
+  call setreg('y', #{ regcontents: 'five',
+        \ regtype: "\<c-v>", isunnamed: v:false })
+  call assert_equal("\<c-v>4", getreginfo('y').regtype)
+  call assert_equal(0, +getreginfo('y').isunnamed)
+  call assert_equal(['three', 'four'], getreg('"', 1, 1))
+  call assert_equal('x', getreginfo('"').points_to)
+
+  call setreg('"', #{ regcontents: 'six' })
+  call assert_equal('0', getreginfo('"').points_to)
+  call assert_equal(1, +getreginfo('0').isunnamed)
+  call assert_equal(['six'], getreginfo('0').regcontents)
+  call assert_equal(['six'], getreginfo('"').regcontents)
+
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -7291,7 +7291,10 @@ f_setreg(typval_T *argvars, typval_T *rettv)
 	{
 	    stropt = dict_get_string(d, (char_u *)"points_to", FALSE);
 	    if (stropt != NULL)
+	    {
 		pointreg = *stropt;
+		regname = pointreg;
+	    }
 	}
 	else if (dict_get_number(d, (char_u *)"isunnamed"))
 	    pointreg = regname;
