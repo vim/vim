@@ -2225,7 +2225,9 @@ getcmdline_int(
 
 		    ignore_drag_release = TRUE;
 		    putcmdline('^', TRUE);
+		    no_reduce_keys = TRUE;  //  don't merge modifyOtherKeys
 		    c = get_literal();	    // get next (two) character(s)
+		    no_reduce_keys = FALSE;
 		    do_abbr = FALSE;	    // don't do abbreviation now
 		    extra_char = NUL;
 		    // may need to remove ^ when composing char was typed

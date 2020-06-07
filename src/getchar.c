@@ -1858,15 +1858,10 @@ vgetc(void)
 		c = (*mb_ptr2char)(buf);
 	    }
 
-	    if (!no_reduce_keys)
+	    if (vgetc_char == 0)
 	    {
-		// A modifier was not used for a mapping, apply it to ASCII
-		// keys.  Shift would already have been applied.
-		// Remember the character and mod_mask from before, in some
-		// cases they are put back in the typeahead buffer.
 		vgetc_mod_mask = mod_mask;
 		vgetc_char = c;
-		c = merge_modifyOtherKeys(c, &mod_mask);
 	    }
 
 	    break;
@@ -2274,17 +2269,39 @@ check_simplify_modifier(int max_offset)
 	tp = typebuf.tb_buf + typebuf.tb_off + offset;
 	if (tp[0] == K_SPECIAL && tp[1] == KS_MODIFIER)
 	{
+	    // A modifier was not used for a mapping, apply it to ASCII keys.
+	    // Shift would already have been applied.
 	    int modifier = tp[2];
-	    int new_c = merge_modifyOtherKeys(tp[3], &modifier);
+	    int	c = tp[3];
+	    int new_c = merge_modifyOtherKeys(c, &modifier);
 
-	    if (new_c != tp[3] && modifier == 0)
+	    if (new_c != c)
 	    {
 		char_u	new_string[MB_MAXBYTES];
-		int	len = mb_char2bytes(new_c, new_string);
+		int	len;
 
-		if (put_string_in_typebuf(offset, 4, new_string, len,
+		if (offset == 0)
+		{
+		    // At the start: remember the character and mod_mask before
+		    // merging, in some cases, e.g. at the hit-return prompt,
+		    // they are put back in the typeahead buffer.
+		    vgetc_char = c;
+		    vgetc_mod_mask = tp[2];
+		}
+		len = mb_char2bytes(new_c, new_string);
+		if (modifier == 0)
+		{
+		    if (put_string_in_typebuf(offset, 4, new_string, len,
 							   NULL, 0, 0) == FAIL)
 		    return -1;
+		}
+		else
+		{
+		    tp[2] = modifier;
+		    if (put_string_in_typebuf(offset + 3, 1, new_string, len,
+							   NULL, 0, 0) == FAIL)
+		    return -1;
+		}
 		return len;
 	    }
 	}
@@ -2559,7 +2576,7 @@ handle_mapping(
 
 	    // If no termcode matched, try to include the modifier into the
 	    // key.  This for when modifyOtherKeys is working.
-	    if (keylen == 0)
+	    if (keylen == 0 && !no_reduce_keys)
 		keylen = check_simplify_modifier(max_mlen + 1);
 
 	    // When getting a partial match, but the last characters were not
