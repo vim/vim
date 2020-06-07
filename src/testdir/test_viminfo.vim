@@ -91,6 +91,28 @@ func Test_global_vars()
   set viminfo-=!
 endfunc
 
+func Test_global_vars_with_circular_reference()
+  let g:MY_GLOBAL_LIST = []
+  call add(g:MY_GLOBAL_LIST, g:MY_GLOBAL_LIST)
+  let g:MY_GLOBAL_DICT = {}
+  let g:MY_GLOBAL_DICT['self'] = g:MY_GLOBAL_DICT
+
+  set viminfo='100,<50,s10,h,!,nviminfo
+  wv! Xviminfo
+  call assert_equal(v:errmsg, '')
+
+  unlet g:MY_GLOBAL_LIST
+  unlet g:MY_GLOBAL_DICT
+
+  rv! Xviminfo
+  call assert_equal(v:errmsg, '')
+  call assert_true(!exists('g:MY_GLOBAL_LIST'))
+  call assert_true(!exists('g:MY_GLOBAL_DICT'))
+
+  call delete('Xviminfo')
+  set viminfo-=!
+endfunc
+
 func Test_cmdline_history()
   call histdel(':')
   call test_settime(11)
