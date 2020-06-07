@@ -763,7 +763,7 @@ au_event_disable(char *what)
     save_ei = vim_strsave(p_ei);
     if (save_ei != NULL)
     {
-	new_ei = vim_strnsave(p_ei, (int)(STRLEN(p_ei) + STRLEN(what)));
+	new_ei = vim_strnsave(p_ei, STRLEN(p_ei) + STRLEN(what));
 	if (new_ei != NULL)
 	{
 	    if (*what == ',' && *p_ei == NUL)
@@ -991,7 +991,7 @@ au_get_grouparg(char_u **argp)
 	;
     if (p > arg)
     {
-	group_name = vim_strnsave(arg, (int)(p - arg));
+	group_name = vim_strnsave(arg, p - arg);
 	if (group_name == NULL)		// out of memory
 	    return AUGROUP_ERROR;
 	group = au_find_group(group_name);

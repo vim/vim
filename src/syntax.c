@@ -5097,7 +5097,7 @@ syn_cmd_region(
 	while (*key_end && !VIM_ISWHITE(*key_end) && *key_end != '=')
 	    ++key_end;
 	vim_free(key);
-	key = vim_strnsave_up(rest, (int)(key_end - rest));
+	key = vim_strnsave_up(rest, key_end - rest);
 	if (key == NULL)			// out of memory
 	{
 	    rest = NULL;
@@ -5762,7 +5762,7 @@ syn_cmd_sync(exarg_T *eap, int syncing UNUSED)
 	arg_end = skiptowhite(arg_start);
 	next_arg = skipwhite(arg_end);
 	vim_free(key);
-	key = vim_strnsave_up(arg_start, (int)(arg_end - arg_start));
+	key = vim_strnsave_up(arg_start, arg_end - arg_start);
 	if (STRCMP(key, "CCOMMENT") == 0)
 	{
 	    if (!eap->skip)

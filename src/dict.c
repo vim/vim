@@ -779,7 +779,7 @@ get_literal_key(char_u **arg, typval_T *tv)
     for (p = *arg; ASCII_ISALNUM(*p) || *p == '_' || *p == '-'; ++p)
 	;
     tv->v_type = VAR_STRING;
-    tv->vval.v_string = vim_strnsave(*arg, (int)(p - *arg));
+    tv->vval.v_string = vim_strnsave(*arg, p - *arg);
 
     *arg = skipwhite(p);
     return OK;

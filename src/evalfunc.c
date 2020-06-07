@@ -5521,7 +5521,7 @@ find_some_match(typval_T *argvars, typval_T *rettv, matchtype_T type)
 
 		vim_free(li1->li_tv.vval.v_string);
 		li1->li_tv.vval.v_string = vim_strnsave(regmatch.startp[0],
-				(int)(regmatch.endp[0] - regmatch.startp[0]));
+					regmatch.endp[0] - regmatch.startp[0]);
 		li3->li_tv.vval.v_number =
 				      (varnumber_T)(regmatch.startp[0] - expr);
 		li4->li_tv.vval.v_number =
@@ -5556,7 +5556,7 @@ find_some_match(typval_T *argvars, typval_T *rettv, matchtype_T type)
 		    copy_tv(&li->li_tv, rettv);
 		else
 		    rettv->vval.v_string = vim_strnsave(regmatch.startp[0],
-				(int)(regmatch.endp[0] - regmatch.startp[0]));
+					regmatch.endp[0] - regmatch.startp[0]);
 	    }
 	    else if (l != NULL)
 		rettv->vval.v_number = idx;
@@ -8861,7 +8861,7 @@ f_trim(typval_T *argvars, typval_T *rettv)
 	    }
 	}
     }
-    rettv->vval.v_string = vim_strnsave(head, (int)(tail - head));
+    rettv->vval.v_string = vim_strnsave(head, tail - head);
 }
 
 #ifdef FEAT_FLOAT

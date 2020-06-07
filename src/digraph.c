@@ -2387,10 +2387,10 @@ ex_loadkeymap(exarg_T *eap)
 	{
 	    kp = (kmap_T *)curbuf->b_kmap_ga.ga_data + curbuf->b_kmap_ga.ga_len;
 	    s = skiptowhite(p);
-	    kp->from = vim_strnsave(p, (int)(s - p));
+	    kp->from = vim_strnsave(p, s - p);
 	    p = skipwhite(s);
 	    s = skiptowhite(p);
-	    kp->to = vim_strnsave(p, (int)(s - p));
+	    kp->to = vim_strnsave(p, s - p);
 
 	    if (kp->from == NULL || kp->to == NULL
 		    || STRLEN(kp->from) + STRLEN(kp->to) >= KMAP_LLEN

@@ -906,7 +906,7 @@ do_highlight(
 	while (*linep && !VIM_ISWHITE(*linep) && *linep != '=')
 	    ++linep;
 	vim_free(key);
-	key = vim_strnsave_up(key_start, (int)(linep - key_start));
+	key = vim_strnsave_up(key_start, linep - key_start);
 	if (key == NULL)
 	{
 	    error = TRUE;

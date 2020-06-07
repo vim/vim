@@ -1301,7 +1301,7 @@ ex_diffpatch(exarg_T *eap)
 	if (curbuf->b_fname != NULL)
 	{
 	    newname = vim_strnsave(curbuf->b_fname,
-					  (int)(STRLEN(curbuf->b_fname) + 4));
+						  STRLEN(curbuf->b_fname) + 4);
 	    if (newname != NULL)
 		STRCAT(newname, ".new");
 	}

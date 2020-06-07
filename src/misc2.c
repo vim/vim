@@ -1291,7 +1291,7 @@ vim_strsave(char_u *string)
  * shorter.
  */
     char_u *
-vim_strnsave(char_u *string, int len)
+vim_strnsave(char_u *string, size_t len)
 {
     char_u	*p;
 
@@ -1538,7 +1538,7 @@ vim_strsave_up(char_u *string)
  * This uses ASCII lower-to-upper case translation, language independent.
  */
     char_u *
-vim_strnsave_up(char_u *string, int len)
+vim_strnsave_up(char_u *string, size_t len)
 {
     char_u *p1;
 

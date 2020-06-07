@@ -2906,7 +2906,7 @@ may_invoke_callback(channel_T *channel, ch_part_T part)
 	    {
 		// Copy the message into allocated memory (excluding the NL)
 		// and remove it from the buffer (including the NL).
-		msg = vim_strnsave(buf, (int)(nl - buf));
+		msg = vim_strnsave(buf, nl - buf);
 		channel_consume(channel, part, (int)(nl - buf) + 1);
 	    }
 	}
@@ -3703,7 +3703,7 @@ channel_read_block(
 	{
 	    // Copy the message into allocated memory and remove it from the
 	    // buffer.
-	    msg = vim_strnsave(buf, (int)(nl - buf));
+	    msg = vim_strnsave(buf, nl - buf);
 	    channel_consume(channel, part, (int)(nl - buf) + 1);
 	}
     }

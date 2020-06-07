@@ -2555,7 +2555,7 @@ ExpandUserDefined(
 	{
 	    if (ga_grow(&ga, 1) == FAIL)
 		break;
-	    ((char_u **)ga.ga_data)[ga.ga_len] = vim_strnsave(s, (int)(e - s));
+	    ((char_u **)ga.ga_data)[ga.ga_len] = vim_strnsave(s, e - s);
 	    ++ga.ga_len;
 	}
 
