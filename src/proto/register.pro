@@ -29,6 +29,7 @@ void free_yank_all(void);
 int op_yank(oparg_T *oap, int deleting, int mess);
 void do_put(int regname, int dir, long count, int flags);
 int get_register_name(int num);
+int get_unname_register(void);
 void ex_display(exarg_T *eap);
 void dnd_yank_drag_data(char_u *str, long len);
 char_u get_reg_type(int regname, long *reglen);
