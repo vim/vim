@@ -6399,10 +6399,8 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
     int		options = SEARCH_KEEP;
     int		subpatnum;
     searchit_arg_T sia;
-    evalarg_T	skip;
+    int		use_skip = FALSE;
     pos_T	firstpos;
-
-    CLEAR_FIELD(skip);
 
     pat = tv_get_string(&argvars[0]);
     dir = get_search_arg(&argvars[1], flagsp);	// may set p_ws
@@ -6429,9 +6427,7 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
 	    if (time_limit < 0)
 		goto theend;
 #endif
-	    if (argvars[4].v_type != VAR_UNKNOWN
-		    && evalarg_get(&argvars[4], &skip) == FAIL)
-		goto theend;
+	    use_skip = eval_expr_valid_arg(&argvars[4]);
 	}
     }
 
@@ -6471,19 +6467,20 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
 	if (firstpos.lnum != 0 && EQUAL_POS(pos, firstpos))
 	    subpatnum = FAIL;
 
-	if (subpatnum == FAIL || !evalarg_valid(&skip))
+	if (subpatnum == FAIL || !use_skip)
 	    // didn't find it or no skip argument
 	    break;
 	firstpos = pos;
 
-	// If the skip pattern matches, ignore this match.
+	// If the skip expression matches, ignore this match.
 	{
 	    int	    do_skip;
 	    int	    err;
 	    pos_T   save_pos = curwin->w_cursor;
 
 	    curwin->w_cursor = pos;
-	    do_skip = evalarg_call_bool(&skip, &err);
+	    err = FALSE;
+	    do_skip = eval_expr_to_bool(&argvars[4], &err);
 	    curwin->w_cursor = save_pos;
 	    if (err)
 	    {
@@ -6523,7 +6520,6 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
 	curwin->w_set_curswant = TRUE;
 theend:
     p_ws = save_p_ws;
-    evalarg_clean(&skip);
 
     return retval;
 }
@@ -6791,14 +6787,9 @@ searchpair_cmn(typval_T *argvars, pos_T *match_pos)
 	skip = NULL;
     else
     {
+	// Type is checked later.
 	skip = &argvars[4];
-	if (skip->v_type != VAR_FUNC && skip->v_type != VAR_PARTIAL
-	    && skip->v_type != VAR_STRING)
-	{
-	    // Type error
-	    semsg(_(e_invarg2), tv_get_string(&argvars[4]));
-	    goto theend;
-	}
+
 	if (argvars[5].v_type != VAR_UNKNOWN)
 	{
 	    lnum_stop = (long)tv_get_number_chk(&argvars[5], NULL);
@@ -6922,12 +6913,7 @@ do_searchpair(
 	options |= SEARCH_START;
 
     if (skip != NULL)
-    {
-	// Empty string means to not use the skip expression.
-	if (skip->v_type == VAR_STRING || skip->v_type == VAR_FUNC)
-	    use_skip = skip->vval.v_string != NULL
-						&& *skip->vval.v_string != NUL;
-    }
+	use_skip = eval_expr_valid_arg(skip);
 
     save_cursor = curwin->w_cursor;
     pos = curwin->w_cursor;
