@@ -133,6 +133,7 @@ struct efm_S
 				//   'E' error message
 				//   'W' warning message
 				//   'I' informational message
+				//   'N' note message
 				//   'C' continuation line
 				//   'Z' end of multi-line message
 				//   'G' general, unspecific message
@@ -371,7 +372,7 @@ efm_analyze_prefix(char_u *efmp, efm_T *efminfo)
 {
     if (vim_strchr((char_u *)"+-", *efmp) != NULL)
 	efminfo->flags = *efmp++;
-    if (vim_strchr((char_u *)"DXAEWICZGOPQ", *efmp) != NULL)
+    if (vim_strchr((char_u *)"DXAEWINCZGOPQ", *efmp) != NULL)
 	efminfo->prefix = *efmp;
     else
     {
@@ -1166,7 +1167,7 @@ qf_parse_match(
 
     if ((idx == 'C' || idx == 'Z') && !qf_multiline)
 	return QF_FAIL;
-    if (vim_strchr((char_u *)"EWI", idx) != NULL)
+    if (vim_strchr((char_u *)"EWIN", idx) != NULL)
 	fields->type = idx;
     else
 	fields->type = 0;
@@ -1439,7 +1440,7 @@ restofline:
 	if (fmt_ptr->conthere)
 	    fmt_start = fmt_ptr;
 
-	if (vim_strchr((char_u *)"AEWI", idx) != NULL)
+	if (vim_strchr((char_u *)"AEWIN", idx) != NULL)
 	{
 	    qfl->qf_multiline = TRUE;	// start of a multi-line message
 	    qfl->qf_multiignore = FALSE;// reset continuation
@@ -3880,11 +3881,13 @@ qf_mark_adjust(
  *  e or E    0		" error"
  *  w or W    0		" warning"
  *  i or I    0		" info"
+ *  n or N    0		" note"
  *  0	      0		""
  *  other     0		" c"
  *  e or E    n		" error n"
  *  w or W    n		" warning n"
  *  i or I    n		" info n"
+ *  n or N    n		" note n"
  *  0	      n		" error n"
  *  other     n		" c n"
  *  1	      x		""	:helpgrep
@@ -3900,6 +3903,8 @@ qf_types(int c, int nr)
 	p = (char_u *)" warning";
     else if (c == 'I' || c == 'i')
 	p = (char_u *)" info";
+    else if (c == 'N' || c == 'n')
+	p = (char_u *)" note";
     else if (c == 'E' || c == 'e' || (c == 0 && nr > 0))
 	p = (char_u *)" error";
     else if (c == 0 || c == 1)
