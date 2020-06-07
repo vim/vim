@@ -1332,13 +1332,30 @@ write_viminfo_varlist(FILE *fp)
 	    this_var = HI2DI(hi);
 	    if (var_flavour(this_var->di_key) == VAR_FLAVOUR_VIMINFO)
 	    {
+		int copyID;
+		dict_T *di;
+		list_T *l;
+
+		copyID = get_copyID();
 		switch (this_var->di_tv.v_type)
 		{
 		    case VAR_STRING:  s = "STR"; break;
 		    case VAR_NUMBER:  s = "NUM"; break;
 		    case VAR_FLOAT:   s = "FLO"; break;
-		    case VAR_DICT:    s = "DIC"; break;
-		    case VAR_LIST:    s = "LIS"; break;
+		    case VAR_DICT:
+			s = "DIC";
+			di = this_var->di_tv.vval.v_dict;
+			if (!set_ref_in_ht(&di->dv_hashtab, copyID, NULL)
+				&& copyID == di->dv_copyID)
+				continue;
+			break;
+		    case VAR_LIST:
+			s = "LIS";
+			l = this_var->di_tv.vval.v_list;
+			if (!set_ref_in_list_items(l, copyID, NULL)
+				&& copyID == l->lv_copyID)
+				continue;
+			break;
 		    case VAR_BLOB:    s = "BLO"; break;
 		    case VAR_BOOL:    s = "XPL"; break;  // backwards compat.
 		    case VAR_SPECIAL: s = "XPL"; break;
