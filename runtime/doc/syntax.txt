@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.2.  Last change: 2020 Feb 29
+*syntax.txt*	For Vim version 8.2.  Last change: 2020 Jun 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4879,7 +4879,12 @@ term={attr-list}			*attr-list* *highlight-term* *E418*
 	have the same effect.
 	"undercurl" is a curly underline.  When "undercurl" is not possible
 	then "underline" is used.  In general "undercurl" and "strikethrough"
-	is only available in the GUI.  The color is set with |highlight-guisp|.
+	are only available in the GUI and some terminals.  The color is set
+	with |highlight-guisp| or |highlight-ctermul|.  You can try these
+	termcap entries to make undercurl work in a terminal: >
+	    let &t_Cs = "\e[4:3m"
+	    let &t_Ce = "\e[4:0m"
+
 
 start={term-list}				*highlight-start* *E422*
 stop={term-list}				*term-list* *highlight-stop*

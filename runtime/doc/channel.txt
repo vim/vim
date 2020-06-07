@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.2.  Last change: 2019 Dec 07
+*channel.txt*      For Vim version 8.2.  Last change: 2020 Jun 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1235,8 +1235,8 @@ If you want to type input for the job in a Vim window you have a few options:
 - Use a terminal window.  This works well if what you type goes directly to
   the job and the job output is directly displayed in the window.
   See |terminal-window|.
-- Use a prompt window. This works well when entering a line for the job in Vim
-  while displaying (possibly filtered) output from the job.
+- Use a window with a prompt buffer. This works well when entering a line for
+  the job in Vim while displaying (possibly filtered) output from the job.
 
 A prompt buffer is created by setting 'buftype' to "prompt". You would
 normally only do that in a newly created buffer.
@@ -1269,6 +1269,47 @@ coming back to the prompt window Insert mode will be restored.
 Any command that starts Insert mode, such as "a", "i", "A" and "I", will move
 the cursor to the last line.  "A" will move to the end of the line, "I" to the
 start of the line.
+
+Here is an example for Unix.  It starts a shell in the background and prompts
+for the next shell command.  Output from the shell is displayed above the
+prompt. >
+
+	" Create a channel log so we can see what happens.
+	call ch_logfile('logfile', 'w')
+
+	" Function handling a line of text has been typed.
+	func TextEntered(text)
+	  " Send the text to a shell with Enter appended.
+	  call ch_sendraw(g:shell_job, a:text .. "\n")
+	endfunc
+		
+	" Function handling output from the shell: Added above the prompt.
+	func GotOutput(channel, msg)
+	  call append(line("$") - 1, "- " . a:msg)
+	endfunc
+
+	" Function handling the shell exist: close the window.
+	func JobExit(job, status)
+	  quit!
+	endfunc
+
+	" Start a shell in the background.
+	let shell_job = job_start(["/bin/sh"], #{
+		\ out_cb: function('GotOutput'),
+		\ err_cb: function('GotOutput'),
+		\ exit_cb: function('JobExit'),
+		\ })
+	let shell_ch = job_getchannel(shell_job)
+
+	new
+	set buftype=prompt
+	let buf = bufnr('')
+	call prompt_setcallback(buf, function("TextEntered"))
+	eval prompt_setprompt(buf, "shell command: ")
+
+	" start accepting shell commands
+	startinsert
+<
 
 
  vim:tw=78:ts=8:noet:ft=help:norl:

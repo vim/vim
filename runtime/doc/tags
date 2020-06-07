@@ -810,6 +810,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'pyx'	options.txt	/*'pyx'*
 'pyxversion'	options.txt	/*'pyxversion'*
 'qe'	options.txt	/*'qe'*
+'qftf'	options.txt	/*'qftf'*
+'quickfixtextfunc'	options.txt	/*'quickfixtextfunc'*
 'quote	motion.txt	/*'quote*
 'quoteescape'	options.txt	/*'quoteescape'*
 'rdt'	options.txt	/*'rdt'*
@@ -956,10 +958,12 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 't_&8'	term.txt	/*'t_&8'*
 't_8b'	term.txt	/*'t_8b'*
 't_8f'	term.txt	/*'t_8f'*
+'t_8u'	term.txt	/*'t_8u'*
 't_@7'	term.txt	/*'t_@7'*
 't_AB'	term.txt	/*'t_AB'*
 't_AF'	term.txt	/*'t_AF'*
 't_AL'	term.txt	/*'t_AL'*
+'t_AU'	term.txt	/*'t_AU'*
 't_BD'	term.txt	/*'t_BD'*
 't_BE'	term.txt	/*'t_BE'*
 't_CS'	term.txt	/*'t_CS'*
@@ -2587,6 +2591,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :lbuffer	quickfix.txt	/*:lbuffer*
 :lc	editing.txt	/*:lc*
 :lcd	editing.txt	/*:lcd*
+:lcd-	editing.txt	/*:lcd-*
 :lch	editing.txt	/*:lch*
 :lchdir	editing.txt	/*:lchdir*
 :lcl	quickfix.txt	/*:lcl*
@@ -2894,6 +2899,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :put	change.txt	/*:put*
 :pw	editing.txt	/*:pw*
 :pwd	editing.txt	/*:pwd*
+:pwd-verbose	editing.txt	/*:pwd-verbose*
 :py	if_pyth.txt	/*:py*
 :py3	if_pyth.txt	/*:py3*
 :py3do	if_pyth.txt	/*:py3do*
@@ -3197,6 +3203,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :syn-file-remarks	syntax.txt	/*:syn-file-remarks*
 :syn-files	syntax.txt	/*:syn-files*
 :syn-fold	syntax.txt	/*:syn-fold*
+:syn-foldlevel	syntax.txt	/*:syn-foldlevel*
 :syn-include	syntax.txt	/*:syn-include*
 :syn-iskeyword	syntax.txt	/*:syn-iskeyword*
 :syn-keepend	syntax.txt	/*:syn-keepend*
@@ -3277,6 +3284,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :tags	tagsrch.txt	/*:tags*
 :tc	if_tcl.txt	/*:tc*
 :tcd	editing.txt	/*:tcd*
+:tcd-	editing.txt	/*:tcd-*
 :tch	editing.txt	/*:tch*
 :tchdir	editing.txt	/*:tchdir*
 :tcl	if_tcl.txt	/*:tcl*
@@ -4249,6 +4257,7 @@ E448	various.txt	/*E448*
 E449	eval.txt	/*E449*
 E45	message.txt	/*E45*
 E452	eval.txt	/*E452*
+E453	syntax.txt	/*E453*
 E455	print.txt	/*E455*
 E456	print.txt	/*E456*
 E457	print.txt	/*E457*
@@ -4829,6 +4838,7 @@ E994	eval.txt	/*E994*
 E995	eval.txt	/*E995*
 E996	eval.txt	/*E996*
 E997	popup.txt	/*E997*
+E998	eval.txt	/*E998*
 E999	repeat.txt	/*E999*
 EX	intro.txt	/*EX*
 EXINIT	starting.txt	/*EXINIT*
@@ -6910,6 +6920,7 @@ getjumplist()	eval.txt	/*getjumplist()*
 getlatestvimscripts-install	pi_getscript.txt	/*getlatestvimscripts-install*
 getline()	eval.txt	/*getline()*
 getloclist()	eval.txt	/*getloclist()*
+getmarklist()	eval.txt	/*getmarklist()*
 getmatches()	eval.txt	/*getmatches()*
 getmousepos()	eval.txt	/*getmousepos()*
 getpid()	eval.txt	/*getpid()*
@@ -6917,6 +6928,7 @@ getpos()	eval.txt	/*getpos()*
 getqflist()	eval.txt	/*getqflist()*
 getqflist-examples	quickfix.txt	/*getqflist-examples*
 getreg()	eval.txt	/*getreg()*
+getreginfo()	eval.txt	/*getreginfo()*
 getregtype()	eval.txt	/*getregtype()*
 getscript	pi_getscript.txt	/*getscript*
 getscript-autoinstall	pi_getscript.txt	/*getscript-autoinstall*
@@ -6987,6 +6999,7 @@ gstar	pattern.txt	/*gstar*
 gt	tabpage.txt	/*gt*
 gtk-css	gui_x11.txt	/*gtk-css*
 gtk-tooltip-colors	gui_x11.txt	/*gtk-tooltip-colors*
+gtk3-slow	gui_x11.txt	/*gtk3-slow*
 gu	change.txt	/*gu*
 gugu	change.txt	/*gugu*
 gui	gui.txt	/*gui*
@@ -7115,6 +7128,7 @@ highlight-changed	version4.txt	/*highlight-changed*
 highlight-cterm	syntax.txt	/*highlight-cterm*
 highlight-ctermbg	syntax.txt	/*highlight-ctermbg*
 highlight-ctermfg	syntax.txt	/*highlight-ctermfg*
+highlight-ctermul	syntax.txt	/*highlight-ctermul*
 highlight-default	syntax.txt	/*highlight-default*
 highlight-font	syntax.txt	/*highlight-font*
 highlight-groups	syntax.txt	/*highlight-groups*
@@ -8549,6 +8563,7 @@ quickfix-title	quickfix.txt	/*quickfix-title*
 quickfix-valid	quickfix.txt	/*quickfix-valid*
 quickfix-window	quickfix.txt	/*quickfix-window*
 quickfix-window-ID	quickfix.txt	/*quickfix-window-ID*
+quickfix-window-function	quickfix.txt	/*quickfix-window-function*
 quickfix.txt	quickfix.txt	/*quickfix.txt*
 quickref	quickref.txt	/*quickref*
 quickref.txt	quickref.txt	/*quickref.txt*
@@ -8599,6 +8614,7 @@ read-messages	insert.txt	/*read-messages*
 read-only-share	editing.txt	/*read-only-share*
 read-stdin	version5.txt	/*read-stdin*
 readdir()	eval.txt	/*readdir()*
+readdirex()	eval.txt	/*readdirex()*
 readfile()	eval.txt	/*readfile()*
 readline.vim	syntax.txt	/*readline.vim*
 recording	repeat.txt	/*recording*
@@ -8607,6 +8623,7 @@ recovery	recover.txt	/*recovery*
 recursive_mapping	map.txt	/*recursive_mapping*
 redo	undo.txt	/*redo*
 redo-register	undo.txt	/*redo-register*
+reduce()	eval.txt	/*reduce()*
 ref	intro.txt	/*ref*
 reference	intro.txt	/*reference*
 reference_toc	help.txt	/*reference_toc*
@@ -8771,6 +8788,7 @@ search-offset	pattern.txt	/*search-offset*
 search-pattern	pattern.txt	/*search-pattern*
 search-range	pattern.txt	/*search-range*
 search-replace	change.txt	/*search-replace*
+searchcount()	eval.txt	/*searchcount()*
 searchdecl()	eval.txt	/*searchdecl()*
 searchforward-variable	eval.txt	/*searchforward-variable*
 searchpair()	eval.txt	/*searchpair()*
@@ -8861,6 +8879,7 @@ slow-terminal	term.txt	/*slow-terminal*
 socket-interface	channel.txt	/*socket-interface*
 sort()	eval.txt	/*sort()*
 sorting	change.txt	/*sorting*
+sound-functions	usr_41.txt	/*sound-functions*
 sound_clear()	eval.txt	/*sound_clear()*
 sound_playevent()	eval.txt	/*sound_playevent()*
 sound_playfile()	eval.txt	/*sound_playfile()*
@@ -9129,10 +9148,12 @@ t_%i	term.txt	/*t_%i*
 t_&8	term.txt	/*t_&8*
 t_8b	term.txt	/*t_8b*
 t_8f	term.txt	/*t_8f*
+t_8u	term.txt	/*t_8u*
 t_@7	term.txt	/*t_@7*
 t_AB	term.txt	/*t_AB*
 t_AF	term.txt	/*t_AF*
 t_AL	term.txt	/*t_AL*
+t_AU	term.txt	/*t_AU*
 t_BD	term.txt	/*t_BD*
 t_BE	term.txt	/*t_BE*
 t_CS	term.txt	/*t_CS*
@@ -9560,6 +9581,7 @@ text-prop-changes	textprop.txt	/*text-prop-changes*
 text-prop-functions	textprop.txt	/*text-prop-functions*
 text-prop-intro	textprop.txt	/*text-prop-intro*
 text-properties	textprop.txt	/*text-properties*
+text-property-functions	usr_41.txt	/*text-property-functions*
 textlock	eval.txt	/*textlock*
 textprop	textprop.txt	/*textprop*
 textprop.txt	textprop.txt	/*textprop.txt*

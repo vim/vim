@@ -2,7 +2,7 @@
 " Language:	man
 " Maintainer:	Jason Franklin <vim@justemail.net>
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
-" Last Change: 	2020 May 07
+" Last Change: 	2020 Jun 01
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.
@@ -34,8 +34,8 @@ if &filetype == "man"
     endif
     nnoremap <buffer> <Plug>ManBS :%s/.\b//g<CR>:setl nomod<CR>''
 
-    nnoremap <buffer> <c-]> :call <SID>PreGetPage(v:count)<CR>
-    nnoremap <buffer> <c-t> :call <SID>PopPage()<CR>
+    nnoremap <buffer> <silent> <c-]> :call <SID>PreGetPage(v:count)<CR>
+    nnoremap <buffer> <silent> <c-t> :call <SID>PopPage()<CR>
     nnoremap <buffer> <silent> q :q<CR>
 
     " Add undo commands for the maps
@@ -138,11 +138,11 @@ func <SID>GetPage(cmdmods, ...)
     endif
   endif
   if s:FindPage(sect, page) == 0
-    let msg = "\nNo manual entry for ".page
-    if sect != ""
-      let msg .= " in section ".sect
+    let msg = 'man.vim: no manual entry for "' . page . '"'
+    if !empty(sect)
+      let msg .= ' in section ' . sect
     endif
-    echo msg
+    echomsg msg
     return
   endif
   exec "let s:man_tag_buf_".s:man_tag_depth." = ".bufnr("%")
