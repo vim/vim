@@ -731,6 +731,95 @@ list_insert(list_T *l, listitem_T *ni, listitem_T *item)
 }
 
 /*
+ * Flatten "list" to depth "maxdepth".
+ * It does nothing if "maxdepth" is 0.
+ * Returns FAIL when out of memory.
+ */
+    static int
+list_flatten(list_T *list, long maxdepth)
+{
+    listitem_T	*item;
+    int		n;
+
+    if (maxdepth == 0)
+	return OK;
+    CHECK_LIST_MATERIALIZE(list);
+
+    n = 0;
+    item = list->lv_first;
+    while (item != NULL)
+    {
+	fast_breakcheck();
+	if (got_int)
+	    return FAIL;
+
+	if (item->li_tv.v_type == VAR_LIST)
+	{
+	    listitem_T *next = item->li_next;
+
+	    vimlist_remove(list, item, item);
+	    if (list_extend(list, item->li_tv.vval.v_list, next) == FAIL)
+		return FAIL;
+
+	    if (item->li_prev == NULL)
+		item = list->lv_first;
+	    else
+		item = item->li_prev->li_next;
+
+	    if (++n >= maxdepth)
+	    {
+		n = 0;
+		item = next;
+	    }
+	}
+	else
+	{
+	    n = 0;
+	    item = item->li_next;
+	}
+    }
+
+    return OK;
+}
+
+/*
+ * "flatten(list[, {maxdepth}])" function
+ */
+    void
+f_flatten(typval_T *argvars, typval_T *rettv)
+{
+    list_T  *l;
+    long    maxdepth;
+    int	    error = FALSE;
+
+    if (argvars[0].v_type != VAR_LIST)
+    {
+	semsg(_(e_listarg), "flatten()");
+	return;
+    }
+
+    if (argvars[1].v_type == VAR_UNKNOWN)
+	maxdepth = 999999;
+    else
+    {
+	maxdepth = (long)tv_get_number_chk(&argvars[1], &error);
+	if (error)
+	    return;
+	if (maxdepth < 0)
+	{
+	    emsg(_("E900: maxdepth must be non-negative number"));
+	    return;
+	}
+    }
+
+    l = argvars[0].vval.v_list;
+    if (l != NULL && !var_check_lock(l->lv_lock,
+				      (char_u *)N_("flatten() argument"), TRUE)
+		 && list_flatten(l, maxdepth) == OK)
+	copy_tv(&argvars[0], rettv);
+}
+
+/*
  * Extend "l1" with "l2".
  * If "bef" is NULL append at the end, otherwise insert before this item.
  * Returns FAIL when out of memory.

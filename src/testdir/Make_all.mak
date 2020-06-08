@@ -135,6 +135,7 @@ NEW_TESTS = \
 	test_find_complete \
 	test_findfile \
 	test_fixeol \
+	test_flatten \
 	test_float_func \
 	test_fnameescape \
 	test_fnamemodify \
@@ -373,6 +374,7 @@ NEW_TESTS_RES = \
 	test_find_complete.res \
 	test_findfile.res \
 	test_fixeol.res \
+	test_flatten.res \
 	test_float_func.res \
 	test_fnameescape.res \
 	test_fold.res \

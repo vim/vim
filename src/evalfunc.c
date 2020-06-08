@@ -541,6 +541,7 @@ static funcentry_T global_functions[] =
     {"filter",		2, 2, FEARG_1,	  ret_any,	f_filter},
     {"finddir",		1, 3, FEARG_1,	  ret_string,	f_finddir},
     {"findfile",	1, 3, FEARG_1,	  ret_string,	f_findfile},
+    {"flatten",		1, 2, FEARG_1,	  ret_list_any,	f_flatten},
     {"float2nr",	1, 1, FEARG_1,	  ret_number,	FLOAT_FUNC(f_float2nr)},
     {"floor",		1, 1, FEARG_1,	  ret_float,	FLOAT_FUNC(f_floor)},
     {"fmod",		2, 2, FEARG_1,	  ret_float,	FLOAT_FUNC(f_fmod)},
