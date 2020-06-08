@@ -175,7 +175,7 @@ static int	qf_win_pos_update(qf_info_T *qi, int old_qf_index);
 static win_T	*qf_find_win(qf_info_T *qi);
 static buf_T	*qf_find_buf(qf_info_T *qi);
 static void	qf_update_buffer(qf_info_T *qi, qfline_T *old_last);
-static void	qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last);
+static void	qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last, int qf_winid);
 static buf_T	*load_dummy_buffer(char_u *fname, char_u *dirname_start, char_u *resulting_dir);
 static void	wipe_dummy_buffer(buf_T *buf, char_u *dirname_start);
 static void	unload_dummy_buffer(buf_T *buf, char_u *dirname_start);
@@ -4189,7 +4189,7 @@ ex_copen(exarg_T *eap)
     lnum = qfl->qf_index;
 
     // Fill the buffer with the quickfix list.
-    qf_fill_buffer(qfl, curbuf, NULL);
+    qf_fill_buffer(qfl, curbuf, NULL, curwin->w_id);
 
     decr_quickfix_busy();
 
@@ -4381,6 +4381,10 @@ qf_update_buffer(qf_info_T *qi, qfline_T *old_last)
     if (buf != NULL)
     {
 	linenr_T	old_line_count = buf->b_ml.ml_line_count;
+	int		qf_winid = 0;
+
+	if (IS_LL_STACK(qi))
+	    qf_winid = curwin->w_id;
 
 	if (old_last == NULL)
 	    // set curwin/curbuf to buf and save a few things
@@ -4388,7 +4392,7 @@ qf_update_buffer(qf_info_T *qi, qfline_T *old_last)
 
 	qf_update_win_titlevar(qi);
 
-	qf_fill_buffer(qf_get_curlist(qi), buf, old_last);
+	qf_fill_buffer(qf_get_curlist(qi), buf, old_last, qf_winid);
 	++CHANGEDTICK(buf);
 
 	if (old_last == NULL)
@@ -4415,7 +4419,8 @@ qf_buf_add_line(
 	buf_T		*buf,		// quickfix window buffer
 	linenr_T	lnum,
 	qfline_T	*qfp,
-	char_u		*dirname)
+	char_u		*dirname,
+	int		qf_winid)
 {
     int		len;
     buf_T	*errbuf;
@@ -4433,10 +4438,11 @@ qf_buf_add_line(
 	typval_T	args[1];
 	dict_T		*d;
 
-	// create 'info' dict argument
+	// create the dict argument
 	if ((d = dict_alloc_lock(VAR_FIXED)) == NULL)
 	    return FAIL;
 	dict_add_number(d, "quickfix", (long)IS_QF_LIST(qfl));
+	dict_add_number(d, "winid", (long)qf_winid);
 	dict_add_number(d, "id", (long)qfl->qf_id);
 	dict_add_number(d, "idx", (long)(lnum + 1));
 	++d->dv_refcount;
@@ -4535,7 +4541,7 @@ qf_buf_add_line(
  * ml_delete() is used and autocommands will be triggered.
  */
     static void
-qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last)
+qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last, int qf_winid)
 {
     linenr_T	lnum;
     qfline_T	*qfp;
@@ -4574,7 +4580,7 @@ qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last)
 	}
 	while (lnum < qfl->qf_count)
 	{
-	    if (qf_buf_add_line(qfl, buf, lnum, qfp, dirname) == FAIL)
+	    if (qf_buf_add_line(qfl, buf, lnum, qfp, dirname, qf_winid) == FAIL)
 		break;
 
 	    ++lnum;
