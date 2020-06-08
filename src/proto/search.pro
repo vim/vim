@@ -35,4 +35,5 @@ int linewhite(linenr_T lnum);
 void find_pattern_in_path(char_u *ptr, int dir, int len, int whole, int skip_comments, int type, long count, int action, linenr_T start_lnum, linenr_T end_lnum);
 spat_T *get_spat(int idx);
 int get_spat_last_idx(void);
+void f_searchcount(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

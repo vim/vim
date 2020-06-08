@@ -1238,8 +1238,11 @@ add_pixmap_args(vimmenu_T *menu, Arg *args, int n)
     }
     else
     {
+# if 0  // DISABLED - this causes a crash when running "make test_gui" in
+	// Test_colorscheme()
 	if (menu->xpm_fname != NULL)
 	    XtSetArg(args[n], XmNpixmapFile, menu->xpm_fname); n++;
+# endif
 	XtSetArg(args[n], XmNpixmapData, menu->xpm); n++;
 	XtSetArg(args[n], XmNlabelLocation, XmBOTTOM); n++;
     }

@@ -595,7 +595,7 @@ normal_cmd(
 	// restart automatically.
 	// Insert the typed character in the typeahead buffer, so that it can
 	// be mapped in Insert mode.  Required for ":lmap" to work.
-	ins_char_typebuf(c);
+	ins_char_typebuf(vgetc_char, vgetc_mod_mask);
 	if (restart_edit != 0)
 	    c = 'd';
 	else
@@ -1080,16 +1080,7 @@ getcount:
     {
 	clearop(oap);
 #ifdef FEAT_EVAL
-	{
-	    int regname = 0;
-
-	    // Adjust the register according to 'clipboard', so that when
-	    // "unnamed" is present it becomes '*' or '+' instead of '"'.
-# ifdef FEAT_CLIPBOARD
-	    adjust_clip_reg(&regname);
-# endif
-	    set_reg_var(regname);
-	}
+	reset_reg_var();
 #endif
     }
 
@@ -1189,6 +1180,11 @@ getcount:
 normal_end:
 
     msg_nowait = FALSE;
+
+#ifdef FEAT_EVAL
+    if (finish_op)
+	reset_reg_var();
+#endif
 
     // Reset finish_op, in case it was set
 #ifdef CURSOR_SHAPE
@@ -3385,14 +3381,6 @@ nv_clear(cmdarg_T *cap)
 {
     if (!checkclearop(cap->oap))
     {
-#if defined(__BEOS__) && !USE_THREAD_FOR_INPUT_WITH_TIMEOUT
-	/*
-	 * Right now, the BeBox doesn't seem to have an easy way to detect
-	 * window resizing, so we cheat and make the user detect it
-	 * manually with CTRL-L instead
-	 */
-	ui_get_shellsize();
-#endif
 #ifdef FEAT_SYN_HL
 	// Clear all syntax states to force resyncing.
 	syn_stack_free_all(curwin->w_s);
@@ -4169,6 +4157,10 @@ nv_gotofile(cmdarg_T *cap)
 	clearop(cap->oap);
 	return;
     }
+#ifdef FEAT_PROP_POPUP
+    if (ERROR_IF_TERM_POPUP_WINDOW)
+	return;
+#endif
 
     ptr = grab_file_name(cap->count1, &lnum);
 
@@ -7417,7 +7409,7 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	// line that needs to be deleted now.
 	if (empty && *ml_get(curbuf->b_ml.ml_line_count) == NUL)
 	{
-	    ml_delete(curbuf->b_ml.ml_line_count, TRUE);
+	    ml_delete_flags(curbuf->b_ml.ml_line_count, ML_DEL_MESSAGE);
 	    deleted_lines(curbuf->b_ml.ml_line_count + 1, 1);
 
 	    // If the cursor was in that line, move it to the end of the last

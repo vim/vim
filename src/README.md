@@ -84,6 +84,7 @@ textformat.c	| text formatting
 textobject.c	| text objects
 textprop.c	| text properties
 time.c		| time and timer functions
+typval.c	| vim script type/value functions
 undo.c		| undo and redo
 usercmd.c	| user defined commands
 userfunc.c	| user defined functions

@@ -1887,6 +1887,7 @@ do_join(
     char_u      *curr_start = NULL;
     char_u	*cend;
     char_u	*newp;
+    size_t	newp_len;
     char_u	*spaces;	// number of spaces inserted before a line
     int		endcurr1 = NUL;
     int		endcurr2 = NUL;
@@ -1900,8 +1901,8 @@ do_join(
 				  && has_format_option(FO_REMOVE_COMS);
     int		prev_was_comment;
 #ifdef FEAT_PROP_POPUP
-    textprop_T	**prop_lines = NULL;
-    int		*prop_lengths = NULL;
+    int		propcount = 0;	// number of props over all joined lines
+    int		props_remaining;
 #endif
 
     if (save_undo && u_save((linenr_T)(curwin->w_cursor.lnum - 1),
@@ -1932,6 +1933,9 @@ do_join(
     for (t = 0; t < count; ++t)
     {
 	curr = curr_start = ml_get((linenr_T)(curwin->w_cursor.lnum + t));
+#ifdef FEAT_PROP_POPUP
+	propcount += count_props((linenr_T) (curwin->w_cursor.lnum + t), t > 0);
+#endif
 	if (t == 0 && setmark && !cmdmod.lockmarks)
 	{
 	    // Set the '[ mark.
@@ -1963,7 +1967,10 @@ do_join(
 		    && (!has_format_option(FO_MBYTE_JOIN)
 			|| (mb_ptr2char(curr) < 0x100 && endcurr1 < 0x100))
 		    && (!has_format_option(FO_MBYTE_JOIN2)
-			|| mb_ptr2char(curr) < 0x100 || endcurr1 < 0x100)
+			|| (mb_ptr2char(curr) < 0x100
+			    && !(enc_utf8 && utf_eat_space(endcurr1)))
+			|| (endcurr1 < 0x100
+			    && !(enc_utf8 && utf_eat_space(mb_ptr2char(curr)))))
 	       )
 	    {
 		// don't add a space if the line is ending in a space
@@ -2014,7 +2021,11 @@ do_join(
     col = sumsize - currsize - spaces[count - 1];
 
     // allocate the space for the new line
-    newp = alloc(sumsize + 1);
+    newp_len = sumsize + 1;
+#ifdef FEAT_PROP_POPUP
+    newp_len += propcount * sizeof(textprop_T);
+#endif
+    newp = alloc(newp_len);
     if (newp == NULL)
     {
 	ret = FAIL;
@@ -2022,20 +2033,6 @@ do_join(
     }
     cend = newp + sumsize;
     *cend = 0;
-
-#ifdef FEAT_PROP_POPUP
-    // We need to move properties of the lines that are going to be deleted to
-    // the new long one.
-    if (curbuf->b_has_textprop && !text_prop_frozen)
-    {
-	// Allocate an array to copy the text properties of joined lines into.
-	// And another array to store the number of properties in each line.
-	prop_lines = ALLOC_CLEAR_MULT(textprop_T *, count - 1);
-	prop_lengths = ALLOC_CLEAR_MULT(int, count - 1);
-	if (prop_lengths == NULL)
-	    VIM_CLEAR(prop_lines);
-    }
-#endif
 
     /*
      * Move affected lines to the new long one.
@@ -2045,12 +2042,16 @@ do_join(
      * column.  This is not Vi compatible, but Vi deletes the marks, thus that
      * should not really be a problem.
      */
+#ifdef FEAT_PROP_POPUP
+    props_remaining = propcount;
+#endif
     for (t = count - 1; ; --t)
     {
 	int spaces_removed;
 
 	cend -= currsize;
 	mch_memmove(cend, curr, (size_t)currsize);
+
 	if (spaces[t] > 0)
 	{
 	    cend -= spaces[t];
@@ -2063,15 +2064,14 @@ do_join(
 
 	mark_col_adjust(curwin->w_cursor.lnum + t, (colnr_T)0, (linenr_T)-t,
 			 (long)(cend - newp - spaces_removed), spaces_removed);
-	if (t == 0)
-	    break;
 #ifdef FEAT_PROP_POPUP
-	if (prop_lines != NULL)
-	    adjust_props_for_join(curwin->w_cursor.lnum + t,
-				      prop_lines + t - 1, prop_lengths + t - 1,
-			 (long)(cend - newp - spaces_removed), spaces_removed);
+	prepend_joined_props(newp + sumsize + 1, propcount, &props_remaining,
+		curwin->w_cursor.lnum + t, t == count - 1,
+		(long)(cend - newp), spaces_removed);
 #endif
 
+	if (t == 0)
+	    break;
 	curr = curr_start = ml_get((linenr_T)(curwin->w_cursor.lnum + t - 1));
 	if (remove_comments)
 	    curr += comments[t - 1];
@@ -2080,13 +2080,7 @@ do_join(
 	currsize = (int)STRLEN(curr);
     }
 
-#ifdef FEAT_PROP_POPUP
-    if (prop_lines != NULL)
-	join_prop_lines(curwin->w_cursor.lnum, newp,
-					      prop_lines, prop_lengths, count);
-    else
-#endif
-	ml_replace(curwin->w_cursor.lnum, newp, FALSE);
+    ml_replace_len(curwin->w_cursor.lnum, newp, (colnr_T)newp_len, TRUE, FALSE);
 
     if (setmark && !cmdmod.lockmarks)
     {
@@ -2437,10 +2431,11 @@ do_addsub(
     char_u	*ptr;
     int		c;
     int		todel;
-    int		dohex;
-    int		dooct;
-    int		dobin;
-    int		doalp;
+    int		do_hex;
+    int		do_oct;
+    int		do_bin;
+    int		do_alpha;
+    int		do_unsigned;
     int		firstdigit;
     int		subtract;
     int		negative = FALSE;
@@ -2452,10 +2447,11 @@ do_addsub(
     pos_T	startpos;
     pos_T	endpos;
 
-    dohex = (vim_strchr(curbuf->b_p_nf, 'x') != NULL);	// "heX"
-    dooct = (vim_strchr(curbuf->b_p_nf, 'o') != NULL);	// "Octal"
-    dobin = (vim_strchr(curbuf->b_p_nf, 'b') != NULL);	// "Bin"
-    doalp = (vim_strchr(curbuf->b_p_nf, 'p') != NULL);	// "alPha"
+    do_hex = (vim_strchr(curbuf->b_p_nf, 'x') != NULL);	// "heX"
+    do_oct = (vim_strchr(curbuf->b_p_nf, 'o') != NULL);	// "Octal"
+    do_bin = (vim_strchr(curbuf->b_p_nf, 'b') != NULL);	// "Bin"
+    do_alpha = (vim_strchr(curbuf->b_p_nf, 'p') != NULL);	// "alPha"
+    do_unsigned = (vim_strchr(curbuf->b_p_nf, 'u') != NULL);	// "Unsigned"
 
     curwin->w_cursor = *pos;
     ptr = ml_get(pos->lnum);
@@ -2469,7 +2465,7 @@ do_addsub(
      */
     if (!VIsual_active)
     {
-	if (dobin)
+	if (do_bin)
 	    while (col > 0 && vim_isbdigit(ptr[col]))
 	    {
 		--col;
@@ -2477,7 +2473,7 @@ do_addsub(
 		    col -= (*mb_head_off)(ptr, ptr + col);
 	    }
 
-	if (dohex)
+	if (do_hex)
 	    while (col > 0 && vim_isxdigit(ptr[col]))
 	    {
 		--col;
@@ -2485,8 +2481,8 @@ do_addsub(
 		    col -= (*mb_head_off)(ptr, ptr + col);
 	    }
 
-	if (       dobin
-		&& dohex
+	if (       do_bin
+		&& do_hex
 		&& ! ((col > 0
 		    && (ptr[col] == 'X'
 			|| ptr[col] == 'x')
@@ -2508,7 +2504,7 @@ do_addsub(
 	    }
 	}
 
-	if ((       dohex
+	if ((       do_hex
 		&& col > 0
 		&& (ptr[col] == 'X'
 		    || ptr[col] == 'x')
@@ -2516,7 +2512,7 @@ do_addsub(
 		&& (!has_mbyte ||
 		    !(*mb_head_off)(ptr, ptr + col - 1))
 		&& vim_isxdigit(ptr[col + 1])) ||
-	    (       dobin
+	    (       do_bin
 		&& col > 0
 		&& (ptr[col] == 'B'
 		    || ptr[col] == 'b')
@@ -2539,12 +2535,12 @@ do_addsub(
 
 	    while (ptr[col] != NUL
 		    && !vim_isdigit(ptr[col])
-		    && !(doalp && ASCII_ISALPHA(ptr[col])))
+		    && !(do_alpha && ASCII_ISALPHA(ptr[col])))
 		col += mb_ptr2len(ptr + col);
 
 	    while (col > 0
 		    && vim_isdigit(ptr[col - 1])
-		    && !(doalp && ASCII_ISALPHA(ptr[col])))
+		    && !(do_alpha && ASCII_ISALPHA(ptr[col])))
 	    {
 		--col;
 		if (has_mbyte)
@@ -2557,7 +2553,7 @@ do_addsub(
     {
 	while (ptr[col] != NUL && length > 0
 		&& !vim_isdigit(ptr[col])
-		&& !(doalp && ASCII_ISALPHA(ptr[col])))
+		&& !(do_alpha && ASCII_ISALPHA(ptr[col])))
 	{
 	    int mb_len = mb_ptr2len(ptr + col);
 
@@ -2569,7 +2565,8 @@ do_addsub(
 	    goto theend;
 
 	if (col > pos->col && ptr[col - 1] == '-'
-		&& (!has_mbyte || !(*mb_head_off)(ptr, ptr + col - 1)))
+		&& (!has_mbyte || !(*mb_head_off)(ptr, ptr + col - 1))
+		&& !do_unsigned)
 	{
 	    negative = TRUE;
 	    was_positive = FALSE;
@@ -2580,13 +2577,13 @@ do_addsub(
      * If a number was found, and saving for undo works, replace the number.
      */
     firstdigit = ptr[col];
-    if (!VIM_ISDIGIT(firstdigit) && !(doalp && ASCII_ISALPHA(firstdigit)))
+    if (!VIM_ISDIGIT(firstdigit) && !(do_alpha && ASCII_ISALPHA(firstdigit)))
     {
 	beep_flush();
 	goto theend;
     }
 
-    if (doalp && ASCII_ISALPHA(firstdigit))
+    if (do_alpha && ASCII_ISALPHA(firstdigit))
     {
 	// decrement or increment alphabetic character
 	if (op_type == OP_NR_SUB)
@@ -2635,7 +2632,8 @@ do_addsub(
 	if (col > 0 && ptr[col - 1] == '-'
 		&& (!has_mbyte ||
 		    !(*mb_head_off)(ptr, ptr + col - 1))
-		&& !visual)
+		&& !visual
+		&& !do_unsigned)
 	{
 	    // negative number
 	    --col;
@@ -2648,9 +2646,9 @@ do_addsub(
 		    : length);
 
 	vim_str2nr(ptr + col, &pre, &length,
-		0 + (dobin ? STR2NR_BIN : 0)
-		    + (dooct ? STR2NR_OCT : 0)
-		    + (dohex ? STR2NR_HEX : 0),
+		0 + (do_bin ? STR2NR_BIN : 0)
+		    + (do_oct ? STR2NR_OCT : 0)
+		    + (do_hex ? STR2NR_HEX : 0),
 		NULL, &n, maxlen, FALSE);
 
 	// ignore leading '-' for hex and octal and bin numbers
@@ -2694,6 +2692,17 @@ do_addsub(
 	    }
 	    if (n == 0)
 		negative = FALSE;
+	}
+
+	if (do_unsigned && negative)
+	{
+	    if (subtract)
+		// sticking at zero.
+		n = (uvarnumber_T)0;
+	    else
+		// sticking at 2^64 - 1.
+		n = (uvarnumber_T)(-1);
+	    negative = FALSE;
 	}
 
 	if (visual && !was_positive && !negative && col > 0)
@@ -2789,7 +2798,7 @@ do_addsub(
 	 * Don't do this when
 	 * the result may look like an octal number.
 	 */
-	if (firstdigit == '0' && !(dooct && pre == 0))
+	if (firstdigit == '0' && !(do_oct && pre == 0))
 	    while (length-- > 0)
 		*ptr++ = '0';
 	*ptr = NUL;

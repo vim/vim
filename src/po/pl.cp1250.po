@@ -2767,8 +2767,6 @@ msgstr "nieznane vimOption"
 msgid "keyboard interrupt"
 msgstr "przerwanie klawiatury"
 
-msgid "vim error"
-msgstr "b³¹d vima"
 
 msgid "cannot create buffer/window command: object is being deleted"
 msgstr "nie mogê stworzyæ bufora/okna komendy: obiekt jest kasowany"
@@ -3078,7 +3076,7 @@ msgstr ""
 msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\tEdytuj zakodowane pliki"
 
-msgid "-display <display>\tConnect vim to this particular X-server"
+msgid "-display <display>\tConnect Vim to this particular X-server"
 msgstr "-display <display>\tPod³¹cz vima to danego X-serwera"
 
 msgid "-X\t\t\tDo not connect to X server"
@@ -3153,10 +3151,10 @@ msgstr ""
 "\n"
 "Argumenty rozpoznawane przez gvim (wersja Athena):\n"
 
-msgid "-display <display>\tRun vim on <display>"
-msgstr "-display <display>\tZa³aduj vim na <display>"
+msgid "-display <display>\tRun Vim on <display>"
+msgstr "-display <display>\tZa³aduj Vim na <display>"
 
-msgid "-iconic\t\tStart vim iconified"
+msgid "-iconic\t\tStart Vim iconified"
 msgstr "-iconic\t\tZacznij Vim jako ikonê"
 
 msgid "-background <color>\tUse <color> for the background (also: -bg)"
@@ -3206,8 +3204,8 @@ msgstr ""
 "\n"
 "Argumenty rozpoznawane przez gvim (wersja GTK+):\n"
 
-msgid "-display <display>\tRun vim on <display> (also: --display)"
-msgstr "-display <display>\tZastartuj vim na <display> (równie¿: --display)"
+msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgstr "-display <display>\tZastartuj Vim na <display> (równie¿: --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"
 msgstr "--role <role>\tUstaw unikatow¹ rolê do identyfikacji g³ównego okna"
@@ -6643,14 +6641,14 @@ msgstr "indeks listy poza zakresem"
 
 #. No more suitable format specifications in python-2.3
 #, c-format
-msgid "internal error: failed to get vim list item %d"
+msgid "internal error: failed to get Vim list item %d"
 msgstr "b³¹d wewnêtrzny: nie powiod³o siê pobranie z listy Vima elementu %d"
 
 msgid "failed to add item to list"
 msgstr "nie powiod³o siê dodanie elementu do listy"
 
 #, c-format
-msgid "internal error: no vim list item %d"
+msgid "internal error: no Vim list item %d"
 msgstr "b³¹d wewnêtrzny: w liœcie Vima brak elementu %d"
 
 msgid "internal error: failed to add item to list"
@@ -6752,7 +6750,7 @@ msgstr "uruchomienie kodu siê nie powiod³o"
 msgid "E858: Eval did not return a valid python object"
 msgstr "E858: eval nie zwróci³o odpowiedniego obiektu pythona"
 
-msgid "E859: Failed to convert returned python object to vim value"
+msgid "E859: Failed to convert returned python object to a Vim value"
 msgstr "E859: Nie powiod³a siê konwersja obiektu pythona do wartoœci Vima"
 
 #, c-format

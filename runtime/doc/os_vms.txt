@@ -432,7 +432,6 @@ Terminal entry not found in termcap
     builtin_gui
     builtin_riscos
     builtin_amiga
-    builtin_beos-ansi
     builtin_ansi
     builtin_vt320
     builtin_vt52

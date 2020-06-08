@@ -553,7 +553,7 @@ vim_stat(const char *name, stat_T *stp)
 
 #if (defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)) || defined(PROTO)
     void
-mch_settmode(int tmode UNUSED)
+mch_settmode(tmode_T tmode UNUSED)
 {
     // nothing to do
 }

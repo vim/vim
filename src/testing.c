@@ -309,6 +309,9 @@ assert_equalfile(typval_T *argvars)
     garray_T	ga;
     FILE	*fd1;
     FILE	*fd2;
+    char	line1[200];
+    char	line2[200];
+    int		lineidx = 0;
 
     if (fname1 == NULL || fname2 == NULL)
 	return 0;
@@ -329,8 +332,9 @@ assert_equalfile(typval_T *argvars)
 	}
 	else
 	{
-	    int c1, c2;
-	    long count = 0;
+	    int	    c1, c2;
+	    long    count = 0;
+	    long    linecount = 1;
 
 	    for (;;)
 	    {
@@ -347,13 +351,31 @@ assert_equalfile(typval_T *argvars)
 		    STRCPY(IObuff, "second file is shorter");
 		    break;
 		}
-		else if (c1 != c2)
+		else
 		{
-		    vim_snprintf((char *)IObuff, IOSIZE,
-					      "difference at byte %ld", count);
-		    break;
+		    line1[lineidx] = c1;
+		    line2[lineidx] = c2;
+		    ++lineidx;
+		    if (c1 != c2)
+		    {
+			vim_snprintf((char *)IObuff, IOSIZE,
+					    "difference at byte %ld, line %ld",
+							     count, linecount);
+			break;
+		    }
 		}
 		++count;
+		if (c1 == NL)
+		{
+		    ++linecount;
+		    lineidx = 0;
+		}
+		else if (lineidx + 2 == (int)sizeof(line1))
+		{
+		    mch_memmove(line1, line1 + 100, lineidx - 100);
+		    mch_memmove(line2, line2 + 100, lineidx - 100);
+		    lineidx -= 100;
+		}
 	    }
 	    fclose(fd1);
 	    fclose(fd2);
@@ -362,7 +384,29 @@ assert_equalfile(typval_T *argvars)
     if (IObuff[0] != NUL)
     {
 	prepare_assert_error(&ga);
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	{
+	    char_u	numbuf[NUMBUFLEN];
+	    char_u	*tofree;
+
+	    ga_concat(&ga, echo_string(&argvars[2], &tofree, numbuf, 0));
+	    vim_free(tofree);
+	    ga_concat(&ga, (char_u *)": ");
+	}
 	ga_concat(&ga, IObuff);
+	if (lineidx > 0)
+	{
+	    line1[lineidx] = NUL;
+	    line2[lineidx] = NUL;
+	    ga_concat(&ga, (char_u *)" after \"");
+	    ga_concat(&ga, (char_u *)line1);
+	    if (STRCMP(line1, line2) != 0)
+	    {
+		ga_concat(&ga, (char_u *)"\" vs \"");
+		ga_concat(&ga, (char_u *)line2);
+	    }
+	    ga_concat(&ga, (char_u *)"\"");
+	}
 	assert_error(&ga);
 	ga_clear(&ga);
 	return 1;
@@ -371,7 +415,7 @@ assert_equalfile(typval_T *argvars)
 }
 
 /*
- * "assert_equalfile(fname-one, fname-two)" function
+ * "assert_equalfile(fname-one, fname-two[, msg])" function
  */
     void
 f_assert_equalfile(typval_T *argvars, typval_T *rettv)

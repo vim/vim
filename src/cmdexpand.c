@@ -2555,7 +2555,7 @@ ExpandUserDefined(
 	{
 	    if (ga_grow(&ga, 1) == FAIL)
 		break;
-	    ((char_u **)ga.ga_data)[ga.ga_len] = vim_strnsave(s, (int)(e - s));
+	    ((char_u **)ga.ga_data)[ga.ga_len] = vim_strnsave(s, e - s);
 	    ++ga.ga_len;
 	}
 
@@ -2675,10 +2675,18 @@ globpath(
 f_getcompletion(typval_T *argvars, typval_T *rettv)
 {
     char_u	*pat;
+    char_u	*type;
     expand_T	xpc;
     int		filtered = FALSE;
     int		options = WILD_SILENT | WILD_USE_NL | WILD_ADD_SLASH
-					| WILD_NO_BEEP;
+								| WILD_NO_BEEP;
+
+    if (argvars[1].v_type != VAR_STRING)
+    {
+	semsg(_(e_invarg2), "type must be a string");
+	return;
+    }
+    type = tv_get_string(&argvars[1]);
 
     if (argvars[2].v_type != VAR_UNKNOWN)
 	filtered = tv_get_number_chk(&argvars[2], NULL);
@@ -2691,39 +2699,45 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 	options |= WILD_KEEP_ALL;
 
     ExpandInit(&xpc);
-    xpc.xp_pattern = tv_get_string(&argvars[0]);
-    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
-    xpc.xp_context = cmdcomplete_str_to_type(tv_get_string(&argvars[1]));
-    if (xpc.xp_context == EXPAND_NOTHING)
+    if (STRCMP(type, "cmdline") == 0)
     {
-	if (argvars[1].v_type == VAR_STRING)
-	    semsg(_(e_invarg2), argvars[1].vval.v_string);
-	else
-	    emsg(_(e_invarg));
-	return;
+	set_one_cmd_context(&xpc, tv_get_string(&argvars[0]));
+	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
     }
+    else
+    {
+	xpc.xp_pattern = tv_get_string(&argvars[0]);
+	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+
+	xpc.xp_context = cmdcomplete_str_to_type(type);
+	if (xpc.xp_context == EXPAND_NOTHING)
+	{
+	    semsg(_(e_invarg2), type);
+	    return;
+	}
 
 # if defined(FEAT_MENU)
-    if (xpc.xp_context == EXPAND_MENUS)
-    {
-	set_context_in_menu_cmd(&xpc, (char_u *)"menu", xpc.xp_pattern, FALSE);
-	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
-    }
+	if (xpc.xp_context == EXPAND_MENUS)
+	{
+	    set_context_in_menu_cmd(&xpc, (char_u *)"menu", xpc.xp_pattern, FALSE);
+	    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+	}
 # endif
 # ifdef FEAT_CSCOPE
-    if (xpc.xp_context == EXPAND_CSCOPE)
-    {
-	set_context_in_cscope_cmd(&xpc, xpc.xp_pattern, CMD_cscope);
-	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
-    }
+	if (xpc.xp_context == EXPAND_CSCOPE)
+	{
+	    set_context_in_cscope_cmd(&xpc, xpc.xp_pattern, CMD_cscope);
+	    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+	}
 # endif
 # ifdef FEAT_SIGNS
-    if (xpc.xp_context == EXPAND_SIGN)
-    {
-	set_context_in_sign_cmd(&xpc, xpc.xp_pattern);
-	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
-    }
+	if (xpc.xp_context == EXPAND_SIGN)
+	{
+	    set_context_in_sign_cmd(&xpc, xpc.xp_pattern);
+	    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+	}
 # endif
+    }
 
     pat = addstar(xpc.xp_pattern, xpc.xp_pattern_len, xpc.xp_context);
     if ((rettv_list_alloc(rettv) != FAIL) && (pat != NULL))

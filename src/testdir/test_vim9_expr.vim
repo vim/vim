@@ -153,9 +153,13 @@ let adict = #{aaa: 2, bbb: 8}
 
 " test == comperator
 def Test_expr4_equal()
+  let trueVar = true
+  let falseVar = false
   assert_equal(true, true == true)
   assert_equal(false, true ==
 			false)
+  assert_equal(true, true == trueVar)
+  assert_equal(false, true == falseVar)
   assert_equal(true, true == g:atrue)
   assert_equal(false, g:atrue == false)
 
@@ -164,21 +168,28 @@ def Test_expr4_equal()
   assert_equal(true, g:anone == v:none)
   assert_equal(false, v:none == g:anull)
 
+  let nr0 = 0
+  let nr61 = 61
   assert_equal(false, 2 == 0)
+  assert_equal(false, 2 == nr0)
   assert_equal(true, 61 == 61)
+  assert_equal(true, 61 == nr61)
   assert_equal(true, g:anint == 10)
   assert_equal(false, 61 == g:anint)
 
   if has('float')
-    assert_equal(true, 0.3 == 0.3)
-    assert_equal(false, 0.4 == 0.3)
+    let ff = 0.3
+    assert_equal(true, ff == 0.3)
+    assert_equal(false, 0.4 == ff)
     assert_equal(true, 0.1 == g:afloat)
     assert_equal(false, g:afloat == 0.3)
 
-    assert_equal(true, 3.0 == 3)
-    assert_equal(true, 3 == 3.0)
-    assert_equal(false, 3.1 == 3)
-    assert_equal(false, 3 == 3.1)
+    ff = 3.0
+    assert_equal(true, ff == 3)
+    assert_equal(true, 3 == ff)
+    ff = 3.1
+    assert_equal(false, ff == 3)
+    assert_equal(false, 3 == ff)
   endif
 
   assert_equal(true, 'abc' == 'abc')
@@ -198,8 +209,9 @@ def Test_expr4_equal()
 
   call CheckDefFailure(["let x = 'a' == xxx"], 'E1001:')
 
-  assert_equal(true, 0z3f == 0z3f)
-  assert_equal(false, 0z3f == 0z4f)
+  let bb = 0z3f
+  assert_equal(true, 0z3f == bb)
+  assert_equal(false, bb == 0z4f)
   assert_equal(true, g:ablob == 0z01ab)
   assert_equal(false, 0z3f == g:ablob)
 
@@ -233,9 +245,13 @@ enddef
 
 " test != comperator
 def Test_expr4_notequal()
+  let trueVar = true
+  let falseVar = false
   assert_equal(false, true != true)
   assert_equal(true, true !=
 			false)
+  assert_equal(false, true != trueVar)
+  assert_equal(true, true != falseVar)
   assert_equal(false, true != g:atrue)
   assert_equal(true, g:atrue != false)
 
@@ -244,21 +260,28 @@ def Test_expr4_notequal()
   assert_equal(false, g:anone != v:none)
   assert_equal(true, v:none != g:anull)
 
+  let nr55 = 55
+  let nr0 = 55
   assert_equal(true, 2 != 0)
+  assert_equal(true, 2 != nr0)
   assert_equal(false, 55 != 55)
+  assert_equal(false, 55 != nr55)
   assert_equal(false, g:anint != 10)
   assert_equal(true, 61 != g:anint)
 
   if has('float')
-    assert_equal(false, 0.3 != 0.3)
-    assert_equal(true, 0.4 != 0.3)
+    let ff = 0.3
+    assert_equal(false, 0.3 != ff)
+    assert_equal(true, 0.4 != ff)
     assert_equal(false, 0.1 != g:afloat)
     assert_equal(true, g:afloat != 0.3)
 
-    assert_equal(false, 3.0 != 3)
-    assert_equal(false, 3 != 3.0)
-    assert_equal(true, 3.1 != 3)
-    assert_equal(true, 3 != 3.1)
+    ff = 3.0
+    assert_equal(false, ff != 3)
+    assert_equal(false, 3 != ff)
+    ff = 3.1
+    assert_equal(true, ff != 3)
+    assert_equal(true, 3 != ff)
   endif
 
   assert_equal(false, 'abc' != 'abc')
@@ -271,8 +294,9 @@ def Test_expr4_notequal()
   assert_equal(true, 'abc' != 'ABC')
   set noignorecase
 
-  assert_equal(false, 0z3f != 0z3f)
-  assert_equal(true, 0z3f != 0z4f)
+  let bb = 0z3f
+  assert_equal(false, 0z3f != bb)
+  assert_equal(true, bb != 0z4f)
   assert_equal(false, g:ablob != 0z01ab)
   assert_equal(true, 0z3f != g:ablob)
 
@@ -305,11 +329,18 @@ def Test_expr4_greater()
 		1)
   assert_false(2 > 2)
   assert_false(2 > 3)
+  let nr2 = 2
+  assert_true(nr2 > 0)
+  assert_true(nr2 >
+		1)
+  assert_false(nr2 > 2)
+  assert_false(nr2 > 3)
   if has('float')
-    assert_true(2.0 > 0.0)
-    assert_true(2.0 > 1.0)
-    assert_false(2.0 > 2.0)
-    assert_false(2.0 > 3.0)
+    let ff = 2.0
+    assert_true(ff > 0.0)
+    assert_true(ff > 1.0)
+    assert_false(ff > 2.0)
+    assert_false(ff > 3.0)
   endif
 enddef
 
@@ -319,10 +350,15 @@ def Test_expr4_greaterequal()
   assert_true(2 >=
 			2)
   assert_false(2 >= 3)
+  let nr2 = 2
+  assert_true(nr2 >= 0)
+  assert_true(nr2 >= 2)
+  assert_false(nr2 >= 3)
   if has('float')
-    assert_true(2.0 >= 0.0)
-    assert_true(2.0 >= 2.0)
-    assert_false(2.0 >= 3.0)
+    let ff = 2.0
+    assert_true(ff >= 0.0)
+    assert_true(ff >= 2.0)
+    assert_false(ff >= 3.0)
   endif
 enddef
 
@@ -332,10 +368,15 @@ def Test_expr4_smaller()
   assert_false(2 <
 			2)
   assert_true(2 < 3)
+  let nr2 = 2
+  assert_false(nr2 < 0)
+  assert_false(nr2 < 2)
+  assert_true(nr2 < 3)
   if has('float')
-    assert_false(2.0 < 0.0)
-    assert_false(2.0 < 2.0)
-    assert_true(2.0 < 3.0)
+    let ff = 2.0
+    assert_false(ff < 0.0)
+    assert_false(ff < 2.0)
+    assert_true(ff < 3.0)
   endif
 enddef
 
@@ -346,11 +387,17 @@ def Test_expr4_smallerequal()
 			1)
   assert_true(2 <= 2)
   assert_true(2 <= 3)
+  let nr2 = 2
+  assert_false(nr2 <= 0)
+  assert_false(nr2 <= 1)
+  assert_true(nr2 <= 2)
+  assert_true(nr2 <= 3)
   if has('float')
-    assert_false(2.0 <= 0.0)
-    assert_false(2.0 <= 1.0)
-    assert_true(2.0 <= 2.0)
-    assert_true(2.0 <= 3.0)
+    let ff = 2.0
+    assert_false(ff <= 0.0)
+    assert_false(ff <= 1.0)
+    assert_true(ff <= 2.0)
+    assert_true(ff <= 3.0)
   endif
 enddef
 
@@ -429,7 +476,7 @@ func Test_expr4_fails()
 
   call CheckDefFailure(["let x = 1 == '2'"], 'Cannot compare number with string')
   call CheckDefFailure(["let x = '1' == 2"], 'Cannot compare string with number')
-  call CheckDefFailure(["let x = 1 == RetVoid()"], 'Cannot use void value')
+  call CheckDefFailure(["let x = 1 == RetVoid()"], 'Cannot compare number with void')
   call CheckDefFailure(["let x = RetVoid() == 1"], 'Cannot compare void with number')
 
   call CheckDefFailure(["let x = true > false"], 'Cannot compare bool with bool')
@@ -487,6 +534,7 @@ def Test_expr5()
   assert_equal('hello', 'hel' .. 'lo')
   assert_equal('hello 123', 'hello ' ..
 					123)
+  assert_equal('hello 123', 'hello ' ..  123)
   assert_equal('123 hello', 123 .. ' hello')
   assert_equal('123456', 123 .. 456)
 
@@ -643,9 +691,9 @@ func Test_expr6_fails()
   call CheckDefFailure(["let x = #{one: 1} / #{two: 2}"], 'E1036:')
   call CheckDefFailure(["let x = #{one: 1} % #{two: 2}"], 'E1035:')
 
-  call CheckDefFailure(["let x = 0xff[1]"], 'E714:')
+  call CheckDefFailure(["let x = 0xff[1]"], 'E1090:')
   if has('float')
-    call CheckDefFailure(["let x = 0.7[1]"], 'E714:')
+    call CheckDefFailure(["let x = 0.7[1]"], 'E1090:')
   endif
 endfunc
 
@@ -759,11 +807,11 @@ def Test_expr7_list()
   assert_equal(g:list_mixed, [1, 'b', false])
   assert_equal('b', g:list_mixed[1])
 
-  call CheckDefExecFailure("let x = g:anint[3]", 'E714:')
+  call CheckDefExecFailure(["let x = g:anint[3]"], 'E714:')
   call CheckDefFailure(["let x = g:list_mixed[xxx]"], 'E1001:')
-  call CheckDefExecFailure("let x = g:list_mixed['xx']", 'E39:')
+  call CheckDefExecFailure(["let x = g:list_mixed['xx']"], 'E39:')
   call CheckDefFailure(["let x = g:list_mixed[0"], 'E111:')
-  call CheckDefExecFailure("let x = g:list_empty[3]", 'E684:')
+  call CheckDefExecFailure(["let x = g:list_empty[3]"], 'E684:')
 enddef
 
 def Test_expr7_lambda()
@@ -792,14 +840,18 @@ def Test_expr7_dict()
   call CheckDefFailure(["let x = #"], 'E1015:')
   call CheckDefFailure(["let x += 1"], 'E1020:')
   call CheckDefFailure(["let x = x + 1"], 'E1001:')
-  call CheckDefExecFailure("let x = g:anint.member", 'E715:')
-  call CheckDefExecFailure("let x = g:dict_empty.member", 'E716:')
+  call CheckDefExecFailure(["let x = g:anint.member"], 'E715:')
+  call CheckDefExecFailure(["let x = g:dict_empty.member"], 'E716:')
 enddef
 
 def Test_expr_member()
   assert_equal(1, g:dict_one.one)
+  let d: dict<number> = g:dict_one
+  assert_equal(1, d['one'])
 
   call CheckDefFailure(["let x = g:dict_one.#$!"], 'E1002:')
+  call CheckDefExecFailure(["let d: dict<any>", "echo d['a']"], 'E716:')
+  call CheckDefExecFailure(["let d: dict<number>", "d = g:list_empty"], 'E1029: Expected dict but got list')
 enddef
 
 def Test_expr7_option()
@@ -899,8 +951,8 @@ func Test_expr7_fails()
   call CheckDefFailure(["let x = -'xx'"], "E1030:")
   call CheckDefFailure(["let x = +'xx'"], "E1030:")
   call CheckDefFailure(["let x = -0z12"], "E974:")
-  call CheckDefExecFailure("let x = -[8]", "E39:")
-  call CheckDefExecFailure("let x = -{'a': 1}", "E39:")
+  call CheckDefExecFailure(["let x = -[8]"], "E39:")
+  call CheckDefExecFailure(["let x = -{'a': 1}"], "E39:")
 
   call CheckDefFailure(["let x = @"], "E1002:")
   call CheckDefFailure(["let x = @<"], "E354:")
@@ -914,23 +966,23 @@ func Test_expr7_fails()
   call CheckDefFailure(["let x = &notexist"], 'E113:')
   call CheckDefFailure(["&grepprg = [343]"], 'E1013:')
 
-  call CheckDefExecFailure("echo s:doesnt_exist", 'E121:')
-  call CheckDefExecFailure("echo g:doesnt_exist", 'E121:')
+  call CheckDefExecFailure(["echo s:doesnt_exist"], 'E121:')
+  call CheckDefExecFailure(["echo g:doesnt_exist"], 'E121:')
 
   call CheckDefFailure(["echo a:somevar"], 'E1075:')
   call CheckDefFailure(["echo l:somevar"], 'E1075:')
   call CheckDefFailure(["echo x:somevar"], 'E1075:')
 
-  call CheckDefExecFailure("let x = +g:astring", 'E1030:')
-  call CheckDefExecFailure("let x = +g:ablob", 'E974:')
-  call CheckDefExecFailure("let x = +g:alist", 'E745:')
-  call CheckDefExecFailure("let x = +g:adict", 'E728:')
+  call CheckDefExecFailure(["let x = +g:astring"], 'E1030:')
+  call CheckDefExecFailure(["let x = +g:ablob"], 'E974:')
+  call CheckDefExecFailure(["let x = +g:alist"], 'E745:')
+  call CheckDefExecFailure(["let x = +g:adict"], 'E728:')
 
   call CheckDefFailure(["let x = ''", "let y = x.memb"], 'E715:')
 
-  call CheckDefExecFailure("[1, 2->len()", 'E492:')
-  call CheckDefExecFailure("#{a: 1->len()", 'E488:')
-  call CheckDefExecFailure("{'a': 1->len()", 'E492:')
+  call CheckDefExecFailure(["[1, 2->len()"], 'E492:')
+  call CheckDefExecFailure(["#{a: 1->len()"], 'E488:')
+  call CheckDefExecFailure(["{'a': 1->len()"], 'E492:')
 endfunc
 
 let g:Funcrefs = [function('add')]
@@ -986,7 +1038,7 @@ func Test_expr_fails()
   call CheckDefFailure(["let x = '1'is2"], 'E488:')
   call CheckDefFailure(["let x = '1'isnot2"], 'E488:')
 
-  call CheckDefExecFailure("CallMe ('yes')", 'E492:')
+  call CheckDefExecFailure(["CallMe ('yes')"], 'E492:')
   call CheckDefFailure(["CallMe2('yes','no')"], 'E1069:')
   call CheckDefFailure(["CallMe2('yes' , 'no')"], 'E1068:')
 

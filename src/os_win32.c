@@ -195,9 +195,11 @@ static void vtp_flag_init();
 static int vtp_working = 0;
 static void vtp_init();
 static void vtp_exit();
-static int vtp_printf(char *format, ...);
 static void vtp_sgr_bulk(int arg);
 static void vtp_sgr_bulks(int argc, int *argv);
+
+static int wt_working = 0;
+static void wt_init();
 
 static guicolor_T save_console_bg_rgb;
 static guicolor_T save_console_fg_rgb;
@@ -214,8 +216,10 @@ static int default_console_color_fg = 0xc0c0c0; // white
 
 # ifdef FEAT_TERMGUICOLORS
 #  define USE_VTP		(vtp_working && is_term_win32() && (p_tgc || (!p_tgc && t_colors >= 256)))
+#  define USE_WT		(wt_working)
 # else
 #  define USE_VTP		0
+#  define USE_WT		0
 # endif
 
 static void set_console_color_rgb(void);
@@ -235,6 +239,12 @@ static int suppress_winsize = 1;	// don't fiddle with console
 static char_u *exe_path = NULL;
 
 static BOOL win8_or_later = FALSE;
+
+# if defined(__GNUC__) && !defined(__MINGW32__)  && !defined(__CYGWIN__)
+#  define UChar UnicodeChar
+# else
+#  define UChar uChar.UnicodeChar
+# endif
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 // Dynamic loading for portability
@@ -286,6 +296,30 @@ get_build_number(void)
 }
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
+    static BOOL
+is_ambiwidth_event(
+    INPUT_RECORD *ir)
+{
+    return ir->EventType == KEY_EVENT
+		&& ir->Event.KeyEvent.bKeyDown
+		&& ir->Event.KeyEvent.wRepeatCount == 1
+		&& ir->Event.KeyEvent.wVirtualKeyCode == 0x12
+		&& ir->Event.KeyEvent.wVirtualScanCode == 0x38
+		&& ir->Event.KeyEvent.UChar == 0
+		&& ir->Event.KeyEvent.dwControlKeyState == 2;
+}
+
+    static void
+make_ambiwidth_event(
+    INPUT_RECORD *down,
+    INPUT_RECORD *up)
+{
+    down->Event.KeyEvent.wVirtualKeyCode = 0;
+    down->Event.KeyEvent.wVirtualScanCode = 0;
+    down->Event.KeyEvent.UChar = up->Event.KeyEvent.UChar;
+    down->Event.KeyEvent.dwControlKeyState = 0;
+}
+
 /*
  * Version of ReadConsoleInput() that works with IME.
  * Works around problems on Windows 8.
@@ -322,10 +356,12 @@ read_console_input(
 
     if (s_dwMax == 0)
     {
-	if (nLength == -1)
+	if (!USE_WT && nLength == -1)
 	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
-	if (!ReadConsoleInputW(hInput, s_irCache, IRSIZE, &dwEvents))
-	    return FALSE;
+	GetNumberOfConsoleInputEvents(hInput, &dwEvents);
+	if (dwEvents == 0 && nLength == -1)
+	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
+	ReadConsoleInputW(hInput, s_irCache, IRSIZE, &dwEvents);
 	s_dwIndex = 0;
 	s_dwMax = dwEvents;
 	if (dwEvents == 0)
@@ -333,6 +369,10 @@ read_console_input(
 	    *lpEvents = 0;
 	    return TRUE;
 	}
+
+	for (i = s_dwIndex; i < (int)s_dwMax - 1; ++i)
+	    if (is_ambiwidth_event(&s_irCache[i]))
+		make_ambiwidth_event(&s_irCache[i], &s_irCache[i + 1]);
 
 	if (s_dwMax > 1)
 	{
@@ -822,7 +862,7 @@ win32_enable_privilege(LPTSTR lpszPrivilege, BOOL bEnable)
 #endif
 
 /*
- * Set "win8_or_later" and fill in "windowsVersion".
+ * Set "win8_or_later" and fill in "windowsVersion" if possible.
  */
     void
 PlatformId(void)
@@ -836,9 +876,10 @@ PlatformId(void)
 	ovi.dwOSVersionInfoSize = sizeof(ovi);
 	GetVersionEx(&ovi);
 
+#ifdef FEAT_EVAL
 	vim_snprintf(windowsVersion, sizeof(windowsVersion), "%d.%d",
 		(int)ovi.dwMajorVersion, (int)ovi.dwMinorVersion);
-
+#endif
 	if ((ovi.dwMajorVersion == 6 && ovi.dwMinorVersion >= 2)
 		|| ovi.dwMajorVersion > 6)
 	    win8_or_later = TRUE;
@@ -935,12 +976,6 @@ static const struct
     { VK_NUMPAD9,TRUE,  '\376',	'\377',	'|',	    '}', },
 };
 
-
-# if defined(__GNUC__) && !defined(__MINGW32__)  && !defined(__CYGWIN__)
-#  define UChar UnicodeChar
-# else
-#  define UChar uChar.UnicodeChar
-# endif
 
 /*
  * The return code indicates key code size.
@@ -2045,57 +2080,200 @@ theend:
 #endif
 
 /*
- * If "use_path" is TRUE: Return TRUE if "name" is in $PATH.
- * If "use_path" is FALSE: Return TRUE if "name" exists.
+ * Return TRUE if "name" is an executable file, FALSE if not or it doesn't exist.
  * When returning TRUE and "path" is not NULL save the path and set "*path" to
  * the allocated memory.
  * TODO: Should somehow check if it's really executable.
  */
     static int
-executable_exists(char *name, char_u **path, int use_path)
+executable_file(char *name, char_u **path)
 {
-    WCHAR	*p;
-    WCHAR	fnamew[_MAX_PATH];
-    WCHAR	*dumw;
-    WCHAR	*wcurpath, *wnewpath;
-    long	n;
-
-    if (!use_path)
+    if (mch_getperm((char_u *)name) != -1 && !mch_isdir((char_u *)name))
     {
-	if (mch_getperm((char_u *)name) != -1 && !mch_isdir((char_u *)name))
-	{
-	    if (path != NULL)
-	    {
-		if (mch_isFullName((char_u *)name))
-		    *path = vim_strsave((char_u *)name);
-		else
-		    *path = FullName_save((char_u *)name, FALSE);
-	    }
-	    return TRUE;
-	}
+	if (path != NULL)
+	    *path = FullName_save((char_u *)name, FALSE);
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * If "use_path" is TRUE: Return TRUE if "name" is in $PATH.
+ * If "use_path" is FALSE: Return TRUE if "name" exists.
+ * If "use_pathext" is TRUE search "name" with extensions in $PATHEXT.
+ * When returning TRUE and "path" is not NULL save the path and set "*path" to
+ * the allocated memory.
+ */
+    static int
+executable_exists(char *name, char_u **path, int use_path, int use_pathext)
+{
+    // WinNT and later can use _MAX_PATH wide characters for a pathname, which
+    // means that the maximum pathname is _MAX_PATH * 3 bytes when 'enc' is
+    // UTF-8.
+    char_u	buf[_MAX_PATH * 3];
+    size_t	len = STRLEN(name);
+    size_t	tmplen;
+    char_u	*p, *e, *e2;
+    char_u	*pathbuf = NULL;
+    char_u	*pathext = NULL;
+    char_u	*pathextbuf = NULL;
+    int		noext = FALSE;
+    int		retval = FALSE;
+
+    if (len >= sizeof(buf))	// safety check
 	return FALSE;
+
+    // Using the name directly when a Unix-shell like 'shell'.
+    if (strstr((char *)gettail(p_sh), "sh") != NULL)
+	noext = TRUE;
+
+    if (use_pathext)
+    {
+	pathext = mch_getenv("PATHEXT");
+	if (pathext == NULL)
+	    pathext = (char_u *)".com;.exe;.bat;.cmd";
+
+	if (noext == FALSE)
+	{
+	    /*
+	     * Loop over all extensions in $PATHEXT.
+	     * Check "name" ends with extension.
+	     */
+	    p = pathext;
+	    while (*p)
+	    {
+		if (p[0] == ';'
+			    || (p[0] == '.' && (p[1] == NUL || p[1] == ';')))
+		{
+		    // Skip empty or single ".".
+		    ++p;
+		    continue;
+		}
+		e = vim_strchr(p, ';');
+		if (e == NULL)
+		    e = p + STRLEN(p);
+		tmplen = e - p;
+
+		if (_strnicoll(name + len - tmplen, (char *)p, tmplen) == 0)
+		{
+		    noext = TRUE;
+		    break;
+		}
+
+		p = e;
+	    }
+	}
     }
 
-    p = enc_to_utf16((char_u *)name, NULL);
-    if (p == NULL)
-	return FALSE;
+    // Prepend single "." to pathext, it's means no extension added.
+    if (pathext == NULL)
+	pathext = (char_u *)".";
+    else if (noext == TRUE)
+    {
+	if (pathextbuf == NULL)
+	    pathextbuf = alloc(STRLEN(pathext) + 3);
+	if (pathextbuf == NULL)
+	{
+	    retval = FALSE;
+	    goto theend;
+	}
+	STRCPY(pathextbuf, ".;");
+	STRCAT(pathextbuf, pathext);
+	pathext = pathextbuf;
+    }
 
-    wcurpath = _wgetenv(L"PATH");
-    wnewpath = ALLOC_MULT(WCHAR, wcslen(wcurpath) + 3);
-    if (wnewpath == NULL)
-	return FALSE;
-    wcscpy(wnewpath, L".;");
-    wcscat(wnewpath, wcurpath);
-    n = (long)SearchPathW(wnewpath, p, NULL, _MAX_PATH, fnamew, &dumw);
-    vim_free(wnewpath);
-    vim_free(p);
-    if (n == 0)
-	return FALSE;
-    if (GetFileAttributesW(fnamew) & FILE_ATTRIBUTE_DIRECTORY)
-	return FALSE;
-    if (path != NULL)
-	*path = utf16_to_enc(fnamew, NULL);
-    return TRUE;
+    // Use $PATH when "use_path" is TRUE and "name" is basename.
+    if (use_path && gettail((char_u *)name) == (char_u *)name)
+    {
+	p = mch_getenv("PATH");
+	if (p != NULL)
+	{
+	    pathbuf = alloc(STRLEN(p) + 3);
+	    if (pathbuf == NULL)
+	    {
+		retval = FALSE;
+		goto theend;
+	    }
+	    STRCPY(pathbuf, ".;");
+	    STRCAT(pathbuf, p);
+	}
+    }
+
+    /*
+     * Walk through all entries in $PATH to check if "name" exists there and
+     * is an executable file.
+     */
+    p = (pathbuf != NULL) ? pathbuf : (char_u *)".";
+    while (*p)
+    {
+	if (*p == ';') // Skip empty entry
+	{
+	    ++p;
+	    continue;
+	}
+	e = vim_strchr(p, ';');
+	if (e == NULL)
+	    e = p + STRLEN(p);
+
+	if (e - p + len + 2 > sizeof(buf))
+	{
+	    retval = FALSE;
+	    goto theend;
+	}
+	// A single "." that means current dir.
+	if (e - p == 1 && *p == '.')
+	    STRCPY(buf, name);
+	else
+	{
+	    vim_strncpy(buf, p, e - p);
+	    add_pathsep(buf);
+	    STRCAT(buf, name);
+	}
+	tmplen = STRLEN(buf);
+
+	/*
+	 * Loop over all extensions in $PATHEXT.
+	 * Check "name" with extension added.
+	 */
+	p = pathext;
+	while (*p)
+	{
+	    if (*p == ';')
+	    {
+		// Skip empty entry
+		++p;
+		continue;
+	    }
+	    e2 = vim_strchr(p, (int)';');
+	    if (e2 == NULL)
+		e2 = p + STRLEN(p);
+
+	    if (!(p[0] == '.' && (p[1] == NUL || p[1] == ';')))
+	    {
+		// Not a single "." that means no extension is added.
+		if (e2 - p + tmplen + 1 > sizeof(buf))
+		{
+		    retval = FALSE;
+		    goto theend;
+		}
+		vim_strncpy(buf + tmplen, p, e2 - p);
+	    }
+	    if (executable_file((char *)buf, path))
+	    {
+		retval = TRUE;
+		goto theend;
+	    }
+
+	    p = e2;
+	}
+
+	p = e;
+    }
+
+theend:
+    free(pathextbuf);
+    free(pathbuf);
+    return retval;
 }
 
 #if (defined(__MINGW32__) && __MSVCRT_VERSION__ >= 0x800) || \
@@ -2175,7 +2353,7 @@ mch_init_g(void)
 	    vimrun_path = (char *)vim_strsave(vimrun_location);
 	    s_dont_use_vimrun = FALSE;
 	}
-	else if (executable_exists("vimrun.exe", NULL, TRUE))
+	else if (executable_exists("vimrun.exe", NULL, TRUE, FALSE))
 	    s_dont_use_vimrun = FALSE;
 
 	// Don't give the warning for a missing vimrun.exe right now, but only
@@ -2189,7 +2367,7 @@ mch_init_g(void)
      * If "finstr.exe" doesn't exist, use "grep -n" for 'grepprg'.
      * Otherwise the default "findstr /n" is used.
      */
-    if (!executable_exists("findstr.exe", NULL, TRUE))
+    if (!executable_exists("findstr.exe", NULL, TRUE, FALSE))
 	set_option_value((char_u *)"grepprg", 0, (char_u *)"grep -n", 0);
 
 # ifdef FEAT_CLIPBOARD
@@ -2688,6 +2866,7 @@ mch_init_c(void)
 
     vtp_flag_init();
     vtp_init();
+    wt_init();
 }
 
 /*
@@ -3270,69 +3449,7 @@ mch_writable(char_u *name)
     int
 mch_can_exe(char_u *name, char_u **path, int use_path)
 {
-    // WinNT and later can use _MAX_PATH wide characters for a pathname, which
-    // means that the maximum pathname is _MAX_PATH * 3 bytes when 'enc' is
-    // UTF-8.
-    char_u	buf[_MAX_PATH * 3];
-    int		len = (int)STRLEN(name);
-    char_u	*p, *saved;
-
-    if (len >= sizeof(buf))	// safety check
-	return FALSE;
-
-    // Try using the name directly when a Unix-shell like 'shell'.
-    if (strstr((char *)gettail(p_sh), "sh") != NULL)
-	if (executable_exists((char *)name, path, use_path))
-	    return TRUE;
-
-    /*
-     * Loop over all extensions in $PATHEXT.
-     */
-    p = mch_getenv("PATHEXT");
-    if (p == NULL)
-	p = (char_u *)".com;.exe;.bat;.cmd";
-    saved = vim_strsave(p);
-    if (saved == NULL)
-	return FALSE;
-    p = saved;
-    while (*p)
-    {
-	char_u	*tmp = vim_strchr(p, ';');
-
-	if (tmp != NULL)
-	    *tmp = NUL;
-	if (_stricoll((char *)name + len - STRLEN(p), (char *)p) == 0
-			    && executable_exists((char *)name, path, use_path))
-	{
-	    vim_free(saved);
-	    return TRUE;
-	}
-	if (tmp == NULL)
-	    break;
-	p = tmp + 1;
-    }
-    vim_free(saved);
-
-    vim_strncpy(buf, name, sizeof(buf) - 1);
-    p = mch_getenv("PATHEXT");
-    if (p == NULL)
-	p = (char_u *)".com;.exe;.bat;.cmd";
-    while (*p)
-    {
-	if (p[0] == '.' && (p[1] == NUL || p[1] == ';'))
-	{
-	    // A single "." means no extension is added.
-	    buf[len] = NUL;
-	    ++p;
-	    if (*p)
-		++p;
-	}
-	else
-	    copy_option_part(&p, buf + len, sizeof(buf) - len, ";");
-	if (executable_exists((char *)buf, path, use_path))
-	    return TRUE;
-    }
-    return FALSE;
+    return executable_exists((char *)name, path, TRUE, TRUE);
 }
 
 /*
@@ -3600,7 +3717,7 @@ handler_routine(
  * set the tty in (raw) ? "raw" : "cooked" mode
  */
     void
-mch_settmode(int tmode)
+mch_settmode(tmode_T tmode)
 {
     DWORD cmodein;
     DWORD cmodeout;
@@ -4899,7 +5016,11 @@ mch_call_shell(
     }
 
     if (tmode == TMODE_RAW)
+    {
+	// The shell may have messed with the mode, always set it.
+	cur_tmode = TMODE_UNKNOWN;
 	settmode(TMODE_RAW);	// set to raw mode
+    }
 
     // Print the return value, unless "vimrun" was used.
     if (x != 0 && !(options & SHELL_SILENT) && !emsg_silent
@@ -5776,6 +5897,19 @@ insert_lines(unsigned cLines)
 	    clear_chars(coord, source.Right - source.Left + 1);
 	}
     }
+
+    if (USE_WT)
+    {
+	COORD coord;
+	int i;
+
+	coord.X = source.Left;
+	for (i = source.Top; i < dest.Y; ++i)
+	{
+	    coord.Y = i;
+	    clear_chars(coord, source.Right - source.Left + 1);
+	}
+    }
 }
 
 
@@ -5827,6 +5961,19 @@ delete_lines(unsigned cLines)
 
 	coord.X = source.Left;
 	for (i = nb; i < clip.Bottom; ++i)
+	{
+	    coord.Y = i;
+	    clear_chars(coord, source.Right - source.Left + 1);
+	}
+    }
+
+    if (USE_WT)
+    {
+	COORD coord;
+	int i;
+
+	coord.X = source.Left;
+	for (i = nb; i <= source.Bottom; ++i)
 	{
 	    coord.Y = i;
 	    clear_chars(coord, source.Right - source.Left + 1);
@@ -7582,7 +7729,7 @@ vtp_exit(void)
     restore_console_color_rgb();
 }
 
-    static int
+    int
 vtp_printf(
     char *format,
     ...)
@@ -7755,6 +7902,18 @@ vtp_sgr_bulks(
     }
 }
 
+    static void
+wt_init(void)
+{
+    wt_working = (mch_getenv("WT_SESSION") != NULL);
+}
+
+    int
+use_wt(void)
+{
+    return USE_WT;
+}
+
 # ifdef FEAT_TERMGUICOLORS
     static int
 ctermtoxterm(
@@ -7779,6 +7938,13 @@ set_console_color_rgb(void)
 	return;
 
     get_default_console_color(&ctermfg, &ctermbg, &fg, &bg);
+
+    if (USE_WT)
+    {
+	term_fg_rgb_color(fg);
+	term_bg_rgb_color(bg);
+	return;
+    }
 
     fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
     bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
@@ -7852,6 +8018,9 @@ reset_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
     DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+
+    if (USE_WT)
+	return;
 
     csbi.cbSize = sizeof(csbi);
     if (has_csbiex)

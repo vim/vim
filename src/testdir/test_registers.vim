@@ -416,4 +416,145 @@ func Test_execute_register()
   call assert_beeps('normal! c@r')
 endfunc
 
+" Test for getting register info
+func Test_get_reginfo()
+  enew
+  call setline(1, ['foo', 'bar'])
+
+  exe 'norm! "zyy'
+  let info = getreginfo('"')
+  call assert_equal('z', info.points_to)
+  call setreg('y', 'baz')
+  call assert_equal('z', getreginfo('').points_to)
+  call setreg('y', { 'isunnamed': v:true })
+  call assert_equal('y', getreginfo('"').points_to)
+
+  exe '$put'
+  call assert_equal(getreg('y'), getline(3))
+  call setreg('', 'qux')
+  call assert_equal('0', getreginfo('').points_to)
+  call setreg('x', 'quux')
+  call assert_equal('0', getreginfo('').points_to)
+
+  let info = getreginfo('')
+  call assert_equal(getreg('', 1, 1), info.regcontents)
+  call assert_equal(getregtype(''), info.regtype)
+
+  exe "norm! 0\<c-v>e" .. '"zy'
+  let info = getreginfo('z')
+  call assert_equal(getreg('z', 1, 1), info.regcontents)
+  call assert_equal(getregtype('z'), info.regtype)
+  call assert_equal(1, +info.isunnamed)
+
+  let info = getreginfo('"')
+  call assert_equal('z', info.points_to)
+
+  bwipe!
+endfunc
+
+" Test for restoring register with dict from getreginfo
+func Test_set_register_dict()
+  enew!
+
+  call setreg('"', #{ regcontents: ['one', 'two'],
+        \ regtype: 'V', points_to: 'z' })
+  call assert_equal(['one', 'two'], getreg('"', 1, 1))
+  let info = getreginfo('"')
+  call assert_equal('z', info.points_to)
+  call assert_equal('V', info.regtype)
+  call assert_equal(1, +getreginfo('z').isunnamed)
+
+  call setreg('x', #{ regcontents: ['three', 'four'],
+        \ regtype: 'v', isunnamed: v:true })
+  call assert_equal(['three', 'four'], getreg('"', 1, 1))
+  let info = getreginfo('"')
+  call assert_equal('x', info.points_to)
+  call assert_equal('v', info.regtype)
+  call assert_equal(1, +getreginfo('x').isunnamed)
+
+  call setreg('y', #{ regcontents: 'five',
+        \ regtype: "\<c-v>", isunnamed: v:false })
+  call assert_equal("\<c-v>4", getreginfo('y').regtype)
+  call assert_equal(0, +getreginfo('y').isunnamed)
+  call assert_equal(['three', 'four'], getreg('"', 1, 1))
+  call assert_equal('x', getreginfo('"').points_to)
+
+  call setreg('"', #{ regcontents: 'six' })
+  call assert_equal('0', getreginfo('"').points_to)
+  call assert_equal(1, +getreginfo('0').isunnamed)
+  call assert_equal(['six'], getreginfo('0').regcontents)
+  call assert_equal(['six'], getreginfo('"').regcontents)
+
+  bwipe!
+endfunc
+
+func Test_v_register()
+  enew
+  call setline(1, 'nothing')
+
+  func s:Put()
+    let s:register = v:register
+    exec 'normal! "' .. v:register .. 'P'
+  endfunc
+  nnoremap <buffer> <plug>(test) :<c-u>call s:Put()<cr>
+  nmap <buffer> S <plug>(test)
+
+  let @z = "testz\n"
+  let @" = "test@\n"
+
+  let s:register = ''
+  call feedkeys('"_ddS', 'mx')
+  call assert_equal('test@', getline('.'))  " fails before 8.2.0929
+  call assert_equal('"', s:register)        " fails before 8.2.0929
+
+  let s:register = ''
+  call feedkeys('"zS', 'mx')
+  call assert_equal('z', s:register)
+
+  let s:register = ''
+  call feedkeys('"zSS', 'mx')
+  call assert_equal('"', s:register)
+
+  let s:register = ''
+  call feedkeys('"_S', 'mx')
+  call assert_equal('_', s:register)
+
+  let s:register = ''
+  normal "_ddS
+  call assert_equal('"', s:register)        " fails before 8.2.0929
+  call assert_equal('test@', getline('.'))  " fails before 8.2.0929
+
+  let s:register = ''
+  execute 'normal "z:call' "s:Put()\n"
+  call assert_equal('z', s:register)
+  call assert_equal('testz', getline('.'))
+
+  " Test operator and omap
+  let @b = 'testb'
+  func s:OpFunc(...)
+    let s:register2 = v:register
+  endfunc
+  set opfunc=s:OpFunc
+
+  normal "bg@l
+  normal S
+  call assert_equal('"', s:register)        " fails before 8.2.0929
+  call assert_equal('b', s:register2)
+
+  func s:Motion()
+    let s:register1 = v:register
+    normal! l
+  endfunc
+  onoremap <buffer> Q :<c-u>call s:Motion()<cr>
+
+  normal "bg@Q
+  normal S
+  call assert_equal('"', s:register)
+  call assert_equal('b', s:register1)
+  call assert_equal('"', s:register2)
+
+  set opfunc&
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

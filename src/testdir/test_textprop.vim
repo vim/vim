@@ -460,9 +460,11 @@ func Test_prop_open_line()
   call assert_equal('nex xtwoxx', getline(2))
   let exp_first = [deepcopy(expected[0])]
   let exp_first[0].length = 1
+  let exp_first[0].end = 0
   call assert_equal(exp_first, prop_list(1))
   let expected[0].col = 1
   let expected[0].length = 2
+  let expected[0].start = 0
   let expected[1].col -= 2
   call assert_equal(expected, prop_list(2))
   call DeletePropTypes()
@@ -575,11 +577,13 @@ func Test_prop_substitute()
 	\ copy(expected_props[3]),
 	\ ]
   let expected_props[0].length = 5
+  let expected_props[0].end = 0
   unlet expected_props[3]
   unlet expected_props[2]
   call assert_equal(expected_props, prop_list(1))
 
   let new_props[0].length = 6
+  let new_props[0].start = 0
   let new_props[1].col = 1
   let new_props[1].length = 1
   let new_props[2].col = 3
@@ -1226,6 +1230,27 @@ func Test_prop_func_invalid_args()
   call assert_fails("call prop_type_get([])", 'E474:')
   call assert_fails("call prop_type_get('', [])", 'E474:')
   call assert_fails("call prop_type_list([])", 'E715:')
+endfunc
+
+func Test_split_join()
+  new
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call setline(1, 'just some text')
+  call prop_add(1, 6, {'length': 4, 'type': 'test'})
+
+  " Split in middle of "some"
+  execute "normal! 8|i\<CR>"
+  call assert_equal([{'id': 0, 'col': 6, 'end': 0, 'type': 'test', 'length': 2, 'start': 1}],
+			  \ prop_list(1))
+  call assert_equal([{'id': 0, 'col': 1, 'end': 1, 'type': 'test', 'length': 2, 'start': 0}],
+			  \ prop_list(2))
+
+  " Join the two lines back together
+  normal! 1GJ
+  call assert_equal([{'id': 0, 'col': 6, 'end': 1, 'type': 'test', 'length': 5, 'start': 1}], prop_list(1))
+
+  bwipe!
+  call prop_type_delete('test')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

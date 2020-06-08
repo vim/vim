@@ -1994,8 +1994,8 @@ static int store_word(spellinfo_T *spin, char_u *word, int flags, int region, ch
 static int tree_add_word(spellinfo_T *spin, char_u *word, wordnode_T *tree, int flags, int region, int affixID);
 static wordnode_T *get_wordnode(spellinfo_T *spin);
 static void free_wordnode(spellinfo_T *spin, wordnode_T *n);
-static void wordtree_compress(spellinfo_T *spin, wordnode_T *root);
-static int node_compress(spellinfo_T *spin, wordnode_T *node, hashtab_T *ht, int *tot);
+static void wordtree_compress(spellinfo_T *spin, wordnode_T *root, char *name);
+static long node_compress(spellinfo_T *spin, wordnode_T *node, hashtab_T *ht, long *tot);
 static int node_equal(wordnode_T *n1, wordnode_T *n2);
 static void clear_node(wordnode_T *node);
 static int put_node(FILE *fd, wordnode_T *node, int idx, int regionmask, int prefixtree);
@@ -2019,7 +2019,8 @@ static void init_spellfile(void);
 #define CONDIT_AFF	8	// word already has an affix
 
 /*
- * Tunable parameters for when the tree is compressed.  See 'mkspellmem'.
+ * Tunable parameters for when the tree is compressed.  Filled from the
+ * 'mkspellmem' option.
  */
 static long compress_start = 30000;	// memory / SBLOCKSIZE
 static long compress_inc = 100;		// memory / SBLOCKSIZE
@@ -3500,6 +3501,7 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
     char_u	message[MAXLINELEN + MAXWLEN];
     int		flags;
     int		duplicate = 0;
+    time_T	last_msg_time = 0;
 
     /*
      * Open the file.
@@ -3588,19 +3590,24 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
 	    continue;
 	}
 
-	// This takes time, print a message every 10000 words.
+	// This takes time, print a message every 10000 words, but not more
+	// often than once per second.
 	if (spin->si_verbose && spin->si_msg_count > 10000)
 	{
 	    spin->si_msg_count = 0;
-	    vim_snprintf((char *)message, sizeof(message),
-		    _("line %6d, word %6ld - %s"),
-		       lnum, spin->si_foldwcount + spin->si_keepwcount, w);
-	    msg_start();
-	    msg_outtrans_long_attr(message, 0);
-	    msg_clr_eos();
-	    msg_didout = FALSE;
-	    msg_col = 0;
-	    out_flush();
+	    if (vim_time() > last_msg_time)
+	    {
+		last_msg_time = vim_time();
+		vim_snprintf((char *)message, sizeof(message),
+			_("line %6d, word %6ld - %s"),
+			   lnum, spin->si_foldwcount + spin->si_keepwcount, w);
+		msg_start();
+		msg_outtrans_long_attr(message, 0);
+		msg_clr_eos();
+		msg_didout = FALSE;
+		msg_col = 0;
+		out_flush();
+	    }
 	}
 
 	// Store the word in the hashtable to be able to find duplicates.
@@ -4576,9 +4583,9 @@ tree_add_word(
 	// compression useful, or one of them is small, which means
 	// compression goes fast.  But when filling the soundfold word tree
 	// there is no keep-case tree.
-	wordtree_compress(spin, spin->si_foldroot);
+	wordtree_compress(spin, spin->si_foldroot, "case-folded");
 	if (affixID >= 0)
-	    wordtree_compress(spin, spin->si_keeproot);
+	    wordtree_compress(spin, spin->si_keeproot, "keep-case");
     }
 
     return OK;
@@ -4652,12 +4659,12 @@ free_wordnode(spellinfo_T *spin, wordnode_T *n)
  * Compress a tree: find tails that are identical and can be shared.
  */
     static void
-wordtree_compress(spellinfo_T *spin, wordnode_T *root)
+wordtree_compress(spellinfo_T *spin, wordnode_T *root, char *name)
 {
     hashtab_T	    ht;
-    int		    n;
-    int		    tot = 0;
-    int		    perc;
+    long	    n;
+    long	    tot = 0;
+    long	    perc;
 
     // Skip the root itself, it's not actually used.  The first sibling is the
     // start of the tree.
@@ -4677,8 +4684,8 @@ wordtree_compress(spellinfo_T *spin, wordnode_T *root)
 	    else
 		perc = (tot - n) * 100 / tot;
 	    vim_snprintf((char *)IObuff, IOSIZE,
-			  _("Compressed %d of %d nodes; %d (%d%%) remaining"),
-						       n, tot, tot - n, perc);
+		       _("Compressed %s: %ld of %ld nodes; %ld (%ld%%) remaining"),
+						       name, n, tot, tot - n, perc);
 	    spell_message(spin, IObuff);
 	}
 #ifdef SPELL_PRINTTREE
@@ -4692,12 +4699,12 @@ wordtree_compress(spellinfo_T *spin, wordnode_T *root)
  * Compress a node, its siblings and its children, depth first.
  * Returns the number of compressed nodes.
  */
-    static int
+    static long
 node_compress(
     spellinfo_T	*spin,
     wordnode_T	*node,
     hashtab_T	*ht,
-    int		*tot)	    // total count of nodes before compressing,
+    long	*tot)	    // total count of nodes before compressing,
 			    // incremented while going through the tree
 {
     wordnode_T	*np;
@@ -4705,9 +4712,9 @@ node_compress(
     wordnode_T	*child;
     hash_T	hash;
     hashitem_T	*hi;
-    int		len = 0;
+    long	len = 0;
     unsigned	nr, n;
-    int		compressed = 0;
+    long	compressed = 0;
 
     /*
      * Go through the list of siblings.  Compress each child and then try
@@ -4790,7 +4797,7 @@ node_compress(
     node->wn_u1.hashkey[5] = NUL;
 
     // Check for CTRL-C pressed now and then.
-    fast_breakcheck();
+    veryfast_breakcheck();
 
     return compressed;
 }
@@ -5499,7 +5506,7 @@ spell_make_sugfile(spellinfo_T *spin, char_u *wfname)
      * Compress the soundfold trie.
      */
     spell_message(spin, (char_u *)_(msg_compressing));
-    wordtree_compress(spin, spin->si_foldroot);
+    wordtree_compress(spin, spin->si_foldroot, "case-folded");
 
     /*
      * Write the .sug file.
@@ -6062,9 +6069,9 @@ mkspell(
 	     * Combine tails in the tree.
 	     */
 	    spell_message(&spin, (char_u *)_(msg_compressing));
-	    wordtree_compress(&spin, spin.si_foldroot);
-	    wordtree_compress(&spin, spin.si_keeproot);
-	    wordtree_compress(&spin, spin.si_prefroot);
+	    wordtree_compress(&spin, spin.si_foldroot, "case-folded");
+	    wordtree_compress(&spin, spin.si_keeproot, "keep-case");
+	    wordtree_compress(&spin, spin.si_prefroot, "prefixes");
 	}
 
 	if (!error && !got_int)
@@ -6658,6 +6665,5 @@ set_map_str(slang_T *lp, char_u *map)
 	}
     }
 }
-
 
 #endif  // FEAT_SPELL

@@ -2607,9 +2607,6 @@ msgstr "'vimOption' inesistente"
 msgid "keyboard interrupt"
 msgstr "interruzione dalla tastiera"
 
-msgid "vim error"
-msgstr "errore vim"
-
 msgid "cannot create buffer/window command: object is being deleted"
 msgstr ""
 "non riesco a creare comando buffer/finestra: oggetto in via di cancellazione"
@@ -3018,8 +3015,8 @@ msgstr "-W <scriptout>\tScrivi tutti i comandi immessi in file <scriptout>"
 msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\tApri un file cifrato"
 
-msgid "-display <display>\tConnect vim to this particular X-server"
-msgstr "-display <schermo>\tEsegui vim a questo particolare server X"
+msgid "-display <display>\tConnect Vim to this particular X-server"
+msgstr "-display <schermo>\tEsegui Vim a questo particolare server X"
 
 msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\tNon connetterti a server X"
@@ -3096,11 +3093,11 @@ msgstr ""
 "\n"
 "Opzioni accettate da gvim (versione Athena):\n"
 
-msgid "-display <display>\tRun vim on <display>"
-msgstr "-display <schermo>\tEsegui vim su <schermo>"
+msgid "-display <display>\tRun Vim on <display>"
+msgstr "-display <schermo>\tEsegui Vim su <schermo>"
 
-msgid "-iconic\t\tStart vim iconified"
-msgstr "-iconic\t\tInizia vim riducendolo ad icona"
+msgid "-iconic\t\tStart Vim iconified"
+msgstr "-iconic\t\tInizia Vim riducendolo ad icona"
 
 msgid "-background <color>\tUse <color> for the background (also: -bg)"
 msgstr "-background <colore>\tUsa <colore> come sfondo (anche: -bg)"
@@ -3146,8 +3143,8 @@ msgstr ""
 "\n"
 "Argomenti accettati da gvim (versione GTK+):\n"
 
-msgid "-display <display>\tRun vim on <display> (also: --display)"
-msgstr "-display <schermo>\tEsegui vim su <schermo> (anche: --display)"
+msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgstr "-display <schermo>\tEsegui Vim su <schermo> (anche: --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"
 msgstr ""
@@ -6530,8 +6527,8 @@ msgstr "il costruttore di lista non accetta parole chiave come argomenti"
 msgid "list index out of range"
 msgstr "Indice di Lista fuori intervallo"
 
-msgid "internal error: failed to get vim list item %d"
-msgstr "errore interno: non ho potuto ottenere l'elemento di vim list %d"
+msgid "internal error: failed to get Vim list item %d"
+msgstr "errore interno: non ho potuto ottenere l'elemento di Vim list %d"
 
 msgid "slice step cannot be zero"
 msgstr "il passo scorrendo un intervallo non può essere zero"
@@ -6540,7 +6537,7 @@ msgid "attempt to assign sequence of size greater than %d to extended slice"
 msgstr ""
 "tentativo di assegnare una sequenza maggiore di %d a un intervallo esteso"
 
-msgid "internal error: no vim list item %d"
+msgid "internal error: no Vim list item %d"
 msgstr "errore interno: non c'è un elemento di vim list %d"
 
 msgid "internal error: not enough list items"
@@ -6642,17 +6639,17 @@ msgstr "esecuzione del codice non riuscita"
 msgid "E858: Eval did not return a valid python object"
 msgstr "E858: Eval non ha restituito un oggetto python valido"
 
-msgid "E859: Failed to convert returned python object to vim value"
+msgid "E859: Failed to convert returned python object to a Vim value"
 msgstr ""
 "E859: Conversione non riuscita dell'oggetto python risultato a un valore vim"
 
-msgid "unable to convert %s to vim dictionary"
+msgid "unable to convert %s to a Vim dictionary"
 msgstr "impossibile convertire %s a dizionario vim"
 
-msgid "unable to convert %s to vim list"
+msgid "unable to convert %s to a Vim list"
 msgstr "impossibile convertire %s a Lista vim"
 
-msgid "unable to convert %s to vim structure"
+msgid "unable to convert %s to a Vim structure"
 msgstr "impossibile convertire %s a struttura vim"
 
 msgid "internal error: NULL reference passed"

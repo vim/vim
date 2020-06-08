@@ -100,7 +100,8 @@
 #endif
 
 // On macOS pre-installed Ruby defines "SIZEOF_TIME_T" as "SIZEOF_LONG" so it
-// conflicts with the definition in config.h then causes macro-redifned warning.
+// conflicts with the definition in config.h then causes a macro-redefined
+// warning.
 #ifdef SIZEOF_TIME_T
 # undef SIZEOF_TIME_T
 #endif
@@ -111,6 +112,11 @@
 #endif
 #if RUBY_VERSION <= 18
 # include <st.h>  // for ST_STOP and ST_CONTINUE
+#endif
+
+// See above.
+#ifdef SIZEOF_TIME_T
+# undef SIZEOF_TIME_T
 #endif
 
 #undef off_t	// ruby defines off_t as _int64, Mingw uses long
@@ -1436,7 +1442,7 @@ buffer_delete(VALUE self, VALUE num)
 
 	if (u_savedel(n, 1) == OK)
 	{
-	    ml_delete(n, 0);
+	    ml_delete(n);
 
 	    // Changes to non-active buffers should properly refresh
 	    //   SegPhault - 01/09/05

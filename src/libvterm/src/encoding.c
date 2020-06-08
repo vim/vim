@@ -223,7 +223,7 @@ encodings[] = {
   { 0, 0, NULL },
 };
 
-// This ought to be INTERNAL but isn't because it's used by unit testing
+/* This ought to be INTERNAL but isn't because it's used by unit testing */
 VTermEncoding *vterm_lookup_encoding(VTermEncodingType type, char designation)
 {
   int i;

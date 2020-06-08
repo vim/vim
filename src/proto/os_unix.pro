@@ -48,7 +48,7 @@ int mch_nodetype(char_u *name);
 void mch_early_init(void);
 void mch_free_mem(void);
 void mch_exit(int r);
-void mch_settmode(int tmode);
+void mch_settmode(tmode_T tmode);
 void get_stty(void);
 int get_tty_info(int fd, ttyinfo_T *info);
 void mch_setmouse(int on);

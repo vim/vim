@@ -13,5 +13,4 @@ freebsd_12_task:
     - make -j${NPROC}
     - src/vim --version
   test_script:
-    # Runtime Indent tests do not work, run only the normal test suite
-    - cd src && make test
+    - make test

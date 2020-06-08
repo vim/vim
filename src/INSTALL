@@ -15,7 +15,6 @@ See INSTALLpc.txt               for PC (Windows XP/Vista/7/8/10)
 See INSTALLvms.txt              for VMS
 See INSTALLx.txt		for cross-compiling on Unix
 See ../READMEdir/README_390.txt for z/OS and OS/390 Unix
-See ../runtime/doc/os_beos.txt  for BeBox
 See ../runtime/doc/os_haiku.txt	for Haiku
 
 1. Generic

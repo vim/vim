@@ -1222,6 +1222,23 @@ func RunTest_mapping_shift(key, func)
   endif
 endfunc
 
+func Test_modifyOtherKeys_mapped()
+  set timeoutlen=10
+  imap ' <C-W>
+  imap <C-W><C-A> c-a
+  call setline(1, '')
+
+  " single quote is turned into single byte CTRL-W
+  " CTRL-A is added with a separate modifier, and needs to be simplified before
+  " the mapping can match.
+  call feedkeys("a'" .. GetEscCodeCSI27('A', 5) .. "\<Esc>", 'Lx!')
+  call assert_equal('c-a', getline(1))
+
+  iunmap '
+  iunmap <C-W><C-A>
+  set timeoutlen&
+endfunc
+
 func RunTest_mapping_works_with_shift(func)
   new
   set timeoutlen=10
@@ -1369,6 +1386,32 @@ func Test_cmdline_literal()
   call assert_equal("\"\<Esc>[27;5;89~", @:)
 
   set timeoutlen&
+endfunc
+
+" Test for translation of special key codes (<xF1>, <xF2>, etc.)
+func Test_Keycode_Tranlsation()
+  let keycodes = [
+        \ ["<xUp>", "<Up>"],
+        \ ["<xDown>", "<Down>"],
+        \ ["<xLeft>", "<Left>"],
+        \ ["<xRight>", "<Right>"],
+        \ ["<xHome>", "<Home>"],
+        \ ["<xEnd>", "<End>"],
+        \ ["<zHome>", "<Home>"],
+        \ ["<zEnd>", "<End>"],
+        \ ["<xF1>", "<F1>"],
+        \ ["<xF2>", "<F2>"],
+        \ ["<xF3>", "<F3>"],
+        \ ["<xF4>", "<F4>"],
+        \ ["<S-xF1>", "<S-F1>"],
+        \ ["<S-xF2>", "<S-F2>"],
+        \ ["<S-xF3>", "<S-F3>"],
+        \ ["<S-xF4>", "<S-F4>"]]
+  for [k1, k2] in keycodes
+    exe "nnoremap " .. k1 .. " 2wx"
+    call assert_true(maparg(k1, 'n', 0, 1).lhs == k2)
+    exe "nunmap " .. k1
+  endfor
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

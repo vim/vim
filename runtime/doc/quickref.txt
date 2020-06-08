@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 8.2.  Last change: 2020 Jan 17
+*quickref.txt*  For Vim version 8.2.  Last change: 2020 Jun 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -851,6 +851,7 @@ Short explanation of each option:		*option-list*
 'pythonthreedll'	    name of the Python 3 dynamic library
 'pythonthreehome'	    name of the Python 3 home directory
 'pyxversion'	  'pyx'	    Python version used for pyx* commands
+'quickfixtextfunc' 'qftf'   function for the text in the quickfix window
 'quoteescape'	  'qe'	    escape characters used in a string
 'readonly'	  'ro'	    disallow writing the buffer
 'redrawtime'	  'rdt'     timeout for 'hlsearch' and |:match| highlighting

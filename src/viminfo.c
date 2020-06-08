@@ -1337,8 +1337,34 @@ write_viminfo_varlist(FILE *fp)
 		    case VAR_STRING:  s = "STR"; break;
 		    case VAR_NUMBER:  s = "NUM"; break;
 		    case VAR_FLOAT:   s = "FLO"; break;
-		    case VAR_DICT:    s = "DIC"; break;
-		    case VAR_LIST:    s = "LIS"; break;
+		    case VAR_DICT:
+			  {
+			      dict_T	*di = this_var->di_tv.vval.v_dict;
+			      int	copyID = get_copyID();
+
+			      s = "DIC";
+			      if (di != NULL && !set_ref_in_ht(
+						 &di->dv_hashtab, copyID, NULL)
+				      && di->dv_copyID == copyID)
+				  // has a circular reference, can't turn the
+				  // value into a string
+				  continue;
+			      break;
+			  }
+		    case VAR_LIST:
+			  {
+			      list_T	*l = this_var->di_tv.vval.v_list;
+			      int	copyID = get_copyID();
+
+			      s = "LIS";
+			      if (l != NULL && !set_ref_in_list_items(
+							       l, copyID, NULL)
+				      && l->lv_copyID == copyID)
+				  // has a circular reference, can't turn the
+				  // value into a string
+				  continue;
+			      break;
+			  }
 		    case VAR_BLOB:    s = "BLO"; break;
 		    case VAR_BOOL:    s = "XPL"; break;  // backwards compat.
 		    case VAR_SPECIAL: s = "XPL"; break;

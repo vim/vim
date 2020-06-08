@@ -1101,18 +1101,29 @@ ins_typebuf(
  * the char.
  */
     void
-ins_char_typebuf(int c)
+ins_char_typebuf(int c, int modifier)
 {
-    char_u	buf[MB_MAXBYTES + 1];
-    if (IS_SPECIAL(c))
+    char_u	buf[MB_MAXBYTES + 4];
+    int		idx = 0;
+
+    if (modifier != 0)
     {
 	buf[0] = K_SPECIAL;
-	buf[1] = K_SECOND(c);
-	buf[2] = K_THIRD(c);
+	buf[1] = KS_MODIFIER;
+	buf[2] = modifier;
 	buf[3] = NUL;
+	idx = 3;
+    }
+    if (IS_SPECIAL(c))
+    {
+	buf[idx] = K_SPECIAL;
+	buf[idx + 1] = K_SECOND(c);
+	buf[idx + 2] = K_THIRD(c);
+	buf[idx + 3] = NUL;
+	idx += 3;
     }
     else
-	buf[(*mb_char2bytes)(c, buf)] = NUL;
+	buf[(*mb_char2bytes)(c, buf + idx) + idx] = NUL;
     (void)ins_typebuf(buf, KeyNoremap, 0, !KeyTyped, cmd_silent);
 }
 
@@ -1571,33 +1582,43 @@ updatescript(int c)
 }
 
 /*
- * Convert "c" plus "mod_mask" to merge the effect of modifyOtherKeys into the
+ * Convert "c" plus "modifiers" to merge the effect of modifyOtherKeys into the
  * character.
  */
     int
-merge_modifyOtherKeys(int c_arg)
+merge_modifyOtherKeys(int c_arg, int *modifiers)
 {
     int c = c_arg;
 
-    if (mod_mask & MOD_MASK_CTRL)
+    if (*modifiers & MOD_MASK_CTRL)
     {
 	if ((c >= '`' && c <= 0x7f) || (c >= '@' && c <= '_'))
-	{
 	    c &= 0x1f;
-	    mod_mask &= ~MOD_MASK_CTRL;
-	}
 	else if (c == '6')
-	{
 	    // CTRL-6 is equivalent to CTRL-^
 	    c = 0x1e;
-	    mod_mask &= ~MOD_MASK_CTRL;
-	}
+#ifdef FEAT_GUI_GTK
+	// These mappings look arbitrary at the first glance, but in fact
+	// resemble quite exactly the behaviour of the GTK+ 1.2 GUI on my
+	// machine.  The only difference is BS vs. DEL for CTRL-8 (makes
+	// more sense and is consistent with usual terminal behaviour).
+	else if (c == '2')
+	    c = NUL;
+	else if (c >= '3' && c <= '7')
+	    c = c ^ 0x28;
+	else if (c == '8')
+	    c = BS;
+	else if (c == '?')
+	    c = DEL;
+#endif
+	if (c != c_arg)
+	    *modifiers &= ~MOD_MASK_CTRL;
     }
-    if ((mod_mask & (MOD_MASK_META | MOD_MASK_ALT))
+    if ((*modifiers & (MOD_MASK_META | MOD_MASK_ALT))
 	    && c >= 0 && c <= 127)
     {
 	c += 0x80;
-	mod_mask &= ~(MOD_MASK_META|MOD_MASK_ALT);
+	*modifiers &= ~(MOD_MASK_META|MOD_MASK_ALT);
     }
     return c;
 }
@@ -1640,8 +1661,11 @@ vgetc(void)
     }
     else
     {
-	mod_mask = 0x0;
+	mod_mask = 0;
+	vgetc_mod_mask = 0;
+	vgetc_char = 0;
 	last_recorded_len = 0;
+
 	for (;;)		// this is done twice if there are modifiers
 	{
 	    int did_inc = FALSE;
@@ -1834,10 +1858,11 @@ vgetc(void)
 		c = (*mb_ptr2char)(buf);
 	    }
 
-	    if (!no_reduce_keys)
-		// A modifier was not used for a mapping, apply it to ASCII
-		// keys.  Shift would already have been applied.
-		c = merge_modifyOtherKeys(c);
+	    if (vgetc_char == 0)
+	    {
+		vgetc_mod_mask = mod_mask;
+		vgetc_char = c;
+	    }
 
 	    break;
 	}
@@ -2147,7 +2172,7 @@ parse_queued_messages(void)
     for (i = 0; i < MAX_REPEAT_PARSE; ++i)
     {
 	// For Win32 mch_breakcheck() does not check for input, do it here.
-# if defined(MSWIN) && defined(FEAT_JOB_CHANNEL)
+# if (defined(MSWIN) || defined(__HAIKU__)) && defined(FEAT_JOB_CHANNEL)
 	channel_handle_events(FALSE);
 # endif
 
@@ -2192,7 +2217,7 @@ parse_queued_messages(void)
     // If the current window or buffer changed we need to bail out of the
     // waiting loop.  E.g. when a job exit callback closes the terminal window.
     if (curwin->w_id != old_curwin_id || curbuf->b_fnum != old_curbuf_fnum)
-	ins_char_typebuf(K_IGNORE);
+	ins_char_typebuf(K_IGNORE, 0);
 
     --entered;
 }
@@ -2222,6 +2247,66 @@ at_ctrl_x_key(void)
 	    && (p[2] & MOD_MASK_CTRL))
 	c = p[3] & 0x1f;
     return vim_is_ctrl_x_key(c);
+}
+
+/*
+ * Check if typebuf.tb_buf[] contains a modifer plus key that can be changed
+ * into just a key, apply that.
+ * Check from typebuf.tb_buf[typebuf.tb_off] to typebuf.tb_buf[typebuf.tb_off
+ * + "max_offset"].
+ * Return the length of the replaced bytes, zero if nothing changed.
+ */
+    static int
+check_simplify_modifier(int max_offset)
+{
+    int		offset;
+    char_u	*tp;
+
+    for (offset = 0; offset < max_offset; ++offset)
+    {
+	if (offset + 3 >= typebuf.tb_len)
+	    break;
+	tp = typebuf.tb_buf + typebuf.tb_off + offset;
+	if (tp[0] == K_SPECIAL && tp[1] == KS_MODIFIER)
+	{
+	    // A modifier was not used for a mapping, apply it to ASCII keys.
+	    // Shift would already have been applied.
+	    int modifier = tp[2];
+	    int	c = tp[3];
+	    int new_c = merge_modifyOtherKeys(c, &modifier);
+
+	    if (new_c != c)
+	    {
+		char_u	new_string[MB_MAXBYTES];
+		int	len;
+
+		if (offset == 0)
+		{
+		    // At the start: remember the character and mod_mask before
+		    // merging, in some cases, e.g. at the hit-return prompt,
+		    // they are put back in the typeahead buffer.
+		    vgetc_char = c;
+		    vgetc_mod_mask = tp[2];
+		}
+		len = mb_char2bytes(new_c, new_string);
+		if (modifier == 0)
+		{
+		    if (put_string_in_typebuf(offset, 4, new_string, len,
+							   NULL, 0, 0) == FAIL)
+		    return -1;
+		}
+		else
+		{
+		    tp[2] = modifier;
+		    if (put_string_in_typebuf(offset + 3, 1, new_string, len,
+							   NULL, 0, 0) == FAIL)
+		    return -1;
+		}
+		return len;
+	    }
+	}
+    }
+    return 0;
 }
 
 /*
@@ -2279,6 +2364,15 @@ handle_mapping(
 		    || ((compl_cont_status & CONT_LOCAL)
 			&& (tb_c1 == Ctrl_N || tb_c1 == Ctrl_P))))
     {
+#ifdef FEAT_GUI
+	if (gui.in_use && tb_c1 == CSI && typebuf.tb_len >= 2
+		&& typebuf.tb_buf[typebuf.tb_off + 1] == KS_MODIFIER)
+	{
+	    // The GUI code sends CSI KS_MODIFIER {flags}, but mappings expect
+	    // K_SPECIAL KS_MODIFIER {flags}.
+	    tb_c1 = K_SPECIAL;
+	}
+#endif
 #ifdef FEAT_LANGMAP
 	if (tb_c1 == K_SPECIAL)
 	    nolmaplen = 2;
@@ -2316,7 +2410,8 @@ handle_mapping(
 	    // Skip ":lmap" mappings if keys were mapped.
 	    if (mp->m_keys[0] == tb_c1
 		    && (mp->m_mode & local_State)
-		    && !(mp->m_simplified && seenModifyOtherKeys)
+		    && !(mp->m_simplified && seenModifyOtherKeys
+						     && typebuf.tb_maplen == 0)
 		    && ((mp->m_mode & LANGMAP) == 0 || typebuf.tb_maplen == 0))
 	    {
 #ifdef FEAT_LANGMAP
@@ -2337,7 +2432,7 @@ handle_mapping(
 		    if (mp->m_keys[mlen] != c2)
 #else
 		    if (mp->m_keys[mlen] !=
-			typebuf.tb_buf[typebuf.tb_off + mlen])
+					 typebuf.tb_buf[typebuf.tb_off + mlen])
 #endif
 			break;
 		}
@@ -2478,6 +2573,11 @@ handle_mapping(
 	    // like an incomplete key sequence.
 	    if (keylen == 0 && save_keylen == KEYLEN_PART_KEY)
 		keylen = KEYLEN_PART_KEY;
+
+	    // If no termcode matched, try to include the modifier into the
+	    // key.  This for when modifyOtherKeys is working.
+	    if (keylen == 0 && !no_reduce_keys)
+		keylen = check_simplify_modifier(max_mlen + 1);
 
 	    // When getting a partial match, but the last characters were not
 	    // typed, don't wait for a typed character to complete the

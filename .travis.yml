@@ -11,13 +11,13 @@ _anchors:
     - &normal
       BUILD=yes TEST=test FEATURES=normal CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     - &linux-huge
-      BUILD=yes TEST="scripttests test_libvterm" CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+      BUILD=yes TEST="scripttests test_libvterm" CFLAGS="--coverage -DUSE_GCOV_FLUSH" LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
       CONFOPT="--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
     - &osx-huge # macOS build
       BUILD=yes TEST=test FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
       CONFOPT="--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
     - &unittests
-      BUILD=no TEST=unittests CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=yes
+      BUILD=no TEST=unittests CFLAGS="--coverage -DUSE_GCOV_FLUSH" LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=yes
     - &asan # ASAN build
       SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
       ASAN_OPTIONS="print_stacktrace=1 log_path=asan" LSAN_OPTIONS="suppressions=$TRAVIS_BUILD_DIR/src/testdir/lsan-suppress.txt"
@@ -125,7 +125,12 @@ script:
       # Append various warning flags to CFLAGS.
       # BSD sed needs backup extension specified.
       sed -i.bak -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
-      sed -i.bak -f ci/config.mk.${CC}.sed ${SRCDIR}/auto/config.mk
+      if [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
+        # On macOS, the entity of gcc is clang.
+        sed -i.bak -f ci/config.mk.clang.sed ${SRCDIR}/auto/config.mk
+      else
+        sed -i.bak -f ci/config.mk.${CC}.sed ${SRCDIR}/auto/config.mk
+      fi
       make ${SHADOWOPT} -j${NPROC}
     fi
   - echo -en "travis_fold:end:build\\r\\033[0K"
@@ -141,11 +146,10 @@ script:
   - do_test make ${SHADOWOPT} ${TEST} && FOLD_MARKER=travis_fold
   - echo -en "${FOLD_MARKER}:end:test\\r\\033[0K"
 
-
-# instead of a 2*2*8 matrix (2*os + 2*compiler + 8*env),
-# exclude some builds on mac os x and linux
-# on mac os x "tiny" is always without GUI
-# linux: 2*compiler + 5*env + mac: 2*compiler + 2*env
+# Instead of using all environments with both compilers on both systems,
+# exclude some builds on mac os x and linux.
+# On mac os x "tiny" is always without GUI, use 2 compilers in 2 environments.
+# Linux: 2 compilers on some of the environments + gcc on os390
 jobs:
   include:
     - <<: *osx

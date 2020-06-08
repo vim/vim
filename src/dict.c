@@ -105,28 +105,37 @@ rettv_dict_set(typval_T *rettv, dict_T *d)
     void
 dict_free_contents(dict_T *d)
 {
+    hashtab_free_contents(&d->dv_hashtab);
+}
+
+/*
+ * Clear hashtab "ht" and dict items it contains.
+ */
+    void
+hashtab_free_contents(hashtab_T *ht)
+{
     int		todo;
     hashitem_T	*hi;
     dictitem_T	*di;
 
     // Lock the hashtab, we don't want it to resize while freeing items.
-    hash_lock(&d->dv_hashtab);
-    todo = (int)d->dv_hashtab.ht_used;
-    for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
+    hash_lock(ht);
+    todo = (int)ht->ht_used;
+    for (hi = ht->ht_array; todo > 0; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
 	    // Remove the item before deleting it, just in case there is
 	    // something recursive causing trouble.
 	    di = HI2DI(hi);
-	    hash_remove(&d->dv_hashtab, hi);
+	    hash_remove(ht, hi);
 	    dictitem_free(di);
 	    --todo;
 	}
     }
 
-    // The hashtab is still locked, it has to be re-initialized anyway
-    hash_clear(&d->dv_hashtab);
+    // The hashtab is still locked, it has to be re-initialized anyway.
+    hash_clear(ht);
 }
 
     static void
@@ -770,7 +779,7 @@ get_literal_key(char_u **arg, typval_T *tv)
     for (p = *arg; ASCII_ISALNUM(*p) || *p == '_' || *p == '-'; ++p)
 	;
     tv->v_type = VAR_STRING;
-    tv->vval.v_string = vim_strnsave(*arg, (int)(p - *arg));
+    tv->vval.v_string = vim_strnsave(*arg, p - *arg);
 
     *arg = skipwhite(p);
     return OK;
@@ -782,8 +791,9 @@ get_literal_key(char_u **arg, typval_T *tv)
  * Return OK or FAIL.  Returns NOTDONE for {expr}.
  */
     int
-eval_dict(char_u **arg, typval_T *rettv, int evaluate, int literal)
+eval_dict(char_u **arg, typval_T *rettv, int flags, int literal)
 {
+    int		evaluate = flags & EVAL_EVALUATE;
     dict_T	*d = NULL;
     typval_T	tvkey;
     typval_T	tv;
@@ -791,6 +801,7 @@ eval_dict(char_u **arg, typval_T *rettv, int evaluate, int literal)
     dictitem_T	*item;
     char_u	*start = skipwhite(*arg + 1);
     char_u	buf[NUMBUFLEN];
+    int		vim9script = current_sctx.sc_version == SCRIPT_VERSION_VIM9;
 
     /*
      * First check if it's not a curly-braces thing: {expr}.
@@ -799,9 +810,9 @@ eval_dict(char_u **arg, typval_T *rettv, int evaluate, int literal)
      * first item.
      * But {} is an empty Dictionary.
      */
-    if (*start != '}')
+    if (!vim9script && *start != '}')
     {
-	if (eval1(&start, &tv, FALSE) == FAIL)	// recursive!
+	if (eval1(&start, &tv, 0) == FAIL)	// recursive!
 	    return FAIL;
 	if (*start == '}')
 	    return NOTDONE;
@@ -821,7 +832,7 @@ eval_dict(char_u **arg, typval_T *rettv, int evaluate, int literal)
     {
 	if ((literal
 		? get_literal_key(arg, &tvkey)
-		: eval1(arg, &tvkey, evaluate)) == FAIL)	// recursive!
+		: eval1(arg, &tvkey, flags)) == FAIL)	// recursive!
 	    goto failret;
 
 	if (**arg != ':')
@@ -843,7 +854,7 @@ eval_dict(char_u **arg, typval_T *rettv, int evaluate, int literal)
 	}
 
 	*arg = skipwhite(*arg + 1);
-	if (eval1(arg, &tv, evaluate) == FAIL)	// recursive!
+	if (eval1(arg, &tv, flags) == FAIL)	// recursive!
 	{
 	    if (evaluate)
 		clear_tv(&tvkey);

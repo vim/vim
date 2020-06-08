@@ -111,6 +111,18 @@ PUSH "\e[20h"
 INKEY 0 Enter
   output "\x0d\x0a"
 
+!Unmodified F1 is SS3 P
+INKEY 0 F1
+  output "\eOP"
+
+!Modified F1 is CSI P
+INKEY S F1
+  output "\e[1;2P"
+INKEY A F1
+  output "\e[1;3P"
+INKEY C F1
+  output "\e[1;5P"
+
 !Keypad in DECKPNM
 INKEY 0 KP0
   output "0"

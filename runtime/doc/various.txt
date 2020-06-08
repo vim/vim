@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.2.  Last change: 2020 Apr 13
+*various.txt*   For Vim version 8.2.  Last change: 2020 May 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -251,14 +251,20 @@ g8			Print the hex values of the bytes used in the
 			it to append a Vim command.  See |:bar|.
 
 			If {cmd} contains "%" it is expanded to the current
-			file name.  Special characters are not escaped, use
-			quotes to avoid their special meaning: >
+			file name, "#" is expanded to the alternate file name.
+			Special characters in the file name are not escaped,
+			use quotes to avoid their special meaning: >
 				:!ls "%"
-<			If the file name contains a "$" single quotes might
-			work better (but a single quote causes trouble): >
+<			If the file name contains a "$" then single quotes
+			might work better, but this only works if the file
+			name does not contain a single quote: >
 				:!ls '%'
 <			This should always work, but it's more typing: >
 				:exe "!ls " . shellescape(expand("%"))
+<			To get a literal "%" or "#" prepend it with a
+			backslash.  For example, to list all files starting
+			with "%": >
+				:!ls \%*
 <
 			A newline character ends {cmd}, what follows is
 			interpreted as a following ":" command.  However, if

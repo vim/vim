@@ -132,15 +132,31 @@ PUSH "\e[12\n;3X"
 
 !OSC BEL
 PUSH "\e]1;Hello\x07"
-  osc "1;Hello"
+  osc [1 "Hello"]
 
 !OSC ST (7bit)
 PUSH "\e]1;Hello\e\\"
-  osc "1;Hello"
+  osc [1 "Hello"]
 
 !OSC ST (8bit)
 PUSH "\x{9d}1;Hello\x9c"
-  osc "1;Hello"
+  osc [1 "Hello"]
+
+!OSC in parts
+PUSH "\e]52;abc"
+  osc [52 "abc"
+PUSH "def"
+  osc "def"
+PUSH "ghi\e\\"
+  osc "ghi"]
+
+!OSC BEL without semicolon 
+PUSH "\e]1234\x07"
+  osc [1234 ]
+
+!OSC ST without semicolon 
+PUSH "\e]1234\e\\"
+  osc [1234 ]
 
 !Escape cancels OSC, starts Escape
 PUSH "\e]Something\e9"
@@ -152,20 +168,21 @@ PUSH "\e]12\x{18}AB"
 
 !C0 in OSC interrupts and continues
 PUSH "\e]2;\nBye\x07"
+  osc [2 ""
   control 10
-  osc "2;Bye"
+  osc "Bye"]
 
 !DCS BEL
 PUSH "\ePHello\x07"
-  dcs "Hello"
+  dcs ["Hello"]
 
 !DCS ST (7bit)
 PUSH "\ePHello\e\\"
-  dcs "Hello"
+  dcs ["Hello"]
 
 !DCS ST (8bit)
 PUSH "\x{90}Hello\x9c"
-  dcs "Hello"
+  dcs ["Hello"]
 
 !Escape cancels DCS, starts Escape
 PUSH "\ePSomething\e9"
@@ -177,8 +194,9 @@ PUSH "\eP12\x{18}AB"
 
 !C0 in OSC interrupts and continues
 PUSH "\ePBy\ne\x07"
+  dcs ["By"
   control 10
-  dcs "Bye"
+  dcs "e"]
 
 !NUL ignored
 PUSH "\x{00}"

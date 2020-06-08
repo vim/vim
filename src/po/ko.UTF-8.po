@@ -2780,9 +2780,6 @@ msgstr "모르는 빔 옵션"
 msgid "keyboard interrupt"
 msgstr "키보드 인터럽트"
 
-msgid "vim error"
-msgstr "빔 에러"
-
 msgid "cannot create buffer/window command: object is being deleted"
 msgstr "버퍼/창 명령을 만들 수 없습니다: 객체가 지워집니다"
 
@@ -3096,7 +3093,7 @@ msgstr "-W <scriptout>\t모든 입력된 명령을 <scriptout> 파일에 저장"
 msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\t암호화된 파일 고치기"
 
-msgid "-display <display>\tConnect vim to this particular X-server"
+msgid "-display <display>\tConnect Vim to this particular X-server"
 msgstr "-display <display>\t빔을 특정 X-서버와 연결"
 
 msgid "-X\t\t\tDo not connect to X server"
@@ -3170,10 +3167,10 @@ msgstr ""
 "\n"
 "gvim이 알고 있는 인자 (아테나 판):\n"
 
-msgid "-display <display>\tRun vim on <display>"
+msgid "-display <display>\tRun Vim on <display>"
 msgstr "-display <display>\t빔을 <display>에서 실행"
 
-msgid "-iconic\t\tStart vim iconified"
+msgid "-iconic\t\tStart Vim iconified"
 msgstr "-iconic\t\t아이콘 상태로 빔 시작"
 
 msgid "-background <color>\tUse <color> for the background (also: -bg)"
@@ -3219,7 +3216,7 @@ msgstr ""
 "\n"
 "gvim이 알고있는 인자 (GTK+ 판):\n"
 
-msgid "-display <display>\tRun vim on <display> (also: --display)"
+msgid "-display <display>\tRun Vim on <display> (also: --display)"
 msgstr "-display <display>\t빔을 <display>에서 실행 (also: --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"
@@ -6811,7 +6808,7 @@ msgid "list index out of range"
 msgstr "list 색인이 범위를 벗어났습니다"
 
 #, c-format
-#~ msgid "internal error: failed to get vim list item %d"
+#~ msgid "internal error: failed to get Vim list item %d"
 #~ msgstr ""
 
 #~ msgid "slice step cannot be zero"
@@ -6822,7 +6819,7 @@ msgstr "list 색인이 범위를 벗어났습니다"
 #~ msgstr ""
 
 #, c-format
-#~ msgid "internal error: no vim list item %d"
+#~ msgid "internal error: no Vim list item %d"
 #~ msgstr ""
 
 #~ msgid "internal error: not enough list items"
@@ -6931,19 +6928,19 @@ msgstr "버퍼 이름을 변경할 수 없습니다"
 #~ msgid "E858: Eval did not return a valid python object"
 #~ msgstr ""
 
-#~ msgid "E859: Failed to convert returned python object to vim value"
+#~ msgid "E859: Failed to convert returned python object to a Vim value"
 #~ msgstr ""
 
 #, c-format
-#~ msgid "unable to convert %s to vim dictionary"
+#~ msgid "unable to convert %s to a Vim dictionary"
 #~ msgstr ""
 
 #, c-format
-msgid "unable to convert %s to vim list"
+msgid "unable to convert %s to a Vim list"
 msgstr "%s을(를) vim list로 변경할 수 없습니다"
 
 #, c-format
-#~ msgid "unable to convert %s to vim structure"
+#~ msgid "unable to convert %s to a Vim structure"
 #~ msgstr ""
 
 #~ msgid "internal error: NULL reference passed"

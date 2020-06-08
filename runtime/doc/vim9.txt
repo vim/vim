@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Apr 30
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 May 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -41,9 +41,10 @@ A secondary goal is to avoid Vim-specific constructs and get closer to
 commonly used programming languages, such as JavaScript, TypeScript and Java.
 
 The performance improvements can only be achieved by not being 100% backwards
-compatible.  For example, in a function the arguments are not available in the
-"a:" dictionary, because creating that dictionary adds quite a lot of
-overhead.  Other differences are more subtle, such as how errors are handled.
+compatible.  For example, making function arguments available in the
+"a:" dictionary adds quite a lot of overhead.  In a Vim9 function this
+dictionary is not available.  Other differences are more subtle, such as how
+errors are handled.
 
 The Vim9 script syntax and semantics are used in:
 - a function defined with the `:def` command
@@ -79,12 +80,16 @@ Vim9 functions ~
 A function defined with `:def` is compiled.  Execution is many times faster,
 often 10x to 100x times.
 
-Many errors are already found when compiling, before the function is called.
+Many errors are already found when compiling, before the function is executed.
 The syntax is strict, to enforce code that is easy to read and understand.
 
-`:def` has no extra arguments like `:function` does: "range", "abort", "dict"
-or "closure".  A `:def` function always aborts on an error, does not get a
-range passed and cannot be a "dict" function.
+Compilation is done when the function is first called, or when the
+`:defcompile` command is encountered in the script where the function was
+defined.
+
+`:def` has no options like `:function` does: "range", "abort", "dict" or
+"closure".  A `:def` function always aborts on an error, does not get a range
+passed and cannot be a "dict" function.
 
 The argument types and return type need to be specified.  The "any" type can
 be used, type checking will then be done at runtime, like with legacy
@@ -118,17 +123,16 @@ search for the function in this order:
 - Local to the current scope and outer scopes up to the function scope.
 - Local to the current script file.
 - Imported functions, see `:import`.
-In all cases the function must be defined before used.  To make a call cycle a
-global function needs to be used. (TODO: can we fix this?)
+In all cases the function must be defined before used.  That is when it is
+first called or when `:defcompile` causes the call to be compiled.
 
 The result is that functions and variables without a namespace can always be
 found in the script, either defined there or imported.  Global functions and
 variables could be defined anywhere (good luck finding where!).
 
-Global functions can be defined and deleted at nearly any time.  In Vim9
-script script-local functions are defined once when the script is sourced and
-cannot be deleted.  Except that when the same script is sourced again all
-existing script-local functions and variables are deleted.
+Global functions can be still be defined and deleted at nearly any time.  In
+Vim9 script script-local functions are defined once when the script is sourced
+and cannot be deleted or replaced.
 
 
 Variable declarations with :let and :const ~
@@ -163,8 +167,8 @@ The declaration must be done earlier: >
 	endif
 	echo inner
 
-To intentionally use a variable that won't be available later, a block can be
-used: >
+To intentionally avoid a variable being available later, a block can be used:
+>
 	{
 	   let temp = 'temp'
 	   ...
@@ -388,7 +392,9 @@ THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 			`:def`, but it is not possible to nest `:def` inside
 			`:function`, for backwards compatibility.
 
-			[!] is used as with `:function`.
+			[!] is used as with `:function`.  Note that in Vim9
+			script script-local functions cannot be deleted or
+			redefined.
 
 							*:enddef*
 :enddef			End of a function defined with `:def`.
@@ -399,6 +405,10 @@ variables can be accessed without the "s:" prefix.  They must be defined
 before the function.  If the script the function is defined in is legacy
 script, then script-local variables must be accessed with the "s:" prefix.
 
+						*:defc* *:defcompile*
+:defc[ompile]		Compile functions defined in the current script that
+			were not compiled yet.
+			This will report errors found during the compilation.
 
 						*:disa* *:disassemble*
 :disa[ssemble] {func}	Show the instructions generated for {func}.

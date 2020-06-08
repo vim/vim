@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.2.  Last change: 2020 Feb 29
+*syntax.txt*	For Vim version 8.2.  Last change: 2020 Jun 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3636,6 +3636,26 @@ DEFINING CASE						*:syn-case* *E390*
 :sy[ntax] case
 	Show either "syntax case match" or "syntax case ignore" (translated).
 
+
+DEFINING FOLDLEVEL					*:syn-foldlevel*
+
+:sy[ntax] foldlevel [start | minimum]
+	This defines how the foldlevel of a line is computed when using
+	foldmethod=syntax (see |fold-syntax| and |:syn-fold|):
+
+	start:		Use level of item containing start of line.
+	minimum:	Use lowest local-minimum level of items on line.
+
+	The default is 'start'.  Use 'minimum' to search a line horizontally
+	for the lowest level contained on the line that is followed by a
+	higher level.  This produces more natural folds when syntax items
+	may close and open horizontally within a line.
+
+:sy[ntax] foldlevel
+	Show either "syntax foldlevel start" or "syntax foldlevel minimum".
+
+	{not meaningful when Vim was compiled without |+folding| feature}
+
 SPELL CHECKING						*:syn-spell*
 
 :sy[ntax] spell [toplevel | notoplevel | default]
@@ -4099,6 +4119,8 @@ This will make each {} block form one fold.
 The fold will start on the line where the item starts, and end where the item
 ends.  If the start and end are within the same line, there is no fold.
 The 'foldnestmax' option limits the nesting of syntax folds.
+See |:syn-foldlevel| to control how the foldlevel of a line is computed
+from its syntax items.
 {not available when Vim was compiled without |+folding| feature}
 
 
@@ -4857,7 +4879,12 @@ term={attr-list}			*attr-list* *highlight-term* *E418*
 	have the same effect.
 	"undercurl" is a curly underline.  When "undercurl" is not possible
 	then "underline" is used.  In general "undercurl" and "strikethrough"
-	is only available in the GUI.  The color is set with |highlight-guisp|.
+	are only available in the GUI and some terminals.  The color is set
+	with |highlight-guisp| or |highlight-ctermul|.  You can try these
+	termcap entries to make undercurl work in a terminal: >
+	    let &t_Cs = "\e[4:3m"
+	    let &t_Ce = "\e[4:0m"
+
 
 start={term-list}				*highlight-start* *E422*
 stop={term-list}				*term-list* *highlight-stop*
@@ -4901,6 +4928,10 @@ cterm={attr-list}					*highlight-cterm*
 
 ctermfg={color-nr}				*highlight-ctermfg* *E421*
 ctermbg={color-nr}				*highlight-ctermbg*
+ctermul={color-nr}				*highlight-ctermul*
+	These give the foreground (ctermfg), background (ctermbg) and
+	underline (ctermul) color to use in the terminal.
+
 	The {color-nr} argument is a color number.  Its range is zero to
 	(not including) the number given by the termcap entry "Co".
 	The actual color with this number depends on the type of terminal
@@ -4978,11 +5009,11 @@ ctermbg={color-nr}				*highlight-ctermbg*
 	needs to reset the color when exiting.	This is done with the "op"
 	termcap entry |t_op|.  If this doesn't work correctly, try setting the
 	't_op' option in your .vimrc.
-							*E419* *E420*
-	When Vim knows the normal foreground and background colors, "fg" and
-	"bg" can be used as color names.  This only works after setting the
-	colors for the Normal group and for the MS-Windows console.  Example,
-	for reverse video: >
+							*E419* *E420* *E453*
+	When Vim knows the normal foreground, background and underline colors,
+	"fg", "bg" and "ul" can be used as color names.  This only works after
+	setting the colors for the Normal group and for the MS-Windows
+	console.  Example, for reverse video: >
 	    :highlight Visual ctermfg=bg ctermbg=fg
 <	Note that the colors are used that are valid at the moment this
 	command are given.  If the Normal group colors are changed later, the

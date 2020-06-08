@@ -2720,9 +2720,6 @@ msgstr "onbekende vim-optie"
 msgid "keyboard interrupt"
 msgstr "toetsenbord-interrupt"
 
-msgid "vim error"
-msgstr "vim-fout"
-
 msgid "cannot create buffer/window command: object is being deleted"
 msgstr "aanmaken buffer-/vensteropdracht is mislukt: object wordt verwijderd"
 

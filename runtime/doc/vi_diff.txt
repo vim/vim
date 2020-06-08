@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 8.2.  Last change: 2019 Dec 17
+*vi_diff.txt*   For Vim version 8.2.  Last change: 2020 Jun 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -135,7 +135,6 @@ Support for different systems.
 	- Amiga (500, 1000, 1200, 2000, 3000, 4000, ...).
 	- MS-Windows
 	- VMS
-	- BeOS
 	- Macintosh
 	- IBM OS/390
 	Note that on some systems features need to be disabled to reduce
@@ -162,7 +161,7 @@ Graphical User Interface (GUI).				|gui|
 	define your own menus.  Better support for CTRL/SHIFT/ALT keys in
 	combination with special keys and mouse.  Supported for various
 	platforms, such as X11 (with Motif and Athena interfaces), GTK, Win32
-	(Windows 95 and later), BeOS, Amiga and Macintosh.
+	(Windows XP and later), Amiga and Macintosh.
 
 Multiple windows and buffers.				|windows.txt|
 	Vim can split the screen into several windows, each editing a

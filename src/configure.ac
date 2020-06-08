@@ -62,6 +62,18 @@ if test x"$ac_cv_prog_cc_c99" != xno; then
   fi
 fi
 
+dnl If $SOURCE_DATE_EPOCH is present in the environment, use that as the
+dnl "compiled" timestamp in :version's output.  Attempt to get the formatted
+dnl date using GNU date syntax, BSD date syntax, and finally falling back to
+dnl just using the current time.
+if test -n "$SOURCE_DATE_EPOCH"; then
+  DATE_FMT="%b %d %Y %H:%M:%S"
+  BUILD_DATE=$(LC_ALL=C date -u -d "@$SOURCE_DATE_EPOCH" "+$DATE_FMT" 2>/dev/null || LC_ALL=C date -u -r "$SOURCE_DATE_EPOCH" "+$DATE_FMT" 2>/dev/null || LC_ALL=C date -u "+$DATE_FMT")
+  AC_DEFINE_UNQUOTED(BUILD_DATE, ["$BUILD_DATE"])
+  BUILD_DATE_MSG=-"echo -e '=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\nNOTE: build date/time is fixed: $BUILD_DATE\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-='"
+  AC_SUBST(BUILD_DATE_MSG)
+fi
+
 dnl Check for the flag that fails if stuff are missing.
 
 AC_MSG_CHECKING(--enable-fail-if-missing argument)
@@ -145,14 +157,6 @@ if test -f ./toolcheck; then
 fi
 
 OS_EXTRA_SRC=""; OS_EXTRA_OBJ=""
-
-dnl Check for BeOS, which needs an extra source file
-AC_MSG_CHECKING(for BeOS)
-case `uname` in
-    BeOS)	OS_EXTRA_SRC=os_beos.c; OS_EXTRA_OBJ=objects/os_beos.o
-		BEOS=yes; AC_MSG_RESULT(yes);;
-    *)		BEOS=no; AC_MSG_RESULT(no);;
-esac
 
 AC_MSG_CHECKING(for Haiku)
 case `uname` in
@@ -4059,6 +4063,21 @@ AC_MSG_CHECKING(for rename)
 AC_TRY_LINK([#include <stdio.h>], [rename("this", "that")],
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_RENAME),
 	AC_MSG_RESULT(no))
+
+dnl check for dirfd()
+AC_MSG_CHECKING(for dirfd)
+AC_TRY_COMPILE(
+[#include <sys/types.h>
+#include <dirent.h>],
+[DIR * dir=opendir("dirname"); dirfd(dir);],
+AC_MSG_RESULT(yes); AC_DEFINE(HAVE_DIRFD), AC_MSG_RESULT(not usable))
+
+dnl check for flock()
+AC_MSG_CHECKING(for flock)
+AC_TRY_COMPILE(
+[#include <sys/file.h>],
+[flock(10, LOCK_SH);],
+AC_MSG_RESULT(yes); AC_DEFINE(HAVE_FLOCK), AC_MSG_RESULT(not usable))
 
 dnl sysctl() may exist but not the arguments we use
 AC_MSG_CHECKING(for sysctl)

@@ -817,7 +817,7 @@ pum_set_selected(int n, int repeat UNUSED)
 		{
 		    // Already a "wipeout" buffer, make it empty.
 		    while (!BUFEMPTY())
-			ml_delete((linenr_T)1, FALSE);
+			ml_delete((linenr_T)1);
 		}
 		else
 		{
@@ -860,7 +860,7 @@ pum_set_selected(int n, int repeat UNUSED)
 			}
 		    }
 		    // delete the empty last line
-		    ml_delete(curbuf->b_ml.ml_line_count, FALSE);
+		    ml_delete(curbuf->b_ml.ml_line_count);
 
 		    // Increase the height of the preview window to show the
 		    // text, but no more than 'previewheight' lines.
@@ -1318,7 +1318,7 @@ ui_post_balloon(char_u *mesg, list_T *list)
 	balloon_array = ALLOC_CLEAR_MULT(pumitem_T, list->lv_len);
 	if (balloon_array == NULL)
 	    return;
-	range_list_materialize(list);
+	CHECK_LIST_MATERIALIZE(list);
 	for (idx = 0, li = list->lv_first; li != NULL; li = li->li_next, ++idx)
 	{
 	    char_u *text = tv_get_string_chk(&li->li_tv);

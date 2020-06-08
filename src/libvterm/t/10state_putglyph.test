@@ -30,6 +30,13 @@ PUSH "\xEF\xBC\x90 "
   putglyph 0xff10 2 0,0
   putglyph 0x20 1 0,2
 
+!UTF-8 emoji wide char
+# U+1F600 = 0xF0 0x9F 0x98 0x80  name: GRINNING FACE
+RESET
+PUSH "\xF0\x9F\x98\x80 "
+  putglyph 0x1f600 2 0,0
+  putglyph 0x20 1 0,2
+
 !UTF-8 combining chars
 # U+0301 = 0xCC 0x81  name: COMBINING ACUTE
 RESET

@@ -826,12 +826,7 @@ vim_main2(void)
     // done after the clipboard is available and all initial commands that may
     // modify the 'clipboard' setting have run; i.e. just before entering the
     // main loop.
-    {
-	int default_regname = 0;
-
-	adjust_clip_reg(&default_regname);
-	set_reg_var(default_regname);
-    }
+    reset_reg_var();
 #endif
 
 #if defined(FEAT_DIFF)
@@ -1576,6 +1571,7 @@ getout(int exitval)
 	tabpage_T	*next_tp;
 	buf_T		*buf;
 	win_T		*wp;
+	int		unblock = 0;
 
 	// Trigger BufWinLeave for all windows, but only once per buffer.
 	for (tp = first_tabpage; tp != NULL; tp = next_tp)
@@ -1617,7 +1613,17 @@ getout(int exitval)
 		    // autocmd deleted the buffer
 		    break;
 	    }
+
+	// deathtrap() blocks autocommands, but we do want to trigger
+	// VimLeavePre.
+	if (is_autocmd_blocked())
+	{
+	    unblock_autocmds();
+	    ++unblock;
+	}
 	apply_autocmds(EVENT_VIMLEAVEPRE, NULL, NULL, FALSE, curbuf);
+	if (unblock)
+	    block_autocmds();
     }
 
 #ifdef FEAT_VIMINFO
@@ -3562,7 +3568,7 @@ usage(void)
 #endif
 #if (defined(UNIX) || defined(VMS)) && defined(FEAT_X11)
 # if defined(FEAT_GUI_X11) && !defined(FEAT_GUI_GTK)
-    main_msg(_("-display <display>\tConnect vim to this particular X-server"));
+    main_msg(_("-display <display>\tConnect Vim to this particular X-server"));
 # endif
     main_msg(_("-X\t\t\tDo not connect to X server"));
 #endif
@@ -3599,8 +3605,8 @@ usage(void)
 #   endif
 #  endif
 # endif
-    main_msg(_("-display <display>\tRun vim on <display>"));
-    main_msg(_("-iconic\t\tStart vim iconified"));
+    main_msg(_("-display <display>\tRun Vim on <display>"));
+    main_msg(_("-iconic\t\tStart Vim iconified"));
     main_msg(_("-background <color>\tUse <color> for the background (also: -bg)"));
     main_msg(_("-foreground <color>\tUse <color> for normal text (also: -fg)"));
     main_msg(_("-font <font>\t\tUse <font> for normal text (also: -fn)"));
@@ -3621,7 +3627,7 @@ usage(void)
     main_msg(_("-font <font>\t\tUse <font> for normal text (also: -fn)"));
     main_msg(_("-geometry <geom>\tUse <geom> for initial geometry (also: -geom)"));
     main_msg(_("-reverse\t\tUse reverse video (also: -rv)"));
-    main_msg(_("-display <display>\tRun vim on <display> (also: --display)"));
+    main_msg(_("-display <display>\tRun Vim on <display> (also: --display)"));
     main_msg(_("--role <role>\tSet a unique role to identify the main window"));
     main_msg(_("--socketid <xid>\tOpen Vim inside another GTK widget"));
     main_msg(_("--echo-wid\t\tMake gvim echo the Window ID on stdout"));

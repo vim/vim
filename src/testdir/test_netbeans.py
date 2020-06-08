@@ -102,7 +102,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                   'setReadOnly_Test' : '3:setReadOnly!87\n',
                   'close_Test' : '3:close!88\n',
                   'specialKeys_Test' : '0:specialKeys!89 "F12 F13"\n',
-                  'detach_Test' : '2:close!90\n1:close!91\nDETACH\n'
+                  'nbbufwrite_Test' : '4:editFile!90 "XnbBuffer"\n4:netbeansBuffer!91 T\n',
+                  'detach_Test' : '2:close!92\n1:close!93\nDETACH\n'
                 }
                 # execute the specified test
                 if cmd not in testmap:
@@ -120,7 +121,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
             if len(response) > 0:
                 self.request.sendall(response.encode('utf-8'))
-                # Write the respoinse into the file, so that the test can knows
+                # Write the response into the file, so that the test can knows
                 # the command was sent.
                 with open("Xnetbeans", "a") as myfile:
                     myfile.write('send: ' + response)

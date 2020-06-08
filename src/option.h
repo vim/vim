@@ -141,12 +141,13 @@
 #define FO_ONE_LETTER	'1'
 #define FO_WHITE_PAR	'w'	// trailing white space continues paragr.
 #define FO_AUTO		'a'	// automatic formatting
+#define FO_RIGOROUS_TW	']'     // respect textwidth rigorously
 #define FO_REMOVE_COMS	'j'	// remove comment leaders when joining lines
 #define FO_PERIOD_ABBR	'p'	// don't break a single space after a period
 
 #define DFLT_FO_VI	"vt"
 #define DFLT_FO_VIM	"tcq"
-#define FO_ALL		"tcroq2vlb1mMBn,awjp"	// for do_set()
+#define FO_ALL		"tcroq2vlb1mMBn,aw]jp"	// for do_set()
 
 // characters for the p_cpo option:
 #define CPO_ALTREAD	'a'	// ":read" sets alternate file name
@@ -820,6 +821,7 @@ EXTERN int	p_ru;		// 'ruler'
 EXTERN char_u	*p_ruf;		// 'rulerformat'
 #endif
 EXTERN char_u	*p_pp;		// 'packpath'
+EXTERN char_u	*p_qftf;	// 'quickfixtextfunc'
 EXTERN char_u	*p_rtp;		// 'runtimepath'
 EXTERN long	p_sj;		// 'scrolljump'
 #if defined(MSWIN) && defined(FEAT_GUI)
