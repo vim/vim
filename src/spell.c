@@ -2002,7 +2002,7 @@ did_set_spelllang(win_T *wp)
 	region = NULL;
 	len = (int)STRLEN(lang);
 
-	if (!valid_spellang(lang))
+	if (!valid_spelllang(lang))
 	    continue;
 
 	if (STRCMP(lang, "cjk") == 0)
@@ -4303,10 +4303,10 @@ expand_spelling(
 }
 
 /*
- * Return TRUE if "val" is a valid 'spellang' value.
+ * Return TRUE if "val" is a valid 'spelllang' value.
  */
     int
-valid_spellang(char_u *val)
+valid_spelllang(char_u *val)
 {
     return valid_name(val, ".-_,@");
 }
