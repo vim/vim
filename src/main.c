@@ -793,7 +793,7 @@ vim_main2(void)
 
 #if defined(FEAT_TERMRESPONSE)
     // Must be done before redrawing, puts a few characters on the screen.
-    may_req_ambiguous_char_width();
+    check_terminal_behavior();
 #endif
 
     RedrawingDisabled = 0;

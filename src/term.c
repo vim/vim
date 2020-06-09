@@ -126,6 +126,9 @@ static termrequest_T crv_status = TERMREQUEST_INIT;
 // Request Cursor position report:
 static termrequest_T u7_status = TERMREQUEST_INIT;
 
+// Request xterm compatibility check:
+static termrequest_T xcc_status = TERMREQUEST_INIT;
+
 #  ifdef FEAT_TERMINAL
 // Request foreground color report:
 static termrequest_T rfg_status = TERMREQUEST_INIT;
@@ -152,6 +155,7 @@ static termrequest_T winpos_status = TERMREQUEST_INIT;
 static termrequest_T *all_termrequests[] = {
     &crv_status,
     &u7_status,
+    &xcc_status,
 #  ifdef FEAT_TERMINAL
     &rfg_status,
 #  endif
@@ -1428,6 +1432,7 @@ static char_u	termleader[256 + 1];	    // for check_termcode()
 #ifdef FEAT_TERMRESPONSE
 static int	check_for_codes = FALSE;    // check for key code response
 static int	is_not_xterm = FALSE;	    // recognized not-really-xterm
+static int	xcc_test_failed = FALSE;    // xcc_status check failed
 #endif
 
     static struct builtin_term *
@@ -3605,40 +3610,80 @@ may_req_termresponse(void)
 }
 
 /*
- * Check how the terminal treats ambiguous character width (UAX #11).
- * First, we move the cursor to (1, 0) and print a test ambiguous character
- * \u25bd (WHITE DOWN-POINTING TRIANGLE) and query current cursor position.
- * If the terminal treats \u25bd as single width, the position is (1, 1),
- * or if it is treated as double width, that will be (1, 2).
- * This function has the side effect that changes cursor position, so
- * it must be called immediately after entering termcap mode.
+ * Send sequences to the terminal and check with t_u7 how the cursor moves, to
+ * find out properties of the terminal.
  */
     void
-may_req_ambiguous_char_width(void)
+check_terminal_behavior(void)
 {
+    int	    did_send = FALSE;
+
+    if (!can_get_termresponse() || starting != 0 || *T_U7 == NUL)
+	return;
+
     if (u7_status.tr_progress == STATUS_GET
-	    && can_get_termresponse()
-	    && starting == 0
-	    && *T_U7 != NUL
 	    && !option_was_set((char_u *)"ambiwidth"))
     {
 	char_u	buf[16];
 
-	LOG_TR(("Sending U7 request"));
+	// Ambiguous width check.
+	// Check how the terminal treats ambiguous character width (UAX #11).
+	// First, we move the cursor to (1, 0) and print a test ambiguous
+	// character \u25bd (WHITE DOWN-POINTING TRIANGLE) and then query
+	// the current cursor position.  If the terminal treats \u25bd as
+	// single width, the position is (1, 1), or if it is treated as double
+	// width, that will be (1, 2).  This function has the side effect that
+	// changes cursor position, so it must be called immediately after
+	// entering termcap mode.
+	LOG_TR(("Sending request for ambiwidth check"));
 	// Do this in the second row.  In the first row the returned sequence
 	// may be CSI 1;2R, which is the same as <S-F3>.
 	term_windgoto(1, 0);
-	buf[mb_char2bytes(0x25bd, buf)] = 0;
+	buf[mb_char2bytes(0x25bd, buf)] = NUL;
 	out_str(buf);
 	out_str(T_U7);
 	termrequest_sent(&u7_status);
 	out_flush();
+	did_send = TRUE;
 
 	// This overwrites a few characters on the screen, a redraw is needed
 	// after this. Clear them out for now.
 	screen_stop_highlight();
 	term_windgoto(1, 0);
 	out_str((char_u *)"  ");
+    }
+
+    if (xcc_status.tr_progress == STATUS_GET)
+    {
+	// 2. Check compatibility with xterm.
+	// We move the cursor to (2, 0), print a test sequence and then query
+	// the current cursor position.  If the terminal properly handles
+	// unknown DCS string and CSI sequence with intermediate byte, the test
+	// sequence is ignored and the cursor does not move.  If the terminal
+	// handles test sequence incorrectly, a garbage string is displayed and
+	// the cursor does move.
+	LOG_TR(("Sending xterm compatibility test sequence."));
+	// Do this in the third row.  Second row is used by ambiguous
+	// chararacter width check.
+	term_windgoto(2, 0);
+	// send the test DCS string.
+	out_str((char_u *)"\033Pzz\033\\");
+	// send the test CSI sequence with intermediate byte.
+	out_str((char_u *)"\033[0%m");
+	out_str(T_U7);
+	termrequest_sent(&xcc_status);
+	out_flush();
+	did_send = TRUE;
+
+	// If the terminal handles test sequence incorrectly, garbage text is
+	// displayed. Clear them out for now.
+	screen_stop_highlight();
+	term_windgoto(2, 0);
+	out_str((char_u *)"           ");
+    }
+
+    if (did_send)
+    {
 	term_windgoto(0, 0);
 
 	// Need to reset the known cursor position.
@@ -4680,6 +4725,16 @@ not_enough:
 # endif
 			}
 		    }
+		    else if (arg[0] == 3)
+		    {
+			// Third row: xterm compatibility test.
+			// If the cursor is not on the first column then the
+			// terminal is not xterm compatible.
+			if (arg[1] != 1)
+			    xcc_test_failed = TRUE;
+			xcc_status.tr_progress = STATUS_GOT;
+		    }
+
 		    key_name[0] = (int)KS_EXTRA;
 		    key_name[1] = (int)KE_IGNORE;
 		    slen = csi_len;
@@ -4814,6 +4869,14 @@ not_enough:
 			else if (version == 115 && arg[0] == 0 && arg[2] == 0)
 			    is_not_xterm = TRUE;
 
+			// GNU screen sends 83;30600;0, 83;40500;0, etc.
+			// 30600/40500 is a version number of GNU screen. DA2
+			// support is added on 3.6.  DCS string has a special
+			// meaning to GNU screen, but xterm compatibility
+			// checking does not detect GNU screen.
+			if (version >= 30600 && arg[0] == 83)
+			    xcc_test_failed = TRUE;
+
 			// Xterm first responded to this request at patch level
 			// 95, so assume anything below 95 is not xterm.
 			if (version < 95)
@@ -4827,11 +4890,14 @@ not_enough:
 			// Only request the cursor style if t_SH and t_RS are
 			// set. Only supported properly by xterm since version
 			// 279 (otherwise it returns 0x18).
+			// Only when the xcc_status was set, the test finished,
+			// and xcc_test_failed is FALSE;
 			// Not for Terminal.app, it can't handle t_RS, it
 			// echoes the characters to the screen.
 			if (rcs_status.tr_progress == STATUS_GET
+				&& xcc_status.tr_progress == STATUS_GOT
+				&& !xcc_test_failed
 				&& version >= 279
-				&& !is_not_xterm
 				&& *T_CSH != NUL
 				&& *T_CRS != NUL)
 			{
@@ -4844,8 +4910,11 @@ not_enough:
 			// Only request the cursor blink mode if t_RC set. Not
 			// for Gnome terminal, it can't handle t_RC, it
 			// echoes the characters to the screen.
+			// Only when the xcc_status was set, the test finished,
+			// and xcc_test_failed is FALSE;
 			if (rbm_status.tr_progress == STATUS_GET
-				&& !is_not_xterm
+				&& xcc_status.tr_progress == STATUS_GOT
+				&& !xcc_test_failed
 				&& *T_CRC != NUL)
 			{
 			    LOG_TR(("Sending cursor blink mode request"));

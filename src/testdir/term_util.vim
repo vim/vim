@@ -44,6 +44,8 @@ endfunc
 " Returns the buffer number of the terminal.
 "
 " Options is a dictionary, these items are recognized:
+" "keep_t_u7" - when 1 do not make t_u7 empty (resetting t_u7 avoids clearing
+"               parts of line 2 and 3 on the display)
 " "rows" - height of the terminal window (max. 20)
 " "cols" - width of the terminal window (max. 78)
 " "statusoff" - number of lines the status is offset from default
@@ -74,7 +76,13 @@ func RunVimInTerminal(arguments, options)
   let cols = get(a:options, 'cols', 75)
   let statusoff = get(a:options, 'statusoff', 1)
 
-  let cmd = GetVimCommandCleanTerm() .. a:arguments
+  if get(a:options, 'keep_t_u7', 0)
+    let reset_u7 = ''
+  else
+    let reset_u7 = ' --cmd "set t_u7=" '
+  endif
+
+  let cmd = GetVimCommandCleanTerm() .. reset_u7 .. a:arguments
 
   let options = {
 	\ 'curwin': 1,

@@ -47,7 +47,7 @@ void settmode(tmode_T tmode);
 void starttermcap(void);
 void stoptermcap(void);
 void may_req_termresponse(void);
-void may_req_ambiguous_char_width(void);
+void check_terminal_behavior(void);
 void may_req_bg_color(void);
 int swapping_screen(void);
 void scroll_start(void);

@@ -2710,7 +2710,6 @@ func Test_cwindow_highlight()
   CheckScreendump
 
   let lines =<< trim END
-	set t_u7=
 	call setline(1, ['some', 'text', 'with', 'matches'])
 	write XCwindow
 	vimgrep e XCwindow

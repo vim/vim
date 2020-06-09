@@ -2465,7 +2465,6 @@ func Test_terminal_in_popup()
   call writefile(text, 'Xtext')
   let cmd = GetVimCommandCleanTerm()
   let lines = [
-	\ 'set t_u7=',
 	\ 'call setline(1, range(20))',
 	\ 'hi PopTerm ctermbg=grey',
 	\ 'func OpenTerm(setColor)',
@@ -2545,7 +2544,6 @@ func Test_terminal_in_popup_min_size()
   END
   call writefile(text, 'Xtext')
   let lines = [
-	\ 'set t_u7=',
 	\ 'call setline(1, range(20))',
 	\ 'func OpenTerm()',
 	\ "  let s:buf = term_start('cat Xtext', #{hidden: 1})",
@@ -2575,7 +2573,6 @@ func Terminal_in_popup_colored(group_name, highlight_cmd, highlight_opt)
   CheckUnix
 
   let lines = [
-	\ 'set t_u7=',
 	\ 'call setline(1, range(20))',
 	\ 'func OpenTerm()',
 	\ "  let s:buf = term_start('cat', #{hidden: 1, "
