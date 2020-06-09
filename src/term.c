@@ -4384,8 +4384,12 @@ modifiers2keycode(int modifiers, int *key, char_u *string)
     return new_slen;
 }
 
+#ifdef FEAT_TERMRESPONSE
+/*
+ * Handle a cursor position report.
+ */
     static void
-handle_u7_response(int *arg, char_u *tp, int csi_len)
+handle_u7_response(int *arg, char_u *tp UNUSED, int csi_len UNUSED)
 {
     if (arg[0] == 2 && arg[1] >= 2)
     {
@@ -4403,8 +4407,7 @@ handle_u7_response(int *arg, char_u *tp, int csi_len)
 	    // Setting the option causes a screen redraw. Do
 	    // that right away if possible, keeping any
 	    // messages.
-	    set_option_value((char_u *)"ambw", 0L,
-			     (char_u *)aw, 0);
+	    set_option_value((char_u *)"ambw", 0L, (char_u *)aw, 0);
 # ifdef DEBUG_TERMRESPONSE
 	    {
 		int r = redraw_asap(CLEAR);
@@ -5029,6 +5032,7 @@ handle_dcs(char_u *tp, char_u *argp, int len, char_u *key_name, int *slen)
     }
     return OK;
 }
+#endif // FEAT_TERMRESPONSE
 
 /*
  * Check if typebuf.tb_buf[] contains a terminal key code.
