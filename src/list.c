@@ -739,6 +739,7 @@ list_insert(list_T *l, listitem_T *ni, listitem_T *item)
 list_flatten(list_T *list, long maxdepth)
 {
     listitem_T	*item;
+    listitem_T	*tofree;
     int		n;
 
     if (maxdepth == 0)
@@ -760,11 +761,14 @@ list_flatten(list_T *list, long maxdepth)
 	    vimlist_remove(list, item, item);
 	    if (list_extend(list, item->li_tv.vval.v_list, next) == FAIL)
 		return FAIL;
+	    clear_tv(&item->li_tv);
+	    tofree = item;
 
 	    if (item->li_prev == NULL)
 		item = list->lv_first;
 	    else
 		item = item->li_prev->li_next;
+	    list_free_item(list, tofree);
 
 	    if (++n >= maxdepth)
 	    {
