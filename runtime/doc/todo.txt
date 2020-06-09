@@ -2107,11 +2107,6 @@ Vim using lots of memory when joining lines. (John Little, 2010 Dec 3)
 BT regexp engine: After trying a \@> match and failing, submatches are not
 cleared.  See test64.
 
-Patch to make "z=" work when 'spell' is off.  Does this have nasty side
-effects?  (Christian Brabandt, 2012 Aug 5, Update 2013 Aug 12)
-Would also need to do this for spellbadword() and spellsuggest().
-https://github.com/chrisbra/vim-mq-patches/blob/master/enable_spellchecking
-
 On 64 bit MS-Windows "long" is only 32 bits, but we sometimes need to store a
 64 bits value.  Change all number options to use nropt_T and define it to the
 right type.
