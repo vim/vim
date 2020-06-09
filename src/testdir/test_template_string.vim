@@ -5,6 +5,7 @@ scriptencoding utf-8
 func Test_template_string_basic()
   " Literals - (non string) literals will be applied by string()
   call assert_equal('I have 10', $'I have ${10}')
+  call assert_equal('10!', $'${10}!')
   call assert_equal(string(function("function")), $'${function("function")}')
   call assert_equal(string([10, 20]), $'${[10, 20]}')
   call assert_equal(string({"x": 10}), $'${{"x": 10}}')
