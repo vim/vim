@@ -5459,7 +5459,7 @@ find_match_text(colnr_T startcol, int regstart, char_u *match_text)
 	{
 	    c1 = PTR2CHAR(match_text + len1);
 	    c2 = PTR2CHAR(rex.line + col + len2);
-	    if (c1 != c2 && (!rex.reg_ic || MB_TOLOWER(c1) != MB_TOLOWER(c2)))
+	    if (c1 != c2 && (!rex.reg_ic || MB_CASEFOLD(c1) != MB_CASEFOLD(c2)))
 	    {
 		match = FALSE;
 		break;
@@ -6271,11 +6271,11 @@ nfa_regmatch(
 			}
 			if (rex.reg_ic)
 			{
-			    int curc_low = MB_TOLOWER(curc);
+			    int curc_low = MB_CASEFOLD(curc);
 			    int done = FALSE;
 
 			    for ( ; c1 <= c2; ++c1)
-				if (MB_TOLOWER(c1) == curc_low)
+				if (MB_CASEFOLD(c1) == curc_low)
 				{
 				    result = result_if_matched;
 				    done = TRUE;
@@ -6287,8 +6287,8 @@ nfa_regmatch(
 		    }
 		    else if (state->c < 0 ? check_char_class(state->c, curc)
 			       : (curc == state->c
-				   || (rex.reg_ic && MB_TOLOWER(curc)
-						    == MB_TOLOWER(state->c))))
+				   || (rex.reg_ic && MB_CASEFOLD(curc)
+						    == MB_CASEFOLD(state->c))))
 		    {
 			result = result_if_matched;
 			break;
@@ -6713,7 +6713,7 @@ nfa_regmatch(
 		result = (c == curc);
 
 		if (!result && rex.reg_ic)
-		    result = MB_TOLOWER(c) == MB_TOLOWER(curc);
+		    result = MB_CASEFOLD(c) == MB_CASEFOLD(curc);
 		// If rex.reg_icombine is not set only skip over the character
 		// itself.  When it is set skip over composing characters.
 		if (result && enc_utf8 && !rex.reg_icombine)
@@ -6882,7 +6882,7 @@ nfa_regmatch(
 			// cheaper than adding a state that won't match.
 			c = PTR2CHAR(rex.input + clen);
 			if (c != prog->regstart && (!rex.reg_ic
-			       || MB_TOLOWER(c) != MB_TOLOWER(prog->regstart)))
+			     || MB_CASEFOLD(c) != MB_CASEFOLD(prog->regstart)))
 			{
 #ifdef ENABLE_LOG
 			    fprintf(log_fd, "  Skipping start state, regstart does not match\n");

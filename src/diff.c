@@ -747,7 +747,7 @@ diff_write_buffer(buf_T *buf, diffin_T *din)
 
 		// xdiff doesn't support ignoring case, fold-case the text.
 		c = PTR2CHAR(s);
-		c = enc_utf8 ? utf_fold(c) : MB_TOLOWER(c);
+		c = MB_CASEFOLD(c);
 		orig_len = mb_ptr2len(s);
 		if (mb_char2bytes(c, cbuf) != orig_len)
 		    // TODO: handle byte length difference
