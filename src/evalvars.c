@@ -145,6 +145,7 @@ static struct vimvar
     {VV_NAME("versionlong",	 VAR_NUMBER), VV_RO},
     {VV_NAME("echospace",	 VAR_NUMBER), VV_RO},
     {VV_NAME("argv",		 VAR_LIST), VV_RO},
+    {VV_NAME("collate",		 VAR_STRING), VV_RO},
 };
 
 // shorthand

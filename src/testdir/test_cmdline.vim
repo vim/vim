@@ -604,10 +604,20 @@ func Test_cmdline_complete_bang()
 endfunc
 
 func Test_cmdline_complete_languages()
+  let lang = substitute(execute('language time'), '.*"\(.*\)"$', '\1', '')
+  call assert_equal(lang, v:lc_time)
+
+  let lang = substitute(execute('language ctype'), '.*"\(.*\)"$', '\1', '')
+  call assert_equal(lang, v:ctype)
+
+  let lang = substitute(execute('language collate'), '.*"\(.*\)"$', '\1', '')
+  call assert_equal(lang, v:collate)
+
   let lang = substitute(execute('language messages'), '.*"\(.*\)"$', '\1', '')
+  call assert_equal(lang, v:lang)
 
   call feedkeys(":language \<c-a>\<c-b>\"\<cr>", 'tx')
-  call assert_match('^"language .*\<ctype\>.*\<messages\>.*\<time\>', @:)
+  call assert_match('^"language .*\<collate\>.*\<ctype\>.*\<messages\>.*\<time\>', @:)
 
   call assert_match('^"language .*\<' . lang . '\>', @:)
 
@@ -618,6 +628,9 @@ func Test_cmdline_complete_languages()
   call assert_match('^"language .*\<' . lang . '\>', @:)
 
   call feedkeys(":language time \<c-a>\<c-b>\"\<cr>", 'tx')
+  call assert_match('^"language .*\<' . lang . '\>', @:)
+
+  call feedkeys(":language collate \<c-a>\<c-b>\"\<cr>", 'tx')
   call assert_match('^"language .*\<' . lang . '\>', @:)
 endfunc
 

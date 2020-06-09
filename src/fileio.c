@@ -35,6 +35,10 @@ static linenr_T readfile_linenr(linenr_T linecnt, char_u *p, char_u *endp);
 static char_u *check_for_bom(char_u *p, long size, int *lenp, int flags);
 static char *e_auchangedbuf = N_("E812: Autocommands changed buffer or buffer name");
 
+#ifdef FEAT_EVAL
+static int readdirex_sort;
+#endif
+
     void
 filemess(
     buf_T	*buf,
@@ -4645,7 +4649,12 @@ compare_readdirex_item(const void *p1, const void *p2)
 
     name1 = dict_get_string(*(dict_T**)p1, (char_u*)"name", FALSE);
     name2 = dict_get_string(*(dict_T**)p2, (char_u*)"name", FALSE);
-    return STRCMP(name1, name2);
+    if (readdirex_sort == READDIR_SORT_BYTE)
+	return STRCMP(name1, name2);
+    else if (readdirex_sort == READDIR_SORT_IC)
+	return STRICMP(name1, name2);
+    else
+	return STRCOLL(name1, name2);
 }
 #endif
 
@@ -4663,7 +4672,8 @@ readdir_core(
     char_u	*path,
     int		withattr UNUSED,
     void	*context,
-    int		(*checkitem)(void *context, void *item))
+    int		(*checkitem)(void *context, void *item),
+    int         sort)
 {
     int			failed = FALSE;
     char_u		*p;
@@ -4687,6 +4697,8 @@ readdir_core(
 	else \
 	    vim_free(item); \
     } while (0)
+
+    readdirex_sort = READDIR_SORT_BYTE;
 # else
 #  define FREE_ITEM(item)   vim_free(item)
 # endif
@@ -4844,9 +4856,10 @@ readdir_core(
 
 # undef FREE_ITEM
 
-    if (!failed && gap->ga_len > 0)
+    if (!failed && gap->ga_len > 0 && sort > READDIR_SORT_NONE)
     {
 # ifdef FEAT_EVAL
+	readdirex_sort = sort;
 	if (withattr)
 	    qsort((void*)gap->ga_data, (size_t)gap->ga_len, sizeof(dict_T*),
 		    compare_readdirex_item);
@@ -4883,7 +4896,7 @@ delete_recursive(char_u *name)
 	exp = vim_strsave(name);
 	if (exp == NULL)
 	    return -1;
-	if (readdir_core(&ga, exp, FALSE, NULL, NULL) == OK)
+	if (readdir_core(&ga, exp, FALSE, NULL, NULL, READDIR_SORT_NONE) == OK)
 	{
 	    for (i = 0; i < ga.ga_len; ++i)
 	    {

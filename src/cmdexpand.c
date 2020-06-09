@@ -1728,7 +1728,8 @@ set_one_cmd_context(
 	    {
 		if ( STRNCMP(arg, "messages", p - arg) == 0
 		  || STRNCMP(arg, "ctype", p - arg) == 0
-		  || STRNCMP(arg, "time", p - arg) == 0)
+		  || STRNCMP(arg, "time", p - arg) == 0
+		  || STRNCMP(arg, "collate", p - arg) == 0)
 		{
 		    xp->xp_context = EXPAND_LOCALES;
 		    xp->xp_pattern = skipwhite(p);
