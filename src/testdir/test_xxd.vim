@@ -209,6 +209,7 @@ func Test_xxd()
 
   %d
   bw!
+  call delete("XXDfile")
 endfunc
 
 " Various ways with wrong arguments that trigger the usage output.
