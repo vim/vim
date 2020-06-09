@@ -4544,7 +4544,7 @@ create_readdirex_item(char_u *path, char_u *name)
     int		ret, link = FALSE;
     varnumber_T	size;
     char_u	permbuf[] = "---------";
-    char_u	*q;
+    char_u	*q = NULL;
     struct passwd *pw;
     struct group  *gr;
 
@@ -4563,6 +4563,9 @@ create_readdirex_item(char_u *path, char_u *name)
     {
 	link = TRUE;
 	ret = mch_stat(p, &st);
+	if (ret < 0)
+	    q = (char_u*)"link";
+
     }
     vim_free(p);
 
@@ -4617,7 +4620,7 @@ create_readdirex_item(char_u *path, char_u *name)
 	    goto theend;
 	if (dict_add_number(item, "time", -1) == FAIL)
 	    goto theend;
-	if (dict_add_string(item, "type", (char_u*)"") == FAIL)
+	if (dict_add_string(item, "type", q == NULL ? (char_u*)"" : q) == FAIL)
 	    goto theend;
 	if (dict_add_string(item, "perm", (char_u*)"") == FAIL)
 	    goto theend;
@@ -4719,6 +4722,11 @@ readdir_core(
 	    ignore = wp[0] == L'.' &&
 		    (wp[1] == NUL ||
 		     (wp[1] == L'.' && wp[2] == NUL));
+	    if (ignore)
+	    {
+		ok = FindNextFileW(hFind, &wfd);
+		continue;
+	    }
 #  ifdef FEAT_EVAL
 	    if (withattr)
 		item = (void*)create_readdirex_item(&wfd);
@@ -4787,6 +4795,8 @@ readdir_core(
 	    ignore = p[0] == '.' &&
 		    (p[1] == NUL ||
 		     (p[1] == '.' && p[2] == NUL));
+	    if (ignore)
+		continue;
 #  ifdef FEAT_EVAL
 	    if (withattr)
 		item = (void*)create_readdirex_item(path, p);
