@@ -416,7 +416,7 @@ repeat:
 	// Need full path first (use expand_env() to remove a "~/")
 	if (!has_fullname && !has_homerelative)
 	{
-	    if (c == '.' && **fnamep == '~')
+	    if ((c == '.' || c == '~') && **fnamep == '~')
 		p = pbuf = expand_env_save(*fnamep);
 	    else
 		p = pbuf = FullName_save(*fnamep, FALSE);
@@ -2397,11 +2397,9 @@ home_replace(
 		if (--dstlen > 0)
 		    *dst++ = '~';
 
-		/*
-		 * If it's just the home directory, add  "/".
-		 */
-		if (!vim_ispathsep(src[0]) && --dstlen > 0)
-		    *dst++ = '/';
+		// Do not add directory separator into dst, because dst is
+		// expected to just return the directory name without the
+		// directory separator '/'.
 		break;
 	    }
 	    if (p == homedir_env)
