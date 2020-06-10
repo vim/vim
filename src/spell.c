@@ -1225,7 +1225,7 @@ no_spell_checking(win_T *wp)
     if (!wp->w_p_spell || *wp->w_s->b_p_spl == NUL
 					 || wp->w_s->b_langp.ga_len == 0)
     {
-	emsg(_("E756: Spell checking is not enabled"));
+	emsg(_(e_no_spell));
 	return TRUE;
     }
     return FALSE;

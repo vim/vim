@@ -1581,6 +1581,9 @@ EXTERN char e_invcmd[]		INIT(= N_("E476: Invalid command"));
 #if defined(UNIX) || defined(FEAT_SYN_HL) || defined(FEAT_SPELL)
 EXTERN char e_isadir2[]		INIT(= N_("E17: \"%s\" is a directory"));
 #endif
+#ifdef FEAT_SPELL
+EXTERN char e_no_spell[]	INIT(= N_("E756: Spell checking is not possible"));
+#endif
 #ifdef FEAT_LIBCALL
 EXTERN char e_libcall[]	INIT(= N_("E364: Library call failed for \"%s()\""));
 #endif

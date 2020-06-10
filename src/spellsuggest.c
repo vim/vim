@@ -471,9 +471,19 @@ spell_suggest(int count)
     int		selected = count;
     int		badlen = 0;
     int		msg_scroll_save = msg_scroll;
+    int		wo_spell_save = curwin->w_p_spell;
 
-    if (no_spell_checking(curwin))
+    if (!curwin->w_p_spell)
+    {
+	did_set_spelllang(curwin);
+	curwin->w_p_spell = TRUE;
+    }
+
+    if (*curwin->w_s->b_p_spl == NUL)
+    {
+	emsg(_(e_no_spell));
 	return;
+    }
 
     if (VIsual_active)
     {
@@ -686,6 +696,7 @@ spell_suggest(int count)
     spell_find_cleanup(&sug);
 skip:
     vim_free(line);
+    curwin->w_p_spell = wo_spell_save;
 }
 
 /*
