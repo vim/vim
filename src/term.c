@@ -1431,8 +1431,63 @@ static int	need_gather = FALSE;	    // need to fill termleader[]
 static char_u	termleader[256 + 1];	    // for check_termcode()
 #ifdef FEAT_TERMRESPONSE
 static int	check_for_codes = FALSE;    // check for key code response
-static int	is_not_xterm = FALSE;	    // recognized not-really-xterm
-static int	xcc_test_failed = FALSE;    // xcc_status check failed
+
+/*
+ * Structure and table to store terminal features that can be detected by
+ * querying the terminal.  Either by inspecting the termresponse or a more
+ * specific request.  Besides this there are:
+ * t_colors - number of colors supported
+ */
+typedef struct {
+    char    *tpr_name;
+    int	    tpr_set_by_termresponse;
+    int	    tpr_status;
+} termprop_T;
+
+// Values for tpr_status.
+#define TPR_UNKNOWN	    'u'
+#define TPR_YES		    'y'
+#define TPR_NO		    'n'
+#define TPR_MOUSE_XTERM     'x'	// use "xterm" for 'ttymouse'
+#define TPR_MOUSE_XTERM2    '2'	// use "xterm2" for 'ttymouse'
+#define TPR_MOUSE_SGR	    's'	// use "sgr" for 'ttymouse'
+
+// can request the cursor style without messing up the display
+#define TPR_CURSOR_STYLE	    0
+// can request the cursor blink mode without messing up the display
+#define TPR_CURSOR_BLINK	    1
+// can set the underline color with t_8u without resetting other colors
+#define TPR_UNDERLINE_RGB	    2
+// mouse support - TPR_MOUSE_XTERM, TPR_MOUSE_XTERM2 or TPR_MOUSE_SGR
+#define TPR_MOUSE		    3
+// table size
+#define TPR_COUNT		    4
+
+static termprop_T term_props[TPR_COUNT];
+
+/*
+ * Initialize the term_props table.
+ * When "all" is FALSE only set those that are detected from the version
+ * response.
+ */
+    static void
+init_term_props(int all)
+{
+    int i;
+
+    term_props[TPR_CURSOR_STYLE].tpr_name = "cursor_style";
+    term_props[TPR_CURSOR_STYLE].tpr_set_by_termresponse = FALSE;
+    term_props[TPR_CURSOR_BLINK].tpr_name = "cursor_blink_mode";
+    term_props[TPR_CURSOR_BLINK].tpr_set_by_termresponse = FALSE;
+    term_props[TPR_UNDERLINE_RGB].tpr_name = "underline_rgb";
+    term_props[TPR_UNDERLINE_RGB].tpr_set_by_termresponse = TRUE;
+    term_props[TPR_MOUSE].tpr_name = "mouse";
+    term_props[TPR_MOUSE].tpr_set_by_termresponse = TRUE;
+
+    for (i = 0; i < TPR_COUNT; ++i)
+	if (all || term_props[i].tpr_set_by_termresponse)
+	    term_props[i].tpr_status = TPR_UNKNOWN;
+}
 #endif
 
     static struct builtin_term *
@@ -1958,8 +2013,9 @@ set_termname(char_u *term)
     term_is_xterm = vim_is_xterm(term);
 #endif
 #ifdef FEAT_TERMRESPONSE
-    is_not_xterm = FALSE;
-    is_mac_terminal = FALSE;
+    // Reset terminal properties that are set based on the termresponse, which
+    // will be sent out soon.
+    init_term_props(FALSE);
 #endif
 
 #if defined(UNIX) || defined(VMS)
@@ -3612,11 +3668,15 @@ may_req_termresponse(void)
 /*
  * Send sequences to the terminal and check with t_u7 how the cursor moves, to
  * find out properties of the terminal.
+ * Note that this goes out before T_CRV, so that the result can be used when
+ * the termresponse arrives.
  */
     void
 check_terminal_behavior(void)
 {
     int	    did_send = FALSE;
+
+    init_term_props(TRUE);
 
     if (!can_get_termresponse() || starting != 0 || *T_U7 == NUL)
 	return;
@@ -4424,27 +4484,39 @@ handle_u7_response(int *arg, char_u *tp UNUSED, int csi_len UNUSED)
     }
     else if (arg[0] == 3)
     {
+	int value;
+
 	LOG_TR(("Received compatibility test result: %s", tp));
-	// Third row: xterm compatibility test.
-	// If the cursor is not on the first column then the
-	// terminal is not xterm compatible.
-	if (arg[1] != 1)
-	    xcc_test_failed = TRUE;
 	xcc_status.tr_progress = STATUS_GOT;
+
+	// Third row: xterm compatibility test.
+	// If the cursor is on the first column then the terminal can handle
+	// the request for cursor style and blinking.
+	value = arg[1] == 1 ? TPR_YES : TPR_NO;
+	term_props[TPR_CURSOR_STYLE].tpr_status = value;
+	term_props[TPR_CURSOR_BLINK].tpr_status = value;
     }
 }
 
 /*
- * Handle a response to T_CRV.
+ * Handle a response to T_CRV: {lead}{first}{x};{vers};{y}c
+ * Xterm and alikes use '>' for {first}.
+ * Rxvt sends "{lead}?1;2c".
  */
     static void
 handle_version_response(int first, int *arg, int argc, char_u *tp)
 {
+    // The xterm version.  It is set to zero when it can't be an actual xterm
+    // version.
     int version = arg[1];
 
     LOG_TR(("Received CRV response: %s", tp));
     crv_status.tr_progress = STATUS_GOT;
     did_cursorhold = TRUE;
+
+    // Reset terminal properties that are set based on the termresponse.
+    // Mainly useful for tests that send the termresponse multiple times.
+    init_term_props(FALSE);
 
     // If this code starts with CSI, you can bet that the
     // terminal uses 8-bit codes.
@@ -4458,19 +4530,21 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
     if (version > 20000)
 	version = 0;
 
+    // Figure out more if the reeponse is CSI > 99 ; 99 ; 99 c
     if (first == '>' && argc == 3)
     {
 	int need_flush = FALSE;
-	int is_iterm2 = FALSE;
-	int is_mintty = FALSE;
-	int is_screen = FALSE;
 
 	// mintty 2.9.5 sends 77;20905;0c.
 	// (77 is ASCII 'M' for mintty.)
 	if (arg[0] == 77)
-	    is_mintty = TRUE;
+	{
+	    // mintty can do SGR mouse reporting
+	    term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
+	}
 
-	// if xterm version >= 141 try to get termcap codes
+	// If xterm version >= 141 try to get termcap codes.  For other
+	// terminals the request should be ignored.
 	if (version >= 141)
 	{
 	    LOG_TR(("Enable checking for XT codes"));
@@ -4488,9 +4562,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	    if (mch_getenv((char_u *)"COLORS") == NULL)
 		may_adjust_color_count(256);
 	    // Libvterm can handle SGR mouse reporting.
-	    if (!option_was_set((char_u *)"ttym"))
-		set_option_value((char_u *)"ttym", 0L,
-					   (char_u *)"sgr", 0);
+	    term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
 	}
 
 	if (version == 95)
@@ -4498,99 +4570,118 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	    // Mac Terminal.app sends 1;95;0
 	    if (arg[0] == 1 && arg[2] == 0)
 	    {
-		is_not_xterm = TRUE;
-		is_mac_terminal = TRUE;
+		term_props[TPR_UNDERLINE_RGB].tpr_status = TPR_YES;
+		term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
 	    }
 	    // iTerm2 sends 0;95;0
 	    else if (arg[0] == 0 && arg[2] == 0)
-		is_iterm2 = TRUE;
+	    {
+		// iTerm2 can do SGR mouse reporting
+		term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
+	    }
 	    // old iTerm2 sends 0;95;
 	    else if (arg[0] == 0 && arg[2] == -1)
-		is_not_xterm = TRUE;
+		term_props[TPR_UNDERLINE_RGB].tpr_status = TPR_YES;
 	}
 
 	// screen sends 83;40500;0 83 is 'S' in ASCII.
 	if (arg[0] == 83)
-	    is_screen = TRUE;
-
-	// Only set 'ttymouse' automatically if it was not set
-	// by the user already.
-	if (!option_was_set((char_u *)"ttym"))
 	{
-	    // Xterm version 277 supports SGR.  Also support
-	    // Terminal.app, iTerm2, mintty, and screen 4.7+.
-	    if ((!is_screen && version >= 277)
-		    || is_iterm2
-		    || is_mac_terminal
-		    || is_mintty
-		    || (is_screen && arg[1] >= 40700))
-		set_option_value((char_u *)"ttym", 0L,
-					  (char_u *)"sgr", 0);
-	    // For xterm version >= 95 mouse dragging works.
+	    // screen supports SGR mouse codes since 4.7.0
+	    if (arg[1] >= 40700)
+		term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
+	    else
+		term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_XTERM;
+	}
+
+	// If no recognized terminal has set mouse behavior, assume xterm.
+	if (term_props[TPR_MOUSE].tpr_status == TPR_UNKNOWN)
+	{
+	    // Xterm version 277 supports SGR.
+	    // Xterm version >= 95 supports mouse dragging.
+	    if (version >= 277)
+		term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
 	    else if (version >= 95)
-		set_option_value((char_u *)"ttym", 0L,
-				       (char_u *)"xterm2", 0);
+		term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_XTERM2;
 	}
 
 	// Detect terminals that set $TERM to something like
 	// "xterm-256color" but are not fully xterm compatible.
-
+	//
 	// Gnome terminal sends 1;3801;0, 1;4402;0 or 1;2501;0.
 	// xfce4-terminal sends 1;2802;0.
 	// screen sends 83;40500;0
 	// Assuming any version number over 2500 is not an
 	// xterm (without the limit for rxvt and screen).
 	if (arg[1] >= 2500)
-	    is_not_xterm = TRUE;
+	    term_props[TPR_UNDERLINE_RGB].tpr_status = TPR_YES;
 
-	// PuTTY sends 0;136;0
-	// vandyke SecureCRT sends 1;136;0
 	else if (version == 136 && arg[2] == 0)
 	{
-	    is_not_xterm = TRUE;
+	    term_props[TPR_UNDERLINE_RGB].tpr_status = TPR_YES;
 
-	    // PuTTY supports sgr-like mouse reporting, but
-	    // only set 'ttymouse' if it was not set by the
-	    // user already.
-	    if (arg[0] == 0
-			  && !option_was_set((char_u *)"ttym"))
-		set_option_value((char_u *)"ttym", 0L,
-					(char_u *)"sgr", 0);
+	    // PuTTY sends 0;136;0
+	    if (arg[0] == 0)
+	    {
+		// supports sgr-like mouse reporting.
+		term_props[TPR_MOUSE].tpr_status = TPR_MOUSE_SGR;
+	    }
+	    // vandyke SecureCRT sends 1;136;0
 	}
 
 	// Konsole sends 0;115;0
 	else if (version == 115 && arg[0] == 0 && arg[2] == 0)
-	    is_not_xterm = TRUE;
+	    term_props[TPR_UNDERLINE_RGB].tpr_status = TPR_YES;
 
 	// GNU screen sends 83;30600;0, 83;40500;0, etc.
-	// 30600/40500 is a version number of GNU screen. DA2
-	// support is added on 3.6.  DCS string has a special
-	// meaning to GNU screen, but xterm compatibility
-	// checking does not detect GNU screen.
-	if (version >= 30600 && arg[0] == 83)
-	    xcc_test_failed = TRUE;
+	// 30600/40500 is a version number of GNU screen. DA2 support is added
+	// on 3.6.  DCS string has a special meaning to GNU screen, but xterm
+	// compatibility checking does not detect GNU screen.
+	if (arg[0] == 83 && arg[1] >= 30600)
+	{
+	    term_props[TPR_CURSOR_STYLE].tpr_status = TPR_NO;
+	    term_props[TPR_CURSOR_BLINK].tpr_status = TPR_NO;
+	}
 
 	// Xterm first responded to this request at patch level
-	// 95, so assume anything below 95 is not xterm.
+	// 95, so assume anything below 95 is not xterm and hopefully supports
+	// the underline RGB color sequence.
 	if (version < 95)
-	    is_not_xterm = TRUE;
+	    term_props[TPR_UNDERLINE_RGB].tpr_status = TPR_YES;
 
-	// With the real Xterm setting the underline RGB color
-	// clears the background color, disable "t_8u".
-	if (!is_not_xterm && *T_8U != NUL)
+	// Getting the cursor style is only supported properly by xterm since
+	// version 279 (otherwise it returns 0x18).
+	if (version < 279)
+	    term_props[TPR_CURSOR_STYLE].tpr_status = TPR_NO;
+
+	/*
+	 * Take action on the detected properties.
+	 */
+
+	// Unless the underline RGB color is expected to work, disable "t_8u".
+	// It does not work for the real Xterm, it resets the background color.
+	if (term_props[TPR_UNDERLINE_RGB].tpr_status == TPR_YES && *T_8U != NUL)
 	    T_8U = empty_option;
+
+	// Only set 'ttymouse' automatically if it was not set
+	// by the user already.
+	if (!option_was_set((char_u *)"ttym")
+		&& (term_props[TPR_MOUSE].tpr_status == TPR_MOUSE_XTERM2
+		    || term_props[TPR_MOUSE].tpr_status == TPR_MOUSE_SGR))
+	{
+	    set_option_value((char_u *)"ttym", 0L,
+		    term_props[TPR_MOUSE].tpr_status == TPR_MOUSE_SGR
+				    ? (char_u *)"sgr" : (char_u *)"xterm2", 0);
+	}
 
 	// Only request the cursor style if t_SH and t_RS are
 	// set. Only supported properly by xterm since version
 	// 279 (otherwise it returns 0x18).
-	// Only when the xcc_status was set, the test finished,
-	// and xcc_test_failed is FALSE;
+	// Only when getting the cursor style was detected to work.
 	// Not for Terminal.app, it can't handle t_RS, it
 	// echoes the characters to the screen.
 	if (rcs_status.tr_progress == STATUS_GET
-		&& xcc_status.tr_progress == STATUS_GOT
-		&& !xcc_test_failed
-		&& version >= 279
+		&& term_props[TPR_CURSOR_STYLE].tpr_status == TPR_YES
 		&& *T_CSH != NUL
 		&& *T_CRS != NUL)
 	{
@@ -4603,11 +4694,9 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	// Only request the cursor blink mode if t_RC set. Not
 	// for Gnome terminal, it can't handle t_RC, it
 	// echoes the characters to the screen.
-	// Only when the xcc_status was set, the test finished,
-	// and xcc_test_failed is FALSE;
+	// Only when getting the cursor style was detected to work.
 	if (rbm_status.tr_progress == STATUS_GET
-		&& xcc_status.tr_progress == STATUS_GOT
-		&& !xcc_test_failed
+		&& term_props[TPR_CURSOR_BLINK].tpr_status == TPR_YES
 		&& *T_CRC != NUL)
 	{
 	    LOG_TR(("Sending cursor blink mode request"));
@@ -4681,9 +4770,7 @@ handle_key_with_modifier(
 
 /*
  * Handle a CSI escape sequence.
- * - Xterm version string: {lead}>{x};{vers};{y}c
- *   Also eat other possible responses to t_RV, rxvt returns
- *   "{lead}?1;2c".
+ * - Xterm version string.
  *
  * - Cursor position report: {lead}{row};{col}R
  *   The final byte must be 'R'. It is used for checking the
