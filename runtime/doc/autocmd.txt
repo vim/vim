@@ -380,6 +380,7 @@ Name			triggered by ~
 			info
 
 |User|			to be used in combination with ":doautocmd"
+|SigUSR1|		after the SIGUSR1 signal has been detected
 
 
 The alphabetical list of autocommand events:		*autocmd-events-abc*
@@ -1158,6 +1159,7 @@ TextYankPost			After text has been yanked or deleted in the
 				It is not allowed to change the buffer text,
 				see |textlock|.
 				{only when compiled with the +eval feature}
+
 							*User*
 User				Never executed automatically.  To be used for
 				autocommands that are only executed with
@@ -1166,6 +1168,15 @@ User				Never executed automatically.  To be used for
 				used while there are no matching autocommands,
 				you will get an error.  If you don't want
 				that, define a dummy autocommand yourself.
+
+							*SigUSR1*
+SigUSR1				After the SIGUSR1 signal has been detected.
+				Could be used if other ways of notifying Vim
+				are not feasible.  E.g. to check for the
+				result of a build that takes a long time, or
+				when a motion sensor is triggered.
+				{only on Unix}
+
 							*UserGettingBored*
 UserGettingBored		When the user presses the same key 42 times.
 				Just kidding! :-)

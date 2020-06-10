@@ -161,6 +161,7 @@ static struct event_name
     {"SessionLoadPost",	EVENT_SESSIONLOADPOST},
     {"ShellCmdPost",	EVENT_SHELLCMDPOST},
     {"ShellFilterPost",	EVENT_SHELLFILTERPOST},
+    {"SigUSR1",		EVENT_SIGUSR1},
     {"SourceCmd",	EVENT_SOURCECMD},
     {"SourcePre",	EVENT_SOURCEPRE},
     {"SourcePost",	EVENT_SOURCEPOST},

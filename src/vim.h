@@ -1316,6 +1316,7 @@ enum auto_event
     EVENT_SESSIONLOADPOST,	// after loading a session file
     EVENT_SHELLCMDPOST,		// after ":!cmd"
     EVENT_SHELLFILTERPOST,	// after ":1,2!cmd", ":w !cmd", ":r !cmd".
+    EVENT_SIGUSR1,		// after the SIGUSR1 signal
     EVENT_SOURCECMD,		// sourcing a Vim script using command
     EVENT_SOURCEPRE,		// before sourcing a Vim script
     EVENT_SOURCEPOST,		// after sourcing a Vim script

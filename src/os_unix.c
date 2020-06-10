@@ -164,6 +164,9 @@ static RETSIGTYPE sig_winch SIGPROTOARG;
 #if defined(SIGINT)
 static RETSIGTYPE catch_sigint SIGPROTOARG;
 #endif
+#if defined(SIGUSR1)
+static RETSIGTYPE catch_sigusr1 SIGPROTOARG;
+#endif
 #if defined(SIGPWR)
 static RETSIGTYPE catch_sigpwr SIGPROTOARG;
 #endif
@@ -297,7 +300,7 @@ static struct signalinfo
     {SIGXFSZ,	    "XFSZ",	TRUE},
 #endif
 #ifdef SIGUSR1
-    {SIGUSR1,	    "USR1",	TRUE},
+    {SIGUSR1,	    "USR1",	FALSE},
 #endif
 #if defined(SIGUSR2) && !defined(FEAT_SYSMOUSE)
     // Used for sysmouse handling
@@ -837,6 +840,17 @@ catch_sigint SIGDEFARG(sigarg)
 }
 #endif
 
+#if defined(SIGUSR1)
+    static RETSIGTYPE
+catch_sigusr1 SIGDEFARG(sigarg)
+{
+    // this is not required on all systems, but it doesn't hurt anybody
+    signal(SIGUSR1, (RETSIGTYPE (*)())catch_sigusr1);
+    got_sigusr1 = TRUE;
+    SIGRETURN;
+}
+#endif
+
 #if defined(SIGPWR)
     static RETSIGTYPE
 catch_sigpwr SIGDEFARG(sigarg)
@@ -1323,15 +1337,22 @@ set_signals(void)
 #if defined(SIGCONT)
     signal(SIGCONT, sigcont_handler);
 #endif
+#ifdef SIGPIPE
     /*
      * We want to ignore breaking of PIPEs.
      */
-#ifdef SIGPIPE
     signal(SIGPIPE, SIG_IGN);
 #endif
 
 #ifdef SIGINT
     catch_int_signal();
+#endif
+
+#ifdef SIGUSR1
+    /*
+     * Call user's handler on SIGUSR1
+     */
+    signal(SIGUSR1, (RETSIGTYPE (*)())catch_sigusr1);
 #endif
 
     /*
@@ -1341,11 +1362,11 @@ set_signals(void)
     signal(SIGALRM, SIG_IGN);
 #endif
 
+#ifdef SIGPWR
     /*
      * Catch SIGPWR (power failure?) to preserve the swap files, so that no
      * work will be lost.
      */
-#ifdef SIGPWR
     signal(SIGPWR, (RETSIGTYPE (*)())catch_sigpwr);
 #endif
 
