@@ -1912,6 +1912,16 @@ func Test_readdirex()
 			  \ ->map({-> v:val.name})
   call sort(files)->assert_equal(['bar.txt', 'dir', 'foo.txt'])
 
+  " report brocken link correctly
+  if has("unix")
+    call writefile([], 'Xdir/abc.txt')
+    call system("ln -s Xdir/abc.txt Xdir/link")
+    call delete('Xdir/abc.txt')
+    let files = readdirex('Xdir', 'readdirex("Xdir", "1") != []')
+			  \ ->map({-> v:val.name .. '_' .. v:val.type})
+    call sort(files)->assert_equal(
+        \ ['bar.txt_file', 'dir_dir', 'foo.txt_file', 'link_link'])
+  endif
   eval 'Xdir'->delete('rf')
 endfunc
 
