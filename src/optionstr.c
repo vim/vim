@@ -248,6 +248,7 @@ check_buf_options(buf_T *buf)
     check_string_option(&buf->b_s.b_p_spc);
     check_string_option(&buf->b_s.b_p_spf);
     check_string_option(&buf->b_s.b_p_spl);
+    check_string_option(&buf->b_s.b_p_spo);
 #endif
 #ifdef FEAT_SEARCHPATH
     check_string_option(&buf->b_p_sua);
@@ -1713,6 +1714,12 @@ did_set_string_option(
     else if (varp == &(curwin->w_s->b_p_spc))
     {
 	errmsg = compile_cap_prog(curwin->w_s);
+    }
+    // 'spelloptions'
+    else if (varp == &(curwin->w_s->b_p_spo))
+    {
+	if (**varp != NUL && STRCMP("camel", *varp) != 0)
+	    errmsg = e_invarg;
     }
     // 'spellsuggest'
     else if (varp == &p_sps)

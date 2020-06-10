@@ -77,6 +77,11 @@ func Test_spellbadword()
   call assert_equal(['bycycle', 'bad'],  spellbadword('My bycycle.'))
   call assert_equal(['another', 'caps'], 'A sentence. another sentence'->spellbadword())
 
+  call assert_equal(['TheCamelWord', 'bad'], 'TheCamelWord asdf'->spellbadword())
+  set spelloptions=camel
+  call assert_equal(['asdf', 'bad'], 'TheCamelWord asdf'->spellbadword())
+  set spelloptions=
+
   set spelllang=en
   call assert_equal(['', ''],            spellbadword('centre'))
   call assert_equal(['', ''],            spellbadword('center'))

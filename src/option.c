@@ -5329,6 +5329,7 @@ get_varp(struct vimoption *p)
 	case PV_SPC:	return (char_u *)&(curwin->w_s->b_p_spc);
 	case PV_SPF:	return (char_u *)&(curwin->w_s->b_p_spf);
 	case PV_SPL:	return (char_u *)&(curwin->w_s->b_p_spl);
+	case PV_SPO:	return (char_u *)&(curwin->w_s->b_p_spo);
 #endif
 	case PV_SW:	return (char_u *)&(curbuf->b_p_sw);
 	case PV_TS:	return (char_u *)&(curbuf->b_p_ts);
@@ -5838,6 +5839,8 @@ buf_copy_options(buf_T *buf, int flags)
 	    COPY_OPT_SCTX(buf, BV_SPF);
 	    buf->b_s.b_p_spl = vim_strsave(p_spl);
 	    COPY_OPT_SCTX(buf, BV_SPL);
+	    buf->b_s.b_p_spo = vim_strsave(p_spo);
+	    COPY_OPT_SCTX(buf, BV_SPO);
 #endif
 #if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
 	    buf->b_p_inde = vim_strsave(p_inde);

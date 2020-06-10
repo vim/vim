@@ -913,6 +913,7 @@ EXTERN char_u	*p_tfu;		// 'tagfunc'
 EXTERN char_u	*p_spc;		// 'spellcapcheck'
 EXTERN char_u	*p_spf;		// 'spellfile'
 EXTERN char_u	*p_spl;		// 'spelllang'
+EXTERN char_u	*p_spo;		// 'spelloptions'
 EXTERN char_u	*p_sps;		// 'spellsuggest'
 #endif
 EXTERN int	p_spr;		// 'splitright'
@@ -1185,6 +1186,7 @@ enum
     , BV_SPC
     , BV_SPF
     , BV_SPL
+    , BV_SPO
 #endif
     , BV_STS
 #ifdef FEAT_SEARCHPATH
