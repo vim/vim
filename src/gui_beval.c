@@ -840,7 +840,7 @@ set_printable_label_text(GtkLabel *label, char_u *text)
 		    }
 		    else
 		    {
-			transchar_nonprint(pdest, *p);	// ^X
+			transchar_nonprint(curbuf, pdest, *p);	// ^X
 			outlen = 2;
 		    }
 		    if (pixel != INVALCOLOR)

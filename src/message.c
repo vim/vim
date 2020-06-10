@@ -1752,7 +1752,7 @@ str2special(
 	// For multi-byte characters check for an illegal byte.
 	if (has_mbyte && MB_BYTE2LEN(*str) > len)
 	{
-	    transchar_nonprint(buf, c);
+	    transchar_nonprint(curbuf, buf, c);
 	    *sp = str + 1;
 	    return buf;
 	}

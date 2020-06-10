@@ -69,7 +69,7 @@ do_ascii(exarg_T *eap UNUSED)
 #endif
 			       ))
 	{
-	    transchar_nonprint(buf3, c);
+	    transchar_nonprint(curbuf, buf3, c);
 	    vim_snprintf(buf1, sizeof(buf1), "  <%s>", (char *)buf3);
 	}
 	else
@@ -2556,7 +2556,7 @@ do_ecmd(
     }
 
     /*
-     * if the file was changed we may not be allowed to abandon it
+     * If the file was changed we may not be allowed to abandon it:
      * - if we are going to re-edit the same file
      * - or if we are the only window on this file and if ECMD_HIDE is FALSE
      */
