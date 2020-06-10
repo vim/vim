@@ -945,7 +945,7 @@ get_number(
 	    do_redraw = FALSE;
 	    break;
 	}
-	else if (c == CAR || c == NL || c == Ctrl_C || c == ESC)
+	else if (c == CAR || c == NL || c == Ctrl_C || c == ESC || c == 'q')
 	    break;
     }
     --no_mapping;
@@ -967,9 +967,9 @@ prompt_for_number(int *mouse_used)
 
     // When using ":silent" assume that <CR> was entered.
     if (mouse_used != NULL)
-	msg_puts(_("Type number and <Enter> or click with mouse (empty cancels): "));
+	msg_puts(_("Type number and <Enter> or click with the mouse (q or empty cancels): "));
     else
-	msg_puts(_("Type number and <Enter> (empty cancels): "));
+	msg_puts(_("Type number and <Enter> (q or empty cancels): "));
 
     // Set the state such that text can be selected/copied/pasted and we still
     // get mouse events. redraw_after_callback() will not redraw if cmdline_row
