@@ -105,6 +105,9 @@ foobar/?
   call assert_equal(['bycycle', 'bad'], spellbadword('My bycycle.'))
   call assert_equal(['another', 'caps'], spellbadword('A sentence. another sentence'))
 
+  set spelllang=
+  call assert_fails("call spellbadword('maxch')", 'E756:')
+
   call delete('Xwords.spl')
   call delete('Xwords')
   set spelllang&
@@ -162,6 +165,10 @@ func Test_spellsuggest()
 
   call assert_fails("call spellsuggest('maxch', [])", 'E745:')
   call assert_fails("call spellsuggest('maxch', 2, [])", 'E745:')
+
+  set spelllang=
+  call assert_fails("call spellsuggest('maxch')", 'E756:')
+  set spelllang&
 
   set spell&
 endfunc
@@ -631,6 +638,17 @@ func Test_zeq_nospell()
     call assert_report("Caught exception: " . v:exception)
   endtry
   set spell& spellsuggest&
+  bwipe!
+endfunc
+
+" Check that "E756: Spell checking is not possible" is reported when z= is
+" executed and 'spelllang' is empty.
+func Test_zeq_no_spelllang()
+  new
+  set spelllang= spellsuggest=1,best
+  call setline(1, 'A baord')
+  call assert_fails('normal $1z=', 'E756:')
+  set spelllang& spellsuggest&
   bwipe!
 endfunc
 
