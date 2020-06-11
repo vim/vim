@@ -1607,6 +1607,7 @@ typedef struct
 #define FC_EXPORT   0x100	// "export def Func()"
 #define FC_NOARGS   0x200	// no a: variables in lambda
 #define FC_VIM9	    0x400	// defined in vim9 script file
+#define FC_CFUNC    0x800	// defined as C func
 
 #define MAX_FUNC_ARGS	20	// maximum number of function arguments
 #define VAR_SHORT_LEN	20	// short variable name length

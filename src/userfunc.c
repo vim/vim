@@ -344,6 +344,21 @@ get_lambda_name(void)
     int
 register_clambda(void (*cb)(typval_T *argvars, typval_T *rettv, void *state), void *state)
 {
+    char_u *name = get_lambda_name();
+    ufunc_T *fp = NULL;
+    partial_T *pt = NULL;
+    int flags = FC_NOARGS;
+
+    fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
+    if (fp == NULL)
+        goto errret;
+    pt = ALLOC_CLEAR_ONE(partial_T);
+    if (pt == NULL)
+        goto errret;
+
+errret:
+    vim_free(fp);
+    vim_free(pt);
     return FAIL;
 }
 
