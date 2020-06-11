@@ -736,7 +736,7 @@ def Test_vim9script_fails()
   CheckScriptFailure(['scriptversion 2', 'vim9script'], 'E1039:')
   CheckScriptFailure(['vim9script', 'scriptversion 2'], 'E1040:')
   CheckScriptFailure(['export let some = 123'], 'E1042:')
-  CheckScriptFailure(['import some from "./Xexport.vim"'], 'E1042:')
+  CheckScriptFailure(['import some from "./Xexport.vim"'], 'E1048:')
   CheckScriptFailure(['vim9script', 'export let g:some'], 'E1044:')
   CheckScriptFailure(['vim9script', 'export echo 134'], 'E1043:')
 
@@ -1836,6 +1836,47 @@ def Test_forward_declaration()
   delete('Xforward')
 enddef
 
+def Test_source_vim9_from_legacy()
+  let legacy_lines =<< trim END
+    source Xvim9_script.vim
+
+    call assert_false(exists('local'))
+    call assert_false(exists('exported'))
+    call assert_false(exists('s:exported'))
+    call assert_equal('global', global)
+    call assert_equal('global', g:global)
+
+    " imported variable becomes script-local
+    import exported from './Xvim9_script.vim'
+    call assert_equal('exported', s:exported)
+    call assert_false(exists('exported'))
+
+    " imported function becomes script-local
+    import GetText from './Xvim9_script.vim'
+    call assert_equal('text', s:GetText())
+    call assert_false(exists('*GetText'))
+  END
+  writefile(legacy_lines, 'Xlegacy_script.vim')
+
+  let vim9_lines =<< trim END
+    vim9script
+    let local = 'local'
+    g:global = 'global'
+    export let exported = 'exported'
+    export def GetText(): string
+       return 'text'
+    enddef
+  END
+  writefile(vim9_lines, 'Xvim9_script.vim')
+
+  source Xlegacy_script.vim
+
+  assert_equal('global', g:global)
+"  unlet g:global
+
+  delete('Xlegacy_script.vim')
+  delete('Xvim9_script.vim')
+enddef
 
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()

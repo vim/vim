@@ -2359,9 +2359,13 @@ get_var_tv(
 	    *dip = v;
     }
 
-    if (tv == NULL && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+    if (tv == NULL && (current_sctx.sc_version == SCRIPT_VERSION_VIM9
+					       || STRNCMP(name, "s:", 2) == 0))
     {
-	imported_T *import = find_imported(name, 0, NULL);
+	imported_T  *import;
+	char_u	    *p = STRNCMP(name, "s:", 2) == 0 ? name + 2 : name;
+
+	import = find_imported(p, 0, NULL);
 
 	// imported variable from another script
 	if (import != NULL)
