@@ -65,7 +65,7 @@ typedef struct
 typedef struct
 {
     int is_expr;
-    string_like* s;
+    string_like *s;
 } template_string_interval;
 
 static template_string_interval* make_interval_between_not_expr(char_u *begin, char_u *end);
@@ -3372,7 +3372,7 @@ interval_free(template_string_interval *x)
 }
 
 /*
- * Free for garray_t of template_string_interval*.
+ * A kind of ga_clear() and interval_free() for garray_t of template_string_interval*.
  */
     static void
 intervals_free(garray_T *xs)
@@ -3385,6 +3385,8 @@ intervals_free(garray_T *xs)
 	    ((template_string_interval **)xs->ga_data)[i];
 	interval_free(x);
     }
+
+    ga_clear(xs);
 }
 
 /*
@@ -3474,7 +3476,7 @@ read_template_string_intervals(
 
     *arg += 2;  // $' or $"
 
-    ga_init2(result, sizeof(template_string_interval*), 80);
+    ga_init2(result, sizeof(template_string_interval*), 10);
     current = *arg;
 
     // Continue while it is not NULL and it is not a closing quote.
@@ -3489,16 +3491,30 @@ read_template_string_intervals(
 	}
 	else if (**arg == '$' && *(*arg + 1) == '{')
 	{
-	    ga_grow(result, 2);
+	    template_string_interval *x;
+
+	    if (ga_grow(result, 2) == FAIL)
+	    {
+		intervals_free(result);
+		semsg(_("Internal error!"));
+		return FAIL;
+	    }
 	    result->ga_len += 2;
 
 	    /*
 	     * Get a current item that is not an expr.
 	     */
+	    x = make_interval_between_not_expr(
+		current,
+		*arg);
+	    if (x == NULL)
+	    {
+		intervals_free(result);
+		semsg(_("Internal error!"));
+		return FAIL;
+	    }
 	    ((template_string_interval **)result->ga_data)[result->ga_len - 2] =
-		make_interval_between_not_expr(
-		    current,
-		    *arg);
+		x;
 
 	    /*
 	     * Get a next item that is a ${ expr }.
@@ -3507,12 +3523,18 @@ read_template_string_intervals(
 	    current = *arg;
 	    forward_to_end_of_template_expr(arg);
 
+	    x = make_interval_between_not_expr(
+		current,
+		*arg);
+	    if (x == NULL)
+	    {
+		intervals_free(result);
+		semsg(_("Internal error!"));
+		return FAIL;
+	    }
+	    x->is_expr = 1;
 	    ((template_string_interval **)result->ga_data)[result->ga_len - 1] =
-		make_interval_between_not_expr(
-		    current,
-		    *arg);
-	    ((template_string_interval **)result->ga_data)[result->ga_len - 1]
-		->is_expr = 1;
+		x;
 
 	    /*
 	     * Go to a next item
@@ -3525,7 +3547,12 @@ read_template_string_intervals(
      * Add a last item
      */
     {
-	ga_grow(result, 1);
+	if (ga_grow(result, 1) == FAIL)
+	{
+	    intervals_free(result);
+	    semsg(_("Internal error!"));
+	    return FAIL;
+	}
 	result->ga_len += 1;
 
 	((template_string_interval **)result->ga_data)[result->ga_len - 1] =
@@ -3554,10 +3581,20 @@ make_interval_between_not_expr(char_u *start, char_u *end)
     template_string_interval	*x;
 
     s = alloc(sizeof(string_like));
+    if (s == NULL)
+    {
+	semsg(_("Internal error!"));
+	return NULL;
+    }
     s->value = start;
     s->length = end - start;
 
     x = alloc(sizeof(template_string_interval));
+    if (x == NULL)
+    {
+	semsg(_("Internal error!"));
+	return NULL;
+    }
     x->is_expr = 0;
     x->s = s;
 
@@ -3595,7 +3632,7 @@ get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
     int		i;
     int		is_reading_intervals_succeed;
     int		is_literal_string = (quote == '\'');
-    garray_T	intervals;  // garray of template_string_interval*
+    garray_T	intervals;  // garray that has elements of template_string_interval*
     garray_T	result;  // a string that is a literal string or a string (not a template string).
     typval_T	interval_val;
 
@@ -3616,8 +3653,6 @@ get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
     }
 
     ga_init2(&result, sizeof(char_u), 80);
-    clear_tv(&interval_val);
-
     for (i = 0; i < intervals.ga_len; ++i)
     {
 	template_string_interval *x =
@@ -3653,8 +3688,8 @@ get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 	    to_eval = (char_u *)interval.ga_data;
 
 	    is_evaluating_success = is_literal_string
-		? get_lit_string_tv(&to_eval, &interval_val, evaluate)
-		: get_string_tv(&to_eval, &interval_val, evaluate);
+		? get_lit_string_tv(&to_eval, &interval_val, TRUE)
+		: get_string_tv(&to_eval, &interval_val, TRUE);
 	    ga_clear(&interval);
 
 	    if (!is_evaluating_success)
@@ -3670,12 +3705,6 @@ get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 	}
     }
     intervals_free(&intervals);
-
-    if (!evaluate)
-    {
-	ga_clear(&result);
-	return OK;
-    }
 
     /*
      * Return the result.
