@@ -82,7 +82,6 @@ static int eval7(char_u **arg, typval_T *rettv, int flags, int want_string);
 static int eval7_leader(typval_T *rettv, char_u *start_leader, char_u **end_leaderp);
 
 static int get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate);
-static int eval_next_template_expr_into_result(garray_T *result, char_u **source, int evaluate);
 static int is_escaped_quote(int is_literal_string, char_u *quotes);
 static int free_unref_items(int copyID);
 static char_u *make_expanded_name(char_u *in_start, char_u *expr_start, char_u *expr_end, char_u *in_end);
@@ -3365,44 +3364,6 @@ is_closing_quote(
     return *template == quote;
 }
 
-/*
- * Consumes current to evaluate,
- * and joins its result into result.
- *
- * Returns the result of evaluating current.
- * Or return NULL if evaluating is FAIL.
- */
-    static int
-eval_template_current_into_result(
-	garray_T *current,
-	garray_T *result,
-	int evaluate)
-{
-    typval_T	current_result;
-    char_u	*to_eval_current = (char_u *) current->ga_data;
-
-    init_tv(&current_result);
-
-    if (!eval1(&to_eval_current, &current_result, evaluate))
-	return FAIL;
-
-    if (!evaluate)
-	return OK;
-
-    ga_concat(result, current_result.vval.v_string);
-    vim_free(current_result.vval.v_string);
-
-    return OK;
-}
-
-    static void
-ga_append_mbytes(garray_T *gap, char_u *c)
-{
-    char_u *current = (char_u *)(gap->ga_data + gap->ga_len);
-    MB_COPY_CHAR(c, current);
-    gap->ga_len = STRLEN(gap->ga_data);
-}
-
     static void
 interval_free(template_string_interval *x)
 {
@@ -3507,10 +3468,9 @@ read_template_string_intervals(
 	int is_literal_string,
 	char_u **arg)
 {
-    char_u			*arg_orig = *arg;
-    int				is_skipping_needed;
-    char_u			*current;
-    template_string_interval	**intervals;
+    char_u	*arg_orig = *arg;
+    int		is_skipping_needed;
+    char_u	*current;
 
     *arg += 2;  // $' or $"
 
@@ -3732,61 +3692,6 @@ is_escaped_quote(int is_literal_string, char_u *p)
     return
 	(is_literal_string && *p == '\'' && *(p + 1) == '\'') ||
 	(!is_literal_string && *p == '\\' && *(p + 1) == '"');
-}
-
-/*
- * Get expr of "${" expr  "}" of source,
- * and forward source.
- */
-    static char_u*
-read_template_expr(char_u **source)
-{
-    char_u  *expr_head;
-
-    *source += 2;  // forward with beginning '${'
-    expr_head = *source;
-
-    if (!forward_to_end_of_template_expr(source))
-	return NULL;
-
-    return vim_strnsave(expr_head, (int)(*source - expr_head));
-}
-
-/*
- * Returns OK when succeed, or returns FAIL.
- */
-    static int
-eval_next_template_expr_into_result(
-	garray_T *result,
-	char_u **source,
-	int evaluate)
-{
-    char_u *expr = read_template_expr(source);
-
-    if (expr == NULL)
-	return FAIL;
-
-    if (!evaluate)
-    {
-	vim_free(expr);
-	return OK;
-    }
-
-    /*
-     * Evaluate the source
-     */
-    {
-	char_u *stringified = stringify_expr(expr);
-	vim_free(expr);
-
-	if (stringified == NULL)
-	    return FAIL;
-
-	ga_concat(result, stringified);
-	vim_free(stringified);
-    }
-
-    return OK;
 }
 
 /*
