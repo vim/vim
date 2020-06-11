@@ -411,6 +411,12 @@ endfunc
 
 " Test for writing to a file in a readonly directory
 func Test_write_readonly_dir()
+  if !has('unix') || has('bsd')
+    " On MS-Windows, modifying files in a read-only directory is allowed.
+    " In Cirrus-CI for Freebsd, tests are run under a root account where
+    " modifying files in a read-only directory are allowed.
+    return
+  endif
   call mkdir('Xdir')
   call writefile(['one'], 'Xdir/Xfile1')
   call setfperm('Xdir', 'r-xr--r--')
