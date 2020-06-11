@@ -558,7 +558,7 @@ ex_hardcopy(exarg_T *eap)
     int			page_line;
     int			jobsplit;
 
-    vim_memset(&settings, 0, sizeof(prt_settings_T));
+    CLEAR_FIELD(settings);
     settings.has_color = TRUE;
 
 # ifdef FEAT_POSTSCRIPT
@@ -681,7 +681,7 @@ ex_hardcopy(exarg_T *eap)
 	prt_pos_T	page_prtpos;	// print position at page start
 	int		side;
 
-	vim_memset(&page_prtpos, 0, sizeof(prt_pos_T));
+	CLEAR_FIELD(page_prtpos);
 	page_prtpos.file_line = eap->line1;
 	prtpos = page_prtpos;
 
@@ -1844,7 +1844,7 @@ prt_open_resource(struct prt_ps_resource_S *resource)
 	semsg(_("E624: Can't open file \"%s\""), resource->filename);
 	return FALSE;
     }
-    vim_memset(prt_resfile.buffer, NUL, PRT_FILE_BUFFER_LEN);
+    CLEAR_FIELD(prt_resfile.buffer);
 
     // Parse first line to ensure valid resource file
     prt_resfile.len = (int)fread((char *)prt_resfile.buffer, sizeof(char_u),

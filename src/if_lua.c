@@ -119,6 +119,7 @@ static luaV_Funcref *luaV_pushfuncref(lua_State *L, char_u *name);
 #define luaL_buffinit dll_luaL_buffinit
 #define luaL_addlstring dll_luaL_addlstring
 #define luaL_pushresult dll_luaL_pushresult
+#define luaL_loadstring dll_luaL_loadstring
 // lua
 #if LUA_VERSION_NUM <= 501
 #define lua_tonumber dll_lua_tonumber
@@ -213,6 +214,7 @@ lua_State *(*dll_luaL_newstate) (void);
 void (*dll_luaL_buffinit) (lua_State *L, luaL_Buffer *B);
 void (*dll_luaL_addlstring) (luaL_Buffer *B, const char *s, size_t l);
 void (*dll_luaL_pushresult) (luaL_Buffer *B);
+int (*dll_luaL_loadstring) (lua_State *L, const char *s);
 // lua
 #if LUA_VERSION_NUM <= 501
 lua_Number (*dll_lua_tonumber) (lua_State *L, int idx);
@@ -325,6 +327,7 @@ static const luaV_Reg luaV_dll[] = {
     {"luaL_buffinit", (luaV_function) &dll_luaL_buffinit},
     {"luaL_addlstring", (luaV_function) &dll_luaL_addlstring},
     {"luaL_pushresult", (luaV_function) &dll_luaL_pushresult},
+    {"luaL_loadstring", (luaV_function) &dll_luaL_loadstring},
     // lua
 #if LUA_VERSION_NUM <= 501
     {"lua_tonumber", (luaV_function) &dll_lua_tonumber},
@@ -397,16 +400,6 @@ static const luaV_Reg luaV_dll[] = {
 };
 
 static HANDLE hinstLua = NULL;
-
-    static void
-end_dynamic_lua(void)
-{
-    if (hinstLua)
-    {
-	close_dll(hinstLua);
-	hinstLua = 0;
-    }
-}
 
     static int
 lua_link_init(char *libname, int verbose)
@@ -578,8 +571,21 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	    break;
 	case LUA_TNUMBER:
 #ifdef FEAT_FLOAT
-	    tv->v_type = VAR_FLOAT;
-	    tv->vval.v_float = (float_T) lua_tonumber(L, pos);
+	{
+	    const lua_Number n = lua_tonumber(L, pos);
+
+	    if (n > (lua_Number)INT64_MAX || n < (lua_Number)INT64_MIN
+		    || ((lua_Number)((varnumber_T)n)) != n)
+	    {
+		tv->v_type = VAR_FLOAT;
+		tv->vval.v_float = (float_T)n;
+	    }
+	    else
+	    {
+		tv->v_type = VAR_NUMBER;
+		tv->vval.v_number = (varnumber_T)n;
+	    }
+	}
 #else
 	    tv->v_type = VAR_NUMBER;
 	    tv->vval.v_number = (varnumber_T) lua_tointeger(L, pos);
@@ -1335,7 +1341,7 @@ luaV_buffer_newindex(lua_State *L)
 	    curbuf = buf;
 	    luaL_error(L, "cannot save undo information");
 	}
-	else if (ml_delete(n, FALSE) == FAIL)
+	else if (ml_delete(n) == FAIL)
 	{
 	    curbuf = buf;
 	    luaL_error(L, "cannot delete line");
@@ -1913,6 +1919,52 @@ luaV_type(lua_State *L)
     return 1;
 }
 
+    static int
+luaV_call(lua_State *L)
+{
+    int		argc = lua_gettop(L) - 1;
+    size_t	funcname_len;
+    char_u	*funcname;
+    char	*error = NULL;
+    typval_T	rettv;
+    typval_T	argv[MAX_FUNC_ARGS + 1];
+    int		i = 0;
+
+    if (argc > MAX_FUNC_ARGS)
+	return luaL_error(L, "Function called with too many arguments");
+
+    funcname = (char_u *)luaL_checklstring(L, 1, &funcname_len);
+
+    for (; i < argc; i++)
+    {
+	if (luaV_totypval(L, i + 2, &argv[i]) == FAIL)
+	{
+	    error = "lua: cannot convert value";
+	    goto free_vim_args;
+	}
+    }
+
+    argv[argc].v_type = VAR_UNKNOWN;
+
+    if (call_vim_function(funcname, argc, argv, &rettv) == FAIL)
+    {
+	error = "lua: call_vim_function failed";
+	goto free_vim_args;
+    }
+
+    luaV_pushtypval(L, &rettv);
+    clear_tv(&rettv);
+
+free_vim_args:
+    while (i > 0)
+	clear_tv(&argv[--i]);
+
+    if (error == NULL)
+	return 1;
+    else
+	return luaL_error(L, error);
+}
+
 static const luaL_Reg luaV_module[] = {
     {"command", luaV_command},
     {"eval", luaV_eval},
@@ -1926,6 +1978,7 @@ static const luaL_Reg luaV_module[] = {
     {"window", luaV_window},
     {"open", luaV_open},
     {"type", luaV_type},
+    {"call", luaV_call},
     {NULL, NULL}
 };
 
@@ -2007,6 +2060,82 @@ luaV_setref(lua_State *L)
     return 1;
 }
 
+#define LUA_VIM_FN_CODE \
+    "vim.fn = setmetatable({}, {\n"\
+    "  __index = function (t, key)\n"\
+    "    local function _fn(...)\n"\
+    "      return vim.call(key, ...)\n"\
+    "    end\n"\
+    "    t[key] = _fn\n"\
+    "    return _fn\n"\
+    "  end\n"\
+    " })"
+
+#define LUA_VIM_UPDATE_PACKAGE_PATHS \
+    "local last_vim_paths = {}\n"\
+    "vim._update_package_paths = function ()\n"\
+    "  local cur_vim_paths = {}\n"\
+    "  local function split(s, delimiter)\n"\
+    "    result = {}\n"\
+    "    for match in (s..delimiter):gmatch(\"(.-)\"..delimiter) do\n"\
+    "      table.insert(result, match)\n"\
+    "    end\n"\
+    "    return result\n"\
+    "  end\n"\
+    "  local rtps = split(vim.eval('&runtimepath'), ',')\n"\
+    "  local sep = package.config:sub(1, 1)\n"\
+    "  for _, key in ipairs({'path', 'cpath'}) do\n"\
+    "    local orig_str = package[key] .. ';'\n"\
+    "    local pathtrails_ordered = {}\n"\
+    "    -- Note: ignores trailing item without trailing `;`. Not using something\n"\
+    "    -- simpler in order to preserve empty items (stand for default path).\n"\
+    "    local orig = {}\n"\
+    "    for s in orig_str:gmatch('[^;]*;') do\n"\
+    "      s = s:sub(1, -2)  -- Strip trailing semicolon\n"\
+    "      orig[#orig + 1] = s\n"\
+    "    end\n"\
+    "    if key == 'path' then\n"\
+    "      -- /?.lua and /?/init.lua\n"\
+    "      pathtrails_ordered = {sep .. '?.lua', sep .. '?' .. sep .. 'init.lua'}\n"\
+    "    else\n"\
+    "      local pathtrails = {}\n"\
+    "      for _, s in ipairs(orig) do\n"\
+    "        -- Find out path patterns. pathtrail should contain something like\n"\
+    "        -- /?.so, \?.dll. This allows not to bother determining what correct\n"\
+    "        -- suffixes are.\n"\
+    "        local pathtrail = s:match('[/\\\\][^/\\\\]*%?.*$')\n"\
+    "        if pathtrail and not pathtrails[pathtrail] then\n"\
+    "          pathtrails[pathtrail] = true\n"\
+    "          pathtrails_ordered[#pathtrails_ordered + 1] = pathtrail\n"\
+    "        end\n"\
+    "      end\n"\
+    "    end\n"\
+    "    local new = {}\n"\
+    "    for _, rtp in ipairs(rtps) do\n"\
+    "      if not rtp:match(';') then\n"\
+    "        for _, pathtrail in pairs(pathtrails_ordered) do\n"\
+    "          local new_path = rtp .. sep .. 'lua' .. pathtrail\n"\
+    "          -- Always keep paths from &runtimepath at the start:\n"\
+    "          -- append them here disregarding orig possibly containing one of them.\n"\
+    "          new[#new + 1] = new_path\n"\
+    "          cur_vim_paths[new_path] = true\n"\
+    "        end\n"\
+    "      end\n"\
+    "    end\n"\
+    "    for _, orig_path in ipairs(orig) do\n"\
+    "      -- Handle removing obsolete paths originating from &runtimepath: such\n"\
+    "      -- paths either belong to cur_nvim_paths and were already added above or\n"\
+    "      -- to last_nvim_paths and should not be added at all if corresponding\n"\
+    "      -- entry was removed from &runtimepath list.\n"\
+    "      if not (cur_vim_paths[orig_path] or last_vim_paths[orig_path]) then\n"\
+    "        new[#new + 1] = orig_path\n"\
+    "      end\n"\
+    "    end\n"\
+    "    package[key] = table.concat(new, ';')\n"\
+    "  end\n"\
+    "  last_vim_paths = cur_vim_paths\n"\
+    "end"
+
     static int
 luaopen_vim(lua_State *L)
 {
@@ -2062,6 +2191,16 @@ luaopen_vim(lua_State *L)
     lua_pushvalue(L, 1); // cache table
     luaV_openlib(L, luaV_module, 1);
     lua_setglobal(L, LUAVIM_NAME);
+    // custom code
+    (void)luaL_dostring(L, LUA_VIM_FN_CODE);
+    (void)luaL_dostring(L, LUA_VIM_UPDATE_PACKAGE_PATHS);
+
+    lua_getglobal(L, "vim");
+    lua_getfield(L, -1, "_update_package_paths");
+
+    if (lua_pcall(L, 0, 0, 0))
+	luaV_emsg(L);
+
     return 0;
 }
 
@@ -2121,9 +2260,6 @@ lua_end(void)
     {
 	lua_close(L);
 	L = NULL;
-#ifdef DYNAMIC_LUA
-	end_dynamic_lua();
-#endif
     }
 }
 
@@ -2264,6 +2400,19 @@ set_ref_in_lua(int copyID)
 	lua_pop(L, 1);
     }
     return aborted;
+}
+
+    void
+update_package_paths_in_lua()
+{
+    if (lua_isopen())
+    {
+	lua_getglobal(L, "vim");
+	lua_getfield(L, -1, "_update_package_paths");
+
+	if (lua_pcall(L, 0, 0, 0))
+	    luaV_emsg(L);
+    }
 }
 
 #endif

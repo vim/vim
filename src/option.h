@@ -141,12 +141,13 @@
 #define FO_ONE_LETTER	'1'
 #define FO_WHITE_PAR	'w'	// trailing white space continues paragr.
 #define FO_AUTO		'a'	// automatic formatting
+#define FO_RIGOROUS_TW	']'     // respect textwidth rigorously
 #define FO_REMOVE_COMS	'j'	// remove comment leaders when joining lines
 #define FO_PERIOD_ABBR	'p'	// don't break a single space after a period
 
 #define DFLT_FO_VI	"vt"
 #define DFLT_FO_VIM	"tcq"
-#define FO_ALL		"tcroq2vlb1mMBn,awjp"	// for do_set()
+#define FO_ALL		"tcroq2vlb1mMBn,aw]jp"	// for do_set()
 
 // characters for the p_cpo option:
 #define CPO_ALTREAD	'a'	// ":read" sets alternate file name
@@ -344,9 +345,14 @@
 #define WIM_BUFLASTUSED	0x08
 
 // arguments for can_bs()
+// each defined char should be unique over all values
+// except for BS_START, that intentionally also matches BS_NOSTOP
+// because BS_NOSTOP behaves exactly the same except it
+// does not stop at the start of the insert point
 #define BS_INDENT	'i'	// "Indent"
-#define BS_EOL		'o'	// "eOl"
+#define BS_EOL		'l'	// "eoL"
 #define BS_START	's'	// "Start"
+#define BS_NOSTOP	'p'	// "nostoP
 
 // flags for the 'culopt' option
 #define CULOPT_LINE	0x01	// Highlight complete line
@@ -403,7 +409,7 @@ EXTERN char_u	*p_bex;		// 'backupext'
 EXTERN char_u	*p_bo;		// 'belloff'
 EXTERN unsigned	bo_flags;
 
-// values for the 'beepon' option
+// values for the 'belloff' option
 #define BO_ALL		0x0001
 #define BO_BS		0x0002
 #define BO_CRSR		0x0004
@@ -815,6 +821,7 @@ EXTERN int	p_ru;		// 'ruler'
 EXTERN char_u	*p_ruf;		// 'rulerformat'
 #endif
 EXTERN char_u	*p_pp;		// 'packpath'
+EXTERN char_u	*p_qftf;	// 'quickfixtextfunc'
 EXTERN char_u	*p_rtp;		// 'runtimepath'
 EXTERN long	p_sj;		// 'scrolljump'
 #if defined(MSWIN) && defined(FEAT_GUI)
@@ -906,6 +913,7 @@ EXTERN char_u	*p_tfu;		// 'tagfunc'
 EXTERN char_u	*p_spc;		// 'spellcapcheck'
 EXTERN char_u	*p_spf;		// 'spellfile'
 EXTERN char_u	*p_spl;		// 'spelllang'
+EXTERN char_u	*p_spo;		// 'spelloptions'
 EXTERN char_u	*p_sps;		// 'spellsuggest'
 #endif
 EXTERN int	p_spr;		// 'splitright'
@@ -1178,6 +1186,7 @@ enum
     , BV_SPC
     , BV_SPF
     , BV_SPL
+    , BV_SPO
 #endif
     , BV_STS
 #ifdef FEAT_SEARCHPATH

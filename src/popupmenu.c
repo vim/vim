@@ -60,9 +60,12 @@ pum_compute_size(void)
     pum_extra_width = 0;
     for (i = 0; i < pum_size; ++i)
     {
-	w = vim_strsize(pum_array[i].pum_text);
-	if (pum_base_width < w)
-	    pum_base_width = w;
+	if (pum_array[i].pum_text != NULL)
+	{
+	    w = vim_strsize(pum_array[i].pum_text);
+	    if (pum_base_width < w)
+		pum_base_width = w;
+	}
 	if (pum_array[i].pum_kind != NULL)
 	{
 	    w = vim_strsize(pum_array[i].pum_kind) + 1;
@@ -814,7 +817,7 @@ pum_set_selected(int n, int repeat UNUSED)
 		{
 		    // Already a "wipeout" buffer, make it empty.
 		    while (!BUFEMPTY())
-			ml_delete((linenr_T)1, FALSE);
+			ml_delete((linenr_T)1);
 		}
 		else
 		{
@@ -857,7 +860,7 @@ pum_set_selected(int n, int repeat UNUSED)
 			}
 		    }
 		    // delete the empty last line
-		    ml_delete(curbuf->b_ml.ml_line_count, FALSE);
+		    ml_delete(curbuf->b_ml.ml_line_count);
 
 		    // Increase the height of the preview window to show the
 		    // text, but no more than 'previewheight' lines.
@@ -1071,12 +1074,13 @@ pum_set_event_info(dict_T *dict)
 {
     if (!pum_visible())
 	return;
-    dict_add_number(dict, "height", pum_height);
-    dict_add_number(dict, "width", pum_width);
-    dict_add_number(dict, "row", pum_row);
-    dict_add_number(dict, "col", pum_col);
-    dict_add_number(dict, "size", pum_size);
-    dict_add_bool(dict, "scrollbar", pum_scrollbar ? VVAL_TRUE : VVAL_FALSE);
+    (void)dict_add_number(dict, "height", pum_height);
+    (void)dict_add_number(dict, "width", pum_width);
+    (void)dict_add_number(dict, "row", pum_row);
+    (void)dict_add_number(dict, "col", pum_col);
+    (void)dict_add_number(dict, "size", pum_size);
+    (void)dict_add_bool(dict, "scrollbar",
+				       pum_scrollbar ? VVAL_TRUE : VVAL_FALSE);
 }
 #endif
 
@@ -1314,7 +1318,7 @@ ui_post_balloon(char_u *mesg, list_T *list)
 	balloon_array = ALLOC_CLEAR_MULT(pumitem_T, list->lv_len);
 	if (balloon_array == NULL)
 	    return;
-	range_list_materialize(list);
+	CHECK_LIST_MATERIALIZE(list);
 	for (idx = 0, li = list->lv_first; li != NULL; li = li->li_next, ++idx)
 	{
 	    char_u *text = tv_get_string_chk(&li->li_tv);
@@ -1378,10 +1382,10 @@ pum_execute_menu(vimmenu_T *menu, int mode)
     int		idx = 0;
     exarg_T	ea;
 
-    for (mp = menu->children; mp != NULL; mp = mp->next)
+    FOR_ALL_CHILD_MENUS(menu, mp)
 	if ((mp->modes & mp->enabled & mode) && idx++ == pum_selected)
 	{
-	    vim_memset(&ea, 0, sizeof(ea));
+	    CLEAR_FIELD(ea);
 	    execute_menu(&ea, mp, -1);
 	    break;
 	}
@@ -1406,7 +1410,7 @@ pum_show_popupmenu(vimmenu_T *menu)
     pum_size = 0;
     mode = get_menu_mode_flag();
 
-    for (mp = menu->children; mp != NULL; mp = mp->next)
+    FOR_ALL_CHILD_MENUS(menu, mp)
 	if (menu_is_separator(mp->dname)
 		|| (mp->modes & mp->enabled & mode))
 	    ++pum_size;
@@ -1423,7 +1427,7 @@ pum_show_popupmenu(vimmenu_T *menu)
     if (array == NULL)
 	return;
 
-    for (mp = menu->children; mp != NULL; mp = mp->next)
+    FOR_ALL_CHILD_MENUS(menu, mp)
 	if (menu_is_separator(mp->dname))
 	    array[idx++].pum_text = (char_u *)"";
 	else if (mp->modes & mp->enabled & mode)

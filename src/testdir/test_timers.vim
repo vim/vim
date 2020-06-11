@@ -3,6 +3,7 @@
 source check.vim
 CheckFeature timers
 
+source screendump.vim
 source shared.vim
 source term_util.vim
 
@@ -324,9 +325,7 @@ func Test_timer_ex_mode()
 endfunc
 
 func Test_timer_restore_count()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot run Vim in a terminal window'
-  endif
+  CheckRunVimInTerminal
   " Check that v:count is saved and restored, not changed by a timer.
   call writefile([
         \ 'nnoremap <expr><silent> L v:count ? v:count . "l" : "l"',
@@ -398,9 +397,9 @@ func Test_timer_error_in_timer_callback()
   call WaitForAssert({-> assert_notequal('', term_getline(buf, 8))})
 
   " GC must not run during timer callback, which can make Vim crash.
-  call term_wait(buf, 100)
+  call TermWait(buf, 50)
   call term_sendkeys(buf, "\<CR>")
-  call term_wait(buf, 100)
+  call TermWait(buf, 50)
   call assert_equal('run', job_status(job))
 
   call term_sendkeys(buf, ":qall!\<CR>")
@@ -420,6 +419,34 @@ func Test_timer_garbage_collect()
   let l = timer_info(timer)
   call assert_equal(function('MyHandler'), l[0].callback)
   call timer_stop(timer)
+endfunc
+
+func Test_timer_invalid_callback()
+  call assert_fails('call timer_start(0, "0")', 'E921')
+endfunc
+
+func Test_timer_changing_function_list()
+  CheckRunVimInTerminal
+
+  " Create a large number of functions.  Should get the "more" prompt.
+  " The typing "G" triggers the timer, which changes the function table.
+  let lines =<< trim END
+    for func in map(range(1,99), "'Func' .. v:val")
+      exe "func " .. func .. "()"
+      endfunc
+    endfor
+    au CmdlineLeave : call timer_start(0, {-> 0})
+  END
+  call writefile(lines, 'XTest_timerchange')
+  let buf = RunVimInTerminal('-S XTest_timerchange', #{rows: 10})
+  call term_sendkeys(buf, ":fu\<CR>")
+  call WaitForAssert({-> assert_match('-- More --', term_getline(buf, 10))})
+  call term_sendkeys(buf, "G")
+  call WaitForAssert({-> assert_match('E454', term_getline(buf, 9))})
+  call term_sendkeys(buf, "\<Esc>")
+
+  call StopVimInTerminal(buf)
+  call delete('XTest_timerchange')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

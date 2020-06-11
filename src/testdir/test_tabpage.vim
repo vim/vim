@@ -130,6 +130,8 @@ function Test_tabpage()
   1tabmove
   call assert_equal(2, tabpagenr())
 
+  call assert_fails('let t = tabpagenr("#")', 'E15:')
+  call assert_equal(0, tabpagewinnr(-1))
   call assert_fails("99tabmove", 'E16:')
   call assert_fails("+99tabmove", 'E16:')
   call assert_fails("-99tabmove", 'E16:')
@@ -591,9 +593,7 @@ func Test_tabs()
 endfunc
 
 func Test_tabpage_cmdheight()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckRunVimInTerminal
   call writefile([
         \ 'set laststatus=2',
         \ 'set cmdheight=2',

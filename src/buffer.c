@@ -52,6 +52,9 @@ static void	clear_wininfo(buf_T *buf);
 # define dev_T unsigned
 #endif
 
+#define FOR_ALL_BUFS_FROM_LAST(buf) \
+    for ((buf) = lastbuf; (buf) != NULL; (buf) = (buf)->b_prev)
+
 #if defined(FEAT_QUICKFIX)
 static char *msg_loclist = N_("[Location List]");
 static char *msg_qflist = N_("[Quickfix List]");
@@ -100,13 +103,13 @@ read_buffer(
     {
 	// Delete the binary lines.
 	while (--line_count >= 0)
-	    ml_delete((linenr_T)1, FALSE);
+	    ml_delete((linenr_T)1);
     }
     else
     {
 	// Delete the converted lines.
 	while (curbuf->b_ml.ml_line_count > line_count)
-	    ml_delete(line_count, FALSE);
+	    ml_delete(line_count);
     }
     // Put the cursor on the first line.
     curwin->w_cursor.lnum = 1;
@@ -415,7 +418,7 @@ buf_valid(buf_T *buf)
 
     // Assume that we more often have a recent buffer, start with the last
     // one.
-    for (bp = lastbuf; bp != NULL; bp = bp->b_prev)
+    FOR_ALL_BUFS_FROM_LAST(bp)
 	if (bp == buf)
 	    return TRUE;
     return FALSE;
@@ -508,6 +511,7 @@ close_buffer(
     int		wipe_buf = (action == DOBUF_WIPE || action == DOBUF_WIPE_REUSE);
     int		del_buf = (action == DOBUF_DEL || wipe_buf);
 
+    CHECK_CURBUF;
     /*
      * Force unloading or deleting when 'bufhidden' says so.
      * The caller must take care of NOT deleting/freeing when 'bufhidden' is
@@ -530,6 +534,7 @@ close_buffer(
 #ifdef FEAT_TERMINAL
     if (bt_terminal(buf) && (buf->b_nwindows == 1 || del_buf))
     {
+	CHECK_CURBUF;
 	if (term_job_running(buf->b_term))
 	{
 	    if (wipe_buf || unload_buf)
@@ -554,6 +559,7 @@ close_buffer(
 	    unload_buf = TRUE;
 	    wipe_buf = TRUE;
 	}
+	CHECK_CURBUF;
     }
 #endif
 
@@ -743,6 +749,7 @@ aucmd_abort:
 	if (del_buf)
 	    buf->b_p_bl = FALSE;
     }
+    // NOTE: at this point "curbuf" may be invalid!
 }
 
 /*
@@ -933,7 +940,11 @@ free_buffer(buf_T *buf)
 	au_pending_free_buf = buf;
     }
     else
+    {
 	vim_free(buf);
+	if (curbuf == buf)
+	    curbuf = NULL;  // make clear it's not to be used
+    }
 }
 
 /*
@@ -2006,7 +2017,10 @@ buflist_new(
 	    apply_autocmds(EVENT_BUFWIPEOUT, NULL, NULL, FALSE, curbuf);
 #ifdef FEAT_EVAL
 	if (aborting())		// autocmds may abort script processing
+	{
+	    vim_free(ffname);
 	    return NULL;
+	}
 #endif
 	if (buf == curbuf)
 	{
@@ -2273,6 +2287,7 @@ free_buf_options(
     vim_regfree(buf->b_s.b_cap_prog);
     buf->b_s.b_cap_prog = NULL;
     clear_string_option(&buf->b_s.b_p_spl);
+    clear_string_option(&buf->b_s.b_p_spo);
 #endif
 #ifdef FEAT_SEARCHPATH
     clear_string_option(&buf->b_p_sua);
@@ -2499,7 +2514,7 @@ buflist_findname_stat(
     buf_T	*buf;
 
     // Start at the last buffer, expect to find a match sooner.
-    for (buf = lastbuf; buf != NULL; buf = buf->b_prev)
+    FOR_ALL_BUFS_FROM_LAST(buf)
 	if ((buf->b_flags & BF_DUMMY) == 0 && !otherfile_buf(buf, ffname
 #ifdef UNIX
 		    , stp
@@ -2582,7 +2597,7 @@ buflist_findpat(
 		    return -1;
 		}
 
-		for (buf = lastbuf; buf != NULL; buf = buf->b_prev)
+		FOR_ALL_BUFS_FROM_LAST(buf)
 		    if (buf->b_p_bl == find_listed
 #ifdef FEAT_DIFF
 			    && (!diffmode || diff_mode_buf(buf))
@@ -2900,7 +2915,7 @@ buflist_setfpos(
 {
     wininfo_T	*wip;
 
-    for (wip = buf->b_wininfo; wip != NULL; wip = wip->wi_next)
+    FOR_ALL_BUF_WININFO(buf, wip)
 	if (wip->wi_win == win)
 	    break;
     if (wip == NULL)
@@ -2993,7 +3008,7 @@ find_wininfo(
 {
     wininfo_T	*wip;
 
-    for (wip = buf->b_wininfo; wip != NULL; wip = wip->wi_next)
+    FOR_ALL_BUF_WININFO(buf, wip)
 	if (wip->wi_win == curwin
 #ifdef FEAT_DIFF
 		&& (!skip_diff_buffer || !wininfo_other_tab_diff(wip))
@@ -3008,7 +3023,7 @@ find_wininfo(
 #ifdef FEAT_DIFF
 	if (skip_diff_buffer)
 	{
-	    for (wip = buf->b_wininfo; wip != NULL; wip = wip->wi_next)
+	    FOR_ALL_BUF_WININFO(buf, wip)
 		if (!wininfo_other_tab_diff(wip))
 		    break;
 	}
@@ -3121,7 +3136,7 @@ buflist_list(exarg_T *eap)
     if (vim_strchr(eap->arg, 't'))
     {
 	ga_init2(&buflist, sizeof(buf_T *), 50);
-	for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	FOR_ALL_BUFFERS(buf)
 	{
 	    if (ga_grow(&buflist, 1) == OK)
 		((buf_T **)buflist.ga_data)[buflist.ga_len++] = buf;

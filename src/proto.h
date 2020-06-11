@@ -49,9 +49,6 @@ extern int _stricoll(char *a, char *b);
 # ifdef VMS
 #  include "os_vms.pro"
 # endif
-# ifdef __BEOS__
-#  include "os_beos.pro"
-# endif
 # ifdef __QNX__
 #  include "os_qnx.pro"
 # endif
@@ -68,6 +65,8 @@ extern int _stricoll(char *a, char *b);
 # include "change.pro"
 # include "charset.pro"
 # include "cindent.pro"
+# include "clientserver.pro"
+# include "clipboard.pro"
 # include "cmdexpand.pro"
 # include "cmdhist.pro"
 # include "if_cscope.pro"
@@ -93,6 +92,7 @@ extern int _stricoll(char *a, char *b);
 # include "findfile.pro"
 # include "fold.pro"
 # include "getchar.pro"
+# include "gui_xim.pro"
 # include "hardcopy.pro"
 # include "hashtab.pro"
 # include "highlight.pro"
@@ -119,7 +119,7 @@ extern int _stricoll(char *a, char *b);
 // These prototypes cannot be produced automatically.
 int smsg(const char *, ...)
 # ifdef USE_PRINTF_FORMAT_ATTRIBUTE
-    __attribute__((format(printf, 1, 0)))
+    __attribute__((format(printf, 1, 2)))
 # endif
     ;
 
@@ -138,14 +138,14 @@ int smsg_attr_keep(int, const char *, ...)
 // These prototypes cannot be produced automatically.
 int semsg(const char *, ...)
 # ifdef USE_PRINTF_FORMAT_ATTRIBUTE
-    __attribute__((format(printf, 1, 0)))
+    __attribute__((format(printf, 1, 2)))
 # endif
     ;
 
 // These prototypes cannot be produced automatically.
 void siemsg(const char *, ...)
 # ifdef USE_PRINTF_FORMAT_ATTRIBUTE
-    __attribute__((format(printf, 1, 0)))
+    __attribute__((format(printf, 1, 2)))
 # endif
     ;
 
@@ -221,7 +221,10 @@ void mbyte_im_set_active(int active_arg);
 #  include "textprop.pro"
 # endif
 # include "testing.pro"
+# include "textobject.pro"
+# include "textformat.pro"
 # include "time.pro"
+# include "typval.pro"
 # include "ui.pro"
 # include "undo.pro"
 # include "usercmd.pro"

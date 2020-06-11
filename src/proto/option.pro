@@ -62,7 +62,6 @@ void set_imsearch_global(void);
 void set_context_in_set_cmd(expand_T *xp, char_u *arg, int opt_flags);
 int ExpandSettings(expand_T *xp, regmatch_T *regmatch, int *num_file, char_u ***file);
 int ExpandOldSetting(int *num_file, char_u ***file);
-int has_format_option(int x);
 int shortmess(int x);
 void vimrc_found(char_u *fname, char_u *envname);
 void change_compatible(int on);

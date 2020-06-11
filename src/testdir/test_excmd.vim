@@ -57,6 +57,10 @@ func Test_copy()
   1,3copy 2
   call assert_equal(['L1', 'L2', 'L1', 'L2', 'L3', 'L3', 'L4'], getline(1, 7))
 
+  " Specifying a count before using : to run an ex-command
+  exe "normal! gg4:yank\<CR>"
+  call assert_equal("L1\nL2\nL1\nL2\n", @")
+
   close!
 endfunc
 
@@ -238,6 +242,14 @@ func Test_confirm_cmd()
   call assert_equal(['foo4'], readfile('foo'))
   call assert_equal(['bar2'], readfile('bar'))
 
+  call delete('foo')
+  call delete('bar')
+endfunc
+
+func Test_confirm_cmd_cancel()
+  CheckNotGui
+  CheckRunVimInTerminal
+
   " Test for closing a window with a modified buffer
   let buf = RunVimInTerminal('', {'rows': 20})
   call term_sendkeys(buf, ":set nomore\n")
@@ -247,15 +259,14 @@ func Test_confirm_cmd()
   call WaitForAssert({-> assert_match('^\[Y\]es, (N)o, (C)ancel: *$',
         \ term_getline(buf, 20))}, 1000)
   call term_sendkeys(buf, "C")
+  call WaitForAssert({-> assert_equal('', term_getline(buf, 20))}, 1000)
   call term_sendkeys(buf, ":confirm close\n")
   call WaitForAssert({-> assert_match('^\[Y\]es, (N)o, (C)ancel: *$',
         \ term_getline(buf, 20))}, 1000)
   call term_sendkeys(buf, "N")
-  call term_sendkeys(buf, ":quit\n")
+  call WaitForAssert({-> assert_match('^ *0,0-1         All$',
+        \ term_getline(buf, 20))}, 1000)
   call StopVimInTerminal(buf)
-
-  call delete('foo')
-  call delete('bar')
 endfunc
 
 " Test for the :print command
@@ -272,12 +283,21 @@ endfunc
 func Test_redir_cmd()
   call assert_fails('redir @@', 'E475:')
   call assert_fails('redir abc', 'E475:')
+  call assert_fails('redir => 1abc', 'E474:')
+  call assert_fails('redir => a b', 'E488:')
+  call assert_fails('redir => abc[1]', 'E474:')
+  let b=0zFF
+  call assert_fails('redir =>> b', 'E734:')
+  unlet b
+
   if has('unix')
+    " Redirecting to a directory name
     call mkdir('Xdir')
     call assert_fails('redir > Xdir', 'E17:')
     call delete('Xdir', 'd')
   endif
   if !has('bsd')
+    " Redirecting to a read-only file
     call writefile([], 'Xfile')
     call setfperm('Xfile', 'r--r--r--')
     call assert_fails('redir! > Xfile', 'E190:')
@@ -334,15 +354,15 @@ endfunc
 func Test_run_excmd_with_text_locked()
   " :quit
   let cmd = ":\<C-\>eexecute('quit')\<CR>\<C-C>"
-  call assert_fails("call feedkeys(cmd, 'xt')", 'E523:')
+  call assert_fails("call feedkeys(cmd, 'xt')", 'E565:')
 
   " :qall
   let cmd = ":\<C-\>eexecute('qall')\<CR>\<C-C>"
-  call assert_fails("call feedkeys(cmd, 'xt')", 'E523:')
+  call assert_fails("call feedkeys(cmd, 'xt')", 'E565:')
 
   " :exit
   let cmd = ":\<C-\>eexecute('exit')\<CR>\<C-C>"
-  call assert_fails("call feedkeys(cmd, 'xt')", 'E523:')
+  call assert_fails("call feedkeys(cmd, 'xt')", 'E565:')
 
   " :close - should be ignored
   new
@@ -350,7 +370,7 @@ func Test_run_excmd_with_text_locked()
   call assert_equal(2, winnr('$'))
   close
 
-  call assert_fails("call feedkeys(\":\<C-R>=execute('bnext')\<CR>\", 'xt')", 'E523:')
+  call assert_fails("call feedkeys(\":\<C-R>=execute('bnext')\<CR>\", 'xt')", 'E565:')
 endfunc
 
 " Test for the :verbose command
@@ -387,6 +407,71 @@ func Test_excmd_delete()
   call setline(1, ['foo', "\tbar"])
   call assert_equal(['        bar'], split(execute('deletep'), "\n"))
   close!
+endfunc
+
+" Test for commands that are blocked in a sandbox
+func Sandbox_tests()
+  call assert_fails("call histadd(':', 'ls')", 'E48:')
+  call assert_fails("call mkdir('Xdir')", 'E48:')
+  call assert_fails("call rename('a', 'b')", 'E48:')
+  call assert_fails("call setbufvar(1, 'myvar', 1)", 'E48:')
+  call assert_fails("call settabvar(1, 'myvar', 1)", 'E48:')
+  call assert_fails("call settabwinvar(1, 1, 'myvar', 1)", 'E48:')
+  call assert_fails("call setwinvar(1, 'myvar', 1)", 'E48:')
+  call assert_fails("call timer_start(100, '')", 'E48:')
+  if has('channel')
+    call assert_fails("call prompt_setcallback(1, '')", 'E48:')
+    call assert_fails("call prompt_setinterrupt(1, '')", 'E48:')
+    call assert_fails("call prompt_setprompt(1, '')", 'E48:')
+  endif
+  call assert_fails("let $TESTVAR=1", 'E48:')
+  call assert_fails("call feedkeys('ivim')", 'E48:')
+  call assert_fails("source! Xfile", 'E48:')
+  call assert_fails("call delete('Xfile')", 'E48:')
+  call assert_fails("call writefile([], 'Xfile')", 'E48:')
+  call assert_fails('!ls', 'E48:')
+  call assert_fails('shell', 'E48:')
+  call assert_fails('stop', 'E48:')
+  call assert_fails('exe "normal \<C-Z>"', 'E48:')
+  set insertmode
+  call assert_fails('call feedkeys("\<C-Z>", "xt")', 'E48:')
+  set insertmode&
+  call assert_fails('suspend', 'E48:')
+  call assert_fails('call system("ls")', 'E48:')
+  call assert_fails('call systemlist("ls")', 'E48:')
+  if has('clientserver')
+    call assert_fails('let s=remote_expr("gvim", "2+2")', 'E48:')
+    if !has('win32')
+      " remote_foreground() doesn't thrown an error message on MS-Windows
+      call assert_fails('call remote_foreground("gvim")', 'E48:')
+    endif
+    call assert_fails('let s=remote_peek("gvim")', 'E48:')
+    call assert_fails('let s=remote_read("gvim")', 'E48:')
+    call assert_fails('let s=remote_send("gvim", "abc")', 'E48:')
+    call assert_fails('let s=server2client("gvim", "abc")', 'E48:')
+  endif
+  if has('terminal')
+    call assert_fails('terminal', 'E48:')
+    call assert_fails('call term_start("vim")', 'E48:')
+    call assert_fails('call term_dumpwrite(1, "Xfile")', 'E48:')
+  endif
+  if has('channel')
+    call assert_fails("call ch_logfile('chlog')", 'E48:')
+    call assert_fails("call ch_open('localhost:8765')", 'E48:')
+  endif
+  if has('job')
+    call assert_fails("call job_start('vim')", 'E48:')
+  endif
+  if has('unix') && has('libcall')
+    call assert_fails("echo libcall('libc.so', 'getenv', 'HOME')", 'E48:')
+  endif
+  if has('unix')
+    call assert_fails('cd `pwd`', 'E48:')
+  endif
+endfunc
+
+func Test_sandbox()
+  sandbox call Sandbox_tests()
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

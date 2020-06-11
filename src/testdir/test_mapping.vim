@@ -76,7 +76,7 @@ func Test_map_ctrl_c_insert()
   inoremap <c-c> <ctrl-c>
   cnoremap <c-c> dummy
   cunmap <c-c>
-  call feedkeys("GoTEST2: CTRL-C |\<C-C>A|\<Esc>", "xt")
+  call feedkeys("GoTEST2: CTRL-C |\<*C-C>A|\<Esc>", "xt")
   call assert_equal('TEST2: CTRL-C |<ctrl-c>A|', getline('$'))
   unmap! <c-c>
   set nomodified
@@ -85,7 +85,7 @@ endfunc
 func Test_map_ctrl_c_visual()
   " mapping of ctrl-c in Visual mode
   vnoremap <c-c> :<C-u>$put ='vmap works'
-  call feedkeys("GV\<C-C>\<CR>", "xt")
+  call feedkeys("GV\<*C-C>\<CR>", "xt")
   call assert_equal('vmap works', getline('$'))
   vunmap <c-c>
   set nomodified
@@ -235,7 +235,7 @@ endfunc
 
 func Test_map_meta_quotes()
   imap <M-"> foo
-  call feedkeys("Go-\<M-\">-\<Esc>", "xt")
+  call feedkeys("Go-\<*M-\">-\<Esc>", "xt")
   call assert_equal("-foo-", getline('$'))
   set nomodified
   iunmap <M-">
@@ -430,9 +430,9 @@ func Test_error_in_map_expr()
 
   " GC must not run during map-expr processing, which can make Vim crash.
   call term_sendkeys(buf, '!')
-  call term_wait(buf, 100)
+  call TermWait(buf, 50)
   call term_sendkeys(buf, "\<CR>")
-  call term_wait(buf, 100)
+  call TermWait(buf, 50)
   call assert_equal('run', job_status(job))
 
   call term_sendkeys(buf, ":qall!\<CR>")
@@ -510,7 +510,7 @@ func Test_expr_map_restore_cursor()
   END
   call writefile(lines, 'XtestExprMap')
   let buf = RunVimInTerminal('-S XtestExprMap', #{rows: 10})
-  call term_wait(buf)
+  call TermWait(buf)
   call term_sendkeys(buf, "\<C-B>")
   call VerifyScreenDump(buf, 'Test_map_expr_1', {})
 

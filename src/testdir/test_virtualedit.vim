@@ -301,6 +301,9 @@ func Test_replace_on_tab()
   call append(0, "'r'\t")
   normal gg^5lrxAy
   call assert_equal("'r'  x  y", getline(1))
+  call setline(1, 'aaaaaaaaaaaa')
+  exe "normal! gg2lgR\<Tab>"
+  call assert_equal("aa\taaaa", getline(1))
   bwipe!
   set virtualedit=
 endfunc
@@ -341,6 +344,17 @@ func Test_yank_paste_small_del_reg()
   call assert_equal(', foo', getline(1))
   bwipe!
   set virtualedit=
+endfunc
+
+" Test for delete that breaks a tab into spaces
+func Test_delete_break_tab()
+  new
+  call setline(1, "one\ttwo")
+  set virtualedit=all
+  normal v3ld
+  call assert_equal('    two', getline(1))
+  set virtualedit&
+  close!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

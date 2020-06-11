@@ -65,7 +65,7 @@ hash_create(void)
 hash_init(hashtab_T *ht)
 {
     // This zeroes all "ht_" entries and all the "hi_key" in "ht_smallarray".
-    vim_memset(ht, 0, sizeof(hashtab_T));
+    CLEAR_POINTER(ht);
     ht->ht_array = ht->ht_smallarray;
     ht->ht_mask = HT_INIT_SIZE - 1;
 }
@@ -394,11 +394,12 @@ hash_may_resize(
 	}
 	else
 	    oldarray = ht->ht_array;
+	CLEAR_FIELD(ht->ht_smallarray);
     }
     else
     {
 	// Allocate an array.
-	newarray = ALLOC_MULT(hashitem_T, newsize);
+	newarray = ALLOC_CLEAR_MULT(hashitem_T, newsize);
 	if (newarray == NULL)
 	{
 	    // Out of memory.  When there are NULL items still return OK.
@@ -411,7 +412,6 @@ hash_may_resize(
 	}
 	oldarray = ht->ht_array;
     }
-    vim_memset(newarray, 0, (size_t)(sizeof(hashitem_T) * newsize));
 
     /*
      * Move all the items from the old array to the new one, placing them in

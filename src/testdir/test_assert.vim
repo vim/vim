@@ -36,6 +36,9 @@ func Test_assert_equal()
   call assert_equal(0, assert_equal(4, n))
   let l = [1, 2, 3]
   call assert_equal(0, assert_equal([1, 2, 3], l))
+  call assert_equal(test_null_list(), test_null_list())
+  call assert_equal(test_null_list(), [])
+  call assert_equal([], test_null_list())
 
   let s = 'foo'
   call assert_equal(1, assert_equal('bar', s))
@@ -75,7 +78,18 @@ func Test_assert_equalfile()
   call writefile(['1234X89'], 'Xone')
   call writefile(['1234Y89'], 'Xtwo')
   call assert_equal(1, assert_equalfile('Xone', 'Xtwo'))
-  call assert_match("difference at byte 4", v:errors[0])
+  call assert_match('difference at byte 4, line 1 after "1234X" vs "1234Y"', v:errors[0])
+  call remove(v:errors, 0)
+
+  call writefile([repeat('x', 234) .. 'X'], 'Xone')
+  call writefile([repeat('x', 234) .. 'Y'], 'Xtwo')
+  call assert_equal(1, assert_equalfile('Xone', 'Xtwo'))
+  let xes = repeat('x', 134)
+  call assert_match('difference at byte 234, line 1 after "' .. xes .. 'X" vs "' .. xes .. 'Y"', v:errors[0])
+  call remove(v:errors, 0)
+
+  call assert_equal(1, assert_equalfile('Xone', 'Xtwo', 'a message'))
+  call assert_match("a message: difference at byte 234, line 1 after", v:errors[0])
   call remove(v:errors, 0)
 
   call delete('Xone')

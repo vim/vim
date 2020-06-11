@@ -20,6 +20,8 @@
 
 static int json_encode_item(garray_T *gap, typval_T *val, int copyID, int options);
 
+static char e_json_error[] = N_("E491: json decode error at '%s'");
+
 /*
  * Encode "val" into a JSON format string.
  * The result is added to "gap"
@@ -265,7 +267,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 
 		    l->lv_copyID = copyID;
 		    ga_append(gap, '[');
-		    range_list_materialize(l);
+		    CHECK_LIST_MATERIALIZE(l);
 		    for (li = l->lv_first; li != NULL && !got_int; )
 		    {
 			if (json_encode_item(gap, &li->li_tv, copyID,
@@ -351,6 +353,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	    break;
 #endif
 	case VAR_UNKNOWN:
+	case VAR_ANY:
 	case VAR_VOID:
 	    internal_error_no_abort("json_encode_item()");
 	    return FAIL;
@@ -739,7 +742,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			retval = json_decode_string(reader, cur_item, *p);
 		    else
 		    {
-			emsg(_(e_invarg));
+			semsg(_(e_json_error), p);
 			retval = FAIL;
 		    }
 		    break;
@@ -747,7 +750,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		case ',': // comma: empty item
 		    if ((options & JSON_JS) == 0)
 		    {
-			emsg(_(e_invarg));
+			semsg(_(e_json_error), p);
 			retval = FAIL;
 			break;
 		    }
@@ -777,7 +780,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			    }
 			    if (!VIM_ISDIGIT(*sp))
 			    {
-				emsg(_(e_invarg));
+				semsg(_(e_json_error), p);
 				retval = FAIL;
 				break;
 			    }
@@ -808,7 +811,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 				    &nr, NULL, 0, TRUE);
 			    if (len == 0)
 			    {
-				emsg(_(e_invarg));
+				semsg(_(e_json_error), p);
 				retval = FAIL;
 				goto theend;
 			    }
@@ -961,7 +964,7 @@ item_end:
 			retval = MAYBE;
 		    else
 		    {
-			emsg(_(e_invarg));
+			semsg(_(e_json_error), p);
 			retval = FAIL;
 		    }
 		    goto theend;
@@ -979,7 +982,7 @@ item_end:
 			retval = MAYBE;
 		    else
 		    {
-			emsg(_(e_invarg));
+			semsg(_(e_json_error), p);
 			retval = FAIL;
 		    }
 		    goto theend;
@@ -1035,7 +1038,7 @@ item_end:
 			retval = MAYBE;
 		    else
 		    {
-			emsg(_(e_invarg));
+			semsg(_(e_json_error), p);
 			retval = FAIL;
 		    }
 		    goto theend;
@@ -1054,7 +1057,7 @@ item_end:
 	res->v_type = VAR_SPECIAL;
 	res->vval.v_number = VVAL_NONE;
     }
-    emsg(_(e_invarg));
+    semsg(_(e_json_error), p);
 
 theend:
     ga_clear(&stack);
@@ -1078,7 +1081,7 @@ json_decode_all(js_read_T *reader, typval_T *res, int options)
     if (ret != OK)
     {
 	if (ret == MAYBE)
-	    emsg(_(e_invarg));
+	    semsg(_(e_json_error), reader->js_buf);
 	return FAIL;
     }
     json_skip_white(reader);

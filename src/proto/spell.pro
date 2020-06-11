@@ -43,7 +43,7 @@ char_u *spell_to_word_end(char_u *start, win_T *win);
 int spell_word_start(int startcol);
 void spell_expand_check_cap(colnr_T col);
 int expand_spelling(linenr_T lnum, char_u *pat, char_u ***matchp);
-int valid_spellang(char_u *val);
+int valid_spelllang(char_u *val);
 int valid_spellfile(char_u *val);
 char *did_set_spell_option(int is_spellfile);
 char *compile_cap_prog(synblock_T *synblock);

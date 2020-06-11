@@ -631,7 +631,7 @@ f_mode(typval_T *argvars, typval_T *rettv)
 {
     char_u	buf[4];
 
-    vim_memset(buf, 0, sizeof(buf));
+    CLEAR_FIELD(buf);
 
     if (time_for_testing == 93784)
     {
@@ -945,7 +945,7 @@ get_number(
 	    do_redraw = FALSE;
 	    break;
 	}
-	else if (c == CAR || c == NL || c == Ctrl_C || c == ESC)
+	else if (c == CAR || c == NL || c == Ctrl_C || c == ESC || c == 'q')
 	    break;
     }
     --no_mapping;
@@ -967,9 +967,9 @@ prompt_for_number(int *mouse_used)
 
     // When using ":silent" assume that <CR> was entered.
     if (mouse_used != NULL)
-	msg_puts(_("Type number and <Enter> or click with mouse (empty cancels): "));
+	msg_puts(_("Type number and <Enter> or click with the mouse (q or empty cancels): "));
     else
-	msg_puts(_("Type number and <Enter> (empty cancels): "));
+	msg_puts(_("Type number and <Enter> (q or empty cancels): "));
 
     // Set the state such that text can be selected/copied/pasted and we still
     // get mouse events. redraw_after_callback() will not redraw if cmdline_row
@@ -1666,23 +1666,25 @@ vim_getenv(char_u *name, int *mustfree)
 
     if (p != NULL)
 	return p;
+
+# ifdef __HAIKU__
+    // special handling for user settings directory...
+    if (STRCMP(name, "BE_USER_SETTINGS") == 0)
+    {
+	static char userSettingsPath[MAXPATHL];
+
+	if (find_directory(B_USER_SETTINGS_DIRECTORY, 0, false,
+					   userSettingsPath, MAXPATHL) == B_OK)
+	    return (char_u *)userSettingsPath;
+	else
+	    return NULL;
+    }
+# endif
 #endif
 
     // handling $VIMRUNTIME and $VIM is below, bail out if it's another name.
     vimruntime = (STRCMP(name, "VIMRUNTIME") == 0);
     if (!vimruntime && STRCMP(name, "VIM") != 0)
-#if defined(__HAIKU__)
-	// special handling for user settings directory...
-	if (STRCMP(name, "BE_USER_SETTINGS") == 0)
-	{
-	    static char userSettingsPath[MAXPATHL] = {0};
-
-	    if (B_OK == find_directory(B_USER_SETTINGS_DIRECTORY, 0,
-					    false, userSettingsPath, MAXPATHL))
-		return userSettingsPath;
-	}
-	else
-#endif
 	return NULL;
 
     /*
@@ -2172,7 +2174,7 @@ preserve_exit(void)
     {
 	if (buf->b_ml.ml_mfp != NULL && buf->b_ml.ml_mfp->mf_fname != NULL)
 	{
-	    OUT_STR("Vim: preserving files...\n");
+	    OUT_STR("Vim: preserving files...\r\n");
 	    screen_start();	    // don't know where cursor is now
 	    out_flush();
 	    ml_sync_all(FALSE, FALSE);	// preserve all swap files
@@ -2182,7 +2184,7 @@ preserve_exit(void)
 
     ml_close_all(FALSE);	    // close all memfiles, without deleting
 
-    OUT_STR("Vim: Finished.\n");
+    OUT_STR("Vim: Finished.\r\n");
 
     getout(1);
 }
@@ -2217,6 +2219,19 @@ line_breakcheck(void)
 fast_breakcheck(void)
 {
     if (++breakcheck_count >= BREAKCHECK_SKIP * 10)
+    {
+	breakcheck_count = 0;
+	ui_breakcheck();
+    }
+}
+
+/*
+ * Like line_breakcheck() but check 100 times less often.
+ */
+    void
+veryfast_breakcheck(void)
+{
+    if (++breakcheck_count >= BREAKCHECK_SKIP * 100)
     {
 	breakcheck_count = 0;
 	ui_breakcheck();

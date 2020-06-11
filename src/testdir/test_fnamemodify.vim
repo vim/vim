@@ -31,6 +31,9 @@ func Test_fnamemodify()
   call assert_equal('tar', fnamemodify('abc.fb2.tar.gz', ':e:e:r'))
 
   let cwd = getcwd()
+  call chdir($HOME)
+  call assert_equal('foobar', fnamemodify('~/foobar', ':~:.'))
+  call chdir(cwd)
   call mkdir($HOME . '/XXXXXXXX/a', 'p')
   call mkdir($HOME . '/XXXXXXXX/b', 'p')
   call chdir($HOME . '/XXXXXXXX/a/')
@@ -86,4 +89,8 @@ func Test_fnamemodify_er()
   " :e never includes the whole filename, so "a.b":e:e:e --> "b"
   call assert_equal('b.c', fnamemodify('a.b.c.d.e', ':r:r:e:e:e'))
   call assert_equal('b.c', fnamemodify('a.b.c.d.e', ':r:r:e:e:e:e'))
+
+  call assert_equal('', fnamemodify(test_null_string(), test_null_string()))
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

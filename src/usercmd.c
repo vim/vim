@@ -1007,7 +1007,7 @@ ex_command(exarg_T *eap)
     if (ASCII_ISALPHA(*p))
 	while (ASCII_ISALNUM(*p))
 	    ++p;
-    if (!ends_excmd(*p) && !VIM_ISWHITE(*p))
+    if (!ends_excmd2(eap->arg, p) && !VIM_ISWHITE(*p))
     {
 	emsg(_("E182: Invalid command name"));
 	return;
@@ -1018,7 +1018,7 @@ ex_command(exarg_T *eap)
     // If there is nothing after the name, and no attributes were specified,
     // we are listing commands
     p = skipwhite(end);
-    if (!has_attr && ends_excmd(*p))
+    if (!has_attr && ends_excmd2(eap->arg, p))
     {
 	uc_list(name, end - name);
     }
@@ -1230,6 +1230,37 @@ add_cmd_modifier(char_u *buf, char *mod_str, int *multi_mods)
 
     *multi_mods = 1;
 
+    return result;
+}
+
+/*
+ * Add modifiers from "cmdmod.split" to "buf".  Set "multi_mods" when one was
+ * added.  Return the number of bytes added.
+ */
+    size_t
+add_win_cmd_modifers(char_u *buf, int *multi_mods)
+{
+    size_t result = 0;
+
+    // :aboveleft and :leftabove
+    if (cmdmod.split & WSP_ABOVE)
+	result += add_cmd_modifier(buf, "aboveleft", multi_mods);
+    // :belowright and :rightbelow
+    if (cmdmod.split & WSP_BELOW)
+	result += add_cmd_modifier(buf, "belowright", multi_mods);
+    // :botright
+    if (cmdmod.split & WSP_BOT)
+	result += add_cmd_modifier(buf, "botright", multi_mods);
+
+    // :tab
+    if (cmdmod.tab > 0)
+	result += add_cmd_modifier(buf, "tab", multi_mods);
+    // :topleft
+    if (cmdmod.split & WSP_TOP)
+	result += add_cmd_modifier(buf, "topleft", multi_mods);
+    // :vertical
+    if (cmdmod.split & WSP_VERT)
+	result += add_cmd_modifier(buf, "vertical", multi_mods);
     return result;
 }
 
@@ -1451,16 +1482,6 @@ uc_check_code(
 	    *buf = '\0';
 	}
 
-	// :aboveleft and :leftabove
-	if (cmdmod.split & WSP_ABOVE)
-	    result += add_cmd_modifier(buf, "aboveleft", &multi_mods);
-	// :belowright and :rightbelow
-	if (cmdmod.split & WSP_BELOW)
-	    result += add_cmd_modifier(buf, "belowright", &multi_mods);
-	// :botright
-	if (cmdmod.split & WSP_BOT)
-	    result += add_cmd_modifier(buf, "botright", &multi_mods);
-
 	// the modifiers that are simple flags
 	for (i = 0; mod_entries[i].varp != NULL; ++i)
 	    if (*mod_entries[i].varp)
@@ -1475,19 +1496,12 @@ uc_check_code(
 	if (msg_silent > 0)
 	    result += add_cmd_modifier(buf,
 		    emsg_silent > 0 ? "silent!" : "silent", &multi_mods);
-	// :tab
-	if (cmdmod.tab > 0)
-	    result += add_cmd_modifier(buf, "tab", &multi_mods);
-	// :topleft
-	if (cmdmod.split & WSP_TOP)
-	    result += add_cmd_modifier(buf, "topleft", &multi_mods);
 	// TODO: How to support :unsilent?
 	// :verbose
 	if (p_verbose > 0)
 	    result += add_cmd_modifier(buf, "verbose", &multi_mods);
-	// :vertical
-	if (cmdmod.split & WSP_VERT)
-	    result += add_cmd_modifier(buf, "vertical", &multi_mods);
+	// flags from cmdmod.split
+	result += add_win_cmd_modifers(buf, &multi_mods);
 	if (quote && buf != NULL)
 	{
 	    buf += result - 2;
@@ -1649,6 +1663,7 @@ do_ucmd(exarg_T *eap)
 
 #ifdef FEAT_EVAL
     current_sctx.sc_sid = cmd->uc_script_ctx.sc_sid;
+    current_sctx.sc_version = cmd->uc_script_ctx.sc_version;
 #endif
     (void)do_cmdline(buf, eap->getline, eap->cookie,
 				   DOCMD_VERBOSE|DOCMD_NOWAIT|DOCMD_KEYTYPED);

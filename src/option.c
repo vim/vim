@@ -1369,7 +1369,7 @@ do_set(
 	    }
 
 	    /*
-	     * allow '=' and ':' for hystorical reasons (MSDOS command.com
+	     * allow '=' and ':' for historical reasons (MSDOS command.com
 	     * allows only one '=' character per "set" command line. grrr. (jw)
 	     */
 	    if (nextchar == '?'
@@ -1684,6 +1684,10 @@ do_set(
 				    case 2:
 					*(char_u **)varp = vim_strsave(
 						(char_u *)"indent,eol,start");
+					break;
+				    case 3:
+					*(char_u **)varp = vim_strsave(
+						(char_u *)"indent,eol,nostop");
 					break;
 				}
 				vim_free(oldval);
@@ -2456,7 +2460,9 @@ set_option_sctx_idx(int opt_idx, int opt_flags, sctx_T script_ctx)
     int		indir = (int)options[opt_idx].indir;
     sctx_T	new_script_ctx = script_ctx;
 
-    new_script_ctx.sc_lnum += SOURCING_LNUM;
+    // Modeline already has the line number set.
+    if (!(opt_flags & OPT_MODELINE))
+	new_script_ctx.sc_lnum += SOURCING_LNUM;
 
     // Remember where the option was set.  For local options need to do that
     // in the buffer or window structure.
@@ -4324,7 +4330,8 @@ find_key_option(char_u *arg_arg, int has_lt)
     {
 	--arg;			    // put arg at the '<'
 	modifiers = 0;
-	key = find_special_key(&arg, &modifiers, TRUE, TRUE, FALSE, TRUE, NULL);
+	key = find_special_key(&arg, &modifiers,
+			    FSK_KEYCODE | FSK_KEEP_X_KEY | FSK_SIMPLIFY, NULL);
 	if (modifiers)		    // can't handle modifiers here
 	    key = 0;
     }
@@ -5322,6 +5329,7 @@ get_varp(struct vimoption *p)
 	case PV_SPC:	return (char_u *)&(curwin->w_s->b_p_spc);
 	case PV_SPF:	return (char_u *)&(curwin->w_s->b_p_spf);
 	case PV_SPL:	return (char_u *)&(curwin->w_s->b_p_spl);
+	case PV_SPO:	return (char_u *)&(curwin->w_s->b_p_spo);
 #endif
 	case PV_SW:	return (char_u *)&(curbuf->b_p_sw);
 	case PV_TS:	return (char_u *)&(curbuf->b_p_ts);
@@ -5666,7 +5674,7 @@ buf_copy_options(buf_T *buf, int flags)
 	if (should_copy || (flags & BCO_ALWAYS))
 	{
 #ifdef FEAT_EVAL
-	    vim_memset(buf->b_p_script_ctx, 0, sizeof(buf->b_p_script_ctx));
+	    CLEAR_FIELD(buf->b_p_script_ctx);
 	    init_buf_opt_idx();
 #endif
 	    // Don't copy the options specific to a help buffer when
@@ -5831,6 +5839,8 @@ buf_copy_options(buf_T *buf, int flags)
 	    COPY_OPT_SCTX(buf, BV_SPF);
 	    buf->b_s.b_p_spl = vim_strsave(p_spl);
 	    COPY_OPT_SCTX(buf, BV_SPL);
+	    buf->b_s.b_p_spo = vim_strsave(p_spo);
+	    COPY_OPT_SCTX(buf, BV_SPO);
 #endif
 #if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
 	    buf->b_p_inde = vim_strsave(p_inde);
@@ -6488,18 +6498,6 @@ wc_use_keyname(char_u *varp, long *wcp)
 }
 
 /*
- * Return TRUE if format option 'x' is in effect.
- * Take care of no formatting when 'paste' is set.
- */
-    int
-has_format_option(int x)
-{
-    if (p_paste)
-	return FALSE;
-    return (vim_strchr(curbuf->b_p_fo, x) != NULL);
-}
-
-/*
  * Return TRUE if "x" is present in 'shortmess' option, or
  * 'shortmess' contains 'a' and "x" is present in SHM_A.
  */
@@ -6818,7 +6816,7 @@ fill_breakat_flags(void)
  */
     int
 can_bs(
-    int		what)	    // BS_INDENT, BS_EOL or BS_START
+    int		what)	    // BS_INDENT, BS_EOL, BS_START or BS_NOSTOP
 {
 #ifdef FEAT_JOB_CHANNEL
     if (what == BS_START && bt_prompt(curbuf))
@@ -6826,7 +6824,8 @@ can_bs(
 #endif
     switch (*p_bs)
     {
-	case '2':	return TRUE;
+	case '3':       return TRUE;
+	case '2':	return (what != BS_NOSTOP);
 	case '1':	return (what != BS_START);
 	case '0':	return FALSE;
     }

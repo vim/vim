@@ -1,4 +1,4 @@
-*os_haiku.txt*	For Vim version 8.2.  Last change: 2020 Feb 26
+*os_haiku.txt*	For Vim version 8.2.  Last change: 2020 May 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -16,7 +16,7 @@ targets personal computing.
  2. Compiling Vim		|haiku-compiling|
  3. The Haiku GUI		|haiku-gui|
  4. The $VIM directory		|haiku-vimdir|
- 5. The $BE_USER_SETTINGS
+ 5. The $USER_SETTINGS_DIR
     directory			|haiku-user-settings-dir|
  6. Drag & Drop			|haiku-dragndrop|
  7. Single Launch vs. Multiple
@@ -25,8 +25,9 @@ targets personal computing.
  9. The meta key modifier	|haiku-meta|
 10. Mouse key mappings		|haiku-mouse|
 11. Color names			|haiku-colors|
-12. Credits			|haiku-support-credits|
-13. Bugs & things To Do		|haiku-bugs|
+12. GUI Toolbar Images		|haiku-toolbar-images|
+13. Credits			|haiku-support-credits|
+14. Bugs & to-do		|haiku-bugs|
 
 
 1. General						*haiku-general*
@@ -44,9 +45,13 @@ Vim can be compiled using the standard configure/make approach. Running
 vim with the Haiku GUI support.  Run ./configure --help , to find out other
 features you can enable/disable.
 
+Haiku uses "ncurses6" as its terminal library, therefore you need to have
+"ncurses6_devel" package installed from HaikuDepot in order to configure
+the Haiku build.  Just append "--with-tlib=ncurses6" to ./configure command
+
 Now you should use "make" to compile Vim, then "make install" to install it.
-For seamless integration into the Haiku the GUI-less vim binary should be
-additionally installed over the GUI version. Typical build commands are: >
+For seamless integration into Haiku, the GUI-less vim binary should be
+additionally installed over the GUI version.  Typical build commands are:
 
   ./configure --prefix=`finddir B_SYSTEM_NONPACKAGED_DIRECTORY` \
     --datarootdir=`finddir B_SYSTEM_NONPACKAGED_DATA_DIRECTORY` \
@@ -66,32 +71,32 @@ additionally installed over the GUI version. Typical build commands are: >
 
 Normally Vim starts with the GUI if you start it as gvim or vim -g.  The vim
 version with GUI tries to determine if it was started from the Tracker instead
-of the Terminal, and if so, uses the GUI anyway. However, the current detection
+of the Terminal, and if so, uses the GUI anyway.  However, the current detection
 scheme is fooled if you use the command "vim - </dev/null".
 
 Stuff that does not work yet:
 
-- Mouse up events are not generated when outside the window. This may be a bug in
-  Haiku. You can notice this when selecting text and moving the cursor outside
-  the window, then letting go of the mouse button.  Another way is when you
-  drag the scrollbar and do the same thing.  Because Vim still thinks you are
-  still playing with the scrollbar it won't change it itself. I provided a
-  workaround which kicks in when the window is activated or deactivated (so it
-  works best with focus- follows-mouse turned on).
-- The cursor does not flash (very low priority; I'm not sure I even like it
-  when it flashes)
+- Mouse up events are not generated when outside the window.  You can notice
+  this when selecting text and moving the cursor outside the window, then
+  letting go of the mouse button.  Another way is when you drag the scrollbar
+  and do the same thing.  Because Vim still thinks you are still playing with
+  the scrollbar it won't change it itself.  There is a workaround which kicks
+  in when the window is activated or deactivated (so it works best with focus-
+  follows-mouse turned on).
+- The cursor does not flash.
 
 
 4. The $VIM directory					*haiku-vimdir*
 
-$VIM is the symbolic name for the place where Vims support files are stored.
-The default value for $VIM is set at compile time and can be determined with >
+$VIM is the symbolic name for the place where Vim's support files are stored.
+The default value for $VIM is set at compile time and can be determined with:
 
   :version
 
-The normal value is /boot/common/data/vim.  If you don't like it you can
-set the VIM environment variable to override this, or set 'helpfile' in your
-.vimrc: >
+The normal value is /boot/system/data/vim for Haikuports version, 
+/boot/system/non-packaged/data/vim for manual builds.  If you don't like it
+you can set the VIM environment variable to override this, or set 'helpfile'
+in your .vimrc: >
 
   :if version >= 500
   :    set helpfile=~/vim/runtime/doc/help.txt
@@ -112,7 +117,7 @@ The normal value is /boot/home/config/settings.
 You can drop files and directories on either the Vim icon (starts a new Vim
 session, unless you use the File Types application to set Vim to be "Single
 Launch") or on the Vim window (starts editing the files).  Dropping a folder
-sets Vim's current working directory. |:cd| |:pwd| If you drop files or
+sets Vim's current working directory |:cd| |:pwd|.  If you drop files or
 folders with either SHIFT key pressed, Vim changes directory to the folder
 that contains the first item dropped.  When starting Vim, there is no need to
 press shift: Vim behaves as if you do.
@@ -159,7 +164,7 @@ isn't a dotted-y, then for this font the encoding does not work.
 
 If the font you specify is unavailable, you get the system fixed font.
 
-GUI Font Selection Dialog is available at giving the >
+GUI Font Selection Dialog is available at giving the:
 
   :set guifont=*
 
@@ -216,13 +221,14 @@ All the changes and patches released under vim-license.
 Thank you, all!
 
 
-13. Bugs & things To Do					*haiku-bugs*
-
-The port is under development now and far away from the perfect state. Bug
-reports, patches and wishes are welcome.
-
-
- -Siarzhuk Zharski <imker@gmx.li>
+14. Bugs & to-do					*haiku-bugs*
+ 
+The port is under development now and far away from the perfect state. For bug
+reports, patches and wishes, please use the Vim mailing list or Vim Github
+repository.
+ 
+Mailing list: https://www.vim.org/maillist.php
+Vim Github repository: https://github.com/vim/vim
 
 
  vim:tw=78:ts=8:ft=help:norl:

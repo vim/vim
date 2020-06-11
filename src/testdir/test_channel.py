@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # Server that will accept connections from a Vim channel.
 # Used by test_channel.vim.
@@ -20,6 +20,9 @@ except ImportError:
     import SocketServer as socketserver
 
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
+
+    def setup(self):
+        self.request.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 
     def handle(self):
         print("=== socket opened ===")
@@ -235,21 +238,19 @@ def writePortInFile(port):
     f.write("{0}".format(port))
     f.close()
 
-if __name__ == "__main__":
-    HOST, PORT = "localhost", 0
-
+def main(host, port, server_class=ThreadedTCPServer):
     # Wait half a second before opening the port to test waittime in ch_open().
     # We do want to get the port number, get that first.  We cannot open the
     # socket, guess a port is free.
     if len(sys.argv) >= 2 and sys.argv[1] == 'delay':
-        PORT = 13684
-        writePortInFile(PORT)
+        port = 13684
+        writePortInFile(port)
 
         print("Wait for it...")
         time.sleep(0.5)
 
-    server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
-    ip, port = server.server_address
+    server = server_class((host, port), ThreadedTCPRequestHandler)
+    ip, port = server.server_address[0:2]
 
     # Start a thread with the server.  That thread will then start a new thread
     # for each connection.
@@ -263,7 +264,10 @@ if __name__ == "__main__":
     # Main thread terminates, but the server continues running
     # until server.shutdown() is called.
     try:
-        while server_thread.isAlive(): 
+        while server_thread.is_alive():
             server_thread.join(1)
     except (KeyboardInterrupt, SystemExit):
         server.shutdown()
+
+if __name__ == "__main__":
+    main("localhost", 0)

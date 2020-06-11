@@ -69,13 +69,30 @@ estack_push(etype_T type, char_u *name, long lnum)
  * Add a user function to the execution stack.
  */
     void
-estack_push_ufunc(etype_T type, ufunc_T *ufunc, long lnum)
+estack_push_ufunc(ufunc_T *ufunc, long lnum)
 {
-    estack_T *entry = estack_push(type,
+    estack_T *entry = estack_push(ETYPE_UFUNC,
 	    ufunc->uf_name_exp != NULL
 				  ? ufunc->uf_name_exp : ufunc->uf_name, lnum);
     if (entry != NULL)
 	entry->es_info.ufunc = ufunc;
+}
+
+/*
+ * Return TRUE if "ufunc" with "lnum" is already at the top of the exe stack.
+ */
+    int
+estack_top_is_ufunc(ufunc_T *ufunc, long lnum)
+{
+    estack_T *entry;
+
+    if (exestack.ga_len == 0)
+	return FALSE;
+    entry = ((estack_T *)exestack.ga_data) + exestack.ga_len - 1;
+    return entry->es_type == ETYPE_UFUNC
+	&& STRCMP( entry->es_name, ufunc->uf_name_exp != NULL
+				    ? ufunc->uf_name_exp : ufunc->uf_name) == 0
+	&& entry->es_lnum == lnum;
 }
 #endif
 
@@ -228,7 +245,7 @@ do_in_path(
     buf = alloc(MAXPATHL);
     if (buf != NULL && rtp_copy != NULL)
     {
-	if (p_verbose > 1 && name != NULL)
+	if (p_verbose > 10 && name != NULL)
 	{
 	    verbose_enter();
 	    smsg(_("Searching for \"%s\" in \"%s\""),
@@ -276,7 +293,7 @@ do_in_path(
 		    copy_option_part(&np, tail, (int)(MAXPATHL - (tail - buf)),
 								       "\t ");
 
-		    if (p_verbose > 2)
+		    if (p_verbose > 10)
 		    {
 			verbose_enter();
 			smsg(_("Searching for \"%s\""), buf);
@@ -967,9 +984,13 @@ ex_source(exarg_T *eap)
 ex_options(
     exarg_T	*eap UNUSED)
 {
-    vim_setenv((char_u *)"OPTWIN_CMD",
-	    (char_u *)(cmdmod.tab ? "tab"
-		: (cmdmod.split & WSP_VERT) ? "vert" : ""));
+    char_u  buf[500];
+    int	    multi_mods = 0;
+
+    buf[0] = NUL;
+    (void)add_win_cmd_modifers(buf, &multi_mods);
+
+    vim_setenv((char_u *)"OPTWIN_CMD", buf);
     cmd_source((char_u *)SYS_OPTWIN_FILE, NULL);
 }
 #endif
@@ -1133,7 +1154,8 @@ do_source(
     {
 	// Already loaded and no need to load again, return here.
 	*ret_sid = sid;
-	return OK;
+	retval = OK;
+	goto theend;
     }
 #endif
 
@@ -1267,26 +1289,40 @@ do_source(
     if (sid > 0)
     {
 	hashtab_T	*ht;
-	hashitem_T	*hi;
-	dictitem_T	*di;
-	int		todo;
+	int		is_vim9 = si->sn_version == SCRIPT_VERSION_VIM9;
 
 	// loading the same script again
 	si->sn_had_command = FALSE;
+	si->sn_version = 1;
 	current_sctx.sc_sid = sid;
 
+	// In Vim9 script all script-local variables are removed when reloading
+	// the same script.  In legacy script they remain but "const" can be
+	// set again.
 	ht = &SCRIPT_VARS(sid);
-	todo = (int)ht->ht_used;
-	for (hi = ht->ht_array; todo > 0; ++hi)
-	    if (!HASHITEM_EMPTY(hi))
-	    {
-		--todo;
-		di = HI2DI(hi);
-		di->di_flags |= DI_FLAGS_RELOAD;
-	    }
+	if (is_vim9)
+	    hashtab_free_contents(ht);
+	else
+	{
+	    int		todo = (int)ht->ht_used;
+	    hashitem_T	*hi;
+	    dictitem_T	*di;
+
+	    for (hi = ht->ht_array; todo > 0; ++hi)
+		if (!HASHITEM_EMPTY(hi))
+		{
+		    --todo;
+		    di = HI2DI(hi);
+		    di->di_flags |= DI_FLAGS_RELOAD;
+		}
+	}
 
 	// old imports are no longer valid
 	free_imports(sid);
+
+	// in Vim9 script functions are marked deleted
+	if (is_vim9)
+	    delete_script_functions(sid);
     }
     else
     {
@@ -1525,6 +1561,7 @@ free_scriptnames(void)
 	vim_free(si->sn_vars);
 
 	vim_free(si->sn_name);
+	free_imports(i);
 	free_string_option(si->sn_save_cpo);
 #  ifdef FEAT_PROFILE
 	ga_clear(&si->sn_prl_ga);

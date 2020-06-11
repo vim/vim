@@ -62,6 +62,18 @@ if test x"$ac_cv_prog_cc_c99" != xno; then
   fi
 fi
 
+dnl If $SOURCE_DATE_EPOCH is present in the environment, use that as the
+dnl "compiled" timestamp in :version's output.  Attempt to get the formatted
+dnl date using GNU date syntax, BSD date syntax, and finally falling back to
+dnl just using the current time.
+if test -n "$SOURCE_DATE_EPOCH"; then
+  DATE_FMT="%b %d %Y %H:%M:%S"
+  BUILD_DATE=$(LC_ALL=C date -u -d "@$SOURCE_DATE_EPOCH" "+$DATE_FMT" 2>/dev/null || LC_ALL=C date -u -r "$SOURCE_DATE_EPOCH" "+$DATE_FMT" 2>/dev/null || LC_ALL=C date -u "+$DATE_FMT")
+  AC_DEFINE_UNQUOTED(BUILD_DATE, ["$BUILD_DATE"])
+  BUILD_DATE_MSG=-"echo -e '=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\nNOTE: build date/time is fixed: $BUILD_DATE\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-='"
+  AC_SUBST(BUILD_DATE_MSG)
+fi
+
 dnl Check for the flag that fails if stuff are missing.
 
 AC_MSG_CHECKING(--enable-fail-if-missing argument)
@@ -145,14 +157,6 @@ if test -f ./toolcheck; then
 fi
 
 OS_EXTRA_SRC=""; OS_EXTRA_OBJ=""
-
-dnl Check for BeOS, which needs an extra source file
-AC_MSG_CHECKING(for BeOS)
-case `uname` in
-    BeOS)	OS_EXTRA_SRC=os_beos.c; OS_EXTRA_OBJ=objects/os_beos.o
-		BEOS=yes; AC_MSG_RESULT(yes);;
-    *)		BEOS=no; AC_MSG_RESULT(no);;
-esac
 
 AC_MSG_CHECKING(for Haiku)
 case `uname` in
@@ -625,7 +629,26 @@ if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
 	  LUA_INC=/lua$vi_cv_version_lua
 	else
 	  AC_MSG_RESULT(no)
-	  vi_cv_path_lua_pfx=
+
+	  # Detect moonjit:
+	  # https://groups.google.com/forum/#!topic/vim_use/O0vek60WuTk
+	  lua_suf=/moonjit-2.3
+	  inc_path="$vi_cv_path_lua_pfx/include"
+	  for dir in "$inc_path"/moonjit-[[0-9]]* ; do
+	    if test -d "$dir" ; then
+	      lua_suf=`basename '$dir'`
+	      lua_suf="/$lua_suf"
+	      break
+	    fi
+	  done
+	  AC_MSG_CHECKING(if lua.h can be found in $inc_path$lua_suf)
+	  if test -f "$inc_path$lua_suf/lua.h"; then
+	    AC_MSG_RESULT(yes)
+	    LUA_INC=$lua_suf
+	  else
+	    AC_MSG_RESULT(no)
+	    vi_cv_path_lua_pfx=
+	  fi
 	fi
       fi
     fi
@@ -2038,17 +2061,51 @@ else
 fi
 
 if test "$enable_channel" = "yes"; then
-  dnl On Solaris we need the socket and nsl library.
-
+  dnl On Solaris we need the socket library, or on Haiku the network library.
   if test "x$HAIKU" = "xyes"; then
 	AC_CHECK_LIB(network, socket)
   else
 	AC_CHECK_LIB(socket, socket)
   fi
 
-  AC_CHECK_LIB(nsl, gethostbyname)
-  AC_MSG_CHECKING(whether compiling with process communication is possible)
-  AC_TRY_LINK([
+  AC_CACHE_CHECK([whether compiling with IPv6 networking is possible], [vim_cv_ipv6_networking],
+    [AC_TRY_LINK([
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+	/* Check bitfields */
+	struct nbbuf {
+	unsigned int  initDone:1;
+	unsigned short signmaplen;
+	};
+	    ], [
+		/* Check creating a socket. */
+		struct sockaddr_in server;
+		struct addrinfo *res;
+		(void)socket(AF_INET, SOCK_STREAM, 0);
+		(void)htons(100);
+		(void)getaddrinfo("microsoft.com", NULL, NULL, &res);
+		if (errno == ECONNREFUSED)
+		  (void)connect(1, (struct sockaddr *)&server, sizeof(server));
+		(void)freeaddrinfo(res);
+	    ],
+	[vim_cv_ipv6_networking="yes"],
+	[vim_cv_ipv6_networking="no"])])
+
+  if test "x$vim_cv_ipv6_networking" = "xyes"; then
+    AC_DEFINE(FEAT_IPV6)
+    AC_CHECK_FUNCS(inet_ntop)
+  else
+    dnl On Solaris we need the nsl library.
+    AC_CHECK_LIB(nsl, gethostbyname)
+    AC_CACHE_CHECK([whether compiling with IPv4 networking is possible], [vim_cv_ipv4_networking],
+      [AC_TRY_LINK([
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -2072,8 +2129,9 @@ if test "$enable_channel" = "yes"; then
 		if (errno == ECONNREFUSED)
 		  (void)connect(1, (struct sockaddr *)&server, sizeof(server));
 	    ],
-	AC_MSG_RESULT(yes),
-	AC_MSG_RESULT(no); enable_netbeans="no"; enable_channel="no")
+	[vim_cv_ipv4_networking="yes"],
+	[vim_cv_ipv4_networking="no"; enable_netbeans="no"; enable_channel="no"])])
+  fi
 fi
 if test "$enable_netbeans" = "yes"; then
   AC_DEFINE(FEAT_NETBEANS_INTG)
@@ -3619,77 +3677,6 @@ else
   AC_MSG_RESULT([don't know])
 fi
 
-dnl    ****  pty mode/group handling ****
-dnl
-dnl support provided by Luke Mewburn <lm@rmit.edu.au>, 931222
-rm -f conftest_grp
-AC_CACHE_CHECK([default tty permissions/group], [vim_cv_tty_group],
-  [
-    AC_RUN_IFELSE([AC_LANG_SOURCE([[
-#include "confdefs.h"
-#include <sys/types.h>
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#endif
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-#include <sys/stat.h>
-#include <stdio.h>
-main()
-{
-  struct stat sb;
-  char *x,*ttyname();
-  int om, m;
-  FILE *fp;
-
-  if (!(x = ttyname(0))) exit(1);
-  if (stat(x, &sb)) exit(1);
-  om = sb.st_mode;
-  if (om & 002) exit(0);
-  m = system("mesg y");
-  if (m == -1 || m == 127) exit(1);
-  if (stat(x, &sb)) exit(1);
-  m = sb.st_mode;
-  if (chmod(x, om)) exit(1);
-  if (m & 002) exit(0);
-  if (sb.st_gid == getgid()) exit(1);
-  if (!(fp=fopen("conftest_grp", "w")))
-    exit(1);
-  fprintf(fp, "%d\n", sb.st_gid);
-  fclose(fp);
-  exit(0);
-}
-    ]])],[
-      if test -f conftest_grp; then
-	vim_cv_tty_group=`cat conftest_grp`
-	if test "x$vim_cv_tty_mode" = "x" ; then
-	  vim_cv_tty_mode=0620
-	fi
-	AC_MSG_RESULT([pty mode: $vim_cv_tty_mode, group: $vim_cv_tty_group])
-      else
-	vim_cv_tty_group=world
-	AC_MSG_RESULT([ptys are world accessible])
-      fi
-    ],[
-      vim_cv_tty_group=world
-      AC_MSG_RESULT([can't determine - assume ptys are world accessible])
-    ],[
-      AC_MSG_ERROR(cross-compiling: please set 'vim_cv_tty_group' and 'vim_cv_tty_mode')
-    ])
-  ])
-rm -f conftest_grp
-
-if test "x$vim_cv_tty_group" != "xworld" ; then
-  AC_DEFINE_UNQUOTED(PTYGROUP,$vim_cv_tty_group)
-  if test "x$vim_cv_tty_mode" = "x" ; then
-    AC_MSG_ERROR([It seems you're cross compiling and have 'vim_cv_tty_group' set, please also set the environment variable 'vim_cv_tty_mode' to the correct mode (probably 0620)])
-  else
-    AC_DEFINE(PTYMODE, 0620)
-  fi
-fi
-
 dnl Checks for library functions. ===================================
 
 AC_TYPE_SIGNAL
@@ -4076,6 +4063,21 @@ AC_MSG_CHECKING(for rename)
 AC_TRY_LINK([#include <stdio.h>], [rename("this", "that")],
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_RENAME),
 	AC_MSG_RESULT(no))
+
+dnl check for dirfd()
+AC_MSG_CHECKING(for dirfd)
+AC_TRY_COMPILE(
+[#include <sys/types.h>
+#include <dirent.h>],
+[DIR * dir=opendir("dirname"); dirfd(dir);],
+AC_MSG_RESULT(yes); AC_DEFINE(HAVE_DIRFD), AC_MSG_RESULT(not usable))
+
+dnl check for flock()
+AC_MSG_CHECKING(for flock)
+AC_TRY_COMPILE(
+[#include <sys/file.h>],
+[flock(10, LOCK_SH);],
+AC_MSG_RESULT(yes); AC_DEFINE(HAVE_FLOCK), AC_MSG_RESULT(not usable))
 
 dnl sysctl() may exist but not the arguments we use
 AC_MSG_CHECKING(for sysctl)

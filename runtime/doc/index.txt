@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 8.2.  Last change: 2020 Jan 14
+*index.txt*     For Vim version 8.2.  Last change: 2020 May 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -85,7 +85,7 @@ tag		char		action in Insert mode	~
 |i_CTRL-R_CTRL-P| CTRL-R CTRL-P {register}
 				insert the contents of a register literally
 				and fix indent.
-		CTRL-S		(used for terminal control flow)
+		CTRL-S		not used or used for terminal control flow
 |i_CTRL-T|	CTRL-T		insert one shiftwidth of indent in current
 				line
 |i_CTRL-U|	CTRL-U		delete all entered characters in the current
@@ -220,9 +220,9 @@ tag		char	      note action in Normal mode	~
 |CTRL-N|	CTRL-N		1  same as "j"
 |CTRL-O|	CTRL-O		1  go to N older entry in jump list
 |CTRL-P|	CTRL-P		1  same as "k"
-		CTRL-Q		   (used for terminal control flow)
+		CTRL-Q		   not used, or used for terminal control flow
 |CTRL-R|	CTRL-R		2  redo changes which were undone with 'u'
-		CTRL-S		   (used for terminal control flow)
+		CTRL-S		   not used, or used for terminal control flow
 |CTRL-T|	CTRL-T		   jump to N older Tag in tag list
 |CTRL-U|	CTRL-U		   scroll N lines Upwards (default: half a
 				   screen)
@@ -246,8 +246,7 @@ tag		char	      note action in Normal mode	~
 				2  filter Nmove text through the {filter}
 				   command
 |!!|		!!{filter}	2  filter N lines through the {filter} command
-|quote|		"{a-zA-Z0-9.%#:-"}  use register {a-zA-Z0-9.%#:-"} for next
-				   delete, yank or put (uppercase to append)
+|quote|		"{register}  	   use {register} for next delete, yank or put
 				   ({.%#:} only work with put)
 |#|		#		1  search backward for the Nth occurrence of
 				   the ident under the cursor
@@ -365,8 +364,8 @@ tag		char	      note action in Normal mode	~
 				   register x]
 |Y|		["x]Y		   yank N lines [into register x]; synonym for
 				   "yy"
-|ZZ|		ZZ		   store current file if modified, and exit
-|ZQ|		ZQ		   exit current file always
+|ZZ|		ZZ		   write if buffer changed and close window
+|ZQ|		ZQ		   close window without writing
 |[|		[{char}		   square bracket command (see |[| below)
 		\		   not used
 |]|		]{char}		   square bracket command (see |]| below)
@@ -829,7 +828,7 @@ tag		char	      note action in Normal mode	~
 |zD|		zD		   delete folds recursively
 |zE|		zE		   eliminate all folds
 |zF|		zF		   create a fold for N lines
-|zG|		zG		   mark word as good spelled word
+|zG|		zG		   temporarily mark word as correctly spelled
 |zH|		zH		   when 'wrap' off scroll half a screenwidth
 				   to the right
 |zL|		zL		   when 'wrap' off scroll half a screenwidth
@@ -838,7 +837,7 @@ tag		char	      note action in Normal mode	~
 |zN|		zN		   set 'foldenable'
 |zO|		zO		   open folds recursively
 |zR|		zR		   set 'foldlevel' to the deepest fold
-|zW|		zW		   mark word as wrong (bad) spelled word
+|zW|		zW		   temporarily mark word as incorrectly spelled
 |zX|		zX		   re-apply 'foldlevel'
 |z^|		z^		   cursor on line N (default line above
 				   window), otherwise like "z-"
@@ -850,7 +849,7 @@ tag		char	      note action in Normal mode	~
 				   position the cursor at the end (right side)
 				   of the screen
 |zf|		zf{motion}	   create a fold for Nmove text
-|zg|		zg		   mark word as good spelled word
+|zg|		zg		   permanently mark word as correctly spelled
 |zh|		zh		   when 'wrap' off scroll screen N characters
 				   to the right
 |zi|		zi		   toggle 'foldenable'
@@ -871,7 +870,7 @@ tag		char	      note action in Normal mode	~
 |zuW|		zuW		   undo |zW|
 |zuG|		zuG		   undo |zG|
 |zv|		zv		   open enough folds to view the cursor line
-|zw|		zw		   mark word as wrong (bad) spelled word
+|zw|		zw		   permanently mark word as incorrectly spelled
 |zx|		zx		   re-apply 'foldlevel' and do "zv"
 |zz|		zz		   redraw, cursor line at center of window
 |z<Left>|	z<Left>		   same as "zh"
@@ -1057,7 +1056,7 @@ tag		command		action in Command-line editing mode	~
 |c_CTRL-R_CTRL-O| CTRL-R CTRL-O {regname}
 				insert the contents of a register or object
 				under the cursor literally
-		CTRL-S		(used for terminal control flow)
+		CTRL-S		not used, or used for terminal control flow
 |c_CTRL-T|	CTRL-T		previous match when 'incsearch' is active
 |c_CTRL-U|	CTRL-U		remove all characters
 |c_CTRL-V|	CTRL-V		insert next non-digit literally, insert three
@@ -1115,7 +1114,7 @@ tag		char		action in Terminal-Job mode	~
 |t_CTRL-W_:|	CTRL-W :	enter an Ex command
 |t_CTRL-W_.|	CTRL-W .	type CTRL-W in the terminal
 		CTRL-W CTRL-\	send a CTRL-\ to the job in the terminal
-|t_CTRL-W_quote|  CTRL-W " {0-9a-z"%#*:=}
+|t_CTRL-W_quote|  CTRL-W " {register}
 				paste register in the terminal
 |t_CTRL-W_CTRL-C| CTRL-W CTRL-C	forcefully ends the job
 |t_CTRL-W_CTRL-W| CTRL-W CTRL-W	move focus to the next window
@@ -1260,11 +1259,13 @@ tag		command		action ~
 |:cunmenu|	:cunme[nu]	remove menu for Command-line mode
 |:cwindow|	:cw[indow]	open or close quickfix window
 |:delete|	:d[elete]	delete lines
-|:delmarks|	:delm[arks]	delete marks
 |:debug|	:deb[ug]	run a command in debugging mode
 |:debuggreedy|	:debugg[reedy]	read debug mode commands from normal input
+|:def|		:def		define a Vim9 user function
+|:defcompile|	:defc[ompile]	compile Vim9 user functions in current script
 |:delcommand|	:delc[ommand]	delete user-defined command
 |:delfunction|	:delf[unction]	delete a user function
+|:delmarks|	:delm[arks]	delete marks
 |:diffupdate|	:dif[fupdate]	update 'diff' buffers
 |:diffget|	:diffg[et]	remove differences in current buffer
 |:diffoff|	:diffo[ff]	switch off diff mode
@@ -1274,9 +1275,9 @@ tag		command		action ~
 |:diffthis|	:diffthis	make current window a diff window
 |:digraphs|	:dig[raphs]	show or enter digraphs
 |:display|	:di[splay]	display registers
+|:disassemble|	:disa[ssemble]	disassemble Vim9 user function
 |:djump|	:dj[ump]	jump to #define
 |:dl|		:dl		short for |:delete| with the 'l' flag
-|:del|		:del[ete]l	short for |:delete| with the 'l' flag
 |:dlist|	:dli[st]	list #defines
 |:doautocmd|	:do[autocmd]	apply autocommands to current buffer
 |:doautoall|	:doautoa[ll]	apply autocommands for all loaded buffers
@@ -1295,15 +1296,17 @@ tag		command		action ~
 |:else|		:el[se]		part of an :if command
 |:elseif|	:elsei[f]	part of an :if command
 |:emenu|	:em[enu]	execute a menu by name
+|:enddef|	:enddef		end of a user function started with :def
 |:endif|	:en[dif]	end previous :if
 |:endfor|	:endfo[r]	end previous :for
-|:endfunction|	:endf[unction]	end of a user function
+|:endfunction|	:endf[unction]	end of a user function started with :function
 |:endtry|	:endt[ry]	end previous :try
 |:endwhile|	:endw[hile]	end previous :while
 |:enew|		:ene[w]		edit a new, unnamed buffer
 |:ex|		:ex		same as ":edit"
 |:execute|	:exe[cute]	execute result of expressions
 |:exit|		:exi[t]		same as ":xit"
+|:export|	:exp[ort]	Vim9: export an item from a script
 |:exusage|	:exu[sage]	overview of Ex commands
 |:file|		:f[ile]		show or set the current file name
 |:files|	:files		list all files in the buffer list
@@ -1345,6 +1348,7 @@ tag		command		action ~
 |:imap|		:im[ap]		like ":map" but for Insert mode
 |:imapclear|	:imapc[lear]	like ":mapclear" but for Insert mode
 |:imenu|	:ime[nu]	add menu for Insert mode
+|:import|	:imp[ort]	Vim9: import an item from another script
 |:inoremap|	:ino[remap]	like ":noremap" but for Insert mode
 |:inoreabbrev|	:inorea[bbrev]	like ":noreabbrev" but for Insert mode
 |:inoremenu|	:inoreme[nu]	like ":noremenu" but for Insert mode
@@ -1686,6 +1690,7 @@ tag		command		action ~
 |:version|	:ve[rsion]	print version number and other info
 |:verbose|	:verb[ose]	execute command with 'verbose' set
 |:vertical|	:vert[ical]	make following command split vertically
+|:vim9script|	:vim9[script]	indicates Vim9 script file
 |:vimgrep|	:vim[grep]	search for pattern in files
 |:vimgrepadd|	:vimgrepa[dd]	like :vimgrep, but append to current list
 |:visual|	:vi[sual]	same as ":edit", but turns off "Ex" mode
@@ -1717,7 +1722,7 @@ tag		command		action ~
 |:wqall|	:wqa[ll]	write all changed buffers and quit Vim
 |:wundo|	:wu[ndo]	write undo information to a file
 |:wviminfo|	:wv[iminfo]	write to viminfo file
-|:xit|		:x[it]		write if buffer changed and quit window or Vim
+|:xit|		:x[it]		write if buffer changed and close window
 |:xall|		:xa[ll]		same as ":wqall"
 |:xmapclear|	:xmapc[lear]	remove all mappings for Visual mode
 |:xmap|		:xm[ap]		like ":map" but for Visual mode

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2020 Feb 14
+*options.txt*	For Vim version 8.2.  Last change: 2020 May 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -915,6 +915,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	eol	allow backspacing over line breaks (join lines)
 	start	allow backspacing over the start of insert; CTRL-W and CTRL-U
 		stop once at the start of insert.
+	nostop	like start, except CTRL-W and CTRL-U do not stop at the start of
+		insert.
 
 	When the value is empty, Vi compatible backspacing is used.
 
@@ -923,6 +925,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  0	same as ":set backspace=" (Vi compatible)
 	  1	same as ":set backspace=indent,eol"
 	  2	same as ":set backspace=indent,eol,start"
+	  3	same as ":set backspace=indent,eol,nostop"
 
 	See |:fixdel| if your <BS> or <Del> key does not do what you want.
 	NOTE: This option is set to "" when 'compatible' is set.
@@ -4646,8 +4649,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	be able to execute Normal mode commands.
 	This is the opposite of the 'keymap' option, where characters are
 	mapped in Insert mode.
-	Also consider resetting 'langremap' to avoid 'langmap' applies to
-	characters resulting from a mapping.
+	Also consider setting 'langremap' to off, to prevent 'langmap' from
+	applying to characters resulting from a mapping.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -4712,7 +4715,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'langnoremap' is set to the inverted value, and the other way around.
 
 			*'langremap'* *'lrm'* *'nolangremap'* *'nolrm'*
-'langremap' 'lrm'	boolean (default on, reset in |defaults.vim|)
+'langremap' 'lrm'	boolean (default on, set to off in |defaults.vim|)
 			global
 			{only available when compiled with the |+langmap|
 			feature}
@@ -5424,6 +5427,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	bin	If included, numbers starting with "0b" or "0B" will be
 		considered to be binary.  Example: Using CTRL-X on
 		"0b1000" subtracts one, resulting in "0b0111".
+	unsigned    If included, numbers are recognized as unsigned. Thus a
+		leading dash or negative sign won't be considered as part of
+		the number.  Examples:
+		    Using CTRL-X on "2020" in "9-2020" results in "9-2019"
+		    (without "unsigned" it would become "9-2021").
+		    Using CTRL-A on "2020" in "9-2020" results in "9-2021"
+		    (without "unsigned" it would become "9-2019").
+		    Using CTRL-X on "0" or CTRL-A on "18446744073709551615"
+		    (2^64 - 1) has no effect, overflow is prevented.
 	Numbers which simply begin with a digit in the range 1-9 are always
 	considered decimal.  This also happens for numbers that are not
 	recognized as octal or hex.
@@ -5885,6 +5897,21 @@ A jump table for the options with a short description can be found at |Q_op|.
 	If Vim is compiled with only |+python| or |+python3| setting
 	'pyxversion' has no effect.  The pyx* functions and commands are
 	always the same as the compiled version.
+
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+
+						*'quickfixtextfunc'* *'qftf'*
+'quickfixtextfunc' 'qftf'	string (default "")
+			global
+			{only available when compiled with the |+quickfix|
+			feature}
+	This option specifies a function to be used to get the text to display
+	in the quickfix and location list windows.  This can be used to
+	customize the information displayed in the quickfix or location window
+	for each entry in the corresponding quickfix or location list.  See
+	|quickfix-window-function| for an explanation of how to write the
+	function and an example.
 
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
@@ -7078,6 +7105,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 	up to the first character that is not an ASCII letter or number and
 	not a dash.  Also see |set-spc-auto|.
 
+						*'spelloptions'* *'spo'*
+'spelloptions' 'spo'	string	(default "")
+			local to buffer
+			{not available when compiled without the |+syntax|
+			feature}
+	A comma separated list of options for spell checking:
+	   camel	When a word is CamelCased, assume "Cased" is a
+			separate word: every upper-case character in a word
+			that comes after a lower case character indicates the
+			start of a new word.
 
 						*'spellsuggest'* *'sps'*
 'spellsuggest' 'sps'	string	(default "best")
@@ -7669,7 +7706,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 'term'			string	(default is $TERM, if that fails:
 				      in the GUI: "builtin_gui"
 					on Amiga: "amiga"
-					 on BeOS: "beos-ansi"
 					on Haiku: "xterm"
 					  on Mac: "mac-ansi"
 					 on MiNT: "vt52"
@@ -7957,7 +7993,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		- VIM		the server name |v:servername| or "VIM"
 	Only works if the terminal supports setting window titles
 	(currently Amiga console, Win32 console, all GUI versions and
-	terminals with a non- empty 't_ts' option - these are Unix xterm and
+	terminals with a non-empty 't_ts' option - these are Unix xterm and
 	iris-ansi by default, where 't_ts' is taken from the builtin termcap).
 								*X11*
 	When Vim was compiled with HAVE_X11 defined, the original title will
@@ -8320,13 +8356,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Currently, these messages are given:
 	>= 1	When the viminfo file is read or written.
 	>= 2	When a file is ":source"'ed.
+	>= 4	Shell commands.
 	>= 5	Every searched tags file and include file.
 	>= 8	Files for which a group of autocommands is executed.
 	>= 9	Every executed autocommand.
+	>= 11	Finding items in a path
 	>= 12	Every executed function.
 	>= 13	When an exception is thrown, caught, finished, or discarded.
 	>= 14	Anything pending in a ":finally" clause.
-	>= 15	Every executed Ex command (truncated at 200 characters).
+	>= 15	Every executed Ex command from a script (truncated at 200
+		characters).
+	>= 16	Every executed Ex command
 
 	This option can also be set with the "-V" argument.  See |-V|.
 	This option is also set by the |:verbose| command.

@@ -172,8 +172,7 @@ check_recorded_changes(
 	linenr_T    prev_lnum;
 	linenr_T    prev_lnume;
 
-	for (li = buf->b_recorded_changes->lv_first; li != NULL;
-							      li = li->li_next)
+	FOR_ALL_LIST_ITEMS(buf->b_recorded_changes, li)
 	{
 	    prev_lnum = (linenr_T)dict_get_number(
 				      li->li_tv.vval.v_dict, (char_u *)"lnum");
@@ -362,8 +361,7 @@ invoke_listeners(buf_T *buf)
     argv[0].v_type = VAR_NUMBER;
     argv[0].vval.v_number = buf->b_fnum; // a:bufnr
 
-
-    for (li = buf->b_recorded_changes->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(buf->b_recorded_changes, li)
     {
 	varnumber_T lnum;
 
@@ -384,7 +382,7 @@ invoke_listeners(buf_T *buf)
 
     argv[4].v_type = VAR_LIST;
     argv[4].vval.v_list = buf->b_recorded_changes;
-    ++textlock;
+    ++textwinlock;
 
     for (lnr = buf->b_listener; lnr != NULL; lnr = lnr->lr_next)
     {
@@ -392,7 +390,7 @@ invoke_listeners(buf_T *buf)
 	clear_tv(&rettv);
     }
 
-    --textlock;
+    --textwinlock;
     list_unref(buf->b_recorded_changes);
     buf->b_recorded_changes = NULL;
 
@@ -2319,7 +2317,7 @@ del_lines(long nlines,	int undo)
 	if (curbuf->b_ml.ml_flags & ML_EMPTY)	    // nothing to delete
 	    break;
 
-	ml_delete(first, TRUE);
+	ml_delete_flags(first, ML_DEL_MESSAGE);
 	++n;
 
 	// If we delete the last line in the file, stop

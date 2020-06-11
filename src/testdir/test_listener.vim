@@ -207,6 +207,11 @@ func Test_listener_args()
 
   call listener_remove(id)
   bwipe!
+
+  " Invalid arguments
+  call assert_fails('call listener_add([])', 'E921:')
+  call assert_fails('call listener_add("s:StoreListArgs", [])', 'E158:')
+  call assert_fails('call listener_flush([])', 'E158:')
 endfunc
 
 func s:StoreBufList(buf, start, end, added, list)
@@ -294,6 +299,31 @@ func Test_listener_undo_line_number()
   delfunc DoIt
   delfunc EchoChanges
   call listener_remove(lid)
+endfunc
+
+func Test_listener_undo_delete_all()
+  new
+  call setline(1, [1, 2, 3, 4])
+  let s:changes = []
+  func s:ExtendList(bufnr, start, end, added, changes)
+    call extend(s:changes, a:changes)
+  endfunc
+  let id = listener_add('s:ExtendList')
+
+  set undolevels&  " start new undo block
+  normal! ggdG
+  undo
+  call listener_flush()
+  call assert_equal(2, s:changes->len())
+  " delete removes four lines, empty line remains
+  call assert_equal({'lnum': 1, 'end': 5, 'col': 1, 'added': -4}, s:changes[0])
+  " undo replaces empty line and adds 3 lines
+  call assert_equal({'lnum': 1, 'end': 2, 'col': 1, 'added': 3}, s:changes[1])
+
+  call listener_remove(id)
+  delfunc s:ExtendList
+  unlet s:changes
+  bwipe!
 endfunc
 
 func Test_listener_cleared_newbuf()

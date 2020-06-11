@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.2.  Last change: 2020 Feb 29
+*cmdline.txt*   For Vim version 8.2.  Last change: 2020 Apr 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -615,6 +615,7 @@ followed by another Vim command:
     :tcl
     :tcldo
     :tclfile
+    :terminal
     :vglobal
     :windo
     :write !

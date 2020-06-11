@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Mar 01
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Jun 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,49 +38,111 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Include src/po/vim.pot ?
+
+If there are no complaints, remove more typecasts from vim_strnsave() length
+argument.
+
 Vim9 script:
-- better implementation for partial and tests.
-- "func" inside "vim9script" doesn't work?  (Ben Jackson, #5670)
-- "echo Func()" is an error if Func() does not return anything.
-- Make "g:imported = Export.exported" work in Vim9 script.
-- Make Foo.Bar() work to call the dict function. (#5676)
-- make "let var: string" work in a vim9script.
-- Disallow unlet for local/script/imported vars
+Making everything work:
+- possible memory leak in test_vim9_func through compile_nested_function.
+- memory leaks in test_vim9_expr
+- memory leaks in test_vim9_script
+- Test that a script-local function in Vim9 script cannot be deleted.
+- Make "true" and "false" work in vim9script
+- Test that a function defined inside a :def function is local to that
+  function, g: functions can be defined and script-local functions cannot be
+  defined.
+- make 0 == 'string' fail on the script level, like inside :def.
+- Check that when using a user function name without prefix, it does not find
+  a global function.  Prefixing g: is required.
+- Compile: let [var, var] = expr
+- Compile: for [key, value] in items(map)
+- Assignment to dict doesn't work:
+      let ret: dict<string> = #{}
+      ret[i] = string(i)
+- Appending to dict item doesn't work:
+    let d[i] ..= value
+- Compile replacement of :s command: s/pat/\=expr/
+- Compile redir to local variable: var_redir_start().
+- Compile builtin functions that access local variables:
+    islocked()
+- Expand `=expr` in :next, :argedit, :argadd, :argdelete, :drop
+- Expand `=expr` in :vimgrep, :vimgrepadd, :lvimgrep, :lvimgrepadd
+- Expand `=expr` in :mkspell
+- When evaluating constants for script variables, some functions could work:
+    has('asdf'), len('string')
 - Support type for ":let"/":const" at script level for Vim9 script.
     (Ben Jackson, #5671)
-- :func inside vim9script must still use a:arg
+    Can we share the code from ex_let_const() between direct execution and
+    compiling?
+- Disallow unlet for local/script/imported vars
 - Make "++nr" work.
+- Make closures work:
+  - Create closure in a loop.  Need to make a list of them.
+- expandcmd() with `=expr` in filename uses legacy expression.
+- eval_expr() in ex_cexpr()
+- eval_expr() call in dbg_parsearg() and debuggy_find()
+- has() is compiled as a constant, but some checks are dynamic.
+  Check for dynamic values, such as "gui_running".
+New syntax and functionality:
+Improve error checking:
+- "echo Func()" is an error if Func() does not return anything.
+Also:
+- For range: make table of first ASCII character with flag to quickly check if
+  it can be a Vim9 command. E.g. "+" can, but "." can't.
+- better implementation for partial and tests for that.
+- Make "g:imported = Export.exported" work in Vim9 script.
+- Make Foo.Bar() work to call the dict function. (#5676)
 - Check that import in legacy script works and puts item in s:
 - Error in any command in "vim9script" aborts sourcing.
 - Find a way to test expressions in legacy and Vim9 script without duplication
+- Fix memory leaks for test_vim9_disassemble, test_vim9_expr, test_vim9_script
 - Test each level of expressions properly, with type checking
-- Test the
 - Test try/catch and throw better, also nested.
   Test return inside try/finally jumps to finally and then returns.
 - call autoload function.
-- Type checking arguments when calling :def function
 - Implement more expressions, e.g. [a:b]
 - can use func as reference:
 	def SomeFunc() ...
 	map(list, SomeFunc)
-- define function and create funcref in one step:
-	let ref = def(arg: type): rettype
-  Also extends lambda
 - Test: Function declared inside a :def function is local, disappears at the
   end of the function.  Unless g: is used, just like with variables.
-- Can we omit \ for line continuation inside (), {}, ?
-  Requires parsing while reading a function.  Like fgetline in do_one_cmd()?
 - implement :type
+- import type declaration?
 - implement class
 - implement interface
 - predefined class: Promise<T>
-- import statement for type declaration?
+- implement enum
 - Make accessing varargs faster: arg[expr]
 	EVAL expr
 	LOADVARARG (varags idx)
+Further improvements:
+- compile options that are an expression, e.g. "expr:" in 'spellsuggest',
+  'foldexpr', 'foldtext', 'printexpr', 'diffexpr', 'patchexpr', 'charconvert',
+  'balloonexpr', 'includeexpr', 'indentexpr', 'formatexpr'.
+- Make inline function work, to be used as a funcref:
+	let ref = def(arg: type): rettype
+	    body
+	enddef
+- compile get_lambda_tv() in popup_add_timeout()
+- inline call to map() and filter()
+- compile "skip" argument of searchpair()
+- compile "expr" and "call" expression of a channel in channel_exe_cmd()?
 
 Popup windows:
+- With some sequence get get hidden finished terminal buffer. (#5768)
+    Cannot close popup terminal (#5744)
+    Buffer can't be wiped, gets status "aF". (#5764)
+    Is buf->nwindows incorrect?
+- popup_clear() and popup_close() should close the terminal popup, and
+   make the buffer hidden. #5745
+- Cursor not updated before a redraw, making it jump. (#5943)
 - With terminal in popup, allow for popup_hide() to temporarily hide it.?
+- Fire some autocommand event after a new popup window was created and
+  positioned?  PopupNew?  Could be used to set some options or move it out of
+  the way. (#5737)
+  However, it may also cause trouble, changing the popup of another plugin.
 - Use popup (or popup menu) for command line completion
 - When using a popup for the info of a completion menu, and there is not
   enough space, let the popup overlap with the menu. (#4544)
@@ -94,7 +156,9 @@ Popup windows:
 - Figure out the size and position better if wrapping inserts indent
 
 Text properties:
-- prop_find() may not find text property at start of the line. (#5663)
+- :goto does not go to the right place when test properties are present.
+  (#5930)
+- "cc" does not call inserted_bytes(). (Axel Forsman, #5763)
 - Get E685 with a sequence of commands. (#5674)
 - Combining text property with 'cursorline' does not always work (Billie
   Cleek, #5533)
@@ -133,8 +197,17 @@ Terminal debugger:
   with another Vim instance.
 
 Terminal emulator window:
+- No support for underline color, t_8u.
+- When started with ":terminal ++close" and the shell exits but there is a
+  background process, the window remains open, because the channel still
+  exists (and output still shows).  Perhaps close the window when an explicit
+  ++close was used? (#5931)
+- Using "CTRL-W :confirm quite" and selecting "yes" should work like ":quit!".
+    (Harm te Hennepe, #6129)
 - When the job in the terminal doesn't use mouse events, let the scroll wheel
   scroll the scrollback, like a terminal does at the shell prompt. #2490
+  A bit like using CTRL-W N first.
+  Jump back like with "a" when any key is typed.
   And use modeless selection.  #2962
 - Use CTRL-W CTRL-K to enter a digraph? #5371
 - When Vim runs in the terminal and changes the title, the statusline needs to
@@ -164,49 +237,70 @@ Terminal emulator window:
   conversions.
 
 Error numbers available:
-E451, E452, E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
-E654, E856, E857, E860, E861, E900
+E489, E610, E611, E653, E856, E857, E861, E900
+
+Buffer autocommands are a bit inconsistent.  Add a separate set of
+autocommands for the buffer lifecycle:
+    BufIsCreated  (after buffer ID exists)
+    BufIsLoaded   (after buffer ID has content)
+    BufIsUnloaded (after buffer ID no longer has)
+    BufIsWiped    (after buffer ID was wiped)
+    BufIsRenamed  (after buffer ID gets another name)
+The buffer list and windows are locked, no changes possible
+
+How about removing Atari MiNT support?
+    src/Make_mint.mak, src/os_mint.h, matches with __MINT__
 
 Patch to fix drawing error with DirectX. (James Grant, #5688)
-Causes flicker on resizing.
+Causes flicker on resizing. Workaround from Ken Takata.
+How about only setting the attribute when part of the Vim window is offscreen?
 
-Patch to use more FOR_ALL_ macros and use them. (Yegappan Lakshmanan, #5339)
+File marks merging has duplicates since 7.4.1925. (Ingo Karkat, #5733)
 
-Patch to explain use of "%" in :!.  (David Briscoe, #5591)
-
-Patch to add "-d" to xxd. (#5616)
-
-Patch to add Turkish manual. (Emir Sarı, #5641)
-
-Running test_gui and test_gui_init with Motif sometimes kills the window
-manager.  Problem with Motif? Now test_gui crashes in submenu_change().
+"make test_gui" crashed in submenu_change(). Fix and remove workaround in
+add_pixmap_args().
 Athena is OK.
 Motif: Build on Ubuntu can't enter any text in dialog text fields.
+Running test_gui and test_gui_init with Motif sometimes kills the window
+manager.  Problem with Motif?
 
-Patch to properly break CJK lines: Anton Kochkov, #3875
-Flag in 'formatoptions' is not used in the tests.
+:map output does not clear the reset of the command line.
+(#5623, also see #5962)
 
-Patch to add 'vtp' option. (#5344)
-Needs better docs.  Is there a better name?
+Problem with auto-formatting - inserting space and putting cursor before added
+character. (#6154)
 
 undo result wrong: Masato Nishihata, #4798
 
 When 'lazyredraw' is set sometimes the title is not updated.
 (Jason Franklin, 2020 Feb 3)  Looks like a race condition.
 
+With bash ":make" does not set v:shell_error.  Possible solution: set
+'shellpipe' to "2>&1| tee %s; exit ${PIPESTATUS[0]}"  #5994
+
+Using mode() when "/pat" is used in Visual mode returns "v" instead of "c",
+which is not useful.  Return "c/v" instead.  And "c/o" when using "d/pat".
+#6127
+
+When 'fileignorecase' is set ":e testfile.c" works to edit TestFile.c, but
+":find testfile.c" does not ignore case.
+Might be related to #6088.
+
+When changing the crypt key the buffer should be considered modified.
+Like when changing 'fileformat'.  Save the old key in save_file_ff().
+(Ninu-Ciprian Marginean)
+
 Strange sequence of BufWipeout and BufNew events while doing omni-complete.
 (Paul Jolly, #5656)
 Get BufDelete without preceding BufNew. (Paul Jolly, #5694)
+    Later more requests for what to track.
+    Should we add new events that don't allow any buffer manipulation?
+    Really only for dealing with appearing and disappearing buffers, load and
+    unload.
 BufWinenter event not fired when saving unnamed buffer. (Paul Jolly, #5655)
 Another spurious BufDelete. (Dani Dickstein, #5701)
 
-Patch to add function to return the text used in the quickfix window.
-(Yegappan, #5465)
-
-Patch for Template string: #4491.  New pull: #4634
-Implementation is too inefficient, avoid using lambda.
-
-Patch to add readdirex() (Ken Takata, #5619)
+Wrong error when using local arglist. (Harm te Hennepe, #6133)
 
 Request to support <Cmd> in mappings, similar to how Neovim does this.
 (Daniel Hahler, #4784)
@@ -216,6 +310,9 @@ Undo puts cursor in wrong line after "cG<Esc>" undo.
 :unmap <c-n> gives error but does remove the mapping. (Antony Scriven, 2019
 Dec 19)
 
+Patch to add an option to enable/disable VTP.  (Nobuhiro Takasaki, #5344)
+Should have three values: empty, "off", "on".  Name it 'winterm'?
+
 Patch to fix session file when using multiple tab pages. (Jason Franklin, 2019
 May 20)
 Also put :argadd commands at the start for all buffers, so that their order
@@ -223,11 +320,8 @@ remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
 Also #4994: window-local options not always restored, related to using :badd.
 Also #5326: netrw buffers are not restored.
 
-Patch to support cindent option to handle pragmas differently.
-(Max Rumpf, #5468)
-
-Patch to make ":verbose pwd" show the scope of the directory. (Takuya
-Fujiwara, #5469)
+When 'backupdir' has a path ending in double slash (meaning: use full path of
+the file) combined with 'patchmode' the file name is wrong. (#5791)
 
 Completion mixes results from the current buffer with tags and other files.
 Happens when typing CTRL-N while still searching for results.  E.g., type "b_"
@@ -238,23 +332,28 @@ Should do current file first and not split it up when more results are found.
 Undo history wrong when ":next file" re-uses a buffer. (#5426)
 ex_next() should pass flag to do_argfile(), then to do_ecmd().
 
-Patch to add "note" type to quickfix. (#5527)  Missing tests.
+Help for ":argadd fname" says that if "fname" is already in the argument list
+that entry is used.  But instead it's always added. (#6210)
+Add flag AL_FIND_ADD, if there is one argument find it in the list.
 
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)
 
-FR: add search_status(), the current values displayed for search (current
-match, total matches). (#5631)
-Patch to provide search stats in a variable, so that it can be used in the
-statusline. (Fujiwara Takuya, #4446)
+behavior of i_CTRl-R_CTRL-R differs from documentation. (Paul Desmond Parker,
+#5771)
 
 ":bnext" in a help buffer is supposed to go to the next help buffer, but it
 goes to any buffer, and then :bnext skips help buffers, since they are
 unlisted. (#4478)
 
-Patch to include reduce() function. (#5481)
+Patch for Template string: #4634
+Copies the text twice, not very efficient.  Requires a separate implementation
+for Vim9 script, compiling the string parts and expressions.
 
 Statusline highlighting error, off by one. (#5599)
+
+":find" with 'path' set to "data*" does not find files, while completion does
+find them. (Max Kukartsev, #6218)
 
 Enable 'termbidi' if $VTE_VERSION >= 5703 ?
 
@@ -268,14 +367,15 @@ Python 3.8 doesn't work. (Antonios Hadjigeorgalis, #5509)
 The :syntax cchar value can only be a single character.  It would be useful to
 support combining characters. (Charles Campbell)  Also #4687
 
-Include Haiku port. (Adrien Destugues, Siarzhuk Zharski, 2013 Oct 24)
-It can replace the BeOS code, which is likely not used anymore.
-Now on github: #1856.  Updated Oct 2017
-Got permission to include this under the Vim license.
-
 "--cleanFOO" does not result in an error. (#5537)
 
+Output from assert_equalfile() doesn't give a hint about what's different.
+Assuming the files are text, print the line with the difference.
+
 Add "t" action to settagstack(): truncate and add new entries. (#5405)
+
+When 'relativenumber' is set the line just below a diff change doesn't get
+updated. (#6138)
 
 Result of synID() sometimes wrong in help files. (#5252)
 
@@ -291,7 +391,7 @@ When using :packadd files under "later" are not used, which is inconsistent
 with packages under "start". (xtal8, #1994)
 
 Patch to add new motion ]( and ]{.  (Yasuhiro Matsumoto, #5320)
-Or make "v" prefix work? 
+Better: use the "z" prefix.
 
 Modeless selection doesn't work in gvim. (#4783)
 Caused by patch 8.1.1534.
@@ -299,23 +399,17 @@ Caused by patch 8.1.1534.
 Visual highlight not removed when 'dipslay' is "lastline" and line doesn't
 fit. (Kevin Lawler, #4457)
 
-Patch to add per-tabpage and per-window previous directory: "lcd -" and "tcd
--". (Yegappan Lakshmanan, #4362)
+Current position in the changelist should be local to the buffer. (#2173)
 
 Does not build with MinGW out of the box:
 - _stat64 is not defined, need to use "struct stat" in vim.h
 - WINVER conflict, should use 0x0600 by default?
+- INT_MAX not defined: need to include <limits.h> in vim.h
 
 Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
 
 Display messed up with matchparen, wrapping and scrolling. (#5638)
-
-Patch to configure BUILD_DATE for reproducible builds. (James McCoy, #513)
-
-Patch to add MODIFIED_BY to MSVC build file. (Chen Lei, 2016 Nov 24, #1275)
-
-Patch to support "0o" for octal numbers. (Ken Takata, #5304)
 
 When getting a focus event halfway a mapping this aborts the mapping.  E.g.
 when "qq" is mapped and after the first "q" the mouse is moved outside of the
@@ -354,9 +448,6 @@ Patch to support CamelCase for spell checking: See a lower-to-upper case
 change as a word boundary. (btucker-MPCData, 2016 Nov 6, #1235)
 patch for 'spellcamelcase' option: spellcheck each CamelCased word.
 (Ben Tucker, 2016 Dec 2)
-
-Patch to add {skip} argument to search(). (Christian Brabandt, 2016 Feb 24)
-Update 2016 Jun 10, #861
 
 Patch to add "cmdline" completion to getcompletion(). (Shougo, Oct 1, #1140)
 
@@ -431,9 +522,6 @@ with the first character (like what happens with a last line that doesn't
 fit).  Display "<<<" at the start of the first visible line (like "@@@" is
 displayed in the last line). (Arseny Nasokin,  #5154)
 
-Patch for ambiguous width characters in libvterm on MS-Windows 10.
-(Nobuhiro Takasaki, #4411)
-
 Window size changes after closing a tab. (#4741)
 
 Problem with colors in terminal window. (Jason Franklin, 2019 May 12)
@@ -474,10 +562,6 @@ on top off, making the whole thing two characters wide. (#4526)
 Should we include some part of pull request #4505, not increment changedtick
 in some cases?  E.g. for ":write" when the changed flag was already off, the
 buffer didn't change at all.
-
-Patch to add getreginfo() and setreg() with an option to set the unnamed
-register "", So that registers can be saved and fully restored.
-(Andy Massimino, 2018 Aug 24, #3370)
 
 Line numbers in profile are off when function was defined with ":execute".
 (Daniel Hahler, #4511)
@@ -603,19 +687,8 @@ Make ":interactive !cmd" stop termcap mode, also when used in an autocommand.
 
 Add buffer argument to undotree(). (#4001)
 
-Using uninitialized value in test_gn
-Using uninitialized value in test_crypt.
-memory leak in test_paste
-Memory leak in test_terminal:
-==23530==    by 0x2640D7: alloc (misc2.c:874)
-==23530==    by 0x2646D6: vim_strsave (misc2.c:1315)
-==23530==    by 0x25841D: FullName_save (misc1.c:5443)
-==23530==    by 0x17CB4F: fix_fname (buffer.c:4794)
-==23530==    by 0x17CB9A: fname_expand (buffer.c:4838)
-==23530==    by 0x1759AB: buflist_new (buffer.c:1889)
-==23530==    by 0x35C923: term_start (terminal.c:421)
-==23530==    by 0x2AFF30: mch_call_shell_terminal (os_unix.c:4377)
-==23530==    by 0x2B16BE: mch_call_shell (os_unix.c:5383)
+Using uninitialized value in test_crypt (can't explain why).
+Memory leak in test_terminal_fail
 TODO: be able to run all parts of test_alot with valgrind separately
 Memory leak in test_alot with pyeval() (allocating partial)
 Memory leak in test_alot with expand()
@@ -654,9 +727,6 @@ screen lines but on text lines. (Julius Hulsmann, #4095)  Lacks a test.
 Patch to implement 'diffref' option. (#3535)
   Easier to use a 'diffmaster' option, is the extra complexity needed?
   Not ready to include.
-
-Patch to specify color for cterm=underline and cterm=undercurl, like "guisp".
-Patch #2405 does something like this, but in the wrong way.
 
 home_replace() uses $HOME instead of "homedir". (Cesar Martins, 2018 Aug 9)
 
@@ -1228,6 +1298,8 @@ sort() is not stable when using numeric/float sort (Nikolay Pavlov, 2016 Sep
 - Add ch_readlines(): for a channel in NL mode, reads as many lines as are
   available.  Should be more efficient than looping over ch_read() with
   ch_status() to check for more.
+- If buffer contents is changed in a callback, set w_redr_status so that it
+  gets redrawn in redraw_after_callback(). #6120
 - Add a separate timeout for opening a socket.  Currently it's fixed at 50
   msec, which is too small for a remote connection. (tverniquet, #2130)
 - Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)
@@ -1328,9 +1400,6 @@ Probably list of keystrokes, with some annotations for mode changes.
 Could store in logfile to be able to analyse it with an external command.
 E.g. to see when's the last time a plugin command was used.
 
-execute() cannot be used with command completion. (Daniel Hahler, 2016 Oct 1,
-#1141)
-
 cmap using execute() has side effects. (Killthemule, 2016 Aug 17, #983)
 
 :map X may print invalid data. (Nikolay Pavlov, 2017 Jul 3, #1816)
@@ -1350,9 +1419,6 @@ ml_get errors when reloading file. (Chris Desjardins, 2016 Apr 19)
 Also with latest version.
 
 Cannot delete a file with square brackets with delete(). (#696)
-
-Patch to add ":syn foldlevel" to use fold level further down the line.
-(Brad King, 2016 Oct 19, update 2017 Jan 30)
 
 Completion for input() does not expand environment variables. (chdiza, 2016
 Jul 25, #948)
@@ -2063,9 +2129,6 @@ When setqflist() uses a filename that triggers a BufReadCmd autocommand Vim
 doesn't jump to the correct line with :cfirst. (ZyX,  2011 Sep 18)
 
 Behavior of i" and a" text objects isn't logical. (Ben Fritz, 2013 Nov 19)
-
-maparg() does not show the <script> flag.  When temporarily changing a
-mapping, how to restore the script ID?
 
 Bug in try/catch: return with invalid compare throws error that isn't caught.
 (ZyX, 2011 Jan 26)
@@ -4847,9 +4910,6 @@ Win32 GUI:
 
 
 GUI:
-8   Make inputdialog() work for Photon, Amiga.
--   <C--> cannot be mapped.  Should be possible to recognize this as a
-    normal "-" with the Ctrl modifier.
 7   Implement ":popup" for other systems than Windows.
 8   Implement ":tearoff" for other systems than Win32 GUI.
 6   Implement ":untearoff": hide a torn-off menu.

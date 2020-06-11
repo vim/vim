@@ -1,5 +1,6 @@
 " Tests for startup using utf-8.
 
+source check.vim
 source shared.vim
 source screendump.vim
 
@@ -62,9 +63,7 @@ func Test_read_fifo_utf8()
 endfunc
 
 func Test_detect_ambiwidth()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot run Vim in a terminal window'
-  endif
+  CheckRunVimInTerminal
 
   " Use the title termcap entries to output the escape sequence.
   call writefile([
@@ -73,8 +72,8 @@ func Test_detect_ambiwidth()
 	\ 'call test_option_not_set("ambiwidth")',
 	\ 'redraw',
 	\ ], 'Xscript')
-  let buf = RunVimInTerminal('-S Xscript', {})
-  call term_wait(buf)
+  let buf = RunVimInTerminal('-S Xscript', #{keep_t_u7: 1})
+  call TermWait(buf)
   call term_sendkeys(buf, "S\<C-R>=&ambiwidth\<CR>\<Esc>")
   call WaitForAssert({-> assert_match('single', term_getline(buf, 1))})
 

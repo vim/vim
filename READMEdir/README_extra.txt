@@ -13,9 +13,6 @@ src/if_sniff.*		Interface to SNiFF.  If you don't know what SNiFF is,
 
 src/os_amiga.*		Files for the Amiga port.
 
-src/gui_beos.*
-src/os_beos.*		Files for the BeOS port.
-
 src/os_msdos.*
 src/os_dos.*		Files for the MS-DOS port.
 

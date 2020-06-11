@@ -188,7 +188,7 @@ menutrans Set\ '&filetype'\ too			Auch\ '&filetype'\ setzen
 menutrans &Off					&Aus
 menutrans &Manual				&Manuell
 menutrans A&utomatic				A&utomatisch
-menutrans on/off\ for\ &This\ file		An/Aus (diese\ &Datei)
+menutrans on/off\ for\ &This\ file		An/Aus\ (diese\ &Datei)
 menutrans Co&lor\ test				Test\ der\ Farben
 menutrans &Highlight\ test			Test\ der\ Un&terstreichungen
 menutrans &Convert\ to\ HTML			Konvertieren\ nach\ &HTML

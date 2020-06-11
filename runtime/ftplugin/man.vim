@@ -1,8 +1,8 @@
 " Vim filetype plugin file
 " Language:	man
+" Maintainer:	Jason Franklin <vim@justemail.net>
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
-" Last Change: 	2019 Sep 26
-"		(fix by Jason Franklin)
+" Last Change: 	2020 Jun 01
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.
@@ -34,8 +34,8 @@ if &filetype == "man"
     endif
     nnoremap <buffer> <Plug>ManBS :%s/.\b//g<CR>:setl nomod<CR>''
 
-    nnoremap <buffer> <c-]> :call <SID>PreGetPage(v:count)<CR>
-    nnoremap <buffer> <c-t> :call <SID>PopPage()<CR>
+    nnoremap <buffer> <silent> <c-]> :call <SID>PreGetPage(v:count)<CR>
+    nnoremap <buffer> <silent> <c-t> :call <SID>PopPage()<CR>
     nnoremap <buffer> <silent> q :q<CR>
 
     " Add undo commands for the maps
@@ -96,7 +96,7 @@ func <SID>PreGetPage(cnt)
     let sect = a:cnt
     let page = expand("<cword>")
   endif
-  call s:GetPage(sect, page)
+  call s:GetPage('', sect, page)
 endfunc
 
 func <SID>GetCmdArg(sect, page)
@@ -138,11 +138,11 @@ func <SID>GetPage(cmdmods, ...)
     endif
   endif
   if s:FindPage(sect, page) == 0
-    let msg = "\nNo manual entry for ".page
-    if sect != ""
-      let msg .= " in section ".sect
+    let msg = 'man.vim: no manual entry for "' . page . '"'
+    if !empty(sect)
+      let msg .= ' in section ' . sect
     endif
-    echo msg
+    echomsg msg
     return
   endif
   exec "let s:man_tag_buf_".s:man_tag_depth." = ".bufnr("%")
@@ -189,7 +189,7 @@ func <SID>GetPage(cmdmods, ...)
   setl buftype=nofile noswapfile
 
   setl fdc=0 ma nofen nonu nornu
-  silent exec "norm! 1GdG"
+  %delete _
   let unsetwidth = 0
   if empty($MANWIDTH)
     let $MANWIDTH = winwidth(0)
@@ -205,6 +205,7 @@ func <SID>GetPage(cmdmods, ...)
     let s:env_has_u = (v:shell_error == 0)
   endif
   let env_cmd = s:env_has_u ? 'env -u MANPAGER' : 'env MANPAGER=cat'
+  let env_cmd .= ' GROFF_NO_SGR=1'
   let man_cmd = env_cmd . ' man ' . s:GetCmdArg(sect, page) . ' | col -b'
   silent exec "r !" . man_cmd
 
@@ -213,10 +214,10 @@ func <SID>GetPage(cmdmods, ...)
   endif
   " Remove blank lines from top and bottom.
   while line('$') > 1 && getline(1) =~ '^\s*$'
-    silent keepj norm! ggdd
+    1delete _
   endwhile
   while line('$') > 1 && getline('$') =~ '^\s*$'
-    silent keepj norm! Gdd
+    $delete _
   endwhile
   1
   setl ft=man nomod

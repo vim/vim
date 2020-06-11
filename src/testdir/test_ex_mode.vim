@@ -54,6 +54,7 @@ func Test_ex_mode()
     " default wildchar <Tab> interferes with this test
     set wildchar=<c-e>
     call assert_equal(["a\tb", "a\tb"],           Ex("a\t\t\<C-H>b"), e)
+    call assert_equal(["\t  mn", "\tm\<C-T>n"],        Ex("\tm\<C-T>n"), e)
     set wildchar&
   endfor
 
@@ -91,7 +92,6 @@ func Test_Ex_substitute()
   call term_sendkeys(buf, ":vi\<CR>")
   call WaitForAssert({-> assert_match('foo bar', term_getline(buf, 1))}, 1000)
 
-  call term_sendkeys(buf, ":q!\n")
   call StopVimInTerminal(buf)
 endfunc
 
@@ -146,15 +146,26 @@ endfunc
 " In Ex-mode, backslashes at the end of a command should be halved.
 func Test_Ex_echo_backslash()
   " This test works only when the language is English
-  if v:lang != "C" && v:lang !~ '^[Ee]n'
-    return
-  endif
+  CheckEnglish
   let bsl = '\\\\'
   let bsl2 = '\\\'
   call assert_fails('call feedkeys("Qecho " .. bsl .. "\nvisual\n", "xt")',
         \ "E15: Invalid expression: \\\\")
   call assert_fails('call feedkeys("Qecho " .. bsl2 .. "\nm\nvisual\n", "xt")',
         \ "E15: Invalid expression: \\\nm")
+endfunc
+
+func Test_ex_mode_errors()
+  " Not allowed to enter ex mode when text is locked
+  au InsertCharPre <buffer> normal! gQ<CR>
+  let caught_e565 = 0
+  try
+    call feedkeys("ix\<esc>", 'xt')
+  catch /^Vim\%((\a\+)\)\=:E565/ " catch E565
+    let caught_e565 = 1
+  endtry
+  call assert_equal(1, caught_e565)
+  au! InsertCharPre
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

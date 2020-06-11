@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2020 Jan 31
+" Last Change:	2020 Jun 07
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -233,11 +233,14 @@ au BufNewFile,BufRead *.bl			setf blank
 " Blkid cache file
 au BufNewFile,BufRead */etc/blkid.tab,*/etc/blkid.tab.old   setf xml
 
+" BSDL
+au BufNewFile,BufRead *bsd,*.bsdl		setf bsdl
+
 " Bazel (http://bazel.io)
 autocmd BufRead,BufNewFile *.bzl,WORKSPACE,BUILD.bazel 	setf bzl
 if has("fname_case")
   " There is another check for BUILD further below.
-  autocmd BufRead,BufNewFile BUILD			setf bzl
+  autocmd BufRead,BufNewFile BUILD		setf bzl
 endif
 
 " C or lpc
@@ -459,7 +462,7 @@ au BufNewFile,BufRead *.desc			setf desc
 au BufNewFile,BufRead *.d			call dist#ft#DtraceCheck()
 
 " Desktop files
-au BufNewFile,BufRead *.desktop,.directory	setf desktop
+au BufNewFile,BufRead *.desktop,*.directory	setf desktop
 
 " Dict config
 au BufNewFile,BufRead dict.conf,.dictrc		setf dictconf
@@ -543,6 +546,9 @@ au BufNewFile,BufRead */etc/elinks.conf,*/.elinks/elinks.conf	setf elinks
 
 " ERicsson LANGuage; Yaws is erlang too
 au BufNewFile,BufRead *.erl,*.hrl,*.yaws	setf erlang
+
+" Elm
+au BufNewFile,BufRead *.elm			setf elm
 
 " Elm Filter Rules file
 au BufNewFile,BufRead filter-rules		setf elmfilt
@@ -881,11 +887,12 @@ au BufNewFile,BufRead *.ll			setf lifelines
 " Lilo: Linux loader
 au BufNewFile,BufRead lilo.conf			setf lilo
 
-" Lisp (*.el = ELisp, *.cl = Common Lisp, *.jl = librep Lisp)
+" Lisp (*.el = ELisp, *.cl = Common Lisp)
+" *.jl was removed, it's also used for Julia, better skip than guess wrong.
 if has("fname_case")
-  au BufNewFile,BufRead *.lsp,*.lisp,*.el,*.cl,*.jl,*.L,.emacs,.sawfishrc setf lisp
+  au BufNewFile,BufRead *.lsp,*.lisp,*.el,*.cl,*.L,.emacs,.sawfishrc setf lisp
 else
-  au BufNewFile,BufRead *.lsp,*.lisp,*.el,*.cl,*.jl,.emacs,.sawfishrc setf lisp
+  au BufNewFile,BufRead *.lsp,*.lisp,*.el,*.cl,.emacs,.sawfishrc setf lisp
 endif
 
 " SBCL implementation of Common Lisp
@@ -1129,6 +1136,9 @@ au BufNewFile,BufRead pf.conf			setf pf
 
 " Pam conf
 au BufNewFile,BufRead */etc/pam.conf		setf pamconf
+
+" Pam environment
+au BufNewFile,BufRead pam_env.conf,.pam_environment	setf pamenv
 
 " PApp
 au BufNewFile,BufRead *.papp,*.pxml,*.pxsl	setf papp
@@ -1607,10 +1617,12 @@ au BufNewFile,BufRead *.sqlj			setf sqlj
 au BufNewFile,BufRead *.sqr,*.sqi		setf sqr
 
 " OpenSSH configuration
-au BufNewFile,BufRead ssh_config,*/.ssh/config	setf sshconfig
+au BufNewFile,BufRead ssh_config,*/.ssh/config		setf sshconfig
+au BufNewFile,BufRead */etc/ssh/ssh_config.d/*.conf	setf sshconfig
 
 " OpenSSH server configuration
-au BufNewFile,BufRead sshd_config		setf sshdconfig
+au BufNewFile,BufRead sshd_config			setf sshdconfig
+au BufNewFile,BufRead */etc/ssh/sshd_config.d/*.conf	setf sshdconfig
 
 " Stata
 au BufNewFile,BufRead *.ado,*.do,*.imata,*.mata	setf stata
@@ -1643,9 +1655,13 @@ au BufNewFile,BufRead */etc/sysctl.conf,*/etc/sysctl.d/*.conf	setf sysctl
 " Systemd unit files
 au BufNewFile,BufRead */systemd/*.{automount,mount,path,service,socket,swap,target,timer}	setf systemd
 " Systemd overrides
-au BufNewFile,BufRead /etc/systemd/system/*.d/*.conf	setf systemd
+au BufNewFile,BufRead */etc/systemd/system/*.d/*.conf	setf systemd
+au BufNewFile,BufRead */.config/systemd/user/*.d/*.conf	setf systemd
 " Systemd temp files
-au BufNewFile,BufRead /etc/systemd/system/*.d/.#*	setf systemd
+au BufNewFile,BufRead */etc/systemd/system/*.d/.#*	setf systemd
+au BufNewFile,BufRead */etc/systemd/system/.#*		setf systemd
+au BufNewFile,BufRead */.config/systemd/user/*.d/.#*	setf systemd
+au BufNewFile,BufRead */.config/systemd/user/.#*	setf systemd
 
 " Synopsys Design Constraints
 au BufNewFile,BufRead *.sdc			setf sdc
@@ -1773,7 +1789,7 @@ au BufNewFile,BufRead *.va,*.vams		setf verilogams
 au BufNewFile,BufRead *.sv,*.svh		setf systemverilog
 
 " VHDL
-au BufNewFile,BufRead *.hdl,*.vhd,*.vhdl,*.vbe,*.vst  setf vhdl
+au BufNewFile,BufRead *.hdl,*.vhd,*.vhdl,*.vbe,*.vst,*.vho  setf vhdl
 
 " Vim script
 au BufNewFile,BufRead *.vim,*.vba,.exrc,_exrc	setf vim

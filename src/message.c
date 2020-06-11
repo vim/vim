@@ -865,6 +865,7 @@ emsg_namelen(char *msg, char_u *name, int len)
     char_u *copy = vim_strnsave((char_u *)name, len);
 
     semsg(msg, copy == NULL ? "NULL" : (char *)copy);
+    vim_free(copy);
 }
 
 /*
@@ -1034,7 +1035,11 @@ ex_messages(exarg_T *eap)
 
     if (p == first_msg_hist)
     {
+#ifdef FEAT_MULTI_LANG
+	s = get_mess_lang();
+#else
 	s = mch_getenv((char_u *)"LANG");
+#endif
 	if (s != NULL && *s != NUL)
 	    // The next comment is extracted by xgettext and put in po file for
 	    // translators to read.
@@ -1253,7 +1258,7 @@ wait_return(int redraw)
 	{
 	    // Put the character back in the typeahead buffer.  Don't use the
 	    // stuff buffer, because lmaps wouldn't work.
-	    ins_char_typebuf(c);
+	    ins_char_typebuf(vgetc_char, vgetc_mod_mask);
 	    do_redraw = TRUE;	    // need a redraw even though there is
 				    // typeahead
 	}
@@ -1747,7 +1752,7 @@ str2special(
 	// For multi-byte characters check for an illegal byte.
 	if (has_mbyte && MB_BYTE2LEN(*str) > len)
 	{
-	    transchar_nonprint(buf, c);
+	    transchar_nonprint(curbuf, buf, c);
 	    *sp = str + 1;
 	    return buf;
 	}
@@ -3707,7 +3712,7 @@ do_dialog(
 		if (c == ':' && ex_cmd)
 		{
 		    retval = dfltbutton;
-		    ins_char_typebuf(':');
+		    ins_char_typebuf(':', 0);
 		    break;
 		}
 
@@ -4722,9 +4727,13 @@ vim_vsnprintf_typval(
 			    // signed
 			    switch (length_modifier)
 			    {
-			    case '\0':
+			    case '\0': str_arg_l += sprintf(
+						 tmp + str_arg_l, f,
+						 int_arg);
+				       break;
 			    case 'h': str_arg_l += sprintf(
-						 tmp + str_arg_l, f, int_arg);
+						 tmp + str_arg_l, f,
+						 (short)int_arg);
 				      break;
 			    case 'l': str_arg_l += sprintf(
 						tmp + str_arg_l, f, long_arg);
@@ -4739,9 +4748,13 @@ vim_vsnprintf_typval(
 			    // unsigned
 			    switch (length_modifier)
 			    {
-			    case '\0':
+			    case '\0': str_arg_l += sprintf(
+						tmp + str_arg_l, f,
+						uint_arg);
+				       break;
 			    case 'h': str_arg_l += sprintf(
-						tmp + str_arg_l, f, uint_arg);
+						tmp + str_arg_l, f,
+						(unsigned short)uint_arg);
 				      break;
 			    case 'l': str_arg_l += sprintf(
 					       tmp + str_arg_l, f, ulong_arg);

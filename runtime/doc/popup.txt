@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.2.  Last change: 2020 Feb 20
+*popup.txt*  For Vim version 8.2.  Last change: 2020 May 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -150,14 +150,21 @@ different:						*E863*
 - When the job ends, the popup window closes.
 - The popup window can be closed with `popup_close()`, the terminal buffer
   then becomes hidden.
+- It is not possible to open a second popup window with a terminal. *E861*
 - The default Pmenu color is only used for the border and padding.  To change
-  the color of the terminal itself set 'wincolor'.
+  the color of the terminal itself set the Terminal highlight group before
+  creating the terminal.  Setting 'wincolor' later can work but requires the
+  program in the terminal to redraw everything.
+- The default minimal size is 5 lines of 20 characters; Use the "minwidth" and
+  "minheight" parameters to set a different value.
+- The terminal size will grow if the program running in the terminal writes
+  text.  Set "maxheight" and "maxwidth" to restrict the size.
 
 To run a terminal in a popup window, first create the terminal hidden.  Then
 pass the buffer number to popup_create().  Example: >
+	hi link Terminal Search
 	let buf = term_start(['picker', 'Something'], #{hidden: 1, term_finish: 'close'})
 	let winid = popup_create(buf, #{minwidth: 50, minheight: 20})
-	set wincolor=Search
 
 ==============================================================================
 2. Functions						*popup-functions*
@@ -191,6 +198,7 @@ Other:
 	|popup_getoptions()|	get current options for a popup
 	|popup_getpos()|	get actual position and size of a popup
 	|popup_locate()|	find popup window at a screen position
+	|popup_list()|		get list of all popups
 
 
 DETAILS						*popup-function-details*
@@ -229,8 +237,15 @@ popup_beval({what}, {options})			*popup_beval()*
 			GetText()->popup_beval({})
 <
 							*popup_clear()*
-popup_clear()	Emergency solution to a misbehaving plugin: close all popup
+popup_clear([{force}])
+		Emergency solution to a misbehaving plugin: close all popup
 		windows for the current tab and global popups.
+		Close callbacks are not invoked.
+		When {force} is not present this will fail if the current
+		window is a popup.
+		When {force} is present and |TRUE| the popup is also closed
+		when it is the current window.  If a terminal is running in a
+		popup it is killed.
 
 
 popup_close({id} [, {result}])				*popup_close()*
@@ -409,6 +424,10 @@ popup_hide({id})						*popup_hide()*
 		Can also be used as a |method|: >
 			GetPopup()->popup_hide()
 
+popup_list()						 *popup_list()*
+		Return a List with the |window-ID| of all existing popups.
+
+
 popup_locate({row}, {col})				 *popup_locate()*
 		Return the |window-ID| of the popup at screen position {row}
 		and {col}.  If there are multiple popups the one with the
@@ -529,6 +548,8 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 			wrap
 			zindex
 		The options from |popup_move()| can also be used.
+		Generally, setting an option to zero or an empty string resets
+		it to the default value, but there are exceptions.
 		For "hidden" use |popup_hide()| and |popup_show()|.
 		"tabpage" cannot be changed.
 
@@ -566,21 +587,22 @@ properties.  It is in one of four forms:
 
 If you want to create a new buffer yourself use |bufadd()| and pass the buffer
 number to popup_create().
-It is not possible to use the buffer of a terminal window. *E278*
+It is not possible to use the buffer of a terminal window. *E278*  You CAN
+create a hidden terminal buffer and use that one in a popup window.
 
 The second argument of |popup_create()| is a dictionary with options:
 	line		Screen line where to position the popup.  Can use a
 			number or "cursor", "cursor+1" or "cursor-1" to use
 			the line of the cursor and add or subtract a number of
-			lines.  If omitted the popup is vertically centered.
-			The first line is 1.
+			lines.  If omitted or zero the popup is vertically
+			centered.  The first line is 1.
 			When using "textprop" the number is relative to the
 			text property and can be negative.
 	col		Screen column where to position the popup.  Can use a
 			number or "cursor" to use the column of the cursor,
 			"cursor+9" or "cursor-9" to add or subtract a number
-			of columns.  If omitted the popup is horizontally
-			centered.  The first column is 1.
+			of columns.  If omitted or zero the popup is
+			horizontally centered.  The first column is 1.
 			When using "textprop" the number is relative to the
 			text property and can be negative.
 	pos		"topleft", "topright", "botleft" or "botright":

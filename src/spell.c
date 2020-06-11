@@ -173,6 +173,8 @@ spell_check(
     int		wrongcaplen = 0;
     int		lpi;
     int		count_word = docount;
+    int		use_camel_case = *wp->w_s->b_p_spo != NUL;
+    int		camel_case = 0;
 
     // A word never starts at a space or a control character.  Return quickly
     // then, skipping over the character.
@@ -183,7 +185,7 @@ spell_check(
     if (wp->w_s->b_langp.ga_len == 0)
 	return 1;
 
-    vim_memset(&mi, 0, sizeof(matchinf_T));
+    CLEAR_FIELD(mi);
 
     // A number is always OK.  Also skip hexadecimal numbers 0xFF99 and
     // 0X99FF.  But always do check spelling to find "3GPP" and "11
@@ -204,9 +206,27 @@ spell_check(
     mi.mi_fend = ptr;
     if (spell_iswordp(mi.mi_fend, wp))
     {
+	int prev_upper;
+	int this_upper = FALSE;  // init for gcc
+
+	if (use_camel_case)
+	{
+	    c = PTR2CHAR(mi.mi_fend);
+	    this_upper = SPELL_ISUPPER(c);
+	}
+
 	do
+	{
 	    MB_PTR_ADV(mi.mi_fend);
-	while (*mi.mi_fend != NUL && spell_iswordp(mi.mi_fend, wp));
+	    if (use_camel_case)
+	    {
+		prev_upper = this_upper;
+		c = PTR2CHAR(mi.mi_fend);
+		this_upper = SPELL_ISUPPER(c);
+		camel_case = !prev_upper && this_upper;
+	    }
+	} while (*mi.mi_fend != NUL && spell_iswordp(mi.mi_fend, wp)
+							       && !camel_case);
 
 	if (capcol != NULL && *capcol == 0 && wp->w_s->b_cap_prog != NULL)
 	{
@@ -236,6 +256,10 @@ spell_check(
     (void)spell_casefold(ptr, (int)(mi.mi_fend - ptr), mi.mi_fword,
 							     MAXWLEN + 1);
     mi.mi_fwordlen = (int)STRLEN(mi.mi_fword);
+
+    if (camel_case)
+	// Introduce a fake word end space into the folded word.
+	mi.mi_fword[mi.mi_fwordlen - 1] = ' ';
 
     // The word is bad unless we recognize it.
     mi.mi_result = SP_BAD;
@@ -1225,7 +1249,7 @@ no_spell_checking(win_T *wp)
     if (!wp->w_p_spell || *wp->w_s->b_p_spl == NUL
 					 || wp->w_s->b_langp.ga_len == 0)
     {
-	emsg(_("E756: Spell checking is not enabled"));
+	emsg(_(e_no_spell));
 	return TRUE;
     }
     return FALSE;
@@ -2002,7 +2026,7 @@ did_set_spelllang(win_T *wp)
 	region = NULL;
 	len = (int)STRLEN(lang);
 
-	if (!valid_spellang(lang))
+	if (!valid_spelllang(lang))
 	    continue;
 
 	if (STRCMP(lang, "cjk") == 0)
@@ -2031,7 +2055,7 @@ did_set_spelllang(win_T *wp)
 		dont_use_region = TRUE;
 
 	    // Check if we loaded this language before.
-	    for (slang = first_lang; slang != NULL; slang = slang->sl_next)
+	    FOR_ALL_SPELL_LANGS(slang)
 		if (fullpathcmp(lang, slang->sl_fname, FALSE, TRUE) == FPC_SAME)
 		    break;
 	}
@@ -2048,7 +2072,7 @@ did_set_spelllang(win_T *wp)
 		dont_use_region = TRUE;
 
 	    // Check if we loaded this language before.
-	    for (slang = first_lang; slang != NULL; slang = slang->sl_next)
+	    FOR_ALL_SPELL_LANGS(slang)
 		if (STRICMP(lang, slang->sl_name) == 0)
 		    break;
 	}
@@ -2083,7 +2107,7 @@ did_set_spelllang(win_T *wp)
 	/*
 	 * Loop over the languages, there can be several files for "lang".
 	 */
-	for (slang = first_lang; slang != NULL; slang = slang->sl_next)
+	FOR_ALL_SPELL_LANGS(slang)
 	    if (filename ? fullpathcmp(lang, slang->sl_fname, FALSE, TRUE)
 								    == FPC_SAME
 			 : STRICMP(lang, slang->sl_name) == 0)
@@ -2162,7 +2186,7 @@ did_set_spelllang(win_T *wp)
 	}
 
 	// Check if it was loaded already.
-	for (slang = first_lang; slang != NULL; slang = slang->sl_next)
+	FOR_ALL_SPELL_LANGS(slang)
 	    if (fullpathcmp(spf_name, slang->sl_fname, FALSE, TRUE)
 								== FPC_SAME)
 		break;
@@ -2274,7 +2298,7 @@ theend:
     static void
 clear_midword(win_T *wp)
 {
-    vim_memset(wp->w_s->b_spell_ismw, 0, 256);
+    CLEAR_FIELD(wp->w_s->b_spell_ismw);
     VIM_CLEAR(wp->w_s->b_spell_ismw_mb);
 }
 
@@ -2520,9 +2544,9 @@ clear_spell_chartab(spelltab_T *sp)
 {
     int		i;
 
-    // Init everything to FALSE.
-    vim_memset(sp->st_isw, FALSE, sizeof(sp->st_isw));
-    vim_memset(sp->st_isu, FALSE, sizeof(sp->st_isu));
+    // Init everything to FALSE (zero).
+    CLEAR_FIELD(sp->st_isw);
+    CLEAR_FIELD(sp->st_isu);
     for (i = 0; i < 256; ++i)
     {
 	sp->st_fold[i] = i;
@@ -3810,7 +3834,7 @@ ex_spelldump(exarg_T *eap)
 
     // Delete the empty line that we started with.
     if (curbuf->b_ml.ml_line_count > 1)
-	ml_delete(curbuf->b_ml.ml_line_count, FALSE);
+	ml_delete(curbuf->b_ml.ml_line_count);
 
     redraw_later(NOT_VALID);
 }
@@ -4303,10 +4327,10 @@ expand_spelling(
 }
 
 /*
- * Return TRUE if "val" is a valid 'spellang' value.
+ * Return TRUE if "val" is a valid 'spelllang' value.
  */
     int
-valid_spellang(char_u *val)
+valid_spelllang(char_u *val)
 {
     return valid_name(val, ".-_,@");
 }

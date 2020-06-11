@@ -69,7 +69,7 @@ do_ascii(exarg_T *eap UNUSED)
 #endif
 			       ))
 	{
-	    transchar_nonprint(buf3, c);
+	    transchar_nonprint(curbuf, buf3, c);
 	    vim_snprintf(buf1, sizeof(buf1), "  <%s>", (char *)buf3);
 	}
 	else
@@ -451,12 +451,9 @@ ex_sort(exarg_T *eap)
 	}
 	else if (!ASCII_ISALPHA(*p) && regmatch.regprog == NULL)
 	{
-	    s = skip_regexp(p + 1, *p, TRUE, NULL);
-	    if (*s != *p)
-	    {
-		emsg(_(e_invalpat));
+	    s = skip_regexp_err(p + 1, *p, TRUE);
+	    if (s == NULL)
 		goto sortend;
-	    }
 	    *s = NUL;
 	    // Use last search pattern if sort pattern is empty.
 	    if (s == p + 1)
@@ -636,7 +633,7 @@ ex_sort(exarg_T *eap)
     // delete the original lines if appending worked
     if (i == count)
 	for (i = 0; i < count; ++i)
-	    ml_delete(eap->line1, FALSE);
+	    ml_delete(eap->line1);
     else
 	count = 0;
 
@@ -782,7 +779,7 @@ do_move(linenr_T line1, linenr_T line2, linenr_T dest)
 	return FAIL;
 
     for (l = line1; l <= line2; l++)
-	ml_delete(line1 + extra, TRUE);
+	ml_delete_flags(line1 + extra, ML_DEL_MESSAGE);
 
     if (!global_busy && num_lines > p_report)
 	smsg(NGETTEXT("%ld line moved", "%ld lines moved", num_lines),
@@ -2074,8 +2071,8 @@ check_overwrite(
     int		other)	    // writing under other name
 {
     /*
-     * write to other file or b_flags set or not writing the whole file:
-     * overwriting only allowed with '!'
+     * Write to another file or b_flags set or not writing the whole file:
+     * overwriting only allowed with '!'.
      */
     if (       (other
 		|| (buf->b_flags & BF_NOTEDITED)
@@ -2083,9 +2080,6 @@ check_overwrite(
 		    && vim_strchr(p_cpo, CPO_OVERNEW) == NULL)
 		|| (buf->b_flags & BF_READERR))
 	    && !p_wa
-#ifdef FEAT_QUICKFIX
-	    && !bt_nofilename(buf)
-#endif
 	    && vim_fexists(ffname))
     {
 	if (!eap->forceit && !eap->append)
@@ -2490,6 +2484,11 @@ do_ecmd(
     int		did_inc_redrawing_disabled = FALSE;
     long        *so_ptr = curwin->w_p_so >= 0 ? &curwin->w_p_so : &p_so;
 
+#ifdef FEAT_PROP_POPUP
+    if (ERROR_IF_TERM_POPUP_WINDOW)
+	return FAIL;
+#endif
+
     if (eap != NULL)
 	command = eap->do_ecmd_cmd;
     set_bufref(&old_curbuf, curbuf);
@@ -2557,7 +2556,7 @@ do_ecmd(
     }
 
     /*
-     * if the file was changed we may not be allowed to abandon it
+     * If the file was changed we may not be allowed to abandon it:
      * - if we are going to re-edit the same file
      * - or if we are the only window on this file and if ECMD_HIDE is FALSE
      */
@@ -3281,7 +3280,7 @@ ex_append(exarg_T *eap)
 
 	if (empty)
 	{
-	    ml_delete(2L, FALSE);
+	    ml_delete(2L);
 	    empty = FALSE;
 	}
     }
@@ -3332,7 +3331,7 @@ ex_change(exarg_T *eap)
     {
 	if (curbuf->b_ml.ml_flags & ML_EMPTY)	    // nothing to delete
 	    break;
-	ml_delete(eap->line1, FALSE);
+	ml_delete(eap->line1);
     }
 
     // make sure the cursor is not beyond the end of the file now
@@ -3629,7 +3628,7 @@ do_sub(exarg_T *eap)
 	    which_pat = RE_LAST;	    // use last used regexp
 	    delimiter = *cmd++;		    // remember delimiter character
 	    pat = cmd;			    // remember start of search pat
-	    cmd = skip_regexp(cmd, delimiter, p_magic, &eap->arg);
+	    cmd = skip_regexp_ex(cmd, delimiter, p_magic, &eap->arg, NULL);
 	    if (cmd[0] == delimiter)	    // end delimiter found
 		*cmd++ = NUL;		    // replace it with a NUL
 	}
@@ -4532,7 +4531,7 @@ skip:
 			    if (u_savedel(lnum, nmatch_tl) != OK)
 				break;
 			    for (i = 0; i < nmatch_tl; ++i)
-				ml_delete(lnum, (int)FALSE);
+				ml_delete(lnum);
 			    mark_adjust(lnum, lnum + nmatch_tl - 1,
 						   (long)MAXLNUM, -nmatch_tl);
 			    if (subflags.do_ask)
@@ -4804,7 +4803,7 @@ ex_global(exarg_T *eap)
 	if (delim)
 	    ++cmd;		// skip delimiter if there is one
 	pat = cmd;		// remember start of pattern
-	cmd = skip_regexp(cmd, delim, p_magic, &eap->arg);
+	cmd = skip_regexp_ex(cmd, delim, p_magic, &eap->arg, NULL);
 	if (cmd[0] == delim)		    // end delimiter found
 	    *cmd++ = NUL;		    // replace it with a NUL
     }
@@ -6350,6 +6349,9 @@ ex_drop(exarg_T *eap)
     buf_T	*buf;
     tabpage_T	*tp;
 
+    if (ERROR_IF_POPUP_WINDOW || ERROR_IF_TERM_POPUP_WINDOW)
+	return;
+
     /*
      * Check if the first argument is already being edited in a window.  If
      * so, jump to that window.
@@ -6444,7 +6446,7 @@ skip_vimgrep_pat(char_u *p, char_u **s, int *flags)
 	if (s != NULL)
 	    *s = p + 1;
 	c = *p;
-	p = skip_regexp(p + 1, c, TRUE, NULL);
+	p = skip_regexp(p + 1, c, TRUE);
 	if (*p != c)
 	    return NULL;
 

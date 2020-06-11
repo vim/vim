@@ -168,7 +168,7 @@ dialog_changed(
 
     // Init ea pseudo-structure, this is needed for the check_overwrite()
     // function.
-    vim_memset(&ea, 0, sizeof(ea));
+    CLEAR_FIELD(ea);
 
     if (ret == VIM_YES)
     {
@@ -303,7 +303,7 @@ check_changed_any(
     // buffers in other tabs
     FOR_ALL_TABPAGES(tp)
 	if (tp != curtab)
-	    for (wp = tp->tp_firstwin; wp != NULL; wp = wp->w_next)
+	    FOR_ALL_WINDOWS_IN_TAB(tp, wp)
 		add_bufnum(bufnrs, &bufnum, wp->w_buffer->b_fnum);
 
     // any other buffer
@@ -477,7 +477,7 @@ ex_listdo(exarg_T *eap)
 	// great speed improvement.
 	save_ei = au_event_disable(",Syntax");
 
-	for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	FOR_ALL_BUFFERS(buf)
 	    buf->b_flags &= ~BF_SYN_SET;
 	buf = curbuf;
     }
@@ -643,7 +643,13 @@ ex_listdo(exarg_T *eap)
 
 		qf_idx = qf_get_cur_idx(eap);
 
+		// Clear 'shm' to avoid that the file message overwrites
+		// any output from the command.
+		p_shm_save = vim_strsave(p_shm);
+		set_option_value((char_u *)"shm", 0L, (char_u *)"", 0);
 		ex_cnext(eap);
+		set_option_value((char_u *)"shm", 0L, p_shm_save, 0);
+		vim_free(p_shm_save);
 
 		// If jumping to the next quickfix entry fails, quit here
 		if (qf_get_cur_idx(eap) == qf_idx)
@@ -889,7 +895,7 @@ source_pyx_file(exarg_T *eap, char_u *fname)
      * unobtrusive message.
      */
     if (eap == NULL)
-	vim_memset(&ex, 0, sizeof(ex));
+	CLEAR_FIELD(ex);
     else
 	ex = *eap;
     ex.arg = fname;

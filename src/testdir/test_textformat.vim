@@ -882,7 +882,7 @@ func Test_tw_2_fo_tm_replace()
 endfunc
 
 " Test for 'matchpairs' with multibyte chars
-func Test_mps()
+func Test_mps_multibyte()
   new
   let t =<< trim END
     {
@@ -904,6 +904,30 @@ func Test_mps()
 
   set mps&
   bwipe!
+endfunc
+
+" Test for 'matchpairs' in latin1 encoding
+func Test_mps_latin1()
+  new
+  let save_enc = &encoding
+  set encoding=latin1
+  call setline(1, 'abc(def)ghi')
+  normal %
+  call assert_equal(8, col('.'))
+  normal %
+  call assert_equal(4, col('.'))
+  call cursor(1, 6)
+  normal [(
+  call assert_equal(4, col('.'))
+  normal %
+  call assert_equal(8, col('.'))
+  call cursor(1, 6)
+  normal ])
+  call assert_equal(8, col('.'))
+  normal %
+  call assert_equal(4, col('.'))
+  let &encoding = save_enc
+  close!
 endfunc
 
 " Test for ra on multi-byte characters
@@ -951,8 +975,358 @@ func Test_whichwrap_multi_byte()
   bwipe!
 endfunc
 
-func Test_substitute()
-  call assert_equal('a１a２a３a', substitute('１２３', '\zs', 'a', 'g'))
+" Test for automatically adding comment leaders in insert mode
+func Test_threepiece_comment()
+  new
+  setlocal expandtab
+  call setline(1, ["\t/*"])
+  setlocal formatoptions=croql
+  call cursor(1, 3)
+  call feedkeys("A\<cr>\<cr>/", 'tnix')
+  call assert_equal(["\t/*", " *", " */"], getline(1, '$'))
+
+  " If a comment ends in a single line, then don't add it in the next line
+  %d
+  call setline(1, '/* line1 */')
+  call feedkeys("A\<CR>next line", 'xt')
+  call assert_equal(['/* line1 */', 'next line'], getline(1, '$'))
+
+  %d
+  " Copy the trailing indentation from the leader comment to a new line
+  setlocal autoindent noexpandtab
+  call feedkeys("a\t/*\tone\ntwo\n/", 'xt')
+  call assert_equal(["\t/*\tone", "\t *\ttwo", "\t */"], getline(1, '$'))
+  close!
+endfunc
+
+" Test for the 'f' flag in 'comments' (only the first line has the comment
+" string)
+func Test_firstline_comment()
+  new
+  setlocal comments=f:- fo+=ro
+  exe "normal i- B\nD\<C-C>ggoC\<C-C>ggOA\<C-C>"
+  call assert_equal(['A', '- B', '  C', '  D'], getline(1, '$'))
+  %d
+  setlocal comments=:-
+  exe "normal i- B\nD\<C-C>ggoC\<C-C>ggOA\<C-C>"
+  call assert_equal(['- A', '- B', '- C', '- D'], getline(1, '$'))
+  %bw!
+endfunc
+
+" Test for the 'r' flag in 'comments' (right align comment)
+func Test_comment_rightalign()
+  new
+  setlocal comments=sr:/***,m:**,ex-2:******/ fo+=ro
+  exe "normal i=\<C-C>o\t  /***\nD\n/"
+  exe "normal 2GOA\<C-C>joB\<C-C>jOC\<C-C>joE\<C-C>GOF\<C-C>joG"
+  let expected =<< trim END
+    =
+    A
+    	  /***
+    	    ** B
+    	    ** C
+    	    ** D
+    	    ** E
+    	    **     F
+    	    ******/
+    G
+  END
+  call assert_equal(expected, getline(1, '$'))
+  %bw!
+endfunc
+
+" Test for the 'b' flag in 'comments'
+func Test_comment_blank()
+  new
+  setlocal comments=b:* fo+=ro
+  exe "normal i* E\nF\n\<BS>G\nH\<C-C>ggOC\<C-C>O\<BS>B\<C-C>OA\<C-C>2joD"
+  let expected =<< trim END
+    A
+    *B
+    * C
+    * D
+    * E
+    * F
+    *G
+    H
+  END
+  call assert_equal(expected, getline(1, '$'))
+  %bw!
+endfunc
+
+" Test for the 'n' flag in comments
+func Test_comment_nested()
+  new
+  setlocal comments=n:> fo+=ro
+  exe "normal i> B\nD\<C-C>ggOA\<C-C>joC\<C-C>Go\<BS>>>> F\nH"
+  exe "normal 5GOE\<C-C>6GoG"
+  let expected =<< trim END
+    > A
+    > B
+    > C
+    > D
+    >>>> E
+    >>>> F
+    >>>> G
+    >>>> H
+  END
+  call assert_equal(expected, getline(1, '$'))
+  %bw!
+endfunc
+
+" Test for a space character in 'comments' setting
+func Test_comment_space()
+  new
+  setlocal comments=b:\ > fo+=ro
+  exe "normal i> B\nD\<C-C>ggOA\<C-C>joC"
+  exe "normal Go > F\nH\<C-C>kOE\<C-C>joG"
+  let expected =<< trim END
+    A
+    > B
+    C
+    D
+     > E
+     > F
+     > G
+     > H
+  END
+  call assert_equal(expected, getline(1, '$'))
+  %bw!
+endfunc
+
+" Test for the 'O' flag in 'comments'
+func Test_comment_O()
+  new
+  setlocal comments=Ob:* fo+=ro
+  exe "normal i* B\nD\<C-C>kOA\<C-C>joC"
+  let expected =<< trim END
+    A
+    * B
+    * C
+    * D
+  END
+  call assert_equal(expected, getline(1, '$'))
+  %bw!
+endfunc
+
+" Test for 'a' and 'w' flags in 'formatoptions'
+func Test_fo_a_w()
+  new
+  setlocal fo+=aw tw=10
+  call feedkeys("iabc abc a abc\<Esc>k0weade", 'xt')
+  call assert_equal(['abc abcde ', 'a abc'], getline(1, '$'))
+
+  " Test for 'a', 'w' and '1' options.
+  setlocal textwidth=0
+  setlocal fo=1aw
+  %d
+  call setline(1, '. foo')
+  normal 72ig
+  call feedkeys('a uu uu uu', 'xt')
+  call assert_equal('g uu uu ', getline(1)[-8:])
+  call assert_equal(['uu. foo'], getline(2, '$'))
+
+  %bw!
+endfunc
+
+" Test for 'j' flag in 'formatoptions'
+func Test_fo_j()
+  new
+  setlocal fo+=j comments=://
+  call setline(1, ['i++; // comment1', '           // comment2'])
+  normal J
+  call assert_equal('i++; // comment1 comment2', getline(1))
+  setlocal fo-=j
+  call setline(1, ['i++; // comment1', '           // comment2'])
+  normal J
+  call assert_equal('i++; // comment1 // comment2', getline(1))
+  " Test with nested comments
+  setlocal fo+=j comments=n:>,n:)
+  call setline(1, ['i++; > ) > ) comment1', '           > ) comment2'])
+  normal J
+  call assert_equal('i++; > ) > ) comment1 comment2', getline(1))
+  %bw!
+endfunc
+
+" Test for formatting lines using gq in visual mode
+func Test_visual_gq_format()
+  new
+  call setline(1, ['one two three four', 'five six', 'one two'])
+  setl textwidth=10
+  call feedkeys('ggv$jj', 'xt')
+  redraw!
+  normal gq
+  %d
+  call setline(1, ['one two three four', 'five six', 'one two'])
+  normal G$
+  call feedkeys('v0kk', 'xt')
+  redraw!
+  normal gq
+  setl textwidth&
+  close!
+endfunc
+
+" Test for 'n' flag in 'formatoptions' to format numbered lists
+func Test_fo_n()
+  new
+  setlocal autoindent
+  setlocal textwidth=12
+  setlocal fo=n
+  call setline(1, ['  1) one two three four', '  2) two'])
+  normal gggqG
+  call assert_equal(['  1) one two', '     three', '     four', '  2) two'],
+        \ getline(1, '$'))
+  close!
+endfunc
+
+" Test for 'formatlistpat' option
+func Test_formatlistpat()
+  new
+  setlocal autoindent
+  setlocal textwidth=10
+  setlocal fo=n
+  setlocal formatlistpat=^\\s*-\\s*
+  call setline(1, ['  - one two three', '  - two'])
+  normal gggqG
+  call assert_equal(['  - one', '    two', '    three', '  - two'],
+        \ getline(1, '$'))
+  close!
+endfunc
+
+" Test for the 'b' and 'v' flags in 'formatoptions'
+" Text should wrap only if a space character is inserted at or before
+" 'textwidth'
+func Test_fo_b()
+  new
+  setlocal textwidth=20
+
+  setlocal formatoptions=t
+  call setline(1, 'one two three four')
+  call feedkeys('Amore', 'xt')
+  call assert_equal(['one two three', 'fourmore'], getline(1, '$'))
+
+  setlocal formatoptions=bt
+  %d
+  call setline(1, 'one two three four')
+  call feedkeys('Amore five', 'xt')
+  call assert_equal(['one two three fourmore five'], getline(1, '$'))
+
+  setlocal formatoptions=bt
+  %d
+  call setline(1, 'one two three four')
+  call feedkeys('A five', 'xt')
+  call assert_equal(['one two three four', 'five'], getline(1, '$'))
+
+  setlocal formatoptions=vt
+  %d
+  call setline(1, 'one two three four')
+  call feedkeys('Amore five', 'xt')
+  call assert_equal(['one two three fourmore', 'five'], getline(1, '$'))
+
+  close!
+endfunc
+
+" Test for the '1' flag in 'formatoptions'. Don't wrap text after a one letter
+" word.
+func Test_fo_1()
+  new
+  setlocal textwidth=20
+
+  setlocal formatoptions=t
+  call setline(1, 'one two three four')
+  call feedkeys('A a bird', 'xt')
+  call assert_equal(['one two three four a', 'bird'], getline(1, '$'))
+
+  %d
+  setlocal formatoptions=t1
+  call setline(1, 'one two three four')
+  call feedkeys('A a bird', 'xt')
+  call assert_equal(['one two three four', 'a bird'], getline(1, '$'))
+
+  close!
+endfunc
+
+" Test for 'l' flag in 'formatoptions'. When starting insert mode, if a line
+" is longer than 'textwidth', then it is not broken.
+func Test_fo_l()
+  new
+  setlocal textwidth=20
+
+  setlocal formatoptions=t
+  call setline(1, 'one two three four five')
+  call feedkeys('A six', 'xt')
+  call assert_equal(['one two three four', 'five six'], getline(1, '$'))
+
+  %d
+  setlocal formatoptions=tl
+  call setline(1, 'one two three four five')
+  call feedkeys('A six', 'xt')
+  call assert_equal(['one two three four five six'], getline(1, '$'))
+
+  close!
+endfunc
+
+" Test for the '2' flag in 'formatoptions'
+func Test_fo_2()
+  new
+  setlocal autoindent
+  setlocal formatoptions=t2
+  setlocal textwidth=30
+  call setline(1, ["\tfirst line of a paragraph.",
+        \ "second line of the same paragraph.",
+        \ "third line."])
+  normal gggqG
+  call assert_equal(["\tfirst line of a",
+        \ "paragraph.  second line of the",
+        \ "same paragraph.  third line."], getline(1, '$'))
+  close!
+endfunc
+
+" Test for formatting lines where only the first line has a comment.
+func Test_fo_gq_with_firstline_comment()
+  new
+  setlocal formatoptions=tcq
+  call setline(1, ['- one two', 'three'])
+  normal gggqG
+  call assert_equal(['- one two three'], getline(1, '$'))
+
+  %d
+  call setline(1, ['- one', '- two'])
+  normal gggqG
+  call assert_equal(['- one', '- two'], getline(1, '$'))
+  close!
+endfunc
+
+" Test for trying to join a comment line with a non-comment line
+func Test_join_comments()
+  new
+  call setline(1, ['one', '/* two */', 'three'])
+  normal gggqG
+  call assert_equal(['one', '/* two */', 'three'], getline(1, '$'))
+  close!
+endfunc
+
+" Test for using 'a' in 'formatoptions' with comments
+func Test_autoformat_comments()
+  new
+  setlocal formatoptions+=a
+  call feedkeys("a- one\n- two\n", 'xt')
+  call assert_equal(['- one', '- two', ''], getline(1, '$'))
+
+  %d
+  call feedkeys("a\none\n", 'xt')
+  call assert_equal(['', 'one', ''], getline(1, '$'))
+
+  setlocal formatoptions+=aw
+  %d
+  call feedkeys("aone \ntwo\n", 'xt')
+  call assert_equal(['one two', ''], getline(1, '$'))
+
+  %d
+  call feedkeys("aone\ntwo\n", 'xt')
+  call assert_equal(['one', 'two', ''], getline(1, '$'))
+
+  close!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

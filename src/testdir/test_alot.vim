@@ -19,7 +19,6 @@ source test_glob2regpat.vim
 source test_global.vim
 source test_jumps.vim
 source test_lispwords.vim
-source test_menu.vim
 source test_move.vim
 source test_put.vim
 source test_recover.vim
@@ -33,4 +32,5 @@ source test_tabline.vim
 source test_tagcase.vim
 source test_tagfunc.vim
 source test_unlet.vim
+source test_version.vim
 source test_wnext.vim

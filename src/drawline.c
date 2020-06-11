@@ -270,7 +270,6 @@ win_line(
     int		tocol = MAXCOL;		// end of inverting
     int		fromcol_prev = -2;	// start of inverting after cursor
     int		noinvcur = FALSE;	// don't invert the cursor
-    pos_T	*top, *bot;
     int		lnum_in_visual_area = FALSE;
     pos_T	pos;
     long	v;
@@ -535,6 +534,8 @@ win_line(
 	// handle Visual active in this window
 	if (VIsual_active && wp->w_buffer == curwin->w_buffer)
 	{
+	    pos_T	*top, *bot;
+
 	    if (LTOREQ_POS(curwin->w_cursor, VIsual))
 	    {
 		// Visual is after curwin->w_cursor
@@ -1176,6 +1177,12 @@ win_line(
 		    c_final = NUL;
 		    n_extra = get_breakindent_win(wp,
 				       ml_get_buf(wp->w_buffer, lnum, FALSE));
+		    if (row == startrow)
+		    {
+			n_extra -= win_col_off2(wp);
+			if (n_extra < 0)
+			    n_extra = 0;
+		    }
 		    if (wp->w_skipcol > 0 && wp->w_p_wrap && wp->w_briopt_sbr)
 			need_showbreak = FALSE;
 		    // Correct end of highlighted area for 'breakindent',
@@ -1757,7 +1764,7 @@ win_line(
 			    {
 				// head byte at end of line
 				mb_l = 1;
-				transchar_nonprint(extra, c);
+				transchar_nonprint(wp->w_buffer, extra, c);
 			    }
 			    else
 			    {
@@ -2217,7 +2224,7 @@ win_line(
 		}
 		else if (c != NUL)
 		{
-		    p_extra = transchar(c);
+		    p_extra = transchar_buf(wp->w_buffer, c);
 		    if (n_extra == 0)
 			n_extra = byte2cells(c) - 1;
 #ifdef FEAT_RIGHTLEFT
@@ -3094,9 +3101,9 @@ win_line(
 #ifdef FEAT_SYN_HL
 	    if (!(cul_screenline
 # ifdef FEAT_DIFF
-			&& diff_hlf == (hlf_T)0)
+			&& diff_hlf == (hlf_T)0
 # endif
-		    )
+		    ))
 		saved_char_attr = char_attr;
 	    else
 #endif

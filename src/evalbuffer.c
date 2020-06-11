@@ -117,7 +117,7 @@ find_win_for_curbuf(void)
 {
     wininfo_T *wip;
 
-    for (wip = curbuf->b_wininfo; wip != NULL; wip = wip->wi_next)
+    FOR_ALL_BUF_WININFO(curbuf, wip)
     {
 	if (wip->wi_win != NULL)
 	{
@@ -176,7 +176,14 @@ set_buffer_lines(
     if (lines->v_type == VAR_LIST)
     {
 	l = lines->vval.v_list;
-	range_list_materialize(l);
+	if (l == NULL || list_len(l) == 0)
+	{
+	    // set proper return code
+	    if (lnum > curbuf->b_ml.ml_line_count)
+		rettv->vval.v_number = 1;	// FAIL
+	    goto done;
+	}
+	CHECK_LIST_MATERIALIZE(l);
 	li = l->lv_first;
     }
     else
@@ -251,6 +258,7 @@ set_buffer_lines(
 	update_topline();
     }
 
+done:
     if (!is_curbuf)
     {
 	curbuf = curbuf_save;
@@ -505,7 +513,7 @@ f_deletebufline(typval_T *argvars, typval_T *rettv)
     }
 
     for (lnum = first; lnum <= last; ++lnum)
-	ml_delete(first, TRUE);
+	ml_delete_flags(first, ML_DEL_MESSAGE);
 
     FOR_ALL_TAB_WINDOWS(tp, wp)
 	if (wp->w_buffer == buf)
@@ -572,11 +580,11 @@ get_buffer_info(buf_T *buf)
     windows = list_alloc();
     if (windows != NULL)
     {
-	for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+	FOR_ALL_POPUPWINS(wp)
 	    if (wp->w_buffer == buf)
 		list_append_number(windows, (varnumber_T)wp->w_id);
 	FOR_ALL_TABPAGES(tp)
-	    for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	    FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
 		if (wp->w_buffer == buf)
 		    list_append_number(windows, (varnumber_T)wp->w_id);
 

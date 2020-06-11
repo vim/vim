@@ -188,15 +188,18 @@ static int win32_set_archive(char_u *name);
 static int conpty_working = 0;
 static int conpty_type = 0;
 static int conpty_stable = 0;
+static int conpty_fix_type = 0;
 static void vtp_flag_init();
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 static int vtp_working = 0;
 static void vtp_init();
 static void vtp_exit();
-static int vtp_printf(char *format, ...);
 static void vtp_sgr_bulk(int arg);
 static void vtp_sgr_bulks(int argc, int *argv);
+
+static int wt_working = 0;
+static void wt_init();
 
 static guicolor_T save_console_bg_rgb;
 static guicolor_T save_console_fg_rgb;
@@ -213,8 +216,10 @@ static int default_console_color_fg = 0xc0c0c0; // white
 
 # ifdef FEAT_TERMGUICOLORS
 #  define USE_VTP		(vtp_working && is_term_win32() && (p_tgc || (!p_tgc && t_colors >= 256)))
+#  define USE_WT		(wt_working)
 # else
 #  define USE_VTP		0
+#  define USE_WT		0
 # endif
 
 static void set_console_color_rgb(void);
@@ -234,6 +239,12 @@ static int suppress_winsize = 1;	// don't fiddle with console
 static char_u *exe_path = NULL;
 
 static BOOL win8_or_later = FALSE;
+
+# if defined(__GNUC__) && !defined(__MINGW32__)  && !defined(__CYGWIN__)
+#  define UChar UnicodeChar
+# else
+#  define UChar uChar.UnicodeChar
+# endif
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 // Dynamic loading for portability
@@ -285,6 +296,30 @@ get_build_number(void)
 }
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
+    static BOOL
+is_ambiwidth_event(
+    INPUT_RECORD *ir)
+{
+    return ir->EventType == KEY_EVENT
+		&& ir->Event.KeyEvent.bKeyDown
+		&& ir->Event.KeyEvent.wRepeatCount == 1
+		&& ir->Event.KeyEvent.wVirtualKeyCode == 0x12
+		&& ir->Event.KeyEvent.wVirtualScanCode == 0x38
+		&& ir->Event.KeyEvent.UChar == 0
+		&& ir->Event.KeyEvent.dwControlKeyState == 2;
+}
+
+    static void
+make_ambiwidth_event(
+    INPUT_RECORD *down,
+    INPUT_RECORD *up)
+{
+    down->Event.KeyEvent.wVirtualKeyCode = 0;
+    down->Event.KeyEvent.wVirtualScanCode = 0;
+    down->Event.KeyEvent.UChar = up->Event.KeyEvent.UChar;
+    down->Event.KeyEvent.dwControlKeyState = 0;
+}
+
 /*
  * Version of ReadConsoleInput() that works with IME.
  * Works around problems on Windows 8.
@@ -307,6 +342,7 @@ read_console_input(
     int head;
     int tail;
     int i;
+    static INPUT_RECORD s_irPseudo;
 
     if (nLength == -2)
 	return (s_dwMax > 0) ? TRUE : FALSE;
@@ -320,10 +356,12 @@ read_console_input(
 
     if (s_dwMax == 0)
     {
-	if (nLength == -1)
+	if (!USE_WT && nLength == -1)
 	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
-	if (!ReadConsoleInputW(hInput, s_irCache, IRSIZE, &dwEvents))
-	    return FALSE;
+	GetNumberOfConsoleInputEvents(hInput, &dwEvents);
+	if (dwEvents == 0 && nLength == -1)
+	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
+	ReadConsoleInputW(hInput, s_irCache, IRSIZE, &dwEvents);
 	s_dwIndex = 0;
 	s_dwMax = dwEvents;
 	if (dwEvents == 0)
@@ -331,6 +369,10 @@ read_console_input(
 	    *lpEvents = 0;
 	    return TRUE;
 	}
+
+	for (i = s_dwIndex; i < (int)s_dwMax - 1; ++i)
+	    if (is_ambiwidth_event(&s_irCache[i]))
+		make_ambiwidth_event(&s_irCache[i], &s_irCache[i + 1]);
 
 	if (s_dwMax > 1)
 	{
@@ -351,6 +393,19 @@ read_console_input(
 		head++;
 	    }
 	    s_dwMax = tail + 1;
+	}
+    }
+
+    if (s_irCache[s_dwIndex].EventType == KEY_EVENT)
+    {
+	if (s_irCache[s_dwIndex].Event.KeyEvent.wRepeatCount > 1)
+	{
+	    s_irPseudo = s_irCache[s_dwIndex];
+	    s_irPseudo.Event.KeyEvent.wRepeatCount = 1;
+	    s_irCache[s_dwIndex].Event.KeyEvent.wRepeatCount--;
+	    *lpBuffer = s_irPseudo;
+	    *lpEvents = 1;
+	    return TRUE;
 	}
     }
 
@@ -807,7 +862,7 @@ win32_enable_privilege(LPTSTR lpszPrivilege, BOOL bEnable)
 #endif
 
 /*
- * Set "win8_or_later" and fill in "windowsVersion".
+ * Set "win8_or_later" and fill in "windowsVersion" if possible.
  */
     void
 PlatformId(void)
@@ -821,9 +876,10 @@ PlatformId(void)
 	ovi.dwOSVersionInfoSize = sizeof(ovi);
 	GetVersionEx(&ovi);
 
+#ifdef FEAT_EVAL
 	vim_snprintf(windowsVersion, sizeof(windowsVersion), "%d.%d",
 		(int)ovi.dwMajorVersion, (int)ovi.dwMinorVersion);
-
+#endif
 	if ((ovi.dwMajorVersion == 6 && ovi.dwMinorVersion >= 2)
 		|| ovi.dwMajorVersion > 6)
 	    win8_or_later = TRUE;
@@ -921,12 +977,6 @@ static const struct
 };
 
 
-# if defined(__GNUC__) && !defined(__MINGW32__)  && !defined(__CYGWIN__)
-#  define UChar UnicodeChar
-# else
-#  define UChar uChar.UnicodeChar
-# endif
-
 /*
  * The return code indicates key code size.
  */
@@ -950,7 +1000,7 @@ win32_kbd_patch_key(
     if (pker->UChar != 0)
 	return 1;
 
-    vim_memset(abKeystate, 0, sizeof (abKeystate));
+    CLEAR_FIELD(abKeystate);
 
     // Clear any pending dead keys
     ToUnicode(VK_SPACE, MapVirtualKey(VK_SPACE, 0), abKeystate, awAnsiCode, 2, 0);
@@ -1782,7 +1832,13 @@ mch_inchar(
 
     int		len;
     int		c;
-# define TYPEAHEADLEN 20
+# ifdef VIMDLL
+// Extra space for maximum three CSIs. E.g. U+1B6DB -> 0xF0 0x9B 0x9B 0x9B.
+#  define TYPEAHEADSPACE    6
+# else
+#  define TYPEAHEADSPACE    0
+# endif
+# define TYPEAHEADLEN	    (20 + TYPEAHEADSPACE)
     static char_u   typeahead[TYPEAHEADLEN];	// previously typed bytes.
     static int	    typeaheadlen = 0;
 
@@ -1838,7 +1894,7 @@ mch_inchar(
     // to get and still room in the buffer (up to two bytes for a char and
     // three bytes for a modifier).
     while ((typeaheadlen == 0 || WaitForChar(0L, FALSE))
-					  && typeaheadlen + 5 <= TYPEAHEADLEN)
+		         && typeaheadlen + 5 + TYPEAHEADSPACE <= TYPEAHEADLEN)
     {
 	if (typebuf_changed(tb_change_cnt))
 	{
@@ -1890,7 +1946,7 @@ mch_inchar(
 
 		if (ch2 == NUL)
 		{
-		    int	    i;
+		    int	    i, j;
 		    char_u  *p;
 		    WCHAR   ch[2];
 
@@ -1903,13 +1959,33 @@ mch_inchar(
 		    p = utf16_to_enc(ch, &n);
 		    if (p != NULL)
 		    {
-			for (i = 0; i < n; i++)
-			    typeahead[typeaheadlen + i] = p[i];
+			for (i = 0, j = 0; i < n; i++)
+			{
+			    typeahead[typeaheadlen + j++] = p[i];
+# ifdef VIMDLL
+			    if (p[i] == CSI)
+			    {
+				typeahead[typeaheadlen + j++] = KS_EXTRA;
+				typeahead[typeaheadlen + j++] = KE_CSI;
+			    }
+# endif
+			}
+			n = j;
 			vim_free(p);
 		    }
 		}
 		else
+		{
 		    typeahead[typeaheadlen] = c;
+# ifdef VIMDLL
+		    if (c == CSI)
+		    {
+			typeahead[typeaheadlen + 1] = KS_EXTRA;
+			typeahead[typeaheadlen + 2] = KE_CSI;
+			n = 3;
+		    }
+# endif
+		}
 		if (ch2 != NUL)
 		{
 		    if (c == K_NUL)
@@ -2004,57 +2080,200 @@ theend:
 #endif
 
 /*
- * If "use_path" is TRUE: Return TRUE if "name" is in $PATH.
- * If "use_path" is FALSE: Return TRUE if "name" exists.
+ * Return TRUE if "name" is an executable file, FALSE if not or it doesn't exist.
  * When returning TRUE and "path" is not NULL save the path and set "*path" to
  * the allocated memory.
  * TODO: Should somehow check if it's really executable.
  */
     static int
-executable_exists(char *name, char_u **path, int use_path)
+executable_file(char *name, char_u **path)
 {
-    WCHAR	*p;
-    WCHAR	fnamew[_MAX_PATH];
-    WCHAR	*dumw;
-    WCHAR	*wcurpath, *wnewpath;
-    long	n;
-
-    if (!use_path)
+    if (mch_getperm((char_u *)name) != -1 && !mch_isdir((char_u *)name))
     {
-	if (mch_getperm((char_u *)name) != -1 && !mch_isdir((char_u *)name))
-	{
-	    if (path != NULL)
-	    {
-		if (mch_isFullName((char_u *)name))
-		    *path = vim_strsave((char_u *)name);
-		else
-		    *path = FullName_save((char_u *)name, FALSE);
-	    }
-	    return TRUE;
-	}
+	if (path != NULL)
+	    *path = FullName_save((char_u *)name, FALSE);
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * If "use_path" is TRUE: Return TRUE if "name" is in $PATH.
+ * If "use_path" is FALSE: Return TRUE if "name" exists.
+ * If "use_pathext" is TRUE search "name" with extensions in $PATHEXT.
+ * When returning TRUE and "path" is not NULL save the path and set "*path" to
+ * the allocated memory.
+ */
+    static int
+executable_exists(char *name, char_u **path, int use_path, int use_pathext)
+{
+    // WinNT and later can use _MAX_PATH wide characters for a pathname, which
+    // means that the maximum pathname is _MAX_PATH * 3 bytes when 'enc' is
+    // UTF-8.
+    char_u	buf[_MAX_PATH * 3];
+    size_t	len = STRLEN(name);
+    size_t	tmplen;
+    char_u	*p, *e, *e2;
+    char_u	*pathbuf = NULL;
+    char_u	*pathext = NULL;
+    char_u	*pathextbuf = NULL;
+    int		noext = FALSE;
+    int		retval = FALSE;
+
+    if (len >= sizeof(buf))	// safety check
 	return FALSE;
+
+    // Using the name directly when a Unix-shell like 'shell'.
+    if (strstr((char *)gettail(p_sh), "sh") != NULL)
+	noext = TRUE;
+
+    if (use_pathext)
+    {
+	pathext = mch_getenv("PATHEXT");
+	if (pathext == NULL)
+	    pathext = (char_u *)".com;.exe;.bat;.cmd";
+
+	if (noext == FALSE)
+	{
+	    /*
+	     * Loop over all extensions in $PATHEXT.
+	     * Check "name" ends with extension.
+	     */
+	    p = pathext;
+	    while (*p)
+	    {
+		if (p[0] == ';'
+			    || (p[0] == '.' && (p[1] == NUL || p[1] == ';')))
+		{
+		    // Skip empty or single ".".
+		    ++p;
+		    continue;
+		}
+		e = vim_strchr(p, ';');
+		if (e == NULL)
+		    e = p + STRLEN(p);
+		tmplen = e - p;
+
+		if (_strnicoll(name + len - tmplen, (char *)p, tmplen) == 0)
+		{
+		    noext = TRUE;
+		    break;
+		}
+
+		p = e;
+	    }
+	}
     }
 
-    p = enc_to_utf16((char_u *)name, NULL);
-    if (p == NULL)
-	return FALSE;
+    // Prepend single "." to pathext, it's means no extension added.
+    if (pathext == NULL)
+	pathext = (char_u *)".";
+    else if (noext == TRUE)
+    {
+	if (pathextbuf == NULL)
+	    pathextbuf = alloc(STRLEN(pathext) + 3);
+	if (pathextbuf == NULL)
+	{
+	    retval = FALSE;
+	    goto theend;
+	}
+	STRCPY(pathextbuf, ".;");
+	STRCAT(pathextbuf, pathext);
+	pathext = pathextbuf;
+    }
 
-    wcurpath = _wgetenv(L"PATH");
-    wnewpath = ALLOC_MULT(WCHAR, wcslen(wcurpath) + 3);
-    if (wnewpath == NULL)
-	return FALSE;
-    wcscpy(wnewpath, L".;");
-    wcscat(wnewpath, wcurpath);
-    n = (long)SearchPathW(wnewpath, p, NULL, _MAX_PATH, fnamew, &dumw);
-    vim_free(wnewpath);
-    vim_free(p);
-    if (n == 0)
-	return FALSE;
-    if (GetFileAttributesW(fnamew) & FILE_ATTRIBUTE_DIRECTORY)
-	return FALSE;
-    if (path != NULL)
-	*path = utf16_to_enc(fnamew, NULL);
-    return TRUE;
+    // Use $PATH when "use_path" is TRUE and "name" is basename.
+    if (use_path && gettail((char_u *)name) == (char_u *)name)
+    {
+	p = mch_getenv("PATH");
+	if (p != NULL)
+	{
+	    pathbuf = alloc(STRLEN(p) + 3);
+	    if (pathbuf == NULL)
+	    {
+		retval = FALSE;
+		goto theend;
+	    }
+	    STRCPY(pathbuf, ".;");
+	    STRCAT(pathbuf, p);
+	}
+    }
+
+    /*
+     * Walk through all entries in $PATH to check if "name" exists there and
+     * is an executable file.
+     */
+    p = (pathbuf != NULL) ? pathbuf : (char_u *)".";
+    while (*p)
+    {
+	if (*p == ';') // Skip empty entry
+	{
+	    ++p;
+	    continue;
+	}
+	e = vim_strchr(p, ';');
+	if (e == NULL)
+	    e = p + STRLEN(p);
+
+	if (e - p + len + 2 > sizeof(buf))
+	{
+	    retval = FALSE;
+	    goto theend;
+	}
+	// A single "." that means current dir.
+	if (e - p == 1 && *p == '.')
+	    STRCPY(buf, name);
+	else
+	{
+	    vim_strncpy(buf, p, e - p);
+	    add_pathsep(buf);
+	    STRCAT(buf, name);
+	}
+	tmplen = STRLEN(buf);
+
+	/*
+	 * Loop over all extensions in $PATHEXT.
+	 * Check "name" with extension added.
+	 */
+	p = pathext;
+	while (*p)
+	{
+	    if (*p == ';')
+	    {
+		// Skip empty entry
+		++p;
+		continue;
+	    }
+	    e2 = vim_strchr(p, (int)';');
+	    if (e2 == NULL)
+		e2 = p + STRLEN(p);
+
+	    if (!(p[0] == '.' && (p[1] == NUL || p[1] == ';')))
+	    {
+		// Not a single "." that means no extension is added.
+		if (e2 - p + tmplen + 1 > sizeof(buf))
+		{
+		    retval = FALSE;
+		    goto theend;
+		}
+		vim_strncpy(buf + tmplen, p, e2 - p);
+	    }
+	    if (executable_file((char *)buf, path))
+	    {
+		retval = TRUE;
+		goto theend;
+	    }
+
+	    p = e2;
+	}
+
+	p = e;
+    }
+
+theend:
+    free(pathextbuf);
+    free(pathbuf);
+    return retval;
 }
 
 #if (defined(__MINGW32__) && __MSVCRT_VERSION__ >= 0x800) || \
@@ -2134,7 +2353,7 @@ mch_init_g(void)
 	    vimrun_path = (char *)vim_strsave(vimrun_location);
 	    s_dont_use_vimrun = FALSE;
 	}
-	else if (executable_exists("vimrun.exe", NULL, TRUE))
+	else if (executable_exists("vimrun.exe", NULL, TRUE, FALSE))
 	    s_dont_use_vimrun = FALSE;
 
 	// Don't give the warning for a missing vimrun.exe right now, but only
@@ -2148,7 +2367,7 @@ mch_init_g(void)
      * If "finstr.exe" doesn't exist, use "grep -n" for 'grepprg'.
      * Otherwise the default "findstr /n" is used.
      */
-    if (!executable_exists("findstr.exe", NULL, TRUE))
+    if (!executable_exists("findstr.exe", NULL, TRUE, FALSE))
 	set_option_value((char_u *)"grepprg", 0, (char_u *)"grep -n", 0);
 
 # ifdef FEAT_CLIPBOARD
@@ -2647,6 +2866,7 @@ mch_init_c(void)
 
     vtp_flag_init();
     vtp_init();
+    wt_init();
 }
 
 /*
@@ -2723,6 +2943,10 @@ mch_init(void)
     void
 mch_exit(int r)
 {
+#ifdef FEAT_NETBEANS_INTG
+    netbeans_send_disconnect();
+#endif
+
 #ifdef VIMDLL
     if (gui.in_use || gui.starting)
 	mch_exit_g(r);
@@ -3225,69 +3449,7 @@ mch_writable(char_u *name)
     int
 mch_can_exe(char_u *name, char_u **path, int use_path)
 {
-    // WinNT and later can use _MAX_PATH wide characters for a pathname, which
-    // means that the maximum pathname is _MAX_PATH * 3 bytes when 'enc' is
-    // UTF-8.
-    char_u	buf[_MAX_PATH * 3];
-    int		len = (int)STRLEN(name);
-    char_u	*p, *saved;
-
-    if (len >= sizeof(buf))	// safety check
-	return FALSE;
-
-    // Try using the name directly when a Unix-shell like 'shell'.
-    if (strstr((char *)gettail(p_sh), "sh") != NULL)
-	if (executable_exists((char *)name, path, use_path))
-	    return TRUE;
-
-    /*
-     * Loop over all extensions in $PATHEXT.
-     */
-    p = mch_getenv("PATHEXT");
-    if (p == NULL)
-	p = (char_u *)".com;.exe;.bat;.cmd";
-    saved = vim_strsave(p);
-    if (saved == NULL)
-	return FALSE;
-    p = saved;
-    while (*p)
-    {
-	char_u	*tmp = vim_strchr(p, ';');
-
-	if (tmp != NULL)
-	    *tmp = NUL;
-	if (_stricoll((char *)name + len - STRLEN(p), (char *)p) == 0
-			    && executable_exists((char *)name, path, use_path))
-	{
-	    vim_free(saved);
-	    return TRUE;
-	}
-	if (tmp == NULL)
-	    break;
-	p = tmp + 1;
-    }
-    vim_free(saved);
-
-    vim_strncpy(buf, name, sizeof(buf) - 1);
-    p = mch_getenv("PATHEXT");
-    if (p == NULL)
-	p = (char_u *)".com;.exe;.bat;.cmd";
-    while (*p)
-    {
-	if (p[0] == '.' && (p[1] == NUL || p[1] == ';'))
-	{
-	    // A single "." means no extension is added.
-	    buf[len] = NUL;
-	    ++p;
-	    if (*p)
-		++p;
-	}
-	else
-	    copy_option_part(&p, buf + len, sizeof(buf) - len, ";");
-	if (executable_exists((char *)buf, path, use_path))
-	    return TRUE;
-    }
-    return FALSE;
+    return executable_exists((char *)name, path, TRUE, TRUE);
 }
 
 /*
@@ -3555,7 +3717,7 @@ handler_routine(
  * set the tty in (raw) ? "raw" : "cooked" mode
  */
     void
-mch_settmode(int tmode)
+mch_settmode(tmode_T tmode)
 {
     DWORD cmodein;
     DWORD cmodeout;
@@ -4854,7 +5016,11 @@ mch_call_shell(
     }
 
     if (tmode == TMODE_RAW)
+    {
+	// The shell may have messed with the mode, always set it.
+	cur_tmode = TMODE_UNKNOWN;
 	settmode(TMODE_RAW);	// set to raw mode
+    }
 
     // Print the return value, unless "vimrun" was used.
     if (x != 0 && !(options & SHELL_SILENT) && !emsg_silent
@@ -5405,6 +5571,9 @@ termcap_mode_start(void)
     if (g_fTermcapMode)
 	return;
 
+    if (!p_rs && USE_VTP)
+	vtp_printf("\033[?1049h");
+
     SaveConsoleBuffer(&g_cbNonTermcap);
 
     if (g_cbTermcap.IsValid)
@@ -5504,6 +5673,9 @@ termcap_mode_end(void)
 	SetConsoleCursorPosition(g_hConOut, coord);
     }
 
+    if (!p_rs && USE_VTP)
+	vtp_printf("\033[?1049l");
+
     g_fTermcapMode = FALSE;
 }
 #endif // FEAT_GUI_MSWIN
@@ -5528,12 +5700,14 @@ clear_chars(
     COORD coord,
     DWORD n)
 {
-    DWORD dwDummy;
-
-    FillConsoleOutputCharacter(g_hConOut, ' ', n, coord, &dwDummy);
-
     if (!USE_VTP)
-	FillConsoleOutputAttribute(g_hConOut, g_attrCurrent, n, coord, &dwDummy);
+    {
+	DWORD dwDummy;
+
+	FillConsoleOutputCharacter(g_hConOut, ' ', n, coord, &dwDummy);
+	FillConsoleOutputAttribute(g_hConOut, g_attrCurrent, n, coord,
+								     &dwDummy);
+    }
     else
     {
 	set_console_color_rgb();
@@ -5723,6 +5897,19 @@ insert_lines(unsigned cLines)
 	    clear_chars(coord, source.Right - source.Left + 1);
 	}
     }
+
+    if (USE_WT)
+    {
+	COORD coord;
+	int i;
+
+	coord.X = source.Left;
+	for (i = source.Top; i < dest.Y; ++i)
+	{
+	    coord.Y = i;
+	    clear_chars(coord, source.Right - source.Left + 1);
+	}
+    }
 }
 
 
@@ -5779,6 +5966,19 @@ delete_lines(unsigned cLines)
 	    clear_chars(coord, source.Right - source.Left + 1);
 	}
     }
+
+    if (USE_WT)
+    {
+	COORD coord;
+	int i;
+
+	coord.X = source.Left;
+	for (i = nb; i <= source.Bottom; ++i)
+	{
+	    coord.Y = i;
+	    clear_chars(coord, source.Right - source.Left + 1);
+	}
+    }
 }
 
 
@@ -5795,6 +5995,12 @@ gotoxy(
 
     if (!USE_VTP)
     {
+	// There are reports of double-width characters not displayed
+	// correctly.  This workaround should fix it, similar to how it's done
+	// for VTP.
+	g_coord.X = 0;
+	SetConsoleCursorPosition(g_hConOut, g_coord);
+
 	// external cursor coords are 1-based; internal are 0-based
 	g_coord.X = x - 1;
 	g_coord.Y = y - 1;
@@ -5958,6 +6164,10 @@ visual_bell(void)
 cursor_visible(BOOL fVisible)
 {
     s_cursor_visible = fVisible;
+
+    if (USE_VTP)
+	vtp_printf("\033[?25%c", fVisible ? 'h' : 'l');
+
 # ifdef MCH_CURSOR_SHAPE
     mch_update_cursor();
 # endif
@@ -5975,23 +6185,57 @@ write_chars(
 {
     COORD	    coord = g_coord;
     DWORD	    written;
-    DWORD	    n, cchwritten, cells;
+    DWORD	    n, cchwritten;
+    static DWORD    cells;
     static WCHAR    *unicodebuf = NULL;
     static int	    unibuflen = 0;
-    int		    length;
+    static int	    length;
     int		    cp = enc_utf8 ? CP_UTF8 : enc_codepage;
+    static WCHAR    *utf8spbuf = NULL;
+    static int	    utf8splength;
+    static DWORD    utf8spcells;
+    static WCHAR    **utf8usingbuf = &unicodebuf;
 
-    length = MultiByteToWideChar(cp, 0, (LPCSTR)pchBuf, cbToWrite, 0, 0);
-    if (unicodebuf == NULL || length > unibuflen)
+    if (cbToWrite != 1 || *pchBuf != ' ' || !enc_utf8)
     {
-	vim_free(unicodebuf);
-	unicodebuf = LALLOC_MULT(WCHAR, length);
-	unibuflen = length;
+	utf8usingbuf = &unicodebuf;
+	do
+	{
+	    length = MultiByteToWideChar(cp, 0, (LPCSTR)pchBuf, cbToWrite,
+							unicodebuf, unibuflen);
+	    if (length && length <= unibuflen)
+		break;
+	    vim_free(unicodebuf);
+	    unicodebuf = length ? LALLOC_MULT(WCHAR, length) : NULL;
+	    unibuflen = unibuflen ? 0 : length;
+	} while(1);
+	cells = mb_string2cells(pchBuf, cbToWrite);
     }
-    MultiByteToWideChar(cp, 0, (LPCSTR)pchBuf, cbToWrite,
-			unicodebuf, unibuflen);
-
-    cells = mb_string2cells(pchBuf, cbToWrite);
+    else // cbToWrite == 1 && *pchBuf == ' ' && enc_utf8
+    {
+	if (utf8usingbuf != &utf8spbuf)
+	{
+	    if (utf8spbuf == NULL)
+	    {
+		cells = mb_string2cells((char_u *)" ", 1);
+		length = MultiByteToWideChar(CP_UTF8, 0, " ", 1, NULL, 0);
+		utf8spbuf = LALLOC_MULT(WCHAR, length);
+		if (utf8spbuf != NULL)
+		{
+		    MultiByteToWideChar(CP_UTF8, 0, " ", 1, utf8spbuf, length);
+		    utf8usingbuf = &utf8spbuf;
+		    utf8splength = length;
+		    utf8spcells = cells;
+		}
+	    }
+	    else
+	    {
+		utf8usingbuf = &utf8spbuf;
+		length = utf8splength;
+		cells = utf8spcells;
+	    }
+	}
+    }
 
     if (!USE_VTP)
     {
@@ -5999,14 +6243,14 @@ write_chars(
 				    coord, &written);
 	// When writing fails or didn't write a single character, pretend one
 	// character was written, otherwise we get stuck.
-	if (WriteConsoleOutputCharacterW(g_hConOut, unicodebuf, length,
+	if (WriteConsoleOutputCharacterW(g_hConOut, *utf8usingbuf, length,
 		    coord, &cchwritten) == 0
 		|| cchwritten == 0 || cchwritten == (DWORD)-1)
 	    cchwritten = 1;
     }
     else
     {
-	if (WriteConsoleW(g_hConOut, unicodebuf, length, &cchwritten,
+	if (WriteConsoleW(g_hConOut, *utf8usingbuf, length, &cchwritten,
 		    NULL) == 0 || cchwritten == 0)
 	    cchwritten = 1;
     }
@@ -6032,11 +6276,119 @@ write_chars(
 	    g_coord.Y++;
     }
 
-    gotoxy(g_coord.X + 1, g_coord.Y + 1);
+    // Cursor under VTP is always in the correct position, no need to reset.
+    if (!USE_VTP)
+	gotoxy(g_coord.X + 1, g_coord.Y + 1);
 
     return written;
 }
 
+    static char_u *
+get_seq(
+    int *args,
+    int *count,
+    char_u *head)
+{
+    int argc;
+    char_u *p;
+
+    if (head == NULL || *head != '\033')
+	return NULL;
+
+    argc = 0;
+    p = head;
+    ++p;
+    do
+    {
+	++p;
+	args[argc] = getdigits(&p);
+	argc += (argc < 15) ? 1 : 0;
+    } while (*p == ';');
+    *count = argc;
+
+    return p;
+}
+
+    static char_u *
+get_sgr(
+    int *args,
+    int *count,
+    char_u *head)
+{
+    char_u *p = get_seq(args, count, head);
+
+    return (p && *p == 'm') ? ++p : NULL;
+}
+
+/*
+ * Pointer to next if SGR (^[[n;2;*;*;*m), NULL otherwise.
+ */
+    static char_u *
+sgrn2(
+    char_u *head,
+    int	   n)
+{
+    int argc;
+    int args[16];
+    char_u *p = get_sgr(args, &argc, head);
+
+    return p && argc == 5 && args[0] == n && args[1] == 2 ? p : NULL;
+}
+
+/*
+ * Pointer to next if SGR(^[[nm)<space>ESC, NULL otherwise.
+ */
+    static char_u *
+sgrnc(
+    char_u *head,
+    int	   n)
+{
+    int argc;
+    int args[16];
+    char_u *p = get_sgr(args, &argc, head);
+
+    return p && argc == 1 && args[0] == n && (p = skipwhite(p)) && *p == '\033'
+								    ? p : NULL;
+}
+
+    static char_u *
+skipblank(char_u *q)
+{
+    char_u *p = q;
+
+    while (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r')
+	++p;
+    return p;
+}
+
+/*
+ * Pointer to the next if any whitespace that may follow SGR is ESC, otherwise
+ * NULL.
+ */
+    static char_u *
+sgrn2c(
+    char_u *head,
+    int	   n)
+{
+    char_u *p = sgrn2(head, n);
+
+    return p && *p != NUL && (p = skipblank(p)) && *p == '\033' ? p : NULL;
+}
+
+/*
+ * If there is only a newline between the sequence immediately following it,
+ * a pointer to the character following the newline is returned.
+ * Otherwise NULL.
+ */
+    static char_u *
+sgrn2cn(
+    char_u *head,
+    int n)
+{
+    char_u *p = sgrn2(head, n);
+
+    return p && p[0] == 0x0a && p[1] == '\033' ? ++p : NULL;
+}
 
 /*
  * mch_write(): write the output buffer to the screen, translating ESC
@@ -6063,9 +6415,21 @@ mch_write(
     // translate ESC | sequences into faked bios calls
     while (len--)
     {
-	// optimization: use one single write_chars for runs of text,
-	// rather than once per character  It ain't curses, but it helps.
-	DWORD  prefix = (DWORD)strcspn((char *)s, "\n\r\b\a\033");
+	int prefix = -1;
+	char_u ch;
+
+	// While processing a sequence, on rare occasions it seems that another
+	// sequence may be inserted asynchronously.
+	if (len < 0)
+	{
+	    redraw_all_later(CLEAR);
+	    return;
+	}
+
+	while((ch = s[++prefix]))
+	    if (ch <= 0x1e && !(ch != '\n' && ch != '\r' && ch != '\b'
+						&& ch != '\a' && ch != '\033'))
+		break;
 
 	if (p_wd)
 	{
@@ -6152,24 +6516,52 @@ mch_write(
 # endif
 	    char_u  *p;
 	    int	    arg1 = 0, arg2 = 0, argc = 0, args[16];
+	    char_u  *sp;
 
 	    switch (s[2])
 	    {
 	    case '0': case '1': case '2': case '3': case '4':
 	    case '5': case '6': case '7': case '8': case '9':
-		p = s + 1;
-		do
+		if (*(p = get_seq(args, &argc, s)) != 'm')
+		    goto notsgr;
+
+		p = s;
+
+		// Handling frequent optional sequences.  Output to the screen
+		// takes too long, so do not output as much as possible.
+
+		// If resetFG,FG,BG,<cr>,BG,FG are connected, the preceding
+		// resetFG,FG,BG are omitted.
+		if (sgrn2(sgrn2(sgrn2cn(sgrn2(sgrnc(p, 39), 38), 48), 48), 38))
 		{
-		    ++p;
-		    args[argc] = getdigits(&p);
-		    argc += (argc < 15) ? 1 : 0;
-		    if (p > s + len)
-			break;
-		} while (*p == ';');
-
-		if (p > s + len)
+		    p = sgrn2(sgrn2(sgrnc(p, 39), 38), 48);
+		    len = len + 1 - (int)(p - s);
+		    s = p;
 		    break;
+		}
 
+		// If FG,BG,BG,FG of SGR are connected, the first FG can be
+		// omitted.
+		if (sgrn2(sgrn2(sgrn2c((sp = sgrn2(p, 38)), 48), 48), 38))
+		    p = sp;
+
+		// If FG,BG,FG,BG of SGR are connected, the first FG can be
+		// omitted.
+		if (sgrn2(sgrn2(sgrn2c((sp = sgrn2(p, 38)), 48), 38), 48))
+		    p = sp;
+
+		// If BG,BG of SGR are connected, the first BG can be omitted.
+		if (sgrn2((sp = sgrn2(p, 48)), 48))
+		    p = sp;
+
+		// If restoreFG and FG are connected, the restoreFG can be
+	        // omitted.
+		if (sgrn2((sp = sgrnc(p, 39)), 38))
+		    p = sp;
+
+		p = get_seq(args, &argc, p);
+
+notsgr:
 		arg1 = args[0];
 		arg2 = args[1];
 		if (*p == 'm')
@@ -7229,6 +7621,12 @@ mch_setenv(char *var, char *value, int x UNUSED)
 #define CONPTY_1909_BUILD	    MAKE_VER(10, 0, 18363)
 
 /*
+ * Stay ahead of the next update, and when it's done, fix this.
+ * version ? (2020 update, temporarily use the build number of insider preview)
+ */
+#define CONPTY_NEXT_UPDATE_BUILD    MAKE_VER(10, 0, 19587)
+
+/*
  * Confirm until this version.  Also the logic changes.
  * insider preview.
  */
@@ -7274,6 +7672,9 @@ vtp_flag_init(void)
 	conpty_type = 2;
     if (ver < CONPTY_FIRST_SUPPORT_BUILD)
 	conpty_type = 1;
+
+    if (ver >= CONPTY_NEXT_UPDATE_BUILD)
+	conpty_fix_type = 1;
 }
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL) || defined(PROTO)
@@ -7328,7 +7729,7 @@ vtp_exit(void)
     restore_console_color_rgb();
 }
 
-    static int
+    int
 vtp_printf(
     char *format,
     ...)
@@ -7336,11 +7737,12 @@ vtp_printf(
     char_u  buf[100];
     va_list list;
     DWORD   result;
+    int	    len;
 
     va_start(list, format);
-    vim_vsnprintf((char *)buf, 100, (char *)format, list);
+    len = vim_vsnprintf((char *)buf, 100, (char *)format, list);
     va_end(list);
-    WriteConsoleA(g_hConOut, buf, (DWORD)STRLEN(buf), &result, NULL);
+    WriteConsoleA(g_hConOut, buf, (DWORD)len, &result, NULL);
     return (int)result;
 }
 
@@ -7354,30 +7756,162 @@ vtp_sgr_bulk(
     vtp_sgr_bulks(1, args);
 }
 
+#define FAST256(x) \
+    if ((*p-- = "0123456789"[(n = x % 10)]) \
+	    && x >= 10 && (*p-- = "0123456789"[((m = x % 100) - n) / 10]) \
+	    && x >= 100 && (*p-- = "012"[((x & 0xff) - m) / 100]));
+
+#define FAST256CASE(x) \
+    case x: \
+	FAST256(newargs[x - 1]);
+
     static void
 vtp_sgr_bulks(
     int argc,
-    int *args
-)
+    int *args)
 {
-    // 2('\033[') + 4('255.') * 16 + NUL
-    char_u buf[2 + (4 * 16) + 1];
-    char_u *p;
-    int    i;
+#define MAXSGR 16
+#define SGRBUFSIZE 2 + 4 * MAXSGR + 1 // '\033[' + SGR + 'm'
+    char_u  buf[SGRBUFSIZE];
+    char_u  *p;
+    int	    in, out;
+    int	    newargs[16];
+    static int sgrfgr = -1, sgrfgg, sgrfgb;
+    static int sgrbgr = -1, sgrbgg, sgrbgb;
 
-    p = buf;
-    *p++ = '\033';
-    *p++ = '[';
-
-    for (i = 0; i < argc; ++i)
+    if (argc == 0)
     {
-	p += vim_snprintf((char *)p, 4, "%d", args[i] & 0xff);
-	*p++ = ';';
+	sgrfgr = sgrbgr = -1;
+	vtp_printf("033[m");
+	return;
     }
-    p--;
-    *p++ = 'm';
-    *p = NUL;
-    vtp_printf((char *)buf);
+
+    in = out = 0;
+    while (in < argc)
+    {
+	int s = args[in];
+	int copylen = 1;
+
+	if (s == 38)
+	{
+	    if (argc - in >= 5 && args[in + 1] == 2)
+	    {
+		if (sgrfgr == args[in + 2] && sgrfgg == args[in + 3]
+						     && sgrfgb == args[in + 4])
+		{
+		    in += 5;
+		    copylen = 0;
+		}
+		else
+		{
+		    sgrfgr = args[in + 2];
+		    sgrfgg = args[in + 3];
+		    sgrfgb = args[in + 4];
+		    copylen = 5;
+		}
+	    }
+	    else if (argc - in >= 3 && args[in + 1] == 5)
+	    {
+		sgrfgr = -1;
+		copylen = 3;
+	    }
+	}
+	else if (s == 48)
+	{
+	    if (argc - in >= 5 && args[in + 1] == 2)
+	    {
+		if (sgrbgr == args[in + 2] && sgrbgg == args[in + 3]
+						     && sgrbgb == args[in + 4])
+		{
+		    in += 5;
+		    copylen = 0;
+		}
+		else
+		{
+		    sgrbgr = args[in + 2];
+		    sgrbgg = args[in + 3];
+		    sgrbgb = args[in + 4];
+		    copylen = 5;
+		}
+	    }
+	    else if (argc - in >= 3 && args[in + 1] == 5)
+	    {
+		sgrbgr = -1;
+		copylen = 3;
+	    }
+	}
+	else if (30 <= s && s <= 39)
+	    sgrfgr = -1;
+	else if (90 <= s && s <= 97)
+	    sgrfgr = -1;
+	else if (40 <= s && s <= 49)
+	    sgrbgr = -1;
+	else if (100 <= s && s <= 107)
+	    sgrbgr = -1;
+	else if (s == 0)
+	    sgrfgr = sgrbgr = -1;
+
+	while (copylen--)
+	    newargs[out++] = args[in++];
+    }
+
+    p = &buf[sizeof(buf) - 1];
+    *p-- = 'm';
+
+    switch (out)
+    {
+	int	n, m;
+	DWORD	r;
+
+	FAST256CASE(16);
+	*p-- = ';';
+	FAST256CASE(15);
+	*p-- = ';';
+	FAST256CASE(14);
+	*p-- = ';';
+	FAST256CASE(13);
+	*p-- = ';';
+	FAST256CASE(12);
+	*p-- = ';';
+	FAST256CASE(11);
+	*p-- = ';';
+	FAST256CASE(10);
+	*p-- = ';';
+	FAST256CASE(9);
+	*p-- = ';';
+	FAST256CASE(8);
+	*p-- = ';';
+	FAST256CASE(7);
+	*p-- = ';';
+	FAST256CASE(6);
+	*p-- = ';';
+	FAST256CASE(5);
+	*p-- = ';';
+	FAST256CASE(4);
+	*p-- = ';';
+	FAST256CASE(3);
+	*p-- = ';';
+	FAST256CASE(2);
+	*p-- = ';';
+	FAST256CASE(1);
+	*p-- = '[';
+	*p = '\033';
+	WriteConsoleA(g_hConOut, p, (DWORD)(&buf[SGRBUFSIZE] - p), &r, NULL);
+    default:
+	break;
+    }
+}
+
+    static void
+wt_init(void)
+{
+    wt_working = (mch_getenv("WT_SESSION") != NULL);
+}
+
+    int
+use_wt(void)
+{
+    return USE_WT;
 }
 
 # ifdef FEAT_TERMGUICOLORS
@@ -7404,6 +7938,13 @@ set_console_color_rgb(void)
 	return;
 
     get_default_console_color(&ctermfg, &ctermbg, &fg, &bg);
+
+    if (USE_WT)
+    {
+	term_fg_rgb_color(fg);
+	term_bg_rgb_color(bg);
+	return;
+    }
 
     fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
     bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
@@ -7477,6 +8018,9 @@ reset_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
     DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+
+    if (USE_WT)
+	return;
 
     csbi.cbSize = sizeof(csbi);
     if (has_csbiex)
@@ -7560,6 +8104,12 @@ get_conpty_type(void)
 is_conpty_stable(void)
 {
     return conpty_stable;
+}
+
+    int
+get_conpty_fix_type(void)
+{
+    return conpty_fix_type;
 }
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL) || defined(PROTO)

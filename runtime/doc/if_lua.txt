@@ -1,4 +1,4 @@
-*if_lua.txt*    For Vim version 8.2.  Last change: 2019 Jul 21
+*if_lua.txt*    For Vim version 8.2.  Last change: 2020 May 17
 
 
 		  VIM REFERENCE MANUAL    by Luis Carvalho
@@ -32,7 +32,7 @@ Examples:
 	:lua local curbuf = vim.buffer() curbuf[7] = "line #7"
 <
 
-:[range]lua << [endmarker]
+:[range]lua << [trim] [{endmarker}]
 {script}
 {endmarker}
 			Execute Lua script {script}.
@@ -40,10 +40,9 @@ Examples:
 			feature wasn't compiled in.  To avoid errors, see
 			|script-here|.
 
-The {endmarker} must NOT be preceded by any white space.
-
 If [endmarker] is omitted from after the "<<", a dot '.' must be used after
-{script}, like for the |:append| and |:insert| commands.
+{script}, like for the |:append| and |:insert| commands.  Refer to
+|:let-heredoc| for more information.
 
 This form of the |:lua| command is mainly useful for including Lua code
 in Vim scripts.
@@ -200,6 +199,15 @@ Vim evaluation and command execution, and others.
 				returns it. Note that the buffer is not set as
 				current.
 
+	vim.call({name} [,{args}])
+				Proxy to call Vim function named {name} with 
+				arguments {args}.  Example: >
+					:lua print(vim.call('has', 'timers'))
+<
+	vim.fn			Proxy to call Vim functions. Proxy methods are
+				created on demand.  Example: >
+					:lua print(vim.fn.has('timers'))
+<
 
 ==============================================================================
 3. List userdata					*lua-list*

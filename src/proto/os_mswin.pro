@@ -10,7 +10,7 @@ int mch_FullName(char_u *fname, char_u *buf, int len, int force);
 int mch_isFullName(char_u *fname);
 void slash_adjust(char_u *p);
 int vim_stat(const char *name, stat_T *stp);
-void mch_settmode(int tmode);
+void mch_settmode(tmode_T tmode);
 int mch_get_shellsize(void);
 void mch_set_shellsize(void);
 void mch_new_shellsize(void);

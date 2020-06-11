@@ -33,14 +33,16 @@
 		       : (a)->coladd < (b)->coladd)
 #define EQUAL_POS(a, b) (((a).lnum == (b).lnum) && ((a).col == (b).col) && ((a).coladd == (b).coladd))
 #define CLEAR_POS(a) do {(a)->lnum = 0; (a)->col = 0; (a)->coladd = 0;} while (0)
+#define EMPTY_POS(a) ((a).lnum == 0 && (a).col == 0 && (a).coladd == 0)
 
 #define LTOREQ_POS(a, b) (LT_POS(a, b) || EQUAL_POS(a, b))
 
 /*
- * VIM_ISWHITE() is used for "^" and the like. It differs from isspace()
- * because it doesn't include <CR> and <LF> and the like.
+ * VIM_ISWHITE() differs from isspace() because it doesn't include <CR> and
+ * <LF> and the like.
  */
-#define VIM_ISWHITE(x)	((x) == ' ' || (x) == '\t')
+#define VIM_ISWHITE(x)		((x) == ' ' || (x) == '\t')
+#define IS_WHITE_OR_NUL(x)	((x) == ' ' || (x) == '\t' || (x) == NUL)
 
 /*
  * LINEEMPTY() - return TRUE if the line is empty
@@ -91,6 +93,7 @@
 #define MB_ISUPPER(c)	vim_isupper(c)
 #define MB_TOLOWER(c)	vim_tolower(c)
 #define MB_TOUPPER(c)	vim_toupper(c)
+#define MB_CASEFOLD(c)	(enc_utf8 ? utf_fold(c) : MB_TOLOWER(c))
 
 // Use our own isdigit() replacement, because on MS-Windows isdigit() returns
 // non-zero for superscript 1.  Also avoids that isdigit() crashes for numbers
@@ -364,8 +367,17 @@
 # define ESTACK_CHECK_SETUP estack_len_before = exestack.ga_len;
 # define ESTACK_CHECK_NOW if (estack_len_before != exestack.ga_len) \
 	siemsg("Exestack length expected: %d, actual: %d", estack_len_before, exestack.ga_len);
+# define CHECK_CURBUF if (curwin != NULL && curwin->w_buffer != curbuf) \
+		iemsg("curbuf != curwin->w_buffer")
 #else
 # define ESTACK_CHECK_DECLARATION
 # define ESTACK_CHECK_SETUP
 # define ESTACK_CHECK_NOW
+# define CHECK_CURBUF
 #endif
+
+// Inline the condition for performance.
+#define CHECK_LIST_MATERIALIZE(l) if ((l)->lv_first == &range_list_item) range_list_materialize(l)
+
+// Inlined version of ga_grow().  Especially useful if "n" is a constant.
+#define GA_GROW(gap, n) (((gap)->ga_maxlen - (gap)->ga_len < n) ? ga_grow_inner((gap), (n)) : OK)

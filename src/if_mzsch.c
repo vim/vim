@@ -1927,7 +1927,7 @@ window_new(win_T *win)
 
     MZ_GC_REG();
     self = scheme_malloc_fail_ok(scheme_malloc_tagged, sizeof(vim_mz_window));
-    vim_memset(self, 0, sizeof(vim_mz_window));
+    CLEAR_POINTER(self);
 #ifndef MZ_PRECISE_GC
     scheme_dont_gc_ptr(self);	// because win isn't visible to GC
 #else
@@ -2311,7 +2311,7 @@ buffer_new(buf_T *buf)
 
     MZ_GC_REG();
     self = scheme_malloc_fail_ok(scheme_malloc_tagged, sizeof(vim_mz_buffer));
-    vim_memset(self, 0, sizeof(vim_mz_buffer));
+    CLEAR_POINTER(self);
 #ifndef MZ_PRECISE_GC
     scheme_dont_gc_ptr(self);	// because buf isn't visible to GC
 #else
@@ -2468,7 +2468,7 @@ set_buffer_line(void *data, int argc, Scheme_Object **argv)
 	    curbuf = savebuf;
 	    raise_vim_exn(_("cannot save undo information"));
 	}
-	else if (ml_delete((linenr_T)n, FALSE) == FAIL)
+	else if (ml_delete((linenr_T)n) == FAIL)
 	{
 	    curbuf = savebuf;
 	    raise_vim_exn(_("cannot delete line"));
@@ -2597,7 +2597,7 @@ set_buffer_line_list(void *data, int argc, Scheme_Object **argv)
 	else
 	{
 	    for (i = 0; i < old_len; i++)
-		if (ml_delete((linenr_T)lo, FALSE) == FAIL)
+		if (ml_delete((linenr_T)lo) == FAIL)
 		{
 		    curbuf = savebuf;
 		    raise_vim_exn(_("cannot delete line"));
@@ -2634,8 +2634,7 @@ set_buffer_line_list(void *data, int argc, Scheme_Object **argv)
 	    MZ_GC_VAR_IN_REG(1, rest);
 	    MZ_GC_REG();
 
-	    array = ALLOC_MULT(char *, new_len + 1);
-	    vim_memset(array, 0, (new_len+1) * sizeof(char *));
+	    array = ALLOC_CLEAR_MULT(char *, new_len + 1);
 
 	    rest = line_list;
 	    for (i = 0; i < new_len; ++i)
@@ -2666,7 +2665,7 @@ set_buffer_line_list(void *data, int argc, Scheme_Object **argv)
 	     */
 	    for (i = 0; i < old_len - new_len; ++i)
 	    {
-		if (ml_delete((linenr_T)lo, FALSE) == FAIL)
+		if (ml_delete((linenr_T)lo) == FAIL)
 		{
 		    curbuf = savebuf;
 		    free_array(array);
@@ -2818,8 +2817,7 @@ insert_buffer_line_list(void *data, int argc, Scheme_Object **argv)
 	MZ_GC_VAR_IN_REG(1, rest);
 	MZ_GC_REG();
 
-	array = ALLOC_MULT(char *, size + 1);
-	vim_memset(array, 0, (size+1) * sizeof(char *));
+	array = ALLOC_CLEAR_MULT(char *, size + 1);
 
 	rest = list;
 	for (i = 0; i < size; ++i)

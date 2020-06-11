@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 8.2.  Last change: 2020 Feb 22
+*testing.txt*	For Vim version 8.2.  Last change: 2020 Jun 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -104,6 +104,10 @@ test_null_channel()					*test_null_channel()*
 
 test_null_dict()					*test_null_dict()*
 		Return a |Dict| that is null. Only useful for testing.
+
+
+test_null_function()					*test_null_function()*
+		Return a |Funcref| that is null. Only useful for testing.
 
 
 test_null_job()						*test_null_job()*
@@ -259,9 +263,8 @@ assert_equal({expected}, {actual} [, {msg}])
 		Can also be used as a |method|: >
 			mylist->assert_equal([1, 2, 3])
 
-
 <							*assert_equalfile()*
-assert_equalfile({fname-one}, {fname-two})
+assert_equalfile({fname-one}, {fname-two} [, {msg}])
 		When the files {fname-one} and {fname-two} do not contain
 		exactly the same text an error message is added to |v:errors|.
 		Also see |assert-return|.
@@ -271,7 +274,6 @@ assert_equalfile({fname-one}, {fname-two})
 
 		Can also be used as a |method|: >
 			GetLog()->assert_equalfile('expected.log')
-
 
 assert_exception({error} [, {msg}])			*assert_exception()*
 		When v:exception does not contain the string {error} an error

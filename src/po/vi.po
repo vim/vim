@@ -2176,7 +2176,7 @@ msgstr "không rõ tùy chọn vimOption"
 msgid "keyboard interrupt"
 msgstr "sự gián đoạn của bàn phím"
 
-msgid "vim error"
+msgid "Vim error"
 msgstr "lỗi của vim"
 
 msgid "cannot create buffer/window command: object is being deleted"
@@ -2460,8 +2460,8 @@ msgstr "-W <scriptout>\tGhi nhớ tất cả các lệnh đã gõ vào tập tin
 msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\tSoạn thảo tập tin đã mã hóa"
 
-msgid "-display <display>\tConnect vim to this particular X-server"
-msgstr "-display <màn hình>\tKết nối vim tới máy chủ X đã chỉ ra"
+msgid "-display <display>\tConnect Vim to this particular X-server"
+msgstr "-display <màn hình>\tKết nối Vim tới máy chủ X đã chỉ ra"
 
 msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\tKhông thực hiện việc kết nối tới máy chủ X"
@@ -2526,11 +2526,11 @@ msgstr ""
 "\n"
 "Tham số cho gvim (phiên bản Athena):\n"
 
-msgid "-display <display>\tRun vim on <display>"
-msgstr "-display <màn hình>\tChạy vim trong <màn hình> đã chỉ ra"
+msgid "-display <display>\tRun Vim on <display>"
+msgstr "-display <màn hình>\tChạy Vim trong <màn hình> đã chỉ ra"
 
-msgid "-iconic\t\tStart vim iconified"
-msgstr "-iconic\t\tChạy vim ở dạng thu nhỏ"
+msgid "-iconic\t\tStart Vim iconified"
+msgstr "-iconic\t\tChạy Vim ở dạng thu nhỏ"
 
 msgid "-name <name>\t\tUse resource as if vim was <name>"
 msgstr "-name <tên>\t\tSử dụng tài nguyên giống như khi vim có <tên>"
@@ -2599,9 +2599,9 @@ msgstr ""
 "\n"
 "Tham số cho gvim (phiên bản GTK+):\n"
 
-msgid "-display <display>\tRun vim on <display> (also: --display)"
+msgid "-display <display>\tRun Vim on <display> (also: --display)"
 msgstr ""
-"-display <màn hình>\tChạy vim trên <màn hình> chỉ ra (cũng như: --display)"
+"-display <màn hình>\tChạy Vim trên <màn hình> chỉ ra (cũng như: --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"
 msgstr "--role <vai trò>\tĐặt <vai trò> duy nhất để nhận diện cửa sổ chính"

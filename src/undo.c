@@ -331,9 +331,9 @@ undo_allowed(void)
 
     // Don't allow changes in the buffer while editing the cmdline.  The
     // caller of getcmdline() may get confused.
-    if (textlock != 0)
+    if (textwinlock != 0 || textlock != 0)
     {
-	emsg(_(e_secure));
+	emsg(_(e_textlock));
 	return FALSE;
     }
 
@@ -374,6 +374,29 @@ u_save_line(undoline_T *ul, linenr_T lnum)
     }
     return ul->ul_line == NULL ? FAIL : OK;
 }
+
+#ifdef FEAT_PROP_POPUP
+/*
+ * return TRUE if line "lnum" has text property "flags".
+ */
+    static int
+has_prop_w_flags(linenr_T lnum, int flags)
+{
+    char_u  *props;
+    int	    i;
+    int	    proplen = get_text_props(curbuf, lnum, &props, FALSE);
+
+    for (i = 0; i < proplen; ++i)
+    {
+	textprop_T prop;
+
+	mch_memmove(&prop, props + i * sizeof prop, sizeof prop);
+	if (prop.tp_flags & flags)
+	    return TRUE;
+    }
+    return FALSE;
+}
+#endif
 
 /*
  * Common code for various ways to save text before a change.
@@ -448,6 +471,23 @@ u_savecommon(
 
 #ifdef U_DEBUG
     u_check(FALSE);
+#endif
+
+#ifdef FEAT_PROP_POPUP
+    // Include the line above if a text property continues from it.
+    // Include the line below if a text property continues to it.
+    if (bot - top > 1)
+    {
+	if (top > 0 && has_prop_w_flags(top + 1, TP_FLAG_CONT_PREV))
+	    --top;
+	if (bot <= curbuf->b_ml.ml_line_count
+			       && has_prop_w_flags(bot - 1, TP_FLAG_CONT_NEXT))
+	{
+	    ++bot;
+	    if (newbot != 0)
+		++newbot;
+	}
+    }
 #endif
 
     size = bot - top - 1;
@@ -662,7 +702,7 @@ u_savecommon(
     uep = U_ALLOC_LINE(sizeof(u_entry_T));
     if (uep == NULL)
 	goto nomem;
-    vim_memset(uep, 0, sizeof(u_entry_T));
+    CLEAR_POINTER(uep);
 #ifdef U_DEBUG
     uep->ue_magic = UE_MAGIC;
 #endif
@@ -1288,7 +1328,7 @@ unserialize_uhp(bufinfo_T *bi, char_u *file_name)
     uhp = U_ALLOC_LINE(sizeof(u_header_T));
     if (uhp == NULL)
 	return NULL;
-    vim_memset(uhp, 0, sizeof(u_header_T));
+    CLEAR_POINTER(uhp);
 #ifdef U_DEBUG
     uhp->uh_magic = UH_MAGIC;
 #endif
@@ -1405,7 +1445,7 @@ unserialize_uep(bufinfo_T *bi, int *error, char_u *file_name)
     uep = U_ALLOC_LINE(sizeof(u_entry_T));
     if (uep == NULL)
 	return NULL;
-    vim_memset(uep, 0, sizeof(u_entry_T));
+    CLEAR_POINTER(uep);
 #ifdef U_DEBUG
     uep->ue_magic = UE_MAGIC;
 #endif
@@ -1532,7 +1572,7 @@ u_write_undo(
 #endif
     bufinfo_T	bi;
 
-    vim_memset(&bi, 0, sizeof(bi));
+    CLEAR_FIELD(bi);
 
     if (name == NULL)
     {
@@ -1814,7 +1854,7 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
 #endif
     bufinfo_T	bi;
 
-    vim_memset(&bi, 0, sizeof(bi));
+    CLEAR_FIELD(bi);
     line_ptr.ul_len = 0;
     line_ptr.ul_line = NULL;
 
@@ -2745,7 +2785,7 @@ u_undoredo(int undo)
 		// dummy empty line will be inserted
 		if (curbuf->b_ml.ml_line_count == 1)
 		    empty_buffer = TRUE;
-		ml_delete(lnum, FALSE);
+		ml_delete_flags(lnum, ML_DEL_UNDO);
 	    }
 	}
 	else
@@ -2767,8 +2807,8 @@ u_undoredo(int undo)
 		    ml_replace_len((linenr_T)1, uep->ue_array[i].ul_line,
 					  uep->ue_array[i].ul_len, TRUE, TRUE);
 		else
-		    ml_append(lnum, uep->ue_array[i].ul_line,
-				      (colnr_T)uep->ue_array[i].ul_len, FALSE);
+		    ml_append_flags(lnum, uep->ue_array[i].ul_line,
+			     (colnr_T)uep->ue_array[i].ul_len, ML_APPEND_UNDO);
 		vim_free(uep->ue_array[i].ul_line);
 	    }
 	    vim_free((char_u *)uep->ue_array);

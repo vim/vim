@@ -127,7 +127,7 @@ buf_init_chartab(
     /*
      * Init word char flags all to FALSE
      */
-    vim_memset(buf->b_chartab, 0, (size_t)32);
+    CLEAR_FIELD(buf->b_chartab);
     if (enc_dbcs != 0)
 	for (c = 0; c < 256; ++c)
 	{
@@ -499,18 +499,24 @@ str_foldcase(
  * Also doesn't work for the first byte of a multi-byte, "c" must be a
  * character!
  */
-static char_u	transchar_buf[7];
+static char_u	transchar_charbuf[7];
 
     char_u *
 transchar(int c)
+{
+    return transchar_buf(curbuf, c);
+}
+
+    char_u *
+transchar_buf(buf_T *buf, int c)
 {
     int			i;
 
     i = 0;
     if (IS_SPECIAL(c))	    // special key code, display as ~@ char
     {
-	transchar_buf[0] = '~';
-	transchar_buf[1] = '@';
+	transchar_charbuf[0] = '~';
+	transchar_charbuf[1] = '@';
 	i = 2;
 	c = K_SECOND(c);
     }
@@ -524,12 +530,12 @@ transchar(int c)
 		)) || (c < 256 && vim_isprintc_strict(c)))
     {
 	// printable character
-	transchar_buf[i] = c;
-	transchar_buf[i + 1] = NUL;
+	transchar_charbuf[i] = c;
+	transchar_charbuf[i + 1] = NUL;
     }
     else
-	transchar_nonprint(transchar_buf + i, c);
-    return transchar_buf;
+	transchar_nonprint(buf, transchar_charbuf + i, c);
+    return transchar_charbuf;
 }
 
 /*
@@ -541,27 +547,27 @@ transchar_byte(int c)
 {
     if (enc_utf8 && c >= 0x80)
     {
-	transchar_nonprint(transchar_buf, c);
-	return transchar_buf;
+	transchar_nonprint(curbuf, transchar_charbuf, c);
+	return transchar_charbuf;
     }
     return transchar(c);
 }
 
 /*
  * Convert non-printable character to two or more printable characters in
- * "buf[]".  "buf" needs to be able to hold five bytes.
+ * "buf[]".  "charbuf" needs to be able to hold five bytes.
  * Does NOT work for multi-byte characters, c must be <= 255.
  */
     void
-transchar_nonprint(char_u *buf, int c)
+transchar_nonprint(buf_T *buf, char_u *charbuf, int c)
 {
     if (c == NL)
 	c = NUL;		// we use newline in place of a NUL
-    else if (c == CAR && get_fileformat(curbuf) == EOL_MAC)
+    else if (c == CAR && get_fileformat(buf) == EOL_MAC)
 	c = NL;			// we use CR in place of  NL in this case
 
     if (dy_flags & DY_UHEX)		// 'display' has "uhex"
-	transchar_hex(buf, c);
+	transchar_hex(charbuf, c);
 
 #ifdef EBCDIC
     // For EBCDIC only the characters 0-63 and 255 are not printable
@@ -570,35 +576,35 @@ transchar_nonprint(char_u *buf, int c)
     else if (c <= 0x7f)			// 0x00 - 0x1f and 0x7f
 #endif
     {
-	buf[0] = '^';
+	charbuf[0] = '^';
 #ifdef EBCDIC
 	if (c == DEL)
-	    buf[1] = '?';		// DEL displayed as ^?
+	    charbuf[1] = '?';		// DEL displayed as ^?
 	else
-	    buf[1] = CtrlChar(c);
+	    charbuf[1] = CtrlChar(c);
 #else
-	buf[1] = c ^ 0x40;		// DEL displayed as ^?
+	charbuf[1] = c ^ 0x40;		// DEL displayed as ^?
 #endif
 
-	buf[2] = NUL;
+	charbuf[2] = NUL;
     }
     else if (enc_utf8 && c >= 0x80)
     {
-	transchar_hex(buf, c);
+	transchar_hex(charbuf, c);
     }
 #ifndef EBCDIC
     else if (c >= ' ' + 0x80 && c <= '~' + 0x80)    // 0xa0 - 0xfe
     {
-	buf[0] = '|';
-	buf[1] = c - 0x80;
-	buf[2] = NUL;
+	charbuf[0] = '|';
+	charbuf[1] = c - 0x80;
+	charbuf[2] = NUL;
     }
 #else
     else if (c < 64)
     {
-	buf[0] = '~';
-	buf[1] = MetaChar(c);
-	buf[2] = NUL;
+	charbuf[0] = '~';
+	charbuf[1] = MetaChar(c);
+	charbuf[2] = NUL;
     }
 #endif
     else					    // 0x80 - 0x9f and 0xff
@@ -607,13 +613,13 @@ transchar_nonprint(char_u *buf, int c)
 	 * TODO: EBCDIC I don't know what to do with this chars, so I display
 	 * them as '~?' for now
 	 */
-	buf[0] = '~';
+	charbuf[0] = '~';
 #ifdef EBCDIC
-	buf[1] = '?';			// 0xff displayed as ~?
+	charbuf[1] = '?';			// 0xff displayed as ~?
 #else
-	buf[1] = (c - 0x80) ^ 0x40;	// 0xff displayed as ~?
+	charbuf[1] = (c - 0x80) ^ 0x40;	// 0xff displayed as ~?
 #endif
-	buf[2] = NUL;
+	charbuf[2] = NUL;
     }
 }
 
@@ -1764,6 +1770,8 @@ vim_isblankline(char_u *lbuf)
  * If "prep" is not NULL, returns a flag to indicate the type of the number:
  *  0	    decimal
  *  '0'	    octal
+ *  'O'	    octal
+ *  'o'	    octal
  *  'B'	    bin
  *  'b'	    bin
  *  'X'	    hex
@@ -1783,8 +1791,8 @@ vim_isblankline(char_u *lbuf)
 vim_str2nr(
     char_u		*start,
     int			*prep,	    // return: type of number 0 = decimal, 'x'
-				    // or 'X' is hex, '0' = octal, 'b' or 'B'
-				    // is bin
+				    // or 'X' is hex, '0', 'o' or 'O' is octal,
+				    // 'b' or 'B' is bin
     int			*len,	    // return: detected length of number
     int			what,	    // what numbers to recognize
     varnumber_T		*nptr,	    // return: signed result
@@ -1821,6 +1829,11 @@ vim_str2nr(
 		&& (pre == 'B' || pre == 'b') && vim_isbdigit(ptr[2])
 		&& (maxlen == 0 || maxlen > 2))
 	    // binary
+	    ptr += 2;
+	else if ((what & STR2NR_OOCT)
+		&& (pre == 'O' || pre == 'o') && vim_isbdigit(ptr[2])
+		&& (maxlen == 0 || maxlen > 2))
+	    // octal with prefix "0o"
 	    ptr += 2;
 	else
 	{
@@ -1869,9 +1882,12 @@ vim_str2nr(
 	    }
 	}
     }
-    else if (pre == '0' || ((what & STR2NR_OCT) && (what & STR2NR_FORCE)))
+    else if (pre == 'O' || pre == 'o' ||
+		pre == '0' || ((what & STR2NR_OCT) && (what & STR2NR_FORCE)))
     {
 	// octal
+	if (pre != 0 && pre != '0')
+	    n += 2;	    // skip over "0o"
 	while ('0' <= *ptr && *ptr <= '7')
 	{
 	    // avoid ubsan error for overflow

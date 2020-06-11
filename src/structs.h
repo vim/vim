@@ -742,6 +742,15 @@ typedef struct memline
 #endif
 } memline_T;
 
+// Values for the flags argument of ml_delete_flags().
+#define ML_DEL_MESSAGE	    1	// may give a "No lines in buffer" message
+#define ML_DEL_UNDO	    2	// called from undo, do not update textprops
+
+// Values for the flags argument of ml_append_int().
+#define ML_APPEND_NEW	    1	// starting to edit a new file
+#define ML_APPEND_MARK	    2	// mark the new line
+#define ML_APPEND_UNDO	    4	// called from undo
+
 
 /*
  * Structure defining text properties.  These stick with the text.
@@ -927,13 +936,16 @@ typedef struct {
  * A list of error messages that can be converted to an exception.  "throw_msg"
  * is only set in the first element of the list.  Usually, it points to the
  * original message stored in that element, but sometimes it points to a later
- * message in the list.  See cause_errthrow() below.
+ * message in the list.  See cause_errthrow().
  */
+typedef struct msglist msglist_T;
 struct msglist
 {
-    char		*msg;		// original message
-    char		*throw_msg;	// msg to throw: usually original one
-    struct msglist	*next;		// next of several messages in a row
+    char	*msg;		// original message, allocated
+    char	*throw_msg;	// msg to throw: usually original one
+    char_u	*sfile;		// value from estack_sfile(), allocated
+    long	slnum;		// line number for "sfile"
+    msglist_T	*next;		// next of several messages in a row
 };
 
 /*
@@ -1056,9 +1068,11 @@ typedef struct attr_entry
 	    // These colors need to be > 8 bits to hold 256.
 	    short_u	    fg_color;	// foreground color number
 	    short_u	    bg_color;	// background color number
+	    short_u	    ul_color;	// underline color number
 # ifdef FEAT_TERMGUICOLORS
 	    guicolor_T	    fg_rgb;	// foreground color RGB
 	    guicolor_T	    bg_rgb;	// background color RGB
+	    guicolor_T	    ul_rgb;	// underline color RGB
 # endif
 	} cterm;
 # ifdef FEAT_GUI
@@ -1290,6 +1304,10 @@ typedef long_u hash_T;		// Type for hi_hash
 # endif
 #endif
 
+// On rare systems "char" is unsigned, sometimes we really want a signed 8-bit
+// value.
+typedef signed char int8_T;
+
 typedef double	float_T;
 
 typedef struct listvar_S list_T;
@@ -1308,6 +1326,7 @@ typedef struct {
     int		cb_free_name;	    // cb_name was allocated
 } callback_T;
 
+typedef struct isn_S isn_T;	    // instruction
 typedef struct dfunc_S dfunc_T;	    // :def function
 
 typedef struct jobvar_S job_T;
@@ -1320,8 +1339,9 @@ typedef struct cctx_S cctx_T;
 
 typedef enum
 {
-    VAR_UNKNOWN = 0,	// not set, also used for "any" type
-    VAR_VOID,		// no value
+    VAR_UNKNOWN = 0,	// not set, any type or "void" allowed
+    VAR_ANY,		// used for "any" type
+    VAR_VOID,		// no value (function not returning anything)
     VAR_BOOL,		// "v_number" is used: VVAL_TRUE or VVAL_FALSE
     VAR_SPECIAL,	// "v_number" is used: VVAL_NULL or VVAL_NONE
     VAR_NUMBER,		// "v_number" is used
@@ -1340,10 +1360,15 @@ typedef enum
 typedef struct type_S type_T;
 struct type_S {
     vartype_T	    tt_type;
-    short	    tt_argcount;    // for func, partial, -1 for unknown
+    int8_T	    tt_argcount;    // for func, incl. vararg, -1 for unknown
+    char	    tt_min_argcount; // number of non-optional arguments
+    char	    tt_flags;	    // TTFLAG_ values
     type_T	    *tt_member;	    // for list, dict, func return type
-    type_T	    *tt_args;	    // func arguments
+    type_T	    **tt_args;	    // func argument types, allocated
 };
+
+#define TTFLAG_VARARGS	1	    // func args ends with "..."
+#define TTFLAG_OPTARG	2	    // func arg type with "?"
 
 /*
  * Structure to hold an internal variable without a name.
@@ -1505,6 +1530,10 @@ struct blobvar_S
 #if defined(FEAT_EVAL) || defined(PROTO)
 typedef struct funccall_S funccall_T;
 
+// values used for "uf_dfunc_idx"
+# define UF_NOT_COMPILED -2
+# define UF_TO_BE_COMPILED -1
+
 /*
  * Structure to hold info for a user function.
  */
@@ -1514,8 +1543,8 @@ typedef struct
     int		uf_flags;	// FC_ flags
     int		uf_calls;	// nr of active calls
     int		uf_cleared;	// func_clear() was already called
-    int		uf_dfunc_idx;	// >= 0 for :def function only
-    garray_T	uf_args;	// arguments
+    int		uf_dfunc_idx;	// UF_NOT_COMPILED, UF_TO_BE_COMPILED or >= 0
+    garray_T	uf_args;	// arguments, including optional arguments
     garray_T	uf_def_args;	// default argument expressions
 
     // for :def (for :function uf_ret_type is NULL)
@@ -1526,6 +1555,7 @@ typedef struct
 				// uf_def_args; length: uf_def_args.ga_len + 1
     char_u	*uf_va_name;	// name from "...name" or NULL
     type_T	*uf_va_type;	// type from "...name: type" or NULL
+    type_T	*uf_func_type;	// type of the function, &t_func_any if unknown
 
     garray_T	uf_lines;	// function lines
 # ifdef FEAT_PROFILE
@@ -1549,7 +1579,9 @@ typedef struct
     sctx_T	uf_script_ctx;	// SCTX where function was defined,
 				// used for s: variables
     int		uf_refcount;	// reference count, see func_name_refcount()
+
     funccall_T	*uf_scoped;	// l: local variables for closure
+
     char_u	*uf_name_exp;	// if "uf_name[]" starts with SNR the name with
 				// "<SNR>" as a string, otherwise NULL
     char_u	uf_name[1];	// name of function (actually longer); can
@@ -1557,12 +1589,25 @@ typedef struct
 				// KS_EXTRA KE_SNR)
 } ufunc_T;
 
+// flags used in uf_flags
+#define FC_ABORT    0x01	// abort function on error
+#define FC_RANGE    0x02	// function accepts range
+#define FC_DICT	    0x04	// Dict function, uses "self"
+#define FC_CLOSURE  0x08	// closure, uses outer scope variables
+#define FC_DELETED  0x10	// :delfunction used while uf_refcount > 0
+#define FC_REMOVED  0x20	// function redefined while uf_refcount > 0
+#define FC_SANDBOX  0x40	// function defined in the sandbox
+#define FC_DEAD	    0x80	// function kept only for reference to dfunc
+#define FC_EXPORT   0x100	// "export def Func()"
+#define FC_NOARGS   0x200	// no a: variables in lambda
+#define FC_VIM9	    0x400	// defined in vim9 script file
+
 #define MAX_FUNC_ARGS	20	// maximum number of function arguments
 #define VAR_SHORT_LEN	20	// short variable name length
 #define FIXVAR_CNT	12	// number of fixed variables
 
 /*
- * structure to hold info for a function that is currently being executed.
+ * Structure to hold info for a function that is currently being executed.
  */
 struct funccall_S
 {
@@ -1750,6 +1795,21 @@ typedef struct {
     typval_T	*basetv;	// base for base->method()
 } funcexe_T;
 
+/*
+ * Structure to hold the context of a compiled function, used by closures
+ * defined in that function.
+ */
+typedef struct funcstack_S
+{
+    garray_T	fs_ga;		// contains the stack, with:
+				// - arguments
+				// - frame
+				// - local variables
+
+    int		fs_refcount;	// nr of closures referencing this funcstack
+    int		fs_copyID;	// for garray_T collection
+} funcstack_T;
+
 struct partial_S
 {
     int		pt_refcount;	// reference count
@@ -1759,9 +1819,18 @@ struct partial_S
 				// with pt_name
     int		pt_auto;	// when TRUE the partial was created for using
 				// dict.member in handle_subscript()
+
+    // For a compiled closure: the arguments and local variables.
+    garray_T	*pt_ectx_stack;	    // where to find local vars
+    int		pt_ectx_frame;	    // index of function frame in uf_ectx_stack
+    funcstack_T	*pt_funcstack;	    // copy of stack, used after context
+				    // function returns
+
     int		pt_argc;	// number of arguments
     typval_T	*pt_argv;	// arguments in allocated array
+
     dict_T	*pt_dict;	// dict for "self"
+    int		pt_copyID;	// funcstack may contain pointer to partial
 };
 
 typedef struct AutoPatCmd_S AutoPatCmd;
@@ -2070,6 +2139,7 @@ struct channel_S {
 #define JO2_TTY_TYPE	    0x10000	// "tty_type"
 #define JO2_BUFNR	    0x20000	// "bufnr"
 #define JO2_TERM_API	    0x40000	// "term_api"
+#define JO2_TERM_HIGHLIGHT  0x80000	// "highlight"
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
@@ -2142,6 +2212,8 @@ typedef struct
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     long_u	jo_ansi_colors[16];
 # endif
+    char_u	jo_term_highlight_buf[NUMBUFLEN];
+    char_u	*jo_term_highlight;
     int		jo_tty_type;	    // first character of "tty_type"
     char_u	jo_term_api_buf[NUMBUFLEN];
     char_u	*jo_term_api;
@@ -2193,6 +2265,10 @@ typedef struct
 #define SYNSPL_DEFAULT	0	// spell check if @Spell not defined
 #define SYNSPL_TOP	1	// spell check toplevel text
 #define SYNSPL_NOTOP	2	// don't spell check toplevel text
+
+// values for b_syn_foldlevel: how to compute foldlevel on a line
+#define SYNFLD_START	0	// use level of item at start of line
+#define SYNFLD_MINIMUM	1	// use lowest local minimum level on line
 
 // avoid #ifdefs for when b_spell is not available
 #ifdef FEAT_SPELL
@@ -2288,6 +2364,7 @@ typedef struct {
     int		b_syn_slow;		// TRUE when 'redrawtime' reached
 # endif
     int		b_syn_ic;		// ignore case for :syn cmds
+    int		b_syn_foldlevel;	// how to compute foldlevel on a line
     int		b_syn_spell;		// SYNSPL_ values
     garray_T	b_syn_patterns;		// table for syntax patterns
     garray_T	b_syn_clusters;		// table for syntax clusters
@@ -2346,6 +2423,7 @@ typedef struct {
     regprog_T	*b_cap_prog;	    // program for 'spellcapcheck'
     char_u	*b_p_spf;	    // 'spellfile'
     char_u	*b_p_spl;	    // 'spelllang'
+    char_u	*b_p_spo;	    // 'spelloptions'
     int		b_cjk;		    // all CJK letters as OK
 #endif
 #if !defined(FEAT_SYN_HL) && !defined(FEAT_SPELL)
@@ -2731,6 +2809,7 @@ struct file_buffer
     int		b_ind_cpp_namespace;
     int		b_ind_if_for_while;
     int		b_ind_cpp_extern_c;
+    int		b_ind_pragma;
 #endif
 
     linenr_T	b_no_eol_lnum;	// non-zero lnum when last line of next binary
@@ -2916,6 +2995,8 @@ struct tabpage_S
 
     char_u	    *tp_localdir;	// absolute path of local directory or
 					// NULL
+    char_u	    *tp_prevdir;	// previous directory
+
 #ifdef FEAT_DIFF
     diff_T	    *tp_first_diff;
     buf_T	    *(tp_diffbuf[DB_COUNT]);
@@ -3319,6 +3400,7 @@ struct window_S
 
     char_u	*w_localdir;	    // absolute path of local directory or
 				    // NULL
+    char_u	*w_prevdir;	    // previous directory
 #ifdef FEAT_MENU
     vimmenu_T	*w_winbar;	    // The root of the WinBar menu hierarchy.
     winbar_item_T *w_winbar_items;  // list of items in the WinBar
@@ -4049,6 +4131,7 @@ typedef struct
 #endif
     int		sa_wrapped;	// search wrapped around
 } searchit_arg_T;
+
 
 #define WRITEBUFSIZE	8192	// size of normal write buffer
 
