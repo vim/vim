@@ -2944,11 +2944,11 @@ func Test_various_motions()
   call assert_equal('bar(), baz());}', getline('.'))
 
   call setline(1, text)
-  exe "norm! gg0/bar\<cr>dvv[("
+  exe "norm! gg0/bar\<cr>dzz[("
   call assert_equal('{foo(bar(), baz());}', getline('.'))
 
   call setline(1, text)
-  exe "norm! gg0/bar\<cr>dvv[{"
+  exe "norm! gg0/bar\<cr>dzz[{"
   call assert_equal('{bar(), baz());}', getline('.'))
 
   bw!

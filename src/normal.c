@@ -1680,7 +1680,7 @@ clearop(oparg_T *oap)
     oap->regname = 0;
     oap->motion_force = NUL;
     oap->use_reg_one = FALSE;
-    oap->vv = 0;
+    oap->zz = 0;
 }
 
     void
@@ -2747,7 +2747,7 @@ dozet:
 	    // commands.
 	    cap->nchar != 'f' && cap->nchar != 'F'
 	    && !(VIsual_active && vim_strchr((char_u *)"dcCoO", cap->nchar))
-	    && cap->nchar != 'j' && cap->nchar != 'k'
+	    && cap->nchar != 'j' && cap->nchar != 'k' && cap->nchar != 'z'
 	    &&
 #endif
 	    checkclearop(cap->oap))
@@ -2798,7 +2798,15 @@ dozet:
     case '.':	beginline(BL_WHITE | BL_FIX);
 		// FALLTHROUGH
 
-    case 'z':	scroll_cursor_halfway(TRUE);
+    case 'z':
+		if (cap->oap->op_type != OP_NOP)
+		{
+		    // zz makes inclusive operator
+		    cap->oap->zz++;
+		    finish_op = FALSE;
+		    return;
+		}
+		scroll_cursor_halfway(TRUE);
 		redraw_later(VALID);
 		set_fraction(curwin);
 		break;
@@ -4481,8 +4489,8 @@ nv_brackets(cmdarg_T *cap)
 	    curwin->w_cursor = *pos;
 	    new_pos = *pos;
 	}
-	/* Go forward one character when vv. */
-	if (cap->oap != NULL && cap->oap->vv > 1)
+	/* Go forward one character when zz. */
+	if (cap->oap != NULL && cap->oap->zz > 0)
 	    ++pos->col;
 	curwin->w_cursor = old_pos;
 

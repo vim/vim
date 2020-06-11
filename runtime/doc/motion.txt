@@ -1331,8 +1331,8 @@ L			To line [count] from bottom of window (default: Last
 			position is in a status line, that window is made the
 			active window and the cursor is not moved.
 
-						*vv*
-vv			Use |exclusive| motion with canceling Visual mode.
-			This is useful to go forward with exclusive.
+						*zz*
+zz			Use |exclusive| motion. This is useful to go forward
+			with exclusive.
 
  vim:tw=78:ts=8:noet:ft=help:norl:
