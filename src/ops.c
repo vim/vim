@@ -2446,6 +2446,7 @@ do_addsub(
     int		maxlen = 0;
     pos_T	startpos;
     pos_T	endpos;
+    colnr_T	save_coladd = 0;
 
     do_hex = (vim_strchr(curbuf->b_p_nf, 'x') != NULL);	// "heX"
     do_oct = (vim_strchr(curbuf->b_p_nf, 'o') != NULL);	// "Octal"
@@ -2453,11 +2454,19 @@ do_addsub(
     do_alpha = (vim_strchr(curbuf->b_p_nf, 'p') != NULL);	// "alPha"
     do_unsigned = (vim_strchr(curbuf->b_p_nf, 'u') != NULL);	// "Unsigned"
 
+    if (virtual_active())
+    {
+	save_coladd = pos->coladd;
+	pos->coladd = 0;
+    }
+
     curwin->w_cursor = *pos;
     ptr = ml_get(pos->lnum);
     col = pos->col;
 
-    if (*ptr == NUL)
+    if (*ptr == NUL
+	|| col + !!save_coladd >= (int)STRLEN(ptr)
+	)
 	goto theend;
 
     /*
@@ -2822,9 +2831,13 @@ do_addsub(
 theend:
     if (visual)
 	curwin->w_cursor = save_cursor;
-    else if (did_change)
-	curwin->w_set_curswant = TRUE;
-
+    else 
+    {
+	if (did_change)
+	    curwin->w_set_curswant = TRUE;
+	else if (virtual_active())
+	    curwin->w_cursor.coladd = save_coladd;
+    }
     return did_change;
 }
 
