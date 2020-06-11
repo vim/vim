@@ -207,7 +207,7 @@ spell_check(
     if (spell_iswordp(mi.mi_fend, wp))
     {
 	int prev_upper;
-	int this_upper;
+	int this_upper = FALSE;  // init for gcc
 
 	if (use_camel_case)
 	{
