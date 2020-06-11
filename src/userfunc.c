@@ -341,13 +341,13 @@ get_lambda_name(void)
     return name;
 }
 
-    int
-register_clambda(void (*cb)(typval_T *argvars, typval_T *rettv, void *state), void *state)
+    char_u *
+register_cfunc(void (*cb)(typval_T *argvars, typval_T *rettv, void *state), void *state)
 {
     char_u *name = get_lambda_name();
     ufunc_T *fp = NULL;
     partial_T *pt = NULL;
-    int flags = FC_NOARGS;
+    int flags = FC_CFUNC;
 
     fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
     if (fp == NULL)
@@ -356,10 +356,25 @@ register_clambda(void (*cb)(typval_T *argvars, typval_T *rettv, void *state), vo
     if (pt == NULL)
         goto errret;
 
+    fp->uf_dfunc_idx = UF_NOT_COMPILED;
+    fp->uf_refcount = 1;
+    fp->uf_varargs = TRUE;
+    fp->uf_flags = flags;
+    fp->uf_calls = 0;
+    fp->uf_script_ctx = current_sctx;
+
+    set_ufunc_name(fp, name);
+    hash_add(&func_hashtab, UF2HIKEY(fp));
+
+    pt->pt_func = fp;
+    pt->pt_refcount = 1;
+
+    return name;
+
 errret:
     vim_free(fp);
     vim_free(pt);
-    return FAIL;
+    return NULL;
 }
 
 /*
