@@ -17,7 +17,7 @@
 
 #include "vim9.h"
 
-static char e_needs_vim9[] = N_("E1042: import/export can only be used in vim9script");
+static char e_needs_vim9[] = N_("E1042: export can only be used in vim9script");
 
     int
 in_vim9script(void)
@@ -141,16 +141,10 @@ free_imports(int sid)
     void
 ex_import(exarg_T *eap)
 {
-    if (current_sctx.sc_version != SCRIPT_VERSION_VIM9)
-	emsg(_(e_needs_vim9));
-    else
-    {
-	char_u *cmd_end = handle_import(eap->arg, NULL,
-						    current_sctx.sc_sid, NULL);
+    char_u *cmd_end = handle_import(eap->arg, NULL, current_sctx.sc_sid, NULL);
 
-	if (cmd_end != NULL)
-	    eap->nextcmd = check_nextcmd(cmd_end);
-    }
+    if (cmd_end != NULL)
+	eap->nextcmd = check_nextcmd(cmd_end);
 }
 
 /*
