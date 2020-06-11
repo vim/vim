@@ -641,6 +641,15 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 		lua_pop(L, 4); // MTs
 	    }
 	}
+	case LUA_TFUNCTION:
+	{
+	    lua_pushvalue(L, pos);
+	    int lua_func_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+
+	    tv->v_type = VAR_NUMBER;
+	    tv->vval.v_number = 0;
+	    status = FAIL;
+	}
 	// FALLTHROUGH
 	default:
 	    tv->v_type = VAR_NUMBER;
