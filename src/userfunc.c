@@ -341,6 +341,12 @@ get_lambda_name(void)
     return name;
 }
 
+    int
+register_clambda(void (*cb)(typval_T *argvars, typval_T *rettv, void *state), void *state)
+{
+    return FAIL;
+}
+
 /*
  * Parse a lambda expression and get a Funcref from "*arg".
  * Return OK or FAIL.  Returns NOTDONE for dict or {expr}.
