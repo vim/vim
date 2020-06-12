@@ -710,7 +710,7 @@ func s:DeleteCommands()
   delcommand Source
   delcommand Winbar
 
-  if exists('s:k_map_saved')
+  if exists('s:k_map_saved') && !empty(s:k_map_saved)
     call mapset('n', 0, s:k_map_saved)
     unlet s:k_map_saved
   endif
