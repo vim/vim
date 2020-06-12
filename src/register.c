@@ -928,6 +928,8 @@ yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
     }
     dict_add_string(v_event, "regtype", buf);
 
+    dict_add_bool(v_event, "visual", oap->is_VIsual);
+
     // Lock the dictionary and its keys
     dict_set_items_ro(v_event);
 
