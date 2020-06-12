@@ -35,6 +35,11 @@ typedef struct {
 } luaV_Funcref;
 typedef void (*msgfunc_T)(char_u *);
 
+typedef struct {
+    int index;
+    lua_State *L
+} luaV_CFuncState;
+
 static const char LUAVIM_DICT[] = "dict";
 static const char LUAVIM_LIST[] = "list";
 static const char LUAVIM_BLOB[] = "blob";
@@ -546,6 +551,16 @@ luaV_pushtypval(lua_State *L, typval_T *tv)
     }
 }
 
+    static void
+lua_closure_callback(int argcount, typval_T *argvars, typval_T *rettv, void *state)
+{
+    luaV_CFuncState *funcstate = (luaV_CFuncState*)state;
+    lua_rawgeti(funcstate->L, LUA_REGISTRYINDEX, funcstate->index);
+    /* TODO: convert vimargs to lua type */
+    lua_pcall(funcstate->L, 0, 0, 0);
+    /* TODO: set lua return value to vim return type */
+}
+
 /*
  * Converts lua value at 'pos' to typval 'tv'.
  * Returns OK or FAIL.
@@ -644,11 +659,15 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	case LUA_TFUNCTION:
 	{
 	    lua_pushvalue(L, pos);
-	    int lua_func_ref = luaL_ref(L, LUA_REGISTRYINDEX);
-
-	    tv->v_type = VAR_NUMBER;
-	    tv->vval.v_number = 0;
-	    status = FAIL;
+	    luaV_CFuncState *state = malloc(sizeof(luaV_CFuncState));
+	    state->index = luaL_ref(L, LUA_REGISTRYINDEX);
+	    state->L = L;
+	    /* TODO: register desctructor for lua_unref and free() */
+	    char_u *name = register_cfunc(&lua_closure_callback, (void*)state);
+	    func_ref(name);
+	    tv->v_type = VAR_FUNC;
+	    tv->vval.v_string = vim_strsave(name);
+	    break;
 	}
 	// FALLTHROUGH
 	default:

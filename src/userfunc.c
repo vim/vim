@@ -342,12 +342,17 @@ get_lambda_name(void)
 }
 
     char_u *
-register_cfunc(void (*cb)(typval_T *argvars, typval_T *rettv, void *state), void *state)
+register_cfunc(cfunc_T cb, void *state)
 {
     char_u *name = get_lambda_name();
     ufunc_T *fp = NULL;
     partial_T *pt = NULL;
     int flags = FC_CFUNC;
+    garray_T newargs;
+    garray_T newlines;
+
+    ga_init(&newargs);
+    ga_init(&newlines);
 
     fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
     if (fp == NULL)
@@ -362,6 +367,10 @@ register_cfunc(void (*cb)(typval_T *argvars, typval_T *rettv, void *state), void
     fp->uf_flags = flags;
     fp->uf_calls = 0;
     fp->uf_script_ctx = current_sctx;
+    fp->uf_lines = newlines;
+    fp->uf_args = newargs;
+    fp->uf_cb = cb;
+    fp->uf_cb_state = state;
 
     set_ufunc_name(fp, name);
     hash_add(&func_hashtab, UF2HIKEY(fp));
@@ -372,6 +381,8 @@ register_cfunc(void (*cb)(typval_T *argvars, typval_T *rettv, void *state), void
     return name;
 
 errret:
+    ga_clear_strings(&newargs);
+    ga_clear_strings(&newlines);
     vim_free(fp);
     vim_free(pt);
     return NULL;
@@ -2009,6 +2020,12 @@ call_func(
 
 	    if (fp != NULL && (fp->uf_flags & FC_DELETED))
 		error = FCERR_DELETED;
+	    if (fp != NULL && (fp->uf_flags & FC_CFUNC))
+	    {
+		cfunc_T cb = fp->uf_cb;
+		(*cb)(argcount, argvars, rettv, fp->uf_cb_state);
+		error = FCERR_NONE;
+	    }
 	    else if (fp != NULL)
 	    {
 		if (funcexe->argv_func != NULL)
