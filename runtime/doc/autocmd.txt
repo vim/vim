@@ -1154,6 +1154,8 @@ TextYankPost			After text has been yanked or deleted in the
 						register.
 				   regtype	Type of the register, see
 						|getregtype()|.
+				   visual	True if the operation is
+						performed on a |Visual| area.
 				Not triggered when |quote_| is used nor when
 				called recursively.
 				It is not allowed to change the buffer text,
