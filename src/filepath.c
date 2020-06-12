@@ -389,7 +389,7 @@ repeat:
 	if (mch_isdir(*fnamep))
 	{
 	    // Make room for one or two extra characters.
-	    *fnamep = vim_strnsave(*fnamep, (int)STRLEN(*fnamep) + 2);
+	    *fnamep = vim_strnsave(*fnamep, STRLEN(*fnamep) + 2);
 	    vim_free(*bufp);	// free any allocated file name
 	    *bufp = *fnamep;
 	    if (*fnamep == NULL)
@@ -655,7 +655,7 @@ repeat:
 	    p = vim_strchr(s, sep);
 	    if (p != NULL)
 	    {
-		pat = vim_strnsave(s, (int)(p - s));
+		pat = vim_strnsave(s, p - s);
 		if (pat != NULL)
 		{
 		    s = p + 1;
@@ -663,7 +663,7 @@ repeat:
 		    p = vim_strchr(s, sep);
 		    if (p != NULL)
 		    {
-			sub = vim_strnsave(s, (int)(p - s));
+			sub = vim_strnsave(s, p - s);
 			str = vim_strnsave(*fnamep, *fnamelen);
 			if (sub != NULL && str != NULL)
 			{
@@ -1296,7 +1296,7 @@ mkdir_recurse(char_u *dir, int prot)
 	return OK;
 
     // If the directory exists we're done.  Otherwise: create it.
-    updir = vim_strnsave(dir, (int)(p - dir));
+    updir = vim_strnsave(dir, p - dir);
     if (updir == NULL)
 	return FAIL;
     if (mch_isdir(updir))
@@ -1594,7 +1594,7 @@ f_readfile(typval_T *argvars, typval_T *rettv)
 			    --prevlen;
 		}
 		if (prevlen == 0)
-		    s = vim_strnsave(start, (int)len);
+		    s = vim_strnsave(start, len);
 		else
 		{
 		    // Change "prev" buffer to be the right size.  This way
@@ -3037,7 +3037,7 @@ expand_backtick(
     int		i;
 
     // Create the command: lop off the backticks.
-    cmd = vim_strnsave(pat + 1, (int)STRLEN(pat) - 2);
+    cmd = vim_strnsave(pat + 1, STRLEN(pat) - 2);
     if (cmd == NULL)
 	return -1;
 

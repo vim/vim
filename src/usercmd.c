@@ -676,7 +676,7 @@ parse_compl_arg(
     }
 
     if (arg != NULL)
-	*compl_arg = vim_strnsave(arg, (int)arglen);
+	*compl_arg = vim_strnsave(arg, arglen);
 # endif
     return OK;
 }
@@ -939,7 +939,7 @@ uc_add_command(
     {
 	if (ga_grow(gap, 1) != OK)
 	    goto fail;
-	if ((p = vim_strnsave(name, (int)name_len)) == NULL)
+	if ((p = vim_strnsave(name, name_len)) == NULL)
 	    goto fail;
 
 	cmd = USER_CMD_GA(gap, i);

@@ -451,7 +451,7 @@ vim_findfile_init(
 		if (walker)
 		{
 		    search_ctx->ffsc_stopdirs_v[dircount-1] =
-				 vim_strnsave(helper, (int)(walker - helper));
+					 vim_strnsave(helper, walker - helper);
 		    walker++;
 		}
 		else
@@ -484,7 +484,7 @@ vim_findfile_init(
 	char	*errpt;
 
 	// save the fix part of the path
-	search_ctx->ffsc_fix_path = vim_strnsave(path, (int)(wc_part - path));
+	search_ctx->ffsc_fix_path = vim_strnsave(path, wc_part - path);
 
 	/*
 	 * copy wc_path and add restricts to the '**' wildcard.

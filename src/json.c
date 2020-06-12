@@ -662,7 +662,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 	    if (cur_item != NULL)
 	    {
 		cur_item->v_type = VAR_STRING;
-		cur_item->vval.v_string = vim_strnsave(key, (int)(p - key));
+		cur_item->vval.v_string = vim_strnsave(key, p - key);
 		top_item->jd_key = cur_item->vval.v_string;
 	    }
 	    reader->js_used += (int)(p - key);

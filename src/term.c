@@ -4086,11 +4086,11 @@ add_termcode(char_u *name, char_u *string, int flags)
     }
 
 #if defined(MSWIN) && !defined(FEAT_GUI)
-    s = vim_strnsave(string, (int)STRLEN(string) + 1);
+    s = vim_strnsave(string, STRLEN(string) + 1);
 #else
 # ifdef VIMDLL
     if (!gui.in_use)
-	s = vim_strnsave(string, (int)STRLEN(string) + 1);
+	s = vim_strnsave(string, STRLEN(string) + 1);
     else
 # endif
 	s = vim_strsave(string);

@@ -4652,7 +4652,7 @@ get_syn_options(
 		arg = skiptowhite(arg);
 		if (gname_start == arg)
 		    return NULL;
-		gname = vim_strnsave(gname_start, (int)(arg - gname_start));
+		gname = vim_strnsave(gname_start, arg - gname_start);
 		if (gname == NULL)
 		    return NULL;
 		if (STRCMP(gname, "NONE") == 0)
@@ -4662,7 +4662,8 @@ get_syn_options(
 		    syn_id = syn_name2id(gname);
 		    for (i = curwin->w_s->b_syn_patterns.ga_len; --i >= 0; )
 			if (SYN_ITEMS(curwin->w_s)[i].sp_syn.id == syn_id
-			      && SYN_ITEMS(curwin->w_s)[i].sp_type == SPTYPE_START)
+			      && SYN_ITEMS(curwin->w_s)[i].sp_type
+							       == SPTYPE_START)
 			{
 			    *opt->sync_idx = i;
 			    break;
@@ -5656,7 +5657,7 @@ get_syn_pattern(char_u *arg, synpat_T *ci)
 	return NULL;
     }
     // store the pattern and compiled regexp program
-    if ((ci->sp_pattern = vim_strnsave(arg + 1, (int)(end - arg - 1))) == NULL)
+    if ((ci->sp_pattern = vim_strnsave(arg + 1, end - arg - 1)) == NULL)
 	return NULL;
 
     // Make 'cpoptions' empty, to avoid the 'l' flag
@@ -5836,8 +5837,9 @@ syn_cmd_sync(exarg_T *eap, int syncing UNUSED)
 	    if (!eap->skip)
 	    {
 		// store the pattern and compiled regexp program
-		if ((curwin->w_s->b_syn_linecont_pat = vim_strnsave(next_arg + 1,
-				      (int)(arg_end - next_arg - 1))) == NULL)
+		if ((curwin->w_s->b_syn_linecont_pat =
+			    vim_strnsave(next_arg + 1,
+				      arg_end - next_arg - 1)) == NULL)
 		{
 		    finished = TRUE;
 		    break;
@@ -6272,7 +6274,7 @@ ex_syntax(exarg_T *eap)
     // isolate subcommand name
     for (subcmd_end = arg; ASCII_ISALPHA(*subcmd_end); ++subcmd_end)
 	;
-    subcmd_name = vim_strnsave(arg, (int)(subcmd_end - arg));
+    subcmd_name = vim_strnsave(arg, subcmd_end - arg);
     if (subcmd_name != NULL)
     {
 	if (eap->skip)		// skip error messages for all subcommands

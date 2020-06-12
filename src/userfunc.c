@@ -2699,7 +2699,7 @@ def_function(exarg_T *eap, char_u *name_arg)
 	    p = skip_type(ret_type);
 	    if (p > ret_type)
 	    {
-		ret_type = vim_strnsave(ret_type, (int)(p - ret_type));
+		ret_type = vim_strnsave(ret_type, p - ret_type);
 		p = skipwhite(p);
 	    }
 	    else
@@ -2972,12 +2972,12 @@ def_function(exarg_T *eap, char_u *name_arg)
 		    // Ignore leading white space.
 		    p = skipwhite(p + 4);
 		    heredoc_trimmed = vim_strnsave(theline,
-			    (int)(skipwhite(theline) - theline));
+						 skipwhite(theline) - theline);
 		}
 		if (*p == NUL)
 		    skip_until = vim_strsave((char_u *)".");
 		else
-		    skip_until = vim_strnsave(p, (int)(skiptowhite(p) - p));
+		    skip_until = vim_strnsave(p, skiptowhite(p) - p);
 		do_concat = FALSE;
 		is_heredoc = TRUE;
 	    }
@@ -3002,9 +3002,9 @@ def_function(exarg_T *eap, char_u *name_arg)
 			// Ignore leading white space.
 			p = skipwhite(p + 4);
 			heredoc_trimmed = vim_strnsave(theline,
-					  (int)(skipwhite(theline) - theline));
+						 skipwhite(theline) - theline);
 		    }
-		    skip_until = vim_strnsave(p, (int)(skiptowhite(p) - p));
+		    skip_until = vim_strnsave(p, skiptowhite(p) - p);
 		    do_concat = FALSE;
 		    is_heredoc = TRUE;
 		}

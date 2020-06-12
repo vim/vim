@@ -3221,7 +3221,7 @@ ex_append(exarg_T *eap)
 	    p = vim_strchr(eap->nextcmd, NL);
 	    if (p == NULL)
 		p = eap->nextcmd + STRLEN(eap->nextcmd);
-	    theline = vim_strnsave(eap->nextcmd, (int)(p - eap->nextcmd));
+	    theline = vim_strnsave(eap->nextcmd, p - eap->nextcmd);
 	    if (*p != NUL)
 		++p;
 	    eap->nextcmd = p;

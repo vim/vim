@@ -2724,7 +2724,7 @@ next_fenc(char_u **pp, int *alloced)
     }
     else
     {
-	r = vim_strnsave(*pp, (int)(p - *pp));
+	r = vim_strnsave(*pp, p - *pp);
 	*pp = p + 1;
 	if (r != NULL)
 	{

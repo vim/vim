@@ -1795,7 +1795,7 @@ vim_getenv(char_u *name, int *mustfree)
 	    if (p == exe_name || p == p_hf)
 #endif
 		// check that the result is a directory name
-		p = vim_strnsave(p, (int)(pend - p));
+		p = vim_strnsave(p, pend - p);
 
 	    if (p != NULL && !mch_isdir(p))
 		VIM_CLEAR(p);
@@ -2576,7 +2576,7 @@ get_isolated_shell_name(void)
 
 #ifdef MSWIN
     p = gettail(p_sh);
-    p = vim_strnsave(p, (int)(skiptowhite(p) - p));
+    p = vim_strnsave(p, skiptowhite(p) - p);
 #else
     p = skiptowhite(p_sh);
     if (*p == NUL)
@@ -2593,7 +2593,7 @@ get_isolated_shell_name(void)
 	for (p2 = p_sh; p2 < p; MB_PTR_ADV(p2))
 	    if (vim_ispathsep(*p2))
 		p1 = p2 + 1;
-	p = vim_strnsave(p1, (int)(p - p1));
+	p = vim_strnsave(p1, p - p1);
     }
 #endif
     return p;

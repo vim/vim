@@ -2655,7 +2655,7 @@ write_reg_contents_ex(
     {
 	char_u	    *p, *s;
 
-	p = vim_strnsave(str, (int)len);
+	p = vim_strnsave(str, len);
 	if (p == NULL)
 	    return;
 	if (must_append && expr_line != NULL)

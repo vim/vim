@@ -1616,7 +1616,7 @@ op_insert(oparg_T *oap, long count1)
 	if (pre_textlen >= 0
 		     && (ins_len = (long)STRLEN(firstline) - pre_textlen) > 0)
 	{
-	    ins_text = vim_strnsave(firstline, (int)ins_len);
+	    ins_text = vim_strnsave(firstline, ins_len);
 	    if (ins_text != NULL)
 	    {
 		// block handled here

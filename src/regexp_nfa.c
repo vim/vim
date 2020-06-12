@@ -7103,8 +7103,7 @@ nfa_regtry(
 
 		if (lpos->start != NULL && lpos->end != NULL)
 		    re_extmatch_out->matches[i] =
-			    vim_strnsave(lpos->start,
-					      (int)(lpos->end - lpos->start));
+			    vim_strnsave(lpos->start, lpos->end - lpos->start);
 	    }
 	}
     }

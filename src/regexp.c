@@ -1846,7 +1846,7 @@ fill_submatch_list(int argc UNUSED, typval_T *argv, int argskip, int argcount)
 	if (s == NULL || rsm.sm_match->endp[i] == NULL)
 	    s = NULL;
 	else
-	    s = vim_strnsave(s, (int)(rsm.sm_match->endp[i] - s));
+	    s = vim_strnsave(s, rsm.sm_match->endp[i] - s);
 	li->li_tv.v_type = VAR_STRING;
 	li->li_tv.vval.v_string = s;
 	li = li->li_next;
@@ -2462,7 +2462,7 @@ reg_submatch(int no)
 	if (s == NULL || rsm.sm_match->endp[no] == NULL)
 	    retval = NULL;
 	else
-	    retval = vim_strnsave(s, (int)(rsm.sm_match->endp[no] - s));
+	    retval = vim_strnsave(s, rsm.sm_match->endp[no] - s);
     }
 
     return retval;

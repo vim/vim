@@ -1309,22 +1309,22 @@ sign_define_cmd(char_u *sign_name, char_u *cmdline)
 	if (STRNCMP(arg, "icon=", 5) == 0)
 	{
 	    arg += 5;
-	    icon = vim_strnsave(arg, (int)(p - arg));
+	    icon = vim_strnsave(arg, p - arg);
 	}
 	else if (STRNCMP(arg, "text=", 5) == 0)
 	{
 	    arg += 5;
-	    text = vim_strnsave(arg, (int)(p - arg));
+	    text = vim_strnsave(arg, p - arg);
 	}
 	else if (STRNCMP(arg, "linehl=", 7) == 0)
 	{
 	    arg += 7;
-	    linehl = vim_strnsave(arg, (int)(p - arg));
+	    linehl = vim_strnsave(arg, p - arg);
 	}
 	else if (STRNCMP(arg, "texthl=", 7) == 0)
 	{
 	    arg += 7;
-	    texthl = vim_strnsave(arg, (int)(p - arg));
+	    texthl = vim_strnsave(arg, p - arg);
 	}
 	else
 	{

@@ -680,7 +680,7 @@ mark_line(pos_T *mp, int lead_len)
     if (mp->lnum == 0 || mp->lnum > curbuf->b_ml.ml_line_count)
 	return vim_strsave((char_u *)"-invalid-");
     // Allow for up to 5 bytes per character.
-    s = vim_strnsave(skipwhite(ml_get(mp->lnum)), (int)Columns * 5);
+    s = vim_strnsave(skipwhite(ml_get(mp->lnum)), Columns * 5);
     if (s == NULL)
 	return NULL;
     // Truncate the line to fit it in the window.

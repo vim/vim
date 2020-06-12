@@ -1575,7 +1575,7 @@ generate_STRINGMEMBER(cctx_T *cctx, char_u *name, size_t len)
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr(cctx, ISN_STRINGMEMBER)) == NULL)
 	return FAIL;
-    isn->isn_arg.string = vim_strnsave(name, (int)len);
+    isn->isn_arg.string = vim_strnsave(name, len);
 
     // check for dict type
     type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
@@ -1671,7 +1671,7 @@ reserve_local(cctx_T *cctx, char_u *name, size_t len, int isConst, type_T *type)
     // entries.  This is less efficient, but memory is cheap these days.
     lvar->lv_idx = cctx->ctx_locals_count++;
 
-    lvar->lv_name = vim_strnsave(name, (int)(len == 0 ? STRLEN(name) : len));
+    lvar->lv_name = vim_strnsave(name, len == 0 ? STRLEN(name) : len);
     lvar->lv_const = isConst;
     lvar->lv_type = type;
 
@@ -4627,7 +4627,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	--p;
 
     varlen = p - arg;
-    name = vim_strnsave(arg, (int)varlen);
+    name = vim_strnsave(arg, varlen);
     if (name == NULL)
 	return NULL;
 
@@ -6268,7 +6268,7 @@ compile_exec(char_u *line, exarg_T *eap, cctx_T *cctx)
 	{
 	    if (p > start)
 	    {
-		generate_PUSHS(cctx, vim_strnsave(start, (int)(p - start)));
+		generate_PUSHS(cctx, vim_strnsave(start, p - start));
 		++count;
 	    }
 	    p += 2;
