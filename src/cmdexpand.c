@@ -273,6 +273,7 @@ nextwild(
  * options = WILD_SILENT:	    don't print warning messages
  * options = WILD_ESCAPE:	    put backslash before special chars
  * options = WILD_ICASE:	    ignore case for files
+ * options = WILD_ALLLINKS;	    keep broken links
  *
  * The variables xp->xp_context and xp->xp_backslash must have been set!
  */

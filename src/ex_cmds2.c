@@ -1188,7 +1188,7 @@ set_lang_var(void)
 }
 #endif
 
-#if defined(HAVE_LOCALE_H) || defined(X_LOCALE) \
+#if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
 /*
  * ":language":  Set the language (locale).
  */
@@ -1200,11 +1200,11 @@ ex_language(exarg_T *eap)
     char_u	*name;
     int		what = LC_ALL;
     char	*whatstr = "";
-#ifdef LC_MESSAGES
-# define VIM_LC_MESSAGES LC_MESSAGES
-#else
-# define VIM_LC_MESSAGES 6789
-#endif
+# ifdef LC_MESSAGES
+#  define VIM_LC_MESSAGES LC_MESSAGES
+# else
+#  define VIM_LC_MESSAGES 6789
+# endif
 
     name = eap->arg;
 
@@ -1236,11 +1236,11 @@ ex_language(exarg_T *eap)
 
     if (*name == NUL)
     {
-#ifndef LC_MESSAGES
+# ifndef LC_MESSAGES
 	if (what == VIM_LC_MESSAGES)
 	    p = get_mess_env();
 	else
-#endif
+# endif
 	    p = (char_u *)setlocale(what, NULL);
 	if (p == NULL || *p == NUL)
 	    p = (char_u *)"Unknown";
@@ -1248,29 +1248,29 @@ ex_language(exarg_T *eap)
     }
     else
     {
-#ifndef LC_MESSAGES
+# ifndef LC_MESSAGES
 	if (what == VIM_LC_MESSAGES)
 	    loc = "";
 	else
-#endif
+# endif
 	{
 	    loc = setlocale(what, (char *)name);
-#if defined(FEAT_FLOAT) && defined(LC_NUMERIC)
+# if defined(FEAT_FLOAT) && defined(LC_NUMERIC)
 	    // Make sure strtod() uses a decimal point, not a comma.
 	    setlocale(LC_NUMERIC, "C");
-#endif
+# endif
 	}
 	if (loc == NULL)
 	    semsg(_("E197: Cannot set language to \"%s\""), name);
 	else
 	{
-#ifdef HAVE_NL_MSG_CAT_CNTR
+# ifdef HAVE_NL_MSG_CAT_CNTR
 	    // Need to do this for GNU gettext, otherwise cached translations
 	    // will be used again.
 	    extern int _nl_msg_cat_cntr;
 
 	    ++_nl_msg_cat_cntr;
-#endif
+# endif
 	    // Reset $LC_ALL, otherwise it would overrule everything.
 	    vim_setenv((char_u *)"LC_ALL", (char_u *)"");
 
@@ -1296,15 +1296,15 @@ ex_language(exarg_T *eap)
 		if (what != LC_CTYPE)
 		{
 		    char_u	*mname;
-#ifdef MSWIN
+# ifdef MSWIN
 		    mname = gettext_lang(name);
-#else
+# else
 		    mname = name;
-#endif
+# endif
 		    vim_setenv((char_u *)"LC_MESSAGES", mname);
-#ifdef FEAT_MULTI_LANG
+# ifdef FEAT_MULTI_LANG
 		    set_helplang_default(mname);
-#endif
+# endif
 		}
 	    }
 
@@ -1321,7 +1321,6 @@ ex_language(exarg_T *eap)
 
 static char_u	**locales = NULL;	// Array of all available locales
 
-# ifndef MSWIN
 static int	did_init_locales = FALSE;
 
 /*
@@ -1333,31 +1332,87 @@ find_locales(void)
 {
     garray_T	locales_ga;
     char_u	*loc;
+    char_u	*locale_list;
+# ifdef MSWIN
+    size_t	len = 0;
+# endif
 
     // Find all available locales by running command "locale -a".  If this
     // doesn't work we won't have completion.
-    char_u *locale_a = get_cmd_output((char_u *)"locale -a",
+# ifndef MSWIN
+    locale_list = get_cmd_output((char_u *)"locale -a",
 						    NULL, SHELL_SILENT, NULL);
-    if (locale_a == NULL)
+# else
+    // Find all available locales by examining the directories in
+    // $VIMRUNTIME/lang/
+    {
+	int		options = WILD_SILENT|WILD_USE_NL|WILD_KEEP_ALL;
+	expand_T	xpc;
+	char_u		*p;
+
+	ExpandInit(&xpc);
+	xpc.xp_context = EXPAND_DIRECTORIES;
+	locale_list = ExpandOne(&xpc, (char_u *)"$VIMRUNTIME/lang/*",
+						      NULL, options, WILD_ALL);
+	ExpandCleanup(&xpc);
+	if (locale_list == NULL)
+	    // Add a dummy input, that will be skipped lated but we need to
+	    // have something in locale_list so that the C locale is added at
+	    // the end.
+	    locale_list = vim_strsave((char_u *)".\n");
+	p = locale_list;
+	// find the last directory delimiter
+	while (p != NULL && *p != NUL)
+	{
+	    if (*p == '\n')
+		break;
+	    if (*p == '\\')
+		len = p - locale_list;
+	    p++;
+	}
+    }
+# endif
+    if (locale_list == NULL)
 	return NULL;
     ga_init2(&locales_ga, sizeof(char_u *), 20);
 
-    // Transform locale_a string where each locale is separated by "\n"
+    // Transform locale_list string where each locale is separated by "\n"
     // into an array of locale strings.
-    loc = (char_u *)strtok((char *)locale_a, "\n");
+    loc = (char_u *)strtok((char *)locale_list, "\n");
 
     while (loc != NULL)
     {
-	if (ga_grow(&locales_ga, 1) == FAIL)
-	    break;
-	loc = vim_strsave(loc);
-	if (loc == NULL)
-	    break;
+	int ignore = FALSE;
 
-	((char_u **)locales_ga.ga_data)[locales_ga.ga_len++] = loc;
+# ifdef MSWIN
+	if (len > 0)
+	    loc += len + 1;
+	// skip locales with a dot (which indicates the charset)
+	if (vim_strchr(loc, '.') != NULL)
+	    ignore = TRUE;
+# endif
+	if (!ignore)
+	{
+	    if (ga_grow(&locales_ga, 1) == FAIL)
+		break;
+
+	    loc = vim_strsave(loc);
+	    if (loc == NULL)
+		break;
+
+	    ((char_u **)locales_ga.ga_data)[locales_ga.ga_len++] = loc;
+	}
 	loc = (char_u *)strtok(NULL, "\n");
     }
-    vim_free(locale_a);
+
+# ifdef MSWIN
+    // Add the C locale
+    if (ga_grow(&locales_ga, 1) == OK)
+	((char_u **)locales_ga.ga_data)[locales_ga.ga_len++] =
+						    vim_strsave((char_u *)"C");
+# endif
+
+    vim_free(locale_list);
     if (ga_grow(&locales_ga, 1) == FAIL)
     {
 	ga_clear(&locales_ga);
@@ -1366,7 +1421,6 @@ find_locales(void)
     ((char_u **)locales_ga.ga_data)[locales_ga.ga_len] = NULL;
     return (char_u **)locales_ga.ga_data;
 }
-# endif
 
 /*
  * Lazy initialization of all available locales.
@@ -1374,16 +1428,14 @@ find_locales(void)
     static void
 init_locales(void)
 {
-#  ifndef MSWIN
     if (!did_init_locales)
     {
 	did_init_locales = TRUE;
 	locales = find_locales();
     }
-#  endif
 }
 
-#  if defined(EXITFREE) || defined(PROTO)
+# if defined(EXITFREE) || defined(PROTO)
     void
 free_locales(void)
 {
@@ -1395,7 +1447,7 @@ free_locales(void)
 	VIM_CLEAR(locales);
     }
 }
-#  endif
+# endif
 
 /*
  * Function given to ExpandGeneric() to obtain the possible arguments of the
