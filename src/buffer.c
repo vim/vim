@@ -3651,7 +3651,7 @@ fileinfo(
 #ifdef FEAT_QUICKFIX
 		    && !bt_dontwrite(curbuf)
 #endif
-					? _("[New file]") : "",
+		  ? _(shortmess(SHM_NEW) ? _("[New]") : _("[New File]")) : "",
 	    (curbuf->b_flags & BF_READERR) ? _("[Read errors]") : "",
 	    curbuf->b_p_ro ? (shortmess(SHM_RO) ? _("[RO]")
 						      : _("[readonly]")) : "",

@@ -506,7 +506,9 @@ readfile(
 			}
 		    }
 		    if (dir_of_file_exists(fname))
-			filemess(curbuf, sfname, (char_u *)_("[New File]"), 0);
+			filemess(curbuf, sfname, (char_u *)_(shortmess(SHM_NEW)
+						       ? _("[New]")
+						       : _("[New File]")), 0);
 		    else
 			filemess(curbuf, sfname,
 					   (char_u *)_("[New DIRECTORY]"), 0);
