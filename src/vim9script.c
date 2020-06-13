@@ -477,7 +477,10 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
     p = skipwhite(p + 1);
     type = parse_type(&p, &si->sn_type_list);
     if (called_emsg != called_emsg_before)
+    {
+	vim_free(name);
 	return p;
+    }
 
     // Create the variable with 0/NULL value.
     CLEAR_FIELD(init_tv);
