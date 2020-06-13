@@ -1597,10 +1597,6 @@ typedef struct
     char_u	uf_name[1];	// name of function (actually longer); can
 				// start with <SNR>123_ (<SNR> is K_SPECIAL
 				// KS_EXTRA KE_SNR)
-    /* void (*cb)(void); */
-    
-    /* void (*cb)(typval_T *argvars, typval_T *rettv, void *state); */
-    /* void *state; */
 } ufunc_T;
 
 // flags used in uf_flags

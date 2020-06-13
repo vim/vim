@@ -37,7 +37,7 @@ typedef void (*msgfunc_T)(char_u *);
 
 typedef struct {
     int index;
-    lua_State *L
+    lua_State *L;
 } luaV_CFuncState;
 
 static const char LUAVIM_DICT[] = "dict";
@@ -77,6 +77,7 @@ static luaV_List *luaV_pushlist(lua_State *L, list_T *lis);
 static luaV_Dict *luaV_pushdict(lua_State *L, dict_T *dic);
 static luaV_Blob *luaV_pushblob(lua_State *L, blob_T *blo);
 static luaV_Funcref *luaV_pushfuncref(lua_State *L, char_u *name);
+static void lua_closure_callback(int argcount, typval_T *argvars, typval_T *rettv, void *state);
 
 #if LUA_VERSION_NUM <= 501
 #define luaV_openlib(L, l, n) luaL_openlib(L, NULL, l, n)
@@ -549,16 +550,6 @@ luaV_pushtypval(lua_State *L, typval_T *tv)
 	default:
 	    lua_pushnil(L);
     }
-}
-
-    static void
-lua_closure_callback(int argcount, typval_T *argvars, typval_T *rettv, void *state)
-{
-    luaV_CFuncState *funcstate = (luaV_CFuncState*)state;
-    lua_rawgeti(funcstate->L, LUA_REGISTRYINDEX, funcstate->index);
-    /* TODO: convert vimargs to lua type */
-    lua_pcall(funcstate->L, 0, 0, 0);
-    /* TODO: set lua return value to vim return type */
 }
 
 /*
@@ -2441,6 +2432,20 @@ update_package_paths_in_lua()
 	if (lua_pcall(L, 0, 0, 0))
 	    luaV_emsg(L);
     }
+}
+
+    static void
+lua_closure_callback(int argcount, typval_T *argvars, typval_T *rettv, void *state)
+{
+    luaV_CFuncState *funcstate = (luaV_CFuncState*)state;
+    lua_rawgeti(funcstate->L, LUA_REGISTRYINDEX, funcstate->index);
+    /* TODO: convert vimargs to lua type */
+    if (lua_pcall(funcstate->L, 0, 1, 0) != 0)
+    {
+	luaV_emsg("failed to call");
+	return;
+    }
+    luaV_checktypval(funcstate->L, -1, rettv, "get return value");
 }
 
 #endif
