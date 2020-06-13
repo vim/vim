@@ -2021,7 +2021,7 @@ call_func(
 
 	    if (fp != NULL && (fp->uf_flags & FC_DELETED))
 		error = FCERR_DELETED;
-	    if (fp != NULL && (fp->uf_flags & FC_CFUNC))
+	    else if (fp != NULL && (fp->uf_flags & FC_CFUNC))
 	    {
 		cfunc_T cb = fp->uf_cb;
 		error = (*cb)(argcount, argvars, rettv, fp->uf_cb_state);
