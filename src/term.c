@@ -4538,7 +4538,13 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
     // Reset terminal properties that are set based on the termresponse.
     // Mainly useful for tests that send the termresponse multiple times.
     // For testing all props can be reset.
-    init_term_props(reset_term_props_on_termresponse);
+    init_term_props(
+#ifdef FEAT_EVAL
+	    reset_term_props_on_termresponse
+#else
+	    FALSE
+#endif
+	    );
 
     // If this code starts with CSI, you can bet that the
     // terminal uses 8-bit codes.
