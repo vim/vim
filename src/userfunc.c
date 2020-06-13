@@ -2024,8 +2024,7 @@ call_func(
 	    if (fp != NULL && (fp->uf_flags & FC_CFUNC))
 	    {
 		cfunc_T cb = fp->uf_cb;
-		(*cb)(argcount, argvars, rettv, fp->uf_cb_state);
-		error = FCERR_NONE;
+		error = (*cb)(argcount, argvars, rettv, fp->uf_cb_state);
 	    }
 	    else if (fp != NULL)
 	    {

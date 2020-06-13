@@ -1529,7 +1529,7 @@ struct blobvar_S
     char	bv_lock;	// zero, VAR_LOCKED, VAR_FIXED
 };
 
-typedef void (*cfunc_T)(int argcount, typval_T *argvars, typval_T *rettv, void *state);
+typedef int (*cfunc_T)(int argcount, typval_T *argvars, typval_T *rettv, void *state);
 typedef void (*cfunc_free_T)(void *state);
 
 #if defined(FEAT_EVAL) || defined(PROTO)

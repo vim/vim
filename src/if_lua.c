@@ -77,7 +77,7 @@ static luaV_List *luaV_pushlist(lua_State *L, list_T *lis);
 static luaV_Dict *luaV_pushdict(lua_State *L, dict_T *dic);
 static luaV_Blob *luaV_pushblob(lua_State *L, blob_T *blo);
 static luaV_Funcref *luaV_pushfuncref(lua_State *L, char_u *name);
-static void luaV_call_lua_func(int argcount, typval_T *argvars, typval_T *rettv, void *state);
+static int luaV_call_lua_func(int argcount, typval_T *argvars, typval_T *rettv, void *state);
 static void luaV_call_lua_func_free(void *state);
 
 #if LUA_VERSION_NUM <= 501
@@ -2433,19 +2433,24 @@ update_package_paths_in_lua()
     }
 }
 
-    static void
+    static int
 luaV_call_lua_func(int argcount, typval_T *argvars, typval_T *rettv, void *state)
 {
+    int i;
     luaV_CFuncState *funcstate = (luaV_CFuncState*)state;
     lua_rawgeti(funcstate->L, LUA_REGISTRYINDEX, funcstate->index);
-    /* TODO: convert vimargs to lua type */
-    // foreach argvars. luaV_pushtypval(funcstate->L, argvars[i])
-    if (lua_pcall(funcstate->L, 0, 1, 0) != 0)
+
+    for (i = 0; i < argcount; ++i)
+	luaV_pushtypval(funcstate->L, &argvars[i]);
+
+    if (lua_pcall(funcstate->L, argcount, 1, 0) != 0)
     {
 	luaV_emsg("failed to call");
-	return;
+	return FCERR_OTHER;
     }
+
     luaV_checktypval(funcstate->L, -1, rettv, "get return value");
+    return FCERR_NONE;
 }
 
     static void
