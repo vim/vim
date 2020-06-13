@@ -598,6 +598,17 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	    tv->vval.v_number = (varnumber_T) lua_tointeger(L, pos);
 #endif
 	    break;
+	case LUA_TFUNCTION:
+	{
+	    lua_pushvalue(L, pos);
+	    luaV_CFuncState *state = malloc(sizeof(luaV_CFuncState));
+	    state->index = luaL_ref(L, LUA_REGISTRYINDEX);
+	    state->L = L;
+	    char_u *name = register_cfunc(&luaV_call_lua_func, &luaV_call_lua_func_free, (void*)state);
+	    tv->v_type = VAR_FUNC;
+	    tv->vval.v_string = vim_strsave(name);
+	    break;
+	}
 	case LUA_TUSERDATA:
 	{
 	    void *p = lua_touserdata(L, pos);
@@ -647,17 +658,6 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 		}
 		lua_pop(L, 4); // MTs
 	    }
-	}
-	case LUA_TFUNCTION:
-	{
-	    lua_pushvalue(L, pos);
-	    luaV_CFuncState *state = malloc(sizeof(luaV_CFuncState));
-	    state->index = luaL_ref(L, LUA_REGISTRYINDEX);
-	    state->L = L;
-	    char_u *name = register_cfunc(&luaV_call_lua_func, &luaV_call_lua_func_free, (void*)state);
-	    tv->v_type = VAR_FUNC;
-	    tv->vval.v_string = vim_strsave(name);
-	    break;
 	}
 	// FALLTHROUGH
 	default:
