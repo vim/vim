@@ -2255,7 +2255,8 @@ get_script_item_idx(int sid, char_u *name, int check_writable)
 }
 
 /*
- * Find "name" in imported items of the current script/
+ * Find "name" in imported items of the current script or in "cctx" if not
+ * NULL.
  */
     imported_T *
 find_imported(char_u *name, size_t len, cctx_T *cctx)
@@ -5012,12 +5013,12 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     }
     else if (cmdidx == CMD_const)
     {
-	emsg(_("E1021: const requires a value"));
+	emsg(_(e_const_req_value));
 	goto theend;
     }
     else if (!has_type || dest == dest_option)
     {
-	emsg(_("E1022: type or initialization required"));
+	emsg(_(e_type_req));
 	goto theend;
     }
     else

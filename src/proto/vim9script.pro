@@ -6,4 +6,5 @@ void free_imports(int sid);
 void ex_import(exarg_T *eap);
 int find_exported(int sid, char_u **argp, int *name_len, ufunc_T **ufunc, type_T **type);
 char_u *handle_import(char_u *arg_start, garray_T *gap, int import_sid, void *cctx);
+char_u *vim9_declare_scriptvar(exarg_T *eap, char_u *arg);
 /* vim: set ft=c : */

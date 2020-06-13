@@ -434,4 +434,59 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid, void *cctx)
     return cmd_end;
 }
 
+/*
+ * Declare a script-local variable without init: "let var: type".
+ * "const" is an error since the value is missing.
+ * Returns a pointer to after the type.
+ */
+    char_u *
+vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
+{
+    char_u	    *p;
+    char_u	    *name;
+    scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
+    type_T	    *type;
+    int		    called_emsg_before = called_emsg;
+    typval_T	    init_tv;
+
+    if (eap->cmdidx == CMD_const)
+    {
+	emsg(_(e_const_req_value));
+	return arg + STRLEN(arg);
+    }
+
+    // Check for valid starting character.
+    if (!eval_isnamec1(*arg))
+    {
+	semsg(_(e_invarg2), arg);
+	return arg + STRLEN(arg);
+    }
+
+    for (p = arg + 1; *p != NUL && *p != ':' && eval_isnamec(*p);
+								 MB_PTR_ADV(p))
+	;
+
+    if (*p != ':')
+    {
+	emsg(_(e_type_req));
+	return arg + STRLEN(arg);
+    }
+    name = vim_strnsave(arg, p - arg);
+
+    // parse type
+    p = skipwhite(p + 1);
+    type = parse_type(&p, &si->sn_type_list);
+    if (called_emsg != called_emsg_before)
+	return p;
+
+    // Create the variable with 0/NULL value.
+    CLEAR_FIELD(init_tv);
+    init_tv.v_type = type->tt_type;
+    set_var_const(name, type, &init_tv, FALSE, 0);
+
+    vim_free(name);
+    return p;
+}
+
+
 #endif // FEAT_EVAL

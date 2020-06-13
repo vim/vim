@@ -1815,6 +1815,22 @@ def Test_let_missing_type()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_let_declaration()
+  let lines =<< trim END
+    vim9script
+    let var: string
+    g:var_uninit = var
+    var = 'text'
+    g:var_test = var
+  END
+  CheckScriptSuccess(lines)
+  assert_equal('', g:var_uninit)
+  assert_equal('text', g:var_test)
+
+  unlet g:var_uninit
+  unlet g:var_test
+enddef
+
 def Test_forward_declaration()
   let lines =<< trim END
     vim9script
