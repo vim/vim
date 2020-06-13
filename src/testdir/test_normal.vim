@@ -2242,7 +2242,6 @@ endfunc
 " Test for cw cW ce
 func Test_normal39_cw()
   " Test for cw and cW on whitespace
-  " and cpo+=w setting
   new
   set tw=0
   call append(0, 'here      are   some words')
@@ -2250,13 +2249,6 @@ func Test_normal39_cw()
   call assert_equal('hereZZZare   some words', getline('.'))
   norm! 1gg0elcWYYY
   call assert_equal('hereZZZareYYYsome words', getline('.'))
-  set cpo+=w
-  call setline(1, 'here      are   some words')
-  norm! 1gg0elcwZZZ
-  call assert_equal('hereZZZ     are   some words', getline('.'))
-  norm! 1gg2elcWYYY
-  call assert_equal('hereZZZ     areYYY  some words', getline('.'))
-  set cpo-=w
   norm! 2gg0cwfoo
   call assert_equal('foo', getline('.'))
 
