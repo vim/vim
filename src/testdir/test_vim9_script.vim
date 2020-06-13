@@ -1831,6 +1831,15 @@ def Test_let_declaration()
   unlet g:var_test
 enddef
 
+def Test_let_type_check()
+  let lines =<< trim END
+    vim9script
+    let var: string
+    var = 1234
+  END
+  CheckScriptFailure(lines, 'E1013:')
+enddef
+
 def Test_forward_declaration()
   let lines =<< trim END
     vim9script

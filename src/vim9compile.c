@@ -139,7 +139,6 @@ static char e_used_as_arg[] = N_("E1006: %s is used as an argument");
 
 static void delete_def_function_contents(dfunc_T *dfunc);
 static void arg_type_mismatch(type_T *expected, type_T *actual, int argidx);
-static int check_type(type_T *expected, type_T *actual, int give_msg);
 
 /*
  * Lookup variable "name" in the local scope and return it.
@@ -461,7 +460,7 @@ func_type_add_arg_types(
 /*
  * Return the type_T for a typval.  Only for primitive types.
  */
-    static type_T *
+    type_T *
 typval2type(typval_T *tv)
 {
     if (tv->v_type == VAR_NUMBER)
@@ -504,7 +503,7 @@ arg_type_mismatch(type_T *expected, type_T *actual, int argidx)
  * Check if the expected and actual types match.
  * Does not allow for assigning "any" to a specific type.
  */
-    static int
+    int
 check_type(type_T *expected, type_T *actual, int give_msg)
 {
     int ret = OK;

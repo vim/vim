@@ -488,5 +488,30 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
     return p;
 }
 
+/*
+ * Check if the type of script variable "dest" allows assigning "value".
+ */
+    void
+check_script_var_type(typval_T *dest, typval_T *value, char_u *name)
+{
+    scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
+    int		    idx;
+
+    // Find the svar_T in sn_var_vals.
+    for (idx = 0; idx < si->sn_var_vals.ga_len; ++idx)
+    {
+	svar_T    *sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
+
+	if (sv->sv_tv == dest)
+	{
+	    if (sv->sv_const)
+		semsg(_(e_readonlyvar), name);
+	    else
+		check_type(sv->sv_type, typval2type(value), TRUE);
+	    return;
+	}
+    }
+    iemsg("check_script_var_type(): not found");
+}
 
 #endif // FEAT_EVAL

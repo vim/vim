@@ -2883,12 +2883,17 @@ set_var_const(
 			       || var_check_lock(di->di_tv.v_lock, name, FALSE))
 		return;
 
-	    if ((flags & LET_NO_COMMAND) == 0
-		    && is_script_local
-		    && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+	    if (is_script_local
+			     && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
 	    {
-		semsg(_("E1041: Redefining script item %s"), name);
-		return;
+		if ((flags & LET_NO_COMMAND) == 0)
+		{
+		    semsg(_("E1041: Redefining script item %s"), name);
+		    return;
+		}
+
+		// check the type
+		check_script_var_type(&di->di_tv, tv, name);
 	    }
 	}
 	else
