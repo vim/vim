@@ -2443,9 +2443,9 @@ luaV_call_lua_func(int argcount, typval_T *argvars, typval_T *rettv, void *state
     for (i = 0; i < argcount; ++i)
 	luaV_pushtypval(funcstate->L, &argvars[i]);
 
-    if (lua_pcall(funcstate->L, argcount, 1, 0) != 0)
+    if (lua_pcall(funcstate->L, argcount, 1, 0))
     {
-	luaV_emsg("failed to call");
+	luaV_emsg(funcstate->L);
 	return FCERR_OTHER;
     }
 
