@@ -165,6 +165,8 @@ test_override({name}, {val})				*test_override()*
 				terminals
 		no_wait_return	set the "no_wait_return" flag.  Not restored
 				with "ALL".
+		term_props   reset all terminal properties when the version
+			     string is detected
 		ALL	     clear all overrides ({val} is not used)
 
 		"starting" is to be used when a test should behave like

@@ -1,6 +1,8 @@
 /* term.c */
 guicolor_T termgui_get_color(char_u *name);
 guicolor_T termgui_mch_get_rgb(guicolor_T color);
+void init_term_props(int all);
+void f_terminalprops(typval_T *argvars, typval_T *rettv);
 void set_color_count(int nr);
 int set_termname(char_u *term);
 void getlinecol(long *cp, long *rp);

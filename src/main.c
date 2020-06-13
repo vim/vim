@@ -407,6 +407,10 @@ main
     init_highlight(TRUE, FALSE); // set the default highlight groups
     TIME_MSG("init highlight");
 
+#if defined(FEAT_TERMRESPONSE)
+    init_term_props(TRUE);
+#endif
+
 #ifdef FEAT_EVAL
     // Set the break level after the terminal is initialized.
     debug_break_level = params.use_debug_break_level;

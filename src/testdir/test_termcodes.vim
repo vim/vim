@@ -922,6 +922,7 @@ endfunc
 func Test_xx01_term_style_response()
   " Termresponse is only parsed when t_RV is not empty.
   set t_RV=x
+  call test_override('term_props', 1)
 
   " send the termresponse to trigger requesting the XT codes
   let seq = "\<Esc>[>41;337;0c"
@@ -932,7 +933,15 @@ func Test_xx01_term_style_response()
   call feedkeys(seq, 'Lx!')
   call assert_equal(seq, v:termstyleresp)
 
+  call assert_equal(#{
+        \ cursor_style: 'u',
+        \ cursor_blink_mode: 'u',
+        \ underline_rgb: 'u',
+        \ mouse: 's'
+        \ }, terminalprops())
+
   set t_RV=
+  call test_override('term_props', 0)
 endfunc
 
 " This checks the iTerm2 version response.
@@ -941,6 +950,7 @@ endfunc
 func Test_xx02_iTerm2_response()
   " Termresponse is only parsed when t_RV is not empty.
   set t_RV=x
+  call test_override('term_props', 1)
 
   " Old versions of iTerm2 used a different style term response.
   set ttymouse=xterm
@@ -957,7 +967,15 @@ func Test_xx02_iTerm2_response()
   call assert_equal(seq, v:termresponse)
   call assert_equal('sgr', &ttymouse)
 
+  call assert_equal(#{
+        \ cursor_style: 'n',
+        \ cursor_blink_mode: 'u',
+        \ underline_rgb: 'u',
+        \ mouse: 's'
+        \ }, terminalprops())
+
   set t_RV=
+  call test_override('term_props', 0)
 endfunc
 
 " This checks the libvterm version response.
@@ -966,6 +984,7 @@ endfunc
 func Test_xx03_libvterm_response()
   " Termresponse is only parsed when t_RV is not empty.
   set t_RV=x
+  call test_override('term_props', 1)
 
   set ttymouse=xterm
   call test_option_not_set('ttymouse')
@@ -974,7 +993,15 @@ func Test_xx03_libvterm_response()
   call assert_equal(seq, v:termresponse)
   call assert_equal('sgr', &ttymouse)
 
+  call assert_equal(#{
+        \ cursor_style: 'n',
+        \ cursor_blink_mode: 'u',
+        \ underline_rgb: 'u',
+        \ mouse: 's'
+        \ }, terminalprops())
+
   set t_RV=
+  call test_override('term_props', 0)
 endfunc
 
 " This checks the Mac Terminal.app version response.
@@ -983,6 +1010,7 @@ endfunc
 func Test_xx04_Mac_Terminal_response()
   " Termresponse is only parsed when t_RV is not empty.
   set t_RV=x
+  call test_override('term_props', 1)
 
   set ttymouse=xterm
   call test_option_not_set('ttymouse')
@@ -991,10 +1019,18 @@ func Test_xx04_Mac_Terminal_response()
   call assert_equal(seq, v:termresponse)
   call assert_equal('sgr', &ttymouse)
 
+  call assert_equal(#{
+        \ cursor_style: 'n',
+        \ cursor_blink_mode: 'u',
+        \ underline_rgb: 'y',
+        \ mouse: 's'
+        \ }, terminalprops())
+
   " Reset is_not_xterm and is_mac_terminal.
   set t_RV=
   set term=xterm
   set t_RV=x
+  call test_override('term_props', 0)
 endfunc
 
 " This checks the mintty version response.
@@ -1003,6 +1039,7 @@ endfunc
 func Test_xx05_mintty_response()
   " Termresponse is only parsed when t_RV is not empty.
   set t_RV=x
+  call test_override('term_props', 1)
 
   set ttymouse=xterm
   call test_option_not_set('ttymouse')
@@ -1011,7 +1048,15 @@ func Test_xx05_mintty_response()
   call assert_equal(seq, v:termresponse)
   call assert_equal('sgr', &ttymouse)
 
+  call assert_equal(#{
+        \ cursor_style: 'n',
+        \ cursor_blink_mode: 'u',
+        \ underline_rgb: 'y',
+        \ mouse: 's'
+        \ }, terminalprops())
+
   set t_RV=
+  call test_override('term_props', 0)
 endfunc
 
 " This checks the screen version response.
@@ -1020,6 +1065,7 @@ endfunc
 func Test_xx06_screen_response()
   " Termresponse is only parsed when t_RV is not empty.
   set t_RV=x
+  call test_override('term_props', 1)
 
   " Old versions of screen don't support SGR mouse mode.
   set ttymouse=xterm
@@ -1037,7 +1083,15 @@ func Test_xx06_screen_response()
   call assert_equal(seq, v:termresponse)
   call assert_equal('sgr', &ttymouse)
 
+  call assert_equal(#{
+        \ cursor_style: 'n',
+        \ cursor_blink_mode: 'n',
+        \ underline_rgb: 'y',
+        \ mouse: 's'
+        \ }, terminalprops())
+
   set t_RV=
+  call test_override('term_props', 0)
 endfunc
 
 " This checks the xterm version response.
@@ -1046,6 +1100,7 @@ endfunc
 func Test_xx07_xterm_response()
   " Termresponse is only parsed when t_RV is not empty.
   set t_RV=x
+  call test_override('term_props', 1)
 
   " Do Terminal.app first to check that is_mac_terminal is reset.
   set ttymouse=xterm
@@ -1066,6 +1121,13 @@ func Test_xx07_xterm_response()
   call assert_equal(seq, v:termresponse)
   call assert_equal('xterm', &ttymouse)
 
+  call assert_equal(#{
+        \ cursor_style: 'n',
+        \ cursor_blink_mode: 'u',
+        \ underline_rgb: 'y',
+        \ mouse: 'u'
+        \ }, terminalprops())
+
   " xterm >= 95 < 277 "xterm2"
   set ttymouse=xterm
   call test_option_not_set('ttymouse')
@@ -1073,6 +1135,13 @@ func Test_xx07_xterm_response()
   call feedkeys(seq, 'Lx!')
   call assert_equal(seq, v:termresponse)
   call assert_equal('xterm2', &ttymouse)
+
+  call assert_equal(#{
+        \ cursor_style: 'n',
+        \ cursor_blink_mode: 'u',
+        \ underline_rgb: 'u',
+        \ mouse: '2'
+        \ }, terminalprops())
 
   " xterm >= 277: "sgr"
   set ttymouse=xterm
@@ -1082,7 +1151,30 @@ func Test_xx07_xterm_response()
   call assert_equal(seq, v:termresponse)
   call assert_equal('sgr', &ttymouse)
 
+  call assert_equal(#{
+        \ cursor_style: 'n',
+        \ cursor_blink_mode: 'u',
+        \ underline_rgb: 'u',
+        \ mouse: 's'
+        \ }, terminalprops())
+
+  " xterm >= 279: "sgr" and cursor_style not reset
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
+  let seq = "\<Esc>[>0;279;0c"
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termresponse)
+  call assert_equal('sgr', &ttymouse)
+
+  call assert_equal(#{
+        \ cursor_style: 'u',
+        \ cursor_blink_mode: 'u',
+        \ underline_rgb: 'u',
+        \ mouse: 's'
+        \ }, terminalprops())
+
   set t_RV=
+  call test_override('term_props', 0)
 endfunc
 
 func Test_get_termcode()

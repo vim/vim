@@ -1470,7 +1470,7 @@ static termprop_T term_props[TPR_COUNT];
  * When "all" is FALSE only set those that are detected from the version
  * response.
  */
-    static void
+    void
 init_term_props(int all)
 {
     int i;
@@ -1487,6 +1487,29 @@ init_term_props(int all)
     for (i = 0; i < TPR_COUNT; ++i)
 	if (all || term_props[i].tpr_set_by_termresponse)
 	    term_props[i].tpr_status = TPR_UNKNOWN;
+}
+#endif
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+    void
+f_terminalprops(typval_T *argvars UNUSED, typval_T *rettv)
+{
+# ifdef FEAT_TERMRESPONSE
+    int i;
+# endif
+
+    if (rettv_dict_alloc(rettv) != OK)
+	return;
+# ifdef FEAT_TERMRESPONSE
+    for (i = 0; i < TPR_COUNT; ++i)
+    {
+	char_u	value[2];
+
+	value[0] = term_props[i].tpr_status;
+	value[1] = NUL;
+	dict_add_string(rettv->vval.v_dict, term_props[i].tpr_name, value);
+    }
+# endif
 }
 #endif
 
@@ -3676,8 +3699,6 @@ check_terminal_behavior(void)
 {
     int	    did_send = FALSE;
 
-    init_term_props(TRUE);
-
     if (!can_get_termresponse() || starting != 0 || *T_U7 == NUL)
 	return;
 
@@ -4516,7 +4537,8 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 
     // Reset terminal properties that are set based on the termresponse.
     // Mainly useful for tests that send the termresponse multiple times.
-    init_term_props(FALSE);
+    // For testing all props can be reset.
+    init_term_props(reset_term_props_on_termresponse);
 
     // If this code starts with CSI, you can bet that the
     // terminal uses 8-bit codes.

@@ -1148,6 +1148,7 @@ Various:					*various-functions*
 	getimstatus()		check if IME status is active
 	interrupt()		interrupt script execution
 	windowsversion()	get MS-Windows version
+	terminalprops()		properties of the terminal
 
 	libcall()		call a function in an external library
 	libcallnr()		idem, returning a number

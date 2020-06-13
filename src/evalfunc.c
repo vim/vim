@@ -944,6 +944,7 @@ static funcentry_T global_functions[] =
     {"term_setsize",	3, 3, FEARG_1,	  ret_void,	TERM_FUNC(f_term_setsize)},
     {"term_start",	1, 2, FEARG_1,	  ret_number,	TERM_FUNC(f_term_start)},
     {"term_wait",	1, 2, FEARG_1,	  ret_void,	TERM_FUNC(f_term_wait)},
+    {"terminalprops",	0, 0, 0,	  ret_dict_string, f_terminalprops},
     {"test_alloc_fail",	3, 3, FEARG_1,	  ret_void,	f_test_alloc_fail},
     {"test_autochdir",	0, 0, 0,	  ret_void,	f_test_autochdir},
     {"test_feedinput",	1, 1, FEARG_1,	  ret_void,	f_test_feedinput},

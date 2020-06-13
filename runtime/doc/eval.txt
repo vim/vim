@@ -2194,7 +2194,8 @@ v:termresponse	The escape sequence returned by the terminal for the |t_RV|
 		'c', with only digits and ';' in between.
 		When this option is set, the TermResponse autocommand event is
 		fired, so that you can react to the response from the
-		terminal.
+		terminal.  You can use |terminalprops()| to see what Vim
+		figured out about the terminal.
 		The response from a new xterm is: "<Esc>[> Pp ; Pv ; Pc c".  Pp
 		is the terminal type: 0 for vt100 and 1 for vt220.  Pv is the
 		patch level (since this was introduced in patch 95, it's
@@ -2870,6 +2871,7 @@ term_setsize({buf}, {rows}, {cols})
 				none	set the size of a terminal
 term_start({cmd} [, {options}])	Number	open a terminal window and run a job
 term_wait({buf} [, {time}])	Number  wait for screen to be updated
+terminalprops()			Dict	properties of the terminal
 test_alloc_fail({id}, {countdown}, {repeat})
 				none	make memory allocation fail
 test_autochdir()		none	enable 'autochdir' during startup
@@ -10389,6 +10391,41 @@ tempname()					*tempname()* *temp-file-name*
 
 
 term_ functions are documented here: |terminal-function-details|
+
+
+terminalprops()						*terminalprops()*
+		Returns a dictionary with properties of the terminal that Vim
+		detected from the response to |t_RV| request.  See
+		|v:termresponse| for the response itself.  If |v:termresponse|
+		is empty most values here will be 'u' for unknown.
+		   cursor_style		wether sending |t_RS| works  **
+		   cursor_blink_mode	wether sending |t_RC| works  **
+		   underline_rgb	whether |t_8u| works **
+		   mouse		mouse type supported
+
+		** value 'u' for unknown, 'y' for yes, 'n' for no
+
+		If the |+termresponse| feature is missing then the result is
+		an empty dictionary.
+
+		If "cursor_style" is 'y' then |t_RS| will be send to request the
+		current cursor style.
+		If "cursor_blink_mode" is 'y' then |t_RC| will be send to
+		request the cursor blink status.
+		"cursor_style" and "cursor_blink_mode" are also set if |t_u7|
+		is not empty, Vim will detect the working of sending |t_RS|
+		and |t_RC| on startup.
+
+		When "underline_rgb" is not 'y', then |t_8u| will be made empty.
+		This avoids sending it to xterm, which would clear the colors.
+
+		For "mouse" the value 'u' is unknown
+
+		Also see:
+		- 'ambiwidth' - detected by using |t_u7|.
+		- |v:termstyleresp| and |v:termblinkresp| for the response to
+		  |t_RS| and |t_RC|.
+
 
 test_ functions are documented here: |test-functions-details|
 
