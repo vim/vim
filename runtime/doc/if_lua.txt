@@ -207,6 +207,7 @@ Vim evaluation and command execution, and others.
 	vim.fn			Proxy to call Vim functions. Proxy methods are
 				created on demand.  Example: >
 					:lua print(vim.fn.has('timers'))
+					:lua vim.fn.timer_start(1000, function (timer) print('timer callback') end)
 <
 
 ==============================================================================
