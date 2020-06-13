@@ -3476,7 +3476,7 @@ read_template_string_intervals(
 
     *arg += 2;  // $' or $"
 
-    ga_init2(result, sizeof(template_string_interval*), 10);
+    ga_init2(result, sizeof(template_string_interval*), 80);
     current = *arg;
 
     // Continue while it is not NULL and it is not a closing quote.
@@ -3681,7 +3681,7 @@ get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 	    char_u	*to_eval;
 	    int		is_evaluating_success;
 
-	    ga_init2(&interval, sizeof(char_u), 80);
+	    ga_init2(&interval, sizeof(char_u), 40);
 	    ga_append(&interval, quote);
 	    ga_concatn(&interval, x->s->value, x->s->length);
 	    ga_append(&interval, quote);
