@@ -77,7 +77,8 @@ static luaV_List *luaV_pushlist(lua_State *L, list_T *lis);
 static luaV_Dict *luaV_pushdict(lua_State *L, dict_T *dic);
 static luaV_Blob *luaV_pushblob(lua_State *L, blob_T *blo);
 static luaV_Funcref *luaV_pushfuncref(lua_State *L, char_u *name);
-static void luaV_call_lua_callback(int argcount, typval_T *argvars, typval_T *rettv, void *state);
+static void luaV_call_lua_func(int argcount, typval_T *argvars, typval_T *rettv, void *state);
+static void luaV_call_lua_func_free(void *state);
 
 #if LUA_VERSION_NUM <= 501
 #define luaV_openlib(L, l, n) luaL_openlib(L, NULL, l, n)
@@ -653,8 +654,7 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	    luaV_CFuncState *state = malloc(sizeof(luaV_CFuncState));
 	    state->index = luaL_ref(L, LUA_REGISTRYINDEX);
 	    state->L = L;
-	    /* TODO: register desctructor for lua_unref and free() */
-	    char_u *name = register_cfunc(&luaV_call_lua_callback, (void*)state);
+	    char_u *name = register_cfunc(&luaV_call_lua_func, &luaV_call_lua_func_free, (void*)state);
 	    tv->v_type = VAR_FUNC;
 	    tv->vval.v_string = vim_strsave(name);
 	    break;
@@ -2434,7 +2434,7 @@ update_package_paths_in_lua()
 }
 
     static void
-luaV_call_lua_callback(int argcount, typval_T *argvars, typval_T *rettv, void *state)
+luaV_call_lua_func(int argcount, typval_T *argvars, typval_T *rettv, void *state)
 {
     luaV_CFuncState *funcstate = (luaV_CFuncState*)state;
     lua_rawgeti(funcstate->L, LUA_REGISTRYINDEX, funcstate->index);
@@ -2446,6 +2446,14 @@ luaV_call_lua_callback(int argcount, typval_T *argvars, typval_T *rettv, void *s
 	return;
     }
     luaV_checktypval(funcstate->L, -1, rettv, "get return value");
+}
+
+    static void
+luaV_call_lua_func_free(void *state)
+{
+    luaV_CFuncState *funcstate = (luaV_CFuncState*)state;
+    luaL_unref(L, LUA_REGISTRYINDEX, funcstate->index);
+    free(funcstate);
 }
 
 #endif

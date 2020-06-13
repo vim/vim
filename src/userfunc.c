@@ -342,7 +342,7 @@ get_lambda_name(void)
 }
 
     char_u *
-register_cfunc(cfunc_T cb, void *state)
+register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
 {
     char_u *name = get_lambda_name();
     ufunc_T *fp = NULL;
@@ -370,6 +370,7 @@ register_cfunc(cfunc_T cb, void *state)
     fp->uf_lines = newlines;
     fp->uf_args = newargs;
     fp->uf_cb = cb;
+    fp->uf_cb_free = cb_free;
     fp->uf_cb_state = state;
 
     set_ufunc_name(fp, name);
@@ -3682,7 +3683,11 @@ func_unref(char_u *name)
 	// Only delete it when it's not being used.  Otherwise it's done
 	// when "uf_calls" becomes zero.
 	if (fp->uf_calls == 0)
+	{
+	    if (fp->uf_cb_free != NULL)
+		fp->uf_cb_free(fp->uf_cb_state);
 	    func_clear_free(fp, FALSE);
+	}
     }
 }
 

@@ -1540,6 +1540,7 @@ typedef enum {
 } def_status_T;
 
 typedef void (*cfunc_T)(int argcount, typval_T *argvars, typval_T *rettv, void *state);
+typedef void (*cfunc_free_T)(void *state);
 
 /*
  * Structure to hold info for a user function.
@@ -1565,6 +1566,7 @@ typedef struct
     type_T	*uf_va_type;	// type from "...name: type" or NULL
     type_T	*uf_func_type;	// type of the function, &t_func_any if unknown
     cfunc_T     uf_cb;		// callback function for cfunc
+    cfunc_free_T uf_cb_free;    // callback function to free cfunc
     void        *uf_cb_state;   // state of uf_cb
 
     garray_T	uf_lines;	// function lines
