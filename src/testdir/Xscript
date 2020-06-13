@@ -1,3 +1,0 @@
-func F1() closure
-  return 1
-endfunc
