@@ -1822,13 +1822,24 @@ def Test_let_declaration()
     g:var_uninit = var
     var = 'text'
     g:var_test = var
+    " prefixing s: is optional
+    s:var = 'prefixed'
+    g:var_prefixed = s:var
+
+    let s:other: number
+    other = 1234
+    g:other_var = other
   END
   CheckScriptSuccess(lines)
   assert_equal('', g:var_uninit)
   assert_equal('text', g:var_test)
+  assert_equal('prefixed', g:var_prefixed)
+  assert_equal(1234, g:other_var)
 
   unlet g:var_uninit
   unlet g:var_test
+  unlet g:var_prefixed
+  unlet g:other_var
 enddef
 
 def Test_let_type_check()
@@ -1838,6 +1849,12 @@ def Test_let_type_check()
     var = 1234
   END
   CheckScriptFailure(lines, 'E1013:')
+
+  lines =<< trim END
+    vim9script
+    let var:string
+  END
+  CheckScriptFailure(lines, 'E1069:')
 enddef
 
 def Test_forward_declaration()

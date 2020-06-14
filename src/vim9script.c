@@ -462,13 +462,18 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
 	return arg + STRLEN(arg);
     }
 
-    for (p = arg + 1; *p != NUL && *p != ':' && eval_isnamec(*p);
-								 MB_PTR_ADV(p))
-	;
+    for (p = arg + 1; *p != NUL && eval_isnamec(*p); MB_PTR_ADV(p))
+	if (*p == ':' && p != arg + 1)
+	    break;
 
     if (*p != ':')
     {
 	emsg(_(e_type_req));
+	return arg + STRLEN(arg);
+    }
+    if (!VIM_ISWHITE(p[1]))
+    {
+	semsg(_(e_white_after), ":");
 	return arg + STRLEN(arg);
     }
     name = vim_strnsave(arg, p - arg);
