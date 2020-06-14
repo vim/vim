@@ -1013,6 +1013,8 @@ func Test_xx04_Mac_Terminal_response()
   call test_override('term_props', 1)
 
   set ttymouse=xterm
+  " t_8u is not reset
+  let &t_8u = "\<Esc>[58;2;%lu;%lu;%lum"
   call test_option_not_set('ttymouse')
   let seq = "\<Esc>[>1;95;0c"
   call feedkeys(seq, 'Lx!')
@@ -1025,6 +1027,7 @@ func Test_xx04_Mac_Terminal_response()
         \ underline_rgb: 'y',
         \ mouse: 's'
         \ }, terminalprops())
+  call assert_equal("\<Esc>[58;2;%lu;%lu;%lum", &t_8u)
 
   " Reset is_not_xterm and is_mac_terminal.
   set t_RV=
@@ -1158,9 +1161,10 @@ func Test_xx07_xterm_response()
         \ mouse: 's'
         \ }, terminalprops())
 
-  " xterm >= 279: "sgr" and cursor_style not reset
+  " xterm >= 279: "sgr" and cursor_style not reset; also check t_8u reset
   set ttymouse=xterm
   call test_option_not_set('ttymouse')
+  let &t_8u = "\<Esc>[58;2;%lu;%lu;%lum"
   let seq = "\<Esc>[>0;279;0c"
   call feedkeys(seq, 'Lx!')
   call assert_equal(seq, v:termresponse)
@@ -1172,6 +1176,7 @@ func Test_xx07_xterm_response()
         \ underline_rgb: 'u',
         \ mouse: 's'
         \ }, terminalprops())
+  call assert_equal('', &t_8u)
 
   set t_RV=
   call test_override('term_props', 0)

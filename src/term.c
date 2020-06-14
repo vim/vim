@@ -4637,6 +4637,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	// "xterm-256color" but are not fully xterm compatible.
 	//
 	// Gnome terminal sends 1;3801;0, 1;4402;0 or 1;2501;0.
+	// Newer Gnome-terminal sends 65;6001;1.
 	// xfce4-terminal sends 1;2802;0.
 	// screen sends 83;40500;0
 	// Assuming any version number over 2500 is not an
@@ -4688,7 +4689,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 
 	// Unless the underline RGB color is expected to work, disable "t_8u".
 	// It does not work for the real Xterm, it resets the background color.
-	if (term_props[TPR_UNDERLINE_RGB].tpr_status == TPR_YES && *T_8U != NUL)
+	if (term_props[TPR_UNDERLINE_RGB].tpr_status != TPR_YES && *T_8U != NUL)
 	    T_8U = empty_option;
 
 	// Only set 'ttymouse' automatically if it was not set
