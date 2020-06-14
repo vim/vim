@@ -164,7 +164,6 @@ static dict_T		vimvardict;		// Dictionary with v: variables
 // for VIM_VERSION_ defines
 #include "version.h"
 
-static char_u *skip_var_one(char_u *arg, int include_type);
 static void list_glob_vars(int *first);
 static void list_buf_vars(int *first);
 static void list_win_vars(int *first);
@@ -709,7 +708,7 @@ ex_let(exarg_T *eap)
     if (eap->arg == eap->cmd)
 	flags |= LET_NO_COMMAND;
 
-    argend = skip_var_list(arg, TRUE, &var_count, &semicolon);
+    argend = skip_var_list(arg, TRUE, &var_count, &semicolon, FALSE);
     if (argend == NULL)
 	return;
     if (argend > arg && argend[-1] == '.')  // for var.='str'
@@ -916,7 +915,8 @@ ex_let_vars(
  * Skip over assignable variable "var" or list of variables "[var, var]".
  * Used for ":let varvar = expr" and ":for varvar in expr".
  * For "[var, var]" increment "*var_count" for each variable.
- * for "[var, var; var]" set "semicolon".
+ * for "[var, var; var]" set "semicolon" to 1.
+ * If "silent" is TRUE do not give an "invalid argument" error message.
  * Return NULL for an error.
  */
     char_u *
@@ -924,7 +924,8 @@ skip_var_list(
     char_u	*arg,
     int		include_type,
     int		*var_count,
-    int		*semicolon)
+    int		*semicolon,
+    int		silent)
 {
     char_u	*p, *s;
 
@@ -935,10 +936,11 @@ skip_var_list(
 	for (;;)
 	{
 	    p = skipwhite(p + 1);	// skip whites after '[', ';' or ','
-	    s = skip_var_one(p, TRUE);
+	    s = skip_var_one(p, FALSE);
 	    if (s == p)
 	    {
-		semsg(_(e_invarg2), p);
+		if (!silent)
+		    semsg(_(e_invarg2), p);
 		return NULL;
 	    }
 	    ++*var_count;
@@ -957,7 +959,8 @@ skip_var_list(
 	    }
 	    else if (*p != ',')
 	    {
-		semsg(_(e_invarg2), p);
+		if (!silent)
+		    semsg(_(e_invarg2), p);
 		return NULL;
 	    }
 	}
@@ -972,7 +975,7 @@ skip_var_list(
  * l[idx].
  * In Vim9 script also skip over ": type" if "include_type" is TRUE.
  */
-    static char_u *
+    char_u *
 skip_var_one(char_u *arg, int include_type)
 {
     char_u *end;
@@ -981,10 +984,13 @@ skip_var_one(char_u *arg, int include_type)
 	return arg + 2;
     end = find_name_end(*arg == '$' || *arg == '&' ? arg + 1 : arg,
 				   NULL, NULL, FNE_INCL_BR | FNE_CHECK_START);
-    if (include_type && current_sctx.sc_version == SCRIPT_VERSION_VIM9
-								&& *end == ':')
+    if (include_type && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
     {
-	end = skip_type(skipwhite(end + 1));
+	// "a: type" is declaring variable "a" with a type, not "a:".
+	if (end == arg + 2 && end[-1] == ':')
+	    --end;
+	if (*end == ':')
+	    end = skip_type(skipwhite(end + 1));
     }
     return end;
 }

@@ -2114,6 +2114,31 @@ call_def_function(
 		}
 		break;
 
+	    case ISN_GETITEM:
+		{
+		    listitem_T	*li;
+		    int		index = iptr->isn_arg.number;
+
+		    // get list item: list is at stack-1, push item
+		    tv = STACK_TV_BOT(-1);
+		    if (tv->v_type != VAR_LIST)
+		    {
+			emsg(_(e_listreq));
+			goto failed;
+		    }
+		    if ((li = list_find(tv->vval.v_list, index)) == NULL)
+		    {
+			semsg(_(e_listidx), index);
+			goto failed;
+		    }
+
+		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
+			goto failed;
+		    ++ectx.ec_stack.ga_len;
+		    copy_tv(&li->li_tv, STACK_TV_BOT(-1));
+		}
+		break;
+
 	    case ISN_MEMBER:
 		{
 		    dict_T	*dict;
@@ -2789,6 +2814,8 @@ ex_disassemble(exarg_T *eap)
 	    // expression operations
 	    case ISN_CONCAT: smsg("%4d CONCAT", current); break;
 	    case ISN_INDEX: smsg("%4d INDEX", current); break;
+	    case ISN_GETITEM: smsg("%4d ITEM %lld",
+					 current, iptr->isn_arg.number); break;
 	    case ISN_MEMBER: smsg("%4d MEMBER", current); break;
 	    case ISN_STRINGMEMBER: smsg("%4d MEMBER %s", current,
 						  iptr->isn_arg.string); break;

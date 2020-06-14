@@ -112,6 +112,7 @@ typedef enum {
     // expression operations
     ISN_CONCAT,
     ISN_INDEX,	    // [expr] list index
+    ISN_GETITEM,    // push list item, isn_arg.number is the index
     ISN_MEMBER,	    // dict[member]
     ISN_STRINGMEMBER, // dict.member using isn_arg.string
     ISN_2BOOL,	    // convert value to bool, invert if isn_arg.number != 0

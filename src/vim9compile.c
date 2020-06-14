@@ -136,6 +136,7 @@ struct cctx_S {
 static char e_var_notfound[] = N_("E1001: variable not found: %s");
 static char e_syntax_at[] = N_("E1002: Syntax error at %s");
 static char e_used_as_arg[] = N_("E1006: %s is used as an argument");
+static char e_cannot_use_void[] = N_("E1031: Cannot use void value");
 
 static void delete_def_function_contents(dfunc_T *dfunc);
 static void arg_type_mismatch(type_T *expected, type_T *actual, int argidx);
@@ -1049,6 +1050,38 @@ generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type)
 	return FAIL;
     isn->isn_arg.string = name;
 
+    return OK;
+}
+
+/*
+ * Generate an ISN_GETITEM instruction with "index".
+ */
+    static int
+generate_GETITEM(cctx_T *cctx, int index)
+{
+    isn_T	*isn;
+    garray_T	*stack = &cctx->ctx_type_stack;
+    type_T	*type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+    type_T	*item_type = &t_any;
+
+    RETURN_OK_IF_SKIP(cctx);
+
+    if (type->tt_type == VAR_LIST)
+	item_type = type->tt_member;
+    else if (type->tt_type != VAR_ANY)
+    {
+	emsg(_(e_listreq));
+	return FAIL;
+    }
+    if ((isn = generate_instr(cctx, ISN_GETITEM)) == NULL)
+	return FAIL;
+    isn->isn_arg.number = index;
+
+    // add the item type to the type stack
+    if (ga_grow(stack, 1) == FAIL)
+	return FAIL;
+    ((type_T **)stack->ga_data)[stack->ga_len] = item_type;
+    ++stack->ga_len;
     return OK;
 }
 
@@ -4573,344 +4606,60 @@ generate_loadvar(
 }
 
 /*
- * compile "let var [= expr]", "const var = expr" and "var = expr"
+ * Compile declaration and assignment:
+ * "let var", "let var = expr", "const var = expr" and "var = expr"
  * "arg" points to "var".
+ * Return NULL for an error.
+ * Return "arg" if it does not look like a variable list.
  */
     static char_u *
 compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 {
-    char_u	*var_end;
+    char_u	*var_start;
     char_u	*p;
     char_u	*end = arg;
     char_u	*ret = NULL;
     int		var_count = 0;
+    int		var_idx;
     int		semicolon = 0;
-    size_t	varlen;
     garray_T	*instr = &cctx->ctx_instr;
     garray_T    *stack = &cctx->ctx_type_stack;
-    int		new_local = FALSE;
     char_u	*op;
-    int		opt_type;
-    assign_dest_T dest = dest_local;
-    int		opt_flags = 0;
-    int		vimvaridx = -1;
     int		oplen = 0;
     int		heredoc = FALSE;
     type_T	*type = &t_any;
     type_T	*member_type = &t_any;
-    lvar_T	*lvar = NULL;
-    lvar_T	arg_lvar;
-    char_u	*name;
+    char_u	*name = NULL;
     char_u	*sp;
-    int		has_type = FALSE;
-    int		has_index = FALSE;
     int		is_decl = cmdidx == CMD_let || cmdidx == CMD_const;
-    int		instr_count = -1;
 
-    var_end = skip_var_list(arg, FALSE, &var_count, &semicolon);
-    if (var_end == NULL)
-	return NULL;
-    if (var_count > 0)
+    // Skip over the "var" or "[var, var]" to get to any "=".
+    p = skip_var_list(arg, TRUE, &var_count, &semicolon, TRUE);
+    if (p == NULL)
+	return *arg == '[' ? arg : NULL;
+
+    if (var_count > 0 && is_decl)
     {
-	// TODO: let [var, var] = list
-	emsg("Cannot handle a list yet");
+	emsg(_("E1092: Cannot use a list for a declaration"));
 	return NULL;
-    }
-
-    p = (*arg == '&' || *arg == '$' || *arg == '@') ? arg + 1 : arg;
-    p = to_name_end(p, TRUE);
-
-    // "a: type" is declaring variable "a" with a type, not "a:".
-    if (is_decl && var_end == arg + 2 && var_end[-1] == ':')
-	--var_end;
-    if (is_decl && p == arg + 2 && p[-1] == ':')
-	--p;
-
-    varlen = p - arg;
-    name = vim_strnsave(arg, varlen);
-    if (name == NULL)
-	return NULL;
-
-    if (cctx->ctx_skip != TRUE)
-    {
-	if (*arg == '&')
-	{
-	    int	    cc;
-	    long	    numval;
-
-	    dest = dest_option;
-	    if (cmdidx == CMD_const)
-	    {
-		emsg(_(e_const_option));
-		goto theend;
-	    }
-	    if (is_decl)
-	    {
-		semsg(_("E1052: Cannot declare an option: %s"), arg);
-		goto theend;
-	    }
-	    p = arg;
-	    p = find_option_end(&p, &opt_flags);
-	    if (p == NULL)
-	    {
-		// cannot happen?
-		emsg(_(e_letunexp));
-		goto theend;
-	    }
-	    cc = *p;
-	    *p = NUL;
-	    opt_type = get_option_value(arg + 1, &numval, NULL, opt_flags);
-	    *p = cc;
-	    if (opt_type == -3)
-	    {
-		semsg(_(e_unknown_option), arg);
-		goto theend;
-	    }
-	    if (opt_type == -2 || opt_type == 0)
-		type = &t_string;
-	    else
-		type = &t_number;	// both number and boolean option
-	}
-	else if (*arg == '$')
-	{
-	    dest = dest_env;
-	    type = &t_string;
-	    if (is_decl)
-	    {
-		semsg(_("E1065: Cannot declare an environment variable: %s"),
-									 name);
-		goto theend;
-	    }
-	}
-	else if (*arg == '@')
-	{
-	    if (!valid_yank_reg(arg[1], TRUE))
-	    {
-		emsg_invreg(arg[1]);
-		goto theend;
-	    }
-	    dest = dest_reg;
-	    type = &t_string;
-	    if (is_decl)
-	    {
-		semsg(_("E1066: Cannot declare a register: %s"), name);
-		goto theend;
-	    }
-	}
-	else if (STRNCMP(arg, "g:", 2) == 0)
-	{
-	    dest = dest_global;
-	    if (is_decl)
-	    {
-		semsg(_("E1016: Cannot declare a global variable: %s"), name);
-		goto theend;
-	    }
-	}
-	else if (STRNCMP(arg, "b:", 2) == 0)
-	{
-	    dest = dest_buffer;
-	    if (is_decl)
-	    {
-		semsg(_("E1078: Cannot declare a buffer variable: %s"), name);
-		goto theend;
-	    }
-	}
-	else if (STRNCMP(arg, "w:", 2) == 0)
-	{
-	    dest = dest_window;
-	    if (is_decl)
-	    {
-		semsg(_("E1079: Cannot declare a window variable: %s"), name);
-		goto theend;
-	    }
-	}
-	else if (STRNCMP(arg, "t:", 2) == 0)
-	{
-	    dest = dest_tab;
-	    if (is_decl)
-	    {
-		semsg(_("E1080: Cannot declare a tab variable: %s"), name);
-		goto theend;
-	    }
-	}
-	else if (STRNCMP(arg, "v:", 2) == 0)
-	{
-	    typval_T	*vtv;
-	    int		di_flags;
-
-	    vimvaridx = find_vim_var(name + 2, &di_flags);
-	    if (vimvaridx < 0)
-	    {
-		semsg(_(e_var_notfound), arg);
-		goto theend;
-	    }
-	    // We use the current value of "sandbox" here, is that OK?
-	    if (var_check_ro(di_flags, name, FALSE))
-		goto theend;
-	    dest = dest_vimvar;
-	    vtv = get_vim_var_tv(vimvaridx);
-	    type = typval2type(vtv);
-	    if (is_decl)
-	    {
-		semsg(_("E1064: Cannot declare a v: variable: %s"), name);
-		goto theend;
-	    }
-	}
-	else
-	{
-	    int idx;
-
-	    for (idx = 0; reserved[idx] != NULL; ++idx)
-		if (STRCMP(reserved[idx], name) == 0)
-		{
-		    semsg(_("E1034: Cannot use reserved name %s"), name);
-		    goto theend;
-		}
-
-	    lvar = lookup_local(arg, varlen, cctx);
-	    if (lvar == NULL)
-	    {
-		CLEAR_FIELD(arg_lvar);
-		if (lookup_arg(arg, varlen,
-			    &arg_lvar.lv_idx, &arg_lvar.lv_type,
-			    &arg_lvar.lv_from_outer, cctx) == OK)
-		{
-		    if (is_decl)
-		    {
-			semsg(_(e_used_as_arg), name);
-			goto theend;
-		    }
-		    lvar = &arg_lvar;
-		}
-	    }
-	    if (lvar != NULL)
-	    {
-		if (is_decl)
-		{
-		    semsg(_("E1017: Variable already declared: %s"), name);
-		    goto theend;
-		}
-		else if (lvar->lv_const)
-		{
-		    semsg(_("E1018: Cannot assign to a constant: %s"), name);
-		    goto theend;
-		}
-	    }
-	    else if (STRNCMP(arg, "s:", 2) == 0
-		    || lookup_script(arg, varlen) == OK
-		    || find_imported(arg, varlen, cctx) != NULL)
-	    {
-		dest = dest_script;
-		if (is_decl)
-		{
-		    semsg(_("E1054: Variable already declared in the script: %s"),
-									 name);
-		    goto theend;
-		}
-	    }
-	    else if (name[1] == ':' && name[2] != NUL)
-	    {
-		semsg(_("E1082: Cannot use a namespaced variable: %s"), name);
-		goto theend;
-	    }
-	    else if (!is_decl)
-	    {
-		semsg(_("E1089: unknown variable: %s"), name);
-		goto theend;
-	    }
-	}
-    }
-
-    // handle "a:name" as a name, not index "name" on "a"
-    if (varlen > 1 || arg[varlen] != ':')
-	p = var_end;
-
-    if (dest != dest_option)
-    {
-	if (is_decl && *p == ':')
-	{
-	    // parse optional type: "let var: type = expr"
-	    if (!VIM_ISWHITE(p[1]))
-	    {
-		semsg(_(e_white_after), ":");
-		goto theend;
-	    }
-	    p = skipwhite(p + 1);
-	    type = parse_type(&p, cctx->ctx_type_list);
-	    has_type = TRUE;
-	}
-	else if (lvar != NULL)
-	    type = lvar->lv_type;
     }
 
     sp = p;
     p = skipwhite(p);
     op = p;
     oplen = assignment_len(p, &heredoc);
+
+    if (var_count > 0 && oplen == 0)
+	// can be something like "[1, 2]->func()"
+	return arg;
+
     if (oplen > 0 && (!VIM_ISWHITE(*sp) || !VIM_ISWHITE(op[oplen])))
     {
 	char_u  buf[4];
 
 	vim_strncpy(buf, op, oplen);
 	semsg(_(e_white_both), buf);
-    }
-
-    if (oplen == 3 && !heredoc && dest != dest_global
-		    && type->tt_type != VAR_STRING && type->tt_type != VAR_ANY)
-    {
-	emsg(_("E1019: Can only concatenate to string"));
-	goto theend;
-    }
-
-    if (lvar == NULL && dest == dest_local && cctx->ctx_skip != TRUE)
-    {
-	if (oplen > 1 && !heredoc)
-	{
-	    // +=, /=, etc. require an existing variable
-	    semsg(_("E1020: cannot use an operator on a new variable: %s"),
-									 name);
-	    goto theend;
-	}
-
-	// new local variable
-	if (type->tt_type == VAR_FUNC && var_check_func_name(name, TRUE))
-	    goto theend;
-	lvar = reserve_local(cctx, arg, varlen, cmdidx == CMD_const, type);
-	if (lvar == NULL)
-	    goto theend;
-	new_local = TRUE;
-    }
-
-    member_type = type;
-    if (var_end > arg + varlen)
-    {
-	// Something follows after the variable: "var[idx]".
-	if (is_decl)
-	{
-	    emsg(_("E1087: cannot use an index when declaring a variable"));
-	    goto theend;
-	}
-
-	if (arg[varlen] == '[')
-	{
-	    has_index = TRUE;
-	    if (type->tt_member == NULL)
-	    {
-		semsg(_("E1088: cannot use an index on %s"), name);
-		goto theend;
-	    }
-	    member_type = type->tt_member;
-	}
-	else
-	{
-	    semsg("Not supported yet: %s", arg);
-	    goto theend;
-	}
-    }
-    else if (lvar == &arg_lvar)
-    {
-	semsg(_("E1090: Cannot assign to argument %s"), name);
-	goto theend;
+	return NULL;
     }
 
     if (heredoc)
@@ -4934,35 +4683,17 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	member_type = &t_list_string;
 	list_free(l);
 	p += STRLEN(p);
+	end = p;
     }
-    else if (oplen > 0)
+    else if (var_count > 0)
     {
-	int	r;
+	// for "[var, var] = expr" evaluate the expression here, loop over the
+	// list of variables below.
 
-	// for "+=", "*=", "..=" etc. first load the current value
-	if (*op != '=')
-	{
-	    generate_loadvar(cctx, dest, name, lvar, type);
-
-	    if (has_index)
-	    {
-		// TODO: get member from list or dict
-		emsg("Index with operation not supported yet");
-		goto theend;
-	    }
-	}
-
-	// Compile the expression.  Temporarily hide the new local variable
-	// here, it is not available to this expression.
-	if (new_local)
-	    --cctx->ctx_locals.ga_len;
-	instr_count = instr->ga_len;
-	p = skipwhite(p + oplen);
-	r = compile_expr0(&p, cctx);
-	if (new_local)
-	    ++cctx->ctx_locals.ga_len;
-	if (r == FAIL)
-	    goto theend;
+	p = skipwhite(op + oplen);
+	if (compile_expr0(&p, cctx) == FAIL)
+	    return NULL;
+	end = p;
 
 	if (cctx->ctx_skip != TRUE)
 	{
@@ -4970,287 +4701,681 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 
 	    stacktype = stack->ga_len == 0 ? &t_void
 			      : ((type_T **)stack->ga_data)[stack->ga_len - 1];
-	    if (lvar != NULL && (is_decl || !has_type))
+	    if (stacktype->tt_type == VAR_VOID)
 	    {
-		if (new_local && !has_type)
+		emsg(_(e_cannot_use_void));
+		goto theend;
+	    }
+	    if (need_type(stacktype, &t_list_any, -1, cctx) == FAIL)
+		goto theend;
+	    // TODO: check length of list to be var_count (or more if
+	    // "semicolon" set)
+	}
+    }
+
+    /*
+     * Loop over variables in "[var, var] = expr".
+     * For "var = expr" and "let var: type" this is done only once.
+     */
+    if (var_count > 0)
+	var_start = skipwhite(arg + 1);  // skip over the "["
+    else
+	var_start = arg;
+    for (var_idx = 0; var_idx == 0 || var_idx < var_count; var_idx++)
+    {
+	char_u		*var_end = skip_var_one(var_start, FALSE);
+	size_t		varlen;
+	int		new_local = FALSE;
+	int		opt_type;
+	int		opt_flags = 0;
+	assign_dest_T	dest = dest_local;
+	int		vimvaridx = -1;
+	lvar_T		*lvar = NULL;
+	lvar_T		arg_lvar;
+	int		has_type = FALSE;
+	int		has_index = FALSE;
+	int		instr_count = -1;
+
+	p = (*var_start == '&' || *var_start == '$'
+			     || *var_start == '@') ? var_start + 1 : var_start;
+	p = to_name_end(p, TRUE);
+
+	// "a: type" is declaring variable "a" with a type, not "a:".
+	if (is_decl && var_end == var_start + 2 && var_end[-1] == ':')
+	    --var_end;
+	if (is_decl && p == var_start + 2 && p[-1] == ':')
+	    --p;
+
+	varlen = p - var_start;
+	vim_free(name);
+	name = vim_strnsave(var_start, varlen);
+	if (name == NULL)
+	    return NULL;
+	if (!heredoc)
+	    type = &t_any;
+
+	if (cctx->ctx_skip != TRUE)
+	{
+	    if (*var_start == '&')
+	    {
+		int	    cc;
+		long	    numval;
+
+		dest = dest_option;
+		if (cmdidx == CMD_const)
 		{
-		    if (stacktype->tt_type == VAR_VOID)
+		    emsg(_(e_const_option));
+		    goto theend;
+		}
+		if (is_decl)
+		{
+		    semsg(_("E1052: Cannot declare an option: %s"), var_start);
+		    goto theend;
+		}
+		p = var_start;
+		p = find_option_end(&p, &opt_flags);
+		if (p == NULL)
+		{
+		    // cannot happen?
+		    emsg(_(e_letunexp));
+		    goto theend;
+		}
+		cc = *p;
+		*p = NUL;
+		opt_type = get_option_value(var_start + 1, &numval,
+							      NULL, opt_flags);
+		*p = cc;
+		if (opt_type == -3)
+		{
+		    semsg(_(e_unknown_option), var_start);
+		    goto theend;
+		}
+		if (opt_type == -2 || opt_type == 0)
+		    type = &t_string;
+		else
+		    type = &t_number;	// both number and boolean option
+	    }
+	    else if (*var_start == '$')
+	    {
+		dest = dest_env;
+		type = &t_string;
+		if (is_decl)
+		{
+		    semsg(_("E1065: Cannot declare an environment variable: %s"),
+									 name);
+		    goto theend;
+		}
+	    }
+	    else if (*var_start == '@')
+	    {
+		if (!valid_yank_reg(var_start[1], TRUE))
+		{
+		    emsg_invreg(var_start[1]);
+		    goto theend;
+		}
+		dest = dest_reg;
+		type = &t_string;
+		if (is_decl)
+		{
+		    semsg(_("E1066: Cannot declare a register: %s"), name);
+		    goto theend;
+		}
+	    }
+	    else if (STRNCMP(var_start, "g:", 2) == 0)
+	    {
+		dest = dest_global;
+		if (is_decl)
+		{
+		    semsg(_("E1016: Cannot declare a global variable: %s"),
+									 name);
+		    goto theend;
+		}
+	    }
+	    else if (STRNCMP(var_start, "b:", 2) == 0)
+	    {
+		dest = dest_buffer;
+		if (is_decl)
+		{
+		    semsg(_("E1078: Cannot declare a buffer variable: %s"),
+									 name);
+		    goto theend;
+		}
+	    }
+	    else if (STRNCMP(var_start, "w:", 2) == 0)
+	    {
+		dest = dest_window;
+		if (is_decl)
+		{
+		    semsg(_("E1079: Cannot declare a window variable: %s"),
+									 name);
+		    goto theend;
+		}
+	    }
+	    else if (STRNCMP(var_start, "t:", 2) == 0)
+	    {
+		dest = dest_tab;
+		if (is_decl)
+		{
+		    semsg(_("E1080: Cannot declare a tab variable: %s"), name);
+		    goto theend;
+		}
+	    }
+	    else if (STRNCMP(var_start, "v:", 2) == 0)
+	    {
+		typval_T	*vtv;
+		int		di_flags;
+
+		vimvaridx = find_vim_var(name + 2, &di_flags);
+		if (vimvaridx < 0)
+		{
+		    semsg(_(e_var_notfound), var_start);
+		    goto theend;
+		}
+		// We use the current value of "sandbox" here, is that OK?
+		if (var_check_ro(di_flags, name, FALSE))
+		    goto theend;
+		dest = dest_vimvar;
+		vtv = get_vim_var_tv(vimvaridx);
+		type = typval2type(vtv);
+		if (is_decl)
+		{
+		    semsg(_("E1064: Cannot declare a v: variable: %s"), name);
+		    goto theend;
+		}
+	    }
+	    else
+	    {
+		int idx;
+
+		for (idx = 0; reserved[idx] != NULL; ++idx)
+		    if (STRCMP(reserved[idx], name) == 0)
 		    {
-			emsg(_("E1031: Cannot use void value"));
+			semsg(_("E1034: Cannot use reserved name %s"), name);
 			goto theend;
 		    }
-		    else
+
+		lvar = lookup_local(var_start, varlen, cctx);
+		if (lvar == NULL)
+		{
+		    CLEAR_FIELD(arg_lvar);
+		    if (lookup_arg(var_start, varlen,
+				&arg_lvar.lv_idx, &arg_lvar.lv_type,
+				&arg_lvar.lv_from_outer, cctx) == OK)
 		    {
-			// An empty list or dict has a &t_void member, for a
-			// variable that implies &t_any.
-			if (stacktype == &t_list_empty)
-			    lvar->lv_type = &t_list_any;
-			else if (stacktype == &t_dict_empty)
-			    lvar->lv_type = &t_dict_any;
-			else
-			    lvar->lv_type = stacktype;
+			if (is_decl)
+			{
+			    semsg(_(e_used_as_arg), name);
+			    goto theend;
+			}
+			lvar = &arg_lvar;
 		    }
+		}
+		if (lvar != NULL)
+		{
+		    if (is_decl)
+		    {
+			semsg(_("E1017: Variable already declared: %s"), name);
+			goto theend;
+		    }
+		    else if (lvar->lv_const)
+		    {
+			semsg(_("E1018: Cannot assign to a constant: %s"),
+									 name);
+			goto theend;
+		    }
+		}
+		else if (STRNCMP(var_start, "s:", 2) == 0
+			|| lookup_script(var_start, varlen) == OK
+			|| find_imported(var_start, varlen, cctx) != NULL)
+		{
+		    dest = dest_script;
+		    if (is_decl)
+		    {
+			semsg(_("E1054: Variable already declared in the script: %s"),
+									 name);
+			goto theend;
+		    }
+		}
+		else if (name[1] == ':' && name[2] != NUL)
+		{
+		    semsg(_("E1082: Cannot use a namespaced variable: %s"),
+									 name);
+		    goto theend;
+		}
+		else if (!is_decl)
+		{
+		    semsg(_("E1089: unknown variable: %s"), name);
+		    goto theend;
+		}
+	    }
+	}
+
+	// handle "a:name" as a name, not index "name" on "a"
+	if (varlen > 1 || var_start[varlen] != ':')
+	    p = var_end;
+
+	if (dest != dest_option)
+	{
+	    if (is_decl && *p == ':')
+	    {
+		// parse optional type: "let var: type = expr"
+		if (!VIM_ISWHITE(p[1]))
+		{
+		    semsg(_(e_white_after), ":");
+		    goto theend;
+		}
+		p = skipwhite(p + 1);
+		type = parse_type(&p, cctx->ctx_type_list);
+		has_type = TRUE;
+	    }
+	    else if (lvar != NULL)
+		type = lvar->lv_type;
+	}
+
+	if (oplen == 3 && !heredoc && dest != dest_global
+			&& type->tt_type != VAR_STRING
+			&& type->tt_type != VAR_ANY)
+	{
+	    emsg(_("E1019: Can only concatenate to string"));
+	    goto theend;
+	}
+
+	if (lvar == NULL && dest == dest_local && cctx->ctx_skip != TRUE)
+	{
+	    if (oplen > 1 && !heredoc)
+	    {
+		// +=, /=, etc. require an existing variable
+		semsg(_("E1020: cannot use an operator on a new variable: %s"),
+									 name);
+		goto theend;
+	    }
+
+	    // new local variable
+	    if (type->tt_type == VAR_FUNC && var_check_func_name(name, TRUE))
+		goto theend;
+	    lvar = reserve_local(cctx, var_start, varlen,
+						    cmdidx == CMD_const, type);
+	    if (lvar == NULL)
+		goto theend;
+	    new_local = TRUE;
+	}
+
+	member_type = type;
+	if (var_end > var_start + varlen)
+	{
+	    // Something follows after the variable: "var[idx]".
+	    if (is_decl)
+	    {
+		emsg(_("E1087: cannot use an index when declaring a variable"));
+		goto theend;
+	    }
+
+	    if (var_start[varlen] == '[')
+	    {
+		has_index = TRUE;
+		if (type->tt_member == NULL)
+		{
+		    semsg(_("E1088: cannot use an index on %s"), name);
+		    goto theend;
+		}
+		member_type = type->tt_member;
+	    }
+	    else
+	    {
+		semsg("Not supported yet: %s", var_start);
+		goto theend;
+	    }
+	}
+	else if (lvar == &arg_lvar)
+	{
+	    semsg(_("E1090: Cannot assign to argument %s"), name);
+	    goto theend;
+	}
+
+	if (!heredoc)
+	{
+	    if (oplen > 0)
+	    {
+		// For "var = expr" evaluate the expression.
+		if (var_count == 0)
+		{
+		    int	r;
+
+		    // for "+=", "*=", "..=" etc. first load the current value
+		    if (*op != '=')
+		    {
+			generate_loadvar(cctx, dest, name, lvar, type);
+
+			if (has_index)
+			{
+			    // TODO: get member from list or dict
+			    emsg("Index with operation not supported yet");
+			    goto theend;
+			}
+		    }
+
+		    // Compile the expression.  Temporarily hide the new local
+		    // variable here, it is not available to this expression.
+		    if (new_local)
+			--cctx->ctx_locals.ga_len;
+		    instr_count = instr->ga_len;
+		    p = skipwhite(op + oplen);
+		    r = compile_expr0(&p, cctx);
+		    if (new_local)
+			++cctx->ctx_locals.ga_len;
+		    if (r == FAIL)
+			goto theend;
 		}
 		else
 		{
-		    type_T *use_type = lvar->lv_type;
+		    // For "[var, var] = expr" get the "var_idx" item from the
+		    // list.
+		    if (generate_GETITEM(cctx, var_idx) == FAIL)
+			return FAIL;
+		}
 
-		    if (has_index)
+		if (cctx->ctx_skip != TRUE)
+		{
+		    type_T	*stacktype;
+
+		    stacktype = stack->ga_len == 0 ? &t_void
+			      : ((type_T **)stack->ga_data)[stack->ga_len - 1];
+		    if (lvar != NULL && (is_decl || !has_type))
 		    {
-			use_type = use_type->tt_member;
-			if (use_type == NULL)
-			    use_type = &t_void;
+			if (new_local && !has_type)
+			{
+			    if (stacktype->tt_type == VAR_VOID)
+			    {
+				emsg(_(e_cannot_use_void));
+				goto theend;
+			    }
+			    else
+			    {
+				// An empty list or dict has a &t_void member,
+				// for a variable that implies &t_any.
+				if (stacktype == &t_list_empty)
+				    lvar->lv_type = &t_list_any;
+				else if (stacktype == &t_dict_empty)
+				    lvar->lv_type = &t_dict_any;
+				else
+				    lvar->lv_type = stacktype;
+			    }
+			}
+			else
+			{
+			    type_T *use_type = lvar->lv_type;
+
+			    if (has_index)
+			    {
+				use_type = use_type->tt_member;
+				if (use_type == NULL)
+				    use_type = &t_void;
+			    }
+			    if (need_type(stacktype, use_type, -1, cctx)
+								       == FAIL)
+				goto theend;
+			}
 		    }
-		    if (need_type(stacktype, use_type, -1, cctx) == FAIL)
+		    else if (*p != '=' && need_type(stacktype, member_type, -1,
+								 cctx) == FAIL)
 			goto theend;
 		}
 	    }
-	    else if (*p != '=' && need_type(stacktype, member_type, -1,
-								 cctx) == FAIL)
-		goto theend;
-	}
-    }
-    else if (cmdidx == CMD_const)
-    {
-	emsg(_(e_const_req_value));
-	goto theend;
-    }
-    else if (!has_type || dest == dest_option)
-    {
-	emsg(_(e_type_req));
-	goto theend;
-    }
-    else
-    {
-	// variables are always initialized
-	if (ga_grow(instr, 1) == FAIL)
-	    goto theend;
-	switch (member_type->tt_type)
-	{
-	    case VAR_BOOL:
-		generate_PUSHBOOL(cctx, VVAL_FALSE);
-		break;
-	    case VAR_FLOAT:
-#ifdef FEAT_FLOAT
-		generate_PUSHF(cctx, 0.0);
-#endif
-		break;
-	    case VAR_STRING:
-		generate_PUSHS(cctx, NULL);
-		break;
-	    case VAR_BLOB:
-		generate_PUSHBLOB(cctx, NULL);
-		break;
-	    case VAR_FUNC:
-		generate_PUSHFUNC(cctx, NULL, &t_func_void);
-		break;
-	    case VAR_LIST:
-		generate_NEWLIST(cctx, 0);
-		break;
-	    case VAR_DICT:
-		generate_NEWDICT(cctx, 0);
-		break;
-	    case VAR_JOB:
-		generate_PUSHJOB(cctx, NULL);
-		break;
-	    case VAR_CHANNEL:
-		generate_PUSHCHANNEL(cctx, NULL);
-		break;
-	    case VAR_NUMBER:
-	    case VAR_UNKNOWN:
-	    case VAR_ANY:
-	    case VAR_PARTIAL:
-	    case VAR_VOID:
-	    case VAR_SPECIAL:  // cannot happen
-		generate_PUSHNR(cctx, 0);
-		break;
-	}
-    }
-    end = p;
-
-    if (oplen > 0 && *op != '=')
-    {
-	type_T	    *expected = &t_number;
-	type_T	    *stacktype;
-
-	// TODO: if type is known use float or any operation
-
-	if (*op == '.')
-	    expected = &t_string;
-	stacktype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-	if (need_type(stacktype, expected, -1, cctx) == FAIL)
-	    goto theend;
-
-	if (*op == '.')
-	    generate_instr_drop(cctx, ISN_CONCAT, 1);
-	else
-	{
-	    isn_T *isn = generate_instr_drop(cctx, ISN_OPNR, 1);
-
-	    if (isn == NULL)
-		goto theend;
-	    switch (*op)
+	    else if (cmdidx == CMD_const)
 	    {
-		case '+': isn->isn_arg.op.op_type = EXPR_ADD; break;
-		case '-': isn->isn_arg.op.op_type = EXPR_SUB; break;
-		case '*': isn->isn_arg.op.op_type = EXPR_MULT; break;
-		case '/': isn->isn_arg.op.op_type = EXPR_DIV; break;
-		case '%': isn->isn_arg.op.op_type = EXPR_REM; break;
+		emsg(_(e_const_req_value));
+		goto theend;
+	    }
+	    else if (!has_type || dest == dest_option)
+	    {
+		emsg(_(e_type_req));
+		goto theend;
+	    }
+	    else
+	    {
+		// variables are always initialized
+		if (ga_grow(instr, 1) == FAIL)
+		    goto theend;
+		switch (member_type->tt_type)
+		{
+		    case VAR_BOOL:
+			generate_PUSHBOOL(cctx, VVAL_FALSE);
+			break;
+		    case VAR_FLOAT:
+#ifdef FEAT_FLOAT
+			generate_PUSHF(cctx, 0.0);
+#endif
+			break;
+		    case VAR_STRING:
+			generate_PUSHS(cctx, NULL);
+			break;
+		    case VAR_BLOB:
+			generate_PUSHBLOB(cctx, NULL);
+			break;
+		    case VAR_FUNC:
+			generate_PUSHFUNC(cctx, NULL, &t_func_void);
+			break;
+		    case VAR_LIST:
+			generate_NEWLIST(cctx, 0);
+			break;
+		    case VAR_DICT:
+			generate_NEWDICT(cctx, 0);
+			break;
+		    case VAR_JOB:
+			generate_PUSHJOB(cctx, NULL);
+			break;
+		    case VAR_CHANNEL:
+			generate_PUSHCHANNEL(cctx, NULL);
+			break;
+		    case VAR_NUMBER:
+		    case VAR_UNKNOWN:
+		    case VAR_ANY:
+		    case VAR_PARTIAL:
+		    case VAR_VOID:
+		    case VAR_SPECIAL:  // cannot happen
+			generate_PUSHNR(cctx, 0);
+			break;
+		}
+	    }
+	    if (var_count == 0)
+		end = p;
+	}
+
+	if (oplen > 0 && *op != '=')
+	{
+	    type_T	    *expected = &t_number;
+	    type_T	    *stacktype;
+
+	    // TODO: if type is known use float or any operation
+
+	    if (*op == '.')
+		expected = &t_string;
+	    stacktype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	    if (need_type(stacktype, expected, -1, cctx) == FAIL)
+		goto theend;
+
+	    if (*op == '.')
+		generate_instr_drop(cctx, ISN_CONCAT, 1);
+	    else
+	    {
+		isn_T *isn = generate_instr_drop(cctx, ISN_OPNR, 1);
+
+		if (isn == NULL)
+		    goto theend;
+		switch (*op)
+		{
+		    case '+': isn->isn_arg.op.op_type = EXPR_ADD; break;
+		    case '-': isn->isn_arg.op.op_type = EXPR_SUB; break;
+		    case '*': isn->isn_arg.op.op_type = EXPR_MULT; break;
+		    case '/': isn->isn_arg.op.op_type = EXPR_DIV; break;
+		    case '%': isn->isn_arg.op.op_type = EXPR_REM; break;
+		}
 	    }
 	}
-    }
 
-    if (has_index)
-    {
-	int r;
-
-	// Compile the "idx" in "var[idx]".
-	if (new_local)
-	    --cctx->ctx_locals.ga_len;
-	p = skipwhite(arg + varlen + 1);
-	r = compile_expr0(&p, cctx);
-	if (new_local)
-	    ++cctx->ctx_locals.ga_len;
-	if (r == FAIL)
-	    goto theend;
-	if (*skipwhite(p) != ']')
+	if (has_index)
 	{
-	    emsg(_(e_missbrac));
-	    goto theend;
-	}
-	if (type->tt_type == VAR_DICT
-		&& may_generate_2STRING(-1, cctx) == FAIL)
-	    goto theend;
-	if (type->tt_type == VAR_LIST
-		&& ((type_T **)stack->ga_data)[stack->ga_len - 1]->tt_type
+	    int r;
+
+	    // Compile the "idx" in "var[idx]".
+	    if (new_local)
+		--cctx->ctx_locals.ga_len;
+	    p = skipwhite(var_start + varlen + 1);
+	    r = compile_expr0(&p, cctx);
+	    if (new_local)
+		++cctx->ctx_locals.ga_len;
+	    if (r == FAIL)
+		goto theend;
+	    if (*skipwhite(p) != ']')
+	    {
+		emsg(_(e_missbrac));
+		goto theend;
+	    }
+	    if (type->tt_type == VAR_DICT
+		    && may_generate_2STRING(-1, cctx) == FAIL)
+		goto theend;
+	    if (type->tt_type == VAR_LIST
+		    && ((type_T **)stack->ga_data)[stack->ga_len - 1]->tt_type
 								 != VAR_NUMBER)
-	{
-	    emsg(_(e_number_exp));
-	    goto theend;
-	}
+	    {
+		emsg(_(e_number_exp));
+		goto theend;
+	    }
 
-	// Load the dict or list.  On the stack we then have:
-	// - value
-	// - index
-	// - variable
-	generate_loadvar(cctx, dest, name, lvar, type);
+	    // Load the dict or list.  On the stack we then have:
+	    // - value
+	    // - index
+	    // - variable
+	    generate_loadvar(cctx, dest, name, lvar, type);
 
-	if (type->tt_type == VAR_LIST)
-	{
-	    if (generate_instr_drop(cctx, ISN_STORELIST, 3) == FAIL)
-		return FAIL;
-	}
-	else if (type->tt_type == VAR_DICT)
-	{
-	    if (generate_instr_drop(cctx, ISN_STOREDICT, 3) == FAIL)
-		return FAIL;
+	    if (type->tt_type == VAR_LIST)
+	    {
+		if (generate_instr_drop(cctx, ISN_STORELIST, 3) == FAIL)
+		    return FAIL;
+	    }
+	    else if (type->tt_type == VAR_DICT)
+	    {
+		if (generate_instr_drop(cctx, ISN_STOREDICT, 3) == FAIL)
+		    return FAIL;
+	    }
+	    else
+	    {
+		emsg(_(e_listreq));
+		goto theend;
+	    }
 	}
 	else
 	{
-	    emsg(_(e_listreq));
-	    goto theend;
-	}
-    }
-    else
-    {
-	switch (dest)
-	{
-	    case dest_option:
-		generate_STOREOPT(cctx, name + 1, opt_flags);
-		break;
-	    case dest_global:
-		// include g: with the name, easier to execute that way
-		generate_STORE(cctx, ISN_STOREG, 0, name);
-		break;
-	    case dest_buffer:
-		// include b: with the name, easier to execute that way
-		generate_STORE(cctx, ISN_STOREB, 0, name);
-		break;
-	    case dest_window:
-		// include w: with the name, easier to execute that way
-		generate_STORE(cctx, ISN_STOREW, 0, name);
-		break;
-	    case dest_tab:
-		// include t: with the name, easier to execute that way
-		generate_STORE(cctx, ISN_STORET, 0, name);
-		break;
-	    case dest_env:
-		generate_STORE(cctx, ISN_STOREENV, 0, name + 1);
-		break;
-	    case dest_reg:
-		generate_STORE(cctx, ISN_STOREREG, name[1], NULL);
-		break;
-	    case dest_vimvar:
-		generate_STORE(cctx, ISN_STOREV, vimvaridx, NULL);
-		break;
-	    case dest_script:
-		{
-		    char_u	*rawname = name + (name[1] == ':' ? 2 : 0);
-		    imported_T  *import = NULL;
-		    int		sid = current_sctx.sc_sid;
-		    int		idx;
-
-		    if (name[1] != ':')
+	    switch (dest)
+	    {
+		case dest_option:
+		    generate_STOREOPT(cctx, name + 1, opt_flags);
+		    break;
+		case dest_global:
+		    // include g: with the name, easier to execute that way
+		    generate_STORE(cctx, ISN_STOREG, 0, name);
+		    break;
+		case dest_buffer:
+		    // include b: with the name, easier to execute that way
+		    generate_STORE(cctx, ISN_STOREB, 0, name);
+		    break;
+		case dest_window:
+		    // include w: with the name, easier to execute that way
+		    generate_STORE(cctx, ISN_STOREW, 0, name);
+		    break;
+		case dest_tab:
+		    // include t: with the name, easier to execute that way
+		    generate_STORE(cctx, ISN_STORET, 0, name);
+		    break;
+		case dest_env:
+		    generate_STORE(cctx, ISN_STOREENV, 0, name + 1);
+		    break;
+		case dest_reg:
+		    generate_STORE(cctx, ISN_STOREREG, name[1], NULL);
+		    break;
+		case dest_vimvar:
+		    generate_STORE(cctx, ISN_STOREV, vimvaridx, NULL);
+		    break;
+		case dest_script:
 		    {
-			import = find_imported(name, 0, cctx);
-			if (import != NULL)
-			    sid = import->imp_sid;
-		    }
+			char_u	    *rawname = name + (name[1] == ':' ? 2 : 0);
+			imported_T  *import = NULL;
+			int	    sid = current_sctx.sc_sid;
+			int	    idx;
 
-		    idx = get_script_item_idx(sid, rawname, TRUE);
-		    // TODO: specific type
-		    if (idx < 0)
-		    {
-			char_u *name_s = name;
-
-			// Include s: in the name for store_var()
 			if (name[1] != ':')
 			{
-			    int len = (int)STRLEN(name) + 3;
-
-			    name_s = alloc(len);
-			    if (name_s == NULL)
-				name_s = name;
-			    else
-				vim_snprintf((char *)name_s, len, "s:%s", name);
+			    import = find_imported(name, 0, cctx);
+			    if (import != NULL)
+				sid = import->imp_sid;
 			}
-			generate_OLDSCRIPT(cctx, ISN_STORES, name_s, sid,
+
+			idx = get_script_item_idx(sid, rawname, TRUE);
+			// TODO: specific type
+			if (idx < 0)
+			{
+			    char_u *name_s = name;
+
+			    // Include s: in the name for store_var()
+			    if (name[1] != ':')
+			    {
+				int len = (int)STRLEN(name) + 3;
+
+				name_s = alloc(len);
+				if (name_s == NULL)
+				    name_s = name;
+				else
+				    vim_snprintf((char *)name_s, len,
+								 "s:%s", name);
+			    }
+			    generate_OLDSCRIPT(cctx, ISN_STORES, name_s, sid,
 								       &t_any);
-			if (name_s != name)
-			    vim_free(name_s);
-		    }
-		    else
-			generate_VIM9SCRIPT(cctx, ISN_STORESCRIPT,
+			    if (name_s != name)
+				vim_free(name_s);
+			}
+			else
+			    generate_VIM9SCRIPT(cctx, ISN_STORESCRIPT,
 							     sid, idx, &t_any);
-		}
-		break;
-	    case dest_local:
-		if (lvar != NULL)
-		{
-		    isn_T *isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
-
-		    // optimization: turn "var = 123" from ISN_PUSHNR +
-		    // ISN_STORE into ISN_STORENR
-		    if (!lvar->lv_from_outer && instr->ga_len == instr_count + 1
-					     && isn->isn_type == ISN_PUSHNR)
-		    {
-			varnumber_T val = isn->isn_arg.number;
-
-			isn->isn_type = ISN_STORENR;
-			isn->isn_arg.storenr.stnr_idx = lvar->lv_idx;
-			isn->isn_arg.storenr.stnr_val = val;
-			if (stack->ga_len > 0)
-			    --stack->ga_len;
 		    }
-		    else if (lvar->lv_from_outer)
-			generate_STORE(cctx, ISN_STOREOUTER, lvar->lv_idx,
+		    break;
+		case dest_local:
+		    if (lvar != NULL)
+		    {
+			isn_T *isn = ((isn_T *)instr->ga_data)
+							   + instr->ga_len - 1;
+
+			// optimization: turn "var = 123" from ISN_PUSHNR +
+			// ISN_STORE into ISN_STORENR
+			if (!lvar->lv_from_outer
+					&& instr->ga_len == instr_count + 1
+					&& isn->isn_type == ISN_PUSHNR)
+			{
+			    varnumber_T val = isn->isn_arg.number;
+
+			    isn->isn_type = ISN_STORENR;
+			    isn->isn_arg.storenr.stnr_idx = lvar->lv_idx;
+			    isn->isn_arg.storenr.stnr_val = val;
+			    if (stack->ga_len > 0)
+				--stack->ga_len;
+			}
+			else if (lvar->lv_from_outer)
+			    generate_STORE(cctx, ISN_STOREOUTER, lvar->lv_idx,
 									 NULL);
-		    else
-			generate_STORE(cctx, ISN_STORE, lvar->lv_idx, NULL);
-		}
-		break;
+			else
+			    generate_STORE(cctx, ISN_STORE, lvar->lv_idx, NULL);
+		    }
+		    break;
+	    }
 	}
+
+	if (var_idx + 1 < var_count)
+	    var_start = skipwhite(var_end + 1);
     }
+
+    // for "[var, var] = expr" drop the "expr" value
+    if (var_count > 0 && generate_instr_drop(cctx, ISN_DROP, 1) == NULL)
+	goto theend;
+
     ret = end;
 
 theend:
@@ -6575,11 +6700,21 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 			    || find_imported(ea.cmd, len, &cctx) != NULL)
 		    {
 			line = compile_assignment(ea.cmd, &ea, CMD_SIZE, &cctx);
-			if (line == NULL)
+			if (line == NULL || line == ea.cmd)
 			    goto erret;
 			continue;
 		    }
 		}
+	    }
+
+	    if (*ea.cmd == '[')
+	    {
+		// [var, var] = expr
+		line = compile_assignment(ea.cmd, &ea, CMD_SIZE, &cctx);
+		if (line == NULL)
+		    goto erret;
+		if (line != ea.cmd)
+		    continue;
 	    }
 	}
 
@@ -6646,6 +6781,8 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	    case CMD_let:
 	    case CMD_const:
 		    line = compile_assignment(p, &ea, ea.cmdidx, &cctx);
+		    if (line == p)
+			line = NULL;
 		    break;
 
 	    case CMD_unlet:
@@ -6957,6 +7094,7 @@ delete_instr(isn_T *isn)
 	case ISN_EXECUTE:
 	case ISN_FOR:
 	case ISN_INDEX:
+	case ISN_GETITEM:
 	case ISN_MEMBER:
 	case ISN_JUMP:
 	case ISN_LOAD:

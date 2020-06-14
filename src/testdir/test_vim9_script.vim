@@ -223,6 +223,14 @@ def Test_assignment_default()
   assert_equal(5678, nr)
 enddef
 
+def Test_assignment_var_list()
+  let v1: string
+  let v2: string
+  [v1, v2] = ['one', 'two']
+  assert_equal('one', v1)
+  assert_equal('two', v2)
+enddef
+
 def Mess(): string
   v:foldstart = 123
   return 'xxx'
