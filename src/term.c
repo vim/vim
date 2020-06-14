@@ -4690,7 +4690,7 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 	// Unless the underline RGB color is expected to work, disable "t_8u".
 	// It does not work for the real Xterm, it resets the background color.
 	if (term_props[TPR_UNDERLINE_RGB].tpr_status != TPR_YES && *T_8U != NUL)
-	    T_8U = empty_option;
+	    set_option_value((char_u *)"t_8u", 0L, (char_u *)"", 0);
 
 	// Only set 'ttymouse' automatically if it was not set
 	// by the user already.
