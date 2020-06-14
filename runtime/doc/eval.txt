@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Jun 07
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Jun 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1533,6 +1533,7 @@ An internal variable is explicitly destroyed with the ":unlet" command
 Using a name that is not an internal variable or refers to a variable that has
 been destroyed results in an error.
 
+						*variable-scope*
 There are several name spaces for variables.  Which one is to be used is
 specified by what is prepended:
 
@@ -1551,7 +1552,9 @@ delete all script-local variables: >
 	:for k in keys(s:)
 	:    unlet s:[k]
 	:endfor
-<
+
+Note: in Vim9 script this is different, see |vim9-scopes|.
+
 						*buffer-variable* *b:var* *b:*
 A variable name that is preceded with "b:" is local to the current buffer.
 Thus you can have several "b:foo" variables, one for each buffer.
@@ -4523,7 +4526,7 @@ flatten({list} [, {maxdepth}])					*flatten()*
 		a very large number.
 		The {list} is changed in place, make a copy first if you do
 		not want that.
-							        *E964*
+							        *E900*
 		{maxdepth} means how deep in nested lists changes are made.
 		{list} is not modified when {maxdepth} is 0.
 		{maxdepth} must be positive number.
@@ -6278,10 +6281,11 @@ inputlist({textlist})					*inputlist()*
 		displayed, one string per line.  The user will be prompted to
 		enter a number, which is returned.
 		The user can also select an item by clicking on it with the
-		mouse.  For the first string 0 is returned.  When clicking
-		above the first item a negative number is returned.  When
-		clicking on the prompt one more than the length of {textlist}
-		is returned.
+		mouse, if the mouse is enabled in the command line ('mouse' is
+		"a" or includes "c").  For the first string 0 is returned.
+		When clicking above the first item a negative number is
+		returned.  When clicking on the prompt one more than the
+		length of {textlist} is returned.
 		Make sure {textlist} has less than 'lines' entries, otherwise
 		it won't work.  It's a good idea to put the entry number at
 		the start of the string.  And put a prompt in the first item.
@@ -11783,6 +11787,9 @@ like this: >
 
 	:call filename#funcname()
 
+These functions are always global, in Vim9 script "g:" needs to be used: >
+	:call g:filename#funcname()
+
 When such a function is called, and it is not defined yet, Vim will search the
 "autoload" directories in 'runtimepath' for a script file called
 "filename.vim".  For example "~/.vim/autoload/filename.vim".  That file should
@@ -11794,7 +11801,11 @@ then define the function like this: >
 
 The file name and the name used before the # in the function must match
 exactly, and the defined function must have the name exactly as it will be
-called.
+called.  In Vim9 script the "g:" prefix must be used: >
+	function g:filename#funcname()
+
+or for a compiled function: >
+	def g:filename#funcname()
 
 It is possible to use subdirectories.  Every # in the function name works like
 a path separator.  Thus when calling a function: >
@@ -11876,6 +11887,9 @@ This does NOT work: >
 
 ==============================================================================
 7. Commands						*expression-commands*
+
+Note: in Vim9 script `:let` is used for variable declaration, not assignment.
+An assignment leaves out the `:let` command.  |vim9-declaration|
 
 :let {var-name} = {expr1}				*:let* *E18*
 			Set internal variable {var-name} to the result of the
@@ -12099,12 +12113,14 @@ text...
 			  s:	script-local variables
 			  l:	local function variables
 			  v:	Vim variables.
+			This does not work in Vim9 script. |vim9-declaration|
 
 :let			List the values of all variables.  The type of the
 			variable is indicated before the value:
 			    <nothing>	String
 				#	Number
 				*	Funcref
+			This does not work in Vim9 script. |vim9-declaration|
 
 :unl[et][!] {name} ...				*:unlet* *:unl* *E108* *E795*
 			Remove the internal variable {name}.  Several variable

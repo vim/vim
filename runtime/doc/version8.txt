@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.2.  Last change: 2020 Feb 04
+*version8.txt*  For Vim version 8.2.  Last change: 2020 Jun 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -30777,7 +30777,7 @@ Solution:   Use a double quoted string.  Add a test.
 Files:	    src/ex_docmd.c, src/testdir/test_mksession.vim
 
 Patch 8.1.0804
-Problem:    Crash when setting v:errmsg to empty list. (Jaon Franklin)
+Problem:    Crash when setting v:errmsg to empty list. (Jason Franklin)
 Solution:   Separate getting value and assigning result.
 Files:	    src/eval.c, src/testdir/test_eval_stuff.vim
 
@@ -33684,8 +33684,8 @@ Solution:   Also change the textprop implementation.
 Files:	    src/textprop.c
 
 Patch 8.1.1279
-Problem:    Cannot set 'spellang' to "sr@latin". (Bojan Stipic)
-Solution:   Allow using '@' in 'spellang'. (closes #4342)
+Problem:    Cannot set 'spelllang' to "sr@latin". (Bojan Stipic)
+Solution:   Allow using '@' in 'spelllang'. (closes #4342)
 Files:	    src/option.c, src/testdir/gen_opt_test.vim
 
 Patch 8.1.1280

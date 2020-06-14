@@ -915,11 +915,13 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'spellcapcheck'	options.txt	/*'spellcapcheck'*
 'spellfile'	options.txt	/*'spellfile'*
 'spelllang'	options.txt	/*'spelllang'*
+'spelloptions'	options.txt	/*'spelloptions'*
 'spellsuggest'	options.txt	/*'spellsuggest'*
 'spf'	options.txt	/*'spf'*
 'spl'	options.txt	/*'spl'*
 'splitbelow'	options.txt	/*'splitbelow'*
 'splitright'	options.txt	/*'splitright'*
+'spo'	options.txt	/*'spo'*
 'spr'	options.txt	/*'spr'*
 'sps'	options.txt	/*'sps'*
 'sr'	options.txt	/*'sr'*
@@ -1926,6 +1928,10 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 45.3	usr_45.txt	/*45.3*
 45.4	usr_45.txt	/*45.4*
 45.5	usr_45.txt	/*45.5*
+46.1	usr_46.txt	/*46.1*
+46.2	usr_46.txt	/*46.2*
+46.3	usr_46.txt	/*46.3*
+46.?	usr_46.txt	/*46.?*
 8g8	various.txt	/*8g8*
 90.1	usr_90.txt	/*90.1*
 90.2	usr_90.txt	/*90.2*
@@ -3886,6 +3892,7 @@ E101	diff.txt	/*E101*
 E102	diff.txt	/*E102*
 E103	diff.txt	/*E103*
 E104	digraph.txt	/*E104*
+E1042	vim9.txt	/*E1042*
 E105	mbyte.txt	/*E105*
 E107	eval.txt	/*E107*
 E108	eval.txt	/*E108*
@@ -4732,6 +4739,7 @@ E897	eval.txt	/*E897*
 E898	channel.txt	/*E898*
 E899	eval.txt	/*E899*
 E90	message.txt	/*E90*
+E900	eval.txt	/*E900*
 E901	channel.txt	/*E901*
 E902	channel.txt	/*E902*
 E903	channel.txt	/*E903*
@@ -5059,6 +5067,7 @@ SessionLoad-variable	starting.txt	/*SessionLoad-variable*
 SessionLoadPost	autocmd.txt	/*SessionLoadPost*
 ShellCmdPost	autocmd.txt	/*ShellCmdPost*
 ShellFilterPost	autocmd.txt	/*ShellFilterPost*
+SigUSR1	autocmd.txt	/*SigUSR1*
 SourceCmd	autocmd.txt	/*SourceCmd*
 SourcePost	autocmd.txt	/*SourcePost*
 SourcePre	autocmd.txt	/*SourcePre*
@@ -5450,20 +5459,7 @@ bars	help.txt	/*bars*
 base_font_name_list	mbyte.txt	/*base_font_name_list*
 basic.vim	syntax.txt	/*basic.vim*
 beep	options.txt	/*beep*
-beos-colors	os_beos.txt	/*beos-colors*
-beos-compiling	os_beos.txt	/*beos-compiling*
-beos-dragndrop	os_beos.txt	/*beos-dragndrop*
-beos-fonts	os_beos.txt	/*beos-fonts*
-beos-general	os_beos.txt	/*beos-general*
-beos-gui	os_beos.txt	/*beos-gui*
-beos-launch	os_beos.txt	/*beos-launch*
-beos-meta	os_beos.txt	/*beos-meta*
-beos-mouse	os_beos.txt	/*beos-mouse*
-beos-perl	os_beos.txt	/*beos-perl*
-beos-timeout	os_beos.txt	/*beos-timeout*
-beos-unicode	os_beos.txt	/*beos-unicode*
-beos-utf8	os_beos.txt	/*beos-utf8*
-beos-vimdir	os_beos.txt	/*beos-vimdir*
+beos	os_beos.txt	/*beos*
 better-python-interface	version7.txt	/*better-python-interface*
 beval_bufnr-variable	eval.txt	/*beval_bufnr-variable*
 beval_col-variable	eval.txt	/*beval_col-variable*
@@ -6342,6 +6338,7 @@ filetype.txt	filetype.txt	/*filetype.txt*
 filetypedetect-changed	version6.txt	/*filetypedetect-changed*
 filetypes	filetype.txt	/*filetypes*
 filewritable()	eval.txt	/*filewritable()*
+filler-lines	windows.txt	/*filler-lines*
 filter	change.txt	/*filter*
 filter()	eval.txt	/*filter()*
 find-manpage	usr_12.txt	/*find-manpage*
@@ -6364,6 +6361,7 @@ fixed-7.1	version7.txt	/*fixed-7.1*
 fixed-7.2	version7.txt	/*fixed-7.2*
 fixed-7.3	version7.txt	/*fixed-7.3*
 fixed-7.4	version7.txt	/*fixed-7.4*
+flatten()	eval.txt	/*flatten()*
 flexwiki.vim	syntax.txt	/*flexwiki.vim*
 float-e	eval.txt	/*float-e*
 float-functions	usr_41.txt	/*float-functions*
@@ -8885,6 +8883,7 @@ sound_playevent()	eval.txt	/*sound_playevent()*
 sound_playfile()	eval.txt	/*sound_playfile()*
 sound_stop()	eval.txt	/*sound_stop()*
 soundfold()	eval.txt	/*soundfold()*
+source-vim9-script	usr_46.txt	/*source-vim9-script*
 space	intro.txt	/*space*
 spec-customizing	pi_spec.txt	/*spec-customizing*
 spec-how-to-use-it	pi_spec.txt	/*spec-how-to-use-it*
@@ -9525,6 +9524,7 @@ terminal-unix	terminal.txt	/*terminal-unix*
 terminal-use	terminal.txt	/*terminal-use*
 terminal-window	terminal.txt	/*terminal-window*
 terminal.txt	terminal.txt	/*terminal.txt*
+terminalprops()	eval.txt	/*terminalprops()*
 terminfo	term.txt	/*terminfo*
 termresponse-variable	eval.txt	/*termresponse-variable*
 test-functions	usr_41.txt	/*test-functions*
@@ -9701,6 +9701,7 @@ usr_42.txt	usr_42.txt	/*usr_42.txt*
 usr_43.txt	usr_43.txt	/*usr_43.txt*
 usr_44.txt	usr_44.txt	/*usr_44.txt*
 usr_45.txt	usr_45.txt	/*usr_45.txt*
+usr_46.txt	usr_46.txt	/*usr_46.txt*
 usr_90.txt	usr_90.txt	/*usr_90.txt*
 usr_toc.txt	usr_toc.txt	/*usr_toc.txt*
 utf-8	mbyte.txt	/*utf-8*
@@ -9920,6 +9921,7 @@ val-variable	eval.txt	/*val-variable*
 valgrind	debug.txt	/*valgrind*
 values()	eval.txt	/*values()*
 var-functions	usr_41.txt	/*var-functions*
+variable-scope	eval.txt	/*variable-scope*
 variables	eval.txt	/*variables*
 various	various.txt	/*various*
 various-cmds	various.txt	/*various-cmds*
@@ -9993,11 +9995,15 @@ vim.vim	syntax.txt	/*vim.vim*
 vim7	version7.txt	/*vim7*
 vim8	version8.txt	/*vim8*
 vim9	vim9.txt	/*vim9*
+vim9-declaration	vim9.txt	/*vim9-declaration*
+vim9-declarations	usr_46.txt	/*vim9-declarations*
 vim9-differences	vim9.txt	/*vim9-differences*
 vim9-export	vim9.txt	/*vim9-export*
 vim9-import	vim9.txt	/*vim9-import*
 vim9-rationale	vim9.txt	/*vim9-rationale*
+vim9-scopes	vim9.txt	/*vim9-scopes*
 vim9-script	vim9.txt	/*vim9-script*
+vim9-script-intro	usr_46.txt	/*vim9-script-intro*
 vim9-types	vim9.txt	/*vim9-types*
 vim9.txt	vim9.txt	/*vim9.txt*
 vim9script	vim9.txt	/*vim9script*

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2020 May 31
+*options.txt*	For Vim version 8.2.  Last change: 2020 Jun 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5232,7 +5232,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	If your terminal can't overrule the mouse events going to the
 	application, use: >
 		:set mouse=nvi
-<	The you can press ":", select text for the system, and press Esc to go
+<	Then you can press ":", select text for the system, and press Esc to go
 	back to Vim using the mouse events.
 	In |defaults.vim| "nvi" is used if the 'term' option is not matching
 	"xterm".
