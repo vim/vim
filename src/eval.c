@@ -3496,7 +3496,7 @@ read_template_string_intervals(
 	    if (ga_grow(result, 2) == FAIL)
 	    {
 		intervals_free(result);
-		semsg(_("Internal error!"));
+		emsg(_(e_outofmem));
 		return FAIL;
 	    }
 	    result->ga_len += 2;
@@ -3510,7 +3510,7 @@ read_template_string_intervals(
 	    if (x == NULL)
 	    {
 		intervals_free(result);
-		semsg(_("Internal error!"));
+		emsg(_(e_outofmem));
 		return FAIL;
 	    }
 	    ((template_string_interval **)result->ga_data)[result->ga_len - 2] =
@@ -3529,7 +3529,7 @@ read_template_string_intervals(
 	    if (x == NULL)
 	    {
 		intervals_free(result);
-		semsg(_("Internal error!"));
+		emsg(_(e_outofmem));
 		return FAIL;
 	    }
 	    x->is_expr = 1;
@@ -3550,7 +3550,7 @@ read_template_string_intervals(
 	if (ga_grow(result, 1) == FAIL)
 	{
 	    intervals_free(result);
-	    semsg(_("Internal error!"));
+	    emsg(_(e_outofmem));
 	    return FAIL;
 	}
 	result->ga_len += 1;
@@ -3583,7 +3583,7 @@ make_interval_between_not_expr(char_u *start, char_u *end)
     s = alloc(sizeof(string_like));
     if (s == NULL)
     {
-	semsg(_("Internal error!"));
+	emsg(_(e_outofmem));
 	return NULL;
     }
     s->value = start;
@@ -3592,7 +3592,7 @@ make_interval_between_not_expr(char_u *start, char_u *end)
     x = alloc(sizeof(template_string_interval));
     if (x == NULL)
     {
-	semsg(_("Internal error!"));
+	emsg(_(e_outofmem));
 	return NULL;
     }
     x->is_expr = 0;
