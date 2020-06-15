@@ -2641,6 +2641,14 @@ simplify_filename(char_u *filename)
 	while (vim_ispathsep(*p));
     }
     start = p;	    // remember start after "c:/" or "/" or "///"
+#ifdef UNIX
+    // Posix says that "//path" is unchanged but "///path" is "/path".
+    if (start > filename + 2)
+    {
+	STRMOVE(filename + 1, p);
+	start = p = filename + 1;
+    }
+#endif
 
     do
     {
