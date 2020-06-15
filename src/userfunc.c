@@ -1075,6 +1075,15 @@ func_clear_items(ufunc_T *fp)
 	vim_free(((type_T **)fp->uf_type_list.ga_data)
 						  [--fp->uf_type_list.ga_len]);
     ga_clear(&fp->uf_type_list);
+
+    if (fp->uf_cb_free != NULL)
+    {
+	fp->uf_cb_free(fp->uf_cb_state);
+	fp->uf_cb_free = NULL;
+    }
+
+    fp->uf_cb_state = NULL;
+    fp->uf_cb = NULL;
 #ifdef FEAT_PROFILE
     VIM_CLEAR(fp->uf_tml_count);
     VIM_CLEAR(fp->uf_tml_total);
@@ -3682,11 +3691,7 @@ func_unref(char_u *name)
 	// Only delete it when it's not being used.  Otherwise it's done
 	// when "uf_calls" becomes zero.
 	if (fp->uf_calls == 0)
-	{
-	    if (fp->uf_cb_free != NULL)
-		fp->uf_cb_free(fp->uf_cb_state);
 	    func_clear_free(fp, FALSE);
-	}
     }
 }
 
