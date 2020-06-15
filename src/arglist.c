@@ -764,9 +764,12 @@ ex_next(exarg_T *eap)
     void
 ex_argdedupe(exarg_T *eap)
 {
-    for (int i = 0; i < ARGCOUNT; ++i)
+    int i;
+    int j;
+
+    for (i = 0; i < ARGCOUNT; ++i)
     {
-	for (int j = i + 1; j < ARGCOUNT; ++j)
+	for (j = i + 1; j < ARGCOUNT; ++j)
 	{
 	    if (fnamecmp(ARGLIST[i].ae_fname, ARGLIST[j].ae_fname) == 0)
 	    {
