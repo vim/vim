@@ -915,11 +915,13 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'spellcapcheck'	options.txt	/*'spellcapcheck'*
 'spellfile'	options.txt	/*'spellfile'*
 'spelllang'	options.txt	/*'spelllang'*
+'spelloptions'	options.txt	/*'spelloptions'*
 'spellsuggest'	options.txt	/*'spellsuggest'*
 'spf'	options.txt	/*'spf'*
 'spl'	options.txt	/*'spl'*
 'splitbelow'	options.txt	/*'splitbelow'*
 'splitright'	options.txt	/*'splitright'*
+'spo'	options.txt	/*'spo'*
 'spr'	options.txt	/*'spr'*
 'sps'	options.txt	/*'sps'*
 'sr'	options.txt	/*'sr'*
@@ -2089,6 +2091,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :arga	editing.txt	/*:arga*
 :argadd	editing.txt	/*:argadd*
 :argd	editing.txt	/*:argd*
+:argded	editing.txt	/*:argded*
+:argdedupe	editing.txt	/*:argdedupe*
 :argdelete	editing.txt	/*:argdelete*
 :argdo	editing.txt	/*:argdo*
 :arge	editing.txt	/*:arge*
@@ -4801,6 +4805,7 @@ E960	options.txt	/*E960*
 E961	cmdline.txt	/*E961*
 E962	eval.txt	/*E962*
 E963	eval.txt	/*E963*
+E964	eval.txt	/*E964*
 E964	textprop.txt	/*E964*
 E965	textprop.txt	/*E965*
 E966	textprop.txt	/*E966*
@@ -5059,6 +5064,7 @@ SessionLoad-variable	starting.txt	/*SessionLoad-variable*
 SessionLoadPost	autocmd.txt	/*SessionLoadPost*
 ShellCmdPost	autocmd.txt	/*ShellCmdPost*
 ShellFilterPost	autocmd.txt	/*ShellFilterPost*
+SigUSR1	autocmd.txt	/*SigUSR1*
 SourceCmd	autocmd.txt	/*SourceCmd*
 SourcePost	autocmd.txt	/*SourcePost*
 SourcePre	autocmd.txt	/*SourcePre*
@@ -5450,20 +5456,7 @@ bars	help.txt	/*bars*
 base_font_name_list	mbyte.txt	/*base_font_name_list*
 basic.vim	syntax.txt	/*basic.vim*
 beep	options.txt	/*beep*
-beos-colors	os_beos.txt	/*beos-colors*
-beos-compiling	os_beos.txt	/*beos-compiling*
-beos-dragndrop	os_beos.txt	/*beos-dragndrop*
-beos-fonts	os_beos.txt	/*beos-fonts*
-beos-general	os_beos.txt	/*beos-general*
-beos-gui	os_beos.txt	/*beos-gui*
-beos-launch	os_beos.txt	/*beos-launch*
-beos-meta	os_beos.txt	/*beos-meta*
-beos-mouse	os_beos.txt	/*beos-mouse*
-beos-perl	os_beos.txt	/*beos-perl*
-beos-timeout	os_beos.txt	/*beos-timeout*
-beos-unicode	os_beos.txt	/*beos-unicode*
-beos-utf8	os_beos.txt	/*beos-utf8*
-beos-vimdir	os_beos.txt	/*beos-vimdir*
+beos	os_beos.txt	/*beos*
 better-python-interface	version7.txt	/*better-python-interface*
 beval_bufnr-variable	eval.txt	/*beval_bufnr-variable*
 beval_col-variable	eval.txt	/*beval_col-variable*
@@ -6364,6 +6357,7 @@ fixed-7.1	version7.txt	/*fixed-7.1*
 fixed-7.2	version7.txt	/*fixed-7.2*
 fixed-7.3	version7.txt	/*fixed-7.3*
 fixed-7.4	version7.txt	/*fixed-7.4*
+flatten()	eval.txt	/*flatten()*
 flexwiki.vim	syntax.txt	/*flexwiki.vim*
 float-e	eval.txt	/*float-e*
 float-functions	usr_41.txt	/*float-functions*
@@ -7108,7 +7102,6 @@ hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	helphelp.txt	/*help*
 help-context	help.txt	/*help-context*
 help-summary	usr_02.txt	/*help-summary*
-help-tags	tags	1
 help-translated	helphelp.txt	/*help-translated*
 help-writing	helphelp.txt	/*help-writing*
 help-xterm-window	helphelp.txt	/*help-xterm-window*
