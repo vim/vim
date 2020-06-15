@@ -781,6 +781,8 @@ ex_argdedupe(exarg_T *eap)
 		    curwin->w_arg_idx = i;
 		else if (curwin->w_arg_idx > j)
 		    --curwin->w_arg_idx;
+
+		--j;
 	    }
 	}
     }
