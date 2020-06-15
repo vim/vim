@@ -416,6 +416,35 @@ func Test_argedit()
   bw! x
 endfunc
 
+" Test for the :argdedupe command
+func Test_argdedupe
+  call Reset_arglist()
+  argdedupe
+  call assert_equal([], argv())
+  args a a a aa b b a b aa
+  argdedupe
+  call assert_equal(['a', 'aa', 'b'], argv())
+  args a b c
+  argdedupe
+  call assert_equal(['a', 'b', 'c'])
+  args a
+  argdedupe
+  call assert_equal(['a'])
+  args a A b B
+  argdedupe
+  if has('fname_case')
+    call assert_equal(['a', 'A', 'b', 'B'])
+  else
+    call assert_equal(['a', 'b'])
+  endif
+  args a b a c a b
+  last
+  argdedupe
+  next
+  call assert_equal('c', expand('%:t'))
+  %argd
+endfunc
+
 " Test for the :argdelete command
 func Test_argdelete()
   call Reset_arglist()
