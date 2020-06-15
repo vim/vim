@@ -601,7 +601,7 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	case LUA_TFUNCTION:
 	{
 	    lua_pushvalue(L, pos);
-	    luaV_CFuncState *state = malloc(sizeof(luaV_CFuncState));
+	    luaV_CFuncState *state = ALLOC_CLEAR_ONE(luaV_CFuncState);
 	    state->index = luaL_ref(L, LUA_REGISTRYINDEX);
 	    state->L = L;
 	    char_u *name = register_cfunc(&luaV_call_lua_func, &luaV_call_lua_func_free, (void*)state);
@@ -2458,7 +2458,7 @@ luaV_call_lua_func_free(void *state)
 {
     luaV_CFuncState *funcstate = (luaV_CFuncState*)state;
     luaL_unref(L, LUA_REGISTRYINDEX, funcstate->index);
-    free(funcstate);
+    vim_free(funcstate);
 }
 
 #endif
