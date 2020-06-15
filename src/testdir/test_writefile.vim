@@ -434,4 +434,12 @@ func Test_write_readonly_dir()
   set backupdir& patchmode&
 endfunc
 
+" Test for writing a file using invalid file encoding
+func Test_write_invalid_encoding()
+  new
+  call setline(1, 'abc')
+  call assert_fails('write ++enc=axbyc Xfile', 'E213:')
+  close!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
