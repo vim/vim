@@ -2461,6 +2461,23 @@ func Test_popupwin_terminal_buffer()
   call assert_equal(origwin, win_getid())
 endfunc
 
+func Test_popupwin_close_prevwin()
+  CheckFeature terminal
+
+  call assert_equal(1, winnr('$'))
+  split
+  wincmd b
+  call assert_equal(2, winnr())
+  let buf = term_start(&shell, #{hidden: 1})
+  call popup_create(buf, {})
+  call term_wait(buf, 100)
+  call popup_clear(1)
+  call assert_equal(2, winnr())
+
+  quit
+  exe 'bwipe! ' .. buf
+endfunc
+
 func Test_popupwin_with_buffer_and_filter()
   new Xwithfilter
   call setline(1, range(100))
