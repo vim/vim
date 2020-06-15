@@ -656,6 +656,11 @@ list of the current window.
 				:args ## x
 <			This will add the "x" item and sort the new list.
 
+:argded[upe]					*:argded* *:argdedupe*
+			Remove duplicate filenames from the argument list.
+			If your current file is a duplicate, your current file
+			will change to the original file index.
+
 :argd[elete] {pattern} ..		*:argd* *:argdelete* *E480* *E610*
 			Delete files from the argument list that match the
 			{pattern}s.  {pattern} is used like a file pattern,
