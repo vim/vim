@@ -4897,7 +4897,6 @@ E960	options.txt	/*E960*
 E961	cmdline.txt	/*E961*
 E962	eval.txt	/*E962*
 E963	eval.txt	/*E963*
-E964	eval.txt	/*E964*
 E964	textprop.txt	/*E964*
 E965	textprop.txt	/*E965*
 E966	textprop.txt	/*E966*
@@ -7281,6 +7280,7 @@ help-buffer-options	helphelp.txt	/*help-buffer-options*
 help-context	help.txt	/*help-context*
 help-curwin	tips.txt	/*help-curwin*
 help-summary	usr_02.txt	/*help-summary*
+help-tags	tags	1
 help-translated	helphelp.txt	/*help-translated*
 help-writing	helphelp.txt	/*help-writing*
 help-xterm-window	helphelp.txt	/*help-xterm-window*

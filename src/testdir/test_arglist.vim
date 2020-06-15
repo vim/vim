@@ -426,16 +426,16 @@ func Test_argdedupe()
   call assert_equal(['a', 'aa', 'b'], argv())
   args a b c
   argdedupe
-  call assert_equal(['a', 'b', 'c'])
+  call assert_equal(['a', 'b', 'c'], argv())
   args a
   argdedupe
-  call assert_equal(['a'])
+  call assert_equal(['a'], argv())
   args a A b B
   argdedupe
   if has('fname_case')
-    call assert_equal(['a', 'A', 'b', 'B'])
+    call assert_equal(['a', 'A', 'b', 'B'], argv())
   else
-    call assert_equal(['a', 'b'])
+    call assert_equal(['a', 'b'], argv())
   endif
   args a b a c a b
   last
