@@ -854,6 +854,8 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	    no_query_mouse_for_testing = val;
 	else if (STRCMP(name, (char_u *)"no_wait_return") == 0)
 	    no_wait_return = val;
+	else if (STRCMP(name, (char_u *)"ui_delay") == 0)
+	    ui_delay_for_testing = val;
 	else if (STRCMP(name, (char_u *)"term_props") == 0)
 	    reset_term_props_on_termresponse = val;
 	else if (STRCMP(name, (char_u *)"ALL") == 0)
@@ -863,6 +865,7 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	    ignore_redraw_flag_for_testing = FALSE;
 	    nfa_fail_for_testing = FALSE;
 	    no_query_mouse_for_testing = FALSE;
+	    ui_delay_for_testing = 0;
 	    reset_term_props_on_termresponse = FALSE;
 	    if (save_starting >= 0)
 	    {

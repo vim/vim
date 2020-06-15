@@ -1841,6 +1841,7 @@ EXTERN int  disable_redraw_for_testing INIT(= FALSE);
 EXTERN int  ignore_redraw_flag_for_testing INIT(= FALSE);
 EXTERN int  nfa_fail_for_testing INIT(= FALSE);
 EXTERN int  no_query_mouse_for_testing INIT(= FALSE);
+EXTERN int  ui_delay_for_testing INIT(= 0);
 EXTERN int  reset_term_props_on_termresponse INIT(= FALSE);
 
 EXTERN int  in_free_unref_items INIT(= FALSE);
