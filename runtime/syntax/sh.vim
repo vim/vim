@@ -15,6 +15,9 @@ endif
 
 " trying to answer the question: which shell is /bin/sh, really?
 " If the user has not specified any of g:is_kornshell, g:is_bash, g:is_posix, g:is_sh, then guess.
+if exists("b:is_kornshell") | unlet b:is_kornshell | endif
+if exists("b:is_bash")      | unlet b:is_bash      | endif
+if exists("b:is_posix")     | unlet b:is_posix     | endif
 if getline(1) =~ '\<ksh$'
  let b:is_kornshell = 1
 elseif getline(1) =~ '\<bash$'
