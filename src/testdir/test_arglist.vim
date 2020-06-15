@@ -417,7 +417,7 @@ func Test_argedit()
 endfunc
 
 " Test for the :argdedupe command
-func Test_argdedupe
+func Test_argdedupe()
   call Reset_arglist()
   argdedupe
   call assert_equal([], argv())
