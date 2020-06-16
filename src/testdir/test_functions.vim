@@ -1958,6 +1958,7 @@ func Test_readdirex_sort()
   let files = readdirex('Xdir2', 1, #{sort: 'none'})->map({-> v:val.name})
   let unsorted = copy(files)
   call assert_equal(['README.txt', 'Readme.txt', 'readme.txt'], sort(files), 'unsorted')
+  call assert_fails("call readdirex('Xdir2', 1, #{slort: 'none'})", 'E857: Dictionary key "sort" required')
 
   " 3) sort by case (same as default)
   let files = readdirex('Xdir2', 1, #{sort: 'case'})->map({-> v:val.name})
