@@ -226,9 +226,23 @@ enddef
 def Test_assignment_var_list()
   let v1: string
   let v2: string
+  let vrem: list<string>
+  [v1] = ['aaa']
+  assert_equal('aaa', v1)
+
   [v1, v2] = ['one', 'two']
   assert_equal('one', v1)
   assert_equal('two', v2)
+
+  [v1, v2; vrem] = ['one', 'two']
+  assert_equal('one', v1)
+  assert_equal('two', v2)
+  assert_equal([], vrem)
+
+  [v1, v2; vrem] = ['one', 'two', 'three']
+  assert_equal('one', v1)
+  assert_equal('two', v2)
+  assert_equal(['three'], vrem)
 enddef
 
 def Mess(): string
@@ -244,7 +258,18 @@ def Test_assignment_failure()
   call CheckDefFailure(['let true = 1'], 'E1034:')
   call CheckDefFailure(['let false = 1'], 'E1034:')
 
-  call CheckDefFailure(['let [a; b; c] = g:list'], 'E452:')
+  call CheckDefFailure(['[a; b; c] = g:list'], 'E452:')
+  call CheckDefExecFailure(['let a: number',
+                            '[a] = test_null_list()'], 'E1093:')
+  call CheckDefExecFailure(['let a: number',
+                            '[a] = []'], 'E1093:')
+  call CheckDefExecFailure(['let x: number',
+                            'let y: number',
+                            '[x, y] = [1]'], 'E1093:')
+  call CheckDefExecFailure(['let x: number',
+                            'let y: number',
+                            'let z: list<number>',
+                            '[x, y; z] = [1]'], 'E1093:')
 
   call CheckDefFailure(['let somevar'], "E1022:")
   call CheckDefFailure(['let &option'], 'E1052:')

@@ -112,6 +112,7 @@ typedef enum {
     // expression operations
     ISN_CONCAT,
     ISN_INDEX,	    // [expr] list index
+    ISN_SLICE,	    // drop isn_arg.number items from start of list
     ISN_GETITEM,    // push list item, isn_arg.number is the index
     ISN_MEMBER,	    // dict[member]
     ISN_STRINGMEMBER, // dict.member using isn_arg.string
@@ -121,6 +122,7 @@ typedef enum {
 
     ISN_CHECKNR,    // check value can be used as a number
     ISN_CHECKTYPE,  // check value type is isn_arg.type.tc_type
+    ISN_CHECKLEN,   // check list length is isn_arg.checklen.cl_min_len
 
     ISN_DROP	    // pop stack and discard value
 } isntype_T;
@@ -229,6 +231,12 @@ typedef struct {
     int		fr_var_idx;	// variable to store partial
 } funcref_T;
 
+// arguments to ISN_CHECKLEN
+typedef struct {
+    int		cl_min_len;	// minimum length
+    int		cl_more_OK;	// longer is allowed
+} checklen_T;
+
 /*
  * Instruction
  */
@@ -261,6 +269,7 @@ struct isn_S {
 	script_T	    script;
 	unlet_T		    unlet;
 	funcref_T	    funcref;
+	checklen_T	    checklen;
     } isn_arg;
 };
 

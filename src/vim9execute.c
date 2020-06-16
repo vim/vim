@@ -2114,6 +2114,35 @@ call_def_function(
 		}
 		break;
 
+	    case ISN_SLICE:
+		{
+		    list_T	*list;
+		    int		count = iptr->isn_arg.number;
+
+		    tv = STACK_TV_BOT(-1);
+		    if (tv->v_type != VAR_LIST)
+		    {
+			emsg(_(e_listreq));
+			goto failed;
+		    }
+		    list = tv->vval.v_list;
+
+		    // no error for short list, expect it to be checked earlier
+		    if (list != NULL && list->lv_len >= count)
+		    {
+			list_T	*newlist = list_slice(list,
+						      count, list->lv_len - 1);
+
+			if (newlist != NULL)
+			{
+			    list_unref(list);
+			    tv->vval.v_list = newlist;
+			    ++newlist->lv_refcount;
+			}
+		    }
+		}
+		break;
+
 	    case ISN_GETITEM:
 		{
 		    listitem_T	*li;
@@ -2238,6 +2267,25 @@ call_def_function(
 			semsg(_("E1029: Expected %s but got %s"),
 				    vartype_name(ct->ct_type),
 				    vartype_name(tv->v_type));
+			goto failed;
+		    }
+		}
+		break;
+
+	    case ISN_CHECKLEN:
+		{
+		    int	    min_len = iptr->isn_arg.checklen.cl_min_len;
+		    list_T  *list = NULL;
+
+		    tv = STACK_TV_BOT(-1);
+		    if (tv->v_type == VAR_LIST)
+			    list = tv->vval.v_list;
+		    if (list == NULL || list->lv_len < min_len
+			    || (list->lv_len > min_len
+					&& !iptr->isn_arg.checklen.cl_more_OK))
+		    {
+			semsg(_("E1093: Expected %d items but got %d"),
+				     min_len, list == NULL ? 0 : list->lv_len);
 			goto failed;
 		    }
 		}
@@ -2814,6 +2862,8 @@ ex_disassemble(exarg_T *eap)
 	    // expression operations
 	    case ISN_CONCAT: smsg("%4d CONCAT", current); break;
 	    case ISN_INDEX: smsg("%4d INDEX", current); break;
+	    case ISN_SLICE: smsg("%4d SLICE %lld",
+					 current, iptr->isn_arg.number); break;
 	    case ISN_GETITEM: smsg("%4d ITEM %lld",
 					 current, iptr->isn_arg.number); break;
 	    case ISN_MEMBER: smsg("%4d MEMBER", current); break;
@@ -2826,6 +2876,10 @@ ex_disassemble(exarg_T *eap)
 				      vartype_name(iptr->isn_arg.type.ct_type),
 				      iptr->isn_arg.type.ct_off);
 				break;
+	    case ISN_CHECKLEN: smsg("%4d CHECKLEN %s%d", current,
+				iptr->isn_arg.checklen.cl_more_OK ? ">= " : "",
+				iptr->isn_arg.checklen.cl_min_len);
+			       break;
 	    case ISN_2BOOL: if (iptr->isn_arg.number)
 				smsg("%4d INVERT (!val)", current);
 			    else

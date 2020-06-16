@@ -868,6 +868,26 @@ list_concat(list_T *l1, list_T *l2, typval_T *tv)
     return list_extend(l, l2, NULL);
 }
 
+    list_T *
+list_slice(list_T *ol, long n1, long n2)
+{
+    listitem_T	*item;
+    list_T	*l = list_alloc();
+
+    if (l == NULL)
+	return NULL;
+    for (item = list_find(ol, n1); n1 <= n2; ++n1)
+    {
+	if (list_append_tv(l, &item->li_tv) == FAIL)
+	{
+	    list_free(l);
+	    return NULL;
+	}
+	item = item->li_next;
+    }
+    return l;
+}
+
 /*
  * Make a copy of list "orig".  Shallow if "deep" is FALSE.
  * The refcount of the new list is set to 1.

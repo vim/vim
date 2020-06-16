@@ -3237,7 +3237,6 @@ eval_index(
 		if (range)
 		{
 		    list_T	*l;
-		    listitem_T	*item;
 
 		    if (n2 < 0)
 			n2 = len + n2;
@@ -3245,19 +3244,9 @@ eval_index(
 			n2 = len - 1;
 		    if (!empty2 && (n2 < 0 || n2 + 1 < n1))
 			n2 = -1;
-		    l = list_alloc();
+		    l = list_slice(rettv->vval.v_list, n1, n2);
 		    if (l == NULL)
 			return FAIL;
-		    for (item = list_find(rettv->vval.v_list, n1);
-							       n1 <= n2; ++n1)
-		    {
-			if (list_append_tv(l, &item->li_tv) == FAIL)
-			{
-			    list_free(l);
-			    return FAIL;
-			}
-			item = item->li_next;
-		    }
 		    clear_tv(rettv);
 		    rettv_list_set(rettv, l);
 		}

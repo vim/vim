@@ -1086,6 +1086,39 @@ generate_GETITEM(cctx_T *cctx, int index)
 }
 
 /*
+ * Generate an ISN_SLICE instruction with "count".
+ */
+    static int
+generate_SLICE(cctx_T *cctx, int count)
+{
+    isn_T	*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_SLICE)) == NULL)
+	return FAIL;
+    isn->isn_arg.number = count;
+    return OK;
+}
+
+/*
+ * Generate an ISN_CHECKLEN instruction with "min_len".
+ */
+    static int
+generate_CHECKLEN(cctx_T *cctx, int min_len, int more_OK)
+{
+    isn_T	*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+
+    if ((isn = generate_instr(cctx, ISN_CHECKLEN)) == NULL)
+	return FAIL;
+    isn->isn_arg.checklen.cl_min_len = min_len;
+    isn->isn_arg.checklen.cl_more_OK = more_OK;
+
+    return OK;
+}
+
+/*
  * Generate an ISN_STORE instruction.
  */
     static int
@@ -4708,8 +4741,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    }
 	    if (need_type(stacktype, &t_list_any, -1, cctx) == FAIL)
 		goto theend;
-	    // TODO: check length of list to be var_count (or more if
-	    // "semicolon" set)
+	    generate_CHECKLEN(cctx, semicolon ? var_count - 1 : var_count,
+								    semicolon);
 	}
     }
 
@@ -5066,6 +5099,12 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    if (r == FAIL)
 			goto theend;
 		}
+		else if (semicolon && var_idx == var_count - 1)
+		{
+		    // For "[var; var] = expr" get the rest of the list
+		    if (generate_SLICE(cctx, var_count - 1) == FAIL)
+			goto theend;
+		}
 		else
 		{
 		    // For "[var, var] = expr" get the "var_idx" item from the
@@ -5373,8 +5412,11 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     }
 
     // for "[var, var] = expr" drop the "expr" value
-    if (var_count > 0 && generate_instr_drop(cctx, ISN_DROP, 1) == NULL)
-	goto theend;
+    if (var_count > 0 && !semicolon)
+    {
+	    if (generate_instr_drop(cctx, ISN_DROP, 1) == NULL)
+	    goto theend;
+    }
 
     ret = end;
 
@@ -7073,6 +7115,7 @@ delete_instr(isn_T *isn)
 	case ISN_CATCH:
 	case ISN_CHECKNR:
 	case ISN_CHECKTYPE:
+	case ISN_CHECKLEN:
 	case ISN_COMPAREANY:
 	case ISN_COMPAREBLOB:
 	case ISN_COMPAREBOOL:
@@ -7095,6 +7138,7 @@ delete_instr(isn_T *isn)
 	case ISN_FOR:
 	case ISN_INDEX:
 	case ISN_GETITEM:
+	case ISN_SLICE:
 	case ISN_MEMBER:
 	case ISN_JUMP:
 	case ISN_LOAD:
