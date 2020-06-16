@@ -7918,7 +7918,8 @@ readdir({directory} [, {expr} [, {dict}]])			*readdir()*
 		Return a list with file and directory names in {directory}.
 		You can also use |glob()| if you don't need to do complicated
 		things, such as limiting the number of matches.
-		The list will be sorted (case sensitive).
+		The list will be sorted (case sensitive), see below for
+		changing the sort order.
 
 		When {expr} is omitted all entries are included.
 		When {expr} is given, it is evaluated to check what to do:
@@ -7976,7 +7977,8 @@ readdirex({directory} [, {expr} [, {dict}]])			*readdirex()*
 		|getfperm()|, |getfsize()|, |getftime()| and |getftype()| for
 		each file and directory especially on MS-Windows.
 		The list will by default be sorted by name (case sensitive),
-		see below for changing the sorting.
+		the sorting can be changed by using the optional {dict}
+		argument, see |readdir()|.
 
 		The Dictionary for file and directory information has the
 		following items:
@@ -8017,7 +8019,6 @@ readdirex({directory} [, {expr} [, {dict}]])			*readdirex()*
 		For example, to get a list of files ending in ".txt": >
 		  readdirex(dirname, {e -> e.name =~ '.txt$'})
 <
-		For the optional {dict} argument, see |readdir()|.
 		For example, to get a list of all files in the current
 		directory without sorting the individual entries: >
 		  readdirex(dirname, '1', #{sort: 'none'})
