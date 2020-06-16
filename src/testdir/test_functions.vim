@@ -1974,10 +1974,11 @@ func Test_readdirex_sort()
     call assert_equal(['readme.txt', 'Readme.txt', 'README.txt'], files, 'sort by de_DE collation')
   catch
     throw 'Skipped: de_DE collation is not available'
-  endtry
 
-  exe 'lang collate' collate
-  eval 'Xdir2'->delete('rf')
+  finally
+    exe 'lang collate' collate
+    eval 'Xdir2'->delete('rf')
+  endtry
 endfunc
 
 func Test_readdirex_sort2()
