@@ -4656,6 +4656,17 @@ compare_readdirex_item(const void *p1, const void *p2)
     else
 	return STRCOLL(name1, name2);
 }
+
+    static int
+compare_readdir_item(const void *s1, const void *s2)
+{
+    if (readdirex_sort == READDIR_SORT_BYTE)
+	return STRCMP(*(char **)s1, *(char **)s2);
+    else if (readdirex_sort == READDIR_SORT_IC)
+	return STRICMP(*(char **)s1, *(char **)s2);
+    else
+	return STRCOLL(*(char **)s1, *(char **)s2);
+}
 #endif
 
 #if defined(TEMPDIRNAMES) || defined(FEAT_EVAL) || defined(PROTO)
@@ -4864,8 +4875,11 @@ readdir_core(
 	    qsort((void*)gap->ga_data, (size_t)gap->ga_len, sizeof(dict_T*),
 		    compare_readdirex_item);
 	else
-# endif
+	    qsort((void*)gap->ga_data, (size_t)gap->ga_len, sizeof(char_u *),
+		    compare_readdir_item);
+# else
 	    sort_strings((char_u **)gap->ga_data, gap->ga_len);
+# endif
     }
 
     return failed ? FAIL : OK;

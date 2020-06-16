@@ -2691,7 +2691,8 @@ pyxeval({expr})			any	evaluate |python_x| expression
 rand([{expr}])			Number	get pseudo-random number
 range({expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
-readdir({dir} [, {expr}])	List	file names in {dir} selected by {expr}
+readdir({dir} [, {expr} [, {dict}]])
+				List	file names in {dir} selected by {expr}
 readdirex({dir} [, {expr} [, {dict}]])
 				List	file info in {dir} selected by {expr}
 readfile({fname} [, {type} [, {max}]])
@@ -7913,7 +7914,7 @@ rand([{expr}])						*rand()* *random*
 			:echo rand(seed)
 			:echo rand(seed) % 16  " random number 0 - 15
 <
-readdir({directory} [, {expr}])				*readdir()*
+readdir({directory} [, {expr} [, {dict}]])			*readdir()*
 		Return a list with file and directory names in {directory}.
 		You can also use |glob()| if you don't need to do complicated
 		things, such as limiting the number of matches.
@@ -7934,7 +7935,26 @@ readdir({directory} [, {expr}])				*readdir()*
 		  readdir(dirname, {n -> n =~ '.txt$'})
 <		To skip hidden and backup files: >
 		  readdir(dirname, {n -> n !~ '^\.\|\~$'})
+<		The optional {dict} argument allows for further custom
+		values. Currently this is used to specify if and how sorting
+		should be performed. The dict can have the following members:
 
+		    sort    How to sort the result returned from the system.
+			    Valid values are:
+				"none"	    do not sort (fastest method)
+				"case"	    sort case sensitive (byte value of
+					    each character, technically, using
+					    strcmp()) (default)
+				"icase"	    sort case insensitive (technically
+					    using strcasecmp())
+				"collate"   sort using the collation order
+					    of the "POSIX" or "C" |locale|
+					    (technically using strcoll())
+			    Other values are silently ignored.
+
+		For example, to get a list of all files in the current
+		directory without sorting the individual entries: >
+		  readdir('.', '1', #{sort: 'none'})
 <		If you want to get a directory tree: >
                   function! s:tree(dir)
                       return {a:dir : map(readdir(a:dir),
@@ -7997,23 +8017,7 @@ readdirex({directory} [, {expr} [, {dict}]])			*readdirex()*
 		For example, to get a list of files ending in ".txt": >
 		  readdirex(dirname, {e -> e.name =~ '.txt$'})
 <
-		The optional {dict} argument allows for further custom
-		values. Currently this is used to specify if and how sorting
-		should be performed. The dict can have the following members:
-
-		    sort    How to sort the result returned from the system.
-			    Valid values are:
-				"none"	    do not sort (fastest method)
-				"case"	    sort case sensitive (byte value of
-					    each character, technically, using
-					    strcmp()) (default)
-				"icase"	    sort case insensitive (technically
-					    using strcasecmp())
-				"collate"   sort using the collation order
-					    of the "POSIX" or "C" |locale|
-					    (technically using strcoll())
-			    Other values are silently ignored.
-
+		For the optional {dict} argument, see |readdir()|.
 		For example, to get a list of all files in the current
 		directory without sorting the individual entries: >
 		  readdirex(dirname, '1', #{sort: 'none'})
