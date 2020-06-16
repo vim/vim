@@ -32,13 +32,14 @@ in_vim9script(void)
     void
 ex_vim9script(exarg_T *eap)
 {
-    scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
+    scriptitem_T    *si;
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
     {
 	emsg(_("E1038: vim9script can only be used in a script"));
 	return;
     }
+    si = SCRIPT_ITEM(current_sctx.sc_sid);
     if (si->sn_had_command)
     {
 	emsg(_("E1039: vim9script must be the first command in a script"));
@@ -141,8 +142,15 @@ free_imports(int sid)
     void
 ex_import(exarg_T *eap)
 {
-    char_u *cmd_end = handle_import(eap->arg, NULL, current_sctx.sc_sid, NULL);
+    char_u *cmd_end;
 
+    if (!getline_equal(eap->getline, eap->cookie, getsourceline))
+    {
+	emsg(_("E1094: import can only be used in a script"));
+	return;
+    }
+
+    cmd_end = handle_import(eap->arg, NULL, current_sctx.sc_sid, NULL);
     if (cmd_end != NULL)
 	eap->nextcmd = check_nextcmd(cmd_end);
 }
