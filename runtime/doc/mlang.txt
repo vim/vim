@@ -46,7 +46,7 @@ use of "-" and "_".
 			With the "time" argument the language used for
 			strftime() is printed.  Technical: LC_TIME.
 			With the "collate" argument the language used for
-                        collation order is printed.  Technical: LC_COLLATE.
+			collation order is printed.  Technical: LC_COLLATE.
 			Without argument all parts of the locale are printed
 			(this is system dependent).
 			The current language can also be obtained with the
