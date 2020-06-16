@@ -858,13 +858,18 @@ f_win_gettype(typval_T *argvars, typval_T *rettv)
 	    return;
 	}
     }
+    if (wp == aucmd_win)
+	rettv->vval.v_string = vim_strsave((char_u *)"aucmdwin");
+#if defined(FEAT_QUICKFIX)
+    else if (wp->w_p_pvw)
+	rettv->vval.v_string = vim_strsave((char_u *)"preview");
+#endif
 #ifdef FEAT_PROP_POPUP
-    if (WIN_IS_POPUP(wp))
+    else if (WIN_IS_POPUP(wp))
 	rettv->vval.v_string = vim_strsave((char_u *)"popup");
-    else
 #endif
 #ifdef FEAT_CMDWIN
-    if (wp == curwin && cmdwin_type != 0)
+    else if (wp == curwin && cmdwin_type != 0)
 	rettv->vval.v_string = vim_strsave((char_u *)"command");
 #endif
 }
