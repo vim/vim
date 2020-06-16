@@ -1981,7 +1981,7 @@ func Test_readdirex_sort()
   endtry
 endfunc
 
-func Test_readdirex_sort2()
+func Test_readdir_sort()
   " some more cases for testing sorting for readdirex
   let dir = 'Xdir3'
   call mkdir(dir)
@@ -1993,16 +1993,16 @@ func Test_readdirex_sort2()
   call writefile(['6'], dir .. '/b.txt')
 
   " 1) default
-  let files = readdirex(dir)->map({-> v:val.name})
+  let files = readdir(dir)
   let default = copy(files)
   call assert_equal(default->sort(), files, 'sort using default')
 
   " 2) sort by case (same as default)
-  let files = readdirex(dir, '1', #{sort: 'case'})->map({-> v:val.name})
+  let files = readdir(dir, '1', #{sort: 'case'})
   call assert_equal(default, files, 'sort using default')
 
   " 3) sort by ignoring case
-  let files = readdirex(dir, '1', #{sort: 'icase'})->map({-> v:val.name})
+  let files = readdir(dir, '1', #{sort: 'icase'})
   call assert_equal(default->sort('i'), files, 'sort by ignoring case')
 
   eval dir->delete('rf')
