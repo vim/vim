@@ -1931,55 +1931,53 @@ endfunc
 
 func Test_readdirex_sort()
   CheckUnix
-  CheckNotBSD
   " Skip tests on Mac OS X and Cygwin (does not allow several files with different casing)
-  if !(has("osxdarwin") || has("osx") || has("macunix") || has("win32unix"))
-    let _collate = v:collate
-    call mkdir('Xdir2')
-    call writefile(['1'], 'Xdir2/README.txt')
-    call writefile(['2'], 'Xdir2/Readme.txt')
-    call writefile(['3'], 'Xdir2/readme.txt')
-
-    " 1) default
-    let files = readdirex('Xdir2')->map({-> v:val.name})
-    let default = copy(files)
-    call assert_equal(['README.txt', 'Readme.txt', 'readme.txt'], files, 'sort using default')
-
-    " 2) no sorting
-    let files = readdirex('Xdir2', 1, #{sort: 'none'})->map({-> v:val.name})
-    let unsorted = copy(files)
-    call assert_equal(['README.txt', 'Readme.txt', 'readme.txt'], sort(files), 'unsorted')
-
-    " 3) sort by case (same as default)
-    let files = readdirex('Xdir2', 1, #{sort: 'case'})->map({-> v:val.name})
-    call assert_equal(default, files, 'sort by case')
-
-    " 4) sort by ignoring case
-    let files = readdirex('Xdir2', 1, #{sort: 'icase'})->map({-> v:val.name})
-    call assert_equal(unsorted->sort('i'), files, 'sort by icase')
-
-    " 5) Default Collation
-    let collate = v:collate
-    lang collate C
-    let files = readdirex('Xdir2', 1, #{sort: 'collate'})->map({-> v:val.name})
-    call assert_equal(['README.txt', 'Readme.txt', 'readme.txt'], files, 'sort by C collation')
-
-    " 6) Collation de_DE
-    " Switch locale, this may not work on the CI system, if the locale isn't
-    " available
-    try
-      lang collate de_DE
-      let files = readdirex('Xdir2', 1, #{sort: 'collate'})->map({-> v:val.name})
-      call assert_equal(['readme.txt', 'Readme.txt', 'README.txt'], files, 'sort by de_DE collation')
-    catch
-      throw 'Skipped: de_DE collation is not available'
-    endtry
-
-    exe 'lang collate' collate
-    eval 'Xdir2'->delete('rf')
-  else
+  if has("osxdarwin") || has("osx") || has("macunix") || has("win32unix")
     throw 'Skipped: Test_readdirex_sort on systems that do not allow this using the default filesystem'
   endif
+  let _collate = v:collate
+  call mkdir('Xdir2')
+  call writefile(['1'], 'Xdir2/README.txt')
+  call writefile(['2'], 'Xdir2/Readme.txt')
+  call writefile(['3'], 'Xdir2/readme.txt')
+
+  " 1) default
+  let files = readdirex('Xdir2')->map({-> v:val.name})
+  let default = copy(files)
+  call assert_equal(['README.txt', 'Readme.txt', 'readme.txt'], files, 'sort using default')
+
+  " 2) no sorting
+  let files = readdirex('Xdir2', 1, #{sort: 'none'})->map({-> v:val.name})
+  let unsorted = copy(files)
+  call assert_equal(['README.txt', 'Readme.txt', 'readme.txt'], sort(files), 'unsorted')
+
+  " 3) sort by case (same as default)
+  let files = readdirex('Xdir2', 1, #{sort: 'case'})->map({-> v:val.name})
+  call assert_equal(default, files, 'sort by case')
+
+  " 4) sort by ignoring case
+  let files = readdirex('Xdir2', 1, #{sort: 'icase'})->map({-> v:val.name})
+  call assert_equal(unsorted->sort('i'), files, 'sort by icase')
+
+  " 5) Default Collation
+  let collate = v:collate
+  lang collate C
+  let files = readdirex('Xdir2', 1, #{sort: 'collate'})->map({-> v:val.name})
+  call assert_equal(['README.txt', 'Readme.txt', 'readme.txt'], files, 'sort by C collation')
+
+  " 6) Collation de_DE
+  " Switch locale, this may not work on the CI system, if the locale isn't
+  " available
+  try
+    lang collate de_DE
+    let files = readdirex('Xdir2', 1, #{sort: 'collate'})->map({-> v:val.name})
+    call assert_equal(['readme.txt', 'Readme.txt', 'README.txt'], files, 'sort by de_DE collation')
+  catch
+    throw 'Skipped: de_DE collation is not available'
+  endtry
+
+  exe 'lang collate' collate
+  eval 'Xdir2'->delete('rf')
 endfunc
 
 func Test_readdirex_sort2()
