@@ -2579,4 +2579,26 @@ func Test_BufDelete_changebuf()
   close!
 endfunc
 
+" Test for the temporary internal window used to execute autocmds
+func Test_autocmd_window()
+  %bw!
+  edit one.txt
+  tabnew two.txt
+  let g:blist = []
+  augroup aucmd_win_test
+    au!
+    au BufEnter * call add(g:blist, [expand('<afile>'),
+          \ win_gettype(bufwinnr(expand('<afile>')))])
+  augroup END
+
+  doautoall BufEnter
+  call assert_equal([['one.txt', 'aucmdwin'], ['two.txt', '']], g:blist)
+
+  augroup aucmd_win_test
+    au!
+  augroup END
+  augroup! aucmd_win_test
+  %bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
