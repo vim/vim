@@ -2025,6 +2025,10 @@ func Test_readdir_sort()
   call assert_fails('call readdir(dir, 1, #{sorta: 1})')
   call assert_fails('call readdirex(dir, 1, #{sorta: 1})')
 
+  " 6) ignore other values in dict
+  let files = readdir(dir, '1', #{sort: 'c'})
+  call assert_equal(default, files, 'sort using default2')
+
   " Cleanup
   exe "lang collate" collate
 
