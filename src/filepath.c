@@ -1405,6 +1405,36 @@ theend:
     return retval;
 }
 
+    static int
+readdirex_dict_arg(typval_T *tv, int *cmp)
+{
+    char_u     *compare;
+
+    if (tv->v_type != VAR_DICT)
+    {
+	emsg(_(e_dictreq));
+	return FAIL;
+    }
+
+    if (dict_find(tv->vval.v_dict, (char_u *)"sort", -1) != NULL)
+	compare = dict_get_string(tv->vval.v_dict, (char_u *)"sort", FALSE);
+    else
+    {
+	semsg(_(e_no_dict_key), "sort");
+	return FAIL;
+    }
+
+    if (STRCMP(compare, (char_u *) "none") == 0)
+	*cmp = READDIR_SORT_NONE;
+    else if (STRCMP(compare, (char_u *) "case") == 0)
+	*cmp = READDIR_SORT_BYTE;
+    else if (STRCMP(compare, (char_u *) "icase") == 0)
+	*cmp = READDIR_SORT_IC;
+    else if (STRCMP(compare, (char_u *) "collate") == 0)
+	*cmp = READDIR_SORT_COLLATE;
+    return OK;
+}
+
 /*
  * "readdir()" function
  */
@@ -1417,14 +1447,19 @@ f_readdir(typval_T *argvars, typval_T *rettv)
     char_u	*p;
     garray_T	ga;
     int		i;
+    int         sort = READDIR_SORT_BYTE;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
     path = tv_get_string(&argvars[0]);
     expr = &argvars[1];
 
+    if (argvars[1].v_type != VAR_UNKNOWN && argvars[2].v_type != VAR_UNKNOWN &&
+	    readdirex_dict_arg(&argvars[2], &sort) == FAIL)
+	return;
+
     ret = readdir_core(&ga, path, FALSE, (void *)expr,
-	    (expr->v_type == VAR_UNKNOWN) ? NULL : readdir_checkitem);
+	    (expr->v_type == VAR_UNKNOWN) ? NULL : readdir_checkitem, sort);
     if (ret == OK)
     {
 	for (i = 0; i < ga.ga_len; i++)
@@ -1480,14 +1515,19 @@ f_readdirex(typval_T *argvars, typval_T *rettv)
     char_u	*path;
     garray_T	ga;
     int		i;
+    int         sort = READDIR_SORT_BYTE;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
     path = tv_get_string(&argvars[0]);
     expr = &argvars[1];
 
+    if (argvars[1].v_type != VAR_UNKNOWN && argvars[2].v_type != VAR_UNKNOWN &&
+	    readdirex_dict_arg(&argvars[2], &sort) == FAIL)
+	return;
+
     ret = readdir_core(&ga, path, TRUE, (void *)expr,
-	    (expr->v_type == VAR_UNKNOWN) ? NULL : readdirex_checkitem);
+	    (expr->v_type == VAR_UNKNOWN) ? NULL : readdirex_checkitem, sort);
     if (ret == OK)
     {
 	for (i = 0; i < ga.ga_len; i++)

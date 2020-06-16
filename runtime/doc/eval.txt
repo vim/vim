@@ -1745,6 +1745,14 @@ v:cmdbang	Set like v:cmdarg for a file read/write command.  When a "!"
 		was used the value is 1, otherwise it is 0.  Note that this
 		can only be used in autocommands.  For user commands |<bang>|
 		can be used.
+						*v:collate* *collate-variable*
+v:collate	The current locale setting for collation order of the runtime
+		environment.  This allows Vim scripts to be aware of the
+		current locale encoding.  Technical: it's the value of
+		LC_COLLATE.  When not using a locale the value is "C".
+		This variable can not be set directly, use the |:language|
+		command.
+		See |multi-lang|.
 
 				*v:completed_item* *completed_item-variable*
 v:completed_item
@@ -2683,8 +2691,10 @@ pyxeval({expr})			any	evaluate |python_x| expression
 rand([{expr}])			Number	get pseudo-random number
 range({expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
-readdir({dir} [, {expr}])	List	file names in {dir} selected by {expr}
-readdirex({dir} [, {expr}])	List	file info in {dir} selected by {expr}
+readdir({dir} [, {expr} [, {dict}]])
+				List	file names in {dir} selected by {expr}
+readdirex({dir} [, {expr} [, {dict}]])
+				List	file info in {dir} selected by {expr}
 readfile({fname} [, {type} [, {max}]])
 				List	get list of lines from file {fname}
 reduce({object}, {func} [, {initial}])
@@ -7904,11 +7914,12 @@ rand([{expr}])						*rand()* *random*
 			:echo rand(seed)
 			:echo rand(seed) % 16  " random number 0 - 15
 <
-readdir({directory} [, {expr}])				*readdir()*
+readdir({directory} [, {expr} [, {dict}]])			*readdir()*
 		Return a list with file and directory names in {directory}.
 		You can also use |glob()| if you don't need to do complicated
 		things, such as limiting the number of matches.
-		The list will be sorted (case sensitive).
+		The list will be sorted (case sensitive), see the {dict}
+		argument below for changing the sort order.
 
 		When {expr} is omitted all entries are included.
 		When {expr} is given, it is evaluated to check what to do:
@@ -7926,18 +7937,38 @@ readdir({directory} [, {expr}])				*readdir()*
 <		To skip hidden and backup files: >
 		  readdir(dirname, {n -> n !~ '^\.\|\~$'})
 
+<		The optional {dict} argument allows for further custom
+		values. Currently this is used to specify if and how sorting
+		should be performed. The dict can have the following members:
+
+		    sort    How to sort the result returned from the system.
+			    Valid values are:
+				"none"	    do not sort (fastest method)
+				"case"	    sort case sensitive (byte value of
+					    each character, technically, using
+					    strcmp()) (default)
+				"icase"	    sort case insensitive (technically
+					    using strcasecmp())
+				"collate"   sort using the collation order
+					    of the "POSIX" or "C" |locale|
+					    (technically using strcoll())
+			    Other values are silently ignored.
+
+		For example, to get a list of all files in the current
+		directory without sorting the individual entries: >
+		  readdir('.', '1', #{sort: 'none'})
 <		If you want to get a directory tree: >
-                  function! s:tree(dir)
-                      return {a:dir : map(readdir(a:dir),
+		  function! s:tree(dir)
+		      return {a:dir : map(readdir(a:dir),
 		      \ {_, x -> isdirectory(x) ?
-		      \          {x : s:tree(a:dir . '/' . x)} : x})}
-                  endfunction
-                  echo s:tree(".")
+		      \		 {x : s:tree(a:dir . '/' . x)} : x})}
+		  endfunction
+		  echo s:tree(".")
 <
 		Can also be used as a |method|: >
 			GetDirName()->readdir()
 <
-readdirex({directory} [, {expr}])			*readdirex()*
+readdirex({directory} [, {expr} [, {dict}]])			*readdirex()*
 		Extended version of |readdir()|.
 		Return a list of Dictionaries with file and directory
 		information in {directory}.
@@ -7946,7 +7977,9 @@ readdirex({directory} [, {expr}])			*readdirex()*
 		This is much faster than calling |readdir()| then calling
 		|getfperm()|, |getfsize()|, |getftime()| and |getftype()| for
 		each file and directory especially on MS-Windows.
-		The list will be sorted by name (case sensitive).
+		The list will by default be sorted by name (case sensitive),
+		the sorting can be changed by using the optional {dict}
+		argument, see |readdir()|.
 
 		The Dictionary for file and directory information has the
 		following items:
@@ -7986,6 +8019,11 @@ readdirex({directory} [, {expr}])			*readdirex()*
 		When {expr} is a function the entry is passed as the argument.
 		For example, to get a list of files ending in ".txt": >
 		  readdirex(dirname, {e -> e.name =~ '.txt$'})
+<
+		For example, to get a list of all files in the current
+		directory without sorting the individual entries: >
+		  readdirex(dirname, '1', #{sort: 'none'})
+
 <
 		Can also be used as a |method|: >
 			GetDirName()->readdirex()

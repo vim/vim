@@ -1185,6 +1185,14 @@ set_lang_var(void)
     loc = get_locale_val(LC_TIME);
 # endif
     set_vim_var_string(VV_LC_TIME, loc, -1);
+
+# ifdef HAVE_GET_LOCALE_VAL
+    loc = get_locale_val(LC_COLLATE);
+# else
+    // setlocale() not supported: use the default value
+    loc = (char_u *)"C";
+# endif
+    set_vim_var_string(VV_COLLATE, loc, -1);
 }
 #endif
 
@@ -1232,6 +1240,12 @@ ex_language(exarg_T *eap)
 	    name = skipwhite(p);
 	    whatstr = "time ";
 	}
+	else if (STRNICMP(eap->arg, "collate", p - eap->arg) == 0)
+	{
+	    what = LC_COLLATE;
+	    name = skipwhite(p);
+	    whatstr = "collate ";
+	}
     }
 
     if (*name == NUL)
@@ -1274,7 +1288,7 @@ ex_language(exarg_T *eap)
 	    // Reset $LC_ALL, otherwise it would overrule everything.
 	    vim_setenv((char_u *)"LC_ALL", (char_u *)"");
 
-	    if (what != LC_TIME)
+	    if (what != LC_TIME && what != LC_COLLATE)
 	    {
 		// Tell gettext() what to translate to.  It apparently doesn't
 		// use the currently effective locale.  Also do this when
@@ -1309,7 +1323,7 @@ ex_language(exarg_T *eap)
 	    }
 
 # ifdef FEAT_EVAL
-	    // Set v:lang, v:lc_time and v:ctype to the final result.
+	    // Set v:lang, v:lc_time, v:collate and v:ctype to the final result.
 	    set_lang_var();
 # endif
 # ifdef FEAT_TITLE
@@ -1462,11 +1476,13 @@ get_lang_arg(expand_T *xp UNUSED, int idx)
 	return (char_u *)"ctype";
     if (idx == 2)
 	return (char_u *)"time";
+    if (idx == 3)
+	return (char_u *)"collate";
 
     init_locales();
     if (locales == NULL)
 	return NULL;
-    return locales[idx - 3];
+    return locales[idx - 4];
 }
 
 /*
