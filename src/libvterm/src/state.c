@@ -16,6 +16,12 @@ static int on_resize(int rows, int cols, void *user);
 static void putglyph(VTermState *state, const uint32_t chars[], int width, VTermPos pos)
 {
   VTermGlyphInfo info;
+
+  if (pos.row >= state->rows)
+  {
+    DEBUG_LOG2("libvterm: putglyph() pos.row %d out of range (rows = %d)\n", pos.row, state.rows);
+    return;
+  }
   info.chars = chars;
   info.width = width;
   info.protected_cell = state->protected_cell;
@@ -283,6 +289,11 @@ static int on_text(const char bytes[], size_t len, void *user)
 
   VTermPos oldpos = state->pos;
 
+  if (state->pos.row >= state->rows)
+  {
+    DEBUG_LOG2("libvterm: on_text() pos.row %d out of range (rows = %d)\n", state->pos.row, state.rows);
+    return 0;
+  }
   // We'll have at most len codepoints, plus one from a previous incomplete
   // sequence.
   codepoints = vterm_allocator_malloc(state->vt, (len + 1) * sizeof(uint32_t));

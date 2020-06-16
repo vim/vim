@@ -280,6 +280,12 @@ static int erase_internal(VTermRect rect, int selective, void *user)
     for(col = rect.start_col; col < rect.end_col; col++) {
       ScreenCell *cell = getcell(screen, row, col);
 
+      if (cell == NULL)
+      {
+        DEBUG_LOG2("libvterm: erase_internal() position invalid: %d / %d",
+								     row, col);
+	return 1;
+      }
       if(selective && cell->pen.protected_cell)
         continue;
 
