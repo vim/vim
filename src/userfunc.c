@@ -346,7 +346,6 @@ register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
 {
     char_u *name = get_lambda_name();
     ufunc_T *fp = NULL;
-    partial_T *pt = NULL;
     int flags = FC_CFUNC;
     garray_T newargs;
     garray_T newlines;
@@ -356,9 +355,6 @@ register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
 
     fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
     if (fp == NULL)
-        goto errret;
-    pt = ALLOC_CLEAR_ONE(partial_T);
-    if (pt == NULL)
         goto errret;
 
     fp->uf_dfunc_idx = UF_NOT_COMPILED;
@@ -376,16 +372,12 @@ register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
     set_ufunc_name(fp, name);
     hash_add(&func_hashtab, UF2HIKEY(fp));
 
-    pt->pt_func = fp;
-    pt->pt_refcount = 1;
-
     return name;
 
 errret:
     ga_clear_strings(&newargs);
     ga_clear_strings(&newlines);
     vim_free(fp);
-    vim_free(pt);
     return NULL;
 }
 
