@@ -474,6 +474,73 @@ set_execreg_lastc(int lastc)
 }
 
 /*
+ * When executing a register as a series of ex-commands, if the
+ * line-continuation character is used for a line, then join it with one or
+ * more previous lines. Note that lines are processed backwards starting from
+ * the last line in the register.
+ *
+ * Arguments:
+ *   lines - list of lines in the register
+ *   idx - index of the line starting with \ or "\. Join this line with all the
+ *	   immediate predecessor lines that start with a \ and the first line
+ *	   that doesn't start with a \. Lines that start with a comment "\
+ *	   character are ignored.
+ *
+ * Returns the concatenated line. The index of the line that should be
+ * processed next is returned in idx.
+ */
+    static char_u *
+execreg_line_continuation(char_u **lines, long *idx)
+{
+    garray_T	ga;
+    long	i = *idx;
+    char_u	*p;
+    int		cmd_start;
+    int		cmd_end = i;
+    int		j;
+    char_u	*str;
+
+    ga_init2(&ga, (int)sizeof(char_u), 400);
+
+    // search backwards to find the first line of this command.
+    // Any line not starting with \ or "\ is the start of the
+    // command.
+    while (--i > 0)
+    {
+	p = skipwhite(lines[i]);
+	if (*p != '\\' && (p[0] != '"' || p[1] != '\\' || p[2] != ' '))
+	    break;
+    }
+    cmd_start = i;
+
+    // join all the lines
+    ga_concat(&ga, lines[cmd_start]);
+    for (j = cmd_start + 1; j <= cmd_end; j++)
+    {
+	p = skipwhite(lines[j]);
+	if (*p == '\\')
+	{
+	    // Adjust the growsize to the current length to
+	    // speed up concatenating many lines.
+	    if (ga.ga_len > 400)
+	    {
+		if (ga.ga_len > 8000)
+		    ga.ga_growsize = 8000;
+		else
+		    ga.ga_growsize = ga.ga_len;
+	    }
+	    ga_concat(&ga, p + 1);
+	}
+    }
+    ga_append(&ga, NUL);
+    str = vim_strsave(ga.ga_data);
+    ga_clear(&ga);
+
+    *idx = i;
+    return str;
+}
+
+/*
  * Execute a yank register: copy it into the stuff buffer.
  *
  * Return FAIL for failure, OK otherwise.
@@ -579,6 +646,8 @@ do_execreg(
 	for (i = y_current->y_size; --i >= 0; )
 	{
 	    char_u *escaped;
+	    char_u *str;
+	    int	    free_str = FALSE;
 
 	    // insert NL between lines and after last line if type is MLINE
 	    if (y_current->y_type == MLINE || i < y_current->y_size - 1
@@ -587,7 +656,23 @@ do_execreg(
 		if (ins_typebuf((char_u *)"\n", remap, 0, TRUE, silent) == FAIL)
 		    return FAIL;
 	    }
-	    escaped = vim_strsave_escape_csi(y_current->y_array[i]);
+
+	    // Handle line-continuation for :@<register>
+	    str = y_current->y_array[i];
+	    if (colon && i > 0)
+	    {
+		p = skipwhite(str);
+		if (*p == '\\' || (p[0] == '"' && p[1] == '\\' && p[2] == ' '))
+		{
+		    str = execreg_line_continuation(y_current->y_array, &i);
+		    if (str == NULL)
+			return FAIL;
+		    free_str = TRUE;
+		}
+	    }
+	    escaped = vim_strsave_escape_csi(str);
+	    if (free_str)
+		vim_free(str);
 	    if (escaped == NULL)
 		return FAIL;
 	    retval = ins_typebuf(escaped, remap, 0, TRUE, silent);
