@@ -1402,9 +1402,6 @@ the system encoding (usually utf-8).
 MS-Windows: use WS_HIDE instead of SW_SHOWMINNOACTIVE in os_win32.c?
 Otherwise task flickers in taskbar.
 
-Should make ":@r" handle line continuation. (Cesar Romani, 2016 Jun 26)
-Also for ":@.".
-
 Repeating 'opfunc' in a function only works once. (Tarmean, 2016 Jul 15, #925)
 
 Have a way to get the call stack, in a function and from an exception.
