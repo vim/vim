@@ -778,7 +778,7 @@ def Test_vim9script_fails()
   assert_fails('export something', 'E1043')
 enddef
 
-def Test_import_fails_without_script()
+func Test_import_fails_without_script()
   CheckRunVimInTerminal
 
   let export =<< trim END
@@ -787,15 +787,14 @@ def Test_import_fails_without_script()
         return 0
     enddef
   END
-  writefile(export, 'Xexport.vim')
+  call writefile(export, 'Xexport.vim')
 
-  let buf = RunVimInTerminal('-c "import Foo from ''./Xexport.vim''"', #{
-                rows: 6, wait_for_ruler: 0})
-  WaitForAssert({-> assert_match('^E1094:', term_getline(buf, 5))})
+  let buf = RunVimInTerminal('-c "import Foo from ''./Xexport.vim''"', #{rows: 6, wait_for_ruler: 0})
+  call WaitForAssert({-> assert_match('^E1094:', term_getline(buf, 5))})
 
-  delete('Xexport.vim')
-  StopVimInTerminal(buf)
-enddef
+  call delete('Xexport.vim')
+  call StopVimInTerminal(buf)
+endfunc
 
 def Test_vim9script_reload_import()
   let lines =<< trim END
