@@ -2014,6 +2014,25 @@ func Test_readdir_sort()
   let files = readdir(dir, '1', #{sort: 'icase'})
   call assert_equal(default->sort('i'), files, 'sort by ignoring case')
 
+  " 4) collation
+  let collate = v:collate
+  lang collate C
+  let files = readdir(dir, 1, #{sort: 'collate'})
+  call assert_equal(default->sort(), files, 'sort by C collation')
+  exe "lang collate" collate
+
+  " 5) Errors
+  call assert_fails('call readdir(dir, 1, 1)', 'E715')
+  call assert_fails('call readdir(dir, 1, #{sorta: 1})')
+  call assert_fails('call readdirex(dir, 1, #{sorta: 1})')
+
+  " 6) ignore other values in dict
+  let files = readdir(dir, '1', #{sort: 'c'})
+  call assert_equal(default, files, 'sort using default2')
+
+  " Cleanup
+  exe "lang collate" collate
+
   eval dir->delete('rf')
 endfunc
 
