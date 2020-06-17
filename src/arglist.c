@@ -540,6 +540,14 @@ ex_args(exarg_T *eap)
 
     if (*eap->arg != NUL)
     {
+	// set arg_had_last if we are using a local arglist, before changing it
+	if (global_alist.al_ga.ga_len == 0 && eap->cmdidx == CMD_arglocal)
+	{
+	    if (global_alist.al_ga.ga_len == 0)
+		arg_had_last = TRUE;
+	    else
+		check_arg_idx(curwin);
+	}
 	// ":args file ..": define new argument list, handle like ":next"
 	// Also for ":argslocal file .." and ":argsglobal file ..".
 	ex_next(eap);

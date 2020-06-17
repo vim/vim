@@ -545,4 +545,26 @@ func Test_quit_with_arglist()
   call delete('.c.swp')
 endfunc
 
+" Test for quiting Vim with edited files in the local argument list
+func Test_quit_with_arglocallist()
+  try
+    let buf = RunVimInTerminal('', {'rows': 6})
+    call term_sendkeys(buf, ":argl a b\n")
+    call term_sendkeys(buf, ":n \n")
+    call term_sendkeys(buf, ":quit\n")
+    call TermWait(buf)
+    call WaitForAssert({-> assert_notequal("running", term_getstatus(buf))})
+    if !empty(v:errors)
+      call StopVimInTerminal(buf)
+    else
+      call WaitForAssert({-> assert_notmatch('^E173:', term_getline(buf, 6))})
+      call WaitForAssert({-> assert_equal("finished", term_getstatus(buf))})
+    endif
+  finally
+    " just in case the test failed
+    call delete('.a.swp')
+    call delete('.b.swp')
+  endtry
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
