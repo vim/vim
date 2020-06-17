@@ -604,7 +604,7 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	    luaV_CFuncState *state = ALLOC_CLEAR_ONE(luaV_CFuncState);
 	    state->index = luaL_ref(L, LUA_REGISTRYINDEX);
 	    state->L = L;
-	    char_u *name = register_cfunc(&luaV_call_lua_func, &luaV_call_lua_func_free, (void*)state);
+	    char_u *name = register_cfunc(&luaV_call_lua_func, &luaV_call_lua_func_free, state);
 	    tv->v_type = VAR_FUNC;
 	    tv->vval.v_string = vim_strsave(name);
 	    break;
@@ -2459,7 +2459,7 @@ luaV_call_lua_func_free(void *state)
     luaV_CFuncState *funcstate = (luaV_CFuncState*)state;
     luaL_unref(L, LUA_REGISTRYINDEX, funcstate->index);
     funcstate->L = NULL;
-    VIM_CLEAR(funcstate);
+    VIM_CLEAR(state);
 }
 
 #endif
