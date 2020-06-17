@@ -2458,6 +2458,7 @@ luaV_call_lua_func_free(void *state)
 {
     luaV_CFuncState *funcstate = (luaV_CFuncState*)state;
     luaL_unref(L, LUA_REGISTRYINDEX, funcstate->index);
+    funcstate->L = NULL;
     VIM_CLEAR(funcstate);
 }
 
