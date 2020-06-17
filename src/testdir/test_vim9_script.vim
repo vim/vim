@@ -781,20 +781,26 @@ enddef
 func Test_import_fails_without_script()
   CheckRunVimInTerminal
 
+  " call indirectly to avoid compilation error for missing functions
+  call Run_Test_import_fails_without_script()
+endfunc
+
+def Run_Test_import_fails_without_script()
   let export =<< trim END
     vim9script
     export def Foo(): number
         return 0
     enddef
   END
-  call writefile(export, 'Xexport.vim')
+  writefile(export, 'Xexport.vim')
 
-  let buf = RunVimInTerminal('-c "import Foo from ''./Xexport.vim''"', #{rows: 6, wait_for_ruler: 0})
-  call WaitForAssert({-> assert_match('^E1094:', term_getline(buf, 5))})
+  let buf = RunVimInTerminal('-c "import Foo from ''./Xexport.vim''"', #{
+                rows: 6, wait_for_ruler: 0})
+  WaitForAssert({-> assert_match('^E1094:', term_getline(buf, 5))})
 
-  call delete('Xexport.vim')
-  call StopVimInTerminal(buf)
-endfunc
+  delete('Xexport.vim')
+  StopVimInTerminal(buf)
+enddef
 
 def Test_vim9script_reload_import()
   let lines =<< trim END
