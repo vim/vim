@@ -166,6 +166,17 @@ func Test_ex_mode_errors()
   endtry
   call assert_equal(1, caught_e565)
   au! InsertCharPre
+
+  new
+  au CmdLineEnter * call ExEnterFunc()
+  func ExEnterFunc()
+
+  endfunc
+  call feedkeys("gQvi\r", 'xt')
+
+  au! CmdLineEnter
+  delfunc ExEnterFunc
+  quit
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
