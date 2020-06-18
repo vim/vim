@@ -2119,12 +2119,8 @@ call_def_function(
 		    list_T	*list;
 		    int		count = iptr->isn_arg.number;
 
+		    // type will have been checked to be a list
 		    tv = STACK_TV_BOT(-1);
-		    if (tv->v_type != VAR_LIST)
-		    {
-			emsg(_(e_listreq));
-			goto failed;
-		    }
 		    list = tv->vval.v_list;
 
 		    // no error for short list, expect it to be checked earlier

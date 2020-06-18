@@ -127,6 +127,7 @@ def Test_assignment_list()
   list2[-3] = 77
   assert_equal([77, 88, 99], list2)
   call CheckDefExecFailure(['let ll = [1, 2, 3]', 'll[-4] = 6'], 'E684:')
+  call CheckDefExecFailure(['let [v1, v2] = [1, 2]'], 'E1092:')
 
   # type becomes list<any>
   let somelist = rand() > 0 ? [1, 2, 3] : ['a', 'b', 'c']
@@ -1920,6 +1921,20 @@ def Test_let_declaration()
   unlet g:other_var
 enddef
 
+def Test_let_declaration_fails()
+  let lines =<< trim END
+    vim9script
+    const var: string
+  END
+  CheckScriptFailure(lines, 'E1021:')
+
+  lines =<< trim END
+    vim9script
+    let 9var: string
+  END
+  CheckScriptFailure(lines, 'E475:')
+enddef
+
 def Test_let_type_check()
   let lines =<< trim END
     vim9script
@@ -1933,6 +1948,12 @@ def Test_let_type_check()
     let var:string
   END
   CheckScriptFailure(lines, 'E1069:')
+
+  lines =<< trim END
+    vim9script
+    let var: asdf
+  END
+  CheckScriptFailure(lines, 'E1010:')
 enddef
 
 def Test_forward_declaration()
