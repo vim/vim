@@ -103,6 +103,13 @@ typedef struct {
     int		lv_arg;		// when TRUE this is an argument
 } lvar_T;
 
+// values for ctx_skip
+typedef enum {
+    SKIP_NOT,		// condition is a constant, produce code
+    SKIP_YES,		// condition is a constant, do NOT produce code
+    SKIP_UNKNONW	// condition is not a constant, produce code
+} skip_T;
+
 /*
  * Context for compiling lines of Vim script.
  * Stores info about the local variables and condition stack.
@@ -121,8 +128,7 @@ struct cctx_S {
 
     garray_T	ctx_imports;	    // imported items
 
-    int		ctx_skip;	    // when TRUE skip commands, when FALSE skip
-				    // commands after "else"
+    skip_T	ctx_skip;
     scope_T	*ctx_scope;	    // current scope, NULL at toplevel
 
     cctx_T	*ctx_outer;	    // outer scope for lambda or nested
@@ -545,8 +551,8 @@ check_type(type_T *expected, type_T *actual, int give_msg)
 /////////////////////////////////////////////////////////////////////
 // Following generate_ functions expect the caller to call ga_grow().
 
-#define RETURN_NULL_IF_SKIP(cctx) if (cctx->ctx_skip == TRUE) return NULL
-#define RETURN_OK_IF_SKIP(cctx) if (cctx->ctx_skip == TRUE) return OK
+#define RETURN_NULL_IF_SKIP(cctx) if (cctx->ctx_skip == SKIP_YES) return NULL
+#define RETURN_OK_IF_SKIP(cctx) if (cctx->ctx_skip == SKIP_YES) return OK
 
 /*
  * Generate an instruction without arguments.
@@ -2493,7 +2499,7 @@ generate_ppconst(cctx_T *cctx, ppconst_T *ppconst)
     int	    ret = OK;
     int	    save_skip = cctx->ctx_skip;
 
-    cctx->ctx_skip = FALSE;
+    cctx->ctx_skip = SKIP_NOT;
     for (i = 0; i < ppconst->pp_used; ++i)
 	if (generate_tv_PUSH(cctx, &ppconst->pp_tv[i]) == FAIL)
 	    ret = FAIL;
@@ -3851,7 +3857,7 @@ compile_expr7(
 	}
 	start_leader = end_leader;   // don't apply again below
 
-	if (cctx->ctx_skip == TRUE)
+	if (cctx->ctx_skip == SKIP_YES)
 	    clear_tv(rettv);
 	else
 	    // A constant expression can possibly be handled compile time,
@@ -4347,7 +4353,8 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
 	    const_value = tv2bool(&ppconst->pp_tv[ppconst_used]);
 	    clear_tv(&ppconst->pp_tv[ppconst_used]);
 	    --ppconst->pp_used;
-	    cctx->ctx_skip = save_skip == TRUE || !const_value;
+	    cctx->ctx_skip = save_skip == SKIP_YES || !const_value
+							 ? SKIP_YES : SKIP_NOT;
 	}
 	else
 	{
@@ -4393,7 +4400,8 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
 
 	// evaluate the third expression
 	if (has_const_expr)
-	    cctx->ctx_skip = save_skip == TRUE || const_value;
+	    cctx->ctx_skip = save_skip == SKIP_YES || const_value
+							 ? SKIP_YES : SKIP_NOT;
 	*arg = skipwhite(p + 1);
 	if (may_get_next_line(p + 1, arg, cctx) == FAIL)
 	    return FAIL;
@@ -4521,7 +4529,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
     eap->arg = name_end;
     eap->getline = exarg_getline;
     eap->cookie = cctx;
-    eap->skip = cctx->ctx_skip == TRUE;
+    eap->skip = cctx->ctx_skip == SKIP_YES;
     eap->forceit = FALSE;
     ufunc = def_function(eap, name);
 
@@ -4728,7 +4736,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    return NULL;
 	end = p;
 
-	if (cctx->ctx_skip != TRUE)
+	if (cctx->ctx_skip != SKIP_YES)
 	{
 	    type_T	*stacktype;
 
@@ -4787,7 +4795,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	if (!heredoc)
 	    type = &t_any;
 
-	if (cctx->ctx_skip != TRUE)
+	if (cctx->ctx_skip != SKIP_YES)
 	{
 	    if (*var_start == '&')
 	    {
@@ -5013,7 +5021,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    goto theend;
 	}
 
-	if (lvar == NULL && dest == dest_local && cctx->ctx_skip != TRUE)
+	if (lvar == NULL && dest == dest_local && cctx->ctx_skip != SKIP_YES)
 	{
 	    if (oplen > 1 && !heredoc)
 	    {
@@ -5067,7 +5075,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 
 	if (!heredoc)
 	{
-	    if (cctx->ctx_skip == TRUE)
+	    if (cctx->ctx_skip == SKIP_YES)
 	    {
 		if (oplen > 0 && var_count == 0)
 		{
@@ -5227,7 +5235,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	}
 
 	// no need to parse more when skipping
-	if (cctx->ctx_skip == TRUE)
+	if (cctx->ctx_skip == SKIP_YES)
 	    break;
 
 	if (oplen > 0 && *op != '=')
@@ -5668,13 +5676,13 @@ compile_if(char_u *arg, cctx_T *cctx)
     {
 	// The expression results in a constant.
 	// TODO: how about nesting?
-	cctx->ctx_skip = tv2bool(&ppconst.pp_tv[0]) ? FALSE : TRUE;
+	cctx->ctx_skip = tv2bool(&ppconst.pp_tv[0]) ? SKIP_NOT : SKIP_YES;
 	clear_ppconst(&ppconst);
     }
     else
     {
 	// Not a constant, generate instructions for the expression.
-	cctx->ctx_skip = MAYBE;
+	cctx->ctx_skip = SKIP_UNKNONW;
 	if (generate_ppconst(cctx, &ppconst) == FAIL)
 	    return NULL;
     }
@@ -5683,7 +5691,7 @@ compile_if(char_u *arg, cctx_T *cctx)
     if (scope == NULL)
 	return NULL;
 
-    if (cctx->ctx_skip == MAYBE)
+    if (cctx->ctx_skip == SKIP_UNKNONW)
     {
 	// "where" is set when ":elseif", "else" or ":endif" is found
 	scope->se_u.se_if.is_if_label = instr->ga_len;
@@ -5712,7 +5720,7 @@ compile_elseif(char_u *arg, cctx_T *cctx)
     }
     unwind_locals(cctx, scope->se_local_count);
 
-    if (cctx->ctx_skip == MAYBE)
+    if (cctx->ctx_skip == SKIP_UNKNONW)
     {
 	if (compile_jump_to_end(&scope->se_u.se_if.is_end_label,
 						    JUMP_ALWAYS, cctx) == FAIL)
@@ -5733,14 +5741,14 @@ compile_elseif(char_u *arg, cctx_T *cctx)
     {
 	// The expression results in a constant.
 	// TODO: how about nesting?
-	cctx->ctx_skip = tv2bool(&ppconst.pp_tv[0]) ? FALSE : TRUE;
+	cctx->ctx_skip = tv2bool(&ppconst.pp_tv[0]) ? SKIP_NOT : SKIP_YES;
 	clear_ppconst(&ppconst);
 	scope->se_u.se_if.is_if_label = -1;
     }
     else
     {
 	// Not a constant, generate instructions for the expression.
-	cctx->ctx_skip = MAYBE;
+	cctx->ctx_skip = SKIP_UNKNONW;
 	if (generate_ppconst(cctx, &ppconst) == FAIL)
 	    return NULL;
 
@@ -5768,14 +5776,14 @@ compile_else(char_u *arg, cctx_T *cctx)
     unwind_locals(cctx, scope->se_local_count);
 
     // jump from previous block to the end, unless the else block is empty
-    if (cctx->ctx_skip == MAYBE)
+    if (cctx->ctx_skip == SKIP_UNKNONW)
     {
 	if (compile_jump_to_end(&scope->se_u.se_if.is_end_label,
 						    JUMP_ALWAYS, cctx) == FAIL)
 	    return NULL;
     }
 
-    if (cctx->ctx_skip == MAYBE)
+    if (cctx->ctx_skip == SKIP_UNKNONW)
     {
 	if (scope->se_u.se_if.is_if_label >= 0)
 	{
@@ -5786,8 +5794,8 @@ compile_else(char_u *arg, cctx_T *cctx)
 	}
     }
 
-    if (cctx->ctx_skip != MAYBE)
-	cctx->ctx_skip = !cctx->ctx_skip;
+    if (cctx->ctx_skip != SKIP_UNKNONW)
+	cctx->ctx_skip = cctx->ctx_skip == SKIP_YES ? SKIP_NOT : SKIP_YES;
 
     return p;
 }
@@ -5817,7 +5825,7 @@ compile_endif(char_u *arg, cctx_T *cctx)
     // Fill in the "end" label in jumps at the end of the blocks.
     compile_fill_jump_to_end(&ifscope->is_end_label, cctx);
     // TODO: this should restore the value from before the :if
-    cctx->ctx_skip = MAYBE;
+    cctx->ctx_skip = SKIP_UNKNONW;
 
     drop_scope(cctx);
     return arg;
@@ -6416,7 +6424,7 @@ compile_exec(char_u *line, exarg_T *eap, cctx_T *cctx)
     char_u  *p;
     int	    has_expr = FALSE;
 
-    if (cctx->ctx_skip == TRUE)
+    if (cctx->ctx_skip == SKIP_YES)
 	goto theend;
 
     if (eap->cmdidx >= 0 && eap->cmdidx < CMD_SIZE)
@@ -6781,7 +6789,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 
 	if (p == ea.cmd && ea.cmdidx != CMD_SIZE)
 	{
-	    if (cctx.ctx_skip == TRUE)
+	    if (cctx.ctx_skip == SKIP_YES)
 	    {
 		line += STRLEN(line);
 		continue;
@@ -6806,7 +6814,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 
 	p = skipwhite(p);
 
-	if (cctx.ctx_skip == TRUE
+	if (cctx.ctx_skip == SKIP_YES
 		&& ea.cmdidx != CMD_elseif
 		&& ea.cmdidx != CMD_else
 		&& ea.cmdidx != CMD_endif)
