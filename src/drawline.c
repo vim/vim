@@ -1287,13 +1287,13 @@ win_line(
 	// When still displaying '$' of change command, stop at cursor.
 	// When only displaying the (relative) line number and that's done,
 	// stop here.
-	if ((dollar_vcol >= 0 && wp == curwin
-		   && lnum == wp->w_cursor.lnum && vcol >= (long)wp->w_virtcol
+	if (((dollar_vcol >= 0 && wp == curwin
+		   && lnum == wp->w_cursor.lnum && vcol >= (long)wp->w_virtcol)
+		|| (number_only && draw_state > WL_NR))
 #ifdef FEAT_DIFF
 				   && filler_todo <= 0
 #endif
 		)
-		|| (number_only && draw_state > WL_NR))
 	{
 	    screen_line(screen_row, wp->w_wincol, col, -(int)wp->w_width,
 							    screen_line_flags);
