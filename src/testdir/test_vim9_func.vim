@@ -31,6 +31,31 @@ def Test_return_something()
   assert_fails('call ReturnGlobal()', 'E1029: Expected number but got string')
 enddef
 
+def Test_missing_return()
+  CheckDefFailure(['def Missing(): number',
+                   '  if g:cond',
+                   '    echo "no return"',
+                   '  else',
+                   '    return 0',
+                   '  endif'
+                   'enddef'], 'E1027:')
+  CheckDefFailure(['def Missing(): number',
+                   '  if g:cond',
+                   '    return 1',
+                   '  else',
+                   '    echo "no return"',
+                   '  endif'
+                   'enddef'], 'E1027:')
+  CheckDefFailure(['def Missing(): number',
+                   '  if g:cond',
+                   '    return 1',
+                   '  else',
+                   '    return 2',
+                   '  endif'
+                   '  return 3'
+                   'enddef'], 'E1095:')
+enddef
+
 let s:nothing = 0
 def ReturnNothing()
   s:nothing = 1

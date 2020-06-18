@@ -533,6 +533,30 @@ def Test_disassemble_const_expr()
   assert_notmatch('JUMP', instr)
 enddef
 
+def ReturnInIf(): string
+  if g:cond
+    return "yes"
+  else
+    return "no"
+  endif
+enddef
+
+def Test_disassemble_return_in_if()
+  let instr = execute('disassemble ReturnInIf')
+  assert_match('ReturnInIf\_s*' ..
+        'if g:cond\_s*' ..
+        '0 LOADG g:cond\_s*' ..
+        '1 JUMP_IF_FALSE -> 4\_s*' ..
+        'return "yes"\_s*' ..
+        '2 PUSHS "yes"\_s*' ..
+        '3 RETURN\_s*' ..
+        'else\_s*' ..
+        ' return "no"\_s*' ..
+        '4 PUSHS "no"\_s*' ..
+        '5 RETURN$',
+        instr)
+enddef
+
 def WithFunc()
   let Funky1: func
   let Funky2: func = function("len")
