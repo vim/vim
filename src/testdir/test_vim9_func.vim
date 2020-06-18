@@ -807,5 +807,10 @@ def Test_call_closure_not_compiled()
   assert_equal('sometext', GetResult(g:Ref))
 enddef
 
+def Test_sort_return_type()
+  let res: list<number>
+  res = [1, 2, 3]->sort()
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

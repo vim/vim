@@ -339,6 +339,14 @@ ret_job(int argcount UNUSED, type_T **argtypes UNUSED)
     return &t_job;
 }
 
+    static type_T *
+ret_first_arg(int argcount, type_T **argtypes)
+{
+    if (argcount > 0)
+	return argtypes[0];
+    return &t_void;
+}
+
 static type_T *ret_f_function(int argcount, type_T **argtypes);
 
 /*
@@ -849,7 +857,7 @@ static funcentry_T global_functions[] =
     {"simplify",	1, 1, FEARG_1,	  ret_string,	f_simplify},
     {"sin",		1, 1, FEARG_1,	  ret_float,	FLOAT_FUNC(f_sin)},
     {"sinh",		1, 1, FEARG_1,	  ret_float,	FLOAT_FUNC(f_sinh)},
-    {"sort",		1, 3, FEARG_1,	  ret_list_any,	f_sort},
+    {"sort",		1, 3, FEARG_1,	  ret_first_arg, f_sort},
     {"sound_clear",	0, 0, 0,	  ret_void,	SOUND_FUNC(f_sound_clear)},
     {"sound_playevent",	1, 2, FEARG_1,	  ret_number,	SOUND_FUNC(f_sound_playevent)},
     {"sound_playfile",	1, 2, FEARG_1,	  ret_number,	SOUND_FUNC(f_sound_playfile)},
