@@ -185,6 +185,42 @@ def Test_disassemble_store_member()
         res)
 enddef
 
+def s:ListAssign()
+  let x: string
+  let y: string
+  let l: list<any>
+  [x, y; l] = g:stringlist
+enddef
+
+def Test_disassemble_list_assign()
+  let res = execute('disass s:ListAssign')
+  assert_match('<SNR>\d*_ListAssign\_s*' ..
+        'let x: string\_s*' ..
+        '\d PUSHS "\[NULL\]"\_s*' ..
+        '\d STORE $0\_s*' ..
+        'let y: string\_s*' ..
+        '\d PUSHS "\[NULL\]"\_s*' ..
+        '\d STORE $1\_s*' ..
+        'let l: list<any>\_s*' ..
+        '\d NEWLIST size 0\_s*' ..
+        '\d STORE $2\_s*' ..
+        '\[x, y; l\] = g:stringlist\_s*' ..
+        '\d LOADG g:stringlist\_s*' ..
+        '\d CHECKTYPE list stack\[-1\]\_s*' ..
+        '\d CHECKLEN >= 2\_s*' ..
+        '\d\+ ITEM 0\_s*' ..
+        '\d\+ CHECKTYPE string stack\[-1\]\_s*' ..
+        '\d\+ STORE $0\_s*' ..
+        '\d\+ ITEM 1\_s*' ..
+        '\d\+ CHECKTYPE string stack\[-1\]\_s*' ..
+        '\d\+ STORE $1\_s*' ..
+        '\d\+ SLICE 2\_s*' ..
+        '\d\+ STORE $2\_s*' ..
+        '\d\+ PUSHNR 0\_s*' ..
+        '\d\+ RETURN',
+        res)
+enddef
+
 def s:ScriptFuncUnlet()
   g:somevar = "value"
   unlet g:somevar
