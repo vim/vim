@@ -547,6 +547,7 @@ endfunc
 
 " Test for quiting Vim with edited files in the local argument list
 func Test_quit_with_arglocallist()
+  CheckRunVimInTerminal
   try
     let buf = RunVimInTerminal('', {'rows': 6})
     call term_sendkeys(buf, ":argl a b\n")
