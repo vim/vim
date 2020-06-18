@@ -1162,6 +1162,26 @@ def Test_if_const_expr_fails()
   call CheckDefFailure(["if has('aaa') ? true false"], 'E109:')
 enddef
 
+def RunNested(i: number): number
+  let x: number = 0
+  if i % 2
+    if 1
+      " comment
+    else
+      " comment
+    endif
+    x += 1
+  else
+    x += 1000
+  endif
+  return x
+enddef
+
+def Test_nested_if()
+  assert_equal(1, RunNested(1))
+  assert_equal(1000, RunNested(2))
+enddef
+
 def Test_execute_cmd()
   new
   setline(1, 'default')

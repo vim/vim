@@ -5067,8 +5067,19 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 
 	if (!heredoc)
 	{
-	    if (oplen > 0)
+	    if (cctx->ctx_skip == TRUE)
 	    {
+		if (oplen > 0 && var_count == 0)
+		{
+		    // skip over the "=" and the expression
+		    p = skipwhite(op + oplen);
+		    compile_expr0(&p, cctx);
+		}
+	    }
+	    else if (oplen > 0)
+	    {
+		type_T	*stacktype;
+
 		// For "var = expr" evaluate the expression.
 		if (var_count == 0)
 		{
@@ -5113,52 +5124,47 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			return FAIL;
 		}
 
-		if (cctx->ctx_skip != TRUE)
+		stacktype = stack->ga_len == 0 ? &t_void
+			  : ((type_T **)stack->ga_data)[stack->ga_len - 1];
+		if (lvar != NULL && (is_decl || !has_type))
 		{
-		    type_T	*stacktype;
-
-		    stacktype = stack->ga_len == 0 ? &t_void
-			      : ((type_T **)stack->ga_data)[stack->ga_len - 1];
-		    if (lvar != NULL && (is_decl || !has_type))
+		    if (new_local && !has_type)
 		    {
-			if (new_local && !has_type)
+			if (stacktype->tt_type == VAR_VOID)
 			{
-			    if (stacktype->tt_type == VAR_VOID)
-			    {
-				emsg(_(e_cannot_use_void));
-				goto theend;
-			    }
-			    else
-			    {
-				// An empty list or dict has a &t_void member,
-				// for a variable that implies &t_any.
-				if (stacktype == &t_list_empty)
-				    lvar->lv_type = &t_list_any;
-				else if (stacktype == &t_dict_empty)
-				    lvar->lv_type = &t_dict_any;
-				else
-				    lvar->lv_type = stacktype;
-			    }
+			    emsg(_(e_cannot_use_void));
+			    goto theend;
 			}
 			else
 			{
-			    type_T *use_type = lvar->lv_type;
-
-			    if (has_index)
-			    {
-				use_type = use_type->tt_member;
-				if (use_type == NULL)
-				    use_type = &t_void;
-			    }
-			    if (need_type(stacktype, use_type, -1, cctx)
-								       == FAIL)
-				goto theend;
+			    // An empty list or dict has a &t_void member,
+			    // for a variable that implies &t_any.
+			    if (stacktype == &t_list_empty)
+				lvar->lv_type = &t_list_any;
+			    else if (stacktype == &t_dict_empty)
+				lvar->lv_type = &t_dict_any;
+			    else
+				lvar->lv_type = stacktype;
 			}
 		    }
-		    else if (*p != '=' && need_type(stacktype, member_type, -1,
-								 cctx) == FAIL)
-			goto theend;
+		    else
+		    {
+			type_T *use_type = lvar->lv_type;
+
+			if (has_index)
+			{
+			    use_type = use_type->tt_member;
+			    if (use_type == NULL)
+				use_type = &t_void;
+			}
+			if (need_type(stacktype, use_type, -1, cctx)
+								   == FAIL)
+			    goto theend;
+		    }
 		}
+		else if (*p != '=' && need_type(stacktype, member_type, -1,
+							     cctx) == FAIL)
+		    goto theend;
 	    }
 	    else if (cmdidx == CMD_const)
 	    {
@@ -5219,6 +5225,10 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    if (var_count == 0)
 		end = p;
 	}
+
+	// no need to parse more when skipping
+	if (cctx->ctx_skip == TRUE)
+	    break;
 
 	if (oplen > 0 && *op != '=')
 	{
@@ -5806,7 +5816,8 @@ compile_endif(char_u *arg, cctx_T *cctx)
     }
     // Fill in the "end" label in jumps at the end of the blocks.
     compile_fill_jump_to_end(&ifscope->is_end_label, cctx);
-    cctx->ctx_skip = FALSE;
+    // TODO: this should restore the value from before the :if
+    cctx->ctx_skip = MAYBE;
 
     drop_scope(cctx);
     return arg;
