@@ -28,10 +28,12 @@ endfunc
 " The second argument is the minimum time to wait in msec, 10 if omitted.
 func TermWait(buf, ...)
   let wait_time = a:0 ? a:1 : 10
-  if g:run_nr == 2
-    let wait_time *= 4
-  elseif g:run_nr > 2
-    let wait_time *= 10
+  if exists('g:run_nr')
+    if g:run_nr == 2
+      let wait_time *= 4
+    elseif g:run_nr > 2
+      let wait_time *= 10
+    endif
   endif
   call term_wait(a:buf, wait_time)
 
