@@ -575,10 +575,18 @@ func Test_quit_with_arglocallist2()
     call term_sendkeys(buf, ":arg Z Y\n")
     call term_sendkeys(buf, ":argl a b\n")
     call term_sendkeys(buf, ":n \n")
+    " TODO: argument Y hasn't been visited, should Vim quit or not?
+    " current behaviour is to ignore all arguments in the global
+    " argument list and check only window-local arguments.
     call term_sendkeys(buf, ":quit\n")
     call TermWait(buf)
-    call WaitForAssert({-> assert_match('^E173:', term_getline(buf, 6))})
-    call StopVimInTerminal(buf)
+    call WaitForAssert({-> assert_notequal("running", term_getstatus(buf))})
+    if !empty(v:errors)
+      call StopVimInTerminal(buf)
+    else
+      call WaitForAssert({-> assert_notmatch('^E173:', term_getline(buf, 6))})
+      call WaitForAssert({-> assert_equal("finished", term_getstatus(buf))})
+    endif
   finally
     " just in case the test failed
     call delete('.a.swp')
