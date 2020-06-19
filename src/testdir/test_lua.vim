@@ -561,6 +561,15 @@ EOF
   call assert_equal("hello vim", luaeval("pass_lua_callback_to_vim_from_lua_result"))
 endfunc
 
+func Vim_func_call_metatable_lua_callback(Greet)
+  return a:Greet("world")
+endfunc
+
+func Test_pass_lua_metatable_callback_to_vim_from_lua()
+  let result = luaeval("vim.funcref('Vim_func_call_metatable_lua_callback')(setmetatable({}, { __call = function(msg) return 'hello ' .. msg  end }) )")
+  call assert_equal("hello world", result)
+endfunc
+
 " Test vim.line()
 func Test_lua_line()
   new

@@ -37,6 +37,7 @@ typedef void (*msgfunc_T)(char_u *);
 
 typedef struct {
     int index;
+    int table_index; // 0 if non table
     lua_State *L;
 } luaV_CFuncState;
 
@@ -604,9 +605,31 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	    luaV_CFuncState *state = ALLOC_CLEAR_ONE(luaV_CFuncState);
 	    state->index = luaL_ref(L, LUA_REGISTRYINDEX);
 	    state->L = L;
+	    state->tableindex = 0;
 	    char_u *name = register_cfunc(&luaV_call_lua_func, &luaV_call_lua_func_free, state);
 	    tv->v_type = VAR_FUNC;
 	    tv->vval.v_string = vim_strsave(name);
+	    break;
+	}
+	case LUA_TTABLE:
+	{
+	    if (lua_getmetatable(L, pos)) {
+		lua_getfield(L, -1, (char*)"__call");
+		if (lua_isfunction(L, -1)) {
+		    int index = luaL_ref(L, LUA_REGISTRYINDEX);
+		    luaV_CFuncState *state = ALLOC_CLEAR_ONE(luaV_CFuncState);
+		    state->index = index;
+		    state->L = L;
+		    // TODO: set state->tableindex
+		    char_u *name = register_cfunc(&luaV_call_lua_func, &luaV_call_lua_func_free, state);
+		    tv->v_type = VAR_FUNC;
+		    tv->vval.v_string = vim_strsave(name);
+		    break;
+		}
+	    }
+	    tv->v_type = VAR_NUMBER;
+	    tv->vval.v_number = 0;
+	    status = FAIL;
 	    break;
 	}
 	case LUA_TUSERDATA:
@@ -2440,6 +2463,7 @@ luaV_call_lua_func(int argcount, typval_T *argvars, typval_T *rettv, void *state
     luaV_CFuncState *funcstate = (luaV_CFuncState*)state;
     lua_rawgeti(funcstate->L, LUA_REGISTRYINDEX, funcstate->index);
 
+    // TODO: if funcstate->tableindex > 0 then pass it as first args
     for (i = 0; i < argcount; ++i)
 	luaV_pushtypval(funcstate->L, &argvars[i]);
 
