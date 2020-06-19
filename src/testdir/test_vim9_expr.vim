@@ -524,6 +524,7 @@ def Test_expr5()
 			g:anint)
   assert_equal(9, g:alsoint + 5)
   assert_equal(14, g:alsoint + g:anint)
+  assert_equal([1, 2, 3, 4], [1] + g:alist)
 
   assert_equal(54, 60 - 6)
   assert_equal(50, 60 -

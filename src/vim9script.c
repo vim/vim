@@ -507,7 +507,7 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
 /*
  * Check if the type of script variable "dest" allows assigning "value".
  */
-    void
+    int
 check_script_var_type(typval_T *dest, typval_T *value, char_u *name)
 {
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
@@ -521,13 +521,15 @@ check_script_var_type(typval_T *dest, typval_T *value, char_u *name)
 	if (sv->sv_tv == dest)
 	{
 	    if (sv->sv_const)
+	    {
 		semsg(_(e_readonlyvar), name);
-	    else
-		check_type(sv->sv_type, typval2type(value), TRUE);
-	    return;
+		return FAIL;
+	    }
+	    return check_type(sv->sv_type, typval2type(value), TRUE);
 	}
     }
     iemsg("check_script_var_type(): not found");
+    return OK; // not really
 }
 
 #endif // FEAT_EVAL

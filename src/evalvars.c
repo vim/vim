@@ -2886,10 +2886,6 @@ set_var_const(
 		return;
 	    }
 
-	    if (var_check_ro(di->di_flags, name, FALSE)
-			       || var_check_lock(di->di_tv.v_lock, name, FALSE))
-		return;
-
 	    if (is_script_local
 			     && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
 	    {
@@ -2900,8 +2896,13 @@ set_var_const(
 		}
 
 		// check the type
-		check_script_var_type(&di->di_tv, tv, name);
+		if (check_script_var_type(&di->di_tv, tv, name) == FAIL)
+		    return;
 	    }
+
+	    if (var_check_ro(di->di_flags, name, FALSE)
+			       || var_check_lock(di->di_tv.v_lock, name, FALSE))
+		return;
 	}
 	else
 	    // can only redefine once

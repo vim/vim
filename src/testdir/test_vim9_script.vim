@@ -140,6 +140,9 @@ def Test_assignment_dict()
   let dict4: dict<any> = #{one: 1, two: '2'}
   let dict5: dict<blob> = #{one: 0z01, two: 0z02}
 
+  " overwrite
+  dict3['key'] = 'another'
+
   call CheckDefExecFailure(['let dd = {}', 'dd[""] = 6'], 'E713:')
 
   # type becomes dict<any>
@@ -219,6 +222,13 @@ def Test_assignment_default()
 
     let thechannel: channel
     assert_equal(test_null_channel(), thechannel)
+
+    if has('unix') && executable('cat')
+      " check with non-null job and channel, types must match
+      thejob = job_start("cat ", #{})
+      thechannel = job_getchannel(thejob)
+      job_stop(thejob, 'kill')
+    endif
   endif
 
   let nr = 1234 | nr = 5678
@@ -774,6 +784,9 @@ def Test_vim9script_fails()
   CheckScriptFailure(['import some from "./Xexport.vim"'], 'E1048:')
   CheckScriptFailure(['vim9script', 'export let g:some'], 'E1044:')
   CheckScriptFailure(['vim9script', 'export echo 134'], 'E1043:')
+
+  CheckScriptFailure(['vim9script', 'let str: string', 'str = 1234'], 'E1013:')
+  CheckScriptFailure(['vim9script', 'const str = "asdf"', 'str = "xxx"'], 'E46:')
 
   assert_fails('vim9script', 'E1038')
   assert_fails('export something', 'E1043')

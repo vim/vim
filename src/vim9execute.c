@@ -2144,18 +2144,10 @@ call_def_function(
 		    listitem_T	*li;
 		    int		index = iptr->isn_arg.number;
 
-		    // get list item: list is at stack-1, push item
+		    // Get list item: list is at stack-1, push item.
+		    // List type and length is checked for when compiling.
 		    tv = STACK_TV_BOT(-1);
-		    if (tv->v_type != VAR_LIST)
-		    {
-			emsg(_(e_listreq));
-			goto failed;
-		    }
-		    if ((li = list_find(tv->vval.v_list, index)) == NULL)
-		    {
-			semsg(_(e_listidx), index);
-			goto failed;
-		    }
+		    li = list_find(tv->vval.v_list, index);
 
 		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
