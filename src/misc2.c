@@ -2929,9 +2929,11 @@ extract_modifiers(int key, int *modp, int simplify, int *did_simplify)
     if ((modifiers & MOD_MASK_SHIFT) && ASCII_ISALPHA(key))
     {
 	key = TOUPPER_ASC(key);
-	// With <C-S-a> and <A-S-a> we keep the shift modifier.
-	// With <S-a> and <S-A> we don't keep the shift modifier.
-	if (simplify || modifiers == MOD_MASK_SHIFT)
+	// With <C-S-a> we keep the shift modifier.
+	// With <S-a>, <A-S-a> and <S-A> we don't keep the shift modifier.
+	if (simplify || modifiers == MOD_MASK_SHIFT
+		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_ALT)
+		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_META))
 	    modifiers &= ~MOD_MASK_SHIFT;
     }
 
