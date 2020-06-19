@@ -566,7 +566,7 @@ func Vim_func_call_metatable_lua_callback(Greet)
 endfunc
 
 func Test_pass_lua_metatable_callback_to_vim_from_lua()
-  let result = luaeval("vim.funcref('Vim_func_call_metatable_lua_callback')(setmetatable({}, { __call = function(tbl, msg) return 'hello ' .. msg  end }) )")
+  let result = luaeval("vim.funcref('Vim_func_call_metatable_lua_callback')(setmetatable({ space = ' '}, { __call = function(tbl, msg) return 'hello' .. tbl.space .. msg  end }) )")
   call assert_equal("hello world", result)
 endfunc
 

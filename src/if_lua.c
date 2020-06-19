@@ -37,7 +37,7 @@ typedef void (*msgfunc_T)(char_u *);
 
 typedef struct {
     int index;
-    int tableindex; // 0 if non table
+    int tableindex; // LUA_NOREF if not __call
     lua_State *L;
 } luaV_CFuncState;
 
@@ -605,7 +605,7 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	    luaV_CFuncState *state = ALLOC_CLEAR_ONE(luaV_CFuncState);
 	    state->index = luaL_ref(L, LUA_REGISTRYINDEX);
 	    state->L = L;
-	    state->tableindex = 0;
+	    state->tableindex = LUA_NOREF;
 	    char_u *name = register_cfunc(&luaV_call_lua_func, &luaV_call_lua_func_free, state);
 	    tv->v_type = VAR_FUNC;
 	    tv->vval.v_string = vim_strsave(name);
@@ -613,6 +613,8 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	}
 	case LUA_TTABLE:
 	{
+	    lua_pushvalue(L, pos);
+	    int tableindex = luaL_ref(L, LUA_REGISTRYINDEX);
 	    if (lua_getmetatable(L, pos)) {
 		lua_getfield(L, -1, (char*)"__call");
 		if (lua_isfunction(L, -1)) {
@@ -620,13 +622,14 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 		    luaV_CFuncState *state = ALLOC_CLEAR_ONE(luaV_CFuncState);
 		    state->index = index;
 		    state->L = L;
-		    state->tableindex = 1; // TODO set proper tableindex
+		    state->tableindex = tableindex;
 		    char_u *name = register_cfunc(&luaV_call_lua_func, &luaV_call_lua_func_free, state);
 		    tv->v_type = VAR_FUNC;
 		    tv->vval.v_string = vim_strsave(name);
 		    break;
 		}
 	    }
+	    luaL_unref(L, LUA_REGISTRYINDEX, tableindex);
 	    tv->v_type = VAR_NUMBER;
 	    tv->vval.v_number = 0;
 	    status = FAIL;
@@ -2467,8 +2470,7 @@ luaV_call_lua_func(int argcount, typval_T *argvars, typval_T *rettv, void *state
     if (funcstate->tableindex > 0)
     {
 	luaargcount += 1;
-	// TODO: pass proper tbl as first args
-	lua_pushnil(L);
+	lua_rawgeti(funcstate->L, LUA_REGISTRYINDEX, funcstate->tableindex);
     }
 
     for (i = 0; i < argcount; ++i)
@@ -2490,6 +2492,8 @@ luaV_call_lua_func_free(void *state)
     luaV_CFuncState *funcstate = (luaV_CFuncState*)state;
     luaL_unref(L, LUA_REGISTRYINDEX, funcstate->index);
     funcstate->L = NULL;
+    if (funcstate->tableindex != LUA_NOREF)
+	luaL_unref(L, LUA_REGISTRYINDEX, funcstate->tableindex);
     VIM_CLEAR(funcstate);
 }
 
