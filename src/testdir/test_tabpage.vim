@@ -623,4 +623,15 @@ func Test_tabpage_close_cmdwin()
   tabonly
 endfunc
 
+" Pressing <C-PageUp> in insert mode should go to the previous tab page
+" and <C-PageDown> should go to the next tab page
+func Test_tabpage_Ctrl_Pageup()
+  tabnew
+  call feedkeys("i\<C-PageUp>", 'xt')
+  call assert_equal(1, tabpagenr())
+  call feedkeys("i\<C-PageDown>", 'xt')
+  call assert_equal(2, tabpagenr())
+  %bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

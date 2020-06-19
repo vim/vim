@@ -2,6 +2,7 @@
 
 source check.vim
 CheckFeature digraphs
+source term_util.vim
 
 func Put_Dig(chars)
   exe "norm! o\<c-k>".a:chars
@@ -500,6 +501,22 @@ func Test_loadkeymap_error()
   call writefile(['loadkeymap', 'a'], 'Xkeymap')
   call assert_fails('source Xkeymap', 'E791:')
   call delete('Xkeymap')
+endfunc
+
+" Test for the characters displayed one the screen when entering a digraph
+func Test_entering_digraph()
+  CheckRunVimInTerminal
+  let buf = RunVimInTerminal('', {'rows': 6})
+  call term_sendkeys(buf, "i\<C-K>")
+  call term_wait(buf)
+  call assert_equal('?', term_getline(buf, 1))
+  call term_sendkeys(buf, "1")
+  call term_wait(buf)
+  call assert_equal('1', term_getline(buf, 1))
+  call term_sendkeys(buf, "2")
+  call term_wait(buf)
+  call assert_equal('½', term_getline(buf, 1))
+  call StopVimInTerminal(buf)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
