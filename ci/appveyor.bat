@@ -8,6 +8,7 @@ cd src
 echo "Building MinGW 32bit console version"
 set PATH=c:\msys64\mingw32\bin;%PATH%
 mingw32-make.exe -f Make_ming.mak GUI=no OPTIMIZE=speed IME=yes ICONV=yes DEBUG=no FEATURES=%FEATURE% || exit 1
+.\vim -u NONE -c "redir @a | ver |0put a | wq" ver_ming.txt
 :: Save vim.exe before Make clean, moved back below.
 copy vim.exe testdir
 mingw32-make.exe -f Make_ming.mak clean
@@ -20,13 +21,14 @@ if "%FEATURE%" == "HUGE" (
 ) ELSE (
     mingw32-make.exe -f Make_ming.mak OPTIMIZE=speed GUI=yes IME=yes ICONV=yes DEBUG=no FEATURES=%FEATURE% || exit 1
 )
-.\gvim -u NONE -c "redir @a | ver |0put a | wq" ver_ming.txt
+.\gvim -u NONE -c "redir @a | ver |0put a | wq" ver_ming_gui.txt
 
 :: Filter out the progress bar from the build log
 sed -e "s/@<<$/@<< | sed -e 's#.*\\\\r.*##'/" Make_mvc.mak > Make_mvc2.mak
 
 echo "Building MSVC 64bit console Version"
 nmake -f Make_mvc2.mak CPU=AMD64 OLE=no GUI=no IME=yes ICONV=yes DEBUG=no FEATURES=%FEATURE% || exit 1
+:: The executable is not used
 nmake -f Make_mvc2.mak clean
 
 :: build MSVC huge version with python and channel support
@@ -43,6 +45,8 @@ if "%FEATURE%" == "HUGE" (
 move /Y testdir\vim.exe .
 echo "version output MinGW"
 type ver_ming.txt
+echo "version output MinGW GUI"
+type ver_ming_gui.txt
 echo "version output MVC"
 type ver_msvc.txt
 cd ..
