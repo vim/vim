@@ -6838,6 +6838,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	p = skipwhite(p);
 
 	if (cctx.ctx_skip == SKIP_YES
+		&& ea.cmdidx != CMD_if
 		&& ea.cmdidx != CMD_elseif
 		&& ea.cmdidx != CMD_else
 		&& ea.cmdidx != CMD_endif)
