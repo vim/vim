@@ -29,14 +29,14 @@ func SetUp()
   endif
   let s:chopt = {}
   call ch_log(g:testfunc)
+
+  " Most tests use job_start(), which can be flaky
+  let g:test_is_flaky = 1
 endfunc
 
 " Run "testfunc" after starting the server and stop the server afterwards.
 func s:run_server(testfunc, ...)
   call RunServer(s:testscript, a:testfunc, a:000)
-
-  " communicating with a server can be flaky
-  let g:test_is_flaky = 1
 endfunc
 
 " Return a list of open files.
@@ -455,7 +455,6 @@ endfunc
 func Test_connect_waittime()
   CheckFunction reltimefloat
   " this is timing sensitive
-  let g:test_is_flaky = 1
 
   let start = reltime()
   let handle = ch_open('localhost:9876', s:chopt)
@@ -1762,9 +1761,8 @@ func Test_write_to_deleted_buffer()
 endfunc
 
 func Test_cmd_parsing()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
+
   call assert_false(filereadable("file with space"))
   let job = job_start('touch "file with space"')
   call WaitForAssert({-> assert_true(filereadable("file with space"))})
@@ -1963,9 +1961,7 @@ func Test_list_args()
 endfunc
 
 func Test_keep_pty_open()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
 
   let job = job_start(s:python . ' -c "import time;time.sleep(0.2)"',
         \ {'out_io': 'null', 'err_io': 'null', 'pty': 1})
@@ -2047,9 +2043,7 @@ func Test_no_hang_windows()
 endfunc
 
 func Test_job_exitval_and_termsig()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
 
   " Terminate job normally
   let cmd = ['echo']
@@ -2123,6 +2117,7 @@ endfunc
 
 " Do this last, it stops any channel log.
 func Test_zz_nl_err_to_out_pipe()
+
   eval 'Xlog'->ch_logfile()
   call ch_log('Test_zz_nl_err_to_out_pipe()')
   let job = job_start(s:python . " test_channel_pipe.py", {'err_io': 'out'})
@@ -2214,6 +2209,7 @@ endfunc
 func Test_job_trailing_space_unix()
   CheckUnix
   CheckExecutable cat
+
   let job = job_start("cat ", #{in_io: 'null'})
   call WaitForAssert({-> assert_equal("dead", job_status(job))})
   call assert_equal(0, job_info(job).exitval)
