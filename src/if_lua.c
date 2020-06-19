@@ -37,7 +37,7 @@ typedef void (*msgfunc_T)(char_u *);
 
 typedef struct {
     int index;
-    int table_index; // 0 if non table
+    int tableindex; // 0 if non table
     lua_State *L;
 } luaV_CFuncState;
 
@@ -620,7 +620,7 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 		    luaV_CFuncState *state = ALLOC_CLEAR_ONE(luaV_CFuncState);
 		    state->index = index;
 		    state->L = L;
-		    // TODO: set state->tableindex
+		    state->tableindex = 1; // TODO set proper tableindex
 		    char_u *name = register_cfunc(&luaV_call_lua_func, &luaV_call_lua_func_free, state);
 		    tv->v_type = VAR_FUNC;
 		    tv->vval.v_string = vim_strsave(name);
@@ -2460,14 +2460,21 @@ update_package_paths_in_lua()
 luaV_call_lua_func(int argcount, typval_T *argvars, typval_T *rettv, void *state)
 {
     int i;
+    int luaargcount = argcount;
     luaV_CFuncState *funcstate = (luaV_CFuncState*)state;
     lua_rawgeti(funcstate->L, LUA_REGISTRYINDEX, funcstate->index);
 
-    // TODO: if funcstate->tableindex > 0 then pass it as first args
+    if (funcstate->tableindex > 0)
+    {
+	luaargcount += 1;
+	// TODO: pass proper tbl as first args
+	lua_pushnil(L);
+    }
+
     for (i = 0; i < argcount; ++i)
 	luaV_pushtypval(funcstate->L, &argvars[i]);
 
-    if (lua_pcall(funcstate->L, argcount, 1, 0))
+    if (lua_pcall(funcstate->L, luaargcount, 1, 0))
     {
 	luaV_emsg(funcstate->L);
 	return FCERR_OTHER;
