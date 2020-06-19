@@ -109,6 +109,41 @@ def Test_assignment()
   call CheckDefFailure(['v:errmsg += 123'], 'E1013:')
 enddef
 
+def Test_vim9_single_char_vars()
+  let lines =<< trim END
+      vim9script
+
+      " single character variable declarations work
+      let a: string
+      let b: number
+      let l: list<any>
+      let s: string
+      let t: number
+      let v: number
+      let w: number
+
+      " script-local variables can be used without s: prefix
+      a = 'script-a'
+      b = 111
+      l = [1, 2, 3]
+      s = 'script-s'
+      t = 222
+      v = 333
+      w = 444
+
+      assert_equal('script-a', a)
+      assert_equal(111, b)
+      assert_equal([1, 2, 3], l)
+      assert_equal('script-s', s)
+      assert_equal(222, t)
+      assert_equal(333, v)
+      assert_equal(444, w)
+  END
+  writefile(lines, 'Xsinglechar')
+  source Xsinglechar
+  delete('Xsinglechar')
+enddef
+
 def Test_assignment_list()
   let list1: list<bool> = [false, true, false]
   let list2: list<number> = [1, 2, 3]

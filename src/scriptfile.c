@@ -1343,7 +1343,7 @@ do_source(
 
 	    // Allocate the local script variables to use for this script.
 	    new_script_vars(script_items.ga_len);
-	    ga_init2(&si->sn_var_vals, sizeof(typval_T), 10);
+	    ga_init2(&si->sn_var_vals, sizeof(svar_T), 10);
 	    ga_init2(&si->sn_imports, sizeof(imported_T), 10);
 	    ga_init2(&si->sn_type_list, sizeof(type_T), 10);
 # ifdef FEAT_PROFILE

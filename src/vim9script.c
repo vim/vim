@@ -471,7 +471,7 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
     }
 
     for (p = arg + 1; *p != NUL && eval_isnamec(*p); MB_PTR_ADV(p))
-	if (*p == ':' && p != arg + 1)
+	if (*p == ':' && (VIM_ISWHITE(p[1]) || p != arg + 1))
 	    break;
 
     if (*p != ':')
