@@ -26,6 +26,18 @@ func Test_rubydo()
   %bwipe!
 endfunc
 
+func Test_rubydo_dollar_underscore()
+  new
+  call setline(1, ['one', 'two', 'three', 'four'])
+  2,3rubydo $_ = '[' + $_  + ']'
+  call assert_equal(['one', '[two]', '[three]', 'four'], getline(1, '$'))
+  bwipe!
+
+  call assert_fails('rubydo $_ = 0', 'E265:')
+  call assert_fails('rubydo 1+', 'syntax error, unexpected end-of-input')
+  bwipe!
+endfunc
+
 func Test_rubyfile()
   " Check :rubyfile does not SEGV with Ruby level exception but just fails
   let tempfile = tempname() . '.rb'
@@ -393,6 +405,10 @@ func Test_ruby_p()
 
   let messages = GetMessages()
   call assert_equal(0, len(messages))
+endfunc
+
+func Test_rubyeval_error()
+  call assert_fails('call rubyeval("1+")', 'syntax error, unexpected end-of-input')
 endfunc
 
 " Test for various heredoc syntax
