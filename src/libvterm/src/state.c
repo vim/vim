@@ -291,7 +291,7 @@ static int on_text(const char bytes[], size_t len, void *user)
 
   if (state->pos.row >= state->rows)
   {
-    DEBUG_LOG2("libvterm: on_text() pos.row %d out of range (rows = %d)\n", state->pos.row, state.rows);
+    DEBUG_LOG2("libvterm: on_text() pos.row %d out of range (rows = %d)\n", state->pos.row, state->rows);
     return 0;
   }
   // We'll have at most len codepoints, plus one from a previous incomplete
