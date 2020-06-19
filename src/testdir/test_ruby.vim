@@ -34,7 +34,7 @@ func Test_rubydo_dollar_underscore()
   bwipe!
 
   call assert_fails('rubydo $_ = 0', 'E265:')
-  call assert_fails('rubydo 1+', 'syntax error, unexpected end-of-input')
+  call assert_fails('rubydo (', 'syntax error, unexpected end-of-input')
   bwipe!
 endfunc
 
@@ -408,7 +408,7 @@ func Test_ruby_p()
 endfunc
 
 func Test_rubyeval_error()
-  call assert_fails('call rubyeval("1+")', 'syntax error, unexpected end-of-input')
+  call assert_fails('call rubyeval("(")', 'syntax error, unexpected end-of-input')
 endfunc
 
 " Test for various heredoc syntax
