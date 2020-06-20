@@ -27,7 +27,7 @@
 typedef enum {
     SKIP_NOT,		// condition is a constant, produce code
     SKIP_YES,		// condition is a constant, do NOT produce code
-    SKIP_UNKNONW	// condition is not a constant, produce code
+    SKIP_UNKNOWN	// condition is not a constant, produce code
 } skip_T;
 
 /*
@@ -5688,7 +5688,7 @@ compile_if(char_u *arg, cctx_T *cctx)
     else
     {
 	// Not a constant, generate instructions for the expression.
-	cctx->ctx_skip = SKIP_UNKNONW;
+	cctx->ctx_skip = SKIP_UNKNOWN;
 	if (generate_ppconst(cctx, &ppconst) == FAIL)
 	    return NULL;
     }
@@ -5700,7 +5700,7 @@ compile_if(char_u *arg, cctx_T *cctx)
     // "is_had_return" will be reset if any block does not end in :return
     scope->se_u.se_if.is_had_return = TRUE;
 
-    if (cctx->ctx_skip == SKIP_UNKNONW)
+    if (cctx->ctx_skip == SKIP_UNKNOWN)
     {
 	// "where" is set when ":elseif", "else" or ":endif" is found
 	scope->se_u.se_if.is_if_label = instr->ga_len;
@@ -5731,7 +5731,7 @@ compile_elseif(char_u *arg, cctx_T *cctx)
     if (!cctx->ctx_had_return)
 	scope->se_u.se_if.is_had_return = FALSE;
 
-    if (cctx->ctx_skip == SKIP_UNKNONW)
+    if (cctx->ctx_skip == SKIP_UNKNOWN)
     {
 	if (compile_jump_to_end(&scope->se_u.se_if.is_end_label,
 						    JUMP_ALWAYS, cctx) == FAIL)
@@ -5761,7 +5761,7 @@ compile_elseif(char_u *arg, cctx_T *cctx)
     else
     {
 	// Not a constant, generate instructions for the expression.
-	cctx->ctx_skip = SKIP_UNKNONW;
+	cctx->ctx_skip = SKIP_UNKNOWN;
 	if (generate_ppconst(cctx, &ppconst) == FAIL)
 	    return NULL;
 
@@ -5794,7 +5794,7 @@ compile_else(char_u *arg, cctx_T *cctx)
     if (scope->se_skip_save != SKIP_YES)
     {
 	// jump from previous block to the end, unless the else block is empty
-	if (cctx->ctx_skip == SKIP_UNKNONW)
+	if (cctx->ctx_skip == SKIP_UNKNOWN)
 	{
 	    if (!cctx->ctx_had_return
 		    && compile_jump_to_end(&scope->se_u.se_if.is_end_label,
@@ -5802,7 +5802,7 @@ compile_else(char_u *arg, cctx_T *cctx)
 		return NULL;
 	}
 
-	if (cctx->ctx_skip == SKIP_UNKNONW)
+	if (cctx->ctx_skip == SKIP_UNKNOWN)
 	{
 	    if (scope->se_u.se_if.is_if_label >= 0)
 	    {
@@ -5813,7 +5813,7 @@ compile_else(char_u *arg, cctx_T *cctx)
 	    }
 	}
 
-	if (cctx->ctx_skip != SKIP_UNKNONW)
+	if (cctx->ctx_skip != SKIP_UNKNOWN)
 	    cctx->ctx_skip = cctx->ctx_skip == SKIP_YES ? SKIP_NOT : SKIP_YES;
     }
 
