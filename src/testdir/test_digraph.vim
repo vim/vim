@@ -503,7 +503,7 @@ func Test_loadkeymap_error()
   call delete('Xkeymap')
 endfunc
 
-" Test for the characters displayed one the screen when entering a digraph
+" Test for the characters displayed on the screen when entering a digraph
 func Test_entering_digraph()
   CheckRunVimInTerminal
   let buf = RunVimInTerminal('', {'rows': 6})
