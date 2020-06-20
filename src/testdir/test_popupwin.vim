@@ -3349,7 +3349,11 @@ func Test_popupwin_filter_input_multibyte()
 
   if has('unix')
     " with modifyOtherKeys <M-S-a> does not include a modifier sequence
-    call feedkeys("\<Esc>[27;4;65~", 'Lx!')
+    if has('gui_running')
+      call feedkeys("\x9b\xfc\x08A", 'Lx!')
+    else
+      call feedkeys("\<Esc>[27;4;65~", 'Lx!')
+    endif
     call assert_equal([0xc3, 0x81], g:bytes)
   endif
 
