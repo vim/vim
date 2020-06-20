@@ -1211,15 +1211,16 @@ key_press_event(GtkWidget *widget UNUSED,
     if (len == 0)   // Unrecognized key
 	return TRUE;
 
-    // Handle modifiers.
-    modifiers = modifiers_gdk2vim(state);
-
     // For some keys a shift modifier is translated into another key code.
     if (len == -3)
 	key = TO_SPECIAL(string[1], string[2]);
     else
 	key = string[0];
 
+    // Handle modifiers.
+    modifiers = modifiers_gdk2vim(state);
+
+    // Recognize special keys.
     key = simplify_key(key, &modifiers);
     if (key == CSI)
 	key = K_CSI;
@@ -1235,6 +1236,10 @@ key_press_event(GtkWidget *widget UNUSED,
 	// <C-H> and <C-h> mean the same thing, always use "H"
 	if ((modifiers & MOD_MASK_CTRL) && ASCII_ISALPHA(key))
 	    key = TOUPPER_ASC(key);
+
+	// May remove the shift modifier if it's included in the key.
+	modifiers = may_remove_shift_modifier(modifiers, key);
+
 	string[0] = key;
 	len = 1;
     }

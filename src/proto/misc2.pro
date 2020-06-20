@@ -71,6 +71,7 @@ char_u *get_special_key_name(int c, int modifiers);
 int trans_special(char_u **srcp, char_u *dst, int flags, int *did_simplify);
 int special_to_buf(int key, int modifiers, int keycode, char_u *dst);
 int find_special_key(char_u **srcp, int *modp, int flags, int *did_simplify);
+int may_remove_shift_modifier(int modifiers, int key);
 int extract_modifiers(int key, int *modp, int simplify, int *did_simplify);
 int find_special_key_in_table(int c);
 int get_special_key_code(char_u *name);
