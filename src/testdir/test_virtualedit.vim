@@ -357,4 +357,22 @@ func Test_delete_break_tab()
   close!
 endfunc
 
+" Test for using <BS>, <C-W> and <C-U> in virtual edit mode
+" to erase character, word and line.
+func Test_ve_backspace()
+  new
+  call setline(1, 'sample')
+  set virtualedit=all
+  set backspace=indent,eol,start
+  exe "normal 15|i\<BS>\<BS>"
+  call assert_equal([0, 1, 7, 5], getpos('.'))
+  exe "normal 15|i\<C-W>"
+  call assert_equal([0, 1, 6, 0], getpos('.'))
+  exe "normal 15|i\<C-U>"
+  call assert_equal([0, 1, 1, 0], getpos('.'))
+  set backspace&
+  set virtualedit&
+  close!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

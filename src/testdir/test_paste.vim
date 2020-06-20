@@ -79,9 +79,25 @@ func Test_paste_clipboard()
   bwipe!
 endfunc
 
+" bracketed paste in command line
 func Test_paste_cmdline()
   call feedkeys(":a\<Esc>[200~foo\<CR>bar\<Esc>[201~b\<Home>\"\<CR>", 'xt')
   call assert_equal("\"afoo\<CR>barb", getreg(':'))
+endfunc
+
+" bracketed paste in Ex-mode
+func Test_paste_ex_mode()
+  unlet! foo
+  call feedkeys("Qlet foo=\"\<Esc>[200~foo\<CR>bar\<Esc>[201~\"\<CR>vi\<CR>", 'xt')
+  call assert_equal("foo\rbar", foo)
+endfunc
+
+func Test_paste_onechar()
+  new
+  let @f='abc'
+  call feedkeys("i\<C-R>\<Esc>[200~foo\<CR>bar\<Esc>[201~", 'xt')
+  call assert_equal("abc", getline(1))
+  close!
 endfunc
 
 func Test_paste_visual_mode()
@@ -134,3 +150,5 @@ func Test_xrestore()
 
   bwipe!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
