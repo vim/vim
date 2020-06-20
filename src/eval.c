@@ -253,7 +253,7 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 	    return FAIL;
 
 	if (partial->pt_func != NULL
-			  && partial->pt_func->uf_dfunc_idx != UF_NOT_COMPILED)
+			  && partial->pt_func->uf_def_status != UF_NOT_COMPILED)
 	{
 	    if (call_def_function(partial->pt_func, argc, argv,
 						       partial, rettv) == FAIL)

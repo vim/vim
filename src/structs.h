@@ -1531,8 +1531,11 @@ struct blobvar_S
 typedef struct funccall_S funccall_T;
 
 // values used for "uf_dfunc_idx"
-# define UF_NOT_COMPILED -2
-# define UF_TO_BE_COMPILED -1
+typedef enum {
+    UF_NOT_COMPILED,
+    UF_TO_BE_COMPILED,
+    UF_COMPILED
+} def_status_T;
 
 /*
  * Structure to hold info for a user function.
@@ -1543,7 +1546,8 @@ typedef struct
     int		uf_flags;	// FC_ flags
     int		uf_calls;	// nr of active calls
     int		uf_cleared;	// func_clear() was already called
-    int		uf_dfunc_idx;	// UF_NOT_COMPILED, UF_TO_BE_COMPILED or >= 0
+    def_status_T uf_def_status; // UF_NOT_COMPILED, UF_TO_BE_COMPILED, etc.
+    int		uf_dfunc_idx;	// only valid if uf_def_status is UF_COMPILED
     garray_T	uf_args;	// arguments, including optional arguments
     garray_T	uf_def_args;	// default argument expressions
 
