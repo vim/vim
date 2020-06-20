@@ -1099,11 +1099,11 @@ def Test_if_const_expr()
 
   g:glob = 2
   if false
-    execute('let g:glob = 3')
+    execute('g:glob = 3')
   endif
   assert_equal(2, g:glob)
   if true
-    execute('let g:glob = 3')
+    execute('g:glob = 3')
   endif
   assert_equal(3, g:glob)
 
@@ -1790,8 +1790,8 @@ def Test_vim9_comment_gui()
 enddef
 
 def Test_vim9_comment_not_compiled()
-  au TabEnter *.vim let g:entered = 1
-  au TabEnter *.x let g:entered = 2
+  au TabEnter *.vim g:entered = 1
+  au TabEnter *.x g:entered = 2
 
   edit test.vim
   doautocmd TabEnter #comment
@@ -1811,7 +1811,7 @@ def Test_vim9_comment_not_compiled()
 
   CheckScriptSuccess([
       'vim9script',
-      'let g:var = 123',
+      'g:var = 123',
       'let w:var = 777',
       'unlet g:var w:var # something',
       ])
@@ -1819,6 +1819,11 @@ def Test_vim9_comment_not_compiled()
   CheckScriptFailure([
       'vim9script',
       'let g:var = 123',
+      ], 'E1016:')
+
+  CheckScriptFailure([
+      'vim9script',
+      'g:var = 123',
       'unlet g:var# comment1',
       ], 'E108:')
 
@@ -1889,11 +1894,11 @@ enddef
 def Test_finish()
   let lines =<< trim END
     vim9script
-    let g:res = 'one'
+    g:res = 'one'
     if v:false | finish | endif
-    let g:res = 'two'
+    g:res = 'two'
     finish
-    let g:res = 'three'
+    g:res = 'three'
   END
   writefile(lines, 'Xfinished')
   source Xfinished

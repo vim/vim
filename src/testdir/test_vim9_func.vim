@@ -323,7 +323,7 @@ def Test_vim9script_call()
     str->MyFunc()
     assert_equal('barfoo', var)
 
-    let g:value = 'value'
+    g:value = 'value'
     g:value->MyFunc()
     assert_equal('value', var)
 

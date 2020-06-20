@@ -3325,6 +3325,9 @@ def_function(exarg_T *eap, char_u *name_arg)
 
     if (eap->cmdidx == CMD_def)
 	set_function_type(fp);
+    else if (fp->uf_script_ctx.sc_version == SCRIPT_VERSION_VIM9)
+	// :func does not use Vim9 script syntax, even in a Vim9 script file
+	fp->uf_script_ctx.sc_version = SCRIPT_VERSION_MAX;
 
     goto ret_free;
 

@@ -2864,6 +2864,14 @@ set_var_const(
 	semsg(_(e_illvar), name);
 	return;
     }
+    if (current_sctx.sc_version == SCRIPT_VERSION_VIM9
+	    && ht == &globvarht
+	    && (flags & LET_NO_COMMAND) == 0)
+    {
+	semsg(_(e_declare_global), name);
+	return;
+    }
+
     is_script_local = ht == get_script_local_ht();
 
     di = find_var_in_ht(ht, 0, varname, TRUE);

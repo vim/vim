@@ -67,6 +67,8 @@ typedef struct terminal_S	term_T;
 typedef struct VimMenu vimmenu_T;
 #endif
 
+// maximum value for sc_version
+#define SCRIPT_VERSION_MAX 4
 // value for sc_version in a Vim9 script file
 #define SCRIPT_VERSION_VIM9 999999
 

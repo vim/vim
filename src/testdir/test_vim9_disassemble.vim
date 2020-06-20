@@ -1190,7 +1190,7 @@ def Test_vim9script_forward_func()
     def FuncTwo(): string
       return 'two'
     enddef
-    let g:res_FuncOne: string = execute('disass FuncOne')
+    g:res_FuncOne = execute('disass FuncOne')
   END
   writefile(lines, 'Xdisassemble')
   source Xdisassemble

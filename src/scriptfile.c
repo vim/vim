@@ -1873,7 +1873,7 @@ ex_scriptversion(exarg_T *eap UNUSED)
     nr = getdigits(&eap->arg);
     if (nr == 0 || *eap->arg != NUL)
 	emsg(_(e_invarg));
-    else if (nr > 4)
+    else if (nr > SCRIPT_VERSION_MAX)
 	semsg(_("E999: scriptversion not supported: %d"), nr);
     else
     {

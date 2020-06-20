@@ -4871,8 +4871,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		dest = dest_global;
 		if (is_decl)
 		{
-		    semsg(_("E1016: Cannot declare a global variable: %s"),
-									 name);
+		    semsg(_(e_declare_global), name);
 		    goto theend;
 		}
 	    }
