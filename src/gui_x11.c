@@ -938,7 +938,10 @@ gui_x11_key_hit_cb(
     if (len == -3)
 	key = TO_SPECIAL(string[1], string[2]);
     else
-	key = string[0];
+    {
+	string[len] = NUL;
+	key = mb_ptr2char(string);
+    }
     key = simplify_key(key, &modifiers);
     if (key == CSI)
 	key = K_CSI;
@@ -951,8 +954,7 @@ gui_x11_key_hit_cb(
     }
     else
     {
-	string[0] = key;
-	len = 1;
+	len = mb_char2bytes(key, string);
 
 	// Remove the SHIFT modifier for keys where it's already included,
 	// e.g., '(', '!' and '*'.

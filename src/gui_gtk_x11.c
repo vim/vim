@@ -1215,7 +1215,10 @@ key_press_event(GtkWidget *widget UNUSED,
     if (len == -3)
 	key = TO_SPECIAL(string[1], string[2]);
     else
-	key = string[0];
+    {
+	string[len] = NUL;
+	key = mb_ptr2char(string);
+    }
 
     // Handle modifiers.
     modifiers = modifiers_gdk2vim(state);
@@ -1240,8 +1243,7 @@ key_press_event(GtkWidget *widget UNUSED,
 	// May remove the shift modifier if it's included in the key.
 	modifiers = may_remove_shift_modifier(modifiers, key);
 
-	string[0] = key;
-	len = 1;
+	len = mb_char2bytes(key, string);
     }
 
     if (modifiers != 0)
