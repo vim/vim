@@ -99,6 +99,7 @@ func Test_screenpos()
 	\ 'curscol': wincol + 9,
 	\ 'endcol': wincol + 9}, screenpos(winid, 2, 22))
   close
+  call assert_equal({}, screenpos(999, 1, 1))
   bwipe!
 endfunc
 
