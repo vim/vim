@@ -3538,7 +3538,10 @@ compile_subscript(
 		return FAIL;
 	    *start_leader = end_leader;   // don't apply again later
 
-	    *arg = skipwhite(*arg + 2);
+	    p = *arg + 2;
+	    *arg = skipwhite(p);
+	    if (may_get_next_line(p, arg, cctx) == FAIL)
+		return FAIL;
 	    if (**arg == '{')
 	    {
 		// lambda call:  list->{lambda}
@@ -3567,6 +3570,7 @@ compile_subscript(
 	{
 	    garray_T	*stack = &cctx->ctx_type_stack;
 	    type_T	**typep;
+	    char_u	*p;
 
 	    // list index: list[123]
 	    // dict member: dict[key]
@@ -3576,7 +3580,10 @@ compile_subscript(
 	    if (generate_ppconst(cctx, ppconst) == FAIL)
 		return FAIL;
 
-	    *arg = skipwhite(*arg + 1);
+	    p = *arg + 1;
+	    *arg = skipwhite(p);
+	    if (may_get_next_line(p, arg, cctx) == FAIL)
+		return FAIL;
 	    if (compile_expr0(arg, cctx) == FAIL)
 		return FAIL;
 
@@ -3617,8 +3624,10 @@ compile_subscript(
 		return FAIL;
 
 	    ++*arg;
-	    p = *arg;
+	    if (may_get_next_line(*arg, arg, cctx) == FAIL)
+		return FAIL;
 	    // dictionary member: dict.name
+	    p = *arg;
 	    if (eval_isnamec1(*p))
 		while (eval_isnamec(*p))
 		    MB_PTR_ADV(p);
@@ -6664,7 +6673,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	if (line != NULL && *line == '|')
 	    // the line continues after a '|'
 	    ++line;
-	else if (line != NULL && *line != NUL
+	else if (line != NULL && *skipwhite(line) != NUL
 		&& !(*line == '#' && (line == cctx.ctx_line_start
 						    || VIM_ISWHITE(line[-1]))))
 	{
