@@ -1036,6 +1036,24 @@ def Test_expr7_subscript_linebreak()
   	map('string(v:key)')
   assert_equal(['0', '1', '2'], l)
 
+  l = range
+  	->map('string(v:key)')
+  assert_equal(['0', '1', '2'], l)
+
+  l = range # comment
+  	->map('string(v:key)')
+  assert_equal(['0', '1', '2'], l)
+
+  l = range
+
+  	->map('string(v:key)')
+  assert_equal(['0', '1', '2'], l)
+
+  l = range
+	# comment
+  	->map('string(v:key)')
+  assert_equal(['0', '1', '2'], l)
+
   assert_equal('1', l[
 	1])
 
