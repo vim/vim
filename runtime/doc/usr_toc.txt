@@ -1,4 +1,4 @@
-*usr_toc.txt*	For Vim version 8.2.  Last change: 2020 Jun 11
+*usr_toc.txt*	For Vim version 8.2.  Last change: 2020 Jun 15
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -339,6 +339,12 @@ Make Vim work as you like it.
 		|45.3|	Using another encoding
 		|45.4|	Editing files with a different encoding
 		|45.5|	Entering language text
+
+|usr_46.txt|  Write plugins using Vim9 script
+		|46.1|	Introduction
+		|46.2|	Variable declarations
+		|46.3|	Functions and types
+		|46.?|	Using a Vim9 script from legacy script
 
 ==============================================================================
 Making Vim Run ~

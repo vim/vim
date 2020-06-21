@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Jun 14
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Jun 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3667,7 +3667,7 @@ complete_info([{what}])
 		   "function"	     User defined completion |i_CTRL-X_CTRL-U|
 		   "omni"	     Omni completion |i_CTRL-X_CTRL-O|
 		   "spell"	     Spelling suggestions |i_CTRL-X_s|
-		   "eval"            |complete()| completion
+		   "eval"	     |complete()| completion
 		   "unknown"	     Other internal modes
 
 		If the optional {what} list argument is supplied, then only
@@ -4536,7 +4536,7 @@ flatten({list} [, {maxdepth}])					*flatten()*
 		a very large number.
 		The {list} is changed in place, make a copy first if you do
 		not want that.
-							        *E900*
+								*E900*
 		{maxdepth} means how deep in nested lists changes are made.
 		{list} is not modified when {maxdepth} is 0.
 		{maxdepth} must be positive number.
@@ -5163,7 +5163,7 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 		highlight	highlight groups
 		history		:history suboptions
 		locale		locale names (as output of locale -a)
-		mapclear        buffer argument
+		mapclear	buffer argument
 		mapping		mapping name
 		menu		menus
 		messages	|:messages| suboptions
@@ -5189,7 +5189,7 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 		If {type} is "cmdline", then the |cmdline-completion| result is
 		returned.  For example, to complete the possible values after
 		a ":call" command: >
-                	echo getcompletion('call ', 'cmdline')
+			echo getcompletion('call ', 'cmdline')
 <
 		If there are no matches, an empty list is returned.  An
 		invalid value for {type} produces an error.
@@ -5770,8 +5770,8 @@ getwininfo([{winid}])					*getwininfo()*
 		Returns information about windows as a List with Dictionaries.
 
 		If {winid} is given Information about the window with that ID
-		is returned.  If the window does not exist the result is an
-		empty list.
+		is returned, as a List with one item.  If the window does not
+		exist the result is an empty list.
 
 		Without {winid} information about all the windows in all the
 		tab pages is returned.
@@ -8606,14 +8606,14 @@ searchcount([{options}])					*searchcount()*
 			    if result.total > result.maxcount &&
 			    \  result.current > result.maxcount
 			      return printf(' /%s [>%d/>%d]', @/,
-			      \             result.current, result.total)
+			      \		    result.current, result.total)
 			    elseif result.total > result.maxcount
 			      return printf(' /%s [%d/>%d]', @/,
-			      \             result.current, result.total)
+			      \		    result.current, result.total)
 			    endif
 			  endif
 			  return printf(' /%s [%d/%d]', @/,
-			  \             result.current, result.total)
+			  \		result.current, result.total)
 			endfunction
 			let &statusline .= '%{LastSearchCount()}'
 
@@ -9386,7 +9386,9 @@ simplify({filename})					*simplify()*
 		Unix) are not resolved.  If the first path component in
 		{filename} designates the current directory, this will be
 		valid for the result as well.  A trailing path separator is
-		not removed either.
+		not removed either. On Unix "//path" is unchanged, but
+		"///path" is simplified to "/path" (this follows the Posix
+		standard).
 		Example: >
 			simplify("./dir/.././/file/") == "./file/"
 <		Note: The combination "dir/.." is only removed if "dir" is
@@ -9696,7 +9698,7 @@ state([{what}])						*state()*
 		    m	halfway a mapping, :normal command, feedkeys() or
 			stuffed command
 		    o	operator pending or waiting for a command argument,
-		        e.g. after |f|
+			e.g. after |f|
 		    a	Insert mode autocomplete active
 		    x	executing an autocommand
 		    w	blocked on waiting, e.g. ch_evalexpr(), ch_read() and
@@ -10450,9 +10452,9 @@ terminalprops()						*terminalprops()*
 		If the |+termresponse| feature is missing then the result is
 		an empty dictionary.
 
-		If "cursor_style" is 'y' then |t_RS| will be send to request the
+		If "cursor_style" is 'y' then |t_RS| will be sent to request the
 		current cursor style.
-		If "cursor_blink_mode" is 'y' then |t_RC| will be send to
+		If "cursor_blink_mode" is 'y' then |t_RC| will be sent to
 		request the cursor blink status.
 		"cursor_style" and "cursor_blink_mode" are also set if |t_u7|
 		is not empty, Vim will detect the working of sending |t_RS|
@@ -10916,7 +10918,7 @@ win_screenpos({nr})					*win_screenpos()*
 			GetWinid()->win_screenpos()
 <
 win_splitmove({nr}, {target} [, {options}])		*win_splitmove()*
-	        Move the window {nr} to a new split of the window {target}.
+		Move the window {nr} to a new split of the window {target}.
 		This is similar to moving to {target}, creating a new window
 		using |:split| but having the same contents as window {nr}, and
 		then closing {nr}.

@@ -112,7 +112,7 @@ Although it's shorter to do: >
 
 Legacy Vim script does have type checking, but this happens at runtime, when
 the code is executed.  And it's permissive, often a computation gives an
-unexpected value instead of reporting an error .  Thus you can define a
+unexpected value instead of reporting an error.  Thus you can define a
 function and think it's fine, but see a problem only later when it is called: >
 	let s:collected = ''
 	func ExtendAndReturn(add)
@@ -142,7 +142,7 @@ you did wrong: >
 
 Vim9 script is strict, it uses the "+" operator only for numbers and floats.
 For string concatenation ".." must be used.  This avoids mistakes and avoids
-the automatic conversion that gave a suprising result above.  So you change
+the automatic conversion that gave a surprising result above.  So you change
 the first line of the function to: >
 	   s:collected ..= add
 And now it works.
