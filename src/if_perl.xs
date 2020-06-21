@@ -656,6 +656,10 @@ S_SvREFCNT_dec(pTHX_ SV *sv)
 	    Perl_sv_free2(aTHX_ sv, rc);
     }
 }
+/* perl-5.32 needs Perl_SvREFCNT_dec */
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
+#define Perl_SvREFCNT_dec S_SvREFCNT_dec
+# endif
 # endif
 
 /* perl-5.26 also needs S_TOPMARK and S_POPMARK. */
@@ -679,6 +683,21 @@ S_POPMARK(pTHX)
 				  (IV)*(PL_markstack_ptr-1))));
     assert((PL_markstack_ptr > PL_markstack) || !"MARK underflow");
     return *PL_markstack_ptr--;
+}
+/* perl-5.32 needs Perl_POPMARK */
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
+#define Perl_POPMARK S_POPMARK
+# endif
+# endif
+
+/* perl-5.32 needs Perl_SvTRUE */
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
+PERL_STATIC_INLINE bool
+Perl_SvTRUE(pTHX_ SV *sv) {
+    if (!LIKELY(sv))
+        return FALSE;
+    SvGETMAGIC(sv);
+    return SvTRUE_nomg_NN(sv);
 }
 # endif
 
