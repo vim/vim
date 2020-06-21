@@ -4357,9 +4357,9 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
 	garray_T	*instr = &cctx->ctx_instr;
 	garray_T	*stack = &cctx->ctx_type_stack;
 	int		alt_idx = instr->ga_len;
-	int		end_idx;
+	int		end_idx = 0;
 	isn_T		*isn;
-	type_T		*type1;
+	type_T		*type1 = NULL;
 	type_T		*type2;
 	int		has_const_expr = FALSE;
 	int		const_value = FALSE;
