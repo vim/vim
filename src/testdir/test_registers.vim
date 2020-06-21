@@ -633,4 +633,22 @@ func Test_execute_reg_as_ex_cmd()
   call assert_equal(repeat('abcdefghijklmnopqrstuvwxyz', 312), str)
 endfunc
 
+" Test for clipboard registers with ASCII NUL
+func Test_clipboard_nul()
+  CheckFeature clipboard_working
+  new
+
+  " Test for putting ASCII NUL into the clipboard
+  set clipboard=unnamed
+  call append(0, "\ntest")
+  normal ggyyp
+  call assert_equal("^@test^@", strtrans(getreg('*')))
+  call assert_equal(getline(1), getline(2))
+  let b = split(execute(":reg *"), "\n")
+  call assert_match('"\*\s*\^@test\^J',b[1])
+
+  set clipboard&vim
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
