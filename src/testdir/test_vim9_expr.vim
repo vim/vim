@@ -1029,6 +1029,21 @@ def Test_expr7_trailing()
   assert_equal(123, d.key)
 enddef
 
+def Test_expr7_subscript_linebreak()
+  let range = range(
+  		3)
+  let l = range->
+  	map('string(v:key)')
+  assert_equal(['0', '1', '2'], l)
+
+  assert_equal('1', l[
+	1])
+
+  let d = #{one: 33}
+  assert_equal(33, d.
+	one)
+enddef
+
 
 func Test_expr7_trailing_fails()
   call CheckDefFailure(['let l = [2]', 'l->{l -> add(l, 8)}'], 'E107')
