@@ -646,6 +646,12 @@ static int setlineinfo(int row, const VTermLineInfo *newinfo, const VTermLineInf
      newinfo->doubleheight != oldinfo->doubleheight) {
     for(col = 0; col < screen->cols; col++) {
       ScreenCell *cell = getcell(screen, row, col);
+      if (cell == NULL)
+      {
+        DEBUG_LOG2("libvterm: setlineinfo() position invalid: %d / %d",
+								     row, col);
+	return 1;
+      }
       cell->pen.dwl = newinfo->doublewidth;
       cell->pen.dhl = newinfo->doubleheight;
     }
@@ -773,6 +779,12 @@ static size_t _get_chars(const VTermScreen *screen, const int utf8, void *buffer
       ScreenCell *cell = getcell(screen, row, col);
       int i;
 
+      if (cell == NULL)
+      {
+        DEBUG_LOG2("libvterm: _get_chars() position invalid: %d / %d",
+								     row, col);
+	return 1;
+      }
       if(cell->chars[0] == 0)
         // Erased cell, might need a space
         padding++;
