@@ -1788,7 +1788,7 @@ EXTERN char e_no_white_before[] INIT(= N_("E1068: No white space allowed before 
 EXTERN char e_lock_unlock[]	INIT(= N_("E940: Cannot lock or unlock variable %s"));
 EXTERN char e_const_req_value[] INIT(= N_("E1021: const requires a value"));
 EXTERN char e_type_req[]	INIT(= N_("E1022: type or initialization required"));
-EXTERN char e_declare_global[]	INIT(= N_("E1016: Cannot declare a global variable: %s"));
+EXTERN char e_declare_var[]	INIT(= N_("E1016: Cannot declare a%s variable: %s"));
 #endif
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 EXTERN char e_alloc_color[]	INIT(= N_("E254: Cannot allocate color %s"));

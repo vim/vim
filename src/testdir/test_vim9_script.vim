@@ -322,15 +322,15 @@ def Test_assignment_failure()
   call CheckDefFailure(['let &option'], 'E1052:')
   call CheckDefFailure(['&g:option = 5'], 'E113:')
 
-  call CheckDefFailure(['let $VAR = 5'], 'E1065:')
+  call CheckDefFailure(['let $VAR = 5'], 'E1016: Cannot declare an environment variable:')
 
   call CheckDefFailure(['let @~ = 5'], 'E354:')
   call CheckDefFailure(['let @a = 5'], 'E1066:')
 
-  call CheckDefFailure(['let g:var = 5'], 'E1016:')
-  call CheckDefFailure(['let w:var = 5'], 'E1079:')
-  call CheckDefFailure(['let b:var = 5'], 'E1078:')
-  call CheckDefFailure(['let t:var = 5'], 'E1080:')
+  call CheckDefFailure(['let g:var = 5'], 'E1016: Cannot declare a global variable:')
+  call CheckDefFailure(['let w:var = 5'], 'E1016: Cannot declare a window variable:')
+  call CheckDefFailure(['let b:var = 5'], 'E1016: Cannot declare a buffer variable:')
+  call CheckDefFailure(['let t:var = 5'], 'E1016: Cannot declare a tab variable:')
 
   call CheckDefFailure(['let anr = 4', 'anr ..= "text"'], 'E1019:')
   call CheckDefFailure(['let xnr += 4'], 'E1020:')
@@ -1812,14 +1812,41 @@ def Test_vim9_comment_not_compiled()
   CheckScriptSuccess([
       'vim9script',
       'g:var = 123',
-      'let w:var = 777',
+      'b:var = 456',
+      'w:var = 777',
+      't:var = 888',
       'unlet g:var w:var # something',
       ])
 
   CheckScriptFailure([
       'vim9script',
       'let g:var = 123',
-      ], 'E1016:')
+      ], 'E1016: Cannot declare a global variable:')
+
+  CheckScriptFailure([
+      'vim9script',
+      'let b:var = 123',
+      ], 'E1016: Cannot declare a buffer variable:')
+
+  CheckScriptFailure([
+      'vim9script',
+      'let w:var = 123',
+      ], 'E1016: Cannot declare a window variable:')
+
+  CheckScriptFailure([
+      'vim9script',
+      'let t:var = 123',
+      ], 'E1016: Cannot declare a tab variable:')
+
+  CheckScriptFailure([
+      'vim9script',
+      'let v:version = 123',
+      ], 'E1016: Cannot declare a v: variable:')
+
+  CheckScriptFailure([
+      'vim9script',
+      'let $VARIABLE = "text"',
+      ], 'E1016: Cannot declare an environment variable:')
 
   CheckScriptFailure([
       'vim9script',
