@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2020 Jun 07
+" Last Change:	2020 Jun 15
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -237,7 +237,7 @@ au BufNewFile,BufRead */etc/blkid.tab,*/etc/blkid.tab.old   setf xml
 au BufNewFile,BufRead *bsd,*.bsdl		setf bsdl
 
 " Bazel (http://bazel.io)
-autocmd BufRead,BufNewFile *.bzl,WORKSPACE,BUILD.bazel 	setf bzl
+autocmd BufRead,BufNewFile *.bzl,WORKSPACE,BUILD.bazel	setf bzl
 if has("fname_case")
   " There is another check for BUILD further below.
   autocmd BufRead,BufNewFile BUILD		setf bzl
@@ -625,8 +625,8 @@ au BufNewFile,BufRead *.mo,*.gdmo		setf gdmo
 au BufNewFile,BufRead *.ged,lltxxxxx.txt	setf gedcom
 
 " Git
-au BufNewFile,BufRead COMMIT_EDITMSG,MERGE_MSG,TAG_EDITMSG 	setf gitcommit
-au BufNewFile,BufRead *.git/config,.gitconfig,/etc/gitconfig 	setf gitconfig
+au BufNewFile,BufRead COMMIT_EDITMSG,MERGE_MSG,TAG_EDITMSG	setf gitcommit
+au BufNewFile,BufRead *.git/config,.gitconfig,/etc/gitconfig	setf gitconfig
 au BufNewFile,BufRead */.config/git/config			setf gitconfig
 au BufNewFile,BufRead .gitmodules,*.git/modules/*/config	setf gitconfig
 if !empty($XDG_CONFIG_HOME)
@@ -770,11 +770,11 @@ au BufNewFile,BufRead *.inf,*.INF		setf inform
 au BufNewFile,BufRead */etc/initng/*/*.i,*.ii	setf initng
 
 " Innovation Data Processing
-au BufRead,BufNewFile upstream.dat\c,upstream.*.dat\c,*.upstream.dat\c 	setf upstreamdat
-au BufRead,BufNewFile fdrupstream.log,upstream.log\c,upstream.*.log\c,*.upstream.log\c,UPSTREAM-*.log\c 	setf upstreamlog
+au BufRead,BufNewFile upstream.dat\c,upstream.*.dat\c,*.upstream.dat\c	setf upstreamdat
+au BufRead,BufNewFile fdrupstream.log,upstream.log\c,upstream.*.log\c,*.upstream.log\c,UPSTREAM-*.log\c	setf upstreamlog
 au BufRead,BufNewFile upstreaminstall.log\c,upstreaminstall.*.log\c,*.upstreaminstall.log\c setf upstreaminstalllog
-au BufRead,BufNewFile usserver.log\c,usserver.*.log\c,*.usserver.log\c 	setf usserverlog
-au BufRead,BufNewFile usw2kagt.log\c,usw2kagt.*.log\c,*.usw2kagt.log\c 	setf usw2kagtlog
+au BufRead,BufNewFile usserver.log\c,usserver.*.log\c,*.usserver.log\c	setf usserverlog
+au BufRead,BufNewFile usw2kagt.log\c,usw2kagt.*.log\c,*.usw2kagt.log\c	setf usw2kagtlog
 
 " Ipfilter
 au BufNewFile,BufRead ipf.conf,ipf6.conf,ipf.rules	setf ipfilter
@@ -1073,7 +1073,7 @@ au BufNewFile,BufRead Mutt{ng,}rc		setf muttrc
 au BufRead,BufNewfile *.n1ql,*.nql		setf n1ql
 
 " Nano
-au BufNewFile,BufRead */etc/nanorc,*.nanorc  	setf nanorc
+au BufNewFile,BufRead */etc/nanorc,*.nanorc	setf nanorc
 
 " Nastran input/DMAP
 "au BufNewFile,BufRead *.dat			setf nastran
@@ -1156,7 +1156,7 @@ au BufNewFile,BufRead *.dpr			setf pascal
 au BufNewFile,BufRead *.pdf			setf pdf
 
 " PCMK - HAE - crm configure edit
-au BufNewFile,BufRead *.pcmk 			setf pcmk
+au BufNewFile,BufRead *.pcmk			setf pcmk
 
 " Perl
 if has("fname_case")
@@ -1646,10 +1646,10 @@ au BufNewFile,BufRead *.cm			setf voscm
 
 " Swift
 au BufNewFile,BufRead *.swift			setf swift
-au BufNewFile,BufRead *.swift.gyb 		setf swiftgyb
+au BufNewFile,BufRead *.swift.gyb		setf swiftgyb
 
 " Swift Intermediate Language
-au BufNewFile,BufRead *.sil 			setf sil
+au BufNewFile,BufRead *.sil			setf sil
 
 " Sysctl
 au BufNewFile,BufRead */etc/sysctl.conf,*/etc/sysctl.d/*.conf	setf sysctl
@@ -2066,7 +2066,7 @@ au BufNewFile,BufRead *fvwm2rc*
 au BufNewFile,BufRead */tmp/lltmp*		call s:StarSetf('gedcom')
 
 " Git
-au BufNewFile,BufRead */.gitconfig.d/*,/etc/gitconfig.d/* 	call s:StarSetf('gitconfig')
+au BufNewFile,BufRead */.gitconfig.d/*,/etc/gitconfig.d/*	call s:StarSetf('gitconfig')
 
 " Gitolite
 au BufNewFile,BufRead */gitolite-admin/conf/*	call s:StarSetf('gitolite')

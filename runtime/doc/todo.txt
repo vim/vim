@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Jun 14
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Jun 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -40,16 +40,16 @@ browser use: https://github.com/vim/vim/issues/1234
 
 Include src/po/vim.pot ?
 
+See if resizing a terminal can be fixed.
+
 Vim9 script:
 Making everything work:
-- assignment to script var should check type
-- Compile: let [var, var] = expr
-  share code for :let between compiled and uncompiled?
-- do not allow "let g:var = value", must drop "let"
+- Error for "g:var: string = 'value'" 
+- Make func()->append('$') work - value is last argument, not first. #6305
 - possible memory leak in test_vim9_func through compile_nested_function.
 - memory leaks in test_vim9_expr
 - memory leaks in test_vim9_script
-- Test that a script-local function in Vim9 script cannot be deleted.
+- more return types depending on the first argument, like sort().
 - Check that when sourcing a Vim9 script, only the global items can be used.
 - Make "true" and "false" work in vim9script
 - Test that a function defined inside a :def function is local to that
@@ -240,9 +240,11 @@ Terminal emulator window:
   conversions.
 
 Error numbers available:
-E489, E610, E611, E653, E856, E857, E861
+E489, E610, E611, E653, E856
 
 Remove SPACE_IN_FILENAME ? It is only used for completion.
+
+Patch to use collaction based sorting. (Christian Brabandt, #6229)
 
 Can we detect true color support?  https://gist.github.com/XVilka/8346728
 Try setting a color then request the current color, like using t_u7.
@@ -272,6 +274,8 @@ The buffer list and windows are locked, no changes possible
 How about removing Atari MiNT support?
     src/Make_mint.mak, src/os_mint.h, matches with __MINT__
 
+Patch to make :q work with local arglist. (Christian Brabandt, #6286)
+
 Patch to fix drawing error with DirectX. (James Grant, #5688)
 Causes flicker on resizing. Workaround from Ken Takata.
 How about only setting the attribute when part of the Vim window is offscreen?
@@ -284,6 +288,8 @@ Athena is OK.
 Motif: Build on Ubuntu can't enter any text in dialog text fields.
 Running test_gui and test_gui_init with Motif sometimes kills the window
 manager.  Problem with Motif?
+
+Patch to add :argdedupe. (Nir Lichtman, #6235)
 
 :map output does not clear the reset of the command line.
 (#5623, also see #5962)
@@ -1401,9 +1407,6 @@ the system encoding (usually utf-8).
 
 MS-Windows: use WS_HIDE instead of SW_SHOWMINNOACTIVE in os_win32.c?
 Otherwise task flickers in taskbar.
-
-Should make ":@r" handle line continuation. (Cesar Romani, 2016 Jun 26)
-Also for ":@.".
 
 Repeating 'opfunc' in a function only works once. (Tarmean, 2016 Jul 15, #925)
 
