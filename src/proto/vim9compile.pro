@@ -10,6 +10,7 @@ int get_script_item_idx(int sid, char_u *name, int check_writable);
 imported_T *find_imported(char_u *name, size_t len, cctx_T *cctx);
 char_u *to_name_const_end(char_u *arg);
 int assignment_len(char_u *p, int *heredoc);
+void vim9_declare_error(char_u *name);
 int check_vim9_unlet(char_u *name);
 int compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx);
 void set_function_type(ufunc_T *ufunc);

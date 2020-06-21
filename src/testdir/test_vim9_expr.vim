@@ -1059,7 +1059,7 @@ func Test_expr_fails()
   call CheckDefFailure(["CallMe2('yes' , 'no')"], 'E1068:')
 
   call CheckDefFailure(["v:nosuch += 3"], 'E1001:')
-  call CheckDefFailure(["let v:statusmsg = ''"], 'E1064:')
+  call CheckDefFailure(["let v:statusmsg = ''"], 'E1016: Cannot declare a v: variable:')
   call CheckDefFailure(["let asdf = v:nosuch"], 'E1001:')
 
   call CheckDefFailure(["echo len('asdf'"], 'E110:')

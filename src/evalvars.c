@@ -1204,6 +1204,13 @@ ex_let_one(
 	    emsg(_("E996: Cannot lock an environment variable"));
 	    return NULL;
 	}
+	if (current_sctx.sc_version == SCRIPT_VERSION_VIM9
+		&& (flags & LET_NO_COMMAND) == 0)
+	{
+	    vim9_declare_error(arg);
+	    return NULL;
+	}
+
 	// Find the end of the name.
 	++arg;
 	name = arg;
@@ -2864,15 +2871,16 @@ set_var_const(
 	semsg(_(e_illvar), name);
 	return;
     }
+    is_script_local = ht == get_script_local_ht();
+
     if (current_sctx.sc_version == SCRIPT_VERSION_VIM9
-	    && ht == &globvarht
-	    && (flags & LET_NO_COMMAND) == 0)
+	    && !is_script_local
+	    && (flags & LET_NO_COMMAND) == 0
+	    && name[1] == ':')
     {
-	semsg(_(e_declare_global), name);
+	vim9_declare_error(name);
 	return;
     }
-
-    is_script_local = ht == get_script_local_ht();
 
     di = find_var_in_ht(ht, 0, varname, TRUE);
 

@@ -4659,6 +4659,23 @@ generate_loadvar(
     }
 }
 
+    void
+vim9_declare_error(char_u *name)
+{
+    char *scope = "";
+
+    switch (*name)
+    {
+	case 'g': scope = " global"; break;
+	case 'b': scope = " buffer"; break;
+	case 'w': scope = " window"; break;
+	case 't': scope = " tab"; break;
+	case 'v': scope = " v:"; break;
+	case '$': scope = "n environment"; break;
+    }
+    semsg(_(e_declare_var), scope, name);
+}
+
 /*
  * Compile declaration and assignment:
  * "let var", "let var = expr", "const var = expr" and "var = expr"
@@ -4855,8 +4872,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		type = &t_string;
 		if (is_decl)
 		{
-		    semsg(_("E1065: Cannot declare an environment variable: %s"),
-									 name);
+		    vim9_declare_error(name);
 		    goto theend;
 		}
 	    }
@@ -4880,7 +4896,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		dest = dest_global;
 		if (is_decl)
 		{
-		    semsg(_(e_declare_global), name);
+		    vim9_declare_error(name);
 		    goto theend;
 		}
 	    }
@@ -4889,8 +4905,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		dest = dest_buffer;
 		if (is_decl)
 		{
-		    semsg(_("E1078: Cannot declare a buffer variable: %s"),
-									 name);
+		    vim9_declare_error(name);
 		    goto theend;
 		}
 	    }
@@ -4899,8 +4914,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		dest = dest_window;
 		if (is_decl)
 		{
-		    semsg(_("E1079: Cannot declare a window variable: %s"),
-									 name);
+		    vim9_declare_error(name);
 		    goto theend;
 		}
 	    }
@@ -4909,7 +4923,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		dest = dest_tab;
 		if (is_decl)
 		{
-		    semsg(_("E1080: Cannot declare a tab variable: %s"), name);
+		    vim9_declare_error(name);
 		    goto theend;
 		}
 	    }
@@ -4932,7 +4946,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		type = typval2type(vtv);
 		if (is_decl)
 		{
-		    semsg(_("E1064: Cannot declare a v: variable: %s"), name);
+		    vim9_declare_error(name);
 		    goto theend;
 		}
 	    }
