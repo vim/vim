@@ -137,6 +137,12 @@ invert the status line.  Now it should be "sr", reverse the status line, as
 status line is inverted anyway; you will only see this problem on terminals
 that have termcap codes for italics.
 
+							*filler-lines*
+The lines after the last buffer line in a window are called filler lines.
+These lines start with a tilde (~) character. By default, these are
+highlighted as NonText (|hl-NonText|). The EndOfBuffer highlight group
+(|hl-EndOfBuffer|) can be used to change the highlighting of filler lines.
+
 ==============================================================================
 3. Opening and closing a window				*opening-window* *E36*
 

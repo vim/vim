@@ -1916,7 +1916,7 @@ find_rawstring_end(char_u *linep, pos_T *startpos, pos_T *endpos)
     for (p = linep + startpos->col + 1; *p && *p != '('; ++p)
 	;
     delim_len = (p - linep) - startpos->col - 1;
-    delim_copy = vim_strnsave(linep + startpos->col + 1, (int)delim_len);
+    delim_copy = vim_strnsave(linep + startpos->col + 1, delim_len);
     if (delim_copy == NULL)
 	return FALSE;
     for (lnum = startpos->lnum; lnum <= endpos->lnum; ++lnum)

@@ -389,7 +389,7 @@ repeat:
 	if (mch_isdir(*fnamep))
 	{
 	    // Make room for one or two extra characters.
-	    *fnamep = vim_strnsave(*fnamep, (int)STRLEN(*fnamep) + 2);
+	    *fnamep = vim_strnsave(*fnamep, STRLEN(*fnamep) + 2);
 	    vim_free(*bufp);	// free any allocated file name
 	    *bufp = *fnamep;
 	    if (*fnamep == NULL)
@@ -416,7 +416,7 @@ repeat:
 	// Need full path first (use expand_env() to remove a "~/")
 	if (!has_fullname && !has_homerelative)
 	{
-	    if (c == '.' && **fnamep == '~')
+	    if ((c == '.' || c == '~') && **fnamep == '~')
 		p = pbuf = expand_env_save(*fnamep);
 	    else
 		p = pbuf = FullName_save(*fnamep, FALSE);
@@ -655,7 +655,7 @@ repeat:
 	    p = vim_strchr(s, sep);
 	    if (p != NULL)
 	    {
-		pat = vim_strnsave(s, (int)(p - s));
+		pat = vim_strnsave(s, p - s);
 		if (pat != NULL)
 		{
 		    s = p + 1;
@@ -663,7 +663,7 @@ repeat:
 		    p = vim_strchr(s, sep);
 		    if (p != NULL)
 		    {
-			sub = vim_strnsave(s, (int)(p - s));
+			sub = vim_strnsave(s, p - s);
 			str = vim_strnsave(*fnamep, *fnamelen);
 			if (sub != NULL && str != NULL)
 			{
@@ -1296,7 +1296,7 @@ mkdir_recurse(char_u *dir, int prot)
 	return OK;
 
     // If the directory exists we're done.  Otherwise: create it.
-    updir = vim_strnsave(dir, (int)(p - dir));
+    updir = vim_strnsave(dir, p - dir);
     if (updir == NULL)
 	return FAIL;
     if (mch_isdir(updir))
@@ -1405,6 +1405,36 @@ theend:
     return retval;
 }
 
+    static int
+readdirex_dict_arg(typval_T *tv, int *cmp)
+{
+    char_u     *compare;
+
+    if (tv->v_type != VAR_DICT)
+    {
+	emsg(_(e_dictreq));
+	return FAIL;
+    }
+
+    if (dict_find(tv->vval.v_dict, (char_u *)"sort", -1) != NULL)
+	compare = dict_get_string(tv->vval.v_dict, (char_u *)"sort", FALSE);
+    else
+    {
+	semsg(_(e_no_dict_key), "sort");
+	return FAIL;
+    }
+
+    if (STRCMP(compare, (char_u *) "none") == 0)
+	*cmp = READDIR_SORT_NONE;
+    else if (STRCMP(compare, (char_u *) "case") == 0)
+	*cmp = READDIR_SORT_BYTE;
+    else if (STRCMP(compare, (char_u *) "icase") == 0)
+	*cmp = READDIR_SORT_IC;
+    else if (STRCMP(compare, (char_u *) "collate") == 0)
+	*cmp = READDIR_SORT_COLLATE;
+    return OK;
+}
+
 /*
  * "readdir()" function
  */
@@ -1417,14 +1447,19 @@ f_readdir(typval_T *argvars, typval_T *rettv)
     char_u	*p;
     garray_T	ga;
     int		i;
+    int         sort = READDIR_SORT_BYTE;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
     path = tv_get_string(&argvars[0]);
     expr = &argvars[1];
 
+    if (argvars[1].v_type != VAR_UNKNOWN && argvars[2].v_type != VAR_UNKNOWN &&
+	    readdirex_dict_arg(&argvars[2], &sort) == FAIL)
+	return;
+
     ret = readdir_core(&ga, path, FALSE, (void *)expr,
-	    (expr->v_type == VAR_UNKNOWN) ? NULL : readdir_checkitem);
+	    (expr->v_type == VAR_UNKNOWN) ? NULL : readdir_checkitem, sort);
     if (ret == OK)
     {
 	for (i = 0; i < ga.ga_len; i++)
@@ -1480,14 +1515,19 @@ f_readdirex(typval_T *argvars, typval_T *rettv)
     char_u	*path;
     garray_T	ga;
     int		i;
+    int         sort = READDIR_SORT_BYTE;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
     path = tv_get_string(&argvars[0]);
     expr = &argvars[1];
 
+    if (argvars[1].v_type != VAR_UNKNOWN && argvars[2].v_type != VAR_UNKNOWN &&
+	    readdirex_dict_arg(&argvars[2], &sort) == FAIL)
+	return;
+
     ret = readdir_core(&ga, path, TRUE, (void *)expr,
-	    (expr->v_type == VAR_UNKNOWN) ? NULL : readdirex_checkitem);
+	    (expr->v_type == VAR_UNKNOWN) ? NULL : readdirex_checkitem, sort);
     if (ret == OK)
     {
 	for (i = 0; i < ga.ga_len; i++)
@@ -1594,7 +1634,7 @@ f_readfile(typval_T *argvars, typval_T *rettv)
 			    --prevlen;
 		}
 		if (prevlen == 0)
-		    s = vim_strnsave(start, (int)len);
+		    s = vim_strnsave(start, len);
 		else
 		{
 		    // Change "prev" buffer to be the right size.  This way
@@ -2397,11 +2437,9 @@ home_replace(
 		if (--dstlen > 0)
 		    *dst++ = '~';
 
-		/*
-		 * If it's just the home directory, add  "/".
-		 */
-		if (!vim_ispathsep(src[0]) && --dstlen > 0)
-		    *dst++ = '/';
+		// Do not add directory separator into dst, because dst is
+		// expected to just return the directory name without the
+		// directory separator '/'.
 		break;
 	    }
 	    if (p == homedir_env)
@@ -3039,7 +3077,7 @@ expand_backtick(
     int		i;
 
     // Create the command: lop off the backticks.
-    cmd = vim_strnsave(pat + 1, (int)STRLEN(pat) - 2);
+    cmd = vim_strnsave(pat + 1, STRLEN(pat) - 2);
     if (cmd == NULL)
 	return -1;
 

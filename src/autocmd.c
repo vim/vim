@@ -161,6 +161,7 @@ static struct event_name
     {"SessionLoadPost",	EVENT_SESSIONLOADPOST},
     {"ShellCmdPost",	EVENT_SHELLCMDPOST},
     {"ShellFilterPost",	EVENT_SHELLFILTERPOST},
+    {"SigUSR1",		EVENT_SIGUSR1},
     {"SourceCmd",	EVENT_SOURCECMD},
     {"SourcePre",	EVENT_SOURCEPRE},
     {"SourcePost",	EVENT_SOURCEPOST},
@@ -1757,15 +1758,6 @@ has_insertcharpre(void)
 has_cmdundefined(void)
 {
     return (first_autopat[(int)EVENT_CMDUNDEFINED] != NULL);
-}
-
-/*
- * Return TRUE when there is an FuncUndefined autocommand defined.
- */
-    int
-has_funcundefined(void)
-{
-    return (first_autopat[(int)EVENT_FUNCUNDEFINED] != NULL);
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)

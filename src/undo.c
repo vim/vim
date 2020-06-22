@@ -849,7 +849,7 @@ u_get_undo_file_name(char_u *buf_ffname, int reading)
 	{
 	    // Use same directory as the ffname,
 	    // "dir/name" -> "dir/.name.un~"
-	    undo_file_name = vim_strnsave(ffname, (int)(STRLEN(ffname) + 5));
+	    undo_file_name = vim_strnsave(ffname, STRLEN(ffname) + 5);
 	    if (undo_file_name == NULL)
 		break;
 	    p = gettail(undo_file_name);

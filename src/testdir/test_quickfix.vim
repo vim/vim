@@ -2710,7 +2710,6 @@ func Test_cwindow_highlight()
   CheckScreendump
 
   let lines =<< trim END
-	set t_u7=
 	call setline(1, ['some', 'text', 'with', 'matches'])
 	write XCwindow
 	vimgrep e XCwindow
@@ -4819,24 +4818,26 @@ endfunc
 " Test for the 'quickfixtextfunc' setting
 func Tqfexpr(info)
   if a:info.quickfix
-    let qfl = getqflist({'id' : a:info.id, 'idx' : a:info.idx,
-          \ 'items' : 1}).items
+    let qfl = getqflist({'id' : a:info.id, 'items' : 1}).items
   else
-    let qfl = getloclist(0, {'id' : a:info.id, 'idx' : a:info.idx,
-          \ 'items' : 1}).items
+    let qfl = getloclist(a:info.winid, {'id' : a:info.id, 'items' : 1}).items
   endif
 
-  let e = qfl[0]
-  let s = ''
-  if e.bufnr != 0
-    let bname = bufname(e.bufnr)
-    let s ..= fnamemodify(bname, ':.')
-  endif
-  let s ..= '-'
-  let s ..= 'L' .. string(e.lnum) .. 'C' .. string(e.col) .. '-'
-  let s ..= e.text
+  let l = []
+  for idx in range(a:info.start_idx - 1, a:info.end_idx - 1)
+    let e = qfl[idx]
+    let s = ''
+    if e.bufnr != 0
+      let bname = bufname(e.bufnr)
+      let s ..= fnamemodify(bname, ':.')
+    endif
+    let s ..= '-'
+    let s ..= 'L' .. string(e.lnum) .. 'C' .. string(e.col) .. '-'
+    let s ..= e.text
+    call add(l, s)
+  endfor
 
-  return s
+  return l
 endfunc
 
 func Xtest_qftextfunc(cchar)
@@ -4860,16 +4861,18 @@ func Xtest_qftextfunc(cchar)
   " Test for per list 'quickfixtextfunc' setting
   func PerQfText(info)
     if a:info.quickfix
-      let qfl = getqflist({'id' : a:info.id, 'idx' : a:info.idx,
-            \ 'items' : 1}).items
+      let qfl = getqflist({'id' : a:info.id, 'items' : 1}).items
     else
-      let qfl = getloclist(0, {'id' : a:info.id, 'idx' : a:info.idx,
-            \ 'items' : 1}).items
+      let qfl = getloclist(a:info.winid, {'id' : a:info.id, 'items' : 1}).items
     endif
     if empty(qfl)
-      return ''
+      return []
     endif
-    return 'Line ' .. qfl[0].lnum .. ', Col ' .. qfl[0].col
+    let l = []
+    for idx in range(a:info.start_idx - 1, a:info.end_idx - 1)
+      call add(l, 'Line ' .. qfl[idx].lnum .. ', Col ' .. qfl[idx].col)
+    endfor
+    return l
   endfunc
   set quickfixtextfunc=Tqfexpr
   call g:Xsetlist([], ' ', {'quickfixtextfunc' : "PerQfText"})
@@ -4877,6 +4880,11 @@ func Xtest_qftextfunc(cchar)
   Xwindow
   call assert_equal('Line 10, Col 2', getline(1))
   call assert_equal('Line 20, Col 4', getline(2))
+  Xclose
+  " Add entries to the list when the quickfix buffer is hidden
+  Xaddexpr ['F1:30:6:red']
+  Xwindow
+  call assert_equal('Line 30, Col 6', getline(3))
   Xclose
   call g:Xsetlist([], 'r', {'quickfixtextfunc' : ''})
   set quickfixtextfunc&
@@ -4904,13 +4912,44 @@ func Xtest_qftextfunc(cchar)
   call assert_fails("Xexpr ['F1:10:2:green', 'F1:20:4:blue']", 'E119:')
   call assert_fails("Xwindow", 'E119:')
   Xclose
+
+  " set option to a function that returns a list with non-strings
+  func Xqftext2(d)
+    return ['one', [], 'two']
+  endfunc
+  set quickfixtextfunc=Xqftext2
+  call assert_fails("Xexpr ['F1:10:2:green', 'F1:20:4:blue', 'F1:30:6:red']",
+                                                                  \ 'E730:')
+  call assert_fails('Xwindow', 'E730:')
+  call assert_equal(['one', 'F1|20 col 4| blue', 'two'], getline(1, '$'))
+  Xclose
+
   set quickfixtextfunc&
   delfunc Xqftext
+  delfunc Xqftext2
 endfunc
 
 func Test_qftextfunc()
   call Xtest_qftextfunc('c')
   call Xtest_qftextfunc('l')
+endfunc
+
+" Running :lhelpgrep command more than once in a help window, doesn't jump to
+" the help topic
+func Test_lhelpgrep_from_help_window()
+  call mkdir('Xtestdir/doc', 'p')
+  call writefile(['window'], 'Xtestdir/doc/a.txt')
+  call writefile(['buffer'], 'Xtestdir/doc/b.txt')
+  let save_rtp = &rtp
+  let &rtp = 'Xtestdir'
+  lhelpgrep window
+  lhelpgrep buffer
+  call assert_equal('b.txt', fnamemodify(@%, ":p:t"))
+  lhelpgrep window
+  call assert_equal('a.txt', fnamemodify(@%, ":p:t"))
+  let &rtp = save_rtp
+  call delete('Xtestdir', 'rf')
+  new | only!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

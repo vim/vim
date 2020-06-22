@@ -1375,7 +1375,7 @@ ml_recover(int checkext)
 #endif
 	for (p = b0p->b0_fname + fnsize; p > b0p->b0_fname && p[-1] != NUL; --p)
 	    ;
-	b0_fenc = vim_strnsave(p, (int)(b0p->b0_fname + fnsize - p));
+	b0_fenc = vim_strnsave(p, b0p->b0_fname + fnsize - p);
     }
 
     mf_put(mfp, hp, FALSE, FALSE);	// release block 0

@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 8.2.  Last change: 2020 Jun 02
+*quickref.txt*  For Vim version 8.2.  Last change: 2020 Jun 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -910,6 +910,7 @@ Short explanation of each option:		*option-list*
 'spellcapcheck'   'spc'     pattern to locate end of a sentence
 'spellfile'	  'spf'     files where |zg| and |zw| store words
 'spelllang'	  'spl'     language(s) to do spell checking for
+'spelloptions'	  'spo'     options for spell checking
 'spellsuggest'	  'sps'     method(s) used to suggest spelling corrections
 'splitbelow'	  'sb'	    new window from split is below the current one
 'splitright'	  'spr'     new window is put right of the current one

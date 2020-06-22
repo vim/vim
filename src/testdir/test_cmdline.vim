@@ -604,25 +604,34 @@ func Test_cmdline_complete_bang()
 endfunc
 
 func Test_cmdline_complete_languages()
+  let lang = substitute(execute('language time'), '.*"\(.*\)"$', '\1', '')
+  call assert_equal(lang, v:lc_time)
+
+  let lang = substitute(execute('language ctype'), '.*"\(.*\)"$', '\1', '')
+  call assert_equal(lang, v:ctype)
+
+  let lang = substitute(execute('language collate'), '.*"\(.*\)"$', '\1', '')
+  call assert_equal(lang, v:collate)
+
   let lang = substitute(execute('language messages'), '.*"\(.*\)"$', '\1', '')
+  call assert_equal(lang, v:lang)
 
   call feedkeys(":language \<c-a>\<c-b>\"\<cr>", 'tx')
-  call assert_match('^"language .*\<ctype\>.*\<messages\>.*\<time\>', @:)
+  call assert_match('^"language .*\<collate\>.*\<ctype\>.*\<messages\>.*\<time\>', @:)
 
-  if has('unix')
-    " TODO: these tests don't work on Windows. lang appears to be 'C'
-    " but C does not appear in the completion. Why?
-    call assert_match('^"language .*\<' . lang . '\>', @:)
+  call assert_match('^"language .*\<' . lang . '\>', @:)
 
-    call feedkeys(":language messages \<c-a>\<c-b>\"\<cr>", 'tx')
-    call assert_match('^"language .*\<' . lang . '\>', @:)
+  call feedkeys(":language messages \<c-a>\<c-b>\"\<cr>", 'tx')
+  call assert_match('^"language .*\<' . lang . '\>', @:)
 
-    call feedkeys(":language ctype \<c-a>\<c-b>\"\<cr>", 'tx')
-    call assert_match('^"language .*\<' . lang . '\>', @:)
+  call feedkeys(":language ctype \<c-a>\<c-b>\"\<cr>", 'tx')
+  call assert_match('^"language .*\<' . lang . '\>', @:)
 
-    call feedkeys(":language time \<c-a>\<c-b>\"\<cr>", 'tx')
-    call assert_match('^"language .*\<' . lang . '\>', @:)
-  endif
+  call feedkeys(":language time \<c-a>\<c-b>\"\<cr>", 'tx')
+  call assert_match('^"language .*\<' . lang . '\>', @:)
+
+  call feedkeys(":language collate \<c-a>\<c-b>\"\<cr>", 'tx')
+  call assert_match('^"language .*\<' . lang . '\>', @:)
 endfunc
 
 func Test_cmdline_complete_env_variable()
@@ -1557,6 +1566,21 @@ func Test_zero_line_search()
   0;/pattern/d
   call assert_equal(["2, ", "3, pattern"], getline(1,'$'))
   q!
+endfunc
+
+func Test_read_shellcmd()
+  CheckUnix
+  if executable('ls')
+    " There should be ls in the $PATH
+    call feedkeys(":r! l\<c-a>\<c-b>\"\<cr>", 'tx')
+    call assert_match('^"r! .*\<ls\>', @:)
+  endif
+
+  if executable('rm')
+    call feedkeys(":r! ++enc=utf-8 r\<c-a>\<c-b>\"\<cr>", 'tx')
+    call assert_notmatch('^"r!.*\<runtest.vim\>', @:)
+    call assert_match('^"r!.*\<rm\>', @:)
+  endif
 endfunc
 
 

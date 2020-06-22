@@ -35,6 +35,10 @@ static linenr_T readfile_linenr(linenr_T linecnt, char_u *p, char_u *endp);
 static char_u *check_for_bom(char_u *p, long size, int *lenp, int flags);
 static char *e_auchangedbuf = N_("E812: Autocommands changed buffer or buffer name");
 
+#ifdef FEAT_EVAL
+static int readdirex_sort;
+#endif
+
     void
 filemess(
     buf_T	*buf,
@@ -506,7 +510,8 @@ readfile(
 			}
 		    }
 		    if (dir_of_file_exists(fname))
-			filemess(curbuf, sfname, (char_u *)_("[New File]"), 0);
+			filemess(curbuf, sfname,
+					      (char_u *)new_file_message(), 0);
 		    else
 			filemess(curbuf, sfname,
 					   (char_u *)_("[New DIRECTORY]"), 0);
@@ -2723,7 +2728,7 @@ next_fenc(char_u **pp, int *alloced)
     }
     else
     {
-	r = vim_strnsave(*pp, (int)(p - *pp));
+	r = vim_strnsave(*pp, p - *pp);
 	*pp = p + 1;
 	if (r != NULL)
 	{
@@ -4544,7 +4549,7 @@ create_readdirex_item(char_u *path, char_u *name)
     int		ret, link = FALSE;
     varnumber_T	size;
     char_u	permbuf[] = "---------";
-    char_u	*q;
+    char_u	*q = NULL;
     struct passwd *pw;
     struct group  *gr;
 
@@ -4563,6 +4568,9 @@ create_readdirex_item(char_u *path, char_u *name)
     {
 	link = TRUE;
 	ret = mch_stat(p, &st);
+	if (ret < 0)
+	    q = (char_u*)"link";
+
     }
     vim_free(p);
 
@@ -4617,7 +4625,7 @@ create_readdirex_item(char_u *path, char_u *name)
 	    goto theend;
 	if (dict_add_number(item, "time", -1) == FAIL)
 	    goto theend;
-	if (dict_add_string(item, "type", (char_u*)"") == FAIL)
+	if (dict_add_string(item, "type", q == NULL ? (char_u*)"" : q) == FAIL)
 	    goto theend;
 	if (dict_add_string(item, "perm", (char_u*)"") == FAIL)
 	    goto theend;
@@ -4641,7 +4649,23 @@ compare_readdirex_item(const void *p1, const void *p2)
 
     name1 = dict_get_string(*(dict_T**)p1, (char_u*)"name", FALSE);
     name2 = dict_get_string(*(dict_T**)p2, (char_u*)"name", FALSE);
-    return STRCMP(name1, name2);
+    if (readdirex_sort == READDIR_SORT_BYTE)
+	return STRCMP(name1, name2);
+    else if (readdirex_sort == READDIR_SORT_IC)
+	return STRICMP(name1, name2);
+    else
+	return STRCOLL(name1, name2);
+}
+
+    static int
+compare_readdir_item(const void *s1, const void *s2)
+{
+    if (readdirex_sort == READDIR_SORT_BYTE)
+	return STRCMP(*(char **)s1, *(char **)s2);
+    else if (readdirex_sort == READDIR_SORT_IC)
+	return STRICMP(*(char **)s1, *(char **)s2);
+    else
+	return STRCOLL(*(char **)s1, *(char **)s2);
 }
 #endif
 
@@ -4659,7 +4683,8 @@ readdir_core(
     char_u	*path,
     int		withattr UNUSED,
     void	*context,
-    int		(*checkitem)(void *context, void *item))
+    int		(*checkitem)(void *context, void *item),
+    int         sort)
 {
     int			failed = FALSE;
     char_u		*p;
@@ -4683,6 +4708,8 @@ readdir_core(
 	else \
 	    vim_free(item); \
     } while (0)
+
+    readdirex_sort = READDIR_SORT_BYTE;
 # else
 #  define FREE_ITEM(item)   vim_free(item)
 # endif
@@ -4719,6 +4746,11 @@ readdir_core(
 	    ignore = wp[0] == L'.' &&
 		    (wp[1] == NUL ||
 		     (wp[1] == L'.' && wp[2] == NUL));
+	    if (ignore)
+	    {
+		ok = FindNextFileW(hFind, &wfd);
+		continue;
+	    }
 #  ifdef FEAT_EVAL
 	    if (withattr)
 		item = (void*)create_readdirex_item(&wfd);
@@ -4787,6 +4819,8 @@ readdir_core(
 	    ignore = p[0] == '.' &&
 		    (p[1] == NUL ||
 		     (p[1] == '.' && p[2] == NUL));
+	    if (ignore)
+		continue;
 #  ifdef FEAT_EVAL
 	    if (withattr)
 		item = (void*)create_readdirex_item(path, p);
@@ -4833,15 +4867,19 @@ readdir_core(
 
 # undef FREE_ITEM
 
-    if (!failed && gap->ga_len > 0)
+    if (!failed && gap->ga_len > 0 && sort > READDIR_SORT_NONE)
     {
 # ifdef FEAT_EVAL
+	readdirex_sort = sort;
 	if (withattr)
 	    qsort((void*)gap->ga_data, (size_t)gap->ga_len, sizeof(dict_T*),
 		    compare_readdirex_item);
 	else
-# endif
+	    qsort((void*)gap->ga_data, (size_t)gap->ga_len, sizeof(char_u *),
+		    compare_readdir_item);
+# else
 	    sort_strings((char_u **)gap->ga_data, gap->ga_len);
+# endif
     }
 
     return failed ? FAIL : OK;
@@ -4872,7 +4910,7 @@ delete_recursive(char_u *name)
 	exp = vim_strsave(name);
 	if (exp == NULL)
 	    return -1;
-	if (readdir_core(&ga, exp, FALSE, NULL, NULL) == OK)
+	if (readdir_core(&ga, exp, FALSE, NULL, NULL, READDIR_SORT_NONE) == OK)
 	{
 	    for (i = 0; i < ga.ga_len; ++i)
 	    {

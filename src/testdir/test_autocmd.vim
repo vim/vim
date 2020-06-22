@@ -1712,23 +1712,27 @@ func Test_TextYankPost()
 
   norm "ayiw
   call assert_equal(
-    \{'regcontents': ['foo'], 'regname': 'a', 'operator': 'y', 'regtype': 'v'},
+    \{'regcontents': ['foo'], 'regname': 'a', 'operator': 'y', 'regtype': 'v', 'visual': v:false},
     \g:event)
   norm y_
   call assert_equal(
-    \{'regcontents': ['foo'], 'regname': '',  'operator': 'y', 'regtype': 'V'},
+    \{'regcontents': ['foo'], 'regname': '',  'operator': 'y', 'regtype': 'V', 'visual': v:false},
+    \g:event)
+  norm Vy
+  call assert_equal(
+    \{'regcontents': ['foo'], 'regname': '',  'operator': 'y', 'regtype': 'V', 'visual': v:true},
     \g:event)
   call feedkeys("\<C-V>y", 'x')
   call assert_equal(
-    \{'regcontents': ['f'], 'regname': '',  'operator': 'y', 'regtype': "\x161"},
+    \{'regcontents': ['f'], 'regname': '',  'operator': 'y', 'regtype': "\x161", 'visual': v:true},
     \g:event)
   norm "xciwbar
   call assert_equal(
-    \{'regcontents': ['foo'], 'regname': 'x', 'operator': 'c', 'regtype': 'v'},
+    \{'regcontents': ['foo'], 'regname': 'x', 'operator': 'c', 'regtype': 'v', 'visual': v:false},
     \g:event)
   norm "bdiw
   call assert_equal(
-    \{'regcontents': ['bar'], 'regname': 'b', 'operator': 'd', 'regtype': 'v'},
+    \{'regcontents': ['bar'], 'regname': 'b', 'operator': 'd', 'regtype': 'v', 'visual': v:false},
     \g:event)
 
   call assert_equal({}, v:event)
@@ -2507,6 +2511,94 @@ func Test_autocmd_deep_nesting()
   autocmd BufEnter Xfile doautocmd BufEnter Xfile
   call assert_fails('doautocmd BufEnter Xfile', 'E218:')
   autocmd! BufEnter Xfile
+endfunc
+
+" Tests for SigUSR1 autocmd event, which is only available on posix systems.
+func Test_autocmd_sigusr1()
+  CheckUnix
+
+  let g:sigusr1_passed = 0
+  au SigUSR1 * let g:sigusr1_passed = 1
+  call system('/bin/kill -s usr1 ' . getpid())
+  call WaitForAssert({-> assert_true(g:sigusr1_passed)})
+
+  au! SigUSR1
+  unlet g:sigusr1_passed
+endfunc
+
+" Test for BufReadPre autocmd deleting the file
+func Test_BufReadPre_delfile()
+  augroup TestAuCmd
+    au!
+    autocmd BufReadPre Xfile call delete('Xfile')
+  augroup END
+  call writefile([], 'Xfile')
+  call assert_fails('new Xfile', 'E200:')
+  call assert_equal('Xfile', @%)
+  call assert_equal(1, &readonly)
+  call delete('Xfile')
+  augroup TestAuCmd
+    au!
+  augroup END
+  close!
+endfunc
+
+" Test for BufReadPre autocmd changing the current buffer
+func Test_BufReadPre_changebuf()
+  augroup TestAuCmd
+    au!
+    autocmd BufReadPre Xfile edit Xsomeotherfile
+  augroup END
+  call writefile([], 'Xfile')
+  call assert_fails('new Xfile', 'E201:')
+  call assert_equal('Xsomeotherfile', @%)
+  call assert_equal(1, &readonly)
+  call delete('Xfile')
+  augroup TestAuCmd
+    au!
+  augroup END
+  close!
+endfunc
+
+" Test for BufWipeouti autocmd changing the current buffer when reading a file
+" in an empty buffer with 'f' flag in 'cpo'
+func Test_BufDelete_changebuf()
+  new
+  augroup TestAuCmd
+    au!
+    autocmd BufWipeout * let bufnr = bufadd('somefile') | exe "b " .. bufnr
+  augroup END
+  let save_cpo = &cpo
+  set cpo+=f
+  call assert_fails('r Xfile', 'E484:')
+  call assert_equal('somefile', @%)
+  let &cpo = save_cpo
+  augroup TestAuCmd
+    au!
+  augroup END
+  close!
+endfunc
+
+" Test for the temporary internal window used to execute autocmds
+func Test_autocmd_window()
+  %bw!
+  edit one.txt
+  tabnew two.txt
+  let g:blist = []
+  augroup aucmd_win_test
+    au!
+    au BufEnter * call add(g:blist, [expand('<afile>'),
+          \ win_gettype(bufwinnr(expand('<afile>')))])
+  augroup END
+
+  doautoall BufEnter
+  call assert_equal([['one.txt', 'autocmd'], ['two.txt', '']], g:blist)
+
+  augroup aucmd_win_test
+    au!
+  augroup END
+  augroup! aucmd_win_test
+  %bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

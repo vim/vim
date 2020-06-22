@@ -487,10 +487,10 @@ call_ufunc(ufunc_T *ufunc, int argcount, ectx_T *ectx, isn_T *iptr)
     int		error;
     int		idx;
 
-    if (ufunc->uf_dfunc_idx == UF_TO_BE_COMPILED
+    if (ufunc->uf_def_status == UF_TO_BE_COMPILED
 	    && compile_def_function(ufunc, FALSE, NULL) == FAIL)
 	return FAIL;
-    if (ufunc->uf_dfunc_idx >= 0)
+    if (ufunc->uf_def_status == UF_COMPILED)
     {
 	// The function has been compiled, can call it quickly.  For a function
 	// that was defined later: we can call it directly next time.
@@ -671,8 +671,8 @@ call_def_function(
 // Like STACK_TV_VAR but use the outer scope
 #define STACK_OUT_TV_VAR(idx) (((typval_T *)ectx.ec_outer_stack->ga_data) + ectx.ec_outer_frame + STACK_FRAME_SIZE + idx)
 
-    if (ufunc->uf_dfunc_idx == UF_NOT_COMPILED
-	    || (ufunc->uf_dfunc_idx == UF_TO_BE_COMPILED
+    if (ufunc->uf_def_status == UF_NOT_COMPILED
+	    || (ufunc->uf_def_status == UF_TO_BE_COMPILED
 			  && compile_def_function(ufunc, FALSE, NULL) == FAIL))
     {
 	if (called_emsg == called_emsg_before)
@@ -2114,6 +2114,48 @@ call_def_function(
 		}
 		break;
 
+	    case ISN_SLICE:
+		{
+		    list_T	*list;
+		    int		count = iptr->isn_arg.number;
+
+		    // type will have been checked to be a list
+		    tv = STACK_TV_BOT(-1);
+		    list = tv->vval.v_list;
+
+		    // no error for short list, expect it to be checked earlier
+		    if (list != NULL && list->lv_len >= count)
+		    {
+			list_T	*newlist = list_slice(list,
+						      count, list->lv_len - 1);
+
+			if (newlist != NULL)
+			{
+			    list_unref(list);
+			    tv->vval.v_list = newlist;
+			    ++newlist->lv_refcount;
+			}
+		    }
+		}
+		break;
+
+	    case ISN_GETITEM:
+		{
+		    listitem_T	*li;
+		    int		index = iptr->isn_arg.number;
+
+		    // Get list item: list is at stack-1, push item.
+		    // List type and length is checked for when compiling.
+		    tv = STACK_TV_BOT(-1);
+		    li = list_find(tv->vval.v_list, index);
+
+		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
+			goto failed;
+		    ++ectx.ec_stack.ga_len;
+		    copy_tv(&li->li_tv, STACK_TV_BOT(-1));
+		}
+		break;
+
 	    case ISN_MEMBER:
 		{
 		    dict_T	*dict;
@@ -2213,6 +2255,25 @@ call_def_function(
 			semsg(_("E1029: Expected %s but got %s"),
 				    vartype_name(ct->ct_type),
 				    vartype_name(tv->v_type));
+			goto failed;
+		    }
+		}
+		break;
+
+	    case ISN_CHECKLEN:
+		{
+		    int	    min_len = iptr->isn_arg.checklen.cl_min_len;
+		    list_T  *list = NULL;
+
+		    tv = STACK_TV_BOT(-1);
+		    if (tv->v_type == VAR_LIST)
+			    list = tv->vval.v_list;
+		    if (list == NULL || list->lv_len < min_len
+			    || (list->lv_len > min_len
+					&& !iptr->isn_arg.checklen.cl_more_OK))
+		    {
+			semsg(_("E1093: Expected %d items but got %d"),
+				     min_len, list == NULL ? 0 : list->lv_len);
 			goto failed;
 		    }
 		}
@@ -2318,10 +2379,10 @@ ex_disassemble(exarg_T *eap)
 	semsg(_("E1061: Cannot find function %s"), eap->arg);
 	return;
     }
-    if (ufunc->uf_dfunc_idx == UF_TO_BE_COMPILED
+    if (ufunc->uf_def_status == UF_TO_BE_COMPILED
 	    && compile_def_function(ufunc, FALSE, NULL) == FAIL)
 	return;
-    if (ufunc->uf_dfunc_idx < 0)
+    if (ufunc->uf_def_status != UF_COMPILED)
     {
 	semsg(_("E1062: Function %s is not compiled"), eap->arg);
 	return;
@@ -2789,6 +2850,10 @@ ex_disassemble(exarg_T *eap)
 	    // expression operations
 	    case ISN_CONCAT: smsg("%4d CONCAT", current); break;
 	    case ISN_INDEX: smsg("%4d INDEX", current); break;
+	    case ISN_SLICE: smsg("%4d SLICE %lld",
+					 current, iptr->isn_arg.number); break;
+	    case ISN_GETITEM: smsg("%4d ITEM %lld",
+					 current, iptr->isn_arg.number); break;
 	    case ISN_MEMBER: smsg("%4d MEMBER", current); break;
 	    case ISN_STRINGMEMBER: smsg("%4d MEMBER %s", current,
 						  iptr->isn_arg.string); break;
@@ -2799,6 +2864,10 @@ ex_disassemble(exarg_T *eap)
 				      vartype_name(iptr->isn_arg.type.ct_type),
 				      iptr->isn_arg.type.ct_off);
 				break;
+	    case ISN_CHECKLEN: smsg("%4d CHECKLEN %s%d", current,
+				iptr->isn_arg.checklen.cl_more_OK ? ">= " : "",
+				iptr->isn_arg.checklen.cl_min_len);
+			       break;
 	    case ISN_2BOOL: if (iptr->isn_arg.number)
 				smsg("%4d INVERT (!val)", current);
 			    else

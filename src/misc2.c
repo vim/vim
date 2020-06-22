@@ -2910,6 +2910,25 @@ find_special_key(
     return 0;
 }
 
+
+/*
+ * Some keys already have Shift included, pass them as normal keys.
+ * Not when Ctrl is also used, because <C-H> and <C-S-H> are different.
+ * Also for <A-S-a> and <M-S-a>.
+ */
+    int
+may_remove_shift_modifier(int modifiers, int key)
+{
+    if ((modifiers == MOD_MASK_SHIFT
+		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_ALT)
+		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_META))
+	    && ((key >= '@' && key <= 'Z')
+		|| key == '^' || key == '_'
+		|| (key >= '{' && key <= '~')))
+	return modifiers & ~MOD_MASK_SHIFT;
+    return modifiers;
+}
+
 /*
  * Try to include modifiers in the key.
  * Changes "Shift-a" to 'A', "Alt-A" to 0xc0, etc.
@@ -2929,9 +2948,11 @@ extract_modifiers(int key, int *modp, int simplify, int *did_simplify)
     if ((modifiers & MOD_MASK_SHIFT) && ASCII_ISALPHA(key))
     {
 	key = TOUPPER_ASC(key);
-	// With <C-S-a> and <A-S-a> we keep the shift modifier.
-	// With <S-a> and <S-A> we don't keep the shift modifier.
-	if (simplify || modifiers == MOD_MASK_SHIFT)
+	// With <C-S-a> we keep the shift modifier.
+	// With <S-a>, <A-S-a> and <S-A> we don't keep the shift modifier.
+	if (simplify || modifiers == MOD_MASK_SHIFT
+		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_ALT)
+		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_META))
 	    modifiers &= ~MOD_MASK_SHIFT;
     }
 

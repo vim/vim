@@ -2287,6 +2287,7 @@ free_buf_options(
     vim_regfree(buf->b_s.b_cap_prog);
     buf->b_s.b_cap_prog = NULL;
     clear_string_option(&buf->b_s.b_p_spl);
+    clear_string_option(&buf->b_s.b_p_spo);
 #endif
 #ifdef FEAT_SEARCHPATH
     clear_string_option(&buf->b_p_sua);
@@ -3650,7 +3651,7 @@ fileinfo(
 #ifdef FEAT_QUICKFIX
 		    && !bt_dontwrite(curbuf)
 #endif
-					? _("[New file]") : "",
+					   ? new_file_message() : "",
 	    (curbuf->b_flags & BF_READERR) ? _("[Read errors]") : "",
 	    curbuf->b_p_ro ? (shortmess(SHM_RO) ? _("[RO]")
 						      : _("[readonly]")) : "",

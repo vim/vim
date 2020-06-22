@@ -168,6 +168,14 @@ newtestssilent: $(NEW_TESTS_RES)
 	$(RUN_VIMTEST) $(NO_INITS) -S runtest.vim $*.vim $(REDIR_TEST_TO_NULL)
 	@rm vimcmd
 
+# Temporary: Do not use $REDIR_TEST_TO_NULL for test_terminal to be able to see
+# where it sometimes hanges on CI.
+test_terminal.res: test_terminal.vim
+	@echo "$(VIMPROG)" > vimcmd
+	@echo "$(RUN_VIMTEST)" >> vimcmd
+	$(RUN_VIMTEST) $(NO_INITS) -S runtest.vim $*.vim
+	@rm vimcmd
+
 test_gui.res: test_gui.vim
 	@echo "$(VIMPROG)" > vimcmd
 	@echo "$(RUN_GVIMTEST)" >> vimcmd

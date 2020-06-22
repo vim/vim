@@ -1,6 +1,8 @@
 /* term.c */
 guicolor_T termgui_get_color(char_u *name);
 guicolor_T termgui_mch_get_rgb(guicolor_T color);
+void init_term_props(int all);
+void f_terminalprops(typval_T *argvars, typval_T *rettv);
 void set_color_count(int nr);
 int set_termname(char_u *term);
 void getlinecol(long *cp, long *rp);
@@ -47,7 +49,7 @@ void settmode(tmode_T tmode);
 void starttermcap(void);
 void stoptermcap(void);
 void may_req_termresponse(void);
-void may_req_ambiguous_char_width(void);
+void check_terminal_behavior(void);
 void may_req_bg_color(void);
 int swapping_screen(void);
 void scroll_start(void);

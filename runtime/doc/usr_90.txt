@@ -1,4 +1,4 @@
-*usr_90.txt*	For Vim version 8.2.  Last change: 2008 Sep 10
+*usr_90.txt*	For Vim version 8.2.  Last change: 2020 Jun 11
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -15,7 +15,7 @@ upgrading to a new version is done.
 |90.4|	Common installation issues
 |90.5|	Uninstalling Vim
 
- Previous chapter: |usr_45.txt|  Select your language
+ Previous chapter: |usr_46.txt|  Write plugins using Vim9 script
 Table of contents: |usr_toc.txt|
 
 ==============================================================================

@@ -963,7 +963,7 @@ do_highlight(
 	    break;
 	}
 	vim_free(arg);
-	arg = vim_strnsave(arg_start, (int)(linep - arg_start));
+	arg = vim_strnsave(arg_start, linep - arg_start);
 	if (arg == NULL)
 	{
 	    error = TRUE;
@@ -5003,7 +5003,7 @@ ex_match(exarg_T *eap)
     {
 	p = skiptowhite(eap->arg);
 	if (!eap->skip)
-	    g = vim_strnsave(eap->arg, (int)(p - eap->arg));
+	    g = vim_strnsave(eap->arg, p - eap->arg);
 	p = skipwhite(p);
 	if (*p == NUL)
 	{

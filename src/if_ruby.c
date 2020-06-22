@@ -1858,7 +1858,7 @@ ruby_convert_to_vim_value(VALUE val, typval_T *rettv)
 
 		rettv->v_type = VAR_STRING;
 		rettv->vval.v_string = vim_strnsave((char_u *)RSTRING_PTR(str),
-							 (int)RSTRING_LEN(str));
+							     RSTRING_LEN(str));
 	    }
 	    break;
 	case T_ARRAY:

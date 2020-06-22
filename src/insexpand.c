@@ -1579,7 +1579,7 @@ ins_compl_bs(void)
 	ins_compl_restart();
 
     vim_free(compl_leader);
-    compl_leader = vim_strnsave(line + compl_col, (int)(p - line) - compl_col);
+    compl_leader = vim_strnsave(line + compl_col, (p - line) - compl_col);
     if (compl_leader != NULL)
     {
 	ins_compl_new_leader();
@@ -1706,7 +1706,7 @@ ins_compl_addleader(int c)
     {
 	vim_free(compl_leader);
 	compl_leader = vim_strnsave(ml_get_curline() + compl_col,
-				     (int)(curwin->w_cursor.col - compl_col));
+					     curwin->w_cursor.col - compl_col);
 	if (compl_leader != NULL)
 	    ins_compl_new_leader();
     }

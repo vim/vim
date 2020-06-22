@@ -273,6 +273,7 @@ nextwild(
  * options = WILD_SILENT:	    don't print warning messages
  * options = WILD_ESCAPE:	    put backslash before special chars
  * options = WILD_ICASE:	    ignore case for files
+ * options = WILD_ALLLINKS;	    keep broken links
  *
  * The variables xp->xp_context and xp->xp_backslash must have been set!
  */
@@ -1145,6 +1146,15 @@ set_one_cmd_context(
 	arg = skipwhite(arg);
     }
 
+    // Skip over ++argopt argument
+    if ((ea.argt & EX_ARGOPT) && *arg != NUL && STRNCMP(arg, "++", 2) == 0)
+    {
+	p = arg;
+	while (*p && !vim_isspace(*p))
+	    MB_PTR_ADV(p);
+	arg = skipwhite(p);
+    }
+
     // Check for '|' to separate commands and '"' to start comments.
     // Don't do this for ":read !cmd" and ":write !cmd".
     if ((ea.argt & EX_TRLBAR) && !usefilter)
@@ -1727,7 +1737,8 @@ set_one_cmd_context(
 	    {
 		if ( STRNCMP(arg, "messages", p - arg) == 0
 		  || STRNCMP(arg, "ctype", p - arg) == 0
-		  || STRNCMP(arg, "time", p - arg) == 0)
+		  || STRNCMP(arg, "time", p - arg) == 0
+		  || STRNCMP(arg, "collate", p - arg) == 0)
 		{
 		    xp->xp_context = EXPAND_LOCALES;
 		    xp->xp_pattern = skipwhite(p);

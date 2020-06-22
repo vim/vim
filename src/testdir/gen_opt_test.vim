@@ -132,6 +132,7 @@ let test_values = {
       \ 'signcolumn': [['', 'auto', 'no'], ['xxx', 'no,yes']],
       \ 'spellfile': [['', 'file.en.add'], ['xxx', '/tmp/file']],
       \ 'spelllang': [['', 'xxx', 'sr@latin'], ['not&lang', "that\\\rthere"]],
+      \ 'spelloptions': [['', 'camel'], ['xxx']],
       \ 'spellsuggest': [['', 'best', 'double,33'], ['xxx']],
       \ 'switchbuf': [['', 'useopen', 'split,newtab'], ['xxx']],
       \ 'tagcase': [['smart', 'match'], ['', 'xxx', 'smart,match']],

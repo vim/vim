@@ -524,6 +524,7 @@ def Test_expr5()
 			g:anint)
   assert_equal(9, g:alsoint + 5)
   assert_equal(14, g:alsoint + g:anint)
+  assert_equal([1, 2, 3, 4], [1] + g:alist)
 
   assert_equal(54, 60 - 6)
   assert_equal(50, 60 -
@@ -1028,6 +1029,39 @@ def Test_expr7_trailing()
   assert_equal(123, d.key)
 enddef
 
+def Test_expr7_subscript_linebreak()
+  let range = range(
+  		3)
+  let l = range->
+  	map('string(v:key)')
+  assert_equal(['0', '1', '2'], l)
+
+  l = range
+  	->map('string(v:key)')
+  assert_equal(['0', '1', '2'], l)
+
+  l = range # comment
+  	->map('string(v:key)')
+  assert_equal(['0', '1', '2'], l)
+
+  l = range
+
+  	->map('string(v:key)')
+  assert_equal(['0', '1', '2'], l)
+
+  l = range
+	# comment
+  	->map('string(v:key)')
+  assert_equal(['0', '1', '2'], l)
+
+  assert_equal('1', l[
+	1])
+
+  let d = #{one: 33}
+  assert_equal(33, d.
+	one)
+enddef
+
 
 func Test_expr7_trailing_fails()
   call CheckDefFailure(['let l = [2]', 'l->{l -> add(l, 8)}'], 'E107')
@@ -1043,7 +1077,7 @@ func Test_expr_fails()
   call CheckDefFailure(["CallMe2('yes' , 'no')"], 'E1068:')
 
   call CheckDefFailure(["v:nosuch += 3"], 'E1001:')
-  call CheckDefFailure(["let v:statusmsg = ''"], 'E1064:')
+  call CheckDefFailure(["let v:statusmsg = ''"], 'E1016: Cannot declare a v: variable:')
   call CheckDefFailure(["let asdf = v:nosuch"], 'E1001:')
 
   call CheckDefFailure(["echo len('asdf'"], 'E110:')

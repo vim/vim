@@ -26,6 +26,7 @@ static int skip_chars(int, int);
 findsent(int dir, long count)
 {
     pos_T	pos, tpos;
+    pos_T	prev_pos;
     int		c;
     int		(*func)(pos_T *);
     int		startlnum;
@@ -41,6 +42,8 @@ findsent(int dir, long count)
 
     while (count--)
     {
+	prev_pos = pos;
+
 	/*
 	 * if on an empty line, skip up to a non-empty line
 	 */
@@ -133,6 +136,18 @@ found:
 	while (!noskip && ((c = gchar_pos(&pos)) == ' ' || c == '\t'))
 	    if (incl(&pos) == -1)
 		break;
+
+	if (EQUAL_POS(prev_pos, pos))
+	{
+	    // didn't actually move, advance one character and try again
+	    if ((*func)(&pos) == -1)
+	    {
+		if (count)
+		    return FAIL;
+		break;
+	    }
+	    ++count;
+	}
     }
 
     setpcmark();

@@ -598,6 +598,12 @@ set_file_time(
 }
 #endif // UNIX
 
+    char *
+new_file_message(void)
+{
+    return shortmess(SHM_NEW) ? _("[New]") : _("[New File]");
+}
+
 /*
  * buf_write() - write to file "fname" lines "start" through "end"
  *
@@ -2347,7 +2353,7 @@ restore_backup:
 	}
 	else if (newfile)
 	{
-	    STRCAT(IObuff, shortmess(SHM_NEW) ? _("[New]") : _("[New File]"));
+	    STRCAT(IObuff, new_file_message());
 	    c = TRUE;
 	}
 	if (no_eol)

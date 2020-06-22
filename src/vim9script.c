@@ -17,7 +17,7 @@
 
 #include "vim9.h"
 
-static char e_needs_vim9[] = N_("E1042: import/export can only be used in vim9script");
+static char e_needs_vim9[] = N_("E1042: export can only be used in vim9script");
 
     int
 in_vim9script(void)
@@ -32,13 +32,14 @@ in_vim9script(void)
     void
 ex_vim9script(exarg_T *eap)
 {
-    scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
+    scriptitem_T    *si;
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
     {
 	emsg(_("E1038: vim9script can only be used in a script"));
 	return;
     }
+    si = SCRIPT_ITEM(current_sctx.sc_sid);
     if (si->sn_had_command)
     {
 	emsg(_("E1039: vim9script must be the first command in a script"));
@@ -141,16 +142,17 @@ free_imports(int sid)
     void
 ex_import(exarg_T *eap)
 {
-    if (current_sctx.sc_version != SCRIPT_VERSION_VIM9)
-	emsg(_(e_needs_vim9));
-    else
-    {
-	char_u *cmd_end = handle_import(eap->arg, NULL,
-						    current_sctx.sc_sid, NULL);
+    char_u *cmd_end;
 
-	if (cmd_end != NULL)
-	    eap->nextcmd = check_nextcmd(cmd_end);
+    if (!getline_equal(eap->getline, eap->cookie, getsourceline))
+    {
+	emsg(_("E1094: import can only be used in a script"));
+	return;
     }
+
+    cmd_end = handle_import(eap->arg, NULL, current_sctx.sc_sid, NULL);
+    if (cmd_end != NULL)
+	eap->nextcmd = check_nextcmd(cmd_end);
 }
 
 /*
@@ -438,6 +440,96 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid, void *cctx)
 	}
     }
     return cmd_end;
+}
+
+/*
+ * Declare a script-local variable without init: "let var: type".
+ * "const" is an error since the value is missing.
+ * Returns a pointer to after the type.
+ */
+    char_u *
+vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
+{
+    char_u	    *p;
+    char_u	    *name;
+    scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
+    type_T	    *type;
+    int		    called_emsg_before = called_emsg;
+    typval_T	    init_tv;
+
+    if (eap->cmdidx == CMD_const)
+    {
+	emsg(_(e_const_req_value));
+	return arg + STRLEN(arg);
+    }
+
+    // Check for valid starting character.
+    if (!eval_isnamec1(*arg))
+    {
+	semsg(_(e_invarg2), arg);
+	return arg + STRLEN(arg);
+    }
+
+    for (p = arg + 1; *p != NUL && eval_isnamec(*p); MB_PTR_ADV(p))
+	if (*p == ':' && (VIM_ISWHITE(p[1]) || p != arg + 1))
+	    break;
+
+    if (*p != ':')
+    {
+	emsg(_(e_type_req));
+	return arg + STRLEN(arg);
+    }
+    if (!VIM_ISWHITE(p[1]))
+    {
+	semsg(_(e_white_after), ":");
+	return arg + STRLEN(arg);
+    }
+    name = vim_strnsave(arg, p - arg);
+
+    // parse type
+    p = skipwhite(p + 1);
+    type = parse_type(&p, &si->sn_type_list);
+    if (called_emsg != called_emsg_before)
+    {
+	vim_free(name);
+	return p;
+    }
+
+    // Create the variable with 0/NULL value.
+    CLEAR_FIELD(init_tv);
+    init_tv.v_type = type->tt_type;
+    set_var_const(name, type, &init_tv, FALSE, 0);
+
+    vim_free(name);
+    return p;
+}
+
+/*
+ * Check if the type of script variable "dest" allows assigning "value".
+ */
+    int
+check_script_var_type(typval_T *dest, typval_T *value, char_u *name)
+{
+    scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
+    int		    idx;
+
+    // Find the svar_T in sn_var_vals.
+    for (idx = 0; idx < si->sn_var_vals.ga_len; ++idx)
+    {
+	svar_T    *sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
+
+	if (sv->sv_tv == dest)
+	{
+	    if (sv->sv_const)
+	    {
+		semsg(_(e_readonlyvar), name);
+		return FAIL;
+	    }
+	    return check_type(sv->sv_type, typval2type(value), TRUE);
+	}
+    }
+    iemsg("check_script_var_type(): not found");
+    return OK; // not really
 }
 
 #endif // FEAT_EVAL

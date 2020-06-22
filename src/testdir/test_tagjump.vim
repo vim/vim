@@ -240,6 +240,7 @@ func Test_tag_file_encoding()
   call delete('Xtags1')
 endfunc
 
+" Test for emacs-style tags file (TAGS)
 func Test_tagjump_etags()
   if !has('emacs_tags')
     return
@@ -263,8 +264,52 @@ func Test_tagjump_etags()
   ta foo
   call assert_equal('void foo() {}', getline('.'))
 
+  " Test for including another tags file
+  call writefile([
+        \ "\x0c",
+        \ "Xmain.c,64",
+        \ "void foo() {}\x7ffoo\x011,0",
+        \ "\x0c",
+        \ "Xnonexisting,include",
+        \ "\x0c",
+        \ "Xtags2,include"
+        \ ], 'Xtags')
+  call writefile([
+        \ "\x0c",
+        \ "Xmain.c,64",
+        \ "int main(int argc, char **argv)\x7fmain\x012,14",
+        \ ], 'Xtags2')
+  tag main
+  call assert_equal(2, line('.'))
+
+  " corrupted tag line
+  call writefile([
+        \ "\x0c",
+        \ "Xmain.c,8",
+        \ "int main"
+        \ ], 'Xtags', 'b')
+  call assert_fails('tag foo', 'E426:')
+
+  " invalid line number
+  call writefile([
+	\ "\x0c",
+        \ "Xmain.c,64",
+        \ "void foo() {}\x7ffoo\x0abc,0",
+	\ ], 'Xtags')
+  call assert_fails('tag foo', 'E426:')
+
+  " invalid tag name
+  call writefile([
+	\ "\x0c",
+        \ "Xmain.c,64",
+        \ ";;;;\x7f1,0",
+	\ ], 'Xtags')
+  call assert_fails('tag foo', 'E426:')
+
   call delete('Xtags')
+  call delete('Xtags2')
   call delete('Xmain.c')
+  set tags&
   bwipe!
 endfunc
 
@@ -1011,7 +1056,7 @@ func Test_tselect_listing()
   call writefile([
         \ "!_TAG_FILE_ENCODING\tutf-8\t//",
         \ "first\tXfoo\t1" .. ';"' .. "\tv\ttyperef:typename:int\tfile:",
-        \ "first\tXfoo\t2" .. ';"' .. "\tv\ttyperef:typename:char\tfile:"],
+        \ "first\tXfoo\t2" .. ';"' .. "\tkind:v\ttyperef:typename:char\tfile:"],
         \ 'Xtags')
   set tags=Xtags
 
@@ -1031,7 +1076,7 @@ func Test_tselect_listing()
   2 FS  v    first             Xfoo
                typeref:typename:char 
                2
-Type number and <Enter> (empty cancels): 
+Type number and <Enter> (q or empty cancels): 
 [DATA]
   call assert_equal(expected, l)
 
@@ -1266,6 +1311,83 @@ func Test_comment_search()
   call setline(1, '        /* comment')
   call assert_beeps('normal! 15|]/')
   close!
+endfunc
+
+" Test for the 'taglength' option
+func Test_tag_length()
+  set tags=Xtags
+  call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "tame\tXfile1\t1;",
+        \ "tape\tXfile2\t1;"], 'Xtags')
+  call writefile(['tame'], 'Xfile1')
+  call writefile(['tape'], 'Xfile2')
+
+  " Jumping to the tag 'tape', should instead jump to 'tame'
+  new
+  set taglength=2
+  tag tape
+  call assert_equal('Xfile1', @%)
+  " Tag search should jump to the right tag
+  enew
+  tag /^tape$
+  call assert_equal('Xfile2', @%)
+
+  call delete('Xtags')
+  call delete('Xfile1')
+  call delete('Xfile2')
+  set tags& taglength&
+endfunc
+
+" Tests for errors in a tags file
+func Test_tagfile_errors()
+  set tags=Xtags
+
+  " missing search pattern or line number for a tag
+  call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "foo\tXfile\t"], 'Xtags', 'b')
+  call writefile(['foo'], 'Xfile')
+
+  enew
+  tag foo
+  call assert_equal('', @%)
+  let caught_431 = v:false
+  try
+    eval taglist('.*')
+  catch /:E431:/
+    let caught_431 = v:true
+  endtry
+  call assert_equal(v:true, caught_431)
+
+  call delete('Xtags')
+  call delete('Xfile')
+  set tags&
+endfunc
+
+" When :stag fails to open the file, should close the new window
+func Test_stag_close_window_on_error()
+  new | only
+  set tags=Xtags
+  call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "foo\tXfile\t1"], 'Xtags')
+  call writefile(['foo'], 'Xfile')
+  call writefile([], '.Xfile.swp')
+  " Remove the catch-all that runtest.vim adds
+  au! SwapExists
+  augroup StagTest
+    au!
+    autocmd SwapExists Xfile let v:swapchoice='q'
+  augroup END
+
+  stag foo
+  call assert_equal(1, winnr('$'))
+  call assert_equal('', @%)
+
+  augroup StagTest
+    au!
+  augroup END
+  call delete('Xfile')
+  call delete('.Xfile.swp')
+  set tags&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

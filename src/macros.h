@@ -93,6 +93,7 @@
 #define MB_ISUPPER(c)	vim_isupper(c)
 #define MB_TOLOWER(c)	vim_tolower(c)
 #define MB_TOUPPER(c)	vim_toupper(c)
+#define MB_CASEFOLD(c)	(enc_utf8 ? utf_fold(c) : MB_TOLOWER(c))
 
 // Use our own isdigit() replacement, because on MS-Windows isdigit() returns
 // non-zero for superscript 1.  Also avoids that isdigit() crashes for numbers

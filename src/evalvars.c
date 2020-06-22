@@ -145,6 +145,7 @@ static struct vimvar
     {VV_NAME("versionlong",	 VAR_NUMBER), VV_RO},
     {VV_NAME("echospace",	 VAR_NUMBER), VV_RO},
     {VV_NAME("argv",		 VAR_LIST), VV_RO},
+    {VV_NAME("collate",		 VAR_STRING), VV_RO},
 };
 
 // shorthand
@@ -164,7 +165,6 @@ static dict_T		vimvardict;		// Dictionary with v: variables
 // for VIM_VERSION_ defines
 #include "version.h"
 
-static char_u *skip_var_one(char_u *arg, int include_type);
 static void list_glob_vars(int *first);
 static void list_buf_vars(int *first);
 static void list_win_vars(int *first);
@@ -709,7 +709,7 @@ ex_let(exarg_T *eap)
     if (eap->arg == eap->cmd)
 	flags |= LET_NO_COMMAND;
 
-    argend = skip_var_list(arg, TRUE, &var_count, &semicolon);
+    argend = skip_var_list(arg, TRUE, &var_count, &semicolon, FALSE);
     if (argend == NULL)
 	return;
     if (argend > arg && argend[-1] == '.')  // for var.='str'
@@ -728,8 +728,18 @@ ex_let(exarg_T *eap)
 	else if (expr[0] == '.')
 	    emsg(_("E985: .= is not supported with script version 2"));
 	else if (!ends_excmd2(eap->cmd, arg))
-	    // ":let var1 var2"
-	    arg = list_arg_vars(eap, arg, &first);
+	{
+	    if (current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+	    {
+		// Vim9 declaration ":let var: type"
+		arg = vim9_declare_scriptvar(eap, arg);
+	    }
+	    else
+	    {
+		// ":let var1 var2" - list values
+		arg = list_arg_vars(eap, arg, &first);
+	    }
+	}
 	else if (!eap->skip)
 	{
 	    // ":let"
@@ -906,7 +916,8 @@ ex_let_vars(
  * Skip over assignable variable "var" or list of variables "[var, var]".
  * Used for ":let varvar = expr" and ":for varvar in expr".
  * For "[var, var]" increment "*var_count" for each variable.
- * for "[var, var; var]" set "semicolon".
+ * for "[var, var; var]" set "semicolon" to 1.
+ * If "silent" is TRUE do not give an "invalid argument" error message.
  * Return NULL for an error.
  */
     char_u *
@@ -914,7 +925,8 @@ skip_var_list(
     char_u	*arg,
     int		include_type,
     int		*var_count,
-    int		*semicolon)
+    int		*semicolon,
+    int		silent)
 {
     char_u	*p, *s;
 
@@ -925,10 +937,11 @@ skip_var_list(
 	for (;;)
 	{
 	    p = skipwhite(p + 1);	// skip whites after '[', ';' or ','
-	    s = skip_var_one(p, TRUE);
+	    s = skip_var_one(p, FALSE);
 	    if (s == p)
 	    {
-		semsg(_(e_invarg2), p);
+		if (!silent)
+		    semsg(_(e_invarg2), p);
 		return NULL;
 	    }
 	    ++*var_count;
@@ -947,7 +960,8 @@ skip_var_list(
 	    }
 	    else if (*p != ',')
 	    {
-		semsg(_(e_invarg2), p);
+		if (!silent)
+		    semsg(_(e_invarg2), p);
 		return NULL;
 	    }
 	}
@@ -962,7 +976,7 @@ skip_var_list(
  * l[idx].
  * In Vim9 script also skip over ": type" if "include_type" is TRUE.
  */
-    static char_u *
+    char_u *
 skip_var_one(char_u *arg, int include_type)
 {
     char_u *end;
@@ -971,10 +985,13 @@ skip_var_one(char_u *arg, int include_type)
 	return arg + 2;
     end = find_name_end(*arg == '$' || *arg == '&' ? arg + 1 : arg,
 				   NULL, NULL, FNE_INCL_BR | FNE_CHECK_START);
-    if (include_type && current_sctx.sc_version == SCRIPT_VERSION_VIM9
-								&& *end == ':')
+    if (include_type && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
     {
-	end = skip_type(skipwhite(end + 1));
+	// "a: type" is declaring variable "a" with a type, not "a:".
+	if (end == arg + 2 && end[-1] == ':')
+	    --end;
+	if (*end == ':')
+	    end = skip_type(skipwhite(end + 1));
     }
     return end;
 }
@@ -1187,6 +1204,13 @@ ex_let_one(
 	    emsg(_("E996: Cannot lock an environment variable"));
 	    return NULL;
 	}
+	if (current_sctx.sc_version == SCRIPT_VERSION_VIM9
+		&& (flags & LET_NO_COMMAND) == 0)
+	{
+	    vim9_declare_error(arg);
+	    return NULL;
+	}
+
 	// Find the end of the name.
 	++arg;
 	name = arg;
@@ -2359,9 +2383,13 @@ get_var_tv(
 	    *dip = v;
     }
 
-    if (tv == NULL && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+    if (tv == NULL && (current_sctx.sc_version == SCRIPT_VERSION_VIM9
+					       || STRNCMP(name, "s:", 2) == 0))
     {
-	imported_T *import = find_imported(name, 0, NULL);
+	imported_T  *import;
+	char_u	    *p = STRNCMP(name, "s:", 2) == 0 ? name + 2 : name;
+
+	import = find_imported(p, 0, NULL);
 
 	// imported variable from another script
 	if (import != NULL)
@@ -2530,7 +2558,7 @@ lookup_scriptvar(char_u *name, size_t len, cctx_T *dummy UNUSED)
     }
     else
     {
-	p = vim_strnsave(name, (int)len);
+	p = vim_strnsave(name, len);
 	if (p == NULL)
 	    return NULL;
     }
@@ -2607,7 +2635,7 @@ find_var_ht(char_u *name, char_u **varname)
     if (*name == 'v')				// v: variable
 	return &vimvarht;
     if (get_current_funccal() != NULL
-	       && get_current_funccal()->func->uf_dfunc_idx == UF_NOT_COMPILED)
+	       && get_current_funccal()->func->uf_def_status == UF_NOT_COMPILED)
     {
 	// a: and l: are only used in functions defined with ":function"
 	if (*name == 'a')			// a: function argument
@@ -2845,6 +2873,15 @@ set_var_const(
     }
     is_script_local = ht == get_script_local_ht();
 
+    if (current_sctx.sc_version == SCRIPT_VERSION_VIM9
+	    && !is_script_local
+	    && (flags & LET_NO_COMMAND) == 0
+	    && name[1] == ':')
+    {
+	vim9_declare_error(name);
+	return;
+    }
+
     di = find_var_in_ht(ht, 0, varname, TRUE);
 
     // Search in parent scope which is possible to reference from lambda
@@ -2865,17 +2902,23 @@ set_var_const(
 		return;
 	    }
 
+	    if (is_script_local
+			     && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+	    {
+		if ((flags & LET_NO_COMMAND) == 0)
+		{
+		    semsg(_("E1041: Redefining script item %s"), name);
+		    return;
+		}
+
+		// check the type
+		if (check_script_var_type(&di->di_tv, tv, name) == FAIL)
+		    return;
+	    }
+
 	    if (var_check_ro(di->di_flags, name, FALSE)
 			       || var_check_lock(di->di_tv.v_lock, name, FALSE))
 		return;
-
-	    if ((flags & LET_NO_COMMAND) == 0
-		    && is_script_local
-		    && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
-	    {
-		semsg(_("E1041: Redefining script item %s"), name);
-		return;
-	    }
 	}
 	else
 	    // can only redefine once

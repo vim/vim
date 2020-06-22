@@ -185,6 +185,42 @@ def Test_disassemble_store_member()
         res)
 enddef
 
+def s:ListAssign()
+  let x: string
+  let y: string
+  let l: list<any>
+  [x, y; l] = g:stringlist
+enddef
+
+def Test_disassemble_list_assign()
+  let res = execute('disass s:ListAssign')
+  assert_match('<SNR>\d*_ListAssign\_s*' ..
+        'let x: string\_s*' ..
+        '\d PUSHS "\[NULL\]"\_s*' ..
+        '\d STORE $0\_s*' ..
+        'let y: string\_s*' ..
+        '\d PUSHS "\[NULL\]"\_s*' ..
+        '\d STORE $1\_s*' ..
+        'let l: list<any>\_s*' ..
+        '\d NEWLIST size 0\_s*' ..
+        '\d STORE $2\_s*' ..
+        '\[x, y; l\] = g:stringlist\_s*' ..
+        '\d LOADG g:stringlist\_s*' ..
+        '\d CHECKTYPE list stack\[-1\]\_s*' ..
+        '\d CHECKLEN >= 2\_s*' ..
+        '\d\+ ITEM 0\_s*' ..
+        '\d\+ CHECKTYPE string stack\[-1\]\_s*' ..
+        '\d\+ STORE $0\_s*' ..
+        '\d\+ ITEM 1\_s*' ..
+        '\d\+ CHECKTYPE string stack\[-1\]\_s*' ..
+        '\d\+ STORE $1\_s*' ..
+        '\d\+ SLICE 2\_s*' ..
+        '\d\+ STORE $2\_s*' ..
+        '\d\+ PUSHNR 0\_s*' ..
+        '\d\+ RETURN',
+        res)
+enddef
+
 def s:ScriptFuncUnlet()
   g:somevar = "value"
   unlet g:somevar
@@ -531,6 +567,30 @@ def Test_disassemble_const_expr()
   assert_notmatch('PUSHS "something"', instr)
   assert_notmatch('PUSHS "less"', instr)
   assert_notmatch('JUMP', instr)
+enddef
+
+def ReturnInIf(): string
+  if g:cond
+    return "yes"
+  else
+    return "no"
+  endif
+enddef
+
+def Test_disassemble_return_in_if()
+  let instr = execute('disassemble ReturnInIf')
+  assert_match('ReturnInIf\_s*' ..
+        'if g:cond\_s*' ..
+        '0 LOADG g:cond\_s*' ..
+        '1 JUMP_IF_FALSE -> 4\_s*' ..
+        'return "yes"\_s*' ..
+        '2 PUSHS "yes"\_s*' ..
+        '3 RETURN\_s*' ..
+        'else\_s*' ..
+        ' return "no"\_s*' ..
+        '4 PUSHS "no"\_s*' ..
+        '5 RETURN$',
+        instr)
 enddef
 
 def WithFunc()
@@ -1130,7 +1190,7 @@ def Test_vim9script_forward_func()
     def FuncTwo(): string
       return 'two'
     enddef
-    let g:res_FuncOne: string = execute('disass FuncOne')
+    g:res_FuncOne = execute('disass FuncOne')
   END
   writefile(lines, 'Xdisassemble')
   source Xdisassemble

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2020 May 31
+*options.txt*	For Vim version 8.2.  Last change: 2020 Jun 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5232,7 +5232,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	If your terminal can't overrule the mouse events going to the
 	application, use: >
 		:set mouse=nvi
-<	The you can press ":", select text for the system, and press Esc to go
+<	Then you can press ":", select text for the system, and press Esc to go
 	back to Vim using the mouse events.
 	In |defaults.vim| "nvi" is used if the 'term' option is not matching
 	"xterm".
@@ -7105,6 +7105,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 	up to the first character that is not an ASCII letter or number and
 	not a dash.  Also see |set-spc-auto|.
 
+						*'spelloptions'* *'spo'*
+'spelloptions' 'spo'	string	(default "")
+			local to buffer
+			{not available when compiled without the |+syntax|
+			feature}
+	A comma separated list of options for spell checking:
+	   camel	When a word is CamelCased, assume "Cased" is a
+			separate word: every upper-case character in a word
+			that comes after a lower case character indicates the
+			start of a new word.
 
 						*'spellsuggest'* *'sps'*
 'spellsuggest' 'sps'	string	(default "best")
@@ -8546,8 +8556,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 					    *'virtualedit'* *'ve'*
 'virtualedit' 've'	string	(default "")
 			global
-			{not available when compiled without the
-			|+virtualedit| feature}
 	A comma separated list of these words:
 	    block	Allow virtual editing in Visual block mode.
 	    insert	Allow virtual editing in Insert mode.

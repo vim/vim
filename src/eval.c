@@ -253,7 +253,7 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 	    return FAIL;
 
 	if (partial->pt_func != NULL
-			  && partial->pt_func->uf_dfunc_idx != UF_NOT_COMPILED)
+			  && partial->pt_func->uf_def_status != UF_NOT_COMPILED)
 	{
 	    if (call_def_function(partial->pt_func, argc, argv,
 						       partial, rettv) == FAIL)
@@ -1431,7 +1431,7 @@ eval_for_line(
     if (fi == NULL)
 	return NULL;
 
-    expr = skip_var_list(arg, TRUE, &fi->fi_varcount, &fi->fi_semicolon);
+    expr = skip_var_list(arg, TRUE, &fi->fi_varcount, &fi->fi_semicolon, FALSE);
     if (expr == NULL)
 	return fi;
 
@@ -3237,7 +3237,6 @@ eval_index(
 		if (range)
 		{
 		    list_T	*l;
-		    listitem_T	*item;
 
 		    if (n2 < 0)
 			n2 = len + n2;
@@ -3245,19 +3244,9 @@ eval_index(
 			n2 = len - 1;
 		    if (!empty2 && (n2 < 0 || n2 + 1 < n1))
 			n2 = -1;
-		    l = list_alloc();
+		    l = list_slice(rettv->vval.v_list, n1, n2);
 		    if (l == NULL)
 			return FAIL;
-		    for (item = list_find(rettv->vval.v_list, n1);
-							       n1 <= n2; ++n1)
-		    {
-			if (list_append_tv(l, &item->li_tv) == FAIL)
-			{
-			    list_free(l);
-			    return FAIL;
-			}
-			item = item->li_next;
-		    }
 		    clear_tv(rettv);
 		    rettv_list_set(rettv, l);
 		}

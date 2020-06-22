@@ -129,6 +129,7 @@
 # define PV_SPC		OPT_BUF(BV_SPC)
 # define PV_SPF		OPT_BUF(BV_SPF)
 # define PV_SPL		OPT_BUF(BV_SPL)
+# define PV_SPO		OPT_BUF(BV_SPO)
 #endif
 #define PV_STS		OPT_BUF(BV_STS)
 #ifdef FEAT_SEARCHPATH
@@ -2393,6 +2394,16 @@ static struct vimoption options[] =
 #ifdef FEAT_SPELL
 			    (char_u *)&p_spl, PV_SPL,
 			    {(char_u *)"en", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    SCTX_INIT},
+    {"spelloptions", "spo",  P_STRING|P_ALLOCED|P_VI_DEF
+						    |P_ONECOMMA|P_NODUP|P_RBUF,
+#ifdef FEAT_SPELL
+			    (char_u *)&p_spo, PV_SPO,
+			    {(char_u *)"", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L}

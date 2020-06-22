@@ -31,6 +31,31 @@ def Test_return_something()
   assert_fails('call ReturnGlobal()', 'E1029: Expected number but got string')
 enddef
 
+def Test_missing_return()
+  CheckDefFailure(['def Missing(): number',
+                   '  if g:cond',
+                   '    echo "no return"',
+                   '  else',
+                   '    return 0',
+                   '  endif'
+                   'enddef'], 'E1027:')
+  CheckDefFailure(['def Missing(): number',
+                   '  if g:cond',
+                   '    return 1',
+                   '  else',
+                   '    echo "no return"',
+                   '  endif'
+                   'enddef'], 'E1027:')
+  CheckDefFailure(['def Missing(): number',
+                   '  if g:cond',
+                   '    return 1',
+                   '  else',
+                   '    return 2',
+                   '  endif'
+                   '  return 3'
+                   'enddef'], 'E1095:')
+enddef
+
 let s:nothing = 0
 def ReturnNothing()
   s:nothing = 1
@@ -298,7 +323,7 @@ def Test_vim9script_call()
     str->MyFunc()
     assert_equal('barfoo', var)
 
-    let g:value = 'value'
+    g:value = 'value'
     g:value->MyFunc()
     assert_equal('value', var)
 
@@ -805,6 +830,11 @@ def Test_call_closure_not_compiled()
   let text = 'text'
   g:Ref = {s ->  s .. text}
   assert_equal('sometext', GetResult(g:Ref))
+enddef
+
+def Test_sort_return_type()
+  let res: list<number>
+  res = [1, 2, 3]->sort()
 enddef
 
 

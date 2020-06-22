@@ -2079,9 +2079,9 @@ func Test_popup_scrollbar()
   " check size with wrapping lines
   call term_sendkeys(buf, "j")
   call VerifyScreenDump(buf, 'Test_popupwin_scroll_12', {})
-  call term_sendkeys(buf, "x")
 
   " clean up
+  call term_sendkeys(buf, "x")
   call StopVimInTerminal(buf)
   call delete('XtestPopupScroll')
 endfunc
@@ -2459,6 +2459,23 @@ func Test_popupwin_terminal_buffer()
   sleep 100m
   call feedkeys(":quit\<CR>", 'xt')
   call assert_equal(origwin, win_getid())
+endfunc
+
+func Test_popupwin_close_prevwin()
+  CheckFeature terminal
+
+  call assert_equal(1, winnr('$'))
+  split
+  wincmd b
+  call assert_equal(2, winnr())
+  let buf = term_start(&shell, #{hidden: 1})
+  call popup_create(buf, {})
+  call term_wait(buf, 100)
+  call popup_clear(1)
+  call assert_equal(2, winnr())
+
+  quit
+  exe 'bwipe! ' .. buf
 endfunc
 
 func Test_popupwin_with_buffer_and_filter()
@@ -3329,6 +3346,16 @@ func Test_popupwin_filter_input_multibyte()
   " UTF-8: E3 80 9B, including CSI(0x9B)
   call feedkeys("\u301b", 'xt')
   call assert_equal([0xe3, 0x80, 0x9b], g:bytes)
+
+  if has('unix')
+    " with modifyOtherKeys <M-S-a> does not include a modifier sequence
+    if has('gui_running')
+      call feedkeys("\x9b\xfc\x08A", 'Lx!')
+    else
+      call feedkeys("\<Esc>[27;4;65~", 'Lx!')
+    endif
+    call assert_equal([0xc3, 0x81], g:bytes)
+  endif
 
   call popup_clear()
   delfunc MyPopupFilter

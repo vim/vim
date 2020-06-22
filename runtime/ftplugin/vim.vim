@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:	Vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2020 May 17
+" Last Change:	2020 Jun 16
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -83,8 +83,7 @@ endif
 if exists("loaded_matchit")
   let b:match_ignorecase = 0
   let b:match_words =
-	\ '\<fu\%[nction]\>:\<retu\%[rn]\>:\<endf\%[unction]\>,' .
-	\ '\<def\>:\<retu\%[rn]\>:\<enddef\>,' .
+	\ '\<\%(fu\%[nction]\|def\)\>:\<retu\%[rn]\>:\<\%(endf\%[unction]\|enddef\)\>,' .
  	\ '\<\(wh\%[ile]\|for\)\>:\<brea\%[k]\>:\<con\%[tinue]\>:\<end\(w\%[hile]\|fo\%[r]\)\>,' .
 	\ '\<if\>:\<el\%[seif]\>:\<en\%[dif]\>,' .
 	\ '{:},' .

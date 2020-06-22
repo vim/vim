@@ -1171,9 +1171,14 @@ EXTERN int	curscript INIT(= 0);	    // index in scriptin[]
 EXTERN FILE	*scriptout  INIT(= NULL);   // stream to write script to
 EXTERN int	read_cmd_fd INIT(= 0);	    // fd to read commands from
 
-// volatile because it is used in signal handler catch_sigint().
-EXTERN volatile sig_atomic_t got_int INIT(= FALSE); // set to TRUE when interrupt
-						// signal occurred
+// Set to TRUE when an interrupt signal occurred.
+// Volatile because it is used in signal handler catch_sigint().
+EXTERN volatile sig_atomic_t got_int INIT(= FALSE);
+
+// Set to TRUE when SIGUSR1 signal was detected.
+// Volatile because it is used in signal handler catch_sigint().
+EXTERN volatile sig_atomic_t got_sigusr1 INIT(= FALSE);
+
 #ifdef USE_TERM_CONSOLE
 EXTERN int	term_console INIT(= FALSE); // set to TRUE when console used
 #endif
@@ -1581,6 +1586,9 @@ EXTERN char e_invcmd[]		INIT(= N_("E476: Invalid command"));
 #if defined(UNIX) || defined(FEAT_SYN_HL) || defined(FEAT_SPELL)
 EXTERN char e_isadir2[]		INIT(= N_("E17: \"%s\" is a directory"));
 #endif
+#ifdef FEAT_SPELL
+EXTERN char e_no_spell[]	INIT(= N_("E756: Spell checking is not possible"));
+#endif
 #ifdef FEAT_LIBCALL
 EXTERN char e_libcall[]	INIT(= N_("E364: Library call failed for \"%s()\""));
 #endif
@@ -1691,6 +1699,7 @@ EXTERN char e_const_option[]	INIT(= N_("E996: Cannot lock an option"));
 EXTERN char e_unknown_option[]	INIT(= N_("E113: Unknown option: %s"));
 EXTERN char e_letunexp[]	INIT(= N_("E18: Unexpected characters in :let"));
 EXTERN char e_reduceempty[]	INIT(= N_("E998: Reduce of an empty %s with no initial value"));
+EXTERN char e_no_dict_key[]	INIT(= N_("E857: Dictionary key \"%s\" required"));
 #endif
 #ifdef FEAT_QUICKFIX
 EXTERN char e_readerrf[]	INIT(= N_("E47: Error while reading errorfile"));
@@ -1777,6 +1786,10 @@ EXTERN char e_white_after[]	INIT(= N_("E1069: white space required after '%s'"))
 EXTERN char e_no_white_before[] INIT(= N_("E1068: No white space allowed before '%s'"));
 
 EXTERN char e_lock_unlock[]	INIT(= N_("E940: Cannot lock or unlock variable %s"));
+EXTERN char e_const_req_value[] INIT(= N_("E1021: const requires a value"));
+EXTERN char e_type_req[]	INIT(= N_("E1022: type or initialization required"));
+EXTERN char e_declare_var[]	INIT(= N_("E1016: Cannot declare a %s variable: %s"));
+EXTERN char e_declare_env_var[]	INIT(= N_("E1016: Cannot declare an environment variable: %s"));
 #endif
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 EXTERN char e_alloc_color[]	INIT(= N_("E254: Cannot allocate color %s"));
@@ -1831,6 +1844,8 @@ EXTERN int  disable_redraw_for_testing INIT(= FALSE);
 EXTERN int  ignore_redraw_flag_for_testing INIT(= FALSE);
 EXTERN int  nfa_fail_for_testing INIT(= FALSE);
 EXTERN int  no_query_mouse_for_testing INIT(= FALSE);
+EXTERN int  ui_delay_for_testing INIT(= 0);
+EXTERN int  reset_term_props_on_termresponse INIT(= FALSE);
 
 EXTERN int  in_free_unref_items INIT(= FALSE);
 #endif

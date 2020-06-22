@@ -439,7 +439,7 @@ get_exception_string(
 	{
 	    cmdlen = (int)STRLEN(cmdname);
 	    ret = (char *)vim_strnsave((char_u *)"Vim(",
-					   4 + cmdlen + 2 + (int)STRLEN(mesg));
+						4 + cmdlen + 2 + STRLEN(mesg));
 	    if (ret == NULL)
 		return ret;
 	    STRCPY(&ret[4], cmdname);
@@ -448,7 +448,7 @@ get_exception_string(
 	}
 	else
 	{
-	    ret = (char *)vim_strnsave((char_u *)"Vim:", 4 + (int)STRLEN(mesg));
+	    ret = (char *)vim_strnsave((char_u *)"Vim:", 4 + STRLEN(mesg));
 	    if (ret == NULL)
 		return ret;
 	    val = ret + 4;
@@ -806,7 +806,7 @@ report_pending(int action, int pending, void *value)
 	    if (pending & CSTP_THROW)
 	    {
 		vim_snprintf((char *)IObuff, IOSIZE, mesg, _("Exception"));
-		mesg = (char *)vim_strnsave(IObuff, (int)STRLEN(IObuff) + 4);
+		mesg = (char *)vim_strnsave(IObuff, STRLEN(IObuff) + 4);
 		STRCAT(mesg, ": %s");
 		s = (char *)((except_T *)value)->value;
 	    }

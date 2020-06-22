@@ -1343,7 +1343,7 @@ do_source(
 
 	    // Allocate the local script variables to use for this script.
 	    new_script_vars(script_items.ga_len);
-	    ga_init2(&si->sn_var_vals, sizeof(typval_T), 10);
+	    ga_init2(&si->sn_var_vals, sizeof(svar_T), 10);
 	    ga_init2(&si->sn_imports, sizeof(imported_T), 10);
 	    ga_init2(&si->sn_type_list, sizeof(type_T), 10);
 # ifdef FEAT_PROFILE
@@ -1873,7 +1873,7 @@ ex_scriptversion(exarg_T *eap UNUSED)
     nr = getdigits(&eap->arg);
     if (nr == 0 || *eap->arg != NUL)
 	emsg(_(e_invarg));
-    else if (nr > 4)
+    else if (nr > SCRIPT_VERSION_MAX)
 	semsg(_("E999: scriptversion not supported: %d"), nr);
     else
     {

@@ -1182,7 +1182,7 @@ get_number_tv(
 get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 {
     char_u	*p;
-    char_u	*name;
+    char_u	*end;
     int		extra = 0;
     int		len;
 
@@ -1216,12 +1216,12 @@ get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 
     // Copy the string into allocated memory, handling backslashed
     // characters.
-    len = (int)(p - *arg + extra);
-    name = alloc(len);
-    if (name == NULL)
-	return FAIL;
     rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = name;
+    len = (int)(p - *arg + extra);
+    rettv->vval.v_string = alloc(len);
+    if (rettv->vval.v_string == NULL)
+	return FAIL;
+    end = rettv->vval.v_string;
 
     for (p = *arg + 1; *p != NUL && *p != '"'; )
     {
@@ -1229,12 +1229,12 @@ get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 	{
 	    switch (*++p)
 	    {
-		case 'b': *name++ = BS; ++p; break;
-		case 'e': *name++ = ESC; ++p; break;
-		case 'f': *name++ = FF; ++p; break;
-		case 'n': *name++ = NL; ++p; break;
-		case 'r': *name++ = CAR; ++p; break;
-		case 't': *name++ = TAB; ++p; break;
+		case 'b': *end++ = BS; ++p; break;
+		case 'e': *end++ = ESC; ++p; break;
+		case 'f': *end++ = FF; ++p; break;
+		case 'n': *end++ = NL; ++p; break;
+		case 'r': *end++ = CAR; ++p; break;
+		case 't': *end++ = TAB; ++p; break;
 
 		case 'X': // hex: "\x1", "\x12"
 		case 'x':
@@ -1261,9 +1261,9 @@ get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 			      // For "\u" store the number according to
 			      // 'encoding'.
 			      if (c != 'X')
-				  name += (*mb_char2bytes)(nr, name);
+				  end += (*mb_char2bytes)(nr, end);
 			      else
-				  *name++ = nr;
+				  *end++ = nr;
 			  }
 			  break;
 
@@ -1275,14 +1275,14 @@ get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 		case '4':
 		case '5':
 		case '6':
-		case '7': *name = *p++ - '0';
+		case '7': *end = *p++ - '0';
 			  if (*p >= '0' && *p <= '7')
 			  {
-			      *name = (*name << 3) + *p++ - '0';
+			      *end = (*end << 3) + *p++ - '0';
 			      if (*p >= '0' && *p <= '7')
-				  *name = (*name << 3) + *p++ - '0';
+				  *end = (*end << 3) + *p++ - '0';
 			  }
-			  ++name;
+			  ++end;
 			  break;
 
 			  // Special key, e.g.: "\<C-W>"
@@ -1292,26 +1292,25 @@ get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 
 			      if (p[1] != '*')
 				  flags |= FSK_SIMPLIFY;
-			      extra = trans_special(&p, name, flags, NULL);
+			      extra = trans_special(&p, end, flags, NULL);
 			      if (extra != 0)
 			      {
-				  name += extra;
-				  if (name >= rettv->vval.v_string + len)
+				  end += extra;
+				  if (end >= rettv->vval.v_string + len)
 				      iemsg("get_string_tv() used more space than allocated");
 				  break;
 			      }
 			  }
 			  // FALLTHROUGH
 
-		default:  MB_COPY_CHAR(p, name);
+		default:  MB_COPY_CHAR(p, end);
 			  break;
 	    }
 	}
 	else
-	    MB_COPY_CHAR(p, name);
-
+	    MB_COPY_CHAR(p, end);
     }
-    *name = NUL;
+    *end = NUL;
     if (*p != NUL) // just in case
 	++p;
     *arg = p;

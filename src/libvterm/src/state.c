@@ -16,6 +16,7 @@ static int on_resize(int rows, int cols, void *user);
 static void putglyph(VTermState *state, const uint32_t chars[], int width, VTermPos pos)
 {
   VTermGlyphInfo info;
+
   info.chars = chars;
   info.width = width;
   info.protected_cell = state->protected_cell;
@@ -1845,8 +1846,12 @@ static int on_resize(int rows, int cols, void *user)
 
   if(state->pos.row >= rows)
     state->pos.row = rows - 1;
+  if(state->pos.row < 0)
+    state->pos.row = 0;
   if(state->pos.col >= cols)
     state->pos.col = cols - 1;
+  if(state->pos.col < 0)
+    state->pos.col = 0;
 
   updatecursor(state, &oldpos, 1);
 

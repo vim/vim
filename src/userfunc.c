@@ -409,7 +409,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 	fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
 	if (fp == NULL)
 	    goto errret;
-	fp->uf_dfunc_idx = UF_NOT_COMPILED;
+	fp->uf_def_status = UF_NOT_COMPILED;
 	pt = ALLOC_CLEAR_ONE(partial_T);
 	if (pt == NULL)
 	    goto errret;
@@ -719,20 +719,45 @@ find_func_even_dead(char_u *name, int is_global, cctx_T *cctx)
     ufunc_T	*func;
     imported_T	*imported;
 
-    if (in_vim9script() && !is_global)
+    if (!is_global)
     {
-	// Find script-local function before global one.
-	func = find_func_with_sid(name, current_sctx.sc_sid);
-	if (func != NULL)
-	    return func;
+	char_u *after_script = NULL;
 
-	// Find imported funcion before global one.
-	imported = find_imported(name, 0, cctx);
-	if (imported != NULL && imported->imp_funcname != NULL)
+	if (in_vim9script())
 	{
-	    hi = hash_find(&func_hashtab, imported->imp_funcname);
-	    if (!HASHITEM_EMPTY(hi))
-		return HI2UF(hi);
+	    // Find script-local function before global one.
+	    func = find_func_with_sid(name, current_sctx.sc_sid);
+	    if (func != NULL)
+		return func;
+	}
+
+	if (!in_vim9script()
+		&& name[0] == K_SPECIAL
+		&& name[1] == KS_EXTRA
+		&& name[2] == KE_SNR)
+	{
+	    long sid;
+
+	    // Caller changes s: to <SNR>99_name.
+
+	    after_script = name + 3;
+	    sid = getdigits(&after_script);
+	    if (sid == current_sctx.sc_sid && *after_script == '_')
+		++after_script;
+	    else
+		after_script = NULL;
+	}
+	if (in_vim9script() || after_script != NULL)
+	{
+	    // Find imported function before global one.
+	    imported = find_imported(
+			  after_script == NULL ? name : after_script, 0, cctx);
+	    if (imported != NULL && imported->imp_funcname != NULL)
+	    {
+		hi = hash_find(&func_hashtab, imported->imp_funcname);
+		if (!HASHITEM_EMPTY(hi))
+		    return HI2UF(hi);
+	    }
 	}
     }
 
@@ -976,7 +1001,7 @@ func_remove(ufunc_T *fp)
     {
 	// When there is a def-function index do not actually remove the
 	// function, so we can find the index when defining the function again.
-	if (fp->uf_dfunc_idx >= 0)
+	if (fp->uf_def_status == UF_COMPILED)
 	    fp->uf_flags |= FC_DEAD;
 	else
 	    hash_remove(&func_hashtab, hi);
@@ -1021,7 +1046,7 @@ func_clear(ufunc_T *fp, int force)
     // clear this function
     func_clear_items(fp);
     funccal_unref(fp->uf_scoped, fp, force);
-    delete_def_function(fp);
+    clear_def_function(fp);
 }
 
 /*
@@ -1049,7 +1074,8 @@ func_free(ufunc_T *fp, int force)
 func_clear_free(ufunc_T *fp, int force)
 {
     func_clear(fp, force);
-    func_free(fp, force);
+    if (force || fp->uf_dfunc_idx == 0)
+	func_free(fp, force);
 }
 
 
@@ -1112,7 +1138,7 @@ call_user_func(
     ga_init2(&fc->fc_funcs, sizeof(ufunc_T *), 1);
     func_ptr_ref(fp);
 
-    if (fp->uf_dfunc_idx != UF_NOT_COMPILED)
+    if (fp->uf_def_status != UF_NOT_COMPILED)
     {
 	estack_push_ufunc(fp, 1);
 	save_current_sctx = current_sctx;
@@ -1637,7 +1663,7 @@ free_all_functions(void)
 		// clear the def function index now
 		fp = HI2UF(hi);
 		fp->uf_flags &= ~FC_DEAD;
-		fp->uf_dfunc_idx = UF_NOT_COMPILED;
+		fp->uf_def_status = UF_NOT_COMPILED;
 
 		// Only free functions that are not refcounted, those are
 		// supposed to be freed when no longer referenced.
@@ -2033,7 +2059,7 @@ list_func_head(ufunc_T *fp, int indent)
     msg_start();
     if (indent)
 	msg_puts("   ");
-    if (fp->uf_dfunc_idx != UF_NOT_COMPILED)
+    if (fp->uf_def_status != UF_NOT_COMPILED)
 	msg_puts("def ");
     else
 	msg_puts("function ");
@@ -2082,7 +2108,7 @@ list_func_head(ufunc_T *fp, int indent)
     }
     msg_putchar(')');
 
-    if (fp->uf_dfunc_idx != UF_NOT_COMPILED)
+    if (fp->uf_def_status != UF_NOT_COMPILED)
     {
 	if (fp->uf_ret_type != &t_void)
 	{
@@ -2599,7 +2625,7 @@ def_function(exarg_T *eap, char_u *name_arg)
 		if (!got_int)
 		{
 		    msg_putchar('\n');
-		    if (fp->uf_dfunc_idx != UF_NOT_COMPILED)
+		    if (fp->uf_def_status != UF_NOT_COMPILED)
 			msg_puts("   enddef");
 		    else
 			msg_puts("   endfunction");
@@ -2674,7 +2700,7 @@ def_function(exarg_T *eap, char_u *name_arg)
 	    p = skip_type(ret_type);
 	    if (p > ret_type)
 	    {
-		ret_type = vim_strnsave(ret_type, (int)(p - ret_type));
+		ret_type = vim_strnsave(ret_type, p - ret_type);
 		p = skipwhite(p);
 	    }
 	    else
@@ -2947,12 +2973,12 @@ def_function(exarg_T *eap, char_u *name_arg)
 		    // Ignore leading white space.
 		    p = skipwhite(p + 4);
 		    heredoc_trimmed = vim_strnsave(theline,
-			    (int)(skipwhite(theline) - theline));
+						 skipwhite(theline) - theline);
 		}
 		if (*p == NUL)
 		    skip_until = vim_strsave((char_u *)".");
 		else
-		    skip_until = vim_strnsave(p, (int)(skiptowhite(p) - p));
+		    skip_until = vim_strnsave(p, skiptowhite(p) - p);
 		do_concat = FALSE;
 		is_heredoc = TRUE;
 	    }
@@ -2977,9 +3003,9 @@ def_function(exarg_T *eap, char_u *name_arg)
 			// Ignore leading white space.
 			p = skipwhite(p + 4);
 			heredoc_trimmed = vim_strnsave(theline,
-					  (int)(skipwhite(theline) - theline));
+						 skipwhite(theline) - theline);
 		    }
-		    skip_until = vim_strnsave(p, (int)(skiptowhite(p) - p));
+		    skip_until = vim_strnsave(p, skiptowhite(p) - p);
 		    do_concat = FALSE;
 		    is_heredoc = TRUE;
 		}
@@ -3072,6 +3098,7 @@ def_function(exarg_T *eap, char_u *name_arg)
 		fp->uf_profiling = FALSE;
 		fp->uf_prof_initialized = FALSE;
 #endif
+		clear_def_function(fp);
 	    }
 	}
     }
@@ -3137,7 +3164,7 @@ def_function(exarg_T *eap, char_u *name_arg)
 	fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
 	if (fp == NULL)
 	    goto erret;
-	fp->uf_dfunc_idx = eap->cmdidx == CMD_def ? UF_TO_BE_COMPILED
+	fp->uf_def_status = eap->cmdidx == CMD_def ? UF_TO_BE_COMPILED
 							     : UF_NOT_COMPILED;
 
 	if (fudi.fd_dict != NULL)
@@ -3194,7 +3221,7 @@ def_function(exarg_T *eap, char_u *name_arg)
     {
 	int	lnum_save = SOURCING_LNUM;
 
-	fp->uf_dfunc_idx = UF_TO_BE_COMPILED;
+	fp->uf_def_status = UF_TO_BE_COMPILED;
 
 	// error messages are for the first function line
 	SOURCING_LNUM = sourcing_lnum_top;
@@ -3264,7 +3291,7 @@ def_function(exarg_T *eap, char_u *name_arg)
 	SOURCING_LNUM = lnum_save;
     }
     else
-	fp->uf_dfunc_idx = UF_NOT_COMPILED;
+	fp->uf_def_status = UF_NOT_COMPILED;
 
     fp->uf_lines = newlines;
     if ((flags & FC_CLOSURE) != 0)
@@ -3298,6 +3325,9 @@ def_function(exarg_T *eap, char_u *name_arg)
 
     if (eap->cmdidx == CMD_def)
 	set_function_type(fp);
+    else if (fp->uf_script_ctx.sc_version == SCRIPT_VERSION_VIM9)
+	// :func does not use Vim9 script syntax, even in a Vim9 script file
+	fp->uf_script_ctx.sc_version = SCRIPT_VERSION_MAX;
 
     goto ret_free;
 
@@ -3347,7 +3377,7 @@ ex_defcompile(exarg_T *eap UNUSED)
 	    --todo;
 	    ufunc = HI2UF(hi);
 	    if (ufunc->uf_script_ctx.sc_sid == current_sctx.sc_sid
-		    && ufunc->uf_dfunc_idx == UF_TO_BE_COMPILED)
+		    && ufunc->uf_def_status == UF_TO_BE_COMPILED)
 	    {
 		compile_def_function(ufunc, FALSE, NULL);
 

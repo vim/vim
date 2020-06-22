@@ -175,7 +175,7 @@ static int	qf_win_pos_update(qf_info_T *qi, int old_qf_index);
 static win_T	*qf_find_win(qf_info_T *qi);
 static buf_T	*qf_find_buf(qf_info_T *qi);
 static void	qf_update_buffer(qf_info_T *qi, qfline_T *old_last);
-static void	qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last);
+static void	qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last, int qf_winid);
 static buf_T	*load_dummy_buffer(char_u *fname, char_u *dirname_start, char_u *resulting_dir);
 static void	wipe_dummy_buffer(buf_T *buf, char_u *dirname_start);
 static void	unload_dummy_buffer(buf_T *buf, char_u *dirname_start);
@@ -4189,7 +4189,7 @@ ex_copen(exarg_T *eap)
     lnum = qfl->qf_index;
 
     // Fill the buffer with the quickfix list.
-    qf_fill_buffer(qfl, curbuf, NULL);
+    qf_fill_buffer(qfl, curbuf, NULL, curwin->w_id);
 
     decr_quickfix_busy();
 
@@ -4381,6 +4381,10 @@ qf_update_buffer(qf_info_T *qi, qfline_T *old_last)
     if (buf != NULL)
     {
 	linenr_T	old_line_count = buf->b_ml.ml_line_count;
+	int		qf_winid = 0;
+
+	if (IS_LL_STACK(qi))
+	    qf_winid = curwin->w_id;
 
 	if (old_last == NULL)
 	    // set curwin/curbuf to buf and save a few things
@@ -4388,7 +4392,7 @@ qf_update_buffer(qf_info_T *qi, qfline_T *old_last)
 
 	qf_update_win_titlevar(qi);
 
-	qf_fill_buffer(qf_get_curlist(qi), buf, old_last);
+	qf_fill_buffer(qf_get_curlist(qi), buf, old_last, qf_winid);
 	++CHANGEDTICK(buf);
 
 	if (old_last == NULL)
@@ -4411,47 +4415,17 @@ qf_update_buffer(qf_info_T *qi, qfline_T *old_last)
  */
     static int
 qf_buf_add_line(
-	qf_list_T	*qfl,		// quickfix list
 	buf_T		*buf,		// quickfix window buffer
 	linenr_T	lnum,
 	qfline_T	*qfp,
-	char_u		*dirname)
+	char_u		*dirname,
+	char_u		*qftf_str)
 {
     int		len;
     buf_T	*errbuf;
-    char_u	*qftf;
 
-    // If 'quickfixtextfunc' is set, then use the user-supplied function to get
-    // the text to display
-    qftf = p_qftf;
-    // Use the local value of 'quickfixtextfunc' if it is set.
-    if (qfl->qf_qftf != NULL)
-	qftf = qfl->qf_qftf;
-    if (qftf != NULL && *qftf != NUL)
-    {
-	char_u		*qfbuf_text;
-	typval_T	args[1];
-	dict_T		*d;
-
-	// create 'info' dict argument
-	if ((d = dict_alloc_lock(VAR_FIXED)) == NULL)
-	    return FAIL;
-	dict_add_number(d, "quickfix", (long)IS_QF_LIST(qfl));
-	dict_add_number(d, "id", (long)qfl->qf_id);
-	dict_add_number(d, "idx", (long)(lnum + 1));
-	++d->dv_refcount;
-	args[0].v_type = VAR_DICT;
-	args[0].vval.v_dict = d;
-
-	qfbuf_text = call_func_retstr(qftf, 1, args);
-	--d->dv_refcount;
-
-	if (qfbuf_text == NULL)
-	    return FAIL;
-
-	vim_strncpy(IObuff, qfbuf_text, IOSIZE - 1);
-	vim_free(qfbuf_text);
-    }
+    if (qftf_str != NULL)
+	vim_strncpy(IObuff, qftf_str, IOSIZE - 1);
     else
     {
 	if (qfp->qf_module != NULL)
@@ -4527,6 +4501,41 @@ qf_buf_add_line(
     return OK;
 }
 
+    static list_T *
+call_qftf_func(qf_list_T *qfl, int qf_winid, long start_idx, long end_idx)
+{
+    char_u	*qftf = p_qftf;
+    list_T	*qftf_list = NULL;
+
+    // If 'quickfixtextfunc' is set, then use the user-supplied function to get
+    // the text to display. Use the local value of 'quickfixtextfunc' if it is
+    // set.
+    if (qfl->qf_qftf != NULL)
+	qftf = qfl->qf_qftf;
+    if (qftf != NULL && *qftf != NUL)
+    {
+	typval_T	args[1];
+	dict_T		*d;
+
+	// create the dict argument
+	if ((d = dict_alloc_lock(VAR_FIXED)) == NULL)
+	    return NULL;
+	dict_add_number(d, "quickfix", (long)IS_QF_LIST(qfl));
+	dict_add_number(d, "winid", (long)qf_winid);
+	dict_add_number(d, "id", (long)qfl->qf_id);
+	dict_add_number(d, "start_idx", start_idx);
+	dict_add_number(d, "end_idx", end_idx);
+	++d->dv_refcount;
+	args[0].v_type = VAR_DICT;
+	args[0].vval.v_dict = d;
+
+	qftf_list = call_func_retlist(qftf, 1, args);
+	--d->dv_refcount;
+    }
+
+    return qftf_list;
+}
+
 /*
  * Fill current buffer with quickfix errors, replacing any previous contents.
  * curbuf must be the quickfix buffer!
@@ -4535,11 +4544,13 @@ qf_buf_add_line(
  * ml_delete() is used and autocommands will be triggered.
  */
     static void
-qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last)
+qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last, int qf_winid)
 {
     linenr_T	lnum;
     qfline_T	*qfp;
     int		old_KeyTyped = KeyTyped;
+    list_T	*qftf_list = NULL;
+    listitem_T	*qftf_li = NULL;
 
     if (old_last == NULL)
     {
@@ -4572,15 +4583,30 @@ qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last)
 	    qfp = old_last->qf_next;
 	    lnum = buf->b_ml.ml_line_count;
 	}
+
+	qftf_list = call_qftf_func(qfl, qf_winid, (long)(lnum + 1),
+							(long)qfl->qf_count);
+	if (qftf_list != NULL)
+	    qftf_li = qftf_list->lv_first;
+
 	while (lnum < qfl->qf_count)
 	{
-	    if (qf_buf_add_line(qfl, buf, lnum, qfp, dirname) == FAIL)
+	    char_u	*qftf_str = NULL;
+
+	    if (qftf_li != NULL)
+		// Use the text supplied by the user defined function
+		qftf_str = tv_get_string_chk(&qftf_li->li_tv);
+
+	    if (qf_buf_add_line(buf, lnum, qfp, dirname, qftf_str) == FAIL)
 		break;
 
 	    ++lnum;
 	    qfp = qfp->qf_next;
 	    if (qfp == NULL)
 		break;
+
+	    if (qftf_li != NULL)
+		qftf_li = qftf_li->li_next;
 	}
 
 	if (old_last == NULL)
@@ -7957,9 +7983,10 @@ ex_helpgrep(exarg_T *eap)
     {
 	apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
 					       curbuf->b_fname, TRUE, curbuf);
-	if (!new_qi && IS_LL_STACK(qi) && qf_find_buf(qi) == NULL)
+	// When adding a location list to an existing location list stack,
+	// if the autocmd made the stack invalid, then just return.
+	if (!new_qi && IS_LL_STACK(qi) && qf_find_win_with_loclist(qi) == NULL)
 	{
-	    // autocommands made "qi" invalid
 	    decr_quickfix_busy();
 	    return;
 	}

@@ -4588,7 +4588,7 @@ regtry(
 		if (reg_startzp[i] != NULL && reg_endzp[i] != NULL)
 		    re_extmatch_out->matches[i] =
 			    vim_strnsave(reg_startzp[i],
-					(int)(reg_endzp[i] - reg_startzp[i]));
+						reg_endzp[i] - reg_startzp[i]);
 	    }
 	}
     }

@@ -314,6 +314,7 @@ f_strptime(typval_T *argvars, typval_T *rettv)
     char_u	*enc;
 
     CLEAR_FIELD(tmval);
+    tmval.tm_isdst = -1;
     fmt = tv_get_string(&argvars[0]);
     str = tv_get_string(&argvars[1]);
 

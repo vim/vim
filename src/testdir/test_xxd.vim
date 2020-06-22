@@ -208,7 +208,8 @@ func Test_xxd()
   " -o -offset
 
   %d
-  bw!
+  bwipe!
+  call delete('XXDfile')
 endfunc
 
 " Various ways with wrong arguments that trigger the usage output.

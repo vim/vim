@@ -523,8 +523,14 @@ ui_char_avail(void)
  * cancel the delay if a key is hit.
  */
     void
-ui_delay(long msec, int ignoreinput)
+ui_delay(long msec_arg, int ignoreinput)
 {
+    long msec = msec_arg;
+
+#ifdef FEAT_EVAL
+    if (ui_delay_for_testing > 0)
+	msec = ui_delay_for_testing;
+#endif
 #ifdef FEAT_JOB_CHANNEL
     ch_log(NULL, "ui_delay(%ld)", msec);
 #endif

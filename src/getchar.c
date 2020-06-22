@@ -2204,6 +2204,13 @@ parse_queued_messages(void)
 	if (has_sound_callback_in_queue())
 	    invoke_sound_callback();
 # endif
+#ifdef SIGUSR1
+	if (got_sigusr1)
+	{
+	    apply_autocmds(EVENT_SIGUSR1, NULL, NULL, FALSE, curbuf);
+	    got_sigusr1 = FALSE;
+	}
+#endif
 	break;
     }
 
