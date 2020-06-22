@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Jun 21
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Jun 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -257,27 +257,32 @@ Function call: >
 			arg2
 			)
 
-For binary operators iin expressions not in [], {} or () a line break is
-possible AFTER the operators.  For example: >
-	let text = lead ..
-		   middle ..
-		   end
+For binary operators in expressions not in [], {} or () a line break is
+possible just before or after the operator.  For example: >
+	let text = lead
+		   .. middle
+		   .. end
 	let total = start +
 	            end -
 		    correction
-	let result = positive ?
-			PosFunc(arg) :
-			NegFunc(arg)
+	let result = positive
+			? PosFunc(arg)
+			: NegFunc(arg)
 
-A special case is "->" for function call chains, it can appear in the next
-line: >
 	let result = GetBuilder()
 			->BuilderSetWidth(333)
 			->BuilderSetHeight(777)
 			->BuilderBuild()
 
-Note that "enddef" cannot be used at the start of a continuation line, it ends
-the current function.
+<							*E1050*
+To make it possible for the operator at the start of the line to be
+recognized, it is required to put a colon before a range.  This will adde
+"start" and print: >
+	let result = start
+	+ print
+This will assign "start" and print a line: >
+	let result = start
+	:+ print
 
 It is also possible to split a function header over multiple lines, in between
 arguments: >
@@ -285,6 +290,9 @@ arguments: >
 		text: string,
 		separator = '-'
 		): string
+
+Note that "enddef" cannot be used at the start of a continuation line, it ends
+the current function.
 
 
 No curly braces expansion ~

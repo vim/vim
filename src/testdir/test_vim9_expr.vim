@@ -585,12 +585,12 @@ func Test_expr5_fails()
   call CheckDefFailure(["let x = '1' ..'2'"], msg)
   call CheckDefFailure(["let x = '1'.. '2'"], msg)
 
-  call CheckDefFailure(["let x = 0z1122 + 33"], 'E1035')
-  call CheckDefFailure(["let x = 0z1122 + [3]"], 'E1035')
-  call CheckDefFailure(["let x = 0z1122 + 'asd'"], 'E1035')
-  call CheckDefFailure(["let x = 33 + 0z1122"], 'E1035')
-  call CheckDefFailure(["let x = [3] + 0z1122"], 'E1035')
-  call CheckDefFailure(["let x = 'asdf' + 0z1122"], 'E1035')
+  call CheckDefFailure(["let x = 0z1122 + 33"], 'E1051')
+  call CheckDefFailure(["let x = 0z1122 + [3]"], 'E1051')
+  call CheckDefFailure(["let x = 0z1122 + 'asd'"], 'E1051')
+  call CheckDefFailure(["let x = 33 + 0z1122"], 'E1051')
+  call CheckDefFailure(["let x = [3] + 0z1122"], 'E1051')
+  call CheckDefFailure(["let x = 'asdf' + 0z1122"], 'E1051')
   call CheckDefFailure(["let x = 6 + xxx"], 'E1001')
 endfunc
 

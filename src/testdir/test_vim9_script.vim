@@ -468,6 +468,14 @@ func Test_const()
   call CheckDefFailure(['const &option'], 'E996:')
 endfunc
 
+def Test_range_no_colon()
+  call CheckDefFailure(['%s/a/b/'], 'E1050:')
+  call CheckDefFailure(['+ s/a/b/'], 'E1050:')
+  call CheckDefFailure(['- s/a/b/'], 'E1050:')
+  call CheckDefFailure(['. s/a/b/'], 'E1050:')
+enddef
+
+
 def Test_block()
   let outer = 1
   {
@@ -1279,7 +1287,7 @@ def Test_echomsg_cmd()
   echomsg 'some' 'more' # comment
   assert_match('^some more$', Screenline(&lines))
   echo 'clear'
-  1messages
+  :1messages
   assert_match('^some more$', Screenline(&lines))
 
   call CheckDefFailure(['echomsg "xxx"# comment'], 'E488:')
@@ -1898,7 +1906,7 @@ def Test_vim9_comment_not_compiled()
       'vim9script',
       'new'
       'call setline(1, ["# define pat", "last"])',
-      '$',
+      ':$',
       'dsearch /pat/ #comment',
       'bwipe!',
       ])
@@ -1907,7 +1915,7 @@ def Test_vim9_comment_not_compiled()
       'vim9script',
       'new'
       'call setline(1, ["# define pat", "last"])',
-      '$',
+      ':$',
       'dsearch /pat/#comment',
       'bwipe!',
       ], 'E488:')
