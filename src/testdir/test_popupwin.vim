@@ -2454,10 +2454,9 @@ func Test_popupwin_terminal_buffer()
   call term_sendkeys(termbuf2, "exit\<CR>")
 
   " Exiting shell closes popup window
-  let pupwin = win_getid()
   call feedkeys("exit\<CR>", 'xt')
   " Wait for shell to exit
-  call WaitForAssert({-> assert_notequal(pupwin, win_getid())})
+  call WaitForAssert({-> assert_equal("dead", job_status(term_getjob(termbuf)))})
 
   call feedkeys(":quit\<CR>", 'xt')
   call assert_equal(origwin, win_getid())
