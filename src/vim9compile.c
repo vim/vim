@@ -2402,8 +2402,11 @@ peek_next_line(cctx_T *cctx)
     while (++lnum < cctx->ctx_ufunc->uf_lines.ga_len)
     {
 	char_u *line = ((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)[lnum];
-	char_u *p = skipwhite(line);
+	char_u *p;
 
+	if (line == NULL)
+	    break;
+	p = skipwhite(line);
 	if (*p != NUL && !comment_start(p))
 	    return p;
     }
