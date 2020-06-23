@@ -2414,6 +2414,27 @@ peek_next_line(cctx_T *cctx)
 }
 
 /*
+ * Called when checking for a following operator at "arg".  When the rest of
+ * the line is empty or only a comment, peek the next line.  If there is a next
+ * line return a pointer to it and set "nextp".
+ * Otherwise skip over white space.
+ */
+    static char_u *
+may_peek_next_line(cctx_T *cctx, char_u *arg, char_u **nextp)
+{
+    char_u *p = skipwhite(arg);
+
+    *nextp = NULL;
+    if (*p == NUL || (VIM_ISWHITE(*arg) && comment_start(p)))
+    {
+	*nextp = peek_next_line(cctx);
+	if (*nextp != NULL)
+	    return *nextp;
+    }
+    return p;
+}
+
+/*
  * Get the next line of the function from "cctx".
  * Skips over empty lines.  Skips over comment lines if "skip_comment" is TRUE.
  * Returns NULL when at the end.
@@ -3947,6 +3968,7 @@ compile_expr7(
 compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 {
     char_u	*op;
+    char_u	*next;
     int		ppconst_used = ppconst->pp_used;
 
     // get the first expression
@@ -3958,9 +3980,14 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
      */
     for (;;)
     {
-	op = skipwhite(*arg);
+	op = may_peek_next_line(cctx, *arg, &next);
 	if (*op != '*' && *op != '/' && *op != '%')
 	    break;
+	if (next != NULL)
+	{
+	    *arg = next_line_from_context(cctx, TRUE);
+	    op = skipwhite(*arg);
+	}
 
 	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(op[1]))
 	{
@@ -4018,6 +4045,7 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 {
     char_u	*op;
+    char_u	*next;
     int		oplen;
     int		ppconst_used = ppconst->pp_used;
 
@@ -4030,10 +4058,15 @@ compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
      */
     for (;;)
     {
-	op = skipwhite(*arg);
-	if (*op != '+' && *op != '-' && !(*op == '.' && (*(*arg + 1) == '.')))
+	op = may_peek_next_line(cctx, *arg, &next);
+	if (*op != '+' && *op != '-' && !(*op == '.' && *(op + 1) == '.'))
 	    break;
 	oplen = (*op == '.' ? 2 : 1);
+	if (next != NULL)
+	{
+	    *arg = next_line_from_context(cctx, TRUE);
+	    op = skipwhite(*arg);
+	}
 
 	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(op[oplen]))
 	{
@@ -4127,6 +4160,7 @@ compile_expr4(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 {
     exptype_T	type = EXPR_UNKNOWN;
     char_u	*p;
+    char_u	*next;
     int		len = 2;
     int		type_is = FALSE;
     int		ppconst_used = ppconst->pp_used;
@@ -4135,7 +4169,7 @@ compile_expr4(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     if (compile_expr5(arg, cctx, ppconst) == FAIL)
 	return FAIL;
 
-    p = skipwhite(*arg);
+    p = may_peek_next_line(cctx, *arg, &next);
     type = get_compare_type(p, &len, &type_is);
 
     /*
@@ -4145,6 +4179,11 @@ compile_expr4(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     {
 	int ic = FALSE;  // Default: do not ignore case
 
+	if (next != NULL)
+	{
+	    *arg = next_line_from_context(cctx, TRUE);
+	    p = skipwhite(*arg);
+	}
 	if (type_is && (p[len] == '?' || p[len] == '#'))
 	{
 	    semsg(_(e_invexpr2), *arg);
@@ -4221,7 +4260,8 @@ compile_and_or(
 	ppconst_T *ppconst,
 	int	ppconst_used UNUSED)
 {
-    char_u	*p = skipwhite(*arg);
+    char_u	*next;
+    char_u	*p = may_peek_next_line(cctx, *arg, &next);
     int		opchar = *op;
 
     if (p[0] == opchar && p[1] == opchar)
@@ -4235,6 +4275,12 @@ compile_and_or(
 	ga_init2(&end_ga, sizeof(int), 10);
 	while (p[0] == opchar && p[1] == opchar)
 	{
+	    if (next != NULL)
+	    {
+		*arg = next_line_from_context(cctx, TRUE);
+		p = skipwhite(*arg);
+	    }
+
 	    if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[2]))
 	    {
 		semsg(_(e_white_both), op);
@@ -4265,7 +4311,8 @@ compile_and_or(
 		ga_clear(&end_ga);
 		return FAIL;
 	    }
-	    p = skipwhite(*arg);
+
+	    p = may_peek_next_line(cctx, *arg, &next);
 	}
 	generate_ppconst(cctx, ppconst);
 
@@ -4349,12 +4396,13 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
 {
     char_u	*p;
     int		ppconst_used = ppconst->pp_used;
+    char_u	*next;
 
     // Evaluate the first expression.
     if (compile_expr2(arg, cctx, ppconst) == FAIL)
 	return FAIL;
 
-    p = skipwhite(*arg);
+    p = may_peek_next_line(cctx, *arg, &next);
     if (*p == '?')
     {
 	garray_T	*instr = &cctx->ctx_instr;
@@ -4367,6 +4415,12 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
 	int		has_const_expr = FALSE;
 	int		const_value = FALSE;
 	int		save_skip = cctx->ctx_skip;
+
+	if (next != NULL)
+	{
+	    *arg = next_line_from_context(cctx, TRUE);
+	    p = skipwhite(*arg);
+	}
 
 	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[1]))
 	{
@@ -4415,12 +4469,18 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
 	}
 
 	// Check for the ":".
-	p = skipwhite(*arg);
+	p = may_peek_next_line(cctx, *arg, &next);
 	if (*p != ':')
 	{
 	    emsg(_(e_missing_colon));
 	    return FAIL;
 	}
+	if (next != NULL)
+	{
+	    *arg = next_line_from_context(cctx, TRUE);
+	    p = skipwhite(*arg);
+	}
+
 	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[1]))
 	{
 	    semsg(_(e_white_both), ":");
