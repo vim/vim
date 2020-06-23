@@ -405,12 +405,6 @@ func Test_statusline_visual()
   bwipe! x2
 endfunc
 
-func Test_statusline_too_many_items()
-  exe 'set statusline=' .. repeat('%p', 79)
-  call assert_fails('exe "set statusline=" .. repeat("%p", 80)', 'E541:')
-  set statusline=
-endfunc
-
 func Test_statusline_removed_group()
   CheckScreendump
 
