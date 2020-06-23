@@ -392,6 +392,7 @@ func Test_getcompletion()
   call delete('Xtags')
   set tags&
 
+  call assert_fails("call getcompletion('\\\\@!\\\\@=', 'buffer')", 'E871:')
   call assert_fails('call getcompletion("", "burp")', 'E475:')
   call assert_fails('call getcompletion("abc", [])', 'E475:')
 endfunc
