@@ -4419,9 +4419,8 @@ update_search_hl(
     while (cur != NULL || shl_flag == FALSE)
     {
 	if (shl_flag == FALSE
-		&& ((cur != NULL
-			&& cur->priority > SEARCH_HL_PRIORITY)
-		    || cur == NULL))
+		&& (cur == NULL
+			|| cur->priority > SEARCH_HL_PRIORITY))
 	{
 	    shl = search_hl;
 	    shl_flag = TRUE;
@@ -4451,9 +4450,9 @@ update_search_hl(
 		{
 		    *has_match_conc = col == shl->startcol ? 2 : 1;
 		    *match_conc = cur->conceal_char;
+		} else {
+		    *has_match_conc = 0;
 		}
-		else
-		    *has_match_conc = *match_conc = 0;
 # endif
 	    }
 	    else if (col == shl->endcol)
@@ -4503,9 +4502,8 @@ update_search_hl(
     while (cur != NULL || shl_flag == FALSE)
     {
 	if (shl_flag == FALSE
-		&& ((cur != NULL
-			&& cur->priority > SEARCH_HL_PRIORITY)
-		    || cur == NULL))
+		&& (cur == NULL ||
+			cur->priority > SEARCH_HL_PRIORITY))
 	{
 	    shl = search_hl;
 	    shl_flag = TRUE;

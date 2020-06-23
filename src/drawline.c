@@ -967,7 +967,7 @@ win_line(
     for (;;)
     {
 #if defined(FEAT_CONCEAL) || defined(FEAT_SEARCH_EXTRA)
-	int has_match_conc  = 0;	// match wants to conceal
+	int has_match_conc = 0;	// match wants to conceal
 #endif
 #ifdef FEAT_CONCEAL
 	int did_decrement_ptr = FALSE;
@@ -2353,13 +2353,13 @@ win_line(
 	    {
 		char_attr = conceal_attr;
 		if ((prev_syntax_id != syntax_seqnr || has_match_conc > 1)
-			&& (syn_get_sub_char() != NUL || match_conc
+			&& (syn_get_sub_char() != NUL || (has_match_conc && match_conc)
 							 || wp->w_p_cole == 1)
 			&& wp->w_p_cole != 3)
 		{
 		    // First time at this concealed item: display one
 		    // character.
-		    if (match_conc)
+		    if (has_match_conc && match_conc)
 			c = match_conc;
 		    else if (syn_get_sub_char() != NUL)
 			c = syn_get_sub_char();
