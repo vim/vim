@@ -1334,6 +1334,10 @@ win_line(
 				      &screen_search_hl, &has_match_conc,
 				      &match_conc, did_line_attr, lcs_eol_one);
 		ptr = line + v;  // "line" may have been changed
+
+		// Multiline conceals are end at EOL.
+		if (*ptr == NUL)
+		    has_match_conc = 0;
 	    }
 #endif
 
