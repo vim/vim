@@ -1127,6 +1127,7 @@ func Test_diff_multilineconceal()
   set cole=2 cocu=n
   call setline(1, ["a", "b"])
   diffthis
+  redraw
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

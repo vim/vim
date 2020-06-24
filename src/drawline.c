@@ -1335,7 +1335,8 @@ win_line(
 				      &match_conc, did_line_attr, lcs_eol_one);
 		ptr = line + v;  // "line" may have been changed
 
-		// Multiline conceals are end at EOL.
+		// Do not allow a conceal over EOL otherwise EOL will be missed
+		// at bad things happen.
 		if (*ptr == NUL)
 		    has_match_conc = 0;
 	    }
