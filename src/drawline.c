@@ -1336,7 +1336,7 @@ win_line(
 		ptr = line + v;  // "line" may have been changed
 
 		// Do not allow a conceal over EOL otherwise EOL will be missed
-		// at bad things happen.
+		// and bad things happen.
 		if (*ptr == NUL)
 		    has_match_conc = 0;
 	    }
