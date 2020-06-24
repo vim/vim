@@ -2585,7 +2585,7 @@ func Test_autocmd_window()
   edit one.txt
   tabnew two.txt
   let g:blist = []
-  augroup aucmd_win_test
+  augroup aucmd_win_test1
     au!
     au BufEnter * call add(g:blist, [expand('<afile>'),
           \ win_gettype(bufwinnr(expand('<afile>')))])
@@ -2594,10 +2594,29 @@ func Test_autocmd_window()
   doautoall BufEnter
   call assert_equal([['one.txt', 'autocmd'], ['two.txt', '']], g:blist)
 
-  augroup aucmd_win_test
+  augroup aucmd_win_test1
     au!
   augroup END
-  augroup! aucmd_win_test
+  augroup! aucmd_win_test1
+  %bw!
+endfunc
+
+" Test for trying to close the temporary window used for executing an autocmd
+func Test_close_autocmd_window()
+  %bw!
+  edit one.txt
+  tabnew two.txt
+  augroup aucmd_win_test2
+    au!
+    au BufEnter * if expand('<afile>') == 'one.txt' | 1close | endif
+  augroup END
+
+  call assert_fails('doautoall BufEnter', 'E813:')
+
+  augroup aucmd_win_test2
+    au!
+  augroup END
+  augroup! aucmd_win_test2
   %bw!
 endfunc
 

@@ -1,10 +1,7 @@
 " Test 'statusline'
 "
 " Not tested yet:
-"   %a
 "   %N
-"   %T
-"   %X
 
 source view_util.vim
 source check.vim
@@ -104,6 +101,18 @@ func Test_statusline()
   " %F: Full path to the file in the buffer.
   set statusline=%F
   call assert_match('/testdir/Xstatusline\s*$', s:get_statusline())
+
+  " Test for min and max width with %(. For some reason, if this test is moved
+  " after the below test for the help buffer flag, then the code to truncate
+  " the string is not executed.
+  set statusline=%015(%f%)
+  call assert_match('^    Xstatusline\s*$', s:get_statusline())
+  set statusline=%.6(%f%)
+  call assert_match('^<sline\s*$', s:get_statusline())
+  set statusline=%14f
+  call assert_match('^   Xstatusline\s*$', s:get_statusline())
+  set statusline=%.4L
+  call assert_match('^10>3\s*$', s:get_statusline())
 
   " %h: Help buffer flag, text is "[help]".
   " %H: Help buffer flag, text is ",HLP".
@@ -423,3 +432,5 @@ func Test_statusline_removed_group()
   call StopVimInTerminal(buf)
   call delete('XTest_statusline')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
