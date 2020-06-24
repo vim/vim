@@ -1904,6 +1904,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	typval_T	var2;
 	evalarg_T	nested_evalarg;
 	int		orig_flags;
+	int		evaluate;
 
 	if (evalarg == NULL)
 	{
@@ -1916,8 +1917,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    orig_flags = evalarg->eval_flags;
 	}
 
-	int evaluate = nested_evalarg.eval_flags & EVAL_EVALUATE;
-
+	evaluate = nested_evalarg.eval_flags & EVAL_EVALUATE;
 	result = FALSE;
 	if (evaluate)
 	{
