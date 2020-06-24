@@ -136,7 +136,7 @@ get_expr_line(void)
 	return expr_copy;
 
     ++nested;
-    rv = eval_to_string(expr_copy, NULL, TRUE);
+    rv = eval_to_string(expr_copy, TRUE);
     --nested;
     vim_free(expr_copy);
     return rv;

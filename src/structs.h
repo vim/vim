@@ -1753,6 +1753,9 @@ typedef struct {
 
     // copied from exarg_T when "getline" is "getsourceline". Can be NULL.
     void	*eval_cookie;	// argument for getline()
+
+    // pointer to the line obtained with getsourceline()
+    char_u	*eval_tofree;
 } evalarg_T;
 
 // Flags for expression evaluation.

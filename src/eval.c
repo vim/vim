@@ -161,7 +161,7 @@ eval_clear(void)
 eval_to_bool(
     char_u	*arg,
     int		*error,
-    char_u	**nextcmd,
+    exarg_T	*eap,
     int		skip)	    // only parse, don't execute
 {
     typval_T	tv;
@@ -169,7 +169,7 @@ eval_to_bool(
 
     if (skip)
 	++emsg_skip;
-    if (eval0(arg, &tv, nextcmd, skip ? NULL : &EVALARG_EVALUATE) == FAIL)
+    if (eval0(arg, &tv, eap, skip ? NULL : &EVALARG_EVALUATE) == FAIL)
 	*error = TRUE;
     else
     {
@@ -317,7 +317,7 @@ eval_expr_to_bool(typval_T *expr, int *error)
     char_u *
 eval_to_string_skip(
     char_u	*arg,
-    char_u	**nextcmd,
+    exarg_T	*eap,
     int		skip)	    // only parse, don't execute
 {
     typval_T	tv;
@@ -325,7 +325,7 @@ eval_to_string_skip(
 
     if (skip)
 	++emsg_skip;
-    if (eval0(arg, &tv, nextcmd, skip ? NULL : &EVALARG_EVALUATE)
+    if (eval0(arg, &tv, eap, skip ? NULL : &EVALARG_EVALUATE)
 							       == FAIL || skip)
 	retval = NULL;
     else
@@ -361,7 +361,6 @@ skip_expr(char_u **pp)
     char_u *
 eval_to_string(
     char_u	*arg,
-    char_u	**nextcmd,
     int		convert)
 {
     typval_T	tv;
@@ -371,7 +370,7 @@ eval_to_string(
     char_u	numbuf[NUMBUFLEN];
 #endif
 
-    if (eval0(arg, &tv, nextcmd, &EVALARG_EVALUATE) == FAIL)
+    if (eval0(arg, &tv, NULL, &EVALARG_EVALUATE) == FAIL)
 	retval = NULL;
     else
     {
@@ -409,7 +408,6 @@ eval_to_string(
     char_u *
 eval_to_string_safe(
     char_u	*arg,
-    char_u	**nextcmd,
     int		use_sandbox)
 {
     char_u	*retval;
@@ -419,7 +417,7 @@ eval_to_string_safe(
     if (use_sandbox)
 	++sandbox;
     ++textwinlock;
-    retval = eval_to_string(arg, nextcmd, FALSE);
+    retval = eval_to_string(arg, FALSE);
     if (use_sandbox)
 	--sandbox;
     --textwinlock;
@@ -459,12 +457,12 @@ eval_to_number(char_u *expr)
  * Returns NULL when there is an error.
  */
     typval_T *
-eval_expr(char_u *arg, char_u **nextcmd)
+eval_expr(char_u *arg, exarg_T *eap)
 {
     typval_T	*tv;
 
     tv = ALLOC_ONE(typval_T);
-    if (tv != NULL && eval0(arg, tv, nextcmd, &EVALARG_EVALUATE) == FAIL)
+    if (tv != NULL && eval0(arg, tv, eap, &EVALARG_EVALUATE) == FAIL)
 	VIM_CLEAR(tv);
 
     return tv;
@@ -1418,7 +1416,7 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 eval_for_line(
     char_u	*arg,
     int		*errp,
-    char_u	**nextcmdp,
+    exarg_T	*eap,
     int		skip)
 {
     forinfo_T	*fi;
@@ -1448,7 +1446,7 @@ eval_for_line(
 
     if (skip)
 	++emsg_skip;
-    if (eval0(skipwhite(expr + 2), &tv, nextcmdp, &evalarg) == OK)
+    if (eval0(skipwhite(expr + 2), &tv, eap, &evalarg) == OK)
     {
 	*errp = FALSE;
 	if (!skip)
@@ -1796,6 +1794,17 @@ eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext)
 }
 
 /*
+ * To be called when eval_next_non_blank() sets "getnext" to TRUE.
+ */
+    static char_u *
+eval_next_line(evalarg_T *evalarg)
+{
+    vim_free(evalarg->eval_tofree);
+    evalarg->eval_tofree = getsourceline(0, evalarg->eval_cookie, 0, TRUE);
+    return skipwhite(evalarg->eval_tofree);
+}
+
+/*
  * The "evaluate" argument: When FALSE, the argument is only parsed but not
  * executed.  The function may return OK, but the rettv will be of type
  * VAR_UNKNOWN.  The function still returns FAIL for a syntax error.
@@ -1813,7 +1822,7 @@ eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext)
 eval0(
     char_u	*arg,
     typval_T	*rettv,
-    char_u	**nextcmd,
+    exarg_T	*eap,
     evalarg_T	*evalarg)
 {
     int		ret;
@@ -1822,8 +1831,11 @@ eval0(
     int		called_emsg_before = called_emsg;
     int		flags = evalarg == NULL ? 0 : evalarg->eval_flags;
 
+    if (evalarg != NULL)
+	evalarg->eval_tofree = NULL;
     p = skipwhite(arg);
     ret = eval1(&p, rettv, evalarg);
+
     if (ret == FAIL || !ends_excmd2(arg, p))
     {
 	if (ret != FAIL)
@@ -1841,8 +1853,27 @@ eval0(
 	    semsg(_(e_invexpr2), arg);
 	ret = FAIL;
     }
-    if (nextcmd != NULL)
-	*nextcmd = check_nextcmd(p);
+
+    if (eap != NULL)
+	eap->nextcmd = check_nextcmd(p);
+
+    if (evalarg != NULL)
+    {
+	if (eap != NULL)
+	{
+	    if (evalarg->eval_tofree != NULL)
+	    {
+		// We may need to keep the original command line, e.g. for
+		// ":let" it has the variable names.  But we may also need the
+		// new one, "nextcmd" points into it.  Keep both.
+		vim_free(eap->cmdline_tofree);
+		eap->cmdline_tofree = *eap->cmdlinep;
+		*eap->cmdlinep = evalarg->eval_tofree;
+	    }
+	}
+	else
+	    vim_free(evalarg->eval_tofree);
+    }
 
     return ret;
 }
@@ -2305,7 +2336,7 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	if (op != '+' && op != '-' && !concat)
 	    break;
 	if (getnext)
-	    *arg = skipwhite(getsourceline(0, evalarg->eval_cookie, 0, TRUE));
+	    *arg = eval_next_line(evalarg);
 
 	if ((op != '+' || (rettv->v_type != VAR_LIST
 						 && rettv->v_type != VAR_BLOB))
@@ -2497,7 +2528,7 @@ eval6(
 	if (op != '*' && op != '/' && op != '%')
 	    break;
 	if (getnext)
-	    *arg = skipwhite(getsourceline(0, evalarg->eval_cookie, 0, TRUE));
+	    *arg = eval_next_line(evalarg);
 
 	if (evaluate)
 	{
@@ -4734,7 +4765,6 @@ make_expanded_name(
     char_u	c1;
     char_u	*retval = NULL;
     char_u	*temp_result;
-    char_u	*nextcmd = NULL;
 
     if (expr_end == NULL || in_end == NULL)
 	return NULL;
@@ -4743,8 +4773,8 @@ make_expanded_name(
     c1 = *in_end;
     *in_end = NUL;
 
-    temp_result = eval_to_string(expr_start + 1, &nextcmd, FALSE);
-    if (temp_result != NULL && nextcmd == NULL)
+    temp_result = eval_to_string(expr_start + 1, FALSE);
+    if (temp_result != NULL)
     {
 	retval = alloc(STRLEN(temp_result) + (expr_start - in_start)
 						   + (in_end - expr_end) + 1);

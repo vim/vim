@@ -3083,7 +3083,7 @@ expand_backtick(
 
 #ifdef FEAT_EVAL
     if (*cmd == '=')	    // `={expr}`: Expand expression
-	buffer = eval_to_string(cmd + 1, &p, TRUE);
+	buffer = eval_to_string(cmd + 1, TRUE);
     else
 #endif
 	buffer = get_cmd_output(cmd, NULL,

@@ -2066,7 +2066,7 @@ vim_regsub_both(
 		clear_tv(&rettv);
 	    }
 	    else
-		eval_result = eval_to_string(source + 2, NULL, TRUE);
+		eval_result = eval_to_string(source + 2, TRUE);
 
 	    if (eval_result != NULL)
 	    {

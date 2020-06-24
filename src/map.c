@@ -1614,7 +1614,7 @@ eval_map_expr(
     save_cursor = curwin->w_cursor;
     save_msg_col = msg_col;
     save_msg_row = msg_row;
-    p = eval_to_string(expr, NULL, FALSE);
+    p = eval_to_string(expr, FALSE);
     --textwinlock;
     --ex_normal_lock;
     curwin->w_cursor = save_cursor;

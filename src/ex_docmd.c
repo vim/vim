@@ -2609,6 +2609,7 @@ doend:
 
 #ifdef FEAT_EVAL
     --ex_nesting_level;
+    vim_free(ea.cmdline_tofree);
 #endif
 
     return ea.nextcmd;
@@ -4912,7 +4913,7 @@ ex_colorscheme(exarg_T *eap)
 	if (expr != NULL)
 	{
 	    ++emsg_off;
-	    p = eval_to_string(expr, NULL, FALSE);
+	    p = eval_to_string(expr, FALSE);
 	    --emsg_off;
 	    vim_free(expr);
 	}

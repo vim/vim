@@ -800,7 +800,7 @@ ex_let(exarg_T *eap)
 	    evalarg.eval_flags = eap->skip ? 0 : EVAL_EVALUATE;
 	    evalarg.eval_cookie = eap->getline == getsourceline
 							  ? eap->cookie : NULL;
-	    i = eval0(expr, &rettv, &eap->nextcmd, &evalarg);
+	    i = eval0(expr, &rettv, eap, &evalarg);
 	    if (eap->skip)
 		--emsg_skip;
 	}
