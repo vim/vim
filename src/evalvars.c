@@ -435,7 +435,7 @@ eval_spell_expr(char_u *badword, char_u *expr)
     if (p_verbose == 0)
 	++emsg_off;
 
-    if (eval1(&p, &rettv, EVAL_EVALUATE) == OK)
+    if (eval1(&p, &rettv, &EVALARG_EVALUATE) == OK)
     {
 	if (rettv.v_type != VAR_LIST)
 	    clear_tv(&rettv);
@@ -774,7 +774,7 @@ ex_let(exarg_T *eap)
     }
     else
     {
-	int eval_flags;
+	evalarg_T   evalarg;
 
 	rettv.v_type = VAR_UNKNOWN;
 	i = FAIL;
@@ -797,14 +797,17 @@ ex_let(exarg_T *eap)
 
 	    if (eap->skip)
 		++emsg_skip;
-	    eval_flags = eap->skip ? 0 : EVAL_EVALUATE;
-	    i = eval0(expr, &rettv, &eap->nextcmd, eval_flags);
+	    evalarg.eval_flags = eap->skip ? 0 : EVAL_EVALUATE;
+	    evalarg.eval_cookie = eap->getline == getsourceline
+							  ? eap->cookie : NULL;
+	    i = eval0(expr, &rettv, &eap->nextcmd, &evalarg);
+	    if (eap->skip)
+		--emsg_skip;
 	}
 	if (eap->skip)
 	{
 	    if (i != FAIL)
 		clear_tv(&rettv);
-	    --emsg_skip;
 	}
 	else if (i != FAIL)
 	{

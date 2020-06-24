@@ -1165,6 +1165,10 @@ get_list_tv(char_u **arg, typval_T *rettv, int flags, int do_error)
     list_T	*l = NULL;
     typval_T	tv;
     listitem_T	*item;
+    evalarg_T	evalarg;
+
+    CLEAR_FIELD(evalarg);
+    evalarg.eval_flags = flags;
 
     if (evaluate)
     {
@@ -1176,7 +1180,7 @@ get_list_tv(char_u **arg, typval_T *rettv, int flags, int do_error)
     *arg = skipwhite(*arg + 1);
     while (**arg != ']' && **arg != NUL)
     {
-	if (eval1(arg, &tv, flags) == FAIL)	// recursive!
+	if (eval1(arg, &tv, &evalarg) == FAIL)	// recursive!
 	    goto failret;
 	if (evaluate)
 	{

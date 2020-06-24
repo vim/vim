@@ -239,7 +239,7 @@ get_function_args(
 		whitep = p;
 		p = skipwhite(p);
 		expr = p;
-		if (eval1(&p, &rettv, 0) != FAIL)
+		if (eval1(&p, &rettv, NULL) != FAIL)
 		{
 		    if (ga_grow(default_args, 1) == FAIL)
 			goto err_ret;
@@ -561,6 +561,10 @@ get_func_tv(
     int		ret = OK;
     typval_T	argvars[MAX_FUNC_ARGS + 1];	// vars for arguments
     int		argcount = 0;		// number of arguments found
+    evalarg_T	evalarg;
+
+    CLEAR_FIELD(evalarg);
+    evalarg.eval_flags = funcexe->evaluate ? EVAL_EVALUATE : 0;
 
     /*
      * Get the arguments.
@@ -572,8 +576,7 @@ get_func_tv(
 	argp = skipwhite(argp + 1);	    // skip the '(' or ','
 	if (*argp == ')' || *argp == ',' || *argp == NUL)
 	    break;
-	if (eval1(&argp, &argvars[argcount],
-				funcexe->evaluate ? EVAL_EVALUATE : 0) == FAIL)
+	if (eval1(&argp, &argvars[argcount], &evalarg) == FAIL)
 	{
 	    ret = FAIL;
 	    break;
@@ -1249,7 +1252,7 @@ call_user_func(
 
 		default_expr = ((char_u **)(fp->uf_def_args.ga_data))
 						 [ai + fp->uf_def_args.ga_len];
-		if (eval1(&default_expr, &def_rettv, EVAL_EVALUATE) == FAIL)
+		if (eval1(&default_expr, &def_rettv, &EVALARG_EVALUATE) == FAIL)
 		{
 		    default_arg_err = 1;
 		    break;
@@ -1394,7 +1397,7 @@ call_user_func(
 	// A Lambda always has the command "return {expr}".  It is much faster
 	// to evaluate {expr} directly.
 	++ex_nesting_level;
-	(void)eval1(&p, rettv, EVAL_EVALUATE);
+	(void)eval1(&p, rettv, &EVALARG_EVALUATE);
 	--ex_nesting_level;
     }
     else
@@ -3697,6 +3700,7 @@ ex_return(exarg_T *eap)
     char_u	*arg = eap->arg;
     typval_T	rettv;
     int		returning = FALSE;
+    evalarg_T	evalarg;
 
     if (current_funccal == NULL)
     {
@@ -3704,13 +3708,15 @@ ex_return(exarg_T *eap)
 	return;
     }
 
+    CLEAR_FIELD(evalarg);
+    evalarg.eval_flags = eap->skip ? 0 : EVAL_EVALUATE;
+
     if (eap->skip)
 	++emsg_skip;
 
     eap->nextcmd = NULL;
     if ((*arg != NUL && *arg != '|' && *arg != '\n')
-	    && eval0(arg, &rettv, &eap->nextcmd, eap->skip ? 0 : EVAL_EVALUATE)
-								       != FAIL)
+			&& eval0(arg, &rettv, &eap->nextcmd, &evalarg) != FAIL)
     {
 	if (!eap->skip)
 	    returning = do_return(eap, FALSE, TRUE, &rettv);
@@ -3767,7 +3773,7 @@ ex_call(exarg_T *eap)
 	// instead to skip to any following command, e.g. for:
 	//   :if 0 | call dict.foo().bar() | endif
 	++emsg_skip;
-	if (eval0(eap->arg, &rettv, &eap->nextcmd, 0) != FAIL)
+	if (eval0(eap->arg, &rettv, &eap->nextcmd, NULL) != FAIL)
 	    clear_tv(&rettv);
 	--emsg_skip;
 	return;

@@ -570,6 +570,26 @@ def Test_expr5()
   assert_equal(0z01ab01ab, g:ablob + g:ablob)
 enddef
 
+def Test_expr5_vim9script()
+  " only checks line continuation
+  let lines =<< trim END
+      vim9script
+      let var = 11
+      		+ 77
+		- 22
+      assert_equal(66, var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let var = 'one'
+      		.. 'two'
+      assert_equal('onetwo', var)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_expr5_float()
   if !has('float')
     MissingFeature 'float'
@@ -659,6 +679,26 @@ def Test_expr6()
   endif
 
   call CheckDefFailure(["let x = 6 * xxx"], 'E1001')
+enddef
+
+def Test_expr6_vim9script()
+  " only checks line continuation
+  let lines =<< trim END
+      vim9script
+      let var = 11
+      		* 22
+		/ 3
+      assert_equal(80, var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let var = 25
+      		% 10
+      assert_equal(5, var)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_expr6_float()
