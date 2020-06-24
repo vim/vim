@@ -1794,6 +1794,10 @@ typedef struct
 {
     int	    dummy;
 } scriptitem_T;
+typedef struct
+{
+    int	    dummy;
+} evalarg_T;
 #endif
 
 // Struct passed between functions dealing with function call execution.
