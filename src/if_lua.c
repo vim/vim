@@ -131,6 +131,8 @@ static void luaV_call_lua_func_free(void *state);
 #define luaL_addlstring dll_luaL_addlstring
 #define luaL_pushresult dll_luaL_pushresult
 #define luaL_loadstring dll_luaL_loadstring
+#define luaL_ref dll_luaL_ref
+#define luaL_unref dll_luaL_unref
 // lua
 #if LUA_VERSION_NUM <= 501
 #define lua_tonumber dll_lua_tonumber
@@ -226,6 +228,12 @@ void (*dll_luaL_buffinit) (lua_State *L, luaL_Buffer *B);
 void (*dll_luaL_addlstring) (luaL_Buffer *B, const char *s, size_t l);
 void (*dll_luaL_pushresult) (luaL_Buffer *B);
 int (*dll_luaL_loadstring) (lua_State *L, const char *s);
+int (*dll_luaL_ref) (lua_State *L, int idx);
+#if LUA_VERSION_NUM <= 502
+void (*dll_luaL_unref) (lua_State *L, int idx, int n);
+#else
+void (*dll_luaL_unref) (lua_State *L, int idx, lua_Integer n);
+#endif
 // lua
 #if LUA_VERSION_NUM <= 501
 lua_Number (*dll_lua_tonumber) (lua_State *L, int idx);
@@ -339,6 +347,8 @@ static const luaV_Reg luaV_dll[] = {
     {"luaL_addlstring", (luaV_function) &dll_luaL_addlstring},
     {"luaL_pushresult", (luaV_function) &dll_luaL_pushresult},
     {"luaL_loadstring", (luaV_function) &dll_luaL_loadstring},
+    {"luaL_ref", (luaV_function) &dll_luaL_ref},
+    {"luaL_unref", (luaV_function) &dll_luaL_unref},
     // lua
 #if LUA_VERSION_NUM <= 501
     {"lua_tonumber", (luaV_function) &dll_lua_tonumber},
