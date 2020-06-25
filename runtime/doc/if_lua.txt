@@ -333,6 +333,14 @@ Examples:
 	:lua l = d.len -- assign d as 'self'
 	:lua print(l())
 <
+Lua functions and closures are automatically converted to a Vim |Funcref| and
+can be accessed in Vim scripts.  Example:
+>
+	lua <<EOF
+	vim.fn.timer_start(1000, function(timer)
+	    print('timer callback')
+	end)
+	EOF
 
 ==============================================================================
 7. Buffer userdata					*lua-buffer*

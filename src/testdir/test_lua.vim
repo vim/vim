@@ -541,6 +541,35 @@ func Test_update_package_paths()
   call assert_equal("hello from lua", luaeval("require('testluaplugin').hello()"))
 endfunc
 
+func Vim_func_call_lua_callback(Concat, Cb)
+  let l:message = a:Concat("hello", "vim")
+  call a:Cb(l:message)
+endfunc
+
+func Test_pass_lua_callback_to_vim_from_lua()
+  lua pass_lua_callback_to_vim_from_lua_result = ""
+  call assert_equal("", luaeval("pass_lua_callback_to_vim_from_lua_result"))
+  lua <<EOF
+  vim.funcref('Vim_func_call_lua_callback')(
+    function(greeting, message)
+      return greeting .. " " .. message
+    end,
+    function(message)
+      pass_lua_callback_to_vim_from_lua_result = message
+    end)
+EOF
+  call assert_equal("hello vim", luaeval("pass_lua_callback_to_vim_from_lua_result"))
+endfunc
+
+func Vim_func_call_metatable_lua_callback(Greet)
+  return a:Greet("world")
+endfunc
+
+func Test_pass_lua_metatable_callback_to_vim_from_lua()
+  let result = luaeval("vim.funcref('Vim_func_call_metatable_lua_callback')(setmetatable({ space = ' '}, { __call = function(tbl, msg) return 'hello' .. tbl.space .. msg  end }) )")
+  call assert_equal("hello world", result)
+endfunc
+
 " Test vim.line()
 func Test_lua_line()
   new

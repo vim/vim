@@ -341,6 +341,51 @@ get_lambda_name(void)
     return name;
 }
 
+#if defined(FEAT_LUA) || defined(PROTO)
+/*
+ * Registers a native C callback which can be called from Vim script.
+ * Returns the name of the Vim script function.
+ */
+    char_u *
+register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
+{
+    char_u	*name = get_lambda_name();
+    ufunc_T	*fp = NULL;
+    garray_T	newargs;
+    garray_T	newlines;
+
+    ga_init(&newargs);
+    ga_init(&newlines);
+
+    fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
+    if (fp == NULL)
+        goto errret;
+
+    fp->uf_dfunc_idx = UF_NOT_COMPILED;
+    fp->uf_refcount = 1;
+    fp->uf_varargs = TRUE;
+    fp->uf_flags = FC_CFUNC;
+    fp->uf_calls = 0;
+    fp->uf_script_ctx = current_sctx;
+    fp->uf_lines = newlines;
+    fp->uf_args = newargs;
+    fp->uf_cb = cb;
+    fp->uf_cb_free = cb_free;
+    fp->uf_cb_state = state;
+
+    set_ufunc_name(fp, name);
+    hash_add(&func_hashtab, UF2HIKEY(fp));
+
+    return name;
+
+errret:
+    ga_clear_strings(&newargs);
+    ga_clear_strings(&newlines);
+    vim_free(fp);
+    return NULL;
+}
+#endif
+
 /*
  * Parse a lambda expression and get a Funcref from "*arg".
  * Return OK or FAIL.  Returns NOTDONE for dict or {expr}.
@@ -1027,6 +1072,17 @@ func_clear_items(ufunc_T *fp)
 	vim_free(((type_T **)fp->uf_type_list.ga_data)
 						  [--fp->uf_type_list.ga_len]);
     ga_clear(&fp->uf_type_list);
+
+#ifdef FEAT_LUA
+    if (fp->uf_cb_free != NULL)
+    {
+	fp->uf_cb_free(fp->uf_cb_state);
+	fp->uf_cb_free = NULL;
+    }
+
+    fp->uf_cb_state = NULL;
+    fp->uf_cb = NULL;
+#endif
 #ifdef FEAT_PROFILE
     VIM_CLEAR(fp->uf_tml_count);
     VIM_CLEAR(fp->uf_tml_total);
@@ -1973,6 +2029,14 @@ call_func(
 
 	    if (fp != NULL && (fp->uf_flags & FC_DELETED))
 		error = FCERR_DELETED;
+#ifdef FEAT_LUA
+	    else if (fp != NULL && (fp->uf_flags & FC_CFUNC))
+	    {
+		cfunc_T cb = fp->uf_cb;
+
+		error = (*cb)(argcount, argvars, rettv, fp->uf_cb_state);
+	    }
+#endif
 	    else if (fp != NULL)
 	    {
 		if (funcexe->argv_func != NULL)
