@@ -36,8 +36,8 @@ typedef struct {
 typedef void (*msgfunc_T)(char_u *);
 
 typedef struct {
-    int index;
-    int tableindex; // LUA_NOREF if not __call
+    int lua_funcref;    // ref to a lua func
+    int lua_tableref;   // ref to a lua table if metatable else LUA_NOREF. used for __call
     lua_State *L;
 } luaV_CFuncState;
 
@@ -50,6 +50,8 @@ static const char LUAVIM_WINDOW[] = "window";
 static const char LUAVIM_FREE[] = "luaV_free";
 static const char LUAVIM_LUAEVAL[] = "luaV_luaeval";
 static const char LUAVIM_SETREF[] = "luaV_setref";
+
+static const char LUA___CALL[] = "__call";
 
 // most functions are closures with a cache table as first upvalue;
 // get/setudata manage references to vim userdata in cache table through
@@ -603,9 +605,9 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	{
 	    lua_pushvalue(L, pos);
 	    luaV_CFuncState *state = ALLOC_CLEAR_ONE(luaV_CFuncState);
-	    state->index = luaL_ref(L, LUA_REGISTRYINDEX);
+	    state->lua_funcref = luaL_ref(L, LUA_REGISTRYINDEX);
 	    state->L = L;
-	    state->tableindex = LUA_NOREF;
+	    state->lua_tableref = LUA_NOREF;
 	    char_u *name = register_cfunc(&luaV_call_lua_func, &luaV_call_lua_func_free, state);
 	    tv->v_type = VAR_FUNC;
 	    tv->vval.v_string = vim_strsave(name);
@@ -614,22 +616,21 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	case LUA_TTABLE:
 	{
 	    lua_pushvalue(L, pos);
-	    int tableindex = luaL_ref(L, LUA_REGISTRYINDEX);
+	    int lua_tableref = luaL_ref(L, LUA_REGISTRYINDEX);
 	    if (lua_getmetatable(L, pos)) {
-		lua_getfield(L, -1, (char*)"__call");
+		lua_getfield(L, -1, LUA___CALL);
 		if (lua_isfunction(L, -1)) {
-		    int index = luaL_ref(L, LUA_REGISTRYINDEX);
+		    int lua_funcref = luaL_ref(L, LUA_REGISTRYINDEX);
 		    luaV_CFuncState *state = ALLOC_CLEAR_ONE(luaV_CFuncState);
-		    state->index = index;
+		    state->lua_funcref = lua_funcref;
 		    state->L = L;
-		    state->tableindex = tableindex;
+		    state->lua_tableref = lua_tableref;
 		    char_u *name = register_cfunc(&luaV_call_lua_func, &luaV_call_lua_func_free, state);
 		    tv->v_type = VAR_FUNC;
 		    tv->vval.v_string = vim_strsave(name);
 		    break;
 		}
 	    }
-	    luaL_unref(L, LUA_REGISTRYINDEX, tableindex);
 	    tv->v_type = VAR_NUMBER;
 	    tv->vval.v_number = 0;
 	    status = FAIL;
@@ -2459,18 +2460,22 @@ update_package_paths_in_lua()
     }
 }
 
+/*
+ * Native c func callback
+ */
     static int
 luaV_call_lua_func(int argcount, typval_T *argvars, typval_T *rettv, void *state)
 {
     int i;
     int luaargcount = argcount;
     luaV_CFuncState *funcstate = (luaV_CFuncState*)state;
-    lua_rawgeti(funcstate->L, LUA_REGISTRYINDEX, funcstate->index);
+    lua_rawgeti(funcstate->L, LUA_REGISTRYINDEX, funcstate->lua_funcref);
 
-    if (funcstate->tableindex > 0)
+    if (funcstate->lua_tableref != LUA_NOREF)
     {
+	// First arg for metatable __call method is a table
 	luaargcount += 1;
-	lua_rawgeti(funcstate->L, LUA_REGISTRYINDEX, funcstate->tableindex);
+	lua_rawgeti(funcstate->L, LUA_REGISTRYINDEX, funcstate->lua_tableref);
     }
 
     for (i = 0; i < argcount; ++i)
@@ -2486,14 +2491,17 @@ luaV_call_lua_func(int argcount, typval_T *argvars, typval_T *rettv, void *state
     return FCERR_NONE;
 }
 
+/*
+ * Free up any lua references held by the func state.
+ */
     static void
 luaV_call_lua_func_free(void *state)
 {
     luaV_CFuncState *funcstate = (luaV_CFuncState*)state;
-    luaL_unref(L, LUA_REGISTRYINDEX, funcstate->index);
+    luaL_unref(L, LUA_REGISTRYINDEX, funcstate->lua_funcref);
     funcstate->L = NULL;
-    if (funcstate->tableindex != LUA_NOREF)
-	luaL_unref(L, LUA_REGISTRYINDEX, funcstate->tableindex);
+    if (funcstate->lua_tableref != LUA_NOREF)
+	luaL_unref(L, LUA_REGISTRYINDEX, funcstate->lua_tableref);
     VIM_CLEAR(funcstate);
 }
 

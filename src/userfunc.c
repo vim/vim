@@ -341,6 +341,10 @@ get_lambda_name(void)
     return name;
 }
 
+/*
+ * Registers a native c callback which can be called from Vim script.
+ * Returns the name of the Vim script function.
+ */
     char_u *
 register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
 {
