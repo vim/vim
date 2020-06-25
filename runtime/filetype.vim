@@ -1134,6 +1134,15 @@ au BufNewFile,BufRead *.ora			setf ora
 " Packet filter conf
 au BufNewFile,BufRead pf.conf			setf pf
 
+" pacman config
+au BufNewFile,BufRead */etc/pacman.conf		setf dosini
+
+" pacman hooks
+au BufNewFile,BufRead *.hook
+	\ if getline(1) == '[Trigger]' |
+	\   setf dosini |
+	\ endif
+
 " Pam conf
 au BufNewFile,BufRead */etc/pam.conf		setf pamconf
 
