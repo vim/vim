@@ -2191,6 +2191,7 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 {
     typval_T	var2;
     char_u	*p;
+    int		getnext;
     int		i;
     exptype_T	type = EXPR_UNKNOWN;
     int		len = 2;
@@ -2202,7 +2203,7 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
     if (eval5(arg, rettv, evalarg) == FAIL)
 	return FAIL;
 
-    p = *arg;
+    p = eval_next_non_blank(*arg, evalarg, &getnext);
     switch (p[0])
     {
 	case '=':   if (p[1] == '=')
@@ -2247,6 +2248,9 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
      */
     if (type != EXPR_UNKNOWN)
     {
+	if (getnext)
+	    *arg = eval_next_line(evalarg);
+
 	// extra question mark appended: ignore case
 	if (p[len] == '?')
 	{

@@ -529,6 +529,43 @@ def RetVoid()
   let x = 1
 enddef
 
+def Test_expr4_vimscript()
+  " only checks line continuation
+  let lines =<< trim END
+      vim9script
+      let var = 0
+      		< 1
+      assert_equal(1, var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let var = 123
+      		!= 123
+      assert_equal(0, var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let list = [1, 2, 3]
+      let var = list
+      		is list
+      assert_equal(1, var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let myblob = 0z1234
+      let var = myblob
+      		isnot 0z11
+      assert_equal(1, var)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 func Test_expr4_fails()
   let msg = "white space required before and after '>'"
   call CheckDefFailure(["let x = 1>2"], msg)
