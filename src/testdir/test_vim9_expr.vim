@@ -45,6 +45,27 @@ def Test_expr1()
   assert_equal(function('len'), RetThat)
 enddef
 
+def Test_expr1_vimscript()
+  " only checks line continuation
+  let lines =<< trim END
+      vim9script
+      let var = 1
+      		? 'yes'
+		: 'no'
+      assert_equal('yes', var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let var = v:false
+      		? 'yes'
+		: 'no'
+      assert_equal('no', var)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 func Test_expr1_fails()
   call CheckDefFailure(["let x = 1 ? 'one'"], "Missing ':' after '?'")
   call CheckDefFailure(["let x = 1 ? 'one' : xxx"], "E1001:")

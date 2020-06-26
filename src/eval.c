@@ -1892,19 +1892,26 @@ eval0(
     int
 eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 {
+    char_u  *p;
+    int	    getnext;
+
     /*
      * Get the first variable.
      */
     if (eval2(arg, rettv, evalarg) == FAIL)
 	return FAIL;
 
-    if ((*arg)[0] == '?')
+    p = eval_next_non_blank(*arg, evalarg, &getnext);
+    if (*p == '?')
     {
 	int		result;
 	typval_T	var2;
 	evalarg_T	nested_evalarg;
 	int		orig_flags;
 	int		evaluate;
+
+	if (getnext)
+	    *arg = eval_next_line(evalarg);
 
 	if (evalarg == NULL)
 	{
@@ -1942,13 +1949,16 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	/*
 	 * Check for the ":".
 	 */
-	if ((*arg)[0] != ':')
+	p = eval_next_non_blank(*arg, evalarg, &getnext);
+	if (*p != ':')
 	{
 	    emsg(_(e_missing_colon));
 	    if (evaluate && result)
 		clear_tv(rettv);
 	    return FAIL;
 	}
+	if (getnext)
+	    *arg = eval_next_line(evalarg);
 
 	/*
 	 * Get the third variable.  Recursive!
