@@ -26,6 +26,8 @@ int next_for_item(void *fi_void, char_u *arg);
 void free_for_info(void *fi_void);
 void set_context_for_expression(expand_T *xp, char_u *arg, cmdidx_T cmdidx);
 int pattern_match(char_u *pat, char_u *text, int ic);
+char_u *eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext);
+char_u *eval_next_line(evalarg_T *evalarg);
 int eval0(char_u *arg, typval_T *rettv, exarg_T *eap, evalarg_T *evalarg);
 int eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
 void eval_addblob(typval_T *tv1, typval_T *tv2);

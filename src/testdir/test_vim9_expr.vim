@@ -974,7 +974,7 @@ def Test_expr7_list()
   " list
   assert_equal(g:list_empty, [])
   assert_equal(g:list_empty, [  ])
-  assert_equal(g:list_mixed, [1, 'b', false])
+  assert_equal(g:list_mixed, [1, 'b', false,])
   assert_equal('b', g:list_mixed[1])
 
   call CheckDefExecFailure(["let x = g:anint[3]"], 'E714:')
@@ -982,6 +982,26 @@ def Test_expr7_list()
   call CheckDefExecFailure(["let x = g:list_mixed['xx']"], 'E39:')
   call CheckDefFailure(["let x = g:list_mixed[0"], 'E111:')
   call CheckDefExecFailure(["let x = g:list_empty[3]"], 'E684:')
+enddef
+
+def Test_expr7_list_vim9script()
+  let lines =<< trim END
+      vim9script
+      let l = [
+		11,
+		22,
+		]
+      assert_equal([11, 22], l)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let l = [11,
+		22]
+      assert_equal([11, 22], l)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_expr7_lambda()

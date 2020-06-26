@@ -1771,7 +1771,7 @@ eval_func(
  * Otherwise just return "arg" unmodified and set "getnext" to FALSE.
  * "arg" must point somewhere inside a line, not at the start.
  */
-    static char_u *
+    char_u *
 eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext)
 {
     *getnext = FALSE;
@@ -1796,7 +1796,7 @@ eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext)
 /*
  * To be called when eval_next_non_blank() sets "getnext" to TRUE.
  */
-    static char_u *
+    char_u *
 eval_next_line(evalarg_T *evalarg)
 {
     vim_free(evalarg->eval_tofree);
@@ -2773,7 +2773,7 @@ eval7(
     /*
      * List: [expr, expr]
      */
-    case '[':	ret = get_list_tv(arg, rettv, flags, TRUE);
+    case '[':	ret = get_list_tv(arg, rettv, evalarg, TRUE);
 		break;
 
     /*

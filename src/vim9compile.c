@@ -2989,7 +2989,7 @@ to_name_const_end(char_u *arg)
     {
 
 	// Can be "[1, 2, 3]->Func()".
-	if (get_list_tv(&p, &rettv, 0, FALSE) == FAIL)
+	if (get_list_tv(&p, &rettv, NULL, FALSE) == FAIL)
 	    p = arg;
     }
     else if (p == arg && *arg == '#' && arg[1] == '{')
