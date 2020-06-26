@@ -953,4 +953,24 @@ func Test_window_opt()
   set window&
 endfunc
 
+" Test for the 'winminheight' option
+func Test_opt_winminheight()
+  only!
+  let &winheight = &lines + 4
+  call assert_fails('let &winminheight = &lines + 2', 'E36:')
+  call assert_true(&winminheight <= &lines)
+  set winminheight&
+  set winheight&
+endfunc
+
+" Test for the 'winminwidth' option
+func Test_opt_winminwidth()
+  only!
+  let &winwidth = &columns + 4
+  call assert_fails('let &winminwidth = &columns + 2', 'E36:')
+  call assert_true(&winminwidth <= &columns)
+  set winminwidth&
+  set winwidth&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
