@@ -1765,6 +1765,7 @@ EXTERN char e_float_as_string[] INIT(= N_("E806: using Float as a String"));
 #endif
 EXTERN char e_dirnotf[]	INIT(= N_("E919: Directory not found in '%s': \"%s\""));
 EXTERN char e_au_recursive[]	INIT(= N_("E952: Autocommand caused recursive behavior"));
+EXTERN char e_autocmd_close[]	INIT(= N_("E813: Cannot close autocmd or popup window"));
 #ifdef FEAT_MENU
 EXTERN char e_menuothermode[]	INIT(= N_("E328: Menu only exists in another mode"));
 #endif
