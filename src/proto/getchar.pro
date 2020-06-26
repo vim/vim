@@ -1,6 +1,7 @@
 /* getchar.c */
 char_u *get_recorded(void);
-char_u *get_inserted(void);
+char_u *get_inserted(int old_redo);
+void set_inserted(int old_redo, char_u *s, long slen);
 int stuff_empty(void);
 int readbuf1_empty(void);
 void typeahead_noflush(int c);

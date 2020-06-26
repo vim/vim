@@ -180,11 +180,15 @@ get_recorded(void)
 /*
  * Return the contents of the redo buffer as a single string.
  * K_SPECIAL and CSI in the returned string are escaped.
+ * If old is TRUE, use old_redobuff instead of redobuff.
  */
     char_u *
-get_inserted(void)
+get_inserted(int old_redo)
 {
-    return get_buffcont(&redobuff, FALSE);
+	if (old_redo)
+		return get_buffcont(&old_redobuff, FALSE);
+	else
+		return get_buffcont(&redobuff, FALSE);
 }
 
 /*
@@ -480,6 +484,29 @@ CancelRedo(void)
 	while (read_readbuffers(TRUE) != NUL)
 	    ;
     }
+}
+
+/*
+ * Set the contents of the redo buffer as a single string.
+ * K_SPECIAL and CSI should already have been escaped.
+ * If old is TRUE, use old_redobuff instead of redobuff.
+ */
+    void
+set_inserted(
+    int		old_redo,
+    char_u	*s,
+    long		slen)	// length of "s" or -1
+{
+	if (old_redo)
+	{
+		free_buff(&old_redobuff);
+		add_buff(&old_redobuff, s, slen);
+	}
+	else
+	{
+		ResetRedobuff();
+		add_buff(&redobuff, s, slen);
+	}
 }
 
 /*

@@ -1178,7 +1178,7 @@ Rationale:	In Vi the "y" command followed by a backwards motion would
 With a linewise yank command the cursor is put in the first line, but the
 column is unmodified, thus it may not be on the first yanked character.
 
-There are ten types of registers:		*registers* *{register}* *E354*
+There are eleven types of registers:		*registers* *{register}* *E354*
 1. The unnamed register ""
 2. 10 numbered registers "0 to "9
 3. The small delete register "-
@@ -1189,6 +1189,7 @@ There are ten types of registers:		*registers* *{register}* *E354*
 8. The selection and drop registers "*, "+ and "~ 
 9. The black hole register "_
 10. Last search pattern register "/
+11. Single repeat registers ", and ";
 
 1. Unnamed register ""				*quote_quote* *quotequote*
 Vim fills this register with text deleted with the "d", "c", "s", "x" commands
@@ -1325,6 +1326,13 @@ other matches without actually searching.  You can't yank or delete into this
 register.  The search direction is available in |v:searchforward|.
 Note that the value is restored when returning from a function
 |function-search-undo|.
+
+11. Single repeat registers ", and ";
+
+						*quote_,* *quote,*
+	",      Contains the commands that will be executed for the |single-repeat|
+		command.
+	";      Contains the commands from the previous |single-repeat| command.
 
 							*@/*
 You can write to a register with a `:let` command |:let-@|.  Example: >

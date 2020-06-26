@@ -408,7 +408,7 @@ edit(
      * Get the current length of the redo buffer, those characters have to be
      * skipped if we want to get to the inserted characters.
      */
-    ptr = get_inserted();
+    ptr = get_inserted(FALSE);
     if (ptr == NULL)
 	new_insert_skip = 0;
     else
@@ -2446,7 +2446,7 @@ stop_insert(
      * Don't do it when "restart_edit" was set and nothing was inserted,
      * otherwise CTRL-O w and then <Left> will clear "last_insert".
      */
-    ptr = get_inserted();
+    ptr = get_inserted(FALSE);
     if (did_restart_edit == 0 || (ptr != NULL
 				       && (int)STRLEN(ptr) > new_insert_skip))
     {
