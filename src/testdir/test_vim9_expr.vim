@@ -117,6 +117,26 @@ def Test_expr2()
   assert_equal([[], '', 0], g:vals)
 enddef
 
+def Test_expr2_vimscript()
+  " only checks line continuation
+  let lines =<< trim END
+      vim9script
+      let var = 0
+      		|| 1
+      assert_equal(1, var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let var = v:false
+      		|| v:true
+      		|| v:false
+      assert_equal(1, var)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 func Test_expr2_fails()
   let msg = "white space required before and after '||'"
   call CheckDefFailure(["let x = 1||2"], msg)
@@ -158,6 +178,26 @@ def Test_expr3()
   g:vals = []
   assert_equal(0, Record([1]) && Record('z') && Record(0))
   assert_equal([[1], 'z', 0], g:vals)
+enddef
+
+def Test_expr3_vimscript()
+  " only checks line continuation
+  let lines =<< trim END
+      vim9script
+      let var = 0
+      		&& 1
+      assert_equal(0, var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let var = v:true
+      		&& v:true
+      		&& v:true
+      assert_equal(1, var)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 func Test_expr3_fails()

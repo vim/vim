@@ -1991,6 +1991,8 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
     static int
 eval2(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 {
+    char_u	*p;
+    int		getnext;
     typval_T	var2;
     long	result;
     int		first;
@@ -2007,11 +2009,15 @@ eval2(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
      */
     first = TRUE;
     result = FALSE;
-    while ((*arg)[0] == '|' && (*arg)[1] == '|')
+    p = eval_next_non_blank(*arg, evalarg, &getnext);
+    while (p[0] == '|' && p[1] == '|')
     {
 	evalarg_T   nested_evalarg;
 	int	    evaluate;
 	int	    orig_flags;
+
+	if (getnext)
+	    *arg = eval_next_line(evalarg);
 
 	if (evalarg == NULL)
 	{
@@ -2061,6 +2067,8 @@ eval2(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    rettv->v_type = VAR_NUMBER;
 	    rettv->vval.v_number = result;
 	}
+
+	p = eval_next_non_blank(*arg, evalarg, &getnext);
     }
 
     return OK;
@@ -2078,6 +2086,8 @@ eval2(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
     static int
 eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 {
+    char_u	*p;
+    int		getnext;
     typval_T	var2;
     long	result;
     int		first;
@@ -2094,11 +2104,15 @@ eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
      */
     first = TRUE;
     result = TRUE;
-    while ((*arg)[0] == '&' && (*arg)[1] == '&')
+    p = eval_next_non_blank(*arg, evalarg, &getnext);
+    while (p[0] == '&' && p[1] == '&')
     {
 	evalarg_T   nested_evalarg;
 	int	    orig_flags;
 	int	    evaluate;
+
+	if (getnext)
+	    *arg = eval_next_line(evalarg);
 
 	if (evalarg == NULL)
 	{
@@ -2147,6 +2161,8 @@ eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    rettv->v_type = VAR_NUMBER;
 	    rettv->vval.v_number = result;
 	}
+
+	p = eval_next_non_blank(*arg, evalarg, &getnext);
     }
 
     return OK;
