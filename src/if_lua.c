@@ -872,7 +872,7 @@ luaV_list_index(lua_State *L)
     if (lua_isnumber(L, 2)) // list item?
     {
 	long n = (long) luaL_checkinteger(L, 2);
-	n -= 1; // lua array index starts with 1 while vim starts with 0 of -1 to normalize
+	n -= 1; // lua array index starts with 1 while vim starts with 0, -1 to normalize
 	listitem_T *li = list_find(l, n);
 	if (li == NULL)
 	    lua_pushnil(L);
@@ -901,7 +901,7 @@ luaV_list_newindex(lua_State *L)
 {
     list_T *l = luaV_unbox(L, luaV_List, 1);
     long n = (long) luaL_checkinteger(L, 2);
-    n -= 1; // lua array index starts with 1 while vim starts with 0 of -1 to normalize
+    n -= 1; // lua array index starts with 1 while vim starts with 0, -1 to normalize
     listitem_T *li;
     if (l->lv_lock)
 	luaL_error(L, "list is locked");
