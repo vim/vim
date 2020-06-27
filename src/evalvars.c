@@ -1125,8 +1125,8 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 		{
 		    // handle d.key, l[idx], f(expr)
 		    arg_subsc = arg;
-		    if (handle_subscript(&arg, &tv, EVAL_EVALUATE, TRUE,
-							  name, &name) == FAIL)
+		    if (handle_subscript(&arg, &tv, EVAL_EVALUATE, TRUE)
+								       == FAIL)
 			error = TRUE;
 		    else
 		    {
@@ -3341,8 +3341,7 @@ var_exists(char_u *var)
 	if (n)
 	{
 	    // handle d.key, l[idx], f(expr)
-	    n = (handle_subscript(&var, &tv, EVAL_EVALUATE,
-						    FALSE, name, &name) == OK);
+	    n = (handle_subscript(&var, &tv, EVAL_EVALUATE, FALSE) == OK);
 	    if (n)
 		clear_tv(&tv);
 	}

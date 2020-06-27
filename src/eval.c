@@ -51,7 +51,7 @@ static int eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
 static int eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
 static int eval6(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int want_string);
 static int eval7(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int want_string);
-static int eval7_leader(typval_T *rettv, char_u *start_leader, char_u **end_leaderp);
+static int eval7_leader(typval_T *rettv, int numeric_only, char_u *start_leader, char_u **end_leaderp);
 
 static int free_unref_items(int copyID);
 static char_u *make_expanded_name(char_u *in_start, char_u *expr_start, char_u *expr_end, char_u *in_end);
@@ -2756,6 +2756,11 @@ eval7(
     case '8':
     case '9':
     case '.':	ret = get_number_tv(arg, rettv, evaluate, want_string);
+
+		// Apply prefixed "-" and "+" now.  Matters especially when
+		// "->" follows.
+		if (ret == OK && evaluate && end_leader > start_leader)
+		    ret = eval7_leader(rettv, TRUE, start_leader, &end_leader);
 		break;
 
     /*
@@ -2879,23 +2884,27 @@ eval7(
     // Handle following '[', '(' and '.' for expr[expr], expr.name,
     // expr(expr), expr->name(expr)
     if (ret == OK)
-	ret = handle_subscript(arg, rettv, flags, TRUE,
-						    start_leader, &end_leader);
+	ret = handle_subscript(arg, rettv, flags, TRUE);
 
     /*
      * Apply logical NOT and unary '-', from right to left, ignore '+'.
      */
     if (ret == OK && evaluate && end_leader > start_leader)
-	ret = eval7_leader(rettv, start_leader, &end_leader);
+	ret = eval7_leader(rettv, FALSE, start_leader, &end_leader);
     return ret;
 }
 
 /*
  * Apply the leading "!" and "-" before an eval7 expression to "rettv".
+ * When "numeric_only" is TRUE only handle "+" and "-".
  * Adjusts "end_leaderp" until it is at "start_leader".
  */
     static int
-eval7_leader(typval_T *rettv, char_u *start_leader, char_u **end_leaderp)
+eval7_leader(
+	typval_T    *rettv,
+	int	    numeric_only,
+	char_u	    *start_leader,
+	char_u	    **end_leaderp)
 {
     char_u	*end_leader = *end_leaderp;
     int		ret = OK;
@@ -2921,6 +2930,11 @@ eval7_leader(typval_T *rettv, char_u *start_leader, char_u **end_leaderp)
 	    --end_leader;
 	    if (*end_leader == '!')
 	    {
+		if (numeric_only)
+		{
+		    ++end_leader;
+		    break;
+		}
 #ifdef FEAT_FLOAT
 		if (rettv->v_type == VAR_FLOAT)
 		    f = !f;
@@ -4871,9 +4885,7 @@ handle_subscript(
     char_u	**arg,
     typval_T	*rettv,
     int		flags,		// do more than finding the end
-    int		verbose,	// give error messages
-    char_u	*start_leader,	// start of '!' and '-' prefixes
-    char_u	**end_leaderp)  // end of '!' and '-' prefixes
+    int		verbose)	// give error messages
 {
     int		evaluate = flags & EVAL_EVALUATE;
     int		ret = OK;
@@ -4910,10 +4922,6 @@ handle_subscript(
 	}
 	else if (**arg == '-')
 	{
-	    // Expression "-1.0->method()" applies the leader "-" before
-	    // applying ->.
-	    if (evaluate && *end_leaderp > start_leader)
-		ret = eval7_leader(rettv, start_leader, end_leaderp);
 	    if (ret == OK)
 	    {
 		if ((*arg)[2] == '{')

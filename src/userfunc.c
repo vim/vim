@@ -3926,7 +3926,7 @@ ex_call(exarg_T *eap)
 
 	// Handle a function returning a Funcref, Dictionary or List.
 	if (handle_subscript(&arg, &rettv, eap->skip ? 0 : EVAL_EVALUATE,
-						    TRUE, name, &name) == FAIL)
+								 TRUE) == FAIL)
 	{
 	    failed = TRUE;
 	    break;

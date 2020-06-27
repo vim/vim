@@ -1081,6 +1081,8 @@ def Test_expr7_parens()
   assert_equal(6, --6)
   assert_equal(6, -+-6)
   assert_equal(-6, ---6)
+  assert_equal(false, !-3)
+  assert_equal(true, !+-+0)
 enddef
 
 def Test_expr7_negate()
@@ -1102,6 +1104,8 @@ enddef
 def Test_expr7_call()
   assert_equal('yes', 'yes'->Echo())
   assert_equal('yes', 'yes'->s:EchoArg())
+  assert_equal(1, !range(5)->empty())
+  assert_equal([0, 1, 2], --3->range())
 
   call CheckDefFailure(["let x = 'yes'->Echo"], 'E107:')
 enddef
