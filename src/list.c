@@ -1168,6 +1168,7 @@ get_list_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
     list_T	*l = NULL;
     typval_T	tv;
     listitem_T	*item;
+    int		vim9script = current_sctx.sc_version == SCRIPT_VERSION_VIM9;
     int		had_comma;
 
     if (evaluate)
@@ -1198,10 +1199,17 @@ get_list_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
 		clear_tv(&tv);
 	}
 
-	// the comma must comma after the value
+	// the comma must come after the value
 	had_comma = **arg == ',';
 	if (had_comma)
+	{
+	    if (vim9script && (*arg)[1] != NUL && !VIM_ISWHITE((*arg)[1]))
+	    {
+		semsg(_(e_white_after), ",");
+		goto failret;
+	    }
 	    *arg = skipwhite(*arg + 1);
+	}
 
 	// the "]" can be on the next line
 	eval_next_non_blank(*arg, evalarg, &getnext);
