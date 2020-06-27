@@ -166,10 +166,16 @@ eval_to_bool(
 {
     typval_T	tv;
     varnumber_T	retval = FALSE;
+    evalarg_T	evalarg;
+
+    CLEAR_FIELD(evalarg);
+    evalarg.eval_flags = skip ? 0 : EVAL_EVALUATE;
+    evalarg.eval_cookie = eap != NULL && eap->getline == getsourceline
+							  ? eap->cookie : NULL;
 
     if (skip)
 	++emsg_skip;
-    if (eval0(arg, &tv, eap, skip ? NULL : &EVALARG_EVALUATE) == FAIL)
+    if (eval0(arg, &tv, eap, &evalarg) == FAIL)
 	*error = TRUE;
     else
     {
@@ -182,6 +188,7 @@ eval_to_bool(
     }
     if (skip)
 	--emsg_skip;
+    clear_evalarg(&evalarg, eap);
 
     return (int)retval;
 }
@@ -1884,6 +1891,24 @@ skipwhite_and_linebreak(char_u *arg, evalarg_T *evalarg)
 }
 
 /*
+ * After using "evalarg" filled from "eap" free the memory.
+ */
+    void
+clear_evalarg(evalarg_T *evalarg, exarg_T *eap)
+{
+    if (evalarg != NULL && eap != NULL && evalarg->eval_tofree != NULL)
+    {
+	// We may need to keep the original command line, e.g. for
+	// ":let" it has the variable names.  But we may also need the
+	// new one, "nextcmd" points into it.  Keep both.
+	vim_free(eap->cmdline_tofree);
+	eap->cmdline_tofree = *eap->cmdlinep;
+	*eap->cmdlinep = evalarg->eval_tofree;
+	evalarg->eval_tofree = NULL;
+    }
+}
+
+/*
  * The "evaluate" argument: When FALSE, the argument is only parsed but not
  * executed.  The function may return OK, but the rettv will be of type
  * VAR_UNKNOWN.  The function still returns FAIL for a syntax error.
@@ -1934,16 +1959,7 @@ eval0(
     if (eap != NULL)
 	eap->nextcmd = check_nextcmd(p);
 
-    if (evalarg != NULL && eap != NULL && evalarg->eval_tofree != NULL)
-    {
-	// We may need to keep the original command line, e.g. for
-	// ":let" it has the variable names.  But we may also need the
-	// new one, "nextcmd" points into it.  Keep both.
-	vim_free(eap->cmdline_tofree);
-	eap->cmdline_tofree = *eap->cmdlinep;
-	*eap->cmdlinep = evalarg->eval_tofree;
-	evalarg->eval_tofree = NULL;
-    }
+    clear_evalarg(evalarg, eap);
 
     return ret;
 }
@@ -5223,6 +5239,7 @@ ex_echo(exarg_T *eap)
 	arg = skipwhite(arg);
     }
     eap->nextcmd = check_nextcmd(arg);
+    clear_evalarg(&evalarg, eap);
 
     if (eap->skip)
 	--emsg_skip;

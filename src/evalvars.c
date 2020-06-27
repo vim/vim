@@ -804,7 +804,7 @@ ex_let(exarg_T *eap)
 	    i = eval0(expr, &rettv, eap, &evalarg);
 	    if (eap->skip)
 		--emsg_skip;
-	    vim_free(evalarg.eval_tofree);
+	    clear_evalarg(&evalarg, eap);
 	}
 	if (eap->skip)
 	{

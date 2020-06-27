@@ -101,5 +101,46 @@ def Test_echo_linebreak()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_if_linebreak()
+  let lines =<< trim END
+      vim9script
+      if 1 &&
+            2
+            || 3
+        g:res = 42
+      endif
+      assert_equal(42, g:res)
+  END
+  CheckScriptSuccess(lines)
+  unlet g:res
+
+  lines =<< trim END
+      vim9script
+      if 1 &&
+            0
+        g:res = 0
+      elseif 0 ||
+              0
+              || 1
+        g:res = 12
+      endif
+      assert_equal(12, g:res)
+  END
+  CheckScriptSuccess(lines)
+  unlet g:res
+enddef
+
+def Test_while_linebreak()
+  " TODO: line break in :while expression doesn't work yet
+  let lines =<< trim END
+      vim9script
+      let nr = 0
+      while nr < 10 + 3
+            nr = nr + 4
+      endwhile
+      assert_equal(16, nr)
+  END
+  CheckScriptSuccess(lines)
+enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
