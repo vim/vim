@@ -191,6 +191,10 @@ func Test_highlight_completion()
   call assert_equal('"hi default', getreg(':'))
   call feedkeys(":hi c\<S-Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"hi clear', getreg(':'))
+  call feedkeys(":hi clear Aardig Aard\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"hi clear Aardig Aardig', getreg(':'))
+  call feedkeys(":hi Aardig \<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"hi Aardig \t", getreg(':'))
 
   " A cleared group does not show up in completions.
   hi Anders ctermfg=green
@@ -199,6 +203,14 @@ func Test_highlight_completion()
   call assert_equal(['Anders'], getcompletion('A', 'highlight'))
   hi clear Anders
   call assert_equal([], getcompletion('A', 'highlight'))
+endfunc
+
+" Test for command-line expansion of "hi Ni " (easter egg)
+func Test_highlight_easter_egg()
+  call test_override('ui_delay', 1)
+  call feedkeys(":hi Ni \<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"hi Ni \<Tab>", @:)
+  call test_override('ALL', 0)
 endfunc
 
 func Test_getcompletion()

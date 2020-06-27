@@ -98,6 +98,7 @@ function Test_match()
   call assert_fails('call setmatches(0)', 'E714:')
   call assert_fails('call setmatches([0])', 'E474:')
   call assert_fails("call setmatches([{'wrong key': 'wrong value'}])", 'E474:')
+  call assert_equal(-1, setmatches([{'group' : 'Search', 'priority' : 10, 'id' : 5, 'pos1' : {}}]))
 
   call setline(1, 'abcdefghijklmnopq')
   call matchaddpos("MyGroup1", [[1, 5], [1, 8, 3]], 10, 3)
@@ -164,6 +165,8 @@ func Test_matchadd_error()
   call assert_fails("call matchadd('Error', 'XXX', 1, 3)", 'E798:')
   call assert_fails("call matchadd('Error', 'XXX', 1, 0)", 'E799:')
   call assert_fails("call matchadd('Error', 'XXX', [], 0)", 'E745:')
+  call assert_equal(-1, matchadd('', 'pat'))
+  call assert_equal(-1, matchadd('Search', ''))
 endfunc
 
 func Test_matchaddpos()
@@ -202,6 +205,14 @@ func Test_matchaddpos()
   call assert_equal(screenattr(2,2), screenattr(1,10))
   call assert_notequal(screenattr(2,2), screenattr(1,11))
 
+  " matchaddpos() with line number as 0
+  call clearmatches()
+  let id = matchaddpos('Search', [[0], [3], [0]])
+  call assert_equal([{'group' : 'Search', 'priority' : 10, 'id' : id, 'pos1' : [3]}], getmatches())
+  call clearmatches()
+  let id = matchaddpos('Search', [0, 3, 0])
+  call assert_equal([{'group' : 'Search', 'priority' : 10, 'id' : id, 'pos1' : [3]}], getmatches())
+
   nohl
   call clearmatches()
   syntax off
@@ -233,6 +244,7 @@ func Test_matchaddpos_otherwin()
 
   eval winid->clearmatches()
   call assert_equal([], getmatches(winid))
+  call assert_fails('echo getmatches(-1)', 'E957:')
 
   call setmatches(savematches, winid)
   call assert_equal(expect, savematches)
@@ -281,6 +293,10 @@ func Test_matchaddpos_error()
   call assert_fails("call matchaddpos('Error', [{}])", 'E290:')
   call assert_equal(-1, matchaddpos('Error', test_null_list()))
   call assert_fails("call matchaddpos('Error', [1], [], 1)", 'E745:')
+  call assert_equal(-1, matchaddpos('Search', [[]]))
+  call assert_fails("call matchaddpos('Search', [[{}]])", 'E728:')
+  call assert_fails("call matchaddpos('Search', [[2, {}]])", 'E728:')
+  call assert_fails("call matchaddpos('Search', [[3, 4, {}]])", 'E728:')
 endfunc
 
 func OtherWindowCommon()
@@ -331,6 +347,26 @@ func Test_matchadd_other_window()
 
   call StopVimInTerminal(buf)
   call delete('XscriptMatchCommon')
+endfunc
+
+" Test for deleting matches outside of the screen redraw top/bottom lines
+" This should cause a redraw of those lines.
+func Test_matchdelete_redraw()
+  new
+  call setline(1, range(1, 500))
+  call cursor(250, 1)
+  let m1 = matchaddpos('Search', [[250]])
+  let m2 = matchaddpos('Search', [[10], [450]])
+  redraw!
+  let m3 = matchaddpos('Search', [[240], [260]])
+  call matchdelete(m2)
+  let m = getmatches()
+  call assert_equal(2, len(m))
+  call assert_equal([250], m[0].pos1)
+  redraw!
+  call matchdelete(m1)
+  call assert_equal(1, len(getmatches()))
+  bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
