@@ -2453,6 +2453,9 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	if (op == '.' && *(*arg + 1) == '.')  // .. string concatenation
 	    ++*arg;
 	*arg = skipwhite(*arg + 1);
+	eval_next_non_blank(*arg, evalarg, &getnext);
+	if (getnext)
+	    *arg = eval_next_line(evalarg);
 	if (eval6(arg, &var2, evalarg, op == '.') == FAIL)
 	{
 	    clear_tv(rettv);
@@ -2890,8 +2893,18 @@ eval7(
      * nested expression: (expression).
      */
     case '(':	{
+		    int getnext;
+
 		    *arg = skipwhite(*arg + 1);
+		    eval_next_non_blank(*arg, evalarg, &getnext);
+		    if (getnext)
+			*arg = eval_next_line(evalarg);
+
 		    ret = eval1(arg, rettv, evalarg);	// recursive!
+
+		    eval_next_non_blank(*arg, evalarg, &getnext);
+		    if (getnext)
+			*arg = eval_next_line(evalarg);
 		    if (**arg == ')')
 			++*arg;
 		    else if (ret == OK)

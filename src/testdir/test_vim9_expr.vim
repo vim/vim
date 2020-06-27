@@ -1137,6 +1137,19 @@ def Test_expr7_parens()
   assert_equal(true, !+-+0)
 enddef
 
+def Test_expr7_parens_vim9script()
+  let lines =<< trim END
+      vim9script
+      let s = (
+		'one'
+		..
+		'two'
+		)
+      assert_equal('onetwo', s)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_expr7_negate()
   assert_equal(-99, -99)
   assert_equal(99, --99)
