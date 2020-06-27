@@ -69,6 +69,22 @@ RESIZE 24,80
   ?screen_chars 22,0,23,10 = "Line 25"
   ?cursor = 23,0
 
+!Resize shorter does not send the cursor to a negative row
+# See also https://github.com/vim/vim/pull/6141
+RESET
+WANTSCREEN -b
+RESIZE 25,80
+WANTSCREEN b
+PUSH "\e[24HLine 24\r\nLine 25\e[H"
+  ?cursor = 0,0
+RESIZE 20,80
+  sb_pushline 80 =
+  sb_pushline 80 =
+  sb_pushline 80 =
+  sb_pushline 80 =
+  sb_pushline 80 =
+  ?cursor = 0,0
+
 !Resize taller attempts to pop scrollback
 RESET
 WANTSCREEN -b
