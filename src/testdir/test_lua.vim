@@ -327,8 +327,8 @@ func Test_lua_list()
   call assert_equal(7, luaeval('#l'))
   call assert_match('^list: \%(0x\)\?\x\+$', luaeval('tostring(l)'))
 
-  lua l[0] = 124
-  lua l[5] = nil
+  lua l[1] = 124
+  lua l[6] = nil
   lua l:insert('first')
   lua l:insert('xx', 3)
   call assert_equal(['first', 124, 'abc', 'xx', v:true, v:false, v:null, {'a': 1, 'b': 2, 'c': 3}], l)
@@ -367,22 +367,22 @@ func Test_lua_recursive_list()
   lua l = vim.list():add(1):add(2)
   lua l = l:add(l)
 
-  call assert_equal(1, luaeval('l[0]'))
-  call assert_equal(2, luaeval('l[1]'))
+  call assert_equal(1, luaeval('l[1]'))
+  call assert_equal(2, luaeval('l[2]'))
 
-  call assert_equal(1, luaeval('l[2][0]'))
-  call assert_equal(2, luaeval('l[2][1]'))
+  call assert_equal(1, luaeval('l[3][1]'))
+  call assert_equal(2, luaeval('l[3][2]'))
 
-  call assert_equal(1, luaeval('l[2][2][0]'))
-  call assert_equal(2, luaeval('l[2][2][1]'))
+  call assert_equal(1, luaeval('l[3][3][1]'))
+  call assert_equal(2, luaeval('l[3][3][2]'))
 
   call assert_equal('[1, 2, [...]]', string(luaeval('l')))
 
   call assert_match('^list: \%(0x\)\?\x\+$', luaeval('tostring(l)'))
-  call assert_equal(luaeval('tostring(l)'), luaeval('tostring(l[2])'))
+  call assert_equal(luaeval('tostring(l)'), luaeval('tostring(l[3])'))
 
-  call assert_equal(luaeval('l'), luaeval('l[2]'))
-  call assert_equal(luaeval('l'), luaeval('l[2][2]'))
+  call assert_equal(luaeval('l'), luaeval('l[3]'))
+  call assert_equal(luaeval('l'), luaeval('l[3][3]'))
 
   lua l = nil
 endfunc

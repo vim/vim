@@ -217,11 +217,15 @@ Vim's syntax for lists. Since lists are objects, changes in list references in
 Lua are reflected in Vim and vice-versa. A list "l" has the following
 properties and methods:
 
+NOTE: In patch 8.2.1066 array indexes were changed from zero-based to
+one-based.  You can check with: >
+	    if has("patch-8.2.1066")
+
 Properties
 ----------
 	o "#l" is the number of items in list "l", equivalent to "len(l)"
 	    in Vim.
-	o "l[k]" returns the k-th item in "l"; "l" is zero-indexed, as in Vim.
+	o "l[k]" returns the k-th item in "l"; "l" is one-indexed, as in Lua.
 	    To modify the k-th item, simply do "l[k] = newitem"; in
 	    particular, "l[k] = nil" removes the k-th item from "l".
 	o "l()" returns an iterator for "l".
@@ -237,11 +241,11 @@ Examples:
 	:let l = [1, 'item']
 	:lua l = vim.eval('l') -- same 'l'
 	:lua l:add(vim.list())
-	:lua l[0] = math.pi
+	:lua l[1] = math.pi
 	:echo l[0] " 3.141593
-	:lua l[0] = nil -- remove first item
+	:lua l[1] = nil -- remove first item
 	:lua l:insert(true, 1)
-	:lua print(l, #l, l[0], l[1], l[-1])
+	:lua print(l, #l, l[1], l[2])
 	:lua for item in l() do print(item) end
 <
 
