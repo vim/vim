@@ -1017,6 +1017,18 @@ def Test_expr7_lambda()
   assert_equal([1, 3, 5], [1, 2, 3]->map({key, val -> key + val}))
 enddef
 
+def Test_expr7_lambda_vim9script()
+  let lines =<< trim END
+      vim9script
+      let v = 10->{a ->
+	    a
+	      + 2
+	  }()
+      assert_equal(12, v)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_expr7_dict()
   " dictionary
   assert_equal(g:dict_empty, {})

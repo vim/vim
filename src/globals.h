@@ -1883,7 +1883,11 @@ EXTERN char windowsVersion[20] INIT(= {0});
 EXTERN listitem_T range_list_item;
 
 // Passed to an eval() function to enable evaluation.
-EXTERN evalarg_T EVALARG_EVALUATE INIT3(EVAL_EVALUATE, NULL, NULL);
+EXTERN evalarg_T EVALARG_EVALUATE
+# ifdef DO_INIT
+	= {EVAL_EVALUATE, NULL, {0, 0, 0, 0, NULL}, NULL}
+# endif
+	;
 #endif
 
 #ifdef MSWIN

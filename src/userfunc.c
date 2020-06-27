@@ -391,8 +391,10 @@ errret:
  * Return OK or FAIL.  Returns NOTDONE for dict or {expr}.
  */
     int
-get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
+get_lambda_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 {
+    int		evaluate = evalarg != NULL
+				      && (evalarg->eval_flags & EVAL_EVALUATE);
     garray_T	newargs;
     garray_T	newlines;
     garray_T	*pnewargs;
@@ -404,6 +406,8 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
     char_u	*s, *e;
     int		*old_eval_lavars = eval_lavars_used;
     int		eval_lavars = FALSE;
+    int		getnext;
+    char_u	*tofree = NULL;
 
     ga_init(&newargs);
     ga_init(&newlines);
@@ -432,12 +436,25 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 
     // Get the start and the end of the expression.
     *arg = skipwhite(*arg + 1);
+    eval_next_non_blank(*arg, evalarg, &getnext);
+    if (getnext)
+	*arg = eval_next_line(evalarg);
     s = *arg;
-    ret = skip_expr(arg);
+    ret = skip_expr_concatenate(&s, arg, evalarg);
     if (ret == FAIL)
 	goto errret;
+    if (evalarg != NULL)
+    {
+	// avoid that the expression gets freed when another line break follows
+	tofree = evalarg->eval_tofree;
+	evalarg->eval_tofree = NULL;
+    }
+
     e = *arg;
     *arg = skipwhite(*arg);
+    eval_next_non_blank(*arg, evalarg, &getnext);
+    if (getnext)
+	*arg = eval_next_line(evalarg);
     if (**arg != '}')
     {
 	semsg(_("E451: Expected }: %s"), *arg);
@@ -447,7 +464,8 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 
     if (evaluate)
     {
-	int	    len, flags = 0;
+	int	    len;
+	int	    flags = 0;
 	char_u	    *p;
 	char_u	    *name = get_lambda_name();
 
@@ -464,7 +482,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 	    goto errret;
 
 	// Add "return " before the expression.
-	len = 7 + e - s + 1;
+	len = 7 + (int)(e - s) + 1;
 	p = alloc(len);
 	if (p == NULL)
 	    goto errret;
@@ -510,6 +528,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
     }
 
     eval_lavars_used = old_eval_lavars;
+    vim_free(tofree);
     return OK;
 
 errret:
@@ -517,6 +536,7 @@ errret:
     ga_clear_strings(&newlines);
     vim_free(fp);
     vim_free(pt);
+    vim_free(tofree);
     eval_lavars_used = old_eval_lavars;
     return FAIL;
 }
@@ -3925,8 +3945,8 @@ ex_call(exarg_T *eap)
 	    dbg_check_breakpoint(eap);
 
 	// Handle a function returning a Funcref, Dictionary or List.
-	if (handle_subscript(&arg, &rettv, eap->skip ? 0 : EVAL_EVALUATE,
-								 TRUE) == FAIL)
+	if (handle_subscript(&arg, &rettv,
+			   eap->skip ? NULL : &EVALARG_EVALUATE, TRUE) == FAIL)
 	{
 	    failed = TRUE;
 	    break;

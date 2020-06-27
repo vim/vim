@@ -1763,6 +1763,11 @@ typedef struct {
     // copied from exarg_T when "getline" is "getsourceline". Can be NULL.
     void	*eval_cookie;	// argument for getline()
 
+    // Used to collect lines while parsing them, so that they can be
+    // concatenated later.  Used when "eval_ga.ga_itemsize" is not zero.
+    // "eval_ga.ga_data" is a list of pointers to lines.
+    garray_T	eval_ga;
+
     // pointer to the line obtained with getsourceline()
     char_u	*eval_tofree;
 } evalarg_T;

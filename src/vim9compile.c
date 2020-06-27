@@ -3001,7 +3001,7 @@ to_name_const_end(char_u *arg)
     }
     else if (p == arg && *arg == '{')
     {
-	int	    ret = get_lambda_tv(&p, &rettv, FALSE);
+	int	    ret = get_lambda_tv(&p, &rettv, NULL);
 
 	// Can be "{x -> ret}()".
 	// Can be "{'a': 1}->Func()".
@@ -3065,7 +3065,7 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     ufunc_T	*ufunc;
 
     // Get the funcref in "rettv".
-    if (get_lambda_tv(arg, &rettv, TRUE) != OK)
+    if (get_lambda_tv(arg, &rettv, &EVALARG_EVALUATE) != OK)
 	return FAIL;
 
     ufunc = rettv.vval.v_partial->pt_func;
@@ -3095,7 +3095,7 @@ compile_lambda_call(char_u **arg, cctx_T *cctx)
     int		ret = FAIL;
 
     // Get the funcref in "rettv".
-    if (get_lambda_tv(arg, &rettv, TRUE) == FAIL)
+    if (get_lambda_tv(arg, &rettv, &EVALARG_EVALUATE) == FAIL)
 	return FAIL;
 
     if (**arg != '(')

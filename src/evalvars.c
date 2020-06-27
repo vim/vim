@@ -797,12 +797,14 @@ ex_let(exarg_T *eap)
 
 	    if (eap->skip)
 		++emsg_skip;
+	    CLEAR_FIELD(evalarg);
 	    evalarg.eval_flags = eap->skip ? 0 : EVAL_EVALUATE;
 	    evalarg.eval_cookie = eap->getline == getsourceline
 							  ? eap->cookie : NULL;
 	    i = eval0(expr, &rettv, eap, &evalarg);
 	    if (eap->skip)
 		--emsg_skip;
+	    vim_free(evalarg.eval_tofree);
 	}
 	if (eap->skip)
 	{
@@ -1125,7 +1127,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 		{
 		    // handle d.key, l[idx], f(expr)
 		    arg_subsc = arg;
-		    if (handle_subscript(&arg, &tv, EVAL_EVALUATE, TRUE)
+		    if (handle_subscript(&arg, &tv, &EVALARG_EVALUATE, TRUE)
 								       == FAIL)
 			error = TRUE;
 		    else
@@ -3341,7 +3343,7 @@ var_exists(char_u *var)
 	if (n)
 	{
 	    // handle d.key, l[idx], f(expr)
-	    n = (handle_subscript(&var, &tv, EVAL_EVALUATE, FALSE) == OK);
+	    n = (handle_subscript(&var, &tv, &EVALARG_EVALUATE, FALSE) == OK);
 	    if (n)
 		clear_tv(&tv);
 	}
