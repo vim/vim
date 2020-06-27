@@ -32,7 +32,7 @@ varnumber_T dict_get_number(dict_T *d, char_u *key);
 varnumber_T dict_get_number_def(dict_T *d, char_u *key, int def);
 varnumber_T dict_get_number_check(dict_T *d, char_u *key);
 char_u *dict2string(typval_T *tv, int copyID, int restore_copyID);
-int eval_dict(char_u **arg, typval_T *rettv, int evaluate, int literal);
+int eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal);
 void dict_extend(dict_T *d1, dict_T *d2, char_u *action);
 dictitem_T *dict_lookup(hashitem_T *hi);
 int dict_equal(dict_T *d1, dict_T *d2, int ic, int recursive);

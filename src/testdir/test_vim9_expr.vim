@@ -1002,6 +1002,12 @@ def Test_expr7_list_vim9script()
       assert_equal([11, 22], l)
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let l = [11,22]
+  END
+  CheckScriptFailure(lines, 'E1069:')
 enddef
 
 def Test_expr7_lambda()
@@ -1032,6 +1038,40 @@ def Test_expr7_dict()
   call CheckDefFailure(["let x = x + 1"], 'E1001:')
   call CheckDefExecFailure(["let x = g:anint.member"], 'E715:')
   call CheckDefExecFailure(["let x = g:dict_empty.member"], 'E716:')
+enddef
+
+def Test_expr7_dict_vim9script()
+  let lines =<< trim END
+      vim9script
+      let d = {
+		'one':
+		   1,
+		'two': 2,
+		   }
+      assert_equal({'one': 1, 'two': 2}, d)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let d = #{one: 1,
+		two: 2,
+	       }
+      assert_equal({'one': 1, 'two': 2}, d)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let d = #{one:1, two: 2}
+  END
+  CheckScriptFailure(lines, 'E1069:')
+
+  lines =<< trim END
+      vim9script
+      let d = #{one: 1,two: 2}
+  END
+  CheckScriptFailure(lines, 'E1069:')
 enddef
 
 def Test_expr_member()

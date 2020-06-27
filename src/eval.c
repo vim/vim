@@ -2787,7 +2787,7 @@ eval7(
     case '#':	if ((*arg)[1] == '{')
 		{
 		    ++*arg;
-		    ret = eval_dict(arg, rettv, flags, TRUE);
+		    ret = eval_dict(arg, rettv, evalarg, TRUE);
 		}
 		else
 		    ret = NOTDONE;
@@ -2799,7 +2799,7 @@ eval7(
      */
     case '{':	ret = get_lambda_tv(arg, rettv, evaluate);
 		if (ret == NOTDONE)
-		    ret = eval_dict(arg, rettv, flags, FALSE);
+		    ret = eval_dict(arg, rettv, evalarg, FALSE);
 		break;
 
     /*
