@@ -805,7 +805,6 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
     char_u	buf[NUMBUFLEN];
     int		vim9script = current_sctx.sc_version == SCRIPT_VERSION_VIM9;
     int		had_comma;
-    int		getnext;
 
     /*
      * First check if it's not a curly-braces thing: {expr}.
@@ -831,10 +830,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
     tvkey.v_type = VAR_UNKNOWN;
     tv.v_type = VAR_UNKNOWN;
 
-    *arg = skipwhite(*arg + 1);
-    eval_next_non_blank(*arg, evalarg, &getnext);
-    if (getnext)
-	*arg = eval_next_line(evalarg);
+    *arg = skipwhite_and_linebreak(*arg + 1, evalarg);
     while (**arg != '}' && **arg != NUL)
     {
 	if ((literal
@@ -866,10 +862,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	    goto failret;
 	}
 
-	*arg = skipwhite(*arg + 1);
-	eval_next_non_blank(*arg, evalarg, &getnext);
-	if (getnext)
-	    *arg = eval_next_line(evalarg);
+	*arg = skipwhite_and_linebreak(*arg + 1, evalarg);
 	if (eval1(arg, &tv, evalarg) == FAIL)	// recursive!
 	{
 	    if (evaluate)
@@ -911,9 +904,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	}
 
 	// the "}" can be on the next line
-	eval_next_non_blank(*arg, evalarg, &getnext);
-	if (getnext)
-	    *arg = eval_next_line(evalarg);
+	*arg = skipwhite_and_linebreak(*arg, evalarg);
 	if (**arg == '}')
 	    break;
 	if (!had_comma)

@@ -1871,6 +1871,18 @@ eval_next_line(evalarg_T *evalarg)
     return skipwhite(line);
 }
 
+    char_u *
+skipwhite_and_linebreak(char_u *arg, evalarg_T *evalarg)
+{
+    int	    getnext;
+    char_u  *p = skipwhite(arg);
+
+    eval_next_non_blank(p, evalarg, &getnext);
+    if (getnext)
+	return eval_next_line(evalarg);
+    return p;
+}
+
 /*
  * The "evaluate" argument: When FALSE, the argument is only parsed but not
  * executed.  The function may return OK, but the rettv will be of type
@@ -1998,7 +2010,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	/*
 	 * Get the second variable.  Recursive!
 	 */
-	*arg = skipwhite(*arg + 1);
+	*arg = skipwhite_and_linebreak(*arg + 1, evalarg);
 	nested_evalarg.eval_flags = result ? orig_flags
 						 : orig_flags & ~EVAL_EVALUATE;
 	if (eval1(arg, rettv, &nested_evalarg) == FAIL)
@@ -2021,7 +2033,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	/*
 	 * Get the third variable.  Recursive!
 	 */
-	*arg = skipwhite(*arg + 1);
+	*arg = skipwhite_and_linebreak(*arg + 1, evalarg);
 	nested_evalarg.eval_flags = !result ? orig_flags
 						 : orig_flags & ~EVAL_EVALUATE;
 	if (eval1(arg, &var2, &nested_evalarg) == FAIL)
@@ -2103,7 +2115,7 @@ eval2(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	/*
 	 * Get the second variable.
 	 */
-	*arg = skipwhite(*arg + 2);
+	*arg = skipwhite_and_linebreak(*arg + 2, evalarg);
 	nested_evalarg.eval_flags = !result ? orig_flags
 						 : orig_flags & ~EVAL_EVALUATE;
 	if (eval3(arg, &var2, &nested_evalarg) == FAIL)
@@ -2197,7 +2209,7 @@ eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	/*
 	 * Get the second variable.
 	 */
-	*arg = skipwhite(*arg + 2);
+	*arg = skipwhite_and_linebreak(*arg + 2, evalarg);
 	nested_evalarg.eval_flags = result ? orig_flags
 						 : orig_flags & ~EVAL_EVALUATE;
 	if (eval4(arg, &var2, &nested_evalarg) == FAIL)
@@ -2328,7 +2340,7 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	/*
 	 * Get the second variable.
 	 */
-	*arg = skipwhite(p + len);
+	*arg = skipwhite_and_linebreak(p + len, evalarg);
 	if (eval5(arg, &var2, evalarg) == FAIL)
 	{
 	    clear_tv(rettv);
@@ -2452,10 +2464,7 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	 */
 	if (op == '.' && *(*arg + 1) == '.')  // .. string concatenation
 	    ++*arg;
-	*arg = skipwhite(*arg + 1);
-	eval_next_non_blank(*arg, evalarg, &getnext);
-	if (getnext)
-	    *arg = eval_next_line(evalarg);
+	*arg = skipwhite_and_linebreak(*arg + 1, evalarg);
 	if (eval6(arg, &var2, evalarg, op == '.') == FAIL)
 	{
 	    clear_tv(rettv);
@@ -2893,18 +2902,10 @@ eval7(
      * nested expression: (expression).
      */
     case '(':	{
-		    int getnext;
-
-		    *arg = skipwhite(*arg + 1);
-		    eval_next_non_blank(*arg, evalarg, &getnext);
-		    if (getnext)
-			*arg = eval_next_line(evalarg);
-
+		    *arg = skipwhite_and_linebreak(*arg + 1, evalarg);
 		    ret = eval1(arg, rettv, evalarg);	// recursive!
 
-		    eval_next_non_blank(*arg, evalarg, &getnext);
-		    if (getnext)
-			*arg = eval_next_line(evalarg);
+		    *arg = skipwhite_and_linebreak(*arg, evalarg);
 		    if (**arg == ')')
 			++*arg;
 		    else if (ret == OK)

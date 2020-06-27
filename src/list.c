@@ -1164,7 +1164,6 @@ get_list_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
 {
     int		evaluate = evalarg == NULL ? FALSE
 					 : evalarg->eval_flags & EVAL_EVALUATE;
-    int		getnext;
     list_T	*l = NULL;
     typval_T	tv;
     listitem_T	*item;
@@ -1178,10 +1177,7 @@ get_list_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
 	    return FAIL;
     }
 
-    *arg = skipwhite(*arg + 1);
-    eval_next_non_blank(*arg, evalarg, &getnext);
-    if (getnext)
-	*arg = eval_next_line(evalarg);
+    *arg = skipwhite_and_linebreak(*arg + 1, evalarg);
     while (**arg != ']' && **arg != NUL)
     {
 	if (eval1(arg, &tv, evalarg) == FAIL)	// recursive!
@@ -1212,9 +1208,7 @@ get_list_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
 	}
 
 	// the "]" can be on the next line
-	eval_next_non_blank(*arg, evalarg, &getnext);
-	if (getnext)
-	    *arg = eval_next_line(evalarg);
+	*arg = skipwhite_and_linebreak(*arg, evalarg);
 	if (**arg == ']')
 	    break;
 

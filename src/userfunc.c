@@ -402,17 +402,17 @@ get_lambda_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
     partial_T   *pt = NULL;
     int		varargs;
     int		ret;
-    char_u	*start = skipwhite(*arg + 1);
+    char_u	*start;
     char_u	*s, *e;
     int		*old_eval_lavars = eval_lavars_used;
     int		eval_lavars = FALSE;
-    int		getnext;
     char_u	*tofree = NULL;
 
     ga_init(&newargs);
     ga_init(&newlines);
 
     // First, check if this is a lambda expression. "->" must exist.
+    start = skipwhite(*arg + 1);
     ret = get_function_args(&start, '-', NULL, NULL, NULL, NULL, TRUE,
 								   NULL, NULL);
     if (ret == FAIL || *start != '>')
@@ -435,10 +435,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	eval_lavars_used = &eval_lavars;
 
     // Get the start and the end of the expression.
-    *arg = skipwhite(*arg + 1);
-    eval_next_non_blank(*arg, evalarg, &getnext);
-    if (getnext)
-	*arg = eval_next_line(evalarg);
+    *arg = skipwhite_and_linebreak(*arg + 1, evalarg);
     s = *arg;
     ret = skip_expr_concatenate(&s, arg, evalarg);
     if (ret == FAIL)
@@ -451,10 +448,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
     }
 
     e = *arg;
-    *arg = skipwhite(*arg);
-    eval_next_non_blank(*arg, evalarg, &getnext);
-    if (getnext)
-	*arg = eval_next_line(evalarg);
+    *arg = skipwhite_and_linebreak(*arg, evalarg);
     if (**arg != '}')
     {
 	semsg(_("E451: Expected }: %s"), *arg);

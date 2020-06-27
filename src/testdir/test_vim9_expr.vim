@@ -64,6 +64,15 @@ def Test_expr1_vimscript()
       assert_equal('no', var)
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let var = v:false ?
+      		'yes' :
+		'no'
+      assert_equal('no', var)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 func Test_expr1_fails()
@@ -135,6 +144,15 @@ def Test_expr2_vimscript()
       assert_equal(1, var)
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let var = v:false ||
+      		v:true ||
+		v:false
+      assert_equal(1, var)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 func Test_expr2_fails()
@@ -195,6 +213,15 @@ def Test_expr3_vimscript()
       let var = v:true
       		&& v:true
       		&& v:true
+      assert_equal(1, var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let var = v:true &&
+      		v:true &&
+      		v:true
       assert_equal(1, var)
   END
   CheckScriptSuccess(lines)
@@ -544,6 +571,14 @@ def Test_expr4_vimscript()
       let var = 123
       		!= 123
       assert_equal(0, var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let var = 123 ==
+      			123
+      assert_equal(1, var)
   END
   CheckScriptSuccess(lines)
 
