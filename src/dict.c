@@ -862,6 +862,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	if (vim9script && (*arg)[1] != NUL && !VIM_ISWHITE((*arg)[1]))
 	{
 	    semsg(_(e_white_after), ":");
+	    clear_tv(&tvkey);
 	    goto failret;
 	}
 
