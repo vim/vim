@@ -78,5 +78,28 @@ def Test_assign_dict()
   assert_equal({'0': 0, '1': 1, '2': 2}, nrd)
 enddef
 
+def Test_echo_linebreak()
+  let lines =<< trim END
+      vim9script
+      redir @a
+      echo 'one'
+            .. 'two'
+      redir END
+      assert_equal("\nonetwo", @a)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      redir @a
+      echo 11 +
+            77
+            - 22
+      redir END
+      assert_equal("\n66", @a)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

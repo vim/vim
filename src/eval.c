@@ -5190,6 +5190,7 @@ ex_echo(exarg_T *eap)
 
     CLEAR_FIELD(evalarg);
     evalarg.eval_flags = eap->skip ? 0 : EVAL_EVALUATE;
+    evalarg.eval_cookie = eap->getline == getsourceline ? eap->cookie : NULL;
 
     if (eap->skip)
 	++emsg_skip;
