@@ -347,6 +347,7 @@ SRC = \
 	main.c \
 	map.c \
 	mark.c \
+	match.c \
 	mbyte.c \
 	memfile.c \
 	memline.c \
@@ -460,6 +461,7 @@ OBJ = \
 	main.obj \
 	map.obj \
 	mark.obj \
+	match.obj \
 	mbyte.obj \
 	memfile.obj \
 	memline.obj \
@@ -865,6 +867,9 @@ map.obj : map.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h
 mark.obj : mark.c vim.h [.auto]config.h feature.h os_unix.h   \
+ ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h beval.h \
+ [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h
+match.obj : match.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h
 memfile.obj : memfile.c vim.h [.auto]config.h feature.h os_unix.h \

@@ -51,8 +51,9 @@ getchar.c	| getting characters and key mapping
 highlight.c	| syntax highlighting
 indent.c	| text indentation
 insexpand.c	| Insert mode completion
-mark.c		| marks
 map.c		| mapping and abbreviations
+mark.c		| marks
+match.c		| highlight matching
 mbyte.c		| multi-byte character handling
 memfile.c	| storing lines for buffers in a swapfile
 memline.c	| storing lines for buffers in memory

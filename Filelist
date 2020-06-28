@@ -80,6 +80,7 @@ SRC_ALL =	\
 		src/main.c \
 		src/map.c \
 		src/mark.c \
+		src/match.c \
 		src/mbyte.c \
 		src/memfile.c \
 		src/memfile_test.c \
@@ -247,6 +248,7 @@ SRC_ALL =	\
 		src/proto/main.pro \
 		src/proto/map.pro \
 		src/proto/mark.pro \
+		src/proto/match.pro \
 		src/proto/mbyte.pro \
 		src/proto/memfile.pro \
 		src/proto/memline.pro \
