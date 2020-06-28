@@ -170,8 +170,11 @@ eval_to_bool(
 
     CLEAR_FIELD(evalarg);
     evalarg.eval_flags = skip ? 0 : EVAL_EVALUATE;
-    evalarg.eval_cookie = eap != NULL && eap->getline == getsourceline
-							  ? eap->cookie : NULL;
+    if (eap != NULL && getline_equal(eap->getline, eap->cookie, getsourceline))
+    {
+	evalarg.eval_getline = eap->getline;
+	evalarg.eval_cookie = eap->cookie;
+    }
 
     if (skip)
 	++emsg_skip;
@@ -1840,10 +1843,9 @@ eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext)
 	    && evalarg != NULL
 	    && evalarg->eval_cookie != NULL
 	    && (*arg == NUL || (VIM_ISWHITE(arg[-1])
-					     && (*arg == '"' || *arg == '#')))
-	    && source_nextline(evalarg->eval_cookie) != NULL)
+					     && (*arg == '"' || *arg == '#'))))
     {
-	char_u *p = source_nextline(evalarg->eval_cookie);
+	char_u *p = getline_peek(evalarg->eval_getline, evalarg->eval_cookie);
 
 	if (p != NULL)
 	{
@@ -1863,7 +1865,7 @@ eval_next_line(evalarg_T *evalarg)
     garray_T	*gap = &evalarg->eval_ga;
     char_u	*line;
 
-    line = getsourceline(0, evalarg->eval_cookie, 0, TRUE);
+    line = evalarg->eval_getline(0, evalarg->eval_cookie, 0, TRUE);
     if (gap->ga_itemsize > 0 && ga_grow(gap, 1) == OK)
     {
 	// Going to concatenate the lines after parsing.
@@ -5206,7 +5208,11 @@ ex_echo(exarg_T *eap)
 
     CLEAR_FIELD(evalarg);
     evalarg.eval_flags = eap->skip ? 0 : EVAL_EVALUATE;
-    evalarg.eval_cookie = eap->getline == getsourceline ? eap->cookie : NULL;
+    if (getline_equal(eap->getline, eap->cookie, getsourceline))
+    {
+	evalarg.eval_getline = eap->getline;
+	evalarg.eval_cookie = eap->cookie;
+    }
 
     if (eap->skip)
 	++emsg_skip;

@@ -629,6 +629,7 @@ do_cmdline(
     cstack_T	cstack;			// conditional stack
     garray_T	lines_ga;		// keep lines for ":while"/":for"
     int		current_line = 0;	// active line in lines_ga
+    int		current_line_before = 0;
     char_u	*fname = NULL;		// function or script name
     linenr_T	*breakpoint = NULL;	// ptr to breakpoint field in cookie
     int		*dbg_tick = NULL;	// ptr to dbg_tick field in cookie
@@ -851,27 +852,6 @@ do_cmdline(
 	    }
 # endif
 	}
-
-	if (cstack.cs_looplevel > 0)
-	{
-	    // Inside a while/for loop we need to store the lines and use them
-	    // again.  Pass a different "fgetline" function to do_one_cmd()
-	    // below, so that it stores lines in or reads them from
-	    // "lines_ga".  Makes it possible to define a function inside a
-	    // while/for loop.
-	    cmd_getline = get_loop_line;
-	    cmd_cookie = (void *)&cmd_loop_cookie;
-	    cmd_loop_cookie.lines_gap = &lines_ga;
-	    cmd_loop_cookie.current_line = current_line;
-	    cmd_loop_cookie.getline = fgetline;
-	    cmd_loop_cookie.cookie = cookie;
-	    cmd_loop_cookie.repeating = (current_line < lines_ga.ga_len);
-	}
-	else
-	{
-	    cmd_getline = fgetline;
-	    cmd_cookie = cookie;
-	}
 #endif
 
 	// 2. If no line given, get an allocated line with fgetline().
@@ -929,21 +909,44 @@ do_cmdline(
 
 #ifdef FEAT_EVAL
 	/*
-	 * Save the current line when inside a ":while" or ":for", and when
-	 * the command looks like a ":while" or ":for", because we may need it
-	 * later.  When there is a '|' and another command, it is stored
-	 * separately, because we need to be able to jump back to it from an
+	 * Inside a while/for loop, and when the command looks like a ":while"
+	 * or ":for", the line is stored, because we may need it later when
+	 * looping.
+	 *
+	 * When there is a '|' and another command, it is stored separately,
+	 * because we need to be able to jump back to it from an
 	 * :endwhile/:endfor.
+	 *
+	 * Pass a different "fgetline" function to do_one_cmd() below,
+	 * that it stores lines in or reads them from "lines_ga".  Makes it
+	 * possible to define a function inside a while/for loop and handles
+	 * line continuation.
 	 */
-	if (current_line == lines_ga.ga_len
-		&& (cstack.cs_looplevel || has_loop_cmd(next_cmdline)))
+	if ((cstack.cs_looplevel > 0 || has_loop_cmd(next_cmdline)))
 	{
-	    if (store_loop_line(&lines_ga, next_cmdline) == FAIL)
+	    cmd_getline = get_loop_line;
+	    cmd_cookie = (void *)&cmd_loop_cookie;
+	    cmd_loop_cookie.lines_gap = &lines_ga;
+	    cmd_loop_cookie.current_line = current_line;
+	    cmd_loop_cookie.getline = fgetline;
+	    cmd_loop_cookie.cookie = cookie;
+	    cmd_loop_cookie.repeating = (current_line < lines_ga.ga_len);
+
+	    // Save the current line when encountering it the first time.
+	    if (current_line == lines_ga.ga_len
+		    && store_loop_line(&lines_ga, next_cmdline) == FAIL)
 	    {
 		retval = FAIL;
 		break;
 	    }
+	    current_line_before = current_line;
 	}
+	else
+	{
+	    cmd_getline = fgetline;
+	    cmd_cookie = cookie;
+	}
+
 	did_endif = FALSE;
 #endif
 
@@ -1078,7 +1081,7 @@ do_cmdline(
 	    else if (cstack.cs_lflags & CSL_HAD_LOOP)
 	    {
 		cstack.cs_lflags &= ~CSL_HAD_LOOP;
-		cstack.cs_line[cstack.cs_idx] = current_line - 1;
+		cstack.cs_line[cstack.cs_idx] = current_line_before;
 	    }
 	}
 
@@ -1515,7 +1518,7 @@ getline_cookie(
 {
 #ifdef FEAT_EVAL
     char_u		*(*gp)(int, void *, int, int);
-    struct loop_cookie *cp;
+    struct loop_cookie  *cp;
 
     // When "fgetline" is "get_loop_line()" use the "cookie" to find the
     // cookie that's originally used to obtain the lines.  This may be nested
@@ -1532,6 +1535,41 @@ getline_cookie(
     return cookie;
 #endif
 }
+
+#if defined(FEAT_EVAL) || defined(PROT)
+/*
+ * Get the next line source line without advancing.
+ */
+    char_u *
+getline_peek(
+    char_u	*(*fgetline)(int, void *, int, int) UNUSED,
+    void	*cookie)		// argument for fgetline()
+{
+    char_u		*(*gp)(int, void *, int, int);
+    struct loop_cookie  *cp;
+    wcmd_T		*wp;
+
+    // When "fgetline" is "get_loop_line()" use the "cookie" to find the
+    // cookie that's originally used to obtain the lines.  This may be nested
+    // several levels.
+    gp = fgetline;
+    cp = (struct loop_cookie *)cookie;
+    while (gp == get_loop_line)
+    {
+	if (cp->current_line + 1 < cp->lines_gap->ga_len)
+	{
+	    // executing lines a second time, use the stored copy
+	    wp = (wcmd_T *)(cp->lines_gap->ga_data) + cp->current_line + 1;
+	    return wp->line;
+	}
+	gp = cp->getline;
+	cp = cp->cookie;
+    }
+    if (gp == getsourceline)
+	return source_nextline(cp);
+    return NULL;
+}
+#endif
 
 
 /*

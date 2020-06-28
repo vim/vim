@@ -1761,7 +1761,8 @@ typedef struct {
     int		eval_flags;	// EVAL_ flag values below
 
     // copied from exarg_T when "getline" is "getsourceline". Can be NULL.
-    void	*eval_cookie;	// argument for getline()
+    char_u	*(*eval_getline)(int, void *, int, int);
+    void	*eval_cookie;	// argument for eval_getline()
 
     // Used to collect lines while parsing them, so that they can be
     // concatenated later.  Used when "eval_ga.ga_itemsize" is not zero.
