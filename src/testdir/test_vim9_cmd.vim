@@ -160,4 +160,35 @@ def Test_while_linebreak()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_for_linebreak()
+  let lines =<< trim END
+      vim9script
+      let nr = 0
+      for x
+            in
+              [1, 2, 3, 4]
+          nr = nr + x
+      endfor
+      assert_equal(10, nr)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let nr = 0
+      for x
+            in
+              [1, 2,
+                  3, 4
+                  ]
+          nr = nr
+                 +
+                  x
+      endfor
+      assert_equal(10, nr)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

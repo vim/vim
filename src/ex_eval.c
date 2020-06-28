@@ -899,10 +899,16 @@ ex_eval(exarg_T *eap)
 
     CLEAR_FIELD(evalarg);
     evalarg.eval_flags = eap->skip ? 0 : EVAL_EVALUATE;
-    evalarg.eval_cookie = eap->getline == getsourceline ? eap->cookie : NULL;
+    if (getline_equal(eap->getline, eap->cookie, getsourceline))
+    {
+	evalarg.eval_getline = eap->getline;
+	evalarg.eval_cookie = eap->cookie;
+    }
 
     if (eval0(eap->arg, &tv, eap, &evalarg) == OK)
 	clear_tv(&tv);
+
+    clear_evalarg(&evalarg, eap);
 }
 
 /*
@@ -1108,7 +1114,16 @@ ex_while(exarg_T *eap)
 	}
 	else
 	{
-	    void *fi;
+	    void	*fi;
+	    evalarg_T	evalarg;
+
+	    CLEAR_FIELD(evalarg);
+	    evalarg.eval_flags = skip ? 0 : EVAL_EVALUATE;
+	    if (getline_equal(eap->getline, eap->cookie, getsourceline))
+	    {
+		evalarg.eval_getline = eap->getline;
+		evalarg.eval_cookie = eap->cookie;
+	    }
 
 	    /*
 	     * ":for var in list-expr"
@@ -1119,11 +1134,14 @@ ex_while(exarg_T *eap)
 		// previously evaluated list.
 		fi = cstack->cs_forinfo[cstack->cs_idx];
 		error = FALSE;
+
+		// the "in expr" is not used, skip over it
+		skip_for_lines(fi, &evalarg);
 	    }
 	    else
 	    {
 		// Evaluate the argument and get the info in a structure.
-		fi = eval_for_line(eap->arg, &error, eap, skip);
+		fi = eval_for_line(eap->arg, &error, eap, &evalarg);
 		cstack->cs_forinfo[cstack->cs_idx] = fi;
 	    }
 
@@ -1138,6 +1156,7 @@ ex_while(exarg_T *eap)
 		free_for_info(fi);
 		cstack->cs_forinfo[cstack->cs_idx] = NULL;
 	    }
+	    clear_evalarg(&evalarg, eap);
 	}
 
 	/*

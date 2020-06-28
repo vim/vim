@@ -1758,11 +1758,12 @@ typedef struct
 // Struct passed through eval() functions.
 // See EVALARG_EVALUATE for a fixed value with eval_flags set to EVAL_EVALUATE.
 typedef struct {
-    int		eval_flags;	// EVAL_ flag values below
+    int		eval_flags;	    // EVAL_ flag values below
+    int		eval_break_count;   // nr of line breaks consumed
 
     // copied from exarg_T when "getline" is "getsourceline". Can be NULL.
     char_u	*(*eval_getline)(int, void *, int, int);
-    void	*eval_cookie;	// argument for eval_getline()
+    void	*eval_cookie;	    // argument for eval_getline()
 
     // Used to collect lines while parsing them, so that they can be
     // concatenated later.  Used when "eval_ga.ga_itemsize" is not zero.

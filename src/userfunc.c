@@ -3825,6 +3825,7 @@ ex_return(exarg_T *eap)
 
     if (eap->skip)
 	--emsg_skip;
+    clear_evalarg(&evalarg, eap);
 }
 
 /*

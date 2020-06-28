@@ -38,6 +38,7 @@ typedef struct
 {
     int		fi_semicolon;	// TRUE if ending in '; var]'
     int		fi_varcount;	// nr of variables in the list
+    int		fi_break_count;	// nr of line breaks encountered
     listwatch_T	fi_lw;		// keep an eye on the item used.
     list_T	*fi_list;	// list being used
     int		fi_bi;		// index of blob
@@ -344,6 +345,7 @@ eval_to_string_skip(
     }
     if (skip)
 	--emsg_skip;
+    clear_evalarg(&EVALARG_EVALUATE, eap);
 
     return retval;
 }
@@ -461,6 +463,7 @@ eval_to_string(
 	    retval = vim_strsave(tv_get_string(&tv));
 	clear_tv(&tv);
     }
+    clear_evalarg(&EVALARG_EVALUATE, NULL);
 
     return retval;
 }
@@ -528,6 +531,7 @@ eval_expr(char_u *arg, exarg_T *eap)
     tv = ALLOC_ONE(typval_T);
     if (tv != NULL && eval0(arg, tv, eap, &EVALARG_EVALUATE) == FAIL)
 	VIM_CLEAR(tv);
+    clear_evalarg(&EVALARG_EVALUATE, eap);
 
     return tv;
 }
@@ -675,6 +679,7 @@ eval_foldexpr(char_u *arg, int *cp)
     if (use_sandbox)
 	--sandbox;
     --textwinlock;
+    clear_evalarg(&EVALARG_EVALUATE, NULL);
 
     return (int)retval;
 }
@@ -1481,16 +1486,14 @@ eval_for_line(
     char_u	*arg,
     int		*errp,
     exarg_T	*eap,
-    int		skip)
+    evalarg_T	*evalarg)
 {
     forinfo_T	*fi;
     char_u	*expr;
     typval_T	tv;
     list_T	*l;
-    evalarg_T	evalarg;
+    int		skip = !(evalarg->eval_flags & EVAL_EVALUATE);
 
-    CLEAR_FIELD(evalarg);
-    evalarg.eval_flags = skip ? 0 : EVAL_EVALUATE;
     *errp = TRUE;	// default: there is an error
 
     fi = ALLOC_CLEAR_ONE(forinfo_T);
@@ -1501,8 +1504,9 @@ eval_for_line(
     if (expr == NULL)
 	return fi;
 
-    expr = skipwhite(expr);
-    if (expr[0] != 'i' || expr[1] != 'n' || !VIM_ISWHITE(expr[2]))
+    expr = skipwhite_and_linebreak(expr, evalarg);
+    if (expr[0] != 'i' || expr[1] != 'n'
+				  || !(expr[2] == NUL || VIM_ISWHITE(expr[2])))
     {
 	emsg(_(e_missing_in));
 	return fi;
@@ -1510,7 +1514,8 @@ eval_for_line(
 
     if (skip)
 	++emsg_skip;
-    if (eval0(skipwhite(expr + 2), &tv, eap, &evalarg) == OK)
+    expr = skipwhite_and_linebreak(expr + 2, evalarg);
+    if (eval0(expr, &tv, eap, evalarg) == OK)
     {
 	*errp = FALSE;
 	if (!skip)
@@ -1558,8 +1563,22 @@ eval_for_line(
     }
     if (skip)
 	--emsg_skip;
+    fi->fi_break_count = evalarg->eval_break_count;
 
     return fi;
+}
+
+/*
+ * Used when looping over a :for line, skip the "in expr" part.
+ */
+    void
+skip_for_lines(void *fi_void, evalarg_T *evalarg)
+{
+    forinfo_T	*fi = (forinfo_T *)fi_void;
+    int		i;
+
+    for (i = 0; i < fi->fi_break_count; ++i)
+	eval_next_line(evalarg);
 }
 
 /*
@@ -1866,6 +1885,7 @@ eval_next_line(evalarg_T *evalarg)
     char_u	*line;
 
     line = evalarg->eval_getline(0, evalarg->eval_cookie, 0, TRUE);
+    ++evalarg->eval_break_count;
     if (gap->ga_itemsize > 0 && ga_grow(gap, 1) == OK)
     {
 	// Going to concatenate the lines after parsing.
@@ -1898,14 +1918,19 @@ skipwhite_and_linebreak(char_u *arg, evalarg_T *evalarg)
     void
 clear_evalarg(evalarg_T *evalarg, exarg_T *eap)
 {
-    if (evalarg != NULL && eap != NULL && evalarg->eval_tofree != NULL)
+    if (evalarg != NULL && evalarg->eval_tofree != NULL)
     {
-	// We may need to keep the original command line, e.g. for
-	// ":let" it has the variable names.  But we may also need the
-	// new one, "nextcmd" points into it.  Keep both.
-	vim_free(eap->cmdline_tofree);
-	eap->cmdline_tofree = *eap->cmdlinep;
-	*eap->cmdlinep = evalarg->eval_tofree;
+	if (eap != NULL)
+	{
+	    // We may need to keep the original command line, e.g. for
+	    // ":let" it has the variable names.  But we may also need the
+	    // new one, "nextcmd" points into it.  Keep both.
+	    vim_free(eap->cmdline_tofree);
+	    eap->cmdline_tofree = *eap->cmdlinep;
+	    *eap->cmdlinep = evalarg->eval_tofree;
+	}
+	else
+	    vim_free(evalarg->eval_tofree);
 	evalarg->eval_tofree = NULL;
     }
 }
@@ -1960,8 +1985,6 @@ eval0(
 
     if (eap != NULL)
 	eap->nextcmd = check_nextcmd(p);
-
-    clear_evalarg(evalarg, eap);
 
     return ret;
 }

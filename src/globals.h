@@ -1885,7 +1885,7 @@ EXTERN listitem_T range_list_item;
 // Passed to an eval() function to enable evaluation.
 EXTERN evalarg_T EVALARG_EVALUATE
 # ifdef DO_INIT
-	= {EVAL_EVALUATE, NULL, NULL, {0, 0, 0, 0, NULL}, NULL}
+	= {EVAL_EVALUATE, 0, NULL, NULL, {0, 0, 0, 0, NULL}, NULL}
 # endif
 	;
 #endif
