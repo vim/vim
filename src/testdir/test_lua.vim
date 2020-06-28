@@ -353,6 +353,32 @@ func Test_lua_list_table()
   call assert_fails('lua vim.list(true)', '[string "vim chunk"]:1: table expected, got boolean')
 endfunc
 
+func Test_lua_list_table_insert_remove()
+  let luaver = split(split(luaeval('_VERSION'), ' ')[1], '\.')
+  let major = str2nr(luaver[0])
+  let minor = str2nr(luaver[1])
+
+  if major < 5 || (major == 5 && minor < 3)
+    throw 'Skipped: Lua version < 5.3'
+  endif
+
+  let l = [1, 2] 
+  lua t = vim.eval('l')
+  lua table.insert(t, 10)
+  lua t[#t + 1] = 20
+  lua table.insert(t, 2, 30)
+  call assert_equal(l, [1, 30, 2, 10, 20])
+  lua table.remove(t, 2)
+  call assert_equal(l, [1, 2, 10, 20])
+  lua t[3] = nil
+  call assert_equal(l, [1, 2, 20])
+  lua removed_value = table.remove(t, 3)
+  call assert_equal(luaeval('removed_value'), 20)
+  lua t = nil
+  lua removed_value = nil
+  unlet l
+endfunc
+
 " Test l() i.e. iterator on list
 func Test_lua_list_iter()
   lua l = vim.list():add('foo'):add('bar')

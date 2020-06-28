@@ -227,8 +227,17 @@ Properties
 	    in Vim.
 	o "l[k]" returns the k-th item in "l"; "l" is one-indexed, as in Lua.
 	    To modify the k-th item, simply do "l[k] = newitem"; in
-	    particular, "l[k] = nil" removes the k-th item from "l".
+	    particular, "l[k] = nil" removes the k-th item from "l". Item can
+	    be added to the end of the list by "l[#l + 1] = newitem"
 	o "l()" returns an iterator for "l".
+	o "table.insert(l, newitem)" inserts an item at the end of the list.
+	    (only Lua 5.3 and later)
+	o "table.insert(l, position, newitem)" inserts an item at the
+	    specified position. "position" is one-indexed.  (only Lua 5.3 and
+	    later)
+	o "table.remove(l, position)" removes an item at the specified
+	    position. "position" is one-indexed.
+
 
 Methods
 -------
@@ -246,8 +255,11 @@ Examples:
 	:lua l[1] = nil -- remove first item
 	:lua l:insert(true, 1)
 	:lua print(l, #l, l[1], l[2])
+	:lua l[#l + 1] = 'value'
+	:lua table.insert(l, 100)
+	:lua table.insert(l, 2, 200)
+	:lua table.remove(l, 1)
 	:lua for item in l() do print(item) end
-<
 
 ==============================================================================
 4. Dict userdata					*lua-dict*
