@@ -354,6 +354,14 @@ func Test_lua_list_table()
 endfunc
 
 func Test_lua_list_table_insert_remove()
+  let luaver = split(split(luaeval('_VERSION'), ' ')[1], '\.')
+  let major = str2nr(luaver[0])
+  let minor = str2nr(luaver[1])
+
+  if major < 5 || (major == 5 && minor < 3)
+    throw 'Skipped: Lua version < 5.3'
+  endif
+
   let l = [1, 2] 
   lua t = vim.eval('l')
   lua table.insert(t, 10)
