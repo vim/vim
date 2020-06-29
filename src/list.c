@@ -2475,10 +2475,10 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 	list_T	    *l = argvars[0].vval.v_list;
 	listitem_T  *li = NULL;
 	int	    r;
-	int	    prev_locked = l->lv_lock;
 	int	    called_emsg_start = called_emsg;
 
-	CHECK_LIST_MATERIALIZE(l);
+	if (l != NULL)
+	    CHECK_LIST_MATERIALIZE(l);
 	if (argvars[2].v_type == VAR_UNKNOWN)
 	{
 	    if (l == NULL || l->lv_first == NULL)
@@ -2495,20 +2495,25 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 	    if (l != NULL)
 		li = l->lv_first;
 	}
-
-	l->lv_lock = VAR_FIXED;  // disallow the list changing here
 	copy_tv(&initial, rettv);
-	for ( ; li != NULL; li = li->li_next)
+
+	if (l != NULL)
 	{
-	    argv[0] = *rettv;
-	    argv[1] = li->li_tv;
-	    rettv->v_type = VAR_UNKNOWN;
-	    r = call_func(func_name, -1, rettv, 2, argv, &funcexe);
-	    clear_tv(&argv[0]);
-	    if (r == FAIL || called_emsg != called_emsg_start)
-		break;
+	    int	    prev_locked = l->lv_lock;
+
+	    l->lv_lock = VAR_FIXED;  // disallow the list changing here
+	    for ( ; li != NULL; li = li->li_next)
+	    {
+		argv[0] = *rettv;
+		argv[1] = li->li_tv;
+		rettv->v_type = VAR_UNKNOWN;
+		r = call_func(func_name, -1, rettv, 2, argv, &funcexe);
+		clear_tv(&argv[0]);
+		if (r == FAIL || called_emsg != called_emsg_start)
+		    break;
+	    }
+	    l->lv_lock = prev_locked;
 	}
-	l->lv_lock = prev_locked;
     }
     else
     {
