@@ -757,6 +757,10 @@ set_indent(
     // Replace the line (unless undo fails).
     if (!(flags & SIN_UNDO) || u_savesub(curwin->w_cursor.lnum) == OK)
     {
+	colnr_T old_offset = (colnr_T)(p - oldline);
+	colnr_T new_offset = (colnr_T)(s - newline);
+
+	// this may free "newline"
 	ml_replace(curwin->w_cursor.lnum, newline, FALSE);
 	if (flags & SIN_CHANGED)
 	    changed_bytes(curwin->w_cursor.lnum, 0);
@@ -764,24 +768,24 @@ set_indent(
 	// Correct saved cursor position if it is in this line.
 	if (saved_cursor.lnum == curwin->w_cursor.lnum)
 	{
-	    if (saved_cursor.col >= (colnr_T)(p - oldline))
+	    if (saved_cursor.col >= old_offset)
 		// cursor was after the indent, adjust for the number of
 		// bytes added/removed
-		saved_cursor.col += ind_len - (colnr_T)(p - oldline);
-	    else if (saved_cursor.col >= (colnr_T)(s - newline))
+		saved_cursor.col += ind_len - old_offset;
+	    else if (saved_cursor.col >= new_offset)
 		// cursor was in the indent, and is now after it, put it back
 		// at the start of the indent (replacing spaces with TAB)
-		saved_cursor.col = (colnr_T)(s - newline);
+		saved_cursor.col = new_offset;
 	}
 #ifdef FEAT_PROP_POPUP
 	{
-	    int added = ind_len - (colnr_T)(p - oldline);
+	    int added = ind_len - old_offset;
 
 	    // When increasing indent this behaves like spaces were inserted at
 	    // the old indent, when decreasing indent it behaves like spaces
 	    // were deleted at the new indent.
 	    adjust_prop_columns(curwin->w_cursor.lnum,
-		 (colnr_T)(added > 0 ? (p - oldline) : ind_len), added, 0);
+			  added > 0 ? old_offset : (colnr_T)ind_len, added, 0);
 	}
 #endif
 	retval = TRUE;
