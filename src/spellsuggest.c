@@ -676,8 +676,6 @@ spell_suggest(int count)
 	    mch_memmove(p, line, c);
 	    STRCPY(p + c, stp->st_word);
 	    STRCAT(p, sug.su_badptr + stp->st_orglen);
-	    ml_replace(curwin->w_cursor.lnum, p, FALSE);
-	    curwin->w_cursor.col = c;
 
 	    // For redo we use a change-word command.
 	    ResetRedobuff();
@@ -686,7 +684,10 @@ spell_suggest(int count)
 			    stp->st_wordlen + sug.su_badlen - stp->st_orglen);
 	    AppendCharToRedobuff(ESC);
 
-	    // After this "p" may be invalid.
+	    // "p" may be freed here
+	    ml_replace(curwin->w_cursor.lnum, p, FALSE);
+	    curwin->w_cursor.col = c;
+
 	    changed_bytes(curwin->w_cursor.lnum, c);
 	}
     }
