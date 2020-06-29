@@ -5908,7 +5908,8 @@ mkspell(
     spin.si_newcompID = 127;	// start compound ID at first maximum
 
     // default: fnames[0] is output file, following are input files
-    innames = &fnames[1];
+    // When "fcount" is 1 there is only one file.
+    innames = &fnames[fcount == 1 ? 0 : 1];
     incount = fcount - 1;
 
     wfname = alloc(MAXPATHL);
@@ -5922,14 +5923,12 @@ mkspell(
 	{
 	    // For ":mkspell path/en.latin1.add" output file is
 	    // "path/en.latin1.add.spl".
-	    innames = &fnames[0];
 	    incount = 1;
 	    vim_snprintf((char *)wfname, MAXPATHL, "%s.spl", fnames[0]);
 	}
 	else if (fcount == 1)
 	{
 	    // For ":mkspell path/vim" output file is "path/vim.latin1.spl".
-	    innames = &fnames[0];
 	    incount = 1;
 	    vim_snprintf((char *)wfname, MAXPATHL, SPL_FNAME_TMPL,
 		  fnames[0], spin.si_ascii ? (char_u *)"ascii" : spell_enc());
