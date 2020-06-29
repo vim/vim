@@ -989,16 +989,16 @@ yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
     for (n = 0; n < reg->y_size; n++)
 	list_append_string(list, reg->y_array[n], -1);
     list->lv_lock = VAR_FIXED;
-    dict_add_list(v_event, "regcontents", list);
+    (void)dict_add_list(v_event, "regcontents", list);
 
     buf[0] = (char_u)oap->regname;
     buf[1] = NUL;
-    dict_add_string(v_event, "regname", buf);
+    (void)dict_add_string(v_event, "regname", buf);
 
     buf[0] = get_op_char(oap->op_type);
     buf[1] = get_extra_op_char(oap->op_type);
     buf[2] = NUL;
-    dict_add_string(v_event, "operator", buf);
+    (void)dict_add_string(v_event, "operator", buf);
 
     buf[0] = NUL;
     buf[1] = NUL;
@@ -1011,9 +1011,9 @@ yank_do_autocmd(oparg_T *oap, yankreg_T *reg)
 			     reglen + 1);
 		break;
     }
-    dict_add_string(v_event, "regtype", buf);
+    (void)dict_add_string(v_event, "regtype", buf);
 
-    dict_add_bool(v_event, "visual", oap->is_VIsual);
+    (void)dict_add_bool(v_event, "visual", oap->is_VIsual);
 
     // Lock the dictionary and its keys
     dict_set_items_ro(v_event);
