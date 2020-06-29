@@ -350,16 +350,11 @@ get_lambda_name(void)
 register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
 {
     char_u	*name = get_lambda_name();
-    ufunc_T	*fp = NULL;
-    garray_T	newargs;
-    garray_T	newlines;
-
-    ga_init(&newargs);
-    ga_init(&newlines);
+    ufunc_T	*fp;
 
     fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
     if (fp == NULL)
-        goto errret;
+	return NULL;
 
     fp->uf_dfunc_idx = UF_NOT_COMPILED;
     fp->uf_refcount = 1;
@@ -367,8 +362,6 @@ register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
     fp->uf_flags = FC_CFUNC;
     fp->uf_calls = 0;
     fp->uf_script_ctx = current_sctx;
-    fp->uf_lines = newlines;
-    fp->uf_args = newargs;
     fp->uf_cb = cb;
     fp->uf_cb_free = cb_free;
     fp->uf_cb_state = state;
@@ -377,12 +370,6 @@ register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
     hash_add(&func_hashtab, UF2HIKEY(fp));
 
     return name;
-
-errret:
-    ga_clear_strings(&newargs);
-    ga_clear_strings(&newlines);
-    vim_free(fp);
-    return NULL;
 }
 #endif
 
