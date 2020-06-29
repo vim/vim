@@ -895,10 +895,20 @@ report_discard_pending(int pending, void *value)
 ex_eval(exarg_T *eap)
 {
     typval_T	tv;
+    evalarg_T	evalarg;
 
-    if (eval0(eap->arg, &tv, &eap->nextcmd, eap->skip ? 0 : EVAL_EVALUATE)
-									 == OK)
+    CLEAR_FIELD(evalarg);
+    evalarg.eval_flags = eap->skip ? 0 : EVAL_EVALUATE;
+    if (getline_equal(eap->getline, eap->cookie, getsourceline))
+    {
+	evalarg.eval_getline = eap->getline;
+	evalarg.eval_cookie = eap->cookie;
+    }
+
+    if (eval0(eap->arg, &tv, eap, &evalarg) == OK)
 	clear_tv(&tv);
+
+    clear_evalarg(&evalarg, eap);
 }
 
 /*
@@ -926,7 +936,7 @@ ex_if(exarg_T *eap)
 	skip = did_emsg || got_int || did_throw || (cstack->cs_idx > 0
 		&& !(cstack->cs_flags[cstack->cs_idx - 1] & CSF_ACTIVE));
 
-	result = eval_to_bool(eap->arg, &error, &eap->nextcmd, skip);
+	result = eval_to_bool(eap->arg, &error, eap, skip);
 
 	if (!skip && !error)
 	{
@@ -1038,7 +1048,7 @@ ex_else(exarg_T *eap)
 
     if (eap->cmdidx == CMD_elseif)
     {
-	result = eval_to_bool(eap->arg, &error, &eap->nextcmd, skip);
+	result = eval_to_bool(eap->arg, &error, eap, skip);
 
 	// When throwing error exceptions, we want to throw always the first
 	// of several errors in a row.  This is what actually happens when
@@ -1100,11 +1110,20 @@ ex_while(exarg_T *eap)
 	    /*
 	     * ":while bool-expr"
 	     */
-	    result = eval_to_bool(eap->arg, &error, &eap->nextcmd, skip);
+	    result = eval_to_bool(eap->arg, &error, eap, skip);
 	}
 	else
 	{
-	    void *fi;
+	    void	*fi;
+	    evalarg_T	evalarg;
+
+	    CLEAR_FIELD(evalarg);
+	    evalarg.eval_flags = skip ? 0 : EVAL_EVALUATE;
+	    if (getline_equal(eap->getline, eap->cookie, getsourceline))
+	    {
+		evalarg.eval_getline = eap->getline;
+		evalarg.eval_cookie = eap->cookie;
+	    }
 
 	    /*
 	     * ":for var in list-expr"
@@ -1115,11 +1134,14 @@ ex_while(exarg_T *eap)
 		// previously evaluated list.
 		fi = cstack->cs_forinfo[cstack->cs_idx];
 		error = FALSE;
+
+		// the "in expr" is not used, skip over it
+		skip_for_lines(fi, &evalarg);
 	    }
 	    else
 	    {
 		// Evaluate the argument and get the info in a structure.
-		fi = eval_for_line(eap->arg, &error, &eap->nextcmd, skip);
+		fi = eval_for_line(eap->arg, &error, eap, &evalarg);
 		cstack->cs_forinfo[cstack->cs_idx] = fi;
 	    }
 
@@ -1134,6 +1156,7 @@ ex_while(exarg_T *eap)
 		free_for_info(fi);
 		cstack->cs_forinfo[cstack->cs_idx] = NULL;
 	    }
+	    clear_evalarg(&evalarg, eap);
 	}
 
 	/*
@@ -1319,7 +1342,7 @@ ex_throw(exarg_T *eap)
     char_u	*value;
 
     if (*arg != NUL && *arg != '|' && *arg != '\n')
-	value = eval_to_string_skip(arg, &eap->nextcmd, eap->skip);
+	value = eval_to_string_skip(arg, eap, eap->skip);
     else
     {
 	emsg(_(e_argreq));

@@ -2665,10 +2665,6 @@ long elapsed(DWORD start_tick);
 #define REPTERM_SPECIAL		4
 #define REPTERM_NO_SIMPLIFY	8
 
-// Flags for expression evaluation.
-#define EVAL_EVALUATE	    1	    // when missing don't actually evaluate
-#define EVAL_CONSTANT	    2	    // when not a constant return FAIL
-
 // Flags for find_special_key()
 #define FSK_KEYCODE	0x01	// prefer key code, e.g. K_DEL instead of DEL
 #define FSK_KEEP_X_KEY	0x02	// don't translate xHome to Home key

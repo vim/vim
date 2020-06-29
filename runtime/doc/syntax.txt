@@ -5018,7 +5018,7 @@ ctermul={color-nr}				*highlight-ctermul*
 	console.  Example, for reverse video: >
 	    :highlight Visual ctermfg=bg ctermbg=fg
 <	Note that the colors are used that are valid at the moment this
-	command are given.  If the Normal group colors are changed later, the
+	command is given.  If the Normal group colors are changed later, the
 	"fg" and "bg" colors will not be adjusted.
 
 

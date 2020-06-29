@@ -13,6 +13,9 @@ def Test_expr1()
     assert_equal('one', 0.1 ? 'one' : 'two')
   endif
   assert_equal('one', 'x' ? 'one' : 'two')
+  assert_equal('one', 'x'
+  			? 'one'
+			: 'two')
   assert_equal('one', 0z1234 ? 'one' : 'two')
   assert_equal('one', [0] ? 'one' : 'two')
   assert_equal('one', #{x: 0} ? 'one' : 'two')
@@ -40,6 +43,36 @@ def Test_expr1()
   let RetTwo: func(string): number = function('winnr')
   let RetThat: func = g:atrue ? RetOne : RetTwo
   assert_equal(function('len'), RetThat)
+enddef
+
+def Test_expr1_vimscript()
+  " only checks line continuation
+  let lines =<< trim END
+      vim9script
+      let var = 1
+      		? 'yes'
+		: 'no'
+      assert_equal('yes', var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let var = v:false
+      		? 'yes'
+		: 'no'
+      assert_equal('no', var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let var = v:false ?
+      		'yes' :
+		'no'
+      assert_equal('no', var)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 func Test_expr1_fails()
@@ -70,6 +103,8 @@ def Test_expr2()
 		    0 ||
 		    7)
   assert_equal(0, 0 || 0)
+  assert_equal(0, 0
+  		    || 0)
   assert_equal('', 0 || '')
 
   g:vals = []
@@ -81,12 +116,43 @@ def Test_expr2()
   assert_equal([0, 5], g:vals)
 
   g:vals = []
-  assert_equal(4, Record(0) || Record(4) || Record(0))
+  assert_equal(4, Record(0)
+		      || Record(4)
+		      || Record(0))
   assert_equal([0, 4], g:vals)
 
   g:vals = []
   assert_equal(0, Record([]) || Record('') || Record(0))
   assert_equal([[], '', 0], g:vals)
+enddef
+
+def Test_expr2_vimscript()
+  " only checks line continuation
+  let lines =<< trim END
+      vim9script
+      let var = 0
+      		|| 1
+      assert_equal(1, var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let var = v:false
+      		|| v:true
+      		|| v:false
+      assert_equal(1, var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let var = v:false ||
+      		v:true ||
+		v:false
+      assert_equal(1, var)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 func Test_expr2_fails()
@@ -104,7 +170,9 @@ def Test_expr3()
   assert_equal(0, 0 &&
 		0 &&
 		7)
-  assert_equal(7, 2 && 3 && 7)
+  assert_equal(7, 2
+  		    && 3
+		    && 7)
   assert_equal(0, 0 && 0)
   assert_equal(0, 0 && '')
   assert_equal('', 8 && '')
@@ -128,6 +196,35 @@ def Test_expr3()
   g:vals = []
   assert_equal(0, Record([1]) && Record('z') && Record(0))
   assert_equal([[1], 'z', 0], g:vals)
+enddef
+
+def Test_expr3_vimscript()
+  " only checks line continuation
+  let lines =<< trim END
+      vim9script
+      let var = 0
+      		&& 1
+      assert_equal(0, var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let var = v:true
+      		&& v:true
+      		&& v:true
+      assert_equal(1, var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let var = v:true &&
+      		v:true &&
+      		v:true
+      assert_equal(1, var)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 func Test_expr3_fails()
@@ -158,7 +255,8 @@ def Test_expr4_equal()
   assert_equal(true, true == true)
   assert_equal(false, true ==
 			false)
-  assert_equal(true, true == trueVar)
+  assert_equal(true, true
+			== trueVar)
   assert_equal(false, true == falseVar)
   assert_equal(true, true == g:atrue)
   assert_equal(false, g:atrue == false)
@@ -250,7 +348,8 @@ def Test_expr4_notequal()
   assert_equal(false, true != true)
   assert_equal(true, true !=
 			false)
-  assert_equal(false, true != trueVar)
+  assert_equal(false, true
+  			!= trueVar)
   assert_equal(true, true != falseVar)
   assert_equal(false, true != g:atrue)
   assert_equal(true, g:atrue != false)
@@ -334,7 +433,8 @@ def Test_expr4_greater()
   assert_true(nr2 >
 		1)
   assert_false(nr2 > 2)
-  assert_false(nr2 > 3)
+  assert_false(nr2
+  		    > 3)
   if has('float')
     let ff = 2.0
     assert_true(ff > 0.0)
@@ -367,7 +467,8 @@ def Test_expr4_smaller()
   assert_false(2 < 0)
   assert_false(2 <
 			2)
-  assert_true(2 < 3)
+  assert_true(2
+  		< 3)
   let nr2 = 2
   assert_false(nr2 < 0)
   assert_false(nr2 < 2)
@@ -385,7 +486,8 @@ def Test_expr4_smallerequal()
   assert_false(2 <= 0)
   assert_false(2 <=
 			1)
-  assert_true(2 <= 2)
+  assert_true(2
+  		<= 2)
   assert_true(2 <= 3)
   let nr2 = 2
   assert_false(nr2 <= 0)
@@ -404,6 +506,8 @@ enddef
 " test =~ comperator
 def Test_expr4_match()
   assert_equal(false, '2' =~ '0')
+  assert_equal(false, ''
+  			 =~ '0')
   assert_equal(true, '2' =~
 			'[0-9]')
 enddef
@@ -411,6 +515,8 @@ enddef
 " test !~ comperator
 def Test_expr4_nomatch()
   assert_equal(true, '2' !~ '0')
+  assert_equal(true, ''
+  			!~ '0')
   assert_equal(false, '2' !~
 			'[0-9]')
 enddef
@@ -424,7 +530,8 @@ def Test_expr4_is()
 		other)
 
   let myblob = 0z1234
-  assert_false(myblob is 0z1234)
+  assert_false(myblob
+  			is 0z1234)
   let otherblob = myblob
   assert_true(myblob is otherblob)
 enddef
@@ -439,13 +546,59 @@ def Test_expr4_isnot()
 			other)
 
   let myblob = 0z1234
-  assert_true(myblob isnot 0z1234)
+  assert_true(myblob
+  		isnot 0z1234)
   let otherblob = myblob
   assert_false(myblob isnot otherblob)
 enddef
 
 def RetVoid()
   let x = 1
+enddef
+
+def Test_expr4_vimscript()
+  " only checks line continuation
+  let lines =<< trim END
+      vim9script
+      let var = 0
+      		< 1
+      assert_equal(1, var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let var = 123
+      		!= 123
+      assert_equal(0, var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let var = 123 ==
+      			123
+      assert_equal(1, var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let list = [1, 2, 3]
+      let var = list
+      		is list
+      assert_equal(1, var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let myblob = 0z1234
+      let var = myblob
+      		isnot 0z11
+      assert_equal(1, var)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 func Test_expr4_fails()
@@ -522,28 +675,52 @@ def Test_expr5()
   assert_equal(66, 60 + 6)
   assert_equal(70, 60 +
 			g:anint)
-  assert_equal(9, g:alsoint + 5)
+  assert_equal(9, g:alsoint
+  			+ 5)
   assert_equal(14, g:alsoint + g:anint)
   assert_equal([1, 2, 3, 4], [1] + g:alist)
 
   assert_equal(54, 60 - 6)
   assert_equal(50, 60 -
 		    g:anint)
-  assert_equal(-1, g:alsoint - 5)
+  assert_equal(-1, g:alsoint
+  			- 5)
   assert_equal(-6, g:alsoint - g:anint)
 
   assert_equal('hello', 'hel' .. 'lo')
   assert_equal('hello 123', 'hello ' ..
 					123)
-  assert_equal('hello 123', 'hello ' ..  123)
+  assert_equal('hello 123', 'hello '
+  				..  123)
   assert_equal('123 hello', 123 .. ' hello')
   assert_equal('123456', 123 .. 456)
 
   assert_equal([1, 2, 3, 4], [1, 2] + [3, 4])
   assert_equal(0z11223344, 0z1122 + 0z3344)
-  assert_equal(0z112201ab, 0z1122 + g:ablob)
+  assert_equal(0z112201ab, 0z1122
+  				+ g:ablob)
   assert_equal(0z01ab3344, g:ablob + 0z3344)
   assert_equal(0z01ab01ab, g:ablob + g:ablob)
+enddef
+
+def Test_expr5_vim9script()
+  " only checks line continuation
+  let lines =<< trim END
+      vim9script
+      let var = 11
+      		+ 77
+		- 22
+      assert_equal(66, var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let var = 'one'
+      		.. 'two'
+      assert_equal('onetwo', var)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_expr5_float()
@@ -554,13 +731,15 @@ def Test_expr5_float()
     assert_equal(66.0, 60.0 + 6)
     assert_equal(66.0, 60 +
 			 6.0)
-    assert_equal(5.1, g:afloat + 5)
+    assert_equal(5.1, g:afloat
+    			+ 5)
     assert_equal(8.1, 8 + g:afloat)
     assert_equal(10.1, g:anint + g:afloat)
     assert_equal(10.1, g:afloat + g:anint)
 
     assert_equal(54.0, 60.0 - 6.0)
-    assert_equal(54.0, 60.0 - 6)
+    assert_equal(54.0, 60.0
+    			    - 6)
     assert_equal(54.0, 60 - 6.0)
     assert_equal(-4.9, g:afloat - 5)
     assert_equal(7.9, 8 - g:afloat)
@@ -585,12 +764,12 @@ func Test_expr5_fails()
   call CheckDefFailure(["let x = '1' ..'2'"], msg)
   call CheckDefFailure(["let x = '1'.. '2'"], msg)
 
-  call CheckDefFailure(["let x = 0z1122 + 33"], 'E1035')
-  call CheckDefFailure(["let x = 0z1122 + [3]"], 'E1035')
-  call CheckDefFailure(["let x = 0z1122 + 'asd'"], 'E1035')
-  call CheckDefFailure(["let x = 33 + 0z1122"], 'E1035')
-  call CheckDefFailure(["let x = [3] + 0z1122"], 'E1035')
-  call CheckDefFailure(["let x = 'asdf' + 0z1122"], 'E1035')
+  call CheckDefFailure(["let x = 0z1122 + 33"], 'E1051')
+  call CheckDefFailure(["let x = 0z1122 + [3]"], 'E1051')
+  call CheckDefFailure(["let x = 0z1122 + 'asd'"], 'E1051')
+  call CheckDefFailure(["let x = 33 + 0z1122"], 'E1051')
+  call CheckDefFailure(["let x = [3] + 0z1122"], 'E1051')
+  call CheckDefFailure(["let x = 'asdf' + 0z1122"], 'E1051')
   call CheckDefFailure(["let x = 6 + xxx"], 'E1001')
 endfunc
 
@@ -599,20 +778,23 @@ def Test_expr6()
   assert_equal(36, 6 * 6)
   assert_equal(24, 6 *
 			g:alsoint)
-  assert_equal(24, g:alsoint * 6)
+  assert_equal(24, g:alsoint
+  			* 6)
   assert_equal(40, g:anint * g:alsoint)
 
   assert_equal(10, 60 / 6)
   assert_equal(6, 60 /
 			g:anint)
   assert_equal(1, g:anint / 6)
-  assert_equal(2, g:anint / g:alsoint)
+  assert_equal(2, g:anint
+  			/ g:alsoint)
 
   assert_equal(5, 11 % 6)
   assert_equal(4, g:anint % 6)
   assert_equal(3, 13 %
 			g:anint)
-  assert_equal(2, g:anint % g:alsoint)
+  assert_equal(2, g:anint
+  			% g:alsoint)
 
   assert_equal(4, 6 * 4 / 6)
 
@@ -623,11 +805,33 @@ def Test_expr6()
   if has('float')
     let xf = [2.0]
     let yf = [3.0]
-    assert_equal(5.0, xf[0] + yf[0])
-    assert_equal(6.0, xf[0] * yf[0])
+    assert_equal(5.0, xf[0]
+    			+ yf[0])
+    assert_equal(6.0, xf[0]
+    			* yf[0])
   endif
 
   call CheckDefFailure(["let x = 6 * xxx"], 'E1001')
+enddef
+
+def Test_expr6_vim9script()
+  " only checks line continuation
+  let lines =<< trim END
+      vim9script
+      let var = 11
+      		* 22
+		/ 3
+      assert_equal(80, var)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let var = 25
+      		% 10
+      assert_equal(5, var)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_expr6_float()
@@ -805,7 +1009,7 @@ def Test_expr7_list()
   " list
   assert_equal(g:list_empty, [])
   assert_equal(g:list_empty, [  ])
-  assert_equal(g:list_mixed, [1, 'b', false])
+  assert_equal(g:list_mixed, [1, 'b', false,])
   assert_equal('b', g:list_mixed[1])
 
   call CheckDefExecFailure(["let x = g:anint[3]"], 'E714:')
@@ -815,11 +1019,49 @@ def Test_expr7_list()
   call CheckDefExecFailure(["let x = g:list_empty[3]"], 'E684:')
 enddef
 
+def Test_expr7_list_vim9script()
+  let lines =<< trim END
+      vim9script
+      let l = [
+		11,
+		22,
+		]
+      assert_equal([11, 22], l)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let l = [11,
+		22]
+      assert_equal([11, 22], l)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let l = [11,22]
+  END
+  CheckScriptFailure(lines, 'E1069:')
+enddef
+
 def Test_expr7_lambda()
   " lambda
   let La = { -> 'result'}
   assert_equal('result', La())
   assert_equal([1, 3, 5], [1, 2, 3]->map({key, val -> key + val}))
+enddef
+
+def Test_expr7_lambda_vim9script()
+  let lines =<< trim END
+      vim9script
+      let v = 10->{a ->
+	    a
+	      + 2
+	  }()
+      assert_equal(12, v)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_expr7_dict()
@@ -843,6 +1085,40 @@ def Test_expr7_dict()
   call CheckDefFailure(["let x = x + 1"], 'E1001:')
   call CheckDefExecFailure(["let x = g:anint.member"], 'E715:')
   call CheckDefExecFailure(["let x = g:dict_empty.member"], 'E716:')
+enddef
+
+def Test_expr7_dict_vim9script()
+  let lines =<< trim END
+      vim9script
+      let d = {
+		'one':
+		   1,
+		'two': 2,
+		   }
+      assert_equal({'one': 1, 'two': 2}, d)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let d = #{one: 1,
+		two: 2,
+	       }
+      assert_equal({'one': 1, 'two': 2}, d)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let d = #{one:1, two: 2}
+  END
+  CheckScriptFailure(lines, 'E1069:')
+
+  lines =<< trim END
+      vim9script
+      let d = #{one: 1,two: 2}
+  END
+  CheckScriptFailure(lines, 'E1069:')
 enddef
 
 def Test_expr_member()
@@ -892,6 +1168,21 @@ def Test_expr7_parens()
   assert_equal(6, --6)
   assert_equal(6, -+-6)
   assert_equal(-6, ---6)
+  assert_equal(false, !-3)
+  assert_equal(true, !+-+0)
+enddef
+
+def Test_expr7_parens_vim9script()
+  let lines =<< trim END
+      vim9script
+      let s = (
+		'one'
+		..
+		'two'
+		)
+      assert_equal('onetwo', s)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_expr7_negate()
@@ -913,6 +1204,8 @@ enddef
 def Test_expr7_call()
   assert_equal('yes', 'yes'->Echo())
   assert_equal('yes', 'yes'->s:EchoArg())
+  assert_equal(1, !range(5)->empty())
+  assert_equal([0, 1, 2], --3->range())
 
   call CheckDefFailure(["let x = 'yes'->Echo"], 'E107:')
 enddef

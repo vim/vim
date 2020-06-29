@@ -139,7 +139,7 @@ let s:filename_checks = {
     \ 'dnsmasq': ['/etc/dnsmasq.conf'],
     \ 'dockerfile': ['Containerfile', 'Dockerfile', 'file.Dockerfile'],
     \ 'dosbatch': ['file.bat', 'file.sys'],
-    \ 'dosini': ['.editorconfig', '/etc/yum.conf', 'file.ini'],
+    \ 'dosini': ['.editorconfig', '/etc/pacman.conf', '/etc/yum.conf', 'file.ini'],
     \ 'dot': ['file.dot', 'file.gv'],
     \ 'dracula': ['file.drac', 'file.drc', 'filelvs', 'filelpe'],
     \ 'dsl': ['file.dsl'],
@@ -150,7 +150,7 @@ let s:filename_checks = {
     \ 'dylanlid': ['file.lid'],
     \ 'ecd': ['file.ecd'],
     \ 'edif': ['file.edf', 'file.edif', 'file.edo'],
-    \ 'elinks': ['/etc/elinks.conf', '/.elinks/elinks.conf'],
+    \ 'elinks': ['elinks.conf'],
     \ 'elm': ['file.elm'],
     \ 'elmfilt': ['filter-rules'],
     \ 'erlang': ['file.erl', 'file.hrl', 'file.yaws'],
@@ -440,7 +440,7 @@ let s:filename_checks = {
     \ 'swiftgyb': ['file.swift.gyb'],
     \ 'sil': ['file.sil'],
     \ 'sysctl': ['/etc/sysctl.conf', '/etc/sysctl.d/file.conf'],
-    \ 'systemd': ['any/systemd/file.automount', 'any/systemd/file.mount', 'any/systemd/file.path', 'any/systemd/file.service', 'any/systemd/file.socket', 'any/systemd/file.swap', 'any/systemd/file.target', 'any/systemd/file.timer', '/etc/systemd/system/some.d/file.conf', '/etc/systemd/system/some.d/.#file', '/etc/systemd/system/.#otherfile', '/home/user/.config/systemd/user/some.d/mine.conf', '/home/user/.config/systemd/user/some.d/.#file', '/home/user/.config/systemd/user/.#otherfile'],
+    \ 'systemd': ['any/systemd/file.automount', 'any/systemd/file.dnssd', 'any/systemd/file.link', 'any/systemd/file.mount', 'any/systemd/file.netdev', 'any/systemd/file.network', 'any/systemd/file.nspawn', 'any/systemd/file.path', 'any/systemd/file.service', 'any/systemd/file.slice', 'any/systemd/file.socket', 'any/systemd/file.swap', 'any/systemd/file.target', 'any/systemd/file.timer', '/etc/systemd/some.conf.d/file.conf', '/etc/systemd/system/some.d/file.conf', '/etc/systemd/system/some.d/.#file', '/etc/systemd/system/.#otherfile', '/home/user/.config/systemd/user/some.d/mine.conf', '/home/user/.config/systemd/user/some.d/.#file', '/home/user/.config/systemd/user/.#otherfile'],
     \ 'systemverilog': ['file.sv', 'file.svh'],
     \ 'tags': ['tags'],
     \ 'tak': ['file.tak'],
@@ -664,5 +664,23 @@ func Test_filetype_indent_off()
         \ execute('filetype')->split("\n"))
   close
 endfunc
+
+func Test_hook_file()
+  filetype on
+
+  call writefile(['[Trigger]', 'this is pacman config'], 'Xfile.hook')
+  split Xfile.hook
+  call assert_equal('dosini', &filetype)
+  bwipe!
+
+  call writefile(['not pacman'], 'Xfile.hook')
+  split Xfile.hook
+  call assert_notequal('dosini', &filetype)
+  bwipe!
+
+  call delete('Xfile.hook')
+  filetype off
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -701,8 +701,9 @@ endfunc
 func Test_highlight_cmd_errors()
   if has('gui_running')
     " This test doesn't fail in the MS-Windows console version.
-    call assert_fails('hi Xcomment ctermfg=fg', 'E419:')
+    call assert_fails('hi Xcomment ctermbg=fg', 'E419:')
     call assert_fails('hi Xcomment ctermfg=bg', 'E420:')
+    call assert_fails('hi Xcomment ctermfg=ul', 'E453:')
   endif
 
   " Try using a very long terminal code. Define a dummy terminal code for this
@@ -711,6 +712,53 @@ func Test_highlight_cmd_errors()
   let c = repeat("t_fo,", 100) . "t_fo"
   call assert_fails('exe "hi Xgroup1 start=" . c', 'E422:')
   let &t_fo = ""
+endfunc
+
+" Test for 'highlight' option
+func Test_highlight_opt()
+  let save_hl = &highlight
+  call assert_fails('set highlight=j:b', 'E474:')
+  set highlight=f\ r
+  call assert_equal('f r', &highlight)
+  set highlight=fb
+  call assert_equal('fb', &highlight)
+  set highlight=fi
+  call assert_equal('fi', &highlight)
+  set highlight=f-
+  call assert_equal('f-', &highlight)
+  set highlight=fr
+  call assert_equal('fr', &highlight)
+  set highlight=fs
+  call assert_equal('fs', &highlight)
+  set highlight=fu
+  call assert_equal('fu', &highlight)
+  set highlight=fc
+  call assert_equal('fc', &highlight)
+  set highlight=ft
+  call assert_equal('ft', &highlight)
+  call assert_fails('set highlight=fr:Search', 'E474:')
+  set highlight=f:$#
+  call assert_match('W18:', v:statusmsg)
+  let &highlight = save_hl
+endfunc
+
+" Test for User group highlighting used in the statusline
+func Test_highlight_User()
+  CheckNotGui
+  hi User1 ctermfg=12
+  redraw!
+  call assert_equal('12', synIDattr(synIDtrans(hlID('User1')), 'fg'))
+  hi clear
+endfunc
+
+" Test for using RGB color values in a highlight group
+func Test_highlight_RGB_color()
+  CheckGui
+  hi MySearch guifg=#110000 guibg=#001100 guisp=#000011
+  call assert_equal('#110000', synIDattr(synIDtrans(hlID('MySearch')), 'fg#'))
+  call assert_equal('#001100', synIDattr(synIDtrans(hlID('MySearch')), 'bg#'))
+  call assert_equal('#000011', synIDattr(synIDtrans(hlID('MySearch')), 'sp#'))
+  hi clear
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

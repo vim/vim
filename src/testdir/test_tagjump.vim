@@ -12,6 +12,47 @@ func Test_ptag_with_notagstack()
   set tagstack&vim
 endfunc
 
+func Test_ptjump()
+  CheckFeature quickfix
+
+  set tags=Xtags
+  call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "one\tXfile\t1",
+        \ "three\tXfile\t3",
+        \ "two\tXfile\t2"],
+        \ 'Xtags')
+  call writefile(['one', 'two', 'three'], 'Xfile')
+
+  %bw!
+  ptjump two
+  call assert_equal(2, winnr())
+  wincmd p
+  call assert_equal(1, &previewwindow)
+  call assert_equal('Xfile', expand("%:p:t"))
+  call assert_equal(2, line('.'))
+  call assert_equal(2, winnr('$'))
+  call assert_equal(1, winnr())
+  close
+  call setline(1, ['one', 'two', 'three'])
+  exe "normal 3G\<C-W>g}"
+  call assert_equal(2, winnr())
+  wincmd p
+  call assert_equal(1, &previewwindow)
+  call assert_equal('Xfile', expand("%:p:t"))
+  call assert_equal(3, line('.'))
+  call assert_equal(2, winnr('$'))
+  call assert_equal(1, winnr())
+  close
+  exe "normal 3G5\<C-W>\<C-G>}"
+  wincmd p
+  call assert_equal(5, winheight(0))
+  close
+
+  call delete('Xtags')
+  call delete('Xfile')
+  set tags&
+endfunc
+
 func Test_cancel_ptjump()
   CheckFeature quickfix
 
@@ -1267,6 +1308,10 @@ func Test_macro_search()
   close
   call assert_fails('3wincmd d', 'E387:')
   call assert_fails('6wincmd d', 'E388:')
+  new
+  call assert_fails("normal \<C-W>d", 'E349:')
+  call assert_fails("normal \<C-W>\<C-D>", 'E349:')
+  close
 
   " Test for :dsplit
   dsplit FOO

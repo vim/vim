@@ -35,6 +35,13 @@ typedef struct {
 } luaV_Funcref;
 typedef void (*msgfunc_T)(char_u *);
 
+typedef struct {
+    int lua_funcref;    // ref to a lua func
+    int lua_tableref;   // ref to a lua table if metatable else LUA_NOREF. used
+			// for __call
+    lua_State *L;
+} luaV_CFuncState;
+
 static const char LUAVIM_DICT[] = "dict";
 static const char LUAVIM_LIST[] = "list";
 static const char LUAVIM_BLOB[] = "blob";
@@ -44,6 +51,8 @@ static const char LUAVIM_WINDOW[] = "window";
 static const char LUAVIM_FREE[] = "luaV_free";
 static const char LUAVIM_LUAEVAL[] = "luaV_luaeval";
 static const char LUAVIM_SETREF[] = "luaV_setref";
+
+static const char LUA___CALL[] = "__call";
 
 // most functions are closures with a cache table as first upvalue;
 // get/setudata manage references to vim userdata in cache table through
@@ -64,7 +73,7 @@ static const char LUAVIM_SETREF[] = "luaV_setref";
 #define luaV_emsg(L) luaV_msgfunc((L), (msgfunc_T) emsg)
 #define luaV_checktypval(L, a, v, msg) \
     do { \
-        if (luaV_totypval(L, a, v) == FAIL) \
+	if (luaV_totypval(L, a, v) == FAIL) \
 	    luaL_error(L, msg ": cannot convert value"); \
     } while (0)
 
@@ -72,6 +81,8 @@ static luaV_List *luaV_pushlist(lua_State *L, list_T *lis);
 static luaV_Dict *luaV_pushdict(lua_State *L, dict_T *dic);
 static luaV_Blob *luaV_pushblob(lua_State *L, blob_T *blo);
 static luaV_Funcref *luaV_pushfuncref(lua_State *L, char_u *name);
+static int luaV_call_lua_func(int argcount, typval_T *argvars, typval_T *rettv, void *state);
+static void luaV_call_lua_func_free(void *state);
 
 #if LUA_VERSION_NUM <= 501
 #define luaV_openlib(L, l, n) luaL_openlib(L, NULL, l, n)
@@ -120,6 +131,8 @@ static luaV_Funcref *luaV_pushfuncref(lua_State *L, char_u *name);
 #define luaL_addlstring dll_luaL_addlstring
 #define luaL_pushresult dll_luaL_pushresult
 #define luaL_loadstring dll_luaL_loadstring
+#define luaL_ref dll_luaL_ref
+#define luaL_unref dll_luaL_unref
 // lua
 #if LUA_VERSION_NUM <= 501
 #define lua_tonumber dll_lua_tonumber
@@ -215,6 +228,12 @@ void (*dll_luaL_buffinit) (lua_State *L, luaL_Buffer *B);
 void (*dll_luaL_addlstring) (luaL_Buffer *B, const char *s, size_t l);
 void (*dll_luaL_pushresult) (luaL_Buffer *B);
 int (*dll_luaL_loadstring) (lua_State *L, const char *s);
+int (*dll_luaL_ref) (lua_State *L, int idx);
+#if LUA_VERSION_NUM <= 502
+void (*dll_luaL_unref) (lua_State *L, int idx, int n);
+#else
+void (*dll_luaL_unref) (lua_State *L, int idx, lua_Integer n);
+#endif
 // lua
 #if LUA_VERSION_NUM <= 501
 lua_Number (*dll_lua_tonumber) (lua_State *L, int idx);
@@ -328,6 +347,8 @@ static const luaV_Reg luaV_dll[] = {
     {"luaL_addlstring", (luaV_function) &dll_luaL_addlstring},
     {"luaL_pushresult", (luaV_function) &dll_luaL_pushresult},
     {"luaL_loadstring", (luaV_function) &dll_luaL_loadstring},
+    {"luaL_ref", (luaV_function) &dll_luaL_ref},
+    {"luaL_unref", (luaV_function) &dll_luaL_unref},
     // lua
 #if LUA_VERSION_NUM <= 501
     {"lua_tonumber", (luaV_function) &dll_lua_tonumber},
@@ -591,6 +612,45 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	    tv->vval.v_number = (varnumber_T) lua_tointeger(L, pos);
 #endif
 	    break;
+	case LUA_TFUNCTION:
+	{
+	    char_u *name;
+	    lua_pushvalue(L, pos);
+	    luaV_CFuncState *state = ALLOC_CLEAR_ONE(luaV_CFuncState);
+	    state->lua_funcref = luaL_ref(L, LUA_REGISTRYINDEX);
+	    state->L = L;
+	    state->lua_tableref = LUA_NOREF;
+	    name = register_cfunc(&luaV_call_lua_func,
+					      &luaV_call_lua_func_free, state);
+	    tv->v_type = VAR_FUNC;
+	    tv->vval.v_string = vim_strsave(name);
+	    break;
+	}
+	case LUA_TTABLE:
+	{
+	    lua_pushvalue(L, pos);
+	    int lua_tableref = luaL_ref(L, LUA_REGISTRYINDEX);
+	    if (lua_getmetatable(L, pos)) {
+		lua_getfield(L, -1, LUA___CALL);
+		if (lua_isfunction(L, -1)) {
+		    char_u *name;
+		    int lua_funcref = luaL_ref(L, LUA_REGISTRYINDEX);
+		    luaV_CFuncState *state = ALLOC_CLEAR_ONE(luaV_CFuncState);
+		    state->lua_funcref = lua_funcref;
+		    state->L = L;
+		    state->lua_tableref = lua_tableref;
+		    name = register_cfunc(&luaV_call_lua_func,
+					      &luaV_call_lua_func_free, state);
+		    tv->v_type = VAR_FUNC;
+		    tv->vval.v_string = vim_strsave(name);
+		    break;
+		}
+	    }
+	    tv->v_type = VAR_NUMBER;
+	    tv->vval.v_number = 0;
+	    status = FAIL;
+	    break;
+	}
 	case LUA_TUSERDATA:
 	{
 	    void *p = lua_touserdata(L, pos);
@@ -811,7 +871,13 @@ luaV_list_index(lua_State *L)
     list_T *l = luaV_unbox(L, luaV_List, 1);
     if (lua_isnumber(L, 2)) // list item?
     {
-	listitem_T *li = list_find(l, (long) luaL_checkinteger(L, 2));
+	long n = (long) luaL_checkinteger(L, 2);
+	listitem_T *li;
+
+	// Lua array index starts with 1 while Vim uses 0, subtract 1 to
+	// normalize.
+	n -= 1;
+	li = list_find(l, n);
 	if (li == NULL)
 	    lua_pushnil(L);
 	else
@@ -840,22 +906,39 @@ luaV_list_newindex(lua_State *L)
     list_T *l = luaV_unbox(L, luaV_List, 1);
     long n = (long) luaL_checkinteger(L, 2);
     listitem_T *li;
+
+    // Lua array index starts with 1 while Vim uses 0, subtract 1 to normalize.
+    n -= 1;
+
     if (l->lv_lock)
 	luaL_error(L, "list is locked");
     li = list_find(l, n);
-    if (li == NULL) return 0;
-    if (lua_isnil(L, 3)) // remove?
+    if (li == NULL)
     {
-	vimlist_remove(l, li, li);
-	listitem_free(l, li);
+        if (!lua_isnil(L, 3))
+        {
+	   typval_T v;
+	   luaV_checktypval(L, 3, &v, "inserting list item");
+	   if (list_insert_tv(l, &v, li) == FAIL)
+	        luaL_error(L, "failed to add item to list");
+	   clear_tv(&v);
+        }
     }
     else
     {
-	typval_T v;
-	luaV_checktypval(L, 3, &v, "setting list item");
-	clear_tv(&li->li_tv);
-	copy_tv(&v, &li->li_tv);
-	clear_tv(&v);
+        if (lua_isnil(L, 3)) // remove?
+        {
+	    vimlist_remove(l, li, li);
+	    listitem_free(l, li);
+        }
+        else
+        {
+	    typval_T v;
+	    luaV_checktypval(L, 3, &v, "setting list item");
+	    clear_tv(&li->li_tv);
+	    copy_tv(&v, &li->li_tv);
+	    clear_tv(&v);
+        }
     }
     return 0;
 }
@@ -2413,6 +2496,55 @@ update_package_paths_in_lua()
 	if (lua_pcall(L, 0, 0, 0))
 	    luaV_emsg(L);
     }
+}
+
+/*
+ * Native C function callback
+ */
+    static int
+luaV_call_lua_func(
+	int	 argcount,
+	typval_T *argvars,
+	typval_T *rettv,
+	void	 *state)
+{
+    int i;
+    int luaargcount = argcount;
+    luaV_CFuncState *funcstate = (luaV_CFuncState*)state;
+    lua_rawgeti(funcstate->L, LUA_REGISTRYINDEX, funcstate->lua_funcref);
+
+    if (funcstate->lua_tableref != LUA_NOREF)
+    {
+	// First arg for metatable __call method is a table
+	luaargcount += 1;
+	lua_rawgeti(funcstate->L, LUA_REGISTRYINDEX, funcstate->lua_tableref);
+    }
+
+    for (i = 0; i < argcount; ++i)
+	luaV_pushtypval(funcstate->L, &argvars[i]);
+
+    if (lua_pcall(funcstate->L, luaargcount, 1, 0))
+    {
+	luaV_emsg(funcstate->L);
+	return FCERR_OTHER;
+    }
+
+    luaV_checktypval(funcstate->L, -1, rettv, "get return value");
+    return FCERR_NONE;
+}
+
+/*
+ * Free up any lua references held by the func state.
+ */
+    static void
+luaV_call_lua_func_free(void *state)
+{
+    luaV_CFuncState *funcstate = (luaV_CFuncState*)state;
+    luaL_unref(L, LUA_REGISTRYINDEX, funcstate->lua_funcref);
+    funcstate->L = NULL;
+    if (funcstate->lua_tableref != LUA_NOREF)
+	luaL_unref(L, LUA_REGISTRYINDEX, funcstate->lua_tableref);
+    VIM_CLEAR(funcstate);
 }
 
 #endif

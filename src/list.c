@@ -1156,15 +1156,19 @@ f_join(typval_T *argvars, typval_T *rettv)
 
 /*
  * Allocate a variable for a List and fill it from "*arg".
+ * "*arg" points to the "[".
  * Return OK or FAIL.
  */
     int
-get_list_tv(char_u **arg, typval_T *rettv, int flags, int do_error)
+get_list_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
 {
-    int		evaluate = flags & EVAL_EVALUATE;
+    int		evaluate = evalarg == NULL ? FALSE
+					 : evalarg->eval_flags & EVAL_EVALUATE;
     list_T	*l = NULL;
     typval_T	tv;
     listitem_T	*item;
+    int		vim9script = current_sctx.sc_version == SCRIPT_VERSION_VIM9;
+    int		had_comma;
 
     if (evaluate)
     {
@@ -1173,10 +1177,10 @@ get_list_tv(char_u **arg, typval_T *rettv, int flags, int do_error)
 	    return FAIL;
     }
 
-    *arg = skipwhite(*arg + 1);
+    *arg = skipwhite_and_linebreak(*arg + 1, evalarg);
     while (**arg != ']' && **arg != NUL)
     {
-	if (eval1(arg, &tv, flags) == FAIL)	// recursive!
+	if (eval1(arg, &tv, evalarg) == FAIL)	// recursive!
 	    goto failret;
 	if (evaluate)
 	{
@@ -1191,15 +1195,29 @@ get_list_tv(char_u **arg, typval_T *rettv, int flags, int do_error)
 		clear_tv(&tv);
 	}
 
+	// the comma must come after the value
+	had_comma = **arg == ',';
+	if (had_comma)
+	{
+	    if (vim9script && (*arg)[1] != NUL && !VIM_ISWHITE((*arg)[1]))
+	    {
+		semsg(_(e_white_after), ",");
+		goto failret;
+	    }
+	    *arg = skipwhite(*arg + 1);
+	}
+
+	// the "]" can be on the next line
+	*arg = skipwhite_and_linebreak(*arg, evalarg);
 	if (**arg == ']')
 	    break;
-	if (**arg != ',')
+
+	if (!had_comma)
 	{
 	    if (do_error)
 		semsg(_("E696: Missing comma in List: %s"), *arg);
 	    goto failret;
 	}
-	*arg = skipwhite(*arg + 1);
     }
 
     if (**arg != ']')
@@ -2457,6 +2475,8 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 	list_T	    *l = argvars[0].vval.v_list;
 	listitem_T  *li = NULL;
 	int	    r;
+	int	    prev_locked = l->lv_lock;
+	int	    called_emsg_start = called_emsg;
 
 	CHECK_LIST_MATERIALIZE(l);
 	if (argvars[2].v_type == VAR_UNKNOWN)
@@ -2476,6 +2496,7 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 		li = l->lv_first;
 	}
 
+	l->lv_lock = VAR_FIXED;  // disallow the list changing here
 	copy_tv(&initial, rettv);
 	for ( ; li != NULL; li = li->li_next)
 	{
@@ -2484,9 +2505,10 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 	    rettv->v_type = VAR_UNKNOWN;
 	    r = call_func(func_name, -1, rettv, 2, argv, &funcexe);
 	    clear_tv(&argv[0]);
-	    if (r == FAIL)
-		return;
+	    if (r == FAIL || called_emsg != called_emsg_start)
+		break;
 	}
+	l->lv_lock = prev_locked;
     }
     else
     {

@@ -788,12 +788,14 @@ get_literal_key(char_u **arg, typval_T *tv)
 /*
  * Allocate a variable for a Dictionary and fill it from "*arg".
  * "literal" is TRUE for #{key: val}
+ * "flags" can have EVAL_EVALUATE and other EVAL_ flags.
  * Return OK or FAIL.  Returns NOTDONE for {expr}.
  */
     int
-eval_dict(char_u **arg, typval_T *rettv, int flags, int literal)
+eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 {
-    int		evaluate = flags & EVAL_EVALUATE;
+    int		evaluate = evalarg == NULL ? FALSE
+					 : evalarg->eval_flags & EVAL_EVALUATE;
     dict_T	*d = NULL;
     typval_T	tvkey;
     typval_T	tv;
@@ -802,6 +804,7 @@ eval_dict(char_u **arg, typval_T *rettv, int flags, int literal)
     char_u	*start = skipwhite(*arg + 1);
     char_u	buf[NUMBUFLEN];
     int		vim9script = current_sctx.sc_version == SCRIPT_VERSION_VIM9;
+    int		had_comma;
 
     /*
      * First check if it's not a curly-braces thing: {expr}.
@@ -812,7 +815,7 @@ eval_dict(char_u **arg, typval_T *rettv, int flags, int literal)
      */
     if (!vim9script && *start != '}')
     {
-	if (eval1(&start, &tv, 0) == FAIL)	// recursive!
+	if (eval1(&start, &tv, NULL) == FAIL)	// recursive!
 	    return FAIL;
 	if (*start == '}')
 	    return NOTDONE;
@@ -827,12 +830,12 @@ eval_dict(char_u **arg, typval_T *rettv, int flags, int literal)
     tvkey.v_type = VAR_UNKNOWN;
     tv.v_type = VAR_UNKNOWN;
 
-    *arg = skipwhite(*arg + 1);
+    *arg = skipwhite_and_linebreak(*arg + 1, evalarg);
     while (**arg != '}' && **arg != NUL)
     {
 	if ((literal
 		? get_literal_key(arg, &tvkey)
-		: eval1(arg, &tvkey, flags)) == FAIL)	// recursive!
+		: eval1(arg, &tvkey, evalarg)) == FAIL)	// recursive!
 	    goto failret;
 
 	if (**arg != ':')
@@ -852,9 +855,15 @@ eval_dict(char_u **arg, typval_T *rettv, int flags, int literal)
 		goto failret;
 	    }
 	}
+	if (vim9script && (*arg)[1] != NUL && !VIM_ISWHITE((*arg)[1]))
+	{
+	    semsg(_(e_white_after), ":");
+	    clear_tv(&tvkey);
+	    goto failret;
+	}
 
-	*arg = skipwhite(*arg + 1);
-	if (eval1(arg, &tv, flags) == FAIL)	// recursive!
+	*arg = skipwhite_and_linebreak(*arg + 1, evalarg);
+	if (eval1(arg, &tv, evalarg) == FAIL)	// recursive!
 	{
 	    if (evaluate)
 		clear_tv(&tvkey);
@@ -882,15 +891,28 @@ eval_dict(char_u **arg, typval_T *rettv, int flags, int literal)
 	}
 	clear_tv(&tvkey);
 
+	// the comma must come after the value
+	had_comma = **arg == ',';
+	if (had_comma)
+	{
+	    if (vim9script && (*arg)[1] != NUL && !VIM_ISWHITE((*arg)[1]))
+	    {
+		semsg(_(e_white_after), ",");
+		goto failret;
+	    }
+	    *arg = skipwhite(*arg + 1);
+	}
+
+	// the "}" can be on the next line
+	*arg = skipwhite_and_linebreak(*arg, evalarg);
 	if (**arg == '}')
 	    break;
-	if (**arg != ',')
+	if (!had_comma)
 	{
 	    if (evaluate)
 		semsg(_(e_missing_dict_comma), *arg);
 	    goto failret;
 	}
-	*arg = skipwhite(*arg + 1);
     }
 
     if (**arg != '}')

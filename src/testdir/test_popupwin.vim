@@ -945,6 +945,8 @@ func Test_win_execute_not_allowed()
   call assert_fails('call win_execute(winid, "blast")', 'E994:')
   call assert_fails('call win_execute(winid, "edit")', 'E994:')
   call assert_fails('call win_execute(winid, "enew")', 'E994:')
+  call assert_fails('call win_execute(winid, "help")', 'E994:')
+  call assert_fails('call win_execute(winid, "1only")', 'E994:')
   call assert_fails('call win_execute(winid, "wincmd x")', 'E994:')
   call assert_fails('call win_execute(winid, "wincmd w")', 'E994:')
   call assert_fails('call win_execute(winid, "wincmd t")', 'E994:')
@@ -2456,7 +2458,8 @@ func Test_popupwin_terminal_buffer()
   " Exiting shell closes popup window
   call feedkeys("exit\<CR>", 'xt')
   " Wait for shell to exit
-  sleep 100m
+  call WaitForAssert({-> assert_equal("dead", job_status(term_getjob(termbuf)))})
+
   call feedkeys(":quit\<CR>", 'xt')
   call assert_equal(origwin, win_getid())
 endfunc

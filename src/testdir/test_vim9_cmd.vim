@@ -78,5 +78,117 @@ def Test_assign_dict()
   assert_equal({'0': 0, '1': 1, '2': 2}, nrd)
 enddef
 
+def Test_echo_linebreak()
+  let lines =<< trim END
+      vim9script
+      redir @a
+      echo 'one'
+            .. 'two'
+      redir END
+      assert_equal("\nonetwo", @a)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      redir @a
+      echo 11 +
+            77
+            - 22
+      redir END
+      assert_equal("\n66", @a)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
+def Test_if_linebreak()
+  let lines =<< trim END
+      vim9script
+      if 1 &&
+            2
+            || 3
+        g:res = 42
+      endif
+      assert_equal(42, g:res)
+  END
+  CheckScriptSuccess(lines)
+  unlet g:res
+
+  lines =<< trim END
+      vim9script
+      if 1 &&
+            0
+        g:res = 0
+      elseif 0 ||
+              0
+              || 1
+        g:res = 12
+      endif
+      assert_equal(12, g:res)
+  END
+  CheckScriptSuccess(lines)
+  unlet g:res
+enddef
+
+def Test_while_linebreak()
+  let lines =<< trim END
+      vim9script
+      let nr = 0
+      while nr <
+              10 + 3
+            nr = nr
+                  + 4
+      endwhile
+      assert_equal(16, nr)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let nr = 0
+      while nr
+            <
+              10
+              +
+              3
+            nr = nr
+                  +
+                  4
+      endwhile
+      assert_equal(16, nr)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
+def Test_for_linebreak()
+  let lines =<< trim END
+      vim9script
+      let nr = 0
+      for x
+            in
+              [1, 2, 3, 4]
+          nr = nr + x
+      endfor
+      assert_equal(10, nr)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let nr = 0
+      for x
+            in
+              [1, 2,
+                  3, 4
+                  ]
+          nr = nr
+                 +
+                  x
+      endfor
+      assert_equal(10, nr)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

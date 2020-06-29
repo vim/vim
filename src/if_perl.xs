@@ -832,7 +832,6 @@ msg_split(
     char_u *
 eval_to_string(
     char_u	*arg UNUSED,
-    char_u	**nextcmd UNUSED,
     int		dolist UNUSED)
 {
     return NULL;
@@ -1562,7 +1561,7 @@ Eval(str)
     PREINIT:
 	char_u *value;
     PPCODE:
-	value = eval_to_string((char_u *)str, (char_u **)0, TRUE);
+	value = eval_to_string((char_u *)str, TRUE);
 	if (value == NULL)
 	{
 	    XPUSHs(sv_2mortal(newSViv(0)));

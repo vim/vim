@@ -1118,4 +1118,16 @@ func Test_diff_rnu()
   call delete('Xtest_diff_rnu')
 endfunc
 
+func Test_diff_multilineconceal()
+  new
+  diffthis
+
+  new
+  call matchadd('Conceal', 'a\nb', 9, -1, {'conceal': 'Y'})
+  set cole=2 cocu=n
+  call setline(1, ["a", "b"])
+  diffthis
+  redraw
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

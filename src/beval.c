@@ -285,7 +285,7 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 	    ++textwinlock;
 
 	    vim_free(result);
-	    result = eval_to_string(bexpr, NULL, TRUE);
+	    result = eval_to_string(bexpr, TRUE);
 
 	    // Remove one trailing newline, it is added when the result was a
 	    // list and it's hardly ever useful.  If the user really wants a

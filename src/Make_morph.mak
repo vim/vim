@@ -72,6 +72,7 @@ SRC =	arabic.c						\
 	main.c							\
 	map.c							\
 	mark.c							\
+	match.c							\
 	mbyte.c							\
 	memfile.c						\
 	memline.c						\

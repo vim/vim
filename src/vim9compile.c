@@ -643,7 +643,7 @@ check_number_or_float(vartype_T type1, vartype_T type2, char_u *op)
 							 || type2 == VAR_ANY)))
     {
 	if (*op == '+')
-	    emsg(_("E1035: wrong argument type for +"));
+	    emsg(_("E1051: wrong argument type for +"));
 	else
 	    semsg(_("E1036: %c requires number or float arguments"), *op);
 	return FAIL;
@@ -2402,12 +2402,36 @@ peek_next_line(cctx_T *cctx)
     while (++lnum < cctx->ctx_ufunc->uf_lines.ga_len)
     {
 	char_u *line = ((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)[lnum];
-	char_u *p = skipwhite(line);
+	char_u *p;
 
+	if (line == NULL)
+	    break;
+	p = skipwhite(line);
 	if (*p != NUL && !comment_start(p))
 	    return p;
     }
     return NULL;
+}
+
+/*
+ * Called when checking for a following operator at "arg".  When the rest of
+ * the line is empty or only a comment, peek the next line.  If there is a next
+ * line return a pointer to it and set "nextp".
+ * Otherwise skip over white space.
+ */
+    static char_u *
+may_peek_next_line(cctx_T *cctx, char_u *arg, char_u **nextp)
+{
+    char_u *p = skipwhite(arg);
+
+    *nextp = NULL;
+    if (*p == NUL || (VIM_ISWHITE(*arg) && comment_start(p)))
+    {
+	*nextp = peek_next_line(cctx);
+	if (*nextp != NULL)
+	    return *nextp;
+    }
+    return p;
 }
 
 /*
@@ -2965,24 +2989,24 @@ to_name_const_end(char_u *arg)
     {
 
 	// Can be "[1, 2, 3]->Func()".
-	if (get_list_tv(&p, &rettv, 0, FALSE) == FAIL)
+	if (get_list_tv(&p, &rettv, NULL, FALSE) == FAIL)
 	    p = arg;
     }
     else if (p == arg && *arg == '#' && arg[1] == '{')
     {
 	// Can be "#{a: 1}->Func()".
 	++p;
-	if (eval_dict(&p, &rettv, 0, TRUE) == FAIL)
+	if (eval_dict(&p, &rettv, NULL, TRUE) == FAIL)
 	    p = arg;
     }
     else if (p == arg && *arg == '{')
     {
-	int	    ret = get_lambda_tv(&p, &rettv, FALSE);
+	int	    ret = get_lambda_tv(&p, &rettv, NULL);
 
 	// Can be "{x -> ret}()".
 	// Can be "{'a': 1}->Func()".
 	if (ret == NOTDONE)
-	    ret = eval_dict(&p, &rettv, 0, FALSE);
+	    ret = eval_dict(&p, &rettv, NULL, FALSE);
 	if (ret != OK)
 	    p = arg;
     }
@@ -3041,7 +3065,7 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     ufunc_T	*ufunc;
 
     // Get the funcref in "rettv".
-    if (get_lambda_tv(arg, &rettv, TRUE) != OK)
+    if (get_lambda_tv(arg, &rettv, &EVALARG_EVALUATE) != OK)
 	return FAIL;
 
     ufunc = rettv.vval.v_partial->pt_func;
@@ -3071,7 +3095,7 @@ compile_lambda_call(char_u **arg, cctx_T *cctx)
     int		ret = FAIL;
 
     // Get the funcref in "rettv".
-    if (get_lambda_tv(arg, &rettv, TRUE) == FAIL)
+    if (get_lambda_tv(arg, &rettv, &EVALARG_EVALUATE) == FAIL)
 	return FAIL;
 
     if (**arg != '(')
@@ -3944,6 +3968,7 @@ compile_expr7(
 compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 {
     char_u	*op;
+    char_u	*next;
     int		ppconst_used = ppconst->pp_used;
 
     // get the first expression
@@ -3955,9 +3980,14 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
      */
     for (;;)
     {
-	op = skipwhite(*arg);
+	op = may_peek_next_line(cctx, *arg, &next);
 	if (*op != '*' && *op != '/' && *op != '%')
 	    break;
+	if (next != NULL)
+	{
+	    *arg = next_line_from_context(cctx, TRUE);
+	    op = skipwhite(*arg);
+	}
 
 	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(op[1]))
 	{
@@ -4015,6 +4045,7 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 {
     char_u	*op;
+    char_u	*next;
     int		oplen;
     int		ppconst_used = ppconst->pp_used;
 
@@ -4027,10 +4058,15 @@ compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
      */
     for (;;)
     {
-	op = skipwhite(*arg);
-	if (*op != '+' && *op != '-' && !(*op == '.' && (*(*arg + 1) == '.')))
+	op = may_peek_next_line(cctx, *arg, &next);
+	if (*op != '+' && *op != '-' && !(*op == '.' && *(op + 1) == '.'))
 	    break;
 	oplen = (*op == '.' ? 2 : 1);
+	if (next != NULL)
+	{
+	    *arg = next_line_from_context(cctx, TRUE);
+	    op = skipwhite(*arg);
+	}
 
 	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(op[oplen]))
 	{
@@ -4124,6 +4160,7 @@ compile_expr4(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 {
     exptype_T	type = EXPR_UNKNOWN;
     char_u	*p;
+    char_u	*next;
     int		len = 2;
     int		type_is = FALSE;
     int		ppconst_used = ppconst->pp_used;
@@ -4132,7 +4169,7 @@ compile_expr4(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     if (compile_expr5(arg, cctx, ppconst) == FAIL)
 	return FAIL;
 
-    p = skipwhite(*arg);
+    p = may_peek_next_line(cctx, *arg, &next);
     type = get_compare_type(p, &len, &type_is);
 
     /*
@@ -4142,6 +4179,11 @@ compile_expr4(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     {
 	int ic = FALSE;  // Default: do not ignore case
 
+	if (next != NULL)
+	{
+	    *arg = next_line_from_context(cctx, TRUE);
+	    p = skipwhite(*arg);
+	}
 	if (type_is && (p[len] == '?' || p[len] == '#'))
 	{
 	    semsg(_(e_invexpr2), *arg);
@@ -4218,7 +4260,8 @@ compile_and_or(
 	ppconst_T *ppconst,
 	int	ppconst_used UNUSED)
 {
-    char_u	*p = skipwhite(*arg);
+    char_u	*next;
+    char_u	*p = may_peek_next_line(cctx, *arg, &next);
     int		opchar = *op;
 
     if (p[0] == opchar && p[1] == opchar)
@@ -4232,6 +4275,12 @@ compile_and_or(
 	ga_init2(&end_ga, sizeof(int), 10);
 	while (p[0] == opchar && p[1] == opchar)
 	{
+	    if (next != NULL)
+	    {
+		*arg = next_line_from_context(cctx, TRUE);
+		p = skipwhite(*arg);
+	    }
+
 	    if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[2]))
 	    {
 		semsg(_(e_white_both), op);
@@ -4262,7 +4311,8 @@ compile_and_or(
 		ga_clear(&end_ga);
 		return FAIL;
 	    }
-	    p = skipwhite(*arg);
+
+	    p = may_peek_next_line(cctx, *arg, &next);
 	}
 	generate_ppconst(cctx, ppconst);
 
@@ -4346,12 +4396,13 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
 {
     char_u	*p;
     int		ppconst_used = ppconst->pp_used;
+    char_u	*next;
 
     // Evaluate the first expression.
     if (compile_expr2(arg, cctx, ppconst) == FAIL)
 	return FAIL;
 
-    p = skipwhite(*arg);
+    p = may_peek_next_line(cctx, *arg, &next);
     if (*p == '?')
     {
 	garray_T	*instr = &cctx->ctx_instr;
@@ -4364,6 +4415,12 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
 	int		has_const_expr = FALSE;
 	int		const_value = FALSE;
 	int		save_skip = cctx->ctx_skip;
+
+	if (next != NULL)
+	{
+	    *arg = next_line_from_context(cctx, TRUE);
+	    p = skipwhite(*arg);
+	}
 
 	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[1]))
 	{
@@ -4412,12 +4469,18 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
 	}
 
 	// Check for the ":".
-	p = skipwhite(*arg);
+	p = may_peek_next_line(cctx, *arg, &next);
 	if (*p != ':')
 	{
 	    emsg(_(e_missing_colon));
 	    return FAIL;
 	}
+	if (next != NULL)
+	{
+	    *arg = next_line_from_context(cctx, TRUE);
+	    p = skipwhite(*arg);
+	}
+
 	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[1]))
 	{
 	    semsg(_(e_white_both), ":");
@@ -6692,6 +6755,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
     {
 	exarg_T	ea;
 	int	starts_with_colon = FALSE;
+	char_u	*cmd;
 
 	// Bail out on the first error to avoid a flood of errors and report
 	// the right line number when inside try/catch.
@@ -6850,7 +6914,13 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	/*
 	 * COMMAND after range
 	 */
+	cmd = ea.cmd;
 	ea.cmd = skip_range(ea.cmd, NULL);
+	if (ea.cmd > cmd && !starts_with_colon)
+	{
+	    emsg(_(e_colon_required));
+	    goto erret;
+	}
 	p = find_ex_command(&ea, NULL, starts_with_colon ? NULL
 		   : (void *(*)(char_u *, size_t, cctx_T *))lookup_local,
 									&cctx);
@@ -7005,8 +7075,9 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 		    line = compile_mult_expr(p, ea.cmdidx, &cctx);
 		    break;
 
+	    // TODO: other commands with an expression argument
+
 	    default:
-		    // TODO: other commands with an expression argument
 		    // Not recognized, execute with do_cmdline_cmd().
 		    ea.arg = p;
 		    line = compile_exec(line, &ea, &cctx);

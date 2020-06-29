@@ -327,8 +327,8 @@ func Test_lua_list()
   call assert_equal(7, luaeval('#l'))
   call assert_match('^list: \%(0x\)\?\x\+$', luaeval('tostring(l)'))
 
-  lua l[0] = 124
-  lua l[5] = nil
+  lua l[1] = 124
+  lua l[6] = nil
   lua l:insert('first')
   lua l:insert('xx', 3)
   call assert_equal(['first', 124, 'abc', 'xx', v:true, v:false, v:null, {'a': 1, 'b': 2, 'c': 3}], l)
@@ -353,6 +353,32 @@ func Test_lua_list_table()
   call assert_fails('lua vim.list(true)', '[string "vim chunk"]:1: table expected, got boolean')
 endfunc
 
+func Test_lua_list_table_insert_remove()
+  let luaver = split(split(luaeval('_VERSION'), ' ')[1], '\.')
+  let major = str2nr(luaver[0])
+  let minor = str2nr(luaver[1])
+
+  if major < 5 || (major == 5 && minor < 3)
+    throw 'Skipped: Lua version < 5.3'
+  endif
+
+  let l = [1, 2] 
+  lua t = vim.eval('l')
+  lua table.insert(t, 10)
+  lua t[#t + 1] = 20
+  lua table.insert(t, 2, 30)
+  call assert_equal(l, [1, 30, 2, 10, 20])
+  lua table.remove(t, 2)
+  call assert_equal(l, [1, 2, 10, 20])
+  lua t[3] = nil
+  call assert_equal(l, [1, 2, 20])
+  lua removed_value = table.remove(t, 3)
+  call assert_equal(luaeval('removed_value'), 20)
+  lua t = nil
+  lua removed_value = nil
+  unlet l
+endfunc
+
 " Test l() i.e. iterator on list
 func Test_lua_list_iter()
   lua l = vim.list():add('foo'):add('bar')
@@ -367,22 +393,22 @@ func Test_lua_recursive_list()
   lua l = vim.list():add(1):add(2)
   lua l = l:add(l)
 
-  call assert_equal(1, luaeval('l[0]'))
-  call assert_equal(2, luaeval('l[1]'))
+  call assert_equal(1, luaeval('l[1]'))
+  call assert_equal(2, luaeval('l[2]'))
 
-  call assert_equal(1, luaeval('l[2][0]'))
-  call assert_equal(2, luaeval('l[2][1]'))
+  call assert_equal(1, luaeval('l[3][1]'))
+  call assert_equal(2, luaeval('l[3][2]'))
 
-  call assert_equal(1, luaeval('l[2][2][0]'))
-  call assert_equal(2, luaeval('l[2][2][1]'))
+  call assert_equal(1, luaeval('l[3][3][1]'))
+  call assert_equal(2, luaeval('l[3][3][2]'))
 
   call assert_equal('[1, 2, [...]]', string(luaeval('l')))
 
   call assert_match('^list: \%(0x\)\?\x\+$', luaeval('tostring(l)'))
-  call assert_equal(luaeval('tostring(l)'), luaeval('tostring(l[2])'))
+  call assert_equal(luaeval('tostring(l)'), luaeval('tostring(l[3])'))
 
-  call assert_equal(luaeval('l'), luaeval('l[2]'))
-  call assert_equal(luaeval('l'), luaeval('l[2][2]'))
+  call assert_equal(luaeval('l'), luaeval('l[3]'))
+  call assert_equal(luaeval('l'), luaeval('l[3][3]'))
 
   lua l = nil
 endfunc
@@ -539,6 +565,35 @@ endfunc
 func Test_update_package_paths()
   set runtimepath+=./testluaplugin
   call assert_equal("hello from lua", luaeval("require('testluaplugin').hello()"))
+endfunc
+
+func Vim_func_call_lua_callback(Concat, Cb)
+  let l:message = a:Concat("hello", "vim")
+  call a:Cb(l:message)
+endfunc
+
+func Test_pass_lua_callback_to_vim_from_lua()
+  lua pass_lua_callback_to_vim_from_lua_result = ""
+  call assert_equal("", luaeval("pass_lua_callback_to_vim_from_lua_result"))
+  lua <<EOF
+  vim.funcref('Vim_func_call_lua_callback')(
+    function(greeting, message)
+      return greeting .. " " .. message
+    end,
+    function(message)
+      pass_lua_callback_to_vim_from_lua_result = message
+    end)
+EOF
+  call assert_equal("hello vim", luaeval("pass_lua_callback_to_vim_from_lua_result"))
+endfunc
+
+func Vim_func_call_metatable_lua_callback(Greet)
+  return a:Greet("world")
+endfunc
+
+func Test_pass_lua_metatable_callback_to_vim_from_lua()
+  let result = luaeval("vim.funcref('Vim_func_call_metatable_lua_callback')(setmetatable({ space = ' '}, { __call = function(tbl, msg) return 'hello' .. tbl.space .. msg  end }) )")
+  call assert_equal("hello world", result)
 endfunc
 
 " Test vim.line()

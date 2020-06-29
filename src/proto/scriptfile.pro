@@ -22,6 +22,7 @@ void ex_options(exarg_T *eap);
 linenr_T *source_breakpoint(void *cookie);
 int *source_dbg_tick(void *cookie);
 int source_level(void *cookie);
+char_u *source_nextline(void *cookie);
 int do_source(char_u *fname, int check_other, int is_vimrc, int *ret_sid);
 void ex_scriptnames(exarg_T *eap);
 void scriptnames_slash_adjust(void);

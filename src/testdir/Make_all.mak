@@ -90,6 +90,7 @@ NEW_TESTS = \
 	test_close_count \
 	test_cmdline \
 	test_command_count \
+	test_comments \
 	test_comparators \
 	test_compiler \
 	test_conceal \
@@ -341,6 +342,7 @@ NEW_TESTS_RES = \
 	test_close_count.res \
 	test_cmdline.res \
 	test_command_count.res \
+	test_comments.res \
 	test_comparators.res \
 	test_conceal.res \
 	test_const.res \

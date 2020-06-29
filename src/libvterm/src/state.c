@@ -1844,14 +1844,14 @@ static int on_resize(int rows, int cols, void *user)
     state->pos.col++;
   }
 
-  if(state->pos.row >= rows)
-    state->pos.row = rows - 1;
   if(state->pos.row < 0)
     state->pos.row = 0;
-  if(state->pos.col >= cols)
-    state->pos.col = cols - 1;
+  if(state->pos.row >= rows)
+    state->pos.row = rows - 1;
   if(state->pos.col < 0)
     state->pos.col = 0;
+  if(state->pos.col >= cols)
+    state->pos.col = cols - 1;
 
   updatecursor(state, &oldpos, 1);
 

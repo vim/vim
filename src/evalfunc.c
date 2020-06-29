@@ -2084,7 +2084,7 @@ f_eval(typval_T *argvars, typval_T *rettv)
 	s = skipwhite(s);
 
     p = s;
-    if (s == NULL || eval1(&s, rettv, EVAL_EVALUATE) == FAIL)
+    if (s == NULL || eval1(&s, rettv, &EVALARG_EVALUATE) == FAIL)
     {
 	if (p != NULL && !aborting())
 	    semsg(_(e_invexpr2), p);
@@ -6002,11 +6002,11 @@ static int	srand_seed_for_testing_is_used = FALSE;
 f_test_srand_seed(typval_T *argvars, typval_T *rettv UNUSED)
 {
     if (argvars[0].v_type == VAR_UNKNOWN)
-        srand_seed_for_testing_is_used = FALSE;
+	srand_seed_for_testing_is_used = FALSE;
     else
     {
-        srand_seed_for_testing = (UINT32_T)tv_get_number(&argvars[0]);
-        srand_seed_for_testing_is_used = TRUE;
+	srand_seed_for_testing = (UINT32_T)tv_get_number(&argvars[0]);
+	srand_seed_for_testing_is_used = TRUE;
     }
 }
 
@@ -6019,7 +6019,7 @@ init_srand(UINT32_T *x)
 
     if (srand_seed_for_testing_is_used)
     {
-        *x = srand_seed_for_testing;
+	*x = srand_seed_for_testing;
 	return;
     }
 #ifndef MSWIN
@@ -7269,6 +7269,37 @@ f_setpos(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * Translate a register type string to the yank type and block length
+ */
+    static int
+get_yank_type(char_u **pp, char_u *yank_type, long *block_len)
+{
+    char_u *stropt = *pp;
+    switch (*stropt)
+    {
+	case 'v': case 'c':	// character-wise selection
+	    *yank_type = MCHAR;
+	    break;
+	case 'V': case 'l':	// line-wise selection
+	    *yank_type = MLINE;
+	    break;
+	case 'b': case Ctrl_V:	// block-wise selection
+	    *yank_type = MBLOCK;
+	    if (VIM_ISDIGIT(stropt[1]))
+	    {
+		++stropt;
+		*block_len = getdigits(&stropt) - 1;
+		--stropt;
+	    }
+	    break;
+	default:
+	    return FAIL;
+    }
+    *pp = stropt;
+    return OK;
+}
+
+/*
  * "setreg()" function
  */
     static void
@@ -7302,30 +7333,31 @@ f_setreg(typval_T *argvars, typval_T *rettv)
     if (argvars[1].v_type == VAR_DICT)
     {
 	dict_T	    *d = argvars[1].vval.v_dict;
-	dictitem_T  *di = dict_find(d, (char_u *)"regcontents", -1);
+	dictitem_T  *di;
+
+	if (d == NULL || d->dv_hashtab.ht_used == 0)
+	{
+	    // Empty dict, clear the register (like setreg(0, []))
+	    char_u *lstval[2] = {NULL, NULL};
+	    write_reg_contents_lst(regname, lstval, 0, FALSE, MAUTO, -1);
+	    return;
+	}
+
+	di = dict_find(d, (char_u *)"regcontents", -1);
 	if (di != NULL)
 	    regcontents = &di->di_tv;
 
 	stropt = dict_get_string(d, (char_u *)"regtype", FALSE);
 	if (stropt != NULL)
-	    switch (*stropt)
+	{
+	    int ret = get_yank_type(&stropt, &yank_type, &block_len);
+
+	    if (ret == FAIL || *++stropt != NUL)
 	    {
-		case 'v':		// character-wise selection
-		    yank_type = MCHAR;
-		    break;
-		case 'V':		// line-wise selection
-		    yank_type = MLINE;
-		    break;
-		case Ctrl_V:		// block-wise selection
-		    yank_type = MBLOCK;
-		    if (VIM_ISDIGIT(stropt[1]))
-		    {
-			++stropt;
-			block_len = getdigits(&stropt) - 1;
-			--stropt;
-		    }
-		    break;
+		semsg(_(e_invargval), "value");
+		return;
 	    }
+	}
 
 	if (regname == '"')
 	{
@@ -7344,6 +7376,12 @@ f_setreg(typval_T *argvars, typval_T *rettv)
 
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
+	if (yank_type != MAUTO)
+	{
+	    semsg(_(e_toomanyarg), "setreg");
+	    return;
+	}
+
 	stropt = tv_get_string_chk(&argvars[2]);
 	if (stropt == NULL)
 	    return;		// type error
@@ -7353,21 +7391,8 @@ f_setreg(typval_T *argvars, typval_T *rettv)
 		case 'a': case 'A':	// append
 		    append = TRUE;
 		    break;
-		case 'v': case 'c':	// character-wise selection
-		    yank_type = MCHAR;
-		    break;
-		case 'V': case 'l':	// line-wise selection
-		    yank_type = MLINE;
-		    break;
-		case 'b': case Ctrl_V:	// block-wise selection
-		    yank_type = MBLOCK;
-		    if (VIM_ISDIGIT(stropt[1]))
-		    {
-			++stropt;
-			block_len = getdigits(&stropt) - 1;
-			--stropt;
-		    }
-		    break;
+		default:
+		    get_yank_type(&stropt, &yank_type, &block_len);
 	    }
     }
 

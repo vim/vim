@@ -1373,7 +1373,7 @@ tclvimexpr(
 
 #ifdef FEAT_EVAL
     expr = Tcl_GetStringFromObj(objv[objn], NULL);
-    str = (char *)eval_to_string((char_u *)expr, NULL, TRUE);
+    str = (char *)eval_to_string((char_u *)expr, TRUE);
     if (str == NULL)
 	Tcl_SetResult(interp, _("invalid expression"), TCL_STATIC);
     else

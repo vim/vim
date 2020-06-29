@@ -2585,7 +2585,7 @@ func Test_autocmd_window()
   edit one.txt
   tabnew two.txt
   let g:blist = []
-  augroup aucmd_win_test
+  augroup aucmd_win_test1
     au!
     au BufEnter * call add(g:blist, [expand('<afile>'),
           \ win_gettype(bufwinnr(expand('<afile>')))])
@@ -2594,11 +2594,50 @@ func Test_autocmd_window()
   doautoall BufEnter
   call assert_equal([['one.txt', 'autocmd'], ['two.txt', '']], g:blist)
 
+  augroup aucmd_win_test1
+    au!
+  augroup END
+  augroup! aucmd_win_test1
+  %bw!
+endfunc
+
+" Test for trying to close the temporary window used for executing an autocmd
+func Test_close_autocmd_window()
+  %bw!
+  edit one.txt
+  tabnew two.txt
+  augroup aucmd_win_test2
+    au!
+    au BufEnter * if expand('<afile>') == 'one.txt' | 1close | endif
+  augroup END
+
+  call assert_fails('doautoall BufEnter', 'E813:')
+
+  augroup aucmd_win_test2
+    au!
+  augroup END
+  augroup! aucmd_win_test2
+  %bwipe!
+endfunc
+
+" Test for trying to close the tab that has the temporary window for exeucing
+" an autocmd.
+func Test_close_autocmd_tab()
+  edit one.txt
+  tabnew two.txt
+   augroup aucmd_win_test
+    au!
+    au BufEnter * if expand('<afile>') == 'one.txt' | tabfirst | tabonly | endif
+  augroup END
+
+  call assert_fails('doautoall BufEnter', 'E813:')
+
+  tabonly
   augroup aucmd_win_test
     au!
   augroup END
   augroup! aucmd_win_test
-  %bw!
+  %bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

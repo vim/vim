@@ -837,5 +837,16 @@ def Test_sort_return_type()
   res = [1, 2, 3]->sort()
 enddef
 
+def Line_continuation_in_def(dir: string = ''): string
+    let path: string = empty(dir)
+            \ ? 'empty'
+            \ : 'full'
+    return path
+enddef
+
+def Test_line_continuation_in_def()
+  assert_equal('full', Line_continuation_in_def('.'))
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

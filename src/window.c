@@ -1810,8 +1810,8 @@ win_move_after(win_T *win1, win_T *win2)
 	    return;
 	}
 
-	// may need move the status line/vertical separator of the last window
-	//
+	// may need to move the status line/vertical separator of the last
+	// window
 	if (win1 == lastwin)
 	{
 	    height = win1->w_prev->w_status_height;
@@ -2461,7 +2461,7 @@ win_close(win_T *win, int free_buf)
 	return FAIL; // window is already being closed
     if (win_unlisted(win))
     {
-	emsg(_("E813: Cannot close autocmd or popup window"));
+	emsg(_(e_autocmd_close));
 	return FAIL;
     }
     if ((firstwin == aucmd_win || lastwin == aucmd_win) && one_window())

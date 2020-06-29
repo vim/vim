@@ -485,6 +485,14 @@ func Test_set_register_dict()
   call assert_equal(['six'], getreginfo('0').regcontents)
   call assert_equal(['six'], getreginfo('"').regcontents)
 
+  let @x = 'one'
+  call setreg('x', {})
+  call assert_equal(1, len(split(execute('reg x'), '\n')))
+
+  call assert_fails("call setreg('0', #{regtype: 'V'}, 'v')", 'E118:')
+  call assert_fails("call setreg('0', #{regtype: 'X'})", 'E475:')
+  call assert_fails("call setreg('0', #{regtype: 'vy'})", 'E475:')
+
   bwipe!
 endfunc
 
@@ -631,6 +639,24 @@ func Test_execute_reg_as_ex_cmd()
   let @r ..= '  \ ""'
   @r
   call assert_equal(repeat('abcdefghijklmnopqrstuvwxyz', 312), str)
+endfunc
+
+" Test for clipboard registers with ASCII NUL
+func Test_clipboard_nul()
+  CheckFeature clipboard_working
+  new
+
+  " Test for putting ASCII NUL into the clipboard
+  set clipboard=unnamed
+  call append(0, "\ntest")
+  normal ggyyp
+  call assert_equal("^@test^@", strtrans(getreg('*')))
+  call assert_equal(getline(1), getline(2))
+  let b = split(execute(":reg *"), "\n")
+  call assert_match('"\*\s*\^@test\^J',b[1])
+
+  set clipboard&vim
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

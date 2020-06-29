@@ -1050,6 +1050,15 @@ source_level(void *cookie)
 {
     return ((struct source_cookie *)cookie)->level;
 }
+
+/*
+ * Return the readahead line.
+ */
+    char_u *
+source_nextline(void *cookie)
+{
+    return ((struct source_cookie *)cookie)->nextline;
+}
 #endif
 
 #if (defined(MSWIN) && defined(FEAT_CSCOPE)) || defined(HAVE_FD_CLOEXEC)

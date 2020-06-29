@@ -2079,7 +2079,7 @@ eval_includeexpr(char_u *ptr, int len)
     char_u	*res;
 
     set_vim_var_string(VV_FNAME, ptr, len);
-    res = eval_to_string_safe(curbuf->b_p_inex, NULL,
+    res = eval_to_string_safe(curbuf->b_p_inex,
 		      was_set_insecurely((char_u *)"includeexpr", OPT_LOCAL));
     set_vim_var_string(VV_FNAME, NULL, 0);
     return res;

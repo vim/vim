@@ -1765,6 +1765,7 @@ EXTERN char e_float_as_string[] INIT(= N_("E806: using Float as a String"));
 #endif
 EXTERN char e_dirnotf[]	INIT(= N_("E919: Directory not found in '%s': \"%s\""));
 EXTERN char e_au_recursive[]	INIT(= N_("E952: Autocommand caused recursive behavior"));
+EXTERN char e_autocmd_close[]	INIT(= N_("E813: Cannot close autocmd or popup window"));
 #ifdef FEAT_MENU
 EXTERN char e_menuothermode[]	INIT(= N_("E328: Menu only exists in another mode"));
 #endif
@@ -1790,6 +1791,7 @@ EXTERN char e_const_req_value[] INIT(= N_("E1021: const requires a value"));
 EXTERN char e_type_req[]	INIT(= N_("E1022: type or initialization required"));
 EXTERN char e_declare_var[]	INIT(= N_("E1016: Cannot declare a %s variable: %s"));
 EXTERN char e_declare_env_var[]	INIT(= N_("E1016: Cannot declare an environment variable: %s"));
+EXTERN char e_colon_required[]	INIT(= N_("E1050: Colon required before a range"));
 #endif
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 EXTERN char e_alloc_color[]	INIT(= N_("E254: Cannot allocate color %s"));
@@ -1879,6 +1881,13 @@ EXTERN char windowsVersion[20] INIT(= {0});
 
 // Used for lv_first in a non-materialized range() list.
 EXTERN listitem_T range_list_item;
+
+// Passed to an eval() function to enable evaluation.
+EXTERN evalarg_T EVALARG_EVALUATE
+# ifdef DO_INIT
+	= {EVAL_EVALUATE, 0, NULL, NULL, {0, 0, 0, 0, NULL}, NULL}
+# endif
+	;
 #endif
 
 #ifdef MSWIN
