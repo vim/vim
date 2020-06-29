@@ -6272,7 +6272,7 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
     list = (list_T *)get_reg_contents(regname, GREG_EXPR_SRC | GREG_LIST);
     if (list == NULL)
 	return;
-    dict_add_list(dict, "regcontents", list);
+    (void)dict_add_list(dict, "regcontents", list);
 
     buf[0] = NUL;
     buf[1] = NUL;
@@ -6285,12 +6285,12 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
 			    reglen + 1);
 		    break;
     }
-    dict_add_string(dict, (char *)"regtype", buf);
+    (void)dict_add_string(dict, (char *)"regtype", buf);
 
     buf[0] = get_register_name(get_unname_register());
     buf[1] = NUL;
     if (regname == '"')
-	dict_add_string(dict, (char *)"points_to", buf);
+	(void)dict_add_string(dict, (char *)"points_to", buf);
     else
     {
 	dictitem_T	*item = dictitem_alloc((char_u *)"isunnamed");
@@ -6300,7 +6300,7 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
 	    item->di_tv.v_type = VAR_SPECIAL;
 	    item->di_tv.vval.v_number = regname == buf[0]
 		? VVAL_TRUE : VVAL_FALSE;
-	    dict_add(dict, item);
+	    (void)dict_add(dict, item);
 	}
     }
 }
