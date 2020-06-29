@@ -52,10 +52,14 @@ filemess(
     if (msg_silent != 0)
 	return;
     msg_add_fname(buf, name);	    // put file name in IObuff with quotes
+
     // If it's extremely long, truncate it.
-    if (STRLEN(IObuff) > IOSIZE - 80)
-	IObuff[IOSIZE - 80] = NUL;
-    STRCAT(IObuff, s);
+    if (STRLEN(IObuff) > IOSIZE - 100)
+	IObuff[IOSIZE - 100] = NUL;
+
+    // Avoid an over-long translation to cause trouble.
+    STRNCAT(IObuff, s, 99);
+
     /*
      * For the first message may have to start a new line.
      * For further ones overwrite the previous one, reset msg_scroll before
