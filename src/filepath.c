@@ -3813,8 +3813,13 @@ gen_expand_wildcards(
 	    vim_free(p);
     }
 
+    // When returning FAIL the array must be freed here.
+    if (retval == FAIL)
+	ga_clear(&ga);
+
     *num_file = ga.ga_len;
-    *file = (ga.ga_data != NULL) ? (char_u **)ga.ga_data : (char_u **)"";
+    *file = (ga.ga_data != NULL) ? (char_u **)ga.ga_data
+						  : (char_u **)_("no matches");
 
     recursive = FALSE;
 
