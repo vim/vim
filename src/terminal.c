@@ -1389,8 +1389,8 @@ term_convert_key(term_T *term, int c, int modmask, char *buf)
 
 	case K_MOUSEUP:		other = term_send_mouse(vterm, 5, 1); break;
 	case K_MOUSEDOWN:	other = term_send_mouse(vterm, 4, 1); break;
-	case K_MOUSELEFT:	/* TODO */ return 0;
-	case K_MOUSERIGHT:	/* TODO */ return 0;
+	case K_MOUSELEFT:	other = term_send_mouse(vterm, 7, 1); break;
+	case K_MOUSERIGHT:	other = term_send_mouse(vterm, 6, 1); break;
 
 	case K_LEFTMOUSE:
 	case K_LEFTMOUSE_NM:
