@@ -28,7 +28,11 @@ setlocal commentstring=//%s
 
 " Change the :browse e filter to primarily show JavaScript-related files.
 if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
-    let  b:browsefilter="Javascript Files (*.js, *.jsx, *.es, *.es6, *.cjs, *.mjs, *.jsm, *.vue, *.json)\t*.js;*.jsx;*.es;*.es6;*.cjs;*.mjs;*.jsm;*.vue;*.json\n" .
+    let  b:browsefilter="JavaScript Files (*.js)\t*.js\n" .
+                \ "JSX Files (*.jsx)\t*.jsx\n" .
+                \ "JavaScript Modules (*.es, *.es6, *.cjs, *.mjs, *.jsm)\t*.es;*.es6;*.cjs;*.mjs;*.jsm\n" .
+                \ "Vue Templates (*.vue)\t*.vue\n" .
+                \ "JSON Files (*.json)\t*.json\n" .
                 \ "All Files (*.*)\t*.*\n"
 endif
 
