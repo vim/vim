@@ -2118,7 +2118,7 @@ check_termcode_mouse(
     int		num_bytes;
 # endif
     int		mouse_code = 0;	    // init for GCC
-    int		is_click, is_drag;
+    int		is_click, is_drag, is_release;
     int		wheel_code = 0;
     int		current_button;
     static int	held_button = MOUSE_RELEASE;
@@ -2133,7 +2133,7 @@ check_termcode_mouse(
     long	timediff;		// elapsed time in msec
 # endif
 
-    is_click = is_drag = FALSE;
+    is_click = is_drag = is_release = FALSE;
 
 # if !defined(UNIX) || defined(FEAT_MOUSE_XTERM) || defined(FEAT_GUI) \
     || defined(FEAT_MOUSE_GPM) || defined(FEAT_SYSMOUSE)
@@ -2256,9 +2256,6 @@ check_termcode_mouse(
 		|| key_name[0] == KS_SGR_MOUSE_RELEASE)
 	    mouse_code += 32;
 
-	if (key_name[0] == KS_SGR_MOUSE_RELEASE)
-	    mouse_code |= MOUSE_RELEASE;
-
 	mouse_col = getdigits(&p) - 1;
 	if (*p++ != ';')
 	    return -1;
@@ -2269,6 +2266,11 @@ check_termcode_mouse(
 	// modifier keys (alt/shift/ctrl/meta) state.
 	*modifiers = 0;
     }
+
+    if (key_name[0] == KS_SGR_MOUSE_RELEASE
+	    || (key_name[0] != KS_SGR_MOUSE
+		&& (mouse_code & MOUSE_RELEASE) == MOUSE_RELEASE))
+	is_release = TRUE;
 
     if (key_name[0] == KS_MOUSE
 #  ifdef FEAT_MOUSE_GPM
@@ -2331,7 +2333,7 @@ check_termcode_mouse(
 #   ifdef FEAT_XCLIPBOARD
 	else if (!(mouse_code & MOUSE_DRAG & ~MOUSE_CLICK_MASK))
 	{
-	    if ((mouse_code & MOUSE_RELEASE) == MOUSE_RELEASE)
+	    if (is_release)
 		stop_xterm_trace();
 	    else
 		start_xterm_trace(mouse_code);
@@ -2469,12 +2471,13 @@ check_termcode_mouse(
 		if (button & 16) mouse_code |= MOUSE_CTRL;
 		break;
 	    case 'u': // Button Up
+		is_release = TRUE;
 		if (button & 1)
-		    mouse_code |= MOUSE_LEFT | MOUSE_RELEASE;
+		    mouse_code |= MOUSE_LEFT;
 		if (button & 2)
-		    mouse_code |= MOUSE_MIDDLE | MOUSE_RELEASE;
+		    mouse_code |= MOUSE_MIDDLE;
 		if (button & 4)
-		    mouse_code |= MOUSE_RIGHT | MOUSE_RELEASE;
+		    mouse_code |= MOUSE_RIGHT;
 		if (button & 8)
 		    mouse_code |= MOUSE_SHIFT;
 		if (button & 16)
@@ -2598,17 +2601,20 @@ check_termcode_mouse(
 	    case  2: mouse_code = MOUSE_LEFT;
 		     WantQueryMouse = TRUE;
 		     break;
-	    case  3: mouse_code = MOUSE_RELEASE | MOUSE_LEFT;
+	    case  3: mouse_code = MOUSE_LEFT;
+		     is_release = TRUE;
 		     break;
 	    case  4: mouse_code = MOUSE_MIDDLE;
 		     WantQueryMouse = TRUE;
 		     break;
-	    case  5: mouse_code = MOUSE_RELEASE | MOUSE_MIDDLE;
+	    case  5: mouse_code = MOUSE_MIDDLE;
+		     is_release = TRUE;
 		     break;
 	    case  6: mouse_code = MOUSE_RIGHT;
 		     WantQueryMouse = TRUE;
 		     break;
-	    case  7: mouse_code = MOUSE_RELEASE | MOUSE_RIGHT;
+	    case  7: mouse_code = MOUSE_RIGHT;
+		     is_release = TRUE;
 		     break;
 	    case  8: return -1; // fourth button down
 	    case  9: return -1; // fourth button up
@@ -2661,7 +2667,7 @@ check_termcode_mouse(
 		break;
 
 	    case 32: // Release
-		mouse_code |= MOUSE_RELEASE;
+		is_release = TRUE;
 		break;
 
 	    case 33: // Drag
@@ -2682,6 +2688,9 @@ check_termcode_mouse(
 
     // Interpret the mouse code
     current_button = (mouse_code & MOUSE_CLICK_MASK);
+    if (is_release)
+	current_button |= MOUSE_RELEASE;
+
     if (current_button == MOUSE_RELEASE
 # ifdef FEAT_MOUSE_XTERM
 	    && wheel_code == 0
@@ -2786,8 +2795,7 @@ check_termcode_mouse(
     // Work out our pseudo mouse event. Note that MOUSE_RELEASE gets
     // added, then it's not mouse up/down.
     key_name[0] = KS_EXTRA;
-    if (wheel_code != 0
-	    && (wheel_code & MOUSE_RELEASE) != MOUSE_RELEASE)
+    if (wheel_code != 0 && !is_release)
     {
 	if (wheel_code & MOUSE_CTRL)
 	    *modifiers |= MOD_MASK_CTRL;
