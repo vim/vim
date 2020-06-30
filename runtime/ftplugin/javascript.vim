@@ -2,7 +2,6 @@
 " Language:     Javascript
 " Maintainer:   Doug Kearns <dougkearns@gmail.com>
 " Last Change:  2020 Jun 23
-" URL:          http://gus.gscit.monash.edu.au/~djkea2/vim/ftplugin/javascript.vim
 " Contributor:  Romain Lafourcade <romainlafourcade@gmail.com>
 
 if exists("b:did_ftplugin")
