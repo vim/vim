@@ -169,4 +169,20 @@ func MouseWheelDown(row, col)
   call feedkeys(MouseWheelDownCode(a:row, a:col), 'Lx!')
 endfunc
 
+func MouseWheelLeftCode(row, col)
+  return TerminalEscapeCode(0x42, a:row, a:col, 'M')
+endfunc
+
+func MouseWheelLeft(row, col)
+  call feedkeys(MouseWheelLeftCode(a:row, a:col), 'Lx!')
+endfunc
+
+func MouseWheelRightCode(row, col)
+  return TerminalEscapeCode(0x43, a:row, a:col, 'M')
+endfunc
+
+func MouseWheelRight(row, col)
+  call feedkeys(MouseWheelRightCode(a:row, a:col), 'Lx!')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

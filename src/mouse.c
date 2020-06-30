@@ -2118,7 +2118,7 @@ check_termcode_mouse(
     int		num_bytes;
 # endif
     int		mouse_code = 0;	    // init for GCC
-    int		is_click, is_drag, is_release;
+    int		is_click, is_drag, is_release, release_is_ambiguous;
     int		wheel_code = 0;
     int		current_button;
     static int	held_button = MOUSE_RELEASE;
@@ -2133,7 +2133,7 @@ check_termcode_mouse(
     long	timediff;		// elapsed time in msec
 # endif
 
-    is_click = is_drag = is_release = FALSE;
+    is_click = is_drag = is_release = release_is_ambiguous = FALSE;
 
 # if !defined(UNIX) || defined(FEAT_MOUSE_XTERM) || defined(FEAT_GUI) \
     || defined(FEAT_MOUSE_GPM) || defined(FEAT_SYSMOUSE)
@@ -2267,10 +2267,18 @@ check_termcode_mouse(
 	*modifiers = 0;
     }
 
-    if (key_name[0] == KS_SGR_MOUSE_RELEASE
-	    || (key_name[0] != KS_SGR_MOUSE
-		&& (mouse_code & MOUSE_RELEASE) == MOUSE_RELEASE))
-	is_release = TRUE;
+    if (key_name[0] == KS_SGR_MOUSE
+	    || key_name[0] == KS_SGR_MOUSE_RELEASE)
+    {
+	if (key_name[0] == KS_SGR_MOUSE_RELEASE)
+	    is_release = TRUE;
+    }
+    else
+    {
+	release_is_ambiguous = TRUE;
+	if ((mouse_code & MOUSE_RELEASE) == MOUSE_RELEASE)
+	    is_release = TRUE;
+    }
 
     if (key_name[0] == KS_MOUSE
 #  ifdef FEAT_MOUSE_GPM
@@ -2795,7 +2803,7 @@ check_termcode_mouse(
     // Work out our pseudo mouse event. Note that MOUSE_RELEASE gets
     // added, then it's not mouse up/down.
     key_name[0] = KS_EXTRA;
-    if (wheel_code != 0 && !is_release)
+    if (wheel_code != 0 && (!is_release || release_is_ambiguous))
     {
 	if (wheel_code & MOUSE_CTRL)
 	    *modifiers |= MOD_MASK_CTRL;
