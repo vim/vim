@@ -45,6 +45,34 @@ typedef struct
     blob_T	*fi_blob;	// blob being used
 } forinfo_T;
 
+/*
+ * A string. But using the length instead of '\0'.
+ * To convert to a finite char_u*, use vim_strnsave(s->value, s->length) please.
+ */
+typedef struct
+{
+    /*
+     * A pointer to the head of char*. This char* is possible to infinite by '\0'.
+     */
+    char_u *value;
+
+    size_t length;
+} string_like;
+
+/*
+ * A interval for 'lead', expr, and 'tail' of $'lead${expr}tail'.
+ * The is_expr is true if the interval is in ${..} (such as above 'expr').
+ */
+typedef struct
+{
+    int is_expr;
+    string_like *s;
+} template_string_interval;
+
+static template_string_interval* make_interval_between_not_expr(char_u *begin, char_u *end);
+static void interval_free(template_string_interval *x);
+static void intervals_free(garray_T *xs);
+
 static int tv_op(typval_T *tv1, typval_T *tv2, char_u  *op);
 static int eval2(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
 static int eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
@@ -54,6 +82,8 @@ static int eval6(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int want_str
 static int eval7(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int want_string);
 static int eval7_leader(typval_T *rettv, int numeric_only, char_u *start_leader, char_u **end_leaderp);
 
+static int get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate);
+static int is_escaped_quote(int is_literal_string, char_u *quotes);
 static int free_unref_items(int copyID);
 static char_u *make_expanded_name(char_u *in_start, char_u *expr_start, char_u *expr_end, char_u *in_end);
 
@@ -2922,9 +2952,14 @@ eval7(
 		break;
 
     /*
+     * Template string constant: $"${expr}", $'${expr}'.
+     * or
      * Environment variable: $VAR.
      */
-    case '$':	ret = get_env_tv(arg, rettv, evaluate);
+    case '$':	if (*(*arg + 1) == '"' || *(*arg + 1) == '\'')
+		    ret = get_template_string_tv(arg, rettv, evaluate);
+		else
+		    ret = get_env_tv(arg, rettv, evaluate);
 		break;
 
     /*
@@ -3588,8 +3623,385 @@ eval_index(
     return OK;
 }
 
+    static int
+is_closing_quote(
+	char_u *template,
+	int is_literal_string,
+	int *is_skipping_needed)
+{
+    char_u quote = is_literal_string ? '\'' : '"';
+
+    if (is_escaped_quote(is_literal_string, template))
+    {
+	*is_skipping_needed = TRUE;
+	return FALSE;
+    }
+
+    *is_skipping_needed = FALSE;
+    return *template == quote;
+}
+
+    static void
+interval_free(template_string_interval *x)
+{
+    vim_free(x->s);
+    vim_free(x);
+}
+
 /*
- * Return the function name of partial "pt".
+ * A kind of ga_clear() and interval_free() for garray_t of template_string_interval*.
+ */
+    static void
+intervals_free(garray_T *xs)
+{
+    int i;
+
+    for (i = 0; i < xs->ga_len; ++i)
+    {
+	template_string_interval *x =
+	    ((template_string_interval **)xs->ga_data)[i];
+	interval_free(x);
+    }
+
+    ga_clear(xs);
+}
+
+/*
+ * Refreshes previous_quote with NUL
+ *	if the closing quote of the opening quote (previous_quote) found on **source.
+ * Refreshes previous_quote with ' or "
+ *	if a opening quote is never found and that quote found.
+ * Doesn't Refresh if no quotes found.
+ */
+    static void
+refresh_pair_of_quote(char_u *previous_quote, char_u source)
+{
+    if (*previous_quote == NUL && source == '\'')
+    {
+	*previous_quote = '\'';
+	return;
+    }
+    else if (*previous_quote == NUL && source == '"')
+    {
+	*previous_quote = '"';
+	return;
+    }
+
+    if (*previous_quote == '\'' && source == '\'')
+	*previous_quote = NUL;
+    else if (*previous_quote == '"' && source == '"')
+	*previous_quote = NUL;
+}
+
+/*
+ * Finds closing '}' of taken expr
+ */
+    static int
+forward_to_end_of_template_expr(char_u **expr)
+{
+    char_u  *expr_head = *expr;
+    size_t  nested_blocks = 0;
+    char_u  encountered_quote = NUL;
+
+    // While the closing '}' encountered. The '}' is neither '}' of a dict nor
+    // '}' in a string.
+    for (; !(encountered_quote == NUL && nested_blocks == 0 && **expr == '}');
+							MB_PTR_ADV(*expr))
+    {
+	switch (**expr)
+	{
+	    case '{':
+		if (encountered_quote == NUL)
+		    ++nested_blocks;
+		break;
+	    case '}':
+		if (encountered_quote == NUL)
+		    --nested_blocks;
+		break;
+	    case NUL:
+		semsg(_("E451: Unterminated template expression: %s"), expr_head);
+		return FAIL;
+	    default:
+		if (is_escaped_quote(encountered_quote == '\'', *expr))
+		{
+		    ++*expr;
+		    break;
+		}
+		refresh_pair_of_quote(&encountered_quote, **expr);
+		break;
+	}
+    }
+
+    if (*expr == expr_head)
+    {
+	semsg(_("E452: Empty template expression: %s"), expr_head);
+	return FAIL;
+    }
+
+    return OK;
+}
+
+    static int
+read_template_string_intervals(
+	garray_T *result,
+	int is_literal_string,
+	char_u **arg)
+{
+    char_u	*arg_orig = *arg;
+    int		is_skipping_needed;
+    char_u	*current;
+
+    *arg += 2;  // $' or $"
+
+    ga_init2(result, sizeof(template_string_interval*), 80);
+    current = *arg;
+
+    // Continue while it is not NULL and it is not a closing quote.
+    for (; (**arg != NUL) &&
+	    !is_closing_quote(*arg, is_literal_string, &is_skipping_needed);
+	    MB_PTR_ADV(*arg))
+    {
+	if (is_skipping_needed)
+	{
+	    *arg += 1;
+	    continue;
+	}
+	else if (**arg == '$' && *(*arg + 1) == '{')
+	{
+	    template_string_interval *x;
+
+	    if (ga_grow(result, 2) == FAIL)
+	    {
+		intervals_free(result);
+		emsg(_(e_outofmem));
+		return FAIL;
+	    }
+	    result->ga_len += 2;
+
+	    /*
+	     * Get a current item that is not an expr.
+	     */
+	    x = make_interval_between_not_expr(
+		current,
+		*arg);
+	    if (x == NULL)
+	    {
+		intervals_free(result);
+		emsg(_(e_outofmem));
+		return FAIL;
+	    }
+	    ((template_string_interval **)result->ga_data)[result->ga_len - 2] =
+		x;
+
+	    /*
+	     * Get a next item that is a ${ expr }.
+	     */
+	    *arg += 2;
+	    current = *arg;
+	    forward_to_end_of_template_expr(arg);
+
+	    x = make_interval_between_not_expr(
+		current,
+		*arg);
+	    if (x == NULL)
+	    {
+		intervals_free(result);
+		emsg(_(e_outofmem));
+		return FAIL;
+	    }
+	    x->is_expr = 1;
+	    ((template_string_interval **)result->ga_data)[result->ga_len - 1] =
+		x;
+
+	    /*
+	     * Go to a next item
+	     */
+	    current = *arg + 1;  // '$' of '${'
+	}
+    }
+
+    /*
+     * Add a last item
+     */
+    {
+	if (ga_grow(result, 1) == FAIL)
+	{
+	    intervals_free(result);
+	    emsg(_(e_outofmem));
+	    return FAIL;
+	}
+	result->ga_len += 1;
+
+	((template_string_interval **)result->ga_data)[result->ga_len - 1] =
+	    make_interval_between_not_expr(
+		current,
+		*arg);
+    }
+
+    /*
+     * Return FAIL if this template string is missing closing quote.
+     */
+    if (**arg == NUL)
+    {
+	intervals_free(result);
+	semsg(_("E115: Missing quote: %s"), arg_orig);
+	return FAIL;
+    }
+
+    return OK;
+}
+
+    static template_string_interval*
+make_interval_between_not_expr(char_u *start, char_u *end)
+{
+    string_like			*s;
+    template_string_interval	*x;
+
+    s = alloc(sizeof(string_like));
+    if (s == NULL)
+    {
+	emsg(_(e_outofmem));
+	return NULL;
+    }
+    s->value = start;
+    s->length = end - start;
+
+    x = alloc(sizeof(template_string_interval));
+    if (x == NULL)
+    {
+	emsg(_(e_outofmem));
+	return NULL;
+    }
+    x->is_expr = 0;
+    x->s = s;
+
+    return x;
+}
+
+    static char_u*
+stringify_expr(char_u *expr)
+{
+    typval_T result, string_result;
+
+    if (eval1(&expr, &result, TRUE) == FAIL)
+	return NULL;
+
+    if (result.v_type != VAR_STRING)
+    {
+	f_string(&result, &string_result);
+	clear_tv(&result);
+	result = string_result;
+    }
+    else if (result.vval.v_string == NULL)  // If $UNDEFINED_ENV_VAR evaluated
+	result.vval.v_string = ALLOC_CLEAR_ONE(char_u);  // meaning success of this function
+
+    return result.vval.v_string;
+}
+
+/*
+ * Allocate a variable for $"${expr}" and $'${expr}' constant.
+ * Return OK or FAIL.
+ */
+    static int
+get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
+{
+    char_u	quote = *(*arg + 1);
+    int		i;
+    int		is_reading_intervals_succeed;
+    int		is_literal_string = (quote == '\'');
+    garray_T	intervals;  // garray that has elements of template_string_interval*
+    garray_T	result;  // a string that is a literal string or a string (not a template string).
+    typval_T	interval_val;
+
+    is_reading_intervals_succeed = read_template_string_intervals(
+	    &intervals,
+	    is_literal_string,
+	    arg);
+    if (!is_reading_intervals_succeed)
+    {
+	return FAIL;
+    }
+
+    ++*arg;  // a closing quotion
+    if (!evaluate)
+    {
+	intervals_free(&intervals);
+	return OK;
+    }
+
+    ga_init2(&result, sizeof(char_u), 80);
+    for (i = 0; i < intervals.ga_len; ++i)
+    {
+	template_string_interval *x =
+	    ((template_string_interval **)intervals.ga_data)[i];
+
+	if (x->is_expr)
+	{
+	    char_u *expr = vim_strnsave(x->s->value, x->s->length);
+	    char_u *stringified = stringify_expr(expr);
+
+	    if (stringified == NULL)
+	    {
+		vim_free(expr);
+		ga_clear(&result);
+		intervals_free(&intervals);
+		return FAIL;
+	    }
+
+	    ga_concat(&result, stringified);
+	    vim_free(expr);
+	    vim_free(stringified);
+	}
+	else
+	{
+	    garray_T	interval;
+	    char_u	*to_eval;
+	    int		is_evaluating_success;
+
+	    ga_init2(&interval, sizeof(char_u), 40);
+	    ga_append(&interval, quote);
+	    ga_concatn(&interval, x->s->value, x->s->length);
+	    ga_append(&interval, quote);
+	    to_eval = (char_u *)interval.ga_data;
+
+	    is_evaluating_success = is_literal_string
+		? get_lit_string_tv(&to_eval, &interval_val, TRUE)
+		: get_string_tv(&to_eval, &interval_val, TRUE);
+	    ga_clear(&interval);
+
+	    if (!is_evaluating_success)
+	    {
+		clear_tv(&interval_val);
+		ga_clear(&result);
+		intervals_free(&intervals);
+		return FAIL;
+	    }
+
+	    ga_concat(&result, interval_val.vval.v_string);
+	    clear_tv(&interval_val);
+	}
+    }
+    intervals_free(&intervals);
+
+    /*
+     * Return the result.
+     */
+    rettv->v_type = VAR_STRING;
+    rettv->v_lock = 0;
+    rettv->vval.v_string = (char_u *)result.ga_data;
+    return OK;
+}
+
+    static int
+is_escaped_quote(int is_literal_string, char_u *p)
+{
+    return
+	(is_literal_string && *p == '\'' && *(p + 1) == '\'') ||
+	(!is_literal_string && *p == '\\' && *(p + 1) == '"');
+}
+
+/*
+ * Return the function name of the partial.
  */
     char_u *
 partial_name(partial_T *pt)

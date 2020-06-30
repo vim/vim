@@ -273,6 +273,7 @@ NEW_TESTS = \
 	test_tagjump \
 	test_taglist \
 	test_tcl \
+	test_template_string \
 	test_termcodes \
 	test_termencoding \
 	test_terminal \
@@ -489,6 +490,7 @@ NEW_TESTS_RES = \
 	test_tagjump.res \
 	test_taglist.res \
 	test_tcl.res \
+	test_template_string.res \
 	test_termcodes.res \
 	test_termencoding.res \
 	test_terminal.res \
