@@ -207,14 +207,17 @@ eval_to_bool(
  * Call eval1() and give an error message if not done at a lower level.
  */
     static int
-eval1_emsg(char_u **arg, typval_T *rettv, int evaluate)
+eval1_emsg(char_u **arg, typval_T *rettv, exarg_T *eap)
 {
     char_u	*start = *arg;
     int		ret;
     int		did_emsg_before = did_emsg;
     int		called_emsg_before = called_emsg;
+    evalarg_T	evalarg;
 
-    ret = eval1(arg, rettv, evaluate ? &EVALARG_EVALUATE : NULL);
+    fill_evalarg_from_eap(&evalarg, eap, eap != NULL && eap->skip);
+
+    ret = eval1(arg, rettv, &evalarg);
     if (ret == FAIL)
     {
 	// Report the invalid expression unless the expression evaluation has
@@ -225,6 +228,7 @@ eval1_emsg(char_u **arg, typval_T *rettv, int evaluate)
 					  && called_emsg == called_emsg_before)
 	    semsg(_(e_invexpr2), start);
     }
+    clear_evalarg(&evalarg, eap);
     return ret;
 }
 
@@ -294,7 +298,7 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 	if (s == NULL)
 	    return FAIL;
 	s = skipwhite(s);
-	if (eval1_emsg(&s, rettv, TRUE) == FAIL)
+	if (eval1_emsg(&s, rettv, NULL) == FAIL)
 	    return FAIL;
 	if (*s != NUL)  // check for trailing chars after expr
 	{
@@ -5330,7 +5334,7 @@ ex_execute(exarg_T *eap)
 	++emsg_skip;
     while (!ends_excmd2(eap->cmd, arg) || *arg == '"')
     {
-	ret = eval1_emsg(&arg, &rettv, !eap->skip);
+	ret = eval1_emsg(&arg, &rettv, eap);
 	if (ret == FAIL)
 	    break;
 
