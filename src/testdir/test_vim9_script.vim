@@ -585,6 +585,20 @@ def Test_try_catch_fails()
   call CheckDefFailure(['throw xxx'], 'E1001:')
 enddef
 
+def Test_throw_vimscript()
+  " only checks line continuation
+  let lines =<< trim END
+      vim9script
+      try
+        throw 'one'
+              .. 'two'
+      catch
+        assert_equal('onetwo', v:exception)
+      endtry
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 if has('channel')
   let someJob = test_null_job()
 

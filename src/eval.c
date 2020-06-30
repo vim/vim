@@ -333,10 +333,18 @@ eval_to_string_skip(
 {
     typval_T	tv;
     char_u	*retval;
+    evalarg_T	evalarg;
 
+    CLEAR_FIELD(evalarg);
+    evalarg.eval_flags = skip ? 0 : EVAL_EVALUATE;
+    if (eap != NULL && getline_equal(eap->getline, eap->cookie, getsourceline))
+    {
+	evalarg.eval_getline = eap->getline;
+	evalarg.eval_cookie = eap->cookie;
+    }
     if (skip)
 	++emsg_skip;
-    if (eval0(arg, &tv, eap, skip ? NULL : &EVALARG_EVALUATE) == FAIL || skip)
+    if (eval0(arg, &tv, eap, &evalarg) == FAIL || skip)
 	retval = NULL;
     else
     {
@@ -345,7 +353,7 @@ eval_to_string_skip(
     }
     if (skip)
 	--emsg_skip;
-    clear_evalarg(&EVALARG_EVALUATE, eap);
+    clear_evalarg(&evalarg, eap);
 
     return retval;
 }
