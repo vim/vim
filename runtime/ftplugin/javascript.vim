@@ -28,7 +28,7 @@ setlocal comments=sO:*\ -,mO:*\ \ ,exO:*/,s1:/*,mb:*,ex:*/,://
 setlocal commentstring=//%s
 
 " Change the :browse e filter to primarily show JavaScript-related files.
-if has("gui_win32")
+if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
     let  b:browsefilter="Javascript Files (*.js, *.jsx, *.es, *.es6, *.cjs, *.mjs, *.jsm, *.vue, *.json)\t*.js;*.jsx;*.es;*.es6;*.cjs;*.mjs;*.jsm;*.vue;*.json\n" .
                 \ "All Files (*.*)\t*.*\n"
 endif
