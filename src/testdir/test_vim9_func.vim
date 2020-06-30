@@ -837,6 +837,22 @@ def Test_sort_return_type()
   res = [1, 2, 3]->sort()
 enddef
 
+def Test_getqflist_return_type()
+  let l = getqflist()
+  assert_equal([], l)
+
+  let d = getqflist(#{items: 0})
+  assert_equal(#{items: []}, d)
+enddef
+
+def Test_getloclist_return_type()
+  let l = getloclist(1)
+  assert_equal([], l)
+
+  let d = getloclist(1, #{items: 0})
+  assert_equal(#{items: []}, d)
+enddef
+
 def Line_continuation_in_def(dir: string = ''): string
     let path: string = empty(dir)
             \ ? 'empty'
