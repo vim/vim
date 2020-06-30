@@ -599,6 +599,20 @@ def Test_throw_vimscript()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_cexpr_vimscript()
+  " only checks line continuation
+  set errorformat=File\ %f\ line\ %l
+  let lines =<< trim END
+      vim9script
+      cexpr 'File'
+                .. ' someFile' ..
+                   ' line 19'
+      assert_equal(19, getqflist()[0].lnum)
+  END
+  CheckScriptSuccess(lines)
+  set errorformat&
+enddef
+
 if has('channel')
   let someJob = test_null_job()
 

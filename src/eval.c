@@ -153,6 +153,18 @@ eval_clear(void)
 }
 #endif
 
+    static void
+fill_evalarg_from_eap(evalarg_T *evalarg, exarg_T *eap, int skip)
+{
+    CLEAR_FIELD(*evalarg);
+    evalarg->eval_flags = skip ? 0 : EVAL_EVALUATE;
+    if (eap != NULL && getline_equal(eap->getline, eap->cookie, getsourceline))
+    {
+	evalarg->eval_getline = eap->getline;
+	evalarg->eval_cookie = eap->cookie;
+    }
+}
+
 /*
  * Top level evaluation function, returning a boolean.
  * Sets "error" to TRUE if there was an error.
@@ -169,13 +181,7 @@ eval_to_bool(
     varnumber_T	retval = FALSE;
     evalarg_T	evalarg;
 
-    CLEAR_FIELD(evalarg);
-    evalarg.eval_flags = skip ? 0 : EVAL_EVALUATE;
-    if (eap != NULL && getline_equal(eap->getline, eap->cookie, getsourceline))
-    {
-	evalarg.eval_getline = eap->getline;
-	evalarg.eval_cookie = eap->cookie;
-    }
+    fill_evalarg_from_eap(&evalarg, eap, skip);
 
     if (skip)
 	++emsg_skip;
@@ -335,13 +341,7 @@ eval_to_string_skip(
     char_u	*retval;
     evalarg_T	evalarg;
 
-    CLEAR_FIELD(evalarg);
-    evalarg.eval_flags = skip ? 0 : EVAL_EVALUATE;
-    if (eap != NULL && getline_equal(eap->getline, eap->cookie, getsourceline))
-    {
-	evalarg.eval_getline = eap->getline;
-	evalarg.eval_cookie = eap->cookie;
-    }
+    fill_evalarg_from_eap(&evalarg, eap, skip);
     if (skip)
 	++emsg_skip;
     if (eval0(arg, &tv, eap, &evalarg) == FAIL || skip)
@@ -535,12 +535,15 @@ eval_to_number(char_u *expr)
 eval_expr(char_u *arg, exarg_T *eap)
 {
     typval_T	*tv;
+    evalarg_T	evalarg;
+
+    fill_evalarg_from_eap(&evalarg, eap, eap != NULL && eap->skip);
 
     tv = ALLOC_ONE(typval_T);
-    if (tv != NULL && eval0(arg, tv, eap, &EVALARG_EVALUATE) == FAIL)
+    if (tv != NULL && eval0(arg, tv, eap, &evalarg) == FAIL)
 	VIM_CLEAR(tv);
-    clear_evalarg(&EVALARG_EVALUATE, eap);
 
+    clear_evalarg(&evalarg, eap);
     return tv;
 }
 
@@ -5239,13 +5242,7 @@ ex_echo(exarg_T *eap)
     int		called_emsg_before = called_emsg;
     evalarg_T	evalarg;
 
-    CLEAR_FIELD(evalarg);
-    evalarg.eval_flags = eap->skip ? 0 : EVAL_EVALUATE;
-    if (getline_equal(eap->getline, eap->cookie, getsourceline))
-    {
-	evalarg.eval_getline = eap->getline;
-	evalarg.eval_cookie = eap->cookie;
-    }
+    fill_evalarg_from_eap(&evalarg, eap, eap != NULL && eap->skip);
 
     if (eap->skip)
 	++emsg_skip;
