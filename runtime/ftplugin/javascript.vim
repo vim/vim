@@ -76,7 +76,7 @@ if executable('standard')
 endif
 
 " Set 'define' to a comprehensive value
-let &define = '\('
+let &l:define = '\('
             \ .. '\(^\s*(*async\s\{-}function\|(*function\)'
             \ .. '\|^\s*\(\*\|static\|async\|get\|set\|\i\{-}\.\)'
             \ .. '\|^\s*\(\ze\i\{-}\)\(([^)]*).*{$\|\s*[:=,]\)'
