@@ -7400,6 +7400,14 @@ set_errorlist(
 	return OK;
     }
 
+    // A dict argument cannot be specified with a non-empty list argument
+    if (list != NULL && list->lv_len != 0 && what != NULL)
+    {
+	semsg(_(e_invarg2),
+			 _("cannot have both a list and a \"what\" argument"));
+	return FAIL;
+    }
+
     incr_quickfix_busy();
 
     if (what != NULL)
