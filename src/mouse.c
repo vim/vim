@@ -2801,8 +2801,16 @@ check_termcode_mouse(
 	    *modifiers |= MOD_MASK_CTRL;
 	if (wheel_code & MOUSE_ALT)
 	    *modifiers |= MOD_MASK_ALT;
-	key_name[1] = (wheel_code & 1)
-	    ? (int)KE_MOUSEUP : (int)KE_MOUSEDOWN;
+
+	if (wheel_code & 1 && wheel_code & 2)
+	    key_name[1] = (int)KE_MOUSELEFT;
+	else if (wheel_code & 2)
+	    key_name[1] = (int)KE_MOUSERIGHT;
+	else if (wheel_code & 1)
+	    key_name[1] = (int)KE_MOUSEUP;
+	else
+	    key_name[1] = (int)KE_MOUSEDOWN;
+
 	held_button = MOUSE_RELEASE;
     }
     else
