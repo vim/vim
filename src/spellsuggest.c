@@ -1406,7 +1406,8 @@ suggest_trie_walk(
 	    tword[sp->ts_twordlen] = NUL;
 
 	    if (sp->ts_prefixdepth <= PFD_NOTSPECIAL
-					&& (sp->ts_flags & TSF_PREFIXOK) == 0)
+					&& (sp->ts_flags & TSF_PREFIXOK) == 0
+					&& pbyts != NULL)
 	    {
 		// There was a prefix before the word.  Check that the prefix
 		// can be used with this word.
