@@ -1441,7 +1441,8 @@ luaV_buffer_newindex(lua_State *L)
 			curwin->w_cursor.lnum -= 1;
 			check_cursor_col();
 		    }
-		    else check_cursor();
+		    else
+			check_cursor();
 		    changed_cline_bef_curs();
 		}
 		invalidate_botline();
@@ -2398,7 +2399,7 @@ ex_luado(exarg_T *eap)
     lua_replace(L, -2); // function -> body
     for (l = eap->line1; l <= eap->line2; l++)
     {
-	// Check the line number, the command my have deleted lines.
+	// Check the line number, the command may have deleted lines.
 	if (l > curbuf->b_ml.ml_line_count)
 	    break;
 
