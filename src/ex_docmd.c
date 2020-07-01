@@ -3219,7 +3219,7 @@ find_ex_command(
      * "lvar = value", "lvar(arg)", "[1, 2 3]->Func()"
      */
     p = eap->cmd;
-    if (lookup != NULL && (*p == '('
+    if (lookup != NULL && (*p == '(' || *p == '[' || *p == '{'
 	       || ((p = to_name_const_end(eap->cmd)) > eap->cmd && *p != NUL)))
     {
 	int oplen;
@@ -3230,8 +3230,9 @@ find_ex_command(
 	// "g:varname" is an expression.
 	// "varname->expr" is an expression.
 	// "(..." is an expression.
+	// "{..." is an dict expression.
 	if (*p == '('
-		|| *p == '['
+		|| *p == '{'
 		|| p[1] == ':'
 		|| (*p == '-' && p[1] == '>'))
 	{
@@ -3239,18 +3240,27 @@ find_ex_command(
 	    return eap->cmd;
 	}
 
+	// Recognize an assignment if we recognize the variable name:
+	// "g:var = expr"
+	// "var = expr"  where "var" is a local var name.
 	oplen = assignment_len(skipwhite(p), &heredoc);
 	if (oplen > 0)
 	{
-	    // Recognize an assignment if we recognize the variable name:
-	    // "g:var = expr"
-	    // "var = expr"  where "var" is a local var name.
 	    if (((p - eap->cmd) > 2 && eap->cmd[1] == ':')
 		    || lookup(eap->cmd, p - eap->cmd, cctx) != NULL)
 	    {
 		eap->cmdidx = CMD_let;
 		return eap->cmd;
 	    }
+	}
+
+	// "[...]->Method()" is a list expression.  But "[a, b] = Func()" is
+	// an assignment.
+	if (*p == '[' && (eval_list(&p, NULL, NULL, FALSE) == FAIL
+						      || *skipwhite(p) != '='))
+	{
+	    eap->cmdidx = CMD_eval;
+	    return eap->cmd;
 	}
     }
 #endif

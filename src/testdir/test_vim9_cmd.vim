@@ -190,5 +190,22 @@ def Test_for_linebreak()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_method_cal_linebreak()
+  let lines =<< trim END
+      vim9script
+      let res = []
+      func RetArg(
+            arg
+            )
+            let s:res = a:arg
+      endfunc
+      [1,
+          2,
+          3]->RetArg()
+      assert_equal([1, 2, 3], res)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
