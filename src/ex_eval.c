@@ -897,13 +897,7 @@ ex_eval(exarg_T *eap)
     typval_T	tv;
     evalarg_T	evalarg;
 
-    CLEAR_FIELD(evalarg);
-    evalarg.eval_flags = eap->skip ? 0 : EVAL_EVALUATE;
-    if (getline_equal(eap->getline, eap->cookie, getsourceline))
-    {
-	evalarg.eval_getline = eap->getline;
-	evalarg.eval_cookie = eap->cookie;
-    }
+    fill_evalarg_from_eap(&evalarg, eap, eap->skip);
 
     if (eval0(eap->arg, &tv, eap, &evalarg) == OK)
 	clear_tv(&tv);

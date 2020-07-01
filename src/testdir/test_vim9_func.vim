@@ -353,6 +353,22 @@ def Test_vim9script_call()
     assert_equal('text', var)
     ("some")->MyFunc()
     assert_equal('some', var)
+
+    MyFunc(
+        'continued'
+        )
+    assert_equal('continued',
+            var
+            )
+
+    call MyFunc(
+        'more'
+          ..
+          'lines'
+        )
+    assert_equal(
+        'morelines',
+        var)
   END
   writefile(lines, 'Xcall.vim')
   source Xcall.vim

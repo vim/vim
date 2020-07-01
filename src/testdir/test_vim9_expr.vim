@@ -1101,6 +1101,13 @@ def Test_expr7_dict_vim9script()
 
   lines =<< trim END
       vim9script
+      let d = { "one": "one", "two": "two", }
+      assert_equal({'one': 'one', 'two': 'two'}, d)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
       let d = #{one: 1,
 		two: 2,
 	       }

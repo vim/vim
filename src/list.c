@@ -1177,7 +1177,7 @@ get_list_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
 	    return FAIL;
     }
 
-    *arg = skipwhite_and_linebreak(*arg + 1, evalarg);
+    *arg = skipwhite_and_linebreak_keep_string(*arg + 1, evalarg);
     while (**arg != ']' && **arg != NUL)
     {
 	if (eval1(arg, &tv, evalarg) == FAIL)	// recursive!
@@ -1207,8 +1207,9 @@ get_list_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
 	    *arg = skipwhite(*arg + 1);
 	}
 
-	// the "]" can be on the next line
-	*arg = skipwhite_and_linebreak(*arg, evalarg);
+	// The "]" can be on the next line.  But a double quoted string may
+	// follow, not a comment.
+	*arg = skipwhite_and_linebreak_keep_string(*arg, evalarg);
 	if (**arg == ']')
 	    break;
 
@@ -2356,7 +2357,7 @@ f_insert(typval_T *argvars, typval_T *rettv)
 	}
 	if (l != NULL)
 	{
-	    list_insert_tv(l, &argvars[1], item);
+	    (void)list_insert_tv(l, &argvars[1], item);
 	    copy_tv(&argvars[0], rettv);
 	}
     }

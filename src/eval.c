@@ -153,7 +153,7 @@ eval_clear(void)
 }
 #endif
 
-    static void
+    void
 fill_evalarg_from_eap(evalarg_T *evalarg, exarg_T *eap, int skip)
 {
     CLEAR_FIELD(*evalarg);
@@ -1804,6 +1804,7 @@ pattern_match(char_u *pat, char_u *text, int ic)
     static int
 eval_func(
 	char_u	    **arg,	// points to "(", will be advanced
+	evalarg_T   *evalarg,
 	char_u	    *name,
 	int	    name_len,
 	typval_T    *rettv,
@@ -1839,7 +1840,7 @@ eval_func(
 	funcexe.evaluate = evaluate;
 	funcexe.partial = partial;
 	funcexe.basetv = basetv;
-	ret = get_func_tv(s, len, rettv, arg, &funcexe);
+	ret = get_func_tv(s, len, rettv, arg, evalarg, &funcexe);
     }
     vim_free(s);
 
@@ -1917,6 +1918,9 @@ eval_next_line(evalarg_T *evalarg)
     return skipwhite(line);
 }
 
+/*
+ * Call eval_next_non_blank() and get the next line if needed.
+ */
     char_u *
 skipwhite_and_linebreak(char_u *arg, evalarg_T *evalarg)
 {
@@ -1927,6 +1931,20 @@ skipwhite_and_linebreak(char_u *arg, evalarg_T *evalarg)
     if (getnext)
 	return eval_next_line(evalarg);
     return p;
+}
+
+/*
+ * Call eval_next_non_blank() and get the next line if needed, but not when a
+ * double quote follows.  Used inside an expression.
+ */
+    char_u *
+skipwhite_and_linebreak_keep_string(char_u *arg, evalarg_T *evalarg)
+{
+    char_u  *p = skipwhite(arg);
+
+    if (*p == '"')
+	return p;
+    return skipwhite_and_linebreak(arg, evalarg);
 }
 
 /*
@@ -2995,7 +3013,7 @@ eval7(
 	else
 	{
 	    if (**arg == '(')		// recursive!
-		ret = eval_func(arg, s, len, rettv, flags, NULL);
+		ret = eval_func(arg, evalarg, s, len, rettv, flags, NULL);
 	    else if (flags & EVAL_CONSTANT)
 		ret = FAIL;
 	    else if (evaluate)
@@ -3106,6 +3124,7 @@ eval7_leader(
     static int
 call_func_rettv(
 	char_u	    **arg,
+	evalarg_T   *evalarg,
 	typval_T    *rettv,
 	int	    evaluate,
 	dict_T	    *selfdict,
@@ -3142,7 +3161,7 @@ call_func_rettv(
     funcexe.partial = pt;
     funcexe.selfdict = selfdict;
     funcexe.basetv = basetv;
-    ret = get_func_tv(s, -1, rettv, arg, &funcexe);
+    ret = get_func_tv(s, -1, rettv, arg, evalarg, &funcexe);
 
     // Clear the funcref afterwards, so that deleting it while
     // evaluating the arguments is possible (see test55).
@@ -3189,7 +3208,7 @@ eval_lambda(
 	ret = FAIL;
     }
     else
-	ret = call_func_rettv(arg, rettv, evaluate, NULL, &base);
+	ret = call_func_rettv(arg, evalarg, rettv, evaluate, NULL, &base);
 
     // Clear the funcref afterwards, so that deleting it while
     // evaluating the arguments is possible (see test55).
@@ -3208,7 +3227,7 @@ eval_lambda(
 eval_method(
     char_u	**arg,
     typval_T	*rettv,
-    int		evaluate,
+    evalarg_T	*evalarg,
     int		verbose)	// give error messages
 {
     char_u	*name;
@@ -3216,6 +3235,8 @@ eval_method(
     char_u	*alias;
     typval_T	base = *rettv;
     int		ret;
+    int		evaluate = evalarg != NULL
+				      && (evalarg->eval_flags & EVAL_EVALUATE);
 
     // Skip over the ->.
     *arg += 2;
@@ -3247,7 +3268,7 @@ eval_method(
 	    ret = FAIL;
 	}
 	else
-	    ret = eval_func(arg, name, len, rettv,
+	    ret = eval_func(arg, evalarg, name, len, rettv,
 					  evaluate ? EVAL_EVALUATE : 0, &base);
     }
 
@@ -5035,7 +5056,8 @@ handle_subscript(
     {
 	if (**arg == '(')
 	{
-	    ret = call_func_rettv(arg, rettv, evaluate, selfdict, NULL);
+	    ret = call_func_rettv(arg, evalarg, rettv, evaluate,
+							       selfdict, NULL);
 
 	    // Stop the expression evaluation when immediately aborting on
 	    // error, or when an interrupt occurred or an exception was thrown
@@ -5058,7 +5080,7 @@ handle_subscript(
 		    ret = eval_lambda(arg, rettv, evalarg, verbose);
 		else
 		    // expr->name()
-		    ret = eval_method(arg, rettv, evaluate, verbose);
+		    ret = eval_method(arg, rettv, evalarg, verbose);
 	    }
 	}
 	else // **arg == '[' || **arg == '.'
