@@ -4133,7 +4133,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 	This option specifies a function that will be called to
 	activate or deactivate the Input Method.
-	It is not used in the GUI.
+	It is not used in the MS-Windows GUI version.
 	The expression will be evaluated in the |sandbox| when set from a
 	modeline, see |sandbox-option|.
 
@@ -4242,7 +4242,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 	This option specifies a function that is called to obtain the status
 	of Input Method.  It must return a positive number when IME is active.
-	It is not used in the GUI.
+	It is not used in the MS-Windows GUI version.
 
 	Example: >
 		function ImStatusFunc()
