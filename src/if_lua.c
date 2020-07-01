@@ -936,8 +936,7 @@ luaV_list_newindex(lua_State *L)
 	    typval_T v;
 	    luaV_checktypval(L, 3, &v, "setting list item");
 	    clear_tv(&li->li_tv);
-	    copy_tv(&v, &li->li_tv);
-	    clear_tv(&v);
+	    li->li_tv = v;
         }
     }
     return 0;
@@ -1084,7 +1083,7 @@ luaV_dict_newindex(lua_State *L)
     dict_T *d = luaV_unbox(L, luaV_Dict, 1);
     char_u *key = (char_u *) luaL_checkstring(L, 2);
     dictitem_T *di;
-    typval_T v;
+    typval_T tv;
 
     if (d->dv_lock)
 	luaL_error(L, "dict is locked");
@@ -1094,9 +1093,12 @@ luaV_dict_newindex(lua_State *L)
 	luaL_error(L, "empty key");
     if (!lua_isnil(L, 3)) // read value?
     {
-	luaV_checktypval(L, 3, &v, "setting dict item");
-	if (d->dv_scope == VAR_DEF_SCOPE && v.v_type == VAR_FUNC)
+	luaV_checktypval(L, 3, &tv, "setting dict item");
+	if (d->dv_scope == VAR_DEF_SCOPE && tv.v_type == VAR_FUNC)
+	{
+	    clear_tv(&tv);
 	    luaL_error(L, "cannot assign funcref to builtin scope");
+	}
     }
     di = dict_find(d, key, -1);
     if (di == NULL) // non-existing key?
@@ -1105,10 +1107,14 @@ luaV_dict_newindex(lua_State *L)
 	    return 0;
 	di = dictitem_alloc(key);
 	if (di == NULL)
+	{
+	    clear_tv(&tv);
 	    return 0;
+	}
 	if (dict_add(d, di) == FAIL)
 	{
 	    vim_free(di);
+	    clear_tv(&tv);
 	    return 0;
 	}
     }
@@ -1121,10 +1127,7 @@ luaV_dict_newindex(lua_State *L)
 	dictitem_free(di);
     }
     else
-    {
-	copy_tv(&v, &di->di_tv);
-	clear_tv(&v);
-    }
+	di->di_tv = tv;
     return 0;
 }
 
@@ -1441,7 +1444,8 @@ luaV_buffer_newindex(lua_State *L)
 			curwin->w_cursor.lnum -= 1;
 			check_cursor_col();
 		    }
-		    else check_cursor();
+		    else
+			check_cursor();
 		    changed_cline_bef_curs();
 		}
 		invalidate_botline();
@@ -1842,8 +1846,7 @@ luaV_dict(lua_State *L)
 		    lua_pushnil(L);
 		    return 1;
 		}
-		copy_tv(&v, &di->di_tv);
-		clear_tv(&v);
+		di->di_tv = v;
 		lua_pop(L, 2); // key copy and value
 	    }
 	}
@@ -2398,7 +2401,7 @@ ex_luado(exarg_T *eap)
     lua_replace(L, -2); // function -> body
     for (l = eap->line1; l <= eap->line2; l++)
     {
-	// Check the line number, the command my have deleted lines.
+	// Check the line number, the command may have deleted lines.
 	if (l > curbuf->b_ml.ml_line_count)
 	    break;
 
