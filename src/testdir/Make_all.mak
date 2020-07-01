@@ -276,6 +276,7 @@ NEW_TESTS = \
 	test_termcodes \
 	test_termencoding \
 	test_terminal \
+	test_terminal2 \
 	test_terminal_fail \
 	test_textformat \
 	test_textobjects \
@@ -492,6 +493,7 @@ NEW_TESTS_RES = \
 	test_termcodes.res \
 	test_termencoding.res \
 	test_terminal.res \
+	test_terminal2.res \
 	test_terminal_fail.res \
 	test_textformat.res \
 	test_textobjects.res \
