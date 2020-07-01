@@ -57,7 +57,7 @@ xim_log(char *s, ...)
 }
 #endif
 
-#ifdef FEAT_GUI
+#if defined(FEAT_GUI_MSWIN)
 # define USE_IMACTIVATEFUNC (!gui.in_use && *p_imaf != NUL)
 # define USE_IMSTATUSFUNC (!gui.in_use && *p_imsf != NUL)
 #else
