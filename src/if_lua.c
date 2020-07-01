@@ -92,11 +92,26 @@ static int luaV_call_lua_func(int argcount, typval_T *argvars, typval_T *rettv, 
 static void luaV_call_lua_func_free(void *state);
 
 #if LUA_VERSION_NUM <= 501
-#define luaV_openlib(L, l, n) luaL_openlib(L, NULL, l, n)
 #define luaL_typeerror luaL_typerror
-#else
-#define luaV_openlib luaL_setfuncs
+/*
+** Backported from Lua 5.2.0
+*/
+static void luaL_setfuncs (lua_State *L, const luaL_Reg *l, int nup)
+{
+    luaL_checkstack(L, nup+1, "too many upvalues");
+    for (; l->name != NULL; l++)
+    { /* fill the table with given functions */
+        int i;
+        lua_pushstring(L, l->name);
+        for (i = 0; i < nup; i++) /* copy upvalues to the top */
+	    lua_pushvalue(L, -(nup+1));
+        lua_pushcclosure(L, l->func, nup); /* closure with those upvalues */
+        lua_settable(L, -(nup + 3));
+    }
+    lua_pop(L, nup); /* remove upvalues */
+}
 #endif
+#define luaV_openlib luaL_setfuncs
 
 #ifdef DYNAMIC_LUA
 
@@ -118,13 +133,11 @@ static void luaV_call_lua_func_free(void *state);
 #if LUA_VERSION_NUM <= 501
 #define luaL_register dll_luaL_register
 #define luaL_prepbuffer dll_luaL_prepbuffer
-#define luaL_openlib dll_luaL_openlib
 #define luaL_typerror dll_luaL_typerror
 #define luaL_loadfile dll_luaL_loadfile
 #define luaL_loadbuffer dll_luaL_loadbuffer
 #else
 #define luaL_prepbuffsize dll_luaL_prepbuffsize
-#define luaL_setfuncs dll_luaL_setfuncs
 #define luaL_loadfilex dll_luaL_loadfilex
 #define luaL_loadbufferx dll_luaL_loadbufferx
 #define luaL_argerror dll_luaL_argerror
@@ -132,6 +145,7 @@ static void luaV_call_lua_func_free(void *state);
 #if LUA_VERSION_NUM >= 504
 #define luaL_typeerror dll_luaL_typeerror
 #endif
+#define luaL_setfuncs dll_luaL_setfuncs
 #define luaL_checkany dll_luaL_checkany
 #define luaL_checklstring dll_luaL_checklstring
 #define luaL_checkinteger dll_luaL_checkinteger
@@ -219,7 +233,6 @@ static void luaV_call_lua_func_free(void *state);
 #if LUA_VERSION_NUM <= 501
 void (*dll_luaL_register) (lua_State *L, const char *libname, const luaL_Reg *l);
 char *(*dll_luaL_prepbuffer) (luaL_Buffer *B);
-void (*dll_luaL_openlib) (lua_State *L, const char *libname, const luaL_Reg *l, int nup);
 int (*dll_luaL_typerror) (lua_State *L, int narg, const char *tname);
 int (*dll_luaL_loadfile) (lua_State *L, const char *filename);
 int (*dll_luaL_loadbuffer) (lua_State *L, const char *buff, size_t sz, const char *name);
@@ -342,13 +355,11 @@ static const luaV_Reg luaV_dll[] = {
 #if LUA_VERSION_NUM <= 501
     {"luaL_register", (luaV_function) &dll_luaL_register},
     {"luaL_prepbuffer", (luaV_function) &dll_luaL_prepbuffer},
-    {"luaL_openlib", (luaV_function) &dll_luaL_openlib},
     {"luaL_typerror", (luaV_function) &dll_luaL_typerror},
     {"luaL_loadfile", (luaV_function) &dll_luaL_loadfile},
     {"luaL_loadbuffer", (luaV_function) &dll_luaL_loadbuffer},
 #else
     {"luaL_prepbuffsize", (luaV_function) &dll_luaL_prepbuffsize},
-    {"luaL_setfuncs", (luaV_function) &dll_luaL_setfuncs},
     {"luaL_loadfilex", (luaV_function) &dll_luaL_loadfilex},
     {"luaL_loadbufferx", (luaV_function) &dll_luaL_loadbufferx},
     {"luaL_argerror", (luaV_function) &dll_luaL_argerror},
@@ -356,6 +367,7 @@ static const luaV_Reg luaV_dll[] = {
 #if LUA_VERSION_NUM >= 504
     {"luaL_typeerror", (luaV_function) &dll_luaL_typeerror},
 #endif
+    {"luaL_setfuncs", (luaV_function) &dll_luaL_setfuncs},
     {"luaL_checkany", (luaV_function) &dll_luaL_checkany},
     {"luaL_checklstring", (luaV_function) &dll_luaL_checklstring},
     {"luaL_checkinteger", (luaV_function) &dll_luaL_checkinteger},
