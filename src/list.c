@@ -1160,7 +1160,7 @@ f_join(typval_T *argvars, typval_T *rettv)
  * Return OK or FAIL.
  */
     int
-get_list_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
+eval_list(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
 {
     int		evaluate = evalarg == NULL ? FALSE
 					 : evalarg->eval_flags & EVAL_EVALUATE;

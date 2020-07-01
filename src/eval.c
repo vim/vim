@@ -1224,7 +1224,7 @@ set_var_lval(
 
 	    // handle +=, -=, *=, /=, %= and .=
 	    di = NULL;
-	    if (get_var_tv(lp->ll_name, (int)STRLEN(lp->ll_name),
+	    if (eval_variable(lp->ll_name, (int)STRLEN(lp->ll_name),
 					     &tv, &di, TRUE, FALSE) == OK)
 	    {
 		if ((di == NULL
@@ -2901,7 +2901,7 @@ eval7(
     case '7':
     case '8':
     case '9':
-    case '.':	ret = get_number_tv(arg, rettv, evaluate, want_string);
+    case '.':	ret = eval_number(arg, rettv, evaluate, want_string);
 
 		// Apply prefixed "-" and "+" now.  Matters especially when
 		// "->" follows.
@@ -2912,19 +2912,19 @@ eval7(
     /*
      * String constant: "string".
      */
-    case '"':	ret = get_string_tv(arg, rettv, evaluate);
+    case '"':	ret = eval_string(arg, rettv, evaluate);
 		break;
 
     /*
      * Literal string constant: 'str''ing'.
      */
-    case '\'':	ret = get_lit_string_tv(arg, rettv, evaluate);
+    case '\'':	ret = eval_lit_string(arg, rettv, evaluate);
 		break;
 
     /*
      * List: [expr, expr]
      */
-    case '[':	ret = get_list_tv(arg, rettv, evalarg, TRUE);
+    case '[':	ret = eval_list(arg, rettv, evalarg, TRUE);
 		break;
 
     /*
@@ -2951,13 +2951,13 @@ eval7(
     /*
      * Option value: &name
      */
-    case '&':	ret = get_option_tv(arg, rettv, evaluate);
+    case '&':	ret = eval_option(arg, rettv, evaluate);
 		break;
 
     /*
      * Environment variable: $VAR.
      */
-    case '$':	ret = get_env_tv(arg, rettv, evaluate);
+    case '$':	ret = eval_env_var(arg, rettv, evaluate);
 		break;
 
     /*
@@ -3012,14 +3012,17 @@ eval7(
 	    ret = FAIL;
 	else
 	{
-	    if (**arg == '(')		// recursive!
+	    if (**arg == '(')
+		// "name(..."  recursive!
 		ret = eval_func(arg, evalarg, s, len, rettv, flags, NULL);
 	    else if (flags & EVAL_CONSTANT)
 		ret = FAIL;
 	    else if (evaluate)
-		ret = get_var_tv(s, len, rettv, NULL, TRUE, FALSE);
+		// get value of variable
+		ret = eval_variable(s, len, rettv, NULL, TRUE, FALSE);
 	    else
 	    {
+		// skip the name
 		check_vars(s, len);
 		ret = OK;
 	    }

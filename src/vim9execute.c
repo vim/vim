@@ -1089,7 +1089,7 @@ call_def_function(
 		    // compilation: don't set SOURCING_LNUM.
 		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
-		    if (get_option_tv(&name, &optval, TRUE) == FAIL)
+		    if (eval_option(&name, &optval, TRUE) == FAIL)
 			goto failed;
 		    *STACK_TV_BOT(0) = optval;
 		    ++ectx.ec_stack.ga_len;
@@ -1105,7 +1105,7 @@ call_def_function(
 		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
 		    // name is always valid, checked when compiling
-		    (void)get_env_tv(&name, &optval, TRUE);
+		    (void)eval_env_var(&name, &optval, TRUE);
 		    *STACK_TV_BOT(0) = optval;
 		    ++ectx.ec_stack.ga_len;
 		}

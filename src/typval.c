@@ -992,7 +992,7 @@ tv_equal(
  * Return OK or FAIL.
  */
     int
-get_option_tv(
+eval_option(
     char_u	**arg,
     typval_T	*rettv,	// when NULL, only check if option exists
     int		evaluate)
@@ -1069,7 +1069,7 @@ get_option_tv(
  * Return OK or FAIL.
  */
     int
-get_number_tv(
+eval_number(
 	char_u	    **arg,
 	typval_T    *rettv,
 	int	    evaluate,
@@ -1179,7 +1179,7 @@ get_number_tv(
  * Return OK or FAIL.
  */
     int
-get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
+eval_string(char_u **arg, typval_T *rettv, int evaluate)
 {
     char_u	*p;
     char_u	*end;
@@ -1297,7 +1297,7 @@ get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 			      {
 				  end += extra;
 				  if (end >= rettv->vval.v_string + len)
-				      iemsg("get_string_tv() used more space than allocated");
+				      iemsg("eval_string() used more space than allocated");
 				  break;
 			      }
 			  }
@@ -1323,7 +1323,7 @@ get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
  * Return OK or FAIL.
  */
     int
-get_lit_string_tv(char_u **arg, typval_T *rettv, int evaluate)
+eval_lit_string(char_u **arg, typval_T *rettv, int evaluate)
 {
     char_u	*p;
     char_u	*str;
@@ -1401,7 +1401,7 @@ tv2string(
  * Return FAIL if the name is invalid.
  */
     int
-get_env_tv(char_u **arg, typval_T *rettv, int evaluate)
+eval_env_var(char_u **arg, typval_T *rettv, int evaluate)
 {
     char_u	*string = NULL;
     int		len;

@@ -2324,7 +2324,7 @@ f_exists(typval_T *argvars, typval_T *rettv)
     }
     else if (*p == '&' || *p == '+')			// option
     {
-	n = (get_option_tv(&p, NULL, TRUE) == OK);
+	n = (eval_option(&p, NULL, TRUE) == OK);
 	if (*skipwhite(p) != NUL)
 	    n = FALSE;			// trailing garbage
     }

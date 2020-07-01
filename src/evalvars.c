@@ -1124,7 +1124,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 	    {
 		if (tofree != NULL)
 		    name = tofree;
-		if (get_var_tv(name, len, &tv, NULL, TRUE, FALSE) == FAIL)
+		if (eval_variable(name, len, &tv, NULL, TRUE, FALSE) == FAIL)
 		    error = TRUE;
 		else
 		{
@@ -2365,7 +2365,7 @@ set_cmdarg(exarg_T *eap, char_u *oldarg)
  * Return OK or FAIL.  If OK is returned "rettv" must be cleared.
  */
     int
-get_var_tv(
+eval_variable(
     char_u	*name,
     int		len,		// length of "name"
     typval_T	*rettv,		// NULL when only checking existence
@@ -3206,7 +3206,7 @@ getwinvar(
 			done = TRUE;
 		    }
 		}
-		else if (get_option_tv(&varname, rettv, 1) == OK)
+		else if (eval_option(&varname, rettv, 1) == OK)
 		    // window-local-option
 		    done = TRUE;
 	    }
@@ -3342,7 +3342,7 @@ var_exists(char_u *var)
     {
 	if (tofree != NULL)
 	    name = tofree;
-	n = (get_var_tv(name, len, &tv, NULL, FALSE, TRUE) == OK);
+	n = (eval_variable(name, len, &tv, NULL, FALSE, TRUE) == OK);
 	if (n)
 	{
 	    // handle d.key, l[idx], f(expr)
@@ -3609,7 +3609,7 @@ f_getbufvar(typval_T *argvars, typval_T *rettv)
 		    done = TRUE;
 		}
 	    }
-	    else if (get_option_tv(&varname, rettv, TRUE) == OK)
+	    else if (eval_option(&varname, rettv, TRUE) == OK)
 		// buffer-local-option
 		done = TRUE;
 

@@ -302,9 +302,9 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid, void *cctx)
     tv.v_type = VAR_UNKNOWN;
     // TODO: should we accept any expression?
     if (*arg == '\'')
-	ret = get_lit_string_tv(&arg, &tv, TRUE);
+	ret = eval_lit_string(&arg, &tv, TRUE);
     else if (*arg == '"')
-	ret = get_string_tv(&arg, &tv, TRUE);
+	ret = eval_string(&arg, &tv, TRUE);
     if (ret == FAIL || tv.vval.v_string == NULL || *tv.vval.v_string == NUL)
     {
 	emsg(_("E1071: Invalid string after \"from\""));
