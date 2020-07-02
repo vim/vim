@@ -190,7 +190,7 @@ def Test_for_linebreak()
   CheckScriptSuccess(lines)
 enddef
 
-def Test_method_cal_linebreak()
+def Test_method_call_linebreak()
   let lines =<< trim END
       vim9script
       let res = []
