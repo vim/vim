@@ -1099,6 +1099,15 @@ set_one_cmd_context(
 
     arg = skipwhite(p);
 
+    // Skip over ++argopt argument
+    if ((ea.argt & EX_ARGOPT) && *arg != NUL && STRNCMP(arg, "++", 2) == 0)
+    {
+	p = arg;
+	while (*p && !vim_isspace(*p))
+	    MB_PTR_ADV(p);
+	arg = skipwhite(p);
+    }
+
     if (ea.cmdidx == CMD_write || ea.cmdidx == CMD_update)
     {
 	if (*arg == '>')			// append
@@ -1146,14 +1155,6 @@ set_one_cmd_context(
 	arg = skipwhite(arg);
     }
 
-    // Skip over ++argopt argument
-    if ((ea.argt & EX_ARGOPT) && *arg != NUL && STRNCMP(arg, "++", 2) == 0)
-    {
-	p = arg;
-	while (*p && !vim_isspace(*p))
-	    MB_PTR_ADV(p);
-	arg = skipwhite(p);
-    }
 
     // Check for '|' to separate commands and '"' to start comments.
     // Don't do this for ":read !cmd" and ":write !cmd".
