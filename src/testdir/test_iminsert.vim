@@ -27,7 +27,7 @@ func Test_iminsert2()
   set imactivatefunc=
   set imstatusfunc=
 
-  let expected = has('gui_win32') ? 0 : 1
+  let expected = (has('win32') && has('gui_running')) ? 0 : 1
   call assert_equal(expected, s:imactivatefunc_called)
   call assert_equal(expected, s:imstatusfunc_called)
 endfunc
@@ -38,7 +38,7 @@ func Test_getimstatus()
   elseif !has('gui_mac')
     CheckFeature xim
   endif
-  if has('gui_win32')
+  if has('win32') && has('gui_running')
     set imactivatefunc=
     set imstatusfunc=
   else
