@@ -576,6 +576,8 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 {
     int status = OK;
 
+    tv->v_lock = 0;
+
     switch (lua_type(L, pos))
     {
 	case LUA_TBOOLEAN:
