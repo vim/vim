@@ -560,11 +560,11 @@ endfunc
 " Test for calling a function
 func Test_python_function_call()
   func New(...)
-     return ['NewStart'] + a:000 + ['NewEnd']
+    return ['NewStart'] + a:000 + ['NewEnd']
   endfunc
 
   func DictNew(...) dict
-     return ['DictNewStart'] + a:000 + ['DictNewEnd', self]
+    return ['DictNewStart'] + a:000 + ['DictNewEnd', self]
   endfunc
 
   new
@@ -1312,8 +1312,8 @@ func Test_python_buffer()
 
   " Test assigning to name property
   augroup BUFS
-     autocmd BufFilePost * python cb.append(vim.eval('expand("<abuf>")') + ':BufFilePost:' + vim.eval('bufnr("%")'))
-     autocmd BufFilePre * python cb.append(vim.eval('expand("<abuf>")') + ':BufFilePre:' + vim.eval('bufnr("%")'))
+    autocmd BufFilePost * python cb.append(vim.eval('expand("<abuf>")') + ':BufFilePost:' + vim.eval('bufnr("%")'))
+    autocmd BufFilePre * python cb.append(vim.eval('expand("<abuf>")') + ':BufFilePre:' + vim.eval('bufnr("%")'))
   augroup END
   py << trim EOF
     import os
@@ -1364,7 +1364,7 @@ func Test_python_buffer()
   call assert_equal([''], getline(1, '$'))
 
   augroup BUFS
-     autocmd!
+    autocmd!
   augroup END
   augroup! BUFS
   %bw!
@@ -1516,7 +1516,7 @@ func Test_python_tabpage_window()
       cb.append('!!!!!! Windows differ')
   EOF
 
-  let expected =<< trim END 
+  let expected =<< trim END
     Number of tabs: 4
     Current tab pages:
       <tabpage 0>(1): 1 windows, current is <window object (unknown)>
@@ -1801,13 +1801,13 @@ func Test_python_vim_func()
     cb.append('psaA: ' + repr(psaA))
     cb.append('psaB: ' + repr(psaB))
     cb.append('psaC: ' + repr(psaC))
-  
+
     psar = vim.Function('SelfArgs', args=[{'abcArgsPSAr': 'abcArgsPSArVal'}], self={'abcSelfPSAr': 'abcSelfPSArVal'})
     psar.args[0]['abcArgsPSAr2'] = [psar.self, psar.args[0]]
     psar.self['rec'] = psar
     psar.self['self'] = psar.self
     psar.self['args'] = psar.args
-  
+
     try:
         cb.append('psar: ' + repr(psar))
     except Exception:
@@ -1931,7 +1931,7 @@ func Test_python_vim_func()
             return repr(v)
         else:
             return vim.Function('string')(v)
-  
+
     cb.append('a.args: ' + s(a.args))
     cb.append('pa1.args: ' + s(pa1.args))
     cb.append('pa2.args: ' + s(pa2.args))
@@ -1942,7 +1942,7 @@ func Test_python_vim_func()
     cb.append('psa2.args: ' + s(psa2.args))
     cb.append('psa3.args: ' + s(psa3.args))
     cb.append('psa4.args: ' + s(psa4.args))
-  
+
     cb.append('a.self: ' + s(a.self))
     cb.append('pa1.self: ' + s(pa1.self))
     cb.append('pa2.self: ' + s(pa2.self))
@@ -1953,7 +1953,7 @@ func Test_python_vim_func()
     cb.append('psa2.self: ' + s(psa2.self))
     cb.append('psa3.self: ' + s(psa3.self))
     cb.append('psa4.self: ' + s(psa4.self))
-  
+
     cb.append('a.name: ' + s(a.name))
     cb.append('pa1.name: ' + s(pa1.name))
     cb.append('pa2.name: ' + s(pa2.name))
@@ -1964,7 +1964,7 @@ func Test_python_vim_func()
     cb.append('psa2.name: ' + s(psa2.name))
     cb.append('psa3.name: ' + s(psa3.name))
     cb.append('psa4.name: ' + s(psa4.name))
-  
+
     cb.append('a.auto_rebind: ' + s(a.auto_rebind))
     cb.append('pa1.auto_rebind: ' + s(pa1.auto_rebind))
     cb.append('pa2.auto_rebind: ' + s(pa2.auto_rebind))
@@ -1983,9 +1983,9 @@ func Test_python_vim_func()
     cb.append('psaA.auto_rebind: ' + s(psaA.auto_rebind))
     cb.append('psaB.auto_rebind: ' + s(psaB.auto_rebind))
     cb.append('psaC.auto_rebind: ' + s(psaC.auto_rebind))
-  
+
     del s
-  
+
     del a
     del pa1
     del pa2
@@ -2005,7 +2005,7 @@ func Test_python_vim_func()
     del psaB
     del psaC
     del psar
-  
+
     del ecall
   EOF
 
@@ -2140,19 +2140,19 @@ func Test_python_subclass()
         super(DupDict, self).__setitem__('dup_' + key, value)
     dd = DupDict()
     dd['a'] = 'b'
-  
+
     class DupList(vim.List):
       def __getitem__(self, idx):
         return [super(DupList, self).__getitem__(idx)] * 2
-  
+
     dl = DupList()
     dl2 = DupList(iter('abcC'))
     dl.extend(dl2[0])
-  
+
     class DupFun(vim.Function):
       def __call__(self, arg):
         return super(DupFun, self).__call__(arg, arg)
-  
+
     df = DupFun('Put')
   EOF
 
@@ -2233,33 +2233,33 @@ func Test_python_errors()
     fd = vim.Function('F')
     fdel = vim.Function('D')
     vim.command('delfunction D')
-  
+
     def subexpr_test(expr, name, subexprs):
         cb.append('>>> Testing %s using %s' % (name, expr))
         for subexpr in subexprs:
             ee(expr % subexpr)
         cb.append('<<< Finished')
-  
+
     def stringtochars_test(expr):
         return subexpr_test(expr, 'StringToChars', (
             '1',       # Fail type checks
             'u"\\0"',  # Fail PyString_AsStringAndSize(bytes, , NULL) check
             '"\\0"',   # Fail PyString_AsStringAndSize(object, , NULL) check
         ))
-  
+
     class Mapping(object):
         def __init__(self, d):
             self.d = d
-  
+
         def __getitem__(self, key):
             return self.d[key]
-  
+
         def keys(self):
             return self.d.keys()
-  
+
         def items(self):
             return self.d.items()
-  
+
     def convertfrompyobject_test(expr, recurse=True):
         # pydict_to_tv
         stringtochars_test(expr % '{%s : 1}')
@@ -2279,19 +2279,19 @@ func Test_python_errors()
             'FailingMappingKey()',  #
             'FailingNumber()',      #
         ))
-  
+
     def convertfrompymapping_test(expr):
         convertfrompyobject_test(expr)
         return subexpr_test(expr, 'ConvertFromPyMapping', (
             '[]',
         ))
-  
+
     def iter_test(expr):
         return subexpr_test(expr, '*Iter*', (
             'FailingIter()',
             'FailingIterNext()',
         ))
-  
+
     def number_test(expr, natural=False, unsigned=False):
         if natural:
             unsigned = True
@@ -2300,69 +2300,69 @@ func Test_python_errors()
             'None',
         ) + (unsigned and ('-1',) or ())
         + (natural and ('0',) or ()))
-  
+
     class FailingTrue(object):
         def __nonzero__(self):
             raise NotImplementedError('bool')
-  
+
     class FailingIter(object):
         def __iter__(self):
             raise NotImplementedError('iter')
-  
+
     class FailingIterNext(object):
         def __iter__(self):
             return self
-  
+
         def next(self):
             raise NotImplementedError('next')
-  
+
     class FailingIterNextN(object):
         def __init__(self, n):
             self.n = n
-  
+
         def __iter__(self):
             return self
-  
+
         def next(self):
             if self.n:
                 self.n -= 1
                 return 1
             else:
                 raise NotImplementedError('next N')
-  
+
     class FailingMappingKey(object):
         def __getitem__(self, item):
             raise NotImplementedError('getitem:mappingkey')
-  
+
         def keys(self):
             return list("abcH")
-  
+
     class FailingMapping(object):
         def __getitem__(self):
             raise NotImplementedError('getitem:mapping')
-  
+
         def keys(self):
             raise NotImplementedError('keys')
-  
+
     class FailingList(list):
         def __getitem__(self, idx):
             if i == 2:
                 raise NotImplementedError('getitem:list')
             else:
                 return super(FailingList, self).__getitem__(idx)
-  
+
     class NoArgsCall(object):
         def __call__(self):
             pass
-  
+
     class FailingCall(object):
         def __call__(self, path):
             raise NotImplementedError('call')
-  
+
     class FailingNumber(object):
         def __int__(self):
             raise NotImplementedError('int')
-  
+
     cb.append("> Output")
     cb.append(">> OutputSetattr")
     ee('del sys.stdout.softspace')
