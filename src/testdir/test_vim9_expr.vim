@@ -1138,6 +1138,43 @@ def Test_expr_member()
   call CheckDefExecFailure(["let d: dict<number>", "d = g:list_empty"], 'E1029: Expected dict but got list')
 enddef
 
+def Test_expr_member_vim9script()
+  let lines =<< trim END
+      vim9script
+      let d = #{one:
+      		'one',
+		two: 'two'}
+      assert_equal('one', d.one)
+      assert_equal('one', d
+                            .one)
+      assert_equal('one', d[
+			    'one'
+			    ])
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let l = [1,
+		  2,
+		  3, 4
+		  ]
+      assert_equal(2, l[
+			    1
+			    ])
+      assert_equal([2, 3], l[1 : 2])
+      assert_equal([1, 2, 3], l[
+				:
+				2
+				])
+      assert_equal([3, 4], l[
+				2
+				:
+				])
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_expr7_option()
   " option
   set ts=11
