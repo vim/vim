@@ -3,6 +3,7 @@
 source check.vim
 CheckFeature python
 CheckFeature quickfix
+source shared.vim
 
 " NOTE: This will cause errors when run under valgrind.
 " This would require recompiling Python with:
@@ -55,13 +56,13 @@ func Test_AAA_python_setup()
 endfunc
 
 func Test_pydo()
-  " Check deleting lines does not trigger ml_get error.
+  " Check deleting lines does not trigger an ml_get error.
   new
   call setline(1, ['one', 'two', 'three'])
   pydo vim.command("%d_")
   bwipe!
 
-  " Check switching to another buffer does not trigger ml_get error.
+  " Check switching to another buffer does not trigger an ml_get error.
   new
   let wincount = winnr('$')
   call setline(1, ['one', 'two', 'three'])
@@ -69,6 +70,19 @@ func Test_pydo()
   call assert_equal(wincount + 1, winnr('$'))
   bwipe!
   bwipe!
+
+  " Try modifying a buffer with 'nomodifiable' set
+  set nomodifiable
+  call assert_fails('pydo toupper(line)', 'cannot save undo information')
+  set modifiable
+
+  " Invalid command
+  call AssertException(['pydo non_existing_cmd'],
+        \ "Vim(pydo):NameError: global name 'non_existing_cmd' is not defined")
+  call AssertException(["pydo raise Exception('test')"],
+        \ 'Vim(pydo):Exception: test')
+  call AssertException(["pydo {lambda}"],
+        \ 'Vim(pydo):SyntaxError: invalid syntax')
 endfunc
 
 func Test_set_cursor()
@@ -106,14 +120,9 @@ func Test_vim_function()
     call assert_false(v:exception)
   endtry
 
-  let caught_vim_err = v:false
-  try
-    let x = pyeval('f.abc')
-  catch
-    call assert_match('AttributeError: abc', v:exception)
-    let caught_vim_err = v:true
-  endtry
-  call assert_equal(v:true, caught_vim_err)
+  " Non-existing function attribute
+  call AssertException(["let x = pyeval('f.abc')"],
+        \ 'Vim(let):AttributeError: abc')
 
   py del f
   delfunc s:foo
@@ -250,6 +259,9 @@ func Test_python_range()
   py r = b.range(1, 3)
   call assert_equal(0, pyeval('r.start'))
   call assert_equal(2, pyeval('r.end'))
+  call assert_equal('one', pyeval('r[0]'))
+  call assert_equal('one', pyeval('r[-3]'))
+  call assert_equal('three', pyeval('r[-4]'))
   call assert_equal(['two', 'three'], pyeval('r[1:]'))
   py r[0] = 'green'
   call assert_equal(['green', 'two', 'three'], getline(1, '$'))
@@ -257,14 +269,22 @@ func Test_python_range()
   call assert_equal(['red', 'blue', 'three'], getline(1, '$'))
   call assert_equal(['start', 'end', '__members__'], pyeval('r.__members__'))
 
-  let caught_vim_err = v:false
-  try
-    let x = pyeval('r.abc')
-  catch
-    call assert_match('AttributeError: abc', v:exception)
-    let caught_vim_err = v:true
-  endtry
-  call assert_equal(v:true, caught_vim_err)
+  " try different invalid start/end index for the range slice
+  %d
+  call setline(1, ['one', 'two', 'three'])
+  py r[-10:1] = ["a"]
+  py r[10:12] = ["b"]
+  py r[-10:-9] = ["c"]
+  py r[1:0] = ["d"]
+  call assert_equal(['c', 'd', 'a', 'two', 'three', 'b'], getline(1, '$'))
+
+  " FIXME: The following code triggers ml_get errors
+  " %d
+  " let x = pyeval('r[:]')
+
+  " Non-existing range attribute
+  call AssertException(["let x = pyeval('r.abc')"],
+        \ 'Vim(let):AttributeError: abc')
 
   close!
 endfunc
@@ -273,33 +293,50 @@ endfunc
 func Test_python_tabpage()
   tabnew
   py t = vim.tabpages[1]
+  py wl = t.windows
   tabclose
-  let caught_vim_err = v:false
-  try
-    let n = pyeval('t.number')
-  catch
-    call assert_match('vim.error: attempt to refer to deleted tab page',
-          \ v:exception)
-    let caught_vim_err = v:true
-  endtry
-  call assert_equal(v:true, caught_vim_err)
+  " Accessing a closed tabpage
+  call AssertException(["let n = pyeval('t.number')"],
+        \ 'Vim(let):vim.error: attempt to refer to deleted tab page')
+  call AssertException(["let n = pyeval('len(wl)')"],
+        \ 'Vim(let):vim.error: attempt to refer to deleted tab page')
+  call AssertException(["py w = wl[0]"],
+        \ 'Vim(python):vim.error: attempt to refer to deleted tab page')
+  call AssertException(["py vim.current.tabpage = t"],
+        \ 'Vim(python):vim.error: attempt to refer to deleted tab page')
+  call assert_match('<tabpage object (deleted)', pyeval('repr(t)'))
   %bw!
 endfunc
 
 " Test for the python window object
 func Test_python_window()
-  new
+  " Test for setting the window height
+  10new
+  py vim.current.window.height = 5
+  call assert_equal(5, winheight(0))
+
+  " Test for setting the window width
+  10vnew
+  py vim.current.window.width = 6
+  call assert_equal(6, winwidth(0))
+
+  " Try accessing a closed window
   py w = vim.current.window
+  py wopts = w.options
   close
-  let caught_vim_err = v:false
-  try
-    let n = pyeval('w.number')
-  catch
-    call assert_match('vim.error: attempt to refer to deleted window',
-          \ v:exception)
-    let caught_vim_err = v:true
-  endtry
-  call assert_equal(v:true, caught_vim_err)
+  " Access the attributes of a closed window
+  call AssertException(["let n = pyeval('w.number')"],
+        \ 'Vim(let):vim.error: attempt to refer to deleted window')
+  call AssertException(["py w.height = 5"],
+        \ 'Vim(python):vim.error: attempt to refer to deleted window')
+  call AssertException(["py vim.current.window = w"],
+        \ 'Vim(python):vim.error: attempt to refer to deleted window')
+  " Try to set one of the options of the closed window
+  " FIXME: The following causes ASAN failure
+  "call AssertException(["py wopts['list'] = False"],
+  "      \ 'vim.error: problem while switching windows')
+  call assert_match('<window object (deleted)', pyeval("repr(w)"))
+  %bw!
 endfunc
 
 " Test for the python List object
@@ -307,6 +344,21 @@ func Test_python_list()
   let l = [1, 2]
   py pl = vim.bindeval('l')
   call assert_equal(['locked', '__members__'], pyeval('pl.__members__'))
+
+  " Try to convert a null List
+  call AssertException(["py t = vim.eval('test_null_list()')"],
+        \ 'Vim(python):SystemError: error return without exception set')
+
+  " Try to convert a List with a null List item
+  call AssertException(["py t = vim.eval('[test_null_list()]')"],
+        \ 'Vim(python):SystemError: error return without exception set')
+
+  " Try to bind a null List variable
+  let cmds =<< trim END
+    let l = test_null_list()
+    py ll = vim.bindeval('l')
+  END
+  call AssertException(cmds, 'Vim(python):SystemError: error return without exception set')
 
   let l = []
   py l = vim.bindeval('l')
@@ -322,6 +374,16 @@ func Test_python_list()
   call assert_equal([0, "as'd", [1, 2, function("strlen"), {'a': 1}]], l)
   py l[-2] = f
   call assert_equal([0, function("strlen"), [1, 2, function("strlen"), {'a': 1}]], l)
+
+  " appending to a list
+  let l = [1, 2]
+  py ll = vim.bindeval('l')
+  py ll[2] = 8
+  call assert_equal([1, 2, 8], l)
+
+  " Using dict as an index
+  call AssertException(['py ll[{}] = 10'],
+        \ 'Vim(python):TypeError: index must be int or slice, not dict')
 endfunc
 
 " Test for the python Dict object
@@ -330,6 +392,26 @@ func Test_python_dict()
   py pd = vim.bindeval('d')
   call assert_equal(['locked', 'scope', '__members__'],
         \ pyeval('pd.__members__'))
+
+  " Try to convert a null Dict
+  call AssertException(["py t = vim.eval('test_null_dict()')"],
+        \ 'Vim(python):SystemError: error return without exception set')
+
+  " Try to convert a Dict with a null List value
+  call AssertException(["py t = vim.eval(\"{'a' : test_null_list()}\")"],
+        \ 'Vim(python):SystemError: error return without exception set')
+
+  " Try to convert a Dict with a null string key
+  py t = vim.eval("{test_null_string() : 10}")
+  call assert_fails("let d = pyeval('t')", 'E859:')
+
+  " Dict length
+  let d = {'a' : 10, 'b' : 20}
+  py d = vim.bindeval('d')
+  call assert_equal(2, pyeval('len(d)'))
+
+  " Deleting an non-existing key
+  call AssertException(["py del d['c']"], "Vim(python):KeyError: 'c'")
 endfunc
 
 " Extending Dictionary directly with different types
@@ -355,6 +437,12 @@ func Test_python_dict_extend()
     dv.sort(cmpfun)
     di.sort(cmpfun)
   EOF
+
+  " Try extending a locked dictionary
+  lockvar d
+  call AssertException(["py d.update({'b' : 20})"],
+        \ 'Vim(python):vim.error: dictionary is locked')
+  unlockvar d
 
   call assert_equal(1, pyeval("d['f'](self={})"))
   call assert_equal("['-1', '0', '1', 'b', 'f']", pyeval('repr(dk)'))
@@ -552,6 +640,11 @@ func Test_python_lockedvar()
   EOF
   call assert_equal(['', "l[2] threw vim.error: error:('list is locked',)"],
         \ getline(1, '$'))
+
+  " Try to concatenate a locked list
+  call AssertException(['py l += [4, 5]'],
+        \ 'Vim(python):vim.error: list is locked')
+
   call assert_equal([0, 1, 2, 3], l)
   unlockvar! l
   close!
@@ -665,6 +758,11 @@ func Test_python_lock_scope_attr()
   call assert_equal([0], l)
   call assert_equal([1], ll)
   unlet l ll
+
+  " Try changing an attribute of a fixed list
+  py a = vim.bindeval('v:argv')
+  call AssertException(['py a.locked = 0'],
+        \ 'Vim(python):TypeError: cannot modify fixed list')
 endfunc
 
 " Test for pyeval()
@@ -679,42 +777,38 @@ func Test_python_pyeval()
   call assert_equal(v:none, pyeval('None'))
   call assert_equal('', v:errmsg)
 
+  py v = vim.eval('test_null_function()')
+  call assert_equal(v:none, pyeval('v'))
+
   if has('float')
     call assert_equal(0.0, pyeval('0.0'))
   endif
 
-  " Invalid values:
-  let caught_859 = 0
-  try
-    let v = pyeval('"\0"')
-  catch /E859:/
-    let caught_859 = 1
-  endtry
-  call assert_equal(1, caught_859)
+  " Evaluate an invalid values
+  call AssertException(['let v = pyeval(''"\0"'')'], 'E859:')
+  call AssertException(['let v = pyeval(''{"\0" : 1}'')'], 'E859:')
+  call AssertException(['let v = pyeval("undefined_name")'],
+        \ "Vim(let):NameError: name 'undefined_name' is not defined")
+  call AssertException(['let v = pyeval("vim")'], 'E859:')
+endfunc
 
-  let caught_859 = 0
-  try
-    let v = pyeval('{"\0" : 1}')
-  catch /E859:/
-    let caught_859 = 1
-  endtry
-  call assert_equal(1, caught_859)
+" Test for vim.bindeval()
+func Test_python_vim_bindeval()
+  " Float
+  let f = 3.14
+  py f = vim.bindeval('f')
+  call assert_equal(3.14, pyeval('f'))
 
-  let caught_nameerr = 0
-  try
-    let v = pyeval("undefined_name")
-  catch /NameError: name 'undefined_name'/
-    let caught_nameerr = 1
-  endtry
-  call assert_equal(1, caught_nameerr)
+  " Blob
+  let b = 0z12
+  py b = vim.bindeval('b')
+  call assert_equal("\x12", pyeval('b'))
 
-  let caught_859 = 0
-  try
-    let v = pyeval("vim")
-  catch /E859:/
-    let caught_859 = 1
-  endtry
-  call assert_equal(1, caught_859)
+  " Bool
+  call assert_equal(1, pyeval("vim.bindeval('v:true')"))
+  call assert_equal(0, pyeval("vim.bindeval('v:false')"))
+  call assert_equal(v:none, pyeval("vim.bindeval('v:null')"))
+  call assert_equal(v:none, pyeval("vim.bindeval('v:none')"))
 endfunc
 
 " threading
@@ -812,7 +906,24 @@ func Test_python_list_slice()
   call assert_equal([0, 2, 4], pyeval('l'))
   py l = ll[4:2:1]
   call assert_equal([], pyeval('l'))
+
+  " Error case: Use an invalid index
+  call AssertException(['py ll[-10] = 5'], 'Vim(python):vim.error: internal error:')
+
+  " Use a step value of 0
+  call AssertException(['py ll[0:3:0] = [1, 2, 3]'],
+        \ 'Vim(python):ValueError: slice step cannot be zero')
+
+  " Error case: Invalid slice type
+  call AssertException(["py x = ll['abc']"],
+        \ 'Vim(python):TypeError: index must be int or slice, not str')
   py del l
+
+  " Error case: List with a null list item
+  let l = [test_null_list()]
+  py ll = vim.bindeval('l')
+  call AssertException(["py x = ll[:]"],
+        \ 'Vim(python):SystemError: error return without exception set')
 endfunc
 
 " Vars
@@ -1249,6 +1360,24 @@ func Test_python_opts()
 
   call assert_equal(expected, g:res)
   unlet g:res
+
+  call assert_equal(0, pyeval("'' in vim.options"))
+
+  " use an empty key to index vim.options
+  call AssertException(["let v = pyeval(\"vim.options['']\")"],
+        \ 'Vim(let):ValueError: empty keys are not allowed')
+  call AssertException(["py vim.current.window.options[''] = 0"],
+        \ 'Vim(python):ValueError: empty keys are not allowed')
+  call AssertException(["py vim.current.window.options[{}] = 0"],
+        \ 'Vim(python):TypeError: expected str() or unicode() instance, but got dict')
+
+  " set one of the number options to a very large number
+  let cmd = ["py vim.options['previewheight'] = 9999999999999999"]
+  call AssertException(cmd, 'OverflowError:')
+
+  " unset a global-local string option
+  call AssertException(["py del vim.options['errorformat']"],
+        \ 'Vim(python):ValueError: unable to unset global option errorformat')
 endfunc
 
 " Test for vim.buffer object
@@ -1267,10 +1396,25 @@ func Test_python_buffer()
   py b = vim.current.buffer
   wincmd w
 
+  " Test for getting lines from the buffer using a slice
+  call assert_equal(['First line'], pyeval('b[-10:1]'))
+  call assert_equal(['Third line'], pyeval('b[2:10]'))
+  call assert_equal([], pyeval('b[2:0]'))
+  call assert_equal([], pyeval('b[10:12]'))
+  call assert_equal([], pyeval('b[-10:-8]'))
+
   " Tests BufferAppend and BufferItem
   py cb.append(b[0])
   call assert_equal(['First line'], getbufline(bnr1, 2))
   %d
+
+  " Try to append using out-of-range line number
+  call AssertException(["py b.append('abc', 10)"],
+        \ 'Vim(python):IndexError: line number out of range')
+
+  " Append a non-string item
+  call AssertException(["py b.append([22])"],
+        \ 'Vim(python):TypeError: expected str() or unicode() instance, but got int')
 
   " Tests BufferSlice and BufferAssSlice
   py cb.append('abc5') # Will be overwritten
@@ -1363,11 +1507,62 @@ func Test_python_buffer()
   EOF
   call assert_equal([''], getline(1, '$'))
 
+  " Delete all the lines in a buffer
+  call setline(1, ['a', 'b', 'c'])
+  py vim.current.buffer[:] = []
+  call assert_equal([''], getline(1, '$'))
+
+  " Test for modifying a 'nomodifiable' buffer
+  setlocal nomodifiable
+  call AssertException(["py vim.current.buffer[0] = 'abc'"],
+        \ "Vim(python):vim.error: Vim:E21: Cannot make changes, 'modifiable' is off")
+  call AssertException(["py vim.current.buffer[0] = None"],
+        \ "Vim(python):vim.error: Vim:E21: Cannot make changes, 'modifiable' is off")
+  call AssertException(["py vim.current.buffer[:] = None"],
+        \ "Vim(python):vim.error: Vim:E21: Cannot make changes, 'modifiable' is off")
+  call AssertException(["py vim.current.buffer[:] = []"],
+        \ "Vim(python):vim.error: Vim:E21: Cannot make changes, 'modifiable' is off")
+  call AssertException(["py vim.current.buffer.append('abc')"],
+        \ "Vim(python):vim.error: Vim:E21: Cannot make changes, 'modifiable' is off")
+  call AssertException(["py vim.current.buffer.append([])"],
+        \ "Vim(python):vim.error: Vim:E21: Cannot make changes, 'modifiable' is off")
+  setlocal modifiable
+
   augroup BUFS
     autocmd!
   augroup END
   augroup! BUFS
   %bw!
+
+  " Range object for a deleted buffer
+  new Xfile
+  call setline(1, ['one', 'two', 'three'])
+  py b = vim.current.buffer
+  py r = vim.current.buffer.range(0, 2)
+  call assert_equal('<range Xfile (0:2)>', pyeval('repr(r)'))
+  %bw!
+  call AssertException(['py r[:] = []'],
+        \ 'Vim(python):vim.error: attempt to refer to deleted buffer')
+  call assert_match('<buffer object (deleted)', pyeval('repr(b)'))
+  call assert_match('<range object (for deleted buffer)', pyeval('repr(r)'))
+  call AssertException(["let n = pyeval('len(r)')"],
+        \ 'Vim(let):vim.error: attempt to refer to deleted buffer')
+  call AssertException(["py r.append('abc')"],
+        \ 'Vim(python):vim.error: attempt to refer to deleted buffer')
+
+  " object for a deleted buffer
+  call AssertException(["py b[0] = 'one'"],
+        \ 'Vim(python):vim.error: attempt to refer to deleted buffer')
+  call AssertException(["py b.append('one')"],
+        \ 'Vim(python):vim.error: attempt to refer to deleted buffer')
+  call AssertException(["let n = pyeval('len(b)')"],
+        \ 'Vim(let):vim.error: attempt to refer to deleted buffer')
+  call AssertException(["py pos = b.mark('a')"],
+        \ 'Vim(python):vim.error: attempt to refer to deleted buffer')
+  call AssertException(["py vim.current.buffer = b"],
+        \ 'Vim(python):vim.error: attempt to refer to deleted buffer')
+  call AssertException(["py rn = b.range(0, 2)"],
+        \ 'Vim(python):vim.error: attempt to refer to deleted buffer')
 endfunc
 
 " Test vim.buffers object
@@ -1467,6 +1662,8 @@ func Test_python_tabpage_window()
   vnew a.2
   vnew b.2
   vnew c.2
+
+  call assert_equal(4, pyeval('vim.current.window.tabpage.number'))
 
   py << trim EOF
     cb.append('Number of tabs: ' + str(len(vim.tabpages)))
@@ -1617,6 +1814,8 @@ func Test_python_vim_current()
     Current line: 'python interface'
   END
   call assert_equal(expected, getbufline(bufnr('Xfile'), 2, '$'))
+  py vim.current.line = 'one line'
+  call assert_equal('one line', getline('.'))
   call deletebufline(bufnr('Xfile'), 1, '$')
 
   py << trim EOF
@@ -1739,19 +1938,21 @@ endfunc
 
 " Test vim.Function
 func Test_python_vim_func()
-  function Args(...)
+  func Args(...)
     return a:000
-  endfunction
+  endfunc
 
-  function SelfArgs(...) dict
+  func SelfArgs(...) dict
     return [a:000, self]
-  endfunction
+  endfunc
 
   " The following four lines should not crash
   let Pt = function('tr', [[]], {'l': []})
   py Pt = vim.bindeval('Pt')
   unlet Pt
   py del Pt
+
+  call assert_equal(3, pyeval('vim.strwidth("a\tb")'))
 
   %bw!
   py cb = vim.current.buffer
@@ -2129,9 +2330,9 @@ endfunc
 " Test subclassing
 func Test_python_subclass()
   new
-  fun Put(...)
-     return a:000
-  endfun
+  func Put(...)
+    return a:000
+  endfunc
 
   py << trim EOF
     class DupDict(vim.Dictionary):
@@ -2211,11 +2412,11 @@ endfunc
 
 " Test errors
 func Test_python_errors()
-  fun F() dict
-  endfun
+  func F() dict
+  endfunc
 
-  fun D()
-  endfun
+  func D()
+  endfunc
 
   new
   py cb = vim.current.buffer
@@ -2537,8 +2738,8 @@ func Test_python_errors()
     ee('vim.windows[1000]')
     cb.append("> Buffer")
     cb.append(">> StringToLine (indirect)")
-    ee('vim.current.buffer[0] = u"\\na"')
     ee('vim.current.buffer[0] = "\\na"')
+    ee('vim.current.buffer[0] = u"\\na"')
     cb.append(">> SetBufferLine (indirect)")
     ee('vim.current.buffer[0] = True')
     cb.append(">> SetBufferLineList (indirect)")
@@ -3360,8 +3561,8 @@ func Test_python_errors()
     vim.windows[1000]:IndexError:('no such window',)
     > Buffer
     >> StringToLine (indirect)
-    vim.current.buffer[0] = u"\na":error:('string cannot contain newlines',)
     vim.current.buffer[0] = "\na":error:('string cannot contain newlines',)
+    vim.current.buffer[0] = u"\na":error:('string cannot contain newlines',)
     >> SetBufferLine (indirect)
     vim.current.buffer[0] = True:TypeError:('bad argument type for built-in operation',)
     >> SetBufferLineList (indirect)
@@ -3442,6 +3643,7 @@ func Test_python_import()
     cb.append(tm.__file__.replace('.pyc', '.py').replace(os.path.sep, '/')[-len('modulex/topmodule/__init__.py'):])
     cb.append(tms.__file__.replace('.pyc', '.py').replace(os.path.sep, '/')[-len('modulex/topmodule/submodule/__init__.py'):])
     cb.append(tmsss.__file__.replace('.pyc', '.py').replace(os.path.sep, '/')[-len('modulex/topmodule/submodule/subsubmodule/subsubsubmodule.py'):])
+
     del before
     del after
     del d
@@ -3463,13 +3665,16 @@ func Test_python_import()
   END
   call assert_equal(expected, getline(2, '$'))
   close!
+
+  " Try to import a non-existing moudle with a dot (.)
+  call AssertException(['py import a.b.c'], 'ImportError:')
 endfunc
 
 " Test exceptions
 func Test_python_exception()
-  fun Exe(e)
+  func Exe(e)
     execute a:e
-  endfun
+  endfunc
 
   new
   py cb = vim.current.buffer
