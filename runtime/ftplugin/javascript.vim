@@ -59,7 +59,7 @@ setlocal path-=/usr/include
 if exists("loaded_matchit")
     let b:match_ignorecase = 0
     let b:match_words =
-                \ .. '\<do\>:\<while\>,'.
+                \ '\<do\>:\<while\>,'
                 \ .. '<\@<=\([^ \t>/]\+\)\%(\s\+[^>]*\%([^/]>\|$\)\|>\|$\):<\@<=/\1>,'
                 \ .. '<\@<=\%([^ \t>/]\+\)\%(\s\+[^/>]*\|$\):/>'
 endif
