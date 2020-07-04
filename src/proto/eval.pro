@@ -32,7 +32,6 @@ int pattern_match(char_u *pat, char_u *text, int ic);
 char_u *eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext);
 char_u *eval_next_line(evalarg_T *evalarg);
 char_u *skipwhite_and_linebreak(char_u *arg, evalarg_T *evalarg);
-char_u *skipwhite_and_linebreak_keep_string(char_u *arg, evalarg_T *evalarg);
 void clear_evalarg(evalarg_T *evalarg, exarg_T *eap);
 int eval0(char_u *arg, typval_T *rettv, exarg_T *eap, evalarg_T *evalarg);
 int eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg);

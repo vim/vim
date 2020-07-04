@@ -1177,7 +1177,7 @@ eval_list(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
 	    return FAIL;
     }
 
-    *arg = skipwhite_and_linebreak_keep_string(*arg + 1, evalarg);
+    *arg = skipwhite_and_linebreak(*arg + 1, evalarg);
     while (**arg != ']' && **arg != NUL)
     {
 	if (eval1(arg, &tv, evalarg) == FAIL)	// recursive!
@@ -1209,7 +1209,7 @@ eval_list(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
 
 	// The "]" can be on the next line.  But a double quoted string may
 	// follow, not a comment.
-	*arg = skipwhite_and_linebreak_keep_string(*arg, evalarg);
+	*arg = skipwhite_and_linebreak(*arg, evalarg);
 	if (**arg == ']')
 	    break;
 

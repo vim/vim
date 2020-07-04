@@ -1866,9 +1866,9 @@ eval_func(
 }
 
 /*
- * If inside Vim9 script, "arg" points to the end of a line (ignoring comments)
- * and there is a next line, return the next line (skipping blanks) and set
- * "getnext".
+ * If inside Vim9 script, "arg" points to the end of a line (ignoring a #
+ * comment) and there is a next line, return the next line (skipping blanks)
+ * and set "getnext".
  * Otherwise just return "arg" unmodified and set "getnext" to FALSE.
  * "arg" must point somewhere inside a line, not at the start.
  */
@@ -1880,7 +1880,7 @@ eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext)
 	    && evalarg != NULL
 	    && evalarg->eval_cookie != NULL
 	    && (*arg == NUL || (VIM_ISWHITE(arg[-1])
-					     && (*arg == '"' || *arg == '#'))))
+					     && *arg == '#' && arg[1] != '{')))
     {
 	char_u *p = getline_peek(evalarg->eval_getline, evalarg->eval_cookie);
 
@@ -1927,24 +1927,12 @@ skipwhite_and_linebreak(char_u *arg, evalarg_T *evalarg)
     int	    getnext;
     char_u  *p = skipwhite(arg);
 
+    if (evalarg == NULL)
+	return skipwhite(arg);
     eval_next_non_blank(p, evalarg, &getnext);
     if (getnext)
 	return eval_next_line(evalarg);
     return p;
-}
-
-/*
- * Call eval_next_non_blank() and get the next line if needed, but not when a
- * double quote follows.  Used inside an expression.
- */
-    char_u *
-skipwhite_and_linebreak_keep_string(char_u *arg, evalarg_T *evalarg)
-{
-    char_u  *p = skipwhite(arg);
-
-    if (*p == '"')
-	return p;
-    return skipwhite_and_linebreak(arg, evalarg);
 }
 
 /*

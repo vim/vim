@@ -787,8 +787,8 @@ get_literal_key(char_u **arg, typval_T *tv)
 
 /*
  * Allocate a variable for a Dictionary and fill it from "*arg".
+ * "*arg" points to the "{".
  * "literal" is TRUE for #{key: val}
- * "flags" can have EVAL_EVALUATE and other EVAL_ flags.
  * Return OK or FAIL.  Returns NOTDONE for {expr}.
  */
     int
@@ -830,7 +830,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
     tvkey.v_type = VAR_UNKNOWN;
     tv.v_type = VAR_UNKNOWN;
 
-    *arg = skipwhite_and_linebreak_keep_string(*arg + 1, evalarg);
+    *arg = skipwhite_and_linebreak(*arg + 1, evalarg);
     while (**arg != '}' && **arg != NUL)
     {
 	if ((literal
@@ -862,7 +862,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	    goto failret;
 	}
 
-	*arg = skipwhite_and_linebreak_keep_string(*arg + 1, evalarg);
+	*arg = skipwhite_and_linebreak(*arg + 1, evalarg);
 	if (eval1(arg, &tv, evalarg) == FAIL)	// recursive!
 	{
 	    if (evaluate)
@@ -904,7 +904,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	}
 
 	// the "}" can be on the next line
-	*arg = skipwhite_and_linebreak_keep_string(*arg, evalarg);
+	*arg = skipwhite_and_linebreak(*arg, evalarg);
 	if (**arg == '}')
 	    break;
 	if (!had_comma)

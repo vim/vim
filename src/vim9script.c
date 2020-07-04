@@ -342,7 +342,7 @@ handle_import(
 	goto erret;
     }
 
-    arg = skipwhite_and_linebreak_keep_string(arg + 4, evalarg);
+    arg = skipwhite_and_linebreak(arg + 4, evalarg);
     tv.v_type = VAR_UNKNOWN;
     // TODO: should we accept any expression?
     if (*arg == '\'')
