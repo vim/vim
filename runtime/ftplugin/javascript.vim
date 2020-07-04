@@ -51,19 +51,18 @@ if len(s:bin_dir) && $PATH !~ s:bin_dir
 endif
 unlet s:bin_dir
 
-" Set 'path' to a minimal, non-greedy, value
+" Remove irrelevant part of 'path'.
 " User is expected to augment it with contextually-relevant paths
-setlocal path-=node_modules
 setlocal path-=/usr/include
-setlocal path-=**
 
 " Matchit configuration
-let b:match_words = '\<function\>:\<return\>,'
-            \ .. '\<do\>:\<while\>,'
-            \ .. '\<switch\>:\<case\>:\<default\>,'
-            \ .. '\<if\>:\<else\>,'
-            \ .. '\<try\>:\<catch\>:\<finally\>,'
-            \ .. '<\(\w\+\):</\1>'
+if exists("loaded_matchit")
+    let b:match_ignorecase = 0
+    let b:match_words =
+                \ .. '\<do\>:\<while\>,'.
+                \ .. '<\@<=\([^ \t>/]\+\)\%(\s\+[^>]*\%([^/]>\|$\)\|>\|$\):<\@<=/\1>,'
+                \ .. '<\@<=\%([^ \t>/]\+\)\%(\s\+[^/>]*\|$\):/>'
+endif
 
 " Use eslint for :make if applicable
 if executable('eslint')
