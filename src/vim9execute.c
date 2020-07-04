@@ -2188,6 +2188,7 @@ call_def_function(
 		{
 		    dict_T	*dict;
 		    dictitem_T	*di;
+		    typval_T	temp_tv;
 
 		    tv = STACK_TV_BOT(-1);
 		    if (tv->v_type != VAR_DICT || tv->vval.v_dict == NULL)
@@ -2203,8 +2204,11 @@ call_def_function(
 			semsg(_(e_dictkey), iptr->isn_arg.string);
 			goto failed;
 		    }
-		    clear_tv(tv);
+		    // Clear the dict after getting the item, to avoid that it
+		    // make the item invalid.
+		    temp_tv = *tv;
 		    copy_tv(&di->di_tv, tv);
+		    clear_tv(&temp_tv);
 		}
 		break;
 

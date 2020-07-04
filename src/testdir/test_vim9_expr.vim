@@ -1133,6 +1133,9 @@ def Test_expr_member()
   let d: dict<number> = g:dict_one
   assert_equal(1, d['one'])
 
+  # getting the one member should clear the dict after getting the item
+  assert_equal('one', #{one: 'one'}.one)
+
   call CheckDefFailure(["let x = g:dict_one.#$!"], 'E1002:')
   call CheckDefExecFailure(["let d: dict<any>", "echo d['a']"], 'E716:')
   call CheckDefExecFailure(["let d: dict<number>", "d = g:list_empty"], 'E1029: Expected dict but got list')
