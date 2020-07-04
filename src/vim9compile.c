@@ -2613,7 +2613,8 @@ compile_load_scriptvar(
 	if (import->imp_all)
 	{
 	    char_u	*p = skipwhite(*end);
-	    int		name_len;
+	    char_u	*exp_name;
+	    int		cc;
 	    ufunc_T	*ufunc;
 	    type_T	*type;
 
@@ -2630,7 +2631,17 @@ compile_load_scriptvar(
 		return FAIL;
 	    }
 
-	    idx = find_exported(import->imp_sid, &p, &name_len, &ufunc, &type);
+	    // isolate one name
+	    exp_name = p;
+	    while (eval_isnamec(*p))
+		++p;
+	    cc = *p;
+	    *p = NUL;
+
+	    idx = find_exported(import->imp_sid, exp_name, &ufunc, &type);
+	    *p = cc;
+	    p = skipwhite(p);
+
 	    // TODO: what if it is a function?
 	    if (idx < 0)
 		return FAIL;
@@ -2981,6 +2992,7 @@ to_name_end(char_u *arg, int namespace)
 
 /*
  * Like to_name_end() but also skip over a list or dict constant.
+ * This intentionally does not handle line continuation.
  */
     char_u *
 to_name_const_end(char_u *arg)
@@ -5632,7 +5644,7 @@ compile_unletlock(char_u *arg, exarg_T *eap, cctx_T *cctx)
     static char_u *
 compile_import(char_u *arg, cctx_T *cctx)
 {
-    return handle_import(arg, &cctx->ctx_imports, 0, cctx);
+    return handle_import(arg, &cctx->ctx_imports, 0, NULL, cctx);
 }
 
 /*

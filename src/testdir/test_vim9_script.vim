@@ -686,6 +686,35 @@ def Test_vim9_import_export()
   unlet g:imported_name g:imported_name_appended
   delete('Ximport.vim')
 
+  # similar, with line breaks
+  let import_line_break_script_lines =<< trim END
+    vim9script
+    import {
+        exported,
+        Exported,
+        }
+        from
+        './Xexport.vim'
+    g:imported = exported
+    exported += 5
+    g:imported_added = exported
+    g:imported_func = Exported()
+  END
+  writefile(import_line_break_script_lines, 'Ximport_lbr.vim')
+  source Ximport_lbr.vim
+
+  assert_equal(9876, g:imported)
+  assert_equal(9881, g:imported_added)
+  assert_equal('Exported', g:imported_func)
+
+  # exported script not sourced again
+  assert_false(exists('g:result'))
+  unlet g:imported
+  unlet g:imported_added
+  unlet g:imported_func
+  delete('Ximport_lbr.vim')
+
+  # import inside :def function
   let import_in_def_lines =<< trim END
     vim9script
     def ImportInDef()
@@ -750,6 +779,21 @@ def Test_vim9_import_export()
   END
   writefile(import_star_as_lines_missing_name, 'Ximport.vim')
   assert_fails('source Ximport.vim', 'E1048:')
+
+  let import_star_as_lbr_lines =<< trim END
+    vim9script
+    import *
+        as Export
+        from
+        './Xexport.vim'
+    def UseExport()
+      g:imported = Export.exported
+    enddef
+    UseExport()
+  END
+  writefile(import_star_as_lbr_lines, 'Ximport.vim')
+  source Ximport.vim
+  assert_equal(9883, g:imported)
 
   let import_star_lines =<< trim END
     vim9script
