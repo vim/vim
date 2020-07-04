@@ -75,13 +75,12 @@ if executable('standard')
 endif
 
 " Set 'define' to a comprehensive value
-let &l:define = '\('
-            \ .. '\(^\s*(*async\s\{-}function\|(*function\)'
-            \ .. '\|^\s*\(\*\|static\|async\|get\|set\|\i\{-}\.\)'
-            \ .. '\|^\s*\(\ze\i\{-}\)\(([^)]*).*{$\|\s*[:=,]\)'
-            \ .. '\|^\s*\(export\s\{-}\|export\s\{-}default\s\{-}\)*\(var\|let\|const\|function\)'
-            \ .. '\|\(\<as\>\)'
-            \ .. '\)'
+let &l:define =
+            \ '\(^\s*(*async\s\+function\|(*function\)'
+            \ .. '\|^\s*\(\*\|static\|async\|get\|set\|\i\+\.\)'
+            \ .. '\|^\s*\(\ze\i\+\)\(([^)]*).*{$\|\s*[:=,]\)'
+            \ .. '\|^\s*\(export\s\+\|export\s\+default\s\+\)*\(var\|let\|const\|function\|class\)'
+            \ .. '\|\<as\>'
 
 let b:undo_ftplugin = "setl fo< ofu< com< cms< sua< su< def< pa< mp< efm<"
 
