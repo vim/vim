@@ -2219,6 +2219,12 @@ def Test_source_vim9_from_legacy()
   delete('Xvim9_script.vim')
 enddef
 
+def Test_vim9_copen()
+  # this was giving an error for setting w:quickfix_title
+  copen
+  quit
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new
