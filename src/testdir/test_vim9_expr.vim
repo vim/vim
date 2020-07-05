@@ -1128,6 +1128,8 @@ def Test_expr7_dict_vim9script()
   CheckScriptFailure(lines, 'E1069:')
 enddef
 
+let g:oneString = 'one'
+
 def Test_expr_member()
   assert_equal(1, g:dict_one.one)
   let d: dict<number> = g:dict_one
@@ -1135,6 +1137,7 @@ def Test_expr_member()
 
   # getting the one member should clear the dict after getting the item
   assert_equal('one', #{one: 'one'}.one)
+  assert_equal('one', #{one: 'one'}[g:oneString])
 
   call CheckDefFailure(["let x = g:dict_one.#$!"], 'E1002:')
   call CheckDefExecFailure(["let d: dict<any>", "echo d['a']"], 'E716:')

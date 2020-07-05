@@ -2166,6 +2166,7 @@ call_def_function(
 		    dict_T	*dict;
 		    char_u	*key;
 		    dictitem_T	*di;
+		    typval_T	temp_tv;
 
 		    // dict member: dict is at stack-2, key at stack-1
 		    tv = STACK_TV_BOT(-2);
@@ -2181,10 +2182,14 @@ call_def_function(
 			semsg(_(e_dictkey), key);
 			goto failed;
 		    }
-		    --ectx.ec_stack.ga_len;
 		    clear_tv(tv);
-		    clear_tv(STACK_TV_BOT(-1));
-		    copy_tv(&di->di_tv, STACK_TV_BOT(-1));
+		    --ectx.ec_stack.ga_len;
+		    // Clear the dict after getting the item, to avoid that it
+		    // make the item invalid.
+		    tv = STACK_TV_BOT(-1);
+		    temp_tv = *tv;
+		    copy_tv(&di->di_tv, tv);
+		    clear_tv(&temp_tv);
 		}
 		break;
 
