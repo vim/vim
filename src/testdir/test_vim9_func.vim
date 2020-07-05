@@ -596,6 +596,14 @@ def Test_func_type()
   assert_equal(13, funcResult)
 enddef
 
+def Test_repeat_return_type()
+  let res = 0
+  for n in repeat([1], 3)
+    res += n
+  endfor
+  assert_equal(3, res)
+enddef
+
 def Test_func_type_part()
   let RefVoid: func: void
   RefVoid = FuncNoArgNoRet
