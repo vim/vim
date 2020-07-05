@@ -286,14 +286,14 @@ enddef
 
 def Test_error_in_nested_function()
   " Error in called function requires unwinding the call stack.
-  assert_fails('call FuncWithForwardCall()', 'E1013')
+  assert_fails('call FuncWithForwardCall()', 'E1096')
 enddef
 
 def Test_return_type_wrong()
   CheckScriptFailure(['def Func(): number', 'return "a"', 'enddef', 'defcompile'], 'expected number but got string')
   CheckScriptFailure(['def Func(): string', 'return 1', 'enddef', 'defcompile'], 'expected string but got number')
-  CheckScriptFailure(['def Func(): void', 'return "a"', 'enddef', 'defcompile'], 'expected void but got string')
-  CheckScriptFailure(['def Func()', 'return "a"', 'enddef', 'defcompile'], 'expected void but got string')
+  CheckScriptFailure(['def Func(): void', 'return "a"', 'enddef', 'defcompile'], 'E1096: Returning a value in a function without a return type')
+  CheckScriptFailure(['def Func()', 'return "a"', 'enddef', 'defcompile'], 'E1096: Returning a value in a function without a return type')
 
   CheckScriptFailure(['def Func(): number', 'return', 'enddef', 'defcompile'], 'E1003:')
 

@@ -4568,9 +4568,19 @@ compile_return(char_u *arg, int set_return_type, cctx_T *cctx)
 	stack_type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
 	if (set_return_type)
 	    cctx->ctx_ufunc->uf_ret_type = stack_type;
-	else if (need_type(stack_type, cctx->ctx_ufunc->uf_ret_type, -1, cctx)
+	else
+	{
+	    if (cctx->ctx_ufunc->uf_ret_type->tt_type == VAR_VOID
+		    && stack_type->tt_type != VAR_VOID
+		    && stack_type->tt_type != VAR_UNKNOWN)
+	    {
+		emsg(_("E1096: Returning a value in a function without a return type"));
+		return NULL;
+	    }
+	    if (need_type(stack_type, cctx->ctx_ufunc->uf_ret_type, -1, cctx)
 								       == FAIL)
 	    return NULL;
+	}
     }
     else
     {
