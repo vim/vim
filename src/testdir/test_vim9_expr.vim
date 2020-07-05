@@ -1141,6 +1141,11 @@ def Test_expr_member()
   call CheckDefExecFailure(["let d: dict<number>", "d = g:list_empty"], 'E1029: Expected dict but got list')
 enddef
 
+def Test_expr_index()
+  # getting the one member should clear the list only after getting the item
+  assert_equal('bbb', ['aaa', 'bbb', 'ccc'][1])
+enddef
+
 def Test_expr_member_vim9script()
   let lines =<< trim END
       vim9script

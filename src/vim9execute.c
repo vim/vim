@@ -2085,6 +2085,7 @@ call_def_function(
 		    list_T	*list;
 		    varnumber_T	n;
 		    listitem_T	*li;
+		    typval_T	temp_tv;
 
 		    // list index: list is at stack-2, index at stack-1
 		    tv = STACK_TV_BOT(-2);
@@ -2109,8 +2110,12 @@ call_def_function(
 			goto failed;
 		    }
 		    --ectx.ec_stack.ga_len;
-		    clear_tv(STACK_TV_BOT(-1));
-		    copy_tv(&li->li_tv, STACK_TV_BOT(-1));
+		    // Clear the list after getting the item, to avoid that it
+		    // make the item invalid.
+		    tv = STACK_TV_BOT(-1);
+		    temp_tv = *tv;
+		    copy_tv(&li->li_tv, tv);
+		    clear_tv(&temp_tv);
 		}
 		break;
 
