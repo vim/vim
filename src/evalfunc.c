@@ -576,7 +576,7 @@ static funcentry_T global_functions[] =
     {"exp",		1, 1, FEARG_1,	  ret_float,	FLOAT_FUNC(f_exp)},
     {"expand",		1, 3, FEARG_1,	  ret_any,	f_expand},
     {"expandcmd",	1, 1, FEARG_1,	  ret_string,	f_expandcmd},
-    {"extend",		2, 3, FEARG_1,	  ret_any,	f_extend},
+    {"extend",		2, 3, FEARG_1,	  ret_first_arg, f_extend},
     {"feedkeys",	1, 2, FEARG_1,	  ret_void,	f_feedkeys},
     {"file_readable",	1, 1, FEARG_1,	  ret_number,	f_filereadable}, // obsolete
     {"filereadable",	1, 1, FEARG_1,	  ret_number,	f_filereadable},

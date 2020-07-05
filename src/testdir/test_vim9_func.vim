@@ -909,6 +909,15 @@ def Test_copy_return_type()
   assert_equal(6, res)
 enddef
 
+def Test_extend_return_type()
+  let l = extend([1, 2], [3])
+  let res = 0
+  for n in l
+    res += n
+  endfor
+  assert_equal(6, res)
+enddef
+
 def Line_continuation_in_def(dir: string = ''): string
     let path: string = empty(dir)
             \ ? 'empty'
