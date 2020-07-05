@@ -2,6 +2,7 @@
 
 source check.vim
 source vim9.vim
+source view_util.vim
 
 def Test_edit_wildcards()
   let filename = 'Xtest'
@@ -205,6 +206,39 @@ def Test_method_call_linebreak()
       assert_equal([1, 2, 3], res)
   END
   CheckScriptSuccess(lines)
+enddef
+
+def Test_bar_after_command()
+  def RedrawAndEcho()
+    let x = 'did redraw'
+    redraw | echo x
+  enddef
+  RedrawAndEcho()
+  assert_match('did redraw', Screenline(&lines))
+
+  if has('unix')
+    # bar in filter write command does not start new command
+    def WriteToShell()
+      new
+      setline(1, 'some text')
+      w !cat | cat > Xoutfile
+      bwipe!
+    enddef
+    WriteToShell()
+    assert_equal(['some text'], readfile('Xoutfile'))
+    delete('Xoutfile')
+
+    # bar in filter read command does not start new command
+    def ReadFromShell()
+      new
+      r! echo hello there | cat > Xoutfile
+      r !echo again | cat >> Xoutfile
+      bwipe!
+    enddef
+    ReadFromShell()
+    assert_equal(['hello there', 'again'], readfile('Xoutfile'))
+    delete('Xoutfile')
+  endif
 enddef
 
 

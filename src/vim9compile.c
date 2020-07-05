@@ -6562,12 +6562,33 @@ compile_exec(char_u *line, exarg_T *eap, cctx_T *cctx)
 {
     char_u  *p;
     int	    has_expr = FALSE;
+    char_u  *nextcmd = (char_u *)"";
 
     if (cctx->ctx_skip == SKIP_YES)
 	goto theend;
 
     if (eap->cmdidx >= 0 && eap->cmdidx < CMD_SIZE)
-	has_expr = (excmd_get_argt(eap->cmdidx) & (EX_XFILE | EX_EXPAND));
+    {
+	long	argt = excmd_get_argt(eap->cmdidx);
+	int	usefilter = FALSE;
+
+	has_expr = argt & (EX_XFILE | EX_EXPAND);
+
+	// If the command can be followed by a bar, find the bar and truncate
+	// it, so that the following command can be compiled.
+	// The '|' is overwritten with a NUL, it is put back below.
+	if ((eap->cmdidx == CMD_write || eap->cmdidx == CMD_read)
+							   && *eap->arg == '!')
+	    // :w !filter or :r !filter or :r! filter
+	    usefilter = TRUE;
+	if ((argt & EX_TRLBAR) && !usefilter)
+	{
+	    separate_nextcmd(eap);
+	    if (eap->nextcmd != NULL)
+		nextcmd = eap->nextcmd;
+	}
+    }
+
     if (eap->cmdidx == CMD_syntax && STRNCMP(eap->arg, "include ", 8) == 0)
     {
 	// expand filename in "syntax include [@group] filename"
@@ -6626,7 +6647,14 @@ compile_exec(char_u *line, exarg_T *eap, cctx_T *cctx)
 	generate_EXEC(cctx, line);
 
 theend:
-    return (char_u *)"";
+    if (*nextcmd != NUL)
+    {
+	// the parser expects a pointer to the bar, put it back
+	--nextcmd;
+	*nextcmd = '|';
+    }
+
+    return nextcmd;
 }
 
 /*
