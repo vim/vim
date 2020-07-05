@@ -610,6 +610,15 @@ def Test_repeat_return_type()
   assert_equal(6, res)
 enddef
 
+def Test_argv_return_type()
+  next fileone filetwo
+  let res = ''
+  for name in argv()
+    res ..= name
+  endfor
+  assert_equal('fileonefiletwo', res)
+enddef
+
 def Test_func_type_part()
   let RefVoid: func: void
   RefVoid = FuncNoArgNoRet
