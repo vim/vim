@@ -441,7 +441,7 @@ static funcentry_T global_functions[] =
 {
     {"abs",		1, 1, FEARG_1,	  ret_any,	FLOAT_FUNC(f_abs)},
     {"acos",		1, 1, FEARG_1,	  ret_float,	FLOAT_FUNC(f_acos)},
-    {"add",		2, 2, FEARG_1,	  ret_any,	f_add},
+    {"add",		2, 2, FEARG_1,	  ret_first_arg, f_add},
     {"and",		2, 2, FEARG_1,	  ret_number,	f_and},
     {"append",		2, 2, FEARG_LAST, ret_number,	f_append},
     {"appendbufline",	3, 3, FEARG_LAST, ret_number,	f_appendbufline},

@@ -602,6 +602,12 @@ def Test_repeat_return_type()
     res += n
   endfor
   assert_equal(3, res)
+
+  res = 0
+  for n in add([1, 2], 3)
+    res += n
+  endfor
+  assert_equal(6, res)
 enddef
 
 def Test_func_type_part()
