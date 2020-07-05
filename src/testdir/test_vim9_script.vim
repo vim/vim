@@ -1440,6 +1440,12 @@ def Test_for_loop()
     result ..= cnt .. '_'
   endfor
   assert_equal('0_1_3_', result)
+
+  let concat = ''
+  for str in eval('["one", "two"]')
+    concat ..= str
+  endfor
+  assert_equal('onetwo', concat)
 enddef
 
 def Test_for_loop_fails()
@@ -1447,7 +1453,7 @@ def Test_for_loop_fails()
   CheckDefFailure(['for i In range(5)'], 'E690:')
   CheckDefFailure(['let x = 5', 'for x in range(5)'], 'E1023:')
   CheckScriptFailure(['def Func(arg: any)', 'for arg in range(5)', 'enddef', 'defcompile'], 'E1006:')
-  CheckDefFailure(['for i in "text"'], 'E1024:')
+  CheckDefFailure(['for i in "text"'], 'E1013:')
   CheckDefFailure(['for i in xxx'], 'E1001:')
   CheckDefFailure(['endfor'], 'E588:')
   CheckDefFailure(['for i in range(3)', 'echo 3'], 'E170:')
