@@ -920,7 +920,7 @@ def Test_line_continuation_in_def()
   assert_equal('full', Line_continuation_in_def('.'))
 enddef
 
-def Test_silent_echo()
+func Test_silent_echo()
   CheckScreendump
 
   let lines =<< trim END
@@ -930,17 +930,17 @@ def Test_silent_echo()
     enddef
     defcompile
   END
-  writefile(lines, 'XTest_silent_echo')
+  call writefile(lines, 'XTest_silent_echo')
 
   " Check that the balloon shows up after a mouse move
   let buf = RunVimInTerminal('-S XTest_silent_echo', {'rows': 6})
-  term_sendkeys(buf, ":abc")
+  call term_sendkeys(buf, ":abc")
   call VerifyScreenDump(buf, 'Test_vim9_silent_echo', {})
 
   " clean up
   call StopVimInTerminal(buf)
   call delete('XTest_silent_echo')
-enddef
+endfunc
 
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
