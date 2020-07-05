@@ -216,6 +216,13 @@ def Test_bar_after_command()
   RedrawAndEcho()
   assert_match('did redraw', Screenline(&lines))
 
+  def CallAndEcho()
+    let x = 'did redraw'
+    reg_executing() | echo x
+  enddef
+  CallAndEcho()
+  assert_match('did redraw', Screenline(&lines))
+
   if has('unix')
     # bar in filter write command does not start new command
     def WriteToShell()

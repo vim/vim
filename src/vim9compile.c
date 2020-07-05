@@ -6985,7 +6985,8 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 
 		// drop the return value
 		generate_instr_drop(&cctx, ISN_DROP, 1);
-		line = p;
+
+		line = skipwhite(p);
 		continue;
 	    }
 	    // CMD_let cannot happen, compile_assignment() above is used
