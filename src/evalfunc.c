@@ -842,7 +842,7 @@ static funcentry_T global_functions[] =
     {"rename",		2, 2, FEARG_1,	  ret_number,	f_rename},
     {"repeat",		2, 2, FEARG_1,	  ret_first_arg, f_repeat},
     {"resolve",		1, 1, FEARG_1,	  ret_string,	f_resolve},
-    {"reverse",		1, 1, FEARG_1,	  ret_any,	f_reverse},
+    {"reverse",		1, 1, FEARG_1,	  ret_first_arg, f_reverse},
     {"round",		1, 1, FEARG_1,	  ret_float,	FLOAT_FUNC(f_round)},
     {"rubyeval",	1, 1, FEARG_1,	  ret_any,
 #ifdef FEAT_RUBY
