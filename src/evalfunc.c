@@ -581,7 +581,7 @@ static funcentry_T global_functions[] =
     {"file_readable",	1, 1, FEARG_1,	  ret_number,	f_filereadable}, // obsolete
     {"filereadable",	1, 1, FEARG_1,	  ret_number,	f_filereadable},
     {"filewritable",	1, 1, FEARG_1,	  ret_number,	f_filewritable},
-    {"filter",		2, 2, FEARG_1,	  ret_any,	f_filter},
+    {"filter",		2, 2, FEARG_1,	  ret_first_arg, f_filter},
     {"finddir",		1, 3, FEARG_1,	  ret_string,	f_finddir},
     {"findfile",	1, 3, FEARG_1,	  ret_string,	f_findfile},
     {"flatten",		1, 2, FEARG_1,	  ret_list_any,	f_flatten},
