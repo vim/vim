@@ -382,6 +382,17 @@ ret_argv(int argcount, type_T **argtypes UNUSED)
     return &t_any;
 }
 
+    static type_T *
+ret_remove(int argcount UNUSED, type_T **argtypes)
+{
+    if (argtypes[0]->tt_type == VAR_LIST
+	    || argtypes[0]->tt_type == VAR_DICT)
+	return argtypes[0]->tt_member;
+    if (argtypes[0]->tt_type == VAR_BLOB)
+	return &t_number;
+    return &t_any;
+}
+
 static type_T *ret_f_function(int argcount, type_T **argtypes);
 
 /*
@@ -827,7 +838,7 @@ static funcentry_T global_functions[] =
     {"remote_read",	1, 2, FEARG_1,	  ret_string,	f_remote_read},
     {"remote_send",	2, 3, FEARG_1,	  ret_string,	f_remote_send},
     {"remote_startserver", 1, 1, FEARG_1, ret_void,	f_remote_startserver},
-    {"remove",		2, 3, FEARG_1,	  ret_any,	f_remove},
+    {"remove",		2, 3, FEARG_1,	  ret_remove,	f_remove},
     {"rename",		2, 2, FEARG_1,	  ret_number,	f_rename},
     {"repeat",		2, 2, FEARG_1,	  ret_first_arg, f_repeat},
     {"resolve",		1, 1, FEARG_1,	  ret_string,	f_resolve},

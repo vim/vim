@@ -927,6 +927,15 @@ def Test_insert_return_type()
   assert_equal(6, res)
 enddef
 
+def Test_remove_return_type()
+  let l = remove(#{one: [1, 2], two: [3, 4]}, 'one')
+  let res = 0
+  for n in l
+    res += n
+  endfor
+  assert_equal(3, res)
+enddef
+
 def Test_filter_return_type()
   let l = filter([1, 2, 3], {-> 1})
   let res = 0
