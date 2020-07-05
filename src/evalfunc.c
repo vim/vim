@@ -544,7 +544,7 @@ static funcentry_T global_functions[] =
     {"complete_check",	0, 0, 0,	  ret_number,	f_complete_check},
     {"complete_info",	0, 1, FEARG_1,	  ret_dict_any,	f_complete_info},
     {"confirm",		1, 4, FEARG_1,	  ret_number,	f_confirm},
-    {"copy",		1, 1, FEARG_1,	  ret_any,	f_copy},
+    {"copy",		1, 1, FEARG_1,	  ret_first_arg, f_copy},
     {"cos",		1, 1, FEARG_1,	  ret_float,	FLOAT_FUNC(f_cos)},
     {"cosh",		1, 1, FEARG_1,	  ret_float,	FLOAT_FUNC(f_cosh)},
     {"count",		2, 4, FEARG_1,	  ret_number,	f_count},
@@ -557,7 +557,7 @@ static funcentry_T global_functions[] =
 	    NULL
 #endif
 			},
-    {"deepcopy",	1, 2, FEARG_1,	  ret_any,	f_deepcopy},
+    {"deepcopy",	1, 2, FEARG_1,	  ret_first_arg, f_deepcopy},
     {"delete",		1, 2, FEARG_1,	  ret_number,	f_delete},
     {"deletebufline",	2, 3, FEARG_1,	  ret_number,	f_deletebufline},
     {"did_filetype",	0, 0, 0,	  ret_number,	f_did_filetype},
