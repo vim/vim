@@ -3,6 +3,7 @@
 source check.vim
 source view_util.vim
 source vim9.vim
+source screendump.vim
 
 func Test_def_basic()
   def SomeFunc(): string
@@ -901,6 +902,28 @@ enddef
 
 def Test_line_continuation_in_def()
   assert_equal('full', Line_continuation_in_def('.'))
+enddef
+
+def Test_silent_echo()
+  CheckScreendump
+
+  let lines =<< trim END
+    vim9script
+    def EchoNothing()
+      silent echo ''
+    enddef
+    defcompile
+  END
+  writefile(lines, 'XTest_silent_echo')
+
+  " Check that the balloon shows up after a mouse move
+  let buf = RunVimInTerminal('-S XTest_silent_echo', {'rows': 6})
+  term_sendkeys(buf, ":abc")
+  call VerifyScreenDump(buf, 'Test_vim9_silent_echo', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XTest_silent_echo')
 enddef
 
 

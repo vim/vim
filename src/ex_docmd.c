@@ -25,7 +25,6 @@ static char_u	*do_one_cmd(char_u **, int, cstack_T *, char_u *(*fgetline)(int, v
 static char_u	*do_one_cmd(char_u **, int, char_u *(*fgetline)(int, void *, int, int), void *cookie);
 static int	if_level = 0;		// depth in :if
 #endif
-static void	free_cmdmod(void);
 static void	append_command(char_u *cmd);
 
 #ifndef FEAT_MENU
@@ -2611,31 +2610,9 @@ doend:
 			? cmdnames[(int)ea.cmdidx].cmd_name : (char_u *)NULL);
 #endif
 
-    if (ea.verbose_save >= 0)
-	p_verbose = ea.verbose_save;
-
-    free_cmdmod();
+    undo_cmdmod(&ea, save_msg_scroll);
     cmdmod = save_cmdmod;
     reg_executing = save_reg_executing;
-
-    if (ea.save_msg_silent != -1)
-    {
-	// messages could be enabled for a serious error, need to check if the
-	// counters don't become negative
-	if (!did_emsg || msg_silent > ea.save_msg_silent)
-	    msg_silent = ea.save_msg_silent;
-	emsg_silent -= ea.did_esilent;
-	if (emsg_silent < 0)
-	    emsg_silent = 0;
-	// Restore msg_scroll, it's set by file I/O commands, even when no
-	// message is actually displayed.
-	msg_scroll = save_msg_scroll;
-
-	// "silent reg" or "silent echo x" inside "redir" leaves msg_col
-	// somewhere in the line.  Put it back in the first column.
-	if (redirecting())
-	    msg_col = 0;
-    }
 
 #ifdef HAVE_SANDBOX
     if (ea.did_sandbox)
@@ -2927,11 +2904,14 @@ parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only)
 }
 
 /*
- * Free contents of "cmdmod".
+ * Unod and free contents of "cmdmod".
  */
-    static void
-free_cmdmod(void)
+    void
+undo_cmdmod(exarg_T *eap, int save_msg_scroll)
 {
+    if (eap->verbose_save >= 0)
+	p_verbose = eap->verbose_save;
+
     if (cmdmod.save_ei != NULL)
     {
 	// Restore 'eventignore' to the value before ":noautocmd".
@@ -2942,6 +2922,25 @@ free_cmdmod(void)
 
     if (cmdmod.filter_regmatch.regprog != NULL)
 	vim_regfree(cmdmod.filter_regmatch.regprog);
+
+    if (eap->save_msg_silent != -1)
+    {
+	// messages could be enabled for a serious error, need to check if the
+	// counters don't become negative
+	if (!did_emsg || msg_silent > eap->save_msg_silent)
+	    msg_silent = eap->save_msg_silent;
+	emsg_silent -= eap->did_esilent;
+	if (emsg_silent < 0)
+	    emsg_silent = 0;
+	// Restore msg_scroll, it's set by file I/O commands, even when no
+	// message is actually displayed.
+	msg_scroll = save_msg_scroll;
+
+	// "silent reg" or "silent echo x" inside "redir" leaves msg_col
+	// somewhere in the line.  Put it back in the first column.
+	if (redirecting())
+	    msg_col = 0;
+    }
 }
 
 /*

@@ -6809,6 +6809,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	exarg_T	ea;
 	int	starts_with_colon = FALSE;
 	char_u	*cmd;
+	int	save_msg_scroll = msg_scroll;
 
 	// Bail out on the first error to avoid a flood of errors and report
 	// the right line number when inside try/catch.
@@ -6897,6 +6898,8 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	    line = (char_u *)"";
 	    continue;
 	}
+	// TODO: use modifiers in the command
+	undo_cmdmod(&ea, save_msg_scroll);
 
 	// Skip ":call" to get to the function name.
 	if (checkforcmd(&ea.cmd, "call", 3))
