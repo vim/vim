@@ -667,7 +667,7 @@ static funcentry_T global_functions[] =
     {"inputrestore",	0, 0, 0,	  ret_number,	f_inputrestore},
     {"inputsave",	0, 0, 0,	  ret_number,	f_inputsave},
     {"inputsecret",	1, 2, FEARG_1,	  ret_string,	f_inputsecret},
-    {"insert",		2, 3, FEARG_1,	  ret_any,	f_insert},
+    {"insert",		2, 3, FEARG_1,	  ret_first_arg, f_insert},
     {"interrupt",	0, 0, 0,	  ret_void,	f_interrupt},
     {"invert",		1, 1, FEARG_1,	  ret_number,	f_invert},
     {"isdirectory",	1, 1, FEARG_1,	  ret_number,	f_isdirectory},

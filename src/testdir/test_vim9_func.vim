@@ -918,6 +918,15 @@ def Test_extend_return_type()
   assert_equal(6, res)
 enddef
 
+def Test_insert_return_type()
+  let l = insert([2, 1], 3)
+  let res = 0
+  for n in l
+    res += n
+  endfor
+  assert_equal(6, res)
+enddef
+
 def Test_filter_return_type()
   let l = filter([1, 2, 3], {-> 1})
   let res = 0
