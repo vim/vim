@@ -3652,6 +3652,7 @@ do_dialog(
     char_u	*hotkeys;
     int		c;
     int		i;
+    tmode_T	save_tmode;
 
 #ifndef NO_CONSOLE
     // Don't output anything in silent mode ("ex -s")
@@ -3682,6 +3683,10 @@ do_dialog(
     oldState = State;
     State = CONFIRM;
     setmouse();
+
+    // Ensure raw mode here.
+    save_tmode = cur_tmode;
+    settmode(TMODE_RAW);
 
     /*
      * Since we wait for a keypress, don't make the
@@ -3743,6 +3748,7 @@ do_dialog(
 	vim_free(hotkeys);
     }
 
+    settmode(save_tmode);
     State = oldState;
     setmouse();
     --no_wait_return;
