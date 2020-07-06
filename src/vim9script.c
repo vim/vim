@@ -324,7 +324,7 @@ handle_import(
 	    if (eval_isnamec1(*arg))
 		while (eval_isnamec(*arg))
 		    ++arg;
-	    if (check_defined(p, (int)(arg - p), cctx) == FAIL)
+	    if (check_defined(p, arg - p, cctx) == FAIL)
 		goto erret;
 	    as_name = vim_strnsave(p, arg - p);
 	    arg = skipwhite_and_linebreak(arg, evalarg);

@@ -1,5 +1,5 @@
 /* vim9compile.c */
-int check_defined(char_u *p, int len, cctx_T *cctx);
+int check_defined(char_u *p, size_t len, cctx_T *cctx);
 type_T *typval2type(typval_T *tv);
 int check_type(type_T *expected, type_T *actual, int give_msg);
 char_u *skip_type(char_u *start);

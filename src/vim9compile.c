@@ -288,7 +288,7 @@ lookup_script(char_u *name, size_t len)
  * Return FAIL and give an error if it defined.
  */
     int
-check_defined(char_u *p, int len, cctx_T *cctx)
+check_defined(char_u *p, size_t len, cctx_T *cctx)
 {
     if (lookup_script(p, len) == OK
 	    || (cctx != NULL
