@@ -2,6 +2,7 @@
 
 source check.vim
 CheckFeature python3
+source shared.vim
 
 " This function should be called first. This sets up python functions used by
 " the other tests.
@@ -73,7 +74,6 @@ endfunc
 
 func Test_py3do()
   " Check deleting lines does not trigger an ml_get error.
-  py3 import vim
   new
   call setline(1, ['one', 'two', 'three'])
   py3do vim.command("%d_")
@@ -87,11 +87,23 @@ func Test_py3do()
   call assert_equal(wincount + 1, winnr('$'))
   bwipe!
   bwipe!
+
+  " Try modifying a buffer with 'nomodifiable' set
+  set nomodifiable
+  call assert_fails('py3do toupper(line)', 'cannot save undo information')
+  set modifiable
+
+  " Invalid command
+  call AssertException(['py3do non_existing_cmd'],
+        \ "Vim(py3do):NameError: name 'non_existing_cmd' is not defined")
+  call AssertException(["py3do raise Exception('test')"],
+        \ 'Vim(py3do):Exception: test')
+  call AssertException(["py3do {lambda}"],
+        \ 'Vim(py3do):SyntaxError: invalid syntax')
 endfunc
 
 func Test_set_cursor()
   " Check that setting the cursor position works.
-  py3 import vim
   new
   call setline(1, ['first line', 'second line'])
   normal gg
@@ -105,7 +117,6 @@ endfunc
 
 func Test_vim_function()
   " Check creating vim.Function object
-  py3 import vim
 
   func s:foo()
     return matchstr(expand('<sfile>'), '<SNR>\zs\d\+_foo$')
@@ -126,14 +137,9 @@ func Test_vim_function()
     call assert_false(v:exception)
   endtry
 
-  let caught_vim_err = v:false
-  try
-    let x = py3eval('f.abc')
-  catch
-    call assert_match("AttributeError: 'vim.function' object has no attribute 'abc'", v:exception)
-    let caught_vim_err = v:true
-  endtry
-  call assert_equal(v:true, caught_vim_err)
+  " Non-existing function attribute
+  call AssertException(["let x = py3eval('f.abc')"],
+        \ "Vim(let):AttributeError: 'vim.function' object has no attribute 'abc'")
 
   py3 del f
   delfunc s:foo
@@ -148,7 +154,6 @@ func Test_skipped_python3_command_does_not_affect_pyxversion()
 endfunc
 
 func _SetUpHiddenBuffer()
-  py3 import vim
   new
   edit hidden
   setlocal bufhidden=hide
@@ -198,7 +203,6 @@ func Test_Write_To_HiddenBuffer_Does_Not_Fix_Cursor_ClearLine()
 endfunc
 
 func _SetUpVisibleBuffer()
-  py3 import vim
   new
   let lnum = 0
   while lnum < 10
@@ -303,8 +307,8 @@ func Test_python3_range()
 
   call assert_fails('py3 r[3] = "x"', 'IndexError: line number out of range')
   call assert_fails('py3 x = r[3]', 'IndexError: line number out of range')
-  call assert_fails('py3 r["a"] = "x"', 'TypeError')
-  call assert_fails('py3 x = r["a"]', 'TypeError')
+  call assert_fails('py3 r["a"] = "x"', 'TypeError: index must be int or slice, not str')
+  call assert_fails('py3 x = r["a"]', 'TypeError: index must be int or slice, not str')
 
   py3 del r[:]
   call assert_equal(['1', '5', '6'], getline(1, '$'))
@@ -431,8 +435,112 @@ s+='B'
   call assert_equal('ABCDE', pyxeval('s'))
 endfunc
 
+" Test for the buffer range object
+func Test_python3_range2()
+  new
+  call setline(1, ['one', 'two', 'three'])
+  py3 b = vim.current.buffer
+  py3 r = b.range(1, 3)
+  call assert_equal(0, py3eval('r.start'))
+  call assert_equal(2, py3eval('r.end'))
+  call assert_equal('one', py3eval('r[0]'))
+  call assert_equal('one', py3eval('r[-3]'))
+  call AssertException(["let x = py3eval('r[-4]')"],
+        \ 'Vim(let):IndexError: line number out of range')
+  call assert_equal(['two', 'three'], py3eval('r[1:]'))
+  py3 r[0] = 'green'
+  call assert_equal(['green', 'two', 'three'], getline(1, '$'))
+  py3 r[0:2] = ['red', 'blue']
+  call assert_equal(['red', 'blue', 'three'], getline(1, '$'))
+
+  " try different invalid start/end index for the range slice
+  %d
+  call setline(1, ['one', 'two', 'three'])
+  py3 r[-10:1] = ["a"]
+  py3 r[10:12] = ["b"]
+  py3 r[-10:-9] = ["c"]
+  py3 r[1:0] = ["d"]
+  call assert_equal(['c', 'd', 'a', 'two', 'three', 'b'], getline(1, '$'))
+
+  " FIXME: The following code triggers ml_get errors
+  " %d
+  " let x = py3eval('r[:]')
+
+  " Non-existing range attribute
+  call AssertException(["let x = py3eval('r.abc')"],
+        \ "Vim(let):AttributeError: 'vim.range' object has no attribute 'abc'")
+
+  close!
+endfunc
+
+" Test for the python tabpage object
+func Test_python3_tabpage()
+  tabnew
+  py3 t = vim.tabpages[1]
+  py3 wl = t.windows
+  tabclose
+  " Accessing a closed tabpage
+  call AssertException(["let n = py3eval('t.number')"],
+        \ 'Vim(let):vim.error: attempt to refer to deleted tab page')
+  call AssertException(["let n = py3eval('len(wl)')"],
+        \ 'Vim(let):vim.error: attempt to refer to deleted tab page')
+  call AssertException(["py3 w = wl[0]"],
+        \ 'Vim(py3):vim.error: attempt to refer to deleted tab page')
+  call AssertException(["py3 vim.current.tabpage = t"],
+        \ 'Vim(py3):vim.error: attempt to refer to deleted tab page')
+  call assert_match('<tabpage object (deleted)', py3eval('repr(t)'))
+  %bw!
+endfunc
+
+" Test for the python window object
+func Test_python3_window()
+  " Test for setting the window height
+  10new
+  py3 vim.current.window.height = 5
+  call assert_equal(5, winheight(0))
+
+  " Test for setting the window width
+  10vnew
+  py3 vim.current.window.width = 6
+  call assert_equal(6, winwidth(0))
+
+  " Try accessing a closed window
+  py3 w = vim.current.window
+  py3 wopts = w.options
+  close
+  " Access the attributes of a closed window
+  call AssertException(["let n = py3eval('w.number')"],
+        \ 'Vim(let):vim.error: attempt to refer to deleted window')
+  call AssertException(["py3 w.height = 5"],
+        \ 'Vim(py3):vim.error: attempt to refer to deleted window')
+  call AssertException(["py3 vim.current.window = w"],
+        \ 'Vim(py3):vim.error: attempt to refer to deleted window')
+  " Try to set one of the options of the closed window
+  " FIXME: The following causes ASAN failure
+  "call AssertException(["py3 wopts['list'] = False"],
+  "      \ 'Vim(py3):vim.error: problem while switching windows')
+  call assert_match('<window object (deleted)', py3eval("repr(w)"))
+  %bw!
+endfunc
+
 " Test for the python List object
 func Test_python3_list()
+  " Try to convert a null List
+  call AssertException(["py3 t = vim.eval('test_null_list()')"],
+        \ 'Vim(py3):SystemError: <built-in function eval> returned NULL without setting an error')
+
+  " Try to convert a List with a null List item
+  call AssertException(["py3 t = vim.eval('[test_null_list()]')"],
+        \ 'Vim(py3):SystemError: <built-in function eval> returned NULL without setting an error')
+
+  " Try to bind a null List variable
+  let cmds =<< trim END
+    let l = test_null_list()
+    py3 ll = vim.bindeval('l')
+  END
+  call AssertException(cmds,
+        \ 'Vim(py3):SystemError: <built-in function bindeval> returned NULL without setting an error')
+
   let l = []
   py3 l = vim.bindeval('l')
   py3 f = vim.bindeval('function("strlen")')
@@ -447,6 +555,39 @@ func Test_python3_list()
   call assert_equal([0, "as'd", [1, 2, function("strlen"), {'a': 1}]], l)
   py3 l[-2] = f
   call assert_equal([0, function("strlen"), [1, 2, function("strlen"), {'a': 1}]], l)
+
+  " appending to a list
+  let l = [1, 2]
+  py3 ll = vim.bindeval('l')
+  py3 ll[2] = 8
+  call assert_equal([1, 2, 8], l)
+
+  " Using dict as an index
+  call AssertException(['py3 ll[{}] = 10'],
+        \ 'Vim(py3):TypeError: index must be int or slice, not dict')
+endfunc
+
+" Test for the python Dict object
+func Test_python3_dict()
+  " Try to convert a null Dict
+  call AssertException(["py3 t = vim.eval('test_null_dict()')"],
+        \ 'Vim(py3):SystemError: <built-in function eval> returned NULL without setting an error')
+
+  " Try to convert a Dict with a null List value
+  call AssertException(["py3 t = vim.eval(\"{'a' : test_null_list()}\")"],
+        \ 'Vim(py3):SystemError: <built-in function eval> returned NULL without setting an error')
+
+  " Try to convert a Dict with a null string key
+  py3 t = vim.eval("{test_null_string() : 10}")
+  call assert_fails("let d = py3eval('t')", 'E859:')
+
+  " Dict length
+  let d = {'a' : 10, 'b' : 20}
+  py3 d = vim.bindeval('d')
+  call assert_equal(2, py3eval('len(d)'))
+
+  " Deleting an non-existing key
+  call AssertException(["py3 del d['c']"], "Vim(py3):KeyError: 'c'")
 endfunc
 
 " Extending Dictionary directly with different types
@@ -471,6 +612,12 @@ func Test_python3_dict_extend()
     dv.sort(key=repr)
     di.sort(key=repr)
   EOF
+
+  " Try extending a locked dictionary
+  lockvar d
+  call AssertException(["py3 d.update({'b' : 20})"],
+        \ 'Vim(py3):vim.error: dictionary is locked')
+  unlockvar d
 
   call assert_equal(1, py3eval("d['f'](self={})"))
   call assert_equal("[b'-1', b'0', b'1', b'b', b'f']", py3eval('repr(dk)'))
@@ -668,6 +815,10 @@ func Test_python3_lockedvar()
   EOF
   call assert_equal(['', "l[2] threw vim.error: error:('list is locked',)"],
         \ getline(1, '$'))
+
+  " Try to concatenate a locked list
+  call AssertException(['py3 l += [4, 5]'], 'Vim(py3):vim.error: list is locked')
+
   call assert_equal([0, 1, 2, 3], l)
   unlockvar! l
   close!
@@ -785,6 +936,11 @@ func Test_python3_lock_scope_attr()
   call assert_equal([0], l)
   call assert_equal([1], ll)
   unlet l ll
+
+  " Try changing an attribute of a fixed list
+  py3 a = vim.bindeval('v:argv')
+  call AssertException(['py3 a.locked = 0'],
+        \ 'Vim(py3):TypeError: cannot modify fixed list')
 endfunc
 
 " Test for py3eval()
@@ -799,48 +955,44 @@ func Test_python3_pyeval()
   call assert_equal(v:none, py3eval('None'))
   call assert_equal('', v:errmsg)
 
+  py3 v = vim.eval('test_null_function()')
+  call assert_equal(v:none, py3eval('v'))
+
   if has('float')
     call assert_equal(0.0, py3eval('0.0'))
   endif
 
-  " Invalid values:
-  let caught_859 = 0
-  try
-    let v = py3eval('"\0"')
-  catch /E859:/
-    let caught_859 = 1
-  endtry
-  call assert_equal(1, caught_859)
+  " Evaluate an invalid values
+  call AssertException(['let v = py3eval(''"\0"'')'], 'E859:')
+  call AssertException(['let v = py3eval(''{"\0" : 1}'')'], 'E859:')
+  call AssertException(['let v = py3eval("undefined_name")'],
+        \ "Vim(let):NameError: name 'undefined_name' is not defined")
+  call AssertException(['let v = py3eval("vim")'], 'E859:')
+endfunc
 
-  let caught_859 = 0
-  try
-    let v = py3eval('{"\0" : 1}')
-  catch /E859:/
-    let caught_859 = 1
-  endtry
-  call assert_equal(1, caught_859)
+" Test for vim.bindeval()
+func Test_python3_vim_bindeval()
+  " Float
+  let f = 3.14
+  py3 f = vim.bindeval('f')
+  call assert_equal(3.14, py3eval('f'))
 
-  let caught_nameerr = 0
-  try
-    let v = py3eval("undefined_name")
-  catch /NameError: name 'undefined_name'/
-    let caught_nameerr = 1
-  endtry
-  call assert_equal(1, caught_nameerr)
+  " Blob
+  let b = 0z12
+  py3 b = vim.bindeval('b')
+  call assert_equal("\x12", py3eval('b'))
 
-  let caught_859 = 0
-  try
-    let v = py3eval("vim")
-  catch /E859:/
-    let caught_859 = 1
-  endtry
-  call assert_equal(1, caught_859)
+  " Bool
+  call assert_equal(1, py3eval("vim.bindeval('v:true')"))
+  call assert_equal(0, py3eval("vim.bindeval('v:false')"))
+  call assert_equal(v:none, py3eval("vim.bindeval('v:null')"))
+  call assert_equal(v:none, py3eval("vim.bindeval('v:none')"))
 endfunc
 
 " threading
 " Running py3do command (Test_pydo) before this test, stops the python thread
 " from running. So this test should be run before the pydo test
-func Test_aaa_python_threading()
+func Test_aaa_python3_threading()
   let l = [0]
   py3 l = vim.bindeval('l')
   py3 << trim EOF
@@ -932,7 +1084,24 @@ func Test_python3_list_slice()
   call assert_equal([0, 2, 4], py3eval('l'))
   py3 l = ll[4:2:1]
   call assert_equal([], py3eval('l'))
+
+  " Error case: Use an invalid index
+  call AssertException(['py3 ll[-10] = 5'], 'Vim(py3):vim.error: internal error:')
+
+  " Use a step value of 0
+  call AssertException(['py3 ll[0:3:0] = [1, 2, 3]'],
+        \ 'Vim(py3):ValueError: slice step cannot be zero')
+
+  " Error case: Invalid slice type
+  call AssertException(["py3 x = ll['abc']"],
+        \ "Vim(py3):TypeError: index must be int or slice, not str")
   py3 del l
+
+  " Error case: List with a null list item
+  let l = [test_null_list()]
+  py3 ll = vim.bindeval('l')
+  call AssertException(["py3 x = ll[:]"],
+        \ "Vim(py3):SystemError: error return without exception set")
 endfunc
 
 " Vars
@@ -1369,6 +1538,24 @@ func Test_python3_opts()
 
   call assert_equal(expected, g:res)
   unlet g:res
+
+  call assert_equal(0, py3eval("'' in vim.options"))
+
+  " use an empty key to index vim.options
+  call AssertException(["let v = py3eval(\"vim.options['']\")"],
+        \ 'Vim(let):ValueError: empty keys are not allowed')
+  call AssertException(["py3 vim.current.window.options[''] = 0"],
+        \ 'Vim(py3):ValueError: empty keys are not allowed')
+  call AssertException(["py3 vim.current.window.options[{}] = 0"],
+        \ 'Vim(py3):TypeError: expected bytes() or str() instance, but got dict')
+
+  " set one of the number options to a very large number
+  let cmd = ["py3 vim.options['previewheight'] = 9999999999999999"]
+  call AssertException(cmd, "Vim(py3):OverflowError:")
+
+  " unset a global-local string option
+  call AssertException(["py3 del vim.options['errorformat']"],
+        \ 'Vim(py3):ValueError: unable to unset global option errorformat')
 endfunc
 
 " Test for vim.buffer object
@@ -1387,10 +1574,25 @@ func Test_python3_buffer()
   py3 b = vim.current.buffer
   wincmd w
 
+  " Test for getting lines from the buffer using a slice
+  call assert_equal(['First line'], py3eval('b[-10:1]'))
+  call assert_equal(['Third line'], py3eval('b[2:10]'))
+  call assert_equal([], py3eval('b[2:0]'))
+  call assert_equal([], py3eval('b[10:12]'))
+  call assert_equal([], py3eval('b[-10:-8]'))
+
   " Tests BufferAppend and BufferItem
   py3 cb.append(b[0])
   call assert_equal(['First line'], getbufline(bnr1, 2))
   %d
+
+  " Try to append using out-of-range line number
+  call AssertException(["py3 b.append('abc', 10)"],
+        \ 'Vim(py3):IndexError: line number out of range')
+
+  " Append a non-string item
+  call AssertException(["py3 b.append([22])"],
+        \ 'Vim(py3):TypeError: expected bytes() or str() instance, but got int')
 
   " Tests BufferSlice and BufferAssSlice
   py3 cb.append('abc5') # Will be overwritten
@@ -1483,11 +1685,62 @@ func Test_python3_buffer()
   EOF
   call assert_equal([''], getline(1, '$'))
 
+  " Delete all the lines in a buffer
+  call setline(1, ['a', 'b', 'c'])
+  py3 vim.current.buffer[:] = []
+  call assert_equal([''], getline(1, '$'))
+
+  " Test for modifying a 'nomodifiable' buffer
+  setlocal nomodifiable
+  call AssertException(["py3 vim.current.buffer[0] = 'abc'"],
+        \ "Vim(py3):vim.error: Vim:E21: Cannot make changes, 'modifiable' is off")
+  call AssertException(["py3 vim.current.buffer[0] = None"],
+        \ "Vim(py3):vim.error: Vim:E21: Cannot make changes, 'modifiable' is off")
+  call AssertException(["py3 vim.current.buffer[:] = None"],
+        \ "Vim(py3):vim.error: Vim:E21: Cannot make changes, 'modifiable' is off")
+  call AssertException(["py3 vim.current.buffer[:] = []"],
+        \ "Vim(py3):vim.error: Vim:E21: Cannot make changes, 'modifiable' is off")
+  call AssertException(["py3 vim.current.buffer.append('abc')"],
+        \ "Vim(py3):vim.error: Vim:E21: Cannot make changes, 'modifiable' is off")
+  call AssertException(["py3 vim.current.buffer.append([])"],
+        \ "Vim(py3):vim.error: Vim:E21: Cannot make changes, 'modifiable' is off")
+  setlocal modifiable
+
   augroup BUFS
     autocmd!
   augroup END
   augroup! BUFS
   %bw!
+
+  " Range object for a deleted buffer
+  new Xfile
+  call setline(1, ['one', 'two', 'three'])
+  py3 b = vim.current.buffer
+  py3 r = vim.current.buffer.range(0, 2)
+  call assert_equal('<range Xfile (0:2)>', py3eval('repr(r)'))
+  %bw!
+  call AssertException(['py3 r[:] = []'],
+        \ 'Vim(py3):vim.error: attempt to refer to deleted buffer')
+  call assert_match('<buffer object (deleted)', py3eval('repr(b)'))
+  call assert_match('<range object (for deleted buffer)', py3eval('repr(r)'))
+  call AssertException(["let n = py3eval('len(r)')"],
+        \ 'Vim(let):vim.error: attempt to refer to deleted buffer')
+  call AssertException(["py3 r.append('abc')"],
+        \ 'Vim(py3):vim.error: attempt to refer to deleted buffer')
+
+  " object for a deleted buffer
+  call AssertException(["py3 b[0] = 'one'"],
+        \ 'Vim(py3):vim.error: attempt to refer to deleted buffer')
+  call AssertException(["py3 b.append('one')"],
+        \ 'Vim(py3):vim.error: attempt to refer to deleted buffer')
+  call AssertException(["let n = py3eval('len(b)')"],
+        \ 'Vim(let):vim.error: attempt to refer to deleted buffer')
+  call AssertException(["py3 pos = b.mark('a')"],
+        \ 'Vim(py3):vim.error: attempt to refer to deleted buffer')
+  call AssertException(["py3 vim.current.buffer = b"],
+        \ 'Vim(py3):vim.error: attempt to refer to deleted buffer')
+  call AssertException(["py3 rn = b.range(0, 2)"],
+        \ 'Vim(py3):vim.error: attempt to refer to deleted buffer')
 endfunc
 
 " Test vim.buffers object
@@ -1731,6 +1984,8 @@ func Test_python3_vim_current()
     Current line: 'python interface'
   END
   call assert_equal(expected, getbufline(bufnr('Xfile'), 2, '$'))
+  py3 vim.current.line = 'one line'
+  call assert_equal('one line', getline('.'))
   call deletebufline(bufnr('Xfile'), 1, '$')
 
   py3 << trim EOF
@@ -1853,11 +2108,11 @@ endfunc
 
 " Test vim.Function
 func Test_python3_vim_func()
-  function Args(...)
+  func Args(...)
     return a:000
   endfunc
 
-  function SelfArgs(...) dict
+  func SelfArgs(...) dict
     return [a:000, self]
   endfunc
 
@@ -1866,6 +2121,8 @@ func Test_python3_vim_func()
   py3 Pt = vim.bindeval('Pt')
   unlet Pt
   py3 del Pt
+
+  call assert_equal(3, py3eval('vim.strwidth("a\tb")'))
 
   %bw!
   py3 cb = vim.current.buffer
@@ -2309,7 +2566,6 @@ func Test_python3_chdir()
       cb.append(str(fnamemodify('.', ':p:h:t')))
       cb.append(vim.eval('@%')[len(path)+1:].replace(os.path.sep, '/'))
       os.chdir(path)
-      del path
     else:
       cb.append(str(fnamemodify('.', ':p:h:t')))
       cb.append(vim.eval('@%').replace(os.path.sep, '/'))
@@ -3579,6 +3835,9 @@ func Test_python3_import()
   END
   call assert_equal(expected, getline(2, '$'))
   close!
+
+  " Try to import a non-existing moudle with a dot (.)
+  call AssertException(['py3 import a.b.c'], "No module named 'a'")
 endfunc
 
 " Test exceptions

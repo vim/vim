@@ -1256,6 +1256,10 @@ BufferAsSubscript(PyObject *self, PyObject* idx, PyObject* val)
     if (PyLong_Check(idx))
     {
 	long n = PyLong_AsLong(idx);
+
+	if (CheckBuffer((BufferObject *) self))
+	    return -1;
+
 	return RBAsItem((BufferObject *)(self), n, val, 1,
 		    (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count,
 		    NULL);
