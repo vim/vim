@@ -248,5 +248,20 @@ def Test_bar_after_command()
   endif
 enddef
 
+def Test_eval_command()
+  let from = 3
+  let to = 5
+  g:val = 111
+  def Increment(nrs: list<number>)
+    for nr in nrs
+      g:val += nr
+    endfor
+  enddef
+  eval range(from, to)
+        ->Increment()
+  assert_equal(111 + 3 + 4 + 5, g:val)
+  unlet g:val
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

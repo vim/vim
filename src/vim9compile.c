@@ -3852,7 +3852,6 @@ compile_expr7(
 			char_u *start = skipwhite(*arg + 1);
 
 			// Find out what comes after the arguments.
-			// TODO: pass getline function
 			ret = get_function_args(&start, '-', NULL,
 					   NULL, NULL, NULL, TRUE, NULL, NULL);
 			if (ret != FAIL && *start == '>')
@@ -6990,21 +6989,12 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	    }
 
 	    // Expression or function call.
-	    if (ea.cmdidx == CMD_eval)
+	    if (ea.cmdidx != CMD_eval)
 	    {
-		p = ea.cmd;
-		if (compile_expr0(&p, &cctx) == FAIL)
-		    goto erret;
-
-		// drop the return value
-		generate_instr_drop(&cctx, ISN_DROP, 1);
-
-		line = skipwhite(p);
-		continue;
+		// CMD_let cannot happen, compile_assignment() above is used
+		iemsg("Command from find_ex_command() not handled");
+		goto erret;
 	    }
-	    // CMD_let cannot happen, compile_assignment() above is used
-	    iemsg("Command from find_ex_command() not handled");
-	    goto erret;
 	}
 
 	p = skipwhite(p);
@@ -7122,6 +7112,16 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 		    break;
 	    case CMD_throw:
 		    line = compile_throw(p, &cctx);
+		    break;
+
+	    case CMD_eval:
+		    if (compile_expr0(&p, &cctx) == FAIL)
+			goto erret;
+
+		    // drop the return value
+		    generate_instr_drop(&cctx, ISN_DROP, 1);
+
+		    line = skipwhite(p);
 		    break;
 
 	    case CMD_echo:
