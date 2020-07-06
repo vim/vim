@@ -587,7 +587,7 @@ func! s:Alien3()
     return eval(b:hi_js1indent)
   endif
   if b:hi_indent.scripttype == "javascript"
-    return GetJavascriptIndent()
+    return eval(b:hi_js1indent) + GetJavascriptIndent()
   else
     return -1
   endif
