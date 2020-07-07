@@ -623,6 +623,9 @@ func Test_python_slice_assignment()
   py l = vim.bindeval('l')
   py l[2:2:1] = ()
   call assert_equal([0, 1, 2, 3, 4, 5, 6, 7], l)
+
+  call AssertException(["py x = l[10:11:0]"],
+        \ "Vim(python):ValueError: slice step cannot be zero")
 endfunc
 
 " Locked variables
@@ -809,6 +812,10 @@ func Test_python_vim_bindeval()
   call assert_equal(0, pyeval("vim.bindeval('v:false')"))
   call assert_equal(v:none, pyeval("vim.bindeval('v:null')"))
   call assert_equal(v:none, pyeval("vim.bindeval('v:none')"))
+
+  " channel/job
+  call assert_equal(v:none, pyeval("vim.bindeval('test_null_channel()')"))
+  call assert_equal(v:none, pyeval("vim.bindeval('test_null_job()')"))
 endfunc
 
 " threading
@@ -1402,6 +1409,20 @@ func Test_python_buffer()
   call assert_equal([], pyeval('b[2:0]'))
   call assert_equal([], pyeval('b[10:12]'))
   call assert_equal([], pyeval('b[-10:-8]'))
+  call AssertException(["py x = b[0:3:0]"],
+        \ "Vim(python):TypeError: sequence index must be integer, not 'slice'")
+  call AssertException(["py b[0:3:0] = 'abc'"],
+        \ "Vim(python):TypeError: sequence index must be integer, not 'slice'")
+  call AssertException(["py x = b[{}]"],
+        \ "Vim(python):TypeError: sequence index must be integer, not 'dict'")
+  call AssertException(["py b[{}] = 'abc'"],
+        \ "Vim(python):TypeError: sequence index must be integer, not 'dict'")
+
+  " Test for getting lines using a range
+  call AssertException(["py x = b.range(0,3)[0:2:0]"],
+        \ "Vim(python):TypeError: sequence index must be integer, not 'slice'")
+  call AssertException(["py b.range(0,3)[0:2:0] = 'abc'"],
+        \ "Vim(python):TypeError: sequence index must be integer, not 'slice'")
 
   " Tests BufferAppend and BufferItem
   py cb.append(b[0])
@@ -1511,6 +1532,9 @@ func Test_python_buffer()
   call setline(1, ['a', 'b', 'c'])
   py vim.current.buffer[:] = []
   call assert_equal([''], getline(1, '$'))
+
+  " Test for buffer marks
+  call assert_equal(v:none, pyeval("vim.current.buffer.mark('r')"))
 
   " Test for modifying a 'nomodifiable' buffer
   setlocal nomodifiable
@@ -2408,6 +2432,7 @@ func Test_python_chdir()
   call assert_equal(['testdir', 'Xfile', 'src', 'testdir/Xfile', 'testdir',
         \ 'Xfile'], getline(2, '$'))
   close!
+  call AssertException(["py vim.chdir(None)"], "Vim(python):TypeError:")
 endfunc
 
 " Test errors
