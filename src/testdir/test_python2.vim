@@ -278,9 +278,9 @@ func Test_python_range()
   py r[1:0] = ["d"]
   call assert_equal(['c', 'd', 'a', 'two', 'three', 'b'], getline(1, '$'))
 
-  " FIXME: The following code triggers ml_get errors
-  " %d
-  " let x = pyeval('r[:]')
+  " The following code used to trigger an ml_get error
+  %d
+  let x = pyeval('r[:]')
 
   " Non-existing range attribute
   call AssertException(["let x = pyeval('r.abc')"],
@@ -332,9 +332,9 @@ func Test_python_window()
   call AssertException(["py vim.current.window = w"],
         \ 'Vim(python):vim.error: attempt to refer to deleted window')
   " Try to set one of the options of the closed window
-  " FIXME: The following causes ASAN failure
-  "call AssertException(["py wopts['list'] = False"],
-  "      \ 'vim.error: problem while switching windows')
+  " The following caused an ASAN failure
+  call AssertException(["py wopts['list'] = False"],
+        \ 'vim.error: attempt to refer to deleted window')
   call assert_match('<window object (deleted)', pyeval("repr(w)"))
   %bw!
 endfunc
