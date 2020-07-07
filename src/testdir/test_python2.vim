@@ -2432,8 +2432,7 @@ func Test_python_chdir()
   call assert_equal(['testdir', 'Xfile', 'src', 'testdir/Xfile', 'testdir',
         \ 'Xfile'], getline(2, '$'))
   close!
-  call AssertException(["py vim.chdir(None)"],
-        \ "Vim(python):TypeError: coercing to Unicode: need string or buffer, NoneType found")
+  call AssertException(["py vim.chdir(None)"], "Vim(python):TypeError:")
 endfunc
 
 " Test errors
