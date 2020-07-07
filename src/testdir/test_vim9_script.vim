@@ -980,6 +980,39 @@ def Test_vim9script_reload_import()
   delete('Ximport.vim')
 enddef
 
+" Not exported function that is referenced needs to be accessed by the
+" script-local name.
+def Test_vim9script_funcref()
+  let sortlines =<< trim END
+      vim9script
+      def Compare(i1: number, i2: number): number
+        return 1
+      enddef
+
+      export def FastSort(): list<number>
+        return range(5)->sort(Compare)
+      enddef
+  END
+  writefile(sortlines, 'Xsort.vim')
+
+  let lines =<< trim END
+    vim9script
+    import FastSort from './Xsort.vim'
+    def Test()
+      g:result = FastSort()
+    enddef
+    Test()
+  END
+  writefile(lines, 'Xscript.vim')
+
+  source Xscript.vim
+  assert_equal([4, 3, 2, 1, 0], g:result)
+
+  unlet g:result
+  delete('Xsort.vim')
+  delete('Xscript.vim')
+enddef
+
 def Test_vim9script_reload_delfunc()
   let first_lines =<< trim END
     vim9script

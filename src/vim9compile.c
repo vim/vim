@@ -2676,7 +2676,8 @@ generate_funcref(cctx_T *cctx, char_u *name)
     if (ufunc == NULL)
 	return FAIL;
 
-    return generate_PUSHFUNC(cctx, vim_strsave(name), ufunc->uf_func_type);
+    return generate_PUSHFUNC(cctx, vim_strsave(ufunc->uf_name),
+							  ufunc->uf_func_type);
 }
 
 /*
