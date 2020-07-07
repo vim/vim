@@ -986,7 +986,7 @@ def Test_vim9script_funcref()
   let sortlines =<< trim END
       vim9script
       def Compare(i1: number, i2: number): number
-        return 1
+        return i2 - i1
       enddef
 
       export def FastSort(): list<number>
