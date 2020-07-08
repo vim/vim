@@ -1420,7 +1420,7 @@ func Test_expr_fails()
   call CheckDefFailure(["let x = '1'is2"], 'E488:')
   call CheckDefFailure(["let x = '1'isnot2"], 'E488:')
 
-  call CheckDefExecFailure(["CallMe ('yes')"], 'E492:')
+  call CheckDefFailure(["CallMe ('yes')"], 'E476:')
   call CheckDefFailure(["CallMe2('yes','no')"], 'E1069:')
   call CheckDefFailure(["CallMe2('yes' , 'no')"], 'E1068:')
 

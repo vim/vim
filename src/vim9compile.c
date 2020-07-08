@@ -7142,6 +7142,10 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 
 	    // TODO: other commands with an expression argument
 
+	    case CMD_SIZE:
+		    semsg(_("E476: Invalid command: %s"), ea.cmd);
+		    goto erret;
+
 	    default:
 		    // Not recognized, execute with do_cmdline_cmd().
 		    ea.arg = p;
