@@ -3732,6 +3732,7 @@ check_terminal_behavior(void)
 	screen_stop_highlight();
 	term_windgoto(1, 0);
 	out_str((char_u *)"  ");
+	line_was_clobbered(1);
     }
 
     if (xcc_status.tr_progress == STATUS_GET)
@@ -3761,6 +3762,7 @@ check_terminal_behavior(void)
 	screen_stop_highlight();
 	term_windgoto(2, 0);
 	out_str((char_u *)"           ");
+	line_was_clobbered(2);
     }
 
     if (did_send)

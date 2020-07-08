@@ -2982,6 +2982,16 @@ lineinvalid(unsigned off, int width)
 }
 
 /*
+ * To be called when characters were sent to the terminal directly, outputting
+ * test on "screen_lnum".
+ */
+    void
+line_was_clobbered(int screen_lnum)
+{
+    lineinvalid(LineOffset[screen_lnum], (int)Columns);
+}
+
+/*
  * Copy part of a Screenline for vertically split window "wp".
  */
     static void
