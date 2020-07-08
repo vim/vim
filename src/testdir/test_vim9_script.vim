@@ -911,10 +911,10 @@ func Test_import_fails_without_script()
   CheckRunVimInTerminal
 
   " call indirectly to avoid compilation error for missing functions
-  call Run_Test_import_fails_without_script()
+  call Run_Test_import_fails_on_command_line()
 endfunc
 
-def Run_Test_import_fails_without_script()
+def Run_Test_import_fails_on_command_line()
   let export =<< trim END
     vim9script
     export def Foo(): number
@@ -1011,6 +1011,35 @@ def Test_vim9script_funcref()
   unlet g:result
   delete('Xsort.vim')
   delete('Xscript.vim')
+enddef
+
+" Check that when searcing for "FilterFunc" it doesn't find the import in the
+" script where FastFilter() is called from.
+def Test_vim9script_funcref_other_script()
+  let filterLines =<< trim END
+    vim9script
+    export def FilterFunc(idx: number, val: number): bool
+      return idx % 2 == 1
+    enddef
+    export def FastFilter(): list<number>
+      return range(10)->filter('FilterFunc')
+    enddef
+  END
+  writefile(filterLines, 'Xfilter.vim')
+
+  let lines =<< trim END
+    vim9script
+    import {FilterFunc, FastFilter} from './Xfilter.vim'
+    def Test()
+      let x: list<number> = FastFilter()
+    enddef
+    Test()
+  END
+  writefile(lines, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E121:')
+
+  delete('Xfilter.vim')
+  delete('Ximport.vim')
 enddef
 
 def Test_vim9script_reload_delfunc()

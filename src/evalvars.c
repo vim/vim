@@ -2375,6 +2375,7 @@ eval_variable(
 {
     int		ret = OK;
     typval_T	*tv = NULL;
+    int		foundFunc = FALSE;
     dictitem_T	*v;
     int		cc;
 
@@ -2402,21 +2403,36 @@ eval_variable(
 	// imported variable from another script
 	if (import != NULL)
 	{
-	    scriptitem_T    *si = SCRIPT_ITEM(import->imp_sid);
-	    svar_T	    *sv = ((svar_T *)si->sn_var_vals.ga_data)
+	    if (import->imp_funcname != NULL)
+	    {
+		foundFunc = TRUE;
+		if (rettv != NULL)
+		{
+		    rettv->v_type = VAR_FUNC;
+		    rettv->vval.v_string = vim_strsave(import->imp_funcname);
+		}
+	    }
+	    else
+	    {
+		scriptitem_T    *si = SCRIPT_ITEM(import->imp_sid);
+		svar_T	    *sv = ((svar_T *)si->sn_var_vals.ga_data)
 						    + import->imp_var_vals_idx;
-	    tv = sv->sv_tv;
+		tv = sv->sv_tv;
+	    }
 	}
     }
 
-    if (tv == NULL)
+    if (!foundFunc)
     {
-	if (rettv != NULL && verbose)
-	    semsg(_(e_undefvar), name);
-	ret = FAIL;
+	if (tv == NULL)
+	{
+	    if (rettv != NULL && verbose)
+		semsg(_(e_undefvar), name);
+	    ret = FAIL;
+	}
+	else if (rettv != NULL)
+	    copy_tv(tv, rettv);
     }
-    else if (rettv != NULL)
-	copy_tv(tv, rettv);
 
     name[len] = cc;
 
