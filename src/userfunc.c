@@ -508,7 +508,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
     }
 
     eval_lavars_used = old_eval_lavars;
-    if (evalarg->eval_tofree == NULL)
+    if (evalarg != NULL && evalarg->eval_tofree == NULL)
 	evalarg->eval_tofree = tofree;
     else
 	vim_free(tofree);
@@ -519,7 +519,7 @@ errret:
     ga_clear_strings(&newlines);
     vim_free(fp);
     vim_free(pt);
-    if (evalarg->eval_tofree == NULL)
+    if (evalarg != NULL && evalarg->eval_tofree == NULL)
 	evalarg->eval_tofree = tofree;
     else
 	vim_free(tofree);
