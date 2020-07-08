@@ -390,11 +390,12 @@ skip_expr_concatenate(char_u **start, char_u **end, evalarg_T *evalarg)
     garray_T    *gap = &evalarg->eval_ga;
     int		save_flags = evalarg == NULL ? 0 : evalarg->eval_flags;
 
-    if (vim9script && evalarg->eval_cookie != NULL)
+    if (vim9script
+	       && (evalarg->eval_cookie != NULL || evalarg->eval_cctx != NULL))
     {
 	ga_init2(gap, sizeof(char_u *), 10);
+	// leave room for "start"
 	if (ga_grow(gap, 1) == OK)
-	    // leave room for "start"
 	    ++gap->ga_len;
     }
 
@@ -406,32 +407,49 @@ skip_expr_concatenate(char_u **start, char_u **end, evalarg_T *evalarg)
     if (evalarg != NULL)
 	evalarg->eval_flags = save_flags;
 
-    if (vim9script && evalarg->eval_cookie != NULL
-						&& evalarg->eval_ga.ga_len > 1)
+    if (vim9script
+	    && (evalarg->eval_cookie != NULL || evalarg->eval_cctx != NULL))
     {
-	char_u	    *p;
-	size_t	    endoff = STRLEN(*end);
+	if (evalarg->eval_ga.ga_len == 1)
+	{
+	    // just one line, no need to concatenate
+	    ga_clear(gap);
+	    gap->ga_itemsize = 0;
+	}
+	else
+	{
+	    char_u	    *p;
+	    size_t	    endoff = STRLEN(*end);
 
-	// Line breaks encountered, concatenate all the lines.
-	*((char_u **)gap->ga_data) = *start;
-	p = ga_concat_strings(gap, "");
-	*((char_u **)gap->ga_data) = NULL;
-	ga_clear_strings(gap);
-	gap->ga_itemsize = 0;
-	if (p == NULL)
-	    return FAIL;
-	*start = p;
-	vim_free(evalarg->eval_tofree);
-	evalarg->eval_tofree = p;
-	// Compute "end" relative to the end.
-	*end = *start + STRLEN(*start) - endoff;
+	    // Line breaks encountered, concatenate all the lines.
+	    *((char_u **)gap->ga_data) = *start;
+	    p = ga_concat_strings(gap, "");
+
+	    // free the lines only when using getsourceline()
+	    if (evalarg->eval_cookie != NULL)
+	    {
+		*((char_u **)gap->ga_data) = NULL;
+		ga_clear_strings(gap);
+	    }
+	    else
+		ga_clear(gap);
+	    gap->ga_itemsize = 0;
+	    if (p == NULL)
+		return FAIL;
+	    *start = p;
+	    vim_free(evalarg->eval_tofree);
+	    evalarg->eval_tofree = p;
+	    // Compute "end" relative to the end.
+	    *end = *start + STRLEN(*start) - endoff;
+	}
     }
 
     return res;
 }
 
 /*
- * Top level evaluation function, returning a string.
+ * Top level evaluation function, returning a string.  Does not handle line
+ * breaks.
  * When "convert" is TRUE convert a List into a sequence of lines and convert
  * a Float to a String.
  * Return pointer to allocated memory, or NULL for failure.
@@ -1878,11 +1896,16 @@ eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext)
     *getnext = FALSE;
     if (current_sctx.sc_version == SCRIPT_VERSION_VIM9
 	    && evalarg != NULL
-	    && evalarg->eval_cookie != NULL
+	    && (evalarg->eval_cookie != NULL || evalarg->eval_cctx != NULL)
 	    && (*arg == NUL || (VIM_ISWHITE(arg[-1])
 					     && *arg == '#' && arg[1] != '{')))
     {
-	char_u *p = getline_peek(evalarg->eval_getline, evalarg->eval_cookie);
+	char_u *p;
+
+	if (evalarg->eval_cookie != NULL)
+	    p = getline_peek(evalarg->eval_getline, evalarg->eval_cookie);
+	else
+	    p = peek_next_line_from_context(evalarg->eval_cctx);
 
 	if (p != NULL)
 	{
@@ -1902,7 +1925,10 @@ eval_next_line(evalarg_T *evalarg)
     garray_T	*gap = &evalarg->eval_ga;
     char_u	*line;
 
-    line = evalarg->eval_getline(0, evalarg->eval_cookie, 0, TRUE);
+    if (evalarg->eval_cookie != NULL)
+	line = evalarg->eval_getline(0, evalarg->eval_cookie, 0, TRUE);
+    else
+	line = next_line_from_context(evalarg->eval_cctx, TRUE);
     ++evalarg->eval_break_count;
     if (gap->ga_itemsize > 0 && ga_grow(gap, 1) == OK)
     {
@@ -5034,35 +5060,27 @@ handle_subscript(
     int		ret = OK;
     dict_T	*selfdict = NULL;
     int		check_white = TRUE;
+    int		getnext;
+    char_u	*p;
 
-    // When at the end of the line and ".name" follows in the next line then
-    // consume the line break.  Only when rettv is a dict.
-    if (rettv->v_type == VAR_DICT)
+    while (ret == OK)
     {
-	int	getnext;
-	char_u	*p = eval_next_non_blank(*arg, evalarg, &getnext);
-
-	if (getnext && *p == '.' && ASCII_ISALPHA(p[1]))
+	// When at the end of the line and ".name" or "->{" or "->X" follows in
+	// the next line then consume the line break.
+	p = eval_next_non_blank(*arg, evalarg, &getnext);
+	if (getnext
+	    && ((rettv->v_type == VAR_DICT && *p == '.'
+						       && ASCII_ISALPHA(p[1]))
+		|| (*p == '-' && p[1] == '>'
+				     && (p[2] == '{' || ASCII_ISALPHA(p[2])))))
 	{
 	    *arg = eval_next_line(evalarg);
 	    check_white = FALSE;
 	}
-    }
 
-    // "." is ".name" lookup when we found a dict or when evaluating and
-    // scriptversion is at least 2, where string concatenation is "..".
-    while (ret == OK
-	    && (((**arg == '['
-		    || (**arg == '.' && (rettv->v_type == VAR_DICT
-			|| (!evaluate
-			    && (*arg)[1] != '.'
-			    && current_sctx.sc_version >= 2)))
-		    || (**arg == '(' && (!evaluate || rettv->v_type == VAR_FUNC
-					    || rettv->v_type == VAR_PARTIAL)))
-		&& (!check_white || !VIM_ISWHITE(*(*arg - 1))))
-	    || (**arg == '-' && (*arg)[1] == '>')))
-    {
-	if (**arg == '(')
+	if ((**arg == '(' && (!evaluate || rettv->v_type == VAR_FUNC
+			    || rettv->v_type == VAR_PARTIAL))
+		    && (!check_white || !VIM_ISWHITE(*(*arg - 1))))
 	{
 	    ret = call_func_rettv(arg, evalarg, rettv, evaluate,
 							       selfdict, NULL);
@@ -5079,7 +5097,7 @@ handle_subscript(
 	    dict_unref(selfdict);
 	    selfdict = NULL;
 	}
-	else if (**arg == '-')
+	else if (**arg == '-' && (*arg)[1] == '>')
 	{
 	    if (ret == OK)
 	    {
@@ -5091,7 +5109,13 @@ handle_subscript(
 		    ret = eval_method(arg, rettv, evalarg, verbose);
 	    }
 	}
-	else // **arg == '[' || **arg == '.'
+	// "." is ".name" lookup when we found a dict or when evaluating and
+	// scriptversion is at least 2, where string concatenation is "..".
+	else if (**arg == '['
+		|| (**arg == '.' && (rettv->v_type == VAR_DICT
+			|| (!evaluate
+			    && (*arg)[1] != '.'
+			    && current_sctx.sc_version >= 2))))
 	{
 	    dict_unref(selfdict);
 	    if (rettv->v_type == VAR_DICT)
@@ -5108,6 +5132,8 @@ handle_subscript(
 		ret = FAIL;
 	    }
 	}
+	else
+	    break;
     }
 
     // Turn "dict.Func" into a partial for "Func" bound to "dict".

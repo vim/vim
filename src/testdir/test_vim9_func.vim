@@ -965,6 +965,18 @@ def Test_line_continuation_in_def()
   assert_equal('full', Line_continuation_in_def('.'))
 enddef
 
+def Line_continuation_in_lambda(): list<number>
+  let x = range(97, 100)
+      ->map({_,v -> nr2char(v)
+          ->toupper()})
+      ->reverse()
+  return x
+enddef
+
+def Test_line_continuation_in_lambda()
+  assert_equal(['D', 'C', 'B', 'A'], Line_continuation_in_lambda())
+enddef
+
 func Test_silent_echo()
   CheckScreendump
 
