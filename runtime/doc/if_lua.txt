@@ -1,4 +1,4 @@
-*if_lua.txt*    For Vim version 8.2.  Last change: 2020 May 17
+*if_lua.txt*    For Vim version 8.2.  Last change: 2020 Jun 28
 
 
 		  VIM REFERENCE MANUAL    by Luis Carvalho

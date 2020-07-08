@@ -305,7 +305,7 @@ def Test_assignment_failure()
   call CheckDefFailure(['let true = 1'], 'E1034:')
   call CheckDefFailure(['let false = 1'], 'E1034:')
 
-  call CheckDefFailure(['[a; b; c] = g:list'], 'E452:')
+  call CheckDefFailure(['[a; b; c] = g:list'], 'E1001:')
   call CheckDefExecFailure(['let a: number',
                             '[a] = test_null_list()'], 'E1093:')
   call CheckDefExecFailure(['let a: number',
@@ -585,6 +585,34 @@ def Test_try_catch_fails()
   call CheckDefFailure(['throw xxx'], 'E1001:')
 enddef
 
+def Test_throw_vimscript()
+  " only checks line continuation
+  let lines =<< trim END
+      vim9script
+      try
+        throw 'one'
+              .. 'two'
+      catch
+        assert_equal('onetwo', v:exception)
+      endtry
+  END
+  CheckScriptSuccess(lines)
+enddef
+
+def Test_cexpr_vimscript()
+  " only checks line continuation
+  set errorformat=File\ %f\ line\ %l
+  let lines =<< trim END
+      vim9script
+      cexpr 'File'
+                .. ' someFile' ..
+                   ' line 19'
+      assert_equal(19, getqflist()[0].lnum)
+  END
+  CheckScriptSuccess(lines)
+  set errorformat&
+enddef
+
 if has('channel')
   let someJob = test_null_job()
 
@@ -658,6 +686,35 @@ def Test_vim9_import_export()
   unlet g:imported_name g:imported_name_appended
   delete('Ximport.vim')
 
+  # similar, with line breaks
+  let import_line_break_script_lines =<< trim END
+    vim9script
+    import {
+        exported,
+        Exported,
+        }
+        from
+        './Xexport.vim'
+    g:imported = exported
+    exported += 5
+    g:imported_added = exported
+    g:imported_func = Exported()
+  END
+  writefile(import_line_break_script_lines, 'Ximport_lbr.vim')
+  source Ximport_lbr.vim
+
+  assert_equal(9876, g:imported)
+  assert_equal(9881, g:imported_added)
+  assert_equal('Exported', g:imported_func)
+
+  # exported script not sourced again
+  assert_false(exists('g:result'))
+  unlet g:imported
+  unlet g:imported_added
+  unlet g:imported_func
+  delete('Ximport_lbr.vim')
+
+  # import inside :def function
   let import_in_def_lines =<< trim END
     vim9script
     def ImportInDef()
@@ -722,6 +779,21 @@ def Test_vim9_import_export()
   END
   writefile(import_star_as_lines_missing_name, 'Ximport.vim')
   assert_fails('source Ximport.vim', 'E1048:')
+
+  let import_star_as_lbr_lines =<< trim END
+    vim9script
+    import *
+        as Export
+        from
+        './Xexport.vim'
+    def UseExport()
+      g:imported = Export.exported
+    enddef
+    UseExport()
+  END
+  writefile(import_star_as_lbr_lines, 'Ximport.vim')
+  source Ximport.vim
+  assert_equal(9883, g:imported)
 
   let import_star_lines =<< trim END
     vim9script
@@ -839,10 +911,10 @@ func Test_import_fails_without_script()
   CheckRunVimInTerminal
 
   " call indirectly to avoid compilation error for missing functions
-  call Run_Test_import_fails_without_script()
+  call Run_Test_import_fails_on_command_line()
 endfunc
 
-def Run_Test_import_fails_without_script()
+def Run_Test_import_fails_on_command_line()
   let export =<< trim END
     vim9script
     export def Foo(): number
@@ -905,6 +977,68 @@ def Test_vim9script_reload_import()
   assert_fails('source Xreload.vim', 'E1041:')
 
   delete('Xreload.vim')
+  delete('Ximport.vim')
+enddef
+
+" Not exported function that is referenced needs to be accessed by the
+" script-local name.
+def Test_vim9script_funcref()
+  let sortlines =<< trim END
+      vim9script
+      def Compare(i1: number, i2: number): number
+        return i2 - i1
+      enddef
+
+      export def FastSort(): list<number>
+        return range(5)->sort(Compare)
+      enddef
+  END
+  writefile(sortlines, 'Xsort.vim')
+
+  let lines =<< trim END
+    vim9script
+    import FastSort from './Xsort.vim'
+    def Test()
+      g:result = FastSort()
+    enddef
+    Test()
+  END
+  writefile(lines, 'Xscript.vim')
+
+  source Xscript.vim
+  assert_equal([4, 3, 2, 1, 0], g:result)
+
+  unlet g:result
+  delete('Xsort.vim')
+  delete('Xscript.vim')
+enddef
+
+" Check that when searcing for "FilterFunc" it doesn't find the import in the
+" script where FastFilter() is called from.
+def Test_vim9script_funcref_other_script()
+  let filterLines =<< trim END
+    vim9script
+    export def FilterFunc(idx: number, val: number): bool
+      return idx % 2 == 1
+    enddef
+    export def FastFilter(): list<number>
+      return range(10)->filter('FilterFunc')
+    enddef
+  END
+  writefile(filterLines, 'Xfilter.vim')
+
+  let lines =<< trim END
+    vim9script
+    import {FilterFunc, FastFilter} from './Xfilter.vim'
+    def Test()
+      let x: list<number> = FastFilter()
+    enddef
+    Test()
+  END
+  writefile(lines, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E121:')
+
+  delete('Xfilter.vim')
   delete('Ximport.vim')
 enddef
 
@@ -1266,6 +1400,19 @@ def Test_execute_cmd()
   call CheckDefFailure(['execute "cmd"# comment'], 'E488:')
 enddef
 
+def Test_execute_cmd_vimscript()
+  " only checks line continuation
+  let lines =<< trim END
+      vim9script
+      execute 'g:someVar'
+                .. ' = ' ..
+                   '28'
+      assert_equal(28, g:someVar)
+      unlet g:someVar
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_echo_cmd()
   echo 'some' # comment
   echon 'thing'
@@ -1293,12 +1440,39 @@ def Test_echomsg_cmd()
   call CheckDefFailure(['echomsg "xxx"# comment'], 'E488:')
 enddef
 
+def Test_echomsg_cmd_vimscript()
+  " only checks line continuation
+  let lines =<< trim END
+      vim9script
+      echomsg 'here'
+                .. ' is ' ..
+                   'a message'
+      assert_match('^here is a message$', Screenline(&lines))
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_echoerr_cmd()
   try
     echoerr 'something' 'wrong' # comment
   catch
     assert_match('something wrong', v:exception)
   endtry
+enddef
+
+def Test_echoerr_cmd_vimscript()
+  " only checks line continuation
+  let lines =<< trim END
+      vim9script
+      try
+        echoerr 'this'
+                .. ' is ' ..
+                   'wrong'
+      catch
+        assert_match('this is wrong', v:exception)
+      endtry
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_for_outside_of_function()
@@ -1328,6 +1502,12 @@ def Test_for_loop()
     result ..= cnt .. '_'
   endfor
   assert_equal('0_1_3_', result)
+
+  let concat = ''
+  for str in eval('["one", "two"]')
+    concat ..= str
+  endfor
+  assert_equal('onetwo', concat)
 enddef
 
 def Test_for_loop_fails()
@@ -1335,7 +1515,7 @@ def Test_for_loop_fails()
   CheckDefFailure(['for i In range(5)'], 'E690:')
   CheckDefFailure(['let x = 5', 'for x in range(5)'], 'E1023:')
   CheckScriptFailure(['def Func(arg: any)', 'for arg in range(5)', 'enddef', 'defcompile'], 'E1006:')
-  CheckDefFailure(['for i in "text"'], 'E1024:')
+  CheckDefFailure(['for i in "text"'], 'E1013:')
   CheckDefFailure(['for i in xxx'], 'E1001:')
   CheckDefFailure(['endfor'], 'E588:')
   CheckDefFailure(['for i in range(3)', 'echo 3'], 'E170:')
@@ -1911,19 +2091,19 @@ def Test_vim9_comment_not_compiled()
       'bwipe!',
       ])
 
-  CheckScriptFailure([
-      'vim9script',
-      'new'
-      'call setline(1, ["# define pat", "last"])',
-      ':$',
-      'dsearch /pat/#comment',
-      'bwipe!',
-      ], 'E488:')
-
-  CheckScriptFailure([
-      'vim9script',
-      'func! SomeFunc()',
-      ], 'E477:')
+"  CheckScriptFailure([
+"      'vim9script',
+"      'new'
+"      'call setline(1, ["# define pat", "last"])',
+"      ':$',
+"      'dsearch /pat/#comment',
+"      'bwipe!',
+"      ], 'E488:')
+"
+"  CheckScriptFailure([
+"      'vim9script',
+"      'func! SomeFunc()',
+"      ], 'E477:')
 enddef
 
 def Test_finish()
@@ -2105,6 +2285,12 @@ def Test_source_vim9_from_legacy()
 
   delete('Xlegacy_script.vim')
   delete('Xvim9_script.vim')
+enddef
+
+def Test_vim9_copen()
+  # this was giving an error for setting w:quickfix_title
+  copen
+  quit
 enddef
 
 " Keep this last, it messes up highlighting.

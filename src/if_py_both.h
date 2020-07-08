@@ -1913,7 +1913,6 @@ DictionaryAssItem(
 
 	if (dict_add(dict, di) == FAIL)
 	{
-	    vim_free(di);
 	    dictitem_free(di);
 	    RAISE_KEY_ADD_FAIL(key);
 	    Py_XDECREF(todecref);
@@ -2250,6 +2249,9 @@ typedef struct
 ListNew(PyTypeObject *subtype, list_T *list)
 {
     ListObject	*self;
+
+    if (list == NULL)
+	return NULL;
 
     self = (ListObject *) subtype->tp_alloc(subtype, 0);
     if (self == NULL)
@@ -2696,6 +2698,12 @@ ListAssIndex(ListObject *self, Py_ssize_t index, PyObject *obj)
     if (obj == NULL)
     {
 	li = list_find(l, (long) index);
+	if (li == NULL)
+	{
+	    PyErr_VIM_FORMAT(N_("internal error: failed to get Vim "
+			"list item %d"), (int) index);
+	    return -1;
+	}
 	vimlist_remove(l, li, li);
 	clear_tv(&li->li_tv);
 	vim_free(li);
@@ -2717,6 +2725,12 @@ ListAssIndex(ListObject *self, Py_ssize_t index, PyObject *obj)
     else
     {
 	li = list_find(l, (long) index);
+	if (li == NULL)
+	{
+	    PyErr_VIM_FORMAT(N_("internal error: failed to get Vim "
+			"list item %d"), (int) index);
+	    return -1;
+	}
 	clear_tv(&li->li_tv);
 	copy_tv(&tv, &li->li_tv);
 	clear_tv(&tv);
@@ -3360,7 +3374,7 @@ OptionsItem(OptionsObject *self, PyObject *keyObject)
     char_u	*stringval;
     PyObject	*todecref;
 
-    if (self->Check(self->from))
+    if (self->Check(self->fromObj))
 	return NULL;
 
     if (!(key = StringToChars(keyObject, &todecref)))
@@ -3551,7 +3565,7 @@ OptionsAssItem(OptionsObject *self, PyObject *keyObject, PyObject *valObject)
     int		ret = 0;
     PyObject	*todecref;
 
-    if (self->Check(self->from))
+    if (self->Check(self->fromObj))
 	return -1;
 
     if (!(key = StringToChars(keyObject, &todecref)))
@@ -3898,7 +3912,7 @@ WindowDestructor(WindowObject *self)
     PyObject_GC_UnTrack((void *)(self));
     if (self->win && self->win != INVALID_WINDOW_VALUE)
 	WIN_PYTHON_REF(self->win) = NULL;
-     Py_XDECREF(((PyObject *)(self->tabObject)));
+    Py_XDECREF(((PyObject *)(self->tabObject)));
     PyObject_GC_Del((void *)(self));
 }
 
@@ -4320,10 +4334,15 @@ GetBufferLineList(buf_T *buf, PyInt lo, PyInt hi)
 
     for (i = 0; i < n; ++i)
     {
-	PyObject	*string = LineToString(
-		(char *)ml_get_buf(buf, (linenr_T)(lo+i), FALSE));
+	linenr_T	lnum = (linenr_T)(lo + i);
+	char		*text;
+	PyObject	*string;
 
-	// Error check - was the Python string creation OK?
+	if (lnum > buf->b_ml.ml_line_count)
+	    text = "";
+	else
+	    text = (char *)ml_get_buf(buf, lnum, FALSE);
+	string = LineToString(text);
 	if (string == NULL)
 	{
 	    Py_DECREF(list);

@@ -350,16 +350,11 @@ get_lambda_name(void)
 register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
 {
     char_u	*name = get_lambda_name();
-    ufunc_T	*fp = NULL;
-    garray_T	newargs;
-    garray_T	newlines;
-
-    ga_init(&newargs);
-    ga_init(&newlines);
+    ufunc_T	*fp;
 
     fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
     if (fp == NULL)
-        goto errret;
+	return NULL;
 
     fp->uf_dfunc_idx = UF_NOT_COMPILED;
     fp->uf_refcount = 1;
@@ -367,8 +362,6 @@ register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
     fp->uf_flags = FC_CFUNC;
     fp->uf_calls = 0;
     fp->uf_script_ctx = current_sctx;
-    fp->uf_lines = newlines;
-    fp->uf_args = newargs;
     fp->uf_cb = cb;
     fp->uf_cb_free = cb_free;
     fp->uf_cb_state = state;
@@ -377,12 +370,6 @@ register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
     hash_add(&func_hashtab, UF2HIKEY(fp));
 
     return name;
-
-errret:
-    ga_clear_strings(&newargs);
-    ga_clear_strings(&newlines);
-    vim_free(fp);
-    return NULL;
 }
 #endif
 
@@ -614,16 +601,13 @@ get_func_tv(
     int		len,		// length of "name" or -1 to use strlen()
     typval_T	*rettv,
     char_u	**arg,		// argument, pointing to the '('
+    evalarg_T	*evalarg,	// for line continuation
     funcexe_T	*funcexe)	// various values
 {
     char_u	*argp;
     int		ret = OK;
     typval_T	argvars[MAX_FUNC_ARGS + 1];	// vars for arguments
     int		argcount = 0;		// number of arguments found
-    evalarg_T	evalarg;
-
-    CLEAR_FIELD(evalarg);
-    evalarg.eval_flags = funcexe->evaluate ? EVAL_EVALUATE : 0;
 
     /*
      * Get the arguments.
@@ -632,10 +616,12 @@ get_func_tv(
     while (argcount < MAX_FUNC_ARGS - (funcexe->partial == NULL ? 0
 						  : funcexe->partial->pt_argc))
     {
-	argp = skipwhite(argp + 1);	    // skip the '(' or ','
+	// skip the '(' or ',' and possibly line breaks
+	argp = skipwhite_and_linebreak(argp + 1, evalarg);
+
 	if (*argp == ')' || *argp == ',' || *argp == NUL)
 	    break;
-	if (eval1(&argp, &argvars[argcount], &evalarg) == FAIL)
+	if (eval1(&argp, &argvars[argcount], evalarg) == FAIL)
 	{
 	    ret = FAIL;
 	    break;
@@ -644,6 +630,7 @@ get_func_tv(
 	if (*argp != ',')
 	    break;
     }
+    argp = skipwhite_and_linebreak(argp, evalarg);
     if (*argp == ')')
 	++argp;
     else
@@ -3845,16 +3832,19 @@ ex_call(exarg_T *eap)
     int		failed = FALSE;
     funcdict_T	fudi;
     partial_T	*partial = NULL;
+    evalarg_T	evalarg;
 
+    fill_evalarg_from_eap(&evalarg, eap, eap->skip);
     if (eap->skip)
     {
 	// trans_function_name() doesn't work well when skipping, use eval0()
 	// instead to skip to any following command, e.g. for:
 	//   :if 0 | call dict.foo().bar() | endif
 	++emsg_skip;
-	if (eval0(eap->arg, &rettv, eap, NULL) != FAIL)
+	if (eval0(eap->arg, &rettv, eap, &evalarg) != FAIL)
 	    clear_tv(&rettv);
 	--emsg_skip;
+	clear_evalarg(&evalarg, eap);
 	return;
     }
 
@@ -3931,7 +3921,7 @@ ex_call(exarg_T *eap)
 	funcexe.evaluate = !eap->skip;
 	funcexe.partial = partial;
 	funcexe.selfdict = fudi.fd_dict;
-	if (get_func_tv(name, -1, &rettv, &arg, &funcexe) == FAIL)
+	if (get_func_tv(name, -1, &rettv, &arg, &evalarg, &funcexe) == FAIL)
 	{
 	    failed = TRUE;
 	    break;
@@ -3960,6 +3950,7 @@ ex_call(exarg_T *eap)
     }
     if (eap->skip)
 	--emsg_skip;
+    clear_evalarg(&evalarg, eap);
 
     // When inside :try we need to check for following "| catch".
     if (!failed || eap->cstack->cs_trylevel > 0)

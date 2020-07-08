@@ -4,7 +4,7 @@
 # Authors:	Zoltan Arpadffy, <arpadffy@polarhome.com>
 #		Sandor Kopanyi,  <sandor.kopanyi@mailbox.hu>
 #
-# Last change:  2019 May 31
+# Last change:  2020 Jul 03
 #
 # This has been tested on VMS 6.2 to 8.3 on DEC Alpha, VAX and IA64.
 # Edit the lines in the Configuration section below to select.
@@ -115,10 +115,6 @@ SCRIPT_ODS5 = test102.out
 SCRIPT_GDIFF = test47.out
 .ENDIF
 
-.IFDEF HAVE_PYTHON
-SCRIPT_PYTHON = test86.out test87.out
-.ENDIF
-
 .in.out :
 	-@ !clean up before doing the test
 	-@ if "''F$SEARCH("test.out.*")'" .NES. "" then delete/noconfirm/nolog test.out.*
@@ -140,7 +136,7 @@ SCRIPT_PYTHON = test86.out test87.out
 	-@ if "''F$SEARCH("Xtest.*")'"    .NES. "" then delete/noconfirm/nolog Xtest.*.*
 
 all : clean nolog $(START_WITH) $(SCRIPT) $(SCRIPT_GUI) $(SCRIPT_UNIX) $(SCRIPT_WIN) $(SCRIPT_SPELL) $(SCRIPT_ODS5) \
-    $(SCRIPT_GDIFF) $(SCRIPT_MZSCH) $(SCRIPT_LUA) $(SCRIPT_PYTHON) nolog 
+    $(SCRIPT_GDIFF) $(SCRIPT_MZSCH) $(SCRIPT_LUA) nolog 
 	-@ write sys$output " "
 	-@ write sys$output "-----------------------------------------------"
 	-@ write sys$output "                All done"

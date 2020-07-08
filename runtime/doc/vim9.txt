@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Jun 22
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Jun 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -377,6 +377,49 @@ string. >
 
 In Vim9 script one can use "true" for v:true and "false" for v:false.
 
+
+What to watch out for ~
+							*vim9-gotchas*
+Vim9 was designed to be closer to often used programming languages, but at the
+same time tries to support the legacy Vim commands.  Some compromises had to
+be made.  Here is a summary of what might be unexpected.
+
+Ex command ranges need to be prefixed with a colon. >
+  	->		" legacy Vim: shifts the previous line to the right
+	->func()	" Vim9: method call
+	:->		" Vim9: shifts the previous line to the right
+
+	%s/a/b		" legacy Vim: substitute on all lines
+	x = alongname
+	     % another	" Vim9: line continuation without a backslash
+	:%s/a/b		" Vim9: substitute on all lines
+
+Functions defined with `:def` compile the whole function.  Legacy functions
+can bail out, and the following lines are not parsed: >
+	func Maybe()
+	  if !has('feature')
+	    return
+	  endif
+	  use-feature
+	endfunc
+Vim9 functions are compiled as a whole: >
+	def Maybe()
+	  if !has('feature')
+	    return
+	  endif
+	  use-feature  " May give compilation error
+	enddef
+For a workaround, split it in two functions: >
+	func Maybe()
+	  if has('feature')
+	    call MaybyInner()
+	  endif
+	endfunc
+	if has('feature')
+	  def MaybeInner()
+	    use-feature
+	  enddef
+	endif
 
 ==============================================================================
 

@@ -3,6 +3,7 @@ varnumber_T num_divide(varnumber_T n1, varnumber_T n2);
 varnumber_T num_modulus(varnumber_T n1, varnumber_T n2);
 void eval_init(void);
 void eval_clear(void);
+void fill_evalarg_from_eap(evalarg_T *evalarg, exarg_T *eap, int skip);
 int eval_to_bool(char_u *arg, int *error, exarg_T *eap, int skip);
 int eval_expr_valid_arg(typval_T *tv);
 int eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv);

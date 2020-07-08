@@ -68,7 +68,7 @@ estack_push(etype_T type, char_u *name, long lnum)
 /*
  * Add a user function to the execution stack.
  */
-    void
+    estack_T *
 estack_push_ufunc(ufunc_T *ufunc, long lnum)
 {
     estack_T *entry = estack_push(ETYPE_UFUNC,
@@ -76,6 +76,7 @@ estack_push_ufunc(ufunc_T *ufunc, long lnum)
 				  ? ufunc->uf_name_exp : ufunc->uf_name, lnum);
     if (entry != NULL)
 	entry->es_info.ufunc = ufunc;
+    return entry;
 }
 
 /*
@@ -97,13 +98,15 @@ estack_top_is_ufunc(ufunc_T *ufunc, long lnum)
 #endif
 
 /*
- * Take an item off of the execution stack.
+ * Take an item off of the execution stack and return it.
  */
-    void
+    estack_T *
 estack_pop(void)
 {
-    if (exestack.ga_len > 1)
-	--exestack.ga_len;
+    if (exestack.ga_len == 0)
+	return NULL;
+    --exestack.ga_len;
+    return ((estack_T *)exestack.ga_data) + exestack.ga_len;
 }
 
 /*

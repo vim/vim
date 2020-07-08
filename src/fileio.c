@@ -52,10 +52,14 @@ filemess(
     if (msg_silent != 0)
 	return;
     msg_add_fname(buf, name);	    // put file name in IObuff with quotes
+
     // If it's extremely long, truncate it.
-    if (STRLEN(IObuff) > IOSIZE - 80)
-	IObuff[IOSIZE - 80] = NUL;
-    STRCAT(IObuff, s);
+    if (STRLEN(IObuff) > IOSIZE - 100)
+	IObuff[IOSIZE - 100] = NUL;
+
+    // Avoid an over-long translation to cause trouble.
+    STRNCAT(IObuff, s, 99);
+
     /*
      * For the first message may have to start a new line.
      * For further ones overwrite the previous one, reset msg_scroll before
@@ -3035,13 +3039,13 @@ msg_add_lines(
 	*p++ = ' ';
     if (shortmess(SHM_LINES))
 	vim_snprintf((char *)p, IOSIZE - (p - IObuff),
-		"%ldL, %lldC", lnum, (varnumber_T)nchars);
+		"%ldL, %lldB", lnum, (varnumber_T)nchars);
     else
     {
 	sprintf((char *)p, NGETTEXT("%ld line, ", "%ld lines, ", lnum), lnum);
 	p += STRLEN(p);
 	vim_snprintf((char *)p, IOSIZE - (p - IObuff),
-		NGETTEXT("%lld character", "%lld characters", nchars),
+		NGETTEXT("%lld byte", "%lld bytes", nchars),
 		(varnumber_T)nchars);
     }
 }

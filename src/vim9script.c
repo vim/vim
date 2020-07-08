@@ -142,17 +142,21 @@ free_imports(int sid)
     void
 ex_import(exarg_T *eap)
 {
-    char_u *cmd_end;
+    char_u	*cmd_end;
+    evalarg_T	evalarg;
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
     {
 	emsg(_("E1094: import can only be used in a script"));
 	return;
     }
+    fill_evalarg_from_eap(&evalarg, eap, eap->skip);
 
-    cmd_end = handle_import(eap->arg, NULL, current_sctx.sc_sid, NULL);
+    cmd_end = handle_import(eap->arg, NULL, current_sctx.sc_sid,
+							       &evalarg, NULL);
     if (cmd_end != NULL)
 	eap->nextcmd = check_nextcmd(cmd_end);
+    clear_evalarg(&evalarg, eap);
 }
 
 /*
@@ -164,27 +168,16 @@ ex_import(exarg_T *eap)
     int
 find_exported(
 	int	    sid,
-	char_u	    **argp,
-	int	    *name_len,
+	char_u	    *name,
 	ufunc_T	    **ufunc,
 	type_T	    **type)
 {
-    char_u	*name = *argp;
-    char_u	*arg = *argp;
-    int		cc;
     int		idx = -1;
     svar_T	*sv;
     scriptitem_T *script = SCRIPT_ITEM(sid);
 
-    // isolate one name
-    while (eval_isnamec(*arg))
-	++arg;
-    *name_len = (int)(arg - name);
-
     // find name in "script"
     // TODO: also find script-local user function
-    cc = *arg;
-    *arg = NUL;
     idx = get_script_item_idx(sid, name, FALSE);
     if (idx >= 0)
     {
@@ -192,7 +185,6 @@ find_exported(
 	if (!sv->sv_export)
 	{
 	    semsg(_("E1049: Item not exported in script: %s"), name);
-	    *arg = cc;
 	    return -1;
 	}
 	*type = sv->sv_type;
@@ -210,10 +202,7 @@ find_exported(
 	{
 	    funcname = alloc(STRLEN(name) + 10);
 	    if (funcname == NULL)
-	    {
-		*arg = cc;
 		return -1;
-	    }
 	}
 	funcname[0] = K_SPECIAL;
 	funcname[1] = KS_EXTRA;
@@ -226,13 +215,9 @@ find_exported(
 	if (*ufunc == NULL)
 	{
 	    semsg(_("E1048: Item not found in script: %s"), name);
-	    *arg = cc;
 	    return -1;
 	}
     }
-    *arg = cc;
-    arg = skipwhite(arg);
-    *argp = arg;
 
     return idx;
 }
@@ -243,76 +228,137 @@ find_exported(
  * Returns a pointer to after the command or NULL in case of failure
  */
     char_u *
-handle_import(char_u *arg_start, garray_T *gap, int import_sid, void *cctx)
+handle_import(
+	char_u	    *arg_start,
+	garray_T    *gap,
+	int	    import_sid,
+	evalarg_T   *evalarg,
+	void	    *cctx)
 {
     char_u	*arg = arg_start;
-    char_u	*cmd_end;
-    char_u	*as_ptr = NULL;
-    char_u	*from_ptr;
-    int		as_len = 0;
+    char_u	*cmd_end = NULL;
+    char_u	*as_name = NULL;
     int		ret = FAIL;
     typval_T	tv;
     int		sid = -1;
     int		res;
+    garray_T	names;
+    static char e_import_syntax[] = N_("E1047: syntax error in import");
 
+    ga_init2(&names, sizeof(char_u *), 10);
     if (*arg == '{')
     {
-	// skip over {item} list
-	while (*arg != NUL && *arg != '}')
-	    ++arg;
-	if (*arg == '}')
-	    arg = skipwhite(arg + 1);
+	// "import {item, item} from ..."
+	arg = skipwhite_and_linebreak(arg + 1, evalarg);
+	for (;;)
+	{
+	    char_u  *p = arg;
+	    int	    had_comma = FALSE;
+
+	    while (eval_isnamec(*arg))
+		++arg;
+	    if (p == arg)
+		break;
+	    if (ga_grow(&names, 1) == FAIL)
+		goto erret;
+	    ((char_u **)names.ga_data)[names.ga_len] =
+						      vim_strnsave(p, arg - p);
+	    ++names.ga_len;
+	    if (*arg == ',')
+	    {
+		had_comma = TRUE;
+		++arg;
+	    }
+	    arg = skipwhite_and_linebreak(arg, evalarg);
+	    if (*arg == '}')
+	    {
+		arg = skipwhite_and_linebreak(arg + 1, evalarg);
+		break;
+	    }
+	    if (!had_comma)
+	    {
+		emsg(_("E1046: Missing comma in import"));
+		goto erret;
+	    }
+	}
+	if (names.ga_len == 0)
+	{
+	    emsg(_(e_import_syntax));
+	    goto erret;
+	}
     }
     else
     {
-	if (*arg == '*')
-	    arg = skipwhite(arg + 1);
+	// "import Name from ..."
+	// "import * as Name from ..."
+	// "import item [as Name] from ..."
+	arg = skipwhite_and_linebreak(arg, evalarg);
+	if (arg[0] == '*' && IS_WHITE_OR_NUL(arg[1]))
+	    arg = skipwhite_and_linebreak(arg + 1, evalarg);
 	else if (eval_isnamec1(*arg))
 	{
+	    char_u  *p = arg;
+
 	    while (eval_isnamec(*arg))
 		++arg;
-	    arg = skipwhite(arg);
+	    if (ga_grow(&names, 1) == FAIL)
+		goto erret;
+	    ((char_u **)names.ga_data)[names.ga_len] =
+						      vim_strnsave(p, arg - p);
+	    ++names.ga_len;
+	    arg = skipwhite_and_linebreak(arg, evalarg);
 	}
-	if (STRNCMP("as", arg, 2) == 0 && VIM_ISWHITE(arg[2]))
+	else
 	{
-	    // skip over "as Name "
+	    emsg(_(e_import_syntax));
+	    goto erret;
+	}
+
+	if (STRNCMP("as", arg, 2) == 0 && IS_WHITE_OR_NUL(arg[2]))
+	{
+	    char_u *p;
+
+	    // skip over "as Name "; no line break allowed after "as"
 	    arg = skipwhite(arg + 2);
-	    as_ptr = arg;
+	    p = arg;
 	    if (eval_isnamec1(*arg))
 		while (eval_isnamec(*arg))
 		    ++arg;
-	    as_len = (int)(arg - as_ptr);
-	    arg = skipwhite(arg);
-	    if (check_defined(as_ptr, as_len, cctx) == FAIL)
-		return NULL;
+	    if (check_defined(p, arg - p, cctx) == FAIL)
+		goto erret;
+	    as_name = vim_strnsave(p, arg - p);
+	    arg = skipwhite_and_linebreak(arg, evalarg);
 	}
 	else if (*arg_start == '*')
 	{
 	    emsg(_("E1045: Missing \"as\" after *"));
-	    return NULL;
+	    goto erret;
 	}
     }
-    if (STRNCMP("from", arg, 4) != 0 || !VIM_ISWHITE(arg[4]))
+
+    if (STRNCMP("from", arg, 4) != 0 || !IS_WHITE_OR_NUL(arg[4]))
     {
 	emsg(_("E1070: Missing \"from\""));
-	return NULL;
+	goto erret;
     }
-    from_ptr = arg;
-    arg = skipwhite(arg + 4);
+
+    arg = skipwhite_and_linebreak(arg + 4, evalarg);
     tv.v_type = VAR_UNKNOWN;
     // TODO: should we accept any expression?
     if (*arg == '\'')
-	ret = get_lit_string_tv(&arg, &tv, TRUE);
+	ret = eval_lit_string(&arg, &tv, TRUE);
     else if (*arg == '"')
-	ret = get_string_tv(&arg, &tv, TRUE);
+	ret = eval_string(&arg, &tv, TRUE);
     if (ret == FAIL || tv.vval.v_string == NULL || *tv.vval.v_string == NUL)
     {
 	emsg(_("E1071: Invalid string after \"from\""));
-	return NULL;
+	goto erret;
     }
     cmd_end = arg;
 
-    // find script tv.vval.v_string
+    /*
+     * find script file
+     */
     if (*tv.vval.v_string == '.')
     {
 	size_t		len;
@@ -326,7 +372,7 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid, void *cctx)
 	if (from_name == NULL)
 	{
 	    clear_tv(&tv);
-	    return NULL;
+	    goto erret;
 	}
 	vim_strncpy(from_name, si->sn_name, tail - si->sn_name);
 	add_pathsep(from_name);
@@ -351,7 +397,7 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid, void *cctx)
 	if (from_name == NULL)
 	{
 	    clear_tv(&tv);
-	    return NULL;
+	    goto erret;
 	}
 	vim_snprintf((char *)from_name, len, "import/%s", tv.vval.v_string);
 	res = source_in_path(p_rtp, from_name, DIP_NOAFTER, &sid);
@@ -362,7 +408,7 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid, void *cctx)
     {
 	semsg(_("E1053: Could not import \"%s\""), tv.vval.v_string);
 	clear_tv(&tv);
-	return NULL;
+	goto erret;
     }
     clear_tv(&tv);
 
@@ -372,41 +418,44 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid, void *cctx)
 					: &SCRIPT_ITEM(import_sid)->sn_imports);
 
 	if (imported == NULL)
-	    return NULL;
-	imported->imp_name = vim_strnsave(as_ptr, as_len);
+	    goto erret;
+	imported->imp_name = as_name;
+	as_name = NULL;
 	imported->imp_sid = sid;
 	imported->imp_all = TRUE;
     }
     else
     {
+	int i;
+
 	arg = arg_start;
 	if (*arg == '{')
 	    arg = skipwhite(arg + 1);
-	for (;;)
+	for (i = 0; i < names.ga_len; ++i)
 	{
-	    char_u	*name = arg;
-	    int		name_len;
+	    char_u	*name = ((char_u **)names.ga_data)[i];
 	    int		idx;
 	    imported_T	*imported;
 	    ufunc_T	*ufunc = NULL;
 	    type_T	*type;
 
-	    idx = find_exported(sid, &arg, &name_len, &ufunc, &type);
+	    idx = find_exported(sid, name, &ufunc, &type);
 
 	    if (idx < 0 && ufunc == NULL)
-		return NULL;
+		goto erret;
 
-	    if (check_defined(name, name_len, cctx) == FAIL)
-		return NULL;
+	    if (check_defined(name, STRLEN(name), cctx) == FAIL)
+		goto erret;
 
 	    imported = new_imported(gap != NULL ? gap
 				       : &SCRIPT_ITEM(import_sid)->sn_imports);
 	    if (imported == NULL)
-		return NULL;
+		goto erret;
 
 	    // TODO: check for "as" following
-	    // imported->imp_name = vim_strnsave(as_ptr, as_len);
-	    imported->imp_name = vim_strnsave(name, name_len);
+	    // imported->imp_name = vim_strsave(as_name);
+	    imported->imp_name = name;
+	    ((char_u **)names.ga_data)[i] = NULL;
 	    imported->imp_sid = sid;
 	    if (idx >= 0)
 	    {
@@ -415,30 +464,11 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid, void *cctx)
 	    }
 	    else
 		imported->imp_funcname = ufunc->uf_name;
-
-	    arg = skipwhite(arg);
-	    if (*arg_start != '{')
-		break;
-	    if (*arg == '}')
-	    {
-		arg = skipwhite(arg + 1);
-		break;
-	    }
-
-	    if (*arg != ',')
-	    {
-		emsg(_("E1046: Missing comma in import"));
-		return NULL;
-	    }
-	    arg = skipwhite(arg + 1);
-	}
-	if (arg != from_ptr)
-	{
-	    // cannot happen, just in case the above has a flaw
-	    emsg(_("E1047: syntax error in import"));
-	    return NULL;
 	}
     }
+erret:
+    ga_clear_strings(&names);
+    vim_free(as_name);
     return cmd_end;
 }
 

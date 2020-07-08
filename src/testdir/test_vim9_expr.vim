@@ -1101,6 +1101,13 @@ def Test_expr7_dict_vim9script()
 
   lines =<< trim END
       vim9script
+      let d = { "one": "one", "two": "two", }
+      assert_equal({'one': 'one', 'two': 'two'}, d)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
       let d = #{one: 1,
 		two: 2,
 	       }
@@ -1121,14 +1128,62 @@ def Test_expr7_dict_vim9script()
   CheckScriptFailure(lines, 'E1069:')
 enddef
 
+let g:oneString = 'one'
+
 def Test_expr_member()
   assert_equal(1, g:dict_one.one)
   let d: dict<number> = g:dict_one
   assert_equal(1, d['one'])
 
+  # getting the one member should clear the dict after getting the item
+  assert_equal('one', #{one: 'one'}.one)
+  assert_equal('one', #{one: 'one'}[g:oneString])
+
   call CheckDefFailure(["let x = g:dict_one.#$!"], 'E1002:')
   call CheckDefExecFailure(["let d: dict<any>", "echo d['a']"], 'E716:')
   call CheckDefExecFailure(["let d: dict<number>", "d = g:list_empty"], 'E1029: Expected dict but got list')
+enddef
+
+def Test_expr_index()
+  # getting the one member should clear the list only after getting the item
+  assert_equal('bbb', ['aaa', 'bbb', 'ccc'][1])
+enddef
+
+def Test_expr_member_vim9script()
+  let lines =<< trim END
+      vim9script
+      let d = #{one:
+      		'one',
+		two: 'two'}
+      assert_equal('one', d.one)
+      assert_equal('one', d
+                            .one)
+      assert_equal('one', d[
+			    'one'
+			    ])
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      let l = [1,
+		  2,
+		  3, 4
+		  ]
+      assert_equal(2, l[
+			    1
+			    ])
+      assert_equal([2, 3], l[1 : 2])
+      assert_equal([1, 2, 3], l[
+				:
+				2
+				])
+      assert_equal([3, 4], l[
+				2
+				:
+				])
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_expr7_option()
@@ -1274,9 +1329,9 @@ func Test_expr7_fails()
 
   call CheckDefFailure(["let x = ''", "let y = x.memb"], 'E715:')
 
-  call CheckDefExecFailure(["[1, 2->len()"], 'E492:')
+  call CheckDefExecFailure(["[1, 2->len()"], 'E697:')
   call CheckDefExecFailure(["#{a: 1->len()"], 'E488:')
-  call CheckDefExecFailure(["{'a': 1->len()"], 'E492:')
+  call CheckDefExecFailure(["{'a': 1->len()"], 'E723:')
 endfunc
 
 let g:Funcrefs = [function('add')]
@@ -1365,7 +1420,7 @@ func Test_expr_fails()
   call CheckDefFailure(["let x = '1'is2"], 'E488:')
   call CheckDefFailure(["let x = '1'isnot2"], 'E488:')
 
-  call CheckDefExecFailure(["CallMe ('yes')"], 'E492:')
+  call CheckDefFailure(["CallMe ('yes')"], 'E476:')
   call CheckDefFailure(["CallMe2('yes','no')"], 'E1069:')
   call CheckDefFailure(["CallMe2('yes' , 'no')"], 'E1068:')
 

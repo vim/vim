@@ -25,7 +25,6 @@ static char_u	*do_one_cmd(char_u **, int, cstack_T *, char_u *(*fgetline)(int, v
 static char_u	*do_one_cmd(char_u **, int, char_u *(*fgetline)(int, void *, int, int), void *cookie);
 static int	if_level = 0;		// depth in :if
 #endif
-static void	free_cmdmod(void);
 static void	append_command(char_u *cmd);
 
 #ifndef FEAT_MENU
@@ -2611,31 +2610,9 @@ doend:
 			? cmdnames[(int)ea.cmdidx].cmd_name : (char_u *)NULL);
 #endif
 
-    if (ea.verbose_save >= 0)
-	p_verbose = ea.verbose_save;
-
-    free_cmdmod();
+    undo_cmdmod(&ea, save_msg_scroll);
     cmdmod = save_cmdmod;
     reg_executing = save_reg_executing;
-
-    if (ea.save_msg_silent != -1)
-    {
-	// messages could be enabled for a serious error, need to check if the
-	// counters don't become negative
-	if (!did_emsg || msg_silent > ea.save_msg_silent)
-	    msg_silent = ea.save_msg_silent;
-	emsg_silent -= ea.did_esilent;
-	if (emsg_silent < 0)
-	    emsg_silent = 0;
-	// Restore msg_scroll, it's set by file I/O commands, even when no
-	// message is actually displayed.
-	msg_scroll = save_msg_scroll;
-
-	// "silent reg" or "silent echo x" inside "redir" leaves msg_col
-	// somewhere in the line.  Put it back in the first column.
-	if (redirecting())
-	    msg_col = 0;
-    }
 
 #ifdef HAVE_SANDBOX
     if (ea.did_sandbox)
@@ -2927,11 +2904,14 @@ parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only)
 }
 
 /*
- * Free contents of "cmdmod".
+ * Unod and free contents of "cmdmod".
  */
-    static void
-free_cmdmod(void)
+    void
+undo_cmdmod(exarg_T *eap, int save_msg_scroll)
 {
+    if (eap->verbose_save >= 0)
+	p_verbose = eap->verbose_save;
+
     if (cmdmod.save_ei != NULL)
     {
 	// Restore 'eventignore' to the value before ":noautocmd".
@@ -2942,6 +2922,25 @@ free_cmdmod(void)
 
     if (cmdmod.filter_regmatch.regprog != NULL)
 	vim_regfree(cmdmod.filter_regmatch.regprog);
+
+    if (eap->save_msg_silent != -1)
+    {
+	// messages could be enabled for a serious error, need to check if the
+	// counters don't become negative
+	if (!did_emsg || msg_silent > eap->save_msg_silent)
+	    msg_silent = eap->save_msg_silent;
+	emsg_silent -= eap->did_esilent;
+	if (emsg_silent < 0)
+	    emsg_silent = 0;
+	// Restore msg_scroll, it's set by file I/O commands, even when no
+	// message is actually displayed.
+	msg_scroll = save_msg_scroll;
+
+	// "silent reg" or "silent echo x" inside "redir" leaves msg_col
+	// somewhere in the line.  Put it back in the first column.
+	if (redirecting())
+	    msg_col = 0;
+    }
 }
 
 /*
@@ -3219,8 +3218,9 @@ find_ex_command(
      * "lvar = value", "lvar(arg)", "[1, 2 3]->Func()"
      */
     p = eap->cmd;
-    if (lookup != NULL && (*p == '('
-	       || ((p = to_name_const_end(eap->cmd)) > eap->cmd && *p != NUL)))
+    if (lookup != NULL && (*p == '(' || *p == '{'
+	       || ((p = to_name_const_end(eap->cmd)) > eap->cmd && *p != NUL)
+	       || *p == '['))
     {
 	int oplen;
 	int heredoc;
@@ -3229,22 +3229,38 @@ find_ex_command(
 	// "varname[]" is an expression.
 	// "g:varname" is an expression.
 	// "varname->expr" is an expression.
+	// "varname.expr" is an expression.
 	// "(..." is an expression.
+	// "{..." is an dict expression.
 	if (*p == '('
-		|| *p == '['
+		|| *p == '{'
+		|| (*p == '[' && p > eap->cmd)
 		|| p[1] == ':'
-		|| (*p == '-' && p[1] == '>'))
+		|| (*p == '-' && p[1] == '>')
+		|| (*p == '.' && ASCII_ISALPHA(p[1])))
 	{
 	    eap->cmdidx = CMD_eval;
 	    return eap->cmd;
 	}
 
+	// "[...]->Method()" is a list expression, but "[a, b] = Func()" is
+	// an assignment.
+	// If there is no line break inside the "[...]" then "p" is advanced to
+	// after the "]" by to_name_const_end(): check if a "=" follows.
+	// If "[...]" has a line break "p" still points at the "[" and it can't
+	// be an assignment.
+	if (*eap->cmd == '[' && (p == eap->cmd || *skipwhite(p) != '='))
+	{
+	    eap->cmdidx = CMD_eval;
+	    return eap->cmd;
+	}
+
+	// Recognize an assignment if we recognize the variable name:
+	// "g:var = expr"
+	// "var = expr"  where "var" is a local var name.
 	oplen = assignment_len(skipwhite(p), &heredoc);
 	if (oplen > 0)
 	{
-	    // Recognize an assignment if we recognize the variable name:
-	    // "g:var = expr"
-	    // "var = expr"  where "var" is a local var name.
 	    if (((p - eap->cmd) > 2 && eap->cmd[1] == ':')
 		    || lookup(eap->cmd, p - eap->cmd, cctx) != NULL)
 	    {

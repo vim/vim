@@ -7374,6 +7374,7 @@ qf_free_stack(win_T *wp, qf_info_T *qi)
  * Populate the quickfix list with the items supplied in the list
  * of dictionaries. "title" will be copied to w:quickfix_title.
  * "action" is 'a' for add, 'r' for replace.  Otherwise create a new list.
+ * When "what" is not NULL then only set some properties.
  */
     int
 set_errorlist(
@@ -7398,6 +7399,14 @@ set_errorlist(
 	// Free the entire quickfix or location list stack
 	qf_free_stack(wp, qi);
 	return OK;
+    }
+
+    // A dict argument cannot be specified with a non-empty list argument
+    if (list->lv_len != 0 && what != NULL)
+    {
+	semsg(_(e_invarg2),
+			 _("cannot have both a list and a \"what\" argument"));
+	return FAIL;
     }
 
     incr_quickfix_busy();
@@ -8098,7 +8107,7 @@ set_qf_ll_list(
     else
     {
 	list_T  *l = list_arg->vval.v_list;
-	dict_T	*d = NULL;
+	dict_T	*what = NULL;
 	int	valid_dict = TRUE;
 
 	if (action_arg->v_type == VAR_STRING)
@@ -8120,8 +8129,8 @@ set_qf_ll_list(
 	if (action_arg->v_type != VAR_UNKNOWN
 		&& what_arg->v_type != VAR_UNKNOWN)
 	{
-	    if (what_arg->v_type == VAR_DICT)
-		d = what_arg->vval.v_dict;
+	    if (what_arg->v_type == VAR_DICT && what_arg->vval.v_dict != NULL)
+		what = what_arg->vval.v_dict;
 	    else
 	    {
 		emsg(_(e_dictreq));
@@ -8130,9 +8139,10 @@ set_qf_ll_list(
 	}
 
 	++recursive;
-	if (l != NULL && action && valid_dict && set_errorlist(wp, l, action,
+	if (l != NULL && action && valid_dict
+		    && set_errorlist(wp, l, action,
 		     (char_u *)(wp == NULL ? ":setqflist()" : ":setloclist()"),
-		     d) == OK)
+		     what) == OK)
 	    rettv->vval.v_number = 0;
 	--recursive;
     }

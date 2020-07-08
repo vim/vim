@@ -1160,7 +1160,7 @@ f_join(typval_T *argvars, typval_T *rettv)
  * Return OK or FAIL.
  */
     int
-get_list_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
+eval_list(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
 {
     int		evaluate = evalarg == NULL ? FALSE
 					 : evalarg->eval_flags & EVAL_EVALUATE;
@@ -1207,7 +1207,8 @@ get_list_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
 	    *arg = skipwhite(*arg + 1);
 	}
 
-	// the "]" can be on the next line
+	// The "]" can be on the next line.  But a double quoted string may
+	// follow, not a comment.
 	*arg = skipwhite_and_linebreak(*arg, evalarg);
 	if (**arg == ']')
 	    break;
@@ -2356,7 +2357,7 @@ f_insert(typval_T *argvars, typval_T *rettv)
 	}
 	if (l != NULL)
 	{
-	    list_insert_tv(l, &argvars[1], item);
+	    (void)list_insert_tv(l, &argvars[1], item);
 	    copy_tv(&argvars[0], rettv);
 	}
     }
@@ -2475,10 +2476,10 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 	list_T	    *l = argvars[0].vval.v_list;
 	listitem_T  *li = NULL;
 	int	    r;
-	int	    prev_locked = l->lv_lock;
 	int	    called_emsg_start = called_emsg;
 
-	CHECK_LIST_MATERIALIZE(l);
+	if (l != NULL)
+	    CHECK_LIST_MATERIALIZE(l);
 	if (argvars[2].v_type == VAR_UNKNOWN)
 	{
 	    if (l == NULL || l->lv_first == NULL)
@@ -2495,20 +2496,25 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 	    if (l != NULL)
 		li = l->lv_first;
 	}
-
-	l->lv_lock = VAR_FIXED;  // disallow the list changing here
 	copy_tv(&initial, rettv);
-	for ( ; li != NULL; li = li->li_next)
+
+	if (l != NULL)
 	{
-	    argv[0] = *rettv;
-	    argv[1] = li->li_tv;
-	    rettv->v_type = VAR_UNKNOWN;
-	    r = call_func(func_name, -1, rettv, 2, argv, &funcexe);
-	    clear_tv(&argv[0]);
-	    if (r == FAIL || called_emsg != called_emsg_start)
-		break;
+	    int	    prev_locked = l->lv_lock;
+
+	    l->lv_lock = VAR_FIXED;  // disallow the list changing here
+	    for ( ; li != NULL; li = li->li_next)
+	    {
+		argv[0] = *rettv;
+		argv[1] = li->li_tv;
+		rettv->v_type = VAR_UNKNOWN;
+		r = call_func(func_name, -1, rettv, 2, argv, &funcexe);
+		clear_tv(&argv[0]);
+		if (r == FAIL || called_emsg != called_emsg_start)
+		    break;
+	    }
+	    l->lv_lock = prev_locked;
 	}
-	l->lv_lock = prev_locked;
     }
     else
     {

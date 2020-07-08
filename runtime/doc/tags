@@ -3894,6 +3894,7 @@ E103	diff.txt	/*E103*
 E104	digraph.txt	/*E104*
 E1042	vim9.txt	/*E1042*
 E105	mbyte.txt	/*E105*
+E1050	vim9.txt	/*E1050*
 E107	eval.txt	/*E107*
 E108	eval.txt	/*E108*
 E109	eval.txt	/*E109*
@@ -10002,6 +10003,7 @@ vim9-declaration	vim9.txt	/*vim9-declaration*
 vim9-declarations	usr_46.txt	/*vim9-declarations*
 vim9-differences	vim9.txt	/*vim9-differences*
 vim9-export	vim9.txt	/*vim9-export*
+vim9-gotchas	vim9.txt	/*vim9-gotchas*
 vim9-import	vim9.txt	/*vim9-import*
 vim9-rationale	vim9.txt	/*vim9-rationale*
 vim9-scopes	vim9.txt	/*vim9-scopes*

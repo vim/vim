@@ -146,4 +146,28 @@ func StopVimInTerminal(buf)
   only!
 endfunc
 
+" Open a terminal with a shell, assign the job to g:job and return the buffer
+" number.
+func Run_shell_in_terminal(options)
+  if has('win32')
+    let buf = term_start([&shell,'/k'], a:options)
+  else
+    let buf = term_start(&shell, a:options)
+  endif
+  let g:test_is_flaky = 1
+
+  let termlist = term_list()
+  call assert_equal(1, len(termlist))
+  call assert_equal(buf, termlist[0])
+
+  let g:job = term_getjob(buf)
+  call assert_equal(v:t_job, type(g:job))
+
+  let string = string({'job': buf->term_getjob()})
+  call assert_match("{'job': 'process \\d\\+ run'}", string)
+
+  return buf
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab

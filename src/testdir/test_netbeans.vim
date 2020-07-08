@@ -501,7 +501,7 @@ func Nb_basic(port)
   let l = readfile('Xnetbeans')
   call assert_equal('send: 3:insertDone!78 T F', l[-1])
   sleep 1m
-  call assert_match('.*/Xfile4" 3L, 0C', v:statusmsg)
+  call assert_match('.*/Xfile4" 3L, 0B', v:statusmsg)
   let g:last += 3
 
   " saveDone test
@@ -511,7 +511,7 @@ func Nb_basic(port)
   let l = readfile('Xnetbeans')
   call assert_equal('send: 3:saveDone!79', l[-1])
   sleep 1m
-  call assert_match('.*/Xfile4" 3L, 0C', v:statusmsg)
+  call assert_match('.*/Xfile4" 3L, 0B', v:statusmsg)
   let g:last += 3
 
   " unimplemented command test

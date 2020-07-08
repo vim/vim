@@ -160,6 +160,7 @@ call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
     int	    arg_to_add;
     int	    vararg_count = 0;
     int	    idx;
+    estack_T *entry;
 
     if (dfunc->df_deleted)
     {
@@ -230,7 +231,14 @@ call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
     // Set execution state to the start of the called function.
     ectx->ec_dfunc_idx = cdf_idx;
     ectx->ec_instr = dfunc->df_instr;
-    estack_push_ufunc(dfunc->df_ufunc, 1);
+    entry = estack_push_ufunc(dfunc->df_ufunc, 1);
+    if (entry != NULL)
+    {
+	// Set the script context to the script where the function was defined.
+	// TODO: save more than the SID?
+	entry->es_save_sid = current_sctx.sc_sid;
+	current_sctx.sc_sid = ufunc->uf_script_ctx.sc_sid;
+    }
 
     // Decide where to start execution, handles optional arguments.
     init_instr_idx(ufunc, argcount, ectx);
@@ -386,9 +394,12 @@ func_return(ectx_T *ectx)
 							  + ectx->ec_dfunc_idx;
     int		argcount = ufunc_argcount(dfunc->df_ufunc);
     int		top = ectx->ec_frame_idx - argcount;
+    estack_T	*entry;
 
     // execution context goes one level up
-    estack_pop();
+    entry = estack_pop();
+    if (entry != NULL)
+	current_sctx.sc_sid = entry->es_save_sid;
 
     if (handle_closure_in_use(ectx, TRUE) == FAIL)
 	return FAIL;
@@ -1089,7 +1100,7 @@ call_def_function(
 		    // compilation: don't set SOURCING_LNUM.
 		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
-		    if (get_option_tv(&name, &optval, TRUE) == FAIL)
+		    if (eval_option(&name, &optval, TRUE) == FAIL)
 			goto failed;
 		    *STACK_TV_BOT(0) = optval;
 		    ++ectx.ec_stack.ga_len;
@@ -1105,7 +1116,7 @@ call_def_function(
 		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
 		    // name is always valid, checked when compiling
-		    (void)get_env_tv(&name, &optval, TRUE);
+		    (void)eval_env_var(&name, &optval, TRUE);
 		    *STACK_TV_BOT(0) = optval;
 		    ++ectx.ec_stack.ga_len;
 		}
@@ -2085,6 +2096,7 @@ call_def_function(
 		    list_T	*list;
 		    varnumber_T	n;
 		    listitem_T	*li;
+		    typval_T	temp_tv;
 
 		    // list index: list is at stack-2, index at stack-1
 		    tv = STACK_TV_BOT(-2);
@@ -2109,8 +2121,12 @@ call_def_function(
 			goto failed;
 		    }
 		    --ectx.ec_stack.ga_len;
-		    clear_tv(STACK_TV_BOT(-1));
-		    copy_tv(&li->li_tv, STACK_TV_BOT(-1));
+		    // Clear the list after getting the item, to avoid that it
+		    // make the item invalid.
+		    tv = STACK_TV_BOT(-1);
+		    temp_tv = *tv;
+		    copy_tv(&li->li_tv, tv);
+		    clear_tv(&temp_tv);
 		}
 		break;
 
@@ -2161,6 +2177,7 @@ call_def_function(
 		    dict_T	*dict;
 		    char_u	*key;
 		    dictitem_T	*di;
+		    typval_T	temp_tv;
 
 		    // dict member: dict is at stack-2, key at stack-1
 		    tv = STACK_TV_BOT(-2);
@@ -2176,10 +2193,14 @@ call_def_function(
 			semsg(_(e_dictkey), key);
 			goto failed;
 		    }
-		    --ectx.ec_stack.ga_len;
 		    clear_tv(tv);
-		    clear_tv(STACK_TV_BOT(-1));
-		    copy_tv(&di->di_tv, STACK_TV_BOT(-1));
+		    --ectx.ec_stack.ga_len;
+		    // Clear the dict after getting the item, to avoid that it
+		    // make the item invalid.
+		    tv = STACK_TV_BOT(-1);
+		    temp_tv = *tv;
+		    copy_tv(&di->di_tv, tv);
+		    clear_tv(&temp_tv);
 		}
 		break;
 
@@ -2188,6 +2209,7 @@ call_def_function(
 		{
 		    dict_T	*dict;
 		    dictitem_T	*di;
+		    typval_T	temp_tv;
 
 		    tv = STACK_TV_BOT(-1);
 		    if (tv->v_type != VAR_DICT || tv->vval.v_dict == NULL)
@@ -2203,8 +2225,11 @@ call_def_function(
 			semsg(_(e_dictkey), iptr->isn_arg.string);
 			goto failed;
 		    }
-		    clear_tv(tv);
+		    // Clear the dict after getting the item, to avoid that it
+		    // make the item invalid.
+		    temp_tv = *tv;
 		    copy_tv(&di->di_tv, tv);
+		    clear_tv(&temp_tv);
 		}
 		break;
 

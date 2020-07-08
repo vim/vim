@@ -787,8 +787,8 @@ get_literal_key(char_u **arg, typval_T *tv)
 
 /*
  * Allocate a variable for a Dictionary and fill it from "*arg".
+ * "*arg" points to the "{".
  * "literal" is TRUE for #{key: val}
- * "flags" can have EVAL_EVALUATE and other EVAL_ flags.
  * Return OK or FAIL.  Returns NOTDONE for {expr}.
  */
     int

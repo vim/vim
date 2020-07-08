@@ -1124,7 +1124,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 	    {
 		if (tofree != NULL)
 		    name = tofree;
-		if (get_var_tv(name, len, &tv, NULL, TRUE, FALSE) == FAIL)
+		if (eval_variable(name, len, &tv, NULL, TRUE, FALSE) == FAIL)
 		    error = TRUE;
 		else
 		{
@@ -2365,7 +2365,7 @@ set_cmdarg(exarg_T *eap, char_u *oldarg)
  * Return OK or FAIL.  If OK is returned "rettv" must be cleared.
  */
     int
-get_var_tv(
+eval_variable(
     char_u	*name,
     int		len,		// length of "name"
     typval_T	*rettv,		// NULL when only checking existence
@@ -2375,6 +2375,7 @@ get_var_tv(
 {
     int		ret = OK;
     typval_T	*tv = NULL;
+    int		foundFunc = FALSE;
     dictitem_T	*v;
     int		cc;
 
@@ -2402,21 +2403,36 @@ get_var_tv(
 	// imported variable from another script
 	if (import != NULL)
 	{
-	    scriptitem_T    *si = SCRIPT_ITEM(import->imp_sid);
-	    svar_T	    *sv = ((svar_T *)si->sn_var_vals.ga_data)
+	    if (import->imp_funcname != NULL)
+	    {
+		foundFunc = TRUE;
+		if (rettv != NULL)
+		{
+		    rettv->v_type = VAR_FUNC;
+		    rettv->vval.v_string = vim_strsave(import->imp_funcname);
+		}
+	    }
+	    else
+	    {
+		scriptitem_T    *si = SCRIPT_ITEM(import->imp_sid);
+		svar_T	    *sv = ((svar_T *)si->sn_var_vals.ga_data)
 						    + import->imp_var_vals_idx;
-	    tv = sv->sv_tv;
+		tv = sv->sv_tv;
+	    }
 	}
     }
 
-    if (tv == NULL)
+    if (!foundFunc)
     {
-	if (rettv != NULL && verbose)
-	    semsg(_(e_undefvar), name);
-	ret = FAIL;
+	if (tv == NULL)
+	{
+	    if (rettv != NULL && verbose)
+		semsg(_(e_undefvar), name);
+	    ret = FAIL;
+	}
+	else if (rettv != NULL)
+	    copy_tv(tv, rettv);
     }
-    else if (rettv != NULL)
-	copy_tv(tv, rettv);
 
     name[len] = cc;
 
@@ -2852,7 +2868,7 @@ set_var(
     typval_T	*tv,
     int		copy)	    // make copy of value in "tv"
 {
-    set_var_const(name, NULL, tv, copy, 0);
+    set_var_const(name, NULL, tv, copy, LET_NO_COMMAND);
 }
 
 /*
@@ -3206,7 +3222,7 @@ getwinvar(
 			done = TRUE;
 		    }
 		}
-		else if (get_option_tv(&varname, rettv, 1) == OK)
+		else if (eval_option(&varname, rettv, 1) == OK)
 		    // window-local-option
 		    done = TRUE;
 	    }
@@ -3342,7 +3358,7 @@ var_exists(char_u *var)
     {
 	if (tofree != NULL)
 	    name = tofree;
-	n = (get_var_tv(name, len, &tv, NULL, FALSE, TRUE) == OK);
+	n = (eval_variable(name, len, &tv, NULL, FALSE, TRUE) == OK);
 	if (n)
 	{
 	    // handle d.key, l[idx], f(expr)
@@ -3609,7 +3625,7 @@ f_getbufvar(typval_T *argvars, typval_T *rettv)
 		    done = TRUE;
 		}
 	    }
-	    else if (get_option_tv(&varname, rettv, TRUE) == OK)
+	    else if (eval_option(&varname, rettv, TRUE) == OK)
 		// buffer-local-option
 		done = TRUE;
 

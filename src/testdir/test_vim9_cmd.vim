@@ -2,6 +2,7 @@
 
 source check.vim
 source vim9.vim
+source view_util.vim
 
 def Test_edit_wildcards()
   let filename = 'Xtest'
@@ -188,6 +189,95 @@ def Test_for_linebreak()
       assert_equal(10, nr)
   END
   CheckScriptSuccess(lines)
+enddef
+
+def Test_method_call_linebreak()
+  let lines =<< trim END
+      vim9script
+      let res = []
+      func RetArg(
+            arg
+            )
+            let s:res = a:arg
+      endfunc
+      [1,
+          2,
+          3]->RetArg()
+      assert_equal([1, 2, 3], res)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
+def Test_dict_member()
+   let test: dict<list<number>> = {'data': [3, 1, 2]}
+   test.data->sort()
+   assert_equal(#{data: [1, 2, 3]}, test)
+   test.data
+      ->reverse()
+   assert_equal(#{data: [3, 2, 1]}, test)
+
+  let lines =<< trim END
+      vim9script
+      let test: dict<list<number>> = {'data': [3, 1, 2]}
+      test.data->sort()
+      assert_equal(#{data: [1, 2, 3]}, test)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
+def Test_bar_after_command()
+  def RedrawAndEcho()
+    let x = 'did redraw'
+    redraw | echo x
+  enddef
+  RedrawAndEcho()
+  assert_match('did redraw', Screenline(&lines))
+
+  def CallAndEcho()
+    let x = 'did redraw'
+    reg_executing() | echo x
+  enddef
+  CallAndEcho()
+  assert_match('did redraw', Screenline(&lines))
+
+  if has('unix')
+    # bar in filter write command does not start new command
+    def WriteToShell()
+      new
+      setline(1, 'some text')
+      w !cat | cat > Xoutfile
+      bwipe!
+    enddef
+    WriteToShell()
+    assert_equal(['some text'], readfile('Xoutfile'))
+    delete('Xoutfile')
+
+    # bar in filter read command does not start new command
+    def ReadFromShell()
+      new
+      r! echo hello there | cat > Xoutfile
+      r !echo again | cat >> Xoutfile
+      bwipe!
+    enddef
+    ReadFromShell()
+    assert_equal(['hello there', 'again'], readfile('Xoutfile'))
+    delete('Xoutfile')
+  endif
+enddef
+
+def Test_eval_command()
+  let from = 3
+  let to = 5
+  g:val = 111
+  def Increment(nrs: list<number>)
+    for nr in nrs
+      g:val += nr
+    endfor
+  enddef
+  eval range(from, to)
+        ->Increment()
+  assert_equal(111 + 3 + 4 + 5, g:val)
+  unlet g:val
 enddef
 
 

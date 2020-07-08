@@ -347,6 +347,52 @@ ret_first_arg(int argcount, type_T **argtypes)
     return &t_void;
 }
 
+/*
+ * Used for getqflist(): returns list if there is no argument, dict if there is
+ * one.
+ */
+    static type_T *
+ret_list_or_dict_0(int argcount, type_T **argtypes UNUSED)
+{
+    if (argcount > 0)
+	return &t_dict_any;
+    return &t_list_dict_any;
+}
+
+/*
+ * Used for getloclist(): returns list if there is one argument, dict if there
+ * are two.
+ */
+    static type_T *
+ret_list_or_dict_1(int argcount, type_T **argtypes UNUSED)
+{
+    if (argcount > 1)
+	return &t_dict_any;
+    return &t_list_dict_any;
+}
+
+    static type_T *
+ret_argv(int argcount, type_T **argtypes UNUSED)
+{
+    // argv() returns list of strings
+    if (argcount == 0)
+	return &t_list_string;
+
+    // argv(0) returns a string, but argv(-1] returns a list
+    return &t_any;
+}
+
+    static type_T *
+ret_remove(int argcount UNUSED, type_T **argtypes)
+{
+    if (argtypes[0]->tt_type == VAR_LIST
+	    || argtypes[0]->tt_type == VAR_DICT)
+	return argtypes[0]->tt_member;
+    if (argtypes[0]->tt_type == VAR_BLOB)
+	return &t_number;
+    return &t_any;
+}
+
 static type_T *ret_f_function(int argcount, type_T **argtypes);
 
 /*
@@ -417,14 +463,14 @@ static funcentry_T global_functions[] =
 {
     {"abs",		1, 1, FEARG_1,	  ret_any,	FLOAT_FUNC(f_abs)},
     {"acos",		1, 1, FEARG_1,	  ret_float,	FLOAT_FUNC(f_acos)},
-    {"add",		2, 2, FEARG_1,	  ret_any,	f_add},
+    {"add",		2, 2, FEARG_1,	  ret_first_arg, f_add},
     {"and",		2, 2, FEARG_1,	  ret_number,	f_and},
     {"append",		2, 2, FEARG_LAST, ret_number,	f_append},
     {"appendbufline",	3, 3, FEARG_LAST, ret_number,	f_appendbufline},
     {"argc",		0, 1, 0,	  ret_number,	f_argc},
     {"argidx",		0, 0, 0,	  ret_number,	f_argidx},
     {"arglistid",	0, 2, 0,	  ret_number,	f_arglistid},
-    {"argv",		0, 2, 0,	  ret_any,	f_argv},
+    {"argv",		0, 2, 0,	  ret_argv,	f_argv},
     {"asin",		1, 1, FEARG_1,	  ret_float,	FLOAT_FUNC(f_asin)},
     {"assert_beeps",	1, 2, FEARG_1,	  ret_number,	f_assert_beeps},
     {"assert_equal",	2, 3, FEARG_2,	  ret_number,	f_assert_equal},
@@ -509,7 +555,7 @@ static funcentry_T global_functions[] =
     {"complete_check",	0, 0, 0,	  ret_number,	f_complete_check},
     {"complete_info",	0, 1, FEARG_1,	  ret_dict_any,	f_complete_info},
     {"confirm",		1, 4, FEARG_1,	  ret_number,	f_confirm},
-    {"copy",		1, 1, FEARG_1,	  ret_any,	f_copy},
+    {"copy",		1, 1, FEARG_1,	  ret_first_arg, f_copy},
     {"cos",		1, 1, FEARG_1,	  ret_float,	FLOAT_FUNC(f_cos)},
     {"cosh",		1, 1, FEARG_1,	  ret_float,	FLOAT_FUNC(f_cosh)},
     {"count",		2, 4, FEARG_1,	  ret_number,	f_count},
@@ -522,7 +568,7 @@ static funcentry_T global_functions[] =
 	    NULL
 #endif
 			},
-    {"deepcopy",	1, 2, FEARG_1,	  ret_any,	f_deepcopy},
+    {"deepcopy",	1, 2, FEARG_1,	  ret_first_arg, f_deepcopy},
     {"delete",		1, 2, FEARG_1,	  ret_number,	f_delete},
     {"deletebufline",	2, 3, FEARG_1,	  ret_number,	f_deletebufline},
     {"did_filetype",	0, 0, 0,	  ret_number,	f_did_filetype},
@@ -541,12 +587,12 @@ static funcentry_T global_functions[] =
     {"exp",		1, 1, FEARG_1,	  ret_float,	FLOAT_FUNC(f_exp)},
     {"expand",		1, 3, FEARG_1,	  ret_any,	f_expand},
     {"expandcmd",	1, 1, FEARG_1,	  ret_string,	f_expandcmd},
-    {"extend",		2, 3, FEARG_1,	  ret_any,	f_extend},
+    {"extend",		2, 3, FEARG_1,	  ret_first_arg, f_extend},
     {"feedkeys",	1, 2, FEARG_1,	  ret_void,	f_feedkeys},
     {"file_readable",	1, 1, FEARG_1,	  ret_number,	f_filereadable}, // obsolete
     {"filereadable",	1, 1, FEARG_1,	  ret_number,	f_filereadable},
     {"filewritable",	1, 1, FEARG_1,	  ret_number,	f_filewritable},
-    {"filter",		2, 2, FEARG_1,	  ret_any,	f_filter},
+    {"filter",		2, 2, FEARG_1,	  ret_first_arg, f_filter},
     {"finddir",		1, 3, FEARG_1,	  ret_string,	f_finddir},
     {"findfile",	1, 3, FEARG_1,	  ret_string,	f_findfile},
     {"flatten",		1, 2, FEARG_1,	  ret_list_any,	f_flatten},
@@ -588,13 +634,13 @@ static funcentry_T global_functions[] =
     {"getimstatus",	0, 0, 0,	  ret_number,	f_getimstatus},
     {"getjumplist",	0, 2, FEARG_1,	  ret_list_any,	f_getjumplist},
     {"getline",		1, 2, FEARG_1,	  ret_f_getline, f_getline},
-    {"getloclist",	1, 2, 0,	  ret_list_dict_any, f_getloclist},
+    {"getloclist",	1, 2, 0,	  ret_list_or_dict_1, f_getloclist},
     {"getmarklist",	0, 1, FEARG_1,	  ret_list_dict_any,  f_getmarklist},
     {"getmatches",	0, 1, 0,	  ret_list_dict_any, f_getmatches},
     {"getmousepos",	0, 0, 0,	  ret_dict_number, f_getmousepos},
     {"getpid",		0, 0, 0,	  ret_number,	f_getpid},
     {"getpos",		1, 1, FEARG_1,	  ret_list_number,	f_getpos},
-    {"getqflist",	0, 1, 0,	  ret_list_dict_any,	f_getqflist},
+    {"getqflist",	0, 1, 0,	  ret_list_or_dict_0,	f_getqflist},
     {"getreg",		0, 3, FEARG_1,	  ret_string,	f_getreg},
     {"getreginfo",	0, 1, FEARG_1,	  ret_dict_any,	f_getreginfo},
     {"getregtype",	0, 1, FEARG_1,	  ret_string,	f_getregtype},
@@ -632,7 +678,7 @@ static funcentry_T global_functions[] =
     {"inputrestore",	0, 0, 0,	  ret_number,	f_inputrestore},
     {"inputsave",	0, 0, 0,	  ret_number,	f_inputsave},
     {"inputsecret",	1, 2, FEARG_1,	  ret_string,	f_inputsecret},
-    {"insert",		2, 3, FEARG_1,	  ret_any,	f_insert},
+    {"insert",		2, 3, FEARG_1,	  ret_first_arg, f_insert},
     {"interrupt",	0, 0, 0,	  ret_void,	f_interrupt},
     {"invert",		1, 1, FEARG_1,	  ret_number,	f_invert},
     {"isdirectory",	1, 1, FEARG_1,	  ret_number,	f_isdirectory},
@@ -791,12 +837,12 @@ static funcentry_T global_functions[] =
     {"remote_peek",	1, 2, FEARG_1,	  ret_number,	f_remote_peek},
     {"remote_read",	1, 2, FEARG_1,	  ret_string,	f_remote_read},
     {"remote_send",	2, 3, FEARG_1,	  ret_string,	f_remote_send},
-    {"remote_startserver", 1, 1, FEARG_1, ret_void,	 f_remote_startserver},
-    {"remove",		2, 3, FEARG_1,	  ret_any,	f_remove},
+    {"remote_startserver", 1, 1, FEARG_1, ret_void,	f_remote_startserver},
+    {"remove",		2, 3, FEARG_1,	  ret_remove,	f_remove},
     {"rename",		2, 2, FEARG_1,	  ret_number,	f_rename},
-    {"repeat",		2, 2, FEARG_1,	  ret_any,	f_repeat},
+    {"repeat",		2, 2, FEARG_1,	  ret_first_arg, f_repeat},
     {"resolve",		1, 1, FEARG_1,	  ret_string,	f_resolve},
-    {"reverse",		1, 1, FEARG_1,	  ret_any,	f_reverse},
+    {"reverse",		1, 1, FEARG_1,	  ret_first_arg, f_reverse},
     {"round",		1, 1, FEARG_1,	  ret_float,	FLOAT_FUNC(f_round)},
     {"rubyeval",	1, 1, FEARG_1,	  ret_any,
 #ifdef FEAT_RUBY
@@ -2300,7 +2346,7 @@ f_exists(typval_T *argvars, typval_T *rettv)
     }
     else if (*p == '&' || *p == '+')			// option
     {
-	n = (get_option_tv(&p, NULL, TRUE) == OK);
+	n = (eval_option(&p, NULL, TRUE) == OK);
 	if (*skipwhite(p) != NUL)
 	    n = FALSE;			// trailing garbage
     }
@@ -6272,7 +6318,7 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
     list = (list_T *)get_reg_contents(regname, GREG_EXPR_SRC | GREG_LIST);
     if (list == NULL)
 	return;
-    dict_add_list(dict, "regcontents", list);
+    (void)dict_add_list(dict, "regcontents", list);
 
     buf[0] = NUL;
     buf[1] = NUL;
@@ -6285,12 +6331,12 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
 			    reglen + 1);
 		    break;
     }
-    dict_add_string(dict, (char *)"regtype", buf);
+    (void)dict_add_string(dict, (char *)"regtype", buf);
 
     buf[0] = get_register_name(get_unname_register());
     buf[1] = NUL;
     if (regname == '"')
-	dict_add_string(dict, (char *)"points_to", buf);
+	(void)dict_add_string(dict, (char *)"points_to", buf);
     else
     {
 	dictitem_T	*item = dictitem_alloc((char_u *)"isunnamed");
@@ -6300,7 +6346,7 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
 	    item->di_tv.v_type = VAR_SPECIAL;
 	    item->di_tv.vval.v_number = regname == buf[0]
 		? VVAL_TRUE : VVAL_FALSE;
-	    dict_add(dict, item);
+	    (void)dict_add(dict, item);
 	}
     }
 }

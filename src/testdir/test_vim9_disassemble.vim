@@ -727,6 +727,43 @@ def Test_disassemble_for_loop()
         instr)
 enddef
 
+def ForLoopEval(): string
+  let res = ""
+  for str in eval('["one", "two"]')
+    res ..= str
+  endfor
+  return res
+enddef
+
+def Test_disassemble_for_loop_eval()
+  assert_equal('onetwo', ForLoopEval())
+  let instr = execute('disassemble ForLoopEval')
+  assert_match('ForLoopEval\_s*' ..
+        'let res = ""\_s*' ..
+        '\d PUSHS ""\_s*' ..
+        '\d STORE $0\_s*' ..
+        'for str in eval(''\["one", "two"\]'')\_s*' ..
+        '\d STORE -1 in $1\_s*' ..
+        '\d PUSHS "\["one", "two"\]"\_s*' ..
+        '\d BCALL eval(argc 1)\_s*' ..
+        '\d CHECKTYPE list stack\[-1\]\_s*' ..
+        '\d FOR $1 -> \d\+\_s*' ..
+        '\d STORE $2\_s*' ..
+        'res ..= str\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ LOAD $2\_s*' ..
+        '\d\+ CHECKTYPE string stack\[-1\]\_s*' ..
+        '\d\+ CONCAT\_s*' ..
+        '\d\+ STORE $0\_s*' ..
+        'endfor\_s*' ..
+        '\d\+ JUMP -> 6\_s*' ..
+        '\d\+ DROP\_s*' ..
+        'return res\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ RETURN',
+        instr)
+enddef
+
 let g:number = 42
 
 def Computing()

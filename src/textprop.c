@@ -1350,8 +1350,9 @@ adjust_prop_columns(
 	if (res.dirty)
 	{
 	    // Save for undo if requested and not done yet.
-	    if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
-		u_savesub(lnum);
+	    if ((flags & APC_SAVE_FOR_UNDO) && !dirty
+						    && u_savesub(lnum) == FAIL)
+		return FALSE;
 	    dirty = TRUE;
 	}
 	if (res.can_drop)
