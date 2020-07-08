@@ -321,6 +321,14 @@ alloc_type(garray_T *type_gap)
     return type;
 }
 
+    void
+clear_type_list(garray_T *gap)
+{
+    while (gap->ga_len > 0)
+	vim_free(((type_T **)gap->ga_data)[--gap->ga_len]);
+    ga_clear(gap);
+}
+
     static type_T *
 get_list_type(type_T *member_type, garray_T *type_gap)
 {

@@ -1069,10 +1069,7 @@ func_clear_items(ufunc_T *fp)
     VIM_CLEAR(fp->uf_arg_types);
     VIM_CLEAR(fp->uf_def_arg_idx);
     VIM_CLEAR(fp->uf_va_name);
-    while (fp->uf_type_list.ga_len > 0)
-	vim_free(((type_T **)fp->uf_type_list.ga_data)
-						  [--fp->uf_type_list.ga_len]);
-    ga_clear(&fp->uf_type_list);
+    clear_type_list(&fp->uf_type_list);
 
 #ifdef FEAT_LUA
     if (fp->uf_cb_free != NULL)

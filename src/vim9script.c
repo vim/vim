@@ -126,7 +126,7 @@ free_imports(int sid)
     }
     ga_clear(&si->sn_imports);
     ga_clear(&si->sn_var_vals);
-    ga_clear(&si->sn_type_list);
+    clear_type_list(&si->sn_type_list);
 }
 
 /*
