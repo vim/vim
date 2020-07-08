@@ -208,6 +208,23 @@ def Test_method_call_linebreak()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_dict_member()
+   let test: dict<list<number>> = {'data': [3, 1, 2]}
+   test.data->sort()
+   assert_equal(#{data: [1, 2, 3]}, test)
+   test.data
+      ->reverse()
+   assert_equal(#{data: [3, 2, 1]}, test)
+
+  let lines =<< trim END
+      vim9script
+      let test: dict<list<number>> = {'data': [3, 1, 2]}
+      test.data->sort()
+      assert_equal(#{data: [1, 2, 3]}, test)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_bar_after_command()
   def RedrawAndEcho()
     let x = 'did redraw'

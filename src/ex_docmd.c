@@ -3229,13 +3229,15 @@ find_ex_command(
 	// "varname[]" is an expression.
 	// "g:varname" is an expression.
 	// "varname->expr" is an expression.
+	// "varname.expr" is an expression.
 	// "(..." is an expression.
 	// "{..." is an dict expression.
 	if (*p == '('
 		|| *p == '{'
 		|| (*p == '[' && p > eap->cmd)
 		|| p[1] == ':'
-		|| (*p == '-' && p[1] == '>'))
+		|| (*p == '-' && p[1] == '>')
+		|| (*p == '.' && ASCII_ISALPHA(p[1])))
 	{
 	    eap->cmdidx = CMD_eval;
 	    return eap->cmd;
