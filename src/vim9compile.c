@@ -3060,7 +3060,14 @@ compile_list(char_u **arg, cctx_T *cctx)
 	    break;
 	++count;
 	if (*p == ',')
+	{
 	    ++p;
+	    if (*p != ']' && !IS_WHITE_OR_NUL(*p))
+	    {
+		semsg(_(e_white_after), ",");
+		return FAIL;
+	    }
+	}
 	whitep = p;
 	p = skipwhite(p);
     }

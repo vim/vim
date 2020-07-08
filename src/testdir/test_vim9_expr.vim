@@ -1014,6 +1014,7 @@ def Test_expr7_list()
 
   call CheckDefExecFailure(["let x = g:anint[3]"], 'E714:')
   call CheckDefFailure(["let x = g:list_mixed[xxx]"], 'E1001:')
+  call CheckDefFailure(["let x = [1,2,3]"], 'E1069:')
   call CheckDefExecFailure(["let x = g:list_mixed['xx']"], 'E39:')
   call CheckDefFailure(["let x = g:list_mixed[0"], 'E111:')
   call CheckDefExecFailure(["let x = g:list_empty[3]"], 'E684:')

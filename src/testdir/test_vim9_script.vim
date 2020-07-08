@@ -571,7 +571,7 @@ enddef
 
 def Test_try_catch_fails()
   call CheckDefFailure(['catch'], 'E603:')
-  call CheckDefFailure(['try', 'echo 0', 'catch','catch'], 'E1033:')
+  call CheckDefFailure(['try', 'echo 0', 'catch', 'catch'], 'E1033:')
   call CheckDefFailure(['try', 'echo 0', 'catch /pat'], 'E1067:')
   call CheckDefFailure(['finally'], 'E606:')
   call CheckDefFailure(['try', 'echo 0', 'finally', 'echo 1', 'finally'], 'E607:')
