@@ -379,10 +379,17 @@ skip_expr(char_u **pp)
  * Skip over an expression at "*pp".
  * If in Vim9 script and line breaks are encountered, the lines are
  * concatenated.  "evalarg->eval_tofree" will be set accordingly.
+ * "arg" is advanced to just after the expression.
+ * "start" is set to the start of the expression, "end" to just after the end.
+ * Also when the expression is copied to allocated memory.
  * Return FAIL for an error, OK otherwise.
  */
     int
-skip_expr_concatenate(char_u **start, char_u **end, evalarg_T *evalarg)
+skip_expr_concatenate(
+	char_u	    **arg,
+	char_u	    **start,
+	char_u	    **end,
+	evalarg_T   *evalarg)
 {
     typval_T	rettv;
     int		res;
@@ -398,12 +405,14 @@ skip_expr_concatenate(char_u **start, char_u **end, evalarg_T *evalarg)
 	if (ga_grow(gap, 1) == OK)
 	    ++gap->ga_len;
     }
+    *start = *arg;
 
     // Don't evaluate the expression.
     if (evalarg != NULL)
 	evalarg->eval_flags &= ~EVAL_EVALUATE;
-    *end = skipwhite(*end);
-    res = eval1(end, &rettv, evalarg);
+    *arg = skipwhite(*arg);
+    res = eval1(arg, &rettv, evalarg);
+    *end = *arg;
     if (evalarg != NULL)
 	evalarg->eval_flags = save_flags;
 
@@ -419,7 +428,7 @@ skip_expr_concatenate(char_u **start, char_u **end, evalarg_T *evalarg)
 	else
 	{
 	    char_u	    *p;
-	    size_t	    endoff = STRLEN(*end);
+	    size_t	    endoff = STRLEN(*arg);
 
 	    // Line breaks encountered, concatenate all the lines.
 	    *((char_u **)gap->ga_data) = *start;
@@ -428,7 +437,14 @@ skip_expr_concatenate(char_u **start, char_u **end, evalarg_T *evalarg)
 	    // free the lines only when using getsourceline()
 	    if (evalarg->eval_cookie != NULL)
 	    {
+		// Do not free the first line, the caller can still use it.
 		*((char_u **)gap->ga_data) = NULL;
+		// Do not free the last line, "arg" points into it, free it
+		// later.
+		vim_free(evalarg->eval_tofree);
+		evalarg->eval_tofree =
+				    ((char_u **)gap->ga_data)[gap->ga_len - 1];
+		((char_u **)gap->ga_data)[gap->ga_len - 1] = NULL;
 		ga_clear_strings(gap);
 	    }
 	    else
@@ -437,8 +453,8 @@ skip_expr_concatenate(char_u **start, char_u **end, evalarg_T *evalarg)
 	    if (p == NULL)
 		return FAIL;
 	    *start = p;
-	    vim_free(evalarg->eval_tofree);
-	    evalarg->eval_tofree = p;
+	    vim_free(evalarg->eval_tofree_lambda);
+	    evalarg->eval_tofree_lambda = p;
 	    // Compute "end" relative to the end.
 	    *end = *start + STRLEN(*start) - endoff;
 	}
@@ -1936,7 +1952,7 @@ eval_next_line(evalarg_T *evalarg)
 	((char_u **)gap->ga_data)[gap->ga_len] = line;
 	++gap->ga_len;
     }
-    else
+    else if (evalarg->eval_cookie != NULL)
     {
 	vim_free(evalarg->eval_tofree);
 	evalarg->eval_tofree = line;
@@ -1962,25 +1978,31 @@ skipwhite_and_linebreak(char_u *arg, evalarg_T *evalarg)
 }
 
 /*
- * After using "evalarg" filled from "eap" free the memory.
+ * After using "evalarg" filled from "eap": free the memory.
  */
     void
 clear_evalarg(evalarg_T *evalarg, exarg_T *eap)
 {
-    if (evalarg != NULL && evalarg->eval_tofree != NULL)
+    if (evalarg != NULL)
     {
-	if (eap != NULL)
+	if (evalarg->eval_tofree != NULL)
 	{
-	    // We may need to keep the original command line, e.g. for
-	    // ":let" it has the variable names.  But we may also need the
-	    // new one, "nextcmd" points into it.  Keep both.
-	    vim_free(eap->cmdline_tofree);
-	    eap->cmdline_tofree = *eap->cmdlinep;
-	    *eap->cmdlinep = evalarg->eval_tofree;
+	    if (eap != NULL)
+	    {
+		// We may need to keep the original command line, e.g. for
+		// ":let" it has the variable names.  But we may also need the
+		// new one, "nextcmd" points into it.  Keep both.
+		vim_free(eap->cmdline_tofree);
+		eap->cmdline_tofree = *eap->cmdlinep;
+		*eap->cmdlinep = evalarg->eval_tofree;
+	    }
+	    else
+		vim_free(evalarg->eval_tofree);
+	    evalarg->eval_tofree = NULL;
 	}
-	else
-	    vim_free(evalarg->eval_tofree);
-	evalarg->eval_tofree = NULL;
+
+	vim_free(evalarg->eval_tofree_lambda);
+	evalarg->eval_tofree_lambda = NULL;
     }
 }
 

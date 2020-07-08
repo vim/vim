@@ -3113,6 +3113,8 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     // Compile it into instructions.
     compile_def_function(ufunc, TRUE, cctx);
 
+    clear_evalarg(&evalarg, NULL);
+
     if (ufunc->uf_def_status == UF_COMPILED)
 	return generate_FUNCREF(cctx, ufunc->uf_dfunc_idx);
     return FAIL;

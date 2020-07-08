@@ -389,8 +389,8 @@ get_lambda_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
     partial_T   *pt = NULL;
     int		varargs;
     int		ret;
-    char_u	*start;
-    char_u	*s, *e;
+    char_u	*s;
+    char_u	*start, *end;
     int		*old_eval_lavars = eval_lavars_used;
     int		eval_lavars = FALSE;
     char_u	*tofree = NULL;
@@ -399,10 +399,10 @@ get_lambda_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
     ga_init(&newlines);
 
     // First, check if this is a lambda expression. "->" must exist.
-    start = skipwhite(*arg + 1);
-    ret = get_function_args(&start, '-', NULL, NULL, NULL, NULL, TRUE,
+    s = skipwhite(*arg + 1);
+    ret = get_function_args(&s, '-', NULL, NULL, NULL, NULL, TRUE,
 								   NULL, NULL);
-    if (ret == FAIL || *start != '>')
+    if (ret == FAIL || *s != '>')
 	return NOTDONE;
 
     // Parse the arguments again.
@@ -423,8 +423,8 @@ get_lambda_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 
     // Get the start and the end of the expression.
     *arg = skipwhite_and_linebreak(*arg + 1, evalarg);
-    s = *arg;
-    ret = skip_expr_concatenate(&s, arg, evalarg);
+    start = *arg;
+    ret = skip_expr_concatenate(arg, &start, &end, evalarg);
     if (ret == FAIL)
 	goto errret;
     if (evalarg != NULL)
@@ -434,7 +434,6 @@ get_lambda_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	evalarg->eval_tofree = NULL;
     }
 
-    e = *arg;
     *arg = skipwhite_and_linebreak(*arg, evalarg);
     if (**arg != '}')
     {
@@ -463,13 +462,13 @@ get_lambda_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    goto errret;
 
 	// Add "return " before the expression.
-	len = 7 + (int)(e - s) + 1;
+	len = 7 + (int)(end - start) + 1;
 	p = alloc(len);
 	if (p == NULL)
 	    goto errret;
 	((char_u **)(newlines.ga_data))[newlines.ga_len++] = p;
 	STRCPY(p, "return ");
-	vim_strncpy(p + 7, s, e - s);
+	vim_strncpy(p + 7, start, end - start);
 	if (strstr((char *)p + 7, "a:") == NULL)
 	    // No a: variables are used for sure.
 	    flags |= FC_NOARGS;
@@ -509,7 +508,10 @@ get_lambda_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
     }
 
     eval_lavars_used = old_eval_lavars;
-    vim_free(tofree);
+    if (evalarg->eval_tofree == NULL)
+	evalarg->eval_tofree = tofree;
+    else
+	vim_free(tofree);
     return OK;
 
 errret:
@@ -517,7 +519,10 @@ errret:
     ga_clear_strings(&newlines);
     vim_free(fp);
     vim_free(pt);
-    vim_free(tofree);
+    if (evalarg->eval_tofree == NULL)
+	evalarg->eval_tofree = tofree;
+    else
+	vim_free(tofree);
     eval_lavars_used = old_eval_lavars;
     return FAIL;
 }

@@ -1773,8 +1773,11 @@ typedef struct {
     // "eval_ga.ga_data" is a list of pointers to lines.
     garray_T	eval_ga;
 
-    // pointer to the line obtained with getsourceline()
+    // pointer to the last line obtained with getsourceline()
     char_u	*eval_tofree;
+
+    // pointer to the lines concatenated for a lambda.
+    char_u	*eval_tofree_lambda;
 } evalarg_T;
 
 // Flags for expression evaluation.
