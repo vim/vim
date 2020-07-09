@@ -466,7 +466,7 @@ static funcentry_T global_functions[] =
     {"add",		2, 2, FEARG_1,	  ret_first_arg, f_add},
     {"and",		2, 2, FEARG_1,	  ret_number,	f_and},
     {"append",		2, 2, FEARG_2,	  ret_number,	f_append},
-    {"appendbufline",	3, 3, FEARG_2,	  ret_number,	f_appendbufline},
+    {"appendbufline",	3, 3, FEARG_3,	  ret_number,	f_appendbufline},
     {"argc",		0, 1, 0,	  ret_number,	f_argc},
     {"argidx",		0, 0, 0,	  ret_number,	f_argidx},
     {"arglistid",	0, 2, 0,	  ret_number,	f_arglistid},
