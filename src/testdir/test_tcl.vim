@@ -23,6 +23,13 @@ func Test_tcldo()
   call setline(1, ['one', 'two', 'three'])
   tcldo ::vim::command new
   call assert_equal(wincount + 1, winnr('$'))
+
+  " Try to run a command in a 'nomodifiable' buffer
+  call setline(1, ['one', 'two', 'three'])
+  set nomodifiable
+  call assert_fails('tcldo set line "abc"', 'cannot save undo information')
+  set modifiable
+
   %bwipe!
 endfunc
 
@@ -91,6 +98,9 @@ func Test_vim_buffer()
         \           'expected integer but got "x"')
   call assert_fails('tcl ::vim::buffer list x',
         \           'wrong # args: should be "::vim::buffer list "')
+  " Invalid buffer command
+  call assert_fails('tcl $::vim::current(buffer) abcd',
+        \           'bad option "abcd":')
 
   tcl rename eachbuf ""
   %bwipe!
@@ -176,6 +186,8 @@ func Test_vim_window_list()
   call assert_fails('tcl ::vim::window x', 'unknown option')
   call assert_fails('tcl ::vim::window list x',
         \           'wrong # args: should be "::vim::window option"')
+  call assert_fails('tcl $::vim::current(window) abcd',
+        \           'bad option "abcd":')
 
   %bwipe
 endfunc
@@ -247,6 +259,19 @@ func Test_window_cursor()
   call assert_equal([0, 3, 1, 0], getpos('.'))
   tcl $win cursor $here(row) $here(column)
   call assert_equal([0, 2, 3, 0], getpos('.'))
+
+  " Invalid values for the row and column
+  tcl array set pos {1 2}
+  call assert_fails('tcl $win cursor pos', "can't read \"pos(row)\":")
+  tcl array set pos {row '' abc 2}
+  call assert_fails('tcl $win cursor pos', "expected integer but got \"''\"")
+  tcl array set pos {row 1 abc 2}
+  call assert_fails('tcl $win cursor pos', "can't read \"pos(column)\":")
+  tcl array set pos {row 1 column ''}
+  call assert_fails('tcl $win cursor pos', "expected integer but got \"''\"")
+
+  call assert_fails("tcl $win cursor '' 2", "expected integer but got \"''\"")
+  call assert_fails("tcl $win cursor 1 ''", "expected integer but got \"''\"")
 
   call assert_fails('tcl $win cursor 1 1 1', 'wrong # args:')
 
@@ -351,6 +376,7 @@ func Test_window_delcmd()
   call assert_equal('window deleted', TclEval('set msg'))
 
   call assert_fails('tcl $::vim::current(window) delcmd', 'wrong # args')
+  call assert_fails('tcl $::vim::current(window) delcmd x x', 'wrong # args')
 
   tcl unset msg
   bwipe
@@ -417,6 +443,14 @@ func Test_buffer_delete()
 
   call assert_fails('tcl $::vim::current(buffer) delete', 'wrong # args:')
   call assert_fails('tcl $::vim::current(buffer) delete 1 2 3', 'wrong # args:')
+  call assert_fails('tcl $::vim::current(buffer) delete 1 abc',
+        \ 'expected integer but got "abc"')
+
+  " Try to delete lines from an 'nomodifiable' buffer
+  set nomodifiable
+  call assert_fails('tcl $::vim::current(buffer) delete 2 1',
+        \ 'cannot save undo information')
+  set modifiable
 
   bwipe!
 endfunc
@@ -458,6 +492,12 @@ func Test_buffer_append()
   call assert_fails('tcl $buf append', 'wrong # args:')
   call assert_fails('tcl $buf append 1 x x', 'wrong # args:')
 
+  " Try to append lines to a 'nomodifiable' buffer
+  set nomodifiable
+  call assert_fails('tcl $buf append 1 "first"',
+        \ 'cannot save undo information')
+  set modifiable
+
   tcl unset buf
   bwipe!
 endfunc
@@ -485,6 +525,18 @@ func Test_buffer_set()
   call assert_fails('tcl $::vim::current(buffer) set 6 "x"', 'line number out of range')
 
   call assert_fails('tcl $::vim::current(buffer) set', 'wrong # args:')
+  call assert_fails('tcl $::vim::current(buffer) set 1 2 {[list "a" "b"]}',
+        \ 'list element in quotes followed by "]" instead of space')
+
+  " Try to modify a 'nomodifiable' buffer
+  set nomodifiable
+  call assert_fails('tcl $::vim::current(buffer) set 1 "x"',
+        \ 'cannot save undo information')
+  call assert_fails('tcl $::vim::current(buffer) set 1 {a b}',
+        \ 'cannot save undo information')
+  call assert_fails('tcl $::vim::current(buffer) set 1 2 {a b}',
+        \ 'cannot save undo information')
+  set modifiable
   bwipe!
 endfunc
 
@@ -514,6 +566,7 @@ func Test_buffer_get()
   call assert_fails('tcl $buf get  0 1', 'line number out of range')
 
   call assert_fails('tcl $::vim::current(buffer) get x', 'expected integer but got "x"')
+  call assert_fails('tcl $::vim::current(buffer) get 1 x', 'expected integer but got "x"')
   call assert_fails('tcl $::vim::current(buffer) get 1 1 1', 'wrong # args:')
 
   tcl unset buf
@@ -592,8 +645,8 @@ func Test_buffer_delcmd()
   q
   call assert_equal('buffer deleted', TclEval('set msg'))
 
-  call assert_fails('tcl $::vim::current(window) delcmd', 'wrong # args')
-  call assert_fails('tcl $::vim::current(window) delcmd x x', 'wrong # args')
+  call assert_fails('tcl $::vim::current(buffer) delcmd', 'wrong # args')
+  call assert_fails('tcl $::vim::current(buffer) delcmd x x', 'wrong # args')
 
   tcl unset msg
   %bwipe
