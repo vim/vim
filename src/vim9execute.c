@@ -554,7 +554,7 @@ call_by_name(char_u *name, int argcount, ectx_T *ectx, isn_T *iptr)
 
 	if (func_idx < 0)
 	    return FAIL;
-	if (check_internal_func(func_idx, argcount) == FAIL)
+	if (check_internal_func(func_idx, argcount) < 0)
 	    return FAIL;
 	return call_bfunc(func_idx, argcount, ectx);
     }
@@ -2333,6 +2333,22 @@ call_def_function(
 		}
 		break;
 
+	    case ISN_SHUFFLE:
+		{
+		    typval_T	    tmp_tv;
+		    int		    item = iptr->isn_arg.shuffle.shfl_item;
+		    int		    up = iptr->isn_arg.shuffle.shfl_up;
+
+		    tmp_tv = *STACK_TV_BOT(-item);
+		    for ( ; up > 0 && item > 1; --up)
+		    {
+			*STACK_TV_BOT(-item) = *STACK_TV_BOT(-item + 1);
+			--item;
+		    }
+		    *STACK_TV_BOT(-item) = tmp_tv;
+		}
+		break;
+
 	    case ISN_DROP:
 		--ectx.ec_stack.ga_len;
 		clear_tv(STACK_TV_BOT(0));
@@ -2900,8 +2916,12 @@ ex_disassemble(exarg_T *eap)
 			    break;
 	    case ISN_2STRING: smsg("%4d 2STRING stack[%lld]", current,
 					 (long long)(iptr->isn_arg.number));
-				break;
+			      break;
 
+	    case ISN_SHUFFLE: smsg("%4d SHUFFLE %d up %d", current,
+					 iptr->isn_arg.shuffle.shfl_item,
+					 iptr->isn_arg.shuffle.shfl_up);
+			      break;
 	    case ISN_DROP: smsg("%4d DROP", current); break;
 	}
     }

@@ -1278,4 +1278,22 @@ def Test_simplify_const_expr()
         res)
 enddef
 
+def s:CallAppend()
+  eval "some text"->append(2)
+enddef
+
+def Test_shuffle()
+  let res = execute('disass s:CallAppend')
+  assert_match('<SNR>\d*_CallAppend\_s*' ..
+        'eval "some text"->append(2)\_s*' ..
+        '\d PUSHS "some text"\_s*' ..
+        '\d PUSHNR 2\_s*' ..
+        '\d SHUFFLE 2 up 1\_s*' ..
+        '\d BCALL append(argc 2)\_s*' ..
+        '\d DROP\_s*' ..
+        '\d PUSHNR 0\_s*' ..
+        '\d RETURN',
+        res)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

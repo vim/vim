@@ -1445,19 +1445,30 @@ generate_FOR(cctx_T *cctx, int loop_idx)
 
 /*
  * Generate an ISN_BCALL instruction.
+ * "method_call" is TRUE for "value->method()"
  * Return FAIL if the number of arguments is wrong.
  */
     static int
-generate_BCALL(cctx_T *cctx, int func_idx, int argcount)
+generate_BCALL(cctx_T *cctx, int func_idx, int argcount, int method_call)
 {
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
+    int		argoff;
     type_T	*argtypes[MAX_FUNC_ARGS];
     int		i;
 
     RETURN_OK_IF_SKIP(cctx);
-    if (check_internal_func(func_idx, argcount) == FAIL)
+    argoff = check_internal_func(func_idx, argcount);
+    if (argoff < 0)
 	return FAIL;
+
+    if (method_call && argoff > 1)
+    {
+	if ((isn = generate_instr(cctx, ISN_SHUFFLE)) == NULL)
+	    return FAIL;
+	isn->isn_arg.shuffle.shfl_item = argcount;
+	isn->isn_arg.shuffle.shfl_up = argoff - 1;
+    }
 
     if ((isn = generate_instr(cctx, ISN_BCALL)) == NULL)
 	return FAIL;
@@ -2930,7 +2941,7 @@ compile_call(
 	// builtin function
 	idx = find_internal_func(name);
 	if (idx >= 0)
-	    res = generate_BCALL(cctx, idx, argcount);
+	    res = generate_BCALL(cctx, idx, argcount, argcount_init == 1);
 	else
 	    semsg(_(e_unknownfunc), namebuf);
 	goto theend;
@@ -7397,6 +7408,7 @@ delete_instr(isn_T *isn)
 	case ISN_COMPARESTRING:
 	case ISN_CONCAT:
 	case ISN_DCALL:
+	case ISN_SHUFFLE:
 	case ISN_DROP:
 	case ISN_ECHO:
 	case ISN_ECHOERR:

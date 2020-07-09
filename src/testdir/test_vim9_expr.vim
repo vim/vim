@@ -1411,6 +1411,28 @@ def Test_expr7_subscript_linebreak()
 	one)
 enddef
 
+def Test_expr7_method_call()
+  new
+  setline(1, ['first', 'last'])
+  eval 'second'->append(1)
+  assert_equal(['first', 'second', 'last'], getline(1, '$'))
+  bwipe!
+
+  let bufnr = bufnr()
+  let loclist = [#{bufnr: bufnr, lnum: 42, col: 17, text: 'wrong'}]
+  loclist->setloclist(0)
+  assert_equal([#{bufnr: bufnr,
+  		lnum: 42,
+		col: 17,
+		text: 'wrong',
+		pattern: '',
+		valid: 1,
+		vcol: 0,
+		nr: 0,
+		type: '',
+		module: ''}
+		], getloclist(0))
+enddef
 
 func Test_expr7_trailing_fails()
   call CheckDefFailure(['let l = [2]', 'l->{l -> add(l, 8)}'], 'E107')

@@ -124,6 +124,7 @@ typedef enum {
     ISN_CHECKTYPE,  // check value type is isn_arg.type.tc_type
     ISN_CHECKLEN,   // check list length is isn_arg.checklen.cl_min_len
 
+    ISN_SHUFFLE,    // move item on stack up or down
     ISN_DROP	    // pop stack and discard value
 } isntype_T;
 
@@ -237,6 +238,12 @@ typedef struct {
     int		cl_more_OK;	// longer is allowed
 } checklen_T;
 
+// arguments to ISN_SHUFFLE
+typedef struct {
+    int		shfl_item;	// item to move (relative to top of stack)
+    int		shfl_up;	// places to move upwards
+} shuffle_T;
+
 /*
  * Instruction
  */
@@ -270,6 +277,7 @@ struct isn_S {
 	unlet_T		    unlet;
 	funcref_T	    funcref;
 	checklen_T	    checklen;
+	shuffle_T	    shuffle;
     } isn_arg;
 };
 

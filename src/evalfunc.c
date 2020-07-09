@@ -465,8 +465,8 @@ static funcentry_T global_functions[] =
     {"acos",		1, 1, FEARG_1,	  ret_float,	FLOAT_FUNC(f_acos)},
     {"add",		2, 2, FEARG_1,	  ret_first_arg, f_add},
     {"and",		2, 2, FEARG_1,	  ret_number,	f_and},
-    {"append",		2, 2, FEARG_LAST, ret_number,	f_append},
-    {"appendbufline",	3, 3, FEARG_LAST, ret_number,	f_appendbufline},
+    {"append",		2, 2, FEARG_2,	  ret_number,	f_append},
+    {"appendbufline",	3, 3, FEARG_2,	  ret_number,	f_appendbufline},
     {"argc",		0, 1, 0,	  ret_number,	f_argc},
     {"argidx",		0, 0, 0,	  ret_number,	f_argidx},
     {"arglistid",	0, 2, 0,	  ret_number,	f_arglistid},
@@ -1191,7 +1191,9 @@ internal_func_ret_type(int idx, int argcount, type_T **argtypes)
 
 /*
  * Check the argument count to use for internal function "idx".
- * Returns OK or FAIL;
+ * Returns -1 for failure, 0 if no method base accepted, 1 if method base is
+ * first argument, 2 if method base is second argument, etc.  9 if method base
+ * is last argument.
  */
     int
 check_internal_func(int idx, int argcount)
@@ -1204,14 +1206,14 @@ check_internal_func(int idx, int argcount)
     else if (argcount > global_functions[idx].f_max_argc)
 	res = FCERR_TOOMANY;
     else
-	return OK;
+	return global_functions[idx].f_argtype;
 
     name = internal_func_name(idx);
     if (res == FCERR_TOOMANY)
 	semsg(_(e_toomanyarg), name);
     else
 	semsg(_(e_toofewarg), name);
-    return FAIL;
+    return -1;
 }
 
     int
