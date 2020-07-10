@@ -96,6 +96,12 @@ func Test_json_encode()
 
   call assert_equal(s:jsonvals, json_encode(s:varvals))
 
+  " JSON is always encoded in utf-8 regardless of 'encoding' value.
+  let save_encoding = &encoding
+  set encoding=latin1
+  call assert_equal('"café"', json_encode("caf\xe9"))
+  let &encoding = save_encoding
+
   call assert_fails('echo json_encode(function("tr"))', 'E474:')
   call assert_fails('echo json_encode([function("tr")])', 'E474:')
 
@@ -142,6 +148,15 @@ func Test_json_decode()
   call assert_equal(type(v:none), type(json_decode('')))
   call assert_equal("", json_decode('""'))
 
+  " Character in string after \ is ignored if not special.
+  call assert_equal("x", json_decode('"\x"'))
+
+  " JSON is always encoded in utf-8 regardless of 'encoding' value.
+  let save_encoding = &encoding
+  set encoding=latin1
+  call assert_equal("caf\xe9", json_decode('"café"'))
+  let &encoding = save_encoding
+
   " empty key is OK
   call assert_equal({'': 'ok'}, json_decode('{"": "ok"}'))
   " but not twice
@@ -165,6 +180,9 @@ func Test_json_decode()
   call assert_fails('call json_decode("{\"n\":1,")', "E491:")
   call assert_fails('call json_decode("{\"n\",1}")', "E491:")
   call assert_fails('call json_decode("{-}")', "E491:")
+  if has('float')
+    call assert_fails('call json_decode("{3.14:1}")', "E474:")
+  endif
 
   call assert_fails('call json_decode("[foobar]")', "E491:")
   call assert_fails('call json_decode("[")', "E491:")
@@ -176,6 +194,9 @@ func Test_json_decode()
 
   call assert_fails('call json_decode("{{}:42}")', "E491:")
   call assert_fails('call json_decode("{[]:42}")', "E491:")
+
+  call assert_fails('call json_decode("-")', "E491:")
+  call assert_fails('call json_decode("infinit")', "E491:")
 
   call assert_fails('call json_decode("\"\\u111Z\"")', 'E491:')
   call assert_equal('[😂]', json_decode('"[\uD83D\uDE02]"'))
