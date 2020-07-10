@@ -4699,6 +4699,7 @@ E855	autocmd.txt	/*E855*
 E858	eval.txt	/*E858*
 E859	eval.txt	/*E859*
 E86	windows.txt	/*E86*
+E860	textprop.txt	/*E860*
 E861	popup.txt	/*E861*
 E862	eval.txt	/*E862*
 E863	popup.txt	/*E863*
@@ -8820,7 +8821,9 @@ setloclist()	eval.txt	/*setloclist()*
 setmatches()	eval.txt	/*setmatches()*
 setpos()	eval.txt	/*setpos()*
 setqflist()	eval.txt	/*setqflist()*
+setqflist-action	eval.txt	/*setqflist-action*
 setqflist-examples	quickfix.txt	/*setqflist-examples*
+setqflist-what	eval.txt	/*setqflist-what*
 setreg()	eval.txt	/*setreg()*
 settabvar()	eval.txt	/*settabvar()*
 settabwinvar()	eval.txt	/*settabwinvar()*

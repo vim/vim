@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.2.  Last change: 2020 Jun 01
+*channel.txt*      For Vim version 8.2.  Last change: 2020 Jul 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1259,7 +1259,7 @@ can start typing a line.
 The text of the prompt can be set with the |prompt_setprompt()| function.
 
 The user can go to Normal mode and navigate through the buffer.  This can be
-useful see older output or copy text.
+useful to see older output or copy text.
 
 The CTRL-W key can be used to start a window command, such as CTRL-W w to
 switch to the next window.  This also works in Insert mode (use Shift-CTRL-W

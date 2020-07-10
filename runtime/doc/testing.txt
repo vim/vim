@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 8.2.  Last change: 2020 Jun 15
+*testing.txt*	For Vim version 8.2.  Last change: 2020 Jul 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -264,7 +264,8 @@ assert_equal({expected}, {actual} [, {msg}])
 <		Will result in a string to be added to |v:errors|:
 	test.vim line 12: Expected 'foo' but got 'bar' ~
 
-		Can also be used as a |method|: >
+		Can also be used as a |method|, the base is passed as the
+		second argument: >
 			mylist->assert_equal([1, 2, 3])
 
 <							*assert_equalfile()*

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Jun 28
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Jul 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,38 +38,22 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Include src/po/vim.pot ?
-
-Vim9 script:
-- line continuation at script level:
-    eval_to_string_skip(), test with :throw
-    eval1_emsg(), pass "eap", test with :execute, :echomsg, :echoerr
-    handle_subscript() - call_func_rettv() - get_func_tv()
-	func(
-	    args arg)
-    callers of get_func_tv():
-	eval_func()
-	ex_call()
-    function arguments, test assert_equal() with lambda, test :function
-    :import:
-    others
-	eval_index()
-- test:
-	[1,
-	 2,
-	 3]->Func()
-
 Making everything work:
-- "nr += 4"  gives "already defined" error.
-- Error for "g:var: string = 'value'" 
-- Make func()->append('$') work - value is last argument, not first. #6305
 - in Vim9 script expressions are evaluated differently, not using a type.
   e.g. "'' == 0" does not give an error and evaluates to true.
-- possible memory leak in test_vim9_func through compile_nested_function.
-- memory leaks in test_vim9_expr
-- memory leaks in test_vim9_script
+- cannot put # comment  after assert() in :def function
 - more return types depending on the first argument, like sort().
 - Check that when sourcing a Vim9 script, only the global items can be used.
+- :put with a "=" register argument doesn't work, need to find the expression
+  and compile it. (#6397)
+- should  "'text'->method()"  work?  't is a range, but 'text isn't.
+- Slice of list: [1, 2, 3][1:2].
+- Give runtime error if function argument is wrong.
+	def Increment(nr: number)
+	range(3)->Increment()
+- Expand `=expr` in :next, :argedit, :argadd, :argdelete, :drop
+- Expand `=expr` in :vimgrep, :vimgrepadd, :lvimgrep, :lvimgrepadd
+- Expand `=expr` in :mkspell
 - Make "true" and "false" work in vim9script
 - Test that a function defined inside a :def function is local to that
   function, g: functions can be defined and script-local functions cannot be
@@ -87,9 +71,10 @@ Making everything work:
 - Compile redir to local variable: var_redir_start().
 - Compile builtin functions that access local variables:
     islocked()
-- Expand `=expr` in :next, :argedit, :argadd, :argdelete, :drop
-- Expand `=expr` in :vimgrep, :vimgrepadd, :lvimgrep, :lvimgrepadd
-- Expand `=expr` in :mkspell
+- possible memory leak in test_vim9_func through compile_nested_function.
+- memory leaks in test_vim9_expr
+- memory leaks in test_vim9_script
+- memory leaks in test_vim9_cmd
 - When evaluating constants for script variables, some functions could work:
     has('asdf'), len('string')
 - Support type for ":let"/":const" at script level for Vim9 script.
@@ -339,6 +324,9 @@ Might be related to #6088.
 When changing the crypt key the buffer should be considered modified.
 Like when changing 'fileformat'.  Save the old key in save_file_ff().
 (Ninu-Ciprian Marginean)
+
+Patch to implement the vimtutor with a plugin: #6414
+Was originally writtten by Felipe Morales.
 
 Strange sequence of BufWipeout and BufNew events while doing omni-complete.
 (Paul Jolly, #5656)
@@ -1074,7 +1062,7 @@ Problem with three-piece comment. (Michael Lee, 2017 May 11, #1696)
 
 Creating a partial with an autoload function is confused about the "self"
 attribute of the function.  For an unknown function assume "self" and make
-that optiona? (Bjorn Linse, 2017 Aug 5)
+that optional? (Bjorn Linse, 2017 Aug 5)
 
 Cindent: returning a structure has more indent for the second item.
 (Sam Pagenkopf, 2017 Sep 14, #2090)

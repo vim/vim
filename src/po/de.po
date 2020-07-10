@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-29 23:12+0100\n"
+"POT-Creation-Date: 2020-07-06 12:56+0200\n"
 "PO-Revision-Date: 2008-05-24 17:26+0200\n"
 "Last-Translator: Christian Brabandt <cb@256bit.org>\n"
 "Language-Team: German\n"
@@ -218,9 +218,6 @@ msgstr " [Verändert]"
 msgid "[Not edited]"
 msgstr "[Nicht editiert]"
 
-msgid "[New file]"
-msgstr "[Neue Datei]"
-
 msgid "[Read errors]"
 msgstr "[Lesefehler]"
 
@@ -278,6 +275,12 @@ msgstr "ACHTUNG: Die Datei wurde seit dem letzten Lesen geändert!!!"
 
 msgid "Do you really want to write to it"
 msgstr "Möchten Sie sie wirklich schreiben"
+
+msgid "[New]"
+msgstr "[Neu]"
+
+msgid "[New File]"
+msgstr "[Neue Datei]"
 
 msgid "E676: No matching autocommands for acwrite buffer"
 msgstr "E676: Keine übereinstimmenden Autokommandos für acwrite Puffer"
@@ -373,12 +376,6 @@ msgstr "[konvertiert]"
 msgid "[Device]"
 msgstr "[Ausgabegerät]"
 
-msgid "[New]"
-msgstr "[Neu]"
-
-msgid "[New File]"
-msgstr "[Neue Datei]"
-
 msgid " [a]"
 msgstr " [a]"
 
@@ -417,11 +414,15 @@ msgstr "W10: Achtung: Ändern einer schreibgeschützten Datei"
 msgid "E902: Cannot connect to port"
 msgstr "E902: Kann keine Verbindung zu Port herstellen."
 
+msgid "E898: socket() in channel_connect()"
+msgstr "E898: socket() in channel_connect()"
+
+#, c-format
+msgid "E901: getaddrinfo() in channel_open(): %s"
+msgstr "E901: getaddrinfo() in channel_open(): %s"
+
 msgid "E901: gethostbyname() in channel_open()"
 msgstr "E901: gethostbyname() in channel_open()"
-
-msgid "E898: socket() in channel_open()"
-msgstr "E898: socket() in channel_open()"
 
 msgid "E903: received command with non-string argument"
 msgstr "E903: Befehl mit Nicht-String Argument empfangen."
@@ -468,6 +469,47 @@ msgstr "E918: Puffer muss geladen sein: %s."
 
 msgid "E916: not a valid job"
 msgstr "E916: kein gültiger Job"
+
+msgid "No display"
+msgstr "Keine Anzeige"
+
+msgid ": Send failed.\n"
+msgstr ": Versendung fehlgeschlagen.\n"
+
+msgid ": Send failed. Trying to execute locally\n"
+msgstr ": Versendung fehlgeschlagen. Versuche lokale Ausführung\n"
+
+#, c-format
+msgid "%d of %d edited"
+msgstr "%d von %d bearbeitet"
+
+msgid "No display: Send expression failed.\n"
+msgstr "Keine Anzeige: Versenden des Ausdrucks fehlgeschlagen.\n"
+
+msgid ": Send expression failed.\n"
+msgstr ": Versenden des Ausdrucks fehlgeschlagen.\n"
+
+msgid "E240: No connection to the X server"
+msgstr "E240: Keine Verbindung zum X-Server"
+
+#, c-format
+msgid "E241: Unable to send to %s"
+msgstr "E241: Kann nicht zu %s senden"
+
+msgid "E277: Unable to read a server reply"
+msgstr "E277: Server-Antwort kann nicht gelesen werden."
+
+msgid "E941: already started a server"
+msgstr "E941: Server bereits gestartet."
+
+msgid "E942: +clientserver feature not available"
+msgstr "E942: +clientserver Eigenschaft nicht verfügbar"
+
+msgid "E258: Unable to send to client"
+msgstr "E258: Kann nicht zum Client senden."
+
+msgid "Used CUT_BUFFER0 instead of empty selection"
+msgstr "CUT_BUFFER0 anstatt der leeren Auswahl benutzt"
 
 msgid "tagname"
 msgstr "Tag-Name"
@@ -692,9 +734,6 @@ msgstr "E791: Leerer keymap Eintrag"
 msgid "E719: Cannot use [:] with a Dictionary"
 msgstr "E719: Kann [:] nicht mit einem Dictionary verwenden"
 
-msgid "E806: using Float as a String"
-msgstr "E806: Float als String benutzt."
-
 msgid "E689: Can only index a List, Dictionary or Blob"
 msgstr "E689: Kann nur Listen, Dictionary oder Blob indizieren"
 
@@ -728,21 +767,6 @@ msgstr "E695: Kann keine Funktionsreferenz indizieren."
 msgid "E909: Cannot index a special variable"
 msgstr "E909: Kann Spezialvariable nicht indexieren."
 
-#, c-format
-msgid "E112: Option name missing: %s"
-msgstr "E112: Optionsname fehlt: %s"
-
-msgid "E973: Blob literal should have an even number of hex characters"
-msgstr "E973: Blob-Literal sollte eine gerade Anzahl von Hex-Zeichen haben"
-
-#, c-format
-msgid "E114: Missing quote: %s"
-msgstr "E114: Fehlendes Anführungszeichen: %s"
-
-#, c-format
-msgid "E115: Missing quote: %s"
-msgstr "E115: Fehlendes Anführungszeichen: %s"
-
 msgid "Not enough memory to set references, garbage collection aborted!"
 msgstr ""
 "Nicht genügend Speicher um Referenzen zu setzen, Garbagecollection "
@@ -750,66 +774,6 @@ msgstr ""
 
 msgid "E724: variable nested too deep for displaying"
 msgstr "E724: Variable ist zu tief verschachtelt für die Anzeige"
-
-msgid "E805: Using a Float as a Number"
-msgstr "E805: Benutze Float als Nummer."
-
-msgid "E703: Using a Funcref as a Number"
-msgstr "E703: Funktionsreferenz als Zahl verwendet"
-
-msgid "E745: Using a List as a Number"
-msgstr "E745: Liste als Zahl verwendet."
-
-msgid "E728: Using a Dictionary as a Number"
-msgstr "E728: Dictionary als Zahl verwendet."
-
-msgid "E910: Using a Job as a Number"
-msgstr "E910: Job als Zahl verwendet."
-
-msgid "E913: Using a Channel as a Number"
-msgstr "E913: Channel als Zahl verwendet."
-
-msgid "E974: Using a Blob as a Number"
-msgstr "E974: Blob als Zahl verwendet."
-
-msgid "E891: Using a Funcref as a Float"
-msgstr "E891: Funktionsreferenz als Float verwendet."
-
-msgid "E892: Using a String as a Float"
-msgstr "E892: String als Float verwendet."
-
-msgid "E893: Using a List as a Float"
-msgstr "E893: Liste als Float verwendet."
-
-msgid "E894: Using a Dictionary as a Float"
-msgstr "E894: Dictionary als Float verwendet."
-
-msgid "E362: Using a boolean value as a Float"
-msgstr "E362: Benutze Boolvariable als Float."
-
-msgid "E907: Using a special value as a Float"
-msgstr "E907: Benutze Spezialvariable als Float."
-
-msgid "E911: Using a Job as a Float"
-msgstr "E911: Job als Float verwendet"
-
-msgid "E914: Using a Channel as a Float"
-msgstr "E914: Channel als Float verwendet"
-
-msgid "E975: Using a Blob as a Float"
-msgstr "E975: Blob als Float verwendet"
-
-msgid "E729: using Funcref as a String"
-msgstr "E729: Funktionsreferenz als String verwendet"
-
-msgid "E730: using List as a String"
-msgstr "E730: Liste als String verwendet"
-
-msgid "E731: using Dictionary as a String"
-msgstr "E731: Dictionary als String verwendet"
-
-msgid "E976: using Blob as a String"
-msgstr "E976: Blob als String verwendet"
 
 msgid "E698: variable nested too deep for making a copy"
 msgstr "E698: Variable ist zu tief verschachtelt für eine Kopie"
@@ -820,24 +784,6 @@ msgid ""
 msgstr ""
 "\n"
 "\tZuletzt gesetzt in "
-
-msgid "E977: Can only compare Blob with Blob"
-msgstr "E977: Kann nur einen Blob mit einem Blob vergleichen"
-
-msgid "E691: Can only compare List with List"
-msgstr "E691: Kann nur eine Liste mit einer Liste vergleichen"
-
-msgid "E692: Invalid operation for List"
-msgstr "E692: Unzulässige Operation für Listen"
-
-msgid "E735: Can only compare Dictionary with Dictionary"
-msgstr "E735: Kann nur ein Dictionary mit einem Dictionary vergleichen"
-
-msgid "E736: Invalid operation for Dictionary"
-msgstr "E736: Unzulässige Funktion für ein Dictionary"
-
-msgid "E694: Invalid operation for Funcrefs"
-msgstr "E694: Unzulässige Operation für Funktionsreferenzen"
 
 msgid "E808: Number or Float required"
 msgstr "E808: Zahl oder Float benötigt."
@@ -886,25 +832,6 @@ msgstr "E726: Stride ist Null"
 msgid "E727: Start past end"
 msgstr "E727: Start hinter dem Ende"
 
-msgid "E240: No connection to the X server"
-msgstr "E240: Keine Verbindung zum X-Server"
-
-#, c-format
-msgid "E241: Unable to send to %s"
-msgstr "E241: Kann nicht zu %s senden"
-
-msgid "E277: Unable to read a server reply"
-msgstr "E277: Server-Antwort kann nicht gelesen werden."
-
-msgid "E941: already started a server"
-msgstr "E941: Server bereits gestartet."
-
-msgid "E942: +clientserver feature not available"
-msgstr "E942: +clientserver Eigenschaft nicht verfügbar"
-
-msgid "E258: Unable to send to client"
-msgstr "E258: Kann nicht zum Client senden."
-
 #, c-format
 msgid "E962: Invalid action: '%s'"
 msgstr "E962: Ungültige Aktion '%s'"
@@ -935,8 +862,8 @@ msgstr "E687: Weniger Ziele als Einträge in der Liste."
 msgid "E688: More targets than List items"
 msgstr "E688: Mehr Ziele als Einträge in der Liste."
 
-msgid "Double ; in list of variables"
-msgstr "Doppeltes ; in der Liste von Variablen"
+msgid "E452: Double ; in list of variables"
+msgstr "E452: Doppeltes ; in der Liste der Variablen"
 
 #, c-format
 msgid "E738: Can't list variables for %s"
@@ -951,10 +878,6 @@ msgstr "E996: Kann Register nicht sperren"
 #, c-format
 msgid "E108: No such variable: \"%s\""
 msgstr "E108: Keine solche Variable: \"%s\""
-
-#, c-format
-msgid "E940: Cannot lock or unlock variable %s"
-msgstr "E940: Kann Variable \"%s\" nicht sperren bzw. entsperren."
 
 msgid "E743: variable nested too deep for (un)lock"
 msgstr "E743: Variable ist zu tief verschachtelt zum (ent)sperren."
@@ -1497,6 +1420,9 @@ msgstr "E601: :try Schachtelung zu tief"
 msgid "E604: :catch after :finally"
 msgstr "E604: :catch nach :finally"
 
+msgid "E193: :enddef not inside a function"
+msgstr "E193: :enddef nicht innerhalb einer Funktion"
+
 msgid "E193: :endfunction not inside a function"
 msgstr "E193: :endfunction außerhalb einer Funktion"
 
@@ -1606,10 +1532,10 @@ msgstr[0] "%ld Zeile, "
 msgstr[1] "%ld Zeilen, "
 
 #, c-format
-msgid "%lld character"
-msgid_plural "%lld characters"
-msgstr[0] "%lld Zeichen"
-msgstr[1] "%lld Zeichen"
+msgid "%lld byte"
+msgid_plural "%lld bytes"
+msgstr[0] "%lld Byte"
+msgstr[1] "%lld Bytes"
 
 msgid "[noeol]"
 msgstr "[noeol]"
@@ -1701,6 +1627,9 @@ msgstr "<leer>"
 msgid "E655: Too many symbolic links (cycle?)"
 msgstr "E655: Zu viele symbolische Links (zirkulär?)"
 
+msgid "writefile() first argument must be a List or a Blob"
+msgstr "writefile() erstes Argument muss eine Liste oder ein Blob sein."
+
 msgid "Select Directory dialog"
 msgstr "Verzeichnis Auswahl Dialog"
 
@@ -1713,8 +1642,11 @@ msgstr "Datei Öffnen Dialog"
 msgid "E338: Sorry, no file browser in console mode"
 msgstr "E338: Kein Datei-Dialog im Konsole-Modus"
 
+msgid "no matches"
+msgstr "keine Treffer"
+
 msgid "E854: path too long for completion"
-msgstr "E854: Pfad für Vervollständigung zu lang."
+msgstr "E854: Pfad für Vervollständigung zu lang"
 
 #, c-format
 msgid ""
@@ -1798,10 +1730,6 @@ msgstr "E231: 'guifontwide' ungültig"
 
 msgid "E599: Value of 'imactivatekey' is invalid"
 msgstr "E599: Wert von 'imactivatekey' ist ungültig"
-
-#, c-format
-msgid "E254: Cannot allocate color %s"
-msgstr "E254: Kann die Farbe %s nicht zuweisen."
 
 msgid "No match at cursor, finding next"
 msgstr "Kein Treffer beim Cursor, finde den nächsten"
@@ -2031,6 +1959,24 @@ msgstr "Schriftart 0 Breite: %d"
 msgid "Font%d width: %d"
 msgstr "Schriftart %d Breite: %d"
 
+msgid "E284: Cannot set IC values"
+msgstr "E284: Kann die IC Werte nicht setzen"
+
+msgid "E285: Failed to create input context"
+msgstr "E285: Eingabe-Kontext konnte nicht erzeugt werden"
+
+msgid "E286: Failed to open input method"
+msgstr "E286: Eingabemethode konnte nicht geöffnet werden"
+
+msgid "E287: Warning: Could not set destroy callback to IM"
+msgstr "E287: Achtung: Destroy Callback konnte nicht auf IM gesetzt werden"
+
+msgid "E288: input method doesn't support any style"
+msgstr "E288: Eingabemethode unterstützt keinen einzigen Stil"
+
+msgid "E289: input method doesn't support my preedit type"
+msgstr "E289: Eingabemethode unterstützt nicht meinen Voreditier-Typen"
+
 msgid "Invalid font specification"
 msgstr "Ungültige Spezifikation der Schriftart"
 
@@ -2195,6 +2141,9 @@ msgstr "E419: Vordergrundfarbe unbekannt"
 msgid "E420: BG color unknown"
 msgstr "E420: Hintergrundfarbe unbekannt"
 
+msgid "E453: UL color unknown"
+msgstr "E453: Unterstreichungsfarbe unbekannt"
+
 #, c-format
 msgid "E421: Color name or number not recognized: %s"
 msgstr "E421: Unbekannte Farbbezeichnung oder -Nummer: %s"
@@ -2218,29 +2167,6 @@ msgstr "W18: Ungültiges Zeichen im Namen der Gruppe"
 
 msgid "E849: Too many highlight and syntax groups"
 msgstr "E849: Zu viele Highlight- und Syntaxgruppen"
-
-#, c-format
-msgid "E799: Invalid ID: %d (must be greater than or equal to 1)"
-msgstr "E799: Ungültige ID: %d (muss größer gleich 1 sein)"
-
-#, c-format
-msgid "E801: ID already taken: %d"
-msgstr "E801: ID bereits benutzt: %d"
-
-msgid "E290: List or number required"
-msgstr "E290: Liste oder Nummer erforderlich"
-
-#, c-format
-msgid "E802: Invalid ID: %d (must be greater than or equal to 1)"
-msgstr "E802: Ungültige ID: %d (muss größer gleich 1 sein)"
-
-#, c-format
-msgid "E803: ID not found: %d"
-msgstr "E803: ID nicht gefunden: %d"
-
-#, c-format
-msgid "E798: ID is reserved for \":match\": %d"
-msgstr "E798: ID ist für \":match\" reserviert: %d"
 
 msgid "Add a new database"
 msgstr "Eine neue Datenbank hinzufügen"
@@ -2725,6 +2651,10 @@ msgid "match %d"
 msgstr "Treffer %d"
 
 #, c-format
+msgid "E491: json decode error at '%s'"
+msgstr "E491: JSON Dekodierungsfehler in Zeile '%s'"
+
+#, c-format
 msgid "E938: Duplicate key in JSON: \"%s\""
 msgstr "E938: Doppelter Schlüssel im JSON: \"%s\""
 
@@ -2732,13 +2662,15 @@ msgstr "E938: Doppelter Schlüssel im JSON: \"%s\""
 msgid "E899: Argument of %s must be a List or Blob"
 msgstr "E899: Argument von %s muss eine Liste oder ein Blob sein."
 
+msgid "E900: maxdepth must be non-negative number"
+msgstr "E900: maxdepth muss eine positive Zahl sein"
+
+msgid "flatten() argument"
+msgstr "flatten() Argument"
+
 #, c-format
 msgid "E696: Missing comma in List: %s"
 msgstr "E696: Fehlendes Komma in der Liste: %s"
-
-#, c-format
-msgid "E697: Missing end of List ']': %s"
-msgstr "E697: Fehlendes Ende der Liste ']': %s"
 
 msgid "sort() argument"
 msgstr "sort() Argument"
@@ -3202,25 +3134,6 @@ msgstr "-P <parent title>\tÖffne Vim innerhalb der Vater-Applikation"
 msgid "--windowid <HWND>\tOpen Vim inside another win32 widget"
 msgstr "--windowid <HWND>\tÖffne Vim in einem anderen Win32 widget"
 
-msgid "No display"
-msgstr "Keine Anzeige"
-
-msgid ": Send failed.\n"
-msgstr ": Versendung fehlgeschlagen.\n"
-
-msgid ": Send failed. Trying to execute locally\n"
-msgstr ": Versendung fehlgeschlagen. Versuche lokale Ausführung\n"
-
-#, c-format
-msgid "%d of %d edited"
-msgstr "%d von %d bearbeitet"
-
-msgid "No display: Send expression failed.\n"
-msgstr "Keine Anzeige: Versenden des Ausdrucks fehlgeschlagen.\n"
-
-msgid ": Send expression failed.\n"
-msgstr ": Versenden des Ausdrucks fehlgeschlagen.\n"
-
 #, c-format
 msgid "E224: global abbreviation already exists for %s"
 msgstr "E224: Globale Kurzform für %s existiert bereits"
@@ -3245,6 +3158,9 @@ msgstr "Kein Mapping gefunden"
 
 msgid "E228: makemap: Illegal mode"
 msgstr "E228: makemap: Unzulässiger Modus"
+
+msgid "E460: entries missing in mapset() dict argument"
+msgstr "E460: Fehlende Einträge im Dictionary Argument"
 
 #, c-format
 msgid "E357: 'langmap': Matching character missing for %s"
@@ -3282,26 +3198,31 @@ msgstr ""
 "\n"
 "Änder. Zeile Sp  Text"
 
+#, c-format
+msgid "E799: Invalid ID: %d (must be greater than or equal to 1)"
+msgstr "E799: Ungültige ID: %d (muss größer gleich 1 sein)"
+
+#, c-format
+msgid "E801: ID already taken: %d"
+msgstr "E801: ID bereits benutzt: %d"
+
+msgid "E290: List or number required"
+msgstr "E290: Liste oder Nummer erforderlich"
+
+#, c-format
+msgid "E802: Invalid ID: %d (must be greater than or equal to 1)"
+msgstr "E802: Ungültige ID: %d (muss größer gleich 1 sein)"
+
+#, c-format
+msgid "E803: ID not found: %d"
+msgstr "E803: ID nicht gefunden: %d"
+
+#, c-format
+msgid "E798: ID is reserved for \":match\": %d"
+msgstr "E798: ID ist für \":match\" reserviert: %d"
+
 msgid "E543: Not a valid codepage"
 msgstr "E543: Keine zulässige Codepage"
-
-msgid "E284: Cannot set IC values"
-msgstr "E284: Kann die IC Werte nicht setzen"
-
-msgid "E285: Failed to create input context"
-msgstr "E285: Eingabe-Kontext konnte nicht erzeugt werden"
-
-msgid "E286: Failed to open input method"
-msgstr "E286: Eingabemethode konnte nicht geöffnet werden"
-
-msgid "E287: Warning: Could not set destroy callback to IM"
-msgstr "E287: Achtung: Destroy Callback konnte nicht auf IM gesetzt werden"
-
-msgid "E288: input method doesn't support any style"
-msgstr "E288: Eingabemethode unterstützt keinen einzigen Stil"
-
-msgid "E289: input method doesn't support my preedit type"
-msgstr "E289: Eingabemethode unterstützt nicht meinen Voreditier-Typen"
 
 msgid "E293: block was not locked"
 msgstr "E293: Block war nicht gesperrt"
@@ -3890,13 +3811,13 @@ msgstr "E807: Erwarte Float Argument für printf()"
 msgid "E767: Too many arguments to printf()"
 msgstr "E767: Zu viele Argumente für printf()"
 
-msgid "Type number and <Enter> or click with mouse (empty cancels): "
+msgid "Type number and <Enter> or click with the mouse (q or empty cancels): "
 msgstr ""
-"Bitte Nummer und <Enter> eingeben oder mit der Maus auswählen (abbrechen mit "
-"<Enter>): "
+"Bitte Nummer und <Enter> eingeben oder mit der Maus auswählen "
+"(abbrechen mit q oder <Enter>): "
 
-msgid "Type number and <Enter> (empty cancels): "
-msgstr "Gewünschte Nummer und <Enter> eingeben (abbrechen mit <Enter>): "
+msgid "Type number and <Enter> (q or empty cancels): "
+msgstr "Gewünschte Nummer und <Enter> eingeben (abbrechen mit q oder <Enter>): "
 
 #, c-format
 msgid "%ld more line"
@@ -4037,6 +3958,12 @@ msgid "%ld line changed"
 msgid_plural "%ld lines changed"
 msgstr[0] "%ld Zeile geändert"
 msgstr[1] "%ld Zeilen geändert"
+
+#, c-format
+msgid "%d line changed"
+msgid_plural "%d lines changed"
+msgstr[0] "%d Zeile geändert"
+msgstr[1] "%d Zeilen geändert"
 
 #, c-format
 msgid "%ld Cols; "
@@ -4472,6 +4399,9 @@ msgstr "Vim Achtung"
 msgid "shell returned %d"
 msgstr "Shell gab %d zurück"
 
+msgid "E861: Cannot open a second popup with a terminal"
+msgstr "E861: Kann kein zweites Popup mit Terminal öffen"
+
 msgid "E450: buffer number, text or a list required"
 msgstr "E450: Puffernummer, Text oder Liste erforderlich"
 
@@ -4563,6 +4493,9 @@ msgstr "E683: Dateiname fehlt oder ungültiges Muster"
 msgid "Cannot open file \"%s\""
 msgstr "Kann Datei \"%s\" nicht öffnen"
 
+msgid "cannot have both a list and a \"what\" argument"
+msgstr "Kann nicht sowohl Liste und ein \"what\" Argument haben"
+
 msgid "E681: Buffer is not loaded"
 msgstr "E681: Puffer ist nicht geladen"
 
@@ -4615,6 +4548,10 @@ msgstr "E70: %s%%[] ist leer"
 
 msgid "E956: Cannot use pattern recursively"
 msgstr "E956: Kann Muster nicht rekursiv ausführen"
+
+#, c-format
+msgid "E654: missing delimiter after search pattern: %s"
+msgstr "E654: Fehlendes Trennzeichen nach Suchmuster: %s"
 
 #, c-format
 msgid "E554: Syntax error in %s{...}"
@@ -4698,12 +4635,12 @@ msgstr "E866: (NFA regexp) Deplatziert %c"
 msgid "E877: (NFA regexp) Invalid character class: %d"
 msgstr "E877: (NFA regexp) Ungültige Zeichenklasse: %d"
 
+msgid "E951: \\% value too large"
+msgstr "E951: \\% Wert zu groß"
+
 #, c-format
 msgid "E867: (NFA) Unknown operator '\\z%c'"
 msgstr "E867: (NFA) Unbekannter Operator '\\z%c'"
-
-msgid "E951: \\% value too large"
-msgstr "E951: \\% Wert zu groß"
 
 #, c-format
 msgid "E867: (NFA) Unknown operator '\\%%%c'"
@@ -5046,9 +4983,6 @@ msgstr " (NICHT GEFUNDEN)"
 msgid " (not supported)"
 msgstr " (nicht unterstützt)"
 
-msgid "E756: Spell checking is not enabled"
-msgstr "E756: Rechtschreibprüfung ist nicht aktiviert"
-
 #, c-format
 msgid "Warning: Cannot find word list \"%s_%s.spl\" or \"%s_ascii.spl\""
 msgstr ""
@@ -5298,32 +5232,36 @@ msgid "Reading word file %s..."
 msgstr "Lese Wort-Datei %s..."
 
 #, c-format
-msgid "Duplicate /encoding= line ignored in %s line %d: %s"
-msgstr "Doppelte /encoding= Zeile ignoriert in %s Zeile %d: %s"
+msgid "Conversion failure for word in %s line %ld: %s"
+msgstr "Umwandlungsfehler beim Wort in %s Zeile %ld: %s"
 
 #, c-format
-msgid "/encoding= line after word ignored in %s line %d: %s"
-msgstr "/encoding= Zeile nach Wort ignoriert in %s Zeile %d: %s"
+msgid "Duplicate /encoding= line ignored in %s line %ld: %s"
+msgstr "Doppelte /encoding= Zeile ignoriert in %s Zeile %ld: %s"
 
 #, c-format
-msgid "Duplicate /regions= line ignored in %s line %d: %s"
-msgstr "Doppelte /regions= Zeile ignoriert in %s Zeile %d: %s"
+msgid "/encoding= line after word ignored in %s line %ld: %s"
+msgstr "/encoding= Zeile nach Wort ignoriert in %s Zeile %ld: %s"
 
 #, c-format
-msgid "Too many regions in %s line %d: %s"
-msgstr "Zu viele Regionen in %s Zeile %d: %s"
+msgid "Duplicate /regions= line ignored in %s line %ld: %s"
+msgstr "Doppelte /regions= Zeile ignoriert in %s Zeile %ld: %s"
 
 #, c-format
-msgid "/ line ignored in %s line %d: %s"
-msgstr "/ Zeile ignoriert in %s Zeile %d: %s"
+msgid "Too many regions in %s line %ld: %s"
+msgstr "Zu viele Regionen in %s Zeile %ld: %s"
 
 #, c-format
-msgid "Invalid region nr in %s line %d: %s"
-msgstr "Ungültige Regionsnummer in %s Zeile %d: %s"
+msgid "/ line ignored in %s line %ld: %s"
+msgstr "/ Zeile ignoriert in %s Zeile %ld: %s"
 
 #, c-format
-msgid "Unrecognized flags in %s line %d: %s"
-msgstr "Nicht erkanntes Flag in %s Zeile %d: %s"
+msgid "Invalid region nr in %s line %ld: %s"
+msgstr "Ungültige Regionsnummer in %s Zeile %ld: %s"
+
+#, c-format
+msgid "Unrecognized flags in %s line %ld: %s"
+msgstr "Nicht erkanntes Flag in %s Zeile %ld: %s"
 
 #, c-format
 msgid "Ignored %d words with non-ASCII characters"
@@ -5333,8 +5271,8 @@ msgid "E845: Insufficient memory, word list will be incomplete"
 msgstr "E845: Nicht ausreichend Speicher, Wortliste wird unvollständig sein"
 
 #, c-format
-msgid "Compressed %d of %d nodes; %d (%d%%) remaining"
-msgstr "%d von %d Knoten komprimiert; %d (%d%%) übrig"
+msgid "Compressed %s: %ld of %ld nodes; %ld (%ld%%) remaining"
+msgstr "Komprimiere %s: %ld von %ld Knoten; %ld (%ld%%) übrig"
 
 msgid "Reading back spell file..."
 msgstr "Lese Rechtschreibwörterbuch zurück..."
@@ -5413,6 +5351,10 @@ msgstr "Ändere \"%.*s\" nach:"
 msgid " < \"%.*s\""
 msgstr " < \"%.*s\""
 
+#, c-format
+msgid "E390: Illegal argument: %s"
+msgstr "E390: Unerlaubtes Argument: %s"
+
 msgid "No Syntax items defined for this buffer"
 msgstr "Keine Syntax-Elemente für diesen Puffer definiert"
 
@@ -5425,15 +5367,17 @@ msgstr "Syntax conceal aktiviert"
 msgid "syntax conceal off"
 msgstr "Syntax conceal deaktiviert"
 
-#, c-format
-msgid "E390: Illegal argument: %s"
-msgstr "E390: Unerlaubtes Argument: %s"
-
 msgid "syntax case ignore"
 msgstr "Syntax ignoriere Groß-/Kleinschreibung"
 
 msgid "syntax case match"
 msgstr "Syntax unterscheide Groß-/Kleinschreibung"
+
+msgid "syntax foldlevel start"
+msgstr "Syntax foldlevel Start"
+
+msgid "syntax foldlevel minimum"
+msgstr "Syntax foldlevel Minimum"
 
 msgid "syntax spell toplevel"
 msgstr "Prüfe Rechtschreibung von Text ohne zugehörige Syntaxgruppe"
@@ -5780,6 +5724,9 @@ msgstr "E967: Texteigenschaft-Info beschädigt"
 msgid "E968: Need at least one of 'id' or 'type'"
 msgstr "E968: Benötige entweder 'id' oder 'type'"
 
+msgid "E860: Need 'id' and 'type' with 'both'"
+msgstr "E860: Benötige 'id' und 'type' mit 'both'"
+
 #, c-format
 msgid "E969: Property type %s already defined"
 msgstr "E969: Eigenschaftentyp %s bereits definiert"
@@ -5801,14 +5748,104 @@ msgid_plural "%ld seconds ago"
 msgstr[0] "vor %ld Sekunde"
 msgstr[1] "vor %ld Sekunden"
 
+msgid "E805: Using a Float as a Number"
+msgstr "E805: Benutze Float als Nummer."
+
+msgid "E703: Using a Funcref as a Number"
+msgstr "E703: Funktionsreferenz als Zahl verwendet"
+
+msgid "E745: Using a List as a Number"
+msgstr "E745: Liste als Zahl verwendet."
+
+msgid "E728: Using a Dictionary as a Number"
+msgstr "E728: Dictionary als Zahl verwendet."
+
+msgid "E910: Using a Job as a Number"
+msgstr "E910: Job als Zahl verwendet."
+
+msgid "E913: Using a Channel as a Number"
+msgstr "E913: Channel als Zahl verwendet."
+
+msgid "E974: Using a Blob as a Number"
+msgstr "E974: Blob als Zahl verwendet."
+
+msgid "E891: Using a Funcref as a Float"
+msgstr "E891: Funktionsreferenz als Float verwendet."
+
+msgid "E892: Using a String as a Float"
+msgstr "E892: String als Float verwendet."
+
+msgid "E893: Using a List as a Float"
+msgstr "E893: Liste als Float verwendet."
+
+msgid "E894: Using a Dictionary as a Float"
+msgstr "E894: Dictionary als Float verwendet."
+
+msgid "E362: Using a boolean value as a Float"
+msgstr "E362: Benutze Boolvariable als Float."
+
+msgid "E907: Using a special value as a Float"
+msgstr "E907: Benutze Spezialvariable als Float."
+
+msgid "E911: Using a Job as a Float"
+msgstr "E911: Job als Float verwendet"
+
+msgid "E914: Using a Channel as a Float"
+msgstr "E914: Channel als Float verwendet"
+
+msgid "E975: Using a Blob as a Float"
+msgstr "E975: Blob als Float verwendet"
+
+msgid "E729: using Funcref as a String"
+msgstr "E729: Funktionsreferenz als String verwendet"
+
+msgid "E730: using List as a String"
+msgstr "E730: Liste als String verwendet"
+
+msgid "E731: using Dictionary as a String"
+msgstr "E731: Dictionary als String verwendet"
+
+msgid "E976: using Blob as a String"
+msgstr "E976: Blob als String verwendet"
+
+msgid "E977: Can only compare Blob with Blob"
+msgstr "E977: Kann nur einen Blob mit einem Blob vergleichen"
+
+msgid "E691: Can only compare List with List"
+msgstr "E691: Kann nur eine Liste mit einer Liste vergleichen"
+
+msgid "E692: Invalid operation for List"
+msgstr "E692: Unzulässige Operation für Listen"
+
+msgid "E735: Can only compare Dictionary with Dictionary"
+msgstr "E735: Kann nur ein Dictionary mit einem Dictionary vergleichen"
+
+msgid "E736: Invalid operation for Dictionary"
+msgstr "E736: Unzulässige Funktion für ein Dictionary"
+
+msgid "E694: Invalid operation for Funcrefs"
+msgstr "E694: Unzulässige Operation für Funktionsreferenzen"
+
+#, c-format
+msgid "E112: Option name missing: %s"
+msgstr "E112: Optionsname fehlt: %s"
+
+msgid "E973: Blob literal should have an even number of hex characters"
+msgstr "E973: Blob-Literal sollte eine gerade Anzahl von Hex-Zeichen haben"
+
+#, c-format
+msgid "E114: Missing quote: %s"
+msgstr "E114: Fehlendes Anführungszeichen: %s"
+
+#, c-format
+msgid "E115: Missing quote: %s"
+msgstr "E115: Fehlendes Anführungszeichen: %s"
+
 msgid "new shell started\n"
 msgstr "neue Shell gestartet\n"
 
 msgid "Vim: Error reading input, exiting...\n"
 msgstr "Vim: Fehler beim Lesen der Eingabe, Abbruch...\n"
-
-msgid "Used CUT_BUFFER0 instead of empty selection"
-msgstr "CUT_BUFFER0 anstatt der leeren Auswahl benutzt"
 
 msgid "E881: Line count changed unexpectedly"
 msgstr "E881: Zeilenanzahl änderte sich unerwartet"
@@ -6030,14 +6067,23 @@ msgstr "E125: Unzulässiges Argument: %s"
 msgid "E853: Duplicate argument name: %s"
 msgstr "E853: Doppelter Argumentname: %s"
 
-msgid "E1059: No white space allowed before :"
-msgstr "E1059: Keine Leerzeichen erlaubt for :"
+#, c-format
+msgid "E1059: No white space allowed before colon: %s"
+msgstr "E1059: Keine Leerzeichen erlaubt vor : %s"
+
+#, c-format
+msgid "E1077: Missing argument type for %s"
+msgstr "E1077: Fehlender Argumenttyp für %s"
 
 msgid "E1055: Missing name after ..."
 msgstr "E1055: Fehlender Name nach ..."
 
 msgid "E989: Non-default argument follows default argument"
 msgstr "E989: Nicht-default Argument folgt auf default Argument"
+
+#, c-format
+msgid "E451: Expected }: %s"
+msgstr "E451: Erwartet }: %s"
 
 #, c-format
 msgid "E740: Too many arguments for function %s"
@@ -6095,6 +6141,9 @@ msgstr ""
 msgid "E884: Function name cannot contain a colon: %s"
 msgstr "E884: Funktionsname darf keinen Doppelpunkt enthalten: %s"
 
+msgid "E454: function list was modified"
+msgstr "E454: Funktionsliste wurde geändert"
+
 #, c-format
 msgid "E123: Undefined function: %s"
 msgstr "E123: Undefinierte Funktion: %s"
@@ -6148,6 +6197,10 @@ msgstr ""
 #, c-format
 msgid "E131: Cannot delete function %s: It is in use"
 msgstr "E131: Funktion %s kann nicht gelöscht werden: sie ist in Verwendung"
+
+#, c-format
+msgid "E1084: Cannot delete Vim9 script function %s"
+msgstr "E1084: Vim9 Funktion %s kann nicht gelöscht werden"
 
 msgid "E133: :return not inside a function"
 msgstr "E133: :return außerhalb einer Funktion"
@@ -6456,12 +6509,27 @@ msgstr "E1001: Variable nicht gefunden: %s"
 msgid "E1002: Syntax error at %s"
 msgstr "E1002: Syntaxfehler bei %s"
 
-msgid "E1035: wrong argument type for +"
-msgstr "E1035: Falscher Argumenttyp für +"
+#, c-format
+msgid "E1006: %s is used as an argument"
+msgstr "E1006: %s wird als Argument verwendet"
+
+msgid "E1031: Cannot use void value"
+msgstr "E1031: Kann nicht void Wert verwenden"
+
+#, c-format
+msgid "E1013: type mismatch, expected %s but got %s"
+msgstr "E1013: Typendiskrepanz, erwartete %s erhielt jedoch %s"
+
+#, c-format
+msgid "E1013: argument %d: type mismatch, expected %s but got %s"
+msgstr "E1013: Argument %d: Typendiskrepanz, erwartete %s erhielt jedoch %s"
+
+msgid "E1051: wrong argument type for +"
+msgstr "E1051: Falscher Argumenttyp für +"
 
 #, c-format
 msgid "E1036: %c requires number or float arguments"
-msgstr "E1036: %c benötigt eine Nummer oder ein Float als Argument"
+msgstr "E1036: %c benötigt Nummer oder Float als Argument"
 
 msgid "E1035: % requires number arguments"
 msgstr "E1035: % benötigt numerische Argumente"
@@ -6471,19 +6539,12 @@ msgid "E1037: Cannot use \"%s\" with %s"
 msgstr "E1037: Kann nicht \"%s\" mit %s verwenden"
 
 #, c-format
-msgid "E1037: Cannot compare %s with %s"
-msgstr "E1037: Kann %s nicht mit %s vergleichen"
+msgid "E1072: Cannot compare %s with %s"
+msgstr "E1072: Kann %s nicht mit %s vergleichen"
 
 #, c-format
-msgid "E1004: white space required before and after '%s'"
-msgstr "E1004: Leerzeichen vor und nach '%s' benötigt"
-
-#, c-format
-msgid "E1006: %s is used as an argument"
-msgstr "E1006: %s wird als Argument verwendet"
-
-msgid "E1007: No white space allowed before <"
-msgstr "E1007: Keine Leerzeichen vor < erlaubt"
+msgid "E1085: Not a callable type: %s"
+msgstr "E1085: Kein aufrufbarer Typ: %s"
 
 msgid "E1008: Missing <type>"
 msgstr "E1008: Fehlendes <type>"
@@ -6491,8 +6552,14 @@ msgstr "E1008: Fehlendes <type>"
 msgid "E1009: Missing > after type"
 msgstr "E1009: Fehlendes '>' nach Typ"
 
-msgid "E1055: This Vim is not compiled with float support"
-msgstr "E1055: Vim wurde nicht mit der \"float\"-Eigenschaft übersetzt."
+msgid "E1076: This Vim is not compiled with float support"
+msgstr "E1076: Vim wurde nicht mit der \"float\"-Eigenschaft übersetzt."
+
+msgid "E1007: mandatory argument after optional argument"
+msgstr "E1007: obligatories Argument nach optionalem Argument"
+
+msgid "E740: Too many argument types"
+msgstr "E740: Zu viele Argumenttypen"
 
 #, c-format
 msgid "E1010: Type not recognized: %s"
@@ -6502,54 +6569,56 @@ msgstr "E1010: Unbekannter Typ: %s"
 msgid "E1060: expected dot after name: %s"
 msgstr "E1060: erwarte Punkt nach Name: %s"
 
+msgid "E1074: no white space allowed after dot"
+msgstr "E1074: Keine Leerzeichen nach Punkt erlaubt"
+
 #, c-format
 msgid "E1050: Item not found: %s"
 msgstr "E1050: Element nicht gefunden: %s"
-
-msgid "E1068: No white space allowed before ,"
-msgstr "E1068: Keine Leerzeichen vor , erlaubt"
-
-msgid "E1069: white space required after ,"
-msgstr "E1069: Leerzeichen benötigt nach ,"
 
 #, c-format
 msgid "E1011: name too long: %s"
 msgstr "E1011: Name zu lang: %s"
 
 #, c-format
-msgid "E1013: type mismatch, expected %s but got %s"
-msgstr "E1013: Typendiskrepanz, erwarte %s erhielt jedoch %s"
-
-#, c-format
 msgid "E1014: Invalid key: %s"
 msgstr "E1014: Ungültiger Schlüssel: %s"
+
+msgid "[end of lines]"
+msgstr "[Zeilenende]"
 
 #, c-format
 msgid "E1015: Name expected: %s"
 msgstr "E1015: Name erwartet: %s"
 
+msgid "E1096: Returning a value in a function without a return type"
+msgstr "E1096: Rückgabe eines Wertes einer Funktion ohne Rückgabetyp"
+
 msgid "E1003: Missing return value"
 msgstr "E1003: Fehlender Returnwert"
+
+msgid "global"
+msgstr "global"
+
+msgid "buffer"
+msgstr "Puffer"
+
+msgid "window"
+msgstr "Fenster"
+
+msgid "tab"
+msgstr "Reiter"
+
+msgid "E1092: Cannot use a list for a declaration"
+msgstr "E1092: Kann Liste nicht als Deklaration verwenden"
 
 #, c-format
 msgid "E1052: Cannot declare an option: %s"
 msgstr "E1052: Kann keine Option deklarieren: %s"
 
 #, c-format
-msgid "E1065: Cannot declare an environment variable: %s"
-msgstr "E1065: Kann keine Umgebungsvariable deklarieren: %s"
-
-#, c-format
 msgid "E1066: Cannot declare a register: %s"
 msgstr "E1066: Kann kein Register deklarieren: %s"
-
-#, c-format
-msgid "E1016: Cannot declare a global variable: %s"
-msgstr "E1016: Kann keine globale Variable deklarieren: %s"
-
-#, c-format
-msgid "E1064: Cannot declare a v: variable: %s"
-msgstr "E1064: Kann keine v: Variable deklarieren: %s"
 
 #, c-format
 msgid "E1034: Cannot use reserved name %s"
@@ -6567,6 +6636,14 @@ msgstr "E1018: Kann nicht einer Konstante zuweisen: %s"
 msgid "E1054: Variable already declared in the script: %s"
 msgstr "E1054: Variable bereits in Script %s deklariert"
 
+#, c-format
+msgid "E1082: Cannot use a namespaced variable: %s"
+msgstr "E1082: Kann eine Variable im Namesraum nicht verwenden: %s"
+
+#, c-format
+msgid "E1089: unknown variable: %s"
+msgstr "E1089: Unbekannte Variable: %s"
+
 msgid "E1019: Can only concatenate to string"
 msgstr "E1019: Kann nur zu einer Zeichenkette verkettet werden"
 
@@ -6574,21 +6651,24 @@ msgstr "E1019: Kann nur zu einer Zeichenkette verkettet werden"
 msgid "E1020: cannot use an operator on a new variable: %s"
 msgstr "E1020: kann Operator nicht auf eine neue Variable %s anwenden"
 
-msgid "E1031: Cannot use void value"
-msgstr "E1031: Kann nicht void Wert verwenden"
+msgid "E1087: cannot use an index when declaring a variable"
+msgstr "E1087: Kann Index nicht verwenden, wenn eine Variable deklariert wird"
 
-msgid "E1021: const requires a value"
-msgstr "E1021: const erfordert einen Wert"
+#, c-format
+msgid "E1088: cannot use an index on %s"
+msgstr "E1088: Kann Index auf: %s nicht verwenden"
 
-msgid "E1022: type or initialization required"
-msgstr "E1022: Typ oder Initialisierung erforderlich"
+#, c-format
+msgid "E1090: Cannot assign to argument %s"
+msgstr "E1090: Kann dem Argument nicht zuweisen %s"
+
+#, c-format
+msgid "E1081: Cannot unlet %s"
+msgstr "E1081: Kann Variable nicht entfernen %s"
 
 #, c-format
 msgid "E1023: variable already defined: %s"
 msgstr "E1023: Variable existiert bereits: %s"
-
-msgid "E1024: need a List to iterate over"
-msgstr "E1024: benötige Liste zum iterieren"
 
 msgid "E1033: catch unreachable after catch-all"
 msgstr "E1033: catch unerreichbar nach catch-all"
@@ -6600,12 +6680,21 @@ msgstr "E1067: Separator-Unstimmigkeit %s"
 msgid "E1032: missing :catch or :finally"
 msgstr "E1032: fehlendes :catch oder :finally"
 
+msgid "E1083: missing backtick"
+msgstr "E1083: Fehlender Backtick"
+
 #, c-format
 msgid "E488: Trailing characters: %s"
 msgstr "E488: Überschüssige Zeichen: %s"
 
 msgid "E1025: using } outside of a block scope"
 msgstr "E1025: } außerhalb eines Blockbereichs verwendet"
+
+msgid "E1095: Unreachable code after :return"
+msgstr "E1095: Nicht erreichbarer Code nach :return"
+
+msgid "E1086: Cannot use :function inside :def"
+msgstr "E1086: Kann :function nicht innerhalb von :def verwenden"
 
 msgid "E1026: Missing }"
 msgstr "E1026: Fehlendes }"
@@ -6617,15 +6706,20 @@ msgid "E1028: compile_def_function failed"
 msgstr "E1028: compile_def_function fehlgeschlagen"
 
 #, c-format
-msgid "E121: Undefined variable: g:%s"
-msgstr "E121: Undefinierte Variable: g:%s"
+msgid "E1091: Function is not compiled: %s"
+msgstr "E1091: Funktion ist nicht kompiliert: %s"
 
-msgid "E1051: Expected string or number"
-msgstr "E1051: Erwartete Zeichenkette oder Nummer"
+#, c-format
+msgid "E121: Undefined variable: %c:%s"
+msgstr "E121: Undefinierte Variable: %c:%s"
 
 #, c-format
 msgid "E1029: Expected %s but got %s"
 msgstr "E1029: Erwartete %s, aber erhielt %s"
+
+#, c-format
+msgid "E1093: Expected %d items but got %d"
+msgstr "E1093: Erwartete %d Einträge, aber erhielt %d"
 
 #, c-format
 msgid "E1061: Cannot find function %s"
@@ -6638,8 +6732,8 @@ msgstr "E1062: Funktion %s ist nicht kompiliert"
 msgid "E1030: Using a String as a Number"
 msgstr "E1030: Verwende Zeichenkette als Nummer"
 
-msgid "E1042: import/export can only be used in vim9script"
-msgstr "E1042: import/export kann nur für vim9script verwendet werden"
+msgid "E1042: export can only be used in vim9script"
+msgstr "E1042: export kann nur für Vim9script verwendet werden"
 
 msgid "E1038: vim9script can only be used in a script"
 msgstr "E1038: vim9script kann nur innerhalb eines Scripts verwendet werden"
@@ -6653,6 +6747,9 @@ msgstr "E1044: export mit ungültigem Argument"
 msgid "E1043: Invalid command after :export"
 msgstr "E1043: Ungültiger Befehl nach :export"
 
+msgid "E1094: import can only be used in a script"
+msgstr "E1094: import kann nur innerhalb eines Scripts verwendet werden"
+
 #, c-format
 msgid "E1049: Item not exported in script: %s"
 msgstr "E1049: Element nicht exportiert in Script: %s"
@@ -6660,6 +6757,12 @@ msgstr "E1049: Element nicht exportiert in Script: %s"
 #, c-format
 msgid "E1048: Item not found in script: %s"
 msgstr "E1048: Element nicht in Script %s gefunden"
+
+msgid "E1047: syntax error in import"
+msgstr "E1047: Syntaxfehler in import"
+
+msgid "E1046: Missing comma in import"
+msgstr "E1046: Fehlendes Komma in import"
 
 msgid "E1045: Missing \"as\" after *"
 msgstr "E1045: Fehlendes \"as\" nach *"
@@ -6673,12 +6776,6 @@ msgstr "E1071: Ungültige Zeichenkette nach \"from\""
 #, c-format
 msgid "E1053: Could not import \"%s\""
 msgstr "E1053: Konnte \"%s\" nicht importieren"
-
-msgid "E1046: Missing comma in import"
-msgstr "E1046: Fehlendes Komma in import"
-
-msgid "E1047: syntax error in import"
-msgstr "E1047: Syntaxfehler in import"
 
 msgid ""
 "\n"
@@ -6809,8 +6906,8 @@ msgid "# Value of 'encoding' when this file was written\n"
 msgstr "# Wert von 'encoding', als diese Datei geschrieben wurde\n"
 
 #, c-format
-msgid "Reading viminfo file \"%s\"%s%s%s"
-msgstr "Lesen der viminfo-Datei \"%s\"%s%s%s"
+msgid "Reading viminfo file \"%s\"%s%s%s%s"
+msgstr "Lesen der viminfo-Datei \"%s\"%s%s%s%s"
 
 msgid " info"
 msgstr " Information"
@@ -6869,10 +6966,6 @@ msgstr "E443: Rotieren nicht möglich wenn ein anderes Fenster geteilt ist"
 
 msgid "E444: Cannot close last window"
 msgstr "E444: Letztes Fenster kann nicht geschlossen werden"
-
-msgid "E813: Cannot close autocmd or popup window"
-msgstr ""
-"E813: Autokommando-Fenster oder Popup-Fenster kann nicht geschlossen werden"
 
 msgid "E814: Cannot close window, only autocmd window would remain"
 msgstr ""
@@ -7039,6 +7132,9 @@ msgstr "E476: Ungültiger Befehl"
 #, c-format
 msgid "E17: \"%s\" is a directory"
 msgstr "E17: \"%s\" ist ein Verzeichnis"
+
+msgid "E756: Spell checking is not possible"
+msgstr "E756: Rechtschreibprüfung ist nicht möglich"
 
 #, c-format
 msgid "E364: Library call failed for \"%s()\""
@@ -7253,8 +7349,15 @@ msgstr "E716: Schlüssel %s nicht im Dictionary vorhanden."
 msgid "E714: List required"
 msgstr "E714: Liste benötigt"
 
+msgid "E1090: List, Dict or Blob required"
+msgstr "E1090: Liste, Dictionary oder Blob benötigt"
+
 msgid "E897: List or Blob required"
 msgstr "E897: Liste oder Blob benötigt"
+
+#, c-format
+msgid "E697: Missing end of List ']': %s"
+msgstr "E697: Fehlendes Ende der Liste ']': %s"
 
 #, c-format
 msgid "E712: Argument of %s must be a List or Dictionary"
@@ -7280,6 +7383,14 @@ msgstr "E113: Unbekannte Option: %s"
 msgid "E18: Unexpected characters in :let"
 msgstr "E18: Unerwartete Zeichen in :let"
 
+#, c-format
+msgid "E998: Reduce of an empty %s with no initial value"
+msgstr "E998: Reduzierung einer leeren %s ohne initialen Anfangswert"
+
+#, c-format
+msgid "E857: Dictionary key \"%s\" required"
+msgstr "E857: Dictionary Schlüssel \"%s\" benötigt"
+
 msgid "E47: Error while reading errorfile"
 msgstr "E47: Fehler während des Lesens der Fehlerdatei"
 
@@ -7288,6 +7399,12 @@ msgstr "E48: In einer Sandbox nicht erlaubt"
 
 msgid "E523: Not allowed here"
 msgstr "E523: Hier nicht erlaubt"
+
+msgid "E578: Not allowed to change text here"
+msgstr "E578: Nicht erlaubt Text hier zu ändern"
+
+msgid "E565: Not allowed to change text or change window"
+msgstr "E565: Es ist nicht erlaubt Text oder Fenster zu ändern"
 
 msgid "E359: Screen mode setting not supported"
 msgstr "E359: Bildschirm-Modus wird nicht unterstützt"
@@ -7398,12 +7515,19 @@ msgstr "E764: Option '%s' ist nicht gesetzt"
 msgid "E850: Invalid register name"
 msgstr "E850: Ungültiger Register Name"
 
+msgid "E806: using Float as a String"
+msgstr "E806: Float als String benutzt."
+
 #, c-format
 msgid "E919: Directory not found in '%s': \"%s\""
 msgstr "E919: Verzeichnis nicht gefunden in '%s': \"%s\""
 
 msgid "E952: Autocommand caused recursive behavior"
 msgstr "E952: Autokommando verursachten Rekursion"
+
+msgid "E813: Cannot close autocmd or popup window"
+msgstr ""
+"E813: Autokommando-Fenster oder Popup-Fenster kann nicht geschlossen werden"
 
 msgid "E328: Menu only exists in another mode"
 msgstr "E328: Menü existiert nur in anderen Modi"
@@ -7445,6 +7569,43 @@ msgstr "E587: :break ohne :while oder :for"
 
 msgid "E274: No white space allowed before parenthesis"
 msgstr "E274: Keine Leerzeichen vor Klammern erlaubt"
+
+#, c-format
+msgid "E1004: white space required before and after '%s'"
+msgstr "E1004: Leerzeichen vor und nach '%s' benötigt"
+
+#, c-format
+msgid "E1069: white space required after '%s'"
+msgstr "E1069: Leerzeichen benötigt nach '%s'"
+
+#, c-format
+msgid "E1068: No white space allowed before '%s'"
+msgstr "E1068: Keine Leerzeichen vor '%s' erlaubt"
+
+#, c-format
+msgid "E940: Cannot lock or unlock variable %s"
+msgstr "E940: Kann Variable \"%s\" nicht sperren bzw. entsperren."
+
+msgid "E1021: const requires a value"
+msgstr "E1021: const erfordert einen Wert"
+
+msgid "E1022: type or initialization required"
+msgstr "E1022: Typ oder Initialisierung erforderlich"
+
+#, c-format
+msgid "E1016: Cannot declare a %s variable: %s"
+msgstr "E1016: Kann eine %s Variable nicht deklarieren: %s"
+
+#, c-format
+msgid "E1016: Cannot declare an environment variable: %s"
+msgstr "E1016: Kann eine Umgebungsvariable nicht deklarieren: %s"
+
+msgid "E1050: Colon required before a range"
+msgstr "E1050: Doppelpunkt vor einem Bereich benötigt"
+
+#, c-format
+msgid "E254: Cannot allocate color %s"
+msgstr "E254: Kann die Farbe %s nicht zuweisen."
 
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "Suche erreichte den ANFANG und wurde am ENDE fortgesetzt"
@@ -7784,3 +7945,5 @@ msgstr "gvim"
 
 msgid "Vim"
 msgstr "Vim"
+
+
