@@ -659,4 +659,22 @@ func Test_clipboard_nul()
   bwipe!
 endfunc
 
+func Test_ve_blockpaste()
+  new
+  set ve=all
+  0put =['QWERTZ','ASDFGH']
+  call cursor(1,1)
+  exe ":norm! \<C-V>3ljdP"
+  call assert_equal(1, col('.'))
+  call assert_equal(getline(1, 2), ['QWERTZ', 'ASDFGH'])
+  call cursor(1,1)
+  exe ":norm! \<C-V>3ljd"
+  call cursor(1,1)
+  norm! $3lP
+  call assert_equal(5, col('.'))
+  call assert_equal(getline(1, 2), ['TZ  QWER', 'GH  ASDF'])
+  set ve&vim
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

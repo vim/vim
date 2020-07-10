@@ -1764,7 +1764,7 @@ do_put(
 	{
 	    if (dir == FORWARD && c == NUL)
 		++col;
-	    if (dir != FORWARD && c != NUL)
+	    if (dir != FORWARD && c != NUL && curwin->w_cursor.coladd > 0)
 		++curwin->w_cursor.col;
 	    if (c == TAB)
 	    {
