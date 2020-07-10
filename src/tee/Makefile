@@ -4,7 +4,7 @@ CC=gcc
 CFLAGS=-O2 -fno-strength-reduce
 
 ifneq (sh.exe, $(SHELL))
-DEL = rm
+DEL = rm -f
 else
 DEL = del
 endif

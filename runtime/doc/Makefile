@@ -396,7 +396,7 @@ test_urls:
 	vim -S test_urls.vim
 
 clean:
-	-rm doctags *.html tags.ref
+	-rm -f doctags *.html tags.ref
 
 # These files are in the extra archive, skip if not present
 

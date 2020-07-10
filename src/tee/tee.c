@@ -32,6 +32,8 @@
 #endif
 #include <malloc.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <fcntl.h>
 
 #ifdef _WIN32
@@ -132,9 +134,11 @@ main(int argc, char *argv[])
 			exit(1);
 		}
 	}
+#ifdef _WIN32
 	setmode(fileno(stdin),  O_BINARY);
 	fflush(stdout);	/* needed for _fsetmode(stdout) */
 	setmode(fileno(stdout),  O_BINARY);
+#endif
 
 	while ((n = myfread(buf, sizeof(char), sizeof(buf), stdin)) > 0)
 	{
