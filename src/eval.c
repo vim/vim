@@ -2460,8 +2460,16 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	}
 	if (evalarg != NULL && (evalarg->eval_flags & EVAL_EVALUATE))
 	{
-	    int ret = typval_compare(rettv, &var2, type, ic);
+	    int ret;
 
+	    if (in_vim9script() && check_compare_types(
+						   type, rettv, &var2) == FAIL)
+	    {
+		ret = FAIL;
+		clear_tv(rettv);
+	    }
+	    else
+		ret = typval_compare(rettv, &var2, type, ic);
 	    clear_tv(&var2);
 	    return ret;
 	}

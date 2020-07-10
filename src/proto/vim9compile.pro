@@ -3,6 +3,7 @@ int check_defined(char_u *p, size_t len, cctx_T *cctx);
 void clear_type_list(garray_T *gap);
 type_T *typval2type(typval_T *tv);
 int check_type(type_T *expected, type_T *actual, int give_msg);
+int check_compare_types(exptype_T type, typval_T *tv1, typval_T *tv2);
 char_u *skip_type(char_u *start);
 type_T *parse_type(char_u **arg, garray_T *type_gap);
 char *vartype_name(vartype_T type);

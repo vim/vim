@@ -820,6 +820,14 @@ get_compare_isn(exptype_T exptype, vartype_T type1, vartype_T type2)
     return isntype;
 }
 
+    int
+check_compare_types(exptype_T type, typval_T *tv1, typval_T *tv2)
+{
+    if (get_compare_isn(type, tv1->v_type, tv2->v_type) == ISN_DROP)
+	return FAIL;
+    return OK;
+}
+
 /*
  * Generate an ISN_COMPARE* instruction with a boolean result.
  */
@@ -4296,7 +4304,7 @@ compile_expr4(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    // Both sides are a constant, compute the result now.
 	    // First check for a valid combination of types, this is more
 	    // strict than typval_compare().
-	    if (get_compare_isn(type, tv1->v_type, tv2->v_type) == ISN_DROP)
+	    if (check_compare_types(type, tv1, tv2) == FAIL)
 		ret = FAIL;
 	    else
 	    {

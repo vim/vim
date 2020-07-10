@@ -557,7 +557,7 @@ def RetVoid()
 enddef
 
 def Test_expr4_vimscript()
-  " only checks line continuation
+  " check line continuation
   let lines =<< trim END
       vim9script
       let var = 0
@@ -599,6 +599,25 @@ def Test_expr4_vimscript()
       assert_equal(1, var)
   END
   CheckScriptSuccess(lines)
+
+  " spot check mismatching types
+  lines =<< trim END
+      vim9script
+      echo '' == 0
+  END
+  CheckScriptFailure(lines, 'E1072:')
+
+  lines =<< trim END
+      vim9script
+      echo v:true > v:false
+  END
+  CheckScriptFailure(lines, 'Cannot compare bool with bool')
+
+  lines =<< trim END
+      vim9script
+      echo 123 is 123
+  END
+  CheckScriptFailure(lines, 'Cannot use "is" with number')
 enddef
 
 func Test_expr4_fails()
