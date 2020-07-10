@@ -2501,6 +2501,21 @@ may_get_next_line(char_u *whitep, char_u **arg, cctx_T *cctx)
     return OK;
 }
 
+/*
+ * Idem, and give an error when failed.
+ */
+    static int
+may_get_next_line_error(char_u *whitep, char_u **arg, cctx_T *cctx)
+{
+    if (may_get_next_line(whitep, arg, cctx) == FAIL)
+    {
+	emsg(_("E1097: line incomplete"));
+	return FAIL;
+    }
+    return OK;
+}
+
+
 // Structure passed between the compile_expr* functions to keep track of
 // constants that have been parsed but for which no code was produced yet.  If
 // possible expressions on these constants are applied at compile time.  If
@@ -3588,8 +3603,11 @@ compile_subscript(
 
 	    // If a following line starts with "->{" or "->X" advance to that
 	    // line, so that a line break before "->" is allowed.
-	    if (next != NULL && next[0] == '-' && next[1] == '>'
-		    && (next[2] == '{' || ASCII_ISALPHA(next[2])))
+	    // Also if a following line starts with ".x".
+	    if (next != NULL &&
+		    ((next[0] == '-' && next[1] == '>'
+				 && (next[2] == '{' || ASCII_ISALPHA(next[2])))
+		    || (next[0] == '.' && ASCII_ISALPHA(next[1]))))
 	    {
 		next = next_line_from_context(cctx, TRUE);
 		if (next == NULL)
@@ -3672,11 +3690,13 @@ compile_subscript(
 
 	    ++p;
 	    *arg = skipwhite(p);
-	    if (may_get_next_line(p, arg, cctx) == FAIL)
+	    if (may_get_next_line_error(p, arg, cctx) == FAIL)
 		return FAIL;
 	    if (compile_expr0(arg, cctx) == FAIL)
 		return FAIL;
 
+	    if (may_get_next_line_error(p, arg, cctx) == FAIL)
+		return FAIL;
 	    if (**arg != ']')
 	    {
 		emsg(_(e_missbrac));

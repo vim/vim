@@ -1016,7 +1016,8 @@ def Test_expr7_list()
   call CheckDefFailure(["let x = g:list_mixed[xxx]"], 'E1001:')
   call CheckDefFailure(["let x = [1,2,3]"], 'E1069:')
   call CheckDefExecFailure(["let x = g:list_mixed['xx']"], 'E39:')
-  call CheckDefFailure(["let x = g:list_mixed[0"], 'E111:')
+  call CheckDefFailure(["let x = g:list_mixed["], 'E1097:')
+  call CheckDefFailure(["let x = g:list_mixed[0"], 'E1097:')
   call CheckDefExecFailure(["let x = g:list_empty[3]"], 'E684:')
 enddef
 
@@ -1135,6 +1136,11 @@ def Test_expr_member()
   assert_equal(1, g:dict_one.one)
   let d: dict<number> = g:dict_one
   assert_equal(1, d['one'])
+  assert_equal(1, d[
+		  'one'
+		  ])
+  assert_equal(1, d
+  	.one)
 
   # getting the one member should clear the dict after getting the item
   assert_equal('one', #{one: 'one'}.one)
