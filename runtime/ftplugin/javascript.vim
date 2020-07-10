@@ -28,12 +28,13 @@ setlocal commentstring=//%s
 
 " Change the :browse e filter to primarily show JavaScript-related files.
 if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
-    let  b:browsefilter="JavaScript Files (*.js)\t*.js\n" .
-                \ "JSX Files (*.jsx)\t*.jsx\n" .
-                \ "JavaScript Modules (*.es, *.es6, *.cjs, *.mjs, *.jsm)\t*.es;*.es6;*.cjs;*.mjs;*.jsm\n" .
-                \ "Vue Templates (*.vue)\t*.vue\n" .
-                \ "JSON Files (*.json)\t*.json\n" .
-                \ "All Files (*.*)\t*.*\n"
+    let b:browsefilter =
+                \ "JavaScript Files (*.js)\t*.js\n"
+                \ .. "JSX Files (*.jsx)\t*.jsx\n"
+                \ .. "JavaScript Modules (*.es, *.es6, *.cjs, *.mjs, *.jsm)\t*.es;*.es6;*.cjs;*.mjs;*.jsm\n"
+                \ .. "Vue Templates (*.vue)\t*.vue\n"
+                \ .. "JSON Files (*.json)\t*.json\n"
+                \ .. "All Files (*.*)\t*.*\n"
 endif
 
 " The following suffixes should be implied when resolving filenames
@@ -45,9 +46,13 @@ setlocal suffixes+=.snap
 
 " Prepend node_modules/.bin to $PATH if applicable
 " Allows calling executables installed locally via npm/yarn
-let s:bin_dir = finddir('node_modules/.bin', '.;')->fnamemodify(':p')
-if len(s:bin_dir) && $PATH !~ s:bin_dir
-    let $PATH = s:bin_dir .. ':' .. $PATH
+let s:bin_dir = finddir('node_modules/.bin', '.;')
+if !empty(s:bin_dir)
+    let s:bin_dir = fnamemodify(s:bin_dir, ':p')
+
+    if $PATH !~ s:bin_dir
+        let $PATH = s:bin_dir .. ':' .. $PATH
+    endif
 endif
 unlet s:bin_dir
 
