@@ -3,6 +3,7 @@
 "
 
 source check.vim
+source view_util.vim
 
 " This test must be executed first to check for empty and unset registers.
 func Test_aaa_empty_reg_test()
@@ -162,6 +163,19 @@ func Test_register_one()
   call assert_equal("\ntw", @1)
 
   bwipe!
+endfunc
+
+func Test_recording_status_in_ex_line()
+  norm qx
+  redraw!
+  call assert_equal('recording @x', Screenline(&lines))
+  set shortmess=q
+  redraw!
+  call assert_equal('recording', Screenline(&lines))
+  set shortmess&
+  norm q
+  redraw!
+  call assert_equal('', Screenline(&lines))
 endfunc
 
 " Check that replaying a typed sequence does not use an Esc and following
