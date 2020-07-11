@@ -2750,10 +2750,11 @@ parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only)
 				if (*p == NUL || ends_excmd(*p))
 				    break;
 			    }
+#ifdef FEAT_EVAL
 			    // Avoid that "filter(arg)" is recognized.
 			    if (in_vim9script() && !VIM_ISWHITE(*p))
 				break;
-
+#endif
 			    if (skip_only)
 				p = skip_vimgrep_pat(p, NULL, NULL);
 			    else
