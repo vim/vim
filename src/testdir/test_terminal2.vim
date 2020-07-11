@@ -184,6 +184,8 @@ endfunc
 
 func Test_termwinscroll()
   CheckUnix
+  " TODO: Somehow this test sometimes hangs in the GUI
+  CheckNotGui
 
   " Let the terminal output more than 'termwinscroll' lines, some at the start
   " will be dropped.
