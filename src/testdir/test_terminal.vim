@@ -1,6 +1,6 @@
 " Tests for the terminal window.
 " This is split in two, because it can take a lot of time.
-" See test_terminal2.vim for further tests.
+" See test_terminal2.vim and test_terminal3.vim for further tests.
 
 source check.vim
 CheckFeature terminal
@@ -1357,6 +1357,472 @@ func Test_terminal_statusline()
   exe tbuf . 'bwipe!'
   au! BufLeave
   set statusline=
+endfunc
+
+func Api_drop_common(options)
+  call assert_equal(1, winnr('$'))
+
+  " Use the title termcap entries to output the escape sequence.
+  call writefile([
+	\ 'set title',
+	\ 'exe "set t_ts=\<Esc>]51; t_fs=\x07"',
+	\ 'let &titlestring = ''["drop","Xtextfile"' . a:options . ']''',
+	\ 'redraw',
+	\ "set t_ts=",
+	\ ], 'Xscript')
+  let buf = RunVimInTerminal('-S Xscript', {})
+  call WaitFor({-> bufnr('Xtextfile') > 0})
+  call assert_equal('Xtextfile', expand('%:t'))
+  call assert_true(winnr('$') >= 3)
+  return buf
+endfunc
+
+func Test_terminal_api_drop_newwin()
+  CheckRunVimInTerminal
+  let buf = Api_drop_common('')
+  call assert_equal(0, &bin)
+  call assert_equal('', &fenc)
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  bwipe Xtextfile
+endfunc
+
+func Test_terminal_api_drop_newwin_bin()
+  CheckRunVimInTerminal
+  let buf = Api_drop_common(',{"bin":1}')
+  call assert_equal(1, &bin)
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  bwipe Xtextfile
+endfunc
+
+func Test_terminal_api_drop_newwin_binary()
+  CheckRunVimInTerminal
+  let buf = Api_drop_common(',{"binary":1}')
+  call assert_equal(1, &bin)
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  bwipe Xtextfile
+endfunc
+
+func Test_terminal_api_drop_newwin_nobin()
+  CheckRunVimInTerminal
+  set binary
+  let buf = Api_drop_common(',{"nobin":1}')
+  call assert_equal(0, &bin)
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  bwipe Xtextfile
+  set nobinary
+endfunc
+
+func Test_terminal_api_drop_newwin_nobinary()
+  CheckRunVimInTerminal
+  set binary
+  let buf = Api_drop_common(',{"nobinary":1}')
+  call assert_equal(0, &bin)
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  bwipe Xtextfile
+  set nobinary
+endfunc
+
+func Test_terminal_api_drop_newwin_ff()
+  CheckRunVimInTerminal
+  let buf = Api_drop_common(',{"ff":"dos"}')
+  call assert_equal("dos", &ff)
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  bwipe Xtextfile
+endfunc
+
+func Test_terminal_api_drop_newwin_fileformat()
+  CheckRunVimInTerminal
+  let buf = Api_drop_common(',{"fileformat":"dos"}')
+  call assert_equal("dos", &ff)
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  bwipe Xtextfile
+endfunc
+
+func Test_terminal_api_drop_newwin_enc()
+  CheckRunVimInTerminal
+  let buf = Api_drop_common(',{"enc":"utf-16"}')
+  call assert_equal("utf-16", &fenc)
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  bwipe Xtextfile
+endfunc
+
+func Test_terminal_api_drop_newwin_encoding()
+  CheckRunVimInTerminal
+  let buf = Api_drop_common(',{"encoding":"utf-16"}')
+  call assert_equal("utf-16", &fenc)
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  bwipe Xtextfile
+endfunc
+
+func Test_terminal_api_drop_oldwin()
+  CheckRunVimInTerminal
+  let firstwinid = win_getid()
+  split Xtextfile
+  let textfile_winid = win_getid()
+  call assert_equal(2, winnr('$'))
+  call win_gotoid(firstwinid)
+
+  " Use the title termcap entries to output the escape sequence.
+  call writefile([
+	\ 'set title',
+	\ 'exe "set t_ts=\<Esc>]51; t_fs=\x07"',
+	\ 'let &titlestring = ''["drop","Xtextfile"]''',
+	\ 'redraw',
+	\ "set t_ts=",
+	\ ], 'Xscript')
+  let buf = RunVimInTerminal('-S Xscript', {'rows': 10})
+  call WaitForAssert({-> assert_equal('Xtextfile', expand('%:t'))})
+  call assert_equal(textfile_winid, win_getid())
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  bwipe Xtextfile
+endfunc
+
+func Tapi_TryThis(bufnum, arg)
+  let g:called_bufnum = a:bufnum
+  let g:called_arg = a:arg
+endfunc
+
+func WriteApiCall(funcname)
+  " Use the title termcap entries to output the escape sequence.
+  call writefile([
+	\ 'set title',
+	\ 'exe "set t_ts=\<Esc>]51; t_fs=\x07"',
+	\ 'let &titlestring = ''["call","' . a:funcname . '",["hello",123]]''',
+	\ 'redraw',
+	\ "set t_ts=",
+	\ ], 'Xscript')
+endfunc
+
+func Test_terminal_api_call()
+  CheckRunVimInTerminal
+
+  unlet! g:called_bufnum
+  unlet! g:called_arg
+
+  call WriteApiCall('Tapi_TryThis')
+
+  " Default
+  let buf = RunVimInTerminal('-S Xscript', {})
+  call WaitFor({-> exists('g:called_bufnum')})
+  call assert_equal(buf, g:called_bufnum)
+  call assert_equal(['hello', 123], g:called_arg)
+  call StopVimInTerminal(buf)
+
+  unlet! g:called_bufnum
+  unlet! g:called_arg
+
+  " Enable explicitly
+  let buf = RunVimInTerminal('-S Xscript', {'term_api': 'Tapi_Try'})
+  call WaitFor({-> exists('g:called_bufnum')})
+  call assert_equal(buf, g:called_bufnum)
+  call assert_equal(['hello', 123], g:called_arg)
+  call StopVimInTerminal(buf)
+
+  unlet! g:called_bufnum
+  unlet! g:called_arg
+
+  func! ApiCall_TryThis(bufnum, arg)
+    let g:called_bufnum2 = a:bufnum
+    let g:called_arg2 = a:arg
+  endfunc
+
+  call WriteApiCall('ApiCall_TryThis')
+
+  " Use prefix match
+  let buf = RunVimInTerminal('-S Xscript', {'term_api': 'ApiCall_'})
+  call WaitFor({-> exists('g:called_bufnum2')})
+  call assert_equal(buf, g:called_bufnum2)
+  call assert_equal(['hello', 123], g:called_arg2)
+  call StopVimInTerminal(buf)
+
+  call assert_fails("call term_start('ls', {'term_api' : []})", 'E475:')
+
+  unlet! g:called_bufnum2
+  unlet! g:called_arg2
+
+  call delete('Xscript')
+  delfunction! ApiCall_TryThis
+  unlet! g:called_bufnum2
+  unlet! g:called_arg2
+endfunc
+
+func Test_terminal_api_call_fails()
+  CheckRunVimInTerminal
+
+  func! TryThis(bufnum, arg)
+    let g:called_bufnum3 = a:bufnum
+    let g:called_arg3 = a:arg
+  endfunc
+
+  call WriteApiCall('TryThis')
+
+  unlet! g:called_bufnum3
+  unlet! g:called_arg3
+
+  " Not permitted
+  call ch_logfile('Xlog', 'w')
+  let buf = RunVimInTerminal('-S Xscript', {'term_api': ''})
+  call WaitForAssert({-> assert_match('Unpermitted function: TryThis', string(readfile('Xlog')))})
+  call assert_false(exists('g:called_bufnum3'))
+  call assert_false(exists('g:called_arg3'))
+  call StopVimInTerminal(buf)
+
+  " No match
+  call ch_logfile('Xlog', 'w')
+  let buf = RunVimInTerminal('-S Xscript', {'term_api': 'TryThat'})
+  call WaitFor({-> string(readfile('Xlog')) =~ 'Unpermitted function: TryThis'})
+  call assert_false(exists('g:called_bufnum3'))
+  call assert_false(exists('g:called_arg3'))
+  call StopVimInTerminal(buf)
+
+  call delete('Xscript')
+  call ch_logfile('')
+  call delete('Xlog')
+  delfunction! TryThis
+  unlet! g:called_bufnum3
+  unlet! g:called_arg3
+endfunc
+
+let s:caught_e937 = 0
+
+func Tapi_Delete(bufnum, arg)
+  try
+    execute 'bdelete!' a:bufnum
+  catch /E937:/
+    let s:caught_e937 = 1
+  endtry
+endfunc
+
+func Test_terminal_api_call_fail_delete()
+  CheckRunVimInTerminal
+
+  call WriteApiCall('Tapi_Delete')
+  let buf = RunVimInTerminal('-S Xscript', {})
+  call WaitForAssert({-> assert_equal(1, s:caught_e937)})
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  call ch_logfile('', '')
+endfunc
+
+func Test_terminal_setapi_and_call()
+  CheckRunVimInTerminal
+
+  call WriteApiCall('Tapi_TryThis')
+  call ch_logfile('Xlog', 'w')
+
+  unlet! g:called_bufnum
+  unlet! g:called_arg
+
+  let buf = RunVimInTerminal('-S Xscript', {'term_api': ''})
+  call WaitForAssert({-> assert_match('Unpermitted function: Tapi_TryThis', string(readfile('Xlog')))})
+  call assert_false(exists('g:called_bufnum'))
+  call assert_false(exists('g:called_arg'))
+
+  eval buf->term_setapi('Tapi_')
+  call term_sendkeys(buf, ":set notitle\<CR>")
+  call term_sendkeys(buf, ":source Xscript\<CR>")
+  call WaitFor({-> exists('g:called_bufnum')})
+  call assert_equal(buf, g:called_bufnum)
+  call assert_equal(['hello', 123], g:called_arg)
+
+  call StopVimInTerminal(buf)
+
+  call delete('Xscript')
+  call ch_logfile('')
+  call delete('Xlog')
+  unlet! g:called_bufnum
+  unlet! g:called_arg
+endfunc
+
+func Test_terminal_api_arg()
+  CheckRunVimInTerminal
+
+  call WriteApiCall('Tapi_TryThis')
+  call ch_logfile('Xlog', 'w')
+
+  unlet! g:called_bufnum
+  unlet! g:called_arg
+
+  execute 'term ++api= ' .. GetVimCommandCleanTerm() .. '-S Xscript'
+  let buf = bufnr('%')
+  call WaitForAssert({-> assert_match('Unpermitted function: Tapi_TryThis', string(readfile('Xlog')))})
+  call assert_false(exists('g:called_bufnum'))
+  call assert_false(exists('g:called_arg'))
+
+  call StopVimInTerminal(buf)
+
+  call ch_logfile('Xlog', 'w')
+
+  execute 'term ++api=Tapi_ ' .. GetVimCommandCleanTerm() .. '-S Xscript'
+  let buf = bufnr('%')
+  call WaitFor({-> exists('g:called_bufnum')})
+  call assert_equal(buf, g:called_bufnum)
+  call assert_equal(['hello', 123], g:called_arg)
+
+  call StopVimInTerminal(buf)
+
+  call delete('Xscript')
+  call ch_logfile('')
+  call delete('Xlog')
+  unlet! g:called_bufnum
+  unlet! g:called_arg
+endfunc
+
+func Test_terminal_ansicolors_default()
+  CheckFunction term_getansicolors
+
+  let colors = [
+	\ '#000000', '#e00000',
+	\ '#00e000', '#e0e000',
+	\ '#0000e0', '#e000e0',
+	\ '#00e0e0', '#e0e0e0',
+	\ '#808080', '#ff4040',
+	\ '#40ff40', '#ffff40',
+	\ '#4040ff', '#ff40ff',
+	\ '#40ffff', '#ffffff',
+	\]
+
+  let buf = Run_shell_in_terminal({})
+  call assert_equal(colors, term_getansicolors(buf))
+  call StopShellInTerminal(buf)
+  call TermWait(buf)
+  call assert_equal([], term_getansicolors(buf))
+
+  exe buf . 'bwipe'
+endfunc
+
+let s:test_colors = [
+	\ '#616e64', '#0d0a79',
+	\ '#6d610d', '#0a7373',
+	\ '#690d0a', '#6d696e',
+	\ '#0d0a6f', '#616e0d',
+	\ '#0a6479', '#6d0d0a',
+	\ '#617373', '#0d0a69',
+	\ '#6d690d', '#0a6e6f',
+	\ '#610d0a', '#6e6479',
+	\]
+
+func Test_terminal_ansicolors_global()
+  CheckFeature termguicolors
+  CheckFunction term_getansicolors
+
+  let g:terminal_ansi_colors = reverse(copy(s:test_colors))
+  let buf = Run_shell_in_terminal({})
+  call assert_equal(g:terminal_ansi_colors, term_getansicolors(buf))
+  call StopShellInTerminal(buf)
+  call TermWait(buf)
+
+  exe buf . 'bwipe'
+  unlet g:terminal_ansi_colors
+endfunc
+
+func Test_terminal_ansicolors_func()
+  CheckFeature termguicolors
+  CheckFunction term_getansicolors
+
+  let g:terminal_ansi_colors = reverse(copy(s:test_colors))
+  let buf = Run_shell_in_terminal({'ansi_colors': s:test_colors})
+  call assert_equal(s:test_colors, term_getansicolors(buf))
+
+  call term_setansicolors(buf, g:terminal_ansi_colors)
+  call assert_equal(g:terminal_ansi_colors, buf->term_getansicolors())
+
+  let colors = [
+	\ 'ivory', 'AliceBlue',
+	\ 'grey67', 'dark goldenrod',
+	\ 'SteelBlue3', 'PaleVioletRed4',
+	\ 'MediumPurple2', 'yellow2',
+	\ 'RosyBrown3', 'OrangeRed2',
+	\ 'white smoke', 'navy blue',
+	\ 'grey47', 'gray97',
+	\ 'MistyRose2', 'DodgerBlue4',
+	\]
+  eval buf->term_setansicolors(colors)
+
+  let colors[4] = 'Invalid'
+  call assert_fails('call term_setansicolors(buf, colors)', 'E474:')
+  call assert_fails('call term_setansicolors(buf, {})', 'E714:')
+
+  call StopShellInTerminal(buf)
+  call TermWait(buf)
+  call assert_equal(0, term_setansicolors(buf, []))
+  exe buf . 'bwipe'
+endfunc
+
+func Test_terminal_all_ansi_colors()
+  CheckRunVimInTerminal
+
+  " Use all the ANSI colors.
+  call writefile([
+	\ 'call setline(1, "AABBCCDDEEFFGGHHIIJJKKLLMMNNOOPP XXYYZZ")',
+	\ 'hi Tblack ctermfg=0 ctermbg=8',
+	\ 'hi Tdarkred ctermfg=1 ctermbg=9',
+	\ 'hi Tdarkgreen ctermfg=2 ctermbg=10',
+	\ 'hi Tbrown ctermfg=3 ctermbg=11',
+	\ 'hi Tdarkblue ctermfg=4 ctermbg=12',
+	\ 'hi Tdarkmagenta ctermfg=5 ctermbg=13',
+	\ 'hi Tdarkcyan ctermfg=6 ctermbg=14',
+	\ 'hi Tlightgrey ctermfg=7 ctermbg=15',
+	\ 'hi Tdarkgrey ctermfg=8 ctermbg=0',
+	\ 'hi Tred ctermfg=9 ctermbg=1',
+	\ 'hi Tgreen ctermfg=10 ctermbg=2',
+	\ 'hi Tyellow ctermfg=11 ctermbg=3',
+	\ 'hi Tblue ctermfg=12 ctermbg=4',
+	\ 'hi Tmagenta ctermfg=13 ctermbg=5',
+	\ 'hi Tcyan ctermfg=14 ctermbg=6',
+	\ 'hi Twhite ctermfg=15 ctermbg=7',
+	\ 'hi TdarkredBold ctermfg=1 cterm=bold',
+	\ 'hi TgreenBold ctermfg=10 cterm=bold',
+	\ 'hi TmagentaBold ctermfg=13 cterm=bold ctermbg=5',
+	\ '',
+	\ 'call  matchadd("Tblack", "A")',
+	\ 'call  matchadd("Tdarkred", "B")',
+	\ 'call  matchadd("Tdarkgreen", "C")',
+	\ 'call  matchadd("Tbrown", "D")',
+	\ 'call  matchadd("Tdarkblue", "E")',
+	\ 'call  matchadd("Tdarkmagenta", "F")',
+	\ 'call  matchadd("Tdarkcyan", "G")',
+	\ 'call  matchadd("Tlightgrey", "H")',
+	\ 'call  matchadd("Tdarkgrey", "I")',
+	\ 'call  matchadd("Tred", "J")',
+	\ 'call  matchadd("Tgreen", "K")',
+	\ 'call  matchadd("Tyellow", "L")',
+	\ 'call  matchadd("Tblue", "M")',
+	\ 'call  matchadd("Tmagenta", "N")',
+	\ 'call  matchadd("Tcyan", "O")',
+	\ 'call  matchadd("Twhite", "P")',
+	\ 'call  matchadd("TdarkredBold", "X")',
+	\ 'call  matchadd("TgreenBold", "Y")',
+	\ 'call  matchadd("TmagentaBold", "Z")',
+	\ 'redraw',
+	\ ], 'Xcolorscript')
+  let buf = RunVimInTerminal('-S Xcolorscript', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_terminal_all_ansi_colors', {})
+
+  call term_sendkeys(buf, ":q\<CR>")
+  call StopVimInTerminal(buf)
+  call delete('Xcolorscript')
 endfunc
 
 

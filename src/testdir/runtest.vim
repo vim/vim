@@ -45,6 +45,11 @@
 " Without the +eval feature we can't run these tests, bail out.
 so small.vim
 
+" In the GUI we can always change the screen size.
+if has('gui_running')
+  set columns=80 lines=25
+endif
+
 " Check that the screen size is at least 24 x 80 characters.
 if &lines < 24 || &columns < 80 
   let error = 'Screen size too small! Tests require at least 24 lines with 80 characters, got ' .. &lines .. ' lines with ' .. &columns .. ' characters'
