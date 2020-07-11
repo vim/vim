@@ -208,12 +208,12 @@ func Test_notmatch()
 endfunc
 
 func Test_assert_fail_fails()
-  call assert_equal(1, assert_fails('xxx', {}))
-  call assert_match("Expected {} but got 'E731:", v:errors[0])
+  call assert_equal(1, assert_fails('xxx', 'E12345'))
+  call assert_match("Expected 'E12345' but got 'E492:", v:errors[0])
   call remove(v:errors, 0)
 
-  call assert_equal(1, assert_fails('xxx', {}, 'stupid'))
-  call assert_match("stupid: Expected {} but got 'E731:", v:errors[0])
+  call assert_equal(1, assert_fails('xxx', 'E9876', 'stupid'))
+  call assert_match("stupid: Expected 'E9876' but got 'E492:", v:errors[0])
   call remove(v:errors, 0)
 
   call assert_equal(1, assert_fails('echo', '', 'echo command'))

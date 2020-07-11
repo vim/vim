@@ -3389,7 +3389,6 @@ static char_u	*redir_varname = NULL;
 var_redir_start(char_u *name, int append)
 {
     int		called_emsg_before;
-    int		err;
     typval_T	tv;
 
     // Catch a bad name early.
