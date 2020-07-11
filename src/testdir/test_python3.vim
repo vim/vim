@@ -90,7 +90,7 @@ func Test_py3do()
 
   " Try modifying a buffer with 'nomodifiable' set
   set nomodifiable
-  call assert_fails('py3do toupper(line)', 'cannot save undo information')
+  call assert_fails('py3do toupper(line)', 'E21:')
   set modifiable
 
   " Invalid command
@@ -290,7 +290,7 @@ func Test_python3_vim_val()
   call assert_equal("\nNone",          execute('py3 print(vim.eval("v:none"))'))
   call assert_equal("\nb'\\xab\\x12'", execute('py3 print(vim.eval("0zab12"))'))
 
-  call assert_fails('py3 vim.eval("1+")', 'vim.error: invalid expression')
+  call assert_fails('py3 vim.eval("1+")', 'E15: Invalid expression')
 endfunc
 
 " Test range objects, see :help python-range
@@ -305,10 +305,10 @@ func Test_python3_range()
   call assert_equal('3', py3eval('b[2]'))
   call assert_equal('4', py3eval('r[2]'))
 
-  call assert_fails('py3 r[3] = "x"', 'IndexError: line number out of range')
-  call assert_fails('py3 x = r[3]', 'IndexError: line number out of range')
-  call assert_fails('py3 r["a"] = "x"', 'TypeError: index must be int or slice, not str')
-  call assert_fails('py3 x = r["a"]', 'TypeError: index must be int or slice, not str')
+  call assert_fails('py3 r[3] = "x"', ['Traceback', 'IndexError: line number out of range'])
+  call assert_fails('py3 x = r[3]', ['Traceback', 'IndexError: line number out of range'])
+  call assert_fails('py3 r["a"] = "x"', ['Traceback', 'TypeError: index must be int or slice, not str'])
+  call assert_fails('py3 x = r["a"]', ['Traceback', 'TypeError: index must be int or slice, not str'])
 
   py3 del r[:]
   call assert_equal(['1', '5', '6'], getline(1, '$'))

@@ -305,7 +305,7 @@ def Test_assignment_failure()
   call CheckDefFailure(['let true = 1'], 'E1034:')
   call CheckDefFailure(['let false = 1'], 'E1034:')
 
-  call CheckDefFailure(['[a; b; c] = g:list'], 'E1001:')
+  call CheckDefFailure(['[a; b; c] = g:list'], 'E452:')
   call CheckDefExecFailure(['let a: number',
                             '[a] = test_null_list()'], 'E1093:')
   call CheckDefExecFailure(['let a: number',
@@ -897,7 +897,7 @@ def Test_vim9script_fails()
   CheckScriptFailure(['vim9script', 'scriptversion 2'], 'E1040:')
   CheckScriptFailure(['export let some = 123'], 'E1042:')
   CheckScriptFailure(['import some from "./Xexport.vim"'], 'E1048:')
-  CheckScriptFailure(['vim9script', 'export let g:some'], 'E1044:')
+  CheckScriptFailure(['vim9script', 'export let g:some'], 'E1022:')
   CheckScriptFailure(['vim9script', 'export echo 134'], 'E1043:')
 
   CheckScriptFailure(['vim9script', 'let str: string', 'str = 1234'], 'E1013:')
@@ -1723,7 +1723,7 @@ def Test_vim9_comment()
       '  echo "yes"',
       'catch',
       'endtry# comment',
-      ], 'E600:')
+      ], 'E488:')
 
   CheckScriptSuccess([
       'vim9script',

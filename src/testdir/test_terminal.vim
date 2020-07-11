@@ -65,7 +65,7 @@ func Test_terminal_make_change()
 
   setlocal modifiable
   exe "normal Axxx\<Esc>"
-  call assert_fails(buf . 'bwipe', 'E517')
+  call assert_fails(buf . 'bwipe', ['E89:', 'E517'])
   undo
 
   exe buf . 'bwipe'
@@ -89,7 +89,7 @@ endfunc
 
 func Test_terminal_wipe_buffer()
   let buf = Run_shell_in_terminal({})
-  call assert_fails(buf . 'bwipe', 'E517')
+  call assert_fails(buf . 'bwipe', ['E89', 'E517'])
   exe buf . 'bwipe!'
   call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
   call assert_equal("", bufname(buf))
@@ -635,7 +635,7 @@ endfunc
 
 func Test_terminal_list_args()
   let buf = term_start([&shell, &shellcmdflag, 'echo "123"'])
-  call assert_fails(buf . 'bwipe', 'E517')
+  call assert_fails(buf . 'bwipe', ['E89', 'E517'])
   exe buf . 'bwipe!'
   call assert_equal("", bufname(buf))
 endfunction
@@ -981,19 +981,19 @@ func Test_terminal_term_start_empty_command()
   let cmd = "call term_start(0, {'curwin' : 1, 'term_finish' : 'close'})"
   call assert_fails(cmd, 'E474')
   let cmd = "call term_start('', {'term_name' : []})"
-  call assert_fails(cmd, 'E475')
+  call assert_fails(cmd, 'E730')
   let cmd = "call term_start('', {'term_finish' : 'axby'})"
   call assert_fails(cmd, 'E475')
   let cmd = "call term_start('', {'eof_chars' : []})"
-  call assert_fails(cmd, 'E475:')
+  call assert_fails(cmd, 'E730:')
   let cmd = "call term_start('', {'term_kill' : []})"
-  call assert_fails(cmd, 'E475:')
+  call assert_fails(cmd, 'E730:')
   let cmd = "call term_start('', {'tty_type' : []})"
-  call assert_fails(cmd, 'E475:')
+  call assert_fails(cmd, 'E730:')
   let cmd = "call term_start('', {'tty_type' : 'abc'})"
   call assert_fails(cmd, 'E475:')
   let cmd = "call term_start('', {'term_highlight' : []})"
-  call assert_fails(cmd, 'E475:')
+  call assert_fails(cmd, 'E730:')
   if has('gui') || has('termguicolors')
     let cmd = "call term_start('', {'ansi_colors' : 'abc'})"
     call assert_fails(cmd, 'E475:')
@@ -1242,7 +1242,7 @@ func Test_terminal_dumpload()
   let closedbuf = winbufnr('')
   quit
   call assert_fails("call term_dumpload('dumps/Test_popup_command_01.dump', {'bufnr': closedbuf})", 'E475:')
-  call assert_fails('call term_dumpload([])', 'E474:')
+  call assert_fails('call term_dumpload([])', 'E730:')
   call assert_fails('call term_dumpload("xabcy.dump")', 'E485:')
 
   quit
@@ -1272,7 +1272,7 @@ func Test_terminal_dumpdiff()
   call assert_equal('           bbbbbbbbbbbbbbbbbb ', getline(26)[0:29])
   quit
 
-  call assert_fails('call term_dumpdiff("X1.dump", [])', 'E474:')
+  call assert_fails('call term_dumpdiff("X1.dump", [])', 'E730:')
   call assert_fails('call term_dumpdiff("X1.dump", "X2.dump")', 'E485:')
   call writefile([], 'X1.dump')
   call assert_fails('call term_dumpdiff("X1.dump", "X2.dump")', 'E485:')
@@ -1555,7 +1555,7 @@ func Test_terminal_api_call()
   call assert_equal(['hello', 123], g:called_arg2)
   call StopVimInTerminal(buf)
 
-  call assert_fails("call term_start('ls', {'term_api' : []})", 'E475:')
+  call assert_fails("call term_start('ls', {'term_api' : []})", 'E730:')
 
   unlet! g:called_bufnum2
   unlet! g:called_arg2
@@ -1761,7 +1761,7 @@ func Test_terminal_ansicolors_func()
   eval buf->term_setansicolors(colors)
 
   let colors[4] = 'Invalid'
-  call assert_fails('call term_setansicolors(buf, colors)', 'E474:')
+  call assert_fails('call term_setansicolors(buf, colors)', 'E254:')
   call assert_fails('call term_setansicolors(buf, {})', 'E714:')
 
   call StopShellInTerminal(buf)

@@ -220,6 +220,10 @@ EXTERN int	emsg_skip INIT(= 0);	    // don't display errors for
 					    // expression that is skipped
 EXTERN int	emsg_severe INIT(= FALSE);  // use message of next of several
 					    // emsg() calls for throw
+// used by assert_fails()
+EXTERN int	emsg_assert_fails_used INIT(= FALSE);
+EXTERN char_u	*emsg_assert_fails_msg INIT(= NULL);
+
 EXTERN int	did_endif INIT(= FALSE);    // just had ":endif"
 #endif
 EXTERN int	did_emsg;		    // set by emsg() when the message

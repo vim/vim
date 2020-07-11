@@ -83,7 +83,7 @@ func Test_multi_failure()
   set re=2
   call assert_fails('/a**', 'E871:')
   call assert_fails('/a*\+', 'E871:')
-  call assert_fails('/a\{a}', 'E870:')
+  call assert_fails('/a\{a}', 'E554:')
   set re=0
 endfunc
 

@@ -168,9 +168,7 @@ func Test_autocmd_bufunload_avoiding_SEGV_01()
     exe 'autocmd BufUnload <buffer> ' . (lastbuf + 1) . 'bwipeout!'
   augroup END
 
-  " Todo: check for E937 generated first
-  " call assert_fails('edit bb.txt', 'E937:')
-  call assert_fails('edit bb.txt', 'E517:')
+  call assert_fails('edit bb.txt', ['E937:', 'E517:'])
 
   autocmd! test_autocmd_bufunload
   augroup! test_autocmd_bufunload
@@ -1745,9 +1743,7 @@ endfunc
 func Test_nocatch_wipe_all_buffers()
   " Real nasty autocommand: wipe all buffers on any event.
   au * * bwipe *
-  " Get E93 first?
-  " call assert_fails('next x', 'E93:')
-  call assert_fails('next x', 'E517:')
+  call assert_fails('next x', ['E94:', 'E517:'])
   bwipe
   au!
 endfunc
@@ -1756,7 +1752,7 @@ func Test_nocatch_wipe_dummy_buffer()
   if has('quickfix')
     " Nasty autocommand: wipe buffer on any event.
     au * x bwipe
-    call assert_fails('lv½ /x', 'E480')
+    call assert_fails('lv½ /x', 'E937')
     au!
   endif
 endfunc
@@ -2570,7 +2566,7 @@ func Test_BufDelete_changebuf()
   augroup END
   let save_cpo = &cpo
   set cpo+=f
-  call assert_fails('r Xfile', 'E484:')
+  call assert_fails('r Xfile', ['E812:', 'E484:'])
   call assert_equal('somefile', @%)
   let &cpo = save_cpo
   augroup TestAuCmd

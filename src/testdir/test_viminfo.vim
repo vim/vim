@@ -705,13 +705,13 @@ func Test_viminfo_error()
 
   " Too many errors in viminfo file
   call writefile(repeat(["a 123"], 15), 'Xviminfo')
-  call assert_fails('rv Xviminfo', 'E136:')
+  call assert_fails('rv Xviminfo', 'E575:')
 
   call writefile(['>'] + repeat(['@'], 10), 'Xviminfo')
-  call assert_fails('rv Xviminfo', 'E136:')
+  call assert_fails('rv Xviminfo', 'E576:')
 
   call writefile(repeat(['"@'], 15), 'Xviminfo')
-  call assert_fails('rv Xviminfo', 'E136:')
+  call assert_fails('rv Xviminfo', 'E577:')
 
   call delete('Xviminfo')
 endfunc

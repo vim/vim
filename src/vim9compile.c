@@ -912,7 +912,12 @@ generate_TYPECHECK(cctx_T *cctx, type_T *vartype, int offset)
  * - return FAIL.
  */
     static int
-need_type(type_T *actual, type_T *expected, int offset, cctx_T *cctx)
+need_type(
+	type_T	*actual,
+	type_T	*expected,
+	int	offset,
+	cctx_T	*cctx,
+	int	silent)
 {
     if (check_type(expected, actual, FALSE) == OK)
 	return OK;
@@ -921,7 +926,8 @@ need_type(type_T *actual, type_T *expected, int offset, cctx_T *cctx)
 	    && !(actual->tt_type == VAR_FUNC
 		&& (actual->tt_member == &t_any || actual->tt_argcount < 0)))
     {
-	type_mismatch(expected, actual);
+	if (!silent)
+	    type_mismatch(expected, actual);
 	return FAIL;
     }
     generate_TYPECHECK(cctx, expected, offset);
@@ -1538,7 +1544,7 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 	    else
 		expected = ufunc->uf_va_type->tt_member;
 	    actual = ((type_T **)stack->ga_data)[stack->ga_len - argcount + i];
-	    if (need_type(actual, expected, -argcount + i, cctx) == FAIL)
+	    if (need_type(actual, expected, -argcount + i, cctx, TRUE) == FAIL)
 	    {
 		arg_type_mismatch(expected, actual, i + 1);
 		return FAIL;
@@ -4640,8 +4646,8 @@ compile_return(char_u *arg, int set_return_type, cctx_T *cctx)
 		emsg(_("E1096: Returning a value in a function without a return type"));
 		return NULL;
 	    }
-	    if (need_type(stack_type, cctx->ctx_ufunc->uf_ret_type, -1, cctx)
-								       == FAIL)
+	    if (need_type(stack_type, cctx->ctx_ufunc->uf_ret_type, -1,
+							  cctx, FALSE) == FAIL)
 	    return NULL;
 	}
     }
@@ -4942,7 +4948,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		emsg(_(e_cannot_use_void));
 		goto theend;
 	    }
-	    if (need_type(stacktype, &t_list_any, -1, cctx) == FAIL)
+	    if (need_type(stacktype, &t_list_any, -1, cctx, FALSE) == FAIL)
 		goto theend;
 	    generate_CHECKLEN(cctx, semicolon ? var_count - 1 : var_count,
 								    semicolon);
@@ -5356,13 +5362,13 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			    if (use_type == NULL)
 				use_type = &t_void;
 			}
-			if (need_type(stacktype, use_type, -1, cctx)
+			if (need_type(stacktype, use_type, -1, cctx, FALSE)
 								   == FAIL)
 			    goto theend;
 		    }
 		}
 		else if (*p != '=' && need_type(stacktype, member_type, -1,
-							     cctx) == FAIL)
+							  cctx, FALSE) == FAIL)
 		    goto theend;
 	    }
 	    else if (cmdidx == CMD_const)
@@ -5439,7 +5445,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    if (*op == '.')
 		expected = &t_string;
 	    stacktype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-	    if (need_type(stacktype, expected, -1, cctx) == FAIL)
+	    if (need_type(stacktype, expected, -1, cctx, FALSE) == FAIL)
 		goto theend;
 
 	    if (*op == '.')
@@ -6128,7 +6134,7 @@ compile_for(char_u *arg, cctx_T *cctx)
     // Now that we know the type of "var", check that it is a list, now or at
     // runtime.
     vartype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-    if (need_type(vartype, &t_list_any, -1, cctx) == FAIL)
+    if (need_type(vartype, &t_list_any, -1, cctx, FALSE) == FAIL)
     {
 	drop_scope(cctx);
 	return NULL;

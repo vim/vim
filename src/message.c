@@ -654,6 +654,9 @@ emsg_core(char_u *s)
 	    return TRUE;
 	}
 
+	if (emsg_assert_fails_used && emsg_assert_fails_msg == NULL)
+	    emsg_assert_fails_msg = vim_strsave(s);
+
 	// set "v:errmsg", also when using ":silent! cmd"
 	set_vim_var_string(VV_ERRMSG, s, -1);
 #endif

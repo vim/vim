@@ -2152,7 +2152,6 @@ cs_read_prompt(int i)
 		ch = getc(csinfo[i].fr_fp);
 	    if (ch == EOF)
 	    {
-		PERROR("cs_read_prompt EOF");
 		if (buf != NULL && buf[0] != NUL)
 		    (void)semsg(cs_emsg, buf);
 		else if (p_csverbose)

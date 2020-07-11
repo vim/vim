@@ -2000,7 +2000,7 @@ endfunc
 func Test_try_catch_errors()
   call assert_fails('throw |', 'E471:')
   call assert_fails("throw \n ", 'E471:')
-  call assert_fails('catch abc', 'E603:')
+  call assert_fails('catch abc', 'E654:')
   call assert_fails('try | let i = 1| finally | catch | endtry', 'E604:')
   call assert_fails('finally', 'E606:')
   call assert_fails('try | finally | finally | endtry', 'E607:')

@@ -3388,7 +3388,7 @@ static char_u	*redir_varname = NULL;
     int
 var_redir_start(char_u *name, int append)
 {
-    int		save_emsg;
+    int		called_emsg_before;
     int		err;
     typval_T	tv;
 
@@ -3432,8 +3432,7 @@ var_redir_start(char_u *name, int append)
 
     // check if we can write to the variable: set it to or append an empty
     // string
-    save_emsg = did_emsg;
-    did_emsg = FALSE;
+    called_emsg_before = called_emsg;
     tv.v_type = VAR_STRING;
     tv.vval.v_string = (char_u *)"";
     if (append)
@@ -3441,9 +3440,7 @@ var_redir_start(char_u *name, int append)
     else
 	set_var_lval(redir_lval, redir_endp, &tv, TRUE, 0, (char_u *)"=");
     clear_lval(redir_lval);
-    err = did_emsg;
-    did_emsg |= save_emsg;
-    if (err)
+    if (called_emsg > called_emsg_before)
     {
 	redir_endp = NULL;  // don't store a value, only cleanup
 	var_redir_stop();
