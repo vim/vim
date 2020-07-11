@@ -967,7 +967,7 @@ enddef
 
 def Line_continuation_in_lambda(): list<number>
   let x = range(97, 100)
-      ->map({_,v -> nr2char(v)
+      ->map({_, v -> nr2char(v)
           ->toupper()})
       ->reverse()
   return x

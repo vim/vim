@@ -266,10 +266,20 @@ get_function_args(
 	    else if (any_default)
 	    {
 		emsg(_("E989: Non-default argument follows default argument"));
-		mustend = TRUE;
+		goto err_ret;
 	    }
 	    if (*p == ',')
+	    {
 		++p;
+		// Don't give this error when skipping, it makes the "->" not
+		// found in "{k,v -> x}" and give a confusing error.
+		if (!skip && in_vim9script()
+				      && !IS_WHITE_OR_NUL(*p) && *p != endchar)
+		{
+		    semsg(_(e_white_after), ",");
+		    goto err_ret;
+		}
+	    }
 	    else
 		mustend = TRUE;
 	}

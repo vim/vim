@@ -1067,10 +1067,11 @@ def Test_expr7_list_vim9script()
 enddef
 
 def Test_expr7_lambda()
-  " lambda
   let La = { -> 'result'}
   assert_equal('result', La())
   assert_equal([1, 3, 5], [1, 2, 3]->map({key, val -> key + val}))
+
+  call CheckDefFailure(["filter([1, 2], {k,v -> 1})"], 'E1069:')
 enddef
 
 def Test_expr7_lambda_vim9script()
