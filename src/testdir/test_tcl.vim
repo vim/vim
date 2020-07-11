@@ -27,7 +27,8 @@ func Test_tcldo()
   " Try to run a command in a 'nomodifiable' buffer
   call setline(1, ['one', 'two', 'three'])
   set nomodifiable
-  call assert_fails('tcldo set line "abc"', 'cannot save undo information')
+  call assert_fails('tcldo set line "abc"',
+        \ ['E21:', 'cannot save undo information'])
   set modifiable
 
   %bwipe!
@@ -449,7 +450,7 @@ func Test_buffer_delete()
   " Try to delete lines from an 'nomodifiable' buffer
   set nomodifiable
   call assert_fails('tcl $::vim::current(buffer) delete 2 1',
-        \ 'cannot save undo information')
+        \ ['E21:', 'cannot save undo information'])
   set modifiable
 
   bwipe!
@@ -495,7 +496,7 @@ func Test_buffer_append()
   " Try to append lines to a 'nomodifiable' buffer
   set nomodifiable
   call assert_fails('tcl $buf append 1 "first"',
-        \ 'cannot save undo information')
+        \ ['E21:', 'cannot save undo information'])
   set modifiable
 
   tcl unset buf
@@ -531,11 +532,11 @@ func Test_buffer_set()
   " Try to modify a 'nomodifiable' buffer
   set nomodifiable
   call assert_fails('tcl $::vim::current(buffer) set 1 "x"',
-        \ 'cannot save undo information')
+        \ ['E21:', 'cannot save undo information'])
   call assert_fails('tcl $::vim::current(buffer) set 1 {a b}',
-        \ 'cannot save undo information')
+        \ ['E21:', 'cannot save undo information'])
   call assert_fails('tcl $::vim::current(buffer) set 1 2 {a b}',
-        \ 'cannot save undo information')
+        \ ['E21:', 'cannot save undo information'])
   set modifiable
   bwipe!
 endfunc

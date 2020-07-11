@@ -184,7 +184,7 @@ func Test_lua_call()
   call assert_fails("call luaeval('vim.call(\"type\", co)')",
         \ '[string "luaeval"]:1: lua: cannot convert value')
   lua co = nil
-  call assert_fails("call luaeval('vim.call(\"abc\")')", '[string "luaeval"]:1: lua: call_vim_function failed')
+  call assert_fails("call luaeval('vim.call(\"abc\")')", ['E117:', '\[string "luaeval"]:1: lua: call_vim_function failed'])
 endfunc
 
 " Test vim.fn.*
@@ -637,7 +637,7 @@ func Test_lua_funcref()
   call assert_fails('lua f1 = vim.funcref(fname)',
         \ "[string \"vim chunk\"]:1: bad argument #1 to 'funcref' (string expected, got nil)")
   call assert_fails('lua vim.funcref("abc")()',
-        \ '[string "vim chunk"]:1: cannot call funcref')
+        \ ['E117:', '\[string "vim chunk"]:1: cannot call funcref'])
 
   " dict funcref
   function Mylen() dict
