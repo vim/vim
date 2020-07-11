@@ -2750,6 +2750,10 @@ parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only)
 				if (*p == NUL || ends_excmd(*p))
 				    break;
 			    }
+			    // Avoid that "filter(arg)" is recognized.
+			    if (in_vim9script() && !VIM_ISWHITE(*p))
+				break;
+
 			    if (skip_only)
 				p = skip_vimgrep_pat(p, NULL, NULL);
 			    else
@@ -2904,7 +2908,7 @@ parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only)
 }
 
 /*
- * Unod and free contents of "cmdmod".
+ * Undo and free contents of "cmdmod".
  */
     void
 undo_cmdmod(exarg_T *eap, int save_msg_scroll)

@@ -6963,6 +6963,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	}
 	// TODO: use modifiers in the command
 	undo_cmdmod(&ea, save_msg_scroll);
+	CLEAR_FIELD(cmdmod);
 
 	// Skip ":call" to get to the function name.
 	if (checkforcmd(&ea.cmd, "call", 3))
