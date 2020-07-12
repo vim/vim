@@ -22,7 +22,9 @@ static char e_needs_vim9[] = N_("E1042: export can only be used in vim9script");
     int
 in_vim9script(void)
 {
-    // TODO: go up the stack?
+    // Do not go up the stack, a ":function" inside vim9script uses legacy
+    // syntax.  "sc_version" is also set when compiling a ":def" function in
+    // legacy script.
     return current_sctx.sc_version == SCRIPT_VERSION_VIM9;
 }
 
@@ -67,7 +69,7 @@ ex_vim9script(exarg_T *eap)
     void
 ex_export(exarg_T *eap)
 {
-    if (current_sctx.sc_version != SCRIPT_VERSION_VIM9)
+    if (!in_vim9script())
     {
 	emsg(_(e_needs_vim9));
 	return;

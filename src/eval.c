@@ -393,7 +393,7 @@ skip_expr_concatenate(
 {
     typval_T	rettv;
     int		res;
-    int		vim9script = current_sctx.sc_version == SCRIPT_VERSION_VIM9;
+    int		vim9script = in_vim9script();
     garray_T    *gap = &evalarg->eval_ga;
     int		save_flags = evalarg == NULL ? 0 : evalarg->eval_flags;
 
@@ -820,7 +820,7 @@ get_lval(
     {
 	lp->ll_name = name;
 
-	if (current_sctx.sc_version == SCRIPT_VERSION_VIM9 && *p == ':')
+	if (in_vim9script() && *p == ':')
 	{
 	    scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
 	    char_u	 *tp = skipwhite(p + 1);
@@ -1643,8 +1643,7 @@ next_for_item(void *fi_void, char_u *arg)
 {
     forinfo_T	*fi = (forinfo_T *)fi_void;
     int		result;
-    int		flag = current_sctx.sc_version == SCRIPT_VERSION_VIM9 ?
-							LET_NO_COMMAND : 0;
+    int		flag = in_vim9script() ?  LET_NO_COMMAND : 0;
     listitem_T	*item;
 
     if (fi->fi_blob != NULL)
@@ -1910,7 +1909,7 @@ eval_func(
 eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext)
 {
     *getnext = FALSE;
-    if (current_sctx.sc_version == SCRIPT_VERSION_VIM9
+    if (in_vim9script()
 	    && evalarg != NULL
 	    && (evalarg->eval_cookie != NULL || evalarg->eval_cctx != NULL)
 	    && (*arg == NUL || (VIM_ISWHITE(arg[-1])
@@ -4918,7 +4917,7 @@ find_name_end(
     int		br_nest = 0;
     char_u	*p;
     int		len;
-    int		vim9script = current_sctx.sc_version == SCRIPT_VERSION_VIM9;
+    int		vim9script = in_vim9script();
 
     if (expr_start != NULL)
     {

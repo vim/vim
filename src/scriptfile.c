@@ -1876,7 +1876,7 @@ ex_scriptversion(exarg_T *eap UNUSED)
 	emsg(_("E984: :scriptversion used outside of a sourced file"));
 	return;
     }
-    if (current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+    if (in_vim9script())
     {
 	emsg(_("E1040: Cannot use :scriptversion after :vim9script"));
 	return;

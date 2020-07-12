@@ -1765,7 +1765,7 @@ do_one_cmd(
 	ea.cmd = skipwhite(ea.cmd + 1);
 
 #ifdef FEAT_EVAL
-    if (current_sctx.sc_version == SCRIPT_VERSION_VIM9 && !starts_with_colon)
+    if (in_vim9script() && !starts_with_colon)
     {
 	if (ea.cmd > cmd)
 	{

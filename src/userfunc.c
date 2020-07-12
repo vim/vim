@@ -2388,8 +2388,7 @@ trans_function_name(
     }
 
     // In Vim9 script a user function is script-local by default.
-    vim9script = ASCII_ISUPPER(*start)
-			     && current_sctx.sc_version == SCRIPT_VERSION_VIM9;
+    vim9script = ASCII_ISUPPER(*start) && in_vim9script();
 
     /*
      * Copy the function name to allocated memory.
@@ -2469,7 +2468,7 @@ untrans_function_name(char_u *name)
 {
     char_u *p;
 
-    if (*name == K_SPECIAL && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+    if (*name == K_SPECIAL && in_vim9script())
     {
 	p = vim_strchr(name, '_');
 	if (p != NULL)

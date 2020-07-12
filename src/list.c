@@ -1167,7 +1167,7 @@ eval_list(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
     list_T	*l = NULL;
     typval_T	tv;
     listitem_T	*item;
-    int		vim9script = current_sctx.sc_version == SCRIPT_VERSION_VIM9;
+    int		vim9script = in_vim9script();
     int		had_comma;
 
     if (evaluate)
