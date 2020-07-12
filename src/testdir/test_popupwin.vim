@@ -585,6 +585,7 @@ func Test_popup_drag_termwin()
   " create a popup that covers the terminal window
   let lines =<< trim END
 	set shell=/bin/sh noruler
+	let $PS1 = 'vim> '
         terminal
 	$wincmd w
 	let winid = popup_create(['1111', '2222'], #{
