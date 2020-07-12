@@ -179,12 +179,18 @@ func Test_lua_call()
 
   " Error cases
   call assert_fails("call luaeval('vim.call(\"min\", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21)')",
-        \ '[string "luaeval"]:1: Function called with too many arguments')
+        \ s:lua_53_or_later
+        \ ? '[string "luaeval"]:1: Function called with too many arguments'
+        \ : 'Function called with too many arguments')
   lua co = coroutine.create(function () print("hi") end)
   call assert_fails("call luaeval('vim.call(\"type\", co)')",
-        \ '[string "luaeval"]:1: lua: cannot convert value')
+        \ s:lua_53_or_later
+        \ ? '[string "luaeval"]:1: lua: cannot convert value'
+        \ : 'lua: cannot convert value')
   lua co = nil
-  call assert_fails("call luaeval('vim.call(\"abc\")')", ['E117:', '\[string "luaeval"]:1: lua: call_vim_function failed'])
+  call assert_fails("call luaeval('vim.call(\"abc\")')",
+        \ ['E117:', s:lua_53_or_later ? '\[string "luaeval"]:1: lua: call_vim_function failed'
+        \                             : 'lua: call_vim_function failed'])
 endfunc
 
 " Test vim.fn.*
@@ -525,7 +531,9 @@ func Test_lua_dict()
   lua d = {}
   lua d[''] = 10
   call assert_fails("let t = luaeval('vim.dict(d)')",
-        \ '[string "luaeval"]:1: table has empty key')
+        \ s:lua_53_or_later
+        \ ? '[string "luaeval"]:1: table has empty key'
+        \ : 'table has empty key')
   let d = {}
   lua x = vim.eval('d')
   call assert_fails("lua x[''] = 10", '[string "vim chunk"]:1: empty key')
