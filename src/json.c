@@ -594,6 +594,7 @@ typedef struct {
 json_decode_item(js_read_T *reader, typval_T *res, int options)
 {
     char_u	*p;
+    int		i;
     int		len;
     int		retval;
     garray_T	stack;
@@ -621,9 +622,6 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 	    if (*p == NUL)
 	    {
 		retval = MAYBE;
-		if (top_item->jd_type == JSON_OBJECT)
-		    // did get the key, clear it
-		    clear_tv(&top_item->jd_key_tv);
 		goto theend;
 	    }
 	    if (top_item->jd_type == JSON_OBJECT_KEY
@@ -925,7 +923,6 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		top_item->jd_key = tv_get_string_buf_chk(cur_item, key_buf);
 		if (top_item->jd_key == NULL)
 		{
-		    clear_tv(cur_item);
 		    emsg(_(e_invarg));
 		    retval = FAIL;
 		    goto theend;
@@ -1001,7 +998,6 @@ item_end:
 		{
 		    semsg(_("E938: Duplicate key in JSON: \"%s\""),
 							     top_item->jd_key);
-		    clear_tv(&top_item->jd_key_tv);
 		    clear_tv(cur_item);
 		    retval = FAIL;
 		    goto theend;
@@ -1060,7 +1056,10 @@ item_end:
     semsg(_(e_json_error), p);
 
 theend:
+    for (i = 0; i < stack.ga_len; i++)
+	clear_tv(&(((json_dec_item_T *)stack.ga_data) + i)->jd_key_tv);
     ga_clear(&stack);
+
     return retval;
 }
 
