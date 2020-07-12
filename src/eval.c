@@ -2088,25 +2088,22 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
     {
 	int		result;
 	typval_T	var2;
-	evalarg_T	nested_evalarg;
+	evalarg_T	*evalarg_used = evalarg;
+	evalarg_T	local_evalarg;
 	int		orig_flags;
 	int		evaluate;
 
-	if (getnext)
-	    *arg = eval_next_line(evalarg);
-
 	if (evalarg == NULL)
 	{
-	    CLEAR_FIELD(nested_evalarg);
-	    orig_flags = 0;
+	    CLEAR_FIELD(local_evalarg);
+	    evalarg_used = &local_evalarg;
 	}
-	else
-	{
-	    nested_evalarg = *evalarg;
-	    orig_flags = evalarg->eval_flags;
-	}
+	orig_flags = evalarg_used->eval_flags;
+	evaluate = evalarg_used->eval_flags & EVAL_EVALUATE;
 
-	evaluate = nested_evalarg.eval_flags & EVAL_EVALUATE;
+	if (getnext)
+	    *arg = eval_next_line(evalarg_used);
+
 	result = FALSE;
 	if (evaluate)
 	{
@@ -2122,16 +2119,16 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	/*
 	 * Get the second variable.  Recursive!
 	 */
-	*arg = skipwhite_and_linebreak(*arg + 1, evalarg);
-	nested_evalarg.eval_flags = result ? orig_flags
+	*arg = skipwhite_and_linebreak(*arg + 1, evalarg_used);
+	evalarg_used->eval_flags = result ? orig_flags
 						 : orig_flags & ~EVAL_EVALUATE;
-	if (eval1(arg, rettv, &nested_evalarg) == FAIL)
+	if (eval1(arg, rettv, evalarg_used) == FAIL)
 	    return FAIL;
 
 	/*
 	 * Check for the ":".
 	 */
-	p = eval_next_non_blank(*arg, evalarg, &getnext);
+	p = eval_next_non_blank(*arg, evalarg_used, &getnext);
 	if (*p != ':')
 	{
 	    emsg(_(e_missing_colon));
@@ -2140,15 +2137,15 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    return FAIL;
 	}
 	if (getnext)
-	    *arg = eval_next_line(evalarg);
+	    *arg = eval_next_line(evalarg_used);
 
 	/*
 	 * Get the third variable.  Recursive!
 	 */
-	*arg = skipwhite_and_linebreak(*arg + 1, evalarg);
-	nested_evalarg.eval_flags = !result ? orig_flags
+	*arg = skipwhite_and_linebreak(*arg + 1, evalarg_used);
+	evalarg_used->eval_flags = !result ? orig_flags
 						 : orig_flags & ~EVAL_EVALUATE;
-	if (eval1(arg, &var2, &nested_evalarg) == FAIL)
+	if (eval1(arg, &var2, evalarg_used) == FAIL)
 	{
 	    if (evaluate && result)
 		clear_tv(rettv);
@@ -2156,6 +2153,11 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	}
 	if (evaluate && !result)
 	    *rettv = var2;
+
+	if (evalarg == NULL)
+	    clear_evalarg(&local_evalarg, NULL);
+	else
+	    evalarg->eval_flags = orig_flags;
     }
 
     return OK;
@@ -2175,10 +2177,6 @@ eval2(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 {
     char_u	*p;
     int		getnext;
-    typval_T	var2;
-    long	result;
-    int		first;
-    int		error = FALSE;
 
     /*
      * Get the first variable.
@@ -2187,70 +2185,77 @@ eval2(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	return FAIL;
 
     /*
-     * Repeat until there is no following "||".
+     * Handle the  "||" operator.
      */
-    first = TRUE;
-    result = FALSE;
     p = eval_next_non_blank(*arg, evalarg, &getnext);
-    while (p[0] == '|' && p[1] == '|')
+    if (p[0] == '|' && p[1] == '|')
     {
-	evalarg_T   nested_evalarg;
+	evalarg_T   *evalarg_used = evalarg;
+	evalarg_T   local_evalarg;
 	int	    evaluate;
 	int	    orig_flags;
-
-	if (getnext)
-	    *arg = eval_next_line(evalarg);
+	long	    result = FALSE;
+	typval_T    var2;
+	int	    error;
 
 	if (evalarg == NULL)
 	{
-	    CLEAR_FIELD(nested_evalarg);
-	    orig_flags = 0;
-	    evaluate = FALSE;
+	    CLEAR_FIELD(local_evalarg);
+	    evalarg_used = &local_evalarg;
 	}
-	else
+	orig_flags = evalarg_used->eval_flags;
+	evaluate = orig_flags & EVAL_EVALUATE;
+	if (evaluate)
 	{
-	    nested_evalarg = *evalarg;
-	    orig_flags = evalarg->eval_flags;
-	    evaluate = orig_flags & EVAL_EVALUATE;
-	}
-
-	if (evaluate && first)
-	{
+	    error = FALSE;
 	    if (tv_get_number_chk(rettv, &error) != 0)
 		result = TRUE;
 	    clear_tv(rettv);
 	    if (error)
 		return FAIL;
-	    first = FALSE;
 	}
 
 	/*
-	 * Get the second variable.
+	 * Repeat until there is no following "||".
 	 */
-	*arg = skipwhite_and_linebreak(*arg + 2, evalarg);
-	nested_evalarg.eval_flags = !result ? orig_flags
+	while (p[0] == '|' && p[1] == '|')
+	{
+	    if (getnext)
+		*arg = eval_next_line(evalarg_used);
+
+	    /*
+	     * Get the second variable.
+	     */
+	    *arg = skipwhite_and_linebreak(*arg + 2, evalarg_used);
+	    evalarg_used->eval_flags = !result ? orig_flags
 						 : orig_flags & ~EVAL_EVALUATE;
-	if (eval3(arg, &var2, &nested_evalarg) == FAIL)
-	    return FAIL;
-
-	/*
-	 * Compute the result.
-	 */
-	if (evaluate && !result)
-	{
-	    if (tv_get_number_chk(&var2, &error) != 0)
-		result = TRUE;
-	    clear_tv(&var2);
-	    if (error)
+	    if (eval3(arg, &var2, evalarg_used) == FAIL)
 		return FAIL;
-	}
-	if (evaluate)
-	{
-	    rettv->v_type = VAR_NUMBER;
-	    rettv->vval.v_number = result;
+
+	    /*
+	     * Compute the result.
+	     */
+	    if (evaluate && !result)
+	    {
+		if (tv_get_number_chk(&var2, &error) != 0)
+		    result = TRUE;
+		clear_tv(&var2);
+		if (error)
+		    return FAIL;
+	    }
+	    if (evaluate)
+	    {
+		rettv->v_type = VAR_NUMBER;
+		rettv->vval.v_number = result;
+	    }
+
+	    p = eval_next_non_blank(*arg, evalarg_used, &getnext);
 	}
 
-	p = eval_next_non_blank(*arg, evalarg, &getnext);
+	if (evalarg == NULL)
+	    clear_evalarg(&local_evalarg, NULL);
+	else
+	    evalarg->eval_flags = orig_flags;
     }
 
     return OK;
@@ -2270,10 +2275,6 @@ eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 {
     char_u	*p;
     int		getnext;
-    typval_T	var2;
-    long	result;
-    int		first;
-    int		error = FALSE;
 
     /*
      * Get the first variable.
@@ -2282,69 +2283,77 @@ eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	return FAIL;
 
     /*
-     * Repeat until there is no following "&&".
+     * Handle the "&&" operator.
      */
-    first = TRUE;
-    result = TRUE;
     p = eval_next_non_blank(*arg, evalarg, &getnext);
-    while (p[0] == '&' && p[1] == '&')
+    if (p[0] == '&' && p[1] == '&')
     {
-	evalarg_T   nested_evalarg;
+	evalarg_T   *evalarg_used = evalarg;
+	evalarg_T   local_evalarg;
 	int	    orig_flags;
 	int	    evaluate;
-
-	if (getnext)
-	    *arg = eval_next_line(evalarg);
+	long	    result = TRUE;
+	typval_T    var2;
+	int	    error;
 
 	if (evalarg == NULL)
 	{
-	    CLEAR_FIELD(nested_evalarg);
-	    orig_flags = 0;
-	    evaluate = FALSE;
+	    CLEAR_FIELD(local_evalarg);
+	    evalarg_used = &local_evalarg;
 	}
-	else
+	orig_flags = evalarg_used->eval_flags;
+	evaluate = orig_flags & EVAL_EVALUATE;
+	if (evaluate)
 	{
-	    nested_evalarg = *evalarg;
-	    orig_flags = evalarg->eval_flags;
-	    evaluate = orig_flags & EVAL_EVALUATE;
-	}
-	if (evaluate && first)
-	{
+	    error = FALSE;
 	    if (tv_get_number_chk(rettv, &error) == 0)
 		result = FALSE;
 	    clear_tv(rettv);
 	    if (error)
 		return FAIL;
-	    first = FALSE;
 	}
 
 	/*
-	 * Get the second variable.
+	 * Repeat until there is no following "&&".
 	 */
-	*arg = skipwhite_and_linebreak(*arg + 2, evalarg);
-	nested_evalarg.eval_flags = result ? orig_flags
+	while (p[0] == '&' && p[1] == '&')
+	{
+	    if (getnext)
+		*arg = eval_next_line(evalarg_used);
+
+	    /*
+	     * Get the second variable.
+	     */
+	    *arg = skipwhite_and_linebreak(*arg + 2, evalarg_used);
+	    evalarg_used->eval_flags = result ? orig_flags
 						 : orig_flags & ~EVAL_EVALUATE;
-	if (eval4(arg, &var2, &nested_evalarg) == FAIL)
-	    return FAIL;
-
-	/*
-	 * Compute the result.
-	 */
-	if (evaluate && result)
-	{
-	    if (tv_get_number_chk(&var2, &error) == 0)
-		result = FALSE;
-	    clear_tv(&var2);
-	    if (error)
+	    if (eval4(arg, &var2, evalarg_used) == FAIL)
 		return FAIL;
-	}
-	if (evaluate)
-	{
-	    rettv->v_type = VAR_NUMBER;
-	    rettv->vval.v_number = result;
+
+	    /*
+	     * Compute the result.
+	     */
+	    if (evaluate && result)
+	    {
+		if (tv_get_number_chk(&var2, &error) == 0)
+		    result = FALSE;
+		clear_tv(&var2);
+		if (error)
+		    return FAIL;
+	    }
+	    if (evaluate)
+	    {
+		rettv->v_type = VAR_NUMBER;
+		rettv->vval.v_number = result;
+	    }
+
+	    p = eval_next_non_blank(*arg, evalarg_used, &getnext);
 	}
 
-	p = eval_next_non_blank(*arg, evalarg, &getnext);
+	if (evalarg == NULL)
+	    clear_evalarg(&local_evalarg, NULL);
+	else
+	    evalarg->eval_flags = orig_flags;
     }
 
     return OK;

@@ -1071,6 +1071,27 @@ def Test_expr7_lambda()
   assert_equal('result', La())
   assert_equal([1, 3, 5], [1, 2, 3]->map({key, val -> key + val}))
 
+  " line continuation inside lambda with "cond ? expr : expr" works
+  let ll = range(3)
+  map(ll, {k, v -> v % 2 ? {
+	    '111': 111 } : {}
+	})
+  assert_equal([{}, {'111': 111}, {}], ll)
+
+  ll = range(3)
+  map(ll, {k, v -> v == 8 || v
+		== 9
+		|| v % 2 ? 111 : 222
+	})
+  assert_equal([222, 111, 222], ll)
+
+  ll = range(3)
+  map(ll, {k, v -> v != 8 && v
+		!= 9
+		&& v % 2 == 0 ? 111 : 222
+	})
+  assert_equal([111, 222, 111], ll)
+
   call CheckDefFailure(["filter([1, 2], {k,v -> 1})"], 'E1069:')
 enddef
 
