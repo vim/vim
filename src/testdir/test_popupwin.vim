@@ -577,6 +577,40 @@ func Test_popup_drag()
   call delete('XtestPopupDrag')
 endfunc
 
+func Test_popup_drag_termwin()
+  CheckUnix
+  CheckScreendump
+  CheckFeature terminal
+
+  " create a popup that covers the terminal window
+  let lines =<< trim END
+	set shell=/bin/sh noruler
+        terminal
+	$wincmd w
+	let winid = popup_create(['1111', '2222'], #{
+	      \ drag: 1,
+	      \ resize: 1,
+	      \ border: [],
+	      \ line: 3,
+	      \ })
+	func Dragit()
+	  call feedkeys("\<F3>\<LeftMouse>\<F4>\<LeftDrag>\<LeftRelease>", "xt")
+	endfunc
+	map <silent> <F3> :call test_setmouse(3, &columns / 2)<CR>
+	map <silent> <F4> :call test_setmouse(3, &columns / 2 - 20)<CR>
+  END
+  call writefile(lines, 'XtestPopupTerm')
+  let buf = RunVimInTerminal('-S XtestPopupTerm', #{rows: 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_term_01', {})
+
+  call term_sendkeys(buf, ":call Dragit()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_term_02', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupTerm')
+endfunc
+
 func Test_popup_close_with_mouse()
   CheckScreendump
 

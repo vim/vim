@@ -3504,22 +3504,29 @@ may_update_popup_mask(int type)
 			wp = mouse_find_win(&line_cp, &col_cp, IGNORE_POPUP);
 			if (wp != NULL)
 			{
-			    if (wp != prev_wp)
-			    {
-				vim_memset(plines_cache, 0, sizeof(int) * Rows);
-				prev_wp = wp;
-			    }
-
-			    if (line_cp >= wp->w_height)
-				// In (or below) status line
-				wp->w_redr_status = TRUE;
+			    // A terminal window needs to be redrawn.
+			    if (bt_terminal(wp->w_buffer))
+				redraw_win_later(wp, NOT_VALID);
 			    else
 			    {
-				// compute the position in the buffer line from
-				// the position in the window
-				mouse_comp_pos(wp, &line_cp, &col_cp,
+				if (wp != prev_wp)
+				{
+				    vim_memset(plines_cache, 0,
+							   sizeof(int) * Rows);
+				    prev_wp = wp;
+				}
+
+				if (line_cp >= wp->w_height)
+				    // In (or below) status line
+				    wp->w_redr_status = TRUE;
+				else
+				{
+				    // compute the position in the buffer line
+				    // from the position in the window
+				    mouse_comp_pos(wp, &line_cp, &col_cp,
 							  &lnum, plines_cache);
-				redrawWinline(wp, lnum);
+				    redrawWinline(wp, lnum);
+				}
 			    }
 
 			    // This line is going to be redrawn, no need to
