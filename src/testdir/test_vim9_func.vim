@@ -999,5 +999,17 @@ func Test_silent_echo()
   call delete('XTest_silent_echo')
 endfunc
 
+def Fibonacci(n: number): number
+  if n < 2
+    return n
+  else
+    return Fibonacci(n - 1) + Fibonacci(n - 2)
+  endif
+enddef
+
+def Test_recursive_call()
+  assert_equal(6765, Fibonacci(20))
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

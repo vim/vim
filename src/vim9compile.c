@@ -6802,6 +6802,8 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
     else if (add_def_function(ufunc) == FAIL)
 	return FAIL;
 
+    ufunc->uf_def_status = UF_COMPILING;
+
     CLEAR_FIELD(cctx);
     cctx.ctx_ufunc = ufunc;
     cctx.ctx_lnum = -1;
