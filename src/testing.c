@@ -66,7 +66,7 @@ ga_concat_esc(garray_T *gap, char_u *p, int clen)
 	case CAR: ga_concat(gap, (char_u *)"\\r"); break;
 	case '\\': ga_concat(gap, (char_u *)"\\\\"); break;
 	default:
-		   if (*p < ' ')
+		   if (*p < ' ' || *p == 0x7f)
 		   {
 		       vim_snprintf((char *)buf, NUMBUFLEN, "\\x%02x", *p);
 		       ga_concat(gap, buf);
@@ -270,12 +270,12 @@ assert_match_common(typval_T *argvars, assert_type_T atype)
     garray_T	ga;
     char_u	buf1[NUMBUFLEN];
     char_u	buf2[NUMBUFLEN];
+    int		called_emsg_before = called_emsg;
     char_u	*pat = tv_get_string_buf_chk(&argvars[0], buf1);
     char_u	*text = tv_get_string_buf_chk(&argvars[1], buf2);
 
-    if (pat == NULL || text == NULL)
-	emsg(_(e_invarg));
-    else if (pattern_match(pat, text, FALSE) != (atype == ASSERT_MATCH))
+    if (called_emsg == called_emsg_before
+		 && pattern_match(pat, text, FALSE) != (atype == ASSERT_MATCH))
     {
 	prepare_assert_error(&ga);
 	fill_assert_error(&ga, &argvars[2], NULL, &argvars[0], &argvars[1],
@@ -379,6 +379,7 @@ assert_equalfile(typval_T *argvars)
 {
     char_u	buf1[NUMBUFLEN];
     char_u	buf2[NUMBUFLEN];
+    int		called_emsg_before = called_emsg;
     char_u	*fname1 = tv_get_string_buf_chk(&argvars[0], buf1);
     char_u	*fname2 = tv_get_string_buf_chk(&argvars[1], buf2);
     garray_T	ga;
@@ -388,7 +389,7 @@ assert_equalfile(typval_T *argvars)
     char	line2[200];
     int		lineidx = 0;
 
-    if (fname1 == NULL || fname2 == NULL)
+    if (called_emsg > called_emsg_before)
 	return 0;
 
     IObuff[0] = NUL;
