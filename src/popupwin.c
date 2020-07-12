@@ -3504,10 +3504,12 @@ may_update_popup_mask(int type)
 			wp = mouse_find_win(&line_cp, &col_cp, IGNORE_POPUP);
 			if (wp != NULL)
 			{
+#if defined(FEAT_TERMINAL)
 			    // A terminal window needs to be redrawn.
 			    if (bt_terminal(wp->w_buffer))
 				redraw_win_later(wp, NOT_VALID);
 			    else
+#endif
 			    {
 				if (wp != prev_wp)
 				{
