@@ -2145,8 +2145,7 @@ check_termcode_mouse(
        )
     {
 	/*
-	 * For xterm we get "<t_mouse>scr", where
-	 *  s == encoded button state:
+	 * For xterm we get "<t_mouse>scr", where s == encoded button state:
 	 *	   0x20 = left button down
 	 *	   0x21 = middle button down
 	 *	   0x22 = right button down
@@ -2162,9 +2161,9 @@ check_termcode_mouse(
 	 *  c == column + ' ' + 1 == column + 33
 	 *  r == row + ' ' + 1 == row + 33
 	 *
-	 * The coordinates are passed on through global variables.
-	 * Ugly, but this avoids trouble with mouse clicks at an
-	 * unexpected moment and allows for mapping them.
+	 * The coordinates are passed on through global variables.  Ugly, but
+	 * this avoids trouble with mouse clicks at an unexpected moment and
+	 * allows for mapping them.
 	 */
 	for (;;)
 	{
@@ -2193,9 +2192,9 @@ check_termcode_mouse(
 	    }
 	    *slen += num_bytes;
 
-	    // If the following bytes is also a mouse code and it has
-	    // the same code, dump this one and get the next.  This
-	    // makes dragging a whole lot faster.
+	    // If the following bytes is also a mouse code and it has the same
+	    // code, dump this one and get the next.  This makes dragging a
+	    // whole lot faster.
 #  ifdef FEAT_GUI
 	    if (gui.in_use)
 		j = 3;
@@ -2223,8 +2222,8 @@ check_termcode_mouse(
 	    || key_name[0] == KS_SGR_MOUSE_RELEASE)
     {
 	// URXVT 1015 mouse reporting mode:
-	// Almost identical to xterm mouse mode, except the values
-	// are decimal instead of bytes.
+	// Almost identical to xterm mouse mode, except the values are decimal
+	// instead of bytes.
 	//
 	// \033[%d;%d;%dM
 	//	       ^-- row
@@ -2232,8 +2231,8 @@ check_termcode_mouse(
 	//	 ^-------- code
 	//
 	// SGR 1006 mouse reporting mode:
-	// Almost identical to xterm mouse mode, except the values
-	// are decimal instead of bytes.
+	// Almost identical to xterm mouse mode, except the values are decimal
+	// instead of bytes.
 	//
 	// \033[<%d;%d;%dM
 	//	       ^-- row
@@ -2263,8 +2262,8 @@ check_termcode_mouse(
 
 	mouse_row = getdigits(&p) - 1;
 
-	// The modifiers were the mouse coordinates, not the
-	// modifier keys (alt/shift/ctrl/meta) state.
+	// The modifiers were the mouse coordinates, not the modifier keys
+	// (alt/shift/ctrl/meta) state.
 	*modifiers = 0;
     }
 
@@ -2272,7 +2271,11 @@ check_termcode_mouse(
 	    || key_name[0] == KS_SGR_MOUSE_RELEASE)
     {
 	if (key_name[0] == KS_SGR_MOUSE_RELEASE)
+	{
 	    is_release = TRUE;
+	    // This is used below to set held_button.
+	    mouse_code |= MOUSE_RELEASE;
+	}
     }
     else
     {
@@ -2293,7 +2296,7 @@ check_termcode_mouse(
     {
 #  if !defined(MSWIN)
 	/*
-	 * Handle mouse events.
+	 * Handle old style mouse events.
 	 * Recognize the xterm mouse wheel, but not in the GUI, the
 	 * Linux console with GPM and the MS-DOS or Win32 console
 	 * (multi-clicks use >= 0x60).
@@ -2384,8 +2387,8 @@ check_termcode_mouse(
 	 * (L-x)  Left button pressed - not pressed x not reporting
 	 * (M-x)  Middle button pressed - not pressed x not reporting
 	 * (R-x)  Right button pressed - not pressed x not reporting
-	 * (SDmdu)  Single , Double click, m mouse move d button down
-	 *						   u button up
+	 * (SDmdu)  Single , Double click, m: mouse move, d: button down,
+		      *						   u: button up
 	 *  ###   X cursor position padded to 3 digits
 	 *  ###   Y cursor position padded to 3 digits
 	 * (s-x)  SHIFT key pressed - not pressed x not reporting
@@ -2516,10 +2519,10 @@ check_termcode_mouse(
 	 * Pp is the third coordinate (page number)
 	 * Pe, the event code indicates what event caused this report
 	 *    The following event codes are defined:
-	 *    0 - request, the terminal received an explicit request
-	 *	 for a locator report, but the locator is unavailable
-	 *    1 - request, the terminal received an explicit request
-	 *	 for a locator report
+	 *    0 - request, the terminal received an explicit request for a
+	 *        locator report, but the locator is unavailable
+	 *    1 - request, the terminal received an explicit request for a
+	 *        locator report
 	 *    2 - left button down
 	 *    3 - left button up
 	 *    4 - middle button down
@@ -2529,28 +2532,24 @@ check_termcode_mouse(
 	 *    8 - fourth button down
 	 *    9 - fourth button up
 	 *    10 - locator outside filter rectangle
-	 * Pb, the button code, ASCII decimal 0-15 indicating which
-	 *   buttons are down if any. The state of the four buttons
-	 *   on the locator correspond to the low four bits of the
-	 *   decimal value,
-	 *   "1" means button depressed
+	 * Pb, the button code, ASCII decimal 0-15 indicating which buttons are
+	 *   down if any. The state of the four buttons on the locator
+	 *   correspond to the low four bits of the decimal value, "1" means
+	 *   button depressed
 	 *   0 - no buttons down,
 	 *   1 - right,
 	 *   2 - middle,
 	 *   4 - left,
 	 *   8 - fourth
 	 * Pr is the row coordinate of the locator position in the page,
-	 *   encoded as an ASCII decimal value.
-	 *   If Pr is omitted, the locator position is undefined
-	 *   (outside the terminal window for example).
-	 * Pc is the column coordinate of the locator position in the
-	 *   page, encoded as an ASCII decimal value.
-	 *   If Pc is omitted, the locator position is undefined
-	 *   (outside the terminal window for example).
-	 * Pp is the page coordinate of the locator position
-	 *   encoded as an ASCII decimal value.
-	 *   The page coordinate may be omitted if the locator is on
-	 *   page one (the default).  We ignore it anyway.
+	 *   encoded as an ASCII decimal value.  If Pr is omitted, the locator
+	 *   position is undefined (outside the terminal window for example).
+	 * Pc is the column coordinate of the locator position in the page,
+	 *   encoded as an ASCII decimal value.  If Pc is omitted, the locator
+	 *   position is undefined (outside the terminal window for example).
+	 * Pp is the page coordinate of the locator position encoded as an
+	 *   ASCII decimal value.  The page coordinate may be omitted if the
+	 *   locator is on page one (the default).  We ignore it anyway.
 	 */
 	int Pe, Pb, Pr, Pc;
 
@@ -2707,12 +2706,11 @@ check_termcode_mouse(
        )
     {
 	/*
-	 * If we get a mouse drag or release event when
-	 * there is no mouse button held down (held_button ==
-	 * MOUSE_RELEASE), produce a K_IGNORE below.
-	 * (can happen when you hold down two buttons
-	 * and then let them go, or click in the menu bar, but not
-	 * on a menu, and drag into the text).
+	 * If we get a mouse drag or release event when there is no mouse
+	 * button held down (held_button == MOUSE_RELEASE), produce a K_IGNORE
+	 * below.
+	 * (can happen when you hold down two buttons and then let them go, or
+	 * click in the menu bar, but not on a menu, and drag into the text).
 	 */
 	if ((mouse_code & MOUSE_DRAG) == MOUSE_DRAG)
 	    is_drag = TRUE;
@@ -2723,8 +2721,8 @@ check_termcode_mouse(
 # ifdef CHECK_DOUBLE_CLICK
 #  ifdef FEAT_MOUSE_GPM
 	/*
-	 * Only for Unix, when GUI not active, we handle
-	 * multi-clicks here, but not for GPM mouse events.
+	 * Only for Unix, when GUI not active, we handle multi-clicks here, but
+	 * not for GPM mouse events.
 	 */
 #   ifdef FEAT_GUI
 	if (key_name[0] != KS_GPM_MOUSE && !gui.in_use)
@@ -2801,8 +2799,8 @@ check_termcode_mouse(
     else if (orig_num_clicks == 4)
 	*modifiers |= MOD_MASK_4CLICK;
 
-    // Work out our pseudo mouse event. Note that MOUSE_RELEASE gets
-    // added, then it's not mouse up/down.
+    // Work out our pseudo mouse event. Note that MOUSE_RELEASE gets added,
+    // then it's not mouse up/down.
     key_name[0] = KS_EXTRA;
     if (wheel_code != 0 && (!is_release || release_is_ambiguous))
     {
@@ -2823,11 +2821,11 @@ check_termcode_mouse(
 	held_button = MOUSE_RELEASE;
     }
     else
-	key_name[1] = get_pseudo_mouse_code(current_button,
-		is_click, is_drag);
+	key_name[1] = get_pseudo_mouse_code(current_button, is_click, is_drag);
 
-    // Make sure the mouse position is valid.  Some terminals may
-    // return weird values.
+
+    // Make sure the mouse position is valid.  Some terminals may return weird
+    // values.
     if (mouse_col >= Columns)
 	mouse_col = Columns - 1;
     if (mouse_row >= Rows)
