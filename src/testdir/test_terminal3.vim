@@ -519,5 +519,49 @@ func Test_term_modeless_selection()
   new | only!
 endfunc
 
+func Test_terminal_getwinpos()
+  CheckRunVimInTerminal
+
+  " split, go to the bottom-right window
+  split
+  wincmd j
+  set splitright
+
+  call writefile([
+	\ 'echo getwinpos()',
+	\ ], 'XTest_getwinpos')
+  let buf = RunVimInTerminal('-S XTest_getwinpos', {'cols': 60})
+  call TermWait(buf)
+
+  " Find the output of getwinpos() in the bottom line.
+  let rows = term_getsize(buf)[0]
+  call WaitForAssert({-> assert_match('\[\d\+, \d\+\]', term_getline(buf, rows))})
+  let line = term_getline(buf, rows)
+  let xpos = str2nr(substitute(line, '\[\(\d\+\), \d\+\]', '\1', ''))
+  let ypos = str2nr(substitute(line, '\[\d\+, \(\d\+\)\]', '\1', ''))
+
+  " Position must be bigger than the getwinpos() result of Vim itself.
+  " The calculation in the console assumes a 10 x 7 character cell.
+  " In the GUI it can be more, let's assume a 20 x 14 cell.
+  " And then add 100 / 200 tolerance.
+  let [xroot, yroot] = getwinpos()
+  let winpos = 50->getwinpos()
+  call assert_equal(xroot, winpos[0])
+  call assert_equal(yroot, winpos[1])
+  let [winrow, wincol] = win_screenpos('.')
+  let xoff = wincol * (has('gui_running') ? 14 : 7) + 100
+  let yoff = winrow * (has('gui_running') ? 20 : 10) + 200
+  call assert_inrange(xroot + 2, xroot + xoff, xpos)
+  call assert_inrange(yroot + 2, yroot + yoff, ypos)
+
+  call TermWait(buf)
+  call term_sendkeys(buf, ":q\<CR>")
+  call StopVimInTerminal(buf)
+  call delete('XTest_getwinpos')
+  exe buf . 'bwipe!'
+  set splitright&
+  only!
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
