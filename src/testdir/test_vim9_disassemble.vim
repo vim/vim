@@ -664,6 +664,19 @@ def Test_disassemble_lambda()
         '\d PCALL (argc 1)\_s*' ..
         '\d RETURN',
         instr)
+
+   let name = substitute(instr, '.*\(<lambda>\d\+\).*', '\1', '')
+   instr = execute('disassemble ' .. name)
+   assert_match('<lambda>\d\+\_s*' ..
+        'return "X" .. a .. "X"\_s*' ..
+        '\d PUSHS "X"\_s*' ..
+        '\d LOAD arg\[-1\]\_s*' ..
+        '\d 2STRING stack\[-1\]\_s*' ..
+        '\d CONCAT\_s*' ..
+        '\d PUSHS "X"\_s*' ..
+        '\d CONCAT\_s*' ..
+        '\d RETURN',
+        instr)
 enddef
 
 def AndOr(arg: any): string

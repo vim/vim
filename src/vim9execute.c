@@ -2397,7 +2397,14 @@ ex_disassemble(exarg_T *eap)
     int		prev_current = 0;
     int		is_global = FALSE;
 
-    fname = trans_function_name(&arg, &is_global, FALSE,
+    if (STRNCMP(arg, "<lambda>", 8) == 0)
+    {
+	arg += 8;
+	(void)getdigits(&arg);
+	fname = vim_strnsave(eap->arg, arg - eap->arg);
+    }
+    else
+	fname = trans_function_name(&arg, &is_global, FALSE,
 			    TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD, NULL, NULL);
     if (fname == NULL)
     {
