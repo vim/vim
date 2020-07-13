@@ -3212,6 +3212,7 @@ compile_lambda_call(char_u **arg, cctx_T *cctx)
 compile_dict(char_u **arg, cctx_T *cctx, int literal)
 {
     garray_T	*instr = &cctx->ctx_instr;
+    garray_T	*stack = &cctx->ctx_type_stack;
     int		count = 0;
     dict_T	*d = dict_alloc();
     dictitem_T	*item;
@@ -3254,10 +3255,16 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 
 	    if (compile_expr0(arg, cctx) == FAIL)
 		return FAIL;
-	    // TODO: check type is string
 	    isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
 	    if (isn->isn_type == ISN_PUSHS)
 		key = isn->isn_arg.string;
+	    else
+	    {
+		type_T *keytype = ((type_T **)stack->ga_data)
+							   [stack->ga_len - 1];
+		if (need_type(keytype, &t_string, -1, cctx, FALSE) == FAIL)
+		    return FAIL;
+	    }
 	}
 
 	// Check for duplicate keys, if using string keys.
