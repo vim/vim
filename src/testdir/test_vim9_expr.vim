@@ -127,7 +127,7 @@ def Test_expr2()
 enddef
 
 def Test_expr2_vimscript()
-  " only checks line continuation
+  " check line continuation
   let lines =<< trim END
       vim9script
       let var = 0
@@ -141,7 +141,7 @@ def Test_expr2_vimscript()
       let var = v:false
       		|| v:true
       		|| v:false
-      assert_equal(1, var)
+      assert_equal(v:true, var)
   END
   CheckScriptSuccess(lines)
 
@@ -150,7 +150,39 @@ def Test_expr2_vimscript()
       let var = v:false ||
       		v:true ||
 		v:false
-      assert_equal(1, var)
+      assert_equal(v:true, var)
+  END
+  CheckScriptSuccess(lines)
+
+  " check keeping the value
+  lines =<< trim END
+      vim9script
+      assert_equal(2, 2 || 0)
+      assert_equal(7, 0 ||
+			0 ||
+			7)
+      assert_equal(0, 0 || 0)
+      assert_equal(0, 0
+			|| 0)
+      assert_equal('', 0 || '')
+
+      g:vals = []
+      assert_equal(3, Record(3) || Record(1))
+      assert_equal([3], g:vals)
+
+      g:vals = []
+      assert_equal(5, Record(0) || Record(5))
+      assert_equal([0, 5], g:vals)
+
+      g:vals = []
+      assert_equal(4, Record(0)
+			  || Record(4)
+			  || Record(0))
+      assert_equal([0, 4], g:vals)
+
+      g:vals = []
+      assert_equal(0, Record([]) || Record('') || Record(0))
+      assert_equal([[], '', 0], g:vals)
   END
   CheckScriptSuccess(lines)
 enddef
@@ -199,7 +231,7 @@ def Test_expr3()
 enddef
 
 def Test_expr3_vimscript()
-  " only checks line continuation
+  " check line continuation
   let lines =<< trim END
       vim9script
       let var = 0
@@ -213,7 +245,7 @@ def Test_expr3_vimscript()
       let var = v:true
       		&& v:true
       		&& v:true
-      assert_equal(1, var)
+      assert_equal(v:true, var)
   END
   CheckScriptSuccess(lines)
 
@@ -222,7 +254,43 @@ def Test_expr3_vimscript()
       let var = v:true &&
       		v:true &&
       		v:true
-      assert_equal(1, var)
+      assert_equal(v:true, var)
+  END
+  CheckScriptSuccess(lines)
+
+  " check keeping the value
+  lines =<< trim END
+      vim9script
+      assert_equal(0, 2 && 0)
+      assert_equal(0, 0 &&
+		    0 &&
+		    7)
+      assert_equal(7, 2
+			&& 3
+			&& 7)
+      assert_equal(0, 0 && 0)
+      assert_equal(0, 0 && '')
+      assert_equal('', 8 && '')
+
+      g:vals = []
+      assert_equal(1, Record(3) && Record(1))
+      assert_equal([3, 1], g:vals)
+
+      g:vals = []
+      assert_equal(0, Record(0) && Record(5))
+      assert_equal([0], g:vals)
+
+      g:vals = []
+      assert_equal(0, Record(0) && Record(4) && Record(0))
+      assert_equal([0], g:vals)
+
+      g:vals = []
+      assert_equal(0, Record(8) && Record(4) && Record(0))
+      assert_equal([8, 4, 0], g:vals)
+
+      g:vals = []
+      assert_equal(0, Record([1]) && Record('z') && Record(0))
+      assert_equal([[1], 'z', 0], g:vals)
   END
   CheckScriptSuccess(lines)
 enddef
