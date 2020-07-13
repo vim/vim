@@ -3079,8 +3079,22 @@ eval7(
 	    else if (flags & EVAL_CONSTANT)
 		ret = FAIL;
 	    else if (evaluate)
-		// get value of variable
-		ret = eval_variable(s, len, rettv, NULL, TRUE, FALSE);
+	    {
+		// get the value of "true", "false" or a variable
+		if (len == 4 && in_vim9script() && STRNCMP(s, "true", 4) == 0)
+		{
+		    rettv->v_type = VAR_BOOL;
+		    rettv->vval.v_number = VVAL_TRUE;
+		}
+		else if (len == 5 && in_vim9script()
+						&& STRNCMP(s, "false", 4) == 0)
+		{
+		    rettv->v_type = VAR_BOOL;
+		    rettv->vval.v_number = VVAL_FALSE;
+		}
+		else
+		    ret = eval_variable(s, len, rettv, NULL, TRUE, FALSE);
+	    }
 	    else
 	    {
 		// skip the name

@@ -1024,6 +1024,19 @@ def Test_expr7_special()
   call CheckDefFailure(['v:none = 22'], 'E46:')
 enddef
 
+def Test_expr7_special_vim9script()
+  let lines =<< trim END
+      vim9script
+      let t = true
+      let f = false
+      assert_equal(v:true, true)
+      assert_equal(true, t)
+      assert_equal(v:false, false)
+      assert_equal(false, f)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_expr7_list()
   " list
   assert_equal(g:list_empty, [])
