@@ -461,6 +461,10 @@ call_prepare(int argcount, typval_T *argvars, ectx_T *ectx)
     return OK;
 }
 
+// Ugly global to avoid passing the execution context around through many
+// layers.
+static ectx_T *current_ectx = NULL;
+
 /*
  * Call a builtin function by index.
  */
@@ -470,12 +474,16 @@ call_bfunc(int func_idx, int argcount, ectx_T *ectx)
     typval_T	argvars[MAX_FUNC_ARGS];
     int		idx;
     int		did_emsg_before = did_emsg;
+    ectx_T	*prev_ectx = current_ectx;
 
     if (call_prepare(argcount, argvars, ectx) == FAIL)
 	return FAIL;
 
-    // Call the builtin function.
+    // Call the builtin function.  Set "current_ectx" so that when it
+    // recursively invokes call_def_function() a closure context can be set.
+    current_ectx = ectx;
     call_internal_func_by_idx(func_idx, argvars, STACK_TV_BOT(-1));
+    current_ectx = prev_ectx;
 
     // Clear the arguments.
     for (idx = 0; idx < argcount; ++idx)
@@ -749,8 +757,17 @@ call_def_function(
 
     if (partial != NULL)
     {
-	ectx.ec_outer_stack = partial->pt_ectx_stack;
-	ectx.ec_outer_frame = partial->pt_ectx_frame;
+	if (partial->pt_ectx_stack == NULL && current_ectx != NULL)
+	{
+	    // TODO: is this always the right way?
+	    ectx.ec_outer_stack = &current_ectx->ec_stack;
+	    ectx.ec_outer_frame = current_ectx->ec_frame_idx;
+	}
+	else
+	{
+	    ectx.ec_outer_stack = partial->pt_ectx_stack;
+	    ectx.ec_outer_frame = partial->pt_ectx_frame;
+	}
     }
 
     // dummy frame entries
