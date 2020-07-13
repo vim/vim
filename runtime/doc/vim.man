@@ -110,7 +110,7 @@ OPTIONS
                    read.   {command}  is interpreted as an Ex command.  If the
                    {command} contains spaces it must  be  enclosed  in  double
                    quotes  (this depends on the shell that is used).  Example:
-                   Vim "+set si" main.c
+                   vim "+set si" main.c
                    Note: You can use up to 10 "+" or "-c" commands.
 
        -S {file}   {file} will be sourced after the first file has been  read.
