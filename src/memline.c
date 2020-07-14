@@ -4368,6 +4368,13 @@ makeswapname(
     char_u	fname_buf[MAXPATHL];
 #endif
 
+#ifdef HAVE_READLINK
+    // Expand symlink in the file name, so that we put the swap file with the
+    // actual file instead of with the symlink.
+    if (resolve_symlink(fname, fname_buf) == OK)
+	fname_res = fname_buf;
+#endif
+
 #if defined(UNIX) || defined(MSWIN)  // Need _very_ long file names
     int		len = (int)STRLEN(dir_name);
 
@@ -4375,20 +4382,13 @@ makeswapname(
     if (after_pathsep(dir_name, s) && len > 1 && s[-1] == s[-2])
     {			       // Ends with '//', Use Full path
 	r = NULL;
-	if ((s = make_percent_swname(dir_name, fname)) != NULL)
+	if ((s = make_percent_swname(dir_name, fname_res)) != NULL)
 	{
 	    r = modname(s, (char_u *)".swp", FALSE);
 	    vim_free(s);
 	}
 	return r;
     }
-#endif
-
-#ifdef HAVE_READLINK
-    // Expand symlink in the file name, so that we put the swap file with the
-    // actual file instead of with the symlink.
-    if (resolve_symlink(fname, fname_buf) == OK)
-	fname_res = fname_buf;
 #endif
 
     r = buf_modname(
