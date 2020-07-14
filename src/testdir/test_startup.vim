@@ -299,7 +299,7 @@ func Test_q_arg()
   if RunVim([], after, '-q')
     let lines = readfile('Xtestout')
     call assert_equal(['errors.err',
-	\              '[0, 208, 5, 0]',
+	\              '[0, 208, 1, 0]',
 	\              source_file . "|208 col 5| error: expected ';' before '}' token"],
 	\             lines)
   endif
@@ -311,7 +311,7 @@ func Test_q_arg()
   if RunVim([], after, '-q Xerrors')
     let lines = readfile('Xtestout')
     call assert_equal(['Xerrors',
-	\              '[0, 208, 5, 0]',
+	\              '[0, 208, 1, 0]',
 	\              source_file . "|208 col 5| error: expected ';' before '}' token"],
 	\             lines)
   endif
@@ -321,7 +321,7 @@ func Test_q_arg()
   if RunVim([], after, '-qXerrors')
     let lines = readfile('Xtestout')
     call assert_equal(['Xerrors',
-	\              '[0, 208, 5, 0]',
+	\              '[0, 208, 1, 0]',
 	\              source_file . "|208 col 5| error: expected ';' before '}' token"],
 	\             lines)
   endif
