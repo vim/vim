@@ -3444,8 +3444,8 @@ ex_function(exarg_T *eap)
     void
 ex_defcompile(exarg_T *eap UNUSED)
 {
-    long_u	ht_used = func_hashtab.ht_used;
-    int		todo = (int)ht_used;
+    long	todo = (long)func_hashtab.ht_used;
+    int		changed = func_hashtab.ht_changed;
     hashitem_T	*hi;
     ufunc_T	*ufunc;
 
@@ -3460,12 +3460,12 @@ ex_defcompile(exarg_T *eap UNUSED)
 	    {
 		compile_def_function(ufunc, FALSE, NULL);
 
-		if (func_hashtab.ht_used != ht_used)
+		if (func_hashtab.ht_changed != changed)
 		{
-		    // another function has been defined, need to start over
+		    // a function has been added or removed, need to start over
+		    todo = (long)func_hashtab.ht_used;
+		    changed = func_hashtab.ht_changed;
 		    hi = func_hashtab.ht_array;
-		    ht_used = func_hashtab.ht_used;
-		    todo = (int)ht_used;
 		    --hi;
 		}
 	    }

@@ -1563,10 +1563,8 @@ def Test_expr7_method_call()
 enddef
 
 func Test_expr7_trailing_fails()
-  " Temporarily commented out - somehow crash occurs with too many
-  " CheckDefFailure calls in the GUI only.
-  " call CheckDefFailure(['let l = [2]', 'l->{l -> add(l, 8)}'], 'E107')
-  " call CheckDefFailure(['let l = [2]', 'l->{l -> add(l, 8)} ()'], 'E274')
+  call CheckDefFailure(['let l = [2]', 'l->{l -> add(l, 8)}'], 'E107')
+  call CheckDefFailure(['let l = [2]', 'l->{l -> add(l, 8)} ()'], 'E274')
 endfunc
 
 func Test_expr_fails()
