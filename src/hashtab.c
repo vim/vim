@@ -236,6 +236,7 @@ hash_add_item(
 	return FAIL;
 
     ++ht->ht_used;
+    ++ht->ht_changed;
     if (hi->hi_key == NULL)
 	++ht->ht_filled;
     hi->hi_key = key;
@@ -271,6 +272,7 @@ hash_set(hashitem_T *hi, char_u *key)
 hash_remove(hashtab_T *ht, hashitem_T *hi)
 {
     --ht->ht_used;
+    ++ht->ht_changed;
     hi->hi_key = HI_KEY_REMOVED;
     hash_may_resize(ht, 0);
 }
@@ -448,6 +450,7 @@ hash_may_resize(
     ht->ht_array = newarray;
     ht->ht_mask = newmask;
     ht->ht_filled = ht->ht_used;
+    ++ht->ht_changed;
     ht->ht_error = FALSE;
 
     return OK;
