@@ -781,7 +781,7 @@ static struct builtin_term builtin_termcaps[] =
     {K_BS,		"\x7f"},	// for some reason 0177 doesn't work
 # endif
 
-# if defined(ALL_BUILTIN_TCAPS) || defined(__MINT__)
+# if defined(ALL_BUILTIN_TCAPS)
 /*
  * Ordinary vt52
  */
@@ -805,41 +805,8 @@ static struct builtin_term builtin_termcaps[] =
     {K_F1,		IF_EB("\033P", ESC_STR "P")},
     {K_F2,		IF_EB("\033Q", ESC_STR "Q")},
     {K_F3,		IF_EB("\033R", ESC_STR "R")},
-#  ifdef __MINT__
-    {(int)KS_CL,	IF_EB("\033E", ESC_STR "E")},
-    {(int)KS_VE,	IF_EB("\033e", ESC_STR "e")},
-    {(int)KS_VI,	IF_EB("\033f", ESC_STR "f")},
-    {(int)KS_SO,	IF_EB("\033p", ESC_STR "p")},
-    {(int)KS_SE,	IF_EB("\033q", ESC_STR "q")},
-    {K_S_UP,		IF_EB("\033a", ESC_STR "a")},
-    {K_S_DOWN,		IF_EB("\033b", ESC_STR "b")},
-    {K_S_LEFT,		IF_EB("\033d", ESC_STR "d")},
-    {K_S_RIGHT,		IF_EB("\033c", ESC_STR "c")},
-    {K_F4,		IF_EB("\033S", ESC_STR "S")},
-    {K_F5,		IF_EB("\033T", ESC_STR "T")},
-    {K_F6,		IF_EB("\033U", ESC_STR "U")},
-    {K_F7,		IF_EB("\033V", ESC_STR "V")},
-    {K_F8,		IF_EB("\033W", ESC_STR "W")},
-    {K_F9,		IF_EB("\033X", ESC_STR "X")},
-    {K_F10,		IF_EB("\033Y", ESC_STR "Y")},
-    {K_S_F1,		IF_EB("\033p", ESC_STR "p")},
-    {K_S_F2,		IF_EB("\033q", ESC_STR "q")},
-    {K_S_F3,		IF_EB("\033r", ESC_STR "r")},
-    {K_S_F4,		IF_EB("\033s", ESC_STR "s")},
-    {K_S_F5,		IF_EB("\033t", ESC_STR "t")},
-    {K_S_F6,		IF_EB("\033u", ESC_STR "u")},
-    {K_S_F7,		IF_EB("\033v", ESC_STR "v")},
-    {K_S_F8,		IF_EB("\033w", ESC_STR "w")},
-    {K_S_F9,		IF_EB("\033x", ESC_STR "x")},
-    {K_S_F10,		IF_EB("\033y", ESC_STR "y")},
-    {K_INS,		IF_EB("\033I", ESC_STR "I")},
-    {K_HOME,		IF_EB("\033E", ESC_STR "E")},
-    {K_PAGEDOWN,	IF_EB("\033b", ESC_STR "b")},
-    {K_PAGEUP,		IF_EB("\033a", ESC_STR "a")},
-#  else
     {(int)KS_CL,	IF_EB("\033H\033J", ESC_STR "H" ESC_STR_nc "J")},
     {(int)KS_MS,	"y"},
-#  endif
 # endif
 
 # if defined(UNIX) || defined(ALL_BUILTIN_TCAPS) || defined(SOME_BUILTIN_TCAPS)
@@ -1399,12 +1366,8 @@ termgui_mch_get_rgb(guicolor_T color)
 # define DEFAULT_TERM	(char_u *)"win32"
 #endif
 
-#if defined(UNIX) && !defined(__MINT__)
+#if defined(UNIX)
 # define DEFAULT_TERM	(char_u *)"ansi"
-#endif
-
-#ifdef __MINT__
-# define DEFAULT_TERM	(char_u *)"vt52"
 #endif
 
 #ifdef VMS

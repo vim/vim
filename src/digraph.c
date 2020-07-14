@@ -35,73 +35,7 @@ static garray_T	user_digraphs = {0, 0, (int)sizeof(digr_T), 10, NULL};
  */
 static digr_T digraphdefault[] =
 
-#ifdef __MINT__
-	/*
-	 * ATARI digraphs
-	 */
-       {{'C', ',', 128},	// ~@ XX
-	{'u', '"', 129},	// 
-	{'e', '\'', 130},	// 
-	{'a', '^', 131},	// 
-	{'a', '"', 132},	// 
-	{'a', '`', 133},	// 
-	{'a', '@', 134},	// 
-	{'c', ',', 135},	// ~G XX
-	{'e', '^', 136},	// ~H XX
-	{'e', '"', 137},	// 
-	{'e', '`', 138},	// 
-	{'i', '"', 139},	// 
-	{'i', '^', 140},	// 
-	{'i', '`', 141},	// 
-	{'A', '"', 142},	// 
-	{'A', '@', 143},	// 
-	{'E', '\'', 144},	// 
-	{'a', 'e', 145},	// 
-	{'A', 'E', 146},	// 
-	{'o', '^', 147},	// 
-	{'o', '"', 148},	// 
-	{'o', '`', 149},	// 
-	{'u', '^', 150},	// 
-	{'u', '`', 151},	// 
-	{'y', '"', 152},	// 
-	{'O', '"', 153},	// 
-	{'U', '"', 154},	// 
-	{'c', '|', 155},	// 
-	{'$', '$', 156},	// 
-	{'Y', '-', 157},	// ~] XX
-	{'s', 's', 158},	// 
-	{'f', 'f', 159},	// 
-	{'a', '\'', 160},	//  
-	{'i', '\'', 161},	// ¡
-	{'o', '\'', 162},	// ¢
-	{'u', '\'', 163},	// £
-	{'n', '~', 164},	// ¤
-	{'N', '~', 165},	// ¥
-	{'a', 'a', 166},	// ¦
-	{'o', 'o', 167},	// §
-	{'~', '?', 168},	// ¨
-	{'-', 'a', 169},	// ©
-	{'a', '-', 170},	// ª
-	{'1', '2', 171},	// «
-	{'1', '4', 172},	// ¬
-	{'~', '!', 173},	// ­
-	{'<', '<', 174},	// ®
-	{'>', '>', 175},	// ¯
-	{'j', 'u', 230},	// æ
-	{'o', '/', 237},	// í
-	{'+', '-', 241},	// ñ
-	{'>', '=', 242},	// ò
-	{'<', '=', 243},	// ó
-	{':', '-', 246},	// ö
-	{'~', '~', 247},	// ÷
-	{'~', 'o', 248},	// ø
-	{'2', '2', 253},	// ý
-	{NUL, NUL, NUL}
-	};
-
-#else	// !__MINT__
-# ifdef HPUX_DIGRAPHS
-
+#ifdef HPUX_DIGRAPHS
 	/*
 	 * different HPUX digraphs
 	 */
@@ -203,9 +137,9 @@ static digr_T digraphdefault[] =
 	{NUL, NUL, NUL}
 	};
 
-# else	// !HPUX_DIGRAPHS
+#else	// !HPUX_DIGRAPHS
 
-#  ifdef EBCDIC
+# ifdef EBCDIC
 
 	/*
 	 * EBCDIC - ISO digraphs
@@ -315,8 +249,8 @@ static digr_T digraphdefault[] =
 	{NUL, NUL, NUL}
 	};
 
-#  else
-#   ifdef OLD_DIGRAPHS
+# else // EBCDIC
+#  ifdef OLD_DIGRAPHS
 
 	/*
 	 * digraphs compatible with Vim 5.x
@@ -423,7 +357,7 @@ static digr_T digraphdefault[] =
 	{'y', '"', 255},	// x XX
 	{NUL, NUL, NUL}
 	};
-#   else // OLD_DIGRAPHS
+#  else // OLD_DIGRAPHS
 
 	/*
 	 * digraphs for Unicode from RFC1345
@@ -509,7 +443,7 @@ static digr_T digraphdefault[] =
 	{'P', 'M', 0x9e},
 	{'A', 'C', 0x9f},
 	{'N', 'S', 0xa0},
-#define DG_START_LATIN 0xa1
+#   define DG_START_LATIN 0xa1
 	{'!', 'I', 0xa1},
 	{'~', '!', 0xa1},	// ¡ Vim 5.x compatible
 	{'C', 't', 0xa2},
@@ -658,7 +592,7 @@ static digr_T digraphdefault[] =
 	{'y', ':', 0xff},
 	{'y', '"', 0xff},	// x XX  Vim 5.x compatible
 
-#	define USE_UNICODE_DIGRAPHS
+#   define USE_UNICODE_DIGRAPHS
 
 	{'A', '-', 0x0100},
 	{'a', '-', 0x0101},
@@ -833,7 +767,7 @@ static digr_T digraphdefault[] =
 	{'\'', '0', 0x02da},
 	{'\'', ';', 0x02db},
 	{'\'', '"', 0x02dd},
-#define DG_START_GREEK 0x0386
+#   define DG_START_GREEK 0x0386
 	{'A', '%', 0x0386},
 	{'E', '%', 0x0388},
 	{'Y', '%', 0x0389},
@@ -915,7 +849,7 @@ static digr_T digraphdefault[] =
 	{'p', '3', 0x03e1},
 	{'\'', '%', 0x03f4},
 	{'j', '3', 0x03f5},
-#define DG_START_CYRILLIC 0x0401
+#   define DG_START_CYRILLIC 0x0401
 	{'I', 'O', 0x0401},
 	{'D', '%', 0x0402},
 	{'G', '%', 0x0403},
@@ -1020,7 +954,7 @@ static digr_T digraphdefault[] =
 	{'c', '3', 0x0481},
 	{'G', '3', 0x0490},
 	{'g', '3', 0x0491},
-#define DG_START_HEBREW 0x05d0
+#   define DG_START_HEBREW 0x05d0
 	{'A', '+', 0x05d0},
 	{'B', '+', 0x05d1},
 	{'G', '+', 0x05d2},
@@ -1048,7 +982,7 @@ static digr_T digraphdefault[] =
 	{'R', '+', 0x05e8},
 	{'S', 'h', 0x05e9},
 	{'T', '+', 0x05ea},
-#define DG_START_ARABIC 0x060c
+#   define DG_START_ARABIC 0x060c
 	{',', '+', 0x060c},
 	{';', '+', 0x061b},
 	{'?', '+', 0x061f},
@@ -1111,7 +1045,7 @@ static digr_T digraphdefault[] =
 	{'7', 'a', 0x06f7},
 	{'8', 'a', 0x06f8},
 	{'9', 'a', 0x06f9},
-#define DG_START_LATIN_EXTENDED 0x1e02
+#   define DG_START_LATIN_EXTENDED 0x1e02
 	{'B', '.', 0x1e02},
 	{'b', '.', 0x1e03},
 	{'B', '_', 0x1e06},
@@ -1206,7 +1140,7 @@ static digr_T digraphdefault[] =
 	{'y', '2', 0x1ef7},
 	{'Y', '?', 0x1ef8},
 	{'y', '?', 0x1ef9},
-#define DG_START_GREEK_EXTENDED 0x1f00
+#   define DG_START_GREEK_EXTENDED 0x1f00
 	{';', '\'', 0x1f00},
 	{',', '\'', 0x1f01},
 	{';', '!', 0x1f02},
@@ -1215,7 +1149,7 @@ static digr_T digraphdefault[] =
 	{'?', ',', 0x1f05},
 	{'!', ':', 0x1f06},
 	{'?', ':', 0x1f07},
-#define DG_START_PUNCTUATION 0x2002
+#   define DG_START_PUNCTUATION 0x2002
 	{'1', 'N', 0x2002},
 	{'1', 'M', 0x2003},
 	{'3', 'M', 0x2004},
@@ -1254,7 +1188,7 @@ static digr_T digraphdefault[] =
 	{':', 'X', 0x203b},
 	{'\'', '-', 0x203e},
 	{'/', 'f', 0x2044},
-#define DG_START_SUB_SUPER 0x2070
+#   define DG_START_SUB_SUPER 0x2070
 	{'0', 'S', 0x2070},
 	{'4', 'S', 0x2074},
 	{'5', 'S', 0x2075},
@@ -1283,7 +1217,7 @@ static digr_T digraphdefault[] =
 	{'=', 's', 0x208c},
 	{'(', 's', 0x208d},
 	{')', 's', 0x208e},
-#define DG_START_CURRENCY 0x20a4
+#   define DG_START_CURRENCY 0x20a4
 	{'L', 'i', 0x20a4},
 	{'P', 't', 0x20a7},
 	{'W', '=', 0x20a9},
@@ -1291,7 +1225,7 @@ static digr_T digraphdefault[] =
 	{'E', 'u', 0x20ac}, // euro
 	{'=', 'R', 0x20bd}, // rouble
 	{'=', 'P', 0x20bd}, // rouble
-#define DG_START_OTHER1 0x2103
+#   define DG_START_OTHER1 0x2103
 	{'o', 'C', 0x2103},
 	{'c', 'o', 0x2105},
 	{'o', 'F', 0x2109},
@@ -1314,7 +1248,7 @@ static digr_T digraphdefault[] =
 	{'3', '8', 0x215c},
 	{'5', '8', 0x215d},
 	{'7', '8', 0x215e},
-#define DG_START_ROMAN 0x2160
+#   define DG_START_ROMAN 0x2160
 	{'1', 'R', 0x2160},
 	{'2', 'R', 0x2161},
 	{'3', 'R', 0x2162},
@@ -1339,7 +1273,7 @@ static digr_T digraphdefault[] =
 	{'a', 'r', 0x2179},
 	{'b', 'r', 0x217a},
 	{'c', 'r', 0x217b},
-#define DG_START_ARROWS 0x2190
+#   define DG_START_ARROWS 0x2190
 	{'<', '-', 0x2190},
 	{'-', '!', 0x2191},
 	{'-', '>', 0x2192},
@@ -1349,7 +1283,7 @@ static digr_T digraphdefault[] =
 	{'<', '=', 0x21d0},
 	{'=', '>', 0x21d2},
 	{'=', '=', 0x21d4},
-#define DG_START_MATH 0x2200
+#   define DG_START_MATH 0x2200
 	{'F', 'A', 0x2200},
 	{'d', 'P', 0x2202},
 	{'T', 'E', 0x2203},
@@ -1407,7 +1341,7 @@ static digr_T digraphdefault[] =
 	{'.', 'P', 0x22c5},
 	{':', '3', 0x22ee},
 	{'.', '3', 0x22ef},
-#define DG_START_TECHNICAL 0x2302
+#   define DG_START_TECHNICAL 0x2302
 	{'E', 'h', 0x2302},
 	{'<', '7', 0x2308},
 	{'>', '7', 0x2309},
@@ -1420,7 +1354,7 @@ static digr_T digraphdefault[] =
 	{'I', 'l', 0x2321},
 	{'<', '/', 0x2329},
 	{'/', '>', 0x232a},
-#define DG_START_OTHER2 0x2423
+#   define DG_START_OTHER2 0x2423
 	{'V', 's', 0x2423},
 	{'1', 'h', 0x2440},
 	{'3', 'h', 0x2441},
@@ -1439,7 +1373,7 @@ static digr_T digraphdefault[] =
 	{'7', '.', 0x248e},
 	{'8', '.', 0x248f},
 	{'9', '.', 0x2490},
-#define DG_START_DRAWING 0x2500
+#   define DG_START_DRAWING 0x2500
 	{'h', 'h', 0x2500},
 	{'H', 'H', 0x2501},
 	{'v', 'v', 0x2502},
@@ -1490,7 +1424,7 @@ static digr_T digraphdefault[] =
 	{'V', 'H', 0x254b},
 	{'F', 'D', 0x2571},
 	{'B', 'D', 0x2572},
-#define DG_START_BLOCK 0x2580
+#   define DG_START_BLOCK 0x2580
 	{'T', 'B', 0x2580},
 	{'L', 'B', 0x2584},
 	{'F', 'B', 0x2588},
@@ -1499,7 +1433,7 @@ static digr_T digraphdefault[] =
 	{'.', 'S', 0x2591},
 	{':', 'S', 0x2592},
 	{'?', 'S', 0x2593},
-#define DG_START_SHAPES 0x25a0
+#   define DG_START_SHAPES 0x25a0
 	{'f', 'S', 0x25a0},
 	{'O', 'S', 0x25a1},
 	{'R', 'O', 0x25a2},
@@ -1533,7 +1467,7 @@ static digr_T digraphdefault[] =
 	{'I', 'c', 0x25d9},
 	{'F', 'd', 0x25e2},
 	{'B', 'd', 0x25e3},
-#define DG_START_SYMBOLS 0x2605
+#   define DG_START_SYMBOLS 0x2605
 	{'*', '2', 0x2605},
 	{'*', '1', 0x2606},
 	{'<', 'H', 0x261c},
@@ -1553,11 +1487,11 @@ static digr_T digraphdefault[] =
 	{'M', 'b', 0x266d},
 	{'M', 'x', 0x266e},
 	{'M', 'X', 0x266f},
-#define DG_START_DINGBATS 0x2713
+#   define DG_START_DINGBATS 0x2713
 	{'O', 'K', 0x2713},
 	{'X', 'X', 0x2717},
 	{'-', 'X', 0x2720},
-#define DG_START_CJK_SYMBOLS 0x3000
+#   define DG_START_CJK_SYMBOLS 0x3000
 	{'I', 'S', 0x3000},
 	{',', '_', 0x3001},
 	{'.', '_', 0x3002},
@@ -1581,7 +1515,7 @@ static digr_T digraphdefault[] =
 	{'(', 'I', 0x3016},
 	{')', 'I', 0x3017},
 	{'-', '?', 0x301c},
-#define DG_START_HIRAGANA 0x3041
+#   define DG_START_HIRAGANA 0x3041
 	{'A', '5', 0x3041},
 	{'a', '5', 0x3042},
 	{'I', '5', 0x3043},
@@ -1670,7 +1604,7 @@ static digr_T digraphdefault[] =
 	{'0', '5', 0x309c},
 	{'*', '5', 0x309d},
 	{'+', '5', 0x309e},
-#define DG_START_KATAKANA 0x30a1
+#   define DG_START_KATAKANA 0x30a1
 	{'a', '6', 0x30a1},
 	{'A', '6', 0x30a2},
 	{'i', '6', 0x30a3},
@@ -1765,7 +1699,7 @@ static digr_T digraphdefault[] =
 	{'-', '6', 0x30fc},
 	{'*', '6', 0x30fd},
 	{'+', '6', 0x30fe},
-#define DG_START_BOPOMOFO 0x3105
+#   define DG_START_BOPOMOFO 0x3105
 	{'b', '4', 0x3105},
 	{'p', '4', 0x3106},
 	{'m', '4', 0x3107},
@@ -1805,7 +1739,7 @@ static digr_T digraphdefault[] =
 	{'v', '4', 0x312a},
 	{'n', 'G', 0x312b},
 	{'g', 'n', 0x312c},
-#define DG_START_OTHER3 0x3220
+#   define DG_START_OTHER3 0x3220
 	{'1', 'c', 0x3220},
 	{'2', 'c', 0x3221},
 	{'3', 'c', 0x3222},
@@ -1826,10 +1760,9 @@ static digr_T digraphdefault[] =
 	{NUL, NUL, NUL}
        };
 
-#   endif // OLD_DIGRAPHS
-#  endif // EBCDIC
-# endif // !HPUX_DIGRAPHS
-#endif // !__MINT__
+#  endif // OLD_DIGRAPHS
+# endif // EBCDIC
+#endif // !HPUX_DIGRAPHS
 
 /*
  * handle digraphs after typing a character

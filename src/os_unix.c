@@ -3505,9 +3505,8 @@ mch_settmode(tmode_T tmode)
 	// ~IXON disables CTRL-S stopping output, so that it can be mapped.
 	tnew.c_iflag &= ~(ICRNL | IXON);
 	tnew.c_lflag &= ~(ICANON | ECHO | ISIG | ECHOE
-# if defined(IEXTEN) && !defined(__MINT__)
+# if defined(IEXTEN)
 		    | IEXTEN	    // IEXTEN enables typing ^V on SOLARIS
-				    // but it breaks function keys on MINT
 # endif
 				);
 # ifdef ONLCR

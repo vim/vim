@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(__TANDEM) || defined(__MINT__)
+#if defined(__TANDEM)
 # include <limits.h>		// for SSIZE_MAX
 #endif
 #if defined(UNIX) && defined(FEAT_EVAL)
