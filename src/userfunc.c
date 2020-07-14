@@ -1712,7 +1712,7 @@ free_all_functions(void)
     ufunc_T	*fp;
     long_u	skipped = 0;
     long_u	todo = 1;
-    long_u	used;
+    int		changed;
 
     // Clean up the current_funccal chain and the funccal stack.
     while (current_funccal != NULL)
@@ -1743,9 +1743,9 @@ free_all_functions(void)
 		    ++skipped;
 		else
 		{
-		    used = func_hashtab.ht_used;
+		    changed = func_hashtab.ht_changed;
 		    func_clear(fp, TRUE);
-		    if (used != func_hashtab.ht_used)
+		    if (changed != func_hashtab.ht_changed)
 		    {
 			skipped = 0;
 			break;
@@ -2484,12 +2484,11 @@ untrans_function_name(char_u *name)
     static void
 list_functions(regmatch_T *regmatch)
 {
-    long_u	used = func_hashtab.ht_used;
-    long_u	todo = used;
-    hashitem_T	*ht_array = func_hashtab.ht_array;
+    int		changed = func_hashtab.ht_changed;
+    long_u	todo = func_hashtab.ht_used;
     hashitem_T	*hi;
 
-    for (hi = ht_array; todo > 0 && !got_int; ++hi)
+    for (hi = func_hashtab.ht_array; todo > 0 && !got_int; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
@@ -2504,8 +2503,7 @@ list_functions(regmatch_T *regmatch)
 			    && vim_regexec(regmatch, fp->uf_name, 0)))
 	    {
 		list_func_head(fp, FALSE);
-		if (used != func_hashtab.ht_used
-			|| ht_array != func_hashtab.ht_array)
+		if (changed != func_hashtab.ht_changed)
 		{
 		    emsg(_("E454: function list was modified"));
 		    return;
@@ -3564,6 +3562,7 @@ get_expanded_name(char_u *name, int check)
 get_user_func_name(expand_T *xp, int idx)
 {
     static long_u	done;
+    static int		changed;
     static hashitem_T	*hi;
     ufunc_T		*fp;
 
@@ -3571,8 +3570,9 @@ get_user_func_name(expand_T *xp, int idx)
     {
 	done = 0;
 	hi = func_hashtab.ht_array;
+	changed = func_hashtab.ht_changed;
     }
-    if (done < func_hashtab.ht_used)
+    if (changed == func_hashtab.ht_changed && done < func_hashtab.ht_used)
     {
 	if (done++ > 0)
 	    ++hi;
