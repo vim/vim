@@ -2681,6 +2681,7 @@ halfpage(int flag, linenr_T Prenum)
 	    if (curwin->w_topfill > 0)
 	    {
 		i = 1;
+		--n;
 		--curwin->w_topfill;
 	    }
 	    else
