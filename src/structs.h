@@ -1250,6 +1250,7 @@ typedef struct hashtable_S
 				// array is "ht_mask" + 1)
     long_u	ht_used;	// number of items used
     long_u	ht_filled;	// number of items used + removed
+    int		ht_changed;	// incremented when adding or removing an item
     int		ht_locked;	// counter for hash_lock()
     int		ht_error;	// when set growing failed, can't add more
 				// items before growing works
