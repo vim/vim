@@ -355,6 +355,15 @@ def Test_vim9script_call()
     ("some")->MyFunc()
     assert_equal('some', var)
 
+    'asdfasdf'->MyFunc()
+    assert_equal('asdfasdf', var)
+
+    def UseString()
+      'xyork'->MyFunc()
+    enddef
+    UseString()
+    assert_equal('xyork', var)
+
     MyFunc(
         'continued'
         )

@@ -1700,6 +1700,8 @@ do_one_cmd(
     char_u	*cmd;
 #ifdef FEAT_EVAL
     int		starts_with_colon;
+    int		starts_with_quote;
+    int		vim9script = in_vim9script();
 #endif
 
     CLEAR_FIELD(ea);
@@ -1760,12 +1762,16 @@ do_one_cmd(
  * We need the command to know what kind of range it uses.
  */
     cmd = ea.cmd;
-    ea.cmd = skip_range(ea.cmd, NULL);
+#ifdef FEAT_EVAL
+    starts_with_quote = vim9script && *ea.cmd == '\'';
+    if (!starts_with_quote)
+#endif
+	ea.cmd = skip_range(ea.cmd, NULL);
     if (*ea.cmd == '*' && vim_strchr(p_cpo, CPO_STAR) == NULL)
 	ea.cmd = skipwhite(ea.cmd + 1);
 
 #ifdef FEAT_EVAL
-    if (in_vim9script() && !starts_with_colon)
+    if (vim9script && !starts_with_colon)
     {
 	if (ea.cmd > cmd)
 	{
@@ -1859,8 +1865,11 @@ do_one_cmd(
     }
 
     ea.cmd = cmd;
-    if (parse_cmd_address(&ea, &errormsg, FALSE) == FAIL)
-	goto doend;
+#ifdef FEAT_EVAL
+    if (!starts_with_quote)
+#endif
+	if (parse_cmd_address(&ea, &errormsg, FALSE) == FAIL)
+	    goto doend;
 
 /*
  * 5. Parse the command.
@@ -1880,7 +1889,7 @@ do_one_cmd(
     if (*ea.cmd == NUL || *ea.cmd == '"'
 #ifdef FEAT_EVAL
 		|| (*ea.cmd == '#' && ea.cmd[1] != '{'
-				      && !starts_with_colon && in_vim9script())
+					   && !starts_with_colon && vim9script)
 #endif
 		|| (ea.nextcmd = check_nextcmd(ea.cmd)) != NULL)
     {
@@ -3223,26 +3232,34 @@ find_ex_command(
      * "lvar = value", "lvar(arg)", "[1, 2 3]->Func()"
      */
     p = eap->cmd;
-    if (lookup != NULL && (*p == '(' || *p == '{'
-	       || ((p = to_name_const_end(eap->cmd)) > eap->cmd && *p != NUL)
-	       || *p == '['))
+    if (lookup != NULL && (vim_strchr((char_u *)"{('[", *p) != NULL
+	       || ((p = to_name_const_end(eap->cmd)) > eap->cmd
+		   && *p != NUL)))
     {
 	int oplen;
 	int heredoc;
 
-	// "funcname(" is always a function call.
-	// "varname[]" is an expression.
-	// "g:varname" is an expression.
-	// "varname->expr" is an expression.
-	// "varname.expr" is an expression.
-	// "(..." is an expression.
-	// "{..." is an dict expression.
-	if (*p == '('
-		|| *p == '{'
-		|| (*p == '[' && p > eap->cmd)
-		|| p[1] == ':'
-		|| (*p == '-' && p[1] == '>')
-		|| (*p == '.' && ASCII_ISALPHA(p[1])))
+	if (
+	    // "(..." is an expression.
+	    // "funcname(" is always a function call.
+	    *p == '('
+		|| (p == eap->cmd
+		    ? (
+			// "{..." is an dict expression.
+			*eap->cmd == '{'
+			// "'string'->func()" is an expression.
+		     || *eap->cmd == '\''
+			// "g:varname" is an expression.
+		     || eap->cmd[1] == ':'
+			)
+		    : (
+			// "varname[]" is an expression.
+			*p == '['
+			// "varname->func()" is an expression.
+		     || (*p == '-' && p[1] == '>')
+			// "varname.expr" is an expression.
+		     || (*p == '.' && ASCII_ISALPHA(p[1]))
+		     )))
 	{
 	    eap->cmdidx = CMD_eval;
 	    return eap->cmd;
