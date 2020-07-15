@@ -203,6 +203,9 @@ typedef PySliceObject PySliceObject_T;
 # define PySys_GetObject py3_PySys_GetObject
 # define PySys_SetArgv py3_PySys_SetArgv
 # define PyType_Ready py3_PyType_Ready
+# if PY_VERSION_HEX >= 0x030800f0
+#  define PyType_HasFeature py3_PyType_HasFeature
+# endif
 #undef Py_BuildValue
 # define Py_BuildValue py3_Py_BuildValue
 # define Py_SetPythonHome py3_Py_SetPythonHome
@@ -233,6 +236,9 @@ typedef PySliceObject PySliceObject_T;
 # define PyBytes_FromString py3_PyBytes_FromString
 # undef PyBytes_FromStringAndSize
 # define PyBytes_FromStringAndSize py3_PyBytes_FromStringAndSize
+# if defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030800f0
+#  define _Py_Dealloc py3__Py_Dealloc
+# endif
 # define PyFloat_FromDouble py3_PyFloat_FromDouble
 # define PyFloat_AsDouble py3_PyFloat_AsDouble
 # define PyObject_GenericGetAttr py3_PyObject_GenericGetAttr
@@ -247,12 +253,11 @@ typedef PySliceObject PySliceObject_T;
 # ifdef Py_DEBUG
 #  define _Py_NegativeRefcount py3__Py_NegativeRefcount
 #  define _Py_RefTotal (*py3__Py_RefTotal)
-#  define _Py_Dealloc py3__Py_Dealloc
 #  define PyModule_Create2TraceRefs py3_PyModule_Create2TraceRefs
 # else
 #  define PyModule_Create2 py3_PyModule_Create2
 # endif
-# if defined(Py_DEBUG) && !defined(Py_DEBUG_NO_PYMALLOC)
+# if (defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030800f0) && !defined(Py_DEBUG_NO_PYMALLOC)
 #  define _PyObject_DebugMalloc py3__PyObject_DebugMalloc
 #  define _PyObject_DebugFree py3__PyObject_DebugFree
 # else
@@ -282,7 +287,7 @@ typedef PySliceObject PySliceObject_T;
 # define PyCapsule_New py3_PyCapsule_New
 # define PyCapsule_GetPointer py3_PyCapsule_GetPointer
 
-# if defined(Py_DEBUG) && !defined(Py_DEBUG_NO_PYMALLOC)
+# if (defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030800f0) && !defined(Py_DEBUG_NO_PYMALLOC)
 #  undef PyObject_NEW
 #  define PyObject_NEW(type, typeobj) \
 ( (type *) PyObject_Init( \
@@ -352,6 +357,9 @@ static PyObject* (*py3_PyObject_Repr)(PyObject *);
 static PyObject* (*py3_PyObject_GetItem)(PyObject *, PyObject *);
 static int (*py3_PyObject_IsTrue)(PyObject *);
 static PyObject* (*py3_Py_BuildValue)(char *, ...);
+# if PY_VERSION_HEX >= 0x030800f0
+static int (*py3_PyType_HasFeature)(PyTypeObject *o, int feature);
+# endif
 static int (*py3_PyType_Ready)(PyTypeObject *type);
 static int (*py3_PyDict_SetItemString)(PyObject *dp, char *key, PyObject *item);
 static PyObject* (*py3_PyUnicode_FromString)(const char *u);
@@ -396,6 +404,9 @@ static char* (*py3_PyBytes_AsString)(PyObject *bytes);
 static int (*py3_PyBytes_AsStringAndSize)(PyObject *bytes, char **buffer, Py_ssize_t *length);
 static PyObject* (*py3_PyBytes_FromString)(char *str);
 static PyObject* (*py3_PyBytes_FromStringAndSize)(char *str, Py_ssize_t length);
+# if defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030800f0
+static void (*py3__Py_Dealloc)(PyObject *obj);
+# endif
 static PyObject* (*py3_PyFloat_FromDouble)(double num);
 static double (*py3_PyFloat_AsDouble)(PyObject *);
 static PyObject* (*py3_PyObject_GenericGetAttr)(PyObject *obj, PyObject *name);
@@ -414,12 +425,11 @@ static void* (*py3_PyCapsule_GetPointer)(PyObject *, char *);
 # ifdef Py_DEBUG
 static void (*py3__Py_NegativeRefcount)(const char *fname, int lineno, PyObject *op);
 static Py_ssize_t* py3__Py_RefTotal;
-static void (*py3__Py_Dealloc)(PyObject *obj);
 static PyObject* (*py3_PyModule_Create2TraceRefs)(struct PyModuleDef* module, int module_api_version);
 # else
 static PyObject* (*py3_PyModule_Create2)(struct PyModuleDef* module, int module_api_version);
 # endif
-# if defined(Py_DEBUG) && !defined(Py_DEBUG_NO_PYMALLOC)
+# if (defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030800f0) && !defined(Py_DEBUG_NO_PYMALLOC)
 static void (*py3__PyObject_DebugFree)(void*);
 static void* (*py3__PyObject_DebugMalloc)(size_t);
 # else
@@ -525,6 +535,9 @@ static struct
     {"PyObject_IsTrue", (PYTHON_PROC*)&py3_PyObject_IsTrue},
     {"PyLong_FromLong", (PYTHON_PROC*)&py3_PyLong_FromLong},
     {"PyDict_New", (PYTHON_PROC*)&py3_PyDict_New},
+# if PY_VERSION_HEX >= 0x030800f0
+    {"PyType_HasFeature", (PYTHON_PROC*)&py3_PyType_HasFeature},
+# endif
     {"PyType_Ready", (PYTHON_PROC*)&py3_PyType_Ready},
     {"PyDict_SetItemString", (PYTHON_PROC*)&py3_PyDict_SetItemString},
     {"PyLong_AsLong", (PYTHON_PROC*)&py3_PyLong_AsLong},
@@ -562,6 +575,9 @@ static struct
     {"PyBytes_AsStringAndSize", (PYTHON_PROC*)&py3_PyBytes_AsStringAndSize},
     {"PyBytes_FromString", (PYTHON_PROC*)&py3_PyBytes_FromString},
     {"PyBytes_FromStringAndSize", (PYTHON_PROC*)&py3_PyBytes_FromStringAndSize},
+# if defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030800f0
+    {"_Py_Dealloc", (PYTHON_PROC*)&py3__Py_Dealloc},
+# endif
     {"PyFloat_FromDouble", (PYTHON_PROC*)&py3_PyFloat_FromDouble},
     {"PyFloat_AsDouble", (PYTHON_PROC*)&py3_PyFloat_AsDouble},
     {"PyObject_GenericGetAttr", (PYTHON_PROC*)&py3_PyObject_GenericGetAttr},
@@ -578,12 +594,11 @@ static struct
 # ifdef Py_DEBUG
     {"_Py_NegativeRefcount", (PYTHON_PROC*)&py3__Py_NegativeRefcount},
     {"_Py_RefTotal", (PYTHON_PROC*)&py3__Py_RefTotal},
-    {"_Py_Dealloc", (PYTHON_PROC*)&py3__Py_Dealloc},
     {"PyModule_Create2TraceRefs", (PYTHON_PROC*)&py3_PyModule_Create2TraceRefs},
 # else
     {"PyModule_Create2", (PYTHON_PROC*)&py3_PyModule_Create2},
 # endif
-# if defined(Py_DEBUG) && !defined(Py_DEBUG_NO_PYMALLOC)
+# if (defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030800f0) && !defined(Py_DEBUG_NO_PYMALLOC)
     {"_PyObject_DebugFree", (PYTHON_PROC*)&py3__PyObject_DebugFree},
     {"_PyObject_DebugMalloc", (PYTHON_PROC*)&py3__PyObject_DebugMalloc},
 # else
@@ -777,7 +792,7 @@ static int python_end_called = FALSE;
     static void
 call_PyObject_Free(void *p)
 {
-#if defined(Py_DEBUG) && !defined(Py_DEBUG_NO_PYMALLOC)
+#if (defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030800f0) && !defined(Py_DEBUG_NO_PYMALLOC)
     _PyObject_DebugFree(p);
 #else
     PyObject_Free(p);
