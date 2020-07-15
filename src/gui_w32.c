@@ -1429,7 +1429,7 @@ gui_mch_create_scrollbar(
 /*
  * Find the scrollbar with the given hwnd.
  */
-	 static scrollbar_T *
+    static scrollbar_T *
 gui_mswin_find_scrollbar(HWND hwnd)
 {
     win_T	*wp;
