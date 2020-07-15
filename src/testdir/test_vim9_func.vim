@@ -1055,5 +1055,23 @@ def Test_closure_in_map()
   delete('XclosureDir', 'rf')
 enddef
 
+def Test_partial_call()
+  let Xsetlist = function('setloclist', [0])
+  Xsetlist([], ' ', {'title': 'test'})
+  assert_equal({'title': 'test'}, getloclist(0, {'title': 1}))
+
+  Xsetlist = function('setloclist', [0, [], ' '])
+  Xsetlist({'title': 'test'})
+  assert_equal({'title': 'test'}, getloclist(0, {'title': 1}))
+
+  Xsetlist = function('setqflist')
+  Xsetlist([], ' ', {'title': 'test'})
+  assert_equal({'title': 'test'}, getqflist({'title': 1}))
+
+  Xsetlist = function('setqflist', [[], ' '])
+  Xsetlist({'title': 'test'})
+  assert_equal({'title': 'test'}, getqflist({'title': 1}))
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

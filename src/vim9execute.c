@@ -575,14 +575,32 @@ call_by_name(char_u *name, int argcount, ectx_T *ectx, isn_T *iptr)
 }
 
     static int
-call_partial(typval_T *tv, int argcount, ectx_T *ectx)
+call_partial(typval_T *tv, int argcount_arg, ectx_T *ectx)
 {
+    int		argcount = argcount_arg;
     char_u	*name = NULL;
     int		called_emsg_before = called_emsg;
 
     if (tv->v_type == VAR_PARTIAL)
     {
-	partial_T *pt = tv->vval.v_partial;
+	partial_T   *pt = tv->vval.v_partial;
+	int	    i;
+
+	if (pt->pt_argc > 0)
+	{
+	    // Make space for arguments from the partial, shift the "argcount"
+	    // arguments up.
+	    if (ga_grow(&ectx->ec_stack, pt->pt_argc) == FAIL)
+		return FAIL;
+	    for (i = 1; i <= argcount; ++i)
+		*STACK_TV_BOT(-i + pt->pt_argc) = *STACK_TV_BOT(-i);
+	    ectx->ec_stack.ga_len += pt->pt_argc;
+	    argcount += pt->pt_argc;
+
+	    // copy the arguments from the partial onto the stack
+	    for (i = 0; i < pt->pt_argc; ++i)
+		copy_tv(&pt->pt_argv[i], STACK_TV_BOT(-argcount + i));
+	}
 
 	if (pt->pt_func != NULL)
 	{
