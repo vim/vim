@@ -3287,10 +3287,12 @@ ml_append_buf(
 #endif
 
 /*
- * Replace line lnum, with buffering, in current buffer.
+ * Replace line "lnum", with buffering, in current buffer.
  *
  * If "copy" is TRUE, make a copy of the line, otherwise the line has been
  * copied to allocated memory already.
+ * If "copy" is FALSE the "line" may be freed to add text properties!
+ * Do not use it after calling ml_replace().
  *
  * Check: The caller of this function should probably also call
  * changed_lines(), unless update_screen(NOT_VALID) is used.
@@ -4366,6 +4368,11 @@ makeswapname(
     char_u	*fname_res = fname;
 #ifdef HAVE_READLINK
     char_u	fname_buf[MAXPATHL];
+
+    // Expand symlink in the file name, so that we put the swap file with the
+    // actual file instead of with the symlink.
+    if (resolve_symlink(fname, fname_buf) == OK)
+	fname_res = fname_buf;
 #endif
 
 #if defined(UNIX) || defined(MSWIN)  // Need _very_ long file names
@@ -4375,20 +4382,13 @@ makeswapname(
     if (after_pathsep(dir_name, s) && len > 1 && s[-1] == s[-2])
     {			       // Ends with '//', Use Full path
 	r = NULL;
-	if ((s = make_percent_swname(dir_name, fname)) != NULL)
+	if ((s = make_percent_swname(dir_name, fname_res)) != NULL)
 	{
 	    r = modname(s, (char_u *)".swp", FALSE);
 	    vim_free(s);
 	}
 	return r;
     }
-#endif
-
-#ifdef HAVE_READLINK
-    // Expand symlink in the file name, so that we put the swap file with the
-    // actual file instead of with the symlink.
-    if (resolve_symlink(fname, fname_buf) == OK)
-	fname_res = fname_buf;
 #endif
 
     r = buf_modname(
