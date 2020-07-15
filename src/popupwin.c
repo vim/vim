@@ -3855,6 +3855,11 @@ update_popups(void (*win_update)(win_T *wp))
 	// Back to the normal zindex.
 	screen_zindex = 0;
     }
+
+#if defined(FEAT_SEARCH_EXTRA)
+    // In case win_update() called start_search_hl().
+    end_search_hl();
+#endif
 }
 
 /*
