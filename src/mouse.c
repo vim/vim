@@ -2839,10 +2839,10 @@ check_termcode_mouse(
 /*
  * Compute the buffer line position from the screen position "rowp" / "colp" in
  * window "win".
- * "plines_cache" can be NULL (no cache) or an array with "win->w_height"
- * entries that caches the plines_win() result from a previous call.  Entry is
- * zero if not computed yet.  There must be no text or setting changes since
- * the entry is put in the cache.
+ * "plines_cache" can be NULL (no cache) or an array with "Rows" entries that
+ * caches the plines_win() result from a previous call.  Entry is zero if not
+ * computed yet.  There must be no text or setting changes since the entry is
+ * put in the cache.
  * Returns TRUE if the position is below the last line.
  */
     int
@@ -2871,7 +2871,10 @@ mouse_comp_pos(
     {
 	int cache_idx = lnum - win->w_topline;
 
-	if (plines_cache != NULL && plines_cache[cache_idx] > 0)
+	// Only "Rows" lines are cached, with folding we'll run out of entries
+	// and use the slow way.
+	if (plines_cache != NULL && cache_idx < Rows
+						&& plines_cache[cache_idx] > 0)
 	    count = plines_cache[cache_idx];
 	else
 	{
@@ -2892,7 +2895,7 @@ mouse_comp_pos(
 	    else
 #endif
 		count = plines_win(win, lnum, TRUE);
-	    if (plines_cache != NULL)
+	    if (plines_cache != NULL && cache_idx < Rows)
 		plines_cache[cache_idx] = count;
 	}
 	if (count > row)

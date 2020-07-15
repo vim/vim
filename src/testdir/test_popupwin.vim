@@ -584,9 +584,16 @@ func Test_popup_drag_termwin()
 
   " create a popup that covers the terminal window
   let lines =<< trim END
+	set foldmethod=marker
+	call setline(1, range(100))
+	for nr in range(7)
+	  call setline(nr * 12 + 1, "fold {{{")
+	  call setline(nr * 12 + 11 , "end }}}")
+	endfor
+	%foldclose
 	set shell=/bin/sh noruler
 	let $PS1 = 'vim> '
-        terminal
+        terminal ++rows=4
 	$wincmd w
 	let winid = popup_create(['1111', '2222'], #{
 	      \ drag: 1,
@@ -594,18 +601,32 @@ func Test_popup_drag_termwin()
 	      \ border: [],
 	      \ line: 3,
 	      \ })
-	func Dragit()
+	func DragitLeft()
 	  call feedkeys("\<F3>\<LeftMouse>\<F4>\<LeftDrag>\<LeftRelease>", "xt")
+	endfunc
+	func DragitDown()
+	  call feedkeys("\<F4>\<LeftMouse>\<F5>\<LeftDrag>\<LeftRelease>", "xt")
+	endfunc
+	func DragitDownLeft()
+	  call feedkeys("\<F5>\<LeftMouse>\<F6>\<LeftDrag>\<LeftRelease>", "xt")
 	endfunc
 	map <silent> <F3> :call test_setmouse(3, &columns / 2)<CR>
 	map <silent> <F4> :call test_setmouse(3, &columns / 2 - 20)<CR>
+	map <silent> <F5> :call test_setmouse(12, &columns / 2)<CR>
+	map <silent> <F6> :call test_setmouse(12, &columns / 2 - 20)<CR>
   END
   call writefile(lines, 'XtestPopupTerm')
-  let buf = RunVimInTerminal('-S XtestPopupTerm', #{rows: 10})
+  let buf = RunVimInTerminal('-S XtestPopupTerm', #{rows: 16})
   call VerifyScreenDump(buf, 'Test_popupwin_term_01', {})
 
-  call term_sendkeys(buf, ":call Dragit()\<CR>")
+  call term_sendkeys(buf, ":call DragitLeft()\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_term_02', {})
+
+  call term_sendkeys(buf, ":call DragitDown()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_term_03', {})
+
+  call term_sendkeys(buf, ":call DragitDownLeft()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_term_04', {})
 
   " clean up
   call StopVimInTerminal(buf)
