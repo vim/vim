@@ -1429,7 +1429,7 @@ gui_mch_create_scrollbar(
 /*
  * Find the scrollbar with the given hwnd.
  */
-	 static scrollbar_T *
+    static scrollbar_T *
 gui_mswin_find_scrollbar(HWND hwnd)
 {
     win_T	*wp;
@@ -5395,28 +5395,21 @@ gui_mch_set_shellsize(
 	int direction)
 {
     RECT	workarea_rect;
+    RECT	window_rect;
     int		win_width, win_height;
-    WINDOWPLACEMENT wndpl;
 
     // Try to keep window completely on screen.
     // Get position of the screen work area.  This is the part that is not
     // used by the taskbar or appbars.
     get_work_area(&workarea_rect);
 
-    // Get current position of our window.  Note that the .left and .top are
-    // relative to the work area.
-    wndpl.length = sizeof(WINDOWPLACEMENT);
-    GetWindowPlacement(s_hwnd, &wndpl);
-
     // Resizing a maximized window looks very strange, unzoom it first.
     // But don't do it when still starting up, it may have been requested in
     // the shortcut.
-    if (wndpl.showCmd == SW_SHOWMAXIMIZED && starting == 0)
-    {
+    if (IsZoomed(s_hwnd) && starting == 0)
 	ShowWindow(s_hwnd, SW_SHOWNORMAL);
-	// Need to get the settings of the normal window.
-	GetWindowPlacement(s_hwnd, &wndpl);
-    }
+
+    GetWindowRect(s_hwnd, &window_rect);
 
     // compute the size of the outside of the window
     win_width = width + (GetSystemMetrics(SM_CXFRAME) +
@@ -5432,34 +5425,24 @@ gui_mch_set_shellsize(
     // The following should take care of keeping Vim on the same monitor, no
     // matter if the secondary monitor is left or right of the primary
     // monitor.
-    wndpl.rcNormalPosition.right = wndpl.rcNormalPosition.left + win_width;
-    wndpl.rcNormalPosition.bottom = wndpl.rcNormalPosition.top + win_height;
+    window_rect.right = window_rect.left + win_width;
+    window_rect.bottom = window_rect.top + win_height;
 
     // If the window is going off the screen, move it on to the screen.
-    if ((direction & RESIZE_HOR)
-	    && wndpl.rcNormalPosition.right > workarea_rect.right)
-	OffsetRect(&wndpl.rcNormalPosition,
-		workarea_rect.right - wndpl.rcNormalPosition.right, 0);
+    if ((direction & RESIZE_HOR) && window_rect.right > workarea_rect.right)
+	OffsetRect(&window_rect, workarea_rect.right - window_rect.right, 0);
 
-    if ((direction & RESIZE_HOR)
-	    && wndpl.rcNormalPosition.left < workarea_rect.left)
-	OffsetRect(&wndpl.rcNormalPosition,
-		workarea_rect.left - wndpl.rcNormalPosition.left, 0);
+    if ((direction & RESIZE_HOR) && window_rect.left < workarea_rect.left)
+	OffsetRect(&window_rect, workarea_rect.left - window_rect.left, 0);
 
-    if ((direction & RESIZE_VERT)
-	    && wndpl.rcNormalPosition.bottom > workarea_rect.bottom)
-	OffsetRect(&wndpl.rcNormalPosition,
-		0, workarea_rect.bottom - wndpl.rcNormalPosition.bottom);
+    if ((direction & RESIZE_VERT) && window_rect.bottom > workarea_rect.bottom)
+	OffsetRect(&window_rect, 0, workarea_rect.bottom - window_rect.bottom);
 
-    if ((direction & RESIZE_VERT)
-	    && wndpl.rcNormalPosition.top < workarea_rect.top)
-	OffsetRect(&wndpl.rcNormalPosition,
-		0, workarea_rect.top - wndpl.rcNormalPosition.top);
+    if ((direction & RESIZE_VERT) && window_rect.top < workarea_rect.top)
+	OffsetRect(&window_rect, 0, workarea_rect.top - window_rect.top);
 
-    // set window position - we should use SetWindowPlacement rather than
-    // SetWindowPos as the MSDN docs say the coord systems returned by
-    // these two are not compatible.
-    SetWindowPlacement(s_hwnd, &wndpl);
+    MoveWindow(s_hwnd, window_rect.left, window_rect.top,
+						win_width, win_height, TRUE);
 
     SetActiveWindow(s_hwnd);
     SetFocus(s_hwnd);
