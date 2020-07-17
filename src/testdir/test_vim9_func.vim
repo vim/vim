@@ -80,7 +80,7 @@ def Test_call_ufunc_count()
   Increment()
   Increment()
   Increment()
-  " works with and without :call
+  # works with and without :call
   assert_equal(4, g:counter)
   call assert_equal(4, g:counter)
   unlet g:counter
@@ -236,7 +236,7 @@ def ListArg(arg: list<string>)
 enddef
 
 def Test_assign_to_argument()
-  " works for dict and list
+  # works for dict and list
   let d: dict<string> = {}
   DictArg(d)
   assert_equal('value', d['key'])
@@ -266,19 +266,19 @@ let SomeFunc = function('len')
 let NotAFunc = 'text'
 
 def CombineFuncrefTypes()
-  " same arguments, different return type
+  # same arguments, different return type
   let Ref1: func(bool): string
   let Ref2: func(bool): number
   let Ref3: func(bool): any
   Ref3 = g:cond ? Ref1 : Ref2
 
-  " different number of arguments
+  # different number of arguments
   let Refa1: func(bool): number
   let Refa2: func(bool, number): number
   let Refa3: func: number
   Refa3 = g:cond ? Refa1 : Refa2
 
-  " different argument types
+  # different argument types
   let Refb1: func(bool, string): number
   let Refb2: func(string, number): number
   let Refb3: func(any, any): number
@@ -294,7 +294,7 @@ def DefinedEvenLater(arg: string): string
 enddef
 
 def Test_error_in_nested_function()
-  " Error in called function requires unwinding the call stack.
+  # Error in called function requires unwinding the call stack.
   assert_fails('call FuncWithForwardCall()', 'E1096')
 enddef
 

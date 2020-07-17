@@ -2420,7 +2420,7 @@ free_imported(cctx_T *cctx)
  * Return TRUE if "p" points at a "#" but not at "#{".
  */
     static int
-comment_start(char_u *p)
+vim9_comment_start(char_u *p)
 {
     return p[0] == '#' && p[1] != '{';
 }
@@ -2443,7 +2443,7 @@ peek_next_line_from_context(cctx_T *cctx)
 	if (line == NULL)
 	    break;
 	p = skipwhite(line);
-	if (*p != NUL && !comment_start(p))
+	if (*p != NUL && !vim9_comment_start(p))
 	    return p;
     }
     return NULL;
@@ -2461,7 +2461,7 @@ may_peek_next_line(cctx_T *cctx, char_u *arg, char_u **nextp)
     char_u *p = skipwhite(arg);
 
     *nextp = NULL;
-    if (*p == NUL || (VIM_ISWHITE(*arg) && comment_start(p)))
+    if (*p == NUL || (VIM_ISWHITE(*arg) && vim9_comment_start(p)))
     {
 	*nextp = peek_next_line_from_context(cctx);
 	if (*nextp != NULL)
@@ -2492,7 +2492,7 @@ next_line_from_context(cctx_T *cctx, int skip_comment)
 	cctx->ctx_line_start = line;
 	SOURCING_LNUM = cctx->ctx_lnum + 1;
     } while (line == NULL || *skipwhite(line) == NUL
-			  || (skip_comment && comment_start(skipwhite(line))));
+			  || (skip_comment && vim9_comment_start(skipwhite(line))));
     return line;
 }
 
@@ -2504,7 +2504,7 @@ next_line_from_context(cctx_T *cctx, int skip_comment)
     static int
 may_get_next_line(char_u *whitep, char_u **arg, cctx_T *cctx)
 {
-    if (**arg == NUL || (VIM_ISWHITE(*whitep) && comment_start(*arg)))
+    if (**arg == NUL || (VIM_ISWHITE(*whitep) && vim9_comment_start(*arg)))
     {
 	char_u *next = next_line_from_context(cctx, TRUE);
 
@@ -3100,7 +3100,7 @@ compile_list(char_u **arg, cctx_T *cctx)
 	{
 	    ++p;
 	    // Allow for following comment, after at least one space.
-	    if (VIM_ISWHITE(*p) && *skipwhite(p) == '"')
+	    if (VIM_ISWHITE(*p) && *skipwhite(p) == '#')
 		p += STRLEN(p);
 	    break;
 	}
@@ -3157,6 +3157,8 @@ compile_lambda(char_u **arg, cctx_T *cctx)
 
     if (ufunc->uf_def_status == UF_COMPILED)
 	return generate_FUNCREF(cctx, ufunc->uf_dfunc_idx);
+
+    func_ptr_unref(ufunc);
     return FAIL;
 }
 
@@ -3201,6 +3203,8 @@ compile_lambda_call(char_u **arg, cctx_T *cctx)
 	// call the compiled function
 	ret = generate_CALL(cctx, ufunc, argcount);
 
+    if (ret == FAIL)
+	func_ptr_unref(ufunc);
     return ret;
 }
 
@@ -3327,7 +3331,7 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 
     // Allow for following comment, after at least one space.
     p = skipwhite(*arg);
-    if (VIM_ISWHITE(**arg) && (*p == '"' || comment_start(p)))
+    if (VIM_ISWHITE(**arg) && vim9_comment_start(p))
 	*arg += STRLEN(*arg);
 
     dict_unref(d);
@@ -3618,7 +3622,7 @@ compile_subscript(
     {
 	char_u *p = skipwhite(*arg);
 
-	if (*p == NUL || (VIM_ISWHITE(**arg) && comment_start(p)))
+	if (*p == NUL || (VIM_ISWHITE(**arg) && vim9_comment_start(p)))
 	{
 	    char_u *next = peek_next_line_from_context(cctx);
 

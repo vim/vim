@@ -1649,6 +1649,16 @@ current_tab_nr(tabpage_T *tab)
     return nr;
 }
 
+    int
+comment_start(char_u *p, int starts_with_colon UNUSED)
+{
+#ifdef FEAT_EVAL
+    if (in_vim9script())
+	return p[0] == '#' && p[1] != '{' && !starts_with_colon;
+#endif
+    return *p == '"';
+}
+
 # define CURRENT_WIN_NR current_win_nr(curwin)
 # define LAST_WIN_NR current_win_nr(NULL)
 # define CURRENT_TAB_NR current_tab_nr(curtab)
@@ -1886,12 +1896,8 @@ do_one_cmd(
      * If we got a line, but no command, then go to the line.
      * If we find a '|' or '\n' we set ea.nextcmd.
      */
-    if (*ea.cmd == NUL || *ea.cmd == '"'
-#ifdef FEAT_EVAL
-		|| (*ea.cmd == '#' && ea.cmd[1] != '{'
-					   && !starts_with_colon && vim9script)
-#endif
-		|| (ea.nextcmd = check_nextcmd(ea.cmd)) != NULL)
+    if (*ea.cmd == NUL || comment_start(ea.cmd, starts_with_colon)
+			       || (ea.nextcmd = check_nextcmd(ea.cmd)) != NULL)
     {
 	/*
 	 * strange vi behaviour:
@@ -2225,7 +2231,7 @@ do_one_cmd(
 	ea.do_ecmd_cmd = getargcmd(&ea.arg);
 
     /*
-     * Check for '|' to separate commands and '"' to start comments.
+     * Check for '|' to separate commands and '"' or '#' to start comments.
      * Don't do this for ":read !cmd" and ":write !cmd".
      */
     if ((ea.argt & EX_TRLBAR) && !ea.usefilter)
@@ -2659,7 +2665,8 @@ doend:
     int
 parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only)
 {
-    char_u *p;
+    char_u  *p;
+    int	    starts_with_colon = FALSE;
 
     CLEAR_FIELD(cmdmod);
     eap->verbose_save = -1;
@@ -2669,7 +2676,11 @@ parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only)
     for (;;)
     {
 	while (*eap->cmd == ' ' || *eap->cmd == '\t' || *eap->cmd == ':')
+	{
+	    if (*eap->cmd == ':')
+		starts_with_colon = TRUE;
 	    ++eap->cmd;
+	}
 
 	// in ex mode, an empty line works like :+
 	if (*eap->cmd == NUL && exmode_active
@@ -2683,7 +2694,7 @@ parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only)
 	}
 
 	// ignore comment and empty lines
-	if (*eap->cmd == '"')
+	if (comment_start(eap->cmd, starts_with_colon))
 	    return FAIL;
 	if (*eap->cmd == NUL)
 	{
@@ -4521,14 +4532,20 @@ separate_nextcmd(exarg_T *eap)
 	// Check for '"': start of comment or '|': next command
 	// :@" and :*" do not start a comment!
 	// :redir @" doesn't either.
-	else if ((*p == '"' && !(eap->argt & EX_NOTRLCOM)
-		    && ((eap->cmdidx != CMD_at && eap->cmdidx != CMD_star)
-			|| p != eap->arg)
-		    && (eap->cmdidx != CMD_redir
-			|| p != eap->arg + 1 || p[-1] != '@'))
+	else if ((*p == '"'
 #ifdef FEAT_EVAL
-		|| (*p == '#' && in_vim9script()
-			  && p[1] != '{' && p > eap->cmd && VIM_ISWHITE(p[-1]))
+		    && !in_vim9script()
+#endif
+		    && !(eap->argt & EX_NOTRLCOM)
+		    && ((eap->cmdidx != CMD_at && eap->cmdidx != CMD_star)
+							      || p != eap->arg)
+		    && (eap->cmdidx != CMD_redir
+					 || p != eap->arg + 1 || p[-1] != '@'))
+#ifdef FEAT_EVAL
+		|| (*p == '#'
+		    && in_vim9script()
+		    && p[1] != '{'
+		    && p > eap->cmd && VIM_ISWHITE(p[-1]))
 #endif
 		|| *p == '|' || *p == '\n')
 	{
@@ -4867,11 +4884,13 @@ ex_blast(exarg_T *eap)
     int
 ends_excmd(int c)
 {
+    int comment_char = '"';
+
 #ifdef FEAT_EVAL
-    if (c == '#')
-	return in_vim9script();
+    if (in_vim9script())
+	comment_char = '#';
 #endif
-    return (c == NUL || c == '|' || c == '"' || c == '\n');
+    return (c == NUL || c == '|' || c == comment_char || c == '\n');
 }
 
 /*
@@ -4883,11 +4902,14 @@ ends_excmd2(char_u *cmd_start UNUSED, char_u *cmd)
 {
     int c = *cmd;
 
+    if (c == NUL || c == '|' || c == '\n')
+	return TRUE;
 #ifdef FEAT_EVAL
-    if (c == '#' && cmd[1] != '{' && (cmd == cmd_start || VIM_ISWHITE(cmd[-1])))
-	return in_vim9script();
+    if (in_vim9script())
+	return c == '#' && cmd[1] != '{'
+				 && (cmd == cmd_start || VIM_ISWHITE(cmd[-1]));
 #endif
-    return (c == NUL || c == '|' || c == '"' || c == '\n');
+    return c == '"';
 }
 
 #if defined(FEAT_SYN_HL) || defined(FEAT_SEARCH_EXTRA) || defined(FEAT_EVAL) \
@@ -7029,7 +7051,12 @@ ex_wincmd(exarg_T *eap)
 
     eap->nextcmd = check_nextcmd(p);
     p = skipwhite(p);
-    if (*p != NUL && *p != '"' && eap->nextcmd == NULL)
+    if (*p != NUL && *p != (
+#ifdef FEAT_EVAL
+	    in_vim9script() ? '#' :
+#endif
+		'"')
+	    && eap->nextcmd == NULL)
 	emsg(_(e_invarg));
     else if (!eap->skip)
     {

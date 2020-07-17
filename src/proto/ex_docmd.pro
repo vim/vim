@@ -5,6 +5,7 @@ int do_cmdline(char_u *cmdline, char_u *(*fgetline)(int, void *, int, int), void
 int getline_equal(char_u *(*fgetline)(int, void *, int, int), void *cookie, char_u *(*func)(int, void *, int, int));
 void *getline_cookie(char_u *(*fgetline)(int, void *, int, int), void *cookie);
 char_u *getline_peek(char_u *(*fgetline)(int, void *, int, int), void *cookie);
+int comment_start(char_u *p, int starts_with_colon);
 int parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only);
 void undo_cmdmod(exarg_T *eap, int save_msg_scroll);
 int parse_cmd_address(exarg_T *eap, char **errormsg, int silent);

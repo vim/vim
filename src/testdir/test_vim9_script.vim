@@ -113,7 +113,7 @@ def Test_vim9_single_char_vars()
   let lines =<< trim END
       vim9script
 
-      " single character variable declarations work
+      # single character variable declarations work
       let a: string
       let b: number
       let l: list<any>
@@ -122,7 +122,7 @@ def Test_vim9_single_char_vars()
       let v: number
       let w: number
 
-      " script-local variables can be used without s: prefix
+      # script-local variables can be used without s: prefix
       a = 'script-a'
       b = 111
       l = [1, 2, 3]
@@ -175,7 +175,7 @@ def Test_assignment_dict()
   let dict4: dict<any> = #{one: 1, two: '2'}
   let dict5: dict<blob> = #{one: 0z01, two: 0z02}
 
-  " overwrite
+  # overwrite
   dict3['key'] = 'another'
 
   call CheckDefExecFailure(['let dd = {}', 'dd[""] = 6'], 'E713:')
@@ -185,8 +185,8 @@ def Test_assignment_dict()
 enddef
 
 def Test_assignment_local()
-  " Test in a separated file in order not to the current buffer/window/tab is
-  " changed.
+  # Test in a separated file in order not to the current buffer/window/tab is
+  # changed.
   let script_lines: list<string> =<< trim END
     let b:existing = 'yes'
     let w:existing = 'yes'
@@ -259,7 +259,7 @@ def Test_assignment_default()
     assert_equal(test_null_channel(), thechannel)
 
     if has('unix') && executable('cat')
-      " check with non-null job and channel, types must match
+      # check with non-null job and channel, types must match
       thejob = job_start("cat ", #{})
       thechannel = job_getchannel(thejob)
       job_stop(thejob, 'kill')
@@ -394,7 +394,7 @@ def Test_unlet()
 enddef
 
 def Test_delfunction()
-  " Check function is defined in script namespace
+  # Check function is defined in script namespace
   CheckScriptSuccess([
       'vim9script',
       'func CheckMe()',
@@ -403,7 +403,7 @@ def Test_delfunction()
       'assert_equal(123, s:CheckMe())',
       ])
 
-  " Check function in script namespace cannot be deleted
+  # Check function in script namespace cannot be deleted
   CheckScriptFailure([
       'vim9script',
       'func DeleteMe1()',
@@ -586,7 +586,7 @@ def Test_try_catch_fails()
 enddef
 
 def Test_throw_vimscript()
-  " only checks line continuation
+  # only checks line continuation
   let lines =<< trim END
       vim9script
       try
@@ -600,7 +600,7 @@ def Test_throw_vimscript()
 enddef
 
 def Test_cexpr_vimscript()
-  " only checks line continuation
+  # only checks line continuation
   set errorformat=File\ %f\ line\ %l
   let lines =<< trim END
       vim9script
@@ -727,7 +727,7 @@ def Test_vim9_import_export()
   END
   writefile(import_in_def_lines, 'Ximport2.vim')
   source Ximport2.vim
-  " TODO: this should be 9879
+  # TODO: this should be 9879
   assert_equal(9876, g:imported)
   assert_equal(9883, g:imported_added)
   unlet g:imported
@@ -802,7 +802,7 @@ def Test_vim9_import_export()
   writefile(import_star_lines, 'Ximport.vim')
   assert_fails('source Ximport.vim', 'E1045:')
 
-  " try to import something that exists but is not exported
+  # try to import something that exists but is not exported
   let import_not_exported_lines =<< trim END
     vim9script
     import name from './Xexport.vim'
@@ -810,7 +810,7 @@ def Test_vim9_import_export()
   writefile(import_not_exported_lines, 'Ximport.vim')
   assert_fails('source Ximport.vim', 'E1049:')
 
-  " try to import something that is already defined
+  # try to import something that is already defined
   let import_already_defined =<< trim END
     vim9script
     let exported = 'something'
@@ -819,7 +819,7 @@ def Test_vim9_import_export()
   writefile(import_already_defined, 'Ximport.vim')
   assert_fails('source Ximport.vim', 'E1073:')
 
-  " try to import something that is already defined
+  # try to import something that is already defined
   import_already_defined =<< trim END
     vim9script
     let exported = 'something'
@@ -828,7 +828,7 @@ def Test_vim9_import_export()
   writefile(import_already_defined, 'Ximport.vim')
   assert_fails('source Ximport.vim', 'E1073:')
 
-  " try to import something that is already defined
+  # try to import something that is already defined
   import_already_defined =<< trim END
     vim9script
     let exported = 'something'
@@ -837,7 +837,7 @@ def Test_vim9_import_export()
   writefile(import_already_defined, 'Ximport.vim')
   assert_fails('source Ximport.vim', 'E1073:')
 
-  " import a very long name, requires making a copy
+  # import a very long name, requires making a copy
   let import_long_name_lines =<< trim END
     vim9script
     import name012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789 from './Xexport.vim'
@@ -877,7 +877,7 @@ def Test_vim9_import_export()
   delete('Ximport3.vim')
   delete('Xexport.vim')
 
-  " Check that in a Vim9 script 'cpo' is set to the Vim default.
+  # Check that in a Vim9 script 'cpo' is set to the Vim default.
   set cpo&vi
   let cpo_before = &cpo
   let lines =<< trim END
@@ -962,12 +962,12 @@ def Test_vim9script_reload_import()
   writefile(testlines, 'Ximport.vim')
   source Ximport.vim
 
-  " Test that when not using "morelines" GetValtwo() and valtwo are still
-  " defined, because import doesn't reload a script.
+  # Test that when not using "morelines" GetValtwo() and valtwo are still
+  # defined, because import doesn't reload a script.
   writefile(lines, 'Xreload.vim')
   source Ximport.vim
 
-  " cannot declare a var twice
+  # cannot declare a var twice
   lines =<< trim END
     vim9script
     let valone = 1234
@@ -1185,7 +1185,7 @@ def Test_import_compile_error()
   try
     source Ximport.vim
   catch /E1001/
-    " Error should be fore the Xexported.vim file.
+    # Error should be fore the Xexported.vim file.
     assert_match('E1001: variable not found: notDefined', v:exception)
     assert_match('function <SNR>\d\+_ImpFunc\[1\]..<SNR>\d\+_ExpFunc, line 1', v:throwpoint)
   endtry
@@ -1195,7 +1195,7 @@ def Test_import_compile_error()
 enddef
 
 def Test_fixed_size_list()
-  " will be allocated as one piece of memory, check that changes work
+  # will be allocated as one piece of memory, check that changes work
   let l = [1, 2, 3, 4]
   l->remove(0)
   l->add(5)
@@ -1357,9 +1357,9 @@ def RunNested(i: number): number
   let x: number = 0
   if i % 2
     if 1
-      " comment
+      # comment
     else
-      " comment
+      # comment
     endif
     x += 1
   else
@@ -1401,7 +1401,7 @@ def Test_execute_cmd()
 enddef
 
 def Test_execute_cmd_vimscript()
-  " only checks line continuation
+  # only checks line continuation
   let lines =<< trim END
       vim9script
       execute 'g:someVar'
@@ -1441,7 +1441,7 @@ def Test_echomsg_cmd()
 enddef
 
 def Test_echomsg_cmd_vimscript()
-  " only checks line continuation
+  # only checks line continuation
   let lines =<< trim END
       vim9script
       echomsg 'here'
@@ -1461,7 +1461,7 @@ def Test_echoerr_cmd()
 enddef
 
 def Test_echoerr_cmd_vimscript()
-  " only checks line continuation
+  # only checks line continuation
   let lines =<< trim END
       vim9script
       try
@@ -1569,7 +1569,7 @@ def Test_automatic_line_continuation()
       'one',
       'two',
       'three',
-      ] " comment
+      ] # comment
   assert_equal(['one', 'two', 'three'], mylist)
 
   let mydict = {
@@ -1577,7 +1577,7 @@ def Test_automatic_line_continuation()
       'two': 2,
       'three':
           3,
-      } " comment
+      } # comment
   assert_equal({'one': 1, 'two': 2, 'three': 3}, mydict)
   mydict = #{
       one: 1,  # comment
@@ -1754,8 +1754,8 @@ def Test_vim9_comment()
       'hi clear This # comment',
       'hi clear # comment',
       ])
-  " not tested, because it doesn't give an error but a warning:
-  " hi clear This# comment',
+  # not tested, because it doesn't give an error but a warning:
+  # hi clear This# comment',
   CheckScriptFailure([
       'vim9script',
       'hi clear# comment',
@@ -2091,19 +2091,19 @@ def Test_vim9_comment_not_compiled()
       'bwipe!',
       ])
 
-"  CheckScriptFailure([
-"      'vim9script',
-"      'new'
-"      'call setline(1, ["# define pat", "last"])',
-"      ':$',
-"      'dsearch /pat/#comment',
-"      'bwipe!',
-"      ], 'E488:')
-"
-"  CheckScriptFailure([
-"      'vim9script',
-"      'func! SomeFunc()',
-"      ], 'E477:')
+  CheckScriptFailure([
+      'vim9script',
+      'new'
+      'call setline(1, ["# define pat", "last"])',
+      ':$',
+      'dsearch /pat/#comment',
+      'bwipe!',
+      ], 'E488:')
+
+  CheckScriptFailure([
+      'vim9script',
+      'func! SomeFunc()',
+      ], 'E477:')
 enddef
 
 def Test_finish()
@@ -2135,12 +2135,12 @@ def Test_let_func_call()
       return 'this'
     endfunc
     let val: string = GetValue() 
-    " env var is always a string
+    # env var is always a string
     let env = $TERM
   END
   writefile(lines, 'Xfinished')
   source Xfinished
-  " GetValue() is not called during discovery phase
+  # GetValue() is not called during discovery phase
   assert_equal(1, g:count)
 
   unlet g:count
@@ -2169,7 +2169,7 @@ def Test_let_declaration()
     g:var_uninit = var
     var = 'text'
     g:var_test = var
-    " prefixing s: is optional
+    # prefixing s: is optional
     s:var = 'prefixed'
     g:var_prefixed = s:var
 
@@ -2281,7 +2281,7 @@ def Test_source_vim9_from_legacy()
   source Xlegacy_script.vim
 
   assert_equal('global', g:global)
-"  unlet g:global
+  unlet g:global
 
   delete('Xlegacy_script.vim')
   delete('Xvim9_script.vim')
@@ -2301,7 +2301,7 @@ def Test_substitute_cmd()
   assert_equal('otherthing', getline(1))
   bwipe!
 
-  " also when the context is Vim9 script
+  # also when the context is Vim9 script
   let lines =<< trim END
     vim9script
     new

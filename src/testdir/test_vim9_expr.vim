@@ -46,7 +46,7 @@ def Test_expr1()
 enddef
 
 def Test_expr1_vimscript()
-  " only checks line continuation
+  # only checks line continuation
   let lines =<< trim END
       vim9script
       let var = 1
@@ -127,7 +127,7 @@ def Test_expr2()
 enddef
 
 def Test_expr2_vimscript()
-  " check line continuation
+  # check line continuation
   let lines =<< trim END
       vim9script
       let var = 0
@@ -154,7 +154,7 @@ def Test_expr2_vimscript()
   END
   CheckScriptSuccess(lines)
 
-  " check keeping the value
+  # check keeping the value
   lines =<< trim END
       vim9script
       assert_equal(2, 2 || 0)
@@ -231,7 +231,7 @@ def Test_expr3()
 enddef
 
 def Test_expr3_vimscript()
-  " check line continuation
+  # check line continuation
   let lines =<< trim END
       vim9script
       let var = 0
@@ -258,7 +258,7 @@ def Test_expr3_vimscript()
   END
   CheckScriptSuccess(lines)
 
-  " check keeping the value
+  # check keeping the value
   lines =<< trim END
       vim9script
       assert_equal(0, 2 && 0)
@@ -625,7 +625,7 @@ def RetVoid()
 enddef
 
 def Test_expr4_vimscript()
-  " check line continuation
+  # check line continuation
   let lines =<< trim END
       vim9script
       let var = 0
@@ -668,7 +668,7 @@ def Test_expr4_vimscript()
   END
   CheckScriptSuccess(lines)
 
-  " spot check mismatching types
+  # spot check mismatching types
   lines =<< trim END
       vim9script
       echo '' == 0
@@ -791,7 +791,7 @@ def Test_expr5()
 enddef
 
 def Test_expr5_vim9script()
-  " only checks line continuation
+  # only checks line continuation
   let lines =<< trim END
       vim9script
       let var = 11
@@ -902,7 +902,7 @@ def Test_expr6()
 enddef
 
 def Test_expr6_vim9script()
-  " only checks line continuation
+  # only checks line continuation
   let lines =<< trim END
       vim9script
       let var = 11
@@ -1024,7 +1024,7 @@ let $TESTVAR = 'testvar'
 
 " test low level expression
 def Test_expr7_number()
-  " number constant
+  # number constant
   assert_equal(0, 0)
   assert_equal(654, 0654)
 
@@ -1034,7 +1034,7 @@ def Test_expr7_number()
 enddef
 
 def Test_expr7_float()
-  " float constant
+  # float constant
   if !has('float')
     MissingFeature 'float'
   else
@@ -1046,7 +1046,7 @@ def Test_expr7_float()
 enddef
 
 def Test_expr7_blob()
-  " blob constant
+  # blob constant
   assert_equal(g:blob_empty, 0z)
   assert_equal(g:blob_one, 0z01)
   assert_equal(g:blob_long, 0z0102.0304)
@@ -1055,7 +1055,7 @@ def Test_expr7_blob()
 enddef
 
 def Test_expr7_string()
-  " string constant
+  # string constant
   assert_equal(g:string_empty, '')
   assert_equal(g:string_empty, "")
   assert_equal(g:string_short, 'x')
@@ -1077,7 +1077,7 @@ def Test_expr7_vimvar()
 enddef
 
 def Test_expr7_special()
-  " special constant
+  # special constant
   assert_equal(g:special_true, true)
   assert_equal(g:special_false, false)
   assert_equal(g:special_true, v:true)
@@ -1106,7 +1106,7 @@ def Test_expr7_special_vim9script()
 enddef
 
 def Test_expr7_list()
-  " list
+  # list
   assert_equal(g:list_empty, [])
   assert_equal(g:list_empty, [  ])
   assert_equal(g:list_mixed, [1, 'b', false,])
@@ -1152,7 +1152,7 @@ def Test_expr7_lambda()
   assert_equal('result', La())
   assert_equal([1, 3, 5], [1, 2, 3]->map({key, val -> key + val}))
 
-  " line continuation inside lambda with "cond ? expr : expr" works
+  # line continuation inside lambda with "cond ? expr : expr" works
   let ll = range(3)
   map(ll, {k, v -> v % 2 ? {
 	    '111': 111 } : {}
@@ -1189,7 +1189,7 @@ def Test_expr7_lambda_vim9script()
 enddef
 
 def Test_expr7_dict()
-  " dictionary
+  # dictionary
   assert_equal(g:dict_empty, {})
   assert_equal(g:dict_empty, {  })
   assert_equal(g:dict_one, {'one': 1})
@@ -1316,7 +1316,7 @@ def Test_expr_member_vim9script()
 enddef
 
 def Test_expr7_option()
-  " option
+  # option
   set ts=11
   assert_equal(11, &ts)
   &ts = 9
@@ -1330,7 +1330,7 @@ def Test_expr7_option()
 enddef
 
 def Test_expr7_environment()
-  " environment variable
+  # environment variable
   assert_equal('testvar', $TESTVAR)
   assert_equal('', $ASDF_ASD_XXX)
 
@@ -1343,7 +1343,7 @@ def Test_expr7_register()
 enddef
 
 def Test_expr7_parens()
-  " (expr)
+  # (expr)
   assert_equal(4, (6 * 4) / 6)
   assert_equal(0, 6 * ( 4 / 6 ))
 
@@ -1474,7 +1474,7 @@ func CallMe2(one, two)
 endfunc
 
 def Test_expr7_trailing()
-  " user function call
+  # user function call
   assert_equal(123, g:CallMe(123))
   assert_equal(123, g:CallMe(  123))
   assert_equal(123, g:CallMe(123  ))
@@ -1482,26 +1482,26 @@ def Test_expr7_trailing()
   assert_equal('yesno', g:CallMe2( 'yes', 'no' ))
   assert_equal('nothing', g:CallMe('nothing'))
 
-  " partial call
+  # partial call
   let Part = function('g:CallMe')
   assert_equal('yes', Part('yes'))
 
-  " funcref call, using list index
+  # funcref call, using list index
   let l = []
   g:Funcrefs[0](l, 2)
   assert_equal([2], l)
 
-  " method call
+  # method call
   l = [2, 5, 6]
   l->map({k, v -> k + v})
   assert_equal([2, 6, 8], l)
 
-  " lambda method call
+  # lambda method call
   l = [2, 5]
   l->{l -> add(l, 8)}()
   assert_equal([2, 5, 8], l)
 
-  " dict member
+  # dict member
   let d = #{key: 123}
   assert_equal(123, d.key)
 enddef

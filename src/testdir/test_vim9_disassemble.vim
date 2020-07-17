@@ -463,7 +463,7 @@ def Test_disassemble_update_instr()
         '\d RETURN',
         res)
 
-  " Calling the function will change UCALL into the faster DCALL
+  # Calling the function will change UCALL into the faster DCALL
   assert_equal('yes', FuncWithForwardCall())
 
   res = execute('disass s:FuncWithForwardCall')
@@ -1073,7 +1073,7 @@ def Test_disassemble_compare()
 
   let nr = 1
   for case in cases
-    " declare local variables to get a non-constant with the right type
+    # declare local variables to get a non-constant with the right type
     writefile(['def TestCase' .. nr .. '()',
              '  let isFalse = false',
              '  let isNull = v:null',
@@ -1121,7 +1121,7 @@ def Test_disassemble_compare_const()
     source Xdisassemble
     let instr = execute('disassemble TestCase' .. nr)
     if case[1]
-      " condition true, "echo 42" executed
+      # condition true, "echo 42" executed
       assert_match('TestCase' .. nr .. '.*' ..
           'if ' .. substitute(case[0], '[[~]', '\\\0', 'g') .. '.*' ..
           '\d PUSHNR 42.*' ..
@@ -1130,7 +1130,7 @@ def Test_disassemble_compare_const()
           '\d RETURN.*',
           instr)
     else
-      " condition false, function just returns
+      # condition false, function just returns
       assert_match('TestCase' .. nr .. '.*' ..
           'if ' .. substitute(case[0], '[[~]', '\\\0', 'g') .. '[ \n]*' ..
           'echo 42[ \n]*' ..
@@ -1245,7 +1245,7 @@ def Test_vim9script_forward_func()
   writefile(lines, 'Xdisassemble')
   source Xdisassemble
 
-  " check that the first function calls the second with DCALL
+  # check that the first function calls the second with DCALL
   assert_match('\<SNR>\d*_FuncOne\_s*' ..
         'return FuncTwo()\_s*' ..
         '\d DCALL <SNR>\d\+_FuncTwo(argc 0)\_s*' ..
