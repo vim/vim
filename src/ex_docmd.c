@@ -1649,7 +1649,7 @@ current_tab_nr(tabpage_T *tab)
     return nr;
 }
 
-    int
+    static int
 comment_start(char_u *p, int starts_with_colon UNUSED)
 {
 #ifdef FEAT_EVAL
@@ -1708,8 +1708,8 @@ do_one_cmd(
     int		save_reg_executing = reg_executing;
     int		ni;			// set when Not Implemented
     char_u	*cmd;
+    int		starts_with_colon = FALSE;
 #ifdef FEAT_EVAL
-    int		starts_with_colon;
     int		starts_with_quote;
     int		vim9script = in_vim9script();
 #endif
