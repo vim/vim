@@ -1065,6 +1065,8 @@ call_def_function(
 		    if (di == NULL)
 		    {
 			semsg(_(e_undefvar), name);
+			if (trylevel > 0)
+			    continue;
 			goto failed;
 		    }
 		    else
@@ -1786,6 +1788,7 @@ call_def_function(
 
 			--trystack->ga_len;
 			--trylevel;
+			ectx.ec_in_catch = FALSE;
 			trycmd = ((trycmd_T *)trystack->ga_data)
 							    + trystack->ga_len;
 			if (trycmd->tcd_caught && current_exception != NULL)
@@ -2084,7 +2087,10 @@ call_def_function(
 			    case EXPR_DIV:  f1 = f1 / f2; break;
 			    case EXPR_SUB:  f1 = f1 - f2; break;
 			    case EXPR_ADD:  f1 = f1 + f2; break;
-			    default: emsg(_(e_modulus)); goto failed;
+			    default: emsg(_(e_modulus));
+				     if (trylevel > 0)
+					 continue;
+				     goto failed;
 			}
 			clear_tv(tv1);
 			clear_tv(tv2);
@@ -2138,6 +2144,8 @@ call_def_function(
 		    if (tv->v_type != VAR_LIST)
 		    {
 			emsg(_(e_listreq));
+			if (trylevel > 0)
+			    continue;
 			goto failed;
 		    }
 		    list = tv->vval.v_list;
@@ -2146,6 +2154,8 @@ call_def_function(
 		    if (tv->v_type != VAR_NUMBER)
 		    {
 			emsg(_(e_number_exp));
+			if (trylevel > 0)
+			    continue;
 			goto failed;
 		    }
 		    n = tv->vval.v_number;
@@ -2153,11 +2163,13 @@ call_def_function(
 		    if ((li = list_find(list, n)) == NULL)
 		    {
 			semsg(_(e_listidx), n);
+			if (trylevel > 0)
+			    continue;
 			goto failed;
 		    }
 		    --ectx.ec_stack.ga_len;
 		    // Clear the list after getting the item, to avoid that it
-		    // make the item invalid.
+		    // makes the item invalid.
 		    tv = STACK_TV_BOT(-1);
 		    temp_tv = *tv;
 		    copy_tv(&li->li_tv, tv);
@@ -2226,6 +2238,8 @@ call_def_function(
 		    if ((di = dict_find(dict, key, -1)) == NULL)
 		    {
 			semsg(_(e_dictkey), key);
+			if (trylevel > 0)
+			    continue;
 			goto failed;
 		    }
 		    clear_tv(tv);

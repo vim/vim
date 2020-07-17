@@ -509,6 +509,43 @@ def Test_try_catch()
     add(l, '3')
   endtry # comment
   assert_equal(['1', 'wrong', '3'], l)
+
+  let n: number
+  try
+    n = l[3]
+  catch /E684:/
+    n = 99
+  endtry
+  assert_equal(99, n)
+
+  try
+    n = g:astring[3]
+  catch /E714:/
+    n = 77
+  endtry
+  assert_equal(77, n)
+
+  try
+    n = l[g:astring]
+  catch /E39:/
+    n = 77
+  endtry
+  assert_equal(77, n)
+
+  try
+    n = s:does_not_exist
+  catch /E121:/
+    n = 121
+  endtry
+  assert_equal(121, n)
+
+  let d = #{one: 1}
+  try
+    n = d[g:astring]
+  catch /E716:/
+    n = 222
+  endtry
+  assert_equal(222, n)
 enddef
 
 def ThrowFromDef()
