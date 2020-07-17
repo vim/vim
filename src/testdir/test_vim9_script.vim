@@ -17,6 +17,7 @@ let g:inc_counter = 1
 let $SOME_ENV_VAR = 'some'
 let g:alist = [7]
 let g:astring = 'text'
+let g:anumber = 123
 
 def Test_assignment()
   let bool1: bool = true
@@ -535,6 +536,13 @@ def Test_try_catch()
   try
     n = s:does_not_exist
   catch /E121:/
+    n = 111
+  endtry
+  assert_equal(111, n)
+
+  try
+    n = g:does_not_exist
+  catch /E121:/
     n = 121
   endtry
   assert_equal(121, n)
@@ -546,6 +554,50 @@ def Test_try_catch()
     n = 222
   endtry
   assert_equal(222, n)
+
+  try
+    n = -g:astring
+  catch /E39:/
+    n = 233
+  endtry
+  assert_equal(233, n)
+
+  try
+    n = +g:astring
+  catch /E1030:/
+    n = 244
+  endtry
+  assert_equal(244, n)
+
+  try
+    n = +g:alist
+  catch /E745:/
+    n = 255
+  endtry
+  assert_equal(255, n)
+
+  let nd: dict<any>
+  try
+    nd = {g:anumber: 1}
+  catch /E1029:/
+    n = 266
+  endtry
+  assert_equal(266, n)
+
+  try
+    [n] = [1, 2, 3]
+  catch /E1093:/
+    n = 277
+  endtry
+  assert_equal(277, n)
+
+  #  TODO: make this work
+  #  try
+  #    &ts = g:astring
+  #  catch /E1093:/
+  #    n = 288
+  #  endtry
+  #  assert_equal(288, n)
 enddef
 
 def ThrowFromDef()

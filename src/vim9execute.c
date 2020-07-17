@@ -1065,9 +1065,7 @@ call_def_function(
 		    if (di == NULL)
 		    {
 			semsg(_(e_undefvar), name);
-			if (trylevel > 0)
-			    continue;
-			goto failed;
+			goto on_error;
 		    }
 		    else
 		    {
@@ -1115,7 +1113,7 @@ call_def_function(
 		    {
 			semsg(_("E121: Undefined variable: %c:%s"),
 					     namespace, iptr->isn_arg.string);
-			goto failed;
+			goto on_error;
 		    }
 		    else
 		    {
@@ -2088,9 +2086,7 @@ call_def_function(
 			    case EXPR_SUB:  f1 = f1 - f2; break;
 			    case EXPR_ADD:  f1 = f1 + f2; break;
 			    default: emsg(_(e_modulus));
-				     if (trylevel > 0)
-					 continue;
-				     goto failed;
+				     goto on_error;
 			}
 			clear_tv(tv1);
 			clear_tv(tv2);
@@ -2144,9 +2140,7 @@ call_def_function(
 		    if (tv->v_type != VAR_LIST)
 		    {
 			emsg(_(e_listreq));
-			if (trylevel > 0)
-			    continue;
-			goto failed;
+			goto on_error;
 		    }
 		    list = tv->vval.v_list;
 
@@ -2154,18 +2148,14 @@ call_def_function(
 		    if (tv->v_type != VAR_NUMBER)
 		    {
 			emsg(_(e_number_exp));
-			if (trylevel > 0)
-			    continue;
-			goto failed;
+			goto on_error;
 		    }
 		    n = tv->vval.v_number;
 		    clear_tv(tv);
 		    if ((li = list_find(list, n)) == NULL)
 		    {
 			semsg(_(e_listidx), n);
-			if (trylevel > 0)
-			    continue;
-			goto failed;
+			goto on_error;
 		    }
 		    --ectx.ec_stack.ga_len;
 		    // Clear the list after getting the item, to avoid that it
@@ -2238,9 +2228,7 @@ call_def_function(
 		    if ((di = dict_find(dict, key, -1)) == NULL)
 		    {
 			semsg(_(e_dictkey), key);
-			if (trylevel > 0)
-			    continue;
-			goto failed;
+			goto on_error;
 		    }
 		    clear_tv(tv);
 		    --ectx.ec_stack.ga_len;
@@ -2291,7 +2279,7 @@ call_def_function(
 			)
 		{
 		    emsg(_(e_number_exp));
-		    goto failed;
+		    goto on_error;
 		}
 #ifdef FEAT_FLOAT
 		if (tv->v_type == VAR_FLOAT)
@@ -2307,10 +2295,10 @@ call_def_function(
 
 		    tv = STACK_TV_BOT(-1);
 		    if (check_not_string(tv) == FAIL)
-			goto failed;
+			goto on_error;
 		    (void)tv_get_number_chk(tv, &error);
 		    if (error)
-			goto failed;
+			goto on_error;
 		}
 		break;
 
@@ -2329,7 +2317,7 @@ call_def_function(
 			semsg(_("E1029: Expected %s but got %s"),
 				    vartype_name(ct->ct_type),
 				    vartype_name(tv->v_type));
-			goto failed;
+			goto on_error;
 		    }
 		}
 		break;
@@ -2348,7 +2336,7 @@ call_def_function(
 		    {
 			semsg(_("E1093: Expected %d items but got %d"),
 				     min_len, list == NULL ? 0 : list->lv_len);
-			goto failed;
+			goto on_error;
 		    }
 		}
 		break;
@@ -2403,6 +2391,11 @@ call_def_function(
 		clear_tv(STACK_TV_BOT(0));
 		break;
 	}
+	continue;
+
+on_error:
+	if (trylevel == 0)
+	    goto failed;
     }
 
 done:
