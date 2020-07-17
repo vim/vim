@@ -1418,11 +1418,13 @@ gui_position_components(int total_width UNUSED)
     if (gui.which_scrollbars[SBAR_BOTTOM])
 	gui_mch_set_scrollbar_pos(&gui.bottom_sbar,
 				  text_area_x,
-				  text_area_y + text_area_height,
+				  text_area_y + text_area_height
+					+ gui_mch_get_scrollbar_ypadding(),
 				  text_area_width,
 				  gui.scrollbar_height);
     gui.left_sbar_x = 0;
-    gui.right_sbar_x = text_area_x + text_area_width;
+    gui.right_sbar_x = text_area_x + text_area_width
+					+ gui_mch_get_scrollbar_xpadding();
 
     --hold_gui_events;
 }

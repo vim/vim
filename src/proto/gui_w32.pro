@@ -14,6 +14,8 @@ void gui_mch_set_winpos(int x, int y);
 void gui_mch_set_text_area_pos(int x, int y, int w, int h);
 void gui_mch_enable_scrollbar(scrollbar_T *sb, int flag);
 void gui_mch_set_scrollbar_pos(scrollbar_T *sb, int x, int y, int w, int h);
+int gui_mch_get_scrollbar_xpadding(void);
+int gui_mch_get_scrollbar_ypadding(void);
 void gui_mch_create_scrollbar(scrollbar_T *sb, int orient);
 int gui_mch_adjust_charheight(void);
 GuiFont gui_mch_get_font(char_u *name, int giveErrorIfMissing);

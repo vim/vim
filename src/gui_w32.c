@@ -1412,6 +1412,34 @@ gui_mch_set_scrollbar_pos(
 			      SWP_NOZORDER | SWP_NOACTIVATE | SWP_SHOWWINDOW);
 }
 
+    int
+gui_mch_get_scrollbar_xpadding(void)
+{
+    RECT    rcTxt, rcWnd;
+    int	    xpad;
+
+    GetWindowRect(s_textArea, &rcTxt);
+    GetWindowRect(s_hwnd, &rcWnd);
+    xpad = rcWnd.right - rcTxt.right - gui.scrollbar_width
+	- GetSystemMetrics(SM_CXFRAME)
+	- GetSystemMetrics(SM_CXPADDEDBORDER);
+    return (xpad < 0) ? 0 : xpad;
+}
+
+    int
+gui_mch_get_scrollbar_ypadding(void)
+{
+    RECT    rcTxt, rcWnd;
+    int	    ypad;
+
+    GetWindowRect(s_textArea, &rcTxt);
+    GetWindowRect(s_hwnd, &rcWnd);
+    ypad = rcWnd.bottom - rcTxt.bottom - gui.scrollbar_height
+	- GetSystemMetrics(SM_CYFRAME)
+	- GetSystemMetrics(SM_CXPADDEDBORDER);
+    return (ypad < 0) ? 0 : ypad;
+}
+
     void
 gui_mch_create_scrollbar(
     scrollbar_T *sb,

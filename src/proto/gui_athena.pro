@@ -21,6 +21,8 @@ void gui_mch_show_popupmenu(vimmenu_T *menu);
 void gui_mch_def_colors(void);
 void gui_mch_set_scrollbar_thumb(scrollbar_T *sb, long val, long size, long max);
 void gui_mch_set_scrollbar_pos(scrollbar_T *sb, int x, int y, int w, int h);
+int gui_mch_get_scrollbar_xpadding(void);
+int gui_mch_get_scrollbar_ypadding(void);
 void gui_mch_enable_scrollbar(scrollbar_T *sb, int flag);
 void gui_mch_create_scrollbar(scrollbar_T *sb, int orient);
 void gui_mch_destroy_scrollbar(scrollbar_T *sb);
