@@ -244,12 +244,12 @@ func Test_term_mouse_middle_click()
     " Prefixing middle click with [ or ] fixes the indent after pasting.
     %d
     call setline(1, "    one two")
-    call setreg('+', 'red blue', 'l')
+    call setreg('r', 'red blue', 'l')
     call test_setmouse(1, 5)
-    exe "normal [\<MiddleMouse>"
+    exe "normal \"r[\<MiddleMouse>"
     call assert_equal('    red blue', getline(1), msg)
     call test_setmouse(2, 5)
-    exe "normal ]\<MiddleMouse>"
+    exe "normal \"r]\<MiddleMouse>"
     call assert_equal('    red blue', getline(3), msg)
     %d
   endfor
@@ -975,6 +975,7 @@ func Test_mouse_alt_leftclick()
   let save_ttymouse = &ttymouse
   call test_override('no_query_mouse', 1)
   set mouse=a term=xterm mousetime=200
+  set mousemodel=popup
   new
   call setline(1, 'one (two) three')
 
@@ -997,7 +998,7 @@ func Test_mouse_alt_leftclick()
   let &mouse = save_mouse
   let &term = save_term
   let &ttymouse = save_ttymouse
-  set mousetime&
+  set mousetime& mousemodel&
   call test_override('no_query_mouse', 0)
   close!
 endfunc
