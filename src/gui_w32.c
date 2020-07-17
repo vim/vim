@@ -3320,19 +3320,33 @@ gui_mch_init_font(char_u *font_name, int fontset UNUSED)
 
 /*
  * Return TRUE if the GUI window is maximized, filling the whole screen.
+ * Also return TRUE if the window is snapped.
  */
     int
 gui_mch_maximized(void)
 {
     WINDOWPLACEMENT wp;
+    RECT	    rc;
 
     wp.length = sizeof(WINDOWPLACEMENT);
     if (GetWindowPlacement(s_hwnd, &wp))
-	return wp.showCmd == SW_SHOWMAXIMIZED
+    {
+	if (wp.showCmd == SW_SHOWMAXIMIZED
 	    || (wp.showCmd == SW_SHOWMINIMIZED
-		    && wp.flags == WPF_RESTORETOMAXIMIZED);
+		    && wp.flags == WPF_RESTORETOMAXIMIZED))
+	    return TRUE;
+	if (wp.showCmd == SW_SHOWMINIMIZED)
+	    return FALSE;
 
-    return 0;
+	// Assume the window is snapped when the sizes from two APIs differ.
+	GetWindowRect(s_hwnd, &rc);
+	if ((rc.right - rc.left !=
+		    wp.rcNormalPosition.right - wp.rcNormalPosition.left)
+		|| (rc.bottom - rc.top !=
+		    wp.rcNormalPosition.bottom - wp.rcNormalPosition.top))
+	    return TRUE;
+    }
+    return FALSE;
 }
 
 /*
