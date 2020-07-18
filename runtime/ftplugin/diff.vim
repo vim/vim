@@ -13,3 +13,4 @@ let b:undo_ftplugin = "setl modeline<"
 
 " Don't use modelines in a diff, they apply to the diffed file
 setlocal nomodeline
+let &commentstring="# %s"
