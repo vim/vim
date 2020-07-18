@@ -626,8 +626,10 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	case LUA_TFUNCTION:
 	{
 	    char_u *name;
+	    luaV_CFuncState *state;
+
 	    lua_pushvalue(L, pos);
-	    luaV_CFuncState *state = ALLOC_CLEAR_ONE(luaV_CFuncState);
+	    state = ALLOC_CLEAR_ONE(luaV_CFuncState);
 	    state->lua_funcref = luaL_ref(L, LUA_REGISTRYINDEX);
 	    state->L = L;
 	    state->lua_tableref = LUA_NOREF;
@@ -639,14 +641,17 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	}
 	case LUA_TTABLE:
 	{
+	    int lua_tableref;
+
 	    lua_pushvalue(L, pos);
-	    int lua_tableref = luaL_ref(L, LUA_REGISTRYINDEX);
+	    lua_tableref = luaL_ref(L, LUA_REGISTRYINDEX);
 	    if (lua_getmetatable(L, pos)) {
 		lua_getfield(L, -1, LUA___CALL);
 		if (lua_isfunction(L, -1)) {
 		    char_u *name;
 		    int lua_funcref = luaL_ref(L, LUA_REGISTRYINDEX);
 		    luaV_CFuncState *state = ALLOC_CLEAR_ONE(luaV_CFuncState);
+
 		    state->lua_funcref = lua_funcref;
 		    state->L = L;
 		    state->lua_tableref = lua_tableref;
@@ -703,6 +708,7 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 		if (lua_rawequal(L, -1, -5))
 		{
 		    luaV_Funcref *f = (luaV_Funcref *) p;
+
 		    func_ref(f->name);
 		    tv->v_type = VAR_FUNC;
 		    tv->vval.v_string = vim_strsave(f->name);
