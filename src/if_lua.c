@@ -626,8 +626,9 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	case LUA_TFUNCTION:
 	{
 	    char_u *name;
+	    luaV_CFuncState *state;
 	    lua_pushvalue(L, pos);
-	    luaV_CFuncState *state = ALLOC_CLEAR_ONE(luaV_CFuncState);
+	    state = ALLOC_CLEAR_ONE(luaV_CFuncState);
 	    state->lua_funcref = luaL_ref(L, LUA_REGISTRYINDEX);
 	    state->L = L;
 	    state->lua_tableref = LUA_NOREF;
@@ -639,8 +640,9 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	}
 	case LUA_TTABLE:
 	{
+	    int lua_tableref;
 	    lua_pushvalue(L, pos);
-	    int lua_tableref = luaL_ref(L, LUA_REGISTRYINDEX);
+	    lua_tableref = luaL_ref(L, LUA_REGISTRYINDEX);
 	    if (lua_getmetatable(L, pos)) {
 		lua_getfield(L, -1, LUA___CALL);
 		if (lua_isfunction(L, -1)) {
