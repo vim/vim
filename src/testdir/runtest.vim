@@ -105,6 +105,13 @@ set nomore
 " Output all messages in English.
 lang mess C
 
+" suppress menu translation
+if has('gui_running') && exists('did_install_default_menus')
+  source $VIMRUNTIME/delmenu.vim
+  set langmenu=none
+  source $VIMRUNTIME/menu.vim
+endif
+
 " Always use forward slashes.
 set shellslash
 
