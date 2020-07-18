@@ -10,7 +10,7 @@ func Test_getbufwintabinfo()
   call assert_equal(2, len(buflist))
   call assert_match('Xtestfile1', buflist[0].name)
   call assert_match('Xtestfile2', getbufinfo('Xtestfile2')[0].name)
-  call assert_equal([], getbufinfo(2016))
+  call assert_equal([], 2016->getbufinfo())
   edit Xtestfile1
   hide edit Xtestfile2
   hide enew

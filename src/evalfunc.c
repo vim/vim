@@ -611,7 +611,7 @@ static funcentry_T global_functions[] =
     {"function",	1, 3, FEARG_1,	  ret_f_function, f_function},
     {"garbagecollect",	0, 1, 0,	  ret_void,	f_garbagecollect},
     {"get",		2, 3, FEARG_1,	  ret_any,	f_get},
-    {"getbufinfo",	0, 1, 0,	  ret_list_dict_any, f_getbufinfo},
+    {"getbufinfo",	0, 1, FEARG_1,	  ret_list_dict_any, f_getbufinfo},
     {"getbufline",	2, 3, FEARG_1,	  ret_list_string, f_getbufline},
     {"getbufvar",	2, 3, FEARG_1,	  ret_any,	f_getbufvar},
     {"getchangelist",	0, 1, FEARG_1,	  ret_list_any,	f_getchangelist},
