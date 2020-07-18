@@ -3302,6 +3302,7 @@ struct window_S
     int		w_minwidth;	    // "minwidth" for popup window
     int		w_maxheight;	    // "maxheight" for popup window
     int		w_maxwidth;	    // "maxwidth" for popup window
+    int		w_maxwidth_opt;	    // maxwidth from option
     int		w_wantline;	    // "line" for popup window
     int		w_wantcol;	    // "col" for popup window
     int		w_firstline;	    // "firstline" for popup window

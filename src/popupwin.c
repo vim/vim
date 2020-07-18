@@ -1620,6 +1620,7 @@ parse_popup_option(win_T *wp, int is_preview)
 		if (is_preview)
 		    wp->w_minwidth = x;
 		wp->w_maxwidth = x;
+		wp->w_maxwidth_opt = x;
 	    }
 	}
 	else if (STRNCMP(s, "highlight:", 10) == 0)

@@ -642,6 +642,7 @@ pum_position_info_popup(win_T *wp)
     int col = pum_col + pum_width + pum_scrollbar + 1;
     int row = pum_row;
     int botpos = POPPOS_BOTLEFT;
+    int	used_maxwidth_opt = FALSE;
 
     wp->w_popup_pos = POPPOS_TOPLEFT;
     if (Columns - col < 20 && Columns - col < pum_col)
@@ -654,6 +655,12 @@ pum_position_info_popup(win_T *wp)
     else
 	wp->w_maxwidth = Columns - col + 1;
     wp->w_maxwidth -= popup_extra_width(wp);
+    if (wp->w_maxwidth_opt > 0 && wp->w_maxwidth > wp->w_maxwidth_opt)
+    {
+	// option value overrules computed value
+	wp->w_maxwidth = wp->w_maxwidth_opt;
+	used_maxwidth_opt = TRUE;
+    }
 
     row -= popup_top_extra(wp);
     if (wp->w_popup_flags & POPF_INFO_MENU)
@@ -673,7 +680,7 @@ pum_position_info_popup(win_T *wp)
 	row += pum_selected - pum_first + 1;
 
     wp->w_popup_flags &= ~POPF_HIDDEN;
-    if (wp->w_maxwidth < 10)
+    if (wp->w_maxwidth < 10 && !used_maxwidth_opt)
 	// The popup is not going to fit or will overlap with the cursor
 	// position, hide the popup.
 	wp->w_popup_flags |= POPF_HIDDEN;
