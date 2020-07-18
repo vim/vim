@@ -4961,6 +4961,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    }
 	    if (need_type(stacktype, &t_list_any, -1, cctx, FALSE) == FAIL)
 		goto theend;
+	    // TODO: check the length of a constant list here
 	    generate_CHECKLEN(cctx, semicolon ? var_count - 1 : var_count,
 								    semicolon);
 	}
@@ -6539,6 +6540,7 @@ compile_finally(char_u *arg, cctx_T *cctx)
 	// Previous catch without match jumps here
 	isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_catch_label;
 	isn->isn_arg.jump.jump_where = instr->ga_len;
+	scope->se_u.se_try.ts_catch_label = 0;
     }
 
     // TODO: set index in ts_finally_label jumps
@@ -6584,8 +6586,18 @@ compile_endtry(char_u *arg, cctx_T *cctx)
     compile_fill_jump_to_end(&scope->se_u.se_try.ts_end_label, cctx);
 
     // End :catch or :finally scope: set value in ISN_TRY instruction
+    if (isn->isn_arg.try.try_catch == 0)
+	isn->isn_arg.try.try_catch = instr->ga_len;
     if (isn->isn_arg.try.try_finally == 0)
 	isn->isn_arg.try.try_finally = instr->ga_len;
+
+    if (scope->se_u.se_try.ts_catch_label != 0)
+    {
+	// Last catch without match jumps here
+	isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_catch_label;
+	isn->isn_arg.jump.jump_where = instr->ga_len;
+    }
+
     compile_endblock(cctx);
 
     if (generate_instr(cctx, ISN_ENDTRY) == NULL)

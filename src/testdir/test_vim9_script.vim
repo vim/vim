@@ -511,6 +511,22 @@ def Test_try_catch()
   endtry # comment
   assert_equal(['1', 'wrong', '3'], l)
 
+  l = []
+  try
+    try
+      add(l, '1')
+      throw 'wrong'
+      add(l, '2')
+    catch /right/
+      add(l, v:exception)
+    endtry
+  catch /wrong/
+    add(l, 'caught')
+  finally
+    add(l, 'finally')
+  endtry
+  assert_equal(['1', 'caught', 'finally'], l)
+
   let n: number
   try
     n = l[3]
@@ -591,14 +607,62 @@ def Test_try_catch()
   endtry
   assert_equal(277, n)
 
-  #  TODO: make this work
-  #  try
-  #    &ts = g:astring
-  #  catch /E1093:/
-  #    n = 288
-  #  endtry
-  #  assert_equal(288, n)
+  try
+    &ts = g:astring
+  catch /E1029:/
+    n = 288
+  endtry
+  assert_equal(288, n)
+
+  try
+    &backspace = 'asdf'
+  catch /E474:/
+    n = 299
+  endtry
+  assert_equal(299, n)
+
+  l = [1]
+  try
+    l[3] = 3
+  catch /E684:/
+    n = 300
+  endtry
+  assert_equal(300, n)
+
+  try
+    d[''] = 3
+  catch /E713:/
+    n = 311
+  endtry
+  assert_equal(311, n)
+
+  try
+    unlet g:does_not_exist
+  catch /E108:/
+    n = 322
+  endtry
+  assert_equal(322, n)
+
+  try
+    d = {'text': 1, g:astring: 2}
+  catch /E721:/
+    n = 333
+  endtry
+  assert_equal(333, n)
+
+  try
+    l = DeletedFunc()
+  catch /E933:/
+    n = 344
+  endtry
+  assert_equal(344, n)
 enddef
+
+def DeletedFunc(): list<any>
+  return ['delete me']
+enddef
+defcompile
+delfunc DeletedFunc
 
 def ThrowFromDef()
   throw "getout" # comment
