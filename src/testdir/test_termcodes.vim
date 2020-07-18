@@ -147,13 +147,13 @@ func Test_xterm_mouse_tagjump()
     new
     let str = 'iHello' .. MouseCtrlRightClickCode(row, col)
           \ .. MouseRightReleaseCode(row, col) .. "\<C-C>"
-    call assert_fails('call feedkeys(str, "Lx!")', 'E37:')
+    call assert_fails('call feedkeys(str, "Lx!")', 'E37:', msg)
     close!
 
     " CTRL-right click with a count
     let str = "4" .. MouseCtrlRightClickCode(row, col)
           \ .. MouseRightReleaseCode(row, col)
-    call assert_fails('call feedkeys(str, "Lx!")', 'E555:')
+    call assert_fails('call feedkeys(str, "Lx!")', 'E555:', msg)
     call assert_match('help.txt$', bufname('%'), msg)
     call assert_equal(1, line('.'), msg)
 
@@ -230,7 +230,7 @@ func Test_term_mouse_middle_click()
           \ MouseMiddleClickCode(2, 7) .. MouseMiddleReleaseCode(2, 7), 'Lx!')
     call assert_equal(['12345abc6789abc', '12abc3abc456789'],
           \ getline(1, '$'), msg)
-    call assert_equal('1234', @")
+    call assert_equal('1234', @", msg)
     let &clipboard = save_clipboard
 
     " Clicking middle mouse in select mode, replaces the selected text with
@@ -240,6 +240,18 @@ func Test_term_mouse_middle_click()
     exe "normal gh\<Right>\<Right>\<MiddleMouse>"
     call assert_equal(['12xyzabc6789abc', '12abc3abc456789'],
           \ getline(1, '$'), msg)
+
+    " Prefixing middle click with [ or ] fixes the indent after pasting.
+    %d
+    call setline(1, "    one two")
+    call setreg('r', 'red blue', 'l')
+    call test_setmouse(1, 5)
+    exe "normal \"r[\<MiddleMouse>"
+    call assert_equal('    red blue', getline(1), msg)
+    call test_setmouse(2, 5)
+    exe "normal \"r]\<MiddleMouse>"
+    call assert_equal('    red blue', getline(3), msg)
+    %d
   endfor
 
   let &mouse = save_mouse
@@ -309,7 +321,7 @@ func Test_term_mouse_middle_click_insert_mode()
           \ "\<C-C>", 'Lx!')
     call assert_equal(['123abc456789', '123456789'],
           \ getline(1, '$'), msg)
-    call assert_equal([1, 6], [line('.'), col('.')])
+    call assert_equal([1, 6], [line('.'), col('.')], msg)
 
     " Middle-click in replace mode
     call cursor(1, 1)
@@ -318,7 +330,7 @@ func Test_term_mouse_middle_click_insert_mode()
           \ "\<C-C>", 'Lx!')
     call assert_equal(['123abc45678abc', '123456789'],
           \ getline(1, '$'), msg)
-    call assert_equal([1, 14], [line('.'), col('.')])
+    call assert_equal([1, 14], [line('.'), col('.')], msg)
   endfor
 
   let &mouse = save_mouse
@@ -899,6 +911,53 @@ func Test_term_mouse_multiple_clicks_to_visually_select()
     call assert_equal("\<c-v>", mode(), msg)
     norm! r4
     call assert_equal(['34333333333333333', 'foo'], getline(1, '$'), msg)
+
+    " Double-click on a space character should visually select all the
+    " consecutive space characters.
+    %d
+    call setline(1, '    one two')
+    call MouseLeftClick(1, 2)
+    call MouseLeftRelease(1, 2)
+    call MouseLeftClick(1, 2)
+    call MouseLeftRelease(1, 2)
+    call assert_equal('v', mode(), msg)
+    norm! r1
+    call assert_equal(['1111one two'], getline(1, '$'), msg)
+
+    " Double-click on a word with exclusive selection
+    set selection=exclusive
+    let @" = ''
+    call MouseLeftClick(1, 10)
+    call MouseLeftRelease(1, 10)
+    call MouseLeftClick(1, 10)
+    call MouseLeftRelease(1, 10)
+    norm! y
+    call assert_equal('two', @", msg)
+
+    " Double click to select a block of text with exclusive selection
+    %d
+    call setline(1, 'one (two) three')
+    call MouseLeftClick(1, 5)
+    call MouseLeftRelease(1, 5)
+    call MouseLeftClick(1, 5)
+    call MouseLeftRelease(1, 5)
+    norm! y
+    call assert_equal(5, col("'<"), msg)
+    call assert_equal(10, col("'>"), msg)
+
+    call MouseLeftClick(1, 9)
+    call MouseLeftRelease(1, 9)
+    call MouseLeftClick(1, 9)
+    call MouseLeftRelease(1, 9)
+    norm! y
+    call assert_equal(5, col("'<"), msg)
+    call assert_equal(10, col("'>"), msg)
+    set selection&
+
+    " Click somewhere else so that the clicks above is not combined with the
+    " clicks in the next iteration.
+    call MouseRightClick(3, 10)
+    call MouseRightRelease(3, 10)
   endfor
 
   let &mouse = save_mouse
@@ -907,6 +966,41 @@ func Test_term_mouse_multiple_clicks_to_visually_select()
   set mousetime&
   call test_override('no_query_mouse', 0)
   bwipe!
+endfunc
+
+" Test for selecting text in visual blockwise mode using Alt-LeftClick
+func Test_mouse_alt_leftclick()
+  let save_mouse = &mouse
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  call test_override('no_query_mouse', 1)
+  set mouse=a term=xterm mousetime=200
+  set mousemodel=popup
+  new
+  call setline(1, 'one (two) three')
+
+  for ttymouse_val in g:Ttymouse_values
+    let msg = 'ttymouse=' .. ttymouse_val
+    exe 'set ttymouse=' .. ttymouse_val
+
+    " Left click with the Alt modifier key should extend the selection in
+    " blockwise visual mode.
+    let @" = ''
+    call MouseLeftClick(1, 3)
+    call MouseLeftRelease(1, 3)
+    call MouseAltLeftClick(1, 11)
+    call MouseLeftRelease(1, 11)
+    call assert_equal("\<C-V>", mode(), msg)
+    normal! y
+    call assert_equal('e (two) t', @")
+  endfor
+
+  let &mouse = save_mouse
+  let &term = save_term
+  let &ttymouse = save_ttymouse
+  set mousetime& mousemodel&
+  call test_override('no_query_mouse', 0)
+  close!
 endfunc
 
 func Test_xterm_mouse_click_in_fold_columns()
@@ -1086,13 +1180,37 @@ func Test_term_mouse_visual_mode()
   call assert_equal('three four', @")
   call assert_equal(9, col('.'))
 
-  " Multi-line selection. Right click in the middle of thse selection
-  call setline(1, ["one", "two", "three", "four", "five", "six"])
+  " Right click inside the selection closer to the start of the selection
+  call test_setmouse(1, 7)
+  exe "normal 5|vee\<RightMouse>lly"
+  call assert_equal('three', @")
+  call assert_equal(9, col('.'))
+  call assert_equal(9, col("'<"))
+  call assert_equal(13, col("'>"))
+
+  " Right click inside the selection closer to the end of the selection
+  call test_setmouse(1, 11)
+  exe "normal 5|vee\<RightMouse>ly"
+  call assert_equal('two thre', @")
+  call assert_equal(5, col('.'))
+  call assert_equal(5, col("'<"))
+  call assert_equal(12, col("'>"))
+
+  " Multi-line selection. Right click inside thse selection.
+  call setline(1, repeat(['aaaaaa'], 7))
   call test_setmouse(3, 1)
   exe "normal ggVG\<RightMouse>y"
   call assert_equal(3, line("'<"))
-  call test_setmouse(4, 1)
+  call test_setmouse(5, 1)
   exe "normal ggVG\<RightMouse>y"
+  call assert_equal(5, line("'>"))
+
+  " Click right in the middle line of the selection
+  call test_setmouse(4, 3)
+  exe "normal ggVG$\<RightMouse>y"
+  call assert_equal(4, line("'<"))
+  call test_setmouse(4, 4)
+  exe "normal ggVG$\<RightMouse>y"
   call assert_equal(4, line("'>"))
 
   set mousemodel&
@@ -1120,11 +1238,12 @@ func Test_term_mouse_popup_menu()
   menu PopUp.baz :let g:menustr = 'baz'<CR>
 
   for ttymouse_val in g:Ttymouse_values
+    let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' .. ttymouse_val
     let g:menustr = ''
     call feedkeys(MouseRightClickCode(1, 4)
 		\ .. MouseRightReleaseCode(1, 4) .. "\<Down>\<Down>\<CR>", "x")
-    call assert_equal('bar', g:menustr)
+    call assert_equal('bar', g:menustr, msg)
   endfor
 
   unmenu PopUp
@@ -1158,70 +1277,71 @@ func Test_term_mouse_popup_menu_setpos()
   vmenu PopUp.baz y:<C-U>let g:menustr = 'baz'<CR>
 
   for ttymouse_val in g:Ttymouse_values
+    let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' .. ttymouse_val
     let g:menustr = ''
     call cursor(1, 1)
     call feedkeys(MouseRightClickCode(1, 5)
 		\ .. MouseRightReleaseCode(1, 5) .. "\<Down>\<Down>\<CR>", "x")
-    call assert_equal('bar', g:menustr)
-    call assert_equal([1, 5], [line('.'), col('.')])
+    call assert_equal('bar', g:menustr, msg)
+    call assert_equal([1, 5], [line('.'), col('.')], msg)
 
     " Test for right click in visual mode inside the selection
     let @" = ''
     call cursor(1, 10)
     call feedkeys('vee' .. MouseRightClickCode(1, 12)
 		\ .. MouseRightReleaseCode(1, 12) .. "\<Down>\<CR>", "x")
-    call assert_equal([1, 10], [line('.'), col('.')])
-    call assert_equal('ran away', @")
+    call assert_equal([1, 10], [line('.'), col('.')], msg)
+    call assert_equal('ran away', @", msg)
 
     " Test for right click in visual mode before the selection
     let @" = ''
     call cursor(1, 10)
     call feedkeys('vee' .. MouseRightClickCode(1, 2)
 		\ .. MouseRightReleaseCode(1, 2) .. "\<Down>\<CR>", "x")
-    call assert_equal([1, 2], [line('.'), col('.')])
-    call assert_equal('', @")
+    call assert_equal([1, 2], [line('.'), col('.')], msg)
+    call assert_equal('', @", msg)
 
     " Test for right click in visual mode after the selection
     let @" = ''
     call cursor(1, 10)
     call feedkeys('vee' .. MouseRightClickCode(1, 20)
 		\ .. MouseRightReleaseCode(1, 20) .. "\<Down>\<CR>", "x")
-    call assert_equal([1, 20], [line('.'), col('.')])
-    call assert_equal('', @")
+    call assert_equal([1, 20], [line('.'), col('.')], msg)
+    call assert_equal('', @", msg)
 
     " Test for right click in block-wise visual mode inside the selection
     let @" = ''
     call cursor(1, 16)
     call feedkeys("\<C-V>j3l" .. MouseRightClickCode(2, 17)
 		\ .. MouseRightReleaseCode(2, 17) .. "\<Down>\<CR>", "x")
-    call assert_equal([1, 16], [line('.'), col('.')])
-    call assert_equal("\<C-V>4", getregtype('"'))
+    call assert_equal([1, 16], [line('.'), col('.')], msg)
+    call assert_equal("\<C-V>4", getregtype('"'), msg)
 
     " Test for right click in block-wise visual mode outside the selection
     let @" = ''
     call cursor(1, 16)
     call feedkeys("\<C-V>j3l" .. MouseRightClickCode(2, 2)
 		\ .. MouseRightReleaseCode(2, 2) .. "\<Down>\<CR>", "x")
-    call assert_equal([2, 2], [line('.'), col('.')])
-    call assert_equal('v', getregtype('"'))
-    call assert_equal('', @")
+    call assert_equal([2, 2], [line('.'), col('.')], msg)
+    call assert_equal('v', getregtype('"'), msg)
+    call assert_equal('', @", msg)
 
     " Try clicking on the status line
     let @" = ''
     call cursor(1, 10)
     call feedkeys('vee' .. MouseRightClickCode(6, 2)
 		\ .. MouseRightReleaseCode(6, 2) .. "\<Down>\<CR>", "x")
-    call assert_equal([1, 10], [line('.'), col('.')])
-    call assert_equal('ran away', @")
+    call assert_equal([1, 10], [line('.'), col('.')], msg)
+    call assert_equal('ran away', @", msg)
 
     " Try clicking outside the window
     let @" = ''
     call cursor(7, 2)
     call feedkeys('vee' .. MouseRightClickCode(7, 2)
 		\ .. MouseRightReleaseCode(7, 2) .. "\<Down>\<CR>", "x")
-    call assert_equal(2, winnr())
-    call assert_equal('', @")
+    call assert_equal(2, winnr(), msg)
+    call assert_equal('', @", msg)
     wincmd w
   endfor
 
@@ -1301,6 +1421,111 @@ func Test_term_mouse_quickfix_window()
   let &term = save_term
   let &ttymouse = save_ttymouse
   call test_override('no_query_mouse', 0)
+endfunc
+
+" Test for the 'h' flag in the 'mouse' option. Using mouse in the help window.
+func Test_term_mouse_help_window()
+  let save_mouse = &mouse
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  call test_override('no_query_mouse', 1)
+  set mouse=h term=xterm mousetime=200
+
+  for ttymouse_val in g:Ttymouse_values + g:Ttymouse_dec
+    let msg = 'ttymouse=' .. ttymouse_val
+    exe 'set ttymouse=' .. ttymouse_val
+    help
+    let @" = ''
+    call MouseLeftClick(2, 5)
+    call MouseLeftRelease(2, 5)
+    call MouseLeftClick(1, 1)
+    call MouseLeftDrag(1, 10)
+    call MouseLeftRelease(1, 10)
+    norm! y
+    call assert_equal('*help.txt*', @", msg)
+    helpclose
+
+    " Click somewhere else to make sure the left click above is not combined
+    " with the next left click and treated as a double click
+    call MouseRightClick(5, 10)
+    call MouseRightRelease(5, 10)
+  endfor
+
+  let &mouse = save_mouse
+  let &term = save_term
+  let &ttymouse = save_ttymouse
+  set mousetime&
+  call test_override('no_query_mouse', 0)
+  %bw!
+endfunc
+
+" Test for the translation of various mouse terminal codes
+func Test_mouse_termcodes()
+  let save_mouse = &mouse
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  call test_override('no_query_mouse', 1)
+  set mouse=a term=xterm mousetime=200
+
+  new
+  for ttymouse_val in g:Ttymouse_values + g:Ttymouse_dec + g:Ttymouse_netterm
+    let msg = 'ttymouse=' .. ttymouse_val
+    exe 'set ttymouse=' .. ttymouse_val
+
+    let mouse_codes = [
+          \ ["\<LeftMouse>", "<LeftMouse>"],
+          \ ["\<MiddleMouse>", "<MiddleMouse>"],
+          \ ["\<RightMouse>", "<RightMouse>"],
+          \ ["\<S-LeftMouse>", "<S-LeftMouse>"],
+          \ ["\<S-MiddleMouse>", "<S-MiddleMouse>"],
+          \ ["\<S-RightMouse>", "<S-RightMouse>"],
+          \ ["\<C-LeftMouse>", "<C-LeftMouse>"],
+          \ ["\<C-MiddleMouse>", "<C-MiddleMouse>"],
+          \ ["\<C-RightMouse>", "<C-RightMouse>"],
+          \ ["\<M-LeftMouse>", "<M-LeftMouse>"],
+          \ ["\<M-MiddleMouse>", "<M-MiddleMouse>"],
+          \ ["\<M-RightMouse>", "<M-RightMouse>"],
+          \ ["\<2-LeftMouse>", "<2-LeftMouse>"],
+          \ ["\<2-MiddleMouse>", "<2-MiddleMouse>"],
+          \ ["\<2-RightMouse>", "<2-RightMouse>"],
+          \ ["\<3-LeftMouse>", "<3-LeftMouse>"],
+          \ ["\<3-MiddleMouse>", "<3-MiddleMouse>"],
+          \ ["\<3-RightMouse>", "<3-RightMouse>"],
+          \ ["\<4-LeftMouse>", "<4-LeftMouse>"],
+          \ ["\<4-MiddleMouse>", "<4-MiddleMouse>"],
+          \ ["\<4-RightMouse>", "<4-RightMouse>"],
+          \ ["\<LeftDrag>", "<LeftDrag>"],
+          \ ["\<MiddleDrag>", "<MiddleDrag>"],
+          \ ["\<RightDrag>", "<RightDrag>"],
+          \ ["\<LeftRelease>", "<LeftRelease>"],
+          \ ["\<MiddleRelease>", "<MiddleRelease>"],
+          \ ["\<RightRelease>", "<RightRelease>"],
+          \ ["\<ScrollWheelUp>", "<ScrollWheelUp>"],
+          \ ["\<S-ScrollWheelUp>", "<S-ScrollWheelUp>"],
+          \ ["\<C-ScrollWheelUp>", "<C-ScrollWheelUp>"],
+          \ ["\<ScrollWheelDown>", "<ScrollWheelDown>"],
+          \ ["\<S-ScrollWheelDown>", "<S-ScrollWheelDown>"],
+          \ ["\<C-ScrollWheelDown>", "<C-ScrollWheelDown>"],
+          \ ["\<ScrollWheelLeft>", "<ScrollWheelLeft>"],
+          \ ["\<S-ScrollWheelLeft>", "<S-ScrollWheelLeft>"],
+          \ ["\<C-ScrollWheelLeft>", "<C-ScrollWheelLeft>"],
+          \ ["\<ScrollWheelRight>", "<ScrollWheelRight>"],
+          \ ["\<S-ScrollWheelRight>", "<S-ScrollWheelRight>"],
+          \ ["\<C-ScrollWheelRight>", "<C-ScrollWheelRight>"]
+          \ ]
+
+    for [code, outstr] in mouse_codes
+      exe "normal ggC\<C-K>" . code
+      call assert_equal(outstr, getline(1), msg)
+    endfor
+  endfor
+
+  let &mouse = save_mouse
+  let &term = save_term
+  let &ttymouse = save_ttymouse
+  set mousetime&
+  call test_override('no_query_mouse', 0)
+  %bw!
 endfunc
 
 " This only checks if the sequence is recognized.
