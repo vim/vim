@@ -60,6 +60,7 @@ void f_popup_findpreview(typval_T *argvars, typval_T *rettv);
 int popup_create_preview_window(int info);
 void popup_close_preview(void);
 void popup_hide_info(void);
+void popup_close_info(void);
 int popup_win_closed(win_T *win);
 void popup_set_title(win_T *wp);
 void popup_update_preview_title(void);

@@ -4031,6 +4031,18 @@ popup_hide_info(void)
     if (wp != NULL)
 	popup_hide(wp);
 }
+
+/*
+ * Close any info popup.
+ */
+    void
+popup_close_info(void)
+{
+    win_T *wp = popup_find_info_window();
+
+    if (wp != NULL)
+	popup_close_with_retval(wp, -1);
+}
 #endif
 
 /*
