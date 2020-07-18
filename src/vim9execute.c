@@ -1512,6 +1512,7 @@ call_def_function(
 			item->di_tv.v_lock = 0;
 			if (dict_add(dict, item) == FAIL)
 			{
+			    // can this ever happen?
 			    dict_unref(dict);
 			    goto failed;
 			}
@@ -1544,7 +1545,7 @@ call_def_function(
 		if (call_bfunc(iptr->isn_arg.bfunc.cbf_idx,
 			      iptr->isn_arg.bfunc.cbf_argcount,
 			      &ectx) == FAIL)
-		    goto failed;
+		    goto on_error;
 		break;
 
 	    // call a funcref or partial
@@ -1571,7 +1572,7 @@ call_def_function(
 		    if (tv == &partial_tv)
 			clear_tv(&partial_tv);
 		    if (r == FAIL)
-			goto failed;
+			goto on_error;
 		}
 		break;
 
@@ -1592,7 +1593,7 @@ call_def_function(
 		    SOURCING_LNUM = iptr->isn_lnum;
 		    if (call_eval_func(cufunc->cuf_name,
 				    cufunc->cuf_argcount, &ectx, iptr) == FAIL)
-			goto failed;
+			goto on_error;
 		}
 		break;
 
@@ -1614,19 +1615,7 @@ call_def_function(
 			trycmd->tcd_return = TRUE;
 		    }
 		    else
-		    {
-			// Restore previous function. If the frame pointer
-			// is zero then there is none and we are done.
-			if (ectx.ec_frame_idx == initial_frame_idx)
-			{
-			    if (handle_closure_in_use(&ectx, FALSE) == FAIL)
-				goto failed;
-			    goto done;
-			}
-
-			if (func_return(&ectx) == FAIL)
-			    goto failed;
-		    }
+			goto func_return;
 		}
 		break;
 
@@ -1735,8 +1724,6 @@ call_def_function(
 		    {
 			listitem_T *li = list_find(list, idxtv->vval.v_number);
 
-			if (li == NULL)
-			    goto failed;
 			copy_tv(&li->li_tv, STACK_TV_BOT(0));
 			++ectx.ec_stack.ga_len;
 		    }
@@ -1814,19 +1801,7 @@ call_def_function(
 			}
 
 			if (trycmd->tcd_return)
-			{
-			    // Restore previous function. If the frame pointer
-			    // is zero then there is none and we are done.
-			    if (ectx.ec_frame_idx == initial_frame_idx)
-			    {
-				if (handle_closure_in_use(&ectx, FALSE) == FAIL)
-				    goto failed;
-				goto done;
-			    }
-
-			    if (func_return(&ectx) == FAIL)
-				goto failed;
-			}
+			    goto func_return;
 		    }
 		}
 		break;
@@ -2068,7 +2043,7 @@ call_def_function(
 		    {
 			n1 = tv_get_number_chk(tv1, &error);
 			if (error)
-			    goto failed;
+			    goto on_error;
 #ifdef FEAT_FLOAT
 			if (tv2->v_type == VAR_FLOAT)
 			    f1 = n1;
@@ -2085,7 +2060,7 @@ call_def_function(
 		    {
 			n2 = tv_get_number_chk(tv2, &error);
 			if (error)
-			    goto failed;
+			    goto on_error;
 #ifdef FEAT_FLOAT
 			if (tv1->v_type == VAR_FLOAT)
 			    f2 = n2;
@@ -2268,7 +2243,7 @@ call_def_function(
 		    if (tv->v_type != VAR_DICT || tv->vval.v_dict == NULL)
 		    {
 			emsg(_(e_dictreq));
-			goto failed;
+			goto on_error;
 		    }
 		    dict = tv->vval.v_dict;
 
@@ -2276,7 +2251,7 @@ call_def_function(
 								       == NULL)
 		    {
 			semsg(_(e_dictkey), iptr->isn_arg.string);
-			goto failed;
+			goto on_error;
 		    }
 		    // Clear the dict after getting the item, to avoid that it
 		    // make the item invalid.
@@ -2408,6 +2383,20 @@ call_def_function(
 		break;
 	}
 	continue;
+
+func_return:
+	// Restore previous function. If the frame pointer is zero then there
+	// is none and we are done.
+	if (ectx.ec_frame_idx == initial_frame_idx)
+	{
+	    if (handle_closure_in_use(&ectx, FALSE) == FAIL)
+		// only fails when out of memory
+		goto failed;
+	    goto done;
+	}
+	if (func_return(&ectx) == FAIL)
+	    // only fails when out of memory
+	    goto failed;
 
 on_error:
 	if (trylevel == 0)

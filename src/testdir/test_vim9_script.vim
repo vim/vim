@@ -498,6 +498,10 @@ def Test_cmd_modifier()
   call CheckDefFailure(['5tab echo 3'], 'E16:')
 enddef
 
+func g:NoSuchFunc()
+  echo 'none'
+endfunc
+
 def Test_try_catch()
   let l = []
   try # comment
@@ -656,6 +660,57 @@ def Test_try_catch()
     n = 344
   endtry
   assert_equal(344, n)
+
+  try
+    echo len(v:true)
+  catch /E701:/
+    n = 355
+  endtry
+  assert_equal(355, n)
+
+  let P = function('g:NoSuchFunc')
+  delfunc g:NoSuchFunc
+  try
+    echo P()
+  catch /E117:/
+    n = 366
+  endtry
+  assert_equal(366, n)
+
+  try
+    echo g:NoSuchFunc()
+  catch /E117:/
+    n = 377
+  endtry
+  assert_equal(377, n)
+
+  try
+    echo g:alist + 4
+  catch /E745:/
+    n = 388
+  endtry
+  assert_equal(388, n)
+
+  try
+    echo 4 + g:alist
+  catch /E745:/
+    n = 399
+  endtry
+  assert_equal(399, n)
+
+  try
+    echo g:alist.member
+  catch /E715:/
+    n = 400
+  endtry
+  assert_equal(400, n)
+
+  try
+    echo d.member
+  catch /E716:/
+    n = 411
+  endtry
+  assert_equal(411, n)
 enddef
 
 def DeletedFunc(): list<any>
@@ -2029,7 +2084,7 @@ def Test_vim9_comment()
   CheckScriptFailure([
       'vim9script',
       'syntax region Word start=/pat/ end=/pat/# comment',
-      ], 'E475:')
+      ], 'E402:')
 
   CheckScriptSuccess([
       'vim9script',
