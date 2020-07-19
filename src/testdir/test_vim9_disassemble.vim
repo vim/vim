@@ -898,6 +898,27 @@ def Test_disassemble_concat()
   assert_equal('aabb', ConcatString())
 enddef
 
+def StringIndex(): number
+  let s = "abcd"
+  let res = s[1]
+  return res
+enddef
+
+def Test_disassemble_string_index()
+  let instr = execute('disassemble StringIndex')
+  assert_match('StringIndex\_s*' ..
+        'let s = "abcd"\_s*' ..
+        '\d PUSHS "abcd"\_s*' ..
+        '\d STORE $0\_s*' ..
+        'let res = s\[1]\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d STRINDEX\_s*' ..
+        '\d STORE $1\_s*',
+        instr)
+  assert_equal('b', StringIndex())
+enddef
+
 def ListIndex(): number
   let l = [1, 2, 3]
   let res = l[1]
@@ -916,7 +937,7 @@ def Test_disassemble_list_index()
         'let res = l\[1]\_s*' ..
         '\d LOAD $0\_s*' ..
         '\d PUSHNR 1\_s*' ..
-        '\d INDEX\_s*' ..
+        '\d LISTINDEX\_s*' ..
         '\d STORE $1\_s*',
         instr)
   assert_equal(2, ListIndex())
