@@ -1768,8 +1768,11 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
 	if (sp->nextline != NULL
 		&& (*(p = skipwhite(sp->nextline)) == '\\'
 			      || (p[0] == '"' && p[1] == '\\' && p[2] == ' ')
+#ifdef FEAT_EVAL
 			      || (in_vim9script()
-				  && (*p == NUL || vim9_comment_start(p)))))
+				       && (*p == NUL || vim9_comment_start(p)))
+#endif
+			      ))
 	{
 	    garray_T    ga;
 
@@ -1798,8 +1801,11 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
 		    ga_concat(&ga, p + 1);
 		}
 		else if (!(p[0] == '"' && p[1] == '\\' && p[2] == ' ')
+#ifdef FEAT_EVAL
 			&& !(in_vim9script()
-				      && (*p == NUL || vim9_comment_start(p))))
+				       && (*p == NUL || vim9_comment_start(p)))
+#endif
+			)
 		    break;
 		/* drop a # comment or "\ comment line */
 	    }
