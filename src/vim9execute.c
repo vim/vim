@@ -2122,7 +2122,44 @@ call_def_function(
 		}
 		break;
 
-	    case ISN_INDEX:
+	    case ISN_STRINDEX:
+		{
+		    char_u	*s;
+		    varnumber_T	n;
+		    char_u	*res;
+
+		    // string index: string is at stack-2, index at stack-1
+		    tv = STACK_TV_BOT(-2);
+		    if (tv->v_type != VAR_STRING)
+		    {
+			emsg(_(e_stringreq));
+			goto on_error;
+		    }
+		    s = tv->vval.v_string;
+
+		    tv = STACK_TV_BOT(-1);
+		    if (tv->v_type != VAR_NUMBER)
+		    {
+			emsg(_(e_number_exp));
+			goto on_error;
+		    }
+		    n = tv->vval.v_number;
+
+		    // The resulting variable is a string of a single
+		    // character.  If the index is too big or negative the
+		    // result is empty.
+		    if (n < 0 || n >= (varnumber_T)STRLEN(s))
+			res = NULL;
+		    else
+			res = vim_strnsave(s + n, 1);
+		    --ectx.ec_stack.ga_len;
+		    tv = STACK_TV_BOT(-1);
+		    vim_free(tv->vval.v_string);
+		    tv->vval.v_string = res;
+		}
+		break;
+
+	    case ISN_LISTINDEX:
 		{
 		    list_T	*list;
 		    varnumber_T	n;
@@ -2947,7 +2984,8 @@ ex_disassemble(exarg_T *eap)
 
 	    // expression operations
 	    case ISN_CONCAT: smsg("%4d CONCAT", current); break;
-	    case ISN_INDEX: smsg("%4d INDEX", current); break;
+	    case ISN_STRINDEX: smsg("%4d STRINDEX", current); break;
+	    case ISN_LISTINDEX: smsg("%4d LISTINDEX", current); break;
 	    case ISN_SLICE: smsg("%4d SLICE %lld",
 					 current, iptr->isn_arg.number); break;
 	    case ISN_GETITEM: smsg("%4d ITEM %lld",

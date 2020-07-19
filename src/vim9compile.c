@@ -3752,6 +3752,7 @@ compile_subscript(
 
 	    // list index: list[123]
 	    // dict member: dict[key]
+	    // string index: text[123]
 	    // TODO: blob index
 	    // TODO: more arguments
 	    // TODO: recognize list or dict at runtime
@@ -3799,11 +3800,17 @@ compile_subscript(
 		if (generate_instr_drop(cctx, ISN_MEMBER, 1) == FAIL)
 		    return FAIL;
 	    }
+	    else if (vtype == VAR_STRING)
+	    {
+		*typep = &t_number;
+		if (generate_instr_drop(cctx, ISN_STRINDEX, 1) == FAIL)
+		    return FAIL;
+	    }
 	    else if (vtype == VAR_LIST || *typep == &t_any)
 	    {
 		if ((*typep)->tt_type == VAR_LIST)
 		    *typep = (*typep)->tt_member;
-		if (generate_instr_drop(cctx, ISN_INDEX, 1) == FAIL)
+		if (generate_instr_drop(cctx, ISN_LISTINDEX, 1) == FAIL)
 		    return FAIL;
 	    }
 	    else
@@ -7542,7 +7549,8 @@ delete_instr(isn_T *isn)
 	case ISN_EXECCONCAT:
 	case ISN_EXECUTE:
 	case ISN_FOR:
-	case ISN_INDEX:
+	case ISN_LISTINDEX:
+	case ISN_STRINDEX:
 	case ISN_GETITEM:
 	case ISN_SLICE:
 	case ISN_MEMBER:

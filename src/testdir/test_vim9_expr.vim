@@ -1509,6 +1509,15 @@ def Test_expr7_trailing()
   assert_equal(123, d.key)
 enddef
 
+def Test_expr7_subscript()
+  let text = 'abcdef'
+  assert_equal('', text[-1])
+  assert_equal('a', text[0])
+  assert_equal('e', text[4])
+  assert_equal('f', text[5])
+  assert_equal('', text[6])
+enddef
+
 def Test_expr7_subscript_linebreak()
   let range = range(
   		3)
