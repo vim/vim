@@ -1913,7 +1913,7 @@ eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext)
 	    && evalarg != NULL
 	    && (evalarg->eval_cookie != NULL || evalarg->eval_cctx != NULL)
 	    && (*arg == NUL || (VIM_ISWHITE(arg[-1])
-					     && *arg == '#' && arg[1] != '{')))
+						  && vim9_comment_start(arg))))
     {
 	char_u *p;
 

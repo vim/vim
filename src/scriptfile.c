@@ -1763,10 +1763,13 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
 	// backslash. We always need to read the next line, keep it in
 	// sp->nextline.
 	/* Also check for a comment in between continuation lines: "\ */
+	// Also check for a Vim9 comment and empty line.
 	sp->nextline = get_one_sourceline(sp);
 	if (sp->nextline != NULL
 		&& (*(p = skipwhite(sp->nextline)) == '\\'
-			      || (p[0] == '"' && p[1] == '\\' && p[2] == ' ')))
+			      || (p[0] == '"' && p[1] == '\\' && p[2] == ' ')
+			      || (in_vim9script()
+				  && (*p == NUL || vim9_comment_start(p)))))
 	{
 	    garray_T    ga;
 
@@ -1794,8 +1797,11 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
 		    }
 		    ga_concat(&ga, p + 1);
 		}
-		else if (p[0] != '"' || p[1] != '\\' || p[2] != ' ')
+		else if (!(p[0] == '"' && p[1] == '\\' && p[2] == ' ')
+			&& !(in_vim9script()
+				      && (*p == NUL || vim9_comment_start(p))))
 		    break;
+		/* drop a # comment or "\ comment line */
 	    }
 	    ga_append(&ga, NUL);
 	    vim_free(line);

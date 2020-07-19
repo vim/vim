@@ -2463,7 +2463,7 @@ free_imported(cctx_T *cctx)
 /*
  * Return TRUE if "p" points at a "#" but not at "#{".
  */
-    static int
+    int
 vim9_comment_start(char_u *p)
 {
     return p[0] == '#' && p[1] != '{';
