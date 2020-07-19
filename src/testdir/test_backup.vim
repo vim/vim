@@ -61,14 +61,11 @@ endfunc
 
 " Test for using a non-existing directory as a backup directory
 func Test_non_existing_backupdir()
-  CheckNotBSD
-  let save_backup = &backupdir
-  set backupdir=./non_existing_dir
+  set backupdir=./non_existing_dir backupskip=
   call writefile(['line1'], 'Xfile')
   new Xfile
-  " TODO: write doesn't fail in Cirrus FreeBSD CI test
   call assert_fails('write', 'E510:')
-  let &backupdir = save_backup
+  set backupdir& backupskip&
   call delete('Xfile')
 endfunc
 
