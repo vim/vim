@@ -2122,7 +2122,7 @@ theend:
     return ret;
 }
 
-    static char_u *
+    char_u *
 printable_func_name(ufunc_T *fp)
 {
     return fp->uf_name_exp != NULL ? fp->uf_name_exp : fp->uf_name;

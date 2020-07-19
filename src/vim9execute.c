@@ -714,8 +714,7 @@ call_def_function(
     {
 	if (called_emsg == called_emsg_before)
 	    semsg(_("E1091: Function is not compiled: %s"),
-		    ufunc->uf_name_exp == NULL
-					? ufunc->uf_name : ufunc->uf_name_exp);
+						   printable_func_name(ufunc));
 	return FAIL;
     }
 
@@ -1139,10 +1138,10 @@ call_def_function(
 
 		    switch (iptr->isn_type)
 		    {
-			case ISN_LOADG: d = get_globvar_dict(); break;
-			case ISN_LOADB: d = &curbuf->b_vars; break;
-			case ISN_LOADW: d = &curwin->w_vars; break;
-			case ISN_LOADT: d = &curtab->tp_vars; break;
+			case ISN_LOADGDICT: d = get_globvar_dict(); break;
+			case ISN_LOADBDICT: d = curbuf->b_vars; break;
+			case ISN_LOADWDICT: d = curwin->w_vars; break;
+			case ISN_LOADTDICT: d = curtab->tp_vars; break;
 			default:  // Cannot reach here
 			    goto failed;
 		    }
@@ -2497,6 +2496,10 @@ failed_early:
 
     vim_free(ectx.ec_stack.ga_data);
     vim_free(ectx.ec_trystack.ga_data);
+
+    if (ret != OK && called_emsg == called_emsg_before)
+	semsg(_("E1099: Unknown error while executing %s"),
+						   printable_func_name(ufunc));
     return ret;
 }
 

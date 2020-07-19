@@ -22,6 +22,7 @@ int get_callback_depth(void);
 int call_callback(callback_T *callback, int len, typval_T *rettv, int argcount, typval_T *argvars);
 void user_func_error(int error, char_u *name);
 int call_func(char_u *funcname, int len, typval_T *rettv, int argcount_in, typval_T *argvars_in, funcexe_T *funcexe);
+char_u *printable_func_name(ufunc_T *fp);
 char_u *trans_function_name(char_u **pp, int *is_global, int skip, int flags, funcdict_T *fdp, partial_T **partial);
 char_u *untrans_function_name(char_u *name);
 ufunc_T *def_function(exarg_T *eap, char_u *name_arg);
