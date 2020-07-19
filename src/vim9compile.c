@@ -3748,6 +3748,7 @@ compile_subscript(
 	{
 	    garray_T	*stack = &cctx->ctx_type_stack;
 	    type_T	**typep;
+	    vartype_T	vtype;
 
 	    // list index: list[123]
 	    // dict member: dict[key]
@@ -3773,20 +3774,36 @@ compile_subscript(
 	    }
 	    *arg = *arg + 1;
 
+	    // We can index a list and a dict.  If we don't know the type
+	    // we can use the index value type.
+	    // TODO: If we don't know use an instruction to figure it out at
+	    // runtime.
 	    typep = ((type_T **)stack->ga_data) + stack->ga_len - 2;
-	    if ((*typep)->tt_type == VAR_LIST || (*typep) == &t_any)
+	    vtype = (*typep)->tt_type;
+	    if (*typep == &t_any)
+	    {
+		type_T *valtype = ((type_T **)stack->ga_data)
+							   [stack->ga_len - 1];
+		if (valtype == &t_string)
+		    vtype = VAR_DICT;
+	    }
+	    if (vtype == VAR_DICT)
+	    {
+		if ((*typep)->tt_type == VAR_DICT)
+		    *typep = (*typep)->tt_member;
+		else if (need_type(*typep, &t_dict_any, -2, cctx, FALSE)
+								       == FAIL)
+		    return FAIL;
+		if (may_generate_2STRING(-1, cctx) == FAIL)
+		    return FAIL;
+		if (generate_instr_drop(cctx, ISN_MEMBER, 1) == FAIL)
+		    return FAIL;
+	    }
+	    else if (vtype == VAR_LIST || *typep == &t_any)
 	    {
 		if ((*typep)->tt_type == VAR_LIST)
 		    *typep = (*typep)->tt_member;
 		if (generate_instr_drop(cctx, ISN_INDEX, 1) == FAIL)
-		    return FAIL;
-	    }
-	    else if ((*typep)->tt_type == VAR_DICT)
-	    {
-		*typep = (*typep)->tt_member;
-		if (may_generate_2STRING(-1, cctx) == FAIL)
-		    return FAIL;
-		if (generate_instr_drop(cctx, ISN_MEMBER, 1) == FAIL)
 		    return FAIL;
 	    }
 	    else
@@ -5386,7 +5403,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		}
 
 		stacktype = stack->ga_len == 0 ? &t_void
-			  : ((type_T **)stack->ga_data)[stack->ga_len - 1];
+			      : ((type_T **)stack->ga_data)[stack->ga_len - 1];
 		if (lvar != NULL && (is_decl || !has_type))
 		{
 		    if (new_local && !has_type)

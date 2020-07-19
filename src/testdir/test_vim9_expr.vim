@@ -1115,7 +1115,7 @@ def Test_expr7_list()
   call CheckDefExecFailure(["let x = g:anint[3]"], 'E714:')
   call CheckDefFailure(["let x = g:list_mixed[xxx]"], 'E1001:')
   call CheckDefFailure(["let x = [1,2,3]"], 'E1069:')
-  call CheckDefExecFailure(["let x = g:list_mixed['xx']"], 'E39:')
+  call CheckDefExecFailure(["let x = g:list_mixed['xx']"], 'E1029:')
   call CheckDefFailure(["let x = g:list_mixed["], 'E1097:')
   call CheckDefFailure(["let x = g:list_mixed[0"], 'E1097:')
   call CheckDefExecFailure(["let x = g:list_empty[3]"], 'E684:')
@@ -1172,6 +1172,9 @@ def Test_expr7_lambda()
 		&& v % 2 == 0 ? 111 : 222
 	})
   assert_equal([111, 222, 111], ll)
+
+  let dl = [{'key': 0}, {'key': 22}]->filter({ _, v -> v['key'] })
+  assert_equal([{'key': 22}], dl)
 
   call CheckDefFailure(["filter([1, 2], {k,v -> 1})"], 'E1069:')
 enddef
