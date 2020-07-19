@@ -147,6 +147,7 @@ static char e_var_notfound[] = N_("E1001: variable not found: %s");
 static char e_syntax_at[] = N_("E1002: Syntax error at %s");
 static char e_used_as_arg[] = N_("E1006: %s is used as an argument");
 static char e_cannot_use_void[] = N_("E1031: Cannot use void value");
+static char e_namespace[] = N_("E1075: Namespace not supported: %s");
 
 static void delete_def_function_contents(dfunc_T *dfunc);
 static void arg_type_mismatch(type_T *expected, type_T *actual, int argidx);
@@ -2781,7 +2782,7 @@ generate_funcref(cctx_T *cctx, char_u *name)
 compile_load(char_u **arg, char_u *end_arg, cctx_T *cctx, int error)
 {
     type_T	*type;
-    char_u	*name;
+    char_u	*name = NULL;
     char_u	*end = end_arg;
     int		res = FAIL;
     int		prev_called_emsg = called_emsg;
@@ -2790,48 +2791,52 @@ compile_load(char_u **arg, char_u *end_arg, cctx_T *cctx, int error)
     {
 	// load namespaced variable
 	if (end <= *arg + 2)
-	    name = vim_strsave((char_u *)"[empty]");
-	else
-	    name = vim_strnsave(*arg + 2, end - (*arg + 2));
-	if (name == NULL)
-	    return FAIL;
+	{
+	    isntype_T  isn_type;
 
-	if (**arg == 'v')
-	{
-	    res = generate_LOADV(cctx, name, error);
-	}
-	else if (**arg == 'g')
-	{
-	    // Global variables can be defined later, thus we don't check if it
-	    // exists, give error at runtime.
-	    res = generate_LOAD(cctx, ISN_LOADG, 0, name, &t_any);
-	}
-	else if (**arg == 's')
-	{
-	    res = compile_load_scriptvar(cctx, name, NULL, NULL, error);
-	}
-	else if (**arg == 'b')
-	{
-	    // Buffer-local variables can be defined later, thus we don't check
-	    // if it exists, give error at runtime.
-	    res = generate_LOAD(cctx, ISN_LOADB, 0, name, &t_any);
-	}
-	else if (**arg == 'w')
-	{
-	    // Window-local variables can be defined later, thus we don't check
-	    // if it exists, give error at runtime.
-	    res = generate_LOAD(cctx, ISN_LOADW, 0, name, &t_any);
-	}
-	else if (**arg == 't')
-	{
-	    // Tabpage-local variables can be defined later, thus we don't
-	    // check if it exists, give error at runtime.
-	    res = generate_LOAD(cctx, ISN_LOADT, 0, name, &t_any);
+	    switch (**arg)
+	    {
+		case 'g': isn_type = ISN_LOADGDICT; break;
+		case 'w': isn_type = ISN_LOADWDICT; break;
+		case 't': isn_type = ISN_LOADTDICT; break;
+		case 'b': isn_type = ISN_LOADBDICT; break;
+		default:
+		    semsg(_(e_namespace), *arg);
+		    goto theend;
+	    }
+	    if (generate_instr_type(cctx, isn_type, &t_dict_any) == NULL)
+		goto theend;
+	    res = OK;
 	}
 	else
 	{
-	    semsg("E1075: Namespace not supported: %s", *arg);
-	    goto theend;
+	    isntype_T  isn_type = ISN_DROP;
+
+	    name = vim_strnsave(*arg + 2, end - (*arg + 2));
+	    if (name == NULL)
+		return FAIL;
+
+	    switch (**arg)
+	    {
+		case 'v': res = generate_LOADV(cctx, name, error);
+			  break;
+		case 's': res = compile_load_scriptvar(cctx, name,
+							    NULL, NULL, error);
+			  break;
+		case 'g': isn_type = ISN_LOADG; break;
+		case 'w': isn_type = ISN_LOADW; break;
+		case 't': isn_type = ISN_LOADT; break;
+		case 'b': isn_type = ISN_LOADB; break;
+		default:  semsg(_(e_namespace), *arg);
+			  goto theend;
+	    }
+	    if (isn_type != ISN_DROP)
+	    {
+		// Global, Buffer-local, Window-local and Tabpage-local
+		// variables can be defined later, thus we don't check if it
+		// exists, give error at runtime.
+		res = generate_LOAD(cctx, isn_type, 0, name, &t_any);
+	    }
 	}
     }
     else
@@ -7556,10 +7561,14 @@ delete_instr(isn_T *isn)
 	case ISN_MEMBER:
 	case ISN_JUMP:
 	case ISN_LOAD:
+	case ISN_LOADBDICT:
+	case ISN_LOADGDICT:
 	case ISN_LOADOUTER:
-	case ISN_LOADSCRIPT:
 	case ISN_LOADREG:
+	case ISN_LOADSCRIPT:
+	case ISN_LOADTDICT:
 	case ISN_LOADV:
+	case ISN_LOADWDICT:
 	case ISN_NEGATENR:
 	case ISN_NEWDICT:
 	case ISN_NEWLIST:

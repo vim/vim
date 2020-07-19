@@ -21,9 +21,13 @@ def s:ScriptFuncLoad(arg: string)
   echo v:version
   echo s:scriptvar
   echo g:globalvar
+  echo get(g:, "global")
   echo b:buffervar
+  echo get(b:, "buffer")
   echo w:windowvar
+  echo get(w:, "window")
   echo t:tabpagevar
+  echo get(t:, "tab")
   echo &tabstop
   echo $ENVVAR
   echo @z
@@ -47,9 +51,25 @@ def Test_disassemble_load()
         ' LOADV v:version.*' ..
         ' LOADS s:scriptvar from .*test_vim9_disassemble.vim.*' ..
         ' LOADG g:globalvar.*' ..
+        'echo get(g:, "global")\_s*' ..
+        '\d\+ LOAD g:\_s*' ..
+        '\d\+ PUSHS "global"\_s*' ..
+        '\d\+ BCALL get(argc 2).*' ..
         ' LOADB b:buffervar.*' ..
+        'echo get(b:, "buffer")\_s*' ..
+        '\d\+ LOAD b:\_s*' ..
+        '\d\+ PUSHS "buffer"\_s*' ..
+        '\d\+ BCALL get(argc 2).*' ..
         ' LOADW w:windowvar.*' ..
+        'echo get(w:, "window")\_s*' ..
+        '\d\+ LOAD w:\_s*' ..
+        '\d\+ PUSHS "window"\_s*' ..
+        '\d\+ BCALL get(argc 2).*' ..
         ' LOADT t:tabpagevar.*' ..
+        'echo get(t:, "tab")\_s*' ..
+        '\d\+ LOAD t:\_s*' ..
+        '\d\+ PUSHS "tab"\_s*' ..
+        '\d\+ BCALL get(argc 2).*' ..
         ' LOADENV $ENVVAR.*' ..
         ' LOADREG @z.*',
         res)

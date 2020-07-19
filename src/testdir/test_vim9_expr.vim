@@ -1345,6 +1345,32 @@ def Test_expr7_register()
   assert_equal('register a', @a)
 enddef
 
+def Test_expr7_namespace()
+  g:some_var = 'some'
+  assert_equal('some', get(g:, 'some_var'))
+  assert_equal('some', get(g:, 'some_var', 'xxx'))
+  assert_equal('xxx', get(g:, 'no_var', 'xxx'))
+  unlet g:some_var
+
+  b:some_var = 'some'
+  assert_equal('some', get(b:, 'some_var'))
+  assert_equal('some', get(b:, 'some_var', 'xxx'))
+  assert_equal('xxx', get(b:, 'no_var', 'xxx'))
+  unlet b:some_var
+
+  w:some_var = 'some'
+  assert_equal('some', get(w:, 'some_var'))
+  assert_equal('some', get(w:, 'some_var', 'xxx'))
+  assert_equal('xxx', get(w:, 'no_var', 'xxx'))
+  unlet w:some_var
+
+  t:some_var = 'some'
+  assert_equal('some', get(t:, 'some_var'))
+  assert_equal('some', get(t:, 'some_var', 'xxx'))
+  assert_equal('xxx', get(t:, 'no_var', 'xxx'))
+  unlet t:some_var
+enddef
+
 def Test_expr7_parens()
   # (expr)
   assert_equal(4, (6 * 4) / 6)

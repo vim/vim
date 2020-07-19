@@ -1089,6 +1089,7 @@ call_def_function(
 		    dictitem_T *di = NULL;
 		    hashtab_T *ht = NULL;
 		    char namespace;
+
 		    switch (iptr->isn_type)
 		    {
 			case ISN_LOADG:
@@ -1125,6 +1126,33 @@ call_def_function(
 			copy_tv(&di->di_tv, STACK_TV_BOT(0));
 			++ectx.ec_stack.ga_len;
 		    }
+		}
+		break;
+
+	    // load g:/b:/w:/t: namespace
+	    case ISN_LOADGDICT:
+	    case ISN_LOADBDICT:
+	    case ISN_LOADWDICT:
+	    case ISN_LOADTDICT:
+		{
+		    dict_T *d = NULL;
+
+		    switch (iptr->isn_type)
+		    {
+			case ISN_LOADG: d = get_globvar_dict(); break;
+			case ISN_LOADB: d = &curbuf->b_vars; break;
+			case ISN_LOADW: d = &curwin->w_vars; break;
+			case ISN_LOADT: d = &curtab->tp_vars; break;
+			default:  // Cannot reach here
+			    goto failed;
+		    }
+		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
+			goto failed;
+		    tv = STACK_TV_BOT(0);
+		    tv->v_type = VAR_DICT;
+		    tv->v_lock = 0;
+		    tv->vval.v_dict = d;
+		    ++ectx.ec_stack.ga_len;
 		}
 		break;
 
@@ -1166,6 +1194,7 @@ call_def_function(
 		    goto failed;
 		tv = STACK_TV_BOT(0);
 		tv->v_type = VAR_STRING;
+		tv->v_lock = 0;
 		tv->vval.v_string = get_reg_contents(
 					  iptr->isn_arg.number, GREG_EXPR_SRC);
 		++ectx.ec_stack.ga_len;
@@ -1411,6 +1440,7 @@ call_def_function(
 		if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 		    goto failed;
 		tv = STACK_TV_BOT(0);
+		tv->v_lock = 0;
 		++ectx.ec_stack.ga_len;
 		switch (iptr->isn_type)
 		{
@@ -1529,6 +1559,7 @@ call_def_function(
 			++ectx.ec_stack.ga_len;
 		    tv = STACK_TV_BOT(-1);
 		    tv->v_type = VAR_DICT;
+		    tv->v_lock = 0;
 		    tv->vval.v_dict = dict;
 		    ++dict->dv_refcount;
 		}
@@ -1673,6 +1704,7 @@ call_def_function(
 		    ++ectx.ec_stack.ga_len;
 		    tv->vval.v_partial = pt;
 		    tv->v_type = VAR_PARTIAL;
+		    tv->v_lock = 0;
 		}
 		break;
 
@@ -1719,6 +1751,7 @@ call_def_function(
 			// non-materialized range() list
 			tv = STACK_TV_BOT(0);
 			tv->v_type = VAR_NUMBER;
+			tv->v_lock = 0;
 			tv->vval.v_number = list_find_nr(
 					     list, idxtv->vval.v_number, NULL);
 			++ectx.ec_stack.ga_len;
@@ -1762,6 +1795,7 @@ call_def_function(
 		tv = STACK_TV_BOT(0);
 		++ectx.ec_stack.ga_len;
 		tv->v_type = VAR_STRING;
+		tv->v_lock = 0;
 		tv->vval.v_string = vim_strsave(
 					   (char_u *)current_exception->value);
 		break;
@@ -2625,6 +2659,18 @@ ex_disassemble(exarg_T *eap)
 		break;
 	    case ISN_LOADT:
 		smsg("%4d LOADT t:%s", current, iptr->isn_arg.string);
+		break;
+	    case ISN_LOADGDICT:
+		smsg("%4d LOAD g:", current);
+		break;
+	    case ISN_LOADBDICT:
+		smsg("%4d LOAD b:", current);
+		break;
+	    case ISN_LOADWDICT:
+		smsg("%4d LOAD w:", current);
+		break;
+	    case ISN_LOADTDICT:
+		smsg("%4d LOAD t:", current);
 		break;
 	    case ISN_LOADOPT:
 		smsg("%4d LOADOPT %s", current, iptr->isn_arg.string);

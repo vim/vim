@@ -26,6 +26,10 @@ typedef enum {
     ISN_LOADB,	    // push b: variable isn_arg.string
     ISN_LOADW,	    // push w: variable isn_arg.string
     ISN_LOADT,	    // push t: variable isn_arg.string
+    ISN_LOADGDICT,  // push g: dict
+    ISN_LOADBDICT,  // push b: dict
+    ISN_LOADWDICT,  // push w: dict
+    ISN_LOADTDICT,  // push t: dict
     ISN_LOADS,	    // push s: variable isn_arg.loadstore
     ISN_LOADOUTER,  // push variable from outer scope isn_arg.number
     ISN_LOADSCRIPT, // push script-local variable isn_arg.script.
