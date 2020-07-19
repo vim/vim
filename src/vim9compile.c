@@ -560,6 +560,50 @@ check_type(type_T *expected, type_T *actual, int give_msg)
     return ret;
 }
 
+/*
+ * Return FAIl if "expected" and "actual" don't match.
+ * TODO: better type comparison
+ */
+    int
+check_argtype(type_T *expected, typval_T *actual_tv)
+{
+    type_T  actual;
+    type_T  member;
+
+    // TODO: should should be done with more levels
+    CLEAR_FIELD(actual);
+    actual.tt_type = actual_tv->v_type;
+    if (actual_tv->v_type == VAR_LIST
+	    && actual_tv->vval.v_list != NULL
+	    && actual_tv->vval.v_list->lv_first != NULL)
+    {
+	// Use the type of the first member, it is the most specific.
+	CLEAR_FIELD(member);
+	member.tt_type = actual_tv->vval.v_list->lv_first->li_tv.v_type;
+	member.tt_member = &t_any;
+	actual.tt_member = &member;
+    }
+    else if (actual_tv->v_type == VAR_DICT
+	    && actual_tv->vval.v_dict != NULL
+	    && actual_tv->vval.v_dict->dv_hashtab.ht_used > 0)
+    {
+	dict_iterator_T iter;
+	typval_T	*value;
+
+	// Use the type of the first value, it is the most specific.
+	dict_iterate_start(actual_tv, &iter);
+	dict_iterate_next(&iter, &value);
+	CLEAR_FIELD(member);
+	member.tt_type = value->v_type;
+	member.tt_member = &t_any;
+	actual.tt_member = &member;
+    }
+    else
+	actual.tt_member = &t_any;
+    return check_type(expected, &actual, TRUE);
+}
+
+
 /////////////////////////////////////////////////////////////////////
 // Following generate_ functions expect the caller to call ga_grow().
 

@@ -407,6 +407,17 @@ def Test_vim9script_call_fail_decl()
   delete('Xcall_decl.vim')
 enddef
 
+def Test_vim9script_call_fail_type()
+  let lines =<< trim END
+    vim9script
+    def MyFunc(arg: string)
+      echo arg
+    enddef
+    MyFunc(1234)
+  END
+  CheckScriptFailure(lines, 'E1013: type mismatch, expected string but got number')
+enddef
+
 def Test_vim9script_call_fail_const()
   let lines =<< trim END
     vim9script
