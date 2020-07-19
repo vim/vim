@@ -29,7 +29,7 @@ def Test_assignment()
   call CheckDefFailure(['let x:string = "x"'], 'E1069:')
   call CheckDefFailure(['let a:string = "x"'], 'E1069:')
 
-  let a: number = 6
+  let a: number = 6 #comment
   assert_equal(6, a)
 
   if has('channel')
@@ -44,7 +44,7 @@ def Test_assignment()
   let Funky2: func = function('len')
   let Party2: func = funcref('g:Test_syntax')
 
-  g:newvar = 'new'
+  g:newvar = 'new'  #comment
   assert_equal('new', g:newvar)
 
   assert_equal('yes', g:existing)
@@ -819,6 +819,22 @@ def Test_cexpr_vimscript()
   END
   CheckScriptSuccess(lines)
   set errorformat&
+enddef
+
+def Test_list_vimscript()
+  # checks line continuation and comments
+  let lines =<< trim END
+      vim9script
+      let mylist = [
+            'one',
+            # comment
+            'two', # empty line follows
+
+            'three',
+            ]
+      assert_equal(['one', 'two', 'three'], mylist)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 if has('channel')

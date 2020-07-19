@@ -5706,7 +5706,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    goto theend;
     }
 
-    ret = end;
+    ret = skipwhite(end);
 
 theend:
     vim_free(name);
