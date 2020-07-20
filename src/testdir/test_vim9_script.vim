@@ -169,6 +169,18 @@ def Test_assignment_list()
   let somelist = rand() > 0 ? [1, 2, 3] : ['a', 'b', 'c']
 enddef
 
+def Test_assignment_list_vim9script()
+  let lines =<< trim END
+    vim9script
+    let v1: number
+    let v2: number
+    let v3: number
+    [v1, v2, v3] = [1, 2, 3]
+    assert_equal([1, 2, 3], [v1, v2, v3])
+  END
+  call CheckScriptSuccess(lines)
+enddef
+
 def Test_assignment_dict()
   let dict1: dict<bool> = #{one: false, two: true}
   let dict2: dict<number> = #{one: 1, two: 2}

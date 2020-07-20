@@ -3282,10 +3282,19 @@ find_ex_command(
 	// after the "]" by to_name_const_end(): check if a "=" follows.
 	// If "[...]" has a line break "p" still points at the "[" and it can't
 	// be an assignment.
-	if (*eap->cmd == '[' && (p == eap->cmd || *skipwhite(p) != '='))
+	if (*eap->cmd == '[')
 	{
-	    eap->cmdidx = CMD_eval;
-	    return eap->cmd;
+	    p = to_name_const_end(eap->cmd);
+	    if (p == eap->cmd || *skipwhite(p) != '=')
+	    {
+		eap->cmdidx = CMD_eval;
+		return eap->cmd;
+	    }
+	    if (p > eap->cmd && *skipwhite(p) == '=')
+	    {
+		eap->cmdidx = CMD_let;
+		return eap->cmd;
+	    }
 	}
 
 	// Recognize an assignment if we recognize the variable name:
