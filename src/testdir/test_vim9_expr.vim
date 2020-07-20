@@ -1176,6 +1176,10 @@ def Test_expr7_lambda()
   let dl = [{'key': 0}, {'key': 22}]->filter({ _, v -> v['key'] })
   assert_equal([{'key': 22}], dl)
 
+  dl = [{'key': 12}, {'foo': 34}]
+  assert_equal([{'key': 12}], filter(dl,
+	{_, v -> has_key(v, 'key') ? v['key'] == 12 : 0}))
+
   call CheckDefFailure(["filter([1, 2], {k,v -> 1})"], 'E1069:')
 enddef
 

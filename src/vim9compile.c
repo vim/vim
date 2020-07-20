@@ -3797,9 +3797,12 @@ compile_subscript(
 	    {
 		if ((*typep)->tt_type == VAR_DICT)
 		    *typep = (*typep)->tt_member;
-		else if (need_type(*typep, &t_dict_any, -2, cctx, FALSE)
-								       == FAIL)
-		    return FAIL;
+		else
+		{
+		    if (need_type(*typep, &t_dict_any, -2, cctx, FALSE) == FAIL)
+			return FAIL;
+		    *typep = &t_any;
+		}
 		if (may_generate_2STRING(-1, cctx) == FAIL)
 		    return FAIL;
 		if (generate_instr_drop(cctx, ISN_MEMBER, 1) == FAIL)
