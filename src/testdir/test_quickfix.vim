@@ -4974,6 +4974,15 @@ func Xtest_qftextfunc(cchar)
   Xclose
   set quickfixtextfunc&
 
+  " use a lambda function that returns a list with empty strings
+  set quickfixtextfunc={d\ ->\ ['',\ '']}
+  Xexpr ['F1:10:2:green', 'F1:20:4:blue']
+  Xwindow
+  call assert_equal(['F1|10 col 2| green', 'F1|20 col 4| blue'],
+        \ getline(1, '$'))
+  Xclose
+  set quickfixtextfunc&
+
   " set the per-quickfix list text function to a lambda function
   call g:Xsetlist([], ' ',
         \ {'quickfixtextfunc' :
