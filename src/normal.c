@@ -1026,7 +1026,12 @@ getcount:
 	out_flush();
 #endif
     if (ca.cmdchar != K_IGNORE)
-	did_cursorhold = save_did_cursorhold;
+    {
+	if (ex_normal_busy)
+	    did_cursorhold = save_did_cursorhold;
+	else
+	    did_cursorhold = FALSE;
+    }
 
     State = NORMAL;
 
