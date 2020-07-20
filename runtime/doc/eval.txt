@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Jul 09
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Jul 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -94,8 +94,9 @@ the Number.  Examples:
 	Number 0	-->	String "0" ~
 	Number -1	-->	String "-1" ~
 							*octal*
-Conversion from a String to a Number is done by converting the first digits to
-a number.  Hexadecimal "0xf9", Octal "017" or "0o17", and Binary "0b10"
+Conversion from a String to a Number only happens in legacy Vim script, not in
+Vim9 script.  It is done by converting the first digits to a number.
+Hexadecimal "0xf9", Octal "017" or "0o17", and Binary "0b10"
 numbers are recognized (NOTE: when using |scriptversion-4| octal with a
 leading "0" is not recognized).  If the String doesn't start with digits, the
 result is zero.
@@ -2831,7 +2832,7 @@ stridx({haystack}, {needle} [, {start}])
 string({expr})			String	String representation of {expr} value
 strlen({expr})			Number	length of the String {expr}
 strpart({str}, {start} [, {len}])
-				String	{len} characters of {str} at {start}
+				String	{len} bytes of {str} at byte {start}
 strptime({format}, {timestring})
 				Number	Convert {timestring} to unix timestamp
 strridx({haystack}, {needle} [, {start}])
@@ -9183,7 +9184,8 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 				the last quickfix list.
 		    quickfixtextfunc
 				function to get the text to display in the
-				quickfix window.  Refer to
+				quickfix window.  The value can be the name of
+				a function or a funcref or a lambda.  Refer to
 				|quickfix-window-function| for an explanation
 				of how to write the function and an example.
 		    title	quickfix list title text. See |quickfix-title|

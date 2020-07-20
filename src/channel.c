@@ -1101,27 +1101,6 @@ channel_open(
     return channel;
 }
 
-/*
- * Copy callback from "src" to "dest", incrementing the refcounts.
- */
-    static void
-copy_callback(callback_T *dest, callback_T *src)
-{
-    dest->cb_partial = src->cb_partial;
-    if (dest->cb_partial != NULL)
-    {
-	dest->cb_name = src->cb_name;
-	dest->cb_free_name = FALSE;
-	++dest->cb_partial->pt_refcount;
-    }
-    else
-    {
-	dest->cb_name = vim_strsave(src->cb_name);
-	dest->cb_free_name = TRUE;
-	func_ref(src->cb_name);
-    }
-}
-
     static void
 free_set_callback(callback_T *cbp, callback_T *callback)
 {

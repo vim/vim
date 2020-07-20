@@ -2255,6 +2255,14 @@ did_set_string_option(
 # endif
 #endif
 
+#ifdef FEAT_QUICKFIX
+    else if (varp == &p_qftf)
+    {
+	if (qf_process_qftf_option() == FALSE)
+	    errmsg = e_invarg;
+    }
+#endif
+
     // Options that are a list of flags.
     else
     {

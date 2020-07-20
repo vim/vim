@@ -82,7 +82,7 @@ typedef struct qf_list_S
     char_u	*qf_title;	// title derived from the command that created
 				// the error list or set by setqflist
     typval_T	*qf_ctx;	// context set by setqflist/setloclist
-    char_u	*qf_qftf;	// 'quickfixtextfunc' setting for this list
+    callback_T  qftf_cb;	// 'quickfixtextfunc' callback function
 
     struct dir_stack_T	*qf_dir_stack;
     char_u		*qf_directory;
@@ -160,6 +160,9 @@ static qf_delq_T *qf_delq_head = NULL;
 static int	quickfix_busy = 0;
 
 static efm_T	*fmt_start = NULL; // cached across qf_parse_line() calls
+
+// callback function for 'quickfixtextfunc'
+static callback_T qftf_cb;
 
 static void	qf_new_list(qf_info_T *qi, char_u *qf_title);
 static int	qf_add_entry(qf_list_T *qfl, char_u *dir, char_u *fname, char_u *module, int bufnum, char_u *mesg, long lnum, int col, int vis_col, char_u *pattern, int nr, int type, int valid);
@@ -2279,10 +2282,10 @@ copy_loclist(qf_list_T *from_qfl, qf_list_T *to_qfl)
     }
     else
 	to_qfl->qf_ctx = NULL;
-    if (from_qfl->qf_qftf != NULL)
-	to_qfl->qf_qftf = vim_strsave(from_qfl->qf_qftf);
+    if (from_qfl->qftf_cb.cb_name != NULL)
+	copy_callback(&to_qfl->qftf_cb, &from_qfl->qftf_cb);
     else
-	to_qfl->qf_qftf = NULL;
+	to_qfl->qftf_cb.cb_name = NULL;
 
     if (from_qfl->qf_count)
 	if (copy_loclist_entries(from_qfl, to_qfl) == FAIL)
@@ -3818,7 +3821,7 @@ qf_free(qf_list_T *qfl)
     VIM_CLEAR(qfl->qf_title);
     free_tv(qfl->qf_ctx);
     qfl->qf_ctx = NULL;
-    VIM_CLEAR(qfl->qf_qftf);
+    free_callback(&qfl->qftf_cb);
     qfl->qf_id = 0;
     qfl->qf_changedtick = 0L;
 }
@@ -4349,6 +4352,49 @@ qf_find_buf(qf_info_T *qi)
 }
 
 /*
+ * Process the 'quickfixtextfunc' option value.
+ */
+    int
+qf_process_qftf_option(void)
+{
+    typval_T	*tv;
+    callback_T	cb;
+
+    if (p_qftf == NULL || *p_qftf == NUL)
+    {
+	free_callback(&qftf_cb);
+	return TRUE;
+    }
+
+    if (*p_qftf == '{')
+    {
+	// Lambda expression
+	tv = eval_expr(p_qftf, NULL);
+	if (tv == NULL)
+	    return FALSE;
+    }
+    else
+    {
+	// treat everything else as a function name string
+	tv = alloc_string_tv(vim_strsave(p_qftf));
+	if (tv == NULL)
+	    return FALSE;
+    }
+
+    cb = get_callback(tv);
+    if (cb.cb_name == NULL)
+    {
+	free_tv(tv);
+	return FALSE;
+    }
+
+    free_callback(&qftf_cb);
+    set_callback(&qftf_cb, &cb);
+    free_tv(tv);
+    return TRUE;
+}
+
+/*
  * Update the w:quickfix_title variable in the quickfix/location list window
  */
     static void
@@ -4424,7 +4470,9 @@ qf_buf_add_line(
     int		len;
     buf_T	*errbuf;
 
-    if (qftf_str != NULL)
+    // If the 'quickfixtextfunc' function returned an non-empty custom string
+    // for this entry, then use it.
+    if (qftf_str != NULL && *qftf_str != NUL)
 	vim_strncpy(IObuff, qftf_str, IOSIZE - 1);
     else
     {
@@ -4501,21 +4549,26 @@ qf_buf_add_line(
     return OK;
 }
 
+/*
+ * Call the 'quickfixtextfunc' function to get the list of lines to display in
+ * the quickfix window for the entries 'start_idx' to 'end_idx'.
+ */
     static list_T *
 call_qftf_func(qf_list_T *qfl, int qf_winid, long start_idx, long end_idx)
 {
-    char_u	*qftf = p_qftf;
+    callback_T	*cb = &qftf_cb;
     list_T	*qftf_list = NULL;
 
     // If 'quickfixtextfunc' is set, then use the user-supplied function to get
     // the text to display. Use the local value of 'quickfixtextfunc' if it is
     // set.
-    if (qfl->qf_qftf != NULL)
-	qftf = qfl->qf_qftf;
-    if (qftf != NULL && *qftf != NUL)
+    if (qfl->qftf_cb.cb_name != NULL)
+	cb = &qfl->qftf_cb;
+    if (cb != NULL && cb->cb_name != NULL)
     {
 	typval_T	args[1];
 	dict_T		*d;
+	typval_T	rettv;
 
 	// create the dict argument
 	if ((d = dict_alloc_lock(VAR_FIXED)) == NULL)
@@ -4529,8 +4582,17 @@ call_qftf_func(qf_list_T *qfl, int qf_winid, long start_idx, long end_idx)
 	args[0].v_type = VAR_DICT;
 	args[0].vval.v_dict = d;
 
-	qftf_list = call_func_retlist(qftf, 1, args);
-	--d->dv_refcount;
+	qftf_list = NULL;
+	if (call_callback(cb, 0, &rettv, 1, args) != FAIL)
+	{
+	    if (rettv.v_type == VAR_LIST)
+	    {
+		qftf_list = rettv.vval.v_list;
+		qftf_list->lv_refcount++;
+	    }
+	    clear_tv(&rettv);
+	}
+	dict_unref(d);
     }
 
     return qftf_list;
@@ -4569,6 +4631,7 @@ qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last, int qf_winid)
     if (qfl != NULL)
     {
 	char_u		dirname[MAXPATHL];
+	int		invalid_val = FALSE;
 
 	*dirname = NUL;
 
@@ -4593,9 +4656,15 @@ qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last, int qf_winid)
 	{
 	    char_u	*qftf_str = NULL;
 
-	    if (qftf_li != NULL)
-		// Use the text supplied by the user defined function
+	    // Use the text supplied by the user defined function (if any).
+	    // If the returned value is not string, then ignore the rest
+	    // of the returned values and use the default.
+	    if (qftf_li != NULL && !invalid_val)
+	    {
 		qftf_str = tv_get_string_chk(&qftf_li->li_tv);
+		if (qftf_str == NULL)
+		    invalid_val = TRUE;
+	    }
 
 	    if (qf_buf_add_line(buf, lnum, qfp, dirname, qftf_str) == FAIL)
 		break;
@@ -6515,7 +6584,8 @@ enum {
     QF_GETLIST_TICK	= 0x100,
     QF_GETLIST_FILEWINID	= 0x200,
     QF_GETLIST_QFBUFNR	= 0x400,
-    QF_GETLIST_ALL	= 0x7FF,
+    QF_GETLIST_QFTF	= 0x800,
+    QF_GETLIST_ALL	= 0xFFF,
 };
 
 /*
@@ -6644,6 +6714,9 @@ qf_getprop_keys2flags(dict_T *what, int loclist)
     if (dict_find(what, (char_u *)"qfbufnr", -1) != NULL)
 	flags |= QF_GETLIST_QFBUFNR;
 
+    if (dict_find(what, (char_u *)"quickfixtextfunc", -1) != NULL)
+	flags |= QF_GETLIST_QFTF;
+
     return flags;
 }
 
@@ -6738,6 +6811,8 @@ qf_getprop_defaults(qf_info_T *qi, int flags, int locstack, dict_T *retdict)
 	status = dict_add_number(retdict, "filewinid", 0);
     if ((status == OK) && (flags & QF_GETLIST_QFBUFNR))
 	status = qf_getprop_qfbufnr(qi, retdict);
+    if ((status == OK) && (flags & QF_GETLIST_QFTF))
+	status = dict_add_string(retdict, "quickfixtextfunc", (char_u *)"");
 
     return status;
 }
@@ -6837,6 +6912,28 @@ qf_getprop_idx(qf_list_T *qfl, int eidx, dict_T *retdict)
 }
 
 /*
+ * Return the 'quickfixtextfunc' function of a quickfix/location list
+ */
+    static int
+qf_getprop_qftf(qf_list_T *qfl, dict_T *retdict)
+{
+    int		status;
+
+    if (qfl->qftf_cb.cb_name != NULL)
+    {
+	typval_T	tv;
+
+	put_callback(&qfl->qftf_cb, &tv);
+	status = dict_add_tv(retdict, "quickfixtextfunc", &tv);
+	clear_tv(&tv);
+    }
+    else
+	status = dict_add_string(retdict, "quickfixtextfunc", (char_u *)"");
+
+    return status;
+}
+
+/*
  * Return quickfix/location list details (title) as a
  * dictionary. 'what' contains the details to return. If 'list_idx' is -1,
  * then current list is used. Otherwise the specified list is used.
@@ -6899,6 +6996,8 @@ qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
 	status = qf_getprop_filewinid(wp, qi, retdict);
     if ((status == OK) && (flags & QF_GETLIST_QFBUFNR))
 	status = qf_getprop_qfbufnr(qi, retdict);
+    if ((status == OK) && (flags & QF_GETLIST_QFTF))
+	status = qf_getprop_qftf(qfl, retdict);
 
     return status;
 }
@@ -7260,10 +7359,12 @@ qf_setprop_curidx(qf_info_T *qi, qf_list_T *qfl, dictitem_T *di)
     static int
 qf_setprop_qftf(qf_info_T *qi UNUSED, qf_list_T *qfl, dictitem_T *di)
 {
-    VIM_CLEAR(qfl->qf_qftf);
-    if (di->di_tv.v_type == VAR_STRING
-	    && di->di_tv.vval.v_string != NULL)
-	qfl->qf_qftf = vim_strsave(di->di_tv.vval.v_string);
+    callback_T	cb;
+
+    free_callback(&qfl->qftf_cb);
+    cb = get_callback(&di->di_tv);
+    if (cb.cb_name != NULL && *cb.cb_name != NUL)
+	set_callback(&qfl->qftf_cb, &cb);
 
     return OK;
 }
