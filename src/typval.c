@@ -790,8 +790,16 @@ typval_compare(
 	}
     }
     clear_tv(typ1);
-    typ1->v_type = VAR_NUMBER;
-    typ1->vval.v_number = n1;
+    if (in_vim9script())
+    {
+	typ1->v_type = VAR_BOOL;
+	typ1->vval.v_number = n1 ? VVAL_TRUE : VVAL_FALSE;
+    }
+    else
+    {
+	typ1->v_type = VAR_NUMBER;
+	typ1->vval.v_number = n1;
+    }
 
     return OK;
 }

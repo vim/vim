@@ -651,7 +651,7 @@ def Test_expr4_vimscript()
       vim9script
       let var = 0
       		< 1
-      assert_equal(1, var)
+      assert_equal(true, var)
   END
   CheckScriptSuccess(lines)
 
@@ -659,7 +659,7 @@ def Test_expr4_vimscript()
       vim9script
       let var = 123
       		!= 123
-      assert_equal(0, var)
+      assert_equal(false, var)
   END
   CheckScriptSuccess(lines)
 
@@ -667,7 +667,7 @@ def Test_expr4_vimscript()
       vim9script
       let var = 123 ==
       			123
-      assert_equal(1, var)
+      assert_equal(true, var)
   END
   CheckScriptSuccess(lines)
 
@@ -676,7 +676,7 @@ def Test_expr4_vimscript()
       let list = [1, 2, 3]
       let var = list
       		is list
-      assert_equal(1, var)
+      assert_equal(true, var)
   END
   CheckScriptSuccess(lines)
 
@@ -685,7 +685,7 @@ def Test_expr4_vimscript()
       let myblob = 0z1234
       let var = myblob
       		isnot 0z11
-      assert_equal(1, var)
+      assert_equal(true, var)
   END
   CheckScriptSuccess(lines)
 
@@ -707,6 +707,25 @@ def Test_expr4_vimscript()
       echo 123 is 123
   END
   CheckScriptFailure(lines, 'Cannot use "is" with number')
+
+  # check 'ignorecase' not being used
+  lines =<< trim END
+    vim9script
+    set ignorecase
+    assert_equal(false, 'abc' == 'ABC')
+    assert_equal(false, 'abc' ==# 'ABC')
+    assert_equal(true, 'abc' ==? 'ABC')
+
+    assert_equal(true, 'abc' != 'ABC')
+    assert_equal(true, 'abc' !=# 'ABC')
+    assert_equal(false, 'abc' !=? 'ABC')
+
+    assert_equal(false, 'abc' =~ 'ABC')
+    assert_equal(false, 'abc' =~# 'ABC')
+    assert_equal(true, 'abc' =~? 'ABC')
+    set noignorecase
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 func Test_expr4_fails()

@@ -2017,9 +2017,6 @@ call_def_function(
 
 		    typval_compare(tv1, tv2, exptype, ic);
 		    clear_tv(tv2);
-		    tv1->v_type = VAR_BOOL;
-		    tv1->vval.v_number = tv1->vval.v_number
-						      ? VVAL_TRUE : VVAL_FALSE;
 		    --ectx.ec_stack.ga_len;
 		}
 		break;

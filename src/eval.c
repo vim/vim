@@ -2413,13 +2413,11 @@ eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
     static int
 eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 {
-    typval_T	var2;
     char_u	*p;
     int		getnext;
     int		i;
     exptype_T	type = EXPR_UNKNOWN;
     int		len = 2;
-    int		ic;
 
     /*
      * Get the first variable.
@@ -2472,6 +2470,10 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
      */
     if (type != EXPR_UNKNOWN)
     {
+	typval_T    var2;
+	int	    ic;
+	int	    vim9script = in_vim9script();
+
 	if (getnext)
 	    *arg = eval_next_line(evalarg);
 
@@ -2487,9 +2489,9 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    ic = FALSE;
 	    ++len;
 	}
-	// nothing appended: use 'ignorecase'
+	// nothing appended: use 'ignorecase' if not in Vim script
 	else
-	    ic = p_ic;
+	    ic = vim9script ? FALSE : p_ic;
 
 	/*
 	 * Get the second variable.
@@ -2504,8 +2506,7 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	{
 	    int ret;
 
-	    if (in_vim9script() && check_compare_types(
-						   type, rettv, &var2) == FAIL)
+	    if (vim9script && check_compare_types(type, rettv, &var2) == FAIL)
 	    {
 		ret = FAIL;
 		clear_tv(rettv);
