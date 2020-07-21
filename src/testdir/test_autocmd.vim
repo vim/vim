@@ -2636,4 +2636,33 @@ func Test_close_autocmd_tab()
   %bwipe!
 endfunc
 
+" Test for the CursorHold autocmd
+func Test_CursorHold_autocmd()
+  CheckRunVimInTerminal
+  call writefile(['one', 'two', 'three'], 'Xfile')
+  let before =<< trim END
+    set updatetime=10
+    au CursorHold * call writefile([line('.')], 'Xoutput', 'a')
+  END
+  call writefile(before, 'Xinit')
+  let buf = RunVimInTerminal('-S Xinit Xfile', {})
+  call term_wait(buf)
+  call term_sendkeys(buf, "gg")
+  call term_wait(buf)
+  sleep 50m
+  call term_sendkeys(buf, "j")
+  call term_wait(buf)
+  sleep 50m
+  call term_sendkeys(buf, "j")
+  call term_wait(buf)
+  sleep 50m
+  call StopVimInTerminal(buf)
+
+  call assert_equal(['1', '2', '3'], readfile('Xoutput')[-3:-1])
+
+  call delete('Xinit')
+  call delete('Xoutput')
+  call delete('Xfile')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
