@@ -4235,6 +4235,11 @@ build_stl_str_hl(
 		    for (n = groupitem[groupdepth] + 1; n < curitem; n++)
 			if (item[n].type == Highlight)
 			    item[n].type = Empty;
+		    // Adjust the start position of TabPage to the next item
+		    // position.
+		    for (n = groupitem[groupdepth] + 1; n < curitem; n++)
+			if (item[n].type == TabPage)
+			    item[n].start = p;
 		}
 	    }
 	    if (l > item[groupitem[groupdepth]].maxwid)
