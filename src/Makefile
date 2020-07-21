@@ -1639,6 +1639,7 @@ BASIC_SRC = \
 	gui_xim.c \
 	hardcopy.c \
 	hashtab.c \
+	help.c \
 	highlight.c \
 	if_cscope.c \
 	if_xcmdsrv.c \
@@ -1790,6 +1791,7 @@ OBJ_COMMON = \
 	objects/gui_xim.o \
 	objects/hardcopy.o \
 	objects/hashtab.o \
+	objects/help.o \
 	objects/highlight.o \
 	objects/if_cscope.o \
 	objects/if_xcmdsrv.o \
@@ -1958,6 +1960,7 @@ PRO_AUTO = \
 	gui_beval.pro \
 	hardcopy.pro \
 	hashtab.pro \
+	help.pro \
 	highlight.pro \
 	if_cscope.pro \
 	if_lua.pro \
@@ -3264,6 +3267,9 @@ objects/hardcopy.o: hardcopy.c
 objects/hashtab.o: hashtab.c
 	$(CCC) -o $@ hashtab.c
 
+objects/help.o: help.c
+	$(CCC) -o $@ help.c
+
 objects/gui.o: gui.c
 	$(CCC) -o $@ gui.c
 
@@ -3927,6 +3933,10 @@ objects/hardcopy.o: hardcopy.c vim.h protodef.h auto/config.h feature.h os_unix.
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h version.h
 objects/hashtab.o: hashtab.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/help.o: help.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
