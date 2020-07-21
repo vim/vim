@@ -2311,10 +2311,9 @@ test_libvterm:
 # Run individual OLD style test.
 # These do not depend on the executable, compile it when needed.
 test1 \
-	test42 test44 test49 \
+	test42 test49 \
 	test52 test59 \
-	test70 \
-	test99:
+	test70:
 	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTESTTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
 # Run individual NEW style test.
