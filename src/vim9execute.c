@@ -2470,6 +2470,7 @@ func_return:
 	if (func_return(&ectx) == FAIL)
 	    // only fails when out of memory
 	    goto failed;
+	continue;
 
 on_error:
 	if (trylevel == 0)

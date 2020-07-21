@@ -1143,13 +1143,13 @@ generate_GETITEM(cctx_T *cctx, int index)
 
     RETURN_OK_IF_SKIP(cctx);
 
-    if (type->tt_type == VAR_LIST)
-	item_type = type->tt_member;
-    else if (type->tt_type != VAR_ANY)
+    if (type->tt_type != VAR_LIST)
     {
+	// cannot happen, caller has checked the type
 	emsg(_(e_listreq));
 	return FAIL;
     }
+    item_type = type->tt_member;
     if ((isn = generate_instr(cctx, ISN_GETITEM)) == NULL)
 	return FAIL;
     isn->isn_arg.number = index;
@@ -4969,6 +4969,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 
     if (var_count > 0 && is_decl)
     {
+	// TODO: should we allow this, and figure out type inference from list
+	// members?
 	emsg(_("E1092: Cannot use a list for a declaration"));
 	return NULL;
     }

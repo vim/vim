@@ -3,6 +3,15 @@
 source check.vim
 source vim9.vim
 
+
+let g:cond = v:false
+def FuncOne(arg: number): string
+  return 'yes'
+enddef
+def FuncTwo(arg: number): number
+  return 123
+enddef
+
 " test cond ? expr : expr
 def Test_expr1()
   assert_equal('one', true ? 'one' : 'two')
@@ -43,6 +52,11 @@ def Test_expr1()
   let RetTwo: func(string): number = function('winnr')
   let RetThat: func = g:atrue ? RetOne : RetTwo
   assert_equal(function('len'), RetThat)
+
+  let x = FuncOne
+  let y = FuncTwo
+  let Z = g:cond ? FuncOne : FuncTwo
+  assert_equal(123, Z(3))
 enddef
 
 def Test_expr1_vimscript()
@@ -88,6 +102,13 @@ func Test_expr1_fails()
   call CheckDefFailure(["let x = 1 ? 'one': 'two'"], msg)
   call CheckDefFailure(["let x = 1 ? 'one' :'two'"], msg)
   call CheckDefFailure(["let x = 1 ? 'one':'two'"], msg)
+
+  " missing argument detected even when common type is used
+  call CheckDefFailure([
+	\ 'let x = FuncOne',
+	\ 'let y = FuncTwo',
+	\ 'let Z = g:cond ? FuncOne : FuncTwo',
+	\ 'Z()'], 'E119:')
 endfunc
 
 " TODO: define inside test function
