@@ -64,6 +64,7 @@ SRC =	arabic.c						\
 	gui_xim.c						\
 	hardcopy.c						\
 	hashtab.c						\
+	help.c							\
 	highlight.c						\
 	indent.c						\
 	insexpand.c						\

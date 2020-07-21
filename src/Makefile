@@ -404,7 +404,7 @@ CClink = $(CC)
 # Use --with-luajit if you want to use LuaJIT instead of Lua.
 # Set PATH environment variable to find lua or luajit executable.
 # This requires at least "normal" features, "tiny" and "small" don't work.
-#CONF_OPT_LUA = --enable-luainterp
+CONF_OPT_LUA = --enable-luainterp
 #CONF_OPT_LUA = --enable-luainterp=dynamic
 #CONF_OPT_LUA = --enable-luainterp --with-luajit
 #CONF_OPT_LUA = --enable-luainterp=dynamic --with-luajit
@@ -447,10 +447,10 @@ CClink = $(CC)
 # dlopen(), dlsym(), dlclose(), i.e. pythonX.Y.so must be available
 # However, this may still cause problems, such as "import termios" failing.
 # Build two separate versions of Vim in that case.
-#CONF_OPT_PYTHON = --enable-pythoninterp
+CONF_OPT_PYTHON = --enable-pythoninterp
 #CONF_OPT_PYTHON = --enable-pythoninterp --with-python-command=python2.7
 #CONF_OPT_PYTHON = --enable-pythoninterp=dynamic
-#CONF_OPT_PYTHON3 = --enable-python3interp
+CONF_OPT_PYTHON3 = --enable-python3interp
 #CONF_OPT_PYTHON3 = --enable-python3interp --with-python3-command=python3.6
 #CONF_OPT_PYTHON3 = --enable-python3interp=dynamic
 
@@ -472,7 +472,7 @@ CClink = $(CC)
 
 # CSCOPE
 # Uncomment this when you want to include the Cscope interface.
-#CONF_OPT_CSCOPE = --enable-cscope
+CONF_OPT_CSCOPE = --enable-cscope
 
 # NETBEANS - NetBeans interface. Only works with Motif, GTK, and gnome.
 # Motif version must have XPM libraries (see |netbeans-xpm|).
@@ -540,7 +540,7 @@ CClink = $(CC)
 #CONF_OPT_FEAT = --with-features=small
 #CONF_OPT_FEAT = --with-features=normal
 #CONF_OPT_FEAT = --with-features=big
-#CONF_OPT_FEAT = --with-features=huge
+CONF_OPT_FEAT = --with-features=huge
 
 # COMPILED BY - For including a specific e-mail address for ":version".
 #CONF_OPT_COMPBY = "--with-compiledby=John Doe <JohnDoe@yahoo.com>"
@@ -614,7 +614,7 @@ CClink = $(CC)
 # Use this with GCC to check for mistakes, unused arguments, etc.
 # Note: If you use -Wextra and get warnings in GTK code about function
 #       parameters, you can add -Wno-cast-function-type
-#CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wunreachable-code -Wno-cast-function-type -Wno-deprecated-declarations -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
+CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wunreachable-code -Wno-cast-function-type -Wno-deprecated-declarations -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
 # Add -Wpedantic to find // comments and other C99 constructs.
 # Better disable Perl and Python to avoid a lot of warnings.
 #CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wpedantic -Wunreachable-code -Wunused-result -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
@@ -709,7 +709,7 @@ SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 # Configuration is in the .ccmalloc or ~/.ccmalloc file.
 # Doesn't work very well, since memory linked to from global variables
 # (in libraries) is also marked as leaked memory.
-#LEAK_CFLAGS = -DEXITFREE
+LEAK_CFLAGS = -DEXITFREE
 #LEAK_LIBS = -lccmalloc
 
 # Uncomment this line to have Vim call abort() when an internal error is
@@ -1639,6 +1639,7 @@ BASIC_SRC = \
 	gui_xim.c \
 	hardcopy.c \
 	hashtab.c \
+	help.c \
 	highlight.c \
 	if_cscope.c \
 	if_xcmdsrv.c \
@@ -1790,6 +1791,7 @@ OBJ_COMMON = \
 	objects/gui_xim.o \
 	objects/hardcopy.o \
 	objects/hashtab.o \
+	objects/help.o \
 	objects/highlight.o \
 	objects/if_cscope.o \
 	objects/if_xcmdsrv.o \
@@ -1958,6 +1960,7 @@ PRO_AUTO = \
 	gui_beval.pro \
 	hardcopy.pro \
 	hashtab.pro \
+	help.pro \
 	highlight.pro \
 	if_cscope.pro \
 	if_lua.pro \
@@ -3264,6 +3267,9 @@ objects/hardcopy.o: hardcopy.c
 objects/hashtab.o: hashtab.c
 	$(CCC) -o $@ hashtab.c
 
+objects/help.o: help.c
+	$(CCC) -o $@ help.c
+
 objects/gui.o: gui.c
 	$(CCC) -o $@ gui.c
 
@@ -3927,6 +3933,10 @@ objects/hardcopy.o: hardcopy.c vim.h protodef.h auto/config.h feature.h os_unix.
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h version.h
 objects/hashtab.o: hashtab.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/help.o: help.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h

@@ -95,6 +95,7 @@ extern int _stricoll(char *a, char *b);
 # include "gui_xim.pro"
 # include "hardcopy.pro"
 # include "hashtab.pro"
+# include "help.pro"
 # include "highlight.pro"
 # include "indent.pro"
 # include "insexpand.pro"

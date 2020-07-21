@@ -68,6 +68,7 @@ SRC_ALL =	\
 		src/gui_beval.c \
 		src/hardcopy.c \
 		src/hashtab.c \
+		src/help.c \
 		src/highlight.c \
 		src/indent.c \
 		src/insexpand.c \
@@ -240,6 +241,7 @@ SRC_ALL =	\
 		src/proto/gui_beval.pro \
 		src/proto/hardcopy.pro \
 		src/proto/hashtab.pro \
+		src/proto/help.pro \
 		src/proto/highlight.pro \
 		src/proto/indent.pro \
 		src/proto/insexpand.pro \
