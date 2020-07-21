@@ -1144,7 +1144,7 @@ au BufNewFile,BufRead *.hook
 	\ endif
 
 " Pam conf
-au BufNewFile,BufRead */etc/pam.conf			setf pamconf
+au BufNewFile,BufRead */etc/pam.conf			let b:pamconf_has_service_field = 1 | setf pamconf
 
 " Pam environment
 au BufNewFile,BufRead pam_env.conf,.pam_environment	setf pamenv
