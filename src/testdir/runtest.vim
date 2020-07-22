@@ -117,6 +117,11 @@ set shellslash
 
 let s:srcdir = expand('%:p:h:h')
 
+if has('win32')
+  " avoid prompt that is long or contains a line break
+  let $PROMPT = '$P$G'
+endif
+
 " Prepare for calling test_garbagecollect_now().
 let v:testing = 1
 
