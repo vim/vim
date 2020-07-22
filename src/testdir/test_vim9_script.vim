@@ -29,6 +29,9 @@ def Test_assignment()
   call CheckDefFailure(['let x:string = "x"'], 'E1069:')
   call CheckDefFailure(['let a:string = "x"'], 'E1069:')
 
+  let nr: number = 1234
+  call CheckDefFailure(['let nr: number = "asdf"'], 'E1013:')
+
   let a: number = 6 #comment
   assert_equal(6, a)
 

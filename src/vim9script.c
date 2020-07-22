@@ -557,7 +557,7 @@ check_script_var_type(typval_T *dest, typval_T *value, char_u *name)
 		semsg(_(e_readonlyvar), name);
 		return FAIL;
 	    }
-	    return check_type(sv->sv_type, typval2type(value), TRUE);
+	    return check_typval_type(sv->sv_type, value);
 	}
     }
     iemsg("check_script_var_type(): not found");

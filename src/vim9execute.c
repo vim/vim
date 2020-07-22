@@ -737,7 +737,8 @@ call_def_function(
     for (idx = 0; idx < argc; ++idx)
     {
 	if (ufunc->uf_arg_types != NULL && idx < ufunc->uf_args.ga_len
-		&& check_argtype(ufunc->uf_arg_types[idx], &argv[idx]) == FAIL)
+		&& check_typval_type(ufunc->uf_arg_types[idx], &argv[idx])
+								       == FAIL)
 	    goto failed_early;
 	copy_tv(&argv[idx], STACK_TV_BOT(0));
 	++ectx.ec_stack.ga_len;
