@@ -2,7 +2,7 @@
 " Language:     BIND zone files (RFC 1035)
 " Maintainer:   Julian Mehnle <julian@mehnle.net>
 " URL:          http://www.mehnle.net/source/odds+ends/vim/syntax/
-" Last Change:  Thu 2011-07-16 20:42:00 UTC
+" Last Change:  Thu 2020-08-22 13:50:00 UTC
 " 
 " Based on an earlier version by Вячеслав Горбанев (Slava Gorbanev), with
 " heavy modifications.
@@ -33,7 +33,7 @@ syn match       zoneDomain      contained  /[^[:space:]!"#$%&'()*+,\/:;<=>?@[\]\
 syn match       zoneSpecial     contained /^[@*.]\s/
 syn match       zoneTTL         contained /\s\@<=\d[0-9WwDdHhMmSs]*\(\s\|$\)\@=/ nextgroup=zoneClass,zoneRRType skipwhite
 syn keyword     zoneClass       contained IN CHAOS CH HS HESIOD nextgroup=zoneRRType,zoneTTL skipwhite
-syn keyword     zoneRRType      contained A AAAA CERT CNAME DNAME DNSKEY DS HINFO LOC MX NAPTR NS NSEC NSEC3 NSEC3PARAM PTR RP RRSIG SSHFP SOA SPF SRV TLSA TXT nextgroup=zoneRData skipwhite
+syn keyword     zoneRRType      contained A AAAA CAA CERT CNAME DNAME DNSKEY DS HINFO LOC MX NAPTR NS NSEC NSEC3 NSEC3PARAM PTR RP RRSIG SSHFP SOA SPF SRV TLSA TXT nextgroup=zoneRData skipwhite
 syn match       zoneRData       contained /[^;]*/ contains=zoneDomain,zoneIPAddr,zoneIP6Addr,zoneText,zoneNumber,zoneParen,zoneUnknown
 
 syn match       zoneIPAddr      contained /\<[0-9]\{1,3}\(\.[0-9]\{1,3}\)\{,3}\>/
