@@ -808,6 +808,12 @@ func Test_terminal_redir_file()
   endif
   let g:job = term_getjob(buf)
   call WaitForAssert({-> assert_equal("dead", job_status(g:job))})
+  if has('win32')
+    " On Windows, can't delete files which are being used by process.  When
+    " job_status() returns "dead", a process of job remains for ashort time.
+    " So we need to wait a little.
+    sleep 50m
+  endif
   call delete('Xfile')
   bwipe
 
