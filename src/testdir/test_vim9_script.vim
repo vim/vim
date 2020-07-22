@@ -2198,6 +2198,35 @@ def Test_vim9_comment()
       'vim9script',
       'call execute("ls")# comment',
       ], 'E488:')
+
+  CheckScriptFailure([
+      'def Test() " comment',
+      'enddef',
+      ], 'E488:')
+  CheckScriptFailure([
+      'vim9script',
+      'def Test() " comment',
+      'enddef',
+      ], 'E488:')
+
+  CheckScriptSuccess([
+      'func Test() " comment',
+      'endfunc',
+      ])
+  CheckScriptFailure([
+      'vim9script',
+      'func Test() " comment',
+      'endfunc',
+      ], 'E488:')
+
+  CheckScriptSuccess([
+      'def Test() # comment',
+      'enddef',
+      ])
+  CheckScriptFailure([
+      'func Test() # comment',
+      'endfunc',
+      ], 'E488:')
 enddef
 
 def Test_vim9_comment_gui()

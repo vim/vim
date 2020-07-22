@@ -2555,8 +2555,9 @@ def_function(exarg_T *eap, char_u *name_arg)
     int		is_heredoc = FALSE;
     char_u	*skip_until = NULL;
     char_u	*heredoc_trimmed = NULL;
+    int		vim9script = in_vim9script();
 
-    if (in_vim9script() && eap->forceit)
+    if (vim9script && eap->forceit)
     {
 	emsg(_(e_nobang));
 	return NULL;
@@ -2786,6 +2787,7 @@ def_function(exarg_T *eap, char_u *name_arg)
 		ret_type = NULL;
 	    }
 	}
+	p = skipwhite(p);
     }
     else
 	// find extra arguments "range", "dict", "abort" and "closure"
@@ -2826,8 +2828,11 @@ def_function(exarg_T *eap, char_u *name_arg)
     // Makes 'exe "func Test()\n...\nendfunc"' work.
     if (*p == '\n')
 	line_arg = p + 1;
-    else if (*p != NUL && *p != '"' && !(eap->cmdidx == CMD_def && *p == '#')
-						    && !eap->skip && !did_emsg)
+    else if (*p != NUL
+	    && !(*p == '"' && !(vim9script || eap->cmdidx == CMD_def))
+	    && !(*p == '#' && (vim9script || eap->cmdidx == CMD_def))
+	    && !eap->skip
+	    && !did_emsg)
 	emsg(_(e_trailing));
 
     /*
@@ -3386,7 +3391,7 @@ def_function(exarg_T *eap, char_u *name_arg)
     fp->uf_varargs = varargs;
     if (sandbox)
 	flags |= FC_SANDBOX;
-    if (in_vim9script() && !ASCII_ISUPPER(*fp->uf_name))
+    if (vim9script && !ASCII_ISUPPER(*fp->uf_name))
 	flags |= FC_VIM9;
     fp->uf_flags = flags;
     fp->uf_calls = 0;
