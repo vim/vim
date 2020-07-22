@@ -70,6 +70,7 @@ SRC =	arabic.c						\
 	insexpand.c						\
 	json.c							\
 	list.c							\
+	locale.c						\
 	main.c							\
 	map.c							\
 	mark.c							\

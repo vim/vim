@@ -52,6 +52,7 @@ help.c		| vim help related functions
 highlight.c	| syntax highlighting
 indent.c	| text indentation
 insexpand.c	| Insert mode completion
+locale.c	| locale/language handling
 map.c		| mapping and abbreviations
 mark.c		| marks
 match.c		| highlight matching

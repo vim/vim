@@ -34,9 +34,6 @@
 static int file_owned(char *fname);
 #endif
 static void mainerr(int, char_u *);
-# if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
-static void init_locale(void);
-# endif
 static void early_arg_scan(mparm_T *parmp);
 #ifndef NO_VIM_MAIN
 static void usage(void);
@@ -1715,56 +1712,6 @@ getout(int exitval)
 
     mch_exit(exitval);
 }
-
-#if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
-/*
- * Setup to use the current locale (for ctype() and many other things).
- */
-    static void
-init_locale(void)
-{
-    setlocale(LC_ALL, "");
-
-# ifdef FEAT_GUI_GTK
-    // Tell Gtk not to change our locale settings.
-    gtk_disable_setlocale();
-# endif
-# if defined(FEAT_FLOAT) && defined(LC_NUMERIC)
-    // Make sure strtod() uses a decimal point, not a comma.
-    setlocale(LC_NUMERIC, "C");
-# endif
-
-# ifdef MSWIN
-    // Apparently MS-Windows printf() may cause a crash when we give it 8-bit
-    // text while it's expecting text in the current locale.  This call avoids
-    // that.
-    setlocale(LC_CTYPE, "C");
-# endif
-
-# ifdef FEAT_GETTEXT
-    {
-	int	mustfree = FALSE;
-	char_u	*p;
-
-#  ifdef DYNAMIC_GETTEXT
-	// Initialize the gettext library
-	dyn_libintl_init();
-#  endif
-	// expand_env() doesn't work yet, because g_chartab[] is not
-	// initialized yet, call vim_getenv() directly
-	p = vim_getenv((char_u *)"VIMRUNTIME", &mustfree);
-	if (p != NULL && *p != NUL)
-	{
-	    vim_snprintf((char *)NameBuff, MAXPATHL, "%s/lang", p);
-	    bindtextdomain(VIMPACKAGE, (char *)NameBuff);
-	}
-	if (mustfree)
-	    vim_free(p);
-	textdomain(VIMPACKAGE);
-    }
-# endif
-}
-#endif
 
 /*
  * Get the name of the display, before gui_prepare() removes it from

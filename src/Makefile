@@ -1647,6 +1647,7 @@ BASIC_SRC = \
 	insexpand.c \
 	json.c \
 	list.c \
+	locale.c \
 	main.c \
 	map.c \
 	mark.c \
@@ -1798,6 +1799,7 @@ OBJ_COMMON = \
 	objects/indent.o \
 	objects/insexpand.o \
 	objects/list.o \
+	objects/locale.o \
 	objects/map.o \
 	objects/mark.o \
 	objects/match.o \
@@ -1973,6 +1975,7 @@ PRO_AUTO = \
 	insexpand.pro \
 	json.pro \
 	list.pro \
+	locale.pro \
 	main.pro \
 	map.pro \
 	mark.pro \
@@ -3378,6 +3381,9 @@ objects/kword_test.o: kword_test.c
 objects/list.o: list.c
 	$(CCC) -o $@ list.c
 
+objects/locale.o: locale.c
+	$(CCC) -o $@ locale.c
+
 objects/main.o: main.c
 	$(CCC) -o $@ main.c
 
@@ -3965,6 +3971,10 @@ objects/json.o: json.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
 objects/list.o: list.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/locale.o: locale.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
