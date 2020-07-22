@@ -1881,26 +1881,35 @@ skip_type(char_u *start)
 	if (*p == '>')
 	    ++p;
     }
-    else if (*p == '(' && STRNCMP("func", start, 4) == 0)
+    else if ((*p == '(' || (*p == ':' && VIM_ISWHITE(p[1])))
+					     && STRNCMP("func", start, 4) == 0)
     {
-	// handle func(args): type
-	++p;
-	while (*p != ')' && *p != NUL)
+	if (*p == '(')
 	{
-	    char_u *sp = p;
+	    // handle func(args): type
+	    ++p;
+	    while (*p != ')' && *p != NUL)
+	    {
+		char_u *sp = p;
 
-	    p = skip_type(p);
-	    if (p == sp)
-		return p;  // syntax error
-	    if (*p == ',')
-		p = skipwhite(p + 1);
+		p = skip_type(p);
+		if (p == sp)
+		    return p;  // syntax error
+		if (*p == ',')
+		    p = skipwhite(p + 1);
+	    }
+	    if (*p == ')')
+	    {
+		if (p[1] == ':')
+		    p = skip_type(skipwhite(p + 2));
+		else
+		    p = skipwhite(p + 1);
+	    }
 	}
-	if (*p == ')')
+	else
 	{
-	    if (p[1] == ':')
-		p = skip_type(skipwhite(p + 2));
-	    else
-		p = skipwhite(p + 1);
+	    // handle func: return_type
+	    p = skip_type(skipwhite(p + 1));
 	}
     }
 
