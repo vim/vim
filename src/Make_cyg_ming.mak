@@ -751,6 +751,7 @@ OBJ = \
 	$(OUTDIR)/insexpand.o \
 	$(OUTDIR)/json.o \
 	$(OUTDIR)/list.o \
+	$(OUTDIR)/locale.o \
 	$(OUTDIR)/main.o \
 	$(OUTDIR)/map.o \
 	$(OUTDIR)/mark.o \

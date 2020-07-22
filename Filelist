@@ -76,6 +76,7 @@ SRC_ALL =	\
 		src/json_test.c \
 		src/kword_test.c \
 		src/list.c \
+		src/locale.c \
 		src/keymap.h \
 		src/macros.h \
 		src/main.c \
@@ -247,6 +248,7 @@ SRC_ALL =	\
 		src/proto/insexpand.pro \
 		src/proto/json.pro \
 		src/proto/list.pro \
+		src/proto/locale.pro \
 		src/proto/main.pro \
 		src/proto/map.pro \
 		src/proto/mark.pro \
