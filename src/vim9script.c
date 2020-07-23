@@ -465,7 +465,10 @@ handle_import(
 		imported->imp_var_vals_idx = idx;
 	    }
 	    else
+	    {
+		imported->imp_type = ufunc->uf_func_type;
 		imported->imp_funcname = ufunc->uf_name;
+	    }
 	}
     }
 erret:

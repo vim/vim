@@ -714,7 +714,7 @@ generate_instr_type(cctx_T *cctx, isntype_T isn_type, type_T *type)
 
     if (ga_grow(stack, 1) == FAIL)
 	return NULL;
-    ((type_T **)stack->ga_data)[stack->ga_len] = type;
+    ((type_T **)stack->ga_data)[stack->ga_len] = type == NULL ? &t_any : type;
     ++stack->ga_len;
 
     return isn;
@@ -1178,7 +1178,7 @@ generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type)
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr_type(cctx, ISN_PUSHFUNC, type)) == NULL)
 	return FAIL;
-    isn->isn_arg.string = name;
+    isn->isn_arg.string = name == NULL ? NULL : vim_strsave(name);
 
     return OK;
 }
@@ -2807,14 +2807,13 @@ compile_load_scriptvar(
 		    idx,
 		    type);
 	}
+	else if (import->imp_funcname != NULL)
+	    generate_PUSHFUNC(cctx, import->imp_funcname, import->imp_type);
 	else
-	{
-	    // TODO: check this is a variable, not a function?
 	    generate_VIM9SCRIPT(cctx, ISN_LOADSCRIPT,
 		    import->imp_sid,
 		    import->imp_var_vals_idx,
 		    import->imp_type);
-	}
 	return OK;
     }
 
@@ -2835,8 +2834,7 @@ generate_funcref(cctx_T *cctx, char_u *name)
     if (ufunc->uf_def_status == UF_TO_BE_COMPILED)
 	if (compile_def_function(ufunc, TRUE, NULL) == FAIL)
 	    return FAIL;
-    return generate_PUSHFUNC(cctx, vim_strsave(ufunc->uf_name),
-							  ufunc->uf_func_type);
+    return generate_PUSHFUNC(cctx, ufunc->uf_name, ufunc->uf_func_type);
 }
 
 /*

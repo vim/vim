@@ -912,6 +912,12 @@ def Test_vim9_import_export()
     g:imported_added = exported
     g:imported_func = Exported()
 
+    def GetExported(): string
+      let local_dict = #{ref: Exported}
+      return local_dict.ref()
+    enddef
+    g:funcref_result = GetExported()
+
     import {exp_name} from './Xexport.vim'
     g:imported_name = exp_name
     exp_name ..= ' Doe'
@@ -930,6 +936,7 @@ def Test_vim9_import_export()
   assert_equal(9879, g:imported_added)
   assert_equal(9879, g:imported_later)
   assert_equal('Exported', g:imported_func)
+  assert_equal('Exported', g:funcref_result)
   assert_equal('John', g:imported_name)
   assert_equal('John Doe', g:imported_name_appended)
   assert_false(exists('g:name'))
