@@ -1944,7 +1944,7 @@ skip_type(char_u *start)
 		if (p[1] == ':')
 		    p = skip_type(skipwhite(p + 2));
 		else
-		    p = skipwhite(p + 1);
+		    ++p;
 	    }
 	}
 	else

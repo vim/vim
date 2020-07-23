@@ -283,6 +283,16 @@ def Test_call_funcref()
     assert_equal(123, Bar(Funcref))
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def UseNumber(nr: number)
+      echo nr
+    enddef
+    let Funcref: func(number) = function('UseNumber')
+    Funcref(123)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 let SomeFunc = function('len')
