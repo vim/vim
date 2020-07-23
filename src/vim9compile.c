@@ -3761,6 +3761,8 @@ compile_subscript(
 	}
 	else if (*p == '-' && p[1] == '>')
 	{
+	    char_u *pstart = p;
+
 	    if (generate_ppconst(cctx, ppconst) == FAIL)
 		return FAIL;
 
@@ -3786,7 +3788,7 @@ compile_subscript(
 		p = *arg;
 		if (!eval_isnamec1(*p))
 		{
-		    semsg(_(e_trailing_arg), p);
+		    semsg(_(e_trailing_arg), pstart);
 		    return FAIL;
 		}
 		if (ASCII_ISALPHA(*p) && p[1] == ':')

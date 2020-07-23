@@ -1532,7 +1532,7 @@ func Test_expr7_fails()
 
   call CheckDefFailure(["let x = ''", "let y = x.memb"], 'E715:')
 
-  call CheckDefFailure(["'yes'->", "Echo()"], 'E488:')
+  call CheckDefFailure(["'yes'->", "Echo()"], 'E488: Trailing characters: ->')
 
   call CheckDefExecFailure(["[1, 2->len()"], 'E697:')
   call CheckDefExecFailure(["#{a: 1->len()"], 'E488:')
