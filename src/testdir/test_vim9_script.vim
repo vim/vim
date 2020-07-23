@@ -376,6 +376,15 @@ def Test_assignment_failure()
 
   call assert_fails('s/^/\=Mess()/n', 'E794:')
   call CheckDefFailure(['let var: dict<number'], 'E1009:')
+
+  call CheckDefFailure(['w:foo: number = 10'],
+                       'E488: Trailing characters: : number = 1')
+  call CheckDefFailure(['t:foo: bool = true'],
+                       'E488: Trailing characters: : bool = true')
+  call CheckDefFailure(['b:foo: string = "x"'],
+                       'E488: Trailing characters: : string = "x"')
+  call CheckDefFailure(['g:foo: number = 123'],
+                       'E488: Trailing characters: : number = 123')
 enddef
 
 def Test_unlet()
