@@ -2922,8 +2922,8 @@ may_remove_shift_modifier(int modifiers, int key)
     if ((modifiers == MOD_MASK_SHIFT
 		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_ALT)
 		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_META))
-	    && ((key >= '@' && key <= 'Z')
-		|| key == '^' || key == '_'
+	    && ((key >= '!' && key <= '/')
+		|| (key >= ':' && key <= '`')
 		|| (key >= '{' && key <= '~')))
 	return modifiers & ~MOD_MASK_SHIFT;
     return modifiers;
