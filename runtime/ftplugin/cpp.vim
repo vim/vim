@@ -10,4 +10,7 @@ endif
 
 " Behaves just like C
 runtime! ftplugin/c.vim ftplugin/c_*.vim ftplugin/c/*.vim
+
+" C++ uses <things>
 set matchpairs+=<:>
+let b:undo_ftplugin ..= ' | setl matchpairs<'
