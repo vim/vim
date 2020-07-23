@@ -917,7 +917,7 @@ ex_if(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_idx == CSTACK_LEN - 1)
-	eap->errmsg = N_("E579: :if nesting too deep");
+	eap->errmsg = _("E579: :if nesting too deep");
     else
     {
 	++cstack->cs_idx;
@@ -953,7 +953,7 @@ ex_endif(exarg_T *eap)
     if (eap->cstack->cs_idx < 0
 	    || (eap->cstack->cs_flags[eap->cstack->cs_idx]
 					   & (CSF_WHILE | CSF_FOR | CSF_TRY)))
-	eap->errmsg = N_(e_endif_without_if);
+	eap->errmsg = _(e_endif_without_if);
     else
     {
 	/*
@@ -997,20 +997,20 @@ ex_else(exarg_T *eap)
     {
 	if (eap->cmdidx == CMD_else)
 	{
-	    eap->errmsg = N_(e_else_without_if);
+	    eap->errmsg = _(e_else_without_if);
 	    return;
 	}
-	eap->errmsg = N_(e_elseif_without_if);
+	eap->errmsg = _(e_elseif_without_if);
 	skip = TRUE;
     }
     else if (cstack->cs_flags[cstack->cs_idx] & CSF_ELSE)
     {
 	if (eap->cmdidx == CMD_else)
 	{
-	    eap->errmsg = N_("E583: multiple :else");
+	    eap->errmsg = _("E583: multiple :else");
 	    return;
 	}
-	eap->errmsg = N_("E584: :elseif after :else");
+	eap->errmsg = _("E584: :elseif after :else");
 	skip = TRUE;
     }
 
@@ -1076,7 +1076,7 @@ ex_while(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_idx == CSTACK_LEN - 1)
-	eap->errmsg = N_("E585: :while/:for nesting too deep");
+	eap->errmsg = _("E585: :while/:for nesting too deep");
     else
     {
 	/*
@@ -1186,7 +1186,7 @@ ex_continue(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_looplevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = N_(e_continue);
+	eap->errmsg = _(e_continue);
     else
     {
 	// Try to find the matching ":while".  This might stop at a try
@@ -1224,7 +1224,7 @@ ex_break(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_looplevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = N_(e_break);
+	eap->errmsg = _(e_break);
     else
     {
 	// Inactivate conditionals until the matching ":while" or a try
@@ -1264,7 +1264,7 @@ ex_endwhile(exarg_T *eap)
     }
 
     if (cstack->cs_looplevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = err;
+	eap->errmsg = _(err);
     else
     {
 	fl =  cstack->cs_flags[cstack->cs_idx];
@@ -1280,9 +1280,9 @@ ex_endwhile(exarg_T *eap)
 	if (!(fl & (CSF_WHILE | CSF_FOR)))
 	{
 	    if (!(fl & CSF_TRY))
-		eap->errmsg = e_endif;
+		eap->errmsg = _(e_endif);
 	    else if (fl & CSF_FINALLY)
-		eap->errmsg = e_endtry;
+		eap->errmsg = _(e_endtry);
 	    // Try to find the matching ":while" and report what's missing.
 	    for (idx = cstack->cs_idx; idx > 0; --idx)
 	    {
@@ -1291,7 +1291,7 @@ ex_endwhile(exarg_T *eap)
 		{
 		    // Give up at a try conditional not in its finally clause.
 		    // Ignore the ":endwhile"/":endfor".
-		    eap->errmsg = err;
+		    eap->errmsg = _(err);
 		    return;
 		}
 		if (fl & csf)
@@ -1447,7 +1447,7 @@ ex_try(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_idx == CSTACK_LEN - 1)
-	eap->errmsg = N_("E601: :try nesting too deep");
+	eap->errmsg = _("E601: :try nesting too deep");
     else
     {
 	++cstack->cs_idx;
@@ -1526,7 +1526,7 @@ ex_catch(exarg_T *eap)
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
     {
-	eap->errmsg = e_catch;
+	eap->errmsg = _(e_catch);
 	give_up = TRUE;
     }
     else
@@ -1545,7 +1545,7 @@ ex_catch(exarg_T *eap)
 	{
 	    // Give up for a ":catch" after ":finally" and ignore it.
 	    // Just parse.
-	    eap->errmsg = N_("E604: :catch after :finally");
+	    eap->errmsg = _("E604: :catch after :finally");
 	    give_up = TRUE;
 	}
 	else
@@ -1685,7 +1685,7 @@ ex_finally(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = e_finally;
+	eap->errmsg = _(e_finally);
     else
     {
 	if (!(cstack->cs_flags[cstack->cs_idx] & CSF_TRY))
@@ -1705,7 +1705,7 @@ ex_finally(exarg_T *eap)
 	if (cstack->cs_flags[idx] & CSF_FINALLY)
 	{
 	    // Give up for a multiple ":finally" and ignore it.
-	    eap->errmsg = e_finally_dup;
+	    eap->errmsg = _(e_finally_dup);
 	    return;
 	}
 	rewind_conditionals(cstack, idx, CSF_WHILE | CSF_FOR,
@@ -1814,7 +1814,7 @@ ex_endtry(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = e_no_endtry;
+	eap->errmsg = _(e_no_endtry);
     else
     {
 	/*
@@ -2276,10 +2276,10 @@ cleanup_conditionals(
 get_end_emsg(cstack_T *cstack)
 {
     if (cstack->cs_flags[cstack->cs_idx] & CSF_WHILE)
-	return e_endwhile;
+	return _(e_endwhile);
     if (cstack->cs_flags[cstack->cs_idx] & CSF_FOR)
-	return e_endfor;
-    return e_endif;
+	return _(e_endfor);
+    return _(e_endif);
 }
 
 

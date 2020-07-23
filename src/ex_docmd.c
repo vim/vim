@@ -2570,7 +2570,7 @@ do_one_cmd(
 	ea.errmsg = NULL;
 	(cmdnames[ea.cmdidx].cmd_func)(&ea);
 	if (ea.errmsg != NULL)
-	    errormsg = _(ea.errmsg);
+	    errormsg = ea.errmsg;
     }
 
 #ifdef FEAT_EVAL
@@ -2647,6 +2647,20 @@ doend:
 #if (_MSC_VER == 1200)
  #pragma optimize( "", on )
 #endif
+
+static char ex_error_buf[MSG_BUF_LEN];
+
+/*
+ * Return an error message with argument included.
+ * Uses a static buffer, only the last error will be kept.
+ * "msg" will be translated, caller should use N_().
+ */
+     char *
+ex_errmsg(char *msg, char_u *arg)
+{
+    vim_snprintf(ex_error_buf, MSG_BUF_LEN, _(msg), arg);
+    return ex_error_buf;
+}
 
 /*
  * Parse and skip over command modifiers:
@@ -3989,7 +4003,8 @@ get_flags(exarg_T *eap)
 ex_ni(exarg_T *eap)
 {
     if (!eap->skip)
-	eap->errmsg = N_("E319: Sorry, the command is not available in this version");
+	eap->errmsg =
+		_("E319: Sorry, the command is not available in this version");
 }
 
 #ifdef HAVE_EX_SCRIPT_NI
@@ -4747,7 +4762,7 @@ ex_autocmd(exarg_T *eap)
     if (secure)
     {
 	secure = 2;
-	eap->errmsg = e_curdir;
+	eap->errmsg = _(e_curdir);
     }
     else if (eap->cmdidx == CMD_autocmd)
 	do_autocmd(eap->arg, eap->forceit);
@@ -4798,7 +4813,7 @@ ex_buffer(exarg_T *eap)
     if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
     if (*eap->arg)
-	eap->errmsg = e_trailing;
+	eap->errmsg = ex_errmsg(e_trailing_arg, eap->arg);
     else
     {
 	if (eap->addr_count == 0)	// default is current buffer
@@ -5365,7 +5380,7 @@ get_tabpage_arg(exarg_T *eap)
 		    || tab_number > LAST_TAB_NR)
 	    {
 		// No numbers as argument.
-		eap->errmsg = e_invarg;
+		eap->errmsg = ex_errmsg(e_invarg2, eap->arg);
 		goto theend;
 	    }
 	}
@@ -5377,7 +5392,7 @@ get_tabpage_arg(exarg_T *eap)
 		    || tab_number == 0)
 	    {
 		// No numbers as argument.
-		eap->errmsg = e_invarg;
+		eap->errmsg = ex_errmsg(e_invarg2, eap->arg);
 		goto theend;
 	    }
 	    tab_number = tab_number * relative + tabpage_index(curtab);
@@ -5385,13 +5400,13 @@ get_tabpage_arg(exarg_T *eap)
 		--tab_number;
 	}
 	if (tab_number < unaccept_arg0 || tab_number > LAST_TAB_NR)
-	    eap->errmsg = e_invarg;
+	    eap->errmsg = ex_errmsg(e_invarg2, eap->arg);
     }
     else if (eap->addr_count > 0)
     {
 	if (unaccept_arg0 && eap->line2 == 0)
 	{
-	    eap->errmsg = e_invrange;
+	    eap->errmsg = _(e_invrange);
 	    tab_number = 0;
 	}
 	else
@@ -5401,7 +5416,7 @@ get_tabpage_arg(exarg_T *eap)
 	    {
 		--tab_number;
 		if (tab_number < unaccept_arg0)
-		    eap->errmsg = e_invarg;
+		    eap->errmsg = _(e_invrange);
 	    }
 	}
     }
@@ -5914,7 +5929,7 @@ ex_recover(exarg_T *eap)
     static void
 ex_wrongmodifier(exarg_T *eap)
 {
-    eap->errmsg = e_invcmd;
+    eap->errmsg = _(e_invcmd);
 }
 
 /*
@@ -6097,7 +6112,7 @@ ex_tabnext(exarg_T *eap)
 			    || tab_number == 0)
 		{
 		    // No numbers as argument.
-		    eap->errmsg = e_invarg;
+		    eap->errmsg = ex_errmsg(e_invarg2, eap->arg);
 		    return;
 		}
 	    }
@@ -6110,7 +6125,7 @@ ex_tabnext(exarg_T *eap)
 		    tab_number = eap->line2;
 		    if (tab_number < 1)
 		    {
-			eap->errmsg = e_invrange;
+			eap->errmsg = _(e_invrange);
 			return;
 		    }
 		}
@@ -6498,7 +6513,7 @@ do_exedit(
     static void
 ex_nogui(exarg_T *eap)
 {
-    eap->errmsg = e_nogvim;
+    eap->errmsg = _(e_nogvim);
 }
 #endif
 
@@ -8074,7 +8089,7 @@ ex_findpat(exarg_T *eap)
 
 	    // Check for trailing illegal characters
 	    if (!ends_excmd2(eap->arg, p))
-		eap->errmsg = e_trailing;
+		eap->errmsg = ex_errmsg(e_trailing_arg, p);
 	    else
 		eap->nextcmd = check_nextcmd(p);
 	}
