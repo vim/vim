@@ -293,6 +293,15 @@ def Test_call_funcref()
     Funcref(123)
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def UseNumber(nr: number)
+      echo nr
+    enddef
+    let Funcref: func(string) = function('UseNumber')
+  END
+  CheckScriptFailure(lines, 'E1013: type mismatch, expected func(string) but got func(number)')
 enddef
 
 let SomeFunc = function('len')

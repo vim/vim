@@ -638,6 +638,18 @@ check_type(type_T *expected, type_T *actual, int give_msg)
 		    && (actual->tt_argcount < expected->tt_min_argcount
 			|| actual->tt_argcount > expected->tt_argcount))
 		    ret = FAIL;
+	    if (expected->tt_args != NULL && actual->tt_args != NULL)
+	    {
+		int i;
+
+		for (i = 0; i < expected->tt_argcount; ++i)
+		    if (check_type(expected->tt_args[i], actual->tt_args[i],
+								FALSE) == FAIL)
+		    {
+			ret = FAIL;
+			break;
+		    }
+	    }
 	}
 	if (ret == FAIL && give_msg)
 	    type_mismatch(expected, actual);
@@ -2819,6 +2831,10 @@ generate_funcref(cctx_T *cctx, char_u *name)
     if (ufunc == NULL)
 	return FAIL;
 
+    // Need to compile any default values to get the argument types.
+    if (ufunc->uf_def_status == UF_TO_BE_COMPILED)
+	if (compile_def_function(ufunc, TRUE, NULL) == FAIL)
+	    return FAIL;
     return generate_PUSHFUNC(cctx, vim_strsave(ufunc->uf_name),
 							  ufunc->uf_func_type);
 }
@@ -6995,6 +7011,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	int	i;
 	char_u	*arg;
 	int	off = STACK_FRAME_SIZE + (ufunc->uf_va_name != NULL ? 1 : 0);
+	int	did_set_arg_type = FALSE;
 
 	// Produce instructions for the default values of optional arguments.
 	// Store the instruction index in uf_def_arg_idx[] so that we know
@@ -7019,7 +7036,10 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	    // specified type.
 	    val_type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
 	    if (ufunc->uf_arg_types[arg_idx] == &t_unknown)
+	    {
+		did_set_arg_type = TRUE;
 		ufunc->uf_arg_types[arg_idx] = val_type;
+	    }
 	    else if (check_type(ufunc->uf_arg_types[arg_idx], val_type, FALSE)
 								       == FAIL)
 	    {
@@ -7032,6 +7052,9 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 		goto erret;
 	}
 	ufunc->uf_def_arg_idx[count] = instr->ga_len;
+
+	if (did_set_arg_type)
+	    set_function_type(ufunc);
     }
 
     /*
