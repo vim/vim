@@ -797,7 +797,7 @@ get_lval(
 	if (unlet && !VIM_ISWHITE(*p) && !ends_excmd(*p)
 						    && *p != '[' && *p != '.')
 	{
-	    emsg(_(e_trailing));
+	    semsg(_(e_trailing_arg), p);
 	    return NULL;
 	}
 

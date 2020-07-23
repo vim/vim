@@ -289,7 +289,7 @@ ex_menu(
     }
     else if (*map_to != NUL && (unmenu || enable != MAYBE))
     {
-	emsg(_(e_trailing));
+	semsg(_(e_trailing_arg), map_to);
 	goto theend;
     }
 #if defined(FEAT_GUI) && !(defined(FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON))

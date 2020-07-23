@@ -3579,7 +3579,7 @@ qf_list(exarg_T *eap)
     }
     if (!get_list_range(&arg, &idx1, &idx2) || *arg != NUL)
     {
-	emsg(_(e_trailing));
+	semsg(_(e_trailing_arg), arg);
 	return;
     }
     qfl = qf_get_curlist(qi);

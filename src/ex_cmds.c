@@ -3816,7 +3816,7 @@ do_sub(exarg_T *eap)
 	eap->nextcmd = check_nextcmd(cmd);
 	if (eap->nextcmd == NULL)
 	{
-	    emsg(_(e_trailing));
+	    semsg(_(e_trailing_arg), cmd);
 	    return;
 	}
     }

@@ -1588,7 +1588,7 @@ ex_catch(exarg_T *eap)
 	    if (end != NULL && *end != NUL
 				      && !ends_excmd2(end, skipwhite(end + 1)))
 	    {
-		emsg(_(e_trailing));
+		semsg(_(e_trailing_arg), end);
 		return;
 	    }
 

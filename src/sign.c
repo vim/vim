@@ -1577,7 +1577,7 @@ parse_sign_cmd_args(
 	    filename = arg;
 	    *buf = buflist_findnr((int)getdigits(&arg));
 	    if (*skipwhite(arg) != NUL)
-		emsg(_(e_trailing));
+		semsg(_(e_trailing_arg), arg);
 	    break;
 	}
 	else

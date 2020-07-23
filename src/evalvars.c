@@ -592,7 +592,7 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 	p = skiptowhite(marker);
 	if (*skipwhite(p) != NUL && *skipwhite(p) != '"')
 	{
-	    emsg(_(e_trailing));
+	    semsg(_(e_trailing_arg), p);
 	    return NULL;
 	}
 	*p = NUL;
@@ -1113,7 +1113,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 	    if (!VIM_ISWHITE(*arg) && !ends_excmd(*arg))
 	    {
 		emsg_severe = TRUE;
-		emsg(_(e_trailing));
+		semsg(_(e_trailing_arg), arg);
 		break;
 	    }
 	}
@@ -1489,7 +1489,7 @@ ex_unletlock(
 		if (name_end != NULL)
 		{
 		    emsg_severe = TRUE;
-		    emsg(_(e_trailing));
+		    semsg(_(e_trailing_arg), name_end);
 		}
 		if (!(eap->skip || error))
 		    clear_lval(&lv);
@@ -3431,9 +3431,9 @@ var_redir_start(char_u *name, int append)
 	clear_lval(redir_lval);
 	if (redir_endp != NULL && *redir_endp != NUL)
 	    // Trailing characters are present after the variable name
-	    emsg(_(e_trailing));
+	    semsg(_(e_trailing_arg), redir_endp);
 	else
-	    emsg(_(e_invarg));
+	    semsg(_(e_invarg2), name);
 	redir_endp = NULL;  // don't store a value, only cleanup
 	var_redir_stop();
 	return FAIL;

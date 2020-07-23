@@ -2141,7 +2141,7 @@ f_eval(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_number = 0;
     }
     else if (*s != NUL)
-	emsg(_(e_trailing));
+	semsg(_(e_trailing_arg), s);
 }
 
 /*
@@ -5113,7 +5113,7 @@ f_islocked(typval_T *argvars, typval_T *rettv)
     if (end != NULL && lv.ll_name != NULL)
     {
 	if (*end != NUL)
-	    emsg(_(e_trailing));
+	    semsg(_(e_trailing_arg), end);
 	else
 	{
 	    if (lv.ll_tv == NULL)
