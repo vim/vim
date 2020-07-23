@@ -3,26 +3,26 @@ language: c
 _anchors:
   envs:
     - &tiny-nogui
-      BUILD=yes TEST=test FEATURES=tiny CONFOPT="--disable-gui" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+      BUILD=yes TEST=test FEATURES=tiny CONFOPT="--disable-gui" LEAK_CFLAGS="-DEXITFREE" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     - &tiny
-      BUILD=yes TEST=test FEATURES=tiny CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+      BUILD=yes TEST=test FEATURES=tiny CONFOPT= LEAK_CFLAGS="-DEXITFREE" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     - &small
-      BUILD=yes TEST=test FEATURES=small CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+      BUILD=yes TEST=test FEATURES=small CONFOPT= LEAK_CFLAGS="-DEXITFREE" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     - &normal
-      BUILD=yes TEST=test FEATURES=normal CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+      BUILD=yes TEST=test FEATURES=normal CONFOPT= LEAK_CFLAGS="-DEXITFREE" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     - &linux-huge
-      BUILD=yes TEST="scripttests test_libvterm" CFLAGS="--coverage -DUSE_GCOV_FLUSH" LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+      BUILD=yes TEST="scripttests test_libvterm" CFLAGS="--coverage -DUSE_GCOV_FLUSH" LDFLAGS=--coverage FEATURES=huge LEAK_CFLAGS="-DEXITFREE" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
       CONFOPT="--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
     - &osx-huge # macOS build
-      BUILD=yes TEST=test FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+      BUILD=yes TEST=test FEATURES=huge LEAK_CFLAGS="-DEXITFREE" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
       CONFOPT="--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
     - &unittests
-      BUILD=no TEST=unittests CFLAGS="--coverage -DUSE_GCOV_FLUSH" LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=yes
+      BUILD=no TEST=unittests CFLAGS="--coverage -DUSE_GCOV_FLUSH" LDFLAGS=--coverage FEATURES=huge LEAK_CFLAGS="-DEXITFREE" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=yes
     - &asan # ASAN build
       SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
       ASAN_OPTIONS="print_stacktrace=1 log_path=asan" LSAN_OPTIONS="suppressions=$TRAVIS_BUILD_DIR/src/testdir/lsan-suppress.txt"
     - &shadowopt
-      SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow
+      LEAK_CFLAGS="-DEXITFREE" SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow
 
   linux: &linux
     os: linux
