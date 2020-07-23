@@ -198,11 +198,11 @@ find_exported(
 	char_u	*funcname;
 
 	// it could be a user function.
-	if (STRLEN(name) < sizeof(buffer) - 10)
+	if (STRLEN(name) < sizeof(buffer) - 15)
 	    funcname = buffer;
 	else
 	{
-	    funcname = alloc(STRLEN(name) + 10);
+	    funcname = alloc(STRLEN(name) + 15);
 	    if (funcname == NULL)
 		return -1;
 	}
