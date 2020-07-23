@@ -698,12 +698,13 @@ ex_let(exarg_T *eap)
     int		i;
     int		var_count = 0;
     int		semicolon = 0;
-    char_u	op[2];
+    char_u	op[4];
     char_u	*argend;
     int		first = TRUE;
     int		concat;
     int		has_assign;
     int		flags = eap->cmdidx == CMD_const ? LET_IS_CONST : 0;
+    int		vim9script = in_vim9script();
 
     // detect Vim9 assignment without ":let" or ":const"
     if (eap->arg == eap->cmd)
@@ -725,11 +726,11 @@ ex_let(exarg_T *eap)
 	// ":let" without "=": list variables
 	if (*arg == '[')
 	    emsg(_(e_invarg));
-	else if (expr[0] == '.')
-	    emsg(_("E985: .= is not supported with script version 2"));
+	else if (expr[0] == '.' && expr[1] == '=')
+	    emsg(_("E985: .= is not supported with script version >= 2"));
 	else if (!ends_excmd2(eap->cmd, arg))
 	{
-	    if (in_vim9script())
+	    if (vim9script)
 	    {
 		// Vim9 declaration ":let var: type"
 		arg = vim9_declare_scriptvar(eap, arg);
@@ -775,6 +776,7 @@ ex_let(exarg_T *eap)
     else
     {
 	evalarg_T   evalarg;
+	int	    len = 1;
 
 	rettv.v_type = VAR_UNKNOWN;
 	i = FAIL;
@@ -787,13 +789,25 @@ ex_let(exarg_T *eap)
 		if (vim_strchr((char_u *)"+-*/%.", *expr) != NULL)
 		{
 		    op[0] = *expr;   // +=, -=, *=, /=, %= or .=
+		    ++len;
 		    if (expr[0] == '.' && expr[1] == '.') // ..=
+		    {
 			++expr;
+			++len;
+		    }
 		}
-		expr = skipwhite(expr + 2);
+		expr += 2;
 	    }
 	    else
-		expr = skipwhite(expr + 1);
+		++expr;
+
+	    if (vim9script && (!VIM_ISWHITE(*argend) || !VIM_ISWHITE(*expr)))
+	    {
+		vim_strncpy(op, expr - len, len);
+		semsg(_(e_white_both), op);
+		i = FAIL;
+	    }
+	    expr = skipwhite(expr);
 
 	    if (eap->skip)
 		++emsg_skip;
@@ -817,7 +831,7 @@ ex_let(exarg_T *eap)
 	else if (i != FAIL)
 	{
 	    (void)ex_let_vars(eap->arg, &rettv, FALSE, semicolon, var_count,
-								 flags, op);
+								    flags, op);
 	    clear_tv(&rettv);
 	}
     }

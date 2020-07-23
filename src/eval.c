@@ -4996,7 +4996,8 @@ find_name_end(
     for (p = arg; *p != NUL
 		    && (eval_isnamec(*p)
 			|| (*p == '{' && !vim9script)
-			|| ((flags & FNE_INCL_BR) && (*p == '[' || *p == '.'))
+			|| ((flags & FNE_INCL_BR) && (*p == '['
+					|| (*p == '.' && eval_isnamec1(p[1]))))
 			|| mb_nest != 0
 			|| br_nest != 0); MB_PTR_ADV(p))
     {

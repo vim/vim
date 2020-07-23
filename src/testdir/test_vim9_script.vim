@@ -318,6 +318,15 @@ def Test_assignment_failure()
   call CheckDefFailure(['let var =234'], 'E1004:')
   call CheckDefFailure(['let var= 234'], 'E1004:')
 
+  call CheckScriptFailure(['vim9script', 'let var=234'], 'E1004:')
+  call CheckScriptFailure(['vim9script', 'let var=234'], "before and after '='")
+  call CheckScriptFailure(['vim9script', 'let var =234'], 'E1004:')
+  call CheckScriptFailure(['vim9script', 'let var= 234'], 'E1004:')
+  call CheckScriptFailure(['vim9script', 'let var = 234', 'var+=234'], 'E1004:')
+  call CheckScriptFailure(['vim9script', 'let var = 234', 'var+=234'], "before and after '+='")
+  call CheckScriptFailure(['vim9script', 'let var = "x"', 'var..="y"'], 'E1004:')
+  call CheckScriptFailure(['vim9script', 'let var = "x"', 'var..="y"'], "before and after '..='")
+
   call CheckDefFailure(['let true = 1'], 'E1034:')
   call CheckDefFailure(['let false = 1'], 'E1034:')
 
