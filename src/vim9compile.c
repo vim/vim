@@ -6945,6 +6945,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
     sctx_T	save_current_sctx = current_sctx;
     int		do_estack_push;
     int		emsg_before = called_emsg;
+    int		new_def_function = FALSE;
 
     // When using a function that was compiled before: Free old instructions.
     // Otherwise add a new entry in "def_functions".
@@ -6954,8 +6955,12 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 							 + ufunc->uf_dfunc_idx;
 	delete_def_function_contents(dfunc);
     }
-    else if (add_def_function(ufunc) == FAIL)
-	return FAIL;
+    else
+    {
+	if (add_def_function(ufunc) == FAIL)
+	    return FAIL;
+	new_def_function = TRUE;
+    }
 
     ufunc->uf_def_status = UF_COMPILING;
 
@@ -7439,10 +7444,14 @@ erret:
 	    delete_instr(((isn_T *)instr->ga_data) + idx);
 	ga_clear(instr);
 
-	// if using the last entry in the table we might as well remove it
-	if (!dfunc->df_deleted
+	// If using the last entry in the table and it was added above, we
+	// might as well remove it.
+	if (!dfunc->df_deleted && new_def_function
 			    && ufunc->uf_dfunc_idx == def_functions.ga_len - 1)
+	{
 	    --def_functions.ga_len;
+	    ufunc->uf_dfunc_idx = 0;
+	}
 	ufunc->uf_def_status = UF_NOT_COMPILED;
 
 	while (cctx.ctx_scope != NULL)
