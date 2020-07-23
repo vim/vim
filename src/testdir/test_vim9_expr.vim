@@ -1460,7 +1460,8 @@ enddef
 
 def Test_expr7_call()
   assert_equal('yes', 'yes'->Echo())
-  assert_equal('yes', 'yes'->s:EchoArg())
+  assert_equal('yes', 'yes'
+  			->s:EchoArg())
   assert_equal(1, !range(5)->empty())
   assert_equal([0, 1, 2], --3->range())
 
@@ -1531,6 +1532,8 @@ func Test_expr7_fails()
 
   call CheckDefFailure(["let x = ''", "let y = x.memb"], 'E715:')
 
+  call CheckDefFailure(["'yes'->", "Echo()"], 'E488:')
+
   call CheckDefExecFailure(["[1, 2->len()"], 'E697:')
   call CheckDefExecFailure(["#{a: 1->len()"], 'E488:')
   call CheckDefExecFailure(["{'a': 1->len()"], 'E723:')
@@ -1591,8 +1594,8 @@ enddef
 def Test_expr7_subscript_linebreak()
   let range = range(
   		3)
-  let l = range->
-  	map('string(v:key)')
+  let l = range
+	->map('string(v:key)')
   assert_equal(['0', '1', '2'], l)
 
   l = range

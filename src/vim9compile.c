@@ -3773,8 +3773,7 @@ compile_subscript(
 
 	    p += 2;
 	    *arg = skipwhite(p);
-	    if (may_get_next_line(p, arg, cctx) == FAIL)
-		return FAIL;
+	    // No line break supported right after "->".
 	    if (**arg == '{')
 	    {
 		// lambda call:  list->{lambda}
@@ -3785,6 +3784,11 @@ compile_subscript(
 	    {
 		// method call:  list->method()
 		p = *arg;
+		if (!eval_isnamec1(*p))
+		{
+		    semsg(_(e_trailing_arg), p);
+		    return FAIL;
+		}
 		if (ASCII_ISALPHA(*p) && p[1] == ':')
 		    p += 2;
 		for ( ; eval_isnamec1(*p); ++p)
@@ -7045,7 +7049,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 		&& !(*line == '#' && (line == cctx.ctx_line_start
 						    || VIM_ISWHITE(line[-1]))))
 	{
-	    semsg(_("E488: Trailing characters: %s"), line);
+	    semsg(_(e_trailing_arg), line);
 	    goto erret;
 	}
 	else
