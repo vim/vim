@@ -1773,7 +1773,7 @@ do_one_cmd(
  */
     cmd = ea.cmd;
 #ifdef FEAT_EVAL
-    starts_with_quote = vim9script && *ea.cmd == '\'';
+    starts_with_quote = vim9script && !starts_with_colon && *ea.cmd == '\'';
     if (!starts_with_quote)
 #endif
 	ea.cmd = skip_range(ea.cmd, NULL);

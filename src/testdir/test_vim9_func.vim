@@ -405,6 +405,7 @@ def Test_vim9script_call()
     ("some")->MyFunc()
     assert_equal('some', var)
 
+    # line starting with single quote is not a mark
     'asdfasdf'->MyFunc()
     assert_equal('asdfasdf', var)
 
@@ -413,6 +414,14 @@ def Test_vim9script_call()
     enddef
     UseString()
     assert_equal('xyork', var)
+
+    # prepending a colon makes it a mark
+    new
+    setline(1, ['aaa', 'bbb', 'ccc'])
+    normal! 3Gmt1G
+    :'t
+    assert_equal(3, getcurpos()[1])
+    bwipe!
 
     MyFunc(
         'continued'
