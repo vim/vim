@@ -2061,12 +2061,22 @@ do_one_cmd(
 	    goto doend;
 	}
 
-	if (text_locked() && !(ea.argt & EX_CMDWIN)
-		&& !IS_USER_CMDIDX(ea.cmdidx))
+	if (!IS_USER_CMDIDX(ea.cmdidx))
 	{
-	    // Command not allowed when editing the command line.
-	    errormsg = _(get_text_locked_msg());
-	    goto doend;
+#ifdef FEAT_CMDWIN
+	    if (cmdwin_type != 0 && !(ea.argt & EX_CMDWIN))
+	    {
+		// Command not allowed in the command line window
+		errormsg = _(e_cmdwin);
+		goto doend;
+	    }
+#endif
+	    if (text_locked() && !(ea.argt & EX_LOCK_OK))
+	    {
+		// Command not allowed when text is locked
+		errormsg = _(get_text_locked_msg());
+		goto doend;
+	    }
 	}
 
 	// Disallow editing another buffer when "curbuf_lock" is set.
