@@ -494,18 +494,9 @@ ExpandOne(
     void
 ExpandInit(expand_T *xp)
 {
-    xp->xp_pattern = NULL;
-    xp->xp_pattern_len = 0;
+    CLEAR_POINTER(xp);
     xp->xp_backslash = XP_BS_NONE;
-#ifndef BACKSLASH_IN_FILENAME
-    xp->xp_shell = FALSE;
-#endif
     xp->xp_numfiles = -1;
-    xp->xp_files = NULL;
-#if defined(FEAT_EVAL)
-    xp->xp_arg = NULL;
-#endif
-    xp->xp_line = NULL;
 }
 
 /*
@@ -2425,7 +2416,7 @@ expand_shellcmd(
 # if defined(FEAT_EVAL)
 /*
  * Call "user_expand_func()" to invoke a user defined Vim script function and
- * return the result (either a string or a List).
+ * return the result (either a string, a List or NULL).
  */
     static void *
 call_user_expand_func(
