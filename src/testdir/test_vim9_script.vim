@@ -468,6 +468,54 @@ def Test_delfunction()
       'enddef',
       'DoThat()',
       ], 'E1084:')
+
+  # Check that global :def function can be replaced and deleted
+  let lines =<< trim END
+      vim9script
+      def g:Global(): string
+        return "yes"
+      enddef
+      assert_equal("yes", g:Global())
+      def! g:Global(): string
+        return "no"
+      enddef
+      assert_equal("no", g:Global())
+      delfunc g:Global
+      assert_false(exists('*g:Global'))
+  END
+  CheckScriptSuccess(lines)
+
+  # Check that global function can be replaced by a :def function and deleted
+  lines =<< trim END
+      vim9script
+      func g:Global()
+        return "yes"
+      endfunc
+      assert_equal("yes", g:Global())
+      def! g:Global(): string
+        return "no"
+      enddef
+      assert_equal("no", g:Global())
+      delfunc g:Global
+      assert_false(exists('*g:Global'))
+  END
+  CheckScriptSuccess(lines)
+
+  # Check that global :def function can be replaced by a function and deleted
+  lines =<< trim END
+      vim9script
+      def g:Global(): string
+        return "yes"
+      enddef
+      assert_equal("yes", g:Global())
+      func! g:Global()
+        return "no"
+      endfunc
+      assert_equal("no", g:Global())
+      delfunc g:Global
+      assert_false(exists('*g:Global'))
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 func Test_wrong_type()

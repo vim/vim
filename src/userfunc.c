@@ -1148,6 +1148,8 @@ func_clear_free(ufunc_T *fp, int force)
     func_clear(fp, force);
     if (force || fp->uf_dfunc_idx == 0)
 	func_free(fp, force);
+    else
+	fp->uf_flags |= FC_DEAD;
 }
 
 
@@ -2557,12 +2559,6 @@ def_function(exarg_T *eap, char_u *name_arg)
     char_u	*heredoc_trimmed = NULL;
     int		vim9script = in_vim9script();
 
-    if (vim9script && eap->forceit)
-    {
-	emsg(_(e_nobang));
-	return NULL;
-    }
-
     /*
      * ":function" without argument: list functions.
      */
@@ -2731,6 +2727,13 @@ def_function(exarg_T *eap, char_u *name_arg)
 	    p = vim_strchr(p, '(');
     }
     p = skipwhite(p + 1);
+
+    // In Vim9 script only global functions can be redefined.
+    if (vim9script && eap->forceit && !is_global)
+    {
+	emsg(_(e_nobang));
+	goto ret_free;
+    }
 
     ga_init2(&newlines, (int)sizeof(char_u *), 3);
 
