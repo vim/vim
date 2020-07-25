@@ -3755,7 +3755,9 @@ compile_subscript(
 	    }
 	}
 
-	if (*p == '(')
+	// Do not skip over white space to find the "(", "exeucte 'x' ()" is
+	// not a function call.
+	if (**arg == '(')
 	{
 	    garray_T    *stack = &cctx->ctx_type_stack;
 	    type_T	*type;
