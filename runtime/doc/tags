@@ -7399,7 +7399,6 @@ in_name	channel.txt	/*in_name*
 in_top	channel.txt	/*in_top*
 inactive-buffer	windows.txt	/*inactive-buffer*
 include-search	tagsrch.txt	/*include-search*
-inclusion	helphelp.txt	/*inclusion*
 inclusive	motion.txt	/*inclusive*
 incomp-small-6	version6.txt	/*incomp-small-6*
 incompatible-5	version5.txt	/*incompatible-5*

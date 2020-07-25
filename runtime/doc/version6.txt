@@ -1867,7 +1867,7 @@ Highlighting:
 - Added "default" argument for ":highlight".  When included, the command is
   ignored if highlighting for the group was already defined.
   All syntax files now use ":hi default ..." to allow the user to specify
-  colors in his vimrc file.  Also, the "if did_xxx_syntax_inits" is not needed
+  colors in their vimrc file.  Also, the "if did_xxx_syntax_inits" is not needed
   anymore.  This greatly simplifies using non-default colors for a specific
   language.
 - Adjusted colortest.vim: Included colors on normal background and reduced the
@@ -2101,7 +2101,7 @@ Added src/README.txt to give an overview of the main parts of the source code.
 The Unix Makefile now fully supports using $(DESTDIR) to install to a specific
 location.  Replaces the manual setting of *ENDLOC variables.
 
-Added the possibility for a maintainer of a binary version to include his
+Added the possibility for a maintainer of a binary version to include their
 e-mail address with the --with-compiledby configure argument.
 
 Included features are now grouped in "tiny", "small", "normal", "big" and

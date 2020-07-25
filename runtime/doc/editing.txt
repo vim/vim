@@ -1547,7 +1547,7 @@ Notes:
 - Text you copy or delete goes to the numbered registers.  The registers can
   be saved in the .viminfo file, where they could be read.  Change your
   'viminfo' option to be safe.
-- Someone can type commands in Vim when you walk away for a moment, he should
+- Someone can type commands in Vim when you walk away for a moment, they should
   not be able to get the key.
 - If you make a typing mistake when entering the key, you might not be able to
   get your text back!

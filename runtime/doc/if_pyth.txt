@@ -918,8 +918,8 @@ Note that for `has('pythonx')` to work it may try to dynamically load Python 3
 or 2.  This may have side effects, especially when Vim can only load one of
 the two.
 
-If a user prefers Python 2 and want to fallback to Python 3, he needs to set
-'pyxversion' explicitly in his |.vimrc|.  E.g.: >
+If a user prefers Python 2 and wants to fallback to Python 3, they need to set
+'pyxversion' explicitly in their |.vimrc|.  E.g.: >
 	if has('python')
 	  set pyx=2
 	elseif has('python3')

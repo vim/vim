@@ -210,7 +210,7 @@ LIMITS ON ENCRYPTION
 
 The encryption algorithm used by Vim is not very strong.  It is good enough to
 keep out the casual prowler, but not good enough to keep out a cryptology
-expert with lots of time on his hands.  The text in the swap file and the undo
+expert with lots of time on their hands.  The text in the swap file and the undo
 file is also encrypted.  However, this is done block-by-block and may reduce
 the time needed to crack a password.  You can disable the swap file, but then
 a crash will cause you to lose your work, since Vim keeps all the text in

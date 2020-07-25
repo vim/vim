@@ -22293,7 +22293,7 @@ Solution:   Add it to the list of flaky tests.
 Files:      src/testdir/runtest.vim
 
 Patch 8.0.1263
-Problem:    Others can read the swap file if a user is careless with his
+Problem:    Others can read the swap file if a user is careless with their
             primary group.
 Solution:   If the group permission allows for reading but the world
             permissions doesn't, make sure the group is right.
