@@ -755,9 +755,27 @@ call_def_function(
 	    argc -= vararg_count;
 	if (exe_newlist(vararg_count, &ectx) == FAIL)
 	    goto failed_early;
+
+	// Check the type of the list items.
+	tv = STACK_TV_BOT(-1);
+	if (ufunc->uf_va_type != NULL
+		&& ufunc->uf_va_type->tt_member != &t_any
+		&& tv->vval.v_list != NULL)
+	{
+	    type_T	*expected = ufunc->uf_va_type->tt_member;
+	    listitem_T	*li = tv->vval.v_list->lv_first;
+
+	    for (idx = 0; idx < vararg_count; ++idx)
+	    {
+		if (check_typval_type(expected, &li->li_tv) == FAIL)
+		    goto failed_early;
+		li = li->li_next;
+	    }
+	}
+
 	if (defcount > 0)
 	    // Move varargs list to below missing default arguments.
-	    *STACK_TV_BOT(defcount- 1) = *STACK_TV_BOT(-1);
+	    *STACK_TV_BOT(defcount - 1) = *STACK_TV_BOT(-1);
 	--ectx.ec_stack.ga_len;
     }
 

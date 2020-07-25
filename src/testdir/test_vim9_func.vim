@@ -164,7 +164,55 @@ def Test_call_def_varargs()
   assert_equal('one,foo', MyDefVarargs('one'))
   assert_equal('one,two', MyDefVarargs('one', 'two'))
   assert_equal('one,two,three', MyDefVarargs('one', 'two', 'three'))
-  call CheckDefFailure(['MyDefVarargs("one", 22)'], 'E1013: argument 2: type mismatch, expected string but got number')
+  CheckDefFailure(['MyDefVarargs("one", 22)'],
+      'E1013: argument 2: type mismatch, expected string but got number')
+  CheckDefFailure(['MyDefVarargs("one", "two", 123)'],
+      'E1013: argument 3: type mismatch, expected string but got number')
+
+  let lines =<< trim END
+      vim9script
+      def Func(...l: list<string>)
+        echo l
+      enddef
+      Func('a', 'b', 'c')
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      def Func(...l: list<string>)
+        echo l
+      enddef
+      Func()
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      def Func(...l: list<string>)
+        echo l
+      enddef
+      Func(1, 2, 3)
+  END
+  CheckScriptFailure(lines, 'E1013:')
+
+  lines =<< trim END
+      vim9script
+      def Func(...l: list<string>)
+        echo l
+      enddef
+      Func('a', 9)
+  END
+  CheckScriptFailure(lines, 'E1013:')
+
+  lines =<< trim END
+      vim9script
+      def Func(...l: list<string>)
+        echo l
+      enddef
+      Func(1, 'a')
+  END
+  CheckScriptFailure(lines, 'E1013:')
 enddef
 
 let s:value = ''
