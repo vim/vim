@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Jul 17
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Jul 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -184,8 +184,9 @@ To intentionally avoid a variable being available later, a block can be used:
 	echo temp  " Error!
 
 An existing variable cannot be assigned to with `:let`, since that implies a
-declaration.  An exception is global variables: these can be both used with
-and without `:let`, because there is no rule about where they are declared.
+declaration.  Global, window, tab, buffer and Vim variables can only be used
+without `:let`, because they are are not really declared, they can also be
+deleted with `:unlet`.
 
 Variables cannot shadow previously defined variables.
 Variables may shadow Ex commands, rename the variable if needed.
@@ -194,11 +195,18 @@ Global variables and user defined functions must be prefixed with "g:", also
 at the script level. >
 	vim9script
 	let script_local = 'text'
-	let g:global = 'value'
+	g:global = 'value'
 	let Funcref = g:ThatFunction
 
 Since "&opt = value" is now assigning a value to option "opt", ":&" cannot be
 used to repeat a `:substitute` command.
+
+							*E1092*
+Declaring more than one variable at a time, using the unpack notation, is
+currently not supported: >
+	let [v1, v2] = GetValues()  # Error!
+That is because the type needs to be inferred from the list item type, which
+isn't that easy.
 
 
 Omitting :call and :eval ~
@@ -209,15 +217,15 @@ Using `:call` is still possible, but this is discouraged.
 
 A method call without `eval` is possible, so long as the start is an
 identifier or can't be an Ex command.  It does NOT work for string constants: >
-	myList->add(123)		" works
-	g:myList->add(123)		" works
-	[1, 2, 3]->Process()		" works
-	#{a: 1, b: 2}->Process()	" works
-	{'a': 1, 'b': 2}->Process()	" works
-	"foobar"->Process()		" does NOT work
-	("foobar")->Process()		" works
-	'foobar'->Process()		" does NOT work
-	('foobar')->Process()		" works
+	myList->add(123)		# works
+	g:myList->add(123)		# works
+	[1, 2, 3]->Process()		# works
+	#{a: 1, b: 2}->Process()	# works
+	{'a': 1, 'b': 2}->Process()	# works
+	"foobar"->Process()		# does NOT work
+	("foobar")->Process()		# works
+	'foobar'->Process()		# does NOT work
+	('foobar')->Process()		# works
 
 In case there is ambiguity between a function name and an Ex command, use ":"
 to make clear you want to use the Ex command.  For example, there is both the
@@ -277,10 +285,14 @@ possible just before or after the operator.  For example: >
 			? PosFunc(arg)
 			: NegFunc(arg)
 
+For a method call using "->" and a member using a dot, a line break is allowed
+before it: >
 	let result = GetBuilder()
 			->BuilderSetWidth(333)
 			->BuilderSetHeight(777)
 			->BuilderBuild()
+	let result = MyDict
+			.member
 
 <							*E1050*
 To make it possible for the operator at the start of the line to be
@@ -486,19 +498,20 @@ THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 			When the caller omits an argument the {value} is used.
 
 			The function will be compiled into instructions when
-			called, or when `:defcompile` is used.  Syntax and
-			type errors will be produced at that time.
+			called, or when `:disassemble` or `:defcompile` is
+			used.  Syntax and type errors will be produced at that
+			time.
 
-			NOTE: It is possible to nest `:def` inside another
-			`:def`, but it is not possible to nest `:def` inside
-			`:function`, for backwards compatibility.
+			It is possible to nest `:def` inside another `:def` or
+			`:function` up to about 50 levels deep.
 
 			[!] is used as with `:function`.  Note that in Vim9
 			script script-local functions cannot be deleted or
 			redefined later in the same script.
 
 							*:enddef*
-:enddef			End of a function defined with `:def`.
+:enddef			End of a function defined with `:def`. It should be on
+			a line by its own.
 
 
 If the script the function is defined in is Vim9 script, then script-local
@@ -559,7 +572,7 @@ Not supported yet:
 	tuple<a: {type}, b: {type}, ...>
 
 These types can be used in declarations, but no value will have this type:
-	{type}|{type}
+	{type}|{type}  {not implemented yet}
 	void
 	any
 
@@ -661,19 +674,15 @@ The original value of 'cpoptions' is restored at the end of the script.
 
 Export ~
 							*:export* *:exp*
-Exporting one item can be written as: >
+Exporting an item can be written as: >
 	export const EXPORTED_CONST = 1234
 	export let someValue = ...
 	export def MyFunc() ...
 	export class MyClass ...
 
 As this suggests, only constants, variables, `:def` functions and classes can
-be exported.
+be exported. {classes are not implemented yet}
 
-Alternatively, an export statement can be used to export several already
-defined (otherwise script-local) items: >
-	export {EXPORTED_CONST, someValue, MyFunc, MyClass}
-<
 							*E1042*
 `:export` can only be used in Vim9 script, at the script level.
 

@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.2.  Last change: 2020 Apr 23
+*cmdline.txt*   For Vim version 8.2.  Last change: 2020 Jul 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

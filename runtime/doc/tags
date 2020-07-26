@@ -1979,6 +1979,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :<sfile>	cmdline.txt	/*:<sfile>*
 :<sflnum>	cmdline.txt	/*:<sflnum>*
 :<slnum>	cmdline.txt	/*:<slnum>*
+:<stack>	cmdline.txt	/*:<stack>*
 :=	various.txt	/*:=*
 :>	change.txt	/*:>*
 :?	cmdline.txt	/*:?*
@@ -3647,6 +3648,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 <sfile>	cmdline.txt	/*<sfile>*
 <sflnum>	cmdline.txt	/*<sflnum>*
 <slnum>	cmdline.txt	/*<slnum>*
+<stack>	cmdline.txt	/*<stack>*
 <xCSI>	intro.txt	/*<xCSI>*
 <xDown>	term.txt	/*<xDown>*
 <xEnd>	term.txt	/*<xEnd>*
@@ -3898,6 +3900,7 @@ E1050	vim9.txt	/*E1050*
 E107	eval.txt	/*E107*
 E108	eval.txt	/*E108*
 E109	eval.txt	/*E109*
+E1092	vim9.txt	/*E1092*
 E1094	vim9.txt	/*E1094*
 E11	cmdline.txt	/*E11*
 E110	eval.txt	/*E110*
@@ -8198,6 +8201,7 @@ no_plugin_maps	filetype.txt	/*no_plugin_maps*
 nocombine	syntax.txt	/*nocombine*
 non-greedy	pattern.txt	/*non-greedy*
 non-zero-arg	eval.txt	/*non-zero-arg*
+none-function_argument	eval.txt	/*none-function_argument*
 none-variable	eval.txt	/*none-variable*
 normal-index	index.txt	/*normal-index*
 not-compatible	usr_01.txt	/*not-compatible*

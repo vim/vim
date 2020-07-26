@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Jul 10
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Jul 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,25 +39,36 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 Making everything work:
-- in Vim9 script expressions are evaluated differently, not using a type.
-  e.g. "'' == 0" does not give an error and evaluates to true.
-- cannot put # comment  after assert() in :def function
-- more return types depending on the first argument, like sort().
+- more items in https://github.com/vim/vim/issues/6507
+- More "goto failed" with check for trylevel.
+- memory leak in test_vim9_script
 - Check that when sourcing a Vim9 script, only the global items can be used.
 - :put with a "=" register argument doesn't work, need to find the expression
   and compile it. (#6397)
-- should  "'text'->method()"  work?  't is a range, but 'text isn't.
+- At the script level, keep script variables local to the block they are
+  declared in?  Need to remember what variables were declared and delete them
+  when leaving the block.
+- Implement { } block at the script level.
+- need to check type when a declaration specifies a type: #6507
+	let nr: number = 'asdf'
+- Make map() give an error if the resulting type is wrong.
+  Add mapnew() to create a new List/Dict for the result, which can have a
+  different value type.
+- Implement "export {one, two three}".
+- ISN_CHECKTYPE could use check_argtype()
 - Slice of list: [1, 2, 3][1:2].
+- give error for variable name:
+      let p = function('NoSuchFunc')
 - Give runtime error if function argument is wrong.
 	def Increment(nr: number)
 	range(3)->Increment()
 - Expand `=expr` in :next, :argedit, :argadd, :argdelete, :drop
 - Expand `=expr` in :vimgrep, :vimgrepadd, :lvimgrep, :lvimgrepadd
 - Expand `=expr` in :mkspell
-- Make "true" and "false" work in vim9script
 - Test that a function defined inside a :def function is local to that
   function, g: functions can be defined and script-local functions cannot be
   defined.
+- Support passing v:none to use the default argument value. (#6504)
 - make 0 == 'string' fail on the script level, like inside :def.
 - Check that when using a user function name without prefix, it does not find
   a global function.  Prefixing g: is required.
@@ -77,10 +88,6 @@ Making everything work:
 - memory leaks in test_vim9_cmd
 - When evaluating constants for script variables, some functions could work:
     has('asdf'), len('string')
-- Support type for ":let"/":const" at script level for Vim9 script.
-    (Ben Jackson, #5671)
-    Can we share the code from ex_let_const() between direct execution and
-    compiling?
 - Implement "as Name" in "import Item as Name from ..."
 - Disallow unlet for local/script/imported vars
 - Make "++nr" work.
@@ -91,6 +98,7 @@ Making everything work:
 - eval_expr() call in dbg_parsearg() and debuggy_find()
 - has() is compiled as a constant, but some checks are dynamic.
   Check for dynamic values, such as "gui_running".
+- Implement command modifiers, such as "silent". (#6530)
 New syntax and functionality:
 Improve error checking:
 - "echo Func()" is an error if Func() does not return anything.
@@ -139,11 +147,15 @@ Further improvements:
 
 Popup windows:
 - Cursor not updated before a redraw, making it jump. (#5943)
+- Add a termcap entry for changing the cursor when it goes under the popup and
+  back.  like t_SI and t_EI  (t_SU and t_EU, where "U" means under?)
 - With terminal in popup, allow for popup_hide() to temporarily hide it.?
 - Fire some autocommand event after a new popup window was created and
   positioned?  PopupNew?  Could be used to set some options or move it out of
   the way. (#5737)
   However, it may also cause trouble, changing the popup of another plugin.
+- Add a way to use popup_menu() synchronously: instead of invoking the
+  callback, return the choice. (Ben Jackson, #6534)
 - Use popup (or popup menu) for command line completion
 - When using a popup for the info of a completion menu, and there is not
   enough space, let the popup overlap with the menu. (#4544)
@@ -199,6 +211,9 @@ Terminal debugger:
 
 Terminal emulator window:
 - No support for underline color, t_8u.
+- When in terminal-Normal mode when the job finishes, the cursor jumps to the
+  end but the window is not updated.  This only happens when typing "a".
+      :term bash -c "for V in {0..5}; do echo $V; sleep 1; done"
 - When started with ":terminal ++close" and the shell exits but there is a
   background process, the window remains open, because the channel still
   exists (and output still shows).  Perhaps close the window when an explicit
@@ -238,7 +253,7 @@ Terminal emulator window:
   conversions.
 
 Error numbers available:
-E489, E610, E611, E653, E856
+E610, E611, E653
 
 Remove SPACE_IN_FILENAME ? It is only used for completion.
 
@@ -269,8 +284,15 @@ autocommands for the buffer lifecycle:
     BufIsRenamed  (after buffer ID gets another name)
 The buffer list and windows are locked, no changes possible
 
-How about removing Atari MiNT support?
-    src/Make_mint.mak, src/os_mint.h, matches with __MINT__
+Make it possible to map (console and GUI):  #6457
+    <C-[>   0x27   or is this <Esc> ?
+    <C-\>   0x28
+    <C-]>   0x29
+    <C-^>   0x30
+    <C-_>   0x31
+
+Patch for Template string: #4634
+Have another look at the implementation.
 
 Add the <=> (spaceship) operator and "cond ?< expr ?= expr ?> expr"
     replace this:
@@ -280,6 +302,13 @@ Add the <=> (spaceship) operator and "cond ?< expr ?= expr ?> expr"
     by:
 	let res = GetLeftFunc() <=> GetRightFunc() ?< lower ?= equal ?> upper
 Patch to make :q work with local arglist. (Christian Brabandt, #6286)
+
+Lua: updating wrong buffer when using newly created, unloaded buffer.
+(#6539)
+
+When "+ register is set then "" points to it.  If another Vim grabs the "+
+register, then "" doesn't contain anything.  Make it still follow "+.
+(#6435)
 
 Patch to fix drawing error with DirectX. (James Grant, #5688)
 Causes flicker on resizing. Workaround from Ken Takata.
@@ -347,6 +376,10 @@ Test loose_clipboard() by selecting text before suspending.
 
 Undo puts cursor in wrong line after "cG<Esc>" undo.
 
+Implement completion for "breakadd".  Should expand the second argument, e.g.
+"func", and then function names after ":breakadd func".  Including
+script-local functions.
+
 :unmap <c-n> gives error but does remove the mapping. (Antony Scriven, 2019
 Dec 19)
 
@@ -385,10 +418,6 @@ behavior of i_CTRl-R_CTRL-R differs from documentation. (Paul Desmond Parker,
 ":bnext" in a help buffer is supposed to go to the next help buffer, but it
 goes to any buffer, and then :bnext skips help buffers, since they are
 unlisted. (#4478)
-
-Patch for Template string: #4634
-Copies the text twice, not very efficient.  Requires a separate implementation
-for Vim9 script, compiling the string parts and expressions.
 
 Statusline highlighting error, off by one. (#5599)
 
@@ -1927,13 +1956,6 @@ Szamotulski, 2012 Nov 8)
 
 Session file creation: 'autochdir' causes trouble.  Keep it off until after
 loading all files.
-
-MS-Windows resizing problems:
-- Windows window on screen positioning: Patch by Yukihiro Nakadaira, 2012 Jun
-  20.  Uses getWindowRect() instead of GetWindowPlacement()
-- Win32: When the taskbar is at the top of the screen creating the tabbar
-  causes the window to move unnecessarily. (William E. Skeith III, 2012 Jan
-  12) Patch: 2012 Jan 13  Needs more work (2012 Feb 2)
 
 'iminsert' global value set when using ":setlocal iminsert"? (Wu, 2012 Jun 23)
 

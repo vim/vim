@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Jul 19
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Jul 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1994,6 +1994,8 @@ v:mouse_col	Column number for a mouse click obtained with |getchar()|.
 					*v:none* *none-variable* *None*
 v:none		An empty String. Used to put an empty item in JSON.  See
 		|json_encode()|.
+		This can also be used as a function argument to use the
+		default value, see |none-function_argument|.
 		When used as a number this evaluates to zero.
 		When used as a string this evaluates to "v:none". >
 			echo v:none
@@ -11710,7 +11712,7 @@ The argument default expressions are evaluated at the time of the function
 call, not definition.  Thus it is possible to use an expression which is
 invalid the moment the function is defined.  The expressions are also only
 evaluated when arguments are not specified during a call.
-
+						*none-function_argument*
 You can pass |v:none| to use the default expression.  Note that this means you
 cannot pass v:none as an ordinary value when an argument has a default
 expression.
