@@ -114,7 +114,7 @@ estack_pop(void)
  * "is_sfile" is TRUE for <sfile> itself.
  */
     char_u *
-estack_sfile(int is_sfile)
+estack_sfile(int is_sfile UNUSED)
 {
     estack_T	*entry;
 #ifdef FEAT_EVAL
