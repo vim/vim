@@ -461,7 +461,7 @@ get_emsg_source(void)
 
     if (SOURCING_NAME != NULL && other_sourcing_name())
     {
-	char_u	    *sname = estack_sfile();
+	char_u	    *sname = estack_sfile(FALSE);
 	char_u	    *tofree = sname;
 
 	if (sname == NULL)

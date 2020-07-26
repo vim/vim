@@ -4,7 +4,7 @@ estack_T *estack_push(etype_T type, char_u *name, long lnum);
 estack_T *estack_push_ufunc(ufunc_T *ufunc, long lnum);
 int estack_top_is_ufunc(ufunc_T *ufunc, long lnum);
 estack_T *estack_pop(void);
-char_u *estack_sfile(void);
+char_u *estack_sfile(int is_sfile);
 void ex_runtime(exarg_T *eap);
 int do_in_path(char_u *path, char_u *name, int flags, void (*callback)(char_u *fname, void *ck), void *cookie);
 int do_in_runtimepath(char_u *name, int flags, void (*callback)(char_u *fname, void *ck), void *cookie);

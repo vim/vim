@@ -290,7 +290,7 @@ cause_errthrow(
 
 		    // Get the source name and lnum now, it may change before
 		    // reaching do_errthrow().
-		    elem->sfile = estack_sfile();
+		    elem->sfile = estack_sfile(FALSE);
 		    elem->slnum = SOURCING_LNUM;
 		}
 	    }
@@ -549,7 +549,7 @@ throw_exception(void *value, except_type_T type, char_u *cmdname)
     }
     else
     {
-	excp->throw_name = estack_sfile();
+	excp->throw_name = estack_sfile(FALSE);
 	if (excp->throw_name == NULL)
 	    excp->throw_name = vim_strsave((char_u *)"");
 	if (excp->throw_name == NULL)
