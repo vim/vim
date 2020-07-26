@@ -3115,6 +3115,11 @@ func Test_popupmenu_info_border()
   call term_sendkeys(buf, "a\<C-X>\<C-U>")
   call VerifyScreenDump(buf, 'Test_popupwin_infopopup_8', {})
 
+  call term_sendkeys(buf, " \<Esc>")
+  call term_sendkeys(buf, ":set completepopup+=width:10\<CR>")
+  call term_sendkeys(buf, "a\<C-X>\<C-U>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_9', {})
+
   call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
   call delete('XtestInfoPopup')
@@ -3435,6 +3440,11 @@ func Test_popupwin_atcursor_far_right()
   call setline(1, repeat('=', &columns))
   normal! ggg$
   let winid = popup_atcursor(repeat('x', 500), #{moved: 'any', border: []})
+
+  " 'signcolumn' was getting reset
+  call setwinvar(winid, '&signcolumn', 'yes')
+  call popup_setoptions(winid, {'zindex': 1000})
+  call assert_equal('yes', getwinvar(winid, '&signcolumn'))
 
   call popup_close(winid)
   bwipe!

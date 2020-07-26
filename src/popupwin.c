@@ -740,8 +740,6 @@ apply_general_options(win_T *wp, dict_T *dict)
 	set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
 						   str, OPT_FREE|OPT_LOCAL, 0);
 
-    set_string_option_direct_in_win(wp, (char_u *)"signcolumn", -1,
-					(char_u *)"no", OPT_FREE|OPT_LOCAL, 0);
     set_padding_border(dict, wp->w_popup_padding, "padding", 999);
     set_padding_border(dict, wp->w_popup_border, "border", 1);
 
@@ -946,6 +944,10 @@ apply_options(win_T *wp, dict_T *dict)
     int		nr;
 
     apply_move_options(wp, dict);
+
+    set_string_option_direct_in_win(wp, (char_u *)"signcolumn", -1,
+					(char_u *)"no", OPT_FREE|OPT_LOCAL, 0);
+
     apply_general_options(wp, dict);
 
     nr = dict_get_number(dict, (char_u *)"hidden");
