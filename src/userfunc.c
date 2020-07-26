@@ -123,7 +123,7 @@ one_function_arg(char_u *arg, garray_T *newargs, garray_T *argtypes, int skip)
 		return arg;
 	    }
 	    type = skipwhite(p);
-	    p = skip_type(type);
+	    p = skip_type(type, TRUE);
 	    type = vim_strnsave(type, p - type);
 	}
 	else if (*skipwhite(p) != '=')
@@ -2778,7 +2778,7 @@ def_function(exarg_T *eap, char_u *name_arg)
 	if (*p == ':')
 	{
 	    ret_type = skipwhite(p + 1);
-	    p = skip_type(ret_type);
+	    p = skip_type(ret_type, FALSE);
 	    if (p > ret_type)
 	    {
 		ret_type = vim_strnsave(ret_type, p - ret_type);

@@ -350,6 +350,19 @@ def Test_call_funcref()
     let Funcref: func(string) = function('UseNumber')
   END
   CheckScriptFailure(lines, 'E1013: type mismatch, expected func(string) but got func(number)')
+
+  lines =<< trim END
+    vim9script
+    def EchoNr(nr = 34)
+      g:echo = nr
+    enddef
+    let Funcref: func(?number) = function('EchoNr')
+    Funcref()
+    assert_equal(34, g:echo)
+    Funcref(123)
+    assert_equal(123, g:echo)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 let SomeFunc = function('len')

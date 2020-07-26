@@ -1013,7 +1013,7 @@ skip_var_one(char_u *arg, int include_type)
 	if (end == arg + 2 && end[-1] == ':')
 	    --end;
 	if (*end == ':')
-	    end = skip_type(skipwhite(end + 1));
+	    end = skip_type(skipwhite(end + 1), FALSE);
     }
     return end;
 }

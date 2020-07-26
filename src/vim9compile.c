@@ -534,8 +534,16 @@ typval2type(typval_T *tv, garray_T *type_gap)
 	if (name != NULL)
 	    // TODO: how about a builtin function?
 	    ufunc = find_func(name, FALSE, NULL);
-	if (ufunc != NULL && ufunc->uf_func_type != NULL)
-	    return ufunc->uf_func_type;
+	if (ufunc != NULL)
+	{
+	    // May need to get the argument types from default values by
+	    // compiling the function.
+	    if (ufunc->uf_def_status == UF_TO_BE_COMPILED
+			    && compile_def_function(ufunc, TRUE, NULL) == FAIL)
+		return NULL;
+	    if (ufunc->uf_func_type != NULL)
+		return ufunc->uf_func_type;
+	}
     }
 
     actual = alloc_type(type_gap);
@@ -1916,12 +1924,15 @@ free_locals(cctx_T *cctx)
 
 /*
  * Skip over a type definition and return a pointer to just after it.
+ * When "optional" is TRUE then a leading "?" is accepted.
  */
     char_u *
-skip_type(char_u *start)
+skip_type(char_u *start, int optional)
 {
     char_u *p = start;
 
+    if (optional && *p == '?')
+	++p;
     while (ASCII_ISALNUM(*p) || *p == '_')
 	++p;
 
@@ -1929,7 +1940,7 @@ skip_type(char_u *start)
     if (*skipwhite(p) == '<')
     {
 	p = skipwhite(p);
-	p = skip_type(skipwhite(p + 1));
+	p = skip_type(skipwhite(p + 1), FALSE);
 	p = skipwhite(p);
 	if (*p == '>')
 	    ++p;
@@ -1945,7 +1956,7 @@ skip_type(char_u *start)
 	    {
 		char_u *sp = p;
 
-		p = skip_type(p);
+		p = skip_type(p, TRUE);
 		if (p == sp)
 		    return p;  // syntax error
 		if (*p == ',')
@@ -1954,7 +1965,7 @@ skip_type(char_u *start)
 	    if (*p == ')')
 	    {
 		if (p[1] == ':')
-		    p = skip_type(skipwhite(p + 2));
+		    p = skip_type(skipwhite(p + 2), FALSE);
 		else
 		    ++p;
 	    }
@@ -1962,7 +1973,7 @@ skip_type(char_u *start)
 	else
 	{
 	    // handle func: return_type
-	    p = skip_type(skipwhite(p + 1));
+	    p = skip_type(skipwhite(p + 1), FALSE);
 	}
     }
 
