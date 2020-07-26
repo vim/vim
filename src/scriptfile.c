@@ -157,18 +157,18 @@ estack_sfile(int is_sfile UNUSED)
 		last_type = entry->es_type;
 	    }
 	    len += STRLEN(type_name);
-	    if (ga_grow(&ga, len) == FAIL)
+	    if (ga_grow(&ga, (int)len) == FAIL)
 		break;
 	    if (idx == exestack.ga_len - 1 || entry->es_lnum == 0)
 		// For the bottom entry: do not add the line number, it is used
 		// in <slnum>.  Also leave it out when the number is not set.
-		vim_snprintf(ga.ga_data + ga.ga_len, len, "%s%s%s",
+		vim_snprintf((char *)ga.ga_data + ga.ga_len, len, "%s%s%s",
 				type_name, entry->es_name,
 				idx == exestack.ga_len - 1 ? "" : "..");
 	    else
-		vim_snprintf(ga.ga_data + ga.ga_len, len, "%s%s[%ld]..",
+		vim_snprintf((char *)ga.ga_data + ga.ga_len, len, "%s%s[%ld]..",
 				    type_name, entry->es_name, entry->es_lnum);
-	    ga.ga_len += STRLEN(ga.ga_data + ga.ga_len);
+	    ga.ga_len += (int)STRLEN((char *)ga.ga_data + ga.ga_len);
 	}
     }
 
