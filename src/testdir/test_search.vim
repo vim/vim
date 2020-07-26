@@ -608,7 +608,7 @@ func Test_search_cmdline6()
 endfunc
 
 func Test_search_cmdline7()
-  " Test that an pressing <c-g> in an empty command line
+  " Test that pressing <c-g> in an empty command line
   " does not move the cursor
   CheckOption incsearch
 
@@ -1640,7 +1640,19 @@ func Test_search_smartcase()
   call feedkeys('/\_.\%(\uello\)\' .. "\<CR>", 'xt')
   call assert_equal([2, 4], [line('.'), col('.')])
 
+  " Test 'smartcase' with utf-8.
+  let save_enc = &encoding
+  set encoding=utf8 ignorecase smartcase
+  call setline(1, 'Café cafÉ')
+  1s/café/x/g
+  call assert_equal('x x', getline(1))
+
+  call setline(1, 'Café cafÉ')
+  1s/cafÉ/x/g
+  call assert_equal('Café x', getline(1))
+
   set ignorecase& smartcase&
+  let &encoding = save_enc
   close!
 endfunc
 
