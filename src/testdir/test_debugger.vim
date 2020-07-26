@@ -404,3 +404,126 @@ func Test_Backtrace_Through_Source()
   call delete('Xtest1.vim')
   call delete('Xtest2.vim')
 endfunc
+
+func Test_Backtrace_Autocmd()
+  CheckRunVimInTerminal
+
+  let file1 =<< trim END
+    func SourceAnotherFile()
+      source Xtest2.vim
+    endfunc
+
+    func CallAFunction()
+      call SourceAnotherFile()
+      call File2Function()
+    endfunc
+
+    func GlobalFunction()
+      call CallAFunction()
+    endfunc
+
+    au User TestGlobalFunction :call GlobalFunction() | echo "Done"
+  END
+  call writefile( file1, 'Xtest1.vim' )
+
+  let file2 =<< trim END
+    func DoAThing()
+      echo "DoAThing"
+    endfunc
+
+    func File2Function()
+      call DoAThing()
+    endfunc
+
+    call File2Function()
+  END
+  call writefile( file2, 'Xtest2.vim' )
+
+  let buf = RunVimInTerminal( '-S Xtest1.vim', {} )
+
+  call RunDbgCmd( buf,
+                \ ':debug doautocmd User TestGlobalFunction',
+                \ [ 'cmd: doautocmd User TestGlobalFunction' ] )
+  call RunDbgCmd( buf, 'step', [ 'cmd: call GlobalFunction() | echo "Done"' ] )
+
+  " At this point the ontly thing in the stack is the autocommand
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '->0 User Autocommands for "TestGlobalFunction"',
+        \ 'cmd: call GlobalFunction() | echo "Done"' ] )
+
+  " And now we're back into the call stack
+  call RunDbgCmd( buf, 'step', [ 'line 1: call CallAFunction()' ] )
+
+  " The rest is the same as Test_Backtrace_Through_Source, but we unwind the
+  " stack all the way back to the above autocommand
+  call RunDbgCmd( buf, 'backtrace', [ '->0 function GlobalFunction',
+                                    \ 'line 1: call CallAFunction()' ] )
+
+  call RunDbgCmd( buf, 'step', [ 'line 1: call SourceAnotherFile()' ] )
+  call RunDbgCmd( buf, 'step', [ 'line 1: source Xtest2.vim' ] )
+
+  call RunDbgCmd( buf, 'backtrace', [ '  2 function GlobalFunction[1]',
+                                    \ '  1 CallAFunction[1]',
+                                    \ '->0 SourceAnotherFile',
+                                    \ 'line 1: source Xtest2.vim' ] )
+
+  " Step into the 'source' command. This will reset the estack that is printed
+  " for the backtrace (traces don't pass "through" source commands)
+  call RunDbgCmd( buf, 'step', [ 'line 1: func DoAThing()' ] )
+  call RunDbgCmd( buf, 'backtrace', [ '->0 ' .. getcwd() .. '/Xtest2.vim',
+                                    \ 'line 1: func DoAThing()' ] )
+
+  " step until we have another meaninfgul trace
+  call RunDbgCmd( buf, 'step', [ 'line 5: func File2Function()' ] )
+  call RunDbgCmd( buf, 'step', [ 'line 9: call File2Function()' ] )
+  call RunDbgCmd( buf, 'backtrace', [ '->0 ' .. getcwd() .. '/Xtest2.vim',
+                                    \ 'line 9: call File2Function()' ] )
+
+  call RunDbgCmd( buf, 'step', [ 'line 1: call DoAThing()' ] )
+  call RunDbgCmd( buf, 'step', [ 'line 1: echo "DoAThing"' ] )
+  call RunDbgCmd( buf, 'backtrace', [ '  1 function File2Function[1]',
+                                    \ '->0 DoAThing',
+                                    \ 'line 1: echo "DoAThing"' ] )
+
+  " Now, step (back to Xfile1.vim), and call the function _in_ Xfile2.vim
+  call RunDbgCmd( buf, 'step', [ 'line 1: End of function' ] )
+  call RunDbgCmd( buf, 'step', [ 'line 1: End of function' ] )
+  call RunDbgCmd( buf, 'step', [ 'line 10: End of sourced file' ] )
+  call RunDbgCmd( buf, 'step', [ 'line 1: End of function' ] )
+  call RunDbgCmd( buf, 'step', [ 'line 2: call File2Function()' ] )
+  call RunDbgCmd( buf, 'backtrace', [ '  1 function GlobalFunction[1]',
+                                    \ '->0 CallAFunction',
+                                    \ 'line 2: call File2Function()' ] )
+
+  call RunDbgCmd( buf, 'step', [ 'line 1: call DoAThing()' ] )
+  call RunDbgCmd( buf, 'backtrace', [ '  2 function GlobalFunction[1]',
+                                    \ '  1 CallAFunction[2]',
+                                    \ '->0 File2Function',
+                                    \ 'line 1: call DoAThing()' ] )
+
+  " Now unwind so that we get back to the original autocommand (and the second
+  " cmd echo "Done")
+  call RunDbgCmd( buf, 'finish', [ 'line 1: End of function' ] )
+  call RunDbgCmd( buf, 'backtrace', [ '  2 function GlobalFunction[1]',
+                                    \ '  1 CallAFunction[2]',
+                                    \ '->0 File2Function',
+                                    \ 'line 1: End of function' ] )
+
+  call RunDbgCmd( buf, 'finish', [ 'line 2: End of function' ] )
+  call RunDbgCmd( buf, 'backtrace', [ '  1 function GlobalFunction[1]',
+                                    \ '->0 CallAFunction',
+                                    \ 'line 2: End of function' ] )
+
+  call RunDbgCmd( buf, 'finish', [ 'line 1: End of function' ] )
+  call RunDbgCmd( buf, 'backtrace', [ '->0 function GlobalFunction',
+                                    \ 'line 1: End of function' ] )
+
+  call RunDbgCmd( buf, 'step', [ 'cmd: echo "Done"' ] )
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '->0 User Autocommands for "TestGlobalFunction"',
+        \ 'cmd: echo "Done"' ] )
+
+  call StopVimInTerminal(buf)
+  call delete('Xtest1.vim')
+  call delete('Xtest2.vim')
+endfunc
