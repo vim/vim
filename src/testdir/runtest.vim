@@ -443,6 +443,7 @@ for g:testfunc in sort(s:tests)
   " - it fails again with the same message
   " - it fails five times (with a different message)
   if len(v:errors) > 0
+        \ && !exists( '$VIM_TEST_NO_RETRY' )
         \ && (index(s:flaky_tests, g:testfunc) >= 0
         \      || g:test_is_flaky)
     while 1
