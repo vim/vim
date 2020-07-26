@@ -363,6 +363,19 @@ def Test_call_funcref()
     assert_equal(123, g:echo)
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def EchoList(...l: list<number>)
+      g:echo = l
+    enddef
+    let Funcref: func(...list<number>) = function('EchoList')
+    Funcref()
+    assert_equal([], g:echo)
+    Funcref(1, 2, 3)
+    assert_equal([1, 2, 3], g:echo)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 let SomeFunc = function('len')

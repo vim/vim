@@ -1956,6 +1956,8 @@ skip_type(char_u *start, int optional)
 	    {
 		char_u *sp = p;
 
+		if (STRNCMP(p, "...", 3) == 0)
+		    p += 3;
 		p = skip_type(p, TRUE);
 		if (p == sp)
 		    return p;  // syntax error
