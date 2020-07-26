@@ -81,38 +81,17 @@ SCRIPT = test1.out \
 # test59: Failed/Hangs - VMS does not support spell files (file names
 # with too many dots).
 #
-# test78: bug - Vim dies at :recover Xtest 
-# test89: bug - findfile() does not work on VMS (just in the current directory) 
-# test102: Just ODS-5 supports space and special chars in the filename.
-# On ODS-2 tests fail. 
 
 .IFDEF WANT_GUI
-SCRIPT_GUI = test16.out
 GUI_OPTION = -g
 .ENDIF
 
 .IFDEF WANT_UNIX
-SCRIPT_UNIX = test10.out test27.out test49.out
-.ENDIF
-
-.IFDEF WANT_WIN
-SCRIPT_WIN = test52.out
+SCRIPT_UNIX = test49.out
 .ENDIF
 
 .IFDEF WANT_SPELL
 SCRIPT_SPELL = test59.out 
-.ENDIF
-
-.IFDEF WANT_MZSCH
-SCRIPT_MZSCH = test70.out 
-.ENDIF
-
-.IFDEF HAVE_ODS5
-SCRIPT_ODS5 = test102.out
-.ENDIF
-
-.IFDEF HAVE_GDIFF
-SCRIPT_GDIFF = test47.out
 .ENDIF
 
 .in.out :
@@ -135,8 +114,8 @@ SCRIPT_GDIFF = test47.out
 	-@ if "''F$SEARCH("Xdotest.*")'"  .NES. "" then delete/noconfirm/nolog Xdotest.*.*
 	-@ if "''F$SEARCH("Xtest.*")'"    .NES. "" then delete/noconfirm/nolog Xtest.*.*
 
-all : clean nolog $(START_WITH) $(SCRIPT) $(SCRIPT_GUI) $(SCRIPT_UNIX) $(SCRIPT_WIN) $(SCRIPT_SPELL) $(SCRIPT_ODS5) \
-    $(SCRIPT_GDIFF) $(SCRIPT_MZSCH) $(SCRIPT_LUA) nolog 
+all : clean nolog $(START_WITH) $(SCRIPT) $(SCRIPT_UNIX) $(SCRIPT_SPELL) \
+    nolog
 	-@ write sys$output " "
 	-@ write sys$output "-----------------------------------------------"
 	-@ write sys$output "                All done"

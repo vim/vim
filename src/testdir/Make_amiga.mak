@@ -9,12 +9,6 @@ default: nongui
 
 include Make_all.mak
 
-# These tests don't work (yet):
-# test2		"\\tmp" doesn't work
-# test10	'errorformat' is different
-# test52	only for Win32
-# test86, 87	no Python interface
-
 SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE4)
 
 # Must run test1 first to create small.vim.
