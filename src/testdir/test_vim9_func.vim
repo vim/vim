@@ -376,6 +376,28 @@ def Test_call_funcref()
     assert_equal([1, 2, 3], g:echo)
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def OptAndVar(nr: number, opt = 12, ...l: list<number>): number
+      g:optarg = opt
+      g:listarg = l
+      return nr
+    enddef
+    let Funcref: func(number, ?number, ...list<number>): number = function('OptAndVar')
+    assert_equal(10, Funcref(10))
+    assert_equal(12, g:optarg)
+    assert_equal([], g:listarg)
+
+    assert_equal(11, Funcref(11, 22))
+    assert_equal(22, g:optarg)
+    assert_equal([], g:listarg)
+
+    assert_equal(17, Funcref(17, 18, 1, 2, 3))
+    assert_equal(18, g:optarg)
+    assert_equal([1, 2, 3], g:listarg)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 let SomeFunc = function('len')

@@ -2106,15 +2106,15 @@ parse_type(char_u **arg, garray_T *type_gap)
 				first_optional = argcount;
 			    ++p;
 			}
-			else if (first_optional != -1)
-			{
-			    emsg(_("E1007: mandatory argument after optional argument"));
-			    return &t_any;
-			}
 			else if (STRNCMP(p, "...", 3) == 0)
 			{
 			    flags |= TTFLAG_VARARGS;
 			    p += 3;
+			}
+			else if (first_optional != -1)
+			{
+			    emsg(_("E1007: mandatory argument after optional argument"));
+			    return &t_any;
 			}
 
 			arg_type[argcount++] = parse_type(&p, type_gap);
