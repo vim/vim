@@ -14,9 +14,7 @@ SCRIPTS_FIRST = \
 # Tests that run on all systems.
 SCRIPTS_ALL = \
 	test42.out \
-	test44.out \
-	test70.out \
-	test99.out
+	test70.out
 
 # Tests that run on most systems, but not on Amiga.
 SCRIPTS_MORE1 = \
