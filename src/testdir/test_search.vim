@@ -1640,9 +1640,16 @@ func Test_search_smartcase()
   call feedkeys('/\_.\%(\uello\)\' .. "\<CR>", 'xt')
   call assert_equal([2, 4], [line('.'), col('.')])
 
-  " Test 'smartcase' with utf-8.
+  set ignorecase& smartcase&
+  close!
+endfun
+
+" Test 'smartcase' with utf-8.
+func Test_search_smartcase_utf8()
+  new
   let save_enc = &encoding
   set encoding=utf8 ignorecase smartcase
+
   call setline(1, 'Café cafÉ')
   1s/café/x/g
   call assert_equal('x x', getline(1))
