@@ -567,9 +567,8 @@ func Test_Backtrace_CmdLine()
         \ { 'wait_for_ruler': 0 } )
 
   " At this point the ontly thing in the stack is the cmdline
-  call RunDbgCmd( buf, 'backtrace', [
-        \ 'command line',
-        \ 'cmd: call GlobalFunction()' ] )
+  call RunDbgCmd( buf, 'backtrace', [ '->0 command line',
+                                    \ 'cmd: call GlobalFunction()' ] )
 
   " And now we're back into the call stack
   call RunDbgCmd( buf, 'step', [ 'line 1: call CallAFunction()' ] )
