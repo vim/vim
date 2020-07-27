@@ -3464,7 +3464,7 @@ eval_index(
 	 * dict.name
 	 */
 	key = *arg + 1;
-	for (len = 0; ASCII_ISALNUM(key[len]) || key[len] == '_'; ++len)
+	for (len = 0; eval_isdictc(key[len]); ++len)
 	    ;
 	if (len == 0)
 	    return FAIL;
@@ -4997,7 +4997,7 @@ find_name_end(
 		    && (eval_isnamec(*p)
 			|| (*p == '{' && !vim9script)
 			|| ((flags & FNE_INCL_BR) && (*p == '['
-					|| (*p == '.' && eval_isnamec1(p[1]))))
+					 || (*p == '.' && eval_isdictc(p[1]))))
 			|| mb_nest != 0
 			|| br_nest != 0); MB_PTR_ADV(p))
     {
@@ -5128,7 +5128,7 @@ make_expanded_name(
     int
 eval_isnamec(int c)
 {
-    return (ASCII_ISALNUM(c) || c == '_' || c == ':' || c == AUTOLOAD_CHAR);
+    return ASCII_ISALNUM(c) || c == '_' || c == ':' || c == AUTOLOAD_CHAR;
 }
 
 /*
@@ -5138,7 +5138,17 @@ eval_isnamec(int c)
     int
 eval_isnamec1(int c)
 {
-    return (ASCII_ISALPHA(c) || c == '_');
+    return ASCII_ISALPHA(c) || c == '_';
+}
+
+/*
+ * Return TRUE if character "c" can be used as the first character of a
+ * dictionary key.
+ */
+    int
+eval_isdictc(int c)
+{
+    return ASCII_ISALNUM(c) || c == '_';
 }
 
 /*
@@ -5171,8 +5181,7 @@ handle_subscript(
 	// the next line then consume the line break.
 	p = eval_next_non_blank(*arg, evalarg, &getnext);
 	if (getnext
-	    && ((rettv->v_type == VAR_DICT && *p == '.'
-						       && ASCII_ISALPHA(p[1]))
+	    && ((rettv->v_type == VAR_DICT && *p == '.' && eval_isdictc(p[1]))
 		|| (*p == '-' && p[1] == '>'
 				     && (p[2] == '{' || ASCII_ISALPHA(p[2])))))
 	{

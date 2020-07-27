@@ -1310,6 +1310,11 @@ def Test_expr_member()
 		  ])
   assert_equal(1, d
   	.one)
+  d = {'1': 1, '_': 2}
+  assert_equal(1, d
+  	.1)
+  assert_equal(2, d
+  	._)
 
   # getting the one member should clear the dict after getting the item
   assert_equal('one', #{one: 'one'}.one)
@@ -1330,10 +1335,16 @@ def Test_expr_member_vim9script()
       vim9script
       let d = #{one:
       		'one',
-		two: 'two'}
+		two: 'two',
+		1: 1,
+		_: 2}
       assert_equal('one', d.one)
       assert_equal('one', d
                             .one)
+      assert_equal(1, d
+                            .1)
+      assert_equal(2, d
+                            ._)
       assert_equal('one', d[
 			    'one'
 			    ])

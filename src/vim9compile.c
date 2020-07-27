@@ -3758,7 +3758,7 @@ compile_subscript(
 	    if (next != NULL &&
 		    ((next[0] == '-' && next[1] == '>'
 				 && (next[2] == '{' || ASCII_ISALPHA(next[2])))
-		    || (next[0] == '.' && ASCII_ISALPHA(next[1]))))
+		    || (next[0] == '.' && eval_isdictc(next[1]))))
 	    {
 		next = next_line_from_context(cctx, TRUE);
 		if (next == NULL)
@@ -3922,7 +3922,7 @@ compile_subscript(
 		return FAIL;
 	    // dictionary member: dict.name
 	    p = *arg;
-	    if (eval_isnamec1(*p))
+	    if (eval_isdictc(*p))
 		while (eval_isnamec(*p))
 		    MB_PTR_ADV(p);
 	    if (p == *arg)
