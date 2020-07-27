@@ -664,6 +664,8 @@ func Test_Backtrace_CmdLine()
 endfunc
 
 func Test_Backtrace_DefFunction()
+  CheckRunVimInTerminal
+
   let file1 =<< trim END
     vim9script
     import File2Function from './Xtest2.vim'
