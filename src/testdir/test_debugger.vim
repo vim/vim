@@ -373,14 +373,16 @@ func Test_Backtrace_Through_Source()
   " Step into the 'source' command. This will reset the estack that is printed
   " for the backtrace (traces don't pass "through" source commands)
   call RunDbgCmd( buf, 'step', [ 'line 1: func DoAThing()' ] )
-  call RunDbgCmd( buf, 'backtrace', [ '->0 ' .. getcwd() .. '/Xtest2.vim',
-                                    \ 'line 1: func DoAThing()' ] )
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '->0 script ' .. getcwd() .. '/Xtest2.vim',
+        \ 'line 1: func DoAThing()' ] )
 
   " step until we have another meaninfgul trace
   call RunDbgCmd( buf, 'step', [ 'line 5: func File2Function()' ] )
   call RunDbgCmd( buf, 'step', [ 'line 9: call File2Function()' ] )
-  call RunDbgCmd( buf, 'backtrace', [ '->0 ' .. getcwd() .. '/Xtest2.vim',
-                                    \ 'line 9: call File2Function()' ] )
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '->0 script ' .. getcwd() .. '/Xtest2.vim',
+        \ 'line 9: call File2Function()' ] )
 
   call RunDbgCmd( buf, 'step', [ 'line 1: call DoAThing()' ] )
   call RunDbgCmd( buf, 'step', [ 'line 1: echo "DoAThing"' ] )
@@ -474,14 +476,16 @@ func Test_Backtrace_Autocmd()
   " Step into the 'source' command. This will reset the estack that is printed
   " for the backtrace (traces don't pass "through" source commands)
   call RunDbgCmd( buf, 'step', [ 'line 1: func DoAThing()' ] )
-  call RunDbgCmd( buf, 'backtrace', [ '->0 ' .. getcwd() .. '/Xtest2.vim',
-                                    \ 'line 1: func DoAThing()' ] )
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '->0 script ' .. getcwd() .. '/Xtest2.vim',
+        \ 'line 1: func DoAThing()' ] )
 
   " step until we have another meaninfgul trace
   call RunDbgCmd( buf, 'step', [ 'line 5: func File2Function()' ] )
   call RunDbgCmd( buf, 'step', [ 'line 9: call File2Function()' ] )
-  call RunDbgCmd( buf, 'backtrace', [ '->0 ' .. getcwd() .. '/Xtest2.vim',
-                                    \ 'line 9: call File2Function()' ] )
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '->0 script ' .. getcwd() .. '/Xtest2.vim',
+        \ 'line 9: call File2Function()' ] )
 
   call RunDbgCmd( buf, 'step', [ 'line 1: call DoAThing()' ] )
   call RunDbgCmd( buf, 'step', [ 'line 1: echo "DoAThing"' ] )
