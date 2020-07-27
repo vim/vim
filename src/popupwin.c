@@ -1111,6 +1111,7 @@ popup_adjust_position(win_T *wp)
     int		wrapped = 0;
     int		maxwidth;
     int		used_maxwidth = FALSE;
+    int		margin_width = 0;
     int		maxspace;
     int		center_vert = FALSE;
     int		center_hor = FALSE;
@@ -1249,6 +1250,19 @@ popup_adjust_position(win_T *wp)
 	allow_adjust_left = FALSE;
 	maxwidth = wp->w_maxwidth;
     }
+
+    if (wp->w_p_nu || wp->w_p_rnu)
+	margin_width = number_width(wp) + 1;
+#ifdef FEAT_FOLDING
+    margin_width += wp->w_p_fdc;
+#endif
+#ifdef FEAT_SIGNS
+    if (signcolumn_on(wp))
+	margin_width += 2;
+#endif
+    if (margin_width >= maxwidth)
+	margin_width = maxwidth - 1;
+
     minwidth = wp->w_minwidth;
     minheight = wp->w_minheight;
 #ifdef FEAT_TERMINAL
@@ -1289,6 +1303,7 @@ popup_adjust_position(win_T *wp)
 
 	// Count Tabs for what they are worth and compute the length based on
 	// the maximum width (matters when 'showbreak' is set).
+	// "margin_width" is added to "len" where it matters.
 	if (wp->w_width < maxwidth)
 	    wp->w_width = maxwidth;
 	len = win_linetabsize(wp, ml_get_buf(wp->w_buffer, lnum, FALSE),
@@ -1297,21 +1312,21 @@ popup_adjust_position(win_T *wp)
 
 	if (wp->w_p_wrap)
 	{
-	    while (len > maxwidth)
+	    while (len + margin_width > maxwidth)
 	    {
 		++wrapped;
-		len -= maxwidth;
+		len -= maxwidth - margin_width;
 		wp->w_width = maxwidth;
 		used_maxwidth = TRUE;
 	    }
 	}
-	else if (len > maxwidth
+	else if (len + margin_width > maxwidth
 		&& allow_adjust_left
 		&& (wp->w_popup_pos == POPPOS_TOPLEFT
 		    || wp->w_popup_pos == POPPOS_BOTLEFT))
 	{
 	    // adjust leftwise to fit text on screen
-	    int shift_by = len - maxwidth;
+	    int shift_by = len + margin_width - maxwidth;
 
 	    if (shift_by > wp->w_wincol)
 	    {
@@ -1325,9 +1340,9 @@ popup_adjust_position(win_T *wp)
 	    maxwidth += shift_by;
 	    wp->w_width = maxwidth;
 	}
-	if (wp->w_width < len)
+	if (wp->w_width < len + margin_width)
 	{
-	    wp->w_width = len;
+	    wp->w_width = len + margin_width;
 	    if (wp->w_maxwidth > 0 && wp->w_width > wp->w_maxwidth)
 		wp->w_width = wp->w_maxwidth;
 	}
