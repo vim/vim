@@ -574,6 +574,7 @@ func Test_Backtrace_CmdLine()
         \ '-S Xtest1.vim -c "debug call GlobalFunction()"',
         \ { 'wait_for_ruler': 0 } )
 
+  " Need to wait for the vim-in-terminal to be ready
   call CheckDbgOutput( buf, [ 'command line',
                             \ 'cmd: call GlobalFunction()' ] )
 
@@ -583,9 +584,6 @@ func Test_Backtrace_CmdLine()
 
   " And now we're back into the call stack
   call RunDbgCmd( buf, 'step', [ 'line 1: call CallAFunction()' ] )
-
-  " The rest is the same as Test_Backtrace_Through_Source, but we unwind the
-  " stack all the way back to the above autocommand
   call RunDbgCmd( buf, 'backtrace', [ '->0 function GlobalFunction',
                                     \ 'line 1: call CallAFunction()' ] )
 
