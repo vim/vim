@@ -4,6 +4,15 @@ source shared.vim
 source screendump.vim
 source check.vim
 
+func CheckDbgOutput( buf, lines )
+  " Verify the expected output
+  let lnum = 20 - len(a:lines)
+  for l in a:lines
+    call WaitForAssert({-> assert_equal(l, term_getline(a:buf, lnum))}, 200)
+    let lnum += 1
+  endfor
+endfunc
+
 " Run a Vim debugger command
 " If the expected output argument is supplied, then check for it.
 func RunDbgCmd(buf, cmd, ...)
@@ -11,12 +20,7 @@ func RunDbgCmd(buf, cmd, ...)
   call TermWait(a:buf)
 
   if a:0 != 0
-    " Verify the expected output
-    let lnum = 20 - len(a:1)
-    for l in a:1
-      call WaitForAssert({-> assert_equal(l, term_getline(a:buf, lnum))}, 200)
-      let lnum += 1
-    endfor
+    call CheckDbgOutput( a:buf, a:1 )
   endif
 endfunc
 
@@ -565,6 +569,9 @@ func Test_Backtrace_CmdLine()
   let buf = RunVimInTerminal(
         \ '-S Xtest1.vim -c "debug call GlobalFunction()"',
         \ { 'wait_for_ruler': 0 } )
+
+  call CheckDbgOutput( buf, [ 'command line',
+                            \ 'cmd: call GlobalFunction()' ] )
 
   " At this point the ontly thing in the stack is the cmdline
   call RunDbgCmd( buf, 'backtrace', [ '->0 command line',
