@@ -593,6 +593,71 @@ func Test_Backtrace_Autocmd()
         \ '->0 script ' .. getcwd() .. '/Xtest2.vim',
         \ 'line 1: func DoAThing()'])
 
+  call RunDbgCmd( buf, 'up' )
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '>backtrace',
+        \ '  3 function GlobalFunction[1]',
+        \ '  2 CallAFunction[1]',
+        \ '->1 SourceAnotherFile[1]',
+        \ '  0 script ' .. getcwd() .. '/Xtest2.vim',
+        \ 'line 1: func DoAThing()' ] )
+
+  call RunDbgCmd( buf, 'up' )
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '>backtrace',
+        \ '  3 function GlobalFunction[1]',
+        \ '->2 CallAFunction[1]',
+        \ '  1 SourceAnotherFile[1]',
+        \ '  0 script ' .. getcwd() .. '/Xtest2.vim',
+        \ 'line 1: func DoAThing()' ] )
+
+  call RunDbgCmd( buf, 'up' )
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '>backtrace',
+        \ '->3 function GlobalFunction[1]',
+        \ '  2 CallAFunction[1]',
+        \ '  1 SourceAnotherFile[1]',
+        \ '  0 script ' .. getcwd() .. '/Xtest2.vim',
+        \ 'line 1: func DoAThing()' ] )
+
+  call RunDbgCmd( buf, 'up', [ 'frame at highest level: 3' ] )
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '>backtrace',
+        \ '->3 function GlobalFunction[1]',
+        \ '  2 CallAFunction[1]',
+        \ '  1 SourceAnotherFile[1]',
+        \ '  0 script ' .. getcwd() .. '/Xtest2.vim',
+        \ 'line 1: func DoAThing()' ] )
+
+  call RunDbgCmd( buf, 'down' )
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '>backtrace',
+        \ '  3 function GlobalFunction[1]',
+        \ '->2 CallAFunction[1]',
+        \ '  1 SourceAnotherFile[1]',
+        \ '  0 script ' .. getcwd() .. '/Xtest2.vim',
+        \ 'line 1: func DoAThing()' ] )
+
+  call RunDbgCmd( buf, 'down' )
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '>backtrace',
+        \ '  3 function GlobalFunction[1]',
+        \ '  2 CallAFunction[1]',
+        \ '->1 SourceAnotherFile[1]',
+        \ '  0 script ' .. getcwd() .. '/Xtest2.vim',
+        \ 'line 1: func DoAThing()' ] )
+
+  call RunDbgCmd( buf, 'down' )
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '>backtrace',
+        \ '  3 function GlobalFunction[1]',
+        \ '  2 CallAFunction[1]',
+        \ '  1 SourceAnotherFile[1]',
+        \ '->0 script ' .. getcwd() .. '/Xtest2.vim',
+        \ 'line 1: func DoAThing()' ] )
+
+  call RunDbgCmd( buf, 'down', [ 'frame is zero' ] )
+
   " step until we have another meaninfgul trace
   call RunDbgCmd(buf, 'step', ['line 5: func File2Function()'])
   call RunDbgCmd(buf, 'step', ['line 9: call File2Function()'])
