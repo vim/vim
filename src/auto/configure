@@ -12106,7 +12106,7 @@ if test "x$olibs" = "x$LIBS"; then
 $as_echo_n "checking for tgetent()... " >&6; }
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-
+int tgetent(char *, const char *);
 int
 main ()
 {
