@@ -43,15 +43,18 @@ func Test_terminal_shell_option()
     bwipe!
   elseif has('win32')
     " dir is a shell builtin command, should fail without a shell.
+    " However, if dir.exe (which might be provided by Cygwin/MSYS2) exists in
+    " the %PATH%, "term dir" succeeds unintentionally.  Use dir.com instead.
     try
-      term dir /b runtest.vim
-      call WaitForAssert({-> assert_match('job failed\|cannot access .*: No such file or directory', term_getline(bufnr(), 1))})
+      term dir.com /b runtest.vim
+      call WaitForAssert({-> assert_match('job failed', term_getline(bufnr(), 1))})
     catch /CreateProcess/
       " ignore
     endtry
     bwipe!
 
-    term ++shell dir /b runtest.vim
+    " This should execute the dir builtin command even with ".com".
+    term ++shell dir.com /b runtest.vim
     call WaitForAssert({-> assert_match('runtest.vim', term_getline(bufnr(), 1))})
     bwipe!
   endif
