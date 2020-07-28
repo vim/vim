@@ -148,7 +148,7 @@
  * VIM_ISBREAK() is used very often if 'linebreak' is set, use a macro to make
  * it work fast.  Only works for single byte characters!
  */
-#define VIM_ISBREAK(c) ((c) < 256 && breakat_flags[(char_u)(c)])
+#define VIM_ISBREAK(c) ((c) < 256 ? breakat_flags[(char_u)(c)] : has_breakat_chars((int)c))
 
 /*
  * On VMS file names are different and require a translation.

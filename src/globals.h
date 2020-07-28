@@ -1276,6 +1276,7 @@ EXTERN char_u	tolower_tab[256];	// table for tolower()
 
 #ifdef FEAT_LINEBREAK
 EXTERN char	breakat_flags[256];	// which characters are in 'breakat'
+EXTERN int	*breakat_chars INIT(= NULL);
 #endif
 
 // These are in version.c, call init_longVersion() before use.

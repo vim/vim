@@ -986,7 +986,7 @@ win_lbr_chartabsize(
     int		*headp UNUSED)
 {
 #ifdef FEAT_LINEBREAK
-    int		c;
+    int		c, c2;
     int		size;
     colnr_T	col2;
     colnr_T	col_adj = 0; // col + screen size of tab
@@ -994,7 +994,6 @@ win_lbr_chartabsize(
     int		added;
     int		mb_added = 0;
     int		numberextra;
-    char_u	*ps;
     int		tab_corr = (*s == TAB);
     int		n;
     char_u	*sbr;
@@ -1015,7 +1014,16 @@ win_lbr_chartabsize(
      * First get normal size, without 'linebreak'
      */
     size = win_chartabsize(wp, s, col);
-    c = *s;
+    if (has_mbyte)
+    {
+	c = (*mb_ptr2char)(s);
+	c2 = (*mb_ptr2char)(s + (*mb_ptr2len)(s));
+    }
+    else
+    {
+	c = *s;
+	c2 = s[1];
+    }
     if (tab_corr)
 	col_adj = size - 1;
 
@@ -1025,7 +1033,7 @@ win_lbr_chartabsize(
      */
     if (wp->w_p_lbr
 	    && VIM_ISBREAK(c)
-	    && !VIM_ISBREAK((int)s[1])
+	    && !VIM_ISBREAK(c2)
 	    && wp->w_p_wrap
 	    && wp->w_width != 0)
     {
@@ -1046,13 +1054,22 @@ win_lbr_chartabsize(
 
 	for (;;)
 	{
-	    ps = s;
-	    MB_PTR_ADV(s);
-	    c = *s;
+	    if (has_mbyte)
+	    {
+		c2 = (*mb_ptr2char)(s);
+		MB_PTR_ADV(s);
+		c = (*mb_ptr2char)(s);
+	    }
+	    else
+	    {
+		c2 = *s;
+		MB_PTR_ADV(s);
+		c = *s;
+	    }
 	    if (!(c != NUL
 		    && (VIM_ISBREAK(c)
 			|| (!VIM_ISBREAK(c)
-			    && (col2 == col || !VIM_ISBREAK((int)*ps))))))
+			    && (col2 == col || !VIM_ISBREAK(c2))))))
 		break;
 
 	    col2 += win_chartabsize(wp, s, col2);

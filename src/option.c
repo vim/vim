@@ -6793,6 +6793,21 @@ compatible_set(void)
 
 #if defined(FEAT_LINEBREAK) || defined(PROTO)
 
+    int
+has_breakat_chars(int c)
+{
+    int	*p = breakat_chars;
+    if (p == NULL)
+	return FALSE;
+
+    while (*p) {
+	if (*p == c)
+	    return TRUE;
+	++p;
+    }
+    return FALSE;
+}
+
 /*
  * fill_breakat_flags() -- called when 'breakat' changes value.
  */
@@ -6801,13 +6816,35 @@ fill_breakat_flags(void)
 {
     char_u	*p;
     int		i;
+    garray_T	ga;
 
     for (i = 0; i < 256; i++)
 	breakat_flags[i] = FALSE;
+    if (breakat_chars != NULL)
+    {
+	vim_free(breakat_chars);
+	breakat_chars = NULL;
+    }
 
+    ga_init2(&ga, sizeof(int), 100);
     if (p_breakat != NULL)
-	for (p = p_breakat; *p; p++)
-	    breakat_flags[*p] = TRUE;
+    {
+	int n = 0;
+	for (p = p_breakat; *p; p++) {
+	    int	len = (*mb_ptr2len)(p);
+	    if (len > 1)
+	    {
+		if (ga_grow(&ga, ga.ga_len + 2) == OK)
+		{
+		    ((int *)ga.ga_data)[n++] = (*mb_ptr2char)(p);
+		    ((int *)ga.ga_data)[n] = 0;
+		    ga.ga_len += len - 1;
+		}
+	    } else
+		breakat_flags[*p] = TRUE;
+	}
+	breakat_chars = ga.ga_data;
+    }
 }
 #endif
 

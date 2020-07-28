@@ -1650,13 +1650,18 @@ win_line(
 	{
 #ifdef FEAT_LINEBREAK
 	    int c0;
+	    char_u  *lb_prev_ptr;
 #endif
 	    VIM_CLEAR(p_extra_free);
 
 	    // Get a character from the line itself.
 	    c = *ptr;
 #ifdef FEAT_LINEBREAK
-	    c0 = *ptr;
+	    lb_prev_ptr = ptr;
+	    if (has_mbyte)
+		c0 = (*mb_ptr2char)(ptr);
+	    else
+		c0 = *ptr;
 #endif
 	    if (has_mbyte)
 	    {
@@ -1670,15 +1675,10 @@ win_line(
 		    if (mb_l > 1)
 		    {
 			mb_c = utfc_ptr2char(ptr, u8cc);
-			// Overlong encoded ASCII or ASCII with composing char
-			// is displayed normally, except a NUL.
-			if (mb_c < 0x80)
-			{
-			    c = mb_c;
+			c = mb_c;
 #ifdef FEAT_LINEBREAK
-			    c0 = mb_c;
+			c0 = mb_c;
 #endif
-			}
 			mb_utf8 = TRUE;
 
 			// At start of the line we can have a composing char.
@@ -1935,7 +1935,9 @@ win_line(
 #ifdef FEAT_LINEBREAK
 		// Found last space before word: check for line break.
 		if (wp->w_p_lbr && c0 == c
-				  && VIM_ISBREAK(c) && !VIM_ISBREAK((int)*ptr))
+			&& VIM_ISBREAK(c)
+			&& !VIM_ISBREAK((*mb_ptr2char)
+			    (lb_prev_ptr + (*mb_ptr2len)(lb_prev_ptr))))
 		{
 		    int mb_off = has_mbyte ? (*mb_head_off)(line, ptr - 1) : 0;
 		    char_u *p = ptr - (mb_off + 1);
