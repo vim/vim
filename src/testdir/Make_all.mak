@@ -11,7 +11,7 @@ NO_INITS = -U NONE $(NO_PLUGINS)
 SCRIPTS_FIRST = test1.out
 
 # Tests that run on all systems.
-SCRIPTS_ALL = test42.out
+SCRIPTS_ALL =
 
 # Tests that run on most systems, but not on Amiga.
 SCRIPTS_MORE1 =
