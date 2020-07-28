@@ -3510,7 +3510,7 @@ fi
 
 if test "x$olibs" = "x$LIBS"; then
   AC_MSG_CHECKING([for tgetent()])
-  AC_TRY_LINK([],
+  AC_TRY_LINK([int tgetent(char *, const char *);],
       [char s[10000]; int res = tgetent(s, "thisterminaldoesnotexist");],
 	AC_MSG_RESULT(yes),
 	AC_MSG_ERROR([NOT FOUND!
