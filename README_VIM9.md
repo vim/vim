@@ -52,7 +52,7 @@ we can gain, and also that Vim script can be faster than builtin
 interfaces.
 
 In practice the script would not do something useless as counting but change
-the text.  For example, re-indent all the lines:
+the text.  For example, reindent all the lines:
 
 ``` vim
   let totallen = 0
