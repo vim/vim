@@ -1710,7 +1710,7 @@ do_one_cmd(
     char_u	*cmd;
     int		starts_with_colon = FALSE;
 #ifdef FEAT_EVAL
-    int		starts_with_quote;
+    int		may_have_range;
     int		vim9script = in_vim9script();
 #endif
 
@@ -1773,8 +1773,9 @@ do_one_cmd(
  */
     cmd = ea.cmd;
 #ifdef FEAT_EVAL
-    starts_with_quote = vim9script && !starts_with_colon && *ea.cmd == '\'';
-    if (!starts_with_quote)
+    // In Vim9 script a colon is required before the range.
+    may_have_range = !vim9script || starts_with_colon;
+    if (may_have_range)
 #endif
 	ea.cmd = skip_range(ea.cmd, NULL);
     if (*ea.cmd == '*' && vim_strchr(p_cpo, CPO_STAR) == NULL)
@@ -1783,7 +1784,10 @@ do_one_cmd(
 #ifdef FEAT_EVAL
     if (vim9script && !starts_with_colon)
     {
-	if (ea.cmd > cmd)
+	if (ea.cmd == cmd + 1 && *cmd == '$')
+	    // should be "$VAR = val"
+	    --ea.cmd;
+	else if (ea.cmd > cmd)
 	{
 	    emsg(_(e_colon_required));
 	    goto doend;
@@ -1876,7 +1880,7 @@ do_one_cmd(
 
     ea.cmd = cmd;
 #ifdef FEAT_EVAL
-    if (!starts_with_quote)
+    if (may_have_range)
 #endif
 	if (parse_cmd_address(&ea, &errormsg, FALSE) == FAIL)
 	    goto doend;
@@ -3267,80 +3271,90 @@ find_ex_command(
      * "lvar = value", "lvar(arg)", "[1, 2 3]->Func()"
      */
     p = eap->cmd;
-    if (lookup != NULL && (vim_strchr((char_u *)"{('[", *p) != NULL
-	       || ((p = to_name_const_end(eap->cmd)) > eap->cmd
-		   && *p != NUL)))
+    if (lookup != NULL)
     {
-	int oplen;
-	int heredoc;
+	// Skip over first char for "&opt = val", "$ENV = val" and "@r = val".
+	char_u *pskip = (*eap->cmd == '&' || *eap->cmd == '$'
+				|| *eap->cmd == '@') ? eap->cmd + 1 : eap->cmd;
 
-	if (
-	    // "(..." is an expression.
-	    // "funcname(" is always a function call.
-	    *p == '('
-		|| (p == eap->cmd
-		    ? (
-			// "{..." is an dict expression.
-			*eap->cmd == '{'
-			// "'string'->func()" is an expression.
-		     || *eap->cmd == '\''
-			// "g:varname" is an expression.
-		     || eap->cmd[1] == ':'
-			)
-		    : (
-			// "varname[]" is an expression.
-			*p == '['
-			// "varname->func()" is an expression.
-		     || (*p == '-' && p[1] == '>')
-			// "varname.expr" is an expression.
-		     || (*p == '.' && ASCII_ISALPHA(p[1]))
-		     )))
+	if (vim_strchr((char_u *)"{('[", *p) != NULL
+	       || ((p = to_name_const_end(pskip)) > eap->cmd && *p != NUL))
 	{
-	    eap->cmdidx = CMD_eval;
-	    return eap->cmd;
-	}
+	    int oplen;
+	    int heredoc;
 
-	// "[...]->Method()" is a list expression, but "[a, b] = Func()" is
-	// an assignment.
-	// If there is no line break inside the "[...]" then "p" is advanced to
-	// after the "]" by to_name_const_end(): check if a "=" follows.
-	// If "[...]" has a line break "p" still points at the "[" and it can't
-	// be an assignment.
-	if (*eap->cmd == '[')
-	{
-	    p = to_name_const_end(eap->cmd);
-	    if (p == eap->cmd || *skipwhite(p) != '=')
+	    if (
+		// "(..." is an expression.
+		// "funcname(" is always a function call.
+		*p == '('
+		    || (p == eap->cmd
+			? (
+			    // "{..." is an dict expression.
+			    *eap->cmd == '{'
+			    // "'string'->func()" is an expression.
+			 || *eap->cmd == '\''
+			    // "g:varname" is an expression.
+			 || eap->cmd[1] == ':'
+			    )
+			: (
+			    // "varname[]" is an expression.
+			    *p == '['
+			    // "varname->func()" is an expression.
+			 || (*p == '-' && p[1] == '>')
+			    // "varname.expr" is an expression.
+			 || (*p == '.' && ASCII_ISALPHA(p[1]))
+			 )))
 	    {
 		eap->cmdidx = CMD_eval;
 		return eap->cmd;
 	    }
-	    if (p > eap->cmd && *skipwhite(p) == '=')
+
+	    // "[...]->Method()" is a list expression, but "[a, b] = Func()" is
+	    // an assignment.
+	    // If there is no line break inside the "[...]" then "p" is
+	    // advanced to after the "]" by to_name_const_end(): check if a "="
+	    // follows.
+	    // If "[...]" has a line break "p" still points at the "[" and it
+	    // can't be an assignment.
+	    if (*eap->cmd == '[')
 	    {
-		eap->cmdidx = CMD_let;
+		p = to_name_const_end(eap->cmd);
+		if (p == eap->cmd || *skipwhite(p) != '=')
+		{
+		    eap->cmdidx = CMD_eval;
+		    return eap->cmd;
+		}
+		if (p > eap->cmd && *skipwhite(p) == '=')
+		{
+		    eap->cmdidx = CMD_let;
+		    return eap->cmd;
+		}
+	    }
+
+	    // Recognize an assignment if we recognize the variable name:
+	    // "g:var = expr"
+	    // "var = expr"  where "var" is a local var name.
+	    oplen = assignment_len(skipwhite(p), &heredoc);
+	    if (oplen > 0)
+	    {
+		if (((p - eap->cmd) > 2 && eap->cmd[1] == ':')
+			|| *eap->cmd == '&'
+			|| *eap->cmd == '$'
+			|| *eap->cmd == '@'
+			|| lookup(eap->cmd, p - eap->cmd, cctx) != NULL)
+		{
+		    eap->cmdidx = CMD_let;
+		    return eap->cmd;
+		}
+	    }
+
+	    // Recognize using a type for a w:, b:, t: or g: variable:
+	    // "w:varname: number = 123".
+	    if (eap->cmd[1] == ':' && *p == ':')
+	    {
+		eap->cmdidx = CMD_eval;
 		return eap->cmd;
 	    }
-	}
-
-	// Recognize an assignment if we recognize the variable name:
-	// "g:var = expr"
-	// "var = expr"  where "var" is a local var name.
-	oplen = assignment_len(skipwhite(p), &heredoc);
-	if (oplen > 0)
-	{
-	    if (((p - eap->cmd) > 2 && eap->cmd[1] == ':')
-		    || lookup(eap->cmd, p - eap->cmd, cctx) != NULL)
-	    {
-		eap->cmdidx = CMD_let;
-		return eap->cmd;
-	    }
-	}
-
-	// Recognize using a type for a w:, b:, t: or g: variable:
-	// "w:varname: number = 123".
-	if (eap->cmd[1] == ':' && *p == ':')
-	{
-	    eap->cmdidx = CMD_eval;
-	    return eap->cmd;
 	}
     }
 #endif

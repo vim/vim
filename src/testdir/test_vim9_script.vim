@@ -61,6 +61,14 @@ def Test_assignment()
   assert_equal('foobar', $ENVVAR)
   $ENVVAR = ''
 
+  let lines =<< trim END
+    vim9script
+    $ENVVAR = 'barfoo'
+    assert_equal('barfoo', $ENVVAR)
+    $ENVVAR = ''
+  END
+  call CheckScriptSuccess(lines)
+
   s:appendToMe ..= 'yyy'
   assert_equal('xxxyyy', s:appendToMe)
   s:addToMe += 222
@@ -80,6 +88,15 @@ def Test_assignment()
   set ts=10
   &ts %= 4
   assert_equal(2, &ts)
+
+  lines =<< trim END
+    vim9script
+    &ts = 6
+    &ts += 3
+    assert_equal(9, &ts)
+  END
+  call CheckScriptSuccess(lines)
+
   call CheckDefFailure(['&notex += 3'], 'E113:')
   call CheckDefFailure(['&ts ..= "xxx"'], 'E1019:')
   call CheckDefFailure(['&ts = [7]'], 'E1013:')
@@ -105,6 +122,14 @@ def Test_assignment()
   assert_equal('aregadd', @a)
   call CheckDefFailure(['@a += "more"'], 'E1013:')
   call CheckDefFailure(['@a += 123'], 'E1013:')
+
+  lines =<< trim END
+    vim9script
+    @c = 'areg'
+    @c ..= 'add'
+    assert_equal('aregadd', @c)
+  END
+  call CheckScriptSuccess(lines)
 
   v:errmsg = 'none'
   v:errmsg ..= 'again'
