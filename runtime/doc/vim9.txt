@@ -71,16 +71,17 @@ comments start with #. >
 
 The reason is that a double quote can also be the start of a string. In many
 places, especially halfway an expression with a line break, it's hard to tell
-what the meaning is.  To avoid confusion only # comments are recognized.
-This is the same as in shell scripts and Python programs.
+what the meaning is, since both a string and a comment can be followed by
+arbitrary text.  To avoid confusion only # comments are recognized.  This is
+the same as in shell scripts and Python programs.
 
 In Vi # is a command to list text with numbers.  In Vim9 script you can use
 `:number` for that. >
-	101number
+	101 number
 
 To improve readability there must be a space between a command and the #
 that starts a comment.  Note that #{ is the start of a dictionary, therefore
-it cannot start a comment.
+it does not start a comment.
 
 
 Vim9 functions ~
@@ -93,7 +94,7 @@ The syntax is strict, to enforce code that is easy to read and understand.
 
 Compilation is done when the function is first called, or when the
 `:defcompile` command is encountered in the script where the function was
-defined.
+defined. `:disassemble` also compiles the function.
 
 `:def` has no options like `:function` does: "range", "abort", "dict" or
 "closure".  A `:def` function always aborts on an error, does not get a range
@@ -104,7 +105,7 @@ be used, type checking will then be done at runtime, like with legacy
 functions.
 
 Arguments are accessed by name, without "a:".  There is no "a:" dictionary or
-"a:000" list.
+"a:000" list.  Just like any other language.
 
 Variable arguments are defined as the last argument, with a name and have a
 list type, similar to Typescript.  For example, a list of numbers: >
@@ -216,29 +217,29 @@ Functions can be called without `:call`: >
 Using `:call` is still possible, but this is discouraged.
 
 A method call without `eval` is possible, so long as the start is an
-identifier or can't be an Ex command.  It does NOT work for string constants: >
-	myList->add(123)		# works
-	g:myList->add(123)		# works
-	[1, 2, 3]->Process()		# works
-	#{a: 1, b: 2}->Process()	# works
-	{'a': 1, 'b': 2}->Process()	# works
-	"foobar"->Process()		# does NOT work
-	("foobar")->Process()		# works
-	'foobar'->Process()		# does NOT work
-	('foobar')->Process()		# works
+identifier or can't be an Ex command.  Examples: >
+	myList->add(123)
+	g:myList->add(123)
+	[1, 2, 3]->Process()
+	#{a: 1, b: 2}->Process()
+	{'a': 1, 'b': 2}->Process()
+	"foobar"->Process()
+	("foobar")->Process()
+	'foobar'->Process()
+	('foobar')->Process()
 
-In case there is ambiguity between a function name and an Ex command, use ":"
-to make clear you want to use the Ex command.  For example, there is both the
-`:substitute` command and the `substitute()` function.  When the line starts
-with `substitute(` this will use the function, prepend a colon to use the
-command instead: >
+In rare case there is ambiguity between a function name and an Ex command, use
+":" to make clear you want to use the Ex command.  For example, there is both
+the `:substitute` command and the `substitute()` function.  When the line
+starts with `substitute(` this will use the function. Prepend a colon to use
+the command instead: >
 	:substitute(pattern (replacement (
 
 Note that while variables need to be defined before they can be used,
 functions can be called before being defined.  This is required to be able
 have cyclic dependencies between functions.  It is slightly less efficient,
 since the function has to be looked up by name.  And a typo in the function
-name will only be found when the call is executed.
+name will only be found when the function is called.
 
 
 Omitting function() ~
@@ -347,9 +348,10 @@ No curly braces expansion ~
 |curly-braces-names| cannot be used.
 
 
-No :append, :change or :insert ~
+No :xit, :append, :change or :insert ~
 
-These commands are too quickly confused with local variable names.
+These commands are too easily confused with local variable names.  Instead of
+`:x` or `:xit` you can use `:exit`.
 
 
 Comparators ~

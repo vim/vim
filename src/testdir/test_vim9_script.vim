@@ -1515,6 +1515,21 @@ def Test_fixed_size_list()
   assert_equal([2, 99, 3, 4, 5], l)
 enddef
 
+def Test_no_insert_xit()
+  call CheckDefExecFailure(['x = 1'], 'E1100:')
+  call CheckDefExecFailure(['a = 1'], 'E1100:')
+  call CheckDefExecFailure(['i = 1'], 'E1100:')
+  call CheckDefExecFailure(['c = 1'], 'E1100:')
+
+  CheckScriptFailure(['vim9script', 'x = 1'], 'E1100:')
+  CheckScriptFailure(['vim9script', 'a = 1'], 'E488:')
+  CheckScriptFailure(['vim9script', 'a'], 'E1100:')
+  CheckScriptFailure(['vim9script', 'i = 1'], 'E488:')
+  CheckScriptFailure(['vim9script', 'i'], 'E1100:')
+  CheckScriptFailure(['vim9script', 'c = 1'], 'E488:')
+  CheckScriptFailure(['vim9script', 'c'], 'E1100:')
+enddef
+
 def IfElse(what: number): string
   let res = ''
   if what == 1

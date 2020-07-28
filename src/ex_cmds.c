@@ -3176,6 +3176,9 @@ ex_append(exarg_T *eap)
     int		vcol;
     int		empty = (curbuf->b_ml.ml_flags & ML_EMPTY);
 
+    if (not_in_vim9(eap) == FAIL)
+	return;
+
     // the ! flag toggles autoindent
     if (eap->forceit)
 	curbuf->b_p_ai = !curbuf->b_p_ai;
@@ -3316,6 +3319,9 @@ ex_append(exarg_T *eap)
 ex_change(exarg_T *eap)
 {
     linenr_T	lnum;
+
+    if (not_in_vim9(eap) == FAIL)
+	return;
 
     if (eap->line2 >= eap->line1
 	    && u_save(eap->line1 - 1, eap->line2 + 1) == FAIL)

@@ -7409,6 +7409,13 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 
 	    // TODO: other commands with an expression argument
 
+	    case CMD_append:
+	    case CMD_change:
+	    case CMD_insert:
+	    case CMD_xit:
+		    not_in_vim9(&ea);
+		    goto erret;
+
 	    case CMD_SIZE:
 		    semsg(_("E476: Invalid command: %s"), ea.cmd);
 		    goto erret;

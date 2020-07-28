@@ -5686,6 +5686,8 @@ ex_stop(exarg_T *eap)
     static void
 ex_exit(exarg_T *eap)
 {
+    if (not_in_vim9(eap) == FAIL)
+	return;
 #ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
     {
