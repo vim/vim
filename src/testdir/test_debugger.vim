@@ -4,6 +4,9 @@ source shared.vim
 source screendump.vim
 source check.vim
 
+CheckFeature terminal
+CheckRunVimInTerminal
+
 func CheckDbgOutput(buf, lines, options = {})
   " Verify the expected output
   let lnum = 20 - len(a:lines)
@@ -34,8 +37,6 @@ endfunc
 
 " Debugger tests
 func Test_Debugger()
-  CheckRunVimInTerminal
-
   " Create a Vim script with some functions
   let lines =<< trim END
 	func Foo()
@@ -329,8 +330,6 @@ func Test_Debugger()
 endfunc
 
 func Test_Backtrace_Through_Source()
-  CheckRunVimInTerminal
-
   let file1 =<< trim END
     func SourceAnotherFile()
       source Xtest2.vim
@@ -505,8 +504,6 @@ func Test_Backtrace_Through_Source()
 endfunc
 
 func Test_Backtrace_Autocmd()
-  CheckRunVimInTerminal
-
   let file1 =<< trim END
     func SourceAnotherFile()
       source Xtest2.vim
@@ -668,8 +665,6 @@ func Test_Backtrace_Autocmd()
 endfunc
 
 func Test_Backtrace_CmdLine()
-  CheckRunVimInTerminal
-
   let file1 =<< trim END
     func SourceAnotherFile()
       source Xtest2.vim
@@ -729,8 +724,6 @@ func Test_Backtrace_CmdLine()
 endfunc
 
 func Test_Backtrace_DefFunction()
-  CheckRunVimInTerminal
-
   let file1 =<< trim END
     vim9script
     import File2Function from './Xtest2.vim'
@@ -815,6 +808,197 @@ func Test_Backtrace_DefFunction()
         \ '\Vline 15: End of sourced file'],
         \ #{match: 'pattern'})
 
+
+  call StopVimInTerminal(buf)
+  call delete('Xtest1.vim')
+  call delete('Xtest2.vim')
+endfunc
+
+func Test_debug_backtrace_level()
+  let lines =<< trim END
+    let s:file1_var = 'file1'
+    let g:global_var = 'global'
+
+    func s:File1Func( arg )
+      let s:file1_var .= a:arg
+      let local_var = s:file1_var .. ' test1'
+      let g:global_var .= local_var
+      source Xtest2.vim
+    endfunc
+
+    call s:File1Func( 'arg1' )
+  END
+  call writefile(lines, 'Xtest1.vim')
+
+  let lines =<< trim END
+    let s:file2_var = 'file2'
+
+    func s:File2Func( arg )
+      let s:file2_var .= a:arg
+      let local_var = s:file2_var .. ' test2'
+      let g:global_var .= local_var
+    endfunc
+
+    call s:File2Func( 'arg2' )
+  END
+  call writefile(lines, 'Xtest2.vim')
+
+  let file1 = getcwd() .. '/Xtest1.vim'
+  let file2 = getcwd() .. '/Xtest2.vim'
+
+  " set a breakpoint and source file1.vim
+  let buf = RunVimInTerminal(
+        \ '-c "breakadd file 1 Xtest1.vim" -S Xtest1.vim',
+        \ #{ wait_for_ruler: 0 } )
+
+  call CheckDbgOutput(buf, [
+        \ 'Breakpoint in "' .. file1 .. '" line 1',
+        \ 'Entering Debug mode.  Type "cont" to continue.',
+        \ 'command line..script ' .. file1,
+        \ 'line 1: let s:file1_var = ''file1'''
+        \ ])
+
+  " step throught the initial declarations
+  call RunDbgCmd(buf, 'step', [ 'line 2: let g:global_var = ''global''' ] )
+  call RunDbgCmd(buf, 'step', [ 'line 4: func s:File1Func( arg )' ] )
+  call RunDbgCmd(buf, 'echo s:file1_var', [ 'file1' ] )
+  call RunDbgCmd(buf, 'echo g:global_var', [ 'global' ] )
+  call RunDbgCmd(buf, 'echo global_var', [ 'global' ] )
+
+  " step in to the first function
+  call RunDbgCmd(buf, 'step', [ 'line 11: call s:File1Func( ''arg1'' )' ] )
+  call RunDbgCmd(buf, 'step', [ 'line 1: let s:file1_var .= a:arg' ] )
+  call RunDbgCmd(buf, 'echo a:arg', [ 'arg1' ] )
+  call RunDbgCmd(buf, 'echo s:file1_var', [ 'file1' ] )
+  call RunDbgCmd(buf, 'echo g:global_var', [ 'global' ] )
+  call RunDbgCmd(buf,
+                \'echo global_var',
+                \[ 'E121: Undefined variable: global_var' ] )
+  call RunDbgCmd(buf,
+                \'echo local_var',
+                \[ 'E121: Undefined variable: local_var' ] )
+  call RunDbgCmd(buf,
+                \'echo l:local_var',
+                \[ 'E121: Undefined variable: l:local_var' ] )
+
+  " backtrace up
+  call RunDbgCmd(buf, 'backtrace', [
+        \ '\V>backtrace',
+        \ '\V  2 command line',
+        \ '\V  1 script ' .. file1 .. '[11]',
+        \ '\V->0 function <SNR>\.\*_File1Func',
+        \ '\Vline 1: let s:file1_var .= a:arg',
+        \ ],
+        \ #{ match: 'pattern' } )
+  call RunDbgCmd(buf, 'up', [ '>up' ] )
+
+  call RunDbgCmd(buf, 'backtrace', [
+        \ '\V>backtrace',
+        \ '\V  2 command line',
+        \ '\V->1 script ' .. file1 .. '[11]',
+        \ '\V  0 function <SNR>\.\*_File1Func',
+        \ '\Vline 1: let s:file1_var .= a:arg',
+        \ ],
+        \ #{ match: 'pattern' } )
+
+  " Expression evaluation in the script frame (not the function frame)
+  " FIXME: Unexpected in this scope (a: should not be visibnle)
+  call RunDbgCmd(buf, 'echo a:arg', [ 'arg1' ] )
+  call RunDbgCmd(buf, 'echo s:file1_var', [ 'file1' ] )
+  call RunDbgCmd(buf, 'echo g:global_var', [ 'global' ] )
+  " FIXME: Unexpected in this scope (global should be found)
+  call RunDbgCmd(buf,
+                \'echo global_var',
+                \[ 'E121: Undefined variable: global_var' ] )
+  call RunDbgCmd(buf,
+                \'echo local_var',
+                \[ 'E121: Undefined variable: local_var' ] )
+  call RunDbgCmd(buf,
+                \'echo l:local_var',
+                \[ 'E121: Undefined variable: l:local_var' ] )
+
+
+  " step while backtraced jumps to the latest frame
+  call RunDbgCmd(buf, 'step', [
+        \ 'line 2: let local_var = s:file1_var .. '' test1''' ] )
+  call RunDbgCmd(buf, 'backtrace', [
+        \ '\V>backtrace',
+        \ '\V  2 command line',
+        \ '\V  1 script ' .. file1 .. '[11]',
+        \ '\V->0 function <SNR>\.\*_File1Func',
+        \ '\Vline 2: let local_var = s:file1_var .. '' test1''',
+        \ ],
+        \ #{ match: 'pattern' } )
+
+  call RunDbgCmd(buf, 'step', [ 'line 3: let g:global_var .= local_var' ] )
+  call RunDbgCmd(buf, 'echo local_var', [ 'file1arg1 test1' ] )
+  call RunDbgCmd(buf, 'echo l:local_var', [ 'file1arg1 test1' ] )
+
+  call RunDbgCmd(buf, 'step', [ 'line 4: source Xtest2.vim' ] )
+  call RunDbgCmd(buf, 'step', [ 'line 1: let s:file2_var = ''file2''' ] )
+  call RunDbgCmd(buf, 'backtrace', [
+        \ '\V>backtrace',
+        \ '\V  3 command line',
+        \ '\V  2 script ' .. file1 .. '[11]',
+        \ '\V  1 function <SNR>\.\*_File1Func[4]',
+        \ '\V->0 script ' .. file2,
+        \ '\Vline 1: let s:file2_var = ''file2''',
+        \ ],
+        \ #{ match: 'pattern' } )
+
+  " Expression evaluation in the script frame file2 (not the function frame)
+  call RunDbgCmd(buf, 'echo a:arg', [ 'E121: Undefined variable: a:arg' ] )
+  call RunDbgCmd(buf,
+        \ 'echo s:file1_var',
+        \ [ 'E121: Undefined variable: s:file1_var' ] )
+  call RunDbgCmd(buf, 'echo g:global_var', [ 'globalfile1arg1 test1' ] )
+  call RunDbgCmd(buf, 'echo global_var', [ 'globalfile1arg1 test1' ] )
+  call RunDbgCmd(buf,
+                \'echo local_var',
+                \[ 'E121: Undefined variable: local_var' ] )
+  call RunDbgCmd(buf,
+                \'echo l:local_var',
+                \[ 'E121: Undefined variable: l:local_var' ] )
+  call RunDbgCmd(buf,
+        \ 'echo s:file2_var',
+        \ [ 'E121: Undefined variable: s:file2_var' ] )
+
+  call RunDbgCmd(buf, 'step', [ 'line 3: func s:File2Func( arg )' ] )
+  call RunDbgCmd(buf, 'echo s:file2_var', [ 'file2' ] )
+
+  " Up the stack to the other script context
+  call RunDbgCmd(buf, 'up')
+  call RunDbgCmd(buf, 'backtrace', [
+        \ '\V>backtrace',
+        \ '\V  3 command line',
+        \ '\V  2 script ' .. file1 .. '[11]',
+        \ '\V->1 function <SNR>\.\*_File1Func[4]',
+        \ '\V  0 script ' .. file2,
+        \ '\Vline 3: func s:File2Func( arg )',
+        \ ],
+        \ #{ match: 'pattern' } )
+  " FIXME: Unexpected. Should see the a: and l: dicts from File1Func
+  call RunDbgCmd(buf, 'echo a:arg', [ 'E121: Undefined variable: a:arg' ] )
+  call RunDbgCmd(buf,
+        \ 'echo l:local_var',
+        \ [ 'E121: Undefined variable: l:local_var' ] )
+
+  call RunDbgCmd(buf, 'up')
+  call RunDbgCmd(buf, 'backtrace', [
+        \ '\V>backtrace',
+        \ '\V  3 command line',
+        \ '\V->2 script ' .. file1 .. '[11]',
+        \ '\V  1 function <SNR>\.\*_File1Func[4]',
+        \ '\V  0 script ' .. file2,
+        \ '\Vline 3: func s:File2Func( arg )',
+        \ ],
+        \ #{ match: 'pattern' } )
+
+  " FIXME: Unexpected (wrong script vars are used)
+  call RunDbgCmd(buf,
+        \ 'echo s:file1_var',
+        \ [ 'E121: Undefined variable: s:file1_var' ] )
+  call RunDbgCmd(buf, 'echo s:file2_var', [ 'file2' ] )
 
   call StopVimInTerminal(buf)
   call delete('Xtest1.vim')
