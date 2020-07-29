@@ -502,14 +502,23 @@ def Test_vim9script_call()
     assert_equal('some', var)
 
     # line starting with single quote is not a mark
+    # line starting with double quote can be a method call
     'asdfasdf'->MyFunc()
     assert_equal('asdfasdf', var)
+    "xyz"->MyFunc()
+    assert_equal('xyz', var)
 
     def UseString()
       'xyork'->MyFunc()
     enddef
     UseString()
     assert_equal('xyork', var)
+
+    def UseString2()
+      "knife"->MyFunc()
+    enddef
+    UseString2()
+    assert_equal('knife', var)
 
     # prepending a colon makes it a mark
     new

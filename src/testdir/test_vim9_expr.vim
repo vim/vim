@@ -1638,8 +1638,9 @@ enddef
 def Test_expr7_method_call()
   new
   setline(1, ['first', 'last'])
-  eval 'second'->append(1)
-  assert_equal(['first', 'second', 'last'], getline(1, '$'))
+  'second'->append(1)
+  "third"->append(2)
+  assert_equal(['first', 'second', 'third', 'last'], getline(1, '$'))
   bwipe!
 
   let bufnr = bufnr()

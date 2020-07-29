@@ -3277,7 +3277,7 @@ find_ex_command(
 	char_u *pskip = (*eap->cmd == '&' || *eap->cmd == '$'
 				|| *eap->cmd == '@') ? eap->cmd + 1 : eap->cmd;
 
-	if (vim_strchr((char_u *)"{('[", *p) != NULL
+	if (vim_strchr((char_u *)"{('[\"", *p) != NULL
 	       || ((p = to_name_const_end(pskip)) > eap->cmd && *p != NUL))
 	{
 	    int oplen;
@@ -3293,6 +3293,8 @@ find_ex_command(
 			    *eap->cmd == '{'
 			    // "'string'->func()" is an expression.
 			 || *eap->cmd == '\''
+			    // '"string"->func()' is an expression.
+			 || *eap->cmd == '"'
 			    // "g:varname" is an expression.
 			 || eap->cmd[1] == ':'
 			    )
