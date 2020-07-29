@@ -801,13 +801,13 @@ ex_let(exarg_T *eap)
 	    else
 		++expr;
 
-	    if (vim9script && (!VIM_ISWHITE(*argend) || !VIM_ISWHITE(*expr)))
+	    if (vim9script && (!VIM_ISWHITE(*argend)
+						   || !IS_WHITE_OR_NUL(*expr)))
 	    {
 		vim_strncpy(op, expr - len, len);
 		semsg(_(e_white_both), op);
 		i = FAIL;
 	    }
-	    expr = skipwhite(expr);
 
 	    if (eap->skip)
 		++emsg_skip;
@@ -818,6 +818,7 @@ ex_let(exarg_T *eap)
 		evalarg.eval_getline = eap->getline;
 		evalarg.eval_cookie = eap->cookie;
 	    }
+	    expr = skipwhite_and_linebreak(expr, &evalarg);
 	    i = eval0(expr, &rettv, eap, &evalarg);
 	    if (eap->skip)
 		--emsg_skip;

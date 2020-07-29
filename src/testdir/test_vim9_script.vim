@@ -358,6 +358,25 @@ def Test_assignment_var_list()
   assert_equal(['three'], vrem)
 enddef
 
+def Test_assignment_vim9script()
+  let lines =<< trim END
+    vim9script
+    def Func(): list<number>
+      return [1, 2]
+    enddef
+    let var1: number
+    let var2: number
+    [var1, var2] =
+          Func()
+    assert_equal(1, var1)
+    assert_equal(2, var2)
+    let ll =
+          Func()
+    assert_equal([1, 2], ll)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Mess(): string
   v:foldstart = 123
   return 'xxx'
