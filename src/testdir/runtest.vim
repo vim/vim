@@ -123,6 +123,12 @@ let s:srcdir = expand('%:p:h:h')
 if has('win32')
   " avoid prompt that is long or contains a line break
   let $PROMPT = '$P$G'
+  " On MS-Windows t_md and t_me are Vim specific escape sequences.
+  let s:t_bold = "\x1b[1m"
+  let s:t_normal = "\x1b[m"
+else
+  let s:t_bold = &t_md
+  let s:t_normal = &t_me
 endif
 
 " Prepare for calling test_garbagecollect_now().
@@ -239,11 +245,11 @@ func RunTheTest(test)
     let message ..= repeat(' ', 50 - len(message))
     let time = reltime(func_start)
     if has('float') && reltimefloat(time) > 0.1
-      let message = &t_md .. message
+      let message = s:t_bold .. message
     endif
     let message ..= ' in ' .. reltimestr(time) .. ' seconds'
     if has('float') && reltimefloat(time) > 0.1
-      let message ..= &t_me
+      let message ..= s:t_normal
     endif
   endif
   call add(s:messages, message)
@@ -312,9 +318,9 @@ func FinishTesting()
     let message = 'Executed ' . s:done . (s:done > 1 ? ' tests' : ' test')
   endif
   if s:done > 0 && has('reltime')
-    let message = &t_md .. message .. repeat(' ', 40 - len(message))
+    let message = s:t_bold .. message .. repeat(' ', 40 - len(message))
     let message ..= ' in ' .. reltimestr(reltime(s:start_time)) .. ' seconds'
-    let message ..= &t_me
+    let message ..= s:t_normal
   endif
   echo message
   call add(s:messages, message)
