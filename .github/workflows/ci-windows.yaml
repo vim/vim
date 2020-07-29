@@ -2,6 +2,8 @@ name: GitHub CI
 
 on:
   push:
+    branches:
+      - '*'
   pull_request:
 
 env:
