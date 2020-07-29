@@ -118,9 +118,13 @@ Functions and variables are script-local by default ~
 							*vim9-scopes*
 When using `:function` or `:def` to specify a new function at the script level
 in a Vim9 script, the function is local to the script, as if "s:" was
-prefixed.  Using the "s:" prefix is optional.
-
-To define or use a global function or variable the "g:" prefix must be used.
+prefixed.  Using the "s:" prefix is optional.  To define or use a global
+function or variable the "g:" prefix must be used.  For functions in an
+autoload script the "name#" prefix is sufficient. >
+	def ThisFunction()          # script-local
+	def s:ThisFunction()        # script-local
+	def g:ThatFunction()	    # global
+	def scriptname#function()   # autoload
 
 When using `:function` or `:def` to specify a new function inside a function,
 the function is local to the function.  It is not possible to define a

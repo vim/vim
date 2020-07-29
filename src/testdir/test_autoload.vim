@@ -17,3 +17,8 @@ func Test_source_autoload()
   source sautest/autoload/sourced.vim
   call assert_equal(1, g:loaded_sourced_vim)
 endfunc
+
+func Test_autoload_vim9script()
+  call assert_equal('some', auto9#getsome())
+  call assert_equal(49, auto9#add42(7))
+endfunc
