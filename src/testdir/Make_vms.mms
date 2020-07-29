@@ -73,8 +73,7 @@ VIMPROG = <->vim.exe
 
 .SUFFIXES : .out .in
 
-SCRIPT = test1.out \
-       test42.out test49.out test77a.out
+SCRIPT = test1.out test49.out test77a.out
 
 # Known problems:
 #
