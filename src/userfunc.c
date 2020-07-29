@@ -2832,7 +2832,8 @@ def_function(exarg_T *eap, char_u *name_arg)
     if (*p == '\n')
 	line_arg = p + 1;
     else if (*p != NUL
-	    && !(*p == '"' && !(vim9script || eap->cmdidx == CMD_def))
+	    && !(*p == '"' && (!vim9script || eap->cmdidx == CMD_function)
+						     && eap->cmdidx != CMD_def)
 	    && !(*p == '#' && (vim9script || eap->cmdidx == CMD_def))
 	    && !eap->skip
 	    && !did_emsg)

@@ -2286,6 +2286,10 @@ def Test_vim9_comment()
       ])
   CheckScriptFailure([
       'vim9script',
+      'function " comment',
+      ], 'E129:')
+  CheckScriptFailure([
+      'vim9script',
       'function# comment',
       ], 'E129:')
   CheckScriptSuccess([
@@ -2333,11 +2337,11 @@ def Test_vim9_comment()
       'func Test() " comment',
       'endfunc',
       ])
-  CheckScriptFailure([
+  CheckScriptSuccess([
       'vim9script',
       'func Test() " comment',
       'endfunc',
-      ], 'E488:')
+      ])
 
   CheckScriptSuccess([
       'def Test() # comment',
