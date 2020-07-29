@@ -9,6 +9,7 @@ SRC_ALL =	\
 		.lgtm.yml \
 		.travis.yml \
 		.cirrus.yml \
+		.github/workflows/ci-windows.yaml \
 		appveyor.yml \
 		ci/appveyor.bat \
 		ci/if_ver*.vim \
