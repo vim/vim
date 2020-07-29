@@ -5237,7 +5237,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    goto theend;
 		}
 	    }
-	    else if (STRNCMP(var_start, "g:", 2) == 0)
+	    else if (varlen > 1 && STRNCMP(var_start, "g:", 2) == 0)
 	    {
 		dest = dest_global;
 		if (is_decl)
@@ -5246,7 +5246,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    goto theend;
 		}
 	    }
-	    else if (STRNCMP(var_start, "b:", 2) == 0)
+	    else if (varlen > 1 && STRNCMP(var_start, "b:", 2) == 0)
 	    {
 		dest = dest_buffer;
 		if (is_decl)
@@ -5255,7 +5255,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    goto theend;
 		}
 	    }
-	    else if (STRNCMP(var_start, "w:", 2) == 0)
+	    else if (varlen > 1 && STRNCMP(var_start, "w:", 2) == 0)
 	    {
 		dest = dest_window;
 		if (is_decl)
@@ -5264,7 +5264,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    goto theend;
 		}
 	    }
-	    else if (STRNCMP(var_start, "t:", 2) == 0)
+	    else if (varlen > 1 && STRNCMP(var_start, "t:", 2) == 0)
 	    {
 		dest = dest_tab;
 		if (is_decl)
@@ -5273,7 +5273,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    goto theend;
 		}
 	    }
-	    else if (STRNCMP(var_start, "v:", 2) == 0)
+	    else if (varlen > 1 && STRNCMP(var_start, "v:", 2) == 0)
 	    {
 		typval_T	*vtv;
 		int		di_flags;
@@ -5337,14 +5337,18 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			goto theend;
 		    }
 		}
-		else if (STRNCMP(var_start, "s:", 2) == 0
+		else if ((varlen > 1 && STRNCMP(var_start, "s:", 2) == 0)
 			|| lookup_script(var_start, varlen) == OK
 			|| find_imported(var_start, varlen, cctx) != NULL)
 		{
 		    dest = dest_script;
 		    if (is_decl)
 		    {
-			semsg(_("E1054: Variable already declared in the script: %s"),
+			if ((varlen > 1 && STRNCMP(var_start, "s:", 2) == 0))
+			    semsg(_("E1101: Cannot declare a script variable in a function: %s"),
+									 name);
+			else
+			    semsg(_("E1054: Variable already declared in the script: %s"),
 									 name);
 			goto theend;
 		    }

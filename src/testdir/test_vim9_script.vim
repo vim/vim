@@ -109,6 +109,9 @@ def Test_assignment()
   call CheckDefFailure(['&ts = 3', 'let asdf'], 'E1022:')
   &ts = 8
 
+  call CheckDefFailure(['let s:var = 123'], 'E1101:')
+  call CheckDefFailure(['let s:var: number'], 'E1101:')
+
   g:inc_counter += 1
   assert_equal(2, g:inc_counter)
 
@@ -136,6 +139,28 @@ def Test_assignment()
   assert_equal('noneagain', v:errmsg)
   call CheckDefFailure(['v:errmsg += "more"'], 'E1013:')
   call CheckDefFailure(['v:errmsg += 123'], 'E1013:')
+
+  # single letter variables
+  a = 123
+  assert_equal(123, a)
+  let b: number
+  b = 123
+  assert_equal(123, b)
+  let g: number
+  g = 123
+  assert_equal(123, g)
+  let s: number
+  s = 123
+  assert_equal(123, s)
+  let t: number
+  t = 123
+  assert_equal(123, t)
+  let v: number
+  v = 123
+  assert_equal(123, v)
+  let w: number
+  w = 123
+  assert_equal(123, w)
 enddef
 
 def Test_vim9_single_char_vars()
