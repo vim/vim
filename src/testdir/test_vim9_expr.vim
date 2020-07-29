@@ -831,7 +831,7 @@ def Test_expr5()
 enddef
 
 def Test_expr5_vim9script()
-  # only checks line continuation
+  # check line continuation
   let lines =<< trim END
       vim9script
       let var = 11
@@ -848,6 +848,30 @@ def Test_expr5_vim9script()
       assert_equal('onetwo', var)
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      echo 'abc' is# 'abc'
+  END
+  CheckScriptFailure(lines, 'E15:')
+
+  lines =<< trim END
+      vim9script
+      echo 'abc' is? 'abc'
+  END
+  CheckScriptFailure(lines, 'E15:')
+
+  lines =<< trim END
+      vim9script
+      echo 'abc' isnot# 'abc'
+  END
+  CheckScriptFailure(lines, 'E15:')
+
+  lines =<< trim END
+      vim9script
+      echo 'abc' isnot? 'abc'
+  END
+  CheckScriptFailure(lines, 'E15:')
 enddef
 
 def Test_expr5_float()

@@ -3633,7 +3633,7 @@ get_vim_constant(char_u **arg, typval_T *rettv)
     }
 }
 
-    static exptype_T
+    exptype_T
 get_compare_type(char_u *p, int *len, int *type_is)
 {
     exptype_T	type = EXPR_UNKNOWN;
