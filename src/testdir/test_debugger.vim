@@ -7,6 +7,17 @@ source check.vim
 CheckFeature terminal
 CheckRunVimInTerminal
 
+func CheckCWD()
+  " Check that the longer lines don't wrap due to the length of the script name
+  " in cwd
+  let script_len = len( getcwd() .. '/Xtest1.vim' )
+  let longest_line = len( 'Breakpoint in "" line 1' )
+  if script_len > ( 75 - longest_line )
+    throw 'Skipped: Your CWD is too many characters'
+  endif
+endfunc
+command! -nargs=0 -bar CheckCWD call CheckCWD()
+
 func CheckDbgOutput(buf, lines, options = {})
   " Verify the expected output
   let lnum = 20 - len(a:lines)
@@ -330,6 +341,7 @@ func Test_Debugger()
 endfunc
 
 func Test_Backtrace_Through_Source()
+  CheckCWD
   let file1 =<< trim END
     func SourceAnotherFile()
       source Xtest2.vim
@@ -504,6 +516,7 @@ func Test_Backtrace_Through_Source()
 endfunc
 
 func Test_Backtrace_Autocmd()
+  CheckCWD
   let file1 =<< trim END
     func SourceAnotherFile()
       source Xtest2.vim
@@ -665,6 +678,7 @@ func Test_Backtrace_Autocmd()
 endfunc
 
 func Test_Backtrace_CmdLine()
+  CheckCWD
   let file1 =<< trim END
     func SourceAnotherFile()
       source Xtest2.vim
@@ -724,6 +738,7 @@ func Test_Backtrace_CmdLine()
 endfunc
 
 func Test_Backtrace_DefFunction()
+  CheckCWD
   let file1 =<< trim END
     vim9script
     import File2Function from './Xtest2.vim'
@@ -815,6 +830,7 @@ func Test_Backtrace_DefFunction()
 endfunc
 
 func Test_debug_backtrace_level()
+  CheckCWD
   let lines =<< trim END
     let s:file1_var = 'file1'
     let g:global_var = 'global'
