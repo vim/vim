@@ -7417,7 +7417,7 @@ $as_echo_n "checking for location of Tcl include... " >&6; }
       if test "x$MACOS_X" != "xyes"; then
 	tclinc="$tclloc/include $tclloc/include/tcl $tclloc/include/tcl$tclver /usr/local/include /usr/local/include/tcl$tclver /usr/include /usr/include/tcl$tclver"
       else
-		tclinc="/System/Library/Frameworks/Tcl.framework/Headers"
+				tclinc="$tclloc/include $tclloc/include/tcl $tclloc/include/tcl$tclver /System/Library/Frameworks/Tcl.framework/Headers `xcrun --show-sdk-path`/System/Library/Frameworks/Tcl.framework/Versions/Current/Headers"
       fi
       TCL_INC=
       for try in $tclinc; do
@@ -7440,7 +7440,8 @@ $as_echo_n "checking for location of tclConfig.sh script... " >&6; }
 	  tclcnf=`echo $tclinc | sed s/include/lib/g`
 	  tclcnf="$tclcnf `echo $tclinc | sed s/include/lib64/g`"
 	else
-	  	  tclcnf="/System/Library/Frameworks/Tcl.framework"
+	  	  	  	  tclcnf=`echo $tclinc | sed s/include/lib/g`
+	  tclcnf="$tclcnf /System/Library/Frameworks/Tcl.framework `xcrun --show-sdk-path`/System/Library/Frameworks/Tcl.framework"
 	fi
 	for try in $tclcnf; do
 	  if test -f "$try/tclConfig.sh"; then

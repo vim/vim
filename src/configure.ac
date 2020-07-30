@@ -1820,8 +1820,10 @@ if test "$enable_tclinterp" = "yes" -o "$enable_tclinterp" = "dynamic"; then
       if test "x$MACOS_X" != "xyes"; then
 	tclinc="$tclloc/include $tclloc/include/tcl $tclloc/include/tcl$tclver /usr/local/include /usr/local/include/tcl$tclver /usr/include /usr/include/tcl$tclver"
       else
+	dnl For all macOS, use the value from TCL in case use of, say, homebrew
 	dnl For Mac OS X 10.3, use the OS-provided framework location
-	tclinc="/System/Library/Frameworks/Tcl.framework/Headers"
+	dnl For Mac OS X 10.14, the OS-provided framework location doesn't contain the headers, so also check the Xcode SDK
+	tclinc="$tclloc/include $tclloc/include/tcl $tclloc/include/tcl$tclver /System/Library/Frameworks/Tcl.framework/Headers `xcrun --show-sdk-path`/System/Library/Frameworks/Tcl.framework/Versions/Current/Headers"
       fi
       TCL_INC=
       for try in $tclinc; do
@@ -1841,8 +1843,11 @@ if test "$enable_tclinterp" = "yes" -o "$enable_tclinterp" = "dynamic"; then
 	  tclcnf=`echo $tclinc | sed s/include/lib/g`
 	  tclcnf="$tclcnf `echo $tclinc | sed s/include/lib64/g`"
 	else
+	  dnl For all macOS, use the value from TCL in case use of, say, homebrew
 	  dnl For Mac OS X 10.3, use the OS-provided framework location
-	  tclcnf="/System/Library/Frameworks/Tcl.framework"
+	  dnl For Mac OS X 10.14, the OS-provided framework location doesn't contain the headers, so also check the Xcode SDK
+	  tclcnf=`echo $tclinc | sed s/include/lib/g`
+	  tclcnf="$tclcnf /System/Library/Frameworks/Tcl.framework `xcrun --show-sdk-path`/System/Library/Frameworks/Tcl.framework"
 	fi
 	for try in $tclcnf; do
 	  if test -f "$try/tclConfig.sh"; then
