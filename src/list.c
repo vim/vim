@@ -1194,6 +1194,9 @@ eval_list(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
 	    else
 		clear_tv(&tv);
 	}
+	// Legacy Vim script allowed a space before the comma.
+	if (!vim9script)
+	    *arg = skipwhite(*arg);
 
 	// the comma must come after the value
 	had_comma = **arg == ',';

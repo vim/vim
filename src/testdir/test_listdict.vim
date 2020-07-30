@@ -23,6 +23,9 @@ func Test_list_create()
   call assert_equal(10, x)
 endfunc
 
+" This was allowed in legacy Vim script
+let s:list_with_spaces = [1 , 2 , 3]
+
 " List slices
 func Test_list_slice()
   let l = [1, 'as''d', [1, 2, function("strlen")], {'a': 1},]
@@ -201,6 +204,10 @@ func Test_dict()
   " undefined variable as value
   call assert_fails("let d={'k' : i}", 'E121:')
 endfunc
+
+" This was allowed in legacy Vim script
+let s:dict_with_spaces = {'one' : 1 , 'two' : 2 , 'three' : 3}
+let s:dict_with_spaces_lit = #{one : 1 , two : 2 , three : 3}
 
 " Dictionary identity
 func Test_dict_identity()
