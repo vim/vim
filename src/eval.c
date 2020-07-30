@@ -1913,27 +1913,28 @@ eval_func(
     char_u *
 eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext)
 {
+    char_u *p = skipwhite(arg);
+
     *getnext = FALSE;
     if (in_vim9script()
 	    && evalarg != NULL
 	    && (evalarg->eval_cookie != NULL || evalarg->eval_cctx != NULL)
-	    && (*arg == NUL || (VIM_ISWHITE(arg[-1])
-						  && vim9_comment_start(arg))))
+	    && (*p == NUL || (VIM_ISWHITE(p[-1]) && vim9_comment_start(p))))
     {
-	char_u *p;
+	char_u *next;
 
 	if (evalarg->eval_cookie != NULL)
-	    p = getline_peek(evalarg->eval_getline, evalarg->eval_cookie);
+	    next = getline_peek(evalarg->eval_getline, evalarg->eval_cookie);
 	else
-	    p = peek_next_line_from_context(evalarg->eval_cctx);
+	    next = peek_next_line_from_context(evalarg->eval_cctx);
 
-	if (p != NULL)
+	if (next != NULL)
 	{
 	    *getnext = TRUE;
-	    return skipwhite(p);
+	    return skipwhite(next);
 	}
     }
-    return arg;
+    return p;
 }
 
 /*
@@ -2039,6 +2040,7 @@ eval0(
 
     p = skipwhite(arg);
     ret = eval1(&p, rettv, evalarg);
+    p = skipwhite(p);
 
     if (ret == FAIL || !ends_excmd2(arg, p))
     {
@@ -2107,6 +2109,8 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 
 	if (getnext)
 	    *arg = eval_next_line(evalarg_used);
+	else
+	    *arg = p;
 
 	result = FALSE;
 	if (evaluate)
@@ -2142,6 +2146,8 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	}
 	if (getnext)
 	    *arg = eval_next_line(evalarg_used);
+	else
+	    *arg = p;
 
 	/*
 	 * Get the third variable.  Recursive!
@@ -2234,6 +2240,8 @@ eval2(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	{
 	    if (getnext)
 		*arg = eval_next_line(evalarg_used);
+	    else
+		*arg = p;
 
 	    /*
 	     * Get the second variable.
@@ -2349,6 +2357,8 @@ eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	{
 	    if (getnext)
 		*arg = eval_next_line(evalarg_used);
+	    else
+		*arg = p;
 
 	    /*
 	     * Get the second variable.
@@ -2575,6 +2585,8 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 
 	if (getnext)
 	    *arg = eval_next_line(evalarg);
+	else
+	    *arg = p;
 	evaluate = evalarg == NULL ? 0 : (evalarg->eval_flags & EVAL_EVALUATE);
 	if ((op != '+' || (rettv->v_type != VAR_LIST
 						 && rettv->v_type != VAR_BLOB))
@@ -2756,6 +2768,7 @@ eval6(
 	int	    evaluate;
 	int	    getnext;
 	typval_T    var2;
+	char_u	    *p;
 	int	    op;
 	varnumber_T n1, n2;
 #ifdef FEAT_FLOAT
@@ -2763,12 +2776,15 @@ eval6(
 #endif
 	int	    error;
 
-	op = *eval_next_non_blank(*arg, evalarg, &getnext);
+	p = eval_next_non_blank(*arg, evalarg, &getnext);
+	op = *p;
 	if (op != '*' && op != '/' && op != '%')
 	    break;
 
 	if (getnext)
 	    *arg = eval_next_line(evalarg);
+	else
+	    *arg = p;
 
 #ifdef FEAT_FLOAT
 	f1 = 0;
@@ -3114,8 +3130,6 @@ eval7(
 	}
 	vim_free(alias);
     }
-
-    *arg = skipwhite(*arg);
 
     // Handle following '[', '(' and '.' for expr[expr], expr.name,
     // expr(expr), expr->name(expr)
@@ -5152,7 +5166,7 @@ handle_subscript(
 	p = eval_next_non_blank(*arg, evalarg, &getnext);
 	if (getnext
 	    && ((rettv->v_type == VAR_DICT && *p == '.' && eval_isdictc(p[1]))
-		|| (*p == '-' && p[1] == '>'
+		|| (p[0] == '-' && p[1] == '>'
 				     && (p[2] == '{' || ASCII_ISALPHA(p[2])))))
 	{
 	    *arg = eval_next_line(evalarg);
@@ -5178,8 +5192,9 @@ handle_subscript(
 	    dict_unref(selfdict);
 	    selfdict = NULL;
 	}
-	else if (**arg == '-' && (*arg)[1] == '>')
+	else if (p[0] == '-' && p[1] == '>')
 	{
+	    *arg = p;
 	    if (ret == OK)
 	    {
 		if ((*arg)[2] == '{')

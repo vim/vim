@@ -350,7 +350,7 @@ function Test_tabpage_with_tabprevious()
     call Check_tab_count(6, cmd . ' 3', 3)
     call Check_tab_count(6, cmd . ' 8', 4)
     for n in range(2)
-      for c in ['0', '.+3', '+', '+2' , '-', '-2' , '$', '+99', '-99']
+      for c in ['0', '.+3', '+', '+2', '-', '-2', '$', '+99', '-99']
         if n == 0 " pre count
           let entire_cmd = c . cmd
           let err_code = 'E16:'

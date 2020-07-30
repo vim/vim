@@ -588,7 +588,7 @@ func Test_popup_drag_termwin()
 	call setline(1, range(100))
 	for nr in range(7)
 	  call setline(nr * 12 + 1, "fold {{{")
-	  call setline(nr * 12 + 11 , "end }}}")
+	  call setline(nr * 12 + 11, "end }}}")
 	endfor
 	%foldclose
 	set shell=/bin/sh noruler

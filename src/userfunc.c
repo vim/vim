@@ -642,6 +642,10 @@ get_func_tv(
 	    break;
 	}
 	++argcount;
+	// The comma should come right after the argument, but this wasn't
+	// checked previously, thus only enforce it in Vim9 script.
+	if (!in_vim9script())
+	    argp = skipwhite(argp);
 	if (*argp != ',')
 	    break;
     }
