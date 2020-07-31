@@ -141,16 +141,15 @@ def Test_nested_global_function()
               return 'inner'
           enddef
       enddef
-      disass Outer
-      Outer()
-      assert_equal('inner', g:Inner())
-      delfunc g:Inner
-      Outer()
-      assert_equal('inner', g:Inner())
-      delfunc g:Inner
-      Outer()
-      assert_equal('inner', g:Inner())
-      delfunc g:Inner
+#      Outer()
+#      assert_equal('inner', g:Inner())
+#      delfunc g:Inner
+#      Outer()
+#      assert_equal('inner', g:Inner())
+#      delfunc g:Inner
+#      Outer()
+#      assert_equal('inner', g:Inner())
+#      delfunc g:Inner
   END
   CheckScriptSuccess(lines)
 enddef

@@ -780,7 +780,7 @@ find_func_with_sid(char_u *name, int sid)
  * When "is_global" is true don't find script-local or imported functions.
  * Return NULL for unknown function.
  */
-    static ufunc_T *
+    ufunc_T *
 find_func_even_dead(char_u *name, int is_global, cctx_T *cctx)
 {
     hashitem_T	*hi;
@@ -1759,7 +1759,7 @@ delete_script_functions(int sid)
 {
     hashitem_T	*hi;
     ufunc_T	*fp;
-    long_u	todo;
+    long_u	todo = 1;
     char_u	buf[30];
     size_t	len;
 
@@ -1769,18 +1769,27 @@ delete_script_functions(int sid)
     sprintf((char *)buf + 3, "%d_", sid);
     len = STRLEN(buf);
 
-    todo = func_hashtab.ht_used;
-    for (hi = func_hashtab.ht_array; todo > 0; ++hi)
-	if (!HASHITEM_EMPTY(hi))
-	{
-	    fp = HI2UF(hi);
-	    if (STRNCMP(fp->uf_name, buf, len) == 0)
+    while (todo > 0)
+    {
+	todo = func_hashtab.ht_used;
+	for (hi = func_hashtab.ht_array; todo > 0; ++hi)
+	    if (!HASHITEM_EMPTY(hi))
 	    {
-		fp->uf_flags |= FC_DEAD;
-		func_clear(fp, TRUE);
+		fp = HI2UF(hi);
+		if (STRNCMP(fp->uf_name, buf, len) == 0)
+		{
+		    int changed = func_hashtab.ht_changed;
+
+		    fp->uf_flags |= FC_DEAD;
+		    func_clear(fp, TRUE);
+		    // When clearing a function another function can be cleared
+		    // as a side effect.  When that happens start over.
+		    if (changed != func_hashtab.ht_changed)
+			break;
+		}
+		--todo;
 	    }
-	    --todo;
-	}
+    }
 }
 
 #if defined(EXITFREE) || defined(PROTO)

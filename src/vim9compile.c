@@ -7677,8 +7677,21 @@ delete_instr(isn_T *isn)
 	    break;
 
 	case ISN_NEWFUNC:
-	    vim_free(isn->isn_arg.newfunc.nf_lambda);
-	    vim_free(isn->isn_arg.newfunc.nf_global);
+	    {
+		char_u  *lambda = isn->isn_arg.newfunc.nf_lambda;
+		ufunc_T *ufunc = find_func_even_dead(lambda, TRUE, NULL);
+
+		if (ufunc != NULL)
+		{
+		    // Clear uf_dfunc_idx so that the function is deleted.
+		    clear_def_function(ufunc);
+		    ufunc->uf_dfunc_idx = 0;
+		    func_ptr_unref(ufunc);
+		}
+
+		vim_free(lambda);
+		vim_free(isn->isn_arg.newfunc.nf_global);
+	    }
 	    break;
 
 	case ISN_2BOOL:
