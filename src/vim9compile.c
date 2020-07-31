@@ -3855,7 +3855,7 @@ compile_subscript(
 		    return FAIL;
 	    }
 	}
-	else if (*p == '[')
+	else if (**arg == '[')
 	{
 	    garray_T	*stack = &cctx->ctx_type_stack;
 	    type_T	**typep;

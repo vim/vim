@@ -1176,6 +1176,10 @@ def Test_expr7_list()
   assert_equal(g:list_mixed, [1, 'b', false,])
   assert_equal('b', g:list_mixed[1])
 
+  echo [1,
+  	2] [3,
+		4]
+
   call CheckDefExecFailure(["let x = g:anint[3]"], 'E714:')
   call CheckDefFailure(["let x = g:list_mixed[xxx]"], 'E1001:')
   call CheckDefFailure(["let x = [1,2,3]"], 'E1069:')
@@ -1193,6 +1197,10 @@ def Test_expr7_list_vim9script()
 		22,
 		]
       assert_equal([11, 22], l)
+
+      echo [1,
+	    2] [3,
+		    4]
   END
   CheckScriptSuccess(lines)
 
