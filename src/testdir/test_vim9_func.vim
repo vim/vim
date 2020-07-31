@@ -133,6 +133,28 @@ def Test_nested_function()
   CheckDefFailure(['func Nested()', 'endfunc'], 'E1086:')
 enddef
 
+def Test_nested_global_function()
+  let lines =<< trim END
+      vim9script
+      def Outer()
+          def g:Inner(): string
+              return 'inner'
+          enddef
+      enddef
+      disass Outer
+      Outer()
+      assert_equal('inner', g:Inner())
+      delfunc g:Inner
+      Outer()
+      assert_equal('inner', g:Inner())
+      delfunc g:Inner
+      Outer()
+      assert_equal('inner', g:Inner())
+      delfunc g:Inner
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 func Test_call_default_args_from_func()
   call assert_equal('string', MyDefaultArgs())
   call assert_equal('one', MyDefaultArgs('one'))

@@ -1523,6 +1523,27 @@ generate_FUNCREF(cctx_T *cctx, int dfunc_idx)
 }
 
 /*
+ * Generate an ISN_NEWFUNC instruction.
+ */
+    static int
+generate_NEWFUNC(cctx_T *cctx, char_u *lambda_name, char_u *func_name)
+{
+    isn_T	*isn;
+    char_u	*name;
+
+    RETURN_OK_IF_SKIP(cctx);
+    name = vim_strsave(lambda_name);
+    if (name == NULL)
+	return FAIL;
+    if ((isn = generate_instr(cctx, ISN_NEWFUNC)) == NULL)
+	return FAIL;
+    isn->isn_arg.newfunc.nf_lambda = name;
+    isn->isn_arg.newfunc.nf_global = func_name;
+
+    return OK;
+}
+
+/*
  * Generate an ISN_JUMP instruction.
  */
     static int
@@ -4875,11 +4896,13 @@ exarg_getline(
     static char_u *
 compile_nested_function(exarg_T *eap, cctx_T *cctx)
 {
+    int		is_global = *eap->arg == 'g' && eap->arg[1] == ':';
     char_u	*name_start = eap->arg;
-    char_u	*name_end = to_name_end(eap->arg, FALSE);
+    char_u	*name_end = to_name_end(eap->arg, is_global);
     char_u	*name = get_lambda_name();
     lvar_T	*lvar;
     ufunc_T	*ufunc;
+    int		r;
 
     eap->arg = name_end;
     eap->getline = exarg_getline;
@@ -4894,16 +4917,28 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 	    && compile_def_function(ufunc, TRUE, cctx) == FAIL)
 	return NULL;
 
-    // Define a local variable for the function reference.
-    lvar = reserve_local(cctx, name_start, name_end - name_start,
-						    TRUE, ufunc->uf_func_type);
+    if (is_global)
+    {
+	char_u *func_name = vim_strnsave(name_start + 2,
+						    name_end - name_start - 2);
 
-    if (generate_FUNCREF(cctx, ufunc->uf_dfunc_idx) == FAIL
-	    || generate_STORE(cctx, ISN_STORE, lvar->lv_idx, NULL) == FAIL)
-	return NULL;
+	if (func_name == NULL)
+	    r = FAIL;
+	else
+	    r = generate_NEWFUNC(cctx, name, func_name);
+    }
+    else
+    {
+	// Define a local variable for the function reference.
+	lvar = reserve_local(cctx, name_start, name_end - name_start,
+						    TRUE, ufunc->uf_func_type);
+	if (generate_FUNCREF(cctx, ufunc->uf_dfunc_idx) == FAIL)
+	    return NULL;
+	r = generate_STORE(cctx, ISN_STORE, lvar->lv_idx, NULL);
+    }
 
     // TODO: warning for trailing text?
-    return (char_u *)"";
+    return r == FAIL ? NULL : (char_u *)"";
 }
 
 /*
@@ -7639,6 +7674,11 @@ delete_instr(isn_T *isn)
 					       + isn->isn_arg.funcref.fr_func;
 		func_ptr_unref(dfunc->df_ufunc);
 	    }
+	    break;
+
+	case ISN_NEWFUNC:
+	    vim_free(isn->isn_arg.newfunc.nf_lambda);
+	    vim_free(isn->isn_arg.newfunc.nf_global);
 	    break;
 
 	case ISN_2BOOL:

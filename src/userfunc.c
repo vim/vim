@@ -366,7 +366,7 @@ register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
     if (fp == NULL)
 	return NULL;
 
-    fp->uf_dfunc_idx = UF_NOT_COMPILED;
+    fp->uf_def_status = UF_NOT_COMPILED;
     fp->uf_refcount = 1;
     fp->uf_varargs = TRUE;
     fp->uf_flags = FC_CFUNC;
@@ -1069,7 +1069,8 @@ func_remove(ufunc_T *fp)
     {
 	// When there is a def-function index do not actually remove the
 	// function, so we can find the index when defining the function again.
-	if (fp->uf_def_status == UF_COMPILED)
+	// Do remove it when it's a copy.
+	if (fp->uf_def_status == UF_COMPILED && (fp->uf_flags & FC_COPY) == 0)
 	    fp->uf_flags |= FC_DEAD;
 	else
 	    hash_remove(&func_hashtab, hi);
@@ -1122,7 +1123,8 @@ func_clear(ufunc_T *fp, int force)
     // clear this function
     func_clear_items(fp);
     funccal_unref(fp->uf_scoped, fp, force);
-    clear_def_function(fp);
+    if ((fp->uf_flags & FC_COPY) == 0)
+	clear_def_function(fp);
 }
 
 /*
@@ -1150,10 +1152,81 @@ func_free(ufunc_T *fp, int force)
 func_clear_free(ufunc_T *fp, int force)
 {
     func_clear(fp, force);
-    if (force || fp->uf_dfunc_idx == 0)
+    if (force || fp->uf_dfunc_idx == 0 || (fp->uf_flags & FC_COPY))
 	func_free(fp, force);
     else
 	fp->uf_flags |= FC_DEAD;
+}
+
+/*
+ * Copy already defined function "lambda" to a new function with name "global".
+ * This is for when a compiled function defines a global function.
+ */
+    void
+copy_func(char_u *lambda, char_u *global)
+{
+    ufunc_T *ufunc = find_func_even_dead(lambda, TRUE, NULL);
+    ufunc_T *fp;
+
+    if (ufunc == NULL)
+	semsg(_("E1102: lambda function not found: %s"), lambda);
+    else
+    {
+	// TODO: handle ! to overwrite
+	fp = find_func(global, TRUE, NULL);
+	if (fp != NULL)
+	{
+	    semsg(_(e_funcexts), global);
+	    return;
+	}
+
+	fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(global) + 1);
+	if (fp == NULL)
+	    return;
+
+	fp->uf_varargs = ufunc->uf_varargs;
+	fp->uf_flags = (ufunc->uf_flags & ~FC_VIM9) | FC_COPY;
+	fp->uf_def_status = ufunc->uf_def_status;
+	fp->uf_dfunc_idx = ufunc->uf_dfunc_idx;
+	if (ga_copy_strings(&fp->uf_args, &ufunc->uf_args) == FAIL
+		|| ga_copy_strings(&fp->uf_def_args, &ufunc->uf_def_args)
+									== FAIL
+		|| ga_copy_strings(&fp->uf_lines, &ufunc->uf_lines) == FAIL)
+	    goto failed;
+
+	fp->uf_name_exp = ufunc->uf_name_exp == NULL ? NULL
+					     : vim_strsave(ufunc->uf_name_exp);
+	if (ufunc->uf_arg_types != NULL)
+	{
+	    fp->uf_arg_types = ALLOC_MULT(type_T *, fp->uf_args.ga_len);
+	    if (fp->uf_arg_types == NULL)
+		goto failed;
+	    mch_memmove(fp->uf_arg_types, ufunc->uf_arg_types,
+					sizeof(type_T *) * fp->uf_args.ga_len);
+	}
+	if (ufunc->uf_def_arg_idx != NULL)
+	{
+	    fp->uf_def_arg_idx = ALLOC_MULT(int, fp->uf_def_args.ga_len + 1);
+	    if (fp->uf_def_arg_idx == NULL)
+		goto failed;
+	    mch_memmove(fp->uf_def_arg_idx, ufunc->uf_def_arg_idx,
+				     sizeof(int) * fp->uf_def_args.ga_len + 1);
+	}
+	if (ufunc->uf_va_name != NULL)
+	{
+	    fp->uf_va_name = vim_strsave(ufunc->uf_va_name);
+	    if (fp->uf_va_name == NULL)
+		goto failed;
+	}
+
+	fp->uf_refcount = 1;
+	STRCPY(fp->uf_name, global);
+	hash_add(&func_hashtab, UF2HIKEY(fp));
+    }
+    return;
+
+failed:
+    func_clear_free(fp, TRUE);
 }
 
 
@@ -2521,6 +2594,8 @@ list_functions(regmatch_T *regmatch)
 
 /*
  * ":function" also supporting nested ":def".
+ * When "name_arg" is not NULL this is a nested function, using "name_arg" for
+ * the function name.
  * Returns a pointer to the function or NULL if no function defined.
  */
     ufunc_T *

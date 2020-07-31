@@ -723,7 +723,10 @@ call_def_function(
 	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
 							 + ufunc->uf_dfunc_idx;
 	if (dfunc->df_instr == NULL)
+	{
+	    iemsg("using call_def_function() on not compiled function");
 	    return FAIL;
+	}
     }
 
     CLEAR_FIELD(ectx);
@@ -1723,6 +1726,15 @@ call_def_function(
 		    tv->vval.v_partial = pt;
 		    tv->v_type = VAR_PARTIAL;
 		    tv->v_lock = 0;
+		}
+		break;
+
+	    // Create a global function from a lambda.
+	    case ISN_NEWFUNC:
+		{
+		    newfunc_T	*newfunc = &iptr->isn_arg.newfunc;
+
+		    copy_func(newfunc->nf_lambda, newfunc->nf_global);
 		}
 		break;
 
@@ -2909,6 +2921,15 @@ ex_disassemble(exarg_T *eap)
 
 		    smsg("%4d FUNCREF %s $%d", current, df->df_ufunc->uf_name,
 				     funcref->fr_var_idx + dfunc->df_varcount);
+		}
+		break;
+
+	    case ISN_NEWFUNC:
+		{
+		    newfunc_T	*newfunc = &iptr->isn_arg.newfunc;
+
+		    smsg("%4d NEWFUNC %s %s", current,
+				       newfunc->nf_lambda, newfunc->nf_global);
 		}
 		break;
 

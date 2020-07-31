@@ -699,6 +699,24 @@ def Test_disassemble_lambda()
         instr)
 enddef
 
+def NestedOuter()
+  def g:Inner()
+    echomsg "inner"
+  enddef
+enddef
+
+def Test_nested_func()
+   let instr = execute('disassemble NestedOuter')
+   assert_match('NestedOuter\_s*' ..
+        'def g:Inner()\_s*' ..
+        'echomsg "inner"\_s*' ..
+        'enddef\_s*' ..
+        '\d NEWFUNC <lambda>\d\+ Inner\_s*' ..
+        '\d PUSHNR 0\_s*' ..
+        '\d RETURN',
+        instr)
+enddef
+
 def AndOr(arg: any): string
   if arg == 1 && arg != 2 || arg == 4
     return 'yes'

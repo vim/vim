@@ -56,6 +56,7 @@ char_u *vim_strrchr(char_u *string, int c);
 int vim_isspace(int x);
 void ga_clear(garray_T *gap);
 void ga_clear_strings(garray_T *gap);
+int ga_copy_strings(garray_T *from, garray_T *to);
 void ga_init(garray_T *gap);
 void ga_init2(garray_T *gap, int itemsize, int growsize);
 int ga_grow(garray_T *gap, int n);
