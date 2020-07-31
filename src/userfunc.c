@@ -1188,10 +1188,10 @@ copy_func(char_u *lambda, char_u *global)
 	fp->uf_flags = (ufunc->uf_flags & ~FC_VIM9) | FC_COPY;
 	fp->uf_def_status = ufunc->uf_def_status;
 	fp->uf_dfunc_idx = ufunc->uf_dfunc_idx;
-	if (ga_copy_strings(&fp->uf_args, &ufunc->uf_args) == FAIL
-		|| ga_copy_strings(&fp->uf_def_args, &ufunc->uf_def_args)
+	if (ga_copy_strings(&ufunc->uf_args, &fp->uf_args) == FAIL
+		|| ga_copy_strings(&ufunc->uf_def_args, &fp->uf_def_args)
 									== FAIL
-		|| ga_copy_strings(&fp->uf_lines, &ufunc->uf_lines) == FAIL)
+		|| ga_copy_strings(&ufunc->uf_lines, &fp->uf_lines) == FAIL)
 	    goto failed;
 
 	fp->uf_name_exp = ufunc->uf_name_exp == NULL ? NULL

@@ -133,6 +133,12 @@ def Test_nested_function()
   CheckDefFailure(['func Nested()', 'endfunc'], 'E1086:')
 enddef
 
+func Test_call_default_args_from_func()
+  call assert_equal('string', MyDefaultArgs())
+  call assert_equal('one', MyDefaultArgs('one'))
+  call assert_fails('call MyDefaultArgs("one", "two")', 'E118:')
+endfunc
+
 def Test_nested_global_function()
   let lines =<< trim END
       vim9script
@@ -141,24 +147,19 @@ def Test_nested_global_function()
               return 'inner'
           enddef
       enddef
-#      Outer()
-#      assert_equal('inner', g:Inner())
-#      delfunc g:Inner
-#      Outer()
-#      assert_equal('inner', g:Inner())
-#      delfunc g:Inner
-#      Outer()
-#      assert_equal('inner', g:Inner())
-#      delfunc g:Inner
+      defcompile
+      Outer()
+      assert_equal('inner', g:Inner())
+      delfunc g:Inner
+      Outer()
+      assert_equal('inner', g:Inner())
+      delfunc g:Inner
+      Outer()
+      assert_equal('inner', g:Inner())
+      delfunc g:Inner
   END
   CheckScriptSuccess(lines)
 enddef
-
-func Test_call_default_args_from_func()
-  call assert_equal('string', MyDefaultArgs())
-  call assert_equal('one', MyDefaultArgs('one'))
-  call assert_fails('call MyDefaultArgs("one", "two")', 'E118:')
-endfunc
 
 func TakesOneArg(arg)
   echo a:arg
