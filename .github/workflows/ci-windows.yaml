@@ -195,16 +195,29 @@ jobs:
         echo.
         echo %COL_GREEN%vim version:%COL_RESET%
         .\vim --version || exit 1
-        cd testdir
+
+        mkdir ..\src2
+        xcopy testdir ..\src2\testdir\ /E > nul || exit 1
+        copy evalfunc.c ..\src2 > nul
+
+        echo %COL_GREEN%Start testing vim in background.%COL_RESET%
+        start cmd /c "cd ..\src2\testdir & nmake -nologo -f Make_dos.mak VIMPROG=..\..\src\vim > nul & echo done>done.txt"
+
         echo %COL_GREEN%Test gvim:%COL_RESET%
+        cd testdir
         nmake -nologo -f Make_dos.mak VIMPROG=..\gvim || exit 1
-        nmake -nologo -f Make_dos.mak clean
-        echo %COL_GREEN%Test vim:%COL_RESET%
-        if "${{ matrix.toolchain }}-${{ matrix.arch }}"=="msvc-x64" (
-          rem This test may hang up unless it is executed in a separate console.
-          start /wait cmd /c "nmake -nologo -f Make_dos.mak VIMPROG=..\vim > nul"
-          if exist messages type messages
-          nmake -nologo -f Make_dos.mak report || exit 1
-        ) else (
-          nmake -nologo -f Make_dos.mak VIMPROG=..\vim || exit 1
+        cd ..
+
+        echo %COL_GREEN%Wait for vim tests to finish.%COL_RESET%
+        cd ..\src2\testdir
+        :: Wait about 5 minutes.
+        for /L %%i in (1,1,300) do (
+          if exist done.txt goto exitloop
+          ping -n 2 localhost > nul
         )
+        echo %COL_RED%Timed out.%COL_RESET%
+        :exitloop
+
+        echo %COL_GREEN%Test results of vim:%COL_RESET%
+        if exist messages type messages
+        nmake -nologo -f Make_dos.mak report VIMPROG=..\..\src\vim || exit 1
