@@ -8581,7 +8581,6 @@ eval_vars(
 				 (long)(current_sctx.sc_lnum + SOURCING_LNUM));
 		result = strbuf;
 		break;
-#endif
 
 	case SPEC_SID:
 		if (current_sctx.sc_sid <= 0)
@@ -8592,6 +8591,7 @@ eval_vars(
 		sprintf((char *)strbuf, "<SNR>%d_", current_sctx.sc_sid);
 		result = strbuf;
 		break;
+#endif
 
 #ifdef FEAT_CLIENTSERVER
 	case SPEC_CLIENT:	// Source of last submitted input
