@@ -32,22 +32,6 @@
 # and directory handling.
 # WANT_UNIX = YES
 
-# Comment out if you want to run Win32 specific tests as well, but please
-# be aware, that on OpenVMS will fail, because of cat, rm, etc commands
-# and directory handling.
-# WANT_WIN = YES
-
-# Comment out if you want to run spell checker tests. 
-# They fail because VMS does not support file names.
-# WANT_SPELL = YES
-
-# Comment out if you want to run mzschema tests.
-# It fails because VMS does not support this feature yet.
-# WANT_MZSCH = YES
-
-# Comment out if you have ODS-5 file system
-# HAVE_ODS5 = YES
-
 # Comment out if you have gzip on your system
 # HAVE_GZIP = YES
 
@@ -75,22 +59,12 @@ VIMPROG = <->vim.exe
 
 SCRIPT = test1.out test49.out test77a.out
 
-# Known problems:
-#
-# test59: Failed/Hangs - VMS does not support spell files (file names
-# with too many dots).
-#
-
 .IFDEF WANT_GUI
 GUI_OPTION = -g
 .ENDIF
 
 .IFDEF WANT_UNIX
 SCRIPT_UNIX = test49.out
-.ENDIF
-
-.IFDEF WANT_SPELL
-SCRIPT_SPELL = test59.out 
 .ENDIF
 
 .in.out :
@@ -113,8 +87,7 @@ SCRIPT_SPELL = test59.out
 	-@ if "''F$SEARCH("Xdotest.*")'"  .NES. "" then delete/noconfirm/nolog Xdotest.*.*
 	-@ if "''F$SEARCH("Xtest.*")'"    .NES. "" then delete/noconfirm/nolog Xtest.*.*
 
-all : clean nolog $(START_WITH) $(SCRIPT) $(SCRIPT_UNIX) $(SCRIPT_SPELL) \
-    nolog
+all : clean nolog $(START_WITH) $(SCRIPT) $(SCRIPT_UNIX) nolog
 	-@ write sys$output " "
 	-@ write sys$output "-----------------------------------------------"
 	-@ write sys$output "                All done"
@@ -139,10 +112,6 @@ nolog :
 	-@ write sys$output "MAKE_VMS.MMS options:"
 	-@ write sys$output "   WANT_GUI   = ""$(WANT_GUI)"" "
 	-@ write sys$output "   WANT_UNIX  = ""$(WANT_UNIX)"" "
-	-@ write sys$output "   WANT_WIN   = ""$(WANT_WIN)"" "
-	-@ write sys$output "   WANT_SPELL = ""$(WANT_SPELL)"" "
-	-@ write sys$output "   WANT_MZSCH = ""$(WANT_MZSCH)"" "
-	-@ write sys$output "   HAVE_ODS5  = ""$(HAVE_ODS5)"" "
 	-@ write sys$output "   HAVE_GZIP  = ""$(HAVE_GZIP)"" "
 	-@ write sys$output "   HAVE_GDIFF = ""$(HAVE_GDIFF)"" "
 	-@ write sys$output "   HAVE_ICONV = ""$(HAVE_ICONV)"" "

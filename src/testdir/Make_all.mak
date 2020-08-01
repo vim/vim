@@ -20,7 +20,7 @@ SCRIPTS_MORE1 =
 SCRIPTS_MORE2 = test49.out
 
 # Tests that run on most systems, but not on VMS
-SCRIPTS_MORE4 = test59.out
+SCRIPTS_MORE4 =
 
 # Tests specifically for MS-Windows.
 SCRIPTS_WIN32 =
@@ -242,6 +242,7 @@ NEW_TESTS = \
 	test_source \
 	test_source_utf8 \
 	test_spell \
+	test_spell_utf8 \
 	test_spellfile \
 	test_startup \
 	test_startup_utf8 \
@@ -464,6 +465,7 @@ NEW_TESTS_RES = \
 	test_sound.res \
 	test_source.res \
 	test_spell.res \
+	test_spell_utf8.res \
 	test_spellfile.res \
 	test_startup.res \
 	test_stat.res \

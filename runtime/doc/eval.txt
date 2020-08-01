@@ -12129,7 +12129,8 @@ text...
 {endmarker}
 			Set internal variable {var-name} to a |List|
 			containing the lines of text bounded by the string
-			{endmarker}.
+			{endmarker}. The lines of text is used as a
+			|literal-string|.
 			{endmarker} must not contain white space.
 			{endmarker} cannot start with a lower case character.
 			The last line should end only with the {endmarker}
