@@ -5588,7 +5588,10 @@ check_for_interrupt(int key, int modifiers_arg)
     int c = merge_modifyOtherKeys(key, &modifiers);
 
     if ((c == Ctrl_C && ctrl_c_interrupts)
-	    || (intr_char != Ctrl_C && c == intr_char))
+#ifdef UNIX
+	    || (intr_char != Ctrl_C && c == intr_char)
+#endif
+	    )
     {
 	got_int = TRUE;
 	return c;
