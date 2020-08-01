@@ -4899,12 +4899,18 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 {
     int		is_global = *eap->arg == 'g' && eap->arg[1] == ':';
     char_u	*name_start = eap->arg;
-    char_u	*name_end = to_name_end(eap->arg, is_global);
+    char_u	*name_end = to_name_end(eap->arg, TRUE);
     char_u	*lambda_name;
     lvar_T	*lvar;
     ufunc_T	*ufunc;
     int		r;
 
+    // Only g:Func() can use a namespace.
+    if (name_start[1] == ':' && !is_global)
+    {
+	semsg(_(e_namespace), name_start);
+	return NULL;
+    }
     if (check_defined(name_start, name_end - name_start, cctx) == FAIL)
 	return NULL;
 

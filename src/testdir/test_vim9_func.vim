@@ -131,6 +131,8 @@ def Test_nested_function()
   CheckDefFailure(['def Nested(arg: string)', 'enddef', 'Nested()'], 'E119:')
 
   CheckDefFailure(['func Nested()', 'endfunc'], 'E1086:')
+  CheckDefFailure(['def s:Nested()', 'enddef'], 'E1075:')
+  CheckDefFailure(['def b:Nested()', 'enddef'], 'E1075:')
 enddef
 
 func Test_call_default_args_from_func()
