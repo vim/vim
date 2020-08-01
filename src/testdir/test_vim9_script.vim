@@ -244,7 +244,10 @@ def Test_assignment_dict()
   # overwrite
   dict3['key'] = 'another'
 
-  call CheckDefExecFailure(['let dd = {}', 'dd[""] = 6'], 'E713:')
+  # empty key can be used
+  let dd = {}
+  dd[""] = 6
+  assert_equal({'': 6}, dd)
 
   # type becomes dict<any>
   let somedict = rand() > 0 ? #{a: 1, b: 2} : #{a: 'a', b: 'b'}
@@ -782,13 +785,6 @@ def Test_try_catch()
     n = 300
   endtry
   assert_equal(300, n)
-
-  try
-    d[''] = 3
-  catch /E713:/
-    n = 311
-  endtry
-  assert_equal(311, n)
 
   try
     unlet g:does_not_exist
