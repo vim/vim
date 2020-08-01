@@ -210,14 +210,18 @@ jobs:
 
         echo %COL_GREEN%Wait for vim tests to finish.%COL_RESET%
         cd ..\src2\testdir
-        :: Wait about 5 minutes.
-        for /L %%i in (1,1,300) do (
+        :: Wait about 10 minutes.
+        for /L %%i in (1,1,600) do (
           if exist done.txt goto exitloop
           ping -n 2 localhost > nul
         )
-        echo %COL_RED%Timed out.%COL_RESET%
+        set timeout=1
         :exitloop
 
         echo %COL_GREEN%Test results of vim:%COL_RESET%
         if exist messages type messages
         nmake -nologo -f Make_dos.mak report VIMPROG=..\..\src\vim || exit 1
+        if "%timeout%"=="1" (
+          echo %COL_RED%Timed out.%COL_RESET%
+          exit 1
+        )
