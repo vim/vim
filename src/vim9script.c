@@ -67,9 +67,10 @@ not_in_vim9(exarg_T *eap)
     if (in_vim9script())
 	switch (eap->cmdidx)
 	{
-	    case CMD_insert:
 	    case CMD_append:
 	    case CMD_change:
+	    case CMD_insert:
+	    case CMD_t:
 	    case CMD_xit:
 		semsg(_("E1100: Missing :let: %s"), eap->cmd);
 		return FAIL;

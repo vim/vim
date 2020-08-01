@@ -1628,18 +1628,21 @@ def Test_fixed_size_list()
 enddef
 
 def Test_no_insert_xit()
-  call CheckDefExecFailure(['x = 1'], 'E1100:')
   call CheckDefExecFailure(['a = 1'], 'E1100:')
-  call CheckDefExecFailure(['i = 1'], 'E1100:')
   call CheckDefExecFailure(['c = 1'], 'E1100:')
+  call CheckDefExecFailure(['i = 1'], 'E1100:')
+  call CheckDefExecFailure(['t = 1'], 'E1100:')
+  call CheckDefExecFailure(['x = 1'], 'E1100:')
 
-  CheckScriptFailure(['vim9script', 'x = 1'], 'E1100:')
   CheckScriptFailure(['vim9script', 'a = 1'], 'E488:')
   CheckScriptFailure(['vim9script', 'a'], 'E1100:')
-  CheckScriptFailure(['vim9script', 'i = 1'], 'E488:')
-  CheckScriptFailure(['vim9script', 'i'], 'E1100:')
   CheckScriptFailure(['vim9script', 'c = 1'], 'E488:')
   CheckScriptFailure(['vim9script', 'c'], 'E1100:')
+  CheckScriptFailure(['vim9script', 'i = 1'], 'E488:')
+  CheckScriptFailure(['vim9script', 'i'], 'E1100:')
+  CheckScriptFailure(['vim9script', 't'], 'E1100:')
+  CheckScriptFailure(['vim9script', 't = 1'], 'E1100:')
+  CheckScriptFailure(['vim9script', 'x = 1'], 'E1100:')
 enddef
 
 def IfElse(what: number): string

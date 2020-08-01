@@ -7467,6 +7467,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	    case CMD_append:
 	    case CMD_change:
 	    case CMD_insert:
+	    case CMD_t:
 	    case CMD_xit:
 		    not_in_vim9(&ea);
 		    goto erret;

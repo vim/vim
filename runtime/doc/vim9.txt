@@ -190,8 +190,8 @@ To intentionally avoid a variable being available later, a block can be used:
 
 An existing variable cannot be assigned to with `:let`, since that implies a
 declaration.  Global, window, tab, buffer and Vim variables can only be used
-without `:let`, because they are are not really declared, they can also be
-deleted with `:unlet`.
+without `:let`, because they are not really declared, they can also be deleted
+with `:unlet`.
 
 Variables cannot shadow previously defined variables.
 Variables may shadow Ex commands, rename the variable if needed.
@@ -352,10 +352,11 @@ No curly braces expansion ~
 |curly-braces-names| cannot be used.
 
 
-No :xit, :append, :change or :insert ~
+No :xit, :t, :append, :change or :insert ~
 
-These commands are too easily confused with local variable names.  Instead of
-`:x` or `:xit` you can use `:exit`.
+These commands are too easily confused with local variable names.
+Instead of `:x` or `:xit` you can use `:exit`.
+Instead of `:t` you can use `:copy`.
 
 
 Comparators ~
