@@ -291,15 +291,21 @@ lookup_script(char_u *name, size_t len)
     int
 check_defined(char_u *p, size_t len, cctx_T *cctx)
 {
+    int c = p[len];
+
+    p[len] = NUL;
     if (lookup_script(p, len) == OK
 	    || (cctx != NULL
 		&& (lookup_local(p, len, cctx) != NULL
 		    || lookup_arg(p, len, NULL, NULL, NULL, cctx) == OK))
-	    || find_imported(p, len, cctx) != NULL)
+	    || find_imported(p, len, cctx) != NULL
+	    || find_func_even_dead(p, FALSE, cctx) != NULL)
     {
+	p[len] = c;
 	semsg(_(e_already_defined), p);
 	return FAIL;
     }
+    p[len] = c;
     return OK;
 }
 
