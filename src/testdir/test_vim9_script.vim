@@ -274,6 +274,30 @@ def Test_assignment_dict()
     FillDict()
   END
   call CheckScriptFailure(lines, 'E1103:')
+
+  # assignment to global dict
+  lines =<< trim END
+    vim9script
+    g:test = {}
+    def FillDict(): dict<any>
+      g:test['a'] = 43
+      return g:test
+    enddef
+    assert_equal(#{a: 43}, FillDict())
+  END
+  call CheckScriptSuccess(lines)
+
+  # assignment to buffer dict
+  lines =<< trim END
+    vim9script
+    b:test = {}
+    def FillDict(): dict<any>
+      b:test['a'] = 43
+      return b:test
+    enddef
+    assert_equal(#{a: 43}, FillDict())
+  END
+  call CheckScriptSuccess(lines)
 enddef
 
 def Test_assignment_local()

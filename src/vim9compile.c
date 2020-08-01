@@ -5486,11 +5486,9 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    {
 		has_index = TRUE;
 		if (type->tt_member == NULL)
-		{
-		    semsg(_("E1088: cannot use an index on %s"), name);
-		    goto theend;
-		}
-		member_type = type->tt_member;
+		    member_type = &t_any;
+		else
+		    member_type = type->tt_member;
 	    }
 	    else
 	    {
@@ -5718,6 +5716,18 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    {
 		emsg(_(e_missbrac));
 		goto theend;
+	    }
+	    if (type == &t_any)
+	    {
+		type_T	    *idx_type = ((type_T **)stack->ga_data)[
+							    stack->ga_len - 1];
+		// Index on variable of unknown type: guess the type from the
+		// index type: number is dict, otherwise dict.
+		// TODO: should do the assignment at runtime
+		if (idx_type->tt_type == VAR_NUMBER)
+		    type = &t_list_any;
+		else
+		    type = &t_dict_any;
 	    }
 	    if (type->tt_type == VAR_DICT
 		    && may_generate_2STRING(-1, cctx) == FAIL)
