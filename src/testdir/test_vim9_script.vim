@@ -1651,6 +1651,19 @@ def Test_func_overrules_import_fails()
   delete('XexportedFunc.vim')
 enddef
 
+def Test_func_redefine_fails()
+  let lines =<< trim END
+    vim9script
+    def Func()
+      echo 'one'
+    enddef
+    def Func()
+      echo 'two'
+    enddef
+  END
+  CheckScriptFailure(lines, 'E1073:')
+enddef
+
 def Test_fixed_size_list()
   # will be allocated as one piece of memory, check that changes work
   let l = [1, 2, 3, 4]
