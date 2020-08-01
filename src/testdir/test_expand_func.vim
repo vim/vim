@@ -1,5 +1,7 @@
 " Tests for expand()
 
+source shared.vim
+
 let s:sfile = expand('<sfile>')
 let s:slnum = str2nr(expand('<slnum>'))
 let s:sflnum = str2nr(expand('<sflnum>'))
@@ -18,20 +20,20 @@ endfunc
 
 " This test depends on the location in the test file, put it first.
 func Test_expand_sflnum()
-  call assert_equal(5, s:sflnum)
-  call assert_equal(22, str2nr(expand('<sflnum>')))
+  call assert_equal(7, s:sflnum)
+  call assert_equal(24, str2nr(expand('<sflnum>')))
 
   " Line-continuation
   call assert_equal(
-        \ 25,
+        \ 27,
         \ str2nr(expand('<sflnum>')))
 
   " Call in script-local function
-  call assert_equal(16, s:expand_sflnum())
+  call assert_equal(18, s:expand_sflnum())
 
   " Call in command
   command Flnum echo expand('<sflnum>')
-  call assert_equal(34, str2nr(trim(execute('Flnum'))))
+  call assert_equal(36, str2nr(trim(execute('Flnum'))))
   delcommand Flnum
 endfunc
 
@@ -60,7 +62,7 @@ func Test_expand_sfile_and_stack()
 endfunc
 
 func Test_expand_slnum()
-  call assert_equal(4, s:slnum)
+  call assert_equal(6, s:slnum)
   call assert_equal(2, str2nr(expand('<slnum>')))
 
   " Line-continuation
@@ -85,6 +87,17 @@ func Test_expand()
   " Don't add any line above this, otherwise <slnum> will change.
   quit
 endfunc
+
+func s:sid_test()
+  return 'works'
+endfunc
+
+func Test_expand_SID()
+  let sid = expand('<SID>')
+  execute 'let g:sid_result = ' .. sid .. 'sid_test()'
+  call assert_equal('works', g:sid_result)
+endfunc
+
 
 " Test for 'wildignore' with expand()
 func Test_expand_wildignore()
