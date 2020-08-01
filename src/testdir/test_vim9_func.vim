@@ -161,6 +161,21 @@ def Test_nested_global_function()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_global_local_function()
+  let lines =<< trim END
+      vim9script
+      def g:Func(): string
+          return 'global'
+      enddef
+      def Func(): string
+          return 'local'
+      enddef
+      assert_equal('global', g:Func())
+      assert_equal('local', Func())
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 func TakesOneArg(arg)
   echo a:arg
 endfunc
