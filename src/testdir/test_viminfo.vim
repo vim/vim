@@ -807,7 +807,7 @@ func Test_viminfo_perm()
 
   " Try to write the viminfo to a directory
   call mkdir('Xdir')
-  call assert_fails('wviminfo Xdir', 'E886:')
+  call assert_fails('wviminfo Xdir', 'E137:')
   call delete('Xdir', 'rf')
 endfunc
 
