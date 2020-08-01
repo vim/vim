@@ -843,11 +843,10 @@ When modifyOtherKeys is enabled you can map <C-[> and <C-S-{>: >
 	imap <C-S-{> {{{
 Without modifyOtherKeys <C-[> and <C-S-{> are indistinguishable from Esc.
 
-A known side effect effect is that in Insert mode the raw escape sequence is
-inserted after the CTRL-V key.  This can be used to check whether
-modifyOtherKeys is enabled: In Insert mode type CTRL-SHIFT-V CTRL-V, if you
-get one byte then modifyOtherKeys is off, if you get <1b>27;5;118~ then it is
-on.
+A known side effect is that in Insert mode the raw escape sequence is inserted
+after the CTRL-V key.  This can be used to check whether modifyOtherKeys is
+enabled: In Insert mode type CTRL-SHIFT-V CTRL-V, if you get one byte then
+modifyOtherKeys is off, if you get <1b>27;5;118~ then it is on.
 
 When the 'esckeys' option is off, then modifyOtherKeys will be disabled in
 Insert mode to avoid every key with a modifier causing Insert mode to end.

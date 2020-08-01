@@ -337,6 +337,7 @@ SRC = \
 	gui_xim.c \
 	hardcopy.c \
 	hashtab.c \
+	help.c \
 	highlight.c \
 	if_cscope.c \
 	if_xcmdsrv.c \
@@ -344,6 +345,7 @@ SRC = \
 	insexpand.c \
 	json.c \
 	list.c \
+	locale.c \
 	main.c \
 	map.c \
 	mark.c \
@@ -450,6 +452,7 @@ OBJ = \
 	gui_xim.obj \
 	hardcopy.obj \
 	hashtab.obj \
+	help.obj \
 	highlight.obj \
 	if_cscope.obj \
 	if_mzsch.obj \
@@ -458,6 +461,7 @@ OBJ = \
 	insexpand.obj \
 	json.obj \
 	list.obj \
+	locale.obj \
 	main.obj \
 	map.obj \
 	mark.obj \
@@ -834,6 +838,10 @@ hashtab.obj : hashtab.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h
+help.obj : help.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h term.h macros.h structs.h regexp.h \
+ gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
+ globals.h
 highlight.obj : highlight.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
@@ -856,6 +864,10 @@ json.obj : json.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h
 list.obj : list.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
+ beval.h [.proto]gui_beval.pro alloc.h ex_cmds.h spell.h proto.h \
+ globals.h
+locale.obj : locale.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h option.h structs.h regexp.h gui.h \
  beval.h [.proto]gui_beval.pro alloc.h ex_cmds.h spell.h proto.h \
  globals.h

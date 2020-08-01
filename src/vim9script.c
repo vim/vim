@@ -59,12 +59,30 @@ ex_vim9script(exarg_T *eap)
 }
 
 /*
+ * When in Vim9 script give an error and return FAIL.
+ */
+    int
+not_in_vim9(exarg_T *eap)
+{
+    if (in_vim9script())
+	switch (eap->cmdidx)
+	{
+	    case CMD_insert:
+	    case CMD_append:
+	    case CMD_change:
+	    case CMD_xit:
+		semsg(_("E1100: Missing :let: %s"), eap->cmd);
+		return FAIL;
+	    default: break;
+	}
+    return OK;
+}
+
+/*
  * ":export let Name: type"
  * ":export const Name: type"
  * ":export def Name(..."
  * ":export class Name ..."
- *
- * ":export {Name, ...}"
  */
     void
 ex_export(exarg_T *eap)
@@ -198,11 +216,11 @@ find_exported(
 	char_u	*funcname;
 
 	// it could be a user function.
-	if (STRLEN(name) < sizeof(buffer) - 10)
+	if (STRLEN(name) < sizeof(buffer) - 15)
 	    funcname = buffer;
 	else
 	{
-	    funcname = alloc(STRLEN(name) + 10);
+	    funcname = alloc(STRLEN(name) + 15);
 	    if (funcname == NULL)
 		return -1;
 	}
@@ -465,7 +483,10 @@ handle_import(
 		imported->imp_var_vals_idx = idx;
 	    }
 	    else
+	    {
+		imported->imp_type = ufunc->uf_func_type;
 		imported->imp_funcname = ufunc->uf_name;
+	    }
 	}
     }
 erret:
@@ -557,7 +578,7 @@ check_script_var_type(typval_T *dest, typval_T *value, char_u *name)
 		semsg(_(e_readonlyvar), name);
 		return FAIL;
 	    }
-	    return check_type(sv->sv_type, typval2type(value), TRUE);
+	    return check_typval_type(sv->sv_type, value);
 	}
     }
     iemsg("check_script_var_type(): not found");

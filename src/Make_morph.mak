@@ -64,11 +64,13 @@ SRC =	arabic.c						\
 	gui_xim.c						\
 	hardcopy.c						\
 	hashtab.c						\
+	help.c							\
 	highlight.c						\
 	indent.c						\
 	insexpand.c						\
 	json.c							\
 	list.c							\
+	locale.c						\
 	main.c							\
 	map.c							\
 	mark.c							\

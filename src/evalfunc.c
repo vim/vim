@@ -611,7 +611,7 @@ static funcentry_T global_functions[] =
     {"function",	1, 3, FEARG_1,	  ret_f_function, f_function},
     {"garbagecollect",	0, 1, 0,	  ret_void,	f_garbagecollect},
     {"get",		2, 3, FEARG_1,	  ret_any,	f_get},
-    {"getbufinfo",	0, 1, 0,	  ret_list_dict_any, f_getbufinfo},
+    {"getbufinfo",	0, 1, FEARG_1,	  ret_list_dict_any, f_getbufinfo},
     {"getbufline",	2, 3, FEARG_1,	  ret_list_string, f_getbufline},
     {"getbufvar",	2, 3, FEARG_1,	  ret_any,	f_getbufvar},
     {"getchangelist",	0, 1, FEARG_1,	  ret_list_any,	f_getchangelist},
@@ -2141,7 +2141,7 @@ f_eval(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_number = 0;
     }
     else if (*s != NUL)
-	emsg(_(e_trailing));
+	semsg(_(e_trailing_arg), s);
 }
 
 /*
@@ -5113,7 +5113,7 @@ f_islocked(typval_T *argvars, typval_T *rettv)
     if (end != NULL && lv.ll_name != NULL)
     {
 	if (*end != NUL)
-	    emsg(_(e_trailing));
+	    semsg(_(e_trailing_arg), end);
 	else
 	{
 	    if (lv.ll_tv == NULL)
@@ -7859,9 +7859,9 @@ f_split(typval_T *argvars, typval_T *rettv)
 	pat = (char_u *)"[\\x01- ]\\+";
 
     if (rettv_list_alloc(rettv) == FAIL)
-	return;
+	goto theend;
     if (typeerr)
-	return;
+	goto theend;
 
     regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
     if (regmatch.regprog != NULL)
@@ -7898,6 +7898,7 @@ f_split(typval_T *argvars, typval_T *rettv)
 	vim_regfree(regmatch.regprog);
     }
 
+theend:
     p_cpo = save_cpo;
 }
 

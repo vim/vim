@@ -9,7 +9,9 @@ char_u *deref_func_name(char_u *name, int *lenp, partial_T **partialp, int no_au
 void emsg_funcname(char *ermsg, char_u *name);
 int get_func_tv(char_u *name, int len, typval_T *rettv, char_u **arg, evalarg_T *evalarg, funcexe_T *funcexe);
 char_u *fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error);
+ufunc_T *find_func_even_dead(char_u *name, int is_global, cctx_T *cctx);
 ufunc_T *find_func(char_u *name, int is_global, cctx_T *cctx);
+void copy_func(char_u *lambda, char_u *global);
 int call_user_func_check(ufunc_T *fp, int argcount, typval_T *argvars, typval_T *rettv, funcexe_T *funcexe, dict_T *selfdict);
 void save_funccal(funccal_entry_T *entry);
 void restore_funccal(void);
@@ -22,6 +24,7 @@ int get_callback_depth(void);
 int call_callback(callback_T *callback, int len, typval_T *rettv, int argcount, typval_T *argvars);
 void user_func_error(int error, char_u *name);
 int call_func(char_u *funcname, int len, typval_T *rettv, int argcount_in, typval_T *argvars_in, funcexe_T *funcexe);
+char_u *printable_func_name(ufunc_T *fp);
 char_u *trans_function_name(char_u **pp, int *is_global, int skip, int flags, funcdict_T *fdp, partial_T **partial);
 char_u *untrans_function_name(char_u *name);
 ufunc_T *def_function(exarg_T *eap, char_u *name_arg);

@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 8.2.  Last change: 2020 Jul 09
+*testing.txt*	For Vim version 8.2.  Last change: 2020 Jul 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar

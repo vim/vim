@@ -1086,7 +1086,7 @@ json_decode_all(js_read_T *reader, typval_T *res, int options)
     json_skip_white(reader);
     if (reader->js_buf[reader->js_used] != NUL)
     {
-	emsg(_(e_trailing));
+	semsg(_(e_trailing_arg), reader->js_buf + reader->js_used);
 	return FAIL;
     }
     return OK;

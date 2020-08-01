@@ -740,8 +740,6 @@ apply_general_options(win_T *wp, dict_T *dict)
 	set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
 						   str, OPT_FREE|OPT_LOCAL, 0);
 
-    set_string_option_direct_in_win(wp, (char_u *)"signcolumn", -1,
-					(char_u *)"no", OPT_FREE|OPT_LOCAL, 0);
     set_padding_border(dict, wp->w_popup_padding, "padding", 999);
     set_padding_border(dict, wp->w_popup_border, "border", 1);
 
@@ -946,6 +944,10 @@ apply_options(win_T *wp, dict_T *dict)
     int		nr;
 
     apply_move_options(wp, dict);
+
+    set_string_option_direct_in_win(wp, (char_u *)"signcolumn", -1,
+					(char_u *)"no", OPT_FREE|OPT_LOCAL, 0);
+
     apply_general_options(wp, dict);
 
     nr = dict_get_number(dict, (char_u *)"hidden");
@@ -1109,6 +1111,7 @@ popup_adjust_position(win_T *wp)
     int		wrapped = 0;
     int		maxwidth;
     int		used_maxwidth = FALSE;
+    int		margin_width = 0;
     int		maxspace;
     int		center_vert = FALSE;
     int		center_hor = FALSE;
@@ -1247,6 +1250,19 @@ popup_adjust_position(win_T *wp)
 	allow_adjust_left = FALSE;
 	maxwidth = wp->w_maxwidth;
     }
+
+    if (wp->w_p_nu || wp->w_p_rnu)
+	margin_width = number_width(wp) + 1;
+#ifdef FEAT_FOLDING
+    margin_width += wp->w_p_fdc;
+#endif
+#ifdef FEAT_SIGNS
+    if (signcolumn_on(wp))
+	margin_width += 2;
+#endif
+    if (margin_width >= maxwidth)
+	margin_width = maxwidth - 1;
+
     minwidth = wp->w_minwidth;
     minheight = wp->w_minheight;
 #ifdef FEAT_TERMINAL
@@ -1287,6 +1303,7 @@ popup_adjust_position(win_T *wp)
 
 	// Count Tabs for what they are worth and compute the length based on
 	// the maximum width (matters when 'showbreak' is set).
+	// "margin_width" is added to "len" where it matters.
 	if (wp->w_width < maxwidth)
 	    wp->w_width = maxwidth;
 	len = win_linetabsize(wp, ml_get_buf(wp->w_buffer, lnum, FALSE),
@@ -1295,21 +1312,21 @@ popup_adjust_position(win_T *wp)
 
 	if (wp->w_p_wrap)
 	{
-	    while (len > maxwidth)
+	    while (len + margin_width > maxwidth)
 	    {
 		++wrapped;
-		len -= maxwidth;
+		len -= maxwidth - margin_width;
 		wp->w_width = maxwidth;
 		used_maxwidth = TRUE;
 	    }
 	}
-	else if (len > maxwidth
+	else if (len + margin_width > maxwidth
 		&& allow_adjust_left
 		&& (wp->w_popup_pos == POPPOS_TOPLEFT
 		    || wp->w_popup_pos == POPPOS_BOTLEFT))
 	{
 	    // adjust leftwise to fit text on screen
-	    int shift_by = len - maxwidth;
+	    int shift_by = len + margin_width - maxwidth;
 
 	    if (shift_by > wp->w_wincol)
 	    {
@@ -1323,9 +1340,9 @@ popup_adjust_position(win_T *wp)
 	    maxwidth += shift_by;
 	    wp->w_width = maxwidth;
 	}
-	if (wp->w_width < len)
+	if (wp->w_width < len + margin_width)
 	{
-	    wp->w_width = len;
+	    wp->w_width = len + margin_width;
 	    if (wp->w_maxwidth > 0 && wp->w_width > wp->w_maxwidth)
 		wp->w_width = wp->w_maxwidth;
 	}
@@ -1620,6 +1637,7 @@ parse_popup_option(win_T *wp, int is_preview)
 		if (is_preview)
 		    wp->w_minwidth = x;
 		wp->w_maxwidth = x;
+		wp->w_maxwidth_opt = x;
 	    }
 	}
 	else if (STRNCMP(s, "highlight:", 10) == 0)
@@ -4030,6 +4048,18 @@ popup_hide_info(void)
 
     if (wp != NULL)
 	popup_hide(wp);
+}
+
+/*
+ * Close any info popup.
+ */
+    void
+popup_close_info(void)
+{
+    win_T *wp = popup_find_info_window();
+
+    if (wp != NULL)
+	popup_close_with_retval(wp, -1);
 }
 #endif
 

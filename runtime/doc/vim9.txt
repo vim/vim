@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Jul 17
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Jul 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -71,16 +71,17 @@ comments start with #. >
 
 The reason is that a double quote can also be the start of a string. In many
 places, especially halfway an expression with a line break, it's hard to tell
-what the meaning is.  To avoid confusion only # comments are recognized.
-This is the same as in shell scripts and Python programs.
+what the meaning is, since both a string and a comment can be followed by
+arbitrary text.  To avoid confusion only # comments are recognized.  This is
+the same as in shell scripts and Python programs.
 
 In Vi # is a command to list text with numbers.  In Vim9 script you can use
 `:number` for that. >
-	101number
+	101 number
 
 To improve readability there must be a space between a command and the #
 that starts a comment.  Note that #{ is the start of a dictionary, therefore
-it cannot start a comment.
+it does not start a comment.
 
 
 Vim9 functions ~
@@ -93,7 +94,7 @@ The syntax is strict, to enforce code that is easy to read and understand.
 
 Compilation is done when the function is first called, or when the
 `:defcompile` command is encountered in the script where the function was
-defined.
+defined. `:disassemble` also compiles the function.
 
 `:def` has no options like `:function` does: "range", "abort", "dict" or
 "closure".  A `:def` function always aborts on an error, does not get a range
@@ -104,7 +105,7 @@ be used, type checking will then be done at runtime, like with legacy
 functions.
 
 Arguments are accessed by name, without "a:".  There is no "a:" dictionary or
-"a:000" list.
+"a:000" list.  Just like any other language.
 
 Variable arguments are defined as the last argument, with a name and have a
 list type, similar to Typescript.  For example, a list of numbers: >
@@ -117,9 +118,13 @@ Functions and variables are script-local by default ~
 							*vim9-scopes*
 When using `:function` or `:def` to specify a new function at the script level
 in a Vim9 script, the function is local to the script, as if "s:" was
-prefixed.  Using the "s:" prefix is optional.
-
-To define or use a global function or variable the "g:" prefix must be used.
+prefixed.  Using the "s:" prefix is optional.  To define or use a global
+function or variable the "g:" prefix must be used.  For functions in an
+autoload script the "name#" prefix is sufficient. >
+	def ThisFunction()          # script-local
+	def s:ThisFunction()        # script-local
+	def g:ThatFunction()	    # global
+	def scriptname#function()   # autoload
 
 When using `:function` or `:def` to specify a new function inside a function,
 the function is local to the function.  It is not possible to define a
@@ -184,8 +189,9 @@ To intentionally avoid a variable being available later, a block can be used:
 	echo temp  " Error!
 
 An existing variable cannot be assigned to with `:let`, since that implies a
-declaration.  An exception is global variables: these can be both used with
-and without `:let`, because there is no rule about where they are declared.
+declaration.  Global, window, tab, buffer and Vim variables can only be used
+without `:let`, because they are are not really declared, they can also be
+deleted with `:unlet`.
 
 Variables cannot shadow previously defined variables.
 Variables may shadow Ex commands, rename the variable if needed.
@@ -194,11 +200,18 @@ Global variables and user defined functions must be prefixed with "g:", also
 at the script level. >
 	vim9script
 	let script_local = 'text'
-	let g:global = 'value'
+	g:global = 'value'
 	let Funcref = g:ThatFunction
 
 Since "&opt = value" is now assigning a value to option "opt", ":&" cannot be
 used to repeat a `:substitute` command.
+
+							*E1092*
+Declaring more than one variable at a time, using the unpack notation, is
+currently not supported: >
+	let [v1, v2] = GetValues()  # Error!
+That is because the type needs to be inferred from the list item type, which
+isn't that easy.
 
 
 Omitting :call and :eval ~
@@ -208,29 +221,29 @@ Functions can be called without `:call`: >
 Using `:call` is still possible, but this is discouraged.
 
 A method call without `eval` is possible, so long as the start is an
-identifier or can't be an Ex command.  It does NOT work for string constants: >
-	myList->add(123)		" works
-	g:myList->add(123)		" works
-	[1, 2, 3]->Process()		" works
-	#{a: 1, b: 2}->Process()	" works
-	{'a': 1, 'b': 2}->Process()	" works
-	"foobar"->Process()		" does NOT work
-	("foobar")->Process()		" works
-	'foobar'->Process()		" does NOT work
-	('foobar')->Process()		" works
+identifier or can't be an Ex command.  Examples: >
+	myList->add(123)
+	g:myList->add(123)
+	[1, 2, 3]->Process()
+	#{a: 1, b: 2}->Process()
+	{'a': 1, 'b': 2}->Process()
+	"foobar"->Process()
+	("foobar")->Process()
+	'foobar'->Process()
+	('foobar')->Process()
 
-In case there is ambiguity between a function name and an Ex command, use ":"
-to make clear you want to use the Ex command.  For example, there is both the
-`:substitute` command and the `substitute()` function.  When the line starts
-with `substitute(` this will use the function, prepend a colon to use the
-command instead: >
+In rare case there is ambiguity between a function name and an Ex command, use
+":" to make clear you want to use the Ex command.  For example, there is both
+the `:substitute` command and the `substitute()` function.  When the line
+starts with `substitute(` this will use the function. Prepend a colon to use
+the command instead: >
 	:substitute(pattern (replacement (
 
 Note that while variables need to be defined before they can be used,
 functions can be called before being defined.  This is required to be able
 have cyclic dependencies between functions.  It is slightly less efficient,
 since the function has to be looked up by name.  And a typo in the function
-name will only be found when the call is executed.
+name will only be found when the function is called.
 
 
 Omitting function() ~
@@ -277,10 +290,14 @@ possible just before or after the operator.  For example: >
 			? PosFunc(arg)
 			: NegFunc(arg)
 
+For a method call using "->" and a member using a dot, a line break is allowed
+before it: >
 	let result = GetBuilder()
 			->BuilderSetWidth(333)
 			->BuilderSetHeight(777)
 			->BuilderBuild()
+	let result = MyDict
+			.member
 
 <							*E1050*
 To make it possible for the operator at the start of the line to be
@@ -335,9 +352,10 @@ No curly braces expansion ~
 |curly-braces-names| cannot be used.
 
 
-No :append, :change or :insert ~
+No :xit, :append, :change or :insert ~
 
-These commands are too quickly confused with local variable names.
+These commands are too easily confused with local variable names.  Instead of
+`:x` or `:xit` you can use `:exit`.
 
 
 Comparators ~
@@ -486,19 +504,20 @@ THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 			When the caller omits an argument the {value} is used.
 
 			The function will be compiled into instructions when
-			called, or when `:defcompile` is used.  Syntax and
-			type errors will be produced at that time.
+			called, or when `:disassemble` or `:defcompile` is
+			used.  Syntax and type errors will be produced at that
+			time.
 
-			NOTE: It is possible to nest `:def` inside another
-			`:def`, but it is not possible to nest `:def` inside
-			`:function`, for backwards compatibility.
+			It is possible to nest `:def` inside another `:def` or
+			`:function` up to about 50 levels deep.
 
 			[!] is used as with `:function`.  Note that in Vim9
 			script script-local functions cannot be deleted or
 			redefined later in the same script.
 
 							*:enddef*
-:enddef			End of a function defined with `:def`.
+:enddef			End of a function defined with `:def`. It should be on
+			a line by its own.
 
 
 If the script the function is defined in is Vim9 script, then script-local
@@ -559,7 +578,7 @@ Not supported yet:
 	tuple<a: {type}, b: {type}, ...>
 
 These types can be used in declarations, but no value will have this type:
-	{type}|{type}
+	{type}|{type}  {not implemented yet}
 	void
 	any
 
@@ -661,19 +680,15 @@ The original value of 'cpoptions' is restored at the end of the script.
 
 Export ~
 							*:export* *:exp*
-Exporting one item can be written as: >
+Exporting an item can be written as: >
 	export const EXPORTED_CONST = 1234
 	export let someValue = ...
 	export def MyFunc() ...
 	export class MyClass ...
 
 As this suggests, only constants, variables, `:def` functions and classes can
-be exported.
+be exported. {classes are not implemented yet}
 
-Alternatively, an export statement can be used to export several already
-defined (otherwise script-local) items: >
-	export {EXPORTED_CONST, someValue, MyFunc, MyClass}
-<
 							*E1042*
 `:export` can only be used in Vim9 script, at the script level.
 

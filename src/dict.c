@@ -838,6 +838,10 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 		: eval1(arg, &tvkey, evalarg)) == FAIL)	// recursive!
 	    goto failret;
 
+	// the colon should come right after the key, but this wasn't checked
+	// previously, so only require it in Vim9 script.
+	if (!vim9script)
+	    *arg = skipwhite(*arg);
 	if (**arg != ':')
 	{
 	    if (evaluate)
@@ -891,7 +895,10 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	}
 	clear_tv(&tvkey);
 
-	// the comma must come after the value
+	// the comma should come right after the value, but this wasn't checked
+	// previously, so only require it in Vim9 script.
+	if (!vim9script)
+	    *arg = skipwhite(*arg);
 	had_comma = **arg == ',';
 	if (had_comma)
 	{

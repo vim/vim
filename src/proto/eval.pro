@@ -58,6 +58,7 @@ int get_name_len(char_u **arg, char_u **alias, int evaluate, int verbose);
 char_u *find_name_end(char_u *arg, char_u **expr_start, char_u **expr_end, int flags);
 int eval_isnamec(int c);
 int eval_isnamec1(int c);
+int eval_isdictc(int c);
 int handle_subscript(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int verbose);
 int item_copy(typval_T *from, typval_T *to, int deep, int copyID);
 void echo_one(typval_T *rettv, int with_space, int *atstart, int *needclr);

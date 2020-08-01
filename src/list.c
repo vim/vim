@@ -1194,12 +1194,15 @@ eval_list(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
 	    else
 		clear_tv(&tv);
 	}
+	// Legacy Vim script allowed a space before the comma.
+	if (!vim9script)
+	    *arg = skipwhite(*arg);
 
 	// the comma must come after the value
 	had_comma = **arg == ',';
 	if (had_comma)
 	{
-	    if (vim9script && (*arg)[1] != NUL && !VIM_ISWHITE((*arg)[1]))
+	    if (vim9script && !IS_WHITE_OR_NUL((*arg)[1]))
 	    {
 		semsg(_(e_white_after), ",");
 		goto failret;
@@ -1231,7 +1234,7 @@ failret:
 	return FAIL;
     }
 
-    *arg = skipwhite(*arg + 1);
+    *arg += 1;
     if (evaluate)
 	rettv_list_set(rettv, l);
 

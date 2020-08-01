@@ -5575,3 +5575,27 @@ gui_handle_drop(
     entered = FALSE;
 }
 #endif
+
+/*
+ * Check if "key" is to interrupt us.  Handles a key that has not had modifiers
+ * applied yet.
+ * Return the key with modifiers applied if so, NUL if not.
+ */
+    int
+check_for_interrupt(int key, int modifiers_arg)
+{
+    int modifiers = modifiers_arg;
+    int c = merge_modifyOtherKeys(key, &modifiers);
+
+    if ((c == Ctrl_C && ctrl_c_interrupts)
+#ifdef UNIX
+	    || (intr_char != Ctrl_C && c == intr_char)
+#endif
+	    )
+    {
+	got_int = TRUE;
+	return c;
+    }
+    return NUL;
+}
+

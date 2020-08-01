@@ -43,15 +43,18 @@ func Test_terminal_shell_option()
     bwipe!
   elseif has('win32')
     " dir is a shell builtin command, should fail without a shell.
+    " However, if dir.exe (which might be provided by Cygwin/MSYS2) exists in
+    " the %PATH%, "term dir" succeeds unintentionally.  Use dir.com instead.
     try
-      term dir /b runtest.vim
-      call WaitForAssert({-> assert_match('job failed\|cannot access .*: No such file or directory', term_getline(bufnr(), 1))})
+      term dir.com /b runtest.vim
+      call WaitForAssert({-> assert_match('job failed', term_getline(bufnr(), 1))})
     catch /CreateProcess/
       " ignore
     endtry
     bwipe!
 
-    term ++shell dir /b runtest.vim
+    " This should execute the dir builtin command even with ".com".
+    term ++shell dir.com /b runtest.vim
     call WaitForAssert({-> assert_match('runtest.vim', term_getline(bufnr(), 1))})
     bwipe!
   endif
@@ -527,11 +530,9 @@ func Test_terminal_getwinpos()
   wincmd j
   set splitright
 
-  call writefile([
-	\ 'echo getwinpos()',
-	\ ], 'XTest_getwinpos')
-  let buf = RunVimInTerminal('-S XTest_getwinpos', {'cols': 60})
-  call TermWait(buf)
+  let buf = RunVimInTerminal('', {'cols': 60})
+  call TermWait(buf, 100)
+  call term_sendkeys(buf, ":echo getwinpos(500)\<CR>")
 
   " Find the output of getwinpos() in the bottom line.
   let rows = term_getsize(buf)[0]
@@ -557,7 +558,6 @@ func Test_terminal_getwinpos()
   call TermWait(buf)
   call term_sendkeys(buf, ":q\<CR>")
   call StopVimInTerminal(buf)
-  call delete('XTest_getwinpos')
   exe buf . 'bwipe!'
   set splitright&
   only!

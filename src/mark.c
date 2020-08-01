@@ -704,6 +704,7 @@ ex_marks(exarg_T *eap)
     char_u	*arg = eap->arg;
     int		i;
     char_u	*name;
+    pos_T	*posp, *startp, *endp;
 
     if (arg != NULL && *arg == NUL)
 	arg = NULL;
@@ -731,8 +732,17 @@ ex_marks(exarg_T *eap)
     show_one_mark(']', arg, &curbuf->b_op_end, NULL, TRUE);
     show_one_mark('^', arg, &curbuf->b_last_insert, NULL, TRUE);
     show_one_mark('.', arg, &curbuf->b_last_change, NULL, TRUE);
-    show_one_mark('<', arg, &curbuf->b_visual.vi_start, NULL, TRUE);
-    show_one_mark('>', arg, &curbuf->b_visual.vi_end, NULL, TRUE);
+
+    // Show the marks as where they will jump to.
+    startp = &curbuf->b_visual.vi_start;
+    endp = &curbuf->b_visual.vi_end;
+    if ((LT_POS(*startp, *endp) || endp->lnum == 0) && startp->lnum != 0)
+	posp = startp;
+    else
+	posp = endp;
+    show_one_mark('<', arg, posp, NULL, TRUE);
+    show_one_mark('>', arg, posp == startp ? endp : startp, NULL, TRUE);
+
     show_one_mark(-1, arg, NULL, NULL, FALSE);
 }
 

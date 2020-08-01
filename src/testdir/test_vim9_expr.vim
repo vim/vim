@@ -3,6 +3,15 @@
 source check.vim
 source vim9.vim
 
+
+let g:cond = v:false
+def FuncOne(arg: number): string
+  return 'yes'
+enddef
+def FuncTwo(arg: number): number
+  return 123
+enddef
+
 " test cond ? expr : expr
 def Test_expr1()
   assert_equal('one', true ? 'one' : 'two')
@@ -43,6 +52,11 @@ def Test_expr1()
   let RetTwo: func(string): number = function('winnr')
   let RetThat: func = g:atrue ? RetOne : RetTwo
   assert_equal(function('len'), RetThat)
+
+  let x = FuncOne
+  let y = FuncTwo
+  let Z = g:cond ? FuncOne : FuncTwo
+  assert_equal(123, Z(3))
 enddef
 
 def Test_expr1_vimscript()
@@ -88,6 +102,13 @@ func Test_expr1_fails()
   call CheckDefFailure(["let x = 1 ? 'one': 'two'"], msg)
   call CheckDefFailure(["let x = 1 ? 'one' :'two'"], msg)
   call CheckDefFailure(["let x = 1 ? 'one':'two'"], msg)
+
+  " missing argument detected even when common type is used
+  call CheckDefFailure([
+	\ 'let x = FuncOne',
+	\ 'let y = FuncTwo',
+	\ 'let Z = g:cond ? FuncOne : FuncTwo',
+	\ 'Z()'], 'E119:')
 endfunc
 
 " TODO: define inside test function
@@ -630,7 +651,7 @@ def Test_expr4_vimscript()
       vim9script
       let var = 0
       		< 1
-      assert_equal(1, var)
+      assert_equal(true, var)
   END
   CheckScriptSuccess(lines)
 
@@ -638,7 +659,7 @@ def Test_expr4_vimscript()
       vim9script
       let var = 123
       		!= 123
-      assert_equal(0, var)
+      assert_equal(false, var)
   END
   CheckScriptSuccess(lines)
 
@@ -646,7 +667,7 @@ def Test_expr4_vimscript()
       vim9script
       let var = 123 ==
       			123
-      assert_equal(1, var)
+      assert_equal(true, var)
   END
   CheckScriptSuccess(lines)
 
@@ -655,7 +676,7 @@ def Test_expr4_vimscript()
       let list = [1, 2, 3]
       let var = list
       		is list
-      assert_equal(1, var)
+      assert_equal(true, var)
   END
   CheckScriptSuccess(lines)
 
@@ -664,7 +685,7 @@ def Test_expr4_vimscript()
       let myblob = 0z1234
       let var = myblob
       		isnot 0z11
-      assert_equal(1, var)
+      assert_equal(true, var)
   END
   CheckScriptSuccess(lines)
 
@@ -686,6 +707,25 @@ def Test_expr4_vimscript()
       echo 123 is 123
   END
   CheckScriptFailure(lines, 'Cannot use "is" with number')
+
+  # check 'ignorecase' not being used
+  lines =<< trim END
+    vim9script
+    set ignorecase
+    assert_equal(false, 'abc' == 'ABC')
+    assert_equal(false, 'abc' ==# 'ABC')
+    assert_equal(true, 'abc' ==? 'ABC')
+
+    assert_equal(true, 'abc' != 'ABC')
+    assert_equal(true, 'abc' !=# 'ABC')
+    assert_equal(false, 'abc' !=? 'ABC')
+
+    assert_equal(false, 'abc' =~ 'ABC')
+    assert_equal(false, 'abc' =~# 'ABC')
+    assert_equal(true, 'abc' =~? 'ABC')
+    set noignorecase
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 func Test_expr4_fails()
@@ -791,7 +831,7 @@ def Test_expr5()
 enddef
 
 def Test_expr5_vim9script()
-  # only checks line continuation
+  # check line continuation
   let lines =<< trim END
       vim9script
       let var = 11
@@ -808,6 +848,30 @@ def Test_expr5_vim9script()
       assert_equal('onetwo', var)
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      echo 'abc' is# 'abc'
+  END
+  CheckScriptFailure(lines, 'E15:')
+
+  lines =<< trim END
+      vim9script
+      echo 'abc' is? 'abc'
+  END
+  CheckScriptFailure(lines, 'E15:')
+
+  lines =<< trim END
+      vim9script
+      echo 'abc' isnot# 'abc'
+  END
+  CheckScriptFailure(lines, 'E15:')
+
+  lines =<< trim END
+      vim9script
+      echo 'abc' isnot? 'abc'
+  END
+  CheckScriptFailure(lines, 'E15:')
 enddef
 
 def Test_expr5_float()
@@ -1112,10 +1176,14 @@ def Test_expr7_list()
   assert_equal(g:list_mixed, [1, 'b', false,])
   assert_equal('b', g:list_mixed[1])
 
+  echo [1,
+  	2] [3,
+		4]
+
   call CheckDefExecFailure(["let x = g:anint[3]"], 'E714:')
   call CheckDefFailure(["let x = g:list_mixed[xxx]"], 'E1001:')
   call CheckDefFailure(["let x = [1,2,3]"], 'E1069:')
-  call CheckDefExecFailure(["let x = g:list_mixed['xx']"], 'E39:')
+  call CheckDefExecFailure(["let x = g:list_mixed['xx']"], 'E1029:')
   call CheckDefFailure(["let x = g:list_mixed["], 'E1097:')
   call CheckDefFailure(["let x = g:list_mixed[0"], 'E1097:')
   call CheckDefExecFailure(["let x = g:list_empty[3]"], 'E684:')
@@ -1129,6 +1197,10 @@ def Test_expr7_list_vim9script()
 		22,
 		]
       assert_equal([11, 22], l)
+
+      echo [1,
+	    2] [3,
+		    4]
   END
   CheckScriptSuccess(lines)
 
@@ -1172,6 +1244,13 @@ def Test_expr7_lambda()
 		&& v % 2 == 0 ? 111 : 222
 	})
   assert_equal([111, 222, 111], ll)
+
+  let dl = [{'key': 0}, {'key': 22}]->filter({ _, v -> v['key'] })
+  assert_equal([{'key': 22}], dl)
+
+  dl = [{'key': 12}, {'foo': 34}]
+  assert_equal([{'key': 12}], filter(dl,
+	{_, v -> has_key(v, 'key') ? v['key'] == 12 : 0}))
 
   call CheckDefFailure(["filter([1, 2], {k,v -> 1})"], 'E1069:')
 enddef
@@ -1263,6 +1342,11 @@ def Test_expr_member()
 		  ])
   assert_equal(1, d
   	.one)
+  d = {'1': 1, '_': 2}
+  assert_equal(1, d
+  	.1)
+  assert_equal(2, d
+  	._)
 
   # getting the one member should clear the dict after getting the item
   assert_equal('one', #{one: 'one'}.one)
@@ -1283,10 +1367,16 @@ def Test_expr_member_vim9script()
       vim9script
       let d = #{one:
       		'one',
-		two: 'two'}
+		two: 'two',
+		1: 1,
+		_: 2}
       assert_equal('one', d.one)
       assert_equal('one', d
                             .one)
+      assert_equal(1, d
+                            .1)
+      assert_equal(2, d
+                            ._)
       assert_equal('one', d[
 			    'one'
 			    ])
@@ -1342,6 +1432,32 @@ def Test_expr7_register()
   assert_equal('register a', @a)
 enddef
 
+def Test_expr7_namespace()
+  g:some_var = 'some'
+  assert_equal('some', get(g:, 'some_var'))
+  assert_equal('some', get(g:, 'some_var', 'xxx'))
+  assert_equal('xxx', get(g:, 'no_var', 'xxx'))
+  unlet g:some_var
+
+  b:some_var = 'some'
+  assert_equal('some', get(b:, 'some_var'))
+  assert_equal('some', get(b:, 'some_var', 'xxx'))
+  assert_equal('xxx', get(b:, 'no_var', 'xxx'))
+  unlet b:some_var
+
+  w:some_var = 'some'
+  assert_equal('some', get(w:, 'some_var'))
+  assert_equal('some', get(w:, 'some_var', 'xxx'))
+  assert_equal('xxx', get(w:, 'no_var', 'xxx'))
+  unlet w:some_var
+
+  t:some_var = 'some'
+  assert_equal('some', get(t:, 'some_var'))
+  assert_equal('some', get(t:, 'some_var', 'xxx'))
+  assert_equal('xxx', get(t:, 'no_var', 'xxx'))
+  unlet t:some_var
+enddef
+
 def Test_expr7_parens()
   # (expr)
   assert_equal(4, (6 * 4) / 6)
@@ -1387,7 +1503,8 @@ enddef
 
 def Test_expr7_call()
   assert_equal('yes', 'yes'->Echo())
-  assert_equal('yes', 'yes'->s:EchoArg())
+  assert_equal('yes', 'yes'
+  			->s:EchoArg())
   assert_equal(1, !range(5)->empty())
   assert_equal([0, 1, 2], --3->range())
 
@@ -1458,6 +1575,8 @@ func Test_expr7_fails()
 
   call CheckDefFailure(["let x = ''", "let y = x.memb"], 'E715:')
 
+  call CheckDefFailure(["'yes'->", "Echo()"], 'E488: Trailing characters: ->')
+
   call CheckDefExecFailure(["[1, 2->len()"], 'E697:')
   call CheckDefExecFailure(["#{a: 1->len()"], 'E488:')
   call CheckDefExecFailure(["{'a': 1->len()"], 'E723:')
@@ -1506,11 +1625,20 @@ def Test_expr7_trailing()
   assert_equal(123, d.key)
 enddef
 
+def Test_expr7_subscript()
+  let text = 'abcdef'
+  assert_equal('', text[-1])
+  assert_equal('a', text[0])
+  assert_equal('e', text[4])
+  assert_equal('f', text[5])
+  assert_equal('', text[6])
+enddef
+
 def Test_expr7_subscript_linebreak()
   let range = range(
   		3)
-  let l = range->
-  	map('string(v:key)')
+  let l = range
+	->map('string(v:key)')
   assert_equal(['0', '1', '2'], l)
 
   l = range
@@ -1542,8 +1670,9 @@ enddef
 def Test_expr7_method_call()
   new
   setline(1, ['first', 'last'])
-  eval 'second'->append(1)
-  assert_equal(['first', 'second', 'last'], getline(1, '$'))
+  'second'->append(1)
+  "third"->append(2)
+  assert_equal(['first', 'second', 'third', 'last'], getline(1, '$'))
   bwipe!
 
   let bufnr = bufnr()

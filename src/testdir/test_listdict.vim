@@ -23,6 +23,9 @@ func Test_list_create()
   call assert_equal(10, x)
 endfunc
 
+" This was allowed in legacy Vim script
+let s:list_with_spaces = [1 , 2 , 3]
+
 " List slices
 func Test_list_slice()
   let l = [1, 'as''d', [1, 2, function("strlen")], {'a': 1},]
@@ -202,6 +205,10 @@ func Test_dict()
   call assert_fails("let d={'k' : i}", 'E121:')
 endfunc
 
+" This was allowed in legacy Vim script
+let s:dict_with_spaces = {'one' : 1 , 'two' : 2 , 'three' : 3}
+let s:dict_with_spaces_lit = #{one : 1 , two : 2 , three : 3}
+
 " Dictionary identity
 func Test_dict_identity()
   let d = {001: 'asd', 'b': [1, 2, function('strlen')], -1: {'a': 1},}
@@ -280,6 +287,13 @@ func Test_dict_func()
   call assert_equal('again: 3', x)
   let Fn = d.func
   call assert_equal('xxx3', Fn('xxx'))
+endfunc
+
+func Test_dict_assign()
+  let d = {}
+  let d.1 = 1
+  let d._ = 2
+  call assert_equal({'1': 1, '_': 2}, d)
 endfunc
 
 " Function in script-local List or Dict

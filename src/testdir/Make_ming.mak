@@ -28,11 +28,6 @@ default: vimall
 
 include Make_all.mak
 
-# Omitted:
-# test2		"\\tmp" doesn't work.
-# test10	'errorformat' is different
-# test97	\{ and \$ are not escaped characters
-
 SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE1) $(SCRIPTS_MORE4) $(SCRIPTS_WIN32)
 
 SCRIPTS_BENCH = test_bench_regexp.res

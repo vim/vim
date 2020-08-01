@@ -111,58 +111,68 @@ estack_pop(void)
 
 /*
  * Get the current value for <sfile> in allocated memory.
+ * "is_sfile" is TRUE for <sfile> itself.
  */
     char_u *
-estack_sfile(void)
+estack_sfile(int is_sfile UNUSED)
 {
     estack_T	*entry;
 #ifdef FEAT_EVAL
+    garray_T	ga;
     size_t	len;
     int		idx;
-    char	*res;
-    size_t	done;
+    etype_T	last_type = ETYPE_SCRIPT;
+    char	*type_name;
 #endif
 
     entry = ((estack_T *)exestack.ga_data) + exestack.ga_len - 1;
-    if (entry->es_name == NULL)
-	return NULL;
 #ifdef FEAT_EVAL
-    if (entry->es_info.ufunc == NULL)
+    if (is_sfile && entry->es_type != ETYPE_UFUNC)
 #endif
+    {
+	if (entry->es_name == NULL)
+	    return NULL;
 	return vim_strsave(entry->es_name);
-
+    }
 #ifdef FEAT_EVAL
+    // Give information about each stack entry up to the root.
     // For a function we compose the call stack, as it was done in the past:
     //   "function One[123]..Two[456]..Three"
-    len = STRLEN(entry->es_name) + 10;
-    for (idx = exestack.ga_len - 2; idx >= 0; --idx)
+    ga_init2(&ga, sizeof(char), 100);
+    for (idx = 0; idx < exestack.ga_len; ++idx)
     {
 	entry = ((estack_T *)exestack.ga_data) + idx;
-	if (entry->es_name == NULL || entry->es_info.ufunc == NULL)
+	if (entry->es_name != NULL)
 	{
-	    ++idx;
-	    break;
+	    len = STRLEN(entry->es_name) + 15;
+	    type_name = "";
+	    if (entry->es_type != last_type)
+	    {
+		switch (entry->es_type)
+		{
+		    case ETYPE_SCRIPT: type_name = "script "; break;
+		    case ETYPE_UFUNC: type_name = "function "; break;
+		    default: type_name = ""; break;
+		}
+		last_type = entry->es_type;
+	    }
+	    len += STRLEN(type_name);
+	    if (ga_grow(&ga, (int)len) == FAIL)
+		break;
+	    if (idx == exestack.ga_len - 1 || entry->es_lnum == 0)
+		// For the bottom entry: do not add the line number, it is used
+		// in <slnum>.  Also leave it out when the number is not set.
+		vim_snprintf((char *)ga.ga_data + ga.ga_len, len, "%s%s%s",
+				type_name, entry->es_name,
+				idx == exestack.ga_len - 1 ? "" : "..");
+	    else
+		vim_snprintf((char *)ga.ga_data + ga.ga_len, len, "%s%s[%ld]..",
+				    type_name, entry->es_name, entry->es_lnum);
+	    ga.ga_len += (int)STRLEN((char *)ga.ga_data + ga.ga_len);
 	}
-	len += STRLEN(entry->es_name) + 15;
     }
 
-    res = (char *)alloc((int)len);
-    if (res != NULL)
-    {
-	STRCPY(res, "function ");
-	while (idx < exestack.ga_len - 1)
-	{
-	    done = STRLEN(res);
-	    entry = ((estack_T *)exestack.ga_data) + idx;
-	    vim_snprintf(res + done, len - done, "%s[%ld]..",
-					       entry->es_name, entry->es_lnum);
-	    ++idx;
-	}
-	done = STRLEN(res);
-	entry = ((estack_T *)exestack.ga_data) + idx;
-	vim_snprintf(res + done, len - done, "%s", entry->es_name);
-    }
-    return (char_u *)res;
+    return (char_u *)ga.ga_data;
 #endif
 }
 
@@ -1763,10 +1773,16 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
 	// backslash. We always need to read the next line, keep it in
 	// sp->nextline.
 	/* Also check for a comment in between continuation lines: "\ */
+	// Also check for a Vim9 comment and empty line.
 	sp->nextline = get_one_sourceline(sp);
 	if (sp->nextline != NULL
 		&& (*(p = skipwhite(sp->nextline)) == '\\'
-			      || (p[0] == '"' && p[1] == '\\' && p[2] == ' ')))
+			      || (p[0] == '"' && p[1] == '\\' && p[2] == ' ')
+#ifdef FEAT_EVAL
+			      || (in_vim9script()
+				       && (*p == NUL || vim9_comment_start(p)))
+#endif
+			      ))
 	{
 	    garray_T    ga;
 
@@ -1794,8 +1810,14 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
 		    }
 		    ga_concat(&ga, p + 1);
 		}
-		else if (p[0] != '"' || p[1] != '\\' || p[2] != ' ')
+		else if (!(p[0] == '"' && p[1] == '\\' && p[2] == ' ')
+#ifdef FEAT_EVAL
+			&& !(in_vim9script()
+				       && (*p == NUL || vim9_comment_start(p)))
+#endif
+			)
 		    break;
+		/* drop a # comment or "\ comment line */
 	    }
 	    ga_append(&ga, NUL);
 	    vim_free(line);

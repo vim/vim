@@ -1355,7 +1355,7 @@ func Test_input_func()
   func! Tcomplete(arglead, cmdline, pos)
     return "item1\nitem2\nitem3"
   endfunc
-  call feedkeys(":let c = input('Q? ', '' , 'custom,Tcomplete')\<CR>"
+  call feedkeys(":let c = input('Q? ', '', 'custom,Tcomplete')\<CR>"
         \ .. "\<C-A>\<CR>", 'xt')
   delfunc Tcomplete
   call assert_equal('item1 item2 item3', c)

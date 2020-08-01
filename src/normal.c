@@ -499,6 +499,7 @@ normal_cmd(
 #ifdef FEAT_EVAL
     int		set_prevcount = FALSE;
 #endif
+    int		save_did_cursorhold = did_cursorhold;
 
     CLEAR_FIELD(ca);	// also resets ca.retval
     ca.oap = oap;
@@ -1025,7 +1026,12 @@ getcount:
 	out_flush();
 #endif
     if (ca.cmdchar != K_IGNORE)
-	did_cursorhold = FALSE;
+    {
+	if (ex_normal_busy)
+	    did_cursorhold = save_did_cursorhold;
+	else
+	    did_cursorhold = FALSE;
+    }
 
     State = NORMAL;
 

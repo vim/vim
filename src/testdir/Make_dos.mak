@@ -10,10 +10,7 @@ default: nongui
 !include Make_all.mak
 
 # Omitted:
-# test2		"\\tmp" doesn't work.
-# test10	'errorformat' is different
 # test49	fails in various ways
-# test97	\{ and \$ are not escaped characters.
 
 SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE1) $(SCRIPTS_MORE4)
 

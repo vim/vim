@@ -797,7 +797,7 @@ get_lval(
 	if (unlet && !VIM_ISWHITE(*p) && !ends_excmd(*p)
 						    && *p != '[' && *p != '.')
 	{
-	    emsg(_(e_trailing));
+	    semsg(_(e_trailing_arg), p);
 	    return NULL;
 	}
 
@@ -1270,7 +1270,12 @@ set_var_lval(
 	    }
 	}
 	else
+	{
+	    if (lp->ll_type != NULL
+			      && check_typval_type(lp->ll_type, rettv) == FAIL)
+		return;
 	    set_var_const(lp->ll_name, lp->ll_type, rettv, copy, flags);
+	}
 	*endp = cc;
     }
     else if (var_check_lock(lp->ll_newkey == NULL
@@ -1908,27 +1913,28 @@ eval_func(
     char_u *
 eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext)
 {
+    char_u *p = skipwhite(arg);
+
     *getnext = FALSE;
     if (in_vim9script()
 	    && evalarg != NULL
 	    && (evalarg->eval_cookie != NULL || evalarg->eval_cctx != NULL)
-	    && (*arg == NUL || (VIM_ISWHITE(arg[-1])
-					     && *arg == '#' && arg[1] != '{')))
+	    && (*p == NUL || (VIM_ISWHITE(p[-1]) && vim9_comment_start(p))))
     {
-	char_u *p;
+	char_u *next;
 
 	if (evalarg->eval_cookie != NULL)
-	    p = getline_peek(evalarg->eval_getline, evalarg->eval_cookie);
+	    next = getline_peek(evalarg->eval_getline, evalarg->eval_cookie);
 	else
-	    p = peek_next_line_from_context(evalarg->eval_cctx);
+	    next = peek_next_line_from_context(evalarg->eval_cctx);
 
-	if (p != NULL)
+	if (next != NULL)
 	{
 	    *getnext = TRUE;
-	    return skipwhite(p);
+	    return skipwhite(next);
 	}
     }
-    return arg;
+    return p;
 }
 
 /*
@@ -2034,6 +2040,7 @@ eval0(
 
     p = skipwhite(arg);
     ret = eval1(&p, rettv, evalarg);
+    p = skipwhite(p);
 
     if (ret == FAIL || !ends_excmd2(arg, p))
     {
@@ -2102,6 +2109,8 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 
 	if (getnext)
 	    *arg = eval_next_line(evalarg_used);
+	else
+	    *arg = p;
 
 	result = FALSE;
 	if (evaluate)
@@ -2137,6 +2146,8 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	}
 	if (getnext)
 	    *arg = eval_next_line(evalarg_used);
+	else
+	    *arg = p;
 
 	/*
 	 * Get the third variable.  Recursive!
@@ -2229,6 +2240,8 @@ eval2(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	{
 	    if (getnext)
 		*arg = eval_next_line(evalarg_used);
+	    else
+		*arg = p;
 
 	    /*
 	     * Get the second variable.
@@ -2344,6 +2357,8 @@ eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	{
 	    if (getnext)
 		*arg = eval_next_line(evalarg_used);
+	    else
+		*arg = p;
 
 	    /*
 	     * Get the second variable.
@@ -2413,13 +2428,11 @@ eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
     static int
 eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 {
-    typval_T	var2;
     char_u	*p;
     int		getnext;
-    int		i;
     exptype_T	type = EXPR_UNKNOWN;
     int		len = 2;
-    int		ic;
+    int		type_is = FALSE;
 
     /*
      * Get the first variable.
@@ -2428,52 +2441,26 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	return FAIL;
 
     p = eval_next_non_blank(*arg, evalarg, &getnext);
-    switch (p[0])
-    {
-	case '=':   if (p[1] == '=')
-			type = EXPR_EQUAL;
-		    else if (p[1] == '~')
-			type = EXPR_MATCH;
-		    break;
-	case '!':   if (p[1] == '=')
-			type = EXPR_NEQUAL;
-		    else if (p[1] == '~')
-			type = EXPR_NOMATCH;
-		    break;
-	case '>':   if (p[1] != '=')
-		    {
-			type = EXPR_GREATER;
-			len = 1;
-		    }
-		    else
-			type = EXPR_GEQUAL;
-		    break;
-	case '<':   if (p[1] != '=')
-		    {
-			type = EXPR_SMALLER;
-			len = 1;
-		    }
-		    else
-			type = EXPR_SEQUAL;
-		    break;
-	case 'i':   if (p[1] == 's')
-		    {
-			if (p[2] == 'n' && p[3] == 'o' && p[4] == 't')
-			    len = 5;
-			i = p[len];
-			if (!isalnum(i) && i != '_')
-			    type = len == 2 ? EXPR_IS : EXPR_ISNOT;
-		    }
-		    break;
-    }
+    type = get_compare_type(p, &len, &type_is);
 
     /*
      * If there is a comparative operator, use it.
      */
     if (type != EXPR_UNKNOWN)
     {
+	typval_T    var2;
+	int	    ic;
+	int	    vim9script = in_vim9script();
+
 	if (getnext)
 	    *arg = eval_next_line(evalarg);
+
+	if (vim9script && type_is && (p[len] == '?' || p[len] == '#'))
+	{
+	    semsg(_(e_invexpr2), p);
+	    clear_tv(rettv);
+	    return FAIL;
+	}
 
 	// extra question mark appended: ignore case
 	if (p[len] == '?')
@@ -2487,9 +2474,9 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    ic = FALSE;
 	    ++len;
 	}
-	// nothing appended: use 'ignorecase'
+	// nothing appended: use 'ignorecase' if not in Vim script
 	else
-	    ic = p_ic;
+	    ic = vim9script ? FALSE : p_ic;
 
 	/*
 	 * Get the second variable.
@@ -2504,8 +2491,7 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	{
 	    int ret;
 
-	    if (in_vim9script() && check_compare_types(
-						   type, rettv, &var2) == FAIL)
+	    if (vim9script && check_compare_types(type, rettv, &var2) == FAIL)
 	    {
 		ret = FAIL;
 		clear_tv(rettv);
@@ -2599,6 +2585,8 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 
 	if (getnext)
 	    *arg = eval_next_line(evalarg);
+	else
+	    *arg = p;
 	evaluate = evalarg == NULL ? 0 : (evalarg->eval_flags & EVAL_EVALUATE);
 	if ((op != '+' || (rettv->v_type != VAR_LIST
 						 && rettv->v_type != VAR_BLOB))
@@ -2780,6 +2768,7 @@ eval6(
 	int	    evaluate;
 	int	    getnext;
 	typval_T    var2;
+	char_u	    *p;
 	int	    op;
 	varnumber_T n1, n2;
 #ifdef FEAT_FLOAT
@@ -2787,12 +2776,15 @@ eval6(
 #endif
 	int	    error;
 
-	op = *eval_next_non_blank(*arg, evalarg, &getnext);
+	p = eval_next_non_blank(*arg, evalarg, &getnext);
+	op = *p;
 	if (op != '*' && op != '/' && op != '%')
 	    break;
 
 	if (getnext)
 	    *arg = eval_next_line(evalarg);
+	else
+	    *arg = p;
 
 #ifdef FEAT_FLOAT
 	f1 = 0;
@@ -3139,8 +3131,6 @@ eval7(
 	vim_free(alias);
     }
 
-    *arg = skipwhite(*arg);
-
     // Handle following '[', '(' and '.' for expr[expr], expr.name,
     // expr(expr), expr->name(expr)
     if (ret == OK)
@@ -3458,7 +3448,7 @@ eval_index(
 	 * dict.name
 	 */
 	key = *arg + 1;
-	for (len = 0; ASCII_ISALNUM(key[len]) || key[len] == '_'; ++len)
+	for (len = 0; eval_isdictc(key[len]); ++len)
 	    ;
 	if (len == 0)
 	    return FAIL;
@@ -4990,7 +4980,8 @@ find_name_end(
     for (p = arg; *p != NUL
 		    && (eval_isnamec(*p)
 			|| (*p == '{' && !vim9script)
-			|| ((flags & FNE_INCL_BR) && (*p == '[' || *p == '.'))
+			|| ((flags & FNE_INCL_BR) && (*p == '['
+					 || (*p == '.' && eval_isdictc(p[1]))))
 			|| mb_nest != 0
 			|| br_nest != 0); MB_PTR_ADV(p))
     {
@@ -5121,7 +5112,7 @@ make_expanded_name(
     int
 eval_isnamec(int c)
 {
-    return (ASCII_ISALNUM(c) || c == '_' || c == ':' || c == AUTOLOAD_CHAR);
+    return ASCII_ISALNUM(c) || c == '_' || c == ':' || c == AUTOLOAD_CHAR;
 }
 
 /*
@@ -5131,7 +5122,17 @@ eval_isnamec(int c)
     int
 eval_isnamec1(int c)
 {
-    return (ASCII_ISALPHA(c) || c == '_');
+    return ASCII_ISALPHA(c) || c == '_';
+}
+
+/*
+ * Return TRUE if character "c" can be used as the first character of a
+ * dictionary key.
+ */
+    int
+eval_isdictc(int c)
+{
+    return ASCII_ISALNUM(c) || c == '_';
 }
 
 /*
@@ -5164,9 +5165,8 @@ handle_subscript(
 	// the next line then consume the line break.
 	p = eval_next_non_blank(*arg, evalarg, &getnext);
 	if (getnext
-	    && ((rettv->v_type == VAR_DICT && *p == '.'
-						       && ASCII_ISALPHA(p[1]))
-		|| (*p == '-' && p[1] == '>'
+	    && ((rettv->v_type == VAR_DICT && *p == '.' && eval_isdictc(p[1]))
+		|| (p[0] == '-' && p[1] == '>'
 				     && (p[2] == '{' || ASCII_ISALPHA(p[2])))))
 	{
 	    *arg = eval_next_line(evalarg);
@@ -5192,8 +5192,9 @@ handle_subscript(
 	    dict_unref(selfdict);
 	    selfdict = NULL;
 	}
-	else if (**arg == '-' && (*arg)[1] == '>')
+	else if (p[0] == '-' && p[1] == '>')
 	{
+	    *arg = p;
 	    if (ret == OK)
 	    {
 		if ((*arg)[2] == '{')

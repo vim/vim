@@ -494,18 +494,9 @@ ExpandOne(
     void
 ExpandInit(expand_T *xp)
 {
-    xp->xp_pattern = NULL;
-    xp->xp_pattern_len = 0;
+    CLEAR_POINTER(xp);
     xp->xp_backslash = XP_BS_NONE;
-#ifndef BACKSLASH_IN_FILENAME
-    xp->xp_shell = FALSE;
-#endif
     xp->xp_numfiles = -1;
-    xp->xp_files = NULL;
-#if defined(FEAT_EVAL)
-    xp->xp_arg = NULL;
-#endif
-    xp->xp_line = NULL;
 }
 
 /*
@@ -1887,62 +1878,6 @@ expand_cmdline(
     return EXPAND_OK;
 }
 
-#ifdef FEAT_MULTI_LANG
-/*
- * Cleanup matches for help tags:
- * Remove "@ab" if the top of 'helplang' is "ab" and the language of the first
- * tag matches it.  Otherwise remove "@en" if "en" is the only language.
- */
-    static void
-cleanup_help_tags(int num_file, char_u **file)
-{
-    int		i, j;
-    int		len;
-    char_u	buf[4];
-    char_u	*p = buf;
-
-    if (p_hlg[0] != NUL && (p_hlg[0] != 'e' || p_hlg[1] != 'n'))
-    {
-	*p++ = '@';
-	*p++ = p_hlg[0];
-	*p++ = p_hlg[1];
-    }
-    *p = NUL;
-
-    for (i = 0; i < num_file; ++i)
-    {
-	len = (int)STRLEN(file[i]) - 3;
-	if (len <= 0)
-	    continue;
-	if (STRCMP(file[i] + len, "@en") == 0)
-	{
-	    // Sorting on priority means the same item in another language may
-	    // be anywhere.  Search all items for a match up to the "@en".
-	    for (j = 0; j < num_file; ++j)
-		if (j != i && (int)STRLEN(file[j]) == len + 3
-			   && STRNCMP(file[i], file[j], len + 1) == 0)
-		    break;
-	    if (j == num_file)
-		// item only exists with @en, remove it
-		file[i][len] = NUL;
-	}
-    }
-
-    if (*buf != NUL)
-	for (i = 0; i < num_file; ++i)
-	{
-	    len = (int)STRLEN(file[i]) - 3;
-	    if (len <= 0)
-		continue;
-	    if (STRCMP(file[i] + len, buf) == 0)
-	    {
-		// remove the default language
-		file[i][len] = NUL;
-	    }
-	}
-}
-#endif
-
 /*
  * Function given to ExpandGeneric() to obtain the possible arguments of the
  * ":behave {mswin,xterm}" command.
@@ -2481,7 +2416,7 @@ expand_shellcmd(
 # if defined(FEAT_EVAL)
 /*
  * Call "user_expand_func()" to invoke a user defined Vim script function and
- * return the result (either a string or a List).
+ * return the result (either a string, a List or NULL).
  */
     static void *
 call_user_expand_func(

@@ -1710,7 +1710,7 @@ do_one_cmd(
     char_u	*cmd;
     int		starts_with_colon = FALSE;
 #ifdef FEAT_EVAL
-    int		starts_with_quote;
+    int		may_have_range;
     int		vim9script = in_vim9script();
 #endif
 
@@ -1773,8 +1773,9 @@ do_one_cmd(
  */
     cmd = ea.cmd;
 #ifdef FEAT_EVAL
-    starts_with_quote = vim9script && *ea.cmd == '\'';
-    if (!starts_with_quote)
+    // In Vim9 script a colon is required before the range.
+    may_have_range = !vim9script || starts_with_colon;
+    if (may_have_range)
 #endif
 	ea.cmd = skip_range(ea.cmd, NULL);
     if (*ea.cmd == '*' && vim_strchr(p_cpo, CPO_STAR) == NULL)
@@ -1783,7 +1784,10 @@ do_one_cmd(
 #ifdef FEAT_EVAL
     if (vim9script && !starts_with_colon)
     {
-	if (ea.cmd > cmd)
+	if (ea.cmd == cmd + 1 && *cmd == '$')
+	    // should be "$VAR = val"
+	    --ea.cmd;
+	else if (ea.cmd > cmd)
 	{
 	    emsg(_(e_colon_required));
 	    goto doend;
@@ -1876,7 +1880,7 @@ do_one_cmd(
 
     ea.cmd = cmd;
 #ifdef FEAT_EVAL
-    if (!starts_with_quote)
+    if (may_have_range)
 #endif
 	if (parse_cmd_address(&ea, &errormsg, FALSE) == FAIL)
 	    goto doend;
@@ -2061,12 +2065,22 @@ do_one_cmd(
 	    goto doend;
 	}
 
-	if (text_locked() && !(ea.argt & EX_CMDWIN)
-		&& !IS_USER_CMDIDX(ea.cmdidx))
+	if (!IS_USER_CMDIDX(ea.cmdidx))
 	{
-	    // Command not allowed when editing the command line.
-	    errormsg = _(get_text_locked_msg());
-	    goto doend;
+#ifdef FEAT_CMDWIN
+	    if (cmdwin_type != 0 && !(ea.argt & EX_CMDWIN))
+	    {
+		// Command not allowed in the command line window
+		errormsg = _(e_cmdwin);
+		goto doend;
+	    }
+#endif
+	    if (text_locked() && !(ea.argt & EX_LOCK_OK))
+	    {
+		// Command not allowed when text is locked
+		errormsg = _(get_text_locked_msg());
+		goto doend;
+	    }
 	}
 
 	// Disallow editing another buffer when "curbuf_lock" is set.
@@ -2396,7 +2410,7 @@ do_one_cmd(
 	    && *ea.arg != '"' && (*ea.arg != '|' || (ea.argt & EX_TRLBAR) == 0))
     {
 	// no arguments allowed but there is something
-	errormsg = _(e_trailing);
+	errormsg = ex_errmsg(e_trailing_arg, ea.arg);
 	goto doend;
     }
 
@@ -2570,7 +2584,7 @@ do_one_cmd(
 	ea.errmsg = NULL;
 	(cmdnames[ea.cmdidx].cmd_func)(&ea);
 	if (ea.errmsg != NULL)
-	    errormsg = _(ea.errmsg);
+	    errormsg = ea.errmsg;
     }
 
 #ifdef FEAT_EVAL
@@ -2647,6 +2661,20 @@ doend:
 #if (_MSC_VER == 1200)
  #pragma optimize( "", on )
 #endif
+
+static char ex_error_buf[MSG_BUF_LEN];
+
+/*
+ * Return an error message with argument included.
+ * Uses a static buffer, only the last error will be kept.
+ * "msg" will be translated, caller should use N_().
+ */
+     char *
+ex_errmsg(char *msg, char_u *arg)
+{
+    vim_snprintf(ex_error_buf, MSG_BUF_LEN, _(msg), arg);
+    return ex_error_buf;
+}
 
 /*
  * Parse and skip over command modifiers:
@@ -3243,61 +3271,90 @@ find_ex_command(
      * "lvar = value", "lvar(arg)", "[1, 2 3]->Func()"
      */
     p = eap->cmd;
-    if (lookup != NULL && (vim_strchr((char_u *)"{('[", *p) != NULL
-	       || ((p = to_name_const_end(eap->cmd)) > eap->cmd
-		   && *p != NUL)))
+    if (lookup != NULL)
     {
-	int oplen;
-	int heredoc;
+	// Skip over first char for "&opt = val", "$ENV = val" and "@r = val".
+	char_u *pskip = (*eap->cmd == '&' || *eap->cmd == '$'
+				|| *eap->cmd == '@') ? eap->cmd + 1 : eap->cmd;
 
-	if (
-	    // "(..." is an expression.
-	    // "funcname(" is always a function call.
-	    *p == '('
-		|| (p == eap->cmd
-		    ? (
-			// "{..." is an dict expression.
-			*eap->cmd == '{'
-			// "'string'->func()" is an expression.
-		     || *eap->cmd == '\''
-			// "g:varname" is an expression.
-		     || eap->cmd[1] == ':'
-			)
-		    : (
-			// "varname[]" is an expression.
-			*p == '['
-			// "varname->func()" is an expression.
-		     || (*p == '-' && p[1] == '>')
-			// "varname.expr" is an expression.
-		     || (*p == '.' && ASCII_ISALPHA(p[1]))
-		     )))
+	if (vim_strchr((char_u *)"{('[\"", *p) != NULL
+	       || ((p = to_name_const_end(pskip)) > eap->cmd && *p != NUL))
 	{
-	    eap->cmdidx = CMD_eval;
-	    return eap->cmd;
-	}
+	    int oplen;
+	    int heredoc;
 
-	// "[...]->Method()" is a list expression, but "[a, b] = Func()" is
-	// an assignment.
-	// If there is no line break inside the "[...]" then "p" is advanced to
-	// after the "]" by to_name_const_end(): check if a "=" follows.
-	// If "[...]" has a line break "p" still points at the "[" and it can't
-	// be an assignment.
-	if (*eap->cmd == '[' && (p == eap->cmd || *skipwhite(p) != '='))
-	{
-	    eap->cmdidx = CMD_eval;
-	    return eap->cmd;
-	}
-
-	// Recognize an assignment if we recognize the variable name:
-	// "g:var = expr"
-	// "var = expr"  where "var" is a local var name.
-	oplen = assignment_len(skipwhite(p), &heredoc);
-	if (oplen > 0)
-	{
-	    if (((p - eap->cmd) > 2 && eap->cmd[1] == ':')
-		    || lookup(eap->cmd, p - eap->cmd, cctx) != NULL)
+	    if (
+		// "(..." is an expression.
+		// "funcname(" is always a function call.
+		*p == '('
+		    || (p == eap->cmd
+			? (
+			    // "{..." is an dict expression.
+			    *eap->cmd == '{'
+			    // "'string'->func()" is an expression.
+			 || *eap->cmd == '\''
+			    // '"string"->func()' is an expression.
+			 || *eap->cmd == '"'
+			    // "g:varname" is an expression.
+			 || eap->cmd[1] == ':'
+			    )
+			: (
+			    // "varname[]" is an expression.
+			    *p == '['
+			    // "varname->func()" is an expression.
+			 || (*p == '-' && p[1] == '>')
+			    // "varname.expr" is an expression.
+			 || (*p == '.' && ASCII_ISALPHA(p[1]))
+			 )))
 	    {
-		eap->cmdidx = CMD_let;
+		eap->cmdidx = CMD_eval;
+		return eap->cmd;
+	    }
+
+	    // "[...]->Method()" is a list expression, but "[a, b] = Func()" is
+	    // an assignment.
+	    // If there is no line break inside the "[...]" then "p" is
+	    // advanced to after the "]" by to_name_const_end(): check if a "="
+	    // follows.
+	    // If "[...]" has a line break "p" still points at the "[" and it
+	    // can't be an assignment.
+	    if (*eap->cmd == '[')
+	    {
+		p = to_name_const_end(eap->cmd);
+		if (p == eap->cmd || *skipwhite(p) != '=')
+		{
+		    eap->cmdidx = CMD_eval;
+		    return eap->cmd;
+		}
+		if (p > eap->cmd && *skipwhite(p) == '=')
+		{
+		    eap->cmdidx = CMD_let;
+		    return eap->cmd;
+		}
+	    }
+
+	    // Recognize an assignment if we recognize the variable name:
+	    // "g:var = expr"
+	    // "var = expr"  where "var" is a local var name.
+	    oplen = assignment_len(skipwhite(p), &heredoc);
+	    if (oplen > 0)
+	    {
+		if (((p - eap->cmd) > 2 && eap->cmd[1] == ':')
+			|| *eap->cmd == '&'
+			|| *eap->cmd == '$'
+			|| *eap->cmd == '@'
+			|| lookup(eap->cmd, p - eap->cmd, cctx) != NULL)
+		{
+		    eap->cmdidx = CMD_let;
+		    return eap->cmd;
+		}
+	    }
+
+	    // Recognize using a type for a w:, b:, t: or g: variable:
+	    // "w:varname: number = 123".
+	    if (eap->cmd[1] == ':' && *p == ':')
+	    {
+		eap->cmdidx = CMD_eval;
 		return eap->cmd;
 	    }
 	}
@@ -3980,7 +4037,8 @@ get_flags(exarg_T *eap)
 ex_ni(exarg_T *eap)
 {
     if (!eap->skip)
-	eap->errmsg = N_("E319: Sorry, the command is not available in this version");
+	eap->errmsg =
+		_("E319: Sorry, the command is not available in this version");
 }
 
 #ifdef HAVE_EX_SCRIPT_NI
@@ -4738,7 +4796,7 @@ ex_autocmd(exarg_T *eap)
     if (secure)
     {
 	secure = 2;
-	eap->errmsg = e_curdir;
+	eap->errmsg = _(e_curdir);
     }
     else if (eap->cmdidx == CMD_autocmd)
 	do_autocmd(eap->arg, eap->forceit);
@@ -4789,7 +4847,7 @@ ex_buffer(exarg_T *eap)
     if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
     if (*eap->arg)
-	eap->errmsg = e_trailing;
+	eap->errmsg = ex_errmsg(e_trailing_arg, eap->arg);
     else
     {
 	if (eap->addr_count == 0)	// default is current buffer
@@ -5356,7 +5414,7 @@ get_tabpage_arg(exarg_T *eap)
 		    || tab_number > LAST_TAB_NR)
 	    {
 		// No numbers as argument.
-		eap->errmsg = e_invarg;
+		eap->errmsg = ex_errmsg(e_invarg2, eap->arg);
 		goto theend;
 	    }
 	}
@@ -5368,7 +5426,7 @@ get_tabpage_arg(exarg_T *eap)
 		    || tab_number == 0)
 	    {
 		// No numbers as argument.
-		eap->errmsg = e_invarg;
+		eap->errmsg = ex_errmsg(e_invarg2, eap->arg);
 		goto theend;
 	    }
 	    tab_number = tab_number * relative + tabpage_index(curtab);
@@ -5376,13 +5434,13 @@ get_tabpage_arg(exarg_T *eap)
 		--tab_number;
 	}
 	if (tab_number < unaccept_arg0 || tab_number > LAST_TAB_NR)
-	    eap->errmsg = e_invarg;
+	    eap->errmsg = ex_errmsg(e_invarg2, eap->arg);
     }
     else if (eap->addr_count > 0)
     {
 	if (unaccept_arg0 && eap->line2 == 0)
 	{
-	    eap->errmsg = e_invrange;
+	    eap->errmsg = _(e_invrange);
 	    tab_number = 0;
 	}
 	else
@@ -5392,7 +5450,7 @@ get_tabpage_arg(exarg_T *eap)
 	    {
 		--tab_number;
 		if (tab_number < unaccept_arg0)
-		    eap->errmsg = e_invarg;
+		    eap->errmsg = _(e_invrange);
 	    }
 	}
     }
@@ -5644,6 +5702,10 @@ ex_stop(exarg_T *eap)
     static void
 ex_exit(exarg_T *eap)
 {
+#ifdef FEAT_EVAL
+    if (not_in_vim9(eap) == FAIL)
+	return;
+#endif
 #ifdef FEAT_CMDWIN
     if (cmdwin_type != 0)
     {
@@ -5905,7 +5967,7 @@ ex_recover(exarg_T *eap)
     static void
 ex_wrongmodifier(exarg_T *eap)
 {
-    eap->errmsg = e_invcmd;
+    eap->errmsg = _(e_invcmd);
 }
 
 /*
@@ -6088,7 +6150,7 @@ ex_tabnext(exarg_T *eap)
 			    || tab_number == 0)
 		{
 		    // No numbers as argument.
-		    eap->errmsg = e_invarg;
+		    eap->errmsg = ex_errmsg(e_invarg2, eap->arg);
 		    return;
 		}
 	    }
@@ -6101,7 +6163,7 @@ ex_tabnext(exarg_T *eap)
 		    tab_number = eap->line2;
 		    if (tab_number < 1)
 		    {
-			eap->errmsg = e_invrange;
+			eap->errmsg = _(e_invrange);
 			return;
 		    }
 		}
@@ -6489,7 +6551,7 @@ do_exedit(
     static void
 ex_nogui(exarg_T *eap)
 {
-    eap->errmsg = e_nogvim;
+    eap->errmsg = _(e_nogvim);
 }
 #endif
 
@@ -7701,7 +7763,7 @@ ex_mark(exarg_T *eap)
     if (*eap->arg == NUL)		// No argument?
 	emsg(_(e_argreq));
     else if (eap->arg[1] != NUL)	// more than one character?
-	emsg(_(e_trailing));
+	semsg(_(e_trailing_arg), eap->arg);
     else
     {
 	pos = curwin->w_cursor;		// save curwin->w_cursor
@@ -8065,7 +8127,7 @@ ex_findpat(exarg_T *eap)
 
 	    // Check for trailing illegal characters
 	    if (!ends_excmd2(eap->arg, p))
-		eap->errmsg = e_trailing;
+		eap->errmsg = ex_errmsg(e_trailing_arg, p);
 	    else
 		eap->nextcmd = check_nextcmd(p);
 	}
@@ -8226,8 +8288,10 @@ find_cmdline_var(char_u *src, int *usedlen)
 #define SPEC_SFILE  (SPEC_CFILE + 1)
 		    "<slnum>",		// ":so" file line number
 #define SPEC_SLNUM  (SPEC_SFILE + 1)
+		    "<stack>",		// call stack
+#define SPEC_STACK  (SPEC_SLNUM + 1)
 		    "<afile>",		// autocommand file name
-#define SPEC_AFILE  (SPEC_SLNUM + 1)
+#define SPEC_AFILE  (SPEC_STACK + 1)
 		    "<abuf>",		// autocommand buffer number
 #define SPEC_ABUF   (SPEC_AFILE + 1)
 		    "<amatch>",		// autocommand match name
@@ -8478,10 +8542,13 @@ eval_vars(
 		break;
 
 	case SPEC_SFILE:	// file name for ":so" command
-		result = estack_sfile();
+	case SPEC_STACK:	// call stack
+		result = estack_sfile(spec_idx == SPEC_SFILE);
 		if (result == NULL)
 		{
-		    *errormsg = _("E498: no :source file name to substitute for \"<sfile>\"");
+		    *errormsg = spec_idx == SPEC_SFILE
+			? _("E498: no :source file name to substitute for \"<sfile>\"")
+			: _("E489: no call stack to substitute for \"<stack>\"");
 		    return NULL;
 		}
 		resultbuf = result;	    // remember allocated string

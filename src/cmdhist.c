@@ -705,7 +705,7 @@ ex_history(exarg_T *eap)
 	    else
 	    {
 		*end = i;
-		emsg(_(e_trailing));
+		semsg(_(e_trailing_arg), arg);
 		return;
 	    }
 	}
@@ -717,7 +717,7 @@ ex_history(exarg_T *eap)
 	end = arg;
     if (!get_list_range(&end, &hisidx1, &hisidx2) || *end != NUL)
     {
-	emsg(_(e_trailing));
+	semsg(_(e_trailing_arg), end);
 	return;
     }
 

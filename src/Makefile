@@ -1639,6 +1639,7 @@ BASIC_SRC = \
 	gui_xim.c \
 	hardcopy.c \
 	hashtab.c \
+	help.c \
 	highlight.c \
 	if_cscope.c \
 	if_xcmdsrv.c \
@@ -1646,6 +1647,7 @@ BASIC_SRC = \
 	insexpand.c \
 	json.c \
 	list.c \
+	locale.c \
 	main.c \
 	map.c \
 	mark.c \
@@ -1790,12 +1792,14 @@ OBJ_COMMON = \
 	objects/gui_xim.o \
 	objects/hardcopy.o \
 	objects/hashtab.o \
+	objects/help.o \
 	objects/highlight.o \
 	objects/if_cscope.o \
 	objects/if_xcmdsrv.o \
 	objects/indent.o \
 	objects/insexpand.o \
 	objects/list.o \
+	objects/locale.o \
 	objects/map.o \
 	objects/mark.o \
 	objects/match.o \
@@ -1958,6 +1962,7 @@ PRO_AUTO = \
 	gui_beval.pro \
 	hardcopy.pro \
 	hashtab.pro \
+	help.pro \
 	highlight.pro \
 	if_cscope.pro \
 	if_lua.pro \
@@ -1970,6 +1975,7 @@ PRO_AUTO = \
 	insexpand.pro \
 	json.pro \
 	list.pro \
+	locale.pro \
 	main.pro \
 	map.pro \
 	mark.pro \
@@ -2304,11 +2310,7 @@ test_libvterm:
 
 # Run individual OLD style test.
 # These do not depend on the executable, compile it when needed.
-test1 \
-	test42 test44 test49 \
-	test52 test59 \
-	test70 \
-	test99:
+test1 test49 test59:
 	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTESTTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
 # Run individual NEW style test.
@@ -3264,6 +3266,9 @@ objects/hardcopy.o: hardcopy.c
 objects/hashtab.o: hashtab.c
 	$(CCC) -o $@ hashtab.c
 
+objects/help.o: help.c
+	$(CCC) -o $@ help.c
+
 objects/gui.o: gui.c
 	$(CCC) -o $@ gui.c
 
@@ -3371,6 +3376,9 @@ objects/kword_test.o: kword_test.c
 
 objects/list.o: list.c
 	$(CCC) -o $@ list.c
+
+objects/locale.o: locale.c
+	$(CCC) -o $@ locale.c
 
 objects/main.o: main.c
 	$(CCC) -o $@ main.c
@@ -3930,6 +3938,10 @@ objects/hashtab.o: hashtab.c vim.h protodef.h auto/config.h feature.h os_unix.h 
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
+objects/help.o: help.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
 objects/highlight.o: highlight.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
@@ -3955,6 +3967,10 @@ objects/json.o: json.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
 objects/list.o: list.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/locale.o: locale.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h

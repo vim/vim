@@ -9,6 +9,7 @@ SRC_ALL =	\
 		.lgtm.yml \
 		.travis.yml \
 		.cirrus.yml \
+		.github/workflows/ci-windows.yaml \
 		appveyor.yml \
 		ci/appveyor.bat \
 		ci/if_ver*.vim \
@@ -68,6 +69,7 @@ SRC_ALL =	\
 		src/gui_beval.c \
 		src/hardcopy.c \
 		src/hashtab.c \
+		src/help.c \
 		src/highlight.c \
 		src/indent.c \
 		src/insexpand.c \
@@ -75,6 +77,7 @@ SRC_ALL =	\
 		src/json_test.c \
 		src/kword_test.c \
 		src/list.c \
+		src/locale.c \
 		src/keymap.h \
 		src/macros.h \
 		src/main.c \
@@ -240,11 +243,13 @@ SRC_ALL =	\
 		src/proto/gui_beval.pro \
 		src/proto/hardcopy.pro \
 		src/proto/hashtab.pro \
+		src/proto/help.pro \
 		src/proto/highlight.pro \
 		src/proto/indent.pro \
 		src/proto/insexpand.pro \
 		src/proto/json.pro \
 		src/proto/list.pro \
+		src/proto/locale.pro \
 		src/proto/main.pro \
 		src/proto/map.pro \
 		src/proto/mark.pro \

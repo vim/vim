@@ -2028,6 +2028,41 @@ ga_clear_strings(garray_T *gap)
 }
 
 /*
+ * Copy a growing array that contains a list of strings.
+ */
+    int
+ga_copy_strings(garray_T *from, garray_T *to)
+{
+    int		i;
+
+    ga_init2(to, sizeof(char_u *), 1);
+    if (ga_grow(to, from->ga_len) == FAIL)
+	return FAIL;
+
+    for (i = 0; i < from->ga_len; ++i)
+    {
+	char_u *orig = ((char_u **)from->ga_data)[i];
+	char_u *copy;
+
+	if (orig == NULL)
+	    copy = NULL;
+	else
+	{
+	    copy = vim_strsave(orig);
+	    if (copy == NULL)
+	    {
+		to->ga_len = i;
+		ga_clear_strings(to);
+		return FAIL;
+	    }
+	}
+	((char_u **)to->ga_data)[i] = copy;
+    }
+    to->ga_len = from->ga_len;
+    return OK;
+}
+
+/*
  * Initialize a growing array.	Don't forget to set ga_itemsize and
  * ga_growsize!  Or use ga_init2().
  */
