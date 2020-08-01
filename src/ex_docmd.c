@@ -7276,9 +7276,10 @@ ex_copymove(exarg_T *eap)
 {
     long	n;
 
+#ifdef FEAT_EVAL
     if (not_in_vim9(eap) == FAIL)
 	return;
-
+#endif
     n = get_address(eap, &eap->arg, eap->addr_type, FALSE, FALSE, FALSE, 1);
     if (eap->arg == NULL)	    // error detected
     {
