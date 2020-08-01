@@ -2652,6 +2652,7 @@ def_function(exarg_T *eap, char_u *name_arg)
     char_u	*skip_until = NULL;
     char_u	*heredoc_trimmed = NULL;
     int		vim9script = in_vim9script();
+    imported_T	*import = NULL;
 
     /*
      * ":function" without argument: list functions.
@@ -3235,17 +3236,29 @@ def_function(exarg_T *eap, char_u *name_arg)
 	}
 
 	fp = find_func_even_dead(name, is_global, NULL);
-	if (fp != NULL)
+	if (vim9script)
 	{
-	    int dead = fp->uf_flags & FC_DEAD;
+	    char_u *uname = untrans_function_name(name);
+
+	    import = find_imported(uname == NULL ? name : uname, 0, NULL);
+	}
+
+	if (fp != NULL || import != NULL)
+	{
+	    int dead = fp != NULL && (fp->uf_flags & FC_DEAD);
 
 	    // Function can be replaced with "function!" and when sourcing the
 	    // same script again, but only once.
-	    if (!dead && !eap->forceit
+	    // A name that is used by an import can not be overruled.
+	    if (import != NULL
+		    || (!dead && !eap->forceit
 			&& (fp->uf_script_ctx.sc_sid != current_sctx.sc_sid
-			    || fp->uf_script_ctx.sc_seq == current_sctx.sc_seq))
+			  || fp->uf_script_ctx.sc_seq == current_sctx.sc_seq)))
 	    {
-		emsg_funcname(e_funcexts, name);
+		if (vim9script)
+		    emsg_funcname(e_already_defined, name);
+		else
+		    emsg_funcname(e_funcexts, name);
 		goto erret;
 	    }
 	    if (fp->uf_calls > 0)

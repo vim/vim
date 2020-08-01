@@ -1618,6 +1618,39 @@ def Test_import_compile_error()
   delete('Ximport.vim')
 enddef
 
+def Test_func_overrules_import_fails()
+  let export_lines =<< trim END
+      vim9script
+      export def Func()
+        echo 'imported'
+      enddef
+  END
+  writefile(export_lines, 'XexportedFunc.vim')
+
+  let lines =<< trim END
+    vim9script
+    import Func from './XexportedFunc.vim'
+    def Func()
+      echo 'local to function'
+    enddef
+  END
+  CheckScriptFailure(lines, 'E1073:')
+
+  lines =<< trim END
+    vim9script
+    import Func from './XexportedFunc.vim'
+    def Outer()
+      def Func()
+        echo 'local to function'
+      enddef
+    enddef
+    defcompile
+  END
+  CheckScriptFailure(lines, 'E1073:')
+
+  delete('XexportedFunc.vim')
+enddef
+
 def Test_fixed_size_list()
   # will be allocated as one piece of memory, check that changes work
   let l = [1, 2, 3, 4]

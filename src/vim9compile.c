@@ -294,9 +294,10 @@ check_defined(char_u *p, size_t len, cctx_T *cctx)
     if (lookup_script(p, len) == OK
 	    || (cctx != NULL
 		&& (lookup_local(p, len, cctx) != NULL
-		    || find_imported(p, len, cctx) != NULL)))
+		    || lookup_arg(p, len, NULL, NULL, NULL, cctx) == OK))
+	    || find_imported(p, len, cctx) != NULL)
     {
-	semsg("E1073: imported name already defined: %s", p);
+	semsg(_(e_already_defined), p);
 	return FAIL;
     }
     return OK;
@@ -4899,17 +4900,21 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
     int		is_global = *eap->arg == 'g' && eap->arg[1] == ':';
     char_u	*name_start = eap->arg;
     char_u	*name_end = to_name_end(eap->arg, is_global);
-    char_u	*name = get_lambda_name();
+    char_u	*lambda_name;
     lvar_T	*lvar;
     ufunc_T	*ufunc;
     int		r;
+
+    if (check_defined(name_start, name_end - name_start, cctx) == FAIL)
+	return NULL;
 
     eap->arg = name_end;
     eap->getline = exarg_getline;
     eap->cookie = cctx;
     eap->skip = cctx->ctx_skip == SKIP_YES;
     eap->forceit = FALSE;
-    ufunc = def_function(eap, name);
+    lambda_name = get_lambda_name();
+    ufunc = def_function(eap, lambda_name);
 
     if (ufunc == NULL)
 	return NULL;
@@ -4925,13 +4930,15 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 	if (func_name == NULL)
 	    r = FAIL;
 	else
-	    r = generate_NEWFUNC(cctx, name, func_name);
+	    r = generate_NEWFUNC(cctx, lambda_name, func_name);
     }
     else
     {
 	// Define a local variable for the function reference.
 	lvar = reserve_local(cctx, name_start, name_end - name_start,
 						    TRUE, ufunc->uf_func_type);
+	if (lvar == NULL)
+	    return NULL;
 	if (generate_FUNCREF(cctx, ufunc->uf_dfunc_idx) == FAIL)
 	    return NULL;
 	r = generate_STORE(cctx, ISN_STORE, lvar->lv_idx, NULL);
