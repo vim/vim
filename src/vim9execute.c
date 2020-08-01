@@ -1422,6 +1422,11 @@ call_def_function(
 		    dict_T	*dict = tv_dict->vval.v_dict;
 		    dictitem_T	*di;
 
+		    if (dict == NULL)
+		    {
+			emsg(_(e_dictnull));
+			goto on_error;
+		    }
 		    if (key == NULL)
 			key = (char_u *)"";
 		    tv = STACK_TV_BOT(-3);

@@ -251,6 +251,29 @@ def Test_assignment_dict()
 
   # type becomes dict<any>
   let somedict = rand() > 0 ? #{a: 1, b: 2} : #{a: 'a', b: 'b'}
+
+  # assignment to script-local dict
+  let lines =<< trim END
+    vim9script
+    let test: dict<any> = {}
+    def FillDict(): dict<any>
+      test['a'] = 43
+      return test
+    enddef
+    assert_equal(#{a: 43}, FillDict())
+  END
+  call CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    let test: dict<any>
+    def FillDict(): dict<any>
+      test['a'] = 43
+      return test
+    enddef
+    FillDict()
+  END
+  call CheckScriptFailure(lines, 'E1103:')
 enddef
 
 def Test_assignment_local()

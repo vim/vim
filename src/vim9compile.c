@@ -5070,6 +5070,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     char_u	*ret = NULL;
     int		var_count = 0;
     int		var_idx;
+    int		scriptvar_sid = 0;
+    int		scriptvar_idx = -1;
     int		semicolon = 0;
     garray_T	*instr = &cctx->ctx_instr;
     garray_T    *stack = &cctx->ctx_type_stack;
@@ -5333,7 +5335,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    }
 	    else
 	    {
-		int idx;
+		int	    idx;
+		imported_T  *import = NULL;
 
 		for (idx = 0; reserved[idx] != NULL; ++idx)
 		    if (STRCMP(reserved[idx], name) == 0)
@@ -5374,9 +5377,11 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		}
 		else if ((varlen > 1 && STRNCMP(var_start, "s:", 2) == 0)
 			|| lookup_script(var_start, varlen) == OK
-			|| find_imported(var_start, varlen, cctx) != NULL)
+			|| (import = find_imported(var_start, varlen, cctx))
+								       != NULL)
 		{
-		    dest = dest_script;
+		    char_u	*rawname = name + (name[1] == ':' ? 2 : 0);
+
 		    if (is_decl)
 		    {
 			if ((varlen > 1 && STRNCMP(var_start, "s:", 2) == 0))
@@ -5386,6 +5391,21 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			    semsg(_("E1054: Variable already declared in the script: %s"),
 									 name);
 			goto theend;
+		    }
+		    dest = dest_script;
+
+		    // existing script-local variables should have a type
+		    scriptvar_sid = current_sctx.sc_sid;
+		    if (import != NULL)
+			scriptvar_sid = import->imp_sid;
+		    scriptvar_idx = get_script_item_idx(scriptvar_sid,
+								rawname, TRUE);
+		    if (scriptvar_idx >= 0)
+		    {
+			scriptitem_T *si = SCRIPT_ITEM(scriptvar_sid);
+			svar_T	     *sv = ((svar_T *)si->sn_var_vals.ga_data)
+							       + scriptvar_idx;
+			type = sv->sv_type;
 		    }
 		}
 		else if (name[1] == ':' && name[2] != NUL)
@@ -5766,21 +5786,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    break;
 		case dest_script:
 		    {
-			char_u	    *rawname = name + (name[1] == ':' ? 2 : 0);
-			imported_T  *import = NULL;
-			int	    sid = current_sctx.sc_sid;
-			int	    idx;
-
-			if (name[1] != ':')
-			{
-			    import = find_imported(name, 0, cctx);
-			    if (import != NULL)
-				sid = import->imp_sid;
-			}
-
-			idx = get_script_item_idx(sid, rawname, TRUE);
-			// TODO: specific type
-			if (idx < 0)
+			if (scriptvar_idx < 0)
 			{
 			    char_u *name_s = name;
 
@@ -5796,14 +5802,14 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 				    vim_snprintf((char *)name_s, len,
 								 "s:%s", name);
 			    }
-			    generate_OLDSCRIPT(cctx, ISN_STORES, name_s, sid,
-								       &t_any);
+			    generate_OLDSCRIPT(cctx, ISN_STORES, name_s,
+							  scriptvar_sid, type);
 			    if (name_s != name)
 				vim_free(name_s);
 			}
 			else
 			    generate_VIM9SCRIPT(cctx, ISN_STORESCRIPT,
-							     sid, idx, &t_any);
+					   scriptvar_sid, scriptvar_idx, type);
 		    }
 		    break;
 		case dest_local:
