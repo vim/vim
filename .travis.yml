@@ -209,6 +209,12 @@ jobs:
       env: *linux-huge
       services: []
     - <<: *linux
+      arch: arm64
+      name: huge/gcc-arm64
+      compiler: gcc
+      env: *linux-huge
+      services: []
+    - <<: *linux
       name: huge+coverage/clang
       compiler: clang
       env:
