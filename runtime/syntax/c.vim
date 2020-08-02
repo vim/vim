@@ -461,7 +461,7 @@ hi def link cCharacter		Character
 hi def link cSpecialCharacter	cSpecial
 hi def link cNumber		Number
 hi def link cOctal		Number
-hi def link cOctalZero		PreProc	 " link this to Error if you want
+hi def link cOctalZero		Number
 hi def link cFloat		Float
 hi def link cOctalError		cError
 hi def link cParenError		cError
