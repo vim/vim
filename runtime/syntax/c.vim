@@ -271,8 +271,8 @@ endif
 if exists("c_gnu")
   syn keyword	cType		__label__ __complex__ __volatile__
 endif
-
-syn keyword	cStructure	struct union enum typedef
+syn keyword	cTypedef	typedef
+syn keyword	cStructure	struct union enum
 syn keyword	cStorageClass	static register auto volatile extern const
 if exists("c_gnu")
   syn keyword	cStorageClass	inline __attribute__
@@ -487,6 +487,7 @@ hi def link cCppOutWrapper	cPreCondit
 hi def link cPreConditMatch	cPreCondit
 hi def link cPreCondit		PreCondit
 hi def link cType		Type
+hi def link cTypedef		Typedef
 hi def link cConstant		Constant
 hi def link cCommentString	cString
 hi def link cComment2String	cString
