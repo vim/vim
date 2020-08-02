@@ -1219,17 +1219,19 @@ ex_let_one(
     int		opt_flags;
     char_u	*tofree = NULL;
 
+    if (in_vim9script() && (flags & LET_NO_COMMAND) == 0
+				  && vim_strchr((char_u *)"$@&", *arg) != NULL)
+    {
+	vim9_declare_error(arg);
+	return NULL;
+    }
+
     // ":let $VAR = expr": Set environment variable.
     if (*arg == '$')
     {
 	if (flags & LET_IS_CONST)
 	{
 	    emsg(_("E996: Cannot lock an environment variable"));
-	    return NULL;
-	}
-	if (in_vim9script() && (flags & LET_NO_COMMAND) == 0)
-	{
-	    vim9_declare_error(arg);
 	    return NULL;
 	}
 
@@ -2427,7 +2429,7 @@ eval_variable(
 	    else
 	    {
 		scriptitem_T    *si = SCRIPT_ITEM(import->imp_sid);
-		svar_T	    *sv = ((svar_T *)si->sn_var_vals.ga_data)
+		svar_T		*sv = ((svar_T *)si->sn_var_vals.ga_data)
 						    + import->imp_var_vals_idx;
 		tv = sv->sv_tv;
 	    }
