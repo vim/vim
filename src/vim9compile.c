@@ -3565,7 +3565,7 @@ compile_get_register(char_u **arg, cctx_T *cctx)
 	semsg(_(e_syntax_at), *arg - 1);
 	return FAIL;
     }
-    if (!valid_yank_reg(**arg, TRUE))
+    if (!valid_yank_reg(**arg, FALSE))
     {
 	emsg_invreg(**arg);
 	return FAIL;
