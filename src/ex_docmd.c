@@ -3274,10 +3274,10 @@ find_ex_command(
     if (lookup != NULL)
     {
 	// Skip over first char for "&opt = val", "$ENV = val" and "@r = val".
-	char_u *pskip = (*eap->cmd == '&' || *eap->cmd == '$'
-				|| *eap->cmd == '@') ? eap->cmd + 1 : eap->cmd;
+	char_u *pskip = (*eap->cmd == '&' || *eap->cmd == '$')
+						     ? eap->cmd + 1 : eap->cmd;
 
-	if (vim_strchr((char_u *)"{('[\"", *p) != NULL
+	if (vim_strchr((char_u *)"{('[\"@", *p) != NULL
 	       || ((p = to_name_const_end(pskip)) > eap->cmd && *p != NUL))
 	{
 	    int oplen;
@@ -3336,6 +3336,8 @@ find_ex_command(
 	    // Recognize an assignment if we recognize the variable name:
 	    // "g:var = expr"
 	    // "var = expr"  where "var" is a local var name.
+	    if (*eap->cmd == '@')
+		p = eap->cmd + 2;
 	    oplen = assignment_len(skipwhite(p), &heredoc);
 	    if (oplen > 0)
 	    {
