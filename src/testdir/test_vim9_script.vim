@@ -470,8 +470,9 @@ def Test_assignment_failure()
   call CheckDefFailure(['let $VAR = 5'], 'E1016: Cannot declare an environment variable:')
   call CheckScriptFailure(['vim9script', 'let $ENV = "xxx"'], 'E1016:')
 
-  call CheckDefFailure(['let @~ = 5'], 'E354:')
+  call CheckDefFailure(['let @~ = 5'], 'E1066:')
   call CheckDefFailure(['let @a = 5'], 'E1066:')
+  call CheckDefFailure(['let @/ = "x"'], 'E1066:')
   call CheckScriptFailure(['vim9script', 'let @a = "abc"'], 'E1066:')
 
   call CheckDefFailure(['let g:var = 5'], 'E1016: Cannot declare a global variable:')

@@ -5214,9 +5214,14 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	int		has_index = FALSE;
 	int		instr_count = -1;
 
-	p = (*var_start == '&' || *var_start == '$'
-			     || *var_start == '@') ? var_start + 1 : var_start;
-	p = to_name_end(p, TRUE);
+	if (*var_start == '@')
+	    p = var_start + 2;
+	else
+	{
+	    p = (*var_start == '&' || *var_start == '$')
+						   ? var_start + 1 : var_start;
+	    p = to_name_end(p, TRUE);
+	}
 
 	// "a: type" is declaring variable "a" with a type, not "a:".
 	if (is_decl && var_end == var_start + 2 && var_end[-1] == ':')
@@ -5279,7 +5284,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    }
 	    else if (*var_start == '@')
 	    {
-		if (!valid_yank_reg(var_start[1], TRUE))
+		if (!valid_yank_reg(var_start[1], FALSE) || var_start[1] == '.')
 		{
 		    emsg_invreg(var_start[1]);
 		    goto theend;
@@ -7247,7 +7252,10 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 		int	oplen;
 		int	heredoc;
 
-		var_end = find_name_end(pskip, NULL, NULL,
+		if (ea.cmd[0] == '@')
+		    var_end = ea.cmd + 2;
+		else
+		    var_end = find_name_end(pskip, NULL, NULL,
 						FNE_CHECK_START | FNE_INCL_BR);
 		oplen = assignment_len(skipwhite(var_end), &heredoc);
 		if (oplen > 0)

@@ -1439,6 +1439,13 @@ def Test_expr7_register()
 
   normal axyz
   assert_equal("xyz", @.)
+  call CheckDefFailure(["@. = 'yes'"], 'E354:')
+
+  @/ = 'slash'
+  assert_equal('slash', @/)
+
+  @= = 'equal'
+  assert_equal('equal', @=)
 enddef
 
 def Test_expr7_namespace()
