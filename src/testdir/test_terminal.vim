@@ -258,6 +258,21 @@ func Test_terminal_scrape_multibyte()
   call delete('Xtext')
 endfunc
 
+func Test_terminal_one_column()
+  " This creates a terminal, displays a double-wide character and makes the
+  " window one column wide.  This used to cause a crash.
+  let width = &columns
+  botright vert term
+  let buf = bufnr('$')
+  call term_wait(buf, 100)
+  exe "set columns=" .. (width / 2)
+  redraw
+  call term_sendkeys(buf, "キ")
+  call term_wait(buf, 10)
+  exe "set columns=" .. width
+  exe buf . 'bwipe!'
+endfunc
+
 func Test_terminal_scroll()
   call writefile(range(1, 200), 'Xtext')
   if has('win32')
