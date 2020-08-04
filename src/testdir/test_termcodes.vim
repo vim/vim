@@ -8,6 +8,7 @@ CheckUnix
 source shared.vim
 source mouse.vim
 source view_util.vim
+source term_util.vim
 
 func Test_term_mouse_left_click()
   new
@@ -1895,6 +1896,7 @@ func Test_get_termcode()
 endfunc
 
 func Test_list_builtin_terminals()
+  CheckRunVimInTerminal
   let buf = RunVimInTerminal('', #{rows: 14})
   call term_sendkeys(buf, ":set cmdheight=3\<CR>")
   call term_wait(buf, 100)
