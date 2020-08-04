@@ -360,9 +360,9 @@ syn region  shSingleQuote	matchgroup=shQuote start=+'+ end=+'+		contains=@Spell	
 syn region  shDoubleQuote	matchgroup=shQuote start=+\%(\%(\\\\\)*\\\)\@<!"+ skip=+\\.+ end=+"+	contains=@shDblQuoteList,shStringSpecial,@Spell	nextgroup=shSpecialStart
 syn region  shDoubleQuote	matchgroup=shQuote start=+"+ matchgroup=shSpecial skip=+\\"+ end=+"+		contained	contains=@shDblQuoteList,shStringSpecial,@Spell	nextgroup=shSpecialStart
 syn match   shStringSpecial	"[^[:print:] \t]"			contained
-syn match   shStringSpecial	"[^\\]\zs\%(\\\\\)*\\[\\"'`$()#]"			nextgroup=shComment
-syn match   shSpecialSQ	"[^\\]\zs\%(\\\\\)*\\[\\"'`$()#]"		contained	nextgroup=shBkslshSnglQuote,@shNoZSList
-syn match   shSpecialDQ	"[^\\]\zs\%(\\\\\)*\\[\\"'`$()#]"		contained	nextgroup=shBkslshDblQuote,@shNoZSList
+syn match   shStringSpecial	"\\\@1<!\%(\\\\\)*\\[\\"'`$()#]"			nextgroup=shComment
+syn match   shSpecialSQ	"\\\@1<!\%(\\\\\)*\\[\\"'`$()#]"		contained	nextgroup=shBkslshSnglQuote,@shNoZSList
+syn match   shSpecialDQ	"\\\@1<!\%(\\\\\)*\\[\\"'`$()#]"		contained	nextgroup=shBkslshDblQuote,@shNoZSList
 syn match   shSpecialStart	"\%(\\\\\)*\\[\\"'`$()#]"			contained	nextgroup=shBkslshSnglQuote,shBkslshDblQuote,@shNoZSList
 syn match   shSpecial	"^\%(\\\\\)*\\[\\"'`$()#]"
 syn match   shSpecialNoZS	contained	"\%(\\\\\)*\\[\\"'`$()#]"
