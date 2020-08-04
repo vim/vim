@@ -3648,7 +3648,7 @@ DEFINING FOLDLEVEL					*:syn-foldlevel*
 	start:		Use level of item containing start of line.
 	minimum:	Use lowest local-minimum level of items on line.
 
-	The default is 'start'.  Use 'minimum' to search a line horizontally
+	The default is "start".  Use "minimum" to search a line horizontally
 	for the lowest level contained on the line that is followed by a
 	higher level.  This produces more natural folds when syntax items
 	may close and open horizontally within a line.

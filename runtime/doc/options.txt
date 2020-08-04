@@ -8368,7 +8368,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	>= 14	Anything pending in a ":finally" clause.
 	>= 15	Every executed Ex command from a script (truncated at 200
 		characters).
-	>= 16	Every executed Ex command
+	>= 16	Every executed Ex command.
 
 	This option can also be set with the "-V" argument.  See |-V|.
 	This option is also set by the |:verbose| command.

@@ -569,7 +569,7 @@ The examples below assume a 'shiftwidth' of 4.
 	      recognize preprocessor lines; right-shifting lines that start
 	      with "#" does not work.
 
-
+								*cino-P*
 	PN    When N is non-zero recognize C pragmas, and indent them like any
 	      other code; does not concern other preprocessor directives.
 	      When N is zero (default): don't recognize C pragmas, treating

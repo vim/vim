@@ -14,7 +14,7 @@ features in Vim9 script.
 THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 
-1   What is Vim9 script?		|vim9-script|
+1.  What is Vim9 script?		|vim9-script|
 2.  Differences				|vim9-differences|
 3.  New style functions			|fast-functions|
 4.  Types				|vim9-types|
@@ -261,8 +261,8 @@ number of arguments and any return type.  The function can be defined later.
 Automatic line continuation ~
 
 In many cases it is obvious that an expression continues on the next line.  In
-those cases there is no need to prefix the line with a backslash.  For
-example, when a list spans multiple lines: >
+those cases there is no need to prefix the line with a backslash
+|line-continuation|.  For example, when a list spans multiple lines: >
 	let mylist = [
 		'one',
 		'two',

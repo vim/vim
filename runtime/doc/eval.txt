@@ -5446,7 +5446,7 @@ getloclist({nr} [, {what}])				*getloclist()*
 			:echo getloclist(5, {'filewinid': 0})
 
 
-getmarklist([{expr}]					*getmarklist()*
+getmarklist([{expr}])					*getmarklist()*
 		Without the {expr} argument returns a |List| with information
 		about all the global marks. |mark|
 
@@ -8709,7 +8709,8 @@ searchcount([{options}])					*searchcount()*
 		  pos		|List|		`[lnum, col, off]` value
 						when recomputing the result.
 						this changes "current" result
-						value. see |cursor()|, |getpos()
+						value. see |cursor()|,
+						|getpos()|
 						(default: cursor's position)
 
 
@@ -9111,7 +9112,7 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 		argument is ignored.  See below for the supported items in
 		{what}.
 							*setqflist-what*
-		When {what} is not present, the items in {list} or used.  Each
+		When {what} is not present, the items in {list} are used.  Each
 		item must be a dictionary.  Non-dictionary items in {list} are
 		ignored.  Each dictionary item can contain the following
 		entries:
@@ -9332,7 +9333,7 @@ settagstack({nr}, {dict} [, {action}])			*settagstack()*
 
 		Returns zero for success, -1 for failure.
 
-		Examples (for more examples see |tagstack-examples||):
+		Examples (for more examples see |tagstack-examples|):
 		    Empty the tag stack of window 3: >
 			call settagstack(3, {'items' : []})
 
