@@ -903,6 +903,7 @@ get_lval(
 		    clear_tv(&var1);
 		    return NULL;
 		}
+		p = skipwhite(p);
 	    }
 
 	    // Optionally get the second index [ :expr].
