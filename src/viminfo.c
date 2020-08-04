@@ -3032,7 +3032,7 @@ read_viminfo(
     vim_free(fname);
     if (fp == NULL)
 	return FAIL;
-    if (mch_fstat(fileno(fp), (struct stat *const)&st) < 0 || S_ISDIR(st.st_mode))
+    if (mch_fstat(fileno(fp), (stat_T *const)&st) < 0 || S_ISDIR(st.st_mode))
     {
 	fclose(fp);
 	return FAIL;
@@ -3103,7 +3103,7 @@ write_viminfo(char_u *file, int forceit)
 	// write the new viminfo into, in the same directory as the
 	// existing viminfo file, which will be renamed once all writing is
 	// successful.
-	if (mch_fstat(fileno(fp_in), (struct stat *const)&st_old) < 0
+	if (mch_fstat(fileno(fp_in), (stat_T *const)&st_old) < 0
 		|| S_ISDIR(st_old.st_mode)
 #ifdef UNIX
 		// For Unix we check the owner of the file.  It's not very nice

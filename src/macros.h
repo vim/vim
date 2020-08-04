@@ -158,7 +158,14 @@
 # define mch_access(n, p)	access(vms_fixfilename(n), (p))
 				// see mch_open() comment
 # define mch_fopen(n, p)	fopen(vms_fixfilename(n), (p))
-# define mch_fstat(n, p)	fstat(vms_fixfilename(n), (p))
+
+// Use 64-bit fstat function if available.
+// NOTE: This condition is the same as stat_T structure.
+# if (defined(_MSC_VER) && (_MSC_VER >= 1300)) || defined(__MINGW32__)
+#  define mch_fstat(n, p)	_fstat64(vms_fixfilename(n), (p))
+# else
+#  define mch_fstat(n, p)	fstat(vms_fixfilename(n), (p))
+# endif
 	// VMS does not have lstat()
 # define mch_stat(n, p)		stat(vms_fixfilename(n), (p))
 # define mch_rmdir(n)		rmdir(vms_fixfilename(n))
@@ -166,7 +173,14 @@
 # ifndef MSWIN
 #   define mch_access(n, p)	access((n), (p))
 # endif
-# define mch_fstat(n, p)	fstat((n), (p))
+
+// Use 64-bit fstat function if available.
+// NOTE: This condition is the same as stat_T structure.
+# if (defined(_MSC_VER) && (_MSC_VER >= 1300)) || defined(__MINGW32__)
+#  define mch_fstat(n, p)	_fstat64((n), (p))
+# else
+#  define mch_fstat(n, p)	fstat((n), (p))
+# endif
 # ifdef MSWIN	// has its own mch_stat() function
 #  define mch_stat(n, p)	vim_stat((n), (p))
 # else
