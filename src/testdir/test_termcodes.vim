@@ -7,6 +7,8 @@ CheckUnix
 
 source shared.vim
 source mouse.vim
+source view_util.vim
+source term_util.vim
 
 func Test_term_mouse_left_click()
   new
@@ -1891,6 +1893,18 @@ func Test_get_termcode()
   endif
 
   set ttybuiltin
+endfunc
+
+func Test_list_builtin_terminals()
+  CheckRunVimInTerminal
+  let buf = RunVimInTerminal('', #{rows: 14})
+  call term_sendkeys(buf, ":set cmdheight=3\<CR>")
+  call term_wait(buf, 100)
+  call term_sendkeys(buf, ":set term=xxx\<CR>")
+  call term_wait(buf, 100)
+  call assert_match('builtin_dumb', term_getline(buf, 11))
+  call assert_match('Not found in termcap', term_getline(buf, 12))
+  call StopVimInTerminal(buf)
 endfunc
 
 func GetEscCodeCSI27(key, modifier)
