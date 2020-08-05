@@ -1137,6 +1137,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 	    }
 	    else
 	    {
+		arg = skipwhite(arg);
 		if (tofree != NULL)
 		    name = tofree;
 		if (eval_variable(name, len, &tv, NULL, TRUE, FALSE) == FAIL)
@@ -3358,6 +3359,7 @@ assert_error(garray_T *gap)
     int
 var_exists(char_u *var)
 {
+    char_u	*arg = var;
     char_u	*name;
     char_u	*tofree;
     typval_T    tv;
@@ -3366,7 +3368,7 @@ var_exists(char_u *var)
 
     // get_name_len() takes care of expanding curly braces
     name = var;
-    len = get_name_len(&var, &tofree, TRUE, FALSE);
+    len = get_name_len(&arg, &tofree, TRUE, FALSE);
     if (len > 0)
     {
 	if (tofree != NULL)
@@ -3375,12 +3377,13 @@ var_exists(char_u *var)
 	if (n)
 	{
 	    // handle d.key, l[idx], f(expr)
-	    n = (handle_subscript(&var, &tv, &EVALARG_EVALUATE, FALSE) == OK);
+	    arg = skipwhite(arg);
+	    n = (handle_subscript(&arg, &tv, &EVALARG_EVALUATE, FALSE) == OK);
 	    if (n)
 		clear_tv(&tv);
 	}
     }
-    if (*var != NUL)
+    if (*arg != NUL)
 	n = FALSE;
 
     vim_free(tofree);

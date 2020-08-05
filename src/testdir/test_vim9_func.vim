@@ -1270,7 +1270,7 @@ enddef
 def TreeWalk(dir: string): list<any>
   return readdir(dir)->map({_, val ->
             fnamemodify(dir .. '/' .. val, ':p')->isdirectory()
-               ? {val : TreeWalk(dir .. '/' .. val)}
+               ? {val: TreeWalk(dir .. '/' .. val)}
                : val
              })
 enddef

@@ -872,6 +872,39 @@ def Test_expr5_vim9script()
       echo 'abc' isnot? 'abc'
   END
   CheckScriptFailure(lines, 'E15:')
+
+  # check white space
+  lines =<< trim END
+      vim9script
+      echo 5+6
+  END
+  CheckScriptFailure(lines, 'E1004:')
+  lines =<< trim END
+      vim9script
+      echo 5 +6
+  END
+  CheckScriptFailure(lines, 'E1004:')
+  lines =<< trim END
+      vim9script
+      echo 5+ 6
+  END
+  CheckScriptFailure(lines, 'E1004:')
+
+  lines =<< trim END
+      vim9script
+      echo 'a'..'b'
+  END
+  CheckScriptFailure(lines, 'E1004:')
+  lines =<< trim END
+      vim9script
+      echo 'a' ..'b'
+  END
+  CheckScriptFailure(lines, 'E1004:')
+  lines =<< trim END
+      vim9script
+      echo 'a'.. 'b'
+  END
+  CheckScriptFailure(lines, 'E1004:')
 enddef
 
 def Test_expr5_float()

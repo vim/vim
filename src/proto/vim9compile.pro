@@ -17,6 +17,7 @@ char_u *peek_next_line_from_context(cctx_T *cctx);
 char_u *next_line_from_context(cctx_T *cctx, int skip_comment);
 char_u *to_name_const_end(char_u *arg);
 exptype_T get_compare_type(char_u *p, int *len, int *type_is);
+void error_white_both(char_u *op, int len);
 int assignment_len(char_u *p, int *heredoc);
 void vim9_declare_error(char_u *name);
 int check_vim9_unlet(char_u *name);

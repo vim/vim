@@ -4244,6 +4244,18 @@ compile_expr7(
 }
 
 /*
+ * Give the "white on both sides" error, taking the operator from "p[len]".
+ */
+    void
+error_white_both(char_u *op, int len)
+{
+    char_u	buf[10];
+
+    vim_strncpy(buf, op, len);
+    semsg(_(e_white_both), buf);
+}
+
+/*
  *	*	number multiplication
  *	/	number division
  *	%	number modulo
@@ -4275,10 +4287,7 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 
 	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(op[1]))
 	{
-	    char_u buf[3];
-
-	    vim_strncpy(buf, op, 1);
-	    semsg(_(e_white_both), buf);
+	    error_white_both(op, 1);
 	    return FAIL;
 	}
 	*arg = skipwhite(op + 1);
@@ -4354,10 +4363,7 @@ compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 
 	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(op[oplen]))
 	{
-	    char_u buf[3];
-
-	    vim_strncpy(buf, op, oplen);
-	    semsg(_(e_white_both), buf);
+	    error_white_both(op, oplen);
 	    return FAIL;
 	}
 
@@ -4486,10 +4492,7 @@ compile_expr4(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 
 	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[len]))
 	{
-	    char_u buf[7];
-
-	    vim_strncpy(buf, p, len);
-	    semsg(_(e_white_both), buf);
+	    error_white_both(p, len);
 	    return FAIL;
 	}
 
@@ -5132,10 +5135,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 
     if (oplen > 0 && (!VIM_ISWHITE(*sp) || !VIM_ISWHITE(op[oplen])))
     {
-	char_u  buf[4];
-
-	vim_strncpy(buf, op, oplen);
-	semsg(_(e_white_both), buf);
+	error_white_both(op, oplen);
 	return NULL;
     }
 
