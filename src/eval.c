@@ -2242,11 +2242,25 @@ eval2(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    if (getnext)
 		*arg = eval_next_line(evalarg_used);
 	    else
+	    {
+		if (evaluate && in_vim9script() && !VIM_ISWHITE(p[-1]))
+		{
+		    error_white_both(p, 2);
+		    clear_tv(rettv);
+		    return FAIL;
+		}
 		*arg = p;
+	    }
 
 	    /*
 	     * Get the second variable.
 	     */
+	    if (evaluate && in_vim9script() && !IS_WHITE_OR_NUL((*arg)[2]))
+	    {
+		error_white_both(p, 2);
+		clear_tv(rettv);
+		return FAIL;
+	    }
 	    *arg = skipwhite_and_linebreak(*arg + 2, evalarg_used);
 	    evalarg_used->eval_flags = !result ? orig_flags
 						 : orig_flags & ~EVAL_EVALUATE;
@@ -2359,11 +2373,25 @@ eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    if (getnext)
 		*arg = eval_next_line(evalarg_used);
 	    else
+	    {
+		if (evaluate && in_vim9script() && !VIM_ISWHITE(p[-1]))
+		{
+		    error_white_both(p, 2);
+		    clear_tv(rettv);
+		    return FAIL;
+		}
 		*arg = p;
+	    }
 
 	    /*
 	     * Get the second variable.
 	     */
+	    if (evaluate && in_vim9script() && !IS_WHITE_OR_NUL((*arg)[2]))
+	    {
+		error_white_both(p, 2);
+		clear_tv(rettv);
+		return FAIL;
+	    }
 	    *arg = skipwhite_and_linebreak(*arg + 2, evalarg_used);
 	    evalarg_used->eval_flags = result ? orig_flags
 						 : orig_flags & ~EVAL_EVALUATE;

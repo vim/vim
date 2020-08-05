@@ -175,6 +175,23 @@ def Test_expr2_vimscript()
   END
   CheckScriptSuccess(lines)
 
+  # check white space
+  lines =<< trim END
+      vim9script
+      let var = v:true||v:true
+  END
+  CheckScriptFailure(lines, 'E1004:')
+  lines =<< trim END
+      vim9script
+      let var = v:true ||v:true
+  END
+  CheckScriptFailure(lines, 'E1004:')
+  lines =<< trim END
+      vim9script
+      let var = v:true|| v:true
+  END
+  CheckScriptFailure(lines, 'E1004:')
+
   # check keeping the value
   lines =<< trim END
       vim9script
@@ -278,6 +295,23 @@ def Test_expr3_vimscript()
       assert_equal(v:true, var)
   END
   CheckScriptSuccess(lines)
+
+  # check white space
+  lines =<< trim END
+      vim9script
+      let var = v:true&&v:true
+  END
+  CheckScriptFailure(lines, 'E1004:')
+  lines =<< trim END
+      vim9script
+      let var = v:true &&v:true
+  END
+  CheckScriptFailure(lines, 'E1004:')
+  lines =<< trim END
+      vim9script
+      let var = v:true&& v:true
+  END
+  CheckScriptFailure(lines, 'E1004:')
 
   # check keeping the value
   lines =<< trim END
