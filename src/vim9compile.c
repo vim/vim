@@ -502,21 +502,24 @@ typval2type(typval_T *tv, garray_T *type_gap)
     if (tv->v_type == VAR_STRING)
 	return &t_string;
 
-    if (tv->v_type == VAR_LIST
-	    && tv->vval.v_list != NULL
-	    && tv->vval.v_list->lv_first != NULL)
+    if (tv->v_type == VAR_LIST)
     {
+	if (tv->vval.v_list == NULL || tv->vval.v_list->lv_first == NULL)
+	    return &t_list_empty;
+
 	// Use the type of the first member, it is the most specific.
 	member_type = typval2type(&tv->vval.v_list->lv_first->li_tv, type_gap);
 	return get_list_type(member_type, type_gap);
     }
 
-    if (tv->v_type == VAR_DICT
-	    && tv->vval.v_dict != NULL
-	    && tv->vval.v_dict->dv_hashtab.ht_used > 0)
+    if (tv->v_type == VAR_DICT)
     {
 	dict_iterator_T iter;
 	typval_T	*value;
+
+	if (tv->vval.v_dict == NULL
+				   || tv->vval.v_dict->dv_hashtab.ht_used == 0)
+	    return &t_dict_empty;
 
 	// Use the type of the first value, it is the most specific.
 	dict_iterate_start(tv, &iter);

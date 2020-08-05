@@ -2782,6 +2782,20 @@ def Test_let_type_check()
     let var: asdf
   END
   CheckScriptFailure(lines, 'E1010:')
+
+  lines =<< trim END
+    vim9script
+    let s:l: list<number>
+    s:l = []
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    let s:d: dict<number>
+    s:d = {}
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_forward_declaration()
