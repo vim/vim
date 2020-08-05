@@ -60,7 +60,7 @@ def Test_expr1()
 enddef
 
 def Test_expr1_vimscript()
-  # only checks line continuation
+  # check line continuation
   let lines =<< trim END
       vim9script
       let var = 1
@@ -87,6 +87,33 @@ def Test_expr1_vimscript()
       assert_equal('no', var)
   END
   CheckScriptSuccess(lines)
+
+  # check white space
+  lines =<< trim END
+      vim9script
+      let var = v:true?1:2
+  END
+  CheckScriptFailure(lines, 'E1004:')
+  lines =<< trim END
+      vim9script
+      let var = v:true? 1 : 2
+  END
+  CheckScriptFailure(lines, 'E1004:')
+  lines =<< trim END
+      vim9script
+      let var = v:true ?1 : 2
+  END
+  CheckScriptFailure(lines, 'E1004:')
+  lines =<< trim END
+      vim9script
+      let var = v:true ? 1: 2
+  END
+  CheckScriptFailure(lines, 'E1004:')
+  lines =<< trim END
+      vim9script
+      let var = v:true ? 1 :2
+  END
+  CheckScriptFailure(lines, 'E1004:')
 enddef
 
 func Test_expr1_fails()

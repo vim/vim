@@ -2072,7 +2072,7 @@ eval0(
  *	expr2 ? expr1 : expr1
  *
  * "arg" must point to the first non-white of the expression.
- * "arg" is advanced to the next non-white after the recognized expression.
+ * "arg" is advanced to just after the recognized expression.
  *
  * Note: "rettv.v_lock" is not set.
  *
@@ -2111,7 +2111,15 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	if (getnext)
 	    *arg = eval_next_line(evalarg_used);
 	else
+	{
+	    if (evaluate && in_vim9script() && !VIM_ISWHITE(p[-1]))
+	    {
+		error_white_both(p, 1);
+		clear_tv(rettv);
+		return FAIL;
+	    }
 	    *arg = p;
+	}
 
 	result = FALSE;
 	if (evaluate)
@@ -2128,6 +2136,12 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	/*
 	 * Get the second variable.  Recursive!
 	 */
+	if (evaluate && in_vim9script() && !IS_WHITE_OR_NUL((*arg)[1]))
+	{
+	    error_white_both(p, 1);
+	    clear_tv(rettv);
+	    return FAIL;
+	}
 	*arg = skipwhite_and_linebreak(*arg + 1, evalarg_used);
 	evalarg_used->eval_flags = result ? orig_flags
 						 : orig_flags & ~EVAL_EVALUATE;
@@ -2148,11 +2162,25 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	if (getnext)
 	    *arg = eval_next_line(evalarg_used);
 	else
+	{
+	    if (evaluate && in_vim9script() && !VIM_ISWHITE(p[-1]))
+	    {
+		error_white_both(p, 1);
+		clear_tv(rettv);
+		return FAIL;
+	    }
 	    *arg = p;
+	}
 
 	/*
 	 * Get the third variable.  Recursive!
 	 */
+	if (evaluate && in_vim9script() && !IS_WHITE_OR_NUL((*arg)[1]))
+	{
+	    error_white_both(p, 1);
+	    clear_tv(rettv);
+	    return FAIL;
+	}
 	*arg = skipwhite_and_linebreak(*arg + 1, evalarg_used);
 	evalarg_used->eval_flags = !result ? orig_flags
 						 : orig_flags & ~EVAL_EVALUATE;
@@ -2179,7 +2207,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
  *	expr2 || expr2 || expr2	    logical OR
  *
  * "arg" must point to the first non-white of the expression.
- * "arg" is advanced to the next non-white after the recognized expression.
+ * "arg" is advanced to just after the recognized expression.
  *
  * Return OK or FAIL.
  */
@@ -2310,7 +2338,7 @@ eval2(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
  *	expr3 && expr3 && expr3	    logical AND
  *
  * "arg" must point to the first non-white of the expression.
- * "arg" is advanced to the next non-white after the recognized expression.
+ * "arg" is advanced to just after the recognized expression.
  *
  * Return OK or FAIL.
  */
