@@ -447,6 +447,8 @@ flush_buffers(flush_buffers_T flush_typeahead)
     typebuf.tb_silent = 0;
     cmd_silent = FALSE;
     typebuf.tb_no_abbr_cnt = 0;
+    if (++typebuf.tb_change_cnt == 0)
+	typebuf.tb_change_cnt = 1;
 }
 
 /*
