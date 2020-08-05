@@ -2586,13 +2586,14 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    break;
 
 	evaluate = evalarg == NULL ? 0 : (evalarg->eval_flags & EVAL_EVALUATE);
+	oplen = (concat && p[1] == '.') ? 2 : 1;
 	if (getnext)
 	    *arg = eval_next_line(evalarg);
 	else
 	{
 	    if (evaluate && in_vim9script() && !VIM_ISWHITE(**arg))
 	    {
-		error_white_both(p, 1);
+		error_white_both(p, oplen);
 		clear_tv(rettv);
 		return FAIL;
 	    }
@@ -2622,7 +2623,6 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	/*
 	 * Get the second variable.
 	 */
-	oplen = (op == '.' && *(*arg + 1) == '.') ? 2 : 1;
 	if (evaluate && in_vim9script() && !IS_WHITE_OR_NUL((*arg)[oplen]))
 	{
 	    error_white_both(p, oplen);
@@ -2796,17 +2796,25 @@ eval6(
 	if (op != '*' && op != '/' && op != '%')
 	    break;
 
+	evaluate = evalarg == NULL ? 0 : (evalarg->eval_flags & EVAL_EVALUATE);
 	if (getnext)
 	    *arg = eval_next_line(evalarg);
 	else
+	{
+	    if (evaluate && in_vim9script() && !VIM_ISWHITE(**arg))
+	    {
+		error_white_both(p, 1);
+		clear_tv(rettv);
+		return FAIL;
+	    }
 	    *arg = p;
+	}
 
 #ifdef FEAT_FLOAT
 	f1 = 0;
 	f2 = 0;
 #endif
 	error = FALSE;
-	evaluate = evalarg == NULL ? 0 : (evalarg->eval_flags & EVAL_EVALUATE);
 	if (evaluate)
 	{
 #ifdef FEAT_FLOAT
@@ -2829,7 +2837,13 @@ eval6(
 	/*
 	 * Get the second variable.
 	 */
-	*arg = skipwhite(*arg + 1);
+	if (evaluate && in_vim9script() && !IS_WHITE_OR_NUL((*arg)[1]))
+	{
+	    error_white_both(p, 1);
+	    clear_tv(rettv);
+	    return FAIL;
+	}
+	*arg = skipwhite_and_linebreak(*arg + 1, evalarg);
 	if (eval7(arg, &var2, evalarg, FALSE) == FAIL)
 	    return FAIL;
 
