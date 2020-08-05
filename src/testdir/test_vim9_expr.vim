@@ -1674,14 +1674,14 @@ def Echo(arg: any): string
   return arg
 enddef
 
-def s:EchoArg(arg: any): string
+def s:Echo4Arg(arg: any): string
   return arg
 enddef
 
 def Test_expr7_call()
   assert_equal('yes', 'yes'->Echo())
   assert_equal('yes', 'yes'
-  			->s:EchoArg())
+  			->s:Echo4Arg())
   assert_equal(1, !range(5)->empty())
   assert_equal([0, 1, 2], --3->range())
 

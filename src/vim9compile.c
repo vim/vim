@@ -3854,7 +3854,7 @@ compile_subscript(
 		}
 		if (ASCII_ISALPHA(*p) && p[1] == ':')
 		    p += 2;
-		for ( ; eval_isnamec1(*p); ++p)
+		for ( ; eval_isnamec(*p); ++p)
 		    ;
 		if (*p != '(')
 		{
