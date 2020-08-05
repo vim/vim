@@ -148,6 +148,7 @@ static char e_syntax_at[] = N_("E1002: Syntax error at %s");
 static char e_used_as_arg[] = N_("E1006: %s is used as an argument");
 static char e_cannot_use_void[] = N_("E1031: Cannot use void value");
 static char e_namespace[] = N_("E1075: Namespace not supported: %s");
+static char e_unknown_var[] = N_("E1089: unknown variable: %s");
 
 static void delete_def_function_contents(dfunc_T *dfunc);
 static void arg_type_mismatch(type_T *expected, type_T *actual, int argidx);
@@ -5335,7 +5336,6 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    else
 	    {
 		int	    idx;
-		imported_T  *import = NULL;
 
 		for (idx = 0; reserved[idx] != NULL; ++idx)
 		    if (STRCMP(reserved[idx], name) == 0)
@@ -5374,49 +5374,67 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			goto theend;
 		    }
 		}
-		else if ((varlen > 1 && STRNCMP(var_start, "s:", 2) == 0)
-			|| lookup_script(var_start, varlen) == OK
-			|| (import = find_imported(var_start, varlen, cctx))
-								       != NULL)
+		else
 		{
-		    char_u	*rawname = name + (name[1] == ':' ? 2 : 0);
+		    int script_namespace = varlen > 1
+					   && STRNCMP(var_start, "s:", 2) == 0;
+		    int script_var = (script_namespace
+				? lookup_script(var_start + 2, varlen - 2)
+				: lookup_script(var_start, varlen)) == OK;
+		    imported_T  *import =
+					find_imported(var_start, varlen, cctx);
 
-		    if (is_decl)
+		    if (script_namespace || script_var || import != NULL)
 		    {
-			if ((varlen > 1 && STRNCMP(var_start, "s:", 2) == 0))
-			    semsg(_("E1101: Cannot declare a script variable in a function: %s"),
+			char_u	*rawname = name + (name[1] == ':' ? 2 : 0);
+
+			if (is_decl)
+			{
+			    if (script_namespace)
+				semsg(_("E1101: Cannot declare a script variable in a function: %s"),
 									 name);
-			else
-			    semsg(_("E1054: Variable already declared in the script: %s"),
+			    else
+				semsg(_("E1054: Variable already declared in the script: %s"),
+									 name);
+			    goto theend;
+			}
+			else if (cctx->ctx_ufunc->uf_script_ctx_version
+							== SCRIPT_VERSION_VIM9
+				&& script_namespace
+					      && !script_var && import == NULL)
+			{
+			    semsg(_(e_unknown_var), name);
+			    goto theend;
+			}
+
+			dest = dest_script;
+
+			// existing script-local variables should have a type
+			scriptvar_sid = current_sctx.sc_sid;
+			if (import != NULL)
+			    scriptvar_sid = import->imp_sid;
+			scriptvar_idx = get_script_item_idx(scriptvar_sid,
+								rawname, TRUE);
+			if (scriptvar_idx >= 0)
+			{
+			    scriptitem_T *si = SCRIPT_ITEM(scriptvar_sid);
+			    svar_T	     *sv =
+					    ((svar_T *)si->sn_var_vals.ga_data)
+							       + scriptvar_idx;
+			    type = sv->sv_type;
+			}
+		    }
+		    else if (name[1] == ':' && name[2] != NUL)
+		    {
+			semsg(_("E1082: Cannot use a namespaced variable: %s"),
 									 name);
 			goto theend;
 		    }
-		    dest = dest_script;
-
-		    // existing script-local variables should have a type
-		    scriptvar_sid = current_sctx.sc_sid;
-		    if (import != NULL)
-			scriptvar_sid = import->imp_sid;
-		    scriptvar_idx = get_script_item_idx(scriptvar_sid,
-								rawname, TRUE);
-		    if (scriptvar_idx >= 0)
+		    else if (!is_decl)
 		    {
-			scriptitem_T *si = SCRIPT_ITEM(scriptvar_sid);
-			svar_T	     *sv = ((svar_T *)si->sn_var_vals.ga_data)
-							       + scriptvar_idx;
-			type = sv->sv_type;
+			semsg(_(e_unknown_var), name);
+			goto theend;
 		    }
-		}
-		else if (name[1] == ':' && name[2] != NUL)
-		{
-		    semsg(_("E1082: Cannot use a namespaced variable: %s"),
-									 name);
-		    goto theend;
-		}
-		else if (!is_decl)
-		{
-		    semsg(_("E1089: unknown variable: %s"), name);
-		    goto theend;
 		}
 	    }
 

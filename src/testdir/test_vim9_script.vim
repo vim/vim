@@ -112,6 +112,15 @@ def Test_assignment()
   call CheckDefFailure(['let s:var = 123'], 'E1101:')
   call CheckDefFailure(['let s:var: number'], 'E1101:')
 
+  lines =<< trim END
+    vim9script
+    def SomeFunc()
+      s:var = 123
+    enddef
+    defcompile
+  END
+  call CheckScriptFailure(lines, 'E1089:')
+
   g:inc_counter += 1
   assert_equal(2, g:inc_counter)
 
