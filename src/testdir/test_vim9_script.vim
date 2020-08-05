@@ -1351,6 +1351,36 @@ def Test_vim9_import_export()
   delete('Xvim9_script')
 enddef
 
+func g:Trigger()
+  source Ximport.vim
+  return "echo 'yes'\<CR>"
+endfunc
+
+def Test_import_export_expr_map()
+  # check that :import and :export work when buffer is locked
+  let export_lines =<< trim END
+    vim9script
+    export def That(): string
+      return 'yes'
+    enddef
+  END
+  writefile(export_lines, 'Xexport_that.vim')
+
+  let import_lines =<< trim END
+    vim9script
+    import That from './Xexport_that.vim'
+    assert_equal('yes', That())
+  END
+  writefile(import_lines, 'Ximport.vim')
+
+  nnoremap <expr> trigger g:Trigger()
+  feedkeys('trigger', "xt")
+
+  delete('Xexport.vim')
+  delete('Ximport.vim')
+  nunmap trigger
+enddef
+
 def Test_vim9script_fails()
   CheckScriptFailure(['scriptversion 2', 'vim9script'], 'E1039:')
   CheckScriptFailure(['vim9script', 'scriptversion 2'], 'E1040:')
