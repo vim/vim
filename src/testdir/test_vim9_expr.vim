@@ -726,6 +726,38 @@ def Test_expr4_vimscript()
     set noignorecase
   END
   CheckScriptSuccess(lines)
+
+  # check missing white space
+  lines =<< trim END
+    vim9script
+    echo 2>3
+  END
+  CheckScriptFailure(lines, 'E1004:')
+  lines =<< trim END
+    vim9script
+    echo 2 >3
+  END
+  CheckScriptFailure(lines, 'E1004:')
+  lines =<< trim END
+    vim9script
+    echo 2> 3
+  END
+  CheckScriptFailure(lines, 'E1004:')
+  lines =<< trim END
+    vim9script
+    echo 2!=3
+  END
+  CheckScriptFailure(lines, 'E1004:')
+  lines =<< trim END
+    vim9script
+    echo 2 !=3
+  END
+  CheckScriptFailure(lines, 'E1004:')
+  lines =<< trim END
+    vim9script
+    echo 2!= 3
+  END
+  CheckScriptFailure(lines, 'E1004:')
 enddef
 
 func Test_expr4_fails()

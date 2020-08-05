@@ -2422,7 +2422,7 @@ eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
  *	var1 isnot var2
  *
  * "arg" must point to the first non-white of the expression.
- * "arg" is advanced to the next non-white after the recognized expression.
+ * "arg" is advanced to just after the recognized expression.
  *
  * Return OK or FAIL.
  */
@@ -2452,9 +2452,17 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	typval_T    var2;
 	int	    ic;
 	int	    vim9script = in_vim9script();
+	int	    evaluate = evalarg == NULL
+				   ? 0 : (evalarg->eval_flags & EVAL_EVALUATE);
 
 	if (getnext)
 	    *arg = eval_next_line(evalarg);
+	else if (evaluate && vim9script && !VIM_ISWHITE(**arg))
+	{
+	    error_white_both(p, len);
+	    clear_tv(rettv);
+	    return FAIL;
+	}
 
 	if (vim9script && type_is && (p[len] == '?' || p[len] == '#'))
 	{
@@ -2482,13 +2490,19 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	/*
 	 * Get the second variable.
 	 */
+	if (evaluate && vim9script && !IS_WHITE_OR_NUL(p[len]))
+	{
+	    error_white_both(p, 1);
+	    clear_tv(rettv);
+	    return FAIL;
+	}
 	*arg = skipwhite_and_linebreak(p + len, evalarg);
 	if (eval5(arg, &var2, evalarg) == FAIL)
 	{
 	    clear_tv(rettv);
 	    return FAIL;
 	}
-	if (evalarg != NULL && (evalarg->eval_flags & EVAL_EVALUATE))
+	if (evaluate)
 	{
 	    int ret;
 
@@ -2552,7 +2566,7 @@ eval_addlist(typval_T *tv1, typval_T *tv2)
  *	..	string concatenation
  *
  * "arg" must point to the first non-white of the expression.
- * "arg" is advanced to the next non-white after the recognized expression.
+ * "arg" is advanced to just after the recognized expression.
  *
  * Return OK or FAIL.
  */
@@ -2754,7 +2768,7 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
  *	%	number modulo
  *
  * "arg" must point to the first non-white of the expression.
- * "arg" is advanced to the next non-white after the recognized expression.
+ * "arg" is advanced to just after the recognized expression.
  *
  * Return OK or FAIL.
  */
@@ -2956,7 +2970,7 @@ eval6(
  *  trailing ->name()	method call
  *
  * "arg" must point to the first non-white of the expression.
- * "arg" is advanced to the next non-white after the recognized expression.
+ * "arg" is advanced to just after the recognized expression.
  *
  * Return OK or FAIL.
  */
