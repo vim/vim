@@ -907,6 +907,47 @@ python3_loaded(void)
 
 static wchar_t *py_home_buf = NULL;
 
+#if defined(MSWIN) && (PY_VERSION_HEX >= 0x030500f0)
+// Python 3.5 or later will abort inside Py_Initialize() when stdin is
+// redirected.  Reconnect stdin to CONIN$.
+// Note that the python DLL is linked to its own stdio DLL which can be
+// differ from Vim's stdio.
+    static void
+reset_stdin(void)
+{
+    FILE *(*py__acrt_iob_func)(unsigned) = NULL;
+    FILE *(*pyfreopen)(const char *, const char *, FILE *) = NULL;
+    HINSTANCE hinst;
+
+# ifdef DYNAMIC_PYTHON3
+    hinst = hinstPy3;
+# else
+    hinst = GetModuleHandle(PYTHON3_DLL);
+# endif
+    if (hinst == NULL)
+	return;
+
+    // Get "freopen" and "stdin" which are used in the python DLL.
+    // "stdin" is defined as "__acrt_iob_func(0)" in VC++ 2015 or later.
+    py__acrt_iob_func = get_dll_import_func(hinst, "__acrt_iob_func");
+    if (py__acrt_iob_func)
+    {
+	HINSTANCE hpystdiodll = find_imported_module_by_funcname(hinst,
+							"__acrt_iob_func");
+	if (hpystdiodll)
+	    pyfreopen = (void*)GetProcAddress(hpystdiodll, "freopen");
+    }
+
+    // Reconnect stdin to CONIN$.
+    if (pyfreopen)
+	pyfreopen("CONIN$", "r", py__acrt_iob_func(0));
+    else
+	freopen("CONIN$", "r", stdin);
+}
+#else
+# define reset_stdin()
+#endif
+
     static int
 Python3_Init(void)
 {
@@ -939,6 +980,7 @@ Python3_Init(void)
 
 	PyImport_AppendInittab("vim", Py3Init_vim);
 
+	reset_stdin();
 	Py_Initialize();
 
 	// Initialise threads, and below save the state using
