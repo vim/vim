@@ -1202,6 +1202,12 @@ def Test_filter_return_type()
   assert_equal(6, res)
 enddef
 
+def Test_getreg_return_type()
+  let s1: string = getreg('"')
+  let s2: string = getreg('"', 1)
+  let s3: list<string> = getreg('"', 1, 1)
+enddef
+
 def Wrong_dict_key_type(items: list<number>): list<number>
   return filter(items, {_, val -> get({val: 1}, 'x')})
 enddef
