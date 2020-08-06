@@ -1381,6 +1381,36 @@ def Test_import_export_expr_map()
   nunmap trigger
 enddef
 
+def Test_import_in_filetype()
+  # check that :import works when the buffer is locked
+  mkdir('ftplugin', 'p')
+  let export_lines =<< trim END
+    vim9script
+    export let That = 'yes'
+  END
+  writefile(export_lines, 'ftplugin/Xexport_that.vim')
+
+  let import_lines =<< trim END
+    vim9script
+    import That from './Xexport_that.vim'
+    assert_equal('yes', That)
+    g:did_load_mytpe = 1
+  END
+  writefile(import_lines, 'ftplugin/qf.vim')
+
+  let save_rtp = &rtp
+  &rtp = getcwd() .. ',' .. &rtp
+
+  filetype plugin on
+  copen
+  assert_equal(1, g:did_load_mytpe)
+
+  quit!
+  delete('Xexport.vim')
+  delete('ftplugin', 'rf')
+  &rtp = save_rtp
+enddef
+
 def Test_vim9script_fails()
   CheckScriptFailure(['scriptversion 2', 'vim9script'], 'E1039:')
   CheckScriptFailure(['vim9script', 'scriptversion 2'], 'E1040:')
