@@ -1026,6 +1026,9 @@ PYTHON_LIB = $(PYTHON)\libs\python$(PYTHON_VER).lib
 ! ifndef PYTHON3_VER
 PYTHON3_VER = 36
 ! endif
+! ifndef DYNAMIC_PYTHON3_DLL
+DYNAMIC_PYTHON3_DLL = python$(PYTHON3_VER).dll
+! endif
 ! message Python3 requested (version $(PYTHON3_VER)) - root dir is "$(PYTHON3)"
 ! if "$(DYNAMIC_PYTHON3)" == "yes"
 !  message Python3 DLL will be loaded dynamically
@@ -1035,9 +1038,10 @@ PYTHON3_OBJ = $(OUTDIR)\if_python3.obj
 PYTHON3_INC = /I "$(PYTHON3)\Include" /I "$(PYTHON3)\PC"
 ! if "$(DYNAMIC_PYTHON3)" == "yes"
 CFLAGS = $(CFLAGS) -DDYNAMIC_PYTHON3 \
-		-DDYNAMIC_PYTHON3_DLL=\"python$(PYTHON3_VER).dll\"
+		-DDYNAMIC_PYTHON3_DLL=\"$(DYNAMIC_PYTHON3_DLL)\"
 PYTHON3_LIB = /nodefaultlib:python$(PYTHON3_VER).lib
 ! else
+CFLAGS = $(CFLAGS) -DPYTHON3_DLL=\"$(DYNAMIC_PYTHON3_DLL)\"
 PYTHON3_LIB = $(PYTHON3)\libs\python$(PYTHON3_VER).lib
 ! endif
 !endif
