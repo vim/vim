@@ -532,4 +532,26 @@ func Test_setreg_basic()
   call assert_fails('call setreg(1, ["", "", [], ""])', 'E730:')
 endfunc
 
+func Test_curly_assignment()
+  let s:svar = 'svar'
+  let g:gvar = 'gvar'
+  let lname = 'gvar'
+  let gname = 'gvar'
+  let {'s:'.lname} = {'g:'.gname}
+  call assert_equal('gvar', s:gvar)
+  let s:gvar = ''
+  let { 's:'.lname } = { 'g:'.gname }
+  call assert_equal('gvar', s:gvar)
+  let s:gvar = ''
+  let { 's:' . lname } = { 'g:' . gname }
+  call assert_equal('gvar', s:gvar)
+  let s:gvar = ''
+  let { 's:' .. lname } = { 'g:' .. gname }
+  call assert_equal('gvar', s:gvar)
+
+  unlet s:svar
+  unlet s:gvar
+  unlet g:gvar
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

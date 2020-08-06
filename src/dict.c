@@ -817,7 +817,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
     {
 	if (eval1(&start, &tv, NULL) == FAIL)	// recursive!
 	    return FAIL;
-	if (*start == '}')
+	if (*skipwhite(start) == '}')
 	    return NOTDONE;
     }
 
