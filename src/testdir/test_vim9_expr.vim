@@ -1686,6 +1686,10 @@ def Test_expr7_call()
   assert_equal([0, 1, 2], --3->range())
 
   call CheckDefFailure(["let x = 'yes'->Echo"], 'E107:')
+  call CheckScriptFailure([
+	"vim9script",
+	"let x = substitute ('x', 'x', 'x', 'x')"
+	], 'E121:')
 enddef
 
 

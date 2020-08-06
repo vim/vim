@@ -3198,9 +3198,12 @@ eval7(
 	{
 	    int	    flags = evalarg == NULL ? 0 : evalarg->eval_flags;
 
-	    if (**arg == '(')
+	    if ((in_vim9script() ? **arg : *skipwhite(*arg)) == '(')
+	    {
 		// "name(..."  recursive!
+		*arg = skipwhite(*arg);
 		ret = eval_func(arg, evalarg, s, len, rettv, flags, NULL);
+	    }
 	    else if (flags & EVAL_CONSTANT)
 		ret = FAIL;
 	    else if (evaluate)
