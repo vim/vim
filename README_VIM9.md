@@ -5,8 +5,8 @@
 This is an experimental side of [Vim](https://github.com/vim/vim).
 It explores ways of making Vim script faster and better.
 
-WARNING: The Vim9 script features are in the early stages of development,
-anything can break!
+WARNING: The Vim9 script features are still under development, anything can
+break!
 
 # Why Vim9?
 
@@ -52,7 +52,7 @@ we can gain, and also that Vim script can be faster than builtin
 interfaces.
 
 In practice the script would not do something useless as counting but change
-the text.  For example, re-indent all the lines:
+the text.  For example, reindent all the lines:
 
 ``` vim
   let totallen = 0
@@ -91,9 +91,9 @@ Instead of using script language support in Vim:
   with them.  The job and channel support already makes this possible.
   Really any language can be used, also Java and Go, which are not
   available built-in.
-* Phase out the built-in language interfaces, make maintenance a bit easier
-  and executables easier to build.  They will be kept for backwards
-  compatibility, no new features.
+* No priority for the built-in language interfaces.  They will have to be kept
+  for backwards compatibility, but many users won't need a Vim build with these
+  interfaces.
 * Improve the Vim script language, it is used to communicate with the external
   tool and implements the Vim side of the interface.  Also, it can be used when
   an external tool is undesired.
@@ -139,6 +139,9 @@ A good example is how in a function the arguments are prefixed with
 Taking this one step further is also dropping "s:" for script-local variables;
 everything at the script level is script-local by default.  Since this is not
 backwards compatible it requires a new script style: Vim9 script!
+
+To avoid having more variations, the syntax inside a compiled function is the
+same as in Vim9 script.  Thus you have legacy syntax and Vim9 syntax.
 
 It should be possible to convert code from other languages to Vim
 script.  We can add functionality to make this easier.  This still needs

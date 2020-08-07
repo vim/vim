@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Jul 26
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Aug 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,10 +39,9 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 Making everything work:
-- more items in https://github.com/vim/vim/issues/6507
-- More "goto failed" with check for trylevel.
-- memory leak in test_vim9_script
 - Check that when sourcing a Vim9 script, only the global items can be used.
+- Make string indexes character indexes instead of byte indexes. (#6574)
+    explain how to use byte index when needed. Use blob?
 - :put with a "=" register argument doesn't work, need to find the expression
   and compile it. (#6397)
 - At the script level, keep script variables local to the block they are
@@ -51,6 +50,8 @@ Making everything work:
 - Implement { } block at the script level.
 - need to check type when a declaration specifies a type: #6507
 	let nr: number = 'asdf'
+- Make sure that in vim9script a function call without namespace only finds
+  the script-local function, not a global one.
 - Make map() give an error if the resulting type is wrong.
   Add mapnew() to create a new List/Dict for the result, which can have a
   different value type.
@@ -169,7 +170,7 @@ Popup windows:
 - Figure out the size and position better if wrapping inserts indent
 
 Text properties:
-- :goto does not go to the right place when test properties are present.
+- :goto does not go to the right place when text properties are present.
   (#5930)
 - "cc" does not call inserted_bytes(). (Axel Forsman, #5763)
 - Get E685 with a sequence of commands. (#5674)
@@ -200,7 +201,7 @@ Terminal debugger:
   an already running program. (M. Kelly)
 - When only gdb window exists, on "quit" edit another buffer.
 - Use a sign group
-- Termdebug does not work when Vim was build with mzscheme: gdb hangs just
+- Termdebug does not work when Vim was built with mzscheme: gdb hangs just
   after "run".  Everything else works, including communication channel.  Not
   initializing mzscheme avoid the problem, thus it's not some #ifdef.
 - Add support for lldb?  issue #3565
@@ -255,9 +256,14 @@ Terminal emulator window:
 Error numbers available:
 E610, E611, E653
 
+Clean up empty entries in testdir/Make_all.mak
+
 Remove SPACE_IN_FILENAME ? It is only used for completion.
 
 Patch to use collaction based sorting. (Christian Brabandt, #6229)
+
+Add 'termguiattr' option, use "gui=" attributes in the terminal?  Would work
+with 'termguicolors'. #1740
 
 Can we detect true color support?  https://gist.github.com/XVilka/8346728
 Try setting a color then request the current color, like using t_u7.
@@ -332,6 +338,9 @@ Problem with auto-formatting - inserting space and putting cursor before added
 character. (#6154)
 
 undo result wrong: Masato Nishihata, #4798
+
+After recovering from a swap file the undofile should not be used, it causes
+corruption.  (#6631)
 
 When 'lazyredraw' is set sometimes the title is not updated.
 (Jason Franklin, 2020 Feb 3)  Looks like a race condition.
@@ -1471,7 +1480,7 @@ Zero-out krypt key information when no longer in use. (Ben Fritz, 2017 May 15)
 
 Add stronger encryption.  Could use libsodium (NaCl).
 https://github.com/jedisct1/libsodium/
-Possibly include the needed code so that it can be build everywhere.
+Possibly include the needed code so that it can be built everywhere.
 
 Add a way to restart a timer.  It's similar to timer_stop() and timer_start(),
 but the reference remains valid.
@@ -3833,8 +3842,6 @@ Macintosh:
 8   When write_viminfo() is used while there are many orphaned viminfo
     tempfiles writing the viminfo file fails.  Give a clear error message so
     that the user knows he has to delete the files.
-7   It's possible to redefine a script-local function with ":func
-    <SNR>123_Test()". (Krishna)  Disallow this.
 
 
 I can't reproduce these (if you can, let me know how!):
@@ -5673,7 +5680,7 @@ Buffer list:
     Also for other windows: ":inwin {winnr} {cmd}".  How to make sure that
     this works properly for all commands, and still be able to return to the
     current buffer/window?  E.g.: ":inbuf xxx only".
-8   Add File.{recent_files} menu entries: Recently edited files.
+8   Add File.{recent-files} menu entries: Recently edited files.
     Ron Aaron has a plugin for this: mru.vim.
 8   Unix: Check all uses of fnamecmp() and fnamencmp() if they should check
     inode too.

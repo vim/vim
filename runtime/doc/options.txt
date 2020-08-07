@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2020 Jul 18
+*options.txt*	For Vim version 8.2.  Last change: 2020 Aug 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2715,6 +2715,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 				 for Unix: ".,~/tmp,/var/tmp,/tmp")
 			global
 	List of directory names for the swap file, separated with commas.
+	Recommended value:  ".,~/vimswap//" - this will put the swap file next
+	to the edited file if possible, and in your personal swap directory
+	otherwise.  Make sure "~/vimswap//" is only readable for you.
+
+	Possible items:
 	- The swap file will be created in the first directory where this is
 	  possible.
 	- Empty means that no swap file will be used (recovery is
@@ -2749,9 +2754,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	the same file twice will result in a warning.  Using "/tmp" on Unix is
 	discouraged: When the system crashes you lose the swap file.
 	"/var/tmp" is often not cleared when rebooting, thus is a better
-	choice than "/tmp".  But it can contain a lot of files, your swap
-	files get lost in the crowd.  That is why a "tmp" directory in your
-	home directory is tried first.
+	choice than "/tmp".  But others on the computer may be able to see the
+	files, and it can contain a lot of files, your swap files get lost in
+	the crowd.  That is why a "tmp" directory in your home directory is
+	tried first.
 	The use of |:set+=| and |:set-=| is preferred when adding or removing
 	directories from the list.  This avoids problems when a future version
 	uses another default.
@@ -8368,7 +8374,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	>= 14	Anything pending in a ":finally" clause.
 	>= 15	Every executed Ex command from a script (truncated at 200
 		characters).
-	>= 16	Every executed Ex command
+	>= 16	Every executed Ex command.
 
 	This option can also be set with the "-V" argument.  See |-V|.
 	This option is also set by the |:verbose| command.
@@ -8907,7 +8913,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{only available when compiled with the |terminal|
 			feature on MS-Windows}
 	Specifies the name of the winpty shared library, used for the
-	|:terminal| command. The default depends on whether was build as a
+	|:terminal| command. The default depends on whether Vim was built as a
 	32-bit or 64-bit executable.  If not found, "winpty.dll" is tried as
 	a fallback.
 	Environment variables are expanded |:set_env|.

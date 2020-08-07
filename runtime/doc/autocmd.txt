@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.2.  Last change: 2020 Jun 10
+*autocmd.txt*   For Vim version 8.2.  Last change: 2020 Aug 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1425,8 +1425,8 @@ name!
 :aug[roup]! {name}		Delete the autocmd group {name}.  Don't use
 				this if there is still an autocommand using
 				this group!  You will get a warning if doing
-				it anyway. when the group is the current group
-				you will get error E936.
+				it anyway.  When the group is the current
+				group you will get error E936.
 
 To enter autocommands for a specific group, use this method:
 1. Select the group with ":augroup {name}".

@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 8.2.  Last change: 2020 Apr 13
+*develop.txt*   For Vim version 8.2.  Last change: 2020 Jul 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -34,8 +34,8 @@ balance must be found between them.
 VIM IS... VI COMPATIBLE					*design-compatible*
 
 First of all, it should be possible to use Vim as a drop-in replacement for
-Vi.  When the user wants to, he can use Vim in compatible mode and hardly
-notice any difference with the original Vi.
+Vi.  When the user wants to, Vim can be used in compatible mode and hardly
+any differences with the original Vi will be noticed.
 
 Exceptions:
 - We don't reproduce obvious Vi bugs in Vim.

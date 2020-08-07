@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Jul 25
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Aug 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -14,7 +14,7 @@ features in Vim9 script.
 THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 
-1   What is Vim9 script?		|vim9-script|
+1.  What is Vim9 script?		|vim9-script|
 2.  Differences				|vim9-differences|
 3.  New style functions			|fast-functions|
 4.  Types				|vim9-types|
@@ -119,11 +119,12 @@ Functions and variables are script-local by default ~
 When using `:function` or `:def` to specify a new function at the script level
 in a Vim9 script, the function is local to the script, as if "s:" was
 prefixed.  Using the "s:" prefix is optional.  To define or use a global
-function or variable the "g:" prefix must be used.  For functions in an
+function or variable the "g:" prefix should be used.  For functions in an
 autoload script the "name#" prefix is sufficient. >
 	def ThisFunction()          # script-local
 	def s:ThisFunction()        # script-local
 	def g:ThatFunction()	    # global
+	def ThatFunction()	    # global if no local ThatFunction()
 	def scriptname#function()   # autoload
 
 When using `:function` or `:def` to specify a new function inside a function,
@@ -132,16 +133,14 @@ script-local function inside a function. It is possible to define a global
 function, using the "g:" prefix.
 
 When referring to a function and no "s:" or "g:" prefix is used, Vim will
-search for the function in this order:
-- Local to the current scope and outer scopes up to the function scope.
-- Local to the current script file.
-- Imported functions, see `:import`.
+prefer using a local function (in the function scope, script scope or
+imported) before looking for a global function.
 In all cases the function must be defined before used.  That is when it is
 first called or when `:defcompile` causes the call to be compiled.
 
-The result is that functions and variables without a namespace can always be
+The result is that functions and variables without a namespace can usually be
 found in the script, either defined there or imported.  Global functions and
-variables could be defined anywhere (good luck finding where!).
+variables could be defined anywhere (good luck finding out where!).
 
 Global functions can be still be defined and deleted at nearly any time.  In
 Vim9 script script-local functions are defined once when the script is sourced
@@ -193,7 +192,8 @@ declaration.  Global, window, tab, buffer and Vim variables can only be used
 without `:let`, because they are not really declared, they can also be deleted
 with `:unlet`.
 
-Variables cannot shadow previously defined variables.
+Variables and functions cannot shadow previously defined or imported variables
+and functions.
 Variables may shadow Ex commands, rename the variable if needed.
 
 Global variables and user defined functions must be prefixed with "g:", also
@@ -232,11 +232,11 @@ identifier or can't be an Ex command.  Examples: >
 	'foobar'->Process()
 	('foobar')->Process()
 
-In rare case there is ambiguity between a function name and an Ex command, use
-":" to make clear you want to use the Ex command.  For example, there is both
-the `:substitute` command and the `substitute()` function.  When the line
-starts with `substitute(` this will use the function. Prepend a colon to use
-the command instead: >
+In rare case there is ambiguity between a function name and an Ex command,
+prepend ":" to make clear you want to use the Ex command.  For example, there
+is both the `:substitute` command and the `substitute()` function.  When the
+line starts with `substitute(` this will use the function. Prepend a colon to
+use the command instead: >
 	:substitute(pattern (replacement (
 
 Note that while variables need to be defined before they can be used,
@@ -261,8 +261,8 @@ number of arguments and any return type.  The function can be defined later.
 Automatic line continuation ~
 
 In many cases it is obvious that an expression continues on the next line.  In
-those cases there is no need to prefix the line with a backslash.  For
-example, when a list spans multiple lines: >
+those cases there is no need to prefix the line with a backslash
+|line-continuation|.  For example, when a list spans multiple lines: >
 	let mylist = [
 		'one',
 		'two',
@@ -451,6 +451,11 @@ Ex command ranges need to be prefixed with a colon. >
 	:%s/a/b		" Vim9: substitute on all lines
 	'text'->func()	" Vim9: method call
 	:'t		" legacy Vim: jump to mark m
+
+Some Ex commands can be confused with assignments in Vim9 script: >
+	g:name = value  # assignment
+	g:pattern:cmd	# invalid command - ERROR
+	:g:pattern:cmd	# :global command
 
 Functions defined with `:def` compile the whole function.  Legacy functions
 can bail out, and the following lines are not parsed: >
