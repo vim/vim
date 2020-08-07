@@ -422,6 +422,11 @@ def Test_assignment_var_list()
   assert_equal('one', v1)
   assert_equal('two', v2)
   assert_equal(['three'], vrem)
+
+  [&ts, &sw] = [3, 4]
+  assert_equal(3, &ts)
+  assert_equal(4, &sw)
+  set ts=8 sw=4
 enddef
 
 def Test_assignment_vim9script()

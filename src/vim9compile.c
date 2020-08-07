@@ -1336,7 +1336,7 @@ generate_STOREOPT(cctx_T *cctx, char_u *name, int opt_flags)
     isn_T	*isn;
 
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr(cctx, ISN_STOREOPT)) == NULL)
+    if ((isn = generate_instr_drop(cctx, ISN_STOREOPT, 1)) == NULL)
 	return FAIL;
     isn->isn_arg.storeopt.so_name = vim_strsave(name);
     isn->isn_arg.storeopt.so_flags = opt_flags;
