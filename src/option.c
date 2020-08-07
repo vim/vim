@@ -1763,6 +1763,7 @@ do_set(
 #ifdef BACKSLASH_IN_FILENAME
 					&& !((flags & P_EXPAND)
 						&& vim_isfilec(arg[1])
+						&& !VIM_ISWHITE(arg[1])
 						&& (arg[1] != '\\'
 						    || (s == newval
 							&& arg[2] != '\\')))

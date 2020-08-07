@@ -973,4 +973,12 @@ func Test_opt_winminwidth()
   set winwidth&
 endfunc
 
+" Test for setting option value contains spaces with isfname+=32
+func Test_isfname_with_options()
+  set isfname+=32
+  setlocal keywordprg=:term\ help.exe
+  set isfname&
+  setlocal keywordprg&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
