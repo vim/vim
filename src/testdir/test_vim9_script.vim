@@ -126,13 +126,13 @@ def Test_assignment()
 
   $SOME_ENV_VAR ..= 'more'
   assert_equal('somemore', $SOME_ENV_VAR)
-  call CheckDefFailure(['$SOME_ENV_VAR += "more"'], 'E1013:')
+  call CheckDefFailure(['$SOME_ENV_VAR += "more"'], 'E1051:')
   call CheckDefFailure(['$SOME_ENV_VAR += 123'], 'E1013:')
 
   @a = 'areg'
   @a ..= 'add'
   assert_equal('aregadd', @a)
-  call CheckDefFailure(['@a += "more"'], 'E1013:')
+  call CheckDefFailure(['@a += "more"'], 'E1051:')
   call CheckDefFailure(['@a += 123'], 'E1013:')
 
   lines =<< trim END
@@ -146,7 +146,7 @@ def Test_assignment()
   v:errmsg = 'none'
   v:errmsg ..= 'again'
   assert_equal('noneagain', v:errmsg)
-  call CheckDefFailure(['v:errmsg += "more"'], 'E1013:')
+  call CheckDefFailure(['v:errmsg += "more"'], 'E1051:')
   call CheckDefFailure(['v:errmsg += 123'], 'E1013:')
 
   # single letter variables
@@ -224,6 +224,13 @@ def Test_assignment_list()
   assert_equal([1, 88, 99], list2)
   list2[-3] = 77
   assert_equal([77, 88, 99], list2)
+  list2 += [100]
+  assert_equal([77, 88, 99, 100], list2)
+
+  list3 += ['end']
+  assert_equal(['sdf', 'asdf', 'end'], list3)
+
+
   call CheckDefExecFailure(['let ll = [1, 2, 3]', 'll[-4] = 6'], 'E684:')
   call CheckDefExecFailure(['let [v1, v2] = [1, 2]'], 'E1092:')
 

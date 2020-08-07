@@ -776,6 +776,53 @@ check_number_or_float(vartype_T type1, vartype_T type2, char_u *op)
     return OK;
 }
 
+    static int
+generate_add_instr(
+	cctx_T *cctx,
+	vartype_T vartype,
+	type_T *type1,
+	type_T *type2)
+{
+    isn_T *isn = generate_instr_drop(cctx,
+	      vartype == VAR_NUMBER ? ISN_OPNR
+	    : vartype == VAR_LIST ? ISN_ADDLIST
+	    : vartype == VAR_BLOB ? ISN_ADDBLOB
+#ifdef FEAT_FLOAT
+	    : vartype == VAR_FLOAT ? ISN_OPFLOAT
+#endif
+	    : ISN_OPANY, 1);
+
+    if (vartype != VAR_LIST && vartype != VAR_BLOB
+	    && type1->tt_type != VAR_ANY
+	    && type2->tt_type != VAR_ANY
+	    && check_number_or_float(
+			type1->tt_type, type2->tt_type, (char_u *)"+") == FAIL)
+	return FAIL;
+
+    if (isn != NULL)
+	isn->isn_arg.op.op_type = EXPR_ADD;
+    return isn == NULL ? FAIL : OK;
+}
+
+/*
+ * Get the type to use for an instruction for an operation on "type1" and
+ * "type2".  If they are matching use a type-specific instruction. Otherwise
+ * fall back to runtime type checking.
+ */
+    static vartype_T
+operator_type(type_T *type1, type_T *type2)
+{
+    if (type1->tt_type == type2->tt_type
+	    && (type1->tt_type == VAR_NUMBER
+		|| type1->tt_type == VAR_LIST
+#ifdef FEAT_FLOAT
+		|| type1->tt_type == VAR_FLOAT
+#endif
+		|| type1->tt_type == VAR_BLOB))
+	return type1->tt_type;
+    return VAR_ANY;
+}
+
 /*
  * Generate an instruction with two arguments.  The instruction depends on the
  * type of the arguments.
@@ -791,39 +838,16 @@ generate_two_op(cctx_T *cctx, char_u *op)
 
     RETURN_OK_IF_SKIP(cctx);
 
-    // Get the known type of the two items on the stack.  If they are matching
-    // use a type-specific instruction. Otherwise fall back to runtime type
-    // checking.
+    // Get the known type of the two items on the stack.
     type1 = ((type_T **)stack->ga_data)[stack->ga_len - 2];
     type2 = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-    vartype = VAR_ANY;
-    if (type1->tt_type == type2->tt_type
-	    && (type1->tt_type == VAR_NUMBER
-		|| type1->tt_type == VAR_LIST
-#ifdef FEAT_FLOAT
-		|| type1->tt_type == VAR_FLOAT
-#endif
-		|| type1->tt_type == VAR_BLOB))
-	vartype = type1->tt_type;
+    vartype = operator_type(type1, type2);
 
     switch (*op)
     {
-	case '+': if (vartype != VAR_LIST && vartype != VAR_BLOB
-			  && type1->tt_type != VAR_ANY
-			  && type2->tt_type != VAR_ANY
-			  && check_number_or_float(
-				   type1->tt_type, type2->tt_type, op) == FAIL)
+	case '+':
+		  if (generate_add_instr(cctx, vartype, type1, type2) == FAIL)
 		      return FAIL;
-		  isn = generate_instr_drop(cctx,
-			    vartype == VAR_NUMBER ? ISN_OPNR
-			  : vartype == VAR_LIST ? ISN_ADDLIST
-			  : vartype == VAR_BLOB ? ISN_ADDBLOB
-#ifdef FEAT_FLOAT
-			  : vartype == VAR_FLOAT ? ISN_OPFLOAT
-#endif
-			  : ISN_OPANY, 1);
-		  if (isn != NULL)
-		      isn->isn_arg.op.op_type = EXPR_ADD;
 		  break;
 
 	case '-':
@@ -5699,15 +5723,28 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    type_T	    *stacktype;
 
 	    // TODO: if type is known use float or any operation
+	    // TODO: check operator matches variable type
 
 	    if (*op == '.')
 		expected = &t_string;
+	    else if (*op == '+')
+		expected = member_type;
 	    stacktype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
 	    if (need_type(stacktype, expected, -1, cctx, FALSE) == FAIL)
 		goto theend;
 
 	    if (*op == '.')
-		generate_instr_drop(cctx, ISN_CONCAT, 1);
+	    {
+		if (generate_instr_drop(cctx, ISN_CONCAT, 1) == NULL)
+		    goto theend;
+	    }
+	    else if (*op == '+')
+	    {
+		if (generate_add_instr(cctx,
+			    operator_type(member_type, stacktype),
+					       member_type, stacktype) == FAIL)
+		    goto theend;
+	    }
 	    else
 	    {
 		isn_T *isn = generate_instr_drop(cctx, ISN_OPNR, 1);
@@ -5716,7 +5753,6 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    goto theend;
 		switch (*op)
 		{
-		    case '+': isn->isn_arg.op.op_type = EXPR_ADD; break;
 		    case '-': isn->isn_arg.op.op_type = EXPR_SUB; break;
 		    case '*': isn->isn_arg.op.op_type = EXPR_MULT; break;
 		    case '/': isn->isn_arg.op.op_type = EXPR_DIV; break;
