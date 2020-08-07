@@ -1311,12 +1311,12 @@ do_set(
 	    {
 		if (flags & (P_SECURE | P_NO_ML))
 		{
-		    errmsg = _("E520: Not allowed in a modeline");
+		    errmsg = N_("E520: Not allowed in a modeline");
 		    goto skip;
 		}
 		if ((flags & P_MLE) && !p_mle)
 		{
-		    errmsg = _("E992: Not allowed in a modeline when 'modelineexpr' is off");
+		    errmsg = N_("E992: Not allowed in a modeline when 'modelineexpr' is off");
 		    goto skip;
 		}
 #ifdef FEAT_DIFF
@@ -1338,7 +1338,7 @@ do_set(
 	    // Disallow changing some options in the sandbox
 	    if (sandbox != 0 && (flags & P_SECURE))
 	    {
-		errmsg = _(e_sandbox);
+		errmsg = e_sandbox;
 		goto skip;
 	    }
 #endif
@@ -1763,6 +1763,7 @@ do_set(
 #ifdef BACKSLASH_IN_FILENAME
 					&& !((flags & P_EXPAND)
 						&& vim_isfilec(arg[1])
+						&& !VIM_ISWHITE(arg[1])
 						&& (arg[1] != '\\'
 						    || (s == newval
 							&& arg[2] != '\\')))
