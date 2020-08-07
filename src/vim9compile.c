@@ -5462,6 +5462,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			semsg(_(e_unknown_var), name);
 			goto theend;
 		    }
+		    else if (check_defined(var_start, varlen, cctx) == FAIL)
+			goto theend;
 		}
 	    }
 

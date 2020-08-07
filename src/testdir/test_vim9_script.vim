@@ -1780,6 +1780,18 @@ def Test_func_redefine_fails()
     enddef
   END
   CheckScriptFailure(lines, 'E1073:')
+
+  lines =<< trim END
+    vim9script
+    def Foo(): string
+      return 'foo'
+      enddef
+    def Func()
+      let  Foo = {-> 'lambda'}
+    enddef
+    defcompile
+  END
+  CheckScriptFailure(lines, 'E1073:')
 enddef
 
 def Test_fixed_size_list()
