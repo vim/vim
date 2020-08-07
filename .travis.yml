@@ -1,23 +1,29 @@
 language: c
 
+env:
+  global:
+    - BUILD=yes TEST=test CONFOPT= LEAK_CFLAGS="-DEXITFREE" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+
 _anchors:
   envs:
     - &tiny-nogui
-      BUILD=yes TEST=test FEATURES=tiny CONFOPT="--disable-gui" LEAK_CFLAGS="-DEXITFREE" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+      FEATURES=tiny CONFOPT="--disable-gui"
     - &tiny
-      BUILD=yes TEST=test FEATURES=tiny CONFOPT= LEAK_CFLAGS="-DEXITFREE" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+      FEATURES=tiny
     - &small
-      BUILD=yes TEST=test FEATURES=small CONFOPT= LEAK_CFLAGS="-DEXITFREE" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+      FEATURES=small
     - &normal
-      BUILD=yes TEST=test FEATURES=normal CONFOPT= LEAK_CFLAGS="-DEXITFREE" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+      FEATURES=normal
     - &linux-huge
-      BUILD=yes TEST="scripttests test_libvterm" CFLAGS="--coverage -DUSE_GCOV_FLUSH" LDFLAGS=--coverage FEATURES=huge LEAK_CFLAGS="-DEXITFREE" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+      FEATURES=huge TEST="scripttests test_libvterm"
       CONFOPT="--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
     - &osx-huge # macOS build
-      BUILD=yes TEST=test FEATURES=huge LEAK_CFLAGS="-DEXITFREE" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
-      CONFOPT="--enable-perlinterp --enable-pythoninterp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
+      FEATURES=huge
+      CONFOPT="--enable-perlinterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
     - &unittests
-      BUILD=no TEST=unittests CFLAGS="--coverage -DUSE_GCOV_FLUSH" LDFLAGS=--coverage FEATURES=huge LEAK_CFLAGS="-DEXITFREE" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=yes
+      BUILD=no TEST=unittests FEATURES=huge CHECK_AUTOCONF=yes
+    - &coverage
+      CFLAGS="--coverage -DUSE_GCOV_FLUSH" LDFLAGS=--coverage
     - &asan # ASAN build
       SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
       ASAN_OPTIONS="print_stacktrace=1 log_path=asan" LSAN_OPTIONS="suppressions=$TRAVIS_BUILD_DIR/src/testdir/lsan-suppress.txt"
@@ -87,7 +93,7 @@ _anchors:
       # Lua is not installed on macOS
       - export LUA_PREFIX=/usr/local
 
-  coverage: &coverage
+  coverage: &eval-coverage
     # needed for https support for coveralls building cffi only works with gcc,
     # not with clang
     - CC=gcc pip install --user cpp-coveralls pyopenssl ndg-httpsclient pyasn1
@@ -209,18 +215,27 @@ jobs:
       env: *linux-huge
       services: []
     - <<: *linux
+      arch: arm64
+      name: huge/gcc-arm64
+      compiler: gcc
+      env: *linux-huge
+      services: []
+    - <<: *linux
       name: huge+coverage/clang
       compiler: clang
       env:
         - *linux-huge
+        - *coverage
         # Clang cannot compile test_libvterm with "--coverage" flag.
         - TEST=scripttests
-      after_success: *coverage
+      after_success: *eval-coverage
     - <<: *linux
       name: huge+coverage/gcc
       compiler: gcc
-      env: *linux-huge
-      after_success: *coverage
+      env:
+        - *linux-huge
+        - *coverage
+      after_success: *eval-coverage
     - <<: *linux # ASAN
       name: huge+asan/gcc
       compiler: gcc
@@ -233,13 +248,16 @@ jobs:
       compiler: gcc
       env:
         - *linux-huge
+        - *coverage
         - TEST="-C src testgui"
-      after_success: *coverage
+      after_success: *eval-coverage
     - <<: *linux
       name: unittests+coverage/gcc
       compiler: gcc
-      env: *unittests
-      after_success: *coverage
+      env:
+        - *unittests
+        - *coverage
+      after_success: *eval-coverage
     - <<: *linux
       name: vimtags/gcc
       compiler: gcc
