@@ -820,14 +820,23 @@ get_lval(
     {
 	lp->ll_name = name;
 
-	if (in_vim9script() && *p == ':')
+	if (in_vim9script())
 	{
-	    scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
-	    char_u	 *tp = skipwhite(p + 1);
+	    // "a: type" is declaring variable "a" with a type, not "a:".
+	    if (p == name + 2 && p[-1] == ':')
+	    {
+		--p;
+		lp->ll_name_end = p;
+	    }
+	    if (*p == ':')
+	    {
+		scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
+		char_u	 *tp = skipwhite(p + 1);
 
-	    // parse the type after the name
-	    lp->ll_type = parse_type(&tp, &si->sn_type_list);
-	    lp->ll_name_end = tp;
+		// parse the type after the name
+		lp->ll_type = parse_type(&tp, &si->sn_type_list);
+		lp->ll_name_end = tp;
+	    }
 	}
     }
 

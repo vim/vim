@@ -449,6 +449,17 @@ def Test_assignment_vim9script()
       @+ = 'plus'
       assert_equal('plus', @+)
     endif
+
+    let a: number = 123
+    assert_equal(123, a)
+    let s: string = 'yes'
+    assert_equal('yes', s)
+    let b: number = 42
+    assert_equal(42, b)
+    let w: number = 43
+    assert_equal(43, w)
+    let t: number = 44
+    assert_equal(44, t)
   END
   CheckScriptSuccess(lines)
 enddef
