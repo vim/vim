@@ -402,6 +402,15 @@ ret_getreg(int argcount, type_T **argtypes UNUSED)
     return &t_string;
 }
 
+    static type_T *
+ret_maparg(int argcount, type_T **argtypes UNUSED)
+{
+    // Assume that if the fourth argument is passed it's non-zero
+    if (argcount == 4)
+	return &t_dict_any;
+    return &t_string;
+}
+
 static type_T *ret_f_function(int argcount, type_T **argtypes);
 
 /*
@@ -729,7 +738,7 @@ static funcentry_T global_functions[] =
 #endif
 			},
     {"map",		2, 2, FEARG_1,	  ret_any,	f_map},
-    {"maparg",		1, 4, FEARG_1,	  ret_string,	f_maparg},
+    {"maparg",		1, 4, FEARG_1,	  ret_maparg,	f_maparg},
     {"mapcheck",	1, 3, FEARG_1,	  ret_string,	f_mapcheck},
     {"mapset",		3, 3, FEARG_1,	  ret_void,	f_mapset},
     {"match",		2, 4, FEARG_1,	  ret_any,	f_match},
