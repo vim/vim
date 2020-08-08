@@ -503,16 +503,48 @@ def Test_error_in_nested_function()
 enddef
 
 def Test_return_type_wrong()
-  CheckScriptFailure(['def Func(): number', 'return "a"', 'enddef', 'defcompile'], 'expected number but got string')
-  CheckScriptFailure(['def Func(): string', 'return 1', 'enddef', 'defcompile'], 'expected string but got number')
-  CheckScriptFailure(['def Func(): void', 'return "a"', 'enddef', 'defcompile'], 'E1096: Returning a value in a function without a return type')
-  CheckScriptFailure(['def Func()', 'return "a"', 'enddef', 'defcompile'], 'E1096: Returning a value in a function without a return type')
+  CheckScriptFailure([
+        'def Func(): number',
+        'return "a"',
+        'enddef',
+        'defcompile'], 'expected number but got string')
+  CheckScriptFailure([
+        'def Func(): string',
+        'return 1',
+        'enddef',
+        'defcompile'], 'expected string but got number')
+  CheckScriptFailure([
+        'def Func(): void',
+        'return "a"',
+        'enddef',
+        'defcompile'],
+        'E1096: Returning a value in a function without a return type')
+  CheckScriptFailure([
+        'def Func()',
+        'return "a"',
+        'enddef',
+        'defcompile'],
+        'E1096: Returning a value in a function without a return type')
 
-  CheckScriptFailure(['def Func(): number', 'return', 'enddef', 'defcompile'], 'E1003:')
+  CheckScriptFailure([
+        'def Func(): number',
+        'return',
+        'enddef',
+        'defcompile'], 'E1003:')
 
   CheckScriptFailure(['def Func(): list', 'return []', 'enddef'], 'E1008:')
   CheckScriptFailure(['def Func(): dict', 'return {}', 'enddef'], 'E1008:')
   CheckScriptFailure(['def Func()', 'return 1'], 'E1057:')
+
+  CheckScriptFailure([
+        'vim9script',
+        'def FuncB()',
+        '  return 123',
+        'enddef',
+        'def FuncA()',
+        '   FuncB()',
+        'enddef',
+        'defcompile'], 'E1096:')
 enddef
 
 def Test_arg_type_wrong()

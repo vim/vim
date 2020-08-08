@@ -662,8 +662,10 @@ check_type(type_T *expected, type_T *actual, int give_msg)
 		int i;
 
 		for (i = 0; i < expected->tt_argcount; ++i)
-		    if (check_type(expected->tt_args[i], actual->tt_args[i],
-								FALSE) == FAIL)
+		    // Allow for using "any" argument type, lambda's have them.
+		    if (actual->tt_args[i] != &t_any && check_type(
+			       expected->tt_args[i], actual->tt_args[i], FALSE)
+								       == FAIL)
 		    {
 			ret = FAIL;
 			break;
@@ -1537,7 +1539,7 @@ generate_NEWDICT(cctx_T *cctx, int count)
  * Generate an ISN_FUNCREF instruction.
  */
     static int
-generate_FUNCREF(cctx_T *cctx, int dfunc_idx)
+generate_FUNCREF(cctx_T *cctx, ufunc_T *ufunc)
 {
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
@@ -1545,13 +1547,13 @@ generate_FUNCREF(cctx_T *cctx, int dfunc_idx)
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr(cctx, ISN_FUNCREF)) == NULL)
 	return FAIL;
-    isn->isn_arg.funcref.fr_func = dfunc_idx;
+    isn->isn_arg.funcref.fr_func = ufunc->uf_dfunc_idx;
     isn->isn_arg.funcref.fr_var_idx = cctx->ctx_closure_count++;
 
     if (ga_grow(stack, 1) == FAIL)
 	return FAIL;
-    ((type_T **)stack->ga_data)[stack->ga_len] = &t_func_any;
-    // TODO: argument and return types
+    ((type_T **)stack->ga_data)[stack->ga_len] =
+	       ufunc->uf_func_type == NULL ? &t_func_any : ufunc->uf_func_type;
     ++stack->ga_len;
 
     return OK;
@@ -1713,7 +1715,8 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 	    }
 	}
 	if (ufunc->uf_def_status == UF_TO_BE_COMPILED)
-	    if (compile_def_function(ufunc, TRUE, NULL) == FAIL)
+	    if (compile_def_function(ufunc, ufunc->uf_ret_type == NULL, NULL)
+								       == FAIL)
 		return FAIL;
     }
 
@@ -3338,7 +3341,12 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     clear_evalarg(&evalarg, NULL);
 
     if (ufunc->uf_def_status == UF_COMPILED)
-	return generate_FUNCREF(cctx, ufunc->uf_dfunc_idx);
+    {
+	// The return type will now be known.
+	set_function_type(ufunc);
+
+	return generate_FUNCREF(cctx, ufunc);
+    }
 
     func_ptr_unref(ufunc);
     return FAIL;
@@ -4982,7 +4990,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 						    TRUE, ufunc->uf_func_type);
 	if (lvar == NULL)
 	    return NULL;
-	if (generate_FUNCREF(cctx, ufunc->uf_dfunc_idx) == FAIL)
+	if (generate_FUNCREF(cctx, ufunc) == FAIL)
 	    return NULL;
 	r = generate_STORE(cctx, ISN_STORE, lvar->lv_idx, NULL);
     }
