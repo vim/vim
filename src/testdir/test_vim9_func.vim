@@ -984,6 +984,47 @@ func DelMe()
   echo 'DelMe'
 endfunc
 
+def Test_error_reporting()
+  # comment lines at the start of the function
+  let lines =<< trim END
+    " comment
+    def Func()
+      # comment
+      # comment
+      invalid
+    enddef
+    defcompile
+  END
+  call writefile(lines, 'Xdef')
+  try
+    source Xdef
+  catch /E476:/
+    assert_match('Invalid command: invalid', v:exception)
+    assert_match(', line 3$', v:throwpoint)
+  endtry
+
+  # comment lines after the start of the function
+  lines =<< trim END
+    " comment
+    def Func()
+      let x = 1234
+      # comment
+      # comment
+      invalid
+    enddef
+    defcompile
+  END
+  call writefile(lines, 'Xdef')
+  try
+    source Xdef
+  catch /E476:/
+    assert_match('Invalid command: invalid', v:exception)
+    assert_match(', line 4$', v:throwpoint)
+  endtry
+
+  call delete('Xdef')
+enddef
+
 def Test_deleted_function()
   CheckDefExecFailure([
       'let RefMe: func = function("g:DelMe")',

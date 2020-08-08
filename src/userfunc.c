@@ -2961,6 +2961,18 @@ def_function(exarg_T *eap, char_u *name_arg)
     // Save the starting line number.
     sourcing_lnum_top = SOURCING_LNUM;
 
+    // Detect having skipped over comment lines to find the return
+    // type.  Add NULL lines to keep the line count correct.
+    sourcing_lnum_off = get_sourced_lnum(eap->getline, eap->cookie);
+    if (SOURCING_LNUM < sourcing_lnum_off)
+    {
+	sourcing_lnum_off -= SOURCING_LNUM;
+	if (ga_grow(&newlines, sourcing_lnum_off) == FAIL)
+	    goto erret;
+	while (sourcing_lnum_off-- > 0)
+	    ((char_u **)(newlines.ga_data))[newlines.ga_len++] = NULL;
+    }
+
     indent = 2;
     nesting = 0;
     nesting_def[nesting] = (eap->cmdidx == CMD_def);
