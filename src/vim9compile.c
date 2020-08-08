@@ -2548,12 +2548,10 @@ get_script_item_idx(int sid, char_u *name, int check_writable)
     imported_T *
 find_imported(char_u *name, size_t len, cctx_T *cctx)
 {
-    scriptitem_T    *si;
     int		    idx;
 
     if (current_sctx.sc_sid <= 0)
 	return NULL;
-    si = SCRIPT_ITEM(current_sctx.sc_sid);
     if (cctx != NULL)
 	for (idx = 0; idx < cctx->ctx_imports.ga_len; ++idx)
 	{
@@ -2565,6 +2563,15 @@ find_imported(char_u *name, size_t len, cctx_T *cctx)
 				  && STRNCMP(name, import->imp_name, len) == 0)
 		return import;
 	}
+
+    return find_imported_in_script(name, len, current_sctx.sc_sid);
+}
+
+    imported_T *
+find_imported_in_script(char_u *name, size_t len, int sid)
+{
+    scriptitem_T    *si = SCRIPT_ITEM(sid);
+    int		    idx;
 
     for (idx = 0; idx < si->sn_imports.ga_len; ++idx)
     {

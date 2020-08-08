@@ -1430,6 +1430,31 @@ def Test_import_in_filetype()
   &rtp = save_rtp
 enddef
 
+def Test_use_import_in_mapping()
+  let lines =<< trim END
+      vim9script
+      export def Funcx()
+        g:result = 42
+      enddef
+  END
+  writefile(lines, 'XsomeExport.vim')
+  lines =<< trim END
+      vim9script
+      import Funcx from './XsomeExport.vim'
+      nnoremap <C-B> :call <sid>Funcx()<cr>
+  END
+  writefile(lines, 'Xmapscript.vim')
+
+  source Xmapscript.vim
+  feedkeys("\<c-b>", "xt")
+  assert_equal(42, g:result)
+
+  unlet g:result
+  delete('XsomeExport.vim')
+  delete('Xmapscript.vim')
+  nunmap <C-B>
+enddef
+
 def Test_vim9script_fails()
   CheckScriptFailure(['scriptversion 2', 'vim9script'], 'E1039:')
   CheckScriptFailure(['vim9script', 'scriptversion 2'], 'E1040:')

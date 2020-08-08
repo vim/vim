@@ -791,6 +791,7 @@ find_func_even_dead(char_u *name, int is_global, cctx_T *cctx)
     {
 	int	vim9script = in_vim9script();
 	char_u	*after_script = NULL;
+	long	sid = 0;
 
 	if (vim9script)
 	{
@@ -800,18 +801,15 @@ find_func_even_dead(char_u *name, int is_global, cctx_T *cctx)
 		return func;
 	}
 
-	if (!vim9script
-		&& name[0] == K_SPECIAL
+	if (name[0] == K_SPECIAL
 		&& name[1] == KS_EXTRA
 		&& name[2] == KE_SNR)
 	{
-	    long sid;
-
 	    // Caller changes s: to <SNR>99_name.
 
 	    after_script = name + 3;
 	    sid = getdigits(&after_script);
-	    if (sid == current_sctx.sc_sid && *after_script == '_')
+	    if (*after_script == '_')
 		++after_script;
 	    else
 		after_script = NULL;
@@ -819,8 +817,11 @@ find_func_even_dead(char_u *name, int is_global, cctx_T *cctx)
 	if (vim9script || after_script != NULL)
 	{
 	    // Find imported function before global one.
-	    imported = find_imported(
-			  after_script == NULL ? name : after_script, 0, cctx);
+	    if (after_script != NULL && sid != current_sctx.sc_sid)
+		imported = find_imported_in_script(after_script, 0, sid);
+	    else
+		imported = find_imported(after_script == NULL
+					       ? name : after_script, 0, cctx);
 	    if (imported != NULL && imported->imp_funcname != NULL)
 	    {
 		hi = hash_find(&func_hashtab, imported->imp_funcname);
