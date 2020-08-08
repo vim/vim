@@ -2012,6 +2012,7 @@ script_autoload(
     char_u	*scriptname, *tofree;
     int		ret = FALSE;
     int		i;
+    int		ret_sid;
 
     // If there is no '#' after name[0] there is no package name.
     p = vim_strchr(name, AUTOLOAD_CHAR);
@@ -2039,7 +2040,8 @@ script_autoload(
 	}
 
 	// Try loading the package from $VIMRUNTIME/autoload/<name>.vim
-	if (source_runtime(scriptname, 0) == OK)
+	// Use "ret_sid" to avoid loading the same script again.
+	if (source_in_path(p_rtp, scriptname, 0, &ret_sid) == OK)
 	    ret = TRUE;
     }
 
