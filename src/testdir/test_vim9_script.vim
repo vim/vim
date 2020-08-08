@@ -751,11 +751,6 @@ func Test_block_failure()
   call CheckDefFailure(['{', 'echo 1'], 'E1026:')
 endfunc
 
-def Test_cmd_modifier()
-  tab echo '0'
-  call CheckDefFailure(['5tab echo 3'], 'E16:')
-enddef
-
 func g:NoSuchFunc()
   echo 'none'
 endfunc

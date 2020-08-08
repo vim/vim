@@ -1351,5 +1351,30 @@ def Test_partial_call()
   assert_equal({'title': 'test'}, getqflist({'title': 1}))
 enddef
 
+def Test_cmd_modifier()
+  tab echo '0'
+  call CheckDefFailure(['5tab echo 3'], 'E16:')
+enddef
+
+def Test_restore_modifiers()
+  # check that when compiling a :def function command modifiers are not messed
+  # up.
+  let lines =<< trim END
+      vim9script
+      set eventignore=
+      autocmd QuickFixCmdPost * copen
+      def AutocmdsDisabled()
+          eval 0
+      enddef
+      func Func()
+        noautocmd call s:AutocmdsDisabled()
+        let g:ei_after = &eventignore
+      endfunc
+      Func()
+  END
+  CheckScriptSuccess(lines)
+  assert_equal('', g:ei_after)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

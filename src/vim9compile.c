@@ -2668,7 +2668,7 @@ next_line_from_context(cctx_T *cctx, int skip_comment)
 	cctx->ctx_line_start = line;
 	SOURCING_LNUM = cctx->ctx_lnum + 1;
     } while (line == NULL || *skipwhite(line) == NUL
-			  || (skip_comment && vim9_comment_start(skipwhite(line))));
+		     || (skip_comment && vim9_comment_start(skipwhite(line))));
     return line;
 }
 
@@ -7194,10 +7194,11 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
      */
     for (;;)
     {
-	exarg_T	ea;
-	int	starts_with_colon = FALSE;
-	char_u	*cmd;
-	int	save_msg_scroll = msg_scroll;
+	exarg_T	    ea;
+	cmdmod_T    save_cmdmod;
+	int	    starts_with_colon = FALSE;
+	char_u	    *cmd;
+	int	    save_msg_scroll = msg_scroll;
 
 	// Bail out on the first error to avoid a flood of errors and report
 	// the right line number when inside try/catch.
@@ -7278,6 +7279,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	/*
 	 * COMMAND MODIFIERS
 	 */
+	save_cmdmod = cmdmod;
 	if (parse_command_modifiers(&ea, &errormsg, FALSE) == FAIL)
 	{
 	    if (errormsg != NULL)
@@ -7288,7 +7290,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	}
 	// TODO: use modifiers in the command
 	undo_cmdmod(&ea, save_msg_scroll);
-	CLEAR_FIELD(cmdmod);
+	cmdmod = save_cmdmod;
 
 	// Skip ":call" to get to the function name.
 	if (checkforcmd(&ea.cmd, "call", 3))
