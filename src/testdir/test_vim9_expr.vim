@@ -53,8 +53,8 @@ def Test_expr1()
   let RetThat: func = g:atrue ? RetOne : RetTwo
   assert_equal(function('len'), RetThat)
 
-  let x = FuncOne
-  let y = FuncTwo
+  let X = FuncOne
+  let Y = FuncTwo
   let Z = g:cond ? FuncOne : FuncTwo
   assert_equal(123, Z(3))
 enddef
@@ -132,8 +132,8 @@ func Test_expr1_fails()
 
   " missing argument detected even when common type is used
   call CheckDefFailure([
-	\ 'let x = FuncOne',
-	\ 'let y = FuncTwo',
+	\ 'let X = FuncOne',
+	\ 'let Y = FuncTwo',
 	\ 'let Z = g:cond ? FuncOne : FuncTwo',
 	\ 'Z()'], 'E119:')
 endfunc

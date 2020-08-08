@@ -1007,7 +1007,7 @@ get_lval(
 		    prevval = 0; // avoid compiler warning
 		wrong = (lp->ll_dict->dv_scope == VAR_DEF_SCOPE
 			       && rettv->v_type == VAR_FUNC
-			       && var_check_func_name(key, lp->ll_di == NULL))
+			       && var_wrong_func_name(key, lp->ll_di == NULL))
 			|| !valid_varname(key);
 		if (len != -1)
 		    key[len] = prevval;

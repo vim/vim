@@ -68,7 +68,7 @@ void set_var(char_u *name, typval_T *tv, int copy);
 void set_var_const(char_u *name, type_T *type, typval_T *tv, int copy, int flags);
 int var_check_ro(int flags, char_u *name, int use_gettext);
 int var_check_fixed(int flags, char_u *name, int use_gettext);
-int var_check_func_name(char_u *name, int new_var);
+int var_wrong_func_name(char_u *name, int new_var);
 int var_check_lock(int lock, char_u *name, int use_gettext);
 int valid_varname(char_u *varname);
 void reset_v_option_vars(void);

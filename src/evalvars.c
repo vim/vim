@@ -2928,7 +2928,7 @@ set_var_const(
 	di = find_var_in_scoped_ht(name, TRUE);
 
     if ((tv->v_type == VAR_FUNC || tv->v_type == VAR_PARTIAL)
-				      && var_check_func_name(name, di == NULL))
+				      && var_wrong_func_name(name, di == NULL))
 	return;
 
     if (di != NULL)
@@ -3114,7 +3114,7 @@ var_check_fixed(int flags, char_u *name, int use_gettext)
  * Return TRUE and give an error if not.
  */
     int
-var_check_func_name(
+var_wrong_func_name(
     char_u *name,    // points to start of variable name
     int    new_var)  // TRUE when creating the variable
 {

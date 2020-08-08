@@ -28,6 +28,7 @@ def Test_assignment()
   call CheckDefFailure(['let x:string'], 'E1069:')
   call CheckDefFailure(['let x:string = "x"'], 'E1069:')
   call CheckDefFailure(['let a:string = "x"'], 'E1069:')
+  call CheckDefFailure(['let lambda = {-> "lambda"}'], 'E704:')
 
   let nr: number = 1234
   call CheckDefFailure(['let nr: number = "asdf"'], 'E1013:')

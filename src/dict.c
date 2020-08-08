@@ -966,7 +966,7 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action)
 		// Check the key to be valid when adding to any scope.
 		if (d1->dv_scope == VAR_DEF_SCOPE
 			&& HI2DI(hi2)->di_tv.v_type == VAR_FUNC
-			&& var_check_func_name(hi2->hi_key, di1 == NULL))
+			&& var_wrong_func_name(hi2->hi_key, di1 == NULL))
 		    break;
 		if (!valid_varname(hi2->hi_key))
 		    break;

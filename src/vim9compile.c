@@ -5515,7 +5515,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    }
 
 	    // new local variable
-	    if (type->tt_type == VAR_FUNC && var_check_func_name(name, TRUE))
+	    if ((type->tt_type == VAR_FUNC || type->tt_type == VAR_PARTIAL)
+					    && var_wrong_func_name(name, TRUE))
 		goto theend;
 	    lvar = reserve_local(cctx, var_start, varlen,
 						    cmdidx == CMD_const, type);
@@ -5622,6 +5623,12 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			if (stacktype->tt_type == VAR_VOID)
 			{
 			    emsg(_(e_cannot_use_void));
+			    goto theend;
+			}
+			else if ((stacktype->tt_type == VAR_FUNC
+				    || stacktype->tt_type == VAR_PARTIAL)
+					    && var_wrong_func_name(name, TRUE))
+			{
 			    goto theend;
 			}
 			else
