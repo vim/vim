@@ -3009,6 +3009,37 @@ def Test_vim9_autoload()
   &rtp = save_rtp
 enddef
 
+def Test_cmdline_win()
+  # if the Vim syntax highlighting uses Vim9 constructs they can be used from
+  # the command line window.
+  mkdir('rtp/syntax', 'p')
+  let export_lines =<< trim END
+    vim9script
+    export let That = 'yes'
+  END
+  writefile(export_lines, 'rtp/syntax/Xexport.vim')
+  let import_lines =<< trim END
+    vim9script
+    import That from './Xexport.vim'
+  END
+  writefile(import_lines, 'rtp/syntax/vim.vim')
+  let save_rtp = &rtp
+  &rtp = getcwd() .. '/rtp' .. ',' .. &rtp
+  syntax on
+  augroup CmdWin
+    autocmd CmdwinEnter * g:got_there = 'yes'
+  augroup END
+  # this will open and also close the cmdline window
+  feedkeys('q:', 'xt')
+  assert_equal('yes', g:got_there)
+
+  augroup CmdWin
+    au!
+  augroup END
+  &rtp = save_rtp
+  delete('rtp', 'rf')
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new
