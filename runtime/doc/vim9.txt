@@ -619,6 +619,8 @@ called in the same way the declaration is the same.
 
 Custom types can be defined with `:type`: >
 	:type MyList list<string>
+Custom types must start with a capital letter, to avoid name clashes with
+builtin types added later, similarly to user functions.
 {not implemented yet}
 
 And classes and interfaces can be used as types: >
@@ -645,6 +647,12 @@ declaring a variable and giving it a value: >
 	let var = 0		" infers number type
 	let var = 'hello'	" infers string type
 
+The type of a list and dictionary comes from the common type of the values.
+If the values all have the same type, that type is used for the list or
+dictionary.  If there is a mix of types, the "any" type is used. >
+	[1, 2, 3]	list<number>
+	['a', 'b', 'c']	list<string>
+	[1, 'x', 3]	list<any>
 
 ==============================================================================
 

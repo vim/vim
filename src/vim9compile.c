@@ -1110,16 +1110,14 @@ generate_NEWLIST(cctx_T *cctx, int count)
 	return FAIL;
     isn->isn_arg.number = count;
 
+    // get the member type from all the items on the stack.
+    member = get_member_type_from_stack(
+	    ((type_T **)stack->ga_data) + stack->ga_len, count, 1,
+							  cctx->ctx_type_list);
+    type = get_list_type(member, cctx->ctx_type_list);
+
     // drop the value types
     stack->ga_len -= count;
-
-    // Use the first value type for the list member type.  Use "any" for an
-    // empty list.
-    if (count > 0)
-	member = ((type_T **)stack->ga_data)[stack->ga_len];
-    else
-	member = &t_void;
-    type = get_list_type(member, cctx->ctx_type_list);
 
     // add the list type to the type stack
     if (ga_grow(stack, 1) == FAIL)
@@ -1146,16 +1144,13 @@ generate_NEWDICT(cctx_T *cctx, int count)
 	return FAIL;
     isn->isn_arg.number = count;
 
+    member = get_member_type_from_stack(
+	    ((type_T **)stack->ga_data) + stack->ga_len, count, 2,
+							  cctx->ctx_type_list);
+    type = get_dict_type(member, cctx->ctx_type_list);
+
     // drop the key and value types
     stack->ga_len -= 2 * count;
-
-    // Use the first value type for the list member type.  Use "void" for an
-    // empty dict.
-    if (count > 0)
-	member = ((type_T **)stack->ga_data)[stack->ga_len + 1];
-    else
-	member = &t_void;
-    type = get_dict_type(member, cctx->ctx_type_list);
 
     // add the dict type to the type stack
     if (ga_grow(stack, 1) == FAIL)

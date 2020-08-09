@@ -789,6 +789,42 @@ common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap)
     *dest = &t_any;
 }
 
+/*
+ * Get the member type of a dict or list from the items on the stack.
+ * "stack_top" points just after the last type on the type stack.
+ * For a list "skip" is 1, for a dict "skip" is 2, keys are skipped.
+ * Returns &t_void for an empty list or dict.
+ * Otherwise finds the common type of all items.
+ */
+    type_T *
+get_member_type_from_stack(
+	type_T	    **stack_top,
+	int	    count,
+	int	    skip,
+	garray_T    *type_gap)
+{
+    int	    i;
+    type_T  *result;
+    type_T  *type;
+
+    // Use "any" for an empty list or dict.
+    if (count == 0)
+	return &t_void;
+
+    // Use the first value type for the list member type, then find the common
+    // type from following items.
+    result = *(stack_top -(count * skip) + skip - 1);
+    for (i = 1; i < count; ++i)
+    {
+	if (result == &t_any)
+	    break;  // won't get more common
+	type = *(stack_top -((count - i) * skip) + skip - 1);
+	common_type(type, result, &result, type_gap);
+    }
+
+    return result;
+}
+
     char *
 vartype_name(vartype_T type)
 {

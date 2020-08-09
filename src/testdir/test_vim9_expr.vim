@@ -1334,7 +1334,17 @@ def Test_expr7_list()
   # list
   assert_equal(g:list_empty, [])
   assert_equal(g:list_empty, [  ])
-  assert_equal(g:list_mixed, [1, 'b', false,])
+
+  let numbers: list<number> = [1, 2, 3]
+  numbers = [1]
+  numbers = []
+
+  let strings: list<string> = ['a', 'b', 'c']
+  strings = ['x']
+  strings = []
+
+  let mixed: list<any> = [1, 'b', false,]
+  assert_equal(g:list_mixed, mixed)
   assert_equal('b', g:list_mixed[1])
 
   echo [1,
@@ -1348,6 +1358,10 @@ def Test_expr7_list()
   call CheckDefFailure(["let x = g:list_mixed["], 'E1097:')
   call CheckDefFailure(["let x = g:list_mixed[0"], 'E1097:')
   call CheckDefExecFailure(["let x = g:list_empty[3]"], 'E684:')
+  call CheckDefFailure(["let l: list<number> = [234, 'x']"], 'E1013:')
+  call CheckDefFailure(["let l: list<number> = ['x', 234]"], 'E1013:')
+  call CheckDefFailure(["let l: list<string> = [234, 'x']"], 'E1013:')
+  call CheckDefFailure(["let l: list<string> = ['x', 123]"], 'E1013:')
 enddef
 
 def Test_expr7_list_vim9script()
@@ -1437,6 +1451,19 @@ def Test_expr7_dict()
   let val = 1
   assert_equal(g:dict_one, {key: val})
 
+  let numbers: dict<number> = #{a: 1, b: 2, c: 3}
+  numbers = #{a: 1}
+  numbers = #{}
+
+  let strings: dict<string> = #{a: 'a', b: 'b', c: 'c'}
+  strings = #{a: 'x'}
+  strings = #{}
+
+  let mixed: dict<any> = #{a: 'a', b: 42}
+  mixed = #{a: 'x'}
+  mixed = #{a: 234}
+  mixed = #{}
+
   call CheckDefFailure(["let x = #{8: 8}"], 'E1014:')
   call CheckDefFailure(["let x = #{xxx}"], 'E720:')
   call CheckDefFailure(["let x = #{xxx: 1", "let y = 2"], 'E722:')
@@ -1449,6 +1476,11 @@ def Test_expr7_dict()
   call CheckDefFailure(["let x = x + 1"], 'E1001:')
   call CheckDefExecFailure(["let x = g:anint.member"], 'E715:')
   call CheckDefExecFailure(["let x = g:dict_empty.member"], 'E716:')
+
+  call CheckDefFailure(['let x: dict<number> = #{a: 234, b: "1"}'], 'E1013:')
+  call CheckDefFailure(['let x: dict<number> = #{a: "x", b: 134}'], 'E1013:')
+  call CheckDefFailure(['let x: dict<string> = #{a: 234, b: "1"}'], 'E1013:')
+  call CheckDefFailure(['let x: dict<string> = #{a: "x", b: 134}'], 'E1013:')
 enddef
 
 def Test_expr7_dict_vim9script()
