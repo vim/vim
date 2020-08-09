@@ -4019,6 +4019,9 @@ func Test_type()
     call assert_true(v:none == 0)
     call assert_false(v:none != 0)
 
+    call assert_true(!v:true is v:false)
+    call assert_true(!v:false is v:true)
+
     call assert_true(v:false is v:false)
     call assert_true(v:true is v:true)
     call assert_true(v:none is v:none)

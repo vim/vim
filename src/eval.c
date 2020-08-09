@@ -3323,7 +3323,10 @@ eval7_leader(
 #endif
 	{
 	    clear_tv(rettv);
-	    rettv->v_type = VAR_NUMBER;
+	    if (rettv->v_type == VAR_BOOL)
+		rettv->v_type = VAR_BOOL;
+	    else
+		rettv->v_type = VAR_NUMBER;
 	    rettv->vval.v_number = val;
 	}
     }
