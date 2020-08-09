@@ -806,6 +806,7 @@ OBJ = \
 	$(OUTDIR)/vim9compile.o \
 	$(OUTDIR)/vim9execute.o \
 	$(OUTDIR)/vim9script.o \
+	$(OUTDIR)/vim9type.o \
 	$(OUTDIR)/viminfo.o \
 	$(OUTDIR)/winclip.o \
 	$(OUTDIR)/window.o
@@ -1176,6 +1177,8 @@ $(OUTDIR)/vim9compile.o: vim9compile.c $(INCL) version.h
 $(OUTDIR)/vim9execute.o: vim9execute.c $(INCL) version.h
 
 $(OUTDIR)/vim9script.o: vim9script.c $(INCL) version.h
+
+$(OUTDIR)/vim9type.o: vim9type.c $(INCL) version.h
 
 $(OUTDIR)/viminfo.o: viminfo.c $(INCL) version.h
 

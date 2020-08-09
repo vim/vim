@@ -149,6 +149,7 @@ SRC_ALL =	\
 		src/vim9compile.c \
 		src/vim9execute.c \
 		src/vim9script.c \
+		src/vim9type.c \
 		src/viminfo.c \
 		src/winclip.c \
 		src/window.c \
@@ -304,6 +305,7 @@ SRC_ALL =	\
 		src/proto/vim9compile.pro \
 		src/proto/vim9execute.pro \
 		src/proto/vim9script.pro \
+		src/proto/vim9type.pro \
 		src/proto/viminfo.pro \
 		src/proto/winclip.pro \
 		src/proto/window.pro \
