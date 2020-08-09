@@ -817,6 +817,24 @@ enddef
 
 let g:number = 42
 
+def TypeCast()
+  let l: list<number> = [23, <number>g:number]
+enddef
+
+def Test_disassemble_typecast()
+  let instr = execute('disassemble TypeCast')
+  assert_match('TypeCast.*' ..
+        'let l: list<number> = \[23, <number>g:number\].*' ..
+        '\d PUSHNR 23\_s*' ..
+        '\d LOADG g:number\_s*' ..
+        '\d CHECKTYPE number stack\[-1\]\_s*' ..
+        '\d NEWLIST size 2\_s*' ..
+        '\d STORE $0\_s*' ..
+        '\d PUSHNR 0\_s*' ..
+        '\d RETURN\_s*',
+        instr)
+enddef
+
 def Computing()
   let nr = 3
   let nrres = nr + 7

@@ -1247,6 +1247,12 @@ let g:dict_one = #{one: 1}
 
 let $TESTVAR = 'testvar'
 
+" type casts
+def Test_expr7t()
+  let ls: list<string> = ['a', <string>g:string_empty]
+  let ln: list<number> = [<number>g:anint, <number>g:alsoint]
+enddef
+
 " test low level expression
 def Test_expr7_number()
   # number constant

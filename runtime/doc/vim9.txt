@@ -640,6 +640,35 @@ And classes and interfaces can be used as types: >
 {not implemented yet}
 
 
+Variable types and type casting				*variable-types*
+
+Variables declared in Vim9 script or in a `:def` function have a type, either
+specified explicitly or inferred from the initialization.
+
+Global, buffer, window and tab page variables do not have a specific type, the
+value can be changed at any time, possibly changing the type.  Therefore, in
+compiled code the "any" type is assumed.
+
+This can be a problem when the "any" type is undesired and the actual type is
+expected to always be the same.  For example, when declaring a list: >
+	let l: list<number> = [1, g:two]
+This will give an error, because "g:two" has type "any".  To avoid this, use a
+type cast: >
+	let l: list<number> = [1, <number>g:two]
+<							*type-casting*
+The compiled code will then check that "g:two" is a number at runtime and give
+an error if it isn't.  This is called type casting.
+
+The syntax of a type cast is:  "<" {type} ">".  There cannot be white space
+after the "<" or before the ">" (to avoid them being confused with
+smaller-than and bigger-than operators).
+
+The semantics is that, if needed, a runtime type check is performed.  The
+value is not actually changed.  If you need to change the type, e.g. to change
+it to a string, use the |string()| function.  Or use |str2nr()| to convert a
+string to a number.
+
+
 Type inference						*type-inference*
 
 In general: Whenever the type is clear it can be omitted.  For example, when
