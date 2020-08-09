@@ -1117,6 +1117,11 @@ let s:export_script_lines =<< trim END
   enddef
 END
 
+def Undo_export_script_lines()
+  unlet g:result
+  unlet g:localname
+enddef
+
 def Test_vim9_import_export()
   let import_script_lines =<< trim END
     vim9script
@@ -1155,8 +1160,7 @@ def Test_vim9_import_export()
   assert_equal('John Doe', g:imported_name_appended)
   assert_false(exists('g:name'))
 
-  unlet g:result
-  unlet g:localname
+  Undo_export_script_lines()
   unlet g:imported
   unlet g:imported_added
   unlet g:imported_later
@@ -1441,18 +1445,18 @@ def Test_use_import_in_mapping()
   lines =<< trim END
       vim9script
       import Funcx from './XsomeExport.vim'
-      nnoremap <C-B> :call <sid>Funcx()<cr>
+      nnoremap <F3> :call <sid>Funcx()<cr>
   END
   writefile(lines, 'Xmapscript.vim')
 
   source Xmapscript.vim
-  feedkeys("\<c-b>", "xt")
+  feedkeys("\<F3>", "xt")
   assert_equal(42, g:result)
 
   unlet g:result
   delete('XsomeExport.vim')
   delete('Xmapscript.vim')
-  nunmap <C-B>
+  nunmap <F3>
 enddef
 
 def Test_vim9script_fails()
@@ -1697,6 +1701,8 @@ def Test_import_absolute()
           '4 LOADSCRIPT exported from .*Xexport_abs.vim.*' ..
           '5 STOREG g:imported_after.*',
         g:import_disassembled)
+
+  Undo_export_script_lines()
   unlet g:imported_abs
   unlet g:import_disassembled
 
@@ -1720,8 +1726,9 @@ def Test_import_rtp()
   &rtp = save_rtp
 
   assert_equal(9876, g:imported_rtp)
-  unlet g:imported_rtp
 
+  Undo_export_script_lines()
+  unlet g:imported_rtp
   delete('Ximport_rtp.vim')
   delete('import', 'rf')
 enddef
