@@ -1130,6 +1130,7 @@ popup_adjust_position(win_T *wp)
     int		org_leftcol = wp->w_leftcol;
     int		org_leftoff = wp->w_popup_leftoff;
     int		minwidth, minheight;
+    int		maxheight = Rows;
     int		wantline = wp->w_wantline;  // adjusted for textprop
     int		wantcol = wp->w_wantcol;    // adjusted for textprop
     int		use_wantcol = wantcol != 0;
@@ -1277,6 +1278,9 @@ popup_adjust_position(win_T *wp)
     }
 #endif
 
+    if (wp->w_maxheight > 0)
+	maxheight = wp->w_maxheight;
+
     // start at the desired first line
     if (wp->w_firstline > 0)
 	wp->w_topline = wp->w_firstline;
@@ -1353,11 +1357,11 @@ popup_adjust_position(win_T *wp)
 	    ++lnum;
 
 	// do not use the width of lines we're not going to show
-	if (wp->w_maxheight > 0
+	if (maxheight > 0
 		   && (wp->w_firstline >= 0
 			       ? lnum - wp->w_topline
 			       : wp->w_buffer->b_ml.ml_line_count - lnum)
-		       + wrapped >= wp->w_maxheight)
+		       + wrapped >= maxheight)
 	    break;
     }
 
@@ -1449,13 +1453,11 @@ popup_adjust_position(win_T *wp)
 								 + 1 + wrapped;
     if (minheight > 0 && wp->w_height < minheight)
 	wp->w_height = minheight;
-    if (wp->w_maxheight > 0 && wp->w_height > wp->w_maxheight)
-	wp->w_height = wp->w_maxheight;
+    if (maxheight > 0 && wp->w_height > maxheight)
+	wp->w_height = maxheight;
     w_height_before_limit = wp->w_height;
     if (wp->w_height > Rows - wp->w_winrow)
 	wp->w_height = Rows - wp->w_winrow;
-    if (wp->w_height != org_height)
-	win_comp_scroll(wp);
 
     if (center_vert)
     {
@@ -1477,9 +1479,21 @@ popup_adjust_position(win_T *wp)
 	    wp->w_height = wantline - extra_height;
 	}
 	else
+	{
 	    // Not enough space and more space on the other side: make top
 	    // aligned.
 	    wp->w_winrow = (wantline < 0 ? 0 : wantline) + 1;
+	    if (wp->w_winrow + wp->w_height + extra_height >= Rows)
+	    {
+		wp->w_height = Rows - wp->w_winrow - extra_height;
+		if (wp->w_want_scrollbar
+#ifdef FEAT_TERMINAL
+			    && wp->w_buffer->b_term == NULL
+#endif
+			    )
+		    wp->w_has_scrollbar = TRUE;
+	    }
+	}
     }
     else if (wp->w_popup_pos == POPPOS_TOPRIGHT
 		|| wp->w_popup_pos == POPPOS_TOPLEFT)
@@ -1501,10 +1515,14 @@ popup_adjust_position(win_T *wp)
 	else
 	    wp->w_winrow = wantline - 1;
     }
+    // make sure w_window is valid
     if (wp->w_winrow >= Rows)
 	wp->w_winrow = Rows - 1;
     else if (wp->w_winrow < 0)
 	wp->w_winrow = 0;
+
+    if (wp->w_height != org_height)
+	win_comp_scroll(wp);
 
     wp->w_popup_last_changedtick = CHANGEDTICK(wp->w_buffer);
     if (win_valid(wp->w_popup_prop_win))
