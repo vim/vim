@@ -5412,6 +5412,15 @@ get_tabpage_arg(exarg_T *eap)
 	{
 	    if (STRCMP(p, "$") == 0)
 		tab_number = LAST_TAB_NR;
+	    else if (STRCMP(p, "#") == 0)
+		if (valid_tabpage(lastused_tabpage))
+		    tab_number = tabpage_index(lastused_tabpage);
+		else
+		{
+		    eap->errmsg = ex_errmsg(e_invargval, eap->arg);
+		    tab_number = 0;
+		    goto theend;
+		}
 	    else if (p == p_save || *p_save == '-' || *p != NUL
 		    || tab_number > LAST_TAB_NR)
 	    {

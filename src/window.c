@@ -3844,6 +3844,7 @@ free_tabpage(tabpage_T *tp)
 win_new_tabpage(int after)
 {
     tabpage_T	*tp = curtab;
+    tabpage_T	*prev_tp = curtab;
     tabpage_T	*newtp;
     int		n;
 
@@ -3893,7 +3894,7 @@ win_new_tabpage(int after)
 	newtp->tp_topframe = topframe;
 	last_status(FALSE);
 
-	lastused_tabpage = tp;
+	lastused_tabpage = prev_tp;
 
 #if defined(FEAT_GUI)
 	// When 'guioptions' includes 'L' or 'R' may have to remove or add
