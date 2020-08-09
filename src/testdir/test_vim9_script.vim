@@ -1395,7 +1395,7 @@ def Test_import_export_expr_map()
   nnoremap <expr> trigger g:Trigger()
   feedkeys('trigger', "xt")
 
-  delete('Xexport.vim')
+  delete('Xexport_that.vim')
   delete('Ximport.vim')
   nunmap trigger
 enddef
@@ -1407,11 +1407,11 @@ def Test_import_in_filetype()
     vim9script
     export let That = 'yes'
   END
-  writefile(export_lines, 'ftplugin/Xexport_that.vim')
+  writefile(export_lines, 'ftplugin/Xexport_ft.vim')
 
   let import_lines =<< trim END
     vim9script
-    import That from './Xexport_that.vim'
+    import That from './Xexport_ft.vim'
     assert_equal('yes', That)
     g:did_load_mytpe = 1
   END
@@ -1425,7 +1425,7 @@ def Test_import_in_filetype()
   assert_equal(1, g:did_load_mytpe)
 
   quit!
-  delete('Xexport.vim')
+  delete('Xexport_ft.vim')
   delete('ftplugin', 'rf')
   &rtp = save_rtp
 enddef
@@ -1484,13 +1484,13 @@ def Run_Test_import_fails_on_command_line()
         return 0
     enddef
   END
-  writefile(export, 'Xexport.vim')
+  writefile(export, 'XexportCmd.vim')
 
-  let buf = RunVimInTerminal('-c "import Foo from ''./Xexport.vim''"', #{
+  let buf = RunVimInTerminal('-c "import Foo from ''./XexportCmd.vim''"', #{
                 rows: 6, wait_for_ruler: 0})
   WaitForAssert({-> assert_match('^E1094:', term_getline(buf, 5))})
 
-  delete('Xexport.vim')
+  delete('XexportCmd.vim')
   StopVimInTerminal(buf)
 enddef
 
