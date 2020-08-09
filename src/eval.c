@@ -3222,12 +3222,14 @@ eval7(
 		{
 		    rettv->v_type = VAR_BOOL;
 		    rettv->vval.v_number = VVAL_TRUE;
+		    ret = OK;
 		}
 		else if (len == 5 && in_vim9script()
 						&& STRNCMP(s, "false", 4) == 0)
 		{
 		    rettv->v_type = VAR_BOOL;
 		    rettv->vval.v_number = VVAL_FALSE;
+		    ret = OK;
 		}
 		else
 		    ret = eval_variable(s, len, rettv, NULL, TRUE, FALSE);
@@ -3271,6 +3273,7 @@ eval7_leader(
     int		ret = OK;
     int		error = FALSE;
     varnumber_T val = 0;
+    vartype_T	type = rettv->v_type;
 #ifdef FEAT_FLOAT
     float_T	    f = 0.0;
 
@@ -3301,7 +3304,10 @@ eval7_leader(
 		    f = !f;
 		else
 #endif
+		{
 		    val = !val;
+		    type = VAR_BOOL;
+		}
 	    }
 	    else if (*end_leader == '-')
 	    {
@@ -3310,7 +3316,10 @@ eval7_leader(
 		    f = -f;
 		else
 #endif
+		{
 		    val = -val;
+		    type = VAR_NUMBER;
+		}
 	    }
 	}
 #ifdef FEAT_FLOAT
@@ -3323,7 +3332,10 @@ eval7_leader(
 #endif
 	{
 	    clear_tv(rettv);
-	    rettv->v_type = VAR_NUMBER;
+	    if (in_vim9script())
+		rettv->v_type = type;
+	    else
+		rettv->v_type = VAR_NUMBER;
 	    rettv->vval.v_number = val;
 	}
     }
