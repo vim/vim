@@ -725,10 +725,12 @@ EXTERN frame_T	*topframe;	// top of the window frame tree
 
 /*
  * Tab pages are alternative topframes.  "first_tabpage" points to the first
- * one in the list, "curtab" is the current one.
+ * one in the list, "curtab" is the current one. "lastused_tabpage" is the
+ * last used one.
  */
 EXTERN tabpage_T    *first_tabpage;
 EXTERN tabpage_T    *curtab;
+EXTERN tabpage_T    *lastused_tabpage;
 EXTERN int	    redraw_tabline INIT(= FALSE);  // need to redraw tabline
 
 /*
