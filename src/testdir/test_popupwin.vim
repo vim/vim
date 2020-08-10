@@ -753,6 +753,7 @@ func Test_popup_with_mask()
 	    \ posinvert: 0,
 	    \ wrap: 0,
 	    \ fixed: 1,
+	    \ scrollbar: v:false,
 	    \ zindex: 90,
 	    \ padding: [],
 	    \ highlight: 'PopupColor',
@@ -772,6 +773,7 @@ func Test_popup_with_mask()
 	    \ posinvert: 0,
 	    \ wrap: 0,
 	    \ fixed: 1,
+	    \ scrollbar: v:false,
 	    \ close: 'button',
 	    \ zindex: 90,
 	    \ padding: [],
@@ -2168,6 +2170,11 @@ func Test_popup_too_high_scrollbar()
   call term_sendkeys(buf, "8G$")
   call term_sendkeys(buf, ":call ShowPopup()\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_toohigh_2', {})
+
+  call term_sendkeys(buf, ":call popup_clear()\<CR>")
+  call term_sendkeys(buf, "gg$")
+  call term_sendkeys(buf, ":call ShowPopup()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_toohigh_3', {})
 
   " clean up
   call StopVimInTerminal(buf)

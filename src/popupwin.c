@@ -1134,6 +1134,7 @@ popup_adjust_position(win_T *wp)
     int		wantline = wp->w_wantline;  // adjusted for textprop
     int		wantcol = wp->w_wantcol;    // adjusted for textprop
     int		use_wantcol = wantcol != 0;
+    int		adjust_height_for_top_aligned = FALSE;
 
     wp->w_winrow = 0;
     wp->w_wincol = 0;
@@ -1483,16 +1484,7 @@ popup_adjust_position(win_T *wp)
 	    // Not enough space and more space on the other side: make top
 	    // aligned.
 	    wp->w_winrow = (wantline < 0 ? 0 : wantline) + 1;
-	    if (wp->w_winrow + wp->w_height + extra_height >= Rows)
-	    {
-		wp->w_height = Rows - wp->w_winrow - extra_height;
-		if (wp->w_want_scrollbar
-#ifdef FEAT_TERMINAL
-			    && wp->w_buffer->b_term == NULL
-#endif
-			    )
-		    wp->w_has_scrollbar = TRUE;
-	    }
+	    adjust_height_for_top_aligned = TRUE;
 	}
     }
     else if (wp->w_popup_pos == POPPOS_TOPRIGHT
@@ -1513,9 +1505,25 @@ popup_adjust_position(win_T *wp)
 	    }
 	}
 	else
+	{
 	    wp->w_winrow = wantline - 1;
+	    adjust_height_for_top_aligned = TRUE;
+	}
     }
-    // make sure w_window is valid
+
+    if (adjust_height_for_top_aligned && wp->w_want_scrollbar
+			  && wp->w_winrow + wp->w_height + extra_height > Rows)
+    {
+	// Bottom of the popup goes below the last line, reduce the height and
+	// add a scrollbar.
+	wp->w_height = Rows - wp->w_winrow - extra_height;
+#ifdef FEAT_TERMINAL
+	if (wp->w_buffer->b_term == NULL)
+#endif
+	    wp->w_has_scrollbar = TRUE;
+    }
+
+    // make sure w_winrow is valid
     if (wp->w_winrow >= Rows)
 	wp->w_winrow = Rows - 1;
     else if (wp->w_winrow < 0)
