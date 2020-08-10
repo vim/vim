@@ -1744,7 +1744,7 @@ def Test_expr7_call()
   assert_equal('yes', 'yes'->Echo())
   assert_equal('yes', 'yes'
   			->s:Echo4Arg())
-  assert_equal(1, !range(5)->empty())
+  assert_equal(true, !range(5)->empty())
   assert_equal([0, 1, 2], --3->range())
 
   call CheckDefFailure(["let x = 'yes'->Echo"], 'E107:')
@@ -1782,6 +1782,9 @@ def Test_expr7_not()
 
       assert_equal(true, !test_void())
       assert_equal(true, !test_unknown())
+
+      assert_equal(false, ![1, 2, 3]->reverse())
+      assert_equal(true, ![]->reverse())
   END
   CheckDefSuccess(lines)
   CheckScriptSuccess(['vim9script'] + lines)

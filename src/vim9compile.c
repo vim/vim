@@ -2723,11 +2723,12 @@ compile_get_register(char_u **arg, cctx_T *cctx)
 
 /*
  * Apply leading '!', '-' and '+' to constant "rettv".
+ * When "numeric_only" is TRUE do not apply '!'.
  */
     static int
-apply_leader(typval_T *rettv, char_u *start, char_u *end)
+apply_leader(typval_T *rettv, int numeric_only, char_u *start, char_u **end)
 {
-    char_u *p = end;
+    char_u *p = *end;
 
     // this works from end to start
     while (p > start)
@@ -2762,6 +2763,11 @@ apply_leader(typval_T *rettv, char_u *start, char_u *end)
 		rettv->vval.v_number = val;
 	    }
 	}
+	else if (numeric_only)
+	{
+	    ++p;
+	    break;
+	}
 	else
 	{
 	    int v = tv2bool(rettv);
@@ -2772,6 +2778,7 @@ apply_leader(typval_T *rettv, char_u *start, char_u *end)
 	    rettv->vval.v_number = v ? VVAL_FALSE : VVAL_TRUE;
 	}
     }
+    *end = p;
     return OK;
 }
 
@@ -2860,11 +2867,12 @@ get_compare_type(char_u *p, int *len, int *type_is)
 
 /*
  * Compile code to apply '-', '+' and '!'.
+ * When "numeric_only" is TRUE do not apply '!'.
  */
     static int
-compile_leader(cctx_T *cctx, char_u *start, char_u *end)
+compile_leader(cctx_T *cctx, int numeric_only, char_u *start, char_u **end)
 {
-    char_u	*p = end;
+    char_u	*p = *end;
 
     // this works from end to start
     while (p > start)
@@ -2890,6 +2898,11 @@ compile_leader(cctx_T *cctx, char_u *start, char_u *end)
 	    if (isn == NULL)
 		return FAIL;
 	}
+	else if (numeric_only)
+	{
+	    ++p;
+	    break;
+	}
 	else
 	{
 	    int  invert = TRUE;
@@ -2903,6 +2916,7 @@ compile_leader(cctx_T *cctx, char_u *start, char_u *end)
 		return FAIL;
 	}
     }
+    *end = p;
     return OK;
 }
 
@@ -2914,10 +2928,12 @@ compile_leader(cctx_T *cctx, char_u *start, char_u *end)
 compile_subscript(
 	char_u **arg,
 	cctx_T *cctx,
-	char_u **start_leader,
-	char_u *end_leader,
+	char_u *start_leader,
+	char_u **end_leader,
 	ppconst_T *ppconst)
 {
+    char_u	*name_start = *end_leader;
+
     for (;;)
     {
 	char_u *p = skipwhite(*arg);
@@ -2959,7 +2975,7 @@ compile_subscript(
 	    *arg = skipwhite(p + 1);
 	    if (compile_arguments(arg, cctx, &argcount) == FAIL)
 		return FAIL;
-	    if (generate_PCALL(cctx, argcount, end_leader, type, TRUE) == FAIL)
+	    if (generate_PCALL(cctx, argcount, name_start, type, TRUE) == FAIL)
 		return FAIL;
 	}
 	else if (*p == '-' && p[1] == '>')
@@ -2972,9 +2988,8 @@ compile_subscript(
 	    // something->method()
 	    // Apply the '!', '-' and '+' first:
 	    //   -1.0->func() works like (-1.0)->func()
-	    if (compile_leader(cctx, *start_leader, end_leader) == FAIL)
+	    if (compile_leader(cctx, TRUE, start_leader, end_leader) == FAIL)
 		return FAIL;
-	    *start_leader = end_leader;   // don't apply again later
 
 	    p += 2;
 	    *arg = skipwhite(p);
@@ -3329,13 +3344,12 @@ compile_expr7(
 
     if (rettv->v_type != VAR_UNKNOWN && used_before == ppconst->pp_used)
     {
-	// apply the '!', '-' and '+' before the constant
-	if (apply_leader(rettv, start_leader, end_leader) == FAIL)
+	// apply the '-' and '+' before the constant, but not '!'
+	if (apply_leader(rettv, TRUE, start_leader, &end_leader) == FAIL)
 	{
 	    clear_tv(rettv);
 	    return FAIL;
 	}
-	start_leader = end_leader;   // don't apply again below
 
 	if (cctx->ctx_skip == SKIP_YES)
 	    clear_tv(rettv);
@@ -3373,18 +3387,18 @@ compile_expr7(
 
     // Handle following "[]", ".member", etc.
     // Then deal with prefixed '-', '+' and '!', if not done already.
-    if (compile_subscript(arg, cctx, &start_leader, end_leader,
+    if (compile_subscript(arg, cctx, start_leader, &end_leader,
 							     ppconst) == FAIL)
 	return FAIL;
     if (ppconst->pp_used > 0)
     {
 	// apply the '!', '-' and '+' before the constant
 	rettv = &ppconst->pp_tv[ppconst->pp_used - 1];
-	if (apply_leader(rettv, start_leader, end_leader) == FAIL)
+	if (apply_leader(rettv, FALSE, start_leader, &end_leader) == FAIL)
 	    return FAIL;
 	return OK;
     }
-    if (compile_leader(cctx, start_leader, end_leader) == FAIL)
+    if (compile_leader(cctx, FALSE, start_leader, &end_leader) == FAIL)
 	return FAIL;
     return OK;
 }
