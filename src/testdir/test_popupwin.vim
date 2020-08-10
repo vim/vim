@@ -3479,6 +3479,31 @@ func Test_popupwin_filter_input_multibyte()
   unlet g:bytes
 endfunc
 
+func Test_popupwin_filter_close_ctrl_c()
+  CheckScreendump
+
+  let lines =<< trim END
+      vsplit
+      set laststatus=2
+      set statusline=%!Statusline()
+
+      function Statusline() abort
+	  return '%<%f %h%m%r%=%-14.(%l,%c%V%) %P'
+      endfunction
+
+      call popup_create('test test test test...', {'filter': {-> 0}})
+  END
+  call writefile(lines, 'XtestPopupCtrlC')
+
+  let buf = RunVimInTerminal('-S XtestPopupCtrlC', #{rows: 10})
+
+  call term_sendkeys(buf, "\<C-C>")
+  call VerifyScreenDump(buf, 'Test_popupwin_ctrl_c', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupCorners')
+endfunc
+
 func Test_popupwin_atcursor_far_right()
   new
 

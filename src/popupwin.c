@@ -3209,7 +3209,14 @@ popup_do_filter(int c)
 	    res = invoke_popup_filter(wp, c);
 
     if (must_redraw > was_must_redraw)
+    {
+	int save_got_int = got_int;
+
+	// Reset got_int to avoid a function used in the statusline aborts.
+	got_int = FALSE;
 	redraw_after_callback(FALSE);
+	got_int |= save_got_int;
+    }
     recursive = FALSE;
     KeyTyped = save_KeyTyped;
     return res;
