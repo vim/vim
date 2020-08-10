@@ -706,7 +706,7 @@ def RetVoid()
   let x = 1
 enddef
 
-def Test_expr4_vimscript()
+def Test_expr4_vim9script()
   # check line continuation
   let lines =<< trim END
       vim9script
@@ -819,6 +819,12 @@ def Test_expr4_vimscript()
     echo 2!= 3
   END
   CheckScriptFailure(lines, 'E1004:')
+
+  lines =<< trim END
+    vim9script
+    echo len('xxx') == 3
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 func Test_expr4_fails()

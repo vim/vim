@@ -686,7 +686,10 @@ get_func_tv(
     while (--argcount >= 0)
 	clear_tv(&argvars[argcount]);
 
-    *arg = skipwhite(argp);
+    if (in_vim9script())
+	*arg = argp;
+    else
+	*arg = skipwhite(argp);
     return ret;
 }
 
@@ -4097,6 +4100,7 @@ ex_call(exarg_T *eap)
     if (!failed || eap->cstack->cs_trylevel > 0)
     {
 	// Check for trailing illegal characters and a following command.
+	arg = skipwhite(arg);
 	if (!ends_excmd2(eap->arg, arg))
 	{
 	    if (!failed)
