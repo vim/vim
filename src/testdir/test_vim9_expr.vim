@@ -1750,31 +1750,35 @@ enddef
 
 
 def Test_expr7_not()
-  assert_equal(true, !'')
-  assert_equal(true, ![])
-  assert_equal(false, !'asdf')
-  assert_equal(false, ![2])
-  assert_equal(true, !!'asdf')
-  assert_equal(true, !![2])
+  let lines =<< trim END
+      assert_equal(true, !'')
+      assert_equal(true, ![])
+      assert_equal(false, !'asdf')
+      assert_equal(false, ![2])
+      assert_equal(true, !!'asdf')
+      assert_equal(true, !![2])
 
-  assert_equal(true, !test_null_partial())
-  assert_equal(false, !{-> 'yes'})
+      assert_equal(true, !test_null_partial())
+      assert_equal(false, !{-> 'yes'})
 
-  assert_equal(true, !test_null_dict())
-  assert_equal(true, !{})
-  assert_equal(false, !{'yes': 'no'})
+      assert_equal(true, !test_null_dict())
+      assert_equal(true, !{})
+      assert_equal(false, !{'yes': 'no'})
 
-  if has('channel')
-    assert_equal(true, !test_null_job())
-    assert_equal(true, !test_null_channel())
-  endif
+      if has('channel')
+	assert_equal(true, !test_null_job())
+	assert_equal(true, !test_null_channel())
+      endif
 
-  assert_equal(true, !test_null_blob())
-  assert_equal(true, !0z)
-  assert_equal(false, !0z01)
+      assert_equal(true, !test_null_blob())
+      assert_equal(true, !0z)
+      assert_equal(false, !0z01)
 
-  assert_equal(true, !test_void())
-  assert_equal(true, !test_unknown())
+      assert_equal(true, !test_void())
+      assert_equal(true, !test_unknown())
+  END
+  CheckDefSuccess(lines)
+  CheckScriptSuccess(['vim9script'] + lines)
 enddef
 
 func Test_expr7_fails()

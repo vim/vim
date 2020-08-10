@@ -1,5 +1,13 @@
 " Utility functions for testing vim9 script
 
+" Check that "lines" inside ":def" has no error.
+func CheckDefSuccess(lines)
+  call writefile(['def Func()'] + a:lines + ['enddef', 'defcompile'], 'Xdef')
+  so Xdef
+  call Func()
+  call delete('Xdef')
+endfunc
+
 " Check that "lines" inside ":def" results in an "error" message.
 func CheckDefFailure(lines, error)
   call writefile(['def Func()'] + a:lines + ['enddef', 'defcompile'], 'Xdef')
