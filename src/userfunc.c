@@ -2132,8 +2132,8 @@ call_func(
 		char_u *p = untrans_function_name(rfname);
 
 		// If using Vim9 script try not local to the script.
-		// TODO: should not do this if the name started with "s:".
-		if (p != NULL)
+		// Don't do this if the name starts with "s:".
+		if (p != NULL && (funcname[0] != 's' || funcname[1] != ':'))
 		    fp = find_func(p, is_global, NULL);
 	    }
 

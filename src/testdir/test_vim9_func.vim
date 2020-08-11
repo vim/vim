@@ -203,6 +203,15 @@ def Test_global_local_function()
       assert_equal('local', Func())
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      def g:Funcy()
+        echo 'funcy'
+      enddef
+      s:Funcy()
+  END
+  CheckScriptFailure(lines, 'E117:')
 enddef
 
 func TakesOneArg(arg)
