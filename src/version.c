@@ -755,6 +755,8 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    1424,
+/**/
     1423,
 /**/
     1422,
@@ -3954,17 +3956,8 @@ list_version(void)
 #     else
 #      if defined(MSWIN)
     msg_puts(_("with GUI."));
-#      else
-#	if defined(TARGET_API_MAC_CARBON) && TARGET_API_MAC_CARBON
-    msg_puts(_("with Carbon GUI."));
-#	else
-#	 if defined(TARGET_API_MAC_OSX) && TARGET_API_MAC_OSX
-    msg_puts(_("with Cocoa GUI."));
-#	 else
-#	 endif
-#	endif
-#	 endif
 #      endif
+#     endif
 #    endif
 #   endif
 #  endif

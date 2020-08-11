@@ -262,6 +262,12 @@ if test "`(uname) 2>/dev/null`" = Darwin; then
     dnl TODO: use -arch i386 on Intel machines
     dnl Removed -no-cpp-precomp, only for very old compilers.
     CPPFLAGS="$CPPFLAGS -DMACOS_X_DARWIN"
+
+     dnl Assume we don't want X11 unless it was specifically asked for
+     dnl (--with-x) or Motif, Athena or GTK GUI is used.
+     if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xathena -a "X$enable_gui" != Xgtk2 -a "X$enable_gui" != Xgtk3; then
+      with_x=no
+     fi
   fi
 
   dnl Avoid a bug with -O2 with gcc 4.0.1.  Symptom: malloc() reports double
@@ -2421,6 +2427,15 @@ elif test "x$QNX" = "xyes" -a "x$with_x" = "xno" ; then
 		SKIP_PHOTON=YES ;;
   esac
 
+elif test "x$MACOS_X" = "xyes" -a "x$with_x" = "xno" ; then
+  case "$enable_gui_canon" in
+    no)		AC_MSG_RESULT(no GUI support) ;;
+    yes|"")	AC_MSG_RESULT(yes - automatic GUI support)
+    		gui_auto=yes ;;
+    auto)	AC_MSG_RESULT(auto - disable GUI support for Mac OS) ;;
+    *)		AC_MSG_RESULT([Sorry, $enable_gui GUI is not supported])
+		SKIP_CARBON=YES ;;
+  esac
 else
 
   case "$enable_gui_canon" in

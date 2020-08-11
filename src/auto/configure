@@ -4744,6 +4744,10 @@ rm -f core conftest.err conftest.$ac_objext \
     OS_EXTRA_SRC="os_macosx.m os_mac_conv.c";
     OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
             CPPFLAGS="$CPPFLAGS -DMACOS_X_DARWIN"
+
+               if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xathena -a "X$enable_gui" != Xgtk2 -a "X$enable_gui" != Xgtk3; then
+      with_x=no
+     fi
   fi
 
         if test "$MACARCH" = "intel" -o "$MACARCH" = "both"; then
@@ -9232,6 +9236,19 @@ $as_echo "Sorry, $enable_gui GUI is not supported" >&6; }
 		SKIP_PHOTON=YES ;;
   esac
 
+elif test "x$MACOS_X" = "xyes" -a "x$with_x" = "xno" ; then
+  case "$enable_gui_canon" in
+    no)		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no GUI support" >&5
+$as_echo "no GUI support" >&6; } ;;
+    yes|"")	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes - automatic GUI support" >&5
+$as_echo "yes - automatic GUI support" >&6; }
+    		gui_auto=yes ;;
+    auto)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: auto - disable GUI support for Mac OS" >&5
+$as_echo "auto - disable GUI support for Mac OS" >&6; } ;;
+    *)		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Sorry, $enable_gui GUI is not supported" >&5
+$as_echo "Sorry, $enable_gui GUI is not supported" >&6; }
+		SKIP_CARBON=YES ;;
+  esac
 else
 
   case "$enable_gui_canon" in
