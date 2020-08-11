@@ -1326,14 +1326,6 @@ MAIN_TARGET = $(VIM).exe
 # Target to run individual tests.
 VIMTESTTARGET = $(VIM).exe
 
-OLD_TEST_OUTFILES = \
-	$(SCRIPTS_FIRST) \
-	$(SCRIPTS_ALL) \
-	$(SCRIPTS_MORE1) \
-	$(SCRIPTS_MORE4) \
-	$(SCRIPTS_WIN32) \
-	$(SCRIPTS_GUI)
-
 all:	$(MAIN_TARGET) \
 	vimrun.exe \
 	install.exe \
@@ -1485,9 +1477,9 @@ testclean:
 	$(MAKE) /NOLOGO -f Make_dos.mak clean
 	cd ..
 
-# Run individual OLD style test.
+# Run test1 to bootstrap tests
 # These do not depend on the executable, compile it when needed.
-$(OLD_TEST_OUTFILES:.out=):
+$(SCRIPTS_FIRST:.out=):
 	cd testdir
 	- if exist $@.out del $@.out
 	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) nolog

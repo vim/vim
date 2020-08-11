@@ -2259,8 +2259,6 @@ test check: unittests $(TERM_TEST) scripttests
 #
 # This will produce a lot of garbage on your screen, including a few error
 # messages.  Don't worry about that.
-# If there is a real error, there will be a difference between "testXX.out" and
-# a "testXX.ok" file.
 # If everything is alright, the final message will be "ALL DONE".  If not you
 # get "TEST FAILURE".
 #
@@ -2311,9 +2309,9 @@ test_libvterm:
 			CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"; \
 	fi
 
-# Run individual OLD style test.
-# These do not depend on the executable, compile it when needed.
-test1 test49:
+# Run test1, used to bootstrap tests.
+# This does not depend on the executable, compile first it when needed.
+test1:
 	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTESTTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
 # Run individual NEW style test.

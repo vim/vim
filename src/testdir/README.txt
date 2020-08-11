@@ -4,14 +4,6 @@ For testing an indent script see runtime/indent/testdir/README.txt.
 If it makes sense, add a new test method to an already existing file.  You may
 want to separate it from other tests with comment lines.
 
-The numbered tests are older, we have switched to named tests.  Don't add any
-more numbered tests.
-
-And then you can choose between a new style test, which is a Vim script, or an
-old style test, which uses Normal mode commands.  Use a new style test if you
-can.  Use an old style test when it needs to run without the +eval feature.
-
-
 TO ADD A NEW STYLE TEST:
 
 1) Create a test_<subject>.vim file.
@@ -57,16 +49,3 @@ TO ADD A SCREEN DUMP TEST:
 Mostly the same as writing a new style test.  Additionally, see help on
 "terminal-dumptest".  Put the reference dump in "dumps/Test_func_name.dump".
 
-
-TO ADD AN OLD STYLE TEST:
-
-1) Create test_<subject>.in and test_<subject>.ok files.
-2) Add test_<subject>.out to SCRIPTS_ALL in Make_all.mak in alphabetical order.
-3) Use make test_<subject>.out to run a single test in src/testdir/.
-   Use make test_<subject> to run a single test in src/.
-4) Also add an entry in src/Makefile.
-
-Keep in mind that the files are used as if everything was typed:
-- To add comments use:   :"  (that's an Ex command comment)
-- A line break is like pressing Enter.  If that happens on the last line
-  you'll hear a beep!

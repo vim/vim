@@ -10,24 +10,6 @@ NO_INITS = -U NONE $(NO_PLUGINS)
 # The first script creates small.vim.
 SCRIPTS_FIRST = test1.out
 
-# Tests that run on all systems.
-SCRIPTS_ALL =
-
-# Tests that run on most systems, but not on Amiga.
-SCRIPTS_MORE1 =
-
-# Tests that run on most systems, but not on Amiga and DOS/Windows.
-SCRIPTS_MORE2 = test49.out
-
-# Tests that run on most systems, but not on VMS
-SCRIPTS_MORE4 =
-
-# Tests specifically for MS-Windows.
-SCRIPTS_WIN32 =
-
-# Tests for the GUI.
-SCRIPTS_GUI =
-
 # Tests for Vim9 script.
 TEST_VIM9 = \
 	test_vim9_cmd \

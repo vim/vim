@@ -9,14 +9,9 @@ default: nongui
 
 include Make_all.mak
 
-SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE4)
+.SUFFIXES: .in .out .res .vim
 
-# Must run test1 first to create small.vim.
-$(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS_RES): $(SCRIPTS_FIRST)
-
-.SUFFIXES: .in .out
-
-nongui:	/tmp $(SCRIPTS_FIRST) $(SCRIPTS)
+nongui:	/tmp $(SCRIPTS_FIRST)
 	csh -c echo ALL DONE
 
 clean:

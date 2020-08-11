@@ -9,25 +9,20 @@ default: nongui
 
 !include Make_all.mak
 
-# Omitted:
-# test49	fails in various ways
-
-SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE1) $(SCRIPTS_MORE4)
-
-TEST_OUTFILES = $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_WIN32) $(SCRIPTS_GUI)
+TEST_OUTFILES = $(SCRIPTS_FIRST)
 DOSTMP = dostmp
 DOSTMP_OUTFILES = $(TEST_OUTFILES:test=dostmp\test)
 DOSTMP_INFILES = $(DOSTMP_OUTFILES:.out=.in)
 
 .SUFFIXES: .in .out .res .vim
 
-nongui:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) newtests report
+nongui:	nolog $(SCRIPTS_FIRST) newtests report
 
 small:	nolog report
 
-gui:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) newtests report
+gui:	nolog $(SCRIPTS_FIRST) newtests report
 
-win32:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_WIN32) newtests report
+win32:	nolog $(SCRIPTS_FIRST) newtests report
 
 # Copy the input files to dostmp, changing the fileformat to dos.
 $(DOSTMP_INFILES): $(*B).in

@@ -28,19 +28,17 @@ default: vimall
 
 include Make_all.mak
 
-SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE1) $(SCRIPTS_MORE4) $(SCRIPTS_WIN32)
-
 SCRIPTS_BENCH = test_bench_regexp.res
 
 # Must run test1 first to create small.vim.
-$(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32) $(NEW_TESTS_RES): $(SCRIPTS_FIRST)
+$(NEW_TESTS_RES): $(SCRIPTS_FIRST)
 
 .SUFFIXES: .in .out .res .vim
 
-vimall:	fixff $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32) newtests
+vimall:	fixff $(SCRIPTS_FIRST) newtests
 	@echo ALL DONE
 
-nongui:	fixff nolog $(SCRIPTS_FIRST) $(SCRIPTS) newtests
+nongui:	fixff nolog $(SCRIPTS_FIRST) newtests
 	@echo ALL DONE
 
 benchmark: $(SCRIPTS_BENCH)
@@ -48,10 +46,10 @@ benchmark: $(SCRIPTS_BENCH)
 small: nolog
 	@echo ALL DONE
 
-gui:	fixff nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) newtests
+gui:	fixff nolog $(SCRIPTS_FIRST) newtests
 	@echo ALL DONE
 
-win32:	fixff nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_WIN32) newtests
+win32:	fixff nolog $(SCRIPTS_FIRST) newtests
 	@echo ALL DONE
 
 # TODO: find a way to avoid changing the distributed files.
@@ -87,19 +85,6 @@ test1.out: test1.in
 	    )
 	-@if exist test.out $(DEL) test.out
 	-@if exist viminfo  $(DEL) viminfo
-
-.in.out:
-	-@if exist $*.ok $(CP) $*.ok test.ok
-	$(VIMPROG) -u dos.vim $(NO_INITS) -s dotest.in $*.in
-	@diff test.out $*.ok
-	-@if exist $*.out $(DEL) $*.out
-	@$(MV) test.out $*.out
-	-@if exist Xdir1 $(DELDIR) Xdir1
-	-@if exist Xfind $(DELDIR) Xfind
-	-@if exist XfakeHOME $(DELDIR) XfakeHOME
-	-@if exist X* $(DEL) X*
-	-@if exist test.ok $(DEL) test.ok
-	-@if exist viminfo $(DEL) viminfo
 
 nolog:
 	-@if exist test.log $(DEL) test.log
