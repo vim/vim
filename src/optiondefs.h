@@ -331,13 +331,8 @@ static struct vimoption options[] =
 #endif
 					    (char_u *)0L} SCTX_INIT},
     {"antialias",   "anti", P_BOOL|P_VI_DEF|P_VIM|P_RCLR,
-#if defined(FEAT_GUI_MAC)
-			    (char_u *)&p_antialias, PV_NONE,
-			    {(char_u *)FALSE, (char_u *)FALSE}
-#else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)FALSE}
-#endif
 			    SCTX_INIT},
     {"arabic",	    "arab", P_BOOL|P_VI_DEF|P_VIM|P_CURSWANT,
 #ifdef FEAT_ARABIC
@@ -1209,7 +1204,7 @@ static struct vimoption options[] =
     {"guioptions",  "go",   P_STRING|P_VI_DEF|P_RALL|P_FLAGLIST,
 #if defined(FEAT_GUI)
 			    (char_u *)&p_go, PV_NONE,
-# if defined(UNIX) && !defined(FEAT_GUI_MAC)
+# if defined(UNIX)
 			    {(char_u *)"aegimrLtT", (char_u *)0L}
 # else
 			    {(char_u *)"egmrLtT", (char_u *)0L}
@@ -1618,13 +1613,8 @@ static struct vimoption options[] =
 #endif
 			    SCTX_INIT},
     {"macatsui",    NULL,   P_BOOL|P_VI_DEF|P_RCLR,
-#ifdef FEAT_GUI_MAC
-			    (char_u *)&p_macatsui, PV_NONE,
-			    {(char_u *)TRUE, (char_u *)0L}
-#else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)"", (char_u *)0L}
-#endif
 			    SCTX_INIT},
     {"magic",	    NULL,   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_magic, PV_NONE,

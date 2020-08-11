@@ -642,13 +642,11 @@ SRC_HAIKU =	\
 SRC_MAC =	\
 		src/INSTALLmac.txt \
 		src/dehqx.py \
-		src/gui_mac.c \
 		src/os_mac_rsrc/*.icns \
 		src/os_mac.h \
 		src/os_mac.rsr.hqx \
 		src/os_mac_conv.c \
 		src/os_macosx.m \
-		src/proto/gui_mac.pro \
 		src/proto/os_mac_conv.pro \
 
 # source files for VMS (in the extra archive)

@@ -829,7 +829,6 @@ enable_gtk3_check
 enable_motif_check
 enable_athena_check
 enable_nextaw_check
-enable_carbon_check
 enable_gtktest
 with_gnome_includes
 with_gnome_libs
@@ -1509,7 +1508,6 @@ Optional Features:
   --enable-motif-check    If auto-select GUI, check for Motif default=yes
   --enable-athena-check   If auto-select GUI, check for Athena default=yes
   --enable-nextaw-check   If auto-select GUI, check for neXtaw default=yes
-  --enable-carbon-check   If auto-select GUI, check for Carbon default=yes
   --disable-gtktest       Do not try to compile and run a test GTK program
   --disable-icon-cache-update        update disabled
   --disable-desktop-database-update  update disabled
@@ -4746,8 +4744,18 @@ rm -f core conftest.err conftest.$ac_objext \
     OS_EXTRA_SRC="os_macosx.m os_mac_conv.c";
     OS_EXTRA_OBJ="objects/os_macosx.o objects/os_mac_conv.o"
             CPPFLAGS="$CPPFLAGS -DMACOS_X_DARWIN"
+  fi
 
-                # On IRIX 5.3, sys/types and inttypes.h are conflicting.
+        if test "$MACARCH" = "intel" -o "$MACARCH" = "both"; then
+    CFLAGS=`echo "$CFLAGS" | sed 's/-O[23456789]/-Oz/'`
+  fi
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+# On IRIX 5.3, sys/types and inttypes.h are conflicting.
 for ac_header in sys/types.h sys/stat.h stdlib.h string.h memory.h strings.h \
 		  inttypes.h stdint.h unistd.h
 do :
@@ -4763,28 +4771,6 @@ fi
 
 done
 
-
-ac_fn_c_check_header_mongrel "$LINENO" "Carbon/Carbon.h" "ac_cv_header_Carbon_Carbon_h" "$ac_includes_default"
-if test "x$ac_cv_header_Carbon_Carbon_h" = xyes; then :
-  CARBON=yes
-fi
-
-
-    if test "x$CARBON" = "xyes"; then
-      if test -z "$with_x" -a "X$enable_gui" != Xmotif -a "X$enable_gui" != Xathena -a "X$enable_gui" != Xgtk2 -a "X$enable_gui" != Xgtk3; then
-	with_x=no
-      fi
-    fi
-  fi
-
-        if test "$MACARCH" = "intel" -o "$MACARCH" = "both"; then
-    CFLAGS=`echo "$CFLAGS" | sed 's/-O[23456789]/-Oz/'`
-  fi
-
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
 
 for ac_header in AvailabilityMacros.h
 do :
@@ -9212,7 +9198,6 @@ SKIP_ATHENA=YES
 SKIP_NEXTAW=YES
 SKIP_PHOTON=YES
 SKIP_HAIKU=YES
-SKIP_CARBON=YES
 GUITYPE=NONE
 
 if test "x$HAIKU" = "xyes"; then
@@ -9247,25 +9232,6 @@ $as_echo "Sorry, $enable_gui GUI is not supported" >&6; }
 		SKIP_PHOTON=YES ;;
   esac
 
-elif test "x$MACOS_X" = "xyes" -a "x$with_x" = "xno" ; then
-  SKIP_CARBON=
-  case "$enable_gui_canon" in
-    no)		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no GUI support" >&5
-$as_echo "no GUI support" >&6; }
-		SKIP_CARBON=YES ;;
-    yes|"")	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes - automatic GUI support" >&5
-$as_echo "yes - automatic GUI support" >&6; }
-    		gui_auto=yes ;;
-    auto)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: auto - Carbon GUI is outdated - disable GUI support" >&5
-$as_echo "auto - Carbon GUI is outdated - disable GUI support" >&6; }
-		SKIP_CARBON=YES ;;
-    carbon)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Carbon GUI support" >&5
-$as_echo "Carbon GUI support" >&6; } ;;
-    *)		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Sorry, $enable_gui GUI is not supported" >&5
-$as_echo "Sorry, $enable_gui GUI is not supported" >&6; }
-		SKIP_CARBON=YES ;;
-  esac
-
 else
 
   case "$enable_gui_canon" in
@@ -9278,8 +9244,7 @@ $as_echo "yes/auto - automatic GUI support" >&6; }
 		SKIP_GNOME=
 		SKIP_MOTIF=
 		SKIP_ATHENA=
-		SKIP_NEXTAW=
-		SKIP_CARBON=;;
+		SKIP_NEXTAW=;;
     gtk2)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: GTK+ 2.x GUI support" >&5
 $as_echo "GTK+ 2.x GUI support" >&6; }
 		SKIP_GTK2=;;
@@ -9407,56 +9372,6 @@ $as_echo "$enable_nextaw_check" >&6; };
   if test "x$enable_nextaw_check" = "xno"; then
     SKIP_NEXTAW=YES
   fi
-fi
-
-if test "x$SKIP_CARBON" != "xYES" -a "$enable_gui_canon" != "carbon"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether or not to look for Carbon" >&5
-$as_echo_n "checking whether or not to look for Carbon... " >&6; }
-  # Check whether --enable-carbon-check was given.
-if test "${enable_carbon_check+set}" = set; then :
-  enableval=$enable_carbon_check;
-else
-  enable_carbon_check="yes"
-fi
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_carbon_check" >&5
-$as_echo "$enable_carbon_check" >&6; };
-  if test "x$enable_carbon_check" = "xno"; then
-    SKIP_CARBON=YES
-  fi
-fi
-
-
-if test "x$MACOS_X" = "xyes" -a -z "$SKIP_CARBON" -a "x$CARBON" = "xyes"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Carbon GUI" >&5
-$as_echo_n "checking for Carbon GUI... " >&6; }
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; };
-  GUITYPE=CARBONGUI
-  if test "$VIMNAME" = "vim"; then
-    VIMNAME=Vim
-  fi
-
-  if test "x$MACARCH" = "xboth"; then
-    CPPFLAGS="$CPPFLAGS -I$DEVELOPER_DIR/SDKs/MacOSX10.4u.sdk/Developer/Headers/FlatCarbon"
-  else
-    CPPFLAGS="$CPPFLAGS -I$DEVELOPER_DIR/Headers/FlatCarbon"
-  fi
-
-    if test x$prefix = xNONE; then
-    prefix=/Applications
-  fi
-
-    datadir='${prefix}/Vim.app/Contents/Resources'
-
-    SKIP_GTK2=YES;
-  SKIP_GNOME=YES;
-  SKIP_MOTIF=YES;
-  SKIP_ATHENA=YES;
-  SKIP_NEXTAW=YES;
-  SKIP_PHOTON=YES;
-  SKIP_HAIKU=YES;
-  SKIP_CARBON=YES
 fi
 
 
@@ -14860,11 +14775,7 @@ fi
 if test "$MACOS_X" = "yes"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we need macOS frameworks" >&5
 $as_echo_n "checking whether we need macOS frameworks... " >&6; }
-  if test "$GUITYPE" = "CARBONGUI"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes, we need Carbon" >&5
-$as_echo "yes, we need Carbon" >&6; }
-    LIBS="$LIBS -framework Carbon"
-  elif test "$MACOS_X_DARWIN" = "yes"; then
+  if test "$MACOS_X_DARWIN" = "yes"; then
     if test "$features" = "tiny"; then
             OS_EXTRA_SRC=`echo "$OS_EXTRA_SRC" | sed -e 's+os_macosx.m++'`
       OS_EXTRA_OBJ=`echo "$OS_EXTRA_OBJ" | sed -e 's+objects/os_macosx.o++'`
@@ -14880,9 +14791,6 @@ $as_echo "yes, we need AppKit" >&6; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
   fi
-fi
-if test "x$MACARCH" = "xboth" && test "x$GUITYPE" = "xCARBONGUI"; then
-  LDFLAGS="$LDFLAGS -isysroot $DEVELOPER_DIR/SDKs/MacOSX10.4u.sdk -arch i386 -arch ppc"
 fi
 
 DEPEND_CFLAGS_FILTER=

@@ -1569,7 +1569,7 @@ EXTERN char e_failed[]	INIT(= N_("E472: Command failed"));
 #if defined(FEAT_GUI) && defined(FEAT_XFONTSET)
 EXTERN char e_fontset[]	INIT(= N_("E234: Unknown fontset: %s"));
 #endif
-#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MAC) \
+#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_HAIKU)
 EXTERN char e_font[]		INIT(= N_("E235: Unknown font: %s"));
 #endif
@@ -1804,10 +1804,6 @@ EXTERN char e_colon_required[]	INIT(= N_("E1050: Colon required before a range")
 #endif
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 EXTERN char e_alloc_color[]	INIT(= N_("E254: Cannot allocate color %s"));
-#endif
-
-#ifdef FEAT_GUI_MAC
-EXTERN short disallow_gui	INIT(= FALSE);
 #endif
 
 EXTERN char top_bot_msg[] INIT(= N_("search hit TOP, continuing at BOTTOM"));

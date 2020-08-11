@@ -403,11 +403,6 @@ readfile(
 	     */
 	    swap_mode = (st.st_mode & 0644) | 0600;
 #endif
-#ifdef FEAT_CW_EDITOR
-	    // Get the FSSpec on MacOS
-	    // TODO: Update it properly when the buffer name changes
-	    (void)GetFSSpecFromPath(curbuf->b_ffname, &curbuf->b_FSSpec);
-#endif
 #ifdef VMS
 	    curbuf->b_fab_rfm = st.st_fab_rfm;
 	    curbuf->b_fab_rat = st.st_fab_rat;
@@ -3389,7 +3384,6 @@ shorten_fnames(int force)
 
 #if (defined(FEAT_DND) && defined(FEAT_GUI_GTK)) \
 	|| defined(FEAT_GUI_MSWIN) \
-	|| defined(FEAT_GUI_MAC) \
 	|| defined(FEAT_GUI_HAIKU) \
 	|| defined(PROTO)
 /*

@@ -1373,24 +1373,6 @@ PHOTONGUI_MAN_TARGETS = yes
 PHOTONGUI_TESTTARGET = gui
 PHOTONGUI_BUNDLE =
 
-# CARBON GUI
-CARBONGUI_SRC	= gui.c gui_mac.c
-CARBONGUI_OBJ	= objects/gui.o objects/gui_mac.o
-CARBONGUI_DEFS	= -DFEAT_GUI_MAC -fno-common -fpascal-strings \
-		  -Wall -Wno-unknown-pragmas \
-		  -mdynamic-no-pic -pipe
-CARBONGUI_IPATH	= -I. -Iproto
-CARBONGUI_LIBS_DIR =
-CARBONGUI_LIBS1	= -framework Carbon
-CARBONGUI_LIBS2	=
-CARBONGUI_INSTALL = install_macosx
-CARBONGUI_TARGETS =
-CARBONGUI_MAN_TARGETS =
-CARBONGUI_TESTTARGET = gui
-CARBONGUI_BUNDLE = gui_bundle
-APPDIR = $(VIMNAME).app
-CARBONGUI_TESTARG = VIMPROG=../$(APPDIR)/Contents/MacOS/$(VIMTARGET)
-
 ### Haiku GUI
 HAIKUGUI_SRC	= gui.c gui_haiku.cc
 HAIKUGUI_OBJ	= objects/gui.o objects/gui_haiku.o

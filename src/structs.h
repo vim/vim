@@ -2530,9 +2530,6 @@ struct file_buffer
     dev_t	b_dev;		// device number
     ino_t	b_ino;		// inode number
 #endif
-#ifdef FEAT_CW_EDITOR
-    FSSpec	b_FSSpec;	// MacOS File Identification
-#endif
 #ifdef VMS
     char	 b_fab_rfm;	// Record format
     char	 b_fab_rat;	// Record attribute
@@ -3789,15 +3786,6 @@ struct VimMenu
 # ifdef FEAT_TOOLBAR
     BPictureButton *button;
 # endif
-#endif
-#ifdef FEAT_GUI_MAC
-//  MenuHandle	id;
-//  short	index;		    // the item index within the father menu
-    short	menu_id;	    // the menu id to which this item belongs
-    short	submenu_id;	    // the menu id of the children (could be
-				    // get through some tricks)
-    MenuHandle	menu_handle;
-    MenuHandle	submenu_handle;
 #endif
 #ifdef FEAT_GUI_PHOTON
     PtWidget_t	*id;
