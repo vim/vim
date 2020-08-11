@@ -9,61 +9,15 @@ default: nongui
 
 !include Make_all.mak
 
-# Omitted:
-# test49	fails in various ways
+.SUFFIXES: .res .vim
 
-SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE1) $(SCRIPTS_MORE4)
-
-TEST_OUTFILES = $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_WIN32) $(SCRIPTS_GUI)
-DOSTMP = dostmp
-DOSTMP_OUTFILES = $(TEST_OUTFILES:test=dostmp\test)
-DOSTMP_INFILES = $(DOSTMP_OUTFILES:.out=.in)
-
-.SUFFIXES: .in .out .res .vim
-
-nongui:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) newtests report
+nongui:	nolog newtests report
 
 small:	nolog report
 
-gui:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) newtests report
+gui:	nolog newtests report
 
-win32:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_WIN32) newtests report
-
-# Copy the input files to dostmp, changing the fileformat to dos.
-$(DOSTMP_INFILES): $(*B).in
-	if not exist $(DOSTMP)\NUL md $(DOSTMP)
-	if exist $@ del $@
-	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=dos|f $@|wq" $(*B).in
-
-# For each input file dostmp/test99.in run the tests.
-# This moves test99.in to test99.in.bak temporarily.
-$(TEST_OUTFILES): $(DOSTMP)\$(*B).in
-	-@if exist test.out DEL test.out
-	-@if exist $(DOSTMP)\$(*B).out DEL $(DOSTMP)\$(*B).out
-	move $(*B).in $(*B).in.bak > nul
-	copy $(DOSTMP)\$(*B).in $(*B).in > nul
-	copy $(*B).ok test.ok > nul
-	$(VIMPROG) -u dos.vim $(NO_INITS) -s dotest.in $(*B).in
-	-@if exist test.out MOVE /y test.out $(DOSTMP)\$(*B).out > nul
-	-@if exist $(*B).in.bak move /y $(*B).in.bak $(*B).in > nul
-	-@if exist test.ok del test.ok
-	-@if exist Xdir1 rd /s /q Xdir1
-	-@if exist Xfind rd /s /q Xfind
-	-@if exist XfakeHOME rd /s /q XfakeHOME
-	-@del X*
-	-@if exist viminfo del viminfo
-	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=unix|f test.out|wq" \
-		$(DOSTMP)\$(*B).out
-	@diff test.out $*.ok & if errorlevel 1 \
-		( move /y test.out $*.failed > nul \
-		 & del $(DOSTMP)\$(*B).out \
-		 & echo $* FAILED >> test.log ) \
-		else ( move /y test.out $*.out > nul )
-
-# Must run test1 first to create small.vim.
-# This rule must come after the one that copies the input files to dostmp to
-# allow for running an individual test.
-$(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32) $(NEW_TESTS_RES): $(SCRIPTS_FIRST)
+win32:	nolog newtests report
 
 report:
 	@rem without the +eval feature test_result.log is a copy of test.log
@@ -80,7 +34,7 @@ clean:
 	-del *.out
 	-del *.failed
 	-del *.res
-	-if exist $(DOSTMP) rd /s /q $(DOSTMP)
+	-if exist dostmp rd /s /q dostmp
 	-if exist test.in del test.in
 	-if exist test.ok del test.ok
 	-if exist small.vim del small.vim

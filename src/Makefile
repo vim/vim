@@ -2259,8 +2259,6 @@ test check: unittests $(TERM_TEST) scripttests
 #
 # This will produce a lot of garbage on your screen, including a few error
 # messages.  Don't worry about that.
-# If there is a real error, there will be a difference between "testXX.out" and
-# a "testXX.ok" file.
 # If everything is alright, the final message will be "ALL DONE".  If not you
 # get "TEST FAILURE".
 #
@@ -2310,11 +2308,6 @@ test_libvterm:
 		cd libvterm; $(MAKE) -f Makefile test \
 			CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"; \
 	fi
-
-# Run individual OLD style test.
-# These do not depend on the executable, compile it when needed.
-test1 test49:
-	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTESTTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
 # Run individual NEW style test.
 # These do not depend on the executable, compile it when needed.
@@ -2985,7 +2978,6 @@ shadow:	runtime pixmaps
 	cd $(SHADOWDIR)/testdir; ln -s ../../testdir/Makefile \
 				 ../../testdir/Make_all.mak \
 				 ../../testdir/README.txt \
-				 ../../testdir/*.in \
 				 ../../testdir/*.vim \
 				 ../../testdir/*.py \
 				 ../../testdir/python* \
@@ -2994,7 +2986,6 @@ shadow:	runtime pixmaps
 				 ../../testdir/samples \
 				 ../../testdir/dumps \
 				 ../../testdir/test83-tags? \
-				 ../../testdir/*.ok \
 				 ../../testdir/testluaplugin \
 				 .
 

@@ -27,26 +27,6 @@
 # Uncomment if you want tests in GUI mode.  Terminal mode is default.
 # WANT_GUI  = YES
 
-# Comment out if you want to run Unix specific tests as well, but please
-# be aware, that on OpenVMS will fail, because of cat, rm, etc commands
-# and directory handling.
-# WANT_UNIX = YES
-
-# Comment out if you have gzip on your system
-# HAVE_GZIP = YES
-
-# Comment out if you have GNU compatible diff on your system
-# HAVE_GDIFF = YES
-
-# Comment out if you have ICONV support
-# HAVE_ICONV = YES
-
-# Comment out if you have LUA support
-# HAVE_LUA = YES
-
-# Comment out if you have PYTHON support
-# HAVE_PYTHON = YES
-
 #######################################################################
 # End of configuration section.
 #
@@ -57,14 +37,10 @@ VIMPROG = <->vim.exe
 
 .SUFFIXES : .out .in
 
-SCRIPT = test1.out test49.out test77a.out
+SCRIPT = test1.out test77a.out
 
 .IFDEF WANT_GUI
 GUI_OPTION = -g
-.ENDIF
-
-.IFDEF WANT_UNIX
-SCRIPT_UNIX = test49.out
 .ENDIF
 
 .in.out :
@@ -87,7 +63,7 @@ SCRIPT_UNIX = test49.out
 	-@ if "''F$SEARCH("Xdotest.*")'"  .NES. "" then delete/noconfirm/nolog Xdotest.*.*
 	-@ if "''F$SEARCH("Xtest.*")'"    .NES. "" then delete/noconfirm/nolog Xtest.*.*
 
-all : clean nolog $(START_WITH) $(SCRIPT) $(SCRIPT_UNIX) nolog
+all : clean nolog $(START_WITH) $(SCRIPT) nolog
 	-@ write sys$output " "
 	-@ write sys$output "-----------------------------------------------"
 	-@ write sys$output "                All done"
@@ -111,12 +87,6 @@ nolog :
 	-@ write sys$output "-----------------------------------------------"
 	-@ write sys$output "MAKE_VMS.MMS options:"
 	-@ write sys$output "   WANT_GUI   = ""$(WANT_GUI)"" "
-	-@ write sys$output "   WANT_UNIX  = ""$(WANT_UNIX)"" "
-	-@ write sys$output "   HAVE_GZIP  = ""$(HAVE_GZIP)"" "
-	-@ write sys$output "   HAVE_GDIFF = ""$(HAVE_GDIFF)"" "
-	-@ write sys$output "   HAVE_ICONV = ""$(HAVE_ICONV)"" "
-	-@ write sys$output "   HAVE_LUA   = ""$(HAVE_LUA)"" "
-	-@ write sys$output "   HAVE_PYTHON= ""$(HAVE_PYTHON)"" "
 	-@ write sys$output "Default vimrc file is VMS.VIM:"
 	-@ write sys$output "-----------------------------------------------"
 	-@ type VMS.VIM

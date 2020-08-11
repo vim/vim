@@ -281,11 +281,11 @@ func Test_set_completion()
   " Expand directories.
   call feedkeys(":set cdpath=./\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_match(' ./samples/ ', @:)
-  call assert_notmatch(' ./small.vim ', @:)
+  call assert_notmatch(' ./check.vim ', @:)
 
   " Expand files and directories.
   call feedkeys(":set tags=./\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_match(' ./samples/.* ./small.vim', @:)
+  call assert_match(' ./runtest.vim ./samples/.*', @:)
 
   call feedkeys(":set tags=./\\\\ dif\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"set tags=./\\ diff diffexpr diffopt', @:)
