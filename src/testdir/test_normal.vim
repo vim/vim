@@ -1384,7 +1384,7 @@ func Test_normal23_K()
   call setline(1, '---')
   call assert_fails('normal! ggv2lK', 'E349:')
   call setline(1, ['abc', 'xyz'])
-  call assert_fails("normal! gg2lv2h\<C-]>", 'E426:')
+  call assert_fails("normal! gg2lv2h\<C-]>", 'E433:')
   call assert_beeps("normal! ggVjK")
 
   " clean up
@@ -2504,24 +2504,6 @@ func Test_normal47_visual_buf_wipe()
   bw!
   norm yp
   set nomodified
-endfunc
-
-func Test_normal47_autocmd()
-  " disabled, does not seem to be possible currently
-  throw "Skipped: not possible to test cursorhold autocmd while waiting for input in normal_cmd"
-  new
-  call append(0, repeat('-',20))
-  au CursorHold * call feedkeys('2l', '')
-  1
-  set updatetime=20
-  " should delete 12 chars (d12l)
-  call feedkeys('d1', '!')
-  call assert_equal('--------', getline(1))
-
-  " clean up
-  au! CursorHold
-  set updatetime=4000
-  bw!
 endfunc
 
 func Test_normal48_wincmd()

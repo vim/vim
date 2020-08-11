@@ -48,9 +48,11 @@ filepath.c	| dealing with file names and paths
 findfile.c	| search for files in 'path'
 fold.c		| folding
 getchar.c	| getting characters and key mapping
+help.c		| vim help related functions
 highlight.c	| syntax highlighting
 indent.c	| text indentation
 insexpand.c	| Insert mode completion
+locale.c	| locale/language handling
 map.c		| mapping and abbreviations
 mark.c		| marks
 match.c		| highlight matching

@@ -592,7 +592,7 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 	p = skiptowhite(marker);
 	if (*skipwhite(p) != NUL && *skipwhite(p) != '"')
 	{
-	    emsg(_(e_trailing));
+	    semsg(_(e_trailing_arg), p);
 	    return NULL;
 	}
 	*p = NUL;
@@ -698,12 +698,13 @@ ex_let(exarg_T *eap)
     int		i;
     int		var_count = 0;
     int		semicolon = 0;
-    char_u	op[2];
+    char_u	op[4];
     char_u	*argend;
     int		first = TRUE;
     int		concat;
     int		has_assign;
     int		flags = eap->cmdidx == CMD_const ? LET_IS_CONST : 0;
+    int		vim9script = in_vim9script();
 
     // detect Vim9 assignment without ":let" or ":const"
     if (eap->arg == eap->cmd)
@@ -725,11 +726,11 @@ ex_let(exarg_T *eap)
 	// ":let" without "=": list variables
 	if (*arg == '[')
 	    emsg(_(e_invarg));
-	else if (expr[0] == '.')
-	    emsg(_("E985: .= is not supported with script version 2"));
+	else if (expr[0] == '.' && expr[1] == '=')
+	    emsg(_("E985: .= is not supported with script version >= 2"));
 	else if (!ends_excmd2(eap->cmd, arg))
 	{
-	    if (current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+	    if (vim9script)
 	    {
 		// Vim9 declaration ":let var: type"
 		arg = vim9_declare_scriptvar(eap, arg);
@@ -775,6 +776,7 @@ ex_let(exarg_T *eap)
     else
     {
 	evalarg_T   evalarg;
+	int	    len = 1;
 
 	rettv.v_type = VAR_UNKNOWN;
 	i = FAIL;
@@ -787,13 +789,25 @@ ex_let(exarg_T *eap)
 		if (vim_strchr((char_u *)"+-*/%.", *expr) != NULL)
 		{
 		    op[0] = *expr;   // +=, -=, *=, /=, %= or .=
+		    ++len;
 		    if (expr[0] == '.' && expr[1] == '.') // ..=
+		    {
 			++expr;
+			++len;
+		    }
 		}
-		expr = skipwhite(expr + 2);
+		expr += 2;
 	    }
 	    else
-		expr = skipwhite(expr + 1);
+		++expr;
+
+	    if (vim9script && (!VIM_ISWHITE(*argend)
+						   || !IS_WHITE_OR_NUL(*expr)))
+	    {
+		vim_strncpy(op, expr - len, len);
+		semsg(_(e_white_both), op);
+		i = FAIL;
+	    }
 
 	    if (eap->skip)
 		++emsg_skip;
@@ -804,6 +818,7 @@ ex_let(exarg_T *eap)
 		evalarg.eval_getline = eap->getline;
 		evalarg.eval_cookie = eap->cookie;
 	    }
+	    expr = skipwhite_and_linebreak(expr, &evalarg);
 	    i = eval0(expr, &rettv, eap, &evalarg);
 	    if (eap->skip)
 		--emsg_skip;
@@ -817,7 +832,7 @@ ex_let(exarg_T *eap)
 	else if (i != FAIL)
 	{
 	    (void)ex_let_vars(eap->arg, &rettv, FALSE, semicolon, var_count,
-								 flags, op);
+								    flags, op);
 	    clear_tv(&rettv);
 	}
     }
@@ -993,13 +1008,13 @@ skip_var_one(char_u *arg, int include_type)
 	return arg + 2;
     end = find_name_end(*arg == '$' || *arg == '&' ? arg + 1 : arg,
 				   NULL, NULL, FNE_INCL_BR | FNE_CHECK_START);
-    if (include_type && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+    if (include_type && in_vim9script())
     {
 	// "a: type" is declaring variable "a" with a type, not "a:".
 	if (end == arg + 2 && end[-1] == ':')
 	    --end;
 	if (*end == ':')
-	    end = skip_type(skipwhite(end + 1));
+	    end = skip_type(skipwhite(end + 1), FALSE);
     }
     return end;
 }
@@ -1099,7 +1114,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 	    if (!VIM_ISWHITE(*arg) && !ends_excmd(*arg))
 	    {
 		emsg_severe = TRUE;
-		emsg(_(e_trailing));
+		semsg(_(e_trailing_arg), arg);
 		break;
 	    }
 	}
@@ -1122,6 +1137,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 	    }
 	    else
 	    {
+		arg = skipwhite(arg);
 		if (tofree != NULL)
 		    name = tofree;
 		if (eval_variable(name, len, &tv, NULL, TRUE, FALSE) == FAIL)
@@ -1204,18 +1220,19 @@ ex_let_one(
     int		opt_flags;
     char_u	*tofree = NULL;
 
+    if (in_vim9script() && (flags & LET_NO_COMMAND) == 0
+				  && vim_strchr((char_u *)"$@&", *arg) != NULL)
+    {
+	vim9_declare_error(arg);
+	return NULL;
+    }
+
     // ":let $VAR = expr": Set environment variable.
     if (*arg == '$')
     {
 	if (flags & LET_IS_CONST)
 	{
 	    emsg(_("E996: Cannot lock an environment variable"));
-	    return NULL;
-	}
-	if (current_sctx.sc_version == SCRIPT_VERSION_VIM9
-		&& (flags & LET_NO_COMMAND) == 0)
-	{
-	    vim9_declare_error(arg);
 	    return NULL;
 	}
 
@@ -1476,7 +1493,7 @@ ex_unletlock(
 		if (name_end != NULL)
 		{
 		    emsg_severe = TRUE;
-		    emsg(_(e_trailing));
+		    semsg(_(e_trailing_arg), name_end);
 		}
 		if (!(eap->skip || error))
 		    clear_lval(&lv);
@@ -1576,8 +1593,7 @@ do_unlet(char_u *name, int forceit)
     dict_T	*d;
     dictitem_T	*di;
 
-    if (current_sctx.sc_version == SCRIPT_VERSION_VIM9
-	    && check_vim9_unlet(name) == FAIL)
+    if (in_vim9script() && check_vim9_unlet(name) == FAIL)
 	return FAIL;
 
     ht = find_var_ht(name, &varname);
@@ -2392,8 +2408,7 @@ eval_variable(
 	    *dip = v;
     }
 
-    if (tv == NULL && (current_sctx.sc_version == SCRIPT_VERSION_VIM9
-					       || STRNCMP(name, "s:", 2) == 0))
+    if (tv == NULL && (in_vim9script() || STRNCMP(name, "s:", 2) == 0))
     {
 	imported_T  *import;
 	char_u	    *p = STRNCMP(name, "s:", 2) == 0 ? name + 2 : name;
@@ -2415,7 +2430,7 @@ eval_variable(
 	    else
 	    {
 		scriptitem_T    *si = SCRIPT_ITEM(import->imp_sid);
-		svar_T	    *sv = ((svar_T *)si->sn_var_vals.ga_data)
+		svar_T		*sv = ((svar_T *)si->sn_var_vals.ga_data)
 						    + import->imp_var_vals_idx;
 		tv = sv->sv_tv;
 	    }
@@ -2634,7 +2649,7 @@ find_var_ht(char_u *name, char_u **varname)
 	    return ht;				// local variable
 
 	// in Vim9 script items at the script level are script-local
-	if (current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+	if (in_vim9script())
 	{
 	    ht = get_script_local_ht();
 	    if (ht != NULL)
@@ -2897,7 +2912,7 @@ set_var_const(
     }
     is_script_local = ht == get_script_local_ht();
 
-    if (current_sctx.sc_version == SCRIPT_VERSION_VIM9
+    if (in_vim9script()
 	    && !is_script_local
 	    && (flags & LET_NO_COMMAND) == 0
 	    && name[1] == ':')
@@ -2913,7 +2928,7 @@ set_var_const(
 	di = find_var_in_scoped_ht(name, TRUE);
 
     if ((tv->v_type == VAR_FUNC || tv->v_type == VAR_PARTIAL)
-				      && var_check_func_name(name, di == NULL))
+				      && var_wrong_func_name(name, di == NULL))
 	return;
 
     if (di != NULL)
@@ -2926,8 +2941,7 @@ set_var_const(
 		return;
 	    }
 
-	    if (is_script_local
-			     && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+	    if (is_script_local && in_vim9script())
 	    {
 		if ((flags & LET_NO_COMMAND) == 0)
 		{
@@ -3023,7 +3037,7 @@ set_var_const(
 	if (flags & LET_IS_CONST)
 	    di->di_flags |= DI_FLAGS_LOCK;
 
-	if (is_script_local && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+	if (is_script_local && in_vim9script())
 	{
 	    scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
 
@@ -3100,7 +3114,7 @@ var_check_fixed(int flags, char_u *name, int use_gettext)
  * Return TRUE and give an error if not.
  */
     int
-var_check_func_name(
+var_wrong_func_name(
     char_u *name,    // points to start of variable name
     int    new_var)  // TRUE when creating the variable
 {
@@ -3345,6 +3359,7 @@ assert_error(garray_T *gap)
     int
 var_exists(char_u *var)
 {
+    char_u	*arg = var;
     char_u	*name;
     char_u	*tofree;
     typval_T    tv;
@@ -3353,7 +3368,7 @@ var_exists(char_u *var)
 
     // get_name_len() takes care of expanding curly braces
     name = var;
-    len = get_name_len(&var, &tofree, TRUE, FALSE);
+    len = get_name_len(&arg, &tofree, TRUE, FALSE);
     if (len > 0)
     {
 	if (tofree != NULL)
@@ -3362,12 +3377,13 @@ var_exists(char_u *var)
 	if (n)
 	{
 	    // handle d.key, l[idx], f(expr)
-	    n = (handle_subscript(&var, &tv, &EVALARG_EVALUATE, FALSE) == OK);
+	    arg = skipwhite(arg);
+	    n = (handle_subscript(&arg, &tv, &EVALARG_EVALUATE, FALSE) == OK);
 	    if (n)
 		clear_tv(&tv);
 	}
     }
-    if (*var != NUL)
+    if (*arg != NUL)
 	n = FALSE;
 
     vim_free(tofree);
@@ -3388,8 +3404,7 @@ static char_u	*redir_varname = NULL;
     int
 var_redir_start(char_u *name, int append)
 {
-    int		save_emsg;
-    int		err;
+    int		called_emsg_before;
     typval_T	tv;
 
     // Catch a bad name early.
@@ -3422,9 +3437,9 @@ var_redir_start(char_u *name, int append)
 	clear_lval(redir_lval);
 	if (redir_endp != NULL && *redir_endp != NUL)
 	    // Trailing characters are present after the variable name
-	    emsg(_(e_trailing));
+	    semsg(_(e_trailing_arg), redir_endp);
 	else
-	    emsg(_(e_invarg));
+	    semsg(_(e_invarg2), name);
 	redir_endp = NULL;  // don't store a value, only cleanup
 	var_redir_stop();
 	return FAIL;
@@ -3432,8 +3447,7 @@ var_redir_start(char_u *name, int append)
 
     // check if we can write to the variable: set it to or append an empty
     // string
-    save_emsg = did_emsg;
-    did_emsg = FALSE;
+    called_emsg_before = called_emsg;
     tv.v_type = VAR_STRING;
     tv.vval.v_string = (char_u *)"";
     if (append)
@@ -3441,9 +3455,7 @@ var_redir_start(char_u *name, int append)
     else
 	set_var_lval(redir_lval, redir_endp, &tv, TRUE, 0, (char_u *)"=");
     clear_lval(redir_lval);
-    err = did_emsg;
-    did_emsg |= save_emsg;
-    if (err)
+    if (called_emsg > called_emsg_before)
     {
 	redir_endp = NULL;  // don't store a value, only cleanup
 	var_redir_stop();
@@ -3854,6 +3866,27 @@ set_callback(callback_T *dest, callback_T *src)
 	dest->cb_free_name = FALSE;
     }
     dest->cb_partial = src->cb_partial;
+}
+
+/*
+ * Copy callback from "src" to "dest", incrementing the refcounts.
+ */
+    void
+copy_callback(callback_T *dest, callback_T *src)
+{
+    dest->cb_partial = src->cb_partial;
+    if (dest->cb_partial != NULL)
+    {
+	dest->cb_name = src->cb_name;
+	dest->cb_free_name = FALSE;
+	++dest->cb_partial->pt_refcount;
+    }
+    else
+    {
+	dest->cb_name = vim_strsave(src->cb_name);
+	dest->cb_free_name = TRUE;
+	func_ref(src->cb_name);
+    }
 }
 
 /*

@@ -461,7 +461,7 @@ get_emsg_source(void)
 
     if (SOURCING_NAME != NULL && other_sourcing_name())
     {
-	char_u	    *sname = estack_sfile();
+	char_u	    *sname = estack_sfile(FALSE);
 	char_u	    *tofree = sname;
 
 	if (sname == NULL)
@@ -653,6 +653,9 @@ emsg_core(char_u *s)
 		++did_emsg;
 	    return TRUE;
 	}
+
+	if (emsg_assert_fails_used && emsg_assert_fails_msg == NULL)
+	    emsg_assert_fails_msg = vim_strsave(s);
 
 	// set "v:errmsg", also when using ":silent! cmd"
 	set_vim_var_string(VV_ERRMSG, s, -1);

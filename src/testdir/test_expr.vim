@@ -55,6 +55,9 @@ func Test_dict()
   let d['a'] = 'aaa'
   call assert_equal('none', d[''])
   call assert_equal('aaa', d['a'])
+
+  let d[ 'b' ] = 'bbb'
+  call assert_equal('bbb', d[ 'b' ])
 endfunc
 
 func Test_strgetchar()
@@ -478,7 +481,7 @@ func Test_setmatches()
   endif
   eval set->setmatches()
   call assert_equal(exp, getmatches())
-  call assert_fails('let m = setmatches([], [])', 'E957:')
+  call assert_fails('let m = setmatches([], [])', 'E745:')
 endfunc
 
 func Test_empty_concatenate()
@@ -594,6 +597,11 @@ func Test_expr_eval_error()
   call assert_fails("let v = 10 + []", 'E745:')
   call assert_fails("let v = 10 / []", 'E745:')
   call assert_fails("let v = -{}", 'E728:')
+endfunc
+
+func Test_white_in_function_call()
+  let text = substitute ( 'some text' , 't' , 'T' , 'g' )
+  call assert_equal('some TexT', text)
 endfunc
 
 " Test for float value comparison

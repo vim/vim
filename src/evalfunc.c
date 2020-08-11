@@ -393,6 +393,24 @@ ret_remove(int argcount UNUSED, type_T **argtypes)
     return &t_any;
 }
 
+    static type_T *
+ret_getreg(int argcount, type_T **argtypes UNUSED)
+{
+    // Assume that if the third argument is passed it's non-zero
+    if (argcount == 3)
+	return &t_list_string;
+    return &t_string;
+}
+
+    static type_T *
+ret_maparg(int argcount, type_T **argtypes UNUSED)
+{
+    // Assume that if the fourth argument is passed it's non-zero
+    if (argcount == 4)
+	return &t_dict_any;
+    return &t_string;
+}
+
 static type_T *ret_f_function(int argcount, type_T **argtypes);
 
 /*
@@ -465,8 +483,8 @@ static funcentry_T global_functions[] =
     {"acos",		1, 1, FEARG_1,	  ret_float,	FLOAT_FUNC(f_acos)},
     {"add",		2, 2, FEARG_1,	  ret_first_arg, f_add},
     {"and",		2, 2, FEARG_1,	  ret_number,	f_and},
-    {"append",		2, 2, FEARG_LAST, ret_number,	f_append},
-    {"appendbufline",	3, 3, FEARG_LAST, ret_number,	f_appendbufline},
+    {"append",		2, 2, FEARG_2,	  ret_number,	f_append},
+    {"appendbufline",	3, 3, FEARG_3,	  ret_number,	f_appendbufline},
     {"argc",		0, 1, 0,	  ret_number,	f_argc},
     {"argidx",		0, 0, 0,	  ret_number,	f_argidx},
     {"arglistid",	0, 2, 0,	  ret_number,	f_arglistid},
@@ -611,7 +629,7 @@ static funcentry_T global_functions[] =
     {"function",	1, 3, FEARG_1,	  ret_f_function, f_function},
     {"garbagecollect",	0, 1, 0,	  ret_void,	f_garbagecollect},
     {"get",		2, 3, FEARG_1,	  ret_any,	f_get},
-    {"getbufinfo",	0, 1, 0,	  ret_list_dict_any, f_getbufinfo},
+    {"getbufinfo",	0, 1, FEARG_1,	  ret_list_dict_any, f_getbufinfo},
     {"getbufline",	2, 3, FEARG_1,	  ret_list_string, f_getbufline},
     {"getbufvar",	2, 3, FEARG_1,	  ret_any,	f_getbufvar},
     {"getchangelist",	0, 1, FEARG_1,	  ret_list_any,	f_getchangelist},
@@ -641,7 +659,7 @@ static funcentry_T global_functions[] =
     {"getpid",		0, 0, 0,	  ret_number,	f_getpid},
     {"getpos",		1, 1, FEARG_1,	  ret_list_number,	f_getpos},
     {"getqflist",	0, 1, 0,	  ret_list_or_dict_0,	f_getqflist},
-    {"getreg",		0, 3, FEARG_1,	  ret_string,	f_getreg},
+    {"getreg",		0, 3, FEARG_1,	  ret_getreg,	f_getreg},
     {"getreginfo",	0, 1, FEARG_1,	  ret_dict_any,	f_getreginfo},
     {"getregtype",	0, 1, FEARG_1,	  ret_string,	f_getregtype},
     {"gettabinfo",	0, 1, FEARG_1,	  ret_list_dict_any,	f_gettabinfo},
@@ -720,7 +738,7 @@ static funcentry_T global_functions[] =
 #endif
 			},
     {"map",		2, 2, FEARG_1,	  ret_any,	f_map},
-    {"maparg",		1, 4, FEARG_1,	  ret_string,	f_maparg},
+    {"maparg",		1, 4, FEARG_1,	  ret_maparg,	f_maparg},
     {"mapcheck",	1, 3, FEARG_1,	  ret_string,	f_mapcheck},
     {"mapset",		3, 3, FEARG_1,	  ret_void,	f_mapset},
     {"match",		2, 4, FEARG_1,	  ret_any,	f_match},
@@ -1191,7 +1209,9 @@ internal_func_ret_type(int idx, int argcount, type_T **argtypes)
 
 /*
  * Check the argument count to use for internal function "idx".
- * Returns OK or FAIL;
+ * Returns -1 for failure, 0 if no method base accepted, 1 if method base is
+ * first argument, 2 if method base is second argument, etc.  9 if method base
+ * is last argument.
  */
     int
 check_internal_func(int idx, int argcount)
@@ -1204,14 +1224,14 @@ check_internal_func(int idx, int argcount)
     else if (argcount > global_functions[idx].f_max_argc)
 	res = FCERR_TOOMANY;
     else
-	return OK;
+	return global_functions[idx].f_argtype;
 
     name = internal_func_name(idx);
     if (res == FCERR_TOOMANY)
 	semsg(_(e_toomanyarg), name);
     else
 	semsg(_(e_toofewarg), name);
-    return FAIL;
+    return -1;
 }
 
     int
@@ -2139,7 +2159,7 @@ f_eval(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_number = 0;
     }
     else if (*s != NUL)
-	emsg(_(e_trailing));
+	semsg(_(e_trailing_arg), s);
 }
 
 /*
@@ -5111,7 +5131,7 @@ f_islocked(typval_T *argvars, typval_T *rettv)
     if (end != NULL && lv.ll_name != NULL)
     {
 	if (*end != NUL)
-	    emsg(_(e_trailing));
+	    semsg(_(e_trailing_arg), end);
 	else
 	{
 	    if (lv.ll_tv == NULL)
@@ -7857,9 +7877,9 @@ f_split(typval_T *argvars, typval_T *rettv)
 	pat = (char_u *)"[\\x01- ]\\+";
 
     if (rettv_list_alloc(rettv) == FAIL)
-	return;
+	goto theend;
     if (typeerr)
-	return;
+	goto theend;
 
     regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
     if (regmatch.regprog != NULL)
@@ -7896,6 +7916,7 @@ f_split(typval_T *argvars, typval_T *rettv)
 	vim_regfree(regmatch.regprog);
     }
 
+theend:
     p_cpo = save_cpo;
 }
 

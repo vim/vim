@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.2.  Last change: 2020 Jun 05
+*editing.txt*   For Vim version 8.2.  Last change: 2020 Jul 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1402,7 +1402,7 @@ to 0, 'modeline' off, 'expandtab' off).  Setting the 'binary' option has the
 same effect.  Don't forget to do this before reading the file.
 
 There are a few things to remember when editing binary files:
-- When editing executable files the number of characters must not change.
+- When editing executable files the number of bytes must not change.
   Use only the "R" or "r" command to change text.  Do not delete characters
   with "x" or by backspacing.
 - Set the 'textwidth' option to 0.  Otherwise lines will unexpectedly be
@@ -1410,7 +1410,7 @@ There are a few things to remember when editing binary files:
 - When there are not many <EOL>s, the lines will become very long.  If you
   want to edit a line that does not fit on the screen reset the 'wrap' option.
   Horizontal scrolling is used then.  If a line becomes too long (more than
-  about 32767 characters on the Amiga, much more on 32-bit systems, see
+  about 32767 bytes on the Amiga, much more on 32-bit and 64-bit systems, see
   |limits|) you cannot edit that line.  The line will be split when reading
   the file.  It is also possible that you get an "out of memory" error when
   reading the file.

@@ -1254,11 +1254,16 @@ key_press_event(GtkWidget *widget UNUSED,
 	add_to_input_buf(string2, 3);
     }
 
-    if (len == 1 && ((string[0] == Ctrl_C && ctrl_c_interrupts)
-		   || (string[0] == intr_char && intr_char != Ctrl_C)))
+    // Check if the key interrupts.
     {
-	trash_input_buf();
-	got_int = TRUE;
+	int int_ch = check_for_interrupt(key, modifiers);
+
+	if (int_ch != NUL)
+	{
+	    trash_input_buf();
+	    string[0] = int_ch;
+	    len = 1;
+	}
     }
 
     add_to_input_buf(string, len);

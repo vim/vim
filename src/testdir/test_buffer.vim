@@ -67,16 +67,7 @@ func Test_bunload_with_offset()
   call assert_fails('1,4bunload', 'E16:')
   call assert_fails(',100bunload', 'E16:')
 
-  " Use a try-catch for this test. When assert_fails() is used for this
-  " test, the command fails with E515: instead of E90:
-  let caught_E90 = 0
-  try
-    $bunload
-  catch /E90:/
-    let caught_E90 = 1
-  endtry
-  call assert_equal(1, caught_E90)
-  call assert_fails('$bunload', 'E515:')
+  call assert_fails('$bunload', 'E90:')
 endfunc
 
 " Test for :buffer, :bnext, :bprevious, :brewind, :blast and :bmodified
@@ -278,7 +269,7 @@ func Test_goto_buf_with_confirm()
   call assert_equal(1, &modified)
   call assert_equal('', @%)
   call feedkeys('y', 'L')
-  call assert_fails('confirm b Xfile', 'E37:')
+  call assert_fails('confirm b Xfile', ['', 'E37:'])
   call assert_equal(1, &modified)
   call assert_equal('', @%)
   call feedkeys('n', 'L')

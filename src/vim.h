@@ -264,10 +264,6 @@
 # include "os_win32.h"
 #endif
 
-#ifdef __MINT__
-# include "os_mint.h"
-#endif
-
 #if defined(MACOS_X)
 # include "os_mac.h"
 #endif

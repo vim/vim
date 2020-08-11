@@ -15,10 +15,4 @@ void ex_pyxfile(exarg_T *eap);
 void ex_pyx(exarg_T *eap);
 void ex_pyxdo(exarg_T *eap);
 void ex_checktime(exarg_T *eap);
-char_u *get_mess_lang(void);
-void set_lang_var(void);
-void ex_language(exarg_T *eap);
-void free_locales(void);
-char_u *get_lang_arg(expand_T *xp, int idx);
-char_u *get_locales(expand_T *xp, int idx);
 /* vim: set ft=c : */

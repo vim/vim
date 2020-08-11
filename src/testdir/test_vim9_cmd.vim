@@ -265,6 +265,12 @@ def Test_bar_after_command()
   endif
 enddef
 
+def Test_filter_is_not_modifier()
+  let tags = [{'a': 1, 'b': 2}, {'x': 3, 'y': 4}]
+  filter(tags, { _, v -> has_key(v, 'x') ? 1 : 0 })
+  assert_equal([#{x: 3, y: 4}], tags)
+enddef
+
 def Test_eval_command()
   let from = 3
   let to = 5

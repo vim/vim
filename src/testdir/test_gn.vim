@@ -120,7 +120,7 @@ func Test_gn_command()
   sil! %d_
 
   " search using the \zs atom
-  call setline(1, [' nnoremap', '' , 'nnoremap'])
+  call setline(1, [' nnoremap', '', 'nnoremap'])
   set wrapscan&vim
   let @/ = '\_s\zsnnoremap'
   $

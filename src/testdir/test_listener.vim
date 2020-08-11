@@ -210,8 +210,8 @@ func Test_listener_args()
 
   " Invalid arguments
   call assert_fails('call listener_add([])', 'E921:')
-  call assert_fails('call listener_add("s:StoreListArgs", [])', 'E158:')
-  call assert_fails('call listener_flush([])', 'E158:')
+  call assert_fails('call listener_add("s:StoreListArgs", [])', 'E730:')
+  call assert_fails('call listener_flush([])', 'E730:')
 endfunc
 
 func s:StoreBufList(buf, start, end, added, list)

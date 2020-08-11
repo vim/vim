@@ -569,7 +569,7 @@ func Test_access_freed_mem()
   au * 0 vs xxx
   arg 0
   argadd
-  call assert_fails("all", "E249:")
+  call assert_fails("all", "E242:")
   au!
   bwipe xxx
   call assert_equal(&columns, winwidth(0))

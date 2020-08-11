@@ -5764,6 +5764,8 @@ syn_cmd_sync(exarg_T *eap, int syncing UNUSED)
 	next_arg = skipwhite(arg_end);
 	vim_free(key);
 	key = vim_strnsave_up(arg_start, arg_end - arg_start);
+	if (key == NULL)
+	    break;
 	if (STRCMP(key, "CCOMMENT") == 0)
 	{
 	    if (!eap->skip)

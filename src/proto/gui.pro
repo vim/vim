@@ -65,4 +65,5 @@ void gui_update_screen(void);
 char_u *get_find_dialog_text(char_u *arg, int *wwordp, int *mcasep);
 int gui_do_findrepl(int flags, char_u *find_text, char_u *repl_text, int down);
 void gui_handle_drop(int x, int y, int_u modifiers, char_u **fnames, int count);
+int check_for_interrupt(int key, int modifiers_arg);
 /* vim: set ft=c : */

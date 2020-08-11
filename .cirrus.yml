@@ -11,6 +11,9 @@ freebsd_12_task:
     - NPROC=$(getconf _NPROCESSORS_ONLN)
     - ./configure --with-features=${FEATURES}
     - make -j${NPROC}
-    - src/vim --version
   test_script:
-    - make test
+    - src/vim --version
+      # run tests as user "cirrus" instead of root
+    - pw useradd cirrus -m
+    - chown -R cirrus:cirrus .
+    - sudo -u cirrus make test

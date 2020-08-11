@@ -3007,6 +3007,7 @@ read_viminfo(
 {
     FILE	*fp;
     char_u	*fname;
+    stat_T	st;		// mch_stat() of existing viminfo file
 
     if (no_viminfo())
 	return FAIL;
@@ -3031,6 +3032,11 @@ read_viminfo(
     vim_free(fname);
     if (fp == NULL)
 	return FAIL;
+    if (mch_fstat(fileno(fp), &st) < 0 || S_ISDIR(st.st_mode))
+    {
+	fclose(fp);
+	return FAIL;
+    }
 
     viminfo_errcnt = 0;
     do_viminfo(fp, NULL, flags);
@@ -3054,12 +3060,12 @@ write_viminfo(char_u *file, int forceit)
     FILE	*fp_out = NULL;	// output viminfo file
     char_u	*tempname = NULL;	// name of temp viminfo file
     stat_T	st_new;		// mch_stat() of potential new file
+    stat_T	st_old;		// mch_stat() of existing viminfo file
 #if defined(UNIX) || defined(VMS)
     mode_t	umask_save;
 #endif
 #ifdef UNIX
     int		shortname = FALSE;	// use 8.3 file name
-    stat_T	st_old;		// mch_stat() of existing viminfo file
 #endif
 #ifdef MSWIN
     int		hidden = FALSE;
@@ -3097,20 +3103,20 @@ write_viminfo(char_u *file, int forceit)
 	// write the new viminfo into, in the same directory as the
 	// existing viminfo file, which will be renamed once all writing is
 	// successful.
+	if (mch_fstat(fileno(fp_in), &st_old) < 0
+		|| S_ISDIR(st_old.st_mode)
 #ifdef UNIX
-	// For Unix we check the owner of the file.  It's not very nice to
-	// overwrite a user's viminfo file after a "su root", with a
-	// viminfo file that the user can't read.
-	st_old.st_dev = (dev_t)0;
-	st_old.st_ino = 0;
-	st_old.st_mode = 0600;
-	if (mch_stat((char *)fname, &st_old) == 0
-		&& getuid() != ROOT_UID
-		&& !(st_old.st_uid == getuid()
-			? (st_old.st_mode & 0200)
-			: (st_old.st_gid == getgid()
-				? (st_old.st_mode & 0020)
-				: (st_old.st_mode & 0002))))
+		// For Unix we check the owner of the file.  It's not very nice
+		// to overwrite a user's viminfo file after a "su root", with a
+		// viminfo file that the user can't read.
+		|| (getuid() != ROOT_UID
+		    && !(st_old.st_uid == getuid()
+			    ? (st_old.st_mode & 0200)
+			    : (st_old.st_gid == getgid()
+				    ? (st_old.st_mode & 0020)
+				    : (st_old.st_mode & 0002))))
+#endif
+		)
 	{
 	    int	tt = msg_didany;
 
@@ -3120,7 +3126,6 @@ write_viminfo(char_u *file, int forceit)
 	    fclose(fp_in);
 	    goto end;
 	}
-#endif
 #ifdef MSWIN
 	// Get the file attributes of the existing viminfo file.
 	hidden = mch_ishidden(fname);

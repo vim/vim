@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.2.  Last change: 2020 May 18
+*popup.txt*  For Vim version 8.2.  Last change: 2020 Jul 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -74,9 +74,9 @@ wrapping, lines in the buffer.  It can be limited with the "maxheight"
 property.  You can use empty lines to increase the height or the "minheight"
 property.
 
-The width of the window is normally equal to the longest line in the buffer.
-It can be limited with the "maxwidth" property.  You can use spaces to
-increase the width or use the "minwidth" property.
+The width of the window is normally equal to the longest visible line in the
+buffer.  It can be limited with the "maxwidth" property.  You can use spaces
+to increase the width or use the "minwidth" property.
 
 By default the 'wrap' option is set, so that no text disappears.  Otherwise,
 if there is not enough space then the window is shifted left in order to

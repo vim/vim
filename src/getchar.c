@@ -447,6 +447,8 @@ flush_buffers(flush_buffers_T flush_typeahead)
     typebuf.tb_silent = 0;
     cmd_silent = FALSE;
     typebuf.tb_no_abbr_cnt = 0;
+    if (++typebuf.tb_change_cnt == 0)
+	typebuf.tb_change_cnt = 1;
 }
 
 /*
@@ -1501,7 +1503,7 @@ openscript(
 	{
 	    update_topline_cursor();	// update cursor position and topline
 	    normal_cmd(&oa, FALSE);	// execute one command
-	    vpeekc();			// check for end of file
+	    (void)vpeekc();		// check for end of file
 	}
 	while (scriptin[oldcurscript] != NULL);
 
@@ -2045,7 +2047,7 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 	    // getchar(0) and char avail: return char
 	    n = plain_vgetc();
 
-	if (n == K_IGNORE)
+	if (n == K_IGNORE || n == K_MOUSEMOVE)
 	    continue;
 	break;
     }

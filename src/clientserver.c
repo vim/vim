@@ -596,7 +596,8 @@ build_drop_cmd(
     ga_concat(&ga, cdp);
 
     // Call inputsave() so that a prompt for an encryption key works.
-    ga_concat(&ga, (char_u *)"<CR>:if exists('*inputsave')|call inputsave()|endif|");
+    ga_concat(&ga, (char_u *)
+		       "<CR>:if exists('*inputsave')|call inputsave()|endif|");
     if (tabs)
 	ga_concat(&ga, (char_u *)"tab ");
     ga_concat(&ga, (char_u *)"drop");
@@ -621,7 +622,8 @@ build_drop_cmd(
 	ga_concat(&ga, p);
 	vim_free(p);
     }
-    ga_concat(&ga, (char_u *)"|if exists('*inputrestore')|call inputrestore()|endif<CR>");
+    ga_concat(&ga, (char_u *)
+		  "|if exists('*inputrestore')|call inputrestore()|endif<CR>");
 
     // The :drop commands goes to Insert mode when 'insertmode' is set, use
     // CTRL-\ CTRL-N again.

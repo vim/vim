@@ -220,6 +220,10 @@ EXTERN int	emsg_skip INIT(= 0);	    // don't display errors for
 					    // expression that is skipped
 EXTERN int	emsg_severe INIT(= FALSE);  // use message of next of several
 					    // emsg() calls for throw
+// used by assert_fails()
+EXTERN int	emsg_assert_fails_used INIT(= FALSE);
+EXTERN char_u	*emsg_assert_fails_msg INIT(= NULL);
+
 EXTERN int	did_endif INIT(= FALSE);    // just had ":endif"
 #endif
 EXTERN int	did_emsg;		    // set by emsg() when the message
@@ -721,10 +725,12 @@ EXTERN frame_T	*topframe;	// top of the window frame tree
 
 /*
  * Tab pages are alternative topframes.  "first_tabpage" points to the first
- * one in the list, "curtab" is the current one.
+ * one in the list, "curtab" is the current one. "lastused_tabpage" is the
+ * last used one.
  */
 EXTERN tabpage_T    *first_tabpage;
 EXTERN tabpage_T    *curtab;
+EXTERN tabpage_T    *lastused_tabpage;
 EXTERN int	    redraw_tabline INIT(= FALSE);  // need to redraw tabline
 
 /*
@@ -1680,6 +1686,7 @@ EXTERN char e_readonlysbx[]	INIT(= N_("E794: Cannot set variable in the sandbox:
 EXTERN char e_stringreq[]	INIT(= N_("E928: String required"));
 EXTERN char e_emptykey[]	INIT(= N_("E713: Cannot use empty key for Dictionary"));
 EXTERN char e_dictreq[]		INIT(= N_("E715: Dictionary required"));
+EXTERN char e_dictnull[]	INIT(= N_("E1103: Dictionary not set"));
 EXTERN char e_listidx[]		INIT(= N_("E684: list index out of range: %ld"));
 EXTERN char e_blobidx[]		INIT(= N_("E979: Blob index out of range: %ld"));
 EXTERN char e_invalblob[]	INIT(= N_("E978: Invalid operation for Blob"));
@@ -1726,6 +1733,7 @@ EXTERN char e_longname[]	INIT(= N_("E75: Name too long"));
 EXTERN char e_toomsbra[]	INIT(= N_("E76: Too many ["));
 EXTERN char e_toomany[]	INIT(= N_("E77: Too many file names"));
 EXTERN char e_trailing[]	INIT(= N_("E488: Trailing characters"));
+EXTERN char e_trailing_arg[]	INIT(= N_("E488: Trailing characters: %s"));
 EXTERN char e_umark[]		INIT(= N_("E78: Unknown mark"));
 EXTERN char e_wildexpand[]	INIT(= N_("E79: Cannot expand wildcards"));
 EXTERN char e_winheight[]	INIT(= N_("E591: 'winheight' cannot be smaller than 'winminheight'"));
@@ -1740,6 +1748,7 @@ EXTERN char e_missing_dict_colon[] INIT(= N_("E720: Missing colon in Dictionary:
 EXTERN char e_duplicate_key[]	INIT(= N_("E721: Duplicate key in Dictionary: \"%s\""));
 EXTERN char e_missing_dict_comma[] INIT(= N_("E722: Missing comma in Dictionary: %s"));
 EXTERN char e_missing_dict_end[]    INIT(= N_("E723: Missing end of Dictionary '}': %s"));
+EXTERN char e_already_defined[] INIT(= N_("E1073: name already defined: %s"));
 #endif
 #ifdef FEAT_CLIENTSERVER
 EXTERN char e_invexprmsg[]	INIT(= N_("E449: Invalid expression received"));
@@ -1885,7 +1894,7 @@ EXTERN listitem_T range_list_item;
 // Passed to an eval() function to enable evaluation.
 EXTERN evalarg_T EVALARG_EVALUATE
 # ifdef DO_INIT
-	= {EVAL_EVALUATE, 0, NULL, NULL, NULL, {0, 0, 0, 0, NULL}, NULL}
+	= {EVAL_EVALUATE, 0, NULL, NULL, NULL, {0, 0, 0, 0, NULL}, NULL, NULL}
 # endif
 	;
 #endif

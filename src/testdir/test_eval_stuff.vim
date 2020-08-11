@@ -1,5 +1,7 @@
 " Tests for various eval things.
 
+source view_util.vim
+
 function s:foo() abort
   try
     return [] == 0
@@ -17,13 +19,8 @@ func Test_nocatch_restore_silent_emsg()
     throw 1
   catch
   endtry
-  echoerr 'wrong'
-  let c1 = nr2char(screenchar(&lines, 1))
-  let c2 = nr2char(screenchar(&lines, 2))
-  let c3 = nr2char(screenchar(&lines, 3))
-  let c4 = nr2char(screenchar(&lines, 4))
-  let c5 = nr2char(screenchar(&lines, 5))
-  call assert_equal('wrong', c1 . c2 . c3 . c4 . c5)
+  echoerr 'wrong again'
+  call assert_equal('wrong again', ScreenLine(&lines))
 endfunc
 
 func Test_mkdir_p()
@@ -533,6 +530,28 @@ func Test_setreg_basic()
   call assert_fails('call setreg("/", ["1", "2"])', 'E883:')
   call assert_fails('call setreg("=", ["1", "2"])', 'E883:')
   call assert_fails('call setreg(1, ["", "", [], ""])', 'E730:')
+endfunc
+
+func Test_curly_assignment()
+  let s:svar = 'svar'
+  let g:gvar = 'gvar'
+  let lname = 'gvar'
+  let gname = 'gvar'
+  let {'s:'.lname} = {'g:'.gname}
+  call assert_equal('gvar', s:gvar)
+  let s:gvar = ''
+  let { 's:'.lname } = { 'g:'.gname }
+  call assert_equal('gvar', s:gvar)
+  let s:gvar = ''
+  let { 's:' . lname } = { 'g:' . gname }
+  call assert_equal('gvar', s:gvar)
+  let s:gvar = ''
+  let { 's:' .. lname } = { 'g:' .. gname }
+  call assert_equal('gvar', s:gvar)
+
+  unlet s:svar
+  unlet s:gvar
+  unlet g:gvar
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -279,7 +279,7 @@ func Test_let_errors()
   let l = [1, 2, 3]
   call assert_fails('let l[:] = 5', 'E709:')
 
-  call assert_fails('let x:lnum=5', 'E488:')
+  call assert_fails('let x:lnum=5', ['E121:', 'E488:'])
   call assert_fails('let v:=5', 'E461:')
   call assert_fails('let [a]', 'E474:')
   call assert_fails('let [a, b] = [', 'E697:')
@@ -298,7 +298,7 @@ func Test_let_errors()
   let l = [[1,2]]
   call assert_fails('let l[:][0] = [5]', 'E708:')
   let d = {'k' : 4}
-  call assert_fails('let d.# = 5', 'E713:')
+  call assert_fails('let d.# = 5', 'E488:')
   call assert_fails('let d.m += 5', 'E734:')
   call assert_fails('let m = d[{]', 'E15:')
   let l = [1, 2]

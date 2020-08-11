@@ -46,9 +46,6 @@
 #  include <sys/statfs.h>
 #  define STATFS statfs
 #  define F_BSIZE f_bsize
-#  ifdef __MINT__		// do we still need this?
-#   define fstatfs(fd, buf, len, nul) mch_fstat((fd), (buf))
-#  endif
 # endif
 #endif
 

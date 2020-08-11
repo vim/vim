@@ -5,16 +5,17 @@ skip_tags: true
 environment:
   matrix:
     - FEATURE: HUGE
-    - FEATURE: NORMAL
 # disabled
 #    - FEATURE: TINY
 #    - FEATURE: SMALL
+#    - FEATURE: NORMAL
 #    - FEATURE: BIG
 
 matrix:
   fast_finish: true
 
 before_build:
+  # Use Windows SDK 7.1 (= MSVC 2010)
   - '"C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64 /release'
   - 'set INCLUDE=%INCLUDE%C:\Program Files (x86)\Windows Kits\8.1\Include\um'
 
@@ -25,9 +26,9 @@ test_script:
   - cd src/testdir
     # Testing with MSVC gvim
   - path C:\Python35-x64;%PATH%
-  - nmake -f Make_dos.mak POSTSCRIPT=yes VIMPROG=..\gvim
+  - nmake -f Make_dos.mak VIMPROG=..\gvim
   - nmake -f Make_dos.mak clean
-    # Testing with MingW console version
-  - nmake -f Make_dos.mak POSTSCRIPT=yes VIMPROG=..\vim
+    # Testing with MSVC console version
+  - nmake -f Make_dos.mak VIMPROG=..\vim
 
 # vim: sw=2 sts=2 et ts=8 sr

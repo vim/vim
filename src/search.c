@@ -1928,8 +1928,8 @@ find_rawstring_end(char_u *linep, pos_T *startpos, pos_T *endpos)
 	{
 	    if (lnum == endpos->lnum && (colnr_T)(p - line) >= endpos->col)
 		break;
-	    if (*p == ')' && p[delim_len + 1] == '"'
-			  && STRNCMP(delim_copy, p + 1, delim_len) == 0)
+	    if (*p == ')' && STRNCMP(delim_copy, p + 1, delim_len) == 0
+			  && p[delim_len + 1] == '"')
 	    {
 		found = TRUE;
 		break;

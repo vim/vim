@@ -32,6 +32,7 @@ tabpage_T *find_tabpage(int n);
 int tabpage_index(tabpage_T *ftp);
 void goto_tabpage(int n);
 void goto_tabpage_tp(tabpage_T *tp, int trigger_enter_autocmds, int trigger_leave_autocmds);
+int goto_tabpage_lastused(void);
 void goto_tabpage_win(tabpage_T *tp, win_T *wp);
 void tabpage_move(int nr);
 void win_goto(win_T *wp);

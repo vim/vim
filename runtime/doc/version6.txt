@@ -7882,7 +7882,7 @@ Files:	    src/buffer.c, src/ex_cmds.c, src/fileio.c, src/globals.h,
 Patch 6.1.221
 Problem:    Changing case may not work properly, depending on the current
 	    locale.
-Solution:   Add the 'casemap' option to let the user chose how changing case
+Solution:   Add the 'casemap' option to let the user choose how changing case
 	    is to be done.
 	    Also fix lowering case when an UTF-8 character doesn't keep the
 	    same byte length.

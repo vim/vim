@@ -73,7 +73,7 @@ func Test_pydo()
 
   " Try modifying a buffer with 'nomodifiable' set
   set nomodifiable
-  call assert_fails('pydo toupper(line)', 'cannot save undo information')
+  call assert_fails('pydo toupper(line)', 'E21:')
   set modifiable
 
   " Invalid command

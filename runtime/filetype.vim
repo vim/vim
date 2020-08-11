@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2020 Jun 25
+" Last Change:	2020 Aug 04
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -87,6 +87,9 @@ endif
 
 " AHDL
 au BufNewFile,BufRead *.tdf			setf ahdl
+
+" AIDL
+au BufNewFile,BufRead *.aidl			setf aidl
 
 " AMPL
 au BufNewFile,BufRead *.run			setf ampl
@@ -1090,6 +1093,9 @@ au BufNewFile,BufRead .netrc			setf netrc
 " Ninja file
 au BufNewFile,BufRead *.ninja			setf ninja
 
+" NPM RC file
+au BufNewFile,BufRead npmrc,.npmrc		setf dosini
+
 " Novell netware batch files
 au BufNewFile,BufRead *.ncf			setf ncf
 
@@ -1195,6 +1201,9 @@ au BufNewFile,BufRead *.pod6			setf pod6
 " Also Phtml (was used for PHP 2 in the past)
 " Also .ctp for Cake template file
 au BufNewFile,BufRead *.php,*.php\d,*.phtml,*.ctp	setf php
+
+" PHP config
+au BufNewFile,BufRead php.ini,php.ini-*		setf dosini
 
 " Pike and Cmod
 au BufNewFile,BufRead *.pike,*.pmod		setf pike

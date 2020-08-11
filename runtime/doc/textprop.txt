@@ -220,7 +220,7 @@ prop_list({lnum} [, {props}])				*prop_list()*
 		Can also be used as a |method|: >
 			GetLnum()->prop_list()
 <
-						*prop_remove()* *E968*
+						*prop_remove()* *E968* *E860*
 prop_remove({props} [, {lnum} [, {lnum-end}]])
 		Remove a matching text property from line {lnum}.  When
 		{lnum-end} is given, remove matching text properties from line

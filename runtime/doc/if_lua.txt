@@ -199,8 +199,8 @@ Vim evaluation and command execution, and others.
 				returns it. Note that the buffer is not set as
 				current.
 
-	vim.call({name} [,{args}])
-				Proxy to call Vim function named {name} with 
+	vim.call({name} [, {args}])
+				Proxy to call Vim function named {name} with
 				arguments {args}.  Example: >
 					:lua print(vim.call('has', 'timers'))
 <

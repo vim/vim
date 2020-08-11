@@ -285,7 +285,15 @@ endfunc
 func Test_q_arg()
   CheckFeature quickfix
 
-  let source_file = has('win32') ? '..\memfile.c' : '../memfile.c'
+  let lines =<< trim END
+    /* some file with an error */
+    main() {
+      functionCall(arg; arg, arg);
+      return 666
+    }
+  END
+  call writefile(lines, 'Xbadfile.c')
+
   let after =<< trim [CODE]
     call writefile([&errorfile, string(getpos("."))], "Xtestout")
     copen
@@ -295,24 +303,24 @@ func Test_q_arg()
 
   " Test with default argument '-q'.
   call assert_equal('errors.err', &errorfile)
-  call writefile(["../memfile.c:208:5: error: expected ';' before '}' token"], 'errors.err')
+  call writefile(["Xbadfile.c:4:12: error: expected ';' before '}' token"], 'errors.err')
   if RunVim([], after, '-q')
     let lines = readfile('Xtestout')
     call assert_equal(['errors.err',
-	\              '[0, 208, 5, 0]',
-	\              source_file . "|208 col 5| error: expected ';' before '}' token"],
+	\              '[0, 4, 12, 0]',
+	\              "Xbadfile.c|4 col 12| error: expected ';' before '}' token"],
 	\             lines)
   endif
   call delete('Xtestout')
   call delete('errors.err')
 
   " Test with explicit argument '-q Xerrors' (with space).
-  call writefile(["../memfile.c:208:5: error: expected ';' before '}' token"], 'Xerrors')
+  call writefile(["Xbadfile.c:4:12: error: expected ';' before '}' token"], 'Xerrors')
   if RunVim([], after, '-q Xerrors')
     let lines = readfile('Xtestout')
     call assert_equal(['Xerrors',
-	\              '[0, 208, 5, 0]',
-	\              source_file . "|208 col 5| error: expected ';' before '}' token"],
+	\              '[0, 4, 12, 0]',
+	\              "Xbadfile.c|4 col 12| error: expected ';' before '}' token"],
 	\             lines)
   endif
   call delete('Xtestout')
@@ -321,8 +329,8 @@ func Test_q_arg()
   if RunVim([], after, '-qXerrors')
     let lines = readfile('Xtestout')
     call assert_equal(['Xerrors',
-	\              '[0, 208, 5, 0]',
-	\              source_file . "|208 col 5| error: expected ';' before '}' token"],
+	\              '[0, 4, 12, 0]',
+	\              "Xbadfile.c|4 col 12| error: expected ';' before '}' token"],
 	\             lines)
   endif
 
@@ -330,6 +338,7 @@ func Test_q_arg()
   let out = system(GetVimCommand() .. ' -q xyz.err')
   call assert_equal(3, v:shell_error)
 
+  call delete('Xbadfile.c')
   call delete('Xtestout')
   call delete('Xerrors')
 endfunc

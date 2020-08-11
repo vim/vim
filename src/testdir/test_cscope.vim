@@ -189,7 +189,7 @@ func Test_cscopeWithCscopeConnections()
 
     " Test: 'cst' option
     set nocst
-    call assert_fails('tag TEST_COUNT', 'E426:')
+    call assert_fails('tag TEST_COUNT', 'E433:')
     set cst
     let a = execute('tag TEST_COUNT')
     call assert_match('(1 of 1): <<TEST_COUNT>> #define TEST_COUNT 50000', a)

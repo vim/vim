@@ -803,7 +803,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
     dictitem_T	*item;
     char_u	*start = skipwhite(*arg + 1);
     char_u	buf[NUMBUFLEN];
-    int		vim9script = current_sctx.sc_version == SCRIPT_VERSION_VIM9;
+    int		vim9script = in_vim9script();
     int		had_comma;
 
     /*
@@ -817,7 +817,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
     {
 	if (eval1(&start, &tv, NULL) == FAIL)	// recursive!
 	    return FAIL;
-	if (*start == '}')
+	if (*skipwhite(start) == '}')
 	    return NOTDONE;
     }
 
@@ -838,6 +838,10 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 		: eval1(arg, &tvkey, evalarg)) == FAIL)	// recursive!
 	    goto failret;
 
+	// the colon should come right after the key, but this wasn't checked
+	// previously, so only require it in Vim9 script.
+	if (!vim9script)
+	    *arg = skipwhite(*arg);
 	if (**arg != ':')
 	{
 	    if (evaluate)
@@ -891,7 +895,10 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	}
 	clear_tv(&tvkey);
 
-	// the comma must come after the value
+	// the comma should come right after the value, but this wasn't checked
+	// previously, so only require it in Vim9 script.
+	if (!vim9script)
+	    *arg = skipwhite(*arg);
 	had_comma = **arg == ',';
 	if (had_comma)
 	{
@@ -959,7 +966,7 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action)
 		// Check the key to be valid when adding to any scope.
 		if (d1->dv_scope == VAR_DEF_SCOPE
 			&& HI2DI(hi2)->di_tv.v_type == VAR_FUNC
-			&& var_check_func_name(hi2->hi_key, di1 == NULL))
+			&& var_wrong_func_name(hi2->hi_key, di1 == NULL))
 		    break;
 		if (!valid_varname(hi2->hi_key))
 		    break;

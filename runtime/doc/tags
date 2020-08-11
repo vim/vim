@@ -1979,6 +1979,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :<sfile>	cmdline.txt	/*:<sfile>*
 :<sflnum>	cmdline.txt	/*:<sflnum>*
 :<slnum>	cmdline.txt	/*:<slnum>*
+:<stack>	cmdline.txt	/*:<stack>*
 :=	various.txt	/*:=*
 :>	change.txt	/*:>*
 :?	cmdline.txt	/*:?*
@@ -3647,6 +3648,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 <sfile>	cmdline.txt	/*<sfile>*
 <sflnum>	cmdline.txt	/*<sflnum>*
 <slnum>	cmdline.txt	/*<slnum>*
+<stack>	cmdline.txt	/*<stack>*
 <xCSI>	intro.txt	/*<xCSI>*
 <xDown>	term.txt	/*<xDown>*
 <xEnd>	term.txt	/*<xEnd>*
@@ -3898,6 +3900,7 @@ E1050	vim9.txt	/*E1050*
 E107	eval.txt	/*E107*
 E108	eval.txt	/*E108*
 E109	eval.txt	/*E109*
+E1092	vim9.txt	/*E1092*
 E1094	vim9.txt	/*E1094*
 E11	cmdline.txt	/*E11*
 E110	eval.txt	/*E110*
@@ -4699,6 +4702,7 @@ E855	autocmd.txt	/*E855*
 E858	eval.txt	/*E858*
 E859	eval.txt	/*E859*
 E86	windows.txt	/*E86*
+E860	textprop.txt	/*E860*
 E861	popup.txt	/*E861*
 E862	eval.txt	/*E862*
 E863	popup.txt	/*E863*
@@ -5740,6 +5744,7 @@ cino-J	indent.txt	/*cino-J*
 cino-L	indent.txt	/*cino-L*
 cino-M	indent.txt	/*cino-M*
 cino-N	indent.txt	/*cino-N*
+cino-P	indent.txt	/*cino-P*
 cino-U	indent.txt	/*cino-U*
 cino-W	indent.txt	/*cino-W*
 cino-^	indent.txt	/*cino-^*
@@ -8197,6 +8202,7 @@ no_plugin_maps	filetype.txt	/*no_plugin_maps*
 nocombine	syntax.txt	/*nocombine*
 non-greedy	pattern.txt	/*non-greedy*
 non-zero-arg	eval.txt	/*non-zero-arg*
+none-function_argument	eval.txt	/*none-function_argument*
 none-variable	eval.txt	/*none-variable*
 normal-index	index.txt	/*normal-index*
 not-compatible	usr_01.txt	/*not-compatible*
@@ -8820,7 +8826,9 @@ setloclist()	eval.txt	/*setloclist()*
 setmatches()	eval.txt	/*setmatches()*
 setpos()	eval.txt	/*setpos()*
 setqflist()	eval.txt	/*setqflist()*
+setqflist-action	eval.txt	/*setqflist-action*
 setqflist-examples	quickfix.txt	/*setqflist-examples*
+setqflist-what	eval.txt	/*setqflist-what*
 setreg()	eval.txt	/*setreg()*
 settabvar()	eval.txt	/*settabvar()*
 settabwinvar()	eval.txt	/*settabwinvar()*

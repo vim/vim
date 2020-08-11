@@ -68,7 +68,7 @@ void set_var(char_u *name, typval_T *tv, int copy);
 void set_var_const(char_u *name, type_T *type, typval_T *tv, int copy, int flags);
 int var_check_ro(int flags, char_u *name, int use_gettext);
 int var_check_fixed(int flags, char_u *name, int use_gettext);
-int var_check_func_name(char_u *name, int new_var);
+int var_wrong_func_name(char_u *name, int new_var);
 int var_check_lock(int lock, char_u *name, int use_gettext);
 int valid_varname(char_u *varname);
 void reset_v_option_vars(void);
@@ -88,5 +88,6 @@ void f_setbufvar(typval_T *argvars, typval_T *rettv);
 callback_T get_callback(typval_T *arg);
 void put_callback(callback_T *cb, typval_T *tv);
 void set_callback(callback_T *dest, callback_T *src);
+void copy_callback(callback_T *dest, callback_T *src);
 void free_callback(callback_T *callback);
 /* vim: set ft=c : */

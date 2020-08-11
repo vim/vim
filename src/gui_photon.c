@@ -596,11 +596,17 @@ gui_ph_handle_keyboard(PtWidget_t *widget, void *data, PtCallbackInfo_t *info)
 	    string[ len++ ] = ch;
 	}
 
-	if (len == 1 && ((ch == Ctrl_C && ctrl_c_interrupts)
-							  || ch == intr_char))
+	// Check if the key interrupts.
 	{
-	    trash_input_buf();
-	    got_int = TRUE;
+	    int int_ch = check_for_interrupt(ch, modifiers);
+
+	    if (int_ch != NUL)
+	    {
+		ch = int_ch;
+		string[0] = ch;
+		len = 1;
+		trash_input_buf();
+	    }
 	}
 
 	if (len == 1 && string[0] == CSI)
@@ -1756,6 +1762,22 @@ gui_mch_set_scrollbar_pos(scrollbar_T *sb, int x, int y, int w, int h)
     PhArea_t area = {{ x, y }, { w, h }};
 
     PtSetResource(sb->id, Pt_ARG_AREA, &area, 0);
+}
+
+    int
+gui_mch_get_scrollbar_xpadding(void)
+{
+    // TODO: Calculate the padding for adjust scrollbar position when the
+    // Window is maximized.
+    return 0;
+}
+
+    int
+gui_mch_get_scrollbar_ypadding(void)
+{
+    // TODO: Calculate the padding for adjust scrollbar position when the
+    // Window is maximized.
+    return 0;
 }
 
     void

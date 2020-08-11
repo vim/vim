@@ -23,6 +23,9 @@ func Test_list_create()
   call assert_equal(10, x)
 endfunc
 
+" This was allowed in legacy Vim script
+let s:list_with_spaces = [1 , 2 , 3]
+
 " List slices
 func Test_list_slice()
   let l = [1, 'as''d', [1, 2, function("strlen")], {'a': 1},]
@@ -202,6 +205,10 @@ func Test_dict()
   call assert_fails("let d={'k' : i}", 'E121:')
 endfunc
 
+" This was allowed in legacy Vim script
+let s:dict_with_spaces = {'one' : 1 , 'two' : 2 , 'three' : 3}
+let s:dict_with_spaces_lit = #{one : 1 , two : 2 , three : 3}
+
 " Dictionary identity
 func Test_dict_identity()
   let d = {001: 'asd', 'b': [1, 2, function('strlen')], -1: {'a': 1},}
@@ -280,6 +287,13 @@ func Test_dict_func()
   call assert_equal('again: 3', x)
   let Fn = d.func
   call assert_equal('xxx3', Fn('xxx'))
+endfunc
+
+func Test_dict_assign()
+  let d = {}
+  let d.1 = 1
+  let d._ = 2
+  call assert_equal({'1': 1, '_': 2}, d)
 endfunc
 
 " Function in script-local List or Dict
@@ -674,10 +688,10 @@ func Test_reverse_sort_uniq()
   endif
 
   call assert_fails('call reverse("")', 'E899:')
-  call assert_fails('call uniq([1, 2], {x, y -> []})', 'E882:')
+  call assert_fails('call uniq([1, 2], {x, y -> []})', 'E745:')
   call assert_fails("call sort([1, 2], function('min'), 1)", "E715:")
   call assert_fails("call sort([1, 2], function('invalid_func'))", "E700:")
-  call assert_fails("call sort([1, 2], function('min'))", "E702:")
+  call assert_fails("call sort([1, 2], function('min'))", "E118:")
 endfunc
 
 " reduce a list or a blob
@@ -960,7 +974,7 @@ func Test_listdict_index()
   call assert_fails('echo d[1:2]', 'E719:')
   call assert_fails("let v = [4, 6][{-> 1}]", 'E729:')
   call assert_fails("let v = range(5)[2:[]]", 'E730:')
-  call assert_fails("let v = range(5)[2:{-> 2}(]", 'E116:')
+  call assert_fails("let v = range(5)[2:{-> 2}(]", ['E15:', 'E116:'])
   call assert_fails("let v = range(5)[2:3", 'E111:')
   call assert_fails("let l = insert([1,2,3], 4, 10)", 'E684:')
   call assert_fails("let l = insert([1,2,3], 4, -10)", 'E684:')
