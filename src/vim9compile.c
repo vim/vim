@@ -3206,6 +3206,15 @@ compile_expr7(
 	case '9':
 	case '.':   if (eval_number(arg, rettv, TRUE, FALSE) == FAIL)
 			return FAIL;
+		    // Apply "-" and "+" just before the number now, right to
+		    // left.  Matters especially when "->" follows.  Stops at
+		    // '!'.
+		    if (apply_leader(rettv, TRUE,
+					    start_leader, &end_leader) == FAIL)
+		    {
+			clear_tv(rettv);
+			return FAIL;
+		    }
 		    break;
 
 	/*
@@ -3344,13 +3353,6 @@ compile_expr7(
 
     if (rettv->v_type != VAR_UNKNOWN && used_before == ppconst->pp_used)
     {
-	// apply the '-' and '+' before the constant, but not '!'
-	if (apply_leader(rettv, TRUE, start_leader, &end_leader) == FAIL)
-	{
-	    clear_tv(rettv);
-	    return FAIL;
-	}
-
 	if (cctx->ctx_skip == SKIP_YES)
 	    clear_tv(rettv);
 	else
