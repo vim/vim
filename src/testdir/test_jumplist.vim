@@ -1,5 +1,7 @@
 " Tests for the jumplist functionality
 
+source check.vim
+
 " Tests for the getjumplist() function
 func Test_getjumplist()
   CheckFeature jumplist

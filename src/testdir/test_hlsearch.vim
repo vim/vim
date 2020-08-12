@@ -1,5 +1,7 @@
 " Test for v:hlsearch
 
+source check.vim
+
 func Test_hlsearch()
   new
   call setline(1, repeat(['aaa'], 10))

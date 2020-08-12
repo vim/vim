@@ -1,5 +1,7 @@
 " Test binding arguments to a Funcref.
  
+source check.vim
+
 func MyFunc(arg1, arg2, arg3)
   return a:arg1 . '/' . a:arg2 . '/' . a:arg3
 endfunc

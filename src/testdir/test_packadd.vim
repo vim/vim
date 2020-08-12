@@ -1,5 +1,6 @@
 " Tests for 'packpath' and :packadd
 
+source check.vim
 
 func SetUp()
   let s:topdir = getcwd() . '/Xdir'

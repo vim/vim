@@ -2,7 +2,7 @@
 " leaks under valgrind.  That is because when fork/exec fails memory is not
 " freed.  Since the process exits right away it's not a real leak.
 
-source shared.vim
+source check.vim
 
 func Test_job_start_fails()
   CheckFeature job

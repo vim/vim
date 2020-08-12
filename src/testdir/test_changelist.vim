@@ -1,5 +1,7 @@
 " Tests for the changelist functionality
 
+source check.vim
+
 " Tests for the getchangelist() function
 func Test_getchangelist()
   CheckFeature jumplist

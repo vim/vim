@@ -1,5 +1,7 @@
 " Tests for stat functions and checktime
 
+source check.vim
+
 func CheckFileTime(doSleep)
   let fnames = ['Xtest1.tmp', 'Xtest2.tmp', 'Xtest3.tmp']
   let times = []

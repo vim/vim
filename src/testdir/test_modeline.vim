@@ -1,5 +1,7 @@
 " Tests for parsing the modeline.
 
+source check.vim
+
 func Test_modeline_invalid()
   " This was reading allocated memory in the past.
   call writefile(['vi:0', 'nothing'], 'Xmodeline')

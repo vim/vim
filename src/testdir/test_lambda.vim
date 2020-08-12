@@ -1,5 +1,7 @@
 " Test for lambda and closure
 
+source check.vim
+
 func Test_lambda_feature()
   call assert_equal(1, has('lambda'))
 endfunc
