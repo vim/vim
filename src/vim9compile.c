@@ -6567,7 +6567,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	 * 'text'->func() should not be confused with 'a mark
 	 */
 	cmd = ea.cmd;
-	if (*cmd != '\'')
+	if (*cmd != '\'' || starts_with_colon)
 	{
 	    ea.cmd = skip_range(ea.cmd, NULL);
 	    if (ea.cmd > cmd && !starts_with_colon)

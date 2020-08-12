@@ -83,20 +83,37 @@ enddef
 
 def Test_disassemble_exec_expr()
   let res = execute('disass s:EditExpand')
-  assert_match('<SNR>\d*_EditExpand.*' ..
-        ' let filename = "file".*' ..
-        '\d PUSHS "file".*' ..
-        '\d STORE $0.*' ..
-        ' let filenr = 123.*' ..
-        '\d STORE 123 in $1.*' ..
-        ' edit the`=filename``=filenr`.txt.*' ..
-        '\d PUSHS "edit the".*' ..
-        '\d LOAD $0.*' ..
-        '\d LOAD $1.*' ..
-        '\d 2STRING stack\[-1\].*' ..
-        '\d PUSHS ".txt".*' ..
-        '\d EXECCONCAT 4.*' ..
-        '\d PUSHNR 0.*' ..
+  assert_match('<SNR>\d*_EditExpand\_s*' ..
+        ' let filename = "file"\_s*' ..
+        '\d PUSHS "file"\_s*' ..
+        '\d STORE $0\_s*' ..
+        ' let filenr = 123\_s*' ..
+        '\d STORE 123 in $1\_s*' ..
+        ' edit the`=filename``=filenr`.txt\_s*' ..
+        '\d PUSHS "edit the"\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d LOAD $1\_s*' ..
+        '\d 2STRING stack\[-1\]\_s*' ..
+        '\d\+ PUSHS ".txt"\_s*' ..
+        '\d\+ EXECCONCAT 4\_s*' ..
+        '\d\+ PUSHNR 0\_s*' ..
+        '\d\+ RETURN',
+        res)
+enddef
+
+def s:YankRange()
+  norm! m[jjm]
+  :'[,']yank
+enddef
+
+def Test_disassemble_yank_range()
+  let res = execute('disass s:YankRange')
+  assert_match('<SNR>\d*_YankRange.*' ..
+        ' norm! m\[jjm\]\_s*' ..
+        '\d EXEC   norm! m\[jjm\]\_s*' ..
+        '  :''\[,''\]yank\_s*' ..
+        '\d EXEC   :''\[,''\]yank\_s*' ..
+        '\d PUSHNR 0\_s*' ..
         '\d RETURN',
         res)
 enddef
