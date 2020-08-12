@@ -37,7 +37,10 @@ VIMPROG = <->vim.exe
 
 .SUFFIXES : .out .in
 
-SCRIPT = test1.out test77a.out
+SCRIPT = test1.out \
+	 test20.out test22.out test23.out test24.out test28.out \
+	 test36.out test41.out test42.out \
+	 test77a.out
 
 .IFDEF WANT_GUI
 GUI_OPTION = -g
