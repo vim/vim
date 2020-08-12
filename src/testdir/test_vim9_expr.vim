@@ -1494,6 +1494,10 @@ def Test_expr7_dict()
   mixed = #{a: 234}
   mixed = #{}
 
+  call CheckDefFailure(["let x = #{a:8}"], 'E1069:')
+  call CheckDefFailure(["let x = #{a : 8}"], 'E1068:')
+  call CheckDefFailure(["let x = #{a :8}"], 'E1068:')
+
   call CheckDefFailure(["let x = #{8: 8}"], 'E1014:')
   call CheckDefFailure(["let x = #{xxx}"], 'E720:')
   call CheckDefFailure(["let x = #{xxx: 1", "let y = 2"], 'E722:')

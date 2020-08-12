@@ -2593,14 +2593,21 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 	    }
 	}
 
-	*arg = skipwhite(*arg);
 	if (**arg != ':')
 	{
-	    semsg(_(e_missing_dict_colon), *arg);
+	    if (*skipwhite(*arg) == ':')
+		semsg(_(e_no_white_before), ":");
+	    else
+		semsg(_(e_missing_dict_colon), *arg);
+	    return FAIL;
+	}
+	whitep = *arg + 1;
+	if (!IS_WHITE_OR_NUL(*whitep))
+	{
+	    semsg(_(e_white_after), ":");
 	    return FAIL;
 	}
 
-	whitep = *arg + 1;
 	*arg = skipwhite(*arg + 1);
 	if (may_get_next_line(whitep, arg, cctx) == FAIL)
 	{

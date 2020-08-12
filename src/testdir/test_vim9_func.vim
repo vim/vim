@@ -774,7 +774,7 @@ func Test_InternalFuncRetType()
     enddef
 
     def RetListAny(): list<any>
-      return items({'k' : 'v'})
+      return items({'k': 'v'})
     enddef
 
     def RetListString(): list<string>
