@@ -9,14 +9,14 @@ default: nongui
 
 !include Make_all.mak
 
-TEST_OUTFILES = $(SCRIPTS_TINY)
+TEST_OUTFILES = $(SCRIPTS_TINY_OUT)
 DOSTMP = dostmp
 DOSTMP_OUTFILES = $(TEST_OUTFILES:test=dostmp\test)
 DOSTMP_INFILES = $(DOSTMP_OUTFILES:.out=.in)
 
 .SUFFIXES: .in .out .res .vim
 
-tiny:	nolog $(SCRIPTS_TINY) report
+tiny:	nolog $(SCRIPTS_TINY_OUT) report
 
 nongui:	nolog newtests report
 

@@ -23,7 +23,7 @@ REDIR_TEST_TO_NULL = --cmd 'au SwapExists * let v:swapchoice = "e"' > /dev/null
 default: nongui
 
 # The list of tests is common to all systems.
-# This defines SCRIPTS_TINY, NEW_TESTS and NEW_TESTS_RES
+# This defines SCRIPTS_TINY_OUT, NEW_TESTS and NEW_TESTS_RES.
 include Make_all.mak
 
 # Explicit dependencies.
@@ -31,7 +31,7 @@ test_options.res test_alot.res: opt_test.vim
 
 .SUFFIXES: .in .out .res .vim
 
-tiny:	nolog $(SCRIPTS_TINY) report
+tiny:	nolog $(SCRIPTS_TINY_OUT) report
 
 nongui:	nolog newtests report
 
@@ -91,22 +91,13 @@ clean:
 .in.out:
 	-rm -rf $*.failed test.ok $(RM_ON_RUN)
 	cp $*.ok test.ok
-	# Sleep a moment to avoid that the xterm title is messed up.
-	# 200 msec is sufficient, but only modern sleep supports a fraction of
-	# a second, fall back to a second if it fails.
+	@# Sleep a moment to avoid that the xterm title is messed up.
+	@# 200 msec is sufficient, but only modern sleep supports a fraction of
+	@# a second, fall back to a second if it fails.
 	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
 	$(RUN_VIM) $*.in $(REDIR_TEST_TO_NULL)
 
-	# For flaky tests retry one time.  No tests at the moment.
-	#@/bin/sh -c "if test -f test.out -a $* = test61; then \
-	#	  if diff test.out $*.ok; \
-	#	  then echo flaky test ok first time; \
-	#	  else rm -rf $*.failed $(RM_ON_RUN); \
-	#		$(RUN_VIM) $*.in; \
-	#	  fi \
-	#	fi"
-
-	# Check if the test.out file matches test.ok.
+	@# Check if the test.out file matches test.ok.
 	@/bin/sh -c "if test -f test.out; then \
 		  if diff test.out $*.ok; \
 		  then mv -f test.out $*.out; \

@@ -21,14 +21,14 @@ default: nongui
 
 include Make_all.mak
 
-TEST_OUTFILES = $(SCRIPTS_TINY)
+TEST_OUTFILES = $(SCRIPTS_TINY_OUT)
 DOSTMP = dostmp
 # Keep $(DOSTMP)/*.in
 .PRECIOUS: $(patsubst %.out, $(DOSTMP)/%.in, $(TEST_OUTFILES))
 
 .SUFFIXES: .in .out .res .vim
 
-tiny:	nolog $(SCRIPTS_TINY) report
+tiny:	nolog $(SCRIPTS_TINY_OUT) report
 
 nongui:	nolog newtests report
 

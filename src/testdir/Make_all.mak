@@ -9,6 +9,16 @@ NO_INITS = -U NONE $(NO_PLUGINS)
 
 # Tests for tiny and small builds.
 SCRIPTS_TINY = \
+	test20 \
+	test22 \
+	test23 \
+	test24 \
+	test28 \
+	test36 \
+	test41 \
+	test42
+
+SCRIPTS_TINY_OUT = \
 	test20.out \
 	test22.out \
 	test23.out \
@@ -33,6 +43,7 @@ TEST_VIM9_RES = \
 	test_vim9_func.res \
 	test_vim9_script.res
 
+# Benchmark scripts.
 SCRIPTS_BENCH = test_bench_regexp.res
 
 # Individual tests, including the ones part of test_alot.
