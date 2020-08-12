@@ -204,3 +204,5 @@ func Test_listchars_composing()
   enew!
   set listchars& ff&
 endfunction
+
+" vim: shiftwidth=2 sts=2 expandtab

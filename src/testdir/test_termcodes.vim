@@ -270,7 +270,6 @@ endfunc
 func Test_term_mouse_middle_click_no_clipboard()
   if has('clipboard_working')
     throw 'Skipped: clipboard support works'
-    return
   endif
   new
   let save_mouse = &mouse

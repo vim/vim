@@ -43,8 +43,9 @@ func Test_writefile_fails_gently()
 endfunc
 
 func Test_writefile_fails_conversion()
-  if !has('iconv') || has('sun')
-    return
+  CheckFeature iconv
+  if has('sun')
+    throw 'Skipped: does not work on SunOS'
   endif
   " Without a backup file the write won't happen if there is a conversion
   " error.
@@ -63,8 +64,9 @@ func Test_writefile_fails_conversion()
 endfunc
 
 func Test_writefile_fails_conversion2()
-  if !has('iconv') || has('sun')
-    return
+  CheckFeature iconv
+  if has('sun')
+    throw 'Skipped: does not work on SunOS'
   endif
   " With a backup file the write happens even if there is a conversion error,
   " but then the backup file must remain

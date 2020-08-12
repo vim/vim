@@ -150,10 +150,9 @@ func Test_mksession_large_winheight()
 endfunc
 
 func Test_mksession_rtp()
-  if has('win32')
-    " TODO: fix problem with backslashes
-    return
-  endif
+  " TODO: fix problem with backslashes on Win32
+  CheckNotMSWindows
+
   new
   let _rtp=&rtp
   " Make a real long (invalid) runtimepath value,
@@ -552,10 +551,9 @@ func Test_mksession_no_errmsg()
 endfunc
 
 func Test_mksession_quote_in_filename()
-  if !has('unix')
-    " only Unix can handle this weird filename
-    return
-  endif
+  " only Unix can handle this weird filename
+  CheckUnix
+
   let v:errmsg = ''
   %bwipe!
   split another
@@ -721,10 +719,9 @@ endfunc
 
 " Test for mksession with window position
 func Test_mksession_winpos()
-  if !has('gui_running')
-    " Only applicable in GUI Vim
-    return
-  endif
+  " Only applicable in GUI Vim
+  CheckGui
+
   set sessionoptions+=winpos
   mksession! Xtest_mks.out
   let found_winpos = v:false

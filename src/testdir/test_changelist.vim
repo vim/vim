@@ -2,9 +2,7 @@
 
 " Tests for the getchangelist() function
 func Test_getchangelist()
-  if !has("jumplist")
-    return
-  endif
+  CheckFeature jumplist
 
   bwipe!
   enew

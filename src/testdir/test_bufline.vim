@@ -202,3 +202,5 @@ func Test_appendbufline_redraw()
   call StopVimInTerminal(buf)
   call delete('XscriptMatchCommon')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

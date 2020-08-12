@@ -136,12 +136,11 @@ func Test_path_keep_commas()
 endfunc
 
 func Test_signcolumn()
-  if has('signs')
-    call assert_equal("auto", &signcolumn)
-    set signcolumn=yes
-    set signcolumn=no
-    call assert_fails('set signcolumn=nope')
-  endif
+  CheckFeature signs
+  call assert_equal("auto", &signcolumn)
+  set signcolumn=yes
+  set signcolumn=no
+  call assert_fails('set signcolumn=nope')
 endfunc
 
 func Test_filetype_valid()
@@ -162,9 +161,7 @@ func Test_filetype_valid()
 endfunc
 
 func Test_syntax_valid()
-  if !has('syntax')
-    return
-  endif
+  CheckFeature syntax
   set syn=valid_name
   call assert_equal("valid_name", &syntax)
   set syn=valid-name
@@ -182,9 +179,7 @@ func Test_syntax_valid()
 endfunc
 
 func Test_keymap_valid()
-  if !has('keymap')
-    return
-  endif
+  CheckFeature keymap
   call assert_fails(":set kmp=valid_name", "E544:")
   call assert_fails(":set kmp=valid_name", "valid_name")
   call assert_fails(":set kmp=valid-name", "E544:")

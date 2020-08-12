@@ -189,3 +189,5 @@ func Test_filter_display()
 
   bwipe!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

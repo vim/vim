@@ -1348,9 +1348,7 @@ endfunction
 " This caused a crash, because messages were handled while peeking for a
 " character.
 func Test_exit_cb_wipes_buf()
-  if !has('timers')
-    return
-  endif
+  CheckFeature timers
   set cursorline lazyredraw
   call test_override('redraw_flag', 1)
   new

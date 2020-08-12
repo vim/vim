@@ -605,9 +605,7 @@ func Test_terminal_cwd_failure()
 endfunc
 
 func Test_terminal_servername()
-  if !has('clientserver')
-    return
-  endif
+  CheckFeature clientserver
   call s:test_environment("VIM_SERVERNAME", v:servername)
 endfunc
 

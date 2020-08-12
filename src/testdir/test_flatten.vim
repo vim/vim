@@ -1,4 +1,5 @@
 " Test for flatting list.
+
 func Test_flatten()
   call assert_fails('call flatten(1)', 'E686:')
   call assert_fails('call flatten({})', 'E686:')
@@ -79,3 +80,5 @@ func Test_flatten()
   call assert_equal([1, 2, 1, 2], flatten(l:x, 2))
   call assert_equal([2, l:x], l:y)
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

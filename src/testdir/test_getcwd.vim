@@ -1,3 +1,5 @@
+" Test for getcwd()
+
 func GetCwdInfo(win, tab)
   let tab_changed = 0
   let mod = ":t"
@@ -262,3 +264,5 @@ function Test_Tab_Local_Cwd()
   enew | only | tabonly
   new
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

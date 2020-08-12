@@ -19,9 +19,7 @@ func Test_lambda_with_sort()
 endfunc
 
 func Test_lambda_with_timer()
-  if !has('timers')
-    return
-  endif
+  CheckFeature timers
 
   let s:n = 0
   let s:timer_id = 0

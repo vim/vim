@@ -92,3 +92,5 @@ func Test_gap()
   call feedkeys("gg0g~ap", "tx")
   call assert_equal(["ABCD", "", "defg"], getline(1,3))
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

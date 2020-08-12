@@ -9,14 +9,10 @@ source screendump.vim
 func CanTestPromptBuffer()
   " We need to use a terminal window to be able to feed keys without leaving
   " Insert mode.
-  if !has('terminal')
-    return 0
-  endif
-  if has('win32')
-    " TODO: make the tests work on MS-Windows
-    return 0
-  endif
-  return 1
+  CheckFeature terminal
+
+  " TODO: make the tests work on MS-Windows
+  CheckNotMSWindows
 endfunc
 
 func WriteScript(name)
@@ -54,9 +50,7 @@ func WriteScript(name)
 endfunc
 
 func Test_prompt_basic()
-  if !CanTestPromptBuffer()
-    return
-  endif
+  call CanTestPromptBuffer()
   let scriptName = 'XpromptscriptBasic'
   call WriteScript(scriptName)
 
@@ -76,9 +70,7 @@ func Test_prompt_basic()
 endfunc
 
 func Test_prompt_editing()
-  if !CanTestPromptBuffer()
-    return
-  endif
+  call CanTestPromptBuffer()
   let scriptName = 'XpromptscriptEditing'
   call WriteScript(scriptName)
 

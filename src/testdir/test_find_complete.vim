@@ -161,3 +161,5 @@ func Test_find_complete()
   call delete('Xfind', 'rf')
   set path&
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

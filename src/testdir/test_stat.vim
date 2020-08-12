@@ -177,12 +177,15 @@ endfunc
 func Test_win32_symlink_dir()
   " On Windows, non-admin users cannot create symlinks.
   " So we use an existing symlink for this test.
-  if has('win32')
-    " Check if 'C:\Users\All Users' is a symlink to a directory.
-    let res = system('dir C:\Users /a')
-    if match(res, '\C<SYMLINKD> *All Users') >= 0
-      " Get the filetype of the symlink.
-      call assert_equal('dir', getftype('C:\Users\All Users'))
-    endif
+  CheckMSWindows
+  " Check if 'C:\Users\All Users' is a symlink to a directory.
+  let res = system('dir C:\Users /a')
+  if match(res, '\C<SYMLINKD> *All Users') >= 0
+    " Get the filetype of the symlink.
+    call assert_equal('dir', getftype('C:\Users\All Users'))
+  else
+    throw 'Skipped: cannot find an existing symlink'
   endif
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

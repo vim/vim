@@ -1,4 +1,5 @@
 " Tests for the exists() function
+
 func Test_exists()
   augroup myagroup
       autocmd! BufEnter       *.my     echo "myfile edited"

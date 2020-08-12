@@ -66,3 +66,5 @@ func Test_swap_file()
   set undolevels&
   enew! | only
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -207,9 +207,7 @@ func Test_highlight_eol_with_cursorline_vertsplit()
 endfunc
 
 func Test_highlight_eol_with_cursorline_rightleft()
-  if !has('rightleft')
-    return
-  endif
+  CheckFeature rightleft
 
   let [hiCursorLine, hi_ul, hi_bg] = HiCursorLine()
 
@@ -358,9 +356,7 @@ func Test_highlight_eol_with_cursorline_linewrap()
 endfunc
 
 func Test_highlight_eol_with_cursorline_sign()
-  if !has('signs')
-    return
-  endif
+  CheckFeature signs
 
   let [hiCursorLine, hi_ul, hi_bg] = HiCursorLine()
 
@@ -418,9 +414,7 @@ func Test_highlight_eol_with_cursorline_sign()
 endfunc
 
 func Test_highlight_eol_with_cursorline_breakindent()
-  if !has('linebreak')
-    return
-  endif
+  CheckFeature linebreak
 
   let [hiCursorLine, hi_ul, hi_bg] = HiCursorLine()
 
@@ -516,9 +510,7 @@ func Test_highlight_eol_on_diff()
 endfunc
 
 func Test_termguicolors()
-  if !exists('+termguicolors')
-    return
-  endif
+  CheckOption termguicolors
   if has('vtp') && !has('vcon') && !has('gui_running')
     " Win32: 'guicolors' doesn't work without virtual console.
     call assert_fails('set termguicolors', 'E954:')

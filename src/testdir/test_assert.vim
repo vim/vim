@@ -374,3 +374,5 @@ func Test_zz_quit_detected()
   " Verify that if a test function ends Vim the test script detects this.
   quit
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -33,9 +33,7 @@ func Test_hlsearch()
 endfunc
 
 func Test_hlsearch_hangs()
-  if !has('reltime') || !has('float')
-    return
-  endif
+  CheckFunction reltimefloat
 
   " This pattern takes a long time to match, it should timeout.
   new
@@ -63,3 +61,5 @@ func Test_hlsearch_eol_highlight()
   set nohlsearch
   bwipe!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

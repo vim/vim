@@ -2,9 +2,7 @@
 
 " Tests for the getjumplist() function
 func Test_getjumplist()
-  if !has("jumplist")
-    return
-  endif
+  CheckFeature jumplist
 
   %bwipe
   clearjumps
@@ -64,3 +62,5 @@ func Test_getjumplist()
 
   call delete("Xtest")
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

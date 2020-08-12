@@ -153,3 +153,5 @@ func Test_non_zero_arg()
     call assert_equal('', r, 'result for ' . v . ' is not "" but ' . r)
   endfor
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

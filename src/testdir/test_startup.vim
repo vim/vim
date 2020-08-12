@@ -21,9 +21,7 @@ endfunc
 " 2. packages
 " 3. plugins in after directories
 func Test_after_comes_later()
-  if !has('packages')
-    return
-  endif
+  CheckFeature packages
   let before =<< trim [CODE]
     set nocp viminfo+=nviminfo
     set guioptions+=M
@@ -80,9 +78,7 @@ func Test_after_comes_later()
 endfunc
 
 func Test_pack_in_rtp_when_plugins_run()
-  if !has('packages')
-    return
-  endif
+  CheckFeature packages
   let before =<< trim [CODE]
     set nocp viminfo+=nviminfo
     set guioptions+=M
@@ -113,9 +109,8 @@ func Test_pack_in_rtp_when_plugins_run()
 endfunc
 
 func Test_help_arg()
-  if !has('unix') && has('gui')
-    " this doesn't work with gvim on MS-Windows
-    return
+  if !has('unix') && has('gui_running')
+    throw 'Skipped: does not work with gvim on MS-Windows'
   endif
   if RunVim([], [], '--help >Xtestout')
     let lines = readfile('Xtestout')
@@ -554,9 +549,7 @@ func Test_file_args()
 endfunc
 
 func Test_startuptime()
-  if !has('startuptime')
-    return
-  endif
+  CheckFeature startuptime
   let after = ['qall']
   if RunVim([], after, '--startuptime Xtestout one')
     let lines = readfile('Xtestout')

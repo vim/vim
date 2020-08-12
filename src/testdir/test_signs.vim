@@ -1997,3 +1997,5 @@ func Test_sign_funcs_multi()
   enew!
   call delete("Xsign")
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

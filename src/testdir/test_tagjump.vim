@@ -192,9 +192,8 @@ endfunction
 " Test for jumping to a tag with 'hidden' set, with symbolic link in path of
 " tag.  This only works for Unix, because of the symbolic link.
 func Test_tag_symbolic()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
+
   set hidden
   call delete("Xtest.dir", "rf")
   call system("ln -s . Xtest.dir")
@@ -230,11 +229,11 @@ endfunc
 " Depends on the test83-tags2 and test83-tags3 files.
 func Test_tag_file_encoding()
   if has('vms')
-    return
+    throw 'Skipped: does not work on VMS'
   endif
 
   if !has('iconv') || iconv("\x82\x60", "cp932", "utf-8") != "\uff21"
-    return
+    throw 'Skipped: iconv does not work'
   endif
 
   let save_enc = &encoding
@@ -283,9 +282,8 @@ endfunc
 
 " Test for emacs-style tags file (TAGS)
 func Test_tagjump_etags()
-  if !has('emacs_tags')
-    return
-  endif
+  CheckFeature emacs_tags
+
   call writefile([
         \ "void foo() {}",
         \ "int main(int argc, char **argv)",

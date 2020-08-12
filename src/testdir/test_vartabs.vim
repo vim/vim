@@ -147,9 +147,7 @@ func Test_vartabs()
 endfunc
 
 func Test_vartabs_breakindent()
-  if !exists("+breakindent")
-    return
-  endif
+  CheckOption breakindent
   new
   %d
 

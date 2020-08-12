@@ -92,9 +92,7 @@ func Test_map_ctrl_c_visual()
 endfunc
 
 func Test_map_langmap()
-  if !has('langmap')
-    return
-  endif
+  CheckFeature langmap
 
   " check langmap applies in normal mode
   set langmap=+- nolangremap
@@ -259,9 +257,7 @@ func Test_abbr_after_line_join()
 endfunc
 
 func Test_map_timeout()
-  if !has('timers')
-    return
-  endif
+  CheckFeature timers
   nnoremap aaaa :let got_aaaa = 1<CR>
   nnoremap bb :let got_bb = 1<CR>
   nmap b aaa
@@ -290,9 +286,8 @@ func Test_map_timeout()
 endfunc
 
 func Test_map_timeout_with_timer_interrupt()
-  if !has('job') || !has('timers')
-    return
-  endif
+  CheckFeature job
+  CheckFeature timers
 
   " Confirm the timer invoked in exit_cb of the job doesn't disturb mapped key
   " sequence.

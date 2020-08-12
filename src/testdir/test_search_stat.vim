@@ -346,3 +346,5 @@ func! Test_search_stat_screendump()
   call StopVimInTerminal(buf)
   call delete('Xsearchstat')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

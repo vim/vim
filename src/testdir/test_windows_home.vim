@@ -118,3 +118,5 @@ func Test_WindowsHome()
     delcommand UnletEnv
   endtry
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
