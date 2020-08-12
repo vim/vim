@@ -2638,6 +2638,11 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 	    semsg(_(e_missing_dict_comma), *arg);
 	    goto failret;
 	}
+	if (IS_WHITE_OR_NUL(*whitep))
+	{
+	    semsg(_(e_no_white_before), ",");
+	    return FAIL;
+	}
 	whitep = *arg + 1;
 	*arg = skipwhite(*arg + 1);
     }

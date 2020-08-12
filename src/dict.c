@@ -922,7 +922,12 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	if (!had_comma)
 	{
 	    if (evaluate)
-		semsg(_(e_missing_dict_comma), *arg);
+	    {
+		if (**arg == ',')
+		    semsg(_(e_no_white_before), ",");
+		else
+		    semsg(_(e_missing_dict_comma), *arg);
+	    }
 	    goto failret;
 	}
     }

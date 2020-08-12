@@ -1506,6 +1506,7 @@ def Test_expr7_dict()
   call CheckDefFailure(["let x = #{a:8}"], 'E1069:')
   call CheckDefFailure(["let x = #{a : 8}"], 'E1068:')
   call CheckDefFailure(["let x = #{a :8}"], 'E1068:')
+  call CheckDefFailure(["let x = #{a: 8 , b: 9}"], 'E1068:')
 
   call CheckDefFailure(["let x = #{8: 8}"], 'E1014:')
   call CheckDefFailure(["let x = #{xxx}"], 'E720:')
@@ -1577,6 +1578,12 @@ def Test_expr7_dict_vim9script()
       let d = #{one:1}
   END
   CheckScriptFailure(lines, 'E1069:')
+
+  lines =<< trim END
+      vim9script
+      let d = #{one: 1 , two: 2}
+  END
+  CheckScriptFailure(lines, 'E1068:')
 enddef
 
 let g:oneString = 'one'
