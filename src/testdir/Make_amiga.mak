@@ -9,9 +9,11 @@ default: nongui
 
 include Make_all.mak
 
+SCRIPTS = $(SCRIPTS_TINY_OUT)
+
 .SUFFIXES: .in .out .res .vim
 
-nongui:	/tmp $(SCRIPTS_FIRST)
+nongui:	/tmp $(SCRIPTS)
 	csh -c echo ALL DONE
 
 clean:
