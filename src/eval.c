@@ -520,6 +520,7 @@ eval_to_string(
 /*
  * Call eval_to_string() without using current local variables and using
  * textwinlock.  When "use_sandbox" is TRUE use the sandbox.
+ * Use legacy Vim script syntax.
  */
     char_u *
 eval_to_string_safe(
@@ -528,7 +529,9 @@ eval_to_string_safe(
 {
     char_u	*retval;
     funccal_entry_T funccal_entry;
+    int		save_sc_version = current_sctx.sc_version;
 
+    current_sctx.sc_version = 1;
     save_funccal(&funccal_entry);
     if (use_sandbox)
 	++sandbox;
@@ -538,6 +541,7 @@ eval_to_string_safe(
 	--sandbox;
     --textwinlock;
     restore_funccal();
+    current_sctx.sc_version = save_sc_version;
     return retval;
 }
 

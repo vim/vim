@@ -1086,6 +1086,20 @@ def Test_cexpr_vimscript()
   set errorformat&
 enddef
 
+def Test_statusline_syntax()
+  # legacy syntax is used for 'statusline'
+  let lines =<< trim END
+      vim9script
+      func g:Status()
+        return '%{"x" is# "x"}'
+      endfunc
+      set laststatus=2 statusline=%!Status()
+      redrawstatus
+      set laststatus statusline= 
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_list_vimscript()
   # checks line continuation and comments
   let lines =<< trim END
