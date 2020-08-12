@@ -967,27 +967,27 @@ func Test_efm1()
   call writefile(l[:-2], 'Xerrorfile2')
 
   let m =<< [DATA]
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  2
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  3
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  4
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  5
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  6
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  7
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  8
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  9
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 10
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 11
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 12
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 13
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 14
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 15
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 16
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 17
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 18
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 19
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 20
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 21
-    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 22
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  2
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  3
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  4
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  5
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  6
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  7
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  8
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  9
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 10
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 11
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 12
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 13
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 14
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 15
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 16
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 17
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 18
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 19
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 20
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 21
+	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 22
 [DATA]
   call writefile(m, 'Xtestfile')
 
