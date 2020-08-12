@@ -2850,7 +2850,7 @@ func Test_vimgrep_existing_swapfile()
   call assert_match('.Xapple.swo', swapname(''))
 
   call delete('Xapple')
-  call delete('Xapple.swp')
+  call delete('.Xapple.swp')
   augroup grep
     au! SwapExists
   augroup END
@@ -3926,9 +3926,7 @@ endfunc
 " Test for shortening/simplifying the file name when opening the
 " quickfix window or when displaying the quickfix list
 func Test_shorten_fname()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
   %bwipe
   " Create a quickfix list with a absolute path filename
   let fname = getcwd() . '/test_quickfix.vim'
