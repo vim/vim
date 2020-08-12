@@ -1487,7 +1487,7 @@ testclean:
 	$(MAKE) /NOLOGO -f Make_dos.mak clean
 	cd ..
 
-# Run indivisual OLD style test.
+# Run individual OLD style test.
 # These do not depend on the executable, compile it when needed.
 $(SCRIPTS_TINY:.out=):
 	cd testdir

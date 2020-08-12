@@ -31,11 +31,11 @@ test_options.res test_alot.res: opt_test.vim
 
 .SUFFIXES: .in .out .res .vim
 
-tiny:	$(SCRIPTS_TINY) report
+tiny:	nolog $(SCRIPTS_TINY) report
 
-nongui:	nolog $(SCRIPTS_TINY) newtests report
+nongui:	nolog newtests report
 
-gui:	nolog $(SCRIPTS_TINY) newtests report
+gui:	nolog newtests report
 
 benchmark: $(SCRIPTS_BENCH)
 

@@ -18,9 +18,9 @@ DOSTMP_INFILES = $(DOSTMP_OUTFILES:.out=.in)
 
 tiny:	nolog $(SCRIPTS_TINY) report
 
-nongui:	nolog $(SCRIPTS_TINY) newtests report
+nongui:	nolog newtests report
 
-gui:	nolog $(SCRIPTS_TINY) newtests report
+gui:	nolog newtests report
 
 benchmark: $(SCRIPTS_BENCH)
 
