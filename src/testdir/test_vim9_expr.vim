@@ -1383,7 +1383,10 @@ def Test_expr7_list()
 
   call CheckDefExecFailure(["let x = g:anint[3]"], 'E714:')
   call CheckDefFailure(["let x = g:list_mixed[xxx]"], 'E1001:')
+
   call CheckDefFailure(["let x = [1,2,3]"], 'E1069:')
+  call CheckDefFailure(["let x = [1 ,2, 3]"], 'E1068:')
+
   call CheckDefExecFailure(["let x = g:list_mixed['xx']"], 'E1029:')
   call CheckDefFailure(["let x = g:list_mixed["], 'E1097:')
   call CheckDefFailure(["let x = g:list_mixed[0"], 'E1097:')
@@ -1422,6 +1425,12 @@ def Test_expr7_list_vim9script()
       let l = [11,22]
   END
   CheckScriptFailure(lines, 'E1069:')
+
+  lines =<< trim END
+      vim9script
+      let l = [11 , 22]
+  END
+  CheckScriptFailure(lines, 'E1068:')
 enddef
 
 def Test_expr7_lambda()
@@ -1554,6 +1563,18 @@ def Test_expr7_dict_vim9script()
   lines =<< trim END
       vim9script
       let d = #{one: 1,two: 2}
+  END
+  CheckScriptFailure(lines, 'E1069:')
+
+  lines =<< trim END
+      vim9script
+      let d = #{one : 1}
+  END
+  CheckScriptFailure(lines, 'E1068:')
+
+  lines =<< trim END
+      vim9script
+      let d = #{one:1}
   END
   CheckScriptFailure(lines, 'E1069:')
 enddef

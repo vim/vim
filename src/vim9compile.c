@@ -2394,6 +2394,11 @@ compile_list(char_u **arg, cctx_T *cctx)
 	    semsg(_(e_list_end), *arg);
 	    return FAIL;
 	}
+	if (*p == ',')
+	{
+	    semsg(_(e_no_white_before), ",");
+	    return FAIL;
+	}
 	if (*p == ']')
 	{
 	    ++p;

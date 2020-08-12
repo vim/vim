@@ -781,7 +781,7 @@ get_literal_key(char_u **arg, typval_T *tv)
     tv->v_type = VAR_STRING;
     tv->vval.v_string = vim_strnsave(*arg, p - *arg);
 
-    *arg = skipwhite(p);
+    *arg = p;
     return OK;
 }
 
@@ -845,7 +845,12 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	if (**arg != ':')
 	{
 	    if (evaluate)
-		semsg(_(e_missing_dict_colon), *arg);
+	    {
+		if (*skipwhite(*arg) == ':')
+		    semsg(_(e_no_white_before), ":");
+		else
+		    semsg(_(e_missing_dict_colon), *arg);
+	    }
 	    clear_tv(&tvkey);
 	    goto failret;
 	}
