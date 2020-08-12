@@ -6,47 +6,46 @@
 #
 # Requires a set of Unix tools: echo, diff, etc.
 
-ifneq (sh.exe, $(SHELL))
-DEL = rm -f
-DELDIR = rm -rf
-MV = mv
-CP = cp
-CAT = cat
-DIRSLASH = /
-else
+# Don't use unix-like shell.
+SHELL = cmd.exe
+
 DEL = del
 DELDIR = rd /s /q
-MV = rename
-CP = copy
+MV = move /y
+CP = copy /y
 CAT = type
-DIRSLASH = \\
-endif
 
-VIMPROG = ..$(DIRSLASH)vim
+VIMPROG = ..\\vim
 
 default: nongui
 
 include Make_all.mak
 
+TEST_OUTFILES = $(SCRIPTS_TINY)
+DOSTMP = dostmp
+# Keep $(DOSTMP)/*.in
+.PRECIOUS: $(patsubst %.out, $(DOSTMP)/%.in, $(TEST_OUTFILES))
+
 .SUFFIXES: .in .out .res .vim
 
-tiny:	nolog fixff $(SCRIPTS_TINY) report
+tiny:	nolog $(SCRIPTS_TINY) report
 
-nongui:	nolog fixff $(SCRIPTS_TINY) newtests report
+nongui:	nolog $(SCRIPTS_TINY) newtests report
 
-gui:	nolog fixff $(SCRIPTS_TINY) newtests report
+gui:	nolog $(SCRIPTS_TINY) newtests report
 
 benchmark: $(SCRIPTS_BENCH)
 
-# TODO: find a way to avoid changing the distributed files.
-fixff:
-	-$(VIMPROG) -u dos.vim $(NO_INITS) "+argdo set ff=dos|upd" +q *.in *.ok
-	-$(VIMPROG) -u dos.vim $(NO_INITS) "+argdo set ff=unix|upd" +q \
-		dotest.in
-
-# TODO: call summarize.vim like other makefiles.
 report:
-	@echo ALL DONE
+	@rem without the +eval feature test_result.log is a copy of test.log
+	@if exist test.log ( copy /y test.log test_result.log > nul ) \
+		else ( echo No failures reported > test_result.log )
+	$(VIMPROG) -u NONE $(NO_INITS) -S summarize.vim messages
+	@echo.
+	@echo Test results:
+	@cmd /c type test_result.log
+	@if exist test.log ( echo TEST FAILURE & exit /b 1 ) \
+		else ( echo ALL DONE )
 
 clean:
 	-@if exist *.out $(DEL) *.out
@@ -67,17 +66,34 @@ clean:
 	-@if exist messages $(DEL) messages
 	-@if exist opt_test.vim $(DEL) opt_test.vim
 
-.in.out:
-	-@if exist $*.ok $(CP) $*.ok test.ok
-	$(VIMPROG) -u dos.vim $(NO_PLUGIN) -s dotest.in $*.in
-	@diff test.out $*.ok
-	-@if exist $*.out $(DEL) $*.out
-	@$(MV) test.out $*.out
-	-@if exist Xdir1 $(DELDIR) Xdir1
-	-@if exist Xfind $(DELDIR) Xfind
-	-@if exist X* $(DEL) X*
+# Copy the input files to dostmp, changing the fileformat to dos.
+$(DOSTMP)/%.in : %.in
+	if not exist $(DOSTMP)\nul mkdir $(DOSTMP)
+	if not exist $@ $(DEL) $@
+	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=dos|f $@|wq" $<
+
+%.out : $(DOSTMP)/%.in
+	-@if exist test.out $(DEL) test.out
+	-@if exist $(DOSTMP)\$@ $(DEL) $(DOSTMP)\$@
+	$(MV) $(notdir $<) $(notdir $<).bak > NUL
+	$(CP) $(DOSTMP)\$(notdir $<) $(notdir $<) > NUL
+	$(CP) $(basename $@).ok test.ok > NUL
+	$(VIMPROG) -u dos.vim $(NO_INITS) -s dotest.in $(notdir $<)
+	-@if exist test.out $(MV) test.out $(DOSTMP)\$@ > NUL
+	-@if exist $(notdir $<).bak $(MV) $(notdir $<).bak $(notdir $<) > NUL
 	-@if exist test.ok $(DEL) test.ok
-	-@if exist viminfo $(DEL) viminfo
+	-@if exist Xdir1 $(DELDIR) /s /q Xdir1
+	-@if exist Xfind $(DELDIR) Xfind
+	-@if exist XfakeHOME $(DELDIR) XfakeHOME
+	-@del X*
+	-@if exist viminfo del viminfo
+	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=unix|f test.out|wq" \
+		$(DOSTMP)\$@
+	@diff test.out $(basename $@).ok & if errorlevel 1 \
+		( $(MV) test.out $(basename $@).failed > NUL \
+		 & del $(DOSTMP)\$@ \
+		 & echo $(basename $@) FAILED >> test.log ) \
+		else ( $(MV) test.out $(basename $@).out > NUL )
 
 nolog:
 	-@if exist test.log $(DEL) test.log
