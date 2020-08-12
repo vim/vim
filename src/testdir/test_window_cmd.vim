@@ -1,6 +1,6 @@
 " Tests for window cmd (:wincmd, :split, :vsplit, :resize and etc...)
 
-so check.vim
+source check.vim
 
 func Test_window_cmd_ls0_with_split()
   set ls=0
@@ -655,9 +655,7 @@ endfunc
 
 func Test_window_prevwin()
   " Can we make this work on MS-Windows?
-  if !has('unix')
-    return
-  endif
+  CheckUnix
 
   set hidden autoread
   call writefile(['2'], 'tmp.txt')

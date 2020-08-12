@@ -3,12 +3,12 @@
 source check.vim
 
 func Compare1(a, b) abort
-    call sort(range(3), 'Compare2')
-    return a:a - a:b
+  call sort(range(3), 'Compare2')
+  return a:a - a:b
 endfunc
 
 func Compare2(a, b) abort
-    return a:a - a:b
+  return a:a - a:b
 endfunc
 
 func Test_sort_strings()

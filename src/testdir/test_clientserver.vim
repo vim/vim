@@ -30,7 +30,7 @@ endfunc
 func Test_client_server()
   let cmd = GetVimCommand()
   if cmd == ''
-    return
+    throw 'GetVimCommand() failed'
   endif
   call Check_X11_Connection()
 

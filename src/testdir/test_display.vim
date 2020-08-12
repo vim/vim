@@ -1,4 +1,5 @@
 " Test for displaying stuff
+
 if !has('gui_running') && has('unix')
   set term=ansi
 endif
@@ -243,3 +244,5 @@ func Test_visual_block_scroll()
   call StopVimInTerminal(buf)
   call delete(filename)
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -52,3 +52,5 @@ func Test_langmap()
   set langmap&
   quit!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

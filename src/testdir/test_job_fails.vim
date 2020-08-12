@@ -2,16 +2,15 @@
 " leaks under valgrind.  That is because when fork/exec fails memory is not
 " freed.  Since the process exits right away it's not a real leak.
 
-source shared.vim
+source check.vim
 
 func Test_job_start_fails()
-  if has('job')
-    let job = job_start('axdfxsdf')
-    if has('unix')
-      call WaitForAssert({-> assert_equal("dead", job_status(job))})
-    else
-      call WaitForAssert({-> assert_equal("fail", job_status(job))})
-    endif
+  CheckFeature job
+  let job = job_start('axdfxsdf')
+  if has('unix')
+    call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  else
+    call WaitForAssert({-> assert_equal("fail", job_status(job))})
   endif
 endfunc
 

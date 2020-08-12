@@ -118,3 +118,5 @@ func Test_rename_fails()
 
   call delete('Xrenamefile')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

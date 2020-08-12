@@ -1,3 +1,4 @@
+" Test for i_CTRL-W
 
 func Test_erasebackword()
   enew
@@ -17,3 +18,5 @@ func Test_erasebackword()
 
   enew!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -1,4 +1,5 @@
 " Tests for various functions.
+
 source shared.vim
 source check.vim
 source term_util.vim
@@ -297,9 +298,7 @@ func Test_strptime()
 endfunc
 
 func Test_resolve_unix()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
 
   " Xlink1 -> Xlink2
   " Xlink2 -> Xlink3
@@ -349,9 +348,7 @@ func s:normalize_fname(fname)
 endfunc
 
 func Test_resolve_win32()
-  if !has('win32')
-    return
-  endif
+  CheckMSWindows
 
   " test for shortcut file
   if executable('cscript')
@@ -1243,13 +1240,13 @@ func Test_Executable()
     call assert_equal(1, executable(catcmd))
     call assert_equal('/' .. catcmd, catcmd->exepath())
     bwipe
+  else
+    throw 'Skipped: does not work on this platform'
   endif
 endfunc
 
 func Test_executable_longname()
-  if !has('win32')
-    return
-  endif
+  CheckMSWindows
 
   let fname = 'X' . repeat('あ', 200) . '.bat'
   call writefile([], fname)
@@ -1418,13 +1415,12 @@ func Test_inputlist()
 endfunc
 
 func Test_balloon_show()
-  if has('balloon_eval')
-    " This won't do anything but must not crash either.
-    call balloon_show('hi!')
-    if !has('gui_running')
-      call balloon_show(range(3))
-      call balloon_show([])
-    endif
+  CheckFeature balloon_eval
+  " This won't do anything but must not crash either.
+  call balloon_show('hi!')
+  if !has('gui_running')
+    call balloon_show(range(3))
+    call balloon_show([])
   endif
 endfunc
 
@@ -1654,9 +1650,7 @@ func Test_getchar()
 endfunc
 
 func Test_libcall_libcallnr()
-  if !has('libcall')
-    return
-  endif
+  CheckFeature libcall
 
   if has('win32')
     let libc = 'msvcrt.dll'

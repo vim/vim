@@ -87,3 +87,5 @@ func Test_ColonEight_MultiByte()
   call delete(file)
   call delete(dir, 'd')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -24,10 +24,9 @@ endfunc
 
 " As for non-GUI, a balloon_show() test was already added with patch 8.0.0401
 func Test_balloon_show()
-  if has('balloon_eval')
-    " This won't do anything but must not crash either.
-    call balloon_show('hi!')
-  endif
+  CheckFeature balloon_eval
+  " This won't do anything but must not crash either.
+  call balloon_show('hi!')
 endfunc
 
 func Test_colorscheme()
@@ -177,9 +176,7 @@ func Test_set_background()
 endfunc
 
 func Test_set_balloondelay()
-  if !exists('+balloondelay')
-    return
-  endif
+  CheckOption balloondelay
 
   let balloondelay_saved = &balloondelay
 
@@ -214,9 +211,7 @@ func Test_set_balloondelay()
 endfunc
 
 func Test_set_ballooneval()
-  if !exists('+ballooneval')
-    return
-  endif
+  CheckOption ballooneval
 
   let ballooneval_saved = &ballooneval
 
@@ -233,9 +228,7 @@ func Test_set_ballooneval()
 endfunc
 
 func Test_set_balloonexpr()
-  if !exists('+balloonexpr')
-    return
-  endif
+  CheckOption balloonexpr
 
   let balloonexpr_saved = &balloonexpr
 
@@ -764,17 +757,16 @@ endfunc
 
 func Test_encoding_conversion()
   " GTK supports conversion between 'encoding' and "utf-8"
-  if has('gui_gtk')
-    let encoding_saved = &encoding
-    set encoding=latin1
+  CheckFeature gui_gtk
+  let encoding_saved = &encoding
+  set encoding=latin1
 
-    " would be nice if we could take a screenshot
-    intro
-    " sets the window title
-    edit SomeFile
+  " would be nice if we could take a screenshot
+  intro
+  " sets the window title
+  edit SomeFile
 
-    let &encoding = encoding_saved
-  endif
+  let &encoding = encoding_saved
 endfunc
 
 func Test_shell_command()

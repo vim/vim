@@ -62,9 +62,7 @@ func Test_buffer_menu_special_buffers()
 endfunc
 
 func Test_translate_menu()
-  if !has('multi_lang')
-    return
-  endif
+  CheckFeature multi_lang
   if !filereadable($VIMRUNTIME . '/lang/menu_de_de.latin1.vim')
     throw 'Skipped: translated menu not found'
   endif

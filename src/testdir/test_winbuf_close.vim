@@ -213,3 +213,4 @@ func Test_window_close_splitright_noequalalways()
   call assert_equal(w, win_getid(), "Did not return to original window after opening and closing a window")
 endfunc
 
+" vim: shiftwidth=2 sts=2 expandtab

@@ -57,6 +57,8 @@ func Test_terminal_shell_option()
     term ++shell dir.com /b runtest.vim
     call WaitForAssert({-> assert_match('runtest.vim', term_getline(bufnr(), 1))})
     bwipe!
+  else
+    throw 'Skipped: does not work on this platform'
   endif
 endfunc
 

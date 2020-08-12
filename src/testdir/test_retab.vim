@@ -1,4 +1,5 @@
 " Test :retab
+
 func SetUp()
   new
   call setline(1, "\ta  \t    b        c    ")
@@ -75,3 +76,5 @@ func Test_retab_error()
   call assert_fails('retab -1',  'E487:')
   call assert_fails('retab! -1', 'E487:')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -557,9 +557,7 @@ endfunc
 
 " test syntax folding
 func Test_fold_syntax()
-  if !has('syntax')
-    return
-  endif
+  CheckFeature syntax
 
   enew!
   set fdm=syntax fdl=0

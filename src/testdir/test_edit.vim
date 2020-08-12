@@ -156,9 +156,8 @@ endfunc
 
 func Test_edit_06()
   " Test in diff mode
-  if !has("diff") || !executable("diff")
-    return
-  endif
+  CheckFeature diff
+  CheckExecutable diff
   new
   call setline(1, ['abc', 'xxx', 'yyy'])
   vnew
@@ -416,9 +415,7 @@ func Test_edit_CR()
   " Test for <CR> in insert mode
   " basically only in quickfix mode ist tested, the rest
   " has been taken care of by other tests
-  if !has("quickfix")
-    return
-  endif
+  CheckFeature quickfix
   botright new
   call writefile(range(1, 10), 'Xqflist.txt')
   call setqflist([{'filename': 'Xqflist.txt', 'lnum': 2}])
@@ -446,10 +443,9 @@ func Test_edit_CR()
 endfunc
 
 func Test_edit_CTRL_()
+  CheckFeature rightleft
   " disabled for Windows builds, why?
-  if !has("rightleft") || has("win32")
-    return
-  endif
+  CheckNotMSWindows
   let _encoding=&encoding
   set encoding=utf-8
   " Test for CTRL-_
@@ -951,9 +947,7 @@ func Test_edit_CTRL_Z()
 endfunc
 
 func Test_edit_DROP()
-  if !has("dnd")
-    return
-  endif
+  CheckFeature dnd
   new
   call setline(1, ['abc def ghi'])
   call cursor(1, 1)
@@ -967,9 +961,7 @@ func Test_edit_DROP()
 endfunc
 
 func Test_edit_CTRL_V()
-  if has("ebcdic")
-    return
-  endif
+  CheckFeature ebcdic
   new
   call setline(1, ['abc'])
   call cursor(2, 1)
@@ -1009,12 +1001,11 @@ endfunc
 func Test_edit_F21()
   " Pressing <f21>
   " sends a netbeans command
-  if has("netbeans_intg")
-    new
-    " I have no idea what this is supposed to do :)
-    call feedkeys("A\<F21>\<F1>\<esc>", 'tnix')
-    bw
-  endif
+  CheckFeature netbeans_intg
+  new
+  " I have no idea what this is supposed to do :)
+  call feedkeys("A\<F21>\<F1>\<esc>", 'tnix')
+  bw
 endfunc
 
 func Test_edit_HOME_END()
@@ -1095,9 +1086,7 @@ endfunc
 
 func Test_edit_MOUSE()
   " This is a simple test, since we not really using the mouse here
-  if !has("mouse")
-    return
-  endif
+  CheckFeature mouse
   10new
   call setline(1, range(1, 100))
   call cursor(1, 1)
@@ -1366,10 +1355,8 @@ func Test_edit_rightleft()
 endfunc
 
 func Test_edit_complete_very_long_name()
-  if !has('unix')
-    " Long directory names only work on Unix.
-    return
-  endif
+  " Long directory names only work on Unix.
+  CheckUnix
 
   let dirname = getcwd() . "/Xdir"
   let longdirname = dirname . repeat('/' . repeat('d', 255), 4)
@@ -1710,8 +1697,7 @@ endfunc
 func Test_edit_hkmap()
   CheckFeature rightleft
   if has('win32') && !has('gui')
-    " Test fails on the MS-Windows terminal version
-    return
+    throw 'Skipped: fails on the MS-Windows terminal version'
   endif
   new
 

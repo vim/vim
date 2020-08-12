@@ -453,9 +453,7 @@ func Test_digraphs_output()
 endfunc
 
 func Test_loadkeymap()
-  if !has('keymap')
-    return
-  endif
+  CheckFeature keymap
   new
   set keymap=czech
   set iminsert=0
@@ -494,9 +492,7 @@ endfunc
 
 " Test for error in a keymap file
 func Test_loadkeymap_error()
-  if !has('keymap')
-    return
-  endif
+  CheckFeature keymap
   call assert_fails('loadkeymap', 'E105:')
   call writefile(['loadkeymap', 'a'], 'Xkeymap')
   call assert_fails('source Xkeymap', 'E791:')

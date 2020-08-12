@@ -370,9 +370,8 @@ func Test_terminal_hidden_and_close()
 endfunc
 
 func Test_terminal_does_not_truncate_last_newlines()
-  " This test does not pass through ConPTY.
   if has('conpty')
-    return
+    throw 'Skipped: fail on ConPTY'
   endif
   let contents = [
   \   [ 'One', '', 'X' ],

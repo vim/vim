@@ -1,5 +1,7 @@
 " Tests for parsing the modeline.
 
+source check.vim
+
 func Test_modeline_invalid()
   " This was reading allocated memory in the past.
   call writefile(['vi:0', 'nothing'], 'Xmodeline')
@@ -62,9 +64,7 @@ func Test_modeline_syntax()
 endfunc
 
 func Test_modeline_keymap()
-  if !has('keymap')
-    return
-  endif
+  CheckFeature keymap
   call writefile(['vim: set keymap=greek :', 'nothing'], 'Xmodeline_keymap')
   let modeline = &modeline
   set modeline
@@ -170,9 +170,7 @@ func Test_modeline_colon()
 endfunc
 
 func s:modeline_fails(what, text, error)
-  if !exists('+' .. a:what)
-    return
-  endif
+  call CheckOption(a:what)
   let fname = "Xmodeline_fails_" . a:what
   call writefile(['vim: set ' . a:text . ' :', 'nothing'], fname)
   let modeline = &modeline
@@ -335,3 +333,5 @@ func Test_modeline_setoption_verbose()
   let &modeline = modeline
   call delete('Xmodeline')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

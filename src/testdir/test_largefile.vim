@@ -27,3 +27,5 @@ func Test_largefile()
   call assert_true(fsize == 4000000000)
   call delete(fname)
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

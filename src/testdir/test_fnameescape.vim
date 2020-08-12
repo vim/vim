@@ -1,5 +1,5 @@
-
 " Test if fnameescape is correct for special chars like !
+
 func Test_fnameescape()
   let fname = 'Xspa ce'
   let status = v:false

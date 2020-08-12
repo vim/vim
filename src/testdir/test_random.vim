@@ -45,3 +45,5 @@ func Test_issue_5587()
   call garbagecollect()
   call rand()
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

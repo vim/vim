@@ -121,3 +121,4 @@ func Test_redraw_after_scroll()
   bwipe!
 endfunc
 
+" vim: shiftwidth=2 sts=2 expandtab

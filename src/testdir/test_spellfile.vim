@@ -170,3 +170,5 @@ func Test_spell_normal()
   set spellfile=
   bw!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

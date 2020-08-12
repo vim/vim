@@ -2009,3 +2009,5 @@ func Test_expr_fails()
   call CheckDefFailure(["echo Func0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789()"], 'E1011:')
   call CheckDefFailure(["echo doesnotexist()"], 'E117:')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

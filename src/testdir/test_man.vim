@@ -131,3 +131,5 @@ func Test_keep_unnamed_register()
 
   %bw!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

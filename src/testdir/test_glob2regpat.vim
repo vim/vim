@@ -30,3 +30,5 @@ func Test_glob2regpat_valid()
     call assert_equal('^\\\(foo\|bar\\\)$', glob2regpat('\\{foo,bar\\}'))
   endif
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

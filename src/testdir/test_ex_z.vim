@@ -83,3 +83,5 @@ func Test_z_negative_lnum()
   call assert_equal(1, line('.'))
   bwipe!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

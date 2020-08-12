@@ -1,4 +1,5 @@
 " Tests for regexp in latin1 encoding
+
 set encoding=latin1
 scriptencoding latin1
 

@@ -444,3 +444,5 @@ func Test_join_lines()
   call assert_equal(['a', 'b c'], getline(1, '$'))
   bwipe!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

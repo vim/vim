@@ -21,3 +21,5 @@ func Test_curswant()
 
   enew!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
