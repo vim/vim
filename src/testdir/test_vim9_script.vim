@@ -1054,6 +1054,24 @@ def Test_throw_vimscript()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_error_in_nested_function()
+  # an error in a nested :function aborts executin in the calling :def function
+  let lines =<< trim END
+      vim9script
+      def Func()
+        Error()
+        g:test_var = 1
+      enddef
+      func Error() abort
+        eval [][0]
+      endfunc
+      Func()
+  END
+  g:test_var = 0
+  CheckScriptFailure(lines, 'E684:')
+  assert_equal(0, g:test_var)
+enddef
+
 def Test_cexpr_vimscript()
   # only checks line continuation
   set errorformat=File\ %f\ line\ %l

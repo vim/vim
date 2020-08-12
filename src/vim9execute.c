@@ -505,6 +505,7 @@ call_ufunc(ufunc_T *ufunc, int argcount, ectx_T *ectx, isn_T *iptr)
     funcexe_T   funcexe;
     int		error;
     int		idx;
+    int		called_emsg_before = called_emsg;
 
     if (ufunc->uf_def_status == UF_TO_BE_COMPILED
 	    && compile_def_function(ufunc, FALSE, NULL) == FAIL)
@@ -542,6 +543,9 @@ call_ufunc(ufunc_T *ufunc, int argcount, ectx_T *ectx, isn_T *iptr)
 	user_func_error(error, ufunc->uf_name);
 	return FAIL;
     }
+    if (called_emsg > called_emsg_before)
+	// Error other than from calling the function itself.
+	return FAIL;
     return OK;
 }
 
@@ -670,10 +674,11 @@ store_var(char_u *name, typval_T *tv)
     static int
 call_eval_func(char_u *name, int argcount, ectx_T *ectx, isn_T *iptr)
 {
-    int		called_emsg_before = called_emsg;
+    int	    called_emsg_before = called_emsg;
+    int	    res;
 
-    if (call_by_name(name, argcount, ectx, iptr) == FAIL
-					  && called_emsg == called_emsg_before)
+    res = call_by_name(name, argcount, ectx, iptr);
+    if (res == FAIL && called_emsg == called_emsg_before)
     {
 	dictitem_T	*v;
 
@@ -690,7 +695,7 @@ call_eval_func(char_u *name, int argcount, ectx_T *ectx, isn_T *iptr)
 	}
 	return call_partial(&v->di_tv, argcount, ectx);
     }
-    return OK;
+    return res;
 }
 
 /*
