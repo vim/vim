@@ -374,19 +374,49 @@ generate_instr_type(cctx_T *cctx, isntype_T isn_type, type_T *type)
 
 /*
  * If type at "offset" isn't already VAR_STRING then generate ISN_2STRING.
+ * But only for simple types.
  */
     static int
 may_generate_2STRING(int offset, cctx_T *cctx)
 {
     isn_T	*isn;
+    isntype_T	isntype = ISN_2STRING;
     garray_T	*stack = &cctx->ctx_type_stack;
     type_T	**type = ((type_T **)stack->ga_data) + stack->ga_len + offset;
 
-    if ((*type)->tt_type == VAR_STRING)
-	return OK;
-    *type = &t_string;
+    switch ((*type)->tt_type)
+    {
+	// nothing to be done
+	case VAR_STRING: return OK;
 
-    if ((isn = generate_instr(cctx, ISN_2STRING)) == NULL)
+	// conversion possible
+	case VAR_SPECIAL:
+	case VAR_BOOL:
+	case VAR_NUMBER:
+	case VAR_FLOAT:
+			 break;
+
+	// conversion possible (with runtime check)
+	case VAR_ANY:
+	case VAR_UNKNOWN:
+			 isntype = ISN_2STRING_ANY;
+			 break;
+
+	// conversion not possible
+	case VAR_VOID:
+	case VAR_BLOB:
+	case VAR_FUNC:
+	case VAR_PARTIAL:
+	case VAR_LIST:
+	case VAR_DICT:
+	case VAR_JOB:
+	case VAR_CHANNEL:
+			 to_string_error((*type)->tt_type);
+			 return FAIL;
+    }
+
+    *type = &t_string;
+    if ((isn = generate_instr(cctx, isntype)) == NULL)
 	return FAIL;
     isn->isn_arg.number = offset;
 
@@ -7005,6 +7035,7 @@ delete_instr(isn_T *isn)
 
 	case ISN_2BOOL:
 	case ISN_2STRING:
+	case ISN_2STRING_ANY:
 	case ISN_ADDBLOB:
 	case ISN_ADDLIST:
 	case ISN_BCALL:

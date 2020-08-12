@@ -1046,7 +1046,7 @@ static funcentry_T global_functions[] =
     {"test_settime",	1, 1, FEARG_1,	  ret_void,	f_test_settime},
     {"test_srand_seed",	0, 1, FEARG_1,	  ret_void,	f_test_srand_seed},
     {"test_unknown",	0, 0, 0,	  ret_any,	f_test_unknown},
-    {"test_void",	0, 0, 0,	  ret_any,	f_test_void},
+    {"test_void",	0, 0, 0,	  ret_void,	f_test_void},
     {"timer_info",	0, 1, FEARG_1,	  ret_list_dict_any, TIMER_FUNC(f_timer_info)},
     {"timer_pause",	2, 2, FEARG_1,	  ret_void,	TIMER_FUNC(f_timer_pause)},
     {"timer_start",	2, 3, FEARG_1,	  ret_number,	TIMER_FUNC(f_timer_start)},

@@ -72,6 +72,12 @@ typedef struct {
 // Get pointer to item relative to the bottom of the stack, -1 is the last one.
 #define STACK_TV_BOT(idx) (((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_stack.ga_len + idx)
 
+    void
+to_string_error(vartype_T vartype)
+{
+    semsg(_("E1105: Cannot convert %s to string"), vartype_name(vartype));
+}
+
 /*
  * Return the number of arguments, including optional arguments and any vararg.
  */
@@ -2476,12 +2482,26 @@ call_def_function(
 		break;
 
 	    case ISN_2STRING:
+	    case ISN_2STRING_ANY:
 		{
 		    char_u *str;
 
 		    tv = STACK_TV_BOT(iptr->isn_arg.number);
 		    if (tv->v_type != VAR_STRING)
 		    {
+			if (iptr->isn_type == ISN_2STRING_ANY)
+			{
+			    switch (tv->v_type)
+			    {
+				case VAR_SPECIAL:
+				case VAR_BOOL:
+				case VAR_NUMBER:
+				case VAR_FLOAT:
+				case VAR_BLOB:	break;
+				default:	to_string_error(tv->v_type);
+						goto on_error;
+			    }
+			}
 			str = typval_tostring(tv);
 			clear_tv(tv);
 			tv->v_type = VAR_STRING;
@@ -3125,6 +3145,9 @@ ex_disassemble(exarg_T *eap)
 				smsg("%4d 2BOOL (!!val)", current);
 			    break;
 	    case ISN_2STRING: smsg("%4d 2STRING stack[%lld]", current,
+					 (long long)(iptr->isn_arg.number));
+			      break;
+	    case ISN_2STRING_ANY: smsg("%4d 2STRING_ANY stack[%lld]", current,
 					 (long long)(iptr->isn_arg.number));
 			      break;
 

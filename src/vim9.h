@@ -93,7 +93,7 @@ typedef enum {
     ISN_CATCH,	    // drop v:exception
     ISN_ENDTRY,	    // take entry off from ec_trystack
 
-    // moreexpression operations
+    // more expression operations
     ISN_ADDLIST,
     ISN_ADDBLOB,
 
@@ -124,6 +124,7 @@ typedef enum {
     ISN_STRINGMEMBER, // dict.member using isn_arg.string
     ISN_2BOOL,	    // convert value to bool, invert if isn_arg.number != 0
     ISN_2STRING,    // convert value to string at isn_arg.number on stack
+    ISN_2STRING_ANY, // like ISN_2STRING but check type
     ISN_NEGATENR,   // apply "-" to number
 
     ISN_CHECKNR,    // check value can be used as a number

@@ -921,6 +921,14 @@ def Test_expr5()
   assert_equal('123 hello', 123 .. ' hello')
   assert_equal('123456', 123 .. 456)
 
+  assert_equal('av:true', 'a' .. true)
+  assert_equal('av:false', 'a' .. false)
+  assert_equal('av:null', 'a' .. v:null)
+  assert_equal('av:none', 'a' .. v:none)
+  if has('float')
+    assert_equal('a0.123', 'a' .. 0.123)
+  endif
+
   assert_equal([1, 2, 3, 4], [1, 2] + [3, 4])
   assert_equal(0z11223344, 0z1122 + 0z3344)
   assert_equal(0z112201ab, 0z1122
@@ -1013,6 +1021,56 @@ def Test_expr5_vim9script()
       echo 'a'.. 'b'
   END
   CheckScriptFailure(lines, 'E1004:')
+
+  # check valid string concatenation
+  lines =<< trim END
+      vim9script
+      assert_equal('one123', 'one' .. 123)
+      assert_equal('onev:true', 'one' .. true)
+      assert_equal('onev:null', 'one' .. v:null)
+      assert_equal('onev:none', 'one' .. v:none)
+      if has('float')
+        assert_equal('a0.123', 'a' .. 0.123)
+      endif
+  END
+  CheckScriptSuccess(lines)
+
+  # check invalid string concatenation
+  lines =<< trim END
+      vim9script
+      echo 'a' .. [1]
+  END
+  CheckScriptFailure(lines, 'E730:')
+  lines =<< trim END
+      vim9script
+      echo 'a' .. #{a: 1}
+  END
+  CheckScriptFailure(lines, 'E731:')
+  lines =<< trim END
+      vim9script
+      echo 'a' .. test_void()
+  END
+  CheckScriptFailure(lines, 'E908:')
+  lines =<< trim END
+      vim9script
+      echo 'a' .. 0z33
+  END
+  CheckScriptFailure(lines, 'E976:')
+  lines =<< trim END
+      vim9script
+      echo 'a' .. function('len')
+  END
+  CheckScriptFailure(lines, 'E729:')
+  lines =<< trim END
+      vim9script
+      echo 'a' .. test_null_job()
+  END
+  CheckScriptFailure(lines, 'E908:')
+  lines =<< trim END
+      vim9script
+      echo 'a' .. test_null_channel()
+  END
+  CheckScriptFailure(lines, 'E908:')
 enddef
 
 def Test_expr5_float()
@@ -1063,6 +1121,15 @@ func Test_expr5_fails()
   call CheckDefFailure(["let x = [3] + 0z1122"], 'E1051')
   call CheckDefFailure(["let x = 'asdf' + 0z1122"], 'E1051')
   call CheckDefFailure(["let x = 6 + xxx"], 'E1001')
+
+  call CheckDefFailure(["let x = 'a' .. [1]"], 'E1105')
+  call CheckDefFailure(["let x = 'a' .. #{a: 1}"], 'E1105')
+  call CheckDefFailure(["let x = 'a' .. test_void()"], 'E1105')
+  call CheckDefFailure(["let x = 'a' .. 0z32"], 'E1105')
+  call CheckDefFailure(["let x = 'a' .. function('len')"], 'E1105')
+  call CheckDefFailure(["let x = 'a' .. function('len', ['a'])"], 'E1105')
+  call CheckDefFailure(["let x = 'a' .. test_null_job()"], 'E1105')
+  call CheckDefFailure(["let x = 'a' .. test_null_channel()"], 'E1105')
 endfunc
 
 " test multiply, divide, modulo

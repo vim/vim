@@ -426,10 +426,13 @@ The boolean operators "||" and "&&" do not change the value: >
 	2 && 0   == 0
 	[] && 2  == []
 
-When using `..` for string concatenation the arguments are always converted to
-string. >
+When using `..` for string concatenation arguments of simple types are always
+converted to string. >
 	'hello ' .. 123  == 'hello 123'
 	'hello ' .. v:true  == 'hello true'
+
+Simple types are string, float, special and bool.  For other types |string()|
+can be used.
 
 In Vim9 script one can use "true" for v:true and "false" for v:false.
 
@@ -804,6 +807,9 @@ actually needed.  A recommended mechanism:
    	export def FilterFunc(arg: string): string
 	   ...
 <   This goes in .../import/someother.vim.
+
+When compiling a `:def` function and a function in an autoload script is
+encountered, the script is not loaded until the `:def` function is called.
 
 
 Import in legacy Vim script ~

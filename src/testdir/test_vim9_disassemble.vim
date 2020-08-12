@@ -708,7 +708,7 @@ def Test_disassemble_lambda()
         'return "X" .. a .. "X"\_s*' ..
         '\d PUSHS "X"\_s*' ..
         '\d LOAD arg\[-1\]\_s*' ..
-        '\d 2STRING stack\[-1\]\_s*' ..
+        '\d 2STRING_ANY stack\[-1\]\_s*' ..
         '\d CONCAT\_s*' ..
         '\d PUSHS "X"\_s*' ..
         '\d CONCAT\_s*' ..
@@ -964,7 +964,7 @@ def Test_disassemble_concat()
         'let res = g:aa .. "bb".*' ..
         '\d LOADG g:aa.*' ..
         '\d PUSHS "bb".*' ..
-        '\d 2STRING stack\[-2].*' ..
+        '\d 2STRING_ANY stack\[-2].*' ..
         '\d CONCAT.*' ..
         '\d STORE $.*',
         instr)

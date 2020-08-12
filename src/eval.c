@@ -2712,7 +2712,7 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    return FAIL;
 	}
 	*arg = skipwhite_and_linebreak(*arg + oplen, evalarg);
-	if (eval6(arg, &var2, evalarg, op == '.') == FAIL)
+	if (eval6(arg, &var2, evalarg, !in_vim9script() && op == '.') == FAIL)
 	{
 	    clear_tv(rettv);
 	    return FAIL;
@@ -2727,8 +2727,22 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    {
 		char_u	buf1[NUMBUFLEN], buf2[NUMBUFLEN];
 		char_u	*s1 = tv_get_string_buf(rettv, buf1);
-		char_u	*s2 = tv_get_string_buf_chk(&var2, buf2);
+		char_u	*s2 = NULL;
 
+		if (in_vim9script() && (var2.v_type == VAR_VOID
+			|| var2.v_type == VAR_CHANNEL
+			|| var2.v_type == VAR_JOB))
+		    emsg(_(e_inval_string));
+#ifdef FEAT_FLOAT
+		else if (var2.v_type == VAR_FLOAT)
+		{
+		    vim_snprintf((char *)buf2, NUMBUFLEN, "%g",
+							    var2.vval.v_float);
+		    s2 = buf2;
+		}
+#endif
+		else
+		    s2 = tv_get_string_buf_chk(&var2, buf2);
 		if (s2 == NULL)		// type error ?
 		{
 		    clear_tv(rettv);
