@@ -943,20 +943,20 @@ func Test_efm1()
     "Xtestfile", linenr 16: yet another problem
     Error in "Xtestfile" at line 17:
     x should be a dot
-     xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 17
+    	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 17
                 ^
     Error in "Xtestfile" at line 18:
     x should be a dot
-     xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 18
+    	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 18
     .............^
     Error in "Xtestfile" at line 19:
     x should be a dot
-     xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 19
+    	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 19
     --------------^
     Error in "Xtestfile" at line 20:
     x should be a dot
-     xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 20
-            ^
+    	xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 20
+    	       ^
 
     Does anyone know what is the problem and how to correction it?
     "Xtestfile", line 21 col 9: What is the title of the quickfix window?
@@ -967,27 +967,27 @@ func Test_efm1()
   call writefile(l[:-2], 'Xerrorfile2')
 
   let m =<< [DATA]
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  2
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  3
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  4
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  5
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  6
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  7
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  8
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  9
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 10
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 11
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 12
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 13
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 14
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 15
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 16
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 17
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 18
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 19
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 20
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 21
-      xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 22
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  2
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  3
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  4
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  5
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  6
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  7
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  8
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line  9
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 10
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 11
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 12
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 13
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 14
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 15
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 16
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 17
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 18
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 19
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 20
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 21
+    xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx    line 22
 [DATA]
   call writefile(m, 'Xtestfile')
 
