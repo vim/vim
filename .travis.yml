@@ -7,11 +7,11 @@ env:
 _anchors:
   envs:
     - &tiny-nogui
-      FEATURES=tiny CONFOPT="--disable-gui"
+      FEATURES=tiny TEST=testtiny CONFOPT="--disable-gui"
     - &tiny
-      FEATURES=tiny
+      FEATURES=tiny TEST=testtiny
     - &small
-      FEATURES=small
+      FEATURES=small TEST=testtiny
     - &normal
       FEATURES=normal
     - &linux-huge

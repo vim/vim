@@ -24,39 +24,29 @@ endif
 
 VIMPROG = ..$(DIRSLASH)vim
 
-default: vimall
+default: nongui
 
 include Make_all.mak
 
-SCRIPTS_BENCH = test_bench_regexp.res
-
-# Must run test1 first to create small.vim.
-$(NEW_TESTS_RES): $(SCRIPTS_FIRST)
-
 .SUFFIXES: .in .out .res .vim
 
-vimall:	fixff $(SCRIPTS_FIRST) newtests
-	@echo ALL DONE
+tiny:	nolog fixff $(SCRIPTS_TINY) report
 
-nongui:	fixff nolog $(SCRIPTS_FIRST) newtests
-	@echo ALL DONE
+nongui:	nolog fixff $(SCRIPTS_TINY) newtests report
+
+gui:	nolog fixff $(SCRIPTS_TINY) newtests report
 
 benchmark: $(SCRIPTS_BENCH)
-
-small: nolog
-	@echo ALL DONE
-
-gui:	fixff nolog $(SCRIPTS_FIRST) newtests
-	@echo ALL DONE
-
-win32:	fixff nolog $(SCRIPTS_FIRST) newtests
-	@echo ALL DONE
 
 # TODO: find a way to avoid changing the distributed files.
 fixff:
 	-$(VIMPROG) -u dos.vim $(NO_INITS) "+argdo set ff=dos|upd" +q *.in *.ok
 	-$(VIMPROG) -u dos.vim $(NO_INITS) "+argdo set ff=unix|upd" +q \
 		dotest.in
+
+# TODO: call summarize.vim like other makefiles.
+report:
+	@echo ALL DONE
 
 clean:
 	-@if exist *.out $(DEL) *.out
@@ -77,14 +67,17 @@ clean:
 	-@if exist messages $(DEL) messages
 	-@if exist opt_test.vim $(DEL) opt_test.vim
 
-test1.out: test1.in
-	-@if exist wrongtermsize  $(DEL) wrongtermsize
-	$(VIMPROG) -u dos.vim $(NO_INITS) -s dotest.in test1.in
-	-@if exist wrongtermsize  ( \
-	    echo Vim window too small- must be 80x25 or larger && exit 1 \
-	    )
-	-@if exist test.out $(DEL) test.out
-	-@if exist viminfo  $(DEL) viminfo
+.in.out:
+	-@if exist $*.ok $(CP) $*.ok test.ok
+	$(VIMPROG) -u dos.vim $(NO_PLUGIN) -s dotest.in $*.in
+	@diff test.out $*.ok
+	-@if exist $*.out $(DEL) $*.out
+	@$(MV) test.out $*.out
+	-@if exist Xdir1 $(DELDIR) Xdir1
+	-@if exist Xfind $(DELDIR) Xfind
+	-@if exist X* $(DEL) X*
+	-@if exist test.ok $(DEL) test.ok
+	-@if exist viminfo $(DEL) viminfo
 
 nolog:
 	-@if exist test.log $(DEL) test.log

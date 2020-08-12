@@ -9,20 +9,20 @@ default: nongui
 
 !include Make_all.mak
 
-TEST_OUTFILES = $(SCRIPTS_FIRST)
+TEST_OUTFILES = $(SCRIPTS_TINY)
 DOSTMP = dostmp
 DOSTMP_OUTFILES = $(TEST_OUTFILES:test=dostmp\test)
 DOSTMP_INFILES = $(DOSTMP_OUTFILES:.out=.in)
 
 .SUFFIXES: .in .out .res .vim
 
-nongui:	nolog $(SCRIPTS_FIRST) newtests report
+tiny:	nolog $(SCRIPTS_TINY) report
 
-small:	nolog report
+nongui:	nolog $(SCRIPTS_TINY) newtests report
 
-gui:	nolog $(SCRIPTS_FIRST) newtests report
+gui:	nolog $(SCRIPTS_TINY) newtests report
 
-win32:	nolog $(SCRIPTS_FIRST) newtests report
+benchmark: $(SCRIPTS_BENCH)
 
 # Copy the input files to dostmp, changing the fileformat to dos.
 $(DOSTMP_INFILES): $(*B).in
@@ -54,11 +54,6 @@ $(TEST_OUTFILES): $(DOSTMP)\$(*B).in
 		 & del $(DOSTMP)\$(*B).out \
 		 & echo $* FAILED >> test.log ) \
 		else ( move /y test.out $*.out > nul )
-
-# Must run test1 first to create small.vim.
-# This rule must come after the one that copies the input files to dostmp to
-# allow for running an individual test.
-$(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32) $(NEW_TESTS_RES): $(SCRIPTS_FIRST)
 
 report:
 	@rem without the +eval feature test_result.log is a copy of test.log
@@ -98,8 +93,6 @@ nolog:
 	-if exist test.log del test.log
 	-if exist test_result.log del test_result.log
 	-if exist messages del messages
-
-benchmark: test_bench_regexp.res
 
 test_bench_regexp.res: test_bench_regexp.vim
 	-if exist benchmark.out del benchmark.out

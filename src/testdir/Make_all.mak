@@ -7,8 +7,16 @@
 NO_PLUGINS = --noplugin --not-a-term
 NO_INITS = -U NONE $(NO_PLUGINS)
 
-# The first script creates small.vim.
-SCRIPTS_FIRST = test1.out
+# Tests for tiny and small builds.
+SCRIPTS_TINY = \
+	test20.out \
+	test22.out \
+	test23.out \
+	test24.out \
+	test28.out \
+	test36.out \
+	test41.out \
+	test42.out
 
 # Tests for Vim9 script.
 TEST_VIM9 = \
@@ -24,6 +32,8 @@ TEST_VIM9_RES = \
 	test_vim9_expr.res \
 	test_vim9_func.res \
 	test_vim9_script.res
+
+SCRIPTS_BENCH = test_bench_regexp.res
 
 # Individual tests, including the ones part of test_alot.
 # Please keep sorted up to test_alot.
