@@ -290,6 +290,12 @@ def Test_call_def_varargs()
   CheckScriptFailure(lines, 'E1013:')
 enddef
 
+def Test_call_call()
+  let l = [3, 2, 1]
+  call('reverse', [l])
+  assert_equal([1, 2, 3], l)
+enddef
+
 let s:value = ''
 
 def FuncOneDefArg(opt = 'text')

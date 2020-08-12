@@ -6484,8 +6484,15 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	cmdmod = save_cmdmod;
 
 	// Skip ":call" to get to the function name.
+	p = ea.cmd;
 	if (checkforcmd(&ea.cmd, "call", 3))
-	    ea.cmd = skipwhite(ea.cmd);
+	{
+	    if (*ea.cmd == '(')
+		// not for "call()"
+		ea.cmd = p;
+	    else
+		ea.cmd = skipwhite(ea.cmd);
+	}
 
 	if (!starts_with_colon)
 	{
