@@ -2294,9 +2294,9 @@ test_libvterm:
 			CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"; \
 	fi
 
-# Run test1, used to bootstrap tests.
+# Run individual OLD style test.
 # This does not depend on the executable, compile first it when needed.
-test1:
+test20 test22 test23 test24 test28 test36 test41 test42:
 	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTESTTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
 # Run individual NEW style test.
