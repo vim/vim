@@ -54,6 +54,8 @@ report:
 		else echo ALL DONE; \
 		fi"
 
+$(NEW_TESTS_RES): $(VIMPROG)
+
 
 # Execute an individual new style test, e.g.:
 # 	make test_largefile
