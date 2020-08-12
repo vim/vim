@@ -1,6 +1,6 @@
 " Test :suspend
 
-source shared.vim
+source check.vim
 source term_util.vim
 
 func CheckSuspended(buf, fileExists)
