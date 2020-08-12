@@ -21,6 +21,9 @@ default: nongui
 
 include Make_all.mak
 
+# Explicit dependencies.
+test_options.res test_alot.res: opt_test.vim
+
 TEST_OUTFILES = $(SCRIPTS_TINY_OUT)
 DOSTMP = dostmp
 # Keep $(DOSTMP)/*.in
@@ -28,11 +31,11 @@ DOSTMP = dostmp
 
 .SUFFIXES: .in .out .res .vim
 
-tiny:	nolog $(SCRIPTS_TINY_OUT) report
+nongui:	nolog tinytests newtests report
 
-nongui:	nolog newtests report
+gui:	nolog tinytests newtests report
 
-gui:	nolog newtests report
+tiny:	nolog tinytests report
 
 benchmark: $(SCRIPTS_BENCH)
 
@@ -47,10 +50,25 @@ report:
 	@if exist test.log ( echo TEST FAILURE & exit /b 1 ) \
 		else ( echo ALL DONE )
 
+
+# Execute an individual new style test, e.g.:
+# 	mingw32-make -f Make_ming.mak test_largefile
+$(NEW_TESTS):
+	-if exist $@.res del $@.res
+	-if exist test.log del test.log
+	-if exist messages del messages
+	@$(MAKE) -f Make_ming.mak $@.res VIMPROG=$(VIMPROG) --no-print-directory
+	@type messages
+	@if exist test.log exit 1
+
+
+# Delete files that may interfere with running tests.  This includes some files
+# that may result from working on the tests, not only from running them.
 clean:
 	-@if exist *.out $(DEL) *.out
 	-@if exist *.failed $(DEL) *.failed
 	-@if exist *.res $(DEL) *.res
+	-@if exist $(DOSTMP) rd /s /q $(DOSTMP)
 	-@if exist test.in $(DEL) test.in
 	-@if exist test.ok $(DEL) test.ok
 	-@if exist small.vim $(DEL) small.vim
@@ -61,10 +79,22 @@ clean:
 	-@if exist Xfind $(DELDIR) Xfind
 	-@if exist XfakeHOME $(DELDIR) XfakeHOME
 	-@if exist X* $(DEL) X*
+	-@for /d %%i in (X*) do @rd /s/q %%i
 	-@if exist viminfo $(DEL) viminfo
 	-@if exist test.log $(DEL) test.log
+	-@if exist test_result.log del test_result.log
 	-@if exist messages $(DEL) messages
+	-@if exist benchmark.out del benchmark.out
 	-@if exist opt_test.vim $(DEL) opt_test.vim
+
+nolog:
+	-@if exist test.log $(DEL) test.log
+	-@if exist test_result.log del test_result.log
+	-@if exist messages $(DEL) messages
+
+
+# Tiny tests.  Works even without the +eval feature.
+tinytests: $(SCRIPTS_TINY_OUT)
 
 # Copy the input files to dostmp, changing the fileformat to dos.
 $(DOSTMP)/%.in : %.in
@@ -72,6 +102,8 @@ $(DOSTMP)/%.in : %.in
 	if not exist $@ $(DEL) $@
 	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=dos|f $@|wq" $<
 
+# For each input file dostmp/test99.in run the tests.
+# This moves test99.in to test99.in.bak temporarily.
 %.out : $(DOSTMP)/%.in
 	-@if exist test.out $(DEL) test.out
 	-@if exist $(DOSTMP)\$@ $(DEL) $(DOSTMP)\$@
@@ -95,22 +127,15 @@ $(DOSTMP)/%.in : %.in
 		 & echo $(basename $@) FAILED >> test.log ) \
 		else ( $(MV) test.out $(basename $@).out > NUL )
 
-nolog:
-	-@if exist test.log $(DEL) test.log
-	-@if exist messages $(DEL) messages
-
-test_bench_regexp.res: test_bench_regexp.vim
-	-$(DEL) benchmark.out
-	@echo $(VIMPROG) > vimcmd
-	$(VIMPROG) -u NONE $(NO_INITS) -S runtest.vim $*.vim
-	@$(DEL) vimcmd
-	$(CAT) benchmark.out
 
 # New style of tests uses Vim script with assert calls.  These are easier
 # to write and a lot easier to read and debug.
 # Limitation: Only works with the +eval feature.
 
-newtests: $(NEW_TESTS_RES)
+newtests: newtestssilent
+	@if exist messages (findstr "SKIPPED FAILED" messages > nul) && type messages
+
+newtestssilent: $(NEW_TESTS_RES)
 
 .vim.res:
 	@echo $(VIMPROG) > vimcmd
@@ -127,7 +152,12 @@ test_gui_init.res: test_gui_init.vim
 	$(VIMPROG) -u gui_preinit.vim -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $<
 	@$(DEL) vimcmd
 
-test_options.res test_alot.res: opt_test.vim
-
 opt_test.vim: ../optiondefs.h gen_opt_test.vim
 	$(VIMPROG) -u NONE -S gen_opt_test.vim --noplugin --not-a-term ../optiondefs.h
+
+test_bench_regexp.res: test_bench_regexp.vim
+	-$(DEL) benchmark.out
+	@echo $(VIMPROG) > vimcmd
+	$(VIMPROG) -u NONE $(NO_INITS) -S runtest.vim $*.vim
+	@$(DEL) vimcmd
+	$(CAT) benchmark.out

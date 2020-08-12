@@ -31,11 +31,11 @@ test_options.res test_alot.res: opt_test.vim
 
 .SUFFIXES: .in .out .res .vim
 
-tiny:	nolog $(SCRIPTS_TINY_OUT) report
+nongui:	nolog tinytests newtests report
 
-nongui:	nolog newtests report
+gui:	nolog tinytests newtests report
 
-gui:	nolog newtests report
+tiny:	nolog tinytests report
 
 benchmark: $(SCRIPTS_BENCH)
 
@@ -54,7 +54,7 @@ report:
 		else echo ALL DONE; \
 		fi"
 
-$(NEW_TESTS_RES): $(VIMPROG)
+$(SCRIPTS_TINY_OUT) $(NEW_TESTS_RES): $(VIMPROG)
 
 
 # Execute an individual new style test, e.g.:
@@ -90,6 +90,13 @@ clean:
 	-rm -f valgrind.*
 	-rm -f asan.*
 
+nolog:
+	-rm -f test.log test_result.log messages
+
+
+# Tiny tests.  Works even without the +eval feature.
+tinytests: $(SCRIPTS_TINY_OUT)
+
 .in.out:
 	-rm -rf $*.failed test.ok $(RM_ON_RUN)
 	cp $*.ok test.ok
@@ -111,9 +118,6 @@ clean:
 		  mv -f valgrind valgrind.$*; \
 		fi"
 	-rm -rf X* test.ok viminfo
-
-nolog:
-	-rm -f test.log messages
 
 
 # New style of tests uses Vim script with assert calls.  These are easier
@@ -153,9 +157,9 @@ test_xxd.res:
 
 test_bench_regexp.res: test_bench_regexp.vim
 	-rm -rf benchmark.out $(RM_ON_RUN)
-	# Sleep a moment to avoid that the xterm title is messed up.
-	# 200 msec is sufficient, but only modern sleep supports a fraction of
-	# a second, fall back to a second if it fails.
+	@# Sleep a moment to avoid that the xterm title is messed up.
+	@# 200 msec is sufficient, but only modern sleep supports a fraction of
+	@# a second, fall back to a second if it fails.
 	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
 	$(RUN_VIMTEST) $(NO_INITS) -S runtest.vim $*.vim $(REDIR_TEST_TO_NULL)
 	@/bin/sh -c "if test -f benchmark.out; then cat benchmark.out; fi"
