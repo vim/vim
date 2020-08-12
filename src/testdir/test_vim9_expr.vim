@@ -1443,6 +1443,16 @@ def LambdaWithComments(): func
         }
 enddef
 
+def LambdaUsingArg(x: number): func
+  return {->
+            # some comment
+            x == 1
+            # some comment
+            ||
+            x == 2
+        }
+enddef
+
 def Test_expr7_lambda()
   let La = { -> 'result'}
   assert_equal('result', La())
@@ -1480,6 +1490,9 @@ def Test_expr7_lambda()
   assert_equal(true, LambdaWithComments()(1))
   assert_equal(true, LambdaWithComments()(2))
   assert_equal(false, LambdaWithComments()(3))
+
+  assert_equal(false, LambdaUsingArg(0)())
+  assert_equal(true, LambdaUsingArg(1)())
 
   call CheckDefFailure(["filter([1, 2], {k,v -> 1})"], 'E1069:')
 enddef

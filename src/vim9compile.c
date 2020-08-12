@@ -2135,7 +2135,10 @@ compile_load(char_u **arg, char_u *end_arg, cctx_T *cctx, int error)
 	if (gen_load)
 	    res = generate_LOAD(cctx, ISN_LOAD, idx, NULL, type);
 	if (gen_load_outer)
+	{
 	    res = generate_LOAD(cctx, ISN_LOADOUTER, idx, NULL, type);
+	    cctx->ctx_outer_used = TRUE;
+	}
     }
 
     *arg = end;
