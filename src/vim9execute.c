@@ -546,6 +546,15 @@ call_ufunc(ufunc_T *ufunc, int argcount, ectx_T *ectx, isn_T *iptr)
 }
 
 /*
+ * Return TRUE if an error was given or CTRL-C was pressed.
+ */
+    static int
+vim9_aborting(int prev_called_emsg)
+{
+    return called_emsg > prev_called_emsg || got_int || did_throw;
+}
+
+/*
  * Execute a function by "name".
  * This can be a builtin function or a user function.
  * "iptr" can be used to replace the instruction with a more efficient one.
@@ -568,6 +577,18 @@ call_by_name(char_u *name, int argcount, ectx_T *ectx, isn_T *iptr)
     }
 
     ufunc = find_func(name, FALSE, NULL);
+
+    if (ufunc == NULL)
+    {
+	int called_emsg_before = called_emsg;
+
+	if (script_autoload(name, TRUE))
+	    // loaded a package, search for the function again
+	    ufunc = find_func(name, FALSE, NULL);
+	if (vim9_aborting(called_emsg_before))
+	    return FAIL;  // bail out if loading the script caused an error
+    }
+
     if (ufunc != NULL)
 	return call_ufunc(ufunc, argcount, ectx, iptr);
 

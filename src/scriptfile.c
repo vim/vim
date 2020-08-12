@@ -1991,7 +1991,7 @@ autoload_name(char_u *name)
     if (scriptname == NULL)
 	return NULL;
     STRCPY(scriptname, "autoload/");
-    STRCAT(scriptname, name);
+    STRCAT(scriptname, name[0] == 'g' && name[1] == ':' ? name + 2: name);
     for (p = scriptname + 9; (p = vim_strchr(p, AUTOLOAD_CHAR)) != NULL;
 								    q = p, ++p)
 	*p = '/';

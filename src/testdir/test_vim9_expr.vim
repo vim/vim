@@ -1752,6 +1752,21 @@ def Test_expr7_call()
 	"vim9script",
 	"let x = substitute ('x', 'x', 'x', 'x')"
 	], 'E121:')
+
+  let auto_lines =<< trim END
+      def g:some#func(): string
+	return 'found'
+      enddef
+  END
+  mkdir('Xruntime/autoload', 'p')
+  writefile(auto_lines, 'Xruntime/autoload/some.vim')
+  let save_rtp = &rtp
+  &rtp = getcwd() .. '/Xruntime,' .. &rtp
+  assert_equal('found', g:some#func())
+  assert_equal('found', some#func())
+
+  &rtp = save_rtp
+  delete('Xruntime', 'rf')
 enddef
 
 

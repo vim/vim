@@ -2214,6 +2214,7 @@ compile_call(
     int		error = FCERR_NONE;
     ufunc_T	*ufunc;
     int		res = FAIL;
+    int		is_autoload;
 
     // we can evaluate "has('name')" at compile time
     if (varlen == 3 && STRNCMP(*arg, "has", 3) == 0)
@@ -2258,7 +2259,8 @@ compile_call(
     if (compile_arguments(arg, cctx, &argcount) == FAIL)
 	goto theend;
 
-    if (ASCII_ISLOWER(*name) && name[1] != ':')
+    is_autoload = vim_strchr(name, '#') != NULL;
+    if (ASCII_ISLOWER(*name) && name[1] != ':' && !is_autoload)
     {
 	int	    idx;
 
@@ -2281,8 +2283,9 @@ compile_call(
 
     // If the name is a variable, load it and use PCALL.
     // Not for g:Func(), we don't know if it is a variable or not.
+    // Not for eome#Func(), it will be loaded later.
     p = namebuf;
-    if (STRNCMP(namebuf, "g:", 2) != 0
+    if (STRNCMP(namebuf, "g:", 2) != 0 && !is_autoload
 	    && compile_load(&p, namebuf + varlen, cctx, FALSE) == OK)
     {
 	garray_T    *stack = &cctx->ctx_type_stack;
@@ -2295,7 +2298,7 @@ compile_call(
 
     // A global function may be defined only later.  Need to figure out at
     // runtime.  Also handles a FuncRef at runtime.
-    if (STRNCMP(namebuf, "g:", 2) == 0)
+    if (STRNCMP(namebuf, "g:", 2) == 0 || is_autoload)
 	res = generate_UCALL(cctx, name, argcount);
     else
 	semsg(_(e_unknownfunc), namebuf);
