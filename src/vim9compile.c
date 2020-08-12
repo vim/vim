@@ -1729,11 +1729,13 @@ peek_next_line_from_context(cctx_T *cctx)
 	char_u *line = ((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)[lnum];
 	char_u *p;
 
-	if (line == NULL)
-	    break;
-	p = skipwhite(line);
-	if (*p != NUL && !vim9_comment_start(p))
-	    return p;
+	// ignore NULLs inserted for continuation lines
+	if (line != NULL)
+	{
+	    p = skipwhite(line);
+	    if (*p != NUL && !vim9_comment_start(p))
+		return p;
+	}
     }
     return NULL;
 }

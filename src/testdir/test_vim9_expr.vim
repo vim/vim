@@ -1433,6 +1433,16 @@ def Test_expr7_list_vim9script()
   CheckScriptFailure(lines, 'E1068:')
 enddef
 
+def LambdaWithComments(): func
+  return {x ->
+            # some comment
+            x == 1
+            # some comment
+            ||
+            x == 2
+        }
+enddef
+
 def Test_expr7_lambda()
   let La = { -> 'result'}
   assert_equal('result', La())
@@ -1465,6 +1475,11 @@ def Test_expr7_lambda()
   dl = [{'key': 12}, {'foo': 34}]
   assert_equal([{'key': 12}], filter(dl,
 	{_, v -> has_key(v, 'key') ? v['key'] == 12 : 0}))
+
+  assert_equal(false, LambdaWithComments()(0))
+  assert_equal(true, LambdaWithComments()(1))
+  assert_equal(true, LambdaWithComments()(2))
+  assert_equal(false, LambdaWithComments()(3))
 
   call CheckDefFailure(["filter([1, 2], {k,v -> 1})"], 'E1069:')
 enddef
