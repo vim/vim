@@ -915,16 +915,17 @@ call_def_function(
 	    }
 	    else
 	    {
-		// not inside try or need to return from current functions.
+		// Not inside try or need to return from current functions.
+		// Push a dummy return value.
+		if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
+		    goto failed;
+		tv = STACK_TV_BOT(0);
+		tv->v_type = VAR_NUMBER;
+		tv->vval.v_number = 0;
+		++ectx.ec_stack.ga_len;
 		if (ectx.ec_frame_idx == initial_frame_idx)
 		{
-		    // At the toplevel we are done.  Push a dummy return value.
-		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
-			goto failed;
-		    tv = STACK_TV_BOT(0);
-		    tv->v_type = VAR_NUMBER;
-		    tv->vval.v_number = 0;
-		    ++ectx.ec_stack.ga_len;
+		    // At the toplevel we are done.
 		    need_rethrow = TRUE;
 		    if (handle_closure_in_use(&ectx, FALSE) == FAIL)
 			goto failed;
