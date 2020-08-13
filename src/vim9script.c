@@ -513,7 +513,7 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
 
     if (eap->cmdidx == CMD_const)
     {
-	emsg(_(e_const_req_value));
+	emsg(_(e_const_requires_a_value));
 	return arg + STRLEN(arg);
     }
 
@@ -530,12 +530,12 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
 
     if (*p != ':')
     {
-	emsg(_(e_type_req));
+	emsg(_(e_type_or_initialization_required));
 	return arg + STRLEN(arg);
     }
     if (!VIM_ISWHITE(p[1]))
     {
-	semsg(_(e_white_after), ":");
+	semsg(_(e_white_space_required_after), ":");
 	return arg + STRLEN(arg);
     }
     name = vim_strnsave(arg, p - arg);

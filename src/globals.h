@@ -1686,7 +1686,6 @@ EXTERN char e_readonlysbx[]	INIT(= N_("E794: Cannot set variable in the sandbox:
 EXTERN char e_stringreq[]	INIT(= N_("E928: String required"));
 EXTERN char e_emptykey[]	INIT(= N_("E713: Cannot use empty key for Dictionary"));
 EXTERN char e_dictreq[]		INIT(= N_("E715: Dictionary required"));
-EXTERN char e_dictnull[]	INIT(= N_("E1103: Dictionary not set"));
 EXTERN char e_listidx[]		INIT(= N_("E684: list index out of range: %ld"));
 EXTERN char e_blobidx[]		INIT(= N_("E979: Blob index out of range: %ld"));
 EXTERN char e_invalblob[]	INIT(= N_("E978: Invalid operation for Blob"));
@@ -1695,7 +1694,6 @@ EXTERN char e_toofewarg[]	INIT(= N_("E119: Not enough arguments for function: %s
 EXTERN char e_func_deleted[]	INIT(= N_("E933: Function was deleted: %s"));
 EXTERN char e_dictkey[]		INIT(= N_("E716: Key not present in Dictionary: %s"));
 EXTERN char e_listreq[]		INIT(= N_("E714: List required"));
-EXTERN char e_listdictblobreq[]	INIT(= N_("E1090: List, Dict or Blob required"));
 EXTERN char e_listblobreq[]	INIT(= N_("E897: List or Blob required"));
 EXTERN char e_list_end[]	INIT(= N_("E697: Missing end of List ']': %s"));
 EXTERN char e_listdictarg[]	INIT(= N_("E712: Argument of %s must be a List or Dictionary"));
@@ -1748,7 +1746,6 @@ EXTERN char e_missing_dict_colon[] INIT(= N_("E720: Missing colon in Dictionary:
 EXTERN char e_duplicate_key[]	INIT(= N_("E721: Duplicate key in Dictionary: \"%s\""));
 EXTERN char e_missing_dict_comma[] INIT(= N_("E722: Missing comma in Dictionary: %s"));
 EXTERN char e_missing_dict_end[]    INIT(= N_("E723: Missing end of Dictionary '}': %s"));
-EXTERN char e_already_defined[] INIT(= N_("E1073: name already defined: %s"));
 #endif
 #ifdef FEAT_CLIENTSERVER
 EXTERN char e_invexprmsg[]	INIT(= N_("E449: Invalid expression received"));
@@ -1791,16 +1788,8 @@ EXTERN char e_endif_without_if[] INIT(= N_("E580: :endif without :if"));
 EXTERN char e_continue[]	INIT(= N_("E586: :continue without :while or :for"));
 EXTERN char e_break[]		INIT(= N_("E587: :break without :while or :for"));
 EXTERN char e_nowhitespace[]	INIT(= N_("E274: No white space allowed before parenthesis"));
-EXTERN char e_white_both[]	INIT(= N_("E1004: white space required before and after '%s'"));
-EXTERN char e_white_after[]	INIT(= N_("E1069: white space required after '%s'"));
-EXTERN char e_no_white_before[] INIT(= N_("E1068: No white space allowed before '%s'"));
 
 EXTERN char e_lock_unlock[]	INIT(= N_("E940: Cannot lock or unlock variable %s"));
-EXTERN char e_const_req_value[] INIT(= N_("E1021: const requires a value"));
-EXTERN char e_type_req[]	INIT(= N_("E1022: type or initialization required"));
-EXTERN char e_declare_var[]	INIT(= N_("E1016: Cannot declare a %s variable: %s"));
-EXTERN char e_declare_env_var[]	INIT(= N_("E1016: Cannot declare an environment variable: %s"));
-EXTERN char e_colon_required[]	INIT(= N_("E1050: Colon required before a range"));
 #endif
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 EXTERN char e_alloc_color[]	INIT(= N_("E254: Cannot allocate color %s"));

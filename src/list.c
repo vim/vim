@@ -1204,7 +1204,7 @@ eval_list(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
 	{
 	    if (vim9script && !IS_WHITE_OR_NUL((*arg)[1]))
 	    {
-		semsg(_(e_white_after), ",");
+		semsg(_(e_white_space_required_after), ",");
 		goto failret;
 	    }
 	    *arg = skipwhite(*arg + 1);
@@ -1221,7 +1221,7 @@ eval_list(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
 	    if (do_error)
 	    {
 		if (**arg == ',')
-		    semsg(_(e_no_white_before), ",");
+		    semsg(_(e_no_white_space_allowed_before), ",");
 		else
 		    semsg(_("E696: Missing comma in List: %s"), *arg);
 	    }

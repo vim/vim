@@ -119,7 +119,7 @@ one_function_arg(char_u *arg, garray_T *newargs, garray_T *argtypes, int skip)
 	    ++p;
 	    if (!VIM_ISWHITE(*p))
 	    {
-		semsg(_(e_white_after), ":");
+		semsg(_(e_white_space_required_after), ":");
 		return arg;
 	    }
 	    type = skipwhite(p);
@@ -276,7 +276,7 @@ get_function_args(
 		if (!skip && in_vim9script()
 				      && !IS_WHITE_OR_NUL(*p) && *p != endchar)
 		{
-		    semsg(_(e_white_after), ",");
+		    semsg(_(e_white_space_required_after), ",");
 		    goto err_ret;
 		}
 	    }
@@ -3272,7 +3272,7 @@ def_function(exarg_T *eap, char_u *name_arg)
 			  || fp->uf_script_ctx.sc_seq == current_sctx.sc_seq)))
 	    {
 		if (vim9script)
-		    emsg_funcname(e_already_defined, name);
+		    emsg_funcname(e_name_already_defined, name);
 		else
 		    emsg_funcname(e_funcexts, name);
 		goto erret;

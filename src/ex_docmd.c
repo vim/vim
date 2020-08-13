@@ -1789,7 +1789,7 @@ do_one_cmd(
 	    --ea.cmd;
 	else if (ea.cmd > cmd)
 	{
-	    emsg(_(e_colon_required));
+	    emsg(_(e_colon_required_before_a_range));
 	    goto doend;
 	}
 	p = find_ex_command(&ea, NULL, lookup_scriptvar, NULL);

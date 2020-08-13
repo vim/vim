@@ -462,7 +462,7 @@ parse_type_member(char_u **arg, type_T *type, garray_T *type_gap)
     if (**arg != '<')
     {
 	if (*skipwhite(*arg) == '<')
-	    semsg(_(e_no_white_before), "<");
+	    semsg(_(e_no_white_space_allowed_before), "<");
 	else
 	    emsg(_("E1008: Missing <type>"));
 	return type;
@@ -591,7 +591,7 @@ parse_type(char_u **arg, garray_T *type_gap)
 
 			if (*p != ',' && *skipwhite(p) == ',')
 			{
-			    semsg(_(e_no_white_before), ",");
+			    semsg(_(e_no_white_space_allowed_before), ",");
 			    return &t_any;
 			}
 			if (*p == ',')
@@ -599,7 +599,7 @@ parse_type(char_u **arg, garray_T *type_gap)
 			    ++p;
 			    if (!VIM_ISWHITE(*p))
 			    {
-				semsg(_(e_white_after), ",");
+				semsg(_(e_white_space_required_after), ",");
 				return &t_any;
 			    }
 			}
@@ -624,7 +624,7 @@ parse_type(char_u **arg, garray_T *type_gap)
 		    // parse return type
 		    ++*arg;
 		    if (!VIM_ISWHITE(**arg))
-			semsg(_(e_white_after), ":");
+			semsg(_(e_white_space_required_after), ":");
 		    *arg = skipwhite(*arg);
 		    ret_type = parse_type(arg, type_gap);
 		}

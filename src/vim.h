@@ -2179,6 +2179,7 @@ typedef enum {
 #endif
 
 #include "globals.h"	    // global variables and messages
+#include "errors.h"	    // error messages
 
 /*
  * If console dialog not supported, but GUI dialog is, use the GUI one.

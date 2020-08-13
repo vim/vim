@@ -1457,7 +1457,7 @@ call_def_function(
 
 		    if (dict == NULL)
 		    {
-			emsg(_(e_dictnull));
+			emsg(_(e_dictionary_not_set));
 			goto on_error;
 		    }
 		    if (key == NULL)

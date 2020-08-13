@@ -805,7 +805,7 @@ ex_let(exarg_T *eap)
 						   || !IS_WHITE_OR_NUL(*expr)))
 	    {
 		vim_strncpy(op, expr - len, len);
-		semsg(_(e_white_both), op);
+		semsg(_(e_white_space_required_before_and_after), op);
 		i = FAIL;
 	    }
 

@@ -302,7 +302,7 @@ check_defined(char_u *p, size_t len, cctx_T *cctx)
 	    || find_func_even_dead(p, FALSE, cctx) != NULL)
     {
 	p[len] = c;
-	semsg(_(e_already_defined), p);
+	semsg(_(e_name_already_defined), p);
 	return FAIL;
     }
     p[len] = c;
@@ -2206,14 +2206,14 @@ compile_arguments(char_u **arg, cctx_T *cctx, int *argcount)
 
 	if (*p != ',' && *skipwhite(p) == ',')
 	{
-	    semsg(_(e_no_white_before), ",");
+	    semsg(_(e_no_white_space_allowed_before), ",");
 	    p = skipwhite(p);
 	}
 	if (*p == ',')
 	{
 	    ++p;
 	    if (*p != NUL && !VIM_ISWHITE(*p))
-		semsg(_(e_white_after), ",");
+		semsg(_(e_white_space_required_after), ",");
 	}
 	whitep = p;
 	p = skipwhite(p);
@@ -2431,7 +2431,7 @@ compile_list(char_u **arg, cctx_T *cctx)
 	}
 	if (*p == ',')
 	{
-	    semsg(_(e_no_white_before), ",");
+	    semsg(_(e_no_white_space_allowed_before), ",");
 	    return FAIL;
 	}
 	if (*p == ']')
@@ -2450,7 +2450,7 @@ compile_list(char_u **arg, cctx_T *cctx)
 	    ++p;
 	    if (*p != ']' && !IS_WHITE_OR_NUL(*p))
 	    {
-		semsg(_(e_white_after), ",");
+		semsg(_(e_white_space_required_after), ",");
 		return FAIL;
 	    }
 	}
@@ -2636,7 +2636,7 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 	if (**arg != ':')
 	{
 	    if (*skipwhite(*arg) == ':')
-		semsg(_(e_no_white_before), ":");
+		semsg(_(e_no_white_space_allowed_before), ":");
 	    else
 		semsg(_(e_missing_dict_colon), *arg);
 	    return FAIL;
@@ -2644,7 +2644,7 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 	whitep = *arg + 1;
 	if (!IS_WHITE_OR_NUL(*whitep))
 	{
-	    semsg(_(e_white_after), ":");
+	    semsg(_(e_white_space_required_after), ":");
 	    return FAIL;
 	}
 
@@ -2675,7 +2675,7 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 	}
 	if (IS_WHITE_OR_NUL(*whitep))
 	{
-	    semsg(_(e_no_white_before), ",");
+	    semsg(_(e_no_white_space_allowed_before), ",");
 	    return FAIL;
 	}
 	whitep = *arg + 1;
@@ -3152,7 +3152,7 @@ compile_subscript(
 	    }
 	    else
 	    {
-		emsg(_(e_listdictblobreq));
+		emsg(_(e_list_dict_or_blob_required));
 		return FAIL;
 	    }
 	}
@@ -3469,7 +3469,7 @@ error_white_both(char_u *op, int len)
     char_u	buf[10];
 
     vim_strncpy(buf, op, len);
-    semsg(_(e_white_both), buf);
+    semsg(_(e_white_space_required_before_and_after), buf);
 }
 
 /*
@@ -3493,7 +3493,7 @@ compile_expr7t(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	if (**arg != '>')
 	{
 	    if (*skipwhite(*arg) == '>')
-		semsg(_(e_no_white_before), ">");
+		semsg(_(e_no_white_space_allowed_before), ">");
 	    else
 		emsg(_("E1104: Missing >"));
 	    return FAIL;
@@ -3837,7 +3837,7 @@ compile_and_or(
 
 	    if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[2]))
 	    {
-		semsg(_(e_white_both), op);
+		semsg(_(e_white_space_required_before_and_after), op);
 		return FAIL;
 	    }
 
@@ -3978,7 +3978,7 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
 
 	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[1]))
 	{
-	    semsg(_(e_white_both), "?");
+	    semsg(_(e_white_space_required_before_and_after), "?");
 	    return FAIL;
 	}
 
@@ -4037,7 +4037,7 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
 
 	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[1]))
 	{
-	    semsg(_(e_white_both), ":");
+	    semsg(_(e_white_space_required_before_and_after), ":");
 	    return FAIL;
 	}
 
@@ -4337,7 +4337,7 @@ vim9_declare_error(char_u *name)
 	case 'w': scope = _("window"); break;
 	case 't': scope = _("tab"); break;
 	case 'v': scope = "v:"; break;
-	case '$': semsg(_(e_declare_env_var), name);
+	case '$': semsg(_(e_cannot_declare_an_environment_variable), name);
 		  return;
 	case '&': semsg(_("E1052: Cannot declare an option: %s"), name);
 		  return;
@@ -4345,7 +4345,7 @@ vim9_declare_error(char_u *name)
 		  return;
 	default: return;
     }
-    semsg(_(e_declare_var), scope, name);
+    semsg(_(e_cannot_declare_a_scope_variable), scope, name);
 }
 
 /*
@@ -4724,7 +4724,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		// parse optional type: "let var: type = expr"
 		if (!VIM_ISWHITE(p[1]))
 		{
-		    semsg(_(e_white_after), ":");
+		    semsg(_(e_white_space_required_after), ":");
 		    goto theend;
 		}
 		p = skipwhite(p + 1);
@@ -4903,12 +4903,12 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    }
 	    else if (cmdidx == CMD_const)
 	    {
-		emsg(_(e_const_req_value));
+		emsg(_(e_const_requires_a_value));
 		goto theend;
 	    }
 	    else if (!has_type || dest == dest_option)
 	    {
-		emsg(_(e_type_req));
+		emsg(_(e_type_or_initialization_required));
 		goto theend;
 	    }
 	    else
@@ -6624,7 +6624,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	    ea.cmd = skip_range(ea.cmd, NULL);
 	    if (ea.cmd > cmd && !starts_with_colon)
 	    {
-		emsg(_(e_colon_required));
+		emsg(_(e_colon_required_before_a_range));
 		goto erret;
 	    }
 	}
