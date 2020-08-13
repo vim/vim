@@ -37,7 +37,7 @@ endfunc
 func Test_getimstatus()
   if has('win32')
     CheckFeature multi_byte_ime
-  elseif !has('gui_mac')
+  else
     CheckFeature xim
   endif
   if has('win32') && has('gui_running')
@@ -87,7 +87,7 @@ func Test_iminsert_toggle()
   CheckGui
   if has('win32')
     CheckFeature multi_byte_ime
-  elseif !has('gui_mac')
+  else
     CheckFeature xim
   endif
   if has('gui_running') && !has('win32')

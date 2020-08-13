@@ -9246,8 +9246,7 @@ $as_echo "yes - automatic GUI support" >&6; }
     auto)	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: auto - disable GUI support for Mac OS" >&5
 $as_echo "auto - disable GUI support for Mac OS" >&6; } ;;
     *)		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Sorry, $enable_gui GUI is not supported" >&5
-$as_echo "Sorry, $enable_gui GUI is not supported" >&6; }
-		SKIP_CARBON=YES ;;
+$as_echo "Sorry, $enable_gui GUI is not supported" >&6; } ;;
   esac
 else
 
