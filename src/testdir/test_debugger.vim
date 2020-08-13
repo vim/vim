@@ -337,6 +337,8 @@ func Test_Debugger()
   call StopVimInTerminal(buf)
 
   call delete('Xtest.vim')
+  %bw!
+  call assert_fails('breakadd here', 'E32:')
 endfunc
 
 func Test_Backtrace_Through_Source()
@@ -1037,7 +1039,6 @@ func Test_breakpt_endif_intr()
     let caught_intr = 0
     debuggreedy
     call feedkeys(":call F()\<CR>quit\<CR>", "xt")
-    call F()
   catch /^Vim:Interrupt$/
     call assert_match('\.F, line 4', v:throwpoint)
     let caught_intr = 1
@@ -1068,7 +1069,6 @@ func Test_breakpt_else_intr()
     let caught_intr = 0
     debuggreedy
     call feedkeys(":call F()\<CR>quit\<CR>", "xt")
-    call F()
   catch /^Vim:Interrupt$/
     call assert_match('\.F, line 4', v:throwpoint)
     let caught_intr = 1
@@ -1097,7 +1097,6 @@ func Test_breakpt_endwhile_intr()
     let caught_intr = 0
     debuggreedy
     call feedkeys(":call F()\<CR>quit\<CR>", "xt")
-    call F()
   catch /^Vim:Interrupt$/
     call assert_match('\.F, line 4', v:throwpoint)
     let caught_intr = 1
@@ -1109,38 +1108,24 @@ func Test_breakpt_endwhile_intr()
   delfunc F
 endfunc
 
-" Test for setting a breakpoint on an :endtry where an exception is pending to
-" be processed and then quit the script. This should generate an interrupt and
-" the thrown exception should be ignored.
-func Test_breakpt_endtry_intr()
-  func F()
-    try
-      let g:Xpath ..= 'a'
-      throw "abc"
-    endtry
-    invalid_command
+" Test for setting a breakpoint on a script local function
+func Test_breakpt_scriptlocal_func()
+  let g:Xpath = ''
+  func s:G()
+    let g:Xpath ..= 'a'
   endfunc
 
-  let g:Xpath = ''
-  breakadd func 4 F
-  try
-    let caught_intr = 0
-    let caught_abc = 0
-    debuggreedy
-    call feedkeys(":call F()\<CR>quit\<CR>", "xt")
-    call F()
-  catch /abc/
-    let caught_abc = 1
-  catch /^Vim:Interrupt$/
-    call assert_match('\.F, line 4', v:throwpoint)
-    let caught_intr = 1
-  endtry
+  let funcname = expand("<SID>") .. "G"
+  exe "breakadd func 1 " .. funcname
+  debuggreedy
+  redir => output
+  call feedkeys(":call " .. funcname .. "()\<CR>c\<CR>", "xt")
+  redir END
   0debuggreedy
-  call assert_equal(1, caught_intr)
-  call assert_equal(0, caught_abc)
+  call assert_match('Breakpoint in "' .. funcname .. '" line 1', output)
   call assert_equal('a', g:Xpath)
   breakdel *
-  delfunc F
+  exe "delfunc " .. funcname
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
