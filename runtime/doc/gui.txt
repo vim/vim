@@ -1096,8 +1096,9 @@ That's all.  XLFDs are not used.  For Chinese this is reported to work well: >
 
 For Mac OSX you can use something like this: >
     :set guifont=Monaco:h10
-Also see 'macatsui', it can help fix display problems.
-							*E236*
+
+Mono-spaced fonts					*E236*
+
 Note that the fonts must be mono-spaced (all characters have the same width).
 An exception is GTK: all fonts are accepted, but mono-spaced fonts look best.
 

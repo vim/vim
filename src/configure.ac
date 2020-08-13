@@ -2434,7 +2434,6 @@ elif test "x$MACOS_X" = "xyes" -a "x$with_x" = "xno" ; then
     		gui_auto=yes ;;
     auto)	AC_MSG_RESULT(auto - disable GUI support for Mac OS) ;;
     *)		AC_MSG_RESULT([Sorry, $enable_gui GUI is not supported])
-		SKIP_CARBON=YES ;;
   esac
 else
 

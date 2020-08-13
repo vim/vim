@@ -2155,8 +2155,6 @@ typedef enum {
 	     || !(defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME)))
 // Whether IME is supported by im_get_status() defined in mbyte.c.
 // For Win32 GUI it's in gui_w32.c when FEAT_MBYTE_IME or GLOBAL_IME is defined.
-// for Mac it is in gui_mac.c for the GUI or in os_mac_conv.c when
-// MACOS_CONVERT is defined.
 # define IME_WITHOUT_XIM
 #endif
 

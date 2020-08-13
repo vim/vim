@@ -727,8 +727,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'antialias' 'anti'	boolean (default: off)
 			global
 			{only available when compiled with GUI enabled
-			on Mac OS X}
-	This option only has an effect in the GUI version of Vim on Mac OS X
+			on macOS}
+	This option only has an effect in the GUI version of Vim on macOS
 	v10.2 or later.  When on, Vim will use smooth ("antialiased") fonts,
 	which can be easier to read at certain sizes on certain displays.
 	Setting this option can sometimes cause problems if 'guifont' is set
@@ -4546,7 +4546,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	set and to the Vim default value when 'compatible' is reset.
 
 						*'isprint'* *'isp'*
-'isprint' 'isp'	string	(default for Win32 and Macintosh:
+'isprint' 'isp'	string	(default for Win32 and macOS:
 				"@,~-255"; otherwise: "@,161-255")
 			global
 	The characters given by this option are displayed directly on the
@@ -4923,7 +4923,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'macatsui'* *'nomacatsui'*
 'macatsui'		boolean	(default on)
 			global
-			{only available in Mac GUI version}
+			{Deprecated}
 	This is a workaround for when drawing doesn't work properly.  When set
 	and compiled with multi-byte support ATSUI text drawing is used.  When
 	not set ATSUI text drawing is not used.  Switch this option off when
@@ -6240,7 +6240,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						$VIMRUNTIME,
 						$VIM/vimfiles/after,
 						$HOME/vimfiles/after"
-					Macintosh: "$VIM:vimfiles,
+					macOS: "$VIM:vimfiles,
 						$VIMRUNTIME,
 						$VIM:vimfiles:after"
 					Haiku: "$BE_USER_SETTINGS/vim,
@@ -7744,14 +7744,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	For further details see |arabic.txt|.
 
 					*'termencoding'* *'tenc'*
-'termencoding' 'tenc'	string	(default ""; with GTK+ GUI: "utf-8"; with
-						    Macintosh GUI: "macroman")
+'termencoding' 'tenc'	string	(default ""; with GTK+ GUI: "utf-8")
 			global
 	Encoding used for the terminal.  This specifies what character
 	encoding the keyboard produces and the display will understand.  For
 	the GUI it only applies to the keyboard ('encoding' is used for the
-	display).  Except for the Mac when 'macatsui' is off, then
-	'termencoding' should be "macroman".
+	display).
 								*E617* *E950*
 	Note: This does not apply to the GTK+ GUI.  After the GUI has been
 	successfully initialized, 'termencoding' is forcibly set to "utf-8".
@@ -8397,7 +8395,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'viewdir' 'vdir'	string	(default for Amiga and Win32:
 							 "$VIM/vimfiles/view",
 				 for Unix: "~/.vim/view",
-				 for Macintosh: "$VIM:vimfiles:view"
+				 for macOS: "$VIM:vimfiles:view"
 				 for VMS: "sys$login:vimfiles/view")
 			global
 			{not available when compiled without the |+mksession|

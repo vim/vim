@@ -375,9 +375,6 @@ CClink = $(CC)
 #CONF_OPT_GUI = --enable-gui=athena
 #CONF_OPT_GUI = --enable-gui=nextaw
 
-# Carbon GUI for Mac OS X
-#CONF_OPT_GUI = --enable-gui=carbon
-
 # Uncomment this line to run an individual test with gvim.
 #GUI_TESTARG = GUI_FLAG=-g 
 
@@ -3303,9 +3300,6 @@ objects/gui_xim.o: gui_xim.c
 objects/gui_photon.o: gui_photon.c
 	$(CCC) -o $@ gui_photon.c
 
-objects/gui_mac.o: gui_mac.c
-	$(CCC) -o $@ gui_mac.c
-
 objects/highlight.o: highlight.c
 	$(CCC) -o $@ highlight.c
 
@@ -3689,13 +3683,6 @@ bundle-rsrc: os_mac.rsr.hqx
 	rm -f gui_mac.rsrc
 	mv gui_mac.rsrc.rsrcfork $(RESDIR)/$(VIMNAME).rsrc
 
-# po/Make_osx.pl says something about generating a Mac message file
-# for Ukrainian.  Would somebody using Mac OS X in Ukrainian
-# *really* be upset that Carbon Vim was not localised in
-# Ukrainian?
-#
-#bundle-language: bundle-dir po/Make_osx.pl
-#	cd po && perl Make_osx.pl --outdir ../$(RESDIR) $(MULTILANG)
 bundle-language: bundle-dir
 
 $(APPDIR)/Contents:
