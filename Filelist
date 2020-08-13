@@ -158,9 +158,7 @@ SRC_ALL =	\
 		src/testdir/gen_opt_test.vim \
 		src/testdir/README.txt \
 		src/testdir/Make_all.mak \
-		src/testdir/dotest.in \
-		src/testdir/test1.in \
-		src/testdir/test77a.in \
+		src/testdir/*.in \
 		src/testdir/*.py \
 		src/testdir/lsan-suppress.txt \
 		src/testdir/sautest/autoload/*.vim \
@@ -179,7 +177,7 @@ SRC_ALL =	\
 		src/testdir/summarize.vim \
 		src/testdir/term_util.vim \
 		src/testdir/view_util.vim \
--		src/testdir/test1.ok \
+		src/testdir/test[0-9]*.ok \
 		src/testdir/test77a.ok \
 		src/testdir/test83-tags? \
 		src/testdir/test77a.com \

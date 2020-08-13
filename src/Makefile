@@ -2258,6 +2258,9 @@ scripttests:
 testgui:
 	cd testdir; $(MAKE) -f Makefile $(GUI_TESTTARGET) VIMPROG=../$(VIMTARGET) GUI_FLAG=-g $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
+testtiny:
+	cd testdir; $(MAKE) -f Makefile tiny VIMPROG=../$(VIMTARGET) SCRIPTSOURCE=../$(SCRIPTSOURCE)
+
 benchmark:
 	cd testdir; $(MAKE) -f Makefile benchmark VIMPROG=../$(VIMTARGET) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
@@ -2291,9 +2294,9 @@ test_libvterm:
 			CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"; \
 	fi
 
-# Run test1, used to bootstrap tests.
-# This does not depend on the executable, compile first it when needed.
-test1:
+# Run individual OLD style test.
+# These do not depend on the executable, compile it when needed.
+$(SCRIPTS_TINY):
 	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTESTTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
 # Run individual NEW style test.
