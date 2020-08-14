@@ -1324,6 +1324,12 @@ let $TESTVAR = 'testvar'
 def Test_expr7t()
   let ls: list<string> = ['a', <string>g:string_empty]
   let ln: list<number> = [<number>g:anint, <number>g:alsoint]
+  let nr = <number>234
+  assert_equal(234, nr)
+
+  call CheckDefFailure(["let x = <nr>123"], 'E1010:')
+  call CheckDefFailure(["let x = <number >123"], 'E1068:')
+  call CheckDefFailure(["let x = <number 123"], 'E1104:')
 enddef
 
 " test low level expression

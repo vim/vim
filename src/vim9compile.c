@@ -3501,11 +3501,12 @@ compile_expr7t(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     if (want_type != NULL)
     {
 	garray_T    *stack = &cctx->ctx_type_stack;
-	type_T	    *actual = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	type_T	    *actual;
 
+	generate_ppconst(cctx, ppconst);
+	actual = ((type_T **)stack->ga_data)[stack->ga_len - 1];
 	if (check_type(want_type, actual, FALSE) == FAIL)
 	{
-	    generate_ppconst(cctx, ppconst);
 	    if (need_type(actual, want_type, -1, cctx, FALSE) == FAIL)
 		return FAIL;
 	}
@@ -5016,6 +5017,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		goto theend;
 	    if (*skipwhite(p) != ']')
 	    {
+		// this should not happen
 		emsg(_(e_missbrac));
 		goto theend;
 	    }
