@@ -1283,6 +1283,11 @@ def Test_insert_return_type()
   assert_equal(6, res)
 enddef
 
+def Test_keys_return_type()
+  const var: list<string> = #{a: 1, b: 2}->keys()
+  assert_equal(['a', 'b'], var)
+enddef
+
 def Test_reverse_return_type()
   let l = reverse([1, 2, 3])
   let res = 0

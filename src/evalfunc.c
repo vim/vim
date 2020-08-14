@@ -715,7 +715,7 @@ static funcentry_T global_functions[] =
     {"js_encode",	1, 1, FEARG_1,	  ret_string,	f_js_encode},
     {"json_decode",	1, 1, FEARG_1,	  ret_any,	f_json_decode},
     {"json_encode",	1, 1, FEARG_1,	  ret_string,	f_json_encode},
-    {"keys",		1, 1, FEARG_1,	  ret_list_any,	f_keys},
+    {"keys",		1, 1, FEARG_1,	  ret_list_string, f_keys},
     {"last_buffer_nr",	0, 0, 0,	  ret_number,	f_last_buffer_nr}, // obsolete
     {"len",		1, 1, FEARG_1,	  ret_number,	f_len},
     {"libcall",		3, 3, FEARG_3,	  ret_string,	f_libcall},
