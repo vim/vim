@@ -214,11 +214,17 @@ typval2type(typval_T *tv, garray_T *type_gap)
 
     if (tv->v_type == VAR_LIST)
     {
+	listitem_T *li;
+
 	if (tv->vval.v_list == NULL || tv->vval.v_list->lv_first == NULL)
 	    return &t_list_empty;
 
-	// Use the type of the first member, it is the most specific.
+	// Use the common type of all members.
 	member_type = typval2type(&tv->vval.v_list->lv_first->li_tv, type_gap);
+	for (li = tv->vval.v_list->lv_first->li_next; li != NULL;
+							     li = li->li_next)
+	    common_type(typval2type(&li->li_tv, type_gap),
+					  member_type, &member_type, type_gap);
 	return get_list_type(member_type, type_gap);
     }
 
@@ -231,10 +237,13 @@ typval2type(typval_T *tv, garray_T *type_gap)
 				   || tv->vval.v_dict->dv_hashtab.ht_used == 0)
 	    return &t_dict_empty;
 
-	// Use the type of the first value, it is the most specific.
+	// Use the common type of all values.
 	dict_iterate_start(tv, &iter);
 	dict_iterate_next(&iter, &value);
 	member_type = typval2type(value, type_gap);
+	while (dict_iterate_next(&iter, &value) != NULL)
+	    common_type(typval2type(value, type_gap),
+					  member_type, &member_type, type_gap);
 	return get_dict_type(member_type, type_gap);
     }
 

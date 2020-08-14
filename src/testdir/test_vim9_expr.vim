@@ -1498,6 +1498,27 @@ def Test_expr7_list_vim9script()
       let l = [11 , 22]
   END
   CheckScriptFailure(lines, 'E1068:')
+
+  lines =<< trim END
+    vim9script
+    let l: list<number> = [234, 'x']
+  END
+  CheckScriptFailure(lines, 'E1013:')
+  lines =<< trim END
+    vim9script
+    let l: list<number> = ['x', 234]
+  END
+  CheckScriptFailure(lines, 'E1013:')
+  lines =<< trim END
+    vim9script
+    let l: list<string> = ['x', 234]
+  END
+  CheckScriptFailure(lines, 'E1013:')
+  lines =<< trim END
+    vim9script
+    let l: list<string> = [234, 'x']
+  END
+  CheckScriptFailure(lines, 'E1013:')
 enddef
 
 def LambdaWithComments(): func
@@ -1679,6 +1700,27 @@ def Test_expr7_dict_vim9script()
       let d = #{one: 1 , two: 2}
   END
   CheckScriptFailure(lines, 'E1068:')
+
+  lines =<< trim END
+    vim9script
+    let l: dict<number> = #{a: 234, b: 'x'}
+  END
+  CheckScriptFailure(lines, 'E1013:')
+  lines =<< trim END
+    vim9script
+    let l: dict<number> = #{a: 'x', b: 234}
+  END
+  CheckScriptFailure(lines, 'E1013:')
+  lines =<< trim END
+    vim9script
+    let l: dict<string> = #{a: 'x', b: 234}
+  END
+  CheckScriptFailure(lines, 'E1013:')
+  lines =<< trim END
+    vim9script
+    let l: dict<string> = #{a: 234, b: 'x'}
+  END
+  CheckScriptFailure(lines, 'E1013:')
 enddef
 
 let g:oneString = 'one'
