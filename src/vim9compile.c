@@ -2396,17 +2396,6 @@ to_name_const_end(char_u *arg)
 	if (eval_dict(&p, &rettv, NULL, TRUE) == FAIL)
 	    p = arg;
     }
-    else if (p == arg && *arg == '{')
-    {
-	int	    ret = get_lambda_tv(&p, &rettv, NULL);
-
-	// Can be "{x -> ret}()".
-	// Can be "{'a': 1}->Func()".
-	if (ret == NOTDONE)
-	    ret = eval_dict(&p, &rettv, NULL, FALSE);
-	if (ret != OK)
-	    p = arg;
-    }
 
     return p;
 }
