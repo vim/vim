@@ -3039,6 +3039,42 @@ def Test_source_vim9_from_legacy()
   delete('Xvim9_script.vim')
 enddef
 
+func Test_vim9script_not_global()
+  " check that items defined in Vim9 script are script-local, not global
+  let vim9lines =<< trim END
+    vim9script
+    let var = 'local'
+    func TheFunc()
+      echo 'local'
+    endfunc
+    def DefFunc()
+      echo 'local'
+    enddef
+  END
+  call writefile(vim9lines, 'Xvim9script.vim')
+  source Xvim9script.vim
+  try
+    echo g:var
+    assert_report('did not fail')
+  catch /E121:/
+    " caught
+  endtry
+  try
+    call TheFunc()
+    assert_report('did not fail')
+  catch /E117:/
+    " caught
+  endtry
+  try
+    call DefFunc()
+    assert_report('did not fail')
+  catch /E117:/
+    " caught
+  endtry
+
+  call delete('Xvim9script.vium')
+endfunc
+
 def Test_vim9_copen()
   # this was giving an error for setting w:quickfix_title
   copen
