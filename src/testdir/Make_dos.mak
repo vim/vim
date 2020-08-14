@@ -53,16 +53,16 @@ $(NEW_TESTS):
 # Delete files that may interfere with running tests.  This includes some files
 # that may result from working on the tests, not only from running them.
 clean:
-	-if exist *.out $(DEL) *.out
-	-if exist *.failed $(DEL) *.failed
-	-if exist *.res $(DEL) *.res
+	-if exist *.out del *.out
+	-if exist *.failed del *.failed
+	-if exist *.res del *.res
 	-if exist $(DOSTMP) rd /s /q $(DOSTMP)
 	-if exist test.in del test.in
 	-if exist test.ok del test.ok
 	-if exist Xdir1 rd /s /q Xdir1
 	-if exist Xfind rd /s /q Xfind
 	-if exist XfakeHOME rd /s /q XfakeHOME
-	-if exist X* $(DEL) X*
+	-if exist X* del X*
 	-for /d %i in (X*) do @rd /s/q %i
 	-if exist viminfo del viminfo
 	-if exist test.log del test.log
