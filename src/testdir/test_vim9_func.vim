@@ -1045,6 +1045,7 @@ def Test_error_reporting()
   call writefile(lines, 'Xdef')
   try
     source Xdef
+    assert_report('should have failed')
   catch /E476:/
     assert_match('Invalid command: invalid', v:exception)
     assert_match(', line 3$', v:throwpoint)
@@ -1064,9 +1065,28 @@ def Test_error_reporting()
   call writefile(lines, 'Xdef')
   try
     source Xdef
+    assert_report('should have failed')
   catch /E476:/
     assert_match('Invalid command: invalid', v:exception)
     assert_match(', line 4$', v:throwpoint)
+  endtry
+
+  lines =<< trim END
+    vim9script
+    def Func()
+      let db = #{foo: 1, bar: 2}
+      # comment
+      let x = db.asdf
+    enddef
+    defcompile
+    Func()
+  END
+  call writefile(lines, 'Xdef')
+  try
+    source Xdef
+    assert_report('should have failed')
+  catch /E716:/
+    assert_match('_Func, line 3$', v:throwpoint)
   endtry
 
   call delete('Xdef')

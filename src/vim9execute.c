@@ -1027,6 +1027,7 @@ call_def_function(
 			tv = STACK_TV_BOT(idx - count);
 			if (tv->v_type == VAR_CHANNEL || tv->v_type == VAR_JOB)
 			{
+			    SOURCING_LNUM = iptr->isn_lnum;
 			    emsg(_(e_inval_string));
 			    break;
 			}
@@ -1121,6 +1122,7 @@ call_def_function(
 
 		    if (di == NULL)
 		    {
+			SOURCING_LNUM = iptr->isn_lnum;
 			semsg(_(e_undefvar), name);
 			goto on_error;
 		    }
@@ -1169,6 +1171,7 @@ call_def_function(
 
 		    if (di == NULL)
 		    {
+			SOURCING_LNUM = iptr->isn_lnum;
 			semsg(_("E121: Undefined variable: %c:%s"),
 					     namespace, iptr->isn_arg.string);
 			goto on_error;
@@ -1326,6 +1329,7 @@ call_def_function(
 		    clear_tv(tv);
 		    if (msg != NULL)
 		    {
+			SOURCING_LNUM = iptr->isn_lnum;
 			emsg(_(msg));
 			goto on_error;
 		    }
@@ -1421,6 +1425,7 @@ call_def_function(
 			lidx = list->lv_len + lidx;
 		    if (lidx < 0 || lidx > list->lv_len)
 		    {
+			SOURCING_LNUM = iptr->isn_lnum;
 			semsg(_(e_listidx), lidx);
 			goto on_error;
 		    }
@@ -1457,6 +1462,7 @@ call_def_function(
 
 		    if (dict == NULL)
 		    {
+			SOURCING_LNUM = iptr->isn_lnum;
 			emsg(_(e_dictionary_not_set));
 			goto on_error;
 		    }
@@ -1586,6 +1592,7 @@ call_def_function(
 			item = dict_find(dict, tv->vval.v_string, -1);
 			if (item != NULL)
 			{
+			    SOURCING_LNUM = iptr->isn_lnum;
 			    semsg(_(e_duplicate_key), tv->vval.v_string);
 			    dict_unref(dict);
 			    goto on_error;
@@ -1749,6 +1756,7 @@ call_def_function(
 			if (tv->v_type == VAR_PARTIAL)
 			{
 			    // TODO: use a garray_T on ectx.
+			    SOURCING_LNUM = iptr->isn_lnum;
 			    emsg("Multiple closures not supported yet");
 			    goto failed;
 			}
@@ -1852,6 +1860,7 @@ call_def_function(
 	    case ISN_PUSHEXC:
 		if (current_exception == NULL)
 		{
+		    SOURCING_LNUM = iptr->isn_lnum;
 		    iemsg("Evaluating catch while current_exception is NULL");
 		    goto failed;
 		}
@@ -2175,7 +2184,8 @@ call_def_function(
 			    case EXPR_DIV:  f1 = f1 / f2; break;
 			    case EXPR_SUB:  f1 = f1 - f2; break;
 			    case EXPR_ADD:  f1 = f1 + f2; break;
-			    default: emsg(_(e_modulus));
+			    default: SOURCING_LNUM = iptr->isn_lnum;
+				     emsg(_(e_modulus));
 				     goto on_error;
 			}
 			clear_tv(tv1);
@@ -2228,6 +2238,7 @@ call_def_function(
 		    tv = STACK_TV_BOT(-2);
 		    if (tv->v_type != VAR_STRING)
 		    {
+			SOURCING_LNUM = iptr->isn_lnum;
 			emsg(_(e_stringreq));
 			goto on_error;
 		    }
@@ -2236,6 +2247,7 @@ call_def_function(
 		    tv = STACK_TV_BOT(-1);
 		    if (tv->v_type != VAR_NUMBER)
 		    {
+			SOURCING_LNUM = iptr->isn_lnum;
 			emsg(_(e_number_exp));
 			goto on_error;
 		    }
@@ -2266,6 +2278,7 @@ call_def_function(
 		    tv = STACK_TV_BOT(-2);
 		    if (tv->v_type != VAR_LIST)
 		    {
+			SOURCING_LNUM = iptr->isn_lnum;
 			emsg(_(e_listreq));
 			goto on_error;
 		    }
@@ -2274,6 +2287,7 @@ call_def_function(
 		    tv = STACK_TV_BOT(-1);
 		    if (tv->v_type != VAR_NUMBER)
 		    {
+			SOURCING_LNUM = iptr->isn_lnum;
 			emsg(_(e_number_exp));
 			goto on_error;
 		    }
@@ -2281,6 +2295,7 @@ call_def_function(
 		    clear_tv(tv);
 		    if ((li = list_find(list, n)) == NULL)
 		    {
+			SOURCING_LNUM = iptr->isn_lnum;
 			semsg(_(e_listidx), n);
 			goto on_error;
 		    }
@@ -2354,6 +2369,7 @@ call_def_function(
 
 		    if ((di = dict_find(dict, key, -1)) == NULL)
 		    {
+			SOURCING_LNUM = iptr->isn_lnum;
 			semsg(_(e_dictkey), key);
 			goto on_error;
 		    }
@@ -2378,6 +2394,7 @@ call_def_function(
 		    tv = STACK_TV_BOT(-1);
 		    if (tv->v_type != VAR_DICT || tv->vval.v_dict == NULL)
 		    {
+			SOURCING_LNUM = iptr->isn_lnum;
 			emsg(_(e_dictreq));
 			goto on_error;
 		    }
@@ -2386,6 +2403,7 @@ call_def_function(
 		    if ((di = dict_find(dict, iptr->isn_arg.string, -1))
 								       == NULL)
 		    {
+			SOURCING_LNUM = iptr->isn_lnum;
 			semsg(_(e_dictkey), iptr->isn_arg.string);
 			goto on_error;
 		    }
@@ -2405,6 +2423,7 @@ call_def_function(
 #endif
 			)
 		{
+		    SOURCING_LNUM = iptr->isn_lnum;
 		    emsg(_(e_number_exp));
 		    goto on_error;
 		}
@@ -2441,6 +2460,7 @@ call_def_function(
 				|| (tv->v_type == VAR_FUNC
 					       && ct->ct_type == VAR_PARTIAL)))
 		    {
+			SOURCING_LNUM = iptr->isn_lnum;
 			semsg(_("E1029: Expected %s but got %s"),
 				    vartype_name(ct->ct_type),
 				    vartype_name(tv->v_type));
@@ -2461,6 +2481,7 @@ call_def_function(
 			    || (list->lv_len > min_len
 					&& !iptr->isn_arg.checklen.cl_more_OK))
 		    {
+			SOURCING_LNUM = iptr->isn_lnum;
 			semsg(_("E1093: Expected %d items but got %d"),
 				     min_len, list == NULL ? 0 : list->lv_len);
 			goto on_error;
