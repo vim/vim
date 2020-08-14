@@ -1583,6 +1583,7 @@ def Test_expr7_lambda()
   assert_equal(true, LambdaUsingArg(1)())
 
   call CheckDefFailure(["filter([1, 2], {k,v -> 1})"], 'E1069:')
+  call CheckDefFailure(["let L = {a -> a + b}"], 'E1001:')
 enddef
 
 def Test_expr7_lambda_vim9script()
