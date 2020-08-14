@@ -1361,6 +1361,9 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 		    continue;
 		expected = ufunc->uf_arg_types[i];
 	    }
+	    else if (ufunc->uf_va_type == NULL)
+		// possibly a lambda
+		expected = &t_any;
 	    else
 		expected = ufunc->uf_va_type->tt_member;
 	    actual = ((type_T **)stack->ga_data)[stack->ga_len - argcount + i];

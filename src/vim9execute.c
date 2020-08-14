@@ -206,7 +206,10 @@ call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
     arg_to_add = ufunc->uf_args.ga_len - argcount;
     if (arg_to_add < 0)
     {
-	iemsg("Argument count wrong?");
+	if (arg_to_add == -1)
+	    emsg(_("E1106: one argument too many"));
+	else
+	    semsg(_("E1106: %d arguments too many"), -arg_to_add);
 	return FAIL;
     }
     if (ga_grow(&ectx->ec_stack, arg_to_add + 3

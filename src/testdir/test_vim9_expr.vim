@@ -1584,6 +1584,14 @@ def Test_expr7_lambda()
 
   call CheckDefFailure(["filter([1, 2], {k,v -> 1})"], 'E1069:')
   call CheckDefFailure(["let L = {a -> a + b}"], 'E1001:')
+
+  assert_equal('xxxyyy', 'xxx'->{a, b -> a .. b}('yyy'))
+
+  CheckDefExecFailure(["let s = 'asdf'->{a -> a}('x')"],
+        'E1106: one argument too many')
+  CheckDefExecFailure(["let s = 'asdf'->{a -> a}('x', 'y')"],
+        'E1106: 2 arguments too many')
+  CheckDefFailure(["echo 'asdf'->{a -> a}(x)"], 'E1001:')
 enddef
 
 def Test_expr7_lambda_vim9script()
