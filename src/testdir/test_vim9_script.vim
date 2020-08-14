@@ -1796,6 +1796,29 @@ def Test_import_compile_error()
   delete('Ximport.vim')
 enddef
 
+def Test_func_redefine_error()
+  let lines = [
+        'vim9script',
+        'def Func()',
+        '  eval [][0]',
+        'enddef',
+        'Func()',
+        ]
+  writefile(lines, 'Xtestscript.vim')
+
+  for count in range(3)
+    try
+      source Xtestscript.vim
+    catch /E684/
+      # function name should contain <SNR> every time
+      assert_match('E684: list index out of range', v:exception)
+      assert_match('function <SNR>\d\+_Func, line 1', v:throwpoint)
+    endtry
+  endfor
+
+  delete('Xtestscript.vim')
+enddef
+
 def Test_func_overrules_import_fails()
   let export_lines =<< trim END
       vim9script
