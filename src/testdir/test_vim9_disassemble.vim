@@ -971,7 +971,7 @@ def Test_disassemble_concat()
   assert_equal('aabb', ConcatString())
 enddef
 
-def StringIndex(): number
+def StringIndex(): string
   let s = "abcd"
   let res = s[1]
   return res

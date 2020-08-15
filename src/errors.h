@@ -69,7 +69,8 @@ EXTERN char e_const_requires_a_value[]
 	INIT(= N_("E1021: const requires a value"));
 EXTERN char e_type_or_initialization_required[]
 	INIT(= N_("E1022: type or initialization required"));
-// E1023 unused
+EXTERN char e_cannot_slice_dictionary[]
+	INIT(= N_("E1023: cannot slice a dictionary"));
 // E1024 unused
 EXTERN char e_using_rcurly_outside_if_block_scope[]
 	INIT(= N_("E1025: using } outside of a block scope"));

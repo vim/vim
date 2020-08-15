@@ -3068,6 +3068,7 @@ compile_subscript(
 	    garray_T	*stack = &cctx->ctx_type_stack;
 	    type_T	**typep;
 	    vartype_T	vtype;
+	    int		is_slice = FALSE;
 
 	    // list index: list[123]
 	    // dict member: dict[key]
@@ -3082,11 +3083,36 @@ compile_subscript(
 	    *arg = skipwhite(p);
 	    if (may_get_next_line_error(p, arg, cctx) == FAIL)
 		return FAIL;
-	    if (compile_expr0(arg, cctx) == FAIL)
-		return FAIL;
+	    if (**arg == ':')
+		// missing first index is equal to zero
+		generate_PUSHNR(cctx, 0);
+	    else
+	    {
+		if (compile_expr0(arg, cctx) == FAIL)
+		    return FAIL;
+		if (may_get_next_line_error(p, arg, cctx) == FAIL)
+		    return FAIL;
+		*arg = skipwhite(*arg);
+	    }
+	    if (**arg == ':')
+	    {
+		*arg = skipwhite(*arg + 1);
+		if (may_get_next_line_error(p, arg, cctx) == FAIL)
+		    return FAIL;
+		if (**arg == ']')
+		    // missing second index is equal to end of string
+		    generate_PUSHNR(cctx, -1);
+		else
+		{
+		    if (compile_expr0(arg, cctx) == FAIL)
+		    return FAIL;
+		    if (may_get_next_line_error(p, arg, cctx) == FAIL)
+			return FAIL;
+		    *arg = skipwhite(*arg);
+		}
+		is_slice = TRUE;
+	    }
 
-	    if (may_get_next_line_error(p, arg, cctx) == FAIL)
-		return FAIL;
 	    if (**arg != ']')
 	    {
 		emsg(_(e_missbrac));
@@ -3098,7 +3124,8 @@ compile_subscript(
 	    // we can use the index value type.
 	    // TODO: If we don't know use an instruction to figure it out at
 	    // runtime.
-	    typep = ((type_T **)stack->ga_data) + stack->ga_len - 2;
+	    typep = ((type_T **)stack->ga_data) + stack->ga_len
+							  - (is_slice ? 3 : 2);
 	    vtype = (*typep)->tt_type;
 	    if (*typep == &t_any)
 	    {
@@ -3109,6 +3136,11 @@ compile_subscript(
 	    }
 	    if (vtype == VAR_DICT)
 	    {
+		if (is_slice)
+		{
+		    emsg(_(e_cannot_slice_dictionary));
+		    return FAIL;
+		}
 		if ((*typep)->tt_type == VAR_DICT)
 		    *typep = (*typep)->tt_member;
 		else
@@ -3124,12 +3156,24 @@ compile_subscript(
 	    }
 	    else if (vtype == VAR_STRING)
 	    {
-		*typep = &t_number;
-		if (generate_instr_drop(cctx, ISN_STRINDEX, 1) == FAIL)
+		*typep = &t_string;
+		if ((is_slice
+			? generate_instr_drop(cctx, ISN_STRSLICE, 2)
+			: generate_instr_drop(cctx, ISN_STRINDEX, 1)) == FAIL)
 		    return FAIL;
+	    }
+	    else if (vtype == VAR_BLOB)
+	    {
+		emsg("Sorry, blob index and slice not implemented yet");
+		return FAIL;
 	    }
 	    else if (vtype == VAR_LIST || *typep == &t_any)
 	    {
+		if (is_slice)
+		{
+		    emsg("Sorry, list slice not implemented yet");
+		    return FAIL;
+		}
 		if ((*typep)->tt_type == VAR_LIST)
 		    *typep = (*typep)->tt_member;
 		if (generate_instr_drop(cctx, ISN_LISTINDEX, 1) == FAIL)
@@ -7052,6 +7096,7 @@ delete_instr(isn_T *isn)
 	case ISN_FOR:
 	case ISN_LISTINDEX:
 	case ISN_STRINDEX:
+	case ISN_STRSLICE:
 	case ISN_GETITEM:
 	case ISN_SLICE:
 	case ISN_MEMBER:

@@ -70,7 +70,7 @@ typedef struct {
 } ectx_T;
 
 // Get pointer to item relative to the bottom of the stack, -1 is the last one.
-#define STACK_TV_BOT(idx) (((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_stack.ga_len + idx)
+#define STACK_TV_BOT(idx) (((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_stack.ga_len + (idx))
 
     void
 to_string_error(vartype_T vartype)
@@ -2232,17 +2232,33 @@ call_def_function(
 		break;
 
 	    case ISN_STRINDEX:
+	    case ISN_STRSLICE:
 		{
-		    varnumber_T	n;
+		    int		is_slice = iptr->isn_type == ISN_STRSLICE;
+		    varnumber_T	n1 = 0, n2;
 		    char_u	*res;
 
 		    // string index: string is at stack-2, index at stack-1
-		    tv = STACK_TV_BOT(-2);
+		    // string slice: string is at stack-3, first index at
+		    // stack-2, second index at stack-1
+		    tv = is_slice ? STACK_TV_BOT(-3) : STACK_TV_BOT(-2);
 		    if (tv->v_type != VAR_STRING)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
 			emsg(_(e_stringreq));
 			goto on_error;
+		    }
+
+		    if (is_slice)
+		    {
+			tv = STACK_TV_BOT(-2);
+			if (tv->v_type != VAR_NUMBER)
+			{
+			    SOURCING_LNUM = iptr->isn_lnum;
+			    emsg(_(e_number_exp));
+			    goto on_error;
+			}
+			n1 = tv->vval.v_number;
 		    }
 
 		    tv = STACK_TV_BOT(-1);
@@ -2252,14 +2268,18 @@ call_def_function(
 			emsg(_(e_number_exp));
 			goto on_error;
 		    }
-		    n = tv->vval.v_number;
+		    n2 = tv->vval.v_number;
 
-		    // The resulting variable is a string of a single
-		    // character.  If the index is too big or negative the
-		    // result is empty.
-		    --ectx.ec_stack.ga_len;
+		    ectx.ec_stack.ga_len -= is_slice ? 2 : 1;
 		    tv = STACK_TV_BOT(-1);
-		    res = char_from_string(tv->vval.v_string, n);
+		    if (is_slice)
+			// Slice: Select the characters from the string
+			res = string_slice(tv->vval.v_string, n1, n2);
+		    else
+			// Index: The resulting variable is a string of a
+			// single character.  If the index is too big or
+			// negative the result is empty.
+			res = char_from_string(tv->vval.v_string, n2);
 		    vim_free(tv->vval.v_string);
 		    tv->vval.v_string = res;
 		}
@@ -3140,6 +3160,7 @@ ex_disassemble(exarg_T *eap)
 	    // expression operations
 	    case ISN_CONCAT: smsg("%4d CONCAT", current); break;
 	    case ISN_STRINDEX: smsg("%4d STRINDEX", current); break;
+	    case ISN_STRSLICE: smsg("%4d STRSLICE", current); break;
 	    case ISN_LISTINDEX: smsg("%4d LISTINDEX", current); break;
 	    case ISN_SLICE: smsg("%4d SLICE %lld",
 					 current, iptr->isn_arg.number); break;

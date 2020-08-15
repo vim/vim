@@ -3699,7 +3699,14 @@ eval_index(
 	    case VAR_STRING:
 		s = tv_get_string(rettv);
 		len = (long)STRLEN(s);
-		if (range)
+		if (in_vim9script())
+		{
+		    if (range)
+			s = string_slice(s, n1, n2);
+		    else
+			s = char_from_string(s, n1);
+		}
+		else if (range)
 		{
 		    // The resulting variable is a substring.  If the indexes
 		    // are out of range the result is empty.
@@ -3717,10 +3724,6 @@ eval_index(
 			s = NULL;
 		    else
 			s = vim_strnsave(s + n1, n2 - n1 + 1);
-		}
-		else if (in_vim9script())
-		{
-		    s = char_from_string(s, n1);
 		}
 		else
 		{
@@ -5310,6 +5313,69 @@ char_from_string(char_u *str, varnumber_T index)
     if (nbyte >= slen)
 	return NULL;
     return vim_strnsave(str + nbyte, MB_CPTR2LEN(str + nbyte));
+}
+
+/*
+ * Get the byte index for character index "idx" in string "str" with length
+ * "str_len".
+ * If going over the end return "str_len".
+ * If "idx" is negative count from the end, -1 is the last character.
+ * When going over the start return zero.
+ */
+    static size_t
+char_idx2byte(char_u *str, size_t str_len, varnumber_T idx)
+{
+    varnumber_T nchar = idx;
+    size_t	nbyte = 0;
+
+    if (nchar >= 0)
+    {
+	while (nchar > 0 && nbyte < str_len)
+	{
+	    nbyte += MB_CPTR2LEN(str + nbyte);
+	    --nchar;
+	}
+    }
+    else
+    {
+	nbyte = str_len;
+	while (nchar < 0 && nbyte > 0)
+	{
+	    --nbyte;
+	    nbyte -= mb_head_off(str, str + nbyte);
+	    ++nchar;
+	}
+    }
+    return nbyte;
+}
+
+/*
+ * Return the slice "str[first:last]" using character indexes.
+ * Return NULL when the result is empty.
+ */
+    char_u *
+string_slice(char_u *str, varnumber_T first, varnumber_T last)
+{
+    size_t	    start_byte, end_byte;
+    size_t	    slen;
+
+    if (str == NULL)
+	return NULL;
+    slen = STRLEN(str);
+    start_byte = char_idx2byte(str, slen, first);
+    if (last == -1)
+	end_byte = slen;
+    else
+    {
+	end_byte = char_idx2byte(str, slen, last);
+	if (end_byte < slen)
+	    // end index is inclusive
+	    end_byte += MB_CPTR2LEN(str + end_byte);
+    }
+
+    if (start_byte >= slen || end_byte <= start_byte)
+	return NULL;
+    return vim_strnsave(str + start_byte, end_byte - start_byte);
 }
 
 /*

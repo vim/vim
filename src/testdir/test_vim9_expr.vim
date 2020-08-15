@@ -2074,7 +2074,7 @@ def Test_expr7_trailing()
   assert_equal(123, d.key)
 enddef
 
-def Test_expr7_subscript()
+def Test_expr7_string_subscript()
   let lines =<< trim END
     let text = 'abcdef'
     assert_equal('', text[-1])
@@ -2094,6 +2094,28 @@ def Test_expr7_subscript()
     assert_equal('f', text[5])
     assert_equal('', text[6])
     assert_equal('', text[999])
+
+    assert_equal('ábçdëf', text[0:-1])
+    assert_equal('ábçdëf', text[0 :-1])
+    assert_equal('ábçdëf', text[0: -1])
+    assert_equal('ábçdëf', text[0 : -1])
+    assert_equal('ábçdëf', text[0
+                  :-1])
+    assert_equal('ábçdëf', text[0:
+                  -1])
+    assert_equal('ábçdëf', text[0 : -1
+                  ])
+    assert_equal('bçdëf', text[1:-1])
+    assert_equal('çdëf', text[2:-1])
+    assert_equal('dëf', text[3:-1])
+    assert_equal('ëf', text[4:-1])
+    assert_equal('f', text[5:-1])
+    assert_equal('', text[6:-1])
+    assert_equal('', text[999:-1])
+
+    assert_equal('ábçd', text[:3])
+    assert_equal('bçdëf', text[1:])
+    assert_equal('ábçdëf', text[:])
   END
   CheckDefSuccess(lines)
   CheckScriptSuccess(['vim9script'] + lines)
