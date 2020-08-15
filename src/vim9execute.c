@@ -2291,7 +2291,6 @@ call_def_function(
 		    int		is_slice = iptr->isn_type == ISN_LISTSLICE;
 		    list_T	*list;
 		    varnumber_T	n1, n2;
-		    listitem_T	*li;
 
 		    // list index: list is at stack-2, index at stack-1
 		    // list slice: list is at stack-3, indexes at stack-2 and
