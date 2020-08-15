@@ -858,7 +858,7 @@ get_lval(
     v = find_var(lp->ll_name, (flags & GLV_READ_ONLY) ? NULL : &ht,
 						      flags & GLV_NO_AUTOLOAD);
     if (v == NULL && !quiet)
-	semsg(_(e_undefvar), lp->ll_name);
+	semsg(_(e_undefined_variable_str), lp->ll_name);
     *p = cc;
     if (v == NULL)
 	return NULL;

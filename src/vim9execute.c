@@ -75,7 +75,7 @@ typedef struct {
     void
 to_string_error(vartype_T vartype)
 {
-    semsg(_("E1105: Cannot convert %s to string"), vartype_name(vartype));
+    semsg(_(e_cannot_convert_str_to_string), vartype_name(vartype));
 }
 
 /*
@@ -207,9 +207,9 @@ call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
     if (arg_to_add < 0)
     {
 	if (arg_to_add == -1)
-	    emsg(_("E1106: one argument too many"));
+	    emsg(_(e_one_argument_too_many));
 	else
-	    semsg(_("E1106: %d arguments too many"), -arg_to_add);
+	    semsg(_(e_nr_arguments_too_many), -arg_to_add);
 	return FAIL;
     }
     if (ga_grow(&ectx->ec_stack, arg_to_add + 3
@@ -748,7 +748,7 @@ call_def_function(
 			  && compile_def_function(ufunc, FALSE, NULL) == FAIL))
     {
 	if (called_emsg == called_emsg_before)
-	    semsg(_("E1091: Function is not compiled: %s"),
+	    semsg(_(e_function_is_not_compiled_str),
 						   printable_func_name(ufunc));
 	return FAIL;
     }
@@ -1126,7 +1126,7 @@ call_def_function(
 		    if (di == NULL)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
-			semsg(_(e_undefvar), name);
+			semsg(_(e_undefined_variable_str), name);
 			goto on_error;
 		    }
 		    else
@@ -1175,7 +1175,7 @@ call_def_function(
 		    if (di == NULL)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
-			semsg(_("E121: Undefined variable: %c:%s"),
+			semsg(_(e_undefined_variable_char_str),
 					     namespace, iptr->isn_arg.string);
 			goto on_error;
 		    }
@@ -2464,7 +2464,7 @@ call_def_function(
 					       && ct->ct_type == VAR_PARTIAL)))
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
-			semsg(_("E1029: Expected %s but got %s"),
+			semsg(_(e_expected_str_but_got_str),
 				    vartype_name(ct->ct_type),
 				    vartype_name(tv->v_type));
 			goto on_error;
@@ -2485,7 +2485,7 @@ call_def_function(
 					&& !iptr->isn_arg.checklen.cl_more_OK))
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
-			semsg(_("E1093: Expected %d items but got %d"),
+			semsg(_(e_expected_nr_items_but_got_nr),
 				     min_len, list == NULL ? 0 : list->lv_len);
 			goto on_error;
 		    }
@@ -2600,7 +2600,7 @@ failed_early:
     vim_free(ectx.ec_trystack.ga_data);
 
     if (ret != OK && called_emsg == called_emsg_before)
-	semsg(_("E1099: Unknown error while executing %s"),
+	semsg(_(e_unknown_error_while_executing_str),
 						   printable_func_name(ufunc));
     return ret;
 }
@@ -2650,7 +2650,7 @@ ex_disassemble(exarg_T *eap)
     vim_free(fname);
     if (ufunc == NULL)
     {
-	semsg(_("E1061: Cannot find function %s"), eap->arg);
+	semsg(_(e_cannot_find_function_str), eap->arg);
 	return;
     }
     if (ufunc->uf_def_status == UF_TO_BE_COMPILED
@@ -2658,7 +2658,7 @@ ex_disassemble(exarg_T *eap)
 	return;
     if (ufunc->uf_def_status != UF_COMPILED)
     {
-	semsg(_("E1062: Function %s is not compiled"), eap->arg);
+	semsg(_(e_function_is_not_compiled_str), eap->arg);
 	return;
     }
     if (ufunc->uf_name_exp != NULL)
@@ -3251,7 +3251,7 @@ check_not_string(typval_T *tv)
 {
     if (tv->v_type == VAR_STRING)
     {
-	emsg(_("E1030: Using a String as a Number"));
+	emsg(_(e_using_string_as_number));
 	clear_tv(tv);
 	return FAIL;
     }

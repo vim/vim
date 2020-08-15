@@ -31,7 +31,7 @@ def Test_assignment()
   call CheckDefFailure(['let lambda = {-> "lambda"}'], 'E704:')
 
   let nr: number = 1234
-  call CheckDefFailure(['let nr: number = "asdf"'], 'E1013:')
+  call CheckDefFailure(['let nr: number = "asdf"'], 'E1012:')
 
   let a: number = 6 #comment
   assert_equal(6, a)
@@ -100,11 +100,11 @@ def Test_assignment()
 
   call CheckDefFailure(['&notex += 3'], 'E113:')
   call CheckDefFailure(['&ts ..= "xxx"'], 'E1019:')
-  call CheckDefFailure(['&ts = [7]'], 'E1013:')
+  call CheckDefFailure(['&ts = [7]'], 'E1012:')
   call CheckDefExecFailure(['&ts = g:alist'], 'E1029: Expected number but got list')
-  call CheckDefFailure(['&ts = "xx"'], 'E1013:')
+  call CheckDefFailure(['&ts = "xx"'], 'E1012:')
   call CheckDefExecFailure(['&ts = g:astring'], 'E1029: Expected number but got string')
-  call CheckDefFailure(['&path += 3'], 'E1013:')
+  call CheckDefFailure(['&path += 3'], 'E1012:')
   call CheckDefExecFailure(['&bs = "asdf"'], 'E474:')
   # test freeing ISN_STOREOPT
   call CheckDefFailure(['&ts = 3', 'let asdf'], 'E1022:')
@@ -128,13 +128,13 @@ def Test_assignment()
   $SOME_ENV_VAR ..= 'more'
   assert_equal('somemore', $SOME_ENV_VAR)
   call CheckDefFailure(['$SOME_ENV_VAR += "more"'], 'E1051:')
-  call CheckDefFailure(['$SOME_ENV_VAR += 123'], 'E1013:')
+  call CheckDefFailure(['$SOME_ENV_VAR += 123'], 'E1012:')
 
   @a = 'areg'
   @a ..= 'add'
   assert_equal('aregadd', @a)
   call CheckDefFailure(['@a += "more"'], 'E1051:')
-  call CheckDefFailure(['@a += 123'], 'E1013:')
+  call CheckDefFailure(['@a += 123'], 'E1012:')
 
   lines =<< trim END
     vim9script
@@ -148,7 +148,7 @@ def Test_assignment()
   v:errmsg ..= 'again'
   assert_equal('noneagain', v:errmsg)
   call CheckDefFailure(['v:errmsg += "more"'], 'E1051:')
-  call CheckDefFailure(['v:errmsg += 123'], 'E1013:')
+  call CheckDefFailure(['v:errmsg += 123'], 'E1012:')
 
   # single letter variables
   a = 123
@@ -538,7 +538,7 @@ def Test_assignment_failure()
   call CheckDefFailure(['let anr = 4', 'anr ..= "text"'], 'E1019:')
   call CheckDefFailure(['let xnr += 4'], 'E1020:')
 
-  call CheckScriptFailure(['vim9script', 'def Func()', 'let dummy = s:notfound', 'enddef', 'defcompile'], 'E1050:')
+  call CheckScriptFailure(['vim9script', 'def Func()', 'let dummy = s:notfound', 'enddef', 'defcompile'], 'E1108:')
 
   call CheckDefFailure(['let var: list<string> = [123]'], 'expected list<string> but got list<number>')
   call CheckDefFailure(['let var: list<number> = ["xx"]'], 'expected list<number> but got list<string>')
@@ -1499,7 +1499,7 @@ def Test_vim9script_fails()
   CheckScriptFailure(['vim9script', 'export let g:some'], 'E1022:')
   CheckScriptFailure(['vim9script', 'export echo 134'], 'E1043:')
 
-  CheckScriptFailure(['vim9script', 'let str: string', 'str = 1234'], 'E1013:')
+  CheckScriptFailure(['vim9script', 'let str: string', 'str = 1234'], 'E1012:')
   CheckScriptFailure(['vim9script', 'const str = "asdf"', 'str = "xxx"'], 'E46:')
 
   assert_fails('vim9script', 'E1038')
@@ -2218,9 +2218,9 @@ enddef
 def Test_for_loop_fails()
   CheckDefFailure(['for # in range(5)'], 'E690:')
   CheckDefFailure(['for i In range(5)'], 'E690:')
-  CheckDefFailure(['let x = 5', 'for x in range(5)'], 'E1023:')
+  CheckDefFailure(['let x = 5', 'for x in range(5)'], 'E1017:')
   CheckScriptFailure(['def Func(arg: any)', 'for arg in range(5)', 'enddef', 'defcompile'], 'E1006:')
-  CheckDefFailure(['for i in "text"'], 'E1013:')
+  CheckDefFailure(['for i in "text"'], 'E1012:')
   CheckDefFailure(['for i in xxx'], 'E1001:')
   CheckDefFailure(['endfor'], 'E588:')
   CheckDefFailure(['for i in range(3)', 'echo 3'], 'E170:')
@@ -2955,7 +2955,7 @@ def Test_let_type_check()
     let var: string
     var = 1234
   END
-  CheckScriptFailure(lines, 'E1013:')
+  CheckScriptFailure(lines, 'E1012:')
 
   lines =<< trim END
     vim9script

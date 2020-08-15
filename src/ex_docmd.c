@@ -5978,7 +5978,7 @@ ex_recover(exarg_T *eap)
     static void
 ex_wrongmodifier(exarg_T *eap)
 {
-    eap->errmsg = _(e_invcmd);
+    eap->errmsg = _(e_invalid_command);
 }
 
 /*

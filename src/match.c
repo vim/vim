@@ -1296,7 +1296,7 @@ ex_match(exarg_T *eap)
 	id = eap->line2;
     else
     {
-	emsg(_(e_invcmd));
+	emsg(_(e_invalid_command));
 	return;
     }
 

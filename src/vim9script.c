@@ -17,8 +17,6 @@
 
 #include "vim9.h"
 
-static char e_needs_vim9[] = N_("E1042: export can only be used in vim9script");
-
     int
 in_vim9script(void)
 {
@@ -38,13 +36,13 @@ ex_vim9script(exarg_T *eap)
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
     {
-	emsg(_("E1038: vim9script can only be used in a script"));
+	emsg(_(e_vim9script_can_only_be_used_in_script));
 	return;
     }
     si = SCRIPT_ITEM(current_sctx.sc_sid);
     if (si->sn_had_command)
     {
-	emsg(_("E1039: vim9script must be the first command in a script"));
+	emsg(_(e_vim9script_must_be_first_command_in_script));
 	return;
     }
     current_sctx.sc_version = SCRIPT_VERSION_VIM9;
@@ -72,7 +70,7 @@ not_in_vim9(exarg_T *eap)
 	    case CMD_insert:
 	    case CMD_t:
 	    case CMD_xit:
-		semsg(_("E1100: Missing :let: %s"), eap->cmd);
+		semsg(_(e_missing_let_str), eap->cmd);
 		return FAIL;
 	    default: break;
 	}
@@ -90,7 +88,7 @@ ex_export(exarg_T *eap)
 {
     if (!in_vim9script())
     {
-	emsg(_(e_needs_vim9));
+	emsg(_(e_export_can_only_be_used_in_vim9script));
 	return;
     }
 
@@ -109,12 +107,12 @@ ex_export(exarg_T *eap)
 	    // The command will reset "is_export" when exporting an item.
 	    if (is_export)
 	    {
-		emsg(_("E1044: export with invalid argument"));
+		emsg(_(e_export_with_invalid_argument));
 		is_export = FALSE;
 	    }
 	    break;
 	default:
-	    emsg(_("E1043: Invalid command after :export"));
+	    emsg(_(e_invalid_command_after_export));
 	    break;
     }
 }
@@ -168,7 +166,7 @@ ex_import(exarg_T *eap)
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
     {
-	emsg(_("E1094: import can only be used in a script"));
+	emsg(_(e_import_can_only_be_used_in_script));
 	return;
     }
     fill_evalarg_from_eap(&evalarg, eap, eap->skip);
@@ -205,7 +203,7 @@ find_exported(
 	sv = ((svar_T *)script->sn_var_vals.ga_data) + idx;
 	if (!sv->sv_export)
 	{
-	    semsg(_("E1049: Item not exported in script: %s"), name);
+	    semsg(_(e_item_not_exported_in_script_str), name);
 	    return -1;
 	}
 	*type = sv->sv_type;
@@ -235,7 +233,7 @@ find_exported(
 
 	if (*ufunc == NULL)
 	{
-	    semsg(_("E1048: Item not found in script: %s"), name);
+	    semsg(_(e_item_not_found_in_script_str), name);
 	    return -1;
 	}
     }
@@ -264,7 +262,6 @@ handle_import(
     int		sid = -1;
     int		res;
     garray_T	names;
-    static char e_import_syntax[] = N_("E1047: syntax error in import");
 
     ga_init2(&names, sizeof(char_u *), 10);
     if (*arg == '{')
@@ -298,13 +295,13 @@ handle_import(
 	    }
 	    if (!had_comma)
 	    {
-		emsg(_("E1046: Missing comma in import"));
+		emsg(_(e_missing_comma_in_import));
 		goto erret;
 	    }
 	}
 	if (names.ga_len == 0)
 	{
-	    emsg(_(e_import_syntax));
+	    emsg(_(e_syntax_error_in_import));
 	    goto erret;
 	}
     }
@@ -331,7 +328,7 @@ handle_import(
 	}
 	else
 	{
-	    emsg(_(e_import_syntax));
+	    emsg(_(e_syntax_error_in_import));
 	    goto erret;
 	}
 
@@ -352,14 +349,14 @@ handle_import(
 	}
 	else if (*arg_start == '*')
 	{
-	    emsg(_("E1045: Missing \"as\" after *"));
+	    emsg(_(e_missing_as_after_star));
 	    goto erret;
 	}
     }
 
     if (STRNCMP("from", arg, 4) != 0 || !IS_WHITE_OR_NUL(arg[4]))
     {
-	emsg(_("E1070: Missing \"from\""));
+	emsg(_(e_missing_from));
 	goto erret;
     }
 
@@ -372,7 +369,7 @@ handle_import(
 	ret = eval_string(&arg, &tv, TRUE);
     if (ret == FAIL || tv.vval.v_string == NULL || *tv.vval.v_string == NUL)
     {
-	emsg(_("E1071: Invalid string after \"from\""));
+	emsg(_(e_invalid_string_after_from));
 	goto erret;
     }
     cmd_end = arg;
@@ -427,7 +424,7 @@ handle_import(
 
     if (res == FAIL || sid <= 0)
     {
-	semsg(_("E1053: Could not import \"%s\""), tv.vval.v_string);
+	semsg(_(e_could_not_import_str), tv.vval.v_string);
 	clear_tv(&tv);
 	goto erret;
     }

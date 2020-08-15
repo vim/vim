@@ -1900,7 +1900,7 @@ ex_scriptversion(exarg_T *eap UNUSED)
     }
     if (in_vim9script())
     {
-	emsg(_("E1040: Cannot use :scriptversion after :vim9script"));
+	emsg(_(e_cannot_use_scriptversion_after_vim9script));
 	return;
     }
 

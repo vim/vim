@@ -1281,9 +1281,9 @@ func Test_expr6_fails()
   call CheckDefFailure(["let x = #{one: 1} / #{two: 2}"], 'E1036:')
   call CheckDefFailure(["let x = #{one: 1} % #{two: 2}"], 'E1035:')
 
-  call CheckDefFailure(["let x = 0xff[1]"], 'E1090:')
+  call CheckDefFailure(["let x = 0xff[1]"], 'E1107:')
   if has('float')
-    call CheckDefFailure(["let x = 0.7[1]"], 'E1090:')
+    call CheckDefFailure(["let x = 0.7[1]"], 'E1107:')
   endif
 endfunc
 
@@ -1382,8 +1382,8 @@ def Test_expr7_vimvar()
   let old: list<string> = v:oldfiles
   let compl: dict<any> = v:completed_item
 
-  call CheckDefFailure(["let old: list<number> = v:oldfiles"], 'E1013: type mismatch, expected list<number> but got list<string>')
-  call CheckDefFailure(["let old: dict<number> = v:completed_item"], 'E1013: type mismatch, expected dict<number> but got dict<any>')
+  call CheckDefFailure(["let old: list<number> = v:oldfiles"], 'E1012: type mismatch, expected list<number> but got list<string>')
+  call CheckDefFailure(["let old: dict<number> = v:completed_item"], 'E1012: type mismatch, expected dict<number> but got dict<any>')
 enddef
 
 def Test_expr7_special()
@@ -1464,10 +1464,10 @@ def Test_expr7_list()
   call CheckDefFailure(["let x = g:list_mixed["], 'E1097:')
   call CheckDefFailure(["let x = g:list_mixed[0"], 'E1097:')
   call CheckDefExecFailure(["let x = g:list_empty[3]"], 'E684:')
-  call CheckDefFailure(["let l: list<number> = [234, 'x']"], 'E1013:')
-  call CheckDefFailure(["let l: list<number> = ['x', 234]"], 'E1013:')
-  call CheckDefFailure(["let l: list<string> = [234, 'x']"], 'E1013:')
-  call CheckDefFailure(["let l: list<string> = ['x', 123]"], 'E1013:')
+  call CheckDefFailure(["let l: list<number> = [234, 'x']"], 'E1012:')
+  call CheckDefFailure(["let l: list<number> = ['x', 234]"], 'E1012:')
+  call CheckDefFailure(["let l: list<string> = [234, 'x']"], 'E1012:')
+  call CheckDefFailure(["let l: list<string> = ['x', 123]"], 'E1012:')
 enddef
 
 def Test_expr7_list_vim9script()
@@ -1509,22 +1509,22 @@ def Test_expr7_list_vim9script()
     vim9script
     let l: list<number> = [234, 'x']
   END
-  CheckScriptFailure(lines, 'E1013:')
+  CheckScriptFailure(lines, 'E1012:')
   lines =<< trim END
     vim9script
     let l: list<number> = ['x', 234]
   END
-  CheckScriptFailure(lines, 'E1013:')
+  CheckScriptFailure(lines, 'E1012:')
   lines =<< trim END
     vim9script
     let l: list<string> = ['x', 234]
   END
-  CheckScriptFailure(lines, 'E1013:')
+  CheckScriptFailure(lines, 'E1012:')
   lines =<< trim END
     vim9script
     let l: list<string> = [234, 'x']
   END
-  CheckScriptFailure(lines, 'E1013:')
+  CheckScriptFailure(lines, 'E1012:')
 enddef
 
 def LambdaWithComments(): func
@@ -1652,10 +1652,10 @@ def Test_expr7_dict()
   call CheckDefExecFailure(["let x = g:anint.member"], 'E715:')
   call CheckDefExecFailure(["let x = g:dict_empty.member"], 'E716:')
 
-  call CheckDefFailure(['let x: dict<number> = #{a: 234, b: "1"}'], 'E1013:')
-  call CheckDefFailure(['let x: dict<number> = #{a: "x", b: 134}'], 'E1013:')
-  call CheckDefFailure(['let x: dict<string> = #{a: 234, b: "1"}'], 'E1013:')
-  call CheckDefFailure(['let x: dict<string> = #{a: "x", b: 134}'], 'E1013:')
+  call CheckDefFailure(['let x: dict<number> = #{a: 234, b: "1"}'], 'E1012:')
+  call CheckDefFailure(['let x: dict<number> = #{a: "x", b: 134}'], 'E1012:')
+  call CheckDefFailure(['let x: dict<string> = #{a: 234, b: "1"}'], 'E1012:')
+  call CheckDefFailure(['let x: dict<string> = #{a: "x", b: 134}'], 'E1012:')
 enddef
 
 def Test_expr7_dict_vim9script()
@@ -1720,22 +1720,22 @@ def Test_expr7_dict_vim9script()
     vim9script
     let l: dict<number> = #{a: 234, b: 'x'}
   END
-  CheckScriptFailure(lines, 'E1013:')
+  CheckScriptFailure(lines, 'E1012:')
   lines =<< trim END
     vim9script
     let l: dict<number> = #{a: 'x', b: 234}
   END
-  CheckScriptFailure(lines, 'E1013:')
+  CheckScriptFailure(lines, 'E1012:')
   lines =<< trim END
     vim9script
     let l: dict<string> = #{a: 'x', b: 234}
   END
-  CheckScriptFailure(lines, 'E1013:')
+  CheckScriptFailure(lines, 'E1012:')
   lines =<< trim END
     vim9script
     let l: dict<string> = #{a: 234, b: 'x'}
   END
-  CheckScriptFailure(lines, 'E1013:')
+  CheckScriptFailure(lines, 'E1012:')
 enddef
 
 let g:oneString = 'one'
@@ -2008,7 +2008,7 @@ func Test_expr7_fails()
   call CheckDefFailure(["let x = 123->{x -> x + 5) }"], "E451:")
 
   call CheckDefFailure(["let x = &notexist"], 'E113:')
-  call CheckDefFailure(["&grepprg = [343]"], 'E1013:')
+  call CheckDefFailure(["&grepprg = [343]"], 'E1012:')
 
   call CheckDefExecFailure(["echo s:doesnt_exist"], 'E121:')
   call CheckDefExecFailure(["echo g:doesnt_exist"], 'E121:')

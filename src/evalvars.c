@@ -2054,7 +2054,7 @@ set_vim_var_tv(int idx, typval_T *tv)
 {
     if (vimvars[idx].vv_type != tv->v_type)
     {
-	emsg(_("E1063: type mismatch for v: variable"));
+	emsg(_(e_type_mismatch_for_v_variable));
 	clear_tv(tv);
 	return FAIL;
     }
@@ -2442,7 +2442,7 @@ eval_variable(
 	if (tv == NULL)
 	{
 	    if (rettv != NULL && verbose)
-		semsg(_(e_undefvar), name);
+		semsg(_(e_undefined_variable_str), name);
 	    ret = FAIL;
 	}
 	else if (rettv != NULL)
@@ -2945,7 +2945,7 @@ set_var_const(
 	    {
 		if ((flags & LET_NO_COMMAND) == 0)
 		{
-		    semsg(_("E1041: Redefining script item %s"), name);
+		    semsg(_(e_redefining_script_item_str), name);
 		    return;
 		}
 
