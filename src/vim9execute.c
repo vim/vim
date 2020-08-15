@@ -2233,7 +2233,6 @@ call_def_function(
 
 	    case ISN_STRINDEX:
 		{
-		    char_u	*s;
 		    varnumber_T	n;
 		    char_u	*res;
 
@@ -2245,7 +2244,6 @@ call_def_function(
 			emsg(_(e_stringreq));
 			goto on_error;
 		    }
-		    s = tv->vval.v_string;
 
 		    tv = STACK_TV_BOT(-1);
 		    if (tv->v_type != VAR_NUMBER)
@@ -2259,12 +2257,9 @@ call_def_function(
 		    // The resulting variable is a string of a single
 		    // character.  If the index is too big or negative the
 		    // result is empty.
-		    if (n < 0 || n >= (varnumber_T)STRLEN(s))
-			res = NULL;
-		    else
-			res = vim_strnsave(s + n, 1);
 		    --ectx.ec_stack.ga_len;
 		    tv = STACK_TV_BOT(-1);
+		    res = char_from_string(tv->vval.v_string, n);
 		    vim_free(tv->vval.v_string);
 		    tv->vval.v_string = res;
 		}

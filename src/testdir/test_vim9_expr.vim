@@ -2075,12 +2075,28 @@ def Test_expr7_trailing()
 enddef
 
 def Test_expr7_subscript()
-  let text = 'abcdef'
-  assert_equal('', text[-1])
-  assert_equal('a', text[0])
-  assert_equal('e', text[4])
-  assert_equal('f', text[5])
-  assert_equal('', text[6])
+  let lines =<< trim END
+    let text = 'abcdef'
+    assert_equal('', text[-1])
+    assert_equal('a', text[0])
+    assert_equal('e', text[4])
+    assert_equal('f', text[5])
+    assert_equal('', text[6])
+
+    text = 'ábçdëf'
+    assert_equal('', text[-999])
+    assert_equal('', text[-1])
+    assert_equal('á', text[0])
+    assert_equal('b', text[1])
+    assert_equal('ç', text[2])
+    assert_equal('d', text[3])
+    assert_equal('ë', text[4])
+    assert_equal('f', text[5])
+    assert_equal('', text[6])
+    assert_equal('', text[999])
+  END
+  CheckDefSuccess(lines)
+  CheckScriptSuccess(['vim9script'] + lines)
 enddef
 
 def Test_expr7_subscript_linebreak()

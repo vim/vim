@@ -1131,19 +1131,25 @@ Evaluation is always from left to right.
 
 expr8[expr1]		item of String or |List|	*expr-[]* *E111*
 							*E909* *subscript*
+In legacy Vim script:
 If expr8 is a Number or String this results in a String that contains the
-expr1'th single byte from expr8.  expr8 is used as a String, expr1 as a
-Number.  This doesn't recognize multi-byte encodings, see `byteidx()` for
-an alternative, or use `split()` to turn the string into a list of characters.
-
-Index zero gives the first byte.  This is like it works in C.  Careful:
-text column numbers start with one!  Example, to get the byte under the
-cursor: >
+expr1'th single byte from expr8.  expr8 is used as a String (a number is
+automatically converted to a String), expr1 as a Number.  This doesn't
+recognize multi-byte encodings, see `byteidx()` for an alternative, or use
+`split()` to turn the string into a list of characters.  Example, to get the
+byte under the cursor: >
 	:let c = getline(".")[col(".") - 1]
+
+In Vim9 script:
+If expr8 is a String this results in a String that contains the expr1'th
+single character from expr8.  To use byte indexes use |strpart()|.
+
+Index zero gives the first byte or character.  Careful: text column numbers
+start with one!
 
 If the length of the String is less than the index, the result is an empty
 String.  A negative index always results in an empty string (reason: backward
-compatibility).  Use [-1:] to get the last byte.
+compatibility).  Use [-1:] to get the last byte or character.
 
 If expr8 is a |List| then it results the item at index expr1.  See |list-index|
 for possible index values.  If the index is out of range this results in an
@@ -1157,10 +1163,16 @@ error.
 
 expr8[expr1a : expr1b]	substring or sublist		*expr-[:]*
 
-If expr8 is a Number or String this results in the substring with the bytes
-from expr1a to and including expr1b.  expr8 is used as a String, expr1a and
-expr1b are used as a Number.  This doesn't recognize multi-byte encodings, see
-|byteidx()| for computing the indexes.
+If expr8 is a String this results in the substring with the bytes from expr1a
+to and including expr1b.  expr8 is used as a String, expr1a and expr1b are
+used as a Number.
+
+In legacy Vim script the indexes are byte indexes.  This doesn't recognize
+multi-byte encodings, see |byteidx()| for computing the indexes.  If expr8 is
+a Number it is first converted to a String.
+
+In Vim9 script the indexes are character indexes.  To use byte indexes use
+|strpart()|.
 
 If expr1a is omitted zero is used.  If expr1b is omitted the length of the
 string minus one is used.

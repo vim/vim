@@ -3718,6 +3718,10 @@ eval_index(
 		    else
 			s = vim_strnsave(s + n1, n2 - n1 + 1);
 		}
+		else if (in_vim9script())
+		{
+		    s = char_from_string(s, n1);
+		}
 		else
 		{
 		    // The resulting variable is a string of a single
@@ -5282,6 +5286,30 @@ eval_isnamec1(int c)
 eval_isdictc(int c)
 {
     return ASCII_ISALNUM(c) || c == '_';
+}
+
+/*
+ * Return the character "str[index]" where "index" is the character index.  If
+ * "index" is out of range NULL is returned.
+ */
+    char_u *
+char_from_string(char_u *str, varnumber_T index)
+{
+    size_t	    nbyte = 0;
+    varnumber_T	    nchar = index;
+    size_t	    slen;
+
+    if (str == NULL || index < 0)
+	return NULL;
+    slen = STRLEN(str);
+    while (nchar > 0 && nbyte < slen)
+    {
+	nbyte += MB_CPTR2LEN(str + nbyte);
+	--nchar;
+    }
+    if (nbyte >= slen)
+	return NULL;
+    return vim_strnsave(str + nbyte, MB_CPTR2LEN(str + nbyte));
 }
 
 /*
