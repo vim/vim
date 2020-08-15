@@ -2286,14 +2286,17 @@ call_def_function(
 		break;
 
 	    case ISN_LISTINDEX:
+	    case ISN_LISTSLICE:
 		{
+		    int		is_slice = iptr->isn_type == ISN_LISTSLICE;
 		    list_T	*list;
-		    varnumber_T	n;
+		    varnumber_T	n1, n2;
 		    listitem_T	*li;
-		    typval_T	temp_tv;
 
 		    // list index: list is at stack-2, index at stack-1
-		    tv = STACK_TV_BOT(-2);
+		    // list slice: list is at stack-3, indexes at stack-2 and
+		    // stack-1
+		    tv = is_slice ? STACK_TV_BOT(-3) : STACK_TV_BOT(-2);
 		    if (tv->v_type != VAR_LIST)
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
@@ -2309,21 +2312,27 @@ call_def_function(
 			emsg(_(e_number_exp));
 			goto on_error;
 		    }
-		    n = tv->vval.v_number;
+		    n1 = n2 = tv->vval.v_number;
 		    clear_tv(tv);
-		    if ((li = list_find(list, n)) == NULL)
+
+		    if (is_slice)
 		    {
-			SOURCING_LNUM = iptr->isn_lnum;
-			semsg(_(e_listidx), n);
-			goto on_error;
+			tv = STACK_TV_BOT(-2);
+			if (tv->v_type != VAR_NUMBER)
+			{
+			    SOURCING_LNUM = iptr->isn_lnum;
+			    emsg(_(e_number_exp));
+			    goto on_error;
+			}
+			n1 = tv->vval.v_number;
+			clear_tv(tv);
 		    }
-		    --ectx.ec_stack.ga_len;
-		    // Clear the list after getting the item, to avoid that it
-		    // makes the item invalid.
+
+		    ectx.ec_stack.ga_len -= is_slice ? 2 : 1;
 		    tv = STACK_TV_BOT(-1);
-		    temp_tv = *tv;
-		    copy_tv(&li->li_tv, tv);
-		    clear_tv(&temp_tv);
+		    if (list_slice_or_index(list, is_slice, n1, n2, tv, TRUE)
+								       == FAIL)
+			goto on_error;
 		}
 		break;
 
@@ -3162,6 +3171,7 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_STRINDEX: smsg("%4d STRINDEX", current); break;
 	    case ISN_STRSLICE: smsg("%4d STRSLICE", current); break;
 	    case ISN_LISTINDEX: smsg("%4d LISTINDEX", current); break;
+	    case ISN_LISTSLICE: smsg("%4d LISTSLICE", current); break;
 	    case ISN_SLICE: smsg("%4d SLICE %lld",
 					 current, iptr->isn_arg.number); break;
 	    case ISN_GETITEM: smsg("%4d ITEM %lld",

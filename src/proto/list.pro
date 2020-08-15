@@ -34,6 +34,7 @@ void f_flatten(typval_T *argvars, typval_T *rettv);
 int list_extend(list_T *l1, list_T *l2, listitem_T *bef);
 int list_concat(list_T *l1, list_T *l2, typval_T *tv);
 list_T *list_slice(list_T *ol, long n1, long n2);
+int list_slice_or_index(list_T *list, int range, long n1_arg, long n2_arg, typval_T *rettv, int verbose);
 list_T *list_copy(list_T *orig, int deep, int copyID);
 void vimlist_remove(list_T *l, listitem_T *item, listitem_T *item2);
 char_u *list2string(typval_T *tv, int copyID, int restore_copyID);

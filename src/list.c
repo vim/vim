@@ -888,6 +888,61 @@ list_slice(list_T *ol, long n1, long n2)
     return l;
 }
 
+    int
+list_slice_or_index(
+	    list_T	*list,
+	    int		range,
+	    long	n1_arg,
+	    long	n2_arg,
+	    typval_T	*rettv,
+	    int		verbose)
+{
+    long	len = list_len(list);
+    long	n1 = n1_arg;
+    long	n2 = n2_arg;
+    typval_T	var1;
+
+    if (n1 < 0)
+	n1 = len + n1;
+    if (n1 < 0 || n1 >= len)
+    {
+	// For a range we allow invalid values and return an empty
+	// list.  A list index out of range is an error.
+	if (!range)
+	{
+	    if (verbose)
+		semsg(_(e_listidx), n1);
+	    return FAIL;
+	}
+	n1 = len;
+    }
+    if (range)
+    {
+	list_T	*l;
+
+	if (n2 < 0)
+	    n2 = len + n2;
+	else if (n2 >= len)
+	    n2 = len - 1;
+	if (n2 < 0 || n2 + 1 < n1)
+	    n2 = -1;
+	l = list_slice(list, n1, n2);
+	if (l == NULL)
+	    return FAIL;
+	clear_tv(rettv);
+	rettv_list_set(rettv, l);
+    }
+    else
+    {
+	// copy the item to "var1" to avoid that freeing the list makes it
+	// invalid.
+	copy_tv(&list_find(list, n1)->li_tv, &var1);
+	clear_tv(rettv);
+	*rettv = var1;
+    }
+    return OK;
+}
+
 /*
  * Make a copy of list "orig".  Shallow if "deep" is FALSE.
  * The refcount of the new list is set to 1.

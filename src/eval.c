@@ -3803,43 +3803,13 @@ eval_index(
 		break;
 
 	    case VAR_LIST:
-		len = list_len(rettv->vval.v_list);
-		if (n1 < 0)
-		    n1 = len + n1;
-		if (!empty1 && (n1 < 0 || n1 >= len))
-		{
-		    // For a range we allow invalid values and return an empty
-		    // list.  A list index out of range is an error.
-		    if (!range)
-		    {
-			if (verbose)
-			    semsg(_(e_listidx), n1);
-			return FAIL;
-		    }
-		    n1 = len;
-		}
-		if (range)
-		{
-		    list_T	*l;
-
-		    if (n2 < 0)
-			n2 = len + n2;
-		    else if (n2 >= len)
-			n2 = len - 1;
-		    if (!empty2 && (n2 < 0 || n2 + 1 < n1))
-			n2 = -1;
-		    l = list_slice(rettv->vval.v_list, n1, n2);
-		    if (l == NULL)
-			return FAIL;
-		    clear_tv(rettv);
-		    rettv_list_set(rettv, l);
-		}
-		else
-		{
-		    copy_tv(&list_find(rettv->vval.v_list, n1)->li_tv, &var1);
-		    clear_tv(rettv);
-		    *rettv = var1;
-		}
+		if (empty1)
+		    n1 = 0;
+		if (empty2)
+		    n2 = -1;
+		if (list_slice_or_index(rettv->vval.v_list,
+					range, n1, n2, rettv, verbose) == FAIL)
+		    return FAIL;
 		break;
 
 	    case VAR_DICT:

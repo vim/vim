@@ -992,6 +992,28 @@ def Test_disassemble_string_index()
   assert_equal('b', StringIndex())
 enddef
 
+def StringSlice(): string
+  let s = "abcd"
+  let res = s[1:8]
+  return res
+enddef
+
+def Test_disassemble_string_slice()
+  let instr = execute('disassemble StringSlice')
+  assert_match('StringSlice\_s*' ..
+        'let s = "abcd"\_s*' ..
+        '\d PUSHS "abcd"\_s*' ..
+        '\d STORE $0\_s*' ..
+        'let res = s\[1:8]\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d PUSHNR 8\_s*' ..
+        '\d STRSLICE\_s*' ..
+        '\d STORE $1\_s*',
+        instr)
+  assert_equal('bcd', StringSlice())
+enddef
+
 def ListIndex(): number
   let l = [1, 2, 3]
   let res = l[1]
@@ -1014,6 +1036,31 @@ def Test_disassemble_list_index()
         '\d STORE $1\_s*',
         instr)
   assert_equal(2, ListIndex())
+enddef
+
+def ListSlice(): list<number>
+  let l = [1, 2, 3]
+  let res = l[1:8]
+  return res
+enddef
+
+def Test_disassemble_list_slice()
+  let instr = execute('disassemble ListSlice')
+  assert_match('ListSlice\_s*' ..
+        'let l = \[1, 2, 3]\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d PUSHNR 2\_s*' ..
+        '\d PUSHNR 3\_s*' ..
+        '\d NEWLIST size 3\_s*' ..
+        '\d STORE $0\_s*' ..
+        'let res = l\[1:8]\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d PUSHNR 8\_s*' ..
+        '\d LISTSLICE\_s*' ..
+        '\d STORE $1\_s*',
+        instr)
+  assert_equal([2, 3], ListSlice())
 enddef
 
 def DictMember(): number

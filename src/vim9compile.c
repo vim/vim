@@ -3171,13 +3171,16 @@ compile_subscript(
 	    {
 		if (is_slice)
 		{
-		    emsg("Sorry, list slice not implemented yet");
-		    return FAIL;
+		    if (generate_instr_drop(cctx, ISN_LISTSLICE, 2) == FAIL)
+			return FAIL;
 		}
-		if ((*typep)->tt_type == VAR_LIST)
-		    *typep = (*typep)->tt_member;
-		if (generate_instr_drop(cctx, ISN_LISTINDEX, 1) == FAIL)
-		    return FAIL;
+		else
+		{
+		    if ((*typep)->tt_type == VAR_LIST)
+			*typep = (*typep)->tt_member;
+		    if (generate_instr_drop(cctx, ISN_LISTINDEX, 1) == FAIL)
+			return FAIL;
+		}
 	    }
 	    else
 	    {
@@ -7095,6 +7098,7 @@ delete_instr(isn_T *isn)
 	case ISN_EXECUTE:
 	case ISN_FOR:
 	case ISN_LISTINDEX:
+	case ISN_LISTSLICE:
 	case ISN_STRINDEX:
 	case ISN_STRSLICE:
 	case ISN_GETITEM:

@@ -2121,6 +2121,34 @@ def Test_expr7_string_subscript()
   CheckScriptSuccess(['vim9script'] + lines)
 enddef
 
+def Test_expr7_list_subscript()
+  let lines =<< trim END
+    let list = [0, 1, 2, 3, 4]
+    assert_equal(0, list[0])
+    assert_equal(4, list[4])
+    assert_equal(4, list[-1])
+    assert_equal(0, list[-5])
+
+    assert_equal([0, 1, 2, 3, 4], list[0:4])
+    assert_equal([0, 1, 2, 3, 4], list[:])
+    assert_equal([1, 2, 3, 4], list[1:])
+    assert_equal([2, 3, 4], list[2:-1])
+    assert_equal([4], list[4:-1])
+    assert_equal([], list[5:-1])
+    assert_equal([], list[999:-1])
+
+    assert_equal([0, 1, 2, 3], list[0:3])
+    assert_equal([0], list[0:0])
+    assert_equal([0, 1, 2, 3, 4], list[0:-1])
+    assert_equal([0, 1, 2], list[0:-3])
+    assert_equal([0], list[0:-5])
+    assert_equal([], list[0:-6])
+    assert_equal([], list[0:-99])
+  END
+  CheckDefSuccess(lines)
+  CheckScriptSuccess(['vim9script'] + lines)
+enddef
+
 def Test_expr7_subscript_linebreak()
   let range = range(
   		3)
