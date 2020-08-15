@@ -3497,6 +3497,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 <C-ScrollWheelLeft>	scroll.txt	/*<C-ScrollWheelLeft>*
 <C-ScrollWheelRight>	scroll.txt	/*<C-ScrollWheelRight>*
 <C-ScrollWheelUp>	scroll.txt	/*<C-ScrollWheelUp>*
+<C-Tab>	tabpage.txt	/*<C-Tab>*
 <CR>	motion.txt	/*<CR>*
 <CSI>	intro.txt	/*<CSI>*
 <Char->	map.txt	/*<Char->*
@@ -3816,6 +3817,7 @@ CTRL-W_bar	windows.txt	/*CTRL-W_bar*
 CTRL-W_c	windows.txt	/*CTRL-W_c*
 CTRL-W_d	tagsrch.txt	/*CTRL-W_d*
 CTRL-W_f	windows.txt	/*CTRL-W_f*
+CTRL-W_g<Tab>	tabpage.txt	/*CTRL-W_g<Tab>*
 CTRL-W_gF	windows.txt	/*CTRL-W_gF*
 CTRL-W_gT	windows.txt	/*CTRL-W_gT*
 CTRL-W_g]	windows.txt	/*CTRL-W_g]*
@@ -6863,6 +6865,7 @@ g<End>	motion.txt	/*g<End>*
 g<Home>	motion.txt	/*g<Home>*
 g<LeftMouse>	tagsrch.txt	/*g<LeftMouse>*
 g<RightMouse>	tagsrch.txt	/*g<RightMouse>*
+g<Tab>	tabpage.txt	/*g<Tab>*
 g<Up>	motion.txt	/*g<Up>*
 g?	change.txt	/*g?*
 g??	change.txt	/*g??*
@@ -8300,6 +8303,7 @@ pascal.vim	syntax.txt	/*pascal.vim*
 patches-8	version8.txt	/*patches-8*
 patches-8.1	version8.txt	/*patches-8.1*
 patches-8.2	version8.txt	/*patches-8.2*
+patches-after-8.2	version8.txt	/*patches-after-8.2*
 pathshorten()	eval.txt	/*pathshorten()*
 pattern	pattern.txt	/*pattern*
 pattern-atoms	pattern.txt	/*pattern-atoms*
@@ -9638,6 +9642,7 @@ tutor	usr_01.txt	/*tutor*
 twice	if_cscop.txt	/*twice*
 two-engines	pattern.txt	/*two-engines*
 type()	eval.txt	/*type()*
+type-casting	vim9.txt	/*type-casting*
 type-inference	vim9.txt	/*type-inference*
 type-mistakes	tips.txt	/*type-mistakes*
 typecorr-settings	usr_41.txt	/*typecorr-settings*
@@ -9934,6 +9939,7 @@ valgrind	debug.txt	/*valgrind*
 values()	eval.txt	/*values()*
 var-functions	usr_41.txt	/*var-functions*
 variable-scope	eval.txt	/*variable-scope*
+variable-types	vim9.txt	/*variable-types*
 variables	eval.txt	/*variables*
 various	various.txt	/*various*
 various-cmds	various.txt	/*various-cmds*

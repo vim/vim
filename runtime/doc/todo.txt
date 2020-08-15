@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Aug 05
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Aug 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,16 +38,21 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+What is the way to get the character under the cursor?  With or without
+composing characters.  getline(".") and then use col(".") somehow?
+Add charidx() perhaps?
+
 Making everything work:
-- Check that when sourcing a Vim9 script, only the global items can be used.
-- Make string indexes character indexes instead of byte indexes. (#6574)
-    explain how to use byte index when needed. Use blob?
+- Slice of list: [1, 2, 3][1:2].
+- Slice of string: "abc"[1:2].  (#6709)
+- Run the same tests in :def and Vim9 script, like in Test_expr7_not()
 - :put with a "=" register argument doesn't work, need to find the expression
   and compile it. (#6397)
 - At the script level, keep script variables local to the block they are
   declared in?  Need to remember what variables were declared and delete them
   when leaving the block.
 - Implement { } block at the script level.
+- In autocmd: use legacy syntax, not whatever the current script uses?
 - need to check type when a declaration specifies a type: #6507
 	let nr: number = 'asdf'
 - Make sure that in vim9script a function call without namespace only finds
@@ -55,9 +60,13 @@ Making everything work:
 - Make map() give an error if the resulting type is wrong.
   Add mapnew() to create a new List/Dict for the result, which can have a
   different value type.
+- When defining an :autocmd or :command, how to specify using Vim9 syntax?
+  - always do this when defined in a Vim9 script
+  - add some command modifier.
+- For an :autocmd and :command argument, if a following line starts with "|"
+  append it.  It's like line continuation. (#6702)
 - Implement "export {one, two three}".
 - ISN_CHECKTYPE could use check_argtype()
-- Slice of list: [1, 2, 3][1:2].
 - give error for variable name:
       let p = function('NoSuchFunc')
 - Give runtime error if function argument is wrong.
@@ -79,6 +88,7 @@ Making everything work:
       ret[i] = string(i)
 - Appending to dict item doesn't work:
     let d[i] ..= value
+- Using ".." at script level doesn't convert arguments to a string.
 - Compile replacement of :s command: s/pat/\=expr/
 - Compile redir to local variable: var_redir_start().
 - Compile builtin functions that access local variables:
@@ -103,8 +113,6 @@ Making everything work:
 New syntax and functionality:
 Improve error checking:
 - "echo Func()" is an error if Func() does not return anything.
-Test:
-- Using a Vim9 autoload script (functions must be global).
 Also:
 - For range: make table of first ASCII character with flag to quickly check if
   it can be a Vim9 command. E.g. "+" can, but "." can't.
@@ -117,8 +125,6 @@ Also:
 - Test each level of expressions properly, with type checking
 - Test try/catch and throw better, also nested.
   Test return inside try/finally jumps to finally and then returns.
-- call autoload function.
-- Implement more expressions, e.g. [a:b]
 - can use func as reference:
 	def SomeFunc() ...
 	map(list, SomeFunc)
@@ -155,6 +161,8 @@ Popup windows:
   positioned?  PopupNew?  Could be used to set some options or move it out of
   the way. (#5737)
   However, it may also cause trouble, changing the popup of another plugin.
+- Width is not computed correctly when minwidth and maxwidth are &columns
+  and padding and a scrollbar are used.  (#6676)
 - Add a way to use popup_menu() synchronously: instead of invoking the
   callback, return the choice. (Ben Jackson, #6534)
 - Use popup (or popup menu) for command line completion
@@ -401,6 +409,9 @@ Also put :argadd commands at the start for all buffers, so that their order
 remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
 Also #4994: window-local options not always restored, related to using :badd.
 Also #5326: netrw buffers are not restored.
+
+Alternate file is not set in the session file.  Use setwintabvar("@#") ?
+(#6714)
 
 When 'backupdir' has a path ending in double slash (meaning: use full path of
 the file) combined with 'patchmode' the file name is wrong. (#5791)
@@ -2863,9 +2874,6 @@ Jun 18)
 
 If the variable "g:x#y#z" exists completion after ":echo g:x#" doesn't work.
 
-Feature request: Command to go to previous tab, like what CTRL-W p does for
-windows. (Adam George)
-
 In debug mode, using CTRL-R = to evaluate a function causes stepping through
 the function. (Hari Krishna Dara, 2006 Jun 28)
 
@@ -3841,7 +3849,7 @@ Macintosh:
     two lines at a time.  "k" doesn't do this. (Cory T. Echols)
 8   When write_viminfo() is used while there are many orphaned viminfo
     tempfiles writing the viminfo file fails.  Give a clear error message so
-    that the user knows he has to delete the files.
+    that the user knows the files have to be deleted.
 
 
 I can't reproduce these (if you can, let me know how!):
@@ -4012,7 +4020,7 @@ Help:
 -   Support a way to view (and edit) .info files.
 -   Implement a "sticky" help window, some help text lines that are always
     displayed in a window with fixed height. (Guckes)  Use "~/.vimhelp" file,
-    user can edit it to insert his favorite commands, new account can contain a
+    user can edit it to insert favorite commands, new account can contain a
     default contents.
 -   Make 'winminheight' a local option, so that the user can set a minimal
     height for the help window (and other windows).
@@ -5779,7 +5787,7 @@ Modelines:
     .cpp files.
 -   Support the "abbreviate" command in modelines (Kearns).  Careful for
     characters after <Esc>, that is a security leak.
--   Add option setting to ask user if he wants to have the modelines executed
+-   Add an option setting to ask the user if the modelines are to be executed
     or not.  Same for .exrc in local dir.
 
 

@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Aug 01
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Aug 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -70,10 +70,10 @@ comments start with #. >
 	let count = 0  # number of occurrences
 
 The reason is that a double quote can also be the start of a string. In many
-places, especially halfway an expression with a line break, it's hard to tell
-what the meaning is, since both a string and a comment can be followed by
-arbitrary text.  To avoid confusion only # comments are recognized.  This is
-the same as in shell scripts and Python programs.
+places, especially halfway through an expression with a line break, it's hard
+to tell what the meaning is, since both a string and a comment can be followed
+by arbitrary text.  To avoid confusion only # comments are recognized.  This
+is the same as in shell scripts and Python programs.
 
 In Vi # is a command to list text with numbers.  In Vim9 script you can use
 `:number` for that. >
@@ -104,11 +104,11 @@ The argument types and return type need to be specified.  The "any" type can
 be used, type checking will then be done at runtime, like with legacy
 functions.
 
-Arguments are accessed by name, without "a:".  There is no "a:" dictionary or
-"a:000" list.  Just like any other language.
+Arguments are accessed by name, without "a:", just like any other language.
+There is no "a:" dictionary or "a:000" list.
 
 Variable arguments are defined as the last argument, with a name and have a
-list type, similar to Typescript.  For example, a list of numbers: >
+list type, similar to TypeScript.  For example, a list of numbers: >
   	def MyFunc(...itemlist: list<number>)
 	   for item in itemlist
 	     ...
@@ -142,7 +142,7 @@ The result is that functions and variables without a namespace can usually be
 found in the script, either defined there or imported.  Global functions and
 variables could be defined anywhere (good luck finding out where!).
 
-Global functions can be still be defined and deleted at nearly any time.  In
+Global functions can still be defined and deleted at nearly any time.  In
 Vim9 script script-local functions are defined once when the script is sourced
 and cannot be deleted or replaced.
 
@@ -232,7 +232,7 @@ identifier or can't be an Ex command.  Examples: >
 	'foobar'->Process()
 	('foobar')->Process()
 
-In rare case there is ambiguity between a function name and an Ex command,
+In the rare case there is ambiguity between a function name and an Ex command,
 prepend ":" to make clear you want to use the Ex command.  For example, there
 is both the `:substitute` command and the `substitute()` function.  When the
 line starts with `substitute(` this will use the function. Prepend a colon to
@@ -240,8 +240,8 @@ use the command instead: >
 	:substitute(pattern (replacement (
 
 Note that while variables need to be defined before they can be used,
-functions can be called before being defined.  This is required to be able
-have cyclic dependencies between functions.  It is slightly less efficient,
+functions can be called before being defined.  This is required to allow
+for cyclic dependencies between functions.  It is slightly less efficient,
 since the function has to be looked up by name.  And a typo in the function
 name will only be found when the function is called.
 
@@ -394,7 +394,7 @@ White space is not allowed:
 
 Conditions and expressions ~
 
-Conditions and expression are mostly working like they do in JavaScript.  A
+Conditions and expressions are mostly working like they do in JavaScript.  A
 difference is made where JavaScript does not work like most people expect.
 Specifically, an empty list is falsey.
 
@@ -429,12 +429,18 @@ The boolean operators "||" and "&&" do not change the value: >
 When using `..` for string concatenation arguments of simple types are always
 converted to string. >
 	'hello ' .. 123  == 'hello 123'
-	'hello ' .. v:true  == 'hello true'
+	'hello ' .. v:true  == 'hello v:true'
 
 Simple types are string, float, special and bool.  For other types |string()|
 can be used.
 
 In Vim9 script one can use "true" for v:true and "false" for v:false.
+
+Indexing a string with [idx] or [idx, idx] uses character indexes instead of
+byte indexes. Example: >
+	echo 'bár'[1]
+In legacy script this results in the character 0xc3 (an illegal byte), in Vim9
+script this results in the string 'á'.
 
 
 What to watch out for ~
@@ -494,7 +500,7 @@ For a workaround, split it in two functions: >
 THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 							*:def*
-:def[!] {name}([arguments])[: {return-type}
+:def[!] {name}([arguments])[: {return-type}]
 			Define a new function by the name {name}.  The body of
 			the function follows in the next lines, until the
 			matching `:enddef`.
@@ -789,7 +795,7 @@ actually needed.  A recommended mechanism:
 
 <   This goes in .../plugin/anyname.vim.  "anyname.vim" can be freely chosen.
 
-2. In the autocommand script do the actual work.  You can import items from
+2. In the autoload script do the actual work.  You can import items from
    other files to split up functionality in appropriate pieces. >
 	vim9script
         import FilterFunc from "../import/someother.vim"
@@ -824,7 +830,7 @@ namespace will be used for the imported item, even when "s:" is not specified.
 
 The :def command ~
 
-Plugin writers have asked for a much faster Vim script.  Investigation have
+Plugin writers have asked for a much faster Vim script.  Investigations have
 shown that keeping the existing semantics of function calls make this close to
 impossible, because of the overhead involved with calling a function, setting
 up the local function scope and executing lines.  There are many details that
@@ -854,7 +860,7 @@ an "add number" instruction can be used, which is faster.  The error can be
 given at compile time, no error handling is needed at runtime.
 
 The syntax for types is similar to Java, since it is easy to understand and
-widely used.  The type names are what was used in Vim before, with some
+widely used.  The type names are what were used in Vim before, with some
 additions such as "void" and "bool".
 
 
@@ -905,7 +911,7 @@ are doing.  Some details are unexpected and can be fixed.  For example how the
 	...
 	return result || 0	" returns 1
 
-Vim9 script works like JavaScript/Typescript, keep the value: >
+Vim9 script works like JavaScript/TypeScript, keep the value: >
 	let result = 44
 	...
 	return result || 0	" returns 44
@@ -922,7 +928,7 @@ A problem of legacy Vim script is that by default all functions and variables
 are global.  It is possible to make them script-local, but then they are not
 available in other scripts.
 
-In Vim9 script a mechanism very similar to the Javascript import and export
+In Vim9 script a mechanism very similar to the JavaScript import and export
 mechanism is supported.  It is a variant to the existing `:source` command
 that works like one would expect:
 - Instead of making everything global by default, everything is script-local,

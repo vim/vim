@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.2.  Last change: 2020 May 10
+*windows.txt*   For Vim version 8.2.  Last change: 2020 Aug 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1112,7 +1112,9 @@ list of buffers. |unlisted-buffer|
 <
 						*:bad* *:badd*
 :bad[d]	[+lnum] {fname}
-		Add file name {fname} to the buffer list, without loading it.
+		Add file name {fname} to the buffer list, without loading it,
+		if it wasn't listed yet.  If the buffer was previously
+		deleted, not wiped, it will be made listed again.
 		If "lnum" is specified, the cursor will be positioned at that
 		line when the buffer is first entered.  Note that other
 		commands after the + will be ignored.

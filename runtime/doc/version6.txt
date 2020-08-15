@@ -449,7 +449,7 @@ The help window is opened at the top, like ":topleft" was used, if the current
 window is fewer than 80 characters wide.
 
 A few options can be used to set the preferences for vertically split windows.
-They work similar to their existing horizontal equivalents:
+They work similarly to their existing horizontal equivalents:
 	horizontal	vertical ~
 	'splitbelow'	'splitright'
 	'winheight'	'winwidth'
@@ -2690,9 +2690,9 @@ Multi-byte:
   wrong error number. (Muraoka Taro)
 - Using Alt-x in the GUI while 'encoding' was set to "utf-8" didn't produce
   the right character.
-- When using Visual block selection and only the left halve of a double-wide
+- When using Visual block selection and only the left half of a double-wide
   character is selected, the highlighting continued to the end of the line.
-- Visual-block delete didn't work properly when deleting the right halve of a
+- Visual-block delete didn't work properly when deleting the right half of a
   double-wide character.
 - Overstrike mode for the cmdline replaced only the first byte of a multibyte
   character.
@@ -2795,7 +2795,7 @@ GTK: Crash when 'shell' doesn't exist and doing":!ls".  Use _exit() instead of
 exit() when the child couldn't execute the shell.
 
 Multi-byte:
-- GUI with double-byte encoding: a mouse click in left halve of double-wide
+- GUI with double-byte encoding: a mouse click in left half of double-wide
   character put the cursor in previous char.
 - Using double-byte encoding and 'selection' is "exclusive": "vey" and "^Vey"
   included the character after the word.
@@ -3165,7 +3165,7 @@ the terminal it was started in.
 When using ESC in Insert mode, an autoindent that wraps to the next line
 caused the cursor to move to the end of the line temporarily.  When the
 character before the cursor was a double-wide multi-byte character the cursor
-would be on the right halve, which causes problems with some terminals.
+would be on the right half, which causes problems with some terminals.
 
 Didn't handle multi-byte characters correctly when expanding a file name.
 (Yasuhiro Matsumoto)
@@ -4356,7 +4356,7 @@ Files:	    src/normal.c
 
 Patch 6.0.104
 Problem:    Multi-byte: When '$' is in 'cpoptions', typing a double-wide
-	    character that overwrites the left halve of an old double-wide
+	    character that overwrites the left half of an old double-wide
 	    character causes a redraw problem and the cursor stops blinking.
 Solution:   Clear the right half of the old character. (Yasuhiro Matsumoto)
 Files:	    src/edit.c, src/screen.c
@@ -5894,7 +5894,7 @@ Files:	    src/move.c
 
 Patch 6.1b.023
 Problem:    On MS-Windows system() may cause checking timestamps, because Vim
-	    loses and gains input focus, while this doesn't happen on Unix.
+	    looses and gains input focus, while this doesn't happen on Unix.
 Solution:   Don't check timestamps while system() is busy.
 Files:	    src/ex_cmds2.c, src/fileio.c, src/globals.h, src/misc1.c
 
@@ -7069,7 +7069,7 @@ Solution:   Don't free the item on the stack.  Use NULL instead of "none" for
 Files:	    src/gui_x11.c
 
 Patch 6.1.096
-Problem:    When erasing the right halve of a double-byte character, it may
+Problem:    When erasing the right half of a double-byte character, it may
 	    cause further characters to be erased. (Yasuhiro Matsumoto)
 Solution:   Make sure only one character is erased.
 Files:	    src/screen.c
@@ -8982,7 +8982,7 @@ Files:	    src/buffer.c
 
 Patch 6.1.386
 Problem:    Get duplicate tags when running ":helptags".
-Solution:   Do the other halve of moving a section to another help file.
+Solution:   Do the other half of moving a section to another help file.
 Files:	    runtime/tagsrch.txt
 
 Patch 6.1.387 (depends on 6.1.373)
