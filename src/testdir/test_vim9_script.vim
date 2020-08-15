@@ -2914,12 +2914,20 @@ def Test_let_declaration()
     let s:other: number
     other = 1234
     g:other_var = other
+
+    # type is inferred
+    s:dict = {'a': 222}
+    def GetDictVal(key: any)
+      g:dict_val = s:dict[key]
+    enddef
+    GetDictVal('a')
   END
   CheckScriptSuccess(lines)
   assert_equal('', g:var_uninit)
   assert_equal('text', g:var_test)
   assert_equal('prefixed', g:var_prefixed)
   assert_equal(1234, g:other_var)
+  assert_equal(222, g:dict_val)
 
   unlet g:var_uninit
   unlet g:var_test

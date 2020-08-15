@@ -3049,7 +3049,10 @@ set_var_const(
 						      + si->sn_var_vals.ga_len;
 		sv->sv_name = di->di_key;
 		sv->sv_tv = &di->di_tv;
-		sv->sv_type = type == NULL ? &t_any : type;
+		if (type == NULL)
+		    sv->sv_type = typval2type(tv, &si->sn_type_list);
+		else
+		    sv->sv_type = type;
 		sv->sv_const = (flags & LET_IS_CONST);
 		sv->sv_export = is_export;
 		++si->sn_var_vals.ga_len;
