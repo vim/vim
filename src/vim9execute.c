@@ -3182,6 +3182,11 @@ ex_disassemble(exarg_T *eap)
 			      break;
 	    case ISN_DROP: smsg("%4d DROP", current); break;
 	}
+
+	out_flush();	    // output one line at a time
+	ui_breakcheck();
+	if (got_int)
+	    break;
     }
 }
 
