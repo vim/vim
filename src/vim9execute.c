@@ -1028,14 +1028,20 @@ call_def_function(
 		    for (idx = 0; idx < count; ++idx)
 		    {
 			tv = STACK_TV_BOT(idx - count);
-			if (tv->v_type == VAR_CHANNEL || tv->v_type == VAR_JOB)
+			if (iptr->isn_type == ISN_EXECUTE)
 			{
-			    SOURCING_LNUM = iptr->isn_lnum;
-			    emsg(_(e_inval_string));
-			    break;
+			    if (tv->v_type == VAR_CHANNEL
+						      || tv->v_type == VAR_JOB)
+			    {
+				SOURCING_LNUM = iptr->isn_lnum;
+				emsg(_(e_inval_string));
+				break;
+			    }
+			    else
+				p = tv_get_string_buf(tv, buf);
 			}
 			else
-			    p = tv_get_string_buf(tv, buf);
+			    p = tv_stringify(tv, buf);
 
 			len = (int)STRLEN(p);
 			if (ga_grow(&ga, len + 2) == FAIL)
@@ -1050,8 +1056,10 @@ call_def_function(
 			clear_tv(tv);
 		    }
 		    ectx.ec_stack.ga_len -= count;
+		    if (failed)
+			goto on_error;
 
-		    if (!failed && ga.ga_data != NULL)
+		    if (ga.ga_data != NULL)
 		    {
 			if (iptr->isn_type == ISN_EXECUTE)
 			    do_cmdline_cmd((char_u *)ga.ga_data);

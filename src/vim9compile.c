@@ -2422,9 +2422,6 @@ compile_list(char_u **arg, cctx_T *cctx)
 	if (*p == ']')
 	{
 	    ++p;
-	    // Allow for following comment, after at least one space.
-	    if (VIM_ISWHITE(*p) && *skipwhite(p) == '#')
-		p += STRLEN(p);
 	    break;
 	}
 	if (compile_expr0(&p, cctx) == FAIL)
@@ -6206,6 +6203,7 @@ compile_throw(char_u *arg, cctx_T *cctx UNUSED)
 compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
 {
     char_u	*p = arg;
+    char_u	*prev;
     int		count = 0;
 
     for (;;)
@@ -6213,8 +6211,9 @@ compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
 	if (compile_expr0(&p, cctx) == FAIL)
 	    return NULL;
 	++count;
+	prev = p;
 	p = skipwhite(p);
-	if (ends_excmd(*p))
+	if (ends_excmd2(prev, p))
 	    break;
     }
 

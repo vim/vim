@@ -2102,6 +2102,9 @@ def Test_execute_cmd()
   execute 'echomsg' (n ? '"true"' : '"no"')
   assert_match('^true$', Screenline(&lines))
 
+  echomsg [1, 2, 3] #{a: 1, b: 2}
+  assert_match('^\[1, 2, 3\] {''a'': 1, ''b'': 2}$', Screenline(&lines))
+
   call CheckDefFailure(['execute xxx'], 'E1001:')
   call CheckDefFailure(['execute "cmd"# comment'], 'E488:')
 enddef
