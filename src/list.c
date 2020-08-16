@@ -1909,7 +1909,10 @@ filter_map_one(typval_T *tv, typval_T *expr, int map, int *remp)
 	int	    error = FALSE;
 
 	// filter(): when expr is zero remove the item
-	*remp = (tv_get_number_chk(&rettv, &error) == 0);
+	if (in_vim9script())
+	    *remp = !tv2bool(&rettv);
+	else
+	    *remp = (tv_get_number_chk(&rettv, &error) == 0);
 	clear_tv(&rettv);
 	// On type error, nothing has been removed; return FAIL to stop the
 	// loop.  The error message was given by tv_get_number_chk().

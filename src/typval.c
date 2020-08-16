@@ -204,6 +204,11 @@ tv_get_number_chk(typval_T *varp, int *denote)
 	    emsg(_("E703: Using a Funcref as a Number"));
 	    break;
 	case VAR_STRING:
+	    if (in_vim9script())
+	    {
+		emsg(_(e_using_string_as_number));
+		break;
+	    }
 	    if (varp->vval.v_string != NULL)
 		vim_str2nr(varp->vval.v_string, NULL, NULL,
 					    STR2NR_ALL, &n, NULL, 0, FALSE);
@@ -216,6 +221,11 @@ tv_get_number_chk(typval_T *varp, int *denote)
 	    break;
 	case VAR_BOOL:
 	case VAR_SPECIAL:
+	    if (in_vim9script())
+	    {
+		emsg(_("E611: Using a Special as a Number"));
+		break;
+	    }
 	    return varp->vval.v_number == VVAL_TRUE ? 1 : 0;
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL
@@ -1461,9 +1471,10 @@ eval_env_var(char_u **arg, typval_T *rettv, int evaluate)
     linenr_T
 tv_get_lnum(typval_T *argvars)
 {
-    linenr_T	lnum;
+    linenr_T	lnum = 0;
 
-    lnum = (linenr_T)tv_get_number_chk(&argvars[0], NULL);
+    if (argvars[0].v_type != VAR_STRING || !in_vim9script())
+	lnum = (linenr_T)tv_get_number_chk(&argvars[0], NULL);
     if (lnum == 0)  // no valid number, try using arg like line()
     {
 	int	fnum;

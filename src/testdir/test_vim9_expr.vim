@@ -384,12 +384,14 @@ func Test_expr3_fails()
   call CheckDefFailure(["let x = 1&& 2"], msg)
 endfunc
 
+" global variables to use for tests with the "any" type
 let atrue = v:true
 let afalse = v:false
 let anone = v:none
 let anull = v:null
 let anint = 10
-let alsoint = 4
+let theone = 1
+let thefour = 4
 if has('float')
   let afloat = 0.1
 endif
@@ -901,17 +903,17 @@ def Test_expr5()
   assert_equal(66, 60 + 6)
   assert_equal(70, 60 +
 			g:anint)
-  assert_equal(9, g:alsoint
+  assert_equal(9, g:thefour
   			+ 5)
-  assert_equal(14, g:alsoint + g:anint)
+  assert_equal(14, g:thefour + g:anint)
   assert_equal([1, 2, 3, 4], [1] + g:alist)
 
   assert_equal(54, 60 - 6)
   assert_equal(50, 60 -
 		    g:anint)
-  assert_equal(-1, g:alsoint
+  assert_equal(-1, g:thefour
   			- 5)
-  assert_equal(-6, g:alsoint - g:anint)
+  assert_equal(-6, g:thefour - g:anint)
 
   assert_equal('hello', 'hel' .. 'lo')
   assert_equal('hello 123', 'hello ' ..
@@ -1136,24 +1138,24 @@ endfunc
 def Test_expr6()
   assert_equal(36, 6 * 6)
   assert_equal(24, 6 *
-			g:alsoint)
-  assert_equal(24, g:alsoint
+			g:thefour)
+  assert_equal(24, g:thefour
   			* 6)
-  assert_equal(40, g:anint * g:alsoint)
+  assert_equal(40, g:anint * g:thefour)
 
   assert_equal(10, 60 / 6)
   assert_equal(6, 60 /
 			g:anint)
   assert_equal(1, g:anint / 6)
   assert_equal(2, g:anint
-  			/ g:alsoint)
+  			/ g:thefour)
 
   assert_equal(5, 11 % 6)
   assert_equal(4, g:anint % 6)
   assert_equal(3, 13 %
 			g:anint)
   assert_equal(2, g:anint
-  			% g:alsoint)
+  			% g:thefour)
 
   assert_equal(4, 6 * 4 / 6)
 
@@ -1323,7 +1325,7 @@ let $TESTVAR = 'testvar'
 " type casts
 def Test_expr7t()
   let ls: list<string> = ['a', <string>g:string_empty]
-  let ln: list<number> = [<number>g:anint, <number>g:alsoint]
+  let ln: list<number> = [<number>g:anint, <number>g:thefour]
   let nr = <number>234
   assert_equal(234, nr)
 
@@ -1448,13 +1450,15 @@ def Test_expr7_list()
 
   let mixed: list<any> = [1, 'b', false,]
   assert_equal(g:list_mixed, mixed)
-  assert_equal('b', g:list_mixed[1])
+  assert_equal('b', mixed[1])
 
   echo [1,
   	2] [3,
 		4]
 
-  call CheckDefExecFailure(["let x = g:anint[3]"], 'E714:')
+  call CheckDefFailure(["let x = 1234[3]"], 'E1107:')
+  call CheckDefExecFailure(["let x = g:anint[3]"], 'E1029:')
+
   call CheckDefFailure(["let x = g:list_mixed[xxx]"], 'E1001:')
 
   call CheckDefFailure(["let x = [1,2,3]"], 'E1069:')
@@ -2136,6 +2140,7 @@ def Test_expr7_list_subscript()
     assert_equal([4], list[4:-1])
     assert_equal([], list[5:-1])
     assert_equal([], list[999:-1])
+    assert_equal([1, 2, 3, 4], list[g:theone:g:thefour])
 
     assert_equal([0, 1, 2, 3], list[0:3])
     assert_equal([0], list[0:0])
@@ -2147,6 +2152,10 @@ def Test_expr7_list_subscript()
   END
   CheckDefSuccess(lines)
   CheckScriptSuccess(['vim9script'] + lines)
+
+  lines = ['let l = [0, 1, 2]', 'echo l[g:astring : g:theone]']
+  CheckDefExecFailure(lines, 'E1029:')
+  CheckScriptFailure(['vim9script'] + lines, 'E1030:')
 enddef
 
 def Test_expr7_subscript_linebreak()

@@ -793,19 +793,20 @@ def Test_try_catch()
   endtry
   assert_equal(99, n)
 
+  # TODO: this will change when index on "any" works
   try
     n = g:astring[3]
-  catch /E714:/
+  catch /E1029:/
     n = 77
   endtry
   assert_equal(77, n)
 
   try
     n = l[g:astring]
-  catch /E39:/
-    n = 77
+  catch /E1029:/
+    n = 88
   endtry
-  assert_equal(77, n)
+  assert_equal(88, n)
 
   try
     n = s:does_not_exist

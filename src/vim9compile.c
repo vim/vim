@@ -3067,6 +3067,7 @@ compile_subscript(
 	{
 	    garray_T	*stack = &cctx->ctx_type_stack;
 	    type_T	**typep;
+	    type_T	*valtype;
 	    vartype_T	vtype;
 	    int		is_slice = FALSE;
 
@@ -3127,13 +3128,22 @@ compile_subscript(
 	    typep = ((type_T **)stack->ga_data) + stack->ga_len
 							  - (is_slice ? 3 : 2);
 	    vtype = (*typep)->tt_type;
-	    if (*typep == &t_any)
+	    valtype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	    // If the index is a string, the variable must be a Dict.
+	    if (*typep == &t_any && valtype == &t_string)
+		vtype = VAR_DICT;
+	    if (vtype == VAR_STRING || vtype == VAR_LIST || vtype == VAR_BLOB)
 	    {
-		type_T *valtype = ((type_T **)stack->ga_data)
-							   [stack->ga_len - 1];
-		if (valtype == &t_string)
-		    vtype = VAR_DICT;
+		if (need_type(valtype, &t_number, -1, cctx, FALSE) == FAIL)
+		    return FAIL;
+		if (is_slice)
+		{
+		    valtype = ((type_T **)stack->ga_data)[stack->ga_len - 2];
+		    if (need_type(valtype, &t_number, -2, cctx, FALSE) == FAIL)
+			return FAIL;
+		}
 	    }
+
 	    if (vtype == VAR_DICT)
 	    {
 		if (is_slice)
@@ -3169,6 +3179,10 @@ compile_subscript(
 	    }
 	    else if (vtype == VAR_LIST || *typep == &t_any)
 	    {
+		// TODO: any requires runtime code
+		if (*typep == &t_any && need_type(*typep, &t_list_any,
+				      is_slice ? -3 : -2, cctx, FALSE) == FAIL)
+		    return FAIL;
 		if (is_slice)
 		{
 		    if (generate_instr_drop(cctx, ISN_LISTSLICE, 2) == FAIL)
@@ -3184,7 +3198,7 @@ compile_subscript(
 	    }
 	    else
 	    {
-		emsg(_(e_list_dict_or_blob_required));
+		emsg(_(e_string_list_dict_or_blob_required));
 		return FAIL;
 	    }
 	}

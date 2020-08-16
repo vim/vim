@@ -2241,33 +2241,13 @@ call_def_function(
 		    // string index: string is at stack-2, index at stack-1
 		    // string slice: string is at stack-3, first index at
 		    // stack-2, second index at stack-1
-		    tv = is_slice ? STACK_TV_BOT(-3) : STACK_TV_BOT(-2);
-		    if (tv->v_type != VAR_STRING)
-		    {
-			SOURCING_LNUM = iptr->isn_lnum;
-			emsg(_(e_stringreq));
-			goto on_error;
-		    }
-
 		    if (is_slice)
 		    {
 			tv = STACK_TV_BOT(-2);
-			if (tv->v_type != VAR_NUMBER)
-			{
-			    SOURCING_LNUM = iptr->isn_lnum;
-			    emsg(_(e_number_exp));
-			    goto on_error;
-			}
 			n1 = tv->vval.v_number;
 		    }
 
 		    tv = STACK_TV_BOT(-1);
-		    if (tv->v_type != VAR_NUMBER)
-		    {
-			SOURCING_LNUM = iptr->isn_lnum;
-			emsg(_(e_number_exp));
-			goto on_error;
-		    }
 		    n2 = tv->vval.v_number;
 
 		    ectx.ec_stack.ga_len -= is_slice ? 2 : 1;
@@ -2296,33 +2276,15 @@ call_def_function(
 		    // list slice: list is at stack-3, indexes at stack-2 and
 		    // stack-1
 		    tv = is_slice ? STACK_TV_BOT(-3) : STACK_TV_BOT(-2);
-		    if (tv->v_type != VAR_LIST)
-		    {
-			SOURCING_LNUM = iptr->isn_lnum;
-			emsg(_(e_listreq));
-			goto on_error;
-		    }
 		    list = tv->vval.v_list;
 
 		    tv = STACK_TV_BOT(-1);
-		    if (tv->v_type != VAR_NUMBER)
-		    {
-			SOURCING_LNUM = iptr->isn_lnum;
-			emsg(_(e_number_exp));
-			goto on_error;
-		    }
 		    n1 = n2 = tv->vval.v_number;
 		    clear_tv(tv);
 
 		    if (is_slice)
 		    {
 			tv = STACK_TV_BOT(-2);
-			if (tv->v_type != VAR_NUMBER)
-			{
-			    SOURCING_LNUM = iptr->isn_lnum;
-			    emsg(_(e_number_exp));
-			    goto on_error;
-			}
 			n1 = tv->vval.v_number;
 			clear_tv(tv);
 		    }

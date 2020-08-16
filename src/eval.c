@@ -2142,7 +2142,9 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	{
 	    int		error = FALSE;
 
-	    if (tv_get_number_chk(rettv, &error) != 0)
+	    if (in_vim9script())
+		result = tv2bool(rettv);
+	    else if (tv_get_number_chk(rettv, &error) != 0)
 		result = TRUE;
 	    clear_tv(rettv);
 	    if (error)

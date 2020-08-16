@@ -228,8 +228,8 @@ EXTERN char e_one_argument_too_many[]
 	INIT(= N_("E1106: one argument too many"));
 EXTERN char e_nr_arguments_too_many[]
 	INIT(= N_("E1106: %d arguments too many"));
-EXTERN char e_list_dict_or_blob_required[]
-	INIT(= N_("E1107: List, Dict or Blob required"));
+EXTERN char e_string_list_dict_or_blob_required[]
+	INIT(= N_("E1107: String, List, Dict or Blob required"));
 EXTERN char e_item_not_found_str[]
 	INIT(= N_("E1108: Item not found: %s"));
 #endif
