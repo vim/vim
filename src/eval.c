@@ -3624,7 +3624,7 @@ eval_index(
 		clear_tv(&var2);
 	    return FAIL;
 	}
-	*arg = skipwhite(*arg + 1);	// skip the ']'
+	*arg = *arg + 1;	// skip over the ']'
     }
 
     if (evaluate)

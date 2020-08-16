@@ -827,6 +827,13 @@ def Test_expr4_vim9script()
     echo len('xxx') == 3
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    let line = 'abc'
+    echo line[1] =~ '\w'
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 func Test_expr4_fails()
