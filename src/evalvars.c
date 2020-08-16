@@ -3087,7 +3087,7 @@ set_var_const(
     }
 
     if (flags & LET_IS_CONST)
-	di->di_tv.v_lock |= VAR_LOCKED;
+	item_lock(&di->di_tv, 1, TRUE);
 }
 
 /*
