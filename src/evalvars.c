@@ -1294,28 +1294,36 @@ ex_let_one(
 	    emsg(_(e_letunexp));
 	else
 	{
-	    long	n;
+	    long	n = 0;
 	    int		opt_type;
 	    long	numval;
 	    char_u	*stringval = NULL;
 	    char_u	*s = NULL;
+	    int		failed = FALSE;
 
 	    c1 = *p;
 	    *p = NUL;
 
-	    n = (long)tv_get_number(tv);
-	    // avoid setting a string option to the text "v:false" or similar.
-	    if (tv->v_type != VAR_BOOL && tv->v_type != VAR_SPECIAL)
-		s = tv_get_string_chk(tv);	// != NULL if number or string
-	    if (s != NULL && op != NULL && *op != '=')
+	    opt_type = get_option_value(arg, &numval, &stringval, opt_flags);
+	    if ((opt_type == 1 || opt_type == -1)
+			     && (tv->v_type != VAR_STRING || !in_vim9script()))
+		// number, possibly hidden
+		n = (long)tv_get_number(tv);
+
+	    // Avoid setting a string option to the text "v:false" or similar.
+	    // In Vim9 script also don't convert a number to string.
+	    if (tv->v_type != VAR_BOOL && tv->v_type != VAR_SPECIAL
+			     && (!in_vim9script() || tv->v_type != VAR_NUMBER))
+		s = tv_get_string_chk(tv);
+
+	    if (op != NULL && *op != '=')
 	    {
-		opt_type = get_option_value(arg, &numval,
-						       &stringval, opt_flags);
 		if ((opt_type == 1 && *op == '.')
 			|| (opt_type == 0 && *op != '.'))
 		{
 		    semsg(_(e_letwrong), op);
-		    s = NULL;  // don't set the value
+		    failed = TRUE;  // don't set the value
+
 		}
 		else
 		{
@@ -1330,19 +1338,25 @@ ex_let_one(
 			    case '%': n = (long)num_modulus(numval, n); break;
 			}
 		    }
-		    else if (opt_type == 0 && stringval != NULL) // string
+		    else if (opt_type == 0 && stringval != NULL && s != NULL)
 		    {
+			// string
 			s = concat_str(stringval, s);
 			vim_free(stringval);
 			stringval = s;
 		    }
 		}
 	    }
-	    if (s != NULL || tv->v_type == VAR_BOOL
-						  || tv->v_type == VAR_SPECIAL)
+
+	    if (!failed)
 	    {
-		set_option_value(arg, n, s, opt_flags);
-		arg_end = p;
+		if (opt_type != 0 || s != NULL)
+		{
+		    set_option_value(arg, n, s, opt_flags);
+		    arg_end = p;
+		}
+		else
+		    emsg(_(e_stringreq));
 	    }
 	    *p = c1;
 	    vim_free(stringval);

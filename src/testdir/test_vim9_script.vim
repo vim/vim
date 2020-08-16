@@ -96,22 +96,36 @@ def Test_assignment()
     &ts += 3
     assert_equal(9, &ts)
   END
-  call CheckScriptSuccess(lines)
+  CheckScriptSuccess(lines)
 
-  call CheckDefFailure(['&notex += 3'], 'E113:')
-  call CheckDefFailure(['&ts ..= "xxx"'], 'E1019:')
-  call CheckDefFailure(['&ts = [7]'], 'E1012:')
-  call CheckDefExecFailure(['&ts = g:alist'], 'E1029: Expected number but got list')
-  call CheckDefFailure(['&ts = "xx"'], 'E1012:')
-  call CheckDefExecFailure(['&ts = g:astring'], 'E1029: Expected number but got string')
-  call CheckDefFailure(['&path += 3'], 'E1012:')
-  call CheckDefExecFailure(['&bs = "asdf"'], 'E474:')
+  CheckDefFailure(['&notex += 3'], 'E113:')
+  CheckDefFailure(['&ts ..= "xxx"'], 'E1019:')
+  CheckDefFailure(['&ts = [7]'], 'E1012:')
+  CheckDefExecFailure(['&ts = g:alist'], 'E1029: Expected number but got list')
+  CheckDefFailure(['&ts = "xx"'], 'E1012:')
+  CheckDefExecFailure(['&ts = g:astring'], 'E1029: Expected number but got string')
+  CheckDefFailure(['&path += 3'], 'E1012:')
+  CheckDefExecFailure(['&bs = "asdf"'], 'E474:')
   # test freeing ISN_STOREOPT
-  call CheckDefFailure(['&ts = 3', 'let asdf'], 'E1022:')
+  CheckDefFailure(['&ts = 3', 'let asdf'], 'E1022:')
   &ts = 8
 
-  call CheckDefFailure(['let s:var = 123'], 'E1101:')
-  call CheckDefFailure(['let s:var: number'], 'E1101:')
+  lines =<< trim END
+    let save_TI = &t_TI
+    &t_TI = ''
+    assert_equal('', &t_TI)
+    &t_TI = 'xxx'
+    assert_equal('xxx', &t_TI)
+    &t_TI = save_TI
+  END
+  CheckDefSuccess(lines)
+  CheckScriptSuccess(['vim9script'] + lines)
+
+  CheckDefFailure(['&t_TI = 123'], 'E1012:')
+  CheckScriptFailure(['vim9script', '&t_TI = 123'], 'E928:')
+
+  CheckDefFailure(['let s:var = 123'], 'E1101:')
+  CheckDefFailure(['let s:var: number'], 'E1101:')
 
   lines =<< trim END
     vim9script
