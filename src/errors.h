@@ -21,6 +21,10 @@ EXTERN char e_invalid_command[]
 #ifdef FEAT_EVAL
 EXTERN char e_invalid_command_str[]
 	INIT(= N_("E476: Invalid command: %s"));
+EXTERN char e_cannot_slice_dictionary[]
+	INIT(= N_("E719: cannot slice a Dictionary"));
+EXTERN char e_cannot_index_special_variable[]
+	INIT(= N_("E909: Cannot index a special variable"));
 EXTERN char e_missing_let_str[]
 	INIT(= N_("E1100: Missing :let: %s"));
 EXTERN char e_variable_not_found_str[]
@@ -69,9 +73,9 @@ EXTERN char e_const_requires_a_value[]
 	INIT(= N_("E1021: const requires a value"));
 EXTERN char e_type_or_initialization_required[]
 	INIT(= N_("E1022: type or initialization required"));
-EXTERN char e_cannot_slice_dictionary[]
-	INIT(= N_("E1023: cannot slice a dictionary"));
-// E1024 unused
+// E1023 unused
+EXTERN char e_using_number_as_string[]
+	INIT(= N_("E1024: Using a Number as a String"));
 EXTERN char e_using_rcurly_outside_if_block_scope[]
 	INIT(= N_("E1025: using } outside of a block scope"));
 EXTERN char e_missing_rcurly[]
@@ -146,7 +150,8 @@ EXTERN char e_expected_dot_after_name_str[]
 	INIT(= N_("E1060: expected dot after name: %s"));
 EXTERN char e_cannot_find_function_str[]
 	INIT(= N_("E1061: Cannot find function %s"));
-// E1062 unused
+EXTERN char e_cannot_index_number[]
+	INIT(= N_("E1062: Cannot index a Number"));
 EXTERN char e_type_mismatch_for_v_variable[]
 	INIT(= N_("E1063: type mismatch for v: variable"));
 // E1064 unused

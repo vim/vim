@@ -120,6 +120,8 @@ typedef enum {
     ISN_STRSLICE,   // [expr:expr] string slice
     ISN_LISTINDEX,  // [expr] list index
     ISN_LISTSLICE,  // [expr:expr] list slice
+    ISN_ANYINDEX,   // [expr] runtime index
+    ISN_ANYSLICE,   // [expr:expr] runtime slice
     ISN_SLICE,	    // drop isn_arg.number items from start of list
     ISN_GETITEM,    // push list item, isn_arg.number is the index
     ISN_MEMBER,	    // dict[member]

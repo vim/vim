@@ -1091,6 +1091,50 @@ def Test_disassemble_dict_member()
   call assert_equal(1, DictMember())
 enddef
 
+let somelist = [1, 2, 3, 4, 5]
+def AnyIndex(): number
+  let res = g:somelist[2]
+  return res
+enddef
+
+def Test_disassemble_any_index()
+  let instr = execute('disassemble AnyIndex')
+  assert_match('AnyIndex\_s*' ..
+        'let res = g:somelist\[2\]\_s*' ..
+        '\d LOADG g:somelist\_s*' ..
+        '\d PUSHNR 2\_s*' ..
+        '\d ANYINDEX\_s*' ..
+        '\d STORE $0\_s*' ..
+        'return res\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d CHECKTYPE number stack\[-1\]\_s*' ..
+        '\d RETURN',
+        instr)
+  assert_equal(3, AnyIndex())
+enddef
+
+def AnySlice(): list<number>
+  let res = g:somelist[1:3]
+  return res
+enddef
+
+def Test_disassemble_any_slice()
+  let instr = execute('disassemble AnySlice')
+  assert_match('AnySlice\_s*' ..
+        'let res = g:somelist\[1:3\]\_s*' ..
+        '\d LOADG g:somelist\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d PUSHNR 3\_s*' ..
+        '\d ANYSLICE\_s*' ..
+        '\d STORE $0\_s*' ..
+        'return res\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d CHECKTYPE list stack\[-1\]\_s*' ..
+        '\d RETURN',
+        instr)
+  assert_equal([2, 3, 4], AnySlice())
+enddef
+
 def NegateNumber(): number
   let nr = 9
   let plus = +nr

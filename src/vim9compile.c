@@ -3179,20 +3179,20 @@ compile_subscript(
 	    }
 	    else if (vtype == VAR_LIST || *typep == &t_any)
 	    {
-		// TODO: any requires runtime code
-		if (*typep == &t_any && need_type(*typep, &t_list_any,
-				      is_slice ? -3 : -2, cctx, FALSE) == FAIL)
-		    return FAIL;
 		if (is_slice)
 		{
-		    if (generate_instr_drop(cctx, ISN_LISTSLICE, 2) == FAIL)
+		    if (generate_instr_drop(cctx,
+			     vtype == VAR_LIST ?  ISN_LISTSLICE : ISN_ANYSLICE,
+								    2) == FAIL)
 			return FAIL;
 		}
 		else
 		{
 		    if ((*typep)->tt_type == VAR_LIST)
 			*typep = (*typep)->tt_member;
-		    if (generate_instr_drop(cctx, ISN_LISTINDEX, 1) == FAIL)
+		    if (generate_instr_drop(cctx,
+			     vtype == VAR_LIST ?  ISN_LISTINDEX : ISN_ANYINDEX,
+								    1) == FAIL)
 			return FAIL;
 		}
 	    }
@@ -7085,11 +7085,13 @@ delete_instr(isn_T *isn)
 	case ISN_2STRING_ANY:
 	case ISN_ADDBLOB:
 	case ISN_ADDLIST:
+	case ISN_ANYINDEX:
+	case ISN_ANYSLICE:
 	case ISN_BCALL:
 	case ISN_CATCH:
+	case ISN_CHECKLEN:
 	case ISN_CHECKNR:
 	case ISN_CHECKTYPE:
-	case ISN_CHECKLEN:
 	case ISN_COMPAREANY:
 	case ISN_COMPAREBLOB:
 	case ISN_COMPAREBOOL:
@@ -7102,7 +7104,6 @@ delete_instr(isn_T *isn)
 	case ISN_COMPARESTRING:
 	case ISN_CONCAT:
 	case ISN_DCALL:
-	case ISN_SHUFFLE:
 	case ISN_DROP:
 	case ISN_ECHO:
 	case ISN_ECHOERR:
@@ -7111,14 +7112,10 @@ delete_instr(isn_T *isn)
 	case ISN_EXECCONCAT:
 	case ISN_EXECUTE:
 	case ISN_FOR:
+	case ISN_GETITEM:
+	case ISN_JUMP:
 	case ISN_LISTINDEX:
 	case ISN_LISTSLICE:
-	case ISN_STRINDEX:
-	case ISN_STRSLICE:
-	case ISN_GETITEM:
-	case ISN_SLICE:
-	case ISN_MEMBER:
-	case ISN_JUMP:
 	case ISN_LOAD:
 	case ISN_LOADBDICT:
 	case ISN_LOADGDICT:
@@ -7128,27 +7125,32 @@ delete_instr(isn_T *isn)
 	case ISN_LOADTDICT:
 	case ISN_LOADV:
 	case ISN_LOADWDICT:
+	case ISN_MEMBER:
 	case ISN_NEGATENR:
 	case ISN_NEWDICT:
 	case ISN_NEWLIST:
-	case ISN_OPNR:
-	case ISN_OPFLOAT:
 	case ISN_OPANY:
+	case ISN_OPFLOAT:
+	case ISN_OPNR:
 	case ISN_PCALL:
 	case ISN_PCALL_END:
+	case ISN_PUSHBOOL:
 	case ISN_PUSHF:
 	case ISN_PUSHNR:
-	case ISN_PUSHBOOL:
 	case ISN_PUSHSPEC:
 	case ISN_RETURN:
+	case ISN_SHUFFLE:
+	case ISN_SLICE:
 	case ISN_STORE:
-	case ISN_STOREOUTER:
-	case ISN_STOREV:
-	case ISN_STORENR:
-	case ISN_STOREREG:
-	case ISN_STORESCRIPT:
 	case ISN_STOREDICT:
 	case ISN_STORELIST:
+	case ISN_STORENR:
+	case ISN_STOREOUTER:
+	case ISN_STOREREG:
+	case ISN_STORESCRIPT:
+	case ISN_STOREV:
+	case ISN_STRINDEX:
+	case ISN_STRSLICE:
 	case ISN_THROW:
 	case ISN_TRY:
 	    // nothing allocated

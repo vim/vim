@@ -1457,7 +1457,7 @@ def Test_expr7_list()
 		4]
 
   call CheckDefFailure(["let x = 1234[3]"], 'E1107:')
-  call CheckDefExecFailure(["let x = g:anint[3]"], 'E1029:')
+  call CheckDefExecFailure(["let x = g:anint[3]"], 'E1062:')
 
   call CheckDefFailure(["let x = g:list_mixed[xxx]"], 'E1001:')
 
@@ -1768,9 +1768,91 @@ def Test_expr_member()
   call CheckDefExecFailure(["let d: dict<number>", "d = g:list_empty"], 'E1029: Expected dict but got list')
 enddef
 
-def Test_expr_index()
-  # getting the one member should clear the list only after getting the item
-  assert_equal('bbb', ['aaa', 'bbb', 'ccc'][1])
+def Test_expr7_any_index_slice()
+  let lines =<< trim END
+    # getting the one member should clear the list only after getting the item
+    assert_equal('bbb', ['aaa', 'bbb', 'ccc'][1])
+
+    # string is permissive, index out of range accepted
+    g:teststring = 'abcdef'
+    assert_equal('b', g:teststring[1])
+    assert_equal('', g:teststring[-1])
+    assert_equal('', g:teststring[99])
+
+    assert_equal('b', g:teststring[1:1])
+    assert_equal('bcdef', g:teststring[1:])
+    assert_equal('abcd', g:teststring[:3])
+    assert_equal('cdef', g:teststring[-4:])
+    assert_equal('abcdef', g:teststring[-9:])
+    assert_equal('abcd', g:teststring[:-3])
+    assert_equal('', g:teststring[:-9])
+
+    # blob index cannot be out of range
+    g:testblob = 0z01ab
+    assert_equal(0x01, g:testblob[0])
+    assert_equal(0xab, g:testblob[1])
+    assert_equal(0xab, g:testblob[-1])
+    assert_equal(0x01, g:testblob[-2])
+
+    # blob slice accepts out of range
+    assert_equal(0z01ab, g:testblob[0:1])
+    assert_equal(0z01, g:testblob[0:0])
+    assert_equal(0z01, g:testblob[-2:-2])
+    assert_equal(0zab, g:testblob[1:1])
+    assert_equal(0zab, g:testblob[-1:-1])
+    assert_equal(0z, g:testblob[2:2])
+    assert_equal(0z, g:testblob[0:-3])
+
+    # list index cannot be out of range
+    g:testlist = [0, 1, 2, 3]
+    assert_equal(0, g:testlist[0])
+    assert_equal(1, g:testlist[1])
+    assert_equal(3, g:testlist[3])
+    assert_equal(3, g:testlist[-1])
+    assert_equal(0, g:testlist[-4])
+    assert_equal(1, g:testlist[g:theone])
+
+    # list slice accepts out of range
+    assert_equal([0], g:testlist[0:0])
+    assert_equal([3], g:testlist[3:3])
+    assert_equal([0, 1], g:testlist[0:1])
+    assert_equal([0, 1, 2, 3], g:testlist[0:3])
+    assert_equal([0, 1, 2, 3], g:testlist[0:9])
+    assert_equal([], g:testlist[-1:1])
+    assert_equal([1], g:testlist[-3:1])
+    assert_equal([0, 1], g:testlist[-4:1])
+    assert_equal([0, 1], g:testlist[-9:1])
+    assert_equal([1, 2, 3], g:testlist[1:-1])
+    assert_equal([1], g:testlist[1:-3])
+    assert_equal([], g:testlist[1:-4])
+    assert_equal([], g:testlist[1:-9])
+
+    g:testdict = #{a: 1, b: 2}
+    assert_equal(1, g:testdict['a'])
+    assert_equal(2, g:testdict['b'])
+  END
+
+  CheckDefSuccess(lines)
+  CheckScriptSuccess(['vim9script'] + lines)
+
+  CheckDefExecFailure(['echo g:testblob[2]'], 'E979:')
+  CheckScriptFailure(['vim9script', 'echo g:testblob[2]'], 'E979:')
+  CheckDefExecFailure(['echo g:testblob[-3]'], 'E979:')
+  CheckScriptFailure(['vim9script', 'echo g:testblob[-3]'], 'E979:')
+
+  CheckDefExecFailure(['echo g:testlist[4]'], 'E684:')
+  CheckScriptFailure(['vim9script', 'echo g:testlist[4]'], 'E684:')
+  CheckDefExecFailure(['echo g:testlist[-5]'], 'E684:')
+  CheckScriptFailure(['vim9script', 'echo g:testlist[-5]'], 'E684:')
+
+  CheckDefExecFailure(['echo g:testdict["a":"b"]'], 'E719:')
+  CheckScriptFailure(['vim9script', 'echo g:testdict["a":"b"]'], 'E719:')
+  CheckDefExecFailure(['echo g:testdict[1]'], 'E716:')
+  CheckScriptFailure(['vim9script', 'echo g:testdict[1]'], 'E716:')
+
+  unlet g:teststring
+  unlet g:testblob
+  unlet g:testlist
 enddef
 
 def Test_expr_member_vim9script()

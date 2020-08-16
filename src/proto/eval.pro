@@ -37,6 +37,8 @@ int eval0(char_u *arg, typval_T *rettv, exarg_T *eap, evalarg_T *evalarg);
 int eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
 void eval_addblob(typval_T *tv1, typval_T *tv2);
 int eval_addlist(typval_T *tv1, typval_T *tv2);
+int check_can_index(typval_T *rettv, int evaluate, int verbose);
+int eval_index_inner(typval_T *rettv, int is_range, typval_T *var1, typval_T *var2, char_u *key, int keylen, int verbose);
 char_u *partial_name(partial_T *pt);
 void partial_unref(partial_T *pt);
 int get_copyID(void);

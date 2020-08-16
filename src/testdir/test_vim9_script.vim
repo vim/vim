@@ -793,8 +793,8 @@ def Test_try_catch()
   endtry
   assert_equal(99, n)
 
-  # TODO: this will change when index on "any" works
   try
+    # string slice returns a string, not a number
     n = g:astring[3]
   catch /E1029:/
     n = 77

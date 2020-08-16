@@ -914,7 +914,7 @@ list_slice_or_index(
 		semsg(_(e_listidx), n1);
 	    return FAIL;
 	}
-	n1 = len;
+	n1 = n1 < 0 ? 0 : len;
     }
     if (range)
     {
