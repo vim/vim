@@ -169,24 +169,8 @@ init_tv(typval_T *varp)
 	CLEAR_POINTER(varp);
 }
 
-/*
- * Get the number value of a variable.
- * If it is a String variable, uses vim_str2nr().
- * For incompatible types, return 0.
- * tv_get_number_chk() is similar to tv_get_number(), but informs the
- * caller of incompatible types: it sets *denote to TRUE if "denote"
- * is not NULL or returns -1 otherwise.
- */
-    varnumber_T
-tv_get_number(typval_T *varp)
-{
-    int		error = FALSE;
-
-    return tv_get_number_chk(varp, &error);	// return 0L on error
-}
-
-    varnumber_T
-tv_get_number_chk(typval_T *varp, int *denote)
+    static varnumber_T
+tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 {
     varnumber_T	n = 0L;
 
@@ -221,7 +205,7 @@ tv_get_number_chk(typval_T *varp, int *denote)
 	    break;
 	case VAR_BOOL:
 	case VAR_SPECIAL:
-	    if (in_vim9script())
+	    if (!want_bool && in_vim9script())
 	    {
 		emsg(_("E611: Using a Special as a Number"));
 		break;
@@ -251,6 +235,39 @@ tv_get_number_chk(typval_T *varp, int *denote)
     else
 	*denote = TRUE;
     return n;
+}
+
+/*
+ * Get the number value of a variable.
+ * If it is a String variable, uses vim_str2nr().
+ * For incompatible types, return 0.
+ * tv_get_number_chk() is similar to tv_get_number(), but informs the
+ * caller of incompatible types: it sets *denote to TRUE if "denote"
+ * is not NULL or returns -1 otherwise.
+ */
+    varnumber_T
+tv_get_number(typval_T *varp)
+{
+    int		error = FALSE;
+
+    return tv_get_number_chk(varp, &error);	// return 0L on error
+}
+
+    varnumber_T
+tv_get_number_chk(typval_T *varp, int *denote)
+{
+    return tv_get_bool_or_number_chk(varp, denote, FALSE);
+}
+
+/*
+ * Get the boolean value of "varp".  This is like tv_get_number_chk(),
+ * but in Vim9 script accepts Number and Bool.
+ */
+    varnumber_T
+tv_get_bool(typval_T *varp)
+{
+    return tv_get_bool_or_number_chk(varp, NULL, TRUE);
+
 }
 
 #ifdef FEAT_FLOAT
