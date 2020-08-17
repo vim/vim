@@ -1315,6 +1315,11 @@ def Test_filter_return_type()
   assert_equal(6, res)
 enddef
 
+def Test_bufnr()
+  let buf = bufnr()
+  assert_equal(buf, bufnr('%'))
+enddef
+
 def Test_getreg_return_type()
   let s1: string = getreg('"')
   let s2: string = getreg('"', 1)
