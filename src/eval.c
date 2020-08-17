@@ -1218,6 +1218,8 @@ set_var_lval(
 		semsg(_(e_letwrong), op);
 		return;
 	    }
+	    if (var_check_lock(lp->ll_blob->bv_lock, lp->ll_name, FALSE))
+		return;
 
 	    if (lp->ll_range && rettv->v_type == VAR_BLOB)
 	    {

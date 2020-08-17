@@ -173,7 +173,7 @@ static char_u *list_arg_vars(exarg_T *eap, char_u *arg, int *first);
 static char_u *ex_let_one(char_u *arg, typval_T *tv, int copy, int flags, char_u *endchars, char_u *op);
 static int do_unlet_var(lval_T *lp, char_u *name_end, exarg_T *eap, int deep, void *cookie);
 static int do_lock_var(lval_T *lp, char_u *name_end, exarg_T *eap, int deep, void *cookie);
-static void item_lock(typval_T *tv, int deep, int lock);
+static void item_lock(typval_T *tv, int deep, int lock, int check_refcount);
 static void delete_var(hashtab_T *ht, hashitem_T *hi);
 static void list_one_var(dictitem_T *v, char *prefix, int *first);
 static void list_one_var_a(char *prefix, char_u *name, int type, char_u *string, int *first);
@@ -1703,7 +1703,7 @@ do_lock_var(
 		    di->di_flags |= DI_FLAGS_LOCK;
 		else
 		    di->di_flags &= ~DI_FLAGS_LOCK;
-		item_lock(&di->di_tv, deep, lock);
+		item_lock(&di->di_tv, deep, lock, FALSE);
 	    }
 	}
 	*name_end = cc;
@@ -1715,26 +1715,28 @@ do_lock_var(
 	// (un)lock a range of List items.
 	while (li != NULL && (lp->ll_empty2 || lp->ll_n2 >= lp->ll_n1))
 	{
-	    item_lock(&li->li_tv, deep, lock);
+	    item_lock(&li->li_tv, deep, lock, FALSE);
 	    li = li->li_next;
 	    ++lp->ll_n1;
 	}
     }
     else if (lp->ll_list != NULL)
 	// (un)lock a List item.
-	item_lock(&lp->ll_li->li_tv, deep, lock);
+	item_lock(&lp->ll_li->li_tv, deep, lock, FALSE);
     else
 	// (un)lock a Dictionary item.
-	item_lock(&lp->ll_di->di_tv, deep, lock);
+	item_lock(&lp->ll_di->di_tv, deep, lock, FALSE);
 
     return ret;
 }
 
 /*
  * Lock or unlock an item.  "deep" is nr of levels to go.
+ * When "check_refcount" is TRUE do not lock a list or dict with a reference
+ * count larger than 1.
  */
     static void
-item_lock(typval_T *tv, int deep, int lock)
+item_lock(typval_T *tv, int deep, int lock, int check_refcount)
 {
     static int	recurse = 0;
     list_T	*l;
@@ -1776,7 +1778,8 @@ item_lock(typval_T *tv, int deep, int lock)
 	    break;
 
 	case VAR_BLOB:
-	    if ((b = tv->vval.v_blob) != NULL)
+	    if ((b = tv->vval.v_blob) != NULL
+				    && !(check_refcount && b->bv_refcount > 1))
 	    {
 		if (lock)
 		    b->bv_lock |= VAR_LOCKED;
@@ -1785,7 +1788,8 @@ item_lock(typval_T *tv, int deep, int lock)
 	    }
 	    break;
 	case VAR_LIST:
-	    if ((l = tv->vval.v_list) != NULL)
+	    if ((l = tv->vval.v_list) != NULL
+				    && !(check_refcount && l->lv_refcount > 1))
 	    {
 		if (lock)
 		    l->lv_lock |= VAR_LOCKED;
@@ -1794,11 +1798,12 @@ item_lock(typval_T *tv, int deep, int lock)
 		if ((deep < 0 || deep > 1) && l->lv_first != &range_list_item)
 		    // recursive: lock/unlock the items the List contains
 		    FOR_ALL_LIST_ITEMS(l, li)
-			item_lock(&li->li_tv, deep - 1, lock);
+			item_lock(&li->li_tv, deep - 1, lock, check_refcount);
 	    }
 	    break;
 	case VAR_DICT:
-	    if ((d = tv->vval.v_dict) != NULL)
+	    if ((d = tv->vval.v_dict) != NULL
+				    && !(check_refcount && d->dv_refcount > 1))
 	    {
 		if (lock)
 		    d->dv_lock |= VAR_LOCKED;
@@ -1813,7 +1818,8 @@ item_lock(typval_T *tv, int deep, int lock)
 			if (!HASHITEM_EMPTY(hi))
 			{
 			    --todo;
-			    item_lock(&HI2DI(hi)->di_tv, deep - 1, lock);
+			    item_lock(&HI2DI(hi)->di_tv, deep - 1, lock,
+							       check_refcount);
 			}
 		    }
 		}
@@ -3087,7 +3093,10 @@ set_var_const(
     }
 
     if (flags & LET_IS_CONST)
-	item_lock(&di->di_tv, 1, TRUE);
+	// Like :lockvar! name: lock the value and what it contains, but only
+	// if the reference count is up to one.  That locks only literal
+	// values.
+	item_lock(&di->di_tv, DICT_MAXNEST, TRUE, TRUE);
 }
 
 /*
