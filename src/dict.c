@@ -703,6 +703,21 @@ dict_get_number_check(dict_T *d, char_u *key)
 }
 
 /*
+ * Get a bool item (number or true/false) from a dictionary.
+ * Returns "def" if the entry doesn't exist.
+ */
+    varnumber_T
+dict_get_bool(dict_T *d, char_u *key, int def)
+{
+    dictitem_T	*di;
+
+    di = dict_find(d, key, -1);
+    if (di == NULL)
+	return def;
+    return tv_get_bool(&di->di_tv);
+}
+
+/*
  * Return an allocated string with the string representation of a Dictionary.
  * May return NULL.
  */
