@@ -223,6 +223,7 @@ EXTERN int	emsg_severe INIT(= FALSE);  // use message of next of several
 // used by assert_fails()
 EXTERN int	emsg_assert_fails_used INIT(= FALSE);
 EXTERN char_u	*emsg_assert_fails_msg INIT(= NULL);
+EXTERN long	emsg_assert_fails_lnum INIT(= 0);
 
 EXTERN int	did_endif INIT(= FALSE);    // just had ":endif"
 #endif

@@ -9,17 +9,19 @@ func CheckDefSuccess(lines)
 endfunc
 
 " Check that "lines" inside ":def" results in an "error" message.
-func CheckDefFailure(lines, error)
+" If "lnum" is given check that the error is reported for this line.
+func CheckDefFailure(lines, error, lnum = -1)
   call writefile(['def Func()'] + a:lines + ['enddef', 'defcompile'], 'Xdef')
-  call assert_fails('so Xdef', a:error, a:lines)
+  call assert_fails('so Xdef', a:error, a:lines, a:lnum)
   call delete('Xdef')
 endfunc
 
 " Check that "lines" inside ":def" results in an "error" message when executed.
-func CheckDefExecFailure(lines, error)
+" If "lnum" is given check that the error is reported for this line.
+func CheckDefExecFailure(lines, error, lnum = -1)
   call writefile(['def Func()'] + a:lines + ['enddef'], 'Xdef')
   so Xdef
-  call assert_fails('call Func()', a:error, a:lines)
+  call assert_fails('call Func()', a:error, a:lines, a:lnum)
   call delete('Xdef')
 endfunc
 

@@ -1464,16 +1464,18 @@ def Test_expr7_list()
 		4]
 
   call CheckDefFailure(["let x = 1234[3]"], 'E1107:')
-  call CheckDefExecFailure(["let x = g:anint[3]"], 'E1062:')
+  call CheckDefExecFailure(["let x = g:anint[3]"], 'E1062:', 1)
 
   call CheckDefFailure(["let x = g:list_mixed[xxx]"], 'E1001:')
 
   call CheckDefFailure(["let x = [1,2,3]"], 'E1069:')
   call CheckDefFailure(["let x = [1 ,2, 3]"], 'E1068:')
 
-  call CheckDefExecFailure(["let x = g:list_mixed['xx']"], 'E1029:')
+  call CheckDefExecFailure(["echo 1", "let x = [][0]", "echo 3"], 'E684:', 2)
+
+  call CheckDefExecFailure(["let x = g:list_mixed['xx']"], 'E1029:', 1)
   call CheckDefFailure(["let x = g:list_mixed["], 'E1097:')
-  call CheckDefFailure(["let x = g:list_mixed[0"], 'E1097:')
+  call CheckDefFailure(["let x = g:list_mixed[0"], 'E1097:', 1)
   call CheckDefExecFailure(["let x = g:list_empty[3]"], 'E684:')
   call CheckDefFailure(["let l: list<number> = [234, 'x']"], 'E1012:')
   call CheckDefFailure(["let l: list<number> = ['x', 234]"], 'E1012:')

@@ -494,7 +494,7 @@ static funcentry_T global_functions[] =
     {"assert_equal",	2, 3, FEARG_2,	  ret_number,	f_assert_equal},
     {"assert_equalfile", 2, 3, FEARG_1,	  ret_number,	f_assert_equalfile},
     {"assert_exception", 1, 2, 0,	  ret_number,	f_assert_exception},
-    {"assert_fails",	1, 3, FEARG_1,	  ret_number,	f_assert_fails},
+    {"assert_fails",	1, 4, FEARG_1,	  ret_number,	f_assert_fails},
     {"assert_false",	1, 2, FEARG_1,	  ret_number,	f_assert_false},
     {"assert_inrange",	3, 4, FEARG_3,	  ret_number,	f_assert_inrange},
     {"assert_match",	2, 3, FEARG_2,	  ret_number,	f_assert_match},

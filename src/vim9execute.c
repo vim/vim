@@ -2299,6 +2299,7 @@ call_def_function(
 
 		    ectx.ec_stack.ga_len -= is_slice ? 2 : 1;
 		    tv = STACK_TV_BOT(-1);
+		    SOURCING_LNUM = iptr->isn_lnum;
 		    if (list_slice_or_index(list, is_slice, n1, n2, tv, TRUE)
 								       == FAIL)
 			goto on_error;
