@@ -3154,7 +3154,7 @@ invoke_popup_filter(win_T *wp, int c)
     call_callback(&wp->w_filter_cb, -1, &rettv, 2, argv);
     if (win_valid_popup(wp) && old_lnum != wp->w_cursor.lnum)
 	popup_highlight_curline(wp);
-    res = tv_get_number(&rettv);
+    res = tv_get_bool(&rettv);
 
     vim_free(argv[1].vval.v_string);
     clear_tv(&rettv);
