@@ -50,8 +50,10 @@ let s:bin_dir = finddir('node_modules/.bin', '.;')
 if !empty(s:bin_dir)
     let s:bin_dir = fnamemodify(s:bin_dir, ':p')
 
+    let path_separator = (has('win64') || has('win32') || has('win16')) ? ';' : ':'
+
     if $PATH !~ s:bin_dir
-        let $PATH = s:bin_dir .. ':' .. $PATH
+        let $PATH = s:bin_dir .. path_separator .. $PATH
     endif
 endif
 unlet s:bin_dir
