@@ -326,7 +326,7 @@ eval_expr_to_bool(typval_T *expr, int *error)
 	*error = TRUE;
 	return FALSE;
     }
-    res = (tv_get_number_chk(&rettv, error) != 0);
+    res = (tv_get_bool_chk(&rettv, error) != 0);
     clear_tv(&rettv);
     return res;
 }

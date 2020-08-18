@@ -270,6 +270,17 @@ tv_get_bool(typval_T *varp)
 
 }
 
+/*
+ * Get the boolean value of "varp".  This is like tv_get_number_chk(),
+ * but in Vim9 script accepts Number and Bool.
+ */
+    varnumber_T
+tv_get_bool_chk(typval_T *varp, int *denote)
+{
+    return tv_get_bool_or_number_chk(varp, denote, TRUE);
+
+}
+
 #ifdef FEAT_FLOAT
     float_T
 tv_get_float(typval_T *varp)
