@@ -615,7 +615,8 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 	    goto theend;
 	}
 
-	if (!error_found && argvars[3].v_type == VAR_NUMBER
+	if (!error_found && argvars[2].v_type != VAR_UNKNOWN
+		&& argvars[3].v_type == VAR_NUMBER
 		&& argvars[3].vval.v_number >= 0
 		&& argvars[3].vval.v_number != emsg_assert_fails_lnum)
 	{
