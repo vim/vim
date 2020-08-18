@@ -43467,7 +43467,7 @@ Files:      src/textprop.c
 
 Patch 8.2.0380
 Problem:    Tiny popup when creating a terminal popup without minwidth.
-Solution:   Use a default mininum size of 5 lines of 20 characters.
+Solution:   Use a default minimum size of 5 lines of 20 characters.
 Files:      src/popupwin.c, src/testdir/test_terminal.vim,
             src/testdir/dumps/Test_terminal_popup_m1.dump
 
@@ -44406,7 +44406,7 @@ Files:      src/testdir/test_search.vim, src/testdir/test_source.vim,
 
 Patch 8.2.0532
 Problem:    Cannot use simplify() as a method.
-Solution:   Add FEARG_1. (closes #5996)
+Solution:   Add FEARG_1. (closes #5896)
 Files:      runtime/doc/eval.txt, src/evalfunc.c,
             src/testdir/test_functions.vim
 
@@ -44932,7 +44932,7 @@ Files:      src/insexpand.c, src/globals.h, src/edit.c, src/ex_getln.c,
             src/testdir/test_ex_mode.vim, runtime/doc/insert.txt
 
 Patch 8.2.0615
-Problem:    Regexp benchmark stest is old style.
+Problem:    Regexp benchmark test is old style.
 Solution:   Make it a new style test.  Fix using a NULL list.  Add more tests.
             (Yegappan Lakshmanan, closes #5963)
 Files:      src/evalbuffer.c, src/testdir/Make_dos.mak,
@@ -45566,7 +45566,7 @@ Files:      runtime/filetype.vim, src/testdir/test_filetype.vim
 
 Patch 8.2.0714
 Problem:    Vim9: handling constant expression does not scale.
-Solution:   Use another solution, passint typval_T.
+Solution:   Use another solution, passing typval_T.
 Files:      src/vim9compile.c, src/testdir/test_vim9_expr.vim
 
 Patch 8.2.0715
@@ -45680,7 +45680,7 @@ Solution:   Do not check for next line in third pass.
 Files:      src/scriptfile.c
 
 Patch 8.2.0735
-Problem:    Vim9: using unitialized memory.
+Problem:    Vim9: using uninitialized memory.
 Solution:   Clear the arg_lvar field.
 Files:      src/vim9compile.c
 
@@ -45801,7 +45801,7 @@ Files:      src/testdir/test_vim9_script.vim
 Patch 8.2.0755
 Problem:    Vim9: No error when variable initializer is not a constant.
 Solution:   Return FAIL when trying to get a variable value.  Do not execute a
-            script when an error is deteted in the first or second phase.
+            script when an error is detected in the first or second phase.
 Files:      src/eval.c, src/vim9script.c, src/testdir/test_vim9_script.vim
 
 Patch 8.2.0756 (after 8.2.0249)
@@ -46003,7 +46003,7 @@ Files:      src/libvterm/include/vterm.h, src/libvterm/src/pen.c,
 
 Patch 8.2.0786
 Problem:    Channel test is flaky on FreeBSD.
-Solution:   Set the sockiet TCP_NODELAY option. Adjust expected line count in
+Solution:   Set the socket TCP_NODELAY option. Adjust expected line count in
             netbeans test. (Ozaki Kiichi, closes #6097)
 Files:      src/testdir/test_channel.py, src/testdir/test_netbeans.vim
 
@@ -46273,7 +46273,7 @@ Solution:   Fix off-by-one error.
 Files:      src/userfunc.c
 
 Patch 8.2.0828
-Problem:    Travis: regexp patttern doesn't work everywhere.
+Problem:    Travis: regexp pattern doesn't work everywhere.
 Solution:   Use [:blank:] instead of \b. (Ozaki Kiichi, closes #6146)
 Files:      .travis.yml, ci/config.mk.clang.sed, ci/config.mk.gcc.sed,
             ci/config.mk.sed, src/if_ruby.c
@@ -46497,7 +46497,7 @@ Files:      runtime/doc/syntax.txt, runtime/doc/term.txt, src/globals.h,
 
 Patch 8.2.0864
 Problem:    Pragmas are indented all the way to the left.
-Solution:   Add an option to indent progmas like normal code. (Max Rumpf,
+Solution:   Add an option to indent pragmas like normal code. (Max Rumpf,
             closes #5468)
 Files:      runtime/doc/indent.txt, src/cindent.c, src/structs.h,
             src/testdir/test_cindent.vim
@@ -46735,7 +46735,7 @@ Files:      src/search.c, src/testdir/test_search_stat.vim,
 
 Patch 8.2.0903
 Problem:    comparing WINVER does not work correctly.
-Solution:   Use arithmethic expansion. (Ozaki Kiichi, closes #6197)
+Solution:   Use arithmetic expansion. (Ozaki Kiichi, closes #6197)
 Files:      src/Make_cyg_ming.mak
 
 Patch 8.2.0904
@@ -46817,7 +46817,7 @@ Files:      src/getchar.c, src/proto/getchar.pro, src/edit.c, src/term.c,
             src/proto/term.pro, src/testdir/test_termcodes.vim
 
 Patch 8.2.0917
-Problem:    Quickfix entries do not suport a "note" type.
+Problem:    Quickfix entries do not support a "note" type.
 Solution:   Add support for "note". (partly by Yegappan Lakshmanan,
             closes #5527, closes #6216)
 Files:      runtime/doc/quickfix.txt, src/quickfix.c,
@@ -46908,7 +46908,7 @@ Files:      READMEdir/README_extra.txt, runtime/doc/options.txt,
             runtime/doc/vi_diff.txt, src/INSTALL
 
 Patch 8.2.0932
-Problem:    Missspelling spelllang.
+Problem:    Misspelling spelllang.
 Solution:   Add an "l". (Dominique Pellé)
 Files:      src/optionstr.c, src/proto/spell.pro, src/spell.c
 
@@ -47364,7 +47364,7 @@ Solution:   Skip over "++arg". (Christian Brabandt, closes #6275,
 Files:      src/cmdexpand.c, src/testdir/test_cmdline.vim
 
 Patch 8.2.1008
-Problem:    Vim9: no test for disassambling newly added instructions.
+Problem:    Vim9: no test for disassembling newly added instructions.
 Solution:   Add a function and check disassembly.
 Files:      src/testdir/test_vim9_disassemble.vim
 
@@ -47697,7 +47697,7 @@ Solution:   Check for operator after line break.
 Files:      src/eval.c, src/testdir/test_vim9_expr.vim
 
 Patch 8.2.1064
-Problem:    Vim9: no line break allowed before comperators.
+Problem:    Vim9: no line break allowed before comparators.
 Solution:   Check for comperator after line break.
 Files:      src/eval.c, src/testdir/test_vim9_expr.vim
 
@@ -47839,7 +47839,7 @@ Files:      src/filepath.c
 
 Patch 8.2.1088
 Problem:    A very long translation might cause a buffer overflow.
-Solution:   Trunctate the message if needed.
+Solution:   Truncate the message if needed.
 Files:      src/fileio.c
 
 Patch 8.2.1089
@@ -48001,7 +48001,7 @@ Solution:   Adjust how a command is parsed.
 Files:      src/ex_docmd.c, src/testdir/test_vim9_cmd.vim
 
 Patch 8.2.1117
-Problem:    Coverity warns for unsing unitialized field.
+Problem:    Coverity warns for using uninitialized field.
 Solution:   Initialize v_lock.
 Files:      src/if_lua.c
 
@@ -48545,7 +48545,7 @@ Problem:    Using ht_used when looping through a hashtab is less reliable.
 Solution:   Use ht_changed in a few more places.
 Files:      src/userfunc.c, src/if_py_both.h
 
-Patch 8.2.1211 (after 8.2.1118
+Patch 8.2.1211 (after 8.2.1118)
 Problem:    Removed more than dead code.
 Solution:   Put back the decrement.
 Files:      src/move.c, src/testdir/test_diffmode.vim
@@ -48852,7 +48852,7 @@ Files:      Filelist, src/Make_cyg_ming.mak, src/Make_morph.mak,
             src/proto/ex_cmds.pro, src/proto/help.pro
 
 Patch 8.2.1263
-Problem:    Vim9: comperators use 'ignorecase' in Vim9 script.
+Problem:    Vim9: comparators use 'ignorecase' in Vim9 script.
 Solution:   Ignore 'ignorecase'.  Use true and false instead of 1 and 0.
             (closes #6497)
 Files:      src/eval.c, src/typval.c, src/vim9execute.c,
@@ -49504,7 +49504,7 @@ Files:      src/vim9compile.c, src/testdir/test_vim9_expr.vim
 
 Patch 8.2.1376
 Problem:    Vim9: expression mapping causes error for using :import.
-Solution:   Add EX_LOCK_OK to :import and :export. (closes 3606)
+Solution:   Add EX_LOCK_OK to :import and :export. (closes #6606)
 Files:      src/ex_cmds.h, src/testdir/test_vim9_script.vim
 
 Patch 8.2.1377
@@ -49558,7 +49558,7 @@ Solution:   Add a test on Travis for ARM. (Ozaki Kiichi, closes #6615)
 Files:      .travis.yml
 
 Patch 8.2.1386
-Problem:    Backslash not removed afer space in option with space in
+Problem:    Backslash not removed after space in option with space in
             'isfname'.
 Solution:   Do remove backslash before space, also when it is in 'isfname'.
             (Yasuhiro Matsumoto, closes #6651)
