@@ -1065,7 +1065,8 @@ source_level(void *cookie)
 }
 
 /*
- * Return the readahead line.
+ * Return the readahead line. Note that the pointer may become invalid when
+ * getting the next line, if it's concatenated with the next one.
  */
     char_u *
 source_nextline(void *cookie)

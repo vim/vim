@@ -397,8 +397,10 @@ skip_expr_concatenate(
     int		vim9script = in_vim9script();
     garray_T    *gap = &evalarg->eval_ga;
     int		save_flags = evalarg == NULL ? 0 : evalarg->eval_flags;
+    int		evaluate = evalarg == NULL
+			       ? FALSE : (evalarg->eval_flags & EVAL_EVALUATE);
 
-    if (vim9script
+    if (vim9script && evaluate
 	       && (evalarg->eval_cookie != NULL || evalarg->eval_cctx != NULL))
     {
 	ga_init2(gap, sizeof(char_u *), 10);
@@ -417,7 +419,7 @@ skip_expr_concatenate(
     if (evalarg != NULL)
 	evalarg->eval_flags = save_flags;
 
-    if (vim9script
+    if (vim9script && evaluate
 	    && (evalarg->eval_cookie != NULL || evalarg->eval_cctx != NULL))
     {
 	if (evalarg->eval_ga.ga_len == 1)
@@ -5425,6 +5427,7 @@ handle_subscript(
 				     && (p[2] == '{' || ASCII_ISALPHA(p[2])))))
 	{
 	    *arg = eval_next_line(evalarg);
+	    p = *arg;
 	    check_white = FALSE;
 	}
 

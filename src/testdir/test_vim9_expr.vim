@@ -1624,6 +1624,15 @@ def Test_expr7_lambda_vim9script()
       assert_equal(12, v)
   END
   CheckScriptSuccess(lines)
+
+  # nested lambda with line breaks
+  lines =<< trim END
+      vim9script
+      search('"', 'cW', 0, 0, {->
+	synstack('.', col('.'))
+	->map({_, v -> synIDattr(v, 'name')})->len()})
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_expr7_dict()
