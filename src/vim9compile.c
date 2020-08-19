@@ -4923,10 +4923,11 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 				lvar->lv_type = stacktype;
 			}
 		    }
-		    else
+		    else if (*op == '=')
 		    {
 			type_T *use_type = lvar->lv_type;
 
+			// without operator type is here, otherwise below
 			if (has_index)
 			{
 			    use_type = use_type->tt_member;
@@ -4934,7 +4935,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 				use_type = &t_void;
 			}
 			if (need_type(stacktype, use_type, -1, cctx, FALSE)
-								   == FAIL)
+								       == FAIL)
 			    goto theend;
 		    }
 		}
@@ -5008,18 +5009,20 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 
 	if (oplen > 0 && *op != '=')
 	{
-	    type_T	    *expected = &t_number;
+	    type_T	    *expected;
 	    type_T	    *stacktype;
-
-	    // TODO: if type is known use float or any operation
-	    // TODO: check operator matches variable type
 
 	    if (*op == '.')
 		expected = &t_string;
-	    else if (*op == '+')
+	    else
 		expected = member_type;
 	    stacktype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-	    if (need_type(stacktype, expected, -1, cctx, FALSE) == FAIL)
+	    if (
+#ifdef FEAT_FLOAT
+		// If variable is float operation with number is OK.
+		!(expected == &t_float && stacktype == &t_number) &&
+#endif
+		    need_type(stacktype, expected, -1, cctx, FALSE) == FAIL)
 		goto theend;
 
 	    if (*op == '.')
@@ -5034,20 +5037,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 					       member_type, stacktype) == FAIL)
 		    goto theend;
 	    }
-	    else
-	    {
-		isn_T *isn = generate_instr_drop(cctx, ISN_OPNR, 1);
-
-		if (isn == NULL)
-		    goto theend;
-		switch (*op)
-		{
-		    case '-': isn->isn_arg.op.op_type = EXPR_SUB; break;
-		    case '*': isn->isn_arg.op.op_type = EXPR_MULT; break;
-		    case '/': isn->isn_arg.op.op_type = EXPR_DIV; break;
-		    case '%': isn->isn_arg.op.op_type = EXPR_REM; break;
-		}
-	    }
+	    else if (generate_two_op(cctx, op) == FAIL)
+		goto theend;
 	}
 
 	if (has_index)
