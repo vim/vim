@@ -1391,6 +1391,18 @@ def Test_readdir()
    eval expand('.')->readdirex({e -> e.name[0] !=# '.'})
 enddef
 
+def Test_setbufvar()
+   setbufvar(bufnr('%'), '&syntax', 'vim')
+   assert_equal('vim', &syntax)
+   setbufvar(bufnr('%'), '&ts', 16)
+   assert_equal(16, &ts)
+   settabwinvar(1, 1, '&syntax', 'vam')
+   assert_equal('vam', &syntax)
+   settabwinvar(1, 1, '&ts', 15)
+   assert_equal(15, &ts)
+   setlocal ts=8
+enddef
+
 def Fibonacci(n: number): number
   if n < 2
     return n
