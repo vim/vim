@@ -245,4 +245,14 @@ func Test_visual_block_scroll()
   call delete(filename)
 endfunc
 
+func Test_display_scroll_at_topline()
+  CheckScreendump
+
+  let buf = RunVimInTerminal('', #{cols: 20})
+  call term_sendkeys(buf, ":call setline(1, repeat('a', 21)) | normal O\<CR>")
+
+  call VerifyScreenDump(buf, 'Test_display_scroll_at_topline', #{rows: 4})
+  call StopVimInTerminal(buf)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
