@@ -69,7 +69,11 @@ _anchors:
         fi
     before_script:
       - sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0
-      - sudo bash ci/load-snd-dummy.sh || true
+      # It appears we can load "snd-dummy" on only amd64.
+      - |
+        if [[ "${TRAVIS_CPU_ARCH}" = amd64 ]]; then
+          sudo bash ci/load-snd-dummy.sh || true
+        fi
       - sudo usermod -a -G audio $USER
       - do_test() { sg audio "sg $(id -gn) '$*'"; }
 
@@ -208,13 +212,13 @@ jobs:
       env:
         - *normal
         - *shadowopt
-          # Temporarily disabled, always fails
-          #- <<: *linux
-          #  arch: s390x
-          #  name: huge/gcc-s390x
-          #  compiler: gcc
-          #  env: *linux-huge
-          #  services: []
+    # Temporarily disabled, always fails
+    #- <<: *linux
+    #  arch: s390x
+    #  name: huge/gcc-s390x
+    #  compiler: gcc
+    #  env: *linux-huge
+    #  services: []
     - <<: *linux
       arch: arm64
       name: huge/gcc-arm64
