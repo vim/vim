@@ -50,13 +50,14 @@ let s:bin_dir = finddir('node_modules/.bin', '.;')
 if !empty(s:bin_dir)
     let s:bin_dir = fnamemodify(s:bin_dir, ':p')
 
-    let path_separator = (has('win64') || has('win32') || has('win16')) ? ';' : ':'
+    let s:path_separator = has('win32') ? ';' : ':'
 
     if $PATH !~ s:bin_dir
-        let $PATH = s:bin_dir .. path_separator .. $PATH
+        let $PATH = s:bin_dir .. s:path_separator .. $PATH
     endif
 endif
 unlet s:bin_dir
+unlet s:path_separator
 
 " Remove irrelevant part of 'path'.
 " User is expected to augment it with contextually-relevant paths
