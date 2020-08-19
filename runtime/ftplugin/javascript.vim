@@ -44,21 +44,6 @@ setlocal suffixesadd+=.js,.jsx,.es,.es6,.cjs,.mjs,.jsm,.vue,.json
 "   .snap    jest snapshot
 setlocal suffixes+=.snap
 
-" Prepend node_modules/.bin to $PATH if applicable
-" Allows calling executables installed locally via npm/yarn
-let s:bin_dir = finddir('node_modules/.bin', '.;')
-if !empty(s:bin_dir)
-    let s:bin_dir = fnamemodify(s:bin_dir, ':p')
-
-    let s:path_separator = has('win32') ? ';' : ':'
-
-    if $PATH !~ s:bin_dir
-        let $PATH = s:bin_dir .. s:path_separator .. $PATH
-    endif
-endif
-unlet s:bin_dir
-unlet s:path_separator
-
 " Remove irrelevant part of 'path'.
 " User is expected to augment it with contextually-relevant paths
 setlocal path-=/usr/include
@@ -72,16 +57,6 @@ if exists("loaded_matchit")
                 \ .. '<\@<=\%([^ \t>/]\+\)\%(\s\+[^/>]*\|$\):/>'
 endif
 
-" Use eslint for :make if applicable
-if executable('eslint')
-    compiler eslint
-endif
-
-" Use standard for :make if applicable
-if executable('standard')
-    compiler standard
-endif
-
 " Set 'define' to a comprehensive value
 let &l:define =
             \ '\(^\s*(*async\s\+function\|(*function\)'
@@ -90,7 +65,7 @@ let &l:define =
             \ .. '\|^\s*\(export\s\+\|export\s\+default\s\+\)*\(var\|let\|const\|function\|class\)'
             \ .. '\|\<as\>'
 
-let b:undo_ftplugin = "setl fo< ofu< com< cms< sua< su< def< pa< mp< efm<"
+let b:undo_ftplugin = "setl fo< ofu< com< cms< sua< su< def< pa<"
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
