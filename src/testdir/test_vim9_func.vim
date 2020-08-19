@@ -1386,6 +1386,10 @@ def Test_search()
   assert_equal(2, search('bar', 'W', 0, 0, {-> val == 1}))
 enddef
 
+def Test_readdirex()
+   eval expand('.')->readdirex({e -> e.name[0] !=# '.'})
+enddef
+
 def Fibonacci(n: number): number
   if n < 2
     return n

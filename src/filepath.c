@@ -1493,6 +1493,12 @@ readdirex_checkitem(void *context, void *item)
     if (eval_expr_typval(expr, argv, 1, &rettv) == FAIL)
 	goto theend;
 
+    // We want to use -1, but also true/false should be allowed.
+    if (rettv.v_type == VAR_SPECIAL || rettv.v_type == VAR_BOOL)
+    {
+	rettv.v_type = VAR_NUMBER;
+	rettv.vval.v_number = rettv.vval.v_number == VVAL_TRUE;
+    }
     retval = tv_get_number_chk(&rettv, &error);
     if (error)
 	retval = -1;
