@@ -6661,10 +6661,22 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	if (*cmd != '\'' || starts_with_colon)
 	{
 	    ea.cmd = skip_range(ea.cmd, NULL);
-	    if (ea.cmd > cmd && !starts_with_colon)
+	    if (ea.cmd > cmd)
 	    {
-		emsg(_(e_colon_required_before_a_range));
-		goto erret;
+		if (!starts_with_colon)
+		{
+		    emsg(_(e_colon_required_before_a_range));
+		    goto erret;
+		}
+		if (ends_excmd2(line, ea.cmd))
+		{
+		    // A range without a command: jump to the line.
+		    // TODO: compile to a more efficient command, possibly
+		    // calling parse_cmd_address().
+		    ea.cmdidx = CMD_SIZE;
+		    line = compile_exec(line, &ea, &cctx);
+		    goto nextline;
+		}
 	    }
 	}
 	p = find_ex_command(&ea, NULL, starts_with_colon ? NULL
@@ -6845,6 +6857,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 		    line = compile_exec(line, &ea, &cctx);
 		    break;
 	}
+nextline:
 	if (line == NULL)
 	    goto erret;
 	line = skipwhite(line);

@@ -10,6 +10,13 @@ def Test_syntax()
   let other: list<string> = ['asdf']
 enddef
 
+def Test_range_only()
+  new
+  setline(1, ['blah', 'Blah'])
+  :/Blah/
+  assert_equal(2, getcurpos()[1])
+enddef
+
 let s:appendToMe = 'xxx'
 let s:addToMe = 111
 let g:existing = 'yes'
