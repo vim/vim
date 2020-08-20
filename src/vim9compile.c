@@ -4197,18 +4197,21 @@ exarg_getline(
 	int c UNUSED,
 	void *cookie,
 	int indent UNUSED,
-	int do_concat UNUSED)
+	getline_opt_T options UNUSED)
 {
     cctx_T  *cctx = (cctx_T *)cookie;
+    char_u  *p;
 
-    if (cctx->ctx_lnum == cctx->ctx_ufunc->uf_lines.ga_len)
+    for (;;)
     {
-	iemsg("Heredoc got to end");
-	return NULL;
+	if (cctx->ctx_lnum == cctx->ctx_ufunc->uf_lines.ga_len)
+	    return NULL;
+	++cctx->ctx_lnum;
+	p = ((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)[cctx->ctx_lnum];
+	// Comment lines result in NULL pointers, skip them.
+	if (p != NULL)
+	    return vim_strsave(p);
     }
-    ++cctx->ctx_lnum;
-    return vim_strsave(((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)
-							     [cctx->ctx_lnum]);
 }
 
 /*

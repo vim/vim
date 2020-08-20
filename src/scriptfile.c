@@ -1604,7 +1604,9 @@ free_autoload_scriptnames(void)
 #endif
 
     linenr_T
-get_sourced_lnum(char_u *(*fgetline)(int, void *, int, int), void *cookie)
+get_sourced_lnum(
+	char_u *(*fgetline)(int, void *, int, getline_opt_T),
+	void *cookie)
 {
     return fgetline == getsourceline
 			? ((struct source_cookie *)cookie)->sourcing_lnum
@@ -1724,7 +1726,11 @@ get_one_sourceline(struct source_cookie *sp)
  * Return NULL for end-of-file or some error.
  */
     char_u *
-getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
+getsourceline(
+	int c UNUSED,
+	void *cookie,
+	int indent UNUSED,
+	getline_opt_T options)
 {
     struct source_cookie *sp = (struct source_cookie *)cookie;
     char_u		*line;
@@ -1765,7 +1771,8 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
 
     // Only concatenate lines starting with a \ when 'cpoptions' doesn't
     // contain the 'C' flag.
-    if (line != NULL && do_concat && vim_strchr(p_cpo, CPO_CONCAT) == NULL)
+    if (line != NULL && options != GETLINE_NONE
+				      && vim_strchr(p_cpo, CPO_CONCAT) == NULL)
     {
 	// compensate for the one line read-ahead
 	--sp->sourcing_lnum;
@@ -1781,7 +1788,8 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
 			      || (p[0] == '"' && p[1] == '\\' && p[2] == ' ')
 #ifdef FEAT_EVAL
 			      || (in_vim9script()
-				       && (*p == NUL || vim9_comment_start(p)))
+				      && options == GETLINE_CONCAT_ALL
+				      && (*p == NUL || vim9_comment_start(p)))
 #endif
 			      ))
 	{
@@ -1814,7 +1822,8 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
 		else if (!(p[0] == '"' && p[1] == '\\' && p[2] == ' ')
 #ifdef FEAT_EVAL
 			&& !(in_vim9script()
-				       && (*p == NUL || vim9_comment_start(p)))
+				&& options == GETLINE_CONCAT_ALL
+				&& (*p == NUL || vim9_comment_start(p)))
 #endif
 			)
 		    break;
@@ -1968,7 +1977,7 @@ do_finish(exarg_T *eap, int reanimate)
  */
     int
 source_finished(
-    char_u	*(*fgetline)(int, void *, int, int),
+    char_u	*(*fgetline)(int, void *, int, getline_opt_T),
     void	*cookie)
 {
     return (getline_equal(fgetline, cookie, getsourceline)

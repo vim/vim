@@ -1761,6 +1761,13 @@ typedef struct
 # endif
 } scriptitem_T;
 
+// type of getline() last argument
+typedef enum {
+    GETLINE_NONE,	    // do not concatenate any lines
+    GETLINE_CONCAT_CONT,    // concatenate continuation lines
+    GETLINE_CONCAT_ALL	    // concatenate continuation and Vim9 # comment lines
+} getline_opt_T;
+
 // Struct passed through eval() functions.
 // See EVALARG_EVALUATE for a fixed value with eval_flags set to EVAL_EVALUATE.
 typedef struct {
@@ -1768,7 +1775,7 @@ typedef struct {
     int		eval_break_count;   // nr of line breaks consumed
 
     // copied from exarg_T when "getline" is "getsourceline". Can be NULL.
-    char_u	*(*eval_getline)(int, void *, int, int);
+    char_u	*(*eval_getline)(int, void *, int, getline_opt_T);
     void	*eval_cookie;	    // argument for eval_getline()
 
     // used when compiling a :def function, NULL otherwise

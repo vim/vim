@@ -2651,7 +2651,7 @@ def_function(exarg_T *eap, char_u *name_arg)
     static int	func_nr = 0;	    // number for nameless function
     int		paren;
     hashitem_T	*hi;
-    int		do_concat = TRUE;
+    getline_opt_T getline_options = GETLINE_CONCAT_CONT;
     linenr_T	sourcing_lnum_off;
     linenr_T	sourcing_lnum_top;
     int		is_heredoc = FALSE;
@@ -3008,9 +3008,10 @@ def_function(exarg_T *eap, char_u *name_arg)
 	{
 	    vim_free(line_to_free);
 	    if (eap->getline == NULL)
-		theline = getcmdline(':', 0L, indent, do_concat);
+		theline = getcmdline(':', 0L, indent, getline_options);
 	    else
-		theline = eap->getline(':', eap->cookie, indent, do_concat);
+		theline = eap->getline(':', eap->cookie, indent,
+							      getline_options);
 	    line_to_free = theline;
 	}
 	if (KeyTyped)
@@ -3053,7 +3054,7 @@ def_function(exarg_T *eap, char_u *name_arg)
 		{
 		    VIM_CLEAR(skip_until);
 		    VIM_CLEAR(heredoc_trimmed);
-		    do_concat = TRUE;
+		    getline_options = GETLINE_CONCAT_CONT;
 		    is_heredoc = FALSE;
 		}
 	    }
@@ -3178,7 +3179,7 @@ def_function(exarg_T *eap, char_u *name_arg)
 		    skip_until = vim_strsave((char_u *)".");
 		else
 		    skip_until = vim_strnsave(p, skiptowhite(p) - p);
-		do_concat = FALSE;
+		getline_options = GETLINE_NONE;
 		is_heredoc = TRUE;
 	    }
 
@@ -3205,7 +3206,7 @@ def_function(exarg_T *eap, char_u *name_arg)
 						 skipwhite(theline) - theline);
 		    }
 		    skip_until = vim_strnsave(p, skiptowhite(p) - p);
-		    do_concat = FALSE;
+		    getline_options = GETLINE_NONE;
 		    is_heredoc = TRUE;
 		}
 	    }
@@ -4249,7 +4250,7 @@ get_func_line(
     int	    c UNUSED,
     void    *cookie,
     int	    indent UNUSED,
-    int	    do_concat UNUSED)
+    getline_opt_T options UNUSED)
 {
     funccall_T	*fcp = (funccall_T *)cookie;
     ufunc_T	*fp = fcp->func;

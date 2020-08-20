@@ -46,7 +46,7 @@ void ex_call(exarg_T *eap);
 int do_return(exarg_T *eap, int reanimate, int is_cmd, void *rettv);
 void discard_pending_return(void *rettv);
 char_u *get_return_cmd(void *rettv);
-char_u *get_func_line(int c, void *cookie, int indent, int do_concat);
+char_u *get_func_line(int c, void *cookie, int indent, getline_opt_T options);
 int func_has_ended(void *cookie);
 int func_has_abort(void *cookie);
 dict_T *make_partial(dict_T *selfdict_in, typval_T *rettv);

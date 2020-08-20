@@ -1141,6 +1141,17 @@ def Test_list_vimscript()
       assert_equal(['one', 'two', 'three'], mylist)
   END
   CheckScriptSuccess(lines)
+
+  # check all lines from heredoc are kept
+  lines =<< trim END
+      # comment 1
+      two
+      # comment 3
+
+      five
+      # comment 6
+  END
+  assert_equal(['# comment 1', 'two', '# comment 3', '', 'five', '# comment 6'], lines)
 enddef
 
 if has('channel')

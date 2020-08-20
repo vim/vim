@@ -1867,7 +1867,7 @@ struct exarg
     int		bad_char;	// BAD_KEEP, BAD_DROP or replacement byte
     int		useridx;	// user command index
     char	*errmsg;	// returned error message
-    char_u	*(*getline)(int, void *, int, int);
+    char_u	*(*getline)(int, void *, int, getline_opt_T);
     void	*cookie;	// argument for getline()
 #ifdef FEAT_EVAL
     cstack_T	*cstack;	// condition stack for ":if" etc.
