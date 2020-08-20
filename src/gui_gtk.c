@@ -824,7 +824,7 @@ gui_gtk_set_mnemonics(int enable)
     vimmenu_T	*menu;
     char_u	*name;
 
-    for (menu = root_menu; menu != NULL; menu = menu->next)
+    FOR_ALL_MENUS(menu)
     {
 	if (menu->id == NULL)
 	    continue;
@@ -1006,6 +1006,22 @@ gui_mch_set_scrollbar_pos(scrollbar_T *sb, int x, int y, int w, int h)
 {
     if (sb->id != NULL)
 	gtk_form_move_resize(GTK_FORM(gui.formwin), sb->id, x, y, w, h);
+}
+
+    int
+gui_mch_get_scrollbar_xpadding(void)
+{
+    // TODO: Calculate the padding for adjust scrollbar position when the
+    // Window is maximized.
+    return 0;
+}
+
+    int
+gui_mch_get_scrollbar_ypadding(void)
+{
+    // TODO: Calculate the padding for adjust scrollbar position when the
+    // Window is maximized.
+    return 0;
 }
 
 /*

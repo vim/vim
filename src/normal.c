@@ -499,8 +499,9 @@ normal_cmd(
 #ifdef FEAT_EVAL
     int		set_prevcount = FALSE;
 #endif
+    int		save_did_cursorhold = did_cursorhold;
 
-    vim_memset(&ca, 0, sizeof(ca));	// also resets ca.retval
+    CLEAR_FIELD(ca);	// also resets ca.retval
     ca.oap = oap;
 
     // Use a count remembered from before entering an operator.  After typing
@@ -595,7 +596,7 @@ normal_cmd(
 	// restart automatically.
 	// Insert the typed character in the typeahead buffer, so that it can
 	// be mapped in Insert mode.  Required for ":lmap" to work.
-	ins_char_typebuf(c);
+	ins_char_typebuf(vgetc_char, vgetc_mod_mask);
 	if (restart_edit != 0)
 	    c = 'd';
 	else
@@ -1025,7 +1026,12 @@ getcount:
 	out_flush();
 #endif
     if (ca.cmdchar != K_IGNORE)
-	did_cursorhold = FALSE;
+    {
+	if (ex_normal_busy)
+	    did_cursorhold = save_did_cursorhold;
+	else
+	    did_cursorhold = FALSE;
+    }
 
     State = NORMAL;
 
@@ -1080,16 +1086,7 @@ getcount:
     {
 	clearop(oap);
 #ifdef FEAT_EVAL
-	{
-	    int regname = 0;
-
-	    // Adjust the register according to 'clipboard', so that when
-	    // "unnamed" is present it becomes '*' or '+' instead of '"'.
-# ifdef FEAT_CLIPBOARD
-	    adjust_clip_reg(&regname);
-# endif
-	    set_reg_var(regname);
-	}
+	reset_reg_var();
 #endif
     }
 
@@ -1154,7 +1151,9 @@ getcount:
 
 	    kmsg = keep_msg;
 	    keep_msg = NULL;
-	    // showmode() will clear keep_msg, but we want to use it anyway
+	    // Showmode() will clear keep_msg, but we want to use it anyway.
+	    // First update w_topline.
+	    setcursor();
 	    update_screen(0);
 	    // now reset it, otherwise it's put in the history again
 	    keep_msg = kmsg;
@@ -1167,6 +1166,9 @@ getcount:
 	    }
 	}
 	setcursor();
+#ifdef CURSOR_SHAPE
+	ui_cursor_shape();		// may show different cursor shape
+#endif
 	cursor_on();
 	out_flush();
 	if (msg_scroll || emsg_on_display)
@@ -1184,6 +1186,11 @@ getcount:
 normal_end:
 
     msg_nowait = FALSE;
+
+#ifdef FEAT_EVAL
+    if (finish_op)
+	reset_reg_var();
+#endif
 
     // Reset finish_op, in case it was set
 #ifdef CURSOR_SHAPE
@@ -1280,7 +1287,7 @@ set_vcount_ca(cmdarg_T *cap, int *set_prevcount)
 #endif
 
 /*
- * Check if  highlighting for visual mode is possible, give a warning message
+ * Check if highlighting for Visual mode is possible, give a warning message
  * if not.
  */
     void
@@ -3380,14 +3387,6 @@ nv_clear(cmdarg_T *cap)
 {
     if (!checkclearop(cap->oap))
     {
-#if defined(__BEOS__) && !USE_THREAD_FOR_INPUT_WITH_TIMEOUT
-	/*
-	 * Right now, the BeBox doesn't seem to have an easy way to detect
-	 * window resizing, so we cheat and make the user detect it
-	 * manually with CTRL-L instead
-	 */
-	ui_get_shellsize();
-#endif
 #ifdef FEAT_SYN_HL
 	// Clear all syntax states to force resyncing.
 	syn_stack_free_all(curwin->w_s);
@@ -3475,7 +3474,7 @@ do_nv_ident(int c1, int c2)
     cmdarg_T	ca;
 
     clear_oparg(&oa);
-    vim_memset(&ca, 0, sizeof(ca));
+    CLEAR_FIELD(ca);
     ca.oap = &oa;
     ca.cmdchar = c1;
     ca.nchar = c2;
@@ -4164,6 +4163,10 @@ nv_gotofile(cmdarg_T *cap)
 	clearop(cap->oap);
 	return;
     }
+#ifdef FEAT_PROP_POPUP
+    if (ERROR_IF_TERM_POPUP_WINDOW)
+	return;
+#endif
 
     ptr = grab_file_name(cap->count1, &lnum);
 
@@ -4303,8 +4306,8 @@ normal_search(
     cap->oap->use_reg_one = TRUE;
     curwin->w_set_curswant = TRUE;
 
-    vim_memset(&sia, 0, sizeof(sia));
-    i = do_search(cap->oap, dir, pat, cap->count1,
+    CLEAR_FIELD(sia);
+    i = do_search(cap->oap, dir, dir, pat, cap->count1,
 			    opt | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG, &sia);
     if (wrapped != NULL)
 	*wrapped = sia.sa_wrapped;
@@ -5439,7 +5442,7 @@ nv_gomark(cmdarg_T *cap)
 }
 
 /*
- * Handle CTRL-O, CTRL-I, "g;" and "g," commands.
+ * Handle CTRL-O, CTRL-I, "g;", "g," and "CTRL-Tab" commands.
  */
     static void
 nv_pcmark(cmdarg_T *cap)
@@ -5453,6 +5456,12 @@ nv_pcmark(cmdarg_T *cap)
 
     if (!checkclearopq(cap->oap))
     {
+	if (cap->cmdchar == TAB && mod_mask == MOD_MASK_CTRL)
+	{
+	    if (goto_tabpage_lastused() == FAIL)
+		clearopbeep(cap->oap);
+	    return;
+	}
 	if (cap->cmdchar == 'g')
 	    pos = movechangelist((int)cap->count1);
 	else
@@ -5659,7 +5668,7 @@ n_start_visual_mode(int c)
     VIsual_reselect = TRUE;
 
     // Corner case: the 0 position in a tab may change when going into
-    // virtualedit.  Recalculate curwin->w_cursor to avoid bad hilighting.
+    // virtualedit.  Recalculate curwin->w_cursor to avoid bad highlighting.
     if (c == Ctrl_V && (ve_flags & VE_BLOCK) && gchar_cursor() == TAB)
     {
 	validate_virtcol();
@@ -6305,6 +6314,11 @@ nv_g_cmd(cmdarg_T *cap)
     case 'T':
 	if (!checkclearop(oap))
 	    goto_tabpage(-(int)cap->count1);
+	break;
+
+    case TAB:
+	if (!checkclearop(oap) && goto_tabpage_lastused() == FAIL)
+	    clearopbeep(oap);
 	break;
 
     case '+':
@@ -7412,7 +7426,7 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	// line that needs to be deleted now.
 	if (empty && *ml_get(curbuf->b_ml.ml_line_count) == NUL)
 	{
-	    ml_delete(curbuf->b_ml.ml_line_count, TRUE);
+	    ml_delete_flags(curbuf->b_ml.ml_line_count, ML_DEL_MESSAGE);
 	    deleted_lines(curbuf->b_ml.ml_line_count + 1, 1);
 
 	    // If the cursor was in that line, move it to the end of the last

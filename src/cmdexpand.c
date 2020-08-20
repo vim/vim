@@ -16,6 +16,9 @@
 static int	cmd_showtail;	// Only show path tail in lists ?
 
 static void	set_expand_context(expand_T *xp);
+static int      ExpandGeneric(expand_T *xp, regmatch_T *regmatch,
+			      int *num_file, char_u ***file,
+			      char_u *((*func)(expand_T *, int)), int escaped);
 static int	ExpandFromContext(expand_T *xp, char_u *, int *, char_u ***, int);
 static int	expand_showtail(expand_T *xp);
 static int	expand_shellcmd(char_u *filepat, int *num_file, char_u ***file, int flagsarg);
@@ -270,6 +273,7 @@ nextwild(
  * options = WILD_SILENT:	    don't print warning messages
  * options = WILD_ESCAPE:	    put backslash before special chars
  * options = WILD_ICASE:	    ignore case for files
+ * options = WILD_ALLLINKS;	    keep broken links
  *
  * The variables xp->xp_context and xp->xp_backslash must have been set!
  */
@@ -490,18 +494,9 @@ ExpandOne(
     void
 ExpandInit(expand_T *xp)
 {
-    xp->xp_pattern = NULL;
-    xp->xp_pattern_len = 0;
+    CLEAR_POINTER(xp);
     xp->xp_backslash = XP_BS_NONE;
-#ifndef BACKSLASH_IN_FILENAME
-    xp->xp_shell = FALSE;
-#endif
     xp->xp_numfiles = -1;
-    xp->xp_files = NULL;
-#if defined(FEAT_EVAL)
-    xp->xp_arg = NULL;
-#endif
-    xp->xp_line = NULL;
 }
 
 /*
@@ -1095,6 +1090,15 @@ set_one_cmd_context(
 
     arg = skipwhite(p);
 
+    // Skip over ++argopt argument
+    if ((ea.argt & EX_ARGOPT) && *arg != NUL && STRNCMP(arg, "++", 2) == 0)
+    {
+	p = arg;
+	while (*p && !vim_isspace(*p))
+	    MB_PTR_ADV(p);
+	arg = skipwhite(p);
+    }
+
     if (ea.cmdidx == CMD_write || ea.cmdidx == CMD_update)
     {
 	if (*arg == '>')			// append
@@ -1141,6 +1145,7 @@ set_one_cmd_context(
 	// Skip space(s) after +command to get to the real argument
 	arg = skipwhite(arg);
     }
+
 
     // Check for '|' to separate commands and '"' to start comments.
     // Don't do this for ":read !cmd" and ":write !cmd".
@@ -1386,7 +1391,7 @@ set_one_cmd_context(
 		if (*arg != NUL)
 		{
 		    xp->xp_context = EXPAND_NOTHING;
-		    arg = skip_regexp(arg + 1, *arg, p_magic, NULL);
+		    arg = skip_regexp(arg + 1, *arg, p_magic);
 		}
 	    }
 	    return find_nextcmd(arg);
@@ -1424,7 +1429,7 @@ set_one_cmd_context(
 	    {
 		// skip "from" part
 		++arg;
-		arg = skip_regexp(arg, delim, p_magic, NULL);
+		arg = skip_regexp(arg, delim, p_magic);
 	    }
 	    // skip "to" part
 	    while (arg[0] != NUL && arg[0] != delim)
@@ -1547,6 +1552,7 @@ set_one_cmd_context(
 
 	case CMD_function:
 	case CMD_delfunction:
+	case CMD_disassemble:
 	    xp->xp_context = EXPAND_USER_FUNC;
 	    xp->xp_pattern = arg;
 	    break;
@@ -1723,7 +1729,8 @@ set_one_cmd_context(
 	    {
 		if ( STRNCMP(arg, "messages", p - arg) == 0
 		  || STRNCMP(arg, "ctype", p - arg) == 0
-		  || STRNCMP(arg, "time", p - arg) == 0)
+		  || STRNCMP(arg, "time", p - arg) == 0
+		  || STRNCMP(arg, "collate", p - arg) == 0)
 		{
 		    xp->xp_context = EXPAND_LOCALES;
 		    xp->xp_pattern = skipwhite(p);
@@ -1871,62 +1878,6 @@ expand_cmdline(
     return EXPAND_OK;
 }
 
-#ifdef FEAT_MULTI_LANG
-/*
- * Cleanup matches for help tags:
- * Remove "@ab" if the top of 'helplang' is "ab" and the language of the first
- * tag matches it.  Otherwise remove "@en" if "en" is the only language.
- */
-    static void
-cleanup_help_tags(int num_file, char_u **file)
-{
-    int		i, j;
-    int		len;
-    char_u	buf[4];
-    char_u	*p = buf;
-
-    if (p_hlg[0] != NUL && (p_hlg[0] != 'e' || p_hlg[1] != 'n'))
-    {
-	*p++ = '@';
-	*p++ = p_hlg[0];
-	*p++ = p_hlg[1];
-    }
-    *p = NUL;
-
-    for (i = 0; i < num_file; ++i)
-    {
-	len = (int)STRLEN(file[i]) - 3;
-	if (len <= 0)
-	    continue;
-	if (STRCMP(file[i] + len, "@en") == 0)
-	{
-	    // Sorting on priority means the same item in another language may
-	    // be anywhere.  Search all items for a match up to the "@en".
-	    for (j = 0; j < num_file; ++j)
-		if (j != i && (int)STRLEN(file[j]) == len + 3
-			   && STRNCMP(file[i], file[j], len + 1) == 0)
-		    break;
-	    if (j == num_file)
-		// item only exists with @en, remove it
-		file[i][len] = NUL;
-	}
-    }
-
-    if (*buf != NUL)
-	for (i = 0; i < num_file; ++i)
-	{
-	    len = (int)STRLEN(file[i]) - 3;
-	    if (len <= 0)
-		continue;
-	    if (STRCMP(file[i] + len, buf) == 0)
-	    {
-		// remove the default language
-		file[i][len] = NUL;
-	    }
-	}
-}
-#endif
-
 /*
  * Function given to ExpandGeneric() to obtain the possible arguments of the
  * ":behave {mswin,xterm}" command.
@@ -1975,6 +1926,7 @@ ExpandFromContext(
     regmatch_T	regmatch;
     int		ret;
     int		flags;
+    char_u	*tofree = NULL;
 
     flags = EW_DIR;	// include directories
     if (options & WILD_LIST_NOTFOUND)
@@ -2112,6 +2064,17 @@ ExpandFromContext(
     if (xp->xp_context == EXPAND_PACKADD)
 	return ExpandPackAddDir(pat, num_file, file);
 
+    // When expanding a function name starting with s:, match the <SNR>nr_
+    // prefix.
+    if (xp->xp_context == EXPAND_USER_FUNC && STRNCMP(pat, "^s:", 3) == 0)
+    {
+	int len = (int)STRLEN(pat) + 20;
+
+	tofree = alloc(len);
+	vim_snprintf((char *)tofree, len, "^<SNR>\\d\\+_%s", pat + 3);
+	pat = tofree;
+    }
+
     regmatch.regprog = vim_regcomp(pat, p_magic ? RE_MAGIC : 0);
     if (regmatch.regprog == NULL)
 	return FAIL;
@@ -2201,6 +2164,7 @@ ExpandFromContext(
     }
 
     vim_regfree(regmatch.regprog);
+    vim_free(tofree);
 
     return ret;
 }
@@ -2214,7 +2178,7 @@ ExpandFromContext(
  *
  * Returns OK when no problems encountered, FAIL for error (out of memory).
  */
-    int
+    static int
 ExpandGeneric(
     expand_T	*xp,
     regmatch_T	*regmatch,
@@ -2250,6 +2214,13 @@ ExpandGeneric(
 			str = vim_strsave_escaped(str, (char_u *)" \t\\.");
 		    else
 			str = vim_strsave(str);
+		    if (str == NULL)
+		    {
+			FreeWild(count, *file);
+			*num_file = 0;
+			*file = NULL;
+			return FAIL;
+		    }
 		    (*file)[count] = str;
 # ifdef FEAT_MENU
 		    if (func == get_menu_names && str != NULL)
@@ -2268,13 +2239,14 @@ ExpandGeneric(
 	{
 	    if (count == 0)
 		return OK;
-	    *num_file = count;
 	    *file = ALLOC_MULT(char_u *, count);
 	    if (*file == NULL)
 	    {
-		*file = (char_u **)"";
+		*num_file = 0;
+		*file = NULL;
 		return FAIL;
 	    }
+	    *num_file = count;
 	    count = 0;
 	}
     }
@@ -2297,7 +2269,6 @@ ExpandGeneric(
     // they don't show up when getting normal highlight names by ID.
     reset_expand_highlight();
 #endif
-
     return OK;
 }
 
@@ -2317,7 +2288,7 @@ expand_shellcmd(
     char_u	*path = NULL;
     int		mustfree = FALSE;
     garray_T    ga;
-    char_u	*buf = alloc(MAXPATHL);
+    char_u	*buf;
     size_t	l;
     char_u	*s, *e;
     int		flags = flagsarg;
@@ -2327,12 +2298,18 @@ expand_shellcmd(
     hashitem_T	*hi;
     hash_T	hash;
 
+    buf = alloc(MAXPATHL);
     if (buf == NULL)
 	return FAIL;
 
-    // for ":set path=" and ":set tags=" halve backslashes for escaped
-    // space
+    // for ":set path=" and ":set tags=" halve backslashes for escaped space
     pat = vim_strsave(filepat);
+    if (pat == NULL)
+    {
+	vim_free(buf);
+	return FAIL;
+    }
+
     for (i = 0; pat[i]; ++i)
 	if (pat[i] == '\\' && pat[i + 1] == ' ')
 	    STRMOVE(pat + i, pat + i + 1);
@@ -2439,7 +2416,7 @@ expand_shellcmd(
 # if defined(FEAT_EVAL)
 /*
  * Call "user_expand_func()" to invoke a user defined Vim script function and
- * return the result (either a string or a List).
+ * return the result (either a string, a List or NULL).
  */
     static void *
 call_user_expand_func(
@@ -2525,7 +2502,7 @@ ExpandUserDefined(
 	{
 	    if (ga_grow(&ga, 1) == FAIL)
 		break;
-	    ((char_u **)ga.ga_data)[ga.ga_len] = vim_strnsave(s, (int)(e - s));
+	    ((char_u **)ga.ga_data)[ga.ga_len] = vim_strnsave(s, e - s);
 	    ++ga.ga_len;
 	}
 
@@ -2557,7 +2534,7 @@ ExpandUserList(
 
     ga_init2(&ga, (int)sizeof(char *), 3);
     // Loop over the items in the list.
-    for (li = retlist->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(retlist, li)
     {
 	if (li->li_tv.v_type != VAR_STRING || li->li_tv.vval.v_string == NULL)
 	    continue;  // Skip non-string items and empty strings
@@ -2623,16 +2600,13 @@ globpath(
 		ExpandEscape(&xpc, buf, num_p, p, WILD_SILENT|expand_options);
 
 		if (ga_grow(ga, num_p) == OK)
-		{
+		    // take over the pointers and put them in "ga"
 		    for (i = 0; i < num_p; ++i)
 		    {
-			((char_u **)ga->ga_data)[ga->ga_len] =
-					vim_strnsave(p[i], (int)STRLEN(p[i]));
+			((char_u **)ga->ga_data)[ga->ga_len] = p[i];
 			++ga->ga_len;
 		    }
-		}
-
-		FreeWild(num_p, p);
+		vim_free(p);
 	    }
 	}
     }
@@ -2648,10 +2622,18 @@ globpath(
 f_getcompletion(typval_T *argvars, typval_T *rettv)
 {
     char_u	*pat;
+    char_u	*type;
     expand_T	xpc;
     int		filtered = FALSE;
     int		options = WILD_SILENT | WILD_USE_NL | WILD_ADD_SLASH
-					| WILD_NO_BEEP;
+								| WILD_NO_BEEP;
+
+    if (argvars[1].v_type != VAR_STRING)
+    {
+	semsg(_(e_invarg2), "type must be a string");
+	return;
+    }
+    type = tv_get_string(&argvars[1]);
 
     if (argvars[2].v_type != VAR_UNKNOWN)
 	filtered = tv_get_number_chk(&argvars[2], NULL);
@@ -2664,39 +2646,45 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
 	options |= WILD_KEEP_ALL;
 
     ExpandInit(&xpc);
-    xpc.xp_pattern = tv_get_string(&argvars[0]);
-    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
-    xpc.xp_context = cmdcomplete_str_to_type(tv_get_string(&argvars[1]));
-    if (xpc.xp_context == EXPAND_NOTHING)
+    if (STRCMP(type, "cmdline") == 0)
     {
-	if (argvars[1].v_type == VAR_STRING)
-	    semsg(_(e_invarg2), argvars[1].vval.v_string);
-	else
-	    emsg(_(e_invarg));
-	return;
+	set_one_cmd_context(&xpc, tv_get_string(&argvars[0]));
+	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
     }
+    else
+    {
+	xpc.xp_pattern = tv_get_string(&argvars[0]);
+	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+
+	xpc.xp_context = cmdcomplete_str_to_type(type);
+	if (xpc.xp_context == EXPAND_NOTHING)
+	{
+	    semsg(_(e_invarg2), type);
+	    return;
+	}
 
 # if defined(FEAT_MENU)
-    if (xpc.xp_context == EXPAND_MENUS)
-    {
-	set_context_in_menu_cmd(&xpc, (char_u *)"menu", xpc.xp_pattern, FALSE);
-	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
-    }
+	if (xpc.xp_context == EXPAND_MENUS)
+	{
+	    set_context_in_menu_cmd(&xpc, (char_u *)"menu", xpc.xp_pattern, FALSE);
+	    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+	}
 # endif
 # ifdef FEAT_CSCOPE
-    if (xpc.xp_context == EXPAND_CSCOPE)
-    {
-	set_context_in_cscope_cmd(&xpc, xpc.xp_pattern, CMD_cscope);
-	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
-    }
+	if (xpc.xp_context == EXPAND_CSCOPE)
+	{
+	    set_context_in_cscope_cmd(&xpc, xpc.xp_pattern, CMD_cscope);
+	    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+	}
 # endif
 # ifdef FEAT_SIGNS
-    if (xpc.xp_context == EXPAND_SIGN)
-    {
-	set_context_in_sign_cmd(&xpc, xpc.xp_pattern);
-	xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
-    }
+	if (xpc.xp_context == EXPAND_SIGN)
+	{
+	    set_context_in_sign_cmd(&xpc, xpc.xp_pattern);
+	    xpc.xp_pattern_len = (int)STRLEN(xpc.xp_pattern);
+	}
 # endif
+    }
 
     pat = addstar(xpc.xp_pattern, xpc.xp_pattern_len, xpc.xp_context);
     if ((rettv_list_alloc(rettv) != FAIL) && (pat != NULL))

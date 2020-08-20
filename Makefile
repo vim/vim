@@ -32,7 +32,7 @@ first:
 
 # Some make programs use the last target for the $@ default; put the other
 # targets separately to always let $@ expand to "first" by default.
-all install uninstall tools config configure reconfig proto depend lint tags types test scripttests test_libvterm unittests testclean clean distclean:
+all install uninstall tools config configure reconfig proto depend lint tags types test scripttests testtiny test_libvterm unittests testclean clean distclean:
 	@if test ! -f src/auto/config.mk; then \
 		cp src/config.mk.dist src/auto/config.mk; \
 	fi
@@ -153,7 +153,7 @@ MINOR = 2
 #   > msvc2015.bat
 # - Build the console binary:
 #   > nmake -f Make_mvc.mak
-# - Run the tests and check the ouput:
+# - Run the tests and check the output:
 #   > nmake -f Make_mvc.mak testclean
 #   > nmake -f Make_mvc.mak test
 # - Rename (using ../tools/rename.bat):

@@ -1,4 +1,5 @@
 " Test for displaying stuff
+
 if !has('gui_running') && has('unix')
   set term=ansi
 endif
@@ -174,7 +175,7 @@ func Test_scroll_CursorLineNr_update()
   call writefile(lines, filename)
   let buf = RunVimInTerminal('-S '.filename, #{rows: 5, cols: 50})
   call term_sendkeys(buf, "k")
-  call term_wait(buf)
+  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_winline_rnu', {})
 
   " clean up
@@ -192,10 +193,68 @@ func Test_edit_long_file_name()
 
   call VerifyScreenDump(buf, 'Test_long_file_name_1', {})
 
-  call term_sendkeys(buf, ":q\<cr>")
-
   " clean up
   call StopVimInTerminal(buf)
   call delete(longName)
 endfunc
 
+func Test_unprintable_fileformats()
+  CheckScreendump
+
+  call writefile(["unix\r", "two"], 'Xunix.txt')
+  call writefile(["mac\r", "two"], 'Xmac.txt')
+  let lines =<< trim END
+    edit Xunix.txt
+    split Xmac.txt
+    edit ++ff=mac
+  END
+  let filename = 'Xunprintable'
+  call writefile(lines, filename)
+  let buf = RunVimInTerminal('-S '.filename, #{rows: 9, cols: 50})
+  call VerifyScreenDump(buf, 'Test_display_unprintable_01', {})
+  call term_sendkeys(buf, "\<C-W>\<C-W>\<C-L>")
+  call VerifyScreenDump(buf, 'Test_display_unprintable_02', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xunix.txt')
+  call delete('Xmac.txt')
+  call delete(filename)
+endfunc
+
+" Test for scrolling that modifies buffer during visual block
+func Test_visual_block_scroll()
+  CheckScreendump
+
+  let lines =<< trim END
+    source $VIMRUNTIME/plugin/matchparen.vim
+    set scrolloff=1
+    call setline(1, ['a', 'b', 'c', 'd', 'e', '', '{', '}', '{', 'f', 'g', '}'])
+    call cursor(5, 1)
+  END
+
+  let filename = 'Xvisualblockmodifiedscroll'
+  call writefile(lines, filename)
+
+  let buf = RunVimInTerminal('-S '.filename, #{rows: 7})
+  call term_sendkeys(buf, "V\<C-D>\<C-D>")
+
+  call VerifyScreenDump(buf, 'Test_display_visual_block_scroll', {})
+
+  call StopVimInTerminal(buf)
+  call delete(filename)
+endfunc
+
+func Test_display_scroll_at_topline()
+  CheckScreendump
+
+  let buf = RunVimInTerminal('', #{cols: 20})
+  call term_sendkeys(buf, ":call setline(1, repeat('a', 21))\<CR>")
+  call term_wait(buf)
+  call term_sendkeys(buf, "O\<Esc>")
+  call VerifyScreenDump(buf, 'Test_display_scroll_at_topline', #{rows: 4})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

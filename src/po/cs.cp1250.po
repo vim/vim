@@ -1962,7 +1962,7 @@ msgstr "neznámá vimOption"
 msgid "keyboard interrupt"
 msgstr "pøerušení z klávesnice"
 
-msgid "vim error"
+msgid "Vim error"
 msgstr "chyba vim"
 
 msgid "cannot create buffer/window command: object is being deleted"
@@ -2247,8 +2247,8 @@ msgstr "-W <skript>\t\tUloží všechny napsané pøíkazy do souboru <skript>"
 msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\tEditace zašifrovaných souborù"
 
-msgid "-display <display>\tConnect vim to this particular X-server"
-msgstr "-display <display>\tSpustí vim na daný X-server"
+msgid "-display <display>\tConnect Vim to this particular X-server"
+msgstr "-display <display>\tSpustí Vim na daný X-server"
 
 msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\tNepøipojí se k X serveru"
@@ -2300,11 +2300,11 @@ msgstr ""
 "\n"
 "Pøepínaèe pro gvim (Athena verzi):\n"
 
-msgid "-display <display>\tRun vim on <display>"
-msgstr "-display <display>\tSpustí vim na <display>"
+msgid "-display <display>\tRun Vim on <display>"
+msgstr "-display <display>\tSpustí Vim na <display>"
 
-msgid "-iconic\t\tStart vim iconified"
-msgstr "-iconic\t\tSpustí vim minimalizované"
+msgid "-iconic\t\tStart Vim iconified"
+msgstr "-iconic\t\tSpustí Vim minimalizované"
 
 msgid "-name <name>\t\tUse resource as if vim was <name>"
 msgstr "-name <název>\t\tPoužije resource jako by vim mìl <název>"
@@ -2368,8 +2368,8 @@ msgstr ""
 "\n"
 "Pøepínaèe pro gvim (GTK+ verzi):\n"
 
-msgid "-display <display>\tRun vim on <display> (also: --display)"
-msgstr "-display <display>\tSpustí vim na <display> (také --display)"
+msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgstr "-display <display>\tSpustí Vim na <display> (také --display)"
 
 msgid "--help\t\tShow Gnome arguments"
 msgstr "--help\t\tVypíše Gnome pøepínaèe"

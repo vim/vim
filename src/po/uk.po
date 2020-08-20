@@ -2879,9 +2879,6 @@ msgstr "Невідома vimOption"
 msgid "keyboard interrupt"
 msgstr "перервано з клавіатури"
 
-msgid "vim error"
-msgstr "помилка Vim"
-
 msgid "cannot create buffer/window command: object is being deleted"
 msgstr "не вдалося створити команду вікна/буфера: об'єкт знищується"
 
@@ -3201,8 +3198,8 @@ msgstr "-w <скрипт>\t\tЗаписати усі набрані команд
 msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\tРедагувати зашифровані файли"
 
-msgid "-display <display>\tConnect vim to this particular X-server"
-msgstr "-display <дисплей>\tПід'єднати vim до заданого дисплею сервера X"
+msgid "-display <display>\tConnect Vim to this particular X-server"
+msgstr "-display <дисплей>\tПід'єднати Vim до заданого дисплею сервера X"
 
 msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\tНе з'єднуватися з X сервером"
@@ -3283,10 +3280,10 @@ msgstr ""
 "\n"
 "Аргументи для gvim (версія Athena)\n"
 
-msgid "-display <display>\tRun vim on <display>"
-msgstr "-display <дисплей>\tВиконати vim на заданому <дисплеї>"
+msgid "-display <display>\tRun Vim on <display>"
+msgstr "-display <дисплей>\tВиконати Vim на заданому <дисплеї>"
 
-msgid "-iconic\t\tStart vim iconified"
+msgid "-iconic\t\tStart Vim iconified"
 msgstr "-iconic\t\tЗапустити Vim і згорнути його вікно"
 
 msgid "-background <color>\tUse <color> for the background (also: -bg)"
@@ -3333,8 +3330,8 @@ msgstr ""
 "\n"
 "Аргументи gvim (версія GTK+)\n"
 
-msgid "-display <display>\tRun vim on <display> (also: --display)"
-msgstr "-display <дисплей>\tВиконати vim на <дисплеї> (також: --display)"
+msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgstr "-display <дисплей>\tВиконати Vim на <дисплеї> (також: --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"
 msgstr ""
@@ -7123,7 +7120,7 @@ msgid "list index out of range"
 msgstr "індекс списку за межами"
 
 #, c-format
-msgid "internal error: failed to get vim list item %d"
+msgid "internal error: failed to get Vim list item %d"
 msgstr "внутрішня помилка: не вдалося отримати елемент списку vim %d"
 
 msgid "slice step cannot be zero"
@@ -7135,7 +7132,7 @@ msgstr ""
 "спроба призначити послідовність розміру більше, ніж %d, у розширений зріз"
 
 #, c-format
-msgid "internal error: no vim list item %d"
+msgid "internal error: no Vim list item %d"
 msgstr "внутрішня помилка: немає елемента списку vim %d"
 
 msgid "internal error: not enough list items"
@@ -7247,19 +7244,19 @@ msgstr "не вдалося виконати код"
 msgid "E858: Eval did not return a valid python object"
 msgstr "E858: Eval не повернув дійсний об’єкт python"
 
-msgid "E859: Failed to convert returned python object to vim value"
+msgid "E859: Failed to convert returned python object to a Vim value"
 msgstr "E859: Не вдалося перетворити об’єкт python у значення vim"
 
 #, c-format
-msgid "unable to convert %s to vim dictionary"
+msgid "unable to convert %s to a Vim dictionary"
 msgstr "не вдалося перетворити %s у словник vim"
 
 #, c-format
-msgid "unable to convert %s to vim list"
+msgid "unable to convert %s to a Vim list"
 msgstr "не вдалося перетворити %s у список vim"
 
 #, c-format
-msgid "unable to convert %s to vim structure"
+msgid "unable to convert %s to a Vim structure"
 msgstr "не вдалося перетворити %s у структуру vim"
 
 msgid "internal error: NULL reference passed"

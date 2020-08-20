@@ -36,6 +36,9 @@ func Test_assert_equal()
   call assert_equal(0, assert_equal(4, n))
   let l = [1, 2, 3]
   call assert_equal(0, assert_equal([1, 2, 3], l))
+  call assert_equal(test_null_list(), test_null_list())
+  call assert_equal(test_null_list(), [])
+  call assert_equal([], test_null_list())
 
   let s = 'foo'
   call assert_equal(1, assert_equal('bar', s))
@@ -44,6 +47,31 @@ func Test_assert_equal()
 
   call assert_equal('XxxxxxxxxxxxxxxxxxxxxxX', 'XyyyyyyyyyyyyyyyyyyyyyyyyyX')
   call assert_match("Expected 'X\\\\\\[x occurs 21 times]X' but got 'X\\\\\\[y occurs 25 times]X'", v:errors[0])
+  call remove(v:errors, 0)
+
+  " special characters are escaped
+  call assert_equal("\b\e\f\n\t\r\\\x01\x7f", 'x')
+  call assert_match('Expected ''\\b\\e\\f\\n\\t\\r\\\\\\x01\\x7f'' but got ''x''', v:errors[0])
+  call remove(v:errors, 0)
+endfunc
+
+func Test_assert_equal_dict()
+  call assert_equal(0, assert_equal(#{one: 1, two: 2}, #{two: 2, one: 1}))
+
+  call assert_equal(1, assert_equal(#{one: 1, two: 2}, #{two: 2, one: 3}))
+  call assert_match("Expected {'one': 1} but got {'one': 3} - 1 equal item omitted", v:errors[0])
+  call remove(v:errors, 0)
+
+  call assert_equal(1, assert_equal(#{one: 1, two: 2}, #{two: 22, one: 11}))
+  call assert_match("Expected {'one': 1, 'two': 2} but got {'one': 11, 'two': 22}", v:errors[0])
+  call remove(v:errors, 0)
+
+  call assert_equal(1, assert_equal(#{}, #{two: 2, one: 1}))
+  call assert_match("Expected {} but got {'one': 1, 'two': 2}", v:errors[0])
+  call remove(v:errors, 0)
+
+  call assert_equal(1, assert_equal(#{two: 2, one: 1}, #{}))
+  call assert_match("Expected {'one': 1, 'two': 2} but got {}", v:errors[0])
   call remove(v:errors, 0)
 endfunc
 
@@ -75,7 +103,18 @@ func Test_assert_equalfile()
   call writefile(['1234X89'], 'Xone')
   call writefile(['1234Y89'], 'Xtwo')
   call assert_equal(1, assert_equalfile('Xone', 'Xtwo'))
-  call assert_match("difference at byte 4", v:errors[0])
+  call assert_match('difference at byte 4, line 1 after "1234X" vs "1234Y"', v:errors[0])
+  call remove(v:errors, 0)
+
+  call writefile([repeat('x', 234) .. 'X'], 'Xone')
+  call writefile([repeat('x', 234) .. 'Y'], 'Xtwo')
+  call assert_equal(1, assert_equalfile('Xone', 'Xtwo'))
+  let xes = repeat('x', 134)
+  call assert_match('difference at byte 234, line 1 after "' .. xes .. 'X" vs "' .. xes .. 'Y"', v:errors[0])
+  call remove(v:errors, 0)
+
+  call assert_equal(1, assert_equalfile('Xone', 'Xtwo', 'a message'))
+  call assert_match("a message: difference at byte 234, line 1 after", v:errors[0])
   call remove(v:errors, 0)
 
   call delete('Xone')
@@ -112,6 +151,14 @@ func Test_assert_exception()
   try
     nocommand
   catch
+    call assert_equal(1, assert_exception('E12345:'))
+  endtry
+  call assert_match("Expected 'E12345:' but got 'Vim:E492: ", v:errors[0])
+  call remove(v:errors, 0)
+
+  try
+    nocommand
+  catch
     try
       " illegal argument, get NULL for error
       call assert_equal(1, assert_exception([]))
@@ -119,6 +166,10 @@ func Test_assert_exception()
       call assert_equal(0, assert_exception('E730:'))
     endtry
   endtry
+
+  call assert_equal(1, assert_exception('E492:'))
+  call assert_match('v:exception is not set', v:errors[0])
+  call remove(v:errors, 0)
 endfunc
 
 func Test_wrong_error_type()
@@ -174,12 +225,20 @@ func Test_notmatch()
 endfunc
 
 func Test_assert_fail_fails()
-  call assert_equal(1, assert_fails('xxx', {}))
-  call assert_match("Expected {} but got 'E731:", v:errors[0])
+  call assert_equal(1, assert_fails('xxx', 'E12345'))
+  call assert_match("Expected 'E12345' but got 'E492:", v:errors[0])
   call remove(v:errors, 0)
 
-  call assert_equal(1, assert_fails('xxx', {}, 'stupid'))
-  call assert_match("stupid: Expected {} but got 'E731:", v:errors[0])
+  call assert_equal(1, assert_fails('xxx', 'E9876', 'stupid'))
+  call assert_match("stupid: Expected 'E9876' but got 'E492:", v:errors[0])
+  call remove(v:errors, 0)
+
+  call assert_equal(1, assert_fails('xxx', ['E9876']))
+  call assert_match("Expected \\['E9876'\\] but got 'E492:", v:errors[0])
+  call remove(v:errors, 0)
+
+  call assert_equal(1, assert_fails('xxx', ['E492:', 'E9876']))
+  call assert_match("Expected \\['E492:', 'E9876'\\] but got 'E492:", v:errors[0])
   call remove(v:errors, 0)
 
   call assert_equal(1, assert_fails('echo', '', 'echo command'))
@@ -189,6 +248,27 @@ func Test_assert_fail_fails()
   call assert_equal(1, 'echo'->assert_fails('', 'echo command'))
   call assert_match("command did not fail: echo command", v:errors[0])
   call remove(v:errors, 0)
+
+  try
+    call assert_equal(1, assert_fails('xxx', []))
+  catch
+    let exp = v:exception
+  endtry
+  call assert_match("E856: assert_fails() second argument", exp)
+
+  try
+    call assert_equal(1, assert_fails('xxx', ['1', '2', '3']))
+  catch
+    let exp = v:exception
+  endtry
+  call assert_match("E856: assert_fails() second argument", exp)
+
+  try
+    call assert_equal(1, assert_fails('xxx', #{one: 1}))
+  catch
+    let exp = v:exception
+  endtry
+  call assert_match("E856: assert_fails() second argument", exp)
 endfunc
 
 func Test_assert_fails_in_try_block()
@@ -294,3 +374,5 @@ func Test_zz_quit_detected()
   " Verify that if a test function ends Vim the test script detects this.
   quit
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

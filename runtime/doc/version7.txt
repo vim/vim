@@ -2762,7 +2762,7 @@ number following the file name.
 Added 'guitabtooltip'.  Implemented for Win32 (Yegappan Lakshmanan).
 
 Added "throw" to 'debug' option: throw an exception for error messages even
-whey they would otherwise be ignored.
+when they would otherwise be ignored.
 
 When 'keymap' is set and a line contains an invalid entry could get a "No
 mapping found" warning instead of a proper error message.
@@ -3859,7 +3859,7 @@ Solution:   Set ins_need_undo after using 'formatexpr'.
 Files:	    src/edit.c
 
 Patch 7.0.127
-Problem:    Crash when swap files has invalid timestamp.
+Problem:    Crash when swap file has invalid timestamp.
 Solution:   Check return value of ctime() for being NULL.
 Files:	    src/memline.c
 
@@ -6757,9 +6757,9 @@ Solution:   Use separate buffer for posix path. (Ben Schmidt)
 Files:	    src/os_unix.c
 
 Patch 7.1.329
-Problem:    When the popup menu is removed a column of cells, the right halve
+Problem:    When the popup menu is removed a column of cells, the right half
 	    of double-wide characters, may not be redrawn.
-Solution:   Check if the right halve of a character needs to be redrawn.
+Solution:   Check if the right half of a character needs to be redrawn.
 	    (Yukihiro Nakadaira)
 Files:	    src/screen.c
 

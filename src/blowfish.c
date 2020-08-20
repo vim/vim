@@ -40,8 +40,7 @@ typedef union {
 # ifdef HAVE_CONFIG_H
    // in configure.ac AC_C_BIGENDIAN() defines WORDS_BIGENDIAN when needed
 # else
-   error!
-   Please change this code to define WORDS_BIGENDIAN for big-endian machines.
+#  error Please change this code to define WORDS_BIGENDIAN for big-endian machines.
 # endif
 #endif
 
@@ -515,7 +514,7 @@ bf_self_test(void)
     UINT32_T ui = 0xffffffffUL;
     bf_state_T state;
 
-    vim_memset(&state, 0, sizeof(bf_state_T));
+    CLEAR_FIELD(state);
     state.cfb_len = BF_MAX_CFB_LEN;
 
     // We can't simply use sizeof(UINT32_T), it would generate a compiler

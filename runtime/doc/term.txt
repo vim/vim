@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 8.2.  Last change: 2019 Dec 07
+*term.txt*      For Vim version 8.2.  Last change: 2020 Apr 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -322,6 +322,7 @@ OUTPUT CODES						*terminal-output-codes*
 	t_ZR	italics end					*t_ZR* *'t_ZR'*
 
 Added by Vim (there are no standard codes for these):
+	t_AU	set underline color (ANSI)			*t_AU* *'t_AU'*
 	t_Ce	undercurl end					*t_Ce* *'t_Ce'*
 	t_Cs	undercurl mode					*t_Cs* *'t_Cs'*
 	t_Te	strikethrough end				*t_Te* *'t_Te'*
@@ -350,6 +351,7 @@ Added by Vim (there are no standard codes for these):
 		|xterm-true-color|
 	t_8b	set background color (R, G, B)			*t_8b* *'t_8b'*
 		|xterm-true-color|
+	t_8u	set underline color (R, G, B)			*t_8u* *'t_8u'*
 	t_BE	enable bracketed paste mode			*t_BE* *'t_BE'*
 		|xterm-bracketed-paste|
 	t_BD	disable bracketed paste mode			*t_BD* *'t_BD'*
@@ -545,6 +547,7 @@ Note about colors: The 't_Co' option tells Vim the number of colors available.
 When it is non-zero, the 't_AB' and 't_AF' options are used to set the color.
 If one of these is not available, 't_Sb' and 't_Sf' are used.  't_me' is used
 to reset to the default colors.  Also see 'termguicolors'.
+When the GUI is running 't_Co' is set to 16777216.
 
 				*termcap-cursor-shape* *termcap-cursor-color*
 When Vim enters Insert mode the 't_SI' escape sequence is sent.  When Vim
@@ -579,7 +582,7 @@ remove highlighting from a line.  This is required for "hpterm".  Setting the
 versa.
 
 							*scroll-region*
-Some termcaps do not include an entry for 'cs' (scroll region), although the
+Some termcaps do not include an entry for "cs" (scroll region), although the
 terminal does support it.  For example: xterm on a Sun.  You can use the
 builtin_xterm or define t_cs yourself.  For example: >
 	:set t_cs=^V^[[%i%d;%dr
@@ -596,11 +599,9 @@ cleared when scrolling).
 Unfortunately it is not possible to deduce from the termcap how cursor
 positioning should be done when using a scrolling region: Relative to the
 beginning of the screen or relative to the beginning of the scrolling region.
-Most terminals use the first method.  A known exception is the MS-Windows
-console (pcterm).  The 't_CS' option should be set to any string when cursor
-positioning is relative to the start of the scrolling region.  It should be
-set to an empty string otherwise.  It defaults to "yes" when 'term' is
-"pcterm".
+Most terminals use the first method.  The 't_CS' option should be set to any
+string when cursor positioning is relative to the start of the scrolling
+region.  It should be set to an empty string otherwise.
 
 Note for xterm users: The shifted cursor keys normally don't work.  You can
 	make them work with the xmodmap command and some mappings in Vim.
@@ -652,15 +653,7 @@ One command can be used to set the screen size:
 :mod[e] [mode]
 
 Without argument this only detects the screen size and redraws the screen.
-With MS-Windows it is possible to switch screen mode.  [mode] can be one of
-these values:
-	"bw40"		40 columns black&white
-	"c40"		40 columns color
-	"bw80"		80 columns black&white
-	"c80"		80 columns color (most people use this)
-	"mono"		80 columns monochrome
-	"c4350"		43 or 50 lines EGA/VGA mode
-	number		mode number to use, depends on your video card
+[mode] was used on MS-DOS, but it doesn't work anymore.
 
 ==============================================================================
 4. Slow and fast terminals			*slow-fast-terminal*
@@ -911,8 +904,8 @@ A double click on a word selects that word.  'iskeyword' is used to specify
 which characters are included in a word.  A double click on a character
 that has a match selects until that match (like using "v%").  If the match is
 an #if/#else/#endif block, the selection becomes linewise.
-For xterm the time for double clicking can be set with the 'mousetime' option.
-For the other systems this time is defined outside of Vim.
+For MS-Windows and xterm the time for double clicking can be set with the
+'mousetime' option.  For the other systems this time is defined outside of Vim.
 An example, for using a double click to jump to the tag under the cursor: >
 	:map <2-LeftMouse> :exe "tag ". expand("<cword>")<CR>
 

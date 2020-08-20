@@ -1,5 +1,6 @@
 " Tests for startup using utf-8.
 
+source check.vim
 source shared.vim
 source screendump.vim
 
@@ -30,16 +31,14 @@ func Test_read_stdin_utf8()
 endfunc
 
 func Test_read_fifo_utf8()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
   " Using bash/zsh's process substitution.
   if executable('bash')
     set shell=bash
   elseif executable('zsh')
     set shell=zsh
   else
-    return
+    throw 'Skipped: bash or zsh is required'
   endif
   let linesin = ['テスト', '€ÀÈÌÒÙ']
   call writefile(linesin, 'Xtestin')
@@ -62,9 +61,7 @@ func Test_read_fifo_utf8()
 endfunc
 
 func Test_detect_ambiwidth()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot run Vim in a terminal window'
-  endif
+  CheckRunVimInTerminal
 
   " Use the title termcap entries to output the escape sequence.
   call writefile([
@@ -73,11 +70,13 @@ func Test_detect_ambiwidth()
 	\ 'call test_option_not_set("ambiwidth")',
 	\ 'redraw',
 	\ ], 'Xscript')
-  let buf = RunVimInTerminal('-S Xscript', {})
-  call term_wait(buf)
+  let buf = RunVimInTerminal('-S Xscript', #{keep_t_u7: 1})
+  call TermWait(buf)
   call term_sendkeys(buf, "S\<C-R>=&ambiwidth\<CR>\<Esc>")
   call WaitForAssert({-> assert_match('single', term_getline(buf, 1))})
 
   call StopVimInTerminal(buf)
   call delete('Xscript')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

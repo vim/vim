@@ -534,19 +534,53 @@ skip_anyof(char_u *p)
 
 /*
  * Skip past regular expression.
- * Stop at end of "startp" or where "dirc" is found ('/', '?', etc).
+ * Stop at end of "startp" or where "delim" is found ('/', '?', etc).
  * Take care of characters with a backslash in front of it.
  * Skip strings inside [ and ].
- * When "newp" is not NULL and "dirc" is '?', make an allocated copy of the
- * expression and change "\?" to "?".  If "*newp" is not NULL the expression
- * is changed in-place.
  */
     char_u *
 skip_regexp(
     char_u	*startp,
+    int		delim,
+    int		magic)
+{
+    return skip_regexp_ex(startp, delim, magic, NULL, NULL);
+}
+
+/*
+ * Call skip_regexp() and when the delimiter does not match give an error and
+ * return NULL.
+ */
+    char_u *
+skip_regexp_err(
+    char_u	*startp,
+    int		delim,
+    int		magic)
+{
+    char_u *p = skip_regexp(startp, delim, magic);
+
+    if (*p != delim)
+    {
+	semsg(_("E654: missing delimiter after search pattern: %s"), startp);
+	return NULL;
+    }
+    return p;
+}
+
+/*
+ * skip_regexp() with extra arguments:
+ * When "newp" is not NULL and "dirc" is '?', make an allocated copy of the
+ * expression and change "\?" to "?".  If "*newp" is not NULL the expression
+ * is changed in-place.
+ * If a "\?" is changed to "?" then "dropped" is incremented, unless NULL.
+ */
+    char_u *
+skip_regexp_ex(
+    char_u	*startp,
     int		dirc,
     int		magic,
-    char_u	**newp)
+    char_u	**newp,
+    int		*dropped)
 {
     int		mymagic;
     char_u	*p = startp;
@@ -579,6 +613,8 @@ skip_regexp(
 		    if (*newp != NULL)
 			p = *newp + (p - startp);
 		}
+		if (dropped != NULL)
+		    ++*dropped;
 		if (*newp != NULL)
 		    STRMOVE(p, p + 1);
 		else
@@ -1810,7 +1846,7 @@ fill_submatch_list(int argc UNUSED, typval_T *argv, int argskip, int argcount)
 	if (s == NULL || rsm.sm_match->endp[i] == NULL)
 	    s = NULL;
 	else
-	    s = vim_strnsave(s, (int)(rsm.sm_match->endp[i] - s));
+	    s = vim_strnsave(s, rsm.sm_match->endp[i] - s);
 	li->li_tv.v_type = VAR_STRING;
 	li->li_tv.vval.v_string = s;
 	li = li->li_next;
@@ -1998,7 +2034,7 @@ vim_regsub_both(
 		argv[0].v_type = VAR_LIST;
 		argv[0].vval.v_list = &matchList.sl_list;
 		matchList.sl_list.lv_len = 0;
-		vim_memset(&funcexe, 0, sizeof(funcexe));
+		CLEAR_FIELD(funcexe);
 		funcexe.argv_func = fill_submatch_list;
 		funcexe.evaluate = TRUE;
 		if (expr->v_type == VAR_FUNC)
@@ -2030,7 +2066,7 @@ vim_regsub_both(
 		clear_tv(&rettv);
 	    }
 	    else
-		eval_result = eval_to_string(source + 2, NULL, TRUE);
+		eval_result = eval_to_string(source + 2, TRUE);
 
 	    if (eval_result != NULL)
 	    {
@@ -2426,7 +2462,7 @@ reg_submatch(int no)
 	if (s == NULL || rsm.sm_match->endp[no] == NULL)
 	    retval = NULL;
 	else
-	    retval = vim_strnsave(s, (int)(rsm.sm_match->endp[no] - s));
+	    retval = vim_strnsave(s, rsm.sm_match->endp[no] - s);
     }
 
     return retval;
@@ -2510,6 +2546,28 @@ reg_submatch_list(int no)
     return list;
 }
 #endif
+
+/*
+ * Initialize the values used for matching against multiple lines
+ */
+    static void
+init_regexec_multi(
+	regmmatch_T	*rmp,
+	win_T		*win,	// window in which to search or NULL
+	buf_T		*buf,	// buffer in which to search
+	linenr_T	lnum)	// nr of line to start looking for match
+{
+    rex.reg_match = NULL;
+    rex.reg_mmatch = rmp;
+    rex.reg_buf = buf;
+    rex.reg_win = win;
+    rex.reg_firstlnum = lnum;
+    rex.reg_maxline = rex.reg_buf->b_ml.ml_line_count - lnum;
+    rex.reg_line_lbr = FALSE;
+    rex.reg_ic = rmp->rmm_ic;
+    rex.reg_icombine = FALSE;
+    rex.reg_maxcol = rmp->rmm_maxcol;
+}
 
 #include "regexp_bt.c"
 

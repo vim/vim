@@ -26,3 +26,5 @@ func Test_searchpos()
   q!
 
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

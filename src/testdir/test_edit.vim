@@ -156,9 +156,8 @@ endfunc
 
 func Test_edit_06()
   " Test in diff mode
-  if !has("diff") || !executable("diff")
-    return
-  endif
+  CheckFeature diff
+  CheckExecutable diff
   new
   call setline(1, ['abc', 'xxx', 'yyy'])
   vnew
@@ -257,18 +256,6 @@ func Test_edit_09()
   bw!
 endfunc
 
-func Test_edit_10()
-  " Test for starting selectmode
-  new
-  set selectmode=key keymodel=startsel
-  call setline(1, ['abc', 'def', 'ghi'])
-  call cursor(1, 4)
-  call feedkeys("A\<s-home>start\<esc>", 'txin')
-  call assert_equal(['startdef', 'ghi'], getline(1, '$'))
-  set selectmode= keymodel=
-  bw!
-endfunc
-
 func Test_edit_11()
   " Test that indenting kicks in
   new
@@ -277,7 +264,7 @@ func Test_edit_11()
   call cursor(2, 1)
   call feedkeys("i\<c-f>int c;\<esc>", 'tnix')
   call cursor(3, 1)
-  call feedkeys("i/* comment */", 'tnix')
+  call feedkeys("\<Insert>/* comment */", 'tnix')
   call assert_equal(['{', "\<tab>int c;", "/* comment */"], getline(1, '$'))
   " added changed cindentkeys slightly
   set cindent cinkeys+=*/
@@ -340,8 +327,8 @@ func Test_edit_11_indentexpr()
   bw!
 endfunc
 
+" Test changing indent in replace mode
 func Test_edit_12()
-  " Test changing indent in replace mode
   new
   call setline(1, ["\tabc", "\tdef"])
   call cursor(2, 4)
@@ -380,15 +367,15 @@ func Test_edit_12()
   call feedkeys("R\<c-t>\<c-t>", 'tnix')
   call assert_equal(["\tabc", "\t\t\tdef"], getline(1, '$'))
   call assert_equal([0, 2, 2, 0], getpos('.'))
-  set et
-  set sw& et&
+  set sw&
+
+  " In replace mode, after hitting enter in a line with tab characters,
+  " pressing backspace should restore the tab characters.
   %d
-  call setline(1, ["\t/*"])
-  set formatoptions=croql
-  call cursor(1, 3)
-  call feedkeys("A\<cr>\<cr>/", 'tnix')
-  call assert_equal(["\t/*", " *", " */"], getline(1, '$'))
-  set formatoptions&
+  setlocal autoindent backspace=2
+  call setline(1, "\tone\t\ttwo")
+  exe "normal ggRred\<CR>six" .. repeat("\<BS>", 8)
+  call assert_equal(["\tone\t\ttwo"], getline(1, '$'))
   bw!
 endfunc
 
@@ -413,6 +400,14 @@ func Test_edit_13()
   call assert_equal("", getline(2))
   call assert_equal("    baz", getline(3))
   set autoindent&
+
+  " pressing <C-U> to erase line should keep the indent with 'autoindent'
+  set backspace=2 autoindent
+  %d
+  exe "normal i\tone\<CR>three\<C-U>two"
+  call assert_equal(["\tone", "\ttwo"], getline(1, '$'))
+  set backspace& autoindent&
+
   bwipe!
 endfunc
 
@@ -420,9 +415,7 @@ func Test_edit_CR()
   " Test for <CR> in insert mode
   " basically only in quickfix mode ist tested, the rest
   " has been taken care of by other tests
-  if !has("quickfix")
-    return
-  endif
+  CheckFeature quickfix
   botright new
   call writefile(range(1, 10), 'Xqflist.txt')
   call setqflist([{'filename': 'Xqflist.txt', 'lnum': 2}])
@@ -450,10 +443,9 @@ func Test_edit_CR()
 endfunc
 
 func Test_edit_CTRL_()
+  CheckFeature rightleft
   " disabled for Windows builds, why?
-  if !has("rightleft") || has("win32")
-    return
-  endif
+  CheckNotMSWindows
   let _encoding=&encoding
   set encoding=utf-8
   " Test for CTRL-_
@@ -589,7 +581,7 @@ func Test_edit_CTRL_K()
   call feedkeys("A\<c-x>\<c-k>\<down>\<down>\<down>\<down>\<cr>\<esc>", 'tnix')
   call assert_equal(['AA'], getline(1, '$'))
 
-  " press an unexecpted key after dictionary completion
+  " press an unexpected key after dictionary completion
   %d
   call setline(1, 'A')
   call cursor(1, 1)
@@ -927,6 +919,23 @@ func Test_edit_CTRL_U()
   bw!
 endfunc
 
+func Test_edit_completefunc_delete()
+  func CompleteFunc(findstart, base)
+    if a:findstart == 1
+      return col('.') - 1
+    endif
+    normal dd
+    return ['a', 'b']
+  endfunc
+  new
+  set completefunc=CompleteFunc
+  call setline(1, ['', 'abcd', ''])
+  2d
+  call assert_fails("normal 2G$a\<C-X>\<C-U>", 'E578:')
+  bwipe!
+endfunc
+
+
 func Test_edit_CTRL_Z()
   " Ctrl-Z when insertmode is not set inserts it literally
   new
@@ -938,9 +947,7 @@ func Test_edit_CTRL_Z()
 endfunc
 
 func Test_edit_DROP()
-  if !has("dnd")
-    return
-  endif
+  CheckFeature dnd
   new
   call setline(1, ['abc def ghi'])
   call cursor(1, 1)
@@ -954,9 +961,7 @@ func Test_edit_DROP()
 endfunc
 
 func Test_edit_CTRL_V()
-  if has("ebcdic")
-    return
-  endif
+  CheckFeature ebcdic
   new
   call setline(1, ['abc'])
   call cursor(2, 1)
@@ -996,12 +1001,11 @@ endfunc
 func Test_edit_F21()
   " Pressing <f21>
   " sends a netbeans command
-  if has("netbeans_intg")
-    new
-    " I have no idea what this is supposed to do :)
-    call feedkeys("A\<F21>\<F1>\<esc>", 'tnix')
-    bw
-  endif
+  CheckFeature netbeans_intg
+  new
+  " I have no idea what this is supposed to do :)
+  call feedkeys("A\<F21>\<F1>\<esc>", 'tnix')
+  bw
 endfunc
 
 func Test_edit_HOME_END()
@@ -1082,9 +1086,7 @@ endfunc
 
 func Test_edit_MOUSE()
   " This is a simple test, since we not really using the mouse here
-  if !has("mouse")
-    return
-  endif
+  CheckFeature mouse
   10new
   call setline(1, range(1, 100))
   call cursor(1, 1)
@@ -1252,7 +1254,7 @@ func Test_edit_forbidden()
   try
     call feedkeys("ix\<esc>", 'tnix')
     call assert_fails(1, 'textlock')
-  catch /^Vim\%((\a\+)\)\=:E523/ " catch E523: not allowed here
+  catch /^Vim\%((\a\+)\)\=:E565/ " catch E565: not allowed here
   endtry
   " TODO: Might be a bug: should x really be inserted here
   call assert_equal(['xa'], getline(1, '$'))
@@ -1276,7 +1278,7 @@ func Test_edit_forbidden()
   try
     call feedkeys("i\<c-x>\<c-u>\<esc>", 'tnix')
     call assert_fails(1, 'change in complete function')
-  catch /^Vim\%((\a\+)\)\=:E523/ " catch E523
+  catch /^Vim\%((\a\+)\)\=:E565/ " catch E565
   endtry
   delfu Complete
   set completefunc=
@@ -1296,9 +1298,7 @@ endfunc
 
 func Test_edit_rightleft()
   " Cursor in rightleft mode moves differently
-  if !exists("+rightleft")
-    return
-  endif
+  CheckFeature rightleft
   call NewWindow(10, 20)
   call setline(1, ['abc', 'def', 'ghi'])
   call cursor(1, 2)
@@ -1343,15 +1343,20 @@ func Test_edit_rightleft()
         \"                 ihg",
         \"                   ~"]
   call assert_equal(join(expect, "\n"), join(lines, "\n"))
+  %d _
+  call test_override('redraw_flag', 1)
+  call test_override('char_avail', 1)
+  call feedkeys("a\<C-V>x41", "xt")
+  redraw!
+  call assert_equal(repeat(' ', 19) .. 'A', Screenline(1))
+  call test_override('ALL', 0)
   set norightleft
   bw!
 endfunc
 
 func Test_edit_complete_very_long_name()
-  if !has('unix')
-    " Long directory names only work on Unix.
-    return
-  endif
+  " Long directory names only work on Unix.
+  CheckUnix
 
   let dirname = getcwd() . "/Xdir"
   let longdirname = dirname . repeat('/' . repeat('d', 255), 4)
@@ -1439,7 +1444,7 @@ func Test_edit_alt()
   call delete('XAltFile')
 endfunc
 
-func Test_leave_insert_autocmd()
+func Test_edit_InsertLeave()
   new
   au InsertLeave * let g:did_au = 1
   let g:did_au = 0
@@ -1467,6 +1472,22 @@ func Test_leave_insert_autocmd()
   bwipe!
   au! InsertLeave
   iunmap x
+endfunc
+
+func Test_edit_InsertLeave_undo()
+  new XtestUndo
+  set undofile
+  au InsertLeave * wall
+  exe "normal ofoo\<Esc>"
+  call assert_equal(2, line('$'))
+  normal u
+  call assert_equal(1, line('$'))
+
+  bwipe!
+  au! InsertLeave
+  call delete('XtestUndo')
+  call delete(undofile('XtestUndo'))
+  set undofile&
 endfunc
 
 " Test for inserting characters using CTRL-V followed by a number.
@@ -1500,6 +1521,22 @@ func Test_edit_startinsert()
   bwipe!
 endfunc
 
+" Test for :startreplace and :startgreplace
+func Test_edit_startreplace()
+  new
+  call setline(1, 'abc')
+  call feedkeys("l:startreplace\<CR>xyz\e", 'xt')
+  call assert_equal('axyz', getline(1))
+  call feedkeys("0:startreplace!\<CR>abc\e", 'xt')
+  call assert_equal('axyzabc', getline(1))
+  call setline(1, "a\tb")
+  call feedkeys("0l:startgreplace\<CR>xyz\e", 'xt')
+  call assert_equal("axyz\tb", getline(1))
+  call feedkeys("0i\<C-R>=execute('startreplace')\<CR>12\e", 'xt')
+  call assert_equal("12axyz\tb", getline(1))
+  close!
+endfunc
+
 func Test_edit_noesckeys()
   CheckNotGui
   new
@@ -1519,3 +1556,228 @@ func Test_edit_noesckeys()
   bwipe!
   set esckeys
 endfunc
+
+" Test for running an invalid ex command in insert mode using CTRL-O
+func Test_edit_ctrl_o_invalid_cmd()
+  new
+  set showmode showcmd
+  " Avoid a sleep of 3 seconds. Zero might have side effects.
+  call test_override('ui_delay', 50)
+  let caught_e492 = 0
+  try
+    call feedkeys("i\<C-O>:invalid\<CR>abc\<Esc>", "xt")
+  catch /E492:/
+    let caught_e492 = 1
+  endtry
+  call assert_equal(1, caught_e492)
+  call assert_equal('abc', getline(1))
+  set showmode& showcmd&
+  call test_override('ui_delay', 0)
+  close!
+endfunc
+
+" Test for editing a file with a very long name
+func Test_edit_illegal_filename()
+  CheckEnglish
+  new
+  redir => msg
+  exe 'edit ' . repeat('f', 5000)
+  redir END
+  call assert_match("Illegal file name$", split(msg, "\n")[0])
+  close!
+endfunc
+
+" Test for editing a file using invalid file encoding
+func Test_edit_invalid_encoding()
+  CheckEnglish
+  call writefile([], 'Xfile')
+  redir => msg
+  new ++enc=axbyc Xfile
+  redir END
+  call assert_match('\[NOT converted\]', msg)
+  call delete('Xfile')
+  close!
+endfunc
+
+" Test for the "charconvert" option
+func Test_edit_charconvert()
+  CheckEnglish
+  call writefile(['one', 'two'], 'Xfile')
+
+  " set 'charconvert' to a non-existing function
+  set charconvert=NonExitingFunc()
+  new
+  let caught_e117 = v:false
+  try
+    redir => msg
+    edit ++enc=axbyc Xfile
+  catch /E117:/
+    let caught_e117 = v:true
+  finally
+    redir END
+  endtry
+  call assert_true(caught_e117)
+  call assert_equal(['one', 'two'], getline(1, '$'))
+  call assert_match("Conversion with 'charconvert' failed", msg)
+  close!
+  set charconvert&
+
+  " 'charconvert' function doesn't create a output file
+  func Cconv1()
+  endfunc
+  set charconvert=Cconv1()
+  new
+  redir => msg
+  edit ++enc=axbyc Xfile
+  redir END
+  call assert_equal(['one', 'two'], getline(1, '$'))
+  call assert_match("can't read output of 'charconvert'", msg)
+  close!
+  delfunc Cconv1
+  set charconvert&
+
+  " 'charconvert' function to convert to upper case
+  func Cconv2()
+    let data = readfile(v:fname_in)
+    call map(data, 'toupper(v:val)')
+    call writefile(data, v:fname_out)
+  endfunc
+  set charconvert=Cconv2()
+  new Xfile
+  write ++enc=ucase Xfile1
+  call assert_equal(['ONE', 'TWO'], readfile('Xfile1'))
+  call delete('Xfile1')
+  close!
+  delfunc Cconv2
+  set charconvert&
+
+  " 'charconvert' function removes the input file
+  func Cconv3()
+    call delete(v:fname_in)
+  endfunc
+  set charconvert=Cconv3()
+  new
+  call assert_fails('edit ++enc=lcase Xfile', 'E202:')
+  call assert_equal([''], getline(1, '$'))
+  close!
+  delfunc Cconv3
+  set charconvert&
+
+  call delete('Xfile')
+endfunc
+
+" Test for editing a file without read permission
+func Test_edit_file_no_read_perm()
+  CheckUnix
+  call writefile(['one', 'two'], 'Xfile')
+  call setfperm('Xfile', '-w-------')
+  new
+  redir => msg
+  edit Xfile
+  redir END
+  call assert_equal(1, &readonly)
+  call assert_equal([''], getline(1, '$'))
+  call assert_match('\[Permission Denied\]', msg)
+  close!
+  call delete('Xfile')
+endfunc
+
+" Pressing escape in 'insertmode' should beep
+func Test_edit_insertmode_esc_beeps()
+  new
+  set insertmode
+  call assert_beeps("call feedkeys(\"one\<Esc>\", 'xt')")
+  set insertmode&
+  " unsupported CTRL-G command should beep in insert mode.
+  call assert_beeps("normal i\<C-G>l")
+  close!
+endfunc
+
+" Test for 'hkmap' and 'hkmapp'
+func Test_edit_hkmap()
+  CheckFeature rightleft
+  if has('win32') && !has('gui')
+    throw 'Skipped: fails on the MS-Windows terminal version'
+  endif
+  new
+
+  set revins hkmap
+  let str = 'abcdefghijklmnopqrstuvwxyz'
+  let str ..= 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  let str ..= '`/'',.;'
+  call feedkeys('i' .. str, 'xt')
+  let expected = "óõú,.;"
+  let expected ..= "ZYXWVUTSRQPONMLKJIHGFEDCBA"
+  let expected ..= "æèñ'äåàãø/ôíîöêìçïéòë÷âáðù"
+  call assert_equal(expected, getline(1))
+
+  %d
+  set revins hkmap hkmapp
+  let str = 'abcdefghijklmnopqrstuvwxyz'
+  let str ..= 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  call feedkeys('i' .. str, 'xt')
+  let expected = "õYXWVUTSRQóOïíLKJIHGFEDêBA"
+  let expected ..= "öòXùåèúæø'ôñðîì÷çéäâóǟãëáà"
+  call assert_equal(expected, getline(1))
+
+  set revins& hkmap& hkmapp&
+  close!
+endfunc
+
+" Test for 'allowrevins' and using CTRL-_ in insert mode
+func Test_edit_allowrevins()
+  CheckFeature rightleft
+  new
+  set allowrevins
+  call feedkeys("iABC\<C-_>DEF\<C-_>GHI", 'xt')
+  call assert_equal('ABCFEDGHI', getline(1))
+  set allowrevins&
+  close!
+endfunc
+
+" Test for inserting a register in insert mode using CTRL-R
+func Test_edit_insert_reg()
+  new
+  let g:Line = ''
+  func SaveFirstLine()
+    let g:Line = Screenline(1)
+    return 'r'
+  endfunc
+  inoremap <expr> <buffer> <F2> SaveFirstLine()
+  call test_override('redraw_flag', 1)
+  call test_override('char_avail', 1)
+  let @r = 'sample'
+  call feedkeys("a\<C-R>=SaveFirstLine()\<CR>", "xt")
+  call assert_equal('"', g:Line)
+  call test_override('ALL', 0)
+  close!
+endfunc
+
+" When a character is inserted at the last position of the last line in a
+" window, the window contents should be scrolled one line up. If the top line
+" is part of a fold, then the entire fold should be scrolled up.
+func Test_edit_lastline_scroll()
+  new
+  let h = winheight(0)
+  let lines = ['one', 'two', 'three']
+  let lines += repeat(['vim'], h - 4)
+  call setline(1, lines)
+  call setline(h, repeat('x', winwidth(0) - 1))
+  call feedkeys("GAx", 'xt')
+  redraw!
+  call assert_equal(h - 1, winline())
+  call assert_equal(2, line('w0'))
+
+  " scroll with a fold
+  1,2fold
+  normal gg
+  call setline(h + 1, repeat('x', winwidth(0) - 1))
+  call feedkeys("GAx", 'xt')
+  redraw!
+  call assert_equal(h - 1, winline())
+  call assert_equal(3, line('w0'))
+
+  close!
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

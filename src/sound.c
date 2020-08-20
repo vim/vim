@@ -351,9 +351,6 @@ f_sound_playevent(typval_T *argvars, typval_T *rettv)
 {
     WCHAR	    *wp;
 
-    rettv->v_type = VAR_NUMBER;
-    rettv->vval.v_number = 0;
-
     wp = enc_to_utf16(tv_get_string(&argvars[0]), NULL);
     if (wp == NULL)
 	return;
@@ -374,9 +371,6 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
     soundcb_T	*soundcb;
     char	buf[32];
     MCIERROR	err;
-
-    rettv->v_type = VAR_NUMBER;
-    rettv->vval.v_number = 0;
 
     esc = vim_strsave_shellescape(tv_get_string(&argvars[0]), FALSE, FALSE);
 

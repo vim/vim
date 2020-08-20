@@ -122,7 +122,7 @@ do_window(
 #endif
     char_u	cbuf[40];
 
-    if (ERROR_IF_POPUP_WINDOW)
+    if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
 
 #ifdef FEAT_CMDWIN
@@ -340,6 +340,7 @@ newwindow:
 
 // move window to new tab page
     case 'T':
+		CHECK_CMDWIN;
 		if (one_window())
 		    msg(_(m_onlyone));
 		else
@@ -626,6 +627,11 @@ wingotofile:
 			goto_tabpage(-(int)Prenum1);
 			break;
 
+		    case TAB:	    // CTRL-W g<Tab>: go to last used tab page
+			if (goto_tabpage_lastused() == FAIL)
+			    beep_flush();
+			break;
+
 		    default:
 			beep_flush();
 			break;
@@ -784,7 +790,7 @@ check_split_disallowed()
     int
 win_split(int size, int flags)
 {
-    if (ERROR_IF_POPUP_WINDOW)
+    if (ERROR_IF_ANY_POPUP_WINDOW)
 	return FAIL;
 
     // When the ":tab" modifier was used open a new tab page instead.
@@ -1379,6 +1385,8 @@ win_init(win_T *newp, win_T *oldp, int flags UNUSED)
 #endif
     newp->w_localdir = (oldp->w_localdir == NULL)
 				    ? NULL : vim_strsave(oldp->w_localdir);
+    newp->w_prevdir = (oldp->w_prevdir == NULL)
+				    ? NULL : vim_strsave(oldp->w_prevdir);
 
     // copy tagstack and folds
     for (i = 0; i < oldp->w_tagstacklen; i++)
@@ -1428,10 +1436,10 @@ win_valid_popup(win_T *win UNUSED)
 #ifdef FEAT_PROP_POPUP
     win_T	*wp;
 
-    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS(wp)
 	if (wp == win)
 	    return TRUE;
-    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
 	if (wp == win)
 	    return TRUE;
 #endif
@@ -1473,7 +1481,7 @@ win_valid_any_tab(win_T *win)
 		return TRUE;
 	}
 #ifdef FEAT_PROP_POPUP
-	for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
 	    if (wp == win)
 		return TRUE;
 #endif
@@ -1574,7 +1582,7 @@ win_exchange(long Prenum)
     win_T	*wp2;
     int		temp;
 
-    if (ERROR_IF_POPUP_WINDOW)
+    if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
     if (ONE_WINDOW)	    // just one window
     {
@@ -1809,8 +1817,8 @@ win_move_after(win_T *win1, win_T *win2)
 	    return;
 	}
 
-	// may need move the status line/vertical separator of the last window
-	//
+	// may need to move the status line/vertical separator of the last
+	// window
 	if (win1 == lastwin)
 	{
 	    height = win1->w_prev->w_status_height;
@@ -2276,7 +2284,7 @@ close_windows(
     {
 	nexttp = tp->tp_next;
 	if (tp != curtab)
-	    for (wp = tp->tp_firstwin; wp != NULL; wp = wp->w_next)
+	    FOR_ALL_WINDOWS_IN_TAB(tp, wp)
 		if (wp->w_buffer == buf
 		    && !(wp->w_closing || wp->w_buffer->b_locked > 0))
 		{
@@ -2441,7 +2449,12 @@ win_close(win_T *win, int free_buf)
     int		had_diffmode = win->w_p_diff;
 #endif
 
-    if (ERROR_IF_POPUP_WINDOW)
+#if defined(FEAT_TERMINAL) && defined(FEAT_PROP_POPUP)
+    // Can close a popup window with a terminal if the job has finished.
+    if (may_close_term_popup() == OK)
+	return OK;
+#endif
+    if (ERROR_IF_ANY_POPUP_WINDOW)
 	return FAIL;
 
     if (last_window())
@@ -2455,7 +2468,7 @@ win_close(win_T *win, int free_buf)
 	return FAIL; // window is already being closed
     if (win_unlisted(win))
     {
-	emsg(_("E813: Cannot close autocmd or popup window"));
+	emsg(_(e_autocmd_close));
 	return FAIL;
     }
     if ((firstwin == aucmd_win || lastwin == aucmd_win) && one_window())
@@ -2761,9 +2774,6 @@ win_free_all(void)
 	(void)win_free_mem(aucmd_win, &dummy, NULL);
 	aucmd_win = NULL;
     }
-# ifdef FEAT_PROP_POPUP
-    close_all_popups();
-# endif
 
     while (firstwin != NULL)
 	(void)win_free_mem(firstwin, &dummy, NULL);
@@ -2962,9 +2972,22 @@ win_altframe(
     if (frp->fr_next == NULL)
 	return frp->fr_prev;
 
+    // By default the next window will get the space that was abandoned by this
+    // window
     target_fr = frp->fr_next;
     other_fr  = frp->fr_prev;
-    if (p_spr || p_sb)
+
+    // If this is part of a column of windows and 'splitbelow' is true then the
+    // previous window will get the space.
+    if (frp->fr_parent != NULL && frp->fr_parent->fr_layout == FR_COL && p_sb)
+    {
+	target_fr = frp->fr_prev;
+	other_fr  = frp->fr_next;
+    }
+
+    // If this is part of a row of windows, and 'splitright' is true then the
+    // previous window will get the space.
+    if (frp->fr_parent != NULL && frp->fr_parent->fr_layout == FR_ROW && p_spr)
     {
 	target_fr = frp->fr_prev;
 	other_fr  = frp->fr_next;
@@ -3616,6 +3639,9 @@ win_alloc_first(void)
 	return FAIL;
     first_tabpage->tp_topframe = topframe;
     curtab = first_tabpage;
+    curtab->tp_firstwin = firstwin;
+    curtab->tp_lastwin = lastwin;
+    curtab->tp_curwin = curwin;
 
     return OK;
 }
@@ -3780,7 +3806,7 @@ free_tabpage(tabpage_T *tp)
 # endif
 # ifdef FEAT_PROP_POPUP
     while (tp->tp_first_popupwin != NULL)
-	popup_close_tabpage(tp, tp->tp_first_popupwin->w_id);
+	popup_close_tabpage(tp, tp->tp_first_popupwin->w_id, TRUE);
 #endif
     for (idx = 0; idx < SNAP_COUNT; ++idx)
 	clear_snapshot(tp, idx);
@@ -3790,7 +3816,11 @@ free_tabpage(tabpage_T *tp)
     unref_var_dict(tp->tp_vars);
 #endif
 
+    if (tp == lastused_tabpage)
+	lastused_tabpage = NULL;
+
     vim_free(tp->tp_localdir);
+    vim_free(tp->tp_prevdir);
 
 #ifdef FEAT_PYTHON
     python_tabpage_free(tp);
@@ -3814,6 +3844,7 @@ free_tabpage(tabpage_T *tp)
 win_new_tabpage(int after)
 {
     tabpage_T	*tp = curtab;
+    tabpage_T	*prev_tp = curtab;
     tabpage_T	*newtp;
     int		n;
 
@@ -3854,12 +3885,16 @@ win_new_tabpage(int after)
 	    newtp->tp_next = tp->tp_next;
 	    tp->tp_next = newtp;
 	}
+	newtp->tp_firstwin = newtp->tp_lastwin = newtp->tp_curwin = curwin;
+
 	win_init_size();
 	firstwin->w_winrow = tabline_height();
 	win_comp_scroll(curwin);
 
 	newtp->tp_topframe = topframe;
 	last_status(FALSE);
+
+	lastused_tabpage = prev_tp;
 
 #if defined(FEAT_GUI)
 	// When 'guioptions' includes 'L' or 'R' may have to remove or add
@@ -4093,8 +4128,10 @@ enter_tabpage(
     int		trigger_enter_autocmds,
     int		trigger_leave_autocmds)
 {
+    int		row;
     int		old_off = tp->tp_firstwin->w_winrow;
     win_T	*next_prevwin = tp->tp_prevwin;
+    tabpage_T	*last_tab = curtab;
 
     curtab = tp;
     firstwin = tp->tp_firstwin;
@@ -4109,7 +4146,7 @@ enter_tabpage(
     prevwin = next_prevwin;
 
     last_status(FALSE);		// status line may appear or disappear
-    (void)win_comp_pos();	// recompute w_winrow for all windows
+    row = win_comp_pos();	// recompute w_winrow for all windows
 #ifdef FEAT_DIFF
     diff_need_scrollbind = TRUE;
 #endif
@@ -4121,6 +4158,13 @@ enter_tabpage(
     if (p_ch != curtab->tp_ch_used)
 	clear_cmdline = TRUE;
     p_ch = curtab->tp_ch_used;
+
+    // When cmdheight is changed in a tab page with '<C-w>-', cmdline_row is
+    // changed but p_ch and tp_ch_used are not changed. Thus we also need to
+    // check cmdline_row.
+    if ((row < cmdline_row) && (cmdline_row <= Rows - p_ch))
+	clear_cmdline = TRUE;
+
     if (curtab->tp_old_Rows != Rows || (old_off != firstwin->w_winrow
 #ifdef FEAT_GUI_TABLINE
 			    && !gui_use_tabline()
@@ -4129,6 +4173,8 @@ enter_tabpage(
 	shell_new_rows();
     if (curtab->tp_old_Columns != Columns && starting == 0)
 	shell_new_columns();	// update window widths
+
+    lastused_tabpage = last_tab;
 
 #if defined(FEAT_GUI)
     // When 'guioptions' includes 'L' or 'R' may have to remove or add
@@ -4248,6 +4294,21 @@ goto_tabpage_tp(
 }
 
 /*
+ * Go to the last accessed tab page, if there is one.
+ * Return OK or FAIL
+ */
+    int
+goto_tabpage_lastused(void)
+{
+    if (valid_tabpage(lastused_tabpage))
+    {
+	goto_tabpage_tp(lastused_tabpage, TRUE, TRUE);
+	return OK;
+    }
+    return FAIL;
+}
+
+/*
  * Enter window "wp" in tab page "tp".
  * Also updates the GUI tab.
  */
@@ -4330,9 +4391,16 @@ win_goto(win_T *wp)
     win_T	*owp = curwin;
 #endif
 
-    if (ERROR_IF_POPUP_WINDOW)
+#ifdef FEAT_PROP_POPUP
+    if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
-    if (text_locked())
+    if (popup_is_popup(wp))
+    {
+	emsg(_("E366: Not allowed to enter a popup window"));
+	return;
+    }
+#endif
+    if (text_and_win_locked())
     {
 	beep_flush();
 	text_locked_msg();
@@ -4406,6 +4474,11 @@ win_vert_neighbor(tabpage_T *tp, win_T *wp, int up, long count)
     frame_T	*nfr;
     frame_T	*foundfr;
 
+#ifdef FEAT_PROP_POPUP
+    if (popup_is_popup(wp))
+	// popups don't have neighbors.
+	return NULL;
+#endif
     foundfr = wp->w_frame;
     while (count--)
     {
@@ -4466,6 +4539,10 @@ win_goto_ver(
 {
     win_T	*win;
 
+#ifdef FEAT_PROP_POPUP
+    if (ERROR_IF_TERM_POPUP_WINDOW)
+	return;
+#endif
     win = win_vert_neighbor(curtab, curwin, up, count);
     if (win != NULL)
 	win_goto(win);
@@ -4484,6 +4561,11 @@ win_horz_neighbor(tabpage_T *tp, win_T *wp, int left, long count)
     frame_T	*nfr;
     frame_T	*foundfr;
 
+#ifdef FEAT_PROP_POPUP
+    if (popup_is_popup(wp))
+	// popups don't have neighbors.
+	return NULL;
+#endif
     foundfr = wp->w_frame;
     while (count--)
     {
@@ -4544,6 +4626,10 @@ win_goto_hor(
 {
     win_T	*win;
 
+#ifdef FEAT_PROP_POPUP
+    if (ERROR_IF_TERM_POPUP_WINDOW)
+	return;
+#endif
     win = win_horz_neighbor(curtab, curwin, left, count);
     if (win != NULL)
 	win_goto(win);
@@ -4742,7 +4828,7 @@ buf_jump_open_tab(buf_T *buf)
     FOR_ALL_TABPAGES(tp)
 	if (tp != curtab)
 	{
-	    for (wp = tp->tp_firstwin; wp != NULL; wp = wp->w_next)
+	    FOR_ALL_WINDOWS_IN_TAB(tp, wp)
 		if (wp->w_buffer == buf)
 		    break;
 	    if (wp != NULL)
@@ -4921,11 +5007,12 @@ win_free(
 	vim_free(wp->w_tagstack[i].user_data);
     }
     vim_free(wp->w_localdir);
+    vim_free(wp->w_prevdir);
 
     // Remove the window from the b_wininfo lists, it may happen that the
     // freed memory is re-used for another window.
     FOR_ALL_BUFFERS(buf)
-	for (wip = buf->b_wininfo; wip != NULL; wip = wip->wi_next)
+	FOR_ALL_BUF_WININFO(buf, wip)
 	    if (wip->wi_win == wp)
 		wip->wi_win = NULL;
 
@@ -6410,6 +6497,12 @@ only_one_window(void)
 {
     int		count = 0;
     win_T	*wp;
+
+#if defined(FEAT_PROP_POPUP)
+    // If the current window is a popup then there always is another window.
+    if (popup_is_popup(curwin))
+	return FALSE;
+#endif
 
     // If there is another tab page there always is another window.
     if (first_tabpage->tp_next != NULL)

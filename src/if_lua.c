@@ -35,6 +35,13 @@ typedef struct {
 } luaV_Funcref;
 typedef void (*msgfunc_T)(char_u *);
 
+typedef struct {
+    int lua_funcref;    // ref to a lua func
+    int lua_tableref;   // ref to a lua table if metatable else LUA_NOREF. used
+			// for __call
+    lua_State *L;
+} luaV_CFuncState;
+
 static const char LUAVIM_DICT[] = "dict";
 static const char LUAVIM_LIST[] = "list";
 static const char LUAVIM_BLOB[] = "blob";
@@ -44,6 +51,8 @@ static const char LUAVIM_WINDOW[] = "window";
 static const char LUAVIM_FREE[] = "luaV_free";
 static const char LUAVIM_LUAEVAL[] = "luaV_luaeval";
 static const char LUAVIM_SETREF[] = "luaV_setref";
+
+static const char LUA___CALL[] = "__call";
 
 // most functions are closures with a cache table as first upvalue;
 // get/setudata manage references to vim userdata in cache table through
@@ -64,7 +73,7 @@ static const char LUAVIM_SETREF[] = "luaV_setref";
 #define luaV_emsg(L) luaV_msgfunc((L), (msgfunc_T) emsg)
 #define luaV_checktypval(L, a, v, msg) \
     do { \
-        if (luaV_totypval(L, a, v) == FAIL) \
+	if (luaV_totypval(L, a, v) == FAIL) \
 	    luaL_error(L, msg ": cannot convert value"); \
     } while (0)
 
@@ -72,6 +81,8 @@ static luaV_List *luaV_pushlist(lua_State *L, list_T *lis);
 static luaV_Dict *luaV_pushdict(lua_State *L, dict_T *dic);
 static luaV_Blob *luaV_pushblob(lua_State *L, blob_T *blo);
 static luaV_Funcref *luaV_pushfuncref(lua_State *L, char_u *name);
+static int luaV_call_lua_func(int argcount, typval_T *argvars, typval_T *rettv, void *state);
+static void luaV_call_lua_func_free(void *state);
 
 #if LUA_VERSION_NUM <= 501
 #define luaV_openlib(L, l, n) luaL_openlib(L, NULL, l, n)
@@ -109,6 +120,9 @@ static luaV_Funcref *luaV_pushfuncref(lua_State *L, char_u *name);
 #define luaL_loadbufferx dll_luaL_loadbufferx
 #define luaL_argerror dll_luaL_argerror
 #endif
+#if LUA_VERSION_NUM >= 504
+#define luaL_typeerror dll_luaL_typeerror
+#endif
 #define luaL_checkany dll_luaL_checkany
 #define luaL_checklstring dll_luaL_checklstring
 #define luaL_checkinteger dll_luaL_checkinteger
@@ -119,6 +133,9 @@ static luaV_Funcref *luaV_pushfuncref(lua_State *L, char_u *name);
 #define luaL_buffinit dll_luaL_buffinit
 #define luaL_addlstring dll_luaL_addlstring
 #define luaL_pushresult dll_luaL_pushresult
+#define luaL_loadstring dll_luaL_loadstring
+#define luaL_ref dll_luaL_ref
+#define luaL_unref dll_luaL_unref
 // lua
 #if LUA_VERSION_NUM <= 501
 #define lua_tonumber dll_lua_tonumber
@@ -203,6 +220,9 @@ int (*dll_luaL_loadfilex) (lua_State *L, const char *filename, const char *mode)
 int (*dll_luaL_loadbufferx) (lua_State *L, const char *buff, size_t sz, const char *name, const char *mode);
 int (*dll_luaL_argerror) (lua_State *L, int numarg, const char *extramsg);
 #endif
+#if LUA_VERSION_NUM >= 504
+int (*dll_luaL_typeerror) (lua_State *L, int narg, const char *tname);
+#endif
 void (*dll_luaL_checkany) (lua_State *L, int narg);
 const char *(*dll_luaL_checklstring) (lua_State *L, int numArg, size_t *l);
 lua_Integer (*dll_luaL_checkinteger) (lua_State *L, int numArg);
@@ -213,6 +233,13 @@ lua_State *(*dll_luaL_newstate) (void);
 void (*dll_luaL_buffinit) (lua_State *L, luaL_Buffer *B);
 void (*dll_luaL_addlstring) (luaL_Buffer *B, const char *s, size_t l);
 void (*dll_luaL_pushresult) (luaL_Buffer *B);
+int (*dll_luaL_loadstring) (lua_State *L, const char *s);
+int (*dll_luaL_ref) (lua_State *L, int idx);
+#if LUA_VERSION_NUM <= 502
+void (*dll_luaL_unref) (lua_State *L, int idx, int n);
+#else
+void (*dll_luaL_unref) (lua_State *L, int idx, lua_Integer n);
+#endif
 // lua
 #if LUA_VERSION_NUM <= 501
 lua_Number (*dll_lua_tonumber) (lua_State *L, int idx);
@@ -315,6 +342,9 @@ static const luaV_Reg luaV_dll[] = {
     {"luaL_loadbufferx", (luaV_function) &dll_luaL_loadbufferx},
     {"luaL_argerror", (luaV_function) &dll_luaL_argerror},
 #endif
+#if LUA_VERSION_NUM >= 504
+    {"luaL_typeerror", (luaV_function) &dll_luaL_typeerror},
+#endif
     {"luaL_checkany", (luaV_function) &dll_luaL_checkany},
     {"luaL_checklstring", (luaV_function) &dll_luaL_checklstring},
     {"luaL_checkinteger", (luaV_function) &dll_luaL_checkinteger},
@@ -325,6 +355,9 @@ static const luaV_Reg luaV_dll[] = {
     {"luaL_buffinit", (luaV_function) &dll_luaL_buffinit},
     {"luaL_addlstring", (luaV_function) &dll_luaL_addlstring},
     {"luaL_pushresult", (luaV_function) &dll_luaL_pushresult},
+    {"luaL_loadstring", (luaV_function) &dll_luaL_loadstring},
+    {"luaL_ref", (luaV_function) &dll_luaL_ref},
+    {"luaL_unref", (luaV_function) &dll_luaL_unref},
     // lua
 #if LUA_VERSION_NUM <= 501
     {"lua_tonumber", (luaV_function) &dll_lua_tonumber},
@@ -398,16 +431,6 @@ static const luaV_Reg luaV_dll[] = {
 
 static HANDLE hinstLua = NULL;
 
-    static void
-end_dynamic_lua(void)
-{
-    if (hinstLua)
-    {
-	close_dll(hinstLua);
-	hinstLua = 0;
-    }
-}
-
     static int
 lua_link_init(char *libname, int verbose)
 {
@@ -443,7 +466,7 @@ lua_enabled(int verbose)
 }
 #endif
 
-#if LUA_VERSION_NUM > 501
+#if LUA_VERSION_NUM > 501 && LUA_VERSION_NUM < 504
     static int
 luaL_typeerror(lua_State *L, int narg, const char *tname)
 {
@@ -535,6 +558,7 @@ luaV_pushtypval(lua_State *L, typval_T *tv)
 	case VAR_DICT:
 	    luaV_pushdict(L, tv->vval.v_dict);
 	    break;
+	case VAR_BOOL:
 	case VAR_SPECIAL:
 	    if (tv->vval.v_number <= VVAL_TRUE)
 		lua_pushinteger(L, (int) tv->vval.v_number);
@@ -561,10 +585,12 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 {
     int status = OK;
 
+    tv->v_lock = 0;
+
     switch (lua_type(L, pos))
     {
 	case LUA_TBOOLEAN:
-	    tv->v_type = VAR_SPECIAL;
+	    tv->v_type = VAR_BOOL;
 	    tv->vval.v_number = (varnumber_T) lua_toboolean(L, pos);
 	    break;
 	case LUA_TNIL:
@@ -577,13 +603,70 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	    break;
 	case LUA_TNUMBER:
 #ifdef FEAT_FLOAT
-	    tv->v_type = VAR_FLOAT;
-	    tv->vval.v_float = (float_T) lua_tonumber(L, pos);
+	{
+	    const lua_Number n = lua_tonumber(L, pos);
+
+	    if (n > (lua_Number)INT64_MAX || n < (lua_Number)INT64_MIN
+		    || ((lua_Number)((varnumber_T)n)) != n)
+	    {
+		tv->v_type = VAR_FLOAT;
+		tv->vval.v_float = (float_T)n;
+	    }
+	    else
+	    {
+		tv->v_type = VAR_NUMBER;
+		tv->vval.v_number = (varnumber_T)n;
+	    }
+	}
 #else
 	    tv->v_type = VAR_NUMBER;
 	    tv->vval.v_number = (varnumber_T) lua_tointeger(L, pos);
 #endif
 	    break;
+	case LUA_TFUNCTION:
+	{
+	    char_u *name;
+	    luaV_CFuncState *state;
+
+	    lua_pushvalue(L, pos);
+	    state = ALLOC_CLEAR_ONE(luaV_CFuncState);
+	    state->lua_funcref = luaL_ref(L, LUA_REGISTRYINDEX);
+	    state->L = L;
+	    state->lua_tableref = LUA_NOREF;
+	    name = register_cfunc(&luaV_call_lua_func,
+					      &luaV_call_lua_func_free, state);
+	    tv->v_type = VAR_FUNC;
+	    tv->vval.v_string = vim_strsave(name);
+	    break;
+	}
+	case LUA_TTABLE:
+	{
+	    int lua_tableref;
+
+	    lua_pushvalue(L, pos);
+	    lua_tableref = luaL_ref(L, LUA_REGISTRYINDEX);
+	    if (lua_getmetatable(L, pos)) {
+		lua_getfield(L, -1, LUA___CALL);
+		if (lua_isfunction(L, -1)) {
+		    char_u *name;
+		    int lua_funcref = luaL_ref(L, LUA_REGISTRYINDEX);
+		    luaV_CFuncState *state = ALLOC_CLEAR_ONE(luaV_CFuncState);
+
+		    state->lua_funcref = lua_funcref;
+		    state->L = L;
+		    state->lua_tableref = lua_tableref;
+		    name = register_cfunc(&luaV_call_lua_func,
+					      &luaV_call_lua_func_free, state);
+		    tv->v_type = VAR_FUNC;
+		    tv->vval.v_string = vim_strsave(name);
+		    break;
+		}
+	    }
+	    tv->v_type = VAR_NUMBER;
+	    tv->vval.v_number = 0;
+	    status = FAIL;
+	    break;
+	}
 	case LUA_TUSERDATA:
 	{
 	    void *p = lua_touserdata(L, pos);
@@ -625,6 +708,7 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 		if (lua_rawequal(L, -1, -5))
 		{
 		    luaV_Funcref *f = (luaV_Funcref *) p;
+
 		    func_ref(f->name);
 		    tv->v_type = VAR_FUNC;
 		    tv->vval.v_string = vim_strsave(f->name);
@@ -804,7 +888,13 @@ luaV_list_index(lua_State *L)
     list_T *l = luaV_unbox(L, luaV_List, 1);
     if (lua_isnumber(L, 2)) // list item?
     {
-	listitem_T *li = list_find(l, (long) luaL_checkinteger(L, 2));
+	long n = (long) luaL_checkinteger(L, 2);
+	listitem_T *li;
+
+	// Lua array index starts with 1 while Vim uses 0, subtract 1 to
+	// normalize.
+	n -= 1;
+	li = list_find(l, n);
 	if (li == NULL)
 	    lua_pushnil(L);
 	else
@@ -833,23 +923,38 @@ luaV_list_newindex(lua_State *L)
     list_T *l = luaV_unbox(L, luaV_List, 1);
     long n = (long) luaL_checkinteger(L, 2);
     listitem_T *li;
+
+    // Lua array index starts with 1 while Vim uses 0, subtract 1 to normalize.
+    n -= 1;
+
     if (l->lv_lock)
 	luaL_error(L, "list is locked");
     li = list_find(l, n);
-    if (li == NULL) return 0;
-    if (lua_isnil(L, 3)) // remove?
+    if (li == NULL)
     {
-	vimlist_remove(l, li, li);
-	clear_tv(&li->li_tv);
-	vim_free(li);
+        if (!lua_isnil(L, 3))
+        {
+	   typval_T v;
+	   luaV_checktypval(L, 3, &v, "inserting list item");
+	   if (list_insert_tv(l, &v, li) == FAIL)
+	        luaL_error(L, "failed to add item to list");
+	   clear_tv(&v);
+        }
     }
     else
     {
-	typval_T v;
-	luaV_checktypval(L, 3, &v, "setting list item");
-	clear_tv(&li->li_tv);
-	copy_tv(&v, &li->li_tv);
-	clear_tv(&v);
+        if (lua_isnil(L, 3)) // remove?
+        {
+	    vimlist_remove(l, li, li);
+	    listitem_free(l, li);
+        }
+        else
+        {
+	    typval_T v;
+	    luaV_checktypval(L, 3, &v, "setting list item");
+	    clear_tv(&li->li_tv);
+	    li->li_tv = v;
+        }
     }
     return 0;
 }
@@ -995,7 +1100,7 @@ luaV_dict_newindex(lua_State *L)
     dict_T *d = luaV_unbox(L, luaV_Dict, 1);
     char_u *key = (char_u *) luaL_checkstring(L, 2);
     dictitem_T *di;
-    typval_T v;
+    typval_T tv;
 
     if (d->dv_lock)
 	luaL_error(L, "dict is locked");
@@ -1005,9 +1110,12 @@ luaV_dict_newindex(lua_State *L)
 	luaL_error(L, "empty key");
     if (!lua_isnil(L, 3)) // read value?
     {
-	luaV_checktypval(L, 3, &v, "setting dict item");
-	if (d->dv_scope == VAR_DEF_SCOPE && v.v_type == VAR_FUNC)
+	luaV_checktypval(L, 3, &tv, "setting dict item");
+	if (d->dv_scope == VAR_DEF_SCOPE && tv.v_type == VAR_FUNC)
+	{
+	    clear_tv(&tv);
 	    luaL_error(L, "cannot assign funcref to builtin scope");
+	}
     }
     di = dict_find(d, key, -1);
     if (di == NULL) // non-existing key?
@@ -1016,10 +1124,14 @@ luaV_dict_newindex(lua_State *L)
 	    return 0;
 	di = dictitem_alloc(key);
 	if (di == NULL)
+	{
+	    clear_tv(&tv);
 	    return 0;
+	}
 	if (dict_add(d, di) == FAIL)
 	{
 	    vim_free(di);
+	    clear_tv(&tv);
 	    return 0;
 	}
     }
@@ -1032,10 +1144,7 @@ luaV_dict_newindex(lua_State *L)
 	dictitem_free(di);
     }
     else
-    {
-	copy_tv(&v, &di->di_tv);
-	clear_tv(&v);
-    }
+	di->di_tv = tv;
     return 0;
 }
 
@@ -1148,7 +1257,7 @@ luaV_blob_add(lua_State *L)
 	size_t i, l = 0;
 	const char *s = lua_tolstring(L, 2, &l);
 
-	if (ga_grow(&b->bv_ga, l) == OK)
+	if (ga_grow(&b->bv_ga, (int)l) == OK)
 	    for (i = 0; i < l; ++i)
 		ga_append(&b->bv_ga, s[i]);
     }
@@ -1335,7 +1444,7 @@ luaV_buffer_newindex(lua_State *L)
 	    curbuf = buf;
 	    luaL_error(L, "cannot save undo information");
 	}
-	else if (ml_delete(n, FALSE) == FAIL)
+	else if (ml_delete(n) == FAIL)
 	{
 	    curbuf = buf;
 	    luaL_error(L, "cannot delete line");
@@ -1352,7 +1461,8 @@ luaV_buffer_newindex(lua_State *L)
 			curwin->w_cursor.lnum -= 1;
 			check_cursor_col();
 		    }
-		    else check_cursor();
+		    else
+			check_cursor();
 		    changed_cline_bef_curs();
 		}
 		invalidate_botline();
@@ -1753,8 +1863,7 @@ luaV_dict(lua_State *L)
 		    lua_pushnil(L);
 		    return 1;
 		}
-		copy_tv(&v, &di->di_tv);
-		clear_tv(&v);
+		di->di_tv = v;
 		lua_pop(L, 2); // key copy and value
 	    }
 	}
@@ -1781,7 +1890,7 @@ luaV_blob(lua_State *L)
 	    size_t i, l = 0;
 	    const char *s = lua_tolstring(L, 1, &l);
 
-	    if (ga_grow(&b->bv_ga, l) == OK)
+	    if (ga_grow(&b->bv_ga, (int)l) == OK)
 		for (i = 0; i < l; ++i)
 		    ga_append(&b->bv_ga, s[i]);
 	}
@@ -1913,6 +2022,52 @@ luaV_type(lua_State *L)
     return 1;
 }
 
+    static int
+luaV_call(lua_State *L)
+{
+    int		argc = lua_gettop(L) - 1;
+    size_t	funcname_len;
+    char_u	*funcname;
+    char	*error = NULL;
+    typval_T	rettv;
+    typval_T	argv[MAX_FUNC_ARGS + 1];
+    int		i = 0;
+
+    if (argc > MAX_FUNC_ARGS)
+	return luaL_error(L, "Function called with too many arguments");
+
+    funcname = (char_u *)luaL_checklstring(L, 1, &funcname_len);
+
+    for (; i < argc; i++)
+    {
+	if (luaV_totypval(L, i + 2, &argv[i]) == FAIL)
+	{
+	    error = "lua: cannot convert value";
+	    goto free_vim_args;
+	}
+    }
+
+    argv[argc].v_type = VAR_UNKNOWN;
+
+    if (call_vim_function(funcname, argc, argv, &rettv) == FAIL)
+    {
+	error = "lua: call_vim_function failed";
+	goto free_vim_args;
+    }
+
+    luaV_pushtypval(L, &rettv);
+    clear_tv(&rettv);
+
+free_vim_args:
+    while (i > 0)
+	clear_tv(&argv[--i]);
+
+    if (error == NULL)
+	return 1;
+    else
+	return luaL_error(L, error);
+}
+
 static const luaL_Reg luaV_module[] = {
     {"command", luaV_command},
     {"eval", luaV_eval},
@@ -1926,6 +2081,7 @@ static const luaL_Reg luaV_module[] = {
     {"window", luaV_window},
     {"open", luaV_open},
     {"type", luaV_type},
+    {"call", luaV_call},
     {NULL, NULL}
 };
 
@@ -2007,6 +2163,82 @@ luaV_setref(lua_State *L)
     return 1;
 }
 
+#define LUA_VIM_FN_CODE \
+    "vim.fn = setmetatable({}, {\n"\
+    "  __index = function (t, key)\n"\
+    "    local function _fn(...)\n"\
+    "      return vim.call(key, ...)\n"\
+    "    end\n"\
+    "    t[key] = _fn\n"\
+    "    return _fn\n"\
+    "  end\n"\
+    " })"
+
+#define LUA_VIM_UPDATE_PACKAGE_PATHS \
+    "local last_vim_paths = {}\n"\
+    "vim._update_package_paths = function ()\n"\
+    "  local cur_vim_paths = {}\n"\
+    "  local function split(s, delimiter)\n"\
+    "    result = {}\n"\
+    "    for match in (s..delimiter):gmatch(\"(.-)\"..delimiter) do\n"\
+    "      table.insert(result, match)\n"\
+    "    end\n"\
+    "    return result\n"\
+    "  end\n"\
+    "  local rtps = split(vim.eval('&runtimepath'), ',')\n"\
+    "  local sep = package.config:sub(1, 1)\n"\
+    "  for _, key in ipairs({'path', 'cpath'}) do\n"\
+    "    local orig_str = package[key] .. ';'\n"\
+    "    local pathtrails_ordered = {}\n"\
+    "    -- Note: ignores trailing item without trailing `;`. Not using something\n"\
+    "    -- simpler in order to preserve empty items (stand for default path).\n"\
+    "    local orig = {}\n"\
+    "    for s in orig_str:gmatch('[^;]*;') do\n"\
+    "      s = s:sub(1, -2)  -- Strip trailing semicolon\n"\
+    "      orig[#orig + 1] = s\n"\
+    "    end\n"\
+    "    if key == 'path' then\n"\
+    "      -- /?.lua and /?/init.lua\n"\
+    "      pathtrails_ordered = {sep .. '?.lua', sep .. '?' .. sep .. 'init.lua'}\n"\
+    "    else\n"\
+    "      local pathtrails = {}\n"\
+    "      for _, s in ipairs(orig) do\n"\
+    "        -- Find out path patterns. pathtrail should contain something like\n"\
+    "        -- /?.so, \?.dll. This allows not to bother determining what correct\n"\
+    "        -- suffixes are.\n"\
+    "        local pathtrail = s:match('[/\\\\][^/\\\\]*%?.*$')\n"\
+    "        if pathtrail and not pathtrails[pathtrail] then\n"\
+    "          pathtrails[pathtrail] = true\n"\
+    "          pathtrails_ordered[#pathtrails_ordered + 1] = pathtrail\n"\
+    "        end\n"\
+    "      end\n"\
+    "    end\n"\
+    "    local new = {}\n"\
+    "    for _, rtp in ipairs(rtps) do\n"\
+    "      if not rtp:match(';') then\n"\
+    "        for _, pathtrail in pairs(pathtrails_ordered) do\n"\
+    "          local new_path = rtp .. sep .. 'lua' .. pathtrail\n"\
+    "          -- Always keep paths from &runtimepath at the start:\n"\
+    "          -- append them here disregarding orig possibly containing one of them.\n"\
+    "          new[#new + 1] = new_path\n"\
+    "          cur_vim_paths[new_path] = true\n"\
+    "        end\n"\
+    "      end\n"\
+    "    end\n"\
+    "    for _, orig_path in ipairs(orig) do\n"\
+    "      -- Handle removing obsolete paths originating from &runtimepath: such\n"\
+    "      -- paths either belong to cur_nvim_paths and were already added above or\n"\
+    "      -- to last_nvim_paths and should not be added at all if corresponding\n"\
+    "      -- entry was removed from &runtimepath list.\n"\
+    "      if not (cur_vim_paths[orig_path] or last_vim_paths[orig_path]) then\n"\
+    "        new[#new + 1] = orig_path\n"\
+    "      end\n"\
+    "    end\n"\
+    "    package[key] = table.concat(new, ';')\n"\
+    "  end\n"\
+    "  last_vim_paths = cur_vim_paths\n"\
+    "end"
+
     static int
 luaopen_vim(lua_State *L)
 {
@@ -2062,6 +2294,16 @@ luaopen_vim(lua_State *L)
     lua_pushvalue(L, 1); // cache table
     luaV_openlib(L, luaV_module, 1);
     lua_setglobal(L, LUAVIM_NAME);
+    // custom code
+    (void)luaL_dostring(L, LUA_VIM_FN_CODE);
+    (void)luaL_dostring(L, LUA_VIM_UPDATE_PACKAGE_PATHS);
+
+    lua_getglobal(L, "vim");
+    lua_getfield(L, -1, "_update_package_paths");
+
+    if (lua_pcall(L, 0, 0, 0))
+	luaV_emsg(L);
+
     return 0;
 }
 
@@ -2121,9 +2363,6 @@ lua_end(void)
     {
 	lua_close(L);
 	L = NULL;
-#ifdef DYNAMIC_LUA
-	end_dynamic_lua();
-#endif
     }
 }
 
@@ -2179,7 +2418,7 @@ ex_luado(exarg_T *eap)
     lua_replace(L, -2); // function -> body
     for (l = eap->line1; l <= eap->line2; l++)
     {
-	// Check the line number, the command my have deleted lines.
+	// Check the line number, the command may have deleted lines.
 	if (l > curbuf->b_ml.ml_line_count)
 	    break;
 
@@ -2264,6 +2503,68 @@ set_ref_in_lua(int copyID)
 	lua_pop(L, 1);
     }
     return aborted;
+}
+
+    void
+update_package_paths_in_lua()
+{
+    if (lua_isopen())
+    {
+	lua_getglobal(L, "vim");
+	lua_getfield(L, -1, "_update_package_paths");
+
+	if (lua_pcall(L, 0, 0, 0))
+	    luaV_emsg(L);
+    }
+}
+
+/*
+ * Native C function callback
+ */
+    static int
+luaV_call_lua_func(
+	int	 argcount,
+	typval_T *argvars,
+	typval_T *rettv,
+	void	 *state)
+{
+    int i;
+    int luaargcount = argcount;
+    luaV_CFuncState *funcstate = (luaV_CFuncState*)state;
+    lua_rawgeti(funcstate->L, LUA_REGISTRYINDEX, funcstate->lua_funcref);
+
+    if (funcstate->lua_tableref != LUA_NOREF)
+    {
+	// First arg for metatable __call method is a table
+	luaargcount += 1;
+	lua_rawgeti(funcstate->L, LUA_REGISTRYINDEX, funcstate->lua_tableref);
+    }
+
+    for (i = 0; i < argcount; ++i)
+	luaV_pushtypval(funcstate->L, &argvars[i]);
+
+    if (lua_pcall(funcstate->L, luaargcount, 1, 0))
+    {
+	luaV_emsg(funcstate->L);
+	return FCERR_OTHER;
+    }
+
+    luaV_checktypval(funcstate->L, -1, rettv, "get return value");
+    return FCERR_NONE;
+}
+
+/*
+ * Free up any lua references held by the func state.
+ */
+    static void
+luaV_call_lua_func_free(void *state)
+{
+    luaV_CFuncState *funcstate = (luaV_CFuncState*)state;
+    luaL_unref(L, LUA_REGISTRYINDEX, funcstate->lua_funcref);
+    funcstate->L = NULL;
+    if (funcstate->lua_tableref != LUA_NOREF)
+	luaL_unref(L, LUA_REGISTRYINDEX, funcstate->lua_tableref);
+    VIM_CLEAR(funcstate);
 }
 
 #endif

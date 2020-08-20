@@ -64,6 +64,7 @@ DOCS = \
 	os_amiga.txt \
 	os_beos.txt \
 	os_dos.txt \
+	os_haiku.txt \
 	os_mac.txt \
 	os_mint.txt \
 	os_msdos.txt \
@@ -140,6 +141,7 @@ DOCS = \
 	usr_43.txt \
 	usr_44.txt \
 	usr_45.txt \
+	usr_46.txt \
 	usr_90.txt \
 	usr_toc.txt \
 	various.txt \
@@ -149,6 +151,7 @@ DOCS = \
 	version7.txt \
 	version8.txt \
 	vi_diff.txt \
+	vim9.txt \
 	visual.txt \
 	windows.txt \
 	workshop.txt
@@ -203,6 +206,7 @@ HTMLS = \
 	os_amiga.html \
 	os_beos.html \
 	os_dos.html \
+	os_haiku.html \
 	os_mac.html \
 	os_mint.html \
 	os_msdos.html \
@@ -279,6 +283,7 @@ HTMLS = \
 	usr_43.html \
 	usr_44.html \
 	usr_45.html \
+	usr_46.html \
 	usr_90.html \
 	usr_toc.html \
 	various.html \
@@ -289,6 +294,7 @@ HTMLS = \
 	version8.html \
 	vi_diff.html \
 	vimindex.html \
+	vim9.html \
 	visual.html \
 	windows.html \
 	workshop.html
@@ -313,7 +319,11 @@ CONVERTED = \
 	evim-ru.UTF-8.1 \
 	vimdiff-ru.UTF-8.1 \
 	vimtutor-ru.UTF-8.1 \
-	xxd-ru.UTF-8.1
+	xxd-ru.UTF-8.1 \
+	vim-tr.UTF-8.1 \
+	evim-tr.UTF-8.1 \
+	vimdiff-tr.UTF-8.1 \
+	vimtutor-tr.UTF-8.1
 
 .SUFFIXES:
 .SUFFIXES: .c .o .txt .html
@@ -323,10 +333,7 @@ all: tags vim.man evim.man vimdiff.man vimtutor.man xxd.man $(CONVERTED)
 # Use Vim to generate the tags file.  Can only be used when Vim has been
 # compiled and installed.  Supports multiple languages.
 vimtags: $(DOCS)
-	@if command -v $(VIMEXE); then \
-	    $(VIMEXE) --clean -eX -u doctags.vim >/dev/null && \
-	      echo "help tags updated"; \
-	  else echo "vim executable $(VIMEXE) not found; help tags not updated"; fi
+	@$(VIMEXE) --clean -esX -V1 -u doctags.vim
 
 # Use "doctags" to generate the tags file.  Only works for English!
 tags: doctags $(DOCS)
@@ -389,7 +396,7 @@ test_urls:
 	vim -S test_urls.vim
 
 clean:
-	-rm doctags *.html tags.ref
+	-rm -f doctags *.html tags.ref
 
 # These files are in the extra archive, skip if not present
 
@@ -422,6 +429,9 @@ os_beos.txt:
 
 os_dos.txt:
 	touch os_dos.txt
+
+os_haiku.txt:
+	touch os_haiku.txt
 
 os_mac.txt:
 	touch os_mac.txt
@@ -505,3 +515,15 @@ vimtutor-ru.UTF-8.1: vimtutor-ru.1
 
 xxd-ru.UTF-8.1: xxd-ru.1
 	iconv -f KOI8-R -t utf-8 $< >$@
+
+vim-tr.UTF-8.1: vim-tr.1
+	iconv -f latin5 -t utf-8 $< >$@
+
+evim-tr.UTF-8.1: evim-tr.1
+	iconv -f latin5 -t utf-8 $< >$@
+
+vimdiff-tr.UTF-8.1: vimdiff-tr.1
+	iconv -f latin5 -t utf-8 $< >$@
+
+vimtutor-tr.UTF-8.1: vimtutor-tr.1
+	iconv -f latin5 -t utf-8 $< >$@

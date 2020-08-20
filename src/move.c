@@ -1174,6 +1174,13 @@ curs_columns(
 	    && !pum_visible())
 	redraw_later(SOME_VALID);
 #endif
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_TERMINAL)
+    if (popup_is_popup(curwin) && curbuf->b_term != NULL)
+    {
+	curwin->w_wrow += popup_top_extra(curwin);
+	curwin->w_wcol += popup_left_extra(curwin);
+    }
+#endif
 
     // now w_leftcol is valid, avoid check_cursor_moved() thinking otherwise
     curwin->w_valid_leftcol = curwin->w_leftcol;
@@ -2674,8 +2681,7 @@ halfpage(int flag, linenr_T Prenum)
 	    if (curwin->w_topfill > 0)
 	    {
 		i = 1;
-		if (--n < 0 && scrolled > 0)
-		    break;
+		--n;
 		--curwin->w_topfill;
 	    }
 	    else

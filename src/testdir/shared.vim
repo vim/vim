@@ -36,6 +36,9 @@ endfunc
 
 " Run "cmd".  Returns the job if using a job.
 func RunCommand(cmd)
+  " Running an external command can occasionally be slow or fail.
+  let g:test_is_flaky = 1
+
   let job = 0
   if has('job')
     let job = job_start(a:cmd, {"stoponexit": "hup"})
@@ -156,7 +159,7 @@ endfunc
 func s:WaitForCommon(expr, assert, timeout)
   " using reltime() is more accurate, but not always available
   let slept = 0
-  if has('reltime')
+  if exists('*reltimefloat')
     let start = reltime()
   endif
 
@@ -181,7 +184,7 @@ func s:WaitForCommon(expr, assert, timeout)
     endif
 
     sleep 10m
-    if has('reltime')
+    if exists('*reltimefloat')
       let slept = float2nr(reltimefloat(reltime(start)) * 1000)
     else
       let slept += 10
@@ -197,7 +200,7 @@ endfunc
 " feeds key-input and resumes process. Return time waited in milliseconds.
 " Without +timers it uses simply :sleep.
 func Standby(msec)
-  if has('timers')
+  if has('timers') && exists('*reltimefloat')
     let start = reltime()
     let g:_standby_timer = timer_start(a:msec, function('s:feedkeys'))
     call getchar()
@@ -265,7 +268,7 @@ func GetVimCommand(...)
 
   " If using valgrind, make sure every run uses a different log file.
   if cmd =~ 'valgrind.*--log-file='
-    let cmd = substitute(cmd, '--log-file=\(^\s*\)', '--log-file=\1.' . g:valgrind_cnt, '')
+    let cmd = substitute(cmd, '--log-file=\(\S*\)', '--log-file=\1.' . g:valgrind_cnt, '')
     let g:valgrind_cnt += 1
   endif
 
@@ -337,3 +340,32 @@ func IsRoot()
   endif
   return v:false
 endfunc
+
+" Get all messages but drop the maintainer entry.
+func GetMessages()
+  redir => result
+  redraw | messages
+  redir END
+  let msg_list = split(result, "\n")
+  if msg_list->len() > 0 && msg_list[0] =~ 'Messages maintainer:'
+    return msg_list[1:]
+  endif
+  return msg_list
+endfunc
+
+" Run the list of commands in 'cmds' and look for 'errstr' in exception.
+" Note that assert_fails() cannot be used in some places and this function
+" can be used.
+func AssertException(cmds, errstr)
+  let save_exception = ''
+  try
+    for cmd in a:cmds
+      exe cmd
+    endfor
+  catch
+    let save_exception = v:exception
+  endtry
+  call assert_match(a:errstr, save_exception)
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

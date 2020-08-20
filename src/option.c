@@ -1066,6 +1066,27 @@ set_title_defaults(void)
 }
 #endif
 
+    void
+ex_set(exarg_T *eap)
+{
+    int		flags = 0;
+
+    if (eap->cmdidx == CMD_setlocal)
+	flags = OPT_LOCAL;
+    else if (eap->cmdidx == CMD_setglobal)
+	flags = OPT_GLOBAL;
+#if defined(FEAT_EVAL) && defined(FEAT_BROWSE)
+    if (cmdmod.browse && flags == 0)
+	ex_options(eap);
+    else
+#endif
+    {
+	if (eap->forceit)
+	    flags |= OPT_ONECOLUMN;
+	(void)do_set(eap->arg, flags);
+    }
+}
+
 /*
  * Parse 'arg' for option settings.
  *
@@ -1290,12 +1311,12 @@ do_set(
 	    {
 		if (flags & (P_SECURE | P_NO_ML))
 		{
-		    errmsg = _("E520: Not allowed in a modeline");
+		    errmsg = N_("E520: Not allowed in a modeline");
 		    goto skip;
 		}
 		if ((flags & P_MLE) && !p_mle)
 		{
-		    errmsg = _("E992: Not allowed in a modeline when 'modelineexpr' is off");
+		    errmsg = N_("E992: Not allowed in a modeline when 'modelineexpr' is off");
 		    goto skip;
 		}
 #ifdef FEAT_DIFF
@@ -1317,7 +1338,7 @@ do_set(
 	    // Disallow changing some options in the sandbox
 	    if (sandbox != 0 && (flags & P_SECURE))
 	    {
-		errmsg = _(e_sandbox);
+		errmsg = e_sandbox;
 		goto skip;
 	    }
 #endif
@@ -1348,7 +1369,7 @@ do_set(
 	    }
 
 	    /*
-	     * allow '=' and ':' for hystorical reasons (MSDOS command.com
+	     * allow '=' and ':' for historical reasons (MSDOS command.com
 	     * allows only one '=' character per "set" command line. grrr. (jw)
 	     */
 	    if (nextchar == '?'
@@ -1664,6 +1685,10 @@ do_set(
 					*(char_u **)varp = vim_strsave(
 						(char_u *)"indent,eol,start");
 					break;
+				    case 3:
+					*(char_u **)varp = vim_strsave(
+						(char_u *)"indent,eol,nostop");
+					break;
 				}
 				vim_free(oldval);
 				if (origval == oldval)
@@ -1738,6 +1763,7 @@ do_set(
 #ifdef BACKSLASH_IN_FILENAME
 					&& !((flags & P_EXPAND)
 						&& vim_isfilec(arg[1])
+						&& !VIM_ISWHITE(arg[1])
 						&& (arg[1] != '\\'
 						    || (s == newval
 							&& arg[2] != '\\')))
@@ -2435,7 +2461,9 @@ set_option_sctx_idx(int opt_idx, int opt_flags, sctx_T script_ctx)
     int		indir = (int)options[opt_idx].indir;
     sctx_T	new_script_ctx = script_ctx;
 
-    new_script_ctx.sc_lnum += SOURCING_LNUM;
+    // Modeline already has the line number set.
+    if (!(opt_flags & OPT_MODELINE))
+	new_script_ctx.sc_lnum += SOURCING_LNUM;
 
     // Remember where the option was set.  For local options need to do that
     // in the buffer or window structure.
@@ -2474,6 +2502,61 @@ set_term_option_sctx_idx(char *name, int opt_idx)
     }
     if (idx >= 0)
 	set_option_sctx_idx(idx, OPT_GLOBAL, current_sctx);
+}
+#endif
+
+#if defined(FEAT_EVAL)
+/*
+ * Apply the OptionSet autocommand.
+ */
+    static void
+apply_optionset_autocmd(
+	int	opt_idx,
+	long	opt_flags,
+	long	oldval,
+	long	oldval_g,
+	long	newval,
+	char	*errmsg)
+{
+    char_u buf_old[12], buf_old_global[12], buf_new[12], buf_type[12];
+
+    // Don't do this while starting up, failure or recursively.
+    if (starting || errmsg != NULL || *get_vim_var_str(VV_OPTION_TYPE) != NUL)
+	return;
+
+    vim_snprintf((char *)buf_old, sizeof(buf_old), "%ld", oldval);
+    vim_snprintf((char *)buf_old_global, sizeof(buf_old_global), "%ld",
+							oldval_g);
+    vim_snprintf((char *)buf_new, sizeof(buf_new), "%ld", newval);
+    vim_snprintf((char *)buf_type, sizeof(buf_type), "%s",
+				(opt_flags & OPT_LOCAL) ? "local" : "global");
+    set_vim_var_string(VV_OPTION_NEW, buf_new, -1);
+    set_vim_var_string(VV_OPTION_OLD, buf_old, -1);
+    set_vim_var_string(VV_OPTION_TYPE, buf_type, -1);
+    if (opt_flags & OPT_LOCAL)
+    {
+	set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"setlocal", -1);
+	set_vim_var_string(VV_OPTION_OLDLOCAL, buf_old, -1);
+    }
+    if (opt_flags & OPT_GLOBAL)
+    {
+	set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"setglobal", -1);
+	set_vim_var_string(VV_OPTION_OLDGLOBAL, buf_old, -1);
+    }
+    if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0)
+    {
+	set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"set", -1);
+	set_vim_var_string(VV_OPTION_OLDLOCAL, buf_old, -1);
+	set_vim_var_string(VV_OPTION_OLDGLOBAL, buf_old_global, -1);
+    }
+    if (opt_flags & OPT_MODELINE)
+    {
+	set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"modeline", -1);
+	set_vim_var_string(VV_OPTION_OLDLOCAL, buf_old, -1);
+    }
+    apply_autocmds(EVENT_OPTIONSET, (char_u *)options[opt_idx].fullname,
+	    NULL, FALSE, NULL);
+    reset_v_option_vars();
 }
 #endif
 
@@ -3050,45 +3133,10 @@ set_bool_option(
     options[opt_idx].flags |= P_WAS_SET;
 
 #if defined(FEAT_EVAL)
-    // Don't do this while starting up or recursively.
-    if (!starting && *get_vim_var_str(VV_OPTION_TYPE) == NUL)
-    {
-	char_u buf_old[2], buf_old_global[2], buf_new[2], buf_type[7];
-
-	vim_snprintf((char *)buf_old, 2, "%d", old_value ? TRUE: FALSE);
-	vim_snprintf((char *)buf_old_global, 2, "%d",
-					       old_global_value ? TRUE: FALSE);
-	vim_snprintf((char *)buf_new, 2, "%d", value ? TRUE: FALSE);
-	vim_snprintf((char *)buf_type, 7, "%s",
-				 (opt_flags & OPT_LOCAL) ? "local" : "global");
-	set_vim_var_string(VV_OPTION_NEW, buf_new, -1);
-	set_vim_var_string(VV_OPTION_OLD, buf_old, -1);
-	set_vim_var_string(VV_OPTION_TYPE, buf_type, -1);
-	if (opt_flags & OPT_LOCAL)
-	{
-	    set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"setlocal", -1);
-	    set_vim_var_string(VV_OPTION_OLDLOCAL, buf_old, -1);
-	}
-	if (opt_flags & OPT_GLOBAL)
-	{
-	    set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"setglobal", -1);
-	    set_vim_var_string(VV_OPTION_OLDGLOBAL, buf_old, -1);
-	}
-	if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0)
-	{
-	    set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"set", -1);
-	    set_vim_var_string(VV_OPTION_OLDLOCAL, buf_old, -1);
-	    set_vim_var_string(VV_OPTION_OLDGLOBAL, buf_old_global, -1);
-	}
-	if (opt_flags & OPT_MODELINE)
-	{
-	    set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"modeline", -1);
-	    set_vim_var_string(VV_OPTION_OLDLOCAL, buf_old, -1);
-	}
-	apply_autocmds(EVENT_OPTIONSET, (char_u *)options[opt_idx].fullname,
-							    NULL, FALSE, NULL);
-	reset_v_option_vars();
-    }
+    apply_optionset_autocmd(opt_idx, opt_flags,
+				(long)(old_value ? TRUE : FALSE),
+				(long)(old_global_value ? TRUE : FALSE),
+				(long)(value ? TRUE : FALSE), NULL);
 #endif
 
     comp_col();			    // in case 'ruler' or 'showcmd' changed
@@ -3134,7 +3182,7 @@ set_num_option(
 
 #if defined(FEAT_EVAL)
     // Save the global value before changing anything. This is needed as for
-    // a global-only option setting the "local value" infact sets the global
+    // a global-only option setting the "local value" in fact sets the global
     // value (since there is only one value).
     if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0)
 	old_global_value = *(long *)get_varp_scope(&(options[opt_idx]),
@@ -3645,42 +3693,8 @@ set_num_option(
     options[opt_idx].flags |= P_WAS_SET;
 
 #if defined(FEAT_EVAL)
-    // Don't do this while starting up, failure or recursively.
-    if (!starting && errmsg == NULL && *get_vim_var_str(VV_OPTION_TYPE) == NUL)
-    {
-	char_u buf_old[11], buf_old_global[11], buf_new[11], buf_type[7];
-	vim_snprintf((char *)buf_old, 10, "%ld", old_value);
-	vim_snprintf((char *)buf_old_global, 10, "%ld", old_global_value);
-	vim_snprintf((char *)buf_new, 10, "%ld", value);
-	vim_snprintf((char *)buf_type, 7, "%s", (opt_flags & OPT_LOCAL) ? "local" : "global");
-	set_vim_var_string(VV_OPTION_NEW, buf_new, -1);
-	set_vim_var_string(VV_OPTION_OLD, buf_old, -1);
-	set_vim_var_string(VV_OPTION_TYPE, buf_type, -1);
-	if (opt_flags & OPT_LOCAL)
-	{
-	    set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"setlocal", -1);
-	    set_vim_var_string(VV_OPTION_OLDLOCAL, buf_old, -1);
-	}
-	if (opt_flags & OPT_GLOBAL)
-	{
-	    set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"setglobal", -1);
-	    set_vim_var_string(VV_OPTION_OLDGLOBAL, buf_old, -1);
-	}
-	if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) == 0)
-	{
-	    set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"set", -1);
-	    set_vim_var_string(VV_OPTION_OLDLOCAL, buf_old, -1);
-	    set_vim_var_string(VV_OPTION_OLDGLOBAL, buf_old_global, -1);
-	}
-	if (opt_flags & OPT_MODELINE)
-	{
-	    set_vim_var_string(VV_OPTION_COMMAND, (char_u *)"modeline", -1);
-	    set_vim_var_string(VV_OPTION_OLDLOCAL, buf_old, -1);
-	}
-	apply_autocmds(EVENT_OPTIONSET, (char_u *)options[opt_idx].fullname,
-							    NULL, FALSE, NULL);
-	reset_v_option_vars();
-    }
+    apply_optionset_autocmd(opt_idx, opt_flags, old_value, old_global_value,
+								value, errmsg);
 #endif
 
     comp_col();			    // in case 'columns' or 'ls' changed
@@ -4317,7 +4331,8 @@ find_key_option(char_u *arg_arg, int has_lt)
     {
 	--arg;			    // put arg at the '<'
 	modifiers = 0;
-	key = find_special_key(&arg, &modifiers, TRUE, TRUE, FALSE, TRUE, NULL);
+	key = find_special_key(&arg, &modifiers,
+			    FSK_KEYCODE | FSK_KEEP_X_KEY | FSK_SIMPLIFY, NULL);
 	if (modifiers)		    // can't handle modifiers here
 	    key = 0;
     }
@@ -4349,7 +4364,7 @@ showoptions(
 #define INC 20
 #define GAP 3
 
-    items = ALLOC_MULT(struct vimoption *, PARAM_COUNT);
+    items = ALLOC_MULT(struct vimoption *, OPTION_COUNT);
     if (items == NULL)
 	return;
 
@@ -4364,9 +4379,10 @@ showoptions(
 	msg_puts_title(_("\n--- Options ---"));
 
     /*
-     * do the loop two times:
+     * Do the loop two times:
      * 1. display the short items
      * 2. display the long items (only strings and numbers)
+     * When "opt_flags" has OPT_ONECOLUMN do everything in run 2.
      */
     for (run = 1; run <= 2 && !got_int; ++run)
     {
@@ -4377,12 +4393,12 @@ showoptions(
 	for (p = &options[0]; p->fullname != NULL; p++)
 	{
 	    // apply :filter /pat/
-	    if (message_filtered((char_u *) p->fullname))
+	    if (message_filtered((char_u *)p->fullname))
 		continue;
 
 	    varp = NULL;
 	    isterm = istermoption(p);
-	    if (opt_flags != 0)
+	    if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) != 0)
 	    {
 		if (p->indir != PV_NONE && !isterm)
 		    varp = get_varp_scope(p, opt_flags);
@@ -4394,7 +4410,9 @@ showoptions(
 			|| (all == 1 && !isterm)
 			|| (all == 0 && !optval_default(p, varp, p_cp))))
 	    {
-		if (p->flags & P_BOOL)
+		if (opt_flags & OPT_ONECOLUMN)
+		    len = Columns;
+		else if (p->flags & P_BOOL)
 		    len = 1;		// a toggle option fits always
 		else
 		{
@@ -5312,6 +5330,7 @@ get_varp(struct vimoption *p)
 	case PV_SPC:	return (char_u *)&(curwin->w_s->b_p_spc);
 	case PV_SPF:	return (char_u *)&(curwin->w_s->b_p_spf);
 	case PV_SPL:	return (char_u *)&(curwin->w_s->b_p_spl);
+	case PV_SPO:	return (char_u *)&(curwin->w_s->b_p_spo);
 #endif
 	case PV_SW:	return (char_u *)&(curbuf->b_p_sw);
 	case PV_TS:	return (char_u *)&(curbuf->b_p_ts);
@@ -5656,7 +5675,7 @@ buf_copy_options(buf_T *buf, int flags)
 	if (should_copy || (flags & BCO_ALWAYS))
 	{
 #ifdef FEAT_EVAL
-	    vim_memset(buf->b_p_script_ctx, 0, sizeof(buf->b_p_script_ctx));
+	    CLEAR_FIELD(buf->b_p_script_ctx);
 	    init_buf_opt_idx();
 #endif
 	    // Don't copy the options specific to a help buffer when
@@ -5821,6 +5840,8 @@ buf_copy_options(buf_T *buf, int flags)
 	    COPY_OPT_SCTX(buf, BV_SPF);
 	    buf->b_s.b_p_spl = vim_strsave(p_spl);
 	    COPY_OPT_SCTX(buf, BV_SPL);
+	    buf->b_s.b_p_spo = vim_strsave(p_spo);
+	    COPY_OPT_SCTX(buf, BV_SPO);
 #endif
 #if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
 	    buf->b_p_inde = vim_strsave(p_inde);
@@ -6478,18 +6499,6 @@ wc_use_keyname(char_u *varp, long *wcp)
 }
 
 /*
- * Return TRUE if format option 'x' is in effect.
- * Take care of no formatting when 'paste' is set.
- */
-    int
-has_format_option(int x)
-{
-    if (p_paste)
-	return FALSE;
-    return (vim_strchr(curbuf->b_p_fo, x) != NULL);
-}
-
-/*
  * Return TRUE if "x" is present in 'shortmess' option, or
  * 'shortmess' contains 'a' and "x" is present in SHM_A.
  */
@@ -6808,7 +6817,7 @@ fill_breakat_flags(void)
  */
     int
 can_bs(
-    int		what)	    // BS_INDENT, BS_EOL or BS_START
+    int		what)	    // BS_INDENT, BS_EOL, BS_START or BS_NOSTOP
 {
 #ifdef FEAT_JOB_CHANNEL
     if (what == BS_START && bt_prompt(curbuf))
@@ -6816,7 +6825,8 @@ can_bs(
 #endif
     switch (*p_bs)
     {
-	case '2':	return TRUE;
+	case '3':       return TRUE;
+	case '2':	return (what != BS_NOSTOP);
 	case '1':	return (what != BS_START);
 	case '0':	return FALSE;
     }

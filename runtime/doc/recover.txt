@@ -1,4 +1,4 @@
-*recover.txt*   For Vim version 8.2.  Last change: 2019 May 07
+*recover.txt*   For Vim version 8.2.  Last change: 2020 Aug 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -64,8 +64,8 @@ Disadvantages:
   directories (although Vim tries to avoid that by comparing the path name).
   This will result in bogus ATTENTION warning messages.
 - When you use your home directory, and somebody else tries to edit the same
-  file, he will not see your swap file and will not get the ATTENTION warning
-  message.
+  file, that user will not see your swap file and will not get the ATTENTION
+  warning message.
 On the Amiga you can also use a recoverable ram disk, but there is no 100%
 guarantee that this works.  Putting swap files in a normal ram disk (like RAM:
 on the Amiga) or in a place that is cleared when rebooting (like /tmp on Unix)
@@ -125,12 +125,12 @@ If you want to make sure that your changes are in the swap file use this
 command:
 
 					*:pre* *:preserve* *E313* *E314*
-:pre[serve]		Write all text for all buffers into swap file.  The
-			original file is no longer needed for recovery.
-			This sets a flag in the current buffer.  When the '&'
-			flag is present in 'cpoptions' the swap file will not
-			be deleted for this buffer when Vim exits and the
-			buffer is still loaded |cpo-&|.
+:pre[serve]		Write all text for the current buffer into its swap
+			file.  The original file is no longer needed for
+			recovery.  This sets a flag in the current buffer.
+			When the '&' flag is present in 'cpoptions' the swap
+			file will not be deleted for this buffer when Vim
+			exits and the buffer is still loaded |cpo-&|.
 
 A Vim swap file can be recognized by the first six characters: "b0VIM ".
 After that comes the version number, e.g., "3.0".

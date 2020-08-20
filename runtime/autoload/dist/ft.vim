@@ -1,7 +1,7 @@
 " Vim functions for file type detection
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2019 Mar 08
+" Last Change:	2020 Mar 30
 
 " These functions are moved here from runtime/filetype.vim to make startup
 " faster.
@@ -298,7 +298,7 @@ endfunc
 
 func dist#ft#FTmms()
   let n = 1
-  while n < 10
+  while n < 20
     let line = getline(n)
     if line =~ '^\s*\(%\|//\)' || line =~ '^\*'
       setf mmix
@@ -325,7 +325,7 @@ endfunc
 
 func dist#ft#FTmm()
   let n = 1
-  while n < 10
+  while n < 20
     let line = getline(n)
     if line =~ '^\s*\(#\s*\(include\|import\)\>\|@import\>\|/\*\)'
       setf objcpp
@@ -575,7 +575,7 @@ endfunc
 let s:ft_rules_udev_rules_pattern = '^\s*\cudev_rules\s*=\s*"\([^"]\{-1,}\)/*".*'
 func dist#ft#FTRules()
   let path = expand('<amatch>:p')
-  if path =~ '^/\(etc/udev/\%(rules\.d/\)\=.*\.rules\|lib/udev/\%(rules\.d/\)\=.*\.rules\)$'
+  if path =~ '/\(etc/udev/\%(rules\.d/\)\=.*\.rules\|\%(usr/\)\=lib/udev/\%(rules\.d/\)\=.*\.rules\)$'
     setf udevrules
     return
   endif

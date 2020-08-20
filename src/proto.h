@@ -49,9 +49,6 @@ extern int _stricoll(char *a, char *b);
 # ifdef VMS
 #  include "os_vms.pro"
 # endif
-# ifdef __BEOS__
-#  include "os_beos.pro"
-# endif
 # ifdef __QNX__
 #  include "os_qnx.pro"
 # endif
@@ -68,6 +65,8 @@ extern int _stricoll(char *a, char *b);
 # include "change.pro"
 # include "charset.pro"
 # include "cindent.pro"
+# include "clientserver.pro"
+# include "clipboard.pro"
 # include "cmdexpand.pro"
 # include "cmdhist.pro"
 # include "if_cscope.pro"
@@ -93,17 +92,21 @@ extern int _stricoll(char *a, char *b);
 # include "findfile.pro"
 # include "fold.pro"
 # include "getchar.pro"
+# include "gui_xim.pro"
 # include "hardcopy.pro"
 # include "hashtab.pro"
+# include "help.pro"
 # include "highlight.pro"
 # include "indent.pro"
 # include "insexpand.pro"
 # include "json.pro"
 # include "list.pro"
+# include "locale.pro"
 # include "blob.pro"
 # include "main.pro"
 # include "map.pro"
 # include "mark.pro"
+# include "match.pro"
 # include "memfile.pro"
 # include "memline.pro"
 # ifdef FEAT_MENU
@@ -119,7 +122,7 @@ extern int _stricoll(char *a, char *b);
 // These prototypes cannot be produced automatically.
 int smsg(const char *, ...)
 # ifdef USE_PRINTF_FORMAT_ATTRIBUTE
-    __attribute__((format(printf, 1, 0)))
+    __attribute__((format(printf, 1, 2)))
 # endif
     ;
 
@@ -138,14 +141,14 @@ int smsg_attr_keep(int, const char *, ...)
 // These prototypes cannot be produced automatically.
 int semsg(const char *, ...)
 # ifdef USE_PRINTF_FORMAT_ATTRIBUTE
-    __attribute__((format(printf, 1, 0)))
+    __attribute__((format(printf, 1, 2)))
 # endif
     ;
 
 // These prototypes cannot be produced automatically.
 void siemsg(const char *, ...)
 # ifdef USE_PRINTF_FORMAT_ATTRIBUTE
-    __attribute__((format(printf, 1, 0)))
+    __attribute__((format(printf, 1, 2)))
 # endif
     ;
 
@@ -221,11 +224,21 @@ void mbyte_im_set_active(int active_arg);
 #  include "textprop.pro"
 # endif
 # include "testing.pro"
+# include "textobject.pro"
+# include "textformat.pro"
+# include "time.pro"
+# include "typval.pro"
 # include "ui.pro"
 # include "undo.pro"
 # include "usercmd.pro"
 # include "userfunc.pro"
 # include "version.pro"
+# ifdef FEAT_EVAL
+#  include "vim9compile.pro"
+#  include "vim9execute.pro"
+#  include "vim9script.pro"
+#  include "vim9type.pro"
+# endif
 # include "window.pro"
 
 # ifdef FEAT_LUA
@@ -307,8 +320,8 @@ extern char_u *vimpty_getenv(const char_u *string);	// in misc2.c
 extern char *vim_SelFile(Widget toplevel, char *prompt, char *init_path, int (*show_entry)(), int x, int y, guicolor_T fg, guicolor_T bg, guicolor_T scroll_fg, guicolor_T scroll_bg);
 #   endif
 #  endif
-#  ifdef FEAT_GUI_MAC
-#   include "gui_mac.pro"
+#  ifdef FEAT_GUI_HAIKU
+#   include "gui_haiku.pro"
 #  endif
 #  ifdef FEAT_GUI_X11
 #   include "gui_x11.pro"

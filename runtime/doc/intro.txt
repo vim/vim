@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 8.2.  Last change: 2019 Nov 11
+*intro.txt*     For Vim version 8.2.  Last change: 2020 May 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -121,14 +121,16 @@ http://www.vim.org/maillist.php
 
 Bug reports:				*bugs* *bug-reports* *bugreport.vim*
 
-There are two ways to report bugs, both work:
-1. Send bug reports to: Vim Developers <vim-dev@vim.org>
+There are three ways to report bugs:
+1. Open an issue on GitHub: https://github.com/vim/vim/issues
+   The text will be forwarded to the vim-dev maillist.
+2. For issues with runtime files, look in the header for an email address or
+   any other way to report it to the maintainer.
+3. Send bug reports to: Vim Developers <vim-dev@vim.org>
    This is a maillist, you need to become a member first and many people will
    see the message.  If you don't want that, e.g. because it is a security
    issue, send it to <bugs@vim.org>, this only goes to the Vim maintainer
    (that's Bram).
-2. Open an issue on GitHub: https://github.com/vim/vim/issues
-   The text will be forwarded to the vim-dev maillist.
 
 Please be brief; all the time that is spent on answering mail is subtracted
 from the time that is spent on improving Vim!  Always give a reproducible

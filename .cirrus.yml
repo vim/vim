@@ -11,7 +11,9 @@ freebsd_12_task:
     - NPROC=$(getconf _NPROCESSORS_ONLN)
     - ./configure --with-features=${FEATURES}
     - make -j${NPROC}
-    - src/vim --version
   test_script:
-    # Runtime Indent tests do not work, run only the normal test suite
-    - cd src && make test
+    - src/vim --version
+      # run tests as user "cirrus" instead of root
+    - pw useradd cirrus -m
+    - chown -R cirrus:cirrus .
+    - sudo -u cirrus make test

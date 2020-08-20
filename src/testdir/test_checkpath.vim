@@ -102,3 +102,5 @@ func Test_checkpath3()
   set include&
   set includeexpr&
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

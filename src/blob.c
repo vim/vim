@@ -58,24 +58,24 @@ rettv_blob_set(typval_T *rettv, blob_T *b)
 }
 
     int
-blob_copy(typval_T *from, typval_T *to)
+blob_copy(blob_T *from, typval_T *to)
 {
     int	    ret = OK;
 
     to->v_type = VAR_BLOB;
     to->v_lock = 0;
-    if (from->vval.v_blob == NULL)
+    if (from == NULL)
 	to->vval.v_blob = NULL;
     else if (rettv_blob_alloc(to) == FAIL)
 	ret = FAIL;
     else
     {
-	int  len = from->vval.v_blob->bv_ga.ga_len;
+	int  len = from->bv_ga.ga_len;
 
 	if (len > 0)
 	{
 	    to->vval.v_blob->bv_ga.ga_data =
-			    vim_memsave(from->vval.v_blob->bv_ga.ga_data, len);
+					 vim_memsave(from->bv_ga.ga_data, len);
 	    if (to->vval.v_blob->bv_ga.ga_data == NULL)
 		len = 0;
 	}

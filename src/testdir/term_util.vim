@@ -24,11 +24,30 @@ func StopShellInTerminal(buf)
   call WaitFor({-> job_status(job) == "dead"})
 endfunc
 
+" Wrapper around term_wait() to allow more time for re-runs of flaky tests
+" The second argument is the minimum time to wait in msec, 10 if omitted.
+func TermWait(buf, ...)
+  let wait_time = a:0 ? a:1 : 10
+  if exists('g:run_nr')
+    if g:run_nr == 2
+      let wait_time *= 4
+    elseif g:run_nr > 2
+      let wait_time *= 10
+    endif
+  endif
+  call term_wait(a:buf, wait_time)
+
+  " In case it wasn't set yet.
+  let g:test_is_flaky = 1
+endfunc
+
 " Run Vim with "arguments" in a new terminal window.
 " By default uses a size of 20 lines and 75 columns.
 " Returns the buffer number of the terminal.
 "
 " Options is a dictionary, these items are recognized:
+" "keep_t_u7" - when 1 do not make t_u7 empty (resetting t_u7 avoids clearing
+"               parts of line 2 and 3 on the display)
 " "rows" - height of the terminal window (max. 20)
 " "cols" - width of the terminal window (max. 78)
 " "statusoff" - number of lines the status is offset from default
@@ -59,7 +78,13 @@ func RunVimInTerminal(arguments, options)
   let cols = get(a:options, 'cols', 75)
   let statusoff = get(a:options, 'statusoff', 1)
 
-  let cmd = GetVimCommandCleanTerm() .. a:arguments
+  if get(a:options, 'keep_t_u7', 0)
+    let reset_u7 = ''
+  else
+    let reset_u7 = ' --cmd "set t_u7=" '
+  endif
+
+  let cmd = GetVimCommandCleanTerm() .. reset_u7 .. a:arguments
 
   let options = {
 	\ 'curwin': 1,
@@ -82,28 +107,67 @@ func RunVimInTerminal(arguments, options)
     let cols = term_getsize(buf)[1]
   endif
 
-  " Wait for "All" or "Top" of the ruler to be shown in the last line or in
-  " the status line of the last window. This can be quite slow (e.g. when
-  " using valgrind).
-  " If it fails then show the terminal contents for debugging.
-  try
-    call WaitFor({-> len(term_getline(buf, rows)) >= cols - 1 || len(term_getline(buf, rows - statusoff)) >= cols - 1})
-  catch /timed out after/
-    let lines = map(range(1, rows), {key, val -> term_getline(buf, val)})
-    call assert_report('RunVimInTerminal() failed, screen contents: ' . join(lines, "<NL>"))
-  endtry
+  call TermWait(buf)
+
+  if get(a:options, 'wait_for_ruler', 1)
+    " Wait for "All" or "Top" of the ruler to be shown in the last line or in
+    " the status line of the last window. This can be quite slow (e.g. when
+    " using valgrind).
+    " If it fails then show the terminal contents for debugging.
+    try
+      call WaitFor({-> len(term_getline(buf, rows)) >= cols - 1 || len(term_getline(buf, rows - statusoff)) >= cols - 1})
+    catch /timed out after/
+      let lines = map(range(1, rows), {key, val -> term_getline(buf, val)})
+      call assert_report('RunVimInTerminal() failed, screen contents: ' . join(lines, "<NL>"))
+    endtry
+  endif
+
+  " Starting a terminal to run Vim is always considered flaky.
+  let g:test_is_flaky = 1
 
   return buf
 endfunc
 
 " Stop a Vim running in terminal buffer "buf".
 func StopVimInTerminal(buf)
+  " Using a terminal to run Vim is always considered flaky.
+  let g:test_is_flaky = 1
+
   call assert_equal("running", term_getstatus(a:buf))
 
   " CTRL-O : works both in Normal mode and Insert mode to start a command line.
   " In Command-line it's inserted, the CTRL-U removes it again.
   call term_sendkeys(a:buf, "\<C-O>:\<C-U>qa!\<cr>")
 
+  " Wait for all the pending updates to terminal to complete
+  call TermWait(a:buf)
+
   call WaitForAssert({-> assert_equal("finished", term_getstatus(a:buf))})
   only!
 endfunc
+
+" Open a terminal with a shell, assign the job to g:job and return the buffer
+" number.
+func Run_shell_in_terminal(options)
+  if has('win32')
+    let buf = term_start([&shell,'/k'], a:options)
+  else
+    let buf = term_start(&shell, a:options)
+  endif
+  let g:test_is_flaky = 1
+
+  let termlist = term_list()
+  call assert_equal(1, len(termlist))
+  call assert_equal(buf, termlist[0])
+
+  let g:job = term_getjob(buf)
+  call assert_equal(v:t_job, type(g:job))
+
+  let string = string({'job': buf->term_getjob()})
+  call assert_match("{'job': 'process \\d\\+ run'}", string)
+
+  return buf
+endfunc
+
+
+" vim: shiftwidth=2 sts=2 expandtab

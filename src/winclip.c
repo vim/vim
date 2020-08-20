@@ -14,7 +14,6 @@
  * Also used by Cygwin, using os_unix.c.
  */
 
-#include "vimio.h"
 #include "vim.h"
 
 /*
@@ -423,7 +422,7 @@ clip_mch_request_selection(Clipboard_T *cbd)
 	}
     }
 
-    if (str != NULL && *str != NUL)
+    if (str != NULL && metadata.txtlen != 0)
     {
 	char_u *temp_clipboard;
 
@@ -544,7 +543,7 @@ clip_mch_set_selection(Clipboard_T *cbd)
 
 	if (lpszMem)
 	{
-	    vim_strncpy((char_u *)lpszMem, str, metadata.txtlen);
+	    mch_memmove((char_u *)lpszMem, str, metadata.txtlen);
 	    GlobalUnlock(hMem);
 	}
     }

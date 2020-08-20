@@ -270,7 +270,6 @@ win_line(
     int		tocol = MAXCOL;		// end of inverting
     int		fromcol_prev = -2;	// start of inverting after cursor
     int		noinvcur = FALSE;	// don't invert the cursor
-    pos_T	*top, *bot;
     int		lnum_in_visual_area = FALSE;
     pos_T	pos;
     long	v;
@@ -491,7 +490,7 @@ win_line(
 	{
 	    extra_check = TRUE;
 	    get_term_attr = TRUE;
-	    win_attr = term_get_attr(wp->w_buffer, lnum, -1);
+	    win_attr = term_get_attr(wp, lnum, -1);
 	}
 #endif
 
@@ -535,6 +534,8 @@ win_line(
 	// handle Visual active in this window
 	if (VIsual_active && wp->w_buffer == curwin->w_buffer)
 	{
+	    pos_T	*top, *bot;
+
 	    if (LTOREQ_POS(curwin->w_cursor, VIsual))
 	    {
 		// Visual is after curwin->w_cursor
@@ -966,7 +967,7 @@ win_line(
     for (;;)
     {
 #if defined(FEAT_CONCEAL) || defined(FEAT_SEARCH_EXTRA)
-	int has_match_conc  = 0;	// match wants to conceal
+	int has_match_conc = 0;	// match wants to conceal
 #endif
 #ifdef FEAT_CONCEAL
 	int did_decrement_ptr = FALSE;
@@ -1140,11 +1141,11 @@ win_line(
 	    }
 
 #ifdef FEAT_LINEBREAK
-	    if (wp->w_p_brisbr && draw_state == WL_BRI - 1
+	    if (wp->w_briopt_sbr && draw_state == WL_BRI - 1
 			    && n_extra == 0 && *get_showbreak_value(wp) != NUL)
 		// draw indent after showbreak value
 		draw_state = WL_BRI;
-	    else if (wp->w_p_brisbr && draw_state == WL_SBR && n_extra == 0)
+	    else if (wp->w_briopt_sbr && draw_state == WL_SBR && n_extra == 0)
 		// After the showbreak, draw the breakindent
 		draw_state = WL_BRI - 1;
 
@@ -1176,6 +1177,14 @@ win_line(
 		    c_final = NUL;
 		    n_extra = get_breakindent_win(wp,
 				       ml_get_buf(wp->w_buffer, lnum, FALSE));
+		    if (row == startrow)
+		    {
+			n_extra -= win_col_off2(wp);
+			if (n_extra < 0)
+			    n_extra = 0;
+		    }
+		    if (wp->w_skipcol > 0 && wp->w_p_wrap && wp->w_briopt_sbr)
+			need_showbreak = FALSE;
 		    // Correct end of highlighted area for 'breakindent',
 		    // required when 'linebreak' is also set.
 		    if (tocol == vcol)
@@ -1222,7 +1231,8 @@ win_line(
 		    c_extra = NUL;
 		    c_final = NUL;
 		    n_extra = (int)STRLEN(sbr);
-		    need_showbreak = FALSE;
+		    if (wp->w_skipcol == 0 || !wp->w_p_wrap)
+			need_showbreak = FALSE;
 		    vcol_sbr = vcol + MB_CHARLEN(sbr);
 		    // Correct end of highlighted area for 'showbreak',
 		    // required when 'linebreak' is also set.
@@ -1277,13 +1287,13 @@ win_line(
 	// When still displaying '$' of change command, stop at cursor.
 	// When only displaying the (relative) line number and that's done,
 	// stop here.
-	if ((dollar_vcol >= 0 && wp == curwin
-		   && lnum == wp->w_cursor.lnum && vcol >= (long)wp->w_virtcol
+	if (((dollar_vcol >= 0 && wp == curwin
+		   && lnum == wp->w_cursor.lnum && vcol >= (long)wp->w_virtcol)
+		|| (number_only && draw_state > WL_NR))
 #ifdef FEAT_DIFF
 				   && filler_todo <= 0
 #endif
 		)
-		|| (number_only && draw_state > WL_NR))
 	{
 	    screen_line(screen_row, wp->w_wincol, col, -(int)wp->w_width,
 							    screen_line_flags);
@@ -1324,6 +1334,11 @@ win_line(
 				      &screen_search_hl, &has_match_conc,
 				      &match_conc, did_line_attr, lcs_eol_one);
 		ptr = line + v;  // "line" may have been changed
+
+		// Do not allow a conceal over EOL otherwise EOL will be missed
+		// and bad things happen.
+		if (*ptr == NUL)
+		    has_match_conc = 0;
 	    }
 #endif
 
@@ -1416,7 +1431,7 @@ win_line(
 		syntax_attr = 0;
 # ifdef FEAT_TERMINAL
 		if (get_term_attr)
-		    syntax_attr = term_get_attr(wp->w_buffer, lnum, vcol);
+		    syntax_attr = term_get_attr(wp, lnum, vcol);
 # endif
 		// Get syntax attribute.
 		if (has_syntax)
@@ -1754,7 +1769,7 @@ win_line(
 			    {
 				// head byte at end of line
 				mb_l = 1;
-				transchar_nonprint(extra, c);
+				transchar_nonprint(wp->w_buffer, extra, c);
 			    }
 			    else
 			    {
@@ -2214,7 +2229,7 @@ win_line(
 		}
 		else if (c != NUL)
 		{
-		    p_extra = transchar(c);
+		    p_extra = transchar_buf(wp->w_buffer, c);
 		    if (n_extra == 0)
 			n_extra = byte2cells(c) - 1;
 #ifdef FEAT_RIGHTLEFT
@@ -2343,13 +2358,14 @@ win_line(
 	    {
 		char_attr = conceal_attr;
 		if ((prev_syntax_id != syntax_seqnr || has_match_conc > 1)
-			&& (syn_get_sub_char() != NUL || match_conc
-							 || wp->w_p_cole == 1)
+			&& (syn_get_sub_char() != NUL
+				|| (has_match_conc && match_conc)
+				|| wp->w_p_cole == 1)
 			&& wp->w_p_cole != 3)
 		{
 		    // First time at this concealed item: display one
 		    // character.
-		    if (match_conc)
+		    if (has_match_conc && match_conc)
 			c = match_conc;
 		    else if (syn_get_sub_char() != NUL)
 			c = syn_get_sub_char();
@@ -3091,9 +3107,9 @@ win_line(
 #ifdef FEAT_SYN_HL
 	    if (!(cul_screenline
 # ifdef FEAT_DIFF
-			&& diff_hlf == (hlf_T)0)
+			&& diff_hlf == (hlf_T)0
 # endif
-		    )
+		    ))
 		saved_char_attr = char_attr;
 	    else
 #endif

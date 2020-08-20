@@ -30,7 +30,7 @@ comments, ideas etc to <Ingo.Wilken@informatik.uni-oldenburg.de>
 			is working: >
 				:tcl puts "Hello"
 
-:[range]tc[l] << [endmarker]
+:[range]tc[l] << [trim] [{endmarker}]
 {script}
 {endmarker}
 			Execute Tcl script {script}.
@@ -38,10 +38,9 @@ comments, ideas etc to <Ingo.Wilken@informatik.uni-oldenburg.de>
 			wasn't compiled in.  To avoid errors, see
 			|script-here|.
 
-The {endmarker} after {script} must NOT be preceded by any white space.
-
 If [endmarker] is omitted from after the "<<", a dot '.' must be used after
-{script}, like for the |:append| and |:insert| commands.
+{script}, like for the |:append| and |:insert| commands.  Refer to
+|:let-heredoc| for more information.
 
 This form of the |:tcl| command is mainly useful for including tcl code in Vim
 scripts.
@@ -276,7 +275,7 @@ Options:
 	$win delcmd {cmd}				*tcl-window-delcmd*
 	Registers the Tcl command {cmd} as a deletion callback for the window.
 	This command is executed (in the global scope) just before the window
-	is closed.  Complex commands should be build with "list": >
+	is closed.  Complex commands should be built with "list": >
 		$win delcmd [list puts vimerr "window deleted"]
 <	See also |tcl-buffer-delcmd|.
 
@@ -358,7 +357,7 @@ Options:
 	$buf delcmd {cmd}				*tcl-buffer-delcmd*
 	Registers the Tcl command {cmd} as a deletion callback for the buffer.
 	This command is executed (in the global scope) just before the buffer
-	is deleted.  Complex commands should be build with "list": >
+	is deleted.  Complex commands should be built with "list": >
 		$buf delcmd [list puts vimerr "buffer [$buf number] gone"]
 <	See also |tcl-window-delcmd|.
 

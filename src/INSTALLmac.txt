@@ -16,7 +16,7 @@ Summary
 ----------------------------------------------------------------------------
 
 1 MacOS X
- 1.1. Carbon interface
+ 1.1. Terminal version
  1.2. X (Athena, GTK, Motif) or plain text.
 
 MacOS Classic is no longer supported.  If you really want it use Vim 6.4.
@@ -27,9 +27,9 @@ MacOS Classic is no longer supported.  If you really want it use Vim 6.4.
 
 1.0 Considerations
 
- Only '/' supported as path separator.
+ Only '/' is supported as path separator.
 
-1.1 Carbon interface (default)
+1.1 Terminal version (default)
 
  You can compile vim with the standard Unix routine:
    cd .../src
@@ -37,14 +37,7 @@ MacOS Classic is no longer supported.  If you really want it use Vim 6.4.
    make test
    sudo make install
 
- "make" will create a working Vim.app application bundle in the src
- directory.  You can move this bundle (the Vim.app directory) anywhere
- you want.  Or use "make install" to move it to /Applications.
-
- You need at least Xcode 1.5 to compile Vim 7.0.
-
- Configure will create a universal binary if possible.  This requires
- installing the universal SDK (currently for 10.4).
+ You need at least Xcode 1.5.
 
  To overrule the architecture do this before running make:
 
@@ -53,17 +46,16 @@ MacOS Classic is no longer supported.  If you really want it use Vim 6.4.
 	./configure --with-mac-arch=ppc
 
 
-1.2 X-Windows or Plain Text
+1.2 X-Windows
 
- If you do not want the Carbon interface, you must explicitly tell
- configure to use a different GUI.
+ You must explicitly tell configure to use a GUI.
 
   cd .../src
   ./configure --disable-darwin --enable-gui=gtk2
   make; make install
 
- NOTE: The following GUI options are supported:
-	no (for text), motif, athena, nextaw
+ NOTE: The following GUI options are possible (but might not work):
+	no (for terminal only), motif, athena, nextaw
 	gtk, gtk2, gnome, gnome2,
 
  NOTE: You need to first install XFree86 and XDarwin.

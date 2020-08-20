@@ -114,6 +114,7 @@ static struct event_name
     {"ColorSchemePre",	EVENT_COLORSCHEMEPRE},
     {"CompleteChanged",	EVENT_COMPLETECHANGED},
     {"CompleteDone",	EVENT_COMPLETEDONE},
+    {"CompleteDonePre",	EVENT_COMPLETEDONEPRE},
     {"CursorHold",	EVENT_CURSORHOLD},
     {"CursorHoldI",	EVENT_CURSORHOLDI},
     {"CursorMoved",	EVENT_CURSORMOVED},
@@ -160,6 +161,7 @@ static struct event_name
     {"SessionLoadPost",	EVENT_SESSIONLOADPOST},
     {"ShellCmdPost",	EVENT_SHELLCMDPOST},
     {"ShellFilterPost",	EVENT_SHELLFILTERPOST},
+    {"SigUSR1",		EVENT_SIGUSR1},
     {"SourceCmd",	EVENT_SOURCECMD},
     {"SourcePre",	EVENT_SOURCEPRE},
     {"SourcePost",	EVENT_SOURCEPOST},
@@ -233,6 +235,10 @@ struct AutoPatCmd_S
 };
 
 static AutoPatCmd *active_apc_list = NULL; // stack of active autocommands
+
+// Macro to loop over all the patterns for an autocmd event
+#define FOR_ALL_AUTOCMD_PATTERNS(event, ap) \
+    for ((ap) = first_autopat[(int)(event)]; (ap) != NULL; (ap) = (ap)->next)
 
 /*
  * augroups stores a list of autocmd group names.
@@ -455,7 +461,7 @@ aubuflocal_remove(buf_T *buf)
     for (event = (event_T)0; (int)event < (int)NUM_EVENTS;
 					    event = (event_T)((int)event + 1))
 	// loop over all autocommand patterns
-	for (ap = first_autopat[(int)event]; ap != NULL; ap = ap->next)
+	FOR_ALL_AUTOCMD_PATTERNS(event, ap)
 	    if (ap->buflocal_nr == buf->b_fnum)
 	    {
 		au_remove_pat(ap);
@@ -518,7 +524,7 @@ au_del_group(char_u *name)
 	for (event = (event_T)0; (int)event < (int)NUM_EVENTS;
 					    event = (event_T)((int)event + 1))
 	{
-	    for (ap = first_autopat[(int)event]; ap != NULL; ap = ap->next)
+	    FOR_ALL_AUTOCMD_PATTERNS(event, ap)
 		if (ap->group == i && ap->pat != NULL)
 		{
 		    give_warning((char_u *)_("W19: Deleting augroup that is still in use"), TRUE);
@@ -758,7 +764,7 @@ au_event_disable(char *what)
     save_ei = vim_strsave(p_ei);
     if (save_ei != NULL)
     {
-	new_ei = vim_strnsave(p_ei, (int)(STRLEN(p_ei) + STRLEN(what)));
+	new_ei = vim_strnsave(p_ei, STRLEN(p_ei) + STRLEN(what));
 	if (new_ei != NULL)
 	{
 	    if (*what == ',' && *p_ei == NUL)
@@ -986,7 +992,7 @@ au_get_grouparg(char_u **argp)
 	;
     if (p > arg)
     {
-	group_name = vim_strnsave(arg, (int)(p - arg));
+	group_name = vim_strnsave(arg, p - arg);
 	if (group_name == NULL)		// out of memory
 	    return AUGROUP_ERROR;
 	group = au_find_group(group_name);
@@ -1040,7 +1046,7 @@ do_autocmd_event(
      */
     if (*pat == NUL)
     {
-	for (ap = first_autopat[(int)event]; ap != NULL; ap = ap->next)
+	FOR_ALL_AUTOCMD_PATTERNS(event, ap)
 	{
 	    if (forceit)  // delete the AutoPat, if it's in the current group
 	    {
@@ -1754,15 +1760,6 @@ has_cmdundefined(void)
     return (first_autopat[(int)EVENT_CMDUNDEFINED] != NULL);
 }
 
-/*
- * Return TRUE when there is an FuncUndefined autocommand defined.
- */
-    int
-has_funcundefined(void)
-{
-    return (first_autopat[(int)EVENT_FUNCUNDEFINED] != NULL);
-}
-
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return TRUE when there is a TextYankPost autocommand defined.
@@ -1827,6 +1824,7 @@ apply_autocmds_group(
     int		did_save_redobuff = FALSE;
     save_redo_T	save_redo;
     int		save_KeyTyped = KeyTyped;
+    ESTACK_CHECK_DECLARATION
 
     /*
      * Quickly return if there are no autocommands for this event or
@@ -2021,6 +2019,7 @@ apply_autocmds_group(
 
     // name and lnum are filled in later
     estack_push(ETYPE_AUCMD, NULL, 0);
+    ESTACK_CHECK_SETUP
 
 #ifdef FEAT_EVAL
     save_current_sctx = current_sctx;
@@ -2124,6 +2123,7 @@ apply_autocmds_group(
     filechangeshell_busy = FALSE;
     autocmd_nested = save_autocmd_nested;
     vim_free(SOURCING_NAME);
+    ESTACK_CHECK_NOW
     estack_pop();
     vim_free(autocmd_fname);
     autocmd_fname = save_autocmd_fname;
@@ -2396,7 +2396,7 @@ has_autocmd(event_T event, char_u *sfname, buf_T *buf)
     forward_slash(fname);
 #endif
 
-    for (ap = first_autopat[(int)event]; ap != NULL; ap = ap->next)
+    FOR_ALL_AUTOCMD_PATTERNS(event, ap)
 	if (ap->pat != NULL && ap->cmds != NULL
 	      && (ap->buflocal_nr == 0
 		? match_file_pat(NULL, &ap->reg_prog,

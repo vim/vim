@@ -203,6 +203,9 @@ typedef PySliceObject PySliceObject_T;
 # define PySys_GetObject py3_PySys_GetObject
 # define PySys_SetArgv py3_PySys_SetArgv
 # define PyType_Ready py3_PyType_Ready
+# if PY_VERSION_HEX >= 0x030900b0
+#  define PyType_GetFlags py3_PyType_GetFlags
+# endif
 #undef Py_BuildValue
 # define Py_BuildValue py3_Py_BuildValue
 # define Py_SetPythonHome py3_Py_SetPythonHome
@@ -233,6 +236,9 @@ typedef PySliceObject PySliceObject_T;
 # define PyBytes_FromString py3_PyBytes_FromString
 # undef PyBytes_FromStringAndSize
 # define PyBytes_FromStringAndSize py3_PyBytes_FromStringAndSize
+# if defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030900b0
+#  define _Py_Dealloc py3__Py_Dealloc
+# endif
 # define PyFloat_FromDouble py3_PyFloat_FromDouble
 # define PyFloat_AsDouble py3_PyFloat_AsDouble
 # define PyObject_GenericGetAttr py3_PyObject_GenericGetAttr
@@ -247,7 +253,6 @@ typedef PySliceObject PySliceObject_T;
 # ifdef Py_DEBUG
 #  define _Py_NegativeRefcount py3__Py_NegativeRefcount
 #  define _Py_RefTotal (*py3__Py_RefTotal)
-#  define _Py_Dealloc py3__Py_Dealloc
 #  define PyModule_Create2TraceRefs py3_PyModule_Create2TraceRefs
 # else
 #  define PyModule_Create2 py3_PyModule_Create2
@@ -287,6 +292,10 @@ typedef PySliceObject PySliceObject_T;
 #  define PyObject_NEW(type, typeobj) \
 ( (type *) PyObject_Init( \
 	(PyObject *) _PyObject_DebugMalloc( _PyObject_SIZE(typeobj) ), (typeobj)) )
+# elif PY_VERSION_HEX >= 0x030900b0
+#  undef PyObject_NEW
+#  define PyObject_NEW(type, typeobj) \
+	((type *)py3__PyObject_New(typeobj))
 # endif
 
 /*
@@ -352,6 +361,9 @@ static PyObject* (*py3_PyObject_Repr)(PyObject *);
 static PyObject* (*py3_PyObject_GetItem)(PyObject *, PyObject *);
 static int (*py3_PyObject_IsTrue)(PyObject *);
 static PyObject* (*py3_Py_BuildValue)(char *, ...);
+# if PY_VERSION_HEX >= 0x030900b0
+static int (*py3_PyType_GetFlags)(PyTypeObject *o);
+# endif
 static int (*py3_PyType_Ready)(PyTypeObject *type);
 static int (*py3_PyDict_SetItemString)(PyObject *dp, char *key, PyObject *item);
 static PyObject* (*py3_PyUnicode_FromString)(const char *u);
@@ -396,6 +408,12 @@ static char* (*py3_PyBytes_AsString)(PyObject *bytes);
 static int (*py3_PyBytes_AsStringAndSize)(PyObject *bytes, char **buffer, Py_ssize_t *length);
 static PyObject* (*py3_PyBytes_FromString)(char *str);
 static PyObject* (*py3_PyBytes_FromStringAndSize)(char *str, Py_ssize_t length);
+# if defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030900b0
+static void (*py3__Py_Dealloc)(PyObject *obj);
+# endif
+# if PY_VERSION_HEX >= 0x030900b0
+static PyObject* (*py3__PyObject_New)(PyTypeObject *);
+# endif
 static PyObject* (*py3_PyFloat_FromDouble)(double num);
 static double (*py3_PyFloat_AsDouble)(PyObject *);
 static PyObject* (*py3_PyObject_GenericGetAttr)(PyObject *obj, PyObject *name);
@@ -414,7 +432,6 @@ static void* (*py3_PyCapsule_GetPointer)(PyObject *, char *);
 # ifdef Py_DEBUG
 static void (*py3__Py_NegativeRefcount)(const char *fname, int lineno, PyObject *op);
 static Py_ssize_t* py3__Py_RefTotal;
-static void (*py3__Py_Dealloc)(PyObject *obj);
 static PyObject* (*py3_PyModule_Create2TraceRefs)(struct PyModuleDef* module, int module_api_version);
 # else
 static PyObject* (*py3_PyModule_Create2)(struct PyModuleDef* module, int module_api_version);
@@ -525,6 +542,9 @@ static struct
     {"PyObject_IsTrue", (PYTHON_PROC*)&py3_PyObject_IsTrue},
     {"PyLong_FromLong", (PYTHON_PROC*)&py3_PyLong_FromLong},
     {"PyDict_New", (PYTHON_PROC*)&py3_PyDict_New},
+# if PY_VERSION_HEX >= 0x030900b0
+    {"PyType_GetFlags", (PYTHON_PROC*)&py3_PyType_GetFlags},
+# endif
     {"PyType_Ready", (PYTHON_PROC*)&py3_PyType_Ready},
     {"PyDict_SetItemString", (PYTHON_PROC*)&py3_PyDict_SetItemString},
     {"PyLong_AsLong", (PYTHON_PROC*)&py3_PyLong_AsLong},
@@ -562,6 +582,12 @@ static struct
     {"PyBytes_AsStringAndSize", (PYTHON_PROC*)&py3_PyBytes_AsStringAndSize},
     {"PyBytes_FromString", (PYTHON_PROC*)&py3_PyBytes_FromString},
     {"PyBytes_FromStringAndSize", (PYTHON_PROC*)&py3_PyBytes_FromStringAndSize},
+# if defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030900b0
+    {"_Py_Dealloc", (PYTHON_PROC*)&py3__Py_Dealloc},
+# endif
+# if PY_VERSION_HEX >= 0x030900b0
+    {"_PyObject_New", (PYTHON_PROC*)&py3__PyObject_New},
+# endif
     {"PyFloat_FromDouble", (PYTHON_PROC*)&py3_PyFloat_FromDouble},
     {"PyFloat_AsDouble", (PYTHON_PROC*)&py3_PyFloat_AsDouble},
     {"PyObject_GenericGetAttr", (PYTHON_PROC*)&py3_PyObject_GenericGetAttr},
@@ -578,7 +604,6 @@ static struct
 # ifdef Py_DEBUG
     {"_Py_NegativeRefcount", (PYTHON_PROC*)&py3__Py_NegativeRefcount},
     {"_Py_RefTotal", (PYTHON_PROC*)&py3__Py_RefTotal},
-    {"_Py_Dealloc", (PYTHON_PROC*)&py3__Py_Dealloc},
     {"PyModule_Create2TraceRefs", (PYTHON_PROC*)&py3_PyModule_Create2TraceRefs},
 # else
     {"PyModule_Create2", (PYTHON_PROC*)&py3_PyModule_Create2},
@@ -603,7 +628,6 @@ static struct
     static inline void
 py3__Py_DECREF(const char *filename UNUSED, int lineno UNUSED, PyObject *op)
 {
-    _Py_DEC_REFTOTAL;
     if (--op->ob_refcnt != 0)
     {
 #  ifdef Py_REF_DEBUG
@@ -635,18 +659,14 @@ py3__Py_XDECREF(PyObject *op)
 #  define Py_XDECREF(op) py3__Py_XDECREF(_PyObject_CAST(op))
 # endif
 
-/*
- * Free python.dll
- */
-    static void
-end_dynamic_python3(void)
+# if PY_VERSION_HEX >= 0x030900b0
+    static inline int
+py3_PyType_HasFeature(PyTypeObject *type, unsigned long feature)
 {
-    if (hinstPy3 != 0)
-    {
-	close_dll(hinstPy3);
-	hinstPy3 = 0;
-    }
+    return ((PyType_GetFlags(type) & feature) != 0);
 }
+#  define PyType_HasFeature(t,f) py3_PyType_HasFeature(t,f)
+# endif
 
 /*
  * Load library and get all pointers.
@@ -874,10 +894,6 @@ python3_end(void)
 	Py_Finalize();
     }
 
-#ifdef DYNAMIC_PYTHON3
-    end_dynamic_python3();
-#endif
-
     --recurse;
 }
 
@@ -890,6 +906,47 @@ python3_loaded(void)
 #endif
 
 static wchar_t *py_home_buf = NULL;
+
+#if defined(MSWIN) && (PY_VERSION_HEX >= 0x030500f0)
+// Python 3.5 or later will abort inside Py_Initialize() when stdin is
+// redirected.  Reconnect stdin to CONIN$.
+// Note that the python DLL is linked to its own stdio DLL which can be
+// differ from Vim's stdio.
+    static void
+reset_stdin(void)
+{
+    FILE *(*py__acrt_iob_func)(unsigned) = NULL;
+    FILE *(*pyfreopen)(const char *, const char *, FILE *) = NULL;
+    HINSTANCE hinst;
+
+# ifdef DYNAMIC_PYTHON3
+    hinst = hinstPy3;
+# else
+    hinst = GetModuleHandle(PYTHON3_DLL);
+# endif
+    if (hinst == NULL)
+	return;
+
+    // Get "freopen" and "stdin" which are used in the python DLL.
+    // "stdin" is defined as "__acrt_iob_func(0)" in VC++ 2015 or later.
+    py__acrt_iob_func = get_dll_import_func(hinst, "__acrt_iob_func");
+    if (py__acrt_iob_func)
+    {
+	HINSTANCE hpystdiodll = find_imported_module_by_funcname(hinst,
+							"__acrt_iob_func");
+	if (hpystdiodll)
+	    pyfreopen = (void*)GetProcAddress(hpystdiodll, "freopen");
+    }
+
+    // Reconnect stdin to CONIN$.
+    if (pyfreopen)
+	pyfreopen("CONIN$", "r", py__acrt_iob_func(0));
+    else
+	freopen("CONIN$", "r", stdin);
+}
+#else
+# define reset_stdin()
+#endif
 
     static int
 Python3_Init(void)
@@ -923,6 +980,7 @@ Python3_Init(void)
 
 	PyImport_AppendInittab("vim", Py3Init_vim);
 
+	reset_stdin();
 	Py_Initialize();
 
 	// Initialise threads, and below save the state using
@@ -1274,6 +1332,10 @@ BufferAsSubscript(PyObject *self, PyObject* idx, PyObject* val)
     if (PyLong_Check(idx))
     {
 	long n = PyLong_AsLong(idx);
+
+	if (CheckBuffer((BufferObject *) self))
+	    return -1;
+
 	return RBAsItem((BufferObject *)(self), n, val, 1,
 		    (Py_ssize_t)((BufferObject *)(self))->buf->b_ml.ml_line_count,
 		    NULL);
@@ -1641,7 +1703,7 @@ LineToString(const char *str)
 {
     PyObject *result;
     Py_ssize_t len = strlen(str);
-    char *tmp,*p;
+    char *tmp, *p;
 
     tmp = alloc(len + 1);
     p = tmp;

@@ -223,7 +223,7 @@ gtk_form_get_type(void)
     {
 	GtkTypeInfo form_info;
 
-	vim_memset(&form_info, 0, sizeof(form_info));
+	CLEAR_FIELD(form_info);
 	form_info.type_name = "GtkForm";
 	form_info.object_size = sizeof(GtkForm);
 	form_info.class_size = sizeof(GtkFormClass);

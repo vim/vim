@@ -1,5 +1,7 @@
 " Test binding arguments to a Funcref.
  
+source check.vim
+
 func MyFunc(arg1, arg2, arg3)
   return a:arg1 . '/' . a:arg2 . '/' . a:arg3
 endfunc
@@ -63,6 +65,7 @@ endfunc
 func Test_partial_dict()
   let dict = {'name': 'hello'}
   let Cb = function('MyDictFunc', ["foo", "bar"], dict)
+  call test_garbagecollect_now()
   call assert_equal("hello/foo/bar", Cb())
   call assert_fails('Cb("xxx")', 'E492:')
 
@@ -83,6 +86,9 @@ func Test_partial_dict()
 
   let dict = {"tr": function('tr', ['hello', 'h', 'H'])}
   call assert_equal("Hello", dict.tr())
+
+  call assert_fails("let F=function('setloclist', 10)", "E923:")
+  call assert_fails("let F=function('setloclist', [], [])", "E922:")
 endfunc
 
 func Test_partial_implicit()
@@ -106,7 +112,7 @@ fun InnerCall(funcref)
 endfu
 
 fun OuterCall()
-  let opt = { 'func' : function('sin') }
+  let opt = { 'func' : function('max') }
   call InnerCall(opt.func)
 endfu
 
@@ -190,6 +196,8 @@ func Test_partial_string()
   call assert_equal("function('MyFunc', {'one': 1})", string(F))
   let F = function('MyFunc', ['foo'], d)
   call assert_equal("function('MyFunc', ['foo'], {'one': 1})", string(F))
+  call assert_equal("function('')", string(test_null_function()))
+  call assert_equal("function('')", string(test_null_partial()))
 endfunc
 
 func Test_func_unref()
@@ -229,17 +237,16 @@ func Test_redefine_dict_func()
 endfunc
 
 func Test_bind_in_python()
-  if has('python')
-    let g:d = {}
-    function g:d.test2()
-    endfunction
-    python import vim
-    try
-      call assert_equal(pyeval('vim.bindeval("g:d.test2")'), g:d.test2)
-    catch
-      call assert_true(v:false, v:exception)
-    endtry
-  endif
+  CheckFeature python
+  let g:d = {}
+  function g:d.test2()
+  endfunction
+  python import vim
+  try
+    call assert_equal(pyeval('vim.bindeval("g:d.test2")'), g:d.test2)
+  catch
+    call assert_true(v:false, v:exception)
+  endtry
 endfunc
 
 " This caused double free on exit if EXITFREE is defined.
@@ -264,22 +271,21 @@ func Ignored3(job1, job2, status)
 endfunc
 
 func Test_cycle_partial_job()
-  if has('job')
-    let job = job_start('echo')
-    call job_setoptions(job, {'exit_cb': function('Ignored3', [job])})
-    unlet job
-  endif
+  CheckFeature job
+  let job = job_start('echo')
+  call job_setoptions(job, {'exit_cb': function('Ignored3', [job])})
+  unlet job
 endfunc
 
 func Ignored2(job, status)
 endfunc
 
 func Test_ref_job_partial_dict()
-  if has('job')
-    let g:ref_job = job_start('echo')
-    let d = {'a': 'b'}
-    call job_setoptions(g:ref_job, {'exit_cb': function('Ignored2', [], d)})
-  endif
+  CheckFeature job
+  let g:ref_job = job_start('echo')
+  let d = {'a': 'b'}
+  call job_setoptions(g:ref_job, {'exit_cb': function('Ignored2', [], d)})
+  call test_garbagecollect_now()
 endfunc
 
 func Test_auto_partial_rebind()
@@ -388,4 +394,16 @@ func Test_compare_partials()
   call assert_true(F1 isnot# F2)  " Different functions
   call assert_true(F1 isnot# F1d1)  " Partial /= non-partial
   call assert_true(d1.f1 isnot# d1.f1)  " handle_subscript creates new partial each time
+
+  " compare two null partials
+  let N1 = test_null_partial()
+  let N2 = N1
+  call assert_true(N1 is N2)
+  call assert_true(N1 == N2)
+
+  " compare a partial and a null partial
+  call assert_false(N1 == F1)
+  call assert_false(F1 is N1)
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

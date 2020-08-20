@@ -97,6 +97,8 @@ set_padding_border(dict_T *dict, int *array, char *name, int max_val)
 	    for (i = 0; i < 4; ++i)
 		array[i] = 1;
 	    if (list != NULL)
+	    {
+		CHECK_LIST_MATERIALIZE(list);
 		for (i = 0, li = list->lv_first; i < 4 && i < list->lv_len;
 							 ++i, li = li->li_next)
 		{
@@ -104,6 +106,7 @@ set_padding_border(dict_T *dict, int *array, char *name, int max_val)
 		    if (nr >= 0)
 			array[i] = nr > max_val ? max_val : nr;
 		}
+	    }
 	}
     }
 }
@@ -381,7 +384,7 @@ popup_add_timeout(win_T *wp, int time)
 
     vim_snprintf((char *)cbbuf, sizeof(cbbuf),
 				       "{_ -> popup_close(%d)}", wp->w_id);
-    if (get_lambda_tv(&ptr, &tv, TRUE) == OK)
+    if (get_lambda_tv(&ptr, &tv, &EVALARG_EVALUATE) == OK)
     {
 	wp->w_popup_timer = create_timer(time, 0);
 	wp->w_popup_timer->tr_callback = get_callback(&tv);
@@ -435,9 +438,10 @@ apply_move_options(win_T *wp, dict_T *d)
     if (nr != MAXCOL)
 	wp->w_wantcol = nr;
 
-    di = dict_find(d, (char_u *)"fixed", -1);
-    if (di != NULL)
-	wp->w_popup_fixed = dict_get_number(d, (char_u *)"fixed") != 0;
+
+    nr = dict_get_bool(d, (char_u *)"fixed", -1);
+    if (nr != -1)
+	wp->w_popup_fixed = nr != 0;
 
     {
 	poppos_T ppt = get_pos_entry(d, TRUE);
@@ -476,6 +480,9 @@ apply_move_options(win_T *wp, dict_T *d)
 	wp->w_popup_prop_id = dict_get_number(d, (char_u *)"textpropid");
 }
 
+/*
+ * Handle "moved" and "mousemoved" arguments.
+ */
     static void
 handle_moved_argument(win_T *wp, dictitem_T *di, int mousemoved)
 {
@@ -506,11 +513,13 @@ handle_moved_argument(win_T *wp, dictitem_T *di, int mousemoved)
 	     || di->di_tv.vval.v_list->lv_len == 3))
     {
 	list_T	    *l = di->di_tv.vval.v_list;
-	listitem_T  *li = l->lv_first;
+	listitem_T  *li;
 	int	    mincol;
 	int	    maxcol;
 
-	if (di->di_tv.vval.v_list->lv_len == 3)
+	CHECK_LIST_MATERIALIZE(l);
+	li = l->lv_first;
+	if (l->lv_len == 3)
 	{
 	    varnumber_T nr = tv_get_number(&l->lv_first->li_tv);
 
@@ -666,37 +675,31 @@ apply_general_options(win_T *wp, dict_T *dict)
 	wp->w_popup_title = vim_strsave(str);
     }
 
-    di = dict_find(dict, (char_u *)"wrap", -1);
-    if (di != NULL)
-    {
-	nr = dict_get_number(dict, (char_u *)"wrap");
+    nr = dict_get_bool(dict, (char_u *)"wrap", -1);
+    if (nr != -1)
 	wp->w_p_wrap = nr != 0;
-    }
 
-    di = dict_find(dict, (char_u *)"drag", -1);
-    if (di != NULL)
+    nr = dict_get_bool(dict, (char_u *)"drag", -1);
+    if (nr != -1)
     {
-	nr = dict_get_number(dict, (char_u *)"drag");
 	if (nr)
 	    wp->w_popup_flags |= POPF_DRAG;
 	else
 	    wp->w_popup_flags &= ~POPF_DRAG;
     }
 
-    di = dict_find(dict, (char_u *)"posinvert", -1);
-    if (di != NULL)
+    nr = dict_get_bool(dict, (char_u *)"posinvert", -1);
+    if (nr != -1)
     {
-	nr = dict_get_number(dict, (char_u *)"posinvert");
 	if (nr)
 	    wp->w_popup_flags |= POPF_POSINVERT;
 	else
 	    wp->w_popup_flags &= ~POPF_POSINVERT;
     }
 
-    di = dict_find(dict, (char_u *)"resize", -1);
-    if (di != NULL)
+    nr = dict_get_bool(dict, (char_u *)"resize", -1);
+    if (nr != -1)
     {
-	nr = dict_get_number(dict, (char_u *)"resize");
 	if (nr)
 	    wp->w_popup_flags |= POPF_RESIZE;
 	else
@@ -732,8 +735,6 @@ apply_general_options(win_T *wp, dict_T *dict)
 	set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
 						   str, OPT_FREE|OPT_LOCAL, 0);
 
-    set_string_option_direct_in_win(wp, (char_u *)"signcolumn", -1,
-					(char_u *)"no", OPT_FREE|OPT_LOCAL, 0);
     set_padding_border(dict, wp->w_popup_padding, "padding", 999);
     set_padding_border(dict, wp->w_popup_border, "border", 1);
 
@@ -748,6 +749,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    listitem_T	*li;
 	    int		i;
 
+	    CHECK_LIST_MATERIALIZE(list);
 	    for (i = 0, li = list->lv_first; i < 4 && i < list->lv_len;
 						     ++i, li = li->li_next)
 	    {
@@ -780,6 +782,8 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    int		i;
 
 	    if (list != NULL)
+	    {
+		CHECK_LIST_MATERIALIZE(list);
 		for (i = 0, li = list->lv_first; i < 8 && i < list->lv_len;
 							 ++i, li = li->li_next)
 		{
@@ -787,15 +791,16 @@ apply_general_options(win_T *wp, dict_T *dict)
 		    if (*str != NUL)
 			wp->w_border_char[i] = mb_ptr2char(str);
 		}
-	    if (list->lv_len == 1)
-		for (i = 1; i < 8; ++i)
-		    wp->w_border_char[i] = wp->w_border_char[0];
-	    if (list->lv_len == 2)
-	    {
-		for (i = 4; i < 8; ++i)
-		    wp->w_border_char[i] = wp->w_border_char[1];
-		for (i = 1; i < 4; ++i)
-		    wp->w_border_char[i] = wp->w_border_char[0];
+		if (list->lv_len == 1)
+		    for (i = 1; i < 8; ++i)
+			wp->w_border_char[i] = wp->w_border_char[0];
+		if (list->lv_len == 2)
+		{
+		    for (i = 4; i < 8; ++i)
+			wp->w_border_char[i] = wp->w_border_char[1];
+		    for (i = 1; i < 4; ++i)
+			wp->w_border_char[i] = wp->w_border_char[0];
+		}
 	    }
 	}
     }
@@ -823,8 +828,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    listitem_T *li;
 
 	    ok = TRUE;
-	    for (li = di->di_tv.vval.v_list->lv_first; li != NULL;
-							      li = li->li_next)
+	    FOR_ALL_LIST_ITEMS(di->di_tv.vval.v_list, li)
 	    {
 		if (li->li_tv.v_type != VAR_LIST
 			|| li->li_tv.vval.v_list == NULL
@@ -833,6 +837,8 @@ apply_general_options(win_T *wp, dict_T *dict)
 		    ok = FALSE;
 		    break;
 		}
+		else
+		    CHECK_LIST_MATERIALIZE(li->li_tv.vval.v_list);
 	    }
 	}
 	if (ok)
@@ -891,10 +897,9 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    set_callback(&wp->w_filter_cb, &callback);
 	}
     }
-    di = dict_find(dict, (char_u *)"mapping", -1);
-    if (di != NULL)
+    nr = dict_get_bool(dict, (char_u *)"mapping", -1);
+    if (nr != -1)
     {
-	nr = dict_get_number(dict, (char_u *)"mapping");
 	if (nr)
 	    wp->w_popup_flags |= POPF_MAPPING;
 	else
@@ -933,14 +938,15 @@ apply_options(win_T *wp, dict_T *dict)
     int		nr;
 
     apply_move_options(wp, dict);
+
+    set_string_option_direct_in_win(wp, (char_u *)"signcolumn", -1,
+					(char_u *)"no", OPT_FREE|OPT_LOCAL, 0);
+
     apply_general_options(wp, dict);
 
-    nr = dict_get_number(dict, (char_u *)"hidden");
+    nr = dict_get_bool(dict, (char_u *)"hidden", FALSE);
     if (nr > 0)
-    {
 	wp->w_popup_flags |= POPF_HIDDEN;
-	--wp->w_buffer->b_nwindows;
-    }
 
     popup_mask_refresh = TRUE;
     popup_highlight_curline(wp);
@@ -956,7 +962,7 @@ add_popup_strings(buf_T *buf, list_T *l)
     linenr_T    lnum = 0;
     char_u	*p;
 
-    for (li = l->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(l, li)
 	if (li->li_tv.v_type == VAR_STRING)
 	{
 	    p = li->li_tv.vval.v_string;
@@ -978,7 +984,7 @@ add_popup_dicts(buf_T *buf, list_T *l)
     dict_T	*dict;
 
     // first add the text lines
-    for (li = l->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(l, li)
     {
 	if (li->li_tv.v_type != VAR_DICT)
 	{
@@ -1011,7 +1017,7 @@ add_popup_dicts(buf_T *buf, list_T *l)
 	    plist = di->di_tv.vval.v_list;
 	    if (plist != NULL)
 	    {
-		for (pli = plist->lv_first; pli != NULL; pli = pli->li_next)
+		FOR_ALL_LIST_ITEMS(plist, pli)
 		{
 		    if (pli->li_tv.v_type != VAR_DICT)
 		    {
@@ -1099,6 +1105,7 @@ popup_adjust_position(win_T *wp)
     int		wrapped = 0;
     int		maxwidth;
     int		used_maxwidth = FALSE;
+    int		margin_width = 0;
     int		maxspace;
     int		center_vert = FALSE;
     int		center_hor = FALSE;
@@ -1116,10 +1123,12 @@ popup_adjust_position(win_T *wp)
     int		org_height = wp->w_height;
     int		org_leftcol = wp->w_leftcol;
     int		org_leftoff = wp->w_popup_leftoff;
-    int		minwidth;
+    int		minwidth, minheight;
+    int		maxheight = Rows;
     int		wantline = wp->w_wantline;  // adjusted for textprop
     int		wantcol = wp->w_wantcol;    // adjusted for textprop
     int		use_wantcol = wantcol != 0;
+    int		adjust_height_for_top_aligned = FALSE;
 
     wp->w_winrow = 0;
     wp->w_wincol = 0;
@@ -1153,7 +1162,6 @@ popup_adjust_position(win_T *wp)
 	    if ((wp->w_popup_flags & POPF_HIDDEN) == 0)
 	    {
 		wp->w_popup_flags |= POPF_HIDDEN;
-		--wp->w_buffer->b_nwindows;
 		if (win_valid(wp->w_popup_prop_win))
 		    redraw_win_later(wp->w_popup_prop_win, SOME_VALID);
 	    }
@@ -1222,8 +1230,9 @@ popup_adjust_position(win_T *wp)
 		|| wp->w_popup_pos == POPPOS_BOTLEFT))
 	{
 	    wp->w_wincol = wantcol - 1;
-	    if (wp->w_wincol >= Columns - 3)
-		wp->w_wincol = Columns - 3;
+	    // Need to see at least one character after the decoration.
+	    if (wp->w_wincol > Columns - left_extra - 1)
+		wp->w_wincol = Columns - left_extra - 1;
 	}
     }
 
@@ -1237,7 +1246,35 @@ popup_adjust_position(win_T *wp)
 	allow_adjust_left = FALSE;
 	maxwidth = wp->w_maxwidth;
     }
+
+    if (wp->w_p_nu || wp->w_p_rnu)
+	margin_width = number_width(wp) + 1;
+#ifdef FEAT_FOLDING
+    margin_width += wp->w_p_fdc;
+#endif
+#ifdef FEAT_SIGNS
+    if (signcolumn_on(wp))
+	margin_width += 2;
+#endif
+    if (margin_width >= maxwidth)
+	margin_width = maxwidth - 1;
+
     minwidth = wp->w_minwidth;
+    minheight = wp->w_minheight;
+#ifdef FEAT_TERMINAL
+    // A terminal popup initially does not have content, use a default minimal
+    // width of 20 characters and height of 5 lines.
+    if (wp->w_buffer->b_term != NULL)
+    {
+	if (minwidth == 0)
+	    minwidth = 20;
+	if (minheight == 0)
+	    minheight = 5;
+    }
+#endif
+
+    if (wp->w_maxheight > 0)
+	maxheight = wp->w_maxheight;
 
     // start at the desired first line
     if (wp->w_firstline > 0)
@@ -1265,6 +1302,7 @@ popup_adjust_position(win_T *wp)
 
 	// Count Tabs for what they are worth and compute the length based on
 	// the maximum width (matters when 'showbreak' is set).
+	// "margin_width" is added to "len" where it matters.
 	if (wp->w_width < maxwidth)
 	    wp->w_width = maxwidth;
 	len = win_linetabsize(wp, ml_get_buf(wp->w_buffer, lnum, FALSE),
@@ -1273,21 +1311,21 @@ popup_adjust_position(win_T *wp)
 
 	if (wp->w_p_wrap)
 	{
-	    while (len > maxwidth)
+	    while (len + margin_width > maxwidth)
 	    {
 		++wrapped;
-		len -= maxwidth;
+		len -= maxwidth - margin_width;
 		wp->w_width = maxwidth;
 		used_maxwidth = TRUE;
 	    }
 	}
-	else if (len > maxwidth
+	else if (len + margin_width > maxwidth
 		&& allow_adjust_left
 		&& (wp->w_popup_pos == POPPOS_TOPLEFT
 		    || wp->w_popup_pos == POPPOS_BOTLEFT))
 	{
 	    // adjust leftwise to fit text on screen
-	    int shift_by = len - maxwidth;
+	    int shift_by = len + margin_width - maxwidth;
 
 	    if (shift_by > wp->w_wincol)
 	    {
@@ -1301,9 +1339,9 @@ popup_adjust_position(win_T *wp)
 	    maxwidth += shift_by;
 	    wp->w_width = maxwidth;
 	}
-	if (wp->w_width < len)
+	if (wp->w_width < len + margin_width)
 	{
-	    wp->w_width = len;
+	    wp->w_width = len + margin_width;
 	    if (wp->w_maxwidth > 0 && wp->w_width > wp->w_maxwidth)
 		wp->w_width = wp->w_maxwidth;
 	}
@@ -1314,11 +1352,11 @@ popup_adjust_position(win_T *wp)
 	    ++lnum;
 
 	// do not use the width of lines we're not going to show
-	if (wp->w_maxheight > 0
+	if (maxheight > 0
 		   && (wp->w_firstline >= 0
 			       ? lnum - wp->w_topline
 			       : wp->w_buffer->b_ml.ml_line_count - lnum)
-		       + wrapped >= wp->w_maxheight)
+		       + wrapped >= maxheight)
 	    break;
     }
 
@@ -1327,6 +1365,11 @@ popup_adjust_position(win_T *wp)
 
     wp->w_has_scrollbar = wp->w_want_scrollbar
 	   && (wp->w_topline > 1 || lnum <= wp->w_buffer->b_ml.ml_line_count);
+#ifdef FEAT_TERMINAL
+    if (wp->w_buffer->b_term != NULL)
+	// Terminal window never has a scrollbar, adjusts to window height.
+	wp->w_has_scrollbar = FALSE;
+#endif
     if (wp->w_has_scrollbar)
     {
 	++right_extra;
@@ -1403,15 +1446,13 @@ popup_adjust_position(win_T *wp)
 
     wp->w_height = wp->w_buffer->b_ml.ml_line_count - wp->w_topline
 								 + 1 + wrapped;
-    if (wp->w_minheight > 0 && wp->w_height < wp->w_minheight)
-	wp->w_height = wp->w_minheight;
-    if (wp->w_maxheight > 0 && wp->w_height > wp->w_maxheight)
-	wp->w_height = wp->w_maxheight;
+    if (minheight > 0 && wp->w_height < minheight)
+	wp->w_height = minheight;
+    if (maxheight > 0 && wp->w_height > maxheight)
+	wp->w_height = maxheight;
     w_height_before_limit = wp->w_height;
     if (wp->w_height > Rows - wp->w_winrow)
 	wp->w_height = Rows - wp->w_winrow;
-    if (wp->w_height != org_height)
-	win_comp_scroll(wp);
 
     if (center_vert)
     {
@@ -1433,9 +1474,12 @@ popup_adjust_position(win_T *wp)
 	    wp->w_height = wantline - extra_height;
 	}
 	else
+	{
 	    // Not enough space and more space on the other side: make top
 	    // aligned.
 	    wp->w_winrow = (wantline < 0 ? 0 : wantline) + 1;
+	    adjust_height_for_top_aligned = TRUE;
+	}
     }
     else if (wp->w_popup_pos == POPPOS_TOPRIGHT
 		|| wp->w_popup_pos == POPPOS_TOPLEFT)
@@ -1455,12 +1499,32 @@ popup_adjust_position(win_T *wp)
 	    }
 	}
 	else
+	{
 	    wp->w_winrow = wantline - 1;
+	    adjust_height_for_top_aligned = TRUE;
+	}
     }
+
+    if (adjust_height_for_top_aligned && wp->w_want_scrollbar
+			  && wp->w_winrow + wp->w_height + extra_height > Rows)
+    {
+	// Bottom of the popup goes below the last line, reduce the height and
+	// add a scrollbar.
+	wp->w_height = Rows - wp->w_winrow - extra_height;
+#ifdef FEAT_TERMINAL
+	if (wp->w_buffer->b_term == NULL)
+#endif
+	    wp->w_has_scrollbar = TRUE;
+    }
+
+    // make sure w_winrow is valid
     if (wp->w_winrow >= Rows)
 	wp->w_winrow = Rows - 1;
     else if (wp->w_winrow < 0)
 	wp->w_winrow = 0;
+
+    if (wp->w_height != org_height)
+	win_comp_scroll(wp);
 
     wp->w_popup_last_changedtick = CHANGEDTICK(wp->w_buffer);
     if (win_valid(wp->w_popup_prop_win))
@@ -1510,7 +1574,7 @@ popup_set_buffer_text(buf_T *buf, typval_T text)
     // Clear the buffer, then replace the lines.
     curbuf = buf;
     for (lnum = buf->b_ml.ml_line_count; lnum > 0; --lnum)
-	ml_delete(lnum, FALSE);
+	ml_delete(lnum);
     curbuf = curwin->w_buffer;
 
     // Add text to the buffer.
@@ -1536,7 +1600,7 @@ popup_set_buffer_text(buf_T *buf, typval_T text)
 
     // delete the line that was in the empty buffer
     curbuf = buf;
-    ml_delete(buf->b_ml.ml_line_count, FALSE);
+    ml_delete(buf->b_ml.ml_line_count);
     curbuf = curwin->w_buffer;
 }
 
@@ -1593,6 +1657,7 @@ parse_popup_option(win_T *wp, int is_preview)
 		if (is_preview)
 		    wp->w_minwidth = x;
 		wp->w_maxwidth = x;
+		wp->w_maxwidth_opt = x;
 	    }
 	}
 	else if (STRNCMP(s, "highlight:", 10) == 0)
@@ -1730,6 +1795,27 @@ add_border_left_right_padding(win_T *wp)
     }
 }
 
+#ifdef FEAT_TERMINAL
+/*
+ * Return TRUE if there is any popup window with a terminal buffer.
+ */
+    static int
+popup_terminal_exists(void)
+{
+    win_T	*wp;
+    tabpage_T	*tp;
+
+    FOR_ALL_POPUPWINS(wp)
+	if (wp->w_buffer->b_term != NULL)
+	    return TRUE;
+    FOR_ALL_TABPAGES(tp)
+	FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
+	    if (wp->w_buffer->b_term != NULL)
+		return TRUE;
+    return FALSE;
+}
+#endif
+
 /*
  * popup_create({text}, {options})
  * popup_atcursor({text}, {options})
@@ -1760,9 +1846,9 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 		return NULL;
 	    }
 #ifdef FEAT_TERMINAL
-	    if (buf->b_term != NULL)
+	    if (buf->b_term != NULL && popup_terminal_exists())
 	    {
-		emsg(_("E278: Cannot put a terminal buffer in a popup window"));
+		emsg(_("E861: Cannot open a second popup with a terminal"));
 		return NULL;
 	    }
 #endif
@@ -1772,7 +1858,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 		    && !(argvars[0].v_type == VAR_LIST
 			&& argvars[0].vval.v_list != NULL))
 	{
-	    emsg(_(e_listreq));
+	    emsg(_("E450: buffer number, text or a list required"));
 	    return NULL;
 	}
 	if (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL)
@@ -2021,6 +2107,12 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     redraw_all_later(NOT_VALID);
     popup_mask_refresh = TRUE;
 
+#ifdef FEAT_TERMINAL
+    // When running a terminal in the popup it becomes the current window.
+    if (buf->b_term != NULL)
+	win_enter(wp, FALSE);
+#endif
+
     return wp;
 }
 
@@ -2028,9 +2120,13 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
  * popup_clear()
  */
     void
-f_popup_clear(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+f_popup_clear(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    close_all_popups();
+    int force = FALSE;
+
+    if (argvars[0].v_type != VAR_UNKNOWN)
+	force = (int)tv_get_number(&argvars[0]);
+    close_all_popups(force);
 }
 
 /*
@@ -2090,6 +2186,19 @@ invoke_popup_callback(win_T *wp, typval_T *result)
 }
 
 /*
+ * Make "prevwin" the current window, unless it's equal to "wp".
+ * Otherwise make "firstwin" the current window.
+ */
+    static void
+back_to_prevwin(win_T *wp)
+{
+    if (win_valid(prevwin) && wp != prevwin)
+	win_enter(prevwin, FALSE);
+    else
+	win_enter(firstwin, FALSE);
+}
+
+/*
  * Close popup "wp" and invoke any close callback for it.
  */
     static void
@@ -2097,18 +2206,49 @@ popup_close_and_callback(win_T *wp, typval_T *arg)
 {
     int id = wp->w_id;
 
+#ifdef FEAT_TERMINAL
+    if (wp == curwin && curbuf->b_term != NULL)
+    {
+	win_T *owp;
+
+	// Closing popup window with a terminal: put focus back on the first
+	// that works:
+	// - another popup window with a terminal
+	// - the previous window
+	// - the first one.
+	FOR_ALL_POPUPWINS(owp)
+	    if (owp != curwin && owp->w_buffer->b_term != NULL)
+		break;
+	if (owp != NULL)
+	    win_enter(owp, FALSE);
+	else
+	{
+	    for (owp = curtab->tp_first_popupwin; owp != NULL;
+							     owp = owp->w_next)
+		if (owp != curwin && owp->w_buffer->b_term != NULL)
+		    break;
+	    if (owp != NULL)
+		win_enter(owp, FALSE);
+	    else
+		back_to_prevwin(wp);
+	}
+    }
+#endif
+
     // Just in case a check higher up is missing.
     if (wp == curwin && ERROR_IF_POPUP_WINDOW)
 	return;
 
+    CHECK_CURBUF;
     if (wp->w_close_cb.cb_name != NULL)
 	// Careful: This may make "wp" invalid.
 	invoke_popup_callback(wp, arg);
 
-    popup_close(id);
+    popup_close(id, FALSE);
+    CHECK_CURBUF;
 }
 
-    static void
+    void
 popup_close_with_retval(win_T *wp, int retval)
 {
     typval_T res;
@@ -2191,7 +2331,7 @@ filter_handle_drag(win_T *wp, int c, typval_T *rettv)
 }
 
 /*
- * popup_filter_menu({text}, {options})
+ * popup_filter_menu({id}, {key})
  */
     void
 f_popup_filter_menu(typval_T *argvars, typval_T *rettv)
@@ -2246,7 +2386,7 @@ f_popup_filter_menu(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * popup_filter_yesno({text}, {options})
+ * popup_filter_yesno({id}, {key})
  */
     void
 f_popup_filter_yesno(typval_T *argvars, typval_T *rettv)
@@ -2337,7 +2477,12 @@ f_popup_close(typval_T *argvars, typval_T *rettv UNUSED)
     int		id = (int)tv_get_number(argvars);
     win_T	*wp;
 
-    if (ERROR_IF_POPUP_WINDOW)
+    if (
+# ifdef FEAT_TERMINAL
+	// if the popup contains a terminal it will become hidden
+	curbuf->b_term == NULL &&
+# endif
+	    ERROR_IF_ANY_POPUP_WINDOW)
 	return;
 
     wp = find_popup_win(id);
@@ -2348,10 +2493,14 @@ f_popup_close(typval_T *argvars, typval_T *rettv UNUSED)
     void
 popup_hide(win_T *wp)
 {
+#ifdef FEAT_TERMINAL
+    if (error_if_term_popup_window())
+	return;
+#endif
     if ((wp->w_popup_flags & POPF_HIDDEN) == 0)
     {
 	wp->w_popup_flags |= POPF_HIDDEN;
-	--wp->w_buffer->b_nwindows;
+	// Do not decrement b_nwindows, we still reference the buffer.
 	redraw_all_later(NOT_VALID);
 	popup_mask_refresh = TRUE;
     }
@@ -2376,7 +2525,6 @@ popup_show(win_T *wp)
     if ((wp->w_popup_flags & POPF_HIDDEN) != 0)
     {
 	wp->w_popup_flags &= ~POPF_HIDDEN;
-	++wp->w_buffer->b_nwindows;
 	redraw_all_later(NOT_VALID);
 	popup_mask_refresh = TRUE;
     }
@@ -2436,12 +2584,38 @@ popup_free(win_T *wp)
     popup_mask_refresh = TRUE;
 }
 
+    static void
+error_for_popup_window(void)
+{
+    emsg(_("E994: Not allowed in a popup window"));
+}
+
+    int
+error_if_popup_window(int also_with_term UNUSED)
+{
+    // win_execute() may set "curwin" to a popup window temporarily, but many
+    // commands are disallowed then.  When a terminal runs in the popup most
+    // things are allowed.  When a terminal is finished it can be closed.
+    if (WIN_IS_POPUP(curwin)
+# ifdef FEAT_TERMINAL
+	    && (also_with_term || curbuf->b_term == NULL)
+	    && !term_is_finished(curbuf)
+# endif
+	    )
+    {
+	error_for_popup_window();
+	return TRUE;
+    }
+    return FALSE;
+}
+
 /*
  * Close a popup window by Window-id.
  * Does not invoke the callback.
+ * Return OK if the popup was closed, FAIL otherwise.
  */
-    void
-popup_close(int id)
+    int
+popup_close(int id, int force)
 {
     win_T	*wp;
     tabpage_T	*tp;
@@ -2451,24 +2625,35 @@ popup_close(int id)
     for (wp = first_popupwin; wp != NULL; prev = wp, wp = wp->w_next)
 	if (wp->w_id == id)
 	{
+	    if (wp == curwin)
+	    {
+		if (!force)
+		{
+		    error_for_popup_window();
+		    return FAIL;
+		}
+		back_to_prevwin(wp);
+	    }
 	    if (prev == NULL)
 		first_popupwin = wp->w_next;
 	    else
 		prev->w_next = wp->w_next;
 	    popup_free(wp);
-	    return;
+	    return OK;
 	}
 
     // go through tab-local popups
     FOR_ALL_TABPAGES(tp)
-	popup_close_tabpage(tp, id);
+	if (popup_close_tabpage(tp, id, force) == OK)
+	    return OK;
+    return FAIL;
 }
 
 /*
  * Close a popup window with Window-id "id" in tabpage "tp".
  */
-    void
-popup_close_tabpage(tabpage_T *tp, int id)
+    int
+popup_close_tabpage(tabpage_T *tp, int id, int force)
 {
     win_T	*wp;
     win_T	**root = &tp->tp_first_popupwin;
@@ -2477,22 +2662,36 @@ popup_close_tabpage(tabpage_T *tp, int id)
     for (wp = *root; wp != NULL; prev = wp, wp = wp->w_next)
 	if (wp->w_id == id)
 	{
+	    if (wp == curwin)
+	    {
+		if (!force)
+		{
+		    error_for_popup_window();
+		    return FAIL;
+		}
+		back_to_prevwin(wp);
+	    }
 	    if (prev == NULL)
 		*root = wp->w_next;
 	    else
 		prev->w_next = wp->w_next;
 	    popup_free(wp);
-	    return;
+	    return OK;
 	}
+    return FAIL;
 }
 
     void
-close_all_popups(void)
+close_all_popups(int force)
 {
+    if (!force && ERROR_IF_ANY_POPUP_WINDOW)
+	return;
     while (first_popupwin != NULL)
-	popup_close(first_popupwin->w_id);
+	if (popup_close(first_popupwin->w_id, force) == FAIL)
+	    return;
     while (curtab->tp_first_popupwin != NULL)
-	popup_close(curtab->tp_first_popupwin->w_id);
+	if (popup_close(curtab->tp_first_popupwin->w_id, force) == FAIL)
+	    return;
 }
 
 /*
@@ -2598,6 +2797,25 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
 	hash_unlock(&dict->dv_hashtab);
     }
 }
+
+/*
+ * popup_list()
+ */
+    void
+f_popup_list(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    win_T	*wp;
+    tabpage_T	*tp;
+
+    if (rettv_list_alloc(rettv) != OK)
+	return;
+    FOR_ALL_POPUPWINS(wp)
+	list_append_number(rettv->vval.v_list, wp->w_id);
+    FOR_ALL_TABPAGES(tp)
+	FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
+	    list_append_number(rettv->vval.v_list, wp->w_id);
+}
+
 /*
  * popup_locate({row}, {col})
  */
@@ -2776,12 +2994,12 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	{
 	    win_T *twp;
 
-	     for (twp = tp->tp_first_popupwin; twp != NULL; twp = twp->w_next)
-		 if (twp->w_id == id)
-		     break;
-	     if (twp != NULL)
-		 break;
-	     ++i;
+	    FOR_ALL_POPUPWINS_IN_TAB(tp, twp)
+		if (twp->w_id == id)
+		    break;
+	    if (twp != NULL)
+		break;
+	    ++i;
 	}
 	if (tp == NULL)
 	    i = -1;  // must be global
@@ -2820,16 +3038,23 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
     }
 }
 
+# if defined(FEAT_TERMINAL) || defined(PROTO)
+/*
+ * Return TRUE if the current window is running a terminal in a popup window.
+ * Return FALSE when the job has ended.
+ */
     int
-error_if_popup_window()
+error_if_term_popup_window()
 {
-    if (WIN_IS_POPUP(curwin))
+    if (WIN_IS_POPUP(curwin) && curbuf->b_term != NULL
+					   && term_job_running(curbuf->b_term))
     {
-	emsg(_("E994: Not allowed in a popup window"));
+	emsg(_("E863: Not allowed for a terminal in a popup window"));
 	return TRUE;
     }
     return FALSE;
 }
+# endif
 
 /*
  * Reset all the "handled_flag" flags in global popup windows and popup windows
@@ -2842,9 +3067,9 @@ popup_reset_handled(int handled_flag)
 {
     win_T *wp;
 
-    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS(wp)
 	wp->w_popup_handled &= ~handled_flag;
-    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
 	wp->w_popup_handled &= ~handled_flag;
 }
 
@@ -2863,7 +3088,7 @@ find_next_popup(int lowest, int handled_flag)
 
     found_zindex = lowest ? INT_MAX : 0;
     found_wp = NULL;
-    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS(wp)
 	if ((wp->w_popup_handled & handled_flag) == 0
 		&& (wp->w_popup_flags & POPF_HIDDEN) == 0
 		&& (lowest ? wp->w_zindex < found_zindex
@@ -2872,7 +3097,7 @@ find_next_popup(int lowest, int handled_flag)
 	    found_zindex = wp->w_zindex;
 	    found_wp = wp;
 	}
-    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
 	if ((wp->w_popup_handled & handled_flag) == 0
 		&& (wp->w_popup_flags & POPF_HIDDEN) == 0
 		&& (lowest ? wp->w_zindex < found_zindex
@@ -2919,7 +3144,7 @@ invoke_popup_filter(win_T *wp, int c)
 
     // Convert the number to a string, so that the function can use:
     //	    if a:c == "\<F2>"
-    buf[special_to_buf(c, mod_mask, TRUE, buf)] = NUL;
+    buf[special_to_buf(c, mod_mask, FALSE, buf)] = NUL;
     argv[1].v_type = VAR_STRING;
     argv[1].vval.v_string = vim_strsave(buf);
 
@@ -2929,7 +3154,7 @@ invoke_popup_filter(win_T *wp, int c)
     call_callback(&wp->w_filter_cb, -1, &rettv, 2, argv);
     if (win_valid_popup(wp) && old_lnum != wp->w_cursor.lnum)
 	popup_highlight_curline(wp);
-    res = tv_get_number(&rettv);
+    res = tv_get_bool(&rettv);
 
     vim_free(argv[1].vval.v_string);
     clear_tv(&rettv);
@@ -2949,6 +3174,12 @@ popup_do_filter(int c)
     int		save_KeyTyped = KeyTyped;
     int		state;
     int		was_must_redraw = must_redraw;
+
+#ifdef FEAT_TERMINAL
+    // Popup window with terminal always gets focus.
+    if (popup_is_popup(curwin) && curbuf->b_term != NULL)
+	return FALSE;
+#endif
 
     if (recursive)
 	return FALSE;
@@ -2972,7 +3203,14 @@ popup_do_filter(int c)
 	    res = invoke_popup_filter(wp, c);
 
     if (must_redraw > was_must_redraw)
+    {
+	int save_got_int = got_int;
+
+	// Reset got_int to avoid a function used in the statusline aborts.
+	got_int = FALSE;
 	redraw_after_callback(FALSE);
+	got_int |= save_got_int;
+    }
     recursive = FALSE;
     KeyTyped = save_KeyTyped;
     return res;
@@ -3039,7 +3277,7 @@ popup_update_mask(win_T *wp, int width, int height)
 	return;
     cells = wp->w_popup_mask_cells;
 
-    for (lio = wp->w_popup_mask->lv_first; lio != NULL; lio = lio->li_next)
+    FOR_ALL_LIST_ITEMS(wp->w_popup_mask, lio)
     {
 	int cols, cole;
 	int lines, linee;
@@ -3097,7 +3335,7 @@ update_popup_transparent(win_T *wp, int val)
 	int		lines, linee;
 	int		col, line;
 
-	for (lio = wp->w_popup_mask->lv_first; lio != NULL; lio = lio->li_next)
+	FOR_ALL_LIST_ITEMS(wp->w_popup_mask, lio)
 	{
 	    li = lio->li_tv.vval.v_list->lv_first;
 	    cols = tv_get_number(&li->li_tv);
@@ -3154,7 +3392,6 @@ check_popup_unhidden(win_T *wp)
 							   &prop, &lnum) == OK)
 	{
 	    wp->w_popup_flags &= ~POPF_HIDDEN;
-	    ++wp->w_buffer->b_nwindows;
 	    wp->w_popup_prop_topline = 0; // force repositioning
 	    return TRUE;
 	}
@@ -3208,12 +3445,12 @@ may_update_popup_mask(int type)
 
     // Check if any popup window buffer has changed and if any popup connected
     // to a text property has become visible.
-    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS(wp)
 	if (wp->w_popup_flags & POPF_HIDDEN)
 	    popup_mask_refresh |= check_popup_unhidden(wp);
 	else if (popup_need_position_adjust(wp))
 	    popup_mask_refresh = TRUE;
-    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
 	if (wp->w_popup_flags & POPF_HIDDEN)
 	    popup_mask_refresh |= check_popup_unhidden(wp);
 	else if (popup_need_position_adjust(wp))
@@ -3312,22 +3549,31 @@ may_update_popup_mask(int type)
 			wp = mouse_find_win(&line_cp, &col_cp, IGNORE_POPUP);
 			if (wp != NULL)
 			{
-			    if (wp != prev_wp)
-			    {
-				vim_memset(plines_cache, 0, sizeof(int) * Rows);
-				prev_wp = wp;
-			    }
-
-			    if (line_cp >= wp->w_height)
-				// In (or below) status line
-				wp->w_redr_status = TRUE;
+#if defined(FEAT_TERMINAL)
+			    // A terminal window needs to be redrawn.
+			    if (bt_terminal(wp->w_buffer))
+				redraw_win_later(wp, NOT_VALID);
 			    else
+#endif
 			    {
-				// compute the position in the buffer line from
-				// the position in the window
-				mouse_comp_pos(wp, &line_cp, &col_cp,
+				if (wp != prev_wp)
+				{
+				    vim_memset(plines_cache, 0,
+							   sizeof(int) * Rows);
+				    prev_wp = wp;
+				}
+
+				if (line_cp >= wp->w_height)
+				    // In (or below) status line
+				    wp->w_redr_status = TRUE;
+				else
+				{
+				    // compute the position in the buffer line
+				    // from the position in the window
+				    mouse_comp_pos(wp, &line_cp, &col_cp,
 							  &lnum, plines_cache);
-				redrawWinline(wp, lnum);
+				    redrawWinline(wp, lnum);
+				}
 			    }
 
 			    // This line is going to be redrawn, no need to
@@ -3420,6 +3666,14 @@ update_popups(void (*win_update)(win_T *wp))
 
 	wp->w_winrow -= top_off;
 	wp->w_wincol -= left_extra;
+	// cursor position matters in terminal in job mode
+#ifdef FEAT_TERMINAL
+	if (wp != curwin || !term_in_normal_mode())
+#endif
+	{
+	    wp->w_wrow += top_off;
+	    wp->w_wcol += left_extra;
+	}
 
 	total_width = popup_width(wp);
 	total_height = popup_height(wp);
@@ -3646,6 +3900,11 @@ update_popups(void (*win_update)(win_T *wp))
 	// Back to the normal zindex.
 	screen_zindex = 0;
     }
+
+#if defined(FEAT_SEARCH_EXTRA)
+    // In case win_update() called start_search_hl().
+    end_search_hl();
+#endif
 }
 
 /*
@@ -3713,7 +3972,7 @@ popup_find_preview_window(void)
     win_T *wp;
 
     // Preview window popup is always local to tab page.
-    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
 	if (wp->w_p_pvw)
 	    return wp;
     return NULL;
@@ -3729,7 +3988,7 @@ popup_find_info_window(void)
     win_T *wp;
 
     // info window popup is always local to tab page.
-    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
 	if (wp->w_popup_flags & POPF_INFO)
 	    return wp;
     return NULL;
@@ -3816,6 +4075,18 @@ popup_hide_info(void)
 
     if (wp != NULL)
 	popup_hide(wp);
+}
+
+/*
+ * Close any info popup.
+ */
+    void
+popup_close_info(void)
+{
+    win_T *wp = popup_find_info_window();
+
+    if (wp != NULL)
+	popup_close_with_retval(wp, -1);
 }
 #endif
 

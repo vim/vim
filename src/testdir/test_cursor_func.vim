@@ -2,6 +2,7 @@
 
 func Test_wrong_arguments()
   call assert_fails('call cursor(1. 3)', 'E474:')
+  call assert_fails('call cursor(test_null_list())', 'E474:')
 endfunc
 
 func Test_move_cursor()
@@ -98,6 +99,7 @@ func Test_screenpos()
 	\ 'curscol': wincol + 9,
 	\ 'endcol': wincol + 9}, screenpos(winid, 2, 22))
   close
+  call assert_equal({}, screenpos(999, 1, 1))
   bwipe!
 endfunc
 
@@ -115,3 +117,5 @@ func Test_screenpos_number()
   close
   bwipe!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

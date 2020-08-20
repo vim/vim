@@ -424,6 +424,30 @@ func Test_format_align()
 	      \ ], getline(1, '$'))
   enew!
 
+  " align text with 'wrapmargin'
+  50vnew
+  call setline(1, ['Vim'])
+  setl textwidth=0
+  setl wrapmargin=30
+  right
+  call assert_equal("\t\t Vim", getline(1))
+  q!
+
+  " align text with 'rightleft'
+  if has('rightleft')
+    new
+    call setline(1, 'Vim')
+    setlocal rightleft
+    left 20
+    setlocal norightleft
+    call assert_equal("\t\t Vim", getline(1))
+    setlocal rightleft
+    right
+    setlocal norightleft
+    call assert_equal("Vim", getline(1))
+    close!
+  endif
+
   set tw&
 endfunc
 
@@ -760,78 +784,6 @@ func Test_tw_2_fo_tm_noai()
   bwipe!
 endfunc
 
-func Test_tw_2_fo_cqm_com()
-  new
-  let t =<< trim END
-    {
-    Ｘ
-    Ｘa
-    ＸaＹ
-    ＸＹ
-    ＸＹＺ
-    Ｘ Ｙ
-    Ｘ ＹＺ
-    ＸＸ
-    ＸＸa
-    ＸＸＹ
-    }
-  END
-  call setline(1, t)
-  call cursor(2, 1)
-
-  set tw=2 fo=cqm comments=n:Ｘ
-  exe "normal gqgqjgqgqjgqgqjgqgqjgqgqjgqgqjgqgqjgqgqjgqgqjgqgq"
-  let t =<< trim END
-    Ｘ
-    Ｘa
-    ＸaＹ
-    ＸＹ
-    ＸＹＺ
-    Ｘ Ｙ
-    Ｘ ＹＺ
-    ＸＸ
-    ＸＸa
-    ＸＸＹ
-  END
-  exe "normal o\n" . join(t, "\n")
-
-  let expected =<< trim END
-    {
-    Ｘ
-    Ｘa
-    Ｘa
-    ＸＹ
-    ＸＹ
-    ＸＹ
-    ＸＺ
-    Ｘ Ｙ
-    Ｘ Ｙ
-    Ｘ Ｚ
-    ＸＸ
-    ＸＸa
-    ＸＸＹ
-
-    Ｘ
-    Ｘa
-    Ｘa
-    ＸＹ
-    ＸＹ
-    ＸＹ
-    ＸＺ
-    Ｘ Ｙ
-    Ｘ Ｙ
-    Ｘ Ｚ
-    ＸＸ
-    ＸＸa
-    ＸＸＹ
-    }
-  END
-  call assert_equal(expected, getline(1, '$'))
-
-  set tw& fo& comments&
-  bwipe!
-endfunc
-
 func Test_tw_2_fo_tm_replace()
   new
   let t =<< trim END
@@ -858,7 +810,7 @@ func Test_tw_2_fo_tm_replace()
 endfunc
 
 " Test for 'matchpairs' with multibyte chars
-func Test_mps()
+func Test_mps_multibyte()
   new
   let t =<< trim END
     {
@@ -880,6 +832,30 @@ func Test_mps()
 
   set mps&
   bwipe!
+endfunc
+
+" Test for 'matchpairs' in latin1 encoding
+func Test_mps_latin1()
+  new
+  let save_enc = &encoding
+  set encoding=latin1
+  call setline(1, 'abc(def)ghi')
+  normal %
+  call assert_equal(8, col('.'))
+  normal %
+  call assert_equal(4, col('.'))
+  call cursor(1, 6)
+  normal [(
+  call assert_equal(4, col('.'))
+  normal %
+  call assert_equal(8, col('.'))
+  call cursor(1, 6)
+  normal ])
+  call assert_equal(8, col('.'))
+  normal %
+  call assert_equal(4, col('.'))
+  let &encoding = save_enc
+  close!
 endfunc
 
 " Test for ra on multi-byte characters
@@ -927,8 +903,172 @@ func Test_whichwrap_multi_byte()
   bwipe!
 endfunc
 
-func Test_substitute()
-  call assert_equal('a１a２a３a', substitute('１２３', '\zs', 'a', 'g'))
+" Test for 'a' and 'w' flags in 'formatoptions'
+func Test_fo_a_w()
+  new
+  setlocal fo+=aw tw=10
+  call feedkeys("iabc abc a abc\<Esc>k0weade", 'xt')
+  call assert_equal(['abc abcde ', 'a abc'], getline(1, '$'))
+
+  " when a line ends with space, it is not broken up.
+  %d
+  call feedkeys("ione two to    ", 'xt')
+  call assert_equal('one two to    ', getline(1))
+
+  " when a line ends with spaces and backspace is used in the next line, the
+  " last space in the previous line should be removed.
+  %d
+  set backspace=indent,eol,start
+  call setline(1, ['one    ', 'two'])
+  exe "normal 2Gi\<BS>"
+  call assert_equal(['one   two'], getline(1, '$'))
+  set backspace&
+
+  " Test for 'a', 'w' and '1' options.
+  setlocal textwidth=0
+  setlocal fo=1aw
+  %d
+  call setline(1, '. foo')
+  normal 72ig
+  call feedkeys('a uu uu uu', 'xt')
+  call assert_equal('g uu uu ', getline(1)[-8:])
+  call assert_equal(['uu. foo'], getline(2, '$'))
+
+  %bw!
+endfunc
+
+" Test for formatting lines using gq in visual mode
+func Test_visual_gq_format()
+  new
+  call setline(1, ['one two three four', 'five six', 'one two'])
+  setl textwidth=10
+  call feedkeys('ggv$jj', 'xt')
+  redraw!
+  normal gq
+  %d
+  call setline(1, ['one two three four', 'five six', 'one two'])
+  normal G$
+  call feedkeys('v0kk', 'xt')
+  redraw!
+  normal gq
+  setl textwidth&
+  close!
+endfunc
+
+" Test for 'n' flag in 'formatoptions' to format numbered lists
+func Test_fo_n()
+  new
+  setlocal autoindent
+  setlocal textwidth=12
+  setlocal fo=n
+  call setline(1, ['  1) one two three four', '  2) two'])
+  normal gggqG
+  call assert_equal(['  1) one two', '     three', '     four', '  2) two'],
+        \ getline(1, '$'))
+  close!
+endfunc
+
+" Test for 'formatlistpat' option
+func Test_formatlistpat()
+  new
+  setlocal autoindent
+  setlocal textwidth=10
+  setlocal fo=n
+  setlocal formatlistpat=^\\s*-\\s*
+  call setline(1, ['  - one two three', '  - two'])
+  normal gggqG
+  call assert_equal(['  - one', '    two', '    three', '  - two'],
+        \ getline(1, '$'))
+  close!
+endfunc
+
+" Test for the 'b' and 'v' flags in 'formatoptions'
+" Text should wrap only if a space character is inserted at or before
+" 'textwidth'
+func Test_fo_b()
+  new
+  setlocal textwidth=20
+
+  setlocal formatoptions=t
+  call setline(1, 'one two three four')
+  call feedkeys('Amore', 'xt')
+  call assert_equal(['one two three', 'fourmore'], getline(1, '$'))
+
+  setlocal formatoptions=bt
+  %d
+  call setline(1, 'one two three four')
+  call feedkeys('Amore five', 'xt')
+  call assert_equal(['one two three fourmore five'], getline(1, '$'))
+
+  setlocal formatoptions=bt
+  %d
+  call setline(1, 'one two three four')
+  call feedkeys('A five', 'xt')
+  call assert_equal(['one two three four', 'five'], getline(1, '$'))
+
+  setlocal formatoptions=vt
+  %d
+  call setline(1, 'one two three four')
+  call feedkeys('Amore five', 'xt')
+  call assert_equal(['one two three fourmore', 'five'], getline(1, '$'))
+
+  close!
+endfunc
+
+" Test for the '1' flag in 'formatoptions'. Don't wrap text after a one letter
+" word.
+func Test_fo_1()
+  new
+  setlocal textwidth=20
+
+  setlocal formatoptions=t
+  call setline(1, 'one two three four')
+  call feedkeys('A a bird', 'xt')
+  call assert_equal(['one two three four a', 'bird'], getline(1, '$'))
+
+  %d
+  setlocal formatoptions=t1
+  call setline(1, 'one two three four')
+  call feedkeys('A a bird', 'xt')
+  call assert_equal(['one two three four', 'a bird'], getline(1, '$'))
+
+  close!
+endfunc
+
+" Test for 'l' flag in 'formatoptions'. When starting insert mode, if a line
+" is longer than 'textwidth', then it is not broken.
+func Test_fo_l()
+  new
+  setlocal textwidth=20
+
+  setlocal formatoptions=t
+  call setline(1, 'one two three four five')
+  call feedkeys('A six', 'xt')
+  call assert_equal(['one two three four', 'five six'], getline(1, '$'))
+
+  %d
+  setlocal formatoptions=tl
+  call setline(1, 'one two three four five')
+  call feedkeys('A six', 'xt')
+  call assert_equal(['one two three four five six'], getline(1, '$'))
+
+  close!
+endfunc
+
+" Test for the '2' flag in 'formatoptions'
+func Test_fo_2()
+  new
+  setlocal autoindent
+  setlocal formatoptions=t2
+  setlocal textwidth=30
+  call setline(1, ["\tfirst line of a paragraph.",
+        \ "second line of the same paragraph.",
+        \ "third line."])
+  normal gggqG
+  call assert_equal(["\tfirst line of a",
+        \ "paragraph.  second line of the",
+        \ "same paragraph.  third line."], getline(1, '$'))
+  close!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

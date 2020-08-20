@@ -1,4 +1,5 @@
 " Tests for diff mode
+
 source shared.vim
 source screendump.vim
 source check.vim
@@ -654,9 +655,8 @@ endfunc
 
 func Test_diffpatch()
   " The patch program on MS-Windows may fail or hang.
-  if !executable('patch') || !has('unix')
-    return
-  endif
+  CheckExecutable patch
+  CheckUnix
   new
   insert
 ***************
@@ -801,7 +801,7 @@ func VerifyInternal(buf, dumpfile, extra)
   call term_sendkeys(a:buf, ":diffupdate!\<CR>")
   " trailing : for leaving the cursor on the command line
   call term_sendkeys(a:buf, ":set diffopt=internal,filler" . a:extra . "\<CR>:")
-  call term_wait(a:buf)
+  call TermWait(a:buf)
   call VerifyScreenDump(a:buf, a:dumpfile, {})
 endfunc
 
@@ -1065,3 +1065,89 @@ func Test_diff_maintains_change_mark()
   bwipe!
   bwipe!
 endfunc
+
+" Test for 'patchexpr'
+func Test_patchexpr()
+  let g:patch_args = []
+  func TPatch()
+    call add(g:patch_args, readfile(v:fname_in))
+    call add(g:patch_args, readfile(v:fname_diff))
+    call writefile(['output file'], v:fname_out)
+  endfunc
+  set patchexpr=TPatch()
+
+  call writefile(['input file'], 'Xinput')
+  call writefile(['diff file'], 'Xdiff')
+  %bwipe!
+  edit Xinput
+  diffpatch Xdiff
+  call assert_equal('output file', getline(1))
+  call assert_equal('Xinput.new', bufname())
+  call assert_equal(2, winnr('$'))
+  call assert_true(&diff)
+
+  call delete('Xinput')
+  call delete('Xdiff')
+  set patchexpr&
+  delfunc TPatch
+  %bwipe!
+endfunc
+
+func Test_diff_rnu()
+  CheckScreendump
+
+  let content =<< trim END
+    call setline(1, ['a', 'a', 'a', 'y', 'b', 'b', 'b', 'b', 'b'])
+    vnew
+    call setline(1, ['a', 'a', 'a', 'x', 'x', 'x', 'b', 'b', 'b', 'b', 'b'])
+    windo diffthis
+    setlocal number rnu foldcolumn=0
+  END
+  call writefile(content, 'Xtest_diff_rnu')
+  let buf = RunVimInTerminal('-S Xtest_diff_rnu', {})
+
+  call VerifyScreenDump(buf, 'Test_diff_rnu_01', {})
+
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_diff_rnu_02', {})
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_diff_rnu_03', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_diff_rnu')
+endfunc
+
+func Test_diff_multilineconceal()
+  new
+  diffthis
+
+  new
+  call matchadd('Conceal', 'a\nb', 9, -1, {'conceal': 'Y'})
+  set cole=2 cocu=n
+  call setline(1, ["a", "b"])
+  diffthis
+  redraw
+endfunc
+
+func Test_diff_and_scroll()
+  " this was causing an ml_get error
+  set ls=2
+  for i in range(winheight(0) * 2) 
+    call setline(i, i < winheight(0) - 10 ? i : i + 10) 
+  endfor
+  vnew
+  for i in range(winheight(0)*2 + 10) 
+    call setline(i, i < winheight(0) - 10 ? 0 : i) 
+  endfor
+  diffthis
+  wincmd p
+  diffthis
+  execute 'normal ' . winheight(0) . "\<C-d>"
+
+  bwipe!
+  bwipe!
+  set ls&
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

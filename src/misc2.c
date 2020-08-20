@@ -1069,6 +1069,10 @@ free_all_mem(void)
 # if defined(FEAT_BEVAL_TERM)
     ui_remove_balloon();
 # endif
+# ifdef FEAT_PROP_POPUP
+    if (curwin != NULL)
+	close_all_popups(TRUE);
+# endif
 
     // Clear user commands (before deleting buffers).
     ex_comclear(NULL);
@@ -1287,7 +1291,7 @@ vim_strsave(char_u *string)
  * shorter.
  */
     char_u *
-vim_strnsave(char_u *string, int len)
+vim_strnsave(char_u *string, size_t len)
 {
     char_u	*p;
 
@@ -1534,7 +1538,7 @@ vim_strsave_up(char_u *string)
  * This uses ASCII lower-to-upper case translation, language independent.
  */
     char_u *
-vim_strnsave_up(char_u *string, int len)
+vim_strnsave_up(char_u *string, size_t len)
 {
     char_u *p1;
 
@@ -2024,6 +2028,41 @@ ga_clear_strings(garray_T *gap)
 }
 
 /*
+ * Copy a growing array that contains a list of strings.
+ */
+    int
+ga_copy_strings(garray_T *from, garray_T *to)
+{
+    int		i;
+
+    ga_init2(to, sizeof(char_u *), 1);
+    if (ga_grow(to, from->ga_len) == FAIL)
+	return FAIL;
+
+    for (i = 0; i < from->ga_len; ++i)
+    {
+	char_u *orig = ((char_u **)from->ga_data)[i];
+	char_u *copy;
+
+	if (orig == NULL)
+	    copy = NULL;
+	else
+	{
+	    copy = vim_strsave(orig);
+	    if (copy == NULL)
+	    {
+		to->ga_len = i;
+		ga_clear_strings(to);
+		return FAIL;
+	    }
+	}
+	((char_u **)to->ga_data)[i] = copy;
+    }
+    to->ga_len = from->ga_len;
+    return OK;
+}
+
+/*
  * Initialize a growing array.	Don't forget to set ga_itemsize and
  * ga_growsize!  Or use ga_init2().
  */
@@ -2050,30 +2089,35 @@ ga_init2(garray_T *gap, int itemsize, int growsize)
     int
 ga_grow(garray_T *gap, int n)
 {
+    if (gap->ga_maxlen - gap->ga_len < n)
+	return ga_grow_inner(gap, n);
+    return OK;
+}
+
+    int
+ga_grow_inner(garray_T *gap, int n)
+{
     size_t	old_len;
     size_t	new_len;
     char_u	*pp;
 
-    if (gap->ga_maxlen - gap->ga_len < n)
-    {
-	if (n < gap->ga_growsize)
-	    n = gap->ga_growsize;
+    if (n < gap->ga_growsize)
+	n = gap->ga_growsize;
 
-	// A linear growth is very inefficient when the array grows big.  This
-	// is a compromise between allocating memory that won't be used and too
-	// many copy operations. A factor of 1.5 seems reasonable.
-	if (n < gap->ga_len / 2)
-	    n = gap->ga_len / 2;
+    // A linear growth is very inefficient when the array grows big.  This
+    // is a compromise between allocating memory that won't be used and too
+    // many copy operations. A factor of 1.5 seems reasonable.
+    if (n < gap->ga_len / 2)
+	n = gap->ga_len / 2;
 
-	new_len = gap->ga_itemsize * (gap->ga_len + n);
-	pp = vim_realloc(gap->ga_data, new_len);
-	if (pp == NULL)
-	    return FAIL;
-	old_len = gap->ga_itemsize * gap->ga_maxlen;
-	vim_memset(pp + old_len, 0, new_len - old_len);
-	gap->ga_maxlen = gap->ga_len + n;
-	gap->ga_data = pp;
-    }
+    new_len = gap->ga_itemsize * (gap->ga_len + n);
+    pp = vim_realloc(gap->ga_data, new_len);
+    if (pp == NULL)
+	return FAIL;
+    old_len = gap->ga_itemsize * gap->ga_maxlen;
+    vim_memset(pp + old_len, 0, new_len - old_len);
+    gap->ga_maxlen = gap->ga_len + n;
+    gap->ga_data = pp;
     return OK;
 }
 
@@ -2694,20 +2738,17 @@ get_special_key_name(int c, int modifiers)
 trans_special(
     char_u	**srcp,
     char_u	*dst,
-    int		keycode,    // prefer key code, e.g. K_DEL instead of DEL
-    int		in_string,  // TRUE when inside a double quoted string
-    int		simplify,	// simplify <C-H> and <A-x>
-    int		*did_simplify)  // found <C-H> or <A-x>
+    int		flags,		// FSK_ values
+    int		*did_simplify)  // FSK_SIMPLIFY and found <C-H> or <A-x>
 {
     int		modifiers = 0;
     int		key;
 
-    key = find_special_key(srcp, &modifiers, keycode, FALSE, in_string,
-						       simplify, did_simplify);
+    key = find_special_key(srcp, &modifiers, flags, did_simplify);
     if (key == 0)
 	return 0;
 
-    return special_to_buf(key, modifiers, keycode, dst);
+    return special_to_buf(key, modifiers, flags & FSK_KEYCODE, dst);
 }
 
 /*
@@ -2755,16 +2796,14 @@ special_to_buf(int key, int modifiers, int keycode, char_u *dst)
 find_special_key(
     char_u	**srcp,
     int		*modp,
-    int		keycode,	// prefer key code, e.g. K_DEL instead of DEL
-    int		keep_x_key,	// don't translate xHome to Home key
-    int		in_string,	// TRUE in string, double quote is escaped
-    int		simplify,	// simplify <C-H> and <A-x>
+    int		flags,		// FSK_ values
     int		*did_simplify)  // found <C-H> or <A-x>
 {
     char_u	*last_dash;
     char_u	*end_of_name;
     char_u	*src;
     char_u	*bp;
+    int		in_string = flags & FSK_IN_STRING;
     int		modifiers;
     int		bit;
     int		key;
@@ -2774,6 +2813,8 @@ find_special_key(
     src = *srcp;
     if (src[0] != '<')
 	return 0;
+    if (src[1] == '*')	    // <*xxx>: do not simplify
+	++src;
 
     // Find end of modifier list
     last_dash = src;
@@ -2794,7 +2835,7 @@ find_special_key(
 		if (!(in_string && bp[1] == '"') && bp[l + 1] == '>')
 		    bp += l;
 		else if (in_string && bp[1] == '\\' && bp[2] == '"'
-							       && bp[3] == '>')
+							   && bp[3] == '>')
 		    bp += 2;
 	    }
 	}
@@ -2864,7 +2905,7 @@ find_special_key(
 		else
 		{
 		    key = get_special_key_code(last_dash + off);
-		    if (!keep_x_key)
+		    if (!(flags & FSK_KEEP_X_KEY))
 			key = handle_x_keys(key);
 		}
 	    }
@@ -2881,7 +2922,7 @@ find_special_key(
 		 */
 		key = simplify_key(key, &modifiers);
 
-		if (!keycode)
+		if (!(flags & FSK_KEYCODE))
 		{
 		    // don't want keycode, use single byte code
 		    if (key == K_BS)
@@ -2893,7 +2934,7 @@ find_special_key(
 		// Normal Key with modifier: Try to make a single byte code.
 		if (!IS_SPECIAL(key))
 		    key = extract_modifiers(key, &modifiers,
-						       simplify, did_simplify);
+					   flags & FSK_SIMPLIFY, did_simplify);
 
 		*modp = modifiers;
 		*srcp = end_of_name;
@@ -2902,6 +2943,25 @@ find_special_key(
 	}
     }
     return 0;
+}
+
+
+/*
+ * Some keys already have Shift included, pass them as normal keys.
+ * Not when Ctrl is also used, because <C-H> and <C-S-H> are different.
+ * Also for <A-S-a> and <M-S-a>.
+ */
+    int
+may_remove_shift_modifier(int modifiers, int key)
+{
+    if ((modifiers == MOD_MASK_SHIFT
+		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_ALT)
+		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_META))
+	    && ((key >= '@' && key <= 'Z')
+		|| key == '^' || key == '_'
+		|| (key >= '{' && key <= '~')))
+	return modifiers & ~MOD_MASK_SHIFT;
+    return modifiers;
 }
 
 /*
@@ -2923,9 +2983,11 @@ extract_modifiers(int key, int *modp, int simplify, int *did_simplify)
     if ((modifiers & MOD_MASK_SHIFT) && ASCII_ISALPHA(key))
     {
 	key = TOUPPER_ASC(key);
-	// With <C-S-a> and <A-S-a> we keep the shift modifier.
-	// With <S-a> and <S-A> we don't keep the shift modifier.
-	if (simplify || modifiers == MOD_MASK_SHIFT)
+	// With <C-S-a> we keep the shift modifier.
+	// With <S-a>, <A-S-a> and <S-A> we don't keep the shift modifier.
+	if (simplify || modifiers == MOD_MASK_SHIFT
+		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_ALT)
+		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_META))
 	    modifiers &= ~MOD_MASK_SHIFT;
     }
 
@@ -3144,8 +3206,7 @@ call_shell(char_u *cmd, int opt)
     if (p_verbose > 3)
     {
 	verbose_enter();
-	smsg(_("Calling shell to execute: \"%s\""),
-						    cmd == NULL ? p_sh : cmd);
+	smsg(_("Calling shell to execute: \"%s\""), cmd == NULL ? p_sh : cmd);
 	out_char('\n');
 	cursor_on();
 	verbose_leave();
@@ -3280,7 +3341,7 @@ same_directory(char_u *f1, char_u *f2)
 }
 
 #if defined(FEAT_SESSION) || defined(FEAT_AUTOCHDIR) \
-	|| defined(MSWIN) || defined(FEAT_GUI_MAC) || defined(FEAT_GUI_GTK) \
+	|| defined(MSWIN) || defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_NETBEANS_INTG) \
 	|| defined(PROTO)
 /*
@@ -4127,26 +4188,6 @@ get4c(FILE *fd)
 }
 
 /*
- * Read 8 bytes from "fd" and turn them into a time_T, MSB first.
- * Returns -1 when encountering EOF.
- */
-    time_T
-get8ctime(FILE *fd)
-{
-    int		c;
-    time_T	n = 0;
-    int		i;
-
-    for (i = 0; i < 8; ++i)
-    {
-	c = getc(fd);
-	if (c == EOF) return -1;
-	n = (n << 8) + c;
-    }
-    return n;
-}
-
-/*
  * Read a string of length "cnt" from "fd" into allocated memory.
  * Returns NULL when out of memory or unable to read that many bytes.
  */
@@ -4190,68 +4231,6 @@ put_bytes(FILE *fd, long_u nr, int len)
 	    return FAIL;
     return OK;
 }
-
-#ifdef _MSC_VER
-# if (_MSC_VER <= 1200)
-// This line is required for VC6 without the service pack.  Also see the
-// matching #pragma below.
- #  pragma optimize("", off)
-# endif
-#endif
-
-/*
- * Write time_T to file "fd" in 8 bytes.
- * Returns FAIL when the write failed.
- */
-    int
-put_time(FILE *fd, time_T the_time)
-{
-    char_u	buf[8];
-
-    time_to_bytes(the_time, buf);
-    return fwrite(buf, (size_t)8, (size_t)1, fd) == 1 ? OK : FAIL;
-}
-
-/*
- * Write time_T to "buf[8]".
- */
-    void
-time_to_bytes(time_T the_time, char_u *buf)
-{
-    int		c;
-    int		i;
-    int		bi = 0;
-    time_T	wtime = the_time;
-
-    // time_T can be up to 8 bytes in size, more than long_u, thus we
-    // can't use put_bytes() here.
-    // Another problem is that ">>" may do an arithmetic shift that keeps the
-    // sign.  This happens for large values of wtime.  A cast to long_u may
-    // truncate if time_T is 8 bytes.  So only use a cast when it is 4 bytes,
-    // it's safe to assume that long_u is 4 bytes or more and when using 8
-    // bytes the top bit won't be set.
-    for (i = 7; i >= 0; --i)
-    {
-	if (i + 1 > (int)sizeof(time_T))
-	    // ">>" doesn't work well when shifting more bits than avail
-	    buf[bi++] = 0;
-	else
-	{
-#if defined(SIZEOF_TIME_T) && SIZEOF_TIME_T > 4
-	    c = (int)(wtime >> (i * 8));
-#else
-	    c = (int)((long_u)wtime >> (i * 8));
-#endif
-	    buf[bi++] = c;
-	}
-    }
-}
-
-#ifdef _MSC_VER
-# if (_MSC_VER <= 1200)
- #  pragma optimize("", on)
-# endif
-#endif
 
 #endif
 
@@ -4324,14 +4303,14 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
      * 1: find number of arguments
      * 2: separate them and build argv[]
      */
-    for (i = 0; i < 2; ++i)
+    for (i = 1; i <= 2; ++i)
     {
 	p = skipwhite(cmd);
 	inquote = FALSE;
 	*argc = 0;
-	for (;;)
+	while (*p != NUL)
 	{
-	    if (i == 1)
+	    if (i == 2)
 		(*argv)[*argc] = (char *)p;
 	    ++*argc;
 	    d = p;
@@ -4348,18 +4327,18 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
 			// Second pass: Remove the backslash.
 			++p;
 		    }
-		    if (i == 1)
+		    if (i == 2)
 			*d++ = *p;
 		}
 		++p;
 	    }
 	    if (*p == NUL)
 	    {
-		if (i == 1)
+		if (i == 2)
 		    *d++ = NUL;
 		break;
 	    }
-	    if (i == 1)
+	    if (i == 2)
 		*d++ = NUL;
 	    p = skipwhite(p + 1);
 	}
@@ -4430,7 +4409,7 @@ build_argv_from_list(list_T *l, char ***argv, int *argc)
     if (*argv == NULL)
 	return FAIL;
     *argc = 0;
-    for (li = l->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(l, li)
     {
 	s = tv_get_string_chk(&li->li_tv);
 	if (s == NULL)
@@ -4438,7 +4417,7 @@ build_argv_from_list(list_T *l, char ***argv, int *argc)
 	    int i;
 
 	    for (i = 0; i < *argc; ++i)
-		vim_free((*argv)[i]);
+		VIM_CLEAR((*argv)[i]);
 	    return FAIL;
 	}
 	(*argv)[*argc] = (char *)vim_strsave(s);

@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2019 Nov 26
+" Last Change:	2020 Aug 04
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -87,6 +87,9 @@ endif
 
 " AHDL
 au BufNewFile,BufRead *.tdf			setf ahdl
+
+" AIDL
+au BufNewFile,BufRead *.aidl			setf aidl
 
 " AMPL
 au BufNewFile,BufRead *.run			setf ampl
@@ -181,7 +184,7 @@ au BufNewFile,BufRead *.at			setf m4
 au BufNewFile,BufRead *.ave			setf ave
 
 " Awk
-au BufNewFile,BufRead *.awk			setf awk
+au BufNewFile,BufRead *.awk,*.gawk		setf awk
 
 " B
 au BufNewFile,BufRead *.mch,*.ref,*.imp		setf b
@@ -233,11 +236,14 @@ au BufNewFile,BufRead *.bl			setf blank
 " Blkid cache file
 au BufNewFile,BufRead */etc/blkid.tab,*/etc/blkid.tab.old   setf xml
 
+" BSDL
+au BufNewFile,BufRead *bsd,*.bsdl		setf bsdl
+
 " Bazel (http://bazel.io)
-autocmd BufRead,BufNewFile *.bzl,WORKSPACE,BUILD.bazel 	setf bzl
+autocmd BufRead,BufNewFile *.bzl,WORKSPACE,BUILD.bazel	setf bzl
 if has("fname_case")
   " There is another check for BUILD further below.
-  autocmd BufRead,BufNewFile BUILD			setf bzl
+  autocmd BufRead,BufNewFile BUILD		setf bzl
 endif
 
 " C or lpc
@@ -384,7 +390,7 @@ au BufNewFile,BufRead configure.in,configure.ac setf config
 " CUDA  Cumpute Unified Device Architecture
 au BufNewFile,BufRead *.cu,*.cuh		setf cuda
 
-" Dockerfilb; Podman uses the same syntax with name Containerfile
+" Dockerfile; Podman uses the same syntax with name Containerfile
 au BufNewFile,BufRead Containerfile,Dockerfile,*.Dockerfile	setf dockerfile
 
 " WildPackets EtherPeek Decoder
@@ -459,7 +465,7 @@ au BufNewFile,BufRead *.desc			setf desc
 au BufNewFile,BufRead *.d			call dist#ft#DtraceCheck()
 
 " Desktop files
-au BufNewFile,BufRead *.desktop,.directory	setf desktop
+au BufNewFile,BufRead *.desktop,*.directory	setf desktop
 
 " Dict config
 au BufNewFile,BufRead dict.conf,.dictrc		setf dictconf
@@ -491,7 +497,7 @@ au BufNewFile,BufRead *.rul
 au BufNewFile,BufRead *.com			call dist#ft#BindzoneCheck('dcl')
 
 " DOT
-au BufNewFile,BufRead *.dot			setf dot
+au BufNewFile,BufRead *.dot,*.gv		setf dot
 
 " Dylan - lid files
 au BufNewFile,BufRead *.lid			setf dylanlid
@@ -539,10 +545,13 @@ au BufNewFile,BufRead *.ecd			setf ecd
 au BufNewFile,BufRead *.e,*.E			call dist#ft#FTe()
 
 " Elinks configuration
-au BufNewFile,BufRead */etc/elinks.conf,*/.elinks/elinks.conf	setf elinks
+au BufNewFile,BufRead elinks.conf		setf elinks
 
 " ERicsson LANGuage; Yaws is erlang too
 au BufNewFile,BufRead *.erl,*.hrl,*.yaws	setf erlang
+
+" Elm
+au BufNewFile,BufRead *.elm			setf elm
 
 " Elm Filter Rules file
 au BufNewFile,BufRead filter-rules		setf elmfilt
@@ -619,8 +628,8 @@ au BufNewFile,BufRead *.mo,*.gdmo		setf gdmo
 au BufNewFile,BufRead *.ged,lltxxxxx.txt	setf gedcom
 
 " Git
-au BufNewFile,BufRead COMMIT_EDITMSG,MERGE_MSG,TAG_EDITMSG 	setf gitcommit
-au BufNewFile,BufRead *.git/config,.gitconfig,/etc/gitconfig 	setf gitconfig
+au BufNewFile,BufRead COMMIT_EDITMSG,MERGE_MSG,TAG_EDITMSG	setf gitcommit
+au BufNewFile,BufRead *.git/config,.gitconfig,/etc/gitconfig	setf gitconfig
 au BufNewFile,BufRead */.config/git/config			setf gitconfig
 au BufNewFile,BufRead .gitmodules,*.git/modules/*/config	setf gitconfig
 if !empty($XDG_CONFIG_HOME)
@@ -764,11 +773,11 @@ au BufNewFile,BufRead *.inf,*.INF		setf inform
 au BufNewFile,BufRead */etc/initng/*/*.i,*.ii	setf initng
 
 " Innovation Data Processing
-au BufRead,BufNewFile upstream.dat\c,upstream.*.dat\c,*.upstream.dat\c 	setf upstreamdat
-au BufRead,BufNewFile fdrupstream.log,upstream.log\c,upstream.*.log\c,*.upstream.log\c,UPSTREAM-*.log\c 	setf upstreamlog
+au BufRead,BufNewFile upstream.dat\c,upstream.*.dat\c,*.upstream.dat\c	setf upstreamdat
+au BufRead,BufNewFile fdrupstream.log,upstream.log\c,upstream.*.log\c,*.upstream.log\c,UPSTREAM-*.log\c	setf upstreamlog
 au BufRead,BufNewFile upstreaminstall.log\c,upstreaminstall.*.log\c,*.upstreaminstall.log\c setf upstreaminstalllog
-au BufRead,BufNewFile usserver.log\c,usserver.*.log\c,*.usserver.log\c 	setf usserverlog
-au BufRead,BufNewFile usw2kagt.log\c,usw2kagt.*.log\c,*.usw2kagt.log\c 	setf usw2kagtlog
+au BufRead,BufNewFile usserver.log\c,usserver.*.log\c,*.usserver.log\c	setf usserverlog
+au BufRead,BufNewFile usw2kagt.log\c,usw2kagt.*.log\c,*.usw2kagt.log\c	setf usw2kagtlog
 
 " Ipfilter
 au BufNewFile,BufRead ipf.conf,ipf6.conf,ipf.rules	setf ipfilter
@@ -833,6 +842,9 @@ au BufNewFile,BufRead *.k			setf kwt
 " Kivy
 au BufNewFile,BufRead *.kv			setf kivy
 
+" Kotlin
+au BufNewFile,BufRead *.kt,*.ktm,*.kts		setf kotlin
+
 " KDE script
 au BufNewFile,BufRead *.ks			setf kscript
 
@@ -878,11 +890,12 @@ au BufNewFile,BufRead *.ll			setf lifelines
 " Lilo: Linux loader
 au BufNewFile,BufRead lilo.conf			setf lilo
 
-" Lisp (*.el = ELisp, *.cl = Common Lisp, *.jl = librep Lisp)
+" Lisp (*.el = ELisp, *.cl = Common Lisp)
+" *.jl was removed, it's also used for Julia, better skip than guess wrong.
 if has("fname_case")
-  au BufNewFile,BufRead *.lsp,*.lisp,*.el,*.cl,*.jl,*.L,.emacs,.sawfishrc setf lisp
+  au BufNewFile,BufRead *.lsp,*.lisp,*.el,*.cl,*.L,.emacs,.sawfishrc setf lisp
 else
-  au BufNewFile,BufRead *.lsp,*.lisp,*.el,*.cl,*.jl,.emacs,.sawfishrc setf lisp
+  au BufNewFile,BufRead *.lsp,*.lisp,*.el,*.cl,.emacs,.sawfishrc setf lisp
 endif
 
 " SBCL implementation of Common Lisp
@@ -1063,7 +1076,7 @@ au BufNewFile,BufRead Mutt{ng,}rc		setf muttrc
 au BufRead,BufNewfile *.n1ql,*.nql		setf n1ql
 
 " Nano
-au BufNewFile,BufRead */etc/nanorc,*.nanorc  	setf nanorc
+au BufNewFile,BufRead */etc/nanorc,*.nanorc	setf nanorc
 
 " Nastran input/DMAP
 "au BufNewFile,BufRead *.dat			setf nastran
@@ -1079,6 +1092,9 @@ au BufNewFile,BufRead .netrc			setf netrc
 
 " Ninja file
 au BufNewFile,BufRead *.ninja			setf ninja
+
+" NPM RC file
+au BufNewFile,BufRead npmrc,.npmrc		setf dosini
 
 " Novell netware batch files
 au BufNewFile,BufRead *.ncf			setf ncf
@@ -1124,8 +1140,20 @@ au BufNewFile,BufRead *.ora			setf ora
 " Packet filter conf
 au BufNewFile,BufRead pf.conf			setf pf
 
+" Pacman Config (close enough to dosini)
+au BufNewFile,BufRead */etc/pacman.conf		setf dosini
+
+" Pacman hooks
+au BufNewFile,BufRead *.hook
+	\ if getline(1) == '[Trigger]' |
+	\   setf dosini |
+	\ endif
+
 " Pam conf
-au BufNewFile,BufRead */etc/pam.conf		setf pamconf
+au BufNewFile,BufRead */etc/pam.conf			setf pamconf
+
+" Pam environment
+au BufNewFile,BufRead pam_env.conf,.pam_environment	setf pamenv
 
 " PApp
 au BufNewFile,BufRead *.papp,*.pxml,*.pxsl	setf papp
@@ -1143,7 +1171,7 @@ au BufNewFile,BufRead *.dpr			setf pascal
 au BufNewFile,BufRead *.pdf			setf pdf
 
 " PCMK - HAE - crm configure edit
-au BufNewFile,BufRead *.pcmk 			setf pcmk
+au BufNewFile,BufRead *.pcmk			setf pcmk
 
 " Perl
 if has("fname_case")
@@ -1153,6 +1181,7 @@ else
 endif
 au BufNewFile,BufRead *.plx,*.al,*.psgi		setf perl
 au BufNewFile,BufRead *.p6,*.pm6,*.pl6		setf perl6
+au BufNewFile,BufRead *.raku,*.rakumod		setf perl6
 
 " Perl, XPM or XPM2
 au BufNewFile,BufRead *.pm
@@ -1172,6 +1201,9 @@ au BufNewFile,BufRead *.pod6			setf pod6
 " Also Phtml (was used for PHP 2 in the past)
 " Also .ctp for Cake template file
 au BufNewFile,BufRead *.php,*.php\d,*.phtml,*.ctp	setf php
+
+" PHP config
+au BufNewFile,BufRead php.ini,php.ini-*		setf dosini
 
 " Pike and Cmod
 au BufNewFile,BufRead *.pike,*.pmod		setf pike
@@ -1282,7 +1314,8 @@ au BufNewFile,BufRead *.pyx,*.pxd		setf pyrex
 
 " Python, Python Shell Startup and Python Stub Files
 " Quixote (Python-based web framework)
-au BufNewFile,BufRead *.py,*.pyw,.pythonstartup,.pythonrc,*.ptl,*.pyi  setf python
+au BufNewFile,BufRead *.py,*.pyw,.pythonstartup,.pythonrc  setf python
+au BufNewFile,BufRead *.ptl,*.pyi,SConstruct		   setf python
 
 " Radiance
 au BufNewFile,BufRead *.rad,*.mat		setf radiance
@@ -1604,10 +1637,12 @@ au BufNewFile,BufRead *.sqlj			setf sqlj
 au BufNewFile,BufRead *.sqr,*.sqi		setf sqr
 
 " OpenSSH configuration
-au BufNewFile,BufRead ssh_config,*/.ssh/config	setf sshconfig
+au BufNewFile,BufRead ssh_config,*/.ssh/config		setf sshconfig
+au BufNewFile,BufRead */etc/ssh/ssh_config.d/*.conf	setf sshconfig
 
 " OpenSSH server configuration
-au BufNewFile,BufRead sshd_config		setf sshdconfig
+au BufNewFile,BufRead sshd_config			setf sshdconfig
+au BufNewFile,BufRead */etc/ssh/sshd_config.d/*.conf	setf sshdconfig
 
 " Stata
 au BufNewFile,BufRead *.ado,*.do,*.imata,*.mata	setf stata
@@ -1627,15 +1662,27 @@ au BufNewFile,BufRead *.sml			setf sml
 " Sratus VOS command macro
 au BufNewFile,BufRead *.cm			setf voscm
 
+" Swift
+au BufNewFile,BufRead *.swift			setf swift
+au BufNewFile,BufRead *.swift.gyb		setf swiftgyb
+
+" Swift Intermediate Language
+au BufNewFile,BufRead *.sil			setf sil
+
 " Sysctl
 au BufNewFile,BufRead */etc/sysctl.conf,*/etc/sysctl.d/*.conf	setf sysctl
 
 " Systemd unit files
-au BufNewFile,BufRead */systemd/*.{automount,mount,path,service,socket,swap,target,timer}	setf systemd
+au BufNewFile,BufRead */systemd/*.{automount,dnssd,link,mount,netdev,network,nspawn,path,service,slice,socket,swap,target,timer}	setf systemd
 " Systemd overrides
-au BufNewFile,BufRead /etc/systemd/system/*.d/*.conf	setf systemd
+au BufNewFile,BufRead */etc/systemd/*.conf.d/*.conf	setf systemd
+au BufNewFile,BufRead */etc/systemd/system/*.d/*.conf	setf systemd
+au BufNewFile,BufRead */.config/systemd/user/*.d/*.conf	setf systemd
 " Systemd temp files
-au BufNewFile,BufRead /etc/systemd/system/*.d/.#*	setf systemd
+au BufNewFile,BufRead */etc/systemd/system/*.d/.#*	setf systemd
+au BufNewFile,BufRead */etc/systemd/system/.#*		setf systemd
+au BufNewFile,BufRead */.config/systemd/user/*.d/.#*	setf systemd
+au BufNewFile,BufRead */.config/systemd/user/.#*	setf systemd
 
 " Synopsys Design Constraints
 au BufNewFile,BufRead *.sdc			setf sdc
@@ -1763,7 +1810,7 @@ au BufNewFile,BufRead *.va,*.vams		setf verilogams
 au BufNewFile,BufRead *.sv,*.svh		setf systemverilog
 
 " VHDL
-au BufNewFile,BufRead *.hdl,*.vhd,*.vhdl,*.vbe,*.vst  setf vhdl
+au BufNewFile,BufRead *.hdl,*.vhd,*.vhdl,*.vbe,*.vst,*.vho  setf vhdl
 
 " Vim script
 au BufNewFile,BufRead *.vim,*.vba,.exrc,_exrc	setf vim
@@ -2038,7 +2085,7 @@ au BufNewFile,BufRead *fvwm2rc*
 au BufNewFile,BufRead */tmp/lltmp*		call s:StarSetf('gedcom')
 
 " Git
-au BufNewFile,BufRead */.gitconfig.d/*,/etc/gitconfig.d/* 	call s:StarSetf('gitconfig')
+au BufNewFile,BufRead */.gitconfig.d/*,/etc/gitconfig.d/*	call s:StarSetf('gitconfig')
 
 " Gitolite
 au BufNewFile,BufRead */gitolite-admin/conf/*	call s:StarSetf('gitolite')

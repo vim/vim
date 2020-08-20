@@ -58,8 +58,8 @@ This initializes Vim for new users (as opposed to traditional Vi users). See
 |defaults.vim| for the details.
 
 The vimrc file can contain all the commands that you type after a colon.  The
-most simple ones are for setting options.  For example, if you want Vim to
-always start with the 'incsearch' option on, add this line your vimrc file: >
+simplest ones are for setting options.  For example, if you want Vim to always
+start with the 'incsearch' option on, add this line your vimrc file: >
 
 	set incsearch
 

@@ -1,3 +1,5 @@
+" Test for environment variables.
+
 scriptencoding utf-8
 
 func Test_environ()
@@ -42,3 +44,5 @@ func Test_external_env()
   endif
   call assert_equal('', result)
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

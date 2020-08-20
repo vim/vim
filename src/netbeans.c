@@ -743,6 +743,7 @@ netbeans_end(void)
 	nbdebug(("EVT: %s", buf));
 	// nb_send(buf, "netbeans_end");    avoid "write failed" messages
 	nb_send(buf, NULL);
+	buf_list[i].bufp = NULL;
     }
 }
 
@@ -1547,7 +1548,7 @@ nb_do_cmd(
 		    // disappear.
 		    do_bufdel(DOBUF_DEL, (char_u *)"", 1,
 				  buf->bufp->b_fnum, buf->bufp->b_fnum, TRUE);
-		    vim_memset(buf, 0, sizeof(nbbuf_T));
+		    CLEAR_POINTER(buf);
 		}
 	    }
 // =====================================================================
@@ -2982,7 +2983,7 @@ netbeans_is_guarded(linenr_T top, linenr_T bot)
     if (!NETBEANS_OPEN)
 	return FALSE;
 
-    for (p = curbuf->b_signlist; p != NULL; p = p->se_next)
+    FOR_ALL_SIGNS_IN_BUF(curbuf, p)
 	if (p->se_id >= GUARDEDOFFSET)
 	    for (lnum = top + 1; lnum < bot; lnum++)
 		if (lnum == p->se_lnum)
@@ -3095,7 +3096,7 @@ netbeans_gutter_click(linenr_T lnum)
     if (!NETBEANS_OPEN)
 	return;
 
-    for (p = curbuf->b_signlist; p != NULL; p = p->se_next)
+    FOR_ALL_SIGNS_IN_BUF(curbuf, p)
     {
 	if (p->se_lnum == lnum && p->se_next && p->se_next->se_lnum == lnum)
 	{

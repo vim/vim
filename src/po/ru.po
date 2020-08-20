@@ -2642,9 +2642,6 @@ msgstr "неизвестная vimOption"
 msgid "keyboard interrupt"
 msgstr "клавиатурное прерывание"
 
-msgid "vim error"
-msgstr "ошибка VIM"
-
 msgid "cannot create buffer/window command: object is being deleted"
 msgstr "невозможно создать команду буфера или окна: объект в процессе удаления"
 
@@ -3132,7 +3129,7 @@ msgstr "-W <сценарий>\tЗаписать все введённые ком
 msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\tРедактирование зашифрованных файлов"
 
-msgid "-display <display>\tConnect vim to this particular X-server"
+msgid "-display <display>\tConnect Vim to this particular X-server"
 msgstr "-display <экран>\tПодсоединить Vim к указанному X-серверу"
 
 msgid "-X\t\t\tDo not connect to X server"
@@ -3210,10 +3207,10 @@ msgstr ""
 "\n"
 "Параметры для gvim (версия Athena):\n"
 
-msgid "-display <display>\tRun vim on <display>"
+msgid "-display <display>\tRun Vim on <display>"
 msgstr "-display <дисплей>\tЗапустить Vim на указанном <дисплее>"
 
-msgid "-iconic\t\tStart vim iconified"
+msgid "-iconic\t\tStart Vim iconified"
 msgstr "-iconic\t\tЗапустить Vim в свёрнутом виде"
 
 msgid "-background <color>\tUse <color> for the background (also: -bg)"
@@ -3260,7 +3257,7 @@ msgstr ""
 "\n"
 "Параметры для gvim (версия GTK+):\n"
 
-msgid "-display <display>\tRun vim on <display> (also: --display)"
+msgid "-display <display>\tRun Vim on <display> (also: --display)"
 msgstr ""
 "-display <дисплей>\tЗапустить Vim на указанном <дисплее> (или --display)"
 
@@ -7262,7 +7259,7 @@ msgid "list index out of range"
 msgstr "Индекс списка за пределами диапазона"
 
 #, c-format
-msgid "internal error: failed to get vim list item %d"
+msgid "internal error: failed to get Vim list item %d"
 msgstr "Внутренняя ошибка: не удалось получить элемент VIM-списка %d"
 
 msgid "slice step cannot be zero"
@@ -7275,7 +7272,7 @@ msgstr ""
 "выборке"
 
 #, c-format
-msgid "internal error: no vim list item %d"
+msgid "internal error: no Vim list item %d"
 msgstr "Внутренняя ошибка: нет элемента VIM-списка %d"
 
 msgid "internal error: not enough list items"
@@ -7386,20 +7383,20 @@ msgstr "Невозможно выполнить код"
 msgid "E858: Eval did not return a valid python object"
 msgstr "E858: Eval не возвратил допустимого объекта Python"
 
-msgid "E859: Failed to convert returned python object to vim value"
+msgid "E859: Failed to convert returned python object to a Vim value"
 msgstr ""
 "E859: Не удалось преобразовать возвращённый объект Python в значение VIM"
 
 #, c-format
-msgid "unable to convert %s to vim dictionary"
+msgid "unable to convert %s to a Vim dictionary"
 msgstr "Невозможно преобразовать %s в словарь VIM"
 
 #, c-format
-msgid "unable to convert %s to vim list"
+msgid "unable to convert %s to a Vim list"
 msgstr "Невозможно преобразовать %s в список VIM"
 
 #, c-format
-msgid "unable to convert %s to vim structure"
+msgid "unable to convert %s to a Vim structure"
 msgstr "Невозможно преобразовать %s в структуру VIM"
 
 msgid "internal error: NULL reference passed"

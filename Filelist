@@ -9,8 +9,12 @@ SRC_ALL =	\
 		.lgtm.yml \
 		.travis.yml \
 		.cirrus.yml \
+		.github/workflows/ci-windows.yaml \
 		appveyor.yml \
 		ci/appveyor.bat \
+		ci/if_ver*.vim \
+		ci/load-snd-dummy.sh \
+		ci/config.mk*.sed \
 		src/Make_all.mak \
 		src/README.md \
 		src/alloc.h \
@@ -28,6 +32,8 @@ SRC_ALL =	\
 		src/channel.c \
 		src/charset.c \
 		src/cindent.c \
+		src/clientserver.c \
+		src/clipboard.c \
 		src/cmdexpand.c \
 		src/cmdhist.c \
 		src/crypt.c \
@@ -39,6 +45,7 @@ SRC_ALL =	\
 		src/drawline.c \
 		src/drawscreen.c \
 		src/edit.c \
+		src/errors.h \
 		src/eval.c \
 		src/evalbuffer.c \
 		src/evalfunc.c \
@@ -63,6 +70,7 @@ SRC_ALL =	\
 		src/gui_beval.c \
 		src/hardcopy.c \
 		src/hashtab.c \
+		src/help.c \
 		src/highlight.c \
 		src/indent.c \
 		src/insexpand.c \
@@ -70,11 +78,13 @@ SRC_ALL =	\
 		src/json_test.c \
 		src/kword_test.c \
 		src/list.c \
+		src/locale.c \
 		src/keymap.h \
 		src/macros.h \
 		src/main.c \
 		src/map.c \
 		src/mark.c \
+		src/match.c \
 		src/mbyte.c \
 		src/memfile.c \
 		src/memfile_test.c \
@@ -124,7 +134,11 @@ SRC_ALL =	\
 		src/term.h \
 		src/termlib.c \
 		src/testing.c \
+		src/textformat.c \
+		src/textobject.c \
 		src/textprop.c \
+		src/time.c \
+		src/typval.c \
 		src/ui.c \
 		src/undo.c \
 		src/usercmd.c \
@@ -132,6 +146,11 @@ SRC_ALL =	\
 		src/version.c \
 		src/version.h \
 		src/vim.h \
+		src/vim9.h \
+		src/vim9compile.c \
+		src/vim9execute.c \
+		src/vim9script.c \
+		src/vim9type.c \
 		src/viminfo.c \
 		src/winclip.c \
 		src/window.c \
@@ -144,21 +163,23 @@ SRC_ALL =	\
 		src/testdir/*.py \
 		src/testdir/lsan-suppress.txt \
 		src/testdir/sautest/autoload/*.vim \
-		src/testdir/runtest.vim \
-		src/testdir/summarize.vim \
+		src/testdir/testluaplugin/lua/testluaplugin/*.lua \
 		src/testdir/check.vim \
-		src/testdir/shared.vim \
-		src/testdir/screendump.vim \
-		src/testdir/view_util.vim \
-		src/testdir/term_util.vim \
-		src/testdir/setup.vim \
 		src/testdir/gui_init.vim \
-		src/testdir/setup_gui.vim \
 		src/testdir/gui_preinit.vim \
+		src/testdir/mouse.vim \
+		src/testdir/runtest.vim \
+		src/testdir/screendump.vim \
+		src/testdir/setup.vim \
+		src/testdir/setup_gui.vim \
+		src/testdir/shared.vim \
+		src/testdir/vim9.vim \
+		src/testdir/script_util.vim \
+		src/testdir/summarize.vim \
+		src/testdir/term_util.vim \
+		src/testdir/view_util.vim \
 		src/testdir/test[0-9]*.ok \
-		src/testdir/test[0-9]*a.ok \
-		src/testdir/test_[a-z]*.ok \
-		src/testdir/test49.vim \
+		src/testdir/test77a.ok \
 		src/testdir/test83-tags? \
 		src/testdir/test77a.com \
 		src/testdir/test_*.vim \
@@ -172,12 +193,9 @@ SRC_ALL =	\
 		src/testdir/python_after/*.py \
 		src/testdir/python_before/*.py \
 		src/testdir/pyxfile/*.py \
-		src/testdir/bench*.in \
-		src/testdir/bench*.vim \
 		src/testdir/dumps/*.dump \
 		src/testdir/samples/*.txt \
 		src/testdir/samples/test000 \
-		src/testdir/if_ver*.vim \
 		src/testdir/color_ramp.vim \
 		src/testdir/silent.wav \
 		src/testdir/popupbounce.vim \
@@ -195,6 +213,8 @@ SRC_ALL =	\
 		src/proto/channel.pro \
 		src/proto/charset.pro \
 		src/proto/cindent.pro \
+		src/proto/clientserver.pro \
+		src/proto/clipboard.pro \
 		src/proto/cmdexpand.pro \
 		src/proto/cmdhist.pro \
 		src/proto/crypt.pro \
@@ -225,14 +245,17 @@ SRC_ALL =	\
 		src/proto/gui_beval.pro \
 		src/proto/hardcopy.pro \
 		src/proto/hashtab.pro \
+		src/proto/help.pro \
 		src/proto/highlight.pro \
 		src/proto/indent.pro \
 		src/proto/insexpand.pro \
 		src/proto/json.pro \
 		src/proto/list.pro \
+		src/proto/locale.pro \
 		src/proto/main.pro \
 		src/proto/map.pro \
 		src/proto/mark.pro \
+		src/proto/match.pro \
 		src/proto/mbyte.pro \
 		src/proto/memfile.pro \
 		src/proto/memline.pro \
@@ -269,12 +292,20 @@ SRC_ALL =	\
 		src/proto/terminal.pro \
 		src/proto/termlib.pro \
 		src/proto/testing.pro \
+		src/proto/textformat.pro \
+		src/proto/textobject.pro \
 		src/proto/textprop.pro \
+		src/proto/time.pro \
+		src/proto/typval.pro \
 		src/proto/ui.pro \
 		src/proto/undo.pro \
 		src/proto/usercmd.pro \
 		src/proto/userfunc.pro \
 		src/proto/version.pro \
+		src/proto/vim9compile.pro \
+		src/proto/vim9execute.pro \
+		src/proto/vim9script.pro \
+		src/proto/vim9type.pro \
 		src/proto/viminfo.pro \
 		src/proto/winclip.pro \
 		src/proto/window.pro \
@@ -283,10 +314,12 @@ SRC_ALL =	\
 		src/libvterm/LICENSE \
 		src/libvterm/Makefile \
 		src/libvterm/README \
+		src/libvterm/CONTRIBUTING \
 		src/libvterm/tbl2inc_c.pl \
 		src/libvterm/vterm.pc.in \
 		src/libvterm/doc/URLs \
 		src/libvterm/doc/seqs.txt \
+		src/libvterm/find-wide-chars.pl \
 		src/libvterm/include/vterm.h \
 		src/libvterm/include/vterm_keycodes.h \
 		src/libvterm/src/encoding.c \
@@ -294,6 +327,7 @@ SRC_ALL =	\
 		src/libvterm/src/encoding/DECdrawing.tbl \
 		src/libvterm/src/encoding/uk.inc \
 		src/libvterm/src/encoding/uk.tbl \
+		src/libvterm/src/fullwidth.inc \
 		src/libvterm/src/keyboard.c \
 		src/libvterm/src/mouse.c \
 		src/libvterm/src/parser.c \
@@ -324,16 +358,18 @@ SRC_ALL =	\
 		src/libvterm/t/27state_reset.test \
 		src/libvterm/t/28state_dbl_wh.test \
 		src/libvterm/t/29state_fallback.test \
-		src/libvterm/t/30pen.test \
-		src/libvterm/t/40screen_ascii.test \
-		src/libvterm/t/41screen_unicode.test \
-		src/libvterm/t/42screen_damage.test \
-		src/libvterm/t/43screen_resize.test \
-		src/libvterm/t/44screen_pen.test \
-		src/libvterm/t/45screen_protect.test \
-		src/libvterm/t/46screen_extent.test \
-		src/libvterm/t/47screen_dbl_wh.test \
-		src/libvterm/t/48screen_termprops.test \
+		src/libvterm/t/30state_pen.test \
+		src/libvterm/t/31state_rep.test \
+		src/libvterm/t/32state_flow.test \
+		src/libvterm/t/60screen_ascii.test \
+		src/libvterm/t/61screen_unicode.test \
+		src/libvterm/t/62screen_damage.test \
+		src/libvterm/t/63screen_resize.test \
+		src/libvterm/t/64screen_pen.test \
+		src/libvterm/t/65screen_protect.test \
+		src/libvterm/t/66screen_extent.test \
+		src/libvterm/t/67screen_dbl_wh.test \
+		src/libvterm/t/68screen_termprops.test \
 		src/libvterm/t/90vttest_01-movement-1.test \
 		src/libvterm/t/90vttest_01-movement-2.test \
 		src/libvterm/t/90vttest_01-movement-3.test \
@@ -393,6 +429,7 @@ SRC_UNIX =	\
 		src/gui_gtk_x11.c \
 		src/gui_gtk_res.xml \
 		src/gui_motif.c \
+		src/gui_xim.c \
 		src/gui_xmdlg.c \
 		src/gui_xmebw.c \
 		src/gui_xmebw.h \
@@ -416,6 +453,7 @@ SRC_UNIX =	\
 		src/proto/gui_gtk_x11.pro \
 		src/proto/gui_gtk_gresources.pro \
 		src/proto/gui_motif.pro \
+		src/proto/gui_xim.pro \
 		src/proto/gui_xmdlg.pro \
 		src/proto/gui_x11.pro \
 		src/proto/if_xcmdsrv.pro \
@@ -521,7 +559,6 @@ SRC_DOS =	\
 		src/uninstall.c \
 		src/vim.def \
 		src/vim.rc \
-		src/vimio.h \
 		src/gvim.exe.mnf \
 		src/vimrun.c \
 		src/xpm_w32.c \
@@ -591,17 +628,24 @@ SRC_AMI =	\
 		src/testdir/amiga.vim \
 		src/xxd/Make_amiga.mak \
 
+# source files for Haiku (also in the extra archive)
+SRC_HAIKU =	\
+		README_haiku.txt \
+		src/os_haiku.h \
+		src/os_haiku.rdef.in \
+		src/gui_haiku.cc \
+		src/gui_haiku.h \
+		src/proto/gui_haiku.pro \
+
 # source files for the Mac (also in the extra archive)
 SRC_MAC =	\
 		src/INSTALLmac.txt \
 		src/dehqx.py \
-		src/gui_mac.c \
 		src/os_mac_rsrc/*.icns \
 		src/os_mac.h \
 		src/os_mac.rsr.hqx \
 		src/os_mac_conv.c \
 		src/os_macosx.m \
-		src/proto/gui_mac.pro \
 		src/proto/os_mac_conv.pro \
 
 # source files for VMS (in the extra archive)
@@ -626,25 +670,19 @@ SRC_QNX =	\
 		src/proto/gui_photon.pro \
 		src/proto/os_qnx.pro \
 
-
 # source files for the extra archive (all sources that are not for Unix)
 SRC_EXTRA =	\
 		$(SRC_AMI) \
 		$(SRC_AMI_DOS) \
 		$(SRC_DOS) \
 		$(SRC_DOS_BIN) \
+		$(SRC_HAIKU) \
 		$(SRC_MAC) \
 		$(SRC_QNX) \
 		$(SRC_VMS) \
 		README_os390.txt \
-		src/Make_mint.mak \
 		src/infplist.xml \
 		src/link.390 \
-		src/os_beos.c \
-		src/os_beos.h \
-		src/os_beos.rsrc \
-		src/proto/os_beos.pro \
-		src/os_mint.h \
 		src/os_vms_fix.com \
 		src/toolbar.phi \
 
@@ -652,6 +690,8 @@ SRC_EXTRA =	\
 RT_ALL =	\
 		README.txt \
 		README.md \
+		README_VIM9.md \
+		LICENSE \
 		CONTRIBUTING.md \
 		runtime/bugreport.vim \
 		runtime/doc/*.awk \
@@ -766,20 +806,20 @@ RT_UNIX =	\
 		README_unix.txt \
 		runtime/hi16-action-make.png \
 		runtime/hi22-action-make.png \
-		runtime/vim16x16.png \
-		runtime/vim16x16.xpm \
-		runtime/vim32x32.png \
-		runtime/vim32x32.xpm \
-		runtime/vim48x48.png \
-		runtime/vim48x48.xpm \
 		runtime/gvim.desktop \
 		runtime/vim.desktop \
 
 # Unix and DOS runtime without CR-LF translation
 RT_UNIX_DOS_BIN =	\
 		runtime/vim16x16.gif \
+		runtime/vim16x16.png \
+		runtime/vim16x16.xpm \
 		runtime/vim32x32.gif \
+		runtime/vim32x32.png \
+		runtime/vim32x32.xpm \
 		runtime/vim48x48.gif \
+		runtime/vim48x48.png \
+		runtime/vim48x48.xpm \
 
 # runtime not for unix or extra
 RT_NO_UNIX =	\
@@ -938,6 +978,8 @@ LANG_GEN = \
 		runtime/doc/*-pl.UTF-8.1 \
 		runtime/doc/*-ru.1 \
 		runtime/doc/*-ru.UTF-8.1 \
+		runtime/doc/*-tr.1 \
+		runtime/doc/*-tr.UTF-8.1 \
 		runtime/lang/README.txt \
 		runtime/lang/menu_*.vim \
 		runtime/keymap/README.txt \

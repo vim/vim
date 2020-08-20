@@ -1,7 +1,7 @@
 " Menu Translations:	Slovenian / Slovensko
 " Maintainer:		Mojca Miklavec <mojca.miklavec.lists@gmail.com>
 " Originally By:	Mojca Miklavec <mojca.miklavec.lists@gmail.com>
-" Last Change:		2016 Oct 17
+" Last Change:		2020 Apr 23
 " vim:set foldmethod=marker tabstop=8:
 
 " TODO: add/check all '&'s
@@ -52,7 +52,7 @@ menutrans Find\ and\ Rep&lace\.\.\.	Poi¹èi\ in\ &zamenjaj\ \.\.\.
 
 " [-- SETTINGS --]
 menutrans Settings\ &Window				Nastavitve\ \.\.\.
-menutrans Startup\ &Settings				Zaèetne nastavitve
+menutrans Startup\ &Settings				Zaèetne\ nastavitve
 menutrans &Global\ Settings				&Globalne\ nastavitve
 
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Vkljuèi/izkljuèi\ poudarjanje\ iskanega\ niza<Tab>:set\ hls!
@@ -92,7 +92,7 @@ menutrans Toggle\ &C-indenting<Tab>:set\ cin!		Vkljuèi/izkljuèi\ C-jevski\ naèin
 
 " other options
 menutrans &Shiftwidth					©irina\ zamika\ vrstic
-menutrans Soft\ &Tabstop				©irina &tabulatorja
+menutrans Soft\ &Tabstop				©irina\ &tabulatorja
 menutrans Te&xt\ Width\.\.\.				©irina\ besedila\ \.\.\.
 menutrans &File\ Format\.\.\.				Format\ &datoteke\ \.\.\.
 menutrans C&olor\ Scheme				&Barvna\ shema\ \.\.\.

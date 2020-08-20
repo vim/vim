@@ -15,22 +15,22 @@ func Test_find_complete()
 
   new
   set path=
-  call assert_fails('call feedkeys(":find\t\n", "xt")', 'E345:')
+  call assert_fails('call feedkeys(":find \t\n", "xt")', 'E471:')
   close
 
   new
   set path=.
-  call assert_fails('call feedkeys(":find\t\n", "xt")', 'E32:')
+  call assert_fails('call feedkeys(":find \t\n", "xt")', 'E471:')
   close
 
   new
   set path=.,,
-  call assert_fails('call feedkeys(":find\t\n", "xt")', 'E32:')
+  call assert_fails('call feedkeys(":find \t\n", "xt")', 'E471:')
   close
 
   new
   set path=./**
-  call assert_fails('call feedkeys(":find\t\n", "xt")', 'E32:')
+  call assert_fails('call feedkeys(":find \t\n", "xt")', 'E471:')
   close
 
   " We shouldn't find any file till this point
@@ -161,3 +161,5 @@ func Test_find_complete()
   call delete('Xfind', 'rf')
   set path&
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

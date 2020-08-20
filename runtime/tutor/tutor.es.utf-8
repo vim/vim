@@ -625,7 +625,7 @@ NOTA: El fichero recuperado se sitúa a partir de la posición del cursor.
 
   4. Para abrir una línea por encima del cursor, simplemente pulse una O
      mayúscula, en lugar de una o minúscula. Pruebe este en la línea siguiente.
-Abra una línea sobre ésta pulsando Mayu-O cuando el curso está en esta línea.
+Abra una línea sobre ésta pulsando Mayu-O cuando el cursor está en esta línea.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			Lección 6.2: EL MANDATO «APPEND» (añadir)
@@ -662,7 +662,7 @@ Nota: ¡Esto evita el pulsar  i , el último carácter, el texto a insertar,
 
   3. Ahora pulse  R  y sustituya el resto del texto de la primera línea
      escribiendo sobre el viejo texto para que la primera línea sea igual
-     que la primera.
+     que la segunda.
 
 ---> Para hacer que esta línea sea igual que la anterior use las teclas.
 ---> Para hacer que esta línea sea igual que la siguiente escriba R y el texto.

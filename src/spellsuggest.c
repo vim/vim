@@ -471,9 +471,19 @@ spell_suggest(int count)
     int		selected = count;
     int		badlen = 0;
     int		msg_scroll_save = msg_scroll;
+    int		wo_spell_save = curwin->w_p_spell;
 
-    if (no_spell_checking(curwin))
+    if (!curwin->w_p_spell)
+    {
+	did_set_spelllang(curwin);
+	curwin->w_p_spell = TRUE;
+    }
+
+    if (*curwin->w_s->b_p_spl == NUL)
+    {
+	emsg(_(e_no_spell));
 	return;
+    }
 
     if (VIsual_active)
     {
@@ -666,8 +676,6 @@ spell_suggest(int count)
 	    mch_memmove(p, line, c);
 	    STRCPY(p + c, stp->st_word);
 	    STRCAT(p, sug.su_badptr + stp->st_orglen);
-	    ml_replace(curwin->w_cursor.lnum, p, FALSE);
-	    curwin->w_cursor.col = c;
 
 	    // For redo we use a change-word command.
 	    ResetRedobuff();
@@ -676,7 +684,10 @@ spell_suggest(int count)
 			    stp->st_wordlen + sug.su_badlen - stp->st_orglen);
 	    AppendCharToRedobuff(ESC);
 
-	    // After this "p" may be invalid.
+	    // "p" may be freed here
+	    ml_replace(curwin->w_cursor.lnum, p, FALSE);
+	    curwin->w_cursor.col = c;
+
 	    changed_bytes(curwin->w_cursor.lnum, c);
 	}
     }
@@ -686,6 +697,7 @@ spell_suggest(int count)
     spell_find_cleanup(&sug);
 skip:
     vim_free(line);
+    curwin->w_p_spell = wo_spell_save;
 }
 
 /*
@@ -760,7 +772,7 @@ spell_find_suggest(
     langp_T	*lp;
 
     // Set the info in "*su".
-    vim_memset(su, 0, sizeof(suginfo_T));
+    CLEAR_POINTER(su);
     ga_init2(&su->su_ga, (int)sizeof(suggest_T), 10);
     ga_init2(&su->su_sga, (int)sizeof(suggest_T), 10);
     if (*badptr == NUL)
@@ -887,7 +899,7 @@ spell_suggest_expr(suginfo_T *su, char_u *expr)
     if (list != NULL)
     {
 	// Loop over the items in the list.
-	for (li = list->lv_first; li != NULL; li = li->li_next)
+	FOR_ALL_LIST_ITEMS(list, li)
 	    if (li->li_tv.v_type == VAR_LIST)
 	    {
 		// Get the word and the score from the items.
@@ -1266,7 +1278,7 @@ suggest_trie_walk(
     // word).
     depth = 0;
     sp = &stack[0];
-    vim_memset(sp, 0, sizeof(trystate_T));
+    CLEAR_POINTER(sp);
     sp->ts_curi = 1;
 
     if (soundfold)
@@ -1394,7 +1406,8 @@ suggest_trie_walk(
 	    tword[sp->ts_twordlen] = NUL;
 
 	    if (sp->ts_prefixdepth <= PFD_NOTSPECIAL
-					&& (sp->ts_flags & TSF_PREFIXOK) == 0)
+					&& (sp->ts_flags & TSF_PREFIXOK) == 0
+					&& pbyts != NULL)
 	    {
 		// There was a prefix before the word.  Check that the prefix
 		// can be used with this word.
@@ -3719,17 +3732,22 @@ cleanup_suggestions(
     suggest_T   *stp = &SUG(*gap, 0);
     int		i;
 
-    // Sort the list.
-    qsort(gap->ga_data, (size_t)gap->ga_len, sizeof(suggest_T), sug_compare);
-
-    // Truncate the list to the number of suggestions that will be displayed.
-    if (gap->ga_len > keep)
+    if (gap->ga_len > 0)
     {
-	for (i = keep; i < gap->ga_len; ++i)
-	    vim_free(stp[i].st_word);
-	gap->ga_len = keep;
-	if (keep >= 1)
-	    return stp[keep - 1].st_score;
+	// Sort the list.
+	qsort(gap->ga_data, (size_t)gap->ga_len, sizeof(suggest_T),
+								  sug_compare);
+
+	// Truncate the list to the number of suggestions that will be
+	// displayed.
+	if (gap->ga_len > keep)
+	{
+	    for (i = keep; i < gap->ga_len; ++i)
+		vim_free(stp[i].st_word);
+	    gap->ga_len = keep;
+	    if (keep >= 1)
+		return stp[keep - 1].st_score;
+	}
     }
     return maxscore;
 }

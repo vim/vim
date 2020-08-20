@@ -147,7 +147,7 @@ func Test_conceal_resize_term()
   call VerifyScreenDump(buf, 'Test_conceal_resize_01', {})
 
   call win_execute(buf->win_findbuf()[0], 'wincmd +')
-  call term_wait(buf)
+  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_conceal_resize_02', {})
 
   " clean up
@@ -252,6 +252,28 @@ func Test_conceal_cursor_pos()
 
   call delete('Xconceal_curpos.out')
   call delete('XTest_conceal_curpos')
+endfunc
+
+func Test_conceal_eol()
+  new!
+  setlocal concealcursor=n conceallevel=1
+  call setline(1, ["x", ""])
+  call matchaddpos('Conceal', [[2, 1, 1]], 2, -1, {'conceal': 1})
+  redraw!
+
+  call assert_notequal(screenchar(1, 1), screenchar(2, 2))
+  call assert_equal(screenattr(1, 1), screenattr(1, 2))
+  call assert_equal(screenattr(1, 2), screenattr(2, 2))
+  call assert_equal(screenattr(2, 1), screenattr(2, 2))
+
+  set list
+  redraw!
+
+  call assert_equal(screenattr(1, 1), screenattr(2, 2))
+  call assert_notequal(screenattr(1, 1), screenattr(1, 2))
+  call assert_notequal(screenattr(1, 2), screenattr(2, 1))
+
+  set nolist
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

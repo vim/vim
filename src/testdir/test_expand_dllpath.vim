@@ -1,3 +1,5 @@
+" Test for expanding dllpath options
+
 func s:test_expand_dllpath(optname)
   let $TEST_EXPAND_DLLPATH = '/dllpath/lib' . substitute(a:optname, '\zedll$', '.', '')
   execute 'let dllpath_save = &' . a:optname
@@ -30,3 +32,5 @@ call s:generate_test_if_exists('pythondll')
 call s:generate_test_if_exists('pythonthreedll')
 call s:generate_test_if_exists('rubydll')
 call s:generate_test_if_exists('tcldll')
+
+" vim: shiftwidth=2 sts=2 expandtab

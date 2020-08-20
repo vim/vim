@@ -5,6 +5,7 @@
 # Argument for running ctags.
 TAGS_FILES = \
 	*.c \
+	*.cc \
 	*.cpp \
 	*.h \
 	auto/*.c \

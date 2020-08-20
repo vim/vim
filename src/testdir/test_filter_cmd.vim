@@ -47,6 +47,14 @@ func Test_filter_fails()
   call assert_fails('filter /pat', 'E476:')
   call assert_fails('filter /pat/', 'E476:')
   call assert_fails('filter /pat/ asdf', 'E492:')
+  " Using assert_fails() causes E476 instead of E866. So use a try-catch.
+  let caught_e866 = 0
+  try
+    filter /\@>b/ ls
+  catch /E866:/
+    let caught_e866 = 1
+  endtry
+  call assert_equal(1, caught_e866)
 
   call assert_fails('filter!', 'E471:')
   call assert_fails('filter! pat', 'E476:')
@@ -138,6 +146,11 @@ func Test_filter_commands()
   let res = split(execute("filter /\.c$/ marks"), "\n")[1:]
   call assert_equal([" A      1    0 file.c"], res)
 
+  " Test filtering :highlight command
+  highlight MyHlGroup ctermfg=10
+  let res = split(execute("filter /MyHlGroup/ highlight"), "\n")
+  call assert_equal(["MyHlGroup      xxx ctermfg=10"], res)
+
   call setline(1, ['one', 'two', 'three'])
   1mark a
   2mark b
@@ -176,3 +189,5 @@ func Test_filter_display()
 
   bwipe!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

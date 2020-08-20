@@ -2,6 +2,7 @@
 
 [![Travis Build Status](https://travis-ci.org/vim/vim.svg?branch=master)](https://travis-ci.org/vim/vim)
 [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/o2qht2kjm02sgghk?svg=true)](https://ci.appveyor.com/project/chrisbra/vim)
+[![Github Build status](https://github.com/vim/vim/workflows/GitHub%20CI/badge.svg)](https://github.com/vim/vim/actions?query=workflow%3A%22GitHub+CI%22)
 [![Cirrus Build Status](https://api.cirrus-ci.com/github/vim/vim.svg)](https://cirrus-ci.com/github/vim/vim)
 [![Coverage Status](https://codecov.io/gh/vim/vim/coverage.svg?branch=master)](https://codecov.io/gh/vim/vim?branch=master)
 [![Coverity Scan](https://scan.coverity.com/projects/241/badge.svg)](https://scan.coverity.com/projects/vim)
@@ -26,10 +27,12 @@ All commands are given with normal keyboard characters, so those who can type
 with ten fingers can work very fast.  Additionally, function keys can be
 mapped to commands by the user, and the mouse can be used.
 
-Vim runs under MS-Windows (NT, 2000, XP, Vista, 7, 8, 10), Macintosh, VMS and
-almost all flavours of UNIX.  Porting to other systems should not be very
-difficult.  Older versions of Vim run on MS-DOS, MS-Windows 95/98/Me, Amiga
-DOS, Atari MiNT, BeOS, RISC OS and OS/2.  These are no longer maintained.
+Vim runs under MS-Windows (XP, Vista, 7, 8, 10), macOS, Haiku, VMS and almost
+all flavours of UNIX.  Porting to other systems should not be very difficult.
+Older versions of Vim run on MS-DOS, MS-Windows 95/98/Me/NT/2000, Amiga DOS,
+Atari MiNT, BeOS, RISC OS and OS/2.  These are no longer maintained.
+
+For Vim9 script see [README_VIM9](README_VIM9.md).
 
 ## Distribution ##
 
@@ -70,6 +73,7 @@ archive):
 	README_unix.txt		Unix
 	README_dos.txt		MS-DOS and MS-Windows
 	README_mac.txt		Macintosh
+	README_haiku.txt	Haiku
 	README_vms.txt		VMS
 
 There are other `README_*.txt` files, depending on the distribution you used.

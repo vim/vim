@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 8.2.  Last change: 2019 Dec 07
+*quickref.txt*  For Vim version 8.2.  Last change: 2020 Jun 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -851,6 +851,7 @@ Short explanation of each option:		*option-list*
 'pythonthreedll'	    name of the Python 3 dynamic library
 'pythonthreehome'	    name of the Python 3 home directory
 'pyxversion'	  'pyx'	    Python version used for pyx* commands
+'quickfixtextfunc' 'qftf'   function for the text in the quickfix window
 'quoteescape'	  'qe'	    escape characters used in a string
 'readonly'	  'ro'	    disallow writing the buffer
 'redrawtime'	  'rdt'     timeout for 'hlsearch' and |:match| highlighting
@@ -909,6 +910,7 @@ Short explanation of each option:		*option-list*
 'spellcapcheck'   'spc'     pattern to locate end of a sentence
 'spellfile'	  'spf'     files where |zg| and |zw| store words
 'spelllang'	  'spl'     language(s) to do spell checking for
+'spelloptions'	  'spo'     options for spell checking
 'spellsuggest'	  'sps'     method(s) used to suggest spelling corrections
 'splitbelow'	  'sb'	    new window from split is below the current one
 'splitright'	  'spr'     new window is put right of the current one
@@ -1057,8 +1059,7 @@ Short explanation of each option:		*option-list*
 				   search
 |<Del>|		   <Del>	while entering a count: delete last character
 |:version|	:ve[rsion]	show version information
-|:mode|		:mode N		MS-Windows: set screen mode to N (number, C80,
-				C4350, etc.)
+|:mode|		:mode N		set screen mode to N (obsolete)
 |:normal|	:norm[al][!] {commands}
 				execute Normal mode commands
 |Q|		   Q		switch to "Ex" mode

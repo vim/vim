@@ -812,10 +812,6 @@ static guint timer_id = 0;
 #elif defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
 static void timer_proc(XtPointer, XtIntervalId *);
 static XtIntervalId timer_id = (XtIntervalId)0;
-#elif defined(FEAT_GUI_MAC)
-pascal void timer_proc(EventLoopTimerRef, void *);
-static EventLoopTimerRef timer_id = NULL;
-static EventLoopTimerUPP timerUPP;
 #endif
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL) // Win32 console and Unix
@@ -852,9 +848,6 @@ timer_proc(gpointer data UNUSED)
 # elif defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
     static void
 timer_proc(XtPointer timed_out UNUSED, XtIntervalId *interval_id UNUSED)
-# elif defined(FEAT_GUI_MAC)
-    pascal void
-timer_proc(EventLoopTimerRef theTimer UNUSED, void *userData UNUSED)
 # endif
 {
     scheme_check_threads();
@@ -877,10 +870,6 @@ setup_timer(void)
     timer_id = g_timeout_add((guint)p_mzq, (GSourceFunc)timer_proc, NULL);
 # elif defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
     timer_id = XtAppAddTimeOut(app_context, p_mzq, timer_proc, NULL);
-# elif defined(FEAT_GUI_MAC)
-    timerUPP = NewEventLoopTimerUPP(timer_proc);
-    InstallEventLoopTimer(GetMainEventLoop(), p_mzq * kEventDurationMillisecond,
-		p_mzq * kEventDurationMillisecond, timerUPP, NULL, &timer_id);
 # endif
 }
 
@@ -893,9 +882,6 @@ remove_timer(void)
     g_source_remove(timer_id);
 # elif defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
     XtRemoveTimeOut(timer_id);
-# elif defined(FEAT_GUI_MAC)
-    RemoveEventLoopTimer(timer_id);
-    DisposeEventLoopTimerUPP(timerUPP);
 # endif
     timer_id = 0;
 }
@@ -1927,7 +1913,7 @@ window_new(win_T *win)
 
     MZ_GC_REG();
     self = scheme_malloc_fail_ok(scheme_malloc_tagged, sizeof(vim_mz_window));
-    vim_memset(self, 0, sizeof(vim_mz_window));
+    CLEAR_POINTER(self);
 #ifndef MZ_PRECISE_GC
     scheme_dont_gc_ptr(self);	// because win isn't visible to GC
 #else
@@ -2311,7 +2297,7 @@ buffer_new(buf_T *buf)
 
     MZ_GC_REG();
     self = scheme_malloc_fail_ok(scheme_malloc_tagged, sizeof(vim_mz_buffer));
-    vim_memset(self, 0, sizeof(vim_mz_buffer));
+    CLEAR_POINTER(self);
 #ifndef MZ_PRECISE_GC
     scheme_dont_gc_ptr(self);	// because buf isn't visible to GC
 #else
@@ -2468,7 +2454,7 @@ set_buffer_line(void *data, int argc, Scheme_Object **argv)
 	    curbuf = savebuf;
 	    raise_vim_exn(_("cannot save undo information"));
 	}
-	else if (ml_delete((linenr_T)n, FALSE) == FAIL)
+	else if (ml_delete((linenr_T)n) == FAIL)
 	{
 	    curbuf = savebuf;
 	    raise_vim_exn(_("cannot delete line"));
@@ -2597,7 +2583,7 @@ set_buffer_line_list(void *data, int argc, Scheme_Object **argv)
 	else
 	{
 	    for (i = 0; i < old_len; i++)
-		if (ml_delete((linenr_T)lo, FALSE) == FAIL)
+		if (ml_delete((linenr_T)lo) == FAIL)
 		{
 		    curbuf = savebuf;
 		    raise_vim_exn(_("cannot delete line"));
@@ -2634,8 +2620,7 @@ set_buffer_line_list(void *data, int argc, Scheme_Object **argv)
 	    MZ_GC_VAR_IN_REG(1, rest);
 	    MZ_GC_REG();
 
-	    array = ALLOC_MULT(char *, new_len + 1);
-	    vim_memset(array, 0, (new_len+1) * sizeof(char *));
+	    array = ALLOC_CLEAR_MULT(char *, new_len + 1);
 
 	    rest = line_list;
 	    for (i = 0; i < new_len; ++i)
@@ -2666,7 +2651,7 @@ set_buffer_line_list(void *data, int argc, Scheme_Object **argv)
 	     */
 	    for (i = 0; i < old_len - new_len; ++i)
 	    {
-		if (ml_delete((linenr_T)lo, FALSE) == FAIL)
+		if (ml_delete((linenr_T)lo) == FAIL)
 		{
 		    curbuf = savebuf;
 		    free_array(array);
@@ -2818,8 +2803,7 @@ insert_buffer_line_list(void *data, int argc, Scheme_Object **argv)
 	MZ_GC_VAR_IN_REG(1, rest);
 	MZ_GC_REG();
 
-	array = ALLOC_MULT(char *, size + 1);
-	vim_memset(array, 0, (size+1) * sizeof(char *));
+	array = ALLOC_CLEAR_MULT(char *, size + 1);
 
 	rest = list;
 	for (i = 0; i < size; ++i)
@@ -3044,7 +3028,7 @@ vim_to_mzscheme_impl(typval_T *vim_value, int depth, Scheme_Hash_Table *visited)
 	    MZ_GC_VAR_IN_REG(0, obj);
 	    MZ_GC_REG();
 
-	    curr = list->lv_last;
+	    curr = list->lv_u.mat.lv_last;
 	    obj = vim_to_mzscheme_impl(&curr->li_tv, depth + 1, visited);
 	    result = scheme_make_pair(obj, scheme_null);
 	    MZ_GC_CHECK();
@@ -3136,7 +3120,7 @@ vim_to_mzscheme_impl(typval_T *vim_value, int depth, Scheme_Hash_Table *visited)
 	    MZ_GC_UNREG();
 	}
     }
-    else if (vim_value->v_type == VAR_SPECIAL)
+    else if (vim_value->v_type == VAR_BOOL || vim_value->v_type == VAR_SPECIAL)
     {
 	if (vim_value->vval.v_number <= VVAL_TRUE)
 	    result = scheme_make_integer((long)vim_value->vval.v_number);
@@ -3218,7 +3202,7 @@ mzscheme_to_vim_impl(Scheme_Object *obj, typval_T *tv, int depth,
     }
     else if (SCHEME_BOOLP(obj))
     {
-	tv->v_type = VAR_SPECIAL;
+	tv->v_type = VAR_BOOL;
 	tv->vval.v_number = SCHEME_TRUEP(obj);
     }
 # ifdef FEAT_FLOAT

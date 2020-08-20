@@ -280,13 +280,6 @@ tcl_enabled(int verbose)
     void
 tcl_end(void)
 {
-#ifdef DYNAMIC_TCL
-    if (hTclLib)
-    {
-	close_dll(hTclLib);
-	hTclLib = NULL;
-    }
-#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -742,7 +735,7 @@ bufselfcmd(
 		    i = n;
 		    do
 		    {
-			if (ml_delete((linenr_T)i, FALSE) != OK)
+			if (ml_delete((linenr_T)i) != OK)
 			    goto setListError;
 			++n;
 		    } while (n <= val2);
@@ -790,7 +783,7 @@ bufselfcmd(
 	    }
 	    for (i = 0; i < n; i++)
 	    {
-		ml_delete((linenr_T)val1, FALSE);
+		ml_delete((linenr_T)val1);
 		err = vimerror(interp);
 		if (err != TCL_OK)
 		    break;
@@ -1380,7 +1373,7 @@ tclvimexpr(
 
 #ifdef FEAT_EVAL
     expr = Tcl_GetStringFromObj(objv[objn], NULL);
-    str = (char *)eval_to_string((char_u *)expr, NULL, TRUE);
+    str = (char *)eval_to_string((char_u *)expr, TRUE);
     if (str == NULL)
 	Tcl_SetResult(interp, _("invalid expression"), TCL_STATIC);
     else
@@ -1410,7 +1403,7 @@ vimerror(Tcl_Interp *interp)
     }
     else if (did_emsg)
     {
-	Tcl_SetResult(interp, _("vim error"), TCL_STATIC);
+	Tcl_SetResult(interp, _("Vim error"), TCL_STATIC);
 	return TCL_ERROR;
     }
     return TCL_OK;

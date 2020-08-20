@@ -240,6 +240,7 @@ gui_mch_set_rendering_options(char_u *s)
 # define CONST
 # define FAR
 # define NEAR
+# define WINAPI
 # undef _cdecl
 # define _cdecl
 typedef int BOOL;
@@ -320,9 +321,6 @@ static int		s_findrep_is_find;	// TRUE for find dialog, FALSE
 						// for find/replace dialog
 #endif
 
-#if !defined(FEAT_GUI)
-static
-#endif
 HWND			s_hwnd = NULL;
 static HDC		s_hdc = NULL;
 static HBRUSH		s_brush = NULL;
@@ -389,7 +387,7 @@ directx_binddc(void)
 #endif
 
 // use of WindowProc depends on Global IME
-#define MyWindowProc vim_WindowProc
+static LRESULT WINAPI MyWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 extern int current_font_height;	    // this is in os_mswin.c
 
@@ -847,8 +845,8 @@ _OnSysChar(
     if (ch < 0x100 && !isalpha(ch) && isprint(ch))
 	modifiers &= ~MOD_MASK_SHIFT;
 
-    // Interpret the ALT key as making the key META, include SHIFT, etc.
-    ch = extract_modifiers(ch, &modifiers, TRUE, NULL);
+    // Unify modifiers somewhat.  No longer use ALT to set the 8th bit.
+    ch = extract_modifiers(ch, &modifiers, FALSE, NULL);
     if (ch == CSI)
 	ch = K_CSI;
 
@@ -1259,12 +1257,8 @@ _TextAreaWndProc(
     }
 }
 
-#ifdef PROTO
-typedef int WINAPI;
-#endif
-
-    LRESULT WINAPI
-vim_WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+    static LRESULT WINAPI
+MyWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 #ifdef GLOBAL_IME
     return global_ime_DefWindowProc(hwnd, message, wParam, lParam);
@@ -1412,6 +1406,34 @@ gui_mch_set_scrollbar_pos(
 			      SWP_NOZORDER | SWP_NOACTIVATE | SWP_SHOWWINDOW);
 }
 
+    int
+gui_mch_get_scrollbar_xpadding(void)
+{
+    RECT    rcTxt, rcWnd;
+    int	    xpad;
+
+    GetWindowRect(s_textArea, &rcTxt);
+    GetWindowRect(s_hwnd, &rcWnd);
+    xpad = rcWnd.right - rcTxt.right - gui.scrollbar_width
+	- GetSystemMetrics(SM_CXFRAME)
+	- GetSystemMetrics(SM_CXPADDEDBORDER);
+    return (xpad < 0) ? 0 : xpad;
+}
+
+    int
+gui_mch_get_scrollbar_ypadding(void)
+{
+    RECT    rcTxt, rcWnd;
+    int	    ypad;
+
+    GetWindowRect(s_textArea, &rcTxt);
+    GetWindowRect(s_hwnd, &rcWnd);
+    ypad = rcWnd.bottom - rcTxt.bottom - gui.scrollbar_height
+	- GetSystemMetrics(SM_CYFRAME)
+	- GetSystemMetrics(SM_CXPADDEDBORDER);
+    return (ypad < 0) ? 0 : ypad;
+}
+
     void
 gui_mch_create_scrollbar(
     scrollbar_T *sb,
@@ -1429,7 +1451,7 @@ gui_mch_create_scrollbar(
 /*
  * Find the scrollbar with the given hwnd.
  */
-	 static scrollbar_T *
+    static scrollbar_T *
 gui_mswin_find_scrollbar(HWND hwnd)
 {
     win_T	*wp;
@@ -3320,19 +3342,33 @@ gui_mch_init_font(char_u *font_name, int fontset UNUSED)
 
 /*
  * Return TRUE if the GUI window is maximized, filling the whole screen.
+ * Also return TRUE if the window is snapped.
  */
     int
 gui_mch_maximized(void)
 {
     WINDOWPLACEMENT wp;
+    RECT	    rc;
 
     wp.length = sizeof(WINDOWPLACEMENT);
     if (GetWindowPlacement(s_hwnd, &wp))
-	return wp.showCmd == SW_SHOWMAXIMIZED
+    {
+	if (wp.showCmd == SW_SHOWMAXIMIZED
 	    || (wp.showCmd == SW_SHOWMINIMIZED
-		    && wp.flags == WPF_RESTORETOMAXIMIZED);
+		    && wp.flags == WPF_RESTORETOMAXIMIZED))
+	    return TRUE;
+	if (wp.showCmd == SW_SHOWMINIMIZED)
+	    return FALSE;
 
-    return 0;
+	// Assume the window is snapped when the sizes from two APIs differ.
+	GetWindowRect(s_hwnd, &rc);
+	if ((rc.right - rc.left !=
+		    wp.rcNormalPosition.right - wp.rcNormalPosition.left)
+		|| (rc.bottom - rc.top !=
+		    wp.rcNormalPosition.bottom - wp.rcNormalPosition.top))
+	    return TRUE;
+    }
+    return FALSE;
 }
 
 /*
@@ -3504,7 +3540,7 @@ gui_mch_browse(
     // Convert the filter to Windows format.
     filterp = convert_filterW(filter);
 
-    vim_memset(&fileStruct, 0, sizeof(OPENFILENAMEW));
+    CLEAR_FIELD(fileStruct);
 # ifdef OPENFILENAME_SIZE_VERSION_400W
     // be compatible with Windows NT 4.0
     fileStruct.lStructSize = OPENFILENAME_SIZE_VERSION_400W;
@@ -3794,10 +3830,6 @@ _OnScroll(
 
 #ifdef FEAT_XPM_W32
 # include "xpm_w32.h"
-#endif
-
-#ifdef PROTO
-# define WINAPI
 #endif
 
 #ifdef __MINGW32__
@@ -4267,7 +4299,7 @@ _OnMouseWheel(
 	// Mouse hovers over popup window, scroll it if possible.
 	mouse_row = wp->w_winrow;
 	mouse_col = wp->w_wincol;
-	vim_memset(&cap, 0, sizeof(cap));
+	CLEAR_FIELD(cap);
 	cap.arg = zDelta < 0 ? MSCR_UP : MSCR_DOWN;
 	cap.cmdchar = zDelta < 0 ? K_MOUSEUP : K_MOUSEDOWN;
 	clear_oparg(&oa);
@@ -5395,28 +5427,21 @@ gui_mch_set_shellsize(
 	int direction)
 {
     RECT	workarea_rect;
+    RECT	window_rect;
     int		win_width, win_height;
-    WINDOWPLACEMENT wndpl;
 
     // Try to keep window completely on screen.
     // Get position of the screen work area.  This is the part that is not
     // used by the taskbar or appbars.
     get_work_area(&workarea_rect);
 
-    // Get current position of our window.  Note that the .left and .top are
-    // relative to the work area.
-    wndpl.length = sizeof(WINDOWPLACEMENT);
-    GetWindowPlacement(s_hwnd, &wndpl);
-
     // Resizing a maximized window looks very strange, unzoom it first.
     // But don't do it when still starting up, it may have been requested in
     // the shortcut.
-    if (wndpl.showCmd == SW_SHOWMAXIMIZED && starting == 0)
-    {
+    if (IsZoomed(s_hwnd) && starting == 0)
 	ShowWindow(s_hwnd, SW_SHOWNORMAL);
-	// Need to get the settings of the normal window.
-	GetWindowPlacement(s_hwnd, &wndpl);
-    }
+
+    GetWindowRect(s_hwnd, &window_rect);
 
     // compute the size of the outside of the window
     win_width = width + (GetSystemMetrics(SM_CXFRAME) +
@@ -5432,34 +5457,24 @@ gui_mch_set_shellsize(
     // The following should take care of keeping Vim on the same monitor, no
     // matter if the secondary monitor is left or right of the primary
     // monitor.
-    wndpl.rcNormalPosition.right = wndpl.rcNormalPosition.left + win_width;
-    wndpl.rcNormalPosition.bottom = wndpl.rcNormalPosition.top + win_height;
+    window_rect.right = window_rect.left + win_width;
+    window_rect.bottom = window_rect.top + win_height;
 
     // If the window is going off the screen, move it on to the screen.
-    if ((direction & RESIZE_HOR)
-	    && wndpl.rcNormalPosition.right > workarea_rect.right)
-	OffsetRect(&wndpl.rcNormalPosition,
-		workarea_rect.right - wndpl.rcNormalPosition.right, 0);
+    if ((direction & RESIZE_HOR) && window_rect.right > workarea_rect.right)
+	OffsetRect(&window_rect, workarea_rect.right - window_rect.right, 0);
 
-    if ((direction & RESIZE_HOR)
-	    && wndpl.rcNormalPosition.left < workarea_rect.left)
-	OffsetRect(&wndpl.rcNormalPosition,
-		workarea_rect.left - wndpl.rcNormalPosition.left, 0);
+    if ((direction & RESIZE_HOR) && window_rect.left < workarea_rect.left)
+	OffsetRect(&window_rect, workarea_rect.left - window_rect.left, 0);
 
-    if ((direction & RESIZE_VERT)
-	    && wndpl.rcNormalPosition.bottom > workarea_rect.bottom)
-	OffsetRect(&wndpl.rcNormalPosition,
-		0, workarea_rect.bottom - wndpl.rcNormalPosition.bottom);
+    if ((direction & RESIZE_VERT) && window_rect.bottom > workarea_rect.bottom)
+	OffsetRect(&window_rect, 0, workarea_rect.bottom - window_rect.bottom);
 
-    if ((direction & RESIZE_VERT)
-	    && wndpl.rcNormalPosition.top < workarea_rect.top)
-	OffsetRect(&wndpl.rcNormalPosition,
-		0, workarea_rect.top - wndpl.rcNormalPosition.top);
+    if ((direction & RESIZE_VERT) && window_rect.top < workarea_rect.top)
+	OffsetRect(&window_rect, 0, workarea_rect.top - window_rect.top);
 
-    // set window position - we should use SetWindowPlacement rather than
-    // SetWindowPos as the MSDN docs say the coord systems returned by
-    // these two are not compatible.
-    SetWindowPlacement(s_hwnd, &wndpl);
+    MoveWindow(s_hwnd, window_rect.left, window_rect.top,
+						win_width, win_height, TRUE);
 
     SetActiveWindow(s_hwnd);
     SetFocus(s_hwnd);
@@ -6478,7 +6493,7 @@ gui_mch_add_menu_item(
     {
 	TBBUTTON newtb;
 
-	vim_memset(&newtb, 0, sizeof(newtb));
+	CLEAR_FIELD(newtb);
 	if (menu_is_separator(menu->name))
 	{
 	    newtb.iBitmap = 0;
@@ -7591,7 +7606,7 @@ gui_mch_tearoff(
     for (col = 0; col < 2; col++)
     {
 	columnWidths[col] = 0;
-	for (pmenu = menu->children; pmenu != NULL; pmenu = pmenu->next)
+	FOR_ALL_CHILD_MENUS(menu, pmenu)
 	{
 	    // Use "dname" here to compute the width of the visible text.
 	    text = (col == 0) ? pmenu->dname : pmenu->actext;

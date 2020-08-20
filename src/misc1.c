@@ -14,6 +14,10 @@
 #include "vim.h"
 #include "version.h"
 
+#if defined(__HAIKU__)
+# include <storage/FindDirectory.h>
+#endif
+
 #if defined(MSWIN)
 # include <lm.h>
 #endif
@@ -627,7 +631,7 @@ f_mode(typval_T *argvars, typval_T *rettv)
 {
     char_u	buf[4];
 
-    vim_memset(buf, 0, sizeof(buf));
+    CLEAR_FIELD(buf);
 
     if (time_for_testing == 93784)
     {
@@ -941,7 +945,7 @@ get_number(
 	    do_redraw = FALSE;
 	    break;
 	}
-	else if (c == CAR || c == NL || c == Ctrl_C || c == ESC)
+	else if (c == CAR || c == NL || c == Ctrl_C || c == ESC || c == 'q')
 	    break;
     }
     --no_mapping;
@@ -963,9 +967,9 @@ prompt_for_number(int *mouse_used)
 
     // When using ":silent" assume that <CR> was entered.
     if (mouse_used != NULL)
-	msg_puts(_("Type number and <Enter> or click with mouse (empty cancels): "));
+	msg_puts(_("Type number and <Enter> or click with the mouse (q or empty cancels): "));
     else
-	msg_puts(_("Type number and <Enter> (empty cancels): "));
+	msg_puts(_("Type number and <Enter> (q or empty cancels): "));
 
     // Set the state such that text can be selected/copied/pasted and we still
     // get mouse events. redraw_after_callback() will not redraw if cmdline_row
@@ -1662,6 +1666,20 @@ vim_getenv(char_u *name, int *mustfree)
 
     if (p != NULL)
 	return p;
+
+# ifdef __HAIKU__
+    // special handling for user settings directory...
+    if (STRCMP(name, "BE_USER_SETTINGS") == 0)
+    {
+	static char userSettingsPath[MAXPATHL];
+
+	if (find_directory(B_USER_SETTINGS_DIRECTORY, 0, false,
+					   userSettingsPath, MAXPATHL) == B_OK)
+	    return (char_u *)userSettingsPath;
+	else
+	    return NULL;
+    }
+# endif
 #endif
 
     // handling $VIMRUNTIME and $VIM is below, bail out if it's another name.
@@ -1777,7 +1795,7 @@ vim_getenv(char_u *name, int *mustfree)
 	    if (p == exe_name || p == p_hf)
 #endif
 		// check that the result is a directory name
-		p = vim_strnsave(p, (int)(pend - p));
+		p = vim_strnsave(p, pend - p);
 
 	    if (p != NULL && !mch_isdir(p))
 		VIM_CLEAR(p);
@@ -1852,6 +1870,22 @@ vim_unsetenv(char_u *var)
 }
 #endif
 
+
+/*
+ * Set environment variable "name" and take care of side effects.
+ */
+    void
+vim_setenv_ext(char_u *name, char_u *val)
+{
+    vim_setenv(name, val);
+    if (STRICMP(name, "HOME") == 0)
+	init_homedir();
+    else if (didset_vim && STRICMP(name, "VIM") == 0)
+	didset_vim = FALSE;
+    else if (didset_vimruntime
+	    && STRICMP(name, "VIMRUNTIME") == 0)
+	didset_vimruntime = FALSE;
+}
 
 /*
  * Our portable version of setenv.
@@ -2067,13 +2101,17 @@ match_user(char_u *name)
 concat_str(char_u *str1, char_u *str2)
 {
     char_u  *dest;
-    size_t  l = STRLEN(str1);
+    size_t  l = str1 == NULL ? 0 : STRLEN(str1);
 
-    dest = alloc(l + STRLEN(str2) + 1L);
+    dest = alloc(l + (str2 == NULL ? 0 : STRLEN(str2)) + 1L);
     if (dest != NULL)
     {
-	STRCPY(dest, str1);
-	STRCPY(dest + l, str2);
+	if (str1 == NULL)
+	    *dest = NUL;
+	else
+	    STRCPY(dest, str1);
+	if (str2 != NULL)
+	    STRCPY(dest + l, str2);
     }
     return dest;
 }
@@ -2136,7 +2174,7 @@ preserve_exit(void)
     {
 	if (buf->b_ml.ml_mfp != NULL && buf->b_ml.ml_mfp->mf_fname != NULL)
 	{
-	    OUT_STR("Vim: preserving files...\n");
+	    OUT_STR("Vim: preserving files...\r\n");
 	    screen_start();	    // don't know where cursor is now
 	    out_flush();
 	    ml_sync_all(FALSE, FALSE);	// preserve all swap files
@@ -2146,7 +2184,7 @@ preserve_exit(void)
 
     ml_close_all(FALSE);	    // close all memfiles, without deleting
 
-    OUT_STR("Vim: Finished.\n");
+    OUT_STR("Vim: Finished.\r\n");
 
     getout(1);
 }
@@ -2181,6 +2219,19 @@ line_breakcheck(void)
 fast_breakcheck(void)
 {
     if (++breakcheck_count >= BREAKCHECK_SKIP * 10)
+    {
+	breakcheck_count = 0;
+	ui_breakcheck();
+    }
+}
+
+/*
+ * Like line_breakcheck() but check 100 times less often.
+ */
+    void
+veryfast_breakcheck(void)
+{
+    if (++breakcheck_count >= BREAKCHECK_SKIP * 100)
     {
 	breakcheck_count = 0;
 	ui_breakcheck();
@@ -2525,7 +2576,7 @@ get_isolated_shell_name(void)
 
 #ifdef MSWIN
     p = gettail(p_sh);
-    p = vim_strnsave(p, (int)(skiptowhite(p) - p));
+    p = vim_strnsave(p, skiptowhite(p) - p);
 #else
     p = skiptowhite(p_sh);
     if (*p == NUL)
@@ -2542,7 +2593,7 @@ get_isolated_shell_name(void)
 	for (p2 = p_sh; p2 < p; MB_PTR_ADV(p2))
 	    if (vim_ispathsep(*p2))
 		p1 = p2 + 1;
-	p = vim_strnsave(p1, (int)(p - p1));
+	p = vim_strnsave(p1, p - p1);
     }
 #endif
     return p;
@@ -2576,35 +2627,4 @@ path_with_url(char_u *fname)
     for (p = fname; isalpha(*p); ++p)
 	;
     return path_is_url(p);
-}
-
-/*
- * Put timestamp "tt" in "buf[buflen]" in a nice format.
- */
-    void
-add_time(char_u *buf, size_t buflen, time_t tt)
-{
-#ifdef HAVE_STRFTIME
-    struct tm	tmval;
-    struct tm	*curtime;
-
-    if (vim_time() - tt >= 100)
-    {
-	curtime = vim_localtime(&tt, &tmval);
-	if (vim_time() - tt < (60L * 60L * 12L))
-	    // within 12 hours
-	    (void)strftime((char *)buf, buflen, "%H:%M:%S", curtime);
-	else
-	    // longer ago
-	    (void)strftime((char *)buf, buflen, "%Y/%m/%d %H:%M:%S", curtime);
-    }
-    else
-#endif
-    {
-	long seconds = (long)(vim_time() - tt);
-
-	vim_snprintf((char *)buf, buflen,
-		NGETTEXT("%ld second ago", "%ld seconds ago", seconds),
-		seconds);
-    }
 }

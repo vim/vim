@@ -12,3 +12,5 @@ func Test_feedkeys_x_with_empty_string()
   call assert_equal('foo', getline('.'))
   quit!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

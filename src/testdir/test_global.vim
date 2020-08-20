@@ -1,3 +1,6 @@
+" Test for :global and :vglobal
+
+source check.vim
 
 func Test_yank_put_clipboard()
   new
@@ -5,7 +8,20 @@ func Test_yank_put_clipboard()
   set clipboard=unnamed
   g/^/normal yyp
   call assert_equal(['a', 'a', 'b', 'b', 'c', 'c'], getline(1, 6))
+  set clipboard=unnamed,unnamedplus
+  call setline(1, ['a', 'b', 'c'])
+  g/^/normal yyp
+  call assert_equal(['a', 'a', 'b', 'b', 'c', 'c'], getline(1, 6))
+  set clipboard&
+  bwipe!
+endfunc
 
+func Test_global_set_clipboard()
+  CheckFeature clipboard_working
+  new
+  set clipboard=unnamedplus
+  let @+='clipboard' | g/^/set cb= | let @" = 'unnamed' | put
+  call assert_equal(['','unnamed'], getline(1, '$'))
   set clipboard&
   bwipe!
 endfunc
@@ -18,3 +34,53 @@ func Test_nested_global()
   call assert_equal(['nothing', '++found', 'found bad', 'bad'], getline(1, 4))
   bwipe!
 endfunc
+
+func Test_global_error()
+  call assert_fails('g\\a', 'E10:')
+  call assert_fails('g', 'E148:')
+  call assert_fails('g/\(/y', 'E54:')
+endfunc
+
+" Test for printing lines using :g with different search patterns
+func Test_global_print()
+  new
+  call setline(1, ['foo', 'bar', 'foo', 'foo'])
+  let @/ = 'foo'
+  let t = execute("g/")->trim()->split("\n")
+  call assert_equal(['foo', 'foo', 'foo'], t)
+
+  " Test for Vi compatible patterns
+  let @/ = 'bar'
+  let t = execute('g\/')->trim()->split("\n")
+  call assert_equal(['bar'], t)
+
+  normal gg
+  s/foo/foo/
+  let t = execute('g\&')->trim()->split("\n")
+  call assert_equal(['foo', 'foo', 'foo'], t)
+
+  let @/ = 'bar'
+  let t = execute('g?')->trim()->split("\n")
+  call assert_equal(['bar'], t)
+
+  " Test for the 'Pattern found in every line' message
+  let v:statusmsg = ''
+  v/foo\|bar/p
+  call assert_notequal('', v:statusmsg)
+
+  close!
+endfunc
+
+" Test for global command with newline character
+func Test_global_newline()
+  new
+  call setline(1, ['foo'])
+  exe "g/foo/s/f/h/\<NL>s/o$/w/"
+  call assert_equal('how', getline(1))
+  call setline(1, ["foo\<NL>bar"])
+  exe "g/foo/s/foo\\\<NL>bar/xyz/"
+  call assert_equal('xyz', getline(1))
+  close!
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -36,7 +36,7 @@ func Do_test_quotestar_for_x11()
 
   let cmd = GetVimCommand()
   if cmd == ''
-    return 'GetVimCommand() failed'
+    throw 'GetVimCommand() failed'
   endif
   try
     call remote_send('xxx', '')
@@ -107,7 +107,8 @@ func Do_test_quotestar_for_x11()
       call remote_send(name, ":gui -f\<CR>")
     endif
     " Wait for the server in the GUI to be up and answering requests.
-    call WaitForAssert({-> assert_match("1", remote_expr(name, "has('gui_running')", "", 1))})
+    " On some systems and with valgrind this can be very slow.
+    call WaitForAssert({-> assert_match("1", remote_expr(name, "has('gui_running')", "", 1))}, 10000)
 
     call remote_send(name, ":let @* = 'maybe'\<CR>")
     call WaitForAssert({-> assert_equal("maybe", remote_expr(name, "@*", "", 2))})
@@ -151,3 +152,5 @@ func Test_quotestar()
     throw 'Skipped: ' . skipped
   endif
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

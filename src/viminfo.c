@@ -26,6 +26,21 @@ typedef struct
     garray_T	vir_barlines;	// lines starting with |
 } vir_T;
 
+typedef enum {
+    BVAL_NR,
+    BVAL_STRING,
+    BVAL_EMPTY
+} btype_T;
+
+typedef struct {
+    btype_T	bv_type;
+    long	bv_nr;
+    char_u	*bv_string;
+    char_u	*bv_tofree;	// free later when not NULL
+    int		bv_len;		// length of bv_string
+    int		bv_allocated;	// bv_string was allocated
+} bval_T;
+
 #if defined(FEAT_VIMINFO) || defined(PROTO)
 
 static int  viminfo_errcnt;
@@ -1087,22 +1102,24 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 	    s[len] = NUL;
 
 	    converted = FALSE;
+	    value->bv_tofree = NULL;
 	    if (virp->vir_conv.vc_type != CONV_NONE && *s != NUL)
 	    {
 		sconv = string_convert(&virp->vir_conv, s, NULL);
 		if (sconv != NULL)
 		{
 		    if (s == buf)
-			vim_free(s);
+			// the converted string is stored in bv_string and
+			// freed later, also need to free "buf" later
+			value->bv_tofree = buf;
 		    s = sconv;
-		    buf = s;
 		    converted = TRUE;
 		}
 	    }
 
 	    // Need to copy in allocated memory if the string wasn't allocated
 	    // above and we did allocate before, thus vir_line may change.
-	    if (s != buf && allocated)
+	    if (s != buf && allocated && !converted)
 		s = vim_strsave(s);
 	    value->bv_string = s;
 	    value->bv_type = BVAL_STRING;
@@ -1233,7 +1250,12 @@ read_viminfo_varlist(vir_T *virp, int writing)
 		    (void)string2float(tab + 1, &tv.vval.v_float);
 #endif
 		else
+		{
 		    tv.vval.v_number = atol((char *)tab + 1);
+		    if (type == VAR_SPECIAL && (tv.vval.v_number == VVAL_FALSE
+					     || tv.vval.v_number == VVAL_TRUE))
+			tv.v_type = VAR_BOOL;
+		}
 		if (type == VAR_DICT || type == VAR_LIST)
 		{
 		    typval_T *etv = eval_expr(tv.vval.v_string, NULL);
@@ -1312,15 +1334,44 @@ write_viminfo_varlist(FILE *fp)
 	    {
 		switch (this_var->di_tv.v_type)
 		{
-		    case VAR_STRING: s = "STR"; break;
-		    case VAR_NUMBER: s = "NUM"; break;
-		    case VAR_FLOAT:  s = "FLO"; break;
-		    case VAR_DICT:   s = "DIC"; break;
-		    case VAR_LIST:   s = "LIS"; break;
-		    case VAR_BLOB:   s = "BLO"; break;
+		    case VAR_STRING:  s = "STR"; break;
+		    case VAR_NUMBER:  s = "NUM"; break;
+		    case VAR_FLOAT:   s = "FLO"; break;
+		    case VAR_DICT:
+			  {
+			      dict_T	*di = this_var->di_tv.vval.v_dict;
+			      int	copyID = get_copyID();
+
+			      s = "DIC";
+			      if (di != NULL && !set_ref_in_ht(
+						 &di->dv_hashtab, copyID, NULL)
+				      && di->dv_copyID == copyID)
+				  // has a circular reference, can't turn the
+				  // value into a string
+				  continue;
+			      break;
+			  }
+		    case VAR_LIST:
+			  {
+			      list_T	*l = this_var->di_tv.vval.v_list;
+			      int	copyID = get_copyID();
+
+			      s = "LIS";
+			      if (l != NULL && !set_ref_in_list_items(
+							       l, copyID, NULL)
+				      && l->lv_copyID == copyID)
+				  // has a circular reference, can't turn the
+				  // value into a string
+				  continue;
+			      break;
+			  }
+		    case VAR_BLOB:    s = "BLO"; break;
+		    case VAR_BOOL:    s = "XPL"; break;  // backwards compat.
 		    case VAR_SPECIAL: s = "XPL"; break;
 
 		    case VAR_UNKNOWN:
+		    case VAR_ANY:
+		    case VAR_VOID:
 		    case VAR_FUNC:
 		    case VAR_PARTIAL:
 		    case VAR_JOB:
@@ -1328,8 +1379,10 @@ write_viminfo_varlist(FILE *fp)
 				     continue;
 		}
 		fprintf(fp, "!%s\t%s\t", this_var->di_key, s);
-		if (this_var->di_tv.v_type == VAR_SPECIAL)
+		if (this_var->di_tv.v_type == VAR_BOOL
+				      || this_var->di_tv.v_type == VAR_SPECIAL)
 		{
+		    // do not use "v:true" but "1"
 		    sprintf((char *)numbuf, "%ld",
 					  (long)this_var->di_tv.vval.v_number);
 		    p = numbuf;
@@ -2738,6 +2791,7 @@ read_viminfo_barline(vir_T *virp, int got_encoding, int force, int writing)
 	    vp = (bval_T *)values.ga_data + i;
 	    if (vp->bv_type == BVAL_STRING && vp->bv_allocated)
 		vim_free(vp->bv_string);
+	    vim_free(vp->bv_tofree);
 	}
 	ga_clear(&values);
     }
@@ -2953,6 +3007,7 @@ read_viminfo(
 {
     FILE	*fp;
     char_u	*fname;
+    stat_T	st;		// mch_stat() of existing viminfo file
 
     if (no_viminfo())
 	return FAIL;
@@ -2965,7 +3020,7 @@ read_viminfo(
     if (p_verbose > 0)
     {
 	verbose_enter();
-	smsg(_("Reading viminfo file \"%s\"%s%s%s"),
+	smsg(_("Reading viminfo file \"%s\"%s%s%s%s"),
 		fname,
 		(flags & VIF_WANT_INFO) ? _(" info") : "",
 		(flags & VIF_WANT_MARKS) ? _(" marks") : "",
@@ -2977,6 +3032,11 @@ read_viminfo(
     vim_free(fname);
     if (fp == NULL)
 	return FAIL;
+    if (mch_fstat(fileno(fp), &st) < 0 || S_ISDIR(st.st_mode))
+    {
+	fclose(fp);
+	return FAIL;
+    }
 
     viminfo_errcnt = 0;
     do_viminfo(fp, NULL, flags);
@@ -3000,12 +3060,12 @@ write_viminfo(char_u *file, int forceit)
     FILE	*fp_out = NULL;	// output viminfo file
     char_u	*tempname = NULL;	// name of temp viminfo file
     stat_T	st_new;		// mch_stat() of potential new file
+    stat_T	st_old;		// mch_stat() of existing viminfo file
 #if defined(UNIX) || defined(VMS)
     mode_t	umask_save;
 #endif
 #ifdef UNIX
     int		shortname = FALSE;	// use 8.3 file name
-    stat_T	st_old;		// mch_stat() of existing viminfo file
 #endif
 #ifdef MSWIN
     int		hidden = FALSE;
@@ -3043,20 +3103,20 @@ write_viminfo(char_u *file, int forceit)
 	// write the new viminfo into, in the same directory as the
 	// existing viminfo file, which will be renamed once all writing is
 	// successful.
+	if (mch_fstat(fileno(fp_in), &st_old) < 0
+		|| S_ISDIR(st_old.st_mode)
 #ifdef UNIX
-	// For Unix we check the owner of the file.  It's not very nice to
-	// overwrite a user's viminfo file after a "su root", with a
-	// viminfo file that the user can't read.
-	st_old.st_dev = (dev_t)0;
-	st_old.st_ino = 0;
-	st_old.st_mode = 0600;
-	if (mch_stat((char *)fname, &st_old) == 0
-		&& getuid() != ROOT_UID
-		&& !(st_old.st_uid == getuid()
-			? (st_old.st_mode & 0200)
-			: (st_old.st_gid == getgid()
-				? (st_old.st_mode & 0020)
-				: (st_old.st_mode & 0002))))
+		// For Unix we check the owner of the file.  It's not very nice
+		// to overwrite a user's viminfo file after a "su root", with a
+		// viminfo file that the user can't read.
+		|| (getuid() != ROOT_UID
+		    && !(st_old.st_uid == getuid()
+			    ? (st_old.st_mode & 0200)
+			    : (st_old.st_gid == getgid()
+				    ? (st_old.st_mode & 0020)
+				    : (st_old.st_mode & 0002))))
+#endif
+		)
 	{
 	    int	tt = msg_didany;
 
@@ -3066,7 +3126,6 @@ write_viminfo(char_u *file, int forceit)
 	    fclose(fp_in);
 	    goto end;
 	}
-#endif
 #ifdef MSWIN
 	// Get the file attributes of the existing viminfo file.
 	hidden = mch_ishidden(fname);

@@ -115,7 +115,7 @@ endif
 
 ifndef CTAGS
 # this assumes ctags is Exuberant ctags
-CTAGS = ctags -I INIT+ --fields=+S
+CTAGS = ctags -I INIT+,INIT2+,INIT3+,INIT4+,INIT5+ --fields=+S
 endif
 
 # Link against the shared version of libstdc++ by default.  Set
@@ -569,11 +569,8 @@ ifdef RUBY
 CFLAGS += -DFEAT_RUBY $(RUBYINC)
  ifeq (yes, $(DYNAMIC_RUBY))
 CFLAGS += -DDYNAMIC_RUBY -DDYNAMIC_RUBY_DLL=\"$(RUBY_INSTALL_NAME).dll\"
-CFLAGS += -DDYNAMIC_RUBY_VER=$(RUBY_VER)
  endif
- ifeq (no, $(DYNAMIC_RUBY))
 CFLAGS += -DRUBY_VERSION=$(RUBY_VER)
- endif
  ifneq ($(findstring w64-mingw32,$(CC)),)
 # A workaround for MinGW-w64
 CFLAGS += -DHAVE_STRUCT_TIMESPEC -DHAVE_STRUCT_TIMEZONE
@@ -591,6 +588,8 @@ ifdef PYTHON3
 CFLAGS += -DFEAT_PYTHON3
  ifeq (yes, $(DYNAMIC_PYTHON3))
 CFLAGS += -DDYNAMIC_PYTHON3 -DDYNAMIC_PYTHON3_DLL=\"$(DYNAMIC_PYTHON3_DLL)\"
+ else
+CFLAGS += -DPYTHON3_DLL=\"$(DYNAMIC_PYTHON3_DLL)\"
  endif
 endif
 
@@ -627,7 +626,10 @@ NBDEBUG_SRC = nbdebug.c
 endif
 
 ifeq ($(CHANNEL),yes)
-DEFINES += -DFEAT_JOB_CHANNEL
+DEFINES += -DFEAT_JOB_CHANNEL -DFEAT_IPV6
+ ifeq ($(shell expr "$$(($(WINVER)))" \>= "$$((0x600))"),1)
+DEFINES += -DHAVE_INET_NTOP
+ endif
 endif
 
 ifeq ($(TERMINAL),yes)
@@ -713,6 +715,8 @@ OBJ = \
 	$(OUTDIR)/change.o \
 	$(OUTDIR)/charset.o \
 	$(OUTDIR)/cindent.o \
+	$(OUTDIR)/clientserver.o \
+	$(OUTDIR)/clipboard.o \
 	$(OUTDIR)/cmdexpand.o \
 	$(OUTDIR)/cmdhist.o \
 	$(OUTDIR)/crypt.o \
@@ -739,17 +743,21 @@ OBJ = \
 	$(OUTDIR)/findfile.o \
 	$(OUTDIR)/fold.o \
 	$(OUTDIR)/getchar.o \
+	$(OUTDIR)/gui_xim.o \
 	$(OUTDIR)/hardcopy.o \
 	$(OUTDIR)/hashtab.o \
+	$(OUTDIR)/help.o \
 	$(OUTDIR)/highlight.o \
 	$(OUTDIR)/if_cscope.o \
 	$(OUTDIR)/indent.o \
 	$(OUTDIR)/insexpand.o \
 	$(OUTDIR)/json.o \
 	$(OUTDIR)/list.o \
+	$(OUTDIR)/locale.o \
 	$(OUTDIR)/main.o \
 	$(OUTDIR)/map.o \
 	$(OUTDIR)/mark.o \
+	$(OUTDIR)/match.o \
 	$(OUTDIR)/memfile.o \
 	$(OUTDIR)/memline.o \
 	$(OUTDIR)/menu.o \
@@ -785,12 +793,20 @@ OBJ = \
 	$(OUTDIR)/tag.o \
 	$(OUTDIR)/term.o \
 	$(OUTDIR)/testing.o \
+	$(OUTDIR)/textformat.o \
+	$(OUTDIR)/textobject.o \
 	$(OUTDIR)/textprop.o \
+	$(OUTDIR)/time.o \
+	$(OUTDIR)/typval.o \
 	$(OUTDIR)/ui.o \
 	$(OUTDIR)/undo.o \
 	$(OUTDIR)/usercmd.o \
 	$(OUTDIR)/userfunc.o \
 	$(OUTDIR)/version.o \
+	$(OUTDIR)/vim9compile.o \
+	$(OUTDIR)/vim9execute.o \
+	$(OUTDIR)/vim9script.o \
+	$(OUTDIR)/vim9type.o \
 	$(OUTDIR)/viminfo.o \
 	$(OUTDIR)/winclip.o \
 	$(OUTDIR)/window.o
@@ -847,7 +863,7 @@ endif
 
 ifeq ($(CHANNEL),yes)
 OBJ += $(OUTDIR)/channel.o
-LIB += -lwsock32
+LIB += -lwsock32 -lws2_32
 endif
 
 ifeq ($(DIRECTX),yes)
@@ -1088,10 +1104,10 @@ endif
 # If this fails because you don't have Vim yet, first build and install Vim
 # without changes.
 cmdidxs: ex_cmds.h
-	vim --clean -X -u create_cmdidxs.vim
+	vim --clean -X --not-a-term -u create_cmdidxs.vim
 
 ###########################################################################
-INCL =	vim.h alloc.h ascii.h ex_cmds.h feature.h globals.h \
+INCL =	vim.h alloc.h ascii.h ex_cmds.h feature.h errors.h globals.h \
 	keymap.h macros.h option.h os_dos.h os_win32.h proto.h regexp.h \
 	spell.h structs.h term.h beval.h $(NBDEBUG_INCL)
 GUI_INCL = gui.h
@@ -1155,6 +1171,14 @@ $(OUTDIR)/misc1.o: misc1.c $(INCL) version.h
 $(OUTDIR)/netbeans.o: netbeans.c $(INCL) version.h
 
 $(OUTDIR)/version.o: version.c $(INCL) version.h
+
+$(OUTDIR)/vim9compile.o: vim9compile.c $(INCL) version.h
+
+$(OUTDIR)/vim9execute.o: vim9execute.c $(INCL) version.h
+
+$(OUTDIR)/vim9script.o: vim9script.c $(INCL) version.h
+
+$(OUTDIR)/vim9type.o: vim9type.c $(INCL) version.h
 
 $(OUTDIR)/viminfo.o: viminfo.c $(INCL) version.h
 
@@ -1232,6 +1256,7 @@ $(OUTDIR)/pathdef.o:	$(PATHDEF_SRC) $(INCL)
 
 CCCTERM = $(CC) -c $(CFLAGS) -Ilibvterm/include -DINLINE="" \
 	  -DVSNPRINTF=vim_vsnprintf \
+	  -DSNPRINTF=vim_snprintf \
 	  -DIS_COMBINING_FUNCTION=utf_iscomposing_uint \
 	  -DWCWIDTH_FUNCTION=utf_uint2cells \
 	  -DGET_SPECIAL_PTY_TYPE_FUNCTION=get_special_pty_type

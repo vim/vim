@@ -11,7 +11,7 @@ func Test_Rand()
 
   call test_settime(12341234)
   let s = srand()
-  if filereadable('/dev/urandom')
+  if !has('win32') && filereadable('/dev/urandom')
     " using /dev/urandom
     call assert_notequal(s, srand())
   else
@@ -21,20 +21,29 @@ func Test_Rand()
     call assert_notequal(s, srand())
   endif
 
-  call srand()
-  let v = rand()
-  call assert_notequal(v, rand())
+  call test_srand_seed(123456789)
+  call assert_equal(4284103975, rand())
+  call assert_equal(1001954530, rand())
+  call test_srand_seed()
 
   if has('float')
     call assert_fails('echo srand(1.2)', 'E805:')
   endif
   call assert_fails('echo srand([1])', 'E745:')
   call assert_fails('echo rand("burp")', 'E475:')
-  call assert_fails('echo rand([1, 2, 3])', 'E475:')
-  call assert_fails('echo rand([[1], 2, 3, 4])', 'E475:')
-  call assert_fails('echo rand([1, [2], 3, 4])', 'E475:')
-  call assert_fails('echo rand([1, 2, [3], 4])', 'E475:')
-  call assert_fails('echo rand([1, 2, 3, [4]])', 'E475:')
+  call assert_fails('echo rand([1, 2, 3])', 'E730:')
+  call assert_fails('echo rand([[1], 2, 3, 4])', 'E730:')
+  call assert_fails('echo rand([1, [2], 3, 4])', 'E730:')
+  call assert_fails('echo rand([1, 2, [3], 4])', 'E730:')
+  call assert_fails('echo rand([1, 2, 3, [4]])', 'E730:')
 
   call test_settime(0)
 endfunc
+
+func Test_issue_5587()
+  call rand()
+  call garbagecollect()
+  call rand()
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

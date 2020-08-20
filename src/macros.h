@@ -33,14 +33,16 @@
 		       : (a)->coladd < (b)->coladd)
 #define EQUAL_POS(a, b) (((a).lnum == (b).lnum) && ((a).col == (b).col) && ((a).coladd == (b).coladd))
 #define CLEAR_POS(a) do {(a)->lnum = 0; (a)->col = 0; (a)->coladd = 0;} while (0)
+#define EMPTY_POS(a) ((a).lnum == 0 && (a).col == 0 && (a).coladd == 0)
 
 #define LTOREQ_POS(a, b) (LT_POS(a, b) || EQUAL_POS(a, b))
 
 /*
- * VIM_ISWHITE() is used for "^" and the like. It differs from isspace()
- * because it doesn't include <CR> and <LF> and the like.
+ * VIM_ISWHITE() differs from isspace() because it doesn't include <CR> and
+ * <LF> and the like.
  */
-#define VIM_ISWHITE(x)	((x) == ' ' || (x) == '\t')
+#define VIM_ISWHITE(x)		((x) == ' ' || (x) == '\t')
+#define IS_WHITE_OR_NUL(x)	((x) == ' ' || (x) == '\t' || (x) == NUL)
 
 /*
  * LINEEMPTY() - return TRUE if the line is empty
@@ -91,6 +93,7 @@
 #define MB_ISUPPER(c)	vim_isupper(c)
 #define MB_TOLOWER(c)	vim_tolower(c)
 #define MB_TOUPPER(c)	vim_toupper(c)
+#define MB_CASEFOLD(c)	(enc_utf8 ? utf_fold(c) : MB_TOLOWER(c))
 
 // Use our own isdigit() replacement, because on MS-Windows isdigit() returns
 // non-zero for superscript 1.  Also avoids that isdigit() crashes for numbers
@@ -163,7 +166,15 @@
 # ifndef MSWIN
 #   define mch_access(n, p)	access((n), (p))
 # endif
-# define mch_fstat(n, p)	fstat((n), (p))
+
+// Use 64-bit fstat function if available.
+// NOTE: This condition is the same as for the stat_T type.
+# if (defined(_MSC_VER) && (_MSC_VER >= 1300)) || defined(__MINGW32__)
+#  define mch_fstat(n, p)	_fstat64((n), (p))
+# else
+#  define mch_fstat(n, p)	fstat((n), (p))
+# endif
+
 # ifdef MSWIN	// has its own mch_stat() function
 #  define mch_stat(n, p)	vim_stat((n), (p))
 # else
@@ -302,6 +313,10 @@
 # endif
 #endif
 
+#ifdef FEAT_EVAL
+# define FUNCARG(fp, j)	((char_u **)(fp->uf_args.ga_data))[j]
+#endif
+
 /*
  * In a hashtab item "hi_key" points to "di_key" in a dictitem.
  * This avoids adding a pointer to the hashtab item.
@@ -340,7 +355,37 @@
 
 // Give an error in curwin is a popup window and evaluate to TRUE.
 #ifdef FEAT_PROP_POPUP
-# define ERROR_IF_POPUP_WINDOW error_if_popup_window()
+# define WIN_IS_POPUP(wp) ((wp)->w_popup_flags != 0)
+# define ERROR_IF_POPUP_WINDOW error_if_popup_window(FALSE)
+# define ERROR_IF_ANY_POPUP_WINDOW error_if_popup_window(TRUE)
 #else
+# define WIN_IS_POPUP(wp) 0
 # define ERROR_IF_POPUP_WINDOW 0
+# define ERROR_IF_ANY_POPUP_WINDOW 0
 #endif
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_TERMINAL)
+# define ERROR_IF_TERM_POPUP_WINDOW error_if_term_popup_window()
+#else
+# define ERROR_IF_TERM_POPUP_WINDOW 0
+#endif
+
+
+#ifdef ABORT_ON_INTERNAL_ERROR
+# define ESTACK_CHECK_DECLARATION int estack_len_before;
+# define ESTACK_CHECK_SETUP estack_len_before = exestack.ga_len;
+# define ESTACK_CHECK_NOW if (estack_len_before != exestack.ga_len) \
+	siemsg("Exestack length expected: %d, actual: %d", estack_len_before, exestack.ga_len);
+# define CHECK_CURBUF if (curwin != NULL && curwin->w_buffer != curbuf) \
+		iemsg("curbuf != curwin->w_buffer")
+#else
+# define ESTACK_CHECK_DECLARATION
+# define ESTACK_CHECK_SETUP
+# define ESTACK_CHECK_NOW
+# define CHECK_CURBUF
+#endif
+
+// Inline the condition for performance.
+#define CHECK_LIST_MATERIALIZE(l) if ((l)->lv_first == &range_list_item) range_list_materialize(l)
+
+// Inlined version of ga_grow().  Especially useful if "n" is a constant.
+#define GA_GROW(gap, n) (((gap)->ga_maxlen - (gap)->ga_len < n) ? ga_grow_inner((gap), (n)) : OK)

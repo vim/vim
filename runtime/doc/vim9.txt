@@ -1,0 +1,982 @@
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Aug 15
+
+
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
+
+
+THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
+
+Vim9 script commands and expressions.			*vim9*
+
+Most expression help is in |eval.txt|.  This file is about the new syntax and
+features in Vim9 script.
+
+THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
+
+
+1.  What is Vim9 script?		|vim9-script|
+2.  Differences				|vim9-differences|
+3.  New style functions			|fast-functions|
+4.  Types				|vim9-types|
+5.  Namespace, Import and Export	|vim9script|
+
+9.  Rationale				|vim9-rationale|
+
+==============================================================================
+
+1. What is Vim9 script?					*vim9-script*
+
+THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
+
+Vim script has been growing over time, while preserving backwards
+compatibility.  That means bad choices from the past often can't be changed
+and compatibility with Vi restricts possible solutions.  Execution is quite
+slow, each line is parsed every time it is executed.
+
+The main goal of Vim9 script is to drastically improve performance.  This is
+accomplished by compiling commands into instructions that can be efficiently
+executed.  An increase in execution speed of 10 to 100 times can be expected.
+
+A secondary goal is to avoid Vim-specific constructs and get closer to
+commonly used programming languages, such as JavaScript, TypeScript and Java.
+
+The performance improvements can only be achieved by not being 100% backwards
+compatible.  For example, making function arguments available in the
+"a:" dictionary adds quite a lot of overhead.  In a Vim9 function this
+dictionary is not available.  Other differences are more subtle, such as how
+errors are handled.
+
+The Vim9 script syntax and semantics are used in:
+- a function defined with the `:def` command
+- a script file where the first command is `vim9script`
+
+When using `:function` in a Vim9 script file the legacy syntax is used.
+However, this can be confusing and is therefore discouraged.
+
+Vim9 script and legacy Vim script can be mixed.  There is no requirement to
+rewrite old scripts, they keep working as before.
+
+==============================================================================
+
+2. Differences from legacy Vim script			*vim9-differences*
+
+THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
+
+Comments starting with # ~
+
+In legacy Vim script comments start with double quote.  In Vim9 script
+comments start with #. >
+	# declarations
+	let count = 0  # number of occurrences
+
+The reason is that a double quote can also be the start of a string. In many
+places, especially halfway through an expression with a line break, it's hard
+to tell what the meaning is, since both a string and a comment can be followed
+by arbitrary text.  To avoid confusion only # comments are recognized.  This
+is the same as in shell scripts and Python programs.
+
+In Vi # is a command to list text with numbers.  In Vim9 script you can use
+`:number` for that. >
+	101 number
+
+To improve readability there must be a space between a command and the #
+that starts a comment.  Note that #{ is the start of a dictionary, therefore
+it does not start a comment.
+
+
+Vim9 functions ~
+
+A function defined with `:def` is compiled.  Execution is many times faster,
+often 10x to 100x times.
+
+Many errors are already found when compiling, before the function is executed.
+The syntax is strict, to enforce code that is easy to read and understand.
+
+Compilation is done when the function is first called, or when the
+`:defcompile` command is encountered in the script where the function was
+defined. `:disassemble` also compiles the function.
+
+`:def` has no options like `:function` does: "range", "abort", "dict" or
+"closure".  A `:def` function always aborts on an error, does not get a range
+passed and cannot be a "dict" function.
+
+The argument types and return type need to be specified.  The "any" type can
+be used, type checking will then be done at runtime, like with legacy
+functions.
+
+Arguments are accessed by name, without "a:", just like any other language.
+There is no "a:" dictionary or "a:000" list.
+
+Variable arguments are defined as the last argument, with a name and have a
+list type, similar to TypeScript.  For example, a list of numbers: >
+  	def MyFunc(...itemlist: list<number>)
+	   for item in itemlist
+	     ...
+
+
+Functions and variables are script-local by default ~
+							*vim9-scopes*
+When using `:function` or `:def` to specify a new function at the script level
+in a Vim9 script, the function is local to the script, as if "s:" was
+prefixed.  Using the "s:" prefix is optional.  To define or use a global
+function or variable the "g:" prefix should be used.  For functions in an
+autoload script the "name#" prefix is sufficient. >
+	def ThisFunction()          # script-local
+	def s:ThisFunction()        # script-local
+	def g:ThatFunction()	    # global
+	def ThatFunction()	    # global if no local ThatFunction()
+	def scriptname#function()   # autoload
+
+When using `:function` or `:def` to specify a new function inside a function,
+the function is local to the function.  It is not possible to define a
+script-local function inside a function. It is possible to define a global
+function, using the "g:" prefix.
+
+When referring to a function and no "s:" or "g:" prefix is used, Vim will
+prefer using a local function (in the function scope, script scope or
+imported) before looking for a global function.
+In all cases the function must be defined before used.  That is when it is
+first called or when `:defcompile` causes the call to be compiled.
+
+The result is that functions and variables without a namespace can usually be
+found in the script, either defined there or imported.  Global functions and
+variables could be defined anywhere (good luck finding out where!).
+
+Global functions can still be defined and deleted at nearly any time.  In
+Vim9 script script-local functions are defined once when the script is sourced
+and cannot be deleted or replaced.
+
+
+Variable declarations with :let and :const ~
+							*vim9-declaration*
+Local variables need to be declared with `:let`.  Local constants need to be
+declared with `:const`.  We refer to both as "variables".
+
+Variables can be local to a script, function or code block: >
+	vim9script
+	let script_var = 123
+	def SomeFunc()
+	  let func_var = script_var
+	  if cond
+	    let block_var = func_var
+	  ...
+
+The variables are only visible in the block where they are defined and nested
+blocks.  Once the block ends the variable is no longer accessible: >
+	if cond
+	   let inner = 5
+	else
+	   let inner = 0
+	endif
+	echo inner  " Error!
+
+The declaration must be done earlier: >
+	let inner: number
+	if cond
+	   inner = 5
+	else
+	   inner = 0
+	endif
+	echo inner
+
+To intentionally avoid a variable being available later, a block can be used:
+>
+	{
+	   let temp = 'temp'
+	   ...
+	}
+	echo temp  " Error!
+
+An existing variable cannot be assigned to with `:let`, since that implies a
+declaration.  Global, window, tab, buffer and Vim variables can only be used
+without `:let`, because they are not really declared, they can also be deleted
+with `:unlet`.
+
+Variables and functions cannot shadow previously defined or imported variables
+and functions.
+Variables may shadow Ex commands, rename the variable if needed.
+
+Global variables and user defined functions must be prefixed with "g:", also
+at the script level. >
+	vim9script
+	let script_local = 'text'
+	g:global = 'value'
+	let Funcref = g:ThatFunction
+
+Since "&opt = value" is now assigning a value to option "opt", ":&" cannot be
+used to repeat a `:substitute` command.
+
+							*E1092*
+Declaring more than one variable at a time, using the unpack notation, is
+currently not supported: >
+	let [v1, v2] = GetValues()  # Error!
+That is because the type needs to be inferred from the list item type, which
+isn't that easy.
+
+
+Omitting :call and :eval ~
+
+Functions can be called without `:call`: >
+  	writefile(lines, 'file')
+Using `:call` is still possible, but this is discouraged.
+
+A method call without `eval` is possible, so long as the start is an
+identifier or can't be an Ex command.  Examples: >
+	myList->add(123)
+	g:myList->add(123)
+	[1, 2, 3]->Process()
+	#{a: 1, b: 2}->Process()
+	{'a': 1, 'b': 2}->Process()
+	"foobar"->Process()
+	("foobar")->Process()
+	'foobar'->Process()
+	('foobar')->Process()
+
+In the rare case there is ambiguity between a function name and an Ex command,
+prepend ":" to make clear you want to use the Ex command.  For example, there
+is both the `:substitute` command and the `substitute()` function.  When the
+line starts with `substitute(` this will use the function. Prepend a colon to
+use the command instead: >
+	:substitute(pattern (replacement (
+
+Note that while variables need to be defined before they can be used,
+functions can be called before being defined.  This is required to allow
+for cyclic dependencies between functions.  It is slightly less efficient,
+since the function has to be looked up by name.  And a typo in the function
+name will only be found when the function is called.
+
+
+Omitting function() ~
+
+A user defined function can be used as a function reference in an expression
+without `function()`. The argument types and return type will then be checked.
+The function must already have been defined. >
+
+	let Funcref = MyFunction
+
+When using `function()` the resulting type is "func", a function with any
+number of arguments and any return type.  The function can be defined later.
+
+
+Automatic line continuation ~
+
+In many cases it is obvious that an expression continues on the next line.  In
+those cases there is no need to prefix the line with a backslash
+|line-continuation|.  For example, when a list spans multiple lines: >
+	let mylist = [
+		'one',
+		'two',
+		]
+And when a dict spans multiple lines: >
+	let mydict = #{
+		one: 1,
+		two: 2,
+		}
+Function call: >
+	let result = Func(
+			arg1,
+			arg2
+			)
+
+For binary operators in expressions not in [], {} or () a line break is
+possible just before or after the operator.  For example: >
+	let text = lead
+		   .. middle
+		   .. end
+	let total = start +
+	            end -
+		    correction
+	let result = positive
+			? PosFunc(arg)
+			: NegFunc(arg)
+
+For a method call using "->" and a member using a dot, a line break is allowed
+before it: >
+	let result = GetBuilder()
+			->BuilderSetWidth(333)
+			->BuilderSetHeight(777)
+			->BuilderBuild()
+	let result = MyDict
+			.member
+
+<							*E1050*
+To make it possible for the operator at the start of the line to be
+recognized, it is required to put a colon before a range.  This will add
+"start" and print: >
+	let result = start
+	+ print
+Like this: >
+	let result = start + print
+
+This will assign "start" and print a line: >
+	let result = start
+	:+ print
+
+It is also possible to split a function header over multiple lines, in between
+arguments: >
+	def MyFunc(
+		text: string,
+		separator = '-'
+		): string
+
+Notes:
+- "enddef" cannot be used at the start of a continuation line, it ends the
+  current function.
+- No line break is allowed in the LHS of an assignment.  Specifically when
+  unpacking a list |:let-unpack|. This is OK: >
+  	[var1, var2] =
+		Func()
+<  This does not work: >
+  	[var1,
+	    var2] =
+		Func()
+- No line break is allowed in between arguments of an `:echo`, `:execute` and
+  similar commands.  This is OK: >
+  	echo [1,
+		2] [3,
+			4]
+<  This does not work: >
+  	echo [1, 2]
+		[3, 4]
+- No line break is allowed in the arguments of a lambda, between the "{" and
+  "->".  This is OK: >
+  	filter(list, {k, v ->
+			v > 0})
+<  This does not work: >
+  	filter(list, {k,
+			v -> v > 0})
+
+
+No curly braces expansion ~
+
+|curly-braces-names| cannot be used.
+
+
+No :xit, :t, :append, :change or :insert ~
+
+These commands are too easily confused with local variable names.
+Instead of `:x` or `:xit` you can use `:exit`.
+Instead of `:t` you can use `:copy`.
+
+
+Comparators ~
+
+The 'ignorecase' option is not used for comparators that use strings.
+
+
+White space ~
+
+Vim9 script enforces proper use of white space.  This is no longer allowed: >
+	let var=234	" Error!
+	let var= 234	" Error!
+	let var =234	" Error!
+There must be white space before and after the "=": >
+	let var = 234	" OK
+White space must also be put before the # that starts a comment after a
+command: >
+	let var = 234# Error!
+	let var = 234 # OK
+
+White space is required around most operators.
+
+White space is not allowed:
+- Between a function name and the "(": >
+  	call Func (arg)	   " Error!
+  	call Func
+	     \ (arg)	   " Error!
+  	call Func(arg)	   " OK
+  	call Func(
+	     \ arg)	   " OK
+  	call Func(
+	     \ arg	   " OK
+	     \ )
+
+
+Conditions and expressions ~
+
+Conditions and expressions are mostly working like they do in JavaScript.  A
+difference is made where JavaScript does not work like most people expect.
+Specifically, an empty list is falsey.
+
+Any type of variable can be used as a condition, there is no error, not even
+for using a list or job.  This is very much like JavaScript, but there are a
+few exceptions.
+
+	type		TRUE when ~
+	bool		v:true
+	number		non-zero
+	float		non-zero
+	string		non-empty
+	blob		non-empty
+	list		non-empty (different from JavaScript)
+	dictionary	non-empty (different from JavaScript)
+	func		when there is a function name
+	special		v:true
+	job		when not NULL
+	channel		when not NULL
+	class		when not NULL
+	object		when not NULL (TODO: when isTrue() returns v:true)
+
+The boolean operators "||" and "&&" do not change the value: >
+	8 || 2   == 8
+	0 || 2   == 2
+	0 || ''  == ''
+	8 && 2   == 2
+	0 && 2   == 0
+	2 && 0   == 0
+	[] && 2  == []
+
+When using `..` for string concatenation arguments of simple types are always
+converted to string. >
+	'hello ' .. 123  == 'hello 123'
+	'hello ' .. v:true  == 'hello v:true'
+
+Simple types are string, float, special and bool.  For other types |string()|
+can be used.
+
+In Vim9 script one can use "true" for v:true and "false" for v:false.
+
+Indexing a string with [idx] or [idx, idx] uses character indexes instead of
+byte indexes. Example: >
+	echo 'bár'[1]
+In legacy script this results in the character 0xc3 (an illegal byte), in Vim9
+script this results in the string 'á'.
+
+
+What to watch out for ~
+							*vim9-gotchas*
+Vim9 was designed to be closer to often used programming languages, but at the
+same time tries to support the legacy Vim commands.  Some compromises had to
+be made.  Here is a summary of what might be unexpected.
+
+Ex command ranges need to be prefixed with a colon. >
+  	->		" legacy Vim: shifts the previous line to the right
+	->func()	" Vim9: method call in continuation line
+	:->		" Vim9: shifts the previous line to the right
+
+	%s/a/b		" legacy Vim: substitute on all lines
+	x = alongname
+	     % another	" Vim9: line continuation without a backslash
+	:%s/a/b		" Vim9: substitute on all lines
+	'text'->func()	" Vim9: method call
+	:'t		" legacy Vim: jump to mark m
+
+Some Ex commands can be confused with assignments in Vim9 script: >
+	g:name = value  # assignment
+	g:pattern:cmd	# invalid command - ERROR
+	:g:pattern:cmd	# :global command
+
+Functions defined with `:def` compile the whole function.  Legacy functions
+can bail out, and the following lines are not parsed: >
+	func Maybe()
+	  if !has('feature')
+	    return
+	  endif
+	  use-feature
+	endfunc
+Vim9 functions are compiled as a whole: >
+	def Maybe()
+	  if !has('feature')
+	    return
+	  endif
+	  use-feature  " May give compilation error
+	enddef
+For a workaround, split it in two functions: >
+	func Maybe()
+	  if has('feature')
+	    call MaybyInner()
+	  endif
+	endfunc
+	if has('feature')
+	  def MaybeInner()
+	    use-feature
+	  enddef
+	endif
+
+==============================================================================
+
+3. New style functions					*fast-functions*
+
+THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
+
+							*:def*
+:def[!] {name}([arguments])[: {return-type}]
+			Define a new function by the name {name}.  The body of
+			the function follows in the next lines, until the
+			matching `:enddef`.
+
+			When {return-type} is omitted or is "void" the
+			function is not expected to return anything.
+			
+			{arguments} is a sequence of zero or more argument
+			declarations.  There are three forms:
+				{name}: {type}
+				{name} = {value}
+				{name}: {type} = {value}
+			The first form is a mandatory argument, the caller
+			must always provide them.
+			The second and third form are optional arguments.
+			When the caller omits an argument the {value} is used.
+
+			The function will be compiled into instructions when
+			called, or when `:disassemble` or `:defcompile` is
+			used.  Syntax and type errors will be produced at that
+			time.
+
+			It is possible to nest `:def` inside another `:def` or
+			`:function` up to about 50 levels deep.
+
+			[!] is used as with `:function`.  Note that in Vim9
+			script script-local functions cannot be deleted or
+			redefined later in the same script.
+
+							*:enddef*
+:enddef			End of a function defined with `:def`. It should be on
+			a line by its own.
+
+
+If the script the function is defined in is Vim9 script, then script-local
+variables can be accessed without the "s:" prefix.  They must be defined
+before the function is compiled.  If the script the function is defined in is
+legacy script, then script-local variables must be accessed with the "s:"
+prefix.
+
+						*:defc* *:defcompile*
+:defc[ompile]		Compile functions defined in the current script that
+			were not compiled yet.
+			This will report errors found during the compilation.
+
+						*:disa* *:disassemble*
+:disa[ssemble] {func}	Show the instructions generated for {func}.
+			This is for debugging and testing.
+			Note that for command line completion of {func} you
+			can prepend "s:" to find script-local functions.
+
+Limitations ~
+
+Local variables will not be visible to string evaluation.  For example: >
+	def EvalString(): list<string>
+	  let list = ['aa', 'bb', 'cc', 'dd']
+	  return range(1, 2)->map('list[v:val]')
+	enddef
+
+The map argument is a string expression, which is evaluated without the
+function scope.  Instead, use a lambda: >
+	def EvalString(): list<string>
+	  let list = ['aa', 'bb', 'cc', 'dd']
+	  return range(1, 2)->map({ _, v -> list[v] })
+	enddef
+
+
+==============================================================================
+
+4. Types					*vim9-types*
+
+THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
+
+The following builtin types are supported:
+	bool
+	number
+	float
+	string
+	blob
+	list<{type}>
+	dict<{type}>
+	job
+	channel
+	func
+	func: {type}
+	func({type}, ...)
+	func({type}, ...): {type}
+
+Not supported yet:
+	tuple<a: {type}, b: {type}, ...>
+
+These types can be used in declarations, but no value will have this type:
+	{type}|{type}  {not implemented yet}
+	void
+	any
+
+There is no array type, use list<{type}> instead.  For a list constant an
+efficient implementation is used that avoids allocating lot of small pieces of
+memory.
+
+A partial and function can be declared in more or less specific ways:
+func				any kind of function reference, no type
+				checking for arguments or return value
+func: {type}			any number and type of arguments with specific
+				return type
+func({type})			function with argument type, does not return
+				a value
+func({type}): {type}		function with argument type and return type
+func(?{type})			function with type of optional argument, does
+				not return a value
+func(...{type})			function with type of variable number of
+				arguments, does not return a value
+func({type}, ?{type}, ...{type}): {type}
+				function with:
+				- type of mandatory argument
+				- type of optional argument
+				- type of variable number of arguments
+				- return type
+
+If the return type is "void" the function does not return a value.
+
+The reference can also be a |Partial|, in which case it stores extra arguments
+and/or a dictionary, which are not visible to the caller.  Since they are
+called in the same way the declaration is the same.
+
+Custom types can be defined with `:type`: >
+	:type MyList list<string>
+Custom types must start with a capital letter, to avoid name clashes with
+builtin types added later, similarly to user functions.
+{not implemented yet}
+
+And classes and interfaces can be used as types: >
+	:class MyClass
+	:let mine: MyClass
+
+	:interface MyInterface
+	:let mine: MyInterface
+
+	:class MyTemplate<Targ>
+	:let mine: MyTemplate<number>
+	:let mine: MyTemplate<string>
+
+	:class MyInterface<Targ>
+	:let mine: MyInterface<number>
+	:let mine: MyInterface<string>
+{not implemented yet}
+
+
+Variable types and type casting				*variable-types*
+
+Variables declared in Vim9 script or in a `:def` function have a type, either
+specified explicitly or inferred from the initialization.
+
+Global, buffer, window and tab page variables do not have a specific type, the
+value can be changed at any time, possibly changing the type.  Therefore, in
+compiled code the "any" type is assumed.
+
+This can be a problem when the "any" type is undesired and the actual type is
+expected to always be the same.  For example, when declaring a list: >
+	let l: list<number> = [1, g:two]
+This will give an error, because "g:two" has type "any".  To avoid this, use a
+type cast: >
+	let l: list<number> = [1, <number>g:two]
+<							*type-casting*
+The compiled code will then check that "g:two" is a number at runtime and give
+an error if it isn't.  This is called type casting.
+
+The syntax of a type cast is:  "<" {type} ">".  There cannot be white space
+after the "<" or before the ">" (to avoid them being confused with
+smaller-than and bigger-than operators).
+
+The semantics is that, if needed, a runtime type check is performed.  The
+value is not actually changed.  If you need to change the type, e.g. to change
+it to a string, use the |string()| function.  Or use |str2nr()| to convert a
+string to a number.
+
+
+Type inference						*type-inference*
+
+In general: Whenever the type is clear it can be omitted.  For example, when
+declaring a variable and giving it a value: >
+	let var = 0		" infers number type
+	let var = 'hello'	" infers string type
+
+The type of a list and dictionary comes from the common type of the values.
+If the values all have the same type, that type is used for the list or
+dictionary.  If there is a mix of types, the "any" type is used. >
+	[1, 2, 3]	list<number>
+	['a', 'b', 'c']	list<string>
+	[1, 'x', 3]	list<any>
+
+==============================================================================
+
+5.  Namespace, Import and Export
+					*vim9script* *vim9-export* *vim9-import*
+
+THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
+
+A Vim9 script can be written to be imported.  This means that everything in
+the script is local, unless exported.  Those exported items, and only those
+items, can then be imported in another script.
+
+
+Namespace ~
+							*:vim9script* *:vim9*
+To recognize a file that can be imported the `vim9script` statement must
+appear as the first statement in the file.  It tells Vim to interpret the
+script in its own namespace, instead of the global namespace.  If a file
+starts with: >
+	vim9script
+	let myvar = 'yes'
+Then "myvar" will only exist in this file.  While without `vim9script` it would
+be available as `g:myvar` from any other script and function.
+
+The variables at the file level are very much like the script-local "s:"
+variables in legacy Vim script, but the "s:" is omitted.  And they cannot be
+deleted.
+
+In Vim9 script the global "g:" namespace can still be used as before.  And the
+"w:", "b:" and "t:" namespaces.  These have in common that variables are not
+declared and they can be deleted.
+
+A side effect of `:vim9script` is that the 'cpoptions' option is set to the
+Vim default value, like with: >
+	:set cpo&vim
+One of the effects is that |line-continuation| is always enabled.
+The original value of 'cpoptions' is restored at the end of the script.
+
+
+Export ~
+							*:export* *:exp*
+Exporting an item can be written as: >
+	export const EXPORTED_CONST = 1234
+	export let someValue = ...
+	export def MyFunc() ...
+	export class MyClass ...
+
+As this suggests, only constants, variables, `:def` functions and classes can
+be exported. {classes are not implemented yet}
+
+							*E1042*
+`:export` can only be used in Vim9 script, at the script level.
+
+
+Import ~
+						*:import* *:imp* *E1094*
+The exported items can be imported individually in another Vim9 script: >
+	import EXPORTED_CONST from "thatscript.vim"
+	import MyClass from "myclass.vim"
+
+To import multiple items at the same time: >
+	import {someValue, MyClass} from "thatscript.vim"
+
+In case the name is ambiguous, another name can be specified: >
+	import MyClass as ThatClass from "myclass.vim"
+	import {someValue, MyClass as ThatClass} from "myclass.vim"
+
+To import all exported items under a specific identifier: >
+	import * as That from 'thatscript.vim'
+
+Then you can use "That.EXPORTED_CONST", "That.someValue", etc.  You are free
+to choose the name "That", but it is highly recommended to use the name of the
+script file to avoid confusion.
+
+The script name after `import` can be:
+- A relative path, starting "." or "..".  This finds a file relative to the
+  location of the script file itself.  This is useful to split up a large
+  plugin into several files.
+- An absolute path, starting with "/" on Unix or "D:/" on MS-Windows.  This
+  will be rarely used.
+- A path not being relative or absolute.  This will be found in the
+  "import" subdirectories of 'runtimepath' entries.  The name will usually be
+  longer and unique, to avoid loading the wrong file.
+
+Once a vim9 script file has been imported, the result is cached and used the
+next time the same script is imported.  It will not be read again.
+							*:import-cycle*
+The `import` commands are executed when encountered.  If that script (directly
+or indirectly) imports the current script, then items defined after the
+`import` won't be processed yet.  Therefore cyclic imports can exist, but may
+result in undefined items.
+
+
+Import in an autoload script ~
+
+For optimal startup speed, loading scripts should be postponed until they are
+actually needed.  A recommended mechanism:
+
+1. In the plugin define user commands, functions and/or mappings that refer to
+   an autoload script. >
+   	command -nargs=1 SearchForStuff call searchfor#Stuff(<f-args>)
+
+<   This goes in .../plugin/anyname.vim.  "anyname.vim" can be freely chosen.
+
+2. In the autoload script do the actual work.  You can import items from
+   other files to split up functionality in appropriate pieces. >
+	vim9script
+        import FilterFunc from "../import/someother.vim"
+	def searchfor#Stuff(arg: string)
+	  let filtered = FilterFunc(arg)
+	  ...
+<   This goes in .../autoload/searchfor.vim.  "searchfor" in the file name
+   must be exactly the same as the prefix for the function name, that is how
+   Vim finds the file.
+
+3. Other functionality, possibly shared between plugins, contains the exported
+   items and any private items. >
+	vim9script
+	let localVar = 'local'
+   	export def FilterFunc(arg: string): string
+	   ...
+<   This goes in .../import/someother.vim.
+
+When compiling a `:def` function and a function in an autoload script is
+encountered, the script is not loaded until the `:def` function is called.
+
+
+Import in legacy Vim script ~
+
+If an `import` statement is used in legacy Vim script, the script-local "s:"
+namespace will be used for the imported item, even when "s:" is not specified.
+
+
+==============================================================================
+
+9. Rationale						*vim9-rationale*
+
+The :def command ~
+
+Plugin writers have asked for a much faster Vim script.  Investigations have
+shown that keeping the existing semantics of function calls make this close to
+impossible, because of the overhead involved with calling a function, setting
+up the local function scope and executing lines.  There are many details that
+need to be handled, such as error messages and exceptions.  The need to create
+a dictionary for a: and l: scopes, the a:000 list and several others add too
+much overhead that cannot be avoided.
+
+Therefore the `:def` method to define a new-style function had to be added,
+which allows for a function with different semantics.  Most things still work
+as before, but some parts do not.  A new way to define a function was
+considered the best way to separate the old-style code from Vim9 script code.
+
+Using "def" to define a function comes from Python. Other languages use
+"function" which clashes with legacy Vim script.
+
+
+Type checking ~
+
+When compiling lines of Vim commands into instructions as much as possible
+should be done at compile time.  Postponing it to runtime makes the execution
+slower and means mistakes are found only later.  For example, when
+encountering the "+" character and compiling this into a generic add
+instruction, at execution time the instruction would have to inspect the type
+of the arguments and decide what kind of addition to do.  And when the
+type is dictionary throw an error.  If the types are known to be numbers then
+an "add number" instruction can be used, which is faster.  The error can be
+given at compile time, no error handling is needed at runtime.
+
+The syntax for types is similar to Java, since it is easy to understand and
+widely used.  The type names are what were used in Vim before, with some
+additions such as "void" and "bool".
+
+
+Compiling functions early ~
+
+Functions are compiled when called or when `:defcompile` is used.  Why not
+compile them early, so that syntax and type errors are reported early?
+
+The functions can't be compiled right away when encountered, because there may
+be forward references to functions defined later.  Consider defining functions
+A, B and C, where A calls B, B calls C, and C calls A again.  It's impossible
+to reorder the functions to avoid forward references.
+
+An alternative would be to first scan through the file to locate items and
+figure out their type, so that forward references are found, and only then
+execute the script and compile the functions.  This means the script has to be
+parsed twice, which is slower, and some conditions at the script level, such
+as checking if a feature is supported, are hard to use.  An attempt was made
+to see if it works, but it turned out to be impossible to make work nicely.
+
+It would be possible to compile all the functions at the end of the script.
+The drawback is that if a function never gets called, the overhead of
+compiling it counts anyway.  Since startup speed is very important, in most
+cases it's better to do it later and accept that syntax and type errors are
+only reported then.  In case these errors should be found early, e.g. when
+testing, the `:defcompile` command will help out.
+
+
+TypeScript syntax and semantics ~
+
+Script writers have complained that the Vim script syntax is unexpectedly
+different from what they are used to.  To reduce this complaint popular
+languages are used as an example.  At the same time, we do not want to abandon
+the well-known parts of legacy Vim script.
+
+Since Vim already uses `:let` and `:const` and optional type checking is
+desirable, the JavaScript/TypeScript syntax fits best for variable
+declarations. >
+	const greeting = 'hello'  " string type is inferred
+	let name: string
+	...
+	name = 'John'
+
+Expression evaluation was already close to what JavaScript and other languages
+are doing.  Some details are unexpected and can be fixed.  For example how the
+|| and && operators work.  Legacy Vim script: >
+	let result = 44
+	...
+	return result || 0	" returns 1
+
+Vim9 script works like JavaScript/TypeScript, keep the value: >
+	let result = 44
+	...
+	return result || 0	" returns 44
+
+On the other hand, overloading "+" to use both for addition and string
+concatenation goes against legacy Vim script and often leads to mistakes.
+For that reason we will keep using ".." for string concatenation.  Lua also
+uses ".." this way.
+
+
+Import and Export ~
+
+A problem of legacy Vim script is that by default all functions and variables
+are global.  It is possible to make them script-local, but then they are not
+available in other scripts.
+
+In Vim9 script a mechanism very similar to the JavaScript import and export
+mechanism is supported.  It is a variant to the existing `:source` command
+that works like one would expect:
+- Instead of making everything global by default, everything is script-local,
+  unless exported.
+- When importing a script the symbols that are imported are listed, avoiding
+  name conflicts and failures if later functionality is added.
+- The mechanism allows for writing a big, long script with a very clear API:
+  the exported function(s) and class(es).
+- By using relative paths loading can be much faster for an import inside of a
+  package, no need to search many directories.
+- Once an import has been used, it can be cached and loading it again can be
+  avoided.
+- The Vim-specific use of "s:" to make things script-local can be dropped.
+
+When sourcing a Vim9 script from a legacy script, only the items defined
+globally can be used, not the exported items.  Alternatives considered:
+- All the exported items become available as script-local items.  This makes
+  it uncontrollable what items get defined.
+- Use the exported items and make them global.  Disadvantage is that it's then
+  not possible to avoid name clashes in the global namespace.
+- Completely disallow sourcing a Vim9 script, require using `:import`.  That
+  makes it difficult to use scripts for testing, or sourcing them from the
+  command line to try them out.
+
+
+Classes ~
+
+Vim supports interfaces to Perl, Python, Lua, Tcl and a few others.  But
+these have never become widespread.  When Vim 9 was designed a decision was
+made to phase out these interfaces and concentrate on Vim script, while
+encouraging plugin authors to write code in any language and run it as an
+external tool, using jobs and channels.
+
+Still, using an external tool has disadvantages.  An alternative is to convert
+the tool into Vim script.  For that to be possible without too much
+translation, and keeping the code fast at the same time, the constructs of the
+tool need to be supported.  Since most languages support classes the lack of
+class support in Vim is then a problem.
+
+Previously Vim supported a kind-of object oriented programming by adding
+methods to a dictionary.  With some care this could be made to work, but it
+does not look like real classes.  On top of that, it's very slow, because of
+the use of dictionaries.
+
+The support of classes in Vim9 script is a "minimal common functionality" of
+class support in most languages.  It works mostly like Java, which is the most
+popular programming language.
+
+
+
+ vim:tw=78:ts=8:noet:ft=help:norl:

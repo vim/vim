@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 8.2.  Last change: 2019 Dec 07
+*repeat.txt*    For Vim version 8.2.  Last change: 2020 Aug 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -126,6 +126,11 @@ q{0-9a-zA-Z"}		Record typed characters into register {0-9a-zA-Z"}
 			recorded macro and the yank will overwrite the
 			recorded macro.
 
+			Note: The recording happens while you type, replaying
+			the register happens as if the keys come from a
+			mapping.  This matters, for example, for undo, which
+			only syncs when commands were typed.
+
 q			Stops recording.  (Implementation note: The 'q' that
 			stops recording is not stored in the register, unless
 			it was the result of a mapping)
@@ -137,7 +142,7 @@ q			Stops recording.  (Implementation note: The 'q' that
 			used.
 			The register is executed like a mapping, that means
 			that the difference between 'wildchar' and 'wildcharm'
-			applies.
+			applies, and undo might not be synced in the same way.
 			For "@=" you are prompted to enter an expression.  The
 			result of the expression is then executed.
 			See also |@:|.
@@ -158,6 +163,11 @@ q			Stops recording.  (Implementation note: The 'q' that
 			result of evaluating the expression is executed as an
 			Ex command.
 			Mappings are not recognized in these commands.
+			When the |line-continuation| character (\) is present
+			at the beginning of a line in a linewise register,
+			then it is combined with the previous line. This is
+			useful for yanking and executing parts of a Vim
+			script.
 			Future: Will execute the register for each line in the
 			address range.
 
@@ -166,7 +176,7 @@ q			Stops recording.  (Implementation note: The 'q' that
 			[addr] (default is current line).
 
 :[addr]@							*:@@*
-:[addr]@@		Repeat the previous :@{0-9a-z"}.  First set cursor at
+:[addr]@@		Repeat the previous :@{register}.  First set cursor at
 			line [addr] (default is current line).
 
 ==============================================================================
@@ -632,8 +642,8 @@ disallowed though.
 This assumes you write one or more plugins that you distribute as a package.
 
 If you have two unrelated plugins you would use two packages, so that Vim
-users can chose what they include or not.  Or you can decide to use one
-package with optional plugins, and tell the user to add the ones he wants with
+users can choose what they include or not.  Or you can decide to use one
+package with optional plugins, and tell the user to add the preferred ones with
 `:packadd`.
 
 Decide how you want to distribute the package.  You can create an archive or
@@ -669,7 +679,7 @@ You could add this packadd command in one of your plugins, to be executed when
 the optional plugin is needed.
 
 Run the `:helptags` command to generate the doc/tags file.  Including this
-generated file in the package means that the user can drop the package in his
+generated file in the package means that the user can drop the package in the
 pack directory and the help command works right away.  Don't forget to re-run
 the command after changing the plugin help: >
 	:helptags path/start/foobar/doc

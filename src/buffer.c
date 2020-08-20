@@ -52,6 +52,9 @@ static void	clear_wininfo(buf_T *buf);
 # define dev_T unsigned
 #endif
 
+#define FOR_ALL_BUFS_FROM_LAST(buf) \
+    for ((buf) = lastbuf; (buf) != NULL; (buf) = (buf)->b_prev)
+
 #if defined(FEAT_QUICKFIX)
 static char *msg_loclist = N_("[Location List]");
 static char *msg_qflist = N_("[Quickfix List]");
@@ -100,13 +103,13 @@ read_buffer(
     {
 	// Delete the binary lines.
 	while (--line_count >= 0)
-	    ml_delete((linenr_T)1, FALSE);
+	    ml_delete((linenr_T)1);
     }
     else
     {
 	// Delete the converted lines.
 	while (curbuf->b_ml.ml_line_count > line_count)
-	    ml_delete(line_count, FALSE);
+	    ml_delete(line_count);
     }
     // Put the cursor on the first line.
     curwin->w_cursor.lnum = 1;
@@ -415,7 +418,7 @@ buf_valid(buf_T *buf)
 
     // Assume that we more often have a recent buffer, start with the last
     // one.
-    for (bp = lastbuf; bp != NULL; bp = bp->b_prev)
+    FOR_ALL_BUFS_FROM_LAST(bp)
 	if (bp == buf)
 	    return TRUE;
     return FALSE;
@@ -508,6 +511,7 @@ close_buffer(
     int		wipe_buf = (action == DOBUF_WIPE || action == DOBUF_WIPE_REUSE);
     int		del_buf = (action == DOBUF_DEL || wipe_buf);
 
+    CHECK_CURBUF;
     /*
      * Force unloading or deleting when 'bufhidden' says so.
      * The caller must take care of NOT deleting/freeing when 'bufhidden' is
@@ -530,6 +534,7 @@ close_buffer(
 #ifdef FEAT_TERMINAL
     if (bt_terminal(buf) && (buf->b_nwindows == 1 || del_buf))
     {
+	CHECK_CURBUF;
 	if (term_job_running(buf->b_term))
 	{
 	    if (wipe_buf || unload_buf)
@@ -554,6 +559,7 @@ close_buffer(
 	    unload_buf = TRUE;
 	    wipe_buf = TRUE;
 	}
+	CHECK_CURBUF;
     }
 #endif
 
@@ -743,6 +749,7 @@ aucmd_abort:
 	if (del_buf)
 	    buf->b_p_bl = FALSE;
     }
+    // NOTE: at this point "curbuf" may be invalid!
 }
 
 /*
@@ -933,7 +940,11 @@ free_buffer(buf_T *buf)
 	au_pending_free_buf = buf;
     }
     else
+    {
 	vim_free(buf);
+	if (curbuf == buf)
+	    curbuf = NULL;  // make clear it's not to be used
+    }
 }
 
 /*
@@ -979,6 +990,7 @@ free_buffer_stuff(
 	hash_init(&buf->b_vars->dv_hashtab);
 	init_changedtick(buf);
 	CHANGEDTICK(buf) = tick;
+	remove_listeners(buf);
     }
 #endif
     uc_clear(&buf->b_ucmds);		// clear local user commands
@@ -1176,7 +1188,7 @@ do_bufdel(
 	if (addr_count == 2)
 	{
 	    if (*arg)		// both range and argument is not allowed
-		return _(e_trailing);
+		return ex_errmsg(e_trailing_arg, arg);
 	    bnr = start_bnr;
 	}
 	else	// addr_count == 1
@@ -1689,7 +1701,7 @@ set_curbuf(buf_T *buf, int action)
     set_bufref(&prevbufref, prevbuf);
     set_bufref(&newbufref, buf);
 
-    // Autocommands may delete the curren buffer and/or the buffer we wan to go
+    // Autocommands may delete the current buffer and/or the buffer we want to go
     // to.  In those cases don't close the buffer.
     if (!apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf)
 	    || (bufref_valid(&prevbufref)
@@ -1712,6 +1724,7 @@ set_curbuf(buf_T *buf, int action)
 #endif
 	{
 	    win_T  *previouswin = curwin;
+
 	    if (prevbuf == curbuf)
 		u_sync(FALSE);
 	    close_buffer(prevbuf == curwin->w_buffer ? curwin : NULL, prevbuf,
@@ -2004,7 +2017,10 @@ buflist_new(
 	    apply_autocmds(EVENT_BUFWIPEOUT, NULL, NULL, FALSE, curbuf);
 #ifdef FEAT_EVAL
 	if (aborting())		// autocmds may abort script processing
+	{
+	    vim_free(ffname);
 	    return NULL;
+	}
 #endif
 	if (buf == curbuf)
 	{
@@ -2271,6 +2287,7 @@ free_buf_options(
     vim_regfree(buf->b_s.b_cap_prog);
     buf->b_s.b_cap_prog = NULL;
     clear_string_option(&buf->b_s.b_p_spl);
+    clear_string_option(&buf->b_s.b_p_spo);
 #endif
 #ifdef FEAT_SEARCHPATH
     clear_string_option(&buf->b_p_sua);
@@ -2497,7 +2514,7 @@ buflist_findname_stat(
     buf_T	*buf;
 
     // Start at the last buffer, expect to find a match sooner.
-    for (buf = lastbuf; buf != NULL; buf = buf->b_prev)
+    FOR_ALL_BUFS_FROM_LAST(buf)
 	if ((buf->b_flags & BF_DUMMY) == 0 && !otherfile_buf(buf, ffname
 #ifdef UNIX
 		    , stp
@@ -2580,7 +2597,7 @@ buflist_findpat(
 		    return -1;
 		}
 
-		for (buf = lastbuf; buf != NULL; buf = buf->b_prev)
+		FOR_ALL_BUFS_FROM_LAST(buf)
 		    if (buf->b_p_bl == find_listed
 #ifdef FEAT_DIFF
 			    && (!diffmode || diff_mode_buf(buf))
@@ -2898,7 +2915,7 @@ buflist_setfpos(
 {
     wininfo_T	*wip;
 
-    for (wip = buf->b_wininfo; wip != NULL; wip = wip->wi_next)
+    FOR_ALL_BUF_WININFO(buf, wip)
 	if (wip->wi_win == win)
 	    break;
     if (wip == NULL)
@@ -2991,7 +3008,7 @@ find_wininfo(
 {
     wininfo_T	*wip;
 
-    for (wip = buf->b_wininfo; wip != NULL; wip = wip->wi_next)
+    FOR_ALL_BUF_WININFO(buf, wip)
 	if (wip->wi_win == curwin
 #ifdef FEAT_DIFF
 		&& (!skip_diff_buffer || !wininfo_other_tab_diff(wip))
@@ -3006,7 +3023,7 @@ find_wininfo(
 #ifdef FEAT_DIFF
 	if (skip_diff_buffer)
 	{
-	    for (wip = buf->b_wininfo; wip != NULL; wip = wip->wi_next)
+	    FOR_ALL_BUF_WININFO(buf, wip)
 		if (!wininfo_other_tab_diff(wip))
 		    break;
 	}
@@ -3119,7 +3136,7 @@ buflist_list(exarg_T *eap)
     if (vim_strchr(eap->arg, 't'))
     {
 	ga_init2(&buflist, sizeof(buf_T *), 50);
-	for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	FOR_ALL_BUFFERS(buf)
 	{
 	    if (ga_grow(&buflist, 1) == OK)
 		((buf_T **)buflist.ga_data)[buflist.ga_len++] = buf;
@@ -3634,7 +3651,7 @@ fileinfo(
 #ifdef FEAT_QUICKFIX
 		    && !bt_dontwrite(curbuf)
 #endif
-					? _("[New file]") : "",
+					   ? new_file_message() : "",
 	    (curbuf->b_flags & BF_READERR) ? _("[Read errors]") : "",
 	    curbuf->b_p_ro ? (shortmess(SHM_RO) ? _("[RO]")
 						      : _("[readonly]")) : "",
@@ -4077,7 +4094,7 @@ build_stl_str_hl(
 	tv.vval.v_number = wp->w_id;
 	set_var((char_u *)"g:statusline_winid", &tv, FALSE);
 
-	usefmt = eval_to_string_safe(fmt + 2, NULL, use_sandbox);
+	usefmt = eval_to_string_safe(fmt + 2, use_sandbox);
 	if (usefmt == NULL)
 	    usefmt = fmt;
 
@@ -4212,8 +4229,19 @@ build_stl_str_hl(
 		}
 		if (n == curitem && group_start_userhl == group_end_userhl)
 		{
+		    // empty group
 		    p = t;
 		    l = 0;
+		    for (n = groupitem[groupdepth] + 1; n < curitem; n++)
+		    {
+			// do not use the highlighting from the removed group
+			if (item[n].type == Highlight)
+			    item[n].type = Empty;
+			// adjust the start position of TabPage to the next
+			// item position
+			if (item[n].type == TabPage)
+			    item[n].start = p;
+		    }
 		}
 	    }
 	    if (l > item[groupitem[groupdepth]].maxwid)
@@ -4413,7 +4441,7 @@ build_stl_str_hl(
 	    if (curwin != save_curwin)
 		VIsual_active = FALSE;
 
-	    str = eval_to_string_safe(p, &t, use_sandbox);
+	    str = eval_to_string_safe(p, use_sandbox);
 
 	    curwin = save_curwin;
 	    curbuf = save_curbuf;
@@ -5286,6 +5314,7 @@ chk_modeline(
 #ifdef FEAT_EVAL
     sctx_T	save_current_sctx;
 #endif
+    ESTACK_CHECK_DECLARATION
 
     prev = -1;
     for (s = ml_get(lnum); *s != NUL; ++s)
@@ -5329,6 +5358,7 @@ chk_modeline(
 
 	// prepare for emsg()
 	estack_push(ETYPE_MODELINE, (char_u *)"modelines", lnum);
+	ESTACK_CHECK_SETUP
 
 	end = FALSE;
 	while (end == FALSE)
@@ -5389,6 +5419,7 @@ chk_modeline(
 	    s = e + 1;			// advance to next part
 	}
 
+	ESTACK_CHECK_NOW
 	estack_pop();
 	vim_free(linecopy);
     }

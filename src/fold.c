@@ -1928,7 +1928,7 @@ get_foldtext(
 	    curbuf = wp->w_buffer;
 
 	    ++emsg_silent; // handle exceptions, but don't display errors
-	    text = eval_to_string_safe(wp->w_p_fdt, NULL,
+	    text = eval_to_string_safe(wp->w_p_fdt,
 			 was_set_insecurely((char_u *)"foldtext", OPT_LOCAL));
 	    --emsg_silent;
 

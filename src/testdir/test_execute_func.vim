@@ -30,16 +30,16 @@ func Test_execute_string()
   call assert_equal("\nthat", evaled)
 
   call assert_fails('call execute("doesnotexist")', 'E492:')
-  call assert_fails('call execute(3.4)', 'E806:')
   call assert_fails('call execute("call NestedRedir()")', 'E930:')
 
   call assert_equal("\nsomething", execute('echo "something"', ''))
   call assert_equal("\nsomething", execute('echo "something"', 'silent'))
   call assert_equal("\nsomething", execute('echo "something"', 'silent!'))
   call assert_equal("", execute('burp', 'silent!'))
-  call assert_fails('call execute("echo \"x\"", 3.4)', 'E806:')
-
-  call assert_equal("", execute(test_null_string()))
+  if has('float')
+    call assert_fails('call execute(3.4)', 'E806:')
+    call assert_fails('call execute("echo \"x\"", 3.4)', 'E806:')
+  endif
 endfunc
 
 func Test_execute_list()
@@ -50,7 +50,6 @@ func Test_execute_list()
   call assert_equal("\n0\n1\n2\n3", execute(l))
 
   call assert_equal("", execute([]))
-  call assert_equal("", execute(test_null_list()))
 endfunc
 
 func Test_execute_does_not_change_col()
@@ -132,3 +131,17 @@ func Test_win_execute_other_tab()
   tabclose
   unlet xyz
 endfunc
+
+func Test_execute_func_with_null()
+  call assert_equal("", execute(test_null_string()))
+  call assert_equal("", execute(test_null_list()))
+  call assert_fails('call execute(test_null_dict())', 'E731:')
+  call assert_fails('call execute(test_null_blob())', 'E976:')
+  call assert_fails('call execute(test_null_partial())','E729:')
+  if has('job')
+    call assert_fails('call execute(test_null_job())', 'E908:')
+    call assert_fails('call execute(test_null_channel())', 'E908:')
+  endif
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

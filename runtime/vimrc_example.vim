@@ -7,6 +7,7 @@
 "	       for Unix:  ~/.vimrc
 "	      for Amiga:  s:.vimrc
 "	 for MS-Windows:  $VIM\_vimrc
+"	      for Haiku:  ~/config/settings/vim/vimrc
 "	    for OpenVMS:  sys$login:.vimrc
 
 " When started as "evim", evim.vim will already have done these settings, bail

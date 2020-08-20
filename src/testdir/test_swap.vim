@@ -1,6 +1,8 @@
 " Tests for the swap feature
 
+source check.vim
 source shared.vim
+source term_util.vim
 
 func s:swapname()
   return trim(execute('swapname'))
@@ -8,9 +10,8 @@ endfunc
 
 " Tests for 'directory' option.
 func Test_swap_directory()
-  if !has("unix")
-    return
-  endif
+  CheckUnix
+
   let content = ['start of testfile',
 	      \ 'line 2 Abcdefghij',
 	      \ 'line 3 Abcdefghij',
@@ -54,9 +55,8 @@ func Test_swap_directory()
 endfunc
 
 func Test_swap_group()
-  if !has("unix")
-    return
-  endif
+  CheckUnix
+
   let groups = split(system('groups'))
   if len(groups) <= 1
     throw 'Skipped: need at least two groups, got ' . string(groups)
@@ -277,7 +277,6 @@ func Test_swap_recover_ext()
     autocmd SwapExists * let v:swapchoice = 'r'
   augroup END
 
-
   " Create a valid swapfile by editing a file with a special extension.
   split Xtest.scr
   call setline(1, ['one', 'two', 'three'])
@@ -309,3 +308,99 @@ func Test_swap_recover_ext()
   augroup END
   augroup! test_swap_recover_ext
 endfunc
+
+" Test for closing a split window automatically when a swap file is detected
+" and 'Q' is selected in the confirmation prompt.
+func Test_swap_split_win()
+  autocmd! SwapExists
+  augroup test_swap_splitwin
+    autocmd!
+    autocmd SwapExists * let v:swapchoice = 'q'
+  augroup END
+
+  " Create a valid swapfile by editing a file with a special extension.
+  split Xtest.scr
+  call setline(1, ['one', 'two', 'three'])
+  write  " file is written, not modified
+  write  " write again to make sure the swapfile is created
+  " read the swapfile as a Blob
+  let swapfile_name = swapname('%')
+  let swapfile_bytes = readfile(swapfile_name, 'B')
+
+  " Close and delete the file and recreate the swap file.
+  quit
+  call delete('Xtest.scr')
+  call writefile(swapfile_bytes, swapfile_name)
+  " Split edit the file again. This should fail to open the window
+  try
+    split Xtest.scr
+  catch
+    " E308 should be caught, not E306.
+    call assert_exception('E308:')  " Original file may have been changed
+  endtry
+  call assert_equal(1, winnr('$'))
+
+  call delete('Xtest.scr')
+  call delete(swapfile_name)
+
+  augroup test_swap_splitwin
+      autocmd!
+  augroup END
+  augroup! test_swap_splitwin
+endfunc
+
+" Test for selecting 'q' in the attention prompt
+func Test_swap_prompt_splitwin()
+  CheckRunVimInTerminal
+
+  call writefile(['foo bar'], 'Xfile1')
+  edit Xfile1
+  preserve  " should help to make sure the swap file exists
+
+  let buf = RunVimInTerminal('', {'rows': 20})
+  call term_sendkeys(buf, ":set nomore\n")
+  call term_sendkeys(buf, ":set noruler\n")
+  call term_sendkeys(buf, ":split Xfile1\n")
+  call TermWait(buf)
+  call WaitForAssert({-> assert_match('^\[O\]pen Read-Only, (E)dit anyway, (R)ecover, (Q)uit, (A)bort: $', term_getline(buf, 20))})
+  call term_sendkeys(buf, "q")
+  call TermWait(buf)
+  call term_sendkeys(buf, ":\<CR>")
+  call WaitForAssert({-> assert_match('^:$', term_getline(buf, 20))})
+  call term_sendkeys(buf, ":echomsg winnr('$')\<CR>")
+  call TermWait(buf)
+  call WaitForAssert({-> assert_match('^1$', term_getline(buf, 20))})
+  call StopVimInTerminal(buf)
+  %bwipe!
+  call delete('Xfile1')
+endfunc
+
+func Test_swap_symlink()
+  CheckUnix
+
+  call writefile(['text'], 'Xtestfile')
+  silent !ln -s -f Xtestfile Xtestlink
+
+  set dir=.
+
+  " Test that swap file uses the name of the file when editing through a
+  " symbolic link (so that editing the file twice is detected)
+  edit Xtestlink
+  call assert_match('Xtestfile\.swp$', s:swapname())
+  bwipe!
+
+  call mkdir('Xswapdir')
+  exe 'set dir=' . getcwd() . '/Xswapdir//'
+
+  " Check that this also works when 'directory' ends with '//'
+  edit Xtestlink
+  call assert_match('Xtestfile\.swp$', s:swapname())
+  bwipe!
+
+  set dir&
+  call delete('Xtestfile')
+  call delete('Xtestlink')
+  call delete('Xswapdir', 'rf')
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

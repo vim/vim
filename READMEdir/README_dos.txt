@@ -1,6 +1,6 @@
 README_dos.txt for version 8.2 of Vim: Vi IMproved.
 
-This file explains the installation of Vim on MS-DOS and MS-Windows systems.
+This file explains the installation of Vim on MS-Windows systems.
 See "README.txt" for general information about Vim.
 
 There are two ways to install Vim:
@@ -64,10 +64,6 @@ These are the normal steps to install Vim from the .zip archives:
    to another location.  That is where they will stay, the install program
    won't move or copy the runtime files.
 
-   Only for the 32 bit DOS version on MS-DOS without DPMI support (trying to
-   run install.exe will produce an error message): Unpack the CSDPMI4B.ZIP
-   archive and follow the instructions in the documentation.
-
 3. Change to the new directory:
 	cd vim\vim82
    Run the "install.exe" program.  It will ask you a number of questions about
@@ -121,7 +117,7 @@ Remarks:
 	set VIM=d:\editors\vim
 
 - If you have told the "install.exe" program to add the "Edit with Vim" menu
-  entry, you can remove it by running the "uninstal.exe".  See
+  entry, you can remove it by running the "uninstall.exe".  See
   ":help win32-popup-menu".
 
 - In Windows 95/98/NT you can create a shortcut to Vim.  This works for all
@@ -150,5 +146,4 @@ Remarks:
 
 For further information, type one of these inside Vim:
 	:help dos
-	:help msdos
 	:help win32

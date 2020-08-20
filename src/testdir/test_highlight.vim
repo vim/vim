@@ -207,9 +207,7 @@ func Test_highlight_eol_with_cursorline_vertsplit()
 endfunc
 
 func Test_highlight_eol_with_cursorline_rightleft()
-  if !has('rightleft')
-    return
-  endif
+  CheckFeature rightleft
 
   let [hiCursorLine, hi_ul, hi_bg] = HiCursorLine()
 
@@ -358,9 +356,7 @@ func Test_highlight_eol_with_cursorline_linewrap()
 endfunc
 
 func Test_highlight_eol_with_cursorline_sign()
-  if !has('signs')
-    return
-  endif
+  CheckFeature signs
 
   let [hiCursorLine, hi_ul, hi_bg] = HiCursorLine()
 
@@ -418,9 +414,7 @@ func Test_highlight_eol_with_cursorline_sign()
 endfunc
 
 func Test_highlight_eol_with_cursorline_breakindent()
-  if !has('linebreak')
-    return
-  endif
+  CheckFeature linebreak
 
   let [hiCursorLine, hi_ul, hi_bg] = HiCursorLine()
 
@@ -516,9 +510,7 @@ func Test_highlight_eol_on_diff()
 endfunc
 
 func Test_termguicolors()
-  if !exists('+termguicolors')
-    return
-  endif
+  CheckOption termguicolors
   if has('vtp') && !has('vcon') && !has('gui_running')
     " Win32: 'guicolors' doesn't work without virtual console.
     call assert_fails('set termguicolors', 'E954:')
@@ -542,9 +534,9 @@ func Test_cursorline_after_yank()
 	\ 'call setline(1, ["","1","2","3",""])',
 	\ ], 'Xtest_cursorline_yank')
   let buf = RunVimInTerminal('-S Xtest_cursorline_yank', {'rows': 8})
-  call term_wait(buf)
+  call TermWait(buf)
   call term_sendkeys(buf, "Gy3k")
-  call term_wait(buf)
+  call TermWait(buf)
   call term_sendkeys(buf, "jj")
 
   call VerifyScreenDump(buf, 'Test_cursorline_yank_01', {})
@@ -582,7 +574,7 @@ func Test_cursorline_with_visualmode()
 	\ 'call setline(1, repeat(["abc"], 50))',
 	\ ], 'Xtest_cursorline_with_visualmode')
   let buf = RunVimInTerminal('-S Xtest_cursorline_with_visualmode', {'rows': 12})
-  call term_wait(buf)
+  call TermWait(buf)
   call term_sendkeys(buf, "V\<C-f>kkkjk")
 
   call VerifyScreenDump(buf, 'Test_cursorline_with_visualmode_01', {})
@@ -594,6 +586,8 @@ endfunc
 
 func Test_wincolor()
   CheckScreendump
+  " make sure the width is enough for the test
+  set columns=80
 
   let lines =<< trim END
 	set cursorline cursorcolumn rnu
@@ -608,9 +602,9 @@ func Test_wincolor()
   END
   call writefile(lines, 'Xtest_wincolor')
   let buf = RunVimInTerminal('-S Xtest_wincolor', {'rows': 8})
-  call term_wait(buf)
+  call TermWait(buf)
   call term_sendkeys(buf, "2G5lvj")
-  call term_wait(buf)
+  call TermWait(buf)
 
   call VerifyScreenDump(buf, 'Test_wincolor_01', {})
 
@@ -622,6 +616,7 @@ endfunc
 
 func Test_wincolor_listchars()
   CheckScreendump
+  CheckFeature conceal
 
   let lines =<< trim END
 	call setline(1, ["one","\t\tsome random text enough long to show 'extends' and 'precedes' includingnbsps, preceding tabs and trailing spaces    ","three"])
@@ -659,7 +654,7 @@ func Test_colorcolumn()
   call writefile(lines, 'Xtest_colorcolumn')
   let buf = RunVimInTerminal('-S Xtest_colorcolumn', {'rows': 10})
   call term_sendkeys(buf, ":\<CR>")
-  call term_wait(buf)
+  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_colorcolumn_1', {})
 
   " clean up
@@ -685,10 +680,120 @@ func Test_1_highlight_Normalgroup_exists()
   endif
 endfunc
 
-function Test_no_space_before_xxx()
+" Do this test last, sometimes restoring the columns doesn't work
+func Test_z_no_space_before_xxx()
   let l:org_columns = &columns
   set columns=17
   let l:hi_StatusLineTermNC = join(split(execute('hi StatusLineTermNC')))
   call assert_match('StatusLineTermNC xxx', l:hi_StatusLineTermNC)
   let &columns = l:org_columns
-endfunction
+endfunc
+
+" Test for :highlight command errors
+func Test_highlight_cmd_errors()
+  if has('gui_running')
+    " This test doesn't fail in the MS-Windows console version.
+    call assert_fails('hi Xcomment ctermbg=fg', 'E419:')
+    call assert_fails('hi Xcomment ctermfg=bg', 'E420:')
+    call assert_fails('hi Xcomment ctermfg=ul', 'E453:')
+  endif
+
+  " Try using a very long terminal code. Define a dummy terminal code for this
+  " test.
+  let &t_fo = "\<Esc>1;"
+  let c = repeat("t_fo,", 100) . "t_fo"
+  call assert_fails('exe "hi Xgroup1 start=" . c', 'E422:')
+  let &t_fo = ""
+endfunc
+
+" Test for 'highlight' option
+func Test_highlight_opt()
+  let save_hl = &highlight
+  call assert_fails('set highlight=j:b', 'E474:')
+  set highlight=f\ r
+  call assert_equal('f r', &highlight)
+  set highlight=fb
+  call assert_equal('fb', &highlight)
+  set highlight=fi
+  call assert_equal('fi', &highlight)
+  set highlight=f-
+  call assert_equal('f-', &highlight)
+  set highlight=fr
+  call assert_equal('fr', &highlight)
+  set highlight=fs
+  call assert_equal('fs', &highlight)
+  set highlight=fu
+  call assert_equal('fu', &highlight)
+  set highlight=fc
+  call assert_equal('fc', &highlight)
+  set highlight=ft
+  call assert_equal('ft', &highlight)
+  call assert_fails('set highlight=fr:Search', 'E474:')
+  set highlight=f:$#
+  call assert_match('W18:', v:statusmsg)
+  let &highlight = save_hl
+endfunc
+
+" Test for User group highlighting used in the statusline
+func Test_highlight_User()
+  CheckNotGui
+  hi User1 ctermfg=12
+  redraw!
+  call assert_equal('12', synIDattr(synIDtrans(hlID('User1')), 'fg'))
+  hi clear
+endfunc
+
+" Test for using RGB color values in a highlight group
+func Test_highlight_RGB_color()
+  CheckGui
+  hi MySearch guifg=#110000 guibg=#001100 guisp=#000011
+  call assert_equal('#110000', synIDattr(synIDtrans(hlID('MySearch')), 'fg#'))
+  call assert_equal('#001100', synIDattr(synIDtrans(hlID('MySearch')), 'bg#'))
+  call assert_equal('#000011', synIDattr(synIDtrans(hlID('MySearch')), 'sp#'))
+  hi clear
+endfunc
+
+" Test for using default highlighting group
+func Test_highlight_default()
+  highlight MySearch ctermfg=7
+  highlight default MySearch ctermfg=5
+  let hlSearch = HighlightArgs('MySearch')
+  call assert_match('ctermfg=7', hlSearch)
+
+  highlight default QFName ctermfg=3
+  call assert_match('ctermfg=3', HighlightArgs('QFName'))
+  hi clear
+endfunc
+
+" Test for 'ctermul in a highlight group
+func Test_highlight_ctermul()
+  CheckNotGui
+  call assert_notmatch('ctermul=', HighlightArgs('Normal'))
+  highlight Normal ctermul=3
+  call assert_match('ctermul=3', HighlightArgs('Normal'))
+  highlight Normal ctermul=NONE
+endfunc
+
+" Test for specifying 'start' and 'stop' in a highlight group
+func Test_highlight_start_stop()
+  hi HlGrp1 start=<Esc>[27h;<Esc>[<Space>r;
+  call assert_match("start=^[[27h;^[[ r;", HighlightArgs('HlGrp1'))
+  hi HlGrp1 start=NONE
+  call assert_notmatch("start=", HighlightArgs('HlGrp1'))
+  hi HlGrp2 stop=<Esc>[27h;<Esc>[<Space>r;
+  call assert_match("stop=^[[27h;^[[ r;", HighlightArgs('HlGrp2'))
+  hi HlGrp2 stop=NONE
+  call assert_notmatch("stop=", HighlightArgs('HlGrp2'))
+  hi clear
+endfunc
+
+" Test for setting various 'term' attributes
+func Test_highlight_term_attr()
+  hi HlGrp3 term=bold,underline,undercurl,strikethrough,reverse,italic,standout
+  call assert_equal('hi HlGrp3          term=bold,standout,underline,undercurl,italic,reverse,strikethrough', HighlightArgs('HlGrp3'))
+  hi HlGrp3 term=NONE
+  call assert_equal('hi HlGrp3          cleared', HighlightArgs('HlGrp3'))
+  hi clear
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

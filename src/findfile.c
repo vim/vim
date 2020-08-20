@@ -320,10 +320,9 @@ vim_findfile_init(
 	search_ctx = search_ctx_arg;
     else
     {
-	search_ctx = ALLOC_ONE(ff_search_ctx_T);
+	search_ctx = ALLOC_CLEAR_ONE(ff_search_ctx_T);
 	if (search_ctx == NULL)
 	    goto error_return;
-	vim_memset(search_ctx, 0, sizeof(ff_search_ctx_T));
     }
     search_ctx->ffsc_find_what = find_what;
     search_ctx->ffsc_tagfile = tagfile;
@@ -452,7 +451,7 @@ vim_findfile_init(
 		if (walker)
 		{
 		    search_ctx->ffsc_stopdirs_v[dircount-1] =
-				 vim_strnsave(helper, (int)(walker - helper));
+					 vim_strnsave(helper, walker - helper);
 		    walker++;
 		}
 		else
@@ -485,7 +484,7 @@ vim_findfile_init(
 	char	*errpt;
 
 	// save the fix part of the path
-	search_ctx->ffsc_fix_path = vim_strnsave(path, (int)(wc_part - path));
+	search_ctx->ffsc_fix_path = vim_strnsave(path, wc_part - path);
 
 	/*
 	 * copy wc_path and add restricts to the '**' wildcard.
@@ -2080,7 +2079,7 @@ eval_includeexpr(char_u *ptr, int len)
     char_u	*res;
 
     set_vim_var_string(VV_FNAME, ptr, len);
-    res = eval_to_string_safe(curbuf->b_p_inex, NULL,
+    res = eval_to_string_safe(curbuf->b_p_inex,
 		      was_set_insecurely((char_u *)"includeexpr", OPT_LOCAL));
     set_vim_var_string(VV_FNAME, NULL, 0);
     return res;
@@ -2642,6 +2641,14 @@ simplify_filename(char_u *filename)
 	while (vim_ispathsep(*p));
     }
     start = p;	    // remember start after "c:/" or "/" or "///"
+#ifdef UNIX
+    // Posix says that "//path" is unchanged but "///path" is "/path".
+    if (start > filename + 2)
+    {
+	STRMOVE(filename + 1, p);
+	start = p = filename + 1;
+    }
+#endif
 
     do
     {

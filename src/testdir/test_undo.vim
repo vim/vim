@@ -123,6 +123,11 @@ func Test_global_local_undolevels()
   call assert_equal(50, &g:undolevels)
   call assert_equal(-123456, &l:undolevels)
 
+  " Resetting the local 'undolevels' value to use the global value
+  setlocal undolevels=5
+  setlocal undolevels<
+  call assert_equal(-123456, &l:undolevels)
+
   " Drop created windows
   set ul&
   new
@@ -295,6 +300,8 @@ func Test_undo_write()
   close!
   call delete('Xtest')
   bwipe! Xtest
+
+  call assert_fails('earlier xyz', 'E475:')
 endfunc
 
 func Test_insert_expr()

@@ -79,7 +79,7 @@ menutrans &Global\ Settings		Opcions\ &globals
     menutrans Never					&Mai
     menutrans Block\ Selection				&Selecció\ de\ blocs
     menutrans Insert\ mode				Mode\ d'&inserció
-    menutrans Block\ and\ Insert			&Blocs i inserció
+    menutrans Block\ and\ Insert			&Blocs\ i\ inserció
     menutrans Always					S&empre
   menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!		Mode\ d'&inserció<Tab>:set\ im!
   menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!	Co&mpatible\ amb\ Vi<Tab>:set\ cp!

@@ -1,3 +1,4 @@
+" Test for marks
 
 " Test that a deleted mark is restored after delete-undo-redo-undo.
 func Test_Restore_DelMark()
@@ -26,11 +27,11 @@ func Test_Incr_Marks()
 endfunc
 
 func Test_setpos()
-  new one
+  new Xone
   let onebuf = bufnr('%')
   let onewin = win_getid()
   call setline(1, ['aaa', 'bbb', 'ccc'])
-  new two
+  new Xtwo
   let twobuf = bufnr('%')
   let twowin = win_getid()
   call setline(1, ['aaa', 'bbb', 'ccc'])
@@ -63,7 +64,35 @@ func Test_setpos()
   call setpos("'N", [onebuf, 1, 3, 0])
   call assert_equal([onebuf, 1, 3, 0], getpos("'N"))
 
+  " try invalid column and check virtcol()
   call win_gotoid(onewin)
+  call setpos("'a", [0, 1, 2, 0])
+  call assert_equal([0, 1, 2, 0], getpos("'a"))
+  call setpos("'a", [0, 1, -5, 0])
+  call assert_equal([0, 1, 2, 0], getpos("'a"))
+  call setpos("'a", [0, 1, 0, 0])
+  call assert_equal([0, 1, 1, 0], getpos("'a"))
+  call setpos("'a", [0, 1, 4, 0])
+  call assert_equal([0, 1, 4, 0], getpos("'a"))
+  call assert_equal(4, virtcol("'a"))
+  call setpos("'a", [0, 1, 5, 0])
+  call assert_equal([0, 1, 5, 0], getpos("'a"))
+  call assert_equal(4, virtcol("'a"))
+  call setpos("'a", [0, 1, 21341234, 0])
+  call assert_equal([0, 1, 21341234, 0], getpos("'a"))
+  call assert_equal(4, virtcol("'a"))
+
+  " Test with invalid buffer number, line number and column number
+  call cursor(2, 2)
+  call setpos('.', [-1, 1, 1, 0])
+  call assert_equal([2, 2], [line('.'), col('.')])
+  call setpos('.', [0, -1, 1, 0])
+  call assert_equal([2, 2], [line('.'), col('.')])
+  call setpos('.', [0, 1, -1, 0])
+  call assert_equal([2, 2], [line('.'), col('.')])
+
+  call assert_fails("call setpos('ab', [0, 1, 1, 0])", 'E474:')
+
   bwipe!
   call win_gotoid(twowin)
   bwipe!
@@ -77,33 +106,43 @@ func Test_marks_cmd()
   new Xtwo
   call setline(1, ['ccc', 'ddd'])
   norm! $mcGmD
+  exe "norm! GVgg\<Esc>G"
   w!
 
   b Xone
   let a = split(execute('marks'), "\n")
   call assert_equal(9, len(a))
-  call assert_equal('mark line  col file/text', a[0])
-  call assert_equal(" '      2    0 bbb", a[1])
-  call assert_equal(' a      1    0 aaa', a[2])
-  call assert_equal(' B      2    2 bbb', a[3])
-  call assert_equal(' D      2    0 Xtwo', a[4])
-  call assert_equal(' "      1    0 aaa', a[5])
-  call assert_equal(' [      1    0 aaa', a[6])
-  call assert_equal(' ]      2    0 bbb', a[7])
-  call assert_equal(' .      2    0 bbb', a[8])
+  call assert_equal(['mark line  col file/text',
+        \ " '      2    0 bbb",
+        \ ' a      1    0 aaa',
+        \ ' B      2    2 bbb',
+        \ ' D      2    0 Xtwo',
+        \ ' "      1    0 aaa',
+        \ ' [      1    0 aaa',
+        \ ' ]      2    0 bbb',
+        \ ' .      2    0 bbb'], a)
 
   b Xtwo
   let a = split(execute('marks'), "\n")
-  call assert_equal(9, len(a))
-  call assert_equal('mark line  col file/text', a[0])
-  call assert_equal(" '      1    0 ccc", a[1])
-  call assert_equal(' c      1    2 ccc', a[2])
-  call assert_equal(' B      2    2 Xone', a[3])
-  call assert_equal(' D      2    0 ddd', a[4])
-  call assert_equal(' "      2    0 ddd', a[5])
-  call assert_equal(' [      1    0 ccc', a[6])
-  call assert_equal(' ]      2    0 ddd', a[7])
-  call assert_equal(' .      2    0 ddd', a[8])
+  call assert_equal(11, len(a))
+  call assert_equal(['mark line  col file/text',
+        \ " '      1    0 ccc",
+        \ ' c      1    2 ccc',
+        \ ' B      2    2 Xone',
+        \ ' D      2    0 ddd',
+        \ ' "      2    0 ddd',
+        \ ' [      1    0 ccc',
+        \ ' ]      2    0 ddd',
+        \ ' .      2    0 ddd',
+        \ ' <      1    0 ccc',
+        \ ' >      2    0 ddd'], a)
+  norm! Gdd
+  w!
+  let a = split(execute('marks <>'), "\n")
+  call assert_equal(3, len(a))
+  call assert_equal(['mark line  col file/text',
+        \ ' <      1    0 ccc',
+        \ ' >      2    0 -invalid-'], a)
 
   b Xone
   delmarks aB
@@ -178,6 +217,10 @@ func Test_mark_error()
   call assert_fails('mark', 'E471:')
   call assert_fails('mark xx', 'E488:')
   call assert_fails('mark _', 'E191:')
+  call assert_beeps('normal! m~')
+
+  call setpos("'k", [0, 100, 1, 0])
+  call assert_fails("normal 'k", 'E19:')
 endfunc
 
 " Test for :lockmarks when pasting content
@@ -193,6 +236,63 @@ func Test_lockmarks_with_put()
   call assert_equal(3, line("']"))
 
   bwipe!
+endfunc
+
+" Test for :k command to set a mark
+func Test_marks_k_cmd()
+  new
+  call setline(1, ['foo', 'bar', 'baz', 'qux'])
+  1,3kr
+  call assert_equal([0, 3, 1, 0], getpos("'r"))
+  close!
+endfunc
+
+" Test for file marks (A-Z)
+func Test_file_mark()
+  new Xone
+  call setline(1, ['aaa', 'bbb'])
+  norm! G$mB
+  w!
+  new Xtwo
+  call setline(1, ['ccc', 'ddd'])
+  norm! GmD
+  w!
+
+  enew
+  normal! `B
+  call assert_equal('Xone', bufname())
+  call assert_equal([2, 3], [line('.'), col('.')])
+  normal! 'D
+  call assert_equal('Xtwo', bufname())
+  call assert_equal([2, 1], [line('.'), col('.')])
+
+  call delete('Xone')
+  call delete('Xtwo')
+endfunc
+
+" Test for the getmarklist() function
+func Test_getmarklist()
+  new
+  " global marks
+  delmarks A-Z 0-9 \" ^.[]
+  call assert_equal([], getmarklist())
+  call setline(1, ['one', 'two', 'three'])
+  mark A
+  call cursor(3, 5)
+  normal mN
+  call assert_equal([{'file' : '', 'mark' : "'A", 'pos' : [bufnr(), 1, 1, 0]},
+        \ {'file' : '', 'mark' : "'N", 'pos' : [bufnr(), 3, 5, 0]}],
+        \ getmarklist())
+  " buffer local marks
+  delmarks!
+  call assert_equal([{'mark' : "''", 'pos' : [bufnr(), 1, 1, 0]},
+        \ {'mark' : "'\"", 'pos' : [bufnr(), 1, 1, 0]}], getmarklist(bufnr()))
+  call cursor(2, 2)
+  normal mr
+  call assert_equal({'mark' : "'r", 'pos' : [bufnr(), 2, 2, 0]},
+        \ bufnr()->getmarklist()[0])
+  call assert_equal([], {}->getmarklist())
+  close!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

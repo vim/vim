@@ -4,6 +4,8 @@ func Test_missing_attr()
   hi Mine term=bold cterm=italic
   call assert_equal('Mine', synIDattr(hlID("Mine"), "name"))
   call assert_equal('', synIDattr("Mine"->hlID(), "bg", 'term'))
+  call assert_equal('', synIDattr("Mine"->hlID(), "fg", 'term'))
+  call assert_equal('', synIDattr("Mine"->hlID(), "sp", 'term'))
   call assert_equal('1', synIDattr(hlID("Mine"), "bold", 'term'))
   call assert_equal('1', synIDattr(hlID("Mine"), "italic", 'cterm'))
   hi Mine term=reverse cterm=inverse
@@ -819,3 +821,5 @@ func Test_color_names()
   hi Mine guifg=blanchedalmond
   hi Mine guifg=BLANCHEDALMOND
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

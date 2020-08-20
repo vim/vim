@@ -2151,7 +2151,7 @@ msgstr "onbekende 'vimOption'"
 msgid "keyboard interrupt"
 msgstr "sleutelbordonderbreking"
 
-msgid "vim error"
+msgid "Vim error"
 msgstr "vim fout"
 
 msgid "cannot create buffer/window command: object is being deleted"
@@ -2432,8 +2432,8 @@ msgstr "-W <skripuit>\tSkryf alle getikte bevele na lêer <skripuit>"
 msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\tBewerk geënkripteerde lêers"
 
-msgid "-display <display>\tConnect vim to this particular X-server"
-msgstr "-display <display>\tKoppel vim aan hierdie X-bediener"
+msgid "-display <display>\tConnect Vim to this particular X-server"
+msgstr "-display <display>\tKoppel Vim aan hierdie X-bediener"
 
 msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\tMoet nie verbinding met X-bediener maak nie"
@@ -2498,10 +2498,10 @@ msgstr ""
 "\n"
 "Parameters deur gvim herken (Athena weergawe):\n"
 
-msgid "-display <display>\tRun vim on <display>"
-msgstr "-display <display>\tVoer vim op <display> uit"
+msgid "-display <display>\tRun Vim on <display>"
+msgstr "-display <display>\tVoer Vim op <display> uit"
 
-msgid "-iconic\t\tStart vim iconified"
+msgid "-iconic\t\tStart Vim iconified"
 msgstr "-iconic\t\tBegin vim as ikoon"
 
 msgid "-name <name>\t\tUse resource as if vim was <name>"
@@ -2568,8 +2568,8 @@ msgstr ""
 "\n"
 "Parameters wat gvim verstaan (GTK+ weergawe):\n"
 
-msgid "-display <display>\tRun vim on <display> (also: --display)"
-msgstr "-display <skerm>\tVoer vim op <skerm> uit: (ook --display)"
+msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgstr "-display <skerm>\tVoer Vim op <skerm> uit: (ook --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"
 msgstr "--role <rol>\tStel 'n unieke rol om die hoofvenster te identifiseer"

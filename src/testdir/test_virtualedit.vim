@@ -301,6 +301,9 @@ func Test_replace_on_tab()
   call append(0, "'r'\t")
   normal gg^5lrxAy
   call assert_equal("'r'  x  y", getline(1))
+  call setline(1, 'aaaaaaaaaaaa')
+  exe "normal! gg2lgR\<Tab>"
+  call assert_equal("aa\taaaa", getline(1))
   bwipe!
   set virtualedit=
 endfunc
@@ -341,6 +344,35 @@ func Test_yank_paste_small_del_reg()
   call assert_equal(', foo', getline(1))
   bwipe!
   set virtualedit=
+endfunc
+
+" Test for delete that breaks a tab into spaces
+func Test_delete_break_tab()
+  new
+  call setline(1, "one\ttwo")
+  set virtualedit=all
+  normal v3ld
+  call assert_equal('    two', getline(1))
+  set virtualedit&
+  close!
+endfunc
+
+" Test for using <BS>, <C-W> and <C-U> in virtual edit mode
+" to erase character, word and line.
+func Test_ve_backspace()
+  new
+  call setline(1, 'sample')
+  set virtualedit=all
+  set backspace=indent,eol,start
+  exe "normal 15|i\<BS>\<BS>"
+  call assert_equal([0, 1, 7, 5], getpos('.'))
+  exe "normal 15|i\<C-W>"
+  call assert_equal([0, 1, 6, 0], getpos('.'))
+  exe "normal 15|i\<C-U>"
+  call assert_equal([0, 1, 1, 0], getpos('.'))
+  set backspace&
+  set virtualedit&
+  close!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -9,14 +9,10 @@ source screendump.vim
 func CanTestPromptBuffer()
   " We need to use a terminal window to be able to feed keys without leaving
   " Insert mode.
-  if !has('terminal')
-    return 0
-  endif
-  if has('win32')
-    " TODO: make the tests work on MS-Windows
-    return 0
-  endif
-  return 1
+  CheckFeature terminal
+
+  " TODO: make the tests work on MS-Windows
+  CheckNotMSWindows
 endfunc
 
 func WriteScript(name)
@@ -54,9 +50,7 @@ func WriteScript(name)
 endfunc
 
 func Test_prompt_basic()
-  if !CanTestPromptBuffer()
-    return
-  endif
+  call CanTestPromptBuffer()
   let scriptName = 'XpromptscriptBasic'
   call WriteScript(scriptName)
 
@@ -76,9 +70,7 @@ func Test_prompt_basic()
 endfunc
 
 func Test_prompt_editing()
-  if !CanTestPromptBuffer()
-    return
-  endif
+  call CanTestPromptBuffer()
   let scriptName = 'XpromptscriptEditing'
   call WriteScript(scriptName)
 
@@ -121,6 +113,39 @@ func Test_prompt_garbage_collect()
   call feedkeys("\<CR>\<C-C>", 'xt')
   call assert_true(v:true)
 
+  call assert_fails("call prompt_setcallback(bufnr(), [])", 'E921:')
+  call assert_equal(0, prompt_setcallback({}, ''))
+  call assert_fails("call prompt_setinterrupt(bufnr(), [])", 'E921:')
+  call assert_equal(0, prompt_setinterrupt({}, ''))
+
   delfunc MyPromptCallback
   bwipe!
 endfunc
+
+" Test for editing the prompt buffer
+func Test_prompt_buffer_edit()
+  new
+  set buftype=prompt
+  normal! i
+  call assert_beeps('normal! dd')
+  call assert_beeps('normal! ~')
+  call assert_beeps('normal! o')
+  call assert_beeps('normal! O')
+  call assert_beeps('normal! p')
+  call assert_beeps('normal! P')
+  call assert_beeps('normal! u')
+  call assert_beeps('normal! ra')
+  call assert_beeps('normal! s')
+  call assert_beeps('normal! S')
+  call assert_beeps("normal! \<C-A>")
+  call assert_beeps("normal! \<C-X>")
+  " pressing CTRL-W in the prompt buffer should trigger the window commands
+  call assert_equal(1, winnr())
+  exe "normal A\<C-W>\<C-W>"
+  call assert_equal(2, winnr())
+  wincmd w
+  close!
+  call assert_equal(0, prompt_setprompt([], ''))
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

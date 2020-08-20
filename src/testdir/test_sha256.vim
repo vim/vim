@@ -20,3 +20,5 @@ function Test_sha256()
   " test for contains non-ascii char:
   call assert_equal('5f78c33274e43fa9de5659265c1d917e25c03722dcb0b8d27db8d5feaa813953', sha256("\xde\xad\xbe\xef"))
 endfunction
+
+" vim: shiftwidth=2 sts=2 expandtab

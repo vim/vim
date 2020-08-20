@@ -18,7 +18,7 @@
 #endif
 
 #ifdef MSWIN
-# include "vimio.h"
+# include <io.h>
 #endif
 
 // ============ the header file puzzle: order matters =========
@@ -33,7 +33,7 @@
  * test program.  Other items from configure may also be wrong then!
  */
 # if (VIM_SIZEOF_INT == 0)
-    Error: configure did not run properly.  Check auto/config.log.
+#  error configure did not run properly.  Check auto/config.log.
 # endif
 
 # if (defined(__linux__) && !defined(__ANDROID__)) || defined(__CYGWIN__)
@@ -97,13 +97,12 @@
 // Unless made through the Makefile enforce GUI on Mac
 #if defined(MACOS_X) && !defined(HAVE_CONFIG_H)
 # define UNIX
-# define FEAT_GUI_MAC
 #endif
 
 #if defined(FEAT_GUI_MOTIF) \
     || defined(FEAT_GUI_GTK) \
     || defined(FEAT_GUI_ATHENA) \
-    || defined(FEAT_GUI_MAC) \
+    || defined(FEAT_GUI_HAIKU) \
     || defined(FEAT_GUI_MSWIN) \
     || defined(FEAT_GUI_PHOTON)
 # define FEAT_GUI_ENABLED  // also defined with NO_X11_INCLUDES
@@ -117,12 +116,6 @@
 # if defined(FEAT_DIRECTX)
 #  define FEAT_RENDER_OPTIONS
 # endif
-#endif
-
-// Visual Studio 2005 has 'deprecated' many of the standard CRT functions
-#if _MSC_VER >= 1400
-# define _CRT_SECURE_NO_DEPRECATE
-# define _CRT_NONSTDC_NO_DEPRECATE
 #endif
 
 /*
@@ -148,7 +141,7 @@
 #endif
 
 #if VIM_SIZEOF_INT < 4 && !defined(PROTO)
-    Error: Vim only works with 32 bit int or larger
+# error Vim only works with 32 bit int or larger
 #endif
 
 /*
@@ -225,8 +218,9 @@
 # include <clib/exec_protos.h>
 #endif
 
-#ifdef __BEOS__
-# include "os_beos.h"
+#ifdef __HAIKU__
+# include "os_haiku.h"
+# define __ARGS(x)  x
 #endif
 
 #if (defined(UNIX) || defined(VMS)) \
@@ -266,10 +260,6 @@
 
 #ifdef MSWIN
 # include "os_win32.h"
-#endif
-
-#ifdef __MINT__
-# include "os_mint.h"
 #endif
 
 #if defined(MACOS_X)
@@ -316,11 +306,12 @@
 #define NUMBUFLEN 65
 
 // flags for vim_str2nr()
-#define STR2NR_BIN 0x01
-#define STR2NR_OCT 0x02
-#define STR2NR_HEX 0x04
-#define STR2NR_ALL (STR2NR_BIN + STR2NR_OCT + STR2NR_HEX)
-#define STR2NR_NO_OCT (STR2NR_BIN + STR2NR_HEX)
+#define STR2NR_BIN  0x01
+#define STR2NR_OCT  0x02
+#define STR2NR_HEX  0x04
+#define STR2NR_OOCT 0x08    // Octal with prefix "0o": 0o777
+#define STR2NR_ALL (STR2NR_BIN + STR2NR_OCT + STR2NR_HEX + STR2NR_OOCT)
+#define STR2NR_NO_OCT (STR2NR_BIN + STR2NR_HEX + STR2NR_OOCT)
 
 #define STR2NR_FORCE 0x80   // only when ONE of the above is used
 
@@ -334,25 +325,15 @@ typedef unsigned char	char_u;
 typedef unsigned short	short_u;
 typedef unsigned int	int_u;
 
-// Older systems do not have support for long long
-// use a typedef instead of hard-coded long long
-#ifdef HAVE_NO_LONG_LONG
- typedef long long_long_T;
- typedef long unsigned long_long_u_T;
-#else
- typedef long long long_long_T;
- typedef long long unsigned long_long_u_T;
-#endif
-
 // Make sure long_u is big enough to hold a pointer.
 // On Win64, longs are 32 bits and pointers are 64 bits.
 // For printf() and scanf(), we need to take care of long_u specifically.
 #ifdef _WIN64
 typedef unsigned __int64	long_u;
 typedef		 __int64	long_i;
-# define SCANF_HEX_LONG_U       "%Ix"
-# define SCANF_DECIMAL_LONG_U   "%Iu"
-# define PRINTF_HEX_LONG_U      "0x%Ix"
+# define SCANF_HEX_LONG_U       "%llx"
+# define SCANF_DECIMAL_LONG_U   "%llu"
+# define PRINTF_HEX_LONG_U      "0x%llx"
 #else
   // Microsoft-specific. The __w64 keyword should be specified on any typedefs
   // that change size between 32-bit and 64-bit platforms.  For any such type,
@@ -649,12 +630,6 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define POPUP_HANDLED_3	    0x04    // used by popup_check_cursor_pos()
 #define POPUP_HANDLED_4	    0x08    // used by may_update_popup_mask()
 #define POPUP_HANDLED_5	    0x10    // used by update_popups()
-
-#ifdef FEAT_PROP_POPUP
-# define WIN_IS_POPUP(wp) ((wp)->w_popup_flags != 0)
-#else
-# define WIN_IS_POPUP(wp) 0
-#endif
 
 /*
  * Terminal highlighting attribute bits.
@@ -1129,20 +1104,6 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define VIMINFO_VERSION_WITH_REGISTERS 3
 #define VIMINFO_VERSION_WITH_MARKS 4
 
-typedef enum {
-    BVAL_NR,
-    BVAL_STRING,
-    BVAL_EMPTY
-} btype_T;
-
-typedef struct {
-    btype_T	bv_type;
-    long	bv_nr;
-    char_u	*bv_string;
-    int		bv_len;		// length of bv_string
-    int		bv_allocated;	// bv_string was allocated
-} bval_T;
-
 /*
  * Values for do_tag().
  */
@@ -1229,12 +1190,13 @@ typedef struct {
  * When OPT_GLOBAL and OPT_LOCAL are both missing, set both local and global
  * values, get local value.
  */
-#define OPT_FREE	1	// free old value if it was allocated
-#define OPT_GLOBAL	2	// use global value
-#define OPT_LOCAL	4	// use local value
-#define OPT_MODELINE	8	// option in modeline
-#define OPT_WINONLY	16	// only set window-local options
-#define OPT_NOWIN	32	// don't set window-local options
+#define OPT_FREE	0x01	// free old value if it was allocated
+#define OPT_GLOBAL	0x02	// use global value
+#define OPT_LOCAL	0x04	// use local value
+#define OPT_MODELINE	0x08	// option in modeline
+#define OPT_WINONLY	0x10	// only set window-local options
+#define OPT_NOWIN	0x20	// don't set window-local options
+#define OPT_ONECOLUMN	0x40	// list options one per line
 
 // Magic chars used in confirm dialog strings
 #define DLG_BUTTON_SEP	'\n'
@@ -1302,6 +1264,7 @@ enum auto_event
     EVENT_COLORSCHEMEPRE,	// before loading a colorscheme
     EVENT_COMPLETECHANGED,	// after completion popup menu changed
     EVENT_COMPLETEDONE,		// after finishing insert complete
+    EVENT_COMPLETEDONEPRE,	// idem, before clearing info
     EVENT_CURSORHOLD,		// cursor in same position for a while
     EVENT_CURSORHOLDI,		// idem, in Insert mode
     EVENT_CURSORMOVED,		// cursor was moved
@@ -1347,6 +1310,7 @@ enum auto_event
     EVENT_SESSIONLOADPOST,	// after loading a session file
     EVENT_SHELLCMDPOST,		// after ":!cmd"
     EVENT_SHELLFILTERPOST,	// after ":1,2!cmd", ":w !cmd", ":r !cmd".
+    EVENT_SIGUSR1,		// after the SIGUSR1 signal
     EVENT_SOURCECMD,		// sourcing a Vim script using command
     EVENT_SOURCEPRE,		// before sourcing a Vim script
     EVENT_SOURCEPOST,		// after sourcing a Vim script
@@ -1603,6 +1567,14 @@ typedef UINT32_TYPEDEF UINT32_T;
 #define LALLOC_CLEAR_MULT(type, count)  (type *)lalloc_clear(sizeof(type) * (count), FALSE)
 #define LALLOC_MULT(type, count)  (type *)lalloc(sizeof(type) * (count), FALSE)
 
+#ifdef HAVE_MEMSET
+# define vim_memset(ptr, c, size)   memset((ptr), (c), (size))
+#else
+void *vim_memset(void *, int, size_t);
+#endif
+#define CLEAR_FIELD(field)  vim_memset(&(field), 0, sizeof(field))
+#define CLEAR_POINTER(ptr)  vim_memset((ptr), 0, sizeof(*(ptr)))
+
 /*
  * defines to avoid typecasts from (char_u *) to (char *) and back
  * (vim_strchr() and vim_strrchr() are now in alloc.c)
@@ -1620,6 +1592,11 @@ typedef UINT32_TYPEDEF UINT32_T;
 # else
 #  define STRICMP(d, s)	    vim_stricmp((char *)(d), (char *)(s))
 # endif
+#endif
+#ifdef HAVE_STRCOLL
+# define STRCOLL(d, s)     strcoll((char *)(d), (char *)(s))
+#else
+# define STRCOLL(d, s)     strcmp((char *)(d), (char *)(s))
 #endif
 
 // Like strcpy() but allows overlapped source and destination.
@@ -1736,12 +1713,6 @@ typedef void	    *vim_acl_T;		// dummy to pass an ACL to a function
 #define fnamecmp(x, y) vim_fnamecmp((char_u *)(x), (char_u *)(y))
 #define fnamencmp(x, y, n) vim_fnamencmp((char_u *)(x), (char_u *)(y), (size_t)(n))
 
-#ifdef HAVE_MEMSET
-# define vim_memset(ptr, c, size)   memset((ptr), (c), (size))
-#else
-void *vim_memset(void *, int, size_t);
-#endif
-
 #if defined(UNIX) || defined(FEAT_GUI) || defined(VMS) \
 	|| defined(FEAT_CLIENTSERVER)
 # define USE_INPUT_BUF
@@ -1779,6 +1750,7 @@ void *vim_memset(void *, int, size_t);
 # define INIT3(a, b, c)
 # define INIT4(a, b, c, d)
 # define INIT5(a, b, c, d, e)
+# define INIT6(a, b, c, d, e, f)
 #else
 # ifndef INIT
 #  define INIT(x) x
@@ -1786,6 +1758,7 @@ void *vim_memset(void *, int, size_t);
 #  define INIT3(a, b, c) = {a, b, c}
 #  define INIT4(a, b, c, d) = {a, b, c, d}
 #  define INIT5(a, b, c, d, e) = {a, b, c, d, e}
+#  define INIT6(a, b, c, d, e, f) = {a, b, c, d, e, f}
 #  define DO_INIT
 # endif
 #endif
@@ -1922,7 +1895,7 @@ typedef int sock_T;
 #define VALID_PATH		1
 #define VALID_HEAD		2
 
-// Defines for Vim variables.  These must match vimvars[] in eval.c!
+// Defines for Vim variables.  These must match vimvars[] in evalvars.c!
 #define VV_COUNT	0
 #define VV_COUNT1	1
 #define VV_PREVCOUNT	2
@@ -1993,37 +1966,39 @@ typedef int sock_T;
 #define VV_ERRORS	67
 #define VV_FALSE	68
 #define VV_TRUE		69
-#define VV_NULL		70
-#define VV_NONE		71
-#define VV_VIM_DID_ENTER 72
-#define VV_TESTING	73
-#define VV_TYPE_NUMBER	74
-#define VV_TYPE_STRING	75
-#define VV_TYPE_FUNC	76
-#define VV_TYPE_LIST	77
-#define VV_TYPE_DICT	78
-#define VV_TYPE_FLOAT	79
-#define VV_TYPE_BOOL	80
-#define VV_TYPE_NONE	81
-#define VV_TYPE_JOB	82
-#define VV_TYPE_CHANNEL	83
-#define VV_TYPE_BLOB	84
-#define VV_TERMRFGRESP	85
-#define VV_TERMRBGRESP	86
-#define VV_TERMU7RESP	87
-#define VV_TERMSTYLERESP 88
-#define VV_TERMBLINKRESP 89
-#define VV_EVENT	90
-#define VV_VERSIONLONG	91
-#define VV_ECHOSPACE	92
-#define VV_ARGV		93
-#define VV_LEN		94	// number of v: vars
+#define VV_NONE		70
+#define VV_NULL		71
+#define VV_NUMBERSIZE	72
+#define VV_VIM_DID_ENTER 73
+#define VV_TESTING	74
+#define VV_TYPE_NUMBER	75
+#define VV_TYPE_STRING	76
+#define VV_TYPE_FUNC	77
+#define VV_TYPE_LIST	78
+#define VV_TYPE_DICT	79
+#define VV_TYPE_FLOAT	80
+#define VV_TYPE_BOOL	81
+#define VV_TYPE_NONE	82
+#define VV_TYPE_JOB	83
+#define VV_TYPE_CHANNEL	84
+#define VV_TYPE_BLOB	85
+#define VV_TERMRFGRESP	86
+#define VV_TERMRBGRESP	87
+#define VV_TERMU7RESP	88
+#define VV_TERMSTYLERESP 89
+#define VV_TERMBLINKRESP 90
+#define VV_EVENT	91
+#define VV_VERSIONLONG	92
+#define VV_ECHOSPACE	93
+#define VV_ARGV		94
+#define VV_COLLATE      95
+#define VV_LEN		96	// number of v: vars
 
-// used for v_number in VAR_SPECIAL
-#define VVAL_FALSE	0L
-#define VVAL_TRUE	1L
-#define VVAL_NONE	2L
-#define VVAL_NULL	3L
+// used for v_number in VAR_BOOL and VAR_SPECIAL
+#define VVAL_FALSE	0L	// VAR_BOOL
+#define VVAL_TRUE	1L	// VAR_BOOL
+#define VVAL_NONE	2L	// VAR_SPECIAL
+#define VVAL_NULL	3L	// VAR_SPECIAL
 
 // Type values for type().
 #define VAR_TYPE_NUMBER	    0
@@ -2102,6 +2077,9 @@ typedef struct
     int_u	format;		// Vim's own special clipboard format
     int_u	format_raw;	// Vim's raw text clipboard format
 # endif
+# ifdef FEAT_GUI_HAIKU
+    // No clipboard at the moment. TODO?
+# endif
 } Clipboard_T;
 #else
 typedef int Clipboard_T;	// This is required for the prototypes.
@@ -2150,6 +2128,10 @@ typedef enum {
     USEPOPUP_HIDDEN	// use info popup initially hidden
 } use_popup_T;
 
+// Flags for assignment functions.
+#define LET_IS_CONST	1   // ":const"
+#define LET_NO_COMMAND	2   // "var = expr" without ":let" or ":const"
+
 #include "ex_cmds.h"	    // Ex command defines
 #include "spell.h"	    // spell checking stuff
 
@@ -2159,8 +2141,8 @@ typedef enum {
 // functions of these names. The declarations would break if the defines had
 // been seen at that stage.  But it must be before globals.h, where error_ga
 // is declared.
-#if !defined(MSWIN) && !defined(FEAT_GUI_X11) \
-	&& !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MAC) && !defined(PROTO)
+#if !defined(MSWIN) && !defined(FEAT_GUI_X11) && !defined(FEAT_GUI_HAIKU) \
+	&& !defined(FEAT_GUI_GTK) && !defined(PROTO)
 # define mch_errmsg(str)	fprintf(stderr, "%s", (str))
 # define display_errors()	fflush(stderr)
 # define mch_msg(str)		printf("%s", (str))
@@ -2170,20 +2152,16 @@ typedef enum {
 
 # if defined(FEAT_EVAL) \
 	&& (!defined(FEAT_GUI_MSWIN) \
-	     || !(defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME))) \
-	&& !(defined(FEAT_GUI_MAC) && defined(MACOS_CONVERT))
+	     || !(defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME)))
 // Whether IME is supported by im_get_status() defined in mbyte.c.
 // For Win32 GUI it's in gui_w32.c when FEAT_MBYTE_IME or GLOBAL_IME is defined.
-// for Mac it is in gui_mac.c for the GUI or in os_mac_conv.c when
-// MACOS_CONVERT is defined.
 # define IME_WITHOUT_XIM
 #endif
 
 #if defined(FEAT_XIM) \
 	|| defined(IME_WITHOUT_XIM) \
 	|| (defined(FEAT_GUI_MSWIN) \
-	    && (defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME))) \
-	|| defined(FEAT_GUI_MAC)
+	    && (defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME)))
 // im_set_active() is available
 # define HAVE_INPUT_METHOD
 #endif
@@ -2201,6 +2179,7 @@ typedef enum {
 #endif
 
 #include "globals.h"	    // global variables and messages
+#include "errors.h"	    // error messages
 
 /*
  * If console dialog not supported, but GUI dialog is, use the GUI one.
@@ -2568,6 +2547,9 @@ typedef enum {
 #define FCERR_DELETED	7
 #define FCERR_NOTMETHOD	8   // function cannot be used as a method
 
+// fixed buffer length for fname_trans_sid()
+#define FLEN_FIXED 40
+
 // flags for find_name_end()
 #define FNE_INCL_BR	1	// include [] in name
 #define FNE_CHECK_START	2	// check name starts with valid character
@@ -2673,5 +2655,17 @@ long elapsed(DWORD start_tick);
 #define REPTERM_DO_LT		2
 #define REPTERM_SPECIAL		4
 #define REPTERM_NO_SIMPLIFY	8
+
+// Flags for find_special_key()
+#define FSK_KEYCODE	0x01	// prefer key code, e.g. K_DEL instead of DEL
+#define FSK_KEEP_X_KEY	0x02	// don't translate xHome to Home key
+#define FSK_IN_STRING	0x04	// TRUE in string, double quote is escaped
+#define FSK_SIMPLIFY	0x08	// simplify <C-H> and <A-x>
+
+// Flags for the readdirex function, how to sort the result
+#define READDIR_SORT_NONE	0  // do not sort
+#define READDIR_SORT_BYTE	1  // sort by byte order (strcmp), default
+#define READDIR_SORT_IC		2  // sort ignoring case (strcasecmp)
+#define READDIR_SORT_COLLATE	3  // sort according to collation (strcoll)
 
 #endif // VIM__H

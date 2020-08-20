@@ -15,7 +15,6 @@
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 
-static int	throw_exception(void *, except_type_T, char_u *);
 static char	*get_end_emsg(cstack_T *cstack);
 
 /*
@@ -147,8 +146,8 @@ cause_errthrow(
     int		severe,
     int		*ignore)
 {
-    struct msglist *elem;
-    struct msglist **plist;
+    msglist_T	*elem;
+    msglist_T	**plist;
 
     /*
      * Do nothing when displaying the interrupt message or reporting an
@@ -252,7 +251,7 @@ cause_errthrow(
 	    while (*plist != NULL)
 		plist = &(*plist)->next;
 
-	    elem = ALLOC_ONE(struct msglist);
+	    elem = ALLOC_CLEAR_ONE(msglist_T);
 	    if (elem == NULL)
 	    {
 		suppress_errthrow = TRUE;
@@ -288,6 +287,11 @@ cause_errthrow(
 			else
 			    (*msg_list)->throw_msg = tmsg;
 		    }
+
+		    // Get the source name and lnum now, it may change before
+		    // reaching do_errthrow().
+		    elem->sfile = estack_sfile(FALSE);
+		    elem->slnum = SOURCING_LNUM;
 		}
 	    }
 	}
@@ -299,15 +303,16 @@ cause_errthrow(
  * Free a "msg_list" and the messages it contains.
  */
     static void
-free_msglist(struct msglist *l)
+free_msglist(msglist_T *l)
 {
-    struct msglist  *messages, *next;
+    msglist_T  *messages, *next;
 
     messages = l;
     while (messages != NULL)
     {
 	next = messages->next;
 	vim_free(messages->msg);
+	vim_free(messages->sfile);
 	vim_free(messages);
 	messages = next;
     }
@@ -429,12 +434,12 @@ get_exception_string(
     if (type == ET_ERROR)
     {
 	*should_free = TRUE;
-	mesg = ((struct msglist *)value)->throw_msg;
+	mesg = ((msglist_T *)value)->throw_msg;
 	if (cmdname != NULL && *cmdname != NUL)
 	{
 	    cmdlen = (int)STRLEN(cmdname);
 	    ret = (char *)vim_strnsave((char_u *)"Vim(",
-					   4 + cmdlen + 2 + (int)STRLEN(mesg));
+						4 + cmdlen + 2 + STRLEN(mesg));
 	    if (ret == NULL)
 		return ret;
 	    STRCPY(&ret[4], cmdname);
@@ -443,7 +448,7 @@ get_exception_string(
 	}
 	else
 	{
-	    ret = (char *)vim_strnsave((char_u *)"Vim:", 4 + (int)STRLEN(mesg));
+	    ret = (char *)vim_strnsave((char_u *)"Vim:", 4 + STRLEN(mesg));
 	    if (ret == NULL)
 		return ret;
 	    val = ret + 4;
@@ -498,7 +503,7 @@ get_exception_string(
  * user or interrupt exception, or points to a message list in case of an
  * error exception.
  */
-    static int
+    int
 throw_exception(void *value, except_type_T type, char_u *cmdname)
 {
     except_T	*excp;
@@ -527,23 +532,34 @@ throw_exception(void *value, except_type_T type, char_u *cmdname)
     if (type == ET_ERROR)
 	// Store the original message and prefix the exception value with
 	// "Vim:" or, if a command name is given, "Vim(cmdname):".
-	excp->messages = (struct msglist *)value;
+	excp->messages = (msglist_T *)value;
 
     excp->value = get_exception_string(value, type, cmdname, &should_free);
     if (excp->value == NULL && should_free)
 	goto nomem;
 
     excp->type = type;
-    excp->throw_name = estack_sfile();
-    if (excp->throw_name == NULL)
-	excp->throw_name = vim_strsave((char_u *)"");
-    if (excp->throw_name == NULL)
+    if (type == ET_ERROR && ((msglist_T *)value)->sfile != NULL)
     {
-	if (should_free)
-	    vim_free(excp->value);
-	goto nomem;
+	msglist_T *entry = (msglist_T *)value;
+
+	excp->throw_name = entry->sfile;
+	entry->sfile = NULL;
+	excp->throw_lnum = entry->slnum;
     }
-    excp->throw_lnum = SOURCING_LNUM;
+    else
+    {
+	excp->throw_name = estack_sfile(FALSE);
+	if (excp->throw_name == NULL)
+	    excp->throw_name = vim_strsave((char_u *)"");
+	if (excp->throw_name == NULL)
+	{
+	    if (should_free)
+		vim_free(excp->value);
+	    goto nomem;
+	}
+	excp->throw_lnum = SOURCING_LNUM;
+    }
 
     if (p_verbose >= 13 || debug_break_level > 0)
     {
@@ -649,7 +665,7 @@ discard_current_exception(void)
 /*
  * Put an exception on the caught stack.
  */
-    static void
+    void
 catch_exception(except_T *excp)
 {
     excp->caught = caught_stack;
@@ -790,7 +806,7 @@ report_pending(int action, int pending, void *value)
 	    if (pending & CSTP_THROW)
 	    {
 		vim_snprintf((char *)IObuff, IOSIZE, mesg, _("Exception"));
-		mesg = (char *)vim_strnsave(IObuff, (int)STRLEN(IObuff) + 4);
+		mesg = (char *)vim_strnsave(IObuff, STRLEN(IObuff) + 4);
 		STRCAT(mesg, ": %s");
 		s = (char *)((except_T *)value)->value;
 	    }
@@ -879,9 +895,14 @@ report_discard_pending(int pending, void *value)
 ex_eval(exarg_T *eap)
 {
     typval_T	tv;
+    evalarg_T	evalarg;
 
-    if (eval0(eap->arg, &tv, &eap->nextcmd, !eap->skip) == OK)
+    fill_evalarg_from_eap(&evalarg, eap, eap->skip);
+
+    if (eval0(eap->arg, &tv, eap, &evalarg) == OK)
 	clear_tv(&tv);
+
+    clear_evalarg(&evalarg, eap);
 }
 
 /*
@@ -896,7 +917,7 @@ ex_if(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_idx == CSTACK_LEN - 1)
-	eap->errmsg = N_("E579: :if nesting too deep");
+	eap->errmsg = _("E579: :if nesting too deep");
     else
     {
 	++cstack->cs_idx;
@@ -909,7 +930,7 @@ ex_if(exarg_T *eap)
 	skip = did_emsg || got_int || did_throw || (cstack->cs_idx > 0
 		&& !(cstack->cs_flags[cstack->cs_idx - 1] & CSF_ACTIVE));
 
-	result = eval_to_bool(eap->arg, &error, &eap->nextcmd, skip);
+	result = eval_to_bool(eap->arg, &error, eap, skip);
 
 	if (!skip && !error)
 	{
@@ -932,7 +953,7 @@ ex_endif(exarg_T *eap)
     if (eap->cstack->cs_idx < 0
 	    || (eap->cstack->cs_flags[eap->cstack->cs_idx]
 					   & (CSF_WHILE | CSF_FOR | CSF_TRY)))
-	eap->errmsg = N_("E580: :endif without :if");
+	eap->errmsg = _(e_endif_without_if);
     else
     {
 	/*
@@ -976,20 +997,20 @@ ex_else(exarg_T *eap)
     {
 	if (eap->cmdidx == CMD_else)
 	{
-	    eap->errmsg = N_("E581: :else without :if");
+	    eap->errmsg = _(e_else_without_if);
 	    return;
 	}
-	eap->errmsg = N_("E582: :elseif without :if");
+	eap->errmsg = _(e_elseif_without_if);
 	skip = TRUE;
     }
     else if (cstack->cs_flags[cstack->cs_idx] & CSF_ELSE)
     {
 	if (eap->cmdidx == CMD_else)
 	{
-	    eap->errmsg = N_("E583: multiple :else");
+	    eap->errmsg = _("E583: multiple :else");
 	    return;
 	}
-	eap->errmsg = N_("E584: :elseif after :else");
+	eap->errmsg = _("E584: :elseif after :else");
 	skip = TRUE;
     }
 
@@ -1021,13 +1042,13 @@ ex_else(exarg_T *eap)
 
     if (eap->cmdidx == CMD_elseif)
     {
-	result = eval_to_bool(eap->arg, &error, &eap->nextcmd, skip);
+	result = eval_to_bool(eap->arg, &error, eap, skip);
+
 	// When throwing error exceptions, we want to throw always the first
 	// of several errors in a row.  This is what actually happens when
 	// a conditional error was detected above and there is another failure
 	// when parsing the expression.  Since the skip flag is set in this
 	// case, the parsing error will be ignored by emsg().
-
 	if (!skip && !error)
 	{
 	    if (result)
@@ -1055,7 +1076,7 @@ ex_while(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_idx == CSTACK_LEN - 1)
-	eap->errmsg = N_("E585: :while/:for nesting too deep");
+	eap->errmsg = _("E585: :while/:for nesting too deep");
     else
     {
 	/*
@@ -1083,11 +1104,20 @@ ex_while(exarg_T *eap)
 	    /*
 	     * ":while bool-expr"
 	     */
-	    result = eval_to_bool(eap->arg, &error, &eap->nextcmd, skip);
+	    result = eval_to_bool(eap->arg, &error, eap, skip);
 	}
 	else
 	{
-	    void *fi;
+	    void	*fi;
+	    evalarg_T	evalarg;
+
+	    CLEAR_FIELD(evalarg);
+	    evalarg.eval_flags = skip ? 0 : EVAL_EVALUATE;
+	    if (getline_equal(eap->getline, eap->cookie, getsourceline))
+	    {
+		evalarg.eval_getline = eap->getline;
+		evalarg.eval_cookie = eap->cookie;
+	    }
 
 	    /*
 	     * ":for var in list-expr"
@@ -1098,11 +1128,14 @@ ex_while(exarg_T *eap)
 		// previously evaluated list.
 		fi = cstack->cs_forinfo[cstack->cs_idx];
 		error = FALSE;
+
+		// the "in expr" is not used, skip over it
+		skip_for_lines(fi, &evalarg);
 	    }
 	    else
 	    {
 		// Evaluate the argument and get the info in a structure.
-		fi = eval_for_line(eap->arg, &error, &eap->nextcmd, skip);
+		fi = eval_for_line(eap->arg, &error, eap, &evalarg);
 		cstack->cs_forinfo[cstack->cs_idx] = fi;
 	    }
 
@@ -1117,6 +1150,7 @@ ex_while(exarg_T *eap)
 		free_for_info(fi);
 		cstack->cs_forinfo[cstack->cs_idx] = NULL;
 	    }
+	    clear_evalarg(&evalarg, eap);
 	}
 
 	/*
@@ -1152,7 +1186,7 @@ ex_continue(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_looplevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = N_("E586: :continue without :while or :for");
+	eap->errmsg = _(e_continue);
     else
     {
 	// Try to find the matching ":while".  This might stop at a try
@@ -1190,7 +1224,7 @@ ex_break(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_looplevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = N_("E587: :break without :while or :for");
+	eap->errmsg = _(e_break);
     else
     {
 	// Inactivate conditionals until the matching ":while" or a try
@@ -1230,7 +1264,7 @@ ex_endwhile(exarg_T *eap)
     }
 
     if (cstack->cs_looplevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = err;
+	eap->errmsg = _(err);
     else
     {
 	fl =  cstack->cs_flags[cstack->cs_idx];
@@ -1246,9 +1280,9 @@ ex_endwhile(exarg_T *eap)
 	if (!(fl & (CSF_WHILE | CSF_FOR)))
 	{
 	    if (!(fl & CSF_TRY))
-		eap->errmsg = e_endif;
+		eap->errmsg = _(e_endif);
 	    else if (fl & CSF_FINALLY)
-		eap->errmsg = e_endtry;
+		eap->errmsg = _(e_endtry);
 	    // Try to find the matching ":while" and report what's missing.
 	    for (idx = cstack->cs_idx; idx > 0; --idx)
 	    {
@@ -1257,7 +1291,7 @@ ex_endwhile(exarg_T *eap)
 		{
 		    // Give up at a try conditional not in its finally clause.
 		    // Ignore the ":endwhile"/":endfor".
-		    eap->errmsg = err;
+		    eap->errmsg = _(err);
 		    return;
 		}
 		if (fl & csf)
@@ -1302,7 +1336,7 @@ ex_throw(exarg_T *eap)
     char_u	*value;
 
     if (*arg != NUL && *arg != '|' && *arg != '\n')
-	value = eval_to_string_skip(arg, &eap->nextcmd, eap->skip);
+	value = eval_to_string_skip(arg, eap, eap->skip);
     else
     {
 	emsg(_(e_argreq));
@@ -1413,7 +1447,7 @@ ex_try(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_idx == CSTACK_LEN - 1)
-	eap->errmsg = N_("E601: :try nesting too deep");
+	eap->errmsg = _("E601: :try nesting too deep");
     else
     {
 	++cstack->cs_idx;
@@ -1492,7 +1526,7 @@ ex_catch(exarg_T *eap)
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
     {
-	eap->errmsg = N_("E603: :catch without :try");
+	eap->errmsg = _(e_catch);
 	give_up = TRUE;
     }
     else
@@ -1511,7 +1545,7 @@ ex_catch(exarg_T *eap)
 	{
 	    // Give up for a ":catch" after ":finally" and ignore it.
 	    // Just parse.
-	    eap->errmsg = N_("E604: :catch after :finally");
+	    eap->errmsg = _("E604: :catch after :finally");
 	    give_up = TRUE;
 	}
 	else
@@ -1519,7 +1553,7 @@ ex_catch(exarg_T *eap)
 						       &cstack->cs_looplevel);
     }
 
-    if (ends_excmd(*eap->arg))	// no argument, catch all errors
+    if (ends_excmd2(eap->cmd, eap->arg))   // no argument, catch all errors
     {
 	pat = (char_u *)".*";
 	end = NULL;
@@ -1528,7 +1562,9 @@ ex_catch(exarg_T *eap)
     else
     {
 	pat = eap->arg + 1;
-	end = skip_regexp(pat, *eap->arg, TRUE, NULL);
+	end = skip_regexp_err(pat, *eap->arg, TRUE);
+	if (end == NULL)
+	    give_up = TRUE;
     }
 
     if (!give_up)
@@ -1549,9 +1585,10 @@ ex_catch(exarg_T *eap)
 	if (!skip && (cstack->cs_flags[idx] & CSF_THROWN)
 		&& !(cstack->cs_flags[idx] & CSF_CAUGHT))
 	{
-	    if (end != NULL && *end != NUL && !ends_excmd(*skipwhite(end + 1)))
+	    if (end != NULL && *end != NUL
+				      && !ends_excmd2(end, skipwhite(end + 1)))
 	    {
-		emsg(_(e_trailing));
+		semsg(_(e_trailing_arg), end);
 		return;
 	    }
 
@@ -1648,7 +1685,7 @@ ex_finally(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = N_("E606: :finally without :try");
+	eap->errmsg = _(e_finally);
     else
     {
 	if (!(cstack->cs_flags[cstack->cs_idx] & CSF_TRY))
@@ -1668,7 +1705,7 @@ ex_finally(exarg_T *eap)
 	if (cstack->cs_flags[idx] & CSF_FINALLY)
 	{
 	    // Give up for a multiple ":finally" and ignore it.
-	    eap->errmsg = N_("E607: multiple :finally");
+	    eap->errmsg = _(e_finally_dup);
 	    return;
 	}
 	rewind_conditionals(cstack, idx, CSF_WHILE | CSF_FOR,
@@ -1777,7 +1814,7 @@ ex_endtry(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = N_("E602: :endtry without :try");
+	eap->errmsg = _(e_no_endtry);
     else
     {
 	/*
@@ -2239,10 +2276,10 @@ cleanup_conditionals(
 get_end_emsg(cstack_T *cstack)
 {
     if (cstack->cs_flags[cstack->cs_idx] & CSF_WHILE)
-	return e_endwhile;
+	return _(e_endwhile);
     if (cstack->cs_flags[cstack->cs_idx] & CSF_FOR)
-	return e_endfor;
-    return e_endif;
+	return _(e_endfor);
+    return _(e_endif);
 }
 
 
@@ -2274,9 +2311,12 @@ rewind_conditionals(
  * ":endfunction" when not after a ":function"
  */
     void
-ex_endfunction(exarg_T *eap UNUSED)
+ex_endfunction(exarg_T *eap)
 {
-    emsg(_("E193: :endfunction not inside a function"));
+    if (eap->cmdidx == CMD_enddef)
+	emsg(_("E193: :enddef not inside a function"));
+    else
+	emsg(_("E193: :endfunction not inside a function"));
 }
 
 /*

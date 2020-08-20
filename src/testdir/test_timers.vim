@@ -3,6 +3,7 @@
 source check.vim
 CheckFeature timers
 
+source screendump.vim
 source shared.vim
 source term_util.vim
 
@@ -110,6 +111,8 @@ func Test_timer_info()
 
   call timer_stop(id)
   call assert_equal([], timer_info(id))
+
+  call assert_fails('call timer_info("abc")', 'E39:')
 endfunc
 
 func Test_timer_stopall()
@@ -152,6 +155,8 @@ func Test_timer_paused()
   else
     call assert_inrange(0, 10, slept)
   endif
+
+  call assert_fails('call timer_pause("abc", 1)', 'E39:')
 endfunc
 
 func StopMyself(timer)
@@ -246,6 +251,10 @@ func Test_timer_errors()
   call WaitForAssert({-> assert_equal(3, g:call_count)})
   sleep 50m
   call assert_equal(3, g:call_count)
+
+  call assert_fails('call timer_start(100, "MyHandler", "abc")', 'E475:')
+  call assert_fails('call timer_start(100, [])', 'E921:')
+  call assert_fails('call timer_stop("abc")', 'E39:')
 endfunc
 
 func FuncWithCaughtError(timer)
@@ -290,6 +299,7 @@ func Test_timer_getchar_zero()
   if has('win32') && !has('gui_running')
     throw 'Skipped: cannot get low-level input'
   endif
+  CheckFunction reltimefloat
 
   " Measure the elapsed time to avoid a hang when it fails.
   let start = reltime()
@@ -315,9 +325,7 @@ func Test_timer_ex_mode()
 endfunc
 
 func Test_timer_restore_count()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot run Vim in a terminal window'
-  endif
+  CheckRunVimInTerminal
   " Check that v:count is saved and restored, not changed by a timer.
   call writefile([
         \ 'nnoremap <expr><silent> L v:count ? v:count . "l" : "l"',
@@ -389,9 +397,9 @@ func Test_timer_error_in_timer_callback()
   call WaitForAssert({-> assert_notequal('', term_getline(buf, 8))})
 
   " GC must not run during timer callback, which can make Vim crash.
-  call term_wait(buf, 100)
+  call TermWait(buf, 50)
   call term_sendkeys(buf, "\<CR>")
-  call term_wait(buf, 100)
+  call TermWait(buf, 50)
   call assert_equal('run', job_status(job))
 
   call term_sendkeys(buf, ":qall!\<CR>")
@@ -402,6 +410,43 @@ func Test_timer_error_in_timer_callback()
 
   call delete('Xtest.vim')
   exe buf .. 'bwipe!'
+endfunc
+
+" Test for garbage collection when a timer is still running
+func Test_timer_garbage_collect()
+  let timer = timer_start(1000, function('MyHandler'), {'repeat' : 10})
+  call test_garbagecollect_now()
+  let l = timer_info(timer)
+  call assert_equal(function('MyHandler'), l[0].callback)
+  call timer_stop(timer)
+endfunc
+
+func Test_timer_invalid_callback()
+  call assert_fails('call timer_start(0, "0")', 'E921')
+endfunc
+
+func Test_timer_changing_function_list()
+  CheckRunVimInTerminal
+
+  " Create a large number of functions.  Should get the "more" prompt.
+  " The typing "G" triggers the timer, which changes the function table.
+  let lines =<< trim END
+    for func in map(range(1,99), "'Func' .. v:val")
+      exe "func " .. func .. "()"
+      endfunc
+    endfor
+    au CmdlineLeave : call timer_start(0, {-> 0})
+  END
+  call writefile(lines, 'XTest_timerchange')
+  let buf = RunVimInTerminal('-S XTest_timerchange', #{rows: 10})
+  call term_sendkeys(buf, ":fu\<CR>")
+  call WaitForAssert({-> assert_match('-- More --', term_getline(buf, 10))})
+  call term_sendkeys(buf, "G")
+  call WaitForAssert({-> assert_match('E454', term_getline(buf, 9))})
+  call term_sendkeys(buf, "\<Esc>")
+
+  call StopVimInTerminal(buf)
+  call delete('XTest_timerchange')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

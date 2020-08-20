@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.2.  Last change: 2019 Dec 19
+*syntax.txt*	For Vim version 8.2.  Last change: 2020 Jul 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -60,8 +60,8 @@ If the VIM environment variable is not set, Vim will try to find
 the path in another way (see |$VIMRUNTIME|).  Usually this works just
 fine.  If it doesn't, try setting the VIM environment variable to the
 directory where the Vim stuff is located.  For example, if your syntax files
-are in the "/usr/vim/vim81/syntax" directory, set $VIMRUNTIME to
-"/usr/vim/vim81".  You must do this in the shell, before starting Vim.
+are in the "/usr/vim/vim82/syntax" directory, set $VIMRUNTIME to
+"/usr/vim/vim82".  You must do this in the shell, before starting Vim.
 This command also sources the |menu.vim| script when the GUI is running or
 will start soon.  See |'go-M'| about avoiding that.
 
@@ -217,7 +217,7 @@ The name for a highlight or syntax group must consist of ASCII letters, digits
 and the underscore.  As a regexp: "[a-zA-Z0-9_]*".  However, Vim does not give
 an error when using other characters.
 
-To be able to allow each user to pick his favorite set of colors, there must
+To be able to allow each user to pick their favorite set of colors, there must
 be preferred names for highlight groups that are common for many languages.
 These are the suggested group names (if syntax highlighting works properly
 you can see the actual color, except for "Ignore"):
@@ -1214,11 +1214,13 @@ DESKTOP					   *desktop.vim* *ft-desktop-syntax*
 
 Primary goal of this syntax file is to highlight .desktop and .directory files
 according to freedesktop.org standard:
-http://standards.freedesktop.org/desktop-entry-spec/latest/
-But actually almost none implements this standard fully.  Thus it will
-highlight all Unix ini files.  But you can force strict highlighting according
-to standard by placing this in your vimrc file: >
-	:let enforce_freedesktop_standard = 1
+https://specifications.freedesktop.org/desktop-entry-spec/latest/
+To highlight nonstandard extensions that does not begin with X-, set >
+	let g:desktop_enable_nonstd = 1
+Note that this may cause wrong highlight.
+To highlight KDE-reserved features, set >
+	let g:desktop_enable_kde = 1
+g:desktop_enable_kde follows g:desktop_enable_nonstd if not supplied
 
 
 DIFF							*diff.vim*
@@ -1401,7 +1403,7 @@ to your startup file.
 
 EUPHORIA	    *euphoria3.vim* *euphoria4.vim* *ft-euphoria-syntax*
 
-Two syntax highlighting files exists for Euphoria. One for Euphoria
+Two syntax highlighting files exist for Euphoria. One for Euphoria
 version 3.1.1, which is the default syntax highlighting file, and one for
 Euphoria version 4.0.5 or later.
 
@@ -1935,7 +1937,7 @@ new highlightings for the following groups.:
     Debug, DebugSpecial, DebugString, DebugBoolean, DebugType
 which are used for the statement itself, special characters used in debug
 strings, strings, boolean constants and types (this, super) respectively.  I
-have opted to chose another background for those statements.
+have opted to choose another background for those statements.
 
 Javadoc is a program that takes special comments out of Java program files and
 creates HTML pages.  The standard configuration will highlight this HTML code
@@ -2315,7 +2317,7 @@ contain very long structures that Vim does not synchronize anymore.
 
 PAPP						*papp.vim* *ft-papp-syntax*
 
-The PApp syntax file handles .papp files and, to a lesser extend, .pxml
+The PApp syntax file handles .papp files and, to a lesser extent, .pxml
 and .pxsl files which are all a mixture of perl/xml/html/other using xml
 as the top-level file format.  By default everything inside phtml or pxml
 sections is treated as a string with embedded preprocessor commands.  If
@@ -2687,12 +2689,12 @@ Note: only existence of these options matter, not their value. You can replace
 
 QUAKE						*quake.vim* *ft-quake-syntax*
 
-The Quake syntax definition should work for most any FPS (First Person
-Shooter) based on one of the Quake engines.  However, the command names vary
-a bit between the three games (Quake, Quake 2, and Quake 3 Arena) so the
-syntax definition checks for the existence of three global variables to allow
-users to specify what commands are legal in their files.  The three variables
-can be set for the following effects:
+The Quake syntax definition should work for most FPS (First Person Shooter)
+based on one of the Quake engines.  However, the command names vary a bit
+between the three games (Quake, Quake 2, and Quake 3 Arena) so the syntax
+definition checks for the existence of three global variables to allow users
+to specify what commands are legal in their files.  The three variables can
+be set for the following effects:
 
 set to highlight commands only available in Quake: >
 	:let quake_is_quake1 = 1
@@ -3028,7 +3030,7 @@ variables in your <.vimrc>:
 
    ksh: >
 	let g:is_kornshell = 1
-<   posix:  (using this is the nearly the same as setting g:is_kornshell to 1) >
+<   posix:  (using this is nearly the same as setting g:is_kornshell to 1) >
 	let g:is_posix     = 1
 <   bash: >
 	let g:is_bash	   = 1
@@ -3636,6 +3638,26 @@ DEFINING CASE						*:syn-case* *E390*
 :sy[ntax] case
 	Show either "syntax case match" or "syntax case ignore" (translated).
 
+
+DEFINING FOLDLEVEL					*:syn-foldlevel*
+
+:sy[ntax] foldlevel [start | minimum]
+	This defines how the foldlevel of a line is computed when using
+	foldmethod=syntax (see |fold-syntax| and |:syn-fold|):
+
+	start:		Use level of item containing start of line.
+	minimum:	Use lowest local-minimum level of items on line.
+
+	The default is "start".  Use "minimum" to search a line horizontally
+	for the lowest level contained on the line that is followed by a
+	higher level.  This produces more natural folds when syntax items
+	may close and open horizontally within a line.
+
+:sy[ntax] foldlevel
+	Show either "syntax foldlevel start" or "syntax foldlevel minimum".
+
+	{not meaningful when Vim was compiled without |+folding| feature}
+
 SPELL CHECKING						*:syn-spell*
 
 :sy[ntax] spell [toplevel | notoplevel | default]
@@ -3773,9 +3795,9 @@ DEFINING REGIONS	*:syn-region* *:syn-start* *:syn-skip* *:syn-end*
 		[keepend]
 		[extend]
 		[excludenl]
-		start={start_pattern} ..
-		[skip={skip_pattern}]
-		end={end_pattern} ..
+		start={start-pattern} ..
+		[skip={skip-pattern}]
+		end={end-pattern} ..
 		[{options}]
 
 	This defines one region.  It may span several lines.
@@ -3797,12 +3819,12 @@ DEFINING REGIONS	*:syn-region* *:syn-start* *:syn-skip* *:syn-end*
 				extend a containing match or item.  Only
 				useful for end patterns.  Must be given before
 				the patterns it applies to. |:syn-excludenl|
-	start={start_pattern}	The search pattern that defines the start of
+	start={start-pattern}	The search pattern that defines the start of
 				the region.  See |:syn-pattern| below.
-	skip={skip_pattern}	The search pattern that defines text inside
+	skip={skip-pattern}	The search pattern that defines text inside
 				the region where not to look for the end
 				pattern.  See |:syn-pattern| below.
-	end={end_pattern}	The search pattern that defines the end of
+	end={end-pattern}	The search pattern that defines the end of
 				the region.  See |:syn-pattern| below.
 
 	Example: >
@@ -4099,6 +4121,8 @@ This will make each {} block form one fold.
 The fold will start on the line where the item starts, and end where the item
 ends.  If the start and end are within the same line, there is no fold.
 The 'foldnestmax' option limits the nesting of syntax folds.
+See |:syn-foldlevel| to control how the foldlevel of a line is computed
+from its syntax items.
 {not available when Vim was compiled without |+folding| feature}
 
 
@@ -4512,8 +4536,8 @@ two different ways:
 	  (e.g., "syntax/pod.vim") the file is searched for in 'runtimepath'.
 	  All matching files are loaded.  Using a relative path is
 	  recommended, because it allows a user to replace the included file
-	  with his own version, without replacing the file that does the ":syn
-	  include".
+	  with their own version, without replacing the file that does the
+	  ":syn include".
 
 						*E847*
 The maximum number of includes is 999.
@@ -4857,7 +4881,12 @@ term={attr-list}			*attr-list* *highlight-term* *E418*
 	have the same effect.
 	"undercurl" is a curly underline.  When "undercurl" is not possible
 	then "underline" is used.  In general "undercurl" and "strikethrough"
-	is only available in the GUI.  The color is set with |highlight-guisp|.
+	are only available in the GUI and some terminals.  The color is set
+	with |highlight-guisp| or |highlight-ctermul|.  You can try these
+	termcap entries to make undercurl work in a terminal: >
+	    let &t_Cs = "\e[4:3m"
+	    let &t_Ce = "\e[4:0m"
+
 
 start={term-list}				*highlight-start* *E422*
 stop={term-list}				*term-list* *highlight-stop*
@@ -4901,6 +4930,10 @@ cterm={attr-list}					*highlight-cterm*
 
 ctermfg={color-nr}				*highlight-ctermfg* *E421*
 ctermbg={color-nr}				*highlight-ctermbg*
+ctermul={color-nr}				*highlight-ctermul*
+	These give the foreground (ctermfg), background (ctermbg) and
+	underline (ctermul) color to use in the terminal.
+
 	The {color-nr} argument is a color number.  Its range is zero to
 	(not including) the number given by the termcap entry "Co".
 	The actual color with this number depends on the type of terminal
@@ -4978,14 +5011,14 @@ ctermbg={color-nr}				*highlight-ctermbg*
 	needs to reset the color when exiting.	This is done with the "op"
 	termcap entry |t_op|.  If this doesn't work correctly, try setting the
 	't_op' option in your .vimrc.
-							*E419* *E420*
-	When Vim knows the normal foreground and background colors, "fg" and
-	"bg" can be used as color names.  This only works after setting the
-	colors for the Normal group and for the MS-Windows console.  Example,
-	for reverse video: >
+							*E419* *E420* *E453*
+	When Vim knows the normal foreground, background and underline colors,
+	"fg", "bg" and "ul" can be used as color names.  This only works after
+	setting the colors for the Normal group and for the MS-Windows
+	console.  Example, for reverse video: >
 	    :highlight Visual ctermfg=bg ctermbg=fg
 <	Note that the colors are used that are valid at the moment this
-	command are given.  If the Normal group colors are changed later, the
+	command is given.  If the Normal group colors are changed later, the
 	"fg" and "bg" colors will not be adjusted.
 
 

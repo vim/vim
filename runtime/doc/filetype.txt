@@ -163,8 +163,8 @@ file.  It will be overwritten when installing a new version of Vim.
 
 A. If you want to overrule all default file type checks.
    This works by writing one file for each filetype.  The disadvantage is that
-   means there can be many files.  The advantage is that you can simply drop
-   this file in the right directory to make it work.
+   there can be many files.  The advantage is that you can simply drop this
+   file in the right directory to make it work.
 							*ftdetect*
    1. Create your user runtime directory.  You would normally use the first
       item of the 'runtimepath' option.  Then create the directory "ftdetect"
@@ -307,13 +307,13 @@ all loaded.  For example, if this command: >
 
 produces this output:
 
-	runtimepath=/etc/vim,~/.vim,/usr/local/share/vim/vim60 ~
+	runtimepath=/etc/vim,~/.vim,/usr/local/share/vim/vim82 ~
 
 then Vim will load all plugins in these directories and below:
 
 	/etc/vim/plugin/  ~
 	~/.vim/plugin/  ~
-	/usr/local/share/vim/vim60/plugin/  ~
+	/usr/local/share/vim/vim82/plugin/  ~
 
 Note that the last one is the value of $VIMRUNTIME which has been expanded.
 

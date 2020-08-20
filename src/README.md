@@ -30,6 +30,8 @@ buffer.c	| manipulating buffers (loaded files)
 bufwrite.c	| writing a buffer to file
 change.c	| handling changes to text
 cindent.c	| C and Lisp indentation
+clientserver.c	| client server functionality
+clipboard.c	| handling the clipboard
 cmdexpand.c	| command-line completion
 cmdhist.c	| command-line history
 debugger.c	| vim script debugger
@@ -46,11 +48,14 @@ filepath.c	| dealing with file names and paths
 findfile.c	| search for files in 'path'
 fold.c		| folding
 getchar.c	| getting characters and key mapping
+help.c		| vim help related functions
 highlight.c	| syntax highlighting
 indent.c	| text indentation
 insexpand.c	| Insert mode completion
-mark.c		| marks
+locale.c	| locale/language handling
 map.c		| mapping and abbreviations
+mark.c		| marks
+match.c		| highlight matching
 mbyte.c		| multi-byte character handling
 memfile.c	| storing lines for buffers in a swapfile
 memline.c	| storing lines for buffers in memory
@@ -78,7 +83,11 @@ syntax.c	| syntax and other highlighting
 tag.c		| tags
 term.c		| terminal handling, termcap codes
 testing.c	| testing: assert and test functions
+textformat.c	| text formatting
+textobject.c	| text objects
 textprop.c	| text properties
+time.c		| time and timer functions
+typval.c	| vim script type/value functions
 undo.c		| undo and redo
 usercmd.c	| user defined commands
 userfunc.c	| user defined functions

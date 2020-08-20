@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.2.  Last change: 2019 Dec 17
+*cmdline.txt*   For Vim version 8.2.  Last change: 2020 Aug 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -476,6 +476,10 @@ emulate it.  For example, this mimics autolist=ambiguous:
 This will find the longest match with the first 'wildchar', then list all
 matching files with the next.
 
+					*complete-script-local-functions*
+When completing user function names, prepend "s:" to find script-local
+functions.
+
 							*suffixes*
 For file name completion you can use the 'suffixes' option to set a priority
 between files with almost the same name.  If there are multiple matches,
@@ -586,6 +590,7 @@ followed by another Vim command:
     :command
     :cscope
     :debug
+    :eval
     :folddoopen
     :folddoclosed
     :function
@@ -610,6 +615,7 @@ followed by another Vim command:
     :tcl
     :tcldo
     :tclfile
+    :terminal
     :vglobal
     :windo
     :write !
@@ -870,7 +876,7 @@ Also see |`=|.
 			       *:<cword>* *<cword>* *:<cWORD>* *<cWORD>*
 			       *:<cexpr>* *<cexpr>* *:<cfile>* *<cfile>*
 			       *:<afile>* *<afile>* *:<abuf>* *<abuf>*
-			       *:<amatch>* *<amatch>*
+			       *:<amatch>* *<amatch>* *:<stack>* *<stack>*
 			       *:<sfile>* *<sfile>* *:<slnum>* *<slnum>*
 			       *:<sflnum>* *<sflnum>* *E499* *E500*
 Note: these are typed literally, they are not special keys!
@@ -897,12 +903,16 @@ Note: these are typed literally, they are not special keys!
 		   events).
 	<sfile>    When executing a ":source" command, is replaced with the
 		   file name of the sourced file.  *E498*
-		   When executing a function, is replaced with:
-		   "function {function-name}[{lnum}]"
-		   function call nesting is indicated like this:
-		   "function {function-name1}[{lnum}]..{function-name2}[{lnum}]"
+		   When executing a function, is replaced with the call stack,
+		   as with <stack> (this is for backwards compatibility, using
+		   <stack> is preferred).
 		   Note that filename-modifiers are useless when <sfile> is
-		   used inside a function.
+		   not used inside a script.
+	<stack>	   is replaced with the call stack, using
+		   "function {function-name}[{lnum}]" for a function line
+		   and "script {file-name}[{lnum}]" for a script line, and
+		   ".." in between items.  E.g.:
+		   "function {function-name1}[{lnum}]..{function-name2}[{lnum}]"
 	<slnum>	   When executing a ":source" command, is replaced with the
 		   line number.  *E842*
 		   When executing a function it's the line number relative to
@@ -933,8 +943,7 @@ These modifiers can be given, in this order:
 		directory.
 	:.	Reduce file name to be relative to current directory, if
 		possible.  File name is unmodified if it is not below the
-		current directory, but on MS-Windows the drive is removed if
-		it is the current drive.
+		current directory.
 		For maximum shortness, use ":~:.".
 	:h	Head of the file name (the last component and any separators
 		removed).  Cannot be used with :e, :r or :t.
@@ -1121,7 +1130,8 @@ CTRL-C		Continue in Command-line mode.  The command-line under the
 		in Normal mode.  There is no redraw, thus the window will
 		remain visible.
 :quit		Discard the command line and go back to Normal mode.
-		":close", ":exit", ":xit" and CTRL-\ CTRL-N also work.
+		":close", CTRL-W c, ":exit", ":xit" and CTRL-\ CTRL-N also
+		work.
 :qall		Quit Vim, unless there are changes in some buffer.
 :qall!		Quit Vim, discarding changes to any buffer.
 

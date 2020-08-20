@@ -110,6 +110,8 @@ find_word_under_cursor(
 			lbuf = vim_strnsave(lbuf, len);
 		    }
 		}
+		else
+		    scol = col;
 
 		if (winp != NULL)
 		    *winp = wp;
@@ -280,10 +282,10 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 	    curbuf = save_curbuf;
 	    if (use_sandbox)
 		++sandbox;
-	    ++textlock;
+	    ++textwinlock;
 
 	    vim_free(result);
-	    result = eval_to_string(bexpr, NULL, TRUE);
+	    result = eval_to_string(bexpr, TRUE);
 
 	    // Remove one trailing newline, it is added when the result was a
 	    // list and it's hardly ever useful.  If the user really wants a
@@ -297,7 +299,7 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 
 	    if (use_sandbox)
 		--sandbox;
-	    --textlock;
+	    --textwinlock;
 
 	    set_vim_var_string(VV_BEVAL_TEXT, NULL, -1);
 	    if (result != NULL && result[0] != NUL)

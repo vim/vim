@@ -64,6 +64,7 @@ get_short_pathname(char_u **fnamep, char_u **bufp, int *fnamelen)
     if (l != 0)
     {
 	char_u *p = utf16_to_enc(newbuf, NULL);
+
 	if (p != NULL)
 	{
 	    vim_free(*bufp);
@@ -301,6 +302,7 @@ modify_fname(
     char_u	dirname[MAXPATHL];
     int		c;
     int		has_fullname = 0;
+    int		has_homerelative = 0;
 #ifdef MSWIN
     char_u	*fname_start = *fnamep;
     int		has_shortname = 0;
@@ -387,7 +389,7 @@ repeat:
 	if (mch_isdir(*fnamep))
 	{
 	    // Make room for one or two extra characters.
-	    *fnamep = vim_strnsave(*fnamep, (int)STRLEN(*fnamep) + 2);
+	    *fnamep = vim_strnsave(*fnamep, STRLEN(*fnamep) + 2);
 	    vim_free(*bufp);	// free any allocated file name
 	    *bufp = *fnamep;
 	    if (*fnamep == NULL)
@@ -412,9 +414,9 @@ repeat:
 	}
 	pbuf = NULL;
 	// Need full path first (use expand_env() to remove a "~/")
-	if (!has_fullname)
+	if (!has_fullname && !has_homerelative)
 	{
-	    if (c == '.' && **fnamep == '~')
+	    if ((c == '.' || c == '~') && **fnamep == '~')
 		p = pbuf = expand_env_save(*fnamep);
 	    else
 		p = pbuf = FullName_save(*fnamep, FALSE);
@@ -428,16 +430,37 @@ repeat:
 	{
 	    if (c == '.')
 	    {
+		size_t	namelen;
+
 		mch_dirname(dirname, MAXPATHL);
-		s = shorten_fname(p, dirname);
-		if (s != NULL)
+		if (has_homerelative)
 		{
-		    *fnamep = s;
-		    if (pbuf != NULL)
+		    s = vim_strsave(dirname);
+		    if (s != NULL)
 		    {
-			vim_free(*bufp);   // free any allocated file name
-			*bufp = pbuf;
-			pbuf = NULL;
+			home_replace(NULL, s, dirname, MAXPATHL, TRUE);
+			vim_free(s);
+		    }
+		}
+		namelen = STRLEN(dirname);
+
+		// Do not call shorten_fname() here since it removes the prefix
+		// even though the path does not have a prefix.
+		if (fnamencmp(p, dirname, namelen) == 0)
+		{
+		    p += namelen;
+		    if (vim_ispathsep(*p))
+		    {
+			while (*p && vim_ispathsep(*p))
+			    ++p;
+			*fnamep = p;
+			if (pbuf != NULL)
+			{
+			    // free any allocated file name
+			    vim_free(*bufp);
+			    *bufp = pbuf;
+			    pbuf = NULL;
+			}
 		    }
 		}
 	    }
@@ -453,6 +476,7 @@ repeat:
 			*fnamep = s;
 			vim_free(*bufp);
 			*bufp = s;
+			has_homerelative = TRUE;
 		    }
 		}
 	    }
@@ -631,7 +655,7 @@ repeat:
 	    p = vim_strchr(s, sep);
 	    if (p != NULL)
 	    {
-		pat = vim_strnsave(s, (int)(p - s));
+		pat = vim_strnsave(s, p - s);
 		if (pat != NULL)
 		{
 		    s = p + 1;
@@ -639,7 +663,7 @@ repeat:
 		    p = vim_strchr(s, sep);
 		    if (p != NULL)
 		    {
-			sub = vim_strnsave(s, (int)(p - s));
+			sub = vim_strnsave(s, p - s);
 			str = vim_strnsave(*fnamep, *fnamelen);
 			if (sub != NULL && str != NULL)
 			{
@@ -701,6 +725,8 @@ f_chdir(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_string = NULL;
 
     if (argvars[0].v_type != VAR_STRING)
+	// Returning an empty string means it failed.
+	// No error message, for historic reasons.
 	return;
 
     // Return the current directory
@@ -1004,6 +1030,25 @@ f_getcwd(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * Convert "st" to file permission string.
+ */
+    char_u *
+getfpermst(stat_T *st, char_u *perm)
+{
+    char_u	    flags[] = "rwx";
+    int		    i;
+
+    for (i = 0; i < 9; i++)
+    {
+	if (st->st_mode & (1 << (8 - i)))
+	    perm[i] = flags[i % 3];
+	else
+	    perm[i] = '-';
+    }
+    return perm;
+}
+
+/*
  * "getfperm({fname})" function
  */
     void
@@ -1012,24 +1057,13 @@ f_getfperm(typval_T *argvars, typval_T *rettv)
     char_u	*fname;
     stat_T	st;
     char_u	*perm = NULL;
-    char_u	flags[] = "rwx";
-    int		i;
+    char_u	permbuf[] = "---------";
 
     fname = tv_get_string(&argvars[0]);
 
     rettv->v_type = VAR_STRING;
     if (mch_stat((char *)fname, &st) >= 0)
-    {
-	perm = vim_strsave((char_u *)"---------");
-	if (perm != NULL)
-	{
-	    for (i = 0; i < 9; i++)
-	    {
-		if (st.st_mode & (1 << (8 - i)))
-		    perm[i] = flags[i % 3];
-	    }
-	}
-    }
+	perm = vim_strsave(getfpermst(&st, permbuf));
     rettv->vval.v_string = perm;
 }
 
@@ -1081,6 +1115,33 @@ f_getftime(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * Convert "st" to file type string.
+ */
+    char_u *
+getftypest(stat_T *st)
+{
+    char    *t;
+
+    if (S_ISREG(st->st_mode))
+	t = "file";
+    else if (S_ISDIR(st->st_mode))
+	t = "dir";
+    else if (S_ISLNK(st->st_mode))
+	t = "link";
+    else if (S_ISBLK(st->st_mode))
+	t = "bdev";
+    else if (S_ISCHR(st->st_mode))
+	t = "cdev";
+    else if (S_ISFIFO(st->st_mode))
+	t = "fifo";
+    else if (S_ISSOCK(st->st_mode))
+	t = "socket";
+    else
+	t = "other";
+    return (char_u*)t;
+}
+
+/*
  * "getftype({fname})" function
  */
     void
@@ -1089,31 +1150,12 @@ f_getftype(typval_T *argvars, typval_T *rettv)
     char_u	*fname;
     stat_T	st;
     char_u	*type = NULL;
-    char	*t;
 
     fname = tv_get_string(&argvars[0]);
 
     rettv->v_type = VAR_STRING;
     if (mch_lstat((char *)fname, &st) >= 0)
-    {
-	if (S_ISREG(st.st_mode))
-	    t = "file";
-	else if (S_ISDIR(st.st_mode))
-	    t = "dir";
-	else if (S_ISLNK(st.st_mode))
-	    t = "link";
-	else if (S_ISBLK(st.st_mode))
-	    t = "bdev";
-	else if (S_ISCHR(st.st_mode))
-	    t = "cdev";
-	else if (S_ISFIFO(st.st_mode))
-	    t = "fifo";
-	else if (S_ISSOCK(st.st_mode))
-	    t = "socket";
-	else
-	    t = "other";
-	type = vim_strsave((char_u *)t);
-    }
+	type = vim_strsave(getftypest(&st));
     rettv->vval.v_string = type;
 }
 
@@ -1236,41 +1278,6 @@ f_isdirectory(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * Evaluate "expr" (= "context") for readdir().
- */
-    static int
-readdir_checkitem(void *context, char_u *name)
-{
-    typval_T	*expr = (typval_T *)context;
-    typval_T	save_val;
-    typval_T	rettv;
-    typval_T	argv[2];
-    int		retval = 0;
-    int		error = FALSE;
-
-    if (expr->v_type == VAR_UNKNOWN)
-	return 1;
-
-    prepare_vimvar(VV_VAL, &save_val);
-    set_vim_var_string(VV_VAL, name, -1);
-    argv[0].v_type = VAR_STRING;
-    argv[0].vval.v_string = name;
-
-    if (eval_expr_typval(expr, argv, 1, &rettv) == FAIL)
-	goto theend;
-
-    retval = tv_get_number_chk(&rettv, &error);
-    if (error)
-	retval = -1;
-    clear_tv(&rettv);
-
-theend:
-    set_vim_var_string(VV_VAL, NULL, 0);
-    restore_vimvar(VV_VAL, &save_val);
-    return retval;
-}
-
-/*
  * Create the directory in which "dir" is located, and higher levels when
  * needed.
  * Return OK or FAIL.
@@ -1289,7 +1296,7 @@ mkdir_recurse(char_u *dir, int prot)
 	return OK;
 
     // If the directory exists we're done.  Otherwise: create it.
-    updir = vim_strnsave(dir, (int)(p - dir));
+    updir = vim_strnsave(dir, p - dir);
     if (updir == NULL)
 	return FAIL;
     if (mch_isdir(updir))
@@ -1366,6 +1373,98 @@ f_pathshorten(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * Common code for readdir_checkitem() and readdirex_checkitem().
+ * Either "name" or "dict" is NULL.
+ */
+    static int
+checkitem_common(void *context, char_u *name, dict_T *dict)
+{
+    typval_T	*expr = (typval_T *)context;
+    typval_T	save_val;
+    typval_T	rettv;
+    typval_T	argv[2];
+    int		retval = 0;
+    int		error = FALSE;
+
+    prepare_vimvar(VV_VAL, &save_val);
+    if (name != NULL)
+    {
+	set_vim_var_string(VV_VAL, name, -1);
+	argv[0].v_type = VAR_STRING;
+	argv[0].vval.v_string = name;
+    }
+    else
+    {
+	set_vim_var_dict(VV_VAL, dict);
+	argv[0].v_type = VAR_DICT;
+	argv[0].vval.v_dict = dict;
+    }
+
+    if (eval_expr_typval(expr, argv, 1, &rettv) == FAIL)
+	goto theend;
+
+    // We want to use -1, but also true/false should be allowed.
+    if (rettv.v_type == VAR_SPECIAL || rettv.v_type == VAR_BOOL)
+    {
+	rettv.v_type = VAR_NUMBER;
+	rettv.vval.v_number = rettv.vval.v_number == VVAL_TRUE;
+    }
+    retval = tv_get_number_chk(&rettv, &error);
+    if (error)
+	retval = -1;
+    clear_tv(&rettv);
+
+theend:
+    if (name != NULL)
+	set_vim_var_string(VV_VAL, NULL, 0);
+    else
+	set_vim_var_dict(VV_VAL, NULL);
+    restore_vimvar(VV_VAL, &save_val);
+    return retval;
+}
+
+/*
+ * Evaluate "expr" (= "context") for readdir().
+ */
+    static int
+readdir_checkitem(void *context, void *item)
+{
+    char_u	*name = (char_u *)item;
+
+    return checkitem_common(context, name, NULL);
+}
+
+    static int
+readdirex_dict_arg(typval_T *tv, int *cmp)
+{
+    char_u     *compare;
+
+    if (tv->v_type != VAR_DICT)
+    {
+	emsg(_(e_dictreq));
+	return FAIL;
+    }
+
+    if (dict_find(tv->vval.v_dict, (char_u *)"sort", -1) != NULL)
+	compare = dict_get_string(tv->vval.v_dict, (char_u *)"sort", FALSE);
+    else
+    {
+	semsg(_(e_no_dict_key), "sort");
+	return FAIL;
+    }
+
+    if (STRCMP(compare, (char_u *) "none") == 0)
+	*cmp = READDIR_SORT_NONE;
+    else if (STRCMP(compare, (char_u *) "case") == 0)
+	*cmp = READDIR_SORT_BYTE;
+    else if (STRCMP(compare, (char_u *) "icase") == 0)
+	*cmp = READDIR_SORT_IC;
+    else if (STRCMP(compare, (char_u *) "collate") == 0)
+	*cmp = READDIR_SORT_COLLATE;
+    return OK;
+}
+
+/*
  * "readdir()" function
  */
     void
@@ -1377,14 +1476,20 @@ f_readdir(typval_T *argvars, typval_T *rettv)
     char_u	*p;
     garray_T	ga;
     int		i;
+    int         sort = READDIR_SORT_BYTE;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
     path = tv_get_string(&argvars[0]);
     expr = &argvars[1];
 
-    ret = readdir_core(&ga, path, (void *)expr, readdir_checkitem);
-    if (ret == OK && rettv->vval.v_list != NULL && ga.ga_len > 0)
+    if (argvars[1].v_type != VAR_UNKNOWN && argvars[2].v_type != VAR_UNKNOWN &&
+	    readdirex_dict_arg(&argvars[2], &sort) == FAIL)
+	return;
+
+    ret = readdir_core(&ga, path, FALSE, (void *)expr,
+	    (expr->v_type == VAR_UNKNOWN) ? NULL : readdir_checkitem, sort);
+    if (ret == OK)
     {
 	for (i = 0; i < ga.ga_len; i++)
 	{
@@ -1393,6 +1498,53 @@ f_readdir(typval_T *argvars, typval_T *rettv)
 	}
     }
     ga_clear_strings(&ga);
+}
+
+/*
+ * Evaluate "expr" (= "context") for readdirex().
+ */
+    static int
+readdirex_checkitem(void *context, void *item)
+{
+    dict_T	*dict = (dict_T*)item;
+
+    return checkitem_common(context, NULL, dict);
+}
+
+/*
+ * "readdirex()" function
+ */
+    void
+f_readdirex(typval_T *argvars, typval_T *rettv)
+{
+    typval_T	*expr;
+    int		ret;
+    char_u	*path;
+    garray_T	ga;
+    int		i;
+    int         sort = READDIR_SORT_BYTE;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+    path = tv_get_string(&argvars[0]);
+    expr = &argvars[1];
+
+    if (argvars[1].v_type != VAR_UNKNOWN && argvars[2].v_type != VAR_UNKNOWN &&
+	    readdirex_dict_arg(&argvars[2], &sort) == FAIL)
+	return;
+
+    ret = readdir_core(&ga, path, TRUE, (void *)expr,
+	    (expr->v_type == VAR_UNKNOWN) ? NULL : readdirex_checkitem, sort);
+    if (ret == OK)
+    {
+	for (i = 0; i < ga.ga_len; i++)
+	{
+	    dict_T  *dict = ((dict_T**)ga.ga_data)[i];
+	    list_append_dict(rettv->vval.v_list, dict);
+	    dict_unref(dict);
+	}
+    }
+    ga_clear(&ga);
 }
 
 /*
@@ -1428,20 +1580,18 @@ f_readfile(typval_T *argvars, typval_T *rettv)
 	    maxline = (long)tv_get_number(&argvars[2]);
     }
 
-    if (blob)
-    {
-	if (rettv_blob_alloc(rettv) == FAIL)
-	    return;
-    }
-    else
-    {
-	if (rettv_list_alloc(rettv) == FAIL)
-	    return;
-    }
+    if ((blob ? rettv_blob_alloc(rettv) : rettv_list_alloc(rettv)) == FAIL)
+	return;
 
     // Always open the file in binary mode, library functions have a mind of
     // their own about CR-LF conversion.
     fname = tv_get_string(&argvars[0]);
+
+    if (mch_isdir(fname))
+    {
+	semsg(_(e_isadir2), fname);
+	return;
+    }
     if (*fname == NUL || (fd = mch_fopen((char *)fname, READBIN)) == NULL)
     {
 	semsg(_(e_notopen), *fname == NUL ? (char_u *)_("<empty>") : fname);
@@ -1452,8 +1602,10 @@ f_readfile(typval_T *argvars, typval_T *rettv)
     {
 	if (read_blob(fd, rettv->vval.v_blob) == FAIL)
 	{
-	    emsg("cannot read file");
+	    semsg(_(e_notread), fname);
+	    // An empty blob is returned on error.
 	    blob_free(rettv->vval.v_blob);
+	    rettv->vval.v_blob = NULL;
 	}
 	fclose(fd);
 	return;
@@ -1489,7 +1641,7 @@ f_readfile(typval_T *argvars, typval_T *rettv)
 			    --prevlen;
 		}
 		if (prevlen == 0)
-		    s = vim_strnsave(start, (int)len);
+		    s = vim_strnsave(start, len);
 		else
 		{
 		    // Change "prev" buffer to be the right size.  This way
@@ -1892,7 +2044,8 @@ f_writefile(typval_T *argvars, typval_T *rettv)
 	list = argvars[0].vval.v_list;
 	if (list == NULL)
 	    return;
-	for (li = list->lv_first; li != NULL; li = li->li_next)
+	CHECK_LIST_MATERIALIZE(list);
+	FOR_ALL_LIST_ITEMS(list, li)
 	    if (tv_get_string_chk(&li->li_tv) == NULL)
 		return;
     }
@@ -1904,7 +2057,8 @@ f_writefile(typval_T *argvars, typval_T *rettv)
     }
     else
     {
-	semsg(_(e_invarg2), "writefile()");
+	semsg(_(e_invarg2),
+		_("writefile() first argument must be a List or a Blob"));
 	return;
     }
 
@@ -2290,11 +2444,9 @@ home_replace(
 		if (--dstlen > 0)
 		    *dst++ = '~';
 
-		/*
-		 * If it's just the home directory, add  "/".
-		 */
-		if (!vim_ispathsep(src[0]) && --dstlen > 0)
-		    *dst++ = '/';
+		// Do not add directory separator into dst, because dst is
+		// expected to just return the directory name without the
+		// directory separator '/'.
 		break;
 	    }
 	    if (p == homedir_env)
@@ -2932,13 +3084,13 @@ expand_backtick(
     int		i;
 
     // Create the command: lop off the backticks.
-    cmd = vim_strnsave(pat + 1, (int)STRLEN(pat) - 2);
+    cmd = vim_strnsave(pat + 1, STRLEN(pat) - 2);
     if (cmd == NULL)
 	return -1;
 
 #ifdef FEAT_EVAL
     if (*cmd == '=')	    // `={expr}`: Expand expression
-	buffer = eval_to_string(cmd + 1, &p, TRUE);
+	buffer = eval_to_string(cmd + 1, TRUE);
     else
 #endif
 	buffer = get_cmd_output(cmd, NULL,
@@ -3021,6 +3173,7 @@ dos_expandpath(
     WCHAR		*wn = NULL;	// UCS-2 name, NULL when not used.
     char_u		*matchname;
     int			ok;
+    char_u		*p_alt;
 
     // Expanding "**" may take a long time, check for CTRL-C.
     if (stardepth > 0)
@@ -3135,8 +3288,14 @@ dos_expandpath(
     while (ok)
     {
 	p = utf16_to_enc(wfb.cFileName, NULL);   // p is allocated here
+
 	if (p == NULL)
 	    break;  // out of memory
+
+	if (*wfb.cAlternateFileName == NUL)
+	    p_alt = NULL;
+	else
+	    p_alt = utf16_to_enc(wfb.cAlternateFileName, NULL);
 
 	// Ignore entries starting with a dot, unless when asked for.  Accept
 	// all entries found with "matchname".
@@ -3145,14 +3304,17 @@ dos_expandpath(
 			     && p[1] != NUL && (p[1] != '.' || p[2] != NUL)))
 		&& (matchname == NULL
 		  || (regmatch.regprog != NULL
-				     && vim_regexec(&regmatch, p, (colnr_T)0))
+		      && (vim_regexec(&regmatch, p, (colnr_T)0)
+			 || (p_alt != NULL
+				&& vim_regexec(&regmatch, p_alt, (colnr_T)0))))
 		  || ((flags & EW_NOTWILD)
 		     && fnamencmp(path + (s - buf), p, e - s) == 0)))
 	{
 	    STRCPY(s, p);
 	    len = (int)STRLEN(buf);
 
-	    if (starstar && stardepth < 100)
+	    if (starstar && stardepth < 100
+			  && (wfb.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 	    {
 		// For "**" in the pattern first go deeper in the tree to
 		// find matches.
@@ -3181,24 +3343,9 @@ dos_expandpath(
 	    }
 	}
 
+	vim_free(p_alt);
 	vim_free(p);
 	ok = FindNextFileW(hFind, &wfb);
-
-	// If no more matches and no match was used, try expanding the name
-	// itself.  Finds the long name of a short filename.
-	if (!ok && matchname != NULL && gap->ga_len == start_len)
-	{
-	    STRCPY(s, matchname);
-	    FindClose(hFind);
-	    vim_free(wn);
-	    wn = enc_to_utf16(buf, NULL);
-	    if (wn != NULL)
-		hFind = FindFirstFileW(wn, &wfb);
-	    else
-		hFind =	INVALID_HANDLE_VALUE;
-	    ok = (hFind != INVALID_HANDLE_VALUE);
-	    VIM_CLEAR(matchname);
-	}
     }
 
     FindClose(hFind);
@@ -3673,8 +3820,13 @@ gen_expand_wildcards(
 	    vim_free(p);
     }
 
+    // When returning FAIL the array must be freed here.
+    if (retval == FAIL)
+	ga_clear(&ga);
+
     *num_file = ga.ga_len;
-    *file = (ga.ga_data != NULL) ? (char_u **)ga.ga_data : (char_u **)"";
+    *file = (ga.ga_data != NULL) ? (char_u **)ga.ga_data
+						  : (char_u **)_("no matches");
 
     recursive = FALSE;
 

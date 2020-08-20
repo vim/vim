@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 8.2.  Last change: 2019 May 05
+*gui_x11.txt*   For Vim version 8.2.  Last change: 2020 Jun 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -356,6 +356,9 @@ need to set those up in some sort of gtkrc file.  You'll have to refer
 to the GTK documentation, however little there is, on how to do this.
 See http://developer.gnome.org/doc/API/2.0/gtk/gtk-Resource-Files.html
 for more information.
+							*gtk3-slow*
+If you are using GTK3 and Vim appears to be slow, try setting the environment
+variable $GDK_RENDERING to "image".
 
 
 Tooltip Colors ~

@@ -557,9 +557,7 @@ endfunc
 
 " test syntax folding
 func Test_fold_syntax()
-  if !has('syntax')
-    return
-  endif
+  CheckFeature syntax
 
   enew!
   set fdm=syntax fdl=0
@@ -794,3 +792,28 @@ func Test_fold_delete_first_line()
   bwipe!
   set foldmethod&
 endfunc
+
+" Test for errors in 'foldexpr'
+func Test_fold_expr_error()
+  new
+  call setline(1, ['one', 'two', 'three'])
+
+  " Return a list from the expression
+  set foldexpr=[]
+  set foldmethod=expr
+  for i in range(3)
+    call assert_equal(0, foldlevel(i))
+  endfor
+
+  " expression error
+  set foldexpr=[{]
+  set foldmethod=expr
+  for i in range(3)
+    call assert_equal(0, foldlevel(i))
+  endfor
+
+  set foldmethod& foldexpr&
+  close!
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

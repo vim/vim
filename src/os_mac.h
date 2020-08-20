@@ -21,25 +21,6 @@
 #endif
 
 /*
- * Macintosh machine-dependent things.
- *
- * Include the Mac header files, unless also compiling with X11 (the header
- * files have many conflicts).
- */
-#ifdef FEAT_GUI_MAC
-# include <Quickdraw.h>	    // Apple calls it QuickDraw.h...
-# include <ToolUtils.h>
-# include <LowMem.h>
-# include <Scrap.h>
-# include <Sound.h>
-# include <TextUtils.h>
-# include <Memory.h>
-# include <OSUtils.h>
-# include <Files.h>
-# include <Script.h>
-#endif
-
-/*
  * Unix interface
  */
 #if defined(__APPLE_CC__) // for Project Builder and ...
@@ -77,7 +58,7 @@
 
 
 /*
- * Generic Vim #define
+ * Generic Vim #define for Mac
  */
 
 #define FEAT_SOURCE_FFS
@@ -86,9 +67,6 @@
 #define USE_EXE_NAME		    // to find  $VIM
 #define CASE_INSENSITIVE_FILENAME   // ignore case when comparing file names
 #define SPACE_IN_FILENAME
-#define BREAKCHECK_SKIP	   32	    // call mch_breakcheck() each time, it's
-				    // quite fast. Did I forgot to update the
-				    // comment
 
 #define USE_FNAME_CASE		// make ":e os_Mac.c" open the file in its
 				// original case, as "os_mac.c"

@@ -1,4 +1,4 @@
-*if_lua.txt*    For Vim version 8.2.  Last change: 2019 Jul 21
+*if_lua.txt*    For Vim version 8.2.  Last change: 2020 Jun 28
 
 
 		  VIM REFERENCE MANUAL    by Luis Carvalho
@@ -32,7 +32,7 @@ Examples:
 	:lua local curbuf = vim.buffer() curbuf[7] = "line #7"
 <
 
-:[range]lua << [endmarker]
+:[range]lua << [trim] [{endmarker}]
 {script}
 {endmarker}
 			Execute Lua script {script}.
@@ -40,10 +40,9 @@ Examples:
 			feature wasn't compiled in.  To avoid errors, see
 			|script-here|.
 
-The {endmarker} must NOT be preceded by any white space.
-
 If [endmarker] is omitted from after the "<<", a dot '.' must be used after
-{script}, like for the |:append| and |:insert| commands.
+{script}, like for the |:append| and |:insert| commands.  Refer to
+|:let-heredoc| for more information.
 
 This form of the |:lua| command is mainly useful for including Lua code
 in Vim scripts.
@@ -200,6 +199,15 @@ Vim evaluation and command execution, and others.
 				returns it. Note that the buffer is not set as
 				current.
 
+	vim.call({name} [, {args}])
+				Proxy to call Vim function named {name} with
+				arguments {args}.  Example: >
+					:lua print(vim.call('has', 'timers'))
+<
+	vim.fn			Proxy to call Vim functions. Proxy methods are
+				created on demand.  Example: >
+					:lua print(vim.fn.has('timers'))
+<
 
 ==============================================================================
 3. List userdata					*lua-list*
@@ -209,14 +217,27 @@ Vim's syntax for lists. Since lists are objects, changes in list references in
 Lua are reflected in Vim and vice-versa. A list "l" has the following
 properties and methods:
 
+NOTE: In patch 8.2.1066 array indexes were changed from zero-based to
+one-based.  You can check with: >
+	    if has("patch-8.2.1066")
+
 Properties
 ----------
 	o "#l" is the number of items in list "l", equivalent to "len(l)"
 	    in Vim.
-	o "l[k]" returns the k-th item in "l"; "l" is zero-indexed, as in Vim.
+	o "l[k]" returns the k-th item in "l"; "l" is one-indexed, as in Lua.
 	    To modify the k-th item, simply do "l[k] = newitem"; in
-	    particular, "l[k] = nil" removes the k-th item from "l".
+	    particular, "l[k] = nil" removes the k-th item from "l". Item can
+	    be added to the end of the list by "l[#l + 1] = newitem"
 	o "l()" returns an iterator for "l".
+	o "table.insert(l, newitem)" inserts an item at the end of the list.
+	    (only Lua 5.3 and later)
+	o "table.insert(l, position, newitem)" inserts an item at the
+	    specified position. "position" is one-indexed.  (only Lua 5.3 and
+	    later)
+	o "table.remove(l, position)" removes an item at the specified
+	    position. "position" is one-indexed.
+
 
 Methods
 -------
@@ -229,13 +250,16 @@ Examples:
 	:let l = [1, 'item']
 	:lua l = vim.eval('l') -- same 'l'
 	:lua l:add(vim.list())
-	:lua l[0] = math.pi
+	:lua l[1] = math.pi
 	:echo l[0] " 3.141593
-	:lua l[0] = nil -- remove first item
+	:lua l[1] = nil -- remove first item
 	:lua l:insert(true, 1)
-	:lua print(l, #l, l[0], l[1], l[-1])
+	:lua print(l, #l, l[1], l[2])
+	:lua l[#l + 1] = 'value'
+	:lua table.insert(l, 100)
+	:lua table.insert(l, 2, 200)
+	:lua table.remove(l, 1)
 	:lua for item in l() do print(item) end
-<
 
 ==============================================================================
 4. Dict userdata					*lua-dict*
@@ -325,6 +349,14 @@ Examples:
 	:lua l = d.len -- assign d as 'self'
 	:lua print(l())
 <
+Lua functions and closures are automatically converted to a Vim |Funcref| and
+can be accessed in Vim scripts.  Example:
+>
+	lua <<EOF
+	vim.fn.timer_start(1000, function(timer)
+	    print('timer callback')
+	end)
+	EOF
 
 ==============================================================================
 7. Buffer userdata					*lua-buffer*

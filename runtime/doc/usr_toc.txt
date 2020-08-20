@@ -1,4 +1,4 @@
-*usr_toc.txt*	For Vim version 8.2.  Last change: 2019 May 24
+*usr_toc.txt*	For Vim version 8.2.  Last change: 2020 Jun 15
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -42,7 +42,8 @@ Tuning Vim
 |usr_42.txt|  Add new menus
 |usr_43.txt|  Using filetypes
 |usr_44.txt|  Your own syntax highlighted
-|usr_45.txt|  Select your language
+|usr_45.txt|  Select your language (locale)
+|usr_46.txt|  Write plugins using Vim9 script
 
 Making Vim Run
 |usr_90.txt|  Installing Vim
@@ -332,12 +333,18 @@ Make Vim work as you like it.
 		|44.11|	Installing a syntax file
 		|44.12|	Portable syntax file layout
 
-|usr_45.txt|  Select your language
+|usr_45.txt|  Select your language (locale)
 		|45.1|	Language for Messages
 		|45.2|	Language for Menus
 		|45.3|	Using another encoding
 		|45.4|	Editing files with a different encoding
 		|45.5|	Entering language text
+
+|usr_46.txt|  Write plugins using Vim9 script
+		|46.1|	Introduction
+		|46.2|	Variable declarations
+		|46.3|	Functions and types
+		|46.?|	Using a Vim9 script from legacy script
 
 ==============================================================================
 Making Vim Run ~

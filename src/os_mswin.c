@@ -553,7 +553,7 @@ vim_stat(const char *name, stat_T *stp)
 
 #if (defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)) || defined(PROTO)
     void
-mch_settmode(int tmode UNUSED)
+mch_settmode(tmode_T tmode UNUSED)
 {
     // nothing to do
 }
@@ -740,17 +740,6 @@ mch_check_messages(void)
 }
 # endif
 #endif
-
-
-/*
- * set screen mode, always fails.
- */
-    int
-mch_screenmode(char_u *arg UNUSED)
-{
-    emsg(_(e_screenmode));
-    return FAIL;
-}
 
 
 #if defined(FEAT_LIBCALL) || defined(PROTO)
@@ -1349,7 +1338,7 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
     int			i;
 
     bUserAbort = &(psettings->user_abort);
-    vim_memset(&prt_dlg, 0, sizeof(PRINTDLGW));
+    CLEAR_FIELD(prt_dlg);
     prt_dlg.lStructSize = sizeof(PRINTDLGW);
 # if !defined(FEAT_GUI) || defined(VIMDLL)
 #  ifdef VIMDLL
@@ -1478,7 +1467,7 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
     /*
      * Initialise the font according to 'printfont'
      */
-    vim_memset(&fLogFont, 0, sizeof(fLogFont));
+    CLEAR_FIELD(fLogFont);
     if (get_logfont(&fLogFont, p_pfn, prt_dlg.hDC, TRUE) == FAIL)
     {
 	semsg(_("E613: Unknown printer font: %s"), p_pfn);
@@ -1573,7 +1562,7 @@ mch_print_begin(prt_settings_T *psettings)
     {
 	DOCINFOW	di;
 
-	vim_memset(&di, 0, sizeof(di));
+	CLEAR_FIELD(di);
 	di.cbSize = sizeof(di);
 	di.lpszDocName = wp;
 	ret = StartDocW(prt_dlg.hDC, &di);
@@ -2892,7 +2881,7 @@ get_logfont(
 # if defined(FEAT_GUI_MSWIN)
 	CHOOSEFONTW	cf;
 	// if name is "*", bring up std font dialog:
-	vim_memset(&cf, 0, sizeof(cf));
+	CLEAR_FIELD(cf);
 	cf.lStructSize = sizeof(cf);
 	cf.hwndOwner = s_hwnd;
 	cf.Flags = CF_SCREENFONTS | CF_FIXEDPITCHONLY | CF_INITTOLOGFONTSTRUCT;

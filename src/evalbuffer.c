@@ -117,7 +117,7 @@ find_win_for_curbuf(void)
 {
     wininfo_T *wip;
 
-    for (wip = curbuf->b_wininfo; wip != NULL; wip = wip->wi_next)
+    FOR_ALL_BUF_WININFO(curbuf, wip)
     {
 	if (wip->wi_win != NULL)
 	{
@@ -176,6 +176,14 @@ set_buffer_lines(
     if (lines->v_type == VAR_LIST)
     {
 	l = lines->vval.v_list;
+	if (l == NULL || list_len(l) == 0)
+	{
+	    // set proper return code
+	    if (lnum > curbuf->b_ml.ml_line_count)
+		rettv->vval.v_number = 1;	// FAIL
+	    goto done;
+	}
+	CHECK_LIST_MATERIALIZE(l);
 	li = l->lv_first;
     }
     else
@@ -250,6 +258,7 @@ set_buffer_lines(
 	update_topline();
     }
 
+done:
     if (!is_curbuf)
     {
 	curbuf = curbuf_save;
@@ -381,7 +390,8 @@ f_bufnr(typval_T *argvars, typval_T *rettv)
 	buf = curbuf;
     else
     {
-	(void)tv_get_number(&argvars[0]);    // issue errmsg if type error
+	if (argvars[0].v_type != VAR_STRING)
+	    (void)tv_get_number(&argvars[0]);    // issue errmsg if type error
 	++emsg_off;
 	buf = tv_get_buf(&argvars[0], FALSE);
 	--emsg_off;
@@ -504,7 +514,7 @@ f_deletebufline(typval_T *argvars, typval_T *rettv)
     }
 
     for (lnum = first; lnum <= last; ++lnum)
-	ml_delete(first, TRUE);
+	ml_delete_flags(first, ML_DEL_MESSAGE);
 
     FOR_ALL_TAB_WINDOWS(tp, wp)
 	if (wp->w_buffer == buf)
@@ -571,11 +581,11 @@ get_buffer_info(buf_T *buf)
     windows = list_alloc();
     if (windows != NULL)
     {
-	for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+	FOR_ALL_POPUPWINS(wp)
 	    if (wp->w_buffer == buf)
 		list_append_number(windows, (varnumber_T)wp->w_id);
 	FOR_ALL_TABPAGES(tp)
-	    for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	    FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
 		if (wp->w_buffer == buf)
 		    list_append_number(windows, (varnumber_T)wp->w_id);
 
@@ -689,10 +699,16 @@ get_buffer_lines(
 {
     char_u	*p;
 
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = NULL;
-    if (retlist && rettv_list_alloc(rettv) == FAIL)
-	return;
+    if (retlist)
+    {
+	if (rettv_list_alloc(rettv) == FAIL)
+	    return;
+    }
+    else
+    {
+	rettv->v_type = VAR_STRING;
+	rettv->vval.v_string = NULL;
+    }
 
     if (buf == NULL || buf->b_ml.ml_mfp == NULL || start < 0)
 	return;
@@ -743,6 +759,12 @@ f_getbufline(typval_T *argvars, typval_T *rettv)
 	end = tv_get_lnum_buf(&argvars[2], buf);
 
     get_buffer_lines(buf, lnum, end, TRUE, rettv);
+}
+
+    type_T *
+ret_f_getline(int argcount, type_T **argtypes UNUSED)
+{
+    return argcount == 1 ? &t_string : &t_list_string;
 }
 
 /*

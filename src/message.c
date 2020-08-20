@@ -461,7 +461,7 @@ get_emsg_source(void)
 
     if (SOURCING_NAME != NULL && other_sourcing_name())
     {
-	char_u	    *sname = estack_sfile();
+	char_u	    *sname = estack_sfile(FALSE);
 	char_u	    *tofree = sname;
 
 	if (sname == NULL)
@@ -654,6 +654,12 @@ emsg_core(char_u *s)
 	    return TRUE;
 	}
 
+	if (emsg_assert_fails_used && emsg_assert_fails_msg == NULL)
+	{
+	    emsg_assert_fails_msg = vim_strsave(s);
+	    emsg_assert_fails_lnum = SOURCING_LNUM;
+	}
+
 	// set "v:errmsg", also when using ":silent! cmd"
 	set_vim_var_string(VV_ERRMSG, s, -1);
 #endif
@@ -838,12 +844,34 @@ internal_error(char *where)
     siemsg(_(e_intern2), where);
 }
 
+/*
+ * Like internal_error() but do not call abort(), to avoid tests using
+ * test_unknown() and test_void() causing Vim to exit.
+ */
+    void
+internal_error_no_abort(char *where)
+{
+     semsg(_(e_intern2), where);
+}
+
 // emsg3() and emsgn() are in misc2.c to avoid warnings for the prototypes.
 
     void
 emsg_invreg(int name)
 {
     semsg(_("E354: Invalid register name: '%s'"), transchar(name));
+}
+
+/*
+ * Give an error message which contains %s for "name[len]".
+ */
+    void
+emsg_namelen(char *msg, char_u *name, int len)
+{
+    char_u *copy = vim_strnsave((char_u *)name, len);
+
+    semsg(msg, copy == NULL ? "NULL" : (char *)copy);
+    vim_free(copy);
 }
 
 /*
@@ -1013,7 +1041,11 @@ ex_messages(exarg_T *eap)
 
     if (p == first_msg_hist)
     {
+#ifdef FEAT_MULTI_LANG
+	s = get_mess_lang();
+#else
 	s = mch_getenv((char_u *)"LANG");
+#endif
 	if (s != NULL && *s != NUL)
 	    // The next comment is extracted by xgettext and put in po file for
 	    // translators to read.
@@ -1232,7 +1264,7 @@ wait_return(int redraw)
 	{
 	    // Put the character back in the typeahead buffer.  Don't use the
 	    // stuff buffer, because lmaps wouldn't work.
-	    ins_char_typebuf(c);
+	    ins_char_typebuf(vgetc_char, vgetc_mod_mask);
 	    do_redraw = TRUE;	    // need a redraw even though there is
 				    // typeahead
 	}
@@ -1726,7 +1758,7 @@ str2special(
 	// For multi-byte characters check for an illegal byte.
 	if (has_mbyte && MB_BYTE2LEN(*str) > len)
 	{
-	    transchar_nonprint(buf, c);
+	    transchar_nonprint(curbuf, buf, c);
 	    *sp = str + 1;
 	    return buf;
 	}
@@ -3626,6 +3658,7 @@ do_dialog(
     char_u	*hotkeys;
     int		c;
     int		i;
+    tmode_T	save_tmode;
 
 #ifndef NO_CONSOLE
     // Don't output anything in silent mode ("ex -s")
@@ -3657,6 +3690,10 @@ do_dialog(
     State = CONFIRM;
     setmouse();
 
+    // Ensure raw mode here.
+    save_tmode = cur_tmode;
+    settmode(TMODE_RAW);
+
     /*
      * Since we wait for a keypress, don't make the
      * user press RETURN as well afterwards.
@@ -3686,7 +3723,7 @@ do_dialog(
 		if (c == ':' && ex_cmd)
 		{
 		    retval = dfltbutton;
-		    ins_char_typebuf(':');
+		    ins_char_typebuf(':', 0);
 		    break;
 		}
 
@@ -3717,6 +3754,7 @@ do_dialog(
 	vim_free(hotkeys);
     }
 
+    settmode(save_tmode);
     State = oldState;
     setmouse();
     --no_wait_return;
@@ -4118,7 +4156,7 @@ infinity_str(int positive,
  * Limited support for floating point was added: 'f', 'F', 'e', 'E', 'g', 'G'.
  *
  * Length modifiers 'h' (short int) and 'l' (long int) and 'll' (long long int)
- * are supported.
+ * are supported.  NOTE: for 'll' the argument is varnumber_T or uvarnumber_T.
  *
  * The locale is not used, the string is used as a byte string.  This is only
  * relevant for double-byte encodings where the second byte may be '%'.
@@ -4235,10 +4273,8 @@ vim_vsnprintf_typval(
 #  define TMP_LEN 350	// On my system 1e308 is the biggest number possible.
 			// That sounds reasonable to use as the maximum
 			// printable.
-# elif defined(FEAT_NUM64)
-#  define TMP_LEN 66
 # else
-#  define TMP_LEN 34
+#  define TMP_LEN 66
 # endif
 	    char    tmp[TMP_LEN];
 
@@ -4362,12 +4398,8 @@ vim_vsnprintf_typval(
 		p++;
 		if (length_modifier == 'l' && *p == 'l')
 		{
-		    // double l = long long
-# ifdef FEAT_NUM64
+		    // double l = __int64 / varnumber_T
 		    length_modifier = 'L';
-# else
-		    length_modifier = 'l';	// treat it as a single 'l'
-# endif
 		    p++;
 		}
 	    }
@@ -4383,7 +4415,7 @@ vim_vsnprintf_typval(
 		default: break;
 	    }
 
-# if defined(FEAT_EVAL) && defined(FEAT_NUM64)
+# if defined(FEAT_EVAL)
 	    switch (fmt_spec)
 	    {
 		case 'd': case 'u': case 'o': case 'x': case 'X':
@@ -4496,22 +4528,20 @@ vim_vsnprintf_typval(
 		    // argument is never negative)
 		    int arg_sign = 0;
 
-		    // only defined for length modifier h, or for no
-		    // length modifiers
+		    // only set for length modifier h, or for no length
+		    // modifiers
 		    int int_arg = 0;
 		    unsigned int uint_arg = 0;
 
-		    // only defined for length modifier l
+		    // only set for length modifier l
 		    long int long_arg = 0;
 		    unsigned long int ulong_arg = 0;
 
-# ifdef FEAT_NUM64
-		    // only defined for length modifier ll
+		    // only set for length modifier ll
 		    varnumber_T llong_arg = 0;
 		    uvarnumber_T ullong_arg = 0;
-# endif
 
-		    // only defined for b conversion
+		    // only set for b conversion
 		    uvarnumber_T bin_arg = 0;
 
 		    // pointer argument value -only defined for p
@@ -4570,19 +4600,17 @@ vim_vsnprintf_typval(
 			    else if (long_arg < 0)
 				arg_sign = -1;
 			    break;
-# ifdef FEAT_NUM64
 			case 'L':
 			    llong_arg =
-#  if defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
 					tvs != NULL ? tv_nr(tvs, &arg_idx) :
-#  endif
+# endif
 					    va_arg(ap, varnumber_T);
 			    if (llong_arg > 0)
 				arg_sign =  1;
 			    else if (llong_arg < 0)
 				arg_sign = -1;
 			    break;
-# endif
 			}
 		    }
 		    else
@@ -4611,18 +4639,16 @@ vim_vsnprintf_typval(
 				if (ulong_arg != 0)
 				    arg_sign = 1;
 				break;
-# ifdef FEAT_NUM64
 			    case 'L':
 				ullong_arg =
-#  if defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
 					    tvs != NULL ? (uvarnumber_T)
 							tv_nr(tvs, &arg_idx) :
-#  endif
+# endif
 						va_arg(ap, uvarnumber_T);
 				if (ullong_arg != 0)
 				    arg_sign = 1;
 				break;
-# endif
 			}
 		    }
 
@@ -4676,16 +4702,12 @@ vim_vsnprintf_typval(
 			    ;
 			else if (length_modifier == 'L')
 			{
-# ifdef FEAT_NUM64
-#  ifdef MSWIN
+# ifdef MSWIN
 			    f[f_l++] = 'I';
 			    f[f_l++] = '6';
 			    f[f_l++] = '4';
-#  else
-			    f[f_l++] = 'l';
-			    f[f_l++] = 'l';
-#  endif
 # else
+			    f[f_l++] = 'l';
 			    f[f_l++] = 'l';
 # endif
 			}
@@ -4717,18 +4739,20 @@ vim_vsnprintf_typval(
 			    // signed
 			    switch (length_modifier)
 			    {
-			    case '\0':
+			    case '\0': str_arg_l += sprintf(
+						 tmp + str_arg_l, f,
+						 int_arg);
+				       break;
 			    case 'h': str_arg_l += sprintf(
-						 tmp + str_arg_l, f, int_arg);
+						 tmp + str_arg_l, f,
+						 (short)int_arg);
 				      break;
 			    case 'l': str_arg_l += sprintf(
 						tmp + str_arg_l, f, long_arg);
 				      break;
-# ifdef FEAT_NUM64
 			    case 'L': str_arg_l += sprintf(
 					       tmp + str_arg_l, f, llong_arg);
 				      break;
-# endif
 			    }
 			}
 			else
@@ -4736,18 +4760,20 @@ vim_vsnprintf_typval(
 			    // unsigned
 			    switch (length_modifier)
 			    {
-			    case '\0':
+			    case '\0': str_arg_l += sprintf(
+						tmp + str_arg_l, f,
+						uint_arg);
+				       break;
 			    case 'h': str_arg_l += sprintf(
-						tmp + str_arg_l, f, uint_arg);
+						tmp + str_arg_l, f,
+						(unsigned short)uint_arg);
 				      break;
 			    case 'l': str_arg_l += sprintf(
 					       tmp + str_arg_l, f, ulong_arg);
 				      break;
-# ifdef FEAT_NUM64
 			    case 'L': str_arg_l += sprintf(
 					      tmp + str_arg_l, f, ullong_arg);
 				      break;
-# endif
 			    }
 			}
 
