@@ -1533,6 +1533,13 @@ struct blobvar_S
 typedef int (*cfunc_T)(int argcount, typval_T *argvars, typval_T *rettv, void *state);
 typedef void (*cfunc_free_T)(void *state);
 
+// type of getline() last argument
+typedef enum {
+    GETLINE_NONE,	    // do not concatenate any lines
+    GETLINE_CONCAT_CONT,    // concatenate continuation lines
+    GETLINE_CONCAT_ALL	    // concatenate continuation and Vim9 # comment lines
+} getline_opt_T;
+
 #if defined(FEAT_EVAL) || defined(PROTO)
 typedef struct funccall_S funccall_T;
 
@@ -1760,13 +1767,6 @@ typedef struct
     int		sn_prl_execed;	// line being timed was executed
 # endif
 } scriptitem_T;
-
-// type of getline() last argument
-typedef enum {
-    GETLINE_NONE,	    // do not concatenate any lines
-    GETLINE_CONCAT_CONT,    // concatenate continuation lines
-    GETLINE_CONCAT_ALL	    // concatenate continuation and Vim9 # comment lines
-} getline_opt_T;
 
 // Struct passed through eval() functions.
 // See EVALARG_EVALUATE for a fixed value with eval_flags set to EVAL_EVALUATE.
