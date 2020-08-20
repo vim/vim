@@ -1966,7 +1966,8 @@ eval_next_line(evalarg_T *evalarg)
     char_u	*line;
 
     if (evalarg->eval_cookie != NULL)
-	line = evalarg->eval_getline(0, evalarg->eval_cookie, 0, TRUE);
+	line = evalarg->eval_getline(0, evalarg->eval_cookie, 0,
+							   GETLINE_CONCAT_ALL);
     else
 	line = next_line_from_context(evalarg->eval_cctx, TRUE);
     ++evalarg->eval_break_count;
