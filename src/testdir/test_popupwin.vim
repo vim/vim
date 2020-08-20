@@ -2566,7 +2566,7 @@ func Test_popupwin_close_prevwin()
   call assert_equal(2, winnr())
   let buf = term_start(&shell, #{hidden: 1})
   call popup_create(buf, {})
-  call term_wait(buf, 100)
+  call TermWait(buf, 100)
   call popup_clear(1)
   call assert_equal(2, winnr())
 
