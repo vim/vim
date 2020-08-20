@@ -286,5 +286,14 @@ def Test_eval_command()
   unlet g:val
 enddef
 
+def Test_map_command()
+  let lines =<< trim END
+      nnoremap <F3> :echo 'hit F3 #'<CR>
+      assert_equal(":echo 'hit F3 #'<CR>", maparg("<F3>", "n"))
+  END
+  CheckDefSuccess(lines)
+  CheckScriptSuccess(['vim9script'] + lines)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -4604,6 +4604,7 @@ separate_nextcmd(exarg_T *eap)
 #ifdef FEAT_EVAL
 		|| (*p == '#'
 		    && in_vim9script()
+		    && !(eap->argt & EX_NOTRLCOM)
 		    && p[1] != '{'
 		    && p > eap->cmd && VIM_ISWHITE(p[-1]))
 #endif
