@@ -4841,19 +4841,23 @@ var2fpos(
 	pos.lnum = list_find_nr(l, 0L, &error);
 	if (error || pos.lnum <= 0 || pos.lnum > curbuf->b_ml.ml_line_count)
 	    return NULL;	// invalid line number
-
-	// Get the column number
-	pos.col = list_find_nr(l, 1L, &error);
-	if (error)
-	    return NULL;
 	len = (long)STRLEN(ml_get(pos.lnum));
 
+	// Get the column number
 	// We accept "$" for the column number: last column.
 	li = list_find(l, 1L);
 	if (li != NULL && li->li_tv.v_type == VAR_STRING
 		&& li->li_tv.vval.v_string != NULL
 		&& STRCMP(li->li_tv.vval.v_string, "$") == 0)
+	{
 	    pos.col = len + 1;
+	}
+	else
+	{
+	    pos.col = list_find_nr(l, 1L, &error);
+	    if (error)
+		return NULL;
+	}
 
 	// Accept a position up to the NUL after the line.
 	if (pos.col == 0 || (int)pos.col > len + 1)

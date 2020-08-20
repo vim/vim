@@ -1320,6 +1320,12 @@ def Test_bufnr()
   assert_equal(buf, bufnr('%'))
 enddef
 
+def Test_col()
+  new
+  setline(1, 'asdf')
+  assert_equal(5, col([1, '$']))
+enddef
+
 def Test_getreg_return_type()
   let s1: string = getreg('"')
   let s2: string = getreg('"', 1)
