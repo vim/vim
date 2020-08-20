@@ -65,7 +65,9 @@ let &l:define =
             \ .. '\|^\s*\(export\s\+\|export\s\+default\s\+\)*\(var\|let\|const\|function\|class\)'
             \ .. '\|\<as\>'
 
-let b:undo_ftplugin = "setl fo< ofu< com< cms< sua< su< def< pa<"
+let b:undo_ftplugin =
+            \ "setl fo< ofu< com< cms< sua< su< def< pa<"
+            \ .. "| unlet b:browsefilter b:match_ignorecase b:match_words"
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
