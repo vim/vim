@@ -519,7 +519,7 @@ spell_load_file(
 		lp->sl_syllable = read_string(fd, len);	// <syllable>
 		if (lp->sl_syllable == NULL)
 		    goto endFAIL;
-		if (init_syl_tab(lp) == FAIL)
+		if (init_syl_tab(lp) != OK)
 		    goto endFAIL;
 		break;
 
