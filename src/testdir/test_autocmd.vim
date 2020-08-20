@@ -29,15 +29,15 @@ func Test_CursorHold_autocmd()
   END
   call writefile(before, 'Xinit')
   let buf = RunVimInTerminal('-S Xinit Xfile', {})
-  call term_wait(buf)
+  call TermWait(buf)
   call term_sendkeys(buf, "gg")
-  call term_wait(buf)
+  call TermWait(buf)
   sleep 50m
   call term_sendkeys(buf, "j")
-  call term_wait(buf)
+  call TermWait(buf)
   sleep 50m
   call term_sendkeys(buf, "j")
-  call term_wait(buf)
+  call TermWait(buf)
   sleep 50m
   call StopVimInTerminal(buf)
 

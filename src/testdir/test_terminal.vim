@@ -264,11 +264,11 @@ func Test_terminal_one_column()
   let width = &columns
   botright vert term
   let buf = bufnr('$')
-  call term_wait(buf, 100)
+  call TermWait(buf, 100)
   exe "set columns=" .. (width / 2)
   redraw
   call term_sendkeys(buf, "キ")
-  call term_wait(buf, 10)
+  call TermWait(buf, 10)
   exe "set columns=" .. width
   exe buf . 'bwipe!'
 endfunc
@@ -1221,7 +1221,7 @@ func Test_terminal_dumpwrite_errors()
   CheckRunVimInTerminal
   call assert_fails("call term_dumpwrite({}, 'Xtest.dump')", 'E728:')
   let buf = RunVimInTerminal('', {})
-  call term_wait(buf)
+  call TermWait(buf)
   call assert_fails("call term_dumpwrite(buf, 'Xtest.dump', '')", 'E715:')
   call assert_fails("call term_dumpwrite(buf, [])", 'E730:')
   call writefile([], 'Xtest.dump')
@@ -1231,7 +1231,7 @@ func Test_terminal_dumpwrite_errors()
   call assert_fails("call term_dumpwrite(buf, test_null_string())", 'E482:')
   call test_garbagecollect_now()
   call StopVimInTerminal(buf)
-  call term_wait(buf)
+  call TermWait(buf)
   call assert_fails("call term_dumpwrite(buf, 'Xtest.dump')", 'E958:')
   call assert_fails('call term_sendkeys([], ":q\<CR>")', 'E745:')
   call assert_equal(0, term_sendkeys(buf, ":q\<CR>"))
