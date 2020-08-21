@@ -564,6 +564,10 @@ check_script_var_type(typval_T *dest, typval_T *value, char_u *name)
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
     int		    idx;
 
+    if (si->sn_version != SCRIPT_VERSION_VIM9)
+	// legacy script doesn't store variable types
+	return OK;
+
     // Find the svar_T in sn_var_vals.
     for (idx = 0; idx < si->sn_var_vals.ga_len; ++idx)
     {

@@ -3166,6 +3166,23 @@ def Test_vim9_autoload()
   &rtp = save_rtp
 enddef
 
+def Test_script_var_in_autocmd()
+  # using a script variable from an autocommand, defined in a :def function in a
+  # legacy Vim script, cannot check the variable type.
+  let lines =<< trim END
+    let s:counter = 1
+    def s:Func()
+      au! CursorHold
+      au CursorHold * s:counter += 1
+    enddef
+    call s:Func()
+    doau CursorHold
+    call assert_equal(2, s:counter)
+    au! CursorHold
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_cmdline_win()
   # if the Vim syntax highlighting uses Vim9 constructs they can be used from
   # the command line window.
