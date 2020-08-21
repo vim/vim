@@ -77,7 +77,7 @@ main(void)
     if (cmdlen >= 2 && p[0] == L'"' && p[cmdlen - 1] == L'"')
     {
 	cmdlen += 3;
-	cmd = (wchar_t *)malloc(cmdlen * sizeof(wchar_t));
+	cmd = malloc(cmdlen * sizeof(wchar_t));
 	if (cmd == NULL)
 	{
 	    perror("vimrun malloc(): ");
