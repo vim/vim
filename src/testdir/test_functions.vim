@@ -2516,6 +2516,18 @@ endfunc
 func Test_glob()
   call assert_equal('', glob(test_null_string()))
   call assert_equal('', globpath(test_null_string(), test_null_string()))
+
+  call writefile([], 'Xglob')
+  call writefile([], 'XGlob')
+  call assert_equal('Xglob', glob('Xgl*b'))
+  set wildignorecase
+  call assert_equal("XGlob\nXglob", glob('Xgl*b'))
+  set wildignorecase&
+
+  call delete('XGlob')
+  call delete('XGLOB')
+
+  call assert_fails("call glob('*', 0, {})", 'E728:')
 endfunc
 
 " Test for browse()
