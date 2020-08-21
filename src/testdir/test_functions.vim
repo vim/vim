@@ -2517,15 +2517,15 @@ func Test_glob()
   call assert_equal('', glob(test_null_string()))
   call assert_equal('', globpath(test_null_string(), test_null_string()))
 
-  call writefile([], 'Xglob')
-  call writefile([], 'XGlob')
-  call assert_equal('Xglob', glob('Xgl*b'))
+  call writefile([], 'Xglob1')
+  call writefile([], 'XGLOB2')
+  call assert_equal('Xglob1', glob('Xglob[12]'))
   set wildignorecase
-  call assert_equal("XGlob\nXglob", glob('Xgl*b'))
+  call assert_equal("XGLOB2\nXglob1", glob('Xglob[12]'))
   set wildignorecase&
 
-  call delete('XGlob')
-  call delete('XGLOB')
+  call delete('Xglob1')
+  call delete('XGLOB2')
 
   call assert_fails("call glob('*', 0, {})", 'E728:')
 endfunc
