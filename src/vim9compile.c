@@ -3402,19 +3402,25 @@ compile_expr7(
 	/*
 	 * Option value: &name
 	 */
-	case '&':	ret = compile_get_option(arg, cctx);
+	case '&':	if (generate_ppconst(cctx, ppconst) == FAIL)
+			    return FAIL;
+			ret = compile_get_option(arg, cctx);
 			break;
 
 	/*
 	 * Environment variable: $VAR.
 	 */
-	case '$':	ret = compile_get_env(arg, cctx);
+	case '$':	if (generate_ppconst(cctx, ppconst) == FAIL)
+			    return FAIL;
+			ret = compile_get_env(arg, cctx);
 			break;
 
 	/*
 	 * Register contents: @r.
 	 */
-	case '@':	ret = compile_get_register(arg, cctx);
+	case '@':	if (generate_ppconst(cctx, ppconst) == FAIL)
+			    return FAIL;
+			ret = compile_get_register(arg, cctx);
 			break;
 	/*
 	 * nested expression: (expression).

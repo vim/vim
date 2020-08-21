@@ -944,6 +944,18 @@ def Test_expr5()
   				+ g:ablob)
   assert_equal(0z01ab3344, g:ablob + 0z3344)
   assert_equal(0z01ab01ab, g:ablob + g:ablob)
+
+  # concatenate non-constant to constant
+  let save_path = &path
+  &path = 'b'
+  assert_equal('ab', 'a' .. &path)
+  &path = save_path
+
+  @b = 'b'
+  assert_equal('ab', 'a' .. @b)
+
+  $ENVVAR = 'env'
+  assert_equal('aenv', 'a' .. $ENVVAR)
 enddef
 
 def Test_expr5_vim9script()
