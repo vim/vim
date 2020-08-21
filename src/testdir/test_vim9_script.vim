@@ -569,7 +569,10 @@ def Test_assignment_failure()
   call CheckDefFailure(['let t:var = 5'], 'E1016: Cannot declare a tab variable:')
 
   call CheckDefFailure(['let anr = 4', 'anr ..= "text"'], 'E1019:')
-  call CheckDefFailure(['let xnr += 4'], 'E1020:')
+  call CheckDefFailure(['let xnr += 4'], 'E1020:', 1)
+  call CheckScriptFailure(['vim9script', 'let xnr += 4'], 'E1020:')
+  call CheckDefFailure(["let xnr = xnr + 1"], 'E1001:', 1)
+  call CheckScriptFailure(['vim9script', 'let xnr = xnr + 4'], 'E121:')
 
   call CheckScriptFailure(['vim9script', 'def Func()', 'let dummy = s:notfound', 'enddef', 'defcompile'], 'E1108:')
 

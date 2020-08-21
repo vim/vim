@@ -786,7 +786,13 @@ ex_let(exarg_T *eap)
 	    op[1] = NUL;
 	    if (*expr != '=')
 	    {
-		if (vim_strchr((char_u *)"+-*/%.", *expr) != NULL)
+		if (vim9script && (flags & LET_NO_COMMAND) == 0)
+		{
+		    // +=, /=, etc. require an existing variable
+		    semsg(_(e_cannot_use_operator_on_new_variable), eap->arg);
+		    i = FAIL;
+		}
+		else if (vim_strchr((char_u *)"+-*/%.", *expr) != NULL)
 		{
 		    op[0] = *expr;   // +=, -=, *=, /=, %= or .=
 		    ++len;

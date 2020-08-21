@@ -1682,8 +1682,6 @@ def Test_expr7_dict()
   call CheckDefFailure(["let x = {xxx: 8}"], 'E1001:', 1)
   call CheckDefFailure(["let x = #{a: 1, a: 2}"], 'E721:', 1)
   call CheckDefFailure(["let x = #"], 'E1015:', 1)
-  call CheckDefFailure(["let x += 1"], 'E1020:', 1)
-  call CheckDefFailure(["let x = x + 1"], 'E1001:', 1)
   call CheckDefExecFailure(["let x = g:anint.member"], 'E715:', 1)
   call CheckDefExecFailure(["let x = g:dict_empty.member"], 'E716:', 1)
 
