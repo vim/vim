@@ -33,7 +33,7 @@ EXTERN char e_syntax_error_at_str[]
 	INIT(= N_("E1002: Syntax error at %s"));
 EXTERN char e_missing_return_value[]
 	INIT(= N_("E1003: Missing return value"));
-EXTERN char e_white_space_required_before_and_after[]
+EXTERN char e_white_space_required_before_and_after_str[]
 	INIT(= N_("E1004: white space required before and after '%s'"));
 EXTERN char e_too_many_argument_types[]
 	INIT(= N_("E1005: Too many argument types"));
@@ -156,13 +156,13 @@ EXTERN char e_type_mismatch_for_v_variable[]
 	INIT(= N_("E1063: type mismatch for v: variable"));
 // E1064 unused
 // E1065 unused
-EXTERN char e_cannot_declare_a_register[]
+EXTERN char e_cannot_declare_a_register_str[]
 	INIT(= N_("E1066: Cannot declare a register: %s"));
-EXTERN char e_separator_mismatch[]
+EXTERN char e_separator_mismatch_str[]
 	INIT(= N_("E1067: Separator mismatch: %s"));
-EXTERN char e_no_white_space_allowed_before[]
+EXTERN char e_no_white_space_allowed_before_str[]
 	INIT(= N_("E1068: No white space allowed before '%s'"));
-EXTERN char e_white_space_required_after[]
+EXTERN char e_white_space_required_after_str[]
 	INIT(= N_("E1069: white space required after '%s'"));
 EXTERN char e_missing_from[]
 	INIT(= N_("E1070: Missing \"from\""));
@@ -170,7 +170,7 @@ EXTERN char e_invalid_string_after_from[]
 	INIT(= N_("E1071: Invalid string after \"from\""));
 EXTERN char e_cannot_compare_str_with_str[]
 	INIT(= N_("E1072: Cannot compare %s with %s"));
-EXTERN char e_name_already_defined[]
+EXTERN char e_name_already_defined_str[]
 	INIT(= N_("E1073: name already defined: %s"));
 EXTERN char e_no_white_space_allowed_after_dot[]
 	INIT(= N_("E1074: no white space allowed after dot"));

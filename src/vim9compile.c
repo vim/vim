@@ -295,7 +295,7 @@ check_defined(char_u *p, size_t len, cctx_T *cctx)
 	    || find_func_even_dead(p, FALSE, cctx) != NULL)
     {
 	p[len] = c;
-	semsg(_(e_name_already_defined), p);
+	semsg(_(e_name_already_defined_str), p);
 	return FAIL;
     }
     p[len] = c;
@@ -2202,14 +2202,14 @@ compile_arguments(char_u **arg, cctx_T *cctx, int *argcount)
 
 	if (*p != ',' && *skipwhite(p) == ',')
 	{
-	    semsg(_(e_no_white_space_allowed_before), ",");
+	    semsg(_(e_no_white_space_allowed_before_str), ",");
 	    p = skipwhite(p);
 	}
 	if (*p == ',')
 	{
 	    ++p;
 	    if (*p != NUL && !VIM_ISWHITE(*p))
-		semsg(_(e_white_space_required_after), ",");
+		semsg(_(e_white_space_required_after_str), ",");
 	}
 	whitep = p;
 	p = skipwhite(p);
@@ -2416,7 +2416,7 @@ compile_list(char_u **arg, cctx_T *cctx)
 	}
 	if (*p == ',')
 	{
-	    semsg(_(e_no_white_space_allowed_before), ",");
+	    semsg(_(e_no_white_space_allowed_before_str), ",");
 	    return FAIL;
 	}
 	if (*p == ']')
@@ -2432,7 +2432,7 @@ compile_list(char_u **arg, cctx_T *cctx)
 	    ++p;
 	    if (*p != ']' && !IS_WHITE_OR_NUL(*p))
 	    {
-		semsg(_(e_white_space_required_after), ",");
+		semsg(_(e_white_space_required_after_str), ",");
 		return FAIL;
 	    }
 	}
@@ -2618,7 +2618,7 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 	if (**arg != ':')
 	{
 	    if (*skipwhite(*arg) == ':')
-		semsg(_(e_no_white_space_allowed_before), ":");
+		semsg(_(e_no_white_space_allowed_before_str), ":");
 	    else
 		semsg(_(e_missing_dict_colon), *arg);
 	    return FAIL;
@@ -2626,7 +2626,7 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 	whitep = *arg + 1;
 	if (!IS_WHITE_OR_NUL(*whitep))
 	{
-	    semsg(_(e_white_space_required_after), ":");
+	    semsg(_(e_white_space_required_after_str), ":");
 	    return FAIL;
 	}
 
@@ -2657,7 +2657,7 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 	}
 	if (IS_WHITE_OR_NUL(*whitep))
 	{
-	    semsg(_(e_no_white_space_allowed_before), ",");
+	    semsg(_(e_no_white_space_allowed_before_str), ",");
 	    return FAIL;
 	}
 	whitep = *arg + 1;
@@ -3518,7 +3518,7 @@ error_white_both(char_u *op, int len)
     char_u	buf[10];
 
     vim_strncpy(buf, op, len);
-    semsg(_(e_white_space_required_before_and_after), buf);
+    semsg(_(e_white_space_required_before_and_after_str), buf);
 }
 
 /*
@@ -3542,7 +3542,7 @@ compile_expr7t(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	if (**arg != '>')
 	{
 	    if (*skipwhite(*arg) == '>')
-		semsg(_(e_no_white_space_allowed_before), ">");
+		semsg(_(e_no_white_space_allowed_before_str), ">");
 	    else
 		emsg(_(e_missing_gt));
 	    return FAIL;
@@ -3887,7 +3887,7 @@ compile_and_or(
 
 	    if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[2]))
 	    {
-		semsg(_(e_white_space_required_before_and_after), op);
+		semsg(_(e_white_space_required_before_and_after_str), op);
 		return FAIL;
 	    }
 
@@ -4028,7 +4028,7 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
 
 	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[1]))
 	{
-	    semsg(_(e_white_space_required_before_and_after), "?");
+	    semsg(_(e_white_space_required_before_and_after_str), "?");
 	    return FAIL;
 	}
 
@@ -4087,7 +4087,7 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
 
 	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[1]))
 	{
-	    semsg(_(e_white_space_required_before_and_after), ":");
+	    semsg(_(e_white_space_required_before_and_after_str), ":");
 	    return FAIL;
 	}
 
@@ -4394,7 +4394,7 @@ vim9_declare_error(char_u *name)
 		  return;
 	case '&': semsg(_(e_cannot_declare_an_option), name);
 		  return;
-	case '@': semsg(_(e_cannot_declare_a_register), name);
+	case '@': semsg(_(e_cannot_declare_a_register_str), name);
 		  return;
 	default: return;
     }
@@ -4775,7 +4775,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		// parse optional type: "let var: type = expr"
 		if (!VIM_ISWHITE(p[1]))
 		{
-		    semsg(_(e_white_space_required_after), ":");
+		    semsg(_(e_white_space_required_after_str), ":");
 		    goto theend;
 		}
 		p = skipwhite(p + 1);
@@ -6042,7 +6042,7 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 	end = skip_regexp_ex(p + 1, *p, TRUE, &tofree, &dropped);
 	if (*end != *p)
 	{
-	    semsg(_(e_separator_mismatch), p);
+	    semsg(_(e_separator_mismatch_str), p);
 	    vim_free(tofree);
 	    return FAIL;
 	}

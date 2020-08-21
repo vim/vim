@@ -119,7 +119,7 @@ one_function_arg(char_u *arg, garray_T *newargs, garray_T *argtypes, int skip)
 	    ++p;
 	    if (!VIM_ISWHITE(*p))
 	    {
-		semsg(_(e_white_space_required_after), ":");
+		semsg(_(e_white_space_required_after_str), ":");
 		return arg;
 	    }
 	    type = skipwhite(p);
@@ -276,7 +276,7 @@ get_function_args(
 		if (!skip && in_vim9script()
 				      && !IS_WHITE_OR_NUL(*p) && *p != endchar)
 		{
-		    semsg(_(e_white_space_required_after), ",");
+		    semsg(_(e_white_space_required_after_str), ",");
 		    goto err_ret;
 		}
 	    }
@@ -623,6 +623,7 @@ get_func_tv(
     int		ret = OK;
     typval_T	argvars[MAX_FUNC_ARGS + 1];	// vars for arguments
     int		argcount = 0;		// number of arguments found
+    int		vim9script = in_vim9script();
 
     /*
      * Get the arguments.
@@ -644,10 +645,25 @@ get_func_tv(
 	++argcount;
 	// The comma should come right after the argument, but this wasn't
 	// checked previously, thus only enforce it in Vim9 script.
-	if (!in_vim9script())
+	if (vim9script)
+	{
+	    if (*argp != ',' && *skipwhite(argp) == ',')
+	    {
+		semsg(_(e_no_white_space_allowed_before_str), ",");
+		ret = FAIL;
+		break;
+	    }
+	}
+	else
 	    argp = skipwhite(argp);
 	if (*argp != ',')
 	    break;
+	if (vim9script && !IS_WHITE_OR_NUL(argp[1]))
+	{
+	    semsg(_(e_white_space_required_after_str), ",");
+	    ret = FAIL;
+	    break;
+	}
     }
     argp = skipwhite_and_linebreak(argp, evalarg);
     if (*argp == ')')
@@ -3275,7 +3291,7 @@ def_function(exarg_T *eap, char_u *name_arg)
 			  || fp->uf_script_ctx.sc_seq == current_sctx.sc_seq)))
 	    {
 		if (vim9script)
-		    emsg_funcname(e_name_already_defined, name);
+		    emsg_funcname(e_name_already_defined_str, name);
 		else
 		    emsg_funcname(e_funcexts, name);
 		goto erret;
