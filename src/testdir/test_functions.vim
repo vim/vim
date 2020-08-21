@@ -2519,9 +2519,10 @@ func Test_glob()
 
   call writefile([], 'Xglob1')
   call writefile([], 'XGLOB2')
-  call assert_equal('Xglob1', glob('Xglob[12]'))
   set wildignorecase
-  call assert_equal("XGLOB2\nXglob1", glob('Xglob[12]'))
+  " Sort output of glob() otherwise we end up with different
+  " ordering depending on whether file system is case-sensitive.
+  call assert_equal(['XGLOB2', 'Xglob1'], sort(glob('Xglob[12]', 0, 1)))
   set wildignorecase&
 
   call delete('Xglob1')
