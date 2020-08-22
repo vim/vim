@@ -260,15 +260,20 @@ lookup_arg(
 
 /*
  * Lookup a variable in the current script.
+ * If "vim9script" is TRUE the script must be Vim9 script.  Used for "var"
+ * without "s:".
  * Returns OK or FAIL.
  */
     static int
-lookup_script(char_u *name, size_t len)
+lookup_script(char_u *name, size_t len, int vim9script)
 {
     int		    cc;
     hashtab_T	    *ht = &SCRIPT_VARS(current_sctx.sc_sid);
     dictitem_T	    *di;
 
+    if (vim9script && SCRIPT_ITEM(current_sctx.sc_sid)->sn_version
+							!= SCRIPT_VERSION_VIM9)
+	return FAIL;
     cc = name[len];
     name[len] = NUL;
     di = find_var_in_ht(ht, 0, name, TRUE);
@@ -287,7 +292,7 @@ check_defined(char_u *p, size_t len, cctx_T *cctx)
     int c = p[len];
 
     p[len] = NUL;
-    if (lookup_script(p, len) == OK
+    if (lookup_script(p, len, FALSE) == OK
 	    || (cctx != NULL
 		&& (lookup_local(p, len, cctx) != NULL
 		    || lookup_arg(p, len, NULL, NULL, NULL, cctx) == OK))
@@ -2145,15 +2150,14 @@ compile_load(char_u **arg, char_u *end_arg, cctx_T *cctx, int error)
 	    else
 	    {
 		// "var" can be script-local even without using "s:" if it
-		// already exists.
-		if (SCRIPT_ITEM(current_sctx.sc_sid)->sn_version
-						    == SCRIPT_VERSION_VIM9
-			    || lookup_script(*arg, len) == OK)
-		   res = compile_load_scriptvar(cctx, name, *arg, &end,
-								    FALSE);
+		// already exists in a Vim9 script or when it's imported.
+		if (lookup_script(*arg, len, TRUE) == OK
+			|| find_imported(name, 0, cctx) != NULL)
+		   res = compile_load_scriptvar(cctx, name, *arg, &end, FALSE);
 
 		// When the name starts with an uppercase letter or "x:" it
 		// can be a user defined function.
+		// TODO: this is just guessing
 		if (res == FAIL && (ASCII_ISUPPER(*name) || name[1] == ':'))
 		    res = generate_funcref(cctx, name);
 	    }
@@ -4697,8 +4701,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    int script_namespace = varlen > 1
 					   && STRNCMP(var_start, "s:", 2) == 0;
 		    int script_var = (script_namespace
-				? lookup_script(var_start + 2, varlen - 2)
-				: lookup_script(var_start, varlen)) == OK;
+			      ? lookup_script(var_start + 2, varlen - 2, FALSE)
+			      : lookup_script(var_start, varlen, TRUE)) == OK;
 		    imported_T  *import =
 					find_imported(var_start, varlen, cctx);
 
@@ -6637,7 +6641,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 			    || lookup_local(ea.cmd, len, &cctx) != NULL
 			    || lookup_arg(ea.cmd, len, NULL, NULL,
 							     NULL, &cctx) == OK
-			    || lookup_script(ea.cmd, len) == OK
+			    || lookup_script(ea.cmd, len, FALSE) == OK
 			    || find_imported(ea.cmd, len, &cctx) != NULL)
 		    {
 			line = compile_assignment(ea.cmd, &ea, CMD_SIZE, &cctx);

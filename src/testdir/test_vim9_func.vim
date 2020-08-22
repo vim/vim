@@ -829,30 +829,30 @@ endfunc
 let s:funcResult = 0
 
 def FuncNoArgNoRet()
-  funcResult = 11
+  s:funcResult = 11
 enddef
 
 def FuncNoArgRetNumber(): number
-  funcResult = 22
+  s:funcResult = 22
   return 1234
 enddef
 
 def FuncNoArgRetString(): string
-  funcResult = 45
+  s:funcResult = 45
   return 'text'
 enddef
 
 def FuncOneArgNoRet(arg: number)
-  funcResult = arg
+  s:funcResult = arg
 enddef
 
 def FuncOneArgRetNumber(arg: number): number
-  funcResult = arg
+  s:funcResult = arg
   return arg
 enddef
 
 def FuncTwoArgNoRet(one: bool, two: number)
-  funcResult = two
+  s:funcResult = two
 enddef
 
 def FuncOneArgRetString(arg: string): string
@@ -865,31 +865,31 @@ enddef
 
 def Test_func_type()
   let Ref1: func()
-  funcResult = 0
+  s:funcResult = 0
   Ref1 = FuncNoArgNoRet
   Ref1()
-  assert_equal(11, funcResult)
+  assert_equal(11, s:funcResult)
 
   let Ref2: func
-  funcResult = 0
+  s:funcResult = 0
   Ref2 = FuncNoArgNoRet
   Ref2()
-  assert_equal(11, funcResult)
+  assert_equal(11, s:funcResult)
 
-  funcResult = 0
+  s:funcResult = 0
   Ref2 = FuncOneArgNoRet
   Ref2(12)
-  assert_equal(12, funcResult)
+  assert_equal(12, s:funcResult)
 
-  funcResult = 0
+  s:funcResult = 0
   Ref2 = FuncNoArgRetNumber
   assert_equal(1234, Ref2())
-  assert_equal(22, funcResult)
+  assert_equal(22, s:funcResult)
 
-  funcResult = 0
+  s:funcResult = 0
   Ref2 = FuncOneArgRetNumber
   assert_equal(13, Ref2(13))
-  assert_equal(13, funcResult)
+  assert_equal(13, s:funcResult)
 enddef
 
 def Test_repeat_return_type()
