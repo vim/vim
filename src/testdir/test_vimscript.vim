@@ -7445,6 +7445,14 @@ func Test_typed_script_var()
   call StopVimInTerminal(buf)
 endfunc
 
+" Test for issue6776              {{{1
+func Test_issue6776()
+  try
+    call eval('0 ? 0')
+  catch
+  endtry
+endfunction
+
 "-------------------------------------------------------------------------------
 " Modelines								    {{{1
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
