@@ -2167,7 +2167,10 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	evalarg_used->eval_flags = result ? orig_flags
 						 : orig_flags & ~EVAL_EVALUATE;
 	if (eval1(arg, rettv, evalarg_used) == FAIL)
+	{
+	    evalarg_used->eval_flags = orig_flags;
 	    return FAIL;
+	}
 
 	/*
 	 * Check for the ":".
@@ -2178,6 +2181,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    emsg(_(e_missing_colon));
 	    if (evaluate && result)
 		clear_tv(rettv);
+	    evalarg_used->eval_flags = orig_flags;
 	    return FAIL;
 	}
 	if (getnext)
@@ -2188,6 +2192,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    {
 		error_white_both(p, 1);
 		clear_tv(rettv);
+		evalarg_used->eval_flags = orig_flags;
 		return FAIL;
 	    }
 	    *arg = p;
@@ -2200,6 +2205,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	{
 	    error_white_both(p, 1);
 	    clear_tv(rettv);
+	    evalarg_used->eval_flags = orig_flags;
 	    return FAIL;
 	}
 	*arg = skipwhite_and_linebreak(*arg + 1, evalarg_used);
@@ -2209,6 +2215,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	{
 	    if (evaluate && result)
 		clear_tv(rettv);
+	    evalarg_used->eval_flags = orig_flags;
 	    return FAIL;
 	}
 	if (evaluate && !result)

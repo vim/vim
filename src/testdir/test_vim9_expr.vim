@@ -114,6 +114,27 @@ def Test_expr1_vimscript()
       let var = v:true ? 1 :2
   END
   CheckScriptFailure(lines, 'E1004:', 2)
+
+  # check after failure eval_flags is reset
+  lines =<< trim END
+      vim9script
+      try
+        call eval('0 ? 1: 2')
+      catch
+      endtry
+      assert_equal(v:true, eval(string(v:true)))
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      try
+        call eval('0 ? 1 :2')
+      catch
+      endtry
+      assert_equal(v:true, eval(string(v:true)))
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 func Test_expr1_fails()
