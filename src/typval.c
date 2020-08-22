@@ -177,6 +177,12 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
     switch (varp->v_type)
     {
 	case VAR_NUMBER:
+	    if (want_bool && varp->vval.v_number != 0
+						   && varp->vval.v_number != 1)
+	    {
+		semsg(_(e_using_number_as_bool_nr), varp->vval.v_number);
+		break;
+	    }
 	    return varp->vval.v_number;
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
@@ -261,13 +267,12 @@ tv_get_number_chk(typval_T *varp, int *denote)
 
 /*
  * Get the boolean value of "varp".  This is like tv_get_number_chk(),
- * but in Vim9 script accepts Number and Bool.
+ * but in Vim9 script accepts Number (0 and 1) and Bool/Special.
  */
     varnumber_T
 tv_get_bool(typval_T *varp)
 {
     return tv_get_bool_or_number_chk(varp, NULL, TRUE);
-
 }
 
 /*

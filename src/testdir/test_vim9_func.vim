@@ -1389,12 +1389,22 @@ def Test_search()
   new
   setline(1, ['foo', 'bar'])
   let val = 0
+  # skip expr returns boolean
   assert_equal(2, search('bar', 'W', 0, 0, {-> val == 1}))
+  :1
+  assert_equal(0, search('bar', 'W', 0, 0, {-> val == 0}))
+  # skip expr returns number, only 0 and 1 are accepted
+  :1
+  assert_equal(2, search('bar', 'W', 0, 0, {-> 0}))
+  :1
+  assert_equal(0, search('bar', 'W', 0, 0, {-> 1}))
+  assert_fails("search('bar', '', 0, 0, {-> -1})", 'E1023:')
+  assert_fails("search('bar', '', 0, 0, {-> -1})", 'E1023:')
 enddef
 
 def Test_readdir()
-   eval expand('.')->readdir({e -> e[0] !=# '.'})
-   eval expand('.')->readdirex({e -> e.name[0] !=# '.'})
+   eval expand('sautest')->readdir({e -> e[0] !=# '.'})
+   eval expand('sautest')->readdirex({e -> e.name[0] !=# '.'})
 enddef
 
 def Test_setbufvar()
