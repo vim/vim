@@ -2189,6 +2189,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    {
 		error_white_both(p, 1);
 		clear_tv(rettv);
+		evalarg_used->eval_flags = orig_flags;
 		return FAIL;
 	    }
 	    *arg = p;
@@ -2201,6 +2202,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	{
 	    error_white_both(p, 1);
 	    clear_tv(rettv);
+	    evalarg_used->eval_flags = orig_flags;
 	    return FAIL;
 	}
 	*arg = skipwhite_and_linebreak(*arg + 1, evalarg_used);
@@ -2210,6 +2212,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	{
 	    if (evaluate && result)
 		clear_tv(rettv);
+	    evalarg_used->eval_flags = orig_flags;
 	    return FAIL;
 	}
 	if (evaluate && !result)
