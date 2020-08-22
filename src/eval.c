@@ -2178,6 +2178,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    emsg(_(e_missing_colon));
 	    if (evaluate && result)
 		clear_tv(rettv);
+	    evalarg_used->eval_flags = orig_flags;
 	    return FAIL;
 	}
 	if (getnext)
