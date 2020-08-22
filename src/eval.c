@@ -4352,7 +4352,8 @@ set_ref_in_item(
 	    }
 	    else
 	    {
-		ht_stack_T *newitem = (ht_stack_T*)malloc(sizeof(ht_stack_T));
+		ht_stack_T *newitem = ALLOC_ONE(ht_stack_T);
+
 		if (newitem == NULL)
 		    abort = TRUE;
 		else
@@ -4378,8 +4379,8 @@ set_ref_in_item(
 	    }
 	    else
 	    {
-		list_stack_T *newitem = (list_stack_T*)malloc(
-							sizeof(list_stack_T));
+		list_stack_T *newitem = ALLOC_ONE(list_stack_T);
+
 		if (newitem == NULL)
 		    abort = TRUE;
 		else
