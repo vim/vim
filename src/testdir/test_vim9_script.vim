@@ -15,6 +15,18 @@ def Test_range_only()
   setline(1, ['blah', 'Blah'])
   :/Blah/
   assert_equal(2, getcurpos()[1])
+  bwipe!
+
+  # without range commands use current line
+  new
+  setline(1, ['one', 'two', 'three'])
+  :2
+  print
+  assert_equal('two', Screenline(&lines))
+  :3
+  list
+  assert_equal('three$', Screenline(&lines))
+  bwipe!
 enddef
 
 let s:appendToMe = 'xxx'
