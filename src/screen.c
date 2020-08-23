@@ -465,7 +465,8 @@ screen_line(
     // double-wide character. Clear the left half to avoid it getting the popup
     // window background color.
     if (coloff > 0 && ScreenLines[off_to] == 0
-					     && ScreenLinesUC[off_to - 1] != 0)
+		   && ScreenLinesUC[off_to - 1] != 0
+		   && (*mb_char2cells)(ScreenLinesUC[off_to - 1]) > 1)
     {
 	ScreenLines[off_to - 1] = ' ';
 	ScreenLinesUC[off_to - 1] = 0;
