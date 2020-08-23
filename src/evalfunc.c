@@ -950,7 +950,7 @@ static funcentry_T global_functions[] =
     {"stridx",		2, 3, FEARG_1,	  ret_number,	f_stridx},
     {"string",		1, 1, FEARG_1,	  ret_string,	f_string},
     {"strlen",		1, 1, FEARG_1,	  ret_number,	f_strlen},
-    {"strpart",		2, 3, FEARG_1,	  ret_string,	f_strpart},
+    {"strpart",		2, 4, FEARG_1,	  ret_string,	f_strpart},
     {"strptime",	2, 2, FEARG_1,	  ret_number,
 #ifdef HAVE_STRPTIME
 	    f_strptime
@@ -8270,10 +8270,8 @@ f_strpart(typval_T *argvars, typval_T *rettv)
     else
 	len = slen - n;	    // default len: all bytes that are available.
 
-    /*
-     * Only return the overlap between the specified part and the actual
-     * string.
-     */
+    // Only return the overlap between the specified part and the actual
+    // string.
     if (n < 0)
     {
 	len += n;
@@ -8285,6 +8283,16 @@ f_strpart(typval_T *argvars, typval_T *rettv)
 	len = 0;
     else if (n + len > slen)
 	len = slen - n;
+
+    if (argvars[2].v_type != VAR_UNKNOWN && argvars[3].v_type != VAR_UNKNOWN)
+    {
+	int off;
+
+	// length in characters
+	for (off = n; off < slen && len > 0; --len)
+	    off += mb_ptr2len(p + off);
+	len = off - n;
+    }
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = vim_strnsave(p + n, len);
