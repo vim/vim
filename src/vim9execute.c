@@ -1062,7 +1062,10 @@ call_def_function(
 		    if (ga.ga_data != NULL)
 		    {
 			if (iptr->isn_type == ISN_EXECUTE)
+			{
+			    SOURCING_LNUM = iptr->isn_lnum;
 			    do_cmdline_cmd((char_u *)ga.ga_data);
+			}
 			else
 			{
 			    msg_sb_eol();
