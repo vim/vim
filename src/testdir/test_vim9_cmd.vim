@@ -295,5 +295,25 @@ def Test_map_command()
   CheckScriptSuccess(['vim9script'] + lines)
 enddef
 
+def Test_normal_command()
+  new
+  setline(1, 'doesnotexist')
+  let caught = 0
+  try
+    exe "norm! \<C-]>"
+  catch /E433/
+    caught = 2
+  endtry
+  assert_equal(2, caught)
+
+  try
+    exe "norm! 3\<C-]>"
+  catch /E433/
+    caught = 3
+  endtry
+  assert_equal(3, caught)
+  bwipe!
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
