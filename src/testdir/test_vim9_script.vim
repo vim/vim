@@ -608,6 +608,13 @@ def Test_unlet()
   assert_false(exists('g:somevar'))
   unlet! g:somevar
 
+  # also works for script-local variable in legacy Vim script
+  s:somevar = 'legacy'
+  assert_true(exists('s:somevar'))
+  unlet s:somevar
+  assert_false(exists('s:somevar'))
+  unlet! s:somevar
+
   call CheckScriptFailure([
         'vim9script',
         'let svar = 123',

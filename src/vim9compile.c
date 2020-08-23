@@ -259,6 +259,15 @@ lookup_arg(
 }
 
 /*
+ * Returnd TRUE if the script context is Vim9 script.
+ */
+    static int
+script_is_vim9()
+{
+    return SCRIPT_ITEM(current_sctx.sc_sid)->sn_version == SCRIPT_VERSION_VIM9;
+}
+
+/*
  * Lookup a variable in the current script.
  * If "vim9script" is TRUE the script must be Vim9 script.  Used for "var"
  * without "s:".
@@ -271,8 +280,7 @@ lookup_script(char_u *name, size_t len, int vim9script)
     hashtab_T	    *ht = &SCRIPT_VARS(current_sctx.sc_sid);
     dictitem_T	    *di;
 
-    if (vim9script && SCRIPT_ITEM(current_sctx.sc_sid)->sn_version
-							!= SCRIPT_VERSION_VIM9)
+    if (vim9script && !script_is_vim9())
 	return FAIL;
     cc = name[len];
     name[len] = NUL;
@@ -5234,6 +5242,9 @@ check_vim9_unlet(char_u *name)
 {
     if (name[1] != ':' || vim_strchr((char_u *)"gwtb", *name) == NULL)
     {
+	// "unlet s:var" is allowed in legacy script.
+	if (*name == 's' && !script_is_vim9())
+	    return OK;
 	semsg(_(e_cannot_unlet_str), name);
 	return FAIL;
     }
