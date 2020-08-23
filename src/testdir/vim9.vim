@@ -41,6 +41,11 @@ def CheckScriptSuccess(lines: list<string>)
   delete('Xdef')
 enddef
 
+def CheckDefAndScriptSuccess(lines: list<string>)
+  CheckDefSuccess(lines)
+  CheckScriptSuccess(['vim9script'] + lines)
+enddef
+
 " Check that a command fails both when used in a :def function and when used
 " in Vim9 script.
 def CheckScriptAndDefFailure(lines: list<string>, error: string, lnum = -3)

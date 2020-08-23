@@ -3243,6 +3243,27 @@ append_command(char_u *cmd)
 }
 
 /*
+ * If "start" points "&opt", "&l:opt", "&g:opt" or "$ENV" return a pointer to
+ * the name.  Otherwise just return "start".
+ */
+    char_u *
+skip_option_env_lead(char_u *start)
+{
+    char_u *name = start;
+
+    if (*start == '&')
+    {
+	if ((start[1] == 'l' || start[1] == 'g') && start[2] == ':')
+	    name += 3;
+	else
+	    name += 1;
+    }
+    else if (*start == '$')
+	name += 1;
+    return name;
+}
+
+/*
  * Find an Ex command by its name, either built-in or user.
  * Start of the name can be found at eap->cmd.
  * Sets eap->cmdidx and returns a pointer to char after the command name.
@@ -3273,9 +3294,7 @@ find_ex_command(
     p = eap->cmd;
     if (lookup != NULL)
     {
-	// Skip over first char for "&opt = val", "$ENV = val" and "@r = val".
-	char_u *pskip = (*eap->cmd == '&' || *eap->cmd == '$')
-						     ? eap->cmd + 1 : eap->cmd;
+	char_u *pskip = skip_option_env_lead(eap->cmd);
 
 	if (vim_strchr((char_u *)"{('[\"@", *p) != NULL
 	       || ((p = to_name_const_end(pskip)) > eap->cmd && *p != NUL))

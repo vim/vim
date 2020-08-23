@@ -4550,8 +4550,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    p = var_start + 2;
 	else
 	{
-	    p = (*var_start == '&' || *var_start == '$')
-						   ? var_start + 1 : var_start;
+	    // skip over the leading "&", "&l:", "&g:" and "$"
+	    p = skip_option_env_lead(var_start);
 	    p = to_name_end(p, TRUE);
 	}
 
@@ -4595,8 +4595,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		}
 		cc = *p;
 		*p = NUL;
-		opt_type = get_option_value(var_start + 1, &numval,
-							      NULL, opt_flags);
+		opt_type = get_option_value(skip_option_env_lead(var_start),
+						     &numval, NULL, opt_flags);
 		*p = cc;
 		if (opt_type == -3)
 		{
@@ -5131,7 +5131,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    switch (dest)
 	    {
 		case dest_option:
-		    generate_STOREOPT(cctx, name + 1, opt_flags);
+		    generate_STOREOPT(cctx, skip_option_env_lead(name),
+								    opt_flags);
 		    break;
 		case dest_global:
 		    // include g: with the name, easier to execute that way
