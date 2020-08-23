@@ -3598,7 +3598,7 @@ stoptermcap(void)
 	    {
 # ifdef UNIX
 		// Give the terminal a chance to respond.
-		mch_delay(100L, FALSE);
+		mch_delay(100L, 0);
 # endif
 # ifdef TCIFLUSH
 		// Discard data received but not read.

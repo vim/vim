@@ -577,15 +577,19 @@ mch_total_mem(int special UNUSED)
 }
 #endif
 
+/*
+ * "flags": MCH_DELAY_IGNOREINPUT - don't read input
+ *	    MCH_DELAY_SETTMODE - use settmode() even for short delays
+ */
     void
-mch_delay(long msec, int ignoreinput)
+mch_delay(long msec, int flags)
 {
     tmode_T	old_tmode;
 #ifdef FEAT_MZSCHEME
     long	total = msec; // remember original value
 #endif
 
-    if (ignoreinput)
+    if (flags & MCH_DELAY_IGNOREINPUT)
     {
 	// Go to cooked mode without echo, to allow SIGINT interrupting us
 	// here.  But we don't want QUIT to kill us (CTRL-\ used in a
@@ -593,7 +597,8 @@ mch_delay(long msec, int ignoreinput)
 	// Only do this if sleeping for more than half a second.
 	in_mch_delay = TRUE;
 	old_tmode = mch_cur_tmode;
-	if (mch_cur_tmode == TMODE_RAW && msec > 500)
+	if (mch_cur_tmode == TMODE_RAW
+			       && (msec > 500 || (flags & MCH_DELAY_SETTMODE)))
 	    settmode(TMODE_SLEEP);
 
 	/*
@@ -636,10 +641,8 @@ mch_delay(long msec, int ignoreinput)
 
 	    tv.tv_sec = msec / 1000;
 	    tv.tv_usec = (msec % 1000) * 1000;
-	    /*
-	     * NOTE: Solaris 2.6 has a bug that makes select() hang here.  Get
-	     * a patch from Sun to fix this.  Reported by Gunnar Pedersen.
-	     */
+	    // NOTE: Solaris 2.6 has a bug that makes select() hang here.  Get
+	    // a patch from Sun to fix this.  Reported by Gunnar Pedersen.
 	    select(0, NULL, NULL, NULL, &tv);
 	}
 #  endif // HAVE_SELECT
@@ -650,7 +653,7 @@ mch_delay(long msec, int ignoreinput)
 	while (total > 0);
 #endif
 
-	if (msec > 500)
+	if (msec > 500 || (flags & MCH_DELAY_SETTMODE))
 	    settmode(old_tmode);
 	in_mch_delay = FALSE;
     }
@@ -1284,7 +1287,7 @@ mch_suspend(void)
 	long wait_time;
 
 	for (wait_time = 0; !sigcont_received && wait_time <= 3L; wait_time++)
-	    mch_delay(wait_time, FALSE);
+	    mch_delay(wait_time, 0);
     }
 # endif
     in_mch_suspend = FALSE;
@@ -4170,7 +4173,7 @@ wait4pid(pid_t child, waitstatus *status)
 	if (wait_pid == 0)
 	{
 	    // Wait for 1 to 10 msec before trying again.
-	    mch_delay(delay_msec, TRUE);
+	    mch_delay(delay_msec, MCH_DELAY_IGNOREINPUT | MCH_DELAY_SETTMODE);
 	    if (++delay_msec > 10)
 		delay_msec = 10;
 	    continue;
@@ -5262,6 +5265,9 @@ finished:
 	    {
 		long delay_msec = 1;
 
+		out_str(T_CTE);	// possibly disables modifyOtherKeys, so that
+				// the system can recognize CTRL-C
+
 		/*
 		 * Similar to the loop above, but only handle X events, no
 		 * I/O.
@@ -5295,11 +5301,14 @@ finished:
 		    clip_update();
 
 		    // Wait for 1 to 10 msec. 1 is faster but gives the child
-		    // less time.
-		    mch_delay(delay_msec, TRUE);
+		    // less time, gradually wait longer.
+		    mch_delay(delay_msec,
+				   MCH_DELAY_IGNOREINPUT | MCH_DELAY_SETTMODE);
 		    if (++delay_msec > 10)
 			delay_msec = 10;
 		}
+
+		out_str(T_CTI);	// possibly enables modifyOtherKeys again
 	    }
 # endif
 
@@ -6710,7 +6719,7 @@ mch_expand_wildcards(
     // When running in the background, give it some time to create the temp
     // file, but don't wait for it to finish.
     if (ampersand)
-	mch_delay(10L, TRUE);
+	mch_delay(10L, MCH_DELAY_IGNOREINPUT);
 
     extra_shell_arg = NULL;		// cleanup
     show_shell_mess = TRUE;

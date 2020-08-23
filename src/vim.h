@@ -2668,4 +2668,8 @@ long elapsed(DWORD start_tick);
 #define READDIR_SORT_IC		2  // sort ignoring case (strcasecmp)
 #define READDIR_SORT_COLLATE	3  // sort according to collation (strcoll)
 
+// Flags for mch_delay.
+#define MCH_DELAY_IGNOREINPUT	1
+#define MCH_DELAY_SETTMODE	2
+
 #endif // VIM__H

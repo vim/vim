@@ -539,7 +539,7 @@ ui_delay(long msec_arg, int ignoreinput)
 	gui_wait_for_chars(msec, typebuf.tb_change_cnt);
     else
 #endif
-	mch_delay(msec, ignoreinput);
+	mch_delay(msec, ignoreinput ? MCH_DELAY_IGNOREINPUT : 0);
 }
 
 /*

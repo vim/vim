@@ -904,7 +904,7 @@ channel_connect(
 	    *waittime -= elapsed_msec;
 	    if (waitnow > 0)
 	    {
-		mch_delay((long)waitnow, TRUE);
+		mch_delay((long)waitnow, MCH_DELAY_IGNOREINPUT);
 		ui_breakcheck();
 		*waittime -= waitnow;
 	    }

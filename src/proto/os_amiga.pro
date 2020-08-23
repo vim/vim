@@ -5,7 +5,7 @@ void mch_write(char_u *p, int len);
 int mch_inchar(char_u *buf, int maxlen, long time, int tb_change_cnt);
 int mch_char_avail(void);
 long_u mch_avail_mem(int special);
-void mch_delay(long msec, int ignoreinput);
+void mch_delay(long msec, int flags);
 void mch_suspend(void);
 void mch_init(void);
 int mch_check_win(int argc, char **argv);
