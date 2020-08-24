@@ -315,7 +315,7 @@ static int read_compound(FILE *fd, slang_T *slang, int len);
 static int set_sofo(slang_T *lp, char_u *from, char_u *to);
 static void set_sal_first(slang_T *lp);
 static int *mb_str2wide(char_u *s);
-static int spell_read_tree(FILE *fd, char_u **bytsp, idx_T **idxsp, int prefixtree, int prefixcnt);
+static int spell_read_tree(FILE *fd, char_u **bytsp, long *bytsp_len, idx_T **idxsp, int prefixtree, int prefixcnt);
 static idx_T read_tree_node(FILE *fd, char_u *byts, idx_T *idxs, int maxidx, idx_T startidx, int prefixtree, int maxprefcondnr);
 static void set_spell_charflags(char_u *flags, int cnt, char_u *upp);
 static int set_spell_chartab(char_u *fol, char_u *low, char_u *upp);
@@ -553,17 +553,18 @@ truncerr:
     }
 
     // <LWORDTREE>
-    res = spell_read_tree(fd, &lp->sl_fbyts, &lp->sl_fidxs, FALSE, 0);
+    res = spell_read_tree(fd, &lp->sl_fbyts, &lp->sl_fbyts_len,
+						      &lp->sl_fidxs, FALSE, 0);
     if (res != 0)
 	goto someerror;
 
     // <KWORDTREE>
-    res = spell_read_tree(fd, &lp->sl_kbyts, &lp->sl_kidxs, FALSE, 0);
+    res = spell_read_tree(fd, &lp->sl_kbyts, NULL, &lp->sl_kidxs, FALSE, 0);
     if (res != 0)
 	goto someerror;
 
     // <PREFIXTREE>
-    res = spell_read_tree(fd, &lp->sl_pbyts, &lp->sl_pidxs, TRUE,
+    res = spell_read_tree(fd, &lp->sl_pbyts, NULL, &lp->sl_pidxs, TRUE,
 							    lp->sl_prefixcnt);
     if (res != 0)
 	goto someerror;
@@ -737,7 +738,7 @@ suggest_load_files(void)
 	     * <SUGWORDTREE>: <wordtree>
 	     * Read the trie with the soundfolded words.
 	     */
-	    if (spell_read_tree(fd, &slang->sl_sbyts, &slang->sl_sidxs,
+	    if (spell_read_tree(fd, &slang->sl_sbyts, NULL, &slang->sl_sidxs,
 							       FALSE, 0) != 0)
 	    {
 someerror:
@@ -1572,6 +1573,7 @@ mb_str2wide(char_u *s)
 spell_read_tree(
     FILE	*fd,
     char_u	**bytsp,
+    long	*bytsp_len,
     idx_T	**idxsp,
     int		prefixtree,	// TRUE for the prefix tree
     int		prefixcnt)	// when "prefixtree" is TRUE: prefix count
@@ -1596,6 +1598,8 @@ spell_read_tree(
 	if (bp == NULL)
 	    return SP_OTHERERROR;
 	*bytsp = bp;
+	if (bytsp_len != NULL)
+	    *bytsp_len = len;
 
 	// Allocate the index array.
 	ip = lalloc_clear(len * sizeof(int), TRUE);
@@ -5609,8 +5613,8 @@ sug_filltree(spellinfo_T *spin, slang_T *slang)
 		spin->si_blocks_cnt = 0;
 
 		// Skip over any other NUL bytes (same word with different
-		// flags).
-		while (byts[n + 1] == 0)
+		// flags).  But don't go over the end.
+		while (n + 1 < slang->sl_fbyts_len && byts[n + 1] == 0)
 		{
 		    ++n;
 		    ++curi[depth];
