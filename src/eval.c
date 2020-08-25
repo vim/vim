@@ -2675,6 +2675,7 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	int	    oplen;
 	int	    concat;
 	typval_T    var2;
+	int	    vim9script = in_vim9script();
 
 	// "." is only string concatenation when scriptversion is 1
 	p = eval_next_non_blank(*arg, evalarg, &getnext);
@@ -2689,7 +2690,7 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    *arg = eval_next_line(evalarg);
 	else
 	{
-	    if (evaluate && in_vim9script() && !VIM_ISWHITE(**arg))
+	    if (evaluate && vim9script && !VIM_ISWHITE(**arg))
 	    {
 		error_white_both(p, oplen);
 		clear_tv(rettv);
@@ -2721,14 +2722,14 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	/*
 	 * Get the second variable.
 	 */
-	if (evaluate && in_vim9script() && !IS_WHITE_OR_NUL((*arg)[oplen]))
+	if (evaluate && vim9script && !IS_WHITE_OR_NUL((*arg)[oplen]))
 	{
 	    error_white_both(p, oplen);
 	    clear_tv(rettv);
 	    return FAIL;
 	}
 	*arg = skipwhite_and_linebreak(*arg + oplen, evalarg);
-	if (eval6(arg, &var2, evalarg, !in_vim9script() && op == '.') == FAIL)
+	if (eval6(arg, &var2, evalarg, !vim9script && op == '.') == FAIL)
 	{
 	    clear_tv(rettv);
 	    return FAIL;
@@ -2745,12 +2746,12 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 		char_u	*s1 = tv_get_string_buf(rettv, buf1);
 		char_u	*s2 = NULL;
 
-		if (in_vim9script() && (var2.v_type == VAR_VOID
+		if (vim9script && (var2.v_type == VAR_VOID
 			|| var2.v_type == VAR_CHANNEL
 			|| var2.v_type == VAR_JOB))
 		    emsg(_(e_inval_string));
 #ifdef FEAT_FLOAT
-		else if (var2.v_type == VAR_FLOAT)
+		else if (vim9script && var2.v_type == VAR_FLOAT)
 		{
 		    vim_snprintf((char *)buf2, NUMBUFLEN, "%g",
 							    var2.vval.v_float);
