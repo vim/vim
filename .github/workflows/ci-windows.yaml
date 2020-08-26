@@ -234,4 +234,6 @@ jobs:
       shell: msys2 {0}
       run: |
         cd src
-        bash <(curl -s https://codecov.io/bash)
+        export ARCH=${{ matrix.arch }}
+        export TOOLCHAIN=${{ matrix.toolchain }}
+        bash <(curl -s https://codecov.io/bash) -e TOOLCHAIN,ARCH
