@@ -117,7 +117,7 @@ $(TEST_OUTFILES): $(DOSTMP)\$(*B).in
 # Limitation: Only works with the +eval feature.
 
 newtests: newtestssilent
-	@if exist messages (findstr "SKIPPED FAILED" messages > nul) && type messages
+	@if exist messages type messages
 
 newtestssilent: $(NEW_TESTS_RES)
 
