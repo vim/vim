@@ -81,7 +81,7 @@ jobs:
       if: matrix.toolchain == 'mingw'
       with:
         msystem: ${{ matrix.msystem }}
-        install: git
+        path-type: inherit
         release: false
 
     - uses: actions/checkout@v2
