@@ -1367,6 +1367,7 @@ endif
 call <SID>PrtOptDesc("buflisted")
 call <SID>BinOptionL("bl")
 call <SID>PrtOptDesc("debug")
+call append("$", " \tset debug=" . &debug)
 if has("signs")
   call <SID>PrtOptDesc("signcolumn")
   call <SID>OptionL("scl")
