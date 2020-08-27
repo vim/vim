@@ -2122,6 +2122,14 @@ def Test_if_const_expr()
     res = true
   endif
   assert_equal(false, res)
+
+  # with constant "false" expression may be invalid so long as the syntax is OK
+  if false | eval 0 | endif
+  if false | eval burp + 234 | endif
+  if false | echo burp 234 'asd' | endif
+  if false
+    burp
+  endif
 enddef
 
 def Test_if_const_expr_fails()
