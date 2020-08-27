@@ -1684,8 +1684,9 @@ def Test_vim9script_funcref()
   delete('Xscript.vim')
 enddef
 
-" Check that when searcing for "FilterFunc" it doesn't find the import in the
-" script where FastFilter() is called from.
+" Check that when searching for "FilterFunc" it finds the import in the
+" script where FastFilter() is called from, both as a string and as a direct
+" function reference.
 def Test_vim9script_funcref_other_script()
   let filterLines =<< trim END
     vim9script
@@ -1695,22 +1696,26 @@ def Test_vim9script_funcref_other_script()
     export def FastFilter(): list<number>
       return range(10)->filter('FilterFunc')
     enddef
+    export def FastFilterDirect(): list<number>
+      return range(10)->filter(FilterFunc)
+    enddef
   END
   writefile(filterLines, 'Xfilter.vim')
 
   let lines =<< trim END
     vim9script
-    import {FilterFunc, FastFilter} from './Xfilter.vim'
+    import {FilterFunc, FastFilter, FastFilterDirect} from './Xfilter.vim'
     def Test()
       let x: list<number> = FastFilter()
     enddef
     Test()
+    def TestDirect()
+      let x: list<number> = FastFilterDirect()
+    enddef
+    TestDirect()
   END
-  writefile(lines, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E121:')
-
+  CheckScriptSuccess(lines)
   delete('Xfilter.vim')
-  delete('Ximport.vim')
 enddef
 
 def Test_vim9script_reload_delfunc()

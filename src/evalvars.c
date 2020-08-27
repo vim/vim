@@ -2461,6 +2461,20 @@ eval_variable(
 		tv = sv->sv_tv;
 	    }
 	}
+	else if (in_vim9script())
+	{
+	    ufunc_T *ufunc = find_func(name, FALSE, NULL);
+
+	    if (ufunc != NULL)
+	    {
+		foundFunc = TRUE;
+		if (rettv != NULL)
+		{
+		    rettv->v_type = VAR_FUNC;
+		    rettv->vval.v_string = vim_strsave(ufunc->uf_name);
+		}
+	    }
+	}
     }
 
     if (!foundFunc)

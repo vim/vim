@@ -1668,6 +1668,17 @@ def Test_expr7_lambda_vim9script()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_epxr7_funcref()
+  let lines =<< trim END
+    def RetNumber(): number
+      return 123
+    enddef
+    let FuncRef = RetNumber
+    assert_equal(123, FuncRef())
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
 def Test_expr7_dict()
   # dictionary
   assert_equal(g:dict_empty, {})
