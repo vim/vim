@@ -236,4 +236,4 @@ jobs:
         cd src
         export ARCH=${{ matrix.arch }}
         export TOOLCHAIN=${{ matrix.toolchain }}
-        bash <(curl -s https://codecov.io/bash) -e TOOLCHAIN,ARCH
+        bash <(curl -s https://codecov.io/bash) -e TOOLCHAIN,ARCH -F windows
