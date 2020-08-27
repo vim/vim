@@ -6879,9 +6879,17 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 		    break;
 
 	    default:
-		    // Not recognized, execute with do_cmdline_cmd().
-		    ea.arg = p;
-		    line = compile_exec(line, &ea, &cctx);
+		    if (cctx.ctx_skip == SKIP_YES)
+		    {
+			// We don't check for a next command here.
+			line = (char_u *)"";
+		    }
+		    else
+		    {
+			// Not recognized, execute with do_cmdline_cmd().
+			ea.arg = p;
+			line = compile_exec(line, &ea, &cctx);
+		    }
 		    break;
 	}
 nextline:
