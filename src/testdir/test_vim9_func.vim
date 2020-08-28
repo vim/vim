@@ -1419,6 +1419,13 @@ def Test_setbufvar()
    setlocal ts=8
 enddef
 
+def Test_setreg()
+  setreg('a', ['aaa', 'bbb', 'ccc'])
+  let reginfo = getreginfo('a')
+  setreg('a', reginfo)
+  assert_equal(reginfo, getreginfo('a'))
+enddef 
+
 def Fibonacci(n: number): number
   if n < 2
     return n

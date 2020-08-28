@@ -7427,7 +7427,7 @@ f_setreg(typval_T *argvars, typval_T *rettv)
 		regname = pointreg;
 	    }
 	}
-	else if (dict_get_number(d, (char_u *)"isunnamed"))
+	else if (dict_get_bool(d, (char_u *)"isunnamed", -1) > 0)
 	    pointreg = regname;
     }
     else
