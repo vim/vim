@@ -726,7 +726,7 @@ call_def_function(
     int		idx;
     int		ret = FAIL;
     int		defcount = ufunc->uf_args.ga_len - argc;
-    int		save_sc_version = current_sctx.sc_version;
+    sctx_T	save_current_sctx = current_sctx;
     int		breakcheck_count = 0;
     int		called_emsg_before = called_emsg;
 
@@ -867,7 +867,10 @@ call_def_function(
 	ectx.ec_instr = dfunc->df_instr;
     }
 
+    // Following errors are in the function, not the caller.
     // Commands behave like vim9script.
+    estack_push_ufunc(ufunc, 1);
+    current_sctx = ufunc->uf_script_ctx;
     current_sctx.sc_version = SCRIPT_VERSION_VIM9;
 
     // Decide where to start execution, handles optional arguments.
@@ -2614,9 +2617,11 @@ failed:
     // When failed need to unwind the call stack.
     while (ectx.ec_frame_idx != initial_frame_idx)
 	func_return(&ectx);
-failed_early:
-    current_sctx.sc_version = save_sc_version;
 
+    estack_pop();
+    current_sctx = save_current_sctx;
+
+failed_early:
     // Free all local variables, but not arguments.
     for (idx = 0; idx < ectx.ec_stack.ga_len; ++idx)
 	clear_tv(STACK_TV(idx));

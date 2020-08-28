@@ -223,6 +223,15 @@ def Test_call_wrong_args()
   call CheckDefFailure(['TakesOneArg(11, 22)'], 'E118:')
   call CheckDefFailure(['bufnr(xxx)'], 'E1001:')
   call CheckScriptFailure(['def Func(Ref: func(s: string))'], 'E475:')
+
+  let lines =<< trim END
+    vim9script
+    def Func(s: string)
+      echo s
+    enddef
+    Func([])
+  END
+  call CheckScriptFailure(lines, 'E1012: type mismatch, expected string but got list<unknown>', 5)
 enddef
 
 " Default arg and varargs

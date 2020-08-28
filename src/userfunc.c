@@ -1314,17 +1314,10 @@ call_user_func(
 
     if (fp->uf_def_status != UF_NOT_COMPILED)
     {
-	estack_push_ufunc(fp, 1);
-	save_current_sctx = current_sctx;
-	current_sctx = fp->uf_script_ctx;
-
 	// Execute the function, possibly compiling it first.
 	call_def_function(fp, argcount, argvars, funcexe->partial, rettv);
 	--depth;
 	current_funccal = fc->caller;
-
-	estack_pop();
-	current_sctx = save_current_sctx;
 	free_funccal(fc);
 	return;
     }
