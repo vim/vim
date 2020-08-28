@@ -247,7 +247,7 @@ EXTERN char e_list_item_nr_range_invalid[]
 EXTERN char e_list_item_nr_cell_width_invalid[]
 	INIT(= N_("E1112: List item %d cell width invalid"));
 EXTERN char e_overlapping_ranges_for_nr[]
-	INIT(= N_("E1113: Overlapping ranges for %lx"));
+	INIT(= N_("E1113: Overlapping ranges for 0x%lx"));
 EXTERN char e_only_values_of_0x100_and_higher_supported[]
 	INIT(= N_("E1114: Only values of 0x100 and higher supported"));
 #endif

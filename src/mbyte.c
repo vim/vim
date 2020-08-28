@@ -5421,8 +5421,8 @@ cw_value(int c)
     static int
 tv_nr_compare(const void *a1, const void *a2)
 {
-    listitem_T *li1 = (listitem_T *)a1;
-    listitem_T *li2 = (listitem_T *)a2;
+    listitem_T *li1 = *(listitem_T **)a1;
+    listitem_T *li2 = *(listitem_T **)a2;
 
     return li1->li_tv.vval.v_number - li2->li_tv.vval.v_number;
 }
@@ -5470,8 +5470,10 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
 	    vim_free(ptrs);
 	    return;
 	}
-	for (lili = li->li_tv.vval.v_list->lv_first, i = 0; lili != NULL;
-						     lili = lili->li_next, ++i)
+
+	lili = li->li_tv.vval.v_list->lv_first;
+	ptrs[item] = lili;
+	for (i = 0; lili != NULL; lili = lili->li_next, ++i)
 	{
 	    if (lili->li_tv.v_type != VAR_NUMBER)
 		break;
@@ -5505,7 +5507,7 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
 	    vim_free(ptrs);
 	    return;
 	}
-	ptrs[item++] = lili;
+	++item;
     }
 
     // Sort the list on the first number.
@@ -5520,9 +5522,9 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
 
     // Store the items in the new table.
     item = 0;
-    for (li = l->lv_first; li != NULL; li = li->li_next)
+    for (item = 0; item < l->lv_len; ++item)
     {
-	listitem_T	*lili = li->li_tv.vval.v_list->lv_first;
+	listitem_T	*lili = ptrs[item];
 	varnumber_T	n1;
 
 	n1 = lili->li_tv.vval.v_number;
@@ -5538,7 +5540,6 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
 	table[item].last = lili->li_tv.vval.v_number;
 	lili = lili->li_next;
 	table[item].width = lili->li_tv.vval.v_number;
-	++item;
     }
 
     vim_free(ptrs);
