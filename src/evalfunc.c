@@ -564,6 +564,7 @@ static funcentry_T global_functions[] =
     {"ch_status",	1, 2, FEARG_1,	  ret_string,	JOB_FUNC(f_ch_status)},
     {"changenr",	0, 0, 0,	  ret_number,	f_changenr},
     {"char2nr",		1, 2, FEARG_1,	  ret_number,	f_char2nr},
+    {"charclass",	1, 1, FEARG_1,	  ret_number,	f_charclass},
     {"chdir",		1, 1, FEARG_1,	  ret_string,	f_chdir},
     {"cindent",		1, 1, FEARG_1,	  ret_number,	f_cindent},
     {"clearmatches",	0, 1, FEARG_1,	  ret_void,	f_clearmatches},

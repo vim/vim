@@ -132,7 +132,9 @@ static int dbcs_char2cells(int c);
 static int dbcs_ptr2cells_len(char_u *p, int size);
 static int dbcs_ptr2char(char_u *p);
 static int dbcs_head_off(char_u *base, char_u *p);
+#ifdef FEAT_EVAL
 static int cw_value(int c);
+#endif
 
 /*
  * Lookup table to quickly get the length in bytes of a UTF-8 character from
@@ -1388,8 +1390,7 @@ utf_char2cells(int c)
 	{0x26ce, 0x26ce},
 	{0x26d4, 0x26d4},
 	{0x26ea, 0x26ea},
-	{0x26f2, 0x26f3},
-	{0x26f5, 0x26f5},
+	{0x26f2, 0x26f5},
 	{0x26fa, 0x26fa},
 	{0x26fd, 0x26fd},
 	{0x2705, 0x2705},
@@ -1490,6 +1491,21 @@ utf_char2cells(int c)
     // based on http://unicode.org/emoji/charts/emoji-list.html
     static struct interval emoji_wide[] =
     {
+	{0x23ed, 0x23ef},
+	{0x23f1, 0x23f2},
+	{0x23f8, 0x23fa},
+	{0x24c2, 0x24c2},
+	{0x261d, 0x261d},
+	{0x26c8, 0x26c8},
+	{0x26cf, 0x26cf},
+	{0x26d1, 0x26d1},
+	{0x26d3, 0x26d3},
+	{0x26e9, 0x26e9},
+	{0x26f0, 0x26f1},
+	{0x26f7, 0x26f9},
+	{0x270c, 0x270d},
+	{0x2934, 0x2935},
+	{0x1f170, 0x1f189},
 	{0x1f1e6, 0x1f1ff},
 	{0x1f321, 0x1f321},
 	{0x1f324, 0x1f32c},
@@ -1533,11 +1549,15 @@ utf_char2cells(int c)
 
     if (c >= 0x100)
     {
+#if defined(FEAT_EVAL) || defined(USE_WCHAR_FUNCTIONS)
 	int	n;
+#endif
 
+#ifdef FEAT_EVAL
 	n = cw_value(c);
 	if (n != 0)
 	    return n;
+#endif
 
 #ifdef USE_WCHAR_FUNCTIONS
 	/*
@@ -2667,8 +2687,7 @@ static struct interval emoji_all[] =
     {0x3299, 0x3299},
     {0x1f004, 0x1f004},
     {0x1f0cf, 0x1f0cf},
-    {0x1f170, 0x1f171},
-    {0x1f17e, 0x1f17f},
+    {0x1f170, 0x1f189},
     {0x1f18e, 0x1f18e},
     {0x1f191, 0x1f19a},
     {0x1f1e6, 0x1f1ff},
@@ -2835,6 +2854,10 @@ utf_class_buf(int c, buf_T *buf)
 	return 1;	    // punctuation
     }
 
+    // emoji
+    if (intable(emoji_all, sizeof(emoji_all), c))
+	return 3;
+
     // binary search in table
     while (top >= bot)
     {
@@ -2846,10 +2869,6 @@ utf_class_buf(int c, buf_T *buf)
 	else
 	    return (int)classes[mid].class;
     }
-
-    // emoji
-    if (intable(emoji_all, sizeof(emoji_all), c))
-	return 3;
 
     // most other characters are "word" characters
     return 2;
@@ -5352,6 +5371,8 @@ string_convert_ext(
     return retval;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+
 /*
  * Table set by setcellwidths().
  */
@@ -5525,3 +5546,17 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     cw_table = table;
     cw_table_size = l->lv_len;
 }
+
+    void
+f_charclass(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    if (argvars[0].v_type != VAR_STRING
+	    || argvars[0].vval.v_string == NULL
+	    || *argvars[0].vval.v_string == NUL)
+    {
+	emsg(_(e_stringreq));
+	return;
+    }
+    rettv->vval.v_number = mb_get_class(argvars[0].vval.v_string);
+}
+#endif
