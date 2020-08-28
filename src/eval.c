@@ -5392,7 +5392,7 @@ string_slice(char_u *str, varnumber_T first, varnumber_T last)
     if (start_byte < 0)
 	start_byte = 0; // first index very negative: use zero
     if (last == -1)
-	end_byte = slen;
+	end_byte = (long)slen;
     else
     {
 	end_byte = char_idx2byte(str, slen, last);
