@@ -238,4 +238,16 @@ EXTERN char e_string_list_dict_or_blob_required[]
 	INIT(= N_("E1107: String, List, Dict or Blob required"));
 EXTERN char e_item_not_found_str[]
 	INIT(= N_("E1108: Item not found: %s"));
+EXTERN char e_list_item_nr_is_not_list[]
+	INIT(= N_("E1109: List item %d is not a List"));
+EXTERN char e_list_item_nr_does_not_contain_3_numbers[]
+	INIT(= N_("E1110: List item %d does not contain 3 numbers"));
+EXTERN char e_list_item_nr_range_invalid[]
+	INIT(= N_("E1111: List item %d range invalid"));
+EXTERN char e_list_item_nr_cell_width_invalid[]
+	INIT(= N_("E1112: List item %d cell width invalid"));
+EXTERN char e_overlapping_ranges_for_nr[]
+	INIT(= N_("E1113: Overlapping ranges for %lx"));
+EXTERN char e_only_values_of_0x100_and_higher_supported[]
+	INIT(= N_("E1114: Only values of 0x100 and higher supported"));
 #endif

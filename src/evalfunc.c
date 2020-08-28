@@ -886,6 +886,7 @@ static funcentry_T global_functions[] =
     {"serverlist",	0, 0, 0,	  ret_string,	f_serverlist},
     {"setbufline",	3, 3, FEARG_3,	  ret_number,	f_setbufline},
     {"setbufvar",	3, 3, FEARG_3,	  ret_void,	f_setbufvar},
+    {"setcellwidths",	1, 1, FEARG_1,	  ret_void,	f_setcellwidths},
     {"setcharsearch",	1, 1, FEARG_1,	  ret_void,	f_setcharsearch},
     {"setcmdpos",	1, 1, FEARG_1,	  ret_number,	f_setcmdpos},
     {"setenv",		2, 2, FEARG_2,	  ret_void,	f_setenv},
