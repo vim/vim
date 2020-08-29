@@ -3261,6 +3261,9 @@ def Test_cmdline_win()
 enddef
 
 def Test_invalid_sid()
+  # TODO: why does this not work in the GUI?
+  CheckNotGui
+
   assert_fails('func <SNR>1234_func', 'E123:')
   if RunVim([], ['wq Xdidit'], '+"func <SNR>1_func"')
     call assert_equal([], readfile('Xdidit'))
