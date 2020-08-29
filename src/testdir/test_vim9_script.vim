@@ -1652,6 +1652,10 @@ def Test_vim9script_reload_import()
   delete('Ximport.vim')
 enddef
 
+def s:RetSome(): string
+  return 'some'
+enddef
+
 " Not exported function that is referenced needs to be accessed by the
 " script-local name.
 def Test_vim9script_funcref()
@@ -1683,6 +1687,9 @@ def Test_vim9script_funcref()
   unlet g:result
   delete('Xsort.vim')
   delete('Xscript.vim')
+
+  let Funcref = function('s:RetSome')
+  assert_equal('some', Funcref())
 enddef
 
 " Check that when searching for "FilterFunc" it finds the import in the

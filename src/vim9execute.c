@@ -614,6 +614,7 @@ call_partial(typval_T *tv, int argcount_arg, ectx_T *ectx)
     int		argcount = argcount_arg;
     char_u	*name = NULL;
     int		called_emsg_before = called_emsg;
+    int		res;
 
     if (tv->v_type == VAR_PARTIAL)
     {
@@ -650,7 +651,23 @@ call_partial(typval_T *tv, int argcount_arg, ectx_T *ectx)
     }
     else if (tv->v_type == VAR_FUNC)
 	name = tv->vval.v_string;
-    if (name == NULL || call_by_name(name, argcount, ectx, NULL) == FAIL)
+    if (name != NULL)
+    {
+	char_u	fname_buf[FLEN_FIXED + 1];
+	char_u	*tofree = NULL;
+	int	error = FCERR_NONE;
+	char_u	*fname;
+
+	// May need to translate <SNR>123_ to K_SNR.
+	fname = fname_trans_sid(name, fname_buf, &tofree, &error);
+	if (error != FCERR_NONE)
+	    res = FAIL;
+	else
+	    res = call_by_name(fname, argcount, ectx, NULL);
+	vim_free(tofree);
+    }
+
+    if (name == NULL || res == FAIL)
     {
 	if (called_emsg == called_emsg_before)
 	    semsg(_(e_unknownfunc),

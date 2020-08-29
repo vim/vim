@@ -808,11 +808,12 @@ find_func_even_dead(char_u *name, int is_global, cctx_T *cctx)
 
     if (!is_global)
     {
-	int	vim9script = in_vim9script();
 	char_u	*after_script = NULL;
 	long	sid = 0;
+	int	find_script_local = in_vim9script()
+				     && eval_isnamec1(*name) && name[1] != ':';
 
-	if (vim9script)
+	if (find_script_local)
 	{
 	    // Find script-local function before global one.
 	    func = find_func_with_sid(name, current_sctx.sc_sid);
@@ -833,7 +834,7 @@ find_func_even_dead(char_u *name, int is_global, cctx_T *cctx)
 	    else
 		after_script = NULL;
 	}
-	if (vim9script || after_script != NULL)
+	if (find_script_local || after_script != NULL)
 	{
 	    // Find imported function before global one.
 	    if (after_script != NULL && sid != current_sctx.sc_sid)
