@@ -4,6 +4,7 @@ source check.vim
 source term_util.vim
 source view_util.vim
 source vim9.vim
+source shared.vim
 
 def Test_syntax()
   let var = 234
@@ -3250,6 +3251,14 @@ def Test_cmdline_win()
   augroup END
   &rtp = save_rtp
   delete('rtp', 'rf')
+enddef
+
+def Test_invalid_sid()
+  assert_fails('func <SNR>1234_func', 'E123:')
+  if RunVim([], ['wq Xdidit'], '+"func <SNR>1_func"')
+    call assert_equal([], readfile('Xdidit'))
+  endif
+  delete('Xdidit')
 enddef
 
 " Keep this last, it messes up highlighting.

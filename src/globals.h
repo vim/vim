@@ -297,8 +297,9 @@ EXTERN int	do_profiling INIT(= PROF_NONE);	// PROF_ values
 # endif
 EXTERN garray_T script_items INIT5(0, 0, sizeof(scriptitem_T *), 20, NULL);
 # define SCRIPT_ITEM(id)    (((scriptitem_T **)script_items.ga_data)[(id) - 1])
-# define SCRIPT_SV(id)	    (SCRIPT_ITEM(id)->sn_vars)
-# define SCRIPT_VARS(id)    (SCRIPT_SV(id)->sv_dict.dv_hashtab)
+# define SCRIPT_ID_VALID(id)    ((id) > 0 && (id) <= script_items.ga_len)
+# define SCRIPT_SV(id)		(SCRIPT_ITEM(id)->sn_vars)
+# define SCRIPT_VARS(id)	(SCRIPT_SV(id)->sv_dict.dv_hashtab)
 
 # define FUNCLINE(fp, j)	((char_u **)(fp->uf_lines.ga_data))[j]
 

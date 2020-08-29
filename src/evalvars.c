@@ -524,7 +524,7 @@ list_vim_vars(int *first)
     static void
 list_script_vars(int *first)
 {
-    if (current_sctx.sc_sid > 0 && current_sctx.sc_sid <= script_items.ga_len)
+    if (SCRIPT_ID_VALID(current_sctx.sc_sid))
 	list_hashtable_vars(&SCRIPT_VARS(current_sctx.sc_sid),
 							   "s:", FALSE, first);
 }
@@ -2609,7 +2609,7 @@ get_script_local_ht(void)
 {
     scid_T sid = current_sctx.sc_sid;
 
-    if (sid > 0 && sid <= script_items.ga_len)
+    if (SCRIPT_ID_VALID(sid))
 	return &SCRIPT_VARS(sid);
     return NULL;
 }
