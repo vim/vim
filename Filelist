@@ -197,7 +197,6 @@ SRC_ALL =	\
 		src/testdir/samples/*.txt \
 		src/testdir/samples/test000 \
 		src/testdir/color_ramp.vim \
-		src/testdir/emoji_list.vim \
 		src/testdir/silent.wav \
 		src/testdir/popupbounce.vim \
 		src/proto.h \
