@@ -895,8 +895,22 @@ getcount:
 	    if (lang && curbuf->b_p_iminsert == B_IMODE_IM)
 		im_set_active(TRUE);
 #endif
+	    if ((State & INSERT) && !p_ek)
+	    {
+		// Disable bracketed paste and modifyOtherKeys here, we won't
+		// recognize the escape sequences with 'esckeys' off.
+		out_str(T_BD);
+		out_str(T_CTE);
+	    }
 
 	    *cp = plain_vgetc();
+
+	    if ((State & INSERT) && !p_ek)
+	    {
+		// Re-enable bracketed paste mode and modifyOtherKeys
+		out_str(T_BE);
+		out_str(T_CTI);
+	    }
 
 	    if (langmap_active)
 	    {
