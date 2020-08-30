@@ -4683,8 +4683,10 @@ mch_call_shell_fork(
 
 # ifdef FEAT_JOB_CHANNEL
 	    if (ch_log_active())
-		// close the log file in the child
+	    {
+		ch_log(NULL, "closing channel log in the child process");
 		ch_logfile((char_u *)"", (char_u *)"");
+	    }
 # endif
 
 	    if (!show_shell_mess || (options & SHELL_EXPAND))

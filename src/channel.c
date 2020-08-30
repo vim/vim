@@ -144,6 +144,7 @@ fd_close(sock_T fd)
 
 // Log file opened with ch_logfile().
 static FILE *log_fd = NULL;
+static char_u *log_name = NULL;
 #ifdef FEAT_RELTIME
 static proftime_T log_start;
 #endif
@@ -158,7 +159,7 @@ ch_logfile(char_u *fname, char_u *opt)
 	if (*fname != NUL)
 	    ch_log(NULL, "closing this logfile, opening %s", fname);
 	else
-	    ch_log(NULL, "closing logfile");
+	    ch_log(NULL, "closing logfile %s", log_name);
 	fclose(log_fd);
     }
 
@@ -170,6 +171,8 @@ ch_logfile(char_u *fname, char_u *opt)
 	    semsg(_(e_notopen), fname);
 	    return;
 	}
+	vim_free(log_name);
+	log_name = vim_strsave(fname);
     }
     log_fd = file;
 
