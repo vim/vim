@@ -78,7 +78,8 @@ language.
 
 (2) Translate
     See the gettext documentation on how to do this.  You can also find
-    examples in the other po files.
+    examples in the other po files.  You can use "gF" on the file name to see
+    the context of the message.
     Search the po file for items that require translation:
 
 	/fuzzy\|^msgstr ""\(\n"\)\@!
@@ -122,6 +123,13 @@ language.
 	make xx.mo
 
     Look out for syntax errors and fix them.
+
+(6) Local tryout:
+    Vim normally picks up the .mo files from:
+	    $VIMRUNTIME/lang/{lang}/LC_MESSAGES/vim.mo
+    To try out the messages with Vim use:
+    	    make tryoutinstall
+    And run Vim with $VIMRUNTIME set to ../runtime
 
 
 USING GETTEXT WITHOUT ICONV

@@ -1028,6 +1028,8 @@ LANG_SRC = \
 		src/po/README_mvc.txt \
 		src/po/check.vim \
 		src/po/cleanup.vim \
+		src/po/tojavascript.vim \
+		src/po/fixfilenames.vim \
 		src/po/Makefile \
 		src/po/Make_all.mak \
 		src/po/Make_cyg.mak \

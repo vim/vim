@@ -97,6 +97,7 @@ static void f_getreg(typval_T *argvars, typval_T *rettv);
 static void f_getreginfo(typval_T *argvars, typval_T *rettv);
 static void f_getregtype(typval_T *argvars, typval_T *rettv);
 static void f_gettagstack(typval_T *argvars, typval_T *rettv);
+static void f_gettext(typval_T *argvars, typval_T *rettv);
 static void f_haslocaldir(typval_T *argvars, typval_T *rettv);
 static void f_hasmapto(typval_T *argvars, typval_T *rettv);
 static void f_hlID(typval_T *argvars, typval_T *rettv);
@@ -667,6 +668,7 @@ static funcentry_T global_functions[] =
     {"gettabvar",	2, 3, FEARG_1,	  ret_any,	f_gettabvar},
     {"gettabwinvar",	3, 4, FEARG_1,	  ret_any,	f_gettabwinvar},
     {"gettagstack",	0, 1, FEARG_1,	  ret_dict_any,	f_gettagstack},
+    {"gettext",		1, 1, FEARG_1,	  ret_string,	f_gettext},
     {"getwininfo",	0, 1, FEARG_1,	  ret_list_dict_any,	f_getwininfo},
     {"getwinpos",	0, 1, FEARG_1,	  ret_list_number,	f_getwinpos},
     {"getwinposx",	0, 0, 0,	  ret_number,	f_getwinposx},
@@ -3435,6 +3437,26 @@ f_gettagstack(typval_T *argvars, typval_T *rettv)
     }
 
     get_tagstack(wp, rettv->vval.v_dict);
+}
+
+/*
+ * "gettext()" function
+ */
+    static void
+f_gettext(typval_T *argvars, typval_T *rettv)
+{
+    if (argvars[0].v_type != VAR_STRING
+	    || argvars[0].vval.v_string == NULL
+	    || *argvars[0].vval.v_string == NUL)
+    {
+	semsg(_(e_invarg2), tv_get_string(&argvars[0]));
+    }
+    else
+    {
+	rettv->v_type = VAR_STRING;
+	rettv->vval.v_string = vim_strsave(
+					(char_u *)_(argvars[0].vval.v_string));
+    }
 }
 
 // for VIM_VERSION_ defines
