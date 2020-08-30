@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Aug 15
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Aug 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,25 +38,25 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-What is the way to get the character under the cursor?  With or without
-composing characters.  getline(".") and then use col(".") somehow?
-Add charidx() perhaps?
+Why does Test_invalid_sid() not work in the GUI?
 
 Making everything work:
-- Slice of list: [1, 2, 3][1:2].
-- Slice of string: "abc"[1:2].  (#6709)
+- Check :const works the same as in legacy script.
 - Run the same tests in :def and Vim9 script, like in Test_expr7_not()
 - :put with a "=" register argument doesn't work, need to find the expression
   and compile it. (#6397)
-- At the script level, keep script variables local to the block they are
+- At the Vim9 script level, keep script variables local to the block they are
   declared in?  Need to remember what variables were declared and delete them
   when leaving the block.
 - Implement { } block at the script level.
+- Use the line number argument with assert_fails() in many more tests.
 - In autocmd: use legacy syntax, not whatever the current script uses?
 - need to check type when a declaration specifies a type: #6507
 	let nr: number = 'asdf'
 - Make sure that in vim9script a function call without namespace only finds
   the script-local function, not a global one.
+- Make sure that where a callback is expected a function can be used (without
+  quotes). E.g. sort() and map().  Also at the script level.
 - Make map() give an error if the resulting type is wrong.
   Add mapnew() to create a new List/Dict for the result, which can have a
   different value type.
@@ -261,23 +261,24 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
-Error numbers available:
-E610, E611, E653
+Error numbers available: E653
 
-Clean up empty entries in testdir/Make_all.mak
+Remove "MacOS X installation"?  $APPDIR is no longer set.
 
 Remove SPACE_IN_FILENAME ? It is only used for completion.
 
-Patch to use collaction based sorting. (Christian Brabandt, #6229)
+Patch to use collation based sorting. (Christian Brabandt, #6229)
 
 Add 'termguiattr' option, use "gui=" attributes in the terminal?  Would work
 with 'termguicolors'. #1740
+
+Patch for blockwise paste reporting changes: #6660.
 
 Can we detect true color support?  https://gist.github.com/XVilka/8346728
 Try setting a color then request the current color, like using t_u7.
 
 Check out PR #543 (Roland Puntaier).
-Patch for multi-byte characters in langmap and applying a mapping on them.
+Patch for multibyte characters in langmap and applying a mapping on them.
 (Christian Brabandt, 2015 Jun 12, update July 25)
 Is this the right solution?  Need to cleanup langmap behavior:
 - in vgetorpeek() apply langmap to the typeahead buffer and put the result in
@@ -424,6 +425,7 @@ Should do current file first and not split it up when more results are found.
 
 Undo history wrong when ":next file" re-uses a buffer. (#5426)
 ex_next() should pass flag to do_argfile(), then to do_ecmd().
+Is there a test for this?
 
 Help for ":argadd fname" says that if "fname" is already in the argument list
 that entry is used.  But instead it's always added. (#6210)
@@ -1231,7 +1233,7 @@ Screen update bug related to matchparen.  (Chris Heath, 2017 Mar 4, #1532)
 Rule to use "^" for statusline does not work if a space is defined with
 highlighting for both stl and stlnc.  Patch by Ken Hamada (itchyny, 2016 Dec 11)
 
-8   "stl" and "stlnc" in 'fillchars' don't work for multi-byte characters.
+8   "stl" and "stlnc" in 'fillchars' don't work for multibyte characters.
     Patch by Christian Wellenbrock, 2013 Jul 5.
 
 Using CTRL-G_U in InsertCharPre causes trouble for redo. (Israel Chauca
@@ -1382,7 +1384,7 @@ Regexp problems:
 - Bug with pattern: '\vblock (\d+)\.\n.*\d+%(\1)@<!\.$'
   (Lech Lorens, 2014 Feb 3)
 - Issue 164: freeze on regexp search.
-- Ignorecase not handled properly for multi-byte characters. (Axel Bender,
+- Ignorecase not handled properly for multibyte characters. (Axel Bender,
   2013 Dec 11)
 - Using \@> and \?. (Brett Stahlman, 2013 Dec 21) Remark from Marcin
   Szamotulski; Remark from Brett 2014 Jan 6 and 7.
@@ -1597,7 +1599,7 @@ Patch to add :mapgroup, put mappings in a group like augroup.
 Value returned by virtcol() changes depending on how lines wrap.  This is
 inconsistent with the documentation.
 
-Value of virtcol() for '[ and '] depend on multi-byte character.
+Value of virtcol() for '[ and '] depend on multibyte character.
 (Luchr, #277)
 
 Can we cache the syntax attributes, so that updates for 'relativenumber' and
@@ -2129,7 +2131,7 @@ Also for another example (ZyX, 2011 Jan 24)
 
 Build problem with small features on Mac OS X 10.6. (Rainer, 2011 Jan 24)
 
-"0g@$" puts '] on last byte of multi-byte. (ZyX, 2011 Jan 22)
+"0g@$" puts '] on last byte of multibyte. (ZyX, 2011 Jan 22)
 
 Patch for :tabrecently. (Hirokazu Yoshida, 2012 Jan 30)
 
@@ -2636,7 +2638,7 @@ work, the backslash is removed, assuming that it escapes the (. (Valery
 Kondakoff, 2009 May 13)
 
 Win32: Using "gvim --remote-tab-silent elŝuti.txt" doesn't work, the
-multi-byte character isn't passed and edits elsuti.txt.
+multibyte character isn't passed and edits elsuti.txt.
 (Raúl Núñez de Arenas Coronado, 2015 Dec 18)
 
 Problem with 'langmap' being used on the rhs of a mapping. (Nikolai Weibull,
@@ -3197,7 +3199,7 @@ Awaiting updated patches:
 7   ATTENTION dialog choices are more logical when "Delete it" appears
     before "Quit".  Patch by Robert Webb, 2004 May 3.
 -   Include flipcase patch: ~/vim/patches/wall.flipcase2 ?  Make it work
-    for multi-byte characters.
+    for multibyte characters.
 -   Win32: add options to print dialog.  Patch from Vipin Aravind.
 -   Patch to add highlighting for whitespace. (Tom Schumm, 2003 Jul 5)
     use the patch that keeps using HLF_8 if HLF_WS has not
@@ -3693,8 +3695,8 @@ Macintosh:
 8   'hkmap' should probably be global-local.
 8   Using ":s" in a function changes the previous replacement string.  Save
     "old_sub" in save_search_patterns()?
-8   Should allow multi-byte characters for the delimiter: ":s+a+b+" where "+"
-    is a multi-byte character.
+8   Should allow multibyte characters for the delimiter: ":s+a+b+" where "+"
+    is a multibyte character.
 8   When appending to a file and 'patchmode' isn't empty, a backup file is
     always written, even when the original file already exists.
 9   When getting focus while writing a large file, could warn for this file
@@ -3997,7 +3999,7 @@ Documentation:
     - change to cursor position and curswant
     - if it can be undone (u/CTRL-R) and redone (.)
     - how it works for folded lines
-    - how it works with multi-byte characters
+    - how it works with multibyte characters
 9   In change.txt, remark about Javadoc isn't right.  Right alignment would
     work too.
 8   Spread the windows commands over the other files.  For example, ":stag"
@@ -4233,8 +4235,8 @@ Multi-byte characters:
 8   Add configure option to be able to disable using the iconv library. (Udo
     Schweigert)
 9   'aleph' should be set to 1488 for Unicode. (Zvi Har'El)
-8   Should add test for using various commands with multi-byte characters.
-8   'infercase' doesn't work with multi-byte characters.
+8   Should add test for using various commands with multibyte characters.
+8   'infercase' doesn't work with multibyte characters.
 8   toupper() function doesn't handle byte count changes.
 7   Searching and composing characters:
     When searching, should order of composing characters be ignored?
@@ -4242,7 +4244,7 @@ Multi-byte characters:
     characters can be manipulated.
 8   Should implement 'delcombine' for command line editing.
 8   Detect overlong UTF-8 sequences and handle them like illegal bytes.
-8   ":s/x/\u\1/" doesn't work, making uppercase isn't done for multi-byte
+8   ":s/x/\u\1/" doesn't work, making uppercase isn't done for multibyte
     characters.
 8   UTF-8: "r" in Visual mode doesn't take composing characters.
 8   UTF-8: When there is a precomposed character in the font, use it instead
@@ -4266,14 +4268,14 @@ Multi-byte characters:
     convert_input() for Mac GUI.
 -   Add mnemonics from RFC1345 longer than two characters.
     Support CTRL-K _{mnemonic}_
--   Make 'breakat' accept multi-byte characters.  Problem: can't use a lookup
+-   Make 'breakat' accept multibyte characters.  Problem: can't use a lookup
     table anymore (breakat_flags[]).
     Simplistic solution: when 'formatoptions' contains "m" also break a line
-    at a multi-byte character >= 0x100.
+    at a multibyte character >= 0x100.
 -   Add the possibility to enter mappings which are used whenever normal text
     could be entered.  E.g., for "f" command.  But not in Normal mode.  Sort
     of opposite of 'langmap'.  Use ":amap" command?
--   When breaking a line, take properties of multi-byte characters into
+-   When breaking a line, take properties of multibyte characters into
     account.  The "linebreak" program from Bruno Haible can do it:
     ftp://ftp.ilog.fr/pub/Users/haible/gnu/linebreak-0.1.tar.gz
     But it's very complicated...
@@ -5338,11 +5340,11 @@ Text objects:
 8   Add test script for text object commands "aw", "iW", etc.
 8   Add text object for part of a CamelHumpedWord and under_scored_word.
     (Scott Graham)  "ac" and "au"?
-8   Add a text object for any kind of quoting, also with multi-byte
+8   Add a text object for any kind of quoting, also with multibyte
     characters.  Option to specify what quotes are recognized (default: all)
     use "aq" and "iq".  Use 'quotepairs' to define pairs of quotes, like
     'matchpairs'?
-8   Add text object for any kind of parens, also multi-byte ones.
+8   Add text object for any kind of parens, also multibyte ones.
 8   Add a way to make an ":omap" for a user-defined text object.  Requires
     changing the starting position in oap->start.
 8   Add "gp" and "gP" commands: insert text and make sure there is a single
@@ -6118,7 +6120,7 @@ Various improvements:
     regexp which triggers auto-formatting (for one line).
     ":set autoformat=\\s$".
 -   Be able to redefine where a sentence stops.  Use a regexp pattern?
--   Support multi-byte characters for sentences.  Example from Ben Peterson.
+-   Support multibyte characters for sentences.  Example from Ben Peterson.
 7   Add command "g)" to go to the end of a sentence, "g(" to go back to the
     end of a sentence. (Servatius Brandt)
 -   Be able to redefine where a paragraph starts.  For "[[" where the '{' is

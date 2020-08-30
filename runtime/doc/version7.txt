@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 8.2.  Last change: 2016 Jul 17
+*version7.txt*  For Vim version 8.2.  Last change: 2020 Aug 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -22,7 +22,7 @@ Vim script enhancements			|new-vim-script|
 Spell checking				|new-spell|
 Omni completion				|new-omni-completion|
 MzScheme interface			|new-MzScheme|
-Printing multi-byte text		|new-print-multi-byte|
+Printing multibyte text			|new-print-multibyte|
 Tab pages				|new-tab-pages|
 Undo branches				|new-undo-branches|
 Extended Unicode support		|new-more-unicode|
@@ -302,10 +302,10 @@ The |:mzfile|   command can be used to execute an MzScheme script file
 This depends on Vim being compiled with the |+mzscheme| feature.
 
 
-Printing multi-byte text				*new-print-multi-byte*
+Printing multibyte text					*new-print-multibyte*
 ------------------------
 
-The |:hardcopy| command now supports printing multi-byte characters when using
+The |:hardcopy| command now supports printing multibyte characters when using
 PostScript.
 
 The 'printmbcharset' and 'printmbfont' options are used for this.
@@ -1211,7 +1211,7 @@ Also fixes the problem that setting 'clipboard' to "unnamed" breaks using
 
 Mac: GUI font selector. (Peter Cucka)
 
-Mac: support for multi-byte characters. (Da Woon Jung)
+Mac: support for multibyte characters. (Da Woon Jung)
 This doesn't always work properly.  If you see text drawing problems try
 switching the 'macatsui' option off.
 
@@ -1361,7 +1361,7 @@ When C, C++ or IDL syntax is used, may additionally load doxygen syntax.
 Support setting 'filetype' and 'syntax' to "aaa.bbb" for "aaa" plus "bbb"
 filetype or syntax.
 
-The ":registers" command now displays multi-byte characters properly.
+The ":registers" command now displays multibyte characters properly.
 
 VMS: In the usage message mention that a slash can be used to make a flag
 upper case.  Add color support to the builtin vt320 terminal codes.
@@ -1460,7 +1460,7 @@ To count items (pattern matches) without changing the buffer the 'n' flag has
 been added to |:substitute|.  See |count-items|.
 
 In a |:substitute| command the \u, \U, \l and \L items now also work for
-multi-byte characters.
+multibyte characters.
 
 The "screen.linux" $TERM name is recognized to set the default for
 'background' to "dark". (Ciaran McCreesh)  Also for "cygwin" and "putty".
@@ -1736,7 +1736,7 @@ variables like for a regular command with a file argument.
 'cindent': When the argument of a #define looks like a C++ class the next line
 is indented too much.
 
-When 'comments' includes multi-byte characters inserting the middle part and
+When 'comments' includes multibyte characters inserting the middle part and
 alignment may go wrong.  'cindent' also suffers from this for right-aligned
 items.
 
@@ -2309,7 +2309,7 @@ characters in v:this_session.
 
 ":set sta ts=8 sw=4 sts=2" deleted 4 spaces halfway a line instead of 2.
 
-In a multi-byte file the foldmarker could be recognized in the trail byte.
+In a multibyte file the foldmarker could be recognized in the trail byte.
 (Taro Muraoka)
 
 Pasting with CTRL-V and menu didn't work properly when some commands are
@@ -2504,7 +2504,7 @@ a crash.
 
 For a new tab page the 'scroll' option wasn't set to a good default.
 
-Using an end offset for a search "/pat/e" didn't work properly for multi-byte
+Using an end offset for a search "/pat/e" didn't work properly for multibyte
 text. (Yukihiro Nakadaira)
 
 ":s/\n/,/" doubled the text when used on the last line.
@@ -2604,7 +2604,7 @@ recursively.  But after a ":normal" command the protection was reset.
 
 ":s/a/b/n" didn't work when 'modifiable' was off.
 
-When $VIMRUNTIME includes a multi-byte character then rgb.txt could not be
+When $VIMRUNTIME includes a multibyte character then rgb.txt could not be
 found. (Yukihiro Nakadaira)
 
 ":mkspell" didn't work correctly for non-ASCII affix flags when conversion is
@@ -2670,7 +2670,7 @@ keep them in the original order.
 Fixed a crash when editing a directory in diff mode.  Don't trigger
 autocommands when executing the diff command.
 
-Getting a keystroke could get stuck if 'encoding' is a multi-byte encoding and
+Getting a keystroke could get stuck if 'encoding' is a multibyte encoding and
 typing a special key.
 
 When 'foldignore' is set the folds were not updated right away.
@@ -2711,7 +2711,7 @@ When using ":vsp" or ":sp" the available space wasn't used equally between
 windows. (Servatius Brandt)
 
 Expanding <cWORD> on a trailing blank resulted in the first word in the line
-if 'encoding' is a multi-byte encoding.
+if 'encoding' is a multibyte encoding.
 
 Spell checking: spellbadword() didn't see a missing capital in the first word
 of a line.  Popup menu now only suggest the capitalized word when appropriate.
@@ -2734,7 +2734,7 @@ background, which made magenta text disappear.  Now use reverse in this
 specific situation.
 
 After completing the longest match "." didn't insert the same text.  Repeating
-also didn't work correctly for multi-byte text.
+also didn't work correctly for multibyte text.
 
 When using Insert mode completion and BS the whole word that was completed
 would result in all possible matches.  Now stop completion.  Also fixes that
@@ -2751,7 +2751,7 @@ non-ASCII characters looked wrong. (Yegappan Lakshmanan)
 Motif: building failed when Xm/Notebook.h doesn't exist.  Added a configure
 check, disable GUI tabline when it's missing.
 
-Mac: When compiled without multi-byte feature the clipboard didn't work.
+Mac: When compiled without multibyte feature the clipboard didn't work.
 
 It was possible to switch to another tab page when the cmdline window is open.
 
@@ -2867,7 +2867,7 @@ a crash.
 
 GTK: The tab pages line menu was not converted from 'encoding' to utf-8.
 
-Typing a multi-byte character or a special key at the hit-enter prompt did not
+Typing a multibyte character or a special key at the hit-enter prompt did not
 work.
 
 When 'virtualedit' contains "onemore" CTRL-O in Insert mode still moved the
@@ -3387,7 +3387,7 @@ Solution:   When running Vim as root don't become a Vim server without an
 Files:	    src/main.c
 
 Patch 7.0.053
-Problem:    Shortening a directory name may fail when there are multi-byte
+Problem:    Shortening a directory name may fail when there are multibyte
 	    characters.
 Solution:   Copy the correct bytes. (Titov Anatoly)
 Files:	    src/misc1.c
@@ -3621,7 +3621,7 @@ Solution:   Remove the "-pipe" argument from PERL_CFLAGS.
 Files:	    src/auto/configure, src/configure.in
 
 Patch 7.0.089
-Problem:    "ga" does not work properly for a non-Unicode multi-byte encoding.
+Problem:    "ga" does not work properly for a non-Unicode multibyte encoding.
 Solution:   Only check for composing chars for utf-8. (Taro Muraoka)
 Files:	    src/ex_cmds.c
 
@@ -4224,7 +4224,7 @@ Files:	    src/if_cscope.c
 Patch 7.0.185
 Problem:    Multi-byte characters in a message are displayed with attributes
 	    from what comes before it.
-Solution:   Don't use the attributes for a multi-byte character.  Do use
+Solution:   Don't use the attributes for a multibyte character.  Do use
 	    attributes for special characters. (Yukihiro Nakadaira)
 Files:	    src/message.c
 
@@ -4307,7 +4307,7 @@ Solution:   Add type casts.  Use "*" for processorArchitecture. (George Reilly)
 Files:	    src/Make_mvc.mak, src/eval.c, src/gvim.exe.mnf, src/misc2.c
 
 Patch 7.0.199
-Problem:    When using multi-byte characters the combination of completion and
+Problem:    When using multibyte characters the combination of completion and
 	    formatting may result in a wrong cursor position.
 Solution:   Don't decrement the cursor column, use dec_cursor(). (Yukihiro
 	    Nakadaira)  Also check for the column to be zero.
@@ -5902,10 +5902,10 @@ Solution:   Don't advance the cursor when it's already on the NUL after a
 Files:	    src/normal.c
 
 Patch 7.1.185
-Problem:    Using "gR" with a multi-byte encoding and typing a CR pushes
+Problem:    Using "gR" with a multibyte encoding and typing a CR pushes
 	    characters onto the replace stack incorrectly, resulting in BS
 	    putting back the wrong characters. (Paul B. Mahol)
-Solution:   Push multi-byte characters onto the replace stack in reverse byte
+Solution:   Push multibyte characters onto the replace stack in reverse byte
 	    order.  Add replace_push_mb().
 Files:	    src/edit.c, src/misc1.c, src/proto/edit.pro
 
@@ -6112,7 +6112,7 @@ Files:	    runtime/doc/eval.txt, src/eval.c, src/hardcopy.c,
 
 Patch 7.1.220
 Problem:    When a ")" or word movement command moves the cursor back from the
-	    end of the line it may end up on the trail byte of a multi-byte
+	    end of the line it may end up on the trail byte of a multibyte
 	    character.  It's also moved back when it isn't needed.
 Solution:   Add the adjust_cursor() function.
 Files:	    src/normal.c
@@ -6241,7 +6241,7 @@ Problem:    When "gUe" turns a German sharp s into SS the operation stops
 	    before the end of the word.  Latin2 has the same sharp s but it's
 	    not changed to SS there.
 Solution:   Make sure all the characters are operated upon.  Detect the sharp
-	    s in latin2.  Also fixes that changing case of a multi-byte
+	    s in latin2.  Also fixes that changing case of a multibyte
 	    character that changes the byte count doesn't always work.
 Files:	    src/ops.c
 
@@ -6771,7 +6771,7 @@ Files:	    src/misc1.c
 
 Warning for missing sentinel in gui_xmldlg.c. (Dominique Pelle)
 
-A search offset from the end of a match didn't work properly for multi-byte
+A search offset from the end of a match didn't work properly for multibyte
 characters.  (Yukihiro Nakadaira)
 
 When displaying the value of 'key' don't show "*****" when the value is empty.
@@ -6965,7 +6965,7 @@ The #ifdef for including "vimio.h" was inconsistent.  In a few files it
 depended on MSWIN, which isn't defined until later.
 
 Patch 7.2b.001
-Problem:    Compilation problem: mb_fix_col() missing with multi-byte feature
+Problem:    Compilation problem: mb_fix_col() missing with multibyte feature
 	    but without GUI or clipboard.
 Solution:   Remove #ifdef.
 Files:	    src/mbyte.c
@@ -7804,7 +7804,7 @@ Solution:   Don't change "Columns" back to an old value at a wrong moment.
 Files:	    src/gui.c
 
 Patch 7.2.066
-Problem:    It's not easy to see whether 'encoding' is a multi-byte encoding.
+Problem:    It's not easy to see whether 'encoding' is a multibyte encoding.
 Solution:   Add has('multi_byte_encoding').
 Files:	    runtime/doc/eval.txt, src/eval.c
 
@@ -7949,7 +7949,7 @@ Solution:   Don't use a WM_OLE message of zero size. (Ray Megal)
 Files:	    src/if_ole.cpp, src/gui_w48.c
 
 Patch 7.2.090
-Problem:    User command containing 0x80 in multi-byte character does not work
+Problem:    User command containing 0x80 in multibyte character does not work
 	    properly. (Yasuhiro Matsumoto)
 Solution:   Undo replacement of K_SPECIAL and CSI characters when executing
 	    the command.
@@ -7967,7 +7967,7 @@ Files:	    src/eval.c
 
 Patch 7.2.093 (extra)
 Problem:    Win32: inputdialog() and find/replace dialogs can't handle
-	    multi-byte text.
+	    multibyte text.
 Solution:   Use the wide version of dialog functions when available. (Yanwei
 	    Jia)
 Files:	    src/gui_w32.c, src/gui_w48.c
@@ -8062,8 +8062,8 @@ Solution:   Add #ifdef.
 Files:	    src/option.c
 
 Patch 7.2.109
-Problem:    'langmap' does not work for multi-byte characters.
-Solution:   Add a list of mapped multi-byte characters. (based on work by
+Problem:    'langmap' does not work for multibyte characters.
+Solution:   Add a list of mapped multibyte characters. (based on work by
 	    Konstantin Korikov, Agathoklis Hatzimanikas)
 Files:	    runtime/doc/options.txt, src/edit.c, src/getchar.c, src/macros.h,
 	    src/normal.c, src/option.c, src/proto/option.pro, src/window.c
@@ -8908,7 +8908,7 @@ Solution:   Remove _FORTIFY_SOURCE=2 from CFLAGS. (Dominique Pelle)
 Files:	    src/auto/configure, src/configure.in
 
 Patch 7.2.252
-Problem:    When using a multi-byte 'enc' the 'iskeyword' option cannot
+Problem:    When using a multibyte 'enc' the 'iskeyword' option cannot
 	    contain characters above 128.
 Solution:   Use mb_ptr2char_adv().
 Files:	    src/charset.c
@@ -9053,7 +9053,7 @@ Files:	    src/memline.c
 Patch 7.2.276
 Problem:    Crash when setting 'isprint' to a small bullet. (Raul Coronado)
 Solution:   Check for the character to be < 256.  Also make it possible to
-	    specify a range of multi-byte characters. (Lech Lorens)
+	    specify a range of multibyte characters. (Lech Lorens)
 Files:	    src/charset.c
 
 Patch 7.2.277
@@ -9144,7 +9144,7 @@ Solution:   Use utfc_ptr2char_len() rather than utfc_ptr2char().  (Dominique
 Files:	    src/screen.c
 
 Patch 7.2.292
-Problem:    Block right-shift doesn't work properly with multi-byte encoding
+Problem:    Block right-shift doesn't work properly with multibyte encoding
 	    and 'list' set.
 Solution:   Add the missing "else". (Lech Lorens)
 Files:	    src/ops.c
@@ -9430,7 +9430,7 @@ Files:	    src/screen.c
 
 Patch 7.2.342
 Problem:    Popup menu displayed wrong in 'rightleft' mode when there are
-	    multi-byte characters.
+	    multibyte characters.
 Solution:   Adjust the column computations. (Dominique Pelle)
 Files:	    src/popupmnu.c
 
@@ -10111,7 +10111,7 @@ Fix compile warnings, esp. for 64-bit systems.  (Mike Williams)
 Fix: :redir to a dictionary that is changed before ":redir END" causes a
 memory access error.
 
-Fix: terminal title not properly restored when there are multi-byte
+Fix: terminal title not properly restored when there are multibyte
 characters.  (partly by James Vega)
 
 Set 'wrapscan' when checking the .po files. (Mike Williams)
@@ -10132,7 +10132,7 @@ Changed readfile() to ignore byte order marks, unless in binary mode.
 
 On MS-Windows completion of shell commands didn't work.
 
-An unprintable multi-byte character at the start of the screen line caused the
+An unprintable multibyte character at the start of the screen line caused the
 following text to be drawn at the wrong position.
 
 Got ml_get errors when using undo with 'virtualedit'.
@@ -10391,7 +10391,7 @@ Solution:   Increase the list reference count.  Add a test for undotree()
 Files:	    src/eval.c, src/testdir/Makefile, src/testdir/test61.in
 
 Patch 7.3.006
-Problem:    Can't build some multi-byte code with C89.
+Problem:    Can't build some multibyte code with C89.
 Solution:   Move code to after declarations. (Joachim Schmitz)
 Files:	    src/mbyte.c, src/spell.c
 
@@ -11161,7 +11161,7 @@ Solution:   Call update_screen() before waiting for input.
 Files:	    src/misc1.c, src/getchar.c
 
 Patch 7.3.138
-Problem:    ":com" changes the multi-byte text of :echo. (Dimitar Dimitrov)
+Problem:    ":com" changes the multibyte text of :echo. (Dimitar Dimitrov)
 Solution:   Search for K_SPECIAL as a byte, not a character. (Ben Schmidt)
 Files:	    src/ex_docmd.c
 
@@ -11486,7 +11486,7 @@ Files:	    README_extra.txt, src/Make_ro.mak, src/INSTALL, src/Makefile,
 	    src/option.h, src/structs.h, src/version.c, src/pty.c, Filelist
 
 Patch 7.3.192
-Problem:    Ex command ":s/ \?/ /g" splits multi-byte characters into bytes.
+Problem:    Ex command ":s/ \?/ /g" splits multibyte characters into bytes.
 	    (Dominique Pelle)
 Solution:   Advance over whole character instead of one byte.
 Files:	    src/ex_cmds.c
@@ -12016,15 +12016,15 @@ Solution:   Only restore the cursor position when there is a command line.
 Files:	    src/ex_getln.c
 
 Patch 7.3.283
-Problem:    An expression mapping with a multi-byte character containing a
+Problem:    An expression mapping with a multibyte character containing a
 	    0x80 byte gets messed up. (ZyX)
 Solution:   Unescape the expression before evaluating it (Yukihiro Nakadaira)
 Files:	    src/getchar.c
 
 Patch 7.3.284
-Problem:    The str2special() function doesn't handle multi-byte characters
+Problem:    The str2special() function doesn't handle multibyte characters
 	    properly.
-Solution:   Recognize multi-byte characters. (partly by Vladimir Vichniakov)
+Solution:   Recognize multibyte characters. (partly by Vladimir Vichniakov)
 Files:	    src/getchar.c, src/message.c, src/misc2.c
 
 Patch 7.3.285 (after 7.3.284)
@@ -12112,7 +12112,7 @@ Solution:   Adjust the style. (Elias Diem)
 Files:	    src/gui_photon.c
 
 Patch 7.3.300
-Problem:    Python doesn't parse multi-byte argument correctly.
+Problem:    Python doesn't parse multibyte argument correctly.
 Solution:   Use "t" instead of "s". (lilydjwg)
 Files:	    src/if_py_both.h
 
@@ -12270,7 +12270,7 @@ Files:	    src/ex_cmds.c
 
 Patch 7.3.328
 Problem:    When command line wraps the cursor may be displayed wrong when
-	    there are multi-byte characters.
+	    there are multibyte characters.
 Solution:   Position the cursor before drawing the text. (Yasuhiro Matsumoto)
 Files:	    src/ex_getln.c
 
@@ -13377,7 +13377,7 @@ Solution:   Move the call to gui_mch_init_check() to after fork(). (Yasuhiro
 Files:	    src/gui.c, src/gui_gtk_x11.c, src/proto/gui_gtk_x11.pro
 
 Patch 7.3.521
-Problem:    Using "z=" on a multi-byte character may cause a crash.
+Problem:    Using "z=" on a multibyte character may cause a crash.
 Solution:   Don't use strlen() on an int pointer.
 Files:	    src/spell.c
 
@@ -13475,7 +13475,7 @@ Files:	    src/quickfix.c, src/testdir/test10.in, src/testdir/test10.ok
 
 Patch 7.3.539
 Problem:    Redrawing a character on the command line does not work properly
-	    for multi-byte characters.
+	    for multibyte characters.
 Solution:   Count the number of bytes in a character. (Yukihiro Nakadaira)
 Files:	    src/ex_getln.c
 
@@ -13854,7 +13854,7 @@ Solution:   Add #ifdef for MEMORYSTATUSEX.
 Files:	    src/os_win32.c
 
 Patch 7.3.606
-Problem:    CTRL-P completion has a problem with multi-byte characters.
+Problem:    CTRL-P completion has a problem with multibyte characters.
 Solution:   Check for next character being NUL properly.  (Yasuhiro Matsumoto)
 Files:	    src/search.c, src/macros.h
 
@@ -14190,7 +14190,7 @@ Files:	    src/ex_docmd.c
 
 Patch 7.3.664
 Problem:    Buffer overflow in unescaping text. (Raymond Ko)
-Solution:   Limit check for multi-byte character to 4 bytes.
+Solution:   Limit check for multibyte character to 4 bytes.
 Files:	    src/mbyte.c
 
 Patch 7.3.665
@@ -14357,8 +14357,8 @@ Solution:   Add the shiftwidth() function. (so8res)
 Files:	    runtime/doc/eval.txt, src/eval.c
 
 Patch 7.3.695
-Problem:    Balloon cannot show multi-byte text.
-Solution:   Properly deal with multi-byte characters. (Dominique Pelle)
+Problem:    Balloon cannot show multibyte text.
+Solution:   Properly deal with multibyte characters. (Dominique Pelle)
 Files:	    src/gui_beval.c, src/ui.c
 
 Patch 7.3.696
@@ -14656,7 +14656,7 @@ Files:	    runtime/doc/eval.txt, src/eval.c, src/proto/screen.pro,
 	    src/testdir/test88.ok,
 
 Patch 7.3.749
-Problem:    Python interface doesn't build without the multi-byte feature.
+Problem:    Python interface doesn't build without the multibyte feature.
 Solution:   Add #ifdef. (Ken Takata)
 Files:	    src/if_py_both.h
 
@@ -14762,7 +14762,7 @@ Solution:   Save and restore the cursor position when appropriate. (idea by
 Files:	    src/edit.c
 
 Patch 7.3.769
-Problem:    'matchpairs' does not work with multi-byte characters.
+Problem:    'matchpairs' does not work with multibyte characters.
 Solution:   Make it work. (Christian Brabandt)
 Files:	    src/misc1.c, src/option.c, src/proto/option.pro, src/search.c,
 	    src/testdir/test69.in, src/testdir/test69.ok
@@ -15182,9 +15182,9 @@ Solution:   Add lines for new files.
 Files:	    Filelist
 
 Patch 7.3.840
-Problem:    "\@<!" in regexp does not work correctly with multi-byte
+Problem:    "\@<!" in regexp does not work correctly with multibyte
 	    characters, especially cp932.
-Solution:   Move column to start of multi-byte character. (Yasuhiro Matsumoto)
+Solution:   Move column to start of multibyte character. (Yasuhiro Matsumoto)
 Files:	    src/regexp.c
 
 Patch 7.3.841
@@ -15254,7 +15254,7 @@ Solution:   Use Xutf8TextPropertyToTextList(). (Christian Brabandt)
 Files:	    src/ui.c, src/ops.c
 
 Patch 7.3.853
-Problem:    Using "ra" in multiple lines on multi-byte characters leaves a few
+Problem:    Using "ra" in multiple lines on multibyte characters leaves a few
 	    characters not replaced.
 Solution:   Adjust the end column only in the last line. (Yasuhiro Matsumoto)
 Files:	    src/testdir/test69.in, src/testdir/test69.ok, src/ops.c
@@ -15271,7 +15271,7 @@ Solution:   Add type casts. (Mike Williams)
 Files:	    src/misc1.c
 
 Patch 7.3.856
-Problem:    When calling system() multi-byte clipboard contents is garbled.
+Problem:    When calling system() multibyte clipboard contents is garbled.
 Solution:   Save and restore the clipboard contents.  (Yukihiro Nakadaira)
 Files:	    src/gui_gtk_x11.c, src/proto/gui_gtk_x11.pro, src/ops.c,
 	    src/proto/ops.pro, src/os_unix.c, src/proto/ui.pro, src/ui.c
@@ -15379,9 +15379,9 @@ Files:	    src/regexp.c, src/testdir/test79.in, src/testdir/test79.ok,
 	    src/testdir/test80.in, src/testdir/test80.ok
 
 Patch 7.3.874
-Problem:    Comparing file names does not handle multi-byte characters
+Problem:    Comparing file names does not handle multibyte characters
 	    properly.
-Solution:   Implement multi-byte handling.
+Solution:   Implement multibyte handling.
 Files:	    src/misc1.c, src/misc2.c
 
 Patch 7.3.875 (after 7.3.866)
@@ -15443,7 +15443,7 @@ Solution:   Do not unref list and dict. (Yasuhiro Matsumoto)
 Files:	    src/if_lua.c
 
 Patch 7.3.886
-Problem:    Can't build with multi-byte on Solaris 10.
+Problem:    Can't build with multibyte on Solaris 10.
 Solution:   Add #ifdef X_HAVE_UTF8_STRING. (Laurent Blume)
 Files:	    src/ui.c
 
@@ -15457,7 +15457,7 @@ Files:	    src/testdir/test94.in, src/testdir/test94.ok,
 
 Patch 7.3.888
 Problem:    Filename completion with 'fileignorecase' does not work for
-	    multi-byte characters.
+	    multibyte characters.
 Solution:   Make 'fileignorecase' work properly. (Hirohito Higashi)
 Files:	    src/misc2.c
 
@@ -15933,7 +15933,7 @@ Files:	    src/if_py_both.h
 Patch 7.3.968
 Problem:    Multi-byte support is only available when compiled with "big"
 	    features.
-Solution:   Include multi-byte by default, with "normal" features.
+Solution:   Include multibyte by default, with "normal" features.
 Files:	    src/feature.h
 
 Patch 7.3.969
@@ -16009,19 +16009,19 @@ Files:	    src/regexp_nfa.c
 
 Patch 7.3.980
 Problem:    Regexp logs may contain garbage. Character classes don't work
-	    correctly for multi-byte characters.
+	    correctly for multibyte characters.
 Solution:   Check for end of post list.  Only use "is" functions for
 	    characters up to 255. (Ken Takata)
 Files:	    src/regexp_nfa.c
 
 Patch 7.3.981
 Problem:    In the old regexp engine \i, \I, \f and \F don't work on
-	    multi-byte characters.
+	    multibyte characters.
 Solution:   Dereference pointer properly.
 Files:	    src/regexp.c, src/testdir/test64.in, src/testdir/test64.ok
 
 Patch 7.3.982
-Problem:    In the new regexp engine \p does not work on multi-byte
+Problem:    In the new regexp engine \p does not work on multibyte
 	    characters.
 Solution:   Don't point to an integer but the characters.
 Files:	    src/regexp_nfa.c, src/testdir/test95.in, src/testdir/test95.ok
@@ -16169,7 +16169,7 @@ Files:	    src/memfile.c
 
 Patch 7.3.1008
 Problem:    Test 95 fails on MS-Windows.
-Solution:   Set 'nomore'. Change \i to \f.  Change multi-byte character to
+Solution:   Set 'nomore'. Change \i to \f.  Change multibyte character to
 	    something that is not matching \i. (Ken Takata)
 Files:	    src/testdir/test95.in, src/testdir/test95.ok
 
@@ -16185,7 +16185,7 @@ Solution:   Only apply ireg_icombine for composing characters.
 Files:	    src/regexp_nfa.c, src/testdir/test95.in, src/testdir/test95.ok
 
 Patch 7.3.1011
-Problem:    New regexp engine is inefficient with multi-byte characters.
+Problem:    New regexp engine is inefficient with multibyte characters.
 Solution:   Handle a character at a time instead of a byte at a time.  Also
 	    make \Z partly work.
 Files:	    src/regexp_nfa.c, src/testdir/test95.in, src/testdir/test95.ok
@@ -16313,7 +16313,7 @@ Files:	    src/regexp_nfa.c, src/testdir/test64.in, src/testdir/test64.ok,
 	    src/regexp.h
 
 Patch 7.3.1034
-Problem:    New regexp code using strange multi-byte code.
+Problem:    New regexp code using strange multibyte code.
 Solution:   Use the normal code to advance and backup pointers.
 Files:	    src/regexp_nfa.c
 

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Aug 15
+*eval.txt*	For Vim version 8.2.  Last change: 2020 aug 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1135,7 +1135,7 @@ In legacy Vim script:
 If expr8 is a Number or String this results in a String that contains the
 expr1'th single byte from expr8.  expr8 is used as a String (a number is
 automatically converted to a String), expr1 as a Number.  This doesn't
-recognize multi-byte encodings, see `byteidx()` for an alternative, or use
+recognize multibyte encodings, see `byteidx()` for an alternative, or use
 `split()` to turn the string into a list of characters.  Example, to get the
 byte under the cursor: >
 	:let c = getline(".")[col(".") - 1]
@@ -1163,12 +1163,12 @@ error.
 
 expr8[expr1a : expr1b]	substring or sublist		*expr-[:]*
 
-If expr8 is a String this results in the substring with the bytes from expr1a
-to and including expr1b.  expr8 is used as a String, expr1a and expr1b are
-used as a Number.
+If expr8 is a String this results in the substring with the bytes or
+characters from expr1a to and including expr1b.  expr8 is used as a String,
+expr1a and expr1b are used as a Number.
 
 In legacy Vim script the indexes are byte indexes.  This doesn't recognize
-multi-byte encodings, see |byteidx()| for computing the indexes.  If expr8 is
+multibyte encodings, see |byteidx()| for computing the indexes.  If expr8 is
 a Number it is first converted to a String.
 
 In Vim9 script the indexes are character indexes.  To use byte indexes use
@@ -1185,6 +1185,7 @@ expr1b is smaller than expr1a the result is an empty string.
 
 Examples: >
 	:let c = name[-1:]		" last byte of a string
+	:let c = name[0:-1]		" the whole string
 	:let c = name[-2:-2]		" last but one byte of a string
 	:let s = line(".")[4:]		" from the fifth byte to the end
 	:let s = s[:-3]			" remove last two bytes
@@ -2359,7 +2360,7 @@ assert_equalfile({fname-one}, {fname-two} [, {msg}])
 				Number	assert file contents are equal
 assert_exception({error} [, {msg}])
 				Number	assert {error} is in v:exception
-assert_fails({cmd} [, {error} [, {msg}]])
+assert_fails({cmd} [, {error} [, {msg} [, {lnum}]]])
 				Number	assert {cmd} fails
 assert_false({actual} [, {msg}])
 				Number	assert {actual} is false
@@ -5722,6 +5723,7 @@ getreginfo([{regname}])					*getreginfo()*
 		If {regname} is invalid or not set, an empty Dictionary
 		will be returned.
 		If {regname} is not specified, |v:register| is used.
+		The returned Dictionary can be passed to |setreg()|.
 
 		Can also be used as a |method|: >
 			GetRegname()->getreginfo()
@@ -6029,7 +6031,7 @@ has({feature} [, {check}])
 		zero otherwise.  This is useful to check for a typo in
 		{feature} and to detect dead code.  Keep in mind that an older
 		Vim version will not know about a feature added later and
-		features that have been abandoned will not be know by the
+		features that have been abandoned will not be known by the
 		current Vim version.
 
 		Also see |exists()|.
@@ -8971,7 +8973,7 @@ setcellwidths({list})					*setcellwidths()*
 		tells Vim how wide characters are, counted in screen cells.
 		This overrides 'ambiwidth'.  Example: >
 		   setcellwidths([[0xad, 0xad, 1],
-		   		\ [0x2194, 0x2199, 2]]
+		   		\ [0x2194, 0x2199, 2]])
 
 <					*E1109* *E1110* *E1111* *E1112* *E1113*
 		The {list} argument is a list of lists with each three
@@ -8986,6 +8988,8 @@ setcellwidths({list})					*setcellwidths()*
 
 		To clear the overrides pass an empty list: >
 		   setcellwidths([]);
+<		You can use the script $VIMRUNTIME/tools/emoji_list.vim to see
+		the effect for known emoji characters.
 
 
 setcharsearch({dict})					*setcharsearch()*
@@ -11443,7 +11447,7 @@ mouse_urxvt		Compiled with support for urxvt mouse.
 mouse_xterm		Compiled with support for xterm mouse.
 mouseshape		Compiled with support for 'mouseshape'.
 multi_byte		Compiled with support for 'encoding' (always true)
-multi_byte_encoding	'encoding' is set to a multi-byte encoding.
+multi_byte_encoding	'encoding' is set to a multibyte encoding.
 multi_byte_ime		Compiled with support for IME input method.
 multi_lang		Compiled with support for multiple languages.
 mzscheme		Compiled with MzScheme interface |mzscheme|.

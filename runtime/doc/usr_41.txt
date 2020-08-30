@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.2.  Last change: 2020 Aug 13
+*usr_41.txt*	For Vim version 8.2.  Last change: 2020 Aug 30
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -2069,7 +2069,7 @@ with this mechanism: >
  22	  map <unique> <Leader>a  <Plug>TypecorrAdd;
  23	endif
 
-This checks if a mapping to "<Plug>TypecorrAdd/" already exists, and only
+This checks if a mapping to "<Plug>TypecorrAdd;" already exists, and only
 defines the mapping from "<Leader>a" if it doesn't.  The user then has a
 chance of putting this in his vimrc file: >
 

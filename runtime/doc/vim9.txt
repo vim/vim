@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Aug 15
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Aug 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -49,6 +49,7 @@ errors are handled.
 The Vim9 script syntax and semantics are used in:
 - a function defined with the `:def` command
 - a script file where the first command is `vim9script`
+- an autocommand defined in the context of these
 
 When using `:function` in a Vim9 script file the legacy syntax is used.
 However, this can be confusing and is therefore discouraged.
@@ -92,9 +93,13 @@ often 10x to 100x times.
 Many errors are already found when compiling, before the function is executed.
 The syntax is strict, to enforce code that is easy to read and understand.
 
-Compilation is done when the function is first called, or when the
-`:defcompile` command is encountered in the script where the function was
-defined. `:disassemble` also compiles the function.
+Compilation is done when:
+- the function is first called
+- when the `:defcompile` command is encountered in the script where the
+  function was defined
+- `:disassemble` is used for the function.
+- a function that is compiled calls the function or uses it as a function
+  reference
 
 `:def` has no options like `:function` does: "range", "abort", "dict" or
 "closure".  A `:def` function always aborts on an error, does not get a range
@@ -492,6 +497,18 @@ For a workaround, split it in two functions: >
 	    use-feature
 	  enddef
 	endif
+Of put the unsupported code inside an `if` with a constant expression that
+evaluates to false: >
+	def Maybe()
+	  if has('feature')
+	    use-feature
+	  endif
+	enddef
+Note that for unrecognized commands there is no check for "|" and a following
+command.  This will give an error for missing `endif`: >
+	def Maybe()
+	  if has('feature') | use-feature | endif
+	enddef
 
 ==============================================================================
 
@@ -539,7 +556,7 @@ If the script the function is defined in is Vim9 script, then script-local
 variables can be accessed without the "s:" prefix.  They must be defined
 before the function is compiled.  If the script the function is defined in is
 legacy script, then script-local variables must be accessed with the "s:"
-prefix.
+prefix and they do not need to exist (they can be deleted any time).
 
 						*:defc* *:defcompile*
 :defc[ompile]		Compile functions defined in the current script that
@@ -692,6 +709,22 @@ dictionary.  If there is a mix of types, the "any" type is used. >
 	['a', 'b', 'c']	list<string>
 	[1, 'x', 3]	list<any>
 
+
+Stricter type checking					*type-checking*
+
+In legacy Vim script, where a number was expected, a string would be
+automatically converted to a number.  This was convenient for an actual number
+such as "123", but leads to unexpected problems (but no error message) if the
+string doesn't start with a number.  Quite often this leads to hard-to-find
+bugs.
+
+In Vim9 script this has been made stricter.  In most places it works just as
+before, if the expected type was already.  There will sometimes be an error,
+thus breaking backwards compatibility.  For example:
+- Using a number other than 0 or 1 where a boolean is expected.  *E1023*
+- Using a string value when setting a number options.
+- Using a number where a string is expected.   *E1024*
+
 ==============================================================================
 
 5.  Namespace, Import and Export
@@ -702,6 +735,9 @@ THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 A Vim9 script can be written to be imported.  This means that everything in
 the script is local, unless exported.  Those exported items, and only those
 items, can then be imported in another script.
+
+You can cheat by using the global namespace explicitly.  We will assume here
+that you don't do that.
 
 
 Namespace ~
