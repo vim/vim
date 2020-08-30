@@ -3557,8 +3557,9 @@ objects/netbeans.o: netbeans.c
 objects/channel.o: channel.c
 	$(CCC) -o $@ channel.c
 
-Makefile:
-	@echo The name of the makefile MUST be "Makefile" (with capital M)!!!!
+# Dependencies that "make depend" doesn't find
+objects/gui_gtk_x11.o: version.h
+
 
 # Build rules for libvterm.  Putting them here allows for adding compilation
 # options specific for Vim.  Since the .o files go into objects/ we do need to
@@ -3617,83 +3618,9 @@ objects/xpatience.o: xdiff/xpatience.c $(XDIFF_INCL)
 	$(CCCDIFF) -o $@ xdiff/xpatience.c
 
 
-###############################################################################
-### MacOS X installation
-###
-### This installs a runnable Vim.app in $(prefix)
+Makefile:
+	@echo The name of the makefile MUST be "Makefile" (with capital M)!!!!
 
-REZ    = /Developer/Tools/Rez
-RESDIR = $(APPDIR)/Contents/Resources
-VERSION = $(VIMMAJOR).$(VIMMINOR)
-
-### Common flags
-M4FLAGSX = $(M4FLAGS) -DAPP_EXE=$(VIMNAME) -DAPP_NAME=$(VIMNAME) \
-		-DAPP_VER=$(VERSION)
-
-install_macosx: gui_bundle
-# Remove the link to the runtime dir, don't want to copy all of that.
-	-rm $(RESDIR)/vim/runtime
-	$(INSTALL_DATA_R) $(APPDIR) $(DESTDIR)$(prefix)
-# Generate the help tags file now, it won't work with "make installruntime".
-	-@srcdir=`pwd`; cd $(HELPSOURCE); $(MAKE) VIMEXE=$$srcdir/$(VIMTARGET) vimtags
-# Install the runtime files.  Recursive!
-	$(MKDIR_P) $(DESTDIR)$(prefix)/$(RESDIR)/vim/runtime
-	srcdir=`pwd`; $(MAKE) -f Makefile installruntime \
-		VIMEXE=$$srcdir/$(VIMTARGET) \
-		prefix=$(DESTDIR)$(prefix)/$(RESDIR)$(VIMDIR) \
-		exec_prefix=$(DESTDIR)$(prefix)/$(APPDIR)/Contents \
-		BINDIR=$(DESTDIR)$(prefix)/$(APPDIR)/Contents/MacOS \
-		VIMLOC=$(DESTDIR)$(prefix)/$(RESDIR)$(VIMDIR) \
-		VIMRTLOC=$(DESTDIR)$(prefix)/$(RESDIR)$(VIMDIR)/runtime
-# Put the link back.
-	ln -s `pwd`/../runtime $(RESDIR)/vim
-# Copy rgb.txt, Mac doesn't always have X11
-	$(INSTALL_DATA) $(SCRIPTSOURCE)/rgb.txt $(DESTDIR)$(prefix)/$(RESDIR)/vim/runtime
-# TODO: Create the vimtutor and/or gvimtutor application.
-
-gui_bundle: $(RESDIR) bundle-dir bundle-executable bundle-info bundle-resource \
-	bundle-language
-
-$(RESDIR):
-	$(MKDIR_P) $@
-
-bundle-dir: $(APPDIR)/Contents $(VIMTARGET)
-# Make a link to the runtime directory, so that we can try out the executable
-# without installing it.
-	$(MKDIR_P) $(RESDIR)/vim
-	-ln -s `pwd`/../runtime $(RESDIR)/vim
-
-bundle-executable: $(VIMTARGET)
-	$(MKDIR_P) $(APPDIR)/Contents/MacOS
-	cp $(VIMTARGET) $(APPDIR)/Contents/MacOS/$(VIMTARGET)
-
-bundle-info:  bundle-dir
-	@echo "Creating PkgInfo"
-	@echo -n "APPLVIM!" > $(APPDIR)/Contents/PkgInfo
-	@echo "Creating Info.plist"
-	m4 $(M4FLAGSX) infplist.xml > $(APPDIR)/Contents/Info.plist
-
-bundle-resource: bundle-dir bundle-rsrc
-	cp -f $(RSRC_DIR)/*.icns $(RESDIR)
-
-### Classic resources
-# Resource fork (in the form of a .rsrc file) for Classic Vim (Mac OS 9)
-# This file is also required for OS X Vim.
-bundle-rsrc: os_mac.rsr.hqx
-	@echo "Creating resource fork"
-	python dehqx.py $<
-	rm -f gui_mac.rsrc
-	mv gui_mac.rsrc.rsrcfork $(RESDIR)/$(VIMNAME).rsrc
-
-bundle-language: bundle-dir
-
-$(APPDIR)/Contents:
-	$(MKDIR_P) $(APPDIR)/Contents/MacOS
-	$(MKDIR_P) $(RESDIR)/English.lproj
-
-
-# Dependencies that "make depend" doesn't find
-objects/gui_gtk_x11.o: version.h
 
 ###############################################################################
 #
