@@ -359,15 +359,20 @@ f_bufloaded(typval_T *argvars, typval_T *rettv)
 f_bufname(typval_T *argvars, typval_T *rettv)
 {
     buf_T	*buf;
+    typval_T	*tv = &argvars[0];
 
-    if (argvars[0].v_type == VAR_UNKNOWN)
+    if (tv->v_type == VAR_UNKNOWN)
 	buf = curbuf;
     else
     {
-	(void)tv_get_number(&argvars[0]);	// issue errmsg if type error
 	++emsg_off;
-	buf = tv_get_buf(&argvars[0], FALSE);
+	buf = tv_get_buf(tv, FALSE);
 	--emsg_off;
+	if (buf == NULL
+		&& tv->v_type != VAR_NUMBER
+		&& tv->v_type != VAR_STRING)
+	    // issue errmsg for type error
+	    (void)tv_get_number(tv);
     }
     rettv->v_type = VAR_STRING;
     if (buf != NULL && buf->b_fname != NULL)

@@ -1435,6 +1435,14 @@ def Test_setreg()
   assert_equal(reginfo, getreginfo('a'))
 enddef 
 
+def Test_bufname()
+  split SomeFile
+  assert_equal('SomeFile', bufname('%'))
+  edit OtherFile
+  assert_equal('SomeFile', bufname('#'))
+  close
+enddef
+
 def Fibonacci(n: number): number
   if n < 2
     return n
