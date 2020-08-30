@@ -2364,6 +2364,8 @@ def Test_interrupt_loop()
     assert_equal(100, x)
   endtry
   assert_true(caught, 'should have caught an exception')
+  # consume the CTRL-C
+  getchar(0)
 enddef
 
 def Test_automatic_line_continuation()
@@ -3177,7 +3179,7 @@ func Test_vim9script_not_global()
     " caught
   endtry
 
-  call delete('Xvim9script.vium')
+  call delete('Xvim9script.vim')
 endfunc
 
 def Test_vim9_copen()
@@ -3261,10 +3263,8 @@ def Test_cmdline_win()
 enddef
 
 def Test_invalid_sid()
-  # TODO: why does this not work in the GUI?
-  CheckNotGui
-
   assert_fails('func <SNR>1234_func', 'E123:')
+
   if RunVim([], ['wq Xdidit'], '+"func <SNR>1_func"')
     call assert_equal([], readfile('Xdidit'))
   endif
