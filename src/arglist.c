@@ -778,7 +778,7 @@ ex_argdelete(exarg_T *eap)
 
     if (eap->addr_count > 0 || *eap->arg == NUL)
     {
-	// ":argdel" works like ":argdel"
+	// ":argdel" works like ":.argdel"
 	if (eap->addr_count == 0)
 	{
 	    if (curwin->w_arg_idx >= ARGCOUNT)

@@ -1607,7 +1607,7 @@ utf_ptr2cells(
 {
     int		c;
 
-    // Need to convert to a wide character.
+    // Need to convert to a character number.
     if (*p >= 0x80)
     {
 	c = utf_ptr2char(p);
@@ -1762,7 +1762,7 @@ dbcs_ptr2char(char_u *p)
 }
 
 /*
- * Convert a UTF-8 byte sequence to a wide character.
+ * Convert a UTF-8 byte sequence to a character number.
  * If the sequence is illegal or truncated by a NUL the first byte is
  * returned.
  * For an overlong sequence this may return zero.

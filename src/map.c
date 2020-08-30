@@ -1952,7 +1952,7 @@ put_escstr(FILE *fd, char_u *strstart, int what)
 	// when they are read back.
 	if (c == K_SPECIAL && what != 2)
 	{
-	    modifiers = 0x0;
+	    modifiers = 0;
 	    if (str[1] == KS_MODIFIER)
 	    {
 		modifiers = str[2];
