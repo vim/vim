@@ -792,8 +792,8 @@ call_def_function(
     for (idx = 0; idx < argc; ++idx)
     {
 	if (ufunc->uf_arg_types != NULL && idx < ufunc->uf_args.ga_len
-		&& check_typval_type(ufunc->uf_arg_types[idx], &argv[idx])
-								       == FAIL)
+		&& check_typval_type(ufunc->uf_arg_types[idx], &argv[idx],
+							      idx + 1) == FAIL)
 	    goto failed_early;
 	copy_tv(&argv[idx], STACK_TV_BOT(0));
 	++ectx.ec_stack.ga_len;
@@ -822,7 +822,8 @@ call_def_function(
 
 	    for (idx = 0; idx < vararg_count; ++idx)
 	    {
-		if (check_typval_type(expected, &li->li_tv) == FAIL)
+		if (check_typval_type(expected, &li->li_tv,
+						       argc + idx + 1) == FAIL)
 		    goto failed_early;
 		li = li->li_next;
 	    }

@@ -729,7 +729,7 @@ need_type(
 	cctx_T	*cctx,
 	int	silent)
 {
-    if (check_type(expected, actual, FALSE) == OK)
+    if (check_type(expected, actual, FALSE, 0) == OK)
 	return OK;
     if (actual->tt_type != VAR_ANY
 	    && actual->tt_type != VAR_UNKNOWN
@@ -3581,7 +3581,7 @@ compile_expr7t(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 
 	generate_ppconst(cctx, ppconst);
 	actual = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-	if (check_type(want_type, actual, FALSE) == FAIL)
+	if (check_type(want_type, actual, FALSE, 0) == FAIL)
 	{
 	    if (need_type(actual, want_type, -1, cctx, FALSE) == FAIL)
 		return FAIL;
@@ -6500,13 +6500,9 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 		did_set_arg_type = TRUE;
 		ufunc->uf_arg_types[arg_idx] = val_type;
 	    }
-	    else if (check_type(ufunc->uf_arg_types[arg_idx], val_type, FALSE)
-								       == FAIL)
-	    {
-		arg_type_mismatch(ufunc->uf_arg_types[arg_idx], val_type,
-								  arg_idx + 1);
+	    else if (check_type(ufunc->uf_arg_types[arg_idx], val_type,
+						    TRUE, arg_idx + 1) == FAIL)
 		goto erret;
-	    }
 
 	    if (generate_STORE(&cctx, ISN_STORE, i - count - off, NULL) == FAIL)
 		goto erret;

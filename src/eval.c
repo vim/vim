@@ -1291,7 +1291,7 @@ set_var_lval(
 	else
 	{
 	    if (lp->ll_type != NULL
-			      && check_typval_type(lp->ll_type, rettv) == FAIL)
+			   && check_typval_type(lp->ll_type, rettv, 0) == FAIL)
 		return;
 	    set_var_const(lp->ll_name, lp->ll_type, rettv, copy, flags);
 	}

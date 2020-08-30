@@ -231,7 +231,7 @@ def Test_call_wrong_args()
     enddef
     Func([])
   END
-  call CheckScriptFailure(lines, 'E1012: type mismatch, expected string but got list<unknown>', 5)
+  call CheckScriptFailure(lines, 'E1013: argument 1: type mismatch, expected string but got list<unknown>', 5)
 enddef
 
 " Default arg and varargs
@@ -278,7 +278,7 @@ def Test_call_def_varargs()
       enddef
       Func(1, 2, 3)
   END
-  CheckScriptFailure(lines, 'E1012:')
+  CheckScriptFailure(lines, 'E1013: argument 1: type mismatch')
 
   lines =<< trim END
       vim9script
@@ -287,7 +287,7 @@ def Test_call_def_varargs()
       enddef
       Func('a', 9)
   END
-  CheckScriptFailure(lines, 'E1012:')
+  CheckScriptFailure(lines, 'E1013: argument 2: type mismatch')
 
   lines =<< trim END
       vim9script
@@ -296,7 +296,7 @@ def Test_call_def_varargs()
       enddef
       Func(1, 'a')
   END
-  CheckScriptFailure(lines, 'E1012:')
+  CheckScriptFailure(lines, 'E1013: argument 1: type mismatch')
 enddef
 
 def Test_call_call()
@@ -691,7 +691,7 @@ def Test_vim9script_call_fail_type()
     enddef
     MyFunc(1234)
   END
-  CheckScriptFailure(lines, 'E1012: type mismatch, expected string but got number')
+  CheckScriptFailure(lines, 'E1013: argument 1: type mismatch, expected string but got number')
 enddef
 
 def Test_vim9script_call_fail_const()

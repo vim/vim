@@ -304,7 +304,7 @@ typval2type_vimvar(typval_T *tv, garray_T *type_gap)
  * Return FAIL if "expected" and "actual" don't match.
  */
     int
-check_typval_type(type_T *expected, typval_T *actual_tv)
+check_typval_type(type_T *expected, typval_T *actual_tv, int argidx)
 {
     garray_T	type_list;
     type_T	*actual_type;
@@ -313,7 +313,7 @@ check_typval_type(type_T *expected, typval_T *actual_tv)
     ga_init2(&type_list, sizeof(type_T *), 10);
     actual_type = typval2type(actual_tv, &type_list);
     if (actual_type != NULL)
-	res = check_type(expected, actual_type, TRUE);
+	res = check_type(expected, actual_type, TRUE, argidx);
     clear_type_list(&type_list);
     return res;
 }
@@ -321,22 +321,22 @@ check_typval_type(type_T *expected, typval_T *actual_tv)
     void
 type_mismatch(type_T *expected, type_T *actual)
 {
-    char *tofree1, *tofree2;
-
-    semsg(_(e_type_mismatch_expected_str_but_got_str),
-		   type_name(expected, &tofree1), type_name(actual, &tofree2));
-    vim_free(tofree1);
-    vim_free(tofree2);
+    arg_type_mismatch(expected, actual, 0);
 }
 
     void
 arg_type_mismatch(type_T *expected, type_T *actual, int argidx)
 {
     char *tofree1, *tofree2;
+    char *typename1 = type_name(expected, &tofree1);
+    char *typename2 = type_name(actual, &tofree2);
 
-    semsg(_(e_argument_nr_type_mismatch_expected_str_but_got_str),
-	    argidx,
-	    type_name(expected, &tofree1), type_name(actual, &tofree2));
+    if (argidx > 0)
+	semsg(_(e_argument_nr_type_mismatch_expected_str_but_got_str),
+						 argidx, typename1, typename2);
+    else
+	semsg(_(e_type_mismatch_expected_str_but_got_str),
+							 typename1, typename2);
     vim_free(tofree1);
     vim_free(tofree2);
 }
@@ -344,9 +344,10 @@ arg_type_mismatch(type_T *expected, type_T *actual, int argidx)
 /*
  * Check if the expected and actual types match.
  * Does not allow for assigning "any" to a specific type.
+ * When "argidx" > 0 it is included in the error message.
  */
     int
-check_type(type_T *expected, type_T *actual, int give_msg)
+check_type(type_T *expected, type_T *actual, int give_msg, int argidx)
 {
     int ret = OK;
 
@@ -359,19 +360,21 @@ check_type(type_T *expected, type_T *actual, int give_msg)
 	if (expected->tt_type != actual->tt_type)
 	{
 	    if (give_msg)
-		type_mismatch(expected, actual);
+		arg_type_mismatch(expected, actual, argidx);
 	    return FAIL;
 	}
 	if (expected->tt_type == VAR_DICT || expected->tt_type == VAR_LIST)
 	{
 	    // "unknown" is used for an empty list or dict
 	    if (actual->tt_member != &t_unknown)
-		ret = check_type(expected->tt_member, actual->tt_member, FALSE);
+		ret = check_type(expected->tt_member, actual->tt_member,
+								     FALSE, 0);
 	}
 	else if (expected->tt_type == VAR_FUNC)
 	{
 	    if (expected->tt_member != &t_unknown)
-		ret = check_type(expected->tt_member, actual->tt_member, FALSE);
+		ret = check_type(expected->tt_member, actual->tt_member,
+								     FALSE, 0);
 	    if (ret == OK && expected->tt_argcount != -1
 		    && (actual->tt_argcount < expected->tt_min_argcount
 			|| actual->tt_argcount > expected->tt_argcount))
@@ -383,7 +386,7 @@ check_type(type_T *expected, type_T *actual, int give_msg)
 		for (i = 0; i < expected->tt_argcount; ++i)
 		    // Allow for using "any" argument type, lambda's have them.
 		    if (actual->tt_args[i] != &t_any && check_type(
-			       expected->tt_args[i], actual->tt_args[i], FALSE)
+			    expected->tt_args[i], actual->tt_args[i], FALSE, 0)
 								       == FAIL)
 		    {
 			ret = FAIL;
@@ -392,7 +395,7 @@ check_type(type_T *expected, type_T *actual, int give_msg)
 	    }
 	}
 	if (ret == FAIL && give_msg)
-	    type_mismatch(expected, actual);
+	    arg_type_mismatch(expected, actual, argidx);
     }
     return ret;
 }
