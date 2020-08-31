@@ -817,6 +817,7 @@ typedef struct sign_attrs_S {
     char_u	*sat_text;
     int		sat_texthl;
     int		sat_linehl;
+    int		sat_priority;
 } sign_attrs_T;
 
 #if defined(FEAT_SIGNS) || defined(PROTO)

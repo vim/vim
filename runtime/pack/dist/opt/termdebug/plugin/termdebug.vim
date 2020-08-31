@@ -2,7 +2,7 @@
 "
 " Author: Bram Moolenaar
 " Copyright: Vim license applies, see ":help license"
-" Last Change: 2020 Jul 12
+" Last Change: 2020 Aug 31
 "
 " WORK IN PROGRESS - Only the basics work
 " Note: On MS-Windows you need a recent version of gdb.  The one included with
@@ -937,7 +937,7 @@ func s:HandleCursor(msg)
       endif
       exe lnum
       exe 'sign unplace ' . s:pc_id
-      exe 'sign place ' . s:pc_id . ' line=' . lnum . ' name=debugPC file=' . fname
+      exe 'sign place ' . s:pc_id . ' line=' . lnum . ' name=debugPC priority=110 file=' . fname
       setlocal signcolumn=yes
     endif
   elseif !s:stopped || fname != ''
