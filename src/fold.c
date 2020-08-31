@@ -1515,6 +1515,9 @@ foldMarkAdjustRecurse(
     linenr_T	last;
     linenr_T	top;
 
+    if (gap->ga_len == 0)
+	return;
+
     // In Insert mode an inserted line at the top of a fold is considered part
     // of the fold, otherwise it isn't.
     if ((State & INSERT) && amount == (linenr_T)1 && line2 == MAXLNUM)
