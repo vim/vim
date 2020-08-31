@@ -608,35 +608,41 @@ foldCreate(linenr_T start, linenr_T end)
 
     // Find the place to insert the new fold.
     gap = &curwin->w_folds;
-    for (;;)
+    if (gap->ga_len == 0)
+	i = 0;
+    else
     {
-	if (!foldFind(gap, start_rel, &fp))
-	    break;
-	if (fp->fd_top + fp->fd_len > end_rel)
+	for (;;)
 	{
-	    // New fold is completely inside this fold: Go one level deeper.
-	    gap = &fp->fd_nested;
-	    start_rel -= fp->fd_top;
-	    end_rel -= fp->fd_top;
-	    if (use_level || fp->fd_flags == FD_LEVEL)
+	    if (!foldFind(gap, start_rel, &fp))
+		break;
+	    if (fp->fd_top + fp->fd_len > end_rel)
 	    {
-		use_level = TRUE;
-		if (level >= curwin->w_p_fdl)
+		// New fold is completely inside this fold: Go one level
+		// deeper.
+		gap = &fp->fd_nested;
+		start_rel -= fp->fd_top;
+		end_rel -= fp->fd_top;
+		if (use_level || fp->fd_flags == FD_LEVEL)
+		{
+		    use_level = TRUE;
+		    if (level >= curwin->w_p_fdl)
+			closed = TRUE;
+		}
+		else if (fp->fd_flags == FD_CLOSED)
 		    closed = TRUE;
+		++level;
 	    }
-	    else if (fp->fd_flags == FD_CLOSED)
-		closed = TRUE;
-	    ++level;
+	    else
+	    {
+		// This fold and new fold overlap: Insert here and move some
+		// folds inside the new fold.
+		break;
+	    }
 	}
-	else
-	{
-	    // This fold and new fold overlap: Insert here and move some folds
-	    // inside the new fold.
-	    break;
-	}
+	i = (int)(fp - (fold_T *)gap->ga_data);
     }
 
-    i = (int)(fp - (fold_T *)gap->ga_data);
     if (ga_grow(gap, 1) == OK)
     {
 	fp = (fold_T *)gap->ga_data + i;
