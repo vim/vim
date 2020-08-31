@@ -820,13 +820,16 @@ foldUpdate(win_T *wp, linenr_T top, linenr_T bot)
 	return;
 #endif
 
-    // Mark all folds from top to bot as maybe-small.
-    (void)foldFind(&wp->w_folds, top, &fp);
-    while (fp < (fold_T *)wp->w_folds.ga_data + wp->w_folds.ga_len
-	    && fp->fd_top < bot)
+    if (wp->w_folds.ga_len > 0)
     {
-	fp->fd_small = MAYBE;
-	++fp;
+	// Mark all folds from top to bot as maybe-small.
+	(void)foldFind(&wp->w_folds, top, &fp);
+	while (fp < (fold_T *)wp->w_folds.ga_data + wp->w_folds.ga_len
+		&& fp->fd_top < bot)
+	{
+	    fp->fd_small = MAYBE;
+	    ++fp;
+	}
     }
 
     if (foldmethodIsIndent(wp)
@@ -1126,6 +1129,12 @@ foldFind(garray_T *gap, linenr_T lnum, fold_T **fpp)
     linenr_T	low, high;
     fold_T	*fp;
     int		i;
+
+    if (gap->ga_len == 0)
+    {
+	*fpp = NULL;
+	return FALSE;
+    }
 
     /*
      * Perform a binary search.
@@ -2500,14 +2509,14 @@ foldUpdateIEMSRecurse(
 		// Find an existing fold to re-use.  Preferably one that
 		// includes startlnum, otherwise one that ends just before
 		// startlnum or starts after it.
-		if (foldFind(gap, startlnum, &fp)
+		if (gap->ga_len > 0 && (foldFind(gap, startlnum, &fp)
 			|| (fp < ((fold_T *)gap->ga_data) + gap->ga_len
 			    && fp->fd_top <= firstlnum)
 			|| foldFind(gap, firstlnum - concat, &fp)
 			|| (fp < ((fold_T *)gap->ga_data) + gap->ga_len
 			    && ((lvl < level && fp->fd_top < flp->lnum)
 				|| (lvl >= level
-					   && fp->fd_top <= flp->lnum_save))))
+					   && fp->fd_top <= flp->lnum_save)))))
 		{
 		    if (fp->fd_top + fp->fd_len + concat > firstlnum)
 		    {
@@ -2622,7 +2631,10 @@ foldUpdateIEMSRecurse(
 		{
 		    // Insert new fold.  Careful: ga_data may be NULL and it
 		    // may change!
-		    i = (int)(fp - (fold_T *)gap->ga_data);
+		    if (gap->ga_len == 0)
+			i = 0;
+		    else
+			i = (int)(fp - (fold_T *)gap->ga_data);
 		    if (foldInsert(gap, i) != OK)
 			return bot;
 		    fp = (fold_T *)gap->ga_data + i;
@@ -2841,7 +2853,7 @@ foldInsert(garray_T *gap, int i)
     if (ga_grow(gap, 1) != OK)
 	return FAIL;
     fp = (fold_T *)gap->ga_data + i;
-    if (i < gap->ga_len)
+    if (gap->ga_len > 0 && i < gap->ga_len)
 	mch_memmove(fp + 1, fp, sizeof(fold_T) * (gap->ga_len - i));
     ++gap->ga_len;
     ga_init2(&fp->fd_nested, (int)sizeof(fold_T), 10);
@@ -2928,7 +2940,7 @@ foldRemove(garray_T *gap, linenr_T top, linenr_T bot)
     if (bot < top)
 	return;		// nothing to do
 
-    for (;;)
+    while (gap->ga_len > 0)
     {
 	// Find fold that includes top or a following one.
 	if (foldFind(gap, top, &fp) && fp->fd_top < top)
