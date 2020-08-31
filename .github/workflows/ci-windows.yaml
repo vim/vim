@@ -127,6 +127,11 @@ jobs:
         )
         goto :eof
 
+    - name: Copy src directory to src2
+      shell: cmd
+      run: |
+        xcopy src src2\ /E > nul
+
     - name: Build (MSVC)
       if: matrix.toolchain == 'msvc'
       shell: cmd
@@ -195,10 +200,6 @@ jobs:
         echo.
         echo %COL_GREEN%vim version:%COL_RESET%
         .\vim --version || exit 1
-
-        mkdir ..\src2
-        xcopy testdir ..\src2\testdir\ /E > nul || exit 1
-        copy evalfunc.c ..\src2 > nul
 
         echo %COL_GREEN%Start testing vim in background.%COL_RESET%
         start cmd /c "cd ..\src2\testdir & nmake -nologo -f Make_dos.mak VIMPROG=..\..\src\vim > nul & echo done>done.txt"
