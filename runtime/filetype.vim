@@ -240,7 +240,7 @@ au BufNewFile,BufRead */etc/blkid.tab,*/etc/blkid.tab.old   setf xml
 au BufNewFile,BufRead *bsd,*.bsdl		setf bsdl
 
 " Bazel (http://bazel.io)
-autocmd BufRead,BufNewFile *.bzl,WORKSPACE,BUILD.bazel	setf bzl
+autocmd BufRead,BufNewFile *.bzl,*.BUILD,WORKSPACE,BUILD.bazel	setf bzl
 if has("fname_case")
   " There is another check for BUILD further below.
   autocmd BufRead,BufNewFile BUILD		setf bzl
