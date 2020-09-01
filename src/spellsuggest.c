@@ -3606,6 +3606,8 @@ check_suggestions(
     int		len;
     hlf_T	attr;
 
+    if (gap->ga_len == 0)
+	return;
     stp = &SUG(*gap, 0);
     for (i = gap->ga_len - 1; i >= 0; --i)
     {

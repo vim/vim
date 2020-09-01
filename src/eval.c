@@ -395,7 +395,7 @@ skip_expr_concatenate(
     typval_T	rettv;
     int		res;
     int		vim9script = in_vim9script();
-    garray_T    *gap = &evalarg->eval_ga;
+    garray_T    *gap = evalarg == NULL ? NULL : &evalarg->eval_ga;
     int		save_flags = evalarg == NULL ? 0 : evalarg->eval_flags;
     int		evaluate = evalarg == NULL
 			       ? FALSE : (evalarg->eval_flags & EVAL_EVALUATE);

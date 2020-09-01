@@ -816,7 +816,7 @@ read_cnt_string(FILE *fd, int cnt_bytes, int *cntp)
 
     // read the length bytes, MSB first
     for (i = 0; i < cnt_bytes; ++i)
-	cnt = (cnt << 8) + getc(fd);
+	cnt = (cnt << 8) + (unsigned)getc(fd);
     if (cnt < 0)
     {
 	*cntp = SP_TRUNCERROR;

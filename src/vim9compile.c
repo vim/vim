@@ -1147,7 +1147,10 @@ generate_NEWLIST(cctx_T *cctx, int count)
     isn->isn_arg.number = count;
 
     // get the member type from all the items on the stack.
-    member = get_member_type_from_stack(
+    if (count == 0)
+	member = &t_void;
+    else
+	member = get_member_type_from_stack(
 	    ((type_T **)stack->ga_data) + stack->ga_len, count, 1,
 							  cctx->ctx_type_list);
     type = get_list_type(member, cctx->ctx_type_list);
@@ -1180,7 +1183,10 @@ generate_NEWDICT(cctx_T *cctx, int count)
 	return FAIL;
     isn->isn_arg.number = count;
 
-    member = get_member_type_from_stack(
+    if (count == 0)
+	member = &t_void;
+    else
+	member = get_member_type_from_stack(
 	    ((type_T **)stack->ga_data) + stack->ga_len, count, 2,
 							  cctx->ctx_type_list);
     type = get_dict_type(member, cctx->ctx_type_list);
