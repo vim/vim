@@ -1314,7 +1314,7 @@ setManualFoldWin(
 	if (!foldFind(gap, lnum, &fp))
 	{
 	    // If there is a following fold, continue there next time.
-	    if (fp < (fold_T *)gap->ga_data + gap->ga_len)
+	    if (fp != NULL && fp < (fold_T *)gap->ga_data + gap->ga_len)
 		next = fp->fd_top + off;
 	    break;
 	}
@@ -2906,17 +2906,20 @@ foldSplit(
     gap1 = &fp->fd_nested;
     gap2 = &fp[1].fd_nested;
     (void)(foldFind(gap1, bot + 1 - fp->fd_top, &fp2));
-    len = (int)((fold_T *)gap1->ga_data + gap1->ga_len - fp2);
-    if (len > 0 && ga_grow(gap2, len) == OK)
+    if (gap1->ga_data != NULL)
     {
-	for (idx = 0; idx < len; ++idx)
+	len = (int)((fold_T *)gap1->ga_data + gap1->ga_len - fp2);
+	if (len > 0 && ga_grow(gap2, len) == OK)
 	{
-	    ((fold_T *)gap2->ga_data)[idx] = fp2[idx];
-	    ((fold_T *)gap2->ga_data)[idx].fd_top
-						 -= fp[1].fd_top - fp->fd_top;
+	    for (idx = 0; idx < len; ++idx)
+	    {
+		((fold_T *)gap2->ga_data)[idx] = fp2[idx];
+		((fold_T *)gap2->ga_data)[idx].fd_top
+						     -= fp[1].fd_top - fp->fd_top;
+	    }
+	    gap2->ga_len = len;
+	    gap1->ga_len -= len;
 	}
-	gap2->ga_len = len;
-	gap1->ga_len -= len;
     }
     fp->fd_len = top - fp->fd_top;
     fold_changed = TRUE;
@@ -3057,7 +3060,8 @@ truncate_fold(fold_T *fp, linenr_T end)
 }
 
 #define fold_end(fp) ((fp)->fd_top + (fp)->fd_len - 1)
-#define valid_fold(fp, gap) ((fp) < ((fold_T *)(gap)->ga_data + (gap)->ga_len))
+#define valid_fold(fp, gap) ((fp) != NULL \
+			&& (fp) < ((fold_T *)(gap)->ga_data + (gap)->ga_len))
 #define fold_index(fp, gap) ((size_t)(fp - ((fold_T *)(gap)->ga_data)))
 
     void
