@@ -1426,6 +1426,9 @@ def Test_setbufvar()
    settabwinvar(1, 1, '&ts', 15)
    assert_equal(15, &ts)
    setlocal ts=8
+
+   setbufvar('%', 'myvar', 123)
+   assert_equal(123, getbufvar('%', 'myvar'))
 enddef
 
 def Test_setreg()

@@ -3662,10 +3662,8 @@ f_getbufvar(typval_T *argvars, typval_T *rettv)
     dictitem_T	*v;
     int		done = FALSE;
 
-    (void)tv_get_number(&argvars[0]);	    // issue errmsg if type error
     varname = tv_get_string_chk(&argvars[1]);
-    ++emsg_off;
-    buf = tv_get_buf(&argvars[0], FALSE);
+    buf = tv_get_buf_from_arg(&argvars[0]);
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
@@ -3717,8 +3715,6 @@ f_getbufvar(typval_T *argvars, typval_T *rettv)
     if (!done && argvars[2].v_type != VAR_UNKNOWN)
 	// use the default value
 	copy_tv(&argvars[2], rettv);
-
-    --emsg_off;
 }
 
 /*
@@ -3789,9 +3785,8 @@ f_setbufvar(typval_T *argvars, typval_T *rettv UNUSED)
 
     if (check_secure())
 	return;
-    (void)tv_get_number(&argvars[0]);	    // issue errmsg if type error
     varname = tv_get_string_chk(&argvars[1]);
-    buf = tv_get_buf(&argvars[0], FALSE);
+    buf = tv_get_buf_from_arg(&argvars[0]);
     varp = &argvars[2];
 
     if (buf != NULL && varname != NULL && varp != NULL)
