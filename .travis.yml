@@ -212,13 +212,12 @@ jobs:
       env:
         - *normal
         - *shadowopt
-    # Temporarily disabled, always fails
-    #- <<: *linux
-    #  arch: s390x
-    #  name: huge/gcc-s390x
-    #  compiler: gcc
-    #  env: *linux-huge
-    #  services: []
+    - <<: *linux
+      arch: s390x
+      name: huge/gcc-s390x
+      compiler: gcc
+      env: *linux-huge
+      services: []
     - <<: *linux
       arch: arm64
       name: huge/gcc-arm64
