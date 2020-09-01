@@ -1443,6 +1443,11 @@ def Test_bufname()
   close
 enddef
 
+def Test_gebufinfo()
+  let bufinfo = getbufinfo(bufnr())
+  assert_equal(bufinfo, getbufinfo('%'))
+enddef
+
 def Fibonacci(n: number): number
   if n < 2
     return n

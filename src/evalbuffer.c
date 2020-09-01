@@ -364,16 +364,7 @@ f_bufname(typval_T *argvars, typval_T *rettv)
     if (tv->v_type == VAR_UNKNOWN)
 	buf = curbuf;
     else
-    {
-	++emsg_off;
-	buf = tv_get_buf(tv, FALSE);
-	--emsg_off;
-	if (buf == NULL
-		&& tv->v_type != VAR_NUMBER
-		&& tv->v_type != VAR_STRING)
-	    // issue errmsg for type error
-	    (void)tv_get_number(tv);
-    }
+	buf = tv_get_buf_from_arg(tv);
     rettv->v_type = VAR_STRING;
     if (buf != NULL && buf->b_fname != NULL)
 	rettv->vval.v_string = vim_strsave(buf->b_fname);
@@ -394,13 +385,7 @@ f_bufnr(typval_T *argvars, typval_T *rettv)
     if (argvars[0].v_type == VAR_UNKNOWN)
 	buf = curbuf;
     else
-    {
-	if (argvars[0].v_type != VAR_STRING)
-	    (void)tv_get_number(&argvars[0]);    // issue errmsg if type error
-	++emsg_off;
-	buf = tv_get_buf(&argvars[0], FALSE);
-	--emsg_off;
-    }
+	buf = tv_get_buf_from_arg(&argvars[0]);
 
     // If the buffer isn't found and the second argument is not zero create a
     // new buffer.
@@ -425,9 +410,7 @@ buf_win_common(typval_T *argvars, typval_T *rettv, int get_nr)
     int		winnr = 0;
     buf_T	*buf;
 
-    (void)tv_get_number(&argvars[0]);	    // issue errmsg if type error
-    ++emsg_off;
-    buf = tv_get_buf(&argvars[0], TRUE);
+    buf = tv_get_buf_from_arg(&argvars[0]);
     FOR_ALL_WINDOWS(wp)
     {
 	++winnr;
@@ -435,7 +418,6 @@ buf_win_common(typval_T *argvars, typval_T *rettv, int get_nr)
 	    break;
     }
     rettv->vval.v_number = (wp != NULL ? (get_nr ? winnr : wp->w_id) : -1);
-    --emsg_off;
 }
 
 /*
@@ -662,10 +644,7 @@ f_getbufinfo(typval_T *argvars, typval_T *rettv)
     else if (argvars[0].v_type != VAR_UNKNOWN)
     {
 	// Information about one buffer.  Argument specifies the buffer
-	(void)tv_get_number(&argvars[0]);   // issue errmsg if type error
-	++emsg_off;
-	argbuf = tv_get_buf(&argvars[0], FALSE);
-	--emsg_off;
+	argbuf = tv_get_buf_from_arg(&argvars[0]);
 	if (argbuf == NULL)
 	    return;
     }
@@ -752,10 +731,7 @@ f_getbufline(typval_T *argvars, typval_T *rettv)
     linenr_T	end;
     buf_T	*buf;
 
-    (void)tv_get_number(&argvars[0]);	    // issue errmsg if type error
-    ++emsg_off;
-    buf = tv_get_buf(&argvars[0], FALSE);
-    --emsg_off;
+    buf = tv_get_buf_from_arg(&argvars[0]);
 
     lnum = tv_get_lnum_buf(&argvars[1], buf);
     if (argvars[2].v_type == VAR_UNKNOWN)
