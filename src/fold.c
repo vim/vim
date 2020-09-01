@@ -3059,7 +3059,7 @@ truncate_fold(fold_T *fp, linenr_T end)
 }
 
 #define fold_end(fp) ((fp)->fd_top + (fp)->fd_len - 1)
-#define valid_fold(fp, gap) ((fp) < ((fold_T *)(gap)->ga_data + (gap)->ga_len))
+#define valid_fold(fp, gap) ((gap)->ga_len > 0 && (fp) < ((fold_T *)(gap)->ga_data + (gap)->ga_len))
 #define fold_index(fp, gap) ((size_t)(fp - ((fold_T *)(gap)->ga_data)))
 
     void
