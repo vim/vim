@@ -1513,6 +1513,10 @@ def Test_glob()
   assert_equal(['runtest.vim'], glob('runtest.vim', true, true, true))
 enddef
 
+def Test_globpath()
+  assert_equal(['./runtest.vim'], globpath('.', 'runtest.vim', true, true, true))
+enddef
+
 def Test_recursive_call()
   assert_equal(6765, Fibonacci(20))
 enddef
