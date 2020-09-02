@@ -2204,9 +2204,9 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 	which = tv_get_string_buf_chk(&argvars[1], buf);
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	{
-	    abbr = (int)tv_get_number(&argvars[2]);
+	    abbr = (int)tv_get_bool(&argvars[2]);
 	    if (argvars[3].v_type != VAR_UNKNOWN)
-		get_dict = (int)tv_get_number(&argvars[3]);
+		get_dict = (int)tv_get_bool(&argvars[3]);
 	}
     }
     else

@@ -4808,7 +4808,7 @@ f_hasmapto(typval_T *argvars, typval_T *rettv)
     {
 	mode = tv_get_string_buf(&argvars[1], buf);
 	if (argvars[2].v_type != VAR_UNKNOWN)
-	    abbr = (int)tv_get_number(&argvars[2]);
+	    abbr = (int)tv_get_bool(&argvars[2]);
     }
 
     if (map_to_exists(name, mode, abbr))

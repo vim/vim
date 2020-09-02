@@ -1521,6 +1521,45 @@ def Test_globpath()
   assert_equal(['./runtest.vim'], globpath('.', 'runtest.vim', true, true, true))
 enddef
 
+def Test_hasmapto()
+  assert_equal(0, hasmapto('foobar', 'i', true))
+  iabbrev foo foobar
+  assert_equal(1, hasmapto('foobar', 'i', true))
+  iunabbrev foo
+enddef
+
+def SID(): number
+  return expand('<SID>')
+          ->matchstr('<SNR>\zs\d\+\ze_$')
+          ->str2nr()
+enddef
+
+def Test_maparg()
+  let lnum = str2nr(expand('<sflnum>'))
+  map foo bar
+  assert_equal(#{
+        lnum: lnum + 1,
+        script: 0,
+        mode: ' ',
+        silent: 0,
+        noremap: 0,
+        lhs: 'foo',
+        lhsraw: 'foo',
+        nowait: 0,
+        expr: 0,
+        sid: SID(),
+        rhs: 'bar',
+        buffer: 0},
+        maparg('foo', '', false, true))
+  unmap foo
+enddef
+
+def Test_mapcheck()
+  iabbrev foo foobar
+  assert_equal('foobar', mapcheck('foo', 'i', true))
+  iunabbrev foo
+enddef
+
 def Test_recursive_call()
   assert_equal(6765, Fibonacci(20))
 enddef
