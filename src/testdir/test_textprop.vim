@@ -211,6 +211,22 @@ func Test_prop_find()
 
   call prop_clear(1,6)
   call prop_type_delete('prop_name')
+
+  " Multiple props per line, start on the first, should find the second.
+  let expected = {'lnum': 1, 'id': 0, 'col': 14, 'end': 1, 'type': 'misspell', 'length': 2, 'start': 1}
+  eval ['the quikc bronw fox jumsp over the layz dog']->repeat(2)->setline(1)
+  call prop_type_add('misspell', #{highlight: 'ErrorMsg'})
+  for lnum in [1, 2]
+    for col in [8, 14, 24, 38]
+      call prop_add(lnum, col, #{type: 'misspell', length: 2})
+    endfor
+  endfor
+  call cursor(1, 8)
+  let result = prop_find(#{type: 'misspell', skipstart: 1}, 'f')
+  call assert_equal(expected, result)
+
+  call prop_type_delete('misspell')
+  bwipe!
 endfunc
 
 func Test_prop_find_smaller_len_than_match_col()

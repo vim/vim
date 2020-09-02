@@ -718,7 +718,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 		    // on a prop and we're not skipping.
 		    if (start_pos_has_prop && !skipstart)
 			dir = -1;
-		    break;
+		    continue;
 		}
 
 		// If skipstart is true, skip the prop at start pos (even if
@@ -726,7 +726,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 		if (start_pos_has_prop && skipstart && !seen_end)
 		{
 		    start_pos_has_prop = 0;
-		    break;
+		    continue;
 		}
 
 		prop_fill_dict(rettv->vval.v_dict, &prop, buf);
