@@ -1503,6 +1503,12 @@ def Test_expand()
   close
 enddef
 
+def Test_getreg()
+  let lines = ['aaa', 'bbb', 'ccc']
+  setreg('a', lines)
+  assert_equal(lines, getreg('a', true, true))
+enddef
+
 def Test_recursive_call()
   assert_equal(6765, Fibonacci(20))
 enddef

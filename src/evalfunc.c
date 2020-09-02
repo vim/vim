@@ -3336,9 +3336,9 @@ f_getreg(typval_T *argvars, typval_T *rettv)
 	error = strregname == NULL;
 	if (argvars[1].v_type != VAR_UNKNOWN)
 	{
-	    arg2 = (int)tv_get_number_chk(&argvars[1], &error);
+	    arg2 = (int)tv_get_bool_chk(&argvars[1], &error);
 	    if (!error && argvars[2].v_type != VAR_UNKNOWN)
-		return_list = (int)tv_get_number_chk(&argvars[2], &error);
+		return_list = (int)tv_get_bool_chk(&argvars[2], &error);
 	}
     }
     else
