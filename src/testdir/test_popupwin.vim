@@ -2559,20 +2559,23 @@ endfunc
 
 func Test_popupwin_close_prevwin()
   CheckFeature terminal
+  call Popupwin_close_prevwin()
+endfunc
 
-  call assert_equal(1, winnr('$'))
+def Popupwin_close_prevwin()
+  assert_equal(1, winnr('$'))
   split
   wincmd b
-  call assert_equal(2, winnr())
+  assert_equal(2, winnr())
   let buf = term_start(&shell, #{hidden: 1})
-  call popup_create(buf, {})
-  call TermWait(buf, 100)
-  call popup_clear(1)
-  call assert_equal(2, winnr())
+  popup_create(buf, {})
+  TermWait(buf, 100)
+  popup_clear(true)
+  assert_equal(2, winnr())
 
   quit
   exe 'bwipe! ' .. buf
-endfunc
+enddef
 
 func Test_popupwin_with_buffer_and_filter()
   new Xwithfilter

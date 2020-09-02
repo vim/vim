@@ -2125,7 +2125,7 @@ f_popup_clear(typval_T *argvars, typval_T *rettv UNUSED)
     int force = FALSE;
 
     if (argvars[0].v_type != VAR_UNKNOWN)
-	force = (int)tv_get_number(&argvars[0]);
+	force = (int)tv_get_bool(&argvars[0]);
     close_all_popups(force);
 }
 
