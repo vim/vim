@@ -2183,7 +2183,8 @@ write_viminfo_filemarks(FILE *fp)
 	xfmark_T	*vi_fm;
 
 	fm = idx >= 0 ? &curwin->w_jumplist[idx] : NULL;
-	vi_fm = vi_idx < vi_jumplist_len ? &vi_jumplist[vi_idx] : NULL;
+	vi_fm = (vi_jumplist != NULL && vi_idx < vi_jumplist_len)
+					? &vi_jumplist[vi_idx] : NULL;
 	if (fm == NULL && vi_fm == NULL)
 	    break;
 	if (fm == NULL || (vi_fm != NULL && fm->time_set < vi_fm->time_set))

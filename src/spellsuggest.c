@@ -3731,9 +3731,6 @@ cleanup_suggestions(
     int		maxscore,
     int		keep)		// nr of suggestions to keep
 {
-    suggest_T   *stp = &SUG(*gap, 0);
-    int		i;
-
     if (gap->ga_len > 0)
     {
 	// Sort the list.
@@ -3744,6 +3741,9 @@ cleanup_suggestions(
 	// displayed.
 	if (gap->ga_len > keep)
 	{
+	    int		i;
+	    suggest_T   *stp = &SUG(*gap, 0);
+
 	    for (i = keep; i < gap->ga_len; ++i)
 		vim_free(stp[i].st_word);
 	    gap->ga_len = keep;
