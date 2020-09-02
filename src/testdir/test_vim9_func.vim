@@ -1497,6 +1497,12 @@ def Test_count()
   assert_equal(0, count('ABC ABC ABC', 'b', false))
 enddef
 
+def Test_expand()
+  split SomeFile
+  assert_equal(['SomeFile'], expand('%', true, true))
+  close
+enddef
+
 def Test_recursive_call()
   assert_equal(6765, Fibonacci(20))
 enddef
