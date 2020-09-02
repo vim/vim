@@ -1509,6 +1509,10 @@ def Test_getreg()
   assert_equal(lines, getreg('a', true, true))
 enddef
 
+def Test_glob()
+  assert_equal(['runtest.vim'], glob('runtest.vim', true, true, true))
+enddef
+
 def Test_recursive_call()
   assert_equal(6765, Fibonacci(20))
 enddef
