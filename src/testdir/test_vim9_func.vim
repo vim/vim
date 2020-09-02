@@ -1431,6 +1431,39 @@ def Test_setbufvar()
    assert_equal(123, getbufvar('%', 'myvar'))
 enddef
 
+def Test_bufwinid()
+  let origwin = win_getid()
+  below split SomeFile
+  let SomeFileID = win_getid()
+  below split OtherFile
+  below split SomeFile
+  assert_equal(SomeFileID, bufwinid('SomeFile'))
+
+  win_gotoid(origwin)
+  only
+  bwipe SomeFile
+  bwipe OtherFile
+enddef
+
+def Test_getbufline()
+  e SomeFile
+  let buf = bufnr()
+  e #
+  let lines = ['aaa', 'bbb', 'ccc']
+  setbufline(buf, 1, lines)
+  assert_equal(lines, getbufline('#', 1, '$'))
+
+  bwipe!
+enddef
+
+def Test_getchangelist()
+  new
+  setline(1, 'some text')
+  let changelist = bufnr()->getchangelist()
+  assert_equal(changelist, getchangelist('%'))
+  bwipe!
+enddef
+
 def Test_setreg()
   setreg('a', ['aaa', 'bbb', 'ccc'])
   let reginfo = getreginfo('a')
