@@ -4944,7 +4944,7 @@ f_index(typval_T *argvars, typval_T *rettv)
 	    item = list_find(l, (long)tv_get_number_chk(&argvars[2], &error));
 	    idx = l->lv_u.mat.lv_idx;
 	    if (argvars[3].v_type != VAR_UNKNOWN)
-		ic = (int)tv_get_number_chk(&argvars[3], &error);
+		ic = (int)tv_get_bool_chk(&argvars[3], &error);
 	    if (error)
 		item = NULL;
 	}

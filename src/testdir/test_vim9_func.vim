@@ -1497,6 +1497,10 @@ def Test_count()
   assert_equal(0, count('ABC ABC ABC', 'b', false))
 enddef
 
+def Test_index()
+  assert_equal(3, index(['a', 'b', 'a', 'B'], 'b', 2, true))
+enddef
+
 def Test_expand()
   split SomeFile
   assert_equal(['SomeFile'], expand('%', true, true))
