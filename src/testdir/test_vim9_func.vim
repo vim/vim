@@ -1492,6 +1492,11 @@ def Fibonacci(n: number): number
   endif
 enddef
 
+def Test_count()
+  assert_equal(3, count('ABC ABC ABC', 'b', true))
+  assert_equal(0, count('ABC ABC ABC', 'b', false))
+enddef
+
 def Test_recursive_call()
   assert_equal(6765, Fibonacci(20))
 enddef
