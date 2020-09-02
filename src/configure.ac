@@ -4013,7 +4013,7 @@ AC_TRY_LINK([#include <stdio.h>], [rename("this", "that")],
 
 dnl check for dirfd()
 AC_MSG_CHECKING(for dirfd)
-AC_TRY_COMPILE(
+AC_TRY_LINK(
 [#include <sys/types.h>
 #include <dirent.h>],
 [DIR * dir=opendir("dirname"); dirfd(dir);],
@@ -4021,7 +4021,7 @@ AC_MSG_RESULT(yes); AC_DEFINE(HAVE_DIRFD), AC_MSG_RESULT(not usable))
 
 dnl check for flock()
 AC_MSG_CHECKING(for flock)
-AC_TRY_COMPILE(
+AC_TRY_LINK(
 [#include <sys/file.h>],
 [flock(10, LOCK_SH);],
 AC_MSG_RESULT(yes); AC_DEFINE(HAVE_FLOCK), AC_MSG_RESULT(not usable))
