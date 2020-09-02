@@ -610,8 +610,9 @@ CClink = $(CC)
 
 # Use this with GCC to check for mistakes, unused arguments, etc.
 # Note: If you use -Wextra and get warnings in GTK code about function
-#       parameters, you can add -Wno-cast-function-type
+#       parameters, you can add -Wno-cast-function-type (but not with clang)
 #CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wunreachable-code -Wno-cast-function-type -Wno-deprecated-declarations -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
+#CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wunreachable-code -Wno-deprecated-declarations -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
 # Add -Wpedantic to find // comments and other C99 constructs.
 # Better disable Perl and Python to avoid a lot of warnings.
 #CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wpedantic -Wunreachable-code -Wunused-result -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
@@ -690,8 +691,8 @@ LINT_OPTIONS = -beprxzF
 
 
 # Uncomment one of the next two lines to compile Vim with the
-# address sanitizer (asan) or with the undefined sanitizer.  Works with gcc and
-# clang.  May make Vim twice as slow.  Errors reported on stderr.
+# address sanitizer (asan) or with the undefined sanitizer.  Works with gcc.
+# May make Vim twice as slow.  Errors are reported on stderr.
 # More at: https://code.google.com/p/address-sanitizer/
 # Useful environment variables:
 # $ export ASAN_OPTIONS="print_stacktrace=1 log_path=asan"
@@ -699,6 +700,13 @@ LINT_OPTIONS = -beprxzF
 # When running tests output can be found in testdir/asan.*
 #SANITIZER_CFLAGS = -g -O0 -fsanitize=address -fno-omit-frame-pointer
 #SANITIZER_CFLAGS = -g -O0 -fsanitize=undefined -fno-omit-frame-pointer
+
+# Similarly when compiling with clang and using ubsan.
+# $ export UBSAN_OPTIONS="print_stacktrace=1 log_path=ubsan"
+# $ export LSAN_OPTIONS="suppressions=`pwd`/testdir/lsan-suppress.txt"
+# When running tests output can be found in testdir/ubsan.*
+#SANITIZER_CFLAGS = -g -O0  -fsanitize-recover=all -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer
+
 SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 
 # MEMORY LEAK DETECTION
