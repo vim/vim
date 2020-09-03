@@ -1682,15 +1682,25 @@ edit_putchar(int c, int highlight)
 
 #if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
 /*
+ * Return the effective prompt for the specified buffer.
+ */
+    char_u *
+buf_prompt_text(buf_T* buf)
+{
+    if (buf->b_prompt_text == NULL)
+	return (char_u *)"% ";
+    return buf->b_prompt_text;
+}
+
+/*
  * Return the effective prompt for the current buffer.
  */
     char_u *
 prompt_text(void)
 {
-    if (curbuf->b_prompt_text == NULL)
-	return (char_u *)"% ";
-    return curbuf->b_prompt_text;
+    return buf_prompt_text(curbuf);
 }
+
 
 /*
  * Prepare for prompt mode: Make sure the last line has the prompt text.

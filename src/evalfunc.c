@@ -806,6 +806,7 @@ static funcentry_T global_functions[] =
     {"pow",		2, 2, FEARG_1,	  ret_float,	FLOAT_FUNC(f_pow)},
     {"prevnonblank",	1, 1, FEARG_1,	  ret_number,	f_prevnonblank},
     {"printf",		1, 19, FEARG_2,	  ret_string,	f_printf},
+    {"prompt_getprompt", 1, 1, FEARG_1,	  ret_string,	JOB_FUNC(f_prompt_getprompt)},
     {"prompt_setcallback", 2, 2, FEARG_1, ret_void,	JOB_FUNC(f_prompt_setcallback)},
     {"prompt_setinterrupt", 2, 2, FEARG_1,ret_void,	JOB_FUNC(f_prompt_setinterrupt)},
     {"prompt_setprompt", 2, 2, FEARG_1,	  ret_void,	JOB_FUNC(f_prompt_setprompt)},
