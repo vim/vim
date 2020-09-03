@@ -2239,6 +2239,18 @@ func Test_popup_settext()
   call delete('XtestPopupSetText')
 endfunc
 
+func Test_popup_settext_getline()
+  let id = popup_create('', #{ tabpage: 0 })
+  call popup_settext(id, ['a','b'])
+  call assert_equal(2, line('$', id)) " OK :)
+  call popup_close(id)
+
+  let id = popup_create('', #{ tabpage: -1 })
+  call popup_settext(id, ['a','b'])
+  call assert_equal(2, line('$', id)) " Fails :(
+  call popup_close(id)
+endfunc
+
 func Test_popup_hidden()
   new
 

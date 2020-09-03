@@ -117,7 +117,7 @@ win_id2wp_tp(int id, tabpage_T **tpp)
 	if (wp->w_id == id)
 	{
 	    if (tpp != NULL)
-		*tpp = tp;
+		*tpp = curtab;  // any tabpage would do
 	    return wp;
 	}
 #endif
