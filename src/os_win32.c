@@ -2065,6 +2065,13 @@ theend:
 	buf[len++] = typeahead[0];
 	mch_memmove(typeahead, typeahead + 1, --typeaheadlen);
     }
+#  ifdef FEAT_JOB_CHANNEL
+    if (len > 0)
+    {
+	buf[len] = NUL;
+	ch_log(NULL, "raw key input: \"%s\"", buf);
+    }
+#  endif
     return len;
 
 #else // FEAT_GUI_MSWIN
