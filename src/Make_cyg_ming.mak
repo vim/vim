@@ -38,6 +38,9 @@ DEBUG=no
 # set to yes to create a mapfile
 #MAP=yes
 
+# set to yes to measure code coverage
+COVERAGE=no
+
 # set to SIZE for size, SPEED for speed, MAXSPEED for maximum optimization
 OPTIMIZE=MAXSPEED
 
@@ -700,6 +703,11 @@ CFLAGS += -O2
 LFLAGS += -s
 endif
 
+ifeq ($(COVERAGE),yes)
+CFLAGS += --coverage
+LFLAGS += --coverage
+endif
+
 LIB = -lkernel32 -luser32 -lgdi32 -ladvapi32 -lcomdlg32 -lcomctl32 -lnetapi32 -lversion
 GUIOBJ =  $(OUTDIR)/gui.o $(OUTDIR)/gui_w32.o $(OUTDIR)/gui_beval.o
 CUIOBJ = $(OUTDIR)/iscygpty.o
@@ -937,6 +945,9 @@ LFLAGS += -shared
 EXELFLAGS += -municode
  ifneq ($(DEBUG),yes)
 EXELFLAGS += -s
+ endif
+ ifeq ($(COVERAGE),yes)
+EXELFLAGS += --coverage
  endif
 DEFINES += $(DEF_GUI) -DVIMDLL
 OBJ += $(GUIOBJ) $(CUIOBJ)
