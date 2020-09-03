@@ -86,11 +86,10 @@ key does the same thing.  In a picture:
 
 		  ^
 	     <------------
-	.....This is a line with example text ~
-	<-----------------   --------------->
+	     This is a line with example text
+       <------------------  ---------------->
 		0		   $
 
-(the "....." indicates blanks here)
 
    The "$" command takes a count, like most movement commands.  But moving to
 the end of the line several times doesn't make sense.  Therefore it causes the
