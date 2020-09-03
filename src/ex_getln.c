@@ -397,7 +397,8 @@ may_do_incsearch_highlighting(
     // NOTE: must call restore_last_search_pattern() before returning!
     save_last_search_pattern();
 
-    if (!do_incsearch_highlighting(firstc, &search_delim, is_state, &skiplen, &patlen))
+    if (!do_incsearch_highlighting(firstc, &search_delim, is_state,
+							    &skiplen, &patlen))
     {
 	restore_last_search_pattern();
 	finish_incsearch_highlighting(FALSE, is_state, TRUE);
@@ -1235,10 +1236,10 @@ getcmdline_int(
 		    if (has_mbyte)
 			j -= (*mb_head_off)(ccline.cmdbuff, ccline.cmdbuff + j);
 		    if (vim_ispathsep(ccline.cmdbuff[j])
-#ifdef BACKSLASH_IN_FILENAME
+# ifdef BACKSLASH_IN_FILENAME
 			    && vim_strchr((char_u *)" *?[{`$%#",
 				ccline.cmdbuff[j + 1]) == NULL
-#endif
+# endif
 		       )
 		    {
 			if (found)
@@ -1425,6 +1426,7 @@ getcmdline_int(
 	if ((c == p_wc && !gotesc && KeyTyped) || c == p_wcm)
 	{
 	    int options = WILD_NO_BEEP;
+
 	    if (wim_flags[wim_index] & WIM_BUFLASTUSED)
 		options |= WILD_BUFLASTUSED;
 	    if (xpc.xp_numfiles > 0)   // typed p_wc at least twice
@@ -1442,8 +1444,7 @@ getcmdline_int(
 		    res = nextwild(&xpc, WILD_LONGEST, options,
 							       firstc != '@');
 		else if (wim_flags[wim_index] & WIM_FULL)
-		    res = nextwild(&xpc, WILD_NEXT, options,
-							       firstc != '@');
+		    res = nextwild(&xpc, WILD_NEXT, options, firstc != '@');
 		else
 		    res = OK;	    // don't insert 'wildchar' now
 	    }
@@ -1454,11 +1455,10 @@ getcmdline_int(
 		// if 'wildmode' first contains "longest", get longest
 		// common part
 		if (wim_flags[0] & WIM_LONGEST)
-		    res = nextwild(&xpc, WILD_LONGEST, options,
-							       firstc != '@');
+		    res = nextwild(&xpc, WILD_LONGEST, options, firstc != '@');
 		else
 		    res = nextwild(&xpc, WILD_EXPAND_KEEP, options,
-							       firstc != '@');
+								firstc != '@');
 
 		// if interrupted while completing, behave like it failed
 		if (got_int)
@@ -1483,7 +1483,7 @@ getcmdline_int(
 			wim_index = 1;
 		    if ((wim_flags[wim_index] & WIM_LIST)
 #ifdef FEAT_WILDMENU
-			    || (p_wmnu && (wim_flags[wim_index] & WIM_FULL) != 0)
+			  || (p_wmnu && (wim_flags[wim_index] & WIM_FULL) != 0)
 #endif
 			    )
 		    {
@@ -1511,8 +1511,7 @@ getcmdline_int(
 			    nextwild(&xpc, WILD_LONGEST, options,
 							       firstc != '@');
 			else if (wim_flags[wim_index] & WIM_FULL)
-			    nextwild(&xpc, WILD_NEXT, options,
-							       firstc != '@');
+			    nextwild(&xpc, WILD_NEXT, options, firstc != '@');
 		    }
 		    else
 			vim_beep(BO_WILD);
@@ -2348,7 +2347,8 @@ cmdline_changed:
 	trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINECHANGED);
 
 #ifdef FEAT_SEARCH_EXTRA
-	may_do_incsearch_highlighting(firstc, count, &is_state);
+	if (xpc.xp_context == EXPAND_NOTHING)
+	    may_do_incsearch_highlighting(firstc, count, &is_state);
 #endif
 
 #ifdef FEAT_RIGHTLEFT
