@@ -645,9 +645,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 	return;
     }
 
-    di = dict_find(dict, (char_u *)"skipstart", -1);
-    if (di != NULL)
-	skipstart = tv_get_number(&di->di_tv);
+    skipstart = dict_get_bool(dict, (char_u *)"skipstart", 0);
 
     if (dict_find(dict, (char_u *)"id", -1) != NULL)
 	id = dict_get_number(dict, (char_u *)"id");
