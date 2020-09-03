@@ -49,7 +49,7 @@ which moves to the previous end of a word:
 
 	This is a line with example text ~
 	   <-   <--- ----->   ---->
-	   ge    ge     e       e
+	  2ge    ge    2e       e
 
 If you are at the last word of a line, the "w" command will take you to the
 first word in the next line.  Thus you can use this to move through a
