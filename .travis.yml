@@ -2,7 +2,7 @@ language: c
 
 env:
   global:
-    - BUILD=yes TEST=test CONFOPT= LEAK_CFLAGS="-DEXITFREE" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
+    - BUILD=yes TEST=test CONFOPT= LEAK_CFLAGS="-DEXITFREE" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no LOG_DIR="$TRAVIS_BUILD_DIR/logs"
 
 _anchors:
   envs:
@@ -25,8 +25,8 @@ _anchors:
     - &coverage
       CFLAGS="--coverage -DUSE_GCOV_FLUSH" LDFLAGS=--coverage
     - &asan # ASAN build
-      SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
-      ASAN_OPTIONS="print_stacktrace=1 log_path=asan" LSAN_OPTIONS="suppressions=$TRAVIS_BUILD_DIR/src/testdir/lsan-suppress.txt"
+      SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize-recover=all -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer"
+      ASAN_OPTIONS="print_stacktrace=1 log_path=$LOG_DIR/asan" UBSAN_OPTIONS="print_stacktrace=1 log_path=$LOG_DIR/ubsan" LSAN_OPTIONS="suppressions=$TRAVIS_BUILD_DIR/src/testdir/lsan-suppress.txt"
     - &shadowopt
       SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow
 
@@ -35,7 +35,7 @@ _anchors:
     dist: bionic
     addons:
       apt:
-        packages:
+        packages: &apt-packages
           - autoconf
           - clang
           - lcov
@@ -108,13 +108,14 @@ _anchors:
     # Update pyenv to fix the error "/opt/pyenv/libexec/pyenv: line 43: cd: asan_symbolize-6.0: Not a directory".
     # https://github.com/pyenv/pyenv/issues/580
     - (cd "${PYENV_ROOT}" && git fetch -p origin && git checkout "$(git rev-list --tags -n1)") &>/dev/null || true
-    - find . -type f -name 'asan.*' -size +0 2>/dev/null | xargs grep -l '^==[[:digit:]]*==ERROR:' | xargs -I{} -n1 -t asan_symbolize -l{}
+    - for f in $(grep -l '#[[:digit:]]* *0x[[:digit:]a-fA-F]*' "$LOG_DIR"/*); do asan_symbolize-11 -l "$f"; done
 
 branches:
   except:
     - /^v[0-9]/
 
 script:
+  - mkdir -p "$LOG_DIR"
   - NPROC=$(getconf _NPROCESSORS_ONLN)
   - set -o errexit
   - echo -e "\\033[33;1mConfiguring Vim\\033[0m" && echo -en "travis_fold:start:configure\\r\\033[0K"
@@ -135,7 +136,7 @@ script:
       # Append various warning flags to CFLAGS.
       # BSD sed needs backup extension specified.
       sed -i.bak -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
-      if [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
+      if [[ "${TRAVIS_OS_NAME}" = "osx" ]] || [[ "${CC}" = "clang-11" ]]; then
         # On macOS, the entity of gcc is clang.
         sed -i.bak -f ci/config.mk.clang.sed ${SRCDIR}/auto/config.mk
       else
@@ -155,6 +156,15 @@ script:
   - echo -e "\\033[33;1mTesting Vim\\033[0m" && echo -en "travis_fold:start:test\\r\\033[0K"
   - do_test make ${SHADOWOPT} ${TEST} && FOLD_MARKER=travis_fold
   - echo -en "${FOLD_MARKER}:end:test\\r\\033[0K"
+  - |
+    # Not all sanitizers will cause the tests to fail.  This helps since we can
+    # see all the failures instead of just the first one, but we still want the
+    # test phase to fail if any sanitizer issues are detected.
+    if [[ -n "${ASAN_OPTIONS}" ]]; then
+      if grep -q '#[[:digit:]]* *0x[[:digit:]a-fA-F]*' "$LOG_DIR"/*; then
+        false
+      fi
+    fi
 
 # Instead of using all environments with both compilers on both systems,
 # exclude some builds on mac os x and linux.
@@ -241,8 +251,16 @@ jobs:
         - *coverage
       after_success: *eval-coverage
     - <<: *linux # ASAN
-      name: huge+asan/gcc
-      compiler: gcc
+      name: huge+asan/clang
+      compiler: clang-11
+      addons:
+        apt:
+          sources:
+            - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+          packages:
+            - *apt-packages
+            - clang-11
       env:
         - *linux-huge
         - *asan
