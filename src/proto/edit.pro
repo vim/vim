@@ -4,6 +4,7 @@ int ins_need_undo_get(void);
 void ins_redraw(int ready);
 int decodeModifyOtherKeys(int c);
 void edit_putchar(int c, int highlight);
+char_u *buf_prompt_text(buf_T* buf);
 char_u *prompt_text(void);
 int prompt_curpos_editable(void);
 void edit_unputchar(void);

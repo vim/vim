@@ -56,6 +56,7 @@ char *job_status(job_T *job);
 int job_stop(job_T *job, typval_T *argvars, char *type);
 void invoke_prompt_callback(void);
 int invoke_prompt_interrupt(void);
+void f_prompt_getprompt(typval_T *argvars, typval_T *rettv);
 void f_prompt_setcallback(typval_T *argvars, typval_T *rettv);
 void f_prompt_setinterrupt(typval_T *argvars, typval_T *rettv);
 void f_prompt_setprompt(typval_T *argvars, typval_T *rettv);

@@ -2684,6 +2684,7 @@ popup_show({id})		none	unhide popup window {id}
 pow({x}, {y})			Float	{x} to the power of {y}
 prevnonblank({lnum})		Number	line nr of non-blank line <= {lnum}
 printf({fmt}, {expr1}...)	String	format text
+prompt_getprompt({buf})		String	get prompt text
 prompt_setcallback({buf}, {expr}) none	set prompt callback function
 prompt_setinterrupt({buf}, {text}) none	set prompt interrupt function
 prompt_setprompt({buf}, {text}) none	set prompt text
@@ -7835,6 +7836,17 @@ printf({fmt}, {expr1} ...)				*printf()*
 		arguments an error is given.  Up to 18 arguments can be used.
 
 
+prompt_getprompt({buf})					*prompt_getprompt()*
+		Returns the effective prompt text for buffer {buf}. {buf} can
+		be a buffer name or number. |prompt-buffer|.
+
+		If the buffer doesn't exist or isn't a prompt buffer, an empty
+		string is returned.
+
+		Can also be used as a |method|: >
+			GetBuffer()->prompt_getprompt()
+
+
 prompt_setcallback({buf}, {expr})			*prompt_setcallback()*
 		Set prompt callback for buffer {buf} to {expr}.  When {expr}
 		is an empty string the callback is removed.  This has only
@@ -7890,7 +7902,7 @@ prompt_setprompt({buf}, {text})				*prompt_setprompt()*
 		Can also be used as a |method|: >
 			GetBuffer()->prompt_setprompt('command: ')
 
-prop_ functions are documented here: |text-prop-functions|.
+prop_ functions are documented here: |text-prop-functions|
 
 pum_getpos()						*pum_getpos()*
 		If the popup menu (see |ins-completion-menu|) is not visible,
