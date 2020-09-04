@@ -181,6 +181,7 @@ PO_INPUTLIST = \
 	../*.c \
 	../if_perl.xs \
 	../GvimExt/gvimext.cpp \
+	../errors.h \
 	../globals.h \
 	../if_py_both.h \
 	../vim.h \
@@ -202,7 +203,7 @@ $(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
 		$(PO_INPUTLIST) $(PO_VIM_JSLIST)
 	mv -f $(PACKAGE).po $(PACKAGE).pot
 	# Fix Vim scripts names, so that "gf" works
-	$(VIM) -u NONE --not-a-term -S fixfilenames.vim  $(PACKAGE).pot $(PO_VIM_INPUTLIST)
+	$(VIM) -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
 	# Delete the temporary files
 	rm *.js
 

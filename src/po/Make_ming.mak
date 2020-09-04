@@ -22,6 +22,11 @@ endif
 include Make_all.mak
 
 PACKAGE = vim
+ifeq (sh.exe, $(SHELL))
+VIM = ..\vim
+else
+VIM = ../vim
+endif
 
 # Uncomment one of the lines below or modify it to put the path to your
 # gettex binaries; I use the first
@@ -53,21 +58,48 @@ endif
 
 .SUFFIXES:
 .SUFFIXES: .po .mo .pot
-.PHONY: first_time all install clean $(LANGUAGES)
+.PHONY: first_time all install install-all clean $(LANGUAGES)
 
 .po.mo:
 	$(MSGFMT) -o $@ $<
 
 all: $(MOFILES) $(MOCONVERTED)
 
-first_time:
-	$(XGETTEXT) --default-domain=$(LANGUAGE) \
-		--add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 $(wildcard ../*.c) ../if_perl.xs ../GvimExt/gvimext.cpp $(wildcard ../globals.h) ../if_py_both.h ../vim.h
+PO_INPUTLIST = \
+	$(wildcard ../*.c) \
+	../if_perl.xs \
+	../GvimExt/gvimext.cpp \
+	../errors.h \
+	../globals.h \
+	../if_py_both.h \
+	../vim.h \
+	gvim.desktop.in \
+	vim.desktop.in
 
-$(LANGUAGES):
+PO_VIM_INPUTLIST = \
+	../../runtime/optwin.vim
+
+PO_VIM_JSLIST = \
+	optwin.js
+
+first_time: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
+	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(LANGUAGE).pot $(PO_VIM_INPUTLIST)
+	$(XGETTEXT) --default-domain=$(LANGUAGE) \
+		--add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 $(PO_INPUTLIST) $(PO_VIM_JSLIST)
+	$(VIM) -u NONE --not-a-term -S fixfilenames.vim $(LANGUAGE).pot $(PO_VIM_INPUTLIST)
+	$(RM) *.js
+
+$(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
+	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
 	$(XGETTEXT) --default-domain=$(PACKAGE) \
-		--add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 $(wildcard ../*.c) ../if_perl.xs ../GvimExt/gvimext.cpp $(wildcard ../globals.h) ../if_py_both.h ../vim.h
+		--add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 $(PO_INPUTLIST) $(PO_VIM_JSLIST)
 	$(MV) $(PACKAGE).po $(PACKAGE).pot
+	$(VIM) -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
+	$(RM) *.js
+
+# Don't add a dependency here, we only want to update the .po files manually
+$(LANGUAGES):
+	@$(MAKE) -f Make_ming.mak $(PACKAGE).pot GETTEXT_PATH=$(GETTEXT_PATH)
 	$(CP) $@.po $@.po.orig
 	$(MV) $@.po $@.po.old
 	$(MSGMERGE) $@.po.old $(PACKAGE).pot -o $@.po
@@ -94,5 +126,3 @@ endif
 clean:
 	$(RM) *.mo
 	$(RM) *.pot
-
-

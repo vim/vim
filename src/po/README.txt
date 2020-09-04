@@ -92,7 +92,7 @@ language.
 	msgstr "Berichten übersetzt bei: John Doe <john@doe.org>"
 
 (3) Remove unused messages (optional)
-    Remove messages that have been marked as obsolete. 
+    Remove messages that have been marked as obsolete.
     Such messages start with "#~".
 
     The cleanup script will also do that (see next step).
@@ -128,7 +128,7 @@ language.
     Vim normally picks up the .mo files from:
 	    $VIMRUNTIME/lang/{lang}/LC_MESSAGES/vim.mo
     To try out the messages with Vim use:
-    	    make tryoutinstall
+	    make tryoutinstall
     And run Vim with $VIMRUNTIME set to ../runtime
 
 
