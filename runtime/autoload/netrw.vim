@@ -1644,6 +1644,7 @@ fun! s:NetrwOptionsSave(vt)
    let {a:vt}netrw_ffkeep    = &l:ff
   endif
   let {a:vt}netrw_fokeep    = &l:fo           " formatoptions
+  let {a:vt}netrw_ftkeep    = &l:ft           " filetype
   let {a:vt}netrw_gdkeep    = &l:gd           " gdefault
   let {a:vt}netrw_hidkeep   = &l:hidden
   let {a:vt}netrw_imkeep    = &l:im
@@ -1844,6 +1845,12 @@ fun! s:NetrwOptionsRestore(vt)
   if &ft != "netrw"
 "   call Decho("filetype detect  (ft=".&ft.")",'~'.expand("<slnum>"))
    filetype detect
+   if exists("{a:vt}netrw_dirkeep")
+    let &l:ft = {a:vt}netrw_ftkeep
+   endif
+  endif
+  if exists("{a:vt}netrw_dirkeep")
+   unlet {a:vt}netrw_ftkeep
   endif
 "  call Decho("settings buf#".bufnr("%")."<".bufname("%").">: ".((&l:ma == 0)? "no" : "")."ma ".((&l:mod == 0)? "no" : "")."mod ".((&l:bl == 0)? "no" : "")."bl ".((&l:ro == 0)? "no" : "")."ro fo=".&l:fo." a:vt=".a:vt,'~'.expand("<slnum>"))
 "  call Dret("s:NetrwOptionsRestore : tab#".tabpagenr()." win#".winnr()." buf#".bufnr("%")."<".bufname("%")."> modified=".&modified." modifiable=".&modifiable." readonly=".&readonly)
