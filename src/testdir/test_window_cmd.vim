@@ -1106,6 +1106,48 @@ func Test_wincmd_fails()
   call assert_beeps("normal \<C-W>2gt")
 endfunc
 
+func Test_window_resize()
+  " Vertical :resize (absolute, relative, min and max size).
+  vsplit
+  vert resize 8
+  call assert_equal(8, winwidth(0))
+  vert resize +2
+  call assert_equal(10, winwidth(0))
+  vert resize -2
+  call assert_equal(8, winwidth(0))
+  vert resize
+  call assert_equal(&columns - 2, winwidth(0))
+  vert resize 0
+  call assert_equal(1, winwidth(0))
+  vert resize 99999
+  call assert_equal(&columns - 2, winwidth(0))
+
+  %bwipe!
+
+  " Horizontal :resize (with absolute, relative size, min and max size).
+  split
+  resize 8
+  call assert_equal(8, winheight(0))
+  resize +2
+  call assert_equal(10, winheight(0))
+  resize -2
+  call assert_equal(8, winheight(0))
+  resize
+  call assert_equal(&lines - 4, winheight(0))
+  resize 0
+  call assert_equal(1, winheight(0))
+  resize 99999
+  call assert_equal(&lines - 4, winheight(0))
+
+  " :resize with explicit window number.
+  let other_winnr = winnr('j')
+  exe other_winnr .. 'resize 10'
+  call assert_equal(10, winheight(other_winnr))
+  call assert_equal(&lines - 10 - 3, winheight(0))
+
+  %bwipe!
+endfunc
+
 " Test for adjusting the window width when a window is closed with some
 " windows using 'winfixwidth'
 func Test_window_width_adjust()
