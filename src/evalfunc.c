@@ -1710,7 +1710,7 @@ f_char2nr(typval_T *argvars, typval_T *rettv)
 	int	utf8 = 0;
 
 	if (argvars[1].v_type != VAR_UNKNOWN)
-	    utf8 = (int)tv_get_number_chk(&argvars[1], NULL);
+	    utf8 = (int)tv_get_bool_chk(&argvars[1], NULL);
 
 	if (utf8)
 	    rettv->vval.v_number = utf_ptr2char(tv_get_string(&argvars[0]));

@@ -1339,6 +1339,10 @@ def Test_col()
   assert_equal(5, col([1, '$']))
 enddef
 
+def Test_char2nr()
+  assert_equal(12354, char2nr('あ', true))
+enddef
+
 def Test_getreg_return_type()
   let s1: string = getreg('"')
   let s2: string = getreg('"', 1)
