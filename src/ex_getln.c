@@ -44,9 +44,6 @@ static void	draw_cmdline(int start, int len);
 static void	save_cmdline(cmdline_info_T *ccp);
 static void	restore_cmdline(cmdline_info_T *ccp);
 static int	cmdline_paste(int regname, int literally, int remcr);
-#ifdef FEAT_WILDMENU
-static void	cmdline_del(int from);
-#endif
 static void	redrawcmdprompt(void);
 static int	ccheck_abbr(int);
 
@@ -1064,21 +1061,7 @@ getcmdline_int(
 	    c = Ctrl_P;
 
 #ifdef FEAT_WILDMENU
-	// Special translations for 'wildmenu'
-	if (did_wild_list && p_wmnu)
-	{
-	    if (c == K_LEFT)
-		c = Ctrl_P;
-	    else if (c == K_RIGHT)
-		c = Ctrl_N;
-	}
-	// Hitting CR after "emenu Name.": complete submenu
-	if (xpc.xp_context == EXPAND_MENUNAMES && p_wmnu
-		&& ccline.cmdpos > 1
-		&& ccline.cmdbuff[ccline.cmdpos - 1] == '.'
-		&& ccline.cmdbuff[ccline.cmdpos - 2] != '\\'
-		&& (c == '\n' || c == '\r' || c == K_KENTER))
-	    c = K_DOWN;
+	wildmenu_translate_key(&ccline, &c, &xpc, did_wild_list);
 #endif
 
 	// free expanded names when finished walking through matches
@@ -1095,190 +1078,13 @@ getcmdline_int(
 		xpc.xp_context = EXPAND_NOTHING;
 	    wim_index = 0;
 #ifdef FEAT_WILDMENU
-	    if (p_wmnu && wild_menu_showing != 0)
-	    {
-		int skt = KeyTyped;
-		int old_RedrawingDisabled = RedrawingDisabled;
-
-		if (ccline.input_fn)
-		    RedrawingDisabled = 0;
-
-		if (wild_menu_showing == WM_SCROLLED)
-		{
-		    // Entered command line, move it up
-		    cmdline_row--;
-		    redrawcmd();
-		}
-		else if (save_p_ls != -1)
-		{
-		    // restore 'laststatus' and 'winminheight'
-		    p_ls = save_p_ls;
-		    p_wmh = save_p_wmh;
-		    last_status(FALSE);
-		    update_screen(VALID);	// redraw the screen NOW
-		    redrawcmd();
-		    save_p_ls = -1;
-		}
-		else
-		{
-		    win_redraw_last_status(topframe);
-		    redraw_statuslines();
-		}
-		KeyTyped = skt;
-		wild_menu_showing = 0;
-		if (ccline.input_fn)
-		    RedrawingDisabled = old_RedrawingDisabled;
-	    }
+	    wildmenu_cleanup(&ccline);
 #endif
 	}
 
 #ifdef FEAT_WILDMENU
-	// Special translations for 'wildmenu'
-	if (xpc.xp_context == EXPAND_MENUNAMES && p_wmnu)
-	{
-	    // Hitting <Down> after "emenu Name.": complete submenu
-	    if (c == K_DOWN && ccline.cmdpos > 0
-				  && ccline.cmdbuff[ccline.cmdpos - 1] == '.')
-		c = p_wc;
-	    else if (c == K_UP)
-	    {
-		// Hitting <Up>: Remove one submenu name in front of the
-		// cursor
-		int found = FALSE;
-
-		j = (int)(xpc.xp_pattern - ccline.cmdbuff);
-		i = 0;
-		while (--j > 0)
-		{
-		    // check for start of menu name
-		    if (ccline.cmdbuff[j] == ' '
-			    && ccline.cmdbuff[j - 1] != '\\')
-		    {
-			i = j + 1;
-			break;
-		    }
-		    // check for start of submenu name
-		    if (ccline.cmdbuff[j] == '.'
-			    && ccline.cmdbuff[j - 1] != '\\')
-		    {
-			if (found)
-			{
-			    i = j + 1;
-			    break;
-			}
-			else
-			    found = TRUE;
-		    }
-		}
-		if (i > 0)
-		    cmdline_del(i);
-		c = p_wc;
-		xpc.xp_context = EXPAND_NOTHING;
-	    }
-	}
-	if ((xpc.xp_context == EXPAND_FILES
-			      || xpc.xp_context == EXPAND_DIRECTORIES
-			      || xpc.xp_context == EXPAND_SHELLCMD) && p_wmnu)
-	{
-	    char_u upseg[5];
-
-	    upseg[0] = PATHSEP;
-	    upseg[1] = '.';
-	    upseg[2] = '.';
-	    upseg[3] = PATHSEP;
-	    upseg[4] = NUL;
-
-	    if (c == K_DOWN
-		    && ccline.cmdpos > 0
-		    && ccline.cmdbuff[ccline.cmdpos - 1] == PATHSEP
-		    && (ccline.cmdpos < 3
-			|| ccline.cmdbuff[ccline.cmdpos - 2] != '.'
-			|| ccline.cmdbuff[ccline.cmdpos - 3] != '.'))
-	    {
-		// go down a directory
-		c = p_wc;
-	    }
-	    else if (STRNCMP(xpc.xp_pattern, upseg + 1, 3) == 0 && c == K_DOWN)
-	    {
-		// If in a direct ancestor, strip off one ../ to go down
-		int found = FALSE;
-
-		j = ccline.cmdpos;
-		i = (int)(xpc.xp_pattern - ccline.cmdbuff);
-		while (--j > i)
-		{
-		    if (has_mbyte)
-			j -= (*mb_head_off)(ccline.cmdbuff, ccline.cmdbuff + j);
-		    if (vim_ispathsep(ccline.cmdbuff[j]))
-		    {
-			found = TRUE;
-			break;
-		    }
-		}
-		if (found
-			&& ccline.cmdbuff[j - 1] == '.'
-			&& ccline.cmdbuff[j - 2] == '.'
-			&& (vim_ispathsep(ccline.cmdbuff[j - 3]) || j == i + 2))
-		{
-		    cmdline_del(j - 2);
-		    c = p_wc;
-		}
-	    }
-	    else if (c == K_UP)
-	    {
-		// go up a directory
-		int found = FALSE;
-
-		j = ccline.cmdpos - 1;
-		i = (int)(xpc.xp_pattern - ccline.cmdbuff);
-		while (--j > i)
-		{
-		    if (has_mbyte)
-			j -= (*mb_head_off)(ccline.cmdbuff, ccline.cmdbuff + j);
-		    if (vim_ispathsep(ccline.cmdbuff[j])
-# ifdef BACKSLASH_IN_FILENAME
-			    && vim_strchr((char_u *)" *?[{`$%#",
-				ccline.cmdbuff[j + 1]) == NULL
-# endif
-		       )
-		    {
-			if (found)
-			{
-			    i = j + 1;
-			    break;
-			}
-			else
-			    found = TRUE;
-		    }
-		}
-
-		if (!found)
-		    j = i;
-		else if (STRNCMP(ccline.cmdbuff + j, upseg, 4) == 0)
-		    j += 4;
-		else if (STRNCMP(ccline.cmdbuff + j, upseg + 1, 3) == 0
-			     && j == i)
-		    j += 3;
-		else
-		    j = 0;
-		if (j > 0)
-		{
-		    // TODO this is only for DOS/UNIX systems - need to put in
-		    // machine-specific stuff here and in upseg init
-		    cmdline_del(j);
-		    put_on_cmdline(upseg + 1, 3, FALSE);
-		}
-		else if (ccline.cmdpos > i)
-		    cmdline_del(i);
-
-		// Now complete in the new directory. Set KeyTyped in case the
-		// Up key came from a mapping.
-		c = p_wc;
-		KeyTyped = TRUE;
-	    }
-	}
-
-#endif	// FEAT_WILDMENU
+	wildmenu_process_key(&ccline, &c, &xpc);
+#endif
 
 	// CTRL-\ CTRL-N goes to Normal mode, CTRL-\ CTRL-G goes to Insert
 	// mode when 'insertmode' is set, CTRL-\ e prompts for an expression.
@@ -3659,21 +3465,6 @@ cmdline_paste_str(char_u *s, int literally)
 	    stuffcharReadbuff(c);
 	}
 }
-
-#ifdef FEAT_WILDMENU
-/*
- * Delete characters on the command line, from "from" to the current
- * position.
- */
-    static void
-cmdline_del(int from)
-{
-    mch_memmove(ccline.cmdbuff + from, ccline.cmdbuff + ccline.cmdpos,
-	    (size_t)(ccline.cmdlen - ccline.cmdpos + 1));
-    ccline.cmdlen -= ccline.cmdpos - from;
-    ccline.cmdpos = from;
-}
-#endif
 
 /*
  * This function is called when the screen size changes and with incremental
