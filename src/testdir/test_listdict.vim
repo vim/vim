@@ -67,7 +67,7 @@ func Test_list_unlet()
 
   " removing items out of range: silently skip items that don't exist
   let l = [0, 1, 2, 3]
-  call assert_fails('unlet l[2:1]', 'E684')
+  call assert_fails('unlet l[2:1]', 'E684:')
   let l = [0, 1, 2, 3]
   unlet l[2:2]
   call assert_equal([0, 1, 3], l)
@@ -81,7 +81,7 @@ func Test_list_unlet()
   unlet l[2:5]
   call assert_equal([0, 1], l)
   let l = [0, 1, 2, 3]
-  call assert_fails('unlet l[-1:2]', 'E684')
+  call assert_fails('unlet l[-1:2]', 'E684:')
   let l = [0, 1, 2, 3]
   unlet l[-2:2]
   call assert_equal([0, 1, 3], l)
@@ -104,8 +104,8 @@ func Test_list_assign()
   let l = [0, 1, 2, 3]
   let [va, vb] = l[2:3]
   call assert_equal([2, 3], [va, vb])
-  call assert_fails('let [va, vb] = l', 'E687')
-  call assert_fails('let [va, vb] = l[1:1]', 'E688')
+  call assert_fails('let [va, vb] = l', 'E687:')
+  call assert_fails('let [va, vb] = l[1:1]', 'E688:')
 endfunc
 
 " test for range assign
@@ -186,7 +186,7 @@ func Test_dict()
 
   call extend(d, {3:33, 1:99})
   call extend(d, {'b':'bbb', 'c':'ccc'}, "keep")
-  call assert_fails("call extend(d, {3:333,4:444}, 'error')", 'E737')
+  call assert_fails("call extend(d, {3:333,4:444}, 'error')", 'E737:')
   call assert_equal({'c': 'ccc', '1': 99, 'b': [1, 2, function('strlen')], '3': 33, '-1': {'a': 1}}, d)
   call filter(d, 'v:key =~ ''[ac391]''')
   call assert_equal({'c': 'ccc', '1': 99, '3': 33, '-1': {'a': 1}}, d)
@@ -343,7 +343,7 @@ func Test_dict_deepcopy()
   let l = [4, d, 6]
   let d[3] = l
   let dc = deepcopy(d)
-  call assert_fails('call deepcopy(d, 1)', 'E698')
+  call assert_fails('call deepcopy(d, 1)', 'E698:')
   let l2 = [0, l, l, 3]
   let l[1] = l2
   let l3 = deepcopy(l2)
@@ -522,7 +522,7 @@ func Test_dict_lock_unlet()
   unlet! d
   let d = {'a': 99, 'b': 100}
   lockvar 1 d
-  call assert_fails('unlet d.a', 'E741')
+  call assert_fails('unlet d.a', 'E741:')
 endfunc
 
 " unlet after lock on dict item
@@ -557,7 +557,7 @@ func Test_dict_lock_extend()
   unlet! d
   let d = {'a': 99, 'b': 100}
   lockvar d.a
-  call assert_fails("call extend(d, {'a' : 123})", 'E741')
+  call assert_fails("call extend(d, {'a' : 123})", 'E741:')
   call assert_equal({'a': 99, 'b': 100}, d)
 endfunc
 
@@ -572,7 +572,7 @@ endfunc
 
 " No remove() of write-protected scope-level variable
 func Tfunc1(this_is_a_long_parameter_name)
-  call assert_fails("call remove(a:, 'this_is_a_long_parameter_name')", 'E742')
+  call assert_fails("call remove(a:, 'this_is_a_long_parameter_name')", 'E742:')
 endfunc
 func Test_dict_scope_var_remove()
   call Tfunc1('testval')
@@ -580,11 +580,11 @@ endfunc
 
 " No extend() of write-protected scope-level variable
 func Test_dict_scope_var_extend()
-  call assert_fails("call extend(a:, {'this_is_a_long_parameter_name': 1234})", 'E742')
+  call assert_fails("call extend(a:, {'this_is_a_long_parameter_name': 1234})", 'E742:')
 endfunc
 
 func Tfunc2(this_is_a_long_parameter_name)
-  call assert_fails("call extend(a:, {'this_is_a_long_parameter_name': 1234})", 'E742')
+  call assert_fails("call extend(a:, {'this_is_a_long_parameter_name': 1234})", 'E742:')
 endfunc
 func Test_dict_scope_var_extend_overwrite()
   call Tfunc2('testval')
@@ -862,7 +862,7 @@ func s:check_scope_dict(x, fixed)
 
   let cmd = s:gen_cmd('let x:foo = 1', a:x)
   if a:fixed
-    call assert_fails(cmd, 'E461')
+    call assert_fails(cmd, 'E461:')
   else
     exe cmd
     exe s:gen_cmd('call assert_equal(1, x:foo)', a:x)
@@ -870,7 +870,7 @@ func s:check_scope_dict(x, fixed)
 
   let cmd = s:gen_cmd('let x:["bar"] = 2', a:x)
   if a:fixed
-    call assert_fails(cmd, 'E461')
+    call assert_fails(cmd, 'E461:')
   else
     exe cmd
     exe s:gen_cmd('call assert_equal(2, x:bar)', a:x)
@@ -878,7 +878,7 @@ func s:check_scope_dict(x, fixed)
 
   let cmd = s:gen_cmd('call extend(x:, {"baz": 3})', a:x)
   if a:fixed
-    call assert_fails(cmd, 'E742')
+    call assert_fails(cmd, 'E742:')
   else
     exe cmd
     exe s:gen_cmd('call assert_equal(3, x:baz)', a:x)
@@ -886,11 +886,11 @@ func s:check_scope_dict(x, fixed)
 
   if a:fixed
     if a:x ==# 'a'
-      call assert_fails('unlet a:x', 'E795')
-      call assert_fails('call remove(a:, "x")', 'E742')
+      call assert_fails('unlet a:x', 'E795:')
+      call assert_fails('call remove(a:, "x")', 'E742:')
     elseif a:x ==# 'v'
-      call assert_fails('unlet v:count', 'E795')
-      call assert_fails('call remove(v:, "count")', 'E742')
+      call assert_fails('unlet v:count', 'E795:')
+      call assert_fails('call remove(v:, "count")', 'E742:')
     endif
   else
     exe s:gen_cmd('unlet x:foo', a:x)

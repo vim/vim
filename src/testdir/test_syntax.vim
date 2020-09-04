@@ -107,7 +107,7 @@ func Test_syntime()
   call assert_notmatch('.* cppNumber*', a)
   call assert_notmatch('[1-9]', a)
 
-  call assert_fails('syntime abc', 'E475')
+  call assert_fails('syntime abc', 'E475:')
 
   syntax clear
   let a = execute('syntime report')
@@ -718,8 +718,8 @@ func Test_syntax_foldlevel()
   syntax on
   set foldmethod=syntax
 
-  call assert_fails('syn foldlevel start start', 'E390')
-  call assert_fails('syn foldlevel not_an_option', 'E390')
+  call assert_fails('syn foldlevel start start', 'E390:')
+  call assert_fails('syn foldlevel not_an_option', 'E390:')
 
   set foldlevel=1
 

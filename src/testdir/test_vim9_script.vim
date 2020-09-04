@@ -1575,8 +1575,8 @@ def Test_vim9script_fails()
   CheckScriptFailure(['vim9script', 'let str: string', 'str = 1234'], 'E1012:')
   CheckScriptFailure(['vim9script', 'const str = "asdf"', 'str = "xxx"'], 'E46:')
 
-  assert_fails('vim9script', 'E1038')
-  assert_fails('export something', 'E1043')
+  assert_fails('vim9script', 'E1038:')
+  assert_fails('export something', 'E1043:')
 enddef
 
 func Test_import_fails_without_script()

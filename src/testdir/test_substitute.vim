@@ -449,7 +449,7 @@ func Test_substitute_partial()
 
    " 20 arguments plus one is too many
    let Replacer = function('SubReplacer20', repeat(['foo'], 20))
-   call assert_fails("call substitute('123', '2', Replacer, 'g')", 'E118')
+   call assert_fails("call substitute('123', '2', Replacer, 'g')", 'E118:')
 endfunc
 
 " Tests for *sub-replace-special* and *sub-replace-expression* on :substitute.
@@ -632,7 +632,7 @@ func Test_sub_cmd_7()
   call Run_SubCmd_Tests(tests)
 
   exe "normal oQ\nQ\<Esc>k"
-  call assert_fails('s/Q[^\n]Q/\=submatch(0)."foobar"/', 'E486')
+  call assert_fails('s/Q[^\n]Q/\=submatch(0)."foobar"/', 'E486:')
   enew!
 endfunc
 

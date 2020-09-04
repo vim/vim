@@ -523,7 +523,7 @@ enddef
 
 def Test_error_in_nested_function()
   # Error in called function requires unwinding the call stack.
-  assert_fails('call FuncWithForwardCall()', 'E1096')
+  assert_fails('call FuncWithForwardCall()', 'E1096:')
 enddef
 
 def Test_return_type_wrong()
@@ -735,8 +735,8 @@ def Test_delfunc()
     CallGoneSoon()
   END
   writefile(lines, 'XToDelFunc')
-  assert_fails('so XToDelFunc', 'E933')
-  assert_fails('so XToDelFunc', 'E933')
+  assert_fails('so XToDelFunc', 'E933:')
+  assert_fails('so XToDelFunc', 'E933:')
 
   delete('XToDelFunc')
 enddef

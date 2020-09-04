@@ -65,7 +65,7 @@ func Test_terminal_make_change()
 
   setlocal modifiable
   exe "normal Axxx\<Esc>"
-  call assert_fails(buf . 'bwipe', ['E89:', 'E517'])
+  call assert_fails(buf . 'bwipe', ['E89:', 'E517:'])
   undo
 
   exe buf . 'bwipe'
@@ -89,7 +89,7 @@ endfunc
 
 func Test_terminal_wipe_buffer()
   let buf = Run_shell_in_terminal({})
-  call assert_fails(buf . 'bwipe', ['E89', 'E517'])
+  call assert_fails(buf . 'bwipe', ['E89:', 'E517:'])
   exe buf . 'bwipe!'
   call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
   call assert_equal("", bufname(buf))
@@ -648,7 +648,7 @@ endfunc
 
 func Test_terminal_list_args()
   let buf = term_start([&shell, &shellcmdflag, 'echo "123"'])
-  call assert_fails(buf . 'bwipe', ['E89', 'E517'])
+  call assert_fails(buf . 'bwipe', ['E89:', 'E517:'])
   exe buf . 'bwipe!'
   call assert_equal("", bufname(buf))
 endfunction
@@ -892,7 +892,7 @@ endfunc
 
 func Test_terminal_wqall()
   let buf = Run_shell_in_terminal({})
-  call assert_fails('wqall', 'E948')
+  call assert_fails('wqall', 'E948:')
   call StopShellInTerminal(buf)
   call TermWait(buf)
   exe buf . 'bwipe'
@@ -993,17 +993,17 @@ endfunc
 
 func Test_terminal_term_start_empty_command()
   let cmd = "call term_start('', {'curwin' : 1, 'term_finish' : 'close'})"
-  call assert_fails(cmd, 'E474')
+  call assert_fails(cmd, 'E474:')
   let cmd = "call term_start('', {'curwin' : 1, 'term_finish' : 'close'})"
-  call assert_fails(cmd, 'E474')
+  call assert_fails(cmd, 'E474:')
   let cmd = "call term_start({}, {'curwin' : 1, 'term_finish' : 'close'})"
-  call assert_fails(cmd, 'E474')
+  call assert_fails(cmd, 'E474:')
   let cmd = "call term_start(0, {'curwin' : 1, 'term_finish' : 'close'})"
-  call assert_fails(cmd, 'E474')
+  call assert_fails(cmd, 'E474:')
   let cmd = "call term_start('', {'term_name' : []})"
-  call assert_fails(cmd, 'E730')
+  call assert_fails(cmd, 'E730:')
   let cmd = "call term_start('', {'term_finish' : 'axby'})"
-  call assert_fails(cmd, 'E475')
+  call assert_fails(cmd, 'E475:')
   let cmd = "call term_start('', {'eof_chars' : []})"
   call assert_fails(cmd, 'E730:')
   let cmd = "call term_start('', {'term_kill' : []})"

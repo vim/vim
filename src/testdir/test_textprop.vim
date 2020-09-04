@@ -314,8 +314,8 @@ func Test_prop_remove()
   unlet props[3]
   call assert_equal(props, prop_list(1))
 
-  call assert_fails("call prop_remove({'id': 11, 'both': 1})", 'E860')
-  call assert_fails("call prop_remove({'type': 'three', 'both': 1})", 'E860')
+  call assert_fails("call prop_remove({'id': 11, 'both': 1})", 'E860:')
+  call assert_fails("call prop_remove({'type': 'three', 'both': 1})", 'E860:')
 
   call DeletePropTypes()
   bwipe!

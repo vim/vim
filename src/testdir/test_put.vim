@@ -60,16 +60,16 @@ func Test_put_fails_when_nomodifiable()
   setlocal nomodifiable
 
   normal! yy
-  call assert_fails(':put', 'E21')
-  call assert_fails(':put!', 'E21')
-  call assert_fails(':normal! p', 'E21')
-  call assert_fails(':normal! gp', 'E21')
-  call assert_fails(':normal! P', 'E21')
-  call assert_fails(':normal! gP', 'E21')
+  call assert_fails(':put', 'E21:')
+  call assert_fails(':put!', 'E21:')
+  call assert_fails(':normal! p', 'E21:')
+  call assert_fails(':normal! gp', 'E21:')
+  call assert_fails(':normal! P', 'E21:')
+  call assert_fails(':normal! gP', 'E21:')
 
   if has('mouse')
     set mouse=n
-    call assert_fails('execute "normal! \<MiddleMouse>"', 'E21')
+    call assert_fails('execute "normal! \<MiddleMouse>"', 'E21:')
     set mouse&
   endif
 

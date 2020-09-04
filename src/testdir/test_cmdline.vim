@@ -843,7 +843,7 @@ func Test_cmdline_write_alternatefile()
   f %<
   call assert_equal('foo-B', expand('%'))
   new
-  call assert_fails('f #<', 'E95')
+  call assert_fails('f #<', 'E95:')
   bw!
   f foo-B.txt
   f %<-A

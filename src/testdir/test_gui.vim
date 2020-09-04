@@ -525,7 +525,7 @@ func Test_set_guifontwide()
         set guifontset=-*-notexist-*
         call assert_report("'set guifontset=-*-notexist-*' should have failed")
       catch
-        call assert_exception('E598')
+        call assert_exception('E598:')
       endtry
       " Set it to an invalid value brutally for preparation.
       let &guifontset = '-*-notexist-*'

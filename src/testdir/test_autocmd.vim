@@ -468,7 +468,7 @@ func Test_autocmd_bufwipe_in_SessLoadPost()
   call writefile(content, 'Xvimrc')
   call system(GetVimCommand('Xvimrc') .. ' --not-a-term --noplugins -S Session.vim -c cq')
   let errors = join(readfile('Xerrors'))
-  call assert_match('E814', errors)
+  call assert_match('E814:', errors)
 
   set swapfile
   for file in ['Session.vim', 'Xvimrc', 'Xerrors']
@@ -638,7 +638,7 @@ func Test_OptionSet()
   " try twice, first time, shouldn't trigger because option name is invalid,
   " second time, it should trigger
   let bnum = bufnr('%')
-  call assert_fails("call setbufvar(bnum, '&l:bk', 1)", "E355")
+  call assert_fails("call setbufvar(bnum, '&l:bk', 1)", 'E355:')
   " should trigger, use correct option name
   call setbufvar(bnum, '&backup', 1)
   call assert_equal([], g:options)
@@ -1175,15 +1175,15 @@ func Test_OptionSet_diffmode_close()
   au OptionSet diff close
 
   call setline(1, ['buffer 1', 'line2', 'line3', 'line4'])
-  call assert_fails(':diffthis', 'E788')
+  call assert_fails(':diffthis', 'E788:')
   call assert_equal(1, &diff)
   vnew
   call setline(1, ['buffer 2', 'line 2', 'line 3', 'line4'])
-  call assert_fails(':diffthis', 'E788')
+  call assert_fails(':diffthis', 'E788:')
   call assert_equal(1, &diff)
   set diffopt-=closeoff
   bw!
-  call assert_fails(':diffoff!', 'E788')
+  call assert_fails(':diffoff!', 'E788:')
   bw!
 
   " Cleanup
@@ -1410,13 +1410,13 @@ func Test_BufWritePre()
   bdel Xtest
   e Xxx1
   " write it, will unload it and give an error msg
-  call assert_fails('w', 'E203')
+  call assert_fails('w', 'E203:')
   call assert_equal('Xxx2', bufname('%'))
   edit Xtest
   e! Xxx2
   bwipe Xtest
   " write it, will delete the buffer and give an error msg
-  call assert_fails('w', 'E203')
+  call assert_fails('w', 'E203:')
   call assert_equal('Xxx1', bufname('%'))
   au! BufWritePre
   call delete('Xxx1')
@@ -1491,7 +1491,7 @@ func Test_Cmd_Autocmds()
   au BufWriteCmd XtestA call append(line("$"), "write")
   write				" will append a line to the file
   call assert_equal('write', getline('$'))
-  call assert_fails('read XtestA', 'E484')	" should not read anything
+  call assert_fails('read XtestA', 'E484:')	" should not read anything
   call assert_equal('write', getline(4))
 
   " now we have:
@@ -1517,7 +1517,7 @@ func Test_Cmd_Autocmds()
   normal 4GA1
   4,5w XtestC			" will copy lines 4 and 5 to the end
   call assert_equal("\tabc21", getline(8))
-  call assert_fails('r XtestC', 'E484')	" should not read anything
+  call assert_fails('r XtestC', 'E484:')	" should not read anything
   call assert_equal("end of Xxx", getline(9))
 
   " now we have:
@@ -1535,7 +1535,7 @@ func Test_Cmd_Autocmds()
   au FileAppendCmd XtestD call extend(g:lines, getline(line("'["), line("']")))
   w >>XtestD			" will add lines to 'lines'
   call assert_equal(9, len(g:lines))
-  call assert_fails('$r XtestD', 'E484')	" should not read anything
+  call assert_fails('$r XtestD', 'E484:')	" should not read anything
   call assert_equal(9, line('$'))
   call assert_equal('end of Xxx', getline('$'))
 
@@ -1776,7 +1776,7 @@ func Test_nocatch_wipe_dummy_buffer()
   CheckFeature quickfix
   " Nasty autocommand: wipe buffer on any event.
   au * x bwipe
-  call assert_fails('lv½ /x', 'E937')
+  call assert_fails('lv½ /x', 'E937:')
   au!
 endfunc
 

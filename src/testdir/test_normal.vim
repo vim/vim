@@ -1265,8 +1265,8 @@ func Test_normal21_nv_hat()
   " Edit a fresh file and wipe the buffer list so that there is no alternate
   " file present.  Next, check for the expected command failures.
   edit Xfoo | %bw
-  call assert_fails(':buffer #', 'E86')
-  call assert_fails(':execute "normal! \<C-^>"', 'E23')
+  call assert_fails(':buffer #', 'E86:')
+  call assert_fails(':execute "normal! \<C-^>"', 'E23:')
   call assert_fails("normal i\<C-R>#", 'E23:')
 
   " Test for the expected behavior when switching between two named buffers.
@@ -1942,8 +1942,8 @@ func Test_normal33_g_cmd2()
   " there is only one change in the changelist
   " currently, when we setup the window
   call assert_equal(2, line('.'))
-  call assert_fails(':norm! g;', 'E662')
-  call assert_fails(':norm! g,', 'E663')
+  call assert_fails(':norm! g;', 'E662:')
+  call assert_fails(':norm! g,', 'E663:')
   let &ul=&ul
   call append('$', ['a', 'b', 'c', 'd'])
   let &ul=&ul
@@ -2466,10 +2466,10 @@ func Test_normal45_drop()
   " unfortunately, without a gui, we can't really test much here,
   " so simply test that ~p fails (which uses the drop register)
   new
-  call assert_fails(':norm! "~p', 'E353')
+  call assert_fails(':norm! "~p', 'E353:')
   call assert_equal([],  getreg('~', 1, 1))
   " the ~ register is read only
-  call assert_fails(':let @~="1"', 'E354')
+  call assert_fails(':let @~="1"', 'E354:')
   bw!
 endfunc
 
@@ -2510,7 +2510,7 @@ func Test_normal48_wincmd()
   new
   exe "norm! \<c-w>c"
   call assert_equal(1, winnr('$'))
-  call assert_fails(":norm! \<c-w>c", "E444")
+  call assert_fails(":norm! \<c-w>c", 'E444:')
 endfunc
 
 func Test_normal49_counts()
@@ -2531,7 +2531,7 @@ func Test_normal50_commandline()
     "call feedkeys("\<c-^>", 'tm')
 
     " should also fail with E11
-    call assert_fails(":wincmd p", 'E11')
+    call assert_fails(":wincmd p", 'E11:')
     " return from commandline window
     call feedkeys("\<cr>")
   endfunc
@@ -2560,7 +2560,7 @@ func Test_normal51_FileChangedRO()
   new Xreadonly.log
   setl ro
   au FileChangedRO <buffer> :call feedkeys("\<c-^>", 'tix')
-  call assert_fails(":norm! Af", 'E788')
+  call assert_fails(":norm! Af", 'E788:')
   call assert_equal(['foo'], getline(1,'$'))
   call assert_equal('Xreadonly.log', bufname(''))
 
@@ -2701,7 +2701,7 @@ endfunc
 func Test_nv_hat_count()
   %bwipeout!
   let l:nr = bufnr('%') + 1
-  call assert_fails(':execute "normal! ' . l:nr . '\<C-^>"', 'E92')
+  call assert_fails(':execute "normal! ' . l:nr . '\<C-^>"', 'E92:')
 
   edit Xfoo
   let l:foo_nr = bufnr('Xfoo')

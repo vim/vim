@@ -36,9 +36,9 @@ func Test_terminal_termwinsize_option_fixed()
   call StopVimInTerminal(buf)
   call delete('Xwinsize')
 
-  call assert_fails('set termwinsize=40', 'E474')
-  call assert_fails('set termwinsize=10+40', 'E474')
-  call assert_fails('set termwinsize=abc', 'E474')
+  call assert_fails('set termwinsize=40', 'E474:')
+  call assert_fails('set termwinsize=10+40', 'E474:')
+  call assert_fails('set termwinsize=abc', 'E474:')
 
   set termwinsize=
 endfunc

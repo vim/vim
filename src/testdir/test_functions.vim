@@ -2025,7 +2025,7 @@ func Test_readdir_sort()
   exe "lang collate" collate
 
   " 5) Errors
-  call assert_fails('call readdir(dir, 1, 1)', 'E715')
+  call assert_fails('call readdir(dir, 1, 1)', 'E715:')
   call assert_fails('call readdir(dir, 1, #{sorta: 1})')
   call assert_fails('call readdirex(dir, 1, #{sorta: 1})')
 

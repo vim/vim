@@ -341,8 +341,8 @@ func Test_override()
   call test_override('char_avail', 1)
   eval 1->test_override('redraw')
   call test_override('ALL', 0)
-  call assert_fails("call test_override('xxx', 1)", 'E475')
-  call assert_fails("call test_override('redraw', 'yes')", 'E474')
+  call assert_fails("call test_override('xxx', 1)", 'E475:')
+  call assert_fails("call test_override('redraw', 'yes')", 'E474:')
 endfunc
 
 func Test_mouse_position()

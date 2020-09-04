@@ -1994,7 +1994,7 @@ func Test_sign_funcs_multi()
   call assert_fails('call sign_unplacelist([[]])', "E715:")
   call assert_fails('call sign_unplacelist(["abc"])', "E715:")
   call assert_fails('call sign_unplacelist([100])', "E715:")
-  call assert_fails("call sign_unplacelist([{'id' : -1}])", 'E474')
+  call assert_fails("call sign_unplacelist([{'id' : -1}])", 'E474:')
 
   call assert_equal([0, 0, 0, 0],
 	      \ sign_undefine(['sign1', 'sign2', 'sign3', 'sign4']))

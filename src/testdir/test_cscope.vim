@@ -31,9 +31,9 @@ func Test_cscopeWithCscopeConnections()
     catch
       call assert_report('exception thrown')
     endtry
-    call assert_fails('cscope add', 'E560')
-    call assert_fails('cscope add Xcscope.out', 'E568')
-    call assert_fails('cscope add doesnotexist.out', 'E563')
+    call assert_fails('cscope add', 'E560:')
+    call assert_fails('cscope add Xcscope.out', 'E568:')
+    call assert_fails('cscope add doesnotexist.out', 'E563:')
     if has('unix')
       call assert_fails('cscope add /dev/null', 'E564:')
     endif
