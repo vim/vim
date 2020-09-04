@@ -1327,6 +1327,10 @@ enddef
 def Test_bufnr()
   let buf = bufnr()
   assert_equal(buf, bufnr('%'))
+
+  buf = bufnr('Xdummy', true)
+  assert_notequal(-1, buf)
+  exe 'bwipe! ' .. buf
 enddef
 
 def Test_col()

@@ -391,7 +391,7 @@ f_bufnr(typval_T *argvars, typval_T *rettv)
     // new buffer.
     if (buf == NULL
 	    && argvars[1].v_type != VAR_UNKNOWN
-	    && tv_get_number_chk(&argvars[1], &error) != 0
+	    && tv_get_bool_chk(&argvars[1], &error) != 0
 	    && !error
 	    && (name = tv_get_string_chk(&argvars[0])) != NULL
 	    && !error)
