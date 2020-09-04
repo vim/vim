@@ -280,8 +280,11 @@ parse_termwinsize(win_T *wp, int *rows, int *cols)
  * Determine the terminal size from 'termwinsize' and the current window.
  */
     static void
-set_term_and_win_size(term_T *term)
+set_term_and_win_size(term_T *term, jobopt_T *opt)
 {
+    int rows, cols;
+    int	minsize;
+
 #ifdef FEAT_GUI
     if (term->tl_system)
     {
@@ -292,21 +295,39 @@ set_term_and_win_size(term_T *term)
 	return;
     }
 #endif
-    if (parse_termwinsize(curwin, &term->tl_rows, &term->tl_cols))
+    term->tl_rows = curwin->w_height;
+    term->tl_cols = curwin->w_width;
+
+    minsize = parse_termwinsize(curwin, &rows, &cols);
+    if (minsize)
     {
-	if (term->tl_rows != 0)
-	    term->tl_rows = MAX(term->tl_rows, curwin->w_height);
-	if (term->tl_cols != 0)
-	    term->tl_cols = MAX(term->tl_cols, curwin->w_width);
+	if (term->tl_rows < rows)
+	    term->tl_rows = rows;
+	if (term->tl_cols < cols)
+	    term->tl_cols = cols;
     }
-    if (term->tl_rows == 0)
-	term->tl_rows = curwin->w_height;
-    else
+    if ((opt->jo_set2 & JO2_TERM_ROWS))
+	term->tl_rows = opt->jo_term_rows;
+    else if (rows != 0)
+	term->tl_rows = rows;
+    if ((opt->jo_set2 & JO2_TERM_COLS))
+	term->tl_cols = opt->jo_term_cols;
+    else if (cols != 0)
+	term->tl_cols = cols;
+
+    if (term->tl_rows != curwin->w_height)
 	win_setheight_win(term->tl_rows, curwin);
-    if (term->tl_cols == 0)
-	term->tl_cols = curwin->w_width;
-    else
+    if (term->tl_cols != curwin->w_width)
 	win_setwidth_win(term->tl_cols, curwin);
+
+    // Set 'winsize' now to avoid a resize at the next redraw.
+    if (!minsize && *curwin->w_p_tws != NUL)
+    {
+	char_u buf[100];
+
+	vim_snprintf((char *)buf, 100, "%dx%d", term->tl_rows, term->tl_cols);
+	set_option_value((char_u *)"termwinsize", 0L, buf, OPT_LOCAL);
+    }
 }
 
 /*
@@ -603,7 +624,7 @@ term_start(
     // the job finished.
     curbuf->b_p_ma = FALSE;
 
-    set_term_and_win_size(term);
+    set_term_and_win_size(term, opt);
 #ifdef MSWIN
     mch_memmove(orig_opt.jo_io, opt->jo_io, sizeof(orig_opt.jo_io));
 #endif
