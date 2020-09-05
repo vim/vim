@@ -1522,6 +1522,13 @@ def Test_has()
   assert_equal(1, has('eval', true))
 enddef
 
+def Test_list2str_str2list_utf8()
+  let s = "\u3042\u3044"
+  let l = [0x3042, 0x3044]
+  assert_equal(l, str2list(s, true))
+  assert_equal(s, list2str(l, true))
+enddef
+
 def Fibonacci(n: number): number
   if n < 2
     return n
