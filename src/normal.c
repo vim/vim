@@ -897,6 +897,9 @@ getcount:
 #endif
 	    if ((State & INSERT) && !p_ek)
 	    {
+#ifdef FEAT_JOB_CHANNEL
+		ch_log_output = TRUE;
+#endif
 		// Disable bracketed paste and modifyOtherKeys here, we won't
 		// recognize the escape sequences with 'esckeys' off.
 		out_str(T_BD);
@@ -907,6 +910,9 @@ getcount:
 
 	    if ((State & INSERT) && !p_ek)
 	    {
+#ifdef FEAT_JOB_CHANNEL
+		ch_log_output = TRUE;
+#endif
 		// Re-enable bracketed paste mode and modifyOtherKeys
 		out_str(T_BE);
 		out_str(T_CTI);

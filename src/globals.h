@@ -1898,6 +1898,10 @@ EXTERN int did_repeated_msg INIT(= 0);
 # define REPEATED_MSG_LOOKING	    1
 # define REPEATED_MSG_SAFESTATE	    2
 
+// This flag is set when outputting a terminal control code and reset in
+// out_flush() when characters have been written.
+EXTERN int ch_log_output INIT(= FALSE);
+
 #define FOR_ALL_CHANNELS(ch) \
     for ((ch) = first_channel; (ch) != NULL; (ch) = (ch)->ch_next)
 #define FOR_ALL_JOBS(job) \

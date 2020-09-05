@@ -315,6 +315,9 @@ edit(
 #endif
     if (!p_ek)
     {
+#ifdef FEAT_JOB_CHANNEL
+	ch_log_output = TRUE;
+#endif
 	// Disable bracketed paste mode, we won't recognize the escape
 	// sequences.
 	out_str(T_BD);
@@ -3724,6 +3727,9 @@ ins_esc(
 #endif
     if (!p_ek)
     {
+#ifdef FEAT_JOB_CHANNEL
+	ch_log_output = TRUE;
+#endif
 	// Re-enable bracketed paste mode.
 	out_str(T_BE);
 
