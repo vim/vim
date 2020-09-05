@@ -1533,6 +1533,20 @@ def Test_nr2char()
   assert_equal('a', nr2char(97, true))
 enddef
 
+def Test_searchcount()
+  new
+  setline(1, "foo bar")
+  :/foo
+  assert_equal(#{
+      exact_match: 1,
+      current: 1,
+      total: 1,
+      maxcount: 99,
+      incomplete: 0,
+    }, searchcount(#{recompute: true}))
+  bwipe!
+enddef
+
 def Fibonacci(n: number): number
   if n < 2
     return n
