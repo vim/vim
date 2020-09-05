@@ -1551,6 +1551,13 @@ def Test_searchdecl()
   assert_equal(1, searchdecl('blah', true, true))
 enddef
 
+def Test_synID()
+  new
+  setline(1, "text")
+  assert_equal(0, synID(1, 1, true))
+  bwipe!
+enddef
+
 def Fibonacci(n: number): number
   if n < 2
     return n
