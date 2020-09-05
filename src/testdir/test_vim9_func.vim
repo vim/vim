@@ -1506,6 +1506,8 @@ def Test_getbufinfo()
 enddef
 
 def Test_getchar()
+  while getchar(0)
+  endwhile
   assert_equal(0, getchar(true))
 enddef
 
