@@ -1007,7 +1007,7 @@ prop_type_set(typval_T *argvars, int add)
 	di = dict_find(dict, (char_u *)"combine", -1);
 	if (di != NULL)
 	{
-	    if (tv_get_number(&di->di_tv))
+	    if (tv_get_bool(&di->di_tv))
 		prop->pt_flags |= PT_FLAG_COMBINE;
 	    else
 		prop->pt_flags &= ~PT_FLAG_COMBINE;
@@ -1020,7 +1020,7 @@ prop_type_set(typval_T *argvars, int add)
 	di = dict_find(dict, (char_u *)"start_incl", -1);
 	if (di != NULL)
 	{
-	    if (tv_get_number(&di->di_tv))
+	    if (tv_get_bool(&di->di_tv))
 		prop->pt_flags |= PT_FLAG_INS_START_INCL;
 	    else
 		prop->pt_flags &= ~PT_FLAG_INS_START_INCL;
@@ -1029,7 +1029,7 @@ prop_type_set(typval_T *argvars, int add)
 	di = dict_find(dict, (char_u *)"end_incl", -1);
 	if (di != NULL)
 	{
-	    if (tv_get_number(&di->di_tv))
+	    if (tv_get_bool(&di->di_tv))
 		prop->pt_flags |= PT_FLAG_INS_END_INCL;
 	    else
 		prop->pt_flags &= ~PT_FLAG_INS_END_INCL;

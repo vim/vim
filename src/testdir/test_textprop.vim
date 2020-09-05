@@ -321,6 +321,17 @@ func Test_prop_remove()
   bwipe!
 endfunc
 
+def Test_prop_add_vim9()
+  prop_type_add('comment', #{
+      highlight: 'Directory',
+      priority: 123,
+      start_incl: true,
+      end_incl: true,
+      combine: false,
+    })
+  prop_type_delete('comment')
+enddef
+
 def Test_prop_remove_vim9()
   new
   call AddPropTypes()
