@@ -1529,6 +1529,10 @@ def Test_list2str_str2list_utf8()
   assert_equal(s, list2str(l, true))
 enddef
 
+def Test_nr2char()
+  assert_equal('a', nr2char(97, true))
+enddef
+
 def Fibonacci(n: number): number
   if n < 2
     return n
