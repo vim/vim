@@ -10,6 +10,7 @@ SRC_ALL =	\
 		.travis.yml \
 		.cirrus.yml \
 		.github/workflows/ci-windows.yaml \
+		.github/CODEOWNERS \
 		appveyor.yml \
 		ci/appveyor.bat \
 		ci/if_ver*.vim \
