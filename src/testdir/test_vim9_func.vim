@@ -1493,9 +1493,16 @@ def Test_bufname()
   close
 enddef
 
-def Test_gebufinfo()
+def Test_getbufinfo()
   let bufinfo = getbufinfo(bufnr())
   assert_equal(bufinfo, getbufinfo('%'))
+
+  edit Xtestfile1
+  hide edit Xtestfile2
+  hide enew
+  getbufinfo(#{bufloaded: true, buflisted: true, bufmodified: false})
+      ->len()->assert_equal(3)
+  bwipe Xtestfile1 Xtestfile2
 enddef
 
 def Fibonacci(n: number): number

@@ -624,21 +624,11 @@ f_getbufinfo(typval_T *argvars, typval_T *rettv)
 
 	if (sel_d != NULL)
 	{
-	    dictitem_T	*di;
-
 	    filtered = TRUE;
-
-	    di = dict_find(sel_d, (char_u *)"buflisted", -1);
-	    if (di != NULL && tv_get_number(&di->di_tv))
-		sel_buflisted = TRUE;
-
-	    di = dict_find(sel_d, (char_u *)"bufloaded", -1);
-	    if (di != NULL && tv_get_number(&di->di_tv))
-		sel_bufloaded = TRUE;
-
-	    di = dict_find(sel_d, (char_u *)"bufmodified", -1);
-	    if (di != NULL && tv_get_number(&di->di_tv))
-		sel_bufmodified = TRUE;
+	    sel_buflisted = dict_get_bool(sel_d, (char_u *)"buflisted", FALSE);
+	    sel_bufloaded = dict_get_bool(sel_d, (char_u *)"bufloaded", FALSE);
+	    sel_bufmodified = dict_get_bool(sel_d, (char_u *)"bufmodified",
+									FALSE);
 	}
     }
     else if (argvars[0].v_type != VAR_UNKNOWN)
