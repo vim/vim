@@ -75,6 +75,7 @@ SRC_ALL =	\
 		src/highlight.c \
 		src/indent.c \
 		src/insexpand.c \
+		src/job.c \
 		src/json.c \
 		src/json_test.c \
 		src/kword_test.c \
@@ -250,6 +251,7 @@ SRC_ALL =	\
 		src/proto/highlight.pro \
 		src/proto/indent.pro \
 		src/proto/insexpand.pro \
+		src/proto/job.pro \
 		src/proto/json.pro \
 		src/proto/list.pro \
 		src/proto/locale.pro \

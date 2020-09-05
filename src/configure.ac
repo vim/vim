@@ -2143,9 +2143,9 @@ if test "$enable_netbeans" = "yes"; then
 fi
 if test "$enable_channel" = "yes"; then
   AC_DEFINE(FEAT_JOB_CHANNEL)
-  CHANNEL_SRC="channel.c"
+  CHANNEL_SRC="job.c channel.c"
   AC_SUBST(CHANNEL_SRC)
-  CHANNEL_OBJ="objects/channel.o"
+  CHANNEL_OBJ="objects/job.o objects/channel.o"
   AC_SUBST(CHANNEL_OBJ)
 fi
 

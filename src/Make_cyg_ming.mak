@@ -870,7 +870,7 @@ OBJ += $(OUTDIR)/netbeans.o
 endif
 
 ifeq ($(CHANNEL),yes)
-OBJ += $(OUTDIR)/channel.o
+OBJ += $(OUTDIR)/job.o $(OUTDIR)/channel.o
 LIB += -lwsock32 -lws2_32
 endif
 

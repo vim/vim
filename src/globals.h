@@ -1902,6 +1902,9 @@ EXTERN int did_repeated_msg INIT(= 0);
 // out_flush() when characters have been written.
 EXTERN int ch_log_output INIT(= FALSE);
 
+// Whether a redraw is needed for appending a line to a buffer.
+EXTERN int channel_need_redraw INIT(= FALSE);
+
 #define FOR_ALL_CHANNELS(ch) \
     for ((ch) = first_channel; (ch) != NULL; (ch) = (ch)->ch_next)
 #define FOR_ALL_JOBS(job) \

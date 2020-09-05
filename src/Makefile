@@ -1708,7 +1708,7 @@ SRC =	$(BASIC_SRC) \
 
 EXTRA_SRC = if_lua.c if_mzsch.c auto/if_perl.c if_perlsfio.c \
 	    if_python.c if_python3.c if_tcl.c if_ruby.c \
-	    gui_beval.c netbeans.c channel.c \
+	    gui_beval.c netbeans.c job.c channel.c \
 	    $(GRESOURCE_SRC)
 
 # Unittest files
@@ -1962,6 +1962,7 @@ PRO_AUTO = \
 	if_xcmdsrv.pro \
 	indent.pro \
 	insexpand.pro \
+	job.pro \
 	json.pro \
 	list.pro \
 	locale.pro \
@@ -3352,6 +3353,9 @@ objects/indent.o: indent.c
 objects/insexpand.o: insexpand.c
 	$(CCC) -o $@ insexpand.c
 
+objects/job.o: job.c
+	$(CCC) -o $@ job.c
+
 objects/json.o: json.c
 	$(CCC) -o $@ json.c
 
@@ -4200,6 +4204,10 @@ objects/gui_at_fs.o: gui_at_fs.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h errors.h globals.h gui_at_sb.h
+objects/job.o: job.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h errors.h globals.h
 objects/json_test.o: json_test.c main.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
