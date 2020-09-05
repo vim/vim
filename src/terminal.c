@@ -315,18 +315,22 @@ set_term_and_win_size(term_T *term, jobopt_T *opt)
     else if (cols != 0)
 	term->tl_cols = cols;
 
-    if (term->tl_rows != curwin->w_height)
-	win_setheight_win(term->tl_rows, curwin);
-    if (term->tl_cols != curwin->w_width)
-	win_setwidth_win(term->tl_cols, curwin);
-
-    // Set 'winsize' now to avoid a resize at the next redraw.
-    if (!minsize && *curwin->w_p_tws != NUL)
+    if (!opt->jo_hidden)
     {
-	char_u buf[100];
+	if (term->tl_rows != curwin->w_height)
+	    win_setheight_win(term->tl_rows, curwin);
+	if (term->tl_cols != curwin->w_width)
+	    win_setwidth_win(term->tl_cols, curwin);
 
-	vim_snprintf((char *)buf, 100, "%dx%d", term->tl_rows, term->tl_cols);
-	set_option_value((char_u *)"termwinsize", 0L, buf, OPT_LOCAL);
+	// Set 'winsize' now to avoid a resize at the next redraw.
+	if (!minsize && *curwin->w_p_tws != NUL)
+	{
+	    char_u buf[100];
+
+	    vim_snprintf((char *)buf, 100, "%dx%d",
+						 term->tl_rows, term->tl_cols);
+	    set_option_value((char_u *)"termwinsize", 0L, buf, OPT_LOCAL);
+	}
     }
 }
 

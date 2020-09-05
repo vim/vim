@@ -130,6 +130,16 @@ func Test_terminal_termwinsize_overruled()
   set termwinsize=
 endfunc
 
+" hidden terminal must not change current window size
+func Test_terminal_hidden_winsize()
+  let cmd = GetDummyCmd()
+  let rows = winheight(0)
+  let buf = term_start(cmd, #{hidden: 1, term_rows: 10})
+  call assert_equal(rows, winheight(0))
+  call assert_equal([10, &columns], term_getsize(buf))
+  exe "bwipe! " .. buf
+endfunc
+
 func Test_terminal_termwinkey()
   " make three tabpages, terminal in the middle
   0tabnew
