@@ -1516,6 +1516,10 @@ def Test_getcompletion()
   set wildignore&
 enddef
 
+def Test_has()
+  assert_equal(1, has('eval', true))
+enddef
+
 def Fibonacci(n: number): number
   if n < 2
     return n

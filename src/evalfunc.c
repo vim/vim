@@ -4763,7 +4763,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 	}
     }
 
-    if (argvars[1].v_type != VAR_UNKNOWN && tv_get_number(&argvars[1]) != 0)
+    if (argvars[1].v_type != VAR_UNKNOWN && tv_get_bool(&argvars[1]))
 	// return whether feature could ever be enabled
 	rettv->vval.v_number = x;
     else
