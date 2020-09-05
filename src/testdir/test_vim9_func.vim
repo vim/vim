@@ -1614,6 +1614,13 @@ def Test_setbufvar()
    assert_equal(123, getbufvar('%', 'myvar'))
 enddef
 
+def Test_setloclist()
+  let items = [#{filename: '/tmp/file', lnum: 1, valid: true}]
+  let what = #{items: items}
+  setqflist([], ' ', what)
+  setloclist(0, [], ' ', what)
+enddef
+
 def Test_setreg()
   setreg('a', ['aaa', 'bbb', 'ccc'])
   let reginfo = getreginfo('a')
