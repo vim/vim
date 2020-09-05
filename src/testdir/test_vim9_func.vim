@@ -1505,6 +1505,10 @@ def Test_getbufinfo()
   bwipe Xtestfile1 Xtestfile2
 enddef
 
+def Test_getchar()
+  assert_equal(0, getchar(true))
+enddef
+
 def Fibonacci(n: number): number
   if n < 2
     return n

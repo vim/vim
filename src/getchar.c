@@ -2037,7 +2037,7 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 	if (argvars[0].v_type == VAR_UNKNOWN)
 	    // getchar(): blocking wait.
 	    n = plain_vgetc();
-	else if (tv_get_number_chk(&argvars[0], &error) == 1)
+	else if (tv_get_bool_chk(&argvars[0], &error))
 	    // getchar(1): only check if char avail
 	    n = vpeekc_any();
 	else if (error || vpeekc_any() == NUL)
