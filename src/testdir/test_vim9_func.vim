@@ -1547,6 +1547,10 @@ def Test_searchcount()
   bwipe!
 enddef
 
+def Test_searchdecl()
+  assert_equal(1, searchdecl('blah', true, true))
+enddef
+
 def Fibonacci(n: number): number
   if n < 2
     return n

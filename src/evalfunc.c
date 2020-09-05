@@ -6876,8 +6876,8 @@ f_search(typval_T *argvars, typval_T *rettv)
     static void
 f_searchdecl(typval_T *argvars, typval_T *rettv)
 {
-    int		locally = 1;
-    int		thisblock = 0;
+    int		locally = TRUE;
+    int		thisblock = FALSE;
     int		error = FALSE;
     char_u	*name;
 
@@ -6886,9 +6886,9 @@ f_searchdecl(typval_T *argvars, typval_T *rettv)
     name = tv_get_string_chk(&argvars[0]);
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
-	locally = (int)tv_get_number_chk(&argvars[1], &error) == 0;
+	locally = !(int)tv_get_bool_chk(&argvars[1], &error);
 	if (!error && argvars[2].v_type != VAR_UNKNOWN)
-	    thisblock = (int)tv_get_number_chk(&argvars[2], &error) != 0;
+	    thisblock = (int)tv_get_bool_chk(&argvars[2], &error);
     }
     if (!error && name != NULL)
 	rettv->vval.v_number = find_decl(name, (int)STRLEN(name),
