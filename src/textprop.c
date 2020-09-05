@@ -805,11 +805,10 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     linenr_T	lnum;
     dict_T	*dict;
     buf_T	*buf = curbuf;
-    dictitem_T	*di;
-    int		do_all = FALSE;
+    int		do_all;
     int		id = -1;
     int		type_id = -1;
-    int		both = FALSE;
+    int		both;
 
     rettv->vval.v_number = 0;
     if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
@@ -837,9 +836,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     if (buf->b_ml.ml_mfp == NULL)
 	return;
 
-    di = dict_find(dict, (char_u*)"all", -1);
-    if (di != NULL)
-	do_all = dict_get_number(dict, (char_u *)"all");
+    do_all = dict_get_bool(dict, (char_u *)"all", FALSE);
 
     if (dict_find(dict, (char_u *)"id", -1) != NULL)
 	id = dict_get_number(dict, (char_u *)"id");
@@ -852,8 +849,8 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 	    return;
 	type_id = type->pt_id;
     }
-    if (dict_find(dict, (char_u *)"both", -1) != NULL)
-	both = dict_get_number(dict, (char_u *)"both");
+    both = dict_get_bool(dict, (char_u *)"both", FALSE);
+
     if (id == -1 && type_id == -1)
     {
 	emsg(_("E968: Need at least one of 'id' or 'type'"));
