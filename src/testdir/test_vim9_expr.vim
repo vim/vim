@@ -1105,16 +1105,23 @@ def Test_expr5_vim9script()
       echo 'a' .. function('len')
   END
   CheckScriptFailure(lines, 'E729:', 2)
-  lines =<< trim END
-      vim9script
-      echo 'a' .. test_null_job()
-  END
-  CheckScriptFailure(lines, 'E908:', 2)
-  lines =<< trim END
-      vim9script
-      echo 'a' .. test_null_channel()
-  END
-  CheckScriptFailure(lines, 'E908:', 2)
+enddef
+
+def Test_expr5_vim9script_channel()
+  if !has('channel')
+    MissingFeature 'float'
+  else
+    let lines =<< trim END
+        vim9script
+        echo 'a' .. test_null_job()
+    END
+    CheckScriptFailure(lines, 'E908:', 2)
+    lines =<< trim END
+        vim9script
+        echo 'a' .. test_null_channel()
+    END
+    CheckScriptFailure(lines, 'E908:', 2)
+  endif
 enddef
 
 def Test_expr5_float()
@@ -1172,6 +1179,10 @@ func Test_expr5_fails()
   call CheckDefFailure(["let x = 'a' .. 0z32"], 'E1105', 1)
   call CheckDefFailure(["let x = 'a' .. function('len')"], 'E1105', 1)
   call CheckDefFailure(["let x = 'a' .. function('len', ['a'])"], 'E1105', 1)
+endfunc
+
+func Test_expr5_fails_channel()
+  CheckFeature channel
   call CheckDefFailure(["let x = 'a' .. test_null_job()"], 'E1105', 1)
   call CheckDefFailure(["let x = 'a' .. test_null_channel()"], 'E1105', 1)
 endfunc
