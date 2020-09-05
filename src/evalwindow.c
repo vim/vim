@@ -832,10 +832,10 @@ f_win_splitmove(typval_T *argvars, typval_T *rettv)
         }
 
         d = argvars[2].vval.v_dict;
-        if (dict_get_number(d, (char_u *)"vertical"))
+        if (dict_get_bool(d, (char_u *)"vertical", FALSE))
             flags |= WSP_VERT;
         if ((di = dict_find(d, (char_u *)"rightbelow", -1)) != NULL)
-            flags |= tv_get_number(&di->di_tv) ? WSP_BELOW : WSP_ABOVE;
+            flags |= tv_get_bool(&di->di_tv) ? WSP_BELOW : WSP_ABOVE;
         size = (int)dict_get_number(d, (char_u *)"size");
     }
 

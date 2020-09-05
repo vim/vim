@@ -1408,41 +1408,14 @@ func Test_silent_echo()
   call delete('XTest_silent_echo')
 endfunc
 
-def Test_search()
-  new
-  setline(1, ['foo', 'bar'])
-  let val = 0
-  # skip expr returns boolean
-  assert_equal(2, search('bar', 'W', 0, 0, {-> val == 1}))
-  :1
-  assert_equal(0, search('bar', 'W', 0, 0, {-> val == 0}))
-  # skip expr returns number, only 0 and 1 are accepted
-  :1
-  assert_equal(2, search('bar', 'W', 0, 0, {-> 0}))
-  :1
-  assert_equal(0, search('bar', 'W', 0, 0, {-> 1}))
-  assert_fails("search('bar', '', 0, 0, {-> -1})", 'E1023:')
-  assert_fails("search('bar', '', 0, 0, {-> -1})", 'E1023:')
-enddef
+""""""" builtin functions that behave differently in Vim9
 
-def Test_readdir()
-   eval expand('sautest')->readdir({e -> e[0] !=# '.'})
-   eval expand('sautest')->readdirex({e -> e.name[0] !=# '.'})
-enddef
-
-def Test_setbufvar()
-   setbufvar(bufnr('%'), '&syntax', 'vim')
-   assert_equal('vim', &syntax)
-   setbufvar(bufnr('%'), '&ts', 16)
-   assert_equal(16, &ts)
-   settabwinvar(1, 1, '&syntax', 'vam')
-   assert_equal('vam', &syntax)
-   settabwinvar(1, 1, '&ts', 15)
-   assert_equal(15, &ts)
-   setlocal ts=8
-
-   setbufvar('%', 'myvar', 123)
-   assert_equal(123, getbufvar('%', 'myvar'))
+def Test_bufname()
+  split SomeFile
+  assert_equal('SomeFile', bufname('%'))
+  edit OtherFile
+  assert_equal('SomeFile', bufname('#'))
+  close
 enddef
 
 def Test_bufwinid()
@@ -1457,6 +1430,29 @@ def Test_bufwinid()
   only
   bwipe SomeFile
   bwipe OtherFile
+enddef
+
+def Test_count()
+  assert_equal(3, count('ABC ABC ABC', 'b', true))
+  assert_equal(0, count('ABC ABC ABC', 'b', false))
+enddef
+
+def Test_expand()
+  split SomeFile
+  assert_equal(['SomeFile'], expand('%', true, true))
+  close
+enddef
+
+def Test_getbufinfo()
+  let bufinfo = getbufinfo(bufnr())
+  assert_equal(bufinfo, getbufinfo('%'))
+
+  edit Xtestfile1
+  hide edit Xtestfile2
+  hide enew
+  getbufinfo(#{bufloaded: true, buflisted: true, bufmodified: false})
+      ->len()->assert_equal(3)
+  bwipe Xtestfile1 Xtestfile2
 enddef
 
 def Test_getbufline()
@@ -1478,33 +1474,6 @@ def Test_getchangelist()
   bwipe!
 enddef
 
-def Test_setreg()
-  setreg('a', ['aaa', 'bbb', 'ccc'])
-  let reginfo = getreginfo('a')
-  setreg('a', reginfo)
-  assert_equal(reginfo, getreginfo('a'))
-enddef 
-
-def Test_bufname()
-  split SomeFile
-  assert_equal('SomeFile', bufname('%'))
-  edit OtherFile
-  assert_equal('SomeFile', bufname('#'))
-  close
-enddef
-
-def Test_getbufinfo()
-  let bufinfo = getbufinfo(bufnr())
-  assert_equal(bufinfo, getbufinfo('%'))
-
-  edit Xtestfile1
-  hide edit Xtestfile2
-  hide enew
-  getbufinfo(#{bufloaded: true, buflisted: true, bufmodified: false})
-      ->len()->assert_equal(3)
-  bwipe Xtestfile1 Xtestfile2
-enddef
-
 def Test_getchar()
   while getchar(0)
   endwhile
@@ -1516,69 +1485,6 @@ def Test_getcompletion()
   let l = getcompletion('run', 'file', true)
   assert_equal([], l)
   set wildignore&
-enddef
-
-def Test_has()
-  assert_equal(1, has('eval', true))
-enddef
-
-def Test_list2str_str2list_utf8()
-  let s = "\u3042\u3044"
-  let l = [0x3042, 0x3044]
-  assert_equal(l, str2list(s, true))
-  assert_equal(s, list2str(l, true))
-enddef
-
-def Test_nr2char()
-  assert_equal('a', nr2char(97, true))
-enddef
-
-def Test_searchcount()
-  new
-  setline(1, "foo bar")
-  :/foo
-  assert_equal(#{
-      exact_match: 1,
-      current: 1,
-      total: 1,
-      maxcount: 99,
-      incomplete: 0,
-    }, searchcount(#{recompute: true}))
-  bwipe!
-enddef
-
-def Test_searchdecl()
-  assert_equal(1, searchdecl('blah', true, true))
-enddef
-
-def Test_synID()
-  new
-  setline(1, "text")
-  assert_equal(0, synID(1, 1, true))
-  bwipe!
-enddef
-
-def Fibonacci(n: number): number
-  if n < 2
-    return n
-  else
-    return Fibonacci(n - 1) + Fibonacci(n - 2)
-  endif
-enddef
-
-def Test_count()
-  assert_equal(3, count('ABC ABC ABC', 'b', true))
-  assert_equal(0, count('ABC ABC ABC', 'b', false))
-enddef
-
-def Test_index()
-  assert_equal(3, index(['a', 'b', 'a', 'B'], 'b', 2, true))
-enddef
-
-def Test_expand()
-  split SomeFile
-  assert_equal(['SomeFile'], expand('%', true, true))
-  close
 enddef
 
 def Test_getreg()
@@ -1595,11 +1501,26 @@ def Test_globpath()
   assert_equal(['./runtest.vim'], globpath('.', 'runtest.vim', true, true, true))
 enddef
 
+def Test_has()
+  assert_equal(1, has('eval', true))
+enddef
+
 def Test_hasmapto()
   assert_equal(0, hasmapto('foobar', 'i', true))
   iabbrev foo foobar
   assert_equal(1, hasmapto('foobar', 'i', true))
   iunabbrev foo
+enddef
+
+def Test_index()
+  assert_equal(3, index(['a', 'b', 'a', 'B'], 'b', 2, true))
+enddef
+
+def Test_list2str_str2list_utf8()
+  let s = "\u3042\u3044"
+  let l = [0x3042, 0x3044]
+  assert_equal(l, str2list(s, true))
+  assert_equal(s, list2str(l, true))
 enddef
 
 def SID(): number
@@ -1632,6 +1553,95 @@ def Test_mapcheck()
   iabbrev foo foobar
   assert_equal('foobar', mapcheck('foo', 'i', true))
   iunabbrev foo
+enddef
+
+def Test_nr2char()
+  assert_equal('a', nr2char(97, true))
+enddef
+
+def Test_readdir()
+   eval expand('sautest')->readdir({e -> e[0] !=# '.'})
+   eval expand('sautest')->readdirex({e -> e.name[0] !=# '.'})
+enddef
+
+def Test_search()
+  new
+  setline(1, ['foo', 'bar'])
+  let val = 0
+  # skip expr returns boolean
+  assert_equal(2, search('bar', 'W', 0, 0, {-> val == 1}))
+  :1
+  assert_equal(0, search('bar', 'W', 0, 0, {-> val == 0}))
+  # skip expr returns number, only 0 and 1 are accepted
+  :1
+  assert_equal(2, search('bar', 'W', 0, 0, {-> 0}))
+  :1
+  assert_equal(0, search('bar', 'W', 0, 0, {-> 1}))
+  assert_fails("search('bar', '', 0, 0, {-> -1})", 'E1023:')
+  assert_fails("search('bar', '', 0, 0, {-> -1})", 'E1023:')
+enddef
+
+def Test_searchcount()
+  new
+  setline(1, "foo bar")
+  :/foo
+  assert_equal(#{
+      exact_match: 1,
+      current: 1,
+      total: 1,
+      maxcount: 99,
+      incomplete: 0,
+    }, searchcount(#{recompute: true}))
+  bwipe!
+enddef
+
+def Test_searchdecl()
+  assert_equal(1, searchdecl('blah', true, true))
+enddef
+
+def Test_setbufvar()
+   setbufvar(bufnr('%'), '&syntax', 'vim')
+   assert_equal('vim', &syntax)
+   setbufvar(bufnr('%'), '&ts', 16)
+   assert_equal(16, &ts)
+   settabwinvar(1, 1, '&syntax', 'vam')
+   assert_equal('vam', &syntax)
+   settabwinvar(1, 1, '&ts', 15)
+   assert_equal(15, &ts)
+   setlocal ts=8
+
+   setbufvar('%', 'myvar', 123)
+   assert_equal(123, getbufvar('%', 'myvar'))
+enddef
+
+def Test_setreg()
+  setreg('a', ['aaa', 'bbb', 'ccc'])
+  let reginfo = getreginfo('a')
+  setreg('a', reginfo)
+  assert_equal(reginfo, getreginfo('a'))
+enddef 
+
+def Test_synID()
+  new
+  setline(1, "text")
+  assert_equal(0, synID(1, 1, true))
+  bwipe!
+enddef
+
+def Test_win_splitmove()
+  split
+  win_splitmove(1, 2, #{vertical: true, rightbelow: true})
+  close
+enddef
+
+""""""" end of builtin functions
+
+def Fibonacci(n: number): number
+  if n < 2
+    return n
+  else
+    return Fibonacci(n - 1) + Fibonacci(n - 2)
+  endif
 enddef
 
 def Test_recursive_call()
