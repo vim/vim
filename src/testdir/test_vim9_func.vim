@@ -1509,6 +1509,13 @@ def Test_getchar()
   assert_equal(0, getchar(true))
 enddef
 
+def Test_getcompletion()
+  set wildignore=*.vim,*~
+  let l = getcompletion('run', 'file', true)
+  assert_equal([], l)
+  set wildignore&
+enddef
+
 def Fibonacci(n: number): number
   if n < 2
     return n
