@@ -1272,6 +1272,8 @@ def Test_copy_return_type()
     res += n
   endfor
   assert_equal(6, res)
+
+  dl = deepcopy([1, 2, 3], true)
 enddef
 
 def Test_extend_return_type()

@@ -1975,7 +1975,7 @@ f_deepcopy(typval_T *argvars, typval_T *rettv)
     int		copyID;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
-	noref = (int)tv_get_number_chk(&argvars[1], NULL);
+	noref = (int)tv_get_bool_chk(&argvars[1], NULL);
     if (noref < 0 || noref > 1)
 	emsg(_(e_invarg));
     else
