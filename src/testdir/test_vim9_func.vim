@@ -1285,6 +1285,10 @@ def Test_extend_return_type()
   assert_equal(6, res)
 enddef
 
+def Test_garbagecollect()
+  garbagecollect(true)
+enddef
+
 def Test_insert_return_type()
   let l = insert([2, 1], 3)
   let res = 0

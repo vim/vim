@@ -2936,7 +2936,7 @@ f_garbagecollect(typval_T *argvars, typval_T *rettv UNUSED)
     // using Lists and Dicts internally.  E.g.: ":echo [garbagecollect()]".
     want_garbage_collect = TRUE;
 
-    if (argvars[0].v_type != VAR_UNKNOWN && tv_get_number(&argvars[0]) == 1)
+    if (argvars[0].v_type != VAR_UNKNOWN && tv_get_bool(&argvars[0]) == 1)
 	garbage_collect_at_exit = TRUE;
 }
 
