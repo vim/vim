@@ -1628,6 +1628,14 @@ def Test_setreg()
   assert_equal(reginfo, getreginfo('a'))
 enddef 
 
+def Test_spellsuggest()
+  if !has('spell')
+    MissingFeature 'spell'
+  else
+    spellsuggest('marrch', 1, true)->assert_equal(['March'])
+  endif
+enddef
+
 def Test_synID()
   new
   setline(1, "text")

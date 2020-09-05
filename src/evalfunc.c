@@ -7828,7 +7828,7 @@ f_spellsuggest(typval_T *argvars UNUSED, typval_T *rettv)
 		return;
 	    if (argvars[2].v_type != VAR_UNKNOWN)
 	    {
-		need_capital = (int)tv_get_number_chk(&argvars[2], &typeerr);
+		need_capital = (int)tv_get_bool_chk(&argvars[2], &typeerr);
 		if (typeerr)
 		    return;
 	    }
