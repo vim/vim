@@ -2293,7 +2293,7 @@ bt_regcomp(char_u *expr, int re_flags)
     int		flags;
 
     if (expr == NULL)
-	EMSG_RET_NULL(_(e_null));
+	IEMSG_RET_NULL(_(e_null));
 
     init_class_tab();
 
@@ -2917,7 +2917,7 @@ do_class:
 	break;
 
       default:			// Oh dear.  Called inappropriately.
-	emsg(_(e_re_corr));
+	iemsg(_(e_re_corr));
 #ifdef DEBUG
 	printf("Called regrepeat with op code %d\n", OP(p));
 #endif
@@ -4099,7 +4099,7 @@ regmatch(
 	    break;
 
 	  default:
-	    emsg(_(e_re_corr));
+	    iemsg(_(e_re_corr));
 #ifdef DEBUG
 	    printf("Illegal op code %d\n", op);
 #endif
@@ -4499,7 +4499,7 @@ regmatch(
 	{
 	    // We get here only if there's trouble -- normally "case END" is
 	    // the terminating point.
-	    emsg(_(e_re_corr));
+	    iemsg(_(e_re_corr));
 #ifdef DEBUG
 	    printf("Premature EOL\n");
 #endif
@@ -4649,7 +4649,7 @@ bt_regexec_both(
     // Be paranoid...
     if (prog == NULL || line == NULL)
     {
-	emsg(_(e_null));
+	iemsg(_(e_null));
 	goto theend;
     }
 
