@@ -573,7 +573,7 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 	char_u	buf[NUMBUFLEN];
 	char_u	*expected;
 	int	error_found = FALSE;
-	int	lnum_error_found = FALSE;
+	int	error_found_index = 1;
 	char_u	*actual = emsg_assert_fails_msg == NULL ? (char_u *)"[unknown]"
 						       : emsg_assert_fails_msg;
 
@@ -616,12 +616,22 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 	}
 
 	if (!error_found && argvars[2].v_type != VAR_UNKNOWN
-		&& argvars[3].v_type == VAR_NUMBER
-		&& argvars[3].vval.v_number >= 0
-		&& argvars[3].vval.v_number != emsg_assert_fails_lnum)
+		&& argvars[3].v_type == VAR_NUMBER)
 	{
-	    error_found = TRUE;
-	    lnum_error_found = TRUE;
+	    if (argvars[3].vval.v_number >= 0
+		&& argvars[3].vval.v_number != emsg_assert_fails_lnum)
+	    {
+		error_found = TRUE;
+		error_found_index = 3;
+	    }
+	    if (!error_found && argvars[4].v_type == VAR_STRING
+		    && argvars[4].vval.v_string != NULL
+		    && !pattern_match(argvars[4].vval.v_string,
+					     emsg_assert_fails_context, FALSE))
+	    {
+		error_found = TRUE;
+		error_found_index = 4;
+	    }
 	}
 
 	if (error_found)
@@ -629,10 +639,15 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 	    typval_T actual_tv;
 
 	    prepare_assert_error(&ga);
-	    if (lnum_error_found)
+	    if (error_found_index == 3)
 	    {
 		actual_tv.v_type = VAR_NUMBER;
 		actual_tv.vval.v_number = emsg_assert_fails_lnum;
+	    }
+	    else if (error_found_index == 4)
+	    {
+		actual_tv.v_type = VAR_STRING;
+		actual_tv.vval.v_string = emsg_assert_fails_context;
 	    }
 	    else
 	    {
@@ -640,8 +655,7 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 		actual_tv.vval.v_string = actual;
 	    }
 	    fill_assert_error(&ga, &argvars[2], NULL,
-		    &argvars[lnum_error_found ? 3 : 1],
-						     &actual_tv, ASSERT_OTHER);
+			&argvars[error_found_index], &actual_tv, ASSERT_OTHER);
 	    ga_concat(&ga, (char_u *)": ");
 	    assert_append_cmd_or_arg(&ga, argvars, cmd);
 	    assert_error(&ga);
