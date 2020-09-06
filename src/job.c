@@ -448,7 +448,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		if (!(supported2 & JO2_CURWIN))
 		    break;
 		opt->jo_set2 |= JO2_CURWIN;
-		opt->jo_curwin = tv_get_number(item);
+		opt->jo_curwin = tv_get_bool(item);
 	    }
 	    else if (STRCMP(hi->hi_key, "bufnr") == 0)
 	    {

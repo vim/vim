@@ -1,6 +1,7 @@
 " Test various aspects of the Vim9 script language.
 
 source check.vim
+source term_util.vim
 source view_util.vim
 source vim9.vim
 source screendump.vim
@@ -1648,10 +1649,32 @@ def Test_strchars()
   strchars("A\u20dd", true)->assert_equal(1)
 enddef
 
+def Test_submatch()
+  let pat = 'A\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)'
+  let Rep = {-> range(10)->map({_, v -> submatch(v, true)})->string()}
+  let actual = substitute('A123456789', pat, Rep, '')
+  let expected = "[['A123456789'], ['1'], ['2'], ['3'], ['4'], ['5'], ['6'], ['7'], ['8'], ['9']]"
+  assert_equal(expected, actual)
+enddef
+
 def Test_synID()
   new
   setline(1, "text")
   assert_equal(0, synID(1, 1, true))
+  bwipe!
+enddef
+
+def Test_term_gettty()
+  let buf = Run_shell_in_terminal({})
+  assert_notequal('', term_gettty(buf, true))
+  StopShellInTerminal(buf)
+enddef
+
+def Test_term_start()
+  botright new
+  let winnr = winnr()
+  term_start(&shell, #{curwin: true})
+  assert_equal(winnr, winnr())
   bwipe!
 enddef
 
