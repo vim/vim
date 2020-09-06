@@ -524,7 +524,7 @@ enddef
 
 def Test_error_in_nested_function()
   # Error in called function requires unwinding the call stack.
-  assert_fails('FuncWithForwardCall()', 'E1096:', 1, 'FuncWithForwardCall')
+  assert_fails('FuncWithForwardCall()', 'E1096:', '', 1, 'FuncWithForwardCall')
 enddef
 
 def Test_return_type_wrong()

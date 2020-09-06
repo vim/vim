@@ -550,7 +550,7 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
     garray_T	ga;
     int		save_trylevel = trylevel;
     int		called_emsg_before = called_emsg;
-    int		wrong_arg = FALSE;
+    char	*wrong_arg_msg = NULL;
 
     // trylevel must be zero for a ":throw" command to be considered failed
     trylevel = 0;
@@ -590,7 +590,7 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 
 	    if (list == NULL || list->lv_len < 1 || list->lv_len > 2)
 	    {
-		wrong_arg = TRUE;
+		wrong_arg_msg = e_assert_fails_second_arg;
 		goto theend;
 	    }
 	    CHECK_LIST_MATERIALIZE(list);
@@ -611,26 +611,38 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 	}
 	else
 	{
-	    wrong_arg = TRUE;
+	    wrong_arg_msg = e_assert_fails_second_arg;
 	    goto theend;
 	}
 
 	if (!error_found && argvars[2].v_type != VAR_UNKNOWN
-		&& argvars[3].v_type == VAR_NUMBER)
+		&& argvars[3].v_type != VAR_UNKNOWN)
 	{
-	    if (argvars[3].vval.v_number >= 0
-		&& argvars[3].vval.v_number != emsg_assert_fails_lnum)
+	    if (argvars[3].v_type != VAR_NUMBER)
+	    {
+		wrong_arg_msg = e_assert_fails_fourth_argument;
+		goto theend;
+	    }
+	    else if (argvars[3].vval.v_number >= 0
+			 && argvars[3].vval.v_number != emsg_assert_fails_lnum)
 	    {
 		error_found = TRUE;
 		error_found_index = 3;
 	    }
-	    if (!error_found && argvars[4].v_type == VAR_STRING
-		    && argvars[4].vval.v_string != NULL
+	    if (!error_found && argvars[4].v_type != VAR_UNKNOWN)
+	    {
+		if (argvars[4].v_type != VAR_STRING)
+		{
+		    wrong_arg_msg = e_assert_fails_fifth_argument;
+		    goto theend;
+		}
+		else if (argvars[4].vval.v_string != NULL
 		    && !pattern_match(argvars[4].vval.v_string,
 					     emsg_assert_fails_context, FALSE))
-	    {
-		error_found = TRUE;
-		error_found_index = 4;
+		{
+		    error_found = TRUE;
+		    error_found_index = 4;
+		}
 	    }
 	}
 
@@ -672,8 +684,8 @@ theend:
     emsg_assert_fails_used = FALSE;
     VIM_CLEAR(emsg_assert_fails_msg);
     set_vim_var_string(VV_ERRMSG, NULL, 0);
-    if (wrong_arg)
-	emsg(_("E856: assert_fails() second argument must be a string or a list with one or two strings"));
+    if (wrong_arg_msg != NULL)
+	emsg(_(wrong_arg_msg));
 }
 
 /*

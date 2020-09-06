@@ -23,6 +23,8 @@ EXTERN char e_invalid_command_str[]
 	INIT(= N_("E476: Invalid command: %s"));
 EXTERN char e_cannot_slice_dictionary[]
 	INIT(= N_("E719: cannot slice a Dictionary"));
+EXTERN char e_assert_fails_second_arg[]
+	INIT(= N_("E856: assert_fails() second argument must be a string or a list with one or two strings"));
 EXTERN char e_cannot_index_special_variable[]
 	INIT(= N_("E909: Cannot index a special variable"));
 EXTERN char e_missing_let_str[]
@@ -250,4 +252,8 @@ EXTERN char e_overlapping_ranges_for_nr[]
 	INIT(= N_("E1113: Overlapping ranges for 0x%lx"));
 EXTERN char e_only_values_of_0x100_and_higher_supported[]
 	INIT(= N_("E1114: Only values of 0x100 and higher supported"));
+EXTERN char e_assert_fails_fourth_argument[]
+	INIT(= N_("E1115: assert_fails() fourth argument must be a number"));
+EXTERN char e_assert_fails_fifth_argument[]
+	INIT(= N_("E1116: assert_fails() fifth argument must be a string"));
 #endif

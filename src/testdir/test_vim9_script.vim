@@ -1343,7 +1343,7 @@ def Test_vim9_import_export()
     defcompile
   END
   writefile(import_star_as_lines_no_dot, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1060:')
+  assert_fails('source Ximport.vim', 'E1060:', '', 2, 'Func')
 
   let import_star_as_lines_dot_space =<< trim END
     vim9script
@@ -1354,7 +1354,7 @@ def Test_vim9_import_export()
     defcompile
   END
   writefile(import_star_as_lines_dot_space, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1074:')
+  assert_fails('source Ximport.vim', 'E1074:', '', 1, 'Func')
 
   let import_star_as_lines_missing_name =<< trim END
     vim9script
@@ -1365,7 +1365,7 @@ def Test_vim9_import_export()
     defcompile
   END
   writefile(import_star_as_lines_missing_name, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1048:')
+  assert_fails('source Ximport.vim', 'E1048:', '', 1, 'Func')
 
   let import_star_as_lbr_lines =<< trim END
     vim9script
@@ -1387,7 +1387,7 @@ def Test_vim9_import_export()
     import * from './Xexport.vim'
   END
   writefile(import_star_lines, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1045:')
+  assert_fails('source Ximport.vim', 'E1045:', '', 2, 'Ximport.vim')
 
   # try to import something that exists but is not exported
   let import_not_exported_lines =<< trim END
@@ -1395,7 +1395,7 @@ def Test_vim9_import_export()
     import name from './Xexport.vim'
   END
   writefile(import_not_exported_lines, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1049:')
+  assert_fails('source Ximport.vim', 'E1049:', '', 2, 'Ximport.vim')
 
   # try to import something that is already defined
   let import_already_defined =<< trim END
@@ -1404,7 +1404,7 @@ def Test_vim9_import_export()
     import exported from './Xexport.vim'
   END
   writefile(import_already_defined, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1073:')
+  assert_fails('source Ximport.vim', 'E1073:', '', 3, 'Ximport.vim')
 
   # try to import something that is already defined
   import_already_defined =<< trim END
@@ -1413,7 +1413,7 @@ def Test_vim9_import_export()
     import * as exported from './Xexport.vim'
   END
   writefile(import_already_defined, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1073:')
+  assert_fails('source Ximport.vim', 'E1073:', '', 3, 'Ximport.vim')
 
   # try to import something that is already defined
   import_already_defined =<< trim END
@@ -1422,7 +1422,7 @@ def Test_vim9_import_export()
     import {exported} from './Xexport.vim'
   END
   writefile(import_already_defined, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1073:')
+  assert_fails('source Ximport.vim', 'E1073:', '', 3, 'Ximport.vim')
 
   # import a very long name, requires making a copy
   let import_long_name_lines =<< trim END
@@ -1430,35 +1430,35 @@ def Test_vim9_import_export()
     import name012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789 from './Xexport.vim'
   END
   writefile(import_long_name_lines, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1048:')
+  assert_fails('source Ximport.vim', 'E1048:', '', 2, 'Ximport.vim')
 
   let import_no_from_lines =<< trim END
     vim9script
     import name './Xexport.vim'
   END
   writefile(import_no_from_lines, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1070:')
+  assert_fails('source Ximport.vim', 'E1070:', '', 2, 'Ximport.vim')
 
   let import_invalid_string_lines =<< trim END
     vim9script
     import name from Xexport.vim
   END
   writefile(import_invalid_string_lines, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1071:')
+  assert_fails('source Ximport.vim', 'E1071:', '', 2, 'Ximport.vim')
 
   let import_wrong_name_lines =<< trim END
     vim9script
     import name from './XnoExport.vim'
   END
   writefile(import_wrong_name_lines, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1053:')
+  assert_fails('source Ximport.vim', 'E1053:', '', 2, 'Ximport.vim')
 
   let import_missing_comma_lines =<< trim END
     vim9script
     import {exported name} from './Xexport.vim'
   END
   writefile(import_missing_comma_lines, 'Ximport3.vim')
-  assert_fails('source Ximport3.vim', 'E1046:')
+  assert_fails('source Ximport3.vim', 'E1046:', '', 2, 'Ximport3.vim')
 
   delete('Ximport.vim')
   delete('Ximport3.vim')
@@ -1646,7 +1646,7 @@ def Test_vim9script_reload_import()
     let valone = 5678
   END
   writefile(lines, 'Xreload.vim')
-  assert_fails('source Xreload.vim', 'E1041:')
+  assert_fails('source Xreload.vim', 'E1041:', '', 3, 'Xreload.vim')
 
   delete('Xreload.vim')
   delete('Ximport.vim')
@@ -1745,7 +1745,7 @@ def Test_vim9script_reload_delfunc()
   let nono_lines =<< trim END
     def g:DoCheck(no_exists: bool)
       assert_equal('yes', FuncYes())
-      assert_fails('FuncNo()', 'E117:')
+      assert_fails('FuncNo()', 'E117:', '', 2, 'DoCheck')
     enddef
   END
 
