@@ -912,7 +912,7 @@ func Test_terminal_composing_unicode()
   endif
 
   enew
-  let buf = term_start(cmd, {'curwin': bufnr('')})
+  let buf = term_start(cmd, {'curwin': 1})
   let g:job = term_getjob(buf)
   call WaitFor({-> term_getline(buf, 1) !=# ''}, 1000)
 
