@@ -944,7 +944,7 @@ cmdline_toggle_langmap(long *b_im_ptr)
  * numbered or named register.
  */
     static int
-cmdline_insert_reg(int *gotesc)
+cmdline_insert_reg(int *gotesc UNUSED)
 {
     int		i;
     int		c;
