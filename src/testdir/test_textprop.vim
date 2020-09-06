@@ -334,10 +334,10 @@ enddef
 
 def Test_prop_remove_vim9()
   new
-  call AddPropTypes()
-  call SetupPropsInFirstLine()
-  call assert_equal(1, prop_remove({'type': 'three', 'id': 13, 'both': true, 'all': true}))
-  call DeletePropTypes()
+  AddPropTypes()
+  SetupPropsInFirstLine()
+  assert_equal(1, prop_remove({'type': 'three', 'id': 13, 'both': true, 'all': true}))
+  DeletePropTypes()
   bwipe!
 enddef
 

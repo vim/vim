@@ -558,7 +558,7 @@ def HasSomething()
 enddef
 
 def Test_disassemble_const_expr()
-  assert_equal("\nyes", execute('call HasEval()'))
+  assert_equal("\nyes", execute('HasEval()'))
   let instr = execute('disassemble HasEval')
   assert_match('HasEval\_s*' ..
         'if has("eval")\_s*' ..
@@ -571,7 +571,7 @@ def Test_disassemble_const_expr()
         instr)
   assert_notmatch('JUMP', instr)
 
-  assert_equal("\nno", execute('call HasNothing()'))
+  assert_equal("\nno", execute('HasNothing()'))
   instr = execute('disassemble HasNothing')
   assert_match('HasNothing\_s*' ..
         'if has("nothing")\_s*' ..
@@ -585,7 +585,7 @@ def Test_disassemble_const_expr()
   assert_notmatch('PUSHS "yes"', instr)
   assert_notmatch('JUMP', instr)
 
-  assert_equal("\neval", execute('call HasSomething()'))
+  assert_equal("\neval", execute('HasSomething()'))
   instr = execute('disassemble HasSomething')
   assert_match('HasSomething.*' ..
         'if has("nothing")\_s*' ..
@@ -1088,7 +1088,7 @@ def Test_disassemble_dict_member()
         '\d\+ MEMBER\_s*' ..
         '\d\+ STORE $1\_s*',
         instr)
-  call assert_equal(1, DictMember())
+  assert_equal(1, DictMember())
 enddef
 
 let somelist = [1, 2, 3, 4, 5]
@@ -1156,7 +1156,7 @@ def Test_disassemble_negate_number()
         '\d NEGATENR\_s*' ..
         '\d STORE $2\_s*',
         instr)
-  call assert_equal(-9, NegateNumber())
+  assert_equal(-9, NegateNumber())
 enddef
 
 def InvertBool(): bool
@@ -1181,7 +1181,7 @@ def Test_disassemble_invert_bool()
         '\d 2BOOL (!!val)\_s*' ..
         '\d STORE $2\_s*',
         instr)
-  call assert_equal(true, InvertBool())
+  assert_equal(true, InvertBool())
 enddef
 
 def Test_disassemble_compare()
