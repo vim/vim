@@ -1665,17 +1665,25 @@ def Test_synID()
 enddef
 
 def Test_term_gettty()
-  let buf = Run_shell_in_terminal({})
-  assert_notequal('', term_gettty(buf, true))
-  StopShellInTerminal(buf)
+  if !has('terminal')
+    MissingFeature 'terminal'
+  else
+    let buf = Run_shell_in_terminal({})
+    assert_notequal('', term_gettty(buf, true))
+    StopShellInTerminal(buf)
+  endif
 enddef
 
 def Test_term_start()
-  botright new
-  let winnr = winnr()
-  term_start(&shell, #{curwin: true})
-  assert_equal(winnr, winnr())
-  bwipe!
+  if !has('terminal')
+    MissingFeature 'terminal'
+  else
+    botright new
+    let winnr = winnr()
+    term_start(&shell, #{curwin: true})
+    assert_equal(winnr, winnr())
+    bwipe!
+  endif
 enddef
 
 def Test_timer_paused()
