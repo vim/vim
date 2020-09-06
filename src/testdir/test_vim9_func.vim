@@ -1636,6 +1636,18 @@ def Test_spellsuggest()
   endif
 enddef
 
+def Test_split()
+  split('  aa  bb  ', '\W\+', true)->assert_equal(['', 'aa', 'bb', ''])
+enddef
+
+def Test_str2nr()
+  str2nr("1'000'000", 10, true)->assert_equal(1000000)
+enddef
+
+def Test_strchars()
+  strchars("A\u20dd", true)->assert_equal(1)
+enddef
+
 def Test_synID()
   new
   setline(1, "text")
