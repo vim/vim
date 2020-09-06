@@ -1678,6 +1678,14 @@ def Test_term_start()
   bwipe!
 enddef
 
+def Test_timer_paused()
+  let id = timer_start(50, {-> 0})
+  timer_pause(id, true)
+  let info = timer_info(id)
+  assert_equal(1, info[0]['paused'])
+  timer_stop(id)
+enddef
+
 def Test_win_splitmove()
   split
   win_splitmove(1, 2, #{vertical: true, rightbelow: true})
