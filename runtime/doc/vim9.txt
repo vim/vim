@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Aug 27
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Sep 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -114,7 +114,7 @@ There is no "a:" dictionary or "a:000" list.
 
 Variable arguments are defined as the last argument, with a name and have a
 list type, similar to TypeScript.  For example, a list of numbers: >
-  	def MyFunc(...itemlist: list<number>)
+	def MyFunc(...itemlist: list<number>)
 	   for item in itemlist
 	     ...
 
@@ -128,8 +128,8 @@ function or variable the "g:" prefix should be used.  For functions in an
 autoload script the "name#" prefix is sufficient. >
 	def ThisFunction()          # script-local
 	def s:ThisFunction()        # script-local
-	def g:ThatFunction()	    # global
-	def ThatFunction()	    # global if no local ThatFunction()
+	def g:ThatFunction()        # global
+	def ThatFunction()          # global if no local ThatFunction()
 	def scriptname#function()   # autoload
 
 When using `:function` or `:def` to specify a new function inside a function,
@@ -173,7 +173,7 @@ blocks.  Once the block ends the variable is no longer accessible: >
 	else
 	   let inner = 0
 	endif
-	echo inner  " Error!
+	echo inner  # Error!
 
 The declaration must be done earlier: >
 	let inner: number
@@ -190,7 +190,7 @@ To intentionally avoid a variable being available later, a block can be used:
 	   let temp = 'temp'
 	   ...
 	}
-	echo temp  " Error!
+	echo temp  # Error!
 
 An existing variable cannot be assigned to with `:let`, since that implies a
 declaration.  Global, window, tab, buffer and Vim variables can only be used
@@ -222,7 +222,7 @@ isn't that easy.
 Omitting :call and :eval ~
 
 Functions can be called without `:call`: >
-  	writefile(lines, 'file')
+	writefile(lines, 'file')
 Using `:call` is still possible, but this is discouraged.
 
 A method call without `eval` is possible, so long as the start is an
@@ -329,26 +329,26 @@ Notes:
   current function.
 - No line break is allowed in the LHS of an assignment.  Specifically when
   unpacking a list |:let-unpack|. This is OK: >
-  	[var1, var2] =
+	[var1, var2] =
 		Func()
 <  This does not work: >
-  	[var1,
+	[var1,
 	    var2] =
 		Func()
 - No line break is allowed in between arguments of an `:echo`, `:execute` and
   similar commands.  This is OK: >
-  	echo [1,
+	echo [1,
 		2] [3,
 			4]
 <  This does not work: >
-  	echo [1, 2]
+	echo [1, 2]
 		[3, 4]
 - No line break is allowed in the arguments of a lambda, between the "{" and
   "->".  This is OK: >
-  	filter(list, {k, v ->
+	filter(list, {k, v ->
 			v > 0})
 <  This does not work: >
-  	filter(list, {k,
+	filter(list, {k,
 			v -> v > 0})
 
 
@@ -372,11 +372,11 @@ The 'ignorecase' option is not used for comparators that use strings.
 White space ~
 
 Vim9 script enforces proper use of white space.  This is no longer allowed: >
-	let var=234	" Error!
-	let var= 234	" Error!
-	let var =234	" Error!
+	let var=234	# Error!
+	let var= 234	# Error!
+	let var =234	# Error!
 There must be white space before and after the "=": >
-	let var = 234	" OK
+	let var = 234	# OK
 White space must also be put before the # that starts a comment after a
 command: >
 	let var = 234# Error!
@@ -386,14 +386,14 @@ White space is required around most operators.
 
 White space is not allowed:
 - Between a function name and the "(": >
-  	call Func (arg)	   " Error!
-  	call Func
-	     \ (arg)	   " Error!
-  	call Func(arg)	   " OK
-  	call Func(
-	     \ arg)	   " OK
-  	call Func(
-	     \ arg	   " OK
+	call Func (arg)	   # Error!
+	call Func
+	     \ (arg)	   # Error!
+	call Func(arg)	   # OK
+	call Func(
+	     \ arg)	   # OK
+	call Func(
+	     \ arg	   # OK
 	     \ )
 
 
@@ -438,7 +438,7 @@ converted to string. >
 
 Simple types are string, float, special and bool.  For other types |string()|
 can be used.
-
+							*false* *true*
 In Vim9 script one can use "true" for v:true and "false" for v:false.
 
 Indexing a string with [idx] or [idx, idx] uses character indexes instead of
@@ -455,16 +455,16 @@ same time tries to support the legacy Vim commands.  Some compromises had to
 be made.  Here is a summary of what might be unexpected.
 
 Ex command ranges need to be prefixed with a colon. >
-  	->		" legacy Vim: shifts the previous line to the right
-	->func()	" Vim9: method call in continuation line
-	:->		" Vim9: shifts the previous line to the right
+	->		# legacy Vim: shifts the previous line to the right
+	->func()	# Vim9: method call in continuation line
+	:->		# Vim9: shifts the previous line to the right
 
-	%s/a/b		" legacy Vim: substitute on all lines
+	%s/a/b		# legacy Vim: substitute on all lines
 	x = alongname
-	     % another	" Vim9: line continuation without a backslash
-	:%s/a/b		" Vim9: substitute on all lines
-	'text'->func()	" Vim9: method call
-	:'t		" legacy Vim: jump to mark m
+	     % another	# Vim9: line continuation without a backslash
+	:%s/a/b		# Vim9: substitute on all lines
+	'text'->func()	# Vim9: method call
+	:'t		# legacy Vim: jump to mark m
 
 Some Ex commands can be confused with assignments in Vim9 script: >
 	g:name = value  # assignment
@@ -484,7 +484,7 @@ Vim9 functions are compiled as a whole: >
 	  if !has('feature')
 	    return
 	  endif
-	  use-feature  " May give compilation error
+	  use-feature  # May give compilation error
 	enddef
 For a workaround, split it in two functions: >
 	func Maybe()
@@ -497,7 +497,7 @@ For a workaround, split it in two functions: >
 	    use-feature
 	  enddef
 	endif
-Of put the unsupported code inside an `if` with a constant expression that
+Or put the unsupported code inside an `if` with a constant expression that
 evaluates to false: >
 	def Maybe()
 	  if has('feature')
@@ -699,8 +699,8 @@ Type inference						*type-inference*
 
 In general: Whenever the type is clear it can be omitted.  For example, when
 declaring a variable and giving it a value: >
-	let var = 0		" infers number type
-	let var = 'hello'	" infers string type
+	let var = 0		# infers number type
+	let var = 'hello'	# infers string type
 
 The type of a list and dictionary comes from the common type of the values.
 If the values all have the same type, that type is used for the list or
@@ -719,8 +719,8 @@ string doesn't start with a number.  Quite often this leads to hard-to-find
 bugs.
 
 In Vim9 script this has been made stricter.  In most places it works just as
-before, if the expected type was already.  There will sometimes be an error,
-thus breaking backwards compatibility.  For example:
+before, if the value used matches the expected type.  There will sometimes be
+an error, thus breaking backwards compatibility.  For example:
 - Using a number other than 0 or 1 where a boolean is expected.  *E1023*
 - Using a string value when setting a number options.
 - Using a number where a string is expected.   *E1024*
@@ -801,6 +801,9 @@ Then you can use "That.EXPORTED_CONST", "That.someValue", etc.  You are free
 to choose the name "That", but it is highly recommended to use the name of the
 script file to avoid confusion.
 
+`:import` can also be used in legacy Vim script.  The imported items still
+become script-local, even when the "s:" prefix is not given.
+
 The script name after `import` can be:
 - A relative path, starting "." or "..".  This finds a file relative to the
   location of the script file itself.  This is useful to split up a large
@@ -846,7 +849,7 @@ actually needed.  A recommended mechanism:
    items and any private items. >
 	vim9script
 	let localVar = 'local'
-   	export def FilterFunc(arg: string): string
+	export def FilterFunc(arg: string): string
 	   ...
 <   This goes in .../import/someother.vim.
 
@@ -934,8 +937,8 @@ the well-known parts of legacy Vim script.
 
 Since Vim already uses `:let` and `:const` and optional type checking is
 desirable, the JavaScript/TypeScript syntax fits best for variable
-declarations. >
-	const greeting = 'hello'  " string type is inferred
+declarations: >
+	const greeting = 'hello'  # string type is inferred
 	let name: string
 	...
 	name = 'John'
@@ -945,32 +948,40 @@ are doing.  Some details are unexpected and can be fixed.  For example how the
 || and && operators work.  Legacy Vim script: >
 	let result = 44
 	...
-	return result || 0	" returns 1
+	return result || 0	# returns 1
 
 Vim9 script works like JavaScript/TypeScript, keep the value: >
 	let result = 44
 	...
-	return result || 0	" returns 44
+	return result || 0	# returns 44
 
 On the other hand, overloading "+" to use both for addition and string
 concatenation goes against legacy Vim script and often leads to mistakes.
 For that reason we will keep using ".." for string concatenation.  Lua also
 uses ".." this way.
 
+There is no intention to completely match TypeScript syntax and semantics.  We
+just want to take those parts that we can use for Vim and we expect Vim users
+are happy with.  TypeScript is a complex language with its own advantages and
+disadvantages.  People used to other languages (Java, Python, etc.) will also
+find things in TypeScript that they do not like or do not understand.  We'll
+try to avoid those things.
+
 
 Import and Export ~
 
 A problem of legacy Vim script is that by default all functions and variables
 are global.  It is possible to make them script-local, but then they are not
-available in other scripts.
+available in other scripts.  This defies the concept of a package that only
+exports selected items and keeps the rest local.
 
 In Vim9 script a mechanism very similar to the JavaScript import and export
 mechanism is supported.  It is a variant to the existing `:source` command
 that works like one would expect:
 - Instead of making everything global by default, everything is script-local,
   unless exported.
-- When importing a script the symbols that are imported are listed, avoiding
-  name conflicts and failures if later functionality is added.
+- When importing a script the symbols that are imported are explicitly listed,
+  avoiding name conflicts and failures if functionality is added later.
 - The mechanism allows for writing a big, long script with a very clear API:
   the exported function(s) and class(es).
 - By using relative paths loading can be much faster for an import inside of a
@@ -982,27 +993,28 @@ that works like one would expect:
 When sourcing a Vim9 script from a legacy script, only the items defined
 globally can be used, not the exported items.  Alternatives considered:
 - All the exported items become available as script-local items.  This makes
-  it uncontrollable what items get defined.
+  it uncontrollable what items get defined and likely soon leads to trouble.
 - Use the exported items and make them global.  Disadvantage is that it's then
   not possible to avoid name clashes in the global namespace.
 - Completely disallow sourcing a Vim9 script, require using `:import`.  That
   makes it difficult to use scripts for testing, or sourcing them from the
   command line to try them out.
+Note that you can also use `:import` in legacy Vim script, see above.
 
 
 Classes ~
 
 Vim supports interfaces to Perl, Python, Lua, Tcl and a few others.  But
-these have never become widespread.  When Vim 9 was designed a decision was
-made to phase out these interfaces and concentrate on Vim script, while
-encouraging plugin authors to write code in any language and run it as an
-external tool, using jobs and channels.
+these interfaces have never become widespread.  When Vim 9 was designed a
+decision was made to phase out these interfaces and concentrate on Vim script,
+while encouraging plugin authors to write code in any language and run it as
+an external tool, using jobs and channels.
 
 Still, using an external tool has disadvantages.  An alternative is to convert
 the tool into Vim script.  For that to be possible without too much
 translation, and keeping the code fast at the same time, the constructs of the
 tool need to be supported.  Since most languages support classes the lack of
-class support in Vim is then a problem.
+support for classes in Vim is then a problem.
 
 Previously Vim supported a kind-of object oriented programming by adding
 methods to a dictionary.  With some care this could be made to work, but it
@@ -1010,7 +1022,7 @@ does not look like real classes.  On top of that, it's very slow, because of
 the use of dictionaries.
 
 The support of classes in Vim9 script is a "minimal common functionality" of
-class support in most languages.  It works mostly like Java, which is the most
+class support in most languages.  It works much like Java, which is the most
 popular programming language.
 
 

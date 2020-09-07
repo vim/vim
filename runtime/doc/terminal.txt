@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.2.  Last change: 2020 Jun 06
+*terminal.txt*	For Vim version 8.2.  Last change: 2020 Sep 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -476,9 +476,11 @@ term_dumpdiff({filename}, {filename} [, {options}])
 		   "term_name"	     name to use for the buffer name, instead
 				     of the first file name.
 		   "term_rows"	     vertical size to use for the terminal,
-				     instead of using 'termwinsize'
+				     instead of using 'termwinsize', but
+				     respecting the minimal size
 		   "term_cols"	     horizontal size to use for the terminal,
-				     instead of using 'termwinsize'
+				     instead of using 'termwinsize', but
+				     respecting the minimal size
 		   "vertical"	     split the window vertically
 		   "curwin"	     use the current window, do not split the
 				     window; fails if the current buffer

@@ -1,4 +1,4 @@
-*version5.txt*  For Vim version 8.2.  Last change: 2020 Aug 15
+*version5.txt*  For Vim version 8.2.  Last change: 2020 Sep 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -4417,7 +4417,7 @@ Now map <xF4> to <F4>, so that the user can override this.
 When compiling os_win32.c with MIN_FEAT the apply_autocmds() should not be
 used. (Aaron)
 
-This autocommand looped forever: ":au FileChangedShell * nested e <afile>"
+This autocommand looped forever: ":au FileChangedShell * ++nested e <afile>"
 Now FileChangeShell never nests. (Roemer)
 
 When evaluating an ":elseif" that was not going to matter anyway, ignore

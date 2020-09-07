@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 aug 30
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Sep 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -120,8 +120,9 @@ base, use |str2nr()|.
 
 						*TRUE* *FALSE* *Boolean*
 For boolean operators Numbers are used.  Zero is FALSE, non-zero is TRUE.
-You can also use |v:false| and |v:true|.  When TRUE is returned from a
-function it is the Number one, FALSE is the number zero.
+You can also use |v:false| and |v:true|.  In Vim9 script |false| and |true|. 
+When TRUE is returned from a function it is the Number one, FALSE is the
+number zero.
 
 Note that in the command: >
 	:if "foo"
@@ -2360,7 +2361,7 @@ assert_equalfile({fname-one}, {fname-two} [, {msg}])
 				Number	assert file contents are equal
 assert_exception({error} [, {msg}])
 				Number	assert {error} is in v:exception
-assert_fails({cmd} [, {error} [, {msg} [, {lnum}]]])
+assert_fails({cmd} [, {error} [, {msg} [, {lnum} [, {context}]]]])
 				Number	assert {cmd} fails
 assert_false({actual} [, {msg}])
 				Number	assert {actual} is false
@@ -3362,7 +3363,7 @@ bufnr([{expr} [, {create}]])
 		above.
 
 		If the buffer doesn't exist, -1 is returned.  Or, if the
-		{create} argument is present and not zero, a new, unlisted,
+		{create} argument is present and TRUE, a new, unlisted,
 		buffer is created and its number is returned.  Example: >
 			let newbuf = bufnr('Scratch001', 1)
 <		Using an empty name uses the current buffer. To create a new
@@ -3513,7 +3514,7 @@ char2nr({expr} [, {utf8}])					*char2nr()*
 		Example for "utf-8": >
 			char2nr("á")		returns 225
 			char2nr("á"[0])		returns 195
-<		With {utf8} set to 1, always treat as utf-8 characters.
+<		With {utf8} set to TRUE, always treat as utf-8 characters.
 		A combining character is a separate character.
 		|nr2char()| does the opposite.
 		To turn a string into a list of character numbers: >
@@ -7608,7 +7609,7 @@ perleval({expr})					*perleval()*
 <		{only available when compiled with the |+perl| feature}
 
 
-popup_ functions are documented here: |popup-functions|.
+popup_ functions are documented here: |popup-functions|
 
 
 pow({x}, {y})						*pow()*
@@ -11040,7 +11041,8 @@ win_screenpos({nr})					*win_screenpos()*
 		Return the screen position of window {nr} as a list with two
 		numbers: [row, col].  The first window always has position
 		[1, 1], unless there is a tabline, then it is [2, 1].
-		{nr} can be the window number or the |window-ID|.
+		{nr} can be the window number or the |window-ID|.  Use zero
+		for the current window.
 		Return [0, 0] if the window cannot be found in the current
 		tabpage.
 

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Aug 29
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Sep 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -41,15 +41,45 @@ browser use: https://github.com/vim/vim/issues/1234
 Why does Test_invalid_sid() not work in the GUI?
 
 Making everything work:
-- Check :const works the same as in legacy script.
+- Should :const work the same as in legacy script?
+  Or should it work like in Typescript: only the variable is fixed, not the
+  value itself.
+  Then use ":const!" to also fix/lock the value?
+  Typescript uses "as const", which is weird.
+  Alternative:  const var = <const>value
+      looks quite strange quite verbose
+      But can be used in several places:
+	    SomeFunc(<const>[1, 2, 3])
+      In Vim this basically means "lock this value".
+      How about:
+	    SomeFunc(<const>[[1], [2], [3]])  # are sub-lists immutable?
+	    SomeFunc(<const>myList)  # is myList mutable afterwards?
+
 - Run the same tests in :def and Vim9 script, like in Test_expr7_not()
 - :put with a "=" register argument doesn't work, need to find the expression
   and compile it. (#6397)
 - At the Vim9 script level, keep script variables local to the block they are
-  declared in?  Need to remember what variables were declared and delete them
-  when leaving the block.
-- Implement { } block at the script level.
-- Use the line number argument with assert_fails() in many more tests.
+  declared in, like in Javascript (using :let).
+  -> Need to remember what variables were declared and delete them when
+     leaving the block.
+  -> if a function is defined it may need to keep the block-locals
+  Then Implement { } block at the script level.
+- Recognize call to assert_fails() and execute it in the function context?
+  Won't work if the command itself fails, not an expression failure:
+	assert_fails("unknown", "E99:")
+  Use try/catch is complicated:
+    let did_catch = false
+    try
+	unknown
+    catch
+	assert_caught('E99:')
+	did_catch = true
+    endtry
+    assert_true('did_catch')
+  Add a new command, 
+    assertfail
+       unknown
+    endassertfail E99:.*unknown
 - In autocmd: use legacy syntax, not whatever the current script uses?
 - need to check type when a declaration specifies a type: #6507
 	let nr: number = 'asdf'
@@ -181,10 +211,8 @@ Text properties:
 - :goto does not go to the right place when text properties are present.
   (#5930)
 - "cc" does not call inserted_bytes(). (Axel Forsman, #5763)
-- Get E685 with a sequence of commands. (#5674)
 - Combining text property with 'cursorline' does not always work (Billie
   Cleek, #5533)
-- Text properties spanning more than one line.  #5683
 - See remarks at top of src/textprop.c
 
 'incsearch' with :s:
@@ -263,7 +291,8 @@ Terminal emulator window:
 
 Error numbers available: E653
 
-Remove "MacOS X installation"?  $APPDIR is no longer set.
+Patch to implement the vimtutor with a plugin: #6414
+Was originally writtten by Felipe Morales.
 
 Remove SPACE_IN_FILENAME ? It is only used for completion.
 
@@ -372,9 +401,6 @@ When changing the crypt key the buffer should be considered modified.
 Like when changing 'fileformat'.  Save the old key in save_file_ff().
 (Ninu-Ciprian Marginean)
 
-Patch to implement the vimtutor with a plugin: #6414
-Was originally writtten by Felipe Morales.
-
 Strange sequence of BufWipeout and BufNew events while doing omni-complete.
 (Paul Jolly, #5656)
 Get BufDelete without preceding BufNew. (Paul Jolly, #5694)
@@ -397,6 +423,7 @@ Undo puts cursor in wrong line after "cG<Esc>" undo.
 Implement completion for "breakadd".  Should expand the second argument, e.g.
 "func", and then function names after ":breakadd func".  Including
 script-local functions.
+Also for ":profile".
 
 :unmap <c-n> gives error but does remove the mapping. (Antony Scriven, 2019
 Dec 19)
@@ -1222,8 +1249,6 @@ Suggestion to improve pt-br spell checking. (Marcelo D Montu, 2016 Dec 15,
 
 Error in test_startup_utf8 on Solaris. (Danek Duvall, 2016 Aug 17)
 
-Completion for :!cmd shows each match twice. #1435
-
 GTK: When adding a timer from 'balloonexpr' it won't fire, because
 g_main_context_iteration() doesn't return.  Need to trigger an event when the
 timer expires.
@@ -1421,9 +1446,6 @@ Feature request: Complete members of a dictionary. (Luc Hermitte, 2017 Jan 4,
 Undo message is not always properly displayed.  Patch by Ken Takata, 2013 oct
 3.  Doesn't work properly according to Yukihiro Nakadaira.
 Also see #1635.
-
-When 'keywordprg' starts with ":" the argument is still escaped as a shell
-command argument. (Romain Lafourcade, 2016 Oct 16, #1175)
 
 Idea from Sven: record sequence of keys.  Useful to show others what they are
 doing (look over the shoulder), and also to see what happened.

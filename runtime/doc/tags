@@ -4071,7 +4071,6 @@ E252	options.txt	/*E252*
 E253	mbyte.txt	/*E253*
 E254	message.txt	/*E254*
 E255	sign.txt	/*E255*
-E256	message.txt	/*E256*
 E257	if_cscop.txt	/*E257*
 E258	remote.txt	/*E258*
 E259	if_cscop.txt	/*E259*
@@ -6323,6 +6322,7 @@ extend()	eval.txt	/*extend()*
 extension-removal	cmdline.txt	/*extension-removal*
 extensions-improvements	todo.txt	/*extensions-improvements*
 f	motion.txt	/*f*
+false	vim9.txt	/*false*
 false-variable	eval.txt	/*false-variable*
 faq	intro.txt	/*faq*
 farsi	farsi.txt	/*farsi*
@@ -8485,6 +8485,7 @@ progname-variable	eval.txt	/*progname-variable*
 progpath-variable	eval.txt	/*progpath-variable*
 progress.vim	syntax.txt	/*progress.vim*
 prompt-buffer	channel.txt	/*prompt-buffer*
+prompt_getprompt()	eval.txt	/*prompt_getprompt()*
 prompt_setcallback()	eval.txt	/*prompt_setcallback()*
 prompt_setinterrupt()	eval.txt	/*prompt_setinterrupt()*
 prompt_setprompt()	eval.txt	/*prompt_setprompt()*
@@ -9644,6 +9645,7 @@ toupper()	eval.txt	/*toupper()*
 tr()	eval.txt	/*tr()*
 trim()	eval.txt	/*trim()*
 trojan-horse	starting.txt	/*trojan-horse*
+true	vim9.txt	/*true*
 true-variable	eval.txt	/*true-variable*
 trunc()	eval.txt	/*trunc()*
 try-conditionals	eval.txt	/*try-conditionals*

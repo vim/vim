@@ -1,12 +1,12 @@
 " Vim compiler file
-" Compiler:	Libxml2 Command-Line Tool
+" Compiler:	Dart Formatter
 " Maintainer:	Doug Kearns <dougkearns@gmail.com>
-" Last Change:	2020 Jul 30
+" Last Change:	2019 May 08
 
 if exists("current_compiler")
   finish
 endif
-let current_compiler = "xmllint"
+let current_compiler = "dartfmt"
 
 if exists(":CompilerSet") != 2		" older Vim always used :setlocal
   command -nargs=* CompilerSet setlocal <args>
@@ -15,13 +15,10 @@ endif
 let s:cpo_save = &cpo
 set cpo&vim
 
-CompilerSet makeprg=xmllint\ --valid\ --noout
-CompilerSet errorformat=%E%f:%l:\ %.%#\ error\ :\ %m,
-		       \%W%f:%l:\ %.%#\ warning\ :\ %m,
-		       \%-Z%p^,
+CompilerSet makeprg=dartfmt
+CompilerSet errorformat=%Eline\ %l\\,\ column\ %c\ of\ %f:\ %m,
+		       \%Z\ %\\{3}│\ %\\+^%\\+,
 		       \%C%.%#,
-		       \%terror:\ %m,
-		       \%tarning:\ %m,
 		       \%-G%.%#
 
 let &cpo = s:cpo_save

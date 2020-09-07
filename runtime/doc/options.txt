@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2020 Aug 28
+*options.txt*	For Vim version 8.2.  Last change: 2020 Sep 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -701,6 +701,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	"double":	Use twice the width of ASCII characters.
 							*E834* *E835*
 	The value "double" cannot be used if 'listchars' or 'fillchars'
+	contains a character that would be double width.
 
 	The values are overruled for characters specified with
 	|setcellwidths()|.
@@ -6563,7 +6564,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	For the Amiga the default is ">".  For MS-Windows the default is
 	">%s 2>&1".  The output is directly saved in a file and not echoed to
 	the screen.
-	For Unix the default it "| tee".  The stdout of the compiler is saved
+	For Unix the default is "| tee".  The stdout of the compiler is saved
 	in a file and echoed to the screen.  If the 'shell' option is "csh" or
 	"tcsh" after initializations, the default becomes "|& tee".  If the
 	'shell' option is "sh", "ksh", "mksh", "pdksh", "zsh", "zsh-beta",
@@ -7807,8 +7808,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'termwinsize'* *'tws'*
 'termwinsize' 'tws'	string	(default "")
 			local to window
-	Size of the |terminal| window.  Format: {rows}x{columns} or
-	{rows}*{columns}.
+	Size used when opening the |terminal| window.  Format:
+		{rows}x{columns} or {rows}*{columns}.
 	- When empty the terminal gets the size from the window.
 	- When set with a "x" (e.g., "24x80") the terminal size is not
 	  adjusted to the window size.  If the window is smaller only the
@@ -7819,6 +7820,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	- When rows is zero then use the height of the window.
 	- When columns is zero then use the width of the window.
 	- Using "0x0" or "0*0" is the same as empty.
+	- Can be overruled in the |term_start()| options with "term_rows" and
+	  "term_cols".
 
 	Examples:
 	  "30x0" uses 30 rows and the current window width.
