@@ -21,6 +21,7 @@
 #define CMDLINE_NOT_CHANGED	1
 #define CMDLINE_CHANGED		2
 #define GOTO_NORMAL_MODE	3
+#define PROCESS_NEXT_KEY	4
 
 // The current cmdline_info.  It is initialized in getcmdline() and after that
 // used by other functions.  When invoking getcmdline() recursively it needs
@@ -39,7 +40,7 @@ static int	extra_char_shift;
 static int	cmd_hkmap = 0;	// Hebrew mapping during command line
 #endif
 
-static char_u	*getcmdline_int(int firstc, long count, int indent, int init_ccline);
+static char_u	*getcmdline_int(int firstc, long count, int indent, int clear_ccline);
 static int	cmdline_charsize(int idx);
 static void	set_cmdspos(void);
 static void	set_cmdspos_cursor(void);
@@ -768,6 +769,220 @@ cmdline_init(void)
 }
 
 /*
+ * Handle the backslash key pressed in the command-line mode.  CTRL-\ CTRL-N
+ * goes to Normal mode, CTRL-\ CTRL-G goes to Insert mode when 'insertmode' is
+ * set, CTRL-\ e prompts for an expression.
+ */
+    static int
+cmdline_handle_backslash_key(int c, int *gotesc)
+{
+    ++no_mapping;
+    ++allow_keys;
+    c = plain_vgetc();
+    --no_mapping;
+    --allow_keys;
+
+    // CTRL-\ e doesn't work when obtaining an expression, unless it
+    // is in a mapping.
+    if (c != Ctrl_N && c != Ctrl_G && (c != 'e'
+		|| (ccline.cmdfirstc == '=' && KeyTyped)
+#ifdef FEAT_EVAL
+		|| cmdline_star > 0
+#endif
+		))
+    {
+	vungetc(c);
+	return PROCESS_NEXT_KEY;
+    }
+
+#ifdef FEAT_EVAL
+    if (c == 'e')
+    {
+	char_u	*p = NULL;
+	int	len;
+
+	/*
+	 * Replace the command line with the result of an expression.
+	 * Need to save and restore the current command line, to be
+	 * able to enter a new one...
+	 */
+	if (ccline.cmdpos == ccline.cmdlen)
+	    new_cmdpos = 99999;	// keep it at the end
+	else
+	    new_cmdpos = ccline.cmdpos;
+
+	c = get_expr_register();
+	if (c == '=')
+	{
+	    // Need to save and restore ccline.  And set "textwinlock"
+	    // to avoid nasty things like going to another buffer when
+	    // evaluating an expression.
+	    ++textwinlock;
+	    p = get_expr_line();
+	    --textwinlock;
+
+	    if (p != NULL)
+	    {
+		len = (int)STRLEN(p);
+		if (realloc_cmdbuff(len + 1) == OK)
+		{
+		    ccline.cmdlen = len;
+		    STRCPY(ccline.cmdbuff, p);
+		    vim_free(p);
+
+		    // Restore the cursor or use the position set with
+		    // set_cmdline_pos().
+		    if (new_cmdpos > ccline.cmdlen)
+			ccline.cmdpos = ccline.cmdlen;
+		    else
+			ccline.cmdpos = new_cmdpos;
+
+		    KeyTyped = FALSE;	// Don't do p_wc completion.
+		    redrawcmd();
+		    return CMDLINE_CHANGED;
+		}
+		vim_free(p);
+	    }
+	}
+	beep_flush();
+	got_int = FALSE;	// don't abandon the command line
+	did_emsg = FALSE;
+	emsg_on_display = FALSE;
+	redrawcmd();
+	return CMDLINE_NOT_CHANGED;
+    }
+#endif
+
+    if (c == Ctrl_G && p_im && restart_edit == 0)
+	restart_edit = 'a';
+    *gotesc = TRUE;	// will free ccline.cmdbuff after putting it
+			// in history
+    return GOTO_NORMAL_MODE;
+}
+
+/*
+ * Completion for 'wildchar' or 'wildcharm' key.
+ * - hitting <ESC> twice means: abandon command line.
+ * - wildcard expansion is only done when the 'wildchar' key is really
+ *   typed, not when it comes from a macro
+ * Returns CMDLINE_CHANGED if command line is changed or CMDLINE_NOT_CHANGED.
+ */
+    static int
+cmdline_wildchar_complete(
+	int		c,
+	int		escape,
+	int		*did_wild_list,
+	int		*wim_index_p,
+	expand_T	*xp,
+	int		*gotesc)
+{
+    int		wim_index = *wim_index_p;
+    int		res;
+    int		j;
+    int		options = WILD_NO_BEEP;
+
+    if (wim_flags[wim_index] & WIM_BUFLASTUSED)
+	options |= WILD_BUFLASTUSED;
+    if (xp->xp_numfiles > 0)   // typed p_wc at least twice
+    {
+	// if 'wildmode' contains "list" may still need to list
+	if (xp->xp_numfiles > 1
+		&& !*did_wild_list
+		&& (wim_flags[wim_index] & WIM_LIST))
+	{
+	    (void)showmatches(xp, FALSE);
+	    redrawcmd();
+	    *did_wild_list = TRUE;
+	}
+	if (wim_flags[wim_index] & WIM_LONGEST)
+	    res = nextwild(xp, WILD_LONGEST, options, escape);
+	else if (wim_flags[wim_index] & WIM_FULL)
+	    res = nextwild(xp, WILD_NEXT, options, escape);
+	else
+	    res = OK;	    // don't insert 'wildchar' now
+    }
+    else		    // typed p_wc first time
+    {
+	wim_index = 0;
+	j = ccline.cmdpos;
+	// if 'wildmode' first contains "longest", get longest
+	// common part
+	if (wim_flags[0] & WIM_LONGEST)
+	    res = nextwild(xp, WILD_LONGEST, options, escape);
+	else
+	    res = nextwild(xp, WILD_EXPAND_KEEP, options, escape);
+
+	// if interrupted while completing, behave like it failed
+	if (got_int)
+	{
+	    (void)vpeekc();	// remove <C-C> from input stream
+	    got_int = FALSE;	// don't abandon the command line
+	    (void)ExpandOne(xp, NULL, NULL, 0, WILD_FREE);
+#ifdef FEAT_WILDMENU
+	    xp->xp_context = EXPAND_NOTHING;
+#endif
+	    *wim_index_p = wim_index;
+	    return CMDLINE_CHANGED;
+	}
+
+	// when more than one match, and 'wildmode' first contains
+	// "list", or no change and 'wildmode' contains "longest,list",
+	// list all matches
+	if (res == OK && xp->xp_numfiles > 1)
+	{
+	    // a "longest" that didn't do anything is skipped (but not
+	    // "list:longest")
+	    if (wim_flags[0] == WIM_LONGEST && ccline.cmdpos == j)
+		wim_index = 1;
+	    if ((wim_flags[wim_index] & WIM_LIST)
+#ifdef FEAT_WILDMENU
+		    || (p_wmnu && (wim_flags[wim_index] & WIM_FULL) != 0)
+#endif
+	       )
+	    {
+		if (!(wim_flags[0] & WIM_LONGEST))
+		{
+#ifdef FEAT_WILDMENU
+		    int p_wmnu_save = p_wmnu;
+		    p_wmnu = 0;
+#endif
+		    // remove match
+		    nextwild(xp, WILD_PREV, 0, escape);
+#ifdef FEAT_WILDMENU
+		    p_wmnu = p_wmnu_save;
+#endif
+		}
+#ifdef FEAT_WILDMENU
+		(void)showmatches(xp, p_wmnu
+			&& ((wim_flags[wim_index] & WIM_LIST) == 0));
+#else
+		(void)showmatches(xp, FALSE);
+#endif
+		redrawcmd();
+		*did_wild_list = TRUE;
+		if (wim_flags[wim_index] & WIM_LONGEST)
+		    nextwild(xp, WILD_LONGEST, options, escape);
+		else if (wim_flags[wim_index] & WIM_FULL)
+		    nextwild(xp, WILD_NEXT, options, escape);
+	    }
+	    else
+		vim_beep(BO_WILD);
+	}
+#ifdef FEAT_WILDMENU
+	else if (xp->xp_numfiles == -1)
+	    xp->xp_context = EXPAND_NOTHING;
+#endif
+    }
+    if (wim_index < 3)
+	++wim_index;
+    if (c == ESC)
+	*gotesc = TRUE;
+
+    *wim_index_p = wim_index;
+    return (res == OK) ? CMDLINE_CHANGED : CMDLINE_NOT_CHANGED;
+}
+
+/*
  * Handle backspace, delete and CTRL-W keys in the command-line mode.
  * Returns:
  *  CMDLINE_NOT_CHANGED - if the command line is not changed
@@ -1245,6 +1460,41 @@ done:
 }
 
 /*
+ * Initialize the current command-line info.
+ */
+    static int
+init_ccline(int firstc, int indent)
+{
+    ccline.overstrike = FALSE;		    // always start in insert mode
+
+    /*
+     * set some variables for redrawcmd()
+     */
+    ccline.cmdfirstc = (firstc == '@' ? 0 : firstc);
+    ccline.cmdindent = (firstc > 0 ? indent : 0);
+
+    // alloc initial ccline.cmdbuff
+    alloc_cmdbuff(exmode_active ? 250 : indent + 1);
+    if (ccline.cmdbuff == NULL)
+	return FAIL;
+    ccline.cmdlen = ccline.cmdpos = 0;
+    ccline.cmdbuff[0] = NUL;
+    sb_text_start_cmdline();
+
+    // autoindent for :insert and :append
+    if (firstc <= 0)
+    {
+	vim_memset(ccline.cmdbuff, ' ', indent);
+	ccline.cmdbuff[indent] = NUL;
+	ccline.cmdpos = indent;
+	ccline.cmdspos = indent;
+	ccline.cmdlen = indent;
+    }
+
+    return OK;
+}
+
+/*
  * getcmdline() - accept a command line starting with firstc.
  *
  * firstc == ':'	    get ":" command line.
@@ -1278,7 +1528,7 @@ getcmdline_int(
     int		firstc,
     long	count UNUSED,	// only used for incremental search
     int		indent,		// indent for inside conditionals
-    int		init_ccline)	// clear ccline first
+    int		clear_ccline)	// clear ccline first
 {
     int		c;
     int		i;
@@ -1316,7 +1566,7 @@ getcmdline_int(
 	save_cmdline(&save_ccline);
 	did_save_ccline = TRUE;
     }
-    if (init_ccline)
+    if (clear_ccline)
 	CLEAR_FIELD(ccline);
 
 #ifdef FEAT_EVAL
@@ -1332,35 +1582,12 @@ getcmdline_int(
 	cmd_hkmap = 0;
 #endif
 
-    ccline.overstrike = FALSE;		    // always start in insert mode
-
 #ifdef FEAT_SEARCH_EXTRA
     init_incsearch_state(&is_state);
 #endif
 
-    /*
-     * set some variables for redrawcmd()
-     */
-    ccline.cmdfirstc = (firstc == '@' ? 0 : firstc);
-    ccline.cmdindent = (firstc > 0 ? indent : 0);
-
-    // alloc initial ccline.cmdbuff
-    alloc_cmdbuff(exmode_active ? 250 : indent + 1);
-    if (ccline.cmdbuff == NULL)
+    if (init_ccline(firstc, indent) != OK)
 	goto theend;	// out of memory
-    ccline.cmdlen = ccline.cmdpos = 0;
-    ccline.cmdbuff[0] = NUL;
-    sb_text_start_cmdline();
-
-    // autoindent for :insert and :append
-    if (firstc <= 0)
-    {
-	vim_memset(ccline.cmdbuff, ' ', indent);
-	ccline.cmdbuff[indent] = NUL;
-	ccline.cmdpos = indent;
-	ccline.cmdspos = indent;
-	ccline.cmdlen = indent;
-    }
 
     ExpandInit(&xpc);
     ccline.xpc = &xpc;
@@ -1572,88 +1799,15 @@ getcmdline_int(
 	// mode when 'insertmode' is set, CTRL-\ e prompts for an expression.
 	if (c == Ctrl_BSL)
 	{
-	    ++no_mapping;
-	    ++allow_keys;
-	    c = plain_vgetc();
-	    --no_mapping;
-	    --allow_keys;
-	    // CTRL-\ e doesn't work when obtaining an expression, unless it
-	    // is in a mapping.
-	    if (c != Ctrl_N && c != Ctrl_G && (c != 'e'
-				    || (ccline.cmdfirstc == '=' && KeyTyped)
-#ifdef FEAT_EVAL
-				    || cmdline_star > 0
-#endif
-				    ))
-	    {
-		vungetc(c);
-		c = Ctrl_BSL;
-	    }
-#ifdef FEAT_EVAL
-	    else if (c == 'e')
-	    {
-		char_u	*p = NULL;
-		int	len;
-
-		/*
-		 * Replace the command line with the result of an expression.
-		 * Need to save and restore the current command line, to be
-		 * able to enter a new one...
-		 */
-		if (ccline.cmdpos == ccline.cmdlen)
-		    new_cmdpos = 99999;	// keep it at the end
-		else
-		    new_cmdpos = ccline.cmdpos;
-
-		c = get_expr_register();
-		if (c == '=')
-		{
-		    // Need to save and restore ccline.  And set "textwinlock"
-		    // to avoid nasty things like going to another buffer when
-		    // evaluating an expression.
-		    ++textwinlock;
-		    p = get_expr_line();
-		    --textwinlock;
-
-		    if (p != NULL)
-		    {
-			len = (int)STRLEN(p);
-			if (realloc_cmdbuff(len + 1) == OK)
-			{
-			    ccline.cmdlen = len;
-			    STRCPY(ccline.cmdbuff, p);
-			    vim_free(p);
-
-			    // Restore the cursor or use the position set with
-			    // set_cmdline_pos().
-			    if (new_cmdpos > ccline.cmdlen)
-				ccline.cmdpos = ccline.cmdlen;
-			    else
-				ccline.cmdpos = new_cmdpos;
-
-			    KeyTyped = FALSE;	// Don't do p_wc completion.
-			    redrawcmd();
-			    goto cmdline_changed;
-			}
-			vim_free(p);
-		    }
-		}
-		beep_flush();
-		got_int = FALSE;	// don't abandon the command line
-		did_emsg = FALSE;
-		emsg_on_display = FALSE;
-		redrawcmd();
+	    res = cmdline_handle_backslash_key(c, &gotesc);
+	    if (res == CMDLINE_CHANGED)
+		goto cmdline_changed;
+	    else if (res == CMDLINE_NOT_CHANGED)
 		goto cmdline_not_changed;
-	    }
-#endif
-	    else
-	    {
-		if (c == Ctrl_G && p_im && restart_edit == 0)
-		    restart_edit = 'a';
-		gotesc = TRUE;	// will free ccline.cmdbuff after putting it
-				// in history
-		goto returncmd;	// back to Normal mode
-	    }
+	    else if (res == GOTO_NORMAL_MODE)
+		goto returncmd;		// back to cmd mode
+	    c = Ctrl_BSL;		// backslash key not processed by
+					// cmdline_handle_backslash_key()
 	}
 
 #ifdef FEAT_CMDWIN
@@ -1705,115 +1859,12 @@ getcmdline_int(
 	    }
 	}
 
-	/*
-	 * Completion for 'wildchar' or 'wildcharm' key.
-	 * - hitting <ESC> twice means: abandon command line.
-	 * - wildcard expansion is only done when the 'wildchar' key is really
-	 *   typed, not when it comes from a macro
-	 */
+	// Completion for 'wildchar' or 'wildcharm' key.
 	if ((c == p_wc && !gotesc && KeyTyped) || c == p_wcm)
 	{
-	    int options = WILD_NO_BEEP;
-
-	    if (wim_flags[wim_index] & WIM_BUFLASTUSED)
-		options |= WILD_BUFLASTUSED;
-	    if (xpc.xp_numfiles > 0)   // typed p_wc at least twice
-	    {
-		// if 'wildmode' contains "list" may still need to list
-		if (xpc.xp_numfiles > 1
-			&& !did_wild_list
-			&& (wim_flags[wim_index] & WIM_LIST))
-		{
-		    (void)showmatches(&xpc, FALSE);
-		    redrawcmd();
-		    did_wild_list = TRUE;
-		}
-		if (wim_flags[wim_index] & WIM_LONGEST)
-		    res = nextwild(&xpc, WILD_LONGEST, options,
-							       firstc != '@');
-		else if (wim_flags[wim_index] & WIM_FULL)
-		    res = nextwild(&xpc, WILD_NEXT, options, firstc != '@');
-		else
-		    res = OK;	    // don't insert 'wildchar' now
-	    }
-	    else		    // typed p_wc first time
-	    {
-		wim_index = 0;
-		j = ccline.cmdpos;
-		// if 'wildmode' first contains "longest", get longest
-		// common part
-		if (wim_flags[0] & WIM_LONGEST)
-		    res = nextwild(&xpc, WILD_LONGEST, options, firstc != '@');
-		else
-		    res = nextwild(&xpc, WILD_EXPAND_KEEP, options,
-								firstc != '@');
-
-		// if interrupted while completing, behave like it failed
-		if (got_int)
-		{
-		    (void)vpeekc();	// remove <C-C> from input stream
-		    got_int = FALSE;	// don't abandon the command line
-		    (void)ExpandOne(&xpc, NULL, NULL, 0, WILD_FREE);
-#ifdef FEAT_WILDMENU
-		    xpc.xp_context = EXPAND_NOTHING;
-#endif
-		    goto cmdline_changed;
-		}
-
-		// when more than one match, and 'wildmode' first contains
-		// "list", or no change and 'wildmode' contains "longest,list",
-		// list all matches
-		if (res == OK && xpc.xp_numfiles > 1)
-		{
-		    // a "longest" that didn't do anything is skipped (but not
-		    // "list:longest")
-		    if (wim_flags[0] == WIM_LONGEST && ccline.cmdpos == j)
-			wim_index = 1;
-		    if ((wim_flags[wim_index] & WIM_LIST)
-#ifdef FEAT_WILDMENU
-			  || (p_wmnu && (wim_flags[wim_index] & WIM_FULL) != 0)
-#endif
-			    )
-		    {
-			if (!(wim_flags[0] & WIM_LONGEST))
-			{
-#ifdef FEAT_WILDMENU
-			    int p_wmnu_save = p_wmnu;
-			    p_wmnu = 0;
-#endif
-			    // remove match
-			    nextwild(&xpc, WILD_PREV, 0, firstc != '@');
-#ifdef FEAT_WILDMENU
-			    p_wmnu = p_wmnu_save;
-#endif
-			}
-#ifdef FEAT_WILDMENU
-			(void)showmatches(&xpc, p_wmnu
-				&& ((wim_flags[wim_index] & WIM_LIST) == 0));
-#else
-			(void)showmatches(&xpc, FALSE);
-#endif
-			redrawcmd();
-			did_wild_list = TRUE;
-			if (wim_flags[wim_index] & WIM_LONGEST)
-			    nextwild(&xpc, WILD_LONGEST, options,
-							       firstc != '@');
-			else if (wim_flags[wim_index] & WIM_FULL)
-			    nextwild(&xpc, WILD_NEXT, options, firstc != '@');
-		    }
-		    else
-			vim_beep(BO_WILD);
-		}
-#ifdef FEAT_WILDMENU
-		else if (xpc.xp_numfiles == -1)
-		    xpc.xp_context = EXPAND_NOTHING;
-#endif
-	    }
-	    if (wim_index < 3)
-		++wim_index;
-	    if (c == ESC)
-		gotesc = TRUE;
-	    if (res == OK)
+	    res = cmdline_wildchar_complete(c, firstc != '@', &did_wild_list,
+		    &wim_index, &xpc, &gotesc);
+	    if (res == CMDLINE_CHANGED)
 		goto cmdline_changed;
 	}
 
