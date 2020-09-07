@@ -2279,7 +2279,7 @@ vim_regsub_both(
 		    else if (*s == NUL) // we hit NUL.
 		    {
 			if (copy)
-			    emsg(_(e_re_damg));
+			    iemsg(_(e_re_damg));
 			goto exit;
 		    }
 		    else
