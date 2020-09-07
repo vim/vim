@@ -802,7 +802,7 @@ NOTE:  Replace mode is like Insert mode, but every typed character deletes an
 --->  a) this is the first item.
       b)
 
-  NOTE: You can also use  y  as an operator;  yw  yanks one word.
+  NOTE: You can also use  y  as an operator;  yw  yanks one word,  yy  yanks the current line.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			    Lesson 6.5: SET OPTION
 
