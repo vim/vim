@@ -3155,31 +3155,33 @@ invoke_popup_filter(win_T *wp, int c)
     if (call_callback(&wp->w_filter_cb, -1, &rettv, 2, argv) == FAIL)
     {
 	// Cannot call the function, close the popup to avoid that the filter
-	// eats keys and the user can't get out.
+	// eats keys and the user is stuck.  Might as well eat the key.
 	popup_close_with_retval(wp, -1);
-	return 1;
-    }
-
-    if (win_valid_popup(wp) && old_lnum != wp->w_cursor.lnum)
-	popup_highlight_curline(wp);
-
-    // If an error was given always return FALSE, so that keys are not
-    // consumed and the user can type something.
-    // If we get three errors in a row then close the popup.  Decrement the
-    // error count by 1/10 if there are no errors, thus allowing up to 1 in
-    // 10 calls to cause an error.
-    if (win_valid_popup(wp) && called_emsg > prev_called_emsg)
-    {
-	wp->w_filter_errors += 10;
-	if (wp->w_filter_errors >= 30)
-	    popup_close_with_retval(wp, -1);
-	res = FALSE;
+	res = TRUE;
     }
     else
     {
-	if (win_valid_popup(wp) && wp->w_filter_errors > 0)
-	    --wp->w_filter_errors;
-	res = tv_get_bool(&rettv);
+	if (win_valid_popup(wp) && old_lnum != wp->w_cursor.lnum)
+	    popup_highlight_curline(wp);
+
+	// If an error was given always return FALSE, so that keys are not
+	// consumed and the user can type something.
+	// If we get three errors in a row then close the popup.  Decrement the
+	// error count by 1/10 if there are no errors, thus allowing up to 1 in
+	// 10 calls to cause an error.
+	if (win_valid_popup(wp) && called_emsg > prev_called_emsg)
+	{
+	    wp->w_filter_errors += 10;
+	    if (wp->w_filter_errors >= 30)
+		popup_close_with_retval(wp, -1);
+	    res = FALSE;
+	}
+	else
+	{
+	    if (win_valid_popup(wp) && wp->w_filter_errors > 0)
+		--wp->w_filter_errors;
+	    res = tv_get_bool(&rettv);
+	}
     }
 
     vim_free(argv[1].vval.v_string);
