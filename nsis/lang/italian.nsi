@@ -58,10 +58,10 @@ LangString str_desc_console         ${LANG_ITALIAN} \
     "Versione console di Vim (vim.exe)."
 
 LangString str_section_batch        ${LANG_ITALIAN} \
-    "Crea file (MS-DOS) .bat"
+    "Crea file .bat"
 LangString str_desc_batch           ${LANG_ITALIAN} \
     "Crea file .bat per varianti di Vim nella directory \
-     di Windows, per utilizzo da linea di comando (MS-DOS)."
+     di Windows, per utilizzo da linea di comando."
 
 LangString str_group_icons          ${LANG_ITALIAN} \
     "Crea icone per Vim"
