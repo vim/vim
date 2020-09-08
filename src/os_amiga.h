@@ -91,6 +91,7 @@ typedef long off_t;
 # include <limits.h>
 # include <errno.h>
 # include <pwd.h>
+# include <grp.h>
 # include <dirent.h>
 #endif
 
