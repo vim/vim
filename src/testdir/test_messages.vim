@@ -94,9 +94,8 @@ func Test_echoerr()
 endfunc
 
 func Test_mode_message_at_leaving_insert_by_ctrl_c()
-  if !has('terminal') || has('gui_running')
-    return
-  endif
+  CheckFeature terminal
+  CheckNotGui
 
   " Set custom statusline built by user-defined function.
   let testfile = 'Xtest.vim'
@@ -126,9 +125,8 @@ func Test_mode_message_at_leaving_insert_by_ctrl_c()
 endfunc
 
 func Test_mode_message_at_leaving_insert_with_esc_mapped()
-  if !has('terminal') || has('gui_running')
-    return
-  endif
+  CheckFeature terminal
+  CheckNotGui
 
   " Set custom statusline built by user-defined function.
   let testfile = 'Xtest.vim'

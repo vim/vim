@@ -4,6 +4,15 @@ source check.vim
 CheckFeature python3
 source shared.vim
 
+func Create_vim_list()
+  return [1]
+endfunction
+
+func Create_vim_dict()
+  return {'a': 1}
+endfunction
+
+
 " This function should be called first. This sets up python functions used by
 " the other tests.
 func Test_AAA_python3_setup()
@@ -2582,7 +2591,7 @@ func Test_python3_chdir()
     cb.append(vim.eval('@%'))
     os.chdir('..')
     path = fnamemodify('.', ':p:h:t')
-    if path != b'src':
+    if path != b'src' and path != b'src2':
       # Running tests from a shadow directory, so move up another level
       # This will result in @% looking like shadow/testdir/Xfile, hence the
       # slicing to remove the leading path and path separator
@@ -2591,7 +2600,8 @@ func Test_python3_chdir()
       cb.append(vim.eval('@%')[len(path)+1:].replace(os.path.sep, '/'))
       os.chdir(path)
     else:
-      cb.append(str(fnamemodify('.', ':p:h:t')))
+      # Also accept running from src2/testdir/ for MS-Windows CI.
+      cb.append(str(fnamemodify('.', ':p:h:t').replace(b'src2', b'src')))
       cb.append(vim.eval('@%').replace(os.path.sep, '/'))
     del path
     os.chdir('testdir')
@@ -3942,6 +3952,49 @@ func Test_python3_keyboard_interrupt()
   call assert_equal(expected, getline(2, '$'))
   call assert_equal('', output)
   close!
+endfunc
+
+" Regression: Iterator for a Vim object should hold a reference.
+func Test_python3_iter_ref()
+  let g:list_iter_ref_count_increase = -1
+  let g:dict_iter_ref_count_increase = -1
+  let g:bufmap_iter_ref_count_increase = -1
+  let g:options_iter_ref_count_increase = -1
+
+  py3 << trim EOF
+    import sys
+    import vim
+
+    def test_python3_iter_ref():
+      create_list = vim.Function('Create_vim_list')
+      v = create_list()
+      base_ref_count = sys.getrefcount(v)
+      for el in v:
+          vim.vars['list_iter_ref_count_increase'] = sys.getrefcount(v) - base_ref_count
+
+      create_dict = vim.Function('Create_vim_dict')
+      v = create_dict()
+      base_ref_count = sys.getrefcount(v)
+      for el in v:
+          vim.vars['dict_iter_ref_count_increase'] = sys.getrefcount(v) - base_ref_count
+
+      v = vim.buffers
+      base_ref_count = sys.getrefcount(v)
+      for el in v:
+          vim.vars['bufmap_iter_ref_count_increase'] = sys.getrefcount(v) - base_ref_count
+
+      v = vim.options
+      base_ref_count = sys.getrefcount(v)
+      for el in v:
+          vim.vars['options_iter_ref_count_increase'] = sys.getrefcount(v) - base_ref_count
+
+    test_python3_iter_ref()
+  EOF
+
+  call assert_equal(1, g:list_iter_ref_count_increase)
+  call assert_equal(1, g:dict_iter_ref_count_increase)
+  call assert_equal(1, g:bufmap_iter_ref_count_increase)
+  call assert_equal(1, g:options_iter_ref_count_increase)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

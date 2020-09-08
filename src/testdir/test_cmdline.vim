@@ -84,11 +84,37 @@ func Test_complete_wildmenu()
   call delete('Xdir1', 'd')
   set nowildmenu
 endfunc
+f
+func Test_wildmenu_screendump()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    set wildmenu hlsearch
+  [SCRIPT]
+  call writefile(lines, 'XTest_wildmenu')
+
+  let buf = RunVimInTerminal('-S XTest_wildmenu', {'rows': 8})
+  call term_sendkeys(buf, ":vim\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_1', {})
+
+  call term_sendkeys(buf, "\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_2', {})
+
+  call term_sendkeys(buf, "\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_3', {})
+
+  call term_sendkeys(buf, "\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_4', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XTest_wildmenu')
+endfunc
+
 
 func Test_map_completion()
-  if !has('cmdline_compl')
-    return
-  endif
+  CheckFeature cmdline_compl
   call feedkeys(":map <unique> <si\<Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"map <unique> <silent>', getreg(':'))
   call feedkeys(":map <script> <un\<Tab>\<Home>\"\<CR>", 'xt')
@@ -164,9 +190,7 @@ func Test_map_completion()
 endfunc
 
 func Test_match_completion()
-  if !has('cmdline_compl')
-    return
-  endif
+  CheckFeature cmdline_compl
   hi Aardig ctermfg=green
   call feedkeys(":match \<Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"match Aardig', getreg(':'))
@@ -175,9 +199,7 @@ func Test_match_completion()
 endfunc
 
 func Test_highlight_completion()
-  if !has('cmdline_compl')
-    return
-  endif
+  CheckFeature cmdline_compl
   hi Aardig ctermfg=green
   call feedkeys(":hi \<Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"hi Aardig', getreg(':'))
@@ -214,9 +236,7 @@ func Test_highlight_easter_egg()
 endfunc
 
 func Test_getcompletion()
-  if !has('cmdline_compl')
-    return
-  endif
+  CheckFeature cmdline_compl
   let groupcount = len(getcompletion('', 'event'))
   call assert_true(groupcount > 0)
   let matchcount = len('File'->getcompletion('event'))
@@ -527,9 +547,7 @@ func Test_cmdline_remove_char()
 endfunc
 
 func Test_cmdline_keymap_ctrl_hat()
-  if !has('keymap')
-    return
-  endif
+  CheckFeature keymap
 
   set keymap=esperanto
   call feedkeys(":\"Jxauxdo \<C-^>Jxauxdo \<C-^>Jxauxdo\<CR>", 'tx')
@@ -596,8 +614,7 @@ func Test_cmdline_complete_user_names()
       call feedkeys(':e ~' . first_letter . "\<c-a>\<c-B>\"\<cr>", 'tx')
       call assert_match('^"e \~.*\<' . whoami . '\>', @:)
     endif
-  endif
-  if has('win32')
+  elseif has('win32')
     " Just in case: check that the system has an Administrator account.
     let names = system('net user')
     if names =~ 'Administrator'
@@ -606,14 +623,15 @@ func Test_cmdline_complete_user_names()
       call feedkeys(':e ~A' . "\<c-a>\<c-B>\"\<cr>", 'tx')
       call assert_match('^"e \~.*Administrator', @:)
     endif
+  else
+    throw 'Skipped: does not work on this platform'
   endif
 endfunc
 
 func Test_cmdline_complete_bang()
-  if executable('whoami')
-    call feedkeys(":!whoam\<C-A>\<C-B>\"\<CR>", 'tx')
-    call assert_match('^".*\<whoami\>', @:)
-  endif
+  CheckExecutable whoami
+  call feedkeys(":!whoam\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_match('^".*\<whoami\>', @:)
 endfunc
 
 func Test_cmdline_complete_languages()
@@ -811,6 +829,15 @@ func Test_cmdline_complete_various()
   " completion after a range followed by a pipe (|) character
   call feedkeys(":1,10 | chist\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"1,10 | chistory', @:)
+
+  " use <Esc> as the 'wildchar' for completion
+  set wildchar=<Esc>
+  call feedkeys(":g/a\\xb/clearj\<Esc>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"g/a\xb/clearjumps', @:)
+  " pressing <esc> twice should cancel the command
+  call feedkeys(":chist\<Esc>\<Esc>", 'xt')
+  call assert_equal('"g/a\xb/clearjumps', @:)
+  set wildchar&
 endfunc
 
 func Test_cmdline_write_alternatefile()
@@ -825,7 +852,7 @@ func Test_cmdline_write_alternatefile()
   f %<
   call assert_equal('foo-B', expand('%'))
   new
-  call assert_fails('f #<', 'E95')
+  call assert_fails('f #<', 'E95:')
   bw!
   f foo-B.txt
   f %<-A
@@ -1256,9 +1283,7 @@ endfunc
 
 " Test for the :! command
 func Test_cmd_bang()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
 
   let lines =<< trim [SCRIPT]
     " Test for no previous command

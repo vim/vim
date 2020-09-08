@@ -1,3 +1,4 @@
+" Test for marks
 
 " Test that a deleted mark is restored after delete-undo-redo-undo.
 func Test_Restore_DelMark()

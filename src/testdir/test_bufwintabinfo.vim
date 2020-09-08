@@ -1,4 +1,5 @@
 " Tests for the getbufinfo(), getwininfo() and gettabinfo() functions
+
 source check.vim
 
 func Test_getbufwintabinfo()
@@ -168,3 +169,5 @@ func Test_getbufinfo_lines()
   edit Xfoo
   bw!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

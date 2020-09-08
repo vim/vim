@@ -1442,11 +1442,12 @@ typedef struct
     destructorfun destruct;
     traversefun traverse;
     clearfun clear;
+    PyObject *iter_object;
 } IterObject;
 
     static PyObject *
 IterNew(void *start, destructorfun destruct, nextfun next, traversefun traverse,
-	clearfun clear)
+	clearfun clear, PyObject *iter_object)
 {
     IterObject *self;
 
@@ -1456,6 +1457,10 @@ IterNew(void *start, destructorfun destruct, nextfun next, traversefun traverse,
     self->destruct = destruct;
     self->traverse = traverse;
     self->clear = clear;
+    self->iter_object = iter_object;
+
+    if (iter_object)
+	Py_INCREF(iter_object);
 
     return (PyObject *)(self);
 }
@@ -1463,6 +1468,8 @@ IterNew(void *start, destructorfun destruct, nextfun next, traversefun traverse,
     static void
 IterDestructor(IterObject *self)
 {
+    if (self->iter_object)
+	Py_DECREF(self->iter_object);
     PyObject_GC_UnTrack((void *)(self));
     self->destruct(self->cur);
     PyObject_GC_Del((void *)(self));
@@ -1844,7 +1851,7 @@ DictionaryIter(DictionaryObject *self)
 
     return IterNew(dii,
 	    (destructorfun) PyMem_Free, (nextfun) DictionaryIterNext,
-	    NULL, NULL);
+	    NULL, NULL, (PyObject *)self);
 }
 
     static PyInt
@@ -2842,7 +2849,7 @@ ListIter(ListObject *self)
 
     return IterNew(lii,
 	    (destructorfun) ListIterDestruct, (nextfun) ListIterNext,
-	    NULL, NULL);
+	    NULL, NULL, (PyObject *)self);
 }
 
 static char *ListAttrs[] = {
@@ -3491,7 +3498,7 @@ OptionsIter(OptionsObject *self)
 
     return IterNew(oii,
 	    (destructorfun) PyMem_Free, (nextfun) OptionsIterNext,
-	    NULL, NULL);
+	    NULL, NULL, (PyObject *)self);
 }
 
     static int
@@ -5488,14 +5495,15 @@ BufMapIterNext(PyObject **buffer)
 }
 
     static PyObject *
-BufMapIter(PyObject *self UNUSED)
+BufMapIter(PyObject *self)
 {
     PyObject *buffer;
 
     buffer = BufferNew(firstbuf);
     return IterNew(buffer,
 	    (destructorfun) BufMapIterDestruct, (nextfun) BufMapIterNext,
-	    (traversefun) BufMapIterTraverse, (clearfun) BufMapIterClear);
+	    (traversefun) BufMapIterTraverse, (clearfun) BufMapIterClear,
+	    (PyObject *)self);
 }
 
 static PyMappingMethods BufMapAsMapping = {

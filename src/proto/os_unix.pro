@@ -5,7 +5,7 @@ int mch_inchar(char_u *buf, int maxlen, long wtime, int tb_change_cnt);
 int mch_char_avail(void);
 int mch_check_messages(void);
 long_u mch_total_mem(int special);
-void mch_delay(long msec, int ignoreinput);
+void mch_delay(long msec, int flags);
 int mch_stackcheck(char *p);
 void mch_suspend(void);
 void mch_init(void);

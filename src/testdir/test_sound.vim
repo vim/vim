@@ -62,3 +62,5 @@ func Test_play_silent()
   sleep 30m
   call assert_true(g:id_again > 0)
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

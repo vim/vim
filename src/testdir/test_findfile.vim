@@ -227,3 +227,5 @@ func Test_find_cmd()
   call assert_fails('sfind', 'E471:')
   call assert_fails('tabfind', 'E471:')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

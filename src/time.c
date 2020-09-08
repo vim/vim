@@ -742,7 +742,7 @@ f_timer_info(typval_T *argvars, typval_T *rettv)
 f_timer_pause(typval_T *argvars, typval_T *rettv UNUSED)
 {
     timer_T	*timer = NULL;
-    int		paused = (int)tv_get_number(&argvars[1]);
+    int		paused = (int)tv_get_bool(&argvars[1]);
 
     if (argvars[0].v_type != VAR_NUMBER)
 	emsg(_(e_number_exp));

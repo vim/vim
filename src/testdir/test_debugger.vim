@@ -337,6 +337,8 @@ func Test_Debugger()
   call StopVimInTerminal(buf)
 
   call delete('Xtest.vim')
+  %bw!
+  call assert_fails('breakadd here', 'E32:')
 endfunc
 
 func Test_Backtrace_Through_Source()
@@ -590,6 +592,99 @@ func Test_Backtrace_Autocmd()
         \ '  1 SourceAnotherFile[1]',
         \ '->0 script ' .. getcwd() .. '/Xtest2.vim',
         \ 'line 1: func DoAThing()'])
+
+  call RunDbgCmd( buf, 'up' )
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '>backtrace',
+        \ '  4 User Autocommands for "TestGlobalFunction"',
+        \ '  3 function GlobalFunction[1]',
+        \ '  2 CallAFunction[1]',
+        \ '->1 SourceAnotherFile[1]',
+        \ '  0 script ' .. getcwd() .. '/Xtest2.vim',
+        \ 'line 1: func DoAThing()' ] )
+
+  call RunDbgCmd( buf, 'up' )
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '>backtrace',
+        \ '  4 User Autocommands for "TestGlobalFunction"',
+        \ '  3 function GlobalFunction[1]',
+        \ '->2 CallAFunction[1]',
+        \ '  1 SourceAnotherFile[1]',
+        \ '  0 script ' .. getcwd() .. '/Xtest2.vim',
+        \ 'line 1: func DoAThing()' ] )
+
+  call RunDbgCmd( buf, 'up' )
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '>backtrace',
+        \ '  4 User Autocommands for "TestGlobalFunction"',
+        \ '->3 function GlobalFunction[1]',
+        \ '  2 CallAFunction[1]',
+        \ '  1 SourceAnotherFile[1]',
+        \ '  0 script ' .. getcwd() .. '/Xtest2.vim',
+        \ 'line 1: func DoAThing()' ] )
+
+  call RunDbgCmd( buf, 'up' )
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '>backtrace',
+        \ '->4 User Autocommands for "TestGlobalFunction"',
+        \ '  3 function GlobalFunction[1]',
+        \ '  2 CallAFunction[1]',
+        \ '  1 SourceAnotherFile[1]',
+        \ '  0 script ' .. getcwd() .. '/Xtest2.vim',
+        \ 'line 1: func DoAThing()' ] )
+
+  call RunDbgCmd( buf, 'up', [ 'frame at highest level: 4' ] )
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '>backtrace',
+        \ '->4 User Autocommands for "TestGlobalFunction"',
+        \ '  3 function GlobalFunction[1]',
+        \ '  2 CallAFunction[1]',
+        \ '  1 SourceAnotherFile[1]',
+        \ '  0 script ' .. getcwd() .. '/Xtest2.vim',
+        \ 'line 1: func DoAThing()' ] )
+
+  call RunDbgCmd( buf, 'down' )
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '>backtrace',
+        \ '  4 User Autocommands for "TestGlobalFunction"',
+        \ '->3 function GlobalFunction[1]',
+        \ '  2 CallAFunction[1]',
+        \ '  1 SourceAnotherFile[1]',
+        \ '  0 script ' .. getcwd() .. '/Xtest2.vim',
+        \ 'line 1: func DoAThing()' ] )
+
+
+  call RunDbgCmd( buf, 'down' )
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '>backtrace',
+        \ '  4 User Autocommands for "TestGlobalFunction"',
+        \ '  3 function GlobalFunction[1]',
+        \ '->2 CallAFunction[1]',
+        \ '  1 SourceAnotherFile[1]',
+        \ '  0 script ' .. getcwd() .. '/Xtest2.vim',
+        \ 'line 1: func DoAThing()' ] )
+
+  call RunDbgCmd( buf, 'down' )
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '>backtrace',
+        \ '  4 User Autocommands for "TestGlobalFunction"',
+        \ '  3 function GlobalFunction[1]',
+        \ '  2 CallAFunction[1]',
+        \ '->1 SourceAnotherFile[1]',
+        \ '  0 script ' .. getcwd() .. '/Xtest2.vim',
+        \ 'line 1: func DoAThing()' ] )
+
+  call RunDbgCmd( buf, 'down' )
+  call RunDbgCmd( buf, 'backtrace', [
+        \ '>backtrace',
+        \ '  4 User Autocommands for "TestGlobalFunction"',
+        \ '  3 function GlobalFunction[1]',
+        \ '  2 CallAFunction[1]',
+        \ '  1 SourceAnotherFile[1]',
+        \ '->0 script ' .. getcwd() .. '/Xtest2.vim',
+        \ 'line 1: func DoAThing()' ] )
+
+  call RunDbgCmd( buf, 'down', [ 'frame is zero' ] )
 
   " step until we have another meaninfgul trace
   call RunDbgCmd(buf, 'step', ['line 5: func File2Function()'])
@@ -1019,3 +1114,111 @@ func Test_debug_backtrace_level()
   call delete('Xtest1.vim')
   call delete('Xtest2.vim')
 endfunc
+
+" Test for setting a breakpoint on a :endif where the :if condition is false
+" and then quit the script. This should generate an interrupt.
+func Test_breakpt_endif_intr()
+  func F()
+    let g:Xpath ..= 'a'
+    if v:false
+      let g:Xpath ..= 'b'
+    endif
+    invalid_command
+  endfunc
+
+  let g:Xpath = ''
+  breakadd func 4 F
+  try
+    let caught_intr = 0
+    debuggreedy
+    call feedkeys(":call F()\<CR>quit\<CR>", "xt")
+  catch /^Vim:Interrupt$/
+    call assert_match('\.F, line 4', v:throwpoint)
+    let caught_intr = 1
+  endtry
+  0debuggreedy
+  call assert_equal(1, caught_intr)
+  call assert_equal('a', g:Xpath)
+  breakdel *
+  delfunc F
+endfunc
+
+" Test for setting a breakpoint on a :else where the :if condition is false
+" and then quit the script. This should generate an interrupt.
+func Test_breakpt_else_intr()
+  func F()
+    let g:Xpath ..= 'a'
+    if v:false
+      let g:Xpath ..= 'b'
+    else
+      invalid_command
+    endif
+    invalid_command
+  endfunc
+
+  let g:Xpath = ''
+  breakadd func 4 F
+  try
+    let caught_intr = 0
+    debuggreedy
+    call feedkeys(":call F()\<CR>quit\<CR>", "xt")
+  catch /^Vim:Interrupt$/
+    call assert_match('\.F, line 4', v:throwpoint)
+    let caught_intr = 1
+  endtry
+  0debuggreedy
+  call assert_equal(1, caught_intr)
+  call assert_equal('a', g:Xpath)
+  breakdel *
+  delfunc F
+endfunc
+
+" Test for setting a breakpoint on a :endwhile where the :while condition is
+" false and then quit the script. This should generate an interrupt.
+func Test_breakpt_endwhile_intr()
+  func F()
+    let g:Xpath ..= 'a'
+    while v:false
+      let g:Xpath ..= 'b'
+    endwhile
+    invalid_command
+  endfunc
+
+  let g:Xpath = ''
+  breakadd func 4 F
+  try
+    let caught_intr = 0
+    debuggreedy
+    call feedkeys(":call F()\<CR>quit\<CR>", "xt")
+  catch /^Vim:Interrupt$/
+    call assert_match('\.F, line 4', v:throwpoint)
+    let caught_intr = 1
+  endtry
+  0debuggreedy
+  call assert_equal(1, caught_intr)
+  call assert_equal('a', g:Xpath)
+  breakdel *
+  delfunc F
+endfunc
+
+" Test for setting a breakpoint on a script local function
+func Test_breakpt_scriptlocal_func()
+  let g:Xpath = ''
+  func s:G()
+    let g:Xpath ..= 'a'
+  endfunc
+
+  let funcname = expand("<SID>") .. "G"
+  exe "breakadd func 1 " .. funcname
+  debuggreedy
+  redir => output
+  call feedkeys(":call " .. funcname .. "()\<CR>c\<CR>", "xt")
+  redir END
+  0debuggreedy
+  call assert_match('Breakpoint in "' .. funcname .. '" line 1', output)
+  call assert_equal('a', g:Xpath)
+  breakdel *
+  exe "delfunc " .. funcname
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

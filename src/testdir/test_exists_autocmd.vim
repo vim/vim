@@ -24,3 +24,5 @@ function Test_AutoCommands()
   edit testfile2.test
   call assert_false(exists("#BufEnter#<buffer>"))
 endfunction
+
+" vim: shiftwidth=2 sts=2 expandtab

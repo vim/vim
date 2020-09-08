@@ -64,3 +64,5 @@ func Test_balloon_eval_term_visual()
   call StopVimInTerminal(buf)
   call delete('XTest_beval_visual')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

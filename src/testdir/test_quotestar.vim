@@ -36,7 +36,7 @@ func Do_test_quotestar_for_x11()
 
   let cmd = GetVimCommand()
   if cmd == ''
-    return 'GetVimCommand() failed'
+    throw 'GetVimCommand() failed'
   endif
   try
     call remote_send('xxx', '')
@@ -152,3 +152,5 @@ func Test_quotestar()
     throw 'Skipped: ' . skipped
   endif
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

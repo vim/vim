@@ -438,9 +438,10 @@ apply_move_options(win_T *wp, dict_T *d)
     if (nr != MAXCOL)
 	wp->w_wantcol = nr;
 
-    di = dict_find(d, (char_u *)"fixed", -1);
-    if (di != NULL)
-	wp->w_popup_fixed = dict_get_number(d, (char_u *)"fixed") != 0;
+
+    nr = dict_get_bool(d, (char_u *)"fixed", -1);
+    if (nr != -1)
+	wp->w_popup_fixed = nr != 0;
 
     {
 	poppos_T ppt = get_pos_entry(d, TRUE);
@@ -674,37 +675,31 @@ apply_general_options(win_T *wp, dict_T *dict)
 	wp->w_popup_title = vim_strsave(str);
     }
 
-    di = dict_find(dict, (char_u *)"wrap", -1);
-    if (di != NULL)
-    {
-	nr = dict_get_number(dict, (char_u *)"wrap");
+    nr = dict_get_bool(dict, (char_u *)"wrap", -1);
+    if (nr != -1)
 	wp->w_p_wrap = nr != 0;
-    }
 
-    di = dict_find(dict, (char_u *)"drag", -1);
-    if (di != NULL)
+    nr = dict_get_bool(dict, (char_u *)"drag", -1);
+    if (nr != -1)
     {
-	nr = dict_get_number(dict, (char_u *)"drag");
 	if (nr)
 	    wp->w_popup_flags |= POPF_DRAG;
 	else
 	    wp->w_popup_flags &= ~POPF_DRAG;
     }
 
-    di = dict_find(dict, (char_u *)"posinvert", -1);
-    if (di != NULL)
+    nr = dict_get_bool(dict, (char_u *)"posinvert", -1);
+    if (nr != -1)
     {
-	nr = dict_get_number(dict, (char_u *)"posinvert");
 	if (nr)
 	    wp->w_popup_flags |= POPF_POSINVERT;
 	else
 	    wp->w_popup_flags &= ~POPF_POSINVERT;
     }
 
-    di = dict_find(dict, (char_u *)"resize", -1);
-    if (di != NULL)
+    nr = dict_get_bool(dict, (char_u *)"resize", -1);
+    if (nr != -1)
     {
-	nr = dict_get_number(dict, (char_u *)"resize");
 	if (nr)
 	    wp->w_popup_flags |= POPF_RESIZE;
 	else
@@ -902,10 +897,9 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    set_callback(&wp->w_filter_cb, &callback);
 	}
     }
-    di = dict_find(dict, (char_u *)"mapping", -1);
-    if (di != NULL)
+    nr = dict_get_bool(dict, (char_u *)"mapping", -1);
+    if (nr != -1)
     {
-	nr = dict_get_number(dict, (char_u *)"mapping");
 	if (nr)
 	    wp->w_popup_flags |= POPF_MAPPING;
 	else
@@ -950,7 +944,7 @@ apply_options(win_T *wp, dict_T *dict)
 
     apply_general_options(wp, dict);
 
-    nr = dict_get_number(dict, (char_u *)"hidden");
+    nr = dict_get_bool(dict, (char_u *)"hidden", FALSE);
     if (nr > 0)
 	wp->w_popup_flags |= POPF_HIDDEN;
 
@@ -2131,7 +2125,7 @@ f_popup_clear(typval_T *argvars, typval_T *rettv UNUSED)
     int force = FALSE;
 
     if (argvars[0].v_type != VAR_UNKNOWN)
-	force = (int)tv_get_number(&argvars[0]);
+	force = (int)tv_get_bool(&argvars[0]);
     close_all_popups(force);
 }
 
@@ -3160,7 +3154,7 @@ invoke_popup_filter(win_T *wp, int c)
     call_callback(&wp->w_filter_cb, -1, &rettv, 2, argv);
     if (win_valid_popup(wp) && old_lnum != wp->w_cursor.lnum)
 	popup_highlight_curline(wp);
-    res = tv_get_number(&rettv);
+    res = tv_get_bool(&rettv);
 
     vim_free(argv[1].vval.v_string);
     clear_tv(&rettv);

@@ -17,7 +17,7 @@
 
 #include "vim.h"
 
-#if !defined(FEAT_GUI_MAC) && !defined(PROTO)
+#if !defined(PROTO)
 # include <CoreServices/CoreServices.h>
 #endif
 

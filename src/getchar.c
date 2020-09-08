@@ -2037,17 +2037,19 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 	if (argvars[0].v_type == VAR_UNKNOWN)
 	    // getchar(): blocking wait.
 	    n = plain_vgetc();
-	else if (tv_get_number_chk(&argvars[0], &error) == 1)
+	else if (tv_get_bool_chk(&argvars[0], &error))
 	    // getchar(1): only check if char avail
 	    n = vpeekc_any();
 	else if (error || vpeekc_any() == NUL)
 	    // illegal argument or getchar(0) and no char avail: return zero
 	    n = 0;
 	else
-	    // getchar(0) and char avail: return char
-	    n = plain_vgetc();
+	    // getchar(0) and char avail() != NUL: get a character.
+	    // Note that vpeekc_any() returns K_SPECIAL for K_IGNORE.
+	    n = safe_vgetc();
 
-	if (n == K_IGNORE || n == K_MOUSEMOVE)
+	if (n == K_IGNORE || n == K_MOUSEMOVE
+		|| n == K_VER_SCROLLBAR || n == K_HOR_SCROLLBAR)
 	    continue;
 	break;
     }

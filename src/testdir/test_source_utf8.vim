@@ -1,4 +1,5 @@
 " Test the :source! command
+
 source check.vim
 
 func Test_source_utf8()
@@ -59,3 +60,5 @@ func Test_source_ctrl_v()
   unmap __4
   unmap __5
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

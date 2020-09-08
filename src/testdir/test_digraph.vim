@@ -453,9 +453,7 @@ func Test_digraphs_output()
 endfunc
 
 func Test_loadkeymap()
-  if !has('keymap')
-    return
-  endif
+  CheckFeature keymap
   new
   set keymap=czech
   set iminsert=0
@@ -494,9 +492,7 @@ endfunc
 
 " Test for error in a keymap file
 func Test_loadkeymap_error()
-  if !has('keymap')
-    return
-  endif
+  CheckFeature keymap
   call assert_fails('loadkeymap', 'E105:')
   call writefile(['loadkeymap', 'a'], 'Xkeymap')
   call assert_fails('source Xkeymap', 'E791:')
@@ -508,13 +504,13 @@ func Test_entering_digraph()
   CheckRunVimInTerminal
   let buf = RunVimInTerminal('', {'rows': 6})
   call term_sendkeys(buf, "i\<C-K>")
-  call term_wait(buf)
+  call TermWait(buf)
   call assert_equal('?', term_getline(buf, 1))
   call term_sendkeys(buf, "1")
-  call term_wait(buf)
+  call TermWait(buf)
   call assert_equal('1', term_getline(buf, 1))
   call term_sendkeys(buf, "2")
-  call term_wait(buf)
+  call TermWait(buf)
   call assert_equal('½', term_getline(buf, 1))
   call StopVimInTerminal(buf)
 endfunc

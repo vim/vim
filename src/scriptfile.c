@@ -1065,7 +1065,8 @@ source_level(void *cookie)
 }
 
 /*
- * Return the readahead line.
+ * Return the readahead line. Note that the pointer may become invalid when
+ * getting the next line, if it's concatenated with the next one.
  */
     char_u *
 source_nextline(void *cookie)
@@ -1516,7 +1517,7 @@ ex_scriptnames(exarg_T *eap)
     if (eap->addr_count > 0)
     {
 	// :script {scriptId}: edit the script
-	if (eap->line2 < 1 || eap->line2 > script_items.ga_len)
+	if (!SCRIPT_ID_VALID(eap->line2))
 	    emsg(_(e_invarg));
 	else
 	{
@@ -1603,7 +1604,9 @@ free_autoload_scriptnames(void)
 #endif
 
     linenr_T
-get_sourced_lnum(char_u *(*fgetline)(int, void *, int, int), void *cookie)
+get_sourced_lnum(
+	char_u *(*fgetline)(int, void *, int, getline_opt_T),
+	void *cookie)
 {
     return fgetline == getsourceline
 			? ((struct source_cookie *)cookie)->sourcing_lnum
@@ -1723,7 +1726,11 @@ get_one_sourceline(struct source_cookie *sp)
  * Return NULL for end-of-file or some error.
  */
     char_u *
-getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
+getsourceline(
+	int c UNUSED,
+	void *cookie,
+	int indent UNUSED,
+	getline_opt_T options)
 {
     struct source_cookie *sp = (struct source_cookie *)cookie;
     char_u		*line;
@@ -1764,7 +1771,8 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
 
     // Only concatenate lines starting with a \ when 'cpoptions' doesn't
     // contain the 'C' flag.
-    if (line != NULL && do_concat && vim_strchr(p_cpo, CPO_CONCAT) == NULL)
+    if (line != NULL && options != GETLINE_NONE
+				      && vim_strchr(p_cpo, CPO_CONCAT) == NULL)
     {
 	// compensate for the one line read-ahead
 	--sp->sourcing_lnum;
@@ -1780,7 +1788,8 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
 			      || (p[0] == '"' && p[1] == '\\' && p[2] == ' ')
 #ifdef FEAT_EVAL
 			      || (in_vim9script()
-				       && (*p == NUL || vim9_comment_start(p)))
+				      && options == GETLINE_CONCAT_ALL
+				      && (*p == NUL || vim9_comment_start(p)))
 #endif
 			      ))
 	{
@@ -1813,7 +1822,8 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
 		else if (!(p[0] == '"' && p[1] == '\\' && p[2] == ' ')
 #ifdef FEAT_EVAL
 			&& !(in_vim9script()
-				       && (*p == NUL || vim9_comment_start(p)))
+				&& options == GETLINE_CONCAT_ALL
+				&& (*p == NUL || vim9_comment_start(p)))
 #endif
 			)
 		    break;
@@ -1900,7 +1910,7 @@ ex_scriptversion(exarg_T *eap UNUSED)
     }
     if (in_vim9script())
     {
-	emsg(_("E1040: Cannot use :scriptversion after :vim9script"));
+	emsg(_(e_cannot_use_scriptversion_after_vim9script));
 	return;
     }
 
@@ -1967,7 +1977,7 @@ do_finish(exarg_T *eap, int reanimate)
  */
     int
 source_finished(
-    char_u	*(*fgetline)(int, void *, int, int),
+    char_u	*(*fgetline)(int, void *, int, getline_opt_T),
     void	*cookie)
 {
     return (getline_equal(fgetline, cookie, getsourceline)
@@ -1991,7 +2001,7 @@ autoload_name(char_u *name)
     if (scriptname == NULL)
 	return NULL;
     STRCPY(scriptname, "autoload/");
-    STRCAT(scriptname, name);
+    STRCAT(scriptname, name[0] == 'g' && name[1] == ':' ? name + 2: name);
     for (p = scriptname + 9; (p = vim_strchr(p, AUTOLOAD_CHAR)) != NULL;
 								    q = p, ++p)
 	*p = '/';

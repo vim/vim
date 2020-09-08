@@ -5448,8 +5448,7 @@ ml_updatechunk(
 	    chunksize_T *t_chunksize = buf->b_ml.ml_chunksize;
 
 	    buf->b_ml.ml_numchunks = buf->b_ml.ml_numchunks * 3 / 2;
-	    buf->b_ml.ml_chunksize = (chunksize_T *)
-		vim_realloc(buf->b_ml.ml_chunksize,
+	    buf->b_ml.ml_chunksize = vim_realloc(buf->b_ml.ml_chunksize,
 			    sizeof(chunksize_T) * buf->b_ml.ml_numchunks);
 	    if (buf->b_ml.ml_chunksize == NULL)
 	    {

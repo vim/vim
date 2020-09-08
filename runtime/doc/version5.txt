@@ -1,4 +1,4 @@
-*version5.txt*  For Vim version 8.2.  Last change: 2016 Feb 27
+*version5.txt*  For Vim version 8.2.  Last change: 2020 Sep 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -2133,12 +2133,12 @@ it is invoked.
 Deleted the "os_archie" files, they were not working anyway.
 
 
-Multi-byte support					*new-multi-byte*
+Multi-byte support			*new-multi-byte* *new-multibyte*
 ------------------
 
 MultiByte support for Win32 GUI. (Baek)
 The 'fileencoding' option decides how the text in the file is encoded.
-":ascii" works for multi-byte characters.  Multi-byte characters work on
+":ascii" works for multibyte characters.  Multi-byte characters work on
 Windows 95, even when using the US version. (Aaron)
 Needs to be enabled in feature.h.
 This has not been tested much yet!
@@ -3671,10 +3671,10 @@ For the ":clist" command, you can scroll backwards with "b" (one screenful),
 "u" (half a screenful) and "k" (one line).
 
 Multi-byte support:
-- X-input method for multi-byte characters.  And various fixes for multi-byte
+- X-input method for multibyte characters.  And various fixes for multibyte
   support. (Nam)
 - Hangul input method feature: |hangul|. (Nam)
-- Cleaned up configuration of multi-byte support, XIM, fontset and Hangul
+- Cleaned up configuration of multibyte support, XIM, fontset and Hangul
   input.  Each is now configurable separately.
 - Changed check for GTK_KEYBOARD to HANGUL_KEYBOARD_TYPE. (Nam)
 - Added doc/hangulin.txt: Documentation for the Hangul input code. (Nam)
@@ -3682,10 +3682,10 @@ Multi-byte support:
 - First attempt to include support for SJIS encoding. (Nagano)
 - When a double-byte character doesn't fit at the end of the line, put a "~"
   there and print it on the next line.
-- Optimize output of multi-byte text. (Park)
+- Optimize output of multibyte text. (Park)
 - Win32 IME: preedit style is like over-the-spot. (Nagano)
 - Win32 IME: IME mode change now done with ImmSetOpenStatus. (Nagano)
-- GUI Athena: file selection dialog can display multi-byte characters.
+- GUI Athena: file selection dialog can display multibyte characters.
   (Nagano)
 - Selection reply for XA_TEXT as XA_STRING. (Nagano)
 
@@ -3720,7 +3720,7 @@ X11:
   with the VisualNOS group to show this. (Madsen)
 - Support for requesting the type of clipboard support.  Used for AIX and
   dtterm. (Wittig)
-- Support compound_text selection (even when compiled without multi-byte).
+- Support compound_text selection (even when compiled without multibyte).
 
 Swap file:
 - New variation for naming swap files: Replace path separators into %, place
@@ -4063,7 +4063,7 @@ compiling pathdef.c.  Replaced it with "tr".
 
 Perl: DO_JOIN was redefined by Perl.  Undefined it in the perl files.
 
-Various XIM and multi-byte fixes:
+Various XIM and multibyte fixes:
 - Fix user cannot see his language while he is typing his language with
   off-the-spot method. (Nagano)
 - Fix preedit position using text/edit area (using gui.wid). (Nagano)
@@ -4080,7 +4080,7 @@ Various XIM and multi-byte fixes:
 - XIM: Composed strings were sometimes ignored.  Vim crashed when compose
   string was longer than 256 bytes.  IM's geometry control is fixed. (Nam,
   Nagano)
-- Win32 multi-byte: hollowed cursor width on a double byte char was wrong.
+- Win32 multibyte: hollowed cursor width on a double byte char was wrong.
   (Nagano)
 - When there is no GUI, selecting XIM caused compilation problems.
   Automatically disable XIM when there is no GUI in configure.
@@ -4417,7 +4417,7 @@ Now map <xF4> to <F4>, so that the user can override this.
 When compiling os_win32.c with MIN_FEAT the apply_autocmds() should not be
 used. (Aaron)
 
-This autocommand looped forever: ":au FileChangedShell * nested e <afile>"
+This autocommand looped forever: ":au FileChangedShell * ++nested e <afile>"
 Now FileChangeShell never nests. (Roemer)
 
 When evaluating an ":elseif" that was not going to matter anyway, ignore
@@ -5496,7 +5496,7 @@ Solution:   When there is a comment leader for the new line, but 'autoindent'
 Files:	    src/misc1.c
 
 Patch 5.4.26
-Problem:    Multi-byte: a multi-byte character is never recognized in a file
+Problem:    Multi-byte: a multibyte character is never recognized in a file
 	    name, causing a backslash before it to be removed on Windows.
 Solution:   Assume that a leading-byte character is a file name character in
 	    vim_isfilec().
@@ -5945,7 +5945,7 @@ __TIME__. (John Card II)
 BeOS: Adjust computing the char_height and char_ascent.  Round them up
 separately, avoids redrawing artifacts. (Mike Steed)
 
-Fix a few multi-byte problems in menu_name_skip(), set_reg_ic(), searchc() and
+Fix a few multibyte problems in menu_name_skip(), set_reg_ic(), searchc() and
 findmatchlimit(). (Taro Muraoka)
 
 GTK GUI:
@@ -6631,9 +6631,9 @@ Solution:   Use a shell extension dll. (Tianmiao Hu)
 Files:	    src/dosinst.c, src/uninstal.c, gvimext/*, runtime/doc/gui_w32.txt
 
 Patch 5.6a.028 (extra)
-Problem:    Win32 GUI: Dialogs and tear-off menus can't handle multi-byte
+Problem:    Win32 GUI: Dialogs and tear-off menus can't handle multibyte
 	    characters.
-Solution:   Adjust nCopyAnsiToWideChar() to handle multi-byte characters
+Solution:   Adjust nCopyAnsiToWideChar() to handle multibyte characters
 	    correctly.
 Files:	    src/gui_w32.c
 
@@ -6727,9 +6727,9 @@ Many fixes to Macintosh specific parts: (mostly by Dany StAmant)
 - Add digraphs table. (Axel Kielhorn)
 - Multi-byte support: (Kenichi Asai)
   Switch keyscript when going in/out of Insert mode.
-  Draw multi-byte character correctly.
-  Don't use mblen() but highest bit of char to detect multi-byte char.
-  Display value of multi-byte in statusline (also for other systems).
+  Draw multibyte character correctly.
+  Don't use mblen() but highest bit of char to detect multibyte char.
+  Display value of multibyte in statusline (also for other systems).
 - mouse button was not initialized properly to MOUSE_LEFT when
   USE_CTRLCLICKMENU not defined.
 - With Japanese SJIS characters: Make "w", "b", and "e" work
@@ -6981,7 +6981,7 @@ Solution:   Support TEXT and COMPOUND_TEXT selection targets. (ChiDeok Hwang)
 Files:	    src/gui_gtk_x11.c
 
 Patch 5.6.037
-Problem:    Multi-byte: Can't use "f" command with multi-byte character in GUI.
+Problem:    Multi-byte: Can't use "f" command with multibyte character in GUI.
 Solution:   Enable XIM in Normal mode for the GUI. (Sung-Hyun Nam)
 Files:	    src/gui_gtk_x11.c, src/multbyte.c
 
@@ -7094,7 +7094,7 @@ Files:	    src/fileio.c, src/tag.c
 Patch 5.6.052
 Problem:    Multi-byte: When an Ex command has a '|' or '"' as a second byte,
 	    it terminates the command.
-Solution:   Skip second byte of multi-byte char when checking for '|' and '"'.
+Solution:   Skip second byte of multibyte char when checking for '|' and '"'.
 	    (Asai Kenichi)
 Files:	    src/ex_docmd.c
 
@@ -7246,7 +7246,7 @@ Files:	    src/Makefile.bor, src/dosinst.c
 
 Patch 5.6.074 (extra)
 Problem:    Entering CSI directly doesn't always work, because it's recognized
-	    as the start of a special key.  Mostly a problem with multi-byte
+	    as the start of a special key.  Mostly a problem with multibyte
 	    in the GUI.
 Solution:   Use K_CSI for a typed CSI character.  Use <CSI> for a normal CSI,
 	    <xCSI> for a CSI typed in the GUI.
@@ -7337,7 +7337,7 @@ Solution:   Use IsBadStringPtr() to check if the pointer is valid.
 Files:	    src/os_win32.c
 
 Patch 5.6.087
-Problem:    Multi-byte: Commands and messages with multi-byte characters are
+Problem:    Multi-byte: Commands and messages with multibyte characters are
 	    displayed wrong.
 Solution:   Detect double-byte characters. (Yasuhiro Matsumoto)
 Files:	    src/ex_getln.c, src/message.c, src/misc2.c, src/screen.c
@@ -7384,9 +7384,9 @@ Solution:   Don't write a message about the file read from stdin until the GUI
 Files:	    src/fileio.c
 
 Patch 5.6.094
-Problem:    Problem with multi-byte string for ":echo var".
+Problem:    Problem with multibyte string for ":echo var".
 Solution:   Check for length in msg_outtrans_len_attr(). (Sung-Hyun Nam)
-	    Also make do_echo() aware of multi-byte characters.
+	    Also make do_echo() aware of multibyte characters.
 Files:	    src/eval.c, src/message.c
 
 Patch 5.6.095
@@ -7417,9 +7417,9 @@ Files:	    src/misc1.c
 
 Patch 5.7a.003
 Problem:    Multi-byte: After using CTRL-O in Insert mode with the cursor at
-	    the end of the line on a multi-byte character the cursor moves to
+	    the end of the line on a multibyte character the cursor moves to
 	    the left.
-Solution:   Check for multi-byte character at end-of-line. (Taro Muraoka)
+Solution:   Check for multibyte character at end-of-line. (Taro Muraoka)
 	    Also: fix cls() to detect a double-byte character. (Chong-Dae Park)
 Files:	    src/edit.c, src/search.c
 
@@ -7736,7 +7736,7 @@ Solution:   Disallow executing a shell command in get_cmd_output() and
 Files:	    src/misc1.c, src/os_unix.c
 
 Patch 5.7.019
-Problem:    Multibyte: In a substitute string, a multi-byte character isn't
+Problem:    Multibyte: In a substitute string, a multibyte character isn't
 	    skipped properly, can be a problem when the second byte is a
 	    backslash.
 Solution:   Skip an extra byte for a double-byte character. (Muraoka Taro)

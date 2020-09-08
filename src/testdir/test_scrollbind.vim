@@ -1,4 +1,5 @@
 " Test for 'scrollbind' causing an unexpected scroll of one of the windows.
+
 func Test_scrollbind()
   " We don't want the status line to cause problems:
   set laststatus=0
@@ -270,3 +271,5 @@ end of window 2
   new | only!
   set scrollbind& scrollopt& scrolloff& wrap& equalalways& splitbelow&
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -471,8 +471,8 @@ SOUND_LIB	= winmm.lib
 !endif
 
 !if "$(CHANNEL)" == "yes"
-CHANNEL_PRO	= proto/channel.pro
-CHANNEL_OBJ	= $(OBJDIR)/channel.obj
+CHANNEL_PRO	= proto/job.pro proto/channel.pro
+CHANNEL_OBJ	= $(OBJDIR)/job.obj $(OBJDIR)/channel.obj
 CHANNEL_DEFS	= -DFEAT_JOB_CHANNEL -DFEAT_IPV6
 ! if $(WINVER) >= 0x600
 CHANNEL_DEFS	= $(CHANNEL_DEFS) -DHAVE_INET_NTOP
@@ -719,7 +719,7 @@ CFLAGS = $(CFLAGS) $(CFLAGS_DEPR)
 !include Make_all.mak
 !include testdir\Make_all.mak
 
-INCL =	vim.h alloc.h ascii.h ex_cmds.h feature.h globals.h \
+INCL =	vim.h alloc.h ascii.h ex_cmds.h feature.h errors.h globals.h \
 	keymap.h macros.h option.h os_dos.h os_win32.h proto.h regexp.h \
 	spell.h structs.h term.h beval.h $(NBDEBUG_INCL)
 
@@ -1326,14 +1326,6 @@ MAIN_TARGET = $(VIM).exe
 # Target to run individual tests.
 VIMTESTTARGET = $(VIM).exe
 
-OLD_TEST_OUTFILES = \
-	$(SCRIPTS_FIRST) \
-	$(SCRIPTS_ALL) \
-	$(SCRIPTS_MORE1) \
-	$(SCRIPTS_MORE4) \
-	$(SCRIPTS_WIN32) \
-	$(SCRIPTS_GUI)
-
 all:	$(MAIN_TARGET) \
 	vimrun.exe \
 	install.exe \
@@ -1472,12 +1464,22 @@ cmdidxs: ex_cmds.h
 
 test:
 	cd testdir
-	$(MAKE) /NOLOGO -f Make_dos.mak win32
+	$(MAKE) /NOLOGO -f Make_dos.mak
 	cd ..
 
 testgvim:
 	cd testdir
-	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\gvim win32
+	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\gvim
+	cd ..
+
+testtiny:
+	cd testdir
+	$(MAKE) /NOLOGO -f Make_dos.mak tiny
+	cd ..
+
+testgvimtiny:
+	cd testdir
+	$(MAKE) /NOLOGO -f Make_dos.mak tiny VIMPROG=..\gvim
 	cd ..
 
 testclean:
@@ -1487,7 +1489,7 @@ testclean:
 
 # Run individual OLD style test.
 # These do not depend on the executable, compile it when needed.
-$(OLD_TEST_OUTFILES:.out=):
+$(SCRIPTS_TINY):
 	cd testdir
 	- if exist $@.out del $@.out
 	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) nolog
@@ -1671,6 +1673,8 @@ $(OUTDIR)/if_tcl.obj: $(OUTDIR) if_tcl.c  $(INCL)
 $(OUTDIR)/iscygpty.obj:	$(OUTDIR) iscygpty.c $(CUI_INCL)
 	$(CC) $(CFLAGS_OUTDIR) iscygpty.c -D_WIN32_WINNT=0x0600 -DUSE_DYNFILEID -DENABLE_STUB_IMPL
 
+$(OUTDIR)/job.obj:	$(OUTDIR) job.c $(INCL)
+
 $(OUTDIR)/json.obj:	$(OUTDIR) json.c  $(INCL)
 
 $(OUTDIR)/list.obj:	$(OUTDIR) list.c  $(INCL)
@@ -1701,11 +1705,11 @@ $(OUTDIR)/mouse.obj:	$(OUTDIR) mouse.c  $(INCL)
 
 $(OUTDIR)/move.obj:	$(OUTDIR) move.c  $(INCL)
 
-$(OUTDIR)/mbyte.obj: $(OUTDIR) mbyte.c  $(INCL)
+$(OUTDIR)/mbyte.obj:	$(OUTDIR) mbyte.c  $(INCL)
 
-$(OUTDIR)/netbeans.obj: $(OUTDIR) netbeans.c $(NBDEBUG_SRC) $(INCL) version.h
+$(OUTDIR)/netbeans.obj:	$(OUTDIR) netbeans.c $(NBDEBUG_SRC) $(INCL) version.h
 
-$(OUTDIR)/channel.obj: $(OUTDIR) channel.c $(INCL)
+$(OUTDIR)/channel.obj:	$(OUTDIR) channel.c $(INCL)
 
 $(OUTDIR)/normal.obj:	$(OUTDIR) normal.c  $(INCL)
 

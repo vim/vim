@@ -909,7 +909,19 @@ win_line(
 	    if (!cul_screenline)
 	    {
 		cul_attr = HL_ATTR(HLF_CUL);
-		line_attr = cul_attr;
+# ifdef FEAT_SIGNS
+		// Combine the 'cursorline' and sign highlighting, depending on
+		// the sign priority.
+		if (sign_present && sattr.sat_linehl > 0)
+		{
+		    if (sattr.sat_priority >= 100)
+			line_attr = hl_combine_attr(cul_attr, line_attr);
+		    else
+			line_attr = hl_combine_attr(line_attr, cul_attr);
+		}
+		else
+# endif
+		    line_attr = cul_attr;
 		wp->w_last_cursorline = wp->w_cursor.lnum;
 	    }
 	    else

@@ -263,4 +263,6 @@ func Test_list_with_tab_and_skipping_first_chars()
 \ ]
   call s:compare_lines(expect, lines)
   call s:close_windows()
-endfu
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -43,8 +43,9 @@ func Test_writefile_fails_gently()
 endfunc
 
 func Test_writefile_fails_conversion()
-  if !has('iconv') || has('sun')
-    return
+  CheckFeature iconv
+  if has('sun')
+    throw 'Skipped: does not work on SunOS'
   endif
   " Without a backup file the write won't happen if there is a conversion
   " error.
@@ -63,8 +64,9 @@ func Test_writefile_fails_conversion()
 endfunc
 
 func Test_writefile_fails_conversion2()
-  if !has('iconv') || has('sun')
-    return
+  CheckFeature iconv
+  if has('sun')
+    throw 'Skipped: does not work on SunOS'
   endif
   " With a backup file the write happens even if there is a conversion error,
   " but then the backup file must remain
@@ -266,9 +268,9 @@ func Test_write_file_mtime()
   call writefile(["Line1", "Line2"], 'Xfile')
   let old_ftime = getftime('Xfile')
   let buf = RunVimInTerminal('Xfile', #{rows : 10})
-  call term_wait(buf)
+  call TermWait(buf)
   call term_sendkeys(buf, ":set noswapfile\<CR>")
-  call term_wait(buf)
+  call TermWait(buf)
 
   " Modify the file directly.  Make sure the file modification time is
   " different. Note that on Linux/Unix, the file is considered modified
@@ -284,17 +286,17 @@ func Test_write_file_mtime()
 
   " Try to overwrite the file and check for the prompt
   call term_sendkeys(buf, ":w\<CR>")
-  call term_wait(buf)
+  call TermWait(buf)
   call WaitForAssert({-> assert_equal("WARNING: The file has been changed since reading it!!!", term_getline(buf, 9))})
   call assert_equal("Do you really want to write to it (y/n)?",
         \ term_getline(buf, 10))
   call term_sendkeys(buf, "n\<CR>")
-  call term_wait(buf)
+  call TermWait(buf)
   call assert_equal(new_ftime, getftime('Xfile'))
   call term_sendkeys(buf, ":w\<CR>")
-  call term_wait(buf)
+  call TermWait(buf)
   call term_sendkeys(buf, "y\<CR>")
-  call term_wait(buf)
+  call TermWait(buf)
   call WaitForAssert({-> assert_equal('Line2', readfile('Xfile')[1])})
 
   " clean up
@@ -308,7 +310,7 @@ func Test_write_autocmd_unloadbuf_lockmark()
     autocmd BufWritePre Xfile enew | write
   augroup END
   e Xfile
-  call assert_fails('lockmarks write', ['E32', 'E203:'])
+  call assert_fails('lockmarks write', ['E32:', 'E203:'])
   augroup WriteTest
     au!
   augroup END
@@ -669,7 +671,7 @@ func Test_readwrite_file_with_bom()
   set cpoptions-=S
   let &fileencoding = save_fileencoding
   call delete('Xtest1')
-  call delete('Xtest2')
+  call delete('Xfile2')
   call delete('Xtest3')
   %bw!
 endfunc

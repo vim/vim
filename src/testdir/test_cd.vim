@@ -191,3 +191,5 @@ func Test_cd_completion()
   call delete('XComplDir2', 'd')
   call delete('XComplFile')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

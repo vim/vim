@@ -10,9 +10,8 @@ endfunc
 
 " Tests for 'directory' option.
 func Test_swap_directory()
-  if !has("unix")
-    return
-  endif
+  CheckUnix
+
   let content = ['start of testfile',
 	      \ 'line 2 Abcdefghij',
 	      \ 'line 3 Abcdefghij',
@@ -56,9 +55,8 @@ func Test_swap_directory()
 endfunc
 
 func Test_swap_group()
-  if !has("unix")
-    return
-  endif
+  CheckUnix
+
   let groups = split(system('groups'))
   if len(groups) <= 1
     throw 'Skipped: need at least two groups, got ' . string(groups)
@@ -378,9 +376,7 @@ func Test_swap_prompt_splitwin()
 endfunc
 
 func Test_swap_symlink()
-  if !has("unix")
-    return
-  endif
+  CheckUnix
 
   call writefile(['text'], 'Xtestfile')
   silent !ln -s -f Xtestfile Xtestlink

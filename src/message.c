@@ -655,7 +655,13 @@ emsg_core(char_u *s)
 	}
 
 	if (emsg_assert_fails_used && emsg_assert_fails_msg == NULL)
+	{
 	    emsg_assert_fails_msg = vim_strsave(s);
+	    emsg_assert_fails_lnum = SOURCING_LNUM;
+	    vim_free(emsg_assert_fails_context);
+	    emsg_assert_fails_context = vim_strsave(
+			 SOURCING_NAME == NULL ? (char_u *)"" : SOURCING_NAME);
+	}
 
 	// set "v:errmsg", also when using ":silent! cmd"
 	set_vim_var_string(VV_ERRMSG, s, -1);

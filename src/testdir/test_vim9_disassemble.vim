@@ -35,7 +35,7 @@ enddef
 
 def Test_disassemble_load()
   assert_fails('disass NoFunc', 'E1061:')
-  assert_fails('disass NotCompiled', 'E1062:')
+  assert_fails('disass NotCompiled', 'E1091:')
   assert_fails('disass', 'E471:')
   assert_fails('disass [', 'E475:')
   assert_fails('disass 234', 'E129:')
@@ -83,20 +83,37 @@ enddef
 
 def Test_disassemble_exec_expr()
   let res = execute('disass s:EditExpand')
-  assert_match('<SNR>\d*_EditExpand.*' ..
-        ' let filename = "file".*' ..
-        '\d PUSHS "file".*' ..
-        '\d STORE $0.*' ..
-        ' let filenr = 123.*' ..
-        '\d STORE 123 in $1.*' ..
-        ' edit the`=filename``=filenr`.txt.*' ..
-        '\d PUSHS "edit the".*' ..
-        '\d LOAD $0.*' ..
-        '\d LOAD $1.*' ..
-        '\d 2STRING stack\[-1\].*' ..
-        '\d PUSHS ".txt".*' ..
-        '\d EXECCONCAT 4.*' ..
-        '\d PUSHNR 0.*' ..
+  assert_match('<SNR>\d*_EditExpand\_s*' ..
+        ' let filename = "file"\_s*' ..
+        '\d PUSHS "file"\_s*' ..
+        '\d STORE $0\_s*' ..
+        ' let filenr = 123\_s*' ..
+        '\d STORE 123 in $1\_s*' ..
+        ' edit the`=filename``=filenr`.txt\_s*' ..
+        '\d PUSHS "edit the"\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d LOAD $1\_s*' ..
+        '\d 2STRING stack\[-1\]\_s*' ..
+        '\d\+ PUSHS ".txt"\_s*' ..
+        '\d\+ EXECCONCAT 4\_s*' ..
+        '\d\+ PUSHNR 0\_s*' ..
+        '\d\+ RETURN',
+        res)
+enddef
+
+def s:YankRange()
+  norm! m[jjm]
+  :'[,']yank
+enddef
+
+def Test_disassemble_yank_range()
+  let res = execute('disass s:YankRange')
+  assert_match('<SNR>\d*_YankRange.*' ..
+        ' norm! m\[jjm\]\_s*' ..
+        '\d EXEC   norm! m\[jjm\]\_s*' ..
+        '  :''\[,''\]yank\_s*' ..
+        '\d EXEC   :''\[,''\]yank\_s*' ..
+        '\d PUSHNR 0\_s*' ..
         '\d RETURN',
         res)
 enddef
@@ -541,7 +558,7 @@ def HasSomething()
 enddef
 
 def Test_disassemble_const_expr()
-  assert_equal("\nyes", execute('call HasEval()'))
+  assert_equal("\nyes", execute('HasEval()'))
   let instr = execute('disassemble HasEval')
   assert_match('HasEval\_s*' ..
         'if has("eval")\_s*' ..
@@ -554,7 +571,7 @@ def Test_disassemble_const_expr()
         instr)
   assert_notmatch('JUMP', instr)
 
-  assert_equal("\nno", execute('call HasNothing()'))
+  assert_equal("\nno", execute('HasNothing()'))
   instr = execute('disassemble HasNothing')
   assert_match('HasNothing\_s*' ..
         'if has("nothing")\_s*' ..
@@ -568,7 +585,7 @@ def Test_disassemble_const_expr()
   assert_notmatch('PUSHS "yes"', instr)
   assert_notmatch('JUMP', instr)
 
-  assert_equal("\neval", execute('call HasSomething()'))
+  assert_equal("\neval", execute('HasSomething()'))
   instr = execute('disassemble HasSomething')
   assert_match('HasSomething.*' ..
         'if has("nothing")\_s*' ..
@@ -691,7 +708,7 @@ def Test_disassemble_lambda()
         'return "X" .. a .. "X"\_s*' ..
         '\d PUSHS "X"\_s*' ..
         '\d LOAD arg\[-1\]\_s*' ..
-        '\d 2STRING stack\[-1\]\_s*' ..
+        '\d 2STRING_ANY stack\[-1\]\_s*' ..
         '\d CONCAT\_s*' ..
         '\d PUSHS "X"\_s*' ..
         '\d CONCAT\_s*' ..
@@ -947,14 +964,14 @@ def Test_disassemble_concat()
         'let res = g:aa .. "bb".*' ..
         '\d LOADG g:aa.*' ..
         '\d PUSHS "bb".*' ..
-        '\d 2STRING stack\[-2].*' ..
+        '\d 2STRING_ANY stack\[-2].*' ..
         '\d CONCAT.*' ..
         '\d STORE $.*',
         instr)
   assert_equal('aabb', ConcatString())
 enddef
 
-def StringIndex(): number
+def StringIndex(): string
   let s = "abcd"
   let res = s[1]
   return res
@@ -973,6 +990,28 @@ def Test_disassemble_string_index()
         '\d STORE $1\_s*',
         instr)
   assert_equal('b', StringIndex())
+enddef
+
+def StringSlice(): string
+  let s = "abcd"
+  let res = s[1:8]
+  return res
+enddef
+
+def Test_disassemble_string_slice()
+  let instr = execute('disassemble StringSlice')
+  assert_match('StringSlice\_s*' ..
+        'let s = "abcd"\_s*' ..
+        '\d PUSHS "abcd"\_s*' ..
+        '\d STORE $0\_s*' ..
+        'let res = s\[1:8]\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d PUSHNR 8\_s*' ..
+        '\d STRSLICE\_s*' ..
+        '\d STORE $1\_s*',
+        instr)
+  assert_equal('bcd', StringSlice())
 enddef
 
 def ListIndex(): number
@@ -997,6 +1036,31 @@ def Test_disassemble_list_index()
         '\d STORE $1\_s*',
         instr)
   assert_equal(2, ListIndex())
+enddef
+
+def ListSlice(): list<number>
+  let l = [1, 2, 3]
+  let res = l[1:8]
+  return res
+enddef
+
+def Test_disassemble_list_slice()
+  let instr = execute('disassemble ListSlice')
+  assert_match('ListSlice\_s*' ..
+        'let l = \[1, 2, 3]\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d PUSHNR 2\_s*' ..
+        '\d PUSHNR 3\_s*' ..
+        '\d NEWLIST size 3\_s*' ..
+        '\d STORE $0\_s*' ..
+        'let res = l\[1:8]\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d PUSHNR 8\_s*' ..
+        '\d LISTSLICE\_s*' ..
+        '\d STORE $1\_s*',
+        instr)
+  assert_equal([2, 3], ListSlice())
 enddef
 
 def DictMember(): number
@@ -1024,7 +1088,51 @@ def Test_disassemble_dict_member()
         '\d\+ MEMBER\_s*' ..
         '\d\+ STORE $1\_s*',
         instr)
-  call assert_equal(1, DictMember())
+  assert_equal(1, DictMember())
+enddef
+
+let somelist = [1, 2, 3, 4, 5]
+def AnyIndex(): number
+  let res = g:somelist[2]
+  return res
+enddef
+
+def Test_disassemble_any_index()
+  let instr = execute('disassemble AnyIndex')
+  assert_match('AnyIndex\_s*' ..
+        'let res = g:somelist\[2\]\_s*' ..
+        '\d LOADG g:somelist\_s*' ..
+        '\d PUSHNR 2\_s*' ..
+        '\d ANYINDEX\_s*' ..
+        '\d STORE $0\_s*' ..
+        'return res\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d CHECKTYPE number stack\[-1\]\_s*' ..
+        '\d RETURN',
+        instr)
+  assert_equal(3, AnyIndex())
+enddef
+
+def AnySlice(): list<number>
+  let res = g:somelist[1:3]
+  return res
+enddef
+
+def Test_disassemble_any_slice()
+  let instr = execute('disassemble AnySlice')
+  assert_match('AnySlice\_s*' ..
+        'let res = g:somelist\[1:3\]\_s*' ..
+        '\d LOADG g:somelist\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d PUSHNR 3\_s*' ..
+        '\d ANYSLICE\_s*' ..
+        '\d STORE $0\_s*' ..
+        'return res\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d CHECKTYPE list stack\[-1\]\_s*' ..
+        '\d RETURN',
+        instr)
+  assert_equal([2, 3, 4], AnySlice())
 enddef
 
 def NegateNumber(): number
@@ -1048,7 +1156,7 @@ def Test_disassemble_negate_number()
         '\d NEGATENR\_s*' ..
         '\d STORE $2\_s*',
         instr)
-  call assert_equal(-9, NegateNumber())
+  assert_equal(-9, NegateNumber())
 enddef
 
 def InvertBool(): bool
@@ -1073,7 +1181,7 @@ def Test_disassemble_invert_bool()
         '\d 2BOOL (!!val)\_s*' ..
         '\d STORE $2\_s*',
         instr)
-  call assert_equal(true, InvertBool())
+  assert_equal(true, InvertBool())
 enddef
 
 def Test_disassemble_compare()

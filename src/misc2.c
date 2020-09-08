@@ -3341,7 +3341,7 @@ same_directory(char_u *f1, char_u *f2)
 }
 
 #if defined(FEAT_SESSION) || defined(FEAT_AUTOCHDIR) \
-	|| defined(MSWIN) || defined(FEAT_GUI_MAC) || defined(FEAT_GUI_GTK) \
+	|| defined(MSWIN) || defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_NETBEANS_INTG) \
 	|| defined(PROTO)
 /*

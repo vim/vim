@@ -17,3 +17,5 @@ func Test_ex_undo()
   call assert_equal(1, line('$'))
   quit!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

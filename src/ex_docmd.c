@@ -20,9 +20,9 @@ static int	ex_pressedreturn = FALSE;
 #endif
 
 #ifdef FEAT_EVAL
-static char_u	*do_one_cmd(char_u **, int, cstack_T *, char_u *(*fgetline)(int, void *, int, int), void *cookie);
+static char_u	*do_one_cmd(char_u **, int, cstack_T *, char_u *(*fgetline)(int, void *, int, getline_opt_T), void *cookie);
 #else
-static char_u	*do_one_cmd(char_u **, int, char_u *(*fgetline)(int, void *, int, int), void *cookie);
+static char_u	*do_one_cmd(char_u **, int, char_u *(*fgetline)(int, void *, int, getline_opt_T), void *cookie);
 static int	if_level = 0;		// depth in :if
 #endif
 static void	append_command(char_u *cmd);
@@ -66,7 +66,9 @@ static int	getargopt(exarg_T *eap);
 # define ex_cexpr		ex_ni
 #endif
 
+static linenr_T default_address(exarg_T *eap);
 static linenr_T get_address(exarg_T *, char_u **, cmd_addr_T addr_type, int skip, int silent, int to_other_file, int address_count);
+static void address_default_all(exarg_T *eap);
 static void	get_flags(exarg_T *eap);
 #if !defined(FEAT_PERL) \
 	|| !defined(FEAT_PYTHON) || !defined(FEAT_PYTHON3) \
@@ -403,11 +405,11 @@ struct loop_cookie
     int		current_line;		// last read line from growarray
     int		repeating;		// TRUE when looping a second time
     // When "repeating" is FALSE use "getline" and "cookie" to get lines
-    char_u	*(*getline)(int, void *, int, int);
+    char_u	*(*getline)(int, void *, int, getline_opt_T);
     void	*cookie;
 };
 
-static char_u	*get_loop_line(int c, void *cookie, int indent, int do_concat);
+static char_u	*get_loop_line(int c, void *cookie, int indent, getline_opt_T options);
 static int	store_loop_line(garray_T *gap, char_u *line);
 static void	free_cmdlines(garray_T *gap);
 
@@ -612,7 +614,7 @@ do_cmdline_cmd(char_u *cmd)
     int
 do_cmdline(
     char_u	*cmdline,
-    char_u	*(*fgetline)(int, void *, int, int),
+    char_u	*(*fgetline)(int, void *, int, getline_opt_T),
     void	*cookie,		// argument for fgetline()
     int		flags)
 {
@@ -638,7 +640,7 @@ do_cmdline(
     msglist_T	*private_msg_list;
 
     // "fgetline" and "cookie" passed to do_one_cmd()
-    char_u	*(*cmd_getline)(int, void *, int, int);
+    char_u	*(*cmd_getline)(int, void *, int, getline_opt_T);
     void	*cmd_cookie;
     struct loop_cookie cmd_loop_cookie;
     void	*real_cookie;
@@ -1419,7 +1421,7 @@ do_cmdline(
  * Obtain a line when inside a ":while" or ":for" loop.
  */
     static char_u *
-get_loop_line(int c, void *cookie, int indent, int do_concat)
+get_loop_line(int c, void *cookie, int indent, getline_opt_T options)
 {
     struct loop_cookie	*cp = (struct loop_cookie *)cookie;
     wcmd_T		*wp;
@@ -1432,9 +1434,9 @@ get_loop_line(int c, void *cookie, int indent, int do_concat)
 
 	// First time inside the ":while"/":for": get line normally.
 	if (cp->getline == NULL)
-	    line = getcmdline(c, 0L, indent, do_concat);
+	    line = getcmdline(c, 0L, indent, options);
 	else
-	    line = cp->getline(c, cp->cookie, indent, do_concat);
+	    line = cp->getline(c, cp->cookie, indent, options);
 	if (line != NULL && store_loop_line(cp->lines_gap, line) == OK)
 	    ++cp->current_line;
 
@@ -1482,12 +1484,12 @@ free_cmdlines(garray_T *gap)
  */
     int
 getline_equal(
-    char_u	*(*fgetline)(int, void *, int, int),
+    char_u	*(*fgetline)(int, void *, int, getline_opt_T),
     void	*cookie UNUSED,		// argument for fgetline()
-    char_u	*(*func)(int, void *, int, int))
+    char_u	*(*func)(int, void *, int, getline_opt_T))
 {
 #ifdef FEAT_EVAL
-    char_u		*(*gp)(int, void *, int, int);
+    char_u		*(*gp)(int, void *, int, getline_opt_T);
     struct loop_cookie *cp;
 
     // When "fgetline" is "get_loop_line()" use the "cookie" to find the
@@ -1512,11 +1514,11 @@ getline_equal(
  */
     void *
 getline_cookie(
-    char_u	*(*fgetline)(int, void *, int, int) UNUSED,
+    char_u	*(*fgetline)(int, void *, int, getline_opt_T) UNUSED,
     void	*cookie)		// argument for fgetline()
 {
 #ifdef FEAT_EVAL
-    char_u		*(*gp)(int, void *, int, int);
+    char_u		*(*gp)(int, void *, int, getline_opt_T);
     struct loop_cookie  *cp;
 
     // When "fgetline" is "get_loop_line()" use the "cookie" to find the
@@ -1541,10 +1543,10 @@ getline_cookie(
  */
     char_u *
 getline_peek(
-    char_u	*(*fgetline)(int, void *, int, int) UNUSED,
+    char_u	*(*fgetline)(int, void *, int, getline_opt_T) UNUSED,
     void	*cookie)		// argument for fgetline()
 {
-    char_u		*(*gp)(int, void *, int, int);
+    char_u		*(*gp)(int, void *, int, getline_opt_T);
     struct loop_cookie  *cp;
     wcmd_T		*wp;
 
@@ -1694,7 +1696,7 @@ do_one_cmd(
 #ifdef FEAT_EVAL
     cstack_T	*cstack,
 #endif
-    char_u	*(*fgetline)(int, void *, int, int),
+    char_u	*(*fgetline)(int, void *, int, getline_opt_T),
     void	*cookie)		// argument for fgetline()
 {
     char_u	*p;
@@ -1789,7 +1791,7 @@ do_one_cmd(
 	    --ea.cmd;
 	else if (ea.cmd > cmd)
 	{
-	    emsg(_(e_colon_required));
+	    emsg(_(e_colon_required_before_a_range));
 	    goto doend;
 	}
 	p = find_ex_command(&ea, NULL, lookup_scriptvar, NULL);
@@ -1880,7 +1882,9 @@ do_one_cmd(
 
     ea.cmd = cmd;
 #ifdef FEAT_EVAL
-    if (may_have_range)
+    if (!may_have_range)
+	ea.line1 = ea.line2 = default_address(&ea);
+    else
 #endif
 	if (parse_cmd_address(&ea, &errormsg, FALSE) == FAIL)
 	    goto doend;
@@ -2282,59 +2286,7 @@ do_one_cmd(
     }
 
     if ((ea.argt & EX_DFLALL) && ea.addr_count == 0)
-    {
-	buf_T	    *buf;
-
-	ea.line1 = 1;
-	switch (ea.addr_type)
-	{
-	    case ADDR_LINES:
-	    case ADDR_OTHER:
-		ea.line2 = curbuf->b_ml.ml_line_count;
-		break;
-	    case ADDR_LOADED_BUFFERS:
-		buf = firstbuf;
-		while (buf->b_next != NULL && buf->b_ml.ml_mfp == NULL)
-		    buf = buf->b_next;
-		ea.line1 = buf->b_fnum;
-		buf = lastbuf;
-		while (buf->b_prev != NULL && buf->b_ml.ml_mfp == NULL)
-		    buf = buf->b_prev;
-		ea.line2 = buf->b_fnum;
-		break;
-	    case ADDR_BUFFERS:
-		ea.line1 = firstbuf->b_fnum;
-		ea.line2 = lastbuf->b_fnum;
-		break;
-	    case ADDR_WINDOWS:
-		ea.line2 = LAST_WIN_NR;
-		break;
-	    case ADDR_TABS:
-		ea.line2 = LAST_TAB_NR;
-		break;
-	    case ADDR_TABS_RELATIVE:
-		ea.line2 = 1;
-		break;
-	    case ADDR_ARGUMENTS:
-		if (ARGCOUNT == 0)
-		    ea.line1 = ea.line2 = 0;
-		else
-		    ea.line2 = ARGCOUNT;
-		break;
-	    case ADDR_QUICKFIX_VALID:
-#ifdef FEAT_QUICKFIX
-		ea.line2 = qf_get_valid_size(&ea);
-		if (ea.line2 == 0)
-		    ea.line2 = 1;
-#endif
-		break;
-	    case ADDR_NONE:
-	    case ADDR_UNSIGNED:
-	    case ADDR_QUICKFIX:
-		iemsg(_("INTERNAL: Cannot use EX_DFLALL with ADDR_NONE, ADDR_UNSIGNED or ADDR_QUICKFIX"));
-		break;
-	}
-    }
+	address_default_all(&ea);
 
     // accept numbered register only when no count allowed (:put)
     if (       (ea.argt & EX_REGSTR)
@@ -3011,50 +2963,7 @@ parse_cmd_address(exarg_T *eap, char **errormsg, int silent)
     for (;;)
     {
 	eap->line1 = eap->line2;
-	switch (eap->addr_type)
-	{
-	    case ADDR_LINES:
-	    case ADDR_OTHER:
-		// Default is the cursor line number.  Avoid using an invalid
-		// line number though.
-		if (curwin->w_cursor.lnum > curbuf->b_ml.ml_line_count)
-		    eap->line2 = curbuf->b_ml.ml_line_count;
-		else
-		    eap->line2 = curwin->w_cursor.lnum;
-		break;
-	    case ADDR_WINDOWS:
-		eap->line2 = CURRENT_WIN_NR;
-		break;
-	    case ADDR_ARGUMENTS:
-		eap->line2 = curwin->w_arg_idx + 1;
-		if (eap->line2 > ARGCOUNT)
-		    eap->line2 = ARGCOUNT;
-		break;
-	    case ADDR_LOADED_BUFFERS:
-	    case ADDR_BUFFERS:
-		eap->line2 = curbuf->b_fnum;
-		break;
-	    case ADDR_TABS:
-		eap->line2 = CURRENT_TAB_NR;
-		break;
-	    case ADDR_TABS_RELATIVE:
-	    case ADDR_UNSIGNED:
-		eap->line2 = 1;
-		break;
-	    case ADDR_QUICKFIX:
-#ifdef FEAT_QUICKFIX
-		eap->line2 = qf_get_cur_idx(eap);
-#endif
-		break;
-	    case ADDR_QUICKFIX_VALID:
-#ifdef FEAT_QUICKFIX
-		eap->line2 = qf_get_cur_valid_idx(eap);
-#endif
-		break;
-	    case ADDR_NONE:
-		// Will give an error later if a range is found.
-		break;
-	}
+	eap->line2 = default_address(eap);
 	eap->cmd = skipwhite(eap->cmd);
 	lnum = get_address(eap, &eap->cmd, eap->addr_type, eap->skip, silent,
 					eap->addr_count == 0, address_count++);
@@ -3243,6 +3152,27 @@ append_command(char_u *cmd)
 }
 
 /*
+ * If "start" points "&opt", "&l:opt", "&g:opt" or "$ENV" return a pointer to
+ * the name.  Otherwise just return "start".
+ */
+    char_u *
+skip_option_env_lead(char_u *start)
+{
+    char_u *name = start;
+
+    if (*start == '&')
+    {
+	if ((start[1] == 'l' || start[1] == 'g') && start[2] == ':')
+	    name += 3;
+	else
+	    name += 1;
+    }
+    else if (*start == '$')
+	name += 1;
+    return name;
+}
+
+/*
  * Find an Ex command by its name, either built-in or user.
  * Start of the name can be found at eap->cmd.
  * Sets eap->cmdidx and returns a pointer to char after the command name.
@@ -3273,9 +3203,7 @@ find_ex_command(
     p = eap->cmd;
     if (lookup != NULL)
     {
-	// Skip over first char for "&opt = val", "$ENV = val" and "@r = val".
-	char_u *pskip = (*eap->cmd == '&' || *eap->cmd == '$')
-						     ? eap->cmd + 1 : eap->cmd;
+	char_u *pskip = skip_option_env_lead(eap->cmd);
 
 	if (vim_strchr((char_u *)"{('[\"@", *p) != NULL
 	       || ((p = to_name_const_end(pskip)) > eap->cmd && *p != NUL))
@@ -3654,6 +3582,61 @@ addr_error(cmd_addr_T addr_type)
 }
 
 /*
+ * Return the default address for an address type.
+ */
+    static linenr_T
+default_address(exarg_T *eap)
+{
+    linenr_T lnum = 0;
+
+    switch (eap->addr_type)
+    {
+	case ADDR_LINES:
+	case ADDR_OTHER:
+	    // Default is the cursor line number.  Avoid using an invalid
+	    // line number though.
+	    if (curwin->w_cursor.lnum > curbuf->b_ml.ml_line_count)
+		lnum = curbuf->b_ml.ml_line_count;
+	    else
+		lnum = curwin->w_cursor.lnum;
+	    break;
+	case ADDR_WINDOWS:
+	    lnum = CURRENT_WIN_NR;
+	    break;
+	case ADDR_ARGUMENTS:
+	    lnum = curwin->w_arg_idx + 1;
+	    if (lnum > ARGCOUNT)
+		lnum = ARGCOUNT;
+	    break;
+	case ADDR_LOADED_BUFFERS:
+	case ADDR_BUFFERS:
+	    lnum = curbuf->b_fnum;
+	    break;
+	case ADDR_TABS:
+	    lnum = CURRENT_TAB_NR;
+	    break;
+	case ADDR_TABS_RELATIVE:
+	case ADDR_UNSIGNED:
+	    lnum = 1;
+	    break;
+	case ADDR_QUICKFIX:
+#ifdef FEAT_QUICKFIX
+	    lnum = qf_get_cur_idx(eap);
+#endif
+	    break;
+	case ADDR_QUICKFIX_VALID:
+#ifdef FEAT_QUICKFIX
+	    lnum = qf_get_cur_valid_idx(eap);
+#endif
+	    break;
+	case ADDR_NONE:
+	    // Will give an error later if a range is found.
+	    break;
+    }
+    return lnum;
+}
+
+/*
  * Get a single EX address.
  *
  * Set ptr to the next character after the part that was interpreted.
@@ -4013,6 +3996,68 @@ error:
     *ptr = cmd;
     return lnum;
 }
+
+/*
+ * Set eap->line1 and eap->line2 to the whole range.
+ * Used for commands with the EX_DFLALL flag and no range given.
+ */
+    static void
+address_default_all(exarg_T *eap)
+{
+    eap->line1 = 1;
+    switch (eap->addr_type)
+    {
+	case ADDR_LINES:
+	case ADDR_OTHER:
+	    eap->line2 = curbuf->b_ml.ml_line_count;
+	    break;
+	case ADDR_LOADED_BUFFERS:
+	    {
+		buf_T *buf = firstbuf;
+
+		while (buf->b_next != NULL && buf->b_ml.ml_mfp == NULL)
+		    buf = buf->b_next;
+		eap->line1 = buf->b_fnum;
+		buf = lastbuf;
+		while (buf->b_prev != NULL && buf->b_ml.ml_mfp == NULL)
+		    buf = buf->b_prev;
+		eap->line2 = buf->b_fnum;
+	    }
+	    break;
+	case ADDR_BUFFERS:
+	    eap->line1 = firstbuf->b_fnum;
+	    eap->line2 = lastbuf->b_fnum;
+	    break;
+	case ADDR_WINDOWS:
+	    eap->line2 = LAST_WIN_NR;
+	    break;
+	case ADDR_TABS:
+	    eap->line2 = LAST_TAB_NR;
+	    break;
+	case ADDR_TABS_RELATIVE:
+	    eap->line2 = 1;
+	    break;
+	case ADDR_ARGUMENTS:
+	    if (ARGCOUNT == 0)
+		eap->line1 = eap->line2 = 0;
+	    else
+		eap->line2 = ARGCOUNT;
+	    break;
+	case ADDR_QUICKFIX_VALID:
+#ifdef FEAT_QUICKFIX
+	    eap->line2 = qf_get_valid_size(eap);
+	    if (eap->line2 == 0)
+		eap->line2 = 1;
+#endif
+	    break;
+	case ADDR_NONE:
+	case ADDR_UNSIGNED:
+	case ADDR_QUICKFIX:
+	    iemsg(_("INTERNAL: Cannot use EX_DFLALL with ADDR_NONE, ADDR_UNSIGNED or ADDR_QUICKFIX"));
+	    break;
+    }
+}
+
 
 /*
  * Get flags from an Ex command argument.
@@ -4604,6 +4649,7 @@ separate_nextcmd(exarg_T *eap)
 #ifdef FEAT_EVAL
 		|| (*p == '#'
 		    && in_vim9script()
+		    && !(eap->argt & EX_NOTRLCOM)
 		    && p[1] != '{'
 		    && p > eap->cmd && VIM_ISWHITE(p[-1]))
 #endif
@@ -5022,7 +5068,7 @@ check_more(
     int	    n = ARGCOUNT - curwin->w_arg_idx - 1;
 
     if (!forceit && only_one_window()
-	    && ARGCOUNT > 1 && !arg_had_last && n >= 0 && quitmore == 0)
+	    && ARGCOUNT > 1 && !arg_had_last && n > 0 && quitmore == 0)
     {
 	if (message)
 	{
@@ -5978,7 +6024,7 @@ ex_recover(exarg_T *eap)
     static void
 ex_wrongmodifier(exarg_T *eap)
 {
-    eap->errmsg = _(e_invcmd);
+    eap->errmsg = _(e_invalid_command);
 }
 
 /*
@@ -7343,7 +7389,7 @@ ex_submagic(exarg_T *eap)
     int		magic_save = p_magic;
 
     p_magic = (eap->cmdidx == CMD_smagic);
-    do_sub(eap);
+    ex_substitute(eap);
     p_magic = magic_save;
 }
 

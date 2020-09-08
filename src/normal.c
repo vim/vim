@@ -895,8 +895,28 @@ getcount:
 	    if (lang && curbuf->b_p_iminsert == B_IMODE_IM)
 		im_set_active(TRUE);
 #endif
+	    if ((State & INSERT) && !p_ek)
+	    {
+#ifdef FEAT_JOB_CHANNEL
+		ch_log_output = TRUE;
+#endif
+		// Disable bracketed paste and modifyOtherKeys here, we won't
+		// recognize the escape sequences with 'esckeys' off.
+		out_str(T_BD);
+		out_str(T_CTE);
+	    }
 
 	    *cp = plain_vgetc();
+
+	    if ((State & INSERT) && !p_ek)
+	    {
+#ifdef FEAT_JOB_CHANNEL
+		ch_log_output = TRUE;
+#endif
+		// Re-enable bracketed paste mode and modifyOtherKeys
+		out_str(T_BE);
+		out_str(T_CTI);
+	    }
 
 	    if (langmap_active)
 	    {
@@ -3644,8 +3664,10 @@ nv_ident(cmdarg_T *cap)
 	    {
 		if (g_cmd)
 		    STRCPY(buf, "tj ");
+		else if (cap->count0 == 0)
+		    STRCPY(buf, "ta ");
 		else
-		    sprintf((char *)buf, "%ldta ", cap->count0);
+		    sprintf((char *)buf, ":%ldta ", cap->count0);
 	    }
     }
 

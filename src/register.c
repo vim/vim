@@ -1937,16 +1937,29 @@ do_put(
 	    --lnum;
 	new_cursor = curwin->w_cursor;
 
-	// simple case: insert into current line
+	// simple case: insert into one line at a time
 	if (y_type == MCHAR && y_size == 1)
 	{
-	    linenr_T end_lnum = 0; // init for gcc
+	    linenr_T	end_lnum = 0; // init for gcc
+	    linenr_T	start_lnum = lnum;
 
 	    if (VIsual_active)
 	    {
 		end_lnum = curbuf->b_visual.vi_end.lnum;
 		if (end_lnum < curbuf->b_visual.vi_start.lnum)
 		    end_lnum = curbuf->b_visual.vi_start.lnum;
+		if (end_lnum > start_lnum)
+		{
+		    pos_T   pos;
+
+		    // "col" is valid for the first line, in following lines
+		    // the virtual column needs to be used.  Matters for
+		    // multi-byte characters.
+		    pos.lnum = lnum;
+		    pos.col = col;
+		    pos.coladd = 0;
+		    getvcol(curwin, &pos, NULL, &vcol, NULL);
+		}
 	    }
 
 	    do {
@@ -1954,6 +1967,16 @@ do_put(
 		if (totlen > 0)
 		{
 		    oldp = ml_get(lnum);
+		    if (lnum > start_lnum)
+		    {
+			pos_T   pos;
+
+			pos.lnum = lnum;
+			if (getvpos(&pos, vcol) == OK)
+			    col = pos.col;
+			else
+			    col = MAXCOL;
+		    }
 		    if (VIsual_active && col > (int)STRLEN(oldp))
 		    {
 			lnum++;

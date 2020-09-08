@@ -93,3 +93,5 @@ func Test_changedtick_not_incremented_with_write()
   bwipe
   call delete(fname)
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

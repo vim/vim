@@ -57,6 +57,8 @@ func Test_terminal_shell_option()
     term ++shell dir.com /b runtest.vim
     call WaitForAssert({-> assert_match('runtest.vim', term_getline(bufnr(), 1))})
     bwipe!
+  else
+    throw 'Skipped: does not work on this platform'
   endif
 endfunc
 
@@ -372,7 +374,7 @@ func Test_term_mouse()
   call term_sendkeys(buf, ":set mouse=a term=xterm ttymouse=sgr\<CR>")
   call term_sendkeys(buf, ":set clipboard=\<CR>")
   call term_sendkeys(buf, ":set mousemodel=extend\<CR>")
-  call term_wait(buf)
+  call TermWait(buf)
   redraw!
 
   " Use the mouse to enter the terminal window
@@ -386,9 +388,9 @@ func Test_term_mouse()
   call feedkeys("\<LeftMouse>\<LeftRelease>", 'xt')
   call test_setmouse(3, 8)
   call term_sendkeys(buf, "\<LeftMouse>\<LeftRelease>")
-  call term_wait(buf, 50)
+  call TermWait(buf, 50)
   call term_sendkeys(buf, ":call writefile([json_encode(getpos('.'))], 'Xbuf')\<CR>")
-  call term_wait(buf, 50)
+  call TermWait(buf, 50)
   let pos = json_decode(readfile('Xbuf')[0])
   call assert_equal([3, 8], pos[1:2])
 
@@ -398,9 +400,9 @@ func Test_term_mouse()
   call term_sendkeys(buf, "\<LeftMouse>")
   call test_setmouse(2, 16)
   call term_sendkeys(buf, "\<LeftRelease>y")
-  call term_wait(buf, 50)
+  call TermWait(buf, 50)
   call term_sendkeys(buf, ":call writefile([@\"], 'Xbuf')\<CR>")
-  call term_wait(buf, 50)
+  call TermWait(buf, 50)
   call assert_equal('yellow', readfile('Xbuf')[0])
 
   " Test for selecting text using doubleclick
@@ -409,18 +411,18 @@ func Test_term_mouse()
   call term_sendkeys(buf, "\<LeftMouse>\<LeftRelease>\<LeftMouse>")
   call test_setmouse(1, 17)
   call term_sendkeys(buf, "\<LeftRelease>y")
-  call term_wait(buf, 50)
+  call TermWait(buf, 50)
   call term_sendkeys(buf, ":call writefile([@\"], 'Xbuf')\<CR>")
-  call term_wait(buf, 50)
+  call TermWait(buf, 50)
   call assert_equal('three four', readfile('Xbuf')[0])
 
   " Test for selecting a line using triple click
   call delete('Xbuf')
   call test_setmouse(3, 2)
   call term_sendkeys(buf, "\<LeftMouse>\<LeftRelease>\<LeftMouse>\<LeftRelease>\<LeftMouse>\<LeftRelease>y")
-  call term_wait(buf, 50)
+  call TermWait(buf, 50)
   call term_sendkeys(buf, ":call writefile([@\"], 'Xbuf')\<CR>")
-  call term_wait(buf, 50)
+  call TermWait(buf, 50)
   call assert_equal("vim emacs sublime nano\n", readfile('Xbuf')[0])
 
   " Test for selecting a block using qudraple click
@@ -429,9 +431,9 @@ func Test_term_mouse()
   call term_sendkeys(buf, "\<LeftMouse>\<LeftRelease>\<LeftMouse>\<LeftRelease>\<LeftMouse>\<LeftRelease>\<LeftMouse>")
   call test_setmouse(3, 13)
   call term_sendkeys(buf, "\<LeftRelease>y")
-  call term_wait(buf, 50)
+  call TermWait(buf, 50)
   call term_sendkeys(buf, ":call writefile([@\"], 'Xbuf')\<CR>")
-  call term_wait(buf, 50)
+  call TermWait(buf, 50)
   call assert_equal("ree\nyel\nsub", readfile('Xbuf')[0])
 
   " Test for extending a selection using right click
@@ -440,9 +442,9 @@ func Test_term_mouse()
   call term_sendkeys(buf, "\<LeftMouse>\<LeftRelease>")
   call test_setmouse(2, 16)
   call term_sendkeys(buf, "\<RightMouse>\<RightRelease>y")
-  call term_wait(buf, 50)
+  call TermWait(buf, 50)
   call term_sendkeys(buf, ":call writefile([@\"], 'Xbuf')\<CR>")
-  call term_wait(buf, 50)
+  call TermWait(buf, 50)
   call assert_equal("n yellow", readfile('Xbuf')[0])
 
   " Test for pasting text using middle click
@@ -450,13 +452,13 @@ func Test_term_mouse()
   call term_sendkeys(buf, ":let @r='bright '\<CR>")
   call test_setmouse(2, 22)
   call term_sendkeys(buf, "\"r\<MiddleMouse>\<MiddleRelease>")
-  call term_wait(buf, 50)
+  call TermWait(buf, 50)
   call term_sendkeys(buf, ":call writefile([getline(2)], 'Xbuf')\<CR>")
-  call term_wait(buf, 50)
+  call TermWait(buf, 50)
   call assert_equal("red bright blue", readfile('Xbuf')[0][-15:])
 
   " cleanup
-  call term_wait(buf)
+  call TermWait(buf)
   call StopVimInTerminal(buf)
   let &mouse = save_mouse
   let &term = save_term
@@ -492,14 +494,14 @@ func Test_term_modeless_selection()
   let buf = RunVimInTerminal('Xtest_modeless -n', {})
   call term_sendkeys(buf, ":set nocompatible\<CR>")
   call term_sendkeys(buf, ":set mouse=\<CR>")
-  call term_wait(buf)
+  call TermWait(buf)
   redraw!
 
   " Use the mouse to enter the terminal window
   call win_gotoid(prev_win)
   call feedkeys(MouseLeftClickCode(1, 1), 'x')
   call feedkeys(MouseLeftReleaseCode(1, 1), 'x')
-  call term_wait(buf)
+  call TermWait(buf)
   call assert_equal(1, getwininfo(win_getid())[0].terminal)
 
   " Test for copying a modeless selection to clipboard
@@ -512,7 +514,7 @@ func Test_term_modeless_selection()
   call assert_equal("d green y", @*)
 
   " cleanup
-  call term_wait(buf)
+  call TermWait(buf)
   call StopVimInTerminal(buf)
   let &mouse = save_mouse
   let &term = save_term
@@ -549,7 +551,7 @@ func Test_terminal_getwinpos()
   let winpos = 50->getwinpos()
   call assert_equal(xroot, winpos[0])
   call assert_equal(yroot, winpos[1])
-  let [winrow, wincol] = win_screenpos('.')
+  let [winrow, wincol] = win_screenpos(0)
   let xoff = wincol * (has('gui_running') ? 14 : 7) + 100
   let yoff = winrow * (has('gui_running') ? 20 : 10) + 200
   call assert_inrange(xroot + 2, xroot + xoff, xpos)

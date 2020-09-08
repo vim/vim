@@ -98,7 +98,7 @@ Instead of using script language support in Vim:
   tool and implements the Vim side of the interface.  Also, it can be used when
   an external tool is undesired.
 
-All together this creates a clear situation: Vim with the +eval feature
+Altogether this creates a clear situation: Vim with the +eval feature
 will be sufficient for most plugins, while some plugins require
 installing a tool that can be written in any language.  No confusion
 about having Vim but the plugin not working because some specific

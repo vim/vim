@@ -84,9 +84,7 @@ func Test_syntax_after_reload()
 endfunc
 
 func Test_syntime()
-  if !has('profile')
-    return
-  endif
+  CheckFeature profile
 
   syntax on
   syntime on
@@ -109,7 +107,7 @@ func Test_syntime()
   call assert_notmatch('.* cppNumber*', a)
   call assert_notmatch('[1-9]', a)
 
-  call assert_fails('syntime abc', 'E475')
+  call assert_fails('syntime abc', 'E475:')
 
   syntax clear
   let a = execute('syntime report')
@@ -119,9 +117,7 @@ func Test_syntime()
 endfunc
 
 func Test_syntime_completion()
-  if !has('profile')
-    return
-  endif
+  CheckFeature profile
 
   call feedkeys(":syntime \<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"syntime clear off on report', @:)
@@ -498,9 +494,8 @@ func Test_bg_detection()
 endfunc
 
 func Test_syntax_hangs()
-  if !has('reltime') || !has('float') || !has('syntax')
-    return
-  endif
+  CheckFunction reltimefloat
+  CheckFeature syntax
 
   " This pattern takes a long time to match, it should timeout.
   new
@@ -532,9 +527,7 @@ func Test_syntax_hangs()
 endfunc
 
 func Test_conceal()
-  if !has('conceal')
-    return
-  endif
+  CheckFeature conceal
 
   new
   call setline(1, ['', '123456'])
@@ -725,8 +718,8 @@ func Test_syntax_foldlevel()
   syntax on
   set foldmethod=syntax
 
-  call assert_fails('syn foldlevel start start', 'E390')
-  call assert_fails('syn foldlevel not_an_option', 'E390')
+  call assert_fails('syn foldlevel start start', 'E390:')
+  call assert_fails('syn foldlevel not_an_option', 'E390:')
 
   set foldlevel=1
 

@@ -223,6 +223,8 @@ EXTERN int	emsg_severe INIT(= FALSE);  // use message of next of several
 // used by assert_fails()
 EXTERN int	emsg_assert_fails_used INIT(= FALSE);
 EXTERN char_u	*emsg_assert_fails_msg INIT(= NULL);
+EXTERN long	emsg_assert_fails_lnum INIT(= 0);
+EXTERN char_u	*emsg_assert_fails_context INIT(= NULL);
 
 EXTERN int	did_endif INIT(= FALSE);    // just had ":endif"
 #endif
@@ -296,8 +298,9 @@ EXTERN int	do_profiling INIT(= PROF_NONE);	// PROF_ values
 # endif
 EXTERN garray_T script_items INIT5(0, 0, sizeof(scriptitem_T *), 20, NULL);
 # define SCRIPT_ITEM(id)    (((scriptitem_T **)script_items.ga_data)[(id) - 1])
-# define SCRIPT_SV(id)	    (SCRIPT_ITEM(id)->sn_vars)
-# define SCRIPT_VARS(id)    (SCRIPT_SV(id)->sv_dict.dv_hashtab)
+# define SCRIPT_ID_VALID(id)    ((id) > 0 && (id) <= script_items.ga_len)
+# define SCRIPT_SV(id)		(SCRIPT_ITEM(id)->sn_vars)
+# define SCRIPT_VARS(id)	(SCRIPT_SV(id)->sv_dict.dv_hashtab)
 
 # define FUNCLINE(fp, j)	((char_u **)(fp->uf_lines.ga_data))[j]
 
@@ -771,7 +774,8 @@ EXTERN int	ru_wid;		// 'rulerfmt' width of ruler when non-zero
 EXTERN int	sc_col;		// column for shown command
 
 #ifdef TEMPDIRNAMES
-# if defined(UNIX) && defined(HAVE_FLOCK) && defined(HAVE_DIRFD)
+# if defined(UNIX) && defined(HAVE_FLOCK) \
+	&& (defined(HAVE_DIRFD) || defined(__hpux))
 EXTERN DIR	*vim_tempdir_dp INIT(= NULL); // File descriptor of temp dir
 # endif
 EXTERN char_u	*vim_tempdir INIT(= NULL); // Name of Vim's own temp dir.
@@ -1569,7 +1573,7 @@ EXTERN char e_failed[]	INIT(= N_("E472: Command failed"));
 #if defined(FEAT_GUI) && defined(FEAT_XFONTSET)
 EXTERN char e_fontset[]	INIT(= N_("E234: Unknown fontset: %s"));
 #endif
-#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MAC) \
+#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_HAIKU)
 EXTERN char e_font[]		INIT(= N_("E235: Unknown font: %s"));
 #endif
@@ -1588,7 +1592,6 @@ EXTERN char e_invargNval[]	INIT(= N_("E475: Invalid value for argument %s: %s"))
 EXTERN char e_invexpr2[]	INIT(= N_("E15: Invalid expression: %s"));
 #endif
 EXTERN char e_invrange[]	INIT(= N_("E16: Invalid range"));
-EXTERN char e_invcmd[]		INIT(= N_("E476: Invalid command"));
 #if defined(UNIX) || defined(FEAT_SYN_HL) || defined(FEAT_SPELL)
 EXTERN char e_isadir2[]		INIT(= N_("E17: \"%s\" is a directory"));
 #endif
@@ -1677,7 +1680,6 @@ EXTERN char e_re_damg[]		INIT(= N_("E43: Damaged match string"));
 EXTERN char e_re_corr[]		INIT(= N_("E44: Corrupted regexp program"));
 EXTERN char e_readonly[]	INIT(= N_("E45: 'readonly' option is set (add ! to override)"));
 #ifdef FEAT_EVAL
-EXTERN char e_undefvar[]	INIT(= N_("E121: Undefined variable: %s"));
 EXTERN char e_letwrong[]	INIT(= N_("E734: Wrong variable type for %s="));
 EXTERN char e_illvar[]		INIT(= N_("E461: Illegal variable name: %s"));
 EXTERN char e_cannot_mod[]	INIT(= N_("E995: Cannot modify existing variable"));
@@ -1686,7 +1688,6 @@ EXTERN char e_readonlysbx[]	INIT(= N_("E794: Cannot set variable in the sandbox:
 EXTERN char e_stringreq[]	INIT(= N_("E928: String required"));
 EXTERN char e_emptykey[]	INIT(= N_("E713: Cannot use empty key for Dictionary"));
 EXTERN char e_dictreq[]		INIT(= N_("E715: Dictionary required"));
-EXTERN char e_dictnull[]	INIT(= N_("E1103: Dictionary not set"));
 EXTERN char e_listidx[]		INIT(= N_("E684: list index out of range: %ld"));
 EXTERN char e_blobidx[]		INIT(= N_("E979: Blob index out of range: %ld"));
 EXTERN char e_invalblob[]	INIT(= N_("E978: Invalid operation for Blob"));
@@ -1695,7 +1696,6 @@ EXTERN char e_toofewarg[]	INIT(= N_("E119: Not enough arguments for function: %s
 EXTERN char e_func_deleted[]	INIT(= N_("E933: Function was deleted: %s"));
 EXTERN char e_dictkey[]		INIT(= N_("E716: Key not present in Dictionary: %s"));
 EXTERN char e_listreq[]		INIT(= N_("E714: List required"));
-EXTERN char e_listdictblobreq[]	INIT(= N_("E1090: List, Dict or Blob required"));
 EXTERN char e_listblobreq[]	INIT(= N_("E897: List or Blob required"));
 EXTERN char e_list_end[]	INIT(= N_("E697: Missing end of List ']': %s"));
 EXTERN char e_listdictarg[]	INIT(= N_("E712: Argument of %s must be a List or Dictionary"));
@@ -1748,7 +1748,6 @@ EXTERN char e_missing_dict_colon[] INIT(= N_("E720: Missing colon in Dictionary:
 EXTERN char e_duplicate_key[]	INIT(= N_("E721: Duplicate key in Dictionary: \"%s\""));
 EXTERN char e_missing_dict_comma[] INIT(= N_("E722: Missing comma in Dictionary: %s"));
 EXTERN char e_missing_dict_end[]    INIT(= N_("E723: Missing end of Dictionary '}': %s"));
-EXTERN char e_already_defined[] INIT(= N_("E1073: name already defined: %s"));
 #endif
 #ifdef FEAT_CLIENTSERVER
 EXTERN char e_invexprmsg[]	INIT(= N_("E449: Invalid expression received"));
@@ -1791,23 +1790,11 @@ EXTERN char e_endif_without_if[] INIT(= N_("E580: :endif without :if"));
 EXTERN char e_continue[]	INIT(= N_("E586: :continue without :while or :for"));
 EXTERN char e_break[]		INIT(= N_("E587: :break without :while or :for"));
 EXTERN char e_nowhitespace[]	INIT(= N_("E274: No white space allowed before parenthesis"));
-EXTERN char e_white_both[]	INIT(= N_("E1004: white space required before and after '%s'"));
-EXTERN char e_white_after[]	INIT(= N_("E1069: white space required after '%s'"));
-EXTERN char e_no_white_before[] INIT(= N_("E1068: No white space allowed before '%s'"));
 
 EXTERN char e_lock_unlock[]	INIT(= N_("E940: Cannot lock or unlock variable %s"));
-EXTERN char e_const_req_value[] INIT(= N_("E1021: const requires a value"));
-EXTERN char e_type_req[]	INIT(= N_("E1022: type or initialization required"));
-EXTERN char e_declare_var[]	INIT(= N_("E1016: Cannot declare a %s variable: %s"));
-EXTERN char e_declare_env_var[]	INIT(= N_("E1016: Cannot declare an environment variable: %s"));
-EXTERN char e_colon_required[]	INIT(= N_("E1050: Colon required before a range"));
 #endif
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 EXTERN char e_alloc_color[]	INIT(= N_("E254: Cannot allocate color %s"));
-#endif
-
-#ifdef FEAT_GUI_MAC
-EXTERN short disallow_gui	INIT(= FALSE);
 #endif
 
 EXTERN char top_bot_msg[] INIT(= N_("search hit TOP, continuing at BOTTOM"));
@@ -1911,6 +1898,13 @@ EXTERN HINSTANCE g_hinst INIT(= NULL);
 EXTERN int did_repeated_msg INIT(= 0);
 # define REPEATED_MSG_LOOKING	    1
 # define REPEATED_MSG_SAFESTATE	    2
+
+// This flag is set when outputting a terminal control code and reset in
+// out_flush() when characters have been written.
+EXTERN int ch_log_output INIT(= FALSE);
+
+// Whether a redraw is needed for appending a line to a buffer.
+EXTERN int channel_need_redraw INIT(= FALSE);
 
 #define FOR_ALL_CHANNELS(ch) \
     for ((ch) = first_channel; (ch) != NULL; (ch) = (ch)->ch_next)

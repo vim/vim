@@ -31,16 +31,14 @@ func Test_read_stdin_utf8()
 endfunc
 
 func Test_read_fifo_utf8()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
   " Using bash/zsh's process substitution.
   if executable('bash')
     set shell=bash
   elseif executable('zsh')
     set shell=zsh
   else
-    return
+    throw 'Skipped: bash or zsh is required'
   endif
   let linesin = ['テスト', '€ÀÈÌÒÙ']
   call writefile(linesin, 'Xtestin')
@@ -80,3 +78,5 @@ func Test_detect_ambiwidth()
   call StopVimInTerminal(buf)
   call delete('Xscript')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

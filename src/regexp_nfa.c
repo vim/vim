@@ -7147,7 +7147,7 @@ nfa_regexec_both(
     // Be paranoid...
     if (prog == NULL || line == NULL)
     {
-	emsg(_(e_null));
+	iemsg(_(e_null));
 	goto theend;
     }
 

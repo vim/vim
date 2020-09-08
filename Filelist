@@ -10,6 +10,7 @@ SRC_ALL =	\
 		.travis.yml \
 		.cirrus.yml \
 		.github/workflows/ci-windows.yaml \
+		.github/CODEOWNERS \
 		appveyor.yml \
 		ci/appveyor.bat \
 		ci/if_ver*.vim \
@@ -45,6 +46,7 @@ SRC_ALL =	\
 		src/drawline.c \
 		src/drawscreen.c \
 		src/edit.c \
+		src/errors.h \
 		src/eval.c \
 		src/evalbuffer.c \
 		src/evalfunc.c \
@@ -73,6 +75,7 @@ SRC_ALL =	\
 		src/highlight.c \
 		src/indent.c \
 		src/insexpand.c \
+		src/job.c \
 		src/json.c \
 		src/json_test.c \
 		src/kword_test.c \
@@ -178,8 +181,7 @@ SRC_ALL =	\
 		src/testdir/term_util.vim \
 		src/testdir/view_util.vim \
 		src/testdir/test[0-9]*.ok \
-		src/testdir/test[0-9]*a.ok \
-		src/testdir/test49.vim \
+		src/testdir/test77a.ok \
 		src/testdir/test83-tags? \
 		src/testdir/test77a.com \
 		src/testdir/test_*.vim \
@@ -249,6 +251,7 @@ SRC_ALL =	\
 		src/proto/highlight.pro \
 		src/proto/indent.pro \
 		src/proto/insexpand.pro \
+		src/proto/job.pro \
 		src/proto/json.pro \
 		src/proto/list.pro \
 		src/proto/locale.pro \
@@ -641,13 +644,11 @@ SRC_HAIKU =	\
 SRC_MAC =	\
 		src/INSTALLmac.txt \
 		src/dehqx.py \
-		src/gui_mac.c \
 		src/os_mac_rsrc/*.icns \
 		src/os_mac.h \
 		src/os_mac.rsr.hqx \
 		src/os_mac_conv.c \
 		src/os_macosx.m \
-		src/proto/gui_mac.pro \
 		src/proto/os_mac_conv.pro \
 
 # source files for VMS (in the extra archive)
@@ -1030,6 +1031,8 @@ LANG_SRC = \
 		src/po/README_mvc.txt \
 		src/po/check.vim \
 		src/po/cleanup.vim \
+		src/po/tojavascript.vim \
+		src/po/fixfilenames.vim \
 		src/po/Makefile \
 		src/po/Make_all.mak \
 		src/po/Make_cyg.mak \

@@ -76,3 +76,5 @@ func Test_compiler_error()
   call assert_fails('compiler! doesnotexist', 'E666:')
   unlet! g:current_compiler
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

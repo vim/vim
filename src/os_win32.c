@@ -2065,6 +2065,13 @@ theend:
 	buf[len++] = typeahead[0];
 	mch_memmove(typeahead, typeahead + 1, --typeaheadlen);
     }
+#  ifdef FEAT_JOB_CHANNEL
+    if (len > 0)
+    {
+	buf[len] = NUL;
+	ch_log(NULL, "raw key input: \"%s\"", buf);
+    }
+#  endif
     return len;
 
 #else // FEAT_GUI_MSWIN
@@ -6739,7 +6746,7 @@ notsgr:
     void
 mch_delay(
     long    msec,
-    int	    ignoreinput UNUSED)
+    int	    flags UNUSED)
 {
 #if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
     Sleep((int)msec);	    // never wait for input
@@ -6751,7 +6758,7 @@ mch_delay(
 	return;
     }
 # endif
-    if (ignoreinput)
+    if (flags & MCH_DELAY_IGNOREINPUT)
 # ifdef FEAT_MZSCHEME
 	if (mzthreads_allowed() && p_mzq > 0 && msec > p_mzq)
 	{

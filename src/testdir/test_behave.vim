@@ -27,3 +27,5 @@ endfunc
 func Test_behave_error()
   call assert_fails('behave x', 'E475:')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

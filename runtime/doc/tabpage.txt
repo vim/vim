@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 8.2.  Last change: 2020 Feb 06
+*tabpage.txt*   For Vim version 8.2.  Last change: 2020 Aug 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

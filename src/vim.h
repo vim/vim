@@ -97,14 +97,12 @@
 // Unless made through the Makefile enforce GUI on Mac
 #if defined(MACOS_X) && !defined(HAVE_CONFIG_H)
 # define UNIX
-# define FEAT_GUI_MAC
 #endif
 
 #if defined(FEAT_GUI_MOTIF) \
     || defined(FEAT_GUI_GTK) \
     || defined(FEAT_GUI_ATHENA) \
     || defined(FEAT_GUI_HAIKU) \
-    || defined(FEAT_GUI_MAC) \
     || defined(FEAT_GUI_MSWIN) \
     || defined(FEAT_GUI_PHOTON)
 # define FEAT_GUI_ENABLED  // also defined with NO_X11_INCLUDES
@@ -2144,7 +2142,7 @@ typedef enum {
 // been seen at that stage.  But it must be before globals.h, where error_ga
 // is declared.
 #if !defined(MSWIN) && !defined(FEAT_GUI_X11) && !defined(FEAT_GUI_HAIKU) \
-	&& !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MAC) && !defined(PROTO)
+	&& !defined(FEAT_GUI_GTK) && !defined(PROTO)
 # define mch_errmsg(str)	fprintf(stderr, "%s", (str))
 # define display_errors()	fflush(stderr)
 # define mch_msg(str)		printf("%s", (str))
@@ -2154,20 +2152,16 @@ typedef enum {
 
 # if defined(FEAT_EVAL) \
 	&& (!defined(FEAT_GUI_MSWIN) \
-	     || !(defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME))) \
-	&& !(defined(FEAT_GUI_MAC) && defined(MACOS_CONVERT))
+	     || !(defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME)))
 // Whether IME is supported by im_get_status() defined in mbyte.c.
 // For Win32 GUI it's in gui_w32.c when FEAT_MBYTE_IME or GLOBAL_IME is defined.
-// for Mac it is in gui_mac.c for the GUI or in os_mac_conv.c when
-// MACOS_CONVERT is defined.
 # define IME_WITHOUT_XIM
 #endif
 
 #if defined(FEAT_XIM) \
 	|| defined(IME_WITHOUT_XIM) \
 	|| (defined(FEAT_GUI_MSWIN) \
-	    && (defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME))) \
-	|| defined(FEAT_GUI_MAC)
+	    && (defined(FEAT_MBYTE_IME) || defined(GLOBAL_IME)))
 // im_set_active() is available
 # define HAVE_INPUT_METHOD
 #endif
@@ -2185,6 +2179,7 @@ typedef enum {
 #endif
 
 #include "globals.h"	    // global variables and messages
+#include "errors.h"	    // error messages
 
 /*
  * If console dialog not supported, but GUI dialog is, use the GUI one.
@@ -2672,5 +2667,9 @@ long elapsed(DWORD start_tick);
 #define READDIR_SORT_BYTE	1  // sort by byte order (strcmp), default
 #define READDIR_SORT_IC		2  // sort ignoring case (strcasecmp)
 #define READDIR_SORT_COLLATE	3  // sort according to collation (strcoll)
+
+// Flags for mch_delay.
+#define MCH_DELAY_IGNOREINPUT	1
+#define MCH_DELAY_SETTMODE	2
 
 #endif // VIM__H

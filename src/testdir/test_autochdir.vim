@@ -24,3 +24,5 @@ func Test_set_filename()
   call chdir(cwd)
   call delete('samples/Xtest')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -46,7 +46,9 @@
 
 
 " Without the +eval feature we can't run these tests, bail out.
-so small.vim
+silent! while 0
+  qa!
+silent! endwhile
 
 " In the GUI we can always change the screen size.
 if has('gui_running')
@@ -380,7 +382,9 @@ endif
 
 " Names of flaky tests.
 let s:flaky_tests = [
+      \ 'Test_BufWrite_lockmarks()',
       \ 'Test_autocmd_SafeState()',
+      \ 'Test_bufunload_all()',
       \ 'Test_client_server()',
       \ 'Test_close_and_exit_cb()',
       \ 'Test_close_output_buffer()',

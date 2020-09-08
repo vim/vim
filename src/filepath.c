@@ -1174,14 +1174,14 @@ f_glob(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
-	if (tv_get_number_chk(&argvars[1], &error))
+	if (tv_get_bool_chk(&argvars[1], &error))
 	    options |= WILD_KEEP_ALL;
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	{
-	    if (tv_get_number_chk(&argvars[2], &error))
+	    if (tv_get_bool_chk(&argvars[2], &error))
 		rettv_list_set(rettv, NULL);
 	    if (argvars[3].v_type != VAR_UNKNOWN
-				    && tv_get_number_chk(&argvars[3], &error))
+				    && tv_get_bool_chk(&argvars[3], &error))
 		options |= WILD_ALLLINKS;
 	}
     }
@@ -1241,14 +1241,14 @@ f_globpath(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
-	if (tv_get_number_chk(&argvars[2], &error))
+	if (tv_get_bool_chk(&argvars[2], &error))
 	    flags |= WILD_KEEP_ALL;
 	if (argvars[3].v_type != VAR_UNKNOWN)
 	{
-	    if (tv_get_number_chk(&argvars[3], &error))
+	    if (tv_get_bool_chk(&argvars[3], &error))
 		rettv_list_set(rettv, NULL);
 	    if (argvars[4].v_type != VAR_UNKNOWN
-				    && tv_get_number_chk(&argvars[4], &error))
+				    && tv_get_bool_chk(&argvars[4], &error))
 		flags |= WILD_ALLLINKS;
 	}
     }
@@ -1373,10 +1373,11 @@ f_pathshorten(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * Evaluate "expr" (= "context") for readdir().
+ * Common code for readdir_checkitem() and readdirex_checkitem().
+ * Either "name" or "dict" is NULL.
  */
     static int
-readdir_checkitem(void *context, void *item)
+checkitem_common(void *context, char_u *name, dict_T *dict)
 {
     typval_T	*expr = (typval_T *)context;
     typval_T	save_val;
@@ -1384,25 +1385,53 @@ readdir_checkitem(void *context, void *item)
     typval_T	argv[2];
     int		retval = 0;
     int		error = FALSE;
-    char_u	*name = (char_u*)item;
 
     prepare_vimvar(VV_VAL, &save_val);
-    set_vim_var_string(VV_VAL, name, -1);
-    argv[0].v_type = VAR_STRING;
-    argv[0].vval.v_string = name;
+    if (name != NULL)
+    {
+	set_vim_var_string(VV_VAL, name, -1);
+	argv[0].v_type = VAR_STRING;
+	argv[0].vval.v_string = name;
+    }
+    else
+    {
+	set_vim_var_dict(VV_VAL, dict);
+	argv[0].v_type = VAR_DICT;
+	argv[0].vval.v_dict = dict;
+    }
 
     if (eval_expr_typval(expr, argv, 1, &rettv) == FAIL)
 	goto theend;
 
+    // We want to use -1, but also true/false should be allowed.
+    if (rettv.v_type == VAR_SPECIAL || rettv.v_type == VAR_BOOL)
+    {
+	rettv.v_type = VAR_NUMBER;
+	rettv.vval.v_number = rettv.vval.v_number == VVAL_TRUE;
+    }
     retval = tv_get_number_chk(&rettv, &error);
     if (error)
 	retval = -1;
     clear_tv(&rettv);
 
 theend:
-    set_vim_var_string(VV_VAL, NULL, 0);
+    if (name != NULL)
+	set_vim_var_string(VV_VAL, NULL, 0);
+    else
+	set_vim_var_dict(VV_VAL, NULL);
     restore_vimvar(VV_VAL, &save_val);
     return retval;
+}
+
+/*
+ * Evaluate "expr" (= "context") for readdir().
+ */
+    static int
+readdir_checkitem(void *context, void *item)
+{
+    char_u	*name = (char_u *)item;
+
+    return checkitem_common(context, name, NULL);
 }
 
     static int
@@ -1477,31 +1506,9 @@ f_readdir(typval_T *argvars, typval_T *rettv)
     static int
 readdirex_checkitem(void *context, void *item)
 {
-    typval_T	*expr = (typval_T *)context;
-    typval_T	save_val;
-    typval_T	rettv;
-    typval_T	argv[2];
-    int		retval = 0;
-    int		error = FALSE;
     dict_T	*dict = (dict_T*)item;
 
-    prepare_vimvar(VV_VAL, &save_val);
-    set_vim_var_dict(VV_VAL, dict);
-    argv[0].v_type = VAR_DICT;
-    argv[0].vval.v_dict = dict;
-
-    if (eval_expr_typval(expr, argv, 1, &rettv) == FAIL)
-	goto theend;
-
-    retval = tv_get_number_chk(&rettv, &error);
-    if (error)
-	retval = -1;
-    clear_tv(&rettv);
-
-theend:
-    set_vim_var_dict(VV_VAL, NULL);
-    restore_vimvar(VV_VAL, &save_val);
-    return retval;
+    return checkitem_common(context, NULL, dict);
 }
 
 /*

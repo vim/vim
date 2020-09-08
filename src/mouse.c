@@ -116,7 +116,7 @@ find_end_of_word(pos_T *pos)
 
 #if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) \
 	    || defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) \
-	    || defined(FEAT_GUI_MAC) || defined(FEAT_GUI_PHOTON) \
+	    || defined(FEAT_GUI_PHOTON) \
 	    || defined(FEAT_TERM_POPUP_MENU)
 # define USE_POPUP_SETPOS
 # define NEED_VCOL2COL
@@ -532,7 +532,7 @@ do_mouse(
 	    if (gui.in_use)
 	    {
 #  if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) \
-			  || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC)
+			  || defined(FEAT_GUI_PHOTON)
 		if (!is_click)
 		    // Ignore right button release events, only shows the popup
 		    // menu on the button down event.

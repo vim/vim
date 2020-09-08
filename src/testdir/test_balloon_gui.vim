@@ -17,3 +17,5 @@ func Test_balloon_show_gui()
   sleep 10m
   call balloon_show('')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

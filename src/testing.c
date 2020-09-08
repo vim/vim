@@ -142,7 +142,10 @@ fill_assert_error(
     int		did_copy = FALSE;
     int		omitted = 0;
 
-    if (opt_msg_tv->v_type != VAR_UNKNOWN)
+    if (opt_msg_tv->v_type != VAR_UNKNOWN
+	    && !(opt_msg_tv->v_type == VAR_STRING
+		&& (opt_msg_tv->vval.v_string == NULL
+		    || *opt_msg_tv->vval.v_string == NUL)))
     {
 	ga_concat(gap, echo_string(opt_msg_tv, &tofree, numbuf, 0));
 	vim_free(tofree);
@@ -547,7 +550,7 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
     garray_T	ga;
     int		save_trylevel = trylevel;
     int		called_emsg_before = called_emsg;
-    int		wrong_arg = FALSE;
+    char	*wrong_arg_msg = NULL;
 
     // trylevel must be zero for a ":throw" command to be considered failed
     trylevel = 0;
@@ -570,6 +573,7 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 	char_u	buf[NUMBUFLEN];
 	char_u	*expected;
 	int	error_found = FALSE;
+	int	error_found_index = 1;
 	char_u	*actual = emsg_assert_fails_msg == NULL ? (char_u *)"[unknown]"
 						       : emsg_assert_fails_msg;
 
@@ -586,7 +590,7 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 
 	    if (list == NULL || list->lv_len < 1 || list->lv_len > 2)
 	    {
-		wrong_arg = TRUE;
+		wrong_arg_msg = e_assert_fails_second_arg;
 		goto theend;
 	    }
 	    CHECK_LIST_MATERIALIZE(list);
@@ -607,8 +611,39 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 	}
 	else
 	{
-	    wrong_arg = TRUE;
+	    wrong_arg_msg = e_assert_fails_second_arg;
 	    goto theend;
+	}
+
+	if (!error_found && argvars[2].v_type != VAR_UNKNOWN
+		&& argvars[3].v_type != VAR_UNKNOWN)
+	{
+	    if (argvars[3].v_type != VAR_NUMBER)
+	    {
+		wrong_arg_msg = e_assert_fails_fourth_argument;
+		goto theend;
+	    }
+	    else if (argvars[3].vval.v_number >= 0
+			 && argvars[3].vval.v_number != emsg_assert_fails_lnum)
+	    {
+		error_found = TRUE;
+		error_found_index = 3;
+	    }
+	    if (!error_found && argvars[4].v_type != VAR_UNKNOWN)
+	    {
+		if (argvars[4].v_type != VAR_STRING)
+		{
+		    wrong_arg_msg = e_assert_fails_fifth_argument;
+		    goto theend;
+		}
+		else if (argvars[4].vval.v_string != NULL
+		    && !pattern_match(argvars[4].vval.v_string,
+					     emsg_assert_fails_context, FALSE))
+		{
+		    error_found = TRUE;
+		    error_found_index = 4;
+		}
+	    }
 	}
 
 	if (error_found)
@@ -616,10 +651,23 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 	    typval_T actual_tv;
 
 	    prepare_assert_error(&ga);
-	    actual_tv.v_type = VAR_STRING;
-	    actual_tv.vval.v_string = actual;
-	    fill_assert_error(&ga, &argvars[2], NULL, &argvars[1],
-						     &actual_tv, ASSERT_OTHER);
+	    if (error_found_index == 3)
+	    {
+		actual_tv.v_type = VAR_NUMBER;
+		actual_tv.vval.v_number = emsg_assert_fails_lnum;
+	    }
+	    else if (error_found_index == 4)
+	    {
+		actual_tv.v_type = VAR_STRING;
+		actual_tv.vval.v_string = emsg_assert_fails_context;
+	    }
+	    else
+	    {
+		actual_tv.v_type = VAR_STRING;
+		actual_tv.vval.v_string = actual;
+	    }
+	    fill_assert_error(&ga, &argvars[2], NULL,
+			&argvars[error_found_index], &actual_tv, ASSERT_OTHER);
 	    ga_concat(&ga, (char_u *)": ");
 	    assert_append_cmd_or_arg(&ga, argvars, cmd);
 	    assert_error(&ga);
@@ -636,8 +684,8 @@ theend:
     emsg_assert_fails_used = FALSE;
     VIM_CLEAR(emsg_assert_fails_msg);
     set_vim_var_string(VV_ERRMSG, NULL, 0);
-    if (wrong_arg)
-	emsg(_("E856: assert_fails() second argument must be a string or a list with one or two strings"));
+    if (wrong_arg_msg != NULL)
+	emsg(_(wrong_arg_msg));
 }
 
 /*

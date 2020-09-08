@@ -1,15 +1,16 @@
 /* ex_docmd.c */
 void do_exmode(int improved);
 int do_cmdline_cmd(char_u *cmd);
-int do_cmdline(char_u *cmdline, char_u *(*fgetline)(int, void *, int, int), void *cookie, int flags);
-int getline_equal(char_u *(*fgetline)(int, void *, int, int), void *cookie, char_u *(*func)(int, void *, int, int));
-void *getline_cookie(char_u *(*fgetline)(int, void *, int, int), void *cookie);
-char_u *getline_peek(char_u *(*fgetline)(int, void *, int, int), void *cookie);
+int do_cmdline(char_u *cmdline, char_u *(*fgetline)(int, void *, int, getline_opt_T), void *cookie, int flags);
+int getline_equal(char_u *(*fgetline)(int, void *, int, getline_opt_T), void *cookie, char_u *(*func)(int, void *, int, getline_opt_T));
+void *getline_cookie(char_u *(*fgetline)(int, void *, int, getline_opt_T), void *cookie);
+char_u *getline_peek(char_u *(*fgetline)(int, void *, int, getline_opt_T), void *cookie);
 char *ex_errmsg(char *msg, char_u *arg);
 int parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only);
 void undo_cmdmod(exarg_T *eap, int save_msg_scroll);
 int parse_cmd_address(exarg_T *eap, char **errormsg, int silent);
 int checkforcmd(char_u **pp, char *cmd, int len);
+char_u *skip_option_env_lead(char_u *start);
 char_u *find_ex_command(exarg_T *eap, int *full, void *(*lookup)(char_u *, size_t, cctx_T *), cctx_T *cctx);
 int modifier_len(char_u *cmd);
 int cmd_exists(char_u *name);

@@ -8,3 +8,5 @@ func Test_version()
 
   call assert_match("^\n\nVIM - Vi IMproved .*", v1)
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

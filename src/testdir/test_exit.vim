@@ -81,3 +81,5 @@ func Test_exiting()
   endif
   call delete('Xtestout')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

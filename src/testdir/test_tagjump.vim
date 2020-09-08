@@ -8,7 +8,7 @@ func Test_ptag_with_notagstack()
   CheckFeature quickfix
 
   set notagstack
-  call assert_fails('ptag does_not_exist_tag_name', 'E433')
+  call assert_fails('ptag does_not_exist_tag_name', 'E433:')
   set tagstack&vim
 endfunc
 
@@ -192,9 +192,8 @@ endfunction
 " Test for jumping to a tag with 'hidden' set, with symbolic link in path of
 " tag.  This only works for Unix, because of the symbolic link.
 func Test_tag_symbolic()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
+
   set hidden
   call delete("Xtest.dir", "rf")
   call system("ln -s . Xtest.dir")
@@ -230,11 +229,11 @@ endfunc
 " Depends on the test83-tags2 and test83-tags3 files.
 func Test_tag_file_encoding()
   if has('vms')
-    return
+    throw 'Skipped: does not work on VMS'
   endif
 
   if !has('iconv') || iconv("\x82\x60", "cp932", "utf-8") != "\uff21"
-    return
+    throw 'Skipped: iconv does not work'
   endif
 
   let save_enc = &encoding
@@ -283,9 +282,8 @@ endfunc
 
 " Test for emacs-style tags file (TAGS)
 func Test_tagjump_etags()
-  if !has('emacs_tags')
-    return
-  endif
+  CheckFeature emacs_tags
+
   call writefile([
         \ "void foo() {}",
         \ "int main(int argc, char **argv)",
@@ -367,10 +365,10 @@ func Test_getsettagstack()
   " Error cases
   call assert_equal({}, gettagstack(100))
   call assert_equal(-1, settagstack(100, {'items' : []}))
-  call assert_fails('call settagstack(1, [1, 10])', 'E715')
-  call assert_fails("call settagstack(1, {'items' : 10})", 'E714')
-  call assert_fails("call settagstack(1, {'items' : []}, 10)", 'E928')
-  call assert_fails("call settagstack(1, {'items' : []}, 'b')", 'E962')
+  call assert_fails('call settagstack(1, [1, 10])', 'E715:')
+  call assert_fails("call settagstack(1, {'items' : 10})", 'E714:')
+  call assert_fails("call settagstack(1, {'items' : []}, 10)", 'E928:')
+  call assert_fails("call settagstack(1, {'items' : []}, 'b')", 'E962:')
   call assert_equal(-1, settagstack(0, test_null_dict()))
 
   set tags=Xtags
@@ -567,7 +565,7 @@ func Test_tag_line_toolong()
   let old_vbs = &verbose
   set verbose=5
   " ":tjump" should give "tag not found" not "Format error in tags file"
-  call assert_fails('tj /foo', 'E426')
+  call assert_fails('tj /foo', 'E426:')
   try
     tj /foo
   catch /^Vim\%((\a\+)\)\=:E431/
@@ -579,7 +577,7 @@ func Test_tag_line_toolong()
   call writefile([
 	\ '123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567	django/contrib/admin/templates/admin/edit_inline/stacked.html	16;"	j	line:16	language:HTML'
 	\ ], 'Xtags')
-  call assert_fails('tj /foo', 'E426')
+  call assert_fails('tj /foo', 'E426:')
   try
     tj /foo
   catch /^Vim\%((\a\+)\)\=:E431/

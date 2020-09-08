@@ -6,117 +6,132 @@
 #
 # Requires a set of Unix tools: echo, diff, etc.
 
-ifneq (sh.exe, $(SHELL))
-DEL = rm -f
-DELDIR = rm -rf
-MV = mv
-CP = cp
-CAT = cat
-DIRSLASH = /
-else
+# Don't use unix-like shell.
+SHELL = cmd.exe
+
 DEL = del
 DELDIR = rd /s /q
-MV = rename
-CP = copy
+MV = move /y
+CP = copy /y
 CAT = type
-DIRSLASH = \\
-endif
 
-VIMPROG = ..$(DIRSLASH)vim
+VIMPROG = ..\\vim
 
-default: vimall
+default: nongui
 
 include Make_all.mak
 
-SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE1) $(SCRIPTS_MORE4) $(SCRIPTS_WIN32)
+# Explicit dependencies.
+test_options.res test_alot.res: opt_test.vim
 
-SCRIPTS_BENCH = test_bench_regexp.res
-
-# Must run test1 first to create small.vim.
-$(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32) $(NEW_TESTS_RES): $(SCRIPTS_FIRST)
+TEST_OUTFILES = $(SCRIPTS_TINY_OUT)
+DOSTMP = dostmp
+# Keep $(DOSTMP)/*.in
+.PRECIOUS: $(patsubst %.out, $(DOSTMP)/%.in, $(TEST_OUTFILES))
 
 .SUFFIXES: .in .out .res .vim
 
-vimall:	fixff $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32) newtests
-	@echo ALL DONE
+nongui:	nolog tinytests newtests report
 
-nongui:	fixff nolog $(SCRIPTS_FIRST) $(SCRIPTS) newtests
-	@echo ALL DONE
+gui:	nolog tinytests newtests report
+
+tiny:	nolog tinytests report
 
 benchmark: $(SCRIPTS_BENCH)
 
-small: nolog
-	@echo ALL DONE
+report:
+	@rem without the +eval feature test_result.log is a copy of test.log
+	@if exist test.log ( copy /y test.log test_result.log > nul ) \
+		else ( echo No failures reported > test_result.log )
+	$(VIMPROG) -u NONE $(NO_INITS) -S summarize.vim messages
+	@echo.
+	@echo Test results:
+	@cmd /c type test_result.log
+	@if exist test.log ( echo TEST FAILURE & exit /b 1 ) \
+		else ( echo ALL DONE )
 
-gui:	fixff nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) newtests
-	@echo ALL DONE
 
-win32:	fixff nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_WIN32) newtests
-	@echo ALL DONE
+# Execute an individual new style test, e.g.:
+# 	mingw32-make -f Make_ming.mak test_largefile
+$(NEW_TESTS):
+	-if exist $@.res del $@.res
+	-if exist test.log del test.log
+	-if exist messages del messages
+	@$(MAKE) -f Make_ming.mak $@.res VIMPROG=$(VIMPROG) --no-print-directory
+	@type messages
+	@if exist test.log exit 1
 
-# TODO: find a way to avoid changing the distributed files.
-fixff:
-	-$(VIMPROG) -u dos.vim $(NO_INITS) "+argdo set ff=dos|upd" +q *.in *.ok
-	-$(VIMPROG) -u dos.vim $(NO_INITS) "+argdo set ff=unix|upd" +q \
-		dotest.in
 
+# Delete files that may interfere with running tests.  This includes some files
+# that may result from working on the tests, not only from running them.
 clean:
 	-@if exist *.out $(DEL) *.out
 	-@if exist *.failed $(DEL) *.failed
 	-@if exist *.res $(DEL) *.res
+	-@if exist $(DOSTMP) rd /s /q $(DOSTMP)
 	-@if exist test.in $(DEL) test.in
 	-@if exist test.ok $(DEL) test.ok
-	-@if exist small.vim $(DEL) small.vim
-	-@if exist tiny.vim $(DEL) tiny.vim
-	-@if exist mbyte.vim $(DEL) mbyte.vim
-	-@if exist mzscheme.vim $(DEL) mzscheme.vim
 	-@if exist Xdir1 $(DELDIR) Xdir1
 	-@if exist Xfind $(DELDIR) Xfind
 	-@if exist XfakeHOME $(DELDIR) XfakeHOME
 	-@if exist X* $(DEL) X*
+	-@for /d %%i in (X*) do @rd /s/q %%i
 	-@if exist viminfo $(DEL) viminfo
 	-@if exist test.log $(DEL) test.log
+	-@if exist test_result.log del test_result.log
 	-@if exist messages $(DEL) messages
+	-@if exist benchmark.out del benchmark.out
 	-@if exist opt_test.vim $(DEL) opt_test.vim
-
-test1.out: test1.in
-	-@if exist wrongtermsize  $(DEL) wrongtermsize
-	$(VIMPROG) -u dos.vim $(NO_INITS) -s dotest.in test1.in
-	-@if exist wrongtermsize  ( \
-	    echo Vim window too small- must be 80x25 or larger && exit 1 \
-	    )
-	-@if exist test.out $(DEL) test.out
-	-@if exist viminfo  $(DEL) viminfo
-
-.in.out:
-	-@if exist $*.ok $(CP) $*.ok test.ok
-	$(VIMPROG) -u dos.vim $(NO_INITS) -s dotest.in $*.in
-	@diff test.out $*.ok
-	-@if exist $*.out $(DEL) $*.out
-	@$(MV) test.out $*.out
-	-@if exist Xdir1 $(DELDIR) Xdir1
-	-@if exist Xfind $(DELDIR) Xfind
-	-@if exist XfakeHOME $(DELDIR) XfakeHOME
-	-@if exist X* $(DEL) X*
-	-@if exist test.ok $(DEL) test.ok
-	-@if exist viminfo $(DEL) viminfo
 
 nolog:
 	-@if exist test.log $(DEL) test.log
+	-@if exist test_result.log del test_result.log
 	-@if exist messages $(DEL) messages
 
-test_bench_regexp.res: test_bench_regexp.vim
-	-$(DEL) benchmark.out
-	@echo $(VIMPROG) > vimcmd
-	$(VIMPROG) -u NONE $(NO_INITS) -S runtest.vim $*.vim
-	@$(DEL) vimcmd
-	$(CAT) benchmark.out
+
+# Tiny tests.  Works even without the +eval feature.
+tinytests: $(SCRIPTS_TINY_OUT)
+
+# Copy the input files to dostmp, changing the fileformat to dos.
+$(DOSTMP)/%.in : %.in
+	if not exist $(DOSTMP)\nul mkdir $(DOSTMP)
+	if not exist $@ $(DEL) $@
+	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=dos|f $@|wq" $<
+
+# For each input file dostmp/test99.in run the tests.
+# This moves test99.in to test99.in.bak temporarily.
+%.out : $(DOSTMP)/%.in
+	-@if exist test.out $(DEL) test.out
+	-@if exist $(DOSTMP)\$@ $(DEL) $(DOSTMP)\$@
+	$(MV) $(notdir $<) $(notdir $<).bak > NUL
+	$(CP) $(DOSTMP)\$(notdir $<) $(notdir $<) > NUL
+	$(CP) $(basename $@).ok test.ok > NUL
+	$(VIMPROG) -u dos.vim $(NO_INITS) -s dotest.in $(notdir $<)
+	-@if exist test.out $(MV) test.out $(DOSTMP)\$@ > NUL
+	-@if exist $(notdir $<).bak $(MV) $(notdir $<).bak $(notdir $<) > NUL
+	-@if exist test.ok $(DEL) test.ok
+	-@if exist Xdir1 $(DELDIR) /s /q Xdir1
+	-@if exist Xfind $(DELDIR) Xfind
+	-@if exist XfakeHOME $(DELDIR) XfakeHOME
+	-@del X*
+	-@if exist viminfo del viminfo
+	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=unix|f test.out|wq" \
+		$(DOSTMP)\$@
+	@diff test.out $(basename $@).ok & if errorlevel 1 \
+		( $(MV) test.out $(basename $@).failed > NUL \
+		 & del $(DOSTMP)\$@ \
+		 & echo $(basename $@) FAILED >> test.log ) \
+		else ( $(MV) test.out $(basename $@).out > NUL )
+
 
 # New style of tests uses Vim script with assert calls.  These are easier
 # to write and a lot easier to read and debug.
 # Limitation: Only works with the +eval feature.
 
-newtests: $(NEW_TESTS_RES)
+newtests: newtestssilent
+	@if exist messages type messages
+
+newtestssilent: $(NEW_TESTS_RES)
 
 .vim.res:
 	@echo $(VIMPROG) > vimcmd
@@ -133,7 +148,12 @@ test_gui_init.res: test_gui_init.vim
 	$(VIMPROG) -u gui_preinit.vim -U gui_init.vim $(NO_PLUGINS) -S runtest.vim $<
 	@$(DEL) vimcmd
 
-test_options.res test_alot.res: opt_test.vim
-
 opt_test.vim: ../optiondefs.h gen_opt_test.vim
 	$(VIMPROG) -u NONE -S gen_opt_test.vim --noplugin --not-a-term ../optiondefs.h
+
+test_bench_regexp.res: test_bench_regexp.vim
+	-$(DEL) benchmark.out
+	@echo $(VIMPROG) > vimcmd
+	$(VIMPROG) -u NONE $(NO_INITS) -S runtest.vim $*.vim
+	@$(DEL) vimcmd
+	$(CAT) benchmark.out

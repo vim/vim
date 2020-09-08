@@ -242,11 +242,11 @@ endfunc
 
 func Test_args_with_quote()
   " Only on Unix can a file name include a double quote.
-  if has('unix')
-    args \"foobar
-    call assert_equal('"foobar', argv(0))
-    %argdelete
-  endif
+  CheckUnix
+
+  args \"foobar
+  call assert_equal('"foobar', argv(0))
+  %argdelete
 endfunc
 
 " Test for 0argadd and 0argedit
@@ -423,9 +423,15 @@ func Test_argdelete()
   last
   argdelete %
   call assert_equal(['b'], argv())
-  call assert_fails('argdelete', 'E471:')
+  call assert_fails('argdelete', 'E610:')
   call assert_fails('1,100argdelete', 'E16:')
-  %argd
+
+  call Reset_arglist()
+  args a b c d
+  next
+  argdel
+  call Assert_argc(['a', 'c', 'd'])
+  %argdel
 endfunc
 
 func Test_argdelete_completion()

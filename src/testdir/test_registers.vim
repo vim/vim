@@ -1,6 +1,4 @@
-"
 " Tests for register operations
-"
 
 source check.vim
 source view_util.vim

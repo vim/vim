@@ -1,3 +1,5 @@
+" Test for insert completion
+
 source screendump.vim
 source check.vim
 

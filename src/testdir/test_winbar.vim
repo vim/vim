@@ -18,7 +18,7 @@ func Test_add_remove_menu()
   call assert_equal(12, g:did_cont)
 
   wincmd w
-  call assert_fails('emenu WinBar.Next', 'E334')
+  call assert_fails('emenu WinBar.Next', 'E334:')
   wincmd p
 
   aunmenu WinBar.Next
@@ -121,3 +121,4 @@ func Test_redraw_after_scroll()
   bwipe!
 endfunc
 
+" vim: shiftwidth=2 sts=2 expandtab

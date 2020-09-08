@@ -93,7 +93,7 @@ typedef enum {
     ISN_CATCH,	    // drop v:exception
     ISN_ENDTRY,	    // take entry off from ec_trystack
 
-    // moreexpression operations
+    // more expression operations
     ISN_ADDLIST,
     ISN_ADDBLOB,
 
@@ -117,13 +117,18 @@ typedef enum {
     // expression operations
     ISN_CONCAT,
     ISN_STRINDEX,   // [expr] string index
+    ISN_STRSLICE,   // [expr:expr] string slice
     ISN_LISTINDEX,  // [expr] list index
+    ISN_LISTSLICE,  // [expr:expr] list slice
+    ISN_ANYINDEX,   // [expr] runtime index
+    ISN_ANYSLICE,   // [expr:expr] runtime slice
     ISN_SLICE,	    // drop isn_arg.number items from start of list
     ISN_GETITEM,    // push list item, isn_arg.number is the index
     ISN_MEMBER,	    // dict[member]
     ISN_STRINGMEMBER, // dict.member using isn_arg.string
     ISN_2BOOL,	    // convert value to bool, invert if isn_arg.number != 0
     ISN_2STRING,    // convert value to string at isn_arg.number on stack
+    ISN_2STRING_ANY, // like ISN_2STRING but check type
     ISN_NEGATENR,   // apply "-" to number
 
     ISN_CHECKNR,    // check value can be used as a number

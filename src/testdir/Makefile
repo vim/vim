@@ -23,28 +23,19 @@ REDIR_TEST_TO_NULL = --cmd 'au SwapExists * let v:swapchoice = "e"' > /dev/null
 default: nongui
 
 # The list of tests is common to all systems.
-# This defines NEW_TESTS, NEW_TESTS_RES, SCRIPTS_ALL, SCRIPTS_MORE* and
-# SCRIPTS_GUI.
+# This defines SCRIPTS_TINY_OUT, NEW_TESTS and NEW_TESTS_RES.
 include Make_all.mak
 
-
-SCRIPTS = $(SCRIPTS_ALL) \
-	  $(SCRIPTS_MORE1) \
-	  $(SCRIPTS_MORE2) \
-	  $(SCRIPTS_MORE4)
-
 # Explicit dependencies.
-test49.out: test49.vim
-
 test_options.res test_alot.res: opt_test.vim
-
-SCRIPTS_BENCH = test_bench_regexp.res
 
 .SUFFIXES: .in .out .res .vim
 
-nongui:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) newtests report
+nongui:	nolog tinytests newtests report
 
-gui:	nolog $(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) newtests report
+gui:	nolog tinytests newtests report
+
+tiny:	nolog tinytests report
 
 benchmark: $(SCRIPTS_BENCH)
 
@@ -63,10 +54,7 @@ report:
 		else echo ALL DONE; \
 		fi"
 
-$(SCRIPTS_FIRST) $(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS_RES): $(VIMPROG)
-
-# Must run test1 first to create small.vim.
-$(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS_RES): $(SCRIPTS_FIRST)
+$(SCRIPTS_TINY_OUT) $(NEW_TESTS_RES): $(VIMPROG)
 
 
 # Execute an individual new style test, e.g.:
@@ -90,7 +78,7 @@ test_vim9:
 	fi
 
 RM_ON_RUN = test.out X* viminfo
-RM_ON_START = tiny.vim small.vim mbyte.vim mzscheme.vim test.ok benchmark.out
+RM_ON_START = test.ok benchmark.out
 RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE) $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim $(NO_INITS) -s dotest.in
 
 # Delete files that may interfere with running tests.  This includes some files
@@ -102,39 +90,23 @@ clean:
 	-rm -f valgrind.*
 	-rm -f asan.*
 
-test1.out: test1.in
-	-rm -rf $*.failed $(RM_ON_RUN) $(RM_ON_START) wrongtermsize
-	$(RUN_VIM) $*.in $(REDIR_TEST_TO_NULL)
-	@/bin/sh -c "if test -f wrongtermsize; \
-		then echo; \
-		echo test1 FAILED - terminal size must be 80x24 or larger; \
-		echo; exit 1; \
-		elif diff test.out $*.ok; \
-		then mv -f test.out $*.out; \
-		else echo; \
-		echo test1 FAILED - Something basic is wrong; \
-		echo; exit 1; fi"
-	-rm -rf X* viminfo
+nolog:
+	-rm -f test.log test_result.log messages
+
+
+# Tiny tests.  Works even without the +eval feature.
+tinytests: $(SCRIPTS_TINY_OUT)
 
 .in.out:
 	-rm -rf $*.failed test.ok $(RM_ON_RUN)
 	cp $*.ok test.ok
-	# Sleep a moment to avoid that the xterm title is messed up.
-	# 200 msec is sufficient, but only modern sleep supports a fraction of
-	# a second, fall back to a second if it fails.
+	@# Sleep a moment to avoid that the xterm title is messed up.
+	@# 200 msec is sufficient, but only modern sleep supports a fraction of
+	@# a second, fall back to a second if it fails.
 	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
 	$(RUN_VIM) $*.in $(REDIR_TEST_TO_NULL)
 
-	# For flaky tests retry one time.  No tests at the moment.
-	#@/bin/sh -c "if test -f test.out -a $* = test61; then \
-	#	  if diff test.out $*.ok; \
-	#	  then echo flaky test ok first time; \
-	#	  else rm -rf $*.failed $(RM_ON_RUN); \
-	#		$(RUN_VIM) $*.in; \
-	#	  fi \
-	#	fi"
-
-	# Check if the test.out file matches test.ok.
+	@# Check if the test.out file matches test.ok.
 	@/bin/sh -c "if test -f test.out; then \
 		  if diff test.out $*.ok; \
 		  then mv -f test.out $*.out; \
@@ -147,9 +119,6 @@ test1.out: test1.in
 		fi"
 	-rm -rf X* test.ok viminfo
 
-nolog:
-	-rm -f test.log messages
-
 
 # New style of tests uses Vim script with assert calls.  These are easier
 # to write and a lot easier to read and debug.
@@ -157,7 +126,7 @@ nolog:
 RUN_VIMTEST = VIMRUNTIME=$(SCRIPTSOURCE) $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim
 
 newtests: newtestssilent
-	@/bin/sh -c "if test -f messages && grep -q 'SKIPPED\|FAILED' messages; then cat messages; fi"
+	@/bin/sh -c "if test -f messages; then cat messages; fi"
 
 newtestssilent: $(NEW_TESTS_RES)
 
@@ -188,9 +157,9 @@ test_xxd.res:
 
 test_bench_regexp.res: test_bench_regexp.vim
 	-rm -rf benchmark.out $(RM_ON_RUN)
-	# Sleep a moment to avoid that the xterm title is messed up.
-	# 200 msec is sufficient, but only modern sleep supports a fraction of
-	# a second, fall back to a second if it fails.
+	@# Sleep a moment to avoid that the xterm title is messed up.
+	@# 200 msec is sufficient, but only modern sleep supports a fraction of
+	@# a second, fall back to a second if it fails.
 	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
 	$(RUN_VIMTEST) $(NO_INITS) -S runtest.vim $*.vim $(REDIR_TEST_TO_NULL)
 	@/bin/sh -c "if test -f benchmark.out; then cat benchmark.out; fi"

@@ -1,4 +1,5 @@
 " Tests for diff mode
+
 source shared.vim
 source screendump.vim
 source check.vim
@@ -654,9 +655,8 @@ endfunc
 
 func Test_diffpatch()
   " The patch program on MS-Windows may fail or hang.
-  if !executable('patch') || !has('unix')
-    return
-  endif
+  CheckExecutable patch
+  CheckUnix
   new
   insert
 ***************

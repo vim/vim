@@ -269,6 +269,20 @@ func Test_assert_fail_fails()
     let exp = v:exception
   endtry
   call assert_match("E856: assert_fails() second argument", exp)
+
+  try
+    call assert_equal(1, assert_fails('xxx', 'E492', '', 'burp'))
+  catch
+    let exp = v:exception
+  endtry
+  call assert_match("E1115: assert_fails() fourth argument must be a number", exp)
+
+  try
+    call assert_equal(1, assert_fails('xxx', 'E492', '', 54, 123))
+  catch
+    let exp = v:exception
+  endtry
+  call assert_match("E1116: assert_fails() fifth argument must be a string", exp)
 endfunc
 
 func Test_assert_fails_in_try_block()
@@ -341,8 +355,8 @@ func Test_override()
   call test_override('char_avail', 1)
   eval 1->test_override('redraw')
   call test_override('ALL', 0)
-  call assert_fails("call test_override('xxx', 1)", 'E475')
-  call assert_fails("call test_override('redraw', 'yes')", 'E474')
+  call assert_fails("call test_override('xxx', 1)", 'E475:')
+  call assert_fails("call test_override('redraw', 'yes')", 'E474:')
 endfunc
 
 func Test_mouse_position()
@@ -374,3 +388,5 @@ func Test_zz_quit_detected()
   " Verify that if a test function ends Vim the test script detects this.
   quit
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

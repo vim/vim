@@ -214,11 +214,17 @@ typval2type(typval_T *tv, garray_T *type_gap)
 
     if (tv->v_type == VAR_LIST)
     {
+	listitem_T *li;
+
 	if (tv->vval.v_list == NULL || tv->vval.v_list->lv_first == NULL)
 	    return &t_list_empty;
 
-	// Use the type of the first member, it is the most specific.
+	// Use the common type of all members.
 	member_type = typval2type(&tv->vval.v_list->lv_first->li_tv, type_gap);
+	for (li = tv->vval.v_list->lv_first->li_next; li != NULL;
+							     li = li->li_next)
+	    common_type(typval2type(&li->li_tv, type_gap),
+					  member_type, &member_type, type_gap);
 	return get_list_type(member_type, type_gap);
     }
 
@@ -231,10 +237,13 @@ typval2type(typval_T *tv, garray_T *type_gap)
 				   || tv->vval.v_dict->dv_hashtab.ht_used == 0)
 	    return &t_dict_empty;
 
-	// Use the type of the first value, it is the most specific.
+	// Use the common type of all values.
 	dict_iterate_start(tv, &iter);
 	dict_iterate_next(&iter, &value);
 	member_type = typval2type(value, type_gap);
+	while (dict_iterate_next(&iter, &value) != NULL)
+	    common_type(typval2type(value, type_gap),
+					  member_type, &member_type, type_gap);
 	return get_dict_type(member_type, type_gap);
     }
 
@@ -295,7 +304,7 @@ typval2type_vimvar(typval_T *tv, garray_T *type_gap)
  * Return FAIL if "expected" and "actual" don't match.
  */
     int
-check_typval_type(type_T *expected, typval_T *actual_tv)
+check_typval_type(type_T *expected, typval_T *actual_tv, int argidx)
 {
     garray_T	type_list;
     type_T	*actual_type;
@@ -304,7 +313,7 @@ check_typval_type(type_T *expected, typval_T *actual_tv)
     ga_init2(&type_list, sizeof(type_T *), 10);
     actual_type = typval2type(actual_tv, &type_list);
     if (actual_type != NULL)
-	res = check_type(expected, actual_type, TRUE);
+	res = check_type(expected, actual_type, TRUE, argidx);
     clear_type_list(&type_list);
     return res;
 }
@@ -312,22 +321,22 @@ check_typval_type(type_T *expected, typval_T *actual_tv)
     void
 type_mismatch(type_T *expected, type_T *actual)
 {
-    char *tofree1, *tofree2;
-
-    semsg(_("E1013: type mismatch, expected %s but got %s"),
-		   type_name(expected, &tofree1), type_name(actual, &tofree2));
-    vim_free(tofree1);
-    vim_free(tofree2);
+    arg_type_mismatch(expected, actual, 0);
 }
 
     void
 arg_type_mismatch(type_T *expected, type_T *actual, int argidx)
 {
     char *tofree1, *tofree2;
+    char *typename1 = type_name(expected, &tofree1);
+    char *typename2 = type_name(actual, &tofree2);
 
-    semsg(_("E1013: argument %d: type mismatch, expected %s but got %s"),
-	    argidx,
-	    type_name(expected, &tofree1), type_name(actual, &tofree2));
+    if (argidx > 0)
+	semsg(_(e_argument_nr_type_mismatch_expected_str_but_got_str),
+						 argidx, typename1, typename2);
+    else
+	semsg(_(e_type_mismatch_expected_str_but_got_str),
+							 typename1, typename2);
     vim_free(tofree1);
     vim_free(tofree2);
 }
@@ -335,9 +344,10 @@ arg_type_mismatch(type_T *expected, type_T *actual, int argidx)
 /*
  * Check if the expected and actual types match.
  * Does not allow for assigning "any" to a specific type.
+ * When "argidx" > 0 it is included in the error message.
  */
     int
-check_type(type_T *expected, type_T *actual, int give_msg)
+check_type(type_T *expected, type_T *actual, int give_msg, int argidx)
 {
     int ret = OK;
 
@@ -350,19 +360,21 @@ check_type(type_T *expected, type_T *actual, int give_msg)
 	if (expected->tt_type != actual->tt_type)
 	{
 	    if (give_msg)
-		type_mismatch(expected, actual);
+		arg_type_mismatch(expected, actual, argidx);
 	    return FAIL;
 	}
 	if (expected->tt_type == VAR_DICT || expected->tt_type == VAR_LIST)
 	{
 	    // "unknown" is used for an empty list or dict
 	    if (actual->tt_member != &t_unknown)
-		ret = check_type(expected->tt_member, actual->tt_member, FALSE);
+		ret = check_type(expected->tt_member, actual->tt_member,
+								     FALSE, 0);
 	}
 	else if (expected->tt_type == VAR_FUNC)
 	{
 	    if (expected->tt_member != &t_unknown)
-		ret = check_type(expected->tt_member, actual->tt_member, FALSE);
+		ret = check_type(expected->tt_member, actual->tt_member,
+								     FALSE, 0);
 	    if (ret == OK && expected->tt_argcount != -1
 		    && (actual->tt_argcount < expected->tt_min_argcount
 			|| actual->tt_argcount > expected->tt_argcount))
@@ -374,7 +386,7 @@ check_type(type_T *expected, type_T *actual, int give_msg)
 		for (i = 0; i < expected->tt_argcount; ++i)
 		    // Allow for using "any" argument type, lambda's have them.
 		    if (actual->tt_args[i] != &t_any && check_type(
-			       expected->tt_args[i], actual->tt_args[i], FALSE)
+			    expected->tt_args[i], actual->tt_args[i], FALSE, 0)
 								       == FAIL)
 		    {
 			ret = FAIL;
@@ -383,7 +395,7 @@ check_type(type_T *expected, type_T *actual, int give_msg)
 	    }
 	}
 	if (ret == FAIL && give_msg)
-	    type_mismatch(expected, actual);
+	    arg_type_mismatch(expected, actual, argidx);
     }
     return ret;
 }
@@ -462,9 +474,9 @@ parse_type_member(char_u **arg, type_T *type, garray_T *type_gap)
     if (**arg != '<')
     {
 	if (*skipwhite(*arg) == '<')
-	    semsg(_(e_no_white_before), "<");
+	    semsg(_(e_no_white_space_allowed_before_str), "<");
 	else
-	    emsg(_("E1008: Missing <type>"));
+	    emsg(_(e_missing_type));
 	return type;
     }
     *arg = skipwhite(*arg + 1);
@@ -474,7 +486,7 @@ parse_type_member(char_u **arg, type_T *type, garray_T *type_gap)
     *arg = skipwhite(*arg);
     if (**arg != '>' && called_emsg == prev_called_emsg)
     {
-	emsg(_("E1009: Missing > after type"));
+	emsg(_(e_missing_gt_after_type));
 	return type;
     }
     ++*arg;
@@ -541,7 +553,7 @@ parse_type(char_u **arg, garray_T *type_gap)
 		*arg += len;
 		return &t_float;
 #else
-		emsg(_("E1076: This Vim is not compiled with float support"));
+		emsg(_(e_this_vim_is_not_compiled_with_float_support));
 		return &t_any;
 #endif
 	    }
@@ -579,7 +591,7 @@ parse_type(char_u **arg, garray_T *type_gap)
 			}
 			else if (first_optional != -1)
 			{
-			    emsg(_("E1007: mandatory argument after optional argument"));
+			    emsg(_(e_mandatory_argument_after_optional_argument));
 			    return &t_any;
 			}
 
@@ -591,7 +603,7 @@ parse_type(char_u **arg, garray_T *type_gap)
 
 			if (*p != ',' && *skipwhite(p) == ',')
 			{
-			    semsg(_(e_no_white_before), ",");
+			    semsg(_(e_no_white_space_allowed_before_str), ",");
 			    return &t_any;
 			}
 			if (*p == ',')
@@ -599,14 +611,14 @@ parse_type(char_u **arg, garray_T *type_gap)
 			    ++p;
 			    if (!VIM_ISWHITE(*p))
 			    {
-				semsg(_(e_white_after), ",");
+				semsg(_(e_white_space_required_after_str), ",");
 				return &t_any;
 			    }
 			}
 			p = skipwhite(p);
 			if (argcount == MAX_FUNC_ARGS)
 			{
-			    emsg(_("E740: Too many argument types"));
+			    emsg(_(e_too_many_argument_types));
 			    return &t_any;
 			}
 		    }
@@ -624,7 +636,7 @@ parse_type(char_u **arg, garray_T *type_gap)
 		    // parse return type
 		    ++*arg;
 		    if (!VIM_ISWHITE(**arg))
-			semsg(_(e_white_after), ":");
+			semsg(_(e_white_space_required_after_str), ":");
 		    *arg = skipwhite(*arg);
 		    ret_type = parse_type(arg, type_gap);
 		}
@@ -686,7 +698,7 @@ parse_type(char_u **arg, garray_T *type_gap)
 	    break;
     }
 
-    semsg(_("E1010: Type not recognized: %s"), *arg);
+    semsg(_(e_type_not_recognized_str), *arg);
     return &t_any;
 }
 

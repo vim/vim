@@ -53,7 +53,7 @@ int mch_signal_job(job_T *job, char_u *how);
 void mch_clear_job(job_T *job);
 void mch_set_normal_colors(void);
 void mch_write(char_u *s, int len);
-void mch_delay(long msec, int ignoreinput);
+void mch_delay(long msec, int flags);
 int mch_remove(char_u *name);
 void mch_breakcheck(int force);
 long_u mch_total_mem(int special);

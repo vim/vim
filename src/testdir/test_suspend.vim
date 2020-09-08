@@ -1,6 +1,6 @@
 " Test :suspend
 
-source shared.vim
+source check.vim
 source term_util.vim
 
 func CheckSuspended(buf, fileExists)
@@ -18,9 +18,8 @@ func CheckSuspended(buf, fileExists)
 endfunc
 
 func Test_suspend()
-  if !has('terminal') || !executable('/bin/sh')
-    return
-  endif
+  CheckFeature terminal
+  CheckExecutable /bin/sh
 
   let buf = term_start('/bin/sh')
   " Wait for shell prompt.
@@ -61,3 +60,5 @@ func Test_suspend()
   exe buf . 'bwipe!'
   call delete('Xfoo')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

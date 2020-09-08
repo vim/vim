@@ -323,3 +323,5 @@ func Test_json_encode_long()
   let json = json_encode([repeat('a', 3996)])
   call assert_equal(4000, len(json))
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

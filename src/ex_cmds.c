@@ -3553,7 +3553,7 @@ typedef struct {
  * The usual escapes are supported as described in the regexp docs.
  */
     void
-do_sub(exarg_T *eap)
+ex_substitute(exarg_T *eap)
 {
     linenr_T	lnum;
     long	i = 0;
@@ -3842,7 +3842,7 @@ do_sub(exarg_T *eap)
     if (search_regcomp(pat, RE_SUBST, which_pat, SEARCH_HIS, &regmatch) == FAIL)
     {
 	if (subflags.do_error)
-	    emsg(_(e_invcmd));
+	    emsg(_(e_invalid_command));
 	return;
     }
 
@@ -4816,7 +4816,7 @@ ex_global(exarg_T *eap)
 
     if (search_regcomp(pat, RE_BOTH, which_pat, SEARCH_HIS, &regmatch) == FAIL)
     {
-	emsg(_(e_invcmd));
+	emsg(_(e_invalid_command));
 	return;
     }
 

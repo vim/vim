@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 8.2.  Last change: 2020 Jul 27
+*develop.txt*   For Vim version 8.2.  Last change: 2020 Aug 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -473,7 +473,7 @@ available spell checking libraries and programs.  Unfortunately, the result
 was that none of them provided sufficient capabilities to be used as the spell
 checking engine in Vim, for various reasons:
 
-- Missing support for multi-byte encodings.  At least UTF-8 must be supported,
+- Missing support for multibyte encodings.  At least UTF-8 must be supported,
   so that more than one language can be used in the same file.
   Doing on-the-fly conversion is not always possible (would require iconv
   support).

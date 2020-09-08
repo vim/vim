@@ -136,3 +136,5 @@ func Test_crypt_set_key_changes_buffer()
   bwipe!
   call delete('Xtest1.txt')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
