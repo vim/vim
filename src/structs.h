@@ -3338,6 +3338,7 @@ struct window_S
 				      // with "cursorline" set
     callback_T	w_close_cb;	    // popup close callback
     callback_T	w_filter_cb;	    // popup filter callback
+    int		w_filter_errors;    // popup filter error count
     int		w_filter_mode;	    // mode when filter callback is used
 
     win_T	*w_popup_curwin;    // close popup if curwin differs
