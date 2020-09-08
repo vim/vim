@@ -315,5 +315,21 @@ def Test_normal_command()
   bwipe!
 enddef
 
+def Test_put_command()
+  new
+  @p = 'ppp'
+  put p
+  assert_equal('ppp', getline(2))
+
+  put ='below'
+  assert_equal('below', getline(3))
+  put! ='above'
+  assert_equal('above', getline(3))
+  assert_equal('below', getline(4))
+
+  bwipe!
+enddef
+
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

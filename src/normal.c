@@ -7427,7 +7427,7 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    // May have been reset in do_put().
 	    VIsual_active = TRUE;
 	}
-	do_put(cap->oap->regname, dir, cap->count1, flags);
+	do_put(cap->oap->regname, NULL, dir, cap->count1, flags);
 
 	// If a register was saved, put it back now.
 	if (reg2 != NULL)
@@ -7500,7 +7500,7 @@ nv_nbcmd(cmdarg_T *cap)
     static void
 nv_drop(cmdarg_T *cap UNUSED)
 {
-    do_put('~', BACKWARD, 1L, PUT_CURSEND);
+    do_put('~', NULL, BACKWARD, 1L, PUT_CURSEND);
 }
 #endif
 

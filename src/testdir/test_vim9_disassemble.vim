@@ -118,6 +118,21 @@ def Test_disassemble_yank_range()
         res)
 enddef
 
+def s:PutExpr()
+  :3put ="text"
+enddef
+
+def Test_disassemble_put_expr()
+  let res = execute('disass s:PutExpr')
+  assert_match('<SNR>\d*_PutExpr.*' ..
+        ' :3put ="text"\_s*' ..
+        '\d PUSHS "text"\_s*' ..
+        '\d PUT = 3\_s*' ..
+        '\d PUSHNR 0\_s*' ..
+        '\d RETURN',
+        res)
+enddef
+
 def s:ScriptFuncPush()
   let localbool = true
   let localspec = v:none

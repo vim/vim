@@ -1567,6 +1567,22 @@ generate_MULT_EXPR(cctx_T *cctx, isntype_T isn_type, int count)
     return OK;
 }
 
+/*
+ * Generate an ISN_PUT instruction.
+ */
+    static int
+generate_PUT(cctx_T *cctx, int regname, linenr_T lnum)
+{
+    isn_T	*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_PUT)) == NULL)
+	return FAIL;
+    isn->isn_arg.put.put_regname = regname;
+    isn->isn_arg.put.put_lnum = lnum;
+    return OK;
+}
+
     static int
 generate_EXEC(cctx_T *cctx, char_u *line)
 {
@@ -6272,6 +6288,50 @@ compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
 }
 
 /*
+ * :put r
+ * :put ={expr}
+ */
+    static char_u *
+compile_put(char_u *arg, exarg_T *eap, cctx_T *cctx)
+{
+    char_u	*line = arg;
+    linenr_T	lnum;
+    char	*errormsg;
+    int		above = FALSE;
+
+    if (*arg == '!')
+    {
+	above = TRUE;
+	line = skipwhite(arg + 1);
+    }
+    eap->regname = *line;
+
+    if (eap->regname == '=')
+    {
+	char_u *p = line + 1;
+
+	if (compile_expr0(&p, cctx) == FAIL)
+	    return NULL;
+	line = p;
+    }
+    else if (eap->regname != NUL)
+	++line;
+
+    // TODO: if the range is something like "$" need to evaluate at runtime
+    if (parse_cmd_address(eap, &errormsg, FALSE) == FAIL)
+	return NULL;
+    if (eap->addr_count == 0)
+	lnum = -1;
+    else
+	lnum = eap->line2;
+    if (above)
+	--lnum;
+
+    generate_PUT(cctx, eap->regname, lnum);
+    return line;
+}
+
+/*
  * A command that is not compiled, execute with legacy code.
  */
     static char_u *
@@ -6870,6 +6930,11 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 		    line = compile_mult_expr(p, ea.cmdidx, &cctx);
 		    break;
 
+	    case CMD_put:
+		    ea.cmd = cmd;
+		    line = compile_put(p, &ea, &cctx);
+		    break;
+
 	    // TODO: any other commands with an expression argument?
 
 	    case CMD_append:
@@ -7192,6 +7257,7 @@ delete_instr(isn_T *isn)
 	case ISN_PUSHF:
 	case ISN_PUSHNR:
 	case ISN_PUSHSPEC:
+	case ISN_PUT:
 	case ISN_RETURN:
 	case ISN_SHUFFLE:
 	case ISN_SLICE:

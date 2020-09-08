@@ -2581,6 +2581,36 @@ call_def_function(
 		}
 		break;
 
+	    case ISN_PUT:
+		{
+		    int		regname = iptr->isn_arg.put.put_regname;
+		    linenr_T	lnum = iptr->isn_arg.put.put_lnum;
+		    char_u	*expr = NULL;
+		    int		dir = FORWARD;
+
+		    if (regname == '=')
+		    {
+			tv = STACK_TV_BOT(-1);
+			if (tv->v_type == VAR_STRING)
+			    expr = tv->vval.v_string;
+			else
+			{
+			    expr = typval_tostring(tv);  // allocates value
+			    clear_tv(tv);
+			}
+			--ectx.ec_stack.ga_len;
+		    }
+		    if (lnum == -2)
+			// :put! above cursor
+			dir = BACKWARD;
+		    else if (lnum >= 0)
+			curwin->w_cursor.lnum = iptr->isn_arg.put.put_lnum;
+		    check_cursor();
+		    do_put(regname, expr, dir, 1L, PUT_LINE|PUT_CURSLINE);
+		    vim_free(expr);
+		}
+		break;
+
 	    case ISN_SHUFFLE:
 		{
 		    typval_T	    tmp_tv;
@@ -3227,6 +3257,10 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_2STRING_ANY: smsg("%4d 2STRING_ANY stack[%lld]", current,
 					 (long long)(iptr->isn_arg.number));
 			      break;
+	    case ISN_PUT:
+		smsg("%4d PUT %c %ld", current, iptr->isn_arg.put.put_regname,
+					     (long)iptr->isn_arg.put.put_lnum);
+		break;
 
 	    case ISN_SHUFFLE: smsg("%4d SHUFFLE %d up %d", current,
 					 iptr->isn_arg.shuffle.shfl_item,

@@ -1487,6 +1487,7 @@ copy_yank_reg(yankreg_T *reg)
     void
 do_put(
     int		regname,
+    char_u	*expr_result,	// result for regname "=" when compiled
     int		dir,		// BACKWARD for 'P', FORWARD for 'p'
     long	count,
     int		flags)
@@ -1551,11 +1552,12 @@ do_put(
 
     // For special registers '%' (file name), '#' (alternate file name) and
     // ':' (last command line), etc. we have to create a fake yank register.
-    if (get_spec_reg(regname, &insert_string, &allocated, TRUE))
-    {
-	if (insert_string == NULL)
-	    return;
-    }
+    // For compiled code "expr_result" holds the expression result.
+    if (regname == '=' && expr_result != NULL)
+	insert_string = expr_result;
+    else if (get_spec_reg(regname, &insert_string, &allocated, TRUE)
+		&& insert_string == NULL)
+	return;
 
     // Autocommands may be executed when saving lines for undo.  This might
     // make "y_array" invalid, so we start undo now to avoid that.
