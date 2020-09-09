@@ -3093,7 +3093,7 @@ icon_size_changed_foreach(GtkWidget *widget, gpointer user_data)
 
 	    gtk_image_get_icon_name(image, &icon_name, NULL);
 
-	    gtk_image_set_from_icon_name(image, icon_name, icon_size);
+	    image = gtk_image_new_from_icon_name(icon_name, icon_size);
 	}
 # else
 	// User-defined icons are stored in a GtkIconSet
