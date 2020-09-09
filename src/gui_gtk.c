@@ -1199,7 +1199,11 @@ gui_mch_browse(int saving UNUSED,
 	       char_u *filter)
 {
 #ifdef USE_FILE_CHOOSER
-    GtkWidget		*fc;
+# if GTK_CHECK_VERSION(3,20,0)
+    GtkFileChooserNative	*fc;
+# else
+    GtkWidget			*fc;
+# endif
 #endif
     char_u		dirbuf[MAXPATHL];
     guint		log_handler;
@@ -1226,18 +1230,27 @@ gui_mch_browse(int saving UNUSED,
 #ifdef USE_FILE_CHOOSER
     // We create the dialog each time, so that the button text can be "Open"
     // or "Save" according to the action.
-    fc = gtk_file_chooser_dialog_new((const gchar *)title,
+# if GTK_CHECK_VERSION(3,20,0)
+    fc = gtk_file_chooser_native_new(
+# else
+    fc = gtk_file_chooser_dialog_new(
+# endif
+	    (const gchar *)title,
 	    GTK_WINDOW(gui.mainwin),
 	    saving ? GTK_FILE_CHOOSER_ACTION_SAVE
 					   : GTK_FILE_CHOOSER_ACTION_OPEN,
-# if GTK_CHECK_VERSION(3,10,0)
+# if GTK_CHECK_VERSION(3,20,0)
+	    saving ? _("_Save") : _("_Open"), _("_Cancel"));
+# else
+#  if GTK_CHECK_VERSION(3,10,0)
 	    _("_Cancel"), GTK_RESPONSE_CANCEL,
 	    saving ? _("_Save") : _("_Open"), GTK_RESPONSE_ACCEPT,
-# else
+#  else
 	    GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 	    saving ? GTK_STOCK_SAVE : GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-# endif
+#  endif
 	    NULL);
+# endif
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(fc),
 						       (const gchar *)dirbuf);
 
@@ -1263,7 +1276,7 @@ gui_mch_browse(int saving UNUSED,
 		    gtk_file_filter_add_pattern(gfilter, (gchar *)patt);
 		    if (*p == '\n')
 		    {
-			gtk_file_chooser_add_filter((GtkFileChooser *)fc,
+			gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(fc),
 								     gfilter);
 			if (*(p + 1) != NUL)
 			    gfilter = gtk_file_filter_new();
@@ -1284,7 +1297,11 @@ gui_mch_browse(int saving UNUSED,
 	gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(fc), (char *)dflt);
 
     gui.browse_fname = NULL;
+# if GTK_CHECK_VERSION(3,20,0)
+    if (gtk_native_dialog_run(GTK_NATIVE_DIALOG(fc)) == GTK_RESPONSE_ACCEPT)
+# else
     if (gtk_dialog_run(GTK_DIALOG(fc)) == GTK_RESPONSE_ACCEPT)
+#endif
     {
 	char *filename;
 
@@ -1292,7 +1309,11 @@ gui_mch_browse(int saving UNUSED,
 	gui.browse_fname = (char_u *)g_strdup(filename);
 	g_free(filename);
     }
+# if GTK_CHECK_VERSION(3,20,0)
+    g_object_unref(fc);
+# else
     gtk_widget_destroy(GTK_WIDGET(fc));
+# endif
 
 #else // !USE_FILE_CHOOSER
 
