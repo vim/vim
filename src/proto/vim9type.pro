@@ -1,4 +1,5 @@
 /* vim9type.c */
+type_T *alloc_type(garray_T *type_gap);
 void clear_type_list(garray_T *gap);
 type_T *get_list_type(type_T *member_type, garray_T *type_gap);
 type_T *get_dict_type(type_T *member_type, garray_T *type_gap);

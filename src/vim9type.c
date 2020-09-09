@@ -24,7 +24,7 @@
  * Allocate memory for a type_T and add the pointer to type_gap, so that it can
  * be freed later.
  */
-    static type_T *
+    type_T *
 alloc_type(garray_T *type_gap)
 {
     type_T *type;
@@ -359,6 +359,10 @@ check_type(type_T *expected, type_T *actual, int give_msg, int argidx)
     {
 	if (expected->tt_type != actual->tt_type)
 	{
+	    if (expected->tt_type == VAR_BOOL && actual->tt_type == VAR_NUMBER
+					&& (actual->tt_flags & TTFLAG_BOOL_OK))
+		// Using number 0 or 1 for bool is OK.
+		return OK;
 	    if (give_msg)
 		arg_type_mismatch(expected, actual, argidx);
 	    return FAIL;

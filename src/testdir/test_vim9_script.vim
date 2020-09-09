@@ -45,6 +45,11 @@ def Test_assignment()
   let bool2: bool = false
   assert_equal(v:false, bool2)
 
+  let bool3: bool = 0
+  assert_equal(0, bool3)
+  let bool4: bool = 1
+  assert_equal(1, bool4)
+
   CheckDefFailure(['let x:string'], 'E1069:')
   CheckDefFailure(['let x:string = "x"'], 'E1069:')
   CheckDefFailure(['let a:string = "x"'], 'E1069:')

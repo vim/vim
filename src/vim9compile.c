@@ -751,12 +751,25 @@ need_type(
 generate_PUSHNR(cctx_T *cctx, varnumber_T number)
 {
     isn_T	*isn;
+    garray_T	*stack = &cctx->ctx_type_stack;
 
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr_type(cctx, ISN_PUSHNR, &t_number)) == NULL)
 	return FAIL;
     isn->isn_arg.number = number;
 
+    if (number == 0 || number == 1)
+    {
+	type_T	*type = alloc_type(cctx->ctx_type_list);
+
+	// A 0 or 1 number can also be used as a bool.
+	if (type != NULL)
+	{
+	    type->tt_type = VAR_NUMBER;
+	    type->tt_flags = TTFLAG_BOOL_OK;
+	    ((type_T **)stack->ga_data)[stack->ga_len - 1] = type;
+	}
+    }
     return OK;
 }
 
