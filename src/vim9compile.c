@@ -729,6 +729,15 @@ need_type(
 	cctx_T	*cctx,
 	int	silent)
 {
+    if (expected == &t_bool && actual != &t_bool
+					&& (actual->tt_flags & TTFLAG_BOOL_OK))
+    {
+	// Using "0", "1" or the result of an expression with "&&" or "||" as a
+	// boolean is OK but requires a conversion.
+	generate_2BOOL(cctx, FALSE);
+	return OK;
+    }
+
     if (check_type(expected, actual, FALSE, 0) == OK)
 	return OK;
     if (actual->tt_type != VAR_ANY
@@ -3926,6 +3935,8 @@ compile_and_or(
     {
 	garray_T	*instr = &cctx->ctx_instr;
 	garray_T	end_ga;
+	garray_T	*stack = &cctx->ctx_type_stack;
+	type_T		**typep;
 
 	/*
 	 * Repeat until there is no following "||" or "&&"
@@ -3985,6 +3996,20 @@ compile_and_or(
 	    isn->isn_arg.jump.jump_where = instr->ga_len;
 	}
 	ga_clear(&end_ga);
+
+	// The resulting type can be used as a bool.
+	typep = ((type_T **)stack->ga_data) + stack->ga_len - 1;
+	if (*typep != &t_bool)
+	{
+	    type_T *type = alloc_type(cctx->ctx_type_list);
+
+	    if (type != NULL)
+	    {
+		*type = **typep;
+		type->tt_flags |= TTFLAG_BOOL_OK;
+		*typep = type;
+	    }
+	}
     }
 
     return OK;

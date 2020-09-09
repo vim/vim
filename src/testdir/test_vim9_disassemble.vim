@@ -1199,6 +1199,29 @@ def Test_disassemble_invert_bool()
   assert_equal(true, InvertBool())
 enddef
 
+def ReturnBool(): bool
+  let var: bool = "no" && [] || 123
+  return var
+enddef
+
+def Test_disassemble_return_bool()
+  let instr = execute('disassemble ReturnBool')
+  assert_match('ReturnBool\_s*' ..
+        'let var: bool = "no" && \[\] || 123\_s*' ..
+        '0 PUSHS "no"\_s*' ..
+        '1 JUMP_AND_KEEP_IF_FALSE -> 3\_s*' ..
+        '2 NEWLIST size 0\_s*' ..
+        '3 JUMP_AND_KEEP_IF_TRUE -> 5\_s*' ..
+        '4 PUSHNR 123\_s*' ..
+        '5 2BOOL (!!val)\_s*' ..
+        '\d STORE $0\_s*' ..
+        'return var\_s*' ..
+        '\d LOAD $0\_s*' ..   
+        '\d RETURN',
+        instr)
+  assert_equal(true, InvertBool())
+enddef
+
 def Test_disassemble_compare()
   let cases = [
         ['true == isFalse', 'COMPAREBOOL =='],
