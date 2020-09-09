@@ -778,7 +778,7 @@ ex_let(exarg_T *eap)
 	evalarg_T   evalarg;
 	int	    len = 1;
 
-	rettv.v_type = VAR_UNKNOWN;
+	CLEAR_FIELD(rettv);
 	i = FAIL;
 	if (has_assign || concat)
 	{
@@ -2935,10 +2935,12 @@ set_var(
 set_var_const(
     char_u	*name,
     type_T	*type,
-    typval_T	*tv,
+    typval_T	*tv_arg,
     int		copy,	    // make copy of value in "tv"
     int		flags)	    // LET_IS_CONST and/or LET_NO_COMMAND
 {
+    typval_T	*tv = tv_arg;
+    typval_T	bool_tv;
     dictitem_T	*di;
     char_u	*varname;
     hashtab_T	*ht;
@@ -2971,6 +2973,15 @@ set_var_const(
 				      && var_wrong_func_name(name, di == NULL))
 	return;
 
+    if (need_convert_to_bool(type, tv))
+    {
+	// Destination is a bool and the value is not, but it can be converted.
+	CLEAR_FIELD(bool_tv);
+	bool_tv.v_type = VAR_BOOL;
+	bool_tv.vval.v_number = tv2bool(tv) ? VVAL_TRUE : VVAL_FALSE;
+	tv = &bool_tv;
+    }
+
     if (di != NULL)
     {
 	if ((di->di_flags & DI_FLAGS_RELOAD) == 0)
@@ -2989,7 +3000,7 @@ set_var_const(
 		    return;
 		}
 
-		// check the type
+		// check the type and adjust to bool if needed
 		if (check_script_var_type(&di->di_tv, tv, name) == FAIL)
 		    return;
 	    }

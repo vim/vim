@@ -66,13 +66,13 @@ def Test_assignment_bool()
     let flag: bool = GetFlag()
     assert_equal(true, flag)
     flag = 0
-    # assert_equal(false, flag)
+    assert_equal(false, flag)
     flag = 1
-    # assert_equal(true, flag)
-    # flag = 99 || 123
-    # assert_equal(true, flag)
-    # flag = 'yes' && []
-    # assert_equal(false, flag)
+    assert_equal(true, flag)
+    flag = 99 || 123
+    assert_equal(true, flag)
+    flag = 'yes' && []
+    assert_equal(false, flag)
   END
   CheckScriptSuccess(lines)
   CheckDefAndScriptFailure(['let x: bool = 2'], 'E1012:')

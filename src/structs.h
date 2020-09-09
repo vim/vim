@@ -1381,7 +1381,7 @@ struct type_S {
 typedef struct
 {
     vartype_T	v_type;
-    char	v_lock;	    // see below: VAR_LOCKED, VAR_FIXED
+    char	v_lock;	    // see below: VAR_LOCKED, VAR_FIXED, VAR_BOOL_OK
     union
     {
 	varnumber_T	v_number;	// number value
@@ -1406,8 +1406,9 @@ typedef struct
 			// allowed to mask existing functions
 
 // Values for "v_lock".
-#define VAR_LOCKED  1	// locked with lock(), can use unlock()
-#define VAR_FIXED   2	// locked forever
+#define VAR_LOCKED	1	// locked with lock(), can use unlock()
+#define VAR_FIXED	2	// locked forever
+#define VAR_BOOL_OK	4	// can be convered to bool
 
 /*
  * Structure to hold an item of a list: an internal variable without a name.
