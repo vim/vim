@@ -3583,7 +3583,8 @@ ex_function(exarg_T *eap)
 }
 
 /*
- * :defcompile - compile all :def functions in the current script.
+ * :defcompile - compile all :def functions in the current script that need to
+ * be compiled.  Except dead functions.
  */
     void
 ex_defcompile(exarg_T *eap UNUSED)
@@ -3600,7 +3601,8 @@ ex_defcompile(exarg_T *eap UNUSED)
 	    --todo;
 	    ufunc = HI2UF(hi);
 	    if (ufunc->uf_script_ctx.sc_sid == current_sctx.sc_sid
-		    && ufunc->uf_def_status == UF_TO_BE_COMPILED)
+		    && ufunc->uf_def_status == UF_TO_BE_COMPILED
+		    && (ufunc->uf_flags & FC_DEAD) == 0)
 	    {
 		compile_def_function(ufunc, FALSE, NULL);
 
