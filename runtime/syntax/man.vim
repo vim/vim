@@ -21,7 +21,7 @@ runtime! syntax/ctrlh.vim
 syn case ignore
 
 syn match  manReference       "\f\+([1-9][a-z]\=)"
-syn match  manSectionHeading  "^[a-z][a-z -]*[a-z]$"
+syn match  manSectionHeading  "^[a-z][a-z -_&/|\0-9]*[a-z0-9]$"
 syn match  manSubHeading      "^\s\{3\}[a-z][a-z -]*[a-z]$"
 syn match  manOptionDesc      "^\s*[+-][a-z0-9]\S*"
 syn match  manLongOptionDesc  "^\s*--[a-z0-9-]\S*"
