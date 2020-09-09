@@ -2555,7 +2555,8 @@ mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
 
 	gtk_window_set_icon_list(GTK_WINDOW(gui.mainwin), icons);
 
-	g_list_foreach(icons, (GFunc)&g_object_unref, NULL);
+	// TODO: is this type cast OK?
+	g_list_foreach(icons, (GFunc)(void *)&g_object_unref, NULL);
 	g_list_free(icons);
     }
 
@@ -3092,8 +3093,8 @@ icon_size_changed_foreach(GtkWidget *widget, gpointer user_data)
 	    const gchar *icon_name;
 
 	    gtk_image_get_icon_name(image, &icon_name, NULL);
-
-	    gtk_image_set_from_icon_name(image, icon_name, icon_size);
+	    image = (GtkImage *)gtk_image_new_from_icon_name(
+							 icon_name, icon_size);
 	}
 # else
 	// User-defined icons are stored in a GtkIconSet
@@ -4967,7 +4968,8 @@ ascii_glyph_table_init(void)
 	}
     }
 
-    g_list_foreach(item_list, (GFunc)&pango_item_free, NULL);
+    // TODO: is this type cast OK?
+    g_list_foreach(item_list, (GFunc)(void *)&pango_item_free, NULL);
     g_list_free(item_list);
     pango_attr_list_unref(attr_list);
 }
