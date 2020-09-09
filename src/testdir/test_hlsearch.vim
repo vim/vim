@@ -28,7 +28,7 @@ func Test_hlsearch()
   set nohls
   exe "normal! /\<CR>" | redraw
   call assert_notequal(r1, screenattr(1,1))
-  call assert_fails('let v:hlsearch=[]', 'E745')
+  call assert_fails('let v:hlsearch=[]', 'E745:')
   call garbagecollect(1)
   call getchar(1)
   enew!

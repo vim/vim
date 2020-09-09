@@ -976,11 +976,11 @@ endfunc
 func Test_win_execute_closing_curwin()
   split
   let winid = popup_create('some text', {})
-  call assert_fails('call win_execute(winid, winnr() .. "close")', 'E994')
+  call assert_fails('call win_execute(winid, winnr() .. "close")', 'E994:')
   call popup_clear()
 
   let winid = popup_create('some text', {})
-  call assert_fails('call win_execute(winid, printf("normal! :\<C-u>call popup_close(%d)\<CR>", winid))', 'E994')
+  call assert_fails('call win_execute(winid, printf("normal! :\<C-u>call popup_close(%d)\<CR>", winid))', 'E994:')
   call popup_clear()
 endfunc
 
@@ -2239,6 +2239,18 @@ func Test_popup_settext()
   call delete('XtestPopupSetText')
 endfunc
 
+func Test_popup_settext_getline()
+  let id = popup_create('', #{ tabpage: 0 })
+  call popup_settext(id, ['a','b'])
+  call assert_equal(2, line('$', id)) " OK :)
+  call popup_close(id)
+
+  let id = popup_create('', #{ tabpage: -1 })
+  call popup_settext(id, ['a','b'])
+  call assert_equal(2, line('$', id)) " Fails :(
+  call popup_close(id)
+endfunc
+
 func Test_popup_hidden()
   new
 
@@ -2559,20 +2571,23 @@ endfunc
 
 func Test_popupwin_close_prevwin()
   CheckFeature terminal
+  call Popupwin_close_prevwin()
+endfunc
 
-  call assert_equal(1, winnr('$'))
+def Popupwin_close_prevwin()
+  assert_equal(1, winnr('$'))
   split
   wincmd b
-  call assert_equal(2, winnr())
+  assert_equal(2, winnr())
   let buf = term_start(&shell, #{hidden: 1})
-  call popup_create(buf, {})
-  call TermWait(buf, 100)
-  call popup_clear(1)
-  call assert_equal(2, winnr())
+  popup_create(buf, {})
+  TermWait(buf, 100)
+  popup_clear(true)
+  assert_equal(2, winnr())
 
   quit
   exe 'bwipe! ' .. buf
-endfunc
+enddef
 
 func Test_popupwin_with_buffer_and_filter()
   new Xwithfilter
@@ -3501,7 +3516,44 @@ func Test_popupwin_filter_close_ctrl_c()
   call VerifyScreenDump(buf, 'Test_popupwin_ctrl_c', {})
 
   call StopVimInTerminal(buf)
-  call delete('XtestPopupCorners')
+  call delete('XtestPopupCtrlC')
+endfunc
+
+func Test_popupwin_filter_close_wrong_name()
+  CheckScreendump
+
+  let lines =<< trim END
+      call popup_create('one two three...', {'filter': 'NoSuchFunc'})
+  END
+  call writefile(lines, 'XtestPopupWrongName')
+
+  let buf = RunVimInTerminal('-S XtestPopupWrongName', #{rows: 10})
+
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_popupwin_wrong_name', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupWrongName')
+endfunc
+
+func Test_popupwin_filter_close_three_errors()
+  CheckScreendump
+
+  let lines =<< trim END
+      set cmdheight=2
+      call popup_create('one two three...', {'filter': 'filter'})
+  END
+  call writefile(lines, 'XtestPopupThreeErrors')
+
+  let buf = RunVimInTerminal('-S XtestPopupThreeErrors', #{rows: 10})
+
+  call term_sendkeys(buf, "jj")
+  call VerifyScreenDump(buf, 'Test_popupwin_three_errors_1', {})
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_popupwin_three_errors_2', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupThreeErrors')
 endfunc
 
 func Test_popupwin_atcursor_far_right()

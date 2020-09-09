@@ -395,7 +395,7 @@ skip_expr_concatenate(
     typval_T	rettv;
     int		res;
     int		vim9script = in_vim9script();
-    garray_T    *gap = &evalarg->eval_ga;
+    garray_T    *gap = evalarg == NULL ? NULL : &evalarg->eval_ga;
     int		save_flags = evalarg == NULL ? 0 : evalarg->eval_flags;
     int		evaluate = evalarg == NULL
 			       ? FALSE : (evalarg->eval_flags & EVAL_EVALUATE);
@@ -1291,7 +1291,7 @@ set_var_lval(
 	else
 	{
 	    if (lp->ll_type != NULL
-			      && check_typval_type(lp->ll_type, rettv) == FAIL)
+			   && check_typval_type(lp->ll_type, rettv, 0) == FAIL)
 		return;
 	    set_var_const(lp->ll_name, lp->ll_type, rettv, copy, flags);
 	}
@@ -5392,7 +5392,7 @@ string_slice(char_u *str, varnumber_T first, varnumber_T last)
     if (start_byte < 0)
 	start_byte = 0; // first index very negative: use zero
     if (last == -1)
-	end_byte = slen;
+	end_byte = (long)slen;
     else
     {
 	end_byte = char_idx2byte(str, slen, last);

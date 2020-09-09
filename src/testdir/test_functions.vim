@@ -1438,19 +1438,19 @@ func Test_setbufvar_options()
   let prev_id = win_getid()
 
   wincmd j
-  let wh = winheight('.')
+  let wh = winheight(0)
   let dummy_buf = bufnr('dummy_buf1', v:true)
   call setbufvar(dummy_buf, '&buftype', 'nofile')
   execute 'belowright vertical split #' . dummy_buf
-  call assert_equal(wh, winheight('.'))
+  call assert_equal(wh, winheight(0))
   let dum1_id = win_getid()
 
   wincmd h
-  let wh = winheight('.')
+  let wh = winheight(0)
   let dummy_buf = bufnr('dummy_buf2', v:true)
   eval 'nofile'->setbufvar(dummy_buf, '&buftype')
   execute 'belowright vertical split #' . dummy_buf
-  call assert_equal(wh, winheight('.'))
+  call assert_equal(wh, winheight(0))
 
   bwipe!
   call win_gotoid(prev_id)
@@ -2025,7 +2025,7 @@ func Test_readdir_sort()
   exe "lang collate" collate
 
   " 5) Errors
-  call assert_fails('call readdir(dir, 1, 1)', 'E715')
+  call assert_fails('call readdir(dir, 1, 1)', 'E715:')
   call assert_fails('call readdir(dir, 1, #{sorta: 1})')
   call assert_fails('call readdirex(dir, 1, #{sorta: 1})')
 
@@ -2075,6 +2075,13 @@ func Test_char2nr()
   set encoding=latin1
   call assert_equal(120, 'x'->char2nr())
   set encoding=utf-8
+endfunc
+
+func Test_charclass()
+  call assert_equal(0, charclass(' '))
+  call assert_equal(1, charclass('.'))
+  call assert_equal(2, charclass('x'))
+  call assert_equal(3, charclass("\u203c"))
 endfunc
 
 func Test_eventhandler()

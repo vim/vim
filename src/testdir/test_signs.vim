@@ -1762,6 +1762,20 @@ func Test_sign_cursor_position()
   call term_sendkeys(buf, ":sign unplace 10\<CR>")
   call VerifyScreenDump(buf, 'Test_sign_cursor_4', {})
 
+  " 'cursorline' highlighting overrules sign
+  call term_sendkeys(buf, ":sign place 12 line=2 name=s2\<CR>")
+  call term_sendkeys(buf, ":set cursorline\<CR>")
+  call term_sendkeys(buf, ":hi CursorLine ctermbg=Green\<CR>")
+  call term_sendkeys(buf, "2G")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_sign_cursor_5', {})
+
+  " sign highlighting overrules 'cursorline'
+  call term_sendkeys(buf, ":sign unplace 12\<CR>")
+  call term_sendkeys(buf, ":sign place 13 line=2 priority=100 name=s2\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_sign_cursor_6', {})
+
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestSigncolumn')
@@ -1980,7 +1994,7 @@ func Test_sign_funcs_multi()
   call assert_fails('call sign_unplacelist([[]])', "E715:")
   call assert_fails('call sign_unplacelist(["abc"])', "E715:")
   call assert_fails('call sign_unplacelist([100])', "E715:")
-  call assert_fails("call sign_unplacelist([{'id' : -1}])", 'E474')
+  call assert_fails("call sign_unplacelist([{'id' : -1}])", 'E474:')
 
   call assert_equal([0, 0, 0, 0],
 	      \ sign_undefine(['sign1', 'sign2', 'sign3', 'sign4']))

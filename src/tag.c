@@ -687,7 +687,7 @@ do_tag(
 		{
 		    VIM_CLEAR(tagstack[tagstackidx].user_data);
 		    tagstack[tagstackidx].user_data = vim_strnsave(
-			    tagp.user_data, tagp.user_data_end - tagp.user_data);
+			  tagp.user_data, tagp.user_data_end - tagp.user_data);
 		}
 
 		++tagstackidx;

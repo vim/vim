@@ -278,6 +278,7 @@ void mbyte_im_set_active(int active_arg);
 #  include "netbeans.pro"
 # endif
 # ifdef FEAT_JOB_CHANNEL
+#  include "job.pro"
 #  include "channel.pro"
 
 // Not generated automatically, to add extra attribute.

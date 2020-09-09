@@ -35,12 +35,12 @@ func Test_mkdir_p()
   endtry
   " 'p' doesn't suppress real errors
   call writefile([], 'Xfile')
-  call assert_fails('call mkdir("Xfile", "p")', 'E739')
+  call assert_fails('call mkdir("Xfile", "p")', 'E739:')
   call delete('Xfile')
   call delete('Xmkdir', 'rf')
   call assert_equal(0, mkdir(test_null_string()))
-  call assert_fails('call mkdir([])', 'E730')
-  call assert_fails('call mkdir("abc", [], [])', 'E745')
+  call assert_fails('call mkdir([])', 'E730:')
+  call assert_fails('call mkdir("abc", [], [])', 'E745:')
 endfunc
 
 func Test_line_continuation()

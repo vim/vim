@@ -70,7 +70,7 @@ func Test_client_server()
     call WaitForAssert({-> assert_equal('maybe', remote_expr(name, "testvar", "", 2))})
   endif
 
-  call assert_fails('call remote_send("XXX", ":let testvar = ''yes''\<CR>")', 'E241')
+  call assert_fails('call remote_send("XXX", ":let testvar = ''yes''\<CR>")', 'E241:')
 
   " Expression evaluated locally.
   if v:servername == ''

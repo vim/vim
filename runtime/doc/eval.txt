@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Aug 15
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Sep 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -120,8 +120,9 @@ base, use |str2nr()|.
 
 						*TRUE* *FALSE* *Boolean*
 For boolean operators Numbers are used.  Zero is FALSE, non-zero is TRUE.
-You can also use |v:false| and |v:true|.  When TRUE is returned from a
-function it is the Number one, FALSE is the number zero.
+You can also use |v:false| and |v:true|.  In Vim9 script |false| and |true|. 
+When TRUE is returned from a function it is the Number one, FALSE is the
+number zero.
 
 Note that in the command: >
 	:if "foo"
@@ -1135,7 +1136,7 @@ In legacy Vim script:
 If expr8 is a Number or String this results in a String that contains the
 expr1'th single byte from expr8.  expr8 is used as a String (a number is
 automatically converted to a String), expr1 as a Number.  This doesn't
-recognize multi-byte encodings, see `byteidx()` for an alternative, or use
+recognize multibyte encodings, see `byteidx()` for an alternative, or use
 `split()` to turn the string into a list of characters.  Example, to get the
 byte under the cursor: >
 	:let c = getline(".")[col(".") - 1]
@@ -1163,12 +1164,12 @@ error.
 
 expr8[expr1a : expr1b]	substring or sublist		*expr-[:]*
 
-If expr8 is a String this results in the substring with the bytes from expr1a
-to and including expr1b.  expr8 is used as a String, expr1a and expr1b are
-used as a Number.
+If expr8 is a String this results in the substring with the bytes or
+characters from expr1a to and including expr1b.  expr8 is used as a String,
+expr1a and expr1b are used as a Number.
 
 In legacy Vim script the indexes are byte indexes.  This doesn't recognize
-multi-byte encodings, see |byteidx()| for computing the indexes.  If expr8 is
+multibyte encodings, see |byteidx()| for computing the indexes.  If expr8 is
 a Number it is first converted to a String.
 
 In Vim9 script the indexes are character indexes.  To use byte indexes use
@@ -1185,6 +1186,7 @@ expr1b is smaller than expr1a the result is an empty string.
 
 Examples: >
 	:let c = name[-1:]		" last byte of a string
+	:let c = name[0:-1]		" the whole string
 	:let c = name[-2:-2]		" last but one byte of a string
 	:let s = line(".")[4:]		" from the fifth byte to the end
 	:let s = s[:-3]			" remove last two bytes
@@ -2359,7 +2361,7 @@ assert_equalfile({fname-one}, {fname-two} [, {msg}])
 				Number	assert file contents are equal
 assert_exception({error} [, {msg}])
 				Number	assert {error} is in v:exception
-assert_fails({cmd} [, {error} [, {msg}]])
+assert_fails({cmd} [, {error} [, {msg} [, {lnum} [, {context}]]]])
 				Number	assert {cmd} fails
 assert_false({actual} [, {msg}])
 				Number	assert {actual} is false
@@ -2425,6 +2427,7 @@ ch_status({handle} [, {options}])
 				String	status of channel {handle}
 changenr()			Number	current change number
 char2nr({expr} [, {utf8}])	Number	ASCII/UTF8 value of first char in {expr}
+charclass({string})		Number	character class of {string}
 chdir({dir})			String	change current working directory
 cindent({lnum})			Number	C indent for line {lnum}
 clearmatches([{win}])		none	clear all matches
@@ -2545,6 +2548,7 @@ gettabvar({nr}, {varname} [, {def}])
 gettabwinvar({tabnr}, {winnr}, {name} [, {def}])
 				any	{name} in {winnr} in tab page {tabnr}
 gettagstack([{nr}])		Dict	get the tag stack of window {nr}
+gettext({text})			String	lookup translation of {text}
 getwininfo([{winid}])		List	list of info about each window
 getwinpos([{timeout}])		List	X and Y coord in pixels of the Vim window
 getwinposx()			Number	X coord in pixels of the Vim window
@@ -2681,6 +2685,7 @@ popup_show({id})		none	unhide popup window {id}
 pow({x}, {y})			Float	{x} to the power of {y}
 prevnonblank({lnum})		Number	line nr of non-blank line <= {lnum}
 printf({fmt}, {expr1}...)	String	format text
+prompt_getprompt({buf})		String	get prompt text
 prompt_setcallback({buf}, {expr}) none	set prompt callback function
 prompt_setinterrupt({buf}, {text}) none	set prompt interrupt function
 prompt_setprompt({buf}, {text}) none	set prompt text
@@ -2768,6 +2773,7 @@ setbufline({expr}, {lnum}, {text})
 					{expr}
 setbufvar({expr}, {varname}, {val})
 				none	set {varname} in buffer {expr} to {val}
+setcellwidths({list})		none	set character cell width overrides
 setcharsearch({dict})		Dict	set character search from {dict}
 setcmdpos({pos})		Number	set cursor position in command-line
 setenv({name}, {val})		none	set environment variable
@@ -3357,7 +3363,7 @@ bufnr([{expr} [, {create}]])
 		above.
 
 		If the buffer doesn't exist, -1 is returned.  Or, if the
-		{create} argument is present and not zero, a new, unlisted,
+		{create} argument is present and TRUE, a new, unlisted,
 		buffer is created and its number is returned.  Example: >
 			let newbuf = bufnr('Scratch001', 1)
 <		Using an empty name uses the current buffer. To create a new
@@ -3508,7 +3514,7 @@ char2nr({expr} [, {utf8}])					*char2nr()*
 		Example for "utf-8": >
 			char2nr("á")		returns 225
 			char2nr("á"[0])		returns 195
-<		With {utf8} set to 1, always treat as utf-8 characters.
+<		With {utf8} set to TRUE, always treat as utf-8 characters.
 		A combining character is a separate character.
 		|nr2char()| does the opposite.
 		To turn a string into a list of character numbers: >
@@ -3518,6 +3524,18 @@ char2nr({expr} [, {utf8}])					*char2nr()*
 
 		Can also be used as a |method|: >
 			GetChar()->char2nr()
+
+
+charclass({string})					*charclass()*
+		Return the character class of the first character in {string}.
+		The character class is one of:
+			0	blank
+			1	punctuation
+			2	word character
+			3	emoji
+			other	specific Unicode class
+		The class is used in patterns and word motions.
+
 
 chdir({dir})						*chdir()*
 		Change the current working directory to {dir}.  The scope of
@@ -5707,6 +5725,7 @@ getreginfo([{regname}])					*getreginfo()*
 		If {regname} is invalid or not set, an empty Dictionary
 		will be returned.
 		If {regname} is not specified, |v:register| is used.
+		The returned Dictionary can be passed to |setreg()|.
 
 		Can also be used as a |method|: >
 			GetRegname()->getreginfo()
@@ -5812,6 +5831,19 @@ gettagstack([{nr}])					*gettagstack()*
 
 		Can also be used as a |method|: >
 			GetWinnr()->gettagstack()
+
+
+gettext({text})						*gettext()*
+		Translate {text} if possible.
+		This is mainly for use in the distributed Vim scripts.  When
+		generating message translations the {text} is extracted by
+		xgettext, the translator can add the translated message in the
+		.po file and Vim will lookup the translation when gettext() is
+		called.
+		For {text} double quoted strings are preferred, because
+		xgettext does not understand escaping in single quoted
+		strings.
+
 
 getwininfo([{winid}])					*getwininfo()*
 		Returns information about windows as a |List| with Dictionaries.
@@ -6001,7 +6033,7 @@ has({feature} [, {check}])
 		zero otherwise.  This is useful to check for a typo in
 		{feature} and to detect dead code.  Keep in mind that an older
 		Vim version will not know about a feature added later and
-		features that have been abandoned will not be know by the
+		features that have been abandoned will not be known by the
 		current Vim version.
 
 		Also see |exists()|.
@@ -7577,7 +7609,7 @@ perleval({expr})					*perleval()*
 <		{only available when compiled with the |+perl| feature}
 
 
-popup_ functions are documented here: |popup-functions|.
+popup_ functions are documented here: |popup-functions|
 
 
 pow({x}, {y})						*pow()*
@@ -7805,6 +7837,17 @@ printf({fmt}, {expr1} ...)				*printf()*
 		arguments an error is given.  Up to 18 arguments can be used.
 
 
+prompt_getprompt({buf})					*prompt_getprompt()*
+		Returns the effective prompt text for buffer {buf}. {buf} can
+		be a buffer name or number. |prompt-buffer|.
+
+		If the buffer doesn't exist or isn't a prompt buffer, an empty
+		string is returned.
+
+		Can also be used as a |method|: >
+			GetBuffer()->prompt_getprompt()
+
+
 prompt_setcallback({buf}, {expr})			*prompt_setcallback()*
 		Set prompt callback for buffer {buf} to {expr}.  When {expr}
 		is an empty string the callback is removed.  This has only
@@ -7860,7 +7903,7 @@ prompt_setprompt({buf}, {text})				*prompt_setprompt()*
 		Can also be used as a |method|: >
 			GetBuffer()->prompt_setprompt('command: ')
 
-prop_ functions are documented here: |text-prop-functions|.
+prop_ functions are documented here: |text-prop-functions|
 
 pum_getpos()						*pum_getpos()*
 		If the popup menu (see |ins-completion-menu|) is not visible,
@@ -8936,6 +8979,31 @@ setbufvar({expr}, {varname}, {val})			*setbufvar()*
 		Can also be used as a |method|, the base is passed as the
 		third argument: >
 			GetValue()->setbufvar(buf, varname)
+
+
+setcellwidths({list})					*setcellwidths()*
+		Specify overrides for cell widths of character ranges.  This
+		tells Vim how wide characters are, counted in screen cells.
+		This overrides 'ambiwidth'.  Example: >
+		   setcellwidths([[0xad, 0xad, 1],
+		   		\ [0x2194, 0x2199, 2]])
+
+<					*E1109* *E1110* *E1111* *E1112* *E1113*
+		The {list} argument is a list of lists with each three
+		numbers. These three numbers are [low, high, width].  "low"
+		and "high" can be the same, in which case this refers to one
+		character. Otherwise it is the range of characters from "low"
+		to "high" (inclusive).  "width" is either 1 or 2, indicating
+		the character width in screen cells.
+		An error is given if the argument is invalid, also when a
+		range overlaps with another.
+		Only characters with value 0x100 and higher can be used.
+
+		To clear the overrides pass an empty list: >
+		   setcellwidths([]);
+<		You can use the script $VIMRUNTIME/tools/emoji_list.vim to see
+		the effect for known emoji characters.
+
 
 setcharsearch({dict})					*setcharsearch()*
 		Set the current character search information to {dict},
@@ -10973,7 +11041,8 @@ win_screenpos({nr})					*win_screenpos()*
 		Return the screen position of window {nr} as a list with two
 		numbers: [row, col].  The first window always has position
 		[1, 1], unless there is a tabline, then it is [2, 1].
-		{nr} can be the window number or the |window-ID|.
+		{nr} can be the window number or the |window-ID|.  Use zero
+		for the current window.
 		Return [0, 0] if the window cannot be found in the current
 		tabpage.
 
@@ -11392,7 +11461,7 @@ mouse_urxvt		Compiled with support for urxvt mouse.
 mouse_xterm		Compiled with support for xterm mouse.
 mouseshape		Compiled with support for 'mouseshape'.
 multi_byte		Compiled with support for 'encoding' (always true)
-multi_byte_encoding	'encoding' is set to a multi-byte encoding.
+multi_byte_encoding	'encoding' is set to a multibyte encoding.
 multi_byte_ime		Compiled with support for IME input method.
 multi_lang		Compiled with support for multiple languages.
 mzscheme		Compiled with MzScheme interface |mzscheme|.

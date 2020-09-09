@@ -551,7 +551,7 @@ func Test_terminal_getwinpos()
   let winpos = 50->getwinpos()
   call assert_equal(xroot, winpos[0])
   call assert_equal(yroot, winpos[1])
-  let [winrow, wincol] = win_screenpos('.')
+  let [winrow, wincol] = win_screenpos(0)
   let xoff = wincol * (has('gui_running') ? 14 : 7) + 100
   let yoff = winrow * (has('gui_running') ? 20 : 10) + 200
   call assert_inrange(xroot + 2, xroot + xoff, xpos)

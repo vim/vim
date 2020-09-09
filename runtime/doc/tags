@@ -3894,6 +3894,8 @@ E10	message.txt	/*E10*
 E100	diff.txt	/*E100*
 E101	diff.txt	/*E101*
 E102	diff.txt	/*E102*
+E1023	vim9.txt	/*E1023*
+E1024	vim9.txt	/*E1024*
 E103	diff.txt	/*E103*
 E104	digraph.txt	/*E104*
 E1042	vim9.txt	/*E1042*
@@ -3906,7 +3908,12 @@ E1092	vim9.txt	/*E1092*
 E1094	vim9.txt	/*E1094*
 E11	cmdline.txt	/*E11*
 E110	eval.txt	/*E110*
+E1109	eval.txt	/*E1109*
 E111	eval.txt	/*E111*
+E1110	eval.txt	/*E1110*
+E1111	eval.txt	/*E1111*
+E1112	eval.txt	/*E1112*
+E1113	eval.txt	/*E1113*
 E112	eval.txt	/*E112*
 E113	eval.txt	/*E113*
 E114	eval.txt	/*E114*
@@ -4064,7 +4071,6 @@ E252	options.txt	/*E252*
 E253	mbyte.txt	/*E253*
 E254	message.txt	/*E254*
 E255	sign.txt	/*E255*
-E256	message.txt	/*E256*
 E257	if_cscop.txt	/*E257*
 E258	remote.txt	/*E258*
 E259	if_cscop.txt	/*E259*
@@ -4437,6 +4443,7 @@ E607	eval.txt	/*E607*
 E608	eval.txt	/*E608*
 E609	if_cscop.txt	/*E609*
 E61	pattern.txt	/*E61*
+E610	editing.txt	/*E610*
 E612	sign.txt	/*E612*
 E613	print.txt	/*E613*
 E614	editing.txt	/*E614*
@@ -5722,6 +5729,7 @@ char2nr()	eval.txt	/*char2nr()*
 characterwise	motion.txt	/*characterwise*
 characterwise-register	change.txt	/*characterwise-register*
 characterwise-visual	visual.txt	/*characterwise-visual*
+charclass()	eval.txt	/*charclass()*
 charconvert_from-variable	eval.txt	/*charconvert_from-variable*
 charconvert_to-variable	eval.txt	/*charconvert_to-variable*
 charity	uganda.txt	/*charity*
@@ -6314,6 +6322,7 @@ extend()	eval.txt	/*extend()*
 extension-removal	cmdline.txt	/*extension-removal*
 extensions-improvements	todo.txt	/*extensions-improvements*
 f	motion.txt	/*f*
+false	vim9.txt	/*false*
 false-variable	eval.txt	/*false-variable*
 faq	intro.txt	/*faq*
 farsi	farsi.txt	/*farsi*
@@ -6949,6 +6958,7 @@ gettabinfo()	eval.txt	/*gettabinfo()*
 gettabvar()	eval.txt	/*gettabvar()*
 gettabwinvar()	eval.txt	/*gettabwinvar()*
 gettagstack()	eval.txt	/*gettagstack()*
+gettext()	eval.txt	/*gettext()*
 getwininfo()	eval.txt	/*getwininfo()*
 getwinpos()	eval.txt	/*getwinpos()*
 getwinposx()	eval.txt	/*getwinposx()*
@@ -8154,6 +8164,7 @@ new-more-highlighting	version7.txt	/*new-more-highlighting*
 new-more-unicode	version7.txt	/*new-more-unicode*
 new-multi-byte	version5.txt	/*new-multi-byte*
 new-multi-lang	version6.txt	/*new-multi-lang*
+new-multibyte	version5.txt	/*new-multibyte*
 new-netrw-explore	version7.txt	/*new-netrw-explore*
 new-network-files	version6.txt	/*new-network-files*
 new-omni-completion	version7.txt	/*new-omni-completion*
@@ -8167,7 +8178,7 @@ new-persistent-undo	version7.txt	/*new-persistent-undo*
 new-plugins	version6.txt	/*new-plugins*
 new-popup-window	version8.txt	/*new-popup-window*
 new-posix	version7.txt	/*new-posix*
-new-print-multi-byte	version7.txt	/*new-print-multi-byte*
+new-print-multibyte	version7.txt	/*new-print-multibyte*
 new-printing	version6.txt	/*new-printing*
 new-python3	version7.txt	/*new-python3*
 new-regexp-engine	version7.txt	/*new-regexp-engine*
@@ -8310,6 +8321,7 @@ pattern-atoms	pattern.txt	/*pattern-atoms*
 pattern-delimiter	change.txt	/*pattern-delimiter*
 pattern-multi-byte	pattern.txt	/*pattern-multi-byte*
 pattern-multi-items	pattern.txt	/*pattern-multi-items*
+pattern-multibyte	pattern.txt	/*pattern-multibyte*
 pattern-overview	pattern.txt	/*pattern-overview*
 pattern-searches	pattern.txt	/*pattern-searches*
 pattern.txt	pattern.txt	/*pattern.txt*
@@ -8473,6 +8485,7 @@ progname-variable	eval.txt	/*progname-variable*
 progpath-variable	eval.txt	/*progpath-variable*
 progress.vim	syntax.txt	/*progress.vim*
 prompt-buffer	channel.txt	/*prompt-buffer*
+prompt_getprompt()	eval.txt	/*prompt_getprompt()*
 prompt_setcallback()	eval.txt	/*prompt_setcallback()*
 prompt_setinterrupt()	eval.txt	/*prompt_setinterrupt()*
 prompt_setprompt()	eval.txt	/*prompt_setprompt()*
@@ -8821,6 +8834,7 @@ set-option	options.txt	/*set-option*
 set-spc-auto	spell.txt	/*set-spc-auto*
 setbufline()	eval.txt	/*setbufline()*
 setbufvar()	eval.txt	/*setbufvar()*
+setcellwidths()	eval.txt	/*setcellwidths()*
 setcharsearch()	eval.txt	/*setcharsearch()*
 setcmdpos()	eval.txt	/*setcmdpos()*
 setenv()	eval.txt	/*setenv()*
@@ -9631,6 +9645,7 @@ toupper()	eval.txt	/*toupper()*
 tr()	eval.txt	/*tr()*
 trim()	eval.txt	/*trim()*
 trojan-horse	starting.txt	/*trojan-horse*
+true	vim9.txt	/*true*
 true-variable	eval.txt	/*true-variable*
 trunc()	eval.txt	/*trunc()*
 try-conditionals	eval.txt	/*try-conditionals*
@@ -9643,6 +9658,7 @@ twice	if_cscop.txt	/*twice*
 two-engines	pattern.txt	/*two-engines*
 type()	eval.txt	/*type()*
 type-casting	vim9.txt	/*type-casting*
+type-checking	vim9.txt	/*type-checking*
 type-inference	vim9.txt	/*type-inference*
 type-mistakes	tips.txt	/*type-mistakes*
 typecorr-settings	usr_41.txt	/*typecorr-settings*

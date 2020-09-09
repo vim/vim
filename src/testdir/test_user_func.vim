@@ -88,7 +88,7 @@ func Test_user_func()
 
   " Try to overwrite a function in the global (g:) scope
   call assert_equal(3, max([1, 2, 3]))
-  call assert_fails("call extend(g:, {'max': function('min')})", 'E704')
+  call assert_fails("call extend(g:, {'max': function('min')})", 'E704:')
   call assert_equal(3, max([1, 2, 3]))
 
   " Try to overwrite an user defined function with a function reference
@@ -131,7 +131,7 @@ func Test_default_arg()
   if has('float')
     call assert_equal(1.0, Log(10))
     call assert_equal(log(10), Log(10, exp(1)))
-    call assert_fails("call Log(1,2,3)", 'E118')
+    call assert_fails("call Log(1,2,3)", 'E118:')
   endif
 
   let res = Args(1)
@@ -149,8 +149,8 @@ func Test_default_arg()
   call assert_equal(res.optional, 2)
   call assert_equal(res['0'], 1)
 
-  call assert_fails("call MakeBadFunc()", 'E989')
-  call assert_fails("fu F(a=1 ,) | endf", 'E475')
+  call assert_fails("call MakeBadFunc()", 'E989:')
+  call assert_fails("fu F(a=1 ,) | endf", 'E475:')
 
   let d = Args2(7, v:none, 9)
   call assert_equal([7, 2, 9], [d.a, d.b, d.c])

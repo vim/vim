@@ -207,9 +207,9 @@ endfunc
 func Test_lockvar()
   let x = 'hello'
   lockvar x
-  call assert_fails('let x = "there"', 'E741')
+  call assert_fails('let x = "there"', 'E741:')
   if 0 | unlockvar x | endif
-  call assert_fails('let x = "there"', 'E741')
+  call assert_fails('let x = "there"', 'E741:')
   unlockvar x
   let x = 'there'
 

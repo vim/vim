@@ -550,7 +550,7 @@ Files:	    src/eval.c, src/version.c
 
 Patch 7.4.012
 Problem:    MS-Windows: resolving shortcut does not work properly with
-	    multi-byte characters.
+	    multibyte characters.
 Solution:   Use wide system functions. (Ken Takata)
 Files:	    src/os_mswin.c
 
@@ -565,7 +565,7 @@ Solution:   Fix #ifdefs. (Ken Takata)
 Files:	    src/fileio.c
 
 Patch 7.4.015
-Problem:    MS-Windows: Detecting node type does not work for multi-byte
+Problem:    MS-Windows: Detecting node type does not work for multibyte
 	    characters.
 Solution:   Use wide character function when needed. (Ken Takata)
 Files:	    src/os_win32.c
@@ -590,7 +590,7 @@ Files:	    src/edit.c
 Patch 7.4.019
 Problem:    MS-Windows: File name completion doesn't work properly with
 	    Chinese characters. (Yue Wu)
-Solution:   Take care of multi-byte characters when looking for the start of
+Solution:   Take care of multibyte characters when looking for the start of
 	    the file name. (Ken Takata)
 Files:	    src/edit.c
 
@@ -639,7 +639,7 @@ Solution:   Don't call mb_ptr_back() at the start of the line.  Add a test.
 Files:	    src/edit.c, src/testdir/test32.in
 
 Patch 7.4.028
-Problem:    Equivalence classes are not working for multi-byte characters.
+Problem:    Equivalence classes are not working for multibyte characters.
 Solution:   Copy the rules from the old to the new regexp engine. Add a test
 	    to check both engines.
 Files:	    src/regexp_nfa.c, src/testdir/test44.in, src/testdir/test99.in,
@@ -1206,7 +1206,7 @@ Files:	    src/ex_docmd.c
 
 Patch 7.4.122
 Problem:    Win32: When 'encoding' is set to "utf-8" and the active codepage
-	    is cp932 then ":grep" and other commands don't work for multi-byte
+	    is cp932 then ":grep" and other commands don't work for multibyte
 	    characters.
 Solution:   (Yasuhiro Matsumoto)
 Files:	    src/os_win32.c
@@ -1222,7 +1222,7 @@ Solution:   Use GetComputerNameW() if possible. (Ken Takata)
 Files:	    src/os_win32.c
 
 Patch 7.4.125
-Problem:    Win32: Dealing with messages may not work for multi-byte chars.
+Problem:    Win32: Dealing with messages may not work for multibyte chars.
 Solution:   Use pDispatchMessage(). (Ken Takata)
 Files:	    src/os_win32.c
 
@@ -1566,7 +1566,7 @@ Solution:   Remember the original insert start position. (Christian Brabandt,
 Files:	    src/edit.c, src/globals.h, src/ops.c, src/structs.h
 
 Patch 7.4.187
-Problem:    Delete that crosses line break splits multi-byte character.
+Problem:    Delete that crosses line break splits multibyte character.
 Solution:   Advance a character instead of a byte. (Cade Foster)
 Files:	    src/normal.c, src/testdir/test69.in, src/testdir/test69.ok
 
@@ -1679,7 +1679,7 @@ Files:	    src/quickfix.c, src/testdir/Make_amiga.mak,
 
 Patch 7.4.204
 Problem:    A mapping where the second byte is 0x80 doesn't work.
-Solution:   Unescape before checking for incomplete multi-byte char. (Nobuhiro
+Solution:   Unescape before checking for incomplete multibyte char. (Nobuhiro
 	    Takasaki)
 Files:	    src/getchar.c, src/testdir/test75.in, src/testdir/test75.ok
 
@@ -2385,13 +2385,13 @@ Solution:   Use the msgfmt command found by configure. (Danek Duvall)
 Files:	    src/config.mk.in, src/po/Makefile
 
 Patch 7.4.323
-Problem:    substitute() with zero width pattern breaks multi-byte character.
-Solution:   Take multi-byte character size into account. (Yukihiro Nakadaira)
+Problem:    substitute() with zero width pattern breaks multibyte character.
+Solution:   Take multibyte character size into account. (Yukihiro Nakadaira)
 Files:	    src/eval.c src/testdir/test69.in, src/testdir/test69.ok
 
 Patch 7.4.324
 Problem:    In Ex mode, cyrillic characters are not handled. (Stas Malavin)
-Solution:   Support multi-byte characters in Ex mode. (Yukihiro Nakadaira)
+Solution:   Support multibyte characters in Ex mode. (Yukihiro Nakadaira)
 Files:	    src/ex_getln.c
 
 Patch 7.4.325
@@ -2810,7 +2810,7 @@ Files:	    src/eval.c
 
 Patch 7.4.393
 Problem:    Text drawing on newer MS-Windows systems is suboptimal.  Some
-	    multi-byte characters are not displayed, even though the same font
+	    multibyte characters are not displayed, even though the same font
 	    in Notepad can display them. (Srinath Avadhanula)
 Solution:   Add the 'renderoptions' option to enable DirectX drawing. (Taro
 	    Muraoka)
@@ -2913,7 +2913,7 @@ Solution:   Reset the update_Insstart_orig flag. (Christian Brabandt)
 Files:	    src/edit.c, src/testdir/test39.in, src/testdir/test39.ok
 
 Patch 7.4.408
-Problem:    Visual block insert breaks a multi-byte character.
+Problem:    Visual block insert breaks a multibyte character.
 Solution:   Calculate the position properly. (Yasuhiro Matsumoto)
 Files:	    src/ops.c, src/testdir/test_utf8.in, src/testdir/test_utf8.ok,
 	    src/testdir/Make_amiga.mak, src/testdir/Make_dos.mak,
@@ -3275,7 +3275,7 @@ Files:	    src/testdir/Make_dos.mak, src/testdir/test11.in,
 	    src/testdir/test100.in
 
 Patch 7.4.471
-Problem:    MS-Windows: When printer name contains multi-byte, the name is
+Problem:    MS-Windows: When printer name contains multibyte, the name is
 	    displayed as ???.
 Solution:   Convert the printer name from the active codepage to 'encoding'.
 	    (Yasuhiro Matsumoto)
@@ -3737,9 +3737,9 @@ Solution:   Move these vim_snprintf() calls into a function.
 Files:	    src/window.c
 
 Patch 7.4.547
-Problem:    Using "vit" does not select a multi-byte character at the end
+Problem:    Using "vit" does not select a multibyte character at the end
 	    correctly.
-Solution:   Advance the cursor over the multi-byte character. (Christian
+Solution:   Advance the cursor over the multibyte character. (Christian
 	    Brabandt)
 Files:	    src/search.c
 
@@ -4334,7 +4334,7 @@ Solution:   Put "-ldl" in LIBS rather than LDFLAGS. (Ozaki Kiichi)
 Files:	    src/configure.in, src/auto/configure
 
 Patch 7.4.651 (after 7.4.582)
-Problem:    Can't match "%>80v" properly for multi-byte characters.
+Problem:    Can't match "%>80v" properly for multibyte characters.
 Solution:   Multiply the character number by the maximum number of bytes in a
 	    character. (Yasuhiro Matsumoto)
 Files:	    src/regexp_nfa.c
@@ -4424,7 +4424,7 @@ Solution:   Check if 'numberwidth' changed. (Christian Brabandt)
 Files:	    src/screen.c, src/structs.h
 
 Patch 7.4.665
-Problem:    'linebreak' does not work properly with multi-byte characters.
+Problem:    'linebreak' does not work properly with multibyte characters.
 Solution:   Compute the pointer offset with mb_head_off().  (Yasuhiro
 	    Matsumoto)
 Files:	    src/screen.c
@@ -4512,7 +4512,7 @@ Solution:   Truncate to 255 colors. (Yasuhiro Matsumoto)
 Files:	    src/os_win32.c
 
 Patch 7.4.680
-Problem:    CTRL-W in Insert mode does not work well for multi-byte
+Problem:    CTRL-W in Insert mode does not work well for multibyte
 	    characters.
 Solution:   Use mb_get_class(). (Yasuhiro Matsumoto)
 Files:	    src/edit.c, src/testdir/Make_amiga.mak, src/testdir/Make_dos.mak,
@@ -5051,7 +5051,7 @@ Solution:   Change the way escape sequences are recognized. (partly by
 Files:      src/ascii.h, src/term.c
 
 Patch 7.4.771
-Problem:    Search does not handle multi-byte character at the start position
+Problem:    Search does not handle multibyte character at the start position
             correctly.
 Solution:   Take byte size of character into account. (Yukihiro Nakadaira)
 Files:      src/search.c, src/testdir/Make_amiga.mak,
@@ -5388,7 +5388,7 @@ Files:      src/testdir/test_increment.in, src/testdir/test_increment.ok,
             src/ops.c
 
 Patch 7.4.824 (after 7.4.813)
-Problem:    Can't compile without the multi-byte feature. (John Marriott)
+Problem:    Can't compile without the multibyte feature. (John Marriott)
 Solution:   Add #ifdef.
 Files:      src/eval.c
 
@@ -5399,7 +5399,7 @@ Files:      src/syntax.c
 
 Patch 7.4.826
 Problem:    Compiler warnings and errors.
-Solution:   Make it build properly without the multi-byte feature.
+Solution:   Make it build properly without the multibyte feature.
 Files:      src/eval.c, src/search.c
 
 Patch 7.4.827
@@ -5477,7 +5477,7 @@ Solution:   Send a WM_CLOSE message. (Jurgen Kramer)
 Files:      src/gui_w32.c
 
 Patch 7.4.841
-Problem:    Can't compile without the multi-byte feature. (John Marriott)
+Problem:    Can't compile without the multibyte feature. (John Marriott)
 Solution:   Add more #ifdef's.
 Files:      src/option.c
 
@@ -5512,7 +5512,7 @@ Files:      Filelist, CONTRIBUTING.md
 
 Patch 7.4.847
 Problem:    "vi)d" may leave a character behind.
-Solution:   Skip over multi-byte character. (Christian Brabandt)
+Solution:   Skip over multibyte character. (Christian Brabandt)
 Files:      src/search.c
 
 Patch 7.4.848
@@ -5969,9 +5969,9 @@ Files:      runtime/doc/options.txt, runtime/doc/repeat.txt, src/ops.c,
             src/option.h, src/screen.c
 
 Patch 7.4.926
-Problem:    Completing the longest match doesn't work properly with multi-byte
+Problem:    Completing the longest match doesn't work properly with multibyte
             characters.
-Solution:   When using multi-byte characters use another way to find the
+Solution:   When using multibyte characters use another way to find the
             longest match. (Hirohito Higashi)
 Files:      src/ex_getln.c, src/testdir/test_utf8.in, src/testdir/test_utf8.ok
 
@@ -9038,7 +9038,7 @@ Files:      src/if_sniff.c, src/if_sniff.h, src/charset.c, src/edit.c,
 
 Patch 7.4.1434
 Problem:    JSON encoding doesn't handle surrogate pair.
-Solution:   Improve multi-byte handling of JSON. (Yasuhiro Matsumoto)
+Solution:   Improve multibyte handling of JSON. (Yasuhiro Matsumoto)
 Files:      src/json.c, src/testdir/test_json.vim
 
 Patch 7.4.1435
@@ -9092,7 +9092,7 @@ Solution:   Use gtk_widget_get_window().  Fix typos. (Dominique Pelle)
 Files:      src/gui_gtk_x11.c
 
 Patch 7.4.1444
-Problem:    Can't build with JSON but without multi-byte.
+Problem:    Can't build with JSON but without multibyte.
 Solution:   Fix pointer name.
 Files:      src/json.c
 
@@ -9351,7 +9351,7 @@ Solution:   Add #ifdef. (Dominique Pelle)
 Files:      src/gui_gtk_x11.c
 
 Patch 7.4.1491
-Problem:    Visual-block shift breaks multi-byte characters.
+Problem:    Visual-block shift breaks multibyte characters.
 Solution:   Compute column differently. (Yasuhiro Matsumoto) Add a test.
 Files:      src/ops.c, src/testdir/test_visual.vim, src/testdir/Make_all.mak
 
@@ -10491,7 +10491,7 @@ Solution:   Fix the coding style. (Ken Takata)
 Files:      src/if_ruby.c
 
 Patch 7.4.1690
-Problem:    Can't compile with the conceal feature but without multi-byte.
+Problem:    Can't compile with the conceal feature but without multibyte.
 Solution:   Adjust #ifdef. (Owen Leibman)
 Files:      src/eval.c, src/window.c
 
@@ -10547,7 +10547,7 @@ Files:      src/ex_cmds2.c, src/testdir/test_packadd.vim
 
 Patch 7.4.1700
 Problem:    Equivalence classes are not properly tested.
-Solution:   Add tests for multi-byte and latin1. Fix an error. (Owen Leibman)
+Solution:   Add tests for multibyte and latin1. Fix an error. (Owen Leibman)
 Files:      src/regexp.c, src/testdir/Make_all.mak,
             src/testdir/test_alot_latin.vim, src/testdir/test_alot_utf8.vim,
             src/testdir/test_regexp_latin.vim,
@@ -11027,7 +11027,7 @@ Solution:   Change the condition for the mode. (Christian Brabandt)
 Files:      src/eval.c
 
 Patch 7.4.1782
-Problem:    strcharpart() does not work properly with some multi-byte
+Problem:    strcharpart() does not work properly with some multibyte
             characters.
 Solution:   Use mb_cptr2len() instead of mb_char2len(). (Hirohito Higashi)
 Files:      src/eval.c, src/testdir/test_expr_utf8.vim
@@ -15896,7 +15896,7 @@ Files:      src/term.c, src/term.h, src/option.c, src/misc2.c, src/keymap.h,
             src/vim.h, src/proto/edit.pro, runtime/doc/term.txt
 
 Patch 8.0.0211 (after 8.0.0210)
-Problem:    Build fails if the multi-byte feature is disabled.
+Problem:    Build fails if the multibyte feature is disabled.
 Solution:   Change #ifdef around ins_char_bytes.
 Files:      src/misc1.c
 
@@ -15960,7 +15960,7 @@ Solution:   Remove the check for PROTO. (Hirohito Higashi)
 Files:      src/misc1.c
 
 Patch 8.0.0222
-Problem:    When a multi-byte character ends in a zero byte, putting blockwise
+Problem:    When a multibyte character ends in a zero byte, putting blockwise
             text puts it before the character instead of after it.
 Solution:   Use int instead of char for the character under the cursor.
             (Luchr, closes #1403)  Add a test.
@@ -16132,9 +16132,9 @@ Files:      .travis.yml
 
 Patch 8.0.0250
 Problem:    When virtcol() gets a column that is not the first byte of a
-            multi-byte character the result is unpredictable. (Christian
+            multibyte character the result is unpredictable. (Christian
             Ludwig)
-Solution:   Correct the column to the first byte of a multi-byte character.
+Solution:   Correct the column to the first byte of a multibyte character.
             Change the utf-8 test to new style.
 Files:      src/charset.c, src/testdir/test_utf8.in, src/testdir/test_utf8.ok,
             src/testdir/test_utf8.vim, src/Makefile, src/testdir/Make_all.mak,
@@ -16321,7 +16321,7 @@ Solution:   Check the MSVC version and use the right dll name. (Ken Takata)
 Files:      src/Make_mvc.mak
 
 Patch 8.0.0280
-Problem:    On MS-Windows setting an environment variable with multi-byte
+Problem:    On MS-Windows setting an environment variable with multibyte
             strings does not work well.
 Solution:   Use wputenv when possible. (Taro Muraoka, Ken Takata)
 Files:      src/misc1.c, src/os_win32.c, src/os_win32.h,
@@ -17777,7 +17777,7 @@ Files:      runtime/doc/eval.txt, src/evalfunc.c, src/quickfix.c,
             src/testdir/test_quickfix.vim
 
 Patch 8.0.0518
-Problem:    Storing a zero byte from a multi-byte character causes fold text
+Problem:    Storing a zero byte from a multibyte character causes fold text
             to show up wrong.
 Solution:   Avoid putting zero in ScreenLines. (Christian Brabandt,
             closes #1567)
@@ -17818,13 +17818,13 @@ Files:      src/ops.c, src/proto/ui.pro, src/ui.c, src/globals.h,
             src/testdir/test_alot.vim
 
 Patch 8.0.0523
-Problem:    dv} deletes part of a multi-byte character. (Urtica Dioica)
+Problem:    dv} deletes part of a multibyte character. (Urtica Dioica)
 Solution:   Include the whole character.
 Files:      src/search.c, src/testdir/test_normal.vim
 
 Patch 8.0.0524 (after 8.0.0518)
 Problem:    Folds are messed up when 'encoding' is "utf-8".
-Solution:   Also set the fold character when it's not multi-byte.
+Solution:   Also set the fold character when it's not multibyte.
 Files:      src/screen.c, src/testdir/test_display.vim
 
 Patch 8.0.0525
@@ -19204,7 +19204,7 @@ Files:      src/structs.h, src/os_unix.c, src/terminal.c, src/channel.c,
             src/proto/os_unix.pro, src/os_win32.c, src/proto/os_win32.pro
 
 Patch 8.0.0745
-Problem:    multi-byte characters in a terminal window are not displayed
+Problem:    multibyte characters in a terminal window are not displayed
             properly.
 Solution:   Set the unused screen characters. (Yasuhiro Matsumoto, closes
             #1857)
@@ -19380,7 +19380,7 @@ Solution:   Use OUTDIR. (Ken Takata)
 Files:      src/Make_cyg_ming.mak, src/Make_mvc.mak, src/libvterm/Makefile.msc
 
 Patch 8.0.0774
-Problem:    Build failure without the multi-byte feature on HPUX.
+Problem:    Build failure without the multibyte feature on HPUX.
 Solution:   Move #ifdefs. (John Marriott)
 Files:      src/term.c
 
@@ -19526,7 +19526,7 @@ Files:      src/terminal.c
 
 Patch 8.0.0800
 Problem:    Terminal window scrollback contents is wrong.
-Solution:   Fix handling of multi-byte characters (Yasuhiro Matsumoto) Handle
+Solution:   Fix handling of multibyte characters (Yasuhiro Matsumoto) Handle
             empty lines correctly. (closes #1891)
 Files:      src/terminal.c
 
@@ -20139,7 +20139,7 @@ Files:      runtime/doc/eval.txt, src/quickfix.c,
             src/testdir/test_quickfix.vim
 
 Patch 8.0.0905
-Problem:    MS-Windows: broken multi-byte characters in the console.
+Problem:    MS-Windows: broken multibyte characters in the console.
 Solution:   Restore all regions of the console buffer. (Ken Takata)
 Files:      src/os_win32.c
 
@@ -20574,7 +20574,7 @@ Solution:   Do not use a blinking cursor by default.
 Files:      src/terminal.c
 
 Patch 8.0.0982
-Problem:    When 'encoding' is set to a multi-byte encoding other than utf-8
+Problem:    When 'encoding' is set to a multibyte encoding other than utf-8
             the characters from their terminal are messed up.
 Solution:   Convert displayed text from utf-8 to 'encoding' for MS-Windows.
             (Yasuhiro Matsumoto, close #2000)
@@ -20600,8 +20600,8 @@ Files:      src/Makefile, src/libvterm/src/unicode.c, src/mbyte.c,
             src/proto/mbyte.pro, src/Make_cyg_ming.mak, src/Make_mvc.mak
 
 Patch 8.0.0986
-Problem:    Terminal feature always requires multi-byte feature.
-Solution:   Remove #ifdef FEAT_MBYTE, disable terminal without multi-byte.
+Problem:    Terminal feature always requires multibyte feature.
+Solution:   Remove #ifdef FEAT_MBYTE, disable terminal without multibyte.
 Files:      src/terminal.c, src/feature.h
 
 Patch 8.0.0987
@@ -21012,7 +21012,7 @@ Solution:   Avoid message for writing file.  Source shared.vim when running
 Files:      src/testdir/test_bufline.vim, src/testdir/test_timers.vim
 
 Patch 8.0.1056
-Problem:    Cannot build with the diff feature but without the multi-byte
+Problem:    Cannot build with the diff feature but without the multibyte
             feature.
 Solution:   Remove #ifdefs. (John Marriott)
 Files:      src/diff.c
@@ -22781,7 +22781,7 @@ Solution:   Skip the text.
 Files:      src/testdir/test_iminsert.vim, runtime/doc/options.txt
 
 Patch 8.0.1342
-Problem:    Cannot build with Motif and multi-byte. (Mohamed Boughaba)
+Problem:    Cannot build with Motif and multibyte. (Mohamed Boughaba)
 Solution:   Use the right input method status flag. (closes #2374)
 Files:      src/mbyte.c
 
@@ -24713,7 +24713,7 @@ Solution:   Add the file name in the separator line.
 Files:      src/terminal.c
 
 Patch 8.0.1663 (after 8.0.1660)
-Problem:    Cannot build without multi-byte feature.
+Problem:    Cannot build without multibyte feature.
 Solution:   Add #ifdef.
 Files:      src/ex_docmd.c
 
@@ -25710,7 +25710,7 @@ Solution:   Escape '?' when needed.  Always escape backslash. (closes #2418,
 Files:      src/gui.c
 
 Patch 8.0.1835
-Problem:    Print document name does not support multi-byte.
+Problem:    Print document name does not support multibyte.
 Solution:   Use StartDocW() if needed. (Yasuhiro Matsumoto, closes #2478)
 Files:      src/os_mswin.c
 
@@ -26735,7 +26735,7 @@ Solution:   Check the terminal type. (Nobuhiro Takasaki, closes #3106)
 Files:	    src/evalfunc.c
 
 Patch 8.1.0125
-Problem:    Virtual edit replace with multi-byte fails at end of line. (Lukas
+Problem:    Virtual edit replace with multibyte fails at end of line. (Lukas
             Werling)
 Solution:   use ins_char() to add the character. (Christian Brabandt,
             closes #3114)  Rename PCHAR() to PBYTE() to avoid mistakes like
@@ -26977,7 +26977,7 @@ Files:	    src/dict.c, src/channel.c, src/ex_cmds2.c, src/userfunc.c,
             src/if_perl.xs, src/if_py_both.h
 
 Patch 8.1.0168
-Problem:    Output of :marks is too short with multi-byte chars. (Tony
+Problem:    Output of :marks is too short with multibyte chars. (Tony
             Mechelynck)
 Solution:   Get more bytes from the text line.
 Files:	    src/mark.c, src/testdir/test_marks.vim
@@ -30303,8 +30303,8 @@ Solution:   Make a copy of the sourced file name.
 Files:	    src/ex_cmds2.c
 
 Patch 8.1.0733
-Problem:    Too many #ifdefs for the multi-byte feature.
-Solution:   Tentatively always enable the multi-byte feature.  If you have a
+Problem:    Too many #ifdefs for the multibyte feature.
+Solution:   Tentatively always enable the multibyte feature.  If you have a
             problem with this, please discuss on the Vim maillist.
 Files:	    src/configure.ac, src/auto/configure, src/feature.h, src/Makefile,
             src/Make_bc5.mak, src/Make_cyg_ming.mak, src/Make_mvc.mak
@@ -31143,8 +31143,8 @@ Solution:   Make them the same, update docs. (close #3882)
 Files:	    src/option.c, runtime/doc/options.txt, runtime/doc/indent.txt
 
 Patch 8.1.0859
-Problem:    "%v" in 'errorformat' does not handle multi-byte characters.
-Solution:   Handle multi-byte characters. (Yegappan Lakshmanan, closes #3700)
+Problem:    "%v" in 'errorformat' does not handle multibyte characters.
+Solution:   Handle multibyte characters. (Yegappan Lakshmanan, closes #3700)
 Files:	    src/quickfix.c, src/testdir/test_quickfix.vim
 
 Patch 8.1.0860
@@ -32563,7 +32563,7 @@ Solution:   Use GetLongPathNameW() instead of GetLongPathName(). (Ken Takata,
 Files:	    src/eval.c
 
 Patch 8.1.1091
-Problem:    MS-Windows: cannot use multi-byte chars in environment var.
+Problem:    MS-Windows: cannot use multibyte chars in environment var.
 Solution:   Use the wide API. (Ken Takata, closes #4008)
 Files:	    src/misc1.c, src/testdir/test_let.vim
 
@@ -36218,7 +36218,7 @@ Solution:   Update the screen if needed.  Also avoid the cursor being
 Files:	    src/beval.c
 
 Patch 8.1.1655
-Problem:    Popup window border drawn wrong with multi-byte char. (Marcin
+Problem:    Popup window border drawn wrong with multibyte char. (Marcin
             Szamotulski)
 Solution:   Correct check in mb_fix_col(). (closes #4635)
 Files:	    src/mbyte.c, src/testdir/test_popupwin.vim,
@@ -37499,13 +37499,13 @@ Files:	    src/testdir/test_popupwin.vim,
             src/testdir/dumps/Test_popupwin_previewpopup_6.dump
 
 Patch 8.1.1857
-Problem:    Cannot use modifier with multi-byte character.
-Solution:   Allow using a multi-byte character, although it doesn't work
+Problem:    Cannot use modifier with multibyte character.
+Solution:   Allow using a multibyte character, although it doesn't work
             everywhere.
 Files:	    src/misc2.c, src/testdir/test_mapping.vim
 
 Patch 8.1.1858
-Problem:    Test for multi-byte mapping fails on some systems.
+Problem:    Test for multibyte mapping fails on some systems.
 Solution:   Test in another way.
 Files:	    src/testdir/test_mapping.vim
 
@@ -39372,7 +39372,7 @@ Files:	    src/term.c, src/getchar.c, src/libvterm/src/vterm_internal.h,
 
 Patch 8.1.2135
 Problem:    With modifyOtherKeys Alt-a does not work properly.
-Solution:   Remove the ALT modifier.  Get multi-byte after applying ALT.
+Solution:   Remove the ALT modifier.  Get multibyte after applying ALT.
 Files:	    src/getchar.c
 
 Patch 8.1.2136
@@ -39971,8 +39971,8 @@ Solution:   Use the wide version of the library function. (closes #5129)
 Files:	    src/filepath.c, src/testdir/test_shortpathname.vim
 
 Patch 8.1.2235
-Problem:    "C" with 'virtualedit' set does not include multi-byte char.
-Solution:   Include the whole multi-byte char. (Nobuhiro Takasaki,
+Problem:    "C" with 'virtualedit' set does not include multibyte char.
+Solution:   Include the whole multibyte char. (Nobuhiro Takasaki,
             closes #5152)
 Files:	    src/ops.c, src/testdir/test_virtualedit.vim
 
@@ -41255,7 +41255,7 @@ Files:      runtime/doc/autocmd.txt, runtime/doc/change.txt,
 
 Patch 8.2.0018
 Problem:    :join does not add white space where it should. (Zdenek Dohnal)
-Solution:   Handle joining multiple lines propely.
+Solution:   Handle joining multiple lines properly.
 Files:      src/ops.c, src/testdir/test_join.vim
 
 Patch 8.2.0019
@@ -41337,7 +41337,7 @@ Files:      src/channel.c, src/testdir/test_channel.vim
 
 Patch 8.2.0033
 Problem:    Crash when make_extmatch() runs out of memory.
-Solution:   Check for NULL. (Dominique Pellé, closs #5392)
+Solution:   Check for NULL. (Dominique Pellé, closes #5392)
 Files:      src/regexp_bt.c, src/regexp_nfa.c
 
 Patch 8.2.0034
@@ -41502,7 +41502,7 @@ Files:      src/message_test.c, src/message.c
 
 Patch 8.2.0061
 Problem:    The execute stack can grow big and never shrinks.
-Solution:   Reduce the size in gargage collect.
+Solution:   Reduce the size in garbage collect.
 Files:      src/eval.c
 
 Patch 8.2.0062
@@ -41517,7 +41517,7 @@ Files:      src/ops.c
 
 Patch 8.2.0064
 Problem:    Diffmode completion doesn't use per-window setting.
-Solution:   Check if a window is in diff mode. (Dominique Pell, closes #5419)
+Solution:   Check if a window is in diff mode. (Dominique Pellé, closes #5419)
 Files:      src/buffer.c, src/testdir/test_diffmode.vim
 
 Patch 8.2.0065
@@ -42066,7 +42066,7 @@ Files:      src/vim9script.c, src/vim9compile.c, src/vim9execute.c,
 
 Patch 8.2.0156
 Problem:    Various typos in source files and tests.
-Solution:   Fix the typos. (Emir Sari, closes #5532)
+Solution:   Fix the typos. (Emir Sarı, closes #5532)
 Files:      Makefile, src/INSTALLvms.txt, src/Make_vms.mms, src/beval.h,
             src/buffer.c, src/charset.c, src/evalvars.c, src/ex_cmds.c,
             src/ex_docmd.c, src/getchar.c, src/gui.c, src/gui_mac.c,
@@ -42263,7 +42263,7 @@ Solution:   Check for features. (Dominique Pellé, closes #5561)
 Files:      src/testdir/test_functions.vim, src/testdir/test_highlight.vim
 
 Patch 8.2.0187
-Problem:    Reduntant code.
+Problem:    Redundant code.
 Solution:   Remove unused assignments. (Dominique Pellé, closes #5557)
 Files:      src/vim9compile.c
 
@@ -42557,7 +42557,7 @@ Files:      src/buffer.c, src/testdir/test_statusline.vim,
             src/testdir/dumps/Test_statusline_1.dump
 
 Patch 8.2.0236
-Problem:    MS-Windows unintall doesn't delete vimtutur.bat.
+Problem:    MS-Windows uninstall doesn't delete vimtutur.bat.
 Solution:   Change directory before deletion. (Ken Takata, closes #5603)
 Files:      src/uninstall.c
 
@@ -42583,7 +42583,7 @@ Files:      src/os_win32.c, src/testdir/test_channel.vim
 
 Patch 8.2.0240
 Problem:    Using memory after it was freed. (Dominique Pellé)
-Solution:   Do not mix converion buffer with other buffer.
+Solution:   Do not mix conversion buffer with other buffer.
 Files:      src/viminfo.c, src/vim.h
 
 Patch 8.2.0241
@@ -42795,7 +42795,7 @@ Files:      src/testdir/test_autocmd.vim, src/testdir/test_buffer.vim,
 Patch 8.2.0271
 Problem:    The "num64" feature is available everywhere and building without
             it causes problems.
-Solution:   Graduage the "num64" feature. (James McCoy, closes #5650)
+Solution:   Graduate the "num64" feature. (James McCoy, closes #5650)
 Files:      src/evalfunc.c, src/feature.h, src/message.c, src/structs.h,
             src/testdir/test_expr.vim, src/testdir/test_largefile.vim,
             src/testdir/test_sort.vim, src/testdir/test_vimscript.vim,
@@ -42945,7 +42945,7 @@ Files:      src/vim9compile.c, src/testdir/test_vim9_script.vim,
 
 Patch 8.2.0295
 Problem:    Highlighting for :s wrong when using different separator.
-Solution:   Use separat argument for search direction and separator. (Rob
+Solution:   Use separate argument for search direction and separator. (Rob
             Pilling, closes #5665)
 Files:      src/ex_docmd.c, src/ex_getln.c, src/gui.c, src/normal.c,
             src/proto/search.pro, src/quickfix.c, src/search.c, src/spell.c,
@@ -43093,7 +43093,7 @@ Files:      Filelist, src/evalvars.c, src/register.c, src/if_python3.c
 
 Patch 8.2.0320
 Problem:    No Haiku support.
-Solution:   Add support for Haiku. (Emir Sari, closes #5605)
+Solution:   Add support for Haiku. (Emir Sarı, closes #5605)
 Files:      Filelist, runtime/doc/Makefile, runtime/doc/eval.txt,
             runtime/doc/gui.txt, runtime/doc/help.txt,
             runtime/doc/options.txt, runtime/doc/os_haiku.txt,
@@ -43377,8 +43377,8 @@ Solution:   Make a difference between int and short. (Dominique Pellé,
 Files:      src/message.c
 
 Patch 8.2.0365
-Problem:    Tag kind can't be a multi-byte character. (Marcin Szamotulski)
-Solution:   Recognize multi-byte character. (closes #5724)
+Problem:    Tag kind can't be a multibyte character. (Marcin Szamotulski)
+Solution:   Recognize multibyte character. (closes #5724)
 Files:      src/tag.c, src/testdir/test_taglist.vim
 
 Patch 8.2.0366
@@ -43467,7 +43467,7 @@ Files:      src/textprop.c
 
 Patch 8.2.0380
 Problem:    Tiny popup when creating a terminal popup without minwidth.
-Solution:   Use a default mininum size of 5 lines of 20 characters.
+Solution:   Use a default minimum size of 5 lines of 20 characters.
 Files:      src/popupwin.c, src/testdir/test_terminal.vim,
             src/testdir/dumps/Test_terminal_popup_m1.dump
 
@@ -44040,7 +44040,7 @@ Files:      src/terminal.c
 
 Patch 8.2.0473
 Problem:    Variables declared in an outer scope.
-Solution:   Decleare variables only in the scope where they are used.
+Solution:   Declare variables only in the scope where they are used.
 Files:      src/evalvars.c
 
 Patch 8.2.0474 (after 8.2.0403)
@@ -44050,12 +44050,12 @@ Files:      src/fileio.c, src/testdir/test_autocmd.vim
 
 Patch 8.2.0475
 Problem:    Channel out_cb test still fails sometimes on Mac.
-Solution:   Use an ever longer timeout.
+Solution:   Use an even longer timeout.
 Files:      src/testdir/test_channel.vim
 
 Patch 8.2.0476
 Problem:    Terminal nasty callback test fails sometimes.
-Solution:   use term_wait() instead of a sleep. (Yee Cheng Chin,closes #5865)
+Solution:   use term_wait() instead of a sleep. (Yee Cheng Chin, closes #5865)
 Files:      src/testdir/test_terminal.vim
 
 Patch 8.2.0477
@@ -44225,7 +44225,7 @@ Solution:   Cleanup the scope list.
 Files:      src/vim9compile.c
 
 Patch 8.2.0505
-Problem:    term_getty() not sufficiently tested.
+Problem:    term_gettty() not sufficiently tested.
 Solution:   Add more asserts. (Dominique Pellé, closes #5877)
 Files:      src/testdir/test_terminal.vim
 
@@ -44406,7 +44406,7 @@ Files:      src/testdir/test_search.vim, src/testdir/test_source.vim,
 
 Patch 8.2.0532
 Problem:    Cannot use simplify() as a method.
-Solution:   Add FEARG_1. (closes #5996)
+Solution:   Add FEARG_1. (closes #5896)
 Files:      runtime/doc/eval.txt, src/evalfunc.c,
             src/testdir/test_functions.vim
 
@@ -44932,7 +44932,7 @@ Files:      src/insexpand.c, src/globals.h, src/edit.c, src/ex_getln.c,
             src/testdir/test_ex_mode.vim, runtime/doc/insert.txt
 
 Patch 8.2.0615
-Problem:    Regexp benchmark stest is old style.
+Problem:    Regexp benchmark test is old style.
 Solution:   Make it a new style test.  Fix using a NULL list.  Add more tests.
             (Yegappan Lakshmanan, closes #5963)
 Files:      src/evalbuffer.c, src/testdir/Make_dos.mak,
@@ -44982,7 +44982,7 @@ Files:      src/testdir/Makefile, src/Makefile
 
 Patch 8.2.0622
 Problem:    Haiku: GUI does not compile.
-Solution:   Various fixes. (Emir Sari, closes #5961)
+Solution:   Various fixes. (Emir Sarı, closes #5961)
 Files:      Filelist, README.md, READMEdir/README_haiku.txt,
             runtime/doc/os_haiku.txt, src/Makefile, src/beval.h,
             src/gui_haiku.cc, src/proto/gui_haiku.pro
@@ -45021,7 +45021,7 @@ Files:      src/userfunc.c
 Patch 8.2.0628
 Problem:    Error in menu translations.
 Solution:   Insert a backslash before a space in one more file. (Shun Bai,
-            Emir Sari)
+            Emir Sarı)
 Files:      runtime/lang/menu_zh_cn.utf-8.vim,
             runtime/lang/menu_ca_es.latin1.vim,
             runtime/lang/menu_cs_cz.iso_8859-2.vim,
@@ -45287,7 +45287,7 @@ Files:      src/testdir/shared.vim, src/testdir/test_messages.vim,
 
 Patch 8.2.0667
 Problem:    Cannot install Haiku version from source.
-Solution:   Update Makefile and rdef file. (Emir Sari, closes #6013)
+Solution:   Update Makefile and rdef file. (Emir Sarı, closes #6013)
 Files:      Filelist, READMEdir/README_haiku.txt, runtime/doc/os_haiku.txt,
             src/Makefile, src/os_haiku.rdef.in, src/os_haiku.rdef
 
@@ -45313,7 +45313,7 @@ Files:      src/ex_getln.c, src/beval.c, src/change.c, src/edit.c, src/eval.c,
 
 Patch 8.2.0671
 Problem:    Haiku: compiler warnings.
-Solution:   Avoid the warnings. Drop display_errors() copy. (Emir Sari,
+Solution:   Avoid the warnings. Drop display_errors() copy. (Emir Sarı,
             closes #6018)
 Files:      .gitignore, src/gui.c, src/gui_haiku.cc
 
@@ -45566,7 +45566,7 @@ Files:      runtime/filetype.vim, src/testdir/test_filetype.vim
 
 Patch 8.2.0714
 Problem:    Vim9: handling constant expression does not scale.
-Solution:   Use another solution, passint typval_T.
+Solution:   Use another solution, passing typval_T.
 Files:      src/vim9compile.c, src/testdir/test_vim9_expr.vim
 
 Patch 8.2.0715
@@ -45680,7 +45680,7 @@ Solution:   Do not check for next line in third pass.
 Files:      src/scriptfile.c
 
 Patch 8.2.0735
-Problem:    Vim9: using unitialized memory.
+Problem:    Vim9: using uninitialized memory.
 Solution:   Clear the arg_lvar field.
 Files:      src/vim9compile.c
 
@@ -45801,7 +45801,7 @@ Files:      src/testdir/test_vim9_script.vim
 Patch 8.2.0755
 Problem:    Vim9: No error when variable initializer is not a constant.
 Solution:   Return FAIL when trying to get a variable value.  Do not execute a
-            script when an error is deteted in the first or second phase.
+            script when an error is detected in the first or second phase.
 Files:      src/eval.c, src/vim9script.c, src/testdir/test_vim9_script.vim
 
 Patch 8.2.0756 (after 8.2.0249)
@@ -46003,7 +46003,7 @@ Files:      src/libvterm/include/vterm.h, src/libvterm/src/pen.c,
 
 Patch 8.2.0786
 Problem:    Channel test is flaky on FreeBSD.
-Solution:   Set the sockiet TCP_NODELAY option. Adjust expected line count in
+Solution:   Set the socket TCP_NODELAY option. Adjust expected line count in
             netbeans test. (Ozaki Kiichi, closes #6097)
 Files:      src/testdir/test_channel.py, src/testdir/test_netbeans.vim
 
@@ -46273,7 +46273,7 @@ Solution:   Fix off-by-one error.
 Files:      src/userfunc.c
 
 Patch 8.2.0828
-Problem:    Travis: regexp patttern doesn't work everywhere.
+Problem:    Travis: regexp pattern doesn't work everywhere.
 Solution:   Use [:blank:] instead of \b. (Ozaki Kiichi, closes #6146)
 Files:      .travis.yml, ci/config.mk.clang.sed, ci/config.mk.gcc.sed,
             ci/config.mk.sed, src/if_ruby.c
@@ -46396,7 +46396,7 @@ Files:      src/os_win32.c, src/proto/os_win32.pro, src/term.c
 
 Patch 8.2.0849
 Problem:    BeOS code is not maintained and probably unused.
-Solution:   Remove the BeOS code. (Emir Sari, closes #5817)
+Solution:   Remove the BeOS code. (Emir Sarı, closes #5817)
 Files:      Filelist, src/Makefile, src/configure.ac, src/auto/configure,
             src/evalfunc.c, src/normal.c, src/os_beos.c, src/os_beos.h,
             src/os_beos.rsrc, src/os_unix.c, src/proto.h,
@@ -46404,7 +46404,7 @@ Files:      Filelist, src/Makefile, src/configure.ac, src/auto/configure,
             src/testdir/test_functions.vim, src/ui.c, src/vim.h
 
 Patch 8.2.0850
-Problem:    MS-Windows: exepath() works different from cmd.exe.
+Problem:    MS-Windows: exepath() works differently from cmd.exe.
 Solution:   Make exepath() work better on MS-Windows. (closes #6115)
 Files:      runtime/doc/eval.txt, src/os_win32.c,
             src/testdir/test_functions.vim
@@ -46497,7 +46497,7 @@ Files:      runtime/doc/syntax.txt, runtime/doc/term.txt, src/globals.h,
 
 Patch 8.2.0864
 Problem:    Pragmas are indented all the way to the left.
-Solution:   Add an option to indent progmas like normal code. (Max Rumpf,
+Solution:   Add an option to indent pragmas like normal code. (Max Rumpf,
             closes #5468)
 Files:      runtime/doc/indent.txt, src/cindent.c, src/structs.h,
             src/testdir/test_cindent.vim
@@ -46558,7 +46558,7 @@ Files:      runtime/doc/eval.txt, src/evalfunc.c, src/mark.c,
             src/testdir/test_marks.vim
 
 Patch 8.2.0872
-Problem:    XIM code is mixed with multi-byte code.
+Problem:    XIM code is mixed with multibyte code.
 Solution:   Move the XIM code to a separate file. (Yegappan Lakshmanan,
             closes #6177)
 Files:      Filelist, src/Make_cyg_ming.mak, src/Make_morph.mak,
@@ -46735,7 +46735,7 @@ Files:      src/search.c, src/testdir/test_search_stat.vim,
 
 Patch 8.2.0903
 Problem:    comparing WINVER does not work correctly.
-Solution:   Use arithmethic expansion. (Ozaki Kiichi, closes #6197)
+Solution:   Use arithmetic expansion. (Ozaki Kiichi, closes #6197)
 Files:      src/Make_cyg_ming.mak
 
 Patch 8.2.0904
@@ -46817,7 +46817,7 @@ Files:      src/getchar.c, src/proto/getchar.pro, src/edit.c, src/term.c,
             src/proto/term.pro, src/testdir/test_termcodes.vim
 
 Patch 8.2.0917
-Problem:    Quickfix entries do not suport a "note" type.
+Problem:    Quickfix entries do not support a "note" type.
 Solution:   Add support for "note". (partly by Yegappan Lakshmanan,
             closes #5527, closes #6216)
 Files:      runtime/doc/quickfix.txt, src/quickfix.c,
@@ -46901,14 +46901,14 @@ Files:      runtime/scripts.vim, src/testdir/test_filetype.vim
 
 Patch 8.2.0931
 Problem:    Some remarks about BeOS remain.
-Solution:   Remove BeOS remarks from the help and other files. (Emir Sari,
+Solution:   Remove BeOS remarks from the help and other files. (Emir Sarı,
             closes #6221)
 Files:      READMEdir/README_extra.txt, runtime/doc/options.txt,
             runtime/doc/os_beos.txt, runtime/doc/os_vms.txt,
             runtime/doc/vi_diff.txt, src/INSTALL
 
 Patch 8.2.0932
-Problem:    Missspelling spelllang.
+Problem:    Misspelling spelllang.
 Solution:   Add an "l". (Dominique Pellé)
 Files:      src/optionstr.c, src/proto/spell.pro, src/spell.c
 
@@ -47364,7 +47364,7 @@ Solution:   Skip over "++arg". (Christian Brabandt, closes #6275,
 Files:      src/cmdexpand.c, src/testdir/test_cmdline.vim
 
 Patch 8.2.1008
-Problem:    Vim9: no test for disassambling newly added instructions.
+Problem:    Vim9: no test for disassembling newly added instructions.
 Solution:   Add a function and check disassembly.
 Files:      src/testdir/test_vim9_disassemble.vim
 
@@ -47480,7 +47480,7 @@ Solution:   Check for a continuation line after "->", "[" and ".".  Ignore
 Files:      src/vim9compile.c, src/testdir/test_vim9_expr.vim
 
 Patch 8.2.1027
-Problem:    GUI: multi-byte characters do not work in a terminal.
+Problem:    GUI: multibyte characters do not work in a terminal.
 Solution:   Do not assume a key is one byte. (closes #6304)
 Files:      src/gui_gtk_x11.c, src/gui_x11.c
 
@@ -47697,7 +47697,7 @@ Solution:   Check for operator after line break.
 Files:      src/eval.c, src/testdir/test_vim9_expr.vim
 
 Patch 8.2.1064
-Problem:    Vim9: no line break allowed before comperators.
+Problem:    Vim9: no line break allowed before comparators.
 Solution:   Check for comperator after line break.
 Files:      src/eval.c, src/testdir/test_vim9_expr.vim
 
@@ -47839,7 +47839,7 @@ Files:      src/filepath.c
 
 Patch 8.2.1088
 Problem:    A very long translation might cause a buffer overflow.
-Solution:   Trunctate the message if needed.
+Solution:   Truncate the message if needed.
 Files:      src/fileio.c
 
 Patch 8.2.1089
@@ -48001,7 +48001,7 @@ Solution:   Adjust how a command is parsed.
 Files:      src/ex_docmd.c, src/testdir/test_vim9_cmd.vim
 
 Patch 8.2.1117
-Problem:    Coverity warns for unsing unitialized field.
+Problem:    Coverity warns for using uninitialized field.
 Solution:   Initialize v_lock.
 Files:      src/if_lua.c
 
@@ -48545,7 +48545,7 @@ Problem:    Using ht_used when looping through a hashtab is less reliable.
 Solution:   Use ht_changed in a few more places.
 Files:      src/userfunc.c, src/if_py_both.h
 
-Patch 8.2.1211 (after 8.2.1118
+Patch 8.2.1211 (after 8.2.1118)
 Problem:    Removed more than dead code.
 Solution:   Put back the decrement.
 Files:      src/move.c, src/testdir/test_diffmode.vim
@@ -48852,7 +48852,7 @@ Files:      Filelist, src/Make_cyg_ming.mak, src/Make_morph.mak,
             src/proto/ex_cmds.pro, src/proto/help.pro
 
 Patch 8.2.1263
-Problem:    Vim9: comperators use 'ignorecase' in Vim9 script.
+Problem:    Vim9: comparators use 'ignorecase' in Vim9 script.
 Solution:   Ignore 'ignorecase'.  Use true and false instead of 1 and 0.
             (closes #6497)
 Files:      src/eval.c, src/typval.c, src/vim9execute.c,
@@ -49043,7 +49043,7 @@ Files:      src/Makefile, src/testdir/Make_all.mak, src/testdir/Make_vms.mms,
             src/testdir/test_regexp_utf8.vim
 
 Patch 8.2.1296
-Problem:    Some part of using 'smarcase' was not tested.
+Problem:    Some part of using 'smartcase' was not tested.
 Solution:   Add more tests. (Dominique Pellé, closes #6538)
 Files:      src/testdir/test_search.vim
 
@@ -49334,7 +49334,7 @@ Files:      src/testdir/test_vim9_func.vim
 
 Patch 8.2.1345
 Problem:    Redraw error when using visual block and scroll.
-Solution:   Add check for w_topline. ( closes #6597)
+Solution:   Add check for w_topline. (closes #6597)
 Files:      src/drawscreen.c, src/testdir/test_display.vim,
             src/testdir/dumps/Test_display_visual_block_scroll.dump
 
@@ -49504,7 +49504,7 @@ Files:      src/vim9compile.c, src/testdir/test_vim9_expr.vim
 
 Patch 8.2.1376
 Problem:    Vim9: expression mapping causes error for using :import.
-Solution:   Add EX_LOCK_OK to :import and :export. (closes 3606)
+Solution:   Add EX_LOCK_OK to :import and :export. (closes #6606)
 Files:      src/ex_cmds.h, src/testdir/test_vim9_script.vim
 
 Patch 8.2.1377
@@ -49558,7 +49558,7 @@ Solution:   Add a test on Travis for ARM. (Ozaki Kiichi, closes #6615)
 Files:      .travis.yml
 
 Patch 8.2.1386
-Problem:    Backslash not removed afer space in option with space in
+Problem:    Backslash not removed after space in option with space in
             'isfname'.
 Solution:   Do remove backslash before space, also when it is in 'isfname'.
             (Yasuhiro Matsumoto, closes #6651)

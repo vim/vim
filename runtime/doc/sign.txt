@@ -1,4 +1,4 @@
-*sign.txt*      For Vim version 8.2.  Last change: 2019 Nov 30
+*sign.txt*      For Vim version 8.2.  Last change: 2020 Aug 31
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -84,6 +84,10 @@ priority is assigned at the time of placing a sign.
 When the line on which the sign is placed is deleted, the sign is moved to the
 next line (or the last line of the buffer, if there is no next line).  When
 the delete is undone the sign does not move back.
+
+When a sign with line highlighting and 'cursorline' highlighting are both
+present, if the priority is 100 or more then the sign highlighting takes
+precedence, otherwise the 'cursorline' highlighting.
 
 ==============================================================================
 2. Commands					*sign-commands* *:sig* *:sign*

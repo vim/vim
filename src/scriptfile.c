@@ -1517,7 +1517,7 @@ ex_scriptnames(exarg_T *eap)
     if (eap->addr_count > 0)
     {
 	// :script {scriptId}: edit the script
-	if (eap->line2 < 1 || eap->line2 > script_items.ga_len)
+	if (!SCRIPT_ID_VALID(eap->line2))
 	    emsg(_(e_invarg));
 	else
 	{

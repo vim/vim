@@ -817,6 +817,7 @@ typedef struct sign_attrs_S {
     char_u	*sat_text;
     int		sat_texthl;
     int		sat_linehl;
+    int		sat_priority;
 } sign_attrs_T;
 
 #if defined(FEAT_SIGNS) || defined(PROTO)
@@ -1372,6 +1373,7 @@ struct type_S {
 
 #define TTFLAG_VARARGS	1	    // func args ends with "..."
 #define TTFLAG_OPTARG	2	    // func arg type with "?"
+#define TTFLAG_BOOL_OK	4	    // can be converted to bool
 
 /*
  * Structure to hold an internal variable without a name.
@@ -3337,6 +3339,7 @@ struct window_S
 				      // with "cursorline" set
     callback_T	w_close_cb;	    // popup close callback
     callback_T	w_filter_cb;	    // popup filter callback
+    int		w_filter_errors;    // popup filter error count
     int		w_filter_mode;	    // mode when filter callback is used
 
     win_T	*w_popup_curwin;    // close popup if curwin differs

@@ -5808,3 +5808,27 @@ msgstr "zoeken bereikte TOP, verder vanaf BODEM"
 msgid "search hit BOTTOM, continuing at TOP"
 msgstr "zoeken bereikte BODEM, verder vanaf TOP"
 
+msgid ""
+"\" Each \"set\" line shows the current value of an option (on the left)."
+msgstr ""
+"\" Elke \"set\" regel toont de huidige waarde van optie (aan de linkerkant)."
+
+msgid "\" Hit <Enter> on a \"set\" line to execute it."
+msgstr "\" Druk op <Enter> op een \"set\" regel om het uit te voeren."
+
+msgid "\"            A boolean option will be toggled."
+msgstr "\"    Een booleaanse optie wordt omgeschakeld."
+
+msgid ""
+"\"            For other options you can edit the value before hitting <Enter>."
+msgstr ""
+"\"    Voor andere opties kun je de waarde aanpassen voor op <Enter> te drukken."
+
+msgid "\" Hit <Enter> on a help line to open a help window on this option."
+msgstr "\" Druk op <Enter> op een help regel om help te openen voor deze optie."
+
+msgid "\" Hit <Enter> on an index line to jump there."
+msgstr "\" Druk op <Enter> op een index regel om daarheen te springen."
+
+msgid "\" Hit <Space> on a \"set\" line to refresh it."
+msgstr "\" Druk op <Spatie> op een \"set\" regel om te verversen."

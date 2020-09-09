@@ -2125,7 +2125,7 @@ f_popup_clear(typval_T *argvars, typval_T *rettv UNUSED)
     int force = FALSE;
 
     if (argvars[0].v_type != VAR_UNKNOWN)
-	force = (int)tv_get_number(&argvars[0]);
+	force = (int)tv_get_bool(&argvars[0]);
     close_all_popups(force);
 }
 
@@ -3126,6 +3126,7 @@ invoke_popup_filter(win_T *wp, int c)
     typval_T	argv[3];
     char_u	buf[NUMBUFLEN];
     linenr_T	old_lnum = wp->w_cursor.lnum;
+    int		prev_called_emsg = called_emsg;
 
     // Emergency exit: CTRL-C closes the popup.
     if (c == Ctrl_C)
@@ -3151,10 +3152,37 @@ invoke_popup_filter(win_T *wp, int c)
     argv[2].v_type = VAR_UNKNOWN;
 
     // NOTE: The callback might close the popup and make "wp" invalid.
-    call_callback(&wp->w_filter_cb, -1, &rettv, 2, argv);
-    if (win_valid_popup(wp) && old_lnum != wp->w_cursor.lnum)
-	popup_highlight_curline(wp);
-    res = tv_get_bool(&rettv);
+    if (call_callback(&wp->w_filter_cb, -1, &rettv, 2, argv) == FAIL)
+    {
+	// Cannot call the function, close the popup to avoid that the filter
+	// eats keys and the user is stuck.  Might as well eat the key.
+	popup_close_with_retval(wp, -1);
+	res = TRUE;
+    }
+    else
+    {
+	if (win_valid_popup(wp) && old_lnum != wp->w_cursor.lnum)
+	    popup_highlight_curline(wp);
+
+	// If an error was given always return FALSE, so that keys are not
+	// consumed and the user can type something.
+	// If we get three errors in a row then close the popup.  Decrement the
+	// error count by 1/10 if there are no errors, thus allowing up to 1 in
+	// 10 calls to cause an error.
+	if (win_valid_popup(wp) && called_emsg > prev_called_emsg)
+	{
+	    wp->w_filter_errors += 10;
+	    if (wp->w_filter_errors >= 30)
+		popup_close_with_retval(wp, -1);
+	    res = FALSE;
+	}
+	else
+	{
+	    if (win_valid_popup(wp) && wp->w_filter_errors > 0)
+		--wp->w_filter_errors;
+	    res = tv_get_bool(&rettv);
+	}
+    }
 
     vim_free(argv[1].vval.v_string);
     clear_tv(&rettv);

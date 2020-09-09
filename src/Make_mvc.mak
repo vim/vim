@@ -471,8 +471,8 @@ SOUND_LIB	= winmm.lib
 !endif
 
 !if "$(CHANNEL)" == "yes"
-CHANNEL_PRO	= proto/channel.pro
-CHANNEL_OBJ	= $(OBJDIR)/channel.obj
+CHANNEL_PRO	= proto/job.pro proto/channel.pro
+CHANNEL_OBJ	= $(OBJDIR)/job.obj $(OBJDIR)/channel.obj
 CHANNEL_DEFS	= -DFEAT_JOB_CHANNEL -DFEAT_IPV6
 ! if $(WINVER) >= 0x600
 CHANNEL_DEFS	= $(CHANNEL_DEFS) -DHAVE_INET_NTOP
@@ -1673,6 +1673,8 @@ $(OUTDIR)/if_tcl.obj: $(OUTDIR) if_tcl.c  $(INCL)
 $(OUTDIR)/iscygpty.obj:	$(OUTDIR) iscygpty.c $(CUI_INCL)
 	$(CC) $(CFLAGS_OUTDIR) iscygpty.c -D_WIN32_WINNT=0x0600 -DUSE_DYNFILEID -DENABLE_STUB_IMPL
 
+$(OUTDIR)/job.obj:	$(OUTDIR) job.c $(INCL)
+
 $(OUTDIR)/json.obj:	$(OUTDIR) json.c  $(INCL)
 
 $(OUTDIR)/list.obj:	$(OUTDIR) list.c  $(INCL)
@@ -1703,11 +1705,11 @@ $(OUTDIR)/mouse.obj:	$(OUTDIR) mouse.c  $(INCL)
 
 $(OUTDIR)/move.obj:	$(OUTDIR) move.c  $(INCL)
 
-$(OUTDIR)/mbyte.obj: $(OUTDIR) mbyte.c  $(INCL)
+$(OUTDIR)/mbyte.obj:	$(OUTDIR) mbyte.c  $(INCL)
 
-$(OUTDIR)/netbeans.obj: $(OUTDIR) netbeans.c $(NBDEBUG_SRC) $(INCL) version.h
+$(OUTDIR)/netbeans.obj:	$(OUTDIR) netbeans.c $(NBDEBUG_SRC) $(INCL) version.h
 
-$(OUTDIR)/channel.obj: $(OUTDIR) channel.c $(INCL)
+$(OUTDIR)/channel.obj:	$(OUTDIR) channel.c $(INCL)
 
 $(OUTDIR)/normal.obj:	$(OUTDIR) normal.c  $(INCL)
 

@@ -816,11 +816,15 @@ read_cnt_string(FILE *fd, int cnt_bytes, int *cntp)
 
     // read the length bytes, MSB first
     for (i = 0; i < cnt_bytes; ++i)
-	cnt = (cnt << 8) + getc(fd);
-    if (cnt < 0)
     {
-	*cntp = SP_TRUNCERROR;
-	return NULL;
+	int c = getc(fd);
+
+	if (c == EOF)
+	{
+	    *cntp = SP_TRUNCERROR;
+	    return NULL;
+	}
+	cnt = (cnt << 8) + (unsigned)c;
     }
     *cntp = cnt;
     if (cnt == 0)
@@ -3529,8 +3533,7 @@ spell_read_dic(spellinfo_T *spin, char_u *fname, afffile_T *affile)
     spin->si_msg_count = 999999;
 
     // Read and ignore the first line: word count.
-    (void)vim_fgets(line, MAXLINELEN, fd);
-    if (!vim_isdigit(*skipwhite(line)))
+    if (vim_fgets(line, MAXLINELEN, fd) || !vim_isdigit(*skipwhite(line)))
 	semsg(_("E760: No word count in %s"), fname);
 
     /*

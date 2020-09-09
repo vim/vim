@@ -224,6 +224,7 @@ EXTERN int	emsg_severe INIT(= FALSE);  // use message of next of several
 EXTERN int	emsg_assert_fails_used INIT(= FALSE);
 EXTERN char_u	*emsg_assert_fails_msg INIT(= NULL);
 EXTERN long	emsg_assert_fails_lnum INIT(= 0);
+EXTERN char_u	*emsg_assert_fails_context INIT(= NULL);
 
 EXTERN int	did_endif INIT(= FALSE);    // just had ":endif"
 #endif
@@ -297,8 +298,9 @@ EXTERN int	do_profiling INIT(= PROF_NONE);	// PROF_ values
 # endif
 EXTERN garray_T script_items INIT5(0, 0, sizeof(scriptitem_T *), 20, NULL);
 # define SCRIPT_ITEM(id)    (((scriptitem_T **)script_items.ga_data)[(id) - 1])
-# define SCRIPT_SV(id)	    (SCRIPT_ITEM(id)->sn_vars)
-# define SCRIPT_VARS(id)    (SCRIPT_SV(id)->sv_dict.dv_hashtab)
+# define SCRIPT_ID_VALID(id)    ((id) > 0 && (id) <= script_items.ga_len)
+# define SCRIPT_SV(id)		(SCRIPT_ITEM(id)->sn_vars)
+# define SCRIPT_VARS(id)	(SCRIPT_SV(id)->sv_dict.dv_hashtab)
 
 # define FUNCLINE(fp, j)	((char_u **)(fp->uf_lines.ga_data))[j]
 
@@ -772,7 +774,8 @@ EXTERN int	ru_wid;		// 'rulerfmt' width of ruler when non-zero
 EXTERN int	sc_col;		// column for shown command
 
 #ifdef TEMPDIRNAMES
-# if defined(UNIX) && defined(HAVE_FLOCK) && defined(HAVE_DIRFD)
+# if defined(UNIX) && defined(HAVE_FLOCK) \
+	&& (defined(HAVE_DIRFD) || defined(__hpux))
 EXTERN DIR	*vim_tempdir_dp INIT(= NULL); // File descriptor of temp dir
 # endif
 EXTERN char_u	*vim_tempdir INIT(= NULL); // Name of Vim's own temp dir.
@@ -1895,6 +1898,13 @@ EXTERN HINSTANCE g_hinst INIT(= NULL);
 EXTERN int did_repeated_msg INIT(= 0);
 # define REPEATED_MSG_LOOKING	    1
 # define REPEATED_MSG_SAFESTATE	    2
+
+// This flag is set when outputting a terminal control code and reset in
+// out_flush() when characters have been written.
+EXTERN int ch_log_output INIT(= FALSE);
+
+// Whether a redraw is needed for appending a line to a buffer.
+EXTERN int channel_need_redraw INIT(= FALSE);
 
 #define FOR_ALL_CHANNELS(ch) \
     for ((ch) = first_channel; (ch) != NULL; (ch) = (ch)->ch_next)

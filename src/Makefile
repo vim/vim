@@ -610,8 +610,9 @@ CClink = $(CC)
 
 # Use this with GCC to check for mistakes, unused arguments, etc.
 # Note: If you use -Wextra and get warnings in GTK code about function
-#       parameters, you can add -Wno-cast-function-type
+#       parameters, you can add -Wno-cast-function-type (but not with clang)
 #CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wunreachable-code -Wno-cast-function-type -Wno-deprecated-declarations -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
+#CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wunreachable-code -Wno-deprecated-declarations -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
 # Add -Wpedantic to find // comments and other C99 constructs.
 # Better disable Perl and Python to avoid a lot of warnings.
 #CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wpedantic -Wunreachable-code -Wunused-result -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
@@ -690,8 +691,8 @@ LINT_OPTIONS = -beprxzF
 
 
 # Uncomment one of the next two lines to compile Vim with the
-# address sanitizer (asan) or with the undefined sanitizer.  Works with gcc and
-# clang.  May make Vim twice as slow.  Errors reported on stderr.
+# address sanitizer (asan) or with the undefined sanitizer.  Works with gcc.
+# May make Vim twice as slow.  Errors are reported on stderr.
 # More at: https://code.google.com/p/address-sanitizer/
 # Useful environment variables:
 # $ export ASAN_OPTIONS="print_stacktrace=1 log_path=asan"
@@ -699,6 +700,13 @@ LINT_OPTIONS = -beprxzF
 # When running tests output can be found in testdir/asan.*
 #SANITIZER_CFLAGS = -g -O0 -fsanitize=address -fno-omit-frame-pointer
 #SANITIZER_CFLAGS = -g -O0 -fsanitize=undefined -fno-omit-frame-pointer
+
+# Similarly when compiling with clang and using ubsan.
+# $ export UBSAN_OPTIONS="print_stacktrace=1 log_path=ubsan"
+# $ export LSAN_OPTIONS="suppressions=`pwd`/testdir/lsan-suppress.txt"
+# When running tests output can be found in testdir/ubsan.*
+#SANITIZER_CFLAGS = -g -O0  -fsanitize-recover=all -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer
+
 SANITIZER_LIBS = $(SANITIZER_CFLAGS)
 
 # MEMORY LEAK DETECTION
@@ -1700,7 +1708,7 @@ SRC =	$(BASIC_SRC) \
 
 EXTRA_SRC = if_lua.c if_mzsch.c auto/if_perl.c if_perlsfio.c \
 	    if_python.c if_python3.c if_tcl.c if_ruby.c \
-	    gui_beval.c netbeans.c channel.c \
+	    gui_beval.c netbeans.c job.c channel.c \
 	    $(GRESOURCE_SRC)
 
 # Unittest files
@@ -1954,6 +1962,7 @@ PRO_AUTO = \
 	if_xcmdsrv.pro \
 	indent.pro \
 	insexpand.pro \
+	job.pro \
 	json.pro \
 	list.pro \
 	locale.pro \
@@ -3344,6 +3353,9 @@ objects/indent.o: indent.c
 objects/insexpand.o: insexpand.c
 	$(CCC) -o $@ insexpand.c
 
+objects/job.o: job.c
+	$(CCC) -o $@ job.c
+
 objects/json.o: json.c
 	$(CCC) -o $@ json.c
 
@@ -3557,8 +3569,9 @@ objects/netbeans.o: netbeans.c
 objects/channel.o: channel.c
 	$(CCC) -o $@ channel.c
 
-Makefile:
-	@echo The name of the makefile MUST be "Makefile" (with capital M)!!!!
+# Dependencies that "make depend" doesn't find
+objects/gui_gtk_x11.o: version.h
+
 
 # Build rules for libvterm.  Putting them here allows for adding compilation
 # options specific for Vim.  Since the .o files go into objects/ we do need to
@@ -3617,83 +3630,9 @@ objects/xpatience.o: xdiff/xpatience.c $(XDIFF_INCL)
 	$(CCCDIFF) -o $@ xdiff/xpatience.c
 
 
-###############################################################################
-### MacOS X installation
-###
-### This installs a runnable Vim.app in $(prefix)
+Makefile:
+	@echo The name of the makefile MUST be "Makefile" (with capital M)!!!!
 
-REZ    = /Developer/Tools/Rez
-RESDIR = $(APPDIR)/Contents/Resources
-VERSION = $(VIMMAJOR).$(VIMMINOR)
-
-### Common flags
-M4FLAGSX = $(M4FLAGS) -DAPP_EXE=$(VIMNAME) -DAPP_NAME=$(VIMNAME) \
-		-DAPP_VER=$(VERSION)
-
-install_macosx: gui_bundle
-# Remove the link to the runtime dir, don't want to copy all of that.
-	-rm $(RESDIR)/vim/runtime
-	$(INSTALL_DATA_R) $(APPDIR) $(DESTDIR)$(prefix)
-# Generate the help tags file now, it won't work with "make installruntime".
-	-@srcdir=`pwd`; cd $(HELPSOURCE); $(MAKE) VIMEXE=$$srcdir/$(VIMTARGET) vimtags
-# Install the runtime files.  Recursive!
-	$(MKDIR_P) $(DESTDIR)$(prefix)/$(RESDIR)/vim/runtime
-	srcdir=`pwd`; $(MAKE) -f Makefile installruntime \
-		VIMEXE=$$srcdir/$(VIMTARGET) \
-		prefix=$(DESTDIR)$(prefix)/$(RESDIR)$(VIMDIR) \
-		exec_prefix=$(DESTDIR)$(prefix)/$(APPDIR)/Contents \
-		BINDIR=$(DESTDIR)$(prefix)/$(APPDIR)/Contents/MacOS \
-		VIMLOC=$(DESTDIR)$(prefix)/$(RESDIR)$(VIMDIR) \
-		VIMRTLOC=$(DESTDIR)$(prefix)/$(RESDIR)$(VIMDIR)/runtime
-# Put the link back.
-	ln -s `pwd`/../runtime $(RESDIR)/vim
-# Copy rgb.txt, Mac doesn't always have X11
-	$(INSTALL_DATA) $(SCRIPTSOURCE)/rgb.txt $(DESTDIR)$(prefix)/$(RESDIR)/vim/runtime
-# TODO: Create the vimtutor and/or gvimtutor application.
-
-gui_bundle: $(RESDIR) bundle-dir bundle-executable bundle-info bundle-resource \
-	bundle-language
-
-$(RESDIR):
-	$(MKDIR_P) $@
-
-bundle-dir: $(APPDIR)/Contents $(VIMTARGET)
-# Make a link to the runtime directory, so that we can try out the executable
-# without installing it.
-	$(MKDIR_P) $(RESDIR)/vim
-	-ln -s `pwd`/../runtime $(RESDIR)/vim
-
-bundle-executable: $(VIMTARGET)
-	$(MKDIR_P) $(APPDIR)/Contents/MacOS
-	cp $(VIMTARGET) $(APPDIR)/Contents/MacOS/$(VIMTARGET)
-
-bundle-info:  bundle-dir
-	@echo "Creating PkgInfo"
-	@echo -n "APPLVIM!" > $(APPDIR)/Contents/PkgInfo
-	@echo "Creating Info.plist"
-	m4 $(M4FLAGSX) infplist.xml > $(APPDIR)/Contents/Info.plist
-
-bundle-resource: bundle-dir bundle-rsrc
-	cp -f $(RSRC_DIR)/*.icns $(RESDIR)
-
-### Classic resources
-# Resource fork (in the form of a .rsrc file) for Classic Vim (Mac OS 9)
-# This file is also required for OS X Vim.
-bundle-rsrc: os_mac.rsr.hqx
-	@echo "Creating resource fork"
-	python dehqx.py $<
-	rm -f gui_mac.rsrc
-	mv gui_mac.rsrc.rsrcfork $(RESDIR)/$(VIMNAME).rsrc
-
-bundle-language: bundle-dir
-
-$(APPDIR)/Contents:
-	$(MKDIR_P) $(APPDIR)/Contents/MacOS
-	$(MKDIR_P) $(RESDIR)/English.lproj
-
-
-# Dependencies that "make depend" doesn't find
-objects/gui_gtk_x11.o: version.h
 
 ###############################################################################
 #
@@ -4265,6 +4204,10 @@ objects/gui_at_fs.o: gui_at_fs.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h errors.h globals.h gui_at_sb.h
+objects/job.o: job.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h errors.h globals.h
 objects/json_test.o: json_test.c main.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \

@@ -24,6 +24,11 @@
 // Is there any system that doesn't have access()?
 #define USE_MCH_ACCESS
 
+#if defined(__hpux) && !defined(HAVE_DIRFD)
+# define dirfd(x) ((x)->__dd_fd)
+# define HAVE_DIRFD
+#endif
+
 static char_u *next_fenc(char_u **pp, int *alloced);
 #ifdef FEAT_EVAL
 static char_u *readfile_charconvert(char_u *fname, char_u *fenc, int *fdp);

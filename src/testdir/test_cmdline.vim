@@ -84,6 +84,34 @@ func Test_complete_wildmenu()
   call delete('Xdir1', 'd')
   set nowildmenu
 endfunc
+f
+func Test_wildmenu_screendump()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    set wildmenu hlsearch
+  [SCRIPT]
+  call writefile(lines, 'XTest_wildmenu')
+
+  let buf = RunVimInTerminal('-S XTest_wildmenu', {'rows': 8})
+  call term_sendkeys(buf, ":vim\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_1', {})
+
+  call term_sendkeys(buf, "\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_2', {})
+
+  call term_sendkeys(buf, "\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_3', {})
+
+  call term_sendkeys(buf, "\<Tab>")
+  call VerifyScreenDump(buf, 'Test_wildmenu_4', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XTest_wildmenu')
+endfunc
+
 
 func Test_map_completion()
   CheckFeature cmdline_compl
@@ -801,6 +829,15 @@ func Test_cmdline_complete_various()
   " completion after a range followed by a pipe (|) character
   call feedkeys(":1,10 | chist\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"1,10 | chistory', @:)
+
+  " use <Esc> as the 'wildchar' for completion
+  set wildchar=<Esc>
+  call feedkeys(":g/a\\xb/clearj\<Esc>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"g/a\xb/clearjumps', @:)
+  " pressing <esc> twice should cancel the command
+  call feedkeys(":chist\<Esc>\<Esc>", 'xt')
+  call assert_equal('"g/a\xb/clearjumps', @:)
+  set wildchar&
 endfunc
 
 func Test_cmdline_write_alternatefile()
@@ -815,7 +852,7 @@ func Test_cmdline_write_alternatefile()
   f %<
   call assert_equal('foo-B', expand('%'))
   new
-  call assert_fails('f #<', 'E95')
+  call assert_fails('f #<', 'E95:')
   bw!
   f foo-B.txt
   f %<-A

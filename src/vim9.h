@@ -135,6 +135,8 @@ typedef enum {
     ISN_CHECKTYPE,  // check value type is isn_arg.type.tc_type
     ISN_CHECKLEN,   // check list length is isn_arg.checklen.cl_min_len
 
+    ISN_PUT,	    // ":put", uses isn_arg.put
+
     ISN_SHUFFLE,    // move item on stack up or down
     ISN_DROP	    // pop stack and discard value
 } isntype_T;
@@ -261,6 +263,12 @@ typedef struct {
     int		shfl_up;	// places to move upwards
 } shuffle_T;
 
+// arguments to ISN_PUT
+typedef struct {
+    int		put_regname;	// register, can be NUL
+    linenr_T	put_lnum;	// line number to put below
+} put_T;
+
 /*
  * Instruction
  */
@@ -296,6 +304,7 @@ struct isn_S {
 	newfunc_T	    newfunc;
 	checklen_T	    checklen;
 	shuffle_T	    shuffle;
+	put_T		    put;
     } isn_arg;
 };
 

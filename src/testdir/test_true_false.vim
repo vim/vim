@@ -40,11 +40,11 @@ func Test_if()
     call assert_true(false, 'one in string is true')
   endif
 
-  call assert_fails('if [1]', 'E745')
-  call assert_fails('if {1: 1}', 'E728')
-  call assert_fails('if function("string")', 'E703')
+  call assert_fails('if [1]', 'E745:')
+  call assert_fails('if {1: 1}', 'E728:')
+  call assert_fails('if function("string")', 'E703:')
   if has('float')
-    call assert_fails('if 1.3")', 'E805')
+    call assert_fails('if 1.3")', 'E805:')
   endif
 endfunc
 

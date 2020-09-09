@@ -49,3 +49,12 @@ TO ADD A SCREEN DUMP TEST:
 Mostly the same as writing a new style test.  Additionally, see help on
 "terminal-dumptest".  Put the reference dump in "dumps/Test_func_name.dump".
 
+
+OLD STYLE TESTS:
+
+There are a few tests that are used when Vim was built without the +eval
+feature.  These cannot use the "assert" functions, therefore they consist of a
+.in file that contains Normal mode commands between STARTTEST and ENDTEST.
+They modify the file and the result gets writtein in the test.out file.  This
+is then compared with the .ok file.  If they are equal the test passed.  If
+they differ the test failed.

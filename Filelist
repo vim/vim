@@ -10,6 +10,7 @@ SRC_ALL =	\
 		.travis.yml \
 		.cirrus.yml \
 		.github/workflows/ci-windows.yaml \
+		.github/CODEOWNERS \
 		appveyor.yml \
 		ci/appveyor.bat \
 		ci/if_ver*.vim \
@@ -74,6 +75,7 @@ SRC_ALL =	\
 		src/highlight.c \
 		src/indent.c \
 		src/insexpand.c \
+		src/job.c \
 		src/json.c \
 		src/json_test.c \
 		src/kword_test.c \
@@ -249,6 +251,7 @@ SRC_ALL =	\
 		src/proto/highlight.pro \
 		src/proto/indent.pro \
 		src/proto/insexpand.pro \
+		src/proto/job.pro \
 		src/proto/json.pro \
 		src/proto/list.pro \
 		src/proto/locale.pro \
@@ -1028,6 +1031,8 @@ LANG_SRC = \
 		src/po/README_mvc.txt \
 		src/po/check.vim \
 		src/po/cleanup.vim \
+		src/po/tojavascript.vim \
+		src/po/fixfilenames.vim \
 		src/po/Makefile \
 		src/po/Make_all.mak \
 		src/po/Make_cyg.mak \

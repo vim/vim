@@ -95,7 +95,7 @@ func Test_endwhile_function()
     call T1_G()
   catch
     " Catch missing :endif
-    call assert_true(v:exception =~ 'E171')
+    call assert_true(v:exception =~ 'E171:')
     Xpath 'x'
   endtry
   Xpath 'G'
@@ -125,7 +125,7 @@ func Test_endwhile_script()
     ExecAsScript T1_G
   catch
     " Catch missing :endif
-    call assert_true(v:exception =~ 'E171')
+    call assert_true(v:exception =~ 'E171:')
     Xpath 'x'
   endtry
   Xpath 'G'
@@ -7022,8 +7022,8 @@ func Test_compound_assignment_operators()
       call assert_equal(10.5, x)
       let x /= 2.5
       call assert_equal(4.2, x)
-      call assert_fails('let x %= 0.5', 'E734')
-      call assert_fails('let x .= "f"', 'E734')
+      call assert_fails('let x %= 0.5', 'E734:')
+      call assert_fails('let x .= "f"', 'E734:')
       let x = !3.14
       call assert_equal(0.0, x)
 
@@ -7044,11 +7044,11 @@ func Test_compound_assignment_operators()
 
     " Test for environment variable
     let $FOO = 1
-    call assert_fails('let $FOO += 1', 'E734')
-    call assert_fails('let $FOO -= 1', 'E734')
-    call assert_fails('let $FOO *= 1', 'E734')
-    call assert_fails('let $FOO /= 1', 'E734')
-    call assert_fails('let $FOO %= 1', 'E734')
+    call assert_fails('let $FOO += 1', 'E734:')
+    call assert_fails('let $FOO -= 1', 'E734:')
+    call assert_fails('let $FOO *= 1', 'E734:')
+    call assert_fails('let $FOO /= 1', 'E734:')
+    call assert_fails('let $FOO %= 1', 'E734:')
     let $FOO .= 's'
     call assert_equal('1s', $FOO)
     unlet $FOO
@@ -7065,16 +7065,16 @@ func Test_compound_assignment_operators()
     call assert_equal(6, &scrolljump)
     let &scrolljump %= 5
     call assert_equal(1, &scrolljump)
-    call assert_fails('let &scrolljump .= "j"', 'E734')
+    call assert_fails('let &scrolljump .= "j"', 'E734:')
     set scrolljump&vim
 
     " Test for register
     let @/ = 1
-    call assert_fails('let @/ += 1', 'E734')
-    call assert_fails('let @/ -= 1', 'E734')
-    call assert_fails('let @/ *= 1', 'E734')
-    call assert_fails('let @/ /= 1', 'E734')
-    call assert_fails('let @/ %= 1', 'E734')
+    call assert_fails('let @/ += 1', 'E734:')
+    call assert_fails('let @/ -= 1', 'E734:')
+    call assert_fails('let @/ *= 1', 'E734:')
+    call assert_fails('let @/ /= 1', 'E734:')
+    call assert_fails('let @/ %= 1', 'E734:')
     let @/ .= 's'
     call assert_equal('1s', @/)
     let @/ = ''
@@ -7083,8 +7083,8 @@ endfunc
 func Test_unlet_env()
   let $TESTVAR = 'yes'
   call assert_equal('yes', $TESTVAR)
-  call assert_fails('lockvar $TESTVAR', 'E940')
-  call assert_fails('unlockvar $TESTVAR', 'E940')
+  call assert_fails('lockvar $TESTVAR', 'E940:')
+  call assert_fails('unlockvar $TESTVAR', 'E940:')
   call assert_equal('yes', $TESTVAR)
   if 0
     unlet $TESTVAR
@@ -7339,8 +7339,8 @@ endfunc
 " Test for errors in converting to float from various types         {{{1
 func Test_float_conversion_errors()
   if has('float')
-    call assert_fails('let x = 4.0 % 2.0', 'E804')
-    call assert_fails('echo 1.1[0]', 'E806')
+    call assert_fails('let x = 4.0 % 2.0', 'E804:')
+    call assert_fails('echo 1.1[0]', 'E806:')
     call assert_fails('echo sort([function("min"), 1], "f")', 'E891:')
     call assert_fails('echo 3.2 == "vim"', 'E892:')
     call assert_fails('echo sort([[], 1], "f")', 'E893:')

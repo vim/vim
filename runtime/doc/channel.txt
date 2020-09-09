@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.2.  Last change: 2020 Jul 10
+*channel.txt*      For Vim version 8.2.  Last change: 2020 Sep 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -608,6 +608,10 @@ ch_logfile({fname} [, {mode}])					*ch_logfile()*
 		after every message, on Unix you can use "tail -f" to see what
 		is going on in real time.
 
+		To enable the log very early, to see what is received from a
+		terminal during startup, use |--cmd|: >
+			vim --cmd "call ch_logfile('logfile', 'w')"
+<
 		This function is not available in the |sandbox|.
 		NOTE: the channel communication is stored in the file, be
 		aware that this may contain confidential and privacy sensitive
@@ -1256,7 +1260,9 @@ After setting 'buftype' to "prompt" Vim does not automatically start Insert
 mode, use `:startinsert` if you want to enter Insert mode, so that the user
 can start typing a line.
 
-The text of the prompt can be set with the |prompt_setprompt()| function.
+The text of the prompt can be set with the |prompt_setprompt()| function. If
+no prompt is set with |prompt_setprompt()|, "% " is used. You can get the
+effective prompt text for a buffer, with |prompt_getprompt()|.
 
 The user can go to Normal mode and navigate through the buffer.  This can be
 useful to see older output or copy text.

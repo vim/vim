@@ -121,7 +121,7 @@ func Test_window_split_edit_alternate()
 
   " Test for failure when the alternate buffer/file no longer exists.
   edit Xfoo | %bw
-  call assert_fails(':wincmd ^', 'E23')
+  call assert_fails(':wincmd ^', 'E23:')
 
   " Test for the expected behavior when we have two named buffers.
   edit Xfoo | edit Xbar
@@ -154,9 +154,9 @@ func Test_window_split_edit_bufnr()
 
   %bwipeout
   let l:nr = bufnr('%') + 1
-  call assert_fails(':execute "normal! ' . l:nr . '\<C-W>\<C-^>"', 'E92')
-  call assert_fails(':' . l:nr . 'wincmd ^', 'E16')
-  call assert_fails(':0wincmd ^', 'E16')
+  call assert_fails(':execute "normal! ' . l:nr . '\<C-W>\<C-^>"', 'E92:')
+  call assert_fails(':' . l:nr . 'wincmd ^', 'E16:')
+  call assert_fails(':0wincmd ^', 'E16:')
 
   edit Xfoo | edit Xbar | edit Xbaz
   let l:foo_nr = bufnr('Xfoo')
@@ -1104,6 +1104,48 @@ func Test_wincmd_fails()
   call assert_beeps("normal \<C-W>K")
   call assert_beeps("normal \<C-W>H")
   call assert_beeps("normal \<C-W>2gt")
+endfunc
+
+func Test_window_resize()
+  " Vertical :resize (absolute, relative, min and max size).
+  vsplit
+  vert resize 8
+  call assert_equal(8, winwidth(0))
+  vert resize +2
+  call assert_equal(10, winwidth(0))
+  vert resize -2
+  call assert_equal(8, winwidth(0))
+  vert resize
+  call assert_equal(&columns - 2, winwidth(0))
+  vert resize 0
+  call assert_equal(1, winwidth(0))
+  vert resize 99999
+  call assert_equal(&columns - 2, winwidth(0))
+
+  %bwipe!
+
+  " Horizontal :resize (with absolute, relative size, min and max size).
+  split
+  resize 8
+  call assert_equal(8, winheight(0))
+  resize +2
+  call assert_equal(10, winheight(0))
+  resize -2
+  call assert_equal(8, winheight(0))
+  resize
+  call assert_equal(&lines - 4, winheight(0))
+  resize 0
+  call assert_equal(1, winheight(0))
+  resize 99999
+  call assert_equal(&lines - 4, winheight(0))
+
+  " :resize with explicit window number.
+  let other_winnr = winnr('j')
+  exe other_winnr .. 'resize 10'
+  call assert_equal(10, winheight(other_winnr))
+  call assert_equal(&lines - 10 - 3, winheight(0))
+
+  %bwipe!
 endfunc
 
 " Test for adjusting the window width when a window is closed with some

@@ -27,7 +27,7 @@ void init_yank(void);
 void clear_registers(void);
 void free_yank_all(void);
 int op_yank(oparg_T *oap, int deleting, int mess);
-void do_put(int regname, int dir, long count, int flags);
+void do_put(int regname, char_u *expr_result, int dir, long count, int flags);
 int get_register_name(int num);
 int get_unname_register(void);
 void ex_display(exarg_T *eap);

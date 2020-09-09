@@ -382,7 +382,9 @@ endif
 
 " Names of flaky tests.
 let s:flaky_tests = [
+      \ 'Test_BufWrite_lockmarks()',
       \ 'Test_autocmd_SafeState()',
+      \ 'Test_bufunload_all()',
       \ 'Test_client_server()',
       \ 'Test_close_and_exit_cb()',
       \ 'Test_close_output_buffer()',

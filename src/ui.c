@@ -949,6 +949,13 @@ fill_input_buf(int exit_on_error UNUSED)
 #  else
 	len = read(read_cmd_fd, (char *)inbuf + inbufcount, readlen);
 #  endif
+#  ifdef FEAT_JOB_CHANNEL
+	if (len > 0)
+	{
+	    inbuf[inbufcount + len] = NUL;
+	    ch_log(NULL, "raw key input: \"%s\"", inbuf + inbufcount);
+	}
+#  endif
 
 	if (len > 0 || got_int)
 	    break;

@@ -266,7 +266,7 @@ func Test_search_cmdline2()
   " In that case Vim should return "E35 no previous regular expression",
   " but it looks like Vim still sees /foo and therefore the test fails.
   " Therefore, disabling this test
-  "call assert_fails(feedkeys("/foo\<c-w>\<cr>", 'tx'), 'E35')
+  "call assert_fails(feedkeys("/foo\<c-w>\<cr>", 'tx'), 'E35:')
   "call assert_equal({'lnum': 1, 'leftcol': 0, 'col': 0, 'topfill': 0, 'topline': 1, 'coladd': 0, 'skipcol': 0, 'curswant': 0}, winsaveview())
 
   " clean up
@@ -470,7 +470,7 @@ func Test_search_cmdline3s()
   call feedkeys(":%smagic/the.e/xxx\<cr>", 'tx')
   call assert_equal('  2 xxx', getline('.'))
   undo
-  call assert_fails(":%snomagic/the.e/xxx\<cr>", 'E486')
+  call assert_fails(":%snomagic/the.e/xxx\<cr>", 'E486:')
   "
   call feedkeys(":%snomagic/the\\.e/xxx\<cr>", 'tx')
   call assert_equal('  2 xxx', getline('.'))
@@ -1278,8 +1278,8 @@ endfunc
 func Test_search_sentence()
   new
   " this used to cause a crash
-  call assert_fails("/\\%')", 'E486')
-  call assert_fails("/", 'E486')
+  call assert_fails("/\\%')", 'E486:')
+  call assert_fails("/", 'E486:')
   /\%'(
   /
 endfunc

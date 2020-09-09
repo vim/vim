@@ -90,7 +90,7 @@ def Test_vim9_maparg()
   let three: string = maparg('{', 'n', 0)
   assert_equal('w', three)
   let four: dict<any> = maparg('{', 'n', 0, 1)
-  call assert_equal(['{', 'w', 'n'], [four.lhs, four.rhs, four.mode])
+  assert_equal(['{', 'w', 'n'], [four.lhs, four.rhs, four.mode])
   nunmap {
 enddef
 

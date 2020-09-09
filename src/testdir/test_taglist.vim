@@ -83,7 +83,7 @@ func Test_taglist_ctags_etags()
 endfunc
 
 func Test_tags_too_long()
-  call assert_fails('tag ' . repeat('x', 1020), ['E433', 'E426'])
+  call assert_fails('tag ' . repeat('x', 1020), ['E433:', 'E426:'])
   tags
 endfunc
 

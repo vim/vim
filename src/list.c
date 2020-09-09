@@ -1397,7 +1397,7 @@ f_list2str(typval_T *argvars, typval_T *rettv)
 	return;  // empty list results in empty string
 
     if (argvars[1].v_type != VAR_UNKNOWN)
-	utf8 = (int)tv_get_number_chk(&argvars[1], NULL);
+	utf8 = (int)tv_get_bool_chk(&argvars[1], NULL);
 
     CHECK_LIST_MATERIALIZE(l);
     ga_init2(&ga, 1, 80);
@@ -2167,7 +2167,7 @@ f_count(typval_T *argvars, typval_T *rettv)
     int		error = FALSE;
 
     if (argvars[2].v_type != VAR_UNKNOWN)
-	ic = (int)tv_get_number_chk(&argvars[2], &error);
+	ic = (int)tv_get_bool_chk(&argvars[2], &error);
 
     if (argvars[0].v_type == VAR_STRING)
     {

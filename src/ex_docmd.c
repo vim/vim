@@ -7321,7 +7321,7 @@ ex_put(exarg_T *eap)
 	eap->forceit = TRUE;
     }
     curwin->w_cursor.lnum = eap->line2;
-    do_put(eap->regname, eap->forceit ? BACKWARD : FORWARD, 1L,
+    do_put(eap->regname, NULL, eap->forceit ? BACKWARD : FORWARD, 1L,
 						       PUT_LINE|PUT_CURSLINE);
 }
 

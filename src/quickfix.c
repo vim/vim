@@ -810,7 +810,7 @@ qf_get_next_file_line(qfstate_T *state)
 	    // reached.
 	    if (fgets((char *)IObuff, IOSIZE, state->fd) == NULL
 		    || (int)STRLEN(IObuff) < IOSIZE - 1
-		    || IObuff[IOSIZE - 1] == '\n')
+		    || IObuff[IOSIZE - 2] == '\n')
 		break;
 	}
 
@@ -6022,7 +6022,7 @@ vgr_process_args(
     static int
 existing_swapfile(buf_T *buf)
 {
-    if (buf->b_ml.ml_mfp != NULL)
+    if (buf->b_ml.ml_mfp != NULL && buf->b_ml.ml_mfp->mf_fname != NULL)
     {
 	char_u *fname = buf->b_ml.ml_mfp->mf_fname;
 	size_t len = STRLEN(fname);
@@ -7072,7 +7072,7 @@ qf_add_entry_from_dict(
 
     // If the 'valid' field is present it overrules the detected value.
     if ((dict_find(d, (char_u *)"valid", -1)) != NULL)
-	valid = (int)dict_get_number(d, (char_u *)"valid");
+	valid = (int)dict_get_bool(d, (char_u *)"valid", FALSE);
 
     status =  qf_add_entry(qfl,
 			NULL,		// dir

@@ -36,9 +36,9 @@ func Test_terminal_termwinsize_option_fixed()
   call StopVimInTerminal(buf)
   call delete('Xwinsize')
 
-  call assert_fails('set termwinsize=40', 'E474')
-  call assert_fails('set termwinsize=10+40', 'E474')
-  call assert_fails('set termwinsize=abc', 'E474')
+  call assert_fails('set termwinsize=40', 'E474:')
+  call assert_fails('set termwinsize=10+40', 'E474:')
+  call assert_fails('set termwinsize=abc', 'E474:')
 
   set termwinsize=
 endfunc
@@ -107,6 +107,37 @@ func Test_terminal_termwinsize_minimum()
   exe buf . 'bwipe'
 
   set termwinsize=
+endfunc
+
+func Test_terminal_termwinsize_overruled()
+  let cmd = GetDummyCmd()
+  set termwinsize=5x43
+  let buf = term_start(cmd, #{term_rows: 7, term_cols: 50})
+  call TermWait(buf)
+  call assert_equal([7, 50], term_getsize(buf))
+  exe "bwipe! " .. buf
+
+  let buf = term_start(cmd, #{term_cols: 50})
+  call TermWait(buf)
+  call assert_equal([5, 50], term_getsize(buf))
+  exe "bwipe! " .. buf
+
+  let buf = term_start(cmd, #{term_rows: 7})
+  call TermWait(buf)
+  call assert_equal([7, 43], term_getsize(buf))
+  exe "bwipe! " .. buf
+
+  set termwinsize=
+endfunc
+
+" hidden terminal must not change current window size
+func Test_terminal_hidden_winsize()
+  let cmd = GetDummyCmd()
+  let rows = winheight(0)
+  let buf = term_start(cmd, #{hidden: 1, term_rows: 10})
+  call assert_equal(rows, winheight(0))
+  call assert_equal([10, &columns], term_getsize(buf))
+  exe "bwipe! " .. buf
 endfunc
 
 func Test_terminal_termwinkey()
@@ -397,13 +428,17 @@ func Test_terminal_does_not_truncate_last_newlines()
   call delete('Xfile')
 endfunc
 
-func Test_terminal_no_job()
+func GetDummyCmd()
   if has('win32')
-    let cmd = 'cmd /c ""'
+    return 'cmd /c ""'
   else
     CheckExecutable false
-    let cmd = 'false'
+    return 'false'
   endif
+endfunc
+
+func Test_terminal_no_job()
+  let cmd = GetDummyCmd()
   let term = term_start(cmd, {'term_finish': 'close'})
   call WaitForAssert({-> assert_equal(v:null, term_getjob(term)) })
 endfunc
@@ -525,8 +560,8 @@ func Test_term_gettty()
     endif
   endif
 
-  call assert_fails('call term_gettty(buf, 2)', 'E475:')
-  call assert_fails('call term_gettty(buf, -1)', 'E475:')
+  call assert_fails('call term_gettty(buf, 2)', 'E1023:')
+  call assert_fails('call term_gettty(buf, -1)', 'E1023:')
 
   call assert_equal('', term_gettty(buf + 1))
 

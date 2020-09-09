@@ -4,6 +4,7 @@ source check.vim
 source term_util.vim
 source view_util.vim
 source vim9.vim
+source shared.vim
 
 def Test_syntax()
   let var = 234
@@ -38,19 +39,57 @@ let g:alist = [7]
 let g:astring = 'text'
 let g:anumber = 123
 
-def Test_assignment()
+def Test_assignment_bool()
   let bool1: bool = true
   assert_equal(v:true, bool1)
   let bool2: bool = false
   assert_equal(v:false, bool2)
 
-  call CheckDefFailure(['let x:string'], 'E1069:')
-  call CheckDefFailure(['let x:string = "x"'], 'E1069:')
-  call CheckDefFailure(['let a:string = "x"'], 'E1069:')
-  call CheckDefFailure(['let lambda = {-> "lambda"}'], 'E704:')
+  let bool3: bool = 0
+  assert_equal(false, bool3)
+  let bool4: bool = 1
+  assert_equal(true, bool4)
+
+  let bool5: bool = 'yes' && 'no'
+  assert_equal(true, bool5)
+  let bool6: bool = [] && 99
+  assert_equal(false, bool6)
+  let bool7: bool = [] || #{a: 1} && 99
+  assert_equal(true, bool7)
+
+  let lines =<< trim END
+    vim9script
+    def GetFlag(): bool
+      let flag: bool = 1
+      return flag
+    enddef
+    let flag: bool = GetFlag()
+    assert_equal(true, flag)
+    flag = 0
+    # assert_equal(false, flag)
+    flag = 1
+    # assert_equal(true, flag)
+    # flag = 99 || 123
+    # assert_equal(true, flag)
+    # flag = 'yes' && []
+    # assert_equal(false, flag)
+  END
+  CheckScriptSuccess(lines)
+  CheckDefAndScriptFailure(['let x: bool = 2'], 'E1012:')
+  CheckDefAndScriptFailure(['let x: bool = -1'], 'E1012:')
+  CheckDefAndScriptFailure(['let x: bool = [1]'], 'E1012:')
+  CheckDefAndScriptFailure(['let x: bool = {}'], 'E1012:')
+  CheckDefAndScriptFailure(['let x: bool = "x"'], 'E1012:')
+enddef
+
+def Test_assignment()
+  CheckDefFailure(['let x:string'], 'E1069:')
+  CheckDefFailure(['let x:string = "x"'], 'E1069:')
+  CheckDefFailure(['let a:string = "x"'], 'E1069:')
+  CheckDefFailure(['let lambda = {-> "lambda"}'], 'E704:')
 
   let nr: number = 1234
-  call CheckDefFailure(['let nr: number = "asdf"'], 'E1012:')
+  CheckDefFailure(['let nr: number = "asdf"'], 'E1012:')
 
   let a: number = 6 #comment
   assert_equal(6, a)
@@ -87,7 +126,7 @@ def Test_assignment()
     assert_equal('barfoo', $ENVVAR)
     $ENVVAR = ''
   END
-  call CheckScriptSuccess(lines)
+  CheckScriptSuccess(lines)
 
   s:appendToMe ..= 'yyy'
   assert_equal('xxxyyy', s:appendToMe)
@@ -158,8 +197,7 @@ def Test_assignment()
     assert_equal('xxx', &t_TI)
     &t_TI = save_TI
   END
-  CheckDefSuccess(lines)
-  CheckScriptSuccess(['vim9script'] + lines)
+  CheckDefAndScriptSuccess(lines)
 
   CheckDefFailure(['&t_TI = 123'], 'E1012:')
   CheckScriptFailure(['vim9script', '&t_TI = 123'], 'E928:')
@@ -174,15 +212,15 @@ def Test_assignment()
     enddef
     defcompile
   END
-  call CheckScriptFailure(lines, 'E1089:')
+  CheckScriptFailure(lines, 'E1089:')
 
   g:inc_counter += 1
   assert_equal(2, g:inc_counter)
 
   $SOME_ENV_VAR ..= 'more'
   assert_equal('somemore', $SOME_ENV_VAR)
-  call CheckDefFailure(['$SOME_ENV_VAR += "more"'], 'E1051:')
-  call CheckDefFailure(['$SOME_ENV_VAR += 123'], 'E1012:')
+  CheckDefFailure(['$SOME_ENV_VAR += "more"'], 'E1051:')
+  CheckDefFailure(['$SOME_ENV_VAR += 123'], 'E1012:')
 
   lines =<< trim END
     @c = 'areg'
@@ -191,14 +229,14 @@ def Test_assignment()
   END
   CheckDefAndScriptSuccess(lines)
 
-  call CheckDefFailure(['@a += "more"'], 'E1051:')
-  call CheckDefFailure(['@a += 123'], 'E1012:')
+  CheckDefFailure(['@a += "more"'], 'E1051:')
+  CheckDefFailure(['@a += 123'], 'E1012:')
 
   v:errmsg = 'none'
   v:errmsg ..= 'again'
   assert_equal('noneagain', v:errmsg)
-  call CheckDefFailure(['v:errmsg += "more"'], 'E1051:')
-  call CheckDefFailure(['v:errmsg += 123'], 'E1012:')
+  CheckDefFailure(['v:errmsg += "more"'], 'E1051:')
+  CheckDefFailure(['v:errmsg += 123'], 'E1012:')
 
   # single letter variables
   a = 123
@@ -282,8 +320,8 @@ def Test_assignment_list()
   assert_equal(['sdf', 'asdf', 'end'], list3)
 
 
-  call CheckDefExecFailure(['let ll = [1, 2, 3]', 'll[-4] = 6'], 'E684:')
-  call CheckDefExecFailure(['let [v1, v2] = [1, 2]'], 'E1092:')
+  CheckDefExecFailure(['let ll = [1, 2, 3]', 'll[-4] = 6'], 'E684:')
+  CheckDefExecFailure(['let [v1, v2] = [1, 2]'], 'E1092:')
 
   # type becomes list<any>
   let somelist = rand() > 0 ? [1, 2, 3] : ['a', 'b', 'c']
@@ -298,7 +336,7 @@ def Test_assignment_list_vim9script()
     [v1, v2, v3] = [1, 2, 3]
     assert_equal([1, 2, 3], [v1, v2, v3])
   END
-  call CheckScriptSuccess(lines)
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_assignment_dict()
@@ -533,89 +571,89 @@ def Mess(): string
 enddef
 
 def Test_assignment_failure()
-  call CheckDefFailure(['let var=234'], 'E1004:')
-  call CheckDefFailure(['let var =234'], 'E1004:')
-  call CheckDefFailure(['let var= 234'], 'E1004:')
+  CheckDefFailure(['let var=234'], 'E1004:')
+  CheckDefFailure(['let var =234'], 'E1004:')
+  CheckDefFailure(['let var= 234'], 'E1004:')
 
-  call CheckScriptFailure(['vim9script', 'let var=234'], 'E1004:')
-  call CheckScriptFailure(['vim9script', 'let var=234'], "before and after '='")
-  call CheckScriptFailure(['vim9script', 'let var =234'], 'E1004:')
-  call CheckScriptFailure(['vim9script', 'let var= 234'], 'E1004:')
-  call CheckScriptFailure(['vim9script', 'let var = 234', 'var+=234'], 'E1004:')
-  call CheckScriptFailure(['vim9script', 'let var = 234', 'var+=234'], "before and after '+='")
-  call CheckScriptFailure(['vim9script', 'let var = "x"', 'var..="y"'], 'E1004:')
-  call CheckScriptFailure(['vim9script', 'let var = "x"', 'var..="y"'], "before and after '..='")
+  CheckScriptFailure(['vim9script', 'let var=234'], 'E1004:')
+  CheckScriptFailure(['vim9script', 'let var=234'], "before and after '='")
+  CheckScriptFailure(['vim9script', 'let var =234'], 'E1004:')
+  CheckScriptFailure(['vim9script', 'let var= 234'], 'E1004:')
+  CheckScriptFailure(['vim9script', 'let var = 234', 'var+=234'], 'E1004:')
+  CheckScriptFailure(['vim9script', 'let var = 234', 'var+=234'], "before and after '+='")
+  CheckScriptFailure(['vim9script', 'let var = "x"', 'var..="y"'], 'E1004:')
+  CheckScriptFailure(['vim9script', 'let var = "x"', 'var..="y"'], "before and after '..='")
 
-  call CheckDefFailure(['let true = 1'], 'E1034:')
-  call CheckDefFailure(['let false = 1'], 'E1034:')
+  CheckDefFailure(['let true = 1'], 'E1034:')
+  CheckDefFailure(['let false = 1'], 'E1034:')
 
-  call CheckDefFailure(['[a; b; c] = g:list'], 'E452:')
-  call CheckDefExecFailure(['let a: number',
-                            '[a] = test_null_list()'], 'E1093:')
-  call CheckDefExecFailure(['let a: number',
-                            '[a] = []'], 'E1093:')
-  call CheckDefExecFailure(['let x: number',
-                            'let y: number',
-                            '[x, y] = [1]'], 'E1093:')
-  call CheckDefExecFailure(['let x: number',
-                            'let y: number',
-                            'let z: list<number>',
-                            '[x, y; z] = [1]'], 'E1093:')
+  CheckDefFailure(['[a; b; c] = g:list'], 'E452:')
+  CheckDefExecFailure(['let a: number',
+                       '[a] = test_null_list()'], 'E1093:')
+  CheckDefExecFailure(['let a: number',
+                       '[a] = []'], 'E1093:')
+  CheckDefExecFailure(['let x: number',
+                       'let y: number',
+                       '[x, y] = [1]'], 'E1093:')
+  CheckDefExecFailure(['let x: number',
+                       'let y: number',
+                       'let z: list<number>',
+                       '[x, y; z] = [1]'], 'E1093:')
 
-  call CheckDefFailure(['let somevar'], "E1022:")
-  call CheckDefFailure(['let &tabstop = 4'], 'E1052:')
-  call CheckDefFailure(['&g:option = 5'], 'E113:')
-  call CheckScriptFailure(['vim9script', 'let &tabstop = 4'], 'E1052:')
+  CheckDefFailure(['let somevar'], "E1022:")
+  CheckDefFailure(['let &tabstop = 4'], 'E1052:')
+  CheckDefFailure(['&g:option = 5'], 'E113:')
+  CheckScriptFailure(['vim9script', 'let &tabstop = 4'], 'E1052:')
 
-  call CheckDefFailure(['let $VAR = 5'], 'E1016: Cannot declare an environment variable:')
-  call CheckScriptFailure(['vim9script', 'let $ENV = "xxx"'], 'E1016:')
+  CheckDefFailure(['let $VAR = 5'], 'E1016: Cannot declare an environment variable:')
+  CheckScriptFailure(['vim9script', 'let $ENV = "xxx"'], 'E1016:')
 
   if has('dnd')
-    call CheckDefFailure(['let @~ = 5'], 'E1066:')
+    CheckDefFailure(['let @~ = 5'], 'E1066:')
   else
-    call CheckDefFailure(['let @~ = 5'], 'E354:')
-    call CheckDefFailure(['@~ = 5'], 'E354:')
+    CheckDefFailure(['let @~ = 5'], 'E354:')
+    CheckDefFailure(['@~ = 5'], 'E354:')
   endif
-  call CheckDefFailure(['let @a = 5'], 'E1066:')
-  call CheckDefFailure(['let @/ = "x"'], 'E1066:')
-  call CheckScriptFailure(['vim9script', 'let @a = "abc"'], 'E1066:')
+  CheckDefFailure(['let @a = 5'], 'E1066:')
+  CheckDefFailure(['let @/ = "x"'], 'E1066:')
+  CheckScriptFailure(['vim9script', 'let @a = "abc"'], 'E1066:')
 
-  call CheckDefFailure(['let g:var = 5'], 'E1016: Cannot declare a global variable:')
-  call CheckDefFailure(['let w:var = 5'], 'E1016: Cannot declare a window variable:')
-  call CheckDefFailure(['let b:var = 5'], 'E1016: Cannot declare a buffer variable:')
-  call CheckDefFailure(['let t:var = 5'], 'E1016: Cannot declare a tab variable:')
+  CheckDefFailure(['let g:var = 5'], 'E1016: Cannot declare a global variable:')
+  CheckDefFailure(['let w:var = 5'], 'E1016: Cannot declare a window variable:')
+  CheckDefFailure(['let b:var = 5'], 'E1016: Cannot declare a buffer variable:')
+  CheckDefFailure(['let t:var = 5'], 'E1016: Cannot declare a tab variable:')
 
-  call CheckDefFailure(['let anr = 4', 'anr ..= "text"'], 'E1019:')
-  call CheckDefFailure(['let xnr += 4'], 'E1020:', 1)
-  call CheckScriptFailure(['vim9script', 'let xnr += 4'], 'E1020:')
-  call CheckDefFailure(["let xnr = xnr + 1"], 'E1001:', 1)
-  call CheckScriptFailure(['vim9script', 'let xnr = xnr + 4'], 'E121:')
+  CheckDefFailure(['let anr = 4', 'anr ..= "text"'], 'E1019:')
+  CheckDefFailure(['let xnr += 4'], 'E1020:', 1)
+  CheckScriptFailure(['vim9script', 'let xnr += 4'], 'E1020:')
+  CheckDefFailure(["let xnr = xnr + 1"], 'E1001:', 1)
+  CheckScriptFailure(['vim9script', 'let xnr = xnr + 4'], 'E121:')
 
-  call CheckScriptFailure(['vim9script', 'def Func()', 'let dummy = s:notfound', 'enddef', 'defcompile'], 'E1108:')
+  CheckScriptFailure(['vim9script', 'def Func()', 'let dummy = s:notfound', 'enddef', 'defcompile'], 'E1108:')
 
-  call CheckDefFailure(['let var: list<string> = [123]'], 'expected list<string> but got list<number>')
-  call CheckDefFailure(['let var: list<number> = ["xx"]'], 'expected list<number> but got list<string>')
+  CheckDefFailure(['let var: list<string> = [123]'], 'expected list<string> but got list<number>')
+  CheckDefFailure(['let var: list<number> = ["xx"]'], 'expected list<number> but got list<string>')
 
-  call CheckDefFailure(['let var: dict<string> = #{key: 123}'], 'expected dict<string> but got dict<number>')
-  call CheckDefFailure(['let var: dict<number> = #{key: "xx"}'], 'expected dict<number> but got dict<string>')
+  CheckDefFailure(['let var: dict<string> = #{key: 123}'], 'expected dict<string> but got dict<number>')
+  CheckDefFailure(['let var: dict<number> = #{key: "xx"}'], 'expected dict<number> but got dict<string>')
 
-  call CheckDefFailure(['let var = feedkeys("0")'], 'E1031:')
-  call CheckDefFailure(['let var: number = feedkeys("0")'], 'expected number but got void')
+  CheckDefFailure(['let var = feedkeys("0")'], 'E1031:')
+  CheckDefFailure(['let var: number = feedkeys("0")'], 'expected number but got void')
 
-  call CheckDefFailure(['let var: dict <number>'], 'E1068:')
-  call CheckDefFailure(['let var: dict<number'], 'E1009:')
+  CheckDefFailure(['let var: dict <number>'], 'E1068:')
+  CheckDefFailure(['let var: dict<number'], 'E1009:')
 
-  call assert_fails('s/^/\=Mess()/n', 'E794:')
-  call CheckDefFailure(['let var: dict<number'], 'E1009:')
+  assert_fails('s/^/\=Mess()/n', 'E794:')
+  CheckDefFailure(['let var: dict<number'], 'E1009:')
 
-  call CheckDefFailure(['w:foo: number = 10'],
-                       'E488: Trailing characters: : number = 1')
-  call CheckDefFailure(['t:foo: bool = true'],
-                       'E488: Trailing characters: : bool = true')
-  call CheckDefFailure(['b:foo: string = "x"'],
-                       'E488: Trailing characters: : string = "x"')
-  call CheckDefFailure(['g:foo: number = 123'],
-                       'E488: Trailing characters: : number = 123')
+  CheckDefFailure(['w:foo: number = 10'],
+                  'E488: Trailing characters: : number = 1')
+  CheckDefFailure(['t:foo: bool = true'],
+                  'E488: Trailing characters: : bool = true')
+  CheckDefFailure(['b:foo: string = "x"'],
+                  'E488: Trailing characters: : string = "x"')
+  CheckDefFailure(['g:foo: number = 123'],
+                  'E488: Trailing characters: : number = 123')
 enddef
 
 def Test_unlet()
@@ -632,32 +670,32 @@ def Test_unlet()
   assert_false(exists('s:somevar'))
   unlet! s:somevar
 
-  call CheckScriptFailure([
-        'vim9script',
-        'let svar = 123',
-        'unlet svar',
-        ], 'E1081:')
-  call CheckScriptFailure([
-        'vim9script',
-        'let svar = 123',
-        'unlet s:svar',
-        ], 'E1081:')
-  call CheckScriptFailure([
-        'vim9script',
-        'let svar = 123',
-        'def Func()',
-        '  unlet svar',
-        'enddef',
-        'defcompile',
-        ], 'E1081:')
-  call CheckScriptFailure([
-        'vim9script',
-        'let svar = 123',
-        'def Func()',
-        '  unlet s:svar',
-        'enddef',
-        'defcompile',
-        ], 'E1081:')
+  CheckScriptFailure([
+   'vim9script',
+   'let svar = 123',
+   'unlet svar',
+   ], 'E1081:')
+  CheckScriptFailure([
+   'vim9script',
+   'let svar = 123',
+   'unlet s:svar',
+   ], 'E1081:')
+  CheckScriptFailure([
+   'vim9script',
+   'let svar = 123',
+   'def Func()',
+   '  unlet svar',
+   'enddef',
+   'defcompile',
+   ], 'E1081:')
+  CheckScriptFailure([
+   'vim9script',
+   'let svar = 123',
+   'def Func()',
+   '  unlet s:svar',
+   'enddef',
+   'defcompile',
+   ], 'E1081:')
 
   $ENVVAR = 'foobar'
   assert_equal('foobar', $ENVVAR)
@@ -789,10 +827,10 @@ func Test_const()
 endfunc
 
 def Test_range_no_colon()
-  call CheckDefFailure(['%s/a/b/'], 'E1050:')
-  call CheckDefFailure(['+ s/a/b/'], 'E1050:')
-  call CheckDefFailure(['- s/a/b/'], 'E1050:')
-  call CheckDefFailure(['. s/a/b/'], 'E1050:')
+  CheckDefFailure(['%s/a/b/'], 'E1050:')
+  CheckDefFailure(['+ s/a/b/'], 'E1050:')
+  CheckDefFailure(['- s/a/b/'], 'E1050:')
+  CheckDefFailure(['. s/a/b/'], 'E1050:')
 enddef
 
 
@@ -1086,19 +1124,19 @@ def Test_try_catch_match()
 enddef
 
 def Test_try_catch_fails()
-  call CheckDefFailure(['catch'], 'E603:')
-  call CheckDefFailure(['try', 'echo 0', 'catch', 'catch'], 'E1033:')
-  call CheckDefFailure(['try', 'echo 0', 'catch /pat'], 'E1067:')
-  call CheckDefFailure(['finally'], 'E606:')
-  call CheckDefFailure(['try', 'echo 0', 'finally', 'echo 1', 'finally'], 'E607:')
-  call CheckDefFailure(['endtry'], 'E602:')
-  call CheckDefFailure(['while 1', 'endtry'], 'E170:')
-  call CheckDefFailure(['for i in range(5)', 'endtry'], 'E170:')
-  call CheckDefFailure(['if 2', 'endtry'], 'E171:')
-  call CheckDefFailure(['try', 'echo 1', 'endtry'], 'E1032:')
+  CheckDefFailure(['catch'], 'E603:')
+  CheckDefFailure(['try', 'echo 0', 'catch', 'catch'], 'E1033:')
+  CheckDefFailure(['try', 'echo 0', 'catch /pat'], 'E1067:')
+  CheckDefFailure(['finally'], 'E606:')
+  CheckDefFailure(['try', 'echo 0', 'finally', 'echo 1', 'finally'], 'E607:')
+  CheckDefFailure(['endtry'], 'E602:')
+  CheckDefFailure(['while 1', 'endtry'], 'E170:')
+  CheckDefFailure(['for i in range(5)', 'endtry'], 'E170:')
+  CheckDefFailure(['if 2', 'endtry'], 'E171:')
+  CheckDefFailure(['try', 'echo 1', 'endtry'], 'E1032:')
 
-  call CheckDefFailure(['throw'], 'E1015:')
-  call CheckDefFailure(['throw xxx'], 'E1001:')
+  CheckDefFailure(['throw'], 'E1015:')
+  CheckDefFailure(['throw xxx'], 'E1001:')
 enddef
 
 def Test_throw_vimscript()
@@ -1342,7 +1380,7 @@ def Test_vim9_import_export()
     defcompile
   END
   writefile(import_star_as_lines_no_dot, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1060:')
+  assert_fails('source Ximport.vim', 'E1060:', '', 2, 'Func')
 
   let import_star_as_lines_dot_space =<< trim END
     vim9script
@@ -1353,7 +1391,7 @@ def Test_vim9_import_export()
     defcompile
   END
   writefile(import_star_as_lines_dot_space, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1074:')
+  assert_fails('source Ximport.vim', 'E1074:', '', 1, 'Func')
 
   let import_star_as_lines_missing_name =<< trim END
     vim9script
@@ -1364,7 +1402,7 @@ def Test_vim9_import_export()
     defcompile
   END
   writefile(import_star_as_lines_missing_name, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1048:')
+  assert_fails('source Ximport.vim', 'E1048:', '', 1, 'Func')
 
   let import_star_as_lbr_lines =<< trim END
     vim9script
@@ -1386,7 +1424,7 @@ def Test_vim9_import_export()
     import * from './Xexport.vim'
   END
   writefile(import_star_lines, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1045:')
+  assert_fails('source Ximport.vim', 'E1045:', '', 2, 'Ximport.vim')
 
   # try to import something that exists but is not exported
   let import_not_exported_lines =<< trim END
@@ -1394,7 +1432,7 @@ def Test_vim9_import_export()
     import name from './Xexport.vim'
   END
   writefile(import_not_exported_lines, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1049:')
+  assert_fails('source Ximport.vim', 'E1049:', '', 2, 'Ximport.vim')
 
   # try to import something that is already defined
   let import_already_defined =<< trim END
@@ -1403,7 +1441,7 @@ def Test_vim9_import_export()
     import exported from './Xexport.vim'
   END
   writefile(import_already_defined, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1073:')
+  assert_fails('source Ximport.vim', 'E1073:', '', 3, 'Ximport.vim')
 
   # try to import something that is already defined
   import_already_defined =<< trim END
@@ -1412,7 +1450,7 @@ def Test_vim9_import_export()
     import * as exported from './Xexport.vim'
   END
   writefile(import_already_defined, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1073:')
+  assert_fails('source Ximport.vim', 'E1073:', '', 3, 'Ximport.vim')
 
   # try to import something that is already defined
   import_already_defined =<< trim END
@@ -1421,7 +1459,7 @@ def Test_vim9_import_export()
     import {exported} from './Xexport.vim'
   END
   writefile(import_already_defined, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1073:')
+  assert_fails('source Ximport.vim', 'E1073:', '', 3, 'Ximport.vim')
 
   # import a very long name, requires making a copy
   let import_long_name_lines =<< trim END
@@ -1429,35 +1467,35 @@ def Test_vim9_import_export()
     import name012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789 from './Xexport.vim'
   END
   writefile(import_long_name_lines, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1048:')
+  assert_fails('source Ximport.vim', 'E1048:', '', 2, 'Ximport.vim')
 
   let import_no_from_lines =<< trim END
     vim9script
     import name './Xexport.vim'
   END
   writefile(import_no_from_lines, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1070:')
+  assert_fails('source Ximport.vim', 'E1070:', '', 2, 'Ximport.vim')
 
   let import_invalid_string_lines =<< trim END
     vim9script
     import name from Xexport.vim
   END
   writefile(import_invalid_string_lines, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1071:')
+  assert_fails('source Ximport.vim', 'E1071:', '', 2, 'Ximport.vim')
 
   let import_wrong_name_lines =<< trim END
     vim9script
     import name from './XnoExport.vim'
   END
   writefile(import_wrong_name_lines, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1053:')
+  assert_fails('source Ximport.vim', 'E1053:', '', 2, 'Ximport.vim')
 
   let import_missing_comma_lines =<< trim END
     vim9script
     import {exported name} from './Xexport.vim'
   END
   writefile(import_missing_comma_lines, 'Ximport3.vim')
-  assert_fails('source Ximport3.vim', 'E1046:')
+  assert_fails('source Ximport3.vim', 'E1046:', '', 2, 'Ximport3.vim')
 
   delete('Ximport.vim')
   delete('Ximport3.vim')
@@ -1574,8 +1612,8 @@ def Test_vim9script_fails()
   CheckScriptFailure(['vim9script', 'let str: string', 'str = 1234'], 'E1012:')
   CheckScriptFailure(['vim9script', 'const str = "asdf"', 'str = "xxx"'], 'E46:')
 
-  assert_fails('vim9script', 'E1038')
-  assert_fails('export something', 'E1043')
+  assert_fails('vim9script', 'E1038:')
+  assert_fails('export something', 'E1043:')
 enddef
 
 func Test_import_fails_without_script()
@@ -1645,10 +1683,14 @@ def Test_vim9script_reload_import()
     let valone = 5678
   END
   writefile(lines, 'Xreload.vim')
-  assert_fails('source Xreload.vim', 'E1041:')
+  assert_fails('source Xreload.vim', 'E1041:', '', 3, 'Xreload.vim')
 
   delete('Xreload.vim')
   delete('Ximport.vim')
+enddef
+
+def s:RetSome(): string
+  return 'some'
 enddef
 
 " Not exported function that is referenced needs to be accessed by the
@@ -1682,10 +1724,14 @@ def Test_vim9script_funcref()
   unlet g:result
   delete('Xsort.vim')
   delete('Xscript.vim')
+
+  let Funcref = function('s:RetSome')
+  assert_equal('some', Funcref())
 enddef
 
-" Check that when searcing for "FilterFunc" it doesn't find the import in the
-" script where FastFilter() is called from.
+" Check that when searching for "FilterFunc" it finds the import in the
+" script where FastFilter() is called from, both as a string and as a direct
+" function reference.
 def Test_vim9script_funcref_other_script()
   let filterLines =<< trim END
     vim9script
@@ -1695,22 +1741,26 @@ def Test_vim9script_funcref_other_script()
     export def FastFilter(): list<number>
       return range(10)->filter('FilterFunc')
     enddef
+    export def FastFilterDirect(): list<number>
+      return range(10)->filter(FilterFunc)
+    enddef
   END
   writefile(filterLines, 'Xfilter.vim')
 
   let lines =<< trim END
     vim9script
-    import {FilterFunc, FastFilter} from './Xfilter.vim'
+    import {FilterFunc, FastFilter, FastFilterDirect} from './Xfilter.vim'
     def Test()
       let x: list<number> = FastFilter()
     enddef
     Test()
+    def TestDirect()
+      let x: list<number> = FastFilterDirect()
+    enddef
+    TestDirect()
   END
-  writefile(lines, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E121:')
-
+  CheckScriptSuccess(lines)
   delete('Xfilter.vim')
-  delete('Ximport.vim')
 enddef
 
 def Test_vim9script_reload_delfunc()
@@ -1732,7 +1782,7 @@ def Test_vim9script_reload_delfunc()
   let nono_lines =<< trim END
     def g:DoCheck(no_exists: bool)
       assert_equal('yes', FuncYes())
-      assert_fails('call FuncNo()', 'E117:')
+      assert_fails('FuncNo()', 'E117:', '', 2, 'DoCheck')
     enddef
   END
 
@@ -1959,11 +2009,11 @@ def Test_fixed_size_list()
 enddef
 
 def Test_no_insert_xit()
-  call CheckDefExecFailure(['a = 1'], 'E1100:')
-  call CheckDefExecFailure(['c = 1'], 'E1100:')
-  call CheckDefExecFailure(['i = 1'], 'E1100:')
-  call CheckDefExecFailure(['t = 1'], 'E1100:')
-  call CheckDefExecFailure(['x = 1'], 'E1100:')
+  CheckDefExecFailure(['a = 1'], 'E1100:')
+  CheckDefExecFailure(['c = 1'], 'E1100:')
+  CheckDefExecFailure(['i = 1'], 'E1100:')
+  CheckDefExecFailure(['t = 1'], 'E1100:')
+  CheckDefExecFailure(['x = 1'], 'E1100:')
 
   CheckScriptFailure(['vim9script', 'a = 1'], 'E488:')
   CheckScriptFailure(['vim9script', 'a'], 'E1100:')
@@ -1995,11 +2045,11 @@ def Test_if_elseif_else()
 enddef
 
 def Test_if_elseif_else_fails()
-  call CheckDefFailure(['elseif true'], 'E582:')
-  call CheckDefFailure(['else'], 'E581:')
-  call CheckDefFailure(['endif'], 'E580:')
-  call CheckDefFailure(['if true', 'elseif xxx'], 'E1001:')
-  call CheckDefFailure(['if true', 'echo 1'], 'E171:')
+  CheckDefFailure(['elseif true'], 'E582:')
+  CheckDefFailure(['else'], 'E581:')
+  CheckDefFailure(['endif'], 'E580:')
+  CheckDefFailure(['if true', 'elseif xxx'], 'E1001:')
+  CheckDefFailure(['if true', 'echo 1'], 'E171:')
 enddef
 
 let g:bool_true = v:true
@@ -2117,13 +2167,21 @@ def Test_if_const_expr()
     res = true
   endif
   assert_equal(false, res)
+
+  # with constant "false" expression may be invalid so long as the syntax is OK
+  if false | eval 0 | endif
+  if false | eval burp + 234 | endif
+  if false | echo burp 234 'asd' | endif
+  if false
+    burp
+  endif
 enddef
 
 def Test_if_const_expr_fails()
-  call CheckDefFailure(['if "aaa" == "bbb'], 'E114:')
-  call CheckDefFailure(["if 'aaa' == 'bbb"], 'E115:')
-  call CheckDefFailure(["if has('aaa'"], 'E110:')
-  call CheckDefFailure(["if has('aaa') ? true false"], 'E109:')
+  CheckDefFailure(['if "aaa" == "bbb'], 'E114:')
+  CheckDefFailure(["if 'aaa' == 'bbb"], 'E115:')
+  CheckDefFailure(["if has('aaa'"], 'E110:')
+  CheckDefFailure(["if has('aaa') ? true false"], 'E109:')
 enddef
 
 def RunNested(i: number): number
@@ -2149,18 +2207,18 @@ enddef
 def Test_execute_cmd()
   new
   setline(1, 'default')
-  execute 'call setline(1, "execute-string")'
+  execute 'setline(1, "execute-string")'
   assert_equal('execute-string', getline(1))
 
-  execute "call setline(1, 'execute-string')"
+  execute "setline(1, 'execute-string')"
   assert_equal('execute-string', getline(1))
 
-  let cmd1 = 'call setline(1,'
+  let cmd1 = 'setline(1,'
   let cmd2 = '"execute-var")'
   execute cmd1 cmd2 # comment
   assert_equal('execute-var', getline(1))
 
-  execute cmd1 cmd2 '|call setline(1, "execute-var-string")'
+  execute cmd1 cmd2 '|setline(1, "execute-var-string")'
   assert_equal('execute-var-string', getline(1))
 
   let cmd_first = 'call '
@@ -2176,9 +2234,9 @@ def Test_execute_cmd()
   echomsg [1, 2, 3] #{a: 1, b: 2}
   assert_match('^\[1, 2, 3\] {''a'': 1, ''b'': 2}$', Screenline(&lines))
 
-  call CheckDefFailure(['execute xxx'], 'E1001:', 1)
-  call CheckDefExecFailure(['execute "tabnext " .. 8'], 'E475:', 1)
-  call CheckDefFailure(['execute "cmd"# comment'], 'E488:', 1)
+  CheckDefFailure(['execute xxx'], 'E1001:', 1)
+  CheckDefExecFailure(['execute "tabnext " .. 8'], 'E475:', 1)
+  CheckDefFailure(['execute "cmd"# comment'], 'E488:', 1)
 enddef
 
 def Test_execute_cmd_vimscript()
@@ -2208,7 +2266,7 @@ def Test_echo_cmd()
   echo str1 str2
   assert_match('^some more$', Screenline(&lines))
 
-  call CheckDefFailure(['echo "xxx"# comment'], 'E488:')
+  CheckDefFailure(['echo "xxx"# comment'], 'E488:')
 enddef
 
 def Test_echomsg_cmd()
@@ -2218,7 +2276,7 @@ def Test_echomsg_cmd()
   :1messages
   assert_match('^some more$', Screenline(&lines))
 
-  call CheckDefFailure(['echomsg "xxx"# comment'], 'E488:')
+  CheckDefFailure(['echomsg "xxx"# comment'], 'E488:')
 enddef
 
 def Test_echomsg_cmd_vimscript()
@@ -2343,6 +2401,8 @@ def Test_interrupt_loop()
     assert_equal(100, x)
   endtry
   assert_true(caught, 'should have caught an exception')
+  # consume the CTRL-C
+  getchar(0)
 enddef
 
 def Test_automatic_line_continuation()
@@ -2899,7 +2959,7 @@ def Test_vim9_comment_not_compiled()
   CheckScriptSuccess([
       'vim9script',
       'new'
-      'call setline(1, ["# define pat", "last"])',
+      'setline(1, ["# define pat", "last"])',
       ':$',
       'dsearch /pat/ #comment',
       'bwipe!',
@@ -2908,7 +2968,7 @@ def Test_vim9_comment_not_compiled()
   CheckScriptFailure([
       'vim9script',
       'new'
-      'call setline(1, ["# define pat", "last"])',
+      'setline(1, ["# define pat", "last"])',
       ':$',
       'dsearch /pat/#comment',
       'bwipe!',
@@ -3156,7 +3216,7 @@ func Test_vim9script_not_global()
     " caught
   endtry
 
-  call delete('Xvim9script.vium')
+  call delete('Xvim9script.vim')
 endfunc
 
 def Test_vim9_copen()
@@ -3237,6 +3297,15 @@ def Test_cmdline_win()
   augroup END
   &rtp = save_rtp
   delete('rtp', 'rf')
+enddef
+
+def Test_invalid_sid()
+  assert_fails('func <SNR>1234_func', 'E123:')
+
+  if RunVim([], ['wq Xdidit'], '+"func <SNR>1_func"')
+    assert_equal([], readfile('Xdidit'))
+  endif
+  delete('Xdidit')
 enddef
 
 " Keep this last, it messes up highlighting.
