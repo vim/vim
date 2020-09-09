@@ -39,7 +39,7 @@ let g:alist = [7]
 let g:astring = 'text'
 let g:anumber = 123
 
-def Test_assignment()
+def Test_assignment_bool()
   let bool1: bool = true
   assert_equal(v:true, bool1)
   let bool2: bool = false
@@ -50,6 +50,25 @@ def Test_assignment()
   let bool4: bool = 1
   assert_equal(1, bool4)
 
+  let lines =<< trim END
+    vim9script
+    def GetFlag(): bool
+      let flag: bool = 1
+      return flag
+    enddef
+    let flag: bool = GetFlag()
+    flag = 0
+    flag = 1
+  END
+  CheckScriptSuccess(lines)
+  CheckDefAndScriptFailure(['let x: bool = 2'], 'E1012:')
+  CheckDefAndScriptFailure(['let x: bool = -1'], 'E1012:')
+  CheckDefAndScriptFailure(['let x: bool = [1]'], 'E1012:')
+  CheckDefAndScriptFailure(['let x: bool = {}'], 'E1012:')
+  CheckDefAndScriptFailure(['let x: bool = "x"'], 'E1012:')
+enddef
+
+def Test_assignment()
   CheckDefFailure(['let x:string'], 'E1069:')
   CheckDefFailure(['let x:string = "x"'], 'E1069:')
   CheckDefFailure(['let a:string = "x"'], 'E1069:')
@@ -164,8 +183,7 @@ def Test_assignment()
     assert_equal('xxx', &t_TI)
     &t_TI = save_TI
   END
-  CheckDefSuccess(lines)
-  CheckScriptSuccess(['vim9script'] + lines)
+  CheckDefAndScriptSuccess(lines)
 
   CheckDefFailure(['&t_TI = 123'], 'E1012:')
   CheckScriptFailure(['vim9script', '&t_TI = 123'], 'E928:')

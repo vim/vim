@@ -2382,7 +2382,7 @@ func Test_expr_fails()
 
   call CheckDefFailure(["CallMe ('yes')"], 'E476:', 1)
   call CheckScriptFailure(["CallMe ('yes')"], 'E492:', 1)
-  call CheckScriptAndDefFailure(["CallMe2('yes','no')"], 'E1069:', 1)
+  call CheckDefAndScriptFailure(["CallMe2('yes','no')"], 'E1069:', 1)
   call CheckDefFailure(["CallMe2('yes' , 'no')"], 'E1068:', 1)
 
   call CheckDefFailure(["v:nosuch += 3"], 'E1001:', 1)
