@@ -1665,6 +1665,7 @@ call_def_function(
 
 	    // call a :def function
 	    case ISN_DCALL:
+		SOURCING_LNUM = iptr->isn_lnum;
 		if (call_dfunc(iptr->isn_arg.dfunc.cdf_idx,
 			      iptr->isn_arg.dfunc.cdf_argcount,
 			      &ectx) == FAIL)

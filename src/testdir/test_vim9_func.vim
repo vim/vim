@@ -1776,5 +1776,25 @@ def Test_restore_modifiers()
   assert_equal('', g:ei_after)
 enddef
 
+def StackTop()
+  eval 1
+  eval 2
+  # call not on fourth line
+  StackBot()
+enddef
+
+def StackBot()
+  # throw an error
+  eval [][0]
+enddef
+
+def Test_callstack_def()
+  try
+    StackTop()
+  catch
+    assert_match('Test_callstack_def\[2\]..StackTop\[4\]..StackBot, line 2', v:throwpoint)
+  endtry
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
