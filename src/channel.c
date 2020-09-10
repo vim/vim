@@ -2619,9 +2619,7 @@ invoke_one_time_callback(
     static void
 append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
 {
-    bufref_T	save_curbuf = {NULL, 0, 0};
-    win_T	*save_curwin = NULL;
-    tabpage_T	*save_curtab = NULL;
+    aco_save_T	aco;
     linenr_T    lnum = buffer->b_ml.ml_line_count;
     int		save_write_to = buffer->b_write_to_channel;
     chanpart_T  *ch_part = &channel->ch_part[part];
@@ -2647,12 +2645,13 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
     }
 
     // Append to the buffer
-    ch_log(channel, "appending line %d to buffer", (int)lnum + 1 - empty);
+    ch_log(channel, "appending line %d to buffer %s",
+				       (int)lnum + 1 - empty, buffer->b_fname);
 
     buffer->b_p_ma = TRUE;
 
-    // Save curbuf/curwin/curtab and make "buffer" the current buffer.
-    switch_to_win_for_buf(buffer, &save_curwin, &save_curtab, &save_curbuf);
+    // set curbuf to be our buf, temporarily
+    aucmd_prepbuf(&aco, buffer);
 
     u_sync(TRUE);
     // ignore undo failure, undo is not very useful here
@@ -2668,8 +2667,8 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
 	ml_append(lnum, msg, 0, FALSE);
     appended_lines_mark(lnum, 1L);
 
-    // Restore curbuf/curwin/curtab
-    restore_win_for_buf(save_curwin, save_curtab, &save_curbuf);
+    // reset notion of buffer
+    aucmd_restbuf(&aco);
 
     if (ch_part->ch_nomodifiable)
 	buffer->b_p_ma = FALSE;
@@ -2693,9 +2692,10 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
 		// down.  If the topline is outdated update it now.
 		if (move_cursor || wp->w_topline > buffer->b_ml.ml_line_count)
 		{
+		    win_T *save_curwin = curwin;
+
 		    if (move_cursor)
 			++wp->w_cursor.lnum;
-		    save_curwin = curwin;
 		    curwin = wp;
 		    curbuf = curwin->w_buffer;
 		    scroll_cursor_bot(0, FALSE);
