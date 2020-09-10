@@ -8389,6 +8389,7 @@ find_cmdline_var(char_u *src, int *usedlen)
  *	  '<cexpr>' to C-expression under the cursor
  *	  '<cfile>' to path name under the cursor
  *	  '<sfile>' to sourced file name
+ *	  '<stack>' to call stack
  *	  '<slnum>' to sourced file line number
  *	  '<afile>' to file name for autocommand
  *	  '<abuf>'  to buffer number for autocommand
@@ -8606,7 +8607,8 @@ eval_vars(
 
 	case SPEC_SFILE:	// file name for ":so" command
 	case SPEC_STACK:	// call stack
-		result = estack_sfile(spec_idx == SPEC_SFILE);
+		result = estack_sfile(spec_idx == SPEC_SFILE
+						? ESTACK_SFILE : ESTACK_STACK);
 		if (result == NULL)
 		{
 		    *errormsg = spec_idx == SPEC_SFILE

@@ -22,7 +22,7 @@
 prepare_assert_error(garray_T *gap)
 {
     char    buf[NUMBUFLEN];
-    char_u  *sname = estack_sfile(FALSE);
+    char_u  *sname = estack_sfile(ESTACK_NONE);
 
     ga_init2(gap, 1, 100);
     if (sname != NULL)

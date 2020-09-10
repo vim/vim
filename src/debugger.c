@@ -105,7 +105,7 @@ do_debug(char_u *cmd)
 	vim_free(debug_newval);
 	debug_newval = NULL;
     }
-    sname = estack_sfile(FALSE);
+    sname = estack_sfile(ESTACK_NONE);
     if (sname != NULL)
 	msg((char *)sname);
     vim_free(sname);
@@ -344,7 +344,7 @@ do_checkbacktracelevel(void)
     }
     else
     {
-	char_u	*sname = estack_sfile(FALSE);
+	char_u	*sname = estack_sfile(ESTACK_NONE);
 	int	max = get_maxbacktrace_level(sname);
 
 	if (debug_backtrace_level > max)
@@ -365,7 +365,7 @@ do_showbacktrace(char_u *cmd)
     int	    i = 0;
     int	    max;
 
-    sname = estack_sfile(FALSE);
+    sname = estack_sfile(ESTACK_NONE);
     max = get_maxbacktrace_level(sname);
     if (sname != NULL)
     {
