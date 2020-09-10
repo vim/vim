@@ -1,7 +1,11 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
+<<<<<<< HEAD
 " Last Change:	09 sep 2020
+=======
+" Last Change:	2020 Sep 10
+>>>>>>> remotes/upstream/master
 
 " If there already is an option window, jump to that one.
 let buf = bufnr('option-window')
@@ -20,7 +24,7 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 " function to be called when <CR> is hit in the option-window
-fun! <SID>CR()
+func <SID>CR()
 
   " If on a continued comment line, go back to the first comment line
   let lnum = search("^[^\t]", 'bWcn')
@@ -47,10 +51,10 @@ fun! <SID>CR()
   elseif match(line, '^ \=[0-9]') >= 0
     exe "norm! /" . line . "\<CR>zt"
   endif
-endfun
+endfunc
 
 " function to be called when <Space> is hit in the option-window
-fun! <SID>Space()
+func <SID>Space()
 
   let lnum = line(".")
   let line = getline(lnum)
@@ -67,14 +71,14 @@ fun! <SID>Space()
     endif
 
   endif
-endfun
+endfunc
 
 let s:local_to_window = gettext('(local to window)')
 let s:local_to_buffer = gettext('(local to buffer)')
 
 " find the window in which the option applies
 " returns 0 for global option, 1 for local option, -1 for error
-fun! <SID>Find(lnum)
+func <SID>Find(lnum)
     let line = getline(a:lnum - 1)
     if line =~ s:local_to_window || line =~ s:local_to_buffer
       let local = 1
@@ -95,10 +99,10 @@ fun! <SID>Find(lnum)
       let local = -1
     endif
     return local
-endfun
+endfunc
 
 " Update a "set" line in the option window
-fun! <SID>Update(lnum, line, local, thiswin)
+func <SID>Update(lnum, line, local, thiswin)
   " get the new value of the option and update the option window line
   if match(a:line, "=") >= 0
     let name = substitute(a:line, '^ \tset \([^=]*\)=.*', '\1', "")
@@ -123,7 +127,7 @@ fun! <SID>Update(lnum, line, local, thiswin)
     endif
   endif
   set nomodified
-endfun
+endfunc
 
 " Reset 'title' and 'icon' to make it work faster.
 " Reset 'undolevels' to avoid undo'ing until the buffer is empty.
@@ -159,35 +163,45 @@ call append(6, gettext('" Hit <Space> on a "set" line to refresh it.'))
 
 " These functions are called often below.  Keep them fast!
 
+" Add an option name and explanation.  The text can contain "\n" characters
+" where a line break is to be inserted.
+func <SID>AddOption(name, text)
+  let lines = split(a:text, "\n")
+  call append("$", a:name .. "\t" .. lines[0])
+  for line in lines[1:]
+    call append("$", "\t" .. line)
+  endfor
+endfunc
+
 " Init a local binary option
-fun! <SID>BinOptionL(name)
+func <SID>BinOptionL(name)
   let val = getwinvar(winnr('#'), '&' . a:name)
   call append("$", substitute(substitute(" \tset " . val . a:name . "\t" .
 	\!val . a:name, "0", "no", ""), "1", "", ""))
-endfun
+endfunc
 
 " Init a global binary option
-fun! <SID>BinOptionG(name, val)
+func <SID>BinOptionG(name, val)
   call append("$", substitute(substitute(" \tset " . a:val . a:name . "\t" .
 	\!a:val . a:name, "0", "no", ""), "1", "", ""))
-endfun
+endfunc
 
 " Init a local string option
-fun! <SID>OptionL(name)
+func <SID>OptionL(name)
   let val = escape(getwinvar(winnr('#'), '&' . a:name), " \t\\\"|")
   call append("$", " \tset " . a:name . "=" . val)
-endfun
+endfunc
 
 " Init a global string option
-fun! <SID>OptionG(name, val)
+func <SID>OptionG(name, val)
   call append("$", " \tset " . a:name . "=" . escape(a:val, " \t\\\"|"))
-endfun
+endfunc
 
 let s:idx = 1
 let s:lnum = line("$")
 call append("$", "")
 
-fun! <SID>Header(text)
+func <SID>Header(text)
   let line = s:idx . " " . a:text
   if s:idx < 10
     let line = " " . line
@@ -198,15 +212,15 @@ fun! <SID>Header(text)
   call append(s:lnum, line)
   let s:idx = s:idx + 1
   let s:lnum = s:lnum + 1
-endfun
+endfunc
 
 " Get the value of 'pastetoggle'.  It could be a special key.
-fun! <SID>PTvalue()
+func <SID>PTvalue()
   redir @a
   silent set pt
   redir END
   return substitute(@a, '[^=]*=\(.*\)', '\1', "")
-endfun
+endfunc
 
 " Restore the previous value of 'cpoptions' here, it's used below.
 let &cpo = s:cpo_save
@@ -237,11 +251,18 @@ call append("$", "helpfile" . gettext("\tname of the main help file"))
 call <SID>OptionG("hf", &hf)
 
 
+<<<<<<< HEAD
 call <SID>Header(gettext("moving around, searching and patterns"))
 call append("$", "whichwrap" . gettext("\tlist of flags specifying which commands wrap to another line"))
 call <SID>OptionL("ww")
 call append("$", "startofline" . gettext("\tmany jump commands move the cursor to the first non-blank"))
 call append("$", gettext("\tcharacter of a line"))
+=======
+call <SID>Header("moving around, searching and patterns")
+call append("$", "whichwrap\tlist of flags specifying which commands wrap to another line")
+call <SID>OptionG("ww", &ww)
+call <SID>AddOption("startofline", gettext("many jump commands move the cursor to the first non-blank\ncharacter of a line"))
+>>>>>>> remotes/upstream/master
 call <SID>BinOptionG("sol", &sol)
 call append("$", "paragraphs" . gettext("\tnroff macro names that separate paragraphs"))
 call <SID>OptionG("para", &para)
@@ -285,17 +306,27 @@ if has("find_in_path")
 endif
 
 
+<<<<<<< HEAD
 call <SID>Header(gettext("tags"))
 call append("$", "tagbsearch" . gettext("\tuse binary searching in tags files"))
+=======
+call <SID>Header("tags")
+call <SID>AddOption("tagbsearch", gettext("use binary searching in tags files"))
+>>>>>>> remotes/upstream/master
 call <SID>BinOptionG("tbs", &tbs)
 call append("$", "taglength" . gettext("\tnumber of significant characters in a tag name or zero"))
 call append("$", " \tset tl=" . &tl)
 call append("$", "tags" . gettext("\tlist of file names to search for tags"))
 call append("$", gettext("\t(global or local to buffer)"))
 call <SID>OptionG("tag", &tag)
+<<<<<<< HEAD
 call append("$", "tagcase" . gettext("\thow to handle case when searching in tags files:"))
 call append("$", gettext("\t\"followic\" to follow 'ignorecase', \"ignore\" or \"match\""))
 call append("$", gettext("\t(global or local to buffer)"))
+=======
+call <SID>AddOption("tagcase", gettext("how to handle case when searching in tags files:\n\"followic\" to follow 'ignorecase', \"ignore\" or \"match\""))
+call append("$", "\t(global or local to buffer)")
+>>>>>>> remotes/upstream/master
 call <SID>OptionG("tc", &tc)
 call append("$", "tagrelative" . gettext("\tfile names in a tags file are relative to the tags file"))
 call <SID>BinOptionG("tr", &tr)
@@ -1446,7 +1477,7 @@ augroup optwin
 	\ call <SID>unload() | delfun <SID>unload
 augroup END
 
-fun! <SID>unload()
+func <SID>unload()
   delfun <SID>CR
   delfun <SID>Space
   delfun <SID>Find
@@ -1457,7 +1488,7 @@ fun! <SID>unload()
   delfun <SID>BinOptionG
   delfun <SID>Header
   au! optwin
-endfun
+endfunc
 
 " Restore the previous value of 'title' and 'icon'.
 let &title = s:old_title

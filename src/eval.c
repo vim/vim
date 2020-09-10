@@ -2356,6 +2356,9 @@ eval2(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    clear_evalarg(&local_evalarg, NULL);
 	else
 	    evalarg->eval_flags = orig_flags;
+
+	// Resulting value can be assigned to a bool.
+	rettv->v_lock |= VAR_BOOL_OK;
     }
 
     return OK;
@@ -2451,6 +2454,7 @@ eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    *arg = skipwhite_and_linebreak(*arg + 2, evalarg_used);
 	    evalarg_used->eval_flags = result ? orig_flags
 						 : orig_flags & ~EVAL_EVALUATE;
+	    CLEAR_FIELD(var2);
 	    if (eval4(arg, &var2, evalarg_used) == FAIL)
 		return FAIL;
 
@@ -2487,6 +2491,9 @@ eval3(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    clear_evalarg(&local_evalarg, NULL);
 	else
 	    evalarg->eval_flags = orig_flags;
+
+	// Resulting value can be assigned to a bool.
+	rettv->v_lock |= VAR_BOOL_OK;
     }
 
     return OK;
