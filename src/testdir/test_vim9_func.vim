@@ -134,6 +134,23 @@ def Test_nested_function()
   CheckDefFailure(['func Nested()', 'endfunc'], 'E1086:')
   CheckDefFailure(['def s:Nested()', 'enddef'], 'E1075:')
   CheckDefFailure(['def b:Nested()', 'enddef'], 'E1075:')
+
+  CheckDefFailure([
+        'def Outer()',
+        '  def Inner()',
+        '    # comment',
+        '  enddef',
+        '  def Inner()',
+        '  enddef',
+        'enddef'], 'E1073:')
+  CheckDefFailure([
+        'def Outer()',
+        '  def Inner()',
+        '    # comment',
+        '  enddef',
+        '  def! Inner()',
+        '  enddef',
+        'enddef'], 'E1117:')
 enddef
 
 func Test_call_default_args_from_func()

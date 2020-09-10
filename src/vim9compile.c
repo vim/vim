@@ -4320,6 +4320,12 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
     ufunc_T	*ufunc;
     int		r;
 
+    if (*name_start == '!')
+    {
+	emsg(_(e_cannot_use_bang_with_nested_def));
+	return NULL;
+    }
+
     // Only g:Func() can use a namespace.
     if (name_start[1] == ':' && !is_global)
     {
