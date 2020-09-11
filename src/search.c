@@ -4165,4 +4165,344 @@ f_searchcount(typval_T *argvars, typval_T *rettv)
 the_end:
     restore_last_search_pattern();
 }
+
+/*
+ * Fuzzy string matching
+ *
+ * Ported from the lib_fts library authored by Forrest Smith.
+ * https://github.com/forrestthewoods/lib_fts/tree/master/code
+ *
+ * Blog describing the algorithm:
+ * https://www.forrestthewoods.com/blog/reverse_engineering_sublime_texts_fuzzy_match/
+ *
+ * Each matching string is assigned a score. The following factors are checked:
+ *   Matched letter
+ *   Unmatched letter
+ *   Consecutively matched letters
+ *   Proximity to start
+ *   Letter following a separator (space, underscore)
+ *   Uppercase letter following lowercase (aka CamelCase)
+ *
+ * Matched letters are good. Unmatched letters are bad. Matching near the start
+ * is good. Matching the first letter in the middle of a phrase is good.
+ * Matching the uppercase letters in camel case entries is good.
+ *
+ * The score assigned for each factor is explained below.
+ * File paths are different from file names. File extensions may be ignorable.
+ * Single words care about consecutive matches but not separators or camel
+ * case.
+ *   Score starts at 0
+ *   Matched letter: +0 points
+ *   Unmatched letter: -1 point
+ *   Consecutive match bonus: +5 points
+ *   Separator bonus: +10 points
+ *   Camel case bonus: +10 points
+ *   Unmatched leading letter: -3 points (max: -9)
+ *
+ * There is some nuance to this. Scores don’t have an intrinsic meaning. The
+ * score range isn’t 0 to 100. It’s roughly [-50, 50]. Longer words have a
+ * lower minimum score due to unmatched letter penalty. Longer search patterns
+ * have a higher maximum score due to match bonuses.
+ *
+ * Separator and camel case bonus is worth a LOT. Consecutive matches are worth
+ * quite a bit.
+ *
+ * There is a penalty if you DON’T match the first three letters. Which
+ * effectively rewards matching near the start. However there’s no difference
+ * in matching between the middle and end.
+ *
+ * There is not an explicit bonus for an exact match. Unmatched letters receive
+ * a penalty. So shorter strings and closer matches are worth more.
+ */
+typedef struct
+{
+    listitem_T *item;
+    int		score;
+} fuzzyItem_T;
+
+    static int
+fuzzy_match_recursive(
+	char_u	*fuzpat,
+	char_u	*str,
+	int	*outScore,
+	char_u	*strBegin,
+	char_u	*srcMatches,
+	char_u	*matches,
+	int	maxMatches,
+	int	nextMatch,
+	int	*recursionCount,
+	int	recursionLimit)
+{
+    // Recursion params
+    int		recursiveMatch = FALSE;
+    char_u	bestRecursiveMatches[256];
+    int		bestRecursiveScore = 0;
+    int		first_match;
+    int		matched;
+
+    // Count recursions
+    ++*recursionCount;
+    if (*recursionCount >= recursionLimit)
+	return FALSE;
+
+    // Detect end of strings
+    if (*fuzpat == '\0' || *str == '\0')
+	return FALSE;
+
+    // Loop through fuzpat and str looking for a match
+    first_match = TRUE;
+    while (*fuzpat != '\0' && *str != '\0')
+    {
+	// Found match
+	if (vim_tolower(*fuzpat) == vim_tolower(*str))
+	{
+	    char_u	recursiveMatches[256];
+	    int		recursiveScore = 0;
+
+	    // Supplied matches buffer was too short
+	    if (nextMatch >= maxMatches)
+		return FALSE;
+
+	    // "Copy-on-Write" srcMatches into matches
+	    if (first_match && srcMatches)
+	    {
+		memcpy(matches, srcMatches, nextMatch);
+		first_match = FALSE;
+	    }
+
+	    // Recursive call that "skips" this match
+	    if (fuzzy_match_recursive(fuzpat, str + 1, &recursiveScore,
+			strBegin, matches, recursiveMatches,
+			sizeof(recursiveMatches), nextMatch, recursionCount,
+			recursionLimit))
+	    {
+		// Pick best recursive score
+		if (!recursiveMatch || recursiveScore > bestRecursiveScore)
+		{
+		    memcpy(bestRecursiveMatches, recursiveMatches, 256);
+		    bestRecursiveScore = recursiveScore;
+		}
+		recursiveMatch = TRUE;
+	    }
+
+	    // Advance
+	    matches[nextMatch++] = (char_u)(str - strBegin);
+	    ++fuzpat;
+	}
+	++str;
+    }
+
+    // Determine if full fuzpat was matched
+    matched = *fuzpat == '\0' ? TRUE : FALSE;
+
+    // Calculate score
+    if (matched)
+    {
+	// bonus for adjacent matches
+	int	sequential_bonus = 15;
+	// bonus if match occurs after a separator
+	int	separator_bonus = 30;
+	// bonus if match is uppercase and prev is lower
+	int	camel_bonus = 30;
+	// bonus if the first letter is matched
+	int	first_letter_bonus = 15;
+	// penalty applied for every letter in str before the first match
+	int	leading_letter_penalty = -5;
+	// maximum penalty for leading letters
+	int	max_leading_letter_penalty = -15;
+	// penalty for every letter that doesn't matter
+	int	unmatched_letter_penalty = -1;
+	int	penalty;
+	int	unmatched;
+	int	i;
+
+	// Iterate str to end
+	while (*str != '\0')
+	    ++str;
+
+	// Initialize score
+	*outScore = 100;
+
+	// Apply leading letter penalty
+	penalty = leading_letter_penalty * matches[0];
+	if (penalty < max_leading_letter_penalty)
+	    penalty = max_leading_letter_penalty;
+	*outScore += penalty;
+
+	// Apply unmatched penalty
+	unmatched = (int)(str - strBegin) - nextMatch;
+	*outScore += unmatched_letter_penalty * unmatched;
+
+	// Apply ordering bonuses
+	for (i = 0; i < nextMatch; ++i)
+	{
+	    char_u	currIdx = matches[i];
+
+	    if (i > 0)
+	    {
+		char_u	prevIdx = matches[i - 1];
+
+		// Sequential
+		if (currIdx == (prevIdx + 1))
+		    *outScore += sequential_bonus;
+	    }
+
+	    // Check for bonuses based on neighbor character value
+	    if (currIdx > 0)
+	    {
+		// Camel case
+		char_u	neighbor = strBegin[currIdx - 1];
+		char_u	curr = strBegin[currIdx];
+		int	neighborSeparator;
+
+		if (islower(neighbor) && isupper(curr))
+		    *outScore += camel_bonus;
+
+		// Separator
+		neighborSeparator = neighbor == '_' || neighbor == ' ';
+		if (neighborSeparator)
+		    *outScore += separator_bonus;
+	    }
+	    else
+	    {
+		// First letter
+		*outScore += first_letter_bonus;
+	    }
+	}
+    }
+
+    // Return best result
+    if (recursiveMatch && (!matched || bestRecursiveScore > *outScore))
+    {
+	// Recursive score is better than "this"
+	memcpy(matches, bestRecursiveMatches, maxMatches);
+	*outScore = bestRecursiveScore;
+	return TRUE;
+    }
+    else if (matched)
+	return TRUE;		// "this" score is better than recursive
+
+    return FALSE;		// no match
+}
+
+/*
+ * fuzzy_match()
+ *
+ * Performs exhaustive search via recursion to find all possible matches and
+ * match with highest score.
+ * Scores values have no intrinsic meaning.  Possible score range is not
+ * normalized and varies with pattern.
+ * Recursion is limited internally (default=10) to prevent degenerate cases
+ * (fuzpat="aaaaaa" str="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").
+ * Uses char_u for match indices. Therefore patterns are limited to 256
+ * characters.
+ *
+ * Returns TRUE if fuzpat is found AND calculates a score.
+ */
+    static int
+fuzzy_match(char_u *str, char_u *fuzpat, int *outScore)
+{
+    char_u	matches[256];
+    int		recursionCount = 0;
+    int		recursionLimit = 10;
+
+    *outScore = 0;
+
+    return fuzzy_match_recursive(fuzpat, str, outScore, str, NULL, matches,
+	    sizeof(matches), 0, &recursionCount, recursionLimit);
+}
+
+/*
+ * Sort the fuzzy matches in the descending order of the match score.
+ */
+    static int
+fuzzy_item_compare(const void *s1, const void *s2)
+{
+    int		v1 = ((fuzzyItem_T *)s1)->score;
+    int		v2 = ((fuzzyItem_T *)s2)->score;
+
+    return v1 == v2 ? 0 : v1 > v2 ? -1 : 1;
+}
+
+/*
+ * Fuzzy search the string 'str' in 'strlist' and return the matching strings
+ * in 'fmatchlist'.
+ */
+    static void
+match_fuzzy(list_T *strlist, char_u *str, list_T *fmatchlist)
+{
+    long	len;
+    fuzzyItem_T	*ptrs;
+    listitem_T	*li;
+    long	i = 0;
+    int		found_match = FALSE;
+
+    len = list_len(strlist);
+    if (len == 0)
+	return;
+
+    ptrs = ALLOC_MULT(fuzzyItem_T, len);
+    if (ptrs == NULL)
+	return;
+
+    // For all the string items in strlist, get the fuzzy matching score
+    FOR_ALL_LIST_ITEMS(strlist, li)
+    {
+	int	score;
+
+	ptrs[i].item = li;
+	ptrs[i].score = -9999;
+	// ignore non-string items in the list
+	if (li->li_tv.v_type == VAR_STRING && li->li_tv.vval.v_string != NULL)
+	    if (fuzzy_match(li->li_tv.vval.v_string, str, &score))
+	    {
+		ptrs[i].score = score;
+		found_match = TRUE;
+	    }
+	++i;
+    }
+
+    if (found_match)
+    {
+	// Sort the list by the descending order of the match score
+	qsort((void *)ptrs, (size_t)len, sizeof(fuzzyItem_T),
+		fuzzy_item_compare);
+
+	// Copy the matching strings with 'score != -9999' to the return list
+	for (i = 0; i < len; i++)
+	{
+	    if (ptrs[i].score == -9999)
+		break;
+	    list_append_string(fmatchlist, ptrs[i].item->li_tv.vval.v_string,
+		    -1);
+	}
+    }
+
+    vim_free(ptrs);
+}
+
+/*
+ * "matchfuzzy()" function
+ */
+    void
+f_matchfuzzy(typval_T *argvars, typval_T *rettv)
+{
+    if (argvars[0].v_type != VAR_LIST)
+    {
+	emsg(_(e_listreq));
+	return;
+    }
+    if (argvars[0].vval.v_list == NULL)
+	return;
+    if (argvars[1].v_type != VAR_STRING
+	    || argvars[1].vval.v_string == NULL)
+    {
+	semsg(_(e_invarg2), tv_get_string(&argvars[1]));
+	return;
+    }
+    if (rettv_list_alloc(rettv) == OK)
+	match_fuzzy(argvars[0].vval.v_list, tv_get_string(&argvars[1]),
+		rettv->vval.v_list);
+}
+
 #endif
