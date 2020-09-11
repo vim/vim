@@ -977,8 +977,8 @@ channel_open(
     CLEAR_FIELD(hints);
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
-# ifdef AI_ADDRCONFIG
-    hints.ai_flags = AI_ADDRCONFIG;
+# if defined(AI_ADDRCONFIG) && defined(AI_V4MAPPED)
+    hints.ai_flags = AI_ADDRCONFIG | AI_V4MAPPED;
 # endif
     // Set port number manually in order to prevent name resolution services
     // from being invoked in the environment where AI_NUMERICSERV is not
