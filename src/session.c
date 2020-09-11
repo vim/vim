@@ -1319,6 +1319,9 @@ theend:
 #ifdef FEAT_SESSION
     vim_free(viewFile);
 #endif
+#ifdef FEAT_TERMINAL
+    hash_clear_all(&terminal_bufs, 0);
+#endif
 }
 
 #if (defined(FEAT_VIMINFO) || defined(FEAT_SESSION)) || defined(PROTO)
