@@ -303,14 +303,12 @@ put_view_curpos(FILE *fd, win_T *wp, char *spaces)
 put_view(
     FILE	*fd,
     win_T	*wp,
-    int		add_edit,	// add ":edit" command to view
-    unsigned	*flagp,		// vop_flags or ssop_flags
-    int		current_arg_idx	// current argument index of the window, use
-				// -1 if unknown
-#ifdef FEAT_TERMINAL
-    , hashtab_T *terminal_bufs
-#endif
-    )
+    int		add_edit,	     // add ":edit" command to view
+    unsigned	*flagp,		     // vop_flags or ssop_flags
+    int		current_arg_idx,     // current argument index of the window,
+				     // use -1 if unknown
+    hashtab_T *terminal_bufs UNUSED) // already encountered terminal buffers,
+				     // can be NULL
 {
     win_T	*save_curwin;
     int		f;
@@ -825,9 +823,11 @@ makeopens(
 	{
 	    if (!ses_do_win(wp))
 		continue;
-	    if (put_view(fd, wp, wp != edited_win, &ssop_flags, cur_arg_idx
+	    if (put_view(fd, wp, wp != edited_win, &ssop_flags, cur_arg_idx,
 #ifdef FEAT_TERMINAL
-							 , &terminal_bufs
+							 &terminal_bufs
+#else
+							 NULL
 #endif
 		 ) == FAIL)
 		goto fail;
@@ -1102,11 +1102,6 @@ ex_mkrc(exarg_T	*eap)
     char_u	*viewFile = NULL;
     unsigned	*flagp;
 #endif
-#ifdef FEAT_TERMINAL
-    hashtab_T	terminal_bufs;
-
-    hash_init(&terminal_bufs);
-#endif
 
     if (eap->cmdidx == CMD_mksession || eap->cmdidx == CMD_mkview)
     {
@@ -1263,11 +1258,8 @@ ex_mkrc(exarg_T	*eap)
 	    }
 	    else
 	    {
-		failed |= (put_view(fd, curwin, !using_vdir, flagp, -1
-#ifdef FEAT_TERMINAL
-							       , &terminal_bufs
-#endif
-			    ) == FAIL);
+		failed |= (put_view(fd, curwin, !using_vdir, flagp, -1, NULL)
+								      == FAIL);
 	    }
 	    if (put_line(fd, "let &so = s:so_save | let &siso = s:siso_save")
 								      == FAIL)

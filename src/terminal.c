@@ -940,7 +940,7 @@ term_write_session(FILE *fd, win_T *wp, hashtab_T *terminal_bufs)
     const int	bufnr = wp->w_buffer->b_fnum;
     term_T	*term = wp->w_buffer->b_term;
 
-    if (wp->w_buffer->b_nwindows > 1)
+    if (terminal_bufs != NULL && wp->w_buffer->b_nwindows > 1)
     {
 	// There are multiple views into this terminal buffer. We don't want to
 	// create the terminal multiple times. If it's the first time, create,
@@ -978,7 +978,7 @@ term_write_session(FILE *fd, win_T *wp, hashtab_T *terminal_bufs)
     if (fprintf(fd, "let s:term_buf_%d = bufnr()", bufnr) < 0)
 	return FAIL;
 
-    if (wp->w_buffer->b_nwindows > 1)
+    if (terminal_bufs != NULL && wp->w_buffer->b_nwindows > 1)
     {
 	char *hash_key = alloc(NUMBUFLEN);
 
