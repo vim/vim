@@ -455,6 +455,32 @@ func Test_mksession_terminal_restore_other()
   call delete('Xtest_mks.out')
 endfunc
 
+func Test_mksession_terminal_shared_windows()
+  terminal
+  let term_buf = bufnr()
+  new
+  execute "buffer" term_buf
+  mksession! Xtest_mks.out
+
+  let lines = readfile('Xtest_mks.out')
+  let found_creation = 0
+  let found_use = 0
+
+  for line in lines
+    if line =~ '^terminal'
+      let found_creation = 1
+      call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+', line)
+    elseif line =~ "^execute 'buffer ' . s:term_buf_" . term_buf . "$"
+      let found_use = 1
+    endif
+  endfor
+
+  call assert_true(found_creation && found_use)
+
+  call StopShellInTerminal(term_buf)
+  call delete('Xtest_mks.out')
+endfunc
+
 endif " has('terminal')
 
 " Test :mkview with a file argument.
