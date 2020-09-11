@@ -4254,7 +4254,7 @@ fuzzy_match_recursive(
     while (*fuzpat != '\0' && *str != '\0')
     {
 	// Found match
-	if (tolower(*fuzpat) == tolower(*str))
+	if (vim_tolower(*fuzpat) == vim_tolower(*str))
 	{
 	    char_u	recursiveMatches[256];
 	    int		recursiveScore = 0;
@@ -4380,13 +4380,9 @@ fuzzy_match_recursive(
 	return TRUE;
     }
     else if (matched)
-    {
-	// "this" score is better than recursive
-	return TRUE;
-    }
+	return TRUE;		// "this" score is better than recursive
 
-    // no match
-    return FALSE;
+    return FALSE;		// no match
 }
 
 /*
