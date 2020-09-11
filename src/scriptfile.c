@@ -144,7 +144,8 @@ estack_sfile(estack_arg_T which UNUSED)
 	entry = ((estack_T *)exestack.ga_data) + idx;
 	if (entry->es_name != NULL)
 	{
-	    long lnum = 0;
+	    long    lnum = 0;
+	    char    *dots;
 
 	    len = STRLEN(entry->es_name) + 15;
 	    type_name = "";
@@ -165,16 +166,16 @@ estack_sfile(estack_arg_T which UNUSED)
 		lnum = which == ESTACK_STACK ? SOURCING_LNUM : 0;
 	    else
 		lnum = entry->es_lnum;
+	    dots = idx == exestack.ga_len - 1 ? "" : "..";
 	    if (lnum == 0)
 		// For the bottom entry of <sfile>: do not add the line number,
 		// it is used in <slnum>.  Also leave it out when the number is
 		// not set.
 		vim_snprintf((char *)ga.ga_data + ga.ga_len, len, "%s%s%s",
-				type_name, entry->es_name,
-				idx == exestack.ga_len - 1 ? "" : "..");
+				type_name, entry->es_name, dots);
 	    else
-		vim_snprintf((char *)ga.ga_data + ga.ga_len, len, "%s%s[%ld]..",
-				    type_name, entry->es_name, lnum);
+		vim_snprintf((char *)ga.ga_data + ga.ga_len, len, "%s%s[%ld]%s",
+				    type_name, entry->es_name, lnum, dots);
 	    ga.ga_len += (int)STRLEN((char *)ga.ga_data + ga.ga_len);
 	}
     }
