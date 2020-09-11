@@ -750,6 +750,7 @@ static funcentry_T global_functions[] =
     {"matcharg",	1, 1, FEARG_1,	  ret_list_string, f_matcharg},
     {"matchdelete",	1, 2, FEARG_1,	  ret_number,	f_matchdelete},
     {"matchend",	2, 4, FEARG_1,	  ret_number,	f_matchend},
+    {"matchfuzzy",	2, 2, FEARG_1,	  ret_list_string,	f_matchfuzzy},
     {"matchlist",	2, 4, FEARG_1,	  ret_list_string, f_matchlist},
     {"matchstr",	2, 4, FEARG_1,	  ret_string,	f_matchstr},
     {"matchstrpos",	2, 4, FEARG_1,	  ret_list_any,	f_matchstrpos},
