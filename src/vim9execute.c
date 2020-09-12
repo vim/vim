@@ -2510,11 +2510,23 @@ call_def_function(
 				|| (tv->v_type == VAR_FUNC
 					       && ct->ct_type == VAR_PARTIAL)))
 		    {
-			SOURCING_LNUM = iptr->isn_lnum;
-			semsg(_(e_expected_str_but_got_str),
-				    vartype_name(ct->ct_type),
-				    vartype_name(tv->v_type));
-			goto on_error;
+			if (tv->v_type == VAR_NUMBER && ct->ct_type == VAR_BOOL
+				&& (tv->vval.v_number == 0
+						    || tv->vval.v_number == 1))
+			{
+			    // number 0 is FALSE, number 1 is TRUE
+			    tv->v_type = VAR_BOOL;
+			    tv->vval.v_number = tv->vval.v_number
+						      ? VVAL_TRUE : VVAL_FALSE;
+			}
+			else
+			{
+			    SOURCING_LNUM = iptr->isn_lnum;
+			    semsg(_(e_expected_str_but_got_str),
+					vartype_name(ct->ct_type),
+					vartype_name(tv->v_type));
+			    goto on_error;
+			}
 		    }
 		}
 		break;

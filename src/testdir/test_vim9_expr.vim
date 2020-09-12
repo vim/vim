@@ -2369,6 +2369,9 @@ def Test_expr7_method_call()
 		type: '',
 		module: ''}
 		], getloclist(0))
+
+  let result: bool = get(#{n: 0}, 'n', 0)
+  assert_equal(false, result)
 enddef
 
 func Test_expr7_trailing_fails()
