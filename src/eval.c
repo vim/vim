@@ -2103,6 +2103,8 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
     char_u  *p;
     int	    getnext;
 
+    CLEAR_POINTER(rettv);
+
     /*
      * Get the first variable.
      */
