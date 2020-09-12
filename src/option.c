@@ -37,7 +37,7 @@
 
 static void set_options_default(int opt_flags);
 static void set_string_default_esc(char *name, char_u *val, int escape);
-static char *find_flag(char *origval, char *newval, long_u flags);
+static char_u *find_flag(char_u *origval, char_u *newval, long_u flags);
 static char_u *option_expand(int opt_idx, char_u *val);
 static void didset_options(void);
 static void didset_options2(void);
@@ -140,7 +140,7 @@ set_init_1(int clean_arg)
 	int		len;
 	garray_T	ga;
 	int		mustfree;
-	char		*item;
+	char_u		*item;
 
 	opt_idx = findoption((char_u *)"backupskip");
 
@@ -675,12 +675,12 @@ set_string_default(char *name, char_u *val)
     set_string_default_esc(name, val, FALSE);
 }
 
-    static char *
-find_flag(char *origval, char *newval, long_u flags)
+    static char_u *
+find_flag(char_u *origval, char_u *newval, long_u flags)
 {
     int bs;
     int i;
-    char *s;
+    char_u *s;
 
     if (!origval)
 	return NULL;
