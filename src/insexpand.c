@@ -4009,6 +4009,7 @@ ins_complete(int c, int enable_pum)
 	{
 	    edit_submode_extra = (char_u *)_("The only match");
 	    edit_submode_highl = HLF_COUNT;
+	    compl_curr_match->cp_number = 0;
 	}
 	else
 	{
