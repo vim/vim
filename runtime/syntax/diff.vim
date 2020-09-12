@@ -379,7 +379,7 @@ hi def link diffIsA		Constant
 hi def link diffNoEOL		Constant
 hi def link diffCommon		Constant
 hi def link diffRemoved		Special
-ahi def link diffChanged		PreProc
+hi def link diffChanged		PreProc
 hi def link diffAdded		Identifier
 hi def link diffLine		Statement
 hi def link diffSubname		PreProc
