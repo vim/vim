@@ -2950,7 +2950,7 @@ set_var_const(
     if (ht == NULL || *varname == NUL)
     {
 	semsg(_(e_illvar), name);
-	return;
+	goto failed;
     }
     is_script_local = ht == get_script_local_ht();
 
@@ -2960,7 +2960,7 @@ set_var_const(
 	    && name[1] == ':')
     {
 	vim9_declare_error(name);
-	return;
+	goto failed;
     }
 
     di = find_var_in_ht(ht, 0, varname, TRUE);
@@ -2971,7 +2971,7 @@ set_var_const(
 
     if ((tv->v_type == VAR_FUNC || tv->v_type == VAR_PARTIAL)
 				      && var_wrong_func_name(name, di == NULL))
-	return;
+	goto failed;
 
     if (need_convert_to_bool(type, tv))
     {
@@ -2989,7 +2989,7 @@ set_var_const(
 	    if (flags & LET_IS_CONST)
 	    {
 		emsg(_(e_cannot_mod));
-		return;
+		goto failed;
 	    }
 
 	    if (is_script_local && in_vim9script())
@@ -2997,17 +2997,17 @@ set_var_const(
 		if ((flags & LET_NO_COMMAND) == 0)
 		{
 		    semsg(_(e_redefining_script_item_str), name);
-		    return;
+		    goto failed;
 		}
 
 		// check the type and adjust to bool if needed
 		if (check_script_var_type(&di->di_tv, tv, name) == FAIL)
-		    return;
+		    goto failed;
 	    }
 
 	    if (var_check_ro(di->di_flags, name, FALSE)
 			       || var_check_lock(di->di_tv.v_lock, name, FALSE))
-		return;
+		goto failed;
 	}
 	else
 	    // can only redefine once
@@ -3037,7 +3037,7 @@ set_var_const(
 		    di->di_tv.vval.v_string = tv->vval.v_string;
 		    tv->vval.v_string = NULL;
 		}
-		return;
+		goto failed;
 	    }
 	    else if (di->di_tv.v_type == VAR_NUMBER)
 	    {
@@ -3051,12 +3051,12 @@ set_var_const(
 		    redraw_all_later(SOME_VALID);
 		}
 #endif
-		return;
+		goto failed;
 	    }
 	    else if (di->di_tv.v_type != tv->v_type)
 	    {
 		semsg(_("E963: setting %s to value with wrong type"), name);
-		return;
+		goto failed;
 	    }
 	}
 
@@ -3068,21 +3068,21 @@ set_var_const(
 	if (ht == &vimvarht || ht == get_funccal_args_ht())
 	{
 	    semsg(_(e_illvar), name);
-	    return;
+	    goto failed;
 	}
 
 	// Make sure the variable name is valid.
 	if (!valid_varname(varname))
-	    return;
+	    goto failed;
 
 	di = alloc(sizeof(dictitem_T) + STRLEN(varname));
 	if (di == NULL)
-	    return;
+	    goto failed;
 	STRCPY(di->di_key, varname);
 	if (hash_add(ht, DI2HIKEY(di)) == FAIL)
 	{
 	    vim_free(di);
-	    return;
+	    goto failed;
 	}
 	di->di_flags = DI_FLAGS_ALLOC;
 	if (flags & LET_IS_CONST)
@@ -3128,6 +3128,10 @@ set_var_const(
 	// if the reference count is up to one.  That locks only literal
 	// values.
 	item_lock(&di->di_tv, DICT_MAXNEST, TRUE, TRUE);
+    return;
+failed:
+    if (!copy)
+	clear_tv(tv_arg);
 }
 
 /*
