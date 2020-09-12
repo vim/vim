@@ -683,7 +683,7 @@ set_string_default(char *name, char_u *val)
     static char_u *
 find_dup_item(char_u *origval, char_u *newval, long_u flags)
 {
-    int	    bs;
+    int	    bs = 0;
     size_t  newlen;
     char_u  *s;
 

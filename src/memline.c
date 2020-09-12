@@ -2634,7 +2634,7 @@ add_text_props_for_append(
     int		n;
     char_u	*props;
     int		new_len = 0;  // init for gcc
-    char_u	*new_line;
+    char_u	*new_line = NULL;
     textprop_T	prop;
 
     // Make two rounds:
