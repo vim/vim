@@ -37,6 +37,7 @@
 
 static void set_options_default(int opt_flags);
 static void set_string_default_esc(char *name, char_u *val, int escape);
+static char *find_flag(char *origval, char *newval, long_u flags);
 static char_u *option_expand(int opt_idx, char_u *val);
 static void didset_options(void);
 static void didset_options2(void);
@@ -665,6 +666,47 @@ set_string_default_esc(char *name, char_u *val, int escape)
 set_string_default(char *name, char_u *val)
 {
     set_string_default_esc(name, val, FALSE);
+}
+
+    static char *
+find_flag(char *origval, char *newval, long_u flags)
+{
+    int bs;
+    int i;
+    char *s;
+
+    if (!origval)
+	return NULL;
+    if (!newval)
+	return NULL;
+
+    i = (int)STRLEN(newval);
+
+    for (s = origval; *s; ++s)
+    {
+	if ((!(flags & P_COMMA)
+		    || s == origval
+		    || (s[-1] == ',' && !(bs & 1)))
+		&& STRNCMP(s, newval, i) == 0
+		&& (!(flags & P_COMMA)
+		    || s[i] == ','
+		    || s[i] == NUL))
+	    return s;
+	// Count backslashes.  Only a comma with an
+	// even number of backslashes or a single
+	// backslash preceded by a comma before it
+	// is recognized as a separator
+	if ((s > origval + 1
+		    && s[-1] == '\\'
+		    && s[-2] != ',')
+		|| (s == origval + 1
+		    && s[-1] == '\\'))
+
+	    ++bs;
+	else
+	    bs = 0;
+    }
+    return NULL;
 }
 
 /*
@@ -1811,39 +1853,19 @@ do_set(
 			    if (removing || (flags & P_NODUP))
 			    {
 				i = (int)STRLEN(newval);
-				bs = 0;
-				for (s = origval; *s; ++s)
-				{
-				    if ((!(flags & P_COMMA)
-						|| s == origval
-						|| (s[-1] == ',' && !(bs & 1)))
-					    && STRNCMP(s, newval, i) == 0
-					    && (!(flags & P_COMMA)
-						|| s[i] == ','
-						|| s[i] == NUL))
-					break;
-				    // Count backslashes.  Only a comma with an
-				    // even number of backslashes or a single
-				    // backslash preceded by a comma before it
-				    // is recognized as a separator
-				    if ((s > origval + 1
-						&& s[-1] == '\\'
-						&& s[-2] != ',')
-					    || (s == origval + 1
-						&& s[-1] == '\\'))
-
-					++bs;
-				    else
-					bs = 0;
-				}
+				s = find_flag(origval, newval, flags);
 
 				// do not add if already there
-				if ((adding || prepending) && *s)
+				if ((adding || prepending) && s)
 				{
 				    prepending = FALSE;
 				    adding = FALSE;
 				    STRCPY(newval, origval);
 				}
+
+				// if no duplicate, move pointer to end of original value
+				if (!s)
+				    s = origval + (int)STRLEN(origval);
 			    }
 
 			    // concatenate the two strings; add a ',' if
