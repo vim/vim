@@ -1622,7 +1622,6 @@ do_set(
 #endif
 			unsigned  newlen;
 			int	  comma;
-			int	  bs;
 			int	  new_value_alloced;	// new string option
 							// was allocated
 
