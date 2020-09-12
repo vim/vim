@@ -684,8 +684,6 @@ find_flag(char_u *origval, char_u *newval, long_u flags)
 
     if (!origval)
 	return NULL;
-    if (!newval)
-	return NULL;
 
     i = (int)STRLEN(newval);
 
