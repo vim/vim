@@ -140,6 +140,10 @@ set_init_1(int clean_arg)
 	int		len;
 	garray_T	ga;
 	int		mustfree;
+	int		opt_idx;
+	char		*item;
+
+	opt_idx = findoption((char_u *)"backupskip");
 
 	ga_init2(&ga, 1, 100);
 	for (n = 0; n < (long)(sizeof(names) / sizeof(char *)); ++n)
@@ -159,15 +163,19 @@ set_init_1(int clean_arg)
 	    {
 		// First time count the NUL, otherwise count the ','.
 		len = (int)STRLEN(p) + 3;
-		if (ga_grow(&ga, len) == OK)
+		item = alloc(len - 1);
+		STRCPY(item, p);
+		add_pathsep(item);
+		STRCAT(item, "*");
+		if (!find_flag(ga.ga_data, item, options[opt_idx].flags)
+			&& ga_grow(&ga, len) == OK)
 		{
 		    if (ga.ga_len > 0)
 			STRCAT(ga.ga_data, ",");
-		    STRCAT(ga.ga_data, p);
-		    add_pathsep(ga.ga_data);
-		    STRCAT(ga.ga_data, "*");
+		    STRCAT(ga.ga_data, item);
 		    ga.ga_len += len;
 		}
+		vim_free(item);
 	    }
 	    if (mustfree)
 		vim_free(p);

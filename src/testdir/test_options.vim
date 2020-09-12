@@ -1,5 +1,6 @@
 " Test for options
 
+source shared.vim
 source check.vim
 source view_util.vim
 
@@ -586,6 +587,29 @@ func Test_backupskip()
       call assert_true(found, var . ' (' . varvalue . ') not in option bsk: ' . &bsk)
     endif
   endfor
+
+  " Duplicates should be filtered out in environment variables (option has
+  " P_NODUP)
+  let after =<< trim [CODE]
+  let bsklist = split(&backupskip, ',')
+  call assert_equal(bsklist, uniq(copy(bsklist)))
+  call writefile(v:errors, 'Xtestout')
+  qall
+  [CODE]
+  call writefile(after, 'Xafter')
+  let saveenv = {}
+  let cmd = GetVimProg() . ' --not-a-term -S Xafter --cmd "set enc=utf8"'
+  for var in ['TMPDIR', 'TMP', 'TEMP']
+    let saveenv[var] = getenv(var)
+    call setenv(var, '/duplicate/path')
+  endfor
+  exe 'silent !' . cmd
+  for var in ['TMPDIR', 'TMP', 'TEMP']
+    call setenv(var, saveenv[var])
+  endfor
+  call assert_equal([], readfile('Xtestout'))
+  call delete('Xtestout')
+  call delete('Xafter')
 
   " Duplicates should be filtered out (option has P_NODUP)
   let backupskip = &backupskip
