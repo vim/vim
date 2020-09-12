@@ -3586,7 +3586,7 @@ eval_index(
 	    ;
 	if (keylen == 0)
 	    return FAIL;
-	*arg = skipwhite(key + keylen);
+	*arg = key + keylen;
     }
     else
     {

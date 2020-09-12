@@ -2314,6 +2314,16 @@ def Test_expr7_list_subscript()
   CheckScriptFailure(['vim9script'] + lines, 'E1030:', 3)
 enddef
 
+def Test_expr7_dict_subscript()
+  let lines =<< trim END
+      vim9script
+      let l = [#{lnum: 2}, #{lnum: 1}]
+      let res = l[0].lnum > l[1].lnum
+      assert_true(res)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_expr7_subscript_linebreak()
   let range = range(
   		3)
