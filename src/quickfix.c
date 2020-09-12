@@ -3264,10 +3264,25 @@ qf_jump_open_window(
 	int		newwin,
 	int		*opened_window)
 {
+    qf_list_T *qfl = qf_get_curlist(qi);
+    int old_qf_curlist = qi->qf_curlist;
+    qfltype_T qfl_type = qfl->qfl_type;
+
     // For ":helpgrep" find a help window or open one.
     if (qf_ptr->qf_type == 1 && (!bt_help(curwin->w_buffer) || cmdmod.tab != 0))
 	if (jump_to_help_window(qi, newwin, opened_window) == FAIL)
 	    return FAIL;
+    if (old_qf_curlist != qi->qf_curlist
+	    || !is_qf_entry_present(qfl, qf_ptr))
+    {
+	if (qfl_type == QFLT_QUICKFIX) {
+	    emsg(_("E925: Current quickfix was changed"));
+	}
+	else {
+	    emsg(_(e_loc_list_changed));
+	}
+	return FAIL;
+    }
 
     // If currently in the quickfix window, find another window to show the
     // file in.
@@ -3281,6 +3296,17 @@ qf_jump_open_window(
 	if (qf_jump_to_usable_window(qf_ptr->qf_fnum, newwin,
 						opened_window) == FAIL)
 	    return FAIL;
+    }
+    if (old_qf_curlist != qi->qf_curlist
+	    || !is_qf_entry_present(qfl, qf_ptr))
+    {
+	if (qfl_type == QFLT_QUICKFIX) {
+	    emsg(_("E925: Current quickfix was changed"));
+	}
+	else {
+	    emsg(_(e_loc_list_changed));
+	}
+	return FAIL;
     }
 
     return OK;
