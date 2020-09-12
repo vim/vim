@@ -875,6 +875,15 @@ find_func(char_u *name, int is_global, cctx_T *cctx)
 }
 
 /*
+ * Return TRUE if "ufunc" is a global function.
+ */
+    int
+func_is_global(ufunc_T *ufunc)
+{
+    return ufunc->uf_name[0] != K_SPECIAL;
+}
+
+/*
  * Copy the function name of "fp" to buffer "buf".
  * "buf" must be able to hold the function name plus three bytes.
  * Takes care of script-local function names.
@@ -882,7 +891,7 @@ find_func(char_u *name, int is_global, cctx_T *cctx)
     static void
 cat_func_name(char_u *buf, ufunc_T *fp)
 {
-    if (fp->uf_name[0] == K_SPECIAL)
+    if (!func_is_global(fp))
     {
 	STRCPY(buf, "<SNR>");
 	STRCAT(buf, fp->uf_name + 3);

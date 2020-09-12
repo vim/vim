@@ -292,12 +292,14 @@ lookup_script(char_u *name, size_t len, int vim9script)
 /*
  * Check if "p[len]" is already defined, either in script "import_sid" or in
  * compilation context "cctx".
+ * Does not check the global namespace.
  * Return FAIL and give an error if it defined.
  */
     int
 check_defined(char_u *p, size_t len, cctx_T *cctx)
 {
-    int c = p[len];
+    int		c = p[len];
+    ufunc_T	*ufunc = NULL;
 
     p[len] = NUL;
     if (lookup_script(p, len, FALSE) == OK
@@ -305,11 +307,16 @@ check_defined(char_u *p, size_t len, cctx_T *cctx)
 		&& (lookup_local(p, len, cctx) != NULL
 		    || lookup_arg(p, len, NULL, NULL, NULL, cctx) == OK))
 	    || find_imported(p, len, cctx) != NULL
-	    || find_func_even_dead(p, FALSE, cctx) != NULL)
+	    || (ufunc = find_func_even_dead(p, FALSE, cctx)) != NULL)
     {
-	p[len] = c;
-	semsg(_(e_name_already_defined_str), p);
-	return FAIL;
+	// A local or script-local function can shadow a global function.
+	if (ufunc == NULL || !func_is_global(ufunc)
+		|| (p[0] == 'g' && p[1] == ':'))
+	{
+	    p[len] = c;
+	    semsg(_(e_name_already_defined_str), p);
+	    return FAIL;
+	}
     }
     p[len] = c;
     return OK;
@@ -2114,10 +2121,16 @@ generate_funcref(cctx_T *cctx, char_u *name)
 /*
  * Compile a variable name into a load instruction.
  * "end" points to just after the name.
+ * "is_expr" is TRUE when evaluating an expression, might be a funcref.
  * When "error" is FALSE do not give an error when not found.
  */
     static int
-compile_load(char_u **arg, char_u *end_arg, cctx_T *cctx, int error)
+compile_load(
+	char_u **arg,
+	char_u *end_arg,
+	cctx_T	*cctx,
+	int	is_expr,
+	int	error)
 {
     type_T	*type;
     char_u	*name = NULL;
@@ -2214,10 +2227,11 @@ compile_load(char_u **arg, char_u *end_arg, cctx_T *cctx, int error)
 			|| find_imported(name, 0, cctx) != NULL)
 		   res = compile_load_scriptvar(cctx, name, *arg, &end, FALSE);
 
-		// When the name starts with an uppercase letter or "x:" it
-		// can be a user defined function.
+		// When evaluating an expression and the name starts with an
+		// uppercase letter or "x:" it can be a user defined function.
 		// TODO: this is just guessing
-		if (res == FAIL && (ASCII_ISUPPER(*name) || name[1] == ':'))
+		if (res == FAIL && is_expr
+				   && (ASCII_ISUPPER(*name) || name[1] == ':'))
 		    res = generate_funcref(cctx, name);
 	    }
 	}
@@ -2368,8 +2382,9 @@ compile_call(
     }
 
     // If we can find the function by name generate the right call.
+    // Skip global functions here, a local funcref takes precedence.
     ufunc = find_func(name, FALSE, cctx);
-    if (ufunc != NULL)
+    if (ufunc != NULL && !func_is_global(ufunc))
     {
 	res = generate_CALL(cctx, ufunc, argcount);
 	goto theend;
@@ -2380,13 +2395,20 @@ compile_call(
     // Not for eome#Func(), it will be loaded later.
     p = namebuf;
     if (STRNCMP(namebuf, "g:", 2) != 0 && !is_autoload
-	    && compile_load(&p, namebuf + varlen, cctx, FALSE) == OK)
+	    && compile_load(&p, namebuf + varlen, cctx, FALSE, FALSE) == OK)
     {
 	garray_T    *stack = &cctx->ctx_type_stack;
 	type_T	    *type;
 
 	type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
 	res = generate_PCALL(cctx, argcount, namebuf, type, FALSE);
+	goto theend;
+    }
+
+    // If we can find a global function by name generate the right call.
+    if (ufunc != NULL)
+    {
+	res = generate_CALL(cctx, ufunc, argcount);
 	goto theend;
     }
 
@@ -3548,7 +3570,7 @@ compile_expr7(
 	{
 	    if (generate_ppconst(cctx, ppconst) == FAIL)
 		return FAIL;
-	    r = compile_load(arg, p, cctx, TRUE);
+	    r = compile_load(arg, p, cctx, TRUE, TRUE);
 	}
 	if (r == FAIL)
 	    return FAIL;
@@ -5002,17 +5024,16 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			      : ((type_T **)stack->ga_data)[stack->ga_len - 1];
 		if (lvar != NULL && (is_decl || !has_type))
 		{
+		    if ((stacktype->tt_type == VAR_FUNC
+				|| stacktype->tt_type == VAR_PARTIAL)
+			    && var_wrong_func_name(name, TRUE))
+			goto theend;
+
 		    if (new_local && !has_type)
 		    {
 			if (stacktype->tt_type == VAR_VOID)
 			{
 			    emsg(_(e_cannot_use_void_value));
-			    goto theend;
-			}
-			else if ((stacktype->tt_type == VAR_FUNC
-				    || stacktype->tt_type == VAR_PARTIAL)
-					    && var_wrong_func_name(name, TRUE))
-			{
 			    goto theend;
 			}
 			else

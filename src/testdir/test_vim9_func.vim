@@ -232,6 +232,36 @@ def Test_global_local_function()
   CheckScriptFailure(lines, 'E117:')
 enddef
 
+def Test_local_function_shadows_global()
+  let lines =<< trim END
+      vim9script
+      def g:Gfunc(): string
+        return 'global'
+      enddef
+      def AnotherFunc(): number
+        let Gfunc = function('len')
+        return Gfunc('testing')
+      enddef
+      g:Gfunc()->assert_equal('global')
+      AnotherFunc()->assert_equal(7)
+      delfunc g:Gfunc
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      def g:Func(): string
+        return 'global'
+      enddef
+      def AnotherFunc()
+        g:Func = function('len')
+      enddef
+      AnotherFunc()
+  END
+  CheckScriptFailure(lines, 'E705:')
+  delfunc g:Func
+enddef
+
 func TakesOneArg(arg)
   echo a:arg
 endfunc
