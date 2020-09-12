@@ -37,6 +37,7 @@
 
 static void set_options_default(int opt_flags);
 static void set_string_default_esc(char *name, char_u *val, int escape);
+static char_u *find_dup_item(char_u *origval, char_u *newval, long_u flags);
 static char_u *option_expand(int opt_idx, char_u *val);
 static void didset_options(void);
 static void didset_options2(void);
@@ -139,6 +140,9 @@ set_init_1(int clean_arg)
 	int		len;
 	garray_T	ga;
 	int		mustfree;
+	char_u		*item;
+
+	opt_idx = findoption((char_u *)"backupskip");
 
 	ga_init2(&ga, 1, 100);
 	for (n = 0; n < (long)(sizeof(names) / sizeof(char *)); ++n)
@@ -158,15 +162,20 @@ set_init_1(int clean_arg)
 	    {
 		// First time count the NUL, otherwise count the ','.
 		len = (int)STRLEN(p) + 3;
-		if (ga_grow(&ga, len) == OK)
+		item = alloc(len);
+		STRCPY(item, p);
+		add_pathsep(item);
+		STRCAT(item, "*");
+		if (find_dup_item(ga.ga_data, item, options[opt_idx].flags)
+									== NULL
+			&& ga_grow(&ga, len) == OK)
 		{
 		    if (ga.ga_len > 0)
 			STRCAT(ga.ga_data, ",");
-		    STRCAT(ga.ga_data, p);
-		    add_pathsep(ga.ga_data);
-		    STRCAT(ga.ga_data, "*");
+		    STRCAT(ga.ga_data, item);
 		    ga.ga_len += len;
 		}
+		vim_free(item);
 	    }
 	    if (mustfree)
 		vim_free(p);
@@ -665,6 +674,46 @@ set_string_default_esc(char *name, char_u *val, int escape)
 set_string_default(char *name, char_u *val)
 {
     set_string_default_esc(name, val, FALSE);
+}
+
+/*
+ * For an option value that contains comma separated items, find "newval" in
+ * "origval".  Return NULL if not found.
+ */
+    static char_u *
+find_dup_item(char_u *origval, char_u *newval, long_u flags)
+{
+    int	    bs;
+    size_t  newlen;
+    char_u  *s;
+
+    if (origval == NULL)
+	return NULL;
+
+    newlen = STRLEN(newval);
+    for (s = origval; *s != NUL; ++s)
+    {
+	if ((!(flags & P_COMMA)
+		    || s == origval
+		    || (s[-1] == ',' && !(bs & 1)))
+		&& STRNCMP(s, newval, newlen) == 0
+		&& (!(flags & P_COMMA)
+		    || s[newlen] == ','
+		    || s[newlen] == NUL))
+	    return s;
+	// Count backslashes.  Only a comma with an even number of backslashes
+	// or a single backslash preceded by a comma before it is recognized as
+	// a separator.
+	if ((s > origval + 1
+		    && s[-1] == '\\'
+		    && s[-2] != ',')
+		|| (s == origval + 1
+		    && s[-1] == '\\'))
+	    ++bs;
+	else
+	    bs = 0;
+    }
+    return NULL;
 }
 
 /*
@@ -1572,7 +1621,6 @@ do_set(
 #endif
 			unsigned  newlen;
 			int	  comma;
-			int	  bs;
 			int	  new_value_alloced;	// new string option
 							// was allocated
 
@@ -1811,39 +1859,20 @@ do_set(
 			    if (removing || (flags & P_NODUP))
 			    {
 				i = (int)STRLEN(newval);
-				bs = 0;
-				for (s = origval; *s; ++s)
-				{
-				    if ((!(flags & P_COMMA)
-						|| s == origval
-						|| (s[-1] == ',' && !(bs & 1)))
-					    && STRNCMP(s, newval, i) == 0
-					    && (!(flags & P_COMMA)
-						|| s[i] == ','
-						|| s[i] == NUL))
-					break;
-				    // Count backslashes.  Only a comma with an
-				    // even number of backslashes or a single
-				    // backslash preceded by a comma before it
-				    // is recognized as a separator
-				    if ((s > origval + 1
-						&& s[-1] == '\\'
-						&& s[-2] != ',')
-					    || (s == origval + 1
-						&& s[-1] == '\\'))
-
-					++bs;
-				    else
-					bs = 0;
-				}
+				s = find_dup_item(origval, newval, flags);
 
 				// do not add if already there
-				if ((adding || prepending) && *s)
+				if ((adding || prepending) && s != NULL)
 				{
 				    prepending = FALSE;
 				    adding = FALSE;
 				    STRCPY(newval, origval);
 				}
+
+				// if no duplicate, move pointer to end of
+				// original value
+				if (s == NULL)
+				    s = origval + (int)STRLEN(origval);
 			    }
 
 			    // concatenate the two strings; add a ',' if
