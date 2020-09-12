@@ -162,7 +162,7 @@ set_init_1(int clean_arg)
 	    {
 		// First time count the NUL, otherwise count the ','.
 		len = (int)STRLEN(p) + 3;
-		item = alloc(len - 1);
+		item = alloc(len);
 		STRCPY(item, p);
 		add_pathsep(item);
 		STRCAT(item, "*");
