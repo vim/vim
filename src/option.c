@@ -140,7 +140,6 @@ set_init_1(int clean_arg)
 	int		len;
 	garray_T	ga;
 	int		mustfree;
-	int		opt_idx;
 	char		*item;
 
 	opt_idx = findoption((char_u *)"backupskip");
