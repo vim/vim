@@ -3308,6 +3308,14 @@ def Test_invalid_sid()
   delete('Xdidit')
 enddef
 
+def Test_unset_any_variable()
+  let lines =<< trim END
+    let var: any
+    assert_equal(0, var)
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new
