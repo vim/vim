@@ -7434,7 +7434,7 @@ mch_libcall(
 			    )))
 		{
 		    if (string_result == NULL)
-			retval_int = ((STRPROCINT)ProcAdd)(argstring);
+			retval_int = ((STRPROCINT)(void *)ProcAdd)(argstring);
 		    else
 			retval_str = (ProcAdd)(argstring);
 		}
@@ -7456,7 +7456,7 @@ mch_libcall(
 			    )))
 		{
 		    if (string_result == NULL)
-			retval_int = ((INTPROCINT)ProcAddI)(argint);
+			retval_int = ((INTPROCINT)(void *)ProcAddI)(argint);
 		    else
 			retval_str = (ProcAddI)(argint);
 		}
