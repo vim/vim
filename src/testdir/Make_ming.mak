@@ -95,7 +95,7 @@ tinytests: $(SCRIPTS_TINY_OUT)
 # Copy the input files to dostmp, changing the fileformat to dos.
 $(DOSTMP)/%.in : %.in
 	if not exist $(DOSTMP)\nul mkdir $(DOSTMP)
-	if not exist $@ $(DEL) $@
+	if exist $(DOSTMP)\$< $(DEL) $(DOSTMP)\$<
 	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=dos|f $@|wq" $<
 
 # For each input file dostmp/test99.in run the tests.
