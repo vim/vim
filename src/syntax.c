@@ -6316,9 +6316,11 @@ ex_ownsyntax(exarg_T *eap)
 #ifdef FEAT_SPELL
 	// TODO: keep the spell checking as it was.
 	curwin->w_p_spell = FALSE;	// No spell checking
+	// make sure option values are "empty_option" instead of NULL
 	clear_string_option(&curwin->w_s->b_p_spc);
 	clear_string_option(&curwin->w_s->b_p_spf);
 	clear_string_option(&curwin->w_s->b_p_spl);
+	clear_string_option(&curwin->w_s->b_p_spo);
 #endif
 	clear_string_option(&curwin->w_s->b_syn_isk);
     }
