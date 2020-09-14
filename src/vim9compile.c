@@ -5066,12 +5066,13 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    {
 			type_T *use_type = lvar->lv_type;
 
-			// without operator type is here, otherwise below
+			// without operator check type here, otherwise below
 			if (has_index)
 			{
 			    use_type = use_type->tt_member;
 			    if (use_type == NULL)
-				use_type = &t_void;
+				// could be indexing "any"
+				use_type = &t_any;
 			}
 			if (need_type(stacktype, use_type, -1, cctx, FALSE)
 								       == FAIL)
