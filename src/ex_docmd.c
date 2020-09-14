@@ -3224,16 +3224,30 @@ find_ex_command(
 			    // "g:varname" is an expression.
 			 || eap->cmd[1] == ':'
 			    )
-			: (
-			    // "varname[]" is an expression.
-			    *p == '['
 			    // "varname->func()" is an expression.
-			 || (*p == '-' && p[1] == '>')
-			    // "varname.expr" is an expression.
-			 || (*p == '.' && ASCII_ISALPHA(p[1]))
-			 )))
+			: (*p == '-' && p[1] == '>')))
 	    {
 		eap->cmdidx = CMD_eval;
+		return eap->cmd;
+	    }
+
+	    if (p != eap->cmd && (
+			    // "varname[]" is an expression.
+			    *p == '['
+			    // "varname.key" is an expression.
+			 || (*p == '.' && ASCII_ISALPHA(p[1]))))
+	    {
+		char_u	*after = p;
+
+		// When followed by "=" or "+=" then it is an assignment.
+		++emsg_silent;
+		if (skip_expr(&after) == OK
+				  && (*after == '='
+				      || (*after != NUL && after[1] == '=')))
+		    eap->cmdidx = CMD_let;
+		else
+		    eap->cmdidx = CMD_eval;
+		--emsg_silent;
 		return eap->cmd;
 	    }
 
