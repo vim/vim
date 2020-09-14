@@ -124,7 +124,7 @@ func Test_gf()
 endfunc
 
 func Test_gf_visual()
-  call writefile([], "Xtest_gf_visual")
+  call writefile(['one', 'two', 'three', 'four'], "Xtest_gf_visual")
   new
   call setline(1, 'XXXtest_gf_visualXXX')
   set hidden
@@ -137,6 +137,25 @@ func Test_gf_visual()
   call setline(1, ["one", "two"])
   normal VGgf
   call assert_equal('Xtest_gf_visual', @%)
+
+  " following line number is used for gF
+  bwipe!
+  new
+  call setline(1, 'XXXtest_gf_visual:3XXX')
+  norm! 0ttvt:gF
+  call assert_equal('Xtest_gf_visual', bufname('%'))
+  call assert_equal(3, getcurpos()[1])
+
+  " line number in visual area is used for file name
+  if has('unix')
+    bwipe!
+    call writefile([], "Xtest_gf_visual:3")
+    new
+    call setline(1, 'XXXtest_gf_visual:3XXX')
+    norm! 0ttvtXgF
+    call assert_equal('Xtest_gf_visual:3', bufname('%'))
+  call delete('Xtest_gf_visual:3')
+  endif
 
   bwipe!
   call delete('Xtest_gf_visual')
