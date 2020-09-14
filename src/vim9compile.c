@@ -4276,7 +4276,7 @@ compile_return(char_u *arg, int set_return_type, cctx_T *cctx)
 	    }
 	    if (need_type(stack_type, cctx->ctx_ufunc->uf_ret_type, -1,
 							  cctx, FALSE) == FAIL)
-	    return NULL;
+		return NULL;
 	}
     }
     else
@@ -6830,7 +6830,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	cmd = ea.cmd;
 	if (*cmd != '\'' || starts_with_colon)
 	{
-	    ea.cmd = skip_range(ea.cmd, NULL);
+	    ea.cmd = skip_range(ea.cmd, TRUE, NULL);
 	    if (ea.cmd > cmd)
 	    {
 		if (!starts_with_colon)

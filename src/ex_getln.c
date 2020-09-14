@@ -187,8 +187,12 @@ set_search_match(pos_T *t)
  * May change the last search pattern.
  */
     static int
-do_incsearch_highlighting(int firstc, int *search_delim, incsearch_state_T *is_state,
-						     int *skiplen, int *patlen)
+do_incsearch_highlighting(
+	int		    firstc,
+	int		    *search_delim,
+	incsearch_state_T   *is_state,
+	int		    *skiplen,
+	int		    *patlen)
 {
     char_u	*cmd;
     cmdmod_T	save_cmdmod = cmdmod;
@@ -230,7 +234,7 @@ do_incsearch_highlighting(int firstc, int *search_delim, incsearch_state_T *is_s
     parse_command_modifiers(&ea, &dummy, TRUE);
     cmdmod = save_cmdmod;
 
-    cmd = skip_range(ea.cmd, NULL);
+    cmd = skip_range(ea.cmd, TRUE, NULL);
     if (vim_strchr((char_u *)"sgvl", *cmd) == NULL)
 	goto theend;
 

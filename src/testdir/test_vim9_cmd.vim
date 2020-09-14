@@ -330,6 +330,17 @@ def Test_put_command()
   bwipe!
 enddef
 
+def Test_command_star_range()
+  new
+  setline(1, ['xxx foo xxx', 'xxx bar xxx', 'xxx foo xx bar'])
+  setpos("'<", [0, 1, 0, 0])
+  setpos("'>", [0, 3, 0, 0])
+  :*s/\(foo\|bar\)/baz/g
+  getline(1, 3)->assert_equal(['xxx baz xxx', 'xxx baz xxx', 'xxx baz xx baz'])
+
+  bwipe!
+enddef
+
 
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

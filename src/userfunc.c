@@ -3150,7 +3150,7 @@ def_function(exarg_T *eap, char_u *name_arg)
 	    }
 
 	    // Check for ":append", ":change", ":insert".  Not for :def.
-	    p = skip_range(p, NULL);
+	    p = skip_range(p, FALSE, NULL);
 	    if (eap->cmdidx != CMD_def
 		&& ((p[0] == 'a' && (!ASCII_ISALPHA(p[1]) || p[1] == 'p'))
 		    || (p[0] == 'c'
