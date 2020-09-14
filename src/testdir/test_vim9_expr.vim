@@ -481,6 +481,7 @@ def Test_expr4_equal()
   set noignorecase
 
   CheckDefFailure(["let x = 'a' == xxx"], 'E1001:', 1)
+  CheckDefExecFailure(['let items: any', 'eval 1', 'eval 2', 'if items == []', 'endif'], 'E691:', 4)
 
   let bb = 0z3f
   assert_equal(true, 0z3f == bb)

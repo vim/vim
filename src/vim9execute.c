@@ -2126,6 +2126,7 @@ call_def_function(
 		    exptype_T	exptype = iptr->isn_arg.op.op_type;
 		    int		ic = iptr->isn_arg.op.op_ic;
 
+		    SOURCING_LNUM = iptr->isn_lnum;
 		    typval_compare(tv1, tv2, exptype, ic);
 		    clear_tv(tv2);
 		    --ectx.ec_stack.ga_len;
