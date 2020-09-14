@@ -6903,7 +6903,8 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	if (ea.cmdidx != CMD_SIZE
 			    && ea.cmdidx != CMD_write && ea.cmdidx != CMD_read)
 	{
-	    ea.argt = excmd_get_argt(ea.cmdidx);
+	    if (ea.cmdidx >= 0)
+		ea.argt = excmd_get_argt(ea.cmdidx);
 	    if ((ea.argt & EX_BANG) && *p == '!')
 	    {
 		ea.forceit = TRUE;
