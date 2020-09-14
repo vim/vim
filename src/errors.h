@@ -258,4 +258,12 @@ EXTERN char e_assert_fails_fifth_argument[]
 	INIT(= N_("E1116: assert_fails() fifth argument must be a string"));
 EXTERN char e_cannot_use_bang_with_nested_def[]
 	INIT(= N_("E1117: Cannot use ! with nested :def"));
+EXTERN char e_cannot_change_list[]
+	INIT(= N_("E1118: Cannot change list"));
+EXTERN char e_cannot_change_list_item[]
+	INIT(= N_("E1119: Cannot change list item"));
+EXTERN char e_cannot_change_dict[]
+	INIT(= N_("E1120: Cannot change dict"));
+EXTERN char e_cannot_change_dict_item[]
+	INIT(= N_("E1121: Cannot change dict item"));
 #endif

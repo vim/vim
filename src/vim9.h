@@ -58,6 +58,8 @@ typedef enum {
     ISN_UNLET,		// unlet variable isn_arg.unlet.ul_name
     ISN_UNLETENV,	// unlet environment variable isn_arg.unlet.ul_name
 
+    ISN_LOCKCONST,	// lock constant value
+
     // constants
     ISN_PUSHNR,		// push number isn_arg.number
     ISN_PUSHBOOL,	// push bool value isn_arg.number

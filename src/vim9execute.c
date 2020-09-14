@@ -678,6 +678,21 @@ call_partial(typval_T *tv, int argcount_arg, ectx_T *ectx)
 }
 
 /*
+ * Check if "lock" is VAR_LOCKED or VAR_FIXED.  If so give an error and return
+ * TRUE.
+ */
+    static int
+error_if_locked(int lock, char *error)
+{
+    if (lock & (VAR_LOCKED | VAR_FIXED))
+    {
+	emsg(_(error));
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
  * Store "tv" in variable "name".
  * This is for s: and g: variables.
  */
@@ -1455,12 +1470,12 @@ call_def_function(
 		    typval_T	*tv_list = STACK_TV_BOT(-1);
 		    list_T	*list = tv_list->vval.v_list;
 
+		    SOURCING_LNUM = iptr->isn_lnum;
 		    if (lidx < 0 && list->lv_len + lidx >= 0)
 			// negative index is relative to the end
 			lidx = list->lv_len + lidx;
 		    if (lidx < 0 || lidx > list->lv_len)
 		    {
-			SOURCING_LNUM = iptr->isn_lnum;
 			semsg(_(e_listidx), lidx);
 			goto on_error;
 		    }
@@ -1469,12 +1484,18 @@ call_def_function(
 		    {
 			listitem_T *li = list_find(list, lidx);
 
+			if (error_if_locked(li->li_tv.v_lock,
+						    e_cannot_change_list_item))
+			    goto failed;
 			// overwrite existing list item
 			clear_tv(&li->li_tv);
 			li->li_tv = *tv;
 		    }
 		    else
 		    {
+			if (error_if_locked(list->lv_lock,
+							 e_cannot_change_list))
+			    goto failed;
 			// append to list, only fails when out of memory
 			if (list_append_tv(list, tv) == FAIL)
 			    goto failed;
@@ -1495,9 +1516,9 @@ call_def_function(
 		    dict_T	*dict = tv_dict->vval.v_dict;
 		    dictitem_T	*di;
 
+		    SOURCING_LNUM = iptr->isn_lnum;
 		    if (dict == NULL)
 		    {
-			SOURCING_LNUM = iptr->isn_lnum;
 			emsg(_(e_dictionary_not_set));
 			goto on_error;
 		    }
@@ -1507,12 +1528,18 @@ call_def_function(
 		    di = dict_find(dict, key, -1);
 		    if (di != NULL)
 		    {
+			if (error_if_locked(di->di_tv.v_lock,
+						    e_cannot_change_dict_item))
+			    goto failed;
 			// overwrite existing value
 			clear_tv(&di->di_tv);
 			di->di_tv = *tv;
 		    }
 		    else
 		    {
+			if (error_if_locked(dict->dv_lock,
+							 e_cannot_change_dict))
+			    goto failed;
 			// add to dict, only fails when out of memory
 			if (dict_add_tv(dict, (char *)key, tv) == FAIL)
 			    goto failed;
@@ -1601,6 +1628,10 @@ call_def_function(
 		break;
 	    case ISN_UNLETENV:
 		vim_unsetenv(iptr->isn_arg.unlet.ul_name);
+		break;
+
+	    case ISN_LOCKCONST:
+		item_lock(STACK_TV_BOT(-1), 100, TRUE, TRUE);
 		break;
 
 	    // create a list from items on the stack; uses a single allocation
@@ -3024,6 +3055,9 @@ ex_disassemble(exarg_T *eap)
 		smsg("%4d UNLETENV%s $%s", current,
 			iptr->isn_arg.unlet.ul_forceit ? "!" : "",
 			iptr->isn_arg.unlet.ul_name);
+		break;
+	    case ISN_LOCKCONST:
+		smsg("%4d LOCKCONST", current);
 		break;
 	    case ISN_NEWLIST:
 		smsg("%4d NEWLIST size %lld", current,

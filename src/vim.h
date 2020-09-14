@@ -2136,7 +2136,8 @@ typedef enum {
 
 // Flags for assignment functions.
 #define LET_IS_CONST	1   // ":const"
-#define LET_NO_COMMAND	2   // "var = expr" without ":let" or ":const"
+#define LET_FORCEIT	2   // ":const!" (LET_IS_CONST is also set)
+#define LET_NO_COMMAND	4   // "var = expr" without ":let" or ":const"
 
 #include "ex_cmds.h"	    // Ex command defines
 #include "spell.h"	    // spell checking stuff

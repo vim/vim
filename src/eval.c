@@ -1200,7 +1200,7 @@ set_var_lval(
     char_u	*endp,
     typval_T	*rettv,
     int		copy,
-    int		flags,    // LET_IS_CONST and/or LET_NO_COMMAND
+    int		flags,    // LET_IS_CONST, LET_FORCEIT, LET_NO_COMMAND
     char_u	*op)
 {
     int		cc;

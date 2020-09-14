@@ -828,8 +828,48 @@ def Test_const()
   let lines =<< trim END
     const list = [1, 2, 3]
     list[0] = 4
+    list->assert_equal([4, 2, 3])
+    const! other = [5, 6, 7]
+    other->assert_equal([5, 6, 7])
   END
   CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_const_bang()
+  let lines =<< trim END
+      const! var = 234
+      var = 99
+  END
+  CheckDefExecFailure(lines, 'E1018:', 2)
+  CheckScriptFailure(['vim9script'] + lines, 'E46:', 3)
+
+  lines =<< trim END
+      const! ll = [2, 3, 4]
+      ll[0] = 99
+  END
+  CheckDefExecFailure(lines, 'E1119:', 2)
+  CheckScriptFailure(['vim9script'] + lines, 'E741:', 3)
+
+  lines =<< trim END
+      const! ll = [2, 3, 4]
+      ll[3] = 99
+  END
+  CheckDefExecFailure(lines, 'E1118:', 2)
+  CheckScriptFailure(['vim9script'] + lines, 'E684:', 3)
+
+  lines =<< trim END
+      const! dd = #{one: 1, two: 2}
+      dd["one"] = 99
+  END
+  CheckDefExecFailure(lines, 'E1121:', 2)
+  CheckScriptFailure(['vim9script'] + lines, 'E741:', 3)
+
+  lines =<< trim END
+      const! dd = #{one: 1, two: 2}
+      dd["three"] = 99
+  END
+  CheckDefExecFailure(lines, 'E1120:')
+  CheckScriptFailure(['vim9script'] + lines, 'E741:', 3)
 enddef
 
 def Test_range_no_colon()
