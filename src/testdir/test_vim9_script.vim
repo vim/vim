@@ -319,7 +319,6 @@ def Test_assignment_list()
   list3 += ['end']
   assert_equal(['sdf', 'asdf', 'end'], list3)
 
-
   CheckDefExecFailure(['let ll = [1, 2, 3]', 'll[-4] = 6'], 'E684:')
   CheckDefExecFailure(['let [v1, v2] = [1, 2]'], 'E1092:')
 
@@ -367,7 +366,7 @@ def Test_assignment_dict()
     enddef
     assert_equal(#{a: 43}, FillDict())
   END
-  call CheckScriptSuccess(lines)
+  CheckScriptSuccess(lines)
 
   lines =<< trim END
     vim9script
@@ -378,7 +377,7 @@ def Test_assignment_dict()
     enddef
     FillDict()
   END
-  call CheckScriptFailure(lines, 'E1103:')
+  CheckScriptFailure(lines, 'E1103:')
 
   # assignment to global dict
   lines =<< trim END
@@ -390,7 +389,7 @@ def Test_assignment_dict()
     enddef
     assert_equal(#{a: 43}, FillDict())
   END
-  call CheckScriptSuccess(lines)
+  CheckScriptSuccess(lines)
 
   # assignment to buffer dict
   lines =<< trim END
@@ -402,7 +401,7 @@ def Test_assignment_dict()
     enddef
     assert_equal(#{a: 43}, FillDict())
   END
-  call CheckScriptSuccess(lines)
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_assignment_local()
@@ -440,7 +439,7 @@ def Test_assignment_local()
     enddef
     call Test_assignment_local_internal()
   END
-  call CheckScriptSuccess(script_lines)
+  CheckScriptSuccess(script_lines)
 enddef
 
 def Test_assignment_default()
@@ -794,37 +793,37 @@ def Test_delfunction()
   CheckScriptSuccess(lines)
 enddef
 
-func Test_wrong_type()
-  call CheckDefFailure(['let var: list<nothing>'], 'E1010:')
-  call CheckDefFailure(['let var: list<list<nothing>>'], 'E1010:')
-  call CheckDefFailure(['let var: dict<nothing>'], 'E1010:')
-  call CheckDefFailure(['let var: dict<dict<nothing>>'], 'E1010:')
+def Test_wrong_type()
+  CheckDefFailure(['let var: list<nothing>'], 'E1010:')
+  CheckDefFailure(['let var: list<list<nothing>>'], 'E1010:')
+  CheckDefFailure(['let var: dict<nothing>'], 'E1010:')
+  CheckDefFailure(['let var: dict<dict<nothing>>'], 'E1010:')
 
-  call CheckDefFailure(['let var: dict<number'], 'E1009:')
-  call CheckDefFailure(['let var: dict<list<number>'], 'E1009:')
+  CheckDefFailure(['let var: dict<number'], 'E1009:')
+  CheckDefFailure(['let var: dict<list<number>'], 'E1009:')
 
-  call CheckDefFailure(['let var: ally'], 'E1010:')
-  call CheckDefFailure(['let var: bram'], 'E1010:')
-  call CheckDefFailure(['let var: cathy'], 'E1010:')
-  call CheckDefFailure(['let var: dom'], 'E1010:')
-  call CheckDefFailure(['let var: freddy'], 'E1010:')
-  call CheckDefFailure(['let var: john'], 'E1010:')
-  call CheckDefFailure(['let var: larry'], 'E1010:')
-  call CheckDefFailure(['let var: ned'], 'E1010:')
-  call CheckDefFailure(['let var: pam'], 'E1010:')
-  call CheckDefFailure(['let var: sam'], 'E1010:')
-  call CheckDefFailure(['let var: vim'], 'E1010:')
+  CheckDefFailure(['let var: ally'], 'E1010:')
+  CheckDefFailure(['let var: bram'], 'E1010:')
+  CheckDefFailure(['let var: cathy'], 'E1010:')
+  CheckDefFailure(['let var: dom'], 'E1010:')
+  CheckDefFailure(['let var: freddy'], 'E1010:')
+  CheckDefFailure(['let var: john'], 'E1010:')
+  CheckDefFailure(['let var: larry'], 'E1010:')
+  CheckDefFailure(['let var: ned'], 'E1010:')
+  CheckDefFailure(['let var: pam'], 'E1010:')
+  CheckDefFailure(['let var: sam'], 'E1010:')
+  CheckDefFailure(['let var: vim'], 'E1010:')
 
-  call CheckDefFailure(['let Ref: number', 'Ref()'], 'E1085:')
-  call CheckDefFailure(['let Ref: string', 'let res = Ref()'], 'E1085:')
-endfunc
+  CheckDefFailure(['let Ref: number', 'Ref()'], 'E1085:')
+  CheckDefFailure(['let Ref: string', 'let res = Ref()'], 'E1085:')
+enddef
 
-func Test_const()
-  call CheckDefFailure(['const var = 234', 'var = 99'], 'E1018:')
-  call CheckDefFailure(['const one = 234', 'let one = 99'], 'E1017:')
-  call CheckDefFailure(['const two'], 'E1021:')
-  call CheckDefFailure(['const &option'], 'E996:')
-endfunc
+def Test_const()
+  CheckDefFailure(['const var = 234', 'var = 99'], 'E1018:')
+  CheckDefFailure(['const one = 234', 'let one = 99'], 'E1017:')
+  CheckDefFailure(['const two'], 'E1021:')
+  CheckDefFailure(['const &option'], 'E996:')
+enddef
 
 def Test_range_no_colon()
   CheckDefFailure(['%s/a/b/'], 'E1050:')
@@ -844,11 +843,11 @@ def Test_block()
   assert_equal(1, outer)
 enddef
 
-func Test_block_failure()
-  call CheckDefFailure(['{', 'let inner = 1', '}', 'echo inner'], 'E1001:')
-  call CheckDefFailure(['}'], 'E1025:')
-  call CheckDefFailure(['{', 'echo 1'], 'E1026:')
-endfunc
+def Test_block_failure()
+  CheckDefFailure(['{', 'let inner = 1', '}', 'echo inner'], 'E1001:')
+  CheckDefFailure(['}'], 'E1025:')
+  CheckDefFailure(['{', 'echo 1'], 'E1026:')
+enddef
 
 func g:NoSuchFunc()
   echo 'none'

@@ -279,7 +279,7 @@ def Test_call_wrong_args()
     enddef
     Func([])
   END
-  call CheckScriptFailure(lines, 'E1013: argument 1: type mismatch, expected string but got list<unknown>', 5)
+  CheckScriptFailure(lines, 'E1013: argument 1: type mismatch, expected string but got list<unknown>', 5)
 enddef
 
 " Default arg and varargs
@@ -1099,7 +1099,7 @@ def Test_error_reporting()
     enddef
     defcompile
   END
-  call writefile(lines, 'Xdef')
+  writefile(lines, 'Xdef')
   try
     source Xdef
     assert_report('should have failed')
@@ -1119,7 +1119,7 @@ def Test_error_reporting()
     enddef
     defcompile
   END
-  call writefile(lines, 'Xdef')
+  writefile(lines, 'Xdef')
   try
     source Xdef
     assert_report('should have failed')
@@ -1138,7 +1138,7 @@ def Test_error_reporting()
     defcompile
     Func()
   END
-  call writefile(lines, 'Xdef')
+  writefile(lines, 'Xdef')
   try
     source Xdef
     assert_report('should have failed')
@@ -1146,7 +1146,7 @@ def Test_error_reporting()
     v:throwpoint->assert_match('_Func, line 3$')
   endtry
 
-  call delete('Xdef')
+  delete('Xdef')
 enddef
 
 def Test_deleted_function()
