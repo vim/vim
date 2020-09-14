@@ -821,8 +821,15 @@ enddef
 def Test_const()
   CheckDefFailure(['const var = 234', 'var = 99'], 'E1018:')
   CheckDefFailure(['const one = 234', 'let one = 99'], 'E1017:')
+  CheckDefFailure(['const list = [1, 2]', 'let list = [3, 4]'], 'E1017:')
   CheckDefFailure(['const two'], 'E1021:')
   CheckDefFailure(['const &option'], 'E996:')
+
+  let lines =<< trim END
+    const list = [1, 2, 3]
+    list[0] = 4
+  END
+  CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_range_no_colon()

@@ -2945,6 +2945,7 @@ set_var_const(
     char_u	*varname;
     hashtab_T	*ht;
     int		is_script_local;
+    int		vim9script = in_vim9script();
 
     ht = find_var_ht(name, &varname);
     if (ht == NULL || *varname == NUL)
@@ -2954,7 +2955,7 @@ set_var_const(
     }
     is_script_local = ht == get_script_local_ht();
 
-    if (in_vim9script()
+    if (vim9script
 	    && !is_script_local
 	    && (flags & LET_NO_COMMAND) == 0
 	    && name[1] == ':')
@@ -2992,7 +2993,7 @@ set_var_const(
 		goto failed;
 	    }
 
-	    if (is_script_local && in_vim9script())
+	    if (is_script_local && vim9script)
 	    {
 		if ((flags & LET_NO_COMMAND) == 0)
 		{
@@ -3088,7 +3089,7 @@ set_var_const(
 	if (flags & LET_IS_CONST)
 	    di->di_flags |= DI_FLAGS_LOCK;
 
-	if (is_script_local && in_vim9script())
+	if (is_script_local && vim9script)
 	{
 	    scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
 
@@ -3123,7 +3124,8 @@ set_var_const(
 	init_tv(tv);
     }
 
-    if (flags & LET_IS_CONST)
+    // ":const var = val" locks the value, but not in Vim9 script
+    if ((flags & LET_IS_CONST) && !vim9script)
 	// Like :lockvar! name: lock the value and what it contains, but only
 	// if the reference count is up to one.  That locks only literal
 	// values.

@@ -4800,11 +4800,6 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			semsg(_(e_variable_already_declared), name);
 			goto theend;
 		    }
-		    else if (lvar->lv_const)
-		    {
-			semsg(_(e_cannot_assign_to_constant), name);
-			goto theend;
-		    }
 		}
 		else
 		{
@@ -4958,6 +4953,11 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	else if (lvar == &arg_lvar)
 	{
 	    semsg(_(e_cannot_assign_to_argument), name);
+	    goto theend;
+	}
+	if (!is_decl && lvar != NULL && lvar->lv_const && !has_index)
+	{
+	    semsg(_(e_cannot_assign_to_constant), name);
 	    goto theend;
 	}
 
