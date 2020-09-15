@@ -7288,9 +7288,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	N N   Printer page number.  (Only works in the 'printheader' option.)
 	l N   Line number.
 	L N   Number of lines in buffer.
-	c N   Column number.
-	v N   Virtual column number.
-	V N   Virtual column number as -{num}.  Not displayed if equal to 'c'.
+	c N   Virtual column number.
+	v N   Screen column number.
+	V N   Screen column number as -{num}.  Not displayed if equal to 'c'.
 	p N   Percentage through file in lines as in |CTRL-G|.
 	P S   Percentage through file of displayed window.  This is like the
 	      percentage described for 'ruler'.  Always 3 in length, unless
