@@ -1629,7 +1629,8 @@ restore_cterm_colors(void)
     static int
 hl_has_settings(int idx, int check_link)
 {
-    return (   HL_TABLE()[idx].sg_term_attr != 0
+    return HL_TABLE()[idx].sg_cleared == 0 &&
+	    (  HL_TABLE()[idx].sg_term_attr != 0
 	    || HL_TABLE()[idx].sg_cterm_attr != 0
 	    || HL_TABLE()[idx].sg_cterm_fg != 0
 	    || HL_TABLE()[idx].sg_cterm_bg != 0
