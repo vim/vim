@@ -2775,8 +2775,12 @@ win_line(
 	// highlight the cursor position itself.
 	// Also highlight the 'colorcolumn' if it is different than
 	// 'cursorcolumn'
+	// Also highlight the 'colorcolumn' if 'breakindent' and/or 'showbreak'
+	// options are set
 	vcol_save_attr = -1;
-	if (draw_state == WL_LINE && !lnum_in_visual_area
+	if ((draw_state == WL_LINE ||
+	     draw_state == WL_BRI ||
+	     draw_state == WL_SBR) && !lnum_in_visual_area
 		&& search_attr == 0 && area_attr == 0)
 	{
 	    if (wp->w_p_cuc && VCOL_HLC == (long)wp->w_virtcol
