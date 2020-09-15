@@ -1314,4 +1314,35 @@ func Test_prop_increment_decrement()
   call prop_type_delete('test')
 endfunc
 
+func Test_prop_block_insert()
+  new
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call setline(1, ['one ', 'two '])
+  call prop_add(1, 1, {'length': 3, 'type': 'test'})
+  call prop_add(2, 1, {'length': 3, 'type': 'test'})
+
+  " insert "xx" in the first column of both lines
+  exe "normal! gg0\<C-V>jIxx\<Esc>"
+  eval getline(1, 2)->assert_equal(['xxone ', 'xxtwo '])
+  let expected = [#{id: 0, col: 3, end: 1, type: 'test', length: 3, start: 1}]
+  eval prop_list(1)->assert_equal(expected)
+  eval prop_list(2)->assert_equal(expected)
+
+  " insert "yy" inside the text props to make them longer
+  exe "normal! gg03l\<C-V>jIyy\<Esc>"
+  eval getline(1, 2)->assert_equal(['xxoyyne ', 'xxtyywo '])
+  let expected[0].length = 5
+  eval prop_list(1)->assert_equal(expected)
+  eval prop_list(2)->assert_equal(expected)
+
+  " insert "zz" after the text props, text props don't change
+  exe "normal! gg07l\<C-V>jIzz\<Esc>"
+  eval getline(1, 2)->assert_equal(['xxoyynezz ', 'xxtyywozz '])
+  eval prop_list(1)->assert_equal(expected)
+  eval prop_list(2)->assert_equal(expected)
+
+  bwipe!
+  call prop_type_delete('test')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

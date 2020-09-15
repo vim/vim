@@ -481,6 +481,7 @@ block_insert(
     int		count = 0;	// extra spaces to replace a cut TAB
     int		spaces = 0;	// non-zero if cutting a TAB
     colnr_T	offset;		// pointer along new line
+    colnr_T	startcol;	// column where insert starts
     unsigned	s_len;		// STRLEN(s)
     char_u	*newp, *oldp;	// new, old lines
     linenr_T	lnum;		// loop var
@@ -553,9 +554,10 @@ block_insert(
 
 	// insert pre-padding
 	vim_memset(newp + offset, ' ', (size_t)spaces);
+	startcol = offset + spaces;
 
 	// copy the new text
-	mch_memmove(newp + offset + spaces, s, (size_t)s_len);
+	mch_memmove(newp + startcol, s, (size_t)s_len);
 	offset += s_len;
 
 	if (spaces && !bdp->is_short)
@@ -573,6 +575,10 @@ block_insert(
 	STRMOVE(newp + offset, oldp);
 
 	ml_replace(lnum, newp, FALSE);
+
+	if (b_insert)
+	    // correct any text properties
+	    inserted_bytes(lnum, startcol, s_len);
 
 	if (lnum == oap->end.lnum)
 	{

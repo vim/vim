@@ -693,7 +693,7 @@ changed_bytes(linenr_T lnum, colnr_T col)
  * Like changed_bytes() but also adjust text properties for "added" bytes.
  * When "added" is negative text was deleted.
  */
-    static void
+    void
 inserted_bytes(linenr_T lnum, colnr_T col, int added UNUSED)
 {
 #ifdef FEAT_PROP_POPUP
