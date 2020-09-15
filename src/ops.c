@@ -2636,6 +2636,9 @@ do_addsub(
     }
     else
     {
+	pos_T	save_pos;
+	int	i;
+
 	if (col > 0 && ptr[col - 1] == '-'
 		&& (!has_mbyte ||
 		    !(*mb_head_off)(ptr, ptr + col - 1))
@@ -2734,7 +2737,9 @@ do_addsub(
 	 */
 	if (c == '-')
 	    --length;
-	while (todel-- > 0)
+
+	save_pos = curwin->w_cursor;
+	for (i = 0; i < todel; ++i)
 	{
 	    if (c < 0x100 && isalpha(c))
 	    {
@@ -2743,10 +2748,10 @@ do_addsub(
 		else
 		    hexupper = FALSE;
 	    }
-	    // del_char() will mark line needing displaying
-	    (void)del_char(FALSE);
+	    inc_cursor();
 	    c = gchar_cursor();
 	}
+	curwin->w_cursor = save_pos;
 
 	/*
 	 * Prepare the leading characters in buf1[].
@@ -2776,7 +2781,6 @@ do_addsub(
 	 */
 	if (pre == 'b' || pre == 'B')
 	{
-	    int i;
 	    int bit = 0;
 	    int bits = sizeof(uvarnumber_T) * 8;
 
@@ -2809,9 +2813,33 @@ do_addsub(
 	    while (length-- > 0)
 		*ptr++ = '0';
 	*ptr = NUL;
+
 	STRCAT(buf1, buf2);
+
+	// Insert just after the first character to be removed, so that any
+	// text properties will be adjusted.  Then delete the old number
+	// afterwards.
+	save_pos = curwin->w_cursor;
+	if (todel > 0)
+	    inc_cursor();
 	ins_str(buf1);		// insert the new number
 	vim_free(buf1);
+
+	// del_char() will also mark line needing displaying
+	if (todel > 0)
+	{
+	    int bytes_after = (int)STRLEN(ml_get_curline())
+							- curwin->w_cursor.col;
+
+	    // Delete the one character before the insert.
+	    curwin->w_cursor = save_pos;
+	    (void)del_char(FALSE);
+	    curwin->w_cursor.col = STRLEN(ml_get_curline()) - bytes_after;
+	    --todel;
+	}
+	while (todel-- > 0)
+	    (void)del_char(FALSE);
+
 	endpos = curwin->w_cursor;
 	if (did_change && curwin->w_cursor.col)
 	    --curwin->w_cursor.col;

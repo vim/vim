@@ -1273,7 +1273,7 @@ func Test_prop_func_invalid_args()
   call assert_fails("call prop_type_list([])", 'E715:')
 endfunc
 
-func Test_split_join()
+func Test_prop_split_join()
   new
   call prop_type_add('test', {'highlight': 'ErrorMsg'})
   call setline(1, 'just some text')
@@ -1289,6 +1289,26 @@ func Test_split_join()
   " Join the two lines back together
   normal! 1GJ
   call assert_equal([{'id': 0, 'col': 6, 'end': 1, 'type': 'test', 'length': 5, 'start': 1}], prop_list(1))
+
+  bwipe!
+  call prop_type_delete('test')
+endfunc
+
+func Test_prop_increment_decrement()
+  new
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call setline(1, 'its 998 times')
+  call prop_add(1, 5, {'length': 3, 'type': 'test'})
+
+  exe "normal! 0f9\<C-A>"
+  eval getline(1)->assert_equal('its 999 times')
+  eval prop_list(1)->assert_equal([
+        \ #{id: 0, col: 5, end: 1, type: 'test', length: 3, start: 1}])
+
+  exe "normal! 0f9\<C-A>"
+  eval getline(1)->assert_equal('its 1000 times')
+  eval prop_list(1)->assert_equal([
+        \ #{id: 0, col: 5, end: 1, type: 'test', length: 4, start: 1}])
 
   bwipe!
   call prop_type_delete('test')
