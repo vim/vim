@@ -704,7 +704,10 @@ generate_2BOOL(cctx_T *cctx, int invert)
 }
 
     static int
-generate_TYPECHECK(cctx_T *cctx, type_T *vartype, int offset)
+generate_TYPECHECK(
+	cctx_T	    *cctx,
+	type_T	    *expected,
+	int	    offset)
 {
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
@@ -712,19 +715,18 @@ generate_TYPECHECK(cctx_T *cctx, type_T *vartype, int offset)
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr(cctx, ISN_CHECKTYPE)) == NULL)
 	return FAIL;
-    // TODO: whole type, e.g. for a function also arg and return types
-    isn->isn_arg.type.ct_type = vartype->tt_type;
+    isn->isn_arg.type.ct_type = alloc_type(expected);
     isn->isn_arg.type.ct_off = offset;
 
-    // type becomes vartype
-    ((type_T **)stack->ga_data)[stack->ga_len + offset] = vartype;
+    // type becomes expected
+    ((type_T **)stack->ga_data)[stack->ga_len + offset] = expected;
 
     return OK;
 }
 
 /*
  * Check that
- * - "actual" is "expected" type or
+ * - "actual" matches "expected" type or
  * - "actual" is a type that can be "expected" type: add a runtime check; or
  * - return FAIL.
  */
@@ -747,17 +749,29 @@ need_type(
 
     if (check_type(expected, actual, FALSE, 0) == OK)
 	return OK;
-    if (actual->tt_type != VAR_ANY
-	    && actual->tt_type != VAR_UNKNOWN
-	    && !(actual->tt_type == VAR_FUNC
-		&& (actual->tt_member == &t_any || actual->tt_argcount < 0)))
+
+    // If the actual type can be the expected type add a runtime check.
+    // TODO: if it's a constant a runtime check makes no sense.
+    if (actual->tt_type == VAR_ANY
+	    || actual->tt_type == VAR_UNKNOWN
+	    || (actual->tt_type == VAR_FUNC
+		&& (expected->tt_type == VAR_FUNC
+					   || expected->tt_type == VAR_PARTIAL)
+		&& (actual->tt_member == &t_any || actual->tt_argcount < 0))
+	    || (actual->tt_type == VAR_LIST
+		&& expected->tt_type == VAR_LIST
+		&& actual->tt_member == &t_any)
+	    || (actual->tt_type == VAR_DICT
+		&& expected->tt_type == VAR_DICT
+		&& actual->tt_member == &t_any))
     {
-	if (!silent)
-	    type_mismatch(expected, actual);
-	return FAIL;
+	generate_TYPECHECK(cctx, expected, offset);
+	return OK;
     }
-    generate_TYPECHECK(cctx, expected, offset);
-    return OK;
+
+    if (!silent)
+	type_mismatch(expected, actual);
+    return FAIL;
 }
 
 /*
@@ -776,7 +790,7 @@ generate_PUSHNR(cctx_T *cctx, varnumber_T number)
 
     if (number == 0 || number == 1)
     {
-	type_T	*type = alloc_type(cctx->ctx_type_list);
+	type_T	*type = get_type_ptr(cctx->ctx_type_list);
 
 	// A 0 or 1 number can also be used as a bool.
 	if (type != NULL)
@@ -4037,7 +4051,7 @@ compile_and_or(
 	typep = ((type_T **)stack->ga_data) + stack->ga_len - 1;
 	if (*typep != &t_bool)
 	{
-	    type_T *type = alloc_type(cctx->ctx_type_list);
+	    type_T *type = get_type_ptr(cctx->ctx_type_list);
 
 	    if (type != NULL)
 	    {
@@ -7290,6 +7304,10 @@ delete_instr(isn_T *isn)
 	    }
 	    break;
 
+	case ISN_CHECKTYPE:
+	    free_type(isn->isn_arg.type.ct_type);
+	    break;
+
 	case ISN_2BOOL:
 	case ISN_2STRING:
 	case ISN_2STRING_ANY:
@@ -7301,7 +7319,6 @@ delete_instr(isn_T *isn)
 	case ISN_CATCH:
 	case ISN_CHECKLEN:
 	case ISN_CHECKNR:
-	case ISN_CHECKTYPE:
 	case ISN_COMPAREANY:
 	case ISN_COMPAREBLOB:
 	case ISN_COMPAREBOOL:

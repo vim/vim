@@ -22,10 +22,10 @@
 
 /*
  * Allocate memory for a type_T and add the pointer to type_gap, so that it can
- * be freed later.
+ * be easily freed later.
  */
     type_T *
-alloc_type(garray_T *type_gap)
+get_type_ptr(garray_T *type_gap)
 {
     type_T *type;
 
@@ -48,6 +48,60 @@ clear_type_list(garray_T *gap)
     ga_clear(gap);
 }
 
+/*
+ * Take a type that is using entries in a growarray and turn it into a type
+ * with allocated entries.
+ */
+    type_T *
+alloc_type(type_T *type)
+{
+    type_T *ret;
+
+    if (type == NULL)
+	return NULL;
+
+    // A fixed type never contains allocated types, return as-is.
+    if (type->tt_flags & TTFLAG_STATIC)
+	return type;
+
+    ret = ALLOC_ONE(type_T);
+    *ret = *type;
+
+    if (ret->tt_member != NULL)
+	ret->tt_member = alloc_type(ret->tt_member);
+    if (type->tt_args != NULL)
+    {
+	int i;
+
+	ret->tt_args = ALLOC_MULT(type_T *, type->tt_argcount);
+	if (ret->tt_args != NULL)
+	    for (i = 0; i < type->tt_argcount; ++i)
+		ret->tt_args[i] = alloc_type(type->tt_args[i]);
+    }
+
+    return ret;
+}
+
+/*
+ * Free a type that was created with alloc_type().
+ */
+    void
+free_type(type_T *type)
+{
+    int i;
+
+    if (type == NULL || (type->tt_flags & TTFLAG_STATIC))
+	return;
+    if (type->tt_args != NULL)
+    {
+	for (i = 0; i < type->tt_argcount; ++i)
+	    free_type(type->tt_args[i]);
+	vim_free(type->tt_args);
+    }
+    free_type(type->tt_member);
+    vim_free(type);
+}
+
     type_T *
 get_list_type(type_T *member_type, garray_T *type_gap)
 {
@@ -67,7 +121,7 @@ get_list_type(type_T *member_type, garray_T *type_gap)
 	return &t_list_string;
 
     // Not a common type, create a new entry.
-    type = alloc_type(type_gap);
+    type = get_type_ptr(type_gap);
     if (type == NULL)
 	return &t_any;
     type->tt_type = VAR_LIST;
@@ -96,7 +150,7 @@ get_dict_type(type_T *member_type, garray_T *type_gap)
 	return &t_dict_string;
 
     // Not a common type, create a new entry.
-    type = alloc_type(type_gap);
+    type = get_type_ptr(type_gap);
     if (type == NULL)
 	return &t_any;
     type->tt_type = VAR_DICT;
@@ -112,7 +166,7 @@ get_dict_type(type_T *member_type, garray_T *type_gap)
     type_T *
 alloc_func_type(type_T *ret_type, int argcount, garray_T *type_gap)
 {
-    type_T *type = alloc_type(type_gap);
+    type_T *type = get_type_ptr(type_gap);
 
     if (type == NULL)
 	return &t_any;
@@ -197,13 +251,14 @@ func_type_add_arg_types(
 
 /*
  * Get a type_T for a typval_T.
- * "type_list" is used to temporarily create types in.
+ * "type_gap" is used to temporarily create types in.
  */
     static type_T *
 typval2type_int(typval_T *tv, garray_T *type_gap)
 {
     type_T  *type;
-    type_T  *member_type;
+    type_T  *member_type = &t_any;
+    int	    argcount = 0;
 
     if (tv->v_type == VAR_NUMBER)
 	return &t_number;
@@ -262,8 +317,18 @@ typval2type_int(typval_T *tv, garray_T *type_gap)
 	else
 	    name = tv->vval.v_string;
 	if (name != NULL)
-	    // TODO: how about a builtin function?
-	    ufunc = find_func(name, FALSE, NULL);
+	{
+	    int idx = find_internal_func(name);
+
+	    if (idx >= 0)
+	    {
+		// TODO: get actual arg count and types
+		argcount = -1;
+		member_type = internal_func_ret_type(idx, 0, NULL);
+	    }
+	    else
+		ufunc = find_func(name, FALSE, NULL);
+	}
 	if (ufunc != NULL)
 	{
 	    // May need to get the argument types from default values by
@@ -276,11 +341,12 @@ typval2type_int(typval_T *tv, garray_T *type_gap)
 	}
     }
 
-    type = alloc_type(type_gap);
+    type = get_type_ptr(type_gap);
     if (type == NULL)
 	return NULL;
     type->tt_type = tv->v_type;
-    type->tt_member = &t_any;
+    type->tt_argcount = argcount;
+    type->tt_member = member_type;
 
     return type;
 }
@@ -311,7 +377,7 @@ typval2type(typval_T *tv, garray_T *type_gap)
 		    && (tv->vval.v_number == 0 || tv->vval.v_number == 1))
 		|| (tv->v_lock & VAR_BOOL_OK)))
     {
-	type_T *newtype = alloc_type(type_gap);
+	type_T *newtype = get_type_ptr(type_gap);
 
 	// Number 0 and 1 and expression with "&&" or "||" can also be used
 	// for bool.
@@ -420,6 +486,7 @@ check_type(type_T *expected, type_T *actual, int give_msg, int argidx)
 		ret = check_type(expected->tt_member, actual->tt_member,
 								     FALSE, 0);
 	    if (ret == OK && expected->tt_argcount != -1
+		    && actual->tt_argcount != -1
 		    && (actual->tt_argcount < expected->tt_min_argcount
 			|| actual->tt_argcount > expected->tt_argcount))
 		    ret = FAIL;
@@ -940,7 +1007,6 @@ type_name(type_T *type, char **tofree)
 	ga_init2(&ga, 1, 100);
 	if (ga_grow(&ga, 20) == FAIL)
 	    return "[unknown]";
-	*tofree = ga.ga_data;
 	STRCPY(ga.ga_data, "func(");
 	ga.ga_len += 5;
 
@@ -963,20 +1029,19 @@ type_name(type_T *type, char **tofree)
 	    if (ga_grow(&ga, len + 8) == FAIL)
 	    {
 		vim_free(arg_free);
+		ga_clear(&ga);
 		return "[unknown]";
 	    }
-	    *tofree = ga.ga_data;
 	    if (varargs && i == type->tt_argcount - 1)
-	    {
-		STRCPY((char *)ga.ga_data + ga.ga_len, "...");
-		ga.ga_len += 3;
-	    }
+		ga_concat(&ga, (char_u *)"...");
 	    else if (i >= type->tt_min_argcount)
 		*((char *)ga.ga_data + ga.ga_len++) = '?';
-	    STRCPY((char *)ga.ga_data + ga.ga_len, arg_type);
-	    ga.ga_len += len;
+	    ga_concat(&ga, (char_u *)arg_type);
 	    vim_free(arg_free);
 	}
+	if (type->tt_argcount < 0)
+	    // any number of arguments
+	    ga_concat(&ga, (char_u *)"...");
 
 	if (type->tt_member == &t_void)
 	    STRCPY((char *)ga.ga_data + ga.ga_len, ")");
@@ -990,18 +1055,18 @@ type_name(type_T *type, char **tofree)
 	    if (ga_grow(&ga, len) == FAIL)
 	    {
 		vim_free(ret_free);
+		ga_clear(&ga);
 		return "[unknown]";
 	    }
-	    *tofree = ga.ga_data;
 	    STRCPY((char *)ga.ga_data + ga.ga_len, "): ");
 	    STRCPY((char *)ga.ga_data + ga.ga_len + 3, ret_name);
 	    vim_free(ret_free);
 	}
+	*tofree = ga.ga_data;
 	return ga.ga_data;
     }
 
     return name;
 }
-
 
 #endif // FEAT_EVAL

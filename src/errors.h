@@ -52,7 +52,7 @@ EXTERN char e_type_not_recognized_str[]
 EXTERN char e_name_too_long_str[]
 	INIT(= N_("E1011: name too long: %s"));
 EXTERN char e_type_mismatch_expected_str_but_got_str[]
-	INIT(= N_("E1012: type mismatch, expected %s but got %s"));
+	INIT(= N_("E1012: Type mismatch; expected %s but got %s"));
 EXTERN char e_argument_nr_type_mismatch_expected_str_but_got_str[]
 	INIT(= N_("E1013: argument %d: type mismatch, expected %s but got %s"));
 EXTERN char e_invalid_key_str[]

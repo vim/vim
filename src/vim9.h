@@ -207,7 +207,7 @@ typedef struct {
 
 // arguments to ISN_CHECKTYPE
 typedef struct {
-    vartype_T	ct_type;
+    type_T	*ct_type;
     int		ct_off;	    // offset in stack, -1 is bottom
 } checktype_T;
 

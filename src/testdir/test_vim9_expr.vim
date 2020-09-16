@@ -1438,8 +1438,11 @@ def Test_expr7_vimvar()
   let old: list<string> = v:oldfiles
   let compl: dict<any> = v:completed_item
 
-  CheckDefFailure(["let old: list<number> = v:oldfiles"], 'E1012: type mismatch, expected list<number> but got list<string>', 1)
-  CheckDefFailure(["let old: dict<number> = v:completed_item"], 'E1012: type mismatch, expected dict<number> but got dict<any>', 1)
+  CheckDefFailure(["let old: list<number> = v:oldfiles"], 'E1012: Type mismatch; expected list<number> but got list<string>', 1)
+  new
+  exec "normal! afoo fo\<C-N>\<Esc>"
+  CheckDefExecFailure(["let old: dict<number> = v:completed_item"], 'E1012: Type mismatch; expected dict<number> but got dict<string>', 1)
+  bwipe!
 enddef
 
 def Test_expr7_special()
@@ -1520,14 +1523,14 @@ def Test_expr7_list()
 
   CheckDefExecFailure(["echo 1", "let x = [][0]", "echo 3"], 'E684:', 2)
 
-  CheckDefExecFailure(["let x = g:list_mixed['xx']"], 'E1029:', 1)
+  CheckDefExecFailure(["let x = g:list_mixed['xx']"], 'E1012:', 1)
   CheckDefFailure(["let x = g:list_mixed["], 'E1097:', 2)
   CheckDefFailure(["let x = g:list_mixed[0"], 'E1097:', 2)
   CheckDefExecFailure(["let x = g:list_empty[3]"], 'E684:', 1)
-  CheckDefFailure(["let l: list<number> = [234, 'x']"], 'E1012:', 1)
-  CheckDefFailure(["let l: list<number> = ['x', 234]"], 'E1012:', 1)
-  CheckDefFailure(["let l: list<string> = [234, 'x']"], 'E1012:', 1)
-  CheckDefFailure(["let l: list<string> = ['x', 123]"], 'E1012:', 1)
+  CheckDefExecFailure(["let l: list<number> = [234, 'x']"], 'E1012:', 1)
+  CheckDefExecFailure(["let l: list<number> = ['x', 234]"], 'E1012:', 1)
+  CheckDefExecFailure(["let l: list<string> = [234, 'x']"], 'E1012:', 1)
+  CheckDefExecFailure(["let l: list<string> = ['x', 123]"], 'E1012:', 1)
 enddef
 
 def Test_expr7_list_vim9script()
@@ -1731,10 +1734,10 @@ def Test_expr7_dict()
   CheckDefExecFailure(["let x = g:anint.member"], 'E715:', 1)
   CheckDefExecFailure(["let x = g:dict_empty.member"], 'E716:', 1)
 
-  CheckDefFailure(['let x: dict<number> = #{a: 234, b: "1"}'], 'E1012:', 1)
-  CheckDefFailure(['let x: dict<number> = #{a: "x", b: 134}'], 'E1012:', 1)
-  CheckDefFailure(['let x: dict<string> = #{a: 234, b: "1"}'], 'E1012:', 1)
-  CheckDefFailure(['let x: dict<string> = #{a: "x", b: 134}'], 'E1012:', 1)
+  CheckDefExecFailure(['let x: dict<number> = #{a: 234, b: "1"}'], 'E1012:', 1)
+  CheckDefExecFailure(['let x: dict<number> = #{a: "x", b: 134}'], 'E1012:', 1)
+  CheckDefExecFailure(['let x: dict<string> = #{a: 234, b: "1"}'], 'E1012:', 1)
+  CheckDefExecFailure(['let x: dict<string> = #{a: "x", b: 134}'], 'E1012:', 1)
 enddef
 
 def Test_expr7_dict_vim9script()
@@ -1840,7 +1843,7 @@ def Test_expr_member()
 
   CheckDefFailure(["let x = g:dict_one.#$!"], 'E1002:', 1)
   CheckDefExecFailure(["let d: dict<any>", "echo d['a']"], 'E716:', 2)
-  CheckDefExecFailure(["let d: dict<number>", "d = g:list_empty"], 'E1029: Expected dict but got list', 2)
+  CheckDefExecFailure(["let d: dict<number>", "d = g:list_empty"], 'E1012: Type mismatch; expected dict<number> but got list<unknown>', 2)
 enddef
 
 def Test_expr7_any_index_slice()
@@ -2311,7 +2314,7 @@ def Test_expr7_list_subscript()
   CheckScriptSuccess(['vim9script'] + lines)
 
   lines = ['let l = [0, 1, 2]', 'echo l[g:astring : g:theone]']
-  CheckDefExecFailure(lines, 'E1029:')
+  CheckDefExecFailure(lines, 'E1012:')
   CheckScriptFailure(['vim9script'] + lines, 'E1030:', 3)
 enddef
 

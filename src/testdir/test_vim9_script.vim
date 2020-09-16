@@ -180,9 +180,9 @@ def Test_assignment()
   CheckDefFailure(['&notex += 3'], 'E113:')
   CheckDefFailure(['&ts ..= "xxx"'], 'E1019:')
   CheckDefFailure(['&ts = [7]'], 'E1012:')
-  CheckDefExecFailure(['&ts = g:alist'], 'E1029: Expected number but got list')
+  CheckDefExecFailure(['&ts = g:alist'], 'E1012: Type mismatch; expected number but got list<number>')
   CheckDefFailure(['&ts = "xx"'], 'E1012:')
-  CheckDefExecFailure(['&ts = g:astring'], 'E1029: Expected number but got string')
+  CheckDefExecFailure(['&ts = g:astring'], 'E1012: Type mismatch; expected number but got string')
   CheckDefFailure(['&path += 3'], 'E1012:')
   CheckDefExecFailure(['&bs = "asdf"'], 'E474:')
   # test freeing ISN_STOREOPT
@@ -958,14 +958,14 @@ def Test_try_catch()
   try
     # string slice returns a string, not a number
     n = g:astring[3]
-  catch /E1029:/
+  catch /E1012:/
     n = 77
   endtry
   assert_equal(77, n)
 
   try
     n = l[g:astring]
-  catch /E1029:/
+  catch /E1012:/
     n = 88
   endtry
   assert_equal(88, n)
@@ -1016,7 +1016,7 @@ def Test_try_catch()
   let nd: dict<any>
   try
     nd = {g:anumber: 1}
-  catch /E1029:/
+  catch /E1012:/
     n = 266
   endtry
   assert_equal(266, n)
@@ -1030,7 +1030,7 @@ def Test_try_catch()
 
   try
     &ts = g:astring
-  catch /E1029:/
+  catch /E1012:/
     n = 288
   endtry
   assert_equal(288, n)
@@ -3182,6 +3182,24 @@ def Test_let_type_check()
     s:d = {}
   END
   CheckScriptSuccess(lines)
+enddef
+
+let g:dict_number = #{one: 1, two: 2}
+
+def Test_let_list_dict_type()
+  let ll: list<number>
+  ll = [1, 2, 2, 3, 3, 3]->uniq()
+  ll->assert_equal([1, 2, 3])
+
+  let dd: dict<number>
+  dd = g:dict_number
+  dd->assert_equal(g:dict_number)
+
+  let lines =<< trim END
+      let ll: list<number>
+      ll = [1, 2, 3]->map('"one"')
+  END
+  CheckDefExecFailure(lines, 'E1012: Type mismatch; expected list<number> but got list<string>')
 enddef
 
 def Test_forward_declaration()

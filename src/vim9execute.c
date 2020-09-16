@@ -2535,30 +2535,19 @@ call_def_function(
 		    checktype_T *ct = &iptr->isn_arg.type;
 
 		    tv = STACK_TV_BOT(ct->ct_off);
-		    // TODO: better type comparison
-		    if (tv->v_type != ct->ct_type
-			    && !((tv->v_type == VAR_PARTIAL
-						   && ct->ct_type == VAR_FUNC)
-				|| (tv->v_type == VAR_FUNC
-					       && ct->ct_type == VAR_PARTIAL)))
+		    SOURCING_LNUM = iptr->isn_lnum;
+		    if (check_typval_type(ct->ct_type, tv, 0) == FAIL)
+			goto on_error;
+
+		    // number 0 is FALSE, number 1 is TRUE
+		    if (tv->v_type == VAR_NUMBER
+			    && ct->ct_type->tt_type == VAR_BOOL
+			    && (tv->vval.v_number == 0
+						|| tv->vval.v_number == 1))
 		    {
-			if (tv->v_type == VAR_NUMBER && ct->ct_type == VAR_BOOL
-				&& (tv->vval.v_number == 0
-						    || tv->vval.v_number == 1))
-			{
-			    // number 0 is FALSE, number 1 is TRUE
-			    tv->v_type = VAR_BOOL;
-			    tv->vval.v_number = tv->vval.v_number
+			tv->v_type = VAR_BOOL;
+			tv->vval.v_number = tv->vval.v_number
 						      ? VVAL_TRUE : VVAL_FALSE;
-			}
-			else
-			{
-			    SOURCING_LNUM = iptr->isn_lnum;
-			    semsg(_(e_expected_str_but_got_str),
-					vartype_name(ct->ct_type),
-					vartype_name(tv->v_type));
-			    goto on_error;
-			}
 		    }
 		}
 		break;
@@ -3286,10 +3275,16 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_NEGATENR: smsg("%4d NEGATENR", current); break;
 
 	    case ISN_CHECKNR: smsg("%4d CHECKNR", current); break;
-	    case ISN_CHECKTYPE: smsg("%4d CHECKTYPE %s stack[%d]", current,
-				      vartype_name(iptr->isn_arg.type.ct_type),
-				      iptr->isn_arg.type.ct_off);
-				break;
+	    case ISN_CHECKTYPE:
+		  {
+		      char *tofree;
+
+		      smsg("%4d CHECKTYPE %s stack[%d]", current,
+			      type_name(iptr->isn_arg.type.ct_type, &tofree),
+			      iptr->isn_arg.type.ct_off);
+		      vim_free(tofree);
+		      break;
+		  }
 	    case ISN_CHECKLEN: smsg("%4d CHECKLEN %s%d", current,
 				iptr->isn_arg.checklen.cl_more_OK ? ">= " : "",
 				iptr->isn_arg.checklen.cl_min_len);
