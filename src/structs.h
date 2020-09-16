@@ -1374,6 +1374,7 @@ struct type_S {
 #define TTFLAG_VARARGS	1	    // func args ends with "..."
 #define TTFLAG_OPTARG	2	    // func arg type with "?"
 #define TTFLAG_BOOL_OK	4	    // can be converted to bool
+#define TTFLAG_STATIC	8	    // one of the static types, e.g. t_any
 
 /*
  * Structure to hold an internal variable without a name.
