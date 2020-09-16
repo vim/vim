@@ -512,8 +512,8 @@ tv_check_lock(typval_T *tv, char_u *name, int use_gettext)
 	default:
 	    break;
     }
-    return var_check_lock(tv->v_lock, name, use_gettext)
-		    || (lock != 0 && var_check_lock(lock, name, use_gettext));
+    return value_check_lock(tv->v_lock, name, use_gettext)
+		   || (lock != 0 && value_check_lock(lock, name, use_gettext));
 }
 
 /*

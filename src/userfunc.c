@@ -3346,11 +3346,11 @@ def_function(exarg_T *eap, char_u *name_arg)
 	if (fudi.fd_di == NULL)
 	{
 	    // Can't add a function to a locked dictionary
-	    if (var_check_lock(fudi.fd_dict->dv_lock, eap->arg, FALSE))
+	    if (value_check_lock(fudi.fd_dict->dv_lock, eap->arg, FALSE))
 		goto erret;
 	}
 	    // Can't change an existing function if it is locked
-	else if (var_check_lock(fudi.fd_di->di_tv.v_lock, eap->arg, FALSE))
+	else if (value_check_lock(fudi.fd_di->di_tv.v_lock, eap->arg, FALSE))
 	    goto erret;
 
 	// Give the function a sequential number.  Can only be used with a
