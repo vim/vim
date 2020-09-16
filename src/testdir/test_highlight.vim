@@ -808,7 +808,7 @@ func Test_highlight_restore_defaults()
   " Test colorscheme
   hi clear
   if exists('syntax_on')
-      syntax reset
+    syntax reset
   endif
   let g:colors_name = 'test'
   hi! link TestLink ErrorMsg
