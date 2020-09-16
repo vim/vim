@@ -119,7 +119,7 @@ def Test_call_default_args()
   MyDefaultSecond('test', false)->assert_equal('none')
 
   CheckScriptFailure(['def Func(arg: number = asdf)', 'enddef', 'defcompile'], 'E1001:')
-  CheckScriptFailure(['def Func(arg: number = "text")', 'enddef', 'defcompile'], 'E1013: argument 1: type mismatch, expected number but got string')
+  CheckScriptFailure(['def Func(arg: number = "text")', 'enddef', 'defcompile'], 'E1013: Argument 1: type mismatch, expected number but got string')
 enddef
 
 def Test_nested_function()
@@ -279,7 +279,7 @@ def Test_call_wrong_args()
     enddef
     Func([])
   END
-  CheckScriptFailure(lines, 'E1013: argument 1: type mismatch, expected string but got list<unknown>', 5)
+  CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 5)
 enddef
 
 " Default arg and varargs
@@ -297,9 +297,9 @@ def Test_call_def_varargs()
   MyDefVarargs('one', 'two')->assert_equal('one,two')
   MyDefVarargs('one', 'two', 'three')->assert_equal('one,two,three')
   CheckDefFailure(['MyDefVarargs("one", 22)'],
-      'E1013: argument 2: type mismatch, expected string but got number')
+      'E1013: Argument 2: type mismatch, expected string but got number')
   CheckDefFailure(['MyDefVarargs("one", "two", 123)'],
-      'E1013: argument 3: type mismatch, expected string but got number')
+      'E1013: Argument 3: type mismatch, expected string but got number')
 
   let lines =<< trim END
       vim9script
@@ -335,7 +335,7 @@ def Test_call_def_varargs()
       enddef
       Func(1, 2, 3)
   END
-  CheckScriptFailure(lines, 'E1013: argument 1: type mismatch')
+  CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch')
 
   lines =<< trim END
       vim9script
@@ -344,7 +344,7 @@ def Test_call_def_varargs()
       enddef
       Func('a', 9)
   END
-  CheckScriptFailure(lines, 'E1013: argument 2: type mismatch')
+  CheckScriptFailure(lines, 'E1013: Argument 2: type mismatch')
 
   lines =<< trim END
       vim9script
@@ -353,7 +353,7 @@ def Test_call_def_varargs()
       enddef
       Func(1, 'a')
   END
-  CheckScriptFailure(lines, 'E1013: argument 1: type mismatch')
+  CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch')
 enddef
 
 def Test_call_call()
@@ -412,8 +412,8 @@ def Test_call_varargs_only()
   MyVarargsOnly()->assert_equal('')
   MyVarargsOnly('one')->assert_equal('one')
   MyVarargsOnly('one', 'two')->assert_equal('one,two')
-  CheckDefFailure(['MyVarargsOnly(1)'], 'E1013: argument 1: type mismatch, expected string but got number')
-  CheckDefFailure(['MyVarargsOnly("one", 2)'], 'E1013: argument 2: type mismatch, expected string but got number')
+  CheckDefFailure(['MyVarargsOnly(1)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  CheckDefFailure(['MyVarargsOnly("one", 2)'], 'E1013: Argument 2: type mismatch, expected string but got number')
 enddef
 
 def Test_using_var_as_arg()
@@ -748,7 +748,7 @@ def Test_vim9script_call_fail_type()
     enddef
     MyFunc(1234)
   END
-  CheckScriptFailure(lines, 'E1013: argument 1: type mismatch, expected string but got number')
+  CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected string but got number')
 enddef
 
 def Test_vim9script_call_fail_const()

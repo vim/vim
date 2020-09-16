@@ -143,12 +143,12 @@ enddef
 func Test_expr1_fails()
   call CheckDefFailure(["let x = 1 ? 'one'"], "Missing ':' after '?'", 1)
 
-  let msg = "white space required before and after '?'"
+  let msg = "White space required before and after '?'"
   call CheckDefFailure(["let x = 1? 'one' : 'two'"], msg, 1)
   call CheckDefFailure(["let x = 1 ?'one' : 'two'"], msg, 1)
   call CheckDefFailure(["let x = 1?'one' : 'two'"], msg, 1)
 
-  let msg = "white space required before and after ':'"
+  let msg = "White space required before and after ':'"
   call CheckDefFailure(["let x = 1 ? 'one': 'two'"], msg, 1)
   call CheckDefFailure(["let x = 1 ? 'one' :'two'"], msg, 1)
   call CheckDefFailure(["let x = 1 ? 'one':'two'"], msg, 1)
@@ -276,7 +276,7 @@ def Test_expr2_vimscript()
 enddef
 
 func Test_expr2_fails()
-  let msg = "white space required before and after '||'"
+  let msg = "White space required before and after '||'"
   call CheckDefFailure(["let x = 1||2"], msg, 1)
   call CheckDefFailure(["let x = 1 ||2"], msg, 1)
   call CheckDefFailure(["let x = 1|| 2"], msg, 1)
@@ -401,7 +401,7 @@ def Test_expr3_vimscript()
 enddef
 
 func Test_expr3_fails()
-  let msg = "white space required before and after '&&'"
+  let msg = "White space required before and after '&&'"
   call CheckDefFailure(["let x = 1&&2"], msg, 1)
   call CheckDefFailure(["let x = 1 &&2"], msg, 1)
   call CheckDefFailure(["let x = 1&& 2"], msg, 1)
@@ -861,22 +861,22 @@ def Test_expr4_vim9script()
 enddef
 
 func Test_expr4_fails()
-  let msg = "white space required before and after '>'"
+  let msg = "White space required before and after '>'"
   call CheckDefFailure(["let x = 1>2"], msg, 1)
   call CheckDefFailure(["let x = 1 >2"], msg, 1)
   call CheckDefFailure(["let x = 1> 2"], msg, 1)
 
-  let msg = "white space required before and after '=='"
+  let msg = "White space required before and after '=='"
   call CheckDefFailure(["let x = 1==2"], msg, 1)
   call CheckDefFailure(["let x = 1 ==2"], msg, 1)
   call CheckDefFailure(["let x = 1== 2"], msg, 1)
 
-  let msg = "white space required before and after 'is'"
+  let msg = "White space required before and after 'is'"
   call CheckDefFailure(["let x = '1'is'2'"], msg, 1)
   call CheckDefFailure(["let x = '1' is'2'"], msg, 1)
   call CheckDefFailure(["let x = '1'is '2'"], msg, 1)
 
-  let msg = "white space required before and after 'isnot'"
+  let msg = "White space required before and after 'isnot'"
   call CheckDefFailure(["let x = '1'isnot'2'"], msg, 1)
   call CheckDefFailure(["let x = '1' isnot'2'"], msg, 1)
   call CheckDefFailure(["let x = '1'isnot '2'"], msg, 1)
@@ -1151,17 +1151,17 @@ def Test_expr5_float()
 enddef
 
 func Test_expr5_fails()
-  let msg = "white space required before and after '+'"
+  let msg = "White space required before and after '+'"
   call CheckDefFailure(["let x = 1+2"], msg, 1)
   call CheckDefFailure(["let x = 1 +2"], msg, 1)
   call CheckDefFailure(["let x = 1+ 2"], msg, 1)
 
-  let msg = "white space required before and after '-'"
+  let msg = "White space required before and after '-'"
   call CheckDefFailure(["let x = 1-2"], msg, 1)
   call CheckDefFailure(["let x = 1 -2"], msg, 1)
   call CheckDefFailure(["let x = 1- 2"], msg, 1)
 
-  let msg = "white space required before and after '..'"
+  let msg = "White space required before and after '..'"
   call CheckDefFailure(["let x = '1'..'2'"], msg, 1)
   call CheckDefFailure(["let x = '1' ..'2'"], msg, 1)
   call CheckDefFailure(["let x = '1'.. '2'"], msg, 1)
@@ -1306,17 +1306,17 @@ def Test_expr6_float()
 enddef
 
 func Test_expr6_fails()
-  let msg = "white space required before and after '*'"
+  let msg = "White space required before and after '*'"
   call CheckDefFailure(["let x = 1*2"], msg, 1)
   call CheckDefFailure(["let x = 1 *2"], msg, 1)
   call CheckDefFailure(["let x = 1* 2"], msg, 1)
 
-  let msg = "white space required before and after '/'"
+  let msg = "White space required before and after '/'"
   call CheckDefFailure(["let x = 1/2"], msg, 1)
   call CheckDefFailure(["let x = 1 /2"], msg, 1)
   call CheckDefFailure(["let x = 1/ 2"], msg, 1)
 
-  let msg = "white space required before and after '%'"
+  let msg = "White space required before and after '%'"
   call CheckDefFailure(["let x = 1%2"], msg, 1)
   call CheckDefFailure(["let x = 1 %2"], msg, 1)
   call CheckDefFailure(["let x = 1% 2"], msg, 1)
@@ -1658,7 +1658,7 @@ def Test_expr7_lambda()
   assert_equal('xxxyyy', 'xxx'->{a, b -> a .. b}('yyy'))
 
   CheckDefExecFailure(["let s = 'asdf'->{a -> a}('x')"],
-        'E1106: one argument too many')
+        'E1106: One argument too many')
   CheckDefExecFailure(["let s = 'asdf'->{a -> a}('x', 'y')"],
         'E1106: 2 arguments too many')
   CheckDefFailure(["echo 'asdf'->{a -> a}(x)"], 'E1001:', 1)
