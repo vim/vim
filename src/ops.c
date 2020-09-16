@@ -2840,7 +2840,8 @@ do_addsub(
 	    // Delete the one character before the insert.
 	    curwin->w_cursor = save_pos;
 	    (void)del_char(FALSE);
-	    curwin->w_cursor.col = STRLEN(ml_get_curline()) - bytes_after;
+	    curwin->w_cursor.col = (colnr_T)(STRLEN(ml_get_curline())
+								- bytes_after);
 	    --todel;
 	}
 	while (todel-- > 0)
