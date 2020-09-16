@@ -4808,7 +4808,8 @@ in their own color.
 :hi[ghlight] clear	Reset all highlighting to the defaults.  Removes all
 			highlighting for groups added by the user!
 			Uses the current value of 'background' to decide which
-			default colors to use.
+			default colors to use. Default highlight links are
+			restored. |:hi-link|
 
 :hi[ghlight] clear {group-name}
 :hi[ghlight] {group-name} NONE

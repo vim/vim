@@ -73,6 +73,7 @@ typedef struct
     char_u	*sg_gui_sp_name;// GUI special color name
 #endif
     int		sg_link;	// link to this highlight group ID
+    int		sg_deflink;     // default link; restored in highlight_clear()
     int		sg_set;		// combination of SG_* flags
 #ifdef FEAT_EVAL
     sctx_T	sg_script_ctx;	// script in which the group was last set
@@ -738,6 +739,9 @@ do_highlight(
 	    to_id = 0;
 	else
 	    to_id = syn_check_group(to_start, (int)(to_end - to_start));
+
+	if (dodefault && (forceit || HL_TABLE()[from_id - 1].sg_deflink == 0))
+	    HL_TABLE()[from_id - 1].sg_deflink = to_id;
 
 	if (from_id > 0 && (!init || HL_TABLE()[from_id - 1].sg_set == 0))
 	{
@@ -1629,8 +1633,7 @@ restore_cterm_colors(void)
     static int
 hl_has_settings(int idx, int check_link)
 {
-    return HL_TABLE()[idx].sg_cleared == 0 &&
-	    (  HL_TABLE()[idx].sg_term_attr != 0
+    return (   HL_TABLE()[idx].sg_term_attr != 0
 	    || HL_TABLE()[idx].sg_cterm_attr != 0
 	    || HL_TABLE()[idx].sg_cterm_fg != 0
 	    || HL_TABLE()[idx].sg_cterm_bg != 0
@@ -1683,6 +1686,8 @@ highlight_clear(int idx)
     HL_TABLE()[idx].sg_gui_attr = 0;
 #endif
 #ifdef FEAT_EVAL
+    // Restore default link
+    HL_TABLE()[idx].sg_link = HL_TABLE()[idx].sg_deflink;
     // Clear the script ID only when there is no link, since that is not
     // cleared.
     if (HL_TABLE()[idx].sg_link == 0)

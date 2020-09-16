@@ -796,14 +796,12 @@ func Test_highlight_term_attr()
   hi clear
 endfunc
 
-" Test default highlighting is restored
-func Test_highlight_restore_defaults()
+" Test default highlighting links are restored
+func Test_highlight_restore_default_links()
 
-  hi! link TestLink Identifier
-  hi! TestHi ctermbg=red
+  hi def link TestLink Identifier
 
   let hlTestLinkPre = HighlightArgs('TestLink')
-  let hlTestHiPre = HighlightArgs('TestHi')
 
   " Test colorscheme
   hi clear
@@ -811,21 +809,14 @@ func Test_highlight_restore_defaults()
     syntax reset
   endif
   let g:colors_name = 'test'
-  hi! link TestLink ErrorMsg
-  hi! TestHi ctermbg=green
+  hi link TestLink ErrorMsg
 
-  " Restore default highlighting
+  " Default links should be restored
   colorscheme default
-  syntax on
-  " 'default' should work no matter if highlight group was cleared
-  hi def link TestLink Identifier
-  hi def TestHi ctermbg=red
 
   let hlTestLinkPost = HighlightArgs('TestLink')
-  let hlTestHiPost = HighlightArgs('TestHi')
 
   call assert_equal(hlTestLinkPre, hlTestLinkPost)
-  call assert_equal(hlTestHiPre, hlTestHiPost)
   hi clear
 endfunc
 
