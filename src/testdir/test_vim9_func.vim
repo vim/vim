@@ -1299,6 +1299,11 @@ def Test_sort_return_type()
   res = [1, 2, 3]->sort()
 enddef
 
+def Test_sort_argument()
+  let res = ['b', 'a', 'c']->sort('i')
+  res->assert_equal(['a', 'b', 'c'])
+enddef
+
 def Test_getqflist_return_type()
   let l = getqflist()
   l->assert_equal([])

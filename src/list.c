@@ -1717,18 +1717,25 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
 	    else
 	    {
 		int	    error = FALSE;
+		int	    nr = 0;
 
-		i = (long)tv_get_number_chk(&argvars[1], &error);
-		if (error)
-		    goto theend;	// type error; errmsg already given
-		if (i == 1)
-		    info.item_compare_ic = TRUE;
-		else if (argvars[1].v_type != VAR_NUMBER)
-		    info.item_compare_func = tv_get_string(&argvars[1]);
-		else if (i != 0)
+		if (argvars[1].v_type == VAR_NUMBER)
 		{
-		    emsg(_(e_invarg));
-		    goto theend;
+		    nr = tv_get_number_chk(&argvars[1], &error);
+		    if (error)
+			goto theend;	// type error; errmsg already given
+		    if (nr == 1)
+			info.item_compare_ic = TRUE;
+		}
+		if (nr != 1)
+		{
+		    if (argvars[1].v_type != VAR_NUMBER)
+			info.item_compare_func = tv_get_string(&argvars[1]);
+		    else if (nr != 0)
+		    {
+			emsg(_(e_invarg));
+			goto theend;
+		    }
 		}
 		if (info.item_compare_func != NULL)
 		{
