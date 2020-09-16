@@ -321,6 +321,15 @@ def Test_call_def_varargs()
 
   lines =<< trim END
       vim9script
+      def Func(...l: any)
+        echo l
+      enddef
+      Func(0)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
       def Func(...l: list<string>)
         echo l
       enddef

@@ -829,6 +829,7 @@ call_def_function(
 	// Check the type of the list items.
 	tv = STACK_TV_BOT(-1);
 	if (ufunc->uf_va_type != NULL
+		&& ufunc->uf_va_type != &t_any
 		&& ufunc->uf_va_type->tt_member != &t_any
 		&& tv->vval.v_list != NULL)
 	{
