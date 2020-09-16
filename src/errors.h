@@ -266,4 +266,6 @@ EXTERN char e_cannot_change_dict[]
 	INIT(= N_("E1120: Cannot change dict"));
 EXTERN char e_cannot_change_dict_item[]
 	INIT(= N_("E1121: Cannot change dict item"));
+EXTERN char e_variable_is_locked_str[]
+	INIT(= N_("E1122: Variable is locked: %s"));
 #endif
