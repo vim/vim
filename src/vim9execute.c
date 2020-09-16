@@ -1922,6 +1922,7 @@ call_def_function(
 		    trycmd->tcd_catch_idx = iptr->isn_arg.try.try_catch;
 		    trycmd->tcd_finally_idx = iptr->isn_arg.try.try_finally;
 		    trycmd->tcd_caught = FALSE;
+		    trycmd->tcd_return = FALSE;
 		}
 		break;
 

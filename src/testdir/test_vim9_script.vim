@@ -1169,6 +1169,26 @@ def Test_try_catch_nested()
   assert_equal('finally', g:in_finally)
 enddef
 
+def TryOne(): number
+  try
+    return 0
+  catch
+  endtry
+  return 0
+enddef
+
+def TryTwo(n: number): string
+  try
+    let x = {}
+  catch
+  endtry
+  return 'text'
+enddef
+
+def Test_try_catch_twice()
+  assert_equal('text', TryOne()->TryTwo())
+enddef
+
 def Test_try_catch_match()
   let seq = 'a'
   try
