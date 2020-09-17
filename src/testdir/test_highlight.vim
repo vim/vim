@@ -871,8 +871,8 @@ func Test_highlight_clear_restores_links()
 endfunc
 
 func Test_highlight_default_colorscheme_restores_links()
-  hi! link TestLink Identifier
-  hi! TestHi ctermbg=red
+  hi link TestLink Identifier
+  hi TestHi ctermbg=red
 
   let hlTestLinkPre = HighlightArgs('TestLink')
   let hlTestHiPre = HighlightArgs('TestHi')
