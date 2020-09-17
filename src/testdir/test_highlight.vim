@@ -838,36 +838,37 @@ func Test_highlight_clear_restores_links()
 
   " create default link aaa --> bbb
   hi def link aaa bbb
-  let aaa_id = hlID('aaa')
-  let bbb_id = hlID('bbb')
-  call assert_equal(synIDtrans(aaa_id), bbb_id)
+  let id_aaa = hlID('aaa')
+  let hl_aaa_bbb = HighlightArgs('aaa')
+  call assert_equal(HighlightArgs('aaa'), hl_aaa_bbb)
 
   " try to redefine default link aaa --> ccc; check aaa --> bbb
   hi def link aaa ccc
-  call assert_equal(synIDtrans(aaa_id), bbb_id)
+  call assert_equal(HighlightArgs('aaa'), hl_aaa_bbb)
 
   " clear aaa; check aaa --> bbb
   hi clear aaa
-  call assert_equal(synIDtrans(aaa_id), bbb_id)
+  call assert_equal(HighlightArgs('aaa'), hl_aaa_bbb)
 
   " link aaa --> ccc; clear aaa; check aaa --> bbb
   hi link aaa ccc
-  let ccc_id = hlID('ccc')
-  call assert_equal(synIDtrans(aaa_id), ccc_id)
+  let id_ccc = hlID('ccc')
+  call assert_equal(synIDtrans(id_aaa), id_ccc)
   hi clear aaa
-  call assert_equal(synIDtrans(aaa_id), bbb_id)
+  call assert_equal(HighlightArgs('aaa'), hl_aaa_bbb)
 
   " forcibly set default link aaa --> ddd
   hi! def link aaa ddd
-  let ddd_id = hlID('ddd')
-  call assert_equal(synIDtrans(aaa_id), ddd_id)
+  let id_ddd = hlID('ddd')
+  let hl_aaa_ddd = HighlightArgs('aaa')
+  call assert_equal(synIDtrans(id_aaa), id_ddd)
 
   " link aaa --> eee; clear aaa; check aaa --> ddd
   hi link aaa eee
   let eee_id = hlID('eee')
-  call assert_equal(synIDtrans(aaa_id), eee_id)
+  call assert_equal(synIDtrans(id_aaa), eee_id)
   hi clear aaa
-  call assert_equal(synIDtrans(aaa_id), ddd_id)
+  call assert_equal(HighlightArgs('aaa'), hl_aaa_ddd)
 endfunc
 
 func Test_highlight_default_colorscheme_restores_links()
