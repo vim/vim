@@ -386,11 +386,14 @@ ret_argv(int argcount, type_T **argtypes UNUSED)
     static type_T *
 ret_remove(int argcount UNUSED, type_T **argtypes)
 {
-    if (argtypes[0]->tt_type == VAR_LIST
-	    || argtypes[0]->tt_type == VAR_DICT)
-	return argtypes[0]->tt_member;
-    if (argtypes[0]->tt_type == VAR_BLOB)
-	return &t_number;
+    if (argtypes != NULL)
+    {
+	if (argtypes[0]->tt_type == VAR_LIST
+		|| argtypes[0]->tt_type == VAR_DICT)
+	    return argtypes[0]->tt_member;
+	if (argtypes[0]->tt_type == VAR_BLOB)
+	    return &t_number;
+    }
     return &t_any;
 }
 
@@ -2915,7 +2918,7 @@ ret_f_function(int argcount, type_T **argtypes)
 {
     if (argcount == 1 && argtypes[0]->tt_type == VAR_STRING)
 	return &t_func_any;
-    return &t_func_void;
+    return &t_func_unknown;
 }
 
 /*

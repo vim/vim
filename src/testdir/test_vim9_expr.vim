@@ -143,12 +143,12 @@ enddef
 func Test_expr1_fails()
   call CheckDefFailure(["let x = 1 ? 'one'"], "Missing ':' after '?'", 1)
 
-  let msg = "white space required before and after '?'"
+  let msg = "White space required before and after '?'"
   call CheckDefFailure(["let x = 1? 'one' : 'two'"], msg, 1)
   call CheckDefFailure(["let x = 1 ?'one' : 'two'"], msg, 1)
   call CheckDefFailure(["let x = 1?'one' : 'two'"], msg, 1)
 
-  let msg = "white space required before and after ':'"
+  let msg = "White space required before and after ':'"
   call CheckDefFailure(["let x = 1 ? 'one': 'two'"], msg, 1)
   call CheckDefFailure(["let x = 1 ? 'one' :'two'"], msg, 1)
   call CheckDefFailure(["let x = 1 ? 'one':'two'"], msg, 1)
@@ -276,7 +276,7 @@ def Test_expr2_vimscript()
 enddef
 
 func Test_expr2_fails()
-  let msg = "white space required before and after '||'"
+  let msg = "White space required before and after '||'"
   call CheckDefFailure(["let x = 1||2"], msg, 1)
   call CheckDefFailure(["let x = 1 ||2"], msg, 1)
   call CheckDefFailure(["let x = 1|| 2"], msg, 1)
@@ -401,7 +401,7 @@ def Test_expr3_vimscript()
 enddef
 
 func Test_expr3_fails()
-  let msg = "white space required before and after '&&'"
+  let msg = "White space required before and after '&&'"
   call CheckDefFailure(["let x = 1&&2"], msg, 1)
   call CheckDefFailure(["let x = 1 &&2"], msg, 1)
   call CheckDefFailure(["let x = 1&& 2"], msg, 1)
@@ -861,22 +861,22 @@ def Test_expr4_vim9script()
 enddef
 
 func Test_expr4_fails()
-  let msg = "white space required before and after '>'"
+  let msg = "White space required before and after '>'"
   call CheckDefFailure(["let x = 1>2"], msg, 1)
   call CheckDefFailure(["let x = 1 >2"], msg, 1)
   call CheckDefFailure(["let x = 1> 2"], msg, 1)
 
-  let msg = "white space required before and after '=='"
+  let msg = "White space required before and after '=='"
   call CheckDefFailure(["let x = 1==2"], msg, 1)
   call CheckDefFailure(["let x = 1 ==2"], msg, 1)
   call CheckDefFailure(["let x = 1== 2"], msg, 1)
 
-  let msg = "white space required before and after 'is'"
+  let msg = "White space required before and after 'is'"
   call CheckDefFailure(["let x = '1'is'2'"], msg, 1)
   call CheckDefFailure(["let x = '1' is'2'"], msg, 1)
   call CheckDefFailure(["let x = '1'is '2'"], msg, 1)
 
-  let msg = "white space required before and after 'isnot'"
+  let msg = "White space required before and after 'isnot'"
   call CheckDefFailure(["let x = '1'isnot'2'"], msg, 1)
   call CheckDefFailure(["let x = '1' isnot'2'"], msg, 1)
   call CheckDefFailure(["let x = '1'isnot '2'"], msg, 1)
@@ -1151,17 +1151,17 @@ def Test_expr5_float()
 enddef
 
 func Test_expr5_fails()
-  let msg = "white space required before and after '+'"
+  let msg = "White space required before and after '+'"
   call CheckDefFailure(["let x = 1+2"], msg, 1)
   call CheckDefFailure(["let x = 1 +2"], msg, 1)
   call CheckDefFailure(["let x = 1+ 2"], msg, 1)
 
-  let msg = "white space required before and after '-'"
+  let msg = "White space required before and after '-'"
   call CheckDefFailure(["let x = 1-2"], msg, 1)
   call CheckDefFailure(["let x = 1 -2"], msg, 1)
   call CheckDefFailure(["let x = 1- 2"], msg, 1)
 
-  let msg = "white space required before and after '..'"
+  let msg = "White space required before and after '..'"
   call CheckDefFailure(["let x = '1'..'2'"], msg, 1)
   call CheckDefFailure(["let x = '1' ..'2'"], msg, 1)
   call CheckDefFailure(["let x = '1'.. '2'"], msg, 1)
@@ -1306,17 +1306,17 @@ def Test_expr6_float()
 enddef
 
 func Test_expr6_fails()
-  let msg = "white space required before and after '*'"
+  let msg = "White space required before and after '*'"
   call CheckDefFailure(["let x = 1*2"], msg, 1)
   call CheckDefFailure(["let x = 1 *2"], msg, 1)
   call CheckDefFailure(["let x = 1* 2"], msg, 1)
 
-  let msg = "white space required before and after '/'"
+  let msg = "White space required before and after '/'"
   call CheckDefFailure(["let x = 1/2"], msg, 1)
   call CheckDefFailure(["let x = 1 /2"], msg, 1)
   call CheckDefFailure(["let x = 1/ 2"], msg, 1)
 
-  let msg = "white space required before and after '%'"
+  let msg = "White space required before and after '%'"
   call CheckDefFailure(["let x = 1%2"], msg, 1)
   call CheckDefFailure(["let x = 1 %2"], msg, 1)
   call CheckDefFailure(["let x = 1% 2"], msg, 1)
@@ -1438,8 +1438,11 @@ def Test_expr7_vimvar()
   let old: list<string> = v:oldfiles
   let compl: dict<any> = v:completed_item
 
-  CheckDefFailure(["let old: list<number> = v:oldfiles"], 'E1012: type mismatch, expected list<number> but got list<string>', 1)
-  CheckDefFailure(["let old: dict<number> = v:completed_item"], 'E1012: type mismatch, expected dict<number> but got dict<any>', 1)
+  CheckDefFailure(["let old: list<number> = v:oldfiles"], 'E1012: Type mismatch; expected list<number> but got list<string>', 1)
+  new
+  exec "normal! afoo fo\<C-N>\<Esc>"
+  CheckDefExecFailure(["let old: dict<number> = v:completed_item"], 'E1012: Type mismatch; expected dict<number> but got dict<string>', 1)
+  bwipe!
 enddef
 
 def Test_expr7_special()
@@ -1520,14 +1523,14 @@ def Test_expr7_list()
 
   CheckDefExecFailure(["echo 1", "let x = [][0]", "echo 3"], 'E684:', 2)
 
-  CheckDefExecFailure(["let x = g:list_mixed['xx']"], 'E1029:', 1)
+  CheckDefExecFailure(["let x = g:list_mixed['xx']"], 'E1012:', 1)
   CheckDefFailure(["let x = g:list_mixed["], 'E1097:', 2)
   CheckDefFailure(["let x = g:list_mixed[0"], 'E1097:', 2)
   CheckDefExecFailure(["let x = g:list_empty[3]"], 'E684:', 1)
-  CheckDefFailure(["let l: list<number> = [234, 'x']"], 'E1012:', 1)
-  CheckDefFailure(["let l: list<number> = ['x', 234]"], 'E1012:', 1)
-  CheckDefFailure(["let l: list<string> = [234, 'x']"], 'E1012:', 1)
-  CheckDefFailure(["let l: list<string> = ['x', 123]"], 'E1012:', 1)
+  CheckDefExecFailure(["let l: list<number> = [234, 'x']"], 'E1012:', 1)
+  CheckDefExecFailure(["let l: list<number> = ['x', 234]"], 'E1012:', 1)
+  CheckDefExecFailure(["let l: list<string> = [234, 'x']"], 'E1012:', 1)
+  CheckDefExecFailure(["let l: list<string> = ['x', 123]"], 'E1012:', 1)
 enddef
 
 def Test_expr7_list_vim9script()
@@ -1655,7 +1658,7 @@ def Test_expr7_lambda()
   assert_equal('xxxyyy', 'xxx'->{a, b -> a .. b}('yyy'))
 
   CheckDefExecFailure(["let s = 'asdf'->{a -> a}('x')"],
-        'E1106: one argument too many')
+        'E1106: One argument too many')
   CheckDefExecFailure(["let s = 'asdf'->{a -> a}('x', 'y')"],
         'E1106: 2 arguments too many')
   CheckDefFailure(["echo 'asdf'->{a -> a}(x)"], 'E1001:', 1)
@@ -1731,10 +1734,10 @@ def Test_expr7_dict()
   CheckDefExecFailure(["let x = g:anint.member"], 'E715:', 1)
   CheckDefExecFailure(["let x = g:dict_empty.member"], 'E716:', 1)
 
-  CheckDefFailure(['let x: dict<number> = #{a: 234, b: "1"}'], 'E1012:', 1)
-  CheckDefFailure(['let x: dict<number> = #{a: "x", b: 134}'], 'E1012:', 1)
-  CheckDefFailure(['let x: dict<string> = #{a: 234, b: "1"}'], 'E1012:', 1)
-  CheckDefFailure(['let x: dict<string> = #{a: "x", b: 134}'], 'E1012:', 1)
+  CheckDefExecFailure(['let x: dict<number> = #{a: 234, b: "1"}'], 'E1012:', 1)
+  CheckDefExecFailure(['let x: dict<number> = #{a: "x", b: 134}'], 'E1012:', 1)
+  CheckDefExecFailure(['let x: dict<string> = #{a: 234, b: "1"}'], 'E1012:', 1)
+  CheckDefExecFailure(['let x: dict<string> = #{a: "x", b: 134}'], 'E1012:', 1)
 enddef
 
 def Test_expr7_dict_vim9script()
@@ -1840,7 +1843,7 @@ def Test_expr_member()
 
   CheckDefFailure(["let x = g:dict_one.#$!"], 'E1002:', 1)
   CheckDefExecFailure(["let d: dict<any>", "echo d['a']"], 'E716:', 2)
-  CheckDefExecFailure(["let d: dict<number>", "d = g:list_empty"], 'E1029: Expected dict but got list', 2)
+  CheckDefExecFailure(["let d: dict<number>", "d = g:list_empty"], 'E1012: Type mismatch; expected dict<number> but got list<unknown>', 2)
 enddef
 
 def Test_expr7_any_index_slice()
@@ -2311,7 +2314,7 @@ def Test_expr7_list_subscript()
   CheckScriptSuccess(['vim9script'] + lines)
 
   lines = ['let l = [0, 1, 2]', 'echo l[g:astring : g:theone]']
-  CheckDefExecFailure(lines, 'E1029:')
+  CheckDefExecFailure(lines, 'E1012:')
   CheckScriptFailure(['vim9script'] + lines, 'E1030:', 3)
 enddef
 

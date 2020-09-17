@@ -817,7 +817,7 @@ f_flatten(typval_T *argvars, typval_T *rettv)
     }
 
     l = argvars[0].vval.v_list;
-    if (l != NULL && !var_check_lock(l->lv_lock,
+    if (l != NULL && !value_check_lock(l->lv_lock,
 				      (char_u *)N_("flatten() argument"), TRUE)
 		 && list_flatten(l, maxdepth) == OK)
 	copy_tv(&argvars[0], rettv);
@@ -1439,7 +1439,7 @@ list_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
     int		idx;
 
     if ((l = argvars[0].vval.v_list) == NULL
-			      || var_check_lock(l->lv_lock, arg_errmsg, TRUE))
+			     || value_check_lock(l->lv_lock, arg_errmsg, TRUE))
 	return;
 
     idx = (long)tv_get_number_chk(&argvars[1], &error);
@@ -1687,7 +1687,7 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
     else
     {
 	l = argvars[0].vval.v_list;
-	if (l == NULL || var_check_lock(l->lv_lock,
+	if (l == NULL || value_check_lock(l->lv_lock,
 	     (char_u *)(sort ? N_("sort() argument") : N_("uniq() argument")),
 									TRUE))
 	    goto theend;
@@ -1717,18 +1717,25 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
 	    else
 	    {
 		int	    error = FALSE;
+		int	    nr = 0;
 
-		i = (long)tv_get_number_chk(&argvars[1], &error);
-		if (error)
-		    goto theend;	// type error; errmsg already given
-		if (i == 1)
-		    info.item_compare_ic = TRUE;
-		else if (argvars[1].v_type != VAR_NUMBER)
-		    info.item_compare_func = tv_get_string(&argvars[1]);
-		else if (i != 0)
+		if (argvars[1].v_type == VAR_NUMBER)
 		{
-		    emsg(_(e_invarg));
-		    goto theend;
+		    nr = tv_get_number_chk(&argvars[1], &error);
+		    if (error)
+			goto theend;	// type error; errmsg already given
+		    if (nr == 1)
+			info.item_compare_ic = TRUE;
+		}
+		if (nr != 1)
+		{
+		    if (argvars[1].v_type != VAR_NUMBER)
+			info.item_compare_func = tv_get_string(&argvars[1]);
+		    else if (nr != 0)
+		    {
+			emsg(_(e_invarg));
+			goto theend;
+		    }
 		}
 		if (info.item_compare_func != NULL)
 		{
@@ -1955,13 +1962,13 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
     else if (argvars[0].v_type == VAR_LIST)
     {
 	if ((l = argvars[0].vval.v_list) == NULL
-	      || (!map && var_check_lock(l->lv_lock, arg_errmsg, TRUE)))
+	      || (!map && value_check_lock(l->lv_lock, arg_errmsg, TRUE)))
 	    return;
     }
     else if (argvars[0].v_type == VAR_DICT)
     {
 	if ((d = argvars[0].vval.v_dict) == NULL
-	      || (!map && var_check_lock(d->dv_lock, arg_errmsg, TRUE)))
+	      || (!map && value_check_lock(d->dv_lock, arg_errmsg, TRUE)))
 	    return;
     }
     else
@@ -2004,7 +2011,7 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 
 		    --todo;
 		    di = HI2DI(hi);
-		    if (map && (var_check_lock(di->di_tv.v_lock,
+		    if (map && (value_check_lock(di->di_tv.v_lock,
 							   arg_errmsg, TRUE)
 				|| var_check_ro(di->di_flags,
 							   arg_errmsg, TRUE)))
@@ -2077,7 +2084,7 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 		l->lv_lock = VAR_LOCKED;
 	    for (li = l->lv_first; li != NULL; li = nli)
 	    {
-		if (map && var_check_lock(li->li_tv.v_lock, arg_errmsg, TRUE))
+		if (map && value_check_lock(li->li_tv.v_lock, arg_errmsg, TRUE))
 		    break;
 		nli = li->li_next;
 		set_vim_var_nr(VV_KEY, idx);
@@ -2131,7 +2138,7 @@ f_add(typval_T *argvars, typval_T *rettv)
     if (argvars[0].v_type == VAR_LIST)
     {
 	if ((l = argvars[0].vval.v_list) != NULL
-		&& !var_check_lock(l->lv_lock,
+		&& !value_check_lock(l->lv_lock,
 					 (char_u *)N_("add() argument"), TRUE)
 		&& list_append_tv(l, &argvars[1]) == OK)
 	    copy_tv(&argvars[0], rettv);
@@ -2139,7 +2146,7 @@ f_add(typval_T *argvars, typval_T *rettv)
     else if (argvars[0].v_type == VAR_BLOB)
     {
 	if ((b = argvars[0].vval.v_blob) != NULL
-		&& !var_check_lock(b->bv_lock,
+		&& !value_check_lock(b->bv_lock,
 					 (char_u *)N_("add() argument"), TRUE))
 	{
 	    int		error = FALSE;
@@ -2282,7 +2289,7 @@ f_extend(typval_T *argvars, typval_T *rettv)
 
 	l1 = argvars[0].vval.v_list;
 	l2 = argvars[1].vval.v_list;
-	if (l1 != NULL && !var_check_lock(l1->lv_lock, arg_errmsg, TRUE)
+	if (l1 != NULL && !value_check_lock(l1->lv_lock, arg_errmsg, TRUE)
 		&& l2 != NULL)
 	{
 	    if (argvars[2].v_type != VAR_UNKNOWN)
@@ -2318,7 +2325,7 @@ f_extend(typval_T *argvars, typval_T *rettv)
 
 	d1 = argvars[0].vval.v_dict;
 	d2 = argvars[1].vval.v_dict;
-	if (d1 != NULL && !var_check_lock(d1->dv_lock, arg_errmsg, TRUE)
+	if (d1 != NULL && !value_check_lock(d1->dv_lock, arg_errmsg, TRUE)
 		&& d2 != NULL)
 	{
 	    // Check the third argument.
@@ -2402,7 +2409,7 @@ f_insert(typval_T *argvars, typval_T *rettv)
     else if (argvars[0].v_type != VAR_LIST)
 	semsg(_(e_listblobarg), "insert()");
     else if ((l = argvars[0].vval.v_list) != NULL
-	    && !var_check_lock(l->lv_lock,
+	    && !value_check_lock(l->lv_lock,
 				     (char_u *)N_("insert() argument"), TRUE))
     {
 	if (argvars[2].v_type != VAR_UNKNOWN)
@@ -2475,7 +2482,7 @@ f_reverse(typval_T *argvars, typval_T *rettv)
     if (argvars[0].v_type != VAR_LIST)
 	semsg(_(e_listblobarg), "reverse()");
     else if ((l = argvars[0].vval.v_list) != NULL
-	    && !var_check_lock(l->lv_lock,
+	    && !value_check_lock(l->lv_lock,
 				    (char_u *)N_("reverse() argument"), TRUE))
     {
 	if (l->lv_first == &range_list_item)

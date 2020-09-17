@@ -30,7 +30,7 @@ enddef
 def Test_return_something()
   ReturnString()->assert_equal('string')
   ReturnNumber()->assert_equal(123)
-  assert_fails('ReturnGlobal()', 'E1029: Expected number but got string', '', 1, 'ReturnGlobal')
+  assert_fails('ReturnGlobal()', 'E1012: Type mismatch; expected number but got string', '', 1, 'ReturnGlobal')
 enddef
 
 def Test_missing_return()
@@ -119,7 +119,7 @@ def Test_call_default_args()
   MyDefaultSecond('test', false)->assert_equal('none')
 
   CheckScriptFailure(['def Func(arg: number = asdf)', 'enddef', 'defcompile'], 'E1001:')
-  CheckScriptFailure(['def Func(arg: number = "text")', 'enddef', 'defcompile'], 'E1013: argument 1: type mismatch, expected number but got string')
+  CheckScriptFailure(['def Func(arg: number = "text")', 'enddef', 'defcompile'], 'E1013: Argument 1: type mismatch, expected number but got string')
 enddef
 
 def Test_nested_function()
@@ -279,7 +279,7 @@ def Test_call_wrong_args()
     enddef
     Func([])
   END
-  CheckScriptFailure(lines, 'E1013: argument 1: type mismatch, expected string but got list<unknown>', 5)
+  CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 5)
 enddef
 
 " Default arg and varargs
@@ -297,9 +297,9 @@ def Test_call_def_varargs()
   MyDefVarargs('one', 'two')->assert_equal('one,two')
   MyDefVarargs('one', 'two', 'three')->assert_equal('one,two,three')
   CheckDefFailure(['MyDefVarargs("one", 22)'],
-      'E1013: argument 2: type mismatch, expected string but got number')
+      'E1013: Argument 2: type mismatch, expected string but got number')
   CheckDefFailure(['MyDefVarargs("one", "two", 123)'],
-      'E1013: argument 3: type mismatch, expected string but got number')
+      'E1013: Argument 3: type mismatch, expected string but got number')
 
   let lines =<< trim END
       vim9script
@@ -321,12 +321,21 @@ def Test_call_def_varargs()
 
   lines =<< trim END
       vim9script
+      def Func(...l: any)
+        echo l
+      enddef
+      Func(0)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
       def Func(...l: list<string>)
         echo l
       enddef
       Func(1, 2, 3)
   END
-  CheckScriptFailure(lines, 'E1013: argument 1: type mismatch')
+  CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch')
 
   lines =<< trim END
       vim9script
@@ -335,7 +344,7 @@ def Test_call_def_varargs()
       enddef
       Func('a', 9)
   END
-  CheckScriptFailure(lines, 'E1013: argument 2: type mismatch')
+  CheckScriptFailure(lines, 'E1013: Argument 2: type mismatch')
 
   lines =<< trim END
       vim9script
@@ -344,7 +353,7 @@ def Test_call_def_varargs()
       enddef
       Func(1, 'a')
   END
-  CheckScriptFailure(lines, 'E1013: argument 1: type mismatch')
+  CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch')
 enddef
 
 def Test_call_call()
@@ -403,8 +412,8 @@ def Test_call_varargs_only()
   MyVarargsOnly()->assert_equal('')
   MyVarargsOnly('one')->assert_equal('one')
   MyVarargsOnly('one', 'two')->assert_equal('one,two')
-  CheckDefFailure(['MyVarargsOnly(1)'], 'E1013: argument 1: type mismatch, expected string but got number')
-  CheckDefFailure(['MyVarargsOnly("one", 2)'], 'E1013: argument 2: type mismatch, expected string but got number')
+  CheckDefFailure(['MyVarargsOnly(1)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  CheckDefFailure(['MyVarargsOnly("one", 2)'], 'E1013: Argument 2: type mismatch, expected string but got number')
 enddef
 
 def Test_using_var_as_arg()
@@ -487,7 +496,7 @@ def Test_call_funcref()
     enddef
     let Funcref: func(string) = function('UseNumber')
   END
-  CheckScriptFailure(lines, 'E1012: type mismatch, expected func(string) but got func(number)')
+  CheckScriptFailure(lines, 'E1012: Type mismatch; expected func(string) but got func(number)')
 
   lines =<< trim END
     vim9script
@@ -739,7 +748,7 @@ def Test_vim9script_call_fail_type()
     enddef
     MyFunc(1234)
   END
-  CheckScriptFailure(lines, 'E1013: argument 1: type mismatch, expected string but got number')
+  CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected string but got number')
 enddef
 
 def Test_vim9script_call_fail_const()
@@ -976,37 +985,37 @@ def Test_func_type_part()
   let RefVoid: func: void
   RefVoid = FuncNoArgNoRet
   RefVoid = FuncOneArgNoRet
-  CheckDefFailure(['let RefVoid: func: void', 'RefVoid = FuncNoArgRetNumber'], 'E1012: type mismatch, expected func() but got func(): number')
-  CheckDefFailure(['let RefVoid: func: void', 'RefVoid = FuncNoArgRetString'], 'E1012: type mismatch, expected func() but got func(): string')
+  CheckDefFailure(['let RefVoid: func: void', 'RefVoid = FuncNoArgRetNumber'], 'E1012: Type mismatch; expected func(...) but got func(): number')
+  CheckDefFailure(['let RefVoid: func: void', 'RefVoid = FuncNoArgRetString'], 'E1012: Type mismatch; expected func(...) but got func(): string')
 
   let RefAny: func(): any
   RefAny = FuncNoArgRetNumber
   RefAny = FuncNoArgRetString
-  CheckDefFailure(['let RefAny: func(): any', 'RefAny = FuncNoArgNoRet'], 'E1012: type mismatch, expected func(): any but got func()')
-  CheckDefFailure(['let RefAny: func(): any', 'RefAny = FuncOneArgNoRet'], 'E1012: type mismatch, expected func(): any but got func(number)')
+  CheckDefFailure(['let RefAny: func(): any', 'RefAny = FuncNoArgNoRet'], 'E1012: Type mismatch; expected func(): any but got func()')
+  CheckDefFailure(['let RefAny: func(): any', 'RefAny = FuncOneArgNoRet'], 'E1012: Type mismatch; expected func(): any but got func(number)')
 
   let RefNr: func: number
   RefNr = FuncNoArgRetNumber
   RefNr = FuncOneArgRetNumber
-  CheckDefFailure(['let RefNr: func: number', 'RefNr = FuncNoArgNoRet'], 'E1012: type mismatch, expected func(): number but got func()')
-  CheckDefFailure(['let RefNr: func: number', 'RefNr = FuncNoArgRetString'], 'E1012: type mismatch, expected func(): number but got func(): string')
+  CheckDefFailure(['let RefNr: func: number', 'RefNr = FuncNoArgNoRet'], 'E1012: Type mismatch; expected func(...): number but got func()')
+  CheckDefFailure(['let RefNr: func: number', 'RefNr = FuncNoArgRetString'], 'E1012: Type mismatch; expected func(...): number but got func(): string')
 
   let RefStr: func: string
   RefStr = FuncNoArgRetString
   RefStr = FuncOneArgRetString
-  CheckDefFailure(['let RefStr: func: string', 'RefStr = FuncNoArgNoRet'], 'E1012: type mismatch, expected func(): string but got func()')
-  CheckDefFailure(['let RefStr: func: string', 'RefStr = FuncNoArgRetNumber'], 'E1012: type mismatch, expected func(): string but got func(): number')
+  CheckDefFailure(['let RefStr: func: string', 'RefStr = FuncNoArgNoRet'], 'E1012: Type mismatch; expected func(...): string but got func()')
+  CheckDefFailure(['let RefStr: func: string', 'RefStr = FuncNoArgRetNumber'], 'E1012: Type mismatch; expected func(...): string but got func(): number')
 enddef
 
 def Test_func_type_fails()
   CheckDefFailure(['let ref1: func()'], 'E704:')
 
-  CheckDefFailure(['let Ref1: func()', 'Ref1 = FuncNoArgRetNumber'], 'E1012: type mismatch, expected func() but got func(): number')
-  CheckDefFailure(['let Ref1: func()', 'Ref1 = FuncOneArgNoRet'], 'E1012: type mismatch, expected func() but got func(number)')
-  CheckDefFailure(['let Ref1: func()', 'Ref1 = FuncOneArgRetNumber'], 'E1012: type mismatch, expected func() but got func(number): number')
-  CheckDefFailure(['let Ref1: func(bool)', 'Ref1 = FuncTwoArgNoRet'], 'E1012: type mismatch, expected func(bool) but got func(bool, number)')
-  CheckDefFailure(['let Ref1: func(?bool)', 'Ref1 = FuncTwoArgNoRet'], 'E1012: type mismatch, expected func(?bool) but got func(bool, number)')
-  CheckDefFailure(['let Ref1: func(...bool)', 'Ref1 = FuncTwoArgNoRet'], 'E1012: type mismatch, expected func(...bool) but got func(bool, number)')
+  CheckDefFailure(['let Ref1: func()', 'Ref1 = FuncNoArgRetNumber'], 'E1012: Type mismatch; expected func() but got func(): number')
+  CheckDefFailure(['let Ref1: func()', 'Ref1 = FuncOneArgNoRet'], 'E1012: Type mismatch; expected func() but got func(number)')
+  CheckDefFailure(['let Ref1: func()', 'Ref1 = FuncOneArgRetNumber'], 'E1012: Type mismatch; expected func() but got func(number): number')
+  CheckDefFailure(['let Ref1: func(bool)', 'Ref1 = FuncTwoArgNoRet'], 'E1012: Type mismatch; expected func(bool) but got func(bool, number)')
+  CheckDefFailure(['let Ref1: func(?bool)', 'Ref1 = FuncTwoArgNoRet'], 'E1012: Type mismatch; expected func(?bool) but got func(bool, number)')
+  CheckDefFailure(['let Ref1: func(...bool)', 'Ref1 = FuncTwoArgNoRet'], 'E1012: Type mismatch; expected func(...bool) but got func(bool, number)')
 
   CheckDefFailure(['let RefWrong: func(string ,number)'], 'E1068:')
   CheckDefFailure(['let RefWrong: func(string,number)'], 'E1069:')
@@ -1026,7 +1035,7 @@ def Test_func_return_type()
   str = FuncOneArgRetAny('yes')
   str->assert_equal('yes')
 
-  CheckDefFailure(['let str: string', 'str = FuncNoArgRetNumber()'], 'E1012: type mismatch, expected string but got number')
+  CheckDefFailure(['let str: string', 'str = FuncNoArgRetNumber()'], 'E1012: Type mismatch; expected string but got number')
 enddef
 
 def MultiLine(
@@ -1204,7 +1213,7 @@ def ReadRef(Ref: func(): list<string>): string
   return join(Ref(), ' ')
 enddef
 
-def ExtendRef(Ref: func(string), add: string)
+def ExtendRef(Ref: func(string): list<string>, add: string)
   Ref(add)
 enddef
 
@@ -1288,6 +1297,11 @@ enddef
 def Test_sort_return_type()
   let res: list<number>
   res = [1, 2, 3]->sort()
+enddef
+
+def Test_sort_argument()
+  let res = ['b', 'a', 'c']->sort('i')
+  res->assert_equal(['a', 'b', 'c'])
 enddef
 
 def Test_getqflist_return_type()
@@ -1408,7 +1422,7 @@ def Wrong_dict_key_type(items: list<number>): list<number>
 enddef
 
 def Test_wrong_dict_key_type()
-  assert_fails('Wrong_dict_key_type([1, 2, 3])', 'E1029:')
+  assert_fails('Wrong_dict_key_type([1, 2, 3])', 'E1012:')
 enddef
 
 def Line_continuation_in_def(dir: string = ''): string
@@ -1422,7 +1436,7 @@ def Test_line_continuation_in_def()
   Line_continuation_in_def('.')->assert_equal('full')
 enddef
 
-def Line_continuation_in_lambda(): list<number>
+def Line_continuation_in_lambda(): list<string>
   let x = range(97, 100)
       ->map({_, v -> nr2char(v)
           ->toupper()})
