@@ -888,7 +888,6 @@ func Test_highlight_default_colorscheme_restores_links()
 
   " Restore default highlighting
   colorscheme default
-  syntax on
   " 'default' should work no matter if highlight group was cleared
   hi def link TestLink Identifier
   hi def TestHi ctermbg=red
