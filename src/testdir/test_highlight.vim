@@ -832,8 +832,45 @@ func Test_highlight_term_attr()
   hi clear
 endfunc
 
-" Test default highlighting is restored
-func Test_highlight_restore_defaults()
+func Test_highlight_clear_restores_links()
+  let aaa_id = hlID('aaa')
+  call assert_equal(aaa_id, 0)
+
+  " create default link aaa --> bbb
+  hi def link aaa bbb
+  let aaa_id = hlID('aaa')
+  let bbb_id = hlID('bbb')
+  call assert_equal(synIDtrans(aaa_id), bbb_id)
+
+  " try to redefine default link aaa --> ccc; check aaa --> bbb
+  hi def link aaa ccc
+  call assert_equal(synIDtrans(aaa_id), bbb_id)
+
+  " clear aaa; check aaa --> bbb
+  hi clear aaa
+  call assert_equal(synIDtrans(aaa_id), bbb_id)
+
+  " link aaa --> ccc; clear aaa; check aaa --> bbb
+  hi link aaa ccc
+  let ccc_id = hlID('ccc')
+  call assert_equal(synIDtrans(aaa_id), ccc_id)
+  hi clear aaa
+  call assert_equal(synIDtrans(aaa_id), bbb_id)
+
+  " forcibly set default link aaa --> ddd
+  hi! def link aaa ddd
+  let ddd_id = hlID('ddd')
+  call assert_equal(synIDtrans(aaa_id), ddd_id)
+
+  " link aaa --> eee; clear aaa; check aaa --> ddd
+  hi link aaa eee
+  let eee_id = hlID('eee')
+  call assert_equal(synIDtrans(aaa_id), eee_id)
+  hi clear aaa
+  call assert_equal(synIDtrans(aaa_id), ddd_id)
+endfunc
+
+func Test_highlight_default_colorscheme_restores_links()
   hi! link TestLink Identifier
   hi! TestHi ctermbg=red
 
