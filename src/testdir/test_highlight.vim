@@ -840,7 +840,6 @@ func Test_highlight_clear_restores_links()
   hi def link aaa bbb
   let id_aaa = hlID('aaa')
   let hl_aaa_bbb = HighlightArgs('aaa')
-  call assert_equal(HighlightArgs('aaa'), hl_aaa_bbb)
 
   " try to redefine default link aaa --> ccc; check aaa --> bbb
   hi def link aaa ccc
