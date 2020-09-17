@@ -3353,6 +3353,45 @@ def Test_vim9_autoload()
   &rtp = save_rtp
 enddef
 
+" This was causing a crash because suppress_errthrow wasn't reset.
+def Test_vim9_autoload_error()
+  let lines =<< trim END
+      vim9script
+      def crash#func()
+          try
+              for x in List()
+              endfor
+          catch
+          endtry
+          g:ok = true
+      enddef
+      fu List()
+          invalid
+      endfu
+      try
+          invalid
+      catch /wontmatch/
+      endtry
+  END
+  call mkdir('Xruntime/autoload', 'p')
+  call writefile(lines, 'Xruntime/autoload/crash.vim')
+
+  # run in a separate Vim to avoid the side effects of assert_fails()
+  lines =<< trim END
+    exe 'set rtp^=' .. getcwd() .. '/Xruntime'
+    call crash#func()
+    call writefile(['ok'], 'Xdidit')
+    qall
+  END
+  writefile(lines, 'Xscript')
+  RunVim([], [], '-S Xscript')
+  assert_equal(['ok'], readfile('Xdidit'))
+
+  delete('Xdidit')
+  delete('Xscript')
+  delete('Xruntime', 'rf')
+enddef
+
 def Test_script_var_in_autocmd()
   # using a script variable from an autocommand, defined in a :def function in a
   # legacy Vim script, cannot check the variable type.

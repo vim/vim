@@ -761,6 +761,7 @@ call_def_function(
     sctx_T	save_current_sctx = current_sctx;
     int		breakcheck_count = 0;
     int		called_emsg_before = called_emsg;
+    int		save_suppress_errthrow = suppress_errthrow;
 
 // Get pointer to item in the stack.
 #define STACK_TV(idx) (((typval_T *)ectx.ec_stack.ga_data) + idx)
@@ -906,6 +907,9 @@ call_def_function(
     estack_push_ufunc(ufunc, 1);
     current_sctx = ufunc->uf_script_ctx;
     current_sctx.sc_version = SCRIPT_VERSION_VIM9;
+
+    // Do turn errors into exceptions.
+    suppress_errthrow = FALSE;
 
     // Decide where to start execution, handles optional arguments.
     init_instr_idx(ufunc, argc, &ectx);
@@ -1884,7 +1888,8 @@ call_def_function(
 		    // push the next item from the list
 		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
-		    if (++idxtv->vval.v_number >= list->lv_len)
+		    ++idxtv->vval.v_number;
+		    if (list == NULL || idxtv->vval.v_number >= list->lv_len)
 			// past the end of the list, jump to "endfor"
 			ectx.ec_iidx = iptr->isn_arg.forloop.for_end;
 		    else if (list->lv_first == &range_list_item)
@@ -2712,6 +2717,9 @@ failed_early:
 
     vim_free(ectx.ec_stack.ga_data);
     vim_free(ectx.ec_trystack.ga_data);
+
+    // Not sure if this is necessary.
+    suppress_errthrow = save_suppress_errthrow;
 
     if (ret != OK && called_emsg == called_emsg_before)
 	semsg(_(e_unknown_error_while_executing_str),
