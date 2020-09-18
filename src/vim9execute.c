@@ -1830,6 +1830,7 @@ call_def_function(
 			    // TODO: use a garray_T on ectx.
 			    SOURCING_LNUM = iptr->isn_lnum;
 			    emsg("Multiple closures not supported yet");
+			    vim_free(pt);
 			    goto failed;
 			}
 			tv->v_type = VAR_PARTIAL;
