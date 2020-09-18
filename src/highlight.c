@@ -74,6 +74,7 @@ typedef struct
 #endif
     int		sg_link;	// link to this highlight group ID
     int		sg_deflink;	// default link; restored in highlight_clear()
+    sctx_T	sg_deflink_sctx;  // script where the default link was set
     int		sg_set;		// combination of SG_* flags
 #ifdef FEAT_EVAL
     sctx_T	sg_script_ctx;	// script in which the group was last set
@@ -746,7 +747,11 @@ do_highlight(
 	{
 	    hlgroup = &HL_TABLE()[from_id - 1];
 	    if (dodefault && (forceit || hlgroup->sg_deflink == 0))
+	    {
 		hlgroup->sg_deflink = to_id;
+		hlgroup->sg_deflink_sctx = current_sctx;
+		hlgroup->sg_deflink_sctx.sc_lnum += SOURCING_LNUM;
+	    }
 	}
 
 	if (from_id > 0 && (!init || hlgroup->sg_set == 0))
@@ -1692,15 +1697,9 @@ highlight_clear(int idx)
     HL_TABLE()[idx].sg_gui_attr = 0;
 #endif
 #ifdef FEAT_EVAL
-    // Restore any default link.
+    // Restore default link and context if exists, otherwise clears.
     HL_TABLE()[idx].sg_link = HL_TABLE()[idx].sg_deflink;
-    // Clear the script ID only when there is no link, since that is not
-    // cleared.
-    if (HL_TABLE()[idx].sg_link == 0)
-    {
-	HL_TABLE()[idx].sg_script_ctx.sc_sid = 0;
-	HL_TABLE()[idx].sg_script_ctx.sc_lnum = 0;
-    }
+    HL_TABLE()[idx].sg_script_ctx = HL_TABLE()[idx].sg_deflink_sctx;
 #endif
 }
 
