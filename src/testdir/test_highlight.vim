@@ -883,8 +883,8 @@ func Test_highlight_clear_restores_context()
 
   let scriptContextDefault = MakeScript("FuncContextDefault")
   let scriptContextRelink = MakeScript("FuncContextRelink")
-  let patContextDefault = scriptContextDefault .. ' line 1'
-  let patContextRelink = scriptContextRelink .. ' line 2'
+  let patContextDefault = fnamemodify(scriptContextDefault, ':t') .. ' line 1'
+  let patContextRelink = fnamemodify(scriptContextRelink, ':t') .. ' line 2'
 
   exec "source" scriptContextDefault
   let hlContextDefault = execute("verbose hi Context")
