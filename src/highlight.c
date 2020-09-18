@@ -749,8 +749,10 @@ do_highlight(
 	    if (dodefault && (forceit || hlgroup->sg_deflink == 0))
 	    {
 		hlgroup->sg_deflink = to_id;
+#ifdef FEAT_EVAL
 		hlgroup->sg_deflink_sctx = current_sctx;
 		hlgroup->sg_deflink_sctx.sc_lnum += SOURCING_LNUM;
+#endif
 	    }
 	}
 
