@@ -74,9 +74,9 @@ typedef struct
 #endif
     int		sg_link;	// link to this highlight group ID
     int		sg_deflink;	// default link; restored in highlight_clear()
-    sctx_T	sg_deflink_sctx;  // script where the default link was set
     int		sg_set;		// combination of SG_* flags
 #ifdef FEAT_EVAL
+    sctx_T	sg_deflink_sctx;  // script where the default link was set
     sctx_T	sg_script_ctx;	// script in which the group was last set
 #endif
 } hl_group_T;
@@ -1696,9 +1696,9 @@ highlight_clear(int idx)
     VIM_CLEAR(HL_TABLE()[idx].sg_font_name);
     HL_TABLE()[idx].sg_gui_attr = 0;
 #endif
-#ifdef FEAT_EVAL
-    // Restore default link and context if exists, otherwise clears.
+    // Restore default link and context if they exist. Otherwise clears.
     HL_TABLE()[idx].sg_link = HL_TABLE()[idx].sg_deflink;
+#ifdef FEAT_EVAL
     HL_TABLE()[idx].sg_script_ctx = HL_TABLE()[idx].sg_deflink_sctx;
 #endif
 }
