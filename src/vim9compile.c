@@ -1406,12 +1406,12 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
     RETURN_OK_IF_SKIP(cctx);
     if (argcount > regular_args && !has_varargs(ufunc))
     {
-	semsg(_(e_toomanyarg), ufunc->uf_name);
+	semsg(_(e_toomanyarg), printable_func_name(ufunc));
 	return FAIL;
     }
     if (argcount < regular_args - ufunc->uf_def_args.ga_len)
     {
-	semsg(_(e_toofewarg), ufunc->uf_name);
+	semsg(_(e_toofewarg), printable_func_name(ufunc));
 	return FAIL;
     }
 

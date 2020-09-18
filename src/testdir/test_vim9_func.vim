@@ -280,6 +280,50 @@ def Test_call_wrong_args()
     Func([])
   END
   CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected string but got list<unknown>', 5)
+
+  lines =<< trim END
+    vim9script
+    def FuncOne(nr: number)
+      echo nr
+    enddef
+    def FuncTwo()
+      FuncOne()
+    enddef
+    defcompile
+  END
+  writefile(lines, 'Xscript')
+  let didCatch = false
+  try
+    source Xscript
+  catch
+    assert_match('E119: Not enough arguments for function: <SNR>\d\+_FuncOne', v:exception)
+    assert_match('Xscript\[8\]..function <SNR>\d\+_FuncTwo, line 1', v:throwpoint)
+    didCatch = true
+  endtry
+  assert_true(didCatch)
+
+  lines =<< trim END
+    vim9script
+    def FuncOne(nr: number)
+      echo nr
+    enddef
+    def FuncTwo()
+      FuncOne(1, 2)
+    enddef
+    defcompile
+  END
+  writefile(lines, 'Xscript')
+  didCatch = false
+  try
+    source Xscript
+  catch
+    assert_match('E118: Too many arguments for function: <SNR>\d\+_FuncOne', v:exception)
+    assert_match('Xscript\[8\]..function <SNR>\d\+_FuncTwo, line 1', v:throwpoint)
+    didCatch = true
+  endtry
+  assert_true(didCatch)
+
+  delete('Xscript')
 enddef
 
 " Default arg and varargs
