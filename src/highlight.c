@@ -76,6 +76,7 @@ typedef struct
     int		sg_deflink;	// default link; restored in highlight_clear()
     int		sg_set;		// combination of SG_* flags
 #ifdef FEAT_EVAL
+    sctx_T	sg_deflink_sctx;  // script where the default link was set
     sctx_T	sg_script_ctx;	// script in which the group was last set
 #endif
 } hl_group_T;
@@ -746,7 +747,13 @@ do_highlight(
 	{
 	    hlgroup = &HL_TABLE()[from_id - 1];
 	    if (dodefault && (forceit || hlgroup->sg_deflink == 0))
+	    {
 		hlgroup->sg_deflink = to_id;
+#ifdef FEAT_EVAL
+		hlgroup->sg_deflink_sctx = current_sctx;
+		hlgroup->sg_deflink_sctx.sc_lnum += SOURCING_LNUM;
+#endif
+	    }
 	}
 
 	if (from_id > 0 && (!init || hlgroup->sg_set == 0))
@@ -1691,16 +1698,12 @@ highlight_clear(int idx)
     VIM_CLEAR(HL_TABLE()[idx].sg_font_name);
     HL_TABLE()[idx].sg_gui_attr = 0;
 #endif
-#ifdef FEAT_EVAL
-    // Restore any default link.
+    // Restore default link and context if they exist. Otherwise clears.
     HL_TABLE()[idx].sg_link = HL_TABLE()[idx].sg_deflink;
-    // Clear the script ID only when there is no link, since that is not
-    // cleared.
-    if (HL_TABLE()[idx].sg_link == 0)
-    {
-	HL_TABLE()[idx].sg_script_ctx.sc_sid = 0;
-	HL_TABLE()[idx].sg_script_ctx.sc_lnum = 0;
-    }
+#ifdef FEAT_EVAL
+    // Since we set the default link, set the location to where the default
+    // link was set.
+    HL_TABLE()[idx].sg_script_ctx = HL_TABLE()[idx].sg_deflink_sctx;
 #endif
 }
 
