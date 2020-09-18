@@ -2676,15 +2676,11 @@ call_def_function(
 	continue;
 
 func_return:
-	// Restore previous function. If the frame pointer is zero then there
-	// is none and we are done.
+	// Restore previous function. If the frame pointer is where we started
+	// then there is none and we are done.
 	if (ectx.ec_frame_idx == initial_frame_idx)
-	{
-	    if (handle_closure_in_use(&ectx, FALSE) == FAIL)
-		// only fails when out of memory
-		goto failed;
 	    goto done;
-	}
+
 	if (func_return(&ectx) == FAIL)
 	    // only fails when out of memory
 	    goto failed;
@@ -2703,6 +2699,10 @@ done:
     ret = OK;
 
 failed:
+    // Also deal with closures when failed, they may already be in use
+    // somewhere.
+    handle_closure_in_use(&ectx, FALSE);
+
     // When failed need to unwind the call stack.
     while (ectx.ec_frame_idx != initial_frame_idx)
 	func_return(&ectx);

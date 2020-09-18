@@ -1294,6 +1294,20 @@ def Test_call_closure_not_compiled()
   GetResult(g:Ref)->assert_equal('sometext')
 enddef
 
+def Test_double_closure_fails()
+  let lines =<< trim END
+    vim9script
+    def Func()
+    let var = 0
+    for i in range(2)
+	timer_start(0, {-> var})
+    endfor
+    enddef
+    Func()
+  END
+  CheckScriptFailure(lines, 'Multiple closures not supported yet')
+enddef
+
 def Test_sort_return_type()
   let res: list<number>
   res = [1, 2, 3]->sort()
