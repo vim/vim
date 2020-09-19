@@ -16,7 +16,7 @@ int modifier_len(char_u *cmd);
 int cmd_exists(char_u *name);
 cmdidx_T excmd_get_cmdidx(char_u *cmd, int len);
 long excmd_get_argt(cmdidx_T idx);
-char_u *skip_range(char_u *cmd, int *ctx);
+char_u *skip_range(char_u *cmd, int skip_star, int *ctx);
 void ex_ni(exarg_T *eap);
 int expand_filename(exarg_T *eap, char_u **cmdlinep, char **errormsgp);
 void separate_nextcmd(exarg_T *eap);

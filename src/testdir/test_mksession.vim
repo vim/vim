@@ -351,9 +351,8 @@ func Test_mksession_blank_windows()
   call delete('Xtest_mks.out')
 endfunc
 
-if has('terminal')
-
 func Test_mksession_terminal_shell()
+  CheckFeature terminal
   CheckFeature quickfix
 
   terminal
@@ -374,6 +373,8 @@ func Test_mksession_terminal_shell()
 endfunc
 
 func Test_mksession_terminal_no_restore_cmdarg()
+  CheckFeature terminal
+
   terminal ++norestore
   mksession! Xtest_mks.out
   let lines = readfile('Xtest_mks.out')
@@ -389,6 +390,8 @@ func Test_mksession_terminal_no_restore_cmdarg()
 endfunc
 
 func Test_mksession_terminal_no_restore_funcarg()
+  CheckFeature terminal
+
   call term_start(&shell, {'norestore': 1})
   mksession! Xtest_mks.out
   let lines = readfile('Xtest_mks.out')
@@ -404,6 +407,8 @@ func Test_mksession_terminal_no_restore_funcarg()
 endfunc
 
 func Test_mksession_terminal_no_restore_func()
+  CheckFeature terminal
+
   terminal
   call term_setrestore(bufnr('%'), 'NONE')
   mksession! Xtest_mks.out
@@ -420,6 +425,8 @@ func Test_mksession_terminal_no_restore_func()
 endfunc
 
 func Test_mksession_terminal_no_ssop()
+  CheckFeature terminal
+
   terminal
   set sessionoptions-=terminal
   mksession! Xtest_mks.out
@@ -437,6 +444,7 @@ func Test_mksession_terminal_no_ssop()
 endfunc
 
 func Test_mksession_terminal_restore_other()
+  CheckFeature terminal
   CheckFeature quickfix
 
   terminal
@@ -455,7 +463,46 @@ func Test_mksession_terminal_restore_other()
   call delete('Xtest_mks.out')
 endfunc
 
-endif " has('terminal')
+func Test_mksession_terminal_shared_windows()
+  CheckFeature terminal
+
+  terminal
+  let term_buf = bufnr()
+  new
+  execute "buffer" term_buf
+  mksession! Xtest_mks.out
+
+  let lines = readfile('Xtest_mks.out')
+  let found_creation = 0
+  let found_use = 0
+
+  for line in lines
+    if line =~ '^terminal'
+      let found_creation = 1
+      call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+', line)
+    elseif line =~ "^execute 'buffer ' . s:term_buf_" . term_buf . "$"
+      let found_use = 1
+    endif
+  endfor
+
+  call assert_true(found_creation && found_use)
+
+  call StopShellInTerminal(term_buf)
+  call delete('Xtest_mks.out')
+endfunc
+
+func Test_mkview_terminal_windows()
+  CheckFeature terminal
+
+  " create two window on the same terminal to check this is handled OK
+  terminal
+  let term_buf = bufnr()
+  exe 'sbuf ' .. term_buf
+  mkview! Xtestview
+
+  call StopShellInTerminal(term_buf)
+  call delete('Xtestview')
+endfunc
 
 " Test :mkview with a file argument.
 func Test_mkview_file()

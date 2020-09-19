@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Sep 07
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Sep 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -192,6 +192,9 @@ To intentionally avoid a variable being available later, a block can be used:
 	}
 	echo temp  # Error!
 
+Declaring a variable with a type but without an initializer will initialize to
+zero, false or empty.
+
 An existing variable cannot be assigned to with `:let`, since that implies a
 declaration.  Global, window, tab, buffer and Vim variables can only be used
 without `:let`, because they are not really declared, they can also be deleted
@@ -210,6 +213,40 @@ at the script level. >
 
 Since "&opt = value" is now assigning a value to option "opt", ":&" cannot be
 used to repeat a `:substitute` command.
+							*vim9-const*
+In legacy Vim script "const list = []" would make the variable "list"
+immutable and also the value.  Thus you cannot add items to the list.  This
+differs from what many languages do. Vim9 script does it like TypeScript: only
+"list" is immutable, the value can be changed.
+
+One can use `:const!` to make both the variable and the value immutable.  Use
+this for composite structures that you want to make sure will not be modified.
+
+How this works: >
+	vim9script
+	const list = [1, 2]
+	list = [3, 4]	     # Error!
+	list[0] = 2          # OK
+
+	const! LIST = [1, 2]
+	LIST = [3, 4]	     # Error!
+	LIST[0] = 2          # Error!
+It is common to write constants as ALL_CAPS, but you don't have to.
+
+The constant only applies to the value itself, not what it refers to. >
+	cont females = ["Mary"]
+	const! NAMES = [["John", "Peter"], females]
+	NAMES[0] = ["Jack"]     # Error!
+	NAMES[0][0] = ["Jack"]  # Error!
+	NAMES[1] = ["Emma"]     # Error!
+	Names[1][0] = "Emma"    # OK, now females[0] == "Emma"
+
+Rationale: TypeScript has no way to make the value immutable.  One can use
+immutable types, but that quickly gets complicated for nested values.  And
+with a type cast the value can be made mutable again, which means there is no
+guarantee the value won't change.  Vim supports immutable values, in legacy
+script this was done with `:lockvar`.  But that is an extra statement and also
+applies to nested values.  Therefore the solution to use `:const!`.
 
 							*E1092*
 Declaring more than one variable at a time, using the unpack notation, is
@@ -408,7 +445,7 @@ for using a list or job.  This is very much like JavaScript, but there are a
 few exceptions.
 
 	type		TRUE when ~
-	bool		v:true
+	bool		v:true or 1
 	number		non-zero
 	float		non-zero
 	string		non-empty
@@ -946,26 +983,41 @@ declarations: >
 Expression evaluation was already close to what JavaScript and other languages
 are doing.  Some details are unexpected and can be fixed.  For example how the
 || and && operators work.  Legacy Vim script: >
-	let result = 44
+	let value = 44
 	...
-	return result || 0	# returns 1
+	let result = value || 0  # result == 1
 
 Vim9 script works like JavaScript/TypeScript, keep the value: >
-	let result = 44
+	let value = 44
 	...
-	return result || 0	# returns 44
-
-On the other hand, overloading "+" to use both for addition and string
-concatenation goes against legacy Vim script and often leads to mistakes.
-For that reason we will keep using ".." for string concatenation.  Lua also
-uses ".." this way.
+	let result = value || 0  # result == 44
 
 There is no intention to completely match TypeScript syntax and semantics.  We
 just want to take those parts that we can use for Vim and we expect Vim users
-are happy with.  TypeScript is a complex language with its own advantages and
-disadvantages.  People used to other languages (Java, Python, etc.) will also
-find things in TypeScript that they do not like or do not understand.  We'll
-try to avoid those things.
+will be happy with.  TypeScript is a complex language with its own advantages
+and disadvantages.  To get an idea of the disadvantages read the book:
+"JavaScript: The Good Parts".  Or find the article "TypeScript: the good
+parts" and read the "Things to avoid" section.
+
+People used to other languages (Java, Python, etc.) will also find things in
+TypeScript that they do not like or do not understand.  We'll try to avoid
+those things.
+
+Specific items from TypeScript we avoid:
+- Overloading "+", using it both for addition and string concatenation.  This
+  goes against legacy Vim script and often leads to mistakes.  For that reason
+  we will keep using ".." for string concatenation.  Lua also uses ".." this
+  way.  And it allows for conversion to string for more values.
+- TypeScript can use an expression like "99 || 'yes'" in a condition, but
+  cannot assign the value to a boolean.  That is inconsistent and can be
+  annoying.  Vim recognizes an expression with && or || and allows using the
+  result as a bool.
+- TypeScript considers an empty string as Falsy, but an empty list or dict as
+  Truthy.  That is inconsistent.  In Vim an empty list and dict are also
+  Falsy.
+- TypeScript has various "Readonly" types, which have limited usefulness,
+  since a type cast can remove the immutable nature.  Vim locks the value,
+  which is more flexible, but is only checked at runtime.
 
 
 Import and Export ~

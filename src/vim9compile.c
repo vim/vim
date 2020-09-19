@@ -292,12 +292,14 @@ lookup_script(char_u *name, size_t len, int vim9script)
 /*
  * Check if "p[len]" is already defined, either in script "import_sid" or in
  * compilation context "cctx".
+ * Does not check the global namespace.
  * Return FAIL and give an error if it defined.
  */
     int
 check_defined(char_u *p, size_t len, cctx_T *cctx)
 {
-    int c = p[len];
+    int		c = p[len];
+    ufunc_T	*ufunc = NULL;
 
     p[len] = NUL;
     if (lookup_script(p, len, FALSE) == OK
@@ -305,11 +307,16 @@ check_defined(char_u *p, size_t len, cctx_T *cctx)
 		&& (lookup_local(p, len, cctx) != NULL
 		    || lookup_arg(p, len, NULL, NULL, NULL, cctx) == OK))
 	    || find_imported(p, len, cctx) != NULL
-	    || find_func_even_dead(p, FALSE, cctx) != NULL)
+	    || (ufunc = find_func_even_dead(p, FALSE, cctx)) != NULL)
     {
-	p[len] = c;
-	semsg(_(e_name_already_defined_str), p);
-	return FAIL;
+	// A local or script-local function can shadow a global function.
+	if (ufunc == NULL || !func_is_global(ufunc)
+		|| (p[0] == 'g' && p[1] == ':'))
+	{
+	    p[len] = c;
+	    semsg(_(e_name_already_defined_str), p);
+	    return FAIL;
+	}
     }
     p[len] = c;
     return OK;
@@ -697,7 +704,10 @@ generate_2BOOL(cctx_T *cctx, int invert)
 }
 
     static int
-generate_TYPECHECK(cctx_T *cctx, type_T *vartype, int offset)
+generate_TYPECHECK(
+	cctx_T	    *cctx,
+	type_T	    *expected,
+	int	    offset)
 {
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
@@ -705,19 +715,18 @@ generate_TYPECHECK(cctx_T *cctx, type_T *vartype, int offset)
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr(cctx, ISN_CHECKTYPE)) == NULL)
 	return FAIL;
-    // TODO: whole type, e.g. for a function also arg and return types
-    isn->isn_arg.type.ct_type = vartype->tt_type;
+    isn->isn_arg.type.ct_type = alloc_type(expected);
     isn->isn_arg.type.ct_off = offset;
 
-    // type becomes vartype
-    ((type_T **)stack->ga_data)[stack->ga_len + offset] = vartype;
+    // type becomes expected
+    ((type_T **)stack->ga_data)[stack->ga_len + offset] = expected;
 
     return OK;
 }
 
 /*
  * Check that
- * - "actual" is "expected" type or
+ * - "actual" matches "expected" type or
  * - "actual" is a type that can be "expected" type: add a runtime check; or
  * - return FAIL.
  */
@@ -740,17 +749,29 @@ need_type(
 
     if (check_type(expected, actual, FALSE, 0) == OK)
 	return OK;
-    if (actual->tt_type != VAR_ANY
-	    && actual->tt_type != VAR_UNKNOWN
-	    && !(actual->tt_type == VAR_FUNC
-		&& (actual->tt_member == &t_any || actual->tt_argcount < 0)))
+
+    // If the actual type can be the expected type add a runtime check.
+    // TODO: if it's a constant a runtime check makes no sense.
+    if (actual->tt_type == VAR_ANY
+	    || actual->tt_type == VAR_UNKNOWN
+	    || (actual->tt_type == VAR_FUNC
+		&& (expected->tt_type == VAR_FUNC
+					   || expected->tt_type == VAR_PARTIAL)
+		&& (actual->tt_member == &t_any || actual->tt_argcount < 0))
+	    || (actual->tt_type == VAR_LIST
+		&& expected->tt_type == VAR_LIST
+		&& actual->tt_member == &t_any)
+	    || (actual->tt_type == VAR_DICT
+		&& expected->tt_type == VAR_DICT
+		&& actual->tt_member == &t_any))
     {
-	if (!silent)
-	    type_mismatch(expected, actual);
-	return FAIL;
+	generate_TYPECHECK(cctx, expected, offset);
+	return OK;
     }
-    generate_TYPECHECK(cctx, expected, offset);
-    return OK;
+
+    if (!silent)
+	type_mismatch(expected, actual);
+    return FAIL;
 }
 
 /*
@@ -769,7 +790,7 @@ generate_PUSHNR(cctx_T *cctx, varnumber_T number)
 
     if (number == 0 || number == 1)
     {
-	type_T	*type = alloc_type(cctx->ctx_type_list);
+	type_T	*type = get_type_ptr(cctx->ctx_type_list);
 
 	// A 0 or 1 number can also be used as a bool.
 	if (type != NULL)
@@ -1102,6 +1123,20 @@ generate_UNLET(cctx_T *cctx, isntype_T isn_type, char_u *name, int forceit)
 }
 
 /*
+ * Generate an ISN_LOCKCONST instruction.
+ */
+    static int
+generate_LOCKCONST(cctx_T *cctx)
+{
+    isn_T	*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_LOCKCONST)) == NULL)
+	return FAIL;
+    return OK;
+}
+
+/*
  * Generate an ISN_LOADS instruction.
  */
     static int
@@ -1371,12 +1406,12 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
     RETURN_OK_IF_SKIP(cctx);
     if (argcount > regular_args && !has_varargs(ufunc))
     {
-	semsg(_(e_toomanyarg), ufunc->uf_name);
+	semsg(_(e_toomanyarg), printable_func_name(ufunc));
 	return FAIL;
     }
     if (argcount < regular_args - ufunc->uf_def_args.ga_len)
     {
-	semsg(_(e_toofewarg), ufunc->uf_name);
+	semsg(_(e_toofewarg), printable_func_name(ufunc));
 	return FAIL;
     }
 
@@ -1395,8 +1430,8 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 		    continue;
 		expected = ufunc->uf_arg_types[i];
 	    }
-	    else if (ufunc->uf_va_type == NULL)
-		// possibly a lambda
+	    else if (ufunc->uf_va_type == NULL || ufunc->uf_va_type == &t_any)
+		// possibly a lambda or "...: any"
 		expected = &t_any;
 	    else
 		expected = ufunc->uf_va_type->tt_member;
@@ -2114,10 +2149,16 @@ generate_funcref(cctx_T *cctx, char_u *name)
 /*
  * Compile a variable name into a load instruction.
  * "end" points to just after the name.
+ * "is_expr" is TRUE when evaluating an expression, might be a funcref.
  * When "error" is FALSE do not give an error when not found.
  */
     static int
-compile_load(char_u **arg, char_u *end_arg, cctx_T *cctx, int error)
+compile_load(
+	char_u **arg,
+	char_u *end_arg,
+	cctx_T	*cctx,
+	int	is_expr,
+	int	error)
 {
     type_T	*type;
     char_u	*name = NULL;
@@ -2214,10 +2255,11 @@ compile_load(char_u **arg, char_u *end_arg, cctx_T *cctx, int error)
 			|| find_imported(name, 0, cctx) != NULL)
 		   res = compile_load_scriptvar(cctx, name, *arg, &end, FALSE);
 
-		// When the name starts with an uppercase letter or "x:" it
-		// can be a user defined function.
+		// When evaluating an expression and the name starts with an
+		// uppercase letter or "x:" it can be a user defined function.
 		// TODO: this is just guessing
-		if (res == FAIL && (ASCII_ISUPPER(*name) || name[1] == ':'))
+		if (res == FAIL && is_expr
+				   && (ASCII_ISUPPER(*name) || name[1] == ':'))
 		    res = generate_funcref(cctx, name);
 	    }
 	}
@@ -2368,8 +2410,9 @@ compile_call(
     }
 
     // If we can find the function by name generate the right call.
+    // Skip global functions here, a local funcref takes precedence.
     ufunc = find_func(name, FALSE, cctx);
-    if (ufunc != NULL)
+    if (ufunc != NULL && !func_is_global(ufunc))
     {
 	res = generate_CALL(cctx, ufunc, argcount);
 	goto theend;
@@ -2380,13 +2423,20 @@ compile_call(
     // Not for eome#Func(), it will be loaded later.
     p = namebuf;
     if (STRNCMP(namebuf, "g:", 2) != 0 && !is_autoload
-	    && compile_load(&p, namebuf + varlen, cctx, FALSE) == OK)
+	    && compile_load(&p, namebuf + varlen, cctx, FALSE, FALSE) == OK)
     {
 	garray_T    *stack = &cctx->ctx_type_stack;
 	type_T	    *type;
 
 	type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
 	res = generate_PCALL(cctx, argcount, namebuf, type, FALSE);
+	goto theend;
+    }
+
+    // If we can find a global function by name generate the right call.
+    if (ufunc != NULL)
+    {
+	res = generate_CALL(cctx, ufunc, argcount);
 	goto theend;
     }
 
@@ -2543,6 +2593,9 @@ compile_lambda(char_u **arg, cctx_T *cctx)
 	// The return type will now be known.
 	set_function_type(ufunc);
 
+	// The function reference count will be 1.  When the ISN_FUNCREF
+	// instruction is deleted the reference count is decremented and the
+	// function is freed.
 	return generate_FUNCREF(cctx, ufunc);
     }
 
@@ -3548,7 +3601,7 @@ compile_expr7(
 	{
 	    if (generate_ppconst(cctx, ppconst) == FAIL)
 		return FAIL;
-	    r = compile_load(arg, p, cctx, TRUE);
+	    r = compile_load(arg, p, cctx, TRUE, TRUE);
 	}
 	if (r == FAIL)
 	    return FAIL;
@@ -4001,7 +4054,7 @@ compile_and_or(
 	typep = ((type_T **)stack->ga_data) + stack->ga_len - 1;
 	if (*typep != &t_bool)
 	{
-	    type_T *type = alloc_type(cctx->ctx_type_list);
+	    type_T *type = get_type_ptr(cctx->ctx_type_list);
 
 	    if (type != NULL)
 	    {
@@ -4254,7 +4307,7 @@ compile_return(char_u *arg, int set_return_type, cctx_T *cctx)
 	    }
 	    if (need_type(stack_type, cctx->ctx_ufunc->uf_ret_type, -1,
 							  cctx, FALSE) == FAIL)
-	    return NULL;
+		return NULL;
 	}
     }
     else
@@ -4319,6 +4372,12 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
     lvar_T	*lvar;
     ufunc_T	*ufunc;
     int		r;
+
+    if (eap->forceit)
+    {
+	emsg(_(e_cannot_use_bang_with_nested_def));
+	return NULL;
+    }
 
     // Only g:Func() can use a namespace.
     if (name_start[1] == ':' && !is_global)
@@ -4772,11 +4831,6 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			semsg(_(e_variable_already_declared), name);
 			goto theend;
 		    }
-		    else if (lvar->lv_const)
-		    {
-			semsg(_(e_cannot_assign_to_constant), name);
-			goto theend;
-		    }
 		}
 		else
 		{
@@ -4932,6 +4986,11 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    semsg(_(e_cannot_assign_to_argument), name);
 	    goto theend;
 	}
+	if (!is_decl && lvar != NULL && lvar->lv_const && !has_index)
+	{
+	    semsg(_(e_cannot_assign_to_constant), name);
+	    goto theend;
+	}
 
 	if (!heredoc)
 	{
@@ -4996,17 +5055,16 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			      : ((type_T **)stack->ga_data)[stack->ga_len - 1];
 		if (lvar != NULL && (is_decl || !has_type))
 		{
+		    if ((stacktype->tt_type == VAR_FUNC
+				|| stacktype->tt_type == VAR_PARTIAL)
+			    && var_wrong_func_name(name, TRUE))
+			goto theend;
+
 		    if (new_local && !has_type)
 		    {
 			if (stacktype->tt_type == VAR_VOID)
 			{
 			    emsg(_(e_cannot_use_void_value));
-			    goto theend;
-			}
-			else if ((stacktype->tt_type == VAR_FUNC
-				    || stacktype->tt_type == VAR_PARTIAL)
-					    && var_wrong_func_name(name, TRUE))
-			{
 			    goto theend;
 			}
 			else
@@ -5025,12 +5083,13 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    {
 			type_T *use_type = lvar->lv_type;
 
-			// without operator type is here, otherwise below
+			// without operator check type here, otherwise below
 			if (has_index)
 			{
 			    use_type = use_type->tt_member;
 			    if (use_type == NULL)
-				use_type = &t_void;
+				// could be indexing "any"
+				use_type = &t_any;
 			}
 			if (need_type(stacktype, use_type, -1, cctx, FALSE)
 								       == FAIL)
@@ -5205,6 +5264,11 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	}
 	else
 	{
+	    if (is_decl && eap->forceit && cmdidx == CMD_const
+		    && (dest == dest_script || dest == dest_local))
+		// ":const! var": lock the value, but not referenced variables
+		generate_LOCKCONST(cctx);
+
 	    switch (dest)
 	    {
 		case dest_option:
@@ -6335,13 +6399,8 @@ compile_put(char_u *arg, exarg_T *eap, cctx_T *cctx)
     char_u	*line = arg;
     linenr_T	lnum;
     char	*errormsg;
-    int		above = FALSE;
+    int		above = eap->forceit;
 
-    if (*arg == '!')
-    {
-	above = TRUE;
-	line = skipwhite(arg + 1);
-    }
     eap->regname = *line;
 
     if (eap->regname == '=')
@@ -6384,7 +6443,7 @@ compile_exec(char_u *line, exarg_T *eap, cctx_T *cctx)
 
     if (eap->cmdidx >= 0 && eap->cmdidx < CMD_SIZE)
     {
-	long	argt = excmd_get_argt(eap->cmdidx);
+	long	argt = eap->argt;
 	int	usefilter = FALSE;
 
 	has_expr = argt & (EX_XFILE | EX_EXPAND);
@@ -6803,7 +6862,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	cmd = ea.cmd;
 	if (*cmd != '\'' || starts_with_colon)
 	{
-	    ea.cmd = skip_range(ea.cmd, NULL);
+	    ea.cmd = skip_range(ea.cmd, TRUE, NULL);
 	    if (ea.cmd > cmd)
 	    {
 		if (!starts_with_colon)
@@ -6843,8 +6902,6 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	    }
 	}
 
-	p = skipwhite(p);
-
 	if (cctx.ctx_had_return
 		&& ea.cmdidx != CMD_elseif
 		&& ea.cmdidx != CMD_else
@@ -6857,6 +6914,19 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	{
 	    emsg(_(e_unreachable_code_after_return));
 	    goto erret;
+	}
+
+	p = skipwhite(p);
+	if (ea.cmdidx != CMD_SIZE
+			    && ea.cmdidx != CMD_write && ea.cmdidx != CMD_read)
+	{
+	    if (ea.cmdidx >= 0)
+		ea.argt = excmd_get_argt(ea.cmdidx);
+	    if ((ea.argt & EX_BANG) && *p == '!')
+	    {
+		ea.forceit = TRUE;
+		p = skipwhite(p + 1);
+	    }
 	}
 
 	switch (ea.cmdidx)
@@ -7237,6 +7307,10 @@ delete_instr(isn_T *isn)
 	    }
 	    break;
 
+	case ISN_CHECKTYPE:
+	    free_type(isn->isn_arg.type.ct_type);
+	    break;
+
 	case ISN_2BOOL:
 	case ISN_2STRING:
 	case ISN_2STRING_ANY:
@@ -7248,7 +7322,6 @@ delete_instr(isn_T *isn)
 	case ISN_CATCH:
 	case ISN_CHECKLEN:
 	case ISN_CHECKNR:
-	case ISN_CHECKTYPE:
 	case ISN_COMPAREANY:
 	case ISN_COMPAREBLOB:
 	case ISN_COMPAREBOOL:
@@ -7282,6 +7355,7 @@ delete_instr(isn_T *isn)
 	case ISN_LOADTDICT:
 	case ISN_LOADV:
 	case ISN_LOADWDICT:
+	case ISN_LOCKCONST:
 	case ISN_MEMBER:
 	case ISN_NEGATENR:
 	case ISN_NEWDICT:
@@ -7351,6 +7425,18 @@ clear_def_function(ufunc_T *ufunc)
 	delete_def_function_contents(dfunc);
 	ufunc->uf_def_status = UF_NOT_COMPILED;
     }
+}
+
+/*
+ * Used when a user function is about to be deleted: remove the pointer to it.
+ * The entry in def_functions is then unused.
+ */
+    void
+unlink_def_function(ufunc_T *ufunc)
+{
+    dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data) + ufunc->uf_dfunc_idx;
+
+    dfunc->df_ufunc = NULL;
 }
 
 #if defined(EXITFREE) || defined(PROTO)

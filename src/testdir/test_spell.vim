@@ -112,6 +112,7 @@ foobar/?
 
   set spelllang=
   call assert_fails("call spellbadword('maxch')", 'E756:')
+  call assert_fails("spelldump", 'E756:')
 
   call delete('Xwords.spl')
   call delete('Xwords')

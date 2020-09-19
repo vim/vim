@@ -2097,8 +2097,7 @@ typedef struct stat stat_T;
 # define USE_PRINTF_FORMAT_ATTRIBUTE
 #endif
 
-typedef enum
-{
+typedef enum {
     ASSERT_EQUAL,
     ASSERT_NOTEQUAL,
     ASSERT_MATCH,
@@ -2128,9 +2127,17 @@ typedef enum {
     USEPOPUP_HIDDEN	// use info popup initially hidden
 } use_popup_T;
 
+// Argument for estack_sfile().
+typedef enum {
+    ESTACK_NONE,
+    ESTACK_SFILE,
+    ESTACK_STACK
+} estack_arg_T;
+
 // Flags for assignment functions.
 #define LET_IS_CONST	1   // ":const"
-#define LET_NO_COMMAND	2   // "var = expr" without ":let" or ":const"
+#define LET_FORCEIT	2   // ":const!" (LET_IS_CONST is also set)
+#define LET_NO_COMMAND	4   // "var = expr" without ":let" or ":const"
 
 #include "ex_cmds.h"	    // Ex command defines
 #include "spell.h"	    // spell checking stuff

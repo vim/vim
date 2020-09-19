@@ -73,8 +73,10 @@ typedef struct
     char_u	*sg_gui_sp_name;// GUI special color name
 #endif
     int		sg_link;	// link to this highlight group ID
+    int		sg_deflink;	// default link; restored in highlight_clear()
     int		sg_set;		// combination of SG_* flags
 #ifdef FEAT_EVAL
+    sctx_T	sg_deflink_sctx;  // script where the default link was set
     sctx_T	sg_script_ctx;	// script in which the group was last set
 #endif
 } hl_group_T;
@@ -715,6 +717,7 @@ do_highlight(
 	char_u	    *to_end;
 	int	    from_id;
 	int	    to_id;
+	hl_group_T  *hlgroup = NULL;
 
 	from_end = skiptowhite(from_start);
 	to_start = skipwhite(from_end);
@@ -729,7 +732,8 @@ do_highlight(
 
 	if (!ends_excmd2(line, skipwhite(to_end)))
 	{
-	    semsg(_("E413: Too many arguments: \":highlight link %s\""), from_start);
+	    semsg(_("E413: Too many arguments: \":highlight link %s\""),
+								   from_start);
 	    return;
 	}
 
@@ -739,7 +743,20 @@ do_highlight(
 	else
 	    to_id = syn_check_group(to_start, (int)(to_end - to_start));
 
-	if (from_id > 0 && (!init || HL_TABLE()[from_id - 1].sg_set == 0))
+	if (from_id > 0)
+	{
+	    hlgroup = &HL_TABLE()[from_id - 1];
+	    if (dodefault && (forceit || hlgroup->sg_deflink == 0))
+	    {
+		hlgroup->sg_deflink = to_id;
+#ifdef FEAT_EVAL
+		hlgroup->sg_deflink_sctx = current_sctx;
+		hlgroup->sg_deflink_sctx.sc_lnum += SOURCING_LNUM;
+#endif
+	    }
+	}
+
+	if (from_id > 0 && (!init || hlgroup->sg_set == 0))
 	{
 	    /*
 	     * Don't allow a link when there already is some highlighting
@@ -751,21 +768,20 @@ do_highlight(
 		if (SOURCING_NAME == NULL && !dodefault)
 		    emsg(_("E414: group has settings, highlight link ignored"));
 	    }
-	    else if (HL_TABLE()[from_id - 1].sg_link != to_id
+	    else if (hlgroup->sg_link != to_id
 #ifdef FEAT_EVAL
-		    || HL_TABLE()[from_id - 1].sg_script_ctx.sc_sid
-							 != current_sctx.sc_sid
+		    || hlgroup->sg_script_ctx.sc_sid != current_sctx.sc_sid
 #endif
-		    || HL_TABLE()[from_id - 1].sg_cleared)
+		    || hlgroup->sg_cleared)
 	    {
 		if (!init)
-		    HL_TABLE()[from_id - 1].sg_set |= SG_LINK;
-		HL_TABLE()[from_id - 1].sg_link = to_id;
+		    hlgroup->sg_set |= SG_LINK;
+		hlgroup->sg_link = to_id;
 #ifdef FEAT_EVAL
-		HL_TABLE()[from_id - 1].sg_script_ctx = current_sctx;
-		HL_TABLE()[from_id - 1].sg_script_ctx.sc_lnum += SOURCING_LNUM;
+		hlgroup->sg_script_ctx = current_sctx;
+		hlgroup->sg_script_ctx.sc_lnum += SOURCING_LNUM;
 #endif
-		HL_TABLE()[from_id - 1].sg_cleared = FALSE;
+		hlgroup->sg_cleared = FALSE;
 		redraw_all_later(SOME_VALID);
 
 		// Only call highlight_changed() once after multiple changes.
@@ -1629,7 +1645,8 @@ restore_cterm_colors(void)
     static int
 hl_has_settings(int idx, int check_link)
 {
-    return (   HL_TABLE()[idx].sg_term_attr != 0
+    return HL_TABLE()[idx].sg_cleared == 0
+	 && (  HL_TABLE()[idx].sg_term_attr != 0
 	    || HL_TABLE()[idx].sg_cterm_attr != 0
 	    || HL_TABLE()[idx].sg_cterm_fg != 0
 	    || HL_TABLE()[idx].sg_cterm_bg != 0
@@ -1681,14 +1698,12 @@ highlight_clear(int idx)
     VIM_CLEAR(HL_TABLE()[idx].sg_font_name);
     HL_TABLE()[idx].sg_gui_attr = 0;
 #endif
+    // Restore default link and context if they exist. Otherwise clears.
+    HL_TABLE()[idx].sg_link = HL_TABLE()[idx].sg_deflink;
 #ifdef FEAT_EVAL
-    // Clear the script ID only when there is no link, since that is not
-    // cleared.
-    if (HL_TABLE()[idx].sg_link == 0)
-    {
-	HL_TABLE()[idx].sg_script_ctx.sc_sid = 0;
-	HL_TABLE()[idx].sg_script_ctx.sc_lnum = 0;
-    }
+    // Since we set the default link, set the location to where the default
+    // link was set.
+    HL_TABLE()[idx].sg_script_ctx = HL_TABLE()[idx].sg_deflink_sctx;
 #endif
 }
 

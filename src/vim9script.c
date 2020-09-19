@@ -548,7 +548,11 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
 
     // Create the variable with 0/NULL value.
     CLEAR_FIELD(init_tv);
-    init_tv.v_type = type->tt_type;
+    if (type->tt_type == VAR_ANY)
+	// A variable of type "any" is not possible, just use zero instead
+	init_tv.v_type = VAR_NUMBER;
+    else
+	init_tv.v_type = type->tt_type;
     set_var_const(name, type, &init_tv, FALSE, 0);
 
     vim_free(name);

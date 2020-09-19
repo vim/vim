@@ -992,7 +992,7 @@ set_one_cmd_context(
     }
 
     // 3. Skip over the range to find the command.
-    cmd = skip_range(cmd, &xp->xp_context);
+    cmd = skip_range(cmd, TRUE, &xp->xp_context);
     xp->xp_pattern = cmd;
     if (*cmd == NUL)
 	return NULL;

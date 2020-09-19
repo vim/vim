@@ -270,11 +270,17 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 {
     dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
 							  + ectx->ec_dfunc_idx;
-    int		argcount = ufunc_argcount(dfunc->df_ufunc);
-    int		top = ectx->ec_frame_idx - argcount;
+    int		argcount;
+    int		top;
     int		idx;
     typval_T	*tv;
     int		closure_in_use = FALSE;
+
+    if (dfunc->df_ufunc == NULL)
+	// function was freed
+	return OK;
+    argcount = ufunc_argcount(dfunc->df_ufunc);
+    top = ectx->ec_frame_idx - argcount;
 
     // Check if any created closure is still in use.
     for (idx = 0; idx < dfunc->df_closure_count; ++idx)
@@ -678,6 +684,21 @@ call_partial(typval_T *tv, int argcount_arg, ectx_T *ectx)
 }
 
 /*
+ * Check if "lock" is VAR_LOCKED or VAR_FIXED.  If so give an error and return
+ * TRUE.
+ */
+    static int
+error_if_locked(int lock, char *error)
+{
+    if (lock & (VAR_LOCKED | VAR_FIXED))
+    {
+	emsg(_(error));
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
  * Store "tv" in variable "name".
  * This is for s: and g: variables.
  */
@@ -746,6 +767,7 @@ call_def_function(
     sctx_T	save_current_sctx = current_sctx;
     int		breakcheck_count = 0;
     int		called_emsg_before = called_emsg;
+    int		save_suppress_errthrow = suppress_errthrow;
 
 // Get pointer to item in the stack.
 #define STACK_TV(idx) (((typval_T *)ectx.ec_stack.ga_data) + idx)
@@ -814,6 +836,7 @@ call_def_function(
 	// Check the type of the list items.
 	tv = STACK_TV_BOT(-1);
 	if (ufunc->uf_va_type != NULL
+		&& ufunc->uf_va_type != &t_any
 		&& ufunc->uf_va_type->tt_member != &t_any
 		&& tv->vval.v_list != NULL)
 	{
@@ -890,6 +913,9 @@ call_def_function(
     estack_push_ufunc(ufunc, 1);
     current_sctx = ufunc->uf_script_ctx;
     current_sctx.sc_version = SCRIPT_VERSION_VIM9;
+
+    // Do turn errors into exceptions.
+    suppress_errthrow = FALSE;
 
     // Decide where to start execution, handles optional arguments.
     init_instr_idx(ufunc, argc, &ectx);
@@ -1455,12 +1481,12 @@ call_def_function(
 		    typval_T	*tv_list = STACK_TV_BOT(-1);
 		    list_T	*list = tv_list->vval.v_list;
 
+		    SOURCING_LNUM = iptr->isn_lnum;
 		    if (lidx < 0 && list->lv_len + lidx >= 0)
 			// negative index is relative to the end
 			lidx = list->lv_len + lidx;
 		    if (lidx < 0 || lidx > list->lv_len)
 		    {
-			SOURCING_LNUM = iptr->isn_lnum;
 			semsg(_(e_listidx), lidx);
 			goto on_error;
 		    }
@@ -1469,12 +1495,18 @@ call_def_function(
 		    {
 			listitem_T *li = list_find(list, lidx);
 
+			if (error_if_locked(li->li_tv.v_lock,
+						    e_cannot_change_list_item))
+			    goto failed;
 			// overwrite existing list item
 			clear_tv(&li->li_tv);
 			li->li_tv = *tv;
 		    }
 		    else
 		    {
+			if (error_if_locked(list->lv_lock,
+							 e_cannot_change_list))
+			    goto failed;
 			// append to list, only fails when out of memory
 			if (list_append_tv(list, tv) == FAIL)
 			    goto failed;
@@ -1495,9 +1527,9 @@ call_def_function(
 		    dict_T	*dict = tv_dict->vval.v_dict;
 		    dictitem_T	*di;
 
+		    SOURCING_LNUM = iptr->isn_lnum;
 		    if (dict == NULL)
 		    {
-			SOURCING_LNUM = iptr->isn_lnum;
 			emsg(_(e_dictionary_not_set));
 			goto on_error;
 		    }
@@ -1507,12 +1539,18 @@ call_def_function(
 		    di = dict_find(dict, key, -1);
 		    if (di != NULL)
 		    {
+			if (error_if_locked(di->di_tv.v_lock,
+						    e_cannot_change_dict_item))
+			    goto failed;
 			// overwrite existing value
 			clear_tv(&di->di_tv);
 			di->di_tv = *tv;
 		    }
 		    else
 		    {
+			if (error_if_locked(dict->dv_lock,
+							 e_cannot_change_dict))
+			    goto failed;
 			// add to dict, only fails when out of memory
 			if (dict_add_tv(dict, (char *)key, tv) == FAIL)
 			    goto failed;
@@ -1603,6 +1641,10 @@ call_def_function(
 		vim_unsetenv(iptr->isn_arg.unlet.ul_name);
 		break;
 
+	    case ISN_LOCKCONST:
+		item_lock(STACK_TV_BOT(-1), 100, TRUE, TRUE);
+		break;
+
 	    // create a list from items on the stack; uses a single allocation
 	    // for the list header and the items
 	    case ISN_NEWLIST:
@@ -1665,6 +1707,7 @@ call_def_function(
 
 	    // call a :def function
 	    case ISN_DCALL:
+		SOURCING_LNUM = iptr->isn_lnum;
 		if (call_dfunc(iptr->isn_arg.dfunc.cdf_idx,
 			      iptr->isn_arg.dfunc.cdf_argcount,
 			      &ectx) == FAIL)
@@ -1793,6 +1836,7 @@ call_def_function(
 			    // TODO: use a garray_T on ectx.
 			    SOURCING_LNUM = iptr->isn_lnum;
 			    emsg("Multiple closures not supported yet");
+			    vim_free(pt);
 			    goto failed;
 			}
 			tv->v_type = VAR_PARTIAL;
@@ -1851,7 +1895,8 @@ call_def_function(
 		    // push the next item from the list
 		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
-		    if (++idxtv->vval.v_number >= list->lv_len)
+		    ++idxtv->vval.v_number;
+		    if (list == NULL || idxtv->vval.v_number >= list->lv_len)
 			// past the end of the list, jump to "endfor"
 			ectx.ec_iidx = iptr->isn_arg.forloop.for_end;
 		    else if (list->lv_first == &range_list_item)
@@ -1889,6 +1934,7 @@ call_def_function(
 		    trycmd->tcd_catch_idx = iptr->isn_arg.try.try_catch;
 		    trycmd->tcd_finally_idx = iptr->isn_arg.try.try_finally;
 		    trycmd->tcd_caught = FALSE;
+		    trycmd->tcd_return = FALSE;
 		}
 		break;
 
@@ -2125,6 +2171,7 @@ call_def_function(
 		    exptype_T	exptype = iptr->isn_arg.op.op_type;
 		    int		ic = iptr->isn_arg.op.op_ic;
 
+		    SOURCING_LNUM = iptr->isn_lnum;
 		    typval_compare(tv1, tv2, exptype, ic);
 		    clear_tv(tv2);
 		    --ectx.ec_stack.ga_len;
@@ -2502,18 +2549,19 @@ call_def_function(
 		    checktype_T *ct = &iptr->isn_arg.type;
 
 		    tv = STACK_TV_BOT(ct->ct_off);
-		    // TODO: better type comparison
-		    if (tv->v_type != ct->ct_type
-			    && !((tv->v_type == VAR_PARTIAL
-						   && ct->ct_type == VAR_FUNC)
-				|| (tv->v_type == VAR_FUNC
-					       && ct->ct_type == VAR_PARTIAL)))
-		    {
-			SOURCING_LNUM = iptr->isn_lnum;
-			semsg(_(e_expected_str_but_got_str),
-				    vartype_name(ct->ct_type),
-				    vartype_name(tv->v_type));
+		    SOURCING_LNUM = iptr->isn_lnum;
+		    if (check_typval_type(ct->ct_type, tv, 0) == FAIL)
 			goto on_error;
+
+		    // number 0 is FALSE, number 1 is TRUE
+		    if (tv->v_type == VAR_NUMBER
+			    && ct->ct_type->tt_type == VAR_BOOL
+			    && (tv->vval.v_number == 0
+						|| tv->vval.v_number == 1))
+		    {
+			tv->v_type = VAR_BOOL;
+			tv->vval.v_number = tv->vval.v_number
+						      ? VVAL_TRUE : VVAL_FALSE;
 		    }
 		}
 		break;
@@ -2635,15 +2683,11 @@ call_def_function(
 	continue;
 
 func_return:
-	// Restore previous function. If the frame pointer is zero then there
-	// is none and we are done.
+	// Restore previous function. If the frame pointer is where we started
+	// then there is none and we are done.
 	if (ectx.ec_frame_idx == initial_frame_idx)
-	{
-	    if (handle_closure_in_use(&ectx, FALSE) == FAIL)
-		// only fails when out of memory
-		goto failed;
 	    goto done;
-	}
+
 	if (func_return(&ectx) == FAIL)
 	    // only fails when out of memory
 	    goto failed;
@@ -2662,6 +2706,10 @@ done:
     ret = OK;
 
 failed:
+    // Also deal with closures when failed, they may already be in use
+    // somewhere.
+    handle_closure_in_use(&ectx, FALSE);
+
     // When failed need to unwind the call stack.
     while (ectx.ec_frame_idx != initial_frame_idx)
 	func_return(&ectx);
@@ -2676,6 +2724,9 @@ failed_early:
 
     vim_free(ectx.ec_stack.ga_data);
     vim_free(ectx.ec_trystack.ga_data);
+
+    // Not sure if this is necessary.
+    suppress_errthrow = save_suppress_errthrow;
 
     if (ret != OK && called_emsg == called_emsg_before)
 	semsg(_(e_unknown_error_while_executing_str),
@@ -3011,6 +3062,9 @@ ex_disassemble(exarg_T *eap)
 			iptr->isn_arg.unlet.ul_forceit ? "!" : "",
 			iptr->isn_arg.unlet.ul_name);
 		break;
+	    case ISN_LOCKCONST:
+		smsg("%4d LOCKCONST", current);
+		break;
 	    case ISN_NEWLIST:
 		smsg("%4d NEWLIST size %lld", current,
 					    (long long)(iptr->isn_arg.number));
@@ -3238,10 +3292,16 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_NEGATENR: smsg("%4d NEGATENR", current); break;
 
 	    case ISN_CHECKNR: smsg("%4d CHECKNR", current); break;
-	    case ISN_CHECKTYPE: smsg("%4d CHECKTYPE %s stack[%d]", current,
-				      vartype_name(iptr->isn_arg.type.ct_type),
-				      iptr->isn_arg.type.ct_off);
-				break;
+	    case ISN_CHECKTYPE:
+		  {
+		      char *tofree;
+
+		      smsg("%4d CHECKTYPE %s stack[%d]", current,
+			      type_name(iptr->isn_arg.type.ct_type, &tofree),
+			      iptr->isn_arg.type.ct_off);
+		      vim_free(tofree);
+		      break;
+		  }
 	    case ISN_CHECKLEN: smsg("%4d CHECKLEN %s%d", current,
 				iptr->isn_arg.checklen.cl_more_OK ? ">= " : "",
 				iptr->isn_arg.checklen.cl_min_len);

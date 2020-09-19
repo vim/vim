@@ -1934,6 +1934,13 @@ grab_file_name(long count, linenr_T *file_lnum)
 
 	if (get_visual_text(NULL, &ptr, &len) == FAIL)
 	    return NULL;
+	// Only recognize ":123" here
+	if (file_lnum != NULL && ptr[len] == ':' && isdigit(ptr[len + 1]))
+	{
+	    char_u *p = ptr + len + 1;
+
+	    *file_lnum = getdigits(&p);
+	}
 	return find_file_name_in_path(ptr, len, options,
 						     count, curbuf->b_ffname);
     }

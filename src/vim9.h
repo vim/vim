@@ -58,6 +58,8 @@ typedef enum {
     ISN_UNLET,		// unlet variable isn_arg.unlet.ul_name
     ISN_UNLETENV,	// unlet environment variable isn_arg.unlet.ul_name
 
+    ISN_LOCKCONST,	// lock constant value
+
     // constants
     ISN_PUSHNR,		// push number isn_arg.number
     ISN_PUSHBOOL,	// push bool value isn_arg.number
@@ -205,7 +207,7 @@ typedef struct {
 
 // arguments to ISN_CHECKTYPE
 typedef struct {
-    vartype_T	ct_type;
+    type_T	*ct_type;
     int		ct_off;	    // offset in stack, -1 is bottom
 } checktype_T;
 

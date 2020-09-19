@@ -875,6 +875,15 @@ find_func(char_u *name, int is_global, cctx_T *cctx)
 }
 
 /*
+ * Return TRUE if "ufunc" is a global function.
+ */
+    int
+func_is_global(ufunc_T *ufunc)
+{
+    return ufunc->uf_name[0] != K_SPECIAL;
+}
+
+/*
  * Copy the function name of "fp" to buffer "buf".
  * "buf" must be able to hold the function name plus three bytes.
  * Takes care of script-local function names.
@@ -882,7 +891,7 @@ find_func(char_u *name, int is_global, cctx_T *cctx)
     static void
 cat_func_name(char_u *buf, ufunc_T *fp)
 {
-    if (fp->uf_name[0] == K_SPECIAL)
+    if (!func_is_global(fp))
     {
 	STRCPY(buf, "<SNR>");
 	STRCAT(buf, fp->uf_name + 3);
@@ -1040,6 +1049,21 @@ cleanup_function_call(funccall_T *fc)
 	}
     }
 }
+
+/*
+ * There are two kinds of function names:
+ * 1. ordinary names, function defined with :function or :def
+ * 2. numbered functions and lambdas
+ * For the first we only count the name stored in func_hashtab as a reference,
+ * using function() does not count as a reference, because the function is
+ * looked up by name.
+ */
+    static int
+func_name_refcount(char_u *name)
+{
+    return isdigit(*name) || *name == '<';
+}
+
 /*
  * Unreference "fc": decrement the reference count and free it when it
  * becomes zero.  "fp" is detached from "fc".
@@ -1163,6 +1187,8 @@ func_free(ufunc_T *fp, int force)
 
     if ((fp->uf_flags & FC_DEAD) == 0 || force)
     {
+	if (fp->uf_dfunc_idx > 0)
+	    unlink_def_function(fp);
 	VIM_CLEAR(fp->uf_name_exp);
 	vim_free(fp);
     }
@@ -1176,7 +1202,8 @@ func_free(ufunc_T *fp, int force)
 func_clear_free(ufunc_T *fp, int force)
 {
     func_clear(fp, force);
-    if (force || fp->uf_dfunc_idx == 0 || (fp->uf_flags & FC_COPY))
+    if (force || fp->uf_dfunc_idx == 0 || func_name_refcount(fp->uf_name)
+						   || (fp->uf_flags & FC_COPY))
 	func_free(fp, force);
     else
 	fp->uf_flags |= FC_DEAD;
@@ -1719,20 +1746,6 @@ call_user_func_check(
 	error = FCERR_NONE;
     }
     return error;
-}
-
-/*
- * There are two kinds of function names:
- * 1. ordinary names, function defined with :function
- * 2. numbered functions and lambdas
- * For the first we only count the name stored in func_hashtab as a reference,
- * using function() does not count as a reference, because the function is
- * looked up by name.
- */
-    static int
-func_name_refcount(char_u *name)
-{
-    return isdigit(*name) || *name == '<';
 }
 
 static funccal_entry_T *funccal_stack = NULL;
@@ -3141,7 +3154,7 @@ def_function(exarg_T *eap, char_u *name_arg)
 	    }
 
 	    // Check for ":append", ":change", ":insert".  Not for :def.
-	    p = skip_range(p, NULL);
+	    p = skip_range(p, FALSE, NULL);
 	    if (eap->cmdidx != CMD_def
 		&& ((p[0] == 'a' && (!ASCII_ISALPHA(p[1]) || p[1] == 'p'))
 		    || (p[0] == 'c'
@@ -3337,11 +3350,11 @@ def_function(exarg_T *eap, char_u *name_arg)
 	if (fudi.fd_di == NULL)
 	{
 	    // Can't add a function to a locked dictionary
-	    if (var_check_lock(fudi.fd_dict->dv_lock, eap->arg, FALSE))
+	    if (value_check_lock(fudi.fd_dict->dv_lock, eap->arg, FALSE))
 		goto erret;
 	}
 	    // Can't change an existing function if it is locked
-	else if (var_check_lock(fudi.fd_di->di_tv.v_lock, eap->arg, FALSE))
+	else if (value_check_lock(fudi.fd_di->di_tv.v_lock, eap->arg, FALSE))
 	    goto erret;
 
 	// Give the function a sequential number.  Can only be used with a

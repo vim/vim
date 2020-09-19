@@ -66,10 +66,6 @@
 
 #define REGION_ALL 0xff		// word valid in all regions
 
-#define VIMSUGMAGIC "VIMsug"	// string at start of Vim .sug file
-#define VIMSUGMAGICL 6
-#define VIMSUGVERSION 1
-
 // Result values.  Lower number is accepted over higher one.
 #define SP_BANNED	-1
 #define SP_OK		0

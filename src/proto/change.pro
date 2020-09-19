@@ -9,6 +9,7 @@ void may_invoke_listeners(buf_T *buf, linenr_T lnum, linenr_T lnume, int added);
 void invoke_listeners(buf_T *buf);
 void remove_listeners(buf_T *buf);
 void changed_bytes(linenr_T lnum, colnr_T col);
+void inserted_bytes(linenr_T lnum, colnr_T col, int added);
 void appended_lines(linenr_T lnum, long count);
 void appended_lines_mark(linenr_T lnum, long count);
 void deleted_lines(linenr_T lnum, long count);

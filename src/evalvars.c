@@ -173,7 +173,6 @@ static char_u *list_arg_vars(exarg_T *eap, char_u *arg, int *first);
 static char_u *ex_let_one(char_u *arg, typval_T *tv, int copy, int flags, char_u *endchars, char_u *op);
 static int do_unlet_var(lval_T *lp, char_u *name_end, exarg_T *eap, int deep, void *cookie);
 static int do_lock_var(lval_T *lp, char_u *name_end, exarg_T *eap, int deep, void *cookie);
-static void item_lock(typval_T *tv, int deep, int lock, int check_refcount);
 static void delete_var(hashtab_T *ht, hashitem_T *hi);
 static void list_one_var(dictitem_T *v, char *prefix, int *first);
 static void list_one_var_a(char *prefix, char_u *name, int type, char_u *string, int *first);
@@ -709,6 +708,8 @@ ex_let(exarg_T *eap)
     // detect Vim9 assignment without ":let" or ":const"
     if (eap->arg == eap->cmd)
 	flags |= LET_NO_COMMAND;
+    if (eap->forceit)
+	flags |= LET_FORCEIT;
 
     argend = skip_var_list(arg, TRUE, &var_count, &semicolon, FALSE);
     if (argend == NULL)
@@ -859,7 +860,7 @@ ex_let_vars(
     int		copy,		// copy values from "tv", don't move
     int		semicolon,	// from skip_var_list()
     int		var_count,	// from skip_var_list()
-    int		flags,		// LET_IS_CONST and/or LET_NO_COMMAND
+    int		flags,		// LET_IS_CONST, LET_FORCEIT, LET_NO_COMMAND
     char_u	*op)
 {
     char_u	*arg = arg_start;
@@ -1214,7 +1215,7 @@ ex_let_one(
     char_u	*arg,		// points to variable name
     typval_T	*tv,		// value to assign to variable
     int		copy,		// copy value from "tv"
-    int		flags,		// LET_IS_CONST and/or LET_NO_COMMAND
+    int		flags,		// LET_IS_CONST, LET_FORCEIT, LET_NO_COMMAND
     char_u	*endchars,	// valid chars after variable name  or NULL
     char_u	*op)		// "+", "-", "."  or NULL
 {
@@ -1559,9 +1560,9 @@ do_unlet_var(
 	*name_end = cc;
     }
     else if ((lp->ll_list != NULL
-		 && var_check_lock(lp->ll_list->lv_lock, lp->ll_name, FALSE))
+		 && value_check_lock(lp->ll_list->lv_lock, lp->ll_name, FALSE))
 	    || (lp->ll_dict != NULL
-		 && var_check_lock(lp->ll_dict->dv_lock, lp->ll_name, FALSE)))
+		&& value_check_lock(lp->ll_dict->dv_lock, lp->ll_name, FALSE)))
 	return FAIL;
     else if (lp->ll_range)
     {
@@ -1572,7 +1573,7 @@ do_unlet_var(
 	while (ll_li != NULL && (lp->ll_empty2 || lp->ll_n2 >= ll_n1))
 	{
 	    li = ll_li->li_next;
-	    if (var_check_lock(ll_li->li_tv.v_lock, lp->ll_name, FALSE))
+	    if (value_check_lock(ll_li->li_tv.v_lock, lp->ll_name, FALSE))
 		return FAIL;
 	    ll_li = li;
 	    ++ll_n1;
@@ -1645,7 +1646,7 @@ do_unlet(char_u *name, int forceit)
 	    di = HI2DI(hi);
 	    if (var_check_fixed(di->di_flags, name, FALSE)
 		    || var_check_ro(di->di_flags, name, FALSE)
-		    || var_check_lock(d->dv_lock, name, FALSE))
+		    || value_check_lock(d->dv_lock, name, FALSE))
 		return FAIL;
 
 	    delete_var(ht, hi);
@@ -1675,9 +1676,6 @@ do_lock_var(
     int		ret = OK;
     int		cc;
     dictitem_T	*di;
-
-    if (deep == 0)	// nothing to do
-	return OK;
 
     if (lp->ll_tv == NULL)
     {
@@ -1709,10 +1707,15 @@ do_lock_var(
 		    di->di_flags |= DI_FLAGS_LOCK;
 		else
 		    di->di_flags &= ~DI_FLAGS_LOCK;
-		item_lock(&di->di_tv, deep, lock, FALSE);
+		if (deep != 0)
+		    item_lock(&di->di_tv, deep, lock, FALSE);
 	    }
 	}
 	*name_end = cc;
+    }
+    else if (deep == 0)
+    {
+	// nothing to do
     }
     else if (lp->ll_range)
     {
@@ -1741,7 +1744,7 @@ do_lock_var(
  * When "check_refcount" is TRUE do not lock a list or dict with a reference
  * count larger than 1.
  */
-    static void
+    void
 item_lock(typval_T *tv, int deep, int lock, int check_refcount)
 {
     static int	recurse = 0;
@@ -2937,7 +2940,7 @@ set_var_const(
     type_T	*type,
     typval_T	*tv_arg,
     int		copy,	    // make copy of value in "tv"
-    int		flags)	    // LET_IS_CONST and/or LET_NO_COMMAND
+    int		flags)	    // LET_IS_CONST, LET_FORCEIT, LET_NO_COMMAND
 {
     typval_T	*tv = tv_arg;
     typval_T	bool_tv;
@@ -2945,22 +2948,23 @@ set_var_const(
     char_u	*varname;
     hashtab_T	*ht;
     int		is_script_local;
+    int		vim9script = in_vim9script();
 
     ht = find_var_ht(name, &varname);
     if (ht == NULL || *varname == NUL)
     {
 	semsg(_(e_illvar), name);
-	return;
+	goto failed;
     }
     is_script_local = ht == get_script_local_ht();
 
-    if (in_vim9script()
+    if (vim9script
 	    && !is_script_local
 	    && (flags & LET_NO_COMMAND) == 0
 	    && name[1] == ':')
     {
 	vim9_declare_error(name);
-	return;
+	goto failed;
     }
 
     di = find_var_in_ht(ht, 0, varname, TRUE);
@@ -2971,7 +2975,7 @@ set_var_const(
 
     if ((tv->v_type == VAR_FUNC || tv->v_type == VAR_PARTIAL)
 				      && var_wrong_func_name(name, di == NULL))
-	return;
+	goto failed;
 
     if (need_convert_to_bool(type, tv))
     {
@@ -2989,25 +2993,30 @@ set_var_const(
 	    if (flags & LET_IS_CONST)
 	    {
 		emsg(_(e_cannot_mod));
-		return;
+		goto failed;
 	    }
 
-	    if (is_script_local && in_vim9script())
+	    if (is_script_local && vim9script)
 	    {
 		if ((flags & LET_NO_COMMAND) == 0)
 		{
 		    semsg(_(e_redefining_script_item_str), name);
-		    return;
+		    goto failed;
 		}
 
 		// check the type and adjust to bool if needed
 		if (check_script_var_type(&di->di_tv, tv, name) == FAIL)
-		    return;
+		    goto failed;
 	    }
 
+	    // Check in this order for backwards compatibility:
+	    // - Whether the variable is read-only
+	    // - Whether the variable value is locked
+	    // - Whether the variable is locked
 	    if (var_check_ro(di->di_flags, name, FALSE)
-			       || var_check_lock(di->di_tv.v_lock, name, FALSE))
-		return;
+			    || value_check_lock(di->di_tv.v_lock, name, FALSE)
+			    || var_check_lock(di->di_flags, name, FALSE))
+		goto failed;
 	}
 	else
 	    // can only redefine once
@@ -3037,7 +3046,7 @@ set_var_const(
 		    di->di_tv.vval.v_string = tv->vval.v_string;
 		    tv->vval.v_string = NULL;
 		}
-		return;
+		goto failed;
 	    }
 	    else if (di->di_tv.v_type == VAR_NUMBER)
 	    {
@@ -3051,12 +3060,12 @@ set_var_const(
 		    redraw_all_later(SOME_VALID);
 		}
 #endif
-		return;
+		goto failed;
 	    }
 	    else if (di->di_tv.v_type != tv->v_type)
 	    {
 		semsg(_("E963: setting %s to value with wrong type"), name);
-		return;
+		goto failed;
 	    }
 	}
 
@@ -3068,27 +3077,27 @@ set_var_const(
 	if (ht == &vimvarht || ht == get_funccal_args_ht())
 	{
 	    semsg(_(e_illvar), name);
-	    return;
+	    goto failed;
 	}
 
 	// Make sure the variable name is valid.
 	if (!valid_varname(varname))
-	    return;
+	    goto failed;
 
 	di = alloc(sizeof(dictitem_T) + STRLEN(varname));
 	if (di == NULL)
-	    return;
+	    goto failed;
 	STRCPY(di->di_key, varname);
 	if (hash_add(ht, DI2HIKEY(di)) == FAIL)
 	{
 	    vim_free(di);
-	    return;
+	    goto failed;
 	}
 	di->di_flags = DI_FLAGS_ALLOC;
 	if (flags & LET_IS_CONST)
 	    di->di_flags |= DI_FLAGS_LOCK;
 
-	if (is_script_local && in_vim9script())
+	if (is_script_local && vim9script)
 	{
 	    scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
 
@@ -3123,11 +3132,16 @@ set_var_const(
 	init_tv(tv);
     }
 
-    if (flags & LET_IS_CONST)
+    // ":const var = val" locks the value; in Vim9 script only with ":const!"
+    if ((flags & LET_IS_CONST) && (!vim9script || (flags & LET_FORCEIT)))
 	// Like :lockvar! name: lock the value and what it contains, but only
 	// if the reference count is up to one.  That locks only literal
 	// values.
 	item_lock(&di->di_tv, DICT_MAXNEST, TRUE, TRUE);
+    return;
+failed:
+    if (!copy)
+	clear_tv(tv_arg);
 }
 
 /*
@@ -3145,6 +3159,22 @@ var_check_ro(int flags, char_u *name, int use_gettext)
     if ((flags & DI_FLAGS_RO_SBX) && sandbox)
     {
 	semsg(_(e_readonlysbx), use_gettext ? (char_u *)_(name) : name);
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * Return TRUE if di_flags "flags" indicates variable "name" is locked.
+ * Also give an error message.
+ */
+    int
+var_check_lock(int flags, char_u *name, int use_gettext)
+{
+    if (flags & DI_FLAGS_LOCK)
+    {
+	semsg(_(e_variable_is_locked_str),
+				       use_gettext ? (char_u *)_(name) : name);
 	return TRUE;
     }
     return FALSE;
@@ -3197,12 +3227,12 @@ var_wrong_func_name(
 }
 
 /*
- * Return TRUE if "flags" indicates variable "name" is locked (immutable).
- * Also give an error message, using "name" or _("name") when use_gettext is
- * TRUE.
+ * Return TRUE if "flags" indicates variable "name" has a locked (immutable)
+ * value.  Also give an error message, using "name" or _("name") when
+ * "use_gettext" is TRUE.
  */
     int
-var_check_lock(int lock, char_u *name, int use_gettext)
+value_check_lock(int lock, char_u *name, int use_gettext)
 {
     if (lock & VAR_LOCKED)
     {

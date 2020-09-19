@@ -111,10 +111,10 @@ estack_pop(void)
 
 /*
  * Get the current value for <sfile> in allocated memory.
- * "is_sfile" is TRUE for <sfile> itself.
+ * "which" is ESTACK_SFILE for <sfile> and ESTACK_STACK for <stack>.
  */
     char_u *
-estack_sfile(int is_sfile UNUSED)
+estack_sfile(estack_arg_T which UNUSED)
 {
     estack_T	*entry;
 #ifdef FEAT_EVAL
@@ -127,7 +127,7 @@ estack_sfile(int is_sfile UNUSED)
 
     entry = ((estack_T *)exestack.ga_data) + exestack.ga_len - 1;
 #ifdef FEAT_EVAL
-    if (is_sfile && entry->es_type != ETYPE_UFUNC)
+    if (which == ESTACK_SFILE && entry->es_type != ETYPE_UFUNC)
 #endif
     {
 	if (entry->es_name == NULL)
@@ -144,6 +144,9 @@ estack_sfile(int is_sfile UNUSED)
 	entry = ((estack_T *)exestack.ga_data) + idx;
 	if (entry->es_name != NULL)
 	{
+	    long    lnum = 0;
+	    char    *dots;
+
 	    len = STRLEN(entry->es_name) + 15;
 	    type_name = "";
 	    if (entry->es_type != last_type)
@@ -159,15 +162,20 @@ estack_sfile(int is_sfile UNUSED)
 	    len += STRLEN(type_name);
 	    if (ga_grow(&ga, (int)len) == FAIL)
 		break;
-	    if (idx == exestack.ga_len - 1 || entry->es_lnum == 0)
-		// For the bottom entry: do not add the line number, it is used
-		// in <slnum>.  Also leave it out when the number is not set.
-		vim_snprintf((char *)ga.ga_data + ga.ga_len, len, "%s%s%s",
-				type_name, entry->es_name,
-				idx == exestack.ga_len - 1 ? "" : "..");
+	    if (idx == exestack.ga_len - 1)
+		lnum = which == ESTACK_STACK ? SOURCING_LNUM : 0;
 	    else
-		vim_snprintf((char *)ga.ga_data + ga.ga_len, len, "%s%s[%ld]..",
-				    type_name, entry->es_name, entry->es_lnum);
+		lnum = entry->es_lnum;
+	    dots = idx == exestack.ga_len - 1 ? "" : "..";
+	    if (lnum == 0)
+		// For the bottom entry of <sfile>: do not add the line number,
+		// it is used in <slnum>.  Also leave it out when the number is
+		// not set.
+		vim_snprintf((char *)ga.ga_data + ga.ga_len, len, "%s%s%s",
+				type_name, entry->es_name, dots);
+	    else
+		vim_snprintf((char *)ga.ga_data + ga.ga_len, len, "%s%s[%ld]%s",
+				    type_name, entry->es_name, lnum, dots);
 	    ga.ga_len += (int)STRLEN((char *)ga.ga_data + ga.ga_len);
 	}
     }

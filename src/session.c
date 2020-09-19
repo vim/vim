@@ -303,10 +303,12 @@ put_view_curpos(FILE *fd, win_T *wp, char *spaces)
 put_view(
     FILE	*fd,
     win_T	*wp,
-    int		add_edit,	// add ":edit" command to view
-    unsigned	*flagp,		// vop_flags or ssop_flags
-    int		current_arg_idx) // current argument index of the window, use
-				 // -1 if unknown
+    int		add_edit,	     // add ":edit" command to view
+    unsigned	*flagp,		     // vop_flags or ssop_flags
+    int		current_arg_idx,     // current argument index of the window,
+				     // use -1 if unknown
+    hashtab_T *terminal_bufs UNUSED) // already encountered terminal buffers,
+				     // can be NULL
 {
     win_T	*save_curwin;
     int		f;
@@ -349,7 +351,7 @@ put_view(
 # ifdef FEAT_TERMINAL
 	if (bt_terminal(wp->w_buffer))
 	{
-	    if (term_write_session(fd, wp) == FAIL)
+	    if (term_write_session(fd, wp, terminal_bufs) == FAIL)
 		return FAIL;
 	}
 	else
@@ -588,6 +590,12 @@ makeopens(
     frame_T	*tab_topframe;
     int		cur_arg_idx = 0;
     int		next_arg_idx = 0;
+    int		ret = FAIL;
+#ifdef FEAT_TERMINAL
+    hashtab_T	terminal_bufs;
+
+    hash_init(&terminal_bufs);
+#endif
 
     if (ssop_flags & SSOP_BUFFERS)
 	only_save_windows = FALSE;		// Save ALL buffers
@@ -596,25 +604,25 @@ makeopens(
     // sessionable variables.
 #ifdef FEAT_EVAL
     if (put_line(fd, "let v:this_session=expand(\"<sfile>:p\")") == FAIL)
-	return FAIL;
+	goto fail;
     if (ssop_flags & SSOP_GLOBALS)
 	if (store_session_globals(fd) == FAIL)
-	    return FAIL;
+	    goto fail;
 #endif
 
     // Close all windows and tabs but one.
     if (put_line(fd, "silent only") == FAIL)
-	return FAIL;
+	goto fail;
     if ((ssop_flags & SSOP_TABPAGES)
 	    && put_line(fd, "silent tabonly") == FAIL)
-	return FAIL;
+	goto fail;
 
     // Now a :cd command to the session directory or the current directory
     if (ssop_flags & SSOP_SESDIR)
     {
 	if (put_line(fd, "exe \"cd \" . escape(expand(\"<sfile>:p:h\"), ' ')")
 								      == FAIL)
-	    return FAIL;
+	    goto fail;
     }
     else if (ssop_flags & SSOP_CURDIR)
     {
@@ -625,7 +633,7 @@ makeopens(
 		|| put_eol(fd) == FAIL)
 	{
 	    vim_free(sname);
-	    return FAIL;
+	    goto fail;
 	}
 	vim_free(sname);
     }
@@ -633,27 +641,27 @@ makeopens(
     // If there is an empty, unnamed buffer we will wipe it out later.
     // Remember the buffer number.
     if (put_line(fd, "if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''") == FAIL)
-	return FAIL;
+	goto fail;
     if (put_line(fd, "  let s:wipebuf = bufnr('%')") == FAIL)
-	return FAIL;
+	goto fail;
     if (put_line(fd, "endif") == FAIL)
-	return FAIL;
+	goto fail;
 
     // Now save the current files, current buffer first.
     if (put_line(fd, "set shortmess=aoO") == FAIL)
-	return FAIL;
+	goto fail;
 
     // the global argument list
     if (ses_arglist(fd, "argglobal", &global_alist.al_ga,
 			    !(ssop_flags & SSOP_CURDIR), &ssop_flags) == FAIL)
-	return FAIL;
+	goto fail;
 
     if (ssop_flags & SSOP_RESIZE)
     {
 	// Note: after the restore we still check it worked!
 	if (fprintf(fd, "set lines=%ld columns=%ld" , Rows, Columns) < 0
 		|| put_eol(fd) == FAIL)
-	    return FAIL;
+	    goto fail;
     }
 
 #ifdef FEAT_GUI
@@ -665,7 +673,7 @@ makeopens(
 	{
 	    // Note: after the restore we still check it worked!
 	    if (fprintf(fd, "winpos %d %d", x, y) < 0 || put_eol(fd) == FAIL)
-		return FAIL;
+		goto fail;
 	}
     }
 #endif
@@ -677,7 +685,7 @@ makeopens(
     if (p_stal == 1 && first_tabpage->tp_next != NULL)
     {
 	if (put_line(fd, "set stal=2") == FAIL)
-	    return FAIL;
+	    goto fail;
 	restore_stal = TRUE;
     }
 
@@ -695,9 +703,9 @@ makeopens(
 	// later local options won't be copied to the new tabs.
 	FOR_ALL_TABPAGES(tp)
 	    if (tp->tp_next != NULL && put_line(fd, "tabnew") == FAIL)
-		return FAIL;
+		goto fail;
 	if (first_tabpage->tp_next != NULL && put_line(fd, "tabrewind") == FAIL)
-	    return FAIL;
+	    goto fail;
     }
     for (tabnr = 1; ; ++tabnr)
     {
@@ -739,13 +747,13 @@ makeopens(
 		    )
 	    {
 		if (need_tabnext && put_line(fd, "tabnext") == FAIL)
-		    return FAIL;
+		    goto fail;
 		need_tabnext = FALSE;
 
 		if (fputs("edit ", fd) < 0
 			      || ses_fname(fd, wp->w_buffer, &ssop_flags, TRUE)
 								       == FAIL)
-		    return FAIL;
+		    goto fail;
 		if (!wp->w_arg_idx_invalid)
 		    edited_win = wp;
 		break;
@@ -754,17 +762,17 @@ makeopens(
 
 	// If no file got edited create an empty tab page.
 	if (need_tabnext && put_line(fd, "tabnext") == FAIL)
-	    return FAIL;
+	    goto fail;
 
 	// Save current window layout.
 	if (put_line(fd, "set splitbelow splitright") == FAIL)
-	    return FAIL;
+	    goto fail;
 	if (ses_win_rec(fd, tab_topframe) == FAIL)
-	    return FAIL;
+	    goto fail;
 	if (!p_sb && put_line(fd, "set nosplitbelow") == FAIL)
-	    return FAIL;
+	    goto fail;
 	if (!p_spr && put_line(fd, "set nosplitright") == FAIL)
-	    return FAIL;
+	    goto fail;
 
 	// Check if window sizes can be restored (no windows omitted).
 	// Remember the window number of the current window after restoring.
@@ -781,7 +789,7 @@ makeopens(
 
 	// Go to the first window.
 	if (put_line(fd, "wincmd t") == FAIL)
-	    return FAIL;
+	    goto fail;
 
 	// If more than one window, see if sizes can be restored.
 	// First set 'winheight' and 'winwidth' to 1 to avoid the windows being
@@ -794,9 +802,9 @@ makeopens(
 		|| put_line(fd, "set winheight=1") == FAIL
 		|| put_line(fd, "set winminwidth=0") == FAIL
 		|| put_line(fd, "set winwidth=1") == FAIL)
-	    return FAIL;
+	    goto fail;
 	if (nr > 1 && ses_winsizes(fd, restore_size, tab_firstwin) == FAIL)
-	    return FAIL;
+	    goto fail;
 
 	// Restore the tab-local working directory if specified
 	// Do this before the windows, so that the window-local directory can
@@ -806,7 +814,7 @@ makeopens(
 	    if (fputs("tcd ", fd) < 0
 		    || ses_put_fname(fd, tp->tp_localdir, &ssop_flags) == FAIL
 		    || put_eol(fd) == FAIL)
-		return FAIL;
+		goto fail;
 	    did_lcd = TRUE;
 	}
 
@@ -815,11 +823,16 @@ makeopens(
 	{
 	    if (!ses_do_win(wp))
 		continue;
-	    if (put_view(fd, wp, wp != edited_win, &ssop_flags,
-							 cur_arg_idx) == FAIL)
-		return FAIL;
+	    if (put_view(fd, wp, wp != edited_win, &ssop_flags, cur_arg_idx,
+#ifdef FEAT_TERMINAL
+							 &terminal_bufs
+#else
+							 NULL
+#endif
+		 ) == FAIL)
+		goto fail;
 	    if (nr > 1 && put_line(fd, "wincmd w") == FAIL)
-		return FAIL;
+		goto fail;
 	    next_arg_idx = wp->w_arg_idx;
 	}
 
@@ -831,12 +844,12 @@ makeopens(
 	// Restore cursor to the current window if it's not the first one.
 	if (cnr > 1 && (fprintf(fd, "%dwincmd w", cnr) < 0
 						      || put_eol(fd) == FAIL))
-	    return FAIL;
+	    goto fail;
 
 	// Restore window sizes again after jumping around in windows, because
 	// the current window has a minimum size while others may not.
 	if (nr > 1 && ses_winsizes(fd, restore_size, tab_firstwin) == FAIL)
-	    return FAIL;
+	    goto fail;
 
 	// Don't continue in another tab page when doing only the current one
 	// or when at the last tab page.
@@ -848,10 +861,10 @@ makeopens(
     {
 	if (fprintf(fd, "tabnext %d", tabpage_index(curtab)) < 0
 		|| put_eol(fd) == FAIL)
-	    return FAIL;
+	    goto fail;
     }
     if (restore_stal && put_line(fd, "set stal=1") == FAIL)
-	return FAIL;
+	goto fail;
 
     // Now put the remaining buffers into the buffer list.
     // This is near the end, so that when 'hidden' is set we don't create extra
@@ -872,38 +885,43 @@ makeopens(
 	    if (fprintf(fd, "badd +%ld ", buf->b_wininfo == NULL ? 1L
 					   : buf->b_wininfo->wi_fpos.lnum) < 0
 		    || ses_fname(fd, buf, &ssop_flags, TRUE) == FAIL)
-		return FAIL;
+		goto fail;
 	}
     }
 
     // Wipe out an empty unnamed buffer we started in.
     if (put_line(fd, "if exists('s:wipebuf') && len(win_findbuf(s:wipebuf)) == 0")
 								       == FAIL)
-	return FAIL;
+	goto fail;
     if (put_line(fd, "  silent exe 'bwipe ' . s:wipebuf") == FAIL)
-	return FAIL;
+	goto fail;
     if (put_line(fd, "endif") == FAIL)
-	return FAIL;
+	goto fail;
     if (put_line(fd, "unlet! s:wipebuf") == FAIL)
-	return FAIL;
+	goto fail;
 
     // Re-apply 'winheight', 'winwidth' and 'shortmess'.
     if (fprintf(fd, "set winheight=%ld winwidth=%ld shortmess=%s",
 			       p_wh, p_wiw, p_shm) < 0 || put_eol(fd) == FAIL)
-	return FAIL;
+	goto fail;
     // Re-apply 'winminheight' and 'winminwidth'.
     if (fprintf(fd, "set winminheight=%ld winminwidth=%ld",
 				      p_wmh, p_wmw) < 0 || put_eol(fd) == FAIL)
-	return FAIL;
+	goto fail;
 
     // Lastly, execute the x.vim file if it exists.
     if (put_line(fd, "let s:sx = expand(\"<sfile>:p:r\").\"x.vim\"") == FAIL
 	    || put_line(fd, "if filereadable(s:sx)") == FAIL
 	    || put_line(fd, "  exe \"source \" . fnameescape(s:sx)") == FAIL
 	    || put_line(fd, "endif") == FAIL)
-	return FAIL;
+	goto fail;
 
-    return OK;
+    ret = OK;
+fail:
+#ifdef FEAT_TERMINAL
+    hash_clear_all(&terminal_bufs, 0);
+#endif
+    return ret;
 }
 
 /*
@@ -1240,8 +1258,8 @@ ex_mkrc(exarg_T	*eap)
 	    }
 	    else
 	    {
-		failed |= (put_view(fd, curwin, !using_vdir, flagp,
-								 -1) == FAIL);
+		failed |= (put_view(fd, curwin, !using_vdir, flagp, -1, NULL)
+								      == FAIL);
 	    }
 	    if (put_line(fd, "let &so = s:so_save | let &siso = s:siso_save")
 								      == FAIL)

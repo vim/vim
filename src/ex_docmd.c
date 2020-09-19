@@ -1779,9 +1779,7 @@ do_one_cmd(
     may_have_range = !vim9script || starts_with_colon;
     if (may_have_range)
 #endif
-	ea.cmd = skip_range(ea.cmd, NULL);
-    if (*ea.cmd == '*' && vim_strchr(p_cpo, CPO_STAR) == NULL)
-	ea.cmd = skipwhite(ea.cmd + 1);
+	ea.cmd = skip_range(ea.cmd, TRUE, NULL);
 
 #ifdef FEAT_EVAL
     if (vim9script && !starts_with_colon)
@@ -2683,7 +2681,7 @@ parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only)
 	    return FAIL;
 	}
 
-	p = skip_range(eap->cmd, NULL);
+	p = skip_range(eap->cmd, TRUE, NULL);
 	switch (*p)
 	{
 	    // When adding an entry, also modify cmd_exists().
@@ -3226,16 +3224,30 @@ find_ex_command(
 			    // "g:varname" is an expression.
 			 || eap->cmd[1] == ':'
 			    )
-			: (
-			    // "varname[]" is an expression.
-			    *p == '['
 			    // "varname->func()" is an expression.
-			 || (*p == '-' && p[1] == '>')
-			    // "varname.expr" is an expression.
-			 || (*p == '.' && ASCII_ISALPHA(p[1]))
-			 )))
+			: (*p == '-' && p[1] == '>')))
 	    {
 		eap->cmdidx = CMD_eval;
+		return eap->cmd;
+	    }
+
+	    if (p != eap->cmd && (
+			    // "varname[]" is an expression.
+			    *p == '['
+			    // "varname.key" is an expression.
+			 || (*p == '.' && ASCII_ISALPHA(p[1]))))
+	    {
+		char_u	*after = p;
+
+		// When followed by "=" or "+=" then it is an assignment.
+		++emsg_silent;
+		if (skip_expr(&after) == OK
+				  && (*after == '='
+				      || (*after != NUL && after[1] == '=')))
+		    eap->cmdidx = CMD_let;
+		else
+		    eap->cmdidx = CMD_eval;
+		--emsg_silent;
 		return eap->cmd;
 	    }
 
@@ -3534,7 +3546,8 @@ excmd_get_argt(cmdidx_T idx)
     char_u *
 skip_range(
     char_u	*cmd,
-    int		*ctx)	// pointer to xp_context or NULL
+    int		skip_star,	// skip "*" used for Visual range
+    int		*ctx)		// pointer to xp_context or NULL
 {
     unsigned	delim;
 
@@ -3567,6 +3580,10 @@ skip_range(
 
     // Skip ":" and white space.
     while (*cmd == ':')
+	cmd = skipwhite(cmd + 1);
+
+    // Skip "*" used for Visual range.
+    if (skip_star && *cmd == '*' && vim_strchr(p_cpo, CPO_STAR) == NULL)
 	cmd = skipwhite(cmd + 1);
 
     return cmd;
@@ -8389,6 +8406,7 @@ find_cmdline_var(char_u *src, int *usedlen)
  *	  '<cexpr>' to C-expression under the cursor
  *	  '<cfile>' to path name under the cursor
  *	  '<sfile>' to sourced file name
+ *	  '<stack>' to call stack
  *	  '<slnum>' to sourced file line number
  *	  '<afile>' to file name for autocommand
  *	  '<abuf>'  to buffer number for autocommand
@@ -8606,7 +8624,8 @@ eval_vars(
 
 	case SPEC_SFILE:	// file name for ":so" command
 	case SPEC_STACK:	// call stack
-		result = estack_sfile(spec_idx == SPEC_SFILE);
+		result = estack_sfile(spec_idx == SPEC_SFILE
+						? ESTACK_SFILE : ESTACK_STACK);
 		if (result == NULL)
 		{
 		    *errormsg = spec_idx == SPEC_SFILE
