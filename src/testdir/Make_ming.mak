@@ -89,7 +89,6 @@ tinytests: $(SCRIPTS_TINY_OUT)
 # For each input file run the tests.
 %.out : %.in
 	-@if exist test.out $(DEL) test.out
-	$(CP) $(basename $@).ok test.ok > NUL
 	$(VIMPROG) -u dos.vim $(NO_INITS) -s dotest.in $(notdir $<)
 	-@if exist test.ok $(DEL) test.ok
 	-@if exist Xdir1 $(DELDIR) /s /q Xdir1
