@@ -24,11 +24,6 @@ include Make_all.mak
 # Explicit dependencies.
 test_options.res test_alot.res: opt_test.vim
 
-TEST_OUTFILES = $(SCRIPTS_TINY_OUT)
-DOSTMP = dostmp
-# Keep $(DOSTMP)/*.in
-.PRECIOUS: $(patsubst %.out, $(DOSTMP)/%.in, $(TEST_OUTFILES))
-
 .SUFFIXES: .in .out .res .vim
 
 nongui:	nolog tinytests newtests report
@@ -68,7 +63,6 @@ clean:
 	-@if exist *.out $(DEL) *.out
 	-@if exist *.failed $(DEL) *.failed
 	-@if exist *.res $(DEL) *.res
-	-@if exist $(DOSTMP) rd /s /q $(DOSTMP)
 	-@if exist test.in $(DEL) test.in
 	-@if exist test.ok $(DEL) test.ok
 	-@if exist Xdir1 $(DELDIR) Xdir1
@@ -92,32 +86,22 @@ nolog:
 # Tiny tests.  Works even without the +eval feature.
 tinytests: $(SCRIPTS_TINY_OUT)
 
-# Copy the input files to dostmp, changing the fileformat to dos.
-$(DOSTMP)/%.in : %.in
-	if not exist $(DOSTMP)\nul mkdir $(DOSTMP)
-
-# For each input file dostmp/test99.in run the tests.
-# This moves test99.in to test99.in.bak temporarily.
-%.out : $(DOSTMP)/%.in
+# For each input file run the tests.
+%.out : %.in
 	-@if exist test.out $(DEL) test.out
-	-@if exist $(DOSTMP)\$@ $(DEL) $(DOSTMP)\$@
-	-@if exist $(DOSTMP)\test.ok $(DEL) $(DOSTMP)\test.ok
 	$(CP) $(basename $@).ok test.ok > NUL
 	$(VIMPROG) -u dos.vim $(NO_INITS) -s dotest.in $(notdir $<)
-	-@if exist test.out $(MV) test.out $(DOSTMP)\$@ > NUL
 	-@if exist test.ok $(DEL) test.ok
 	-@if exist Xdir1 $(DELDIR) /s /q Xdir1
 	-@if exist Xfind $(DELDIR) Xfind
 	-@if exist XfakeHOME $(DELDIR) XfakeHOME
 	-@del X*
 	-@if exist viminfo del viminfo
-	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=unix|f test.out|wq" \
-		$(DOSTMP)\$@
-	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=unix|f $(DOSTMP)\test.ok|wq" \
+	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=unix|update|q" test.out
+	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=unix|f test.ok|wq" \
 		$(basename $@).ok
-	@diff test.out $(DOSTMP)\test.ok & if errorlevel 1 \
+	@diff test.out test.ok & if errorlevel 1 \
 		( $(MV) test.out $(basename $@).failed > NUL \
-		 & del $(DOSTMP)\$@ \
 		 & echo $(basename $@) FAILED >> test.log ) \
 		else ( $(MV) test.out $(basename $@).out > NUL )
 
