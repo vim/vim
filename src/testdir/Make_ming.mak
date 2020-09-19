@@ -36,12 +36,12 @@ benchmark: $(SCRIPTS_BENCH)
 
 report:
 	@rem without the +eval feature test_result.log is a copy of test.log
-	@if exist test.log ( copy /y test.log test_result.log > nul ) \
+	@if exist test.log ( $(CP) test.log test_result.log > nul ) \
 		else ( echo No failures reported > test_result.log )
 	$(VIMPROG) -u NONE $(NO_INITS) -S summarize.vim messages
 	@echo.
 	@echo Test results:
-	@cmd /c type test_result.log
+	@cmd /c $(CAT) test_result.log
 	@if exist test.log ( echo TEST FAILURE & exit /b 1 ) \
 		else ( echo ALL DONE )
 
@@ -49,11 +49,11 @@ report:
 # Execute an individual new style test, e.g.:
 # 	mingw32-make -f Make_ming.mak test_largefile
 $(NEW_TESTS):
-	-if exist $@.res del $@.res
-	-if exist test.log del test.log
-	-if exist messages del messages
+	-if exist $@.res $(DEL) $@.res
+	-if exist test.log $(DEL) test.log
+	-if exist messages $(DEL) messages
 	@$(MAKE) -f Make_ming.mak $@.res VIMPROG=$(VIMPROG) --no-print-directory
-	@type messages
+	@$(CAT) messages
 	@if exist test.log exit 1
 
 
@@ -69,17 +69,17 @@ clean:
 	-@if exist Xfind $(DELDIR) Xfind
 	-@if exist XfakeHOME $(DELDIR) XfakeHOME
 	-@if exist X* $(DEL) X*
-	-@for /d %%i in (X*) do @rd /s/q %%i
+	-@for /d %%i in (X*) do @$(DELDIR) %%i
 	-@if exist viminfo $(DEL) viminfo
 	-@if exist test.log $(DEL) test.log
-	-@if exist test_result.log del test_result.log
+	-@if exist test_result.log $(DEL) test_result.log
 	-@if exist messages $(DEL) messages
-	-@if exist benchmark.out del benchmark.out
+	-@if exist benchmark.out $(DEL) benchmark.out
 	-@if exist opt_test.vim $(DEL) opt_test.vim
 
 nolog:
 	-@if exist test.log $(DEL) test.log
-	-@if exist test_result.log del test_result.log
+	-@if exist test_result.log $(DEL) test_result.log
 	-@if exist messages $(DEL) messages
 
 
@@ -90,11 +90,11 @@ tinytests: $(SCRIPTS_TINY_OUT)
 %.out : %.in
 	-@if exist test.out $(DEL) test.out
 	$(VIMPROG) -u dos.vim $(NO_INITS) -s dotest.in $(notdir $<)
-	-@if exist Xdir1 $(DELDIR) /s /q Xdir1
+	-@if exist Xdir1 $(DELDIR) Xdir1
 	-@if exist Xfind $(DELDIR) Xfind
 	-@if exist XfakeHOME $(DELDIR) XfakeHOME
-	-@del X*
-	-@if exist viminfo del viminfo
+	-@$(DEL) X*
+	-@if exist viminfo $(DEL) viminfo
 	-@if exist test.ok $(DEL) test.ok
 	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=unix|update|q" test.out
 	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=unix|f test.ok|wq" \
@@ -110,7 +110,7 @@ tinytests: $(SCRIPTS_TINY_OUT)
 # Limitation: Only works with the +eval feature.
 
 newtests: newtestssilent
-	@if exist messages type messages
+	@if exist messages $(CAT) messages
 
 newtestssilent: $(NEW_TESTS_RES)
 
