@@ -96,7 +96,7 @@ tinytests: $(SCRIPTS_TINY_OUT)
 $(DOSTMP)/%.in : %.in
 	if not exist $(DOSTMP)\nul mkdir $(DOSTMP)
 	if exist $(DOSTMP)\$< $(DEL) $(DOSTMP)\$<
-	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=dos|f $@|wq" $<
+	$(CP) $< $(DOSTMP)\$< > NUL
 
 # For each input file dostmp/test99.in run the tests.
 # This moves test99.in to test99.in.bak temporarily.
