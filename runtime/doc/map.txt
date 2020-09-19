@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.2.  Last change: 2020 Sep 06
+*map.txt*       For Vim version 8.2.  Last change: 2020 Sep 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1506,7 +1506,7 @@ The valid escape sequences are
 	<bang>	(See the '-bang' attribute) Expands to a ! if the
 		command was executed with a ! modifier, otherwise
 		expands to nothing.
-						*<mods>* *:command-modifiers*
+					*<mods>* *<q-mods>* *:command-modifiers*
 	<mods>  The command modifiers, if specified. Otherwise, expands to
 		nothing. Supported modifiers are |:aboveleft|, |:belowright|,
 		|:botright|, |:browse|, |:confirm|, |:hide|, |:keepalt|,
