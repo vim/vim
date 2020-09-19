@@ -103,6 +103,7 @@ $(DOSTMP)/%.in : %.in
 %.out : $(DOSTMP)/%.in
 	-@if exist test.out $(DEL) test.out
 	-@if exist $(DOSTMP)\$@ $(DEL) $(DOSTMP)\$@
+	-@if exist $(DOSTMP)\test.ok $(DEL) $(DOSTMP)\test.ok
 	$(MV) $(notdir $<) $(notdir $<).bak > NUL
 	$(CP) $(DOSTMP)\$(notdir $<) $(notdir $<) > NUL
 	$(CP) $(basename $@).ok test.ok > NUL
@@ -117,7 +118,9 @@ $(DOSTMP)/%.in : %.in
 	-@if exist viminfo del viminfo
 	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=unix|f test.out|wq" \
 		$(DOSTMP)\$@
-	@diff test.out $(basename $@).ok & if errorlevel 1 \
+	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=unix|f $(DOSTMP)\test.ok|wq" \
+		$(basename $@).ok
+	@diff test.out $(DOSTMP)\test.ok & if errorlevel 1 \
 		( $(MV) test.out $(basename $@).failed > NUL \
 		 & del $(DOSTMP)\$@ \
 		 & echo $(basename $@) FAILED >> test.log ) \
