@@ -1049,6 +1049,21 @@ cleanup_function_call(funccall_T *fc)
 	}
     }
 }
+
+/*
+ * There are two kinds of function names:
+ * 1. ordinary names, function defined with :function or :def
+ * 2. numbered functions and lambdas
+ * For the first we only count the name stored in func_hashtab as a reference,
+ * using function() does not count as a reference, because the function is
+ * looked up by name.
+ */
+    static int
+func_name_refcount(char_u *name)
+{
+    return isdigit(*name) || *name == '<';
+}
+
 /*
  * Unreference "fc": decrement the reference count and free it when it
  * becomes zero.  "fp" is detached from "fc".
@@ -1172,6 +1187,8 @@ func_free(ufunc_T *fp, int force)
 
     if ((fp->uf_flags & FC_DEAD) == 0 || force)
     {
+	if (fp->uf_dfunc_idx > 0)
+	    unlink_def_function(fp);
 	VIM_CLEAR(fp->uf_name_exp);
 	vim_free(fp);
     }
@@ -1185,7 +1202,8 @@ func_free(ufunc_T *fp, int force)
 func_clear_free(ufunc_T *fp, int force)
 {
     func_clear(fp, force);
-    if (force || fp->uf_dfunc_idx == 0 || (fp->uf_flags & FC_COPY))
+    if (force || fp->uf_dfunc_idx == 0 || func_name_refcount(fp->uf_name)
+						   || (fp->uf_flags & FC_COPY))
 	func_free(fp, force);
     else
 	fp->uf_flags |= FC_DEAD;
@@ -1728,20 +1746,6 @@ call_user_func_check(
 	error = FCERR_NONE;
     }
     return error;
-}
-
-/*
- * There are two kinds of function names:
- * 1. ordinary names, function defined with :function
- * 2. numbered functions and lambdas
- * For the first we only count the name stored in func_hashtab as a reference,
- * using function() does not count as a reference, because the function is
- * looked up by name.
- */
-    static int
-func_name_refcount(char_u *name)
-{
-    return isdigit(*name) || *name == '<';
 }
 
 static funccal_entry_T *funccal_stack = NULL;

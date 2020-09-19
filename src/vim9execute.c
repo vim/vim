@@ -270,11 +270,17 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 {
     dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
 							  + ectx->ec_dfunc_idx;
-    int		argcount = ufunc_argcount(dfunc->df_ufunc);
-    int		top = ectx->ec_frame_idx - argcount;
+    int		argcount;
+    int		top;
     int		idx;
     typval_T	*tv;
     int		closure_in_use = FALSE;
+
+    if (dfunc->df_ufunc == NULL)
+	// function was freed
+	return OK;
+    argcount = ufunc_argcount(dfunc->df_ufunc);
+    top = ectx->ec_frame_idx - argcount;
 
     // Check if any created closure is still in use.
     for (idx = 0; idx < dfunc->df_closure_count; ++idx)

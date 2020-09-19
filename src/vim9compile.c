@@ -2593,6 +2593,9 @@ compile_lambda(char_u **arg, cctx_T *cctx)
 	// The return type will now be known.
 	set_function_type(ufunc);
 
+	// The function reference count will be 1.  When the ISN_FUNCREF
+	// instruction is deleted the reference count is decremented and the
+	// function is freed.
 	return generate_FUNCREF(cctx, ufunc);
     }
 
@@ -7422,6 +7425,18 @@ clear_def_function(ufunc_T *ufunc)
 	delete_def_function_contents(dfunc);
 	ufunc->uf_def_status = UF_NOT_COMPILED;
     }
+}
+
+/*
+ * Used when a user function is about to be deleted: remove the pointer to it.
+ * The entry in def_functions is then unused.
+ */
+    void
+unlink_def_function(ufunc_T *ufunc)
+{
+    dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data) + ufunc->uf_dfunc_idx;
+
+    dfunc->df_ufunc = NULL;
 }
 
 #if defined(EXITFREE) || defined(PROTO)
