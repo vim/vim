@@ -90,12 +90,12 @@ tinytests: $(SCRIPTS_TINY_OUT)
 %.out : %.in
 	-@if exist test.out $(DEL) test.out
 	$(VIMPROG) -u dos.vim $(NO_INITS) -s dotest.in $(notdir $<)
-	-@if exist test.ok $(DEL) test.ok
 	-@if exist Xdir1 $(DELDIR) /s /q Xdir1
 	-@if exist Xfind $(DELDIR) Xfind
 	-@if exist XfakeHOME $(DELDIR) XfakeHOME
 	-@del X*
 	-@if exist viminfo del viminfo
+	-@if exist test.ok $(DEL) test.ok
 	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=unix|update|q" test.out
 	$(VIMPROG) -u dos.vim $(NO_INITS) "+set ff=unix|f test.ok|wq" \
 		$(basename $@).ok
