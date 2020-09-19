@@ -869,6 +869,19 @@ common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap)
 	return;
     }
 
+    // If either is VAR_UNKNOWN use the other type.  An empty list/dict has no
+    // specific type.
+    if (type1->tt_type == VAR_UNKNOWN)
+    {
+	*dest = type2;
+	return;
+    }
+    if (type2->tt_type == VAR_UNKNOWN)
+    {
+	*dest = type1;
+	return;
+    }
+
     if (type1->tt_type == type2->tt_type)
     {
 	if (type1->tt_type == VAR_LIST || type2->tt_type == VAR_DICT)
@@ -932,7 +945,7 @@ get_member_type_from_stack(
 
     // Use "any" for an empty list or dict.
     if (count == 0)
-	return &t_void;
+	return &t_unknown;
 
     // Use the first value type for the list member type, then find the common
     // type from following items.
