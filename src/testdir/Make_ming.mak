@@ -95,8 +95,6 @@ tinytests: $(SCRIPTS_TINY_OUT)
 # Copy the input files to dostmp, changing the fileformat to dos.
 $(DOSTMP)/%.in : %.in
 	if not exist $(DOSTMP)\nul mkdir $(DOSTMP)
-	if exist $(DOSTMP)\$< $(DEL) $(DOSTMP)\$<
-	$(CP) $< $(DOSTMP)\$< > NUL
 
 # For each input file dostmp/test99.in run the tests.
 # This moves test99.in to test99.in.bak temporarily.
@@ -104,12 +102,9 @@ $(DOSTMP)/%.in : %.in
 	-@if exist test.out $(DEL) test.out
 	-@if exist $(DOSTMP)\$@ $(DEL) $(DOSTMP)\$@
 	-@if exist $(DOSTMP)\test.ok $(DEL) $(DOSTMP)\test.ok
-	$(MV) $(notdir $<) $(notdir $<).bak > NUL
-	$(CP) $(DOSTMP)\$(notdir $<) $(notdir $<) > NUL
 	$(CP) $(basename $@).ok test.ok > NUL
 	$(VIMPROG) -u dos.vim $(NO_INITS) -s dotest.in $(notdir $<)
 	-@if exist test.out $(MV) test.out $(DOSTMP)\$@ > NUL
-	-@if exist $(notdir $<).bak $(MV) $(notdir $<).bak $(notdir $<) > NUL
 	-@if exist test.ok $(DEL) test.ok
 	-@if exist Xdir1 $(DELDIR) /s /q Xdir1
 	-@if exist Xfind $(DELDIR) Xfind
