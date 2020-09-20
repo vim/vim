@@ -2290,6 +2290,7 @@ compile_arguments(char_u **arg, cctx_T *cctx, int *argcount)
 {
     char_u  *p = *arg;
     char_u  *whitep = *arg;
+    int	    must_end = FALSE;
 
     for (;;)
     {
@@ -2299,6 +2300,11 @@ compile_arguments(char_u **arg, cctx_T *cctx, int *argcount)
 	{
 	    *arg = p + 1;
 	    return OK;
+	}
+	if (must_end)
+	{
+	    semsg(_(e_missing_comma_before_argument_str), p);
+	    return FAIL;
 	}
 
 	if (compile_expr0(&p, cctx) == FAIL)
@@ -2316,6 +2322,8 @@ compile_arguments(char_u **arg, cctx_T *cctx, int *argcount)
 	    if (*p != NUL && !VIM_ISWHITE(*p))
 		semsg(_(e_white_space_required_after_str), ",");
 	}
+	else
+	    must_end = TRUE;
 	whitep = p;
 	p = skipwhite(p);
     }
