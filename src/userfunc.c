@@ -66,8 +66,9 @@ one_function_arg(char_u *arg, garray_T *newargs, garray_T *argtypes, int skip)
     while (ASCII_ISALNUM(*p) || *p == '_')
 	++p;
     if (arg == p || isdigit(*arg)
-	    || (p - arg == 9 && STRNCMP(arg, "firstline", 9) == 0)
-	    || (p - arg == 8 && STRNCMP(arg, "lastline", 8) == 0))
+	    || (argtypes == NULL
+		&& ((p - arg == 9 && STRNCMP(arg, "firstline", 9) == 0)
+		    || (p - arg == 8 && STRNCMP(arg, "lastline", 8) == 0))))
     {
 	if (!skip)
 	    semsg(_("E125: Illegal argument: %s"), arg);
