@@ -916,9 +916,13 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
 # endif
 	{
 	    if (gui.menu_bg_pixel != INVALCOLOR)
+	    {
 		XtSetArg(arg[0], XmNbackground, gui.menu_bg_pixel); n++;
+	    }
 	    if (gui.menu_fg_pixel != INVALCOLOR)
+	    {
 		XtSetArg(arg[1], XmNforeground, gui.menu_fg_pixel); n++;
+	    }
 	    menu->submenu_id = XmCreatePopupMenu(textArea, "contextMenu",
 								      arg, n);
 	    menu->id = (Widget)0;
