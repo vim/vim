@@ -259,6 +259,14 @@ def Test_assignment()
   let w: number
   w = 123
   assert_equal(123, w)
+
+
+  # this should not leak
+  if 0
+    let text =<< trim END
+      some text
+    END
+  endif
 enddef
 
 def Test_vim9_single_char_vars()
