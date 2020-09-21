@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Sep 13
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Sep 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -19,6 +19,7 @@ THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 3.  New style functions			|fast-functions|
 4.  Types				|vim9-types|
 5.  Namespace, Import and Export	|vim9script|
+6.  Future work: classes		|vim9-classes|
 
 9.  Rationale				|vim9-rationale|
 
@@ -49,13 +50,14 @@ errors are handled.
 The Vim9 script syntax and semantics are used in:
 - a function defined with the `:def` command
 - a script file where the first command is `vim9script`
-- an autocommand defined in the context of these
+- an autocommand defined in the context of the above
 
 When using `:function` in a Vim9 script file the legacy syntax is used.
 However, this can be confusing and is therefore discouraged.
 
 Vim9 script and legacy Vim script can be mixed.  There is no requirement to
-rewrite old scripts, they keep working as before.
+rewrite old scripts, they keep working as before.  You may want to use a few
+`:def` functions for code that needs to be fast.
 
 ==============================================================================
 
@@ -834,6 +836,8 @@ In case the name is ambiguous, another name can be specified: >
 To import all exported items under a specific identifier: >
 	import * as That from 'thatscript.vim'
 
+{not implemented yet: using "This as That"}
+
 Then you can use "That.EXPORTED_CONST", "That.someValue", etc.  You are free
 to choose the name "That", but it is highly recommended to use the name of the
 script file to avoid confusion.
@@ -902,6 +906,37 @@ namespace will be used for the imported item, even when "s:" is not specified.
 
 ==============================================================================
 
+6. Future work: classes					*vim9-classes*
+
+Above "class" was mentioned a few times, but it has not been implemented yet.
+Most of Vim9 script can be created without this funcionality, and since
+implementing classes is going to be a lot of work, it is left for the future.
+For now we'll just make sure classes can be added later.
+
+Thoughts:
+- `class` / `endclass`, everything in one file
+- Class names are always CamelCase
+- Single constructor
+- Single inheritance with `class ThisClass extends BaseClass`
+- `abstract class`
+- `interface` (Abstract class without any implementation)
+- `class SomeClass implements SomeInterface`
+- Generics for class: `class <Tkey, Tentry>`
+- Generics for function: `def <Tkey> GetLast(key: Tkey)`
+
+Again, much of this is from TypeScript.
+
+Some things that look like good additions:
+- Use a class as an interface (like Dart)
+- Extend a class with methods, using an import (like Dart)
+
+An important class that will be provided is "Promise".  Since Vim is single
+threaded, connecting asynchronous operations is a natural way of allowing
+plugins to do their work without blocking the user.  It's a uniform way to
+invoke callbacks and handle timeouts and errors.
+
+==============================================================================
+
 9. Rationale						*vim9-rationale*
 
 The :def command ~
@@ -933,36 +968,37 @@ instruction, at execution time the instruction would have to inspect the type
 of the arguments and decide what kind of addition to do.  And when the
 type is dictionary throw an error.  If the types are known to be numbers then
 an "add number" instruction can be used, which is faster.  The error can be
-given at compile time, no error handling is needed at runtime.
+given at compile time, no error handling is needed at runtime, adding two
+numbers cannot fail.
 
 The syntax for types is similar to Java, since it is easy to understand and
 widely used.  The type names are what were used in Vim before, with some
 additions such as "void" and "bool".
 
 
-Compiling functions early ~
+Removing clutter and weirdness ~
 
-Functions are compiled when called or when `:defcompile` is used.  Why not
-compile them early, so that syntax and type errors are reported early?
+Once decided that `:def` functions have different syntax than legacy functions,
+we are free to add improvements to make the code more familiar for users who
+know popular programming languages.  In other words: remove weird things that
+only Vim uses.
 
-The functions can't be compiled right away when encountered, because there may
-be forward references to functions defined later.  Consider defining functions
-A, B and C, where A calls B, B calls C, and C calls A again.  It's impossible
-to reorder the functions to avoid forward references.
+We can also remove clutter, mainly things that were done to make Vim script
+backwards compatible with good old Vi commands.
 
-An alternative would be to first scan through the file to locate items and
-figure out their type, so that forward references are found, and only then
-execute the script and compile the functions.  This means the script has to be
-parsed twice, which is slower, and some conditions at the script level, such
-as checking if a feature is supported, are hard to use.  An attempt was made
-to see if it works, but it turned out to be impossible to make work nicely.
+Examples:
+- Drop `:call` for calling a function and `:eval` for manipulating data.
+- Drop using a leading backslash for line continuation, automatically figure
+  out where an expression ends.
 
-It would be possible to compile all the functions at the end of the script.
-The drawback is that if a function never gets called, the overhead of
-compiling it counts anyway.  Since startup speed is very important, in most
-cases it's better to do it later and accept that syntax and type errors are
-only reported then.  In case these errors should be found early, e.g. when
-testing, the `:defcompile` command will help out.
+However, this does require that some things need to change:
+- Comments start with # instead of ", to avoid confusing them with strings.
+- Ex command ranges need to be prefixed with a colon, to avoid confusion with
+  expressions (single quote can be a string or a mark, "/" can be divide or a
+  search command, etc.).
+
+Goal is to limit the differences.  A good criteria is that when the old syntax
+is used you are very likely to get an error message.
 
 
 TypeScript syntax and semantics ~
@@ -992,16 +1028,23 @@ Vim9 script works like JavaScript/TypeScript, keep the value: >
 	...
 	let result = value || 0  # result == 44
 
+Another reason why TypeScript can be used as an example for Vim9 script is the
+mix of static typing (a variable always has a known value type) and dynamic
+typing (a variable can have different types, this hanges at runtime).  Since
+legacy Vim script is dynamically typed and a lot of existing functionality
+(esp. builtin functions) depends on that, while static typing allows for much
+faster execution, we need to have this mix in Vim9 script.
+
 There is no intention to completely match TypeScript syntax and semantics.  We
 just want to take those parts that we can use for Vim and we expect Vim users
-will be happy with.  TypeScript is a complex language with its own advantages
-and disadvantages.  To get an idea of the disadvantages read the book:
-"JavaScript: The Good Parts".  Or find the article "TypeScript: the good
+will be happy with.  TypeScript is a complex language with its own history,
+advantages and disadvantages.  To get an idea of the disadvantages read the
+book: "JavaScript: The Good Parts".  Or find the article "TypeScript: the good
 parts" and read the "Things to avoid" section.
 
-People used to other languages (Java, Python, etc.) will also find things in
-TypeScript that they do not like or do not understand.  We'll try to avoid
-those things.
+People familiar with other languages (Java, Python, etc.) will also find
+things in TypeScript that they do not like or do not understand.  We'll try to
+avoid those things.
 
 Specific items from TypeScript we avoid:
 - Overloading "+", using it both for addition and string concatenation.  This
@@ -1054,24 +1097,56 @@ globally can be used, not the exported items.  Alternatives considered:
 Note that you can also use `:import` in legacy Vim script, see above.
 
 
-Classes ~
+Compiling functions early ~
+
+Functions are compiled when called or when `:defcompile` is used.  Why not
+compile them early, so that syntax and type errors are reported early?
+
+The functions can't be compiled right away when encountered, because there may
+be forward references to functions defined later.  Consider defining functions
+A, B and C, where A calls B, B calls C, and C calls A again.  It's impossible
+to reorder the functions to avoid forward references.
+
+An alternative would be to first scan through the file to locate items and
+figure out their type, so that forward references are found, and only then
+execute the script and compile the functions.  This means the script has to be
+parsed twice, which is slower, and some conditions at the script level, such
+as checking if a feature is supported, are hard to use.  An attempt was made
+to see if it works, but it turned out to be impossible to make work nicely.
+
+It would be possible to compile all the functions at the end of the script.
+The drawback is that if a function never gets called, the overhead of
+compiling it counts anyway.  Since startup speed is very important, in most
+cases it's better to do it later and accept that syntax and type errors are
+only reported then.  In case these errors should be found early, e.g. when
+testing, the `:defcompile` command will help out.
+
+
+Why not use an embeded language? ~
 
 Vim supports interfaces to Perl, Python, Lua, Tcl and a few others.  But
-these interfaces have never become widespread.  When Vim 9 was designed a
-decision was made to phase out these interfaces and concentrate on Vim script,
-while encouraging plugin authors to write code in any language and run it as
-an external tool, using jobs and channels.
+these interfaces have never become widely used, for various reasons.  When
+Vim9 was designed a decision was made to make these interfaces lower priority
+and concentrate on Vim script.
 
-Still, using an external tool has disadvantages.  An alternative is to convert
+Still, plugin writers may find other languages more familiar, want to use
+existing libraries or see a performance benefit.  We encourage plugin authors
+to write code in any language and run it as an external tool, using jobs and
+channels.  We can try to make this easier somehow.
+
+Using an external tool also has disadvantages.  An alternative is to convert
 the tool into Vim script.  For that to be possible without too much
 translation, and keeping the code fast at the same time, the constructs of the
 tool need to be supported.  Since most languages support classes the lack of
 support for classes in Vim is then a problem.
 
-Previously Vim supported a kind-of object oriented programming by adding
-methods to a dictionary.  With some care this could be made to work, but it
-does not look like real classes.  On top of that, it's very slow, because of
-the use of dictionaries.
+
+Classes ~
+
+Vim supports a kind-of object oriented programming by adding methods to a
+dictionary.  With some care this can be made to work, but it does not look
+like real classes.  On top of that, it's quite slow, because of the use of
+dictionaries.
 
 The support of classes in Vim9 script is a "minimal common functionality" of
 class support in most languages.  It works much like Java, which is the most

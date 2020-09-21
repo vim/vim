@@ -66,8 +66,9 @@ one_function_arg(char_u *arg, garray_T *newargs, garray_T *argtypes, int skip)
     while (ASCII_ISALNUM(*p) || *p == '_')
 	++p;
     if (arg == p || isdigit(*arg)
-	    || (p - arg == 9 && STRNCMP(arg, "firstline", 9) == 0)
-	    || (p - arg == 8 && STRNCMP(arg, "lastline", 8) == 0))
+	    || (argtypes == NULL
+		&& ((p - arg == 9 && STRNCMP(arg, "firstline", 9) == 0)
+		    || (p - arg == 8 && STRNCMP(arg, "lastline", 8) == 0))))
     {
 	if (!skip)
 	    semsg(_("E125: Illegal argument: %s"), arg);
@@ -1058,7 +1059,7 @@ cleanup_function_call(funccall_T *fc)
  * using function() does not count as a reference, because the function is
  * looked up by name.
  */
-    static int
+    int
 func_name_refcount(char_u *name)
 {
     return isdigit(*name) || *name == '<';
@@ -1176,8 +1177,9 @@ func_clear(ufunc_T *fp, int force)
  * Free a function and remove it from the list of functions.  Does not free
  * what a function contains, call func_clear() first.
  * When "force" is TRUE we are exiting.
+ * Returns OK when the function was actually freed.
  */
-    static void
+    static int
 func_free(ufunc_T *fp, int force)
 {
     // Only remove it when not done already, otherwise we would remove a newer
@@ -1191,7 +1193,9 @@ func_free(ufunc_T *fp, int force)
 	    unlink_def_function(fp);
 	VIM_CLEAR(fp->uf_name_exp);
 	vim_free(fp);
+	return OK;
     }
+    return FAIL;
 }
 
 /*
@@ -1890,9 +1894,13 @@ free_all_functions(void)
 		    ++skipped;
 		else
 		{
-		    func_free(fp, FALSE);
-		    skipped = 0;
-		    break;
+		    if (func_free(fp, FALSE) == OK)
+		    {
+			skipped = 0;
+			break;
+		    }
+		    // did not actually free it
+		    ++skipped;
 		}
 	    }
     }

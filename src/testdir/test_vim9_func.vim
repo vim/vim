@@ -486,6 +486,15 @@ def Test_assign_to_argument()
   CheckScriptFailure(['def Func(arg: number)', 'arg = 3', 'enddef', 'defcompile'], 'E1090:')
 enddef
 
+" These argument names are reserved in legacy functions.
+def WithReservedNames(firstline: string, lastline: string): string
+  return firstline .. lastline
+enddef
+
+def Test_argument_names()
+  assert_equal('OK', WithReservedNames('O', 'K'))
+enddef
+
 def Test_call_func_defined_later()
   g:DefinedLater('one')->assert_equal('one')
   assert_fails('NotDefined("one")', 'E117:', '', 2, 'Test_call_func_defined_later')

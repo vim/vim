@@ -1975,6 +1975,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :<cWORD>	cmdline.txt	/*:<cWORD>*
 :<cexpr>	cmdline.txt	/*:<cexpr>*
 :<cfile>	cmdline.txt	/*:<cfile>*
+:<client>	cmdline.txt	/*:<client>*
 :<cword>	cmdline.txt	/*:<cword>*
 :<sfile>	cmdline.txt	/*:<sfile>*
 :<sflnum>	cmdline.txt	/*:<sflnum>*
@@ -3160,6 +3161,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :sta	windows.txt	/*:sta*
 :stag	windows.txt	/*:stag*
 :star	repeat.txt	/*:star*
+:star-visual-range	cmdline.txt	/*:star-visual-range*
 :start	insert.txt	/*:start*
 :startgreplace	insert.txt	/*:startgreplace*
 :startinsert	insert.txt	/*:startinsert*
@@ -3614,6 +3616,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 <cexpr>	cmdline.txt	/*<cexpr>*
 <cfile>	cmdline.txt	/*<cfile>*
 <character>	intro.txt	/*<character>*
+<client>	cmdline.txt	/*<client>*
 <count>	map.txt	/*<count>*
 <cword>	cmdline.txt	/*<cword>*
 <f-args>	map.txt	/*<f-args>*
@@ -3643,6 +3646,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 <mods>	map.txt	/*<mods>*
 <nomodeline>	autocmd.txt	/*<nomodeline>*
 <q-args>	map.txt	/*<q-args>*
+<q-mods>	map.txt	/*<q-mods>*
 <range>	map.txt	/*<range>*
 <reg>	map.txt	/*<reg>*
 <register>	map.txt	/*<register>*
@@ -7751,6 +7755,7 @@ matchaddpos()	eval.txt	/*matchaddpos()*
 matcharg()	eval.txt	/*matcharg()*
 matchdelete()	eval.txt	/*matchdelete()*
 matchend()	eval.txt	/*matchend()*
+matchfuzzy()	eval.txt	/*matchfuzzy()*
 matchit-install	usr_05.txt	/*matchit-install*
 matchlist()	eval.txt	/*matchlist()*
 matchparen	pi_paren.txt	/*matchparen*
@@ -7929,7 +7934,6 @@ netrw-browser-options	pi_netrw.txt	/*netrw-browser-options*
 netrw-browser-settings	pi_netrw.txt	/*netrw-browser-settings*
 netrw-browser-var	pi_netrw.txt	/*netrw-browser-var*
 netrw-browsing	pi_netrw.txt	/*netrw-browsing*
-netrw-c	pi_netrw.txt	/*netrw-c*
 netrw-c-tab	pi_netrw.txt	/*netrw-c-tab*
 netrw-cB	pi_netrw.txt	/*netrw-cB*
 netrw-cadaver	pi_netrw.txt	/*netrw-cadaver*
@@ -8392,6 +8396,7 @@ popup-callback	popup.txt	/*popup-callback*
 popup-close	popup.txt	/*popup-close*
 popup-examples	popup.txt	/*popup-examples*
 popup-filter	popup.txt	/*popup-filter*
+popup-filter-errors	popup.txt	/*popup-filter-errors*
 popup-filter-mode	popup.txt	/*popup-filter-mode*
 popup-function-details	popup.txt	/*popup-function-details*
 popup-functions	popup.txt	/*popup-functions*
@@ -10029,6 +10034,8 @@ vim.vim	syntax.txt	/*vim.vim*
 vim7	version7.txt	/*vim7*
 vim8	version8.txt	/*vim8*
 vim9	vim9.txt	/*vim9*
+vim9-classes	vim9.txt	/*vim9-classes*
+vim9-const	vim9.txt	/*vim9-const*
 vim9-declaration	vim9.txt	/*vim9-declaration*
 vim9-declarations	usr_46.txt	/*vim9-declarations*
 vim9-differences	vim9.txt	/*vim9-differences*

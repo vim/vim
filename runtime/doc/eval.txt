@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Sep 06
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Sep 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4302,6 +4302,7 @@ expand({expr} [, {nosuf} [, {list}]])				*expand()*
 			<afile>		autocmd file name
 			<abuf>		autocmd buffer number (as a String!)
 			<amatch>	autocmd matched name
+			<cexpr>		C expression under the cursor
 			<sfile>		sourced script file or function name
 			<slnum>		sourced script line number or function
 					line number
@@ -4309,6 +4310,7 @@ expand({expr} [, {nosuf} [, {list}]])				*expand()*
 					a function
 			<SID>		"<SNR>123_"  where "123" is the
 					current script ID  |<SID>|
+			<stack>		call stack
 			<cword>		word under the cursor
 			<cWORD>		WORD under the cursor
 			<client>	the {clientid} of the last received
@@ -5489,7 +5491,7 @@ getmarklist([{expr}])					*getmarklist()*
 		local marks defined in buffer {expr}.  For the use of {expr},
 		see |bufname()|.
 
-		Each item in the retuned List is a |Dict| with the following:
+		Each item in the returned List is a |Dict| with the following:
 		    name - name of the mark prefixed by "'"
 		    pos - a |List| with the position of the mark:
 				[bufnum, lnum, col, off]

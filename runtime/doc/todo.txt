@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Sep 07
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Sep 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -40,24 +40,13 @@ browser use: https://github.com/vim/vim/issues/1234
 
 Why does Test_invalid_sid() not work in the GUI?
 
-Making everything work:
-- Should :const work the same as in legacy script?
-  Or should it work like in Typescript: only the variable is fixed, not the
-  value itself.
-  Then use ":const!" to also fix/lock the value?
-  Typescript uses "as const", which is weird.
-  Alternative:  const var = <const>value
-      looks quite strange quite verbose
-      But can be used in several places:
-	    SomeFunc(<const>[1, 2, 3])
-      In Vim this basically means "lock this value".
-      How about:
-	    SomeFunc(<const>[[1], [2], [3]])  # are sub-lists immutable?
-	    SomeFunc(<const>myList)  # is myList mutable afterwards?
+Add matchfuzzy() and matchfuzzypos() Yegappan, #6947
+    should be ready now
 
-- Run the same tests in :def and Vim9 script, like in Test_expr7_not()
-- :put with a "=" register argument doesn't work, need to find the expression
-  and compile it. (#6397)
+Making everything work:
+- Fix memory leak in test_vim9_func (through compile_nested_function and
+  get_lambda_tv())
+- Fix memory leaks in test_vim9_script
 - At the Vim9 script level, keep script variables local to the block they are
   declared in, like in Javascript (using :let).
   -> Need to remember what variables were declared and delete them when
@@ -80,6 +69,7 @@ Making everything work:
     assertfail
        unknown
     endassertfail E99:.*unknown
+- Run the same tests in :def and Vim9 script, like in Test_expr7_not()
 - In autocmd: use legacy syntax, not whatever the current script uses?
 - need to check type when a declaration specifies a type: #6507
 	let nr: number = 'asdf'
@@ -87,6 +77,9 @@ Making everything work:
   the script-local function, not a global one.
 - Make sure that where a callback is expected a function can be used (without
   quotes). E.g. sort() and map().  Also at the script level.
+- assignment to more complex lval: list[1][2][3] = 8
+- ":put" with ISN_PUT does not handle range correctly, e.g. ":$-2put".
+  Add command to parse range at runtime?
 - Make map() give an error if the resulting type is wrong.
   Add mapnew() to create a new List/Dict for the result, which can have a
   different value type.
@@ -108,6 +101,9 @@ Making everything work:
 - Test that a function defined inside a :def function is local to that
   function, g: functions can be defined and script-local functions cannot be
   defined.
+- Does this work already: can use func as reference:
+	def SomeFunc() ...
+	map(list, SomeFunc)
 - Support passing v:none to use the default argument value. (#6504)
 - make 0 == 'string' fail on the script level, like inside :def.
 - Check that when using a user function name without prefix, it does not find
@@ -123,10 +119,6 @@ Making everything work:
 - Compile redir to local variable: var_redir_start().
 - Compile builtin functions that access local variables:
     islocked()
-- possible memory leak in test_vim9_func through compile_nested_function.
-- memory leaks in test_vim9_expr
-- memory leaks in test_vim9_script
-- memory leaks in test_vim9_cmd
 - When evaluating constants for script variables, some functions could work:
     has('asdf'), len('string')
 - Implement "as Name" in "import Item as Name from ..."
@@ -151,24 +143,23 @@ Also:
 - Make Foo.Bar() work to call the dict function. (#5676)
 - Error in any command in "vim9script" aborts sourcing.
 - Find a way to test expressions in legacy and Vim9 script without duplication
-- Fix memory leaks for test_vim9_disassemble, test_vim9_expr, test_vim9_script
 - Test each level of expressions properly, with type checking
 - Test try/catch and throw better, also nested.
   Test return inside try/finally jumps to finally and then returns.
-- can use func as reference:
-	def SomeFunc() ...
-	map(list, SomeFunc)
 - Test: Function declared inside a :def function is local, disappears at the
   end of the function.  Unless g: is used, just like with variables.
 - implement :type
 - import type declaration?
-- implement class
-- implement interface
-- predefined class: Promise<T>
+- Future work: See |vim9-classes|
 - implement enum
 - Make accessing varargs faster: arg[expr]
 	EVAL expr
 	LOADVARARG (varags idx)
+- Make debugging work - at least per function.  Need to recompile a function
+  to step through it line-by-line?  Evaluate the stack and variables on the
+  stack?
+- Make profiling work - Add ISN_PROFILE instructions after every line?
+- List commands when 'verbose' is set or :verbose is used.
 Further improvements:
 - compile options that are an expression, e.g. "expr:" in 'spellsuggest',
   'foldexpr', 'foldtext', 'printexpr', 'diffexpr', 'patchexpr', 'charconvert',
@@ -292,7 +283,7 @@ Terminal emulator window:
 Error numbers available: E653
 
 Patch to implement the vimtutor with a plugin: #6414
-Was originally writtten by Felipe Morales.
+Was originally written by Felipe Morales.
 
 Remove SPACE_IN_FILENAME ? It is only used for completion.
 
@@ -302,6 +293,9 @@ Add 'termguiattr' option, use "gui=" attributes in the terminal?  Would work
 with 'termguicolors'. #1740
 
 Patch for blockwise paste reporting changes: #6660.
+
+Expanding <mods> should put the tab number from cmdmod.tab before "tab".
+Any way to convert "$" back by using a special value? (#6901)
 
 Can we detect true color support?  https://gist.github.com/XVilka/8346728
 Try setting a color then request the current color, like using t_u7.
@@ -396,6 +390,9 @@ which is not useful.  Return "c/v" instead.  And "c/o" when using "d/pat".
 When 'fileignorecase' is set ":e testfile.c" works to edit TestFile.c, but
 ":find testfile.c" does not ignore case.
 Might be related to #6088.
+
+Error for reverse range when using :vimgrep in file "[id-01] file.txt".
+(#6919)
 
 When changing the crypt key the buffer should be considered modified.
 Like when changing 'fileformat'.  Save the old key in save_file_ff().
@@ -514,7 +511,7 @@ Better: use the "z" prefix.  or ]t) and [t(.
 Modeless selection doesn't work in gvim. (#4783)
 Caused by patch 8.1.1534.
 
-Visual highlight not removed when 'dipslay' is "lastline" and line doesn't
+Visual highlight not removed when 'display' is "lastline" and line doesn't
 fit. (Kevin Lawler, #4457)
 
 Current position in the changelist should be local to the buffer. (#2173)

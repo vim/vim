@@ -42445,7 +42445,7 @@ Files:      src/filepath.c, src/testdir/test_fnamemodify.vim
 
 Patch 8.2.0216
 Problem:    Several Vim9 instructions are not tested.
-Solution:   Add more tests. Fix :disassamble output. Make catch with pattern
+Solution:   Add more tests. Fix :disassemble output. Make catch with pattern
             work.
 Files:      src/testdir/test_vim9_script.vim, src/vim9execute.c,
             src/vim9compile.c
@@ -42665,7 +42665,7 @@ Solution:   Change to int. (Mike Williams)
 Files:      src/vim9compile.c
 
 Patch 8.2.0253
-Problem:    Crash when using :disassamble without argument. (Dhiraj Mishra)
+Problem:    Crash when using :disassemble without argument. (Dhiraj Mishra)
 Solution:   Check for missing argument. (Dominique Pellé, closes #5635,
             closes #5637)
 Files:      src/vim9execute.c, src/testdir/test_vim9_disassemble.vim,
