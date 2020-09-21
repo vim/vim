@@ -211,7 +211,7 @@ get_function_args(
 	    if (argtypes != NULL)
 	    {
 		// ...name: list<type>
-		if (!ASCII_ISALPHA(*p))
+		if (!eval_isnamec1(*p))
 		{
 		    emsg(_(e_missing_name_after_dots));
 		    break;
