@@ -463,7 +463,7 @@ check_type(type_T *expected, type_T *actual, int give_msg, int argidx)
 	    && !(expected->tt_type == VAR_ANY && actual->tt_type != VAR_VOID))
 
     {
-	if (expected->tt_type != actual->tt_type)
+	if (expected->tt_type != (actual->tt_type == VAR_PARTIAL ? VAR_FUNC : actual->tt_type))
 	{
 	    if (expected->tt_type == VAR_BOOL
 					&& (actual->tt_flags & TTFLAG_BOOL_OK))
