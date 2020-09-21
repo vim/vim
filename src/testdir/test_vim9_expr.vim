@@ -1687,6 +1687,18 @@ def Test_expr7_lambda_vim9script()
 	->map({_, v -> synIDattr(v, 'name')})->len()})
   END
   CheckScriptSuccess(lines)
+
+  # check if assign a lambda to a variable which type is func or any.
+  lines =<< trim END
+      vim9script
+      let FuncRef = {->123}
+      assert_equal(123, FuncRef())
+      let FuncRef_Func: func = {->123}
+      assert_equal(123, FuncRef_Func())
+      let FuncRef_Any: any = {->123}
+      assert_equal(123, FuncRef_Any())
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_epxr7_funcref()
