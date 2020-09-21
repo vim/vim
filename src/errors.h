@@ -268,4 +268,6 @@ EXTERN char e_cannot_change_dict_item[]
 	INIT(= N_("E1121: Cannot change dict item"));
 EXTERN char e_variable_is_locked_str[]
 	INIT(= N_("E1122: Variable is locked: %s"));
+EXTERN char e_missing_comma_before_argument_str[]
+	INIT(= N_("E1123: Missing comma before argument: %s"));
 #endif

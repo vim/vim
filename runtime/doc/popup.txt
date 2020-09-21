@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.2.  Last change: 2020 Jul 27
+*popup.txt*  For Vim version 8.2.  Last change: 2020 Sep 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -914,6 +914,12 @@ Note that "x" is the normal way to close a popup.  You may want to use Esc,
 but since many keys start with an Esc character, there may be a delay before
 Vim recognizes the Esc key.  If you do use Esc, it is recommended to set the
 'ttimeoutlen' option to 100 and set 'timeout' and/or 'ttimeout'.
+
+							*popup-filter-errors*
+If the filter function can't be called, e.g. because the name is wrong, then
+the popup is closed.  If the filter causes an error then it is assumed to
+return zero.  If this happens three times in a row the popup is closed.  If
+the popup gives errors fewer than 10% of the calls then it won't be closed.
 
 
 POPUP CALLBACK						*popup-callback*

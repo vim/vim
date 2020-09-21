@@ -2112,6 +2112,7 @@ def Test_expr7_call()
    "vim9script",
    "let x = substitute ('x', 'x', 'x', 'x')"
    ], 'E121:', 2)
+  CheckDefFailure(["let Ref = function('len' [1, 2])"], 'E1123:', 1)
 
   let auto_lines =<< trim END
       def g:some#func(): string

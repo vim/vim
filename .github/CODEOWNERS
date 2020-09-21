@@ -3,22 +3,25 @@
 # You can use github users with @user or email addresses
 
 # These owners will be the default owners for everything in the repo.
-*       @brammool
+#*       @brammool
 
 # Order is important. The last matching pattern has the most precedence.
 # So if a pull request only touches javascript files, only these owners
 # will be requested to review.
 
-src/libvterm/*				@leonerd
+src/iscygpty.*				@k-takata
+src/libvterm/				@leonerd
 
 runtime/autoload/getscript.vim		@cecamp
 runtime/autoload/netrw.vim		@cecamp
 runtime/autoload/netrwFileHandlers.vim	@cecamp
 runtime/autoload/netrwSettings.vim	@cecamp
+runtime/autoload/rubycomplete.vim	@segfault @dkearns
 runtime/autoload/tar.vim		@cecamp
 runtime/autoload/vimball.vim		@cecamp
 runtime/autoload/zip.vim		@cecamp
 runtime/compiler/checkstyle.vim		@dkearns
+runtime/compiler/cucumber.vim		@tpope
 runtime/compiler/dart.vim		@dkearns
 runtime/compiler/dart2js.vim		@dkearns
 runtime/compiler/dart2native.vim	@dkearns
@@ -29,15 +32,20 @@ runtime/compiler/dartfmt.vim		@dkearns
 runtime/compiler/eruby.vim		@dkearns
 runtime/compiler/gawk.vim		@dkearns
 runtime/compiler/gjs.vim		@dkearns
+runtime/compiler/haml.vim		@tpope
 runtime/compiler/javac.vim		@dkearns
 runtime/compiler/jest.vim		@dkearns
 runtime/compiler/jjs.vim		@dkearns
 runtime/compiler/jshint.vim		@dkearns
 runtime/compiler/jsonlint.vim		@dkearns
 runtime/compiler/php.vim		@dkearns
+runtime/compiler/rake.vim		@tpope @dkearns
 runtime/compiler/rhino.vim		@dkearns
+runtime/compiler/rspec.vim		@tpope @dkearns
 runtime/compiler/rubocop.vim		@dkearns
+runtime/compiler/ruby.vim		@tpope @dkearns
 runtime/compiler/rubyunit.vim		@dkearns
+runtime/compiler/sass.vim		@tpope
 runtime/compiler/se.vim			@dkearns
 runtime/compiler/stylelint.vim		@dkearns
 runtime/compiler/tcl.vim		@dkearns
@@ -53,40 +61,92 @@ runtime/doc/pi_netrw.txt		@cecamp
 runtime/doc/pi_tar.txt			@cecamp
 runtime/doc/pi_vimball.txt		@cecamp
 runtime/doc/pi_zip.txt			@cecamp
+runtime/ftplugin/bst.vim		@tpope
 runtime/ftplugin/css.vim		@dkearns
+runtime/ftplugin/cucumber.vim		@tpope
 runtime/ftplugin/eiffel.vim		@dkearns
+runtime/ftplugin/eruby.vim		@tpope @dkearns
+runtime/ftplugin/git.vim		@tpope
+runtime/ftplugin/gitcommit.vim		@tpope
+runtime/ftplugin/gitconfig.vim		@tpope
+runtime/ftplugin/gitrebase.vim		@tpope
+runtime/ftplugin/gitsendemail.vim	@tpope
+runtime/ftplugin/haml.vim		@tpope
+runtime/ftplugin/hgcommit.vim		@k-takata
 runtime/ftplugin/javascript.vim		@dkearns
 runtime/ftplugin/javascriptreact.vim	@dkearns
+runtime/ftplugin/liquid.vim		@tpope
+runtime/ftplugin/markdown.vim		@tpope
+runtime/ftplugin/matlab.vim		@cecamp
+runtime/ftplugin/nsis.vim		@k-takata
+runtime/ftplugin/pdf.vim		@tpope
+runtime/ftplugin/ruby.vim		@tpope @dkearns
+runtime/ftplugin/sass.vim		@tpope
+runtime/ftplugin/scss.vim		@tpope
+runtime/ftplugin/tmux.vim		@ericpruitt
 runtime/ftplugin/typescript.vim		@dkearns
 runtime/ftplugin/typescriptreact.vim	@dkearns
-runtime/plugin/amiga.vim		@cecamp
-runtime/plugin/csh.vim			@cecamp
-runtime/plugin/dcl.vim			@cecamp
-runtime/plugin/exports.vim		@cecamp
+runtime/indent/bst.vim			@tpope
+runtime/indent/cucumber.vim		@tpope
+runtime/indent/dosbatch.vim		@k-takata
+runtime/indent/eruby.vim		@tpope @dkearns
+runtime/indent/gitconfig.vim		@tpope
+runtime/indent/haml.vim			@tpope
+runtime/indent/liquid.vim		@tpope
+runtime/indent/nsis.vim			@k-takata
+runtime/indent/ruby.vim			@AndrewRadev @dkearns
+runtime/indent/sass.vim			@tpope
+runtime/indent/scss.vim			@tpope
+runtime/indent/teraterm.vim		@k-takata
 runtime/plugin/getscriptPlugin.vim	@cecamp
-runtime/plugin/lex.vim			@cecamp
-runtime/plugin/lisp.vim			@cecamp
 runtime/plugin/logiPat.vim		@cecamp
-runtime/plugin/maple.vim		@cecamp
-runtime/plugin/netrw.vim		@cecamp
 runtime/plugin/netrwPlugin.vim		@cecamp
-runtime/plugin/rpcgen.vim		@cecamp
-runtime/plugin/sh.vim			@cecamp
-runtime/plugin/sm.vim			@cecamp
-runtime/plugin/tags.vim			@cecamp
 runtime/plugin/tarPlugin.vim		@cecamp
-runtime/plugin/tex.vim			@cecamp
-runtime/plugin/vim.vim			@cecamp
 runtime/plugin/vimballPlugin.vim	@cecamp
-runtime/plugin/wlmfilt.vim		@cecamp
-runtime/plugin/xmath.vim		@cecamp
-runtime/plugin/xxd.vim			@cecamp
-runtime/plugin/yacc.vim			@cecamp
 runtime/plugin/zipPlugin.vim		@cecamp
+runtime/syntax/amiga.vim		@cecamp
+runtime/syntax/bst.vim			@tpope
+runtime/syntax/csh.vim			@cecamp
+runtime/syntax/cucumber.vim		@tpope
+runtime/syntax/dcl.vim			@cecamp
+runtime/syntax/elmfilt.vim		@cecamp
+runtime/syntax/eruby.vim		@tpope @dkearns
+runtime/syntax/exports.vim		@cecamp
+runtime/syntax/git.vim			@tpope
+runtime/syntax/gitcommit.vim		@tpope
+runtime/syntax/gitconfig.vim		@tpope
+runtime/syntax/gitrebase.vim		@tpope
+runtime/syntax/haml.vim			@tpope
+runtime/syntax/hgcommit.vim		@k-takata
+runtime/syntax/lex.vim			@cecamp
+runtime/syntax/liquid.vim		@tpope
+runtime/syntax/lisp.vim			@cecamp
 runtime/syntax/lynx.vim			@dkearns
 runtime/syntax/mailcap.vim		@dkearns
+runtime/syntax/make.vim			@rohieb
+runtime/syntax/make.vim			@rohieb
+runtime/syntax/maple.vim		@cecamp
+runtime/syntax/markdown.vim		@tpope
+runtime/syntax/netrw.vim		@cecamp
+runtime/syntax/nsis.vim			@k-takata
+runtime/syntax/pdf.vim			@tpope
+runtime/syntax/php.vim			@TysonAndre
 runtime/syntax/privoxy.vim		@dkearns
+runtime/syntax/rpcgen.vim		@cecamp
 runtime/syntax/ruby.vim			@dkearns
+runtime/syntax/sass.vim			@tpope
+runtime/syntax/scss.vim			@tpope
+runtime/syntax/sh.vim			@cecamp
+runtime/syntax/sm.vim			@cecamp
+runtime/syntax/tags.vim			@cecamp
+runtime/syntax/teraterm.vim		@k-takata
+runtime/syntax/tex.vim			@cecamp
 runtime/syntax/tidy.vim			@dkearns
+runtime/syntax/tmux.vim			@ericpruitt
+runtime/syntax/vim.vim			@cecamp
 runtime/syntax/wget.vim			@dkearns
 runtime/syntax/xbl.vim			@dkearns
+runtime/syntax/xmath.vim		@cecamp
+runtime/syntax/xslt.vim			@Boobies
+runtime/syntax/xxd.vim			@cecamp
+runtime/syntax/yacc.vim			@cecamp
