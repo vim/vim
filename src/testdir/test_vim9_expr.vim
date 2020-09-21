@@ -1698,7 +1698,7 @@ def Test_expr7_lambda_vim9script()
       let FuncRef_Any: any = {->123}
       assert_equal(123, FuncRef_Any())
   END
-  CheckDefAndScriptSuccess(lines)
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_epxr7_funcref()
