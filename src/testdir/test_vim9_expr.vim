@@ -1688,7 +1688,7 @@ def Test_expr7_lambda_vim9script()
   END
   CheckScriptSuccess(lines)
 
-  # check if assign a lambda to variable which type is func or any.
+  # check if assign a lambda to a variable which type is func or any.
   lines =<< trim END
       vim9script
       let FuncRef = {->123}
