@@ -7,7 +7,7 @@
 # fileencoding : UTF-8
 # Author       : Restorer
 
-!insertmacro MUI_LANGUAGE "Русский"
+!insertmacro MUI_LANGUAGE "Russian"
 
 
 # Overwrite the default translation.
