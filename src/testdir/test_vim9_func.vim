@@ -374,6 +374,15 @@ def Test_call_def_varargs()
 
   lines =<< trim END
       vim9script
+      def Func(..._l: list<string>)
+        echo _l
+      enddef
+      Func('a', 'b', 'c')
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
       def Func(...l: list<string>)
         echo l
       enddef
@@ -484,6 +493,15 @@ def Test_assign_to_argument()
   l[0]->assert_equal('value')
 
   CheckScriptFailure(['def Func(arg: number)', 'arg = 3', 'enddef', 'defcompile'], 'E1090:')
+enddef
+
+" These argument names are reserved in legacy functions.
+def WithReservedNames(firstline: string, lastline: string): string
+  return firstline .. lastline
+enddef
+
+def Test_argument_names()
+  assert_equal('OK', WithReservedNames('O', 'K'))
 enddef
 
 def Test_call_func_defined_later()

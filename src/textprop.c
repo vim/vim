@@ -1349,6 +1349,10 @@ adjust_prop_columns(
 						    && u_savesub(lnum) == FAIL)
 		return FALSE;
 	    dirty = TRUE;
+
+	    // u_savesub() may have updated curbuf->b_ml, fetch it again
+	    if (curbuf->b_ml.ml_line_lnum != lnum)
+		proplen = get_text_props(curbuf, lnum, &props, TRUE);
 	}
 	if (res.can_drop)
 	    continue; // Drop this text property

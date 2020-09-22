@@ -45,40 +45,6 @@ def Test_syn_include_wildcards()
   delete('Xthemine.vim')
 enddef
 
-def Test_assign_list()
-  let l: list<string> = []
-  l[0] = 'value'
-  assert_equal('value', l[0])
-
-  l[1] = 'asdf'
-  assert_equal('value', l[0])
-  assert_equal('asdf', l[1])
-  assert_equal('asdf', l[-1])
-  assert_equal('value', l[-2])
-
-  let nrl: list<number> = []
-  for i in range(5)
-    nrl[i] = i
-  endfor
-  assert_equal([0, 1, 2, 3, 4], nrl)
-enddef
-
-def Test_assign_dict()
-  let d: dict<string> = {}
-  d['key'] = 'value'
-  assert_equal('value', d['key'])
-
-  d[123] = 'qwerty'
-  assert_equal('qwerty', d[123])
-  assert_equal('qwerty', d['123'])
-
-  let nrd: dict<number> = {}
-  for i in range(3)
-    nrd[i] = i
-  endfor
-  assert_equal({'0': 0, '1': 1, '2': 2}, nrd)
-enddef
-
 def Test_echo_linebreak()
   let lines =<< trim END
       vim9script

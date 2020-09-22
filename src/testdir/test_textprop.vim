@@ -1132,6 +1132,19 @@ func Test_proptype_substitute2()
   bwipe!
 endfunc
 
+" This was causing property corruption.
+func Test_proptype_substitute3()
+  new
+  call setline(1, ['abcxxx', 'def'])
+  call prop_type_add("test", {"highlight": "Search"})
+  call prop_add(1, 2, {"end_lnum": 2, "end_col": 2, "type": "test"})
+  %s/x\+$//
+  redraw
+
+  call prop_type_delete('test')
+  bwipe!
+endfunc
+
 func SaveOptions()
   let d = #{tabstop: &tabstop,
 	  \ softtabstop: &softtabstop,

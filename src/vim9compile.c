@@ -1452,7 +1452,7 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 		    ufunc->uf_def_status != UF_NOT_COMPILED ? ISN_DCALL
 							 : ISN_UCALL)) == NULL)
 	return FAIL;
-    if (ufunc->uf_def_status != UF_NOT_COMPILED)
+    if (isn->isn_type == ISN_DCALL)
     {
 	isn->isn_arg.dfunc.cdf_idx = ufunc->uf_dfunc_idx;
 	isn->isn_arg.dfunc.cdf_argcount = argcount;
@@ -2290,6 +2290,7 @@ compile_arguments(char_u **arg, cctx_T *cctx, int *argcount)
 {
     char_u  *p = *arg;
     char_u  *whitep = *arg;
+    int	    must_end = FALSE;
 
     for (;;)
     {
@@ -2299,6 +2300,11 @@ compile_arguments(char_u **arg, cctx_T *cctx, int *argcount)
 	{
 	    *arg = p + 1;
 	    return OK;
+	}
+	if (must_end)
+	{
+	    semsg(_(e_missing_comma_before_argument_str), p);
+	    return FAIL;
 	}
 
 	if (compile_expr0(&p, cctx) == FAIL)
@@ -2316,6 +2322,8 @@ compile_arguments(char_u **arg, cctx_T *cctx, int *argcount)
 	    if (*p != NUL && !VIM_ISWHITE(*p))
 		semsg(_(e_white_space_required_after_str), ",");
 	}
+	else
+	    must_end = TRUE;
 	whitep = p;
 	p = skipwhite(p);
     }
@@ -2634,8 +2642,8 @@ compile_lambda_call(char_u **arg, cctx_T *cctx)
     clear_tv(&rettv);
     ga_init2(&ufunc->uf_type_list, sizeof(type_T *), 10);
 
-    // The function will have one line: "return {expr}".
-    // Compile it into instructions.
+    // The function will have one line: "return {expr}".  Compile it into
+    // instructions so that we get any errors right now.
     compile_def_function(ufunc, TRUE, cctx);
 
     // compile the arguments
@@ -4614,15 +4622,18 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	eap->cookie = cctx;
 	l = heredoc_get(eap, op + 3, FALSE);
 
-	// Push each line and the create the list.
-	FOR_ALL_LIST_ITEMS(l, li)
+	if (cctx->ctx_skip != SKIP_YES)
 	{
-	    generate_PUSHS(cctx, li->li_tv.vval.v_string);
-	    li->li_tv.vval.v_string = NULL;
+	    // Push each line and the create the list.
+	    FOR_ALL_LIST_ITEMS(l, li)
+	    {
+		generate_PUSHS(cctx, li->li_tv.vval.v_string);
+		li->li_tv.vval.v_string = NULL;
+	    }
+	    generate_NEWLIST(cctx, l->lv_len);
+	    type = &t_list_string;
+	    member_type = &t_list_string;
 	}
-	generate_NEWLIST(cctx, l->lv_len);
-	type = &t_list_string;
-	member_type = &t_list_string;
 	list_free(l);
 	p += STRLEN(p);
 	end = p;
@@ -7285,7 +7296,19 @@ delete_instr(isn_T *isn)
 	    {
 		dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
 					       + isn->isn_arg.funcref.fr_func;
-		func_ptr_unref(dfunc->df_ufunc);
+
+		if (func_name_refcount(dfunc->df_ufunc->uf_name))
+		    func_ptr_unref(dfunc->df_ufunc);
+	    }
+	    break;
+
+	case ISN_DCALL:
+	    {
+		dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
+					       + isn->isn_arg.dfunc.cdf_idx;
+
+		if (func_name_refcount(dfunc->df_ufunc->uf_name))
+		    func_ptr_unref(dfunc->df_ufunc);
 	    }
 	    break;
 
@@ -7333,7 +7356,6 @@ delete_instr(isn_T *isn)
 	case ISN_COMPARESPECIAL:
 	case ISN_COMPARESTRING:
 	case ISN_CONCAT:
-	case ISN_DCALL:
 	case ISN_DROP:
 	case ISN_ECHO:
 	case ISN_ECHOERR:

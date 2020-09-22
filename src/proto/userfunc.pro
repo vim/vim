@@ -12,6 +12,7 @@ char_u *fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *e
 ufunc_T *find_func_even_dead(char_u *name, int is_global, cctx_T *cctx);
 ufunc_T *find_func(char_u *name, int is_global, cctx_T *cctx);
 int func_is_global(ufunc_T *ufunc);
+int func_name_refcount(char_u *name);
 void copy_func(char_u *lambda, char_u *global);
 int call_user_func_check(ufunc_T *fp, int argcount, typval_T *argvars, typval_T *rettv, funcexe_T *funcexe, dict_T *selfdict);
 void save_funccal(funccal_entry_T *entry);
