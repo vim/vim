@@ -4293,7 +4293,7 @@ fuzzy_match_compute_score(
 	if (currIdx > 0)
 	{
 	    // Camel case
-	    int	neighbor;
+	    int	neighbor = ' ';
 	    int	curr;
 	    int	neighborSeparator;
 
