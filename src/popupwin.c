@@ -593,8 +593,9 @@ popup_show_curline(win_T *wp)
 	    ++wp->w_topline;
     }
 
-    // Don't use "firstline" now.
-    wp->w_firstline = 0;
+    // Don't let "firstline" cause a scroll.
+    if (wp->w_firstline > 0)
+	wp->w_firstline = wp->w_topline;
 }
 
 /*
@@ -947,6 +948,18 @@ apply_options(win_T *wp, dict_T *dict)
     nr = dict_get_bool(dict, (char_u *)"hidden", FALSE);
     if (nr > 0)
 	wp->w_popup_flags |= POPF_HIDDEN;
+
+    // when "firstline" and "cursorline" are both set move the cursor to the
+    // "firstline".
+    if (wp->w_firstline > 0 && (wp->w_popup_flags & POPF_CURSORLINE))
+    {
+	if (wp->w_firstline > wp->w_buffer->b_ml.ml_line_count)
+	    wp->w_cursor.lnum = wp->w_buffer->b_ml.ml_line_count;
+	else
+	    wp->w_cursor.lnum = wp->w_firstline;
+	wp->w_topline = wp->w_cursor.lnum;
+	curwin->w_valid &= ~VALID_BOTLINE;
+    }
 
     popup_mask_refresh = TRUE;
     popup_highlight_curline(wp);

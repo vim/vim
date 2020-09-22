@@ -516,6 +516,19 @@ func Test_popup_firstline()
   call popup_close(winid)
 endfunc
 
+func Test_popup_firstline_cursorline()
+  let winid = popup_create(['1111', '222222', '33333', '44444'], #{
+	\ maxheight: 2,
+	\ firstline: 3,
+	\ cursorline: 1,
+	\ })
+  call assert_equal(3, popup_getoptions(winid).firstline)
+  call assert_equal(3, getwininfo(winid)[0].topline)
+  call assert_equal(3, getcurpos(winid)[1])
+
+  call popup_close(winid)
+endfunc
+
 func Test_popup_noscrolloff()
   set scrolloff=5
   let winid = popup_create(['xxx']->repeat(50), #{

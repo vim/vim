@@ -2520,7 +2520,19 @@ func Test_getcurpos_setpos()
   call assert_equal('6', @")
   call assert_equal(-1, setpos('.', test_null_list()))
   call assert_equal(-1, setpos('.', {}))
+
+  let winid = win_getid()
+  normal G$
+  let pos = getcurpos()
+  wincmd w
+  call assert_equal(pos, getcurpos(winid))
+
+  wincmd w
   close!
+
+  call assert_equal(getcurpos(), getcurpos(0))
+  call assert_equal([0, 0, 0, 0, 0], getcurpos(-1))
+  call assert_equal([0, 0, 0, 0, 0], getcurpos(1999))
 endfunc
 
 " Test for glob()
