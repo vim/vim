@@ -223,6 +223,20 @@ def Test_assignment()
   endif
 enddef
 
+def Test_extend_list()
+  let lines =<< trim END
+      vim9script
+      let l: list<number>
+      l += [123]
+      assert_equal([123], l)
+
+      let d: dict<number>
+      d['one'] = 1
+      assert_equal(#{one: 1}, d)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_single_letter_vars()
   # single letter variables
   let a: number = 123

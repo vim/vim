@@ -872,8 +872,7 @@ get_lval(
     while (*p == '[' || (*p == '.' && lp->ll_tv->v_type == VAR_DICT))
     {
 	if (!(lp->ll_tv->v_type == VAR_LIST && lp->ll_tv->vval.v_list != NULL)
-		&& !(lp->ll_tv->v_type == VAR_DICT
-					   && lp->ll_tv->vval.v_dict != NULL)
+		&& !(lp->ll_tv->v_type == VAR_DICT)
 		&& !(lp->ll_tv->v_type == VAR_BLOB
 					   && lp->ll_tv->vval.v_blob != NULL))
 	{
@@ -994,7 +993,20 @@ get_lval(
 		}
 	    }
 	    lp->ll_list = NULL;
+
+	    // a NULL dict is equivalent with an empty dict
+	    if (lp->ll_tv->vval.v_dict == NULL)
+	    {
+		lp->ll_tv->vval.v_dict = dict_alloc();
+		if (lp->ll_tv->vval.v_dict == NULL)
+		{
+		    clear_tv(&var1);
+		    return NULL;
+		}
+		++lp->ll_tv->vval.v_dict->dv_refcount;
+	    }
 	    lp->ll_dict = lp->ll_tv->vval.v_dict;
+
 	    lp->ll_di = dict_find(lp->ll_dict, key, len);
 
 	    // When assigning to a scope dictionary check that a function and
@@ -1460,8 +1472,16 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 		if (*op != '+' || tv2->v_type != VAR_LIST)
 		    break;
 		// List += List
-		if (tv1->vval.v_list != NULL && tv2->vval.v_list != NULL)
-		    list_extend(tv1->vval.v_list, tv2->vval.v_list, NULL);
+		if (tv2->vval.v_list != NULL)
+		{
+		    if (tv1->vval.v_list == NULL)
+		    {
+			tv1->vval.v_list = tv2->vval.v_list;
+			++tv1->vval.v_list->lv_refcount;
+		    }
+		    else
+			list_extend(tv1->vval.v_list, tv2->vval.v_list, NULL);
+		}
 		return OK;
 
 	    case VAR_NUMBER:
