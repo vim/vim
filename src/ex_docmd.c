@@ -8030,6 +8030,10 @@ ex_normal(exarg_T *eap)
 
     restore_current_state(&save_state);
     --ex_normal_busy;
+#ifdef FEAT_PROP_POPUP
+    if (ex_normal_busy == 0)
+	ex_normal_busy_done = FALSE;
+#endif
     setmouse();
 #ifdef CURSOR_SHAPE
     ui_cursor_shape();		// may show different cursor shape
