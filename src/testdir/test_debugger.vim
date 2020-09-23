@@ -339,6 +339,7 @@ func Test_Debugger()
   call delete('Xtest.vim')
   %bw!
   call assert_fails('breakadd here', 'E32:')
+  call assert_fails('breakadd file Xtest.vim /\)/', 'E55:')
 endfunc
 
 func Test_Backtrace_Through_Source()

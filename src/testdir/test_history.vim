@@ -95,6 +95,7 @@ function Test_History()
   call assert_fails('call histnr([])', 'E730:')
   call assert_fails('history xyz', 'E488:')
   call assert_fails('history ,abc', 'E488:')
+  call assert_fails('call histdel(":", "\\%(")', 'E53:')
 endfunction
 
 function Test_Search_history_window()
