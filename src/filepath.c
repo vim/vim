@@ -2722,6 +2722,10 @@ vim_ispathsep_nocolon(int c)
     void
 shorten_dir(char_u *str)
 {
+    shorten_dir2(str, 1);
+}
+
+{
     char_u	*tail, *s, *d;
     int		skip = FALSE;
 
