@@ -708,7 +708,7 @@ def Test_disassemble_lambda()
   let instr = execute('disassemble WithLambda')
   assert_match('WithLambda\_s*' ..
         'let F = {a -> "X" .. a .. "X"}\_s*' ..
-        '\d FUNCREF <lambda>\d\+ $1\_s*' ..
+        '\d FUNCREF <lambda>\d\+\_s*' ..
         '\d STORE $0\_s*' ..
         'return F("x")\_s*' ..
         '\d PUSHS "x"\_s*' ..
