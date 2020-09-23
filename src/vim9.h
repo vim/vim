@@ -244,7 +244,6 @@ typedef struct {
 // arguments to ISN_FUNCREF
 typedef struct {
     int		fr_func;	// function index
-    int		fr_var_idx;	// variable to store partial
 } funcref_T;
 
 // arguments to ISN_NEWFUNC
@@ -323,7 +322,7 @@ struct dfunc_S {
     int		df_instr_count;
 
     int		df_varcount;	    // number of local variables
-    int		df_closure_count;   // number of closures created
+    int		df_has_closure;	    // one if a closure was created
 };
 
 // Number of entries used by stack frame for a function call.

@@ -1367,7 +1367,7 @@ def Test_double_closure_fails()
     enddef
     Func()
   END
-  CheckScriptFailure(lines, 'Multiple closures not supported yet')
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_sort_return_type()

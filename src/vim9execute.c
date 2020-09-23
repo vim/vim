@@ -67,6 +67,8 @@ typedef struct {
     int		ec_dfunc_idx;	// current function index
     isn_T	*ec_instr;	// array with instructions
     int		ec_iidx;	// index in ec_instr: instruction to execute
+
+    garray_T	ec_funcrefs;	// partials that might be a closure
 } ectx_T;
 
 // Get pointer to item relative to the bottom of the stack, -1 is the last one.
@@ -165,6 +167,7 @@ call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
     ufunc_T *ufunc = dfunc->df_ufunc;
     int	    arg_to_add;
     int	    vararg_count = 0;
+    int	    varcount;
     int	    idx;
     estack_T *entry;
 
@@ -212,8 +215,16 @@ call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
 	    semsg(_(e_nr_arguments_too_many), -arg_to_add);
 	return FAIL;
     }
-    if (ga_grow(&ectx->ec_stack, arg_to_add + 3
-		       + dfunc->df_varcount + dfunc->df_closure_count) == FAIL)
+
+    // Reserve space for:
+    // - missing arguments
+    // - stack frame
+    // - local variables
+    // - if needed: a counter for number of closures created in
+    //   ectx->ec_funcrefs.
+    varcount = dfunc->df_varcount + dfunc->df_has_closure;
+    if (ga_grow(&ectx->ec_stack, arg_to_add + STACK_FRAME_SIZE + varcount)
+								       == FAIL)
 	return FAIL;
 
     // Move the vararg-list to below the missing optional arguments.
@@ -232,10 +243,16 @@ call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
     ectx->ec_frame_idx = ectx->ec_stack.ga_len;
 
     // Initialize local variables
-    for (idx = 0; idx < dfunc->df_varcount + dfunc->df_closure_count; ++idx)
+    for (idx = 0; idx < dfunc->df_varcount; ++idx)
 	STACK_TV_BOT(STACK_FRAME_SIZE + idx)->v_type = VAR_UNKNOWN;
-    ectx->ec_stack.ga_len += STACK_FRAME_SIZE
-				+ dfunc->df_varcount + dfunc->df_closure_count;
+    if (dfunc->df_has_closure)
+    {
+	typval_T *tv = STACK_TV_BOT(STACK_FRAME_SIZE + dfunc->df_varcount);
+
+	tv->v_type = VAR_NUMBER;
+	tv->vval.v_number = 0;
+    }
+    ectx->ec_stack.ga_len += STACK_FRAME_SIZE + varcount;
 
     // Set execution state to the start of the called function.
     ectx->ec_dfunc_idx = cdf_idx;
@@ -275,22 +292,30 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
     int		idx;
     typval_T	*tv;
     int		closure_in_use = FALSE;
+    garray_T	*gap = &ectx->ec_funcrefs;
+    varnumber_T	closure_count;
 
     if (dfunc->df_ufunc == NULL)
-	// function was freed
-	return OK;
+	return OK;  // function was freed
+    if (dfunc->df_has_closure == 0)
+	return OK;  // no closures
+    tv = STACK_TV(ectx->ec_frame_idx + STACK_FRAME_SIZE + dfunc->df_varcount);
+    closure_count = tv->vval.v_number;
+    if (closure_count == 0)
+	return OK;  // no funcrefs created
+
     argcount = ufunc_argcount(dfunc->df_ufunc);
     top = ectx->ec_frame_idx - argcount;
 
     // Check if any created closure is still in use.
-    for (idx = 0; idx < dfunc->df_closure_count; ++idx)
+    for (idx = 0; idx < closure_count; ++idx)
     {
-	tv = STACK_TV(ectx->ec_frame_idx + STACK_FRAME_SIZE
-						   + dfunc->df_varcount + idx);
-	if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial != NULL
-					&& tv->vval.v_partial->pt_refcount > 1)
+	partial_T *pt = ((partial_T **)gap->ga_data)[gap->ga_len
+							- closure_count + idx];
+
+	if (pt->pt_refcount > 1)
 	{
-	    int refcount = tv->vval.v_partial->pt_refcount;
+	    int refcount = pt->pt_refcount;
 	    int i;
 
 	    // A Reference in a local variables doesn't count, it gets
@@ -299,8 +324,7 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 	    {
 		typval_T *stv = STACK_TV(ectx->ec_frame_idx
 						       + STACK_FRAME_SIZE + i);
-		if (stv->v_type == VAR_PARTIAL
-				  && tv->vval.v_partial == stv->vval.v_partial)
+		if (stv->v_type == VAR_PARTIAL && pt == stv->vval.v_partial)
 		    --refcount;
 	    }
 	    if (refcount > 1)
@@ -355,45 +379,42 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 	    if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial != NULL)
 	    {
 		int i;
-		typval_T *ctv;
 
-		for (i = 0; i < dfunc->df_closure_count; ++i)
+		for (i = 0; i < closure_count; ++i)
 		{
-		    ctv = STACK_TV(ectx->ec_frame_idx + STACK_FRAME_SIZE
-						     + dfunc->df_varcount + i);
-		    if (tv->vval.v_partial == ctv->vval.v_partial)
+		    partial_T *pt = ((partial_T **)gap->ga_data)[gap->ga_len
+							  - closure_count + i];
+		    if (tv->vval.v_partial == pt)
 			break;
 		}
-		if (i < dfunc->df_closure_count)
-		{
-		    (stack + argcount + STACK_FRAME_SIZE + idx)->v_type =
-								   VAR_UNKNOWN;
+		if (i < closure_count)
 		    continue;
-		}
 	    }
 
 	    *(stack + argcount + STACK_FRAME_SIZE + idx) = *tv;
 	    tv->v_type = VAR_UNKNOWN;
 	}
 
-	for (idx = 0; idx < dfunc->df_closure_count; ++idx)
+	for (idx = 0; idx < closure_count; ++idx)
 	{
-	    tv = STACK_TV(ectx->ec_frame_idx + STACK_FRAME_SIZE
-						   + dfunc->df_varcount + idx);
-	    if (tv->v_type == VAR_PARTIAL)
+	    partial_T *pt = ((partial_T **)gap->ga_data)[gap->ga_len
+							- closure_count + idx];
+	    if (pt->pt_refcount > 1)
 	    {
-		partial_T *partial = tv->vval.v_partial;
-
-		if (partial->pt_refcount > 1)
-		{
-		    ++funcstack->fs_refcount;
-		    partial->pt_funcstack = funcstack;
-		    partial->pt_ectx_stack = &funcstack->fs_ga;
-		    partial->pt_ectx_frame = ectx->ec_frame_idx - top;
-		}
+		++funcstack->fs_refcount;
+		pt->pt_funcstack = funcstack;
+		pt->pt_ectx_stack = &funcstack->fs_ga;
+		pt->pt_ectx_frame = ectx->ec_frame_idx - top;
 	    }
 	}
     }
+
+    for (idx = 0; idx < closure_count; ++idx)
+	partial_unref(((partial_T **)gap->ga_data)[gap->ga_len
+						       - closure_count + idx]);
+    gap->ga_len -= closure_count;
+    if (gap->ga_len == 0)
+	ga_clear(gap);
 
     return OK;
 }
@@ -809,6 +830,7 @@ call_def_function(
     if (ga_grow(&ectx.ec_stack, 20) == FAIL)
 	return FAIL;
     ga_init2(&ectx.ec_trystack, sizeof(trycmd_T), 10);
+    ga_init2(&ectx.ec_funcrefs, sizeof(partial_T *), 10);
 
     // Put arguments on the stack.
     for (idx = 0; idx < argc; ++idx)
@@ -896,14 +918,19 @@ call_def_function(
     }
 
     {
-	// Reserve space for local variables and closure references.
+	// Reserve space for local variables and any closure reference count.
 	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
 							 + ufunc->uf_dfunc_idx;
-	int	count = dfunc->df_varcount + dfunc->df_closure_count;
 
-	for (idx = 0; idx < count; ++idx)
+	for (idx = 0; idx < dfunc->df_varcount; ++idx)
 	    STACK_TV_VAR(idx)->v_type = VAR_UNKNOWN;
-	ectx.ec_stack.ga_len += count;
+	ectx.ec_stack.ga_len += dfunc->df_varcount;
+	if (dfunc->df_has_closure)
+	{
+	    STACK_TV_VAR(idx)->v_type = VAR_NUMBER;
+	    STACK_TV_VAR(idx)->vval.v_number = 0;
+	    ++ectx.ec_stack.ga_len;
+	}
 
 	ectx.ec_instr = dfunc->df_instr;
     }
@@ -1812,7 +1839,6 @@ call_def_function(
 					       + iptr->isn_arg.funcref.fr_func;
 		    pt->pt_func = pt_dfunc->df_ufunc;
 		    pt->pt_refcount = 1;
-		    ++pt_dfunc->df_ufunc->uf_refcount;
 
 		    if (pt_dfunc->df_ufunc->uf_flags & FC_CLOSURE)
 		    {
@@ -1825,23 +1851,25 @@ call_def_function(
 			pt->pt_ectx_frame = ectx.ec_frame_idx;
 
 			// If this function returns and the closure is still
-			// used, we need to make a copy of the context
+			// being used, we need to make a copy of the context
 			// (arguments and local variables). Store a reference
 			// to the partial so we can handle that.
-			++pt->pt_refcount;
-			tv = STACK_TV_VAR(dfunc->df_varcount
-					   + iptr->isn_arg.funcref.fr_var_idx);
-			if (tv->v_type == VAR_PARTIAL)
+			if (ga_grow(&ectx.ec_funcrefs, 1) == FAIL)
 			{
-			    // TODO: use a garray_T on ectx.
-			    SOURCING_LNUM = iptr->isn_lnum;
-			    emsg("Multiple closures not supported yet");
 			    vim_free(pt);
 			    goto failed;
 			}
-			tv->v_type = VAR_PARTIAL;
-			tv->vval.v_partial = pt;
+			// Extra variable keeps the count of closures created
+			// in the current function call.
+			tv = STACK_TV_VAR(dfunc->df_varcount);
+			++tv->vval.v_number;
+
+			((partial_T **)ectx.ec_funcrefs.ga_data)
+					       [ectx.ec_funcrefs.ga_len] = pt;
+			++pt->pt_refcount;
+			++ectx.ec_funcrefs.ga_len;
 		    }
+		    ++pt_dfunc->df_ufunc->uf_refcount;
 
 		    tv = STACK_TV_BOT(0);
 		    ++ectx.ec_stack.ga_len;
@@ -3124,8 +3152,7 @@ ex_disassemble(exarg_T *eap)
 		    dfunc_T	*df = ((dfunc_T *)def_functions.ga_data)
 							    + funcref->fr_func;
 
-		    smsg("%4d FUNCREF %s $%d", current, df->df_ufunc->uf_name,
-				     funcref->fr_var_idx + dfunc->df_varcount);
+		    smsg("%4d FUNCREF %s", current, df->df_ufunc->uf_name);
 		}
 		break;
 

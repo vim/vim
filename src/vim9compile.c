@@ -126,8 +126,8 @@ struct cctx_S {
     garray_T	ctx_locals;	    // currently visible local variables
     int		ctx_locals_count;   // total number of local variables
 
-    int		ctx_closure_count;  // number of closures created in the
-				    // function
+    int		ctx_has_closure;    // set to one if a closures was created in
+				    // the function
 
     garray_T	ctx_imports;	    // imported items
 
@@ -1273,7 +1273,7 @@ generate_FUNCREF(cctx_T *cctx, ufunc_T *ufunc)
     if ((isn = generate_instr(cctx, ISN_FUNCREF)) == NULL)
 	return FAIL;
     isn->isn_arg.funcref.fr_func = ufunc->uf_dfunc_idx;
-    isn->isn_arg.funcref.fr_var_idx = cctx->ctx_closure_count++;
+    cctx->ctx_has_closure = 1;
 
     if (ga_grow(stack, 1) == FAIL)
 	return FAIL;
@@ -7138,7 +7138,7 @@ nextline:
 	dfunc->df_instr = instr->ga_data;
 	dfunc->df_instr_count = instr->ga_len;
 	dfunc->df_varcount = cctx.ctx_locals_count;
-	dfunc->df_closure_count = cctx.ctx_closure_count;
+	dfunc->df_has_closure = cctx.ctx_has_closure;
 	if (cctx.ctx_outer_used)
 	    ufunc->uf_flags |= FC_CLOSURE;
 	ufunc->uf_def_status = UF_COMPILED;
@@ -7312,7 +7312,8 @@ delete_instr(isn_T *isn)
 		dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
 					       + isn->isn_arg.dfunc.cdf_idx;
 
-		if (func_name_refcount(dfunc->df_ufunc->uf_name))
+		if (dfunc->df_ufunc != NULL
+			       && func_name_refcount(dfunc->df_ufunc->uf_name))
 		    func_ptr_unref(dfunc->df_ufunc);
 	    }
 	    break;
