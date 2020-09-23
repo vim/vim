@@ -2250,7 +2250,13 @@ popup_close_and_callback(win_T *wp, typval_T *arg)
 
     // Just in case a check higher up is missing.
     if (wp == curwin && ERROR_IF_POPUP_WINDOW)
+    {
+	// To avoid getting stuck when win_execute() does something that causes
+	// an error, stop calling the filter callback.
+	free_callback(&wp->w_filter_cb);
+
 	return;
+    }
 
     CHECK_CURBUF;
     if (wp->w_close_cb.cb_name != NULL)
@@ -3128,7 +3134,8 @@ find_next_popup(int lowest, int handled_flag)
 /*
  * Invoke the filter callback for window "wp" with typed character "c".
  * Uses the global "mod_mask" for modifiers.
- * Returns the return value of the filter.
+ * Returns the return value of the filter or -1 for CTRL-C in the current
+ * window.
  * Careful: The filter may make "wp" invalid!
  */
     static int
@@ -3145,12 +3152,18 @@ invoke_popup_filter(win_T *wp, int c)
     if (c == Ctrl_C)
     {
 	int save_got_int = got_int;
+	int was_curwin = wp == curwin;
 
 	// Reset got_int to avoid the callback isn't called.
 	got_int = FALSE;
 	popup_close_with_retval(wp, -1);
 	got_int |= save_got_int;
-	return 1;
+
+	// If the popup is the current window it probably fails to close.  Then
+	// do not consume the key.
+	if (was_curwin && wp == curwin)
+	    return -1;
+	return TRUE;
     }
 
     argv[0].v_type = VAR_NUMBER;
@@ -3238,7 +3251,8 @@ popup_do_filter(int c)
 
     popup_reset_handled(POPUP_HANDLED_2);
     state = get_real_state();
-    while (!res && (wp = find_next_popup(FALSE, POPUP_HANDLED_2)) != NULL)
+    while (res == FALSE
+		     && (wp = find_next_popup(FALSE, POPUP_HANDLED_2)) != NULL)
 	if (wp->w_filter_cb.cb_name != NULL
 		&& (wp->w_filter_mode & state) != 0)
 	    res = invoke_popup_filter(wp, c);
@@ -3254,7 +3268,9 @@ popup_do_filter(int c)
     }
     recursive = FALSE;
     KeyTyped = save_KeyTyped;
-    return res;
+
+    // When interrupted return FALSE to avoid looping.
+    return res == -1 ? FALSE : res;
 }
 
 /*
