@@ -1358,9 +1358,18 @@ f_mkdir(typval_T *argvars, typval_T *rettv)
 f_pathshorten(typval_T *argvars, typval_T *rettv)
 {
     char_u	*p;
+    size_t	trim_len;
+
+    if (argvars[1].v_type != VAR_UNKNOWN) {
+	trim_len = (size_t)tv_get_number(&argvars[1]);
+	if (trim_len < 1) trim_len = 1;
+    } else {
+	trim_len = (size_t)1;
+    }
 
     rettv->v_type = VAR_STRING;
     p = tv_get_string_chk(&argvars[0]);
+
     if (p == NULL)
 	rettv->vval.v_string = NULL;
     else
@@ -1368,7 +1377,7 @@ f_pathshorten(typval_T *argvars, typval_T *rettv)
 	p = vim_strsave(p);
 	rettv->vval.v_string = p;
 	if (p != NULL)
-	    shorten_dir(p);
+	    shorten_dir2(p, trim_len);
     }
 }
 
