@@ -676,6 +676,33 @@ def Test_assign_dict()
   assert_equal({'0': 0, '1': 1, '2': 2}, nrd)
 enddef
 
+def Test_assign_dict_unknown_type()
+  let lines =<< trim END
+      vim9script
+      let mylist = []
+      mylist += [#{one: 'one'}]
+      def Func()
+        let dd = mylist[0]
+        assert_equal('one', dd.one)
+      enddef
+      Func()
+  END
+  CheckScriptSuccess(lines)
+
+  # doesn't work yet
+  #lines =<< trim END
+  #    vim9script
+  #    let mylist = [[]]
+  #    mylist[0] += [#{one: 'one'}]
+  #    def Func()
+  #      let dd = mylist[0][0]
+  #      assert_equal('one', dd.one)
+  #    enddef
+  #    Func()
+  #END
+  #CheckScriptSuccess(lines)
+enddef
+
 def Test_assign_lambda()
   # check if assign a lambda to a variable which type is func or any.
   let lines =<< trim END

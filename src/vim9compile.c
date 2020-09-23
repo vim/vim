@@ -5080,12 +5080,14 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			}
 			else
 			{
-			    // An empty list or dict has a &t_void member,
+			    // An empty list or dict has a &t_unknown member,
 			    // for a variable that implies &t_any.
 			    if (stacktype == &t_list_empty)
 				lvar->lv_type = &t_list_any;
 			    else if (stacktype == &t_dict_empty)
 				lvar->lv_type = &t_dict_any;
+			    else if (stacktype == &t_unknown)
+				lvar->lv_type = &t_any;
 			    else
 				lvar->lv_type = stacktype;
 			}
