@@ -2725,9 +2725,18 @@ shorten_dir(char_u *str)
     shorten_dir2(str, 1);
 }
 
+/*
+ * Shorten the path of a file from "~/foo/../.bar/fname" to "~/f/../.b/fname"
+ * It's done in-place.
+ */
+    void
+shorten_dir2(char_u *str, size_t trim_len)
 {
     char_u	*tail, *s, *d;
     int		skip = FALSE;
+    int		dirchunk_len = 0;
+
+    if (trim_len < 1) trim_len = 1; // defaults
 
     tail = gettail(str);
     d = str;
@@ -2743,12 +2752,20 @@ shorten_dir(char_u *str)
 	{
 	    *d++ = *s;
 	    skip = FALSE;
+	    dirchunk_len = 0;
 	}
 	else if (!skip)
 	{
 	    *d++ = *s;		    // copy next char
-	    if (*s != '~' && *s != '.') // and leading "~" and "."
-		skip = TRUE;
+	    if (*s != '~' && *s != '.') {// and leading "~" and "."
+		++dirchunk_len; // only count wordy chars to the size
+
+		// keep copying next chars until we have our preferred length (or
+		// until the above if/else branches move us along)
+		if (dirchunk_len >= trim_len)
+		    skip = TRUE;
+	    }
+
 	    if (has_mbyte)
 	    {
 		int l = mb_ptr2len(s);
