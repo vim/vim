@@ -2610,7 +2610,13 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 		    ++ex_normal_busy;
 		exec_normal(TRUE, lowlevel, TRUE);
 		if (!dangerous)
+		{
 		    --ex_normal_busy;
+#ifdef FEAT_PROP_POPUP
+		    if (ex_normal_busy == 0)
+			ex_normal_busy_done = FALSE;
+#endif
+		}
 
 		msg_scroll |= save_msg_scroll;
 	    }

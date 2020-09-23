@@ -1152,6 +1152,11 @@ EXTERN typebuf_T typebuf		// typeahead buffer
 		    ;
 EXTERN int	ex_normal_busy INIT(= 0); // recursiveness of ex_normal()
 EXTERN int	ex_normal_lock INIT(= 0); // forbid use of ex_normal()
+#ifdef FEAT_PROP_POPUP
+// Set to TRUE when ex_normal_busy is set and out of typeahead.
+EXTERN int	ex_normal_busy_done INIT(= FALSE);
+#endif
+
 #ifdef FEAT_EVAL
 EXTERN int	ignore_script INIT(= FALSE);  // ignore script input
 #endif
