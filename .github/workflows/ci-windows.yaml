@@ -212,9 +212,9 @@ jobs:
         echo %COL_GREEN%Wait for vim tests to finish.%COL_RESET%
         cd ..\src2\testdir
         :: Wait about 10 minutes.
-        for /L %%i in (1,1,600) do (
+        for /L %%i in (1,1,60) do (
           if exist done.txt goto exitloop
-          ping -n 2 localhost > nul
+          timeout 10
         )
         set timeout=1
         :exitloop
