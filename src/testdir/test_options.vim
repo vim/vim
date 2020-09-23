@@ -411,6 +411,7 @@ func Test_set_errors()
     call assert_fails('set pyxversion=6', 'E474:')
   endif
   call assert_fails("let &tabstop='ab'", 'E521:')
+  call assert_fails('set spellcapcheck=%\\(', 'E54:')
 endfunc
 
 func CheckWasSet(name)
