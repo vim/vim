@@ -3711,6 +3711,11 @@ update_popups(void (*win_update)(win_T *wp))
 	// Draw the popup text, unless it's off screen.
 	if (wp->w_winrow < screen_Rows && wp->w_wincol < screen_Columns)
 	{
+	    // May need to update the "cursorline" highlighting, which may also
+	    // change "topline"
+	    if (wp->w_popup_last_curline != wp->w_cursor.lnum)
+		popup_highlight_curline(wp);
+
 	    win_update(wp);
 
 	    // move the cursor into the visible lines, otherwise executing
