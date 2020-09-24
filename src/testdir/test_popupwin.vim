@@ -1556,16 +1556,41 @@ func Test_popup_filter_normal_cmd()
   call delete('XtestPopupNormal')
 endfunc
 
-" this tests that we don't get stuck with an error in "win_execute()"
+" test that cursor line highlight is updated after using win_execute()
 func Test_popup_filter_win_execute()
+  CheckScreendump
+
+  let lines =<< trim END
+      let lines = range(1, &lines * 2)->map({_, v -> string(v)})
+      let g:id = popup_create(lines, #{
+	  \ minheight: &lines - 5,
+	  \ maxheight: &lines - 5,
+	  \ cursorline: 1,
+	  \ })
+      redraw
+  END
+  call writefile(lines, 'XtestPopupWinExecute')
+  let buf = RunVimInTerminal('-S XtestPopupWinExecute', #{rows: 14})
+
+  call term_sendkeys(buf, ":call win_execute(g:id, ['normal 17Gzz'])\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+
+  call VerifyScreenDump(buf, 'Test_popupwin_win_execute_cursorline', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupWinExecute')
+endfunc
+
+" this tests that we don't get stuck with an error in "win_execute()"
+func Test_popup_filter_win_execute_error()
   CheckScreendump
 
   let lines =<< trim END
       let g:winid = popup_create('some text', {'filter': 'invalidfilter'})
       call timer_start(0, {-> win_execute(g:winid, 'invalidCommand')})
   END
-  call writefile(lines, 'XtestPopupWinExecute')
-  let buf = RunVimInTerminal('-S XtestPopupWinExecute', #{rows: 10, wait_for_ruler: 0})
+  call writefile(lines, 'XtestPopupWinExecuteError')
+  let buf = RunVimInTerminal('-S XtestPopupWinExecuteError', #{rows: 10, wait_for_ruler: 0})
 
   call WaitFor({-> term_getline(buf, 9) =~ 'Not an editor command: invalidCommand'})
   call term_sendkeys(buf, "\<CR>")
@@ -1577,7 +1602,7 @@ func Test_popup_filter_win_execute()
   call VerifyScreenDump(buf, 'Test_popupwin_win_execute', {})
 
   call StopVimInTerminal(buf)
-  call delete('XtestPopupWinExecute')
+  call delete('XtestPopupWinExecuteError')
 endfunc
 
 func ShowDialog(key, result)
