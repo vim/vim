@@ -1360,12 +1360,14 @@ f_pathshorten(typval_T *argvars, typval_T *rettv)
     char_u	*p;
     int		trim_len;
 
-    if (argvars[1].v_type != VAR_UNKNOWN) {
-	trim_len = (int)tv_get_number(&argvars[1]);
-	if (trim_len < 1) trim_len = 1;
-    } else {
-	trim_len = (int)1;
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+        trim_len = (int)tv_get_number(&argvars[1]);
+        if (trim_len < 1)
+            trim_len = 1;
     }
+    else
+        trim_len = 1;
 
     rettv->v_type = VAR_STRING;
     p = tv_get_string_chk(&argvars[0]);
@@ -2736,7 +2738,8 @@ shorten_dir2(char_u *str, int trim_len)
     int		skip = FALSE;
     int		dirchunk_len = 0;
 
-    if (trim_len < 1) trim_len = 1; // defaults
+    if (trim_len < 1)
+        trim_len = 1; // less than 1 doesn't make sense
 
     tail = gettail(str);
     d = str;
@@ -2757,7 +2760,8 @@ shorten_dir2(char_u *str, int trim_len)
 	else if (!skip)
 	{
 	    *d++ = *s;		    // copy next char
-	    if (*s != '~' && *s != '.') {// and leading "~" and "."
+	    if (*s != '~' && *s != '.') // and leading "~" and "."
+	    {
 		++dirchunk_len; // only count wordy chars to the size
 
 		// keep copying next chars until we have our preferred length (or
