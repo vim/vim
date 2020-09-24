@@ -41,7 +41,7 @@ char_u *get_past_head(char_u *path);
 int vim_ispathsep(int c);
 int vim_ispathsep_nocolon(int c);
 void shorten_dir(char_u *str);
-void shorten_dir2(char_u *str, size_t trim_len);
+void shorten_dir2(char_u *str, int trim_len);
 int dir_of_file_exists(char_u *fname);
 int vim_fnamecmp(char_u *x, char_u *y);
 int vim_fnamencmp(char_u *x, char_u *y, size_t len);

@@ -1358,13 +1358,13 @@ f_mkdir(typval_T *argvars, typval_T *rettv)
 f_pathshorten(typval_T *argvars, typval_T *rettv)
 {
     char_u	*p;
-    size_t	trim_len;
+    int		trim_len;
 
     if (argvars[1].v_type != VAR_UNKNOWN) {
-	trim_len = (size_t)tv_get_number(&argvars[1]);
+	trim_len = (int)tv_get_number(&argvars[1]);
 	if (trim_len < 1) trim_len = 1;
     } else {
-	trim_len = (size_t)1;
+	trim_len = (int)1;
     }
 
     rettv->v_type = VAR_STRING;
@@ -2730,7 +2730,7 @@ shorten_dir(char_u *str)
  * It's done in-place.
  */
     void
-shorten_dir2(char_u *str, size_t trim_len)
+shorten_dir2(char_u *str, int trim_len)
 {
     char_u	*tail, *s, *d;
     int		skip = FALSE;
