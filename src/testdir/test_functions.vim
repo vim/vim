@@ -517,6 +517,7 @@ func Test_pathshorten()
   call assert_fails('call pathshorten([],2)', 'E730:')
   call assert_notequal('~/fo/bar', pathshorten('~/foo/bar', 3))
   call assert_equal('~/foo/bar', pathshorten('~/foo/bar', 3))
+  call assert_equal('~/f/bar', pathshorten('~/foo/bar', 0))
 endfunc
 
 func Test_strpart()
