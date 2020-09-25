@@ -2755,7 +2755,7 @@ def Test_vim9_autoload_error()
     exe 'set rtp^=' .. getcwd() .. '/Xruntime'
     call crash#func()
     call writefile(['ok'], 'Xdidit')
-    qall
+    qall!
   END
   writefile(lines, 'Xscript')
   RunVim([], [], '-S Xscript')
@@ -2817,7 +2817,7 @@ enddef
 def Test_invalid_sid()
   assert_fails('func <SNR>1234_func', 'E123:')
 
-  if RunVim([], ['wq Xdidit'], '+"func <SNR>1_func"')
+  if RunVim([], ['wq! Xdidit'], '+"func <SNR>1_func"')
     assert_equal([], readfile('Xdidit'))
   endif
   delete('Xdidit')
@@ -2829,6 +2829,27 @@ def Test_unset_any_variable()
     assert_equal(0, var)
   END
   CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_define_func_at_command_line()
+  # run in a separate Vim instance to avoid the script context
+  let lines =<< trim END
+    func CheckAndQuit()
+      call assert_fails('call Afunc()', 'E117: Unknown function: Bfunc')
+      call writefile(['errors: ' .. string(v:errors)], 'Xdidcmd')
+    endfunc
+  END
+  writefile([''], 'Xdidcmd')
+  writefile(lines, 'XcallFunc')
+  let buf = RunVimInTerminal('-S XcallFunc', #{rows: 6})
+  # define Afunc() on the command line
+  term_sendkeys(buf, ":def Afunc()\<CR>Bfunc()\<CR>enddef\<CR>")
+  term_sendkeys(buf, ":call CheckAndQuit()\<CR>")
+  WaitForAssert({-> assert_equal(['errors: []'], readfile('Xdidcmd'))})
+
+  call StopVimInTerminal(buf)
+  delete('XcallFunc')
+  delete('Xdidcmd')
 enddef
 
 " Keep this last, it messes up highlighting.

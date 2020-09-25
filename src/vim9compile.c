@@ -277,9 +277,12 @@ script_is_vim9()
 lookup_script(char_u *name, size_t len, int vim9script)
 {
     int		    cc;
-    hashtab_T	    *ht = &SCRIPT_VARS(current_sctx.sc_sid);
+    hashtab_T	    *ht;
     dictitem_T	    *di;
 
+    if (current_sctx.sc_sid <= 0)
+	return FAIL;
+    ht = &SCRIPT_VARS(current_sctx.sc_sid);
     if (vim9script && !script_is_vim9())
 	return FAIL;
     cc = name[len];
