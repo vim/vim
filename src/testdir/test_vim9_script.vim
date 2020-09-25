@@ -2831,9 +2831,14 @@ def Test_unset_any_variable()
   CheckDefAndScriptSuccess(lines)
 enddef
 
-def Test_define_func_at_command_line()
+func Test_define_func_at_command_line()
   CheckRunVimInTerminal
 
+  " call indirectly to avoid compilation error for missing functions
+  call Run_Test_define_func_at_command_line()
+endfunc
+
+def Run_Test_define_func_at_command_line()
   # run in a separate Vim instance to avoid the script context
   let lines =<< trim END
     func CheckAndQuit()
