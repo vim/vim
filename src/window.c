@@ -2752,10 +2752,10 @@ win_free_mem(
     vim_free(frp);
     win_free(win, tp);
 
-    // When deleting the current window of another tab page select a new
-    // current window.
-    if (tp != NULL && win == tp->tp_curwin)
-	tp->tp_curwin = wp;
+    // When deleting the current window, select a new current window,
+    // even if it's the current tab page
+    if (win == (tp ? tp : curtab)->tp_curwin)
+	(tp ? tp : curtab)->tp_curwin = wp;
 
     return wp;
 }
