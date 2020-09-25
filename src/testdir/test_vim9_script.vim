@@ -2832,6 +2832,8 @@ def Test_unset_any_variable()
 enddef
 
 def Test_define_func_at_command_line()
+  CheckRunVimInTerminal
+
   # run in a separate Vim instance to avoid the script context
   let lines =<< trim END
     func CheckAndQuit()
