@@ -779,7 +779,7 @@ static funcentry_T global_functions[] =
     {"nextnonblank",	1, 1, FEARG_1,	  ret_number,	f_nextnonblank},
     {"nr2char",		1, 2, FEARG_1,	  ret_string,	f_nr2char},
     {"or",		2, 2, FEARG_1,	  ret_number,	f_or},
-    {"pathshorten",	1, 1, FEARG_1,	  ret_string,	f_pathshorten},
+    {"pathshorten",	1, 2, FEARG_1,	  ret_string,	f_pathshorten},
     {"perleval",	1, 1, FEARG_1,	  ret_any,
 #ifdef FEAT_PERL
 	    f_perleval
