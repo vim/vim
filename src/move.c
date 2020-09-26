@@ -2144,6 +2144,10 @@ scroll_cursor_halfway(int atend)
     linenr_T	old_topline = curwin->w_topline;
 #endif
 
+#ifdef FEAT_PROP_POPUP
+    // if the width changed this needs to be updated first
+    may_update_popup_position();
+#endif
     loff.lnum = boff.lnum = curwin->w_cursor.lnum;
 #ifdef FEAT_FOLDING
     (void)hasFolding(loff.lnum, &loff.lnum, &boff.lnum);

@@ -579,7 +579,7 @@ popup_show_curline(win_T *wp)
     if (wp->w_cursor.lnum < wp->w_topline)
 	wp->w_topline = wp->w_cursor.lnum;
     else if (wp->w_cursor.lnum >= wp->w_botline
-					  && (curwin->w_valid & VALID_BOTLINE))
+					      && (wp->w_valid & VALID_BOTLINE))
     {
 	wp->w_topline = wp->w_cursor.lnum - wp->w_height + 1;
 	if (wp->w_topline < 1)
@@ -931,16 +931,17 @@ apply_general_options(win_T *wp, dict_T *dict)
 
 /*
  * Go through the options in "dict" and apply them to popup window "wp".
- * Only used when creating a new popup window.
+ * "create" is TRUE when creating a new popup window.
  */
     static void
-apply_options(win_T *wp, dict_T *dict)
+apply_options(win_T *wp, dict_T *dict, int create)
 {
     int		nr;
 
     apply_move_options(wp, dict);
 
-    set_string_option_direct_in_win(wp, (char_u *)"signcolumn", -1,
+    if (create)
+	set_string_option_direct_in_win(wp, (char_u *)"signcolumn", -1,
 					(char_u *)"no", OPT_FREE|OPT_LOCAL, 0);
 
     apply_general_options(wp, dict);
@@ -949,16 +950,17 @@ apply_options(win_T *wp, dict_T *dict)
     if (nr > 0)
 	wp->w_popup_flags |= POPF_HIDDEN;
 
-    // when "firstline" and "cursorline" are both set move the cursor to the
-    // "firstline".
+    // when "firstline" and "cursorline" are both set and the cursor would be
+    // above or below the displayed lines, move the cursor to "firstline".
     if (wp->w_firstline > 0 && (wp->w_popup_flags & POPF_CURSORLINE))
     {
 	if (wp->w_firstline > wp->w_buffer->b_ml.ml_line_count)
 	    wp->w_cursor.lnum = wp->w_buffer->b_ml.ml_line_count;
-	else
+	else if (wp->w_cursor.lnum < wp->w_firstline
+		|| wp->w_cursor.lnum >= wp->w_firstline + wp->w_height)
 	    wp->w_cursor.lnum = wp->w_firstline;
-	wp->w_topline = wp->w_cursor.lnum;
-	curwin->w_valid &= ~VALID_BOTLINE;
+	wp->w_topline = wp->w_firstline;
+	wp->w_valid &= ~VALID_BOTLINE;
     }
 
     popup_mask_refresh = TRUE;
@@ -2106,7 +2108,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 
     if (d != NULL)
 	// Deal with options.
-	apply_options(wp, d);
+	apply_options(wp, d, TRUE);
 
 #ifdef FEAT_TIMERS
     if (type == TYPE_NOTIFICATION && wp->w_popup_timer == NULL)
@@ -2762,13 +2764,10 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     dict = argvars[1].vval.v_dict;
     old_firstline = wp->w_firstline;
 
-    apply_move_options(wp, dict);
-    apply_general_options(wp, dict);
+    apply_options(wp, dict, FALSE);
 
     if (old_firstline != wp->w_firstline)
 	redraw_win_later(wp, NOT_VALID);
-    popup_mask_refresh = TRUE;
-    popup_highlight_curline(wp);
     popup_adjust_position(wp);
 }
 
@@ -3467,13 +3466,14 @@ popup_need_position_adjust(win_T *wp)
 {
     if (wp->w_popup_last_changedtick != CHANGEDTICK(wp->w_buffer))
 	return TRUE;
-    if (win_valid(wp->w_popup_prop_win))
-	return wp->w_popup_prop_changedtick
-				!= CHANGEDTICK(wp->w_popup_prop_win->w_buffer)
-		|| wp->w_popup_prop_topline != wp->w_popup_prop_win->w_topline
-		|| ((wp->w_popup_flags & POPF_CURSORLINE)
-			&& wp->w_cursor.lnum != wp->w_popup_last_curline);
-    return FALSE;
+    if (win_valid(wp->w_popup_prop_win)
+	    && (wp->w_popup_prop_changedtick
+				 != CHANGEDTICK(wp->w_popup_prop_win->w_buffer)
+	       || wp->w_popup_prop_topline != wp->w_popup_prop_win->w_topline))
+	return TRUE;
+
+    // May need to adjust the width if the cursor moved.
+    return wp->w_cursor.lnum != wp->w_popup_last_curline;
 }
 
 /*
@@ -3644,6 +3644,17 @@ may_update_popup_mask(int type)
 
 	vim_free(plines_cache);
     }
+}
+
+/*
+ * If the current window is a popup and something relevant changed, recompute
+ * the position and size.
+ */
+    void
+may_update_popup_position(void)
+{
+    if (popup_is_popup(curwin) && popup_need_position_adjust(curwin))
+	popup_adjust_position(curwin);
 }
 
 /*
