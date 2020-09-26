@@ -2436,6 +2436,9 @@ f_expand(typval_T *argvars, typval_T *rettv)
     expand_T	xpc;
     int		error = FALSE;
     char_u	*result;
+    char_u	*p_csl_save = p_csl;
+
+    p_csl = (char_u*) "";
 
     rettv->v_type = VAR_STRING;
     if (argvars[1].v_type != VAR_UNKNOWN
@@ -2488,6 +2491,7 @@ f_expand(typval_T *argvars, typval_T *rettv)
 	else
 	    rettv->vval.v_string = NULL;
     }
+    p_csl = p_csl_save;
 }
 
 /*
