@@ -363,12 +363,12 @@ endfunc
 " Test for insert path completion with completeslash option
 func Test_ins_completeslash()
   CheckMSWindows
-  
+
   call mkdir('Xdir')
   let orig_shellslash = &shellslash
   set cpt&
   new
-  
+
   set noshellslash
 
   set completeslash=
@@ -652,6 +652,19 @@ func Test_complete_cmdline()
   exe "normal oabcxyz(\<C-X>\<C-V>"
   call assert_equal('abcxyz(', getline(3))
   close!
+endfunc
+
+func Test_issue_7021()
+  CheckMSWindows
+
+  let orig_shellslash = &shellslash
+  set noshellslash
+
+  set completeslash=slash
+  call assert_false(expand('~') =~ '/')
+
+  let &shellslash = orig_shellslash
+  set completeslash=
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
