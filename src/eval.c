@@ -1213,7 +1213,7 @@ set_var_lval(
     char_u	*endp,
     typval_T	*rettv,
     int		copy,
-    int		flags,    // LET_IS_CONST, LET_FORCEIT, LET_NO_COMMAND
+    int		flags,    // ASSIGN_CONST, ASSIGN_NO_DECL
     char_u	*op)
 {
     int		cc;
@@ -1281,7 +1281,7 @@ set_var_lval(
 	{
 	    typval_T tv;
 
-	    if (flags & LET_IS_CONST)
+	    if (flags & ASSIGN_CONST)
 	    {
 		emsg(_(e_cannot_mod));
 		*endp = cc;
@@ -1319,7 +1319,7 @@ set_var_lval(
 	listitem_T *ll_li = lp->ll_li;
 	int	    ll_n1 = lp->ll_n1;
 
-	if (flags & LET_IS_CONST)
+	if (flags & ASSIGN_CONST)
 	{
 	    emsg(_("E996: Cannot lock a range"));
 	    return;
@@ -1378,7 +1378,7 @@ set_var_lval(
 	/*
 	 * Assign to a List or Dictionary item.
 	 */
-	if (flags & LET_IS_CONST)
+	if (flags & ASSIGN_CONST)
 	{
 	    emsg(_("E996: Cannot lock a list or dict"));
 	    return;
@@ -1688,7 +1688,7 @@ next_for_item(void *fi_void, char_u *arg)
 {
     forinfo_T	*fi = (forinfo_T *)fi_void;
     int		result;
-    int		flag = in_vim9script() ?  LET_NO_COMMAND : 0;
+    int		flag = in_vim9script() ?  ASSIGN_NO_DECL : 0;
     listitem_T	*item;
 
     if (fi->fi_blob != NULL)
@@ -1741,11 +1741,12 @@ set_context_for_expression(
     char_u	*arg,
     cmdidx_T	cmdidx)
 {
-    int		got_eq = FALSE;
+    int		has_expr = cmdidx != CMD_let && cmdidx != CMD_var;
     int		c;
     char_u	*p;
 
-    if (cmdidx == CMD_let || cmdidx == CMD_const)
+    if (cmdidx == CMD_let || cmdidx == CMD_var
+				 || cmdidx == CMD_const || cmdidx == CMD_final)
     {
 	xp->xp_context = EXPAND_USER_VARS;
 	if (vim_strpbrk(arg, (char_u *)"\"'+-*/%.=!?~|&$([<>,#") == NULL)
@@ -1774,8 +1775,7 @@ set_context_for_expression(
 	    if (c == '&')
 	    {
 		++xp->xp_pattern;
-		xp->xp_context = cmdidx != CMD_let || got_eq
-					 ? EXPAND_EXPRESSION : EXPAND_NOTHING;
+		xp->xp_context = has_expr ? EXPAND_EXPRESSION : EXPAND_NOTHING;
 	    }
 	    else if (c != ' ')
 	    {
@@ -1792,7 +1792,7 @@ set_context_for_expression(
 	}
 	else if (c == '=')
 	{
-	    got_eq = TRUE;
+	    has_expr = TRUE;
 	    xp->xp_context = EXPAND_EXPRESSION;
 	}
 	else if (c == '#'
@@ -1808,7 +1808,7 @@ set_context_for_expression(
 	    // Function name can start with "<SNR>" and contain '#'.
 	    break;
 	}
-	else if (cmdidx != CMD_let || got_eq)
+	else if (has_expr)
 	{
 	    if (c == '"')	    // string
 	    {

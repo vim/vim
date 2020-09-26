@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Sep 17
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Sep 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -70,7 +70,7 @@ Comments starting with # ~
 In legacy Vim script comments start with double quote.  In Vim9 script
 comments start with #. >
 	# declarations
-	let count = 0  # number of occurrences
+	var count = 0  # number of occurrences
 
 The reason is that a double quote can also be the start of a string. In many
 places, especially halfway through an expression with a line break, it's hard
@@ -154,31 +154,32 @@ Vim9 script script-local functions are defined once when the script is sourced
 and cannot be deleted or replaced.
 
 
-Variable declarations with :let and :const ~
+Variable declarations with :var, :final and :const ~
 							*vim9-declaration*
-Local variables need to be declared with `:let`.  Local constants need to be
-declared with `:const`.  We refer to both as "variables".
+Local variables need to be declared with `:var`.  Local constants need to be
+declared with `:final` or `:const`.  We refer to both as "variables" in this
+section.
 
 Variables can be local to a script, function or code block: >
 	vim9script
-	let script_var = 123
+	var script_var = 123
 	def SomeFunc()
-	  let func_var = script_var
+	  var func_var = script_var
 	  if cond
-	    let block_var = func_var
+	    var block_var = func_var
 	  ...
 
 The variables are only visible in the block where they are defined and nested
 blocks.  Once the block ends the variable is no longer accessible: >
 	if cond
-	   let inner = 5
+	   var inner = 5
 	else
-	   let inner = 0
+	   var inner = 0
 	endif
 	echo inner  # Error!
 
 The declaration must be done earlier: >
-	let inner: number
+	var inner: number
 	if cond
 	   inner = 5
 	else
@@ -186,10 +187,10 @@ The declaration must be done earlier: >
 	endif
 	echo inner
 
-To intentionally avoid a variable being available later, a block can be used:
->
+To intentionally hide a variable from code that follows, a block can be
+used: >
 	{
-	   let temp = 'temp'
+	   var temp = 'temp'
 	   ...
 	}
 	echo temp  # Error!
@@ -197,9 +198,9 @@ To intentionally avoid a variable being available later, a block can be used:
 Declaring a variable with a type but without an initializer will initialize to
 zero, false or empty.
 
-An existing variable cannot be assigned to with `:let`, since that implies a
-declaration.  Global, window, tab, buffer and Vim variables can only be used
-without `:let`, because they are not really declared, they can also be deleted
+In Vim9 script `:let` cannot be used.  An existing variable is assigned to
+without any command.  The same for global, window, tab, buffer and Vim
+variables, because they are not really declared.  They can also be deleted
 with `:unlet`.
 
 Variables and functions cannot shadow previously defined or imported variables
@@ -209,51 +210,50 @@ Variables may shadow Ex commands, rename the variable if needed.
 Global variables and user defined functions must be prefixed with "g:", also
 at the script level. >
 	vim9script
-	let script_local = 'text'
+	var script_local = 'text'
 	g:global = 'value'
-	let Funcref = g:ThatFunction
+	var Funcref = g:ThatFunction
 
-Since "&opt = value" is now assigning a value to option "opt", ":&" cannot be
+Since `&opt = value` is now assigning a value to option "opt", ":&" cannot be
 used to repeat a `:substitute` command.
-							*vim9-const*
-In legacy Vim script "const list = []" would make the variable "list"
-immutable and also the value.  Thus you cannot add items to the list.  This
-differs from what many languages do. Vim9 script does it like TypeScript: only
-"list" is immutable, the value can be changed.
 
-One can use `:const!` to make both the variable and the value immutable.  Use
+
+Constants ~
+						*vim9-const* *vim9-final*
+How constants work varies between languages.  Some consider a variable that
+can't be assigned another value a constant.  JavaScript is an example.  Others
+also make the value immutable, thus when a constant uses a list, the list
+cannot be changed.  In Vim9 we can use both.
+
+`:const` is used for making both the variable and the value a constant.  Use
 this for composite structures that you want to make sure will not be modified.
+Example: >
+	const myList = [1, 2]
+	myList = [3, 4]		# Error!
+	myList[0] = 9		# Error!
+	muList->add(3)		# Error!
 
-How this works: >
-	vim9script
-	const list = [1, 2]
-	list = [3, 4]	     # Error!
-	list[0] = 2          # OK
+`:final` is used for making only the variable a constant, the value can be
+changed.  This is well known from Java.  Example: >
+	final myList = [1, 2]
+	myList = [3, 4]		# Error!
+	myList[0] = 9		# OK
+	muList->add(3)		# OK
 
-	const! LIST = [1, 2]
-	LIST = [3, 4]	     # Error!
-	LIST[0] = 2          # Error!
 It is common to write constants as ALL_CAPS, but you don't have to.
 
 The constant only applies to the value itself, not what it refers to. >
-	cont females = ["Mary"]
-	const! NAMES = [["John", "Peter"], females]
+	final females = ["Mary"]
+	const NAMES = [["John", "Peter"], females]
 	NAMES[0] = ["Jack"]     # Error!
-	NAMES[0][0] = ["Jack"]  # Error!
+	NAMES[0][0] = "Jack"    # Error!
 	NAMES[1] = ["Emma"]     # Error!
 	Names[1][0] = "Emma"    # OK, now females[0] == "Emma"
 
-Rationale: TypeScript has no way to make the value immutable.  One can use
-immutable types, but that quickly gets complicated for nested values.  And
-with a type cast the value can be made mutable again, which means there is no
-guarantee the value won't change.  Vim supports immutable values, in legacy
-script this was done with `:lockvar`.  But that is an extra statement and also
-applies to nested values.  Therefore the solution to use `:const!`.
-
-							*E1092*
+<							*E1092*
 Declaring more than one variable at a time, using the unpack notation, is
 currently not supported: >
-	let [v1, v2] = GetValues()  # Error!
+	var [v1, v2] = GetValues()  # Error!
 That is because the type needs to be inferred from the list item type, which
 isn't that easy.
 
@@ -296,7 +296,7 @@ A user defined function can be used as a function reference in an expression
 without `function()`. The argument types and return type will then be checked.
 The function must already have been defined. >
 
-	let Funcref = MyFunction
+	var Funcref = MyFunction
 
 When using `function()` the resulting type is "func", a function with any
 number of arguments and any return type.  The function can be defined later.
@@ -307,53 +307,53 @@ Automatic line continuation ~
 In many cases it is obvious that an expression continues on the next line.  In
 those cases there is no need to prefix the line with a backslash
 |line-continuation|.  For example, when a list spans multiple lines: >
-	let mylist = [
+	var mylist = [
 		'one',
 		'two',
 		]
 And when a dict spans multiple lines: >
-	let mydict = #{
+	var mydict = #{
 		one: 1,
 		two: 2,
 		}
 Function call: >
-	let result = Func(
+	var result = Func(
 			arg1,
 			arg2
 			)
 
 For binary operators in expressions not in [], {} or () a line break is
 possible just before or after the operator.  For example: >
-	let text = lead
+	var text = lead
 		   .. middle
 		   .. end
-	let total = start +
+	var total = start +
 	            end -
 		    correction
-	let result = positive
+	var result = positive
 			? PosFunc(arg)
 			: NegFunc(arg)
 
 For a method call using "->" and a member using a dot, a line break is allowed
 before it: >
-	let result = GetBuilder()
+	var result = GetBuilder()
 			->BuilderSetWidth(333)
 			->BuilderSetHeight(777)
 			->BuilderBuild()
-	let result = MyDict
+	var result = MyDict
 			.member
 
 <							*E1050*
 To make it possible for the operator at the start of the line to be
 recognized, it is required to put a colon before a range.  This will add
 "start" and print: >
-	let result = start
+	var result = start
 	+ print
 Like this: >
-	let result = start + print
+	var result = start + print
 
 This will assign "start" and print a line: >
-	let result = start
+	var result = start
 	:+ print
 
 It is also possible to split a function header over multiple lines, in between
@@ -411,15 +411,15 @@ The 'ignorecase' option is not used for comparators that use strings.
 White space ~
 
 Vim9 script enforces proper use of white space.  This is no longer allowed: >
-	let var=234	# Error!
-	let var= 234	# Error!
-	let var =234	# Error!
+	var name=234	# Error!
+	var name= 234	# Error!
+	var name =234	# Error!
 There must be white space before and after the "=": >
-	let var = 234	# OK
+	var name = 234	# OK
 White space must also be put before the # that starts a comment after a
 command: >
-	let var = 234# Error!
-	let var = 234 # OK
+	var name = 234# Error!
+	var name = 234 # OK
 
 White space is required around most operators.
 
@@ -440,7 +440,7 @@ Conditions and expressions ~
 
 Conditions and expressions are mostly working like they do in JavaScript.  A
 difference is made where JavaScript does not work like most people expect.
-Specifically, an empty list is falsey.
+Specifically, an empty list is falsy.
 
 Any type of variable can be used as a condition, there is no error, not even
 for using a list or job.  This is very much like JavaScript, but there are a
@@ -582,9 +582,10 @@ THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 			It is possible to nest `:def` inside another `:def` or
 			`:function` up to about 50 levels deep.
 
-			[!] is used as with `:function`.  Note that in Vim9
-			script script-local functions cannot be deleted or
-			redefined later in the same script.
+			[!] is used as with `:function`.  Note that
+			script-local functions cannot be deleted or redefined
+			later in Vim9 script.  They can only be removed by
+			reloading the same script.
 
 							*:enddef*
 :enddef			End of a function defined with `:def`. It should be on
@@ -612,14 +613,14 @@ Limitations ~
 
 Local variables will not be visible to string evaluation.  For example: >
 	def EvalString(): list<string>
-	  let list = ['aa', 'bb', 'cc', 'dd']
+	  var list = ['aa', 'bb', 'cc', 'dd']
 	  return range(1, 2)->map('list[v:val]')
 	enddef
 
 The map argument is a string expression, which is evaluated without the
 function scope.  Instead, use a lambda: >
 	def EvalString(): list<string>
-	  let list = ['aa', 'bb', 'cc', 'dd']
+	  var list = ['aa', 'bb', 'cc', 'dd']
 	  return range(1, 2)->map({ _, v -> list[v] })
 	enddef
 
@@ -690,23 +691,23 @@ builtin types added later, similarly to user functions.
 
 And classes and interfaces can be used as types: >
 	:class MyClass
-	:let mine: MyClass
+	:var mine: MyClass
 
 	:interface MyInterface
-	:let mine: MyInterface
+	:var mine: MyInterface
 
 	:class MyTemplate<Targ>
-	:let mine: MyTemplate<number>
-	:let mine: MyTemplate<string>
+	:var mine: MyTemplate<number>
+	:var mine: MyTemplate<string>
 
 	:class MyInterface<Targ>
-	:let mine: MyInterface<number>
-	:let mine: MyInterface<string>
+	:var mine: MyInterface<number>
+	:var mine: MyInterface<string>
 {not implemented yet}
 
 
-Variable types and type casting				*variable-types*
-
+Variable types and type casting	~
+							*variable-types*
 Variables declared in Vim9 script or in a `:def` function have a type, either
 specified explicitly or inferred from the initialization.
 
@@ -716,10 +717,10 @@ compiled code the "any" type is assumed.
 
 This can be a problem when the "any" type is undesired and the actual type is
 expected to always be the same.  For example, when declaring a list: >
-	let l: list<number> = [1, g:two]
+	var l: list<number> = [1, g:two]
 This will give an error, because "g:two" has type "any".  To avoid this, use a
 type cast: >
-	let l: list<number> = [1, <number>g:two]
+	var l: list<number> = [1, <number>g:two]
 <							*type-casting*
 The compiled code will then check that "g:two" is a number at runtime and give
 an error if it isn't.  This is called type casting.
@@ -734,12 +735,12 @@ it to a string, use the |string()| function.  Or use |str2nr()| to convert a
 string to a number.
 
 
-Type inference						*type-inference*
-
+Type inference ~
+							*type-inference*
 In general: Whenever the type is clear it can be omitted.  For example, when
 declaring a variable and giving it a value: >
-	let var = 0		# infers number type
-	let var = 'hello'	# infers string type
+	var name = 0		# infers number type
+	var name = 'hello'	# infers string type
 
 The type of a list and dictionary comes from the common type of the values.
 If the values all have the same type, that type is used for the list or
@@ -749,8 +750,8 @@ dictionary.  If there is a mix of types, the "any" type is used. >
 	[1, 'x', 3]	list<any>
 
 
-Stricter type checking					*type-checking*
-
+Stricter type checking ~
+							*type-checking*
 In legacy Vim script, where a number was expected, a string would be
 automatically converted to a number.  This was convenient for an actual number
 such as "123", but leads to unexpected problems (but no error message) if the
@@ -766,7 +767,7 @@ an error, thus breaking backwards compatibility.  For example:
 
 ==============================================================================
 
-5.  Namespace, Import and Export
+5. Namespace, Import and Export
 					*vim9script* *vim9-export* *vim9-import*
 
 THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
@@ -786,7 +787,7 @@ appear as the first statement in the file.  It tells Vim to interpret the
 script in its own namespace, instead of the global namespace.  If a file
 starts with: >
 	vim9script
-	let myvar = 'yes'
+	var myvar = 'yes'
 Then "myvar" will only exist in this file.  While without `vim9script` it would
 be available as `g:myvar` from any other script and function.
 
@@ -809,7 +810,9 @@ Export ~
 							*:export* *:exp*
 Exporting an item can be written as: >
 	export const EXPORTED_CONST = 1234
-	export let someValue = ...
+	export var someValue = ...
+	export final someValue = ...
+	export const someValue = ...
 	export def MyFunc() ...
 	export class MyClass ...
 
@@ -880,7 +883,7 @@ actually needed.  A recommended mechanism:
 	vim9script
         import FilterFunc from "../import/someother.vim"
 	def searchfor#Stuff(arg: string)
-	  let filtered = FilterFunc(arg)
+	  var filtered = FilterFunc(arg)
 	  ...
 <   This goes in .../autoload/searchfor.vim.  "searchfor" in the file name
    must be exactly the same as the prefix for the function name, that is how
@@ -889,7 +892,7 @@ actually needed.  A recommended mechanism:
 3. Other functionality, possibly shared between plugins, contains the exported
    items and any private items. >
 	vim9script
-	let localVar = 'local'
+	var localVar = 'local'
 	export def FilterFunc(arg: string): string
 	   ...
 <   This goes in .../import/someother.vim.
@@ -909,7 +912,7 @@ namespace will be used for the imported item, even when "s:" is not specified.
 6. Future work: classes					*vim9-classes*
 
 Above "class" was mentioned a few times, but it has not been implemented yet.
-Most of Vim9 script can be created without this funcionality, and since
+Most of Vim9 script can be created without this functionality, and since
 implementing classes is going to be a lot of work, it is left for the future.
 For now we'll just make sure classes can be added later.
 
@@ -941,7 +944,7 @@ invoke callbacks and handle timeouts and errors.
 
 The :def command ~
 
-Plugin writers have asked for a much faster Vim script.  Investigations have
+Plugin writers have asked for much faster Vim script.  Investigations have
 shown that keeping the existing semantics of function calls make this close to
 impossible, because of the overhead involved with calling a function, setting
 up the local function scope and executing lines.  There are many details that
@@ -952,7 +955,7 @@ much overhead that cannot be avoided.
 Therefore the `:def` method to define a new-style function had to be added,
 which allows for a function with different semantics.  Most things still work
 as before, but some parts do not.  A new way to define a function was
-considered the best way to separate the old-style code from Vim9 script code.
+considered the best way to separate the legacy style code from Vim9 style code.
 
 Using "def" to define a function comes from Python. Other languages use
 "function" which clashes with legacy Vim script.
@@ -968,12 +971,12 @@ instruction, at execution time the instruction would have to inspect the type
 of the arguments and decide what kind of addition to do.  And when the
 type is dictionary throw an error.  If the types are known to be numbers then
 an "add number" instruction can be used, which is faster.  The error can be
-given at compile time, no error handling is needed at runtime, adding two
-numbers cannot fail.
+given at compile time, no error handling is needed at runtime, since adding
+two numbers cannot fail.
 
-The syntax for types is similar to Java, since it is easy to understand and
-widely used.  The type names are what were used in Vim before, with some
-additions such as "void" and "bool".
+The syntax for types, using <type> for compound types, is similar to Java.  It
+is easy to understand and widely used.  The type names are what were used in
+Vim before, with some additions such as "void" and "bool".
 
 
 Removing clutter and weirdness ~
@@ -981,10 +984,10 @@ Removing clutter and weirdness ~
 Once decided that `:def` functions have different syntax than legacy functions,
 we are free to add improvements to make the code more familiar for users who
 know popular programming languages.  In other words: remove weird things that
-only Vim uses.
+only Vim does.
 
 We can also remove clutter, mainly things that were done to make Vim script
-backwards compatible with good old Vi commands.
+backwards compatible with the good old Vi commands.
 
 Examples:
 - Drop `:call` for calling a function and `:eval` for manipulating data.
@@ -993,44 +996,26 @@ Examples:
 
 However, this does require that some things need to change:
 - Comments start with # instead of ", to avoid confusing them with strings.
+  This is good anyway, it is known from several popular languages.
 - Ex command ranges need to be prefixed with a colon, to avoid confusion with
   expressions (single quote can be a string or a mark, "/" can be divide or a
   search command, etc.).
 
 Goal is to limit the differences.  A good criteria is that when the old syntax
-is used you are very likely to get an error message.
+is accidentally used you are very likely to get an error message.
 
 
-TypeScript syntax and semantics ~
+Syntax and semantics from popular languages ~
 
 Script writers have complained that the Vim script syntax is unexpectedly
 different from what they are used to.  To reduce this complaint popular
 languages are used as an example.  At the same time, we do not want to abandon
 the well-known parts of legacy Vim script.
 
-Since Vim already uses `:let` and `:const` and optional type checking is
-desirable, the JavaScript/TypeScript syntax fits best for variable
-declarations: >
-	const greeting = 'hello'  # string type is inferred
-	let name: string
-	...
-	name = 'John'
-
-Expression evaluation was already close to what JavaScript and other languages
-are doing.  Some details are unexpected and can be fixed.  For example how the
-|| and && operators work.  Legacy Vim script: >
-	let value = 44
-	...
-	let result = value || 0  # result == 1
-
-Vim9 script works like JavaScript/TypeScript, keep the value: >
-	let value = 44
-	...
-	let result = value || 0  # result == 44
-
-Another reason why TypeScript can be used as an example for Vim9 script is the
+For many things TypeScript is followed.  It's a recent language that is
+gaining popularity and has similarities with Vim script.  It also has a
 mix of static typing (a variable always has a known value type) and dynamic
-typing (a variable can have different types, this hanges at runtime).  Since
+typing (a variable can have different types, this changes at runtime).  Since
 legacy Vim script is dynamically typed and a lot of existing functionality
 (esp. builtin functions) depends on that, while static typing allows for much
 faster execution, we need to have this mix in Vim9 script.
@@ -1054,13 +1039,87 @@ Specific items from TypeScript we avoid:
 - TypeScript can use an expression like "99 || 'yes'" in a condition, but
   cannot assign the value to a boolean.  That is inconsistent and can be
   annoying.  Vim recognizes an expression with && or || and allows using the
-  result as a bool.
+  result as a bool.  TODO: to be reconsidered
 - TypeScript considers an empty string as Falsy, but an empty list or dict as
   Truthy.  That is inconsistent.  In Vim an empty list and dict are also
   Falsy.
 - TypeScript has various "Readonly" types, which have limited usefulness,
   since a type cast can remove the immutable nature.  Vim locks the value,
   which is more flexible, but is only checked at runtime.
+
+
+Declarations ~
+
+Legacy Vim script uses `:let` for every assignment, while in Vim9 declarations
+are used.  That is different, thus it's good to use a different command:
+`:var`.  This is used in many languages.  The semantics might be slightly
+different, but it's easily recognized as a declaration.
+
+Using `:const`  for constants is common, but the semantics vary.  Some
+languages only make the variable immutable, others also make the value
+immutable.  Since "final" is well known from Java for only making the variable
+immutable we decided to use that.  And then `:const` can be used for making
+both immutable.  This was also used in legacy Vim script and the meaning is
+almost the same.
+
+What we end up with is very similar to Dart: >
+	:var name	# mutable variable and value
+	:final name	# immutable variable, mutable value
+	:const name	# immutable variable and value
+
+Since legacy and Vim9 script will be mixed and global variables will be
+shared, optional type checking is desirable.  Also, type inference will avoid
+the need for specifying the type in many cases.  The TypeScript syntax fits
+best for adding types to declarations: >
+	var name: string	  # string type is specified
+	...
+	name = 'John'
+	const greeting = 'hello'  # string type is inferred
+
+This is how we put types in a declaration: >
+	var mylist: list<string>
+	final mylist: list<string> = ['foo']
+	def Func(arg1: number, arg2: string): bool
+
+Two alternatives were considered:
+1. Put the type before the name, like Dart: >
+	var list<string> mylist
+	final list<string> mylist = ['foo']
+	def Func(number arg1, string arg2) bool
+2. Put the type after the variable name, but do not use a colon, like Go: >
+	var mylist list<string>
+	final mylist list<string> = ['foo']
+	def Func(arg1 number, arg2 string) bool
+
+The first is more familiar for anyone used to C or Java.  The second one
+doesn't really has an advantage over the first, so let's discard the second.
+
+Since we use type inference the type can be left out when it can be inferred
+from the value.  This means that after `var` we don't know if a type or a name
+follows.  That makes parsing harder, not only for Vim but also for humans.
+Also, it will not be allowed to use a variable name that could be a type name,
+using `var string string` is too confusing.
+
+The chosen syntax, using a colon to separate the name from the type, adds
+punctuation, but it actually makes it easier to recognize the parts of a
+declaration.
+
+
+Expressions ~
+
+Expression evaluation was already close to what JavaScript and other languages
+are doing.  Some details are unexpected and can be fixed.  For example how the
+|| and && operators work.  Legacy Vim script: >
+	var value = 44
+	...
+	var result = value || 0  # result == 1
+
+Vim9 script works like JavaScript/TypeScript, keep the value: >
+	var value = 44
+	...
+	var result = value || 0  # result == 44
+
+TODO: the semantics of || and && need to be reconsidered.
 
 
 Import and Export ~
@@ -1122,7 +1181,7 @@ only reported then.  In case these errors should be found early, e.g. when
 testing, the `:defcompile` command will help out.
 
 
-Why not use an embeded language? ~
+Why not use an embedded language? ~
 
 Vim supports interfaces to Perl, Python, Lua, Tcl and a few others.  But
 these interfaces have never become widely used, for various reasons.  When

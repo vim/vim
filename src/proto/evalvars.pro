@@ -14,6 +14,7 @@ int get_spellword(list_T *list, char_u **pp);
 void prepare_vimvar(int idx, typval_T *save_tv);
 void restore_vimvar(int idx, typval_T *save_tv);
 list_T *heredoc_get(exarg_T *eap, char_u *cmd, int script_get);
+void ex_var(exarg_T *eap);
 void ex_let(exarg_T *eap);
 int ex_let_vars(char_u *arg_start, typval_T *tv, int copy, int semicolon, int var_count, int flags, char_u *op);
 char_u *skip_var_list(char_u *arg, int include_type, int *var_count, int *semicolon, int silent);

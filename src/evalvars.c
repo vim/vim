@@ -669,6 +669,25 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 }
 
 /*
+ * Vim9 variable declaration:
+ * ":var name"
+ * ":var name: type"
+ * ":var name = expr"
+ * ":var name: type = expr"
+ * etc.
+ */
+    void
+ex_var(exarg_T *eap)
+{
+    if (!in_vim9script())
+    {
+	semsg(_(e_str_cannot_be_used_in_legacy_vim_script), ":var");
+	return;
+    }
+    ex_let(eap);
+}
+
+/*
  * ":let"			list all variable values
  * ":let var1 var2"		list variable values
  * ":let var = expr"		assignment command.
@@ -682,6 +701,9 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
  * ":let [var1, var2] = expr"	unpack list.
  * ":let var =<< ..."		heredoc
  * ":let var: string"		Vim9 declaration
+ *
+ * ":final var = expr"		assignment command.
+ * ":final [var1, var2] = expr"	unpack list.
  *
  * ":const"			list all variable values
  * ":const var1 var2"		list variable values
@@ -702,14 +724,22 @@ ex_let(exarg_T *eap)
     int		first = TRUE;
     int		concat;
     int		has_assign;
-    int		flags = eap->cmdidx == CMD_const ? LET_IS_CONST : 0;
+    int		flags = eap->cmdidx == CMD_const ? ASSIGN_CONST : 0;
     int		vim9script = in_vim9script();
+
+    if (eap->cmdidx == CMD_final && !vim9script)
+    {
+	    // In legacy Vim script ":final" is short for ":finally".
+	    ex_finally(eap);
+	    return;
+    }
+    if (eap->cmdidx == CMD_const && !vim9script && !eap->forceit)
+	// In legacy Vim script ":const" works like ":final".
+	eap->cmdidx = CMD_final;
 
     // detect Vim9 assignment without ":let" or ":const"
     if (eap->arg == eap->cmd)
-	flags |= LET_NO_COMMAND;
-    if (eap->forceit)
-	flags |= LET_FORCEIT;
+	flags |= ASSIGN_NO_DECL;
 
     argend = skip_var_list(arg, TRUE, &var_count, &semicolon, FALSE);
     if (argend == NULL)
@@ -787,7 +817,7 @@ ex_let(exarg_T *eap)
 	    op[1] = NUL;
 	    if (*expr != '=')
 	    {
-		if (vim9script && (flags & LET_NO_COMMAND) == 0)
+		if (vim9script && (flags & ASSIGN_NO_DECL) == 0)
 		{
 		    // +=, /=, etc. require an existing variable
 		    semsg(_(e_cannot_use_operator_on_new_variable), eap->arg);
@@ -860,7 +890,7 @@ ex_let_vars(
     int		copy,		// copy values from "tv", don't move
     int		semicolon,	// from skip_var_list()
     int		var_count,	// from skip_var_list()
-    int		flags,		// LET_IS_CONST, LET_FORCEIT, LET_NO_COMMAND
+    int		flags,		// ASSIGN_CONST, ASSIGN_NO_DECL
     char_u	*op)
 {
     char_u	*arg = arg_start;
@@ -1215,7 +1245,7 @@ ex_let_one(
     char_u	*arg,		// points to variable name
     typval_T	*tv,		// value to assign to variable
     int		copy,		// copy value from "tv"
-    int		flags,		// LET_IS_CONST, LET_FORCEIT, LET_NO_COMMAND
+    int		flags,		// ASSIGN_CONST, ASSIGN_NO_DECL
     char_u	*endchars,	// valid chars after variable name  or NULL
     char_u	*op)		// "+", "-", "."  or NULL
 {
@@ -1227,7 +1257,7 @@ ex_let_one(
     int		opt_flags;
     char_u	*tofree = NULL;
 
-    if (in_vim9script() && (flags & LET_NO_COMMAND) == 0
+    if (in_vim9script() && (flags & ASSIGN_NO_DECL) == 0
 				  && vim_strchr((char_u *)"$@&", *arg) != NULL)
     {
 	vim9_declare_error(arg);
@@ -1237,7 +1267,7 @@ ex_let_one(
     // ":let $VAR = expr": Set environment variable.
     if (*arg == '$')
     {
-	if (flags & LET_IS_CONST)
+	if (flags & ASSIGN_CONST)
 	{
 	    emsg(_("E996: Cannot lock an environment variable"));
 	    return NULL;
@@ -1289,7 +1319,7 @@ ex_let_one(
     // ":let &g:option = expr": Set global option value.
     else if (*arg == '&')
     {
-	if (flags & LET_IS_CONST)
+	if (flags & ASSIGN_CONST)
 	{
 	    emsg(_(e_const_option));
 	    return NULL;
@@ -1373,7 +1403,7 @@ ex_let_one(
     // ":let @r = expr": Set register contents.
     else if (*arg == '@')
     {
-	if (flags & LET_IS_CONST)
+	if (flags & ASSIGN_CONST)
 	{
 	    emsg(_("E996: Cannot lock a register"));
 	    return NULL;
@@ -2926,7 +2956,7 @@ set_var(
     typval_T	*tv,
     int		copy)	    // make copy of value in "tv"
 {
-    set_var_const(name, NULL, tv, copy, LET_NO_COMMAND);
+    set_var_const(name, NULL, tv, copy, ASSIGN_NO_DECL);
 }
 
 /*
@@ -2940,7 +2970,7 @@ set_var_const(
     type_T	*type,
     typval_T	*tv_arg,
     int		copy,	    // make copy of value in "tv"
-    int		flags)	    // LET_IS_CONST, LET_FORCEIT, LET_NO_COMMAND
+    int		flags)	    // ASSIGN_CONST, ASSIGN_NO_DECL
 {
     typval_T	*tv = tv_arg;
     typval_T	bool_tv;
@@ -2960,7 +2990,7 @@ set_var_const(
 
     if (vim9script
 	    && !is_script_local
-	    && (flags & LET_NO_COMMAND) == 0
+	    && (flags & ASSIGN_NO_DECL) == 0
 	    && name[1] == ':')
     {
 	vim9_declare_error(name);
@@ -2990,7 +3020,7 @@ set_var_const(
     {
 	if ((di->di_flags & DI_FLAGS_RELOAD) == 0)
 	{
-	    if (flags & LET_IS_CONST)
+	    if (flags & ASSIGN_CONST)
 	    {
 		emsg(_(e_cannot_mod));
 		goto failed;
@@ -2998,7 +3028,7 @@ set_var_const(
 
 	    if (is_script_local && vim9script)
 	    {
-		if ((flags & LET_NO_COMMAND) == 0)
+		if ((flags & ASSIGN_NO_DECL) == 0)
 		{
 		    semsg(_(e_redefining_script_item_str), name);
 		    goto failed;
@@ -3094,7 +3124,7 @@ set_var_const(
 	    goto failed;
 	}
 	di->di_flags = DI_FLAGS_ALLOC;
-	if (flags & LET_IS_CONST)
+	if (flags & ASSIGN_CONST)
 	    di->di_flags |= DI_FLAGS_LOCK;
 
 	if (is_script_local && vim9script)
@@ -3113,7 +3143,7 @@ set_var_const(
 		    sv->sv_type = typval2type(tv, &si->sn_type_list);
 		else
 		    sv->sv_type = type;
-		sv->sv_const = (flags & LET_IS_CONST);
+		sv->sv_const = (flags & ASSIGN_CONST);
 		sv->sv_export = is_export;
 		++si->sn_var_vals.ga_len;
 
@@ -3132,8 +3162,8 @@ set_var_const(
 	init_tv(tv);
     }
 
-    // ":const var = val" locks the value; in Vim9 script only with ":const!"
-    if ((flags & LET_IS_CONST) && (!vim9script || (flags & LET_FORCEIT)))
+    // ":const var = val" locks the value
+    if (flags & ASSIGN_CONST)
 	// Like :lockvar! name: lock the value and what it contains, but only
 	// if the reference count is up to one.  That locks only literal
 	// values.

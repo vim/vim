@@ -4562,8 +4562,12 @@ vim9_declare_error(char_u *name)
 
 /*
  * Compile declaration and assignment:
- * "let var", "let var = expr", "const var = expr" and "var = expr"
- * "arg" points to "var".
+ * "let name"
+ * "var name = expr"
+ * "final name = expr"
+ * "const name = expr"
+ * "name = expr"
+ * "arg" points to "name".
  * Return NULL for an error.
  * Return "arg" if it does not look like a variable list.
  */
@@ -4588,7 +4592,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     type_T	*member_type = &t_any;
     char_u	*name = NULL;
     char_u	*sp;
-    int		is_decl = cmdidx == CMD_let || cmdidx == CMD_const;
+    int		is_decl = cmdidx == CMD_let || cmdidx == CMD_var
+				 || cmdidx == CMD_final || cmdidx == CMD_const;
 
     // Skip over the "var" or "[var, var]" to get to any "=".
     p = skip_var_list(arg, TRUE, &var_count, &semicolon, TRUE);
@@ -4729,7 +4734,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		long	    numval;
 
 		dest = dest_option;
-		if (cmdidx == CMD_const)
+		if (cmdidx == CMD_final || cmdidx == CMD_const)
 		{
 		    emsg(_(e_const_option));
 		    goto theend;
@@ -4968,7 +4973,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 					    && var_wrong_func_name(name, TRUE))
 		goto theend;
 	    lvar = reserve_local(cctx, var_start, varlen,
-						    cmdidx == CMD_const, type);
+			     cmdidx == CMD_final || cmdidx == CMD_const, type);
 	    if (lvar == NULL)
 		goto theend;
 	    new_local = TRUE;
@@ -5118,6 +5123,11 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		else if (*p != '=' && need_type(stacktype, member_type, -1,
 							  cctx, FALSE) == FAIL)
 		    goto theend;
+	    }
+	    else if (cmdidx == CMD_final)
+	    {
+		emsg(_(e_final_requires_a_value));
+		goto theend;
 	    }
 	    else if (cmdidx == CMD_const)
 	    {
@@ -5283,9 +5293,9 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	}
 	else
 	{
-	    if (is_decl && eap->forceit && cmdidx == CMD_const
-		    && (dest == dest_script || dest == dest_local))
-		// ":const! var": lock the value, but not referenced variables
+	    if (is_decl && cmdidx == CMD_const
+				&& (dest == dest_script || dest == dest_local))
+		// ":const var": lock the value, but not referenced variables
 		generate_LOCKCONST(cctx);
 
 	    switch (dest)
@@ -6915,7 +6925,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	    // Expression or function call.
 	    if (ea.cmdidx != CMD_eval)
 	    {
-		// CMD_let cannot happen, compile_assignment() above is used
+		// CMD_var cannot happen, compile_assignment() above is used
 		iemsg("Command from find_ex_command() not handled");
 		goto erret;
 	    }
@@ -6967,6 +6977,8 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 		    break;
 
 	    case CMD_let:
+	    case CMD_var:
+	    case CMD_final:
 	    case CMD_const:
 		    line = compile_assignment(p, &ea, ea.cmdidx, &cctx);
 		    if (line == p)

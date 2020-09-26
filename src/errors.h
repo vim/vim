@@ -270,4 +270,8 @@ EXTERN char e_variable_is_locked_str[]
 	INIT(= N_("E1122: Variable is locked: %s"));
 EXTERN char e_missing_comma_before_argument_str[]
 	INIT(= N_("E1123: Missing comma before argument: %s"));
+EXTERN char e_str_cannot_be_used_in_legacy_vim_script[]
+	INIT(= N_("E1124: \"%s\" cannot be used in legacy Vim script"));
+EXTERN char e_final_requires_a_value[]
+	INIT(= N_("E1125: Final requires a value"));
 #endif
