@@ -316,7 +316,7 @@ def Test_try_catch()
     endtry
   catch /wrong/
     add(l, 'caught')
-  finally
+  fina
     add(l, 'finally')
   endtry
   assert_equal(['1', 'caught', 'finally'], l)
@@ -526,7 +526,7 @@ enddef
 def ReturnFinally(): string
   try
     return 'intry'
-  finally
+  finall
     g:in_finally = 'finally'
   endtry
   return 'end'

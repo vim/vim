@@ -3420,6 +3420,10 @@ find_ex_command(
 	    eap->cmdidx = CMD_SIZE;
     }
 
+    // ":fina" means ":finally" for backwards compatibility.
+    if (eap->cmdidx == CMD_final && p - eap->cmd == 4)
+	eap->cmdidx = CMD_finally;
+
     return p;
 }
 
