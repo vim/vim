@@ -310,9 +310,12 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
     // Check if any created closure is still in use.
     for (idx = 0; idx < closure_count; ++idx)
     {
-	partial_T *pt = ((partial_T **)gap->ga_data)[gap->ga_len
-							- closure_count + idx];
+	partial_T   *pt;
+	int	    off = gap->ga_len - closure_count + idx;
 
+	if (off < 0)
+	    continue;  // count is off or already done
+	pt = ((partial_T **)gap->ga_data)[off];
 	if (pt->pt_refcount > 1)
 	{
 	    int refcount = pt->pt_refcount;
@@ -2734,13 +2737,13 @@ done:
     ret = OK;
 
 failed:
-    // Also deal with closures when failed, they may already be in use
-    // somewhere.
-    handle_closure_in_use(&ectx, FALSE);
-
     // When failed need to unwind the call stack.
     while (ectx.ec_frame_idx != initial_frame_idx)
 	func_return(&ectx);
+
+    // Deal with any remaining closures, they may be in use somewhere.
+    if (ectx.ec_funcrefs.ga_len > 0)
+	handle_closure_in_use(&ectx, FALSE);
 
     estack_pop();
     current_sctx = save_current_sctx;

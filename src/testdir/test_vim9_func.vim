@@ -1370,6 +1370,20 @@ def Test_double_closure_fails()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_nested_closure_fails()
+  let lines =<< trim END
+    vim9script
+    def FuncA()
+      FuncB(0)
+    enddef
+    def FuncB(n: number): list<string>
+      return map([0], {_, v -> n})
+    enddef
+    FuncA()
+  END
+  CheckScriptFailure(lines, 'E1012:')
+enddef
+
 def Test_sort_return_type()
   let res: list<number>
   res = [1, 2, 3]->sort()
