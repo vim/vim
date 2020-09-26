@@ -560,8 +560,8 @@ func Test_term_gettty()
     endif
   endif
 
-  call assert_fails('call term_gettty(buf, 2)', 'E1023:')
-  call assert_fails('call term_gettty(buf, -1)', 'E1023:')
+  call assert_fails('call term_gettty(buf, 2)', 'E475:')
+  call assert_fails('call term_gettty(buf, -1)', 'E475:')
 
   call assert_equal('', term_gettty(buf + 1))
 
