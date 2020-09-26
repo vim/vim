@@ -97,6 +97,8 @@ ex_export(exarg_T *eap)
     switch (eap->cmdidx)
     {
 	case CMD_let:
+	case CMD_var:
+	case CMD_final:
 	case CMD_const:
 	case CMD_def:
 	// case CMD_class:
@@ -508,9 +510,12 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
     int		    called_emsg_before = called_emsg;
     typval_T	    init_tv;
 
-    if (eap->cmdidx == CMD_const)
+    if (eap->cmdidx == CMD_final || eap->cmdidx == CMD_const)
     {
-	emsg(_(e_const_requires_a_value));
+	if (eap->cmdidx == CMD_final)
+	    emsg(_(e_final_requires_a_value));
+	else
+	    emsg(_(e_const_requires_a_value));
 	return arg + STRLEN(arg);
     }
 

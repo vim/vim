@@ -729,7 +729,7 @@ store_var(char_u *name, typval_T *tv)
     funccal_entry_T entry;
 
     save_funccal(&entry);
-    set_var_const(name, NULL, tv, FALSE, LET_NO_COMMAND);
+    set_var_const(name, NULL, tv, FALSE, ASSIGN_NO_DECL);
     restore_funccal();
 }
 

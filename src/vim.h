@@ -2135,9 +2135,9 @@ typedef enum {
 } estack_arg_T;
 
 // Flags for assignment functions.
-#define LET_IS_CONST	1   // ":const"
-#define LET_FORCEIT	2   // ":const!" (LET_IS_CONST is also set)
-#define LET_NO_COMMAND	4   // "var = expr" without ":let" or ":const"
+#define ASSIGN_FINAL	1   // ":final"
+#define ASSIGN_CONST	2   // ":const"
+#define ASSIGN_NO_DECL	4   // "name = expr" without ":let" or ":const"
 
 #include "ex_cmds.h"	    // Ex command defines
 #include "spell.h"	    // spell checking stuff

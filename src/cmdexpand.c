@@ -1513,8 +1513,10 @@ set_one_cmd_context(
 	    break;
 #endif
 #ifdef FEAT_EVAL
+	case CMD_final:
 	case CMD_const:
 	case CMD_let:
+	case CMD_var:
 	case CMD_if:
 	case CMD_elseif:
 	case CMD_while:

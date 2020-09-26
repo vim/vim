@@ -2421,6 +2421,7 @@ do_one_cmd(
 	    case CMD_eval:
 	    case CMD_execute:
 	    case CMD_filter:
+	    case CMD_final:
 	    case CMD_help:
 	    case CMD_hide:
 	    case CMD_ijump:
@@ -2442,9 +2443,9 @@ do_one_cmd(
 	    case CMD_noswapfile:
 	    case CMD_perl:
 	    case CMD_psearch:
-	    case CMD_python:
 	    case CMD_py3:
 	    case CMD_python3:
+	    case CMD_python:
 	    case CMD_return:
 	    case CMD_rightbelow:
 	    case CMD_ruby:
@@ -2460,6 +2461,7 @@ do_one_cmd(
 	    case CMD_topleft:
 	    case CMD_unlet:
 	    case CMD_unlockvar:
+	    case CMD_var:
 	    case CMD_verbose:
 	    case CMD_vertical:
 	    case CMD_wincmd:
@@ -3244,7 +3246,7 @@ find_ex_command(
 		if (skip_expr(&after) == OK
 				  && (*after == '='
 				      || (*after != NUL && after[1] == '=')))
-		    eap->cmdidx = CMD_let;
+		    eap->cmdidx = CMD_var;
 		else
 		    eap->cmdidx = CMD_eval;
 		--emsg_silent;
@@ -3268,7 +3270,7 @@ find_ex_command(
 		}
 		if (p > eap->cmd && *skipwhite(p) == '=')
 		{
-		    eap->cmdidx = CMD_let;
+		    eap->cmdidx = CMD_var;
 		    return eap->cmd;
 		}
 	    }
@@ -3287,7 +3289,7 @@ find_ex_command(
 			|| *eap->cmd == '@'
 			|| lookup(eap->cmd, p - eap->cmd, cctx) != NULL)
 		{
-		    eap->cmdidx = CMD_let;
+		    eap->cmdidx = CMD_var;
 		    return eap->cmd;
 		}
 	    }
