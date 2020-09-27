@@ -740,6 +740,22 @@ def Test_heredoc()
 
   CheckDefFailure(['var lines =<< trim END X', 'END'], 'E488:')
   CheckDefFailure(['var lines =<< trim END " comment', 'END'], 'E488:')
+
+  lines =<< trim [END]
+      def Func()
+        var&lines =<< trim END
+        x
+        x
+        x
+        x
+        x
+        x
+        x
+        x
+      enddef
+      call Func()
+  [END]
+  CheckScriptFailure(lines, 'E990:')
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
