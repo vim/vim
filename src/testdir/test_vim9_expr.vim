@@ -3,9 +3,6 @@
 source check.vim
 source vim9.vim
 
-" TODO: remove later
-let v:disallow_let = 1
-
 let g:cond = v:false
 def FuncOne(arg: number): string
   return 'yes'

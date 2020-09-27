@@ -226,8 +226,8 @@ def Test_prop_find2()
     endfor
   endfor
   cursor(1, 8)
-  let expected = {'lnum': 1, 'id': 0, 'col': 14, 'end': 1, 'type': 'misspell', 'length': 2, 'start': 1}
-  let result = prop_find(#{type: 'misspell', skipstart: true}, 'f')
+  var expected = {'lnum': 1, 'id': 0, 'col': 14, 'end': 1, 'type': 'misspell', 'length': 2, 'start': 1}
+  var result = prop_find(#{type: 'misspell', skipstart: true}, 'f')
   assert_equal(expected, result)
 
   prop_type_delete('misspell')
