@@ -58,7 +58,7 @@ def Test_assignment_bool()
 enddef
 
 def Test_syntax()
-  var var = 234
+  var name = 234
   var other: list<string> = ['asdf']
 enddef
 
@@ -528,12 +528,12 @@ def Test_assignment_vim9script()
     def Func(): list<number>
       return [1, 2]
     enddef
-    var var1: number
-    var var2: number
-    [var1, var2] =
+    var name1: number
+    var name2: number
+    [name1, name2] =
           Func()
-    assert_equal(1, var1)
-    assert_equal(2, var2)
+    assert_equal(1, name1)
+    assert_equal(2, name2)
     var ll =
           Func()
     assert_equal([1, 2], ll)
@@ -585,18 +585,18 @@ def Mess(): string
 enddef
 
 def Test_assignment_failure()
-  CheckDefFailure(['var var=234'], 'E1004:')
-  CheckDefFailure(['var var =234'], 'E1004:')
-  CheckDefFailure(['var var= 234'], 'E1004:')
+  CheckDefFailure(['var name=234'], 'E1004:')
+  CheckDefFailure(['var name =234'], 'E1004:')
+  CheckDefFailure(['var name= 234'], 'E1004:')
 
-  CheckScriptFailure(['vim9script', 'var var=234'], 'E1004:')
-  CheckScriptFailure(['vim9script', 'var var=234'], "before and after '='")
-  CheckScriptFailure(['vim9script', 'var var =234'], 'E1004:')
-  CheckScriptFailure(['vim9script', 'var var= 234'], 'E1004:')
-  CheckScriptFailure(['vim9script', 'var var = 234', 'var+=234'], 'E1004:')
-  CheckScriptFailure(['vim9script', 'var var = 234', 'var+=234'], "before and after '+='")
-  CheckScriptFailure(['vim9script', 'var var = "x"', 'var..="y"'], 'E1004:')
-  CheckScriptFailure(['vim9script', 'var var = "x"', 'var..="y"'], "before and after '..='")
+  CheckScriptFailure(['vim9script', 'var name=234'], 'E1004:')
+  CheckScriptFailure(['vim9script', 'var name=234'], "before and after '='")
+  CheckScriptFailure(['vim9script', 'var name =234'], 'E1004:')
+  CheckScriptFailure(['vim9script', 'var name= 234'], 'E1004:')
+  CheckScriptFailure(['vim9script', 'var name = 234', 'name+=234'], 'E1004:')
+  CheckScriptFailure(['vim9script', 'var name = 234', 'name+=234'], "before and after '+='")
+  CheckScriptFailure(['vim9script', 'var name = "x"', 'name..="y"'], 'E1004:')
+  CheckScriptFailure(['vim9script', 'var name = "x"', 'name..="y"'], "before and after '..='")
 
   CheckDefFailure(['var true = 1'], 'E1034:')
   CheckDefFailure(['var false = 1'], 'E1034:')
@@ -645,20 +645,20 @@ def Test_assignment_failure()
 
   CheckScriptFailure(['vim9script', 'def Func()', 'var dummy = s:notfound', 'enddef', 'defcompile'], 'E1108:')
 
-  CheckDefFailure(['var var: list<string> = [123]'], 'expected list<string> but got list<number>')
-  CheckDefFailure(['var var: list<number> = ["xx"]'], 'expected list<number> but got list<string>')
+  CheckDefFailure(['var name: list<string> = [123]'], 'expected list<string> but got list<number>')
+  CheckDefFailure(['var name: list<number> = ["xx"]'], 'expected list<number> but got list<string>')
 
-  CheckDefFailure(['var var: dict<string> = #{key: 123}'], 'expected dict<string> but got dict<number>')
-  CheckDefFailure(['var var: dict<number> = #{key: "xx"}'], 'expected dict<number> but got dict<string>')
+  CheckDefFailure(['var name: dict<string> = #{key: 123}'], 'expected dict<string> but got dict<number>')
+  CheckDefFailure(['var name: dict<number> = #{key: "xx"}'], 'expected dict<number> but got dict<string>')
 
-  CheckDefFailure(['var var = feedkeys("0")'], 'E1031:')
-  CheckDefFailure(['var var: number = feedkeys("0")'], 'expected number but got void')
+  CheckDefFailure(['var name = feedkeys("0")'], 'E1031:')
+  CheckDefFailure(['var name: number = feedkeys("0")'], 'expected number but got void')
 
-  CheckDefFailure(['var var: dict <number>'], 'E1068:')
-  CheckDefFailure(['var var: dict<number'], 'E1009:')
+  CheckDefFailure(['var name: dict <number>'], 'E1068:')
+  CheckDefFailure(['var name: dict<number'], 'E1009:')
 
   assert_fails('s/^/\=Mess()/n', 'E794:')
-  CheckDefFailure(['var var: dict<number'], 'E1009:')
+  CheckDefFailure(['var name: dict<number'], 'E1009:')
 
   CheckDefFailure(['w:foo: number = 10'],
                   'E488: Trailing characters: : number = 1')

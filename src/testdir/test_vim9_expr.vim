@@ -68,55 +68,55 @@ def Test_expr1_vimscript()
   # check line continuation
   var lines =<< trim END
       vim9script
-      var var = 1
+      var name = 1
       		? 'yes'
 		: 'no'
-      assert_equal('yes', var)
+      assert_equal('yes', name)
   END
   CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
-      var var = v:false
+      var name = v:false
       		? 'yes'
 		: 'no'
-      assert_equal('no', var)
+      assert_equal('no', name)
   END
   CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
-      var var = v:false ?
+      var name = v:false ?
       		'yes' :
 		'no'
-      assert_equal('no', var)
+      assert_equal('no', name)
   END
   CheckScriptSuccess(lines)
 
   # check white space
   lines =<< trim END
       vim9script
-      var var = v:true?1:2
+      var name = v:true?1:2
   END
   CheckScriptFailure(lines, 'E1004:', 2)
   lines =<< trim END
       vim9script
-      var var = v:true? 1 : 2
+      var name = v:true? 1 : 2
   END
   CheckScriptFailure(lines, 'E1004:', 2)
   lines =<< trim END
       vim9script
-      var var = v:true ?1 : 2
+      var name = v:true ?1 : 2
   END
   CheckScriptFailure(lines, 'E1004:', 2)
   lines =<< trim END
       vim9script
-      var var = v:true ? 1: 2
+      var name = v:true ? 1: 2
   END
   CheckScriptFailure(lines, 'E1004:', 2)
   lines =<< trim END
       vim9script
-      var var = v:true ? 1 :2
+      var name = v:true ? 1 :2
   END
   CheckScriptFailure(lines, 'E1004:', 2)
 
@@ -203,44 +203,44 @@ def Test_expr2_vimscript()
   # check line continuation
   var lines =<< trim END
       vim9script
-      var var = 0
+      var name = 0
       		|| 1
-      assert_equal(1, var)
+      assert_equal(1, name)
   END
   CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
-      var var = v:false
+      var name = v:false
       		|| v:true
       		|| v:false
-      assert_equal(v:true, var)
+      assert_equal(v:true, name)
   END
   CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
-      var var = v:false ||
+      var name = v:false ||
       		v:true ||
 		v:false
-      assert_equal(v:true, var)
+      assert_equal(v:true, name)
   END
   CheckScriptSuccess(lines)
 
   # check white space
   lines =<< trim END
       vim9script
-      var var = v:true||v:true
+      var name = v:true||v:true
   END
   CheckScriptFailure(lines, 'E1004:', 2)
   lines =<< trim END
       vim9script
-      var var = v:true ||v:true
+      var name = v:true ||v:true
   END
   CheckScriptFailure(lines, 'E1004:', 2)
   lines =<< trim END
       vim9script
-      var var = v:true|| v:true
+      var name = v:true|| v:true
   END
   CheckScriptFailure(lines, 'E1004:', 2)
 
@@ -324,44 +324,44 @@ def Test_expr3_vimscript()
   # check line continuation
   var lines =<< trim END
       vim9script
-      var var = 0
+      var name = 0
       		&& 1
-      assert_equal(0, var)
+      assert_equal(0, name)
   END
   CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
-      var var = v:true
+      var name = v:true
       		&& v:true
       		&& v:true
-      assert_equal(v:true, var)
+      assert_equal(v:true, name)
   END
   CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
-      var var = v:true &&
+      var name = v:true &&
       		v:true &&
       		v:true
-      assert_equal(v:true, var)
+      assert_equal(v:true, name)
   END
   CheckScriptSuccess(lines)
 
   # check white space
   lines =<< trim END
       vim9script
-      var var = v:true&&v:true
+      var name = v:true&&v:true
   END
   CheckScriptFailure(lines, 'E1004:', 2)
   lines =<< trim END
       vim9script
-      var var = v:true &&v:true
+      var name = v:true &&v:true
   END
   CheckScriptFailure(lines, 'E1004:', 2)
   lines =<< trim END
       vim9script
-      var var = v:true&& v:true
+      var name = v:true&& v:true
   END
   CheckScriptFailure(lines, 'E1004:', 2)
 
@@ -738,25 +738,25 @@ def Test_expr4_vim9script()
   # check line continuation
   var lines =<< trim END
       vim9script
-      var var = 0
+      var name = 0
       		< 1
-      assert_equal(true, var)
+      assert_equal(true, name)
   END
   CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
-      var var = 123
+      var name = 123
       		!= 123
-      assert_equal(false, var)
+      assert_equal(false, name)
   END
   CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
-      var var = 123 ==
+      var name = 123 ==
       			123
-      assert_equal(true, var)
+      assert_equal(true, name)
   END
   CheckScriptSuccess(lines)
 
@@ -988,27 +988,27 @@ def Test_expr5_vim9script()
   # check line continuation
   var lines =<< trim END
       vim9script
-      var var = 11
+      var name = 11
       		+ 77
 		- 22
-      assert_equal(66, var)
+      assert_equal(66, name)
   END
   CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
-      var var = 11 +
+      var name = 11 +
 		  77 -
 		  22
-      assert_equal(66, var)
+      assert_equal(66, name)
   END
   CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
-      var var = 'one'
+      var name = 'one'
       		.. 'two'
-      assert_equal('onetwo', var)
+      assert_equal('onetwo', name)
   END
   CheckScriptSuccess(lines)
 
@@ -1235,27 +1235,27 @@ def Test_expr6_vim9script()
   # check line continuation
   var lines =<< trim END
       vim9script
-      var var = 11
+      var name = 11
       		* 22
 		/ 3
-      assert_equal(80, var)
+      assert_equal(80, name)
   END
   CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
-      var var = 25
+      var name = 25
       		% 10
-      assert_equal(5, var)
+      assert_equal(5, name)
   END
   CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
-      var var = 11 *
+      var name = 11 *
       		22 /
 		3
-      assert_equal(80, var)
+      assert_equal(80, name)
   END
   CheckScriptSuccess(lines)
 
