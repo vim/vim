@@ -2168,6 +2168,21 @@ func Test_popup_scrollbar()
       endif
     endfunc
 
+    def CreatePopup(text: list<string>)
+      popup_create(text, #{
+	    \ minwidth: 30,
+	    \ maxwidth: 30,
+	    \ minheight: 4,
+	    \ maxheight: 4,
+	    \ firstline: 1,
+	    \ lastline: 4,
+	    \ wrap: true,
+	    \ scrollbar: true,
+	    \ mapping: false,
+	    \ filter: Popup_filter,
+	    \ })
+    enddef
+
     func PopupScroll()
       call popup_clear()
       let text =<< trim END
@@ -2179,18 +2194,7 @@ func Test_popup_scrollbar()
 	  long line long line long line long line long line long line
 	  long line long line long line long line long line long line
       END
-      call popup_create(text, #{
-	    \ minwidth: 30,
-	    \ maxwidth: 30,
-	    \ minheight: 4,
-	    \ maxheight: 4,
-	    \ firstline: 1,
-	    \ lastline: 4,
-	    \ wrap: v:true,
-	    \ scrollbar: v:true,
-	    \ mapping: v:false,
-	    \ filter: funcref('Popup_filter')
-	    \ })
+      call CreatePopup(text)
     endfunc
     map <silent> <F3> :call test_setmouse(5, 36)<CR>
     map <silent> <F4> :call test_setmouse(4, 42)<CR>
