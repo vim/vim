@@ -90,18 +90,18 @@ an 9999.80 &Help.&Version		:version<CR>
 an 9999.90 &Help.&About			:intro<CR>
 
 if exists(':tlmenu')
-  tln 9999.10 &Help.&Overview<Tab><F1>	<C-W>:help<CR>
-  tln 9999.20 &Help.&User\ Manual		<C-W>:help usr_toc<CR>
-  tln 9999.30 &Help.&How-To\ Links		<C-W>:help how-to<CR>
+  tln 9999.10 &Help.&Overview<Tab><F1>		<C-W>:help<CR>
+  tln 9999.20 &Help.&User\ Manual			<C-W>:help usr_toc<CR>
+  tln 9999.30 &Help.&How-To\ Links			<C-W>:help how-to<CR>
   tln <silent> 9999.40 &Help.&Find\.\.\.	<C-W>:call <SID>Helpfind()<CR>
-  tln 9999.45 &Help.-sep1-			<Nop>
-  tln 9999.50 &Help.&Credits		<C-W>:help credits<CR>
-  tln 9999.60 &Help.Co&pying		<C-W>:help copying<CR>
-  tln 9999.70 &Help.&Sponsor/Register	<C-W>:help sponsor<CR>
-  tln 9999.70 &Help.O&rphans		<C-W>:help kcc<CR>
-  tln 9999.75 &Help.-sep2-			<Nop>
-  tln 9999.80 &Help.&Version		<C-W>:version<CR>
-  tln 9999.90 &Help.&About			<C-W>:intro<CR>
+  tln 9999.45 &Help.-sep1-					<Nop>
+  tln 9999.50 &Help.&Credits				<C-W>:help credits<CR>
+  tln 9999.60 &Help.Co&pying				<C-W>:help copying<CR>
+  tln 9999.70 &Help.&Sponsor/Register		<C-W>:help sponsor<CR>
+  tln 9999.70 &Help.O&rphans				<C-W>:help kcc<CR>
+  tln 9999.75 &Help.-sep2-					<Nop>
+  tln 9999.80 &Help.&Version				<C-W>:version<CR>
+  tln 9999.90 &Help.&About					<C-W>:intro<CR>
 endif
 
 fun! s:Helpfind()
