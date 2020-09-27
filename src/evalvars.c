@@ -146,6 +146,7 @@ static struct vimvar
     {VV_NAME("echospace",	 VAR_NUMBER), VV_RO},
     {VV_NAME("argv",		 VAR_LIST), VV_RO},
     {VV_NAME("collate",		 VAR_STRING), VV_RO},
+    {VV_NAME("disallow_let",	 VAR_NUMBER), 0}, // TODO: remove
 };
 
 // shorthand
@@ -733,6 +734,12 @@ ex_let(exarg_T *eap)
 	    // In legacy Vim script ":final" is short for ":finally".
 	    ex_finally(eap);
 	    return;
+    }
+    if (get_vim_var_nr(VV_DISALLOW_LET)
+				      && eap->cmdidx == CMD_let && vim9script)
+    {
+	emsg(_(e_cannot_use_let_in_vim9_script));
+	return;
     }
     if (eap->cmdidx == CMD_const && !vim9script && !eap->forceit)
 	// In legacy Vim script ":const" works like ":final".
