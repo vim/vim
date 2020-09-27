@@ -3214,19 +3214,20 @@ def_function(exarg_T *eap, char_u *name_arg)
 		is_heredoc = TRUE;
 	    }
 
-	    // Check for ":let v =<< [trim] EOF"
-	    //       and ":let [a, b] =<< [trim] EOF"
+	    // Check for ":cmd v =<< [trim] EOF"
+	    //       and ":cmd [a, b] =<< [trim] EOF"
+	    // Where "cmd" can be "let", "var", "final" or "const".
 	    arg = skipwhite(skiptowhite(p));
 	    if (*arg == '[')
 		arg = vim_strchr(arg, ']');
 	    if (arg != NULL)
 	    {
 		arg = skipwhite(skiptowhite(arg));
-		if ( arg[0] == '=' && arg[1] == '<' && arg[2] =='<'
-			&& ((p[0] == 'l'
-				&& p[1] == 'e'
-				&& (!ASCII_ISALNUM(p[2])
-				    || (p[2] == 't' && !ASCII_ISALNUM(p[3]))))))
+		if (arg[0] == '=' && arg[1] == '<' && arg[2] =='<'
+			&& (checkforcmd(&p, "let", 2)
+			    || checkforcmd(&p, "var", 3)
+			    || checkforcmd(&p, "final", 5)
+			    || checkforcmd(&p, "const", 5)))
 		{
 		    p = skipwhite(arg + 3);
 		    if (STRNCMP(p, "trim", 4) == 0)

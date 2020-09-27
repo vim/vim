@@ -6979,6 +6979,12 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 		    break;
 
 	    case CMD_let:
+		    if (get_vim_var_nr(VV_DISALLOW_LET))
+		    {
+			emsg(_(e_cannot_use_let_in_vim9_script));
+			break;
+		    }
+		    // FALLTHROUGH
 	    case CMD_var:
 	    case CMD_final:
 	    case CMD_const:
