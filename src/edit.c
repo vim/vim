@@ -587,8 +587,11 @@ edit(
 		if (stop_insert_mode)
 		{
 		    // Insert mode ended, possibly from a callback.
+		    if (c != K_IGNORE && c != K_NOP)
+			vungetc(c);
 		    count = 0;
 		    nomove = TRUE;
+		    ins_compl_prep(ESC);
 		    goto doESCkey;
 		}
 	    } while (c == K_IGNORE || c == K_NOP);
