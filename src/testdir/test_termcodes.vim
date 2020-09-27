@@ -2123,6 +2123,20 @@ func Test_mapping_works_with_shift_alt()
   call RunTest_mapping_works_with_mods(function('GetEscCodeCSIu'), 'S-A', 4)
 endfunc
 
+func Test_mapping_works_with_alt_and_shift()
+  new
+  set timeoutlen=10
+
+  " mapping <A-?> works even though the code is A-S-?
+  for c in ['!', '$', '+', ':', '?', '^', '~']
+    call RunTest_mapping_mods('<A-' .. c .. '>', c, function('GetEscCodeCSI27'), 4)
+    call RunTest_mapping_mods('<A-' .. c .. '>', c, function('GetEscCodeCSIu'), 4)
+  endfor
+
+  bwipe!
+  set timeoutlen&
+endfunc
+
 func Test_mapping_works_with_ctrl_alt()
   call RunTest_mapping_works_with_mods(function('GetEscCodeCSI27'), 'C-A', 7)
   call RunTest_mapping_works_with_mods(function('GetEscCodeCSIu'), 'C-A', 7)

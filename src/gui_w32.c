@@ -842,8 +842,7 @@ _OnSysChar(
     ch = simplify_key(ch, &modifiers);
     // remove the SHIFT modifier for keys where it's already included, e.g.,
     // '(' and '*'
-    if (ch < 0x100 && !isalpha(ch) && isprint(ch))
-	modifiers &= ~MOD_MASK_SHIFT;
+    modifiers = may_remove_shift_modifier(modifiers, ch);
 
     // Unify modifiers somewhat.  No longer use ALT to set the 8th bit.
     ch = extract_modifiers(ch, &modifiers, FALSE, NULL);
