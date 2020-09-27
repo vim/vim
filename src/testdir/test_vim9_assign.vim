@@ -567,6 +567,16 @@ def Test_assignment_vim9script()
     assert_equal(44, t)
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      var n: number
+      def Func()
+        n = 'string'
+      enddef
+      defcompile
+  END
+  CheckScriptFailure(lines, 'E1012: Type mismatch; expected number but got string')
 enddef
 
 def Mess(): string

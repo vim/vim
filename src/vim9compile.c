@@ -4899,7 +4899,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			{
 			    scriptvar_idx = get_script_item_idx(scriptvar_sid,
 								rawname, TRUE);
-			    if (scriptvar_idx > 0)
+			    if (scriptvar_idx >= 0)
 			    {
 				scriptitem_T *si = SCRIPT_ITEM(scriptvar_sid);
 				svar_T	     *sv =
