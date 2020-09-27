@@ -1517,6 +1517,10 @@ def Test_expr7_list()
   llstring = [[], ['text']]
   llstring = [[], []]
 
+  var rangelist: list<number> = range(3)
+  g:rangelist = range(3)
+  CheckDefExecFailure(["var x: list<string> = g:rangelist"], 'E1012: Type mismatch; expected list<string> but got list<number>', 1)
+
   CheckDefFailure(["let x = 1234[3]"], 'E1107:', 1)
   CheckDefExecFailure(["let x = g:anint[3]"], 'E1062:', 1)
 
