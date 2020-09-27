@@ -4632,6 +4632,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	eap->getline = exarg_getline;
 	eap->cookie = cctx;
 	l = heredoc_get(eap, op + 3, FALSE);
+	if (l == NULL)
+	    return NULL;
 
 	if (cctx->ctx_skip != SKIP_YES)
 	{

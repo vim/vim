@@ -732,4 +732,14 @@ def Test_assign_lambda()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_heredoc()
+  var lines =<< trim END # comment
+    text
+  END
+  assert_equal(['text'], lines)
+
+  CheckDefFailure(['var lines =<< trim END X', 'END'], 'E488:')
+  CheckDefFailure(['var lines =<< trim END " comment', 'END'], 'E488:')
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

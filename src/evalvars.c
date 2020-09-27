@@ -558,6 +558,7 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
     int		text_indent_len = 0;
     char_u	*text_indent = NULL;
     char_u	dot[] = ".";
+    int		comment_char = in_vim9script() ? '#' : '"';
 
     if (eap->getline == NULL)
     {
@@ -585,11 +586,11 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
     }
 
     // The marker is the next word.
-    if (*cmd != NUL && *cmd != '"')
+    if (*cmd != NUL && *cmd != comment_char)
     {
 	marker = skipwhite(cmd);
 	p = skiptowhite(marker);
-	if (*skipwhite(p) != NUL && *skipwhite(p) != '"')
+	if (*skipwhite(p) != NUL && *skipwhite(p) != comment_char)
 	{
 	    semsg(_(e_trailing_arg), p);
 	    return NULL;
