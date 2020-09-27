@@ -3,6 +3,9 @@
 source check.vim
 source vim9.vim
 
+" TODO: remove later
+let v:disallow_let = 1
+
 let s:appendToMe = 'xxx'
 let s:addToMe = 111
 let g:existing = 'yes'
