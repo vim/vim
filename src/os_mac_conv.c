@@ -570,12 +570,20 @@ mac_lang_init(void)
 {
     if (mch_getenv((char_u *)"LANG") == NULL)
     {
+	// If LANG is unset (either because it was manually unset or a GUI
+	// version is opened from the Dock), we want to just query the system
+	// locale.
 	char	buf[20];
 	if (LocaleRefGetPartString(NULL,
 		    kLocaleLanguageMask | kLocaleLanguageVariantMask |
 		    kLocaleRegionMask | kLocaleRegionVariantMask,
 		    sizeof buf, buf) == noErr && *buf)
 	{
+	    // The API does not provide an encoding component. Explicitly add
+	    // ".UTF-8" since that's native in macOS, and it helps tools like
+	    // Python parse the locale correctly.
+	    strlcat(buf, ".UTF-8", sizeof(buf)/sizeof(char));
+
 	    vim_setenv((char_u *)"LANG", (char_u *)buf);
 #   ifdef HAVE_LOCALE_H
 	    setlocale(LC_ALL, "");

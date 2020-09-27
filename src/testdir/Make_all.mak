@@ -175,6 +175,7 @@ NEW_TESTS = \
 	test_listener \
 	test_listlbr \
 	test_listlbr_utf8 \
+	test_locale \
 	test_lua \
 	test_makeencoding \
 	test_man \
