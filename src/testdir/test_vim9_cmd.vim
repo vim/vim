@@ -4,12 +4,15 @@ source check.vim
 source vim9.vim
 source view_util.vim
 
+" TODO: remove later
+let v:disallow_let = 1
+
 def Test_edit_wildcards()
-  let filename = 'Xtest'
+  var filename = 'Xtest'
   edit `=filename`
   assert_equal('Xtest', bufname())
 
-  let filenr = 123
+  var filenr = 123
   edit Xtest`=filenr`
   assert_equal('Xtest123', bufname())
 
@@ -25,7 +28,7 @@ def Test_hardcopy_wildcards()
   CheckUnix
   CheckFeature postscript
 
-  let outfile = 'print'
+  var outfile = 'print'
   hardcopy > X`=outfile`.ps
   assert_true(filereadable('Xprint.ps'))
 
@@ -34,10 +37,10 @@ enddef
 
 def Test_syn_include_wildcards()
   writefile(['syn keyword Found found'], 'Xthemine.vim')
-  let save_rtp = &rtp
+  var save_rtp = &rtp
   &rtp = '.'
 
-  let fname = 'mine'
+  var fname = 'mine'
   syn include @Group Xthe`=fname`.vim
   assert_match('Found.* contained found', execute('syn list Found'))
 
@@ -46,7 +49,7 @@ def Test_syn_include_wildcards()
 enddef
 
 def Test_echo_linebreak()
-  let lines =<< trim END
+  var lines =<< trim END
       vim9script
       redir @a
       echo 'one'
@@ -69,7 +72,7 @@ def Test_echo_linebreak()
 enddef
 
 def Test_if_linebreak()
-  let lines =<< trim END
+  var lines =<< trim END
       vim9script
       if 1 &&
             2
@@ -98,9 +101,9 @@ def Test_if_linebreak()
 enddef
 
 def Test_while_linebreak()
-  let lines =<< trim END
+  var lines =<< trim END
       vim9script
-      let nr = 0
+      var nr = 0
       while nr <
               10 + 3
             nr = nr
@@ -112,7 +115,7 @@ def Test_while_linebreak()
 
   lines =<< trim END
       vim9script
-      let nr = 0
+      var nr = 0
       while nr
             <
               10
@@ -128,9 +131,9 @@ def Test_while_linebreak()
 enddef
 
 def Test_for_linebreak()
-  let lines =<< trim END
+  var lines =<< trim END
       vim9script
-      let nr = 0
+      var nr = 0
       for x
             in
               [1, 2, 3, 4]
@@ -142,7 +145,7 @@ def Test_for_linebreak()
 
   lines =<< trim END
       vim9script
-      let nr = 0
+      var nr = 0
       for x
             in
               [1, 2,
@@ -158,9 +161,9 @@ def Test_for_linebreak()
 enddef
 
 def Test_method_call_linebreak()
-  let lines =<< trim END
+  var lines =<< trim END
       vim9script
-      let res = []
+      var res = []
       func RetArg(
             arg
             )
@@ -175,16 +178,16 @@ def Test_method_call_linebreak()
 enddef
 
 def Test_dict_member()
-   let test: dict<list<number>> = {'data': [3, 1, 2]}
+   var test: dict<list<number>> = {'data': [3, 1, 2]}
    test.data->sort()
    assert_equal(#{data: [1, 2, 3]}, test)
    test.data
       ->reverse()
    assert_equal(#{data: [3, 2, 1]}, test)
 
-  let lines =<< trim END
+  var lines =<< trim END
       vim9script
-      let test: dict<list<number>> = {'data': [3, 1, 2]}
+      var test: dict<list<number>> = {'data': [3, 1, 2]}
       test.data->sort()
       assert_equal(#{data: [1, 2, 3]}, test)
   END
@@ -193,14 +196,14 @@ enddef
 
 def Test_bar_after_command()
   def RedrawAndEcho()
-    let x = 'did redraw'
+    var x = 'did redraw'
     redraw | echo x
   enddef
   RedrawAndEcho()
   assert_match('did redraw', Screenline(&lines))
 
   def CallAndEcho()
-    let x = 'did redraw'
+    var x = 'did redraw'
     reg_executing() | echo x
   enddef
   CallAndEcho()
@@ -232,14 +235,14 @@ def Test_bar_after_command()
 enddef
 
 def Test_filter_is_not_modifier()
-  let tags = [{'a': 1, 'b': 2}, {'x': 3, 'y': 4}]
+  var tags = [{'a': 1, 'b': 2}, {'x': 3, 'y': 4}]
   filter(tags, { _, v -> has_key(v, 'x') ? 1 : 0 })
   assert_equal([#{x: 3, y: 4}], tags)
 enddef
 
 def Test_eval_command()
-  let from = 3
-  let to = 5
+  var from = 3
+  var to = 5
   g:val = 111
   def Increment(nrs: list<number>)
     for nr in nrs
@@ -253,7 +256,7 @@ def Test_eval_command()
 enddef
 
 def Test_map_command()
-  let lines =<< trim END
+  var lines =<< trim END
       nnoremap <F3> :echo 'hit F3 #'<CR>
       assert_equal(":echo 'hit F3 #'<CR>", maparg("<F3>", "n"))
   END
@@ -264,7 +267,7 @@ enddef
 def Test_normal_command()
   new
   setline(1, 'doesnotexist')
-  let caught = 0
+  var caught = 0
   try
     exe "norm! \<C-]>"
   catch /E433/
