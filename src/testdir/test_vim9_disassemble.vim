@@ -2,9 +2,6 @@
 
 source check.vim
 
-" TODO: remove later
-let v:disallow_let = 1
-
 func NotCompiled()
   echo "not"
 endfunc

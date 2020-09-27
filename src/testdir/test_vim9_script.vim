@@ -6,9 +6,6 @@ source view_util.vim
 source vim9.vim
 source shared.vim
 
-" TODO: remove later
-let v:disallow_let = 1
-
 def Test_range_only()
   new
   setline(1, ['blah', 'Blah'])

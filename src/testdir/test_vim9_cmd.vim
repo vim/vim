@@ -4,9 +4,6 @@ source check.vim
 source vim9.vim
 source view_util.vim
 
-" TODO: remove later
-let v:disallow_let = 1
-
 def Test_edit_wildcards()
   var filename = 'Xtest'
   edit `=filename`

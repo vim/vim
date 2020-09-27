@@ -88,7 +88,7 @@ def Test_call_ufunc_count()
 enddef
 
 def MyVarargs(arg: string, ...rest: list<string>): string
-  let res = arg
+  var res = arg
   for s in rest
     res ..= ',' .. s
   endfor
@@ -160,7 +160,7 @@ func Test_call_default_args_from_func()
 endfunc
 
 def Test_nested_global_function()
-  let lines =<< trim END
+  var lines =<< trim END
       vim9script
       def Outer()
           def g:Inner(): string
@@ -209,7 +209,7 @@ def Test_nested_global_function()
 enddef
 
 def Test_global_local_function()
-  let lines =<< trim END
+  var lines =<< trim END
       vim9script
       def g:Func(): string
           return 'global'
@@ -233,13 +233,13 @@ def Test_global_local_function()
 enddef
 
 def Test_local_function_shadows_global()
-  let lines =<< trim END
+  var lines =<< trim END
       vim9script
       def g:Gfunc(): string
         return 'global'
       enddef
       def AnotherFunc(): number
-        let Gfunc = function('len')
+        var Gfunc = function('len')
         return Gfunc('testing')
       enddef
       g:Gfunc()->assert_equal('global')
@@ -272,7 +272,7 @@ def Test_call_wrong_args()
   CheckDefFailure(['bufnr(xxx)'], 'E1001:')
   CheckScriptFailure(['def Func(Ref: func(s: string))'], 'E475:')
 
-  let lines =<< trim END
+  var lines =<< trim END
     vim9script
     def Func(s: string)
       echo s
@@ -292,7 +292,7 @@ def Test_call_wrong_args()
     defcompile
   END
   writefile(lines, 'Xscript')
-  let didCatch = false
+  var didCatch = false
   try
     source Xscript
   catch
@@ -328,7 +328,7 @@ enddef
 
 " Default arg and varargs
 def MyDefVarargs(one: string, two = 'foo', ...rest: list<string>): string
-  let res = one .. ',' .. two
+  var res = one .. ',' .. two
   for s in rest
     res ..= ',' .. s
   endfor
@@ -345,7 +345,7 @@ def Test_call_def_varargs()
   CheckDefFailure(['MyDefVarargs("one", "two", 123)'],
       'E1013: Argument 3: type mismatch, expected string but got number')
 
-  let lines =<< trim END
+  var lines =<< trim END
       vim9script
       def Func(...l: list<string>)
         echo l
@@ -410,7 +410,7 @@ def Test_call_def_varargs()
 enddef
 
 def Test_call_call()
-  let l = [3, 2, 1]
+  var l = [3, 2, 1]
   call('reverse', [l])
   l->assert_equal([1, 2, 3])
 enddef
@@ -430,30 +430,30 @@ def FuncVarargs(...arg: list<string>): string
 enddef
 
 def Test_func_type_varargs()
-  let RefDefArg: func(?string)
+  var RefDefArg: func(?string)
   RefDefArg = FuncOneDefArg
   RefDefArg()
   s:value->assert_equal('text')
   RefDefArg('some')
   s:value->assert_equal('some')
 
-  let RefDef2Arg: func(?number, ?string): string
+  var RefDef2Arg: func(?number, ?string): string
   RefDef2Arg = FuncTwoDefArg
   RefDef2Arg()->assert_equal('123text')
   RefDef2Arg(99)->assert_equal('99text')
   RefDef2Arg(77, 'some')->assert_equal('77some')
 
-  CheckDefFailure(['let RefWrong: func(string?)'], 'E1010:')
-  CheckDefFailure(['let RefWrong: func(?string, string)'], 'E1007:')
+  CheckDefFailure(['var RefWrong: func(string?)'], 'E1010:')
+  CheckDefFailure(['var RefWrong: func(?string, string)'], 'E1007:')
 
-  let RefVarargs: func(...list<string>): string
+  var RefVarargs: func(...list<string>): string
   RefVarargs = FuncVarargs
   RefVarargs()->assert_equal('')
   RefVarargs('one')->assert_equal('one')
   RefVarargs('one', 'two')->assert_equal('one,two')
 
-  CheckDefFailure(['let RefWrong: func(...list<string>, string)'], 'E110:')
-  CheckDefFailure(['let RefWrong: func(...list<string>, ?string)'], 'E110:')
+  CheckDefFailure(['var RefWrong: func(...list<string>, string)'], 'E110:')
+  CheckDefFailure(['var RefWrong: func(...list<string>, ?string)'], 'E110:')
 enddef
 
 " Only varargs
@@ -470,7 +470,7 @@ def Test_call_varargs_only()
 enddef
 
 def Test_using_var_as_arg()
-  writefile(['def Func(x: number)',  'let x = 234', 'enddef', 'defcompile'], 'Xdef')
+  writefile(['def Func(x: number)',  'var x = 234', 'enddef', 'defcompile'], 'Xdef')
   assert_fails('so Xdef', 'E1006:', '', 1, 'Func')
   delete('Xdef')
 enddef
@@ -485,10 +485,10 @@ enddef
 
 def Test_assign_to_argument()
   # works for dict and list
-  let d: dict<string> = {}
+  var d: dict<string> = {}
   DictArg(d)
   d['key']->assert_equal('value')
-  let l: list<string> = []
+  var l: list<string> = []
   ListArg(l)
   l[0]->assert_equal('value')
 
@@ -518,12 +518,12 @@ def Test_call_funcref()
   assert_fails('NotAFunc()', 'E117:', '', 2, 'Test_call_funcref') # comment after call
   assert_fails('g:NotAFunc()', 'E117:', '', 3, 'Test_call_funcref')
 
-  let lines =<< trim END
+  var lines =<< trim END
     vim9script
     def RetNumber(): number
       return 123
     enddef
-    let Funcref: func: number = function('RetNumber')
+    var Funcref: func: number = function('RetNumber')
     Funcref()->assert_equal(123)
   END
   CheckScriptSuccess(lines)
@@ -536,7 +536,7 @@ def Test_call_funcref()
     def Bar(F: func: number): number
       return F()
     enddef
-    let Funcref = function('RetNumber')
+    var Funcref = function('RetNumber')
     Bar(Funcref)->assert_equal(123)
   END
   CheckScriptSuccess(lines)
@@ -546,7 +546,7 @@ def Test_call_funcref()
     def UseNumber(nr: number)
       echo nr
     enddef
-    let Funcref: func(number) = function('UseNumber')
+    var Funcref: func(number) = function('UseNumber')
     Funcref(123)
   END
   CheckScriptSuccess(lines)
@@ -556,7 +556,7 @@ def Test_call_funcref()
     def UseNumber(nr: number)
       echo nr
     enddef
-    let Funcref: func(string) = function('UseNumber')
+    var Funcref: func(string) = function('UseNumber')
   END
   CheckScriptFailure(lines, 'E1012: Type mismatch; expected func(string) but got func(number)')
 
@@ -565,7 +565,7 @@ def Test_call_funcref()
     def EchoNr(nr = 34)
       g:echo = nr
     enddef
-    let Funcref: func(?number) = function('EchoNr')
+    var Funcref: func(?number) = function('EchoNr')
     Funcref()
     g:echo->assert_equal(34)
     Funcref(123)
@@ -578,7 +578,7 @@ def Test_call_funcref()
     def EchoList(...l: list<number>)
       g:echo = l
     enddef
-    let Funcref: func(...list<number>) = function('EchoList')
+    var Funcref: func(...list<number>) = function('EchoList')
     Funcref()
     g:echo->assert_equal([])
     Funcref(1, 2, 3)
@@ -593,7 +593,7 @@ def Test_call_funcref()
       g:listarg = l
       return nr
     enddef
-    let Funcref: func(number, ?number, ...list<number>): number = function('OptAndVar')
+    var Funcref: func(number, ?number, ...list<number>): number = function('OptAndVar')
     Funcref(10)->assert_equal(10)
     g:optarg->assert_equal(12)
     g:listarg->assert_equal([])
@@ -614,21 +614,21 @@ let NotAFunc = 'text'
 
 def CombineFuncrefTypes()
   # same arguments, different return type
-  let Ref1: func(bool): string
-  let Ref2: func(bool): number
-  let Ref3: func(bool): any
+  var Ref1: func(bool): string
+  var Ref2: func(bool): number
+  var Ref3: func(bool): any
   Ref3 = g:cond ? Ref1 : Ref2
 
   # different number of arguments
-  let Refa1: func(bool): number
-  let Refa2: func(bool, number): number
-  let Refa3: func: number
+  var Refa1: func(bool): number
+  var Refa2: func(bool, number): number
+  var Refa3: func: number
   Refa3 = g:cond ? Refa1 : Refa2
 
   # different argument types
-  let Refb1: func(bool, string): number
-  let Refb2: func(string, number): number
-  let Refb3: func(any, any): number
+  var Refb1: func(bool, string): number
+  var Refb2: func(string, number): number
+  var Refb3: func(any, any): number
   Refb3 = g:cond ? Refb1 : Refb2
 enddef
 
@@ -698,31 +698,31 @@ def Test_arg_type_wrong()
 enddef
 
 def Test_vim9script_call()
-  let lines =<< trim END
+  var lines =<< trim END
     vim9script
-    let var = ''
+    var name = ''
     def MyFunc(arg: string)
-       var = arg
+       name = arg
     enddef
     MyFunc('foobar')
-    var->assert_equal('foobar')
+    name->assert_equal('foobar')
 
-    let str = 'barfoo'
+    var str = 'barfoo'
     str->MyFunc()
-    var->assert_equal('barfoo')
+    name->assert_equal('barfoo')
 
     g:value = 'value'
     g:value->MyFunc()
-    var->assert_equal('value')
+    name->assert_equal('value')
 
-    let listvar = []
+    var listvar = []
     def ListFunc(arg: list<number>)
        listvar = arg
     enddef
     [1, 2, 3]->ListFunc()
     listvar->assert_equal([1, 2, 3])
 
-    let dictvar = {}
+    var dictvar = {}
     def DictFunc(arg: dict<number>)
        dictvar = arg
     enddef
@@ -738,28 +738,28 @@ def Test_vim9script_call()
     dictvar->assert_equal(#{a: 3, b: 4})
 
     ('text')->MyFunc()
-    var->assert_equal('text')
+    name->assert_equal('text')
     ("some")->MyFunc()
-    var->assert_equal('some')
+    name->assert_equal('some')
 
     # line starting with single quote is not a mark
     # line starting with double quote can be a method call
     'asdfasdf'->MyFunc()
-    var->assert_equal('asdfasdf')
+    name->assert_equal('asdfasdf')
     "xyz"->MyFunc()
-    var->assert_equal('xyz')
+    name->assert_equal('xyz')
 
     def UseString()
       'xyork'->MyFunc()
     enddef
     UseString()
-    var->assert_equal('xyork')
+    name->assert_equal('xyork')
 
     def UseString2()
       "knife"->MyFunc()
     enddef
     UseString2()
-    var->assert_equal('knife')
+    name->assert_equal('knife')
 
     # prepending a colon makes it a mark
     new
@@ -773,7 +773,7 @@ def Test_vim9script_call()
         'continued'
         )
     assert_equal('continued',
-            var
+            name
             )
 
     call MyFunc(
@@ -783,7 +783,7 @@ def Test_vim9script_call()
         )
     assert_equal(
         'morelines',
-        var)
+        name)
   END
   writefile(lines, 'Xcall.vim')
   source Xcall.vim
@@ -791,11 +791,11 @@ def Test_vim9script_call()
 enddef
 
 def Test_vim9script_call_fail_decl()
-  let lines =<< trim END
+  var lines =<< trim END
     vim9script
-    let var = ''
+    var name = ''
     def MyFunc(arg: string)
-       let var = 123
+       var name = 123
     enddef
     defcompile
   END
@@ -803,7 +803,7 @@ def Test_vim9script_call_fail_decl()
 enddef
 
 def Test_vim9script_call_fail_type()
-  let lines =<< trim END
+  var lines =<< trim END
     vim9script
     def MyFunc(arg: string)
       echo arg
@@ -814,7 +814,7 @@ def Test_vim9script_call_fail_type()
 enddef
 
 def Test_vim9script_call_fail_const()
-  let lines =<< trim END
+  var lines =<< trim END
     vim9script
     const var = ''
     def MyFunc(arg: string)
@@ -831,7 +831,7 @@ enddef
 " recognized.
 func Test_function_python()
   CheckFeature python3
-  let py = 'python3'
+  var py = 'python3'
   execute py "<< EOF"
 def do_something():
   return 1
@@ -839,7 +839,7 @@ EOF
 endfunc
 
 def Test_delfunc()
-  let lines =<< trim END
+  var lines =<< trim END
     vim9script
     def g:GoneSoon()
       echo 'hello'
@@ -881,7 +881,7 @@ def Test_redef_failure()
 enddef
 
 def Test_vim9script_func()
-  let lines =<< trim END
+  var lines =<< trim END
     vim9script
     func Func(arg)
       echo a:arg
@@ -992,13 +992,13 @@ def FuncOneArgRetAny(arg: any): any
 enddef
 
 def Test_func_type()
-  let Ref1: func()
+  var Ref1: func()
   s:funcResult = 0
   Ref1 = FuncNoArgNoRet
   Ref1()
   s:funcResult->assert_equal(11)
 
-  let Ref2: func
+  var Ref2: func
   s:funcResult = 0
   Ref2 = FuncNoArgNoRet
   Ref2()
@@ -1021,7 +1021,7 @@ def Test_func_type()
 enddef
 
 def Test_repeat_return_type()
-  let res = 0
+  var res = 0
   for n in repeat([1], 3)
     res += n
   endfor
@@ -1036,7 +1036,7 @@ enddef
 
 def Test_argv_return_type()
   next fileone filetwo
-  let res = ''
+  var res = ''
   for name in argv()
     res ..= name
   endfor
@@ -1044,60 +1044,60 @@ def Test_argv_return_type()
 enddef
 
 def Test_func_type_part()
-  let RefVoid: func: void
+  var RefVoid: func: void
   RefVoid = FuncNoArgNoRet
   RefVoid = FuncOneArgNoRet
-  CheckDefFailure(['let RefVoid: func: void', 'RefVoid = FuncNoArgRetNumber'], 'E1012: Type mismatch; expected func(...) but got func(): number')
-  CheckDefFailure(['let RefVoid: func: void', 'RefVoid = FuncNoArgRetString'], 'E1012: Type mismatch; expected func(...) but got func(): string')
+  CheckDefFailure(['var RefVoid: func: void', 'RefVoid = FuncNoArgRetNumber'], 'E1012: Type mismatch; expected func(...) but got func(): number')
+  CheckDefFailure(['var RefVoid: func: void', 'RefVoid = FuncNoArgRetString'], 'E1012: Type mismatch; expected func(...) but got func(): string')
 
-  let RefAny: func(): any
+  var RefAny: func(): any
   RefAny = FuncNoArgRetNumber
   RefAny = FuncNoArgRetString
-  CheckDefFailure(['let RefAny: func(): any', 'RefAny = FuncNoArgNoRet'], 'E1012: Type mismatch; expected func(): any but got func()')
-  CheckDefFailure(['let RefAny: func(): any', 'RefAny = FuncOneArgNoRet'], 'E1012: Type mismatch; expected func(): any but got func(number)')
+  CheckDefFailure(['var RefAny: func(): any', 'RefAny = FuncNoArgNoRet'], 'E1012: Type mismatch; expected func(): any but got func()')
+  CheckDefFailure(['var RefAny: func(): any', 'RefAny = FuncOneArgNoRet'], 'E1012: Type mismatch; expected func(): any but got func(number)')
 
-  let RefNr: func: number
+  var RefNr: func: number
   RefNr = FuncNoArgRetNumber
   RefNr = FuncOneArgRetNumber
-  CheckDefFailure(['let RefNr: func: number', 'RefNr = FuncNoArgNoRet'], 'E1012: Type mismatch; expected func(...): number but got func()')
-  CheckDefFailure(['let RefNr: func: number', 'RefNr = FuncNoArgRetString'], 'E1012: Type mismatch; expected func(...): number but got func(): string')
+  CheckDefFailure(['var RefNr: func: number', 'RefNr = FuncNoArgNoRet'], 'E1012: Type mismatch; expected func(...): number but got func()')
+  CheckDefFailure(['var RefNr: func: number', 'RefNr = FuncNoArgRetString'], 'E1012: Type mismatch; expected func(...): number but got func(): string')
 
-  let RefStr: func: string
+  var RefStr: func: string
   RefStr = FuncNoArgRetString
   RefStr = FuncOneArgRetString
-  CheckDefFailure(['let RefStr: func: string', 'RefStr = FuncNoArgNoRet'], 'E1012: Type mismatch; expected func(...): string but got func()')
-  CheckDefFailure(['let RefStr: func: string', 'RefStr = FuncNoArgRetNumber'], 'E1012: Type mismatch; expected func(...): string but got func(): number')
+  CheckDefFailure(['var RefStr: func: string', 'RefStr = FuncNoArgNoRet'], 'E1012: Type mismatch; expected func(...): string but got func()')
+  CheckDefFailure(['var RefStr: func: string', 'RefStr = FuncNoArgRetNumber'], 'E1012: Type mismatch; expected func(...): string but got func(): number')
 enddef
 
 def Test_func_type_fails()
-  CheckDefFailure(['let ref1: func()'], 'E704:')
+  CheckDefFailure(['var ref1: func()'], 'E704:')
 
-  CheckDefFailure(['let Ref1: func()', 'Ref1 = FuncNoArgRetNumber'], 'E1012: Type mismatch; expected func() but got func(): number')
-  CheckDefFailure(['let Ref1: func()', 'Ref1 = FuncOneArgNoRet'], 'E1012: Type mismatch; expected func() but got func(number)')
-  CheckDefFailure(['let Ref1: func()', 'Ref1 = FuncOneArgRetNumber'], 'E1012: Type mismatch; expected func() but got func(number): number')
-  CheckDefFailure(['let Ref1: func(bool)', 'Ref1 = FuncTwoArgNoRet'], 'E1012: Type mismatch; expected func(bool) but got func(bool, number)')
-  CheckDefFailure(['let Ref1: func(?bool)', 'Ref1 = FuncTwoArgNoRet'], 'E1012: Type mismatch; expected func(?bool) but got func(bool, number)')
-  CheckDefFailure(['let Ref1: func(...bool)', 'Ref1 = FuncTwoArgNoRet'], 'E1012: Type mismatch; expected func(...bool) but got func(bool, number)')
+  CheckDefFailure(['var Ref1: func()', 'Ref1 = FuncNoArgRetNumber'], 'E1012: Type mismatch; expected func() but got func(): number')
+  CheckDefFailure(['var Ref1: func()', 'Ref1 = FuncOneArgNoRet'], 'E1012: Type mismatch; expected func() but got func(number)')
+  CheckDefFailure(['var Ref1: func()', 'Ref1 = FuncOneArgRetNumber'], 'E1012: Type mismatch; expected func() but got func(number): number')
+  CheckDefFailure(['var Ref1: func(bool)', 'Ref1 = FuncTwoArgNoRet'], 'E1012: Type mismatch; expected func(bool) but got func(bool, number)')
+  CheckDefFailure(['var Ref1: func(?bool)', 'Ref1 = FuncTwoArgNoRet'], 'E1012: Type mismatch; expected func(?bool) but got func(bool, number)')
+  CheckDefFailure(['var Ref1: func(...bool)', 'Ref1 = FuncTwoArgNoRet'], 'E1012: Type mismatch; expected func(...bool) but got func(bool, number)')
 
-  CheckDefFailure(['let RefWrong: func(string ,number)'], 'E1068:')
-  CheckDefFailure(['let RefWrong: func(string,number)'], 'E1069:')
-  CheckDefFailure(['let RefWrong: func(bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool)'], 'E1005:')
-  CheckDefFailure(['let RefWrong: func(bool):string'], 'E1069:')
+  CheckDefFailure(['var RefWrong: func(string ,number)'], 'E1068:')
+  CheckDefFailure(['var RefWrong: func(string,number)'], 'E1069:')
+  CheckDefFailure(['var RefWrong: func(bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, bool)'], 'E1005:')
+  CheckDefFailure(['var RefWrong: func(bool):string'], 'E1069:')
 enddef
 
 def Test_func_return_type()
-  let nr: number
+  var nr: number
   nr = FuncNoArgRetNumber()
   nr->assert_equal(1234)
 
   nr = FuncOneArgRetAny(122)
   nr->assert_equal(122)
 
-  let str: string
+  var str: string
   str = FuncOneArgRetAny('yes')
   str->assert_equal('yes')
 
-  CheckDefFailure(['let str: string', 'str = FuncNoArgRetNumber()'], 'E1012: Type mismatch; expected string but got number')
+  CheckDefFailure(['var str: string', 'str = FuncNoArgRetNumber()'], 'E1012: Type mismatch; expected string but got number')
 enddef
 
 def MultiLine(
@@ -1161,7 +1161,7 @@ endfunc
 
 def Test_error_reporting()
   # comment lines at the start of the function
-  let lines =<< trim END
+  var lines =<< trim END
     " comment
     def Func()
       # comment
@@ -1183,7 +1183,7 @@ def Test_error_reporting()
   lines =<< trim END
     " comment
     def Func()
-      let x = 1234
+      var x = 1234
       # comment
       # comment
       invalid
@@ -1202,9 +1202,9 @@ def Test_error_reporting()
   lines =<< trim END
     vim9script
     def Func()
-      let db = #{foo: 1, bar: 2}
+      var db = #{foo: 1, bar: 2}
       # comment
-      let x = db.asdf
+      var x = db.asdf
     enddef
     defcompile
     Func()
@@ -1222,14 +1222,14 @@ enddef
 
 def Test_deleted_function()
   CheckDefExecFailure([
-      'let RefMe: func = function("g:DelMe")',
+      'var RefMe: func = function("g:DelMe")',
       'delfunc g:DelMe',
       'echo RefMe()'], 'E117:')
 enddef
 
 def Test_unknown_function()
   CheckDefExecFailure([
-      'let Ref: func = function("NotExist")',
+      'var Ref: func = function("NotExist")',
       'delfunc g:NotExist'], 'E700:')
 enddef
 
@@ -1238,12 +1238,12 @@ def RefFunc(Ref: func(string): string): string
 enddef
 
 def Test_closure_simple()
-  let local = 'some '
+  var local = 'some '
   RefFunc({s -> local .. s})->assert_equal('some more')
 enddef
 
 def MakeRef()
-  let local = 'some '
+  var local = 'some '
   g:Ref = {s -> local .. s}
 enddef
 
@@ -1254,7 +1254,7 @@ def Test_closure_ref_after_return()
 enddef
 
 def MakeTwoRefs()
-  let local = ['some']
+  var local = ['some']
   g:Extend = {s -> local->add(s)}
   g:Read = {-> local}
 enddef
@@ -1292,12 +1292,12 @@ def Test_closure_two_indirect_refs()
 enddef
 
 def MakeArgRefs(theArg: string)
-  let local = 'loc_val'
+  var local = 'loc_val'
   g:UseArg = {s -> theArg .. '/' .. local .. '/' .. s}
 enddef
 
 def MakeArgRefsVarargs(theArg: string, ...rest: list<string>)
-  let local = 'the_loc'
+  var local = 'the_loc'
   g:UseVararg = {s -> theArg .. '/' .. local .. '/' .. s .. '/' .. join(rest)}
 enddef
 
@@ -1313,7 +1313,7 @@ def Test_closure_using_argument()
 enddef
 
 def MakeGetAndAppendRefs()
-  let local = 'a'
+  var local = 'a'
 
   def Append(arg: string)
     local ..= arg
@@ -1339,7 +1339,7 @@ def Test_closure_append_get()
 enddef
 
 def Test_nested_closure()
-  let local = 'text'
+  var local = 'text'
   def Closure(arg: string): string
     return local .. arg
   enddef
@@ -1351,19 +1351,19 @@ func GetResult(Ref)
 endfunc
 
 def Test_call_closure_not_compiled()
-  let text = 'text'
+  var text = 'text'
   g:Ref = {s ->  s .. text}
   GetResult(g:Ref)->assert_equal('sometext')
 enddef
 
 def Test_double_closure_fails()
-  let lines =<< trim END
+  var lines =<< trim END
     vim9script
     def Func()
-    let var = 0
-    for i in range(2)
-	timer_start(0, {-> var})
-    endfor
+      var name = 0
+      for i in range(2)
+          timer_start(0, {-> name})
+      endfor
     enddef
     Func()
   END
@@ -1371,7 +1371,7 @@ def Test_double_closure_fails()
 enddef
 
 def Test_nested_closure_fails()
-  let lines =<< trim END
+  var lines =<< trim END
     vim9script
     def FuncA()
       FuncB(0)
@@ -1385,40 +1385,40 @@ def Test_nested_closure_fails()
 enddef
 
 def Test_sort_return_type()
-  let res: list<number>
+  var res: list<number>
   res = [1, 2, 3]->sort()
 enddef
 
 def Test_sort_argument()
-  let res = ['b', 'a', 'c']->sort('i')
+  var res = ['b', 'a', 'c']->sort('i')
   res->assert_equal(['a', 'b', 'c'])
 enddef
 
 def Test_getqflist_return_type()
-  let l = getqflist()
+  var l = getqflist()
   l->assert_equal([])
 
-  let d = getqflist(#{items: 0})
+  var d = getqflist(#{items: 0})
   d->assert_equal(#{items: []})
 enddef
 
 def Test_getloclist_return_type()
-  let l = getloclist(1)
+  var l = getloclist(1)
   l->assert_equal([])
 
-  let d = getloclist(1, #{items: 0})
+  var d = getloclist(1, #{items: 0})
   d->assert_equal(#{items: []})
 enddef
 
 def Test_copy_return_type()
-  let l = copy([1, 2, 3])
-  let res = 0
+  var l = copy([1, 2, 3])
+  var res = 0
   for n in l
     res += n
   endfor
   res->assert_equal(6)
 
-  let dl = deepcopy([1, 2, 3])
+  var dl = deepcopy([1, 2, 3])
   res = 0
   for n in dl
     res += n
@@ -1429,8 +1429,8 @@ def Test_copy_return_type()
 enddef
 
 def Test_extend_return_type()
-  let l = extend([1, 2], [3])
-  let res = 0
+  var l = extend([1, 2], [3])
+  var res = 0
   for n in l
     res += n
   endfor
@@ -1442,8 +1442,8 @@ def Test_garbagecollect()
 enddef
 
 def Test_insert_return_type()
-  let l = insert([2, 1], 3)
-  let res = 0
+  var l = insert([2, 1], 3)
+  var res = 0
   for n in l
     res += n
   endfor
@@ -1456,8 +1456,8 @@ def Test_keys_return_type()
 enddef
 
 def Test_reverse_return_type()
-  let l = reverse([1, 2, 3])
-  let res = 0
+  var l = reverse([1, 2, 3])
+  var res = 0
   for n in l
     res += n
   endfor
@@ -1465,8 +1465,8 @@ def Test_reverse_return_type()
 enddef
 
 def Test_remove_return_type()
-  let l = remove(#{one: [1, 2], two: [3, 4]}, 'one')
-  let res = 0
+  var l = remove(#{one: [1, 2], two: [3, 4]}, 'one')
+  var res = 0
   for n in l
     res += n
   endfor
@@ -1474,8 +1474,8 @@ def Test_remove_return_type()
 enddef
 
 def Test_filter_return_type()
-  let l = filter([1, 2, 3], {-> 1})
-  let res = 0
+  var l = filter([1, 2, 3], {-> 1})
+  var res = 0
   for n in l
     res += n
   endfor
@@ -1483,7 +1483,7 @@ def Test_filter_return_type()
 enddef
 
 def Test_bufnr()
-  let buf = bufnr()
+  var buf = bufnr()
   bufnr('%')->assert_equal(buf)
 
   buf = bufnr('Xdummy', true)
@@ -1502,9 +1502,9 @@ def Test_char2nr()
 enddef
 
 def Test_getreg_return_type()
-  let s1: string = getreg('"')
-  let s2: string = getreg('"', 1)
-  let s3: list<string> = getreg('"', 1, 1)
+  var s1: string = getreg('"')
+  var s2: string = getreg('"', 1)
+  var s3: list<string> = getreg('"', 1, 1)
 enddef
 
 def Wrong_dict_key_type(items: list<number>): list<number>
@@ -1516,10 +1516,10 @@ def Test_wrong_dict_key_type()
 enddef
 
 def Line_continuation_in_def(dir: string = ''): string
-    let path: string = empty(dir)
-            \ ? 'empty'
-            \ : 'full'
-    return path
+  var path: string = empty(dir)
+          \ ? 'empty'
+          \ : 'full'
+  return path
 enddef
 
 def Test_line_continuation_in_def()
@@ -1527,7 +1527,7 @@ def Test_line_continuation_in_def()
 enddef
 
 def Line_continuation_in_lambda(): list<string>
-  let x = range(97, 100)
+  var x = range(97, 100)
       ->map({_, v -> nr2char(v)
           ->toupper()})
       ->reverse()
@@ -1571,9 +1571,9 @@ def Test_bufname()
 enddef
 
 def Test_bufwinid()
-  let origwin = win_getid()
+  var origwin = win_getid()
   below split SomeFile
-  let SomeFileID = win_getid()
+  var SomeFileID = win_getid()
   below split OtherFile
   below split SomeFile
   bufwinid('SomeFile')->assert_equal(SomeFileID)
@@ -1596,7 +1596,7 @@ def Test_expand()
 enddef
 
 def Test_getbufinfo()
-  let bufinfo = getbufinfo(bufnr())
+  var bufinfo = getbufinfo(bufnr())
   getbufinfo('%')->assert_equal(bufinfo)
 
   edit Xtestfile1
@@ -1609,9 +1609,9 @@ enddef
 
 def Test_getbufline()
   e SomeFile
-  let buf = bufnr()
+  var buf = bufnr()
   e #
-  let lines = ['aaa', 'bbb', 'ccc']
+  var lines = ['aaa', 'bbb', 'ccc']
   setbufline(buf, 1, lines)
   getbufline('#', 1, '$')->assert_equal(lines)
 
@@ -1621,7 +1621,7 @@ enddef
 def Test_getchangelist()
   new
   setline(1, 'some text')
-  let changelist = bufnr()->getchangelist()
+  var changelist = bufnr()->getchangelist()
   getchangelist('%')->assert_equal(changelist)
   bwipe!
 enddef
@@ -1634,13 +1634,13 @@ enddef
 
 def Test_getcompletion()
   set wildignore=*.vim,*~
-  let l = getcompletion('run', 'file', true)
+  var l = getcompletion('run', 'file', true)
   l->assert_equal([])
   set wildignore&
 enddef
 
 def Test_getreg()
-  let lines = ['aaa', 'bbb', 'ccc']
+  var lines = ['aaa', 'bbb', 'ccc']
   setreg('a', lines)
   getreg('a', true, true)->assert_equal(lines)
 enddef
@@ -1669,8 +1669,8 @@ def Test_index()
 enddef
 
 def Test_list2str_str2list_utf8()
-  let s = "\u3042\u3044"
-  let l = [0x3042, 0x3044]
+  var s = "\u3042\u3044"
+  var l = [0x3042, 0x3044]
   str2list(s, true)->assert_equal(l)
   list2str(l, true)->assert_equal(s)
 enddef
@@ -1682,7 +1682,7 @@ def SID(): number
 enddef
 
 def Test_maparg()
-  let lnum = str2nr(expand('<sflnum>'))
+  var lnum = str2nr(expand('<sflnum>'))
   map foo bar
   maparg('foo', '', false, true)->assert_equal(#{
         lnum: lnum + 1,
@@ -1718,7 +1718,7 @@ enddef
 def Test_search()
   new
   setline(1, ['foo', 'bar'])
-  let val = 0
+  var val = 0
   # skip expr returns boolean
   search('bar', 'W', 0, 0, {-> val == 1})->assert_equal(2)
   :1
@@ -1766,15 +1766,15 @@ def Test_setbufvar()
 enddef
 
 def Test_setloclist()
-  let items = [#{filename: '/tmp/file', lnum: 1, valid: true}]
-  let what = #{items: items}
+  var items = [#{filename: '/tmp/file', lnum: 1, valid: true}]
+  var what = #{items: items}
   setqflist([], ' ', what)
   setloclist(0, [], ' ', what)
 enddef
 
 def Test_setreg()
   setreg('a', ['aaa', 'bbb', 'ccc'])
-  let reginfo = getreginfo('a')
+  var reginfo = getreginfo('a')
   setreg('a', reginfo)
   getreginfo('a')->assert_equal(reginfo)
 enddef 
@@ -1800,10 +1800,10 @@ def Test_strchars()
 enddef
 
 def Test_submatch()
-  let pat = 'A\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)'
-  let Rep = {-> range(10)->map({_, v -> submatch(v, true)})->string()}
-  let actual = substitute('A123456789', pat, Rep, '')
-  let expected = "[['A123456789'], ['1'], ['2'], ['3'], ['4'], ['5'], ['6'], ['7'], ['8'], ['9']]"
+  var pat = 'A\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)'
+  var Rep = {-> range(10)->map({_, v -> submatch(v, true)})->string()}
+  var actual = substitute('A123456789', pat, Rep, '')
+  var expected = "[['A123456789'], ['1'], ['2'], ['3'], ['4'], ['5'], ['6'], ['7'], ['8'], ['9']]"
   actual->assert_equal(expected)
 enddef
 
@@ -1818,7 +1818,7 @@ def Test_term_gettty()
   if !has('terminal')
     MissingFeature 'terminal'
   else
-    let buf = Run_shell_in_terminal({})
+    var buf = Run_shell_in_terminal({})
     term_gettty(buf, true)->assert_notequal('')
     StopShellInTerminal(buf)
   endif
@@ -1829,7 +1829,7 @@ def Test_term_start()
     MissingFeature 'terminal'
   else
     botright new
-    let winnr = winnr()
+    var winnr = winnr()
     term_start(&shell, #{curwin: true})
     winnr()->assert_equal(winnr)
     bwipe!
@@ -1837,9 +1837,9 @@ def Test_term_start()
 enddef
 
 def Test_timer_paused()
-  let id = timer_start(50, {-> 0})
+  var id = timer_start(50, {-> 0})
   timer_pause(id, true)
-  let info = timer_info(id)
+  var info = timer_info(id)
   info[0]['paused']->assert_equal(1)
   timer_stop(id)
 enddef
@@ -1884,7 +1884,7 @@ def Test_closure_in_map()
 enddef
 
 def Test_partial_call()
-  let Xsetlist = function('setloclist', [0])
+  var Xsetlist = function('setloclist', [0])
   Xsetlist([], ' ', {'title': 'test'})
   getloclist(0, {'title': 1})->assert_equal({'title': 'test'})
 
@@ -1909,7 +1909,7 @@ enddef
 def Test_restore_modifiers()
   # check that when compiling a :def function command modifiers are not messed
   # up.
-  let lines =<< trim END
+  var lines =<< trim END
       vim9script
       set eventignore=
       autocmd QuickFixCmdPost * copen
