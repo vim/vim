@@ -2950,6 +2950,7 @@ find_special_key(
  * Some keys already have Shift included, pass them as normal keys.
  * Not when Ctrl is also used, because <C-H> and <C-S-H> are different.
  * Also for <A-S-a> and <M-S-a>.
+ * This includes all printable ASCII characters except numbers and a-z.
  */
     int
 may_remove_shift_modifier(int modifiers, int key)
@@ -2957,8 +2958,9 @@ may_remove_shift_modifier(int modifiers, int key)
     if ((modifiers == MOD_MASK_SHIFT
 		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_ALT)
 		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_META))
-	    && ((key >= '@' && key <= 'Z')
-		|| key == '^' || key == '_'
+	    && ((key >= '!' && key <= '/')
+		|| (key >= ':' && key <= 'Z')
+		|| (key >= '[' && key <= '`')
 		|| (key >= '{' && key <= '~')))
 	return modifiers & ~MOD_MASK_SHIFT;
     return modifiers;
