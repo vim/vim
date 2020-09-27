@@ -665,9 +665,9 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    wp->w_firstline = -1;
     }
 
-    di = dict_find(dict, (char_u *)"scrollbar", -1);
-    if (di != NULL)
-	wp->w_want_scrollbar = dict_get_number(dict, (char_u *)"scrollbar");
+    nr = dict_get_bool(dict, (char_u *)"scrollbar", -1);
+    if (nr != -1)
+	wp->w_want_scrollbar = nr;
 
     str = dict_get_string(dict, (char_u *)"title", FALSE);
     if (str != NULL)
