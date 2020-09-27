@@ -4360,7 +4360,7 @@ exarg_getline(
 
     for (;;)
     {
-	if (cctx->ctx_lnum == cctx->ctx_ufunc->uf_lines.ga_len)
+	if (cctx->ctx_lnum >= cctx->ctx_ufunc->uf_lines.ga_len - 1)
 	    return NULL;
 	++cctx->ctx_lnum;
 	p = ((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)[cctx->ctx_lnum];
