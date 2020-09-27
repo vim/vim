@@ -831,7 +831,7 @@ enddef
 " recognized.
 func Test_function_python()
   CheckFeature python3
-  var py = 'python3'
+  let py = 'python3'
   execute py "<< EOF"
 def do_something():
   return 1
