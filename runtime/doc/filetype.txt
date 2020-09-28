@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 8.2.  Last change: 2019 Jul 16
+*filetype.txt*  For Vim version 8.2.  Last change: 2020 Sep 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -395,6 +395,13 @@ ways to change this:
 
 ==============================================================================
 3.  Docs for the default filetype plugins.		*ftplugin-docs*
+
+
+AWK							*ft-awk-plugin*
+
+Support for features specific to GNU Awk, like @include, can be enabled by
+setting: >
+	let g:awk_is_gawk = 1
 
 
 CHANGELOG						*ft-changelog-plugin*

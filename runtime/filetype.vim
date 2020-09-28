@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2020 Aug 04
+" Last Change:	2020 Sep 28
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1203,7 +1203,7 @@ au BufNewFile,BufRead *.pod6			setf pod6
 au BufNewFile,BufRead *.php,*.php\d,*.phtml,*.ctp	setf php
 
 " PHP config
-au BufNewFile,BufRead php.ini,php.ini-*		setf dosini
+au BufNewFile,BufRead php.ini-*			setf dosini
 
 " Pike and Cmod
 au BufNewFile,BufRead *.pike,*.pmod		setf pike

@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.2.  Last change: 2020 Sep 08
+*popup.txt*  For Vim version 8.2.  Last change: 2020 Sep 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -711,7 +711,7 @@ The second argument of |popup_create()| is a dictionary with options:
 			By default a double line is used all around when
 			'encoding' is "utf-8" and 'ambiwidth' is "single",
 			otherwise ASCII characters are used.
-	scrollbar	non-zero: show a scrollbar when the text doesn't fit.
+	scrollbar	1 or true: show a scrollbar when the text doesn't fit.
 			zero: do not show a scrollbar.  Default is non-zero.
 			Also see |popup-scrollbar|.
 	scrollbarhighlight  Highlight group name for the scrollbar. The
