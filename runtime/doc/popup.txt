@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.2.  Last change: 2020 Sep 27
+*popup.txt*  For Vim version 8.2.  Last change: 2020 Sep 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -909,6 +909,11 @@ A mouse click arrives as <LeftMouse>.  The coordinates can be obtained with
 
 Vim provides standard filters |popup_filter_menu()| and
 |popup_filter_yesno()|.
+
+Keys coming from a `:normal` command do not pass through the filter.  This can
+be used to move the cursor in a popup where the "cursorline" option is set: >
+	call win_execute(winid, 'normal! 10Gzz')
+Keys coming from `feedkeys()` are passed through the filter.
 
 Note that "x" is the normal way to close a popup.  You may want to use Esc,
 but since many keys start with an Esc character, there may be a delay before
