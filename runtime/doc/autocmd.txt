@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.2.  Last change: 2020 Aug 02
+*autocmd.txt*   For Vim version 8.2.  Last change: 2020 Sep 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -631,7 +631,7 @@ CompleteDone			After Insert mode completion is done.  Either
 
 							*CursorHold*
 CursorHold			When the user doesn't press a key for the time
-				specified with 'updatetime'.  Not re-triggered
+				specified with 'updatetime'.  Not triggered
 				until the user has pressed a key (i.e. doesn't
 				fire every 'updatetime' ms if you leave Vim to
 				make some coffee. :)  See |CursorHold-example|

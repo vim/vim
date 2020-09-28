@@ -65,6 +65,35 @@ rewrite old scripts, they keep working as before.  You may want to use a few
 
 THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
+Overview ~
+
+Brief summary of the differences you will most often encounter when using Vim9
+script and `:def` functions; details are below:
+- Comments start with #, not ": >
+  	echo "hello"   # comment
+- Using a backslash for line continuation is hardly ever needed: >
+  	echo "hello "
+	     .. yourName
+	     .. ", how are you?"
+- White space is required in many places.
+- Assign values without `:let`, declare variables with `:var`: >
+  	var count = 0
+	count += 3
+- Constants can be declared with `:final` and `:const`: >
+  	final matches = []		  # add matches
+	const names = ['Betty', 'Peter']  # cannot be changed
+- `:final` cannot be used as an abbreviation of `:finally`.
+- Variables and functions are script-local by default.
+- Functions are declared with argument types and return type: >
+	def CallMe(count: number, message: string): bool
+- Call functions without `:call`: >
+  	writefile(['done'], 'file.txt')
+- You cannot use `:xit`, `:t`, `:append`, `:change`, `:insert` or curly-braces
+  names.
+- A range before a command must be prefixed with a colon: >
+  	:%s/this/that
+
+
 Comments starting with # ~
 
 In legacy Vim script comments start with double quote.  In Vim9 script

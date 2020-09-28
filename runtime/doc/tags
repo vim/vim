@@ -6461,6 +6461,7 @@ ft-asm68k-syntax	syntax.txt	/*ft-asm68k-syntax*
 ft-asmh8300-syntax	syntax.txt	/*ft-asmh8300-syntax*
 ft-aspperl-syntax	syntax.txt	/*ft-aspperl-syntax*
 ft-aspvbs-syntax	syntax.txt	/*ft-aspvbs-syntax*
+ft-awk-plugin	filetype.txt	/*ft-awk-plugin*
 ft-bash-syntax	syntax.txt	/*ft-bash-syntax*
 ft-basic-syntax	syntax.txt	/*ft-basic-syntax*
 ft-c-omni	insert.txt	/*ft-c-omni*
@@ -7756,6 +7757,7 @@ matcharg()	eval.txt	/*matcharg()*
 matchdelete()	eval.txt	/*matchdelete()*
 matchend()	eval.txt	/*matchend()*
 matchfuzzy()	eval.txt	/*matchfuzzy()*
+matchfuzzypos()	eval.txt	/*matchfuzzypos()*
 matchit-install	usr_05.txt	/*matchit-install*
 matchlist()	eval.txt	/*matchlist()*
 matchparen	pi_paren.txt	/*matchparen*
@@ -9649,6 +9651,7 @@ tooltips	gui.txt	/*tooltips*
 toupper()	eval.txt	/*toupper()*
 tr()	eval.txt	/*tr()*
 trim()	eval.txt	/*trim()*
+trinary	eval.txt	/*trinary*
 trojan-horse	starting.txt	/*trojan-horse*
 true	vim9.txt	/*true*
 true-variable	eval.txt	/*true-variable*
@@ -10040,6 +10043,7 @@ vim9-declaration	vim9.txt	/*vim9-declaration*
 vim9-declarations	usr_46.txt	/*vim9-declarations*
 vim9-differences	vim9.txt	/*vim9-differences*
 vim9-export	vim9.txt	/*vim9-export*
+vim9-final	vim9.txt	/*vim9-final*
 vim9-gotchas	vim9.txt	/*vim9-gotchas*
 vim9-import	vim9.txt	/*vim9-import*
 vim9-rationale	vim9.txt	/*vim9-rationale*
