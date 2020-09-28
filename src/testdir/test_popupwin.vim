@@ -1539,13 +1539,14 @@ func Test_popup_filter()
   call popup_clear()
 endfunc
 
-" this tests that the "ex_normal_busy_done" flag works
+" this tests that the filter is not used for :normal command
 func Test_popup_filter_normal_cmd()
   CheckScreendump
 
   let lines =<< trim END
-      let g:winid = popup_create('some text', {'filter': 'invalidfilter'})
-      call timer_start(0, {-> win_execute(g:winid, 'norm! zz')})
+      let text = range(1, 20)->map({_, v -> string(v)})
+      let g:winid = popup_create(text, #{maxheight: 5, minwidth: 3, filter: 'invalidfilter'})
+      call timer_start(0, {-> win_execute(g:winid, 'norm! 10Gzz')})
   END
   call writefile(lines, 'XtestPopupNormal')
   let buf = RunVimInTerminal('-S XtestPopupNormal', #{rows: 10})

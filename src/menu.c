@@ -2398,10 +2398,6 @@ execute_menu(exarg_T *eap, vimmenu_T *menu, int mode_idx)
 							   menu->silent[idx]);
 	    restore_current_state(&save_state);
 	    --ex_normal_busy;
-#ifdef FEAT_PROP_POPUP
-	    if (ex_normal_busy == 0)
-		ex_normal_busy_done = FALSE;
-#endif
 	}
 	else
 	    ins_typebuf(menu->strings[idx], menu->noremap[idx], 0,
