@@ -4381,11 +4381,14 @@ gui_mch_open(void)
     return OK;
 }
 
-
+/*
+ * Clean up for when exiting Vim.
+ */
     void
 gui_mch_exit(int rc UNUSED)
 {
-    if (gui.mainwin != NULL)
+    // Clean up, unless we don't want to invoke free().
+    if (gui.mainwin != NULL && !really_exiting)
 	gtk_widget_destroy(gui.mainwin);
 }
 
