@@ -4385,7 +4385,7 @@ gui_mch_open(void)
     void
 gui_mch_exit(int rc UNUSED)
 {
-    if (gui.mainwin != NULL)
+    if (gui.mainwin != NULL && !really_exiting)
 	gtk_widget_destroy(gui.mainwin);
 }
 
