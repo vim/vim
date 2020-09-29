@@ -2640,12 +2640,13 @@ if (raw_c > 0)
 	    }
 	    else if (termwinkey == 0 || c != termwinkey)
 	    {
-		char_u buf[MB_MAXBYTES + 2];
+		// space for CTRL-W, modifier, multi-byte char and NUL
+		char_u buf[1 + 3 + MB_MAXBYTES + 1];
 
 		// Put the command into the typeahead buffer, when using the
 		// stuff buffer KeyStuffed is set and 'langmap' won't be used.
 		buf[0] = Ctrl_W;
-		buf[(*mb_char2bytes)(c, buf + 1) + 1] = NUL;
+		buf[special_to_buf(c, mod_mask, FALSE, buf + 1) + 1] = NUL;
 		ins_typebuf(buf, REMAP_NONE, 0, TRUE, FALSE);
 		ret = OK;
 		goto theend;
