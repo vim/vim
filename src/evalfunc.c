@@ -8604,7 +8604,9 @@ f_synIDattr(typval_T *argvars UNUSED, typval_T *rettv)
 		break;
 
 	case 'u':
-		if (STRLEN(what) <= 5 || TOLOWER_ASC(what[5]) != 'c')
+		if (TOLOWER_ASC(what[1]) == 'l')	// ul
+		    p = highlight_color(id, what, modec);
+		else if (STRLEN(what) <= 5 || TOLOWER_ASC(what[5]) != 'c')
 							// underline
 		    p = highlight_has_attr(id, HL_UNDERLINE, modec);
 		else

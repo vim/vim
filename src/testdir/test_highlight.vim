@@ -808,6 +808,7 @@ func Test_highlight_ctermul()
   call assert_notmatch('ctermul=', HighlightArgs('Normal'))
   highlight Normal ctermul=3
   call assert_match('ctermul=3', HighlightArgs('Normal'))
+  call assert_equal('3', synIDattr(synIDtrans(hlID('Normal')), 'ul'))
   highlight Normal ctermul=NONE
 endfunc
 
