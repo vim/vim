@@ -2304,6 +2304,8 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
     char_u	*arg;
 
     which = tv_get_string_buf_chk(&argvars[0], buf);
+    if (which == NULL)
+	return;
     mode = get_map_mode(&which, 0);
     is_abbr = (int)tv_get_number(&argvars[1]);
 
