@@ -4496,6 +4496,7 @@ qf_buf_add_line(
 	linenr_T	lnum,
 	qfline_T	*qfp,
 	char_u		*dirname,
+	int		first_bufline,
 	char_u		*qftf_str)
 {
     int		len;
@@ -4520,9 +4521,11 @@ qf_buf_add_line(
 		vim_strncpy(IObuff, gettail(errbuf->b_fname), IOSIZE - 1);
 	    else
 	    {
-		// shorten the file name if not done already
-		if (errbuf->b_sfname == NULL
-			|| mch_isFullName(errbuf->b_sfname))
+		// Shorten the file name if not done already.
+		// For optimization, do this only for the first entry in a
+		// buffer.
+		if (first_bufline && (errbuf->b_sfname == NULL
+				|| mch_isFullName(errbuf->b_sfname)))
 		{
 		    if (*dirname == NUL)
 			mch_dirname(dirname, MAXPATHL);
@@ -4663,6 +4666,7 @@ qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last, int qf_winid)
     {
 	char_u		dirname[MAXPATHL];
 	int		invalid_val = FALSE;
+	int		prev_bufnr = -1;
 
 	*dirname = NUL;
 
@@ -4697,9 +4701,11 @@ qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last, int qf_winid)
 		    invalid_val = TRUE;
 	    }
 
-	    if (qf_buf_add_line(buf, lnum, qfp, dirname, qftf_str) == FAIL)
+	    if (qf_buf_add_line(buf, lnum, qfp, dirname,
+			prev_bufnr != qfp->qf_fnum, qftf_str) == FAIL)
 		break;
 
+	    prev_bufnr = qfp->qf_fnum;
 	    ++lnum;
 	    qfp = qfp->qf_next;
 	    if (qfp == NULL)
