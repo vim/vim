@@ -768,4 +768,199 @@ def Test_heredoc()
   CheckScriptFailure(lines, 'E990:')
 enddef
 
+def Test_let_func_call()
+  var lines =<< trim END
+    vim9script
+    func GetValue()
+      if exists('g:count')
+        let g:count += 1
+      else
+        let g:count = 1
+      endif
+      return 'this'
+    endfunc
+    var val: string = GetValue() 
+    # env var is always a string
+    var env = $TERM
+  END
+  writefile(lines, 'Xfinished')
+  source Xfinished
+  # GetValue() is not called during discovery phase
+  assert_equal(1, g:count)
+
+  unlet g:count
+  delete('Xfinished')
+enddef
+
+def Test_let_missing_type()
+  var lines =<< trim END
+    vim9script
+    var name = g:unknown
+  END
+  CheckScriptFailure(lines, 'E121:')
+
+  lines =<< trim END
+    vim9script
+    var nr: number = 123
+    var name = nr
+  END
+  CheckScriptSuccess(lines)
+enddef
+
+def Test_let_declaration()
+  var lines =<< trim END
+    vim9script
+    var name: string
+    g:var_uninit = name
+    name = 'text'
+    g:var_test = name
+    # prefixing s: is optional
+    s:name = 'prefixed'
+    g:var_prefixed = s:name
+
+    var s:other: number
+    other = 1234
+    g:other_var = other
+
+    # type is inferred
+    s:dict = {'a': 222}
+    def GetDictVal(key: any)
+      g:dict_val = s:dict[key]
+    enddef
+    GetDictVal('a')
+  END
+  CheckScriptSuccess(lines)
+  assert_equal('', g:var_uninit)
+  assert_equal('text', g:var_test)
+  assert_equal('prefixed', g:var_prefixed)
+  assert_equal(1234, g:other_var)
+  assert_equal(222, g:dict_val)
+
+  unlet g:var_uninit
+  unlet g:var_test
+  unlet g:var_prefixed
+  unlet g:other_var
+enddef
+
+def Test_let_declaration_fails()
+  var lines =<< trim END
+    vim9script
+    final var: string
+  END
+  CheckScriptFailure(lines, 'E1125:')
+
+  lines =<< trim END
+    vim9script
+    const var: string
+  END
+  CheckScriptFailure(lines, 'E1021:')
+
+  lines =<< trim END
+    vim9script
+    var 9var: string
+  END
+  CheckScriptFailure(lines, 'E475:')
+enddef
+
+def Test_let_type_check()
+  var lines =<< trim END
+    vim9script
+    var name: string
+    name = 1234
+  END
+  CheckScriptFailure(lines, 'E1012:')
+
+  lines =<< trim END
+    vim9script
+    var name:string
+  END
+  CheckScriptFailure(lines, 'E1069:')
+
+  lines =<< trim END
+    vim9script
+    var name: asdf
+  END
+  CheckScriptFailure(lines, 'E1010:')
+
+  lines =<< trim END
+    vim9script
+    var s:l: list<number>
+    s:l = []
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    var s:d: dict<number>
+    s:d = {}
+  END
+  CheckScriptSuccess(lines)
+enddef
+
+let g:dict_number = #{one: 1, two: 2}
+
+def Test_let_list_dict_type()
+  var ll: list<number>
+  ll = [1, 2, 2, 3, 3, 3]->uniq()
+  ll->assert_equal([1, 2, 3])
+
+  var dd: dict<number>
+  dd = g:dict_number
+  dd->assert_equal(g:dict_number)
+
+  var lines =<< trim END
+      var ll: list<number>
+      ll = [1, 2, 3]->map('"one"')
+  END
+  CheckDefExecFailure(lines, 'E1012: Type mismatch; expected list<number> but got list<string>')
+enddef
+
+def Test_unlet()
+  g:somevar = 'yes'
+  assert_true(exists('g:somevar'))
+  unlet g:somevar
+  assert_false(exists('g:somevar'))
+  unlet! g:somevar
+
+  # also works for script-local variable in legacy Vim script
+  s:somevar = 'legacy'
+  assert_true(exists('s:somevar'))
+  unlet s:somevar
+  assert_false(exists('s:somevar'))
+  unlet! s:somevar
+
+  CheckScriptFailure([
+   'vim9script',
+   'var svar = 123',
+   'unlet svar',
+   ], 'E1081:')
+  CheckScriptFailure([
+   'vim9script',
+   'var svar = 123',
+   'unlet s:svar',
+   ], 'E1081:')
+  CheckScriptFailure([
+   'vim9script',
+   'var svar = 123',
+   'def Func()',
+   '  unlet svar',
+   'enddef',
+   'defcompile',
+   ], 'E1081:')
+  CheckScriptFailure([
+   'vim9script',
+   'var svar = 123',
+   'def Func()',
+   '  unlet s:svar',
+   'enddef',
+   'defcompile',
+   ], 'E1081:')
+
+  $ENVVAR = 'foobar'
+  assert_equal('foobar', $ENVVAR)
+  unlet $ENVVAR
+  assert_equal('', $ENVVAR)
+enddef
+
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
