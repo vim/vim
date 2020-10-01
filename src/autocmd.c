@@ -1533,7 +1533,7 @@ win_found:
 	unblock_autocmds();
 
 	if (win_valid(aco->save_curwin))
-	    curwin = aco->save_curwin;
+	    win_enter(aco->save_curwin, TRUE);
 	else
 	    // Hmm, original window disappeared.  Just use the first one.
 	    curwin = firstwin;
