@@ -1384,6 +1384,21 @@ def Test_nested_closure_fails()
   CheckScriptFailure(lines, 'E1012:')
 enddef
 
+def Test_nested_lambda()
+  var lines =<< trim END
+    vim9script
+    def Func()
+      var x = 4
+      var Lambda1 = {-> 7}
+      var Lambda2 = {-> [Lambda1(), x]}
+      var res = Lambda2()
+      assert_equal([7, 4], res)
+    enddef
+    Func()
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_sort_return_type()
   var res: list<number>
   res = [1, 2, 3]->sort()

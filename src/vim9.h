@@ -326,10 +326,12 @@ struct dfunc_S {
 };
 
 // Number of entries used by stack frame for a function call.
-// - function index
-// - instruction index
-// - previous frame index
-#define STACK_FRAME_SIZE 3
+// - ec_dfunc_idx:   function index
+// - ec_iidx:        instruction index
+// - ec_outer_stack: stack used for closures  TODO: can we avoid this?
+// - ec_outer_frame: stack frame for closures
+// - ec_frame_idx:   previous frame index
+#define STACK_FRAME_SIZE 5
 
 
 #ifdef DEFINE_VIM9_GLOBALS

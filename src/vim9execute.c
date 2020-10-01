@@ -239,7 +239,9 @@ call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
     // Store current execution state in stack frame for ISN_RETURN.
     STACK_TV_BOT(0)->vval.v_number = ectx->ec_dfunc_idx;
     STACK_TV_BOT(1)->vval.v_number = ectx->ec_iidx;
-    STACK_TV_BOT(2)->vval.v_number = ectx->ec_frame_idx;
+    STACK_TV_BOT(2)->vval.v_string = (void *)ectx->ec_outer_stack;
+    STACK_TV_BOT(3)->vval.v_number = ectx->ec_outer_frame;
+    STACK_TV_BOT(4)->vval.v_number = ectx->ec_frame_idx;
     ectx->ec_frame_idx = ectx->ec_stack.ga_len;
 
     // Initialize local variables
@@ -455,7 +457,11 @@ func_return(ectx_T *ectx)
     // Restore the previous frame.
     ectx->ec_dfunc_idx = STACK_TV(ectx->ec_frame_idx)->vval.v_number;
     ectx->ec_iidx = STACK_TV(ectx->ec_frame_idx + 1)->vval.v_number;
-    ectx->ec_frame_idx = STACK_TV(ectx->ec_frame_idx + 2)->vval.v_number;
+    ectx->ec_outer_stack =
+		       (void *)STACK_TV(ectx->ec_frame_idx + 2)->vval.v_string;
+    ectx->ec_outer_frame = STACK_TV(ectx->ec_frame_idx + 3)->vval.v_number;
+    // restoring ec_frame_idx must be last
+    ectx->ec_frame_idx = STACK_TV(ectx->ec_frame_idx + 4)->vval.v_number;
     dfunc = ((dfunc_T *)def_functions.ga_data) + ectx->ec_dfunc_idx;
     ectx->ec_instr = dfunc->df_instr;
 
