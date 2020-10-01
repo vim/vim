@@ -2227,7 +2227,7 @@ leaving_window(win_T *win)
     }
 }
 
-    static void
+    void
 entering_window(win_T *win)
 {
     // Only matters for a prompt window.
