@@ -2307,7 +2307,7 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
     if (which == NULL)
 	return;
     mode = get_map_mode(&which, 0);
-    is_abbr = (int)tv_get_number(&argvars[1]);
+    is_abbr = (int)tv_get_bool(&argvars[1]);
 
     if (argvars[2].v_type != VAR_DICT)
     {

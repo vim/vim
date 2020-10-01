@@ -1721,6 +1721,14 @@ def Test_mapcheck()
   iunabbrev foo
 enddef
 
+def Test_maparg_mapset()
+  nnoremap <F3> :echo "hit F3"<CR>
+  var mapsave = maparg('<F3>', 'n', false, true)
+  mapset('n', false, mapsave)
+
+  nunmap <F3>
+enddef
+
 def Test_nr2char()
   nr2char(97, true)->assert_equal('a')
 enddef
