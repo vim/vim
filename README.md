@@ -1,4 +1,4 @@
-![Vim Logo](https://github.com/vim/vim/blob/master/runtime/vimlogo.gif)
+![Vim Logo][Vim Logo](https://github.com/vim/vim/blob/master/runtime/vimlogo.gif)
 
 [![Travis Build Status](https://travis-ci.org/vim/vim.svg?branch=master)](https://travis-ci.org/vim/vim)
 [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/o2qht2kjm02sgghk?svg=true)](https://ci.appveyor.com/project/chrisbra/vim)
@@ -31,7 +31,6 @@ Vim runs under MS-Windows (XP, Vista, 7, 8, 10), macOS, Haiku, VMS and almost
 all flavours of UNIX.  Porting to other systems should not be very difficult.
 Older versions of Vim run on MS-DOS, MS-Windows 95/98/Me/NT/2000, Amiga DOS,
 Atari MiNT, BeOS, RISC OS and OS/2.  These are no longer maintained.
-
 For Vim9 script see [README_VIM9](README_VIM9.md).
 
 ## Distribution ##
