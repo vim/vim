@@ -236,11 +236,12 @@ dictitem_alloc(char_u *key)
 dictitem_copy(dictitem_T *org)
 {
     dictitem_T *di;
+    size_t	len = STRLEN(org->di_key);
 
-    di = alloc(offsetof(dictitem_T, di_key) + STRLEN(org->di_key) + 1);
+    di = alloc(offsetof(dictitem_T, di_key) + len + 1);
     if (di != NULL)
     {
-	STRCPY(di->di_key, org->di_key);
+	mch_memmove(di->di_key, org->di_key, len + 1);
 	di->di_flags = DI_FLAGS_ALLOC;
 	copy_tv(&org->di_tv, &di->di_tv);
     }
