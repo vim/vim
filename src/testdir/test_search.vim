@@ -964,6 +964,20 @@ func Test_incsearch_substitute()
   call Incsearch_cleanup()
 endfunc
 
+func Test_incsearch_substitute_long_line()
+  new
+  call test_override("char_avail", 1)
+  set incsearch
+
+  call repeat('x', 100000)->setline(1)
+  call feedkeys(':s/\%c', 'xt')
+  redraw
+  call feedkeys("\<Esc>", 'xt')
+
+  call Incsearch_cleanup()
+  bwipe!
+endfunc
+
 " Similar to Test_incsearch_substitute() but with a screendump halfway.
 func Test_incsearch_substitute_dump()
   CheckOption incsearch

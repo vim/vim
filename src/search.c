@@ -759,6 +759,9 @@ searchit(
 					     NULL, NULL
 #endif
 						      );
+		// vim_regexec_multi() may clear "regprog"
+		if (regmatch.regprog == NULL)
+		    break;
 		// Abort searching on an error (e.g., out of stack).
 		if (called_emsg > called_emsg_before
 #ifdef FEAT_RELTIME
@@ -858,6 +861,9 @@ searchit(
 				match_ok = FALSE;
 				break;
 			    }
+			    // vim_regexec_multi() may clear "regprog"
+			    if (regmatch.regprog == NULL)
+				break;
 			    matchpos = regmatch.startpos[0];
 			    endpos = regmatch.endpos[0];
 # ifdef FEAT_EVAL
@@ -972,6 +978,9 @@ searchit(
 #endif
 				break;
 			    }
+			    // vim_regexec_multi() may clear "regprog"
+			    if (regmatch.regprog == NULL)
+				break;
 
 			    // Need to get the line pointer again, a
 			    // multi-line search may have made it invalid.
@@ -1064,6 +1073,10 @@ searchit(
 		    break;	    // if second loop, stop where started
 	    }
 	    at_first_line = FALSE;
+
+	    // vim_regexec_multi() may clear "regprog"
+	    if (regmatch.regprog == NULL)
+		break;
 
 	    /*
 	     * Stop the search if wrapscan isn't set, "stop_lnum" is
@@ -2911,7 +2924,8 @@ is_zero_width(char_u *pattern, int move, pos_T *cur, int direction)
 			       pos.lnum, regmatch.startpos[0].col, NULL, NULL);
 	    if (nmatched != 0)
 		break;
-	} while (direction == FORWARD ? regmatch.startpos[0].col < pos.col
+	} while (regmatch.regprog != NULL
+		&& direction == FORWARD ? regmatch.startpos[0].col < pos.col
 				      : regmatch.startpos[0].col > pos.col);
 
 	if (called_emsg == called_emsg_before)
