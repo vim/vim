@@ -924,6 +924,10 @@ common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap)
 	    }
 	    else
 		*dest = alloc_func_type(common, -1, type_gap);
+	    // Use the minimum of min_argcount.
+	    (*dest)->tt_min_argcount =
+			type1->tt_min_argcount < type2->tt_min_argcount
+			     ? type1->tt_min_argcount : type2->tt_min_argcount;
 	    return;
 	}
     }

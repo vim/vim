@@ -1326,6 +1326,33 @@ def Test_disassemble_compare()
   delete('Xdisassemble')
 enddef
 
+def s:FalsyOp()
+  echo g:flag ?? "yes"
+  echo [] ?? "empty list"
+  echo "" ?? "empty string"
+enddef
+
+def Test_dsassemble_falsy_op()
+  var res = execute('disass s:FalsyOp')
+  assert_match('\<SNR>\d*_FalsyOp\_s*' ..
+      'echo g:flag ?? "yes"\_s*' ..
+      '0 LOADG g:flag\_s*' ..
+      '1 JUMP_AND_KEEP_IF_TRUE -> 3\_s*' ..
+      '2 PUSHS "yes"\_s*' ..
+      '3 ECHO 1\_s*' ..
+      'echo \[\] ?? "empty list"\_s*' ..
+      '4 NEWLIST size 0\_s*' ..
+      '5 JUMP_AND_KEEP_IF_TRUE -> 7\_s*' ..
+      '6 PUSHS "empty list"\_s*' ..
+      '7 ECHO 1\_s*' ..
+      'echo "" ?? "empty string"\_s*' ..
+      '\d\+ PUSHS "empty string"\_s*' ..
+      '\d\+ ECHO 1\_s*' ..
+      '\d\+ PUSHNR 0\_s*' ..
+      '\d\+ RETURN',
+      res)
+enddef
+
 def Test_disassemble_compare_const()
   var cases = [
         ['"xx" == "yy"', false],

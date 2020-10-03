@@ -12,7 +12,7 @@ def FuncTwo(arg: number): number
 enddef
 
 " test cond ? expr : expr
-def Test_expr1()
+def Test_expr1_trinary()
   assert_equal('one', true ? 'one' : 'two')
   assert_equal('one', 1 ?
 			'one' :
@@ -61,7 +61,7 @@ def Test_expr1()
   assert_equal(123, Z(3))
 enddef
 
-def Test_expr1_vimscript()
+def Test_expr1_trinary_vimscript()
   # check line continuation
   var lines =<< trim END
       vim9script
@@ -139,7 +139,7 @@ def Test_expr1_vimscript()
   CheckScriptSuccess(lines)
 enddef
 
-func Test_expr1_fails()
+func Test_expr1_trinary_fails()
   call CheckDefFailure(["var x = 1 ? 'one'"], "Missing ':' after '?'", 1)
 
   let msg = "White space required before and after '?'"
@@ -159,6 +159,34 @@ func Test_expr1_fails()
 	\ 'var Z = g:cond ? FuncOne : FuncTwo',
 	\ 'Z()'], 'E119:', 4)
 endfunc
+
+def Test_expr1_falsy()
+  var lines =<< trim END
+      assert_equal(v:true, v:true ?? 456)
+      assert_equal(123, 123 ?? 456)
+      assert_equal('yes', 'yes' ?? 456)
+      assert_equal([1], [1] ?? 456)
+      assert_equal(#{one: 1}, #{one: 1} ?? 456)
+      if has('float')
+        assert_equal(0.1, 0.1 ?? 456)
+      endif
+
+      assert_equal(456, v:false ?? 456)
+      assert_equal(456, 0 ?? 456)
+      assert_equal(456, '' ?? 456)
+      assert_equal(456, [] ?? 456)
+      assert_equal(456, {} ?? 456)
+      if has('float')
+        assert_equal(456, 0.0 ?? 456)
+      endif
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  var msg = "White space required before and after '??'"
+  call CheckDefFailure(["var x = 1?? 'one' : 'two'"], msg, 1)
+  call CheckDefFailure(["var x = 1 ??'one' : 'two'"], msg, 1)
+  call CheckDefFailure(["var x = 1??'one' : 'two'"], msg, 1)
+enddef
 
 " TODO: define inside test function
 def Record(val: any): any

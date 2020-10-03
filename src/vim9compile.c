@@ -4132,13 +4132,19 @@ compile_expr2(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 
 /*
  * Toplevel expression: expr2 ? expr1a : expr1b
- *
  * Produces instructions:
- *	EVAL expr2		Push result of "expr"
+ *	EVAL expr2		Push result of "expr2"
  *      JUMP_IF_FALSE alt	jump if false
  *      EVAL expr1a
  *      JUMP_ALWAYS end
  * alt:	EVAL expr1b
+ * end:
+ *
+ * Toplevel expression: expr2 ?? expr1
+ * Produces instructions:
+ *	EVAL expr2		    Push result of "expr2"
+ *      JUMP_AND_KEEP_IF_TRUE end   jump if true
+ *      EVAL expr1
  * end:
  */
     static int
@@ -4162,13 +4168,13 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
     p = may_peek_next_line(cctx, *arg, &next);
     if (*p == '?')
     {
+	int		op_falsy = p[1] == '?';
 	garray_T	*instr = &cctx->ctx_instr;
 	garray_T	*stack = &cctx->ctx_type_stack;
 	int		alt_idx = instr->ga_len;
 	int		end_idx = 0;
 	isn_T		*isn;
 	type_T		*type1 = NULL;
-	type_T		*type2;
 	int		has_const_expr = FALSE;
 	int		const_value = FALSE;
 	int		save_skip = cctx->ctx_skip;
@@ -4179,9 +4185,10 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
 	    p = skipwhite(*arg);
 	}
 
-	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[1]))
+	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[1 + op_falsy]))
 	{
-	    semsg(_(e_white_space_required_before_and_after_str), "?");
+	    semsg(_(e_white_space_required_before_and_after_str),
+							op_falsy ? "??" : "?");
 	    return FAIL;
 	}
 
@@ -4191,20 +4198,32 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
 	    // expression is to be evaluated.
 	    has_const_expr = TRUE;
 	    const_value = tv2bool(&ppconst->pp_tv[ppconst_used]);
-	    clear_tv(&ppconst->pp_tv[ppconst_used]);
-	    --ppconst->pp_used;
-	    cctx->ctx_skip = save_skip == SKIP_YES || !const_value
-							 ? SKIP_YES : SKIP_NOT;
+	    cctx->ctx_skip = save_skip == SKIP_YES ||
+		 (op_falsy ? const_value : !const_value) ? SKIP_YES : SKIP_NOT;
+
+	    if (op_falsy && cctx->ctx_skip == SKIP_YES)
+		// "left ?? right" and "left" is truthy: produce "left"
+		generate_ppconst(cctx, ppconst);
+	    else
+	    {
+		clear_tv(&ppconst->pp_tv[ppconst_used]);
+		--ppconst->pp_used;
+	    }
 	}
 	else
 	{
 	    generate_ppconst(cctx, ppconst);
-	    generate_JUMP(cctx, JUMP_IF_FALSE, 0);
+	    if (op_falsy)
+		end_idx = instr->ga_len;
+	    generate_JUMP(cctx, op_falsy
+				   ? JUMP_AND_KEEP_IF_TRUE : JUMP_IF_FALSE, 0);
+	    if (op_falsy)
+		type1 = ((type_T **)stack->ga_data)[stack->ga_len];
 	}
 
 	// evaluate the second expression; any type is accepted
-	*arg = skipwhite(p + 1);
-	if (may_get_next_line(p + 1, arg, cctx) == FAIL)
+	*arg = skipwhite(p + 1 + op_falsy);
+	if (may_get_next_line(p + 1 + op_falsy, arg, cctx) == FAIL)
 	    return FAIL;
 	if (compile_expr1(arg, cctx, ppconst) == FAIL)
 	    return FAIL;
@@ -4213,56 +4232,64 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
 	{
 	    generate_ppconst(cctx, ppconst);
 
-	    // remember the type and drop it
-	    --stack->ga_len;
-	    type1 = ((type_T **)stack->ga_data)[stack->ga_len];
+	    if (!op_falsy)
+	    {
+		// remember the type and drop it
+		--stack->ga_len;
+		type1 = ((type_T **)stack->ga_data)[stack->ga_len];
 
-	    end_idx = instr->ga_len;
-	    generate_JUMP(cctx, JUMP_ALWAYS, 0);
+		end_idx = instr->ga_len;
+		generate_JUMP(cctx, JUMP_ALWAYS, 0);
 
-	    // jump here from JUMP_IF_FALSE
-	    isn = ((isn_T *)instr->ga_data) + alt_idx;
-	    isn->isn_arg.jump.jump_where = instr->ga_len;
+		// jump here from JUMP_IF_FALSE
+		isn = ((isn_T *)instr->ga_data) + alt_idx;
+		isn->isn_arg.jump.jump_where = instr->ga_len;
+	    }
 	}
 
-	// Check for the ":".
-	p = may_peek_next_line(cctx, *arg, &next);
-	if (*p != ':')
+	if (!op_falsy)
 	{
-	    emsg(_(e_missing_colon));
-	    return FAIL;
-	}
-	if (next != NULL)
-	{
-	    *arg = next_line_from_context(cctx, TRUE);
-	    p = skipwhite(*arg);
-	}
+	    // Check for the ":".
+	    p = may_peek_next_line(cctx, *arg, &next);
+	    if (*p != ':')
+	    {
+		emsg(_(e_missing_colon));
+		return FAIL;
+	    }
+	    if (next != NULL)
+	    {
+		*arg = next_line_from_context(cctx, TRUE);
+		p = skipwhite(*arg);
+	    }
 
-	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[1]))
-	{
-	    semsg(_(e_white_space_required_before_and_after_str), ":");
-	    return FAIL;
-	}
+	    if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[1]))
+	    {
+		semsg(_(e_white_space_required_before_and_after_str), ":");
+		return FAIL;
+	    }
 
-	// evaluate the third expression
-	if (has_const_expr)
-	    cctx->ctx_skip = save_skip == SKIP_YES || const_value
+	    // evaluate the third expression
+	    if (has_const_expr)
+		cctx->ctx_skip = save_skip == SKIP_YES || const_value
 							 ? SKIP_YES : SKIP_NOT;
-	*arg = skipwhite(p + 1);
-	if (may_get_next_line(p + 1, arg, cctx) == FAIL)
-	    return FAIL;
-	if (compile_expr1(arg, cctx, ppconst) == FAIL)
-	    return FAIL;
+	    *arg = skipwhite(p + 1);
+	    if (may_get_next_line(p + 1, arg, cctx) == FAIL)
+		return FAIL;
+	    if (compile_expr1(arg, cctx, ppconst) == FAIL)
+		return FAIL;
+	}
 
 	if (!has_const_expr)
 	{
+	    type_T	**typep;
+
 	    generate_ppconst(cctx, ppconst);
 
 	    // If the types differ, the result has a more generic type.
-	    type2 = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-	    common_type(type1, type2, &type2, cctx->ctx_type_list);
+	    typep = ((type_T **)stack->ga_data) + stack->ga_len - 1;
+	    common_type(type1, *typep, typep, cctx->ctx_type_list);
 
-	    // jump here from JUMP_ALWAYS
+	    // jump here from JUMP_ALWAYS or JUMP_AND_KEEP_IF_TRUE
 	    isn = ((isn_T *)instr->ga_data) + end_idx;
 	    isn->isn_arg.jump.jump_where = instr->ga_len;
 	}
