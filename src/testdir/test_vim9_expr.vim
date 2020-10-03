@@ -1538,6 +1538,16 @@ def Test_expr7_list()
   CheckDefExecFailure(["var l: list<number> = ['x', 234]"], 'E1012:', 1)
   CheckDefExecFailure(["var l: list<string> = [234, 'x']"], 'E1012:', 1)
   CheckDefExecFailure(["var l: list<string> = ['x', 123]"], 'E1012:', 1)
+
+  var lines =<< trim END
+      vim9script
+      var datalist: list<string>
+      def Main()
+        datalist += ['x'.
+      enddef
+      Main()
+  END
+  CheckScriptFailure(lines, 'E1127:')
 enddef
 
 def Test_expr7_list_vim9script()

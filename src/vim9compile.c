@@ -2549,7 +2549,7 @@ compile_list(char_u **arg, cctx_T *cctx)
 	    break;
 	}
 	if (compile_expr0(&p, cctx) == FAIL)
-	    break;
+	    return FAIL;
 	++count;
 	if (*p == ',')
 	{
@@ -3333,7 +3333,10 @@ compile_subscript(
 
 	    *arg = p + 1;
 	    if (may_get_next_line(*arg, arg, cctx) == FAIL)
+	    {
+		emsg(_(e_missing_name_after_dot));
 		return FAIL;
+	    }
 	    // dictionary member: dict.name
 	    p = *arg;
 	    if (eval_isdictc(*p))
