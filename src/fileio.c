@@ -318,10 +318,17 @@ readfile(
      */
     if (fname != NULL && *fname != NUL)
     {
-	p = fname + STRLEN(fname);
-	if (after_pathsep(fname, p) || STRLEN(fname) >= MAXPATHL)
+	if (STRLEN(fname) >= MAXPATHL)
 	{
 	    filemess(curbuf, fname, (char_u *)_("Illegal file name"), 0);
+	    msg_end();
+	    msg_scroll = msg_save;
+	    return FAIL;
+	}
+	p = fname + STRLEN(fname);
+	if (after_pathsep(fname, p))
+	{
+	    filemess(curbuf, fname, (char_u *)_("is a directory"), 0);
 	    msg_end();
 	    msg_scroll = msg_save;
 	    return FAIL;
