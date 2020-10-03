@@ -274,6 +274,9 @@ func Test_get_register()
   call assert_fails('let r = getreg("=", [])', 'E745:')
   call assert_fails('let r = getreg("=", 1, [])', 'E745:')
   enew!
+
+  " Using a register in operator-pending mode should fail
+  call assert_beeps('norm! c"')
 endfunc
 
 func Test_set_register()
