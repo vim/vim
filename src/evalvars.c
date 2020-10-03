@@ -215,8 +215,8 @@ evalvars_init(void)
 	    // add to compat scope dict
 	    hash_add(&compat_hashtab, p->vv_di.di_key);
     }
-    vimvars[VV_VERSION].vv_nr = VIM_VERSION_100;
-    vimvars[VV_VERSIONLONG].vv_nr = VIM_VERSION_100 * 10000 + highest_patch();
+    set_vim_var_nr(VV_VERSION, VIM_VERSION_100);
+    set_vim_var_nr(VV_VERSIONLONG, VIM_VERSION_100 * 10000 + highest_patch());
 
     set_vim_var_nr(VV_SEARCHFORWARD, 1L);
     set_vim_var_nr(VV_HLSEARCH, 1L);
@@ -243,6 +243,9 @@ evalvars_init(void)
     set_vim_var_nr(VV_TYPE_BLOB,    VAR_TYPE_BLOB);
 
     set_vim_var_nr(VV_ECHOSPACE,    sc_col - 1);
+
+    // TODO: remove later
+    set_vim_var_nr(VV_DISALLOW_LET, 1);
 
     // Default for v:register is not 0 but '"'.  This is adjusted once the
     // clipboard has been setup by calling reset_reg_var().

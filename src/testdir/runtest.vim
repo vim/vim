@@ -360,9 +360,6 @@ func FinishTesting()
   qall!
 endfunc
 
-" TODO: remove later
-let v:disallow_let = 1
-
 " Source the test script.  First grab the file name, in case the script
 " navigates away.  g:testname can be used by the tests.
 let g:testname = expand('%')
