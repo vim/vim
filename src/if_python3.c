@@ -909,7 +909,7 @@ static wchar_t *py_home_buf = NULL;
 
 #if defined(MSWIN) && (PY_VERSION_HEX >= 0x030500f0)
 // Python 3.5 or later will abort inside Py_Initialize() when stdin is
-// redirected.  Reconnect stdin to CONIN$.
+// redirected.  Reconnect stdin to NUL.
 // Note that the python DLL is linked to its own stdio DLL which can be
 // differ from Vim's stdio.
     static void
@@ -938,11 +938,11 @@ reset_stdin(void)
 	    pyfreopen = (void*)GetProcAddress(hpystdiodll, "freopen");
     }
 
-    // Reconnect stdin to CONIN$.
+    // Reconnect stdin to NUL.
     if (pyfreopen)
-	pyfreopen("CONIN$", "r", py__acrt_iob_func(0));
+	pyfreopen("NUL", "r", py__acrt_iob_func(0));
     else
-	freopen("CONIN$", "r", stdin);
+	freopen("NUL", "r", stdin);
 }
 #else
 # define reset_stdin()
