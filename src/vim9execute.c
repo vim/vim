@@ -1901,14 +1901,25 @@ call_def_function(
 	    case ISN_JUMP:
 		{
 		    jumpwhen_T	when = iptr->isn_arg.jump.jump_when;
+		    int		error = FALSE;
 		    int		jump = TRUE;
 
 		    if (when != JUMP_ALWAYS)
 		    {
 			tv = STACK_TV_BOT(-1);
-			jump = tv2bool(tv);
+			if (when == JUMP_IF_COND_FALSE
+				|| when == JUMP_IF_COND_TRUE)
+			{
+			    SOURCING_LNUM = iptr->isn_lnum;
+			    jump = tv_get_bool_chk(tv, &error);
+			    if (error)
+				goto on_error;
+			}
+			else
+			    jump = tv2bool(tv);
 			if (when == JUMP_IF_FALSE
-					     || when == JUMP_AND_KEEP_IF_FALSE)
+					     || when == JUMP_AND_KEEP_IF_FALSE
+					     || when == JUMP_IF_COND_FALSE)
 			    jump = !jump;
 			if (when == JUMP_IF_FALSE || !jump)
 			{
@@ -2624,13 +2635,25 @@ call_def_function(
 		break;
 
 	    case ISN_2BOOL:
+	    case ISN_COND2BOOL:
 		{
 		    int n;
+		    int error = FALSE;
 
 		    tv = STACK_TV_BOT(-1);
-		    n = tv2bool(tv);
-		    if (iptr->isn_arg.number)  // invert
-			n = !n;
+		    if (iptr->isn_type == ISN_2BOOL)
+		    {
+			n = tv2bool(tv);
+			if (iptr->isn_arg.number)  // invert
+			    n = !n;
+		    }
+		    else
+		    {
+			SOURCING_LNUM = iptr->isn_lnum;
+			n = tv_get_bool_chk(tv, &error);
+			if (error)
+			    goto on_error;
+		    }
 		    clear_tv(tv);
 		    tv->v_type = VAR_BOOL;
 		    tv->vval.v_number = n ? VVAL_TRUE : VVAL_FALSE;
@@ -3192,6 +3215,12 @@ ex_disassemble(exarg_T *eap)
 			case JUMP_AND_KEEP_IF_FALSE:
 			    when = "JUMP_AND_KEEP_IF_FALSE";
 			    break;
+			case JUMP_IF_COND_FALSE:
+			    when = "JUMP_IF_COND_FALSE";
+			    break;
+			case JUMP_IF_COND_TRUE:
+			    when = "JUMP_IF_COND_TRUE";
+			    break;
 		    }
 		    smsg("%4d %s -> %d", current, when,
 						iptr->isn_arg.jump.jump_where);
@@ -3342,6 +3371,7 @@ ex_disassemble(exarg_T *eap)
 				iptr->isn_arg.checklen.cl_more_OK ? ">= " : "",
 				iptr->isn_arg.checklen.cl_min_len);
 			       break;
+	    case ISN_COND2BOOL: smsg("%4d COND2BOOL", current); break;
 	    case ISN_2BOOL: if (iptr->isn_arg.number)
 				smsg("%4d INVERT (!val)", current);
 			    else

@@ -22,11 +22,11 @@ def Test_assignment_bool()
   var bool4: bool = 1
   assert_equal(true, bool4)
 
-  var bool5: bool = 'yes' && 'no'
+  var bool5: bool = 1 && true
   assert_equal(true, bool5)
-  var bool6: bool = [] && 99
+  var bool6: bool = 0 && 1
   assert_equal(false, bool6)
-  var bool7: bool = [] || #{a: 1} && 99
+  var bool7: bool = 0 || 1 && true
   assert_equal(true, bool7)
 
   var lines =<< trim END
@@ -41,9 +41,9 @@ def Test_assignment_bool()
     assert_equal(false, flag)
     flag = 1
     assert_equal(true, flag)
-    flag = 99 || 123
+    flag = 1 || true
     assert_equal(true, flag)
-    flag = 'yes' && []
+    flag = 1 && false
     assert_equal(false, flag)
   END
   CheckScriptSuccess(lines)

@@ -128,7 +128,8 @@ typedef enum {
     ISN_GETITEM,    // push list item, isn_arg.number is the index
     ISN_MEMBER,	    // dict[member]
     ISN_STRINGMEMBER, // dict.member using isn_arg.string
-    ISN_2BOOL,	    // convert value to bool, invert if isn_arg.number != 0
+    ISN_2BOOL,	    // falsy/truthy to bool, invert if isn_arg.number != 0
+    ISN_COND2BOOL,  // convert value to bool
     ISN_2STRING,    // convert value to string at isn_arg.number on stack
     ISN_2STRING_ANY, // like ISN_2STRING but check type
     ISN_NEGATENR,   // apply "-" to number
@@ -171,8 +172,10 @@ typedef struct {
 typedef enum {
     JUMP_ALWAYS,
     JUMP_IF_FALSE,		// pop and jump if false
-    JUMP_AND_KEEP_IF_TRUE,	// jump if top of stack is true, drop if not
-    JUMP_AND_KEEP_IF_FALSE,	// jump if top of stack is false, drop if not
+    JUMP_AND_KEEP_IF_TRUE,	// jump if top of stack is truthy, drop if not
+    JUMP_AND_KEEP_IF_FALSE,	// jump if top of stack is falsy, drop if not
+    JUMP_IF_COND_TRUE,		// jump if top of stack is true, drop if not
+    JUMP_IF_COND_FALSE,		// jump if top of stack is false, drop if not
 } jumpwhen_T;
 
 // arguments to ISN_JUMP

@@ -706,6 +706,25 @@ generate_2BOOL(cctx_T *cctx, int invert)
     return OK;
 }
 
+/*
+ * Generate an ISN_COND2BOOL instruction.
+ */
+    static int
+generate_COND2BOOL(cctx_T *cctx)
+{
+    isn_T	*isn;
+    garray_T	*stack = &cctx->ctx_type_stack;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_COND2BOOL)) == NULL)
+	return FAIL;
+
+    // type becomes bool
+    ((type_T **)stack->ga_data)[stack->ga_len - 1] = &t_bool;
+
+    return OK;
+}
+
     static int
 generate_TYPECHECK(
 	cctx_T	    *cctx,
@@ -4003,7 +4022,7 @@ compile_and_or(
 	garray_T	*instr = &cctx->ctx_instr;
 	garray_T	end_ga;
 	garray_T	*stack = &cctx->ctx_type_stack;
-	type_T		**typep;
+	int		all_bool_values = TRUE;
 
 	/*
 	 * Repeat until there is no following "||" or "&&"
@@ -4023,8 +4042,12 @@ compile_and_or(
 		return FAIL;
 	    }
 
-	    // TODO: use ppconst if the value is a constant
+	    // TODO: use ppconst if the value is a constant and check
+	    // evaluating to bool
 	    generate_ppconst(cctx, ppconst);
+
+	    if (((type_T **)stack->ga_data)[stack->ga_len - 1] != &t_bool)
+		all_bool_values = FALSE;
 
 	    if (ga_grow(&end_ga, 1) == FAIL)
 	    {
@@ -4034,7 +4057,7 @@ compile_and_or(
 	    *(((int *)end_ga.ga_data) + end_ga.ga_len) = instr->ga_len;
 	    ++end_ga.ga_len;
 	    generate_JUMP(cctx, opchar == '|'
-			 ?  JUMP_AND_KEEP_IF_TRUE : JUMP_AND_KEEP_IF_FALSE, 0);
+				 ?  JUMP_IF_COND_TRUE : JUMP_IF_COND_FALSE, 0);
 
 	    // eval the next expression
 	    *arg = skipwhite(p + 2);
@@ -4064,19 +4087,9 @@ compile_and_or(
 	}
 	ga_clear(&end_ga);
 
-	// The resulting type can be used as a bool.
-	typep = ((type_T **)stack->ga_data) + stack->ga_len - 1;
-	if (*typep != &t_bool)
-	{
-	    type_T *type = get_type_ptr(cctx->ctx_type_list);
-
-	    if (type != NULL)
-	    {
-		*type = **typep;
-		type->tt_flags |= TTFLAG_BOOL_OK;
-		*typep = type;
-	    }
-	}
+	// The resulting type is converted to bool if needed.
+	if (!all_bool_values)
+	    generate_COND2BOOL(cctx);
     }
 
     return OK;
@@ -4087,10 +4100,11 @@ compile_and_or(
  *
  * Produces instructions:
  *	EVAL expr4a		Push result of "expr4a"
- *	JUMP_AND_KEEP_IF_FALSE end
+ *	JUMP_IF_COND_FALSE end
  *	EVAL expr4b		Push result of "expr4b"
- *	JUMP_AND_KEEP_IF_FALSE end
+ *	JUMP_IF_COND_FALSE end
  *	EVAL expr4c		Push result of "expr4c"
+ *	COND2BOOL
  * end:
  */
     static int
@@ -4111,10 +4125,11 @@ compile_expr3(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
  *
  * Produces instructions:
  *	EVAL expr3a		Push result of "expr3a"
- *	JUMP_AND_KEEP_IF_TRUE end
+ *	JUMP_IF_COND_TRUE end
  *	EVAL expr3b		Push result of "expr3b"
- *	JUMP_AND_KEEP_IF_TRUE end
+ *	JUMP_IF_COND_TRUE end
  *	EVAL expr3c		Push result of "expr3c"
+ *	COND2BOOL
  * end:
  */
     static int
@@ -7415,6 +7430,7 @@ delete_instr(isn_T *isn)
 	case ISN_COMPARESPECIAL:
 	case ISN_COMPARESTRING:
 	case ISN_CONCAT:
+	case ISN_COND2BOOL:
 	case ISN_DROP:
 	case ISN_ECHO:
 	case ISN_ECHOERR:

@@ -196,32 +196,32 @@ enddef
 
 " test ||
 def Test_expr2()
-  assert_equal(2, 2 || 0)
-  assert_equal(7, 0 ||
+  assert_equal(true, 1 || 0)
+  assert_equal(true, 0 ||
 		    0 ||
-		    7)
-  assert_equal(0, 0 || 0)
-  assert_equal(0, 0
+		    1)
+  assert_equal(false, 0 || 0)
+  assert_equal(false, 0
   		    || 0)
-  assert_equal('', 0 || '')
+  assert_equal(false, 0 || false)
 
   g:vals = []
-  assert_equal(3, Record(3) || Record(1))
-  assert_equal([3], g:vals)
+  assert_equal(true, Record(1) || Record(3))
+  assert_equal([1], g:vals)
 
   g:vals = []
-  assert_equal(5, Record(0) || Record(5))
-  assert_equal([0, 5], g:vals)
+  assert_equal(true, Record(0) || Record(1))
+  assert_equal([0, 1], g:vals)
 
   g:vals = []
-  assert_equal(4, Record(0)
-		      || Record(4)
+  assert_equal(true, Record(0)
+		      || Record(1)
 		      || Record(0))
-  assert_equal([0, 4], g:vals)
+  assert_equal([0, 1], g:vals)
 
   g:vals = []
-  assert_equal(0, Record([]) || Record('') || Record(0))
-  assert_equal([[], '', 0], g:vals)
+  assert_equal(false, Record(0) || Record(false) || Record(0))
+  assert_equal([0, false, 0], g:vals)
 enddef
 
 def Test_expr2_vimscript()
@@ -230,7 +230,7 @@ def Test_expr2_vimscript()
       vim9script
       var name = 0
       		|| 1
-      assert_equal(1, name)
+      assert_equal(true, name)
   END
   CheckScriptSuccess(lines)
 
@@ -269,80 +269,85 @@ def Test_expr2_vimscript()
   END
   CheckScriptFailure(lines, 'E1004:', 2)
 
-  # check keeping the value
+  # check evaluating to bool
   lines =<< trim END
-      vim9script
-      assert_equal(2, 2 || 0)
-      assert_equal(7, 0 ||
+      assert_equal(true, 1 || 0)
+      assert_equal(true, 0 ||
 			0 ||
-			7)
-      assert_equal(0, 0 || 0)
-      assert_equal(0, 0
+			!!7)
+      assert_equal(false, 0 || 0)
+      assert_equal(false, 0
 			|| 0)
-      assert_equal('', 0 || '')
+      assert_equal(false, 0 || false)
 
       g:vals = []
-      assert_equal(3, Record(3) || Record(1))
-      assert_equal([3], g:vals)
+      assert_equal(true, Record(true) || Record(false))
+      assert_equal([true], g:vals)
 
       g:vals = []
-      assert_equal(5, Record(0) || Record(5))
-      assert_equal([0, 5], g:vals)
+      assert_equal(true, Record(0) || Record(true))
+      assert_equal([0, true], g:vals)
 
       g:vals = []
-      assert_equal(4, Record(0)
-			  || Record(4)
+      assert_equal(true, Record(0)
+			  || Record(true)
 			  || Record(0))
-      assert_equal([0, 4], g:vals)
+      assert_equal([0, true], g:vals)
 
       g:vals = []
-      assert_equal(0, Record([]) || Record('') || Record(0))
-      assert_equal([[], '', 0], g:vals)
+      assert_equal(false, Record(0) || Record(false) || Record(0))
+      assert_equal([0, false, 0], g:vals)
   END
-  CheckScriptSuccess(lines)
+  CheckDefAndScriptSuccess(lines)
 enddef
 
-func Test_expr2_fails()
-  let msg = "White space required before and after '||'"
+def Test_expr2_fails()
+  var msg = "White space required before and after '||'"
   call CheckDefFailure(["var x = 1||2"], msg, 1)
   call CheckDefFailure(["var x = 1 ||2"], msg, 1)
   call CheckDefFailure(["var x = 1|| 2"], msg, 1)
 
   call CheckDefFailure(["var x = 1 || xxx"], 'E1001:', 1)
-endfunc
+
+  # TODO: should fail at compile time
+  call CheckDefExecFailure(["var x = 3 || 7"], 'E1023:', 1)
+  call CheckScriptFailure(["vim9script", "var x = 3 || 7"], 'E1023:', 2)
+  call CheckDefExecFailure(["var x = [] || false"], 'E745:', 1)
+  call CheckScriptFailure(["vim9script", "var x = [] || false"], 'E745:', 2)
+enddef
 
 " test &&
 def Test_expr3()
-  assert_equal(0, 2 && 0)
-  assert_equal(0, 0 &&
+  assert_equal(false, 1 && 0)
+  assert_equal(false, 0 &&
 		0 &&
-		7)
-  assert_equal(7, 2
-  		    && 3
-		    && 7)
-  assert_equal(0, 0 && 0)
-  assert_equal(0, 0 && '')
-  assert_equal('', 8 && '')
+		1)
+  assert_equal(true, 1
+  		    && true
+		    && 1)
+  assert_equal(false, 0 && 0)
+  assert_equal(false, 0 && false)
+  assert_equal(true, 1 && true)
 
   g:vals = []
-  assert_equal(1, Record(3) && Record(1))
-  assert_equal([3, 1], g:vals)
+  assert_equal(true, Record(true) && Record(1))
+  assert_equal([true, 1], g:vals)
 
   g:vals = []
-  assert_equal(0, Record(0) && Record(5))
+  assert_equal(false, Record(0) && Record(1))
   assert_equal([0], g:vals)
 
   g:vals = []
-  assert_equal(0, Record(0) && Record(4) && Record(0))
+  assert_equal(false, Record(0) && Record(4) && Record(0))
   assert_equal([0], g:vals)
 
   g:vals = []
-  assert_equal(0, Record(8) && Record(4) && Record(0))
-  assert_equal([8, 4, 0], g:vals)
+  assert_equal(false, Record(1) && Record(true) && Record(0))
+  assert_equal([1, true, 0], g:vals)
 
   g:vals = []
-  assert_equal(0, Record([1]) && Record('z') && Record(0))
-  assert_equal([[1], 'z', 0], g:vals)
+  assert_equal(false, Record(1) && Record(true) && Record(0))
+  assert_equal([1, true, 0], g:vals)
 enddef
 
 def Test_expr3_vimscript()
@@ -351,7 +356,7 @@ def Test_expr3_vimscript()
       vim9script
       var name = 0
       		&& 1
-      assert_equal(0, name)
+      assert_equal(false, name)
   END
   CheckScriptSuccess(lines)
 
@@ -393,36 +398,32 @@ def Test_expr3_vimscript()
   # check keeping the value
   lines =<< trim END
       vim9script
-      assert_equal(0, 2 && 0)
-      assert_equal(0, 0 &&
+      assert_equal(false, 1 && 0)
+      assert_equal(false, 0 &&
 		    0 &&
-		    7)
-      assert_equal(7, 2
-			&& 3
-			&& 7)
-      assert_equal(0, 0 && 0)
-      assert_equal(0, 0 && '')
-      assert_equal('', 8 && '')
+		    1)
+      assert_equal(true, 1
+			&& true
+			&& 1)
+      assert_equal(false, 0 && 0)
+      assert_equal(false, 0 && false)
+      assert_equal(false, 1 && 0)
 
       g:vals = []
-      assert_equal(1, Record(3) && Record(1))
-      assert_equal([3, 1], g:vals)
+      assert_equal(true, Record(1) && Record(true))
+      assert_equal([1, true], g:vals)
 
       g:vals = []
-      assert_equal(0, Record(0) && Record(5))
+      assert_equal(false, Record(0) && Record(1))
       assert_equal([0], g:vals)
 
       g:vals = []
-      assert_equal(0, Record(0) && Record(4) && Record(0))
+      assert_equal(false, Record(0) && Record(1) && Record(0))
       assert_equal([0], g:vals)
 
       g:vals = []
-      assert_equal(0, Record(8) && Record(4) && Record(0))
-      assert_equal([8, 4, 0], g:vals)
-
-      g:vals = []
-      assert_equal(0, Record([1]) && Record('z') && Record(0))
-      assert_equal([[1], 'z', 0], g:vals)
+      assert_equal(false, Record(1) && Record(true) && Record(0))
+      assert_equal([1, true, 0], g:vals)
   END
   CheckScriptSuccess(lines)
 enddef

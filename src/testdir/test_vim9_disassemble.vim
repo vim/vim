@@ -766,11 +766,11 @@ def Test_disassemble_and_or()
         '\d LOAD arg\[-1]\_s*' ..
         '\d PUSHNR 1\_s*' ..
         '\d COMPAREANY ==\_s*' ..
-        '\d JUMP_AND_KEEP_IF_FALSE -> \d\+\_s*' ..
+        '\d JUMP_IF_COND_FALSE -> \d\+\_s*' ..
         '\d LOAD arg\[-1]\_s*' ..
         '\d PUSHNR 2\_s*' ..
         '\d COMPAREANY !=\_s*' ..
-        '\d JUMP_AND_KEEP_IF_TRUE -> \d\+\_s*' ..
+        '\d JUMP_IF_COND_TRUE -> \d\+\_s*' ..
         '\d LOAD arg\[-1]\_s*' ..
         '\d\+ PUSHNR 4\_s*' ..
         '\d\+ COMPAREANY ==\_s*' ..
@@ -1200,22 +1200,23 @@ def Test_disassemble_invert_bool()
 enddef
 
 def ReturnBool(): bool
-  var var: bool = "no" && [] || 123
-  return var
+  var name: bool = 1 && 0 || 1
+  return name
 enddef
 
 def Test_disassemble_return_bool()
   var instr = execute('disassemble ReturnBool')
   assert_match('ReturnBool\_s*' ..
-        'var var: bool = "no" && \[\] || 123\_s*' ..
-        '0 PUSHS "no"\_s*' ..
-        '1 JUMP_AND_KEEP_IF_FALSE -> 3\_s*' ..
-        '2 NEWLIST size 0\_s*' ..
-        '3 JUMP_AND_KEEP_IF_TRUE -> 5\_s*' ..
-        '4 PUSHNR 123\_s*' ..
-        '5 2BOOL (!!val)\_s*' ..
+        'var name: bool = 1 && 0 || 1\_s*' ..
+        '0 PUSHNR 1\_s*' ..
+        '1 JUMP_IF_COND_FALSE -> 3\_s*' ..
+        '2 PUSHNR 0\_s*' ..
+        '3 COND2BOOL\_s*' ..
+        '4 JUMP_IF_COND_TRUE -> 6\_s*' ..
+        '5 PUSHNR 1\_s*' ..
+        '6 2BOOL (!!val)\_s*' ..
         '\d STORE $0\_s*' ..
-        'return var\_s*' ..
+        'return name\_s*' ..
         '\d LOAD $0\_s*' ..   
         '\d RETURN',
         instr)

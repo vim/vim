@@ -360,13 +360,12 @@ typval2type_int(typval_T *tv, garray_T *type_gap)
 need_convert_to_bool(type_T *type, typval_T *tv)
 {
     return type != NULL && type == &t_bool && tv->v_type != VAR_BOOL
-	    && ((tv->v_lock & VAR_BOOL_OK)
-		|| (tv->v_type == VAR_NUMBER
-		       && (tv->vval.v_number == 0 || tv->vval.v_number == 1)));
+	    && (tv->v_type == VAR_NUMBER
+		       && (tv->vval.v_number == 0 || tv->vval.v_number == 1));
 }
 
 /*
- * Get a type_T for a typval_T and handle VAR_BOOL_OK.
+ * Get a type_T for a typval_T.
  * "type_list" is used to temporarily create types in.
  */
     type_T *
@@ -375,9 +374,8 @@ typval2type(typval_T *tv, garray_T *type_gap)
     type_T *type = typval2type_int(tv, type_gap);
 
     if (type != NULL && type != &t_bool
-	    && ((tv->v_type == VAR_NUMBER
-		    && (tv->vval.v_number == 0 || tv->vval.v_number == 1))
-		|| (tv->v_lock & VAR_BOOL_OK)))
+	    && (tv->v_type == VAR_NUMBER
+		    && (tv->vval.v_number == 0 || tv->vval.v_number == 1)))
     {
 	type_T *newtype = get_type_ptr(type_gap);
 

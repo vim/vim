@@ -72,8 +72,8 @@ def Test_if_linebreak()
   var lines =<< trim END
       vim9script
       if 1 &&
-            2
-            || 3
+            true
+            || 1
         g:res = 42
       endif
       assert_equal(42, g:res)
