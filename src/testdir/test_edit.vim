@@ -1587,7 +1587,7 @@ func Test_edit_illegal_filename()
   close!
 endfunc
 
-" Test for editing a file with a directory
+" Test for editing a directory
 func Test_edit_is_a_directory()
   CheckEnglish
   let dirname = getcwd() . "/Xdir"
