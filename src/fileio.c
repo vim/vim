@@ -211,6 +211,7 @@ readfile(
     char_u	*old_b_fname;
     int		using_b_ffname;
     int		using_b_fname;
+    static char *msg_is_a_directory = N_("is a directory");
 
     au_did_filetype = FALSE; // reset before triggering any autocommands
 
@@ -310,18 +311,25 @@ readfile(
     else
 	msg_scroll = TRUE;	// don't overwrite previous file message
 
-    /*
-     * If the name ends in a path separator, we can't open it.  Check here,
-     * because reading the file may actually work, but then creating the swap
-     * file may destroy it!  Reported on MS-DOS and Win 95.
-     * If the name is too long we might crash further on, quit here.
-     */
     if (fname != NULL && *fname != NUL)
     {
-	p = fname + STRLEN(fname);
-	if (after_pathsep(fname, p) || STRLEN(fname) >= MAXPATHL)
+	size_t namelen = STRLEN(fname);
+
+	// If the name is too long we might crash further on, quit here.
+	if (namelen >= MAXPATHL)
 	{
 	    filemess(curbuf, fname, (char_u *)_("Illegal file name"), 0);
+	    msg_end();
+	    msg_scroll = msg_save;
+	    return FAIL;
+	}
+
+	// If the name ends in a path separator, we can't open it.  Check here,
+	// because reading the file may actually work, but then creating the
+	// swap file may destroy it!  Reported on MS-DOS and Win 95.
+	if (after_pathsep(fname, fname + namelen))
+	{
+	    filemess(curbuf, fname, (char_u *)_(msg_is_a_directory), 0);
 	    msg_end();
 	    msg_scroll = msg_save;
 	    return FAIL;
@@ -349,7 +357,7 @@ readfile(
 
 	    if (S_ISDIR(perm))
 	    {
-		filemess(curbuf, fname, (char_u *)_("is a directory"), 0);
+		filemess(curbuf, fname, (char_u *)_(msg_is_a_directory), 0);
 		retval = NOTDONE;
 	    }
 	    else
@@ -475,7 +483,7 @@ readfile(
 	perm = mch_getperm(fname);  // check if the file exists
 	if (isdir_f)
 	{
-	    filemess(curbuf, sfname, (char_u *)_("is a directory"), 0);
+	    filemess(curbuf, sfname, (char_u *)_(msg_is_a_directory), 0);
 	    curbuf->b_p_ro = TRUE;	// must use "w!" now
 	}
 	else

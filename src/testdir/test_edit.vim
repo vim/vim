@@ -1587,6 +1587,31 @@ func Test_edit_illegal_filename()
   close!
 endfunc
 
+" Test for editing a directory
+func Test_edit_is_a_directory()
+  CheckEnglish
+  let dirname = getcwd() . "/Xdir"
+  call mkdir(dirname, 'p')
+
+  new
+  redir => msg
+  exe 'edit' dirname
+  redir END
+  call assert_match("is a directory$", split(msg, "\n")[0])
+  bwipe!
+
+  let dirname .= '/'
+
+  new
+  redir => msg
+  exe 'edit' dirname
+  redir END
+  call assert_match("is a directory$", split(msg, "\n")[0])
+  bwipe!
+
+  call delete(dirname, 'rf')
+endfunc
+
 " Test for editing a file using invalid file encoding
 func Test_edit_invalid_encoding()
   CheckEnglish
