@@ -1056,6 +1056,8 @@ def Test_func_type_part()
   CheckDefFailure(['var RefAny: func(): any', 'RefAny = FuncNoArgNoRet'], 'E1012: Type mismatch; expected func(): any but got func()')
   CheckDefFailure(['var RefAny: func(): any', 'RefAny = FuncOneArgNoRet'], 'E1012: Type mismatch; expected func(): any but got func(number)')
 
+  var RefAnyNoArgs: func: any = RefAny
+
   var RefNr: func: number
   RefNr = FuncNoArgRetNumber
   RefNr = FuncOneArgRetNumber
@@ -1098,6 +1100,22 @@ def Test_func_return_type()
   str->assert_equal('yes')
 
   CheckDefFailure(['var str: string', 'str = FuncNoArgRetNumber()'], 'E1012: Type mismatch; expected string but got number')
+enddef
+
+def Test_func_common_type()
+  def FuncOne(n: number): number
+    return n
+  enddef
+  def FuncTwo(s: string): number
+    return len(s)
+  enddef
+  def FuncThree(n: number, s: string): number
+    return n + len(s)
+  enddef
+  var list = [FuncOne, FuncTwo, FuncThree]
+  assert_equal(8, list[0](8))
+  assert_equal(4, list[1]('word'))
+  assert_equal(7, list[2](3, 'word'))
 enddef
 
 def MultiLine(
@@ -1948,6 +1966,9 @@ def Test_partial_call()
   Xsetlist = function('setqflist', [[], ' '])
   Xsetlist({'title': 'test'})
   getqflist({'title': 1})->assert_equal({'title': 'test'})
+
+  var Len: func: number = function('len', ['word'])
+  assert_equal(4, Len())
 enddef
 
 def Test_cmd_modifier()
