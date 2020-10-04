@@ -1906,6 +1906,32 @@ def Test_closure_in_map()
   delete('XclosureDir', 'rf')
 enddef
 
+def Test_invalid_function_name()
+  var lines =<< trim END
+      vim9script
+      def s: list<string>
+  END
+  CheckScriptFailure(lines, 'E129:')
+
+  lines =<< trim END
+      vim9script
+      def g: list<string>
+  END
+  CheckScriptFailure(lines, 'E129:')
+
+  lines =<< trim END
+      vim9script
+      def <SID>: list<string>
+  END
+  CheckScriptFailure(lines, 'E884:')
+
+  lines =<< trim END
+      vim9script
+      def F list<string>
+  END
+  CheckScriptFailure(lines, 'E488:')
+enddef
+
 def Test_partial_call()
   var Xsetlist = function('setloclist', [0])
   Xsetlist([], ' ', {'title': 'test'})
