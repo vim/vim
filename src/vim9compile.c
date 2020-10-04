@@ -5721,10 +5721,10 @@ compile_if(char_u *arg, cctx_T *cctx)
 
 	// The expression results in a constant.
 	v = tv_get_bool_chk(&ppconst.pp_tv[0], &error);
+	clear_ppconst(&ppconst);
 	if (error)
 	    return NULL;
 	cctx->ctx_skip = v ? SKIP_NOT : SKIP_YES;
-	clear_ppconst(&ppconst);
     }
     else
     {
