@@ -913,7 +913,6 @@ func Test_n_arg()
     call assert_equal([], readfile('Xtestout'))
     call delete('Xtestout')
   endif
-  call delete('Xafter')
 endfunc
 
 " Test for the "-h" (help) argument
@@ -945,7 +944,6 @@ func Test_E_arg()
     call assert_equal([], readfile('Xtestout'))
     call delete('Xtestout')
   endif
-  call delete('Xafter')
 endfunc
 
 " Test for too many edit argument errors
