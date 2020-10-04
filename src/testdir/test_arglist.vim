@@ -426,6 +426,7 @@ func Test_argdelete()
   call assert_fails('argdelete', 'E610:')
   call assert_fails('1,100argdelete', 'E16:')
   call assert_fails('argdel /\)/', 'E55:')
+  call assert_fails('1argdel 1', 'E474:')
 
   call Reset_arglist()
   args a b c d

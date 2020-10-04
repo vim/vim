@@ -196,6 +196,7 @@ func Test_json_decode()
   call assert_fails('call json_decode("{[]:42}")', "E491:")
 
   call assert_fails('call json_decode("-")', "E491:")
+  call assert_fails('call json_decode("-1x")', "E491:")
   call assert_fails('call json_decode("infinit")', "E491:")
 
   call assert_fails('call json_decode("\"\\u111Z\"")', 'E491:')
