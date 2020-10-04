@@ -164,15 +164,20 @@ the "name#" prefix is sufficient. >
 
 When using `:function` or `:def` to specify a nested function inside a `:def`
 function, this nested function is local to the code block it is defined in.
-In a `:def` function IT is not possible to define a script-local function.  it
+In a `:def` function it is not possible to define a script-local function.  it
 is possible to define a global function by using the "g:" prefix.
 
 When referring to a function and no "s:" or "g:" prefix is used, Vim will
-prefer using a local function (in the function scope, script scope or
-imported) before looking for a global function.  However, it is recommended to
-always use "g:" to refer to a local function for clarity.  In all cases the
-function must be defined before used.  That is when it is first called or when
-`:defcompile` causes the call to be compiled.
+search for the function:
+- in the function scope
+- in the script scope, possibly imported
+- in the list of global functions
+However, it is recommended to always use "g:" to refer to a global function
+for clarity.
+
+In all cases the function must be defined before used.  That is when it is
+called, when `:defcompile` causes the it to be compiled, or when code that
+calls it is being compiled (to figure out the return type).
 
 The result is that functions and variables without a namespace can usually be
 found in the script, either defined there or imported.  Global functions and
@@ -467,11 +472,21 @@ White space is not allowed:
 
 Conditions and expressions ~
 
-Conditions and expressions are mostly working like they do in JavaScript.  A
-difference is made where JavaScript does not work like most people expect.
-Specifically, an empty list is falsy.
+Conditions and expressions are mostly working like they do in other languages.
+Some values are different from legacy Vim script:
+	value		legacy Vim script	Vim9 script ~
+	0		falsy			falsy
+	1		truthy			truthy
+	99		truthy			Error!
+	"0"		falsy			Error!
+	"99"		truthy			Error!
+	"text"		falsy			Error!
 
-	type		TRUE when ~
+For the "??" operator and when using "!" then there is no error, every value
+is either falsy or truthy.  This is mostly like JavaScript, except that an
+empty list and dict is falsy:
+
+	type		truthy when ~
 	bool		v:true or 1
 	number		non-zero
 	float		non-zero
@@ -498,13 +513,13 @@ one: >
 	[] || 99     Error!
 
 When using "!" for inverting, there is no error for using any type and the
-result is a boolean: >
+result is a boolean.  "!!" can be used to turn any value into boolean: >
 	!'yes'	    		== false
-	var myList = [1, 2, 3]
-	!!myList    		== true
+	!![]			== false
+	!![1, 2, 3]    		== true
 
 When using "`.."` for string concatenation arguments of simple types are
-always converted to string. >
+always converted to string: >
 	'hello ' .. 123  == 'hello 123'
 	'hello ' .. v:true  == 'hello v:true'
 

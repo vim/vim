@@ -1908,6 +1908,7 @@ call_def_function(
 		    {
 			tv = STACK_TV_BOT(-1);
 			if (when == JUMP_IF_COND_FALSE
+				|| when == JUMP_IF_FALSE
 				|| when == JUMP_IF_COND_TRUE)
 			{
 			    SOURCING_LNUM = iptr->isn_lnum;
@@ -3403,7 +3404,7 @@ ex_disassemble(exarg_T *eap)
 }
 
 /*
- * Return TRUE when "tv" is not falsey: non-zero, non-empty string, non-empty
+ * Return TRUE when "tv" is not falsy: non-zero, non-empty string, non-empty
  * list, etc.  Mostly like what JavaScript does, except that empty list and
  * empty dictionary are FALSE.
  */

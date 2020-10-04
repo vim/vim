@@ -4212,7 +4212,17 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
 	    // the condition is a constant, we know whether the ? or the :
 	    // expression is to be evaluated.
 	    has_const_expr = TRUE;
-	    const_value = tv2bool(&ppconst->pp_tv[ppconst_used]);
+	    if (op_falsy)
+		const_value = tv2bool(&ppconst->pp_tv[ppconst_used]);
+	    else
+	    {
+		int error = FALSE;
+
+		const_value = tv_get_bool_chk(&ppconst->pp_tv[ppconst_used],
+								       &error);
+		if (error)
+		    return FAIL;
+	    }
 	    cctx->ctx_skip = save_skip == SKIP_YES ||
 		 (op_falsy ? const_value : !const_value) ? SKIP_YES : SKIP_NOT;
 
@@ -5638,6 +5648,23 @@ drop_scope(cctx_T *cctx)
 }
 
 /*
+ * Check that the top of the type stack has a type that can be used as a
+ * condition.  Give an error and return FAIL if not.
+ */
+    static int
+bool_on_stack(cctx_T *cctx)
+{
+    garray_T	*stack = &cctx->ctx_type_stack;
+    type_T	*type;
+
+    type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+    if (type != &t_bool && type != &t_number && type != &t_any
+	    && need_type(type, &t_bool, -1, cctx, FALSE) == FAIL)
+	return FAIL;
+    return OK;
+}
+
+/*
  * compile "if expr"
  *
  * "if expr" Produces instructions:
@@ -5689,8 +5716,14 @@ compile_if(char_u *arg, cctx_T *cctx)
 	clear_ppconst(&ppconst);
     else if (instr->ga_len == instr_count && ppconst.pp_used == 1)
     {
+	int error = FALSE;
+	int v;
+
 	// The expression results in a constant.
-	cctx->ctx_skip = tv2bool(&ppconst.pp_tv[0]) ? SKIP_NOT : SKIP_YES;
+	v = tv_get_bool_chk(&ppconst.pp_tv[0], &error);
+	if (error)
+	    return NULL;
+	cctx->ctx_skip = v ? SKIP_NOT : SKIP_YES;
 	clear_ppconst(&ppconst);
     }
     else
@@ -5698,6 +5731,8 @@ compile_if(char_u *arg, cctx_T *cctx)
 	// Not a constant, generate instructions for the expression.
 	cctx->ctx_skip = SKIP_UNKNOWN;
 	if (generate_ppconst(cctx, &ppconst) == FAIL)
+	    return NULL;
+	if (bool_on_stack(cctx) == FAIL)
 	    return NULL;
     }
 
@@ -5764,9 +5799,15 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 	clear_ppconst(&ppconst);
     else if (instr->ga_len == instr_count && ppconst.pp_used == 1)
     {
+	int error = FALSE;
+	int v;
+
 	// The expression results in a constant.
 	// TODO: how about nesting?
-	cctx->ctx_skip = tv2bool(&ppconst.pp_tv[0]) ? SKIP_NOT : SKIP_YES;
+	v = tv_get_bool_chk(&ppconst.pp_tv[0], &error);
+	if (error)
+	    return NULL;
+	cctx->ctx_skip = v ? SKIP_NOT : SKIP_YES;
 	clear_ppconst(&ppconst);
 	scope->se_u.se_if.is_if_label = -1;
     }
@@ -5775,6 +5816,8 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 	// Not a constant, generate instructions for the expression.
 	cctx->ctx_skip = SKIP_UNKNOWN;
 	if (generate_ppconst(cctx, &ppconst) == FAIL)
+	    return NULL;
+	if (bool_on_stack(cctx) == FAIL)
 	    return NULL;
 
 	// "where" is set when ":elseif", "else" or ":endif" is found
@@ -6036,6 +6079,9 @@ compile_while(char_u *arg, cctx_T *cctx)
     // compile "expr"
     if (compile_expr0(&p, cctx) == FAIL)
 	return NULL;
+
+    if (bool_on_stack(cctx) == FAIL)
+	return FAIL;
 
     // "while_end" is set when ":endwhile" is found
     if (compile_jump_to_end(&scope->se_u.se_while.ws_end_label,

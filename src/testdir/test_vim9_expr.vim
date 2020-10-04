@@ -18,27 +18,27 @@ def Test_expr1_trinary()
 			'one' :
 			'two')
   if has('float')
-    assert_equal('one', 0.1 ? 'one' : 'two')
+    assert_equal('one', !!0.1 ? 'one' : 'two')
   endif
-  assert_equal('one', 'x' ? 'one' : 'two')
-  assert_equal('one', 'x'
+  assert_equal('one', !!'x' ? 'one' : 'two')
+  assert_equal('one', !!'x'
   			? 'one'
 			: 'two')
-  assert_equal('one', 0z1234 ? 'one' : 'two')
-  assert_equal('one', [0] ? 'one' : 'two')
-  assert_equal('one', #{x: 0} ? 'one' : 'two')
+  assert_equal('one', !!0z1234 ? 'one' : 'two')
+  assert_equal('one', !![0] ? 'one' : 'two')
+  assert_equal('one', !!#{x: 0} ? 'one' : 'two')
   var name = 1
   assert_equal('one', name ? 'one' : 'two')
 
   assert_equal('two', false ? 'one' : 'two')
   assert_equal('two', 0 ? 'one' : 'two')
   if has('float')
-    assert_equal('two', 0.0 ? 'one' : 'two')
+    assert_equal('two', !!0.0 ? 'one' : 'two')
   endif
-  assert_equal('two', '' ? 'one' : 'two')
-  assert_equal('two', 0z ? 'one' : 'two')
-  assert_equal('two', [] ? 'one' : 'two')
-  assert_equal('two', {} ? 'one' : 'two')
+  assert_equal('two', !!'' ? 'one' : 'two')
+  assert_equal('two', !!0z ? 'one' : 'two')
+  assert_equal('two', !![] ? 'one' : 'two')
+  assert_equal('two', !!{} ? 'one' : 'two')
   name = 0
   assert_equal('two', name ? 'one' : 'two')
 
@@ -117,6 +117,24 @@ def Test_expr1_trinary_vimscript()
   END
   CheckScriptFailure(lines, 'E1004:', 2)
 
+  lines =<< trim END
+      vim9script
+      var name = 'x' ? 1 : 2
+  END
+  CheckScriptFailure(lines, 'E1030:', 2)
+
+  lines =<< trim END
+      vim9script
+      var name = [] ? 1 : 2
+  END
+  CheckScriptFailure(lines, 'E745:', 2)
+
+  lines =<< trim END
+      vim9script
+      var name = {} ? 1 : 2
+  END
+  CheckScriptFailure(lines, 'E728:', 2)
+
   # check after failure eval_flags is reset
   lines =<< trim END
       vim9script
@@ -151,6 +169,15 @@ func Test_expr1_trinary_fails()
   call CheckDefFailure(["var x = 1 ? 'one': 'two'"], msg, 1)
   call CheckDefFailure(["var x = 1 ? 'one' :'two'"], msg, 1)
   call CheckDefFailure(["var x = 1 ? 'one':'two'"], msg, 1)
+
+  call CheckDefFailure(["var x = 'x' ? 'one' : 'two'"], 'E1030:', 1)
+  call CheckDefFailure(["var x = 0z1234 ? 'one' : 'two'"], 'E974:', 1)
+  call CheckDefExecFailure(["var x = [] ? 'one' : 'two'"], 'E745:', 1)
+  call CheckDefExecFailure(["var x = {} ? 'one' : 'two'"], 'E728:', 1)
+
+  if has('float')
+    call CheckDefFailure(["var x = 0.1 ? 'one' : 'two'"], 'E805:', 1)
+  endif
 
   " missing argument detected even when common type is used
   call CheckDefFailure([

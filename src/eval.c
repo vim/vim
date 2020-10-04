@@ -191,7 +191,7 @@ eval_to_bool(
 	if (!skip)
 	{
 	    if (in_vim9script())
-		retval = tv2bool(&tv);
+		retval = tv_get_bool_chk(&tv, error);
 	    else
 		retval = (tv_get_number_chk(&tv, error) != 0);
 	    clear_tv(&tv);
@@ -2143,6 +2143,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	evalarg_T	local_evalarg;
 	int		orig_flags;
 	int		evaluate;
+	int		vim9script = in_vim9script();
 
 	if (evalarg == NULL)
 	{
@@ -2156,7 +2157,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    *arg = eval_next_line(evalarg_used);
 	else
 	{
-	    if (evaluate && in_vim9script() && !VIM_ISWHITE(p[-1]))
+	    if (evaluate && vim9script && !VIM_ISWHITE(p[-1]))
 	    {
 		error_white_both(p, 1);
 		clear_tv(rettv);
@@ -2170,8 +2171,10 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	{
 	    int		error = FALSE;
 
-	    if (in_vim9script() || op_falsy)
+	    if (op_falsy)
 		result = tv2bool(rettv);
+	    else if (vim9script)
+		result = tv_get_bool_chk(rettv, &error);
 	    else if (tv_get_number_chk(rettv, &error) != 0)
 		result = TRUE;
 	    if (error || !op_falsy || !result)
@@ -2185,7 +2188,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	 */
 	if (op_falsy)
 	    ++*arg;
-	if (evaluate && in_vim9script() && !IS_WHITE_OR_NUL((*arg)[1]))
+	if (evaluate && vim9script && !IS_WHITE_OR_NUL((*arg)[1]))
 	{
 	    error_white_both(p, 1);
 	    clear_tv(rettv);
@@ -2220,7 +2223,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 		*arg = eval_next_line(evalarg_used);
 	    else
 	    {
-		if (evaluate && in_vim9script() && !VIM_ISWHITE(p[-1]))
+		if (evaluate && vim9script && !VIM_ISWHITE(p[-1]))
 		{
 		    error_white_both(p, 1);
 		    clear_tv(rettv);
@@ -2233,7 +2236,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    /*
 	     * Get the third variable.  Recursive!
 	     */
-	    if (evaluate && in_vim9script() && !IS_WHITE_OR_NUL((*arg)[1]))
+	    if (evaluate && vim9script && !IS_WHITE_OR_NUL((*arg)[1]))
 	    {
 		error_white_both(p, 1);
 		clear_tv(rettv);

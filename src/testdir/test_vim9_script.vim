@@ -543,7 +543,7 @@ def Test_try_catch_fails()
   CheckDefFailure(['endtry'], 'E602:')
   CheckDefFailure(['while 1', 'endtry'], 'E170:')
   CheckDefFailure(['for i in range(5)', 'endtry'], 'E170:')
-  CheckDefFailure(['if 2', 'endtry'], 'E171:')
+  CheckDefFailure(['if 1', 'endtry'], 'E171:')
   CheckDefFailure(['try', 'echo 1', 'endtry'], 'E1032:')
 
   CheckDefFailure(['throw'], 'E1015:')

@@ -52,3 +52,10 @@ def CheckDefAndScriptFailure(lines: list<string>, error: string, lnum = -3)
   CheckDefFailure(lines, error, lnum)
   CheckScriptFailure(['vim9script'] + lines, error, lnum + 1)
 enddef
+
+" Check that a command fails both when executed in a :def function and when
+" used in Vim9 script.
+def CheckDefExecAndScriptFailure(lines: list<string>, error: string, lnum = -3)
+  CheckDefExecFailure(lines, error, lnum)
+  CheckScriptFailure(['vim9script'] + lines, error, lnum + 1)
+enddef
