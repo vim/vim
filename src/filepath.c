@@ -1889,7 +1889,7 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 	    is_relative_to_current = TRUE;
 
 	len = STRLEN(p);
-	if (len > 0 && after_pathsep(p, p + len))
+	if (len > 1 && after_pathsep(p, p + len))
 	{
 	    has_trailing_pathsep = TRUE;
 	    p[len - 1] = NUL; // the trailing slash breaks readlink()

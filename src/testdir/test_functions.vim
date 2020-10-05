@@ -339,6 +339,8 @@ func Test_resolve_unix()
   call assert_equal('Xlink2', resolve('Xlink1'))
   call assert_equal('./Xlink2', resolve('./Xlink1'))
   call delete('Xlink1')
+
+  call assert_equal('/', resolve('/'))
 endfunc
 
 func s:normalize_fname(fname)
