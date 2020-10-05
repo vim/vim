@@ -585,6 +585,7 @@ mch_total_mem(int special UNUSED)
 mch_delay(long msec, int flags)
 {
     tmode_T	old_tmode;
+    int		call_settmode;
 #ifdef FEAT_MZSCHEME
     long	total = msec; // remember original value
 #endif
@@ -596,10 +597,13 @@ mch_delay(long msec, int flags)
 	// shell may produce SIGQUIT).
 	// Only do this if sleeping for more than half a second.
 	in_mch_delay = TRUE;
-	old_tmode = mch_cur_tmode;
-	if (mch_cur_tmode == TMODE_RAW
-			       && (msec > 500 || (flags & MCH_DELAY_SETTMODE)))
+	call_settmode = mch_cur_tmode == TMODE_RAW
+			       && (msec > 500 || (flags & MCH_DELAY_SETTMODE));
+	if (call_settmode)
+	{
+	    old_tmode = mch_cur_tmode;
 	    settmode(TMODE_SLEEP);
+	}
 
 	/*
 	 * Everybody sleeps in a different way...
@@ -653,7 +657,7 @@ mch_delay(long msec, int flags)
 	while (total > 0);
 #endif
 
-	if (msec > 500 || (flags & MCH_DELAY_SETTMODE))
+	if (call_settmode)
 	    settmode(old_tmode);
 	in_mch_delay = FALSE;
     }
