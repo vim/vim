@@ -2822,7 +2822,10 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 
 failret:
     if (*arg == NULL)
+    {
 	semsg(_(e_missing_dict_end), _("[end of lines]"));
+	*arg = (char_u *)"";
+    }
     dict_unref(d);
     return FAIL;
 }

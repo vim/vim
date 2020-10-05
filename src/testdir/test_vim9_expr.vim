@@ -1819,6 +1819,8 @@ def Test_expr7_dict()
   CheckDefExecFailure(['var x: dict<number> = #{a: "x", b: 134}'], 'E1012:', 1)
   CheckDefExecFailure(['var x: dict<string> = #{a: 234, b: "1"}'], 'E1012:', 1)
   CheckDefExecFailure(['var x: dict<string> = #{a: "x", b: 134}'], 'E1012:', 1)
+
+  CheckDefFailure(['var x = ({'], 'E723:', 2)
 enddef
 
 def Test_expr7_dict_vim9script()
