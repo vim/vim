@@ -917,6 +917,7 @@ reset_stdin(void)
 {
     FILE *(*py__acrt_iob_func)(unsigned) = NULL;
     FILE *(*pyfreopen)(const char *, const char *, FILE *) = NULL;
+    char *stdin_name = "NUL";
     HINSTANCE hinst;
 
 # ifdef DYNAMIC_PYTHON3
@@ -933,16 +934,18 @@ reset_stdin(void)
     if (py__acrt_iob_func)
     {
 	HINSTANCE hpystdiodll = find_imported_module_by_funcname(hinst,
-							"__acrt_iob_func");
+							    "__acrt_iob_func");
 	if (hpystdiodll)
-	    pyfreopen = (void*)GetProcAddress(hpystdiodll, "freopen");
+	    pyfreopen = (void *)GetProcAddress(hpystdiodll, "freopen");
     }
+    if (isatty(fileno(stdin)))
+	stdin_name = "CONIN$";
 
-    // Reconnect stdin to NUL.
-    if (pyfreopen)
-	pyfreopen("NUL", "r", py__acrt_iob_func(0));
+    // Reconnect stdin to NUL or CONIN$.
+    if (pyfreopen != NULL)
+	pyfreopen(stdin_name, "r", py__acrt_iob_func(0));
     else
-	freopen("NUL", "r", stdin);
+	freopen(stdin_name, "r", stdin);
 }
 #else
 # define reset_stdin()
