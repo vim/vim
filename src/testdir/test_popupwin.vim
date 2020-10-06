@@ -2645,6 +2645,10 @@ func Test_popupwin_terminal_buffer()
   let g:test_is_flaky = 1
 
   let origwin = win_getid()
+
+  " open help window to test that :help below fails
+  help
+
   let termbuf = term_start(&shell, #{hidden: 1})
   let winid = popup_create(termbuf, #{minwidth: 40, minheight: 10})
   " Wait for shell to start
@@ -2666,6 +2670,7 @@ func Test_popupwin_terminal_buffer()
 
   " Cannot escape from terminal window
   call assert_fails('tab drop xxx', 'E863:')
+  call assert_fails('help', 'E994:')
 
   " Cannot open a second one.
   let termbuf2 = term_start(&shell, #{hidden: 1})
@@ -2677,6 +2682,7 @@ func Test_popupwin_terminal_buffer()
   " Wait for shell to exit
   call WaitForAssert({-> assert_equal("dead", job_status(term_getjob(termbuf)))})
 
+  helpclose
   call feedkeys(":quit\<CR>", 'xt')
   call assert_equal(origwin, win_getid())
 endfunc

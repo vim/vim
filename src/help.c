@@ -39,6 +39,9 @@ ex_help(exarg_T *eap)
     int		old_KeyTyped = KeyTyped;
 #endif
 
+    if (ERROR_IF_ANY_POPUP_WINDOW)
+	return;
+
     if (eap != NULL)
     {
 	// A ":help" command ends at the first LF, or at a '|' that is
