@@ -839,8 +839,15 @@ execute a shell command, e.g.: `!ls`  Or put the lines in your |vimrc|.
 
 When modifyOtherKeys is enabled you can map <C-[> and <C-S-{>: >
 	imap <C-[> [[[
-	imap <C-S-{> {{{
-Without modifyOtherKeys <C-[> and <C-S-{> are indistinguishable from Esc.
+	imap <C-{> {{{
+Without modifyOtherKeys <C-[> and <C-{> are indistinguishable from Esc.
+Note that <C-{> is used and not <C-S-[> or <C-S-{>.  This works on most
+keyboards.  Similarly, <C-}> is used instead of <C-S-]> or <C-S-}> and
+<C-|> instead of <C-S-\> or <C-S-|>.  Note that '|' has a special meaning in a
+mapping, see |map-bar|.
+
+WARNING: if you map <C-[> you may very well break any key codes that start
+with Esc.  Make sure it comes AFTER other mappings.
 
 A known side effect is that in Insert mode the raw escape sequence is inserted
 after the CTRL-V key.  This can be used to check whether modifyOtherKeys is

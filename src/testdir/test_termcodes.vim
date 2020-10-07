@@ -2126,6 +2126,24 @@ endfunc
 func Test_mapping_works_with_shift_ctrl()
   call RunTest_mapping_works_with_mods(function('GetEscCodeCSI27'), 'C-S', 6)
   call RunTest_mapping_works_with_mods(function('GetEscCodeCSIu'), 'C-S', 6)
+
+  new
+  set timeoutlen=10
+
+  " Ctrl-Shift-[ actually produces CTRL-Shift-{ which is mapped as <C-{>
+  call RunTest_mapping_mods('<C-{>', '{', function('GetEscCodeCSI27'), 6)
+  call RunTest_mapping_mods('<C-{>', '{', function('GetEscCodeCSIu'), 6)
+
+  " Ctrl-Shift-] actually produces CTRL-Shift-} which is mapped as <C-}>
+  call RunTest_mapping_mods('<C-{>', '{', function('GetEscCodeCSI27'), 6)
+  call RunTest_mapping_mods('<C-{>', '{', function('GetEscCodeCSIu'), 6)
+
+  " Ctrl-Shift-\ actually produces CTRL-Shift-| which is mapped as <C-|>
+  call RunTest_mapping_mods('<C-\|>', '|', function('GetEscCodeCSI27'), 6)
+  call RunTest_mapping_mods('<C-\|>', '|', function('GetEscCodeCSIu'), 6)
+
+  bwipe!
+  set timeoutlen&
 endfunc
 
 " Below we also test the "u" code with Alt, This works, but libvterm would not
