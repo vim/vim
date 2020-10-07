@@ -10,9 +10,9 @@
 "  Fortran 77 syntax file by Mario Eusebio and Preben Guldberg.
 "  Since then, useful suggestions and contributions have been made, in order, by:
 "  Andrej Panjkov, Bram Moolenaar, Thomas Olsen, Michael Sternberg, Christian Reile,
-"  Walter Dieudonné, Alexander Wagner, Roman Bertle, Charles Rendleman,
+"  Walter DieudonnÃ©, Alexander Wagner, Roman Bertle, Charles Rendleman,
 "  Andrew Griffiths, Joe Krahn, Hendrik Merx, Matt Thompson, Jan Hermann,
-"  Stefano Zaghi, Vishnu V. Krishnan, Judicaël Grasset, and Takuma Yoshida
+"  Stefano Zaghi, Vishnu V. Krishnan, JudicaÃ«l Grasset, and Takuma Yoshida
 
 if exists("b:current_syntax")
   finish
