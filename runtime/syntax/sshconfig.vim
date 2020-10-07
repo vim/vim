@@ -10,6 +10,11 @@
 "
 " Last Change:     2019 Feb 03
 " OpenSSH Version: 7.9p1
+"
+" NOTE: To ease the maintenance of this file, most
+"       of its elements are ordered exactly like in
+"       the OpenSSH documentation (case-insensitive
+"       lexicographical order).
 
 " Setup
 
@@ -137,8 +142,8 @@ syn keyword sshconfigHostSect Host
 
 syn keyword sshconfigMatch canonical final exec host originalhost user localuser all
 
-syn keyword sshconfigKeyword AddressFamily
 syn keyword sshconfigKeyword AddKeysToAgent
+syn keyword sshconfigKeyword AddressFamily
 syn keyword sshconfigKeyword BatchMode
 syn keyword sshconfigKeyword BindAddress
 syn keyword sshconfigKeyword BindInterface
@@ -214,8 +219,8 @@ syn keyword sshconfigKeyword SecurityKeyProvider
 syn keyword sshconfigKeyword SendEnv
 syn keyword sshconfigKeyword ServerAliveCountMax
 syn keyword sshconfigKeyword ServerAliveInterval
-syn keyword sshconfigKeyword SmartcardDevice
 syn keyword sshconfigKeyword SetEnv
+syn keyword sshconfigKeyword SmartcardDevice
 syn keyword sshconfigKeyword StreamLocalBindMask
 syn keyword sshconfigKeyword StreamLocalBindUnlink
 syn keyword sshconfigKeyword StrictHostKeyChecking
@@ -249,31 +254,31 @@ syn keyword sshconfigDeprecated UsePrivilegedPort
 
 " Define the default highlighting
 
-hi def link sshconfigComment         Comment
-hi def link sshconfigTodo            Todo
-hi def link sshconfigHostPort        sshconfigConstant
-hi def link sshconfigNumber          sshconfigConstant
-hi def link sshconfigConstant        Constant
-hi def link sshconfigYesNo           sshconfigEnum
+hi def link sshconfigAddressFamily   sshconfigEnum
 hi def link sshconfigCipher          sshconfigDeprecated
 hi def link sshconfigCiphers         sshconfigEnum
-hi def link sshconfigMAC             sshconfigEnum
+hi def link sshconfigComment         Comment
+hi def link sshconfigConstant        Constant
+hi def link sshconfigDeprecated      Error
+hi def link sshconfigEnum            Identifier
 hi def link sshconfigHostKeyAlgo     sshconfigEnum
-hi def link sshconfigLogLevel        sshconfigEnum
-hi def link sshconfigSysLogFacility  sshconfigEnum
-hi def link sshconfigAddressFamily   sshconfigEnum
+hi def link sshconfigHostPort        sshconfigConstant
+hi def link sshconfigHostSect        Type
 hi def link sshconfigIPQoS           sshconfigEnum
 hi def link sshconfigKbdInteractive  sshconfigEnum
 hi def link sshconfigKexAlgo         sshconfigEnum
-hi def link sshconfigTunnel          sshconfigEnum
-hi def link sshconfigPreferredAuth   sshconfigEnum
-hi def link sshconfigVar             sshconfigEnum
-hi def link sshconfigEnum            Identifier
-hi def link sshconfigSpecial         Special
 hi def link sshconfigKeyword         Keyword
-hi def link sshconfigHostSect        Type
+hi def link sshconfigLogLevel        sshconfigEnum
+hi def link sshconfigMAC             sshconfigEnum
 hi def link sshconfigMatch           Type
-hi def link sshconfigDeprecated      Error
+hi def link sshconfigNumber          sshconfigConstant
+hi def link sshconfigPreferredAuth   sshconfigEnum
+hi def link sshconfigSpecial         Special
+hi def link sshconfigSysLogFacility  sshconfigEnum
+hi def link sshconfigTodo            Todo
+hi def link sshconfigTunnel          sshconfigEnum
+hi def link sshconfigVar             sshconfigEnum
+hi def link sshconfigYesNo           sshconfigEnum
 
 let b:current_syntax = "sshconfig"
 
