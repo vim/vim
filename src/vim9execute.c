@@ -377,10 +377,11 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 	    tv = STACK_TV(ectx->ec_frame_idx + STACK_FRAME_SIZE + idx);
 
 	    // Do not copy a partial created for a local function.
-	    // TODO: this won't work if the closure actually uses it.  But when
+	    // TODO: This won't work if the closure actually uses it.  But when
 	    // keeping it it gets complicated: it will create a reference cycle
 	    // inside the partial, thus needs special handling for garbage
 	    // collection.
+	    // For now, decide on the reference count.
 	    if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial != NULL)
 	    {
 		int i;
@@ -389,7 +390,8 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 		{
 		    partial_T *pt = ((partial_T **)gap->ga_data)[gap->ga_len
 							  - closure_count + i];
-		    if (tv->vval.v_partial == pt)
+
+		    if (tv->vval.v_partial == pt && pt->pt_refcount < 2)
 			break;
 		}
 		if (i < closure_count)
