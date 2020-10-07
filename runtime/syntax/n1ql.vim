@@ -12,7 +12,7 @@
 " Questions, comments:  <n1ql AT cime.net>
 "                       https://ciurana.eu/pgp, https://keybase.io/pr3d4t0r
 "
-" vim: set fileencoding=utf-8:
+" vim: set encoding=utf-8:
 
 
 if exists("b:current_syntax")

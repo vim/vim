@@ -30,7 +30,7 @@ setlocal noexpandtab
 " 4-char tabstops, per flexwiki.el
 setlocal tabstop=4
 " Save *.wiki files in UTF-8
-setlocal fileencoding=utf-8
+setlocal encoding=utf-8
 " Add the UTF-8 Byte Order Mark to the beginning of the file
 setlocal bomb
 " Save <EOL>s as \n, not \r\n

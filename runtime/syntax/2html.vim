@@ -779,7 +779,7 @@ let s:old_magic = &magic
 set magic
 
 " set the fileencoding to match the charset we'll be using
-let &l:fileencoding=s:settings.vim_encoding
+let &l:encoding=s:settings.vim_encoding
 
 " According to http://www.w3.org/TR/html4/charset.html#doc-char-set, the byte
 " order mark is highly recommend on the web when using multibyte encodings. But,
