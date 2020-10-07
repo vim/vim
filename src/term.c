@@ -4784,14 +4784,11 @@ handle_key_with_modifier(
 
     modifiers = decode_modifiers(arg[1]);
 
+    // Some keys need adjustment when the Ctrl modifier is used.
+    key = may_adjust_key_for_ctrl(modifiers, key);
+
     // May remove the shift modifier if it's already included in the key.
     modifiers = may_remove_shift_modifier(modifiers, key);
-
-    // When used with Ctrl we always make a letter upper case,
-    // so that mapping <C-H> and <C-h> are the same.  Typing
-    // <C-S-H> also uses "H" but modifier is different.
-    if ((modifiers & MOD_MASK_CTRL) && ASCII_ISALPHA(key))
-	key = TOUPPER_ASC(key);
 
     // insert modifiers with KS_MODIFIER
     new_slen = modifiers2keycode(modifiers, &key, string);

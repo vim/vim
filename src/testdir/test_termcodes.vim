@@ -2103,6 +2103,24 @@ endfunc
 func Test_mapping_works_with_ctrl()
   call RunTest_mapping_works_with_mods(function('GetEscCodeCSI27'), 'C', 5)
   call RunTest_mapping_works_with_mods(function('GetEscCodeCSIu'), 'C', 5)
+
+  new
+  set timeoutlen=10
+
+  " CTRL-@ actually produces the code for CTRL-2, which is converted
+  call RunTest_mapping_mods('<C-@>', '2', function('GetEscCodeCSI27'), 5)
+  call RunTest_mapping_mods('<C-@>', '2', function('GetEscCodeCSIu'), 5)
+
+  " CTRL-^ actually produces the code for CTRL-6, which is converted
+  call RunTest_mapping_mods('<C-^>', '6', function('GetEscCodeCSI27'), 5)
+  call RunTest_mapping_mods('<C-^>', '6', function('GetEscCodeCSIu'), 5)
+
+  " CTRL-_ actually produces the code for CTRL--, which is converted
+  call RunTest_mapping_mods('<C-_>', '-', function('GetEscCodeCSI27'), 5)
+  call RunTest_mapping_mods('<C-_>', '-', function('GetEscCodeCSIu'), 5)
+
+  bwipe!
+  set timeoutlen&
 endfunc
 
 func Test_mapping_works_with_shift_ctrl()

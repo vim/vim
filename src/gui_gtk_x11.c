@@ -1236,11 +1236,10 @@ key_press_event(GtkWidget *widget UNUSED,
     }
     else
     {
-	// <C-H> and <C-h> mean the same thing, always use "H"
-	if ((modifiers & MOD_MASK_CTRL) && ASCII_ISALPHA(key))
-	    key = TOUPPER_ASC(key);
+	// Some keys need adjustment when the Ctrl modifier is used.
+	key = may_adjust_key_for_ctrl(modifiers, key);
 
-	// May remove the shift modifier if it's included in the key.
+	// May remove the Shift modifier if it's included in the key.
 	modifiers = may_remove_shift_modifier(modifiers, key);
 
 	len = mb_char2bytes(key, string);
