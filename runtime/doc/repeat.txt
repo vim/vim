@@ -271,6 +271,9 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			directories are added to 'runtimepath'.  This is
 			useful in your .vimrc.  The plugins will then be
 			loaded during initialization, see |load-plugins|.
+			Please note that for ftdetect scripts to be loaded
+			you will need to write `filetype plugin indent on`
+			after all `packadd!` commands.
 
 			Also see |pack-add|.
 			{only available when compiled with |+eval|}
