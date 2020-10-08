@@ -226,7 +226,6 @@ syn keyword sshconfigKeyword SyslogFacility
 syn keyword sshconfigKeyword TCPKeepAlive
 syn keyword sshconfigKeyword Tunnel
 syn keyword sshconfigKeyword TunnelDevice
-syn keyword sshconfigKeyword UseBlacklistedKeys
 syn keyword sshconfigKeyword UpdateHostKeys
 syn keyword sshconfigKeyword User
 syn keyword sshconfigKeyword UserKnownHostsFile
@@ -253,6 +252,7 @@ syn keyword sshconfigDeprecated RhostsRSAAuthentication
 syn keyword sshconfigDeprecated CompressionLevel
 syn keyword sshconfigDeprecated UseRoaming
 syn keyword sshconfigDeprecated UsePrivilegedPort
+syn keyword sshconfigDeprecated UseBlacklistedKeys
 
 " Define the default highlighting
 
