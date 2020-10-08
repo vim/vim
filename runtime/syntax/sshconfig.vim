@@ -93,7 +93,8 @@ syn match   sshconfigIPQoS	"af2[123]"
 syn match   sshconfigIPQoS	"af3[123]"
 syn match   sshconfigIPQoS	"af4[123]"
 syn match   sshconfigIPQoS	"cs[0-7]"
-syn keyword sshconfigIPQoS	ef lowdelay throughput reliability
+syn match   sshconfigIPQoS      "\<\d\+\>"
+syn keyword sshconfigIPQoS	ef le lowdelay throughput reliability none
 
 syn keyword sshconfigKbdInteractive bsdauth pam skey
 
