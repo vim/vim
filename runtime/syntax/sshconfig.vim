@@ -103,6 +103,7 @@ syn keyword sshconfigKexAlgo diffie-hellman-group-exchange-sha256
 syn keyword sshconfigKexAlgo ecdh-sha2-nistp256
 syn keyword sshconfigKexAlgo ecdh-sha2-nistp384
 syn keyword sshconfigKexAlgo ecdh-sha2-nistp521
+syn keyword sshconfigKexAlgo curve25519-sha256
 syn match   sshconfigKexAlgo "\<curve25519-sha256@libssh\.org\>"
 
 syn keyword sshconfigTunnel point-to-point ethernet
