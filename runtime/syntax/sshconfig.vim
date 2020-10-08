@@ -41,8 +41,6 @@ syn keyword sshconfigYesNo yes no ask confirm
 syn keyword sshconfigYesNo any auto
 syn keyword sshconfigYesNo force autoask none
 
-syn keyword sshconfigCipher 3des blowfish
-
 syn keyword sshconfigCiphers 3des-cbc
 syn keyword sshconfigCiphers blowfish-cbc
 syn keyword sshconfigCiphers cast128-cbc
@@ -236,8 +234,12 @@ syn keyword sshconfigKeyword VerifyHostKeyDNS
 syn keyword sshconfigKeyword VisualHostKey
 syn keyword sshconfigKeyword XAuthLocation
 
-" Deprecated/ignored/remove/unsupported keywords
+" Deprecated/ignored/remove/unsupported elements
 
+" 1) Syntax groups that are linked to the highlight group sshconfigDeprecated
+syn keyword sshconfigCipher 3des blowfish
+
+" 2) Items (keywords/matches/regions) that are deprecated
 syn keyword sshconfigDeprecated Cipher
 syn keyword sshconfigDeprecated GSSAPIClientIdentity
 syn keyword sshconfigDeprecated GSSAPIKeyExchange
