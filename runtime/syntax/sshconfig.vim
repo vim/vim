@@ -8,8 +8,8 @@
 " Contributor:     Samy Mahmoudi <samy.mahmoudi@gmail.com>
 " Maintainer:      Dominik Fischer <d.f.fischer@web.de>
 "
-" Last Change:     2019 Feb 03
-" OpenSSH Version: 7.9p1
+" Last Change:     2020 Oct 08
+" OpenSSH Version: 8.3p1
 "
 " NOTE: To ease the maintenance of this file, most
 "       of its elements are ordered exactly like in
@@ -243,6 +243,8 @@ syn match   sshconfigDeprecated "\<hmac-md5-96-etm@openssh\.com\>"
 syn keyword sshconfigDeprecated hmac-ripemd160
 syn match   sshconfigDeprecated "\<hmac-ripemd160@openssh\.com\>"
 syn match   sshconfigDeprecated "\<hmac-ripemd160-etm@openssh\.com\>"
+syn keyword sshconfigDeprecated hmac-sha2-256-96
+syn keyword sshconfigDeprecated hmac-sha2-512-96
 
 "   Deprecated host key algorithms (were in sshconfigHostKeyAlgo)
 syn keyword sshconfigDeprecated ssh-rsa
