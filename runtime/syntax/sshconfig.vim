@@ -96,11 +96,9 @@ syn keyword sshconfigIPQoS	ef le lowdelay throughput reliability none
 
 syn keyword sshconfigKbdInteractive bsdauth pam skey
 
-syn keyword sshconfigKexAlgo diffie-hellman-group1-sha1
 syn keyword sshconfigKexAlgo diffie-hellman-group14-sha256
 syn keyword sshconfigKexAlgo diffie-hellman-group16-sha512
 syn keyword sshconfigKexAlgo diffie-hellman-group18-sha512
-syn keyword sshconfigKexAlgo diffie-hellman-group-exchange-sha1
 syn keyword sshconfigKexAlgo diffie-hellman-group-exchange-sha256
 syn keyword sshconfigKexAlgo ecdh-sha2-nistp256
 syn keyword sshconfigKexAlgo ecdh-sha2-nistp384
