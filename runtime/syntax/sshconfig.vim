@@ -68,12 +68,10 @@ syn match   sshconfigMAC "\<umac-128-etm@openssh\.com\>"
 
 syn keyword sshconfigHostKeyAlgo ssh-ed25519
 syn match   sshconfigHostKeyAlgo "\<ssh-ed25519-cert-v01@openssh\.com\>"
-syn keyword sshconfigHostKeyAlgo ssh-rsa
 syn keyword sshconfigHostKeyAlgo ssh-dss
 syn keyword sshconfigHostKeyAlgo ecdsa-sha2-nistp256
 syn keyword sshconfigHostKeyAlgo ecdsa-sha2-nistp384
 syn keyword sshconfigHostKeyAlgo ecdsa-sha2-nistp521
-syn match   sshconfigHostKeyAlgo "\<ssh-rsa-cert-v01@openssh\.com\>"
 syn match   sshconfigHostKeyAlgo "\<ssh-dss-cert-v01@openssh\.com\>"
 syn match   sshconfigHostKeyAlgo "\<ecdsa-sha2-nistp256-cert-v01@openssh\.com\>"
 syn match   sshconfigHostKeyAlgo "\<ecdsa-sha2-nistp384-cert-v01@openssh\.com\>"
@@ -244,6 +242,10 @@ syn match   sshconfigDeprecated "\<hmac-md5-96-etm@openssh\.com\>"
 syn keyword sshconfigDeprecated hmac-ripemd160
 syn match   sshconfigDeprecated "\<hmac-ripemd160@openssh\.com\>"
 syn match   sshconfigDeprecated "\<hmac-ripemd160-etm@openssh\.com\>"
+
+"   Deprecated host key algorithms (were in sshconfigHostKeyAlgo)
+syn keyword sshconfigDeprecated ssh-rsa
+syn match   sshconfigDeprecated "\<ssh-rsa-cert-v01@openssh\.com\>"
 
 "   Deprecated key exchange algorithms (were in sshconfigKexAlgo)
 syn keyword sshconfigDeprecated diffie-hellman-group14-sha1
