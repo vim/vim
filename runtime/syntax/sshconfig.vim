@@ -57,19 +57,12 @@ syn keyword sshconfigMAC hmac-sha1
 syn keyword sshconfigMAC mac-sha1-96
 syn keyword sshconfigMAC mac-sha2-256
 syn keyword sshconfigMAC mac-sha2-512
-syn keyword sshconfigMAC mac-md5
-syn keyword sshconfigMAC mac-md5-96
-syn keyword sshconfigMAC mac-ripemd160
-syn match   sshconfigMAC "\<hmac-ripemd160@openssh\.com\>"
 syn match   sshconfigMAC "\<umac-64@openssh\.com\>"
 syn match   sshconfigMAC "\<umac-128@openssh\.com\>"
 syn match   sshconfigMAC "\<hmac-sha1-etm@openssh\.com\>"
 syn match   sshconfigMAC "\<hmac-sha1-96-etm@openssh\.com\>"
 syn match   sshconfigMAC "\<hmac-sha2-256-etm@openssh\.com\>"
 syn match   sshconfigMAC "\<hmac-sha2-512-etm@openssh\.com\>"
-syn match   sshconfigMAC "\<hmac-md5-etm@openssh\.com\>"
-syn match   sshconfigMAC "\<hmac-md5-96-etm@openssh\.com\>"
-syn match   sshconfigMAC "\<hmac-ripemd160-etm@openssh\.com\>"
 syn match   sshconfigMAC "\<umac-64-etm@openssh\.com\>"
 syn match   sshconfigMAC "\<umac-128-etm@openssh\.com\>"
 
@@ -243,6 +236,15 @@ syn keyword sshconfigDeprecated arcfour
 syn keyword sshconfigDeprecated arcfour128
 syn keyword sshconfigDeprecated arcfour256
 syn match   sshconfigDeprecated "\<rijndael-cbc@lysator\.liu.se\>"
+
+"   Deprecated message authentication codes (MACs) (were in sshconfigMAC)
+syn keyword sshconfigDeprecated hmac-md5
+syn keyword sshconfigDeprecated hmac-md5-96
+syn match   sshconfigDeprecated "\<hmac-md5-etm@openssh\.com\>"
+syn match   sshconfigDeprecated "\<hmac-md5-96-etm@openssh\.com\>"
+syn keyword sshconfigDeprecated hmac-ripemd160
+syn match   sshconfigDeprecated "\<hmac-ripemd160@openssh\.com\>"
+syn match   sshconfigDeprecated "\<hmac-ripemd160-etm@openssh\.com\>"
 
 "   Deprecated keywords (were in sshconfigKeyword)
 syn keyword sshconfigDeprecated Cipher
