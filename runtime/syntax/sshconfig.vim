@@ -41,16 +41,9 @@ syn keyword sshconfigYesNo yes no ask confirm
 syn keyword sshconfigYesNo any auto
 syn keyword sshconfigYesNo force autoask none
 
-syn keyword sshconfigCiphers 3des-cbc
-syn keyword sshconfigCiphers blowfish-cbc
-syn keyword sshconfigCiphers cast128-cbc
-syn keyword sshconfigCiphers arcfour
-syn keyword sshconfigCiphers arcfour128
-syn keyword sshconfigCiphers arcfour256
 syn keyword sshconfigCiphers aes128-cbc
 syn keyword sshconfigCiphers aes192-cbc
 syn keyword sshconfigCiphers aes256-cbc
-syn match   sshconfigCiphers "\<rijndael-cbc@lysator\.liu.se\>"
 syn keyword sshconfigCiphers aes128-ctr
 syn keyword sshconfigCiphers aes192-ctr
 syn keyword sshconfigCiphers aes256-ctr
@@ -241,6 +234,17 @@ syn keyword sshconfigKeyword XAuthLocation
 syn keyword sshconfigCipher 3des blowfish
 
 " 2) Items (keywords/matches/regions) that are deprecated
+
+"   Deprecated ciphers (were in sshconfigCiphers)
+syn keyword sshconfigDeprecated 3des-cbc
+syn keyword sshconfigDeprecated blowfish-cbc
+syn keyword sshconfigDeprecated cast128-cbc
+syn keyword sshconfigDeprecated arcfour
+syn keyword sshconfigDeprecated arcfour128
+syn keyword sshconfigDeprecated arcfour256
+syn match   sshconfigDeprecated "\<rijndael-cbc@lysator\.liu.se\>"
+
+"   Deprecated keywords (were in sshconfigKeyword)
 syn keyword sshconfigDeprecated Cipher
 syn keyword sshconfigDeprecated GSSAPIClientIdentity
 syn keyword sshconfigDeprecated GSSAPIKeyExchange
