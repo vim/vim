@@ -100,7 +100,6 @@ syn keyword sshconfigIPQoS	ef lowdelay throughput reliability
 syn keyword sshconfigKbdInteractive bsdauth pam skey
 
 syn keyword sshconfigKexAlgo diffie-hellman-group1-sha1
-syn keyword sshconfigKexAlgo diffie-hellman-group14-sha1
 syn keyword sshconfigKexAlgo diffie-hellman-group-exchange-sha1
 syn keyword sshconfigKexAlgo diffie-hellman-group-exchange-sha256
 syn keyword sshconfigKexAlgo ecdh-sha2-nistp256
@@ -245,6 +244,9 @@ syn match   sshconfigDeprecated "\<hmac-md5-96-etm@openssh\.com\>"
 syn keyword sshconfigDeprecated hmac-ripemd160
 syn match   sshconfigDeprecated "\<hmac-ripemd160@openssh\.com\>"
 syn match   sshconfigDeprecated "\<hmac-ripemd160-etm@openssh\.com\>"
+
+"   Deprecated key exchange algorithms (were in sshconfigKexAlgo)
+syn keyword sshconfigDeprecated diffie-hellman-group14-sha1
 
 "   Deprecated keywords (were in sshconfigKeyword)
 syn keyword sshconfigDeprecated Cipher
