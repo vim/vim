@@ -54,9 +54,9 @@ syn match   sshconfigCiphers "\<chacha20-poly1305@openssh\.com\>"
 syn keyword sshconfigFingerprintHash md5 sha256
 
 syn keyword sshconfigMAC hmac-sha1
-syn keyword sshconfigMAC mac-sha1-96
-syn keyword sshconfigMAC mac-sha2-256
-syn keyword sshconfigMAC mac-sha2-512
+syn keyword sshconfigMAC hmac-sha1-96
+syn keyword sshconfigMAC hmac-sha2-256
+syn keyword sshconfigMAC hmac-sha2-512
 syn match   sshconfigMAC "\<umac-64@openssh\.com\>"
 syn match   sshconfigMAC "\<umac-128@openssh\.com\>"
 syn match   sshconfigMAC "\<hmac-sha1-etm@openssh\.com\>"
