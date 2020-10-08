@@ -4055,6 +4055,7 @@ typedef struct lval_S
     dict_T	*ll_dict;	// The Dictionary or NULL
     dictitem_T	*ll_di;		// The dictitem or NULL
     char_u	*ll_newkey;	// New key for Dict in alloc. mem or NULL.
+    type_T	*ll_valtype;	// type expected for the value or NULL
     blob_T	*ll_blob;	// The Blob or NULL
 } lval_T;
 

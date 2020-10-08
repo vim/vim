@@ -145,6 +145,15 @@ def Test_wrong_type()
   CheckDefFailure(['var Ref: string', 'var res = Ref()'], 'E1085:')
 enddef
 
+def Test_script_wrong_type()
+  var lines =<< trim END
+      vim9script
+      var s:dict: dict<string>
+      s:dict['a'] = ['x']
+  END
+  CheckScriptFailure(lines, 'E1012: Type mismatch; expected string but got list<string>', 3)
+enddef
+
 def Test_const()
   CheckDefFailure(['final name = 234', 'name = 99'], 'E1018:')
   CheckDefFailure(['final one = 234', 'var one = 99'], 'E1017:')

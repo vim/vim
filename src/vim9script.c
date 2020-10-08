@@ -565,18 +565,18 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
 }
 
 /*
- * Check if the type of script variable "dest" allows assigning "value".
- * If needed convert "value" to a bool.
+ * Find the script-local variable that links to "dest".
+ * Returns NULL if not found.
  */
-    int
-check_script_var_type(typval_T *dest, typval_T *value, char_u *name)
+    svar_T *
+find_typval_in_script(typval_T *dest)
 {
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
     int		    idx;
 
     if (si->sn_version != SCRIPT_VERSION_VIM9)
 	// legacy script doesn't store variable types
-	return OK;
+	return NULL;
 
     // Find the svar_T in sn_var_vals.
     for (idx = 0; idx < si->sn_var_vals.ga_len; ++idx)
@@ -584,28 +584,42 @@ check_script_var_type(typval_T *dest, typval_T *value, char_u *name)
 	svar_T    *sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
 
 	if (sv->sv_tv == dest)
-	{
-	    int	    ret;
-
-	    if (sv->sv_const)
-	    {
-		semsg(_(e_readonlyvar), name);
-		return FAIL;
-	    }
-	    ret = check_typval_type(sv->sv_type, value, 0);
-	    if (ret == OK && need_convert_to_bool(sv->sv_type, value))
-	    {
-		int	val = tv2bool(value);
-
-		clear_tv(value);
-		value->v_type = VAR_BOOL;
-		value->v_lock = 0;
-		value->vval.v_number = val ? VVAL_TRUE : VVAL_FALSE;
-	    }
-	    return ret;
-	}
+	    return sv;
     }
     iemsg("check_script_var_type(): not found");
+    return NULL;
+}
+
+/*
+ * Check if the type of script variable "dest" allows assigning "value".
+ * If needed convert "value" to a bool.
+ */
+    int
+check_script_var_type(typval_T *dest, typval_T *value, char_u *name)
+{
+    svar_T  *sv = find_typval_in_script(dest);
+    int	    ret;
+
+    if (sv != NULL)
+    {
+	if (sv->sv_const)
+	{
+	    semsg(_(e_readonlyvar), name);
+	    return FAIL;
+	}
+	ret = check_typval_type(sv->sv_type, value, 0);
+	if (ret == OK && need_convert_to_bool(sv->sv_type, value))
+	{
+	    int	val = tv2bool(value);
+
+	    clear_tv(value);
+	    value->v_type = VAR_BOOL;
+	    value->v_lock = 0;
+	    value->vval.v_number = val ? VVAL_TRUE : VVAL_FALSE;
+	}
+	return ret;
+    }
+
     return OK; // not really
 }
 

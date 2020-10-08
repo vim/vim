@@ -887,6 +887,17 @@ get_lval(
 	    return NULL;
 	}
 
+	if (in_vim9script() && lp->ll_valtype == NULL
+		&& lp->ll_tv == &v->di_tv
+		&& ht != NULL && ht == get_script_local_ht())
+	{
+	    svar_T  *sv = find_typval_in_script(lp->ll_tv);
+
+	    // Vim9 script local variable: get the type
+	    if (sv != NULL)
+		lp->ll_valtype = sv->sv_type;
+	}
+
 	len = -1;
 	if (*p == '.')
 	{
@@ -1037,6 +1048,10 @@ get_lval(
 		}
 	    }
 
+	    if (lp->ll_valtype != NULL)
+		// use the type of the member
+		lp->ll_valtype = lp->ll_valtype->tt_member;
+
 	    if (lp->ll_di == NULL)
 	    {
 		// Can't add "v:" or "a:" variable.
@@ -1147,6 +1162,10 @@ get_lval(
 		    semsg(_(e_listidx), lp->ll_n1);
 		return NULL;
 	    }
+
+	    if (lp->ll_valtype != NULL)
+		// use the type of the member
+		lp->ll_valtype = lp->ll_valtype->tt_member;
 
 	    /*
 	     * May need to find the item or absolute index for the second
@@ -1383,6 +1402,11 @@ set_var_lval(
 	    emsg(_("E996: Cannot lock a list or dict"));
 	    return;
 	}
+
+	if (lp->ll_valtype != NULL
+			&& check_typval_type(lp->ll_valtype, rettv, 0) == FAIL)
+	    return;
+
 	if (lp->ll_newkey != NULL)
 	{
 	    if (op != NULL && *op != '=')
