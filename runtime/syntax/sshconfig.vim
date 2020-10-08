@@ -86,7 +86,7 @@ syn keyword sshconfigLogLevel DEBUG DEBUG1 DEBUG2 DEBUG3
 syn keyword sshconfigSysLogFacility DAEMON USER AUTH AUTHPRIV LOCAL0 LOCAL1
 syn keyword sshconfigSysLogFacility LOCAL2 LOCAL3 LOCAL4 LOCAL5 LOCAL6 LOCAL7
 
-syn keyword sshconfigAddressFamily  inet inet6
+syn keyword sshconfigAddressFamily  any inet inet6
 
 syn match   sshconfigIPQoS	"af1[123]"
 syn match   sshconfigIPQoS	"af2[123]"
