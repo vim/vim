@@ -2832,8 +2832,8 @@ mch_copy_sec(char_u *from_file, char_u *to_file)
 
     if (selinux_enabled > 0)
     {
-	security_context_t from_context = NULL;
-	security_context_t to_context = NULL;
+	char *from_context = NULL;
+	char *to_context = NULL;
 
 	if (getfilecon((char *)from_file, &from_context) < 0)
 	{
