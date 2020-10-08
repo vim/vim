@@ -111,14 +111,14 @@ syn match   sshconfigKexAlgo "\<curve25519-sha256@libssh\.org\>"
 
 syn keyword sshconfigTunnel point-to-point ethernet
 
-syn match sshconfigVar "%[rhplLdun]\>"
+syn match sshconfigVar "\W%%\W\|\W%[CdhikLlnprTu]\>"
 syn match sshconfigSpecial "[*?]"
-syn match sshconfigNumber "\d\+"
-syn match sshconfigHostPort "\<\(\d\{1,3}\.\)\{3}\d\{1,3}\(:\d\+\)\?\>"
-syn match sshconfigHostPort "\<\([-a-zA-Z0-9]\+\.\)\+[-a-zA-Z0-9]\{2,}\(:\d\+\)\?\>"
-syn match sshconfigHostPort "\<\(\x\{,4}:\)\+\x\{,4}[:/]\d\+\>"
-syn match sshconfigHostPort "\(Host \)\@<=.\+"
-syn match sshconfigHostPort "\(HostName \)\@<=.\+"
+syn match sshconfigNumber "\<\d\+\>"
+syn match sshconfigHostPort "\<\(\d\{1,3}\.\)\{3}\d\{1,3}\(:\d\{1,5}\)\?\>"
+syn match sshconfigHostPort "\<\([a-zA-Z0-9][-a-zA-Z0-9]\{,62}\.\)\{,126}[a-zA-Z][-a-zA-Z0-9]\{,62}\(:\d\{1,5}\)\?\>"
+syn match sshconfigHostPort "\<\[\(\x\{,4}:\)\+\x\{,4}\(/\d\{1,3}\)\?\]\(:\d\{1,5}\)\?\>"
+syn match sshconfigHostPort "\<\(Host \)\@<=.\+"
+syn match sshconfigHostPort "\<\(Host[nN]ame \)\@<=.\+"
 
 " Case off
 syn case ignore
@@ -167,7 +167,7 @@ syn keyword sshconfigKeyword GlobalKnownHostsFile
 syn keyword sshconfigKeyword HashKnownHosts
 syn keyword sshconfigKeyword HostKeyAlgorithms
 syn keyword sshconfigKeyword HostKeyAlias
-syn keyword sshconfigKeyword HostName
+syn keyword sshconfigKeyword Hostname
 syn keyword sshconfigKeyword HostbasedAuthentication
 syn keyword sshconfigKeyword HostbasedKeyTypes
 syn keyword sshconfigKeyword IPQoS
