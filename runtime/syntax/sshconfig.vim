@@ -58,6 +58,8 @@ syn match   sshconfigCiphers "\<aes128-gcm@openssh\.com\>"
 syn match   sshconfigCiphers "\<aes256-gcm@openssh\.com\>"
 syn match   sshconfigCiphers "\<chacha20-poly1305@openssh\.com\>"
 
+syn keyword sshconfigFingerprintHash md5 sha256
+
 syn keyword sshconfigMAC hmac-sha1
 syn keyword sshconfigMAC mac-sha1-96
 syn keyword sshconfigMAC mac-sha2-256
@@ -263,6 +265,7 @@ hi def link sshconfigComment         Comment
 hi def link sshconfigConstant        Constant
 hi def link sshconfigDeprecated      Error
 hi def link sshconfigEnum            Identifier
+hi def link sshconfigFingerprintHash sshconfigEnum
 hi def link sshconfigHostKeyAlgo     sshconfigEnum
 hi def link sshconfigHostPort        sshconfigConstant
 hi def link sshconfigHostSect        Type
