@@ -2032,5 +2032,23 @@ def Test_callstack_def()
   endtry
 enddef
 
+" Re-using spot for variable used in block
+def Test_block_scoped_var()
+  var lines =<< trim END
+      vim9script
+      def Func()
+        var x = ['a', 'b', 'c']
+        if 1
+          var y = 'x'
+          map(x, {-> y})
+        endif
+        var z = x
+        assert_equal(['x', 'x', 'x'], z)
+      enddef
+      Func()
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

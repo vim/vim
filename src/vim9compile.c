@@ -1690,7 +1690,12 @@ generate_EXECCONCAT(cctx_T *cctx, int count)
  * Return the variable or NULL if it failed.
  */
     static lvar_T *
-reserve_local(cctx_T *cctx, char_u *name, size_t len, int isConst, type_T *type)
+reserve_local(
+	cctx_T	*cctx,
+	char_u	*name,
+	size_t	len,
+	int	isConst,
+	type_T	*type)
 {
     lvar_T  *lvar;
 
@@ -1703,6 +1708,7 @@ reserve_local(cctx_T *cctx, char_u *name, size_t len, int isConst, type_T *type)
     if (ga_grow(&cctx->ctx_locals, 1) == FAIL)
 	return NULL;
     lvar = ((lvar_T *)cctx->ctx_locals.ga_data) + cctx->ctx_locals.ga_len++;
+    CLEAR_POINTER(lvar);
 
     // Every local variable uses the next entry on the stack.  We could re-use
     // the last ones when leaving a scope, but then variables used in a closure
@@ -4438,7 +4444,6 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
     char_u	*name_start = eap->arg;
     char_u	*name_end = to_name_end(eap->arg, TRUE);
     char_u	*lambda_name;
-    lvar_T	*lvar;
     ufunc_T	*ufunc;
     int		r;
 
@@ -4487,8 +4492,9 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
     else
     {
 	// Define a local variable for the function reference.
-	lvar = reserve_local(cctx, name_start, name_end - name_start,
+	lvar_T	*lvar = reserve_local(cctx, name_start, name_end - name_start,
 						    TRUE, ufunc->uf_func_type);
+
 	if (lvar == NULL)
 	    return NULL;
 	if (generate_FUNCREF(cctx, ufunc) == FAIL)
