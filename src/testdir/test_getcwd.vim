@@ -1,3 +1,5 @@
+" Test for getcwd()
+
 func GetCwdInfo(win, tab)
   let tab_changed = 0
   let mod = ":t"
@@ -24,7 +26,7 @@ endfunc
 
 " Do all test in a separate window to avoid E211 when we recursively
 " delete the Xtopdir directory during cleanup
-function SetUp()
+func SetUp()
   set visualbell
   set nocp viminfo+=nviminfo
 
@@ -46,7 +48,7 @@ endfunction
 let g:cwd=getcwd()
 function TearDown()
   q
-  exec "cd " . g:cwd
+  call chdir(g:cwd)
   call delete("Xtopdir", "rf")
 endfunction
 
@@ -262,3 +264,5 @@ function Test_Tab_Local_Cwd()
   enew | only | tabonly
   new
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

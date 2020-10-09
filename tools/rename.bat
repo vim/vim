@@ -3,4 +3,4 @@ mv tee/tee.exe teew32.exe
 mv xxd/xxd.exe xxdw32.exe
 mv vim.pdb vimw32.pdb
 mv install.exe installw32.exe
-mv uninstal.exe uninstalw32.exe
+mv uninstall.exe uninstallw32.exe

@@ -50,22 +50,6 @@ win_getid(typval_T *argvars)
     return 0;
 }
 
-    static int
-win_gotoid(typval_T *argvars)
-{
-    win_T	*wp;
-    tabpage_T   *tp;
-    int		id = tv_get_number(&argvars[0]);
-
-    FOR_ALL_TAB_WINDOWS(tp, wp)
-	    if (wp->w_id == id)
-	    {
-		goto_tabpage_win(tp, wp);
-		return 1;
-	    }
-    return 0;
-}
-
     static void
 win_id2tabwin(typval_T *argvars, list_T *list)
 {
@@ -119,21 +103,21 @@ win_id2wp_tp(int id, tabpage_T **tpp)
 		*tpp = tp;
 	    return wp;
 	}
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     // popup windows are in separate lists
      FOR_ALL_TABPAGES(tp)
-	 for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	 FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
 	     if (wp->w_id == id)
 	     {
 		 if (tpp != NULL)
 		     *tpp = tp;
 		 return wp;
 	     }
-    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS(wp)
 	if (wp->w_id == id)
 	{
 	    if (tpp != NULL)
-		*tpp = tp;
+		*tpp = curtab;  // any tabpage would do
 	    return wp;
 	}
 #endif
@@ -197,13 +181,14 @@ find_win_by_nr(
     }
     if (nr >= LOWEST_WIN_ID)
     {
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	// check tab-local popup windows
-	for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	for (wp = (tp == NULL ? curtab : tp)->tp_first_popupwin;
+						   wp != NULL; wp = wp->w_next)
 	    if (wp->w_id == nr)
 		return wp;
 	// check global popup windows
-	for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+	FOR_ALL_POPUPWINS(wp)
 	    if (wp->w_id == nr)
 		return wp;
 #endif
@@ -215,6 +200,7 @@ find_win_by_nr(
 /*
  * Find a window: When using a Window ID in any tab page, when using a number
  * in the current tab page.
+ * Returns NULL when not found.
  */
     win_T *
 find_win_by_nr_or_id(typval_T *vp)
@@ -346,8 +332,6 @@ get_winnr(tabpage_T *tp, typval_T *argvar)
 	else if (STRCMP(arg, "#") == 0)
 	{
 	    twin = (tp == curtab) ? prevwin : tp->tp_prevwin;
-	    if (twin == NULL)
-		nr = 0;
 	}
 	else
 	{
@@ -374,6 +358,8 @@ get_winnr(tabpage_T *tp, typval_T *argvar)
 	    else
 		invalid_arg = TRUE;
 	}
+	if (twin == NULL)
+	    nr = 0;
 
 	if (invalid_arg)
 	{
@@ -458,8 +444,7 @@ get_tabpage_info(tabpage_T *tp, int tp_idx)
     l = list_alloc();
     if (l != NULL)
     {
-	for (wp = (tp == curtab) ? firstwin : tp->tp_firstwin;
-						   wp != NULL; wp = wp->w_next)
+	FOR_ALL_WINDOWS_IN_TAB(tp, wp)
 	    list_append_number(l, (varnumber_T)wp->w_id);
 	dict_add_list(dict, "windows", l);
     }
@@ -545,6 +530,22 @@ f_getwininfo(typval_T *argvars, typval_T *rettv)
 		return;
 	}
     }
+#ifdef FEAT_PROP_POPUP
+    if (wparg != NULL)
+    {
+	tabnr = 0;
+	FOR_ALL_TABPAGES(tp)
+	{
+	    tabnr++;
+	    FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
+	    if (wp == wparg)
+		break;
+	}
+	d = get_win_info(wparg, tp == NULL ? 0 : tabnr, 0);
+	if (d != NULL)
+	    list_append_dict(rettv->vval.v_list, d);
+    }
+#endif
 }
 
 /*
@@ -631,6 +632,9 @@ f_tabpagenr(typval_T *argvars UNUSED, typval_T *rettv)
 	{
 	    if (STRCMP(arg, "$") == 0)
 		nr = tabpage_index(NULL) - 1;
+	    else if (STRCMP(arg, "#") == 0)
+		nr = valid_tabpage(lastused_tabpage) ?
+					tabpage_index(lastused_tabpage) : 0;
 	    else
 		semsg(_(e_invexpr2), arg);
 	}
@@ -671,12 +675,18 @@ f_win_execute(typval_T *argvars, typval_T *rettv)
 
     if (wp != NULL && tp != NULL)
     {
+	pos_T	curpos = wp->w_cursor;
+
 	if (switch_win_noblock(&save_curwin, &save_curtab, wp, tp, TRUE) == OK)
 	{
 	    check_cursor();
 	    execute_common(argvars, rettv, 1);
 	}
 	restore_win_noblock(save_curwin, save_curtab, TRUE);
+
+	// Update the status line if the cursor moved.
+	if (win_valid(wp) && !EQUAL_POS(curpos, wp->w_cursor))
+	    wp->w_redr_status = TRUE;
     }
 }
 
@@ -705,7 +715,24 @@ f_win_getid(typval_T *argvars, typval_T *rettv)
     void
 f_win_gotoid(typval_T *argvars, typval_T *rettv)
 {
-    rettv->vval.v_number = win_gotoid(argvars);
+    win_T	*wp;
+    tabpage_T   *tp;
+    int		id = tv_get_number(&argvars[0]);
+
+#ifdef FEAT_CMDWIN
+    if (cmdwin_type != 0)
+    {
+	emsg(_(e_cmdwin));
+	return;
+    }
+#endif
+    FOR_ALL_TAB_WINDOWS(tp, wp)
+	if (wp->w_id == id)
+	{
+	    goto_tabpage_win(tp, wp);
+	    rettv->vval.v_number = 1;
+	    return;
+	}
 }
 
 /*
@@ -741,6 +768,147 @@ f_win_screenpos(typval_T *argvars, typval_T *rettv)
     wp = find_win_by_nr_or_id(&argvars[0]);
     list_append_number(rettv->vval.v_list, wp == NULL ? 0 : wp->w_winrow + 1);
     list_append_number(rettv->vval.v_list, wp == NULL ? 0 : wp->w_wincol + 1);
+}
+
+/*
+ * Move the window wp into a new split of targetwin in a given direction
+ */
+    static void
+win_move_into_split(win_T *wp, win_T *targetwin, int size, int flags)
+{
+    int	    dir;
+    int	    height = wp->w_height;
+    win_T   *oldwin = curwin;
+
+    if (wp == targetwin)
+	return;
+
+    // Jump to the target window
+    if (curwin != targetwin)
+	win_goto(targetwin);
+
+    // Remove the old window and frame from the tree of frames
+    (void)winframe_remove(wp, &dir, NULL);
+    win_remove(wp, NULL);
+    last_status(FALSE);	    // may need to remove last status line
+    (void)win_comp_pos();   // recompute window positions
+
+    // Split a window on the desired side and put the old window there
+    (void)win_split_ins(size, flags, wp, dir);
+
+    // If splitting horizontally, try to preserve height
+    if (size == 0 && !(flags & WSP_VERT))
+    {
+	win_setheight_win(height, wp);
+	if (p_ea)
+	    win_equal(wp, TRUE, 'v');
+    }
+
+#if defined(FEAT_GUI)
+    // When 'guioptions' includes 'L' or 'R' may have to remove or add
+    // scrollbars.  Have to update them anyway.
+    gui_may_update_scrollbars();
+#endif
+
+    if (oldwin != curwin)
+	win_goto(oldwin);
+}
+
+/*
+ * "win_splitmove()" function
+ */
+    void
+f_win_splitmove(typval_T *argvars, typval_T *rettv)
+{
+    win_T   *wp;
+    win_T   *targetwin;
+    int     flags = 0, size = 0;
+
+    wp = find_win_by_nr_or_id(&argvars[0]);
+    targetwin = find_win_by_nr_or_id(&argvars[1]);
+
+    if (wp == NULL || targetwin == NULL || wp == targetwin
+	    || !win_valid(wp) || !win_valid(targetwin)
+	    || win_valid_popup(wp) || win_valid_popup(targetwin))
+    {
+        emsg(_(e_invalwindow));
+	rettv->vval.v_number = -1;
+	return;
+    }
+
+    if (argvars[2].v_type != VAR_UNKNOWN)
+    {
+        dict_T      *d;
+        dictitem_T  *di;
+
+        if (argvars[2].v_type != VAR_DICT || argvars[2].vval.v_dict == NULL)
+        {
+            emsg(_(e_invarg));
+            return;
+        }
+
+        d = argvars[2].vval.v_dict;
+        if (dict_get_bool(d, (char_u *)"vertical", FALSE))
+            flags |= WSP_VERT;
+        if ((di = dict_find(d, (char_u *)"rightbelow", -1)) != NULL)
+            flags |= tv_get_bool(&di->di_tv) ? WSP_BELOW : WSP_ABOVE;
+        size = (int)dict_get_number(d, (char_u *)"size");
+    }
+
+    win_move_into_split(wp, targetwin, size, flags);
+}
+
+/*
+ * "win_gettype(nr)" function
+ */
+    void
+f_win_gettype(typval_T *argvars, typval_T *rettv)
+{
+    win_T	*wp = curwin;
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	wp = find_win_by_nr_or_id(&argvars[0]);
+	if (wp == NULL)
+	{
+	    rettv->vval.v_string = vim_strsave((char_u *)"unknown");
+	    return;
+	}
+    }
+    if (wp == aucmd_win)
+	rettv->vval.v_string = vim_strsave((char_u *)"autocmd");
+#if defined(FEAT_QUICKFIX)
+    else if (wp->w_p_pvw)
+	rettv->vval.v_string = vim_strsave((char_u *)"preview");
+#endif
+#ifdef FEAT_PROP_POPUP
+    else if (WIN_IS_POPUP(wp))
+	rettv->vval.v_string = vim_strsave((char_u *)"popup");
+#endif
+#ifdef FEAT_CMDWIN
+    else if (wp == curwin && cmdwin_type != 0)
+	rettv->vval.v_string = vim_strsave((char_u *)"command");
+#endif
+}
+
+/*
+ * "getcmdwintype()" function
+ */
+    void
+f_getcmdwintype(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+#ifdef FEAT_CMDWIN
+    rettv->vval.v_string = alloc(2);
+    if (rettv->vval.v_string != NULL)
+    {
+	rettv->vval.v_string[0] = cmdwin_type;
+	rettv->vval.v_string[1] = NUL;
+    }
+#endif
 }
 
 /*
@@ -1044,7 +1212,7 @@ restore_win_noblock(
 	curwin = save_curwin;
 	curbuf = curwin->w_buffer;
     }
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_PROP_POPUP
     else if (WIN_IS_POPUP(curwin))
 	// original window was closed and now we're in a popup window: Go
 	// to the first valid window.

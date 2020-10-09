@@ -7,7 +7,7 @@
    fasonita por priskribi sufiæajn komandojn, por ke vi kapablu uzi Vim
    kun sufiæa facileco.
 
-   La tempo bezonata por plenumi la kurson estas 25-30 minutoj, kaj dependas
+   La tempo bezonata por plenumi la kurson estas 30 minutoj, kaj dependas
    de kiom da tempo estas uzata por eksperimenti.
 
    ATENTU:
@@ -100,7 +100,7 @@ RIMARKO: Trairante la instruilon, ne provu memori, lernu per la uzo.
   1. Movu la kursoron al la unua suba linio markita per --->.
 
   2. Por igi la unuan linion sama kiel la dua, movu la kursoron sur la unuan
-     signon post kie la teksto estas enmetenda.
+     signon antaý kie la teksto estas enmetenda.
 
   3. Premu  i  kaj tajpu la bezonatajn aldonojn.
 
@@ -200,7 +200,7 @@ Nun daýrigu al la leciono 2.
 
   1. Premu  <ESK>  por certigi, ke vi estas en normala reøimo.
 
-  2. Movu la kursoron al la linio markita per --->.
+  2. Movu la kursoron al la suba linio markita per --->.
 
   3. Movu la kursoron al la komenco de vorto, kiu forviþendas.
 
@@ -225,7 +225,7 @@ Nun daýrigu al la leciono 2.
 
   1. Premu  <ESK>  por certigi, ke vi estas en normala reøimo.
 
-  2. Movu la kursoron sur la suban linion markita per --->.
+  2. Movu la kursoron al la suba linio markita per --->.
 
   3. Movu la kursoron æe la fino de la øusta linio (POST la unua . ).
 
@@ -296,10 +296,10 @@ RIMARKO: Premo de nur la movo en Normala reøimo sen operatoro movos
 
   1. Movu la kursoron æe la unua MAJUSKLA vorto en la linio markita per --->.
 
-  2. Tajpu  d2w  por forviþi la du MAJUSKLAJN vortojn
+  2. Tajpu  d2w  por forviþi la du MAJUSKLAJN vortojn.
 
   3. Ripetu paþojn 1 øis 2 per malsama nombro por forviþi la sinsekvajn
-     MAJUSKLAJN vortojn per unu komando
+     MAJUSKLAJN vortojn per unu komando.
 
 ---> Tiu AB CDE linio FGHI JK LMN OP de vortoj estas Q RS TUV purigita.
 
@@ -379,7 +379,7 @@ RIMARKO: Premo de nur la movo en Normala reøimo sen operatoro movos
 
     ** Tajpu  p  por meti tekston forviþitan antaýe post la kursoro. **
 
-  1. Movu la kursoron æe la unua ---> suba linio.
+  1. Movu la kursoron æe la unua suba linio markita per --->.
 
   2. Tajpu  dd  por forviþi la linion kaj konservi øin ene de reøistro de Vim.
 
@@ -652,7 +652,7 @@ RIMARKO: Se vi volus eliri el Vim kaj restartigi øin denove per  vim TESTO,
          la dosiero estus precize same kiel kopio de la instruilo kiam vi
          konservis øin.
 
-  5. Nun forviþu la dosieron tajpante (WINDOWS):    :!del TESTO
+  5. Nun forviþu la dosieron tajpante (VINDOZO):    :!del TESTO
                                    aý (UNIKSO):     :!rm TESTO
 
 
@@ -713,7 +713,7 @@ RIMARKO: Vi nun povas legi la eliron de ekstera komando. Ekzemple,
   1.  :!komando  plenumas eksteran komandon.
 
       Iuj utilaj ekzemploj estas:
-        (WINDOWS)          (UNIKSO)
+        (VINDOZO)          (UNIKSO)
          :!dir              :!ls            - listigas dosierujon
          :!del DOSIERNOMO   :!rm DOSIERNOMO - forviþas la dosieron DOSIERNOMO
 
@@ -808,7 +808,7 @@ RIMARKO: Anstataýiga reøimo estas same kiel Enmeta reøimo, sed æiu signo
      ** Uzu la  y  operatoron por kopii tekston, kaj  p  por alglui øin **
 
 
-  1. Iru al la linio markita per ---> sube kaj poziciu la kursoron post "a)".
+  1. Iru al la suba linio markita per ---> kaj poziciu la kursoron post "a)".
 
   2. Komencu la Viduman reøimon per  v  kaj movu la kursoron tuj antaý "unua".
 
@@ -914,7 +914,7 @@ RIMARKO: Se vi deziras ignori usklecon por nur unu seræa komando, uzu  \c
 
   1. Ekredaktu la dosieron "vimrc".  Tio dependas de via sistemo:
       :e ~/.vimrc          por Unikso
-      :e $VIM/_vimrc       por Windows
+      :e $VIM/_vimrc       por Vindozo
 
   2. Nun legu la enhavon de la ekzempla "vimrc"
       :r $VIMRUNTIME/vimrc_example.vim
@@ -945,7 +945,7 @@ RIMARKO: Se vi deziras ignori usklecon por nur unu seræa komando, uzu  \c
 
   6. Nun aldonu spaceton kaj la komencon de ekzistanta nomo:  :edit DOSI
 
-  7. Premu <TAB>.  Vim kompletigos la nomon (se øi estas unika)
+  7. Premu d<TAB>.  Vim kompletigos la nomon (se øi estas unika)
 
 RIMARKO: Kompletigo funkcias por multaj komandoj. Nur provu premi CTRL-D kaj
          <TAB>.  Estas aparte utila por  :help .
@@ -986,6 +986,6 @@ RIMARKO: Kompletigo funkcias por multaj komandoj. Nur provu premi CTRL-D kaj
 
   Esperantigita fare de Dominique Pellé, 2008-04-01
   Retpoþto: dominique.pelle@gmail.com
-  Lasta þanøo: 2018-12-02
+  Lasta þanøo: 2020-07-19
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

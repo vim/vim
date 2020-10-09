@@ -1,5 +1,7 @@
 " Test rename()
 
+source shared.vim
+
 func Test_rename_file_to_file()
   call writefile(['foo'], 'Xrename1')
 
@@ -81,7 +83,7 @@ func Test_rename_copy()
 
   call assert_equal(0, rename('Xrenamedir/Xrenamefile', 'Xrenamefile'))
 
-  if !has('win32')
+  if !has('win32') && !IsRoot()
     " On Windows, the source file is removed despite
     " its directory being made not writable.
     call assert_equal(['foo'], readfile('Xrenamedir/Xrenamefile'))
@@ -111,8 +113,10 @@ func Test_rename_fails()
   " Can't rename to en empty file name.
   call assert_notequal(0, rename('Xrenamefile', ''))
 
-  call assert_fails('call rename("Xrenamefile", [])', 'E730')
-  call assert_fails('call rename(0z, "Xrenamefile")', 'E976')
+  call assert_fails('call rename("Xrenamefile", [])', 'E730:')
+  call assert_fails('call rename(0z, "Xrenamefile")', 'E976:')
 
   call delete('Xrenamefile')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

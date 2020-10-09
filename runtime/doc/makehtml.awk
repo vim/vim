@@ -58,7 +58,7 @@ substr($0,length($0),1) == "~" { print "<B><FONT COLOR=\"PURPLE\">" substr($0,1,
 #
 #ad hoc code
 #
-/^"\|\& / {gsub(/\|/,"\\&#124;"); }
+/^"\|& / {gsub(/\|/,"\\&#124;"); }
 / = b / {gsub(/ b /," \\&#98; "); }
 #
 # one letter tag

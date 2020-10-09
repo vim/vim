@@ -13,7 +13,7 @@ void fmarks_check_names(buf_T *buf);
 int check_mark(pos_T *pos);
 void clrallmarks(buf_T *buf);
 char_u *fm_getname(fmark_T *fmark, int lead_len);
-void do_marks(exarg_T *eap);
+void ex_marks(exarg_T *eap);
 void ex_delmarks(exarg_T *eap);
 void ex_jumps(exarg_T *eap);
 void ex_clearjumps(exarg_T *eap);
@@ -27,4 +27,5 @@ void free_jumplist(win_T *wp);
 void set_last_cursor(win_T *win);
 void free_all_marks(void);
 xfmark_T *get_namedfm(void);
+void f_getmarklist(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

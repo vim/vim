@@ -1,0 +1,192 @@
+*usr_46.txt*	For Vim version 8.2.  Last change: 2020 Jun 14
+
+		     VIM USER MANUAL - by Bram Moolenaar
+
+		       Write plugins using Vim9 script
+
+
+The Vim9 script language is used for writing plugins, especially larger ones
+that use multiple files.  This chapter explains how to split up a plugin into
+modules, import and export items and keep the rest local.
+
+|46.1|	Introduction
+|46.2|	Variable declarations
+|46.3|	Functions and types
+|46.?|	Using a Vim9 script from legacy script
+
+     Next chapter: |usr_90.txt|  Installing Vim
+ Previous chapter: |usr_45.txt|  Select your language (locale)
+Table of contents: |usr_toc.txt|
+
+==============================================================================
+*46.1*	Introduction				*vim9-script-intro*
+
+Vim9 script was designed to make it easier to write large Vim scripts.  It
+looks more like other script languages, especially Typescript.  Also,
+functions are compiled into instructions that can be executed quickly.  This
+makes Vim9 script a lot faster, up to a 100 times.
+
+The basic idea is that a script file has items that are private, only used
+inside the script file, and items that are exported, used outside of the
+script file.  The exported items can then be used by scripts that import them.
+That makes very clear what is defined where.
+
+Let's start with an example, a script that exports one function and has one
+private function: >
+
+	vim9script  " This indicates a Vim9 script file.
+
+	export def GetMessage(): string
+	   let result = ''
+	   ...
+	   result = GetPart(count)
+	   ...
+	   return result
+	enddef
+
+	def GetPart(nr: number): string
+	  if nr == 4
+	     return 'yes'
+	  else
+	     return 'no'
+	  endif
+	enddef
+
+The `vim9script` command must be the very first command in the file.  Without
+it Vim will assume legacy script syntax.
+
+The `export def GetMessage(): string` line starts with `export`, meaning that
+this function can be imported and called by other scripts. The line
+`def GetPart(...` does not start with `export`, this is a script-local
+function, it can only be used inside this script file.
+
+In the `export def GetMessage(): string` line you will notice the colon and
+the return type.  Vim9 functions, defined with `def`, require specifying the
+type of arguments and the return type.  That way Vim can compile the code
+efficiently.  The GetPart function defines an argument "nr" of type "number".
+
+Notice that the assignment `result = GetPart(count)` does not use the `let`
+command.  That is explained in the next section.
+
+==============================================================================
+*46.2*	Variable declarations				*vim9-declarations*
+
+In Vim9 script variables are declared once with a `:let` or `:const` command.
+Assigning a value is done without `:let` and it is not possible to `:unlet`
+the variable.
+
+In most cases you will want to declare the variable and initialize it at the
+same time: >
+	let myText = 'some text'
+	...
+	myText = 'other text'
+
+The type of the variable will be inferred from the expression.  In this case
+it is a string.  If you initialize with a number, then the type is number: >
+	let myNumber = 1234
+	...
+	myNumber = 0
+
+If you try to assign a string to this variable, you will get an error: >
+	let myNumber = 'this fails!'
+
+In the rare case you want a variable that can take values of any type, you
+have to specify the type: >
+	let myVar: any = 1234
+	myVar = 'text also works'
+
+You can also declare a variable without assigning a value.  In that case Vim
+will initialize it to zero or empty: >
+	let word: string
+	if condition
+	  word = 'yes'
+	else
+	  word = 'no'
+	endif
+
+Although it's shorter to do: >
+	let word = condition ? 'yes' : 'no'
+
+==============================================================================
+*46.3*	Functions and types
+
+Legacy Vim script does have type checking, but this happens at runtime, when
+the code is executed.  And it's permissive, often a computation gives an
+unexpected value instead of reporting an error.  Thus you can define a
+function and think it's fine, but see a problem only later when it is called: >
+	let s:collected = ''
+	func ExtendAndReturn(add)
+	   let s:collected += a:add
+	   return s:collected
+	endfunc
+
+Can you spot the error?  Try this: >
+	echo ExtendAndReturn('text')
+And you'll see zero.  Why?  Because in legacy Vim script "+=" will convert the
+arguments to numbers, and any string without a number results in zero!
+
+With `:def` the type checking happens when compiling the function.  For that
+you need to specify the argument types and the return type.  Also notice that
+the argument is used without the "a:" prefix: >
+	let s:collected = ''
+	def ExtendAndReturn(add: string): string
+	   s:collected += add
+	   return s:collected
+	enddef
+	defcompile
+
+Here we use `:defcompile` to do the compilation right away, without it the
+compilation would happen when the function is called.  Vim will tell you what
+you did wrong: >
+	E1013: type mismatch, expected number but got string
+
+Vim9 script is strict, it uses the "+" operator only for numbers and floats.
+For string concatenation ".." must be used.  This avoids mistakes and avoids
+the automatic conversion that gave a surprising result above.  So you change
+the first line of the function to: >
+	   s:collected ..= add
+And now it works.
+
+If the function does not return anything, just leave out the return type: >
+	def ReportResult(result: string)
+	   echo 'The result is: ' .. result
+	enddef
+
+This is also checked, if you try to return a value you'll get an error.
+
+In case you don't care about types or have a function that does work with
+multiple types, you can use the "any" type: >
+	def Store(key: string, value: any)
+	  resultDict[key] = value
+	enddef
+
+==============================================================================
+*46.?*	Using a Vim9 script from legacy script		*source-vim9-script*
+
+In some cases you have a legacy Vim script where you want to use items from a
+Vim9 script.  For example in your .vimrc you want to initialize a plugin.  The
+best way to do this is to use `:import`.  For example: >
+
+	import Init as NiceInit from 'myNicePlugin.vim'
+	call NiceInit('today')
+
+This finds the exported function "Init" in the Vim9 script file and makes it
+available as script-local item "NiceInit". `:import` always uses the script
+namespace, even when "s:" is not given.  If "myNicePlugin.vim" was already
+sourced it is not sourced again.
+
+Besides avoiding putting any items in the global namespace (where name clashes
+can cause unexpected errors), this also means the script is sourced only once,
+no matter how many times items from it are imported.
+
+In some cases, e.g. for testing, you may just want to source the Vim9 script.
+That is OK, but then only global items will be available.  The Vim9 script
+will have to make sure to use a unique name for these global items. Example: >
+	source ~/.vim/extra/myNicePlugin.vim
+	call g:NicePluginTest()
+
+==============================================================================
+
+Next chapter: |usr_90.txt|  Installing Vim
+
+Copyright: see |manual-copyright|  vim:tw=78:ts=8:noet:ft=help:norl:

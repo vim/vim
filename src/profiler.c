@@ -440,7 +440,7 @@ prof_inchar_exit(void)
 prof_def_func(void)
 {
     if (current_sctx.sc_sid > 0)
-	return SCRIPT_ITEM(current_sctx.sc_sid).sn_pr_force;
+	return SCRIPT_ITEM(current_sctx.sc_sid)->sn_pr_force;
     return FALSE;
 }
 
@@ -602,10 +602,10 @@ func_line_start(void *cookie)
     funccall_T	*fcp = (funccall_T *)cookie;
     ufunc_T	*fp = fcp->func;
 
-    if (fp->uf_profiling && sourcing_lnum >= 1
-				      && sourcing_lnum <= fp->uf_lines.ga_len)
+    if (fp->uf_profiling && SOURCING_LNUM >= 1
+				      && SOURCING_LNUM <= fp->uf_lines.ga_len)
     {
-	fp->uf_tml_idx = sourcing_lnum - 1;
+	fp->uf_tml_idx = SOURCING_LNUM - 1;
 	// Skip continuation lines.
 	while (fp->uf_tml_idx > 0 && FUNCLINE(fp, fp->uf_tml_idx) == NULL)
 	    --fp->uf_tml_idx;
@@ -696,7 +696,7 @@ func_dump_profile(FILE *fd)
 				     get_scriptname(fp->uf_script_ctx.sc_sid));
 		    if (p != NULL)
 		    {
-			fprintf(fd, "    Defined: %s line %ld\n",
+			fprintf(fd, "    Defined: %s:%ld\n",
 					   p, (long)fp->uf_script_ctx.sc_lnum);
 			vim_free(p);
 		    }
@@ -761,9 +761,9 @@ script_prof_save(
 {
     scriptitem_T    *si;
 
-    if (current_sctx.sc_sid > 0 && current_sctx.sc_sid <= script_items.ga_len)
+    if (SCRIPT_ID_VALID(current_sctx.sc_sid))
     {
-	si = &SCRIPT_ITEM(current_sctx.sc_sid);
+	si = SCRIPT_ITEM(current_sctx.sc_sid);
 	if (si->sn_prof_on && si->sn_pr_nest++ == 0)
 	    profile_start(&si->sn_pr_child);
     }
@@ -778,9 +778,9 @@ script_prof_restore(proftime_T *tm)
 {
     scriptitem_T    *si;
 
-    if (current_sctx.sc_sid > 0 && current_sctx.sc_sid <= script_items.ga_len)
+    if (SCRIPT_ID_VALID(current_sctx.sc_sid))
     {
-	si = &SCRIPT_ITEM(current_sctx.sc_sid);
+	si = SCRIPT_ITEM(current_sctx.sc_sid);
 	if (si->sn_prof_on && --si->sn_pr_nest == 0)
 	{
 	    profile_end(&si->sn_pr_child);
@@ -805,7 +805,7 @@ script_dump_profile(FILE *fd)
 
     for (id = 1; id <= script_items.ga_len; ++id)
     {
-	si = &SCRIPT_ITEM(id);
+	si = SCRIPT_ITEM(id);
 	if (si->sn_prof_on)
 	{
 	    fprintf(fd, "SCRIPT  %s\n", si->sn_name);
@@ -903,16 +903,16 @@ script_line_start(void)
     scriptitem_T    *si;
     sn_prl_T	    *pp;
 
-    if (current_sctx.sc_sid <= 0 || current_sctx.sc_sid > script_items.ga_len)
+    if (!SCRIPT_ID_VALID(current_sctx.sc_sid))
 	return;
-    si = &SCRIPT_ITEM(current_sctx.sc_sid);
-    if (si->sn_prof_on && sourcing_lnum >= 1)
+    si = SCRIPT_ITEM(current_sctx.sc_sid);
+    if (si->sn_prof_on && SOURCING_LNUM >= 1)
     {
 	// Grow the array before starting the timer, so that the time spent
 	// here isn't counted.
 	(void)ga_grow(&si->sn_prl_ga,
-				  (int)(sourcing_lnum - si->sn_prl_ga.ga_len));
-	si->sn_prl_idx = sourcing_lnum - 1;
+				  (int)(SOURCING_LNUM - si->sn_prl_ga.ga_len));
+	si->sn_prl_idx = SOURCING_LNUM - 1;
 	while (si->sn_prl_ga.ga_len <= si->sn_prl_idx
 		&& si->sn_prl_ga.ga_len < si->sn_prl_ga.ga_maxlen)
 	{
@@ -938,9 +938,9 @@ script_line_exec(void)
 {
     scriptitem_T    *si;
 
-    if (current_sctx.sc_sid <= 0 || current_sctx.sc_sid > script_items.ga_len)
+    if (!SCRIPT_ID_VALID(current_sctx.sc_sid))
 	return;
-    si = &SCRIPT_ITEM(current_sctx.sc_sid);
+    si = SCRIPT_ITEM(current_sctx.sc_sid);
     if (si->sn_prof_on && si->sn_prl_idx >= 0)
 	si->sn_prl_execed = TRUE;
 }
@@ -954,9 +954,9 @@ script_line_end(void)
     scriptitem_T    *si;
     sn_prl_T	    *pp;
 
-    if (current_sctx.sc_sid <= 0 || current_sctx.sc_sid > script_items.ga_len)
+    if (!SCRIPT_ID_VALID(current_sctx.sc_sid))
 	return;
-    si = &SCRIPT_ITEM(current_sctx.sc_sid);
+    si = SCRIPT_ITEM(current_sctx.sc_sid);
     if (si->sn_prof_on && si->sn_prl_idx >= 0
 				     && si->sn_prl_idx < si->sn_prl_ga.ga_len)
     {

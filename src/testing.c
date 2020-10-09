@@ -21,22 +21,24 @@
     static void
 prepare_assert_error(garray_T *gap)
 {
-    char buf[NUMBUFLEN];
+    char    buf[NUMBUFLEN];
+    char_u  *sname = estack_sfile(ESTACK_NONE);
 
     ga_init2(gap, 1, 100);
-    if (sourcing_name != NULL)
+    if (sname != NULL)
     {
-	ga_concat(gap, sourcing_name);
-	if (sourcing_lnum > 0)
+	ga_concat(gap, sname);
+	if (SOURCING_LNUM > 0)
 	    ga_concat(gap, (char_u *)" ");
     }
-    if (sourcing_lnum > 0)
+    if (SOURCING_LNUM > 0)
     {
-	sprintf(buf, "line %ld", (long)sourcing_lnum);
+	sprintf(buf, "line %ld", (long)SOURCING_LNUM);
 	ga_concat(gap, (char_u *)buf);
     }
-    if (sourcing_name != NULL || sourcing_lnum > 0)
+    if (sname != NULL || SOURCING_LNUM > 0)
 	ga_concat(gap, (char_u *)": ");
+    vim_free(sname);
 }
 
 /*
@@ -64,7 +66,7 @@ ga_concat_esc(garray_T *gap, char_u *p, int clen)
 	case CAR: ga_concat(gap, (char_u *)"\\r"); break;
 	case '\\': ga_concat(gap, (char_u *)"\\\\"); break;
 	default:
-		   if (*p < ' ')
+		   if (*p < ' ' || *p == 0x7f)
 		   {
 		       vim_snprintf((char *)buf, NUMBUFLEN, "\\x%02x", *p);
 		       ga_concat(gap, buf);
@@ -129,14 +131,21 @@ fill_assert_error(
     garray_T	*gap,
     typval_T	*opt_msg_tv,
     char_u      *exp_str,
-    typval_T	*exp_tv,
-    typval_T	*got_tv,
+    typval_T	*exp_tv_arg,
+    typval_T	*got_tv_arg,
     assert_type_T atype)
 {
     char_u	numbuf[NUMBUFLEN];
     char_u	*tofree;
+    typval_T	*exp_tv = exp_tv_arg;
+    typval_T	*got_tv = got_tv_arg;
+    int		did_copy = FALSE;
+    int		omitted = 0;
 
-    if (opt_msg_tv->v_type != VAR_UNKNOWN)
+    if (opt_msg_tv->v_type != VAR_UNKNOWN
+	    && !(opt_msg_tv->v_type == VAR_STRING
+		&& (opt_msg_tv->vval.v_string == NULL
+		    || *opt_msg_tv->vval.v_string == NUL)))
     {
 	ga_concat(gap, echo_string(opt_msg_tv, &tofree, numbuf, 0));
 	vim_free(tofree);
@@ -151,6 +160,62 @@ fill_assert_error(
 	ga_concat(gap, (char_u *)"Expected ");
     if (exp_str == NULL)
     {
+	// When comparing dictionaries, drop the items that are equal, so that
+	// it's a lot easier to see what differs.
+	if (atype != ASSERT_NOTEQUAL
+		&& exp_tv->v_type == VAR_DICT && got_tv->v_type == VAR_DICT
+		&& exp_tv->vval.v_dict != NULL && got_tv->vval.v_dict != NULL)
+	{
+	    dict_T	*exp_d = exp_tv->vval.v_dict;
+	    dict_T	*got_d = got_tv->vval.v_dict;
+	    hashitem_T	*hi;
+	    dictitem_T	*item2;
+	    int		todo;
+
+	    did_copy = TRUE;
+	    exp_tv->vval.v_dict = dict_alloc();
+	    got_tv->vval.v_dict = dict_alloc();
+	    if (exp_tv->vval.v_dict == NULL || got_tv->vval.v_dict == NULL)
+		return;
+
+	    todo = (int)exp_d->dv_hashtab.ht_used;
+	    for (hi = exp_d->dv_hashtab.ht_array; todo > 0; ++hi)
+	    {
+		if (!HASHITEM_EMPTY(hi))
+		{
+		    item2 = dict_find(got_d, hi->hi_key, -1);
+		    if (item2 == NULL || !tv_equal(&HI2DI(hi)->di_tv,
+						  &item2->di_tv, FALSE, FALSE))
+		    {
+			// item of exp_d not present in got_d or values differ.
+			dict_add_tv(exp_tv->vval.v_dict,
+					(char *)hi->hi_key, &HI2DI(hi)->di_tv);
+			if (item2 != NULL)
+			    dict_add_tv(got_tv->vval.v_dict,
+					    (char *)hi->hi_key, &item2->di_tv);
+		    }
+		    else
+			++omitted;
+		    --todo;
+		}
+	    }
+
+	    // Add items only present in got_d.
+	    todo = (int)got_d->dv_hashtab.ht_used;
+	    for (hi = got_d->dv_hashtab.ht_array; todo > 0; ++hi)
+	    {
+		if (!HASHITEM_EMPTY(hi))
+		{
+		    item2 = dict_find(exp_d, hi->hi_key, -1);
+		    if (item2 == NULL)
+			// item of got_d not present in exp_d
+			dict_add_tv(got_tv->vval.v_dict,
+					(char *)hi->hi_key, &HI2DI(hi)->di_tv);
+		    --todo;
+		}
+	    }
+	}
+
 	ga_concat_shorten_esc(gap, tv2string(exp_tv, &tofree, numbuf, 0));
 	vim_free(tofree);
     }
@@ -166,6 +231,21 @@ fill_assert_error(
 	    ga_concat(gap, (char_u *)" but got ");
 	ga_concat_shorten_esc(gap, tv2string(got_tv, &tofree, numbuf, 0));
 	vim_free(tofree);
+
+	if (omitted != 0)
+	{
+	    char buf[100];
+
+	    vim_snprintf(buf, 100, " - %d equal item%s omitted",
+					     omitted, omitted == 1 ? "" : "s");
+	    ga_concat(gap, (char_u *)buf);
+	}
+    }
+
+    if (did_copy)
+    {
+	clear_tv(exp_tv);
+	clear_tv(got_tv);
     }
 }
 
@@ -193,12 +273,12 @@ assert_match_common(typval_T *argvars, assert_type_T atype)
     garray_T	ga;
     char_u	buf1[NUMBUFLEN];
     char_u	buf2[NUMBUFLEN];
+    int		called_emsg_before = called_emsg;
     char_u	*pat = tv_get_string_buf_chk(&argvars[0], buf1);
     char_u	*text = tv_get_string_buf_chk(&argvars[1], buf2);
 
-    if (pat == NULL || text == NULL)
-	emsg(_(e_invarg));
-    else if (pattern_match(pat, text, FALSE) != (atype == ASSERT_MATCH))
+    if (called_emsg == called_emsg_before
+		 && pattern_match(pat, text, FALSE) != (atype == ASSERT_MATCH))
     {
 	prepare_assert_error(&ga);
 	fill_assert_error(&ga, &argvars[2], NULL, &argvars[0], &argvars[1],
@@ -220,7 +300,7 @@ assert_bool(typval_T *argvars, int isTrue)
     int		error = FALSE;
     garray_T	ga;
 
-    if (argvars[0].v_type == VAR_SPECIAL
+    if (argvars[0].v_type == VAR_BOOL
 	    && argvars[0].vval.v_number == (isTrue ? VVAL_TRUE : VVAL_FALSE))
 	return 0;
     if (argvars[0].v_type != VAR_NUMBER
@@ -302,13 +382,17 @@ assert_equalfile(typval_T *argvars)
 {
     char_u	buf1[NUMBUFLEN];
     char_u	buf2[NUMBUFLEN];
+    int		called_emsg_before = called_emsg;
     char_u	*fname1 = tv_get_string_buf_chk(&argvars[0], buf1);
     char_u	*fname2 = tv_get_string_buf_chk(&argvars[1], buf2);
     garray_T	ga;
     FILE	*fd1;
     FILE	*fd2;
+    char	line1[200];
+    char	line2[200];
+    int		lineidx = 0;
 
-    if (fname1 == NULL || fname2 == NULL)
+    if (called_emsg > called_emsg_before)
 	return 0;
 
     IObuff[0] = NUL;
@@ -327,8 +411,9 @@ assert_equalfile(typval_T *argvars)
 	}
 	else
 	{
-	    int c1, c2;
-	    long count = 0;
+	    int	    c1, c2;
+	    long    count = 0;
+	    long    linecount = 1;
 
 	    for (;;)
 	    {
@@ -345,13 +430,31 @@ assert_equalfile(typval_T *argvars)
 		    STRCPY(IObuff, "second file is shorter");
 		    break;
 		}
-		else if (c1 != c2)
+		else
 		{
-		    vim_snprintf((char *)IObuff, IOSIZE,
-					      "difference at byte %ld", count);
-		    break;
+		    line1[lineidx] = c1;
+		    line2[lineidx] = c2;
+		    ++lineidx;
+		    if (c1 != c2)
+		    {
+			vim_snprintf((char *)IObuff, IOSIZE,
+					    "difference at byte %ld, line %ld",
+							     count, linecount);
+			break;
+		    }
 		}
 		++count;
+		if (c1 == NL)
+		{
+		    ++linecount;
+		    lineidx = 0;
+		}
+		else if (lineidx + 2 == (int)sizeof(line1))
+		{
+		    mch_memmove(line1, line1 + 100, lineidx - 100);
+		    mch_memmove(line2, line2 + 100, lineidx - 100);
+		    lineidx -= 100;
+		}
 	    }
 	    fclose(fd1);
 	    fclose(fd2);
@@ -360,7 +463,29 @@ assert_equalfile(typval_T *argvars)
     if (IObuff[0] != NUL)
     {
 	prepare_assert_error(&ga);
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	{
+	    char_u	numbuf[NUMBUFLEN];
+	    char_u	*tofree;
+
+	    ga_concat(&ga, echo_string(&argvars[2], &tofree, numbuf, 0));
+	    vim_free(tofree);
+	    ga_concat(&ga, (char_u *)": ");
+	}
 	ga_concat(&ga, IObuff);
+	if (lineidx > 0)
+	{
+	    line1[lineidx] = NUL;
+	    line2[lineidx] = NUL;
+	    ga_concat(&ga, (char_u *)" after \"");
+	    ga_concat(&ga, (char_u *)line1);
+	    if (STRCMP(line1, line2) != 0)
+	    {
+		ga_concat(&ga, (char_u *)"\" vs \"");
+		ga_concat(&ga, (char_u *)line2);
+	    }
+	    ga_concat(&ga, (char_u *)"\"");
+	}
 	assert_error(&ga);
 	ga_clear(&ga);
 	return 1;
@@ -369,7 +494,7 @@ assert_equalfile(typval_T *argvars)
 }
 
 /*
- * "assert_equalfile(fname-one, fname-two)" function
+ * "assert_equalfile(fname-one, fname-two[, msg])" function
  */
     void
 f_assert_equalfile(typval_T *argvars, typval_T *rettv)
@@ -424,15 +549,17 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
     char_u	*cmd = tv_get_string_chk(&argvars[0]);
     garray_T	ga;
     int		save_trylevel = trylevel;
+    int		called_emsg_before = called_emsg;
+    char	*wrong_arg_msg = NULL;
 
     // trylevel must be zero for a ":throw" command to be considered failed
     trylevel = 0;
-    called_emsg = FALSE;
     suppress_errthrow = TRUE;
     emsg_silent = TRUE;
+    emsg_assert_fails_used = TRUE;
 
     do_cmdline_cmd(cmd);
-    if (!called_emsg)
+    if (called_emsg == called_emsg_before)
     {
 	prepare_assert_error(&ga);
 	ga_concat(&ga, (char_u *)"command did not fail: ");
@@ -444,14 +571,103 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
     else if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	char_u	buf[NUMBUFLEN];
-	char	*error = (char *)tv_get_string_buf_chk(&argvars[1], buf);
+	char_u	*expected;
+	int	error_found = FALSE;
+	int	error_found_index = 1;
+	char_u	*actual = emsg_assert_fails_msg == NULL ? (char_u *)"[unknown]"
+						       : emsg_assert_fails_msg;
 
-	if (error == NULL
-		  || strstr((char *)get_vim_var_str(VV_ERRMSG), error) == NULL)
+	if (argvars[1].v_type == VAR_STRING)
 	{
+	    expected = tv_get_string_buf_chk(&argvars[1], buf);
+	    error_found = expected == NULL
+			   || strstr((char *)actual, (char *)expected) == NULL;
+	}
+	else if (argvars[1].v_type == VAR_LIST)
+	{
+	    list_T	*list = argvars[1].vval.v_list;
+	    typval_T	*tv;
+
+	    if (list == NULL || list->lv_len < 1 || list->lv_len > 2)
+	    {
+		wrong_arg_msg = e_assert_fails_second_arg;
+		goto theend;
+	    }
+	    CHECK_LIST_MATERIALIZE(list);
+	    tv = &list->lv_first->li_tv;
+	    expected = tv_get_string_buf_chk(tv, buf);
+	    if (!pattern_match(expected, actual, FALSE))
+	    {
+		error_found = TRUE;
+	    }
+	    else if (list->lv_len == 2)
+	    {
+		tv = &list->lv_u.mat.lv_last->li_tv;
+		actual = get_vim_var_str(VV_ERRMSG);
+		expected = tv_get_string_buf_chk(tv, buf);
+		if (!pattern_match(expected, actual, FALSE))
+		    error_found = TRUE;
+	    }
+	}
+	else
+	{
+	    wrong_arg_msg = e_assert_fails_second_arg;
+	    goto theend;
+	}
+
+	if (!error_found && argvars[2].v_type != VAR_UNKNOWN
+		&& argvars[3].v_type != VAR_UNKNOWN)
+	{
+	    if (argvars[3].v_type != VAR_NUMBER)
+	    {
+		wrong_arg_msg = e_assert_fails_fourth_argument;
+		goto theend;
+	    }
+	    else if (argvars[3].vval.v_number >= 0
+			 && argvars[3].vval.v_number != emsg_assert_fails_lnum)
+	    {
+		error_found = TRUE;
+		error_found_index = 3;
+	    }
+	    if (!error_found && argvars[4].v_type != VAR_UNKNOWN)
+	    {
+		if (argvars[4].v_type != VAR_STRING)
+		{
+		    wrong_arg_msg = e_assert_fails_fifth_argument;
+		    goto theend;
+		}
+		else if (argvars[4].vval.v_string != NULL
+		    && !pattern_match(argvars[4].vval.v_string,
+					     emsg_assert_fails_context, FALSE))
+		{
+		    error_found = TRUE;
+		    error_found_index = 4;
+		}
+	    }
+	}
+
+	if (error_found)
+	{
+	    typval_T actual_tv;
+
 	    prepare_assert_error(&ga);
-	    fill_assert_error(&ga, &argvars[2], NULL, &argvars[1],
-				      get_vim_var_tv(VV_ERRMSG), ASSERT_OTHER);
+	    if (error_found_index == 3)
+	    {
+		actual_tv.v_type = VAR_NUMBER;
+		actual_tv.vval.v_number = emsg_assert_fails_lnum;
+	    }
+	    else if (error_found_index == 4)
+	    {
+		actual_tv.v_type = VAR_STRING;
+		actual_tv.vval.v_string = emsg_assert_fails_context;
+	    }
+	    else
+	    {
+		actual_tv.v_type = VAR_STRING;
+		actual_tv.vval.v_string = actual;
+	    }
+	    fill_assert_error(&ga, &argvars[2], NULL,
+			&argvars[error_found_index], &actual_tv, ASSERT_OTHER);
 	    ga_concat(&ga, (char_u *)": ");
 	    assert_append_cmd_or_arg(&ga, argvars, cmd);
 	    assert_error(&ga);
@@ -460,12 +676,16 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 	}
     }
 
+theend:
     trylevel = save_trylevel;
-    called_emsg = FALSE;
     suppress_errthrow = FALSE;
     emsg_silent = FALSE;
     emsg_on_display = FALSE;
+    emsg_assert_fails_used = FALSE;
+    VIM_CLEAR(emsg_assert_fails_msg);
     set_vim_var_string(VV_ERRMSG, NULL, 0);
+    if (wrong_arg_msg != NULL)
+	emsg(_(wrong_arg_msg));
 }
 
 /*
@@ -639,6 +859,12 @@ f_test_feedinput(typval_T *argvars, typval_T *rettv UNUSED)
 #ifdef USE_INPUT_BUF
     char_u	*val = tv_get_string_chk(&argvars[0]);
 
+# ifdef VIMDLL
+    // this doesn't work in the console
+    if (!gui.in_use)
+	return;
+# endif
+
     if (val != NULL)
     {
 	trash_input_buf();
@@ -728,6 +954,10 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	    no_query_mouse_for_testing = val;
 	else if (STRCMP(name, (char_u *)"no_wait_return") == 0)
 	    no_wait_return = val;
+	else if (STRCMP(name, (char_u *)"ui_delay") == 0)
+	    ui_delay_for_testing = val;
+	else if (STRCMP(name, (char_u *)"term_props") == 0)
+	    reset_term_props_on_termresponse = val;
 	else if (STRCMP(name, (char_u *)"ALL") == 0)
 	{
 	    disable_char_avail_for_testing = FALSE;
@@ -735,6 +965,8 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	    ignore_redraw_flag_for_testing = FALSE;
 	    nfa_fail_for_testing = FALSE;
 	    no_query_mouse_for_testing = FALSE;
+	    ui_delay_for_testing = 0;
+	    reset_term_props_on_termresponse = FALSE;
 	    if (save_starting >= 0)
 	    {
 		starting = save_starting;
@@ -757,7 +989,10 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
     switch (argvars[0].v_type)
     {
 	case VAR_UNKNOWN:
+	case VAR_ANY:
+	case VAR_VOID:
 	case VAR_NUMBER:
+	case VAR_BOOL:
 	case VAR_FLOAT:
 	case VAR_SPECIAL:
 	case VAR_STRING:
@@ -779,7 +1014,7 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
 	    {
 		ufunc_T *fp;
 
-		fp = find_func(argvars[0].vval.v_string);
+		fp = find_func(argvars[0].vval.v_string, FALSE, NULL);
 		if (fp != NULL)
 		    retval = fp->uf_refcount;
 	    }
@@ -813,8 +1048,8 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
     void
 f_test_garbagecollect_now(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-    /* This is dangerous, any Lists and Dicts used internally may be freed
-     * while still in use. */
+    // This is dangerous, any Lists and Dicts used internally may be freed
+    // while still in use.
     garbage_collect(TRUE);
 }
 
@@ -874,6 +1109,13 @@ f_test_null_list(typval_T *argvars UNUSED, typval_T *rettv)
 }
 
     void
+f_test_null_function(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_FUNC;
+    rettv->vval.v_string = NULL;
+}
+
+    void
 f_test_null_partial(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_PARTIAL;
@@ -885,6 +1127,18 @@ f_test_null_string(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
+}
+
+    void
+f_test_unknown(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_UNKNOWN;
+}
+
+    void
+f_test_void(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_VOID;
 }
 
 #ifdef FEAT_GUI
@@ -926,14 +1180,12 @@ f_test_scrollbar(typval_T *argvars, typval_T *rettv UNUSED)
 }
 #endif
 
-#ifdef FEAT_MOUSE
     void
 f_test_setmouse(typval_T *argvars, typval_T *rettv UNUSED)
 {
     mouse_row = (time_t)tv_get_number(&argvars[0]) - 1;
     mouse_col = (time_t)tv_get_number(&argvars[1]) - 1;
 }
-#endif
 
     void
 f_test_settime(typval_T *argvars, typval_T *rettv UNUSED)

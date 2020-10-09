@@ -24,6 +24,81 @@ func Test_let()
   let out = execute('let a {0 == 1 ? "a" : "b"}')
   let s = "\na                     #1\nb                     #2"
   call assert_equal(s, out)
+
+  " Test for displaying a string variable
+  let s = 'vim'
+  let out = execute('let s')
+  let s = "\ns                      vim"
+  call assert_equal(s, out)
+
+  " Test for displaying a list variable
+  let l = [1, 2]
+  let out = execute('let l')
+  let s = "\nl                     [1, 2]"
+  call assert_equal(s, out)
+
+  " Test for displaying a dict variable
+  let d = {'k' : 'v'}
+  let out = execute('let d')
+  let s = "\nd                     {'k': 'v'}"
+  call assert_equal(s, out)
+
+  " Test for displaying a function reference variable
+  let F = function('min')
+  let out = execute('let F')
+  let s = "\nF                     *min()"
+  call assert_equal(s, out)
+
+  let x = 0
+  if 0 | let x = 1 | endif
+  call assert_equal(0, x)
+
+  " Display a list item using an out of range index
+  let l = [10]
+  call assert_fails('let l[1]', 'E684:')
+
+  " List special variable dictionaries
+  let g:Test_Global_Var = 5
+  call assert_match("\nTest_Global_Var       #5", execute('let g:'))
+  unlet g:Test_Global_Var
+
+  let b:Test_Buf_Var = 8
+  call assert_match("\nb:Test_Buf_Var        #8", execute('let b:'))
+  unlet b:Test_Buf_Var
+
+  let w:Test_Win_Var = 'foo'
+  call assert_equal("\nw:Test_Win_Var         foo", execute('let w:'))
+  unlet w:Test_Win_Var
+
+  let t:Test_Tab_Var = 'bar'
+  call assert_equal("\nt:Test_Tab_Var         bar", execute('let t:'))
+  unlet t:Test_Tab_Var
+
+  let s:Test_Script_Var = [7]
+  call assert_match("\ns:Test_Script_Var     \\[7]", execute('let s:'))
+  unlet s:Test_Script_Var
+
+  let l:Test_Local_Var = {'k' : 5}
+  call assert_match("\nl:Test_Local_Var      {'k': 5}", execute('let l:'))
+  call assert_match("v:errors              []", execute('let v:'))
+
+  " Test for assigning multiple list items
+  let l = [1, 2, 3]
+  let [l[0], l[1]] = [10, 20]
+  call assert_equal([10, 20, 3], l)
+
+  " Test for errors in conditional expression
+  call assert_fails('let val = [] ? 1 : 2', 'E745:')
+  call assert_fails('let val = 1 ? 5+ : 6', 'E121:')
+  call assert_fails('let val = 1 ? 0 : 5+', 'E15:')
+  call assert_false(exists('val'))
+
+  " Test for errors in logical operators
+  let @a = 'if [] || 0 | let val = 2 | endif'
+  call assert_fails('exe @a', 'E745:')
+  call assert_fails('call feedkeys(":let val = 0 || []\<cr>", "xt")', 'E745:')
+  call assert_fails('exe "let val = [] && 5"', 'E745:')
+  call assert_fails('exe "let val = 6 && []"', 'E745:')
 endfunc
 
 func s:set_arg1(a) abort
@@ -152,8 +227,110 @@ func Test_let_utf8_environment()
   call assert_equal('ĀĒĪŌŪあいうえお', $a)
 endfunc
 
+func Test_let_no_type_checking()
+  let v = 1
+  let v = [1,2,3]
+  let v = {'a': 1, 'b': 2}
+  let v = 3.4
+  let v = 'hello'
+endfunc
+
+func Test_let_termcap()
+  " Terminal code
+  let old_t_te = &t_te
+  let &t_te = "\<Esc>[yes;"
+  call assert_match('t_te.*^[[yes;', execute("set termcap"))
+  let &t_te = old_t_te
+
+  if exists("+t_k1")
+    " Key code
+    let old_t_k1 = &t_k1
+    let &t_k1 = "that"
+    call assert_match('t_k1.*that', execute("set termcap"))
+    let &t_k1 = old_t_k1
+  endif
+
+  call assert_fails('let x = &t_xx', 'E113:')
+  let &t_xx = "yes"
+  call assert_equal("yes", &t_xx)
+  let &t_xx = ""
+  call assert_fails('let x = &t_xx', 'E113:')
+endfunc
+
+func Test_let_option_error()
+  let _w = &tw
+  let &tw = 80
+  call assert_fails('let &tw .= 1', 'E734:')
+  call assert_equal(80, &tw)
+  let &tw = _w
+
+  let _w = &fillchars
+  let &fillchars = "vert:|"
+  call assert_fails('let &fillchars += "diff:-"', 'E734:')
+  call assert_equal("vert:|", &fillchars)
+  let &fillchars = _w
+endfunc
+
+" Errors with the :let statement
+func Test_let_errors()
+  let s = 'abcd'
+  call assert_fails('let s[1] = 5', 'E689:')
+
+  let l = [1, 2, 3]
+  call assert_fails('let l[:] = 5', 'E709:')
+
+  call assert_fails('let x:lnum=5', ['E121:', 'E488:'])
+  call assert_fails('let v:=5', 'E461:')
+  call assert_fails('let [a]', 'E474:')
+  call assert_fails('let [a, b] = [', 'E697:')
+  call assert_fails('let [a, b] = [10, 20', 'E696:')
+  call assert_fails('let [a, b] = 10', 'E714:')
+  call assert_fails('let [a, , b] = [10, 20]', 'E475:')
+  call assert_fails('let [a, b&] = [10, 20]', 'E475:')
+  call assert_fails('let $ = 10', 'E475:')
+  call assert_fails('let $FOO[1] = "abc"', 'E18:')
+  call assert_fails('let &buftype[1] = "nofile"', 'E18:')
+  let s = "var"
+  let var = 1
+  call assert_fails('let var += [1,2]', 'E734:')
+  call assert_fails('let {s}.1 = 2', 'E18:')
+  call assert_fails('let a[1] = 5', 'E121:')
+  let l = [[1,2]]
+  call assert_fails('let l[:][0] = [5]', 'E708:')
+  let d = {'k' : 4}
+  call assert_fails('let d.# = 5', 'E488:')
+  call assert_fails('let d.m += 5', 'E734:')
+  call assert_fails('let m = d[{]', 'E15:')
+  let l = [1, 2]
+  call assert_fails('let l[2] = 0', 'E684:')
+  call assert_fails('let l[0:1] = [1, 2, 3]', 'E710:')
+  call assert_fails('let l[-2:-3] = [3, 4]', 'E684:')
+  call assert_fails('let l[0:4] = [5, 6]', 'E711:')
+  call assert_fails('let l -= 2', 'E734:')
+  call assert_fails('let l += 2', 'E734:')
+  call assert_fails('let g:["a;b"] = 10', 'E461:')
+  call assert_fails('let g:.min = function("max")', 'E704:')
+  if has('channel')
+    let ch = test_null_channel()
+    call assert_fails('let ch += 1', 'E734:')
+  endif
+
+  " This test works only when the language is English
+  if v:lang == "C" || v:lang =~ '^[Ee]n'
+    call assert_fails('let [a ; b;] = [10, 20]',
+          \ 'Double ; in list of variables')
+  endif
+endfunc
+
 func Test_let_heredoc_fails()
   call assert_fails('let v =<< marker', 'E991:')
+  try
+    exe "let v =<< TEXT | abc | TEXT"
+    call assert_report('No exception thrown')
+  catch /E488:/
+  catch
+    call assert_report("Caught exception: " .. v:exception)
+  endtry
 
   let text =<< trim END
   func WrongSyntax()
@@ -186,6 +363,10 @@ func Test_let_heredoc_fails()
   call writefile(text, 'XheredocBadMarker')
   call assert_fails('source XheredocBadMarker', 'E221:')
   call delete('XheredocBadMarker')
+
+  call writefile(['let v =<< TEXT', 'abc'], 'XheredocMissingMarker')
+  call assert_fails('source XheredocMissingMarker', 'E990:')
+  call delete('XheredocMissingMarker')
 endfunc
 
 func Test_let_heredoc_trim_no_indent_marker()
@@ -295,4 +476,22 @@ E
   app
   END
   call assert_equal(['something', 'app'], var1)
+
+  let check = []
+  if 0
+     let check =<< trim END
+       from heredoc
+     END
+  endif
+  call assert_equal([], check)
+
+  " unpack assignment
+  let [a, b, c] =<< END
+     x
+     \y
+     z
+END
+  call assert_equal(['     x', '     \y', '     z'], [a, b, c])
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

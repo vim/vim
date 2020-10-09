@@ -57,7 +57,6 @@
 #pragma data_seg(".text")
 #define INITGUID
 #include <initguid.h>
-#include <shlguid.h>
 
 //
 // The class ID of this Shell extension class.

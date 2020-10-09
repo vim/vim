@@ -2774,9 +2774,6 @@ msgstr "tuntematon vimOption"
 msgid "keyboard interrupt"
 msgstr "näppäimistökeskeytys"
 
-msgid "vim error"
-msgstr "vim-virhe"
-
 msgid "cannot create buffer/window command: object is being deleted"
 msgstr "ei voi luoda puskuri- tai ikkunakomentoa, olio on poistumassa"
 
@@ -3093,8 +3090,8 @@ msgstr "-W <skripti>\tKirjoita komennot <skripti>-tiedostoon"
 msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\tMuokkaa salattua tiedostoa"
 
-msgid "-display <display>\tConnect vim to this particular X-server"
-msgstr "-display <näyttö>\tYhdistä vim tiettyyn X-palvelimeen"
+msgid "-display <display>\tConnect Vim to this particular X-server"
+msgstr "-display <näyttö>\tYhdistä Vim tiettyyn X-palvelimeen"
 
 msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\tÄlä yhdistä X-palvelimeen"
@@ -3177,10 +3174,10 @@ msgstr ""
 "\n"
 "Gvimin (Athena-version) tuntemat argumentit:\n"
 
-msgid "-display <display>\tRun vim on <display>"
-msgstr "-display <näyttö>\tSuorita vim <näytössä>"
+msgid "-display <display>\tRun Vim on <display>"
+msgstr "-display <näyttö>\tSuorita Vim <näytössä>"
 
-msgid "-iconic\t\tStart vim iconified"
+msgid "-iconic\t\tStart Vim iconified"
 msgstr "-iconic\t\tKäynnistä pienennettynä"
 
 msgid "-background <color>\tUse <color> for the background (also: -bg)"
@@ -3228,8 +3225,8 @@ msgstr ""
 "\n"
 "Gvimin (GTK+-version) tuntemat argumentit:\n"
 
-msgid "-display <display>\tRun vim on <display> (also: --display)"
-msgstr "-display <näyttö>\tSuorita vim näytöllä <näyttö> (myös: --display)"
+msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgstr "-display <näyttö>\tSuorita Vim näytöllä <näyttö> (myös: --display)"
 
 # X-ikkunointijärjestelmässä saman sovelluksen saman luokan ikkunat
 # tunnistetaan rooliresursseista
@@ -6306,8 +6303,8 @@ msgstr "E799: Käyttökelvoton ID: %ld (pitää olla vähintään 1)"
 msgid "E801: ID already taken: %ld"
 msgstr "E801: ID jo käytössä: %ld"
 
-msgid "List or number required"
-msgstr "Lista tai luku tarvitaan"
+msgid "E290: List or number required"
+msgstr "E290: Lista tai luku tarvitaan"
 
 #, c-format
 msgid "E802: Invalid ID: %ld (must be greater than or equal to 1)"
@@ -6828,7 +6825,7 @@ msgid "list index out of range"
 msgstr "listaindeksi arvoalueen ulkopuolelta"
 
 #, c-format
-msgid "internal error: failed to get vim list item %d"
+msgid "internal error: failed to get Vim list item %d"
 msgstr "sisäinen virhe: ei pystytty hakea vimin listan indeksiä %d"
 
 msgid "slice step cannot be zero"
@@ -6839,7 +6836,7 @@ msgid "attempt to assign sequence of size greater than %d to extended slice"
 msgstr "yritettiin sijoittaa sekvenssiä jonka koko on enemmän kuin %d sliceen"
 
 #, c-format
-msgid "internal error: no vim list item %d"
+msgid "internal error: no Vim list item %d"
 msgstr "sisäinen virhe: ei vim-listan indeksiä %d"
 
 msgid "internal error: not enough list items"
@@ -6949,19 +6946,19 @@ msgstr "ei voitu suorittaa koodia"
 msgid "E858: Eval did not return a valid python object"
 msgstr "E858: Eval ei palauttanut python-oliota"
 
-msgid "E859: Failed to convert returned python object to vim value"
+msgid "E859: Failed to convert returned python object to a Vim value"
 msgstr "E859: Ei voitu konvertoida python-oliota vim-arvoksi"
 
 #, c-format
-msgid "unable to convert %s to vim dictionary"
+msgid "unable to convert %s to a Vim dictionary"
 msgstr "ei voitu konvertoida oliota %s vim-sanakirjaksi"
 
 #, c-format
-msgid "unable to convert %s to vim list"
+msgid "unable to convert %s to a Vim list"
 msgstr "ei voitu konvertoida tyypistä %s vim-listaksi"
 
 #, c-format
-msgid "unable to convert %s to vim structure"
+msgid "unable to convert %s to a Vim structure"
 msgstr "ei voi konvertoida oliota %s vim-tietorakenteeksi"
 
 msgid "internal error: NULL reference passed"

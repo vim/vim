@@ -16,7 +16,7 @@
  * For MSDOS some keys produce codes larger than 0xff. They are split into two
  * chars, the first one is K_NUL (same value used in term.h).
  */
-#define K_NUL			(0xce)	/* for MSDOS: special key follows */
+#define K_NUL			(0xce)	// for MSDOS: special key follows
 
 /*
  * K_SPECIAL is the first byte of a special key code and is always followed by
@@ -92,29 +92,29 @@
  */
 #define KS_TEAROFF		244
 
-/* Used for JSB term mouse. */
+// Used for JSB term mouse.
 #define KS_JSBTERM_MOUSE	243
 
-/* Used a termcap entry that produces a normal character. */
+// Used a termcap entry that produces a normal character.
 #define KS_KEY			242
 
-/* Used for the qnx pterm mouse. */
+// Used for the qnx pterm mouse.
 #define KS_PTERM_MOUSE		241
 
-/* Used for click in a tab pages label. */
+// Used for click in a tab pages label.
 #define KS_TABLINE		240
 
-/* Used for menu in a tab pages line. */
+// Used for menu in a tab pages line.
 #define KS_TABMENU		239
 
-/* Used for the urxvt mouse. */
+// Used for the urxvt mouse.
 #define KS_URXVT_MOUSE		238
 
-/* Used for the sgr mouse. */
+// Used for the sgr mouse.
 #define KS_SGR_MOUSE		237
 #define KS_SGR_MOUSE_RELEASE	236
 
-/* Used for the GPM mouse. */
+// Used for the GPM mouse.
 #define KS_GPM_MOUSE		235
 
 /*
@@ -150,12 +150,12 @@
  */
 enum key_extra
 {
-    KE_NAME = 3		/* name of this terminal entry */
+    KE_NAME = 3		// name of this terminal entry
 
-    , KE_S_UP = 4		/* shift-up */
-    , KE_S_DOWN = 5		/* shift-down */
+    , KE_S_UP = 4		// shift-up
+    , KE_S_DOWN = 5		// shift-down
 
-    , KE_S_F1 = 6		/* shifted function keys */
+    , KE_S_F1 = 6		// shifted function keys
     , KE_S_F2 = 7
     , KE_S_F3 = 8
     , KE_S_F4 = 9
@@ -196,84 +196,84 @@ enum key_extra
     , KE_S_F36 = 41
     , KE_S_F37 = 42
 
-    , KE_MOUSE = 43		/* mouse event start */
+    , KE_MOUSE = 43		// mouse event start
 
 /*
  * Symbols for pseudo keys which are translated from the real key symbols
  * above.
  */
-    , KE_LEFTMOUSE = 44		/* Left mouse button click */
-    , KE_LEFTDRAG = 45		/* Drag with left mouse button down */
-    , KE_LEFTRELEASE = 46	/* Left mouse button release */
-    , KE_MIDDLEMOUSE = 47	/* Middle mouse button click */
-    , KE_MIDDLEDRAG = 48	/* Drag with middle mouse button down */
-    , KE_MIDDLERELEASE = 49	/* Middle mouse button release */
-    , KE_RIGHTMOUSE = 50	/* Right mouse button click */
-    , KE_RIGHTDRAG = 51		/* Drag with right mouse button down */
-    , KE_RIGHTRELEASE = 52	/* Right mouse button release */
+    , KE_LEFTMOUSE = 44		// Left mouse button click
+    , KE_LEFTDRAG = 45		// Drag with left mouse button down
+    , KE_LEFTRELEASE = 46	// Left mouse button release
+    , KE_MIDDLEMOUSE = 47	// Middle mouse button click
+    , KE_MIDDLEDRAG = 48	// Drag with middle mouse button down
+    , KE_MIDDLERELEASE = 49	// Middle mouse button release
+    , KE_RIGHTMOUSE = 50	// Right mouse button click
+    , KE_RIGHTDRAG = 51		// Drag with right mouse button down
+    , KE_RIGHTRELEASE = 52	// Right mouse button release
 
-    , KE_IGNORE = 53		/* Ignored mouse drag/release */
+    , KE_IGNORE = 53		// Ignored mouse drag/release
 
-    , KE_TAB = 54		/* unshifted TAB key */
-    , KE_S_TAB_OLD = 55		/* shifted TAB key (no longer used) */
+    , KE_TAB = 54		// unshifted TAB key
+    , KE_S_TAB_OLD = 55		// shifted TAB key (no longer used)
 
-    , KE_SNIFF_UNUSED = 56	/* obsolete */
-    , KE_XF1 = 57		/* extra vt100 function keys for xterm */
+    , KE_SNIFF_UNUSED = 56	// obsolete
+    , KE_XF1 = 57		// extra vt100 function keys for xterm
     , KE_XF2 = 58
     , KE_XF3 = 59
     , KE_XF4 = 60
-    , KE_XEND = 61		/* extra (vt100) end key for xterm */
-    , KE_ZEND = 62		/* extra (vt100) end key for xterm */
-    , KE_XHOME = 63		/* extra (vt100) home key for xterm */
-    , KE_ZHOME = 64		/* extra (vt100) home key for xterm */
-    , KE_XUP = 65		/* extra vt100 cursor keys for xterm */
+    , KE_XEND = 61		// extra (vt100) end key for xterm
+    , KE_ZEND = 62		// extra (vt100) end key for xterm
+    , KE_XHOME = 63		// extra (vt100) home key for xterm
+    , KE_ZHOME = 64		// extra (vt100) home key for xterm
+    , KE_XUP = 65		// extra vt100 cursor keys for xterm
     , KE_XDOWN = 66
     , KE_XLEFT = 67
     , KE_XRIGHT = 68
 
-    , KE_LEFTMOUSE_NM = 69	/* non-mappable Left mouse button click */
-    , KE_LEFTRELEASE_NM = 70	/* non-mappable left mouse button release */
+    , KE_LEFTMOUSE_NM = 69	// non-mappable Left mouse button click
+    , KE_LEFTRELEASE_NM = 70	// non-mappable left mouse button release
 
-    , KE_S_XF1 = 71		/* vt100 shifted function keys for xterm */
+    , KE_S_XF1 = 71		// vt100 shifted function keys for xterm
     , KE_S_XF2 = 72
     , KE_S_XF3 = 73
     , KE_S_XF4 = 74
 
-    /* NOTE: The scroll wheel events are inverted: i.e. UP is the same as
-     * moving the actual scroll wheel down, LEFT is the same as moving the
-     * scroll wheel right. */
-    , KE_MOUSEDOWN = 75		/* scroll wheel pseudo-button Down */
-    , KE_MOUSEUP = 76		/* scroll wheel pseudo-button Up */
-    , KE_MOUSELEFT = 77		/* scroll wheel pseudo-button Left */
-    , KE_MOUSERIGHT = 78	/* scroll wheel pseudo-button Right */
+    // NOTE: The scroll wheel events are inverted: i.e. UP is the same as
+    // moving the actual scroll wheel down, LEFT is the same as moving the
+    // scroll wheel right.
+    , KE_MOUSEDOWN = 75		// scroll wheel pseudo-button Down
+    , KE_MOUSEUP = 76		// scroll wheel pseudo-button Up
+    , KE_MOUSELEFT = 77		// scroll wheel pseudo-button Left
+    , KE_MOUSERIGHT = 78	// scroll wheel pseudo-button Right
 
-    , KE_KINS = 79		/* keypad Insert key */
-    , KE_KDEL = 80		/* keypad Delete key */
+    , KE_KINS = 79		// keypad Insert key
+    , KE_KDEL = 80		// keypad Delete key
 
-    , KE_CSI = 81		/* CSI typed directly */
-    , KE_SNR = 82		/* <SNR> */
-    , KE_PLUG = 83		/* <Plug> */
-    , KE_CMDWIN = 84		/* open command-line window from Command-line Mode */
+    , KE_CSI = 81		// CSI typed directly
+    , KE_SNR = 82		// <SNR>
+    , KE_PLUG = 83		// <Plug>
+    , KE_CMDWIN = 84		// open command-line window from Command-line Mode
 
-    , KE_C_LEFT = 85		/* control-left */
-    , KE_C_RIGHT = 86		/* control-right */
-    , KE_C_HOME = 87		/* control-home */
-    , KE_C_END = 88		/* control-end */
+    , KE_C_LEFT = 85		// control-left
+    , KE_C_RIGHT = 86		// control-right
+    , KE_C_HOME = 87		// control-home
+    , KE_C_END = 88		// control-end
 
-    , KE_X1MOUSE = 89		/* X1/X2 mouse-buttons */
+    , KE_X1MOUSE = 89		// X1/X2 mouse-buttons
     , KE_X1DRAG = 90
     , KE_X1RELEASE = 91
     , KE_X2MOUSE = 92
     , KE_X2DRAG = 93
     , KE_X2RELEASE = 94
 
-    , KE_DROP = 95		/* DnD data is available */
-    , KE_CURSORHOLD = 96	/* CursorHold event */
-    , KE_NOP = 97		/* doesn't do something */
-    , KE_FOCUSGAINED = 98	/* focus gained */
-    , KE_FOCUSLOST = 99		/* focus lost */
-    , KE_MOUSEMOVE = 100	/* mouse moved with no button down */
-    , KE_CANCEL = 101		/* return from vgetc() */
+    , KE_DROP = 95		// DnD data is available
+    , KE_CURSORHOLD = 96	// CursorHold event
+    , KE_NOP = 97		// doesn't do something
+    , KE_FOCUSGAINED = 98	// focus gained
+    , KE_FOCUSLOST = 99		// focus lost
+    , KE_MOUSEMOVE = 100	// mouse moved with no button down
+    , KE_CANCEL = 101		// return from vgetc()
 };
 
 /*
@@ -298,19 +298,19 @@ enum key_extra
 #define K_TAB		TERMCAP2KEY(KS_EXTRA, KE_TAB)
 #define K_S_TAB		TERMCAP2KEY('k', 'B')
 
-/* extra set of function keys F1-F4, for vt100 compatible xterm */
+// extra set of function keys F1-F4, for vt100 compatible xterm
 #define K_XF1		TERMCAP2KEY(KS_EXTRA, KE_XF1)
 #define K_XF2		TERMCAP2KEY(KS_EXTRA, KE_XF2)
 #define K_XF3		TERMCAP2KEY(KS_EXTRA, KE_XF3)
 #define K_XF4		TERMCAP2KEY(KS_EXTRA, KE_XF4)
 
-/* extra set of cursor keys for vt100 compatible xterm */
+// extra set of cursor keys for vt100 compatible xterm
 #define K_XUP		TERMCAP2KEY(KS_EXTRA, KE_XUP)
 #define K_XDOWN		TERMCAP2KEY(KS_EXTRA, KE_XDOWN)
 #define K_XLEFT		TERMCAP2KEY(KS_EXTRA, KE_XLEFT)
 #define K_XRIGHT	TERMCAP2KEY(KS_EXTRA, KE_XRIGHT)
 
-#define K_F1		TERMCAP2KEY('k', '1')	/* function keys */
+#define K_F1		TERMCAP2KEY('k', '1')	// function keys
 #define K_F2		TERMCAP2KEY('k', '2')
 #define K_F3		TERMCAP2KEY('k', '3')
 #define K_F4		TERMCAP2KEY('k', '4')
@@ -351,13 +351,13 @@ enum key_extra
 #define K_F36		TERMCAP2KEY('F', 'Q')
 #define K_F37		TERMCAP2KEY('F', 'R')
 
-/* extra set of shifted function keys F1-F4, for vt100 compatible xterm */
+// extra set of shifted function keys F1-F4, for vt100 compatible xterm
 #define K_S_XF1		TERMCAP2KEY(KS_EXTRA, KE_S_XF1)
 #define K_S_XF2		TERMCAP2KEY(KS_EXTRA, KE_S_XF2)
 #define K_S_XF3		TERMCAP2KEY(KS_EXTRA, KE_S_XF3)
 #define K_S_XF4		TERMCAP2KEY(KS_EXTRA, KE_S_XF4)
 
-#define K_S_F1		TERMCAP2KEY(KS_EXTRA, KE_S_F1)	/* shifted func. keys */
+#define K_S_F1		TERMCAP2KEY(KS_EXTRA, KE_S_F1)	// shifted func. keys
 #define K_S_F2		TERMCAP2KEY(KS_EXTRA, KE_S_F2)
 #define K_S_F3		TERMCAP2KEY(KS_EXTRA, KE_S_F3)
 #define K_S_F4		TERMCAP2KEY(KS_EXTRA, KE_S_F4)
@@ -370,7 +370,7 @@ enum key_extra
 
 #define K_S_F11		TERMCAP2KEY(KS_EXTRA, KE_S_F11)
 #define K_S_F12		TERMCAP2KEY(KS_EXTRA, KE_S_F12)
-/* K_S_F13 to K_S_F37  are currently not used */
+// K_S_F13 to K_S_F37  are currently not used
 
 #define K_HELP		TERMCAP2KEY('%', '1')
 #define K_UNDO		TERMCAP2KEY('&', '8')
@@ -382,37 +382,37 @@ enum key_extra
 #define K_DEL		TERMCAP2KEY('k', 'D')
 #define K_KDEL		TERMCAP2KEY(KS_EXTRA, KE_KDEL)
 #define K_HOME		TERMCAP2KEY('k', 'h')
-#define K_KHOME		TERMCAP2KEY('K', '1')	/* keypad home (upper left) */
+#define K_KHOME		TERMCAP2KEY('K', '1')	// keypad home (upper left)
 #define K_XHOME		TERMCAP2KEY(KS_EXTRA, KE_XHOME)
 #define K_ZHOME		TERMCAP2KEY(KS_EXTRA, KE_ZHOME)
 #define K_END		TERMCAP2KEY('@', '7')
-#define K_KEND		TERMCAP2KEY('K', '4')	/* keypad end (lower left) */
+#define K_KEND		TERMCAP2KEY('K', '4')	// keypad end (lower left)
 #define K_XEND		TERMCAP2KEY(KS_EXTRA, KE_XEND)
 #define K_ZEND		TERMCAP2KEY(KS_EXTRA, KE_ZEND)
 #define K_PAGEUP	TERMCAP2KEY('k', 'P')
 #define K_PAGEDOWN	TERMCAP2KEY('k', 'N')
-#define K_KPAGEUP	TERMCAP2KEY('K', '3')	/* keypad pageup (upper R.) */
-#define K_KPAGEDOWN	TERMCAP2KEY('K', '5')	/* keypad pagedown (lower R.) */
+#define K_KPAGEUP	TERMCAP2KEY('K', '3')	// keypad pageup (upper R.)
+#define K_KPAGEDOWN	TERMCAP2KEY('K', '5')	// keypad pagedown (lower R.)
 
-#define K_KPLUS		TERMCAP2KEY('K', '6')	/* keypad plus */
-#define K_KMINUS	TERMCAP2KEY('K', '7')	/* keypad minus */
-#define K_KDIVIDE	TERMCAP2KEY('K', '8')	/* keypad / */
-#define K_KMULTIPLY	TERMCAP2KEY('K', '9')	/* keypad * */
-#define K_KENTER	TERMCAP2KEY('K', 'A')	/* keypad Enter */
-#define K_KPOINT	TERMCAP2KEY('K', 'B')	/* keypad . or ,*/
-#define K_PS		TERMCAP2KEY('P', 'S')	/* paste start */
-#define K_PE		TERMCAP2KEY('P', 'E')	/* paste end */
+#define K_KPLUS		TERMCAP2KEY('K', '6')	// keypad plus
+#define K_KMINUS	TERMCAP2KEY('K', '7')	// keypad minus
+#define K_KDIVIDE	TERMCAP2KEY('K', '8')	// keypad /
+#define K_KMULTIPLY	TERMCAP2KEY('K', '9')	// keypad *
+#define K_KENTER	TERMCAP2KEY('K', 'A')	// keypad Enter
+#define K_KPOINT	TERMCAP2KEY('K', 'B')	// keypad . or ,
+#define K_PS		TERMCAP2KEY('P', 'S')	// paste start
+#define K_PE		TERMCAP2KEY('P', 'E')	// paste end
 
-#define K_K0		TERMCAP2KEY('K', 'C')	/* keypad 0 */
-#define K_K1		TERMCAP2KEY('K', 'D')	/* keypad 1 */
-#define K_K2		TERMCAP2KEY('K', 'E')	/* keypad 2 */
-#define K_K3		TERMCAP2KEY('K', 'F')	/* keypad 3 */
-#define K_K4		TERMCAP2KEY('K', 'G')	/* keypad 4 */
-#define K_K5		TERMCAP2KEY('K', 'H')	/* keypad 5 */
-#define K_K6		TERMCAP2KEY('K', 'I')	/* keypad 6 */
-#define K_K7		TERMCAP2KEY('K', 'J')	/* keypad 7 */
-#define K_K8		TERMCAP2KEY('K', 'K')	/* keypad 8 */
-#define K_K9		TERMCAP2KEY('K', 'L')	/* keypad 9 */
+#define K_K0		TERMCAP2KEY('K', 'C')	// keypad 0
+#define K_K1		TERMCAP2KEY('K', 'D')	// keypad 1
+#define K_K2		TERMCAP2KEY('K', 'E')	// keypad 2
+#define K_K3		TERMCAP2KEY('K', 'F')	// keypad 3
+#define K_K4		TERMCAP2KEY('K', 'G')	// keypad 4
+#define K_K5		TERMCAP2KEY('K', 'H')	// keypad 5
+#define K_K6		TERMCAP2KEY('K', 'I')	// keypad 6
+#define K_K7		TERMCAP2KEY('K', 'J')	// keypad 7
+#define K_K8		TERMCAP2KEY('K', 'K')	// keypad 8
+#define K_K9		TERMCAP2KEY('K', 'L')	// keypad 9
 
 #define K_MOUSE		TERMCAP2KEY(KS_MOUSE, KE_FILLER)
 #define K_MENU		TERMCAP2KEY(KS_MENU, KE_FILLER)
@@ -477,15 +477,15 @@ enum key_extra
 
 #define K_CURSORHOLD	TERMCAP2KEY(KS_EXTRA, KE_CURSORHOLD)
 
-/* Bits for modifier mask */
-/* 0x01 cannot be used, because the modifier must be 0x02 or higher */
+// Bits for modifier mask
+// 0x01 cannot be used, because the modifier must be 0x02 or higher
 #define MOD_MASK_SHIFT	    0x02
 #define MOD_MASK_CTRL	    0x04
-#define MOD_MASK_ALT	    0x08	/* aka META */
-#define MOD_MASK_META	    0x10	/* META when it's different from ALT */
-#define MOD_MASK_2CLICK	    0x20	/* use MOD_MASK_MULTI_CLICK */
-#define MOD_MASK_3CLICK	    0x40	/* use MOD_MASK_MULTI_CLICK */
-#define MOD_MASK_4CLICK	    0x60	/* use MOD_MASK_MULTI_CLICK */
+#define MOD_MASK_ALT	    0x08	// aka META
+#define MOD_MASK_META	    0x10	// META when it's different from ALT
+#define MOD_MASK_2CLICK	    0x20	// use MOD_MASK_MULTI_CLICK
+#define MOD_MASK_3CLICK	    0x40	// use MOD_MASK_MULTI_CLICK
+#define MOD_MASK_4CLICK	    0x60	// use MOD_MASK_MULTI_CLICK
 #ifdef MACOS_X
 # define MOD_MASK_CMD	    0x80
 #endif
@@ -499,7 +499,8 @@ enum key_extra
  */
 #define MAX_KEY_NAME_LEN    32
 
-/* Maximum length of a special key event as tokens.  This includes modifiers.
+/*
+ * Maximum length of a special key event as tokens.  This includes modifiers.
  * The longest event is something like <M-C-S-T-4-LeftDrag> which would be the
  * following string of tokens:
  *

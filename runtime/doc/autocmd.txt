@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Jun 26
+*autocmd.txt*   For Vim version 8.2.  Last change: 2020 Sep 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -268,7 +268,6 @@ Name			triggered by ~
 |BufCreate|		just after adding a buffer to the buffer list
 |BufDelete|		before deleting a buffer from the buffer list
 |BufWipeout|		before completely deleting a buffer
-|TerminalOpen|		after a terminal buffer was created
 
 |BufFilePre|		before changing the name of the current buffer
 |BufFilePost|		after changing the name of the current buffer
@@ -301,6 +300,10 @@ Name			triggered by ~
 |ExitPre|		when using a command that may make Vim exit
 |VimLeavePre|		before exiting Vim, before writing the viminfo file
 |VimLeave|		before exiting Vim, after writing the viminfo file
+
+	Terminal
+|TerminalOpen|		after a terminal buffer was created
+|TerminalWinOpen|	after a terminal buffer was created in a new window
 
 	Various
 |FileChangedShell|	Vim notices that a file changed since editing started
@@ -355,6 +358,10 @@ Name			triggered by ~
 			when popup menu visible
 |TextYankPost|		after text has been yanked or deleted
 
+|SafeState|		nothing pending, going to wait for the user to type a
+			character
+|SafeStateAgain|	repeated SafeState
+
 |ColorSchemePre|	before loading a color scheme
 |ColorScheme|		after loading a color scheme
 
@@ -367,9 +374,13 @@ Name			triggered by ~
 
 |MenuPopup|		just before showing the popup menu
 |CompleteChanged|	after Insert mode completion menu changed
-|CompleteDone|		after Insert mode completion is done
+|CompleteDonePre|	after Insert mode completion is done, before clearing
+			info
+|CompleteDone|		after Insert mode completion is done, after clearing
+			info
 
 |User|			to be used in combination with ":doautocmd"
+|SigUSR1|		after the SIGUSR1 signal has been detected
 
 
 The alphabetical list of autocommand events:		*autocmd-events-abc*
@@ -380,6 +391,8 @@ BufAdd or BufCreate		Just after creating a new buffer which is
 				to the buffer list.
 				Also used just after a buffer in the buffer
 				list has been renamed.
+				Not triggered for the initial buffers created
+				during startup.
 				The BufCreate event is for historic reasons.
 				NOTE: When this autocommand is executed, the
 				current buffer "%" may be different from the
@@ -577,11 +590,11 @@ ColorScheme			After loading a color scheme. |:colorscheme|
 ColorSchemePre			Before loading a color scheme. |:colorscheme|
 				Useful to setup removing things added by a
 				color scheme, before another one is loaded.
-CompleteChanged 					*CompleteChanged*
+CompleteChanged						*CompleteChanged*
 				After each time the Insert mode completion
 				menu changed.  Not fired on popup menu hide,
-				use |CompleteDone| for that.  Never triggered
-				recursively.
+				use |CompleteDonePre| or |CompleteDone| for
+				that.  Never triggered recursively.
 
 				Sets these |v:event| keys:
 				    completed_item	See |complete-items|.
@@ -597,16 +610,28 @@ CompleteChanged 					*CompleteChanged*
 				The size and position of the popup are also
 				available by calling |pum_getpos()|.
 
+							*CompleteDonePre*
+CompleteDonePre			After Insert mode completion is done.  Either
+				when something was completed or abandoning
+				completion. |ins-completion|
+				|complete_info()| can be used, the info is
+				cleared after triggering CompleteDonePre.
+				The |v:completed_item| variable contains
+				information about the completed item.
+
 							*CompleteDone*
 CompleteDone			After Insert mode completion is done.  Either
 				when something was completed or abandoning
 				completion. |ins-completion|
+				|complete_info()| cannot be used, the info is
+				cleared before triggering CompleteDone.  Use
+				CompleteDonePre if you need it.
 				The |v:completed_item| variable contains
 				information about the completed item.
 
 							*CursorHold*
 CursorHold			When the user doesn't press a key for the time
-				specified with 'updatetime'.  Not re-triggered
+				specified with 'updatetime'.  Not triggered
 				until the user has pressed a key (i.e. doesn't
 				fire every 'updatetime' ms if you leave Vim to
 				make some coffee. :)  See |CursorHold-example|
@@ -630,7 +655,7 @@ CursorHold			When the user doesn't press a key for the time
 				Hint: to force an update of the status lines
 				use: >
 					:let &ro = &ro
-<				{only on Amiga, Unix, Win32, MSDOS and all GUI
+<				{only on Amiga, Unix, Win32 and all GUI
 				versions}
 							*CursorHoldI*
 CursorHoldI			Just like CursorHold, but in Insert mode.
@@ -955,6 +980,32 @@ RemoteReply			When a reply from a Vim that functions as
 				Note that even if an autocommand is defined,
 				the reply should be read with |remote_read()|
 				to consume it.
+							*SafeState*
+SafeState			When nothing is pending, going to wait for the
+				user to type a character.
+				This will not be triggered when:
+				- an operator is pending
+				- a register was entered with "r
+				- halfway executing a command
+				- executing a mapping
+				- there is typeahead
+				- Insert mode completion is active
+				- Command line completion is active
+				You can use `mode()` to find out what state
+				Vim is in.  That may be:
+				- VIsual mode
+				- Normal mode
+				- Insert mode
+				- Command-line mode
+				Depending on what you want to do, you may also
+				check more with `state()`, e.g. whether the
+				screen was scrolled for messages.
+							*SafeStateAgain*
+SafeStateAgain			Like SafeState but after processing any
+				messages and invoking callbacks. This may be
+				triggered often, don't do something that takes
+				time.
+
 							*SessionLoadPost*
 SessionLoadPost			After loading the session file created using
 				the |:mksession| command.
@@ -1051,6 +1102,12 @@ TerminalOpen			Just after a terminal buffer was created, with
 				`:terminal` or |term_start()|. This event is
 				triggered even if the buffer is created
 				without a window, with the ++hidden option.
+							*TerminalWinOpen*
+TerminalWinOpen			Just after a terminal buffer was created, with
+				`:terminal` or |term_start()|. This event is
+				triggered only if the buffer is created
+				with a window.  Can be used to set window
+				local options for the terminal window.
 							*TermResponse*
 TermResponse			After the response to |t_RV| is received from
 				the terminal.  The value of |v:termresponse|
@@ -1087,8 +1144,8 @@ TextYankPost			After text has been yanked or deleted in the
 				current buffer.  The following values of
 				|v:event| can be used to determine the operation
 				that triggered this autocmd:
-				   operator    	The operation performed.
-				   regcontents 	Text that was stored in the
+				   operator	The operation performed.
+				   regcontents	Text that was stored in the
 						register, as a list of lines,
 						like with: >
 						getreg(r, 1, 1)
@@ -1097,11 +1154,14 @@ TextYankPost			After text has been yanked or deleted in the
 						register.
 				   regtype	Type of the register, see
 						|getregtype()|.
+				   visual	True if the operation is
+						performed on a |Visual| area.
 				Not triggered when |quote_| is used nor when
 				called recursively.
 				It is not allowed to change the buffer text,
 				see |textlock|.
 				{only when compiled with the +eval feature}
+
 							*User*
 User				Never executed automatically.  To be used for
 				autocommands that are only executed with
@@ -1110,6 +1170,15 @@ User				Never executed automatically.  To be used for
 				used while there are no matching autocommands,
 				you will get an error.  If you don't want
 				that, define a dummy autocommand yourself.
+
+							*SigUSR1*
+SigUSR1				After the SIGUSR1 signal has been detected.
+				Could be used if other ways of notifying Vim
+				are not feasible.  E.g. to check for the
+				result of a build that takes a long time, or
+				when a motion sensor is triggered.
+				{only on Unix}
+
 							*UserGettingBored*
 UserGettingBored		When the user presses the same key 42 times.
 				Just kidding! :-)
@@ -1124,7 +1193,7 @@ VimEnter			After doing all the startup stuff, including
 				   if v:vim_did_enter
 				     call s:init()
 				   else
- 	  			     au VimEnter * call s:init()
+				     au VimEnter * call s:init()
 				   endif
 <							*VimLeave*
 VimLeave			Before exiting Vim, just after writing the
@@ -1248,8 +1317,8 @@ The pattern is interpreted like mostly used in file names:
 	[^ch]   match any character but 'c' and 'h'
 
 Note that for all systems the '/' character is used for path separator (even
-MS-DOS and OS/2).  This was done because the backslash is difficult to use
-in a pattern and to make the autocommands portable across different systems.
+for MS-Windows).  This was done because the backslash is difficult to use in a
+pattern and to make the autocommands portable across different systems.
 
 It is possible to use |pattern| items, but they may not work as expected,
 because of the translation done for the above.
@@ -1356,8 +1425,8 @@ name!
 :aug[roup]! {name}		Delete the autocmd group {name}.  Don't use
 				this if there is still an autocommand using
 				this group!  You will get a warning if doing
-				it anyway. when the group is the current group
-				you will get error E936.
+				it anyway.  When the group is the current
+				group you will get error E936.
 
 To enter autocommands for a specific group, use this method:
 1. Select the group with ":augroup {name}".

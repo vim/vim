@@ -1,0 +1,33 @@
+/* typval.c */
+typval_T *alloc_tv(void);
+typval_T *alloc_string_tv(char_u *s);
+void free_tv(typval_T *varp);
+void clear_tv(typval_T *varp);
+void init_tv(typval_T *varp);
+varnumber_T tv_get_number(typval_T *varp);
+varnumber_T tv_get_number_chk(typval_T *varp, int *denote);
+varnumber_T tv_get_bool(typval_T *varp);
+varnumber_T tv_get_bool_chk(typval_T *varp, int *denote);
+float_T tv_get_float(typval_T *varp);
+char_u *tv_get_string(typval_T *varp);
+char_u *tv_get_string_buf(typval_T *varp, char_u *buf);
+char_u *tv_get_string_chk(typval_T *varp);
+char_u *tv_get_string_buf_chk(typval_T *varp, char_u *buf);
+char_u *tv_stringify(typval_T *varp, char_u *buf);
+int tv_check_lock(typval_T *tv, char_u *name, int use_gettext);
+void copy_tv(typval_T *from, typval_T *to);
+int typval_compare(typval_T *typ1, typval_T *typ2, exptype_T type, int ic);
+char_u *typval_tostring(typval_T *arg);
+int tv_islocked(typval_T *tv);
+int tv_equal(typval_T *tv1, typval_T *tv2, int ic, int recursive);
+int eval_option(char_u **arg, typval_T *rettv, int evaluate);
+int eval_number(char_u **arg, typval_T *rettv, int evaluate, int want_string);
+int eval_string(char_u **arg, typval_T *rettv, int evaluate);
+int eval_lit_string(char_u **arg, typval_T *rettv, int evaluate);
+char_u *tv2string(typval_T *tv, char_u **tofree, char_u *numbuf, int copyID);
+int eval_env_var(char_u **arg, typval_T *rettv, int evaluate);
+linenr_T tv_get_lnum(typval_T *argvars);
+linenr_T tv_get_lnum_buf(typval_T *argvars, buf_T *buf);
+buf_T *tv_get_buf(typval_T *tv, int curtab_only);
+buf_T *tv_get_buf_from_arg(typval_T *tv);
+/* vim: set ft=c : */

@@ -20,6 +20,8 @@ func Test_strchars()
     call assert_equal(exp[i][1], inp[i]->strchars(0))
     call assert_equal(exp[i][2], strchars(inp[i], 1))
   endfor
+  call assert_fails("let v=strchars('abc', [])", 'E745:')
+  call assert_fails("let v=strchars('abc', 2)", 'E1023:')
 endfunc
 
 " Test for customlist completion
@@ -99,6 +101,10 @@ func Test_list2str_str2list_latin1()
   
   let lres = str2list(s, 1)
   let sres = list2str(l, 1)
+  call assert_equal([65, 66, 67], str2list("ABC"))
+
+  " Try converting a list to a string in latin-1 encoding
+  call assert_equal([1, 2, 3], str2list(list2str([1, 2, 3])))
 
   let &encoding = save_encoding
   call assert_equal(l, lres)
@@ -138,3 +144,40 @@ func Test_screenchar_utf8()
 
   bwipe!
 endfunc
+
+func Test_setcellwidths()
+  call setcellwidths([
+        \ [0x1330, 0x1330, 2],
+        \ [9999, 10000, 1],
+        \ [0x1337, 0x1339, 2],
+        \])
+
+  call assert_equal(2, strwidth("\u1330"))
+  call assert_equal(1, strwidth("\u1336"))
+  call assert_equal(2, strwidth("\u1337"))
+  call assert_equal(2, strwidth("\u1339"))
+  call assert_equal(1, strwidth("\u133a"))
+
+  call setcellwidths([])
+
+  call assert_fails('call setcellwidths(1)', 'E714:')
+
+  call assert_fails('call setcellwidths([1, 2, 0])', 'E1109:')
+
+  call assert_fails('call setcellwidths([[0x101]])', 'E1110:')
+  call assert_fails('call setcellwidths([[0x101, 0x102]])', 'E1110:')
+  call assert_fails('call setcellwidths([[0x101, 0x102, 1, 4]])', 'E1110:')
+  call assert_fails('call setcellwidths([["a"]])', 'E1110:')
+
+  call assert_fails('call setcellwidths([[0x102, 0x101, 1]])', 'E1111:')
+
+  call assert_fails('call setcellwidths([[0x101, 0x102, 0]])', 'E1112:')
+  call assert_fails('call setcellwidths([[0x101, 0x102, 3]])', 'E1112:')
+
+  call assert_fails('call setcellwidths([[0x111, 0x122, 1], [0x115, 0x116, 2]])', 'E1113:')
+  call assert_fails('call setcellwidths([[0x111, 0x122, 1], [0x122, 0x123, 2]])', 'E1113:')
+
+  call assert_fails('call setcellwidths([[0x33, 0x44, 2]])', 'E1114:')
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

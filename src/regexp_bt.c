@@ -470,7 +470,7 @@ regcomp_start(
 
     num_complex_braces = 0;
     regnpar = 1;
-    vim_memset(had_endbrace, 0, sizeof(had_endbrace));
+    CLEAR_FIELD(had_endbrace);
 #ifdef FEAT_SYN_HL
     regnzpar = 1;
     re_has_z = 0;
@@ -2293,7 +2293,7 @@ bt_regcomp(char_u *expr, int re_flags)
     int		flags;
 
     if (expr == NULL)
-	EMSG_RET_NULL(_(e_null));
+	IEMSG_RET_NULL(_(e_null));
 
     init_class_tab();
 
@@ -2917,7 +2917,7 @@ do_class:
 	break;
 
       default:			// Oh dear.  Called inappropriately.
-	emsg(_(e_re_corr));
+	iemsg(_(e_re_corr));
 #ifdef DEBUG
 	printf("Called regrepeat with op code %d\n", OP(p));
 #endif
@@ -4099,7 +4099,7 @@ regmatch(
 	    break;
 
 	  default:
-	    emsg(_(e_re_corr));
+	    iemsg(_(e_re_corr));
 #ifdef DEBUG
 	    printf("Illegal op code %d\n", op);
 #endif
@@ -4499,7 +4499,7 @@ regmatch(
 	{
 	    // We get here only if there's trouble -- normally "case END" is
 	    // the terminating point.
-	    emsg(_(e_re_corr));
+	    iemsg(_(e_re_corr));
 #ifdef DEBUG
 	    printf("Premature EOL\n");
 #endif
@@ -4568,6 +4568,8 @@ regtry(
 
 	cleanup_zsubexpr();
 	re_extmatch_out = make_extmatch();
+	if (re_extmatch_out == NULL)
+	    return 0;
 	for (i = 0; i < NSUBEXP; i++)
 	{
 	    if (REG_MULTI)
@@ -4586,7 +4588,7 @@ regtry(
 		if (reg_startzp[i] != NULL && reg_endzp[i] != NULL)
 		    re_extmatch_out->matches[i] =
 			    vim_strnsave(reg_startzp[i],
-					(int)(reg_endzp[i] - reg_startzp[i]));
+						reg_endzp[i] - reg_startzp[i]);
 	    }
 	}
     }
@@ -4647,7 +4649,7 @@ bt_regexec_both(
     // Be paranoid...
     if (prog == NULL || line == NULL)
     {
-	emsg(_(e_null));
+	iemsg(_(e_null));
 	goto theend;
     }
 
@@ -4852,17 +4854,7 @@ bt_regexec_multi(
     proftime_T	*tm,		// timeout limit or NULL
     int		*timed_out)	// flag set on timeout or NULL
 {
-    rex.reg_match = NULL;
-    rex.reg_mmatch = rmp;
-    rex.reg_buf = buf;
-    rex.reg_win = win;
-    rex.reg_firstlnum = lnum;
-    rex.reg_maxline = rex.reg_buf->b_ml.ml_line_count - lnum;
-    rex.reg_line_lbr = FALSE;
-    rex.reg_ic = rmp->rmm_ic;
-    rex.reg_icombine = FALSE;
-    rex.reg_maxcol = rmp->rmm_maxcol;
-
+    init_regexec_multi(rmp, win, buf, lnum);
     return bt_regexec_both(NULL, col, tm, timed_out);
 }
 

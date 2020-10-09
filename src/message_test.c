@@ -14,13 +14,31 @@
 #undef NDEBUG
 #include <assert.h>
 
-/* Must include main.c because it contains much more than just main() */
+// Must include main.c because it contains much more than just main()
 #define NO_VIM_MAIN
 #include "main.c"
 
-/* This file has to be included because some of the tested functions are
- * static. */
+// This file has to be included because some of the tested functions are
+// static.
 #include "message.c"
+
+#ifndef MIN
+# define MIN(x,y) ((x) < (y) ? (x) : (y))
+#endif
+
+// These formats are not standard in C printf() function.
+// Use a global variable rather than a literal format to disable
+// -Wformat compiler warnings:
+//
+// - warning: '0' flag used with ‘%p’ gnu_printf format
+// - warning: format ‘%S’ expects argument of type ‘wchar_t *’, but argument 4 has type ‘char *’
+// - warning: unknown conversion type character ‘b’ in format
+//
+// These formats are in practise only used from vim script printf()
+// function and never as literals in C code.
+char *fmt_012p = "%012p";
+char *fmt_5S   = "%5S";
+char *fmt_06b  = "%06b";
 
 /*
  * Test trunc_string().
@@ -31,7 +49,7 @@ test_trunc_string(void)
     char_u  *buf; /*allocated every time to find uninit errors */
     char_u  *s;
 
-    /* in place */
+    // in place
     buf = alloc(40);
     STRCPY(buf, "text");
     trunc_string(buf, buf, 20, 40);
@@ -56,7 +74,7 @@ test_trunc_string(void)
     assert(STRCMP(buf, "a text t...nott fits") == 0);
     vim_free(buf);
 
-    /* copy from string to buf */
+    // copy from string to buf
     buf = alloc(40);
     s = vim_strsave((char_u *)"text");
     trunc_string(s, buf, 20, 40);
@@ -93,15 +111,178 @@ test_trunc_string(void)
     vim_free(s);
 }
 
+/*
+ * Test vim_snprintf() with a focus on checking that truncation is
+ * correct when buffer is small, since it cannot be tested from
+ * vim scrip tests. Check that:
+ * - no buffer overflows happens (with valgrind or asan)
+ * - output string is always NUL terminated.
+ *
+ * Not all formats of vim_snprintf() are checked here. They are
+ * checked more exhaustively in Test_printf*() vim script tests.
+ */
+    static void
+test_vim_snprintf(void)
+{
+    int		n;
+    size_t	bsize;
+    int		bsize_int;
+    void	*ptr = (void *)0x87654321;
+
+    // Loop on various buffer sizes to make sure that truncation of
+    // vim_snprintf() is correct.
+    for (bsize = 0; bsize < 15; ++bsize)
+    {
+	bsize_int = (int)bsize - 1;
+
+	// buf is the heap rather than in the stack
+	// so valgrind can detect buffer overflows if any.
+	// Use malloc() rather than alloc() as test checks with 0-size
+	// buffer and its content should then never be used.
+	char *buf = malloc(bsize);
+
+	n = vim_snprintf(buf, bsize, "%d", 1234567);
+	assert(n == 7);
+	assert(bsize == 0 || STRNCMP(buf, "1234567", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%ld", 1234567L);
+	assert(n == 7);
+	assert(bsize == 0 || STRNCMP(buf, "1234567", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%9ld", 1234567L);
+	assert(n == 9);
+	assert(bsize == 0 || STRNCMP(buf, "  1234567", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%-9ld", 1234567L);
+	assert(n == 9);
+	assert(bsize == 0 || STRNCMP(buf, "1234567  ", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%x", 0xdeadbeef);
+	assert(n == 8);
+	assert(bsize == 0 || STRNCMP(buf, "deadbeef", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, fmt_06b, (uvarnumber_T)12);
+	assert(n == 6);
+	assert(bsize == 0 || STRNCMP(buf, "001100", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+#ifdef FEAT_FLOAT
+	n = vim_snprintf(buf, bsize, "%f", 1.234);
+	assert(n == 8);
+	assert(bsize == 0 || STRNCMP(buf, "1.234000", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%e", 1.234);
+	assert(n == 12);
+	assert(bsize == 0 || STRNCMP(buf, "1.234000e+00", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%f", 0.0/0.0);
+	assert(n == 3);
+	assert(bsize == 0 || STRNCMP(buf, "nan", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%f", 1.0/0.0);
+	assert(n == 3);
+	assert(bsize == 0 || STRNCMP(buf, "inf", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%f", -1.0/0.0);
+	assert(n == 4);
+	assert(bsize == 0 || STRNCMP(buf, "-inf", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%f", -0.0);
+	assert(n == 9);
+	assert(bsize == 0 || STRNCMP(buf, "-0.000000", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+#endif
+
+	n = vim_snprintf(buf, bsize, "%s", "漢語");
+	assert(n == 6);
+	assert(bsize == 0 || STRNCMP(buf, "漢語", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%8s", "漢語");
+	assert(n == 8);
+	assert(bsize == 0 || STRNCMP(buf, "  漢語", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%-8s", "漢語");
+	assert(n == 8);
+	assert(bsize == 0 || STRNCMP(buf, "漢語  ", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%.3s", "漢語");
+	assert(n == 3);
+	assert(bsize == 0 || STRNCMP(buf, "漢", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, fmt_5S, "foo");
+	assert(n == 5);
+	assert(bsize == 0 || STRNCMP(buf, "  foo", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%%%%%%");
+	assert(n == 3);
+	assert(bsize == 0 || STRNCMP(buf, "%%%", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, "%c%c", 1, 2);
+	assert(n == 2);
+	assert(bsize == 0 || STRNCMP(buf, "\x01\x02", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	// %p format is not tested in vim script tests Test_printf*()
+	// as it only makes sense in C code.
+	// NOTE: SunOS libc doesn't use the prefix "0x" on %p.
+#ifdef SUN_SYSTEM
+# define PREFIX_LEN  0
+# define PREFIX_STR1 ""
+# define PREFIX_STR2 "00"
+#else
+# define PREFIX_LEN  2
+# define PREFIX_STR1 "0x"
+# define PREFIX_STR2 "0x"
+#endif
+	n = vim_snprintf(buf, bsize, "%p", ptr);
+	assert(n == 8 + PREFIX_LEN);
+	assert(bsize == 0
+		     || STRNCMP(buf, PREFIX_STR1 "87654321", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	n = vim_snprintf(buf, bsize, fmt_012p, ptr);
+	assert(n == 12);
+	assert(bsize == 0
+		   || STRNCMP(buf, PREFIX_STR2 "0087654321", bsize_int) == 0);
+	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
+
+	free(buf);
+    }
+}
+
     int
 main(int argc, char **argv)
 {
-    vim_memset(&params, 0, sizeof(params));
+    CLEAR_FIELD(params);
     params.argc = argc;
     params.argv = argv;
     common_init(&params);
-    init_chartab();
 
+    set_option_value((char_u *)"encoding", 0, (char_u *)"utf-8", 0);
+    init_chartab();
     test_trunc_string();
+    test_vim_snprintf();
+
+    set_option_value((char_u *)"encoding", 0, (char_u *)"latin1", 0);
+    init_chartab();
+    test_trunc_string();
+    test_vim_snprintf();
+
     return 0;
 }

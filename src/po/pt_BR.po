@@ -2765,9 +2765,6 @@ msgstr "opção do Vim desconhecida"
 msgid "keyboard interrupt"
 msgstr "interrompido pelo teclado"
 
-msgid "vim error"
-msgstr "erro do vim"
-
 msgid "cannot create buffer/window command: object is being deleted"
 msgstr ""
 "impossível criar comando de buffer/janela: o objeto está sendo excluído"
@@ -3096,8 +3093,8 @@ msgstr "-W <script>\t\tGravar todos os comandos digitados no arquivo <script>"
 msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\tEditar arquivos criptografados"
 
-msgid "-display <display>\tConnect vim to this particular X-server"
-msgstr "-display <display>\tConectar o vim a este servidor X específico"
+msgid "-display <display>\tConnect Vim to this particular X-server"
+msgstr "-display <display>\tConectar o Vim a este servidor X específico"
 
 msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\tNão conectar ao servidor X"
@@ -3175,11 +3172,11 @@ msgstr ""
 "\n"
 "Argumentos reconhecidos pelo gvim (versão Athena):\n"
 
-msgid "-display <display>\tRun vim on <display>"
-msgstr "-display <display>\tExecutar vim em <display>"
+msgid "-display <display>\tRun Vim on <display>"
+msgstr "-display <display>\tExecutar Vim em <display>"
 
-msgid "-iconic\t\tStart vim iconified"
-msgstr "-iconic\t\tIniciar vim iconizado"
+msgid "-iconic\t\tStart Vim iconified"
+msgstr "-iconic\t\tIniciar Vim iconizado"
 
 msgid "-background <color>\tUse <color> for the background (also: -bg)"
 msgstr "-background <cor>\tUsar <cor> para o fundo (abrev.: -bg)"
@@ -3227,8 +3224,8 @@ msgstr ""
 "\n"
 "Argumentos reconhecidos pelo gvim (versão GTK+):\n"
 
-msgid "-display <display>\tRun vim on <display> (also: --display)"
-msgstr "-display <display>\tExecutar vim no <display> (alt.: --display)"
+msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgstr "-display <display>\tExecutar Vim no <display> (alt.: --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"
 msgstr ""
@@ -6325,8 +6322,8 @@ msgstr "E799: ID inválido: %ld (deve ser maior ou igual a 1)"
 msgid "E801: ID already taken: %ld"
 msgstr "E801: ID já atribuído: %ld"
 
-msgid "List or number required"
-msgstr "Necessária Lista ou número"
+msgid "E290: List or number required"
+msgstr "E290: Necessária Lista ou número"
 
 #, c-format
 msgid "E802: Invalid ID: %ld (must be greater than or equal to 1)"
@@ -6849,7 +6846,7 @@ msgid "list index out of range"
 msgstr "índice de lista fora dos limites"
 
 #, c-format
-msgid "internal error: failed to get vim list item %d"
+msgid "internal error: failed to get Vim list item %d"
 msgstr "erro interno: não consegui obter item %d de lista do Vim"
 
 msgid "slice step cannot be zero"
@@ -6861,7 +6858,7 @@ msgstr ""
 "tentativa de atribuir sequência de tamanho maior que %d a slice estendida"
 
 #, c-format
-msgid "internal error: no vim list item %d"
+msgid "internal error: no Vim list item %d"
 msgstr "erro interno: não existe o item %d na lista do vim"
 
 msgid "internal error: not enough list items"
@@ -6971,20 +6968,20 @@ msgstr "falha ao executar o código"
 msgid "E858: Eval did not return a valid python object"
 msgstr "E858: Eval não devolveu um objeto python válido"
 
-msgid "E859: Failed to convert returned python object to vim value"
+msgid "E859: Failed to convert returned python object to a Vim value"
 msgstr ""
 "E859: Falha ao converter o objeto devolvido pelo python para um valor do vim"
 
 #, c-format
-msgid "unable to convert %s to vim dictionary"
+msgid "unable to convert %s to a Vim dictionary"
 msgstr "impossível converter %s para dicionário do vim"
 
 #, c-format
-msgid "unable to convert %s to vim list"
+msgid "unable to convert %s to a Vim list"
 msgstr "impossível converter %s para lista do vim"
 
 #, c-format
-msgid "unable to convert %s to vim structure"
+msgid "unable to convert %s to a Vim structure"
 msgstr "impossível converter %s para estrutura do vim"
 
 msgid "internal error: NULL reference passed"

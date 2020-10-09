@@ -14,5 +14,6 @@ void ex_command(exarg_T *eap);
 void ex_comclear(exarg_T *eap);
 void uc_clear(garray_T *gap);
 void ex_delcommand(exarg_T *eap);
+size_t add_win_cmd_modifers(char_u *buf, int *multi_mods);
 void do_ucmd(exarg_T *eap);
 /* vim: set ft=c : */

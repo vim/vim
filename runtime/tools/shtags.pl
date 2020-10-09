@@ -72,7 +72,7 @@ if( ! $explicit && open( TAGS, "< $tags_file" ) )
 
 #
 # for each line of every file listed on the command line, look for a
-# 'sub' definition, or, if variables are wanted aswell, look for a
+# 'sub' definition, or, if variables are wanted as well, look for a
 # variable definition at the start of a line
 #
 while( <> )

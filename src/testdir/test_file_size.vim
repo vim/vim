@@ -7,15 +7,16 @@
 "
 " cksum is part of POSIX and so should be available on most Unixes.
 " If it isn't available then the test will be skipped.
+
+source check.vim
+
 func Test_File_Size()
-  if !executable('cksum')
-      return
-  endif
+  CheckExecutable cksum
 
   new
   set fileformat=unix undolevels=-1
   for i in range(1, 2000000, 100)
-      call append(i, range(i, i + 99))
+    call append(i, range(i, i + 99))
   endfor
 
   1delete
@@ -56,3 +57,5 @@ func Test_File_Read_Write()
   enew!
   call delete("Xtest")
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

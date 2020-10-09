@@ -58,3 +58,5 @@ func Test_set_guioptions_for_p()
     throw skipped
   endif
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

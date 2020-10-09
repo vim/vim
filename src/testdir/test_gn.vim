@@ -120,7 +120,7 @@ func Test_gn_command()
   sil! %d_
 
   " search using the \zs atom
-  call setline(1, [' nnoremap', '' , 'nnoremap'])
+  call setline(1, [' nnoremap', '', 'nnoremap'])
   set wrapscan&vim
   let @/ = '\_s\zsnnoremap'
   $
@@ -128,7 +128,50 @@ func Test_gn_command()
   call assert_equal([' nnoremap', '', 'match'], getline(1,'$'))
   sil! %d_
 
+  " make sure it works correctly for one-char wide search items
+  call setline('.', ['abcdefghi'])
+  let @/ = 'a'
+  exe "norm! 0fhvhhgNgU"
+  call assert_equal(['ABCDEFGHi'], getline(1,'$'))
+  call setline('.', ['abcdefghi'])
+  let @/ = 'b'
+  " this gn wraps around the end of the file
+  exe "norm! 0fhvhhgngU"
+  call assert_equal(['aBCDEFGHi'], getline(1,'$'))
+  sil! %d _
+  call setline('.', ['abcdefghi'])
+  let @/ = 'f'
+  exe "norm! 0vllgngU"
+  call assert_equal(['ABCDEFghi'], getline(1,'$'))
+  sil! %d _
+  call setline('.', ['12345678'])
+  let @/ = '5'
+  norm! gg0f7vhhhhgnd
+  call assert_equal(['12348'], getline(1,'$'))
+  sil! %d _
+  call setline('.', ['12345678'])
+  let @/ = '5'
+  norm! gg0f2vf7gNd
+  call assert_equal(['1678'], getline(1,'$'))
+  sil! %d _
   set wrapscan&vim
+
+  " Without 'wrapscan', in visual mode, running gn without a match should fail
+  " but the visual mode should be kept.
+  set nowrapscan
+  call setline('.', 'one two')
+  let @/ = 'one'
+  call assert_beeps('normal 0wvlgn')
+  exe "normal y"
+  call assert_equal('tw', @")
+
+  " with exclusive selection, run gn and gN
+  set selection=exclusive
+  normal 0gny
+  call assert_equal('one', @")
+  normal 0wgNy
+  call assert_equal('one', @")
+  set selection&
 endfu
 
 func Test_gn_multi_line()

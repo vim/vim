@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 8.1.  Last change: 2019 Aug 21
+*insert.txt*    For Vim version 8.2.  Last change: 2020 Sep 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -106,7 +106,7 @@ CTRL-K {char1} [char2]
 CTRL-N		Find next keyword (see |i_CTRL-N|).
 CTRL-P		Find previous keyword (see |i_CTRL-P|).
 
-CTRL-R {0-9a-z"%#*+:.-=}					*i_CTRL-R*
+CTRL-R {register}				*i_CTRL-R*
 		Insert the contents of a register.  Between typing CTRL-R and
 		the second character, '"' will be displayed to indicate that
 		you are expected to enter the name of a register.
@@ -143,7 +143,7 @@ CTRL-R {0-9a-z"%#*+:.-=}					*i_CTRL-R*
 				sequence will be broken.
 		See |registers| about registers.
 
-CTRL-R CTRL-R {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-R*
+CTRL-R CTRL-R {register}			*i_CTRL-R_CTRL-R*
 		Insert the contents of a register.  Works like using a single
 		CTRL-R, but the text is inserted literally, not as if typed.
 		This differs when the register contains characters like <BS>.
@@ -154,8 +154,10 @@ CTRL-R CTRL-R {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-R*
 		you also want to avoid these, use CTRL-R CTRL-O, see below.
 		The '.' register (last inserted text) is still inserted as
 		typed.
+		After this command, the '.' register contains the text from
+		the register as if it was inserted by typing it.
 
-CTRL-R CTRL-O {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-O*
+CTRL-R CTRL-O {register}			*i_CTRL-R_CTRL-O*
 		Insert the contents of a register literally and don't
 		auto-indent.  Does the same as pasting with the mouse
 		|<MiddleMouse>|. When the register is linewise this will
@@ -163,13 +165,19 @@ CTRL-R CTRL-O {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-O*
 		Does not replace characters!
 		The '.' register (last inserted text) is still inserted as
 		typed.
+		After this command, the '.' register contains the command
+		typed and not the text. I.e., the literals "^R^O" and not the
+		text from the register.
 
-CTRL-R CTRL-P {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-P*
+CTRL-R CTRL-P {register}			*i_CTRL-R_CTRL-P*
 		Insert the contents of a register literally and fix the
 		indent, like |[<MiddleMouse>|.
 		Does not replace characters!
 		The '.' register (last inserted text) is still inserted as
 		typed.
+		After this command, the '.' register contains the command
+		typed and not the text. I.e., the literals "^R^P" and not the
+		text from the register.
 
 						*i_CTRL-T*
 CTRL-T		Insert one shiftwidth of indent at the start of the current
@@ -196,11 +204,18 @@ CTRL-V		Insert next non-digit literally.  For special keys, the
 		mapping.
 		Note: When CTRL-V is mapped (e.g., to paste text) you can
 		often use CTRL-Q instead |i_CTRL-Q|.
+		When |modifyOtherKeys| is enabled then special Escape sequence
+		is converted back to what it was without |modifyOtherKeys|,
+		unless the Shift key is also pressed.
 
 						*i_CTRL-Q*
 CTRL-Q		Same as CTRL-V.
 		Note: Some terminal connections may eat CTRL-Q, it doesn't
 		work then.  It does work in the GUI.
+
+CTRL-SHIFT-V				*i_CTRL-SHIFT-V* *i_CTRL-SHIFT-Q*
+CTRL-SHIFT-Q	Works just like CTRL-V, unless |modifyOtherKeys| is active,
+		then it inserts the Escape sequence for a key with modifiers.
 
 CTRL-X		Enter CTRL-X mode.  This is a sub-mode where commands can
 		be given to complete words or scroll the window.  See
@@ -372,8 +387,8 @@ CTRL-\ CTRL-O	like CTRL-O but don't move the cursor	     *i_CTRL-\_CTRL-O*
 CTRL-L		when 'insertmode' is set: go to Normal mode  *i_CTRL-L*
 CTRL-G u	break undo sequence, start new change	     *i_CTRL-G_u*
 CTRL-G U	don't break undo with next left/right cursor *i_CTRL-G_U*
-		movement, if the cursor stays within
-		same the line
+		movement, if the cursor stays within the
+		same line
 -----------------------------------------------------------------------
 
 Note: If the cursor keys take you out of Insert mode, check the 'noesckeys'
@@ -651,8 +666,10 @@ Note: The keys that are valid in CTRL-X mode are not mapped.  This allows for
 ends CTRL-X mode (any key that is not a valid CTRL-X mode command) is mapped.
 Also, when doing completion with 'complete' mappings apply as usual.
 
-Note: While completion is active Insert mode can't be used recursively.
-Mappings that somehow invoke ":normal i.." will generate an E523 error.
+							*E578* *E565*
+Note: While completion is active Insert mode can't be used recursively and
+buffer text cannot be changed.  Mappings that somehow invoke ":normal i.."
+will generate an E565 error.
 
 The following mappings are suggested to make typing the completion commands
 a bit easier (although they will hide other commands): >
@@ -1072,7 +1089,8 @@ If you want to suppress the warning message for an empty result, return
 
 Other items are ignored.
 
-For acting upon end of completion, see the |CompleteDone| autocommand event.
+For acting upon end of completion, see the |CompleteDonePre| and
+|CompleteDone| autocommand event.
 
 For example, the function can contain this: >
 	let matches = ... list of words ...
@@ -1101,7 +1119,8 @@ items:
 	empty		when non-zero this match will be added even when it is
 			an empty string
 	user_data 	custom data which is associated with the item and
-			available in |v:completed_item|
+			available in |v:completed_item|; it can be any type;
+			defaults to an empty string
 
 All of these except "icase", "equal", "dup" and "empty" must be a string.  If
 an item does not meet these requirements then an error message is given and
@@ -1124,7 +1143,7 @@ is used when the info popup is created.  The option is a comma separated list
 of values:
 	height		maximum height of the popup
 	width		maximum width of the popup
-	highlight	highlight group of the popup (default is Pmenu)
+	highlight	highlight group of the popup (default is PmenuSel)
 	align		"item" (default) or "menu"
 	border		"on" (default) or "off"
 Example: >
@@ -1138,6 +1157,27 @@ below the text, and the bottom of the menu otherwise.
 After the info popup is created it can be found with |popup_findinfo()| and
 properties can be changed with |popup_setoptions()|.
 
+						*complete-popuphidden*
+If the information for the popup is obtained asynchronously, use "popuphidden"
+in 'completeopt'.  The info popup will then be initially hidden and
+|popup_show()| must be called once it has been filled with the info.  This can
+be done with a |CompleteChanged| autocommand, something like this: >
+	set completeopt+=popuphidden
+	au CompleteChanged * call UpdateCompleteInfo()
+	func UpdateCompleteInfo()
+	  " Cancel any pending info fetch
+	  let item = v:event.completed_item
+	  " Start fetching info for the item then call ShowCompleteInfo(info)
+	endfunc
+	func ShowCompleteInfo(info)
+	  let id = popup_findinfo()
+	  if id
+	    call popup_settext(id, 'async info: ' .. a:info)
+	    call popup_show(id)
+	  endif
+	endfunc
+
+<						*complete-item-kind*
 The "kind" item uses a single letter to indicate the kind of completion.  This
 may be used to show the completion differently (different color or icon).
 Currently these types can be used:
@@ -1803,6 +1843,7 @@ a			Append text after the cursor [count] times.  If the
 
 							*A*
 A			Append text at the end of the line [count] times.
+			For using "A" in Visual block mode see |v_b_A|.
 
 <insert>	or				*i* *insert* *<Insert>*
 i			Insert text before the cursor [count] times.
@@ -1815,6 +1856,7 @@ I			Insert text before the first non-blank in the line
 			When the 'H' flag is present in 'cpoptions' and the
 			line only contains blanks, insert start just before
 			the last blank.
+			For using "I" in Visual block mode see |v_b_I|.
 
 							*gI*
 gI			Insert text in column 1 [count] times.
@@ -1980,11 +2022,11 @@ If the 'fileformats' option is not empty Vim tries to recognize the type of
 changed, the detected format is only used while reading the file.
 A similar thing happens with 'fileencodings'.
 
-On non-MS-DOS, Win32, and OS/2 systems the message "[dos format]" is shown if
-a file is read in DOS format, to remind you that something unusual is done.
-On Macintosh, MS-DOS, Win32, and OS/2 the message "[unix format]" is shown if
-a file is read in Unix format.
-On non-Macintosh systems, the message "[Mac format]" is shown if a file is
+On non-Win32 systems the message "[dos format]" is shown if a file is read in
+DOS format, to remind you that something unusual is done.
+On Macintosh and Win32 the message "[unix format]" is shown if a file is read
+in Unix format.
+On non-Macintosh systems, the message "[mac format]" is shown if a file is
 read in Mac format.
 
 An example on how to use ":r !": >

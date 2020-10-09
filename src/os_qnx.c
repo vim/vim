@@ -36,17 +36,17 @@ void qnx_init(void)
 #define CLIP_TYPE_VIM "VIMTYPE"
 #define CLIP_TYPE_TEXT "TEXT"
 
-/* Turn on the clipboard for a console vim when photon is running */
+// Turn on the clipboard for a console vim when photon is running
 void qnx_clip_init(void)
 {
     if (is_photon_available == TRUE && !gui.in_use)
 	clip_init(TRUE);
 }
 
-/*****************************************************************************/
-/* Clipboard */
+/////////////////////////////////////////////////////////////////////////////
+// Clipboard
 
-/* No support for owning the clipboard */
+// No support for owning the clipboard
 int
 clip_mch_own_selection(Clipboard_T *cbd)
 {
@@ -69,13 +69,13 @@ clip_mch_request_selection(Clipboard_T *cbd)
     cbdata = PhClipboardPasteStart(PhInputGroup(NULL));
     if (cbdata != NULL)
     {
-	/* Look for the vim specific clip first */
+	// Look for the vim specific clip first
 	clip_header = PhClipboardPasteType(cbdata, CLIP_TYPE_VIM);
 	if (clip_header != NULL && clip_header->data != NULL)
 	{
 	    switch(*(char *) clip_header->data)
 	    {
-		default: /* fallthrough to line type */
+		default: // fallthrough to line type
 		case 'L': type = MLINE; break;
 		case 'C': type = MCHAR; break;
 		case 'B': type = MBLOCK; break;
@@ -83,7 +83,7 @@ clip_mch_request_selection(Clipboard_T *cbd)
 	    is_type_set = TRUE;
 	}
 
-	/* Try for just normal text */
+	// Try for just normal text
 	clip_header = PhClipboardPasteType(cbdata, CLIP_TYPE_TEXT);
 	if (clip_header != NULL)
 	{
@@ -109,7 +109,7 @@ clip_mch_set_selection(Clipboard_T *cbd)
     char_u *text_clip, vim_clip[2], *str = NULL;
     PhClipHeader clip_header[2];
 
-    /* Prevent recursion from clip_get_selection() */
+    // Prevent recursion from clip_get_selection()
     if (cbd->owned == TRUE)
 	return;
 
@@ -136,7 +136,7 @@ clip_mch_set_selection(Clipboard_T *cbd)
 
 	    switch(type)
 	    {
-		default: /* fallthrough to MLINE */
+		default: // fallthrough to MLINE
 		case MLINE:	*vim_clip = 'L'; break;
 		case MCHAR:	*vim_clip = 'C'; break;
 		case MBLOCK:	*vim_clip = 'B'; break;

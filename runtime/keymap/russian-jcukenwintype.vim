@@ -1,5 +1,6 @@
-" Vim Keymap file for russian characters, layout 'jcuken', MS Windows variant
-" (slightly incompatible with XFree86 'ru' keymap - makes use of NUMERO SIGN)
+" Vim Keymap file for russian characters, layout 'jcuken', MS Windows
+" Typewriter variant (slightly incompatible with XFree86 'ru' keymap -
+" makes use of NUMERO SIGN)
 " Useful mainly with utf-8 but may work with other encodings
 
 " Derived from russian-jcuken.vim by Artem Chuprina <ran@ran.pp.ru>
@@ -15,14 +16,13 @@ scriptencoding utf-8
 let b:keymap_name = "ru"
 
 loadkeymap
-~	+	CYRILLIC CAPITAL LETTER IO
-`	|	CYRILLIC SMALL LETTER IO	
 F	А	CYRILLIC CAPITAL LETTER A
 <	Б	CYRILLIC CAPITAL LETTER BE
 D	В	CYRILLIC CAPITAL LETTER VE
 U	Г	CYRILLIC CAPITAL LETTER GHE
 L	Д	CYRILLIC CAPITAL LETTER DE
 T	Е	CYRILLIC CAPITAL LETTER IE
+?	Ё	CYRILLIC CAPITAL LETTER IO
 :	Ж	CYRILLIC CAPITAL LETTER ZHE
 P	З	CYRILLIC CAPITAL LETTER ZE
 B	И	CYRILLIC CAPITAL LETTER I
@@ -55,6 +55,7 @@ d	в	CYRILLIC SMALL LETTER VE
 u	г	CYRILLIC SMALL LETTER GHE
 l	д	CYRILLIC SMALL LETTER DE
 t	е	CYRILLIC SMALL LETTER IE
+/	ё	CYRILLIC SMALL LETTER IO
 ;	ж	CYRILLIC SMALL LETTER ZHE
 p	з	CYRILLIC SMALL LETTER ZE
 b	и	CYRILLIC SMALL LETTER I
@@ -81,13 +82,7 @@ m	ь	CYRILLIC SMALL LETTER SOFT SIGN
 '	э	CYRILLIC SMALL LETTER E
 .	ю	CYRILLIC SMALL LETTER YU
 z	я	CYRILLIC SMALL LETTER YA
-@	"
-#	№	NUMERO SIGN
-$	;
-^	:
-&	?
-/	ё
-?	Ё
+`	|
 1	№
 2	-
 3	/
@@ -100,5 +95,18 @@ $	;
 0	%
 -	!
 =	;
+~	+
+!	1
+@	2
+#	3
+$	4
+%	5
+^	6
+&	7
+*	8
+(	9
+)	0
+_	=
++	\\
 \\	)
 \|	(

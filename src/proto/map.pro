@@ -18,6 +18,7 @@ int put_escstr(FILE *fd, char_u *strstart, int what);
 void check_map_keycodes(void);
 char_u *check_map(char_u *keys, int mode, int exact, int ign_mod, int abbr, mapblock_T **mp_ptr, int *local_ptr);
 void get_maparg(typval_T *argvars, typval_T *rettv, int exact);
+void f_mapset(typval_T *argvars, typval_T *rettv);
 void init_mappings(void);
 void add_map(char_u *map, int mode);
 int langmap_adjust_mb(int c);

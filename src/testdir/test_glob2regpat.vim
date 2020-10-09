@@ -1,7 +1,9 @@
 " Test glob2regpat()
 
 func Test_glob2regpat_invalid()
-  call assert_fails('call glob2regpat(1.33)', 'E806:')
+  if has('float')
+    call assert_fails('call glob2regpat(1.33)', 'E806:')
+  endif
   call assert_fails('call glob2regpat("}")', 'E219:')
   call assert_fails('call glob2regpat("{")', 'E220:')
 endfunc
@@ -28,3 +30,5 @@ func Test_glob2regpat_valid()
     call assert_equal('^\\\(foo\|bar\\\)$', glob2regpat('\\{foo,bar\\}'))
   endif
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

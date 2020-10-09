@@ -72,3 +72,5 @@ func Test_set_tagcase()
   setg tc&
   setl tc&
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

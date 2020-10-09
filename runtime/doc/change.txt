@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 8.1.  Last change: 2019 Aug 21
+*change.txt*    For Vim version 8.2.  Last change: 2020 Aug 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -153,7 +153,7 @@ the 'joinspaces' option is on, these commands insert two spaces after a '.',
 '!' or '?' (but if 'cpoptions' includes the 'j' flag, they insert two spaces
 only after a '.').
 The 'B' and 'M' flags in 'formatoptions' change the behavior for inserting
-spaces before and after a multi-byte character |fo-table|.
+spaces before and after a multibyte character |fo-table|.
 
 The '[ mark is set at the end of the first line that was joined, '] at the end
 of the resulting line.
@@ -209,7 +209,7 @@ gR			Enter Virtual Replace mode: Each character you type
 			start insert (for {Visual} see |Visual-mode|).
 
 							*v_r*
-{Visual}["x]r{char}	Replace all selected characters by {char}.
+{Visual}r{char}		Replace all selected characters by {char}.
 
 							*v_C*
 {Visual}["x]C		Delete the highlighted lines [into register x] and
@@ -611,7 +611,7 @@ attack or other people reading your file).  When Vim exits the directory and
 all files in it are deleted.  When Vim has the setuid bit set this may cause
 problems, the temp file is owned by the setuid user but the filter command
 probably runs as the original user.
-On MS-DOS and OS/2 the first of these directories that works is used: $TMP,
+On MS-Windows the first of these directories that works is used: $TMP,
 $TEMP, c:\TMP, c:\TEMP.
 For Unix the list of directories is: $TMPDIR, /tmp, current-dir, $HOME.
 For MS-Windows the GetTempFileName() system function is used.
@@ -636,6 +636,8 @@ For other systems the tmpnam() library function is used.
 			|cmdline-ranges|.
 
 			See |:s_flags| for [flags].
+			The delimiter doesn't need to be /, see
+			|pattern-delimiter|.
 
 :[range]s[ubstitute] [flags] [count]
 :[range]&[&][flags] [count]					*:&*
@@ -775,7 +777,7 @@ This deletes "TESTING" from all lines, but only one per line.
 For compatibility with Vi these two exceptions are allowed:
 "\/{string}/" and "\?{string}?" do the same as "//{string}/r".
 "\&{string}&" does the same as "//{string}/".
-							*E146*
+						*pattern-delimiter* *E146*
 Instead of the '/' which surrounds the pattern and replacement string, you
 can use any other single-byte character, but not an alphanumeric character,
 '\', '"' or '|'.  This is useful if you want to include a '/' in the search
@@ -994,14 +996,18 @@ inside of strings can change!  Also see 'softtabstop' option. >
 5. Copying and moving text				*copy-move*
 
 							*quote*
-"{a-zA-Z0-9.%#:-"}	Use register {a-zA-Z0-9.%#:-"} for next delete, yank
-			or put (use uppercase character to append with
-			delete and yank) ({.%#:} only work with put).
+"{register}		Use {register} for next delete, yank or put.  Use
+			an uppercase character to append with delete and yank.
+			Registers ".", "%", "#" and ":" only work with put.
 
 							*:reg* *:registers*
-:reg[isters]		Display the contents of all numbered and named
-			registers.  If a register is written to for |:redir|
-			it will not be listed.
+:reg[isters]		Display the type and contents of all numbered and
+			named registers.  If a register is written to for
+			|:redir| it will not be listed.
+			Type can be one of:
+			"c"	for |characterwise| text
+			"l"	for |linewise| text
+			"b"	for |blockwise-visual| text
 
 
 :reg[isters] {arg}	Display the contents of the numbered and named
@@ -1172,7 +1178,7 @@ Rationale:	In Vi the "y" command followed by a backwards motion would
 With a linewise yank command the cursor is put in the first line, but the
 column is unmodified, thus it may not be on the first yanked character.
 
-There are ten types of registers:			*registers* *E354*
+There are ten types of registers:		*registers* *{register}* *E354*
 1. The unnamed register ""
 2. 10 numbered registers "0 to "9
 3. The small delete register "-
@@ -1312,7 +1318,7 @@ When writing to this register, nothing happens.  This can be used to delete
 text without affecting the normal registers.  When reading from this register,
 nothing is returned.
 
-10. Last search pattern register	"/			*quote_/* *quote/*
+10. Last search pattern register	"/		*quote_/* *quote/*
 Contains the most recent search-pattern.  This is used for "n" and 'hlsearch'.
 It is writable with `:let`, you can change it to have 'hlsearch' highlight
 other matches without actually searching.  You can't yank or delete into this
@@ -1452,7 +1458,7 @@ text.  Put it in your autoload directory, e.g. ~/.vim/autoload/format.vim: >
   func! format#Format()
     " only reformat on explicit gq command
     if mode() != 'n'
-      " fall back to Vims internal reformatting
+      " fall back to Vim's internal reformatting
       return 1
     endif
     let lines = getline(v:lnum, v:lnum + v:count - 1)
@@ -1618,8 +1624,6 @@ By default, "b:#" is included.  This means that a line that starts with
 "#include" is not recognized as a comment line.  But a line that starts with
 "# define" is recognized.  This is a compromise.
 
-{not available when compiled without the |+comments| feature}
-
 							*fo-table*
 You can use the 'formatoptions' option  to influence how Vim formats text.
 'formatoptions' is a string that can contain any of the letters below.  The
@@ -1676,14 +1680,18 @@ b	Like 'v', but only auto-wrap if you enter a blank at or before
 l	Long lines are not broken in insert mode: When a line was longer than
 	'textwidth' when the insert command started, Vim does not
 	automatically format it.
-m	Also break at a multi-byte character above 255.  This is useful for
+m	Also break at a multibyte character above 255.  This is useful for
 	Asian text where every character is a word on its own.
-M	When joining lines, don't insert a space before or after a multi-byte
+M	When joining lines, don't insert a space before or after a multibyte
 	character.  Overrules the 'B' flag.
-B	When joining lines, don't insert a space between two multi-byte
+B	When joining lines, don't insert a space between two multibyte
 	characters.  Overruled by the 'M' flag.
 1	Don't break a line after a one-letter word.  It's broken before it
 	instead (if possible).
+]	Respect textwidth rigorously. With this flag set, no line can be
+	longer than textwidth, unless line-break-prohibition rules make this
+	impossible.  Mainly for CJK scripts and works only if 'encoding' is
+	"utf-8".
 j	Where it makes sense, remove a comment leader when joining lines.  For
 	example, joining:
 		int i;   // the index ~
@@ -1747,7 +1755,7 @@ Some examples:
 Automatic formatting				*auto-format* *autoformat*
 
 When the 'a' flag is present in 'formatoptions' text is formatted
-automatically when inserting text or deleting text.  This works nice for
+automatically when inserting text or deleting text.  This works nicely for
 editing text paragraphs.  A few hints on how to use this:
 
 - You need to properly define paragraphs.  The simplest is paragraphs that are

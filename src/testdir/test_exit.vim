@@ -40,6 +40,7 @@ func Test_exiting()
   endif
   call delete('Xtestout')
 
+  " ExitPre autocommand splits the window, so that it's no longer the last one.
   let after =<< trim [CODE]
     au QuitPre * call writefile(["QuitPre"], "Xtestout", "a")
     au ExitPre * call writefile(["ExitPre"], "Xtestout", "a")
@@ -58,4 +59,27 @@ func Test_exiting()
 	  \ readfile('Xtestout'))
   endif
   call delete('Xtestout')
+
+  " ExitPre autocommand splits and closes the window, so that there is still
+  " one window but it's a different one.
+  let after =<< trim [CODE]
+    au QuitPre * call writefile(["QuitPre"], "Xtestout", "a")
+    au ExitPre * call writefile(["ExitPre"], "Xtestout", "a")
+    augroup nasty
+      au ExitPre * split | only
+    augroup END
+    quit
+    augroup nasty
+      au! ExitPre
+    augroup END
+    quit
+  [CODE]
+
+  if RunVim([], after, '')
+    call assert_equal(['QuitPre', 'ExitPre', 'QuitPre', 'ExitPre'],
+	  \ readfile('Xtestout'))
+  endif
+  call delete('Xtestout')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

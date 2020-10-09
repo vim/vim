@@ -26,8 +26,8 @@
  */
 
 #include "vim.h"
-#include <gtk/gtk.h>	/* without this it compiles, but gives errors at
-			   runtime! */
+#include <gtk/gtk.h>	// without this it compiles, but gives errors at
+			// runtime!
 #include "gui_gtk_f.h"
 #if !GTK_CHECK_VERSION(3,0,0)
 # include <gtk/gtksignal.h>
@@ -44,8 +44,8 @@ struct _GtkFormChild
 {
     GtkWidget *widget;
     GdkWindow *window;
-    gint x;		/* relative subwidget x position */
-    gint y;		/* relative subwidget y position */
+    gint x;		// relative subwidget x position
+    gint y;		// relative subwidget y position
     gint mapped;
 };
 
@@ -101,8 +101,7 @@ static void gtk_form_child_unmap(GtkWidget *widget, gpointer user_data);
 static GtkWidgetClass *parent_class = NULL;
 #endif
 
-/* Public interface
- */
+// Public interface
 
     GtkWidget *
 gtk_form_new(void)
@@ -128,7 +127,7 @@ gtk_form_put(GtkForm	*form,
 
     g_return_if_fail(GTK_IS_FORM(form));
 
-    /* LINTED: avoid warning: conversion to 'unsigned long' */
+    // LINTED: avoid warning: conversion to 'unsigned long'
     child = g_new(GtkFormChild, 1);
     if (child == NULL)
 	return;
@@ -147,11 +146,10 @@ gtk_form_put(GtkForm	*form,
 
     form->children = g_list_append(form->children, child);
 
-    /* child->window must be created and attached to the widget _before_
-     * it has been realized, or else things will break with GTK2.  Note
-     * that gtk_widget_set_parent() realizes the widget if it's visible
-     * and its parent is mapped.
-     */
+    // child->window must be created and attached to the widget _before_
+    // it has been realized, or else things will break with GTK2.  Note
+    // that gtk_widget_set_parent() realizes the widget if it's visible
+    // and its parent is mapped.
     if (gtk_widget_get_realized(GTK_WIDGET(form)))
 	gtk_form_attach_child_window(form, child);
 
@@ -212,8 +210,7 @@ gtk_form_thaw(GtkForm *form)
     }
 }
 
-/* Basic Object handling procedures
- */
+// Basic Object handling procedures
 #if GTK_CHECK_VERSION(3,0,0)
 G_DEFINE_TYPE(GtkForm, gtk_form, GTK_TYPE_CONTAINER)
 #else
@@ -226,7 +223,7 @@ gtk_form_get_type(void)
     {
 	GtkTypeInfo form_info;
 
-	vim_memset(&form_info, 0, sizeof(form_info));
+	CLEAR_FIELD(form_info);
 	form_info.type_name = "GtkForm";
 	form_info.object_size = sizeof(GtkForm);
 	form_info.class_size = sizeof(GtkFormClass);
@@ -237,7 +234,7 @@ gtk_form_get_type(void)
     }
     return form_type;
 }
-#endif /* !GTK_CHECK_VERSION(3,0,0) */
+#endif // !GTK_CHECK_VERSION(3,0,0)
 
     static void
 gtk_form_class_init(GtkFormClass *klass)
@@ -364,14 +361,13 @@ gtk_form_realize(GtkWidget *widget)
 }
 
 
-/* After reading the documentation at
- * http://developer.gnome.org/doc/API/2.0/gtk/gtk-changes-2-0.html
- * I think it should be possible to remove this function when compiling
- * against gtk-2.0.  It doesn't seem to cause problems, though.
- *
- * Well, I reckon at least the gdk_window_show(form->bin_window)
- * is necessary.  GtkForm is anything but a usual container widget.
- */
+// After reading the documentation at
+// http://developer.gnome.org/doc/API/2.0/gtk/gtk-changes-2-0.html
+// I think it should be possible to remove this function when compiling
+// against gtk-2.0.  It doesn't seem to cause problems, though.
+//
+// Well, I reckon at least the gdk_window_show(form->bin_window)
+// is necessary.  GtkForm is anything but a usual container widget.
     static void
 gtk_form_map(GtkWidget *widget)
 {
@@ -480,7 +476,7 @@ gtk_form_get_preferred_height(GtkWidget *widget,
     *minimal_height = requisition.height;
     *natural_height = requisition.height;
 }
-#endif /* GTK_CHECK_VERSION(3,0,0) */
+#endif // GTK_CHECK_VERSION(3,0,0)
 
     static void
 gtk_form_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
@@ -559,16 +555,16 @@ gtk_form_draw(GtkWidget *widget, cairo_t *cr)
 	if (!gtk_widget_get_has_window(formchild->widget) &&
 		gtk_cairo_should_draw_window(cr, formchild->window))
 	{
-	    /* To get gtk_widget_draw() to work, it is required to call
-	     * gtk_widget_size_allocate() in advance with a well-posed
-	     * allocation for a given child widget in order to set a
-	     * certain private GtkWidget variable, called
-	     * widget->priv->alloc_need, to the proper value; otherwise,
-	     * gtk_widget_draw() fails and the relevant scrollbar won't
-	     * appear on the screen.
-	     *
-	     * Calling gtk_form_position_child() like this is one of ways
-	     * to make sure of that. */
+	    // To get gtk_widget_draw() to work, it is required to call
+	    // gtk_widget_size_allocate() in advance with a well-posed
+	    // allocation for a given child widget in order to set a
+	    // certain private GtkWidget variable, called
+	    // widget->priv->alloc_need, to the proper value; otherwise,
+	    // gtk_widget_draw() fails and the relevant scrollbar won't
+	    // appear on the screen.
+	    //
+	    // Calling gtk_form_position_child() like this is one of ways
+	    // to make sure of that.
 	    gtk_form_position_child(form, formchild, TRUE);
 
 	    gtk_form_render_background(formchild->widget, cr);
@@ -577,7 +573,7 @@ gtk_form_draw(GtkWidget *widget, cairo_t *cr)
 
     return GTK_WIDGET_CLASS(gtk_form_parent_class)->draw(widget, cr);
 }
-#else /* !GTK_CHECK_VERSION(3,0,0) */
+#else // !GTK_CHECK_VERSION(3,0,0)
     static gint
 gtk_form_expose(GtkWidget *widget, GdkEventExpose *event)
 {
@@ -598,16 +594,15 @@ gtk_form_expose(GtkWidget *widget, GdkEventExpose *event)
 
     return FALSE;
 }
-#endif /* !GTK_CHECK_VERSION(3,0,0) */
+#endif // !GTK_CHECK_VERSION(3,0,0)
 
-/* Container method
- */
+// Container method
     static void
 gtk_form_remove(GtkContainer *container, GtkWidget *widget)
 {
     GList *tmp_list;
     GtkForm *form;
-    GtkFormChild *child = NULL;	    /* init for gcc */
+    GtkFormChild *child = NULL;	    // init for gcc
 
     g_return_if_fail(GTK_IS_FORM(container));
 
@@ -634,9 +629,8 @@ gtk_form_remove(GtkContainer *container, GtkWidget *widget)
 	    g_signal_handlers_disconnect_by_func(G_OBJECT(child->widget),
 		    FUNC2GENERIC(&gtk_form_child_unmap), child);
 
-	    /* FIXME: This will cause problems for reparenting NO_WINDOW
-	     * widgets out of a GtkForm
-	     */
+	    // FIXME: This will cause problems for reparenting NO_WINDOW
+	    // widgets out of a GtkForm
 	    gdk_window_set_user_data(child->window, NULL);
 	    gdk_window_destroy(child->window);
 	}
@@ -676,14 +670,13 @@ gtk_form_forall(GtkContainer	*container,
     }
 }
 
-/* Operations on children
- */
+// Operations on children
 
     static void
 gtk_form_attach_child_window(GtkForm *form, GtkFormChild *child)
 {
     if (child->window != NULL)
-	return; /* been there, done that */
+	return; // been there, done that
 
     if (!gtk_widget_get_has_window(child->widget))
     {

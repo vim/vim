@@ -10,6 +10,9 @@ TARGETOS = WINNT
 !ifndef APPVER
 APPVER = 5.01
 !endif
+!ifndef WINVER
+WINVER = 0x0501
+!endif
 
 !if "$(DEBUG)" != "yes"
 NODEBUG = 1
@@ -52,6 +55,13 @@ olelibsdll = ole32.lib uuid.lib oleaut32.lib user32.lib gdi32.lib advapi32.lib
 
 # include CPUARG
 cflags = $(cflags) $(CPUARG)
+
+# set WINVER and _WIN32_WINNT
+cflags = $(cflags) -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER)
+
+!if "$(CL)" == "/D_USING_V110_SDK71_"
+rcflags = $(rcflags) /D_USING_V110_SDK71_
+!endif
 
 SUBSYSTEM = console
 !if "$(SUBSYSTEM_VER)" != ""

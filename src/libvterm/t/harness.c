@@ -1,5 +1,5 @@
 #include "vterm.h"
-#include "../src/vterm_internal.h" /* We pull in some internal bits too */
+#include "../src/vterm_internal.h" // We pull in some internal bits too
 
 #include <stdio.h>
 #include <string.h>
@@ -47,6 +47,7 @@ static VTermKey strp_key(char *str)
     { "Tab",   VTERM_KEY_TAB },
     { "Enter", VTERM_KEY_ENTER },
     { "KP0",   VTERM_KEY_KP_0 },
+    { "F1",    VTERM_KEY_FUNCTION(1) },
     { NULL,    VTERM_KEY_NONE },
   };
   int i;
@@ -59,15 +60,50 @@ static VTermKey strp_key(char *str)
   return VTERM_KEY_NONE;
 }
 
+static void print_color(const VTermColor *col)
+{
+  if (VTERM_COLOR_IS_RGB(col)) {
+    printf("rgb(%d,%d,%d", col->red, col->green, col->blue);
+  }
+  else if (VTERM_COLOR_IS_INDEXED(col)) {
+    printf("idx(%d", col->index);
+  }
+  else {
+    printf("invalid(%d", col->type);
+  }
+  if (VTERM_COLOR_IS_DEFAULT_FG(col)) {
+    printf(",is_default_fg");
+  }
+  if (VTERM_COLOR_IS_DEFAULT_BG(col)) {
+    printf(",is_default_bg");
+  }
+  printf(")");
+}
+
 static VTerm *vt;
 static VTermState *state;
 static VTermScreen *screen;
 
 static VTermEncodingInstance encoding;
 
-static int parser_text(const char bytes[], size_t len, void *user)
+static void term_output(const char *s, size_t len, void *user UNUSED)
 {
-  int i;
+  size_t i;
+
+  printf("output ");
+  for(i = 0; i < len; i++)
+    printf("%x%s", (unsigned char)s[i], i < len-1 ? "," : "\n");
+}
+
+static void printhex(const char *s, size_t len)
+{
+  while(len--)
+    printf("%02x", (s++)[0]);
+}
+
+static int parser_text(const char bytes[], size_t len, void *user UNUSED)
+{
+  size_t i;
 
   printf("text ");
   for(i = 0; i < len; i++) {
@@ -81,17 +117,15 @@ static int parser_text(const char bytes[], size_t len, void *user)
   return i;
 }
 
-static int parser_control(unsigned char control, void *user)
+static int parser_control(unsigned char control, void *user UNUSED)
 {
   printf("control %02x\n", control);
 
   return 1;
 }
 
-static int parser_escape(const char bytes[], size_t len, void *user)
+static int parser_escape(const char bytes[], size_t len, void *user UNUSED)
 {
-  int i;
-
   if(bytes[0] >= 0x20 && bytes[0] < 0x30) {
     if(len < 2)
       return -1;
@@ -102,14 +136,13 @@ static int parser_escape(const char bytes[], size_t len, void *user)
   }
 
   printf("escape ");
-  for(i = 0; i < len; i++)
-    printf("%02x", bytes[i]);
+  printhex(bytes, len);
   printf("\n");
 
   return len;
 }
 
-static int parser_csi(const char *leader, const long args[], int argcount, const char *intermed, char command, void *user)
+static int parser_csi(const char *leader, const long args[], int argcount, const char *intermed, char command, void *user UNUSED)
 {
   int i;
   printf("csi %02x", command);
@@ -140,43 +173,71 @@ static int parser_csi(const char *leader, const long args[], int argcount, const
   return 1;
 }
 
-static int parser_osc(const char *command, size_t cmdlen, void *user)
+static int parser_osc(int command, VTermStringFragment frag, void *user UNUSED)
 {
-  int i;
+
   printf("osc ");
-  for(i = 0; i < cmdlen; i++)
-    printf("%02x", command[i]);
+
+  if(frag.initial) {
+    if(command == -1)
+      printf("[");
+    else
+      printf("[%d;", command);
+  }
+
+  printhex(frag.str, frag.len);
+
+  if(frag.final)
+    printf("]");
+
   printf("\n");
 
   return 1;
 }
 
-static int parser_dcs(const char *command, size_t cmdlen, void *user)
+static int parser_dcs(const char *command, size_t commandlen, VTermStringFragment frag, void *user UNUSED)
 {
-  int i;
   printf("dcs ");
-  for(i = 0; i < cmdlen; i++)
-    printf("%02x", command[i]);
+
+  if(frag.initial) {
+    size_t i;
+    printf("[");
+    for(i = 0; i < commandlen; i++)
+      printf("%02x", command[i]);
+  }
+
+  printhex(frag.str, frag.len);
+
+  if(frag.final)
+    printf("]");
+
   printf("\n");
 
   return 1;
 }
 
 static VTermParserCallbacks parser_cbs = {
-  parser_text, /* text */
-  parser_control, /* control */
-  parser_escape, /* escape */
-  parser_csi, /* csi */
-  parser_osc, /* osc */
-  parser_dcs, /* dcs */
-  NULL /* resize */
+  parser_text, // text
+  parser_control, // control
+  parser_escape, // escape
+  parser_csi, // csi
+  parser_osc, // osc
+  parser_dcs, // dcs
+  NULL // resize
+};
+
+static VTermStateFallbacks fallbacks = {
+  parser_control, // control
+  parser_csi, // csi
+  parser_osc, // osc
+  parser_dcs // dcs
 };
 
 /* These callbacks are shared by State and Screen */
 
 static int want_movecursor = 0;
 static VTermPos state_pos;
-static int movecursor(VTermPos pos, VTermPos oldpos, int visible, void *user)
+static int movecursor(VTermPos pos, VTermPos oldpos UNUSED, int visible UNUSED, void *user UNUSED)
 {
   state_pos = pos;
 
@@ -187,7 +248,7 @@ static int movecursor(VTermPos pos, VTermPos oldpos, int visible, void *user)
 }
 
 static int want_scrollrect = 0;
-static int scrollrect(VTermRect rect, int downward, int rightward, void *user)
+static int scrollrect(VTermRect rect, int downward, int rightward, void *user UNUSED)
 {
   if(!want_scrollrect)
     return 0;
@@ -200,7 +261,7 @@ static int scrollrect(VTermRect rect, int downward, int rightward, void *user)
 }
 
 static int want_moverect = 0;
-static int moverect(VTermRect dest, VTermRect src, void *user)
+static int moverect(VTermRect dest, VTermRect src, void *user UNUSED)
 {
   if(!want_moverect)
     return 0;
@@ -213,7 +274,7 @@ static int moverect(VTermRect dest, VTermRect src, void *user)
 }
 
 static int want_settermprop = 0;
-static int settermprop(VTermProp prop, VTermValue *val, void *user)
+static int settermprop(VTermProp prop, VTermValue *val, void *user UNUSED)
 {
   VTermValueType type;
   if(!want_settermprop)
@@ -228,10 +289,13 @@ static int settermprop(VTermProp prop, VTermValue *val, void *user)
     printf("settermprop %d %d\n", prop, val->number);
     return 1;
   case VTERM_VALUETYPE_STRING:
-    printf("settermprop %d \"%s\"\n", prop, val->string);
+    printf("settermprop %d %s\"%.*s\"%s\n", prop,
+        val->string.initial ? "[" : "", val->string.len, val->string.str, val->string.final ? "]" : "");
     return 1;
   case VTERM_VALUETYPE_COLOR:
-    printf("settermprop %d rgb(%d,%d,%d)\n", prop, val->color.red, val->color.green, val->color.blue);
+    printf("settermprop %d ", prop);
+    print_color(&val->color);
+    printf("\n");
     return 1;
 
   case VTERM_N_VALUETYPES:
@@ -241,17 +305,17 @@ static int settermprop(VTermProp prop, VTermValue *val, void *user)
   return 0;
 }
 
-/* These callbacks are for State */
+// These callbacks are for State
 
 static int want_state_putglyph = 0;
-static int state_putglyph(VTermGlyphInfo *info, VTermPos pos, void *user)
+static int state_putglyph(VTermGlyphInfo *info, VTermPos pos, void *user UNUSED)
 {
   int i;
   if(!want_state_putglyph)
     return 1;
 
   printf("putglyph ");
-  for(i = 0; info->chars[i]; i++)
+  for(i = 0; i < VTERM_MAX_CHARS_PER_CELL && info->chars[i]; i++)
     printf(i ? ",%x" : "%x", info->chars[i]);
   printf(" %d %d,%d", info->width, pos.row, pos.col);
   if(info->protected_cell)
@@ -266,7 +330,7 @@ static int state_putglyph(VTermGlyphInfo *info, VTermPos pos, void *user)
 }
 
 static int want_state_erase = 0;
-static int state_erase(VTermRect rect, int selective, void *user)
+static int state_erase(VTermRect rect, int selective, void *user UNUSED)
 {
   if(!want_state_erase)
     return 1;
@@ -284,12 +348,13 @@ static struct {
   int italic;
   int blink;
   int reverse;
+  int conceal;
   int strike;
   int font;
   VTermColor foreground;
   VTermColor background;
 } state_pen;
-static int state_setpenattr(VTermAttr attr, VTermValue *val, void *user)
+static int state_setpenattr(VTermAttr attr, VTermValue *val, void *user UNUSED)
 {
   switch(attr) {
   case VTERM_ATTR_BOLD:
@@ -306,6 +371,9 @@ static int state_setpenattr(VTermAttr attr, VTermValue *val, void *user)
     break;
   case VTERM_ATTR_REVERSE:
     state_pen.reverse = val->boolean;
+    break;
+  case VTERM_ATTR_CONCEAL:
+    state_pen.conceal = val->boolean;
     break;
   case VTERM_ATTR_STRIKE:
     state_pen.strike = val->boolean;
@@ -327,28 +395,28 @@ static int state_setpenattr(VTermAttr attr, VTermValue *val, void *user)
   return 1;
 }
 
-static int state_setlineinfo(int row, const VTermLineInfo *newinfo, const VTermLineInfo *oldinfo, void *user)
+static int state_setlineinfo(int row UNUSED, const VTermLineInfo *newinfo UNUSED, const VTermLineInfo *oldinfo UNUSED, void *user UNUSED)
 {
   return 1;
 }
 
 VTermStateCallbacks state_cbs = {
-  state_putglyph, /* putglyph */
-  movecursor, /* movecursor */
-  scrollrect, /* scrollrect */
-  moverect, /* moverect */
-  state_erase, /* erase */
-  NULL, /* initpen */
-  state_setpenattr, /* setpenattr */
-  settermprop, /* settermprop */
-  NULL, /* bell */
-  NULL, /* resize */
-  state_setlineinfo, /* setlineinfo */
+  state_putglyph, // putglyph
+  movecursor, // movecursor
+  scrollrect, // scrollrect
+  moverect, // moverect
+  state_erase, // erase
+  NULL, // initpen
+  state_setpenattr, // setpenattr
+  settermprop, // settermprop
+  NULL, // bell
+  NULL, // resize
+  state_setlineinfo, // setlineinfo
 };
 
 static int want_screen_damage = 0;
 static int want_screen_damage_cells = 0;
-static int screen_damage(VTermRect rect, void *user)
+static int screen_damage(VTermRect rect, void *user UNUSED)
 {
   if(!want_screen_damage)
     return 1;
@@ -400,7 +468,7 @@ static int screen_damage(VTermRect rect, void *user)
 }
 
 static int want_screen_scrollback = 0;
-static int screen_sb_pushline(int cols, const VTermScreenCell *cells, void *user)
+static int screen_sb_pushline(int cols, const VTermScreenCell *cells, void *user UNUSED)
 {
   int eol;
   int c;
@@ -420,14 +488,14 @@ static int screen_sb_pushline(int cols, const VTermScreenCell *cells, void *user
   return 1;
 }
 
-static int screen_sb_popline(int cols, VTermScreenCell *cells, void *user)
+static int screen_sb_popline(int cols, VTermScreenCell *cells, void *user UNUSED)
 {
   int col;
 
   if(!want_screen_scrollback)
     return 0;
 
-  /* All lines of scrollback contain "ABCDE" */
+  // All lines of scrollback contain "ABCDE"
   for(col = 0; col < cols; col++) {
     if(col < 5)
       cells[col].chars[0] = 'A' + col;
@@ -442,17 +510,17 @@ static int screen_sb_popline(int cols, VTermScreenCell *cells, void *user)
 }
 
 VTermScreenCallbacks screen_cbs = {
-  screen_damage, /* damage */
-  moverect, /* moverect */
-  movecursor, /* movecursor */
-  settermprop, /* settermprop */
-  NULL, /* bell */
-  NULL, /* resize */
-  screen_sb_pushline, /* sb_pushline */
-  screen_sb_popline /* sb_popline */
+  screen_damage, // damage
+  moverect, // moverect
+  movecursor, // movecursor
+  settermprop, // settermprop
+  NULL, // bell
+  NULL, // resize
+  screen_sb_pushline, // sb_pushline
+  screen_sb_popline // sb_popline
 };
 
-int main(int argc, char **argv)
+int main(int argc UNUSED, char **argv UNUSED)
 {
   char line[1024] = {0};
   int flag;
@@ -472,6 +540,9 @@ int main(int argc, char **argv)
     if(streq(line, "INIT")) {
       if(!vt)
         vt = vterm_new(25, 80);
+
+      // Somehow this makes tests fail
+      // vterm_output_set_callback(vt, term_output, NULL);
     }
 
     else if(streq(line, "WANTPARSER")) {
@@ -514,7 +585,7 @@ int main(int argc, char **argv)
           want_settermprop = sense;
           break;
         case 'f':
-          vterm_state_set_unrecognised_fallbacks(state, sense ? &parser_cbs : NULL, NULL);
+          vterm_state_set_unrecognised_fallbacks(state, sense ? &fallbacks : NULL, NULL);
           break;
         default:
           fprintf(stderr, "Unrecognised WANTSTATE flag '%c'\n", line[i]);
@@ -526,7 +597,6 @@ int main(int argc, char **argv)
       int sense = 1;
       if(!screen)
         screen = vterm_obtain_screen(vt);
-      vterm_screen_enable_altscreen(screen, 1);
       vterm_screen_set_callbacks(screen, &screen_cbs, NULL);
 
       while(line[i] == ' ')
@@ -535,6 +605,9 @@ int main(int argc, char **argv)
         switch(line[i]) {
         case '-':
           sense = 0;
+          break;
+        case 'a':
+          vterm_screen_enable_altscreen(screen, 1);
           break;
         case 'd':
           want_screen_damage = sense;
@@ -592,9 +665,8 @@ int main(int argc, char **argv)
     }
 
     else if(streq(line, "WANTENCODING")) {
-      /* This isn't really external API but it's hard to get this out any
-       * other way
-       */
+      // This isn't really external API but it's hard to get this out any
+      // other way
       encoding.enc = vterm_lookup_encoding(ENC_UTF8, 'u');
       if(encoding.enc->init)
         (*encoding.enc->init)(encoding.enc, encoding.data);
@@ -784,13 +856,34 @@ int main(int argc, char **argv)
             printf("%d\n", state_pen.font);
         }
         else if(streq(linep, "foreground")) {
-          printf("rgb(%d,%d,%d)\n", state_pen.foreground.red, state_pen.foreground.green, state_pen.foreground.blue);
+          print_color(&state_pen.foreground);
+          printf("\n");
         }
         else if(streq(linep, "background")) {
-          printf("rgb(%d,%d,%d)\n", state_pen.background.red, state_pen.background.green, state_pen.background.blue);
+          print_color(&state_pen.background);
+          printf("\n");
         }
         else
           printf("?\n");
+      }
+      else if(strstartswith(line, "?lineinfo ")) {
+        char *linep = line + 10;
+        int row;
+        const VTermLineInfo *info;
+        while(linep[0] == ' ')
+          linep++;
+        if(sscanf(linep, "%d", &row) < 1) {
+          printf("! lineinfo unrecognised input\n");
+          goto abort_line;
+        }
+        info = vterm_state_get_lineinfo(state, row);
+        if(info->doublewidth)
+          printf("dwl ");
+        if(info->doubleheight)
+          printf("dhl ");
+        if(info->continuation)
+          printf("cont ");
+        printf("\n");
       }
       else if(strstartswith(line, "?screen_chars ")) {
         char *linep = line + 13;
@@ -833,7 +926,7 @@ int main(int argc, char **argv)
         else if(len == 0)
           printf("\n");
         else {
-          /* Put an overwrite guard at both ends of the buffer */
+          // Put an overwrite guard at both ends of the buffer
           unsigned char *buffer = malloc(len + 4);
           unsigned char *text = buffer + 2;
           text[-2] = 0x55; text[-1] = 0xAA;
@@ -883,8 +976,13 @@ int main(int argc, char **argv)
         printf("} ");
         if(cell.attrs.dwl)       printf("dwl ");
         if(cell.attrs.dhl)       printf("dhl-%s ", cell.attrs.dhl == 2 ? "bottom" : "top");
-        printf("fg=rgb(%d,%d,%d) ",  cell.fg.red, cell.fg.green, cell.fg.blue);
-        printf("bg=rgb(%d,%d,%d)\n", cell.bg.red, cell.bg.green, cell.bg.blue);
+        printf("fg=");
+        vterm_screen_convert_color_to_rgb(screen, &cell.fg);
+        print_color(&cell.fg);
+        printf(" bg=");
+        vterm_screen_convert_color_to_rgb(screen, &cell.bg);
+        print_color(&cell.bg);
+        printf("\n");
       }
       else if(strstartswith(line, "?screen_eol ")) {
         VTermPos pos;
@@ -927,13 +1025,10 @@ int main(int argc, char **argv)
 
     outlen = vterm_output_get_buffer_current(vt);
     if(outlen > 0) {
-      int i;
       char outbuff[1024];
       vterm_output_read(vt, outbuff, outlen);
 
-      printf("output ");
-      for(i = 0; i < outlen; i++)
-        printf("%x%s", (unsigned char)outbuff[i], i < outlen-1 ? "," : "\n");
+      term_output(outbuff, outlen, NULL);
     }
 
     printf(err ? "?\n" : "DONE\n");

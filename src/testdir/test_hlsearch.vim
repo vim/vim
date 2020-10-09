@@ -1,5 +1,7 @@
 " Test for v:hlsearch
 
+source check.vim
+
 func Test_hlsearch()
   new
   call setline(1, repeat(['aaa'], 10))
@@ -26,16 +28,14 @@ func Test_hlsearch()
   set nohls
   exe "normal! /\<CR>" | redraw
   call assert_notequal(r1, screenattr(1,1))
-  call assert_fails('let v:hlsearch=[]', 'E745')
+  call assert_fails('let v:hlsearch=[]', 'E745:')
   call garbagecollect(1)
   call getchar(1)
   enew!
 endfunc
 
 func Test_hlsearch_hangs()
-  if !has('reltime') || !has('float')
-    return
-  endif
+  CheckFunction reltimefloat
 
   " This pattern takes a long time to match, it should timeout.
   new
@@ -63,3 +63,5 @@ func Test_hlsearch_eol_highlight()
   set nohlsearch
   bwipe!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

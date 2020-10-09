@@ -1,8 +1,8 @@
-README_amibin.txt for version 8.1 of Vim: Vi IMproved.
+README_amibin.txt for version 8.2 of Vim: Vi IMproved.
 
 See "README.txt" for general information about Vim.
 See "README_ami.txt" for installation instructions for the Amiga.
-These files are in the runtime archive (vim81rt.tgz).
+These files are in the runtime archive (vim82rt.tgz).
 
 
 The Amiga "bin" archive contains the Vim executable for the Amiga.  It was

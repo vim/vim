@@ -2,7 +2,7 @@
 " Language:             Zsh shell script
 " Maintainer:           Christian Brabandt <cb@256bit.org>
 " Previous Maintainer:  Nikolai Weibull <now@bitwi.se>
-" Latest Revision:      2018-05-12
+" Latest Revision:      2020-01-23
 " License:              Vim (see :h license)
 " Repository:           https://github.com/chrisbra/vim-zsh
 
@@ -13,11 +13,30 @@ endif
 let s:cpo_save = &cpo
 set cpo&vim
 
-if v:version > 704 || (v:version == 704 && has("patch1142"))
-    syn iskeyword @,48-57,_,192-255,#,-
-else
-    setlocal iskeyword+=-
-endif
+function! s:ContainedGroup()
+	" needs 7.4.2008 for execute() function
+  let result='TOP'
+    " vim-pandoc syntax defines the @langname cluster for embedded syntax languages
+    " However, if no syntax is defined yet, `syn list @zsh` will return
+    " "No syntax items defined", so make sure the result is actually a valid syn cluster
+    for cluster in ['markdownHighlightzsh', 'zsh']
+      try
+      " markdown syntax defines embedded clusters as @markdownhighlight<lang>,
+      " pandoc just uses @<lang>, so check both for both clusters
+        let a=split(execute('syn list @'. cluster), "\n")
+        if len(a) == 2 && a[0] =~# '^---' && a[1] =~? cluster
+          return  '@'. cluster
+        endif
+      catch /E392/
+        " ignore
+      endtry
+    endfor
+    return result
+endfunction
+
+let s:contained=s:ContainedGroup()
+
+syn iskeyword @,48-57,_,192-255,#,-
 if get(g:, 'zsh_fold_enable', 0)
     setlocal foldmethod=syntax
 endif
@@ -32,13 +51,16 @@ syn region  zshComment          start='^\s*#' end='^\%(\s*#\)\@!'
 
 syn match   zshPreProc          '^\%1l#\%(!\|compdef\|autoload\).*$'
 
+syn match   zshPOSIXQuoted      '\\[xX][0-9a-fA-F]\{1,2}'
+syn match   zshPOSIXQuoted      '\\[0-7]\{1,3}'
+syn match   zshPOSIXQuoted      '\\u[0-9a-fA-F]\{1,4}'
+syn match   zshPOSIXQuoted      '\\U[1-9a-fA-F]\{1,8}'
 syn match   zshQuoted           '\\.'
 syn region  zshString           matchgroup=zshStringDelimiter start=+"+ end=+"+
                                 \ contains=zshQuoted,@zshDerefs,@zshSubst fold
 syn region  zshString           matchgroup=zshStringDelimiter start=+'+ end=+'+ fold
-" XXX: This should probably be more precise, but Zsh seems a bit confused about it itself
 syn region  zshPOSIXString      matchgroup=zshStringDelimiter start=+\$'+
-                                \ end=+'+ contains=zshQuoted
+                                \ skip=+\\[\\']+ end=+'+ contains=zshPOSIXQuoted,zshQuoted
 syn match   zshJobSpec          '%\(\d\+\|?\=\w\+\|[%+-]\)'
 
 syn keyword zshPrecommand       noglob nocorrect exec command builtin - time
@@ -112,7 +134,7 @@ syn keyword zshCommands         alias autoload bg bindkey break bye cap cd
                                 \ enable eval exec exit export false fc fg
                                 \ functions getcap getln getopts hash history
                                 \ jobs kill let limit log logout popd print
-                                \ printf pushd pushln pwd r read readonly
+                                \ printf pushd pushln pwd r read
                                 \ rehash return sched set setcap shift
                                 \ source stat suspend test times trap true
                                 \ ttyctl type ulimit umask unalias unfunction
@@ -125,7 +147,7 @@ syn keyword zshCommands         alias autoload bg bindkey break bye cap cd
 " Create a list of option names from zsh source dir:
 "     #!/bin/zsh
 "    topdir=/path/to/zsh-xxx
-"    grep '^pindex([A-Za-z_]*)$' $topdir/Src/Doc/Zsh/optionsyo |
+"    grep '^pindex([A-Za-z_]*)$' $topdir/Doc/Zsh/options.yo |
 "    while read opt
 "    do
 "        echo ${${(L)opt#pindex\(}%\)}
@@ -136,6 +158,7 @@ syn case ignore
 syn match   zshOptStart /^\s*\%(\%(\%(un\)\?setopt\)\|set\s+[-+]o\)/ nextgroup=zshOption skipwhite
 syn match   zshOption /
       \ \%(\%(\<no_\?\)\?aliases\>\)\|
+      \ \%(\%(\<no_\?\)\?aliasfuncdef\>\)\|\%(\%(no_\?\)\?alias_func_def\>\)\|
       \ \%(\%(\<no_\?\)\?allexport\>\)\|\%(\%(no_\?\)\?all_export\>\)\|
       \ \%(\%(\<no_\?\)\?alwayslastprompt\>\)\|\%(\%(no_\?\)\?always_last_prompt\>\)\|\%(\%(no_\?\)\?always_lastprompt\>\)\|
       \ \%(\%(\<no_\?\)\?alwaystoend\>\)\|\%(\%(no_\?\)\?always_to_end\>\)\|
@@ -168,6 +191,7 @@ syn match   zshOption /
       \ \%(\%(\<no_\?\)\?chasedots\>\)\|\%(\%(no_\?\)\?chase_dots\>\)\|
       \ \%(\%(\<no_\?\)\?chaselinks\>\)\|\%(\%(no_\?\)\?chase_links\>\)\|
       \ \%(\%(\<no_\?\)\?checkjobs\>\)\|\%(\%(no_\?\)\?check_jobs\>\)\|
+      \ \%(\%(\<no_\?\)\?checkrunningjobs\>\)\|\%(\%(no_\?\)\?check_running_jobs\>\)\|
       \ \%(\%(\<no_\?\)\?clobber\>\)\|
       \ \%(\%(\<no_\?\)\?combiningchars\>\)\|\%(\%(no_\?\)\?combining_chars\>\)\|
       \ \%(\%(\<no_\?\)\?completealiases\>\)\|\%(\%(no_\?\)\?complete_aliases\>\)\|
@@ -188,7 +212,7 @@ syn match   zshOption /
       \ \%(\%(\<no_\?\)\?equals\>\)\|
       \ \%(\%(\<no_\?\)\?errexit\>\)\|\%(\%(no_\?\)\?err_exit\>\)\|
       \ \%(\%(\<no_\?\)\?errreturn\>\)\|\%(\%(no_\?\)\?err_return\>\)\|
-      \ \%(\%(\<no_\?\)\?evallineno_\?\)\|\%(\%(no_\?\)\?eval_lineno_\?\)\|
+      \ \%(\%(\<no_\?\)\?evallineno\>\)\|\%(\%(no_\?\)\?eval_lineno\>\)\|
       \ \%(\%(\<no_\?\)\?exec\>\)\|
       \ \%(\%(\<no_\?\)\?extendedglob\>\)\|\%(\%(no_\?\)\?extended_glob\>\)\|
       \ \%(\%(\<no_\?\)\?extendedhistory\>\)\|\%(\%(no_\?\)\?extended_history\>\)\|
@@ -322,6 +346,7 @@ syn match   zshOption /
       \ \%(\%(\<no_\?\)\?unset\>\)\|
       \ \%(\%(\<no_\?\)\?verbose\>\)\|
       \ \%(\%(\<no_\?\)\?vi\>\)\|
+      \ \%(\%(\<no_\?\)\?warnnestedvar\>\)\|\%(\%(no_\?\)\?warn_nested_var\>\)\|
       \ \%(\%(\<no_\?\)\?warncreateglobal\>\)\|\%(\%(no_\?\)\?warn_create_global\>\)\|
       \ \%(\%(\<no_\?\)\?xtrace\>\)\|
       \ \%(\%(\<no_\?\)\?zle\>\)/ nextgroup=zshOption,zshComment skipwhite contained
@@ -339,22 +364,22 @@ syn match   zshNumber           '[+-]\=\d\+\.\d\+\>'
 
 " TODO: $[...] is the same as $((...)), so add that as well.
 syn cluster zshSubst            contains=zshSubst,zshOldSubst,zshMathSubst
-syn region  zshSubst            matchgroup=zshSubstDelim transparent
-                                \ start='\$(' skip='\\)' end=')' contains=TOP fold
+exe 'syn region  zshSubst       matchgroup=zshSubstDelim transparent start=/\$(/ skip=/\\)/ end=/)/ contains='.s:contained. '  fold'
 syn region  zshParentheses      transparent start='(' skip='\\)' end=')' fold
 syn region  zshGlob             start='(#' end=')'
 syn region  zshMathSubst        matchgroup=zshSubstDelim transparent
                                 \ start='\$((' skip='\\)' end='))'
                                 \ contains=zshParentheses,@zshSubst,zshNumber,
                                 \ @zshDerefs,zshString keepend fold
-syn region  zshBrackets         contained transparent start='{' skip='\\}'
+" The ms=s+1 prevents matching zshBrackets several times on opening brackets
+" (see https://github.com/chrisbra/vim-zsh/issues/21#issuecomment-576330348)
+syn region  zshBrackets         contained transparent start='{'ms=s+1 skip='\\}'
                                 \ end='}' fold
-syn region  zshBrackets         transparent start='{' skip='\\}'
-                                \ end='}' contains=TOP fold
+exe 'syn region  zshBrackets    transparent start=/{/ms=s+1 skip=/\\}/ end=/}/ contains='.s:contained. ' fold'
+
 syn region  zshSubst            matchgroup=zshSubstDelim start='\${' skip='\\}'
                                 \ end='}' contains=@zshSubst,zshBrackets,zshQuoted,zshString fold
-syn region  zshOldSubst         matchgroup=zshSubstDelim start=+`+ skip=+\\`+
-                                \ end=+`+ contains=TOP,zshOldSubst fold
+exe 'syn region  zshOldSubst    matchgroup=zshSubstDelim start=/`/ skip=/\\[\\`]/ end=/`/ contains='.s:contained. ',zshOldSubst fold'
 
 syn sync    minlines=50 maxlines=90
 syn sync    match zshHereDocSync    grouphere   NONE '<<-\=\s*\%(\\\=\S\+\|\(["']\)\S\+\1\)'
@@ -364,6 +389,7 @@ hi def link zshTodo             Todo
 hi def link zshComment          Comment
 hi def link zshPreProc          PreProc
 hi def link zshQuoted           SpecialChar
+hi def link zshPOSIXQuoted      SpecialChar
 hi def link zshString           String
 hi def link zshStringDelimiter  zshString
 hi def link zshPOSIXString      zshString

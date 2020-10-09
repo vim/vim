@@ -41,3 +41,5 @@ func Test_match_using_multibyte_conceal_char()
 
   quit!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

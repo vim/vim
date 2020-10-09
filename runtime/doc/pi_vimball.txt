@@ -1,10 +1,10 @@
-*pi_vimball.txt*	For Vim version 8.1.  Last change: 2016 Apr 11
+*pi_vimball.txt*	For Vim version 8.2.  Last change: 2016 Apr 11
 
 			       ----------------
 			       Vimball Archiver
 			       ----------------
 
-Author:  Charles E. Campbell  <NdrOchip@ScampbellPfamily.AbizM>
+Author:  Charles E. Campbell  <NcampObell@SdrPchip.AorgM-NOSPAM>
 	  (remove NOSPAM from Campbell's email first)
 Copyright: (c) 2004-2015 by Charles E. Campbell		*Vimball-copyright*
 	The VIM LICENSE (see |copyright|) applies to the files in this

@@ -638,7 +638,7 @@ do_argfile(exarg_T *eap, int argn)
     char_u	*p;
     int		old_arg_idx = curwin->w_arg_idx;
 
-    if (ERROR_IF_POPUP_WINDOW)
+    if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
     if (argn < 0 || argn >= ARGCOUNT)
     {
@@ -776,10 +776,20 @@ ex_argdelete(exarg_T *eap)
     int		i;
     int		n;
 
-    if (eap->addr_count > 0)
+    if (eap->addr_count > 0 || *eap->arg == NUL)
     {
-	// ":1,4argdel": Delete all arguments in the range.
-	if (eap->line2 > ARGCOUNT)
+	// ":argdel" works like ":.argdel"
+	if (eap->addr_count == 0)
+	{
+	    if (curwin->w_arg_idx >= ARGCOUNT)
+	    {
+		emsg(_("E610: No argument to delete"));
+		return;
+	    }
+	    eap->line1 = eap->line2 = curwin->w_arg_idx + 1;
+	}
+	else if (eap->line2 > ARGCOUNT)
+	    // ":1,4argdel": Delete all arguments in the range.
 	    eap->line2 = ARGCOUNT;
 	n = eap->line2 - eap->line1 + 1;
 	if (*eap->arg != NUL)
@@ -808,8 +818,6 @@ ex_argdelete(exarg_T *eap)
 		curwin->w_arg_idx = ARGCOUNT - 1;
 	}
     }
-    else if (*eap->arg == NUL)
-	emsg(_(e_argreq));
     else
 	do_arglist(eap->arg, AL_DEL, 0, FALSE);
 #ifdef FEAT_TITLE
@@ -864,6 +872,7 @@ do_arg_all(
 				//
     int		opened_len;	// length of opened[]
     int		use_firstwin = FALSE;	// use first window for arglist
+    int		tab_drop_empty_window = FALSE;
     int		split_ret = OK;
     int		p_ea_save;
     alist_T	*alist;		// argument list to be used
@@ -1027,13 +1036,16 @@ do_arg_all(
     last_curwin = curwin;
     last_curtab = curtab;
     win_enter(lastwin, FALSE);
-    // ":drop all" should re-use an empty window to avoid "--remote-tab"
+    // ":tab drop file" should re-use an empty window to avoid "--remote-tab"
     // leaving an empty tab page when executed locally.
     if (keep_tabs && BUFEMPTY() && curbuf->b_nwindows == 1
 			    && curbuf->b_ffname == NULL && !curbuf->b_changed)
+    {
 	use_firstwin = TRUE;
+	tab_drop_empty_window = TRUE;
+    }
 
-    for (i = 0; i < count && i < opened_len && !got_int; ++i)
+    for (i = 0; i < count && !got_int; ++i)
     {
 	if (alist == &global_alist && i == global_alist.al_ga.ga_len - 1)
 	    arg_had_last = TRUE;
@@ -1042,7 +1054,7 @@ do_arg_all(
 	    // Move the already present window to below the current window
 	    if (curwin->w_arg_idx != i)
 	    {
-		for (wpnext = firstwin; wpnext != NULL; wpnext = wpnext->w_next)
+		FOR_ALL_WINDOWS(wpnext)
 		{
 		    if (wpnext->w_arg_idx == i)
 		    {
@@ -1067,6 +1079,9 @@ do_arg_all(
 	}
 	else if (split_ret == OK)
 	{
+	    // trigger events for tab drop
+	    if (tab_drop_empty_window && i == count - 1)
+		--autocmd_no_enter;
 	    if (!use_firstwin)		// split current window
 	    {
 		p_ea_save = p_ea;
@@ -1091,6 +1106,8 @@ do_arg_all(
 		      ((buf_hide(curwin->w_buffer)
 			   || bufIsChanged(curwin->w_buffer)) ? ECMD_HIDE : 0)
 						       + ECMD_OLDBUF, curwin);
+	    if (tab_drop_empty_window && i == count - 1)
+		++autocmd_no_enter;
 	    if (use_firstwin)
 		++autocmd_no_leave;
 	    use_firstwin = FALSE;

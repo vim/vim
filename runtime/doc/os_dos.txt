@@ -1,4 +1,4 @@
-*os_dos.txt*    For Vim version 8.1.  Last change: 2006 Mar 30
+*os_dos.txt*    For Vim version 8.2.  Last change: 2006 Mar 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -39,7 +39,7 @@ If you move the executable to another location, you also need to set the $VIM
 environment variable.  The runtime files will be found in "$VIM/vim{version}".
 Example: >
 	set VIM=E:\vim
-Will find the version 5.4 runtime files in "e:\vim\vim54".
+Will find the version 8.2 runtime files in "e:\vim\vim82".
 Note: This is _not_ recommended.  The preferred way is to keep the executable
 in the runtime directory.
 
@@ -47,17 +47,23 @@ If you move your executable AND want to put your "_vimrc" and "_gvimrc" files
 somewhere else, you must set $VIM to where you vimrc files are, and set
 $VIMRUNTIME to the runtime files.  Example: >
 	set VIM=C:\usr\piet
-	set VIMRUNTIME=E:\vim\vim54
-Will find "c:\user\piet\_vimrc" and the runtime files in "e:\vim\vim54".
+	set VIMRUNTIME=E:\vim\vim82
+Will find "c:\user\piet\_vimrc" and the runtime files in "e:\vim\vim82".
 
 See |$VIM| and |$VIMRUNTIME| for more information.
 
-Under Windows 95, you can set $VIM in your C:\autoexec.bat file.  For
-example: >
-  set VIM=D:\vim
-Under Windows NT, you can set environment variables for each user separately
-under "Start/Settings/Control Panel->System", or through the properties in the
-menu of "My Computer", under the Environment Tab.
+You can set environment variables for each user separately through the
+System Properties dialog box.  The steps to do that:
+1. Type Windows Key + R to open the "Run" dialog box.
+2. Enter "sysdm.cpl" and press the "OK" button.  The "System Properties"
+   dialog box will open.
+3. Select the "Advanced" tab and press the "Environment Variables..." button.
+   The "Environment Variables" dialog box will open.
+4. Select an existing variable in the "User variables" list and press the
+   "Edit..." button to edit it.  Or press the "New..." button to add a new
+   variable.
+5. After you finished editing variables, press the "OK" button to save the
+   changes.
 
 ==============================================================================
 2. Using backslashes					*dos-backslash*

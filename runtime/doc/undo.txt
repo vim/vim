@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 8.1.  Last change: 2019 May 07
+*undo.txt*      For Vim version 8.2.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -271,7 +271,7 @@ respectively:
 		(the magic number at the start of the file is wrong), then
 		this fails, unless the ! was added.
 		If it exists and does look like an undo file it is
-		overwritten. If there is no undo-history, nothing will be 
+		overwritten. If there is no undo-history, nothing will be
 		written.
 		Implementation detail: Overwriting happens by first deleting
 		the existing file and then creating a new file with the same

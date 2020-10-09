@@ -122,6 +122,24 @@ func Test_gd()
   call XTest_goto_decl('gd', lines, 3, 14)
 endfunc
 
+" Using gd to jump to a declaration in a fold
+func Test_gd_with_fold()
+  new
+  let lines =<< trim END
+    #define ONE 1
+    #define TWO 2
+    #define THREE 3
+
+    TWO
+  END
+  call setline(1, lines)
+  1,3fold
+  call feedkeys('Ggd', 'xt')
+  call assert_equal(2, line('.'))
+  call assert_equal(-1, foldclosedend(2))
+  bw!
+endfunc
+
 func Test_gd_not_local()
   let lines =<< trim [CODE]
     int func1(void)
@@ -333,21 +351,24 @@ endfunc
 
 func Test_motion_if_elif_else_endif()
   new
-  a
-/* Test pressing % on #if, #else #elsif and #endif,
- * with nested #if
- */
-#if FOO
-/* ... */
-#  if BAR
-/* ... */
-#  endif
-#elif BAR
-/* ... */
-#else
-/* ... */
-#endif
-.
+  let lines =<< trim END
+    /* Test pressing % on #if, #else #elsif and #endif,
+     * with nested #if
+     */
+    #if FOO
+    /* ... */
+    #  if BAR
+    /* ... */
+    #  endif
+    #elif BAR
+    /* ... */
+    #else
+    /* ... */
+    #endif
+
+    #define FOO 1
+  END
+  call setline(1, lines)
   /#if FOO
   norm %
   call assert_equal([9, 1], getpos('.')[1:2])
@@ -362,6 +383,30 @@ func Test_motion_if_elif_else_endif()
   call assert_equal([8, 1], getpos('.')[1:2])
   norm $%
   call assert_equal([6, 1], getpos('.')[1:2])
+
+  " Test for [# and ]# command
+  call cursor(5, 1)
+  normal [#
+  call assert_equal([4, 1], getpos('.')[1:2])
+  call cursor(5, 1)
+  normal ]#
+  call assert_equal([9, 1], getpos('.')[1:2])
+  call cursor(10, 1)
+  normal [#
+  call assert_equal([9, 1], getpos('.')[1:2])
+  call cursor(10, 1)
+  normal ]#
+  call assert_equal([11, 1], getpos('.')[1:2])
+
+  " Finding a match before the first line or after the last line should fail
+  normal gg
+  call assert_beeps('normal [#')
+  normal G
+  call assert_beeps('normal ]#')
+
+  " Finding a match for a macro definition (#define) should fail
+  normal G
+  call assert_beeps('normal %')
 
   bw!
 endfunc
@@ -392,3 +437,5 @@ func Test_motion_c_comment()
 
   bw!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -1,6 +1,6 @@
 " Vim plugin for showing matching parens
 " Maintainer:  Bram Moolenaar <Bram@vim.org>
-" Last Change: 2018 Jul 3
+" Last Change: 2020 Jun 18
 
 " Exit quickly when:
 " - this plugin was already loaded (or disabled)
@@ -21,6 +21,7 @@ endif
 augroup matchparen
   " Replace all matchparen autocommands
   autocmd! CursorMoved,CursorMovedI,WinEnter * call s:Highlight_Matching_Pair()
+  autocmd! WinLeave * call s:Remove_Matches()
   if exists('##TextChanged')
     autocmd! TextChanged,TextChangedI * call s:Highlight_Matching_Pair()
   endif
@@ -36,12 +37,9 @@ set cpo-=C
 
 " The function that is invoked (very often) to define a ":match" highlighting
 " for any matching paren.
-function! s:Highlight_Matching_Pair()
+func s:Highlight_Matching_Pair()
   " Remove any previous match.
-  if exists('w:paren_hl_on') && w:paren_hl_on
-    silent! call matchdelete(3)
-    let w:paren_hl_on = 0
-  endif
+  call s:Remove_Matches()
 
   " Avoid that we remove the popup menu.
   " Return when there are no colors (looks like the cursor jumps).
@@ -195,11 +193,19 @@ function! s:Highlight_Matching_Pair()
   endif
 endfunction
 
-" Define commands that will disable and enable the plugin.
-command! DoMatchParen call s:DoMatchParen()
-command! NoMatchParen call s:NoMatchParen()
+func s:Remove_Matches()
+  if exists('w:paren_hl_on') && w:paren_hl_on
+    silent! call matchdelete(3)
+    let w:paren_hl_on = 0
+  endif
+endfunc
 
-func! s:NoMatchParen()
+
+" Define commands that will disable and enable the plugin.
+command DoMatchParen call s:DoMatchParen()
+command NoMatchParen call s:NoMatchParen()
+
+func s:NoMatchParen()
   let w = winnr()
   noau windo silent! call matchdelete(3)
   unlet! g:loaded_matchparen
@@ -207,7 +213,7 @@ func! s:NoMatchParen()
   au! matchparen
 endfunc
 
-func! s:DoMatchParen()
+func s:DoMatchParen()
   runtime plugin/matchparen.vim
   let w = winnr()
   silent windo doau CursorMoved

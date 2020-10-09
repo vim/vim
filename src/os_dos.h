@@ -112,24 +112,24 @@
 #endif
 
 #ifndef DFLT_BDIR
-# define DFLT_BDIR	".,$TEMP,c:\\tmp,c:\\temp" /* default for 'backupdir' */
+# define DFLT_BDIR	".,$TEMP,c:\\tmp,c:\\temp" // default for 'backupdir'
 #endif
 
 #ifndef DFLT_VDIR
-# define DFLT_VDIR	"$VIM/vimfiles/view"	/* default for 'viewdir' */
+# define DFLT_VDIR	"$VIM/vimfiles/view"	// default for 'viewdir'
 #endif
 
 #ifndef DFLT_DIR
-# define DFLT_DIR	".,$TEMP,c:\\tmp,c:\\temp" /* default for 'directory' */
+# define DFLT_DIR	".,$TEMP,c:\\tmp,c:\\temp" // default for 'directory'
 #endif
 
 #define DFLT_ERRORFILE		"errors.err"
 #define DFLT_RUNTIMEPATH	"$HOME/vimfiles,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,$HOME/vimfiles/after"
 #define CLEAN_RUNTIMEPATH	"$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after"
 
-#define CASE_INSENSITIVE_FILENAME   /* ignore case when comparing file names */
+#define CASE_INSENSITIVE_FILENAME   // ignore case when comparing file names
 #define SPACE_IN_FILENAME
 #define BACKSLASH_IN_FILENAME
-#define USE_CRNL		/* lines end in CR-NL instead of NL */
-#define HAVE_DUP		/* have dup() */
-#define HAVE_ST_MODE		/* have stat.st_mode */
+#define USE_CRNL		// lines end in CR-NL instead of NL
+#define HAVE_DUP		// have dup()
+#define HAVE_ST_MODE		// have stat.st_mode

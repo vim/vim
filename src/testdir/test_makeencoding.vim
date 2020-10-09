@@ -1,7 +1,9 @@
 " Tests for 'makeencoding'.
 
 source shared.vim
+source check.vim
 
+CheckFeature quickfix
 let s:python = PythonProg()
 if s:python == ''
   throw 'Skipped: python program missing'
@@ -100,3 +102,5 @@ func Test_make()
     lclose
   endfor
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

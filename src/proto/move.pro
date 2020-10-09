@@ -21,6 +21,7 @@ void validate_cursor(void);
 void validate_cline_row(void);
 void validate_virtcol(void);
 void validate_virtcol_win(win_T *wp);
+void validate_cheight(void);
 void validate_cursor_col(void);
 int win_col_off(win_T *wp);
 int curwin_col_off(void);

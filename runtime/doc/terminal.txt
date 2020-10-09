@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.1.  Last change: 2019 Jul 04
+*terminal.txt*	For Vim version 8.2.  Last change: 2020 Sep 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -72,7 +72,7 @@ CTRL-W can be used to navigate between windows and other CTRL-W commands, e.g.:
 	CTRL-W :	enter an Ex command
 See |CTRL-W| for more commands.
 
-Special in the terminal window:			*t_CTRL-W_.*  *t_CTRL-W_N* 
+Special in the terminal window:			*t_CTRL-W_.*  *t_CTRL-W_N*
 	CTRL-W .	send a CTRL-W to the job in the terminal
 	CTRL-W CTRL-\	send a CTRL-\ to the job in the terminal
 	CTRL-W N	go to Terminal-Normal mode, see |Terminal-mode|
@@ -113,14 +113,15 @@ sent to the job running in the terminal.  For example, to make F1 switch
 to Terminal-Normal mode: >
    tnoremap <F1> <C-W>N
 You can use Esc, but you need to make sure it won't cause other keys to
-break (cursor keys start with an Esc, so they may break): >
+break (cursor keys start with an Esc, so they may break), this probably only
+works in the GUI: >
    tnoremap <Esc> <C-W>N
    set notimeout ttimeout timeoutlen=100
 
 You can also create menus similar to terminal mode mappings, but you have to
 use |:tlmenu| instead of |:tmenu|.
 
-<							*options-in-terminal*
+							*options-in-terminal*
 After opening the terminal window and setting 'buftype' to "terminal" the
 TerminalOpen autocommand event is triggered.  This makes it possible to set
 options specifically for the window and buffer.  Example: >
@@ -148,7 +149,12 @@ terminal window will start with a white or black background.
 To use a different color the Terminal highlight group can be used, for
 example: >
     hi Terminal ctermbg=lightgrey ctermfg=blue guibg=lightgrey guifg=blue
-<
+The highlight needs to be defined before the terminal is created.  Doing it
+later, or setting 'wincolor', will only have effect when the program running
+in the terminal displays text or clears the terminal.
+Instead of Terminal another group can be specified with the "term_highlight"
+option for `term_start()`.
+
 							*g:terminal_ansi_colors*
 In GUI mode or with 'termguicolors', the 16 ANSI colors used by default in new
 terminal windows may be configured using the variable
@@ -156,6 +162,7 @@ terminal windows may be configured using the variable
 hexadecimal color codes, similar to those accepted by |highlight-guifg|.  When
 not using GUI colors, the terminal window always uses the 16 ANSI colors of
 the underlying terminal.
+When using `term_start()` the colors can be set with the "ansi_colors" option.
 The |term_setansicolors()| function can be used to change the colors, and
 |term_getansicolors()| to get the currently used colors.
 
@@ -178,6 +185,10 @@ Command syntax ~
 			keep the terminal open in Terminal-Normal mode.  This
 			can be changed with the ++close argument.
 
+			No Vim command can follow, any | is included in
+			[command].  Use `:execute` if you must have a Vim
+			command following in the same line.
+
 			A new buffer will be created, using [command] or
 			'shell' as the name, prefixed with a "!".  If a buffer
 			by this name already exists a number is added in
@@ -193,6 +204,7 @@ Command syntax ~
 			Supported [options] are:
 			++close		The terminal window will close
 					automatically when the job terminates.
+					|terminal-close|
 			++noclose	The terminal window will NOT close
 					automatically when the job terminates.
 			++open		When the job terminates and no window
@@ -209,6 +221,10 @@ Command syntax ~
 					no window will be used.
 			++norestore	Do not include this terminal window
 					in a session file.
+			++shell		Instead of executing {command}
+					directly, use a shell, like with
+					`:!command` 		*E279*
+					{only works on Unix currently}
 			++kill={how}	When trying to close the terminal
 					window kill the job with {how}.  See
 					|term_setkill()| for the values.
@@ -222,7 +238,7 @@ Command syntax ~
 					Vim width (no window left or right of
 					the terminal window) this value is
 					ignored.
-			++eof={text}	when using [range]: text to send after
+			++eof={text}	When using [range]: text to send after
 					the last line was written. Cannot
 					contain white space.  A CR is
 					appended.  For MS-Windows the default
@@ -234,6 +250,10 @@ Command syntax ~
 			++type={pty}	(MS-Windows only): Use {pty} as the
 					virtual console.  See 'termwintype'
 					for the values.
+			++api={expr}	Permit the function name starting with
+					{expr} to be called as |terminal-api|
+					function.  If {expr} is empty then no
+					function can be called.
 
 			If you want to use more options use the |term_start()|
 			function.
@@ -262,6 +282,12 @@ You can use `CTRL-W :hide` to close the terminal window and make the buffer
 hidden, the job keeps running.  The `:buffer` command can be used to turn the
 current window into a terminal window.  If there are unsaved changes this
 fails, use ! to force, as usual.
+
+							*terminal-close*
+When the terminal window is closed, e.g. when the shell exits and "++close"
+argument was used, and this is the last normal Vim window, then Vim will exit.
+This is like using |:quit| in a normal window. Help and preview windows are
+not counted.
 
 To have a background job run without a window, and open the window when it's
 done, use options like this: >
@@ -450,9 +476,11 @@ term_dumpdiff({filename}, {filename} [, {options}])
 		   "term_name"	     name to use for the buffer name, instead
 				     of the first file name.
 		   "term_rows"	     vertical size to use for the terminal,
-				     instead of using 'termwinsize'
+				     instead of using 'termwinsize', but
+				     respecting the minimal size
 		   "term_cols"	     horizontal size to use for the terminal,
-				     instead of using 'termwinsize'
+				     instead of using 'termwinsize', but
+				     respecting the minimal size
 		   "vertical"	     split the window vertically
 		   "curwin"	     use the current window, do not split the
 				     window; fails if the current buffer
@@ -492,7 +520,7 @@ term_dumpload({filename} [, {options}])
 		For {options} see |term_dumpdiff()|.
 
 		Can also be used as a |method|: >
-			GetFilename()-> term_dumpload()
+			GetFilename()->term_dumpload()
 <
 							*term_dumpwrite()*
 term_dumpwrite({buf}, {filename} [, {options}])
@@ -510,7 +538,7 @@ term_dumpwrite({buf}, {filename} [, {options}])
 
 		Can also be used as a |method|, the base is used for the file
 		name: >
-			GetFilename()-> term_dumpwrite(bufnr)
+			GetFilename()->term_dumpwrite(bufnr)
 
 term_getaltscreen({buf})				*term_getaltscreen()*
 		Returns 1 if the terminal of {buf} is using the alternate
@@ -626,8 +654,8 @@ term_getsize({buf})					*term_getsize()*
 
 
 term_getstatus({buf})					*term_getstatus()*
-		Get the status of terminal {buf}. This returns a comma
-		separated list of these items:
+		Get the status of terminal {buf}. This returns a String with
+		a comma separated list of these items:
 			running		job is running
 			finished	job has finished
 			normal		in Terminal-Normal mode
@@ -700,6 +728,15 @@ term_sendkeys({buf}, {keys})				*term_sendkeys()*
 		Can also be used as a |method|: >
 			GetBufnr()->term_sendkeys(keys)
 
+
+term_setapi({buf}, {expr})				*term_setapi()*
+		Set the function name prefix to be used for the |terminal-api|
+		function in terminal {buf}.  For example: >
+		    :call term_setapi(buf, "Myapi_")
+		    :call term_setapi(buf, "")
+<
+		The default is "Tapi_".  When {expr} is an empty string then
+		no |terminal-api| function can be used for {buf}.
 
 term_setansicolors({buf}, {colors})			*term_setansicolors()*
 		Set the ANSI color palette used by terminal {buf}.
@@ -833,6 +870,8 @@ term_start({cmd} [, {options}])			*term_start()*
 				     have "%d" where the buffer number goes,
 				     e.g. "10split|buffer %d"; when not
 				     specified "botright sbuf %d" is used
+		   "term_highlight"  highlight group to use instead of
+				     "Terminal"
 		   "eof_chars"	     Text to send after all buffer lines were
 				     written to the terminal.  When not set
 				     CTRL-D is used on MS-Windows. For Python
@@ -843,11 +882,12 @@ term_start({cmd} [, {options}])			*term_start()*
 				     color modes.  See |g:terminal_ansi_colors|.
 		   "tty_type"	     (MS-Windows only): Specify which pty to
 				     use.  See 'termwintype' for the values.
+		   "term_api"	     function name prefix for the
+				     |terminal-api| function.  See
+				     |term_setapi()|.
 
 		Can also be used as a |method|: >
 			GetCommand()->term_start()
-
-<		{only available when compiled with the |+terminal| feature}
 
 
 term_wait({buf} [, {time}])					*term_wait()*
@@ -901,10 +941,10 @@ Currently supported commands:
 
 		Call a user defined function with {argument}.
 		The function is called with two arguments: the buffer number
-		of the terminal and {argument}, the decoded JSON argument. 
-		The function name must start with "Tapi_" to avoid
+		of the terminal and {argument}, the decoded JSON argument.
+		By default, the function name must start with "Tapi_" to avoid
 		accidentally calling a function not meant to be used for the
-		terminal API.
+		terminal API.  This can be changed with |term_setapi()|.
 		The user function should sanity check the argument.
 		The function can use |term_sendkeys()| to send back a reply.
 		Example in JSON: >
@@ -928,7 +968,7 @@ Currently supported commands:
 		directory, thus it's best to use the full path.
 
 		[options] is only used when opening a new window.  If present,
-		it must be a Dict.  Similarly to |++opt|, These entries are
+		it must be a Dict.  Similarly to |++opt|, these entries are
 		recognized:
 		  "ff"		file format: "dos", "mac" or "unix"
 		  "fileformat"	idem
@@ -1000,7 +1040,7 @@ Writing a screen dump test for Vim ~
 For an example see the Test_syntax_c() function in
 src/testdir/test_syntax.vim.  The main parts are:
 - Write a file you want to test with. This is useful for testing syntax
-  highlighting.  You can also start Vim with en empty buffer.
+  highlighting.  You can also start Vim with an empty buffer.
 - Run Vim in a terminal with a specific size.  The default is 20 lines of 75
   characters.  This makes sure the dump is always this size.  The function
   RunVimInTerminal() takes care of this.  Pass it the arguments for the Vim
@@ -1021,12 +1061,12 @@ file for now, e.g.: >
 
 The test will then fail, giving you the command to compare the reference dump
 and the failed dump, e.g.: >
-	call term_dumpdiff("Test_func.dump.failed", "dumps/Test_func.dump")
+	call term_dumpdiff("failed/Test_func.dump", "dumps/Test_func.dump")
 
 Use this command in Vim, with the current directory set to src/testdir.
 Once you are satisfied with the test, move the failed dump in place of the
 reference: >
-	:!mv Test_func.dump.failed dumps/Test_func.dump
+	:!mv failed/Test_func.dump dumps/Test_func.dump
 
 
 Creating a screen dump ~
@@ -1115,7 +1155,7 @@ program window	A terminal window for the executed program.  When "run" is
 
 The current window is used to show the source code.  When gdb pauses the
 source file location will be displayed, if possible.  A sign is used to
-highlight the current position, using highlight group debugPC.	 
+highlight the current position, using highlight group debugPC.
 
 If the buffer in the current window is modified, another window will be opened
 to display the current gdb position.  You can use `:Winbar` to add a window
@@ -1152,8 +1192,12 @@ Example session ~
 							*termdebug-example*
 Start in the Vim "src" directory and build Vim: >
 	% make
+Make sure that debug symbols are present, usually that means that $CFLAGS
+includes "-g".
+
 Start Vim: >
 	% ./vim
+
 Load the termdebug plugin and start debugging Vim: >
 	:packadd termdebug
 	:Termdebug vim
@@ -1168,7 +1212,7 @@ Put focus on the gdb window and type: >
 	run
 Vim will start running in the program window. Put focus there and type: >
 	:help gui
-Gdb will run into the ex_help breakpoint.  The source window now shows the 
+Gdb will run into the ex_help breakpoint.  The source window now shows the
 ex_cmds.c file.  A red "1 " marker will appear in the signcolumn where the
 breakpoint was set.  The line where the debugger stopped is highlighted.  You
 can now step through the program.  Let's use the mouse: click on the "Next"
@@ -1225,8 +1269,10 @@ gdb:
  `:Run` [args]	    run the program with [args] or the previous arguments
  `:Arguments` {args}  set arguments for the next `:Run`
 
- *:Break*	set a breakpoint at the current line; a sign will be displayed
- *:Clear*	delete the breakpoint at the current line
+ *:Break*	set a breakpoint at the cursor position
+ :Break {position}
+		set a breakpoint at the specified position
+ *:Clear*	delete the breakpoint at the cursor position
 
  *:Step*	execute the gdb "step" command
  *:Over*	execute the gdb "next" command (`:Next` is a Vim command)
@@ -1263,7 +1309,7 @@ breakpoint, or use the "Clear breakpoint" right-click menu entry.
 Inspecting variables ~
 					*termdebug-variables* *:Evaluate*
  `:Evaluate`	    evaluate the expression under the cursor
- `K`		    same
+ `K`		    same (see |termdebug_map_K| to disable)
  `:Evaluate` {expr}   evaluate {expr}
  `:'<,'>Evaluate`     evaluate the Visually selected text
 
@@ -1294,6 +1340,10 @@ in a buffer with 'buftype' set to "prompt".  This works slightly differently:
 						*termdebug_use_prompt*
 Prompt mode can be used even when the |+terminal| feature is present with: >
 	let g:termdebug_use_prompt = 1
+<
+						*termdebug_map_K*
+The K key is normally mapped to :Evaluate. If you do not want this use: >
+	let g:termdebug_map_K = 0
 
 
 Communication ~

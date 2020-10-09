@@ -557,9 +557,7 @@ endfunc
 
 " test syntax folding
 func Test_fold_syntax()
-  if !has('syntax')
-    return
-  endif
+  CheckFeature syntax
 
   enew!
   set fdm=syntax fdl=0
@@ -757,3 +755,84 @@ func Test_fold_delete_with_marker()
   bwipe!
   bwipe!
 endfunc
+
+func Test_fold_delete_with_marker_and_whichwrap()
+  new
+  let content1 = ['']
+  let content2 = ['folded line 1 "{{{1', '  test', '  test2', '  test3', '', 'folded line 2 "{{{1', '  test', '  test2', '  test3']
+  call setline(1, content1 + content2)
+  set fdm=marker ww+=l
+  normal! x
+  call assert_equal(content2, getline(1, '$'))
+  set fdm& ww&
+  bwipe!
+endfunc
+
+func Test_fold_delete_first_line()
+  new
+  call setline(1, [
+	\ '" x {{{1',
+	\ '" a',
+	\ '" aa',
+	\ '" x {{{1',
+	\ '" b',
+	\ '" bb',
+	\ '" x {{{1',
+	\ '" c',
+	\ '" cc',
+	\ ])
+  set foldmethod=marker
+  1
+  normal dj
+  call assert_equal([
+	\ '" x {{{1',
+	\ '" c',
+	\ '" cc',
+	\ ], getline(1,'$'))
+  bwipe!
+  set foldmethod&
+endfunc
+
+" Test for errors in 'foldexpr'
+func Test_fold_expr_error()
+  new
+  call setline(1, ['one', 'two', 'three'])
+
+  " Return a list from the expression
+  set foldexpr=[]
+  set foldmethod=expr
+  for i in range(3)
+    call assert_equal(0, foldlevel(i))
+  endfor
+
+  " expression error
+  set foldexpr=[{]
+  set foldmethod=expr
+  for i in range(3)
+    call assert_equal(0, foldlevel(i))
+  endfor
+
+  set foldmethod& foldexpr&
+  close!
+endfunc
+
+func Test_undo_fold_deletion()
+  new
+  set fdm=marker
+  let lines =<< trim END
+      " {{{
+      " }}}1
+      " {{{
+  END
+  call setline(1, lines)
+  3d
+  g/"/d
+  undo
+  redo
+  eval getline(1, '$')->assert_equal([''])
+
+  set fdm&vim
+  bwipe!
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

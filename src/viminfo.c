@@ -14,6 +14,33 @@
 #include "vim.h"
 #include "version.h"
 
+/*
+ * Structure used for reading from the viminfo file.
+ */
+typedef struct
+{
+    char_u	*vir_line;	// text of the current line
+    FILE	*vir_fd;	// file descriptor
+    vimconv_T	vir_conv;	// encoding conversion
+    int		vir_version;	// viminfo version detected or -1
+    garray_T	vir_barlines;	// lines starting with |
+} vir_T;
+
+typedef enum {
+    BVAL_NR,
+    BVAL_STRING,
+    BVAL_EMPTY
+} btype_T;
+
+typedef struct {
+    btype_T	bv_type;
+    long	bv_nr;
+    char_u	*bv_string;
+    char_u	*bv_tofree;	// free later when not NULL
+    int		bv_len;		// length of bv_string
+    int		bv_allocated;	// bv_string was allocated
+} bval_T;
+
 #if defined(FEAT_VIMINFO) || defined(PROTO)
 
 static int  viminfo_errcnt;
@@ -822,11 +849,9 @@ write_viminfo_history(FILE *fp, int merge)
 	if (num_saved > hislen)
 	    num_saved = hislen;
 
-	/*
-	 * Merge typed and viminfo history:
-	 * round 1: history of typed commands.
-	 * round 2: history from recently read viminfo.
-	 */
+	// Merge typed and viminfo history:
+	// round 1: history of typed commands.
+	// round 2: history from recently read viminfo.
 	for (round = 1; round <= 2; ++round)
 	{
 	    if (round == 1)
@@ -1077,22 +1102,24 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 	    s[len] = NUL;
 
 	    converted = FALSE;
+	    value->bv_tofree = NULL;
 	    if (virp->vir_conv.vc_type != CONV_NONE && *s != NUL)
 	    {
 		sconv = string_convert(&virp->vir_conv, s, NULL);
 		if (sconv != NULL)
 		{
 		    if (s == buf)
-			vim_free(s);
+			// the converted string is stored in bv_string and
+			// freed later, also need to free "buf" later
+			value->bv_tofree = buf;
 		    s = sconv;
-		    buf = s;
 		    converted = TRUE;
 		}
 	    }
 
 	    // Need to copy in allocated memory if the string wasn't allocated
 	    // above and we did allocate before, thus vir_line may change.
-	    if (s != buf && allocated)
+	    if (s != buf && allocated && !converted)
 		s = vim_strsave(s);
 	    value->bv_string = s;
 	    value->bv_type = BVAL_STRING;
@@ -1223,7 +1250,12 @@ read_viminfo_varlist(vir_T *virp, int writing)
 		    (void)string2float(tab + 1, &tv.vval.v_float);
 #endif
 		else
+		{
 		    tv.vval.v_number = atol((char *)tab + 1);
+		    if (type == VAR_SPECIAL && (tv.vval.v_number == VVAL_FALSE
+					     || tv.vval.v_number == VVAL_TRUE))
+			tv.v_type = VAR_BOOL;
+		}
 		if (type == VAR_DICT || type == VAR_LIST)
 		{
 		    typval_T *etv = eval_expr(tv.vval.v_string, NULL);
@@ -1302,15 +1334,44 @@ write_viminfo_varlist(FILE *fp)
 	    {
 		switch (this_var->di_tv.v_type)
 		{
-		    case VAR_STRING: s = "STR"; break;
-		    case VAR_NUMBER: s = "NUM"; break;
-		    case VAR_FLOAT:  s = "FLO"; break;
-		    case VAR_DICT:   s = "DIC"; break;
-		    case VAR_LIST:   s = "LIS"; break;
-		    case VAR_BLOB:   s = "BLO"; break;
+		    case VAR_STRING:  s = "STR"; break;
+		    case VAR_NUMBER:  s = "NUM"; break;
+		    case VAR_FLOAT:   s = "FLO"; break;
+		    case VAR_DICT:
+			  {
+			      dict_T	*di = this_var->di_tv.vval.v_dict;
+			      int	copyID = get_copyID();
+
+			      s = "DIC";
+			      if (di != NULL && !set_ref_in_ht(
+						 &di->dv_hashtab, copyID, NULL)
+				      && di->dv_copyID == copyID)
+				  // has a circular reference, can't turn the
+				  // value into a string
+				  continue;
+			      break;
+			  }
+		    case VAR_LIST:
+			  {
+			      list_T	*l = this_var->di_tv.vval.v_list;
+			      int	copyID = get_copyID();
+
+			      s = "LIS";
+			      if (l != NULL && !set_ref_in_list_items(
+							       l, copyID, NULL)
+				      && l->lv_copyID == copyID)
+				  // has a circular reference, can't turn the
+				  // value into a string
+				  continue;
+			      break;
+			  }
+		    case VAR_BLOB:    s = "BLO"; break;
+		    case VAR_BOOL:    s = "XPL"; break;  // backwards compat.
 		    case VAR_SPECIAL: s = "XPL"; break;
 
 		    case VAR_UNKNOWN:
+		    case VAR_ANY:
+		    case VAR_VOID:
 		    case VAR_FUNC:
 		    case VAR_PARTIAL:
 		    case VAR_JOB:
@@ -1318,8 +1379,10 @@ write_viminfo_varlist(FILE *fp)
 				     continue;
 		}
 		fprintf(fp, "!%s\t%s\t", this_var->di_key, s);
-		if (this_var->di_tv.v_type == VAR_SPECIAL)
+		if (this_var->di_tv.v_type == VAR_BOOL
+				      || this_var->di_tv.v_type == VAR_SPECIAL)
 		{
+		    // do not use "v:true" but "1"
 		    sprintf((char *)numbuf, "%ld",
 					  (long)this_var->di_tv.vval.v_number);
 		    p = numbuf;
@@ -2045,8 +2108,7 @@ write_viminfo_filemarks(FILE *fp)
     for (i = 0; i < NMARKS; i++)
     {
 	if (vi_namedfm != NULL
-			&& (vi_namedfm[i].time_set > namedfm_p[i].time_set
-			    || namedfm_p[i].fmark.mark.lnum == 0))
+			&& (vi_namedfm[i].time_set > namedfm_p[i].time_set))
 	    fm = &vi_namedfm[i];
 	else
 	    fm = &namedfm_p[i];
@@ -2121,7 +2183,8 @@ write_viminfo_filemarks(FILE *fp)
 	xfmark_T	*vi_fm;
 
 	fm = idx >= 0 ? &curwin->w_jumplist[idx] : NULL;
-	vi_fm = vi_idx < vi_jumplist_len ? &vi_jumplist[vi_idx] : NULL;
+	vi_fm = (vi_jumplist != NULL && vi_idx < vi_jumplist_len)
+					? &vi_jumplist[vi_idx] : NULL;
 	if (fm == NULL && vi_fm == NULL)
 	    break;
 	if (fm == NULL || (vi_fm != NULL && fm->time_set < vi_fm->time_set))
@@ -2142,7 +2205,7 @@ write_viminfo_filemarks(FILE *fp)
 /*
  * Compare functions for qsort() below, that compares b_last_used.
  */
-    static int
+    int
 buf_compare(const void *s1, const void *s2)
 {
     buf_T *buf1 = *(buf_T **)s1;
@@ -2297,7 +2360,7 @@ copy_viminfo_marks(
 			else
 			{
 			    // No timestamp, must be written by an older Vim.
-			    // Assume all remaining buffers are older then
+			    // Assume all remaining buffers are older than
 			    // ours.
 			    while (count < num_marked_files
 					    && buflist_used < buflist->ga_len)
@@ -2671,16 +2734,14 @@ read_viminfo_barline(vir_T *virp, int got_encoding, int force, int writing)
     int		i;
     int		read_next = TRUE;
 
-    /*
-     * The format is: |{bartype},{value},...
-     * For a very long string:
-     *     |{bartype},>{length of "{text}{text2}"}
-     *     |<{text1}
-     *     |<{text2},{value}
-     * For a long line not using a string
-     *     |{bartype},{lots of values},>
-     *     |<{value},{value}
-     */
+    // The format is: |{bartype},{value},...
+    // For a very long string:
+    //     |{bartype},>{length of "{text}{text2}"}
+    //     |<{text1}
+    //     |<{text2},{value}
+    // For a long line not using a string
+    //     |{bartype},{lots of values},>
+    //     |<{value},{value}
     if (*p == '<')
     {
 	// Continuation line of an unrecognized item.
@@ -2731,6 +2792,7 @@ read_viminfo_barline(vir_T *virp, int got_encoding, int force, int writing)
 	    vp = (bval_T *)values.ga_data + i;
 	    if (vp->bv_type == BVAL_STRING && vp->bv_allocated)
 		vim_free(vp->bv_string);
+	    vim_free(vp->bv_tofree);
 	}
 	ga_clear(&values);
     }
@@ -2946,6 +3008,7 @@ read_viminfo(
 {
     FILE	*fp;
     char_u	*fname;
+    stat_T	st;		// mch_stat() of existing viminfo file
 
     if (no_viminfo())
 	return FAIL;
@@ -2958,7 +3021,7 @@ read_viminfo(
     if (p_verbose > 0)
     {
 	verbose_enter();
-	smsg(_("Reading viminfo file \"%s\"%s%s%s"),
+	smsg(_("Reading viminfo file \"%s\"%s%s%s%s"),
 		fname,
 		(flags & VIF_WANT_INFO) ? _(" info") : "",
 		(flags & VIF_WANT_MARKS) ? _(" marks") : "",
@@ -2970,6 +3033,11 @@ read_viminfo(
     vim_free(fname);
     if (fp == NULL)
 	return FAIL;
+    if (mch_fstat(fileno(fp), &st) < 0 || S_ISDIR(st.st_mode))
+    {
+	fclose(fp);
+	return FAIL;
+    }
 
     viminfo_errcnt = 0;
     do_viminfo(fp, NULL, flags);
@@ -2993,12 +3061,12 @@ write_viminfo(char_u *file, int forceit)
     FILE	*fp_out = NULL;	// output viminfo file
     char_u	*tempname = NULL;	// name of temp viminfo file
     stat_T	st_new;		// mch_stat() of potential new file
+    stat_T	st_old;		// mch_stat() of existing viminfo file
 #if defined(UNIX) || defined(VMS)
     mode_t	umask_save;
 #endif
 #ifdef UNIX
     int		shortname = FALSE;	// use 8.3 file name
-    stat_T	st_old;		// mch_stat() of existing viminfo file
 #endif
 #ifdef MSWIN
     int		hidden = FALSE;
@@ -3032,28 +3100,24 @@ write_viminfo(char_u *file, int forceit)
     }
     else
     {
-	/*
-	 * There is an existing viminfo file.  Create a temporary file to
-	 * write the new viminfo into, in the same directory as the
-	 * existing viminfo file, which will be renamed once all writing is
-	 * successful.
-	 */
+	// There is an existing viminfo file.  Create a temporary file to
+	// write the new viminfo into, in the same directory as the
+	// existing viminfo file, which will be renamed once all writing is
+	// successful.
+	if (mch_fstat(fileno(fp_in), &st_old) < 0
+		|| S_ISDIR(st_old.st_mode)
 #ifdef UNIX
-	/*
-	 * For Unix we check the owner of the file.  It's not very nice to
-	 * overwrite a user's viminfo file after a "su root", with a
-	 * viminfo file that the user can't read.
-	 */
-	st_old.st_dev = (dev_t)0;
-	st_old.st_ino = 0;
-	st_old.st_mode = 0600;
-	if (mch_stat((char *)fname, &st_old) == 0
-		&& getuid() != ROOT_UID
-		&& !(st_old.st_uid == getuid()
-			? (st_old.st_mode & 0200)
-			: (st_old.st_gid == getgid()
-				? (st_old.st_mode & 0020)
-				: (st_old.st_mode & 0002))))
+		// For Unix we check the owner of the file.  It's not very nice
+		// to overwrite a user's viminfo file after a "su root", with a
+		// viminfo file that the user can't read.
+		|| (getuid() != ROOT_UID
+		    && !(st_old.st_uid == getuid()
+			    ? (st_old.st_mode & 0200)
+			    : (st_old.st_gid == getgid()
+				    ? (st_old.st_mode & 0020)
+				    : (st_old.st_mode & 0002))))
+#endif
+		)
 	{
 	    int	tt = msg_didany;
 
@@ -3063,20 +3127,17 @@ write_viminfo(char_u *file, int forceit)
 	    fclose(fp_in);
 	    goto end;
 	}
-#endif
 #ifdef MSWIN
 	// Get the file attributes of the existing viminfo file.
 	hidden = mch_ishidden(fname);
 #endif
 
-	/*
-	 * Make tempname, find one that does not exist yet.
-	 * Beware of a race condition: If someone logs out and all Vim
-	 * instances exit at the same time a temp file might be created between
-	 * stat() and open().  Use mch_open() with O_EXCL to avoid that.
-	 * May try twice: Once normal and once with shortname set, just in
-	 * case somebody puts his viminfo file in an 8.3 filesystem.
-	 */
+	// Make tempname, find one that does not exist yet.
+	// Beware of a race condition: If someone logs out and all Vim
+	// instances exit at the same time a temp file might be created between
+	// stat() and open().  Use mch_open() with O_EXCL to avoid that.
+	// May try twice: Once normal and once with shortname set, just in
+	// case somebody puts his viminfo file in an 8.3 filesystem.
 	for (;;)
 	{
 	    int		next_char = 'z';
@@ -3098,30 +3159,24 @@ write_viminfo(char_u *file, int forceit)
 	    if (tempname == NULL)		// out of memory
 		break;
 
-	    /*
-	     * Try a series of names.  Change one character, just before
-	     * the extension.  This should also work for an 8.3
-	     * file name, when after adding the extension it still is
-	     * the same file as the original.
-	     */
+	    // Try a series of names.  Change one character, just before
+	    // the extension.  This should also work for an 8.3
+	    // file name, when after adding the extension it still is
+	    // the same file as the original.
 	    wp = tempname + STRLEN(tempname) - 5;
 	    if (wp < gettail(tempname))	    // empty file name?
 		wp = gettail(tempname);
 	    for (;;)
 	    {
-		/*
-		 * Check if tempfile already exists.  Never overwrite an
-		 * existing file!
-		 */
+		// Check if tempfile already exists.  Never overwrite an
+		// existing file!
 		if (mch_stat((char *)tempname, &st_new) == 0)
 		{
 #ifdef UNIX
-		    /*
-		     * Check if tempfile is same as original file.  May happen
-		     * when modname() gave the same file back.  E.g.  silly
-		     * link, or file name-length reached.  Try again with
-		     * shortname set.
-		     */
+		    // Check if tempfile is same as original file.  May happen
+		    // when modname() gave the same file back.  E.g.  silly
+		    // link, or file name-length reached.  Try again with
+		    // shortname set.
 		    if (!shortname && st_new.st_dev == st_old.st_dev
 						&& st_new.st_ino == st_old.st_ino)
 		    {
@@ -3199,15 +3254,13 @@ write_viminfo(char_u *file, int forceit)
 	{
 		stat_T	tmp_st;
 
-	    /*
-	     * Make sure the original owner can read/write the tempfile and
-	     * otherwise preserve permissions, making sure the group matches.
-	     */
+	    // Make sure the original owner can read/write the tempfile and
+	    // otherwise preserve permissions, making sure the group matches.
 	    if (mch_stat((char *)tempname, &tmp_st) >= 0)
 	    {
 		if (st_old.st_uid != tmp_st.st_uid)
 		    // Changing the owner might fail, in which case the
-		    // file will now owned by the current user, oh well.
+		    // file will now be owned by the current user, oh well.
 		    vim_ignored = fchown(fileno(fp_out), st_old.st_uid, -1);
 		if (st_old.st_gid != tmp_st.st_gid
 			&& fchown(fileno(fp_out), -1, st_old.st_gid) == -1)
@@ -3222,9 +3275,7 @@ write_viminfo(char_u *file, int forceit)
 #endif
     }
 
-    /*
-     * Check if the new viminfo file can be written to.
-     */
+    // Check if the new viminfo file can be written to.
     if (fp_out == NULL)
     {
 	semsg(_("E138: Can't write viminfo file %s!"),

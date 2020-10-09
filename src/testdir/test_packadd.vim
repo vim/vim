@@ -1,5 +1,6 @@
 " Tests for 'packpath' and :packadd
 
+source check.vim
 
 func SetUp()
   let s:topdir = getcwd() . '/Xdir'
@@ -115,9 +116,7 @@ func Test_packadd_noload()
 endfunc
 
 func Test_packadd_symlink_dir()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
   let top2_dir = s:topdir . '/Xdir2'
   let real_dir = s:topdir . '/Xsym'
   call mkdir(real_dir, 'p')
@@ -150,9 +149,7 @@ func Test_packadd_symlink_dir()
 endfunc
 
 func Test_packadd_symlink_dir2()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
   let top2_dir = s:topdir . '/Xdir2'
   let real_dir = s:topdir . '/Xsym/pack'
   call mkdir(top2_dir, 'p')
@@ -264,6 +261,8 @@ func Test_helptags()
   call assert_match('look-here', tags1[0])
   let tags2 = readfile(docdir2 . '/tags') 
   call assert_match('look-away', tags2[0])
+
+  call assert_fails('helptags abcxyz', 'E150:')
 endfunc
 
 func Test_colorscheme()
@@ -355,3 +354,5 @@ func Test_runtime()
   runtime! ALL extra/bar.vim
   call assert_equal('runstartopt', g:sequence)
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

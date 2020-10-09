@@ -46,9 +46,8 @@ extern Widget vimShell;
 # define apply_fontlist(w)
 #endif
 
-/****************************************************************************
- * Font selection dialogue implementation.
- */
+/////////////////////////////////////////////////////////////////////////////
+// Font selection dialogue implementation.
 
 static char wild[3] = "*";
 
@@ -68,10 +67,10 @@ add_cancel_action(Widget shell, XtCallbackProc close_callback, void *arg)
     static Atom dw_atom = 0;
     Display *display = XtDisplay(shell);
 
-    /* deactivate the built-in delete response of killing the application */
+    // deactivate the built-in delete response of killing the application
     XtVaSetValues(shell, XmNdeleteResponse, XmDO_NOTHING, NULL);
 
-    /* add a delete window protocol callback instead */
+    // add a delete window protocol callback instead
     if (!dw_atom)
     {
 	wmp_atom = XmInternAtom(display, "WM_PROTOCOLS", True);
@@ -105,14 +104,14 @@ typedef struct _SharedFontSelData
     Widget	list[NONE];
     Widget	name;
     Widget	sample;
-    char	**names;	/* font name array of arrays */
-    int		num;		/* number of font names */
-    String	sel[NONE];	/* selection category */
-    Boolean	in_pixels;	/* toggle state - size in pixels  */
-    char	*font_name;	/* current font name */
-    XFontStruct	*old;		/* font data structure for sample display */
-    XmFontList	old_list;	/* font data structure for sample display */
-    Boolean	exit;		/* used for program exit control */
+    char	**names;	// font name array of arrays
+    int		num;		// number of font names
+    String	sel[NONE];	// selection category
+    Boolean	in_pixels;	// toggle state - size in pixels
+    char	*font_name;	// current font name
+    XFontStruct	*old;		// font data structure for sample display
+    XmFontList	old_list;	// font data structure for sample display
+    Boolean	exit;		// used for program exit control
 } SharedFontSelData;
 
 /*
@@ -121,7 +120,7 @@ typedef struct _SharedFontSelData
     static char *
 fn(SharedFontSelData *data, int i)
 {
-    /* Assertion checks: */
+    // Assertion checks:
     if (data->num < 0)
 	abort();
     if (i >= data->num)
@@ -279,14 +278,14 @@ add_to_list(char **buf, char *item, int *count)
     if (*count == MAX_ENTRIES_IN_LIST)
 	return;
 
-    /* avoid duplication */
+    // avoid duplication
     for (i = 0; i < *count; ++i)
     {
 	if (!strcmp(buf[i], item))
 	    return;
     }
 
-    /* find order place, but make sure that wild card comes first */
+    // find order place, but make sure that wild card comes first
     if (!strcmp(item, wild))
 	i = 0;
     else
@@ -294,7 +293,7 @@ add_to_list(char **buf, char *item, int *count)
 	    if (strcmp(buf[i], item) > 0 && strcmp(buf[i], wild))
 		break;
 
-    /* now insert the item */
+    // now insert the item
     for (j = *count; j > i; --j)
 	buf[j] = buf[j-1];
     buf[i] = XtNewString(item);
@@ -310,12 +309,11 @@ match(SharedFontSelData *data, enum ListSpecifier l, int i)
 {
     char buf[TEMP_BUF_SIZE];
 
-    /* An empty selection or a wild card matches anything.
-     */
+    // An empty selection or a wild card matches anything.
     if (!data->sel[l] || !strcmp(data->sel[l], wild))
 	return True;
 
-    /* chunk out the desired part... */
+    // chunk out the desired part...
     switch (l)
     {
 	case ENCODING:
@@ -337,7 +335,7 @@ match(SharedFontSelData *data, enum ListSpecifier l, int i)
 	    ;
     }
 
-    /* ...and chew it now */
+    // ...and chew it now
 
     return !strcmp(buf, data->sel[l]);
 }
@@ -374,7 +372,7 @@ fill_lists(enum ListSpecifier fix, SharedFontSelData *data)
     for (idx = (int)ENCODING; idx < (int)NONE; ++idx)
 	count[idx] = 0;
 
-    /* First we insert the wild char into every single list. */
+    // First we insert the wild char into every single list.
     if (fix != ENCODING)
 	add_to_list(list[ENCODING], wild, &count[ENCODING]);
     if (fix != NAME)
@@ -436,7 +434,7 @@ fill_lists(enum ListSpecifier fix, SharedFontSelData *data)
 	WidgetList children;
 	Widget selected_button = 0;
 
-	/* Get and update the current button list.  */
+	// Get and update the current button list.
 	XtVaGetValues(data->encoding_pulldown,
 		XmNchildren, &children,
 		XmNnumChildren, &n_items,
@@ -450,7 +448,7 @@ fill_lists(enum ListSpecifier fix, SharedFontSelData *data)
 
 	    if (i < (int)n_items)
 	    {
-		/* recycle old button */
+		// recycle old button
 		XtVaSetValues(children[i],
 			XmNlabelString, items[i],
 			XmNuserData, i,
@@ -459,7 +457,7 @@ fill_lists(enum ListSpecifier fix, SharedFontSelData *data)
 	    }
 	    else
 	    {
-		/* create a new button */
+		// create a new button
 		button = XtVaCreateManagedWidget("button",
 			xmPushButtonGadgetClass,
 			data->encoding_pulldown,
@@ -479,16 +477,14 @@ fill_lists(enum ListSpecifier fix, SharedFontSelData *data)
 	    XtFree(list[ENCODING][i]);
 	}
 
-	/* Destroy all the outstanding menu items.
-	 */
+	// Destroy all the outstanding menu items.
 	for (i = count[ENCODING]; i < (int)n_items; ++i)
 	{
 	    XtUnmanageChild(children[i]);
 	    XtDestroyWidget(children[i]);
 	}
 
-	/* Preserve the current selection visually.
-	 */
+	// Preserve the current selection visually.
 	if (selected_button)
 	{
 	    XtVaSetValues(data->encoding_menu,
@@ -522,7 +518,7 @@ fill_lists(enum ListSpecifier fix, SharedFontSelData *data)
 		w = data->list[SIZE];
 		break;
 	    default:
-		w = (Widget)0;	/* for lint */
+		w = (Widget)0;	// for lint
 	}
 
 	for (i = 0; i < count[idx]; ++i)
@@ -635,7 +631,7 @@ do_choice(Widget w,
     {
 	if (!strcmp(data->sel[which], sel))
 	{
-	    /* unselecting current selection */
+	    // unselecting current selection
 	    XtFree(data->sel[which]);
 	    data->sel[which] = NULL;
 	    if (w)
@@ -651,7 +647,7 @@ do_choice(Widget w,
 
     fill_lists(which, data);
 
-    /* If there is a font selection, we display it. */
+    // If there is a font selection, we display it.
     if (data->sel[ENCODING]
 	    && data->sel[NAME]
 	    && data->sel[STYLE]
@@ -904,11 +900,11 @@ gui_xm_select_font(char_u *current)
     data->old = XLoadQueryFont(XtDisplay(parent), big_font);
     data->old_list = gui_motif_create_fontlist(data->old);
 
-    /* Set the title of the Dialog window. */
+    // Set the title of the Dialog window.
     data->dialog = XmCreateDialogShell(parent, "fontSelector", NULL, 0);
     str = XmStringCreateLocalized(_("Vim - Font Selector"));
 
-    /* Create form popup dialog widget. */
+    // Create form popup dialog widget.
     form = XtVaCreateWidget("form",
 	    xmFormWidgetClass, data->dialog,
 	    XmNdialogTitle, str,
@@ -948,7 +944,7 @@ gui_xm_select_font(char_u *current)
 	    NULL);
     apply_fontlist(data->cancel);
 
-    /* Create the separator for beauty. */
+    // Create the separator for beauty.
     n = 0;
     XtSetArg(args[n], XmNorientation, XmVERTICAL); n++;
     XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM); n++;
@@ -959,7 +955,7 @@ gui_xm_select_font(char_u *current)
     separator = XmCreateSeparatorGadget(form, "separator", args, n);
     XtManageChild(separator);
 
-    /* Create font name text widget and the corresponding label. */
+    // Create font name text widget and the corresponding label.
     data->name = XtVaCreateManagedWidget("fontName",
 	    xmTextWidgetClass, form,
 	    XmNbottomAttachment, XmATTACH_FORM,
@@ -989,7 +985,7 @@ gui_xm_select_font(char_u *current)
     XmStringFree(str);
     apply_fontlist(name);
 
-    /* create sample display label widget */
+    // create sample display label widget
     disp_frame = XtVaCreateManagedWidget("sampleFrame",
 	    xmFrameWidgetClass, form,
 	    XmNshadowType, XmSHADOW_ETCHED_IN,
@@ -1014,7 +1010,7 @@ gui_xm_select_font(char_u *current)
 	    XmNfontList, data->old_list,
 	    NULL);
 
-    /* create toggle button */
+    // create toggle button
     str = XmStringCreateLocalized(_("Show size in Points"));
     size_toggle = XtVaCreateManagedWidget("sizeToggle",
 	    xmToggleButtonGadgetClass, form,
@@ -1029,8 +1025,7 @@ gui_xm_select_font(char_u *current)
     apply_fontlist(size_toggle);
     XtManageChild(size_toggle);
 
-    /* Encoding pulldown menu.
-     */
+    // Encoding pulldown menu.
 
     data->encoding_pulldown = XmCreatePulldownMenu(form,
 						 "encodingPulldown", NULL, 0);
@@ -1070,7 +1065,7 @@ gui_xm_select_font(char_u *current)
 	    XmNorientation, XmVERTICAL,
 	    NULL);
 
-    /* font list */
+    // font list
     frame = XtVaCreateManagedWidget("frame", xmFrameWidgetClass, sub_form,
 	    XmNshadowThickness, 0,
 	    XmNtopAttachment, XmATTACH_FORM,
@@ -1101,7 +1096,7 @@ gui_xm_select_font(char_u *current)
     data->list[NAME] = XmCreateScrolledList(frame, "fontList", args, n);
     XtVaSetValues(name, XmNuserData, data->list[NAME], NULL);
 
-    /* style list */
+    // style list
     frame = XtVaCreateManagedWidget("frame", xmFrameWidgetClass, sub_form,
 	    XmNshadowThickness, 0,
 	    XmNtopAttachment, XmATTACH_FORM,
@@ -1134,7 +1129,7 @@ gui_xm_select_font(char_u *current)
     data->list[STYLE] = XmCreateScrolledList(frame, "styleList", args, n);
     XtVaSetValues(name, XmNuserData, data->list[STYLE], NULL);
 
-    /* size list */
+    // size list
     frame = XtVaCreateManagedWidget("frame", xmFrameWidgetClass, sub_form,
 	    XmNshadowThickness, 0,
 	    XmNtopAttachment, XmATTACH_FORM,
@@ -1166,7 +1161,7 @@ gui_xm_select_font(char_u *current)
     data->list[SIZE] = XmCreateScrolledList(frame, "sizeList", args, n);
     XtVaSetValues(name, XmNuserData, data->list[SIZE], NULL);
 
-    /* update form widgets cancel button */
+    // update form widgets cancel button
     XtVaSetValues(form, XmNcancelButton, data->cancel, NULL);
 
     XtAddCallback(size_toggle, XmNvalueChangedCallback,
@@ -1184,7 +1179,7 @@ gui_xm_select_font(char_u *current)
 
     XmProcessTraversal(data->list[NAME], XmTRAVERSE_CURRENT);
 
-    /* setup tabgroups */
+    // setup tabgroups
 
     XmAddTabGroup(data->list[NAME]);
     XmAddTabGroup(data->list[STYLE]);
@@ -1196,7 +1191,7 @@ gui_xm_select_font(char_u *current)
 
     add_cancel_action(data->dialog, (XtCallbackProc)cancel_callback, data);
 
-    /* Preset selection data. */
+    // Preset selection data.
 
     data->exit = False;
     data->in_pixels= True;
@@ -1206,7 +1201,7 @@ gui_xm_select_font(char_u *current)
     data->sel[SIZE] = NULL;
     data->font_name = NULL;
 
-    /* set up current font parameters */
+    // set up current font parameters
     if (current && current[0] != '\0')
     {
 	int	    i;
@@ -1244,14 +1239,12 @@ gui_xm_select_font(char_u *current)
 	    }
 	    else
 	    {
-		/* We can't preset a symbolic name, which isn't a full font
-		 * description. Therefore we just behave the same way as if the
-		 * user didn't have selected anything thus far.
-		 *
-		 * Unfortunately there is no known way to expand an abbreviated
-		 * font name.
-		 */
-
+		// We can't preset a symbolic name, which isn't a full font
+		// description. Therefore we just behave the same way as if the
+		// user didn't have selected anything thus far.
+		//
+		// Unfortunately there is no known way to expand an abbreviated
+		// font name.
 		data->font_name = NULL;
 	    }
 	}
@@ -1260,16 +1253,15 @@ gui_xm_select_font(char_u *current)
 
     fill_lists(NONE, data);
 
-    /* Unfortunately LessTif doesn't align the list widget's properly.  I don't
-     * have currently any idea how to fix this problem.
-     */
+    // Unfortunately LessTif doesn't align the list widget's properly.  I don't
+    // have currently any idea how to fix this problem.
     XtManageChild(data->list[NAME]);
     XtManageChild(data->list[STYLE]);
     XtManageChild(data->list[SIZE]);
     XtManageChild(data->encoding_menu);
     manage_centered(form);
 
-    /* modal event loop */
+    // modal event loop
     while (!data->exit)
 	XtAppProcessEvent(XtWidgetToApplicationContext(data->dialog),
 							(XtInputMask)XtIMAll);

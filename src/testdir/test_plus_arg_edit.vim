@@ -1,4 +1,5 @@
 " Tests for complicated + argument to :edit command
+
 function Test_edit()
   call writefile(["foo|bar"], "Xfile1")
   call writefile(["foo/bar"], "Xfile2")
@@ -18,7 +19,7 @@ func Test_edit_bad()
   e! ++enc=utf8 Xfile
   call assert_equal('[?][?][???][??]', getline(1))
 
-  e! ++enc=utf8 ++bad=_ Xfile
+  e! ++encoding=utf8 ++bad=_ Xfile
   call assert_equal('[_][_][___][__]', getline(1))
 
   e! ++enc=utf8 ++bad=drop Xfile
@@ -32,3 +33,16 @@ func Test_edit_bad()
   bw!
   call delete('Xfile')
 endfunc
+
+" Test for ++bin and ++nobin arguments
+func Test_binary_arg()
+  new
+  edit ++bin Xfile1
+  call assert_equal(1, &binary)
+  edit ++nobin Xfile2
+  call assert_equal(0, &binary)
+  call assert_fails('edit ++binabc Xfile3', 'E474:')
+  close!
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

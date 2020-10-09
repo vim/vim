@@ -4,14 +4,6 @@ For testing an indent script see runtime/indent/testdir/README.txt.
 If it makes sense, add a new test method to an already existing file.  You may
 want to separate it from other tests with comment lines.
 
-The numbered tests are older, we have switched to named tests.  Don't add any
-more numbered tests.
-
-And then you can choose between a new style test, which is a Vim script, or an
-old style test, which uses Normal mode commands.  Use a new style test if you
-can.  Use an old style test when it needs to run without the +eval feature.
-
-
 TO ADD A NEW STYLE TEST:
 
 1) Create a test_<subject>.vim file.
@@ -24,6 +16,8 @@ At 2), instead of running the test separately, it can be included in
 "test_alot".  Do this for quick tests without side effects.  The test runs a
 bit faster, because Vim doesn't have to be started, one Vim instance runs many
 tests.
+
+At 4), to run a test in GUI, add "GUI_FLAG=-g" to the make command.
 
 
 What you can use (see test_assert.vim for an example):
@@ -56,15 +50,11 @@ Mostly the same as writing a new style test.  Additionally, see help on
 "terminal-dumptest".  Put the reference dump in "dumps/Test_func_name.dump".
 
 
-TO ADD AN OLD STYLE TEST:
+OLD STYLE TESTS:
 
-1) Create test_<subject>.in and test_<subject>.ok files.
-2) Add test_<subject>.out to SCRIPTS_ALL in Make_all.mak in alphabetical order.
-3) Use make test_<subject>.out to run a single test in src/testdir/.
-   Use make test_<subject> to run a single test in src/.
-4) Also add an entry in src/Makefile.
-
-Keep in mind that the files are used as if everything was typed:
-- To add comments use:   :"  (that's an Ex command comment)
-- A line break is like pressing Enter.  If that happens on the last line
-  you'll hear a beep!
+There are a few tests that are used when Vim was built without the +eval
+feature.  These cannot use the "assert" functions, therefore they consist of a
+.in file that contains Normal mode commands between STARTTEST and ENDTEST.
+They modify the file and the result gets writtein in the test.out file.  This
+is then compared with the .ok file.  If they are equal the test passed.  If
+they differ the test failed.

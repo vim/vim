@@ -24,13 +24,14 @@ endfunc
 
 " As for non-GUI, a balloon_show() test was already added with patch 8.0.0401
 func Test_balloon_show()
-  if has('balloon_eval')
-    " This won't do anything but must not crash either.
-    call balloon_show('hi!')
-  endif
+  CheckFeature balloon_eval
+  " This won't do anything but must not crash either.
+  call balloon_show('hi!')
 endfunc
 
 func Test_colorscheme()
+  call assert_equal('16777216', &t_Co)
+
   let colorscheme_saved = exists('g:colors_name') ? g:colors_name : 'default'
   let g:color_count = 0
   augroup TestColors
@@ -75,6 +76,7 @@ func Test_getfontname_with_arg()
   elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
     " Invalid font name. The result should be the name plus the default size.
     call assert_equal('notexist 10', getfontname('notexist'))
+    call assert_equal('', getfontname('*'))
 
     " Valid font name. This is usually the real name of Monospace by default.
     let fname = 'Bitstream Vera Sans Mono 12'
@@ -174,9 +176,7 @@ func Test_set_background()
 endfunc
 
 func Test_set_balloondelay()
-  if !exists('+balloondelay')
-    return
-  endif
+  CheckOption balloondelay
 
   let balloondelay_saved = &balloondelay
 
@@ -211,9 +211,7 @@ func Test_set_balloondelay()
 endfunc
 
 func Test_set_ballooneval()
-  if !exists('+ballooneval')
-    return
-  endif
+  CheckOption ballooneval
 
   let ballooneval_saved = &ballooneval
 
@@ -230,9 +228,7 @@ func Test_set_ballooneval()
 endfunc
 
 func Test_set_balloonexpr()
-  if !exists('+balloonexpr')
-    return
-  endif
+  CheckOption balloonexpr
 
   let balloonexpr_saved = &balloonexpr
 
@@ -387,6 +383,11 @@ func Test_set_guifont()
     call assert_equal('Monospace 10', getfontname())
   endif
 
+  if has('win32')
+    " Invalid font names are accepted in GTK GUI
+    call assert_fails('set guifont=xa1bc23d7f', 'E596:')
+  endif
+
   if has('xfontset')
     let &guifontset = guifontset_saved
   endif
@@ -400,6 +401,8 @@ endfunc
 func Test_set_guifontset()
   CheckFeature xfontset
   let skipped = ''
+
+  call assert_fails('set guifontset=*', 'E597:')
 
   let ctype_saved = v:ctype
 
@@ -467,6 +470,7 @@ func Test_set_guifontset()
 endfunc
 
 func Test_set_guifontwide()
+  call assert_fails('set guifontwide=*', 'E533:')
   let skipped = ''
 
   if !g:x11_based_gui
@@ -521,7 +525,7 @@ func Test_set_guifontwide()
         set guifontset=-*-notexist-*
         call assert_report("'set guifontset=-*-notexist-*' should have failed")
       catch
-        call assert_exception('E598')
+        call assert_exception('E598:')
       endtry
       " Set it to an invalid value brutally for preparation.
       let &guifontset = '-*-notexist-*'
@@ -643,6 +647,15 @@ func Test_set_guioptions()
       call assert_equal('aegi', &guioptions)
     endif
 
+    if has('gui_gtk3')
+      set guioptions+=d
+      exec 'sleep' . duration
+      call assert_equal('aegid', &guioptions)
+      set guioptions-=d
+      exec 'sleep' . duration
+      call assert_equal('aegi', &guioptions)
+    endif
+
     " Restore GUI ornaments to the default state.
     set guioptions+=m
     exec 'sleep' . duration
@@ -713,6 +726,8 @@ func Test_scrollbars()
 endfunc
 
 func Test_menu()
+  CheckFeature quickfix
+
   " Check Help menu exists
   let help_menu = execute('menu Help')
   call assert_match('Overview', help_menu)
@@ -724,6 +739,9 @@ func Test_menu()
 
   " Check deleting menu doesn't cause trouble.
   aunmenu Help
+  if exists(':tlmenu')
+    tlunmenu Help
+  endif
   call assert_fails('menu Help', 'E329:')
 endfunc
 
@@ -742,17 +760,16 @@ endfunc
 
 func Test_encoding_conversion()
   " GTK supports conversion between 'encoding' and "utf-8"
-  if has('gui_gtk')
-    let encoding_saved = &encoding
-    set encoding=latin1
+  CheckFeature gui_gtk
+  let encoding_saved = &encoding
+  set encoding=latin1
 
-    " would be nice if we could take a screenshot
-    intro
-    " sets the window title
-    edit SomeFile
+  " would be nice if we could take a screenshot
+  intro
+  " sets the window title
+  edit SomeFile
 
-    let &encoding = encoding_saved
-  endif
+  let &encoding = encoding_saved
 endfunc
 
 func Test_shell_command()
@@ -773,6 +790,7 @@ func Test_set_term()
   " It's enough to check the current value since setting 'term' to anything
   " other than builtin_gui makes no sense at all.
   call assert_equal('builtin_gui', &term)
+  call assert_fails('set term=xterm', 'E530:')
 endfunc
 
 func Test_windowid_variable()
@@ -814,3 +832,33 @@ func Test_gui_dash_y()
   call delete('Xscriptgui')
   call delete('Xtestgui')
 endfunc
+
+" Test for "!" option in 'guioptions'. Use a terminal for running external
+" commands
+func Test_gui_run_cmd_in_terminal()
+  CheckFeature terminal
+  let save_guioptions = &guioptions
+  set guioptions+=!
+  if has('win32')
+    let cmd = 'type'
+  else
+    " assume all the other systems have a cat command
+    let cmd = 'cat'
+  endif
+  exe "silent !" . cmd . " test_gui.vim"
+  " TODO: how to check that the command ran in a separate terminal?
+  " Maybe check for $TERM (dumb vs xterm) in the spawned shell?
+  let &guioptions = save_guioptions
+endfunc
+
+func Test_gui_recursive_mapping()
+  nmap ' <C-W>
+  nmap <C-W>a :let didit = 1<CR>
+  call feedkeys("'a", 'xt')
+  call assert_equal(1, didit)
+
+  nunmap '
+  nunmap <C-W>a
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

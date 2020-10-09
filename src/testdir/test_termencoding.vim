@@ -35,3 +35,5 @@ func Test_termencoding_euc_jp()
   call delete('Xeuc_jp.txt')
   call delete('XTest_tenc_euc_jp')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

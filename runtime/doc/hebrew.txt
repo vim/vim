@@ -1,4 +1,4 @@
-*hebrew.txt*    For Vim version 8.1.  Last change: 2019 May 05
+*hebrew.txt*    For Vim version 8.2.  Last change: 2019 May 05
 
 
 	   VIM REFERENCE MANUAL    by Ron Aaron (and Avner Lottem)

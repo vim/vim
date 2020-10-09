@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 8.1.  Last change: 2019 Aug 01
+*indent.txt*    For Vim version 8.2.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -414,11 +414,11 @@ The examples below assume a 'shiftwidth' of 4.
 <
 							*cino-(*
 	(N    When in unclosed parentheses, indent N characters from the line
-	      with the unclosed parentheses.  Add a 'shiftwidth' for every
+	      with the unclosed parenthesis.  Add a 'shiftwidth' for every
 	      extra unclosed parentheses.  When N is 0 or the unclosed
-	      parentheses is the first non-white character in its line, line
+	      parenthesis is the first non-white character in its line, line
 	      up with the next non-white character after the unclosed
-	      parentheses.  (default 'shiftwidth' * 2).
+	      parenthesis.  (default 'shiftwidth' * 2).
 
 		cino=			  cino=(0 >
 		  if (c1 && (c2 ||	    if (c1 && (c2 ||
@@ -439,7 +439,7 @@ The examples below assume a 'shiftwidth' of 4.
 <
 							*cino-U*
 	UN    When N is non-zero, do not ignore the indenting specified by
-	      ( or u in case that the unclosed parentheses is the first
+	      ( or u in case that the unclosed parenthesis is the first
 	      non-white character in its line.  (default 0).
 
 		cino= or cino=(s	  cino=(s,U1 >
@@ -452,8 +452,8 @@ The examples below assume a 'shiftwidth' of 4.
 							*cino-w*
 	wN    When in unclosed parentheses and N is non-zero and either
 	      using "(0" or "u0", respectively, or using "U0" and the unclosed
-	      parentheses is the first non-white character in its line, line
-	      up with the character immediately after the unclosed parentheses
+	      parenthesis is the first non-white character in its line, line
+	      up with the character immediately after the unclosed parenthesis
 	      rather than the first non-white character.  (default 0).
 
 		cino=(0			  cino=(0,w1 >
@@ -464,11 +464,11 @@ The examples below assume a 'shiftwidth' of 4.
 <
 							*cino-W*
 	WN    When in unclosed parentheses and N is non-zero and either
-	      using "(0" or "u0", respectively and the unclosed parentheses is
+	      using "(0" or "u0", respectively and the unclosed parenthesis is
 	      the last non-white character in its line and it is not the
-	      closing parentheses, indent the following line N characters
+	      closing parenthesis, indent the following line N characters
 	      relative to the outer context (i.e. start of the line or the
-	      next unclosed parentheses).  (default: 0).
+	      next unclosed parenthesis).  (default: 0).
 
 		cino=(0			   cino=(0,W4 >
 		  a_long_line(		    a_long_line(
@@ -495,8 +495,8 @@ The examples below assume a 'shiftwidth' of 4.
 <
 							*cino-m*
 	mN    When N is non-zero, line up a line starting with a closing
-	      parentheses with the first character of the line with the
-	      matching opening parentheses.  (default 0).
+	      parenthesis with the first character of the line with the
+	      matching opening parenthesis.  (default 0).
 
 		cino=(s			  cino=(s,m1 >
 		  c = c1 && (		    c = c1 && (
@@ -510,7 +510,7 @@ The examples below assume a 'shiftwidth' of 4.
 <
 							*cino-M*
 	MN    When N is non-zero, line up a line starting with a closing
-	      parentheses with the first character of the previous line.
+	      parenthesis with the first character of the previous line.
 	      (default 0).
 
 		cino=			  cino=M1 >
@@ -532,7 +532,7 @@ The examples below assume a 'shiftwidth' of 4.
 <
 			*javascript-cinoptions* *javascript-indenting* *cino-J*
 	JN    Indent JavaScript object declarations correctly by not confusing
-	      them with labels.  The value 'N' is currently unused but must be 
+	      them with labels.  The value 'N' is currently unused but must be
 	      non-zero (e.g. 'J1').  If you enable this you probably also want
 	      to set |cino-j|. >
 
@@ -541,7 +541,7 @@ The examples below assume a 'shiftwidth' of 4.
 			that: this,
 			some: ok,
 		    },
-		    "bar":{ 
+		    "bar":{
 			a : 2,
 			b: "123abc",
 			x: 4,
@@ -569,10 +569,16 @@ The examples below assume a 'shiftwidth' of 4.
 	      recognize preprocessor lines; right-shifting lines that start
 	      with "#" does not work.
 
+								*cino-P*
+	PN    When N is non-zero recognize C pragmas, and indent them like any
+	      other code; does not concern other preprocessor directives.
+	      When N is zero (default): don't recognize C pragmas, treating
+	      them like every other preprocessor directive.
+
 
 The defaults, spelled out in full, are:
 	cinoptions=>s,e0,n0,f0,{0,}0,^0,L-1,:s,=s,l0,b0,gs,hs,N0,E0,ps,ts,is,+s,
-			c3,C0,/0,(2s,us,U0,w0,W0,k0,m0,j0,J0,)20,*70,#0
+			c3,C0,/0,(2s,us,U0,w0,W0,k0,m0,j0,J0,)20,*70,#0,P0
 
 Vim puts a line in column 1 if:
 - It starts with '#' (preprocessor directives), if 'cinkeys' contains '#0'.
@@ -812,6 +818,16 @@ Detail:
       <!-- --> : -1
 
 
+MATLAB			*ft-matlab-indent* *matlab-indent* *matlab-indenting*
+
+The setting Function indenting format in MATLAB Editor/Debugger Language
+Preferences corresponds to: >
+    :let g:MATLAB_function_indent = {0, 1 or 2 (default)}
+
+Where 0 is for Classic, 1 for Indent nested functions and 2 for Indent all
+functions.
+
+
 PHP				*ft-php-indent* *php-indent* *php-indenting*
 
 NOTE:	PHP files will be indented correctly only if PHP |syntax| is active.
@@ -885,7 +901,7 @@ To automatically remove '\r' characters when the 'fileformat' is set to Unix: >
 							*PHP_BracesAtCodeLevel*
 To indent braces at the same level than the code they contain: >
     :let g:PHP_BracesAtCodeLevel = 1
-    
+
 This will give the following result: >
     if ($foo)
 	{
@@ -949,10 +965,12 @@ Function call arguments will indent 1 extra level. For two-space indentation: >
 -------------
 
 				*PHP_IndentFunctionDeclarationParameters*
-Extra indentation levels to add to arguments in multi-line function definitions. >
+Extra indentation levels to add to arguments in multi-line function
+definitions. >
     let g:PHP_IndentFunctionDeclarationParameters = 1
 
-Function arguments in declarations will indent 1 extra level. For two-space indentation: >
+Function arguments in declarations will indent 1 extra level. For two-space
+indentation: >
 
     function call_the_thing(
         $with_this,
@@ -978,7 +996,7 @@ Indent after a nested paren: >
 Indent for a continuation line: >
 	let g:pyindent_continue = 'shiftwidth() * 2'
 
-The method uses |searchpair()| to look back for unclosed parenthesis.  This
+The method uses |searchpair()| to look back for unclosed parentheses.  This
 can sometimes be slow, thus it timeouts after 150 msec.  If you notice the
 indenting isn't correct, you can set a larger timeout in msec: >
 	let g:pyindent_searchpair_timeout = 500

@@ -1,5 +1,4 @@
 " Test for cinoptions and cindent
-"
 
 func Test_cino_hash()
   " Test that curbuf->b_ind_hash_comment is correctly reset
@@ -815,7 +814,7 @@ func Test_cindent_1()
         }
      }
 
-  public: // <-- this was incorectly indented before!!
+  public: // <-- this was incorrectly indented before!!
      void testfall();
   protected:
      void testfall();
@@ -1780,7 +1779,7 @@ func Test_cindent_1()
   		}
   	}
 
-  	public: // <-- this was incorectly indented before!!
+  	public: // <-- this was incorrectly indented before!!
   	void testfall();
   	protected:
   	void testfall();
@@ -5243,6 +5242,63 @@ func Test_cindent_56()
   {
   	a = second/*bug*/*line;
   	x
+  }
+
+  [CODE]
+
+  call assert_equal(expected, getline(1, '$'))
+  enew! | close
+endfunc
+
+" this was going beyond the end of the line.
+func Test_cindent_case()
+  new
+  call setline(1, 'case x: // x')
+  set cindent
+  norm! f:a:
+  call assert_equal('case x:: // x', getline(1))
+  set cindent&
+  bwipe!
+endfunc
+
+" Test for changing multiple lines (using c) with cindent
+func Test_cindent_change_multline()
+  new
+  setlocal cindent
+  call setline(1, ['if (a)', '{', '    i = 1;', '}'])
+  normal! jc3jm = 2;
+  call assert_equal("\tm = 2;", getline(2))
+  close!
+endfunc
+
+func Test_cindent_pragma()
+  new
+  setl cindent ts=4 sw=4
+  setl cino=Ps
+
+  let code =<< trim [CODE]
+  {
+  #pragma omp parallel
+  {
+  #pragma omp task
+  foo();
+  # pragma omp taskwait
+  }
+  }
+  [CODE]
+
+  call append(0, code)
+  normal gg
+  normal =G
+
+  let expected =<< trim [CODE]
+  {
+	#pragma omp parallel
+	{
+		#pragma omp task
+		foo();
+		# pragma omp taskwait
+	}
   }
 
   [CODE]

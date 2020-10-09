@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.1.  Last change: 2019 Sep 04
+*cmdline.txt*   For Vim version 8.2.  Last change: 2020 Sep 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -75,11 +75,18 @@ CTRL-V		Insert next non-digit literally.  Up to three digits form the
 		decimal value of a single byte.  The non-digit and the three
 		digits are not considered for mapping.  This works the same
 		way as in Insert mode (see above, |i_CTRL-V|).
-		Note: Under Windows CTRL-V is often mapped to paste text.
+		Note: Under MS-Windows CTRL-V is often mapped to paste text.
 		Use CTRL-Q instead then.
+		When |modifyOtherKeys| is enabled then special Escape sequence
+		is converted back to what it was without |modifyOtherKeys|,
+		unless the Shift key is also pressed.
 							*c_CTRL-Q*
 CTRL-Q		Same as CTRL-V.  But with some terminals it is used for
 		control flow, it doesn't work then.
+
+CTRL-SHIFT-V				*c_CTRL-SHIFT-V* *c_CTRL-SHIFT-Q*
+CTRL-SHIFT-Q	Works just like CTRL-V, unless |modifyOtherKeys| is active,
+		then it inserts the Escape sequence for a key with modifiers.
 
 							*c_<Left>* *c_Left*
 <Left>		cursor left
@@ -129,7 +136,7 @@ CTRL-K {char1} {char2}					*c_CTRL-K*
 		enter digraph (see |digraphs|).  When {char1} is a special
 		key, the code for that key is inserted in <> form.
 
-CTRL-R {0-9a-z"%#:-=.}					*c_CTRL-R* *c_<C-R>*
+CTRL-R {register}					*c_CTRL-R* *c_<C-R>*
 		Insert the contents of a numbered or named register.  Between
 		typing CTRL-R and the second character '"' will be displayed
 		to indicate that you are expected to enter the name of a
@@ -191,8 +198,8 @@ CTRL-R CTRL-L				*c_CTRL-R_CTRL-L* *c_<C-R>_<C-L>*
 
 					*c_CTRL-R_CTRL-R* *c_<C-R>_<C-R>*
 					*c_CTRL-R_CTRL-O* *c_<C-R>_<C-O>*
-CTRL-R CTRL-R {0-9a-z"%#:-=. CTRL-F CTRL-P CTRL-W CTRL-A CTRL-L}
-CTRL-R CTRL-O {0-9a-z"%#:-=. CTRL-F CTRL-P CTRL-W CTRL-A CTRL-L}
+CTRL-R CTRL-R {register CTRL-F CTRL-P CTRL-W CTRL-A CTRL-L}
+CTRL-R CTRL-O {register CTRL-F CTRL-P CTRL-W CTRL-A CTRL-L}
 		Insert register or object under the cursor.  Works like
 		|c_CTRL-R| but inserts the text literally.  For example, if
 		register a contains "xy^Hz" (where ^H is a backspace),
@@ -469,6 +476,10 @@ emulate it.  For example, this mimics autolist=ambiguous:
 This will find the longest match with the first 'wildchar', then list all
 matching files with the next.
 
+					*complete-script-local-functions*
+When completing user function names, prepend "s:" to find script-local
+functions.
+
 							*suffixes*
 For file name completion you can use the 'suffixes' option to set a priority
 between files with almost the same name.  If there are multiple matches,
@@ -579,6 +590,7 @@ followed by another Vim command:
     :command
     :cscope
     :debug
+    :eval
     :folddoopen
     :folddoclosed
     :function
@@ -603,6 +615,7 @@ followed by another Vim command:
     :tcl
     :tcldo
     :tclfile
+    :terminal
     :vglobal
     :windo
     :write !
@@ -784,7 +797,7 @@ three lines: >
 <
 
 Visual Mode and Range					*v_:*
-
+							*:star-visual-range*
 {Visual}:	Starts a command-line with the Visual selected lines as a
 		range.  The code `:'<,'>` is used for this range, which makes
 		it possible to select a similar line from the command-line
@@ -860,49 +873,62 @@ it, no matter how many backslashes.
 	   \\#			\#
 Also see |`=|.
 
-			       *:<cword>* *<cword>* *:<cWORD>* *<cWORD>*
-			       *:<cexpr>* *<cexpr>* *:<cfile>* *<cfile>*
-			       *:<afile>* *<afile>* *:<abuf>* *<abuf>*
-			       *:<amatch>* *<amatch>*
-			       *:<sfile>* *<sfile>* *:<slnum>* *<slnum>*
-			       *:<sflnum>* *<sflnum>* *E499* *E500*
+							*E499* *E500*
 Note: these are typed literally, they are not special keys!
+							*:<cword>* *<cword>*
 	<cword>    is replaced with the word under the cursor (like |star|)
+							*:<cWORD>* *<cWORD>*
 	<cWORD>    is replaced with the WORD under the cursor (see |WORD|)
+							*:<cexpr>* *<cexpr>*
 	<cexpr>    is replaced with the word under the cursor, including more
 		   to form a C expression.  E.g., when the cursor is on "arg"
 		   of "ptr->arg" then the result is "ptr->arg"; when the
 		   cursor is on "]" of "list[idx]" then the result is
 		   "list[idx]".  This is used for |v:beval_text|.
+							*:<cfile>* *<cfile>*
 	<cfile>    is replaced with the path name under the cursor (like what
 		   |gf| uses)
+							*:<afile>* *<afile>*
 	<afile>    When executing autocommands, is replaced with the file name
 		   of the buffer being manipulated, or the file for a read or
 		   write.  *E495*
+							*:<abuf>* *<abuf>*
 	<abuf>     When executing autocommands, is replaced with the currently
 		   effective buffer number (for ":r file" and ":so file" it is
 		   the current buffer, the file being read/sourced is not in a
 		   buffer).  *E496*
+							*:<amatch>* *<amatch>*
 	<amatch>   When executing autocommands, is replaced with the match for
 		   which this autocommand was executed.  *E497*
 		   It differs from <afile> only when the file name isn't used
 		   to match with (for FileType, Syntax and SpellFileMissing
 		   events).
+							*:<sfile>* *<sfile>*
 	<sfile>    When executing a ":source" command, is replaced with the
 		   file name of the sourced file.  *E498*
-		   When executing a function, is replaced with:
-		   "function {function-name}[{lnum}]"
-		   function call nesting is indicated like this:
-		   "function {function-name1}[{lnum}]..{function-name2}[{lnum}]"
+		   When executing a function, is replaced with the call stack,
+		   as with <stack> (this is for backwards compatibility, using
+		   <stack> is preferred).
 		   Note that filename-modifiers are useless when <sfile> is
-		   used inside a function.
+		   not used inside a script.
+							*:<stack>* *<stack>*
+	<stack>	   is replaced with the call stack, using
+		   "function {function-name}[{lnum}]" for a function line
+		   and "script {file-name}[{lnum}]" for a script line, and
+		   ".." in between items.  E.g.:
+		   "function {function-name1}[{lnum}]..{function-name2}[{lnum}]"
+							*:<slnum>* *<slnum>*
 	<slnum>	   When executing a ":source" command, is replaced with the
 		   line number.  *E842*
 		   When executing a function it's the line number relative to
 		   the start of the function.
+							*:<sflnum>* *<sflnum>*
 	<sflnum>   When executing a script, is replaced with the line number.
 		   It differs from <slnum> in that <sflnum> is replaced with
 		   the script line number in any situation.  *E961*
+							*:<client>* *<client>*
+	<client>   is replaced with the {clinetid} of the last received
+		   message in |server2client()|
 
 							 *filename-modifiers*
 *:_%:* *::8* *::p* *::.* *::~* *::h* *::t* *::r* *::e* *::s* *::gs* *::S*
@@ -926,8 +952,7 @@ These modifiers can be given, in this order:
 		directory.
 	:.	Reduce file name to be relative to current directory, if
 		possible.  File name is unmodified if it is not below the
-		current directory, but on MS-Windows the drive is removed if
-		it is the current drive.
+		current directory.
 		For maximum shortness, use ":~:.".
 	:h	Head of the file name (the last component and any separators
 		removed).  Cannot be used with :e, :r or :t.
@@ -936,9 +961,9 @@ These modifiers can be given, in this order:
 		separator is removed.  Thus ":p:h" on a directory name results
 		on the directory name itself (without trailing slash).
 		When the file name is an absolute path (starts with "/" for
-		Unix; "x:\" for MS-DOS, WIN32, OS/2; "drive:" for Amiga), that
-		part is not removed.  When there is no head (path is relative
-		to current directory) the result is empty.
+		Unix; "x:\" for Win32; "drive:" for Amiga), that part is not
+		removed.  When there is no head (path is relative to current
+		directory) the result is empty.
 	:t	Tail of the file name (last component of the name).  Must
 		precede any :r or :e.
 	:r	Root of the file name (the last extension removed).  When
@@ -1035,12 +1060,12 @@ option contains "sh", this is done twice, to avoid the shell trying to expand
 the "!".
 
 							*filename-backslash*
-For filesystems that use a backslash as directory separator (MS-DOS, Windows,
-OS/2), it's a bit difficult to recognize a backslash that is used to escape
-the special meaning of the next character.  The general rule is: If the
-backslash is followed by a normal file name character, it does not have a
-special meaning.  Therefore "\file\foo" is a valid file name, you don't have
-to type the backslash twice.
+For filesystems that use a backslash as directory separator (MS-Windows), it's
+a bit difficult to recognize a backslash that is used to escape the special
+meaning of the next character.  The general rule is: If the backslash is
+followed by a normal file name character, it does not have a special meaning.
+Therefore "\file\foo" is a valid file name, you don't have to type the
+backslash twice.
 
 An exception is the '$' sign.  It is a valid character in a file name.  But
 to avoid a file name like "$home" to be interpreted as an environment variable,
@@ -1114,7 +1139,8 @@ CTRL-C		Continue in Command-line mode.  The command-line under the
 		in Normal mode.  There is no redraw, thus the window will
 		remain visible.
 :quit		Discard the command line and go back to Normal mode.
-		":close", ":exit", ":xit" and CTRL-\ CTRL-N also work.
+		":close", CTRL-W c, ":exit", ":xit" and CTRL-\ CTRL-N also
+		work.
 :qall		Quit Vim, unless there are changes in some buffer.
 :qall!		Quit Vim, discarding changes to any buffer.
 
