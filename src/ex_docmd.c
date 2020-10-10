@@ -263,6 +263,7 @@ static void	ex_psearch(exarg_T *eap);
 static void	ex_tag(exarg_T *eap);
 static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 #ifndef FEAT_EVAL
+# define ex_block		ex_ni
 # define ex_break		ex_ni
 # define ex_breakadd		ex_ni
 # define ex_breakdel		ex_ni
@@ -280,6 +281,7 @@ static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 # define ex_echo		ex_ni
 # define ex_echohl		ex_ni
 # define ex_else		ex_ni
+# define ex_endblock		ex_ni
 # define ex_endfunction		ex_ni
 # define ex_endif		ex_ni
 # define ex_endtry		ex_ni
