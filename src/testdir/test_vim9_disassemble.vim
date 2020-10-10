@@ -436,42 +436,42 @@ def Test_disassemble_call()
         res)
 enddef
 
-" TODO: fix memory leak and enable again
-"def s:CreateRefs()
-"  var local = 'a'
-"  def Append(arg: string)
-"    local ..= arg
-"  enddef
-"  g:Append = Append
-"  def Get(): string
-"    return local
-"  enddef
-"  g:Get = Get
-"enddef
-"
-"def Test_disassemble_closure()
-"  CreateRefs()
-"  var res = execute('disass g:Append')
-"  assert_match('<lambda>\d\_s*' ..
-"        'local ..= arg\_s*' ..
-"        '\d LOADOUTER $0\_s*' ..
-"        '\d LOAD arg\[-1\]\_s*' ..
-"        '\d CONCAT\_s*' ..
-"        '\d STOREOUTER $0\_s*' ..
-"        '\d PUSHNR 0\_s*' ..
-"        '\d RETURN',
-"        res)
-"
-"  res = execute('disass g:Get')
-"  assert_match('<lambda>\d\_s*' ..
-"        'return local\_s*' ..
-"        '\d LOADOUTER $0\_s*' ..
-"        '\d RETURN',
-"        res)
-"
-"  unlet g:Append
-"  unlet g:Get
-"enddef
+
+def s:CreateRefs()
+  var local = 'a'
+  def Append(arg: string)
+    local ..= arg
+  enddef
+  g:Append = Append
+  def Get(): string
+    return local
+  enddef
+  g:Get = Get
+enddef
+
+def Test_disassemble_closure()
+  CreateRefs()
+  var res = execute('disass g:Append')
+  assert_match('<lambda>\d\_s*' ..
+        'local ..= arg\_s*' ..
+        '\d LOADOUTER $0\_s*' ..
+        '\d LOAD arg\[-1\]\_s*' ..
+        '\d CONCAT\_s*' ..
+        '\d STOREOUTER $0\_s*' ..
+        '\d PUSHNR 0\_s*' ..
+        '\d RETURN',
+        res)
+
+  res = execute('disass g:Get')
+  assert_match('<lambda>\d\_s*' ..
+        'return local\_s*' ..
+        '\d LOADOUTER $0\_s*' ..
+        '\d RETURN',
+        res)
+
+  unlet g:Append
+  unlet g:Get
+enddef
 
 
 def EchoArg(arg: string): string

@@ -1869,8 +1869,11 @@ typedef struct funcstack_S
 				// - arguments
 				// - frame
 				// - local variables
+    int		fs_var_offset;	// count of arguments + frame size == offset to
+				// local variables
 
     int		fs_refcount;	// nr of closures referencing this funcstack
+    int		fs_min_refcount; // nr of closures on this funcstack
     int		fs_copyID;	// for garray_T collection
 } funcstack_T;
 

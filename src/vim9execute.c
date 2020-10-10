@@ -349,8 +349,8 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 	// Move them to the called function.
 	if (funcstack == NULL)
 	    return FAIL;
-	funcstack->fs_ga.ga_len = argcount + STACK_FRAME_SIZE
-							  + dfunc->df_varcount;
+	funcstack->fs_var_offset = argcount + STACK_FRAME_SIZE;
+	funcstack->fs_ga.ga_len = funcstack->fs_var_offset + dfunc->df_varcount;
 	stack = ALLOC_CLEAR_MULT(typval_T, funcstack->fs_ga.ga_len);
 	funcstack->fs_ga.ga_data = stack;
 	if (stack == NULL)
@@ -376,29 +376,22 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 	{
 	    tv = STACK_TV(ectx->ec_frame_idx + STACK_FRAME_SIZE + idx);
 
-	    // Do not copy a partial created for a local function.
-	    // TODO: This won't work if the closure actually uses it.  But when
-	    // keeping it it gets complicated: it will create a reference cycle
-	    // inside the partial, thus needs special handling for garbage
-	    // collection.
-	    // For now, decide on the reference count.
+	    // A partial created for a local function, that is also used as a
+	    // local variable, has a reference count for the variable, thus
+	    // will never go down to zero.  When all these refcounts are one
+	    // then the funcstack is unused.  We need to count how many we have
+	    // so we need when to check.
 	    if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial != NULL)
 	    {
-		int i;
+		int	    i;
 
 		for (i = 0; i < closure_count; ++i)
-		{
-		    partial_T *pt = ((partial_T **)gap->ga_data)[gap->ga_len
-							  - closure_count + i];
-
-		    if (tv->vval.v_partial == pt && pt->pt_refcount < 2)
-			break;
-		}
-		if (i < closure_count)
-		    continue;
+		    if (tv->vval.v_partial == ((partial_T **)gap->ga_data)[
+					      gap->ga_len - closure_count + i])
+			++funcstack->fs_min_refcount;
 	    }
 
-	    *(stack + argcount + STACK_FRAME_SIZE + idx) = *tv;
+	    *(stack + funcstack->fs_var_offset + idx) = *tv;
 	    tv->v_type = VAR_UNKNOWN;
 	}
 
@@ -424,6 +417,43 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 	ga_clear(gap);
 
     return OK;
+}
+
+/*
+ * Called when a partial is freed or its reference count goes down to one.  The
+ * funcstack may be the only reference to the partials in the local variables.
+ * Go over all of them, the funcref and can be freed if all partials
+ * referencing the funcstack have a reference count of one.
+ */
+    void
+funcstack_check_refcount(funcstack_T *funcstack)
+{
+    int		    i;
+    garray_T	    *gap = &funcstack->fs_ga;
+    int		    done = 0;
+
+    if (funcstack->fs_refcount > funcstack->fs_min_refcount)
+	return;
+    for (i = funcstack->fs_var_offset; i < gap->ga_len; ++i)
+    {
+	typval_T *tv = ((typval_T *)gap->ga_data) + i;
+
+	if (tv->v_type == VAR_PARTIAL && tv->vval.v_partial != NULL
+		&& tv->vval.v_partial->pt_funcstack == funcstack
+		&& tv->vval.v_partial->pt_refcount == 1)
+	    ++done;
+    }
+    if (done == funcstack->fs_min_refcount)
+    {
+	typval_T	*stack = gap->ga_data;
+
+	// All partials referencing the funcstack have a reference count of
+	// one, thus the funcstack is no longer of use.
+	for (i = 0; i < gap->ga_len; ++i)
+	    clear_tv(stack + i);
+	vim_free(stack);
+	vim_free(funcstack);
+    }
 }
 
 /*
