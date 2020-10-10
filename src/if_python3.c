@@ -908,8 +908,25 @@ python3_loaded(void)
 static wchar_t *py_home_buf = NULL;
 
 #if defined(MSWIN) && (PY_VERSION_HEX >= 0x030500f0)
-// Python 3.5 or later will abort inside Py_Initialize() when stdin is
-// redirected.  Reconnect stdin to NUL.
+// Check if stdin is readable from Python 3.
+    static BOOL
+is_stdin_readable(void)
+{
+    DWORD	    mode, eventnum;
+    struct _stat    st;
+    int		    fd = fileno(stdin);
+    HANDLE	    hstdin = (HANDLE)_get_osfhandle(fd);
+
+    // Check if stdin is connected to the console.
+    if (GetConsoleMode(hstdin, &mode))
+	// Check if it is opened as input.
+	return GetNumberOfConsoleInputEvents(hstdin, &eventnum);
+
+    return _fstat(fd, &st) == 0;
+}
+
+// Python 3.5 or later will abort inside Py_Initialize() when stdin has
+// been closed (i.e. executed by "vim -").  Reconnect stdin to CONIN$.
 // Note that the python DLL is linked to its own stdio DLL which can be
 // differ from Vim's stdio.
     static void
@@ -917,7 +934,7 @@ reset_stdin(void)
 {
     FILE *(*py__acrt_iob_func)(unsigned) = NULL;
     FILE *(*pyfreopen)(const char *, const char *, FILE *) = NULL;
-    char *stdin_name = "NUL";
+    char *stdin_name = "CONIN$";
     HINSTANCE hinst;
 
 # ifdef DYNAMIC_PYTHON3
@@ -925,7 +942,7 @@ reset_stdin(void)
 # else
     hinst = GetModuleHandle(PYTHON3_DLL);
 # endif
-    if (hinst == NULL)
+    if (hinst == NULL || is_stdin_readable())
 	return;
 
     // Get "freopen" and "stdin" which are used in the python DLL.
@@ -938,10 +955,8 @@ reset_stdin(void)
 	if (hpystdiodll)
 	    pyfreopen = (void *)GetProcAddress(hpystdiodll, "freopen");
     }
-    if (isatty(fileno(stdin)))
-	stdin_name = "CONIN$";
 
-    // Reconnect stdin to NUL or CONIN$.
+    // Reconnect stdin to CONIN$.
     if (pyfreopen != NULL)
 	pyfreopen(stdin_name, "r", py__acrt_iob_func(0));
     else
