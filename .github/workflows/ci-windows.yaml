@@ -74,8 +74,8 @@ jobs:
         git config --global core.autocrlf input
         python_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON_VER_DOT}/InstallPath/@")
         python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
-        echo "::set-env name=PYTHON_DIR::$python_dir"
-        echo "::set-env name=PYTHON3_DIR::$python3_dir"
+        echo "PYTHON_DIR=$python_dir" >> $GITHUB_ENV
+        echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
 
     - uses: msys2/setup-msys2@v2
       if: matrix.toolchain == 'mingw'
