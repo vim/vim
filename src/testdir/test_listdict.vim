@@ -1007,8 +1007,10 @@ func Test_null_list()
   call assert_equal('[]', string(l))
   call assert_equal(0, sort(l))
   call assert_equal(0, uniq(l))
-  call assert_fails("let k = [] + l", 'E15:')
-  call assert_fails("let k = l + []", 'E15:')
+  let k = [] + l
+  call assert_equal([], k)
+  let k = l + []
+  call assert_equal([], k)
   call assert_equal(0, len(copy(l)))
   call assert_equal(0, count(l, 5))
   call assert_equal([], deepcopy(l))
