@@ -925,22 +925,28 @@ leave_block(cstack_T *cstack)
 
     if (in_vim9script())
     {
-	scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
+	scriptitem_T	*si = SCRIPT_ITEM(current_sctx.sc_sid);
+	hashtab_T	*ht = get_script_local_ht();
 
-	for (i = cstack->cs_script_var_len[cstack->cs_idx];
-					       i < si->sn_var_vals.ga_len; ++i)
+	if (ht != NULL)
 	{
-	    svar_T	*sv = ((svar_T *)si->sn_var_vals.ga_data) + i;
-	    hashtab_T	*ht = get_script_local_ht();
-	    hashitem_T	*hi;
-
-	    if (ht != NULL)
+	    for (i = cstack->cs_script_var_len[cstack->cs_idx];
+					       i < si->sn_var_vals.ga_len; ++i)
 	    {
-		// Remove a variable declared inside the block, if it still
-		// exists.
-		hi = hash_find(ht, sv->sv_name);
-		if (!HASHITEM_EMPTY(hi))
-		    delete_var(ht, hi);
+		svar_T	*sv = ((svar_T *)si->sn_var_vals.ga_data) + i;
+		hashitem_T	*hi;
+
+		if (sv->sv_name != NULL)
+		{
+		    // Remove a variable declared inside the block, if it still
+		    // exists.
+		    hi = hash_find(ht, sv->sv_name);
+		    if (!HASHITEM_EMPTY(hi))
+		    {
+			delete_var(ht, hi);
+			sv->sv_name = NULL;
+		    }
+		}
 	    }
 	}
     }
