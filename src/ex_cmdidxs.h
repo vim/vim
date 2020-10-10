@@ -69,4 +69,4 @@ static const unsigned char cmdidxs2[26][26] =
   /* z */ {  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0 }
 };
 
-static const int command_count = 571;
+static const int command_count = 573;

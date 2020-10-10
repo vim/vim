@@ -2733,6 +2733,27 @@ def Test_script_var_scope()
       echo one
   END
   CheckScriptFailure(lines, 'E121:', 6)
+
+  lines =<< trim END
+      vim9script
+      {
+        var one = 'one'
+        assert_equal('one', one)
+      }
+      assert_false(exists('one'))
+      assert_false(exists('s:one'))
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      {
+        var one = 'one'
+        echo one
+      }
+      echo one
+  END
+  CheckScriptFailure(lines, 'E121:', 6)
 enddef
 
 " Keep this last, it messes up highlighting.

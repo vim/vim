@@ -3222,7 +3222,7 @@ find_ex_command(
 		*p == '('
 		    || (p == eap->cmd
 			? (
-			    // "{..." is an dict expression.
+			    // "{..." is a dict expression or block start.
 			    *eap->cmd == '{'
 			    // "'string'->func()" is an expression.
 			 || *eap->cmd == '\''
@@ -3234,6 +3234,12 @@ find_ex_command(
 			    // "varname->func()" is an expression.
 			: (*p == '-' && p[1] == '>')))
 	    {
+		if (*eap->cmd == '{' && ends_excmd(*skipwhite(eap->cmd + 1)))
+		{
+		    // "{" by itself is the start of a block.
+		    eap->cmdidx = CMD_block;
+		    return eap->cmd + 1;
+		}
 		eap->cmdidx = CMD_eval;
 		return eap->cmd;
 	    }
@@ -3355,7 +3361,7 @@ find_ex_command(
 	}
 
 	// check for non-alpha command
-	if (p == eap->cmd && vim_strchr((char_u *)"@*!=><&~#", *p) != NULL)
+	if (p == eap->cmd && vim_strchr((char_u *)"@*!=><&~#}", *p) != NULL)
 	    ++p;
 	len = (int)(p - eap->cmd);
 	if (*eap->cmd == 'd' && (p[-1] == 'l' || p[-1] == 'p'))

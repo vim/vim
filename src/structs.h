@@ -907,6 +907,7 @@ typedef struct {
 # define CSF_ELSE	0x0004	// ":else" has been passed
 # define CSF_WHILE	0x0008	// is a ":while"
 # define CSF_FOR	0x0010	// is a ":for"
+# define CSF_BLOCK	0x0020	// is a "{" block
 
 # define CSF_TRY	0x0100	// is a ":try"
 # define CSF_FINALLY	0x0200	// ":finally" has been passed

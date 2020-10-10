@@ -1002,7 +1002,7 @@ ex_endif(exarg_T *eap)
     did_endif = TRUE;
     if (cstack->cs_idx < 0
 	    || (cstack->cs_flags[cstack->cs_idx]
-					   & (CSF_WHILE | CSF_FOR | CSF_TRY)))
+				& (CSF_WHILE | CSF_FOR | CSF_TRY | CSF_BLOCK)))
 	eap->errmsg = _(e_endif_without_if);
     else
     {
@@ -1043,7 +1043,7 @@ ex_else(exarg_T *eap)
 
     if (cstack->cs_idx < 0
 	    || (cstack->cs_flags[cstack->cs_idx]
-					   & (CSF_WHILE | CSF_FOR | CSF_TRY)))
+				& (CSF_WHILE | CSF_FOR | CSF_TRY | CSF_BLOCK)))
     {
 	if (eap->cmdidx == CMD_else)
 	{
@@ -1375,6 +1375,37 @@ ex_endwhile(exarg_T *eap)
     }
 }
 
+/*
+ * "{" start of a block in Vim9 script
+ */
+    void
+ex_block(exarg_T *eap)
+{
+    cstack_T	*cstack = eap->cstack;
+
+    if (cstack->cs_idx == CSTACK_LEN - 1)
+	eap->errmsg = _("E579: block nesting too deep");
+    else
+    {
+	enter_block(cstack);
+	cstack->cs_flags[cstack->cs_idx] = CSF_BLOCK | CSF_ACTIVE | CSF_TRUE;
+    }
+}
+
+/*
+ * "}" end of a block in Vim9 script
+ */
+    void
+ex_endblock(exarg_T *eap)
+{
+    cstack_T	*cstack = eap->cstack;
+
+    if (cstack->cs_idx < 0
+	    || (cstack->cs_flags[cstack->cs_idx] & CSF_BLOCK) == 0)
+	eap->errmsg = _(e_endblock_without_block);
+    else
+	leave_block(cstack);
+}
 
 /*
  * ":throw expr"
