@@ -172,7 +172,16 @@ func Test_gn_command()
   normal 0wgNy
   call assert_equal('one', @")
   set selection&
-endfu
+endfunc
+
+func Test_gN_repeat()
+  new
+  call setline(1, 'this list is a list with a list of a list.')
+  /list
+  normal $gNgNgNx
+  call assert_equal('list with a list of a list', @")
+  bwipe!
+endfunc
 
 func Test_gn_multi_line()
   new
