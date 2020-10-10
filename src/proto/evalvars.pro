@@ -67,6 +67,7 @@ void init_var_dict(dict_T *dict, dictitem_T *dict_var, int scope);
 void unref_var_dict(dict_T *dict);
 void vars_clear(hashtab_T *ht);
 void vars_clear_ext(hashtab_T *ht, int free_val);
+void delete_var(hashtab_T *ht, hashitem_T *hi);
 void set_var(char_u *name, typval_T *tv, int copy);
 void set_var_const(char_u *name, type_T *type, typval_T *tv_arg, int copy, int flags);
 int var_check_ro(int flags, char_u *name, int use_gettext);

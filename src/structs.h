@@ -889,6 +889,8 @@ typedef struct {
     }		cs_pend;
     void	*cs_forinfo[CSTACK_LEN]; // info used by ":for"
     int		cs_line[CSTACK_LEN];	// line nr of ":while"/":for" line
+    int		cs_script_var_len[CSTACK_LEN];	// value of sn_var_vals.ga_len
+						// when entering the block
     int		cs_idx;			// current entry, or -1 if none
     int		cs_looplevel;		// nr of nested ":while"s and ":for"s
     int		cs_trylevel;		// nr of nested ":try"s

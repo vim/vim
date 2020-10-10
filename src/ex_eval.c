@@ -906,6 +906,48 @@ ex_eval(exarg_T *eap)
 }
 
 /*
+ * Start a new scope/block.  Caller should have checked that cs_idx is not
+ * exceeding CSTACK_LEN.
+ */
+    static void
+enter_block(cstack_T *cstack)
+{
+    ++cstack->cs_idx;
+    if (in_vim9script())
+	cstack->cs_script_var_len[cstack->cs_idx] =
+			  SCRIPT_ITEM(current_sctx.sc_sid)->sn_var_vals.ga_len;
+}
+
+    static void
+leave_block(cstack_T *cstack)
+{
+    int i;
+
+    if (in_vim9script())
+    {
+	scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
+
+	for (i = cstack->cs_script_var_len[cstack->cs_idx];
+					       i < si->sn_var_vals.ga_len; ++i)
+	{
+	    svar_T	*sv = ((svar_T *)si->sn_var_vals.ga_data) + i;
+	    hashtab_T	*ht = get_script_local_ht();
+	    hashitem_T	*hi;
+
+	    if (ht != NULL)
+	    {
+		// Remove a variable declared inside the block, if it still
+		// exists.
+		hi = hash_find(ht, sv->sv_name);
+		if (!HASHITEM_EMPTY(hi))
+		    delete_var(ht, hi);
+	    }
+	}
+    }
+    --cstack->cs_idx;
+}
+
+/*
  * ":if".
  */
     void
@@ -920,12 +962,12 @@ ex_if(exarg_T *eap)
 	eap->errmsg = _("E579: :if nesting too deep");
     else
     {
-	++cstack->cs_idx;
+	enter_block(cstack);
 	cstack->cs_flags[cstack->cs_idx] = 0;
 
 	/*
-	 * Don't do something after an error, interrupt, or throw, or when there
-	 * is a surrounding conditional and it was not active.
+	 * Don't do something after an error, interrupt, or throw, or when
+	 * there is a surrounding conditional and it was not active.
 	 */
 	skip = did_emsg || got_int || did_throw || (cstack->cs_idx > 0
 		&& !(cstack->cs_flags[cstack->cs_idx - 1] & CSF_ACTIVE));
@@ -949,9 +991,11 @@ ex_if(exarg_T *eap)
     void
 ex_endif(exarg_T *eap)
 {
+    cstack_T	*cstack = eap->cstack;
+
     did_endif = TRUE;
-    if (eap->cstack->cs_idx < 0
-	    || (eap->cstack->cs_flags[eap->cstack->cs_idx]
+    if (cstack->cs_idx < 0
+	    || (cstack->cs_flags[cstack->cs_idx]
 					   & (CSF_WHILE | CSF_FOR | CSF_TRY)))
 	eap->errmsg = _(e_endif_without_if);
     else
@@ -965,11 +1009,11 @@ ex_endif(exarg_T *eap)
 	 * Doing this here prevents an exception for a parsing error being
 	 * discarded by throwing the interrupt exception later on.
 	 */
-	if (!(eap->cstack->cs_flags[eap->cstack->cs_idx] & CSF_TRUE)
+	if (!(cstack->cs_flags[cstack->cs_idx] & CSF_TRUE)
 						    && dbg_check_skipped(eap))
-	    (void)do_intthrow(eap->cstack);
+	    (void)do_intthrow(cstack);
 
-	--eap->cstack->cs_idx;
+	leave_block(cstack);
     }
 }
 
@@ -1086,7 +1130,7 @@ ex_while(exarg_T *eap)
 	 */
 	if ((cstack->cs_lflags & CSL_HAD_LOOP) == 0)
 	{
-	    ++cstack->cs_idx;
+	    enter_block(cstack);
 	    ++cstack->cs_looplevel;
 	    cstack->cs_line[cstack->cs_idx] = -1;
 	}
@@ -1450,7 +1494,7 @@ ex_try(exarg_T *eap)
 	eap->errmsg = _("E601: :try nesting too deep");
     else
     {
-	++cstack->cs_idx;
+	enter_block(cstack);
 	++cstack->cs_trylevel;
 	cstack->cs_flags[cstack->cs_idx] = CSF_TRY;
 	cstack->cs_pending[cstack->cs_idx] = CSTP_NONE;
@@ -1923,7 +1967,7 @@ ex_endtry(exarg_T *eap)
 	 */
 	(void)cleanup_conditionals(cstack, CSF_TRY | CSF_SILENT, TRUE);
 
-	--cstack->cs_idx;
+	leave_block(cstack);
 	--cstack->cs_trylevel;
 
 	if (!skip)
@@ -2303,7 +2347,7 @@ rewind_conditionals(
 	    --*cond_level;
 	if (cstack->cs_flags[cstack->cs_idx] & CSF_FOR)
 	    free_for_info(cstack->cs_forinfo[cstack->cs_idx]);
-	--cstack->cs_idx;
+	leave_block(cstack);
     }
 }
 
