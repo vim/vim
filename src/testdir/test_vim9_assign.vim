@@ -236,6 +236,18 @@ def Test_extend_list()
       assert_equal(#{one: 1}, d)
   END
   CheckScriptSuccess(lines)
+
+  # appending to NULL list from a function
+  lines =<< trim END
+      vim9script
+      var list: list<string>
+      def Func()
+        list += ['a', 'b']
+      enddef
+      Func()
+      assert_equal(['a', 'b'], list)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_single_letter_vars()

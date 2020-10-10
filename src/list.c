@@ -824,7 +824,7 @@ f_flatten(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * Extend "l1" with "l2".
+ * Extend "l1" with "l2".  "l1" must not be NULL.
  * If "bef" is NULL append at the end, otherwise insert before this item.
  * Returns FAIL when out of memory.
  */
@@ -832,8 +832,13 @@ f_flatten(typval_T *argvars, typval_T *rettv)
 list_extend(list_T *l1, list_T *l2, listitem_T *bef)
 {
     listitem_T	*item;
-    int		todo = l2->lv_len;
+    int		todo;
 
+    // NULL list is equivalent to an empty list: nothing to do.
+    if (l2 == NULL || l2->lv_len == 0)
+	return OK;
+
+    todo = l2->lv_len;
     CHECK_LIST_MATERIALIZE(l1);
     CHECK_LIST_MATERIALIZE(l2);
 
@@ -854,15 +859,17 @@ list_concat(list_T *l1, list_T *l2, typval_T *tv)
 {
     list_T	*l;
 
-    if (l1 == NULL || l2 == NULL)
-	return FAIL;
-
     // make a copy of the first list.
-    l = list_copy(l1, FALSE, 0);
+    if (l1 == NULL)
+	l = list_alloc();
+    else
+	l = list_copy(l1, FALSE, 0);
     if (l == NULL)
 	return FAIL;
     tv->v_type = VAR_LIST;
     tv->vval.v_list = l;
+    if (l1 == NULL)
+	++l->lv_refcount;
 
     // append all items from the second list
     return list_extend(l, l2, NULL);
