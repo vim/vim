@@ -1002,11 +1002,13 @@ Python3_Init(void)
 	reset_stdin();
 	Py_Initialize();
 
+#if PY_VERSION_HEX < 0x03090000
 	// Initialise threads, and below save the state using
 	// PyEval_SaveThread.  Without the call to PyEval_SaveThread, thread
 	// specific state (such as the system trace hook), will be lost
 	// between invocations of Python code.
 	PyEval_InitThreads();
+#endif
 #ifdef DYNAMIC_PYTHON3
 	get_py3_exceptions();
 #endif
