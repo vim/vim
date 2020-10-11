@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.2.  Last change: 2020 Sep 09
+*map.txt*       For Vim version 8.2.  Last change: 2020 Oct 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -251,6 +251,17 @@ text before the cursor and start omni completion when some condition is met.
 For abbreviations |v:char| is set to the character that was typed to trigger
 the abbreviation.  You can use this to decide how to expand the {lhs}.  You
 should not either insert or change the v:char.
+
+In case you want the mapping to not do anything, you can have the expression
+evaluate to an empty string.  If something changed that requires Vim to
+go through the main loop (e.g. to update the display), return "\<Ignore>".
+This is similar to "nothing" but makes Vim return from the loop that waits for
+input. Example: >
+	func s:OpenPopup()
+	  call popup_create(... arguments ...)
+	  return "\<Ignore>"
+	endfunc
+	nnoremap <expr> <F3> <Sid>OpenPopup()
 
 Be very careful about side effects!  The expression is evaluated while
 obtaining characters, you may very well make the command dysfunctional.

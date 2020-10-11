@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 8.2.  Last change: 2020 Aug 15
+*repeat.txt*    For Vim version 8.2.  Last change: 2020 Oct 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -271,6 +271,9 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			directories are added to 'runtimepath'.  This is
 			useful in your .vimrc.  The plugins will then be
 			loaded during initialization, see |load-plugins|.
+			Note that for ftdetect scripts to be loaded
+			you will need to write `filetype plugin indent on`
+			AFTER all `packadd!` commands.
 
 			Also see |pack-add|.
 			{only available when compiled with |+eval|}

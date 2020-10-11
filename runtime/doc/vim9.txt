@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Sep 26
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Oct 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -164,12 +164,12 @@ the "name#" prefix is sufficient. >
 
 When using `:function` or `:def` to specify a nested function inside a `:def`
 function, this nested function is local to the code block it is defined in.
-In a `:def` function it is not possible to define a script-local function.  it
+In a `:def` function it is not possible to define a script-local function.  It
 is possible to define a global function by using the "g:" prefix.
 
 When referring to a function and no "s:" or "g:" prefix is used, Vim will
 search for the function:
-- in the function scope
+- in the function scope, in block scopes
 - in the script scope, possibly imported
 - in the list of global functions
 However, it is recommended to always use "g:" to refer to a global function
@@ -1140,7 +1140,7 @@ Two alternatives were considered:
 	def Func(arg1 number, arg2 string) bool
 
 The first is more familiar for anyone used to C or Java.  The second one
-doesn't really has an advantage over the first, so let's discard the second.
+doesn't really have an advantage over the first, so let's discard the second.
 
 Since we use type inference the type can be left out when it can be inferred
 from the value.  This means that after `var` we don't know if a type or a name
@@ -1155,19 +1155,35 @@ declaration.
 
 Expressions ~
 
-Expression evaluation was already close to what JavaScript and other languages
-are doing.  Some details are unexpected and can be fixed.  For example how the
-|| and && operators work.  Legacy Vim script: >
-	var value = 44
-	...
-	var result = value || 0  # result == 1
+Expression evaluation was already close to what other languages are doing.
+Some details are unexpected and can be improved.  For example a boolean
+condition would accept a string, convert it to a number and check if the
+number is non-zero.  This is unexpected and often leads to mistakes, since
+text not starting with a number would be converted to zero, which is
+considered false.  Thus a string would not give an error and be considered
+false if it doesn't start with a number.  That is confusing.
 
-Vim9 script works like JavaScript/TypeScript, keep the value: >
-	var value = 44
-	...
-	var result = value || 0  # result == 44
+In Vim9 type checking is more strict to avoid mistakes.  Where a condition is
+used, e.g. with the `:if` command and the `||` operator, only boolean-like
+values are accepted:
+	true:  `true`, `v:true`, `1`, `0 < 9`
+	false: `false`, `v:false`, `0`, `0 > 9`
+Note that the number zero is false and the number one is true.  This is more
+persmissive than most other languages.  It was done because many builtin
+functions return these values.
 
-TODO: the semantics of || and && need to be reconsidered.
+If you have any type of value and want to use it as a boolean, use the `!!`
+operator:
+	true: !`!'text'`, `!![99]`, `!!{'x': 1}`, `!!99`
+	false: `!!''`, `!![]`, `!!{}`
+
+From a language like JavaScript we have this handy construct: >
+	GetName() || 'unknown'
+However, this conflicts with only allowing a boolean for a condition.
+Therefore the "??" operator was added: >
+	GetName() ?? 'unknown'
+Here you can explicitly express your intention to use the value as-is and not
+result in a boolean. This is called the |falsy-operator|.
 
 
 Import and Export ~

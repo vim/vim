@@ -2447,6 +2447,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :filter	various.txt	/*:filter*
 :fin	editing.txt	/*:fin*
 :fina	eval.txt	/*:fina*
+:final	vim9.txt	/*:final*
 :finally	eval.txt	/*:finally*
 :find	editing.txt	/*:find*
 :fini	repeat.txt	/*:fini*
@@ -3371,6 +3372,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :up	editing.txt	/*:up*
 :update	editing.txt	/*:update*
 :v	repeat.txt	/*:v*
+:var	vim9.txt	/*:var*
 :ve	various.txt	/*:ve*
 :ver	various.txt	/*:ver*
 :verb	various.txt	/*:verb*
@@ -3689,6 +3691,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 >where	repeat.txt	/*>where*
 ?	pattern.txt	/*?*
 ?<CR>	pattern.txt	/*?<CR>*
+??	eval.txt	/*??*
 @	repeat.txt	/*@*
 @/	change.txt	/*@\/*
 @:	repeat.txt	/*@:*
@@ -6328,6 +6331,8 @@ extensions-improvements	todo.txt	/*extensions-improvements*
 f	motion.txt	/*f*
 false	vim9.txt	/*false*
 false-variable	eval.txt	/*false-variable*
+falsy	eval.txt	/*falsy*
+falsy-operator	eval.txt	/*falsy-operator*
 faq	intro.txt	/*faq*
 farsi	farsi.txt	/*farsi*
 farsi.txt	farsi.txt	/*farsi.txt*
@@ -9656,6 +9661,7 @@ trojan-horse	starting.txt	/*trojan-horse*
 true	vim9.txt	/*true*
 true-variable	eval.txt	/*true-variable*
 trunc()	eval.txt	/*trunc()*
+truthy	eval.txt	/*truthy*
 try-conditionals	eval.txt	/*try-conditionals*
 try-echoerr	eval.txt	/*try-echoerr*
 try-finally	eval.txt	/*try-finally*

@@ -48515,7 +48515,7 @@ Solution:   Recognize true and false.
 Files:      src/eval.c, src/testdir/test_vim9_expr.vim
 
 Patch 8.2.1205
-Problem:    Vim9: && and || work different when not compiled.
+Problem:    Vim9: && and || work differently when not compiled.
 Solution:   Keep the value.
 Files:      src/eval.c, src/testdir/test_vim9_expr.vim
 

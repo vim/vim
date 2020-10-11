@@ -38,6 +38,7 @@ runtime/compiler/jest.vim		@dkearns
 runtime/compiler/jjs.vim		@dkearns
 runtime/compiler/jshint.vim		@dkearns
 runtime/compiler/jsonlint.vim		@dkearns
+runtime/compiler/lazbuild.vim		@dkearns
 runtime/compiler/php.vim		@dkearns
 runtime/compiler/rake.vim		@tpope @dkearns
 runtime/compiler/rhino.vim		@dkearns
@@ -47,6 +48,7 @@ runtime/compiler/ruby.vim		@tpope @dkearns
 runtime/compiler/rubyunit.vim		@dkearns
 runtime/compiler/sass.vim		@tpope
 runtime/compiler/se.vim			@dkearns
+runtime/compiler/shellcheck.vim		@dkearns
 runtime/compiler/stylelint.vim		@dkearns
 runtime/compiler/tcl.vim		@dkearns
 runtime/compiler/tidy.vim		@dkearns

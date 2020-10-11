@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Sep 25
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Oct 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -897,7 +897,7 @@ Example: >
 All expressions within one level are parsed from left to right.
 
 
-expr1				*expr1* *trinary* *falsy-operator* *E109*
+expr1				*expr1* *trinary* *falsy-operator* *??* *E109*
 -----
 
 The trinary operator: expr2 ? expr1 : expr1
@@ -3503,7 +3503,7 @@ byteidxcomp({expr}, {nr})					*byteidxcomp()*
 <		The first and third echo result in 3 ('e' plus composing
 		character is 3 bytes), the second echo results in 1 ('e' is
 		one byte).
-		Only works different from byteidx() when 'encoding' is set to
+		Only works differently from byteidx() when 'encoding' is set to
 		a Unicode encoding.
 
 		Can also be used as a |method|: >

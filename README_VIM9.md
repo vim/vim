@@ -80,7 +80,7 @@ e.g. each stack item is a typeval_T.  And one of the instructions is
 "execute Ex command", for commands that are not compiled.
 
 
-## 2. PHASING OUT INTERFACES
+## 2. DEPRIORITIZE INTERFACES
 
 Attempts have been made to implement functionality with built-in script
 languages such as Python, Perl, Lua, Tcl and Ruby.  This never gained much
