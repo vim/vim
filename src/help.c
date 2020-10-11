@@ -323,33 +323,57 @@ find_help_tags(
 {
     char_u	*s, *d;
     int		i;
-    static char *(mtable[]) = {"*", "g*", "[*", "]*", ":*",
-			       "/*", "/\\*", "\"*", "**",
-			       "cpo-*", "/\\(\\)", "/\\%(\\)",
-			       "?", ":?", "?<CR>", "g?", "g?g?", "g??",
-			       "-?", "q?", "v_g?",
-			       "/\\?", "/\\z(\\)", "\\=", ":s\\=",
-			       "[count]", "[quotex]",
-			       "[range]", ":[range]",
-			       "[pattern]", "\\|", "\\%$",
-			       "s/\\~", "s/\\U", "s/\\L",
-			       "s/\\1", "s/\\2", "s/\\3", "s/\\9"};
-    static char *(rtable[]) = {"star", "gstar", "[star", "]star", ":star",
-			       "/star", "/\\\\star", "quotestar", "starstar",
-			       "cpo-star", "/\\\\(\\\\)", "/\\\\%(\\\\)",
-			       "?", ":?", "?<CR>", "g?", "g?g?", "g??",
-			       "-?", "q?", "v_g?",
-			       "/\\\\?", "/\\\\z(\\\\)", "\\\\=", ":s\\\\=",
-			       "\\[count]", "\\[quotex]",
-			       "\\[range]", ":\\[range]",
-			       "\\[pattern]", "\\\\bar", "/\\\\%\\$",
-			       "s/\\\\\\~", "s/\\\\U", "s/\\\\L",
-			       "s/\\\\1", "s/\\\\2", "s/\\\\3", "s/\\\\9"};
+    // Specific tags that either have a specific replacement or won't go
+    // throught the generic rules.
+    static char *(except_tbl[][2]) = {
+	{"*",		"star"},
+	{"g*",		"gstar"},
+	{"[*",		"[star"},
+	{"]*",		"]star"},
+	{":*",		":star"},
+	{"/*",		"/star"},
+	{"/\\*",	"/\\\\star"},
+	{"\"*",		"quotestar"},
+	{"**",		"starstar"},
+	{"cpo-*",	"cpo-star"},
+	{"/\\(\\)",	"/\\\\(\\\\)"},
+	{"/\\%(\\)",	"/\\\\%(\\\\)"},
+	{"?",		"?"},
+	{"??",		"??"},
+	{":?",		":?"},
+	{"?<CR>",	"?<CR>"},
+	{"g?",		"g?"},
+	{"g?g?",	"g?g?"},
+	{"g??",		"g??"},
+	{"-?",		"-?"},
+	{"q?",		"q?"},
+	{"v_g?",	"v_g?"},
+	{"/\\?",	"/\\\\?"},
+	{"/\\z(\\)",	"/\\\\z(\\\\)"},
+	{"\\=",		"\\\\="},
+	{":s\\=",	":s\\\\="},
+	{"[count]",	"\\[count]"},
+	{"[quotex]",	"\\[quotex]"},
+	{"[range]",	"\\[range]"},
+	{":[range]",	":\\[range]"},
+	{"[pattern]",	"\\[pattern]"},
+	{"\\|",		"\\\\bar"},
+	{"\\%$",	"/\\\\%\\$"},
+	{"s/\\~",	"s/\\\\\\~"},
+	{"s/\\U",	"s/\\\\U"},
+	{"s/\\L",	"s/\\\\L"},
+	{"s/\\1",	"s/\\\\1"},
+	{"s/\\2",	"s/\\\\2"},
+	{"s/\\3",	"s/\\\\3"},
+	{"s/\\9",	"s/\\\\9"},
+	{NULL, NULL}
+    };
     static char *(expr_table[]) = {"!=?", "!~?", "<=?", "<?", "==?", "=~?",
-				">=?", ">?", "is?", "isnot?"};
+				   ">=?", ">?", "is?", "isnot?"};
     int flags;
 
     d = IObuff;		    // assume IObuff is long enough!
+    d[0] = NUL;
 
     if (STRNICMP(arg, "expr-", 5) == 0)
     {
@@ -376,16 +400,16 @@ find_help_tags(
     else
     {
 	// Recognize a few exceptions to the rule.  Some strings that contain
-	// '*' with "star".  Otherwise '*' is recognized as a wildcard.
-	for (i = (int)(sizeof(mtable) / sizeof(char *)); --i >= 0; )
-	    if (STRCMP(arg, mtable[i]) == 0)
+	// '*'are changed to "star", otherwise '*' is recognized as a wildcard.
+	for (i = 0; except_tbl[i][0] != NULL; ++i)
+	    if (STRCMP(arg, except_tbl[i][0]) == 0)
 	    {
-		STRCPY(d, rtable[i]);
+		STRCPY(d, except_tbl[i][1]);
 		break;
 	    }
     }
 
-    if (i < 0)	// no match in table
+    if (d[0] == NUL)	// no match in table
     {
 	// Replace "\S" with "/\\S", etc.  Otherwise every tag is matched.
 	// Also replace "\%^" and "\%(", they match every tag too.
