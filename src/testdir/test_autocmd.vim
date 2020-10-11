@@ -30,7 +30,7 @@ func Test_CursorHold_autocmd()
   call writefile(before, 'Xinit')
   let buf = RunVimInTerminal('-S Xinit Xfile', {})
   call term_sendkeys(buf, "G")
-  call term_wait(buf, 20)
+  call term_wait(buf, 50)
   call term_sendkeys(buf, "gg")
   call term_wait(buf)
   call WaitForAssert({-> assert_equal(['1'], readfile('Xoutput')[-1:-1])})
@@ -77,9 +77,9 @@ if has('timers')
     " CursorHoldI event.
     let g:triggered = 0
     au CursorHoldI * let g:triggered += 1
-    set updatetime=500
+    set updatetime=100
     call job_start(has('win32') ? 'cmd /c echo:' : 'echo',
-          \ {'exit_cb': {-> timer_start(1000, 'ExitInsertMode')}})
+          \ {'exit_cb': {-> timer_start(200, 'ExitInsertMode')}})
     call feedkeys('a', 'x!')
     call assert_equal(1, g:triggered)
     unlet g:triggered
@@ -452,6 +452,7 @@ func Test_autocmd_bufwipe_in_SessLoadPost()
   mksession!
 
   let content =<< trim [CODE]
+    call test_override('ui_delay', 10)
     set nocp noswapfile
     let v:swapchoice="e"
     augroup test_autocmd_sessionload
@@ -2421,6 +2422,8 @@ endfunc
 " Test closing a window or editing another buffer from a FileChangedRO handler
 " in a readonly buffer
 func Test_FileChangedRO_winclose()
+  call test_override('ui_delay', 10)
+
   augroup FileChangedROTest
     au!
     autocmd FileChangedRO * quit
@@ -2440,6 +2443,7 @@ func Test_FileChangedRO_winclose()
   call assert_fails('normal i', 'E788:')
   close
   augroup! FileChangedROTest
+  call test_override('ALL', 0)
 endfunc
 
 func LogACmd()
@@ -2533,6 +2537,7 @@ endfunc
 " Tests for SigUSR1 autocmd event, which is only available on posix systems.
 func Test_autocmd_sigusr1()
   CheckUnix
+  CheckExecutable /bin/kill
 
   let g:sigusr1_passed = 0
   au SigUSR1 * let g:sigusr1_passed = 1
