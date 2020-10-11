@@ -2533,6 +2533,7 @@ endfunc
 " Tests for SigUSR1 autocmd event, which is only available on posix systems.
 func Test_autocmd_sigusr1()
   CheckUnix
+  CheckExecutable /bin/kill
 
   let g:sigusr1_passed = 0
   au SigUSR1 * let g:sigusr1_passed = 1
