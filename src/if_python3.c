@@ -1002,11 +1002,10 @@ Python3_Init(void)
 	reset_stdin();
 	Py_Initialize();
 
-	// Initialise threads, and below save the state using
-	// PyEval_SaveThread.  Without the call to PyEval_SaveThread, thread
-	// specific state (such as the system trace hook), will be lost
-	// between invocations of Python code.
+#if PY_VERSION_HEX < 0x03090000
+	// Initialise threads.  This is deprecated since Python 3.9.
 	PyEval_InitThreads();
+#endif
 #ifdef DYNAMIC_PYTHON3
 	get_py3_exceptions();
 #endif
@@ -1024,12 +1023,14 @@ Python3_Init(void)
 	// sys.path.
 	PyRun_SimpleString("import vim; import sys; sys.path = list(filter(lambda x: not x.endswith('must>not&exist'), sys.path))");
 
-	// lock is created and acquired in PyEval_InitThreads() and thread
-	// state is created in Py_Initialize()
-	// there _PyGILState_NoteThreadState() also sets gilcounter to 1
-	// (python must have threads enabled!)
-	// so the following does both: unlock GIL and save thread state in TLS
-	// without deleting thread state
+	// Without the call to PyEval_SaveThread, thread specific state (such
+	// as the system trace hook), will be lost between invocations of
+	// Python code.
+	// GIL may have been created and acquired in PyEval_InitThreads() and
+	// thread state is created in Py_Initialize(); there
+	// _PyGILState_NoteThreadState() also sets gilcounter to 1 (python must
+	// have threads enabled!), so the following does both: unlock GIL and
+	// save thread state in TLS without deleting thread state
 	PyEval_SaveThread();
 
 	py3initialised = 1;

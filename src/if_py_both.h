@@ -307,7 +307,7 @@ ObjectDir(PyObject *self, char **attributes)
 // Output buffer management
 
 // Function to write a line, points to either msg() or emsg().
-typedef void (*writefn)(char_u *);
+typedef int (*writefn)(char *);
 
 static PyTypeObject OutputType;
 
@@ -359,8 +359,8 @@ PythonIO_Flush(void)
 {
     if (old_fn != NULL && io_ga.ga_len > 0)
     {
-	((char_u *)io_ga.ga_data)[io_ga.ga_len] = NUL;
-	old_fn((char_u *)io_ga.ga_data);
+	((char *)io_ga.ga_data)[io_ga.ga_len] = NUL;
+	old_fn((char *)io_ga.ga_data);
     }
     io_ga.ga_len = 0;
 }
@@ -390,7 +390,7 @@ writer(writefn fn, char_u *str, PyInt n)
 
 	mch_memmove(((char *)io_ga.ga_data) + io_ga.ga_len, str, (size_t)len);
 	((char *)io_ga.ga_data)[io_ga.ga_len + len] = NUL;
-	fn((char_u *)io_ga.ga_data);
+	fn((char *)io_ga.ga_data);
 	str = ptr + 1;
 	n -= len + 1;
 	io_ga.ga_len = 0;
