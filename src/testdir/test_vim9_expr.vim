@@ -90,6 +90,16 @@ def Test_expr1_trinary_vimscript()
   END
   CheckScriptSuccess(lines)
 
+  lines =<< trim END
+      vim9script
+      var name = v:false ?  # comment
+      		'yes' :
+                # comment
+		'no' # comment
+      assert_equal('no', name)
+  END
+  CheckScriptSuccess(lines)
+
   # check white space
   lines =<< trim END
       vim9script
@@ -279,6 +289,17 @@ def Test_expr2_vimscript()
   END
   CheckScriptSuccess(lines)
 
+  lines =<< trim END
+      vim9script
+      var name = v:false || # comment
+                # comment
+      		v:true ||
+                # comment
+		v:false # comment
+      assert_equal(v:true, name)
+  END
+  CheckScriptSuccess(lines)
+
   # check white space
   lines =<< trim END
       vim9script
@@ -400,6 +421,17 @@ def Test_expr3_vimscript()
       vim9script
       var name = v:true &&
       		v:true &&
+      		v:true
+      assert_equal(v:true, name)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      var name = v:true &&  # comment
+                # comment
+      		v:true &&
+                # comment
       		v:true
       assert_equal(v:true, name)
   END
@@ -800,6 +832,7 @@ def Test_expr4_vim9script()
   lines =<< trim END
       vim9script
       var name = 123
+                # comment
       		!= 123
       assert_equal(false, name)
   END
@@ -817,6 +850,16 @@ def Test_expr4_vim9script()
       vim9script
       var list = [1, 2, 3]
       var name = list
+      		is list
+      assert_equal(true, name)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      var list = [1, 2, 3]
+      var name = list # comment
+                 # comment
       		is list
       assert_equal(true, name)
   END
@@ -1052,6 +1095,16 @@ def Test_expr5_vim9script()
       vim9script
       var name = 11 +
 		  77 -
+		  22
+      assert_equal(66, name)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      var name = 11 +  # comment
+		  77 -
+                  # comment
 		  22
       assert_equal(66, name)
   END
@@ -1298,6 +1351,17 @@ def Test_expr6_vim9script()
   lines =<< trim END
       vim9script
       var name = 25
+      		% 10
+      assert_equal(5, name)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      var name = 25
+                # comment
+
+                # comment
       		% 10
       assert_equal(5, name)
   END
@@ -1618,6 +1682,12 @@ def Test_expr7_list_vim9script()
       echo [1,
 	    2] [3,
 		    4]
+
+      echo [1, # comment
+            # comment
+	    2] [3,
+            # comment
+		    4]
   END
   CheckScriptSuccess(lines)
 
@@ -1829,6 +1899,17 @@ def Test_expr7_dict_vim9script()
       var d = {
 		'one':
 		   1,
+		'two': 2,
+		   }
+      assert_equal({'one': 1, 'two': 2}, d)
+
+      d = {  # comment
+		'one':
+                # comment
+
+		   1,
+                # comment
+                # comment
 		'two': 2,
 		   }
       assert_equal({'one': 1, 'two': 2}, d)
