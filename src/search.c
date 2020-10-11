@@ -2961,10 +2961,16 @@ current_search(
     int		flags = 0;
     pos_T	save_VIsual = VIsual;
     int		zero_width;
+    int		skip_first_backward;
 
     // Correct cursor when 'selection' is exclusive
     if (VIsual_active && *p_sel == 'e' && LT_POS(VIsual, curwin->w_cursor))
 	dec_cursor();
+
+    // When searching forward and the cursor is at the start of the Visual
+    // area, skip the first search backward, otherwise it doesn't move.
+    skip_first_backward = forward && VIsual_active
+					   && LT_POS(curwin->w_cursor, VIsual);
 
     orig_pos = pos = curwin->w_cursor;
     if (VIsual_active)
@@ -2984,12 +2990,16 @@ current_search(
     /*
      * The trick is to first search backwards and then search forward again,
      * so that a match at the current cursor position will be correctly
-     * captured.
+     * captured.  When "forward" is false do it the other way around.
      */
     for (i = 0; i < 2; i++)
     {
 	if (forward)
+	{
+	    if (i == 0 && skip_first_backward)
+		continue;
 	    dir = i;
+	}
 	else
 	    dir = !i;
 
@@ -3043,10 +3053,17 @@ current_search(
     if (!VIsual_active)
 	VIsual = start_pos;
 
-    // put cursor on last character of match
+    // put the cursor after the match
     curwin->w_cursor = end_pos;
     if (LT_POS(VIsual, end_pos) && forward)
-	dec_cursor();
+    {
+	if (skip_first_backward)
+	    // put the cursor on the start of the match
+	    curwin->w_cursor = pos;
+	else
+	    // put the cursor on last character of match
+	    dec_cursor();
+    }
     else if (VIsual_active && LT_POS(curwin->w_cursor, VIsual) && forward)
 	curwin->w_cursor = pos;   // put the cursor on the start of the match
     VIsual_active = TRUE;
