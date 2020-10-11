@@ -1959,6 +1959,8 @@ func Test_readdirex()
         \ ['bar.txt_file', 'dir_dir', 'foo.txt_file', 'link_link'])
   endif
   eval 'Xdir'->delete('rf')
+
+  call assert_fails('call readdirex("doesnotexist")', 'E484:')
 endfunc
 
 func Test_readdirex_sort()

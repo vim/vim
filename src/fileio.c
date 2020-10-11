@@ -4743,7 +4743,7 @@ readdir_core(
     if (!ok)
     {
 	failed = TRUE;
-	smsg(_(e_notopen), path);
+	semsg(_(e_notopen), path);
     }
     else
     {
@@ -4813,7 +4813,7 @@ readdir_core(
     if (dirp == NULL)
     {
 	failed = TRUE;
-	smsg(_(e_notopen), path);
+	semsg(_(e_notopen), path);
     }
     else
     {
