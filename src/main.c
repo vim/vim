@@ -2710,15 +2710,6 @@ read_stdin(void)
     TIME_MSG("reading stdin");
 
     check_swap_exists_action();
-#if !(defined(AMIGA) || defined(MACOS_X))
-    /*
-     * Close stdin and dup it from stderr.  Required for GPM to work
-     * properly, and for running external commands.
-     * Is there any other system that cannot do this?
-     */
-    close(0);
-    vim_ignored = dup(2);
-#endif
 }
 
 /*
