@@ -75,7 +75,7 @@ def Test_assignment()
   if has('channel')
     var chan1: channel
     var job1: job
-    var job2: job = job_start('willfail')
+    # calling job_start() is in test_vim9_fails.vim, it causes leak reports
   endif
   if has('float')
     var float1: float = 3.4
@@ -216,12 +216,9 @@ def Test_assignment()
   CheckDefFailure(['v:errmsg += "more"'], 'E1051:')
   CheckDefFailure(['v:errmsg += 123'], 'E1012:')
 
-  # this should not leak
-  if 0
-    var text =<< trim END
-      some text
-    END
-  endif
+  var text =<< trim END
+    some text
+  END
 enddef
 
 def Test_extend_list()
