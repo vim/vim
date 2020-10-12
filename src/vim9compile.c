@@ -6715,6 +6715,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
     int		called_emsg_before = called_emsg;
     int		ret = FAIL;
     sctx_T	save_current_sctx = current_sctx;
+    int		save_estack_compiling = estack_compiling;
     int		do_estack_push;
     int		emsg_before = called_emsg;
     int		new_def_function = FALSE;
@@ -6757,6 +6758,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
     do_estack_push = !estack_top_is_ufunc(ufunc, 1);
     if (do_estack_push)
 	estack_push_ufunc(ufunc, 1);
+    estack_compiling = TRUE;
 
     if (ufunc->uf_def_args.ga_len > 0)
     {
@@ -7303,6 +7305,7 @@ erret:
     }
 
     current_sctx = save_current_sctx;
+    estack_compiling = save_estack_compiling;
     if (do_estack_push)
 	estack_pop();
 

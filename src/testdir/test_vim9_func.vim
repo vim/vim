@@ -13,6 +13,38 @@ func Test_def_basic()
   call SomeFunc()->assert_equal('yes')
 endfunc
 
+def Test_compiling_error()
+  # use a terminal to see the whole error message
+  CheckRunVimInTerminal
+
+  var lines =<< trim END
+    vim9script
+    def Fails()
+      echo nothing
+    enddef
+    defcompile
+  END
+  call writefile(lines, 'XTest_compile_error')
+  var buf = RunVimInTerminal('-S XTest_compile_error',
+              #{rows: 10, wait_for_ruler: 0})
+  var text = ''
+  for loop in range(100)
+    text = ''
+    for i in range(1, 9)
+      text ..= term_getline(buf, i)
+    endfor
+    if text =~ 'Error detected'
+      break
+    endif
+    sleep 20m
+  endfor
+  assert_match('Error detected while compiling command line.*Fails.*Variable not found: nothing', text)
+
+  # clean up
+  call StopVimInTerminal(buf)
+  call delete('XTest_compile_error')
+enddef
+
 def ReturnString(): string
   return 'string'
 enddef
