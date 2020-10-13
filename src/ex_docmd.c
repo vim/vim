@@ -6084,6 +6084,7 @@ ex_splitview(exarg_T *eap)
     char_u	*fname = NULL;
 #endif
 #ifdef FEAT_BROWSE
+    char_u	dot_path[] = ".";
     int		browse_flag = cmdmod.browse;
 #endif
     int		use_tab = eap->cmdidx == CMD_tabedit
@@ -6136,7 +6137,7 @@ ex_splitview(exarg_T *eap)
 	    // No browsing supported but we do have the file explorer:
 	    // Edit the directory.
 	    if (*eap->arg == NUL || !mch_isdir(eap->arg))
-		eap->arg = (char_u *)".";
+		eap->arg = dot_path;
 	}
 	else
 	{
