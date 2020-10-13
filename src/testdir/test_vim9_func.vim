@@ -13,10 +13,14 @@ func Test_def_basic()
   call SomeFunc()->assert_equal('yes')
 endfunc
 
-def Test_compiling_error()
-  # use a terminal to see the whole error message
+func Test_compiling_error()
+  " use a terminal to see the whole error message
   CheckRunVimInTerminal
 
+  call TestCompilingError()
+endfunc
+
+def TestCompilingError()
   var lines =<< trim END
     vim9script
     def Fails()
