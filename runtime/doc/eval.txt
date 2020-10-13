@@ -120,7 +120,7 @@ base, use |str2nr()|.
 
 						*TRUE* *FALSE* *Boolean*
 For boolean operators Numbers are used.  Zero is FALSE, non-zero is TRUE.
-You can also use |v:false| and |v:true|.  In Vim9 script |false| and |true|. 
+You can also use |v:false| and |v:true|.  In Vim9 script |false| and |true|.
 When TRUE is returned from a function it is the Number one, FALSE is the
 number zero.
 
@@ -3125,7 +3125,7 @@ appendbufline({expr}, {lnum}, {text})			*appendbufline()*
 		If {expr} is not a valid buffer or {lnum} is not valid, an
 		error message is given. Example: >
 			:let failed = appendbufline(13, 0, "# THE START")
-<
+
 <		Can also be used as a |method| after a List, the base is
 		passed as the second argument: >
 			mylist->appendbufline(buf, lnum)
@@ -7957,8 +7957,8 @@ printf({fmt}, {expr1} ...)				*printf()*
 
 
 prompt_getprompt({buf})					*prompt_getprompt()*
-		Returns the effective prompt text for buffer {buf}. {buf} can
-		be a buffer name or number. |prompt-buffer|.
+		Returns the effective prompt text for buffer {buf}.  {buf} can
+		be a buffer name or number.  See |prompt-buffer|.
 
 		If the buffer doesn't exist or isn't a prompt buffer, an empty
 		string is returned.
@@ -10694,8 +10694,8 @@ terminalprops()						*terminalprops()*
 		detected from the response to |t_RV| request.  See
 		|v:termresponse| for the response itself.  If |v:termresponse|
 		is empty most values here will be 'u' for unknown.
-		   cursor_style		wether sending |t_RS| works  **
-		   cursor_blink_mode	wether sending |t_RC| works  **
+		   cursor_style		whether sending |t_RS| works  **
+		   cursor_blink_mode	whether sending |t_RC| works  **
 		   underline_rgb	whether |t_8u| works **
 		   mouse		mouse type supported
 

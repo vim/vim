@@ -1288,7 +1288,7 @@ prompt. >
 	  " Send the text to a shell with Enter appended.
 	  call ch_sendraw(g:shell_job, a:text .. "\n")
 	endfunc
-		
+
 	" Function handling output from the shell: Added above the prompt.
 	func GotOutput(channel, msg)
 	  call append(line("$") - 1, "- " . a:msg)
