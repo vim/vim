@@ -3,6 +3,7 @@
 
 source test_backup.vim
 source test_behave.vim
+source test_browse.vim
 source test_compiler.vim
 source test_ex_equal.vim
 source test_ex_undo.vim

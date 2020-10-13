@@ -67,6 +67,7 @@ NEW_TESTS = \
 	test_blob \
 	test_blockedit \
 	test_breakindent \
+	test_browse \
 	test_buffer \
 	test_bufline \
 	test_bufwintabinfo \
@@ -324,6 +325,7 @@ NEW_TESTS_RES = \
 	test_blob.res \
 	test_blockedit.res \
 	test_breakindent.res \
+	test_browse.res \
 	test_buffer.res \
 	test_bufline.res \
 	test_bufwintabinfo.res \
