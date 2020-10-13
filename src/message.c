@@ -1551,6 +1551,10 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
     char_u	*s;
     int		mb_l;
     int		c;
+    int		save_got_int = got_int;
+
+    // Only quit when got_int was set in here.
+    got_int = FALSE;
 
     // if MSG_HIST flag set, add message to history
     if (attr & MSG_HIST)
@@ -1568,7 +1572,7 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
      * Go over the string.  Special characters are translated and printed.
      * Normal characters are printed several at a time.
      */
-    while (--len >= 0)
+    while (--len >= 0 && !got_int)
     {
 	if (enc_utf8)
 	    // Don't include composing chars after the end.
@@ -1618,9 +1622,11 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
 	}
     }
 
-    if (str > plain_start)
+    if (str > plain_start && !got_int)
 	// print the printable chars at the end
 	msg_puts_attr_len((char *)plain_start, (int)(str - plain_start), attr);
+
+    got_int |= save_got_int;
 
     return retval;
 }
