@@ -2465,6 +2465,7 @@ do_ecmd(
     bufref_T	old_curbuf;
     char_u	*free_fname = NULL;
 #ifdef FEAT_BROWSE
+    char_u	dot_path[] = ".";
     char_u	*browse_file = NULL;
 #endif
     int		retval = FAIL;
@@ -2511,7 +2512,7 @@ do_ecmd(
 		// No browsing supported but we do have the file explorer:
 		// Edit the directory.
 		if (ffname == NULL || !mch_isdir(ffname))
-		    ffname = (char_u *)".";
+		    ffname = dot_path;
 	    }
 	    else
 	    {

@@ -1805,4 +1805,22 @@ func Test_edit_lastline_scroll()
   close!
 endfunc
 
+func Test_edit_browse()
+  " in the GUI this opens a file picker, we only test the terminal behavior
+  CheckNotGui
+
+  " ":browse xxx" checks for the FileExplorer augroup and assumes editing "."
+  " works then.
+  augroup FileExplorer
+    au!
+  augroup END
+
+  " When the USE_FNAME_CASE is defined this used to cause a crash.
+  browse enew
+  bwipe!
+
+  browse split
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
