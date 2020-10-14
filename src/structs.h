@@ -889,6 +889,7 @@ typedef struct {
     }		cs_pend;
     void	*cs_forinfo[CSTACK_LEN]; // info used by ":for"
     int		cs_line[CSTACK_LEN];	// line nr of ":while"/":for" line
+    int		cs_block_id[CSTACK_LEN];    // block ID stack
     int		cs_script_var_len[CSTACK_LEN];	// value of sn_var_vals.ga_len
 						// when entering the block
     int		cs_idx;			// current entry, or -1 if none
@@ -1701,18 +1702,47 @@ struct funccal_entry {
  * Holds the hashtab with variables local to each sourced script.
  * Each item holds a variable (nameless) that points to the dict_T.
  */
-typedef struct
-{
+typedef struct {
     dictitem_T	sv_var;
     dict_T	sv_dict;
 } scriptvar_T;
 
 /*
+ * Entry for "sn_all_vars".  Contains the s: variables from sn_vars plus the
+ * block-local ones.
+ */
+typedef struct sallvar_S sallvar_T;
+struct sallvar_S {
+    sallvar_T	*sav_next;	  // var with same name but different block
+    int		sav_block_id;	  // block ID where declared
+    int		sav_var_vals_idx; // index in sn_var_vals
+
+    // So long as the variable is valid (block it was defined in is still
+    // active) "sav_di" is used.  It is set to NULL when leaving the block,
+    // then sav_tv and sav_flags are used.
+    dictitem_T *sav_di;		// dictitem with di_key and di_tv
+    typval_T	sav_tv;		// type and value of the variable
+    char_u	sav_flags;	// DI_FLAGS_ flags (only used for variable)
+    char_u	sav_key[1];	// key (actually longer!)
+};
+
+/*
+ * In the sn_all_vars hashtab item "hi_key" points to "sav_key" in a sallvar_T.
+ * This makes it possible to store and find the sallvar_T.
+ * SAV2HIKEY() converts a sallvar_T pointer to a hashitem key pointer.
+ * HIKEY2SAV() converts a hashitem key pointer to a sallvar_T pointer.
+ * HI2SAV() converts a hashitem pointer to a sallvar_T pointer.
+ */
+#define SAV2HIKEY(sav) ((sav)->sav_key)
+#define HIKEY2SAV(p)  ((sallvar_T *)(p - offsetof(sallvar_T, sav_key)))
+#define HI2SAV(hi)     HIKEY2SAV((hi)->hi_key)
+
+/*
  * Entry for "sn_var_vals".  Used for script-local variables.
  */
 typedef struct {
-    char_u	*sv_name;	// points into "sn_vars" di_key
-    typval_T	*sv_tv;		// points into "sn_vars" di_tv
+    char_u	*sv_name;	// points into "sn_all_vars" di_key
+    typval_T	*sv_tv;		// points into "sn_vars" or "sn_all_vars" di_tv
     type_T	*sv_type;
     int		sv_const;
     int		sv_export;	// "export let var = val"
@@ -1742,12 +1772,27 @@ typedef struct
 {
     char_u	*sn_name;
 
-    scriptvar_T	*sn_vars;	// stores s: variables for this script
-    garray_T	sn_var_vals;	// same variables as a list of svar_T
+    // "sn_vars" stores the s: variables currently valid.  When leaving a block
+    // variables local to that block are removed.
+    scriptvar_T	*sn_vars;
+
+    // Specific for a Vim9 script.
+    // "sn_all_vars" stores all script variables ever declared.  So long as the
+    // variable is still valid the value is in "sn_vars->sv_dict...di_tv".
+    // When the block of a declaration is left the value is moved to
+    // "sn_all_vars..sav_tv".
+    // Variables with duplicate names are possible, the sav_block_id must be
+    // used to check that which variable is valid.
+    dict_T	sn_all_vars;	// all script variables, dict of sallvar_T
+
+    // Stores the same variables as in "sn_all_vars" as a list of svar_T, so
+    // that they can be quickly found by index instead of a hash table lookup.
+    // Also stores the type.
+    garray_T	sn_var_vals;
 
     garray_T	sn_imports;	// imported items, imported_T
-
     garray_T	sn_type_list;	// keeps types used by variables
+    int		sn_current_block_id;  // Unique ID for each script block
 
     int		sn_version;	// :scriptversion
     int		sn_had_command;	// TRUE if any command was executed

@@ -914,41 +914,35 @@ enter_block(cstack_T *cstack)
 {
     ++cstack->cs_idx;
     if (in_vim9script())
-	cstack->cs_script_var_len[cstack->cs_idx] =
-			  SCRIPT_ITEM(current_sctx.sc_sid)->sn_var_vals.ga_len;
+    {
+	scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
+
+	cstack->cs_script_var_len[cstack->cs_idx] = si->sn_var_vals.ga_len;
+	cstack->cs_block_id[cstack->cs_idx] = ++si->sn_current_block_id;
+    }
 }
 
     static void
 leave_block(cstack_T *cstack)
 {
-    int i;
-
-    if (in_vim9script())
+    if (in_vim9script() && SCRIPT_ID_VALID(current_sctx.sc_sid))
     {
 	scriptitem_T	*si = SCRIPT_ITEM(current_sctx.sc_sid);
-	hashtab_T	*ht = get_script_local_ht();
+	int		i;
 
-	if (ht != NULL)
-	{
-	    for (i = cstack->cs_script_var_len[cstack->cs_idx];
+	for (i = cstack->cs_script_var_len[cstack->cs_idx];
 					       i < si->sn_var_vals.ga_len; ++i)
-	    {
-		svar_T	*sv = ((svar_T *)si->sn_var_vals.ga_data) + i;
-		hashitem_T	*hi;
+	{
+	    svar_T	*sv = ((svar_T *)si->sn_var_vals.ga_data) + i;
 
-		if (sv->sv_name != NULL)
-		{
-		    // Remove a variable declared inside the block, if it still
-		    // exists.
-		    hi = hash_find(ht, sv->sv_name);
-		    if (!HASHITEM_EMPTY(hi))
-		    {
-			delete_var(ht, hi);
-			sv->sv_name = NULL;
-		    }
-		}
-	    }
+	    if (sv->sv_name != NULL)
+		// Remove a variable declared inside the block, if it still
+		// exists, from sn_vars and move the value into sn_all_vars.
+		hide_script_var(si, sv);
 	}
+
+	// TODO: is this needed?
+	cstack->cs_script_var_len[cstack->cs_idx] = si->sn_var_vals.ga_len;
     }
     --cstack->cs_idx;
 }
