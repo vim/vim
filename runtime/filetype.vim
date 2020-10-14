@@ -1755,9 +1755,6 @@ au BufNewFile,BufReadPost *.tssop		setf tssop
 " TSS - Command Line (temporary)
 au BufNewFile,BufReadPost *.tsscl		setf tsscl
 
-" TWIG files
-au BufNewFile,BufReadPost *.twig		setf twig
-
 " Typescript
 au BufNewFile,BufReadPost *.ts			setf typescript
 
