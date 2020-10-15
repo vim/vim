@@ -169,6 +169,18 @@ func Test_string_html_objects()
   normal! k$vaty
   call assert_equal("<html>\n<title>welcome\n</html>", @")
 
+  " nested tag that has < in a different line from >
+  let t = "<div><div\n></div></div>"
+  $put =t
+  normal! k0vaty
+  call assert_equal("<div><div\n></div></div>", @")
+
+  " nested tag with attribute that has < in a different line from >
+  let t = "<div><div\nattr=\"attr\"\n></div></div>"
+  $put =t
+  normal! 2k0vaty
+  call assert_equal("<div><div\nattr=\"attr\"\n></div></div>", @")
+
   set quoteescape&
   enew!
 endfunc
