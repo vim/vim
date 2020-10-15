@@ -2363,6 +2363,16 @@ func Test_popup_settext_getline()
   call popup_close(id)
 endfunc
 
+func Test_popup_settext_null()
+  let id = popup_create('', #{ tabpage: 0 })
+  call popup_settext(id, test_null_list())
+  call popup_close(id)
+
+  let id = popup_create('', #{ tabpage: 0 })
+  call popup_settext(id, test_null_string())
+  call popup_close(id)
+endfunc
+
 func Test_popup_hidden()
   new
 

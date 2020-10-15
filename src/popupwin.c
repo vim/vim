@@ -1595,14 +1595,16 @@ popup_set_buffer_text(buf_T *buf, typval_T text)
     // Add text to the buffer.
     if (text.v_type == VAR_STRING)
     {
+	char_u *s = text.vval.v_string;
+
 	// just a string
-	ml_append_buf(buf, 0, text.vval.v_string, (colnr_T)0, TRUE);
+	ml_append_buf(buf, 0, s == NULL ? (char_u *)"" : s, (colnr_T)0, TRUE);
     }
     else
     {
 	list_T *l = text.vval.v_list;
 
-	if (l->lv_len > 0)
+	if (l != NULL && l->lv_len > 0)
 	{
 	    if (l->lv_first->li_tv.v_type == VAR_STRING)
 		// list of strings
