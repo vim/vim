@@ -253,31 +253,47 @@ enddef
 def Test_block_local_vars()
   var lines =<< trim END
       vim9script
+      v:testing = 1
       if true
-        var text = 'hello'
-        def SayHello(): string
+        var text = ['hello']
+        def SayHello(): list<string>
           return text
         enddef
         def SetText(v: string)
-          text = v
+          text = [v]
         enddef
       endif
 
       if true
-        var text = 'again'
-        def SayAgain(): string
+        var text = ['again']
+        def SayAgain(): list<string>
           return text
         enddef
       endif
+
+      # test that the "text" variables are not cleaned up
+      test_garbagecollect_now()
+
       defcompile
 
-      assert_equal('hello', SayHello())
-      assert_equal('again', SayAgain())
+      assert_equal(['hello'], SayHello())
+      assert_equal(['again'], SayAgain())
 
       SetText('foobar')
-      assert_equal('foobar', SayHello())
+      assert_equal(['foobar'], SayHello())
+
+      call writefile(['ok'], 'Xdidit')
+      qall!
   END
-  CheckScriptSuccess(lines)
+
+  # need to execute this with a separate Vim instance to avoid the current
+  # context gets garbage collected.
+  writefile(lines, 'Xscript')
+  RunVim([], [], '-S Xscript')
+  assert_equal(['ok'], readfile('Xdidit'))
+
+  delete('Xscript')
+  delete('Xdidit')
 enddef
 
 func g:NoSuchFunc()
