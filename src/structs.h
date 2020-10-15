@@ -1582,6 +1582,8 @@ typedef struct
     char_u	*uf_va_name;	// name from "...name" or NULL
     type_T	*uf_va_type;	// type from "...name: type" or NULL
     type_T	*uf_func_type;	// type of the function, &t_func_any if unknown
+    int		uf_block_depth;	// nr of entries in uf_block_ids
+    int		*uf_block_ids;	// blocks a :def function is defined inside
 # if defined(FEAT_LUA)
     cfunc_T     uf_cb;		// callback function for cfunc
     cfunc_free_T uf_cb_free;    // callback function to free cfunc
@@ -1792,7 +1794,8 @@ typedef struct
 
     garray_T	sn_imports;	// imported items, imported_T
     garray_T	sn_type_list;	// keeps types used by variables
-    int		sn_current_block_id;  // Unique ID for each script block
+    int		sn_current_block_id; // ID for current block, 0 for outer
+    int		sn_last_block_id;  // Unique ID for each script block
 
     int		sn_version;	// :scriptversion
     int		sn_had_command;	// TRUE if any command was executed

@@ -1134,6 +1134,7 @@ func_clear_items(ufunc_T *fp)
     ga_clear_strings(&(fp->uf_lines));
     VIM_CLEAR(fp->uf_arg_types);
     VIM_CLEAR(fp->uf_def_arg_idx);
+    VIM_CLEAR(fp->uf_block_ids);
     VIM_CLEAR(fp->uf_va_name);
     clear_type_list(&fp->uf_type_list);
 
@@ -2658,7 +2659,7 @@ list_functions(regmatch_T *regmatch)
  * Returns a pointer to the function or NULL if no function defined.
  */
     ufunc_T *
-def_function(exarg_T *eap, char_u *name_arg)
+define_function(exarg_T *eap, char_u *name_arg)
 {
     char_u	*theline;
     char_u	*line_to_free = NULL;
@@ -3477,9 +3478,24 @@ def_function(exarg_T *eap, char_u *name_arg)
 	// error messages are for the first function line
 	SOURCING_LNUM = sourcing_lnum_top;
 
+	if (eap->cstack != NULL && eap->cstack->cs_idx >= 0)
+	{
+	    int count = eap->cstack->cs_idx + 1;
+
+	    // The block context may be needed for script variables declared in
+	    // a block visible now but not when the function is compiled.
+	    fp->uf_block_ids = ALLOC_MULT(int, count);
+	    if (fp->uf_block_ids != NULL)
+	    {
+		mch_memmove(fp->uf_block_ids, eap->cstack->cs_block_id,
+							  sizeof(int) * count);
+		fp->uf_block_depth = count;
+	    }
+	    // TODO: set flag in each block to indicate a function was defined
+	}
+
 	// parse the argument types
 	ga_init2(&fp->uf_type_list, sizeof(type_T *), 10);
-
 	if (argtypes.ga_len > 0)
 	{
 	    // When "varargs" is set the last name/type goes into uf_va_name
@@ -3608,7 +3624,7 @@ ret_free:
     void
 ex_function(exarg_T *eap)
 {
-    (void)def_function(eap, NULL);
+    (void)define_function(eap, NULL);
 }
 
 /*

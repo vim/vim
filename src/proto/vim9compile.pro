@@ -1,7 +1,7 @@
 /* vim9compile.c */
 int check_defined(char_u *p, size_t len, cctx_T *cctx);
 int check_compare_types(exptype_T type, typval_T *tv1, typval_T *tv2);
-int get_script_item_idx(int sid, char_u *name, int check_writable);
+int get_script_item_idx(int sid, char_u *name, int check_writable, cctx_T *cctx);
 imported_T *find_imported(char_u *name, size_t len, cctx_T *cctx);
 imported_T *find_imported_in_script(char_u *name, size_t len, int sid);
 int vim9_comment_start(char_u *p);

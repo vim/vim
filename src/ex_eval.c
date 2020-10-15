@@ -918,7 +918,8 @@ enter_block(cstack_T *cstack)
 	scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
 
 	cstack->cs_script_var_len[cstack->cs_idx] = si->sn_var_vals.ga_len;
-	cstack->cs_block_id[cstack->cs_idx] = ++si->sn_current_block_id;
+	cstack->cs_block_id[cstack->cs_idx] = ++si->sn_last_block_id;
+	si->sn_current_block_id = si->sn_last_block_id;
     }
 }
 
@@ -938,11 +939,16 @@ leave_block(cstack_T *cstack)
 	    if (sv->sv_name != NULL)
 		// Remove a variable declared inside the block, if it still
 		// exists, from sn_vars and move the value into sn_all_vars.
-		hide_script_var(si, sv);
+		hide_script_var(si, i);
 	}
 
 	// TODO: is this needed?
 	cstack->cs_script_var_len[cstack->cs_idx] = si->sn_var_vals.ga_len;
+
+	if (cstack->cs_idx == 0)
+	    si->sn_current_block_id = 0;
+	else
+	    si->sn_current_block_id = cstack->cs_block_id[cstack->cs_idx - 1];
     }
     --cstack->cs_idx;
 }

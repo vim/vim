@@ -2962,8 +2962,10 @@ ex_disassemble(exarg_T *eap)
 		    svar_T *sv = ((svar_T *)si->sn_var_vals.ga_data)
 					     + iptr->isn_arg.script.script_idx;
 
-		    smsg("%4d LOADSCRIPT %s from %s", current,
-						     sv->sv_name, si->sn_name);
+		    smsg("%4d LOADSCRIPT %s-%d from %s", current,
+					    sv->sv_name,
+					    iptr->isn_arg.script.script_idx,
+					    si->sn_name);
 		}
 		break;
 	    case ISN_LOADS:
@@ -3054,8 +3056,10 @@ ex_disassemble(exarg_T *eap)
 		    svar_T *sv = ((svar_T *)si->sn_var_vals.ga_data)
 					     + iptr->isn_arg.script.script_idx;
 
-		    smsg("%4d STORESCRIPT %s in %s", current,
-						     sv->sv_name, si->sn_name);
+		    smsg("%4d STORESCRIPT %s-%d in %s", current,
+					     sv->sv_name,
+					     iptr->isn_arg.script.script_idx,
+					     si->sn_name);
 		}
 		break;
 	    case ISN_STOREOPT:

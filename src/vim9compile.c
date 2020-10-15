@@ -195,7 +195,7 @@ lookup_local(char_u *name, size_t len, cctx_T *cctx)
  * Returns OK when found, FAIL otherwise.
  */
     static int
-lookup_arg(
+arg_exists(
 	char_u	*name,
 	size_t	len,
 	int	*idxp,
@@ -247,7 +247,7 @@ lookup_arg(
     if (cctx->ctx_outer != NULL)
     {
 	// Lookup the name for an argument of the outer function.
-	if (lookup_arg(name, len, idxp, type, gen_load_outer, cctx->ctx_outer)
+	if (arg_exists(name, len, idxp, type, gen_load_outer, cctx->ctx_outer)
 									 == OK)
 	{
 	    *gen_load_outer = TRUE;
@@ -256,6 +256,57 @@ lookup_arg(
     }
 
     return FAIL;
+}
+
+/*
+ * Lookup a script-local variable in the current script, possibly defined in a
+ * block that contains the function "cctx->ctx_ufunc".
+ * "cctx" is NULL at the script level.
+ * if "len" is <= 0 "name" must be NUL terminated.
+ * Return NULL when not found.
+ */
+    static sallvar_T *
+find_script_var(char_u *name, size_t len, cctx_T *cctx)
+{
+    scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
+    hashitem_T	    *hi;
+    int		    cc;
+    sallvar_T	    *sav;
+    ufunc_T	    *ufunc;
+
+    // Find the list of all script variables with the right name.
+    if (len > 0)
+    {
+	cc = name[len];
+	name[len] = NUL;
+    }
+    hi = hash_find(&si->sn_all_vars.dv_hashtab, name);
+    if (len > 0)
+	name[len] = cc;
+    if (HASHITEM_EMPTY(hi))
+	return NULL;
+
+    sav = HI2SAV(hi);
+    if (sav->sav_block_id == 0 || cctx == NULL)
+	// variable defined in the script scope or not in a function.
+	return sav;
+
+    // Go over the variables with this name and find one that was visible
+    // from the function.
+    ufunc = cctx->ctx_ufunc;
+    while (sav != NULL)
+    {
+	int idx;
+
+	// Go over the blocks that this function was defined in.  If the
+	// variable block ID matches it was visible to the function.
+	for (idx = 0; idx < ufunc->uf_block_depth; ++idx)
+	    if (ufunc->uf_block_ids[idx] == sav->sav_block_id)
+		return sav;
+	sav = sav->sav_next;
+    }
+
+    return NULL;
 }
 
 /*
@@ -268,33 +319,50 @@ script_is_vim9()
 }
 
 /*
- * Lookup a variable in the current script.
+ * Lookup a variable (without s: prefix) in the current script.
  * If "vim9script" is TRUE the script must be Vim9 script.  Used for "var"
  * without "s:".
+ * "cctx" is NULL at the script level.
  * Returns OK or FAIL.
  */
     static int
-lookup_script(char_u *name, size_t len, int vim9script)
+script_var_exists(char_u *name, size_t len, int vim9script, cctx_T *cctx)
 {
-    int		    cc;
-    hashtab_T	    *ht;
-    dictitem_T	    *di;
+    int		    is_vim9_script;
 
     if (current_sctx.sc_sid <= 0)
 	return FAIL;
-    ht = &SCRIPT_VARS(current_sctx.sc_sid);
-    if (vim9script && !script_is_vim9())
+    is_vim9_script = script_is_vim9();
+    if (vim9script && !is_vim9_script)
 	return FAIL;
-    cc = name[len];
-    name[len] = NUL;
-    di = find_var_in_ht(ht, 0, name, TRUE);
-    name[len] = cc;
-    return di == NULL ? FAIL: OK;
+    if (is_vim9_script)
+    {
+	// Check script variables that were visible where the function was
+	// defined.
+	if (find_script_var(name, len, cctx) != NULL)
+	    return OK;
+    }
+    else
+    {
+	hashtab_T	*ht = &SCRIPT_VARS(current_sctx.sc_sid);
+	dictitem_T	*di;
+	int		cc;
+
+	// Check script variables that are currently visible
+	cc = name[len];
+	name[len] = NUL;
+	di = find_var_in_ht(ht, 0, name, TRUE);
+	name[len] = cc;
+	if (di != NULL)
+	    return OK;
+    }
+
+    return FAIL;
 }
 
 /*
  * Check if "p[len]" is already defined, either in script "import_sid" or in
- * compilation context "cctx".
+ * compilation context "cctx".  "cctx" is NULL at the script level.
  * Does not check the global namespace.
  * Return FAIL and give an error if it defined.
  */
@@ -305,10 +373,10 @@ check_defined(char_u *p, size_t len, cctx_T *cctx)
     ufunc_T	*ufunc = NULL;
 
     p[len] = NUL;
-    if (lookup_script(p, len, FALSE) == OK
+    if (script_var_exists(p, len, FALSE, cctx) == OK
 	    || (cctx != NULL
 		&& (lookup_local(p, len, cctx) != NULL
-		    || lookup_arg(p, len, NULL, NULL, NULL, cctx) == OK))
+		    || arg_exists(p, len, NULL, NULL, NULL, cctx) == OK))
 	    || find_imported(p, len, cctx) != NULL
 	    || (ufunc = find_func_even_dead(p, FALSE, cctx)) != NULL)
     {
@@ -1699,7 +1767,7 @@ reserve_local(
 {
     lvar_T  *lvar;
 
-    if (lookup_arg(name, len, NULL, NULL, NULL, cctx) == OK)
+    if (arg_exists(name, len, NULL, NULL, NULL, cctx) == OK)
     {
 	emsg_namelen(_(e_str_is_used_as_argument), name, (int)len);
 	return NULL;
@@ -1760,16 +1828,30 @@ free_locals(cctx_T *cctx)
  * If not found returns -2.
  */
     int
-get_script_item_idx(int sid, char_u *name, int check_writable)
+get_script_item_idx(int sid, char_u *name, int check_writable, cctx_T *cctx)
 {
     hashtab_T	    *ht;
     dictitem_T	    *di;
     scriptitem_T    *si = SCRIPT_ITEM(sid);
+    svar_T	    *sv;
     int		    idx;
 
-    // First look the name up in the hashtable.
     if (!SCRIPT_ID_VALID(sid))
 	return -1;
+    if (sid == current_sctx.sc_sid)
+    {
+	sallvar_T *sav = find_script_var(name, (size_t)-1, cctx);
+
+	if (sav == NULL)
+	    return -2;
+	idx = sav->sav_var_vals_idx;
+	sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
+	if (check_writable && sv->sv_const)
+	    semsg(_(e_readonlyvar), name);
+	return idx;
+    }
+
+    // First look the name up in the hashtable.
     ht = &SCRIPT_VARS(sid);
     di = find_var_in_ht(ht, 0, name, TRUE);
     if (di == NULL)
@@ -1778,8 +1860,7 @@ get_script_item_idx(int sid, char_u *name, int check_writable)
     // Now find the svar_T index in sn_var_vals.
     for (idx = 0; idx < si->sn_var_vals.ga_len; ++idx)
     {
-	svar_T    *sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
-
+	sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
 	if (sv->sv_tv == &di->di_tv)
 	{
 	    if (check_writable && sv->sv_const)
@@ -2083,7 +2164,7 @@ compile_load_scriptvar(
     if (!SCRIPT_ID_VALID(current_sctx.sc_sid))
 	return FAIL;
     si = SCRIPT_ITEM(current_sctx.sc_sid);
-    idx = get_script_item_idx(current_sctx.sc_sid, name, FALSE);
+    idx = get_script_item_idx(current_sctx.sc_sid, name, FALSE, cctx);
     if (idx == -1 || si->sn_version != SCRIPT_VERSION_VIM9)
     {
 	// variable is not in sn_var_vals: old style script.
@@ -2130,7 +2211,7 @@ compile_load_scriptvar(
 	    cc = *p;
 	    *p = NUL;
 
-	    idx = find_exported(import->imp_sid, exp_name, &ufunc, &type);
+	    idx = find_exported(import->imp_sid, exp_name, &ufunc, &type, cctx);
 	    *p = cc;
 	    p = skipwhite(p);
 
@@ -2257,7 +2338,7 @@ compile_load(
 	if (name == NULL)
 	    return FAIL;
 
-	if (lookup_arg(*arg, len, &idx, &type, &gen_load_outer, cctx) == OK)
+	if (arg_exists(*arg, len, &idx, &type, &gen_load_outer, cctx) == OK)
 	{
 	    if (!gen_load_outer)
 		gen_load = TRUE;
@@ -2279,7 +2360,7 @@ compile_load(
 	    {
 		// "var" can be script-local even without using "s:" if it
 		// already exists in a Vim9 script or when it's imported.
-		if (lookup_script(*arg, len, TRUE) == OK
+		if (script_var_exists(*arg, len, TRUE, cctx) == OK
 			|| find_imported(name, 0, cctx) != NULL)
 		   res = compile_load_scriptvar(cctx, name, *arg, &end, FALSE);
 
@@ -4468,7 +4549,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
     eap->skip = cctx->ctx_skip == SKIP_YES;
     eap->forceit = FALSE;
     lambda_name = get_lambda_name();
-    ufunc = def_function(eap, lambda_name);
+    ufunc = define_function(eap, lambda_name);
 
     if (ufunc == NULL)
 	return eap->skip ? (char_u *)"" : NULL;
@@ -4494,12 +4575,25 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 	// Define a local variable for the function reference.
 	lvar_T	*lvar = reserve_local(cctx, name_start, name_end - name_start,
 						    TRUE, ufunc->uf_func_type);
+	int block_depth = cctx->ctx_ufunc->uf_block_depth;
 
 	if (lvar == NULL)
 	    return NULL;
 	if (generate_FUNCREF(cctx, ufunc) == FAIL)
 	    return NULL;
 	r = generate_STORE(cctx, ISN_STORE, lvar->lv_idx, NULL);
+
+	// copy over the block scope IDs
+	if (block_depth > 0)
+	{
+	    ufunc->uf_block_ids = ALLOC_MULT(int, block_depth);
+	    if (ufunc->uf_block_ids != NULL)
+	    {
+		mch_memmove(ufunc->uf_block_ids, cctx->ctx_ufunc->uf_block_ids,
+						    sizeof(int) * block_depth);
+		ufunc->uf_block_depth = block_depth;
+	    }
+	}
     }
 
     // TODO: warning for trailing text?
@@ -4900,7 +4994,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		if (lvar == NULL)
 		{
 		    CLEAR_FIELD(arg_lvar);
-		    if (lookup_arg(var_start, varlen,
+		    if (arg_exists(var_start, varlen,
 				&arg_lvar.lv_idx, &arg_lvar.lv_type,
 				&arg_lvar.lv_from_outer, cctx) == OK)
 		    {
@@ -4925,8 +5019,10 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    int script_namespace = varlen > 1
 					   && STRNCMP(var_start, "s:", 2) == 0;
 		    int script_var = (script_namespace
-			      ? lookup_script(var_start + 2, varlen - 2, FALSE)
-			      : lookup_script(var_start, varlen, TRUE)) == OK;
+			      ? script_var_exists(var_start + 2, varlen - 2,
+								   FALSE, cctx)
+			      : script_var_exists(var_start, varlen,
+							    TRUE, cctx)) == OK;
 		    imported_T  *import =
 					find_imported(var_start, varlen, cctx);
 
@@ -4962,7 +5058,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			if (SCRIPT_ID_VALID(scriptvar_sid))
 			{
 			    scriptvar_idx = get_script_item_idx(scriptvar_sid,
-								rawname, TRUE);
+							  rawname, TRUE, cctx);
 			    if (scriptvar_idx >= 0)
 			    {
 				scriptitem_T *si = SCRIPT_ITEM(scriptvar_sid);
@@ -6964,9 +7060,10 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 			    || *ea.cmd == '@'
 			    || ((len) > 2 && ea.cmd[1] == ':')
 			    || lookup_local(ea.cmd, len, &cctx) != NULL
-			    || lookup_arg(ea.cmd, len, NULL, NULL,
+			    || arg_exists(ea.cmd, len, NULL, NULL,
 							     NULL, &cctx) == OK
-			    || lookup_script(ea.cmd, len, FALSE) == OK
+			    || script_var_exists(ea.cmd, len,
+							    FALSE, &cctx) == OK
 			    || find_imported(ea.cmd, len, &cctx) != NULL)
 		    {
 			line = compile_assignment(ea.cmd, &ea, CMD_SIZE, &cctx);

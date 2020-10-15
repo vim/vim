@@ -250,6 +250,36 @@ def Test_block_failure()
   CheckDefFailure(['{', 'echo 1'], 'E1026:')
 enddef
 
+def Test_block_local_vars()
+  var lines =<< trim END
+      vim9script
+      if true
+        var text = 'hello'
+        def SayHello(): string
+          return text
+        enddef
+        def SetText(v: string)
+          text = v
+        enddef
+      endif
+
+      if true
+        var text = 'again'
+        def SayAgain(): string
+          return text
+        enddef
+      endif
+      defcompile
+
+      assert_equal('hello', SayHello())
+      assert_equal('again', SayAgain())
+
+      SetText('foobar')
+      assert_equal('foobar', SayHello())
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 func g:NoSuchFunc()
   echo 'none'
 endfunc
@@ -1265,15 +1295,16 @@ def Test_import_absolute()
 
   assert_equal(9876, g:imported_abs)
   assert_equal(8888, g:imported_after)
-  assert_match('<SNR>\d\+_UseExported.*' ..
-          'g:imported_abs = exported.*' ..
-          '0 LOADSCRIPT exported from .*Xexport_abs.vim.*' ..
-          '1 STOREG g:imported_abs.*' ..
-          'exported = 8888.*' ..
-          '3 STORESCRIPT exported in .*Xexport_abs.vim.*' ..
-          'g:imported_after = exported.*' ..
-          '4 LOADSCRIPT exported from .*Xexport_abs.vim.*' ..
-          '5 STOREG g:imported_after.*',
+  assert_match('<SNR>\d\+_UseExported\_s*' ..
+          'g:imported_abs = exported\_s*' ..
+          '0 LOADSCRIPT exported-2 from .*Xexport_abs.vim\_s*' ..
+          '1 STOREG g:imported_abs\_s*' ..
+          'exported = 8888\_s*' ..
+          '2 PUSHNR 8888\_s*' ..
+          '3 STORESCRIPT exported-2 in .*Xexport_abs.vim\_s*' ..
+          'g:imported_after = exported\_s*' ..
+          '4 LOADSCRIPT exported-2 from .*Xexport_abs.vim\_s*' ..
+          '5 STOREG g:imported_after',
         g:import_disassembled)
 
   Undo_export_script_lines()

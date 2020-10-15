@@ -193,7 +193,8 @@ find_exported(
 	int	    sid,
 	char_u	    *name,
 	ufunc_T	    **ufunc,
-	type_T	    **type)
+	type_T	    **type,
+	cctx_T	    *cctx)
 {
     int		idx = -1;
     svar_T	*sv;
@@ -201,7 +202,7 @@ find_exported(
 
     // find name in "script"
     // TODO: also find script-local user function
-    idx = get_script_item_idx(sid, name, FALSE);
+    idx = get_script_item_idx(sid, name, FALSE, cctx);
     if (idx >= 0)
     {
 	sv = ((svar_T *)script->sn_var_vals.ga_data) + idx;
@@ -248,6 +249,7 @@ find_exported(
 /*
  * Handle an ":import" command and add the resulting imported_T to "gap", when
  * not NULL, or script "import_sid" sn_imports.
+ * "cctx" is NULL at the script level.
  * Returns a pointer to after the command or NULL in case of failure
  */
     char_u *
@@ -461,7 +463,7 @@ handle_import(
 	    ufunc_T	*ufunc = NULL;
 	    type_T	*type;
 
-	    idx = find_exported(sid, name, &ufunc, &type);
+	    idx = find_exported(sid, name, &ufunc, &type, cctx);
 
 	    if (idx < 0 && ufunc == NULL)
 		goto erret;
@@ -623,9 +625,14 @@ add_vim9_script_var(dictitem_T *di, typval_T *tv, type_T *type)
     }
 }
 
+/*
+ * Hide a script variable when leaving a block.
+ * "idx" is de index in sn_var_vals.
+ */
     void
-hide_script_var(scriptitem_T *si, svar_T *sv)
+hide_script_var(scriptitem_T *si, int idx)
 {
+    svar_T	*sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
     hashtab_T	*script_ht = get_script_local_ht();
     hashtab_T	*all_ht = &si->sn_all_vars.dv_hashtab;
     hashitem_T	*script_hi;
@@ -640,11 +647,19 @@ hide_script_var(scriptitem_T *si, svar_T *sv)
 	dictitem_T	*di = HI2DI(script_hi);
 	sallvar_T	*sav = HI2SAV(all_hi);
 
-	sav->sav_tv = di->di_tv;
-	di->di_tv.v_type = VAR_UNKNOWN;
-	sav->sav_flags = di->di_flags;
-	sav->sav_di = NULL;
-	delete_var(script_ht, script_hi);
+	// There can be multiple entries with the same name in different
+	// blocks, find the right one.
+	while (sav != NULL && sav->sav_var_vals_idx != idx)
+	    sav = sav->sav_next;
+	if (sav != NULL)
+	{
+	    sav->sav_tv = di->di_tv;
+	    di->di_tv.v_type = VAR_UNKNOWN;
+	    sav->sav_flags = di->di_flags;
+	    sav->sav_di = NULL;
+	    delete_var(script_ht, script_hi);
+	    sv->sv_tv = &sav->sav_tv;
+	}
     }
 }
 
