@@ -2292,6 +2292,22 @@ def Test_expr7_not()
       assert_equal(true, !!'asdf')
       assert_equal(true, !![2])
 
+      assert_equal(true, ! false)
+      assert_equal(true, !! true)
+      assert_equal(true, ! ! true)
+      assert_equal(true, !!! false)
+      assert_equal(true, ! ! ! false)
+
+      g:true = true
+      g:false = false
+      assert_equal(true, ! g:false)
+      assert_equal(true, !! g:true)
+      assert_equal(true, ! ! g:true)
+      assert_equal(true, !!! g:false)
+      assert_equal(true, ! ! ! g:false)
+      unlet g:true
+      unlet g:false
+
       assert_equal(true, !test_null_partial())
       assert_equal(false, !{-> 'yes'})
 
@@ -2314,8 +2330,7 @@ def Test_expr7_not()
       assert_equal(false, ![1, 2, 3]->reverse())
       assert_equal(true, ![]->reverse())
   END
-  CheckDefSuccess(lines)
-  CheckScriptSuccess(['vim9script'] + lines)
+  CheckDefAndScriptSuccess(lines)
 enddef
 
 func Test_expr7_fails()

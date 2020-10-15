@@ -3390,10 +3390,14 @@ eval7_leader(
 	f = rettv->vval.v_float;
     else
 #endif
+    {
+	while (VIM_ISWHITE(end_leader[-1]))
+	    --end_leader;
 	if (in_vim9script() && end_leader[-1] == '!')
 	    val = tv2bool(rettv);
 	else
 	    val = tv_get_number_chk(rettv, &error);
+    }
     if (error)
     {
 	clear_tv(rettv);
