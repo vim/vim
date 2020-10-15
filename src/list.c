@@ -1961,6 +1961,9 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
     int		save_did_emsg;
     int		idx = 0;
 
+    // Always return the first argument, also on failure.
+    copy_tv(&argvars[0], rettv);
+
     if (argvars[0].v_type == VAR_BLOB)
     {
 	if ((b = argvars[0].vval.v_blob) == NULL)
@@ -2110,8 +2113,6 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 
 	did_emsg |= save_did_emsg;
     }
-
-    copy_tv(&argvars[0], rettv);
 }
 
 /*
