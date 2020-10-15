@@ -1840,7 +1840,7 @@ get_script_item_idx(int sid, char_u *name, int check_writable, cctx_T *cctx)
 	return -1;
     if (sid == current_sctx.sc_sid)
     {
-	sallvar_T *sav = find_script_var(name, (size_t)-1, cctx);
+	sallvar_T *sav = find_script_var(name, 0, cctx);
 
 	if (sav == NULL)
 	    return -2;
