@@ -454,7 +454,6 @@ def Test_assignment_local()
 enddef
 
 def Test_assignment_default()
-
   # Test default values.
   var thebool: bool
   assert_equal(v:false, thebool)
@@ -571,6 +570,10 @@ def Test_assignment_vim9script()
     assert_equal(43, w)
     var t: number = 44
     assert_equal(44, t)
+
+    var to_var = 0
+    to_var = 3
+    assert_equal(3, to_var)
   END
   CheckScriptSuccess(lines)
 

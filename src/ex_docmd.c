@@ -3123,7 +3123,7 @@ checkforcmd(
     for (i = 0; cmd[i] != NUL; ++i)
 	if (((char_u *)cmd)[i] != (*pp)[i])
 	    break;
-    if (i >= len && !isalpha((*pp)[i]))
+    if (i >= len && !isalpha((*pp)[i]) && (*pp)[i] != '_')
     {
 	*pp = skipwhite(*pp + i);
 	return TRUE;
