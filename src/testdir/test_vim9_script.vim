@@ -617,6 +617,21 @@ def Test_throw_vimscript()
       endtry
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    vim9script
+    def Func()
+      throw @r
+    enddef
+    var result = ''
+    try
+      Func()
+    catch /E1129:/
+      result = 'caught'
+    endtry
+    assert_equal('caught', result)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_error_in_nested_function()

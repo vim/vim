@@ -280,4 +280,6 @@ EXTERN char e_missing_name_after_dot[]
 	INIT(= N_("E1127: Missing name after dot"));
 EXTERN char e_endblock_without_block[]
 	INIT(= N_("E1128: } without {"));
+EXTERN char e_throw_with_empty_string[]
+	INIT(= N_("E1129: Throw with empty string"));
 #endif

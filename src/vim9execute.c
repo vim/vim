@@ -1381,6 +1381,8 @@ call_def_function(
 		tv = STACK_TV_BOT(0);
 		tv->v_type = VAR_STRING;
 		tv->v_lock = 0;
+		// This may result in NULL, which should be equivalent to an
+		// empty string.
 		tv->vval.v_string = get_reg_contents(
 					  iptr->isn_arg.number, GREG_EXPR_SRC);
 		++ectx.ec_stack.ga_len;
@@ -2082,6 +2084,13 @@ call_def_function(
 	    case ISN_THROW:
 		--ectx.ec_stack.ga_len;
 		tv = STACK_TV_BOT(0);
+		if (tv->vval.v_string == NULL
+				       || *skipwhite(tv->vval.v_string) == NUL)
+		{
+		    emsg(_(e_throw_with_empty_string));
+		    goto failed;
+		}
+
 		if (throw_exception(tv->vval.v_string, ET_USER, NULL) == FAIL)
 		{
 		    vim_free(tv->vval.v_string);
