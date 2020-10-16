@@ -550,7 +550,7 @@ call_bfunc(int func_idx, int argcount, ectx_T *ectx)
 {
     typval_T	argvars[MAX_FUNC_ARGS];
     int		idx;
-    int		did_emsg_before = did_emsg;
+    int		called_emsg_before = called_emsg;
     ectx_T	*prev_ectx = current_ectx;
 
     if (call_prepare(argcount, argvars, ectx) == FAIL)
@@ -566,7 +566,7 @@ call_bfunc(int func_idx, int argcount, ectx_T *ectx)
     for (idx = 0; idx < argcount; ++idx)
 	clear_tv(&argvars[idx]);
 
-    if (did_emsg != did_emsg_before)
+    if (called_emsg != called_emsg_before)
 	return FAIL;
     return OK;
 }

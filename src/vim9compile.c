@@ -6642,7 +6642,9 @@ compile_put(char_u *arg, exarg_T *eap, cctx_T *cctx)
     else if (eap->regname != NUL)
 	++line;
 
-    // TODO: if the range is something like "$" need to evaluate at runtime
+    // "errormsg" will not be set because the range is ADDR_LINES.
+    // TODO: if the range contains something like "$" or "." need to evaluate
+    // at runtime
     if (parse_cmd_address(eap, &errormsg, FALSE) == FAIL)
 	return NULL;
     if (eap->addr_count == 0)
@@ -7399,7 +7401,7 @@ erret:
 	if (errormsg != NULL)
 	    emsg(errormsg);
 	else if (called_emsg == called_emsg_before)
-	    emsg(_(e_compile_def_function_failed));
+	    emsg(_(e_compiling_def_function_failed));
     }
 
     current_sctx = save_current_sctx;

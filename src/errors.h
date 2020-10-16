@@ -85,7 +85,7 @@ EXTERN char e_missing_rcurly[]
 	INIT(= N_("E1026: Missing }"));
 EXTERN char e_missing_return_statement[]
 	INIT(= N_("E1027: Missing return statement"));
-EXTERN char e_compile_def_function_failed[]
+EXTERN char e_compiling_def_function_failed[]
 	INIT(= N_("E1028: Compiling :def function failed"));
 EXTERN char e_expected_str_but_got_str[]
 	INIT(= N_("E1029: Expected %s but got %s"));
