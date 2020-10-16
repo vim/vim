@@ -4253,7 +4253,7 @@ typedef struct
 } fuzzyItem_T;
 
 // bonus for adjacent matches
-#define SEQUENTIAL_BONUS 15
+#define SEQUENTIAL_BONUS 40
 // bonus if match occurs after a separator
 #define SEPARATOR_BONUS 30
 // bonus if match is uppercase and prev is lower
