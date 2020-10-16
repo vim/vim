@@ -3,7 +3,7 @@
 " Maintainer:	Roland Hieber <rohieb+vim-iR0jGdkV@rohieb.name>, <https://github.com/rohieb>
 " Previous Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		https://github.com/vim/vim/blob/master/runtime/syntax/make.vim
-" Last Change:	2020 May 03
+" Last Change:	2020 Oct 16
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -54,10 +54,10 @@ syn match makeTarget		"^[~A-Za-z0-9_./$()%*@-][A-Za-z0-9_./\t $()%*@-]*::\=\s*$"
 	\ skipnl nextgroup=makeCommands,makeCommandError
 
 syn region makeSpecTarget	transparent matchgroup=makeSpecTarget
-	\ start="^\.\(SUFFIXES\|PHONY\|DEFAULT\|PRECIOUS\|IGNORE\|SILENT\|EXPORT_ALL_VARIABLES\|KEEP_STATE\|LIBPATTERNS\|NOTPARALLEL\|DELETE_ON_ERROR\|INTERMEDIATE\|POSIX\|SECONDARY\)\>\s*:\{1,2}[^:=]"rs=e-1
+	\ start="^\.\(SUFFIXES\|PHONY\|DEFAULT\|PRECIOUS\|IGNORE\|SILENT\|EXPORT_ALL_VARIABLES\|KEEP_STATE\|LIBPATTERNS\|NOTPARALLEL\|DELETE_ON_ERROR\|INTERMEDIATE\|POSIX\|SECONDARY\|ONESHELL\)\>\s*:\{1,2}[^:=]"rs=e-1
 	\ end="[^\\]$" keepend
 	\ contains=makeIdent,makeSpecTarget,makeNextLine,makeComment skipnl nextGroup=makeCommands
-syn match makeSpecTarget	"^\.\(SUFFIXES\|PHONY\|DEFAULT\|PRECIOUS\|IGNORE\|SILENT\|EXPORT_ALL_VARIABLES\|KEEP_STATE\|LIBPATTERNS\|NOTPARALLEL\|DELETE_ON_ERROR\|INTERMEDIATE\|POSIX\|SECONDARY\)\>\s*::\=\s*$"
+syn match makeSpecTarget	"^\.\(SUFFIXES\|PHONY\|DEFAULT\|PRECIOUS\|IGNORE\|SILENT\|EXPORT_ALL_VARIABLES\|KEEP_STATE\|LIBPATTERNS\|NOTPARALLEL\|DELETE_ON_ERROR\|INTERMEDIATE\|POSIX\|SECONDARY\|ONESHELL\)\>\s*::\=\s*$"
 	\ contains=makeIdent,makeComment
 	\ skipnl nextgroup=makeCommands,makeCommandError
 
