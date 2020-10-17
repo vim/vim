@@ -6365,7 +6365,7 @@ ex_resize(exarg_T *eap)
     if (cmdmod.split & WSP_VERT)
     {
 	if (*eap->arg == '-' || *eap->arg == '+')
-	    n += curwin->w_width;
+	    n += wp->w_width;
 	else if (n == 0 && eap->arg[0] == NUL)	// default is very wide
 	    n = 9999;
 	win_setwidth_win((int)n, wp);
@@ -6373,7 +6373,7 @@ ex_resize(exarg_T *eap)
     else
     {
 	if (*eap->arg == '-' || *eap->arg == '+')
-	    n += curwin->w_height;
+	    n += wp->w_height;
 	else if (n == 0 && eap->arg[0] == NUL)	// default is very high
 	    n = 9999;
 	win_setheight_win((int)n, wp);
