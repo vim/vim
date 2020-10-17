@@ -620,6 +620,7 @@ def Test_throw_vimscript()
 
   lines =<< trim END
     vim9script
+    @r = ''
     def Func()
       throw @r
     enddef
@@ -2816,6 +2817,27 @@ def Test_script_var_scope()
       echo one
   END
   CheckScriptFailure(lines, 'E121:', 6)
+enddef
+
+def Test_catch_exception_in_callback()
+  var lines =<< trim END
+    vim9script
+    def Callback(...l: any)
+      try
+        var x: string
+        var y: string
+        # this error should be caught with CHECKLEN
+        [x, y] = ['']
+      catch
+        g:caught = 'yes'
+      endtry
+    enddef
+    popup_menu('popup', #{callback: Callback})
+    feedkeys("\r", 'xt')
+  END
+  CheckScriptSuccess(lines)
+
+  unlet g:caught
 enddef
 
 " Keep this last, it messes up highlighting.

@@ -830,6 +830,8 @@ call_def_function(
     int		breakcheck_count = 0;
     int		called_emsg_before = called_emsg;
     int		save_suppress_errthrow = suppress_errthrow;
+    msglist_T	**saved_msg_list = NULL;
+    msglist_T	*private_msg_list = NULL;
 
 // Get pointer to item in the stack.
 #define STACK_TV(idx) (((typval_T *)ectx.ec_stack.ga_data) + idx)
@@ -981,6 +983,11 @@ call_def_function(
     estack_push_ufunc(ufunc, 1);
     current_sctx = ufunc->uf_script_ctx;
     current_sctx.sc_version = SCRIPT_VERSION_VIM9;
+
+    // Use a specific location for storing error messages to be converted to an
+    // exception.
+    saved_msg_list = msg_list;
+    msg_list = &private_msg_list;
 
     // Do turn errors into exceptions.
     suppress_errthrow = FALSE;
@@ -2818,6 +2825,19 @@ failed:
 
     estack_pop();
     current_sctx = save_current_sctx;
+
+    if (*msg_list != NULL && saved_msg_list != NULL)
+    {
+	msglist_T **plist = saved_msg_list;
+
+	// Append entries from the current msg_list (uncaught exceptions) to
+	// the saved msg_list.
+	while (*plist != NULL)
+	    plist = &(*plist)->next;
+
+	*plist = *msg_list;
+    }
+    msg_list = saved_msg_list;
 
 failed_early:
     // Free all local variables, but not arguments.

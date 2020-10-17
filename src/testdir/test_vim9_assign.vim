@@ -622,6 +622,9 @@ def Test_assignment_failure()
   CheckDefExecFailure(['var x: number',
                        'var y: number',
                        '[x, y] = [1]'], 'E1093:')
+  CheckDefExecFailure(['var x: string',
+                       'var y: string',
+                       '[x, y] = ["x"]'], 'E1093:')
   CheckDefExecFailure(['var x: number',
                        'var y: number',
                        'var z: list<number>',
