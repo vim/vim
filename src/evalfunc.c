@@ -270,6 +270,11 @@ ret_any(int argcount UNUSED, type_T **argtypes UNUSED)
     return &t_any;
 }
     static type_T *
+ret_bool(int argcount UNUSED, type_T **argtypes UNUSED)
+{
+    return &t_bool;
+}
+    static type_T *
 ret_number(int argcount UNUSED, type_T **argtypes UNUSED)
 {
     return &t_number;
@@ -793,8 +798,8 @@ static funcentry_T global_functions[] =
     {"popup_close",	1, 2, FEARG_1,	  ret_void,	PROP_FUNC(f_popup_close)},
     {"popup_create",	2, 2, FEARG_1,	  ret_number,	PROP_FUNC(f_popup_create)},
     {"popup_dialog",	2, 2, FEARG_1,	  ret_number,	PROP_FUNC(f_popup_dialog)},
-    {"popup_filter_menu", 2, 2, 0,	  ret_number,	PROP_FUNC(f_popup_filter_menu)},
-    {"popup_filter_yesno", 2, 2, 0,	  ret_number,	PROP_FUNC(f_popup_filter_yesno)},
+    {"popup_filter_menu", 2, 2, 0,	  ret_bool,	PROP_FUNC(f_popup_filter_menu)},
+    {"popup_filter_yesno", 2, 2, 0,	  ret_bool,	PROP_FUNC(f_popup_filter_yesno)},
     {"popup_findinfo",	0, 0, 0,	  ret_number,	PROP_FUNC(f_popup_findinfo)},
     {"popup_findpreview", 0, 0, 0,	  ret_number,	PROP_FUNC(f_popup_findpreview)},
     {"popup_getoptions", 1, 1, FEARG_1,	  ret_dict_any,	PROP_FUNC(f_popup_getoptions)},

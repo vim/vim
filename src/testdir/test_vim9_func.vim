@@ -94,6 +94,20 @@ def Test_missing_return()
                    'enddef'], 'E1095:')
 enddef
 
+def Test_return_bool()
+  var lines =<< trim END
+      vim9script
+      def MenuFilter(id: number, key: string): bool
+        return popup_filter_menu(id, key)
+      enddef
+      def YesnoFilter(id: number, key: string): bool
+        return popup_filter_yesno(id, key)
+      enddef
+      defcompile
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 let s:nothing = 0
 def ReturnNothing()
   s:nothing = 1

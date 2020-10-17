@@ -2375,7 +2375,8 @@ f_popup_filter_menu(typval_T *argvars, typval_T *rettv)
 	c = TO_SPECIAL(key[1], key[2]);
 
     // consume all keys until done
-    rettv->vval.v_number = 1;
+    rettv->v_type = VAR_BOOL;
+    rettv->vval.v_number = VVAL_TRUE;
     res.v_type = VAR_NUMBER;
 
     old_lnum = wp->w_cursor.lnum;
@@ -2429,7 +2430,8 @@ f_popup_filter_yesno(typval_T *argvars, typval_T *rettv)
 	c = TO_SPECIAL(key[1], key[2]);
 
     // consume all keys until done
-    rettv->vval.v_number = 1;
+    rettv->v_type = VAR_BOOL;
+    rettv->vval.v_number = VVAL_TRUE;
 
     if (c == 'y' || c == 'Y')
 	res.vval.v_number = 1;
