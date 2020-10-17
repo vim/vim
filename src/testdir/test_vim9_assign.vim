@@ -74,7 +74,11 @@ def Test_assignment()
 
   if has('channel')
     var chan1: channel
+    assert_equal('fail', ch_status(chan1))
+
     var job1: job
+    assert_equal('fail', job_status(job1))
+
     # calling job_start() is in test_vim9_fails.vim, it causes leak reports
   endif
   if has('float')

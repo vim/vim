@@ -1894,12 +1894,21 @@ f_job_start(typval_T *argvars, typval_T *rettv)
     void
 f_job_status(typval_T *argvars, typval_T *rettv)
 {
-    job_T	*job = get_job_arg(&argvars[0]);
-
-    if (job != NULL)
+    if (argvars[0].v_type == VAR_JOB && argvars[0].vval.v_job == NULL)
     {
+	// A job that never started returns "fail".
 	rettv->v_type = VAR_STRING;
-	rettv->vval.v_string = vim_strsave((char_u *)job_status(job));
+	rettv->vval.v_string = vim_strsave((char_u *)"fail");
+    }
+    else
+    {
+	job_T	*job = get_job_arg(&argvars[0]);
+
+	if (job != NULL)
+	{
+	    rettv->v_type = VAR_STRING;
+	    rettv->vval.v_string = vim_strsave((char_u *)job_status(job));
+	}
     }
 }
 
