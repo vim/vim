@@ -2094,6 +2094,7 @@ call_def_function(
 		if (tv->vval.v_string == NULL
 				       || *skipwhite(tv->vval.v_string) == NUL)
 		{
+		    vim_free(tv->vval.v_string);
 		    emsg(_(e_throw_with_empty_string));
 		    goto failed;
 		}
