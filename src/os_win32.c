@@ -1778,7 +1778,6 @@ tgetch(int *pmodifiers, WCHAR *pch2)
 	DWORD cRecords = 0;
 
 # ifdef FEAT_CLIENTSERVER
-	(void)WaitForChar(-1L, FALSE);
 	if (input_available())
 	    return 0;
 	if (g_nMouseClick != -1)
