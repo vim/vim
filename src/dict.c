@@ -860,13 +860,10 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	    *arg = skipwhite(*arg);
 	if (**arg != ':')
 	{
-	    if (evaluate)
-	    {
-		if (*skipwhite(*arg) == ':')
-		    semsg(_(e_no_white_space_allowed_before_str), ":");
-		else
-		    semsg(_(e_missing_dict_colon), *arg);
-	    }
+	    if (*skipwhite(*arg) == ':')
+		semsg(_(e_no_white_space_allowed_before_str), ":");
+	    else
+		semsg(_(e_missing_dict_colon), *arg);
 	    clear_tv(&tvkey);
 	    goto failret;
 	}
@@ -899,8 +896,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	    item = dict_find(d, key, -1);
 	    if (item != NULL)
 	    {
-		if (evaluate)
-		    semsg(_(e_duplicate_key), key);
+		semsg(_(e_duplicate_key), key);
 		clear_tv(&tvkey);
 		clear_tv(&tv);
 		goto failret;
@@ -937,21 +933,17 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	    break;
 	if (!had_comma)
 	{
-	    if (evaluate)
-	    {
-		if (**arg == ',')
-		    semsg(_(e_no_white_space_allowed_before_str), ",");
-		else
-		    semsg(_(e_missing_dict_comma), *arg);
-	    }
+	    if (**arg == ',')
+		semsg(_(e_no_white_space_allowed_before_str), ",");
+	    else
+		semsg(_(e_missing_dict_comma), *arg);
 	    goto failret;
 	}
     }
 
     if (**arg != '}')
     {
-	if (evaluate)
-	    semsg(_(e_missing_dict_end), *arg);
+	semsg(_(e_missing_dict_end), *arg);
 failret:
 	if (d != NULL)
 	    dict_free(d);

@@ -1805,6 +1805,13 @@ def Test_expr7_lambda()
   CheckDefExecFailure(["var s = 'asdf'->{a -> a}('x', 'y')"],
         'E1106: 2 arguments too many')
   CheckDefFailure(["echo 'asdf'->{a -> a}(x)"], 'E1001:', 1)
+
+  CheckDefSuccess(['var Fx = {a -> #{k1: 0,', ' k2: 1}}'])
+  CheckDefFailure(['var Fx = {a -> #{k1: 0', ' k2: 1}}'], 'E722:', 2)
+  CheckDefFailure(['var Fx = {a -> #{k1: 0,', ' k2 1}}'], 'E720:', 2)
+
+  CheckDefSuccess(['var Fx = {a -> [0,', ' 1]}'])
+  CheckDefFailure(['var Fx = {a -> [0', ' 1]}'], 'E696:', 2)
 enddef
 
 def Test_expr7_lambda_vim9script()
@@ -2371,7 +2378,7 @@ func Test_expr7_fails()
   call CheckDefFailure(["'yes'->", "Echo()"], 'E488: Trailing characters: ->', 1)
 
   call CheckDefExecFailure(["[1, 2->len()"], 'E697:', 2)
-  call CheckDefExecFailure(["#{a: 1->len()"], 'E488:', 1)
+  call CheckDefExecFailure(["#{a: 1->len()"], 'E722:', 1)
   call CheckDefExecFailure(["{'a': 1->len()"], 'E723:', 2)
 endfunc
 
