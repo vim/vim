@@ -2692,7 +2692,10 @@ compile_lambda(char_u **arg, cctx_T *cctx)
 
     // Get the funcref in "rettv".
     if (get_lambda_tv(arg, &rettv, &evalarg) != OK)
+    {
+	clear_evalarg(&evalarg, NULL);
 	return FAIL;
+    }
 
     ufunc = rettv.vval.v_partial->pt_func;
     ++ufunc->uf_refcount;
