@@ -96,8 +96,8 @@ typedef enum {
     ISN_ENDTRY,	    // take entry off from ec_trystack
 
     // more expression operations
-    ISN_ADDLIST,
-    ISN_ADDBLOB,
+    ISN_ADDLIST,    // add two lists
+    ISN_ADDBLOB,    // add two blobs
 
     // operation with two arguments; isn_arg.op.op_type is exptype_T
     ISN_OPNR,
@@ -120,6 +120,7 @@ typedef enum {
     ISN_CONCAT,
     ISN_STRINDEX,   // [expr] string index
     ISN_STRSLICE,   // [expr:expr] string slice
+    ISN_LISTAPPEND, // append to a list, like add()
     ISN_LISTINDEX,  // [expr] list index
     ISN_LISTSLICE,  // [expr:expr] list slice
     ISN_ANYINDEX,   // [expr] runtime index

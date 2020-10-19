@@ -282,4 +282,6 @@ EXTERN char e_endblock_without_block[]
 	INIT(= N_("E1128: } without {"));
 EXTERN char e_throw_with_empty_string[]
 	INIT(= N_("E1129: Throw with empty string"));
+EXTERN char e_cannot_add_to_null_list[]
+	INIT(= N_("E1130: Cannot add to null list"));
 #endif

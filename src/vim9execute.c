@@ -2095,6 +2095,7 @@ call_def_function(
 				       || *skipwhite(tv->vval.v_string) == NUL)
 		{
 		    vim_free(tv->vval.v_string);
+		    SOURCING_LNUM = iptr->isn_lnum;
 		    emsg(_(e_throw_with_empty_string));
 		    goto failed;
 		}
@@ -2282,11 +2283,31 @@ call_def_function(
 		    typval_T *tv1 = STACK_TV_BOT(-2);
 		    typval_T *tv2 = STACK_TV_BOT(-1);
 
+		    // add two lists or blobs
 		    if (iptr->isn_type == ISN_ADDLIST)
 			eval_addlist(tv1, tv2);
 		    else
 			eval_addblob(tv1, tv2);
 		    clear_tv(tv2);
+		    --ectx.ec_stack.ga_len;
+		}
+		break;
+
+	    case ISN_LISTAPPEND:
+		{
+		    typval_T	*tv1 = STACK_TV_BOT(-2);
+		    typval_T	*tv2 = STACK_TV_BOT(-1);
+		    list_T	*l = tv1->vval.v_list;
+
+		    // add an item to a list
+		    if (l == NULL)
+		    {
+			SOURCING_LNUM = iptr->isn_lnum;
+			emsg(_(e_cannot_add_to_null_list));
+			goto on_error;
+		    }
+		    if (list_append_tv(l, tv2) == FAIL)
+			goto failed;
 		    --ectx.ec_stack.ga_len;
 		}
 		break;
@@ -3410,6 +3431,7 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_CONCAT: smsg("%4d CONCAT", current); break;
 	    case ISN_STRINDEX: smsg("%4d STRINDEX", current); break;
 	    case ISN_STRSLICE: smsg("%4d STRSLICE", current); break;
+	    case ISN_LISTAPPEND: smsg("%4d LISTAPPEND", current); break;
 	    case ISN_LISTINDEX: smsg("%4d LISTINDEX", current); break;
 	    case ISN_LISTSLICE: smsg("%4d LISTSLICE", current); break;
 	    case ISN_ANYINDEX: smsg("%4d ANYINDEX", current); break;
