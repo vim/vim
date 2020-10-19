@@ -1790,6 +1790,12 @@ def Test_list_add()
   CheckDefExecFailure(lines, 'E1130:', 2)
 enddef
 
+def Test_blob_add()
+  var b: blob = 0z12
+  add(b, 0x34)
+  assert_equal(0z1234, b)
+enddef
+
 def SID(): number
   return expand('<SID>')
           ->matchstr('<SNR>\zs\d\+\ze_$')
