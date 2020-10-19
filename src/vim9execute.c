@@ -2308,6 +2308,7 @@ call_def_function(
 		    }
 		    if (list_append_tv(l, tv2) == FAIL)
 			goto failed;
+		    clear_tv(tv2);
 		    --ectx.ec_stack.ga_len;
 		}
 		break;
