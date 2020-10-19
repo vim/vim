@@ -1521,6 +1521,28 @@ generate_LISTAPPEND(cctx_T *cctx)
 }
 
 /*
+ * Generate an ISN_BLOBAPPEND instruction.  Works like add().
+ * Argument count is already checked.
+ */
+    static int
+generate_BLOBAPPEND(cctx_T *cctx)
+{
+    garray_T	*stack = &cctx->ctx_type_stack;
+    type_T	*item_type;
+
+    // Caller already checked that blob_type is a blob.
+    item_type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+    if (need_type(item_type, &t_number, -1, cctx, FALSE, FALSE) == FAIL)
+	return FAIL;
+
+    if (generate_instr(cctx, ISN_BLOBAPPEND) == NULL)
+	return FAIL;
+
+    --stack->ga_len;	    // drop the argument
+    return OK;
+}
+
+/*
  * Generate an ISN_DCALL or ISN_UCALL instruction.
  * Return FAIL if the number of arguments is wrong.
  */
@@ -2570,11 +2592,16 @@ compile_call(
 		type_T	    *type = ((type_T **)stack->ga_data)[
 							    stack->ga_len - 2];
 
-		// TODO: also check for VAR_BLOB
 		if (type->tt_type == VAR_LIST)
 		{
 		    // inline "add(list, item)" so that the type can be checked
 		    res = generate_LISTAPPEND(cctx);
+		    idx = -1;
+		}
+		else if (type->tt_type == VAR_BLOB)
+		{
+		    // inline "add(blob, nr)" so that the type can be checked
+		    res = generate_BLOBAPPEND(cctx);
 		    idx = -1;
 		}
 	    }
@@ -5421,7 +5448,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			generate_PUSHS(cctx, NULL);
 			break;
 		    case VAR_BLOB:
-			generate_PUSHBLOB(cctx, NULL);
+			generate_PUSHBLOB(cctx, blob_alloc());
 			break;
 		    case VAR_FUNC:
 			generate_PUSHFUNC(cctx, NULL, &t_func_void);
@@ -7675,6 +7702,7 @@ delete_instr(isn_T *isn)
 	case ISN_ANYINDEX:
 	case ISN_ANYSLICE:
 	case ISN_BCALL:
+	case ISN_BLOBAPPEND:
 	case ISN_CATCH:
 	case ISN_CHECKLEN:
 	case ISN_CHECKNR:

@@ -2312,6 +2312,29 @@ call_def_function(
 		}
 		break;
 
+	    case ISN_BLOBAPPEND:
+		{
+		    typval_T	*tv1 = STACK_TV_BOT(-2);
+		    typval_T	*tv2 = STACK_TV_BOT(-1);
+		    blob_T	*b = tv1->vval.v_blob;
+		    int		error = FALSE;
+		    varnumber_T n;
+
+		    // add a number to a blob
+		    if (b == NULL)
+		    {
+			SOURCING_LNUM = iptr->isn_lnum;
+			emsg(_(e_cannot_add_to_null_blob));
+			goto on_error;
+		    }
+		    n = tv_get_number_chk(tv2, &error);
+		    if (error)
+			goto on_error;
+		    ga_append(&b->bv_ga, (int)n);
+		    --ectx.ec_stack.ga_len;
+		}
+		break;
+
 	    // Computation with two arguments of unknown type
 	    case ISN_OPANY:
 		{
@@ -3432,6 +3455,7 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_STRINDEX: smsg("%4d STRINDEX", current); break;
 	    case ISN_STRSLICE: smsg("%4d STRSLICE", current); break;
 	    case ISN_LISTAPPEND: smsg("%4d LISTAPPEND", current); break;
+	    case ISN_BLOBAPPEND: smsg("%4d BLOBAPPEND", current); break;
 	    case ISN_LISTINDEX: smsg("%4d LISTINDEX", current); break;
 	    case ISN_LISTSLICE: smsg("%4d LISTSLICE", current); break;
 	    case ISN_ANYINDEX: smsg("%4d ANYINDEX", current); break;

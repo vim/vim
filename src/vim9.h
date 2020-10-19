@@ -126,6 +126,7 @@ typedef enum {
     ISN_ANYINDEX,   // [expr] runtime index
     ISN_ANYSLICE,   // [expr:expr] runtime slice
     ISN_SLICE,	    // drop isn_arg.number items from start of list
+    ISN_BLOBAPPEND, // append to a blob, like add()
     ISN_GETITEM,    // push list item, isn_arg.number is the index
     ISN_MEMBER,	    // dict[member]
     ISN_STRINGMEMBER, // dict.member using isn_arg.string

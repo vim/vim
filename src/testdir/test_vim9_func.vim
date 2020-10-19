@@ -1791,9 +1791,25 @@ def Test_list_add()
 enddef
 
 def Test_blob_add()
-  var b: blob = 0z12
-  add(b, 0x34)
-  assert_equal(0z1234, b)
+  var b1: blob = 0z12
+  add(b1, 0x34)
+  assert_equal(0z1234, b1)
+
+  var b2: blob # defaults to empty blob
+  add(b2, 0x67)
+  assert_equal(0z67, b2)
+
+  var lines =<< trim END
+      var b: blob
+      add(b, "x")
+  END
+  CheckDefFailure(lines, 'E1012:', 2)
+
+  lines =<< trim END
+      var b: blob = test_null_blob()
+      add(b, 123)
+  END
+  CheckDefExecFailure(lines, 'E1131:', 2)
 enddef
 
 def SID(): number
