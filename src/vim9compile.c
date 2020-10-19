@@ -2996,6 +2996,11 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal, ppconst_T *ppconst)
 	    return FAIL;
 	}
 	whitep = *arg + 1;
+	if (!IS_WHITE_OR_NUL(*whitep))
+	{
+	    semsg(_(e_white_space_required_after_str), ",");
+	    return FAIL;
+	}
 	*arg = skipwhite(*arg + 1);
     }
 

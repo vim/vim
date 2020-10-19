@@ -1880,6 +1880,7 @@ def Test_expr7_dict()
   CheckDefFailure(["var x = #{a : 8}"], 'E1068:', 1)
   CheckDefFailure(["var x = #{a :8}"], 'E1068:', 1)
   CheckDefFailure(["var x = #{a: 8 , b: 9}"], 'E1068:', 1)
+  CheckDefFailure(["var x = #{a: 1,b: 2}"], 'E1069:', 1)
 
   CheckDefFailure(["var x = #{8: 8}"], 'E1014:', 1)
   CheckDefFailure(["var x = #{xxx}"], 'E720:', 1)
