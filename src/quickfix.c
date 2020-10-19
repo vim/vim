@@ -1363,7 +1363,8 @@ qf_parse_multiline_pfx(
 	    qfprev->qf_lnum = fields->lnum;
 	if (!qfprev->qf_col)
 	    qfprev->qf_col = fields->col;
-	qfprev->qf_viscol = fields->use_viscol;
+        if (!qfprev->qf_viscol)
+            qfprev->qf_viscol = fields->use_viscol;
 	if (!qfprev->qf_fnum)
 	    qfprev->qf_fnum = qf_get_fnum(qfl,
 		    qfl->qf_directory,
