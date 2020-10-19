@@ -702,6 +702,9 @@ def Test_assign_list()
     nrl[i] = i
   endfor
   assert_equal([0, 1, 2, 3, 4], nrl)
+
+  CheckDefFailure(["var l: list<number> = ['', true]"], 'E1012: Type mismatch; expected list<number> but got list<any>', 1)
+  CheckDefFailure(["var l: list<list<number>> = [['', true]]"], 'E1012: Type mismatch; expected list<list<number>> but got list<list<any>>', 1)
 enddef
 
 def Test_assign_dict()
@@ -718,6 +721,9 @@ def Test_assign_dict()
     nrd[i] = i
   endfor
   assert_equal({'0': 0, '1': 1, '2': 2}, nrd)
+
+  CheckDefFailure(["var d: dict<number> = #{a: '', b: true}"], 'E1012: Type mismatch; expected dict<number> but got dict<any>', 1)
+  CheckDefFailure(["var d: dict<dict<number>> = #{x: #{a: '', b: true}}"], 'E1012: Type mismatch; expected dict<dict<number>> but got dict<dict<any>>', 1)
 enddef
 
 def Test_assign_dict_unknown_type()

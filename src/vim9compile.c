@@ -815,10 +815,33 @@ generate_TYPECHECK(
 }
 
 /*
+ * Return TRUE if "actual" could be "expected" and a runtime typecheck is to be
+ * used.  Return FALSE if the types will never match.
+ */
+    static int
+use_typecheck(type_T *actual, type_T *expected)
+{
+    if (actual->tt_type == VAR_ANY
+	    || actual->tt_type == VAR_UNKNOWN
+	    || (actual->tt_type == VAR_FUNC
+		&& (expected->tt_type == VAR_FUNC
+					   || expected->tt_type == VAR_PARTIAL)
+		&& (actual->tt_member == &t_any || actual->tt_argcount < 0)))
+	return TRUE;
+    if ((actual->tt_type == VAR_LIST || actual->tt_type == VAR_DICT)
+				       && actual->tt_type == expected->tt_type)
+	// This takes care of a nested list or dict.
+	return use_typecheck(actual->tt_member, expected->tt_member);
+    return FALSE;
+}
+
+/*
  * Check that
  * - "actual" matches "expected" type or
  * - "actual" is a type that can be "expected" type: add a runtime check; or
  * - return FAIL.
+ * If "actual_is_const" is TRUE then the type won't change at runtime, do not
+ * generate a TYPECHECK.
  */
     static int
 need_type(
@@ -826,7 +849,8 @@ need_type(
 	type_T	*expected,
 	int	offset,
 	cctx_T	*cctx,
-	int	silent)
+	int	silent,
+	int	actual_is_const)
 {
     if (expected == &t_bool && actual != &t_bool
 					&& (actual->tt_flags & TTFLAG_BOOL_OK))
@@ -841,19 +865,8 @@ need_type(
 	return OK;
 
     // If the actual type can be the expected type add a runtime check.
-    // TODO: if it's a constant a runtime check makes no sense.
-    if (actual->tt_type == VAR_ANY
-	    || actual->tt_type == VAR_UNKNOWN
-	    || (actual->tt_type == VAR_FUNC
-		&& (expected->tt_type == VAR_FUNC
-					   || expected->tt_type == VAR_PARTIAL)
-		&& (actual->tt_member == &t_any || actual->tt_argcount < 0))
-	    || (actual->tt_type == VAR_LIST
-		&& expected->tt_type == VAR_LIST
-		&& actual->tt_member == &t_any)
-	    || (actual->tt_type == VAR_DICT
-		&& expected->tt_type == VAR_DICT
-		&& actual->tt_member == &t_any))
+    // If it's a constant a runtime check makes no sense.
+    if (!actual_is_const && use_typecheck(actual, expected))
     {
 	generate_TYPECHECK(cctx, expected, offset);
 	return OK;
@@ -1526,7 +1539,8 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 	    else
 		expected = ufunc->uf_va_type->tt_member;
 	    actual = ((type_T **)stack->ga_data)[stack->ga_len - argcount + i];
-	    if (need_type(actual, expected, -argcount + i, cctx, TRUE) == FAIL)
+	    if (need_type(actual, expected, -argcount + i, cctx,
+							  TRUE, FALSE) == FAIL)
 	    {
 		arg_type_mismatch(expected, actual, i + 1);
 		return FAIL;
@@ -2061,8 +2075,11 @@ may_get_next_line_error(char_u *whitep, char_u **arg, cctx_T *cctx)
 typedef struct {
     typval_T	pp_tv[PPSIZE];	// stack of ppconst constants
     int		pp_used;	// active entries in pp_tv[]
+    int		pp_is_const;	// all generated code was constants, used for a
+				// list or dict with constant members
 } ppconst_T;
 
+static int compile_expr0_ext(char_u **arg,  cctx_T *cctx, int *is_const);
 static int compile_expr0(char_u **arg,  cctx_T *cctx);
 static int compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst);
 
@@ -2629,13 +2646,16 @@ to_name_const_end(char_u *arg)
 /*
  * parse a list: [expr, expr]
  * "*arg" points to the '['.
+ * ppconst->pp_is_const is set if all items are a constant.
  */
     static int
-compile_list(char_u **arg, cctx_T *cctx)
+compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 {
     char_u	*p = skipwhite(*arg + 1);
     char_u	*whitep = *arg + 1;
     int		count = 0;
+    int		is_const;
+    int		is_all_const = TRUE;	// reset when non-const encountered
 
     for (;;)
     {
@@ -2654,8 +2674,10 @@ compile_list(char_u **arg, cctx_T *cctx)
 	    ++p;
 	    break;
 	}
-	if (compile_expr0(&p, cctx) == FAIL)
+	if (compile_expr0_ext(&p, cctx, &is_const) == FAIL)
 	    return FAIL;
+	if (!is_const)
+	    is_all_const = FALSE;
 	++count;
 	if (*p == ',')
 	{
@@ -2671,8 +2693,8 @@ compile_list(char_u **arg, cctx_T *cctx)
     }
     *arg = p;
 
-    generate_NEWLIST(cctx, count);
-    return OK;
+    ppconst->pp_is_const = is_all_const;
+    return generate_NEWLIST(cctx, count);
 }
 
 /*
@@ -2772,9 +2794,10 @@ compile_lambda_call(char_u **arg, cctx_T *cctx)
 /*
  * parse a dict: {'key': val} or #{key: val}
  * "*arg" points to the '{'.
+ * ppconst->pp_is_const is set if all item values are a constant.
  */
     static int
-compile_dict(char_u **arg, cctx_T *cctx, int literal)
+compile_dict(char_u **arg, cctx_T *cctx, int literal, ppconst_T *ppconst)
 {
     garray_T	*instr = &cctx->ctx_instr;
     garray_T	*stack = &cctx->ctx_type_stack;
@@ -2783,6 +2806,8 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
     dictitem_T	*item;
     char_u	*whitep = *arg;
     char_u	*p;
+    int		is_const;
+    int		is_all_const = TRUE;	// reset when non-const encountered
 
     if (d == NULL)
 	return FAIL;
@@ -2827,7 +2852,8 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 	    {
 		type_T *keytype = ((type_T **)stack->ga_data)
 							   [stack->ga_len - 1];
-		if (need_type(keytype, &t_string, -1, cctx, FALSE) == FAIL)
+		if (need_type(keytype, &t_string, -1, cctx,
+							 FALSE, FALSE) == FAIL)
 		    return FAIL;
 	    }
 	}
@@ -2873,8 +2899,10 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 	    goto failret;
 	}
 
-	if (compile_expr0(arg, cctx) == FAIL)
+	if (compile_expr0_ext(arg, cctx, &is_const) == FAIL)
 	    return FAIL;
+	if (!is_const)
+	    is_all_const = FALSE;
 	++count;
 
 	whitep = *arg;
@@ -2908,6 +2936,7 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 	*arg += STRLEN(*arg);
 
     dict_unref(d);
+    ppconst->pp_is_const = is_all_const;
     return generate_NEWDICT(cctx, count);
 
 failret:
@@ -3245,6 +3274,7 @@ compile_subscript(
 
 	    if (generate_ppconst(cctx, ppconst) == FAIL)
 		return FAIL;
+	    ppconst->pp_is_const = FALSE;
 
 	    // funcref(arg)
 	    type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
@@ -3261,6 +3291,7 @@ compile_subscript(
 
 	    if (generate_ppconst(cctx, ppconst) == FAIL)
 		return FAIL;
+	    ppconst->pp_is_const = FALSE;
 
 	    // something->method()
 	    // Apply the '!', '-' and '+' first:
@@ -3316,6 +3347,7 @@ compile_subscript(
 	    // TODO: recognize list or dict at runtime
 	    if (generate_ppconst(cctx, ppconst) == FAIL)
 		return FAIL;
+	    ppconst->pp_is_const = FALSE;
 
 	    ++p;
 	    *arg = skipwhite(p);
@@ -3371,12 +3403,14 @@ compile_subscript(
 		vtype = VAR_DICT;
 	    if (vtype == VAR_STRING || vtype == VAR_LIST || vtype == VAR_BLOB)
 	    {
-		if (need_type(valtype, &t_number, -1, cctx, FALSE) == FAIL)
+		if (need_type(valtype, &t_number, -1, cctx,
+							 FALSE, FALSE) == FAIL)
 		    return FAIL;
 		if (is_slice)
 		{
 		    valtype = ((type_T **)stack->ga_data)[stack->ga_len - 2];
-		    if (need_type(valtype, &t_number, -2, cctx, FALSE) == FAIL)
+		    if (need_type(valtype, &t_number, -2, cctx,
+							 FALSE, FALSE) == FAIL)
 			return FAIL;
 		}
 	    }
@@ -3392,7 +3426,8 @@ compile_subscript(
 		    *typep = (*typep)->tt_member;
 		else
 		{
-		    if (need_type(*typep, &t_dict_any, -2, cctx, FALSE) == FAIL)
+		    if (need_type(*typep, &t_dict_any, -2, cctx,
+							 FALSE, FALSE) == FAIL)
 			return FAIL;
 		    *typep = &t_any;
 		}
@@ -3441,8 +3476,10 @@ compile_subscript(
 	}
 	else if (*p == '.' && p[1] != '.')
 	{
+	    // dictionary member: dict.name
 	    if (generate_ppconst(cctx, ppconst) == FAIL)
 		return FAIL;
+	    ppconst->pp_is_const = FALSE;
 
 	    *arg = p + 1;
 	    if (may_get_next_line(*arg, arg, cctx) == FAIL)
@@ -3450,7 +3487,6 @@ compile_subscript(
 		emsg(_(e_missing_name_after_dot));
 		return FAIL;
 	    }
-	    // dictionary member: dict.name
 	    p = *arg;
 	    if (eval_isdictc(*p))
 		while (eval_isnamec(*p))
@@ -3480,7 +3516,7 @@ compile_subscript(
  * Compile an expression at "*arg" and add instructions to "cctx->ctx_instr".
  * "arg" is advanced until after the expression, skipping white space.
  *
- * If the value is a constant "ppconst->pp_ret" will be set.
+ * If the value is a constant "ppconst->pp_used" will be non-zero.
  * Before instructions are generated, any values in "ppconst" will generated.
  *
  * This is the compiling equivalent of eval1(), eval2(), etc.
@@ -3520,6 +3556,8 @@ compile_expr7(
     int		ret = OK;
     typval_T	*rettv = &ppconst->pp_tv[ppconst->pp_used];
     int		used_before = ppconst->pp_used;
+
+    ppconst->pp_is_const = FALSE;
 
     /*
      * Skip '!', '-' and '+' characters.  They are handled later.
@@ -3610,7 +3648,7 @@ compile_expr7(
 	/*
 	 * List: [expr, expr]
 	 */
-	case '[':   ret = compile_list(arg, cctx);
+	case '[':   ret = compile_list(arg, cctx, ppconst);
 		    break;
 
 	/*
@@ -3619,7 +3657,7 @@ compile_expr7(
 	case '#':   if ((*arg)[1] == '{')
 		    {
 			++*arg;
-			ret = compile_dict(arg, cctx, TRUE);
+			ret = compile_dict(arg, cctx, TRUE, ppconst);
 		    }
 		    else
 			ret = NOTDONE;
@@ -3638,7 +3676,7 @@ compile_expr7(
 			if (ret != FAIL && *start == '>')
 			    ret = compile_lambda(arg, cctx);
 			else
-			    ret = compile_dict(arg, cctx, FALSE);
+			    ret = compile_dict(arg, cctx, FALSE, ppconst);
 		    }
 		    break;
 
@@ -3807,7 +3845,7 @@ compile_expr7t(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	actual = ((type_T **)stack->ga_data)[stack->ga_len - 1];
 	if (check_type(want_type, actual, FALSE, 0) == FAIL)
 	{
-	    if (need_type(actual, want_type, -1, cctx, FALSE) == FAIL)
+	    if (need_type(actual, want_type, -1, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
 	}
     }
@@ -4420,9 +4458,11 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
 
 /*
  * Toplevel expression.
+ * Sets "is_const" (if not NULL) to indicate the value is a constant.
+ * Returns OK or FAIL.
  */
     static int
-compile_expr0(char_u **arg,  cctx_T *cctx)
+compile_expr0_ext(char_u **arg,  cctx_T *cctx, int *is_const)
 {
     ppconst_T	ppconst;
 
@@ -4432,9 +4472,20 @@ compile_expr0(char_u **arg,  cctx_T *cctx)
 	clear_ppconst(&ppconst);
 	return FAIL;
     }
+    if (is_const != NULL)
+	*is_const = ppconst.pp_used > 0 || ppconst.pp_is_const;
     if (generate_ppconst(cctx, &ppconst) == FAIL)
 	return FAIL;
     return OK;
+}
+
+/*
+ * Toplevel expression.
+ */
+    static int
+compile_expr0(char_u **arg,  cctx_T *cctx)
+{
+    return compile_expr0_ext(arg, cctx, NULL);
 }
 
 /*
@@ -4466,7 +4517,7 @@ compile_return(char_u *arg, int set_return_type, cctx_T *cctx)
 		return NULL;
 	    }
 	    if (need_type(stack_type, cctx->ctx_ufunc->uf_ret_type, -1,
-							  cctx, FALSE) == FAIL)
+						   cctx, FALSE, FALSE) == FAIL)
 		return NULL;
 	}
     }
@@ -4834,7 +4885,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		emsg(_(e_cannot_use_void_value));
 		goto theend;
 	    }
-	    if (need_type(stacktype, &t_list_any, -1, cctx, FALSE) == FAIL)
+	    if (need_type(stacktype, &t_list_any, -1, cctx,
+							 FALSE, FALSE) == FAIL)
 		goto theend;
 	    // TODO: check the length of a constant list here
 	    generate_CHECKLEN(cctx, semicolon ? var_count - 1 : var_count,
@@ -5194,6 +5246,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    else if (oplen > 0)
 	    {
 		type_T	*stacktype;
+		int	is_const = FALSE;
 
 		// For "var = expr" evaluate the expression.
 		if (var_count == 0)
@@ -5219,7 +5272,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			--cctx->ctx_locals.ga_len;
 		    instr_count = instr->ga_len;
 		    p = skipwhite(op + oplen);
-		    r = compile_expr0(&p, cctx);
+		    r = compile_expr0_ext(&p, cctx, &is_const);
 		    if (new_local)
 			++cctx->ctx_locals.ga_len;
 		    if (r == FAIL)
@@ -5281,13 +5334,13 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 				// could be indexing "any"
 				use_type = &t_any;
 			}
-			if (need_type(stacktype, use_type, -1, cctx, FALSE)
-								       == FAIL)
+			if (need_type(stacktype, use_type, -1, cctx,
+						      FALSE, is_const) == FAIL)
 			    goto theend;
 		    }
 		}
 		else if (*p != '=' && need_type(stacktype, member_type, -1,
-							  cctx, FALSE) == FAIL)
+						   cctx, FALSE, FALSE) == FAIL)
 		    goto theend;
 	    }
 	    else if (cmdidx == CMD_final)
@@ -5374,7 +5427,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		// If variable is float operation with number is OK.
 		!(expected == &t_float && stacktype == &t_number) &&
 #endif
-		    need_type(stacktype, expected, -1, cctx, FALSE) == FAIL)
+		    need_type(stacktype, expected, -1, cctx,
+							 FALSE, FALSE) == FAIL)
 		goto theend;
 
 	    if (*op == '.')
@@ -5768,7 +5822,7 @@ bool_on_stack(cctx_T *cctx)
 
     type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
     if (type != &t_bool && type != &t_number && type != &t_any
-	    && need_type(type, &t_bool, -1, cctx, FALSE) == FAIL)
+	    && need_type(type, &t_bool, -1, cctx, FALSE, FALSE) == FAIL)
 	return FAIL;
     return OK;
 }
@@ -6105,7 +6159,7 @@ compile_for(char_u *arg, cctx_T *cctx)
     // Now that we know the type of "var", check that it is a list, now or at
     // runtime.
     vartype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-    if (need_type(vartype, &t_list_any, -1, cctx, FALSE) == FAIL)
+    if (need_type(vartype, &t_list_any, -1, cctx, FALSE, FALSE) == FAIL)
     {
 	drop_scope(cctx);
 	return NULL;
