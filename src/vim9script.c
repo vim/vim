@@ -51,8 +51,8 @@ ex_vim9script(exarg_T *eap)
 
     if (STRCMP(p_cpo, CPO_VIM) != 0)
     {
-	si->sn_save_cpo = p_cpo;
-	p_cpo = vim_strsave((char_u *)CPO_VIM);
+	si->sn_save_cpo = vim_strsave(p_cpo);
+	set_option_value((char_u *)"cpo", 0L, (char_u *)CPO_VIM, 0);
     }
 }
 
@@ -569,8 +569,8 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
 }
 
 /*
- * Vim9 part of adding a script variable: add it to sn_all_vars and
- * sn_var_vals.
+ * Vim9 part of adding a script variable: add it to sn_all_vars (lookup by name
+ * with a hashtable) and sn_var_vals (lookup by index).
  * When "type" is NULL use "tv" for the type.
  */
     void
@@ -628,9 +628,11 @@ add_vim9_script_var(dictitem_T *di, typval_T *tv, type_T *type)
 /*
  * Hide a script variable when leaving a block.
  * "idx" is de index in sn_var_vals.
+ * When "func_defined" is non-zero then a function was defined in this block,
+ * the variable may be accessed by it.  Otherwise the variable can be cleared.
  */
     void
-hide_script_var(scriptitem_T *si, int idx)
+hide_script_var(scriptitem_T *si, int idx, int func_defined)
 {
     svar_T	*sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
     hashtab_T	*script_ht = get_script_local_ht();
@@ -639,6 +641,7 @@ hide_script_var(scriptitem_T *si, int idx)
     hashitem_T	*all_hi;
 
     // Remove a variable declared inside the block, if it still exists.
+    // If it was added in a nested block it will already have been removed.
     // The typval is moved into the sallvar_T.
     script_hi = hash_find(script_ht, sv->sv_name);
     all_hi = hash_find(all_ht, sv->sv_name);
@@ -646,19 +649,36 @@ hide_script_var(scriptitem_T *si, int idx)
     {
 	dictitem_T	*di = HI2DI(script_hi);
 	sallvar_T	*sav = HI2SAV(all_hi);
+	sallvar_T	*sav_prev = NULL;
 
 	// There can be multiple entries with the same name in different
 	// blocks, find the right one.
 	while (sav != NULL && sav->sav_var_vals_idx != idx)
+	{
+	    sav_prev = sav;
 	    sav = sav->sav_next;
+	}
 	if (sav != NULL)
 	{
-	    sav->sav_tv = di->di_tv;
-	    di->di_tv.v_type = VAR_UNKNOWN;
-	    sav->sav_flags = di->di_flags;
-	    sav->sav_di = NULL;
+	    if (func_defined)
+	    {
+		// move the typval from the dictitem to the sallvar
+		sav->sav_tv = di->di_tv;
+		di->di_tv.v_type = VAR_UNKNOWN;
+		sav->sav_flags = di->di_flags;
+		sav->sav_di = NULL;
+		sv->sv_tv = &sav->sav_tv;
+	    }
+	    else
+	    {
+		if (sav_prev == NULL)
+		    hash_remove(all_ht, all_hi);
+		else
+		    sav_prev->sav_next = sav->sav_next;
+		sv->sv_name = NULL;
+		vim_free(sav);
+	    }
 	    delete_var(script_ht, script_hi);
-	    sv->sv_tv = &sav->sav_tv;
 	}
     }
 }

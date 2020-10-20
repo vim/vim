@@ -296,6 +296,25 @@ def Test_block_local_vars()
   delete('Xdidit')
 enddef
 
+def Test_block_local_vars_with_func()
+  var lines =<< trim END
+      vim9script
+      if true
+        var foo = 'foo'
+        if true
+          var bar = 'bar'
+          def Func(): list<string>
+            return [foo, bar]
+          enddef
+        endif
+      endif
+      # function is compiled here, after blocks have finished, can still access
+      # "foo" and "bar"
+      assert_equal(['foo', 'bar'], Func())
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 func g:NoSuchFunc()
   echo 'none'
 endfunc

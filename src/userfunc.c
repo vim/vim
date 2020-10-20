@@ -3471,27 +3471,35 @@ define_function(exarg_T *eap, char_u *name_arg)
 
     if (eap->cmdidx == CMD_def)
     {
-	int	lnum_save = SOURCING_LNUM;
+	int	    lnum_save = SOURCING_LNUM;
+	cstack_T    *cstack = eap->cstack;
 
 	fp->uf_def_status = UF_TO_BE_COMPILED;
 
 	// error messages are for the first function line
 	SOURCING_LNUM = sourcing_lnum_top;
 
-	if (eap->cstack != NULL && eap->cstack->cs_idx >= 0)
+	if (cstack != NULL && cstack->cs_idx >= 0)
 	{
-	    int count = eap->cstack->cs_idx + 1;
+	    int	    count = cstack->cs_idx + 1;
+	    int	    i;
 
 	    // The block context may be needed for script variables declared in
-	    // a block visible now but not when the function is compiled.
+	    // a block that is visible now but not when the function is called
+	    // later.
 	    fp->uf_block_ids = ALLOC_MULT(int, count);
 	    if (fp->uf_block_ids != NULL)
 	    {
-		mch_memmove(fp->uf_block_ids, eap->cstack->cs_block_id,
+		mch_memmove(fp->uf_block_ids, cstack->cs_block_id,
 							  sizeof(int) * count);
 		fp->uf_block_depth = count;
 	    }
-	    // TODO: set flag in each block to indicate a function was defined
+
+	    // Set flag in each block to indicate a function was defined.  This
+	    // is used to keep the variable when leaving the block, see
+	    // hide_script_var().
+	    for (i = 0; i <= cstack->cs_idx; ++i)
+		cstack->cs_flags[i] |= CSF_FUNC_DEF;
 	}
 
 	// parse the argument types

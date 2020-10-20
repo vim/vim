@@ -917,6 +917,8 @@ typedef struct {
 # define CSF_SILENT	0x1000	// "emsg_silent" reset by ":try"
 // Note that CSF_ELSE is only used when CSF_TRY and CSF_WHILE are unset
 // (an ":if"), and CSF_SILENT is only used when CSF_TRY is set.
+//
+#define CSF_FUNC_DEF	0x2000	// a function was defined in this block
 
 /*
  * What's pending for being reactivated at the ":endtry" of this try
