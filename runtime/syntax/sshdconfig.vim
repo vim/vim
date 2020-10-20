@@ -6,8 +6,8 @@
 " Contributor:  Leonard Ehrenfried <leonard.ehrenfried@web.de>	
 " Contributor:  Karsten Hopp <karsten@redhat.com>
 " Originally:	2009-07-09
-" Last Change:	2019-05-31
-" SSH Version:	7.9p1
+" Last Change:	2020-10-20
+" SSH Version:	8.4p1
 "
 
 " Setup
@@ -187,6 +187,7 @@ syn keyword sshdconfigKeyword HostbasedUsesNameFromPacketOnly
 syn keyword sshdconfigKeyword IPQoS
 syn keyword sshdconfigKeyword IgnoreRhosts
 syn keyword sshdconfigKeyword IgnoreUserKnownHosts
+syn keyword sshdconfigKeyword Include
 syn keyword sshdconfigKeyword KbdInteractiveAuthentication
 syn keyword sshdconfigKeyword KerberosAuthentication
 syn keyword sshdconfigKeyword KerberosGetAFSToken
@@ -221,11 +222,13 @@ syn keyword sshdconfigKeyword PrintMotd
 syn keyword sshdconfigKeyword Protocol
 syn keyword sshdconfigKeyword PubkeyAcceptedKeyTypes
 syn keyword sshdconfigKeyword PubkeyAuthentication
+syn keyword sshdconfigKeyword PubkeyAuthOptions
 syn keyword sshdconfigKeyword RSAAuthentication
 syn keyword sshdconfigKeyword RekeyLimit
 syn keyword sshdconfigKeyword RevokedKeys
 syn keyword sshdconfigKeyword RDomain
 syn keyword sshdconfigKeyword RhostsRSAAuthentication
+syn keyword sshdconfigKeyword SecurityKeyProvider
 syn keyword sshdconfigKeyword ServerKeyBits
 syn keyword sshdconfigKeyword SetEnv
 syn keyword sshdconfigKeyword ShowPatchLevel
