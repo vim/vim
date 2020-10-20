@@ -375,6 +375,24 @@ def Test_command_star_range()
   bwipe!
 enddef
 
+def Test_f_args()
+  var lines =<< trim END
+    vim9script
+
+    func SaveCmdArgs(...)
+      let g:args = a:000
+    endfunc
+
+    command -nargs=* TestFArgs call SaveCmdArgs(<f-args>)
+
+    TestFArgs
+    assert_equal([], g:args)
+
+    TestFArgs one two three
+    assert_equal(['one', 'two', 'three'], g:args)
+  END
+  CheckScriptSuccess(lines)
+enddef
 
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

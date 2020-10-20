@@ -1153,7 +1153,7 @@ uc_split_args(char_u *arg, size_t *lenp)
 	    p = skipwhite(p);
 	    if (*p == NUL)
 		break;
-	    len += 3; // ","
+	    len += 4; // ", "
 	}
 	else
 	{
@@ -1199,6 +1199,7 @@ uc_split_args(char_u *arg, size_t *lenp)
 		break;
 	    *q++ = '"';
 	    *q++ = ',';
+	    *q++ = ' ';
 	    *q++ = '"';
 	}
 	else
