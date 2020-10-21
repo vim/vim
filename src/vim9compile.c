@@ -1475,11 +1475,13 @@ generate_BCALL(cctx_T *cctx, int func_idx, int argcount, int method_call)
 	isn->isn_arg.shuffle.shfl_up = argoff - 1;
     }
 
-    // Check the types of the arguments.
-    argtypes = ((type_T **)stack->ga_data) + stack->ga_len - argcount;
-    if (argcount > 0 && internal_func_check_arg_types(
-					argtypes, func_idx, argcount) == FAIL)
+    if (argcount > 0)
+    {
+	// Check the types of the arguments.
+	argtypes = ((type_T **)stack->ga_data) + stack->ga_len - argcount;
+	if (internal_func_check_arg_types(argtypes, func_idx, argcount) == FAIL)
 	    return FAIL;
+    }
 
     if ((isn = generate_instr(cctx, ISN_BCALL)) == NULL)
 	return FAIL;
