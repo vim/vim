@@ -31,6 +31,7 @@ SCRIPTS_TINY_OUT = \
 # Tests for Vim9 script.
 TEST_VIM9 = \
 	test_vim9_assign \
+	test_vim9_builtin \
 	test_vim9_cmd \
 	test_vim9_disassemble \
 	test_vim9_expr \
@@ -40,6 +41,7 @@ TEST_VIM9 = \
 
 TEST_VIM9_RES = \
 	test_vim9_assign.res \
+	test_vim9_builtin.res \
 	test_vim9_cmd.res \
 	test_vim9_disassemble.res \
 	test_vim9_expr.res \
