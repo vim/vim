@@ -1298,7 +1298,8 @@ enum auto_event
     EVENT_INSERTCHANGE,		// when changing Insert/Replace mode
     EVENT_INSERTCHARPRE,	// before inserting a char
     EVENT_INSERTENTER,		// when entering Insert mode
-    EVENT_INSERTLEAVE,		// when leaving Insert mode
+    EVENT_INSERTLEAVEPRE,	// just before leaving Insert mode
+    EVENT_INSERTLEAVE,		// just after leaving Insert mode
     EVENT_MENUPOPUP,		// just before popup menu is displayed
     EVENT_OPTIONSET,		// option was set
     EVENT_QUICKFIXCMDPOST,	// after :make, :grep etc.
@@ -1325,7 +1326,8 @@ enum auto_event
     EVENT_TABNEW,		// when entering a new tab page
     EVENT_TERMCHANGED,		// after changing 'term'
     EVENT_TERMINALOPEN,		// after a terminal buffer was created
-    EVENT_TERMINALWINOPEN,	// after a terminal buffer was created and entering its window
+    EVENT_TERMINALWINOPEN,	// after a terminal buffer was created and
+				// entering its window
     EVENT_TERMRESPONSE,		// after setting "v:termresponse"
     EVENT_TEXTCHANGED,		// text was modified not in Insert mode
     EVENT_TEXTCHANGEDI,         // text was modified in Insert mode
