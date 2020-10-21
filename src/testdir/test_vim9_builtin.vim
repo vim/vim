@@ -318,13 +318,20 @@ def Test_index()
   index(['a', 'b', 'a', 'B'], 'b', 2, true)->assert_equal(3)
 enddef
 
-def Test_insert_return_type()
+def Test_insert()
   var l = insert([2, 1], 3)
   var res = 0
   for n in l
     res += n
   endfor
   res->assert_equal(6)
+
+  assert_equal([1, 2, 3], insert([2, 3], 1))
+  assert_equal([1, 2, 3], insert([1, 2], 3, 2))
+  assert_equal(['a', 'b', 'c'], insert(['b', 'c'], 'a'))
+  assert_equal(0z1234, insert(0z34, 0x12))
+  CheckDefFailure(['insert([2, 3], "a")'], 'E1013: Argument 2: type mismatch, expected number but got string', 1)
+  CheckDefFailure(['insert([2, 3], 1, "x")'], 'E1013: Argument 3: type mismatch, expected number but got string', 1)
 enddef
 
 def Test_keys_return_type()

@@ -1478,7 +1478,7 @@ generate_BCALL(cctx_T *cctx, int func_idx, int argcount, int method_call)
     // Check the types of the arguments.
     argtypes = ((type_T **)stack->ga_data) + stack->ga_len - argcount;
     if (argcount > 0 && internal_func_check_arg_types(
-					*argtypes, func_idx, argcount) == FAIL)
+					argtypes, func_idx, argcount) == FAIL)
 	    return FAIL;
 
     if ((isn = generate_instr(cctx, ISN_BCALL)) == NULL)

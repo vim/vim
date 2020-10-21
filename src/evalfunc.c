@@ -266,8 +266,9 @@ static void f_xor(typval_T *argvars, typval_T *rettv);
 
 // Context passed to an arg_ function.
 typedef struct {
-    int		arg_count;  // actual argument count
-    int		arg_idx;    // current argument index (first arg is zero)
+    int		arg_count;	// actual argument count
+    type_T	**arg_types;	// list of argument types
+    int		arg_idx;	// current argument index (first arg is zero)
 } argcontext_T;
 
 // A function to check one argument type.  The first argument is the type to
@@ -278,16 +279,55 @@ typedef int (*argcheck_T)(type_T *, argcontext_T *);
     static int
 arg_float_or_nr(type_T *type, argcontext_T *context)
 {
-    if (type->tt_type == VAR_FLOAT || type->tt_type == VAR_NUMBER)
+    if (type->tt_type == VAR_ANY
+		  || type->tt_type == VAR_FLOAT || type->tt_type == VAR_NUMBER)
 	return OK;
     arg_type_mismatch(&t_number, type, context->arg_idx + 1);
     return FAIL;
+}
+
+    static int
+arg_number(type_T *type, argcontext_T *context)
+{
+    return check_type(&t_number, type, TRUE, context->arg_idx + 1);
+}
+
+    static int
+arg_list_or_blob(type_T *type, argcontext_T *context)
+{
+    if (type->tt_type == VAR_ANY
+		     || type->tt_type == VAR_LIST || type->tt_type == VAR_BLOB)
+	return OK;
+    arg_type_mismatch(&t_list_any, type, context->arg_idx + 1);
+    return FAIL;
+}
+
+/*
+ * Check the type is an item of the list or blob of the previous arg.
+ * Must not be used for the first argcheck_T entry.
+ */
+    static int
+arg_item_of_prev(type_T *type, argcontext_T *context)
+{
+    type_T *prev_type = context->arg_types[context->arg_idx - 1];
+    type_T *expected;
+
+    if (prev_type->tt_type == VAR_LIST)
+	expected = prev_type->tt_member;
+    else if (prev_type->tt_type == VAR_BLOB)
+	expected = &t_number;
+    else
+	// probably VAR_ANY, can't check
+	return OK;
+
+    return check_type(expected, type, TRUE, context->arg_idx + 1);
 }
 
 /*
  * Lists of functions that check the argument types of a builtin function.
  */
 argcheck_T arg1_float_or_nr[] = {arg_float_or_nr};
+argcheck_T arg3_insert[] = {arg_list_or_blob, arg_item_of_prev, arg_number};
 
 /*
  * Functions that return the return type of a builtin function.
@@ -936,7 +976,7 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_inputsave},
     {"inputsecret",	1, 2, FEARG_1,	    NULL,
 			ret_string,	    f_inputsecret},
-    {"insert",		2, 3, FEARG_1,	    NULL,
+    {"insert",		2, 3, FEARG_1,	    arg3_insert,
 			ret_first_arg,	    f_insert},
     {"interrupt",	0, 0, 0,	    NULL,
 			ret_void,	    f_interrupt},
@@ -1763,7 +1803,7 @@ internal_func_name(int idx)
  * Return FAIL and gives an error message when a type is wrong.
  */
     int
-internal_func_check_arg_types(type_T *types, int idx, int argcount)
+internal_func_check_arg_types(type_T **types, int idx, int argcount)
 {
     argcheck_T	*argchecks = global_functions[idx].f_argcheck;
     int		i;
@@ -1773,11 +1813,12 @@ internal_func_check_arg_types(type_T *types, int idx, int argcount)
 	argcontext_T context;
 
 	context.arg_count = argcount;
+	context.arg_types = types;
 	for (i = 0; i < argcount; ++i)
 	    if (argchecks[i] != NULL)
 	    {
 		context.arg_idx = i;
-		if (argchecks[i](types + i, &context) == FAIL)
+		if (argchecks[i](types[i], &context) == FAIL)
 		    return FAIL;
 	    }
     }
