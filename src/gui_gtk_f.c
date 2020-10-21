@@ -48,8 +48,12 @@ struct _GtkFormChild
 };
 
 
-static void form_class_init(GtkFormClass *klass);
-static void form_init(GtkForm *form, void *g_class);
+static void gui_gtk_form_class_init(GtkFormClass *klass);
+#if GTK_CHECK_VERSION(3,0,0)
+static void gui_gtk_form_init(GtkForm *form);
+#else
+static void gui_gtk_form_init(GtkForm *form, void *g_class);
+#endif
 
 static void form_realize(GtkWidget *widget);
 static void form_unrealize(GtkWidget *widget);
@@ -195,8 +199,9 @@ gui_gtk_form_thaw(GtkForm *form)
 }
 
 // Basic Object handling procedures
+
 #if GTK_CHECK_VERSION(3,0,0)
-G_DEFINE_TYPE(GtkForm, gtk_form, GTK_TYPE_CONTAINER)
+G_DEFINE_TYPE(GtkForm, gui_gtk_form, GTK_TYPE_CONTAINER)
 #else
     GtkType
 gui_gtk_form_get_type(void)
@@ -211,8 +216,8 @@ gui_gtk_form_get_type(void)
 	form_info.type_name = "GtkForm";
 	form_info.object_size = sizeof(GtkForm);
 	form_info.class_size = sizeof(GtkFormClass);
-	form_info.class_init_func = (GtkClassInitFunc)form_class_init;
-	form_info.object_init_func = (GtkObjectInitFunc)form_init;
+	form_info.class_init_func = (GtkClassInitFunc)gui_gtk_form_class_init;
+	form_info.object_init_func = (GtkObjectInitFunc)gui_gtk_form_init;
 
 	form_type = gtk_type_unique(GTK_TYPE_CONTAINER, &form_info);
     }
@@ -221,7 +226,7 @@ gui_gtk_form_get_type(void)
 #endif // !GTK_CHECK_VERSION(3,0,0)
 
     static void
-form_class_init(GtkFormClass *klass)
+gui_gtk_form_class_init(GtkFormClass *klass)
 {
     GtkWidgetClass *widget_class;
     GtkContainerClass *container_class;
@@ -254,7 +259,11 @@ form_class_init(GtkFormClass *klass)
 }
 
     static void
-form_init(GtkForm *form, void *g_class UNUSED)
+gui_gtk_form_init(GtkForm *form
+#if !GTK_CHECK_VERSION(3,0,0)
+	, void *g_class UNUSED
+#endif
+	)
 {
 #if GTK_CHECK_VERSION(3,0,0)
     gtk_widget_set_has_window(GTK_WIDGET(form), TRUE);
@@ -416,8 +425,8 @@ form_unrealize(GtkWidget *widget)
     }
 
 #if GTK_CHECK_VERSION(3,0,0)
-    if (GTK_WIDGET_CLASS (gtk_form_parent_class)->unrealize)
-	 (* GTK_WIDGET_CLASS (gtk_form_parent_class)->unrealize) (widget);
+    if (GTK_WIDGET_CLASS (gui_gtk_form_parent_class)->unrealize)
+	 (* GTK_WIDGET_CLASS (gui_gtk_form_parent_class)->unrealize) (widget);
 #else
     if (GTK_WIDGET_CLASS (parent_class)->unrealize)
 	 (* GTK_WIDGET_CLASS (parent_class)->unrealize) (widget);
@@ -555,7 +564,7 @@ form_draw(GtkWidget *widget, cairo_t *cr)
 	}
     }
 
-    return GTK_WIDGET_CLASS(gtk_form_parent_class)->draw(widget, cr);
+    return GTK_WIDGET_CLASS(gui_gtk_form_parent_class)->draw(widget, cr);
 }
 #else // !GTK_CHECK_VERSION(3,0,0)
     static gint
