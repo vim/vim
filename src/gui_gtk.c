@@ -810,7 +810,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
     void
 gui_mch_set_text_area_pos(int x, int y, int w, int h)
 {
-    gtk_form_move_resize(GTK_FORM(gui.formwin), gui.drawarea, x, y, w, h);
+    gui_gtk_form_move_resize(GTK_FORM(gui.formwin), gui.drawarea, x, y, w, h);
 }
 
 
@@ -1005,7 +1005,7 @@ gui_mch_set_scrollbar_thumb(scrollbar_T *sb, long val, long size, long max)
 gui_mch_set_scrollbar_pos(scrollbar_T *sb, int x, int y, int w, int h)
 {
     if (sb->id != NULL)
-	gtk_form_move_resize(GTK_FORM(gui.formwin), sb->id, x, y, w, h);
+	gui_gtk_form_move_resize(GTK_FORM(gui.formwin), sb->id, x, y, w, h);
 }
 
     int
@@ -1111,7 +1111,7 @@ gui_mch_create_scrollbar(scrollbar_T *sb, int orient)
 	GtkAdjustment *adjustment;
 
 	gtk_widget_set_can_focus(sb->id, FALSE);
-	gtk_form_put(GTK_FORM(gui.formwin), sb->id, 0, 0);
+	gui_gtk_form_put(GTK_FORM(gui.formwin), sb->id, 0, 0);
 
 	adjustment = gtk_range_get_adjustment(GTK_RANGE(sb->id));
 

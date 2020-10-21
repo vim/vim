@@ -3811,7 +3811,7 @@ gui_mch_init(void)
 	    G_CALLBACK(on_tabline_menu), G_OBJECT(tabline_menu));
 #endif // FEAT_GUI_TABLINE
 
-    gui.formwin = gtk_form_new();
+    gui.formwin = gui_gtk_form_new();
     gtk_container_set_border_width(GTK_CONTAINER(gui.formwin), 0);
 #if !GTK_CHECK_VERSION(3,0,0)
     gtk_widget_set_events(gui.formwin, GDK_EXPOSURE_MASK);
@@ -3840,7 +3840,7 @@ gui_mch_init(void)
 			  GDK_POINTER_MOTION_HINT_MASK);
 
     gtk_widget_show(gui.drawarea);
-    gtk_form_put(GTK_FORM(gui.formwin), gui.drawarea, 0, 0);
+    gui_gtk_form_put(GTK_FORM(gui.formwin), gui.drawarea, 0, 0);
     gtk_widget_show(gui.formwin);
     gtk_box_pack_start(GTK_BOX(vbox), gui.formwin, TRUE, TRUE, 0);
 
@@ -4119,9 +4119,9 @@ form_configure_event(GtkWidget *widget UNUSED,
     if (gtk_socket_id != 0)
 	usable_height -= (gui.char_height - (gui.char_height/2)); // sic.
 
-    gtk_form_freeze(GTK_FORM(gui.formwin));
+    gui_gtk_form_freeze(GTK_FORM(gui.formwin));
     gui_resize_shell(event->width, usable_height);
-    gtk_form_thaw(GTK_FORM(gui.formwin));
+    gui_gtk_form_thaw(GTK_FORM(gui.formwin));
 
     return TRUE;
 }
