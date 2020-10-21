@@ -51,7 +51,7 @@ struct _GtkFormChild
 
 
 static void gtk_form_class_init(GtkFormClass *klass);
-static void gtk_form_init(GtkForm *form);
+static void gtk_form_init(GtkForm *form, void *g_class);
 
 static void gtk_form_realize(GtkWidget *widget);
 static void gtk_form_unrealize(GtkWidget *widget);
@@ -270,7 +270,7 @@ gtk_form_class_init(GtkFormClass *klass)
 }
 
     static void
-gtk_form_init(GtkForm *form)
+gtk_form_init(GtkForm *form, void *g_class UNUSED)
 {
 #if GTK_CHECK_VERSION(3,0,0)
     gtk_widget_set_has_window(GTK_WIDGET(form), TRUE);
