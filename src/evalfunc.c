@@ -561,6 +561,7 @@ static funcentry_T global_functions[] =
     {"ch_getbufnr",	2, 2, FEARG_1,	  ret_number,	JOB_FUNC(f_ch_getbufnr)},
     {"ch_getjob",	1, 1, FEARG_1,	  ret_job,	JOB_FUNC(f_ch_getjob)},
     {"ch_info",		1, 1, FEARG_1,	  ret_dict_any,	JOB_FUNC(f_ch_info)},
+    {"ch_listen",	1, 2, FEARG_1,	  ret_channel,  JOB_FUNC(f_ch_listen)},
     {"ch_log",		1, 2, FEARG_1,	  ret_void,	JOB_FUNC(f_ch_log)},
     {"ch_logfile",	1, 2, FEARG_1,	  ret_void,	JOB_FUNC(f_ch_logfile)},
     {"ch_open",		1, 2, FEARG_1,	  ret_channel,	JOB_FUNC(f_ch_open)},
