@@ -1252,7 +1252,7 @@ OutputSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
 #define BufferType_Check(obj) ((obj)->ob_base.ob_type == &BufferType)
 
 static PyObject* BufferSubscript(PyObject *self, PyObject *idx);
-static Py_ssize_t BufferAsSubscript(PyObject *self, PyObject *idx, PyObject *val);
+static int BufferAsSubscript(PyObject *self, PyObject *idx, PyObject *val);
 
 // Line range type - Implementation functions
 // --------------------------------------
@@ -1260,8 +1260,8 @@ static Py_ssize_t BufferAsSubscript(PyObject *self, PyObject *idx, PyObject *val
 #define RangeType_Check(obj) ((obj)->ob_base.ob_type == &RangeType)
 
 static PyObject* RangeSubscript(PyObject *self, PyObject *idx);
-static Py_ssize_t RangeAsItem(PyObject *, Py_ssize_t, PyObject *);
-static Py_ssize_t RangeAsSubscript(PyObject *self, PyObject *idx, PyObject *val);
+static int RangeAsItem(PyObject *, Py_ssize_t, PyObject *);
+static int RangeAsSubscript(PyObject *self, PyObject *idx, PyObject *val);
 
 // Current objects type - Implementation functions
 // -----------------------------------------------
@@ -1346,7 +1346,7 @@ BufferSubscript(PyObject *self, PyObject* idx)
     }
 }
 
-    static Py_ssize_t
+    static int
 BufferAsSubscript(PyObject *self, PyObject* idx, PyObject* val)
 {
     if (PyLong_Check(idx))
@@ -1418,7 +1418,7 @@ RangeGetattro(PyObject *self, PyObject *nameobj)
 
 ////////////////
 
-    static Py_ssize_t
+    static int
 RangeAsItem(PyObject *self, Py_ssize_t n, PyObject *val)
 {
     return RBAsItem(((RangeObject *)(self))->buf, n, val,
@@ -1461,7 +1461,7 @@ RangeSubscript(PyObject *self, PyObject* idx)
     }
 }
 
-    static Py_ssize_t
+    static int
 RangeAsSubscript(PyObject *self, PyObject *idx, PyObject *val)
 {
     if (PyLong_Check(idx))
