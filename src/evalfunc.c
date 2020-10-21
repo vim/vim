@@ -604,12 +604,12 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_bufadd},
     {"bufexists",	1, 1, FEARG_1,	    NULL,
 			ret_number,	    f_bufexists},
-    {"buffer_exists",	1, 1, FEARG_1,	    NULL,
-			ret_number,	    f_bufexists},	// obsolete
-    {"buffer_name",	0, 1, FEARG_1,	    NULL,
-			ret_string,	    f_bufname},	// obsolete
-    {"buffer_number",	0, 1, FEARG_1,	    NULL,
-			ret_number,	    f_bufnr},	// obsolete
+    {"buffer_exists",	1, 1, FEARG_1,	    NULL,	// obsolete
+			ret_number,	    f_bufexists},
+    {"buffer_name",	0, 1, FEARG_1,	    NULL,	// obsolete
+			ret_string,	    f_bufname},
+    {"buffer_number",	0, 1, FEARG_1,	    NULL,	// obsolete
+			ret_number,	    f_bufnr},
     {"buflisted",	1, 1, FEARG_1,	    NULL,
 			ret_number,	    f_buflisted},
     {"bufload",		1, 1, FEARG_1,	    NULL,
@@ -756,8 +756,8 @@ static funcentry_T global_functions[] =
 			ret_first_arg,	    f_extend},
     {"feedkeys",	1, 2, FEARG_1,	    NULL,
 			ret_void,	    f_feedkeys},
-    {"file_readable",	1, 1, FEARG_1,	    NULL,
-			ret_number,	    f_filereadable}, // obsolete
+    {"file_readable",	1, 1, FEARG_1,	    NULL,	// obsolete
+			ret_number,	    f_filereadable},
     {"filereadable",	1, 1, FEARG_1,	    NULL,
 			ret_number,	    f_filereadable},
     {"filewritable",	1, 1, FEARG_1,	    NULL,
@@ -900,10 +900,10 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_haslocaldir},
     {"hasmapto",	1, 3, FEARG_1,	    NULL,
 			ret_number,	    f_hasmapto},
-    {"highlightID",	1, 1, FEARG_1,	    NULL,
-			ret_number,	    f_hlID},	// obsolete
-    {"highlight_exists",1, 1, FEARG_1,	    NULL,
-			ret_number,	    f_hlexists},	// obsolete
+    {"highlightID",	1, 1, FEARG_1,	    NULL,	// obsolete
+			ret_number,	    f_hlID},
+    {"highlight_exists",1, 1, FEARG_1,	    NULL,	// obsolete
+			ret_number,	    f_hlexists},
     {"histadd",		2, 2, FEARG_2,	    NULL,
 			ret_number,	    f_histadd},
     {"histdel",		1, 2, FEARG_1,	    NULL,
@@ -976,8 +976,8 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_json_encode},
     {"keys",		1, 1, FEARG_1,	    NULL,
 			ret_list_string,    f_keys},
-    {"last_buffer_nr",	0, 0, 0,	    NULL,
-			ret_number,	    f_last_buffer_nr}, // obsolete
+    {"last_buffer_nr",	0, 0, 0,	    NULL,	// obsolete
+			ret_number,	    f_last_buffer_nr},
     {"len",		1, 1, FEARG_1,	    NULL,
 			ret_number,	    f_len},
     {"libcall",		3, 3, FEARG_3,	    NULL,
