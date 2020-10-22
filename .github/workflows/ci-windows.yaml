@@ -3,7 +3,7 @@ name: GitHub CI
 on:
   push:
     branches:
-      - '*'
+      - '**'
   pull_request:
 
 env:
@@ -39,6 +39,7 @@ jobs:
     runs-on: windows-latest
 
     strategy:
+      fail-fast: false
       matrix:
         toolchain: [msvc, mingw]
         arch: [x64, x86]
