@@ -1460,7 +1460,7 @@ generate_BCALL(cctx_T *cctx, int func_idx, int argcount, int method_call)
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
     int		argoff;
-    type_T	**argtypes;
+    type_T	**argtypes = NULL;
 
     RETURN_OK_IF_SKIP(cctx);
     argoff = check_internal_func(func_idx, argcount);

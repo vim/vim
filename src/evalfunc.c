@@ -331,6 +331,7 @@ argcheck_T arg3_insert[] = {arg_list_or_blob, arg_item_of_prev, arg_number};
 
 /*
  * Functions that return the return type of a builtin function.
+ * Note that "argtypes" is NULL if "argcount" is zero.
  */
     static type_T *
 ret_void(int argcount UNUSED, type_T **argtypes UNUSED)
@@ -1825,6 +1826,11 @@ internal_func_check_arg_types(type_T **types, int idx, int argcount)
     return OK;
 }
 
+/*
+ * Call the "f_retfunc" function to obtain the return type of function "idx".
+ * "argtypes" is the list of argument types or NULL when there are no
+ * arguments.
+ */
     type_T *
 internal_func_ret_type(int idx, int argcount, type_T **argtypes)
 {
