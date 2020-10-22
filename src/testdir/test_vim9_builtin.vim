@@ -242,6 +242,8 @@ def Test_getbufline()
   var lines = ['aaa', 'bbb', 'ccc']
   setbufline(buf, 1, lines)
   getbufline('#', 1, '$')->assert_equal(lines)
+  getbufline(-1, '$', '$')->assert_equal([])
+  getbufline(-1, 1, '$')->assert_equal([])
 
   bwipe!
 enddef
