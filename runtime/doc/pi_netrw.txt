@@ -1510,6 +1510,9 @@ Netrw determines which special handler by the following method:
     If g:netrw_browsex_viewer == '-', then netrwFileHandlers#Invoke() will be
     used instead (see |netrw_filehandler|).
 
+    If the viewer doesn't support to handle a remote URL directry, set
+    |g:netrw_browsex_support_remote| to 0.
+
   * for Windows 32 or 64, the URL and FileProtocolHandler dlls are used.
   * for Gnome (with gnome-open): gnome-open is used.
   * for KDE (with kfmclient)   : kfmclient is used
@@ -2606,6 +2609,10 @@ your browsing preferences.  (see also: |netrw-settings|)
 <				is used, then netrwFileHandler() will look for
 				a script/function to handle the given
 				extension.  (see |netrw_filehandler|).
+
+  *g:netrw_browsex_support_remote*
+				specify if the specified viewer supports a
+				remote URL.  (see |netrw-handler|).
 
   *g:netrw_chgperm*		Unix/Linux: "chmod PERM FILENAME"
 				Windows:    "cacls FILENAME /e /p PERM"
