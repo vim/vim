@@ -549,6 +549,7 @@ let s:filename_case_checks = {
     \ }
 
 func CheckItems(checks)
+  set noswapfile
   for [ft, names] in items(a:checks)
     for i in range(0, len(names) - 1)
       new
@@ -565,6 +566,7 @@ func CheckItems(checks)
       bwipe!
     endfor
   endfor
+  set swapfile&
 endfunc
 
 func Test_filetype_detection()
