@@ -1329,7 +1329,7 @@ expand_env_esc(
 
 	    var = src;
 	    src += 2;
-	    (void)skip_expr(&src);
+	    (void)skip_expr(&src, NULL);
 	    if (*src == '`')
 		++src;
 	    len = src - var;

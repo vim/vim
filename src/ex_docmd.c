@@ -640,7 +640,7 @@ do_cmdline(
     struct dbg_stuff debug_saved;	// saved things for debug mode
     int		initial_trylevel;
     msglist_T	**saved_msg_list = NULL;
-    msglist_T	*private_msg_list;
+    msglist_T	*private_msg_list = NULL;
 
     // "fgetline" and "cookie" passed to do_one_cmd()
     char_u	*(*cmd_getline)(int, void *, int, getline_opt_T);
@@ -664,7 +664,6 @@ do_cmdline(
     // BufWritePost autocommands are executed after a write error.
     saved_msg_list = msg_list;
     msg_list = &private_msg_list;
-    private_msg_list = NULL;
 #endif
 
     // It's possible to create an endless loop with ":execute", catch that
@@ -3256,7 +3255,7 @@ find_ex_command(
 
 		// When followed by "=" or "+=" then it is an assignment.
 		++emsg_silent;
-		if (skip_expr(&after) == OK
+		if (skip_expr(&after, NULL) == OK
 				  && (*after == '='
 				      || (*after != NUL && after[1] == '=')))
 		    eap->cmdidx = CMD_var;
@@ -4391,7 +4390,7 @@ expand_filename(
 	if (p[0] == '`' && p[1] == '=')
 	{
 	    p += 2;
-	    (void)skip_expr(&p);
+	    (void)skip_expr(&p, NULL);
 	    if (*p == '`')
 		++p;
 	    continue;
@@ -4666,7 +4665,7 @@ separate_nextcmd(exarg_T *eap)
 	else if (p[0] == '`' && p[1] == '=' && (eap->argt & EX_XFILE))
 	{
 	    p += 2;
-	    (void)skip_expr(&p);
+	    (void)skip_expr(&p, NULL);
 	}
 #endif
 

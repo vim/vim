@@ -242,6 +242,13 @@ def Test_method_call_linebreak()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_skipped_expr_linebreak()
+  if 0
+    var x = []
+               ->map({ -> 0})
+  endif
+enddef
+
 def Test_dict_member()
    var test: dict<list<number>> = {'data': [3, 1, 2]}
    test.data->sort()

@@ -4385,7 +4385,11 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
     // Ignore all kinds of errors when not producing code.
     if (cctx->ctx_skip == SKIP_YES)
     {
-	skip_expr(arg);
+	evalarg_T	evalarg;
+
+	CLEAR_FIELD(evalarg);
+	evalarg.eval_cctx = cctx;
+	skip_expr(arg, &evalarg);
 	return OK;
     }
 

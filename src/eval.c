@@ -368,12 +368,12 @@ eval_to_string_skip(
  * Return FAIL for an error, OK otherwise.
  */
     int
-skip_expr(char_u **pp)
+skip_expr(char_u **pp, evalarg_T *evalarg)
 {
     typval_T	rettv;
 
     *pp = skipwhite(*pp);
-    return eval1(pp, &rettv, NULL);
+    return eval1(pp, &rettv, evalarg);
 }
 
 /*
