@@ -351,8 +351,6 @@ work.
 Using "au!" after "filetype on" is a bit slow.  Can the matching of
 autocommands be made faster?  (#7056)
 
-Valgrind warns for uninitialized values in f_term_dumpwrite().
-
 Add the <=> (spaceship) operator and "cond ?< expr ?= expr ?> expr"
     replace this:
 	let left = GetLeftFunc()
