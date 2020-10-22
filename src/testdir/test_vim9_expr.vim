@@ -1128,7 +1128,19 @@ def Test_expr5_vim9script()
       vim9script
       echo {} - 22
   END
-  CheckScriptFailure(lines, 'E731:', 2)
+  CheckScriptFailure(lines, 'E728:', 2)
+
+  lines =<< trim END
+      vim9script
+      echo [] - 33
+  END
+  CheckScriptFailure(lines, 'E745:', 2)
+
+  lines =<< trim END
+      vim9script
+      echo 0z1234 - 44
+  END
+  CheckScriptFailure(lines, 'E974:', 2)
 
   lines =<< trim END
       vim9script
