@@ -2849,7 +2849,10 @@ parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only)
 				++emsg_silent;
 				++eap->did_esilent;
 			    }
+			    cmdmod.emsg_silent = TRUE;
 			}
+			else
+			    cmdmod.msg_silent = TRUE;
 			continue;
 
 	    case 't':	if (checkforcmd(&p, "tab", 3))
