@@ -246,6 +246,17 @@ func Test_packloadall()
   call assert_equal(4321, g:plugin_bar_number)
 endfunc
 
+func Test_start_autoload()
+  " plugin foo with an autoload directory
+  let autodir = &packpath . '/pack/mine/start/foo/autoload'
+  call mkdir(autodir, 'p')
+  call writefile(['func! baz#test()',
+	\ '  return 1666',
+	\ 'endfunc'], autodir . '/baz.vim')
+
+  call assert_equal(1666, baz#test())
+endfunc
+
 func Test_helptags()
   let docdir1 = &packpath . '/pack/mine/start/foo/doc'
   let docdir2 = &packpath . '/pack/mine/start/bar/doc'
