@@ -643,6 +643,8 @@ typedef struct
     char_u	*save_ei;		// saved value of 'eventignore'
     regmatch_T	filter_regmatch;	// set by :filter /pat/
     int		filter_force;		// set for :filter!
+    int		msg_silent;		// TRUE when ":silent" was used
+    int		emsg_silent;		// TRUE when ":silent!" was used
 } cmdmod_T;
 
 #define MF_SEED_LEN	8

@@ -832,6 +832,8 @@ call_def_function(
     int		save_suppress_errthrow = suppress_errthrow;
     msglist_T	**saved_msg_list = NULL;
     msglist_T	*private_msg_list = NULL;
+    int		save_msg_silent = -1;
+    int		save_emsg_silent = -1;
 
 // Get pointer to item in the stack.
 #define STACK_TV(idx) (((typval_T *)ectx.ec_stack.ga_data) + idx)
@@ -2814,6 +2816,24 @@ call_def_function(
 		}
 		break;
 
+	    case ISN_SILENT:
+		if (save_msg_silent == -1)
+		    save_msg_silent = msg_silent;
+		++msg_silent;
+		if (iptr->isn_arg.number)
+		{
+		    if (save_emsg_silent == -1)
+			save_emsg_silent = emsg_silent;
+		    ++emsg_silent;
+		}
+		break;
+
+	    case ISN_UNSILENT:
+		--msg_silent;
+		if (iptr->isn_arg.number)
+		    --emsg_silent;
+		break;
+
 	    case ISN_SHUFFLE:
 		{
 		    typval_T	    tmp_tv;
@@ -2884,6 +2904,11 @@ failed:
 	*plist = *msg_list;
     }
     msg_list = saved_msg_list;
+
+    if (save_msg_silent != -1)
+	msg_silent = save_msg_silent;
+    if (save_emsg_silent != -1)
+	emsg_silent = save_emsg_silent;
 
 failed_early:
     // Free all local variables, but not arguments.
@@ -3501,6 +3526,11 @@ ex_disassemble(exarg_T *eap)
 		smsg("%4d PUT %c %ld", current, iptr->isn_arg.put.put_regname,
 					     (long)iptr->isn_arg.put.put_lnum);
 		break;
+
+	    case ISN_SILENT: smsg("%4d SILENT%s", current,
+				       iptr->isn_arg.number ? "!" : ""); break;
+	    case ISN_UNSILENT: smsg("%4d UNSILENT%s", current,
+				       iptr->isn_arg.number ? "!" : ""); break;
 
 	    case ISN_SHUFFLE: smsg("%4d SHUFFLE %d up %d", current,
 					 iptr->isn_arg.shuffle.shfl_item,

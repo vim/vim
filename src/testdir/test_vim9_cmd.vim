@@ -401,5 +401,17 @@ def Test_f_args()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_modifier_silent()
+  echomsg 'last one'
+  silent echomsg "text"
+  redir => g:testmsg
+    :1messages
+  redir END
+  assert_equal("\nlast one", g:testmsg)
+  unlet g:testmsg
+
+  silent! echoerr "error"
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

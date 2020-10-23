@@ -141,6 +141,8 @@ struct cctx_S {
 
     garray_T	ctx_type_stack;	    // type of each item on the stack
     garray_T	*ctx_type_list;	    // list of pointers to allocated types
+
+    int		ctx_silent;	    // set when ISN_SILENT was generated
 };
 
 static void delete_def_function_contents(dfunc_T *dfunc);
@@ -1817,6 +1819,40 @@ generate_EXECCONCAT(cctx_T *cctx, int count)
     if ((isn = generate_instr_drop(cctx, ISN_EXECCONCAT, count)) == NULL)
 	return FAIL;
     isn->isn_arg.number = count;
+    return OK;
+}
+
+/*
+ * Generate any instructions for side effects of "cmdmod".
+ */
+    static int
+generate_cmdmods(cctx_T *cctx)
+{
+    isn_T	*isn;
+
+    // TODO: use more modifiers in the command
+    if (cmdmod.msg_silent || cmdmod.emsg_silent)
+    {
+	if ((isn = generate_instr(cctx, ISN_SILENT)) == NULL)
+	    return FAIL;
+	isn->isn_arg.number = cmdmod.emsg_silent;
+	cctx->ctx_silent = cmdmod.emsg_silent ? 2 : 1;
+    }
+    return OK;
+}
+
+    static int
+generate_restore_cmdmods(cctx_T *cctx)
+{
+    isn_T	*isn;
+
+    if (cctx->ctx_silent > 0)
+    {
+	if ((isn = generate_instr(cctx, ISN_UNSILENT)) == NULL)
+	    return FAIL;
+	isn->isn_arg.number = cctx->ctx_silent == 2;
+	cctx->ctx_silent = 0;
+    }
     return OK;
 }
 
@@ -7149,7 +7185,8 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	    line = (char_u *)"";
 	    continue;
 	}
-	// TODO: use modifiers in the command
+	generate_cmdmods(&cctx);
+
 	undo_cmdmod(&ea, save_msg_scroll);
 	cmdmod = save_cmdmod;
 
@@ -7461,6 +7498,9 @@ nextline:
 	    goto erret;
 	line = skipwhite(line);
 
+	// Undo any command modifiers.
+	generate_restore_cmdmods(&cctx);
+
 	if (cctx.ctx_type_stack.ga_len < 0)
 	{
 	    iemsg("Type stack underflow");
@@ -7767,6 +7807,7 @@ delete_instr(isn_T *isn)
 	case ISN_PUT:
 	case ISN_RETURN:
 	case ISN_SHUFFLE:
+	case ISN_SILENT:
 	case ISN_SLICE:
 	case ISN_STORE:
 	case ISN_STOREDICT:
@@ -7780,6 +7821,7 @@ delete_instr(isn_T *isn)
 	case ISN_STRSLICE:
 	case ISN_THROW:
 	case ISN_TRY:
+	case ISN_UNSILENT:
 	    // nothing allocated
 	    break;
     }

@@ -142,6 +142,9 @@ typedef enum {
 
     ISN_PUT,	    // ":put", uses isn_arg.put
 
+    ISN_SILENT,	    // set msg_silent or emsg_silent if arg_number is non-zero
+    ISN_UNSILENT,   // undo ISN_SILENT
+
     ISN_SHUFFLE,    // move item on stack up or down
     ISN_DROP	    // pop stack and discard value
 } isntype_T;
