@@ -377,7 +377,19 @@ func Test_statusline()
   delfunc GetStatusLine
 
   " Test statusline works with 80+ items
-  let &statusline = join(map(range(200), {i-> '%#' . (i % 2 == 0 ? 'Normal' : 'TabLineSel' ) . '#' . i}), '')
+  function! StatusLabel()
+    redrawstatus
+    return '[label]'	
+  endfunc
+  let statusline = '%{StatusLabel()}'
+  for i in range(150)
+    let statusline .= '%#TabLine' . (i % 2 == 0 ? 'Fill' : 'Sel') . '#' . string(i)[0]
+  endfor
+  let &statusline = statusline
+  redrawstatus
+  set statusline&
+  delfunc StatusLabel
+
 
   " Check statusline in current and non-current window
   " with the 'fillchars' option.
