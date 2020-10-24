@@ -7,7 +7,8 @@ void *getline_cookie(char_u *(*fgetline)(int, void *, int, getline_opt_T), void 
 char_u *getline_peek(char_u *(*fgetline)(int, void *, int, getline_opt_T), void *cookie);
 char *ex_errmsg(char *msg, char_u *arg);
 int parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only);
-void undo_cmdmod(exarg_T *eap, int save_msg_scroll);
+void apply_cmdmod(cmdmod_T *cmod);
+void undo_cmdmod(int save_msg_scroll);
 int parse_cmd_address(exarg_T *eap, char **errormsg, int silent);
 int checkforcmd(char_u **pp, char *cmd, int len);
 char_u *skip_option_env_lead(char_u *start);

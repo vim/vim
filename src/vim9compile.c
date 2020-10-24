@@ -1831,12 +1831,12 @@ generate_cmdmods(cctx_T *cctx)
     isn_T	*isn;
 
     // TODO: use more modifiers in the command
-    if (cmdmod.msg_silent || cmdmod.emsg_silent)
+    if (cmdmod.cmod_flags & (CMOD_SILENT | CMOD_ERRSILENT))
     {
 	if ((isn = generate_instr(cctx, ISN_SILENT)) == NULL)
 	    return FAIL;
-	isn->isn_arg.number = cmdmod.emsg_silent;
-	cctx->ctx_silent = cmdmod.emsg_silent ? 2 : 1;
+	isn->isn_arg.number = (cmdmod.cmod_flags & CMOD_ERRSILENT) != 0;
+	cctx->ctx_silent = (cmdmod.cmod_flags & CMOD_ERRSILENT) ? 2 : 1;
     }
     return OK;
 }
@@ -7187,7 +7187,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	}
 	generate_cmdmods(&cctx);
 
-	undo_cmdmod(&ea, save_msg_scroll);
+	undo_cmdmod(save_msg_scroll);
 	cmdmod = save_cmdmod;
 
 	// Skip ":call" to get to the function name.

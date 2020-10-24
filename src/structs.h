@@ -625,6 +625,7 @@ typedef struct
  */
 typedef struct
 {
+    int		cmod_flags;		// CMOD_ flags, see below
     int		hide;			// TRUE when ":hide" was used
 # ifdef FEAT_BROWSE_CMD
     int		browse;			// TRUE to invoke file dialog
@@ -640,12 +641,28 @@ typedef struct
     int		lockmarks;		// TRUE when ":lockmarks" was used
     int		keeppatterns;		// TRUE when ":keeppatterns" was used
     int		noswapfile;		// TRUE when ":noswapfile" was used
-    char_u	*save_ei;		// saved value of 'eventignore'
     regmatch_T	filter_regmatch;	// set by :filter /pat/
     int		filter_force;		// set for :filter!
-    int		msg_silent;		// TRUE when ":silent" was used
-    int		emsg_silent;		// TRUE when ":silent!" was used
+
+    int		cmod_verbose;		// non-zero to set 'verbose'
+
+    // values for undo_cmdmod()
+    char_u	*cmod_save_ei;		// saved value of 'eventignore'
+#ifdef HAVE_SANDBOX
+    int		cmod_did_sandbox;	// set when "sandbox" was incremented
+#endif
+    long	cmod_verbose_save;	// if 'verbose' was set: value of
+					// p_verbose plus one
+    int		cmod_save_msg_silent;	// if non-zero: saved value of
+					// msg_silent + 1
+    int		cmod_did_esilent;	// incremented when emsg_silent is
 } cmdmod_T;
+
+#define CMOD_SANDBOX	0x01
+#define CMOD_SILENT	0x02
+#define CMOD_ERRSILENT	0x04
+#define CMOD_UNSILENT	0x08
+#define CMOD_NOAUTOCMD	0x10
 
 #define MF_SEED_LEN	8
 

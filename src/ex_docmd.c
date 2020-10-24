@@ -1764,6 +1764,7 @@ do_one_cmd(
 #endif
     if (parse_command_modifiers(&ea, &errormsg, FALSE) == FAIL)
 	goto doend;
+    apply_cmdmod(&cmdmod);
 
     after_modifier = ea.cmd;
 
@@ -2515,12 +2516,12 @@ do_one_cmd(
 
     // The :try command saves the emsg_silent flag, reset it here when
     // ":silent! try" was used, it should only apply to :try itself.
-    if (ea.cmdidx == CMD_try && ea.did_esilent > 0)
+    if (ea.cmdidx == CMD_try && cmdmod.cmod_did_esilent > 0)
     {
-	emsg_silent -= ea.did_esilent;
+	emsg_silent -= cmdmod.cmod_did_esilent;
 	if (emsg_silent < 0)
 	    emsg_silent = 0;
-	ea.did_esilent = 0;
+	cmdmod.cmod_did_esilent = 0;
     }
 
 /*
@@ -2597,14 +2598,9 @@ doend:
 			? cmdnames[(int)ea.cmdidx].cmd_name : (char_u *)NULL);
 #endif
 
-    undo_cmdmod(&ea, save_msg_scroll);
+    undo_cmdmod(save_msg_scroll);
     cmdmod = save_cmdmod;
     reg_executing = save_reg_executing;
-
-#ifdef HAVE_SANDBOX
-    if (ea.did_sandbox)
-	--sandbox;
-#endif
 
     if (ea.nextcmd && *ea.nextcmd == NUL)	// not really a next command
 	ea.nextcmd = NULL;
@@ -2641,10 +2637,11 @@ ex_errmsg(char *msg, char_u *arg)
  * - Set ex_pressedreturn for an empty command line.
  * - set msg_silent for ":silent"
  * - set 'eventignore' to "all" for ":noautocmd"
- * - set p_verbose for ":verbose"
- * - Increment "sandbox" for ":sandbox"
  * When "skip_only" is TRUE the global variables are not changed, except for
  * "cmdmod".
+ * Call apply_cmdmod() to get the side effects of the modifiers:
+ * - Increment "sandbox" for ":sandbox"
+ * - set p_verbose for ":verbose"
  * Return FAIL when the command is not to be executed.
  * May set "errormsg" to an error message.
  */
@@ -2655,8 +2652,6 @@ parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only)
     int	    starts_with_colon = FALSE;
 
     CLEAR_FIELD(cmdmod);
-    eap->verbose_save = -1;
-    eap->save_msg_silent = -1;
 
     // Repeat until no more command modifiers are found.
     for (;;)
@@ -2800,14 +2795,7 @@ parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only)
 
 	    case 'n':	if (checkforcmd(&eap->cmd, "noautocmd", 3))
 			{
-			    if (cmdmod.save_ei == NULL && !skip_only)
-			    {
-				// Set 'eventignore' to "all". Restore the
-				// existing option value later.
-				cmdmod.save_ei = vim_strsave(p_ei);
-				set_string_option_direct((char_u *)"ei", -1,
-					 (char_u *)"all", OPT_FREE, SID_NONE);
-			    }
+			    cmdmod.cmod_flags |= CMOD_NOAUTOCMD;
 			    continue;
 			}
 			if (!checkforcmd(&eap->cmd, "noswapfile", 3))
@@ -2822,37 +2810,18 @@ parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only)
 
 	    case 's':	if (checkforcmd(&eap->cmd, "sandbox", 3))
 			{
-#ifdef HAVE_SANDBOX
-			    if (!skip_only)
-			    {
-				if (!eap->did_sandbox)
-				    ++sandbox;
-				eap->did_sandbox = TRUE;
-			    }
-#endif
+			    cmdmod.cmod_flags |= CMOD_SANDBOX;
 			    continue;
 			}
 			if (!checkforcmd(&eap->cmd, "silent", 3))
 			    break;
-			if (!skip_only)
-			{
-			    if (eap->save_msg_silent == -1)
-				eap->save_msg_silent = msg_silent;
-			    ++msg_silent;
-			}
+			cmdmod.cmod_flags |= CMOD_SILENT;
 			if (*eap->cmd == '!' && !VIM_ISWHITE(eap->cmd[-1]))
 			{
 			    // ":silent!", but not "silent !cmd"
 			    eap->cmd = skipwhite(eap->cmd + 1);
-			    if (!skip_only)
-			    {
-				++emsg_silent;
-				++eap->did_esilent;
-			    }
-			    cmdmod.emsg_silent = TRUE;
+			    cmdmod.cmod_flags |= CMOD_ERRSILENT;
 			}
-			else
-			    cmdmod.msg_silent = TRUE;
 			continue;
 
 	    case 't':	if (checkforcmd(&p, "tab", 3))
@@ -2884,12 +2853,7 @@ parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only)
 
 	    case 'u':	if (!checkforcmd(&eap->cmd, "unsilent", 3))
 			    break;
-			if (!skip_only)
-			{
-			    if (eap->save_msg_silent == -1)
-				eap->save_msg_silent = msg_silent;
-			    msg_silent = 0;
-			}
+			cmdmod.cmod_flags |= CMOD_UNSILENT;
 			continue;
 
 	    case 'v':	if (checkforcmd(&eap->cmd, "vertical", 4))
@@ -2899,15 +2863,10 @@ parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only)
 			}
 			if (!checkforcmd(&p, "verbose", 4))
 			    break;
-			if (!skip_only)
-			{
-			    if (eap->verbose_save < 0)
-				eap->verbose_save = p_verbose;
-			    if (vim_isdigit(*eap->cmd))
-				p_verbose = atoi((char *)eap->cmd);
-			    else
-				p_verbose = 1;
-			}
+			if (vim_isdigit(*eap->cmd))
+			    cmdmod.cmod_verbose = atoi((char *)eap->cmd);
+			else
+			    cmdmod.cmod_verbose = 1;
 			eap->cmd = p;
 			continue;
 	}
@@ -2918,32 +2877,89 @@ parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only)
 }
 
 /*
+ * Apply the command modifiers.  Saves current state in "cmdmod", call
+ * undo_cmdmod() later.
+ */
+    void
+apply_cmdmod(cmdmod_T *cmod)
+{
+#ifdef HAVE_SANDBOX
+    if ((cmod->cmod_flags & CMOD_SANDBOX) && !cmod->cmod_did_sandbox)
+    {
+	++sandbox;
+	cmod->cmod_did_sandbox = TRUE;
+    }
+#endif
+    if (cmod->cmod_verbose > 0)
+    {
+	if (cmod->cmod_verbose_save == 0)
+	    cmod->cmod_verbose_save = p_verbose + 1;
+	p_verbose = cmod->cmod_verbose;
+    }
+
+    if ((cmod->cmod_flags & (CMOD_SILENT | CMOD_UNSILENT))
+	    && cmod->cmod_save_msg_silent == 0)
+	cmod->cmod_save_msg_silent = msg_silent + 1;
+    if (cmod->cmod_flags & CMOD_SILENT)
+	++msg_silent;
+    if (cmod->cmod_flags & CMOD_UNSILENT)
+	msg_silent = 0;
+
+    if (cmod->cmod_flags & CMOD_ERRSILENT)
+    {
+	++emsg_silent;
+	++cmod->cmod_did_esilent;
+    }
+
+    if ((cmod->cmod_flags & CMOD_NOAUTOCMD) && cmdmod.cmod_save_ei == NULL)
+    {
+	// Set 'eventignore' to "all".
+	// First save the existing option value for restoring it later.
+	cmdmod.cmod_save_ei = vim_strsave(p_ei);
+	set_string_option_direct((char_u *)"ei", -1,
+					  (char_u *)"all", OPT_FREE, SID_NONE);
+    }
+}
+
+/*
  * Undo and free contents of "cmdmod".
  */
     void
-undo_cmdmod(exarg_T *eap, int save_msg_scroll)
+undo_cmdmod(int save_msg_scroll)
 {
-    if (eap->verbose_save >= 0)
-	p_verbose = eap->verbose_save;
+    if (cmdmod.cmod_verbose_save > 0)
+    {
+	p_verbose = cmdmod.cmod_verbose_save - 1;
+	cmdmod.cmod_verbose_save = 0;
+    }
 
-    if (cmdmod.save_ei != NULL)
+#ifdef HAVE_SANDBOX
+    if (cmdmod.cmod_did_sandbox)
+    {
+	--sandbox;
+	cmdmod.cmod_did_sandbox = FALSE;
+    }
+#endif
+
+    if (cmdmod.cmod_save_ei != NULL)
     {
 	// Restore 'eventignore' to the value before ":noautocmd".
-	set_string_option_direct((char_u *)"ei", -1, cmdmod.save_ei,
+	set_string_option_direct((char_u *)"ei", -1, cmdmod.cmod_save_ei,
 							  OPT_FREE, SID_NONE);
-	free_string_option(cmdmod.save_ei);
+	free_string_option(cmdmod.cmod_save_ei);
+	cmdmod.cmod_save_ei = NULL;
     }
 
     if (cmdmod.filter_regmatch.regprog != NULL)
 	vim_regfree(cmdmod.filter_regmatch.regprog);
 
-    if (eap->save_msg_silent != -1)
+    if (cmdmod.cmod_save_msg_silent > 0)
     {
 	// messages could be enabled for a serious error, need to check if the
 	// counters don't become negative
-	if (!did_emsg || msg_silent > eap->save_msg_silent)
-	    msg_silent = eap->save_msg_silent;
-	emsg_silent -= eap->did_esilent;
+	if (!did_emsg || msg_silent > cmdmod.cmod_save_msg_silent - 1)
+	    msg_silent = cmdmod.cmod_save_msg_silent - 1;
+	emsg_silent -= cmdmod.cmod_did_esilent;
 	if (emsg_silent < 0)
 	    emsg_silent = 0;
 	// Restore msg_scroll, it's set by file I/O commands, even when no
@@ -2954,6 +2970,9 @@ undo_cmdmod(exarg_T *eap, int save_msg_scroll)
 	// somewhere in the line.  Put it back in the first column.
 	if (redirecting())
 	    msg_col = 0;
+
+	cmdmod.cmod_save_msg_silent = 0;
+	cmdmod.cmod_did_esilent = 0;
     }
 }
 
