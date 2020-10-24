@@ -3999,11 +3999,11 @@ free_titles(void)
 
 #if defined(FEAT_STL_OPT) || defined(FEAT_GUI_TABLINE) || defined(PROTO)
 
-static size_t           stl_items_len = 80;
-static struct stl_item *stl_items = NULL;
+static size_t           stl_items_len = 20; // Initial value, grows as needed.
+static stl_item_T      *stl_items = NULL;
 static int             *stl_groupitem = NULL;
-struct stl_hlrec       *stl_hltab = NULL;
-struct stl_hlrec       *stl_tabtab = NULL;
+static stl_hlrec_T     *stl_hltab = NULL;
+static stl_hlrec_T     *stl_tabtab = NULL;
 
 size_t get_stl_items_len() {
     return stl_items_len;
@@ -4148,7 +4148,7 @@ build_stl_str_hl(
 	{
 	    stl_items_len = stl_items_len * 1.5;
 	    stl_items = vim_realloc(stl_items, sizeof(struct stl_item) * stl_items_len);
-	    stl_groupitem = vim_realloc(stl_items, sizeof(struct stl_item) * stl_items_len);
+	    stl_groupitem = vim_realloc(stl_groupitem, sizeof(struct stl_item) * stl_items_len);
 	    stl_hltab  = vim_realloc(stl_hltab, sizeof(struct stl_hlrec) * stl_items_len);
 	    stl_tabtab = vim_realloc(stl_tabtab, sizeof(struct stl_hlrec) * stl_items_len);
 	}
@@ -4183,15 +4183,15 @@ build_stl_str_hl(
 	    s++;
 	    if (groupdepth > 0)
 		continue;
-	    stl_items[curitem].type = Middle;
-	    stl_items[curitem++].start = p;
+	    stl_items[curitem].stl_type = Middle;
+	    stl_items[curitem++].stl_start = p;
 	    continue;
 	}
 	if (*s == STL_TRUNCMARK)
 	{
 	    s++;
-	    stl_items[curitem].type = Trunc;
-	    stl_items[curitem++].start = p;
+	    stl_items[curitem].stl_type = Trunc;
+	    stl_items[curitem++].stl_start = p;
 	    continue;
 	}
 	if (*s == ')')
@@ -4201,29 +4201,29 @@ build_stl_str_hl(
 		continue;
 	    groupdepth--;
 
-	    t = stl_items[stl_groupitem[groupdepth]].start;
+	    t = stl_items[stl_groupitem[groupdepth]].stl_start;
 	    *p = NUL;
 	    l = vim_strsize(t);
 	    if (curitem > stl_groupitem[groupdepth] + 1
-		    && stl_items[stl_groupitem[groupdepth]].minwid == 0)
+		    && stl_items[stl_groupitem[groupdepth]].stl_minwid == 0)
 	    {
 		// remove group if all items are empty and highlight group
 		// doesn't change
 		group_start_userhl = group_end_userhl = 0;
 		for (n = stl_groupitem[groupdepth] - 1; n >= 0; n--)
 		{
-		    if (stl_items[n].type == Highlight)
+		    if (stl_items[n].stl_type == Highlight)
 		    {
-			group_start_userhl = group_end_userhl = stl_items[n].minwid;
+			group_start_userhl = group_end_userhl = stl_items[n].stl_minwid;
 			break;
 		    }
 		}
 		for (n = stl_groupitem[groupdepth] + 1; n < curitem; n++)
 		{
-		    if (stl_items[n].type == Normal)
+		    if (stl_items[n].stl_type == Normal)
 			break;
-		    if (stl_items[n].type == Highlight)
-			group_end_userhl = stl_items[n].minwid;
+		    if (stl_items[n].stl_type == Highlight)
+			group_end_userhl = stl_items[n].stl_minwid;
 		}
 		if (n == curitem && group_start_userhl == group_end_userhl)
 		{
@@ -4233,51 +4233,51 @@ build_stl_str_hl(
 		    for (n = stl_groupitem[groupdepth] + 1; n < curitem; n++)
 		    {
 			// do not use the highlighting from the removed group
-			if (stl_items[n].type == Highlight)
-			    stl_items[n].type = Empty;
+			if (stl_items[n].stl_type == Highlight)
+			    stl_items[n].stl_type = Empty;
 			// adjust the start position of TabPage to the next
 			// item position
-			if (stl_items[n].type == TabPage)
-			    stl_items[n].start = p;
+			if (stl_items[n].stl_type == TabPage)
+			    stl_items[n].stl_start = p;
 		    }
 		}
 	    }
-	    if (l > stl_items[stl_groupitem[groupdepth]].maxwid)
+	    if (l > stl_items[stl_groupitem[groupdepth]].stl_maxwid)
 	    {
 		// truncate, remove n bytes of text at the start
 		if (has_mbyte)
 		{
 		    // Find the first character that should be included.
 		    n = 0;
-		    while (l >= stl_items[stl_groupitem[groupdepth]].maxwid)
+		    while (l >= stl_items[stl_groupitem[groupdepth]].stl_maxwid)
 		    {
 			l -= ptr2cells(t + n);
 			n += (*mb_ptr2len)(t + n);
 		    }
 		}
 		else
-		    n = (long)(p - t) - stl_items[stl_groupitem[groupdepth]].maxwid + 1;
+		    n = (long)(p - t) - stl_items[stl_groupitem[groupdepth]].stl_maxwid + 1;
 
 		*t = '<';
 		mch_memmove(t + 1, t + n, (size_t)(p - (t + n)));
 		p = p - n + 1;
 
 		// Fill up space left over by half a double-wide char.
-		while (++l < stl_items[stl_groupitem[groupdepth]].minwid)
+		while (++l < stl_items[stl_groupitem[groupdepth]].stl_minwid)
 		    *p++ = fillchar;
 
 		// correct the start of the items for the truncation
 		for (l = stl_groupitem[groupdepth] + 1; l < curitem; l++)
 		{
-		    stl_items[l].start -= n;
-		    if (stl_items[l].start < t)
-			stl_items[l].start = t;
+		    stl_items[l].stl_start -= n;
+		    if (stl_items[l].stl_start < t)
+			stl_items[l].stl_start = t;
 		}
 	    }
-	    else if (abs(stl_items[stl_groupitem[groupdepth]].minwid) > l)
+	    else if (abs(stl_items[stl_groupitem[groupdepth]].stl_minwid) > l)
 	    {
 		// fill
-		n = stl_items[stl_groupitem[groupdepth]].minwid;
+		n = stl_items[stl_groupitem[groupdepth]].stl_minwid;
 		if (n < 0)
 		{
 		    // fill by appending characters
@@ -4294,7 +4294,7 @@ build_stl_str_hl(
 			l = (long)((out + outlen) - p - 1);
 		    p += l;
 		    for (n = stl_groupitem[groupdepth] + 1; n < curitem; n++)
-			stl_items[n].start += l;
+			stl_items[n].stl_start += l;
 		    for ( ; l > 0; l--)
 			*t++ = fillchar;
 		}
@@ -4323,9 +4323,9 @@ build_stl_str_hl(
 	}
 	if (*s == STL_USER_HL)
 	{
-	    stl_items[curitem].type = Highlight;
-	    stl_items[curitem].start = p;
-	    stl_items[curitem].minwid = minwid > 9 ? 1 : minwid;
+	    stl_items[curitem].stl_type = Highlight;
+	    stl_items[curitem].stl_start = p;
+	    stl_items[curitem].stl_minwid = minwid > 9 ? 1 : minwid;
 	    s++;
 	    curitem++;
 	    continue;
@@ -4339,9 +4339,9 @@ build_stl_str_hl(
 		    // %X ends the close label, go back to the previously
 		    // define tab label nr.
 		    for (n = curitem - 1; n >= 0; --n)
-			if (stl_items[n].type == TabPage && stl_items[n].minwid >= 0)
+			if (stl_items[n].stl_type == TabPage && stl_items[n].stl_minwid >= 0)
 			{
-			    minwid = stl_items[n].minwid;
+			    minwid = stl_items[n].stl_minwid;
 			    break;
 			}
 		}
@@ -4349,9 +4349,9 @@ build_stl_str_hl(
 		    // close nrs are stored as negative values
 		    minwid = - minwid;
 	    }
-	    stl_items[curitem].type = TabPage;
-	    stl_items[curitem].start = p;
-	    stl_items[curitem].minwid = minwid;
+	    stl_items[curitem].stl_type = TabPage;
+	    stl_items[curitem].stl_start = p;
+	    stl_items[curitem].stl_minwid = minwid;
 	    s++;
 	    curitem++;
 	    continue;
@@ -4370,10 +4370,10 @@ build_stl_str_hl(
 	if (*s == '(')
 	{
 	    stl_groupitem[groupdepth++] = curitem;
-	    stl_items[curitem].type = Group;
-	    stl_items[curitem].start = p;
-	    stl_items[curitem].minwid = minwid;
-	    stl_items[curitem].maxwid = maxwid;
+	    stl_items[curitem].stl_type = Group;
+	    stl_items[curitem].stl_start = p;
+	    stl_items[curitem].stl_minwid = minwid;
+	    stl_items[curitem].stl_maxwid = maxwid;
 	    s++;
 	    curitem++;
 	    continue;
@@ -4626,9 +4626,9 @@ build_stl_str_hl(
 		++s;
 	    if (*s == '#')
 	    {
-		stl_items[curitem].type = Highlight;
-		stl_items[curitem].start = p;
-		stl_items[curitem].minwid = -syn_namen2id(t, (int)(s - t));
+		stl_items[curitem].stl_type = Highlight;
+		stl_items[curitem].stl_start = p;
+		stl_items[curitem].stl_minwid = -syn_namen2id(t, (int)(s - t));
 		curitem++;
 	    }
 	    if (*s != NUL)
@@ -4636,8 +4636,8 @@ build_stl_str_hl(
 	    continue;
 	}
 
-	stl_items[curitem].start = p;
-	stl_items[curitem].type = Normal;
+	stl_items[curitem].stl_start = p;
+	stl_items[curitem].stl_type = Normal;
 	if (str != NULL && *str)
 	{
 	    t = str;
@@ -4736,7 +4736,7 @@ build_stl_str_hl(
 	    p += STRLEN(p);
 	}
 	else
-	    stl_items[curitem].type = Empty;
+	    stl_items[curitem].stl_type = Empty;
 
 	if (opt == STL_VIM_EXPR)
 	    vim_free(str);
@@ -4763,16 +4763,16 @@ build_stl_str_hl(
 	else
 	{
 	    for ( ; l < itemcnt; l++)
-		if (stl_items[l].type == Trunc)
+		if (stl_items[l].stl_type == Trunc)
 		{
 		    // Truncate at %< item.
-		    s = stl_items[l].start;
+		    s = stl_items[l].stl_start;
 		    break;
 		}
 	    if (l == itemcnt)
 	    {
 		// No %< item, truncate first item.
-		s = stl_items[0].start;
+		s = stl_items[0].stl_start;
 		l = 0;
 	    }
 	}
@@ -4798,7 +4798,7 @@ build_stl_str_hl(
 	    else
 		s = out + maxwidth - 1;
 	    for (l = 0; l < itemcnt; l++)
-		if (stl_items[l].start > s)
+		if (stl_items[l].stl_start > s)
 		    break;
 	    itemcnt = l;
 	    *s++ = '>';
@@ -4832,10 +4832,10 @@ build_stl_str_hl(
 	    --n;	// count the '<'
 	    for (; l < itemcnt; l++)
 	    {
-		if (stl_items[l].start - n >= s)
-		    stl_items[l].start -= n;
+		if (stl_items[l].stl_start - n >= s)
+		    stl_items[l].stl_start -= n;
 		else
-		    stl_items[l].start = s;
+		    stl_items[l].stl_start = s;
 	    }
 	}
 	width = maxwidth;
@@ -4844,16 +4844,16 @@ build_stl_str_hl(
     {
 	// Apply STL_MIDDLE if any
 	for (l = 0; l < itemcnt; l++)
-	    if (stl_items[l].type == Middle)
+	    if (stl_items[l].stl_type == Middle)
 		break;
 	if (l < itemcnt)
 	{
-	    p = stl_items[l].start + maxwidth - width;
-	    STRMOVE(p, stl_items[l].start);
-	    for (s = stl_items[l].start; s < p; s++)
+	    p = stl_items[l].stl_start + maxwidth - width;
+	    STRMOVE(p, stl_items[l].stl_start);
+	    for (s = stl_items[l].stl_start; s < p; s++)
 		*s = fillchar;
 	    for (l++; l < itemcnt; l++)
-		stl_items[l].start += maxwidth - width;
+		stl_items[l].stl_start += maxwidth - width;
 	    width = maxwidth;
 	}
     }
@@ -4865,10 +4865,10 @@ build_stl_str_hl(
 	sp = stl_hltab;
 	for (l = 0; l < itemcnt; l++)
 	{
-	    if (stl_items[l].type == Highlight)
+	    if (stl_items[l].stl_type == Highlight)
 	    {
-		sp->start = stl_items[l].start;
-		sp->userhl = stl_items[l].minwid;
+		sp->start = stl_items[l].stl_start;
+		sp->userhl = stl_items[l].stl_minwid;
 		sp++;
 	    }
 	}
@@ -4883,10 +4883,10 @@ build_stl_str_hl(
 	sp = stl_tabtab;
 	for (l = 0; l < itemcnt; l++)
 	{
-	    if (stl_items[l].type == TabPage)
+	    if (stl_items[l].stl_type == TabPage)
 	    {
-		sp->start = stl_items[l].start;
-		sp->userhl = stl_items[l].minwid;
+		sp->start = stl_items[l].stl_start;
+		sp->userhl = stl_items[l].stl_minwid;
 		sp++;
 	    }
 	}

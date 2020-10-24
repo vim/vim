@@ -1216,30 +1216,30 @@ struct mapblock
 /*
  * Used for highlighting in the status line.
  */
-struct stl_hlrec
+typedef struct stl_hlrec
 {
     char_u	*start;
     int		userhl;		// 0: no HL, 1-9: User HL, < 0 for syn ID
-};
+} stl_hlrec_T;
 
 /*
  * Used for building in the status line.
  */
-struct stl_item {
-    char_u	*start;
-    int		minwid;
-    int		maxwid;
-    enum
-    {
-        Normal,
-        Empty,
-        Group,
-        Middle,
-        Highlight,
-        TabPage,
-        Trunc
-    }           type;
-};
+typedef struct stl_item
+{
+  char_u 	*stl_start;
+  int 		stl_minwid;
+  int 		stl_maxwid;
+  enum {
+      Normal,
+      Empty,
+      Group,
+      Middle,
+      Highlight,
+      TabPage,
+      Trunc
+  }		stl_type;
+} stl_item_T;
 
 
 /*
