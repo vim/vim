@@ -744,7 +744,7 @@ do_move(linenr_T line1, linenr_T line2, linenr_T dest)
 		foldMoveRange(&win->w_folds, line1, line2, dest);
 	}
 #endif
-	if (!cmdmod.lockmarks)
+	if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
 	{
 	    curbuf->b_op_start.lnum = dest - num_lines + 1;
 	    curbuf->b_op_end.lnum = dest;
@@ -759,13 +759,13 @@ do_move(linenr_T line1, linenr_T line2, linenr_T dest)
 		foldMoveRange(&win->w_folds, dest + 1, line1 - 1, line2);
 	}
 #endif
-	if (!cmdmod.lockmarks)
+	if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
 	{
 	    curbuf->b_op_start.lnum = dest + 1;
 	    curbuf->b_op_end.lnum = dest + num_lines;
 	}
     }
-    if (!cmdmod.lockmarks)
+    if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
 	curbuf->b_op_start.col = curbuf->b_op_end.col = 0;
     mark_adjust_nofold(last_line - num_lines + 1, last_line,
 					     -(last_line - dest - extra), 0L);
@@ -815,7 +815,7 @@ ex_copy(linenr_T line1, linenr_T line2, linenr_T n)
     char_u	*p;
 
     count = line2 - line1 + 1;
-    if (!cmdmod.lockmarks)
+    if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
     {
 	curbuf->b_op_start.lnum = n + 1;
 	curbuf->b_op_end.lnum = n + count;
@@ -1062,7 +1062,7 @@ do_filter(
     int		shell_flags = 0;
     pos_T	orig_start = curbuf->b_op_start;
     pos_T	orig_end = curbuf->b_op_end;
-    int		save_lockmarks = cmdmod.lockmarks;
+    int		save_cmod_flags = cmdmod.cmod_flags;
 #ifdef FEAT_FILTERPIPE
     int		stmp = p_stmp;
 #endif
@@ -1072,7 +1072,7 @@ do_filter(
 
     // Temporarily disable lockmarks since that's needed to propagate changed
     // regions of the buffer for foldUpdate(), linecount, etc.
-    cmdmod.lockmarks = 0;
+    cmdmod.cmod_flags &= ~CMOD_LOCKMARKS;
 
     cursor_save = curwin->w_cursor;
     linecount = line2 - line1 + 1;
@@ -1241,7 +1241,8 @@ do_filter(
 
 	if (do_in)
 	{
-	    if (cmdmod.keepmarks || vim_strchr(p_cpo, CPO_REMMARK) == NULL)
+	    if ((cmdmod.cmod_flags & CMOD_KEEPMARKS)
+				     || vim_strchr(p_cpo, CPO_REMMARK) == NULL)
 	    {
 		if (read_linecount >= linecount)
 		    // move all marks from old lines to new lines
@@ -1307,13 +1308,13 @@ error:
 
 filterend:
 
-    cmdmod.lockmarks = save_lockmarks;
+    cmdmod.cmod_flags = save_cmod_flags;
     if (curbuf != old_curbuf)
     {
 	--no_wait_return;
 	emsg(_("E135: *Filter* Autocommands must not change current buffer"));
     }
-    else if (cmdmod.lockmarks)
+    else if (cmdmod.cmod_flags & CMOD_LOCKMARKS)
     {
 	curbuf->b_op_start = orig_start;
 	curbuf->b_op_end = orig_end;
@@ -1769,7 +1770,7 @@ rename_buffer(char_u *new_fname)
     if (xfname != NULL && *xfname != NUL)
     {
 	buf = buflist_new(fname, xfname, curwin->w_cursor.lnum, 0);
-	if (buf != NULL && !cmdmod.keepalt)
+	if (buf != NULL && (cmdmod.cmod_flags & CMOD_KEEPALT) == 0)
 	    curwin->w_alt_fnum = buf->b_fnum;
     }
     vim_free(fname);
@@ -1866,7 +1867,7 @@ do_write(exarg_T *eap)
 
     ffname = eap->arg;
 #ifdef FEAT_BROWSE
-    if (cmdmod.browse && !exiting)
+    if ((cmdmod.cmod_flags & CMOD_BROWSE) && !exiting)
     {
 	browse_file = do_browse(BROWSE_SAVE, (char_u *)_("Save As"), ffname,
 						    NULL, NULL, NULL, curbuf);
@@ -1942,7 +1943,7 @@ do_write(exarg_T *eap)
 		&& !p_wa)
 	{
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
-	    if (p_confirm || cmdmod.confirm)
+	    if (p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM))
 	    {
 		if (vim_dialog_yesno(VIM_QUESTION, NULL,
 			       (char_u *)_("Write partial file?"), 2) != VIM_YES)
@@ -2091,7 +2092,7 @@ check_overwrite(
 	    }
 #endif
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
-	    if (p_confirm || cmdmod.confirm)
+	    if (p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM))
 	    {
 		char_u	buff[DIALOG_MSG_SIZE];
 
@@ -2142,7 +2143,7 @@ check_overwrite(
 	    if (r)
 	    {
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
-		if (p_confirm || cmdmod.confirm)
+		if (p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM))
 		{
 		    char_u	buff[DIALOG_MSG_SIZE];
 
@@ -2229,12 +2230,13 @@ do_wqall(exarg_T *eap)
 	    }
 #ifdef FEAT_BROWSE
 	    // ":browse wall": ask for file name if there isn't one
-	    if (buf->b_ffname == NULL && cmdmod.browse)
+	    if (buf->b_ffname == NULL && (cmdmod.cmod_flags & CMOD_BROWSE))
 		browse_save_fname(buf);
 #endif
 	    if (buf->b_ffname == NULL)
 	    {
-		semsg(_("E141: No file name for buffer %ld"), (long)buf->b_fnum);
+		semsg(_("E141: No file name for buffer %ld"),
+							    (long)buf->b_fnum);
 		++error;
 	    }
 	    else if (check_readonly(&eap->forceit, buf)
@@ -2297,7 +2299,8 @@ check_readonly(int *forceit, buf_T *buf)
 		    && check_file_readonly(buf->b_ffname, 0777))))
     {
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
-	if ((p_confirm || cmdmod.confirm) && buf->b_fname != NULL)
+	if ((p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM))
+						       && buf->b_fname != NULL)
 	{
 	    char_u	buff[DIALOG_MSG_SIZE];
 
@@ -2501,7 +2504,7 @@ do_ecmd(
     else
     {
 #ifdef FEAT_BROWSE
-	if (cmdmod.browse && !exiting)
+	if ((cmdmod.cmod_flags & CMOD_BROWSE) && !exiting)
 	{
 	    if (
 # ifdef FEAT_GUI
@@ -2612,7 +2615,7 @@ do_ecmd(
     {
 	if (!(flags & ECMD_ADDBUF))
 	{
-	    if (!cmdmod.keepalt)
+	    if ((cmdmod.cmod_flags & CMOD_KEEPALT) == 0)
 		curwin->w_alt_fnum = curbuf->b_fnum;
 	    if (oldwin != NULL)
 		buflist_altfpos(oldwin);
@@ -3299,14 +3302,14 @@ ex_append(exarg_T *eap)
     // eap->line2 pointed to the end of the buffer and nothing was appended)
     // "end" is set to lnum when something has been appended, otherwise
     // it is the same than "start"  -- Acevedo
-    if (!cmdmod.lockmarks)
+    if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
     {
 	curbuf->b_op_start.lnum = (eap->line2 < curbuf->b_ml.ml_line_count) ?
 	    eap->line2 + 1 : curbuf->b_ml.ml_line_count;
 	if (eap->cmdidx != CMD_append)
 	    --curbuf->b_op_start.lnum;
 	curbuf->b_op_end.lnum = (eap->line2 < lnum)
-						 ? lnum : curbuf->b_op_start.lnum;
+					      ? lnum : curbuf->b_op_start.lnum;
 	curbuf->b_op_start.col = curbuf->b_op_end.col = 0;
     }
     curwin->w_cursor.lnum = lnum;
@@ -3729,7 +3732,7 @@ ex_substitute(exarg_T *eap)
 	    ex_may_print(eap);
 	}
 
-	if (!cmdmod.keeppatterns)
+	if ((cmdmod.cmod_flags & CMOD_KEEPPATTERNS) == 0)
 	    save_re_pat(RE_SUBST, pat, p_magic);
 	// put pattern in history
 	add_to_history(HIST_SEARCH, pat, TRUE, NUL);
@@ -4619,7 +4622,7 @@ outofmem:
 
     if (sub_nsubs > start_nsubs)
     {
-	if (!cmdmod.lockmarks)
+	if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
 	{
 	    // Set the '[ and '] marks.
 	    curbuf->b_op_start.lnum = eap->line1;
@@ -5108,7 +5111,7 @@ ex_drop(exarg_T *eap)
     if (ARGCOUNT == 0)
 	return;
 
-    if (cmdmod.tab)
+    if (cmdmod.cmod_tab)
     {
 	// ":tab drop file ...": open a tab for each argument that isn't
 	// edited in a window yet.  It's like ":tab all" but without closing
@@ -5247,7 +5250,7 @@ ex_oldfiles(exarg_T *eap UNUSED)
 	got_int = FALSE;
 
 # ifdef FEAT_BROWSE_CMD
-	if (cmdmod.browse)
+	if (cmdmod.cmod_flags & CMOD_BROWSE)
 	{
 	    quit_more = FALSE;
 	    nr = prompt_for_number(FALSE);
@@ -5262,7 +5265,7 @@ ex_oldfiles(exarg_T *eap UNUSED)
 		    p = expand_env_save(p);
 		    eap->arg = p;
 		    eap->cmdidx = CMD_edit;
-		    cmdmod.browse = FALSE;
+		    cmdmod.cmod_flags &= ~CMOD_BROWSE;
 		    do_exedit(eap, NULL);
 		    vim_free(p);
 		}

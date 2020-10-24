@@ -1826,17 +1826,17 @@ generate_EXECCONCAT(cctx_T *cctx, int count)
  * Generate any instructions for side effects of "cmdmod".
  */
     static int
-generate_cmdmods(cctx_T *cctx)
+generate_cmdmods(cctx_T *cctx, cmdmod_T *cmod)
 {
     isn_T	*isn;
 
     // TODO: use more modifiers in the command
-    if (cmdmod.cmod_flags & (CMOD_SILENT | CMOD_ERRSILENT))
+    if (cmod->cmod_flags & (CMOD_SILENT | CMOD_ERRSILENT))
     {
 	if ((isn = generate_instr(cctx, ISN_SILENT)) == NULL)
 	    return FAIL;
-	isn->isn_arg.number = (cmdmod.cmod_flags & CMOD_ERRSILENT) != 0;
-	cctx->ctx_silent = (cmdmod.cmod_flags & CMOD_ERRSILENT) ? 2 : 1;
+	isn->isn_arg.number = (cmod->cmod_flags & CMOD_ERRSILENT) != 0;
+	cctx->ctx_silent = (cmod->cmod_flags & CMOD_ERRSILENT) ? 2 : 1;
     }
     return OK;
 }
@@ -7092,10 +7092,9 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
     for (;;)
     {
 	exarg_T	    ea;
-	cmdmod_T    save_cmdmod;
+	cmdmod_T    local_cmdmod;
 	int	    starts_with_colon = FALSE;
 	char_u	    *cmd;
-	int	    save_msg_scroll = msg_scroll;
 
 	// Bail out on the first error to avoid a flood of errors and report
 	// the right line number when inside try/catch.
@@ -7176,8 +7175,9 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	/*
 	 * COMMAND MODIFIERS
 	 */
-	save_cmdmod = cmdmod;
-	if (parse_command_modifiers(&ea, &errormsg, FALSE) == FAIL)
+	CLEAR_FIELD(local_cmdmod);
+	if (parse_command_modifiers(&ea, &errormsg, &local_cmdmod, FALSE)
+								       == FAIL)
 	{
 	    if (errormsg != NULL)
 		goto erret;
@@ -7185,10 +7185,8 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	    line = (char_u *)"";
 	    continue;
 	}
-	generate_cmdmods(&cctx);
-
-	undo_cmdmod(save_msg_scroll);
-	cmdmod = save_cmdmod;
+	generate_cmdmods(&cctx, &local_cmdmod);
+	undo_cmdmod(&local_cmdmod);
 
 	// Skip ":call" to get to the function name.
 	p = ea.cmd;

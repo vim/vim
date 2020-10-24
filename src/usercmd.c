@@ -1235,8 +1235,8 @@ add_cmd_modifier(char_u *buf, char *mod_str, int *multi_mods)
 }
 
 /*
- * Add modifiers from "cmdmod.split" to "buf".  Set "multi_mods" when one was
- * added.  Return the number of bytes added.
+ * Add modifiers from "cmdmod.cmod_split" to "buf".  Set "multi_mods" when one
+ * was added.  Return the number of bytes added.
  */
     size_t
 add_win_cmd_modifers(char_u *buf, int *multi_mods)
@@ -1244,23 +1244,23 @@ add_win_cmd_modifers(char_u *buf, int *multi_mods)
     size_t result = 0;
 
     // :aboveleft and :leftabove
-    if (cmdmod.split & WSP_ABOVE)
+    if (cmdmod.cmod_split & WSP_ABOVE)
 	result += add_cmd_modifier(buf, "aboveleft", multi_mods);
     // :belowright and :rightbelow
-    if (cmdmod.split & WSP_BELOW)
+    if (cmdmod.cmod_split & WSP_BELOW)
 	result += add_cmd_modifier(buf, "belowright", multi_mods);
     // :botright
-    if (cmdmod.split & WSP_BOT)
+    if (cmdmod.cmod_split & WSP_BOT)
 	result += add_cmd_modifier(buf, "botright", multi_mods);
 
     // :tab
-    if (cmdmod.tab > 0)
+    if (cmdmod.cmod_tab > 0)
 	result += add_cmd_modifier(buf, "tab", multi_mods);
     // :topleft
-    if (cmdmod.split & WSP_TOP)
+    if (cmdmod.cmod_split & WSP_TOP)
 	result += add_cmd_modifier(buf, "topleft", multi_mods);
     // :vertical
-    if (cmdmod.split & WSP_VERT)
+    if (cmdmod.cmod_split & WSP_VERT)
 	result += add_cmd_modifier(buf, "vertical", multi_mods);
     return result;
 }
@@ -1454,24 +1454,24 @@ uc_check_code(
     {
 	int multi_mods = 0;
 	typedef struct {
-	    int *varp;
+	    int flag;
 	    char *name;
 	} mod_entry_T;
 	static mod_entry_T mod_entries[] = {
 #ifdef FEAT_BROWSE_CMD
-	    {&cmdmod.browse, "browse"},
+	    {CMOD_BROWSE, "browse"},
 #endif
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
-	    {&cmdmod.confirm, "confirm"},
+	    {CMOD_CONFIRM, "confirm"},
 #endif
-	    {&cmdmod.hide, "hide"},
-	    {&cmdmod.keepalt, "keepalt"},
-	    {&cmdmod.keepjumps, "keepjumps"},
-	    {&cmdmod.keepmarks, "keepmarks"},
-	    {&cmdmod.keeppatterns, "keeppatterns"},
-	    {&cmdmod.lockmarks, "lockmarks"},
-	    {&cmdmod.noswapfile, "noswapfile"},
-	    {NULL, NULL}
+	    {CMOD_HIDE, "hide"},
+	    {CMOD_KEEPALT, "keepalt"},
+	    {CMOD_KEEPJUMPS, "keepjumps"},
+	    {CMOD_KEEPMARKS, "keepmarks"},
+	    {CMOD_KEEPPATTERNS, "keeppatterns"},
+	    {CMOD_LOCKMARKS, "lockmarks"},
+	    {CMOD_NOSWAPFILE, "noswapfile"},
+	    {0, NULL}
 	};
 	int i;
 
@@ -1484,8 +1484,8 @@ uc_check_code(
 	}
 
 	// the modifiers that are simple flags
-	for (i = 0; mod_entries[i].varp != NULL; ++i)
-	    if (*mod_entries[i].varp)
+	for (i = 0; mod_entries[i].name != NULL; ++i)
+	    if (cmdmod.cmod_flags & mod_entries[i].flag)
 		result += add_cmd_modifier(buf, mod_entries[i].name,
 								 &multi_mods);
 
@@ -1501,7 +1501,7 @@ uc_check_code(
 	// :verbose
 	if (p_verbose > 0)
 	    result += add_cmd_modifier(buf, "verbose", &multi_mods);
-	// flags from cmdmod.split
+	// flags from cmdmod.cmod_split
 	result += add_win_cmd_modifers(buf, &multi_mods);
 	if (quote && buf != NULL)
 	{

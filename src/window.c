@@ -615,7 +615,7 @@ wingotofile:
 #ifdef FEAT_SEARCHPATH
 		    case 'f':	    // CTRL-W gf: "gf" in a new tab page
 		    case 'F':	    // CTRL-W gF: "gF" in a new tab page
-			cmdmod.tab = tabpage_index(curtab) + 1;
+			cmdmod.cmod_tab = tabpage_index(curtab) + 1;
 			nchar = xchar;
 			goto wingotofile;
 #endif
@@ -798,7 +798,7 @@ win_split(int size, int flags)
 	return OK;
 
     // Add flags from ":vertical", ":topleft" and ":botright".
-    flags |= cmdmod.split;
+    flags |= cmdmod.cmod_split;
     if ((flags & WSP_TOP) && (flags & WSP_BOT))
     {
 	emsg(_("E442: Can't split topleft and botright at the same time"));
@@ -3568,7 +3568,8 @@ close_others(
 	    if (!r)
 	    {
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
-		if (message && (p_confirm || cmdmod.confirm) && p_write)
+		if (message && (p_confirm
+			     || (cmdmod.cmod_flags & CMOD_CONFIRM)) && p_write)
 		{
 		    dialog_changed(wp->w_buffer, FALSE);
 		    if (!win_valid(wp))		// autocommands messed wp up
@@ -3925,11 +3926,12 @@ win_new_tabpage(int after)
     static int
 may_open_tabpage(void)
 {
-    int		n = (cmdmod.tab == 0) ? postponed_split_tab : cmdmod.tab;
+    int		n = (cmdmod.cmod_tab == 0)
+				       ? postponed_split_tab : cmdmod.cmod_tab;
 
     if (n != 0)
     {
-	cmdmod.tab = 0;	    // reset it to avoid doing it twice
+	cmdmod.cmod_tab = 0;	    // reset it to avoid doing it twice
 	postponed_split_tab = 0;
 	return win_new_tabpage(n);
     }

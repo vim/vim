@@ -289,7 +289,7 @@ ml_open(buf_T *buf)
     buf->b_ml.ml_chunksize = NULL;
 #endif
 
-    if (cmdmod.noswapfile)
+    if (cmdmod.cmod_flags & CMOD_NOSWAPFILE)
 	buf->b_p_swf = FALSE;
 
     /*
@@ -635,7 +635,7 @@ ml_setname(buf_T *buf)
 	 * When 'updatecount' is 0 and 'noswapfile' there is no swap file.
 	 * For help files we will make a swap file now.
 	 */
-	if (p_uc != 0 && !cmdmod.noswapfile)
+	if (p_uc != 0 && (cmdmod.cmod_flags & CMOD_NOSWAPFILE) == 0)
 	    ml_open_file(buf);	    // create a swap file
 	return;
     }
@@ -747,7 +747,8 @@ ml_open_file(buf_T *buf)
     char_u	*dirp;
 
     mfp = buf->b_ml.ml_mfp;
-    if (mfp == NULL || mfp->mf_fd >= 0 || !buf->b_p_swf || cmdmod.noswapfile)
+    if (mfp == NULL || mfp->mf_fd >= 0 || !buf->b_p_swf
+				      || (cmdmod.cmod_flags & CMOD_NOSWAPFILE))
 	return;		// nothing to do
 
 #ifdef FEAT_SPELL

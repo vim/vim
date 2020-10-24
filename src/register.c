@@ -1358,7 +1358,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	}
     }
 
-    if (!cmdmod.lockmarks)
+    if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
     {
 	// Set "'[" and "']" marks.
 	curbuf->b_op_start = oap->start;
@@ -2170,7 +2170,7 @@ error:
     curwin->w_set_curswant = TRUE;
 
 end:
-    if (cmdmod.lockmarks)
+    if (cmdmod.cmod_flags & CMOD_LOCKMARKS)
     {
 	curbuf->b_op_start = orig_start;
 	curbuf->b_op_end = orig_end;

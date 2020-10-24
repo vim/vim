@@ -7868,15 +7868,15 @@ clip_xterm_set_selection(Clipboard_T *cbd)
     static void
 xsmp_handle_interaction(SmcConn smc_conn, SmPointer client_data UNUSED)
 {
-    cmdmod_T	save_cmdmod;
+    int		save_cmod_flags;
     int		cancel_shutdown = False;
 
-    save_cmdmod = cmdmod;
-    cmdmod.confirm = TRUE;
+    save_cmod_flags = cmdmod.cmod_flags;
+    cmdmod.cmod_flags |= CMOD_CONFIRM;
     if (check_changed_any(FALSE, FALSE))
 	// Mustn't logout
 	cancel_shutdown = True;
-    cmdmod = save_cmdmod;
+    cmdmod.cmod_flags = save_cmod_flags;
     setcursor();		// position cursor
     out_flush();
 

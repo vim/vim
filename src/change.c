@@ -453,7 +453,7 @@ changed_common(
 #endif
 
     // set the '. mark
-    if (!cmdmod.keepjumps)
+    if ((cmdmod.cmod_flags & CMOD_KEEPJUMPS) == 0)
     {
 	curbuf->b_last_change.lnum = lnum;
 	curbuf->b_last_change.col = col;

@@ -189,7 +189,8 @@ search_regcomp(
      * Save the currently used pattern in the appropriate place,
      * unless the pattern should not be remembered.
      */
-    if (!(options & SEARCH_KEEP) && !cmdmod.keeppatterns)
+    if (!(options & SEARCH_KEEP)
+			       && (cmdmod.cmod_flags & CMOD_KEEPPATTERNS) == 0)
     {
 	// search or global command
 	if (pat_save == RE_SEARCH || pat_save == RE_BOTH)
@@ -1661,7 +1662,7 @@ do_search(
     curwin->w_set_curswant = TRUE;
 
 end_do_search:
-    if ((options & SEARCH_KEEP) || cmdmod.keeppatterns)
+    if ((options & SEARCH_KEEP) || (cmdmod.cmod_flags & CMOD_KEEPPATTERNS))
 	spats[0].off = old_off;
     vim_free(strcopy);
     vim_free(msgbuf);

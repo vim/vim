@@ -195,7 +195,7 @@ do_incsearch_highlighting(
 	int		    *patlen)
 {
     char_u	*cmd;
-    cmdmod_T	save_cmdmod = cmdmod;
+    cmdmod_T	dummy_cmdmod;
     char_u	*p;
     int		delim_optional = FALSE;
     int		delim;
@@ -231,8 +231,8 @@ do_incsearch_highlighting(
     ea.cmd = ccline.cmdbuff;
     ea.addr_type = ADDR_LINES;
 
-    parse_command_modifiers(&ea, &dummy, TRUE);
-    cmdmod = save_cmdmod;
+    CLEAR_FIELD(dummy_cmdmod);
+    parse_command_modifiers(&ea, &dummy, &dummy_cmdmod, TRUE);
 
     cmd = skip_range(ea.cmd, TRUE, NULL);
     if (vim_strchr((char_u *)"sgvl", *cmd) == NULL)
@@ -4163,8 +4163,8 @@ open_cmdwin(void)
     pum_undisplay();
 
     // don't use a new tab page
-    cmdmod.tab = 0;
-    cmdmod.noswapfile = 1;
+    cmdmod.cmod_tab = 0;
+    cmdmod.cmod_flags |= CMOD_NOSWAPFILE;
 
     // Create a window for the command-line buffer.
     if (win_split((int)p_cwh, WSP_BOT) == FAIL)

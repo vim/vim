@@ -1444,7 +1444,7 @@ do_buffer(
 	if (!forceit && bufIsChanged(buf))
 	{
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
-	    if ((p_confirm || cmdmod.confirm) && p_write)
+	    if ((p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM)) && p_write)
 	    {
 		dialog_changed(buf, FALSE);
 		if (!bufref_valid(&bufref))
@@ -1634,7 +1634,7 @@ do_buffer(
     if (action == DOBUF_GOTO && !can_abandon(curbuf, forceit))
     {
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
-	if ((p_confirm || cmdmod.confirm) && p_write)
+	if ((p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM)) && p_write)
 	{
 	    bufref_T bufref;
 
@@ -1689,7 +1689,7 @@ set_curbuf(buf_T *buf, int action)
     bufref_T	prevbufref;
 
     setpcmark();
-    if (!cmdmod.keepalt)
+    if ((cmdmod.cmod_flags & CMOD_KEEPALT) == 0)
 	curwin->w_alt_fnum = curbuf->b_fnum; // remember alternate file
     buflist_altfpos(curwin);			 // remember curpos
 
@@ -3435,7 +3435,7 @@ setaltfname(
 
     // Create a buffer.  'buflisted' is not set if it's a new buffer
     buf = buflist_new(ffname, sfname, lnum, 0);
-    if (buf != NULL && !cmdmod.keepalt)
+    if (buf != NULL && (cmdmod.cmod_flags & CMOD_KEEPALT) == 0)
 	curwin->w_alt_fnum = buf->b_fnum;
     return buf;
 }
@@ -5068,7 +5068,7 @@ ex_buffer_all(exarg_T *eap)
     int		r;
     int		count;		// Maximum number of windows to open.
     int		all;		// When TRUE also load inactive buffers.
-    int		had_tab = cmdmod.tab;
+    int		had_tab = cmdmod.cmod_tab;
     tabpage_T	*tpnext;
 
     if (eap->addr_count == 0)	// make as many windows as possible
@@ -5099,7 +5099,7 @@ ex_buffer_all(exarg_T *eap)
 	{
 	    wpnext = wp->w_next;
 	    if ((wp->w_buffer->b_nwindows > 1
-		    || ((cmdmod.split & WSP_VERT)
+		    || ((cmdmod.cmod_split & WSP_VERT)
 			? wp->w_height + wp->w_status_height < Rows - p_ch
 							    - tabline_height()
 			: wp->w_width != Columns)
@@ -5220,7 +5220,7 @@ ex_buffer_all(exarg_T *eap)
 #endif
 	// When ":tab" was used open a new tab for a new window repeatedly.
 	if (had_tab > 0 && tabpage_index(NULL) <= p_tpm)
-	    cmdmod.tab = 9999;
+	    cmdmod.cmod_tab = 9999;
     }
     --autocmd_no_enter;
     win_enter(firstwin, FALSE);		// back to first window
@@ -5547,7 +5547,7 @@ buf_hide(buf_T *buf)
 	case 'd': return FALSE;	    // "delete"
 	case 'h': return TRUE;	    // "hide"
     }
-    return (p_hid || cmdmod.hide);
+    return (p_hid || (cmdmod.cmod_flags & CMOD_HIDE));
 }
 
 /*
