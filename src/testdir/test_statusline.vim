@@ -376,6 +376,9 @@ func Test_statusline()
   delfunc GetNested
   delfunc GetStatusLine
 
+  " Test statusline works with 80+ items
+  let &statusline = join(map(range(200), {i-> '%#' . (i % 2 == 0 ? 'Normal' : 'TabLineSel' ) . '#' . i}), '')
+
   " Check statusline in current and non-current window
   " with the 'fillchars' option.
   set fillchars=stl:^,stlnc:=,vert:\|,fold:-,diff:-
