@@ -832,8 +832,8 @@ call_def_function(
     int		save_suppress_errthrow = suppress_errthrow;
     msglist_T	**saved_msg_list = NULL;
     msglist_T	*private_msg_list = NULL;
-    int		save_msg_silent = -1;
-    int		save_emsg_silent = -1;
+    cmdmod_T	save_cmdmod;
+    int		restore_cmdmod = FALSE;
 
 // Get pointer to item in the stack.
 #define STACK_TV(idx) (((typval_T *)ectx.ec_stack.ga_data) + idx)
@@ -2816,22 +2816,19 @@ call_def_function(
 		}
 		break;
 
-	    case ISN_SILENT:
-		if (save_msg_silent == -1)
-		    save_msg_silent = msg_silent;
-		++msg_silent;
-		if (iptr->isn_arg.number)
-		{
-		    if (save_emsg_silent == -1)
-			save_emsg_silent = emsg_silent;
-		    ++emsg_silent;
-		}
+	    case ISN_CMDMOD:
+		save_cmdmod = cmdmod;
+		restore_cmdmod = TRUE;
+		cmdmod = *iptr->isn_arg.cmdmod.cf_cmdmod;
+		apply_cmdmod(&cmdmod);
 		break;
 
-	    case ISN_UNSILENT:
-		--msg_silent;
-		if (iptr->isn_arg.number)
-		    --emsg_silent;
+	    case ISN_CMDMOD_REV:
+		// filter regprog is owned by the instruction, don't free it
+		cmdmod.cmod_filter_regmatch.regprog = NULL;
+		undo_cmdmod(&cmdmod);
+		cmdmod = save_cmdmod;
+		restore_cmdmod = FALSE;
 		break;
 
 	    case ISN_SHUFFLE:
@@ -2905,10 +2902,12 @@ failed:
     }
     msg_list = saved_msg_list;
 
-    if (save_msg_silent != -1)
-	msg_silent = save_msg_silent;
-    if (save_emsg_silent != -1)
-	emsg_silent = save_emsg_silent;
+    if (restore_cmdmod)
+    {
+	cmdmod.cmod_filter_regmatch.regprog = NULL;
+	undo_cmdmod(&cmdmod);
+	cmdmod = save_cmdmod;
+    }
 
 failed_early:
     // Free all local variables, but not arguments.
@@ -3527,10 +3526,24 @@ ex_disassemble(exarg_T *eap)
 					     (long)iptr->isn_arg.put.put_lnum);
 		break;
 
-	    case ISN_SILENT: smsg("%4d SILENT%s", current,
-				       iptr->isn_arg.number ? "!" : ""); break;
-	    case ISN_UNSILENT: smsg("%4d UNSILENT%s", current,
-				       iptr->isn_arg.number ? "!" : ""); break;
+		// TODO: summarize modifiers
+	    case ISN_CMDMOD:
+		{
+		    char_u  *buf;
+		    int	    len = produce_cmdmods(
+				  NULL, iptr->isn_arg.cmdmod.cf_cmdmod, FALSE);
+
+		    buf = alloc(len + 1);
+		    if (buf != NULL)
+		    {
+			(void)produce_cmdmods(
+				   buf, iptr->isn_arg.cmdmod.cf_cmdmod, FALSE);
+			smsg("%4d CMDMOD %s", current, buf);
+			vim_free(buf);
+		    }
+		    break;
+		}
+	    case ISN_CMDMOD_REV: smsg("%4d CMDMOD_REV", current); break;
 
 	    case ISN_SHUFFLE: smsg("%4d SHUFFLE %d up %d", current,
 					 iptr->isn_arg.shuffle.shfl_item,

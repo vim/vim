@@ -142,8 +142,8 @@ typedef enum {
 
     ISN_PUT,	    // ":put", uses isn_arg.put
 
-    ISN_SILENT,	    // set msg_silent or emsg_silent if arg_number is non-zero
-    ISN_UNSILENT,   // undo ISN_SILENT
+    ISN_CMDMOD,	    // set cmdmod
+    ISN_CMDMOD_REV, // undo ISN_CMDMOD
 
     ISN_SHUFFLE,    // move item on stack up or down
     ISN_DROP	    // pop stack and discard value
@@ -278,6 +278,11 @@ typedef struct {
     linenr_T	put_lnum;	// line number to put below
 } put_T;
 
+// arguments to ISN_CMDMOD
+typedef struct {
+    cmdmod_T	*cf_cmdmod;	// allocated
+} cmod_T;
+
 /*
  * Instruction
  */
@@ -314,6 +319,7 @@ struct isn_S {
 	checklen_T	    checklen;
 	shuffle_T	    shuffle;
 	put_T		    put;
+	cmod_T		    cmdmod;
     } isn_arg;
 };
 

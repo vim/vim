@@ -1235,33 +1235,100 @@ add_cmd_modifier(char_u *buf, char *mod_str, int *multi_mods)
 }
 
 /*
- * Add modifiers from "cmdmod.cmod_split" to "buf".  Set "multi_mods" when one
+ * Add modifiers from "cmod->cmod_split" to "buf".  Set "multi_mods" when one
  * was added.  Return the number of bytes added.
  */
     size_t
-add_win_cmd_modifers(char_u *buf, int *multi_mods)
+add_win_cmd_modifers(char_u *buf, cmdmod_T *cmod, int *multi_mods)
 {
     size_t result = 0;
 
     // :aboveleft and :leftabove
-    if (cmdmod.cmod_split & WSP_ABOVE)
+    if (cmod->cmod_split & WSP_ABOVE)
 	result += add_cmd_modifier(buf, "aboveleft", multi_mods);
     // :belowright and :rightbelow
-    if (cmdmod.cmod_split & WSP_BELOW)
+    if (cmod->cmod_split & WSP_BELOW)
 	result += add_cmd_modifier(buf, "belowright", multi_mods);
     // :botright
-    if (cmdmod.cmod_split & WSP_BOT)
+    if (cmod->cmod_split & WSP_BOT)
 	result += add_cmd_modifier(buf, "botright", multi_mods);
 
     // :tab
-    if (cmdmod.cmod_tab > 0)
+    if (cmod->cmod_tab > 0)
 	result += add_cmd_modifier(buf, "tab", multi_mods);
     // :topleft
-    if (cmdmod.cmod_split & WSP_TOP)
+    if (cmod->cmod_split & WSP_TOP)
 	result += add_cmd_modifier(buf, "topleft", multi_mods);
     // :vertical
-    if (cmdmod.cmod_split & WSP_VERT)
+    if (cmod->cmod_split & WSP_VERT)
 	result += add_cmd_modifier(buf, "vertical", multi_mods);
+    return result;
+}
+
+/*
+ * Generate text for the "cmod" command modifiers.
+ * If "buf" is NULL just return the length.
+ */
+    int
+produce_cmdmods(char_u *buf, cmdmod_T *cmod, int quote)
+{
+    int	    result = 0;
+    int	    multi_mods = 0;
+    int	    i;
+    typedef struct {
+	int flag;
+	char *name;
+    } mod_entry_T;
+    static mod_entry_T mod_entries[] = {
+#ifdef FEAT_BROWSE_CMD
+	{CMOD_BROWSE, "browse"},
+#endif
+#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
+	{CMOD_CONFIRM, "confirm"},
+#endif
+	{CMOD_HIDE, "hide"},
+	{CMOD_KEEPALT, "keepalt"},
+	{CMOD_KEEPJUMPS, "keepjumps"},
+	{CMOD_KEEPMARKS, "keepmarks"},
+	{CMOD_KEEPPATTERNS, "keeppatterns"},
+	{CMOD_LOCKMARKS, "lockmarks"},
+	{CMOD_NOSWAPFILE, "noswapfile"},
+	{CMOD_UNSILENT, "unsilent"},
+	{CMOD_NOAUTOCMD, "noautocmd"},
+#ifdef HAVE_SANDBOX
+	{CMOD_SANDBOX, "sandbox"},
+#endif
+	{0, NULL}
+    };
+
+    result = quote ? 2 : 0;
+    if (buf != NULL)
+    {
+	if (quote)
+	    *buf++ = '"';
+	*buf = '\0';
+    }
+
+    // the modifiers that are simple flags
+    for (i = 0; mod_entries[i].name != NULL; ++i)
+	if (cmod->cmod_flags & mod_entries[i].flag)
+	    result += add_cmd_modifier(buf, mod_entries[i].name, &multi_mods);
+
+    // :silent
+    if (cmod->cmod_flags & CMOD_SILENT)
+	result += add_cmd_modifier(buf,
+			(cmod->cmod_flags & CMOD_ERRSILENT) ? "silent!"
+						      : "silent", &multi_mods);
+    // :verbose
+    if (p_verbose > 0)
+	result += add_cmd_modifier(buf, "verbose", &multi_mods);
+    // flags from cmod->cmod_split
+    result += add_win_cmd_modifers(buf, cmod, &multi_mods);
+    if (quote && buf != NULL)
+    {
+	buf += result - 2;
+	*buf = '"';
+    }
     return result;
 }
 
@@ -1452,62 +1519,7 @@ uc_check_code(
 
     case ct_MODS:
     {
-	int multi_mods = 0;
-	typedef struct {
-	    int flag;
-	    char *name;
-	} mod_entry_T;
-	static mod_entry_T mod_entries[] = {
-#ifdef FEAT_BROWSE_CMD
-	    {CMOD_BROWSE, "browse"},
-#endif
-#if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
-	    {CMOD_CONFIRM, "confirm"},
-#endif
-	    {CMOD_HIDE, "hide"},
-	    {CMOD_KEEPALT, "keepalt"},
-	    {CMOD_KEEPJUMPS, "keepjumps"},
-	    {CMOD_KEEPMARKS, "keepmarks"},
-	    {CMOD_KEEPPATTERNS, "keeppatterns"},
-	    {CMOD_LOCKMARKS, "lockmarks"},
-	    {CMOD_NOSWAPFILE, "noswapfile"},
-	    {0, NULL}
-	};
-	int i;
-
-	result = quote ? 2 : 0;
-	if (buf != NULL)
-	{
-	    if (quote)
-		*buf++ = '"';
-	    *buf = '\0';
-	}
-
-	// the modifiers that are simple flags
-	for (i = 0; mod_entries[i].name != NULL; ++i)
-	    if (cmdmod.cmod_flags & mod_entries[i].flag)
-		result += add_cmd_modifier(buf, mod_entries[i].name,
-								 &multi_mods);
-
-	// TODO: How to support :noautocmd?
-#ifdef HAVE_SANDBOX
-	// TODO: How to support :sandbox?
-#endif
-	// :silent
-	if (msg_silent > 0)
-	    result += add_cmd_modifier(buf,
-		    emsg_silent > 0 ? "silent!" : "silent", &multi_mods);
-	// TODO: How to support :unsilent?
-	// :verbose
-	if (p_verbose > 0)
-	    result += add_cmd_modifier(buf, "verbose", &multi_mods);
-	// flags from cmdmod.cmod_split
-	result += add_win_cmd_modifers(buf, &multi_mods);
-	if (quote && buf != NULL)
-	{
-	    buf += result - 2;
-	    *buf = '"';
-	}
+	result = produce_cmdmods(buf, &cmdmod, quote);
 	break;
     }
 

@@ -1627,15 +1627,15 @@ def Test_silent()
   var res = execute('disass s:SilentMessage')
   assert_match('<SNR>\d*_SilentMessage\_s*' ..
         'silent echomsg "text"\_s*' ..
-        '\d SILENT\_s*' ..
+        '\d CMDMOD silent\_s*' ..
         '\d PUSHS "text"\_s*' ..
         '\d ECHOMSG 1\_s*' ..
-        '\d UNSILENT\_s*' ..
+        '\d CMDMOD_REV\_s*' ..
         'silent! echoerr "error"\_s*' ..
-        '\d SILENT!\_s*' ..
+        '\d CMDMOD silent!\_s*' ..
         '\d PUSHS "error"\_s*' ..
         '\d ECHOERR 1\_s*' ..
-        '\d UNSILENT!\_s*' ..
+        '\d CMDMOD_REV\_s*' ..
         '\d PUSHNR 0\_s*' ..
         '\d RETURN',
         res)
