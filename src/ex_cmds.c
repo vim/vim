@@ -1544,6 +1544,9 @@ make_filter_cmd(
     int		is_fish_shell;
     char_u	*shell_name = get_isolated_shell_name();
 
+    if (shell_name == NULL)
+	return NULL;
+
     // Account for fish's different syntax for subshells
     is_fish_shell = (fnamecmp(shell_name, "fish") == 0);
     vim_free(shell_name);
