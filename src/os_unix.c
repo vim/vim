@@ -8068,10 +8068,13 @@ xsmp_init(void)
 	    errorstring);
     if (xsmp.smcconn == NULL)
     {
-	char errorreport[132];
-
 	if (p_verbose > 0)
 	{
+	    char errorreport[132];
+
+	    // If the message is too long it might not be NUL terminated.  Add
+	    // a NUL at the end to make sure we don't go over the end.
+	    errorstring[sizeof(errorstring) - 1] = NUL;
 	    vim_snprintf(errorreport, sizeof(errorreport),
 			 _("XSMP SmcOpenConnection failed: %s"), errorstring);
 	    verb_msg(errorreport);
