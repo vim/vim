@@ -1222,6 +1222,25 @@ struct stl_hlrec
     int		userhl;		// 0: no HL, 1-9: User HL, < 0 for syn ID
 };
 
+/*
+ * Used for building in the status line.
+ */
+struct stl_item {
+    char_u	*start;
+    int		minwid;
+    int		maxwid;
+    enum
+    {
+        Normal,
+        Empty,
+        Group,
+        Middle,
+        Highlight,
+        TabPage,
+        Trunc
+    }           type;
+};
+
 
 /*
  * Syntax items - usually buffer-specific.

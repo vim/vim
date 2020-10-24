@@ -575,7 +575,7 @@ check_stl_option(char_u *s)
     int		groupdepth = 0;
     static char errbuf[80];
 
-    while (*s && itemcnt < STL_MAX_ITEM)
+    while (*s && itemcnt < get_stl_items_len())
     {
 	// Check for valid keys after % sequences
 	while (*s && *s != '%')
@@ -627,7 +627,7 @@ check_stl_option(char_u *s)
 		return N_("E540: Unclosed expression sequence");
 	}
     }
-    if (itemcnt >= STL_MAX_ITEM)
+    if (itemcnt >= get_stl_items_len())
 	return N_("E541: too many items");
     if (groupdepth != 0)
 	return N_("E542: unbalanced groups");
