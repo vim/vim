@@ -4035,13 +4035,6 @@ build_stl_str_hl(
     struct stl_hlrec **hltab,	// return: HL attributes (can be NULL)
     struct stl_hlrec **tabtab)	// return: tab page nrs (can be NULL)
 {
-    if (stl_items == NULL) {
-        stl_items = malloc(sizeof(struct stl_item) * stl_items_len);
-        stl_groupitem = malloc(sizeof(struct stl_item) * stl_items_len);
-        stl_hltab  = malloc(sizeof(struct stl_hlrec) * stl_items_len);
-        stl_tabtab = malloc(sizeof(struct stl_hlrec) * stl_items_len);
-    }
-
     linenr_T	lnum;
     size_t	len;
     char_u	*p;
@@ -4081,6 +4074,13 @@ build_stl_str_hl(
     struct stl_hlrec *sp;
     int		save_must_redraw = must_redraw;
     int		save_redr_type = curwin->w_redr_type;
+
+    if (stl_items == NULL) {
+        stl_items = malloc(sizeof(struct stl_item) * stl_items_len);
+        stl_groupitem = malloc(sizeof(struct stl_item) * stl_items_len);
+        stl_hltab  = malloc(sizeof(struct stl_hlrec) * stl_items_len);
+        stl_tabtab = malloc(sizeof(struct stl_hlrec) * stl_items_len);
+    }
 
 #ifdef FEAT_EVAL
     /*
