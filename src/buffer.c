@@ -1006,6 +1006,22 @@ free_buffer_stuff(
 }
 
 /*
+ * Free one wininfo_T.
+ */
+    void
+free_wininfo(wininfo_T *wip)
+{
+    if (wip->wi_optset)
+    {
+	clear_winopt(&wip->wi_opt);
+#ifdef FEAT_FOLDING
+	deleteFoldRecurse(&wip->wi_folds);
+#endif
+    }
+    vim_free(wip);
+}
+
+/*
  * Free the b_wininfo list for buffer "buf".
  */
     static void
@@ -1017,14 +1033,7 @@ clear_wininfo(buf_T *buf)
     {
 	wip = buf->b_wininfo;
 	buf->b_wininfo = wip->wi_next;
-	if (wip->wi_optset)
-	{
-	    clear_winopt(&wip->wi_opt);
-#ifdef FEAT_FOLDING
-	    deleteFoldRecurse(&wip->wi_folds);
-#endif
-	}
-	vim_free(wip);
+	free_wininfo(wip);
     }
 }
 

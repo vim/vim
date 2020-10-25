@@ -5015,7 +5015,26 @@ win_free(
     FOR_ALL_BUFFERS(buf)
 	FOR_ALL_BUF_WININFO(buf, wip)
 	    if (wip->wi_win == wp)
+	    {
+		wininfo_T	*wip2;
+
+		// If there already is an entry with "wi_win" set to NULL it
+		// must be removed, it would never be used.
+		for (wip2 = buf->b_wininfo; wip2 != NULL; wip2 = wip2->wi_next)
+		    if (wip2->wi_win == NULL)
+		    {
+			if (wip2->wi_next != NULL)
+			    wip2->wi_next->wi_prev = wip2->wi_prev;
+			if (wip2->wi_prev == NULL)
+			    buf->b_wininfo = wip2->wi_next;
+			else
+			    wip2->wi_prev->wi_next = wip2->wi_next;
+			free_wininfo(wip2);
+			break;
+		    }
+
 		wip->wi_win = NULL;
+	    }
 
 #ifdef FEAT_SEARCH_EXTRA
     clear_matches(wp);
