@@ -4144,7 +4144,7 @@ build_stl_str_hl(
     prevchar_isitem = FALSE;
     for (s = usefmt; *s; )
     {
-	if (curitem == stl_items_len)
+	if (curitem == (int)stl_items_len)
 	{
 	    stl_items_len = stl_items_len * 1.5;
 	    stl_items = vim_realloc(stl_items, sizeof(struct stl_item) * stl_items_len);
