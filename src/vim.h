@@ -931,6 +931,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define BLN_NOOPT	16	// don't copy options to existing buffer
 #define BLN_DUMMY_OK	32	// also find an existing dummy buffer
 #define BLN_REUSE	64	// may re-use number from buf_reuse
+#define BLN_NOCURWIN	128	// buffer is not associated with curwin
 
 // Values for in_cinkeys()
 #define KEY_OPEN_FORW	0x101

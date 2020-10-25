@@ -2640,7 +2640,10 @@ do_ecmd(
 		    if (tlnum <= 0)
 			tlnum = 1L;
 		}
-		(void)buflist_new(ffname, sfname, tlnum, BLN_LISTED);
+		// Add BLN_NOCURWIN to avoid a new wininfo items is assocated
+		// with the current window.
+		(void)buflist_new(ffname, sfname, tlnum,
+						    BLN_LISTED | BLN_NOCURWIN);
 		goto theend;
 	    }
 	    buf = buflist_new(ffname, sfname, 0L,
