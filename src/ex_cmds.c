@@ -2630,7 +2630,9 @@ do_ecmd(
 	{
 	    if (flags & ECMD_ADDBUF)
 	    {
-		linenr_T	tlnum = 1L;
+		// Default the line number to zero to avoid that a wininfo item
+		// is added for the current window.
+		linenr_T	tlnum = 0;
 
 		if (command != NULL)
 		{

@@ -362,4 +362,16 @@ func Test_sball_with_count()
   %bw!
 endfunc
 
+func Test_badd_options()
+  new SomeNewBuffer
+  setlocal cole=3
+  wincmd p
+  badd SomeNewBuffer
+  new SomeNewBuffer
+  call assert_equal(3, &cole)
+  close
+  close
+  bwipe! SomeNewBuffer
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
