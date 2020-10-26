@@ -1287,6 +1287,22 @@ func Test_cmd_backtick()
   %argd
 endfunc
 
+" Test for incomplete backtick expression.
+" This used to access invalid memory with C locale.
+func Test_cmd_backtick_incomplete()
+  let encoding_save = &encoding
+  new
+
+  let encodings = ['latin1', 'utf8']
+  for e in encodings
+    exe 'set encoding=' . e
+    call assert_fails('r`=', 'E484:')
+  endfor
+
+  let &encoding = encoding_save
+  bwipe!
+endfunc
+
 " Test for the :! command
 func Test_cmd_bang()
   CheckUnix

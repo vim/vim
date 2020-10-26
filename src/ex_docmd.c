@@ -4695,6 +4695,8 @@ separate_nextcmd(exarg_T *eap)
 	else if (p[0] == '`' && p[1] == '=' && (eap->argt & EX_XFILE))
 	{
 	    p += 2;
+	    if (*p == NUL)
+		break;
 	    (void)skip_expr(&p, NULL);
 	}
 #endif
