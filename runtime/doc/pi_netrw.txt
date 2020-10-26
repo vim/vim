@@ -1510,7 +1510,7 @@ Netrw determines which special handler by the following method:
     If g:netrw_browsex_viewer == '-', then netrwFileHandlers#Invoke() will be
     used instead (see |netrw_filehandler|).
 
-    If the viewer doesn't support to handle a remote URL directry, set
+    If the viewer doesn't support handling a remote URL, set
     |g:netrw_browsex_support_remote| to 0.
 
   * for Windows 32 or 64, the URL and FileProtocolHandler dlls are used.
