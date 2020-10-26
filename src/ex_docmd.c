@@ -2958,8 +2958,7 @@ undo_cmdmod(cmdmod_T *cmod)
 	cmod->cmod_save_ei = NULL;
     }
 
-    if (cmod->cmod_filter_regmatch.regprog != NULL)
-	vim_regfree(cmod->cmod_filter_regmatch.regprog);
+    vim_regfree(cmod->cmod_filter_regmatch.regprog);
 
     if (cmod->cmod_save_msg_silent > 0)
     {
@@ -4696,6 +4695,8 @@ separate_nextcmd(exarg_T *eap)
 	{
 	    p += 2;
 	    (void)skip_expr(&p, NULL);
+	    if (*p == NUL)		// stop at NUL after CTRL-V
+		break;
 	}
 #endif
 
