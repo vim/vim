@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.2.  Last change: 2020 Sep 28
+*popup.txt*  For Vim version 8.2.  Last change: 2020 Oct 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -314,6 +314,7 @@ popup_filter_menu({id}, {key})				*popup_filter_menu()*
 		    <Space> <Enter>	accept current selection
 		    x Esc CTRL-C	cancel the menu
 		Other keys are ignored.
+		Always returns |v:true|.
 
 		A match is set on that line to highlight it, see
 		|popup_menu()|.

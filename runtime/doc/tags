@@ -4378,7 +4378,6 @@ E538	options.txt	/*E538*
 E539	options.txt	/*E539*
 E54	pattern.txt	/*E54*
 E540	options.txt	/*E540*
-E541	options.txt	/*E541*
 E542	options.txt	/*E542*
 E543	options.txt	/*E543*
 E544	options.txt	/*E544*
@@ -4932,6 +4931,7 @@ InsertChange	autocmd.txt	/*InsertChange*
 InsertCharPre	autocmd.txt	/*InsertCharPre*
 InsertEnter	autocmd.txt	/*InsertEnter*
 InsertLeave	autocmd.txt	/*InsertLeave*
+InsertLeavePre	autocmd.txt	/*InsertLeavePre*
 Integer	eval.txt	/*Integer*
 J	change.txt	/*J*
 Japanese	mbyte.txt	/*Japanese*

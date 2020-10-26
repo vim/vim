@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2020 Sep 30
+" Last Change:	2020 Oct 24
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1506,9 +1506,10 @@ au BufNewFile,BufRead *.decl,*.dcl,*.dec
 au BufNewFile,BufRead catalog			setf catalog
 
 " Shell scripts (sh, ksh, bash, bash2, csh); Allow .profile_foo etc.
-" Gentoo ebuilds and Arch Linux PKGBUILDs are actually bash scripts
+" Gentoo ebuilds, Arch Linux PKGBUILDs and Alpine Linux APKBUILDs are actually
+" bash scripts.
 " NOTE: Patterns ending in a star are further down, these have lower priority.
-au BufNewFile,BufRead .bashrc,bashrc,bash.bashrc,.bash[_-]profile,.bash[_-]logout,.bash[_-]aliases,bash-fc[-.],*.bash,*/{,.}bash[_-]completion{,.d,.sh}{,/*},*.ebuild,*.eclass,PKGBUILD call dist#ft#SetFileTypeSH("bash")
+au BufNewFile,BufRead .bashrc,bashrc,bash.bashrc,.bash[_-]profile,.bash[_-]logout,.bash[_-]aliases,bash-fc[-.],*.bash,*/{,.}bash[_-]completion{,.d,.sh}{,/*},*.ebuild,*.eclass,PKGBUILD,APKBUILD call dist#ft#SetFileTypeSH("bash")
 au BufNewFile,BufRead .kshrc,*.ksh call dist#ft#SetFileTypeSH("ksh")
 au BufNewFile,BufRead */etc/profile,.profile,*.sh,*.env call dist#ft#SetFileTypeSH(getline(1))
 
@@ -2163,7 +2164,7 @@ au BufNewFile,BufRead .reminders*		call s:StarSetf('remind')
 au BufNewFile,BufRead sgml.catalog*		call s:StarSetf('catalog')
 
 " Shell scripts ending in a star
-au BufNewFile,BufRead .bashrc*,.bash[_-]profile*,.bash[_-]logout*,.bash[_-]aliases*,bash-fc[-.]*,,PKGBUILD* call dist#ft#SetFileTypeSH("bash")
+au BufNewFile,BufRead .bashrc*,.bash[_-]profile*,.bash[_-]logout*,.bash[_-]aliases*,bash-fc[-.]*,PKGBUILD*,APKBUILD* call dist#ft#SetFileTypeSH("bash")
 au BufNewFile,BufRead .kshrc* call dist#ft#SetFileTypeSH("ksh")
 au BufNewFile,BufRead .profile* call dist#ft#SetFileTypeSH(getline(1))
 

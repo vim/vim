@@ -4028,8 +4028,6 @@ msgstr "E538: 不支持鼠标"
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: 没有结束的表达式序列"
 
-msgid "E541: too many items"
-msgstr "E541: 项目过多"
 
 msgid "E542: unbalanced groups"
 msgstr "E542: 错乱的组"

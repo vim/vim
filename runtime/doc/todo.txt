@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Oct 10
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Oct 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,29 +38,13 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Sign highlight in signcolumn disappears if there is line highlighting.
+
 Making everything work:
-- If a function is defined in a block it may need to keep the block-locals,
-  like a compiled closure.
-- Fix memory leaks in test_vim9_assign, remove "if 0"
-- Fix memory leaks in test_vim9_script
+- Test all  command modifiers.
+- Check many more builtin function arguments at compile time.
 - Closure arguments should be more strict, like any function call?
-- Remove v:disallow_let
-- Recognize call to assert_fails() and execute it in the function context?
-  Won't work if the command itself fails, not an expression failure:
-	assert_fails("unknown", "E99:")
-  Use try/catch is complicated:
-    let did_catch = false
-    try
-	unknown
-    catch
-	assert_caught('E99:')
-	did_catch = true
-    endtry
-    assert_true('did_catch')
-  Add a new command perhaps:
-    assertfail
-       unknown
-    endassertfail E99:.*unknown
+- Invoke user command in a :def function
 - Make map() give an error if the resulting type is wrong.
   Add mapnew() or mapcopy() to create a new List/Dict for the result, which
   can have a different value type.
@@ -124,12 +108,12 @@ Making everything work:
 - Make "++nr" work.
 - Make closures work:
   - Create closure in a loop.  Need to make a list of them.
+  - nested closure only uses one context, not all (#7150)
 - expandcmd() with `=expr` in filename uses legacy expression.
 - eval_expr() in ex_cexpr()
 - eval_expr() call in dbg_parsearg() and debuggy_find()
 - has() is compiled as a constant, but some checks are dynamic.
   Check for dynamic values, such as "gui_running".
-- Implement command modifiers, such as "silent". (#6530)
 New syntax and functionality:
 Improve error checking:
 - "echo Func()" is an error if Func() does not return anything.
@@ -302,6 +286,8 @@ with 'termguicolors'. #1740
 
 Patch for blockwise paste reporting changes: #6660.
 
+Missing filetype test for bashrc, PKGBUILD, etc.
+
 Add an option to not fetch terminal codes in xterm, to avoid flicker when t_Co
 changes.
 
@@ -350,8 +336,6 @@ work.
 
 Using "au!" after "filetype on" is a bit slow.  Can the matching of
 autocommands be made faster?  (#7056)
-
-Valgrind warns for uninitialized values in f_term_dumpwrite().
 
 Add the <=> (spaceship) operator and "cond ?< expr ?= expr ?> expr"
     replace this:
@@ -455,7 +439,6 @@ Patch to fix session file when using multiple tab pages. (Jason Franklin, 2019
 May 20)
 Also put :argadd commands at the start for all buffers, so that their order
 remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
-Also #4994: window-local options not always restored, related to using :badd.
 Also #5326: netrw buffers are not restored.
 
 Alternate file is not set in the session file.  Use setwintabvar("@#") ?
@@ -594,10 +577,6 @@ it's in a mapping. (2018 Oct 6, #2302, #3522)
 Patch to have text objects defined by arbitrary single characters. (Daniel
 Thau, 2013 Nov 20, 2014 Jan 29, 2014 Jan 31)
 Added tests (James McCoy, 2016 Aug 3, #958).  Still needs more work.
-
-":2resize +10" uses size of the current window, adds 10 and applies it to
-window 2.  User expects 10 to be added to size of window 2. (Daniel Steinberg,
-#5443)
 
 Would be nice to set tab-local values for 'diffexpr' and 'diffopt'.  Use
 t:diffexpr_option t:diffopt_option? (#4782)
@@ -3858,10 +3837,6 @@ Macintosh:
     on the status line (caused by 'winheight').  Select window on button up,
     instead of on button down.
 8   Dragging the status line doesn't scroll but redraw.
-9   Evaluating 'statusline' in build_stl_str_hl() does not properly check for
-    reaching the end of the available buffer.
-    Patch to dynamically allocate the buffer for % items. (Eric Arnold, 2006
-    May 14)
 8   When performing incremental search, should abort searching as soon as a
     character is typed.
 8   When the value of $MAKE contains a path, configure can't handle this.

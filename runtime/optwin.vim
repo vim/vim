@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2020 Sep 10
+" Last Change:	2020 Oct 23
 
 " If there already is an option window, jump to that one.
 let buf = bufnr('option-window')
@@ -617,7 +617,7 @@ call <SID>AddOption("mousemodel", gettext("\"extend\", \"popup\" or \"popup_setp
 call <SID>OptionG("mousem", &mousem)
 call <SID>AddOption("mousetime", gettext("maximum time in msec to recognize a double-click"))
 call append("$", " \tset mouset=" . &mouset)
-call <SID>AddOption("ttymouse", gettext("\"xterm\", \"xterm2\", \"dec\" or \"netterm\"; type of mouse"))
+call <SID>AddOption("ttymouse", gettext("\"xterm\", \"xterm2\", \"sgr\", etc.; type of mouse"))
 call <SID>OptionG("ttym", &ttym)
 if has("mouseshape")
   call <SID>AddOption("mouseshape", gettext("what the mouse pointer looks like in different modes"))
@@ -688,10 +688,6 @@ if has("gui")
       call <SID>AddOption("balloonexpr", gettext("expression to show in balloon eval"))
       call append("$", " \tset bexpr=" . &bexpr)
     endif
-  endif
-  if exists("+macatsui")
-    call <SID>AddOption("macatsui", gettext("use ATSUI text drawing; disable to avoid display problems"))
-    call <SID>OptionG("macatsui", &macatsui)
   endif
 endif
 
@@ -791,7 +787,7 @@ call <SID>BinOptionL("mod")
 call <SID>AddOption("readonly", gettext("buffer is not to be written"))
 call append("$", "\t" .. s:local_to_buffer)
 call <SID>BinOptionL("ro")
-call <SID>AddOption("modifiable", gettext("changes to the text are not possible"))
+call <SID>AddOption("modifiable", gettext("changes to the text are possible"))
 call append("$", "\t" .. s:local_to_buffer)
 call <SID>BinOptionL("ma")
 call <SID>AddOption("textwidth", gettext("line length above which to break a line"))
@@ -852,7 +848,7 @@ if has("digraphs")
 endif
 call <SID>AddOption("tildeop", gettext("the \"~\" command behaves like an operator"))
 call <SID>BinOptionG("top", &top)
-call <SID>AddOption("operatorfunc", gettext("function called for the\"g@\"  operator"))
+call <SID>AddOption("operatorfunc", gettext("function called for the \"g@\"  operator"))
 call <SID>OptionG("opfunc", &opfunc)
 call <SID>AddOption("showmatch", gettext("when inserting a bracket, briefly jump to its match"))
 call <SID>BinOptionG("sm", &sm)
@@ -863,7 +859,7 @@ call append("$", "\t" .. s:local_to_buffer)
 call <SID>OptionL("mps")
 call <SID>AddOption("joinspaces", gettext("use two spaces after '.' when joining a line"))
 call <SID>BinOptionG("js", &js)
-call <SID>AddOption("nrformats", gettext("\"alpha\", \"octal\" and/or \"hex\"; number formats recognized for\nCTRL-A and CTRL-X commands"))
+call <SID>AddOption("nrformats", gettext("\"alpha\", \"octal\", \"hex\", \"bin\" and/or \"unsigned\"; number formats\nrecognized for CTRL-A and CTRL-X commands"))
 call append("$", "\t" .. s:local_to_buffer)
 call <SID>OptionL("nf")
 
@@ -938,7 +934,7 @@ endif
 
 if has("folding")
   call <SID>Header(gettext("folding"))
-  call <SID>AddOption("foldenable", gettext("set to display all folds open"))
+  call <SID>AddOption("foldenable", gettext("unset to display all folds open"))
   call append("$", "\t" .. s:local_to_window)
   call <SID>BinOptionL("fen")
   call <SID>AddOption("foldlevel", gettext("folds with a level higher than this number will be closed"))
@@ -961,7 +957,7 @@ if has("folding")
   call <SID>OptionL("fml")
   call <SID>AddOption("commentstring", gettext("template for comments; used to put the marker in"))
   call <SID>OptionL("cms")
-  call <SID>AddOption("foldmethod", gettext("folding type: \"manual\", \"indent\", \"expr\", \"marker\" or \"syntax\""))
+  call <SID>AddOption("foldmethod", gettext("folding type: \"manual\", \"indent\", \"expr\", \"marker\",\n\"syntax\" or \"diff\""))
   call append("$", "\t" .. s:local_to_window)
   call <SID>OptionL("fdm")
   call <SID>AddOption("foldexpr", gettext("expression used when 'foldmethod' is \"expr\""))
@@ -1069,7 +1065,7 @@ call <SID>BinOptionG("fs", &fs)
 call <SID>AddOption("shortname", gettext("use 8.3 file names"))
 call append("$", "\t" .. s:local_to_buffer)
 call <SID>BinOptionL("sn")
-call <SID>AddOption("cryptmethod", gettext("encryption method for file writing: zip or blowfish"))
+call <SID>AddOption("cryptmethod", gettext("encryption method for file writing: zip, blowfish or blowfish2"))
 call append("$", "\t" .. s:local_to_buffer)
 call <SID>OptionL("cm")
 
@@ -1093,7 +1089,7 @@ call append("$", " \tset mmt=" . &mmt)
 
 
 call <SID>Header(gettext("command line editing"))
-call <SID>AddOption("history", gettext("how many command lines are remembered "))
+call <SID>AddOption("history", gettext("how many command lines are remembered"))
 call append("$", " \tset hi=" . &hi)
 call <SID>AddOption("wildchar", gettext("key that triggers command-line expansion"))
 call append("$", " \tset wc=" . &wc)
@@ -1187,19 +1183,12 @@ if has("quickfix")
 endif
 
 
-if has("win32") || has("osfiletype")
+if has("win32")
   call <SID>Header(gettext("system specific"))
-  if has("osfiletype")
-    call <SID>AddOption("osfiletype", gettext("OS-specific information about the type of file"))
-    call append("$", "\t" .. s:local_to_buffer)
-    call <SID>OptionL("oft")
-  endif
-  if has("win32")
-    call <SID>AddOption("shellslash", gettext("use forward slashes in file names; for Unix-like shells"))
-    call <SID>BinOptionG("ssl", &ssl)
-    call <SID>AddOption("completeslash", gettext("specifies slash/backslash used for completion"))
-    call <SID>OptionG("csl", &csl)
-  endif
+  call <SID>AddOption("shellslash", gettext("use forward slashes in file names; for Unix-like shells"))
+  call <SID>BinOptionG("ssl", &ssl)
+  call <SID>AddOption("completeslash", gettext("specifies slash/backslash used for completion"))
+  call <SID>OptionG("csl", &csl)
 endif
 
 
@@ -1235,12 +1224,6 @@ if has("rightleft")
   call <SID>BinOptionG("hk", &hk)
   call <SID>AddOption("hkmapp", gettext("use phonetic Hebrew keyboard mapping"))
   call <SID>BinOptionG("hkp", &hkp)
-endif
-if has("farsi")
-  call <SID>AddOption("altkeymap", gettext("use Farsi as the second language when 'revins' is set"))
-  call <SID>BinOptionG("akm", &akm)
-  call <SID>AddOption("fkmap", gettext("use Farsi keyboard mapping"))
-  call <SID>BinOptionG("fk", &fk)
 endif
 if has("arabic")
   call <SID>AddOption("arabic", gettext("prepare for editing Arabic text"))
@@ -1310,7 +1293,7 @@ call <SID>BinOptionG("emo", &emo)
 
 
 call <SID>Header(gettext("various"))
-call <SID>AddOption("virtualedit", gettext("when to use virtual editing: \"block\", \"insert\" and/or \"all\""))
+call <SID>AddOption("virtualedit", gettext("when to use virtual editing: \"block\", \"insert\", \"all\"\nand/or \"onemore\""))
 call <SID>OptionG("ve", &ve)
 call <SID>AddOption("eventignore", gettext("list of autocommand events which are to be ignored"))
 call <SID>OptionG("ei", &ei)
@@ -1350,7 +1333,7 @@ if has("quickfix")
   call <SID>AddOption("bufhidden", gettext("what happens with a buffer when it's no longer in a window"))
   call append("$", "\t" .. s:local_to_buffer)
   call <SID>OptionL("bh")
-  call <SID>AddOption("buftype", gettext("\"\", \"nofile\", \"nowrite\" or \"quickfix\": type of buffer"))
+  call <SID>AddOption("buftype", gettext("empty, \"nofile\", \"nowrite\", \"quickfix\", etc.: type of buffer"))
   call append("$", "\t" .. s:local_to_buffer)
   call <SID>OptionL("bt")
 endif

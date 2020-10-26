@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.2.  Last change: 2020 Aug 15
+*version8.txt*  For Vim version 8.2.  Last change: 2020 Oct 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -47698,7 +47698,7 @@ Files:      src/eval.c, src/testdir/test_vim9_expr.vim
 
 Patch 8.2.1064
 Problem:    Vim9: no line break allowed before comparators.
-Solution:   Check for comperator after line break.
+Solution:   Check for comparator after line break.
 Files:      src/eval.c, src/testdir/test_vim9_expr.vim
 
 Patch 8.2.1065

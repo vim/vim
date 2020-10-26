@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 8.2.  Last change: 2020 Aug 10
+*tabpage.txt*   For Vim version 8.2.  Last change: 2020 Oct 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -195,8 +195,8 @@ gt					*i_CTRL-<PageDown>* *i_<C-PageDown>*
 		    :+2tabnext	" go to the two next tab page
 		    :1tabnext	" go to the first tab page
 		    :$tabnext	" go to the last tab page
-		    :tabnext #  " go to the last accessed tab page
 		    :tabnext $	" as above
+		    :tabnext #  " go to the last accessed tab page
 		    :tabnext -	" go to the previous tab page
 		    :tabnext -1	" as above
 		    :tabnext +	" go to the next tab page
@@ -225,7 +225,7 @@ gT		Go to the previous tab page.  Wraps around from the first one
 							*:tabl* *:tablast*
 :tabl[ast]	Go to the last tab page.
 
-					    *g<Tab>* *CTRL-W_g<Tab>* *<C-Tab>*
+					*g<Tab>* *CTRL-W_g<Tab>* *<C-Tab>*
 g<Tab>		Go to the last accessed tab page.
 
 Other commands:
@@ -259,7 +259,7 @@ REORDERING TAB PAGES:
 		    :tabmove	" move the tab page to the last
 		    :$tabmove	" as above
 		    :tabmove $	" as above
-		    :tabmove #  " move the tab page after the last accessed
+		    :tabmove #	" move the tab page after the last accessed
 				" tab page
 
 :tabm[ove] +[N]

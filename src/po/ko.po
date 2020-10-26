@@ -4282,8 +4282,6 @@ msgstr "E538: 마우스를 지원하지 않습니다"
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: 닫히지 않은 표현식 배열"
 
-msgid "E541: too many items"
-msgstr "E541: 너무 많은 항목"
 
 msgid "E542: unbalanced groups"
 msgstr "E542: 균형이 안 잡힌 그룹"

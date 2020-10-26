@@ -3897,8 +3897,6 @@ msgstr "E538: Bez podpory myši"
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: Neuzatvorené zoskupenie výrazov"
 
-msgid "E541: too many items"
-msgstr "E541: príliš mnoho položiek"
 
 msgid "E542: unbalanced groups"
 msgstr "E542: nevyvážené skupiny"

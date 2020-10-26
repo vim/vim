@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Oct 05
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Oct 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -120,7 +120,7 @@ base, use |str2nr()|.
 
 						*TRUE* *FALSE* *Boolean*
 For boolean operators Numbers are used.  Zero is FALSE, non-zero is TRUE.
-You can also use |v:false| and |v:true|.  In Vim9 script |false| and |true|. 
+You can also use |v:false| and |v:true|.  In Vim9 script |false| and |true|.
 When TRUE is returned from a function it is the Number one, FALSE is the
 number zero.
 
@@ -2746,7 +2746,7 @@ prop_type_change({name}, {props})
 				none	change an existing property type
 prop_type_delete({name} [, {props}])
 				none	delete a property type
-prop_type_get([{name} [, {props}]])
+prop_type_get({name} [, {props}])
 				Dict	get property type values
 prop_type_list([{props}])	List	get list of property types
 pum_getpos()			Dict	position and size of pum if visible
@@ -3126,7 +3126,7 @@ appendbufline({expr}, {lnum}, {text})			*appendbufline()*
 		error message is given. Example: >
 			:let failed = appendbufline(13, 0, "# THE START")
 <
-<		Can also be used as a |method| after a List, the base is
+		Can also be used as a |method| after a List, the base is
 		passed as the second argument: >
 			mylist->appendbufline(buf, lnum)
 
@@ -7972,8 +7972,8 @@ printf({fmt}, {expr1} ...)				*printf()*
 
 
 prompt_getprompt({buf})					*prompt_getprompt()*
-		Returns the effective prompt text for buffer {buf}. {buf} can
-		be a buffer name or number. |prompt-buffer|.
+		Returns the effective prompt text for buffer {buf}.  {buf} can
+		be a buffer name or number.  See |prompt-buffer|.
 
 		If the buffer doesn't exist or isn't a prompt buffer, an empty
 		string is returned.
@@ -10709,8 +10709,8 @@ terminalprops()						*terminalprops()*
 		detected from the response to |t_RV| request.  See
 		|v:termresponse| for the response itself.  If |v:termresponse|
 		is empty most values here will be 'u' for unknown.
-		   cursor_style		wether sending |t_RS| works  **
-		   cursor_blink_mode	wether sending |t_RC| works  **
+		   cursor_style		whether sending |t_RS| works  **
+		   cursor_blink_mode	whether sending |t_RC| works  **
 		   underline_rgb	whether |t_8u| works **
 		   mouse		mouse type supported
 
@@ -11366,7 +11366,8 @@ winsaveview()	Returns a |Dictionary| that contains information to restore
 			curswant	column for vertical movement
 			topline		first line in the window
 			topfill		filler lines, only in diff mode
-			leftcol		first column displayed
+			leftcol		first column displayed; only used when
+					'wrap' is off
 			skipcol		columns skipped
 		Note that no option values are saved.
 
@@ -12140,8 +12141,9 @@ be used to pass settings to the autoload script before it's loaded: >
 
 Note that when you make a mistake and call a function that is supposed to be
 defined in an autoload script, but the script doesn't actually define the
-function, the script will be sourced every time you try to call the function.
-And you will get an error message every time.
+function, you will get an error message for the missing function.  If you fix
+the autoload script it won't be automatically loaded again.  Either restart
+Vim or manually source the script.
 
 Also note that if you have two script files, and one calls a function in the
 other and vice versa, before the used function is defined, it won't work.

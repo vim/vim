@@ -4253,8 +4253,6 @@ msgstr "E538: No hi ha suport per a ratolí"
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: Seqüència d'expressions no tancada"
 
-msgid "E541: too many items"
-msgstr "E541: massa ítems"
 
 msgid "E542: unbalanced groups"
 msgstr "E542: grups desequilibrats"

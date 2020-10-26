@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.2.  Last change: 2020 Sep 25
+*autocmd.txt*   For Vim version 8.2.  Last change: 2020 Oct 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -278,7 +278,7 @@ Name			triggered by ~
 |BufWinLeave|		before a buffer is removed from a window
 
 |BufUnload|		before unloading a buffer
-|BufHidden|		just after a buffer has become hidden
+|BufHidden|		just before a buffer becomes hidden
 |BufNew|		just after creating a new buffer
 
 |SwapExists|		detected an existing swap file
@@ -883,7 +883,7 @@ InsertEnter			Just before starting Insert mode.  Also for
 				string.
 							*InsertLeavePre*
 InsertLeavePre			Just before leaving Insert mode.  Also when
-				using CTRL-O |i_CTRL-O|.  Be caseful not to
+				using CTRL-O |i_CTRL-O|.  Be careful not to
 				change mode or use `:normal`, it will likely
 				cause trouble.
 							*InsertLeave*

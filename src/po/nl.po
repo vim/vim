@@ -3715,8 +3715,6 @@ msgstr "E538: geen muisondersteuning"
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: ongepaarde expressie-volgorde"
 
-msgid "E541: too many items"
-msgstr "E541: teveel items"
 
 msgid "E542: unbalanced groups"
 msgstr "E542: ongepaarde groepen"

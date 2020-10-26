@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Oct 05
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Oct 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -176,8 +176,8 @@ However, it is recommended to always use "g:" to refer to a global function
 for clarity.
 
 In all cases the function must be defined before used.  That is when it is
-called, when `:defcompile` causes the it to be compiled, or when code that
-calls it is being compiled (to figure out the return type).
+called, when `:defcompile` causes it to be compiled, or when code that calls
+it is being compiled (to figure out the return type).
 
 The result is that functions and variables without a namespace can usually be
 found in the script, either defined there or imported.  Global functions and
@@ -901,7 +901,7 @@ The script name after `import` can be:
   location of the script file itself.  This is useful to split up a large
   plugin into several files.
 - An absolute path, starting with "/" on Unix or "D:/" on MS-Windows.  This
-  will be rarely used.
+  will rarely be used.
 - A path not being relative or absolute.  This will be found in the
   "import" subdirectories of 'runtimepath' entries.  The name will usually be
   longer and unique, to avoid loading the wrong file.
@@ -1160,8 +1160,8 @@ Some details are unexpected and can be improved.  For example a boolean
 condition would accept a string, convert it to a number and check if the
 number is non-zero.  This is unexpected and often leads to mistakes, since
 text not starting with a number would be converted to zero, which is
-considered false.  Thus a string would not give an error and be considered
-false if it doesn't start with a number.  That is confusing.
+considered false.  Thus using a string for a condition would often not give an
+error and be considered false.  That is confusing.
 
 In Vim9 type checking is more strict to avoid mistakes.  Where a condition is
 used, e.g. with the `:if` command and the `||` operator, only boolean-like
@@ -1169,7 +1169,7 @@ values are accepted:
 	true:  `true`, `v:true`, `1`, `0 < 9`
 	false: `false`, `v:false`, `0`, `0 > 9`
 Note that the number zero is false and the number one is true.  This is more
-persmissive than most other languages.  It was done because many builtin
+permissive than most other languages.  It was done because many builtin
 functions return these values.
 
 If you have any type of value and want to use it as a boolean, use the `!!`
