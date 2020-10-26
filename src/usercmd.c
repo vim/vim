@@ -1269,10 +1269,10 @@ add_win_cmd_modifers(char_u *buf, cmdmod_T *cmod, int *multi_mods)
  * Generate text for the "cmod" command modifiers.
  * If "buf" is NULL just return the length.
  */
-    int
+    size_t
 produce_cmdmods(char_u *buf, cmdmod_T *cmod, int quote)
 {
-    int	    result = 0;
+    size_t  result = 0;
     int	    multi_mods = 0;
     int	    i;
     typedef struct {

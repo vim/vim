@@ -3530,7 +3530,7 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_CMDMOD:
 		{
 		    char_u  *buf;
-		    int	    len = produce_cmdmods(
+		    size_t  len = produce_cmdmods(
 				  NULL, iptr->isn_arg.cmdmod.cf_cmdmod, FALSE);
 
 		    buf = alloc(len + 1);
