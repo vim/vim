@@ -1699,7 +1699,6 @@ typedef unsigned short disptick_T;	// display tick type
 #endif
 
 #define SHOWCMD_COLS 10			// columns needed by shown command
-#define STL_MAX_ITEM 80			// max nr of %<flag> in statusline
 
 typedef void	    *vim_acl_T;		// dummy to pass an ACL to a function
 
