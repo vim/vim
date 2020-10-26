@@ -2498,6 +2498,56 @@ ins_compl_mode(void)
     return (char_u *)"";
 }
 
+    static void
+ins_compl_update_sequence_numbers()
+{
+    int		number = 0;
+    compl_T	*match;
+
+    if (compl_direction == FORWARD)
+    {
+	// search backwards for the first valid (!= -1) number.
+	// This should normally succeed already at the first loop
+	// cycle, so it's fast!
+	for (match = compl_curr_match->cp_prev; match != NULL
+		&& match != compl_first_match;
+					   match = match->cp_prev)
+	    if (match->cp_number != -1)
+	    {
+		number = match->cp_number;
+		break;
+	    }
+	if (match != NULL)
+	    // go up and assign all numbers which are not assigned
+	    // yet
+	    for (match = match->cp_next;
+		    match != NULL && match->cp_number == -1;
+					   match = match->cp_next)
+		match->cp_number = ++number;
+    }
+    else // BACKWARD
+    {
+	// search forwards (upwards) for the first valid (!= -1)
+	// number.  This should normally succeed already at the
+	// first loop cycle, so it's fast!
+	for (match = compl_curr_match->cp_next; match != NULL
+		&& match != compl_first_match;
+					   match = match->cp_next)
+	    if (match->cp_number != -1)
+	    {
+		number = match->cp_number;
+		break;
+	    }
+	if (match != NULL)
+	    // go down and assign all numbers which are not
+	    // assigned yet
+	    for (match = match->cp_prev; match
+		    && match->cp_number == -1;
+					   match = match->cp_prev)
+		match->cp_number = ++number;
+    }
+}
+
 /*
  * Get complete information
  */
@@ -2584,8 +2634,12 @@ get_complete_info(list_T *what_list, dict_T *retdict)
     }
 
     if (ret == OK && (what_flag & CI_WHAT_SELECTED))
-	ret = dict_add_number(retdict, "selected", (compl_curr_match != NULL) ?
-			compl_curr_match->cp_number - 1 : -1);
+    {
+	if (compl_curr_match != NULL && compl_curr_match->cp_number == -1)
+	    ins_compl_update_sequence_numbers();
+	ret = dict_add_number(retdict, "selected", compl_curr_match != NULL
+				      ? compl_curr_match->cp_number - 1 : -1);
+    }
 
     // TODO
     // if (ret == OK && (what_flag & CI_WHAT_INSERTED))
@@ -4009,59 +4063,13 @@ ins_complete(int c, int enable_pum)
 	{
 	    edit_submode_extra = (char_u *)_("The only match");
 	    edit_submode_highl = HLF_COUNT;
-	    compl_curr_match->cp_number = 0;
+	    compl_curr_match->cp_number = 1;
 	}
 	else
 	{
 	    // Update completion sequence number when needed.
 	    if (compl_curr_match->cp_number == -1)
-	    {
-		int		number = 0;
-		compl_T		*match;
-
-		if (compl_direction == FORWARD)
-		{
-		    // search backwards for the first valid (!= -1) number.
-		    // This should normally succeed already at the first loop
-		    // cycle, so it's fast!
-		    for (match = compl_curr_match->cp_prev; match != NULL
-			    && match != compl_first_match;
-						       match = match->cp_prev)
-			if (match->cp_number != -1)
-			{
-			    number = match->cp_number;
-			    break;
-			}
-		    if (match != NULL)
-			// go up and assign all numbers which are not assigned
-			// yet
-			for (match = match->cp_next;
-				match != NULL && match->cp_number == -1;
-						       match = match->cp_next)
-			    match->cp_number = ++number;
-		}
-		else // BACKWARD
-		{
-		    // search forwards (upwards) for the first valid (!= -1)
-		    // number.  This should normally succeed already at the
-		    // first loop cycle, so it's fast!
-		    for (match = compl_curr_match->cp_next; match != NULL
-			    && match != compl_first_match;
-						       match = match->cp_next)
-			if (match->cp_number != -1)
-			{
-			    number = match->cp_number;
-			    break;
-			}
-		    if (match != NULL)
-			// go down and assign all numbers which are not
-			// assigned yet
-			for (match = match->cp_prev; match
-				&& match->cp_number == -1;
-						       match = match->cp_prev)
-			    match->cp_number = ++number;
-		}
-	    }
+		ins_compl_update_sequence_numbers();
 
 	    // The match should always have a sequence number now, this is
 	    // just a safety check.
