@@ -268,69 +268,6 @@ pum_display(
 		if (pum_width < p_pw)
 		    pum_width = p_pw;
 	    }
-	    else if (((cursor_col > p_pw || cursor_col > max_width)
-#ifdef FEAT_RIGHTLEFT
-			&& !curwin->w_p_rl)
-		|| (curwin->w_p_rl && (cursor_col < Columns - p_pw
-			|| cursor_col < Columns - max_width)
-#endif
-		    ))
-	    {
-		// align pum edge with "cursor_col"
-#ifdef FEAT_RIGHTLEFT
-		if (curwin->w_p_rl
-			&& W_ENDCOL(curwin) < max_width + pum_scrollbar + 1)
-		{
-		    pum_col = cursor_col + max_width + pum_scrollbar + 1;
-		    if (pum_col >= Columns)
-			pum_col = Columns - 1;
-		}
-		else if (!curwin->w_p_rl)
-#endif
-		{
-		    if (curwin->w_wincol > Columns - max_width - pum_scrollbar
-							  && max_width <= p_pw)
-		    {
-			// use full width to end of the screen
-			pum_col = Columns - max_width - pum_scrollbar;
-			if (pum_col < 0)
-			    pum_col = 0;
-		    }
-		}
-
-#ifdef FEAT_RIGHTLEFT
-		if (curwin->w_p_rl)
-		    pum_width = pum_col - pum_scrollbar + 1;
-		else
-#endif
-		    pum_width = Columns - pum_col - pum_scrollbar;
-
-		if (pum_width < p_pw)
-		{
-		    pum_width = p_pw;
-#ifdef FEAT_RIGHTLEFT
-		    if (curwin->w_p_rl)
-		    {
-			if (pum_width > pum_col)
-			    pum_width = pum_col;
-		    }
-		    else
-#endif
-		    {
-			if (pum_width >= Columns - pum_col)
-			    pum_width = Columns - pum_col - 1;
-		    }
-		}
-		else if (pum_width > max_width + pum_kind_width
-							  + pum_extra_width + 1
-			    && pum_width > p_pw)
-		{
-		    pum_width = max_width + pum_kind_width
-							 + pum_extra_width + 1;
-		    if (pum_width < p_pw)
-			pum_width = p_pw;
-		}
-	    }
 
 	}
 	else if (Columns < def_width)
