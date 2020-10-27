@@ -3815,7 +3815,16 @@ func Test_python3_errors()
     vim.current.xxx = True:(<class 'AttributeError'>, AttributeError('xxx',))
   END
 
-  call assert_equal(expected, getline(2, '$'))
+  let actual = getline(2, '$')
+  let n_expected = len(expected)
+  let n_actual = len(actual)
+
+  call assert_equal(n_expected, n_actual)
+  let n = n_expected <= n_actual ? n_expected : n_actual
+  " Compare line by line so the errors are easier to understand
+  for i in range(n)
+    call assert_equal(expected[i], actual[i])
+  endfor
   close!
 endfunc
 
