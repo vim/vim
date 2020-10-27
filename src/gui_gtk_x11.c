@@ -4726,9 +4726,10 @@ gui_mch_adjust_charheight(void)
 
     pango_font_metrics_unref(metrics);
 
-    // Round up, but not when the value is very close (e.g. 15.0009).
-    gui.char_height = (ascent + descent + PANGO_SCALE - 3) / PANGO_SCALE
-								+ p_linespace;
+    // Round up when the value is more than about 1/16 of a pixel above a whole
+    // pixel (12.0624 becomes 12, 12.07 becomes 13).  Then add 'linespace'.
+    gui.char_height = (ascent + descent + (PANGO_SCALE * 15) / 16)
+						   / PANGO_SCALE + p_linespace;
     // LINTED: avoid warning: bitwise operation on signed value
     gui.char_ascent = PANGO_PIXELS(ascent + p_linespace * PANGO_SCALE / 2);
 
