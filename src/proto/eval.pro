@@ -11,6 +11,7 @@ int eval_expr_to_bool(typval_T *expr, int *error);
 char_u *eval_to_string_skip(char_u *arg, exarg_T *eap, int skip);
 int skip_expr(char_u **pp, evalarg_T *evalarg);
 int skip_expr_concatenate(char_u **arg, char_u **start, char_u **end, evalarg_T *evalarg);
+char_u *eval_to_string_eap(char_u *arg, int convert, exarg_T *eap);
 char_u *eval_to_string(char_u *arg, int convert);
 char_u *eval_to_string_safe(char_u *arg, int use_sandbox);
 varnumber_T eval_to_number(char_u *expr);

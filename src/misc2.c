@@ -1131,7 +1131,7 @@ free_all_mem(void)
     free_signs();
 # endif
 # ifdef FEAT_EVAL
-    set_expr_line(NULL);
+    set_expr_line(NULL, NULL);
 # endif
 # ifdef FEAT_DIFF
     if (curtab != NULL)

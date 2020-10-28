@@ -2859,6 +2859,18 @@ def Test_catch_exception_in_callback()
   unlet g:caught
 enddef
 
+def Test_put_with_linebreak()
+  new
+  var lines =<< trim END
+    vim9script
+    pu=split('abc', '\zs')
+            ->join()
+  END
+  CheckScriptSuccess(lines)
+  getline(2)->assert_equal('a b c')
+  bwipe!
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new

@@ -474,9 +474,10 @@ skip_expr_concatenate(
  * Return pointer to allocated memory, or NULL for failure.
  */
     char_u *
-eval_to_string(
+eval_to_string_eap(
     char_u	*arg,
-    int		convert)
+    int		convert,
+    exarg_T	*eap)
 {
     typval_T	tv;
     char_u	*retval;
@@ -484,8 +485,10 @@ eval_to_string(
 #ifdef FEAT_FLOAT
     char_u	numbuf[NUMBUFLEN];
 #endif
+    evalarg_T	evalarg;
 
-    if (eval0(arg, &tv, NULL, &EVALARG_EVALUATE) == FAIL)
+    fill_evalarg_from_eap(&evalarg, eap, eap != NULL && eap->skip);
+    if (eval0(arg, &tv, NULL, &evalarg) == FAIL)
 	retval = NULL;
     else
     {
@@ -512,9 +515,17 @@ eval_to_string(
 	    retval = vim_strsave(tv_get_string(&tv));
 	clear_tv(&tv);
     }
-    clear_evalarg(&EVALARG_EVALUATE, NULL);
+    clear_evalarg(&evalarg, NULL);
 
     return retval;
+}
+
+    char_u *
+eval_to_string(
+    char_u	*arg,
+    int		convert)
+{
+    return eval_to_string_eap(arg, convert, NULL);
 }
 
 /*

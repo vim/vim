@@ -6,7 +6,7 @@ yankreg_T *get_y_previous(void);
 void set_y_current(yankreg_T *yreg);
 void set_y_previous(yankreg_T *yreg);
 int get_expr_register(void);
-void set_expr_line(char_u *new_line);
+void set_expr_line(char_u *new_line, exarg_T *eap);
 char_u *get_expr_line(void);
 int valid_yank_reg(int regname, int writing);
 int get_yank_register(int regname, int writing);
