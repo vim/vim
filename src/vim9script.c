@@ -70,7 +70,7 @@ not_in_vim9(exarg_T *eap)
 	    case CMD_insert:
 	    case CMD_t:
 	    case CMD_xit:
-		semsg(_(e_missing_let_str), eap->cmd);
+		semsg(_(e_missing_var_str), eap->cmd);
 		return FAIL;
 	    default: break;
 	}

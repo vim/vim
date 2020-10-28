@@ -27,8 +27,8 @@ EXTERN char e_assert_fails_second_arg[]
 	INIT(= N_("E856: \"assert_fails()\" second argument must be a string or a list with one or two strings"));
 EXTERN char e_cannot_index_special_variable[]
 	INIT(= N_("E909: Cannot index a special variable"));
-EXTERN char e_missing_let_str[]
-	INIT(= N_("E1100: Missing :let: %s"));
+EXTERN char e_missing_var_str[]
+	INIT(= N_("E1100: Missing :var: %s"));
 EXTERN char e_variable_not_found_str[]
 	INIT(= N_("E1001: Variable not found: %s"));
 EXTERN char e_syntax_error_at_str[]
