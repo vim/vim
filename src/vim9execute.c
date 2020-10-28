@@ -582,7 +582,7 @@ call_ufunc(ufunc_T *ufunc, int argcount, ectx_T *ectx, isn_T *iptr)
     funcexe_T   funcexe;
     int		error;
     int		idx;
-    int		called_emsg_before = called_emsg;
+    int		did_emsg_before = did_emsg;
 
     if (ufunc->uf_def_status == UF_TO_BE_COMPILED
 	    && compile_def_function(ufunc, FALSE, NULL) == FAIL)
@@ -620,7 +620,7 @@ call_ufunc(ufunc_T *ufunc, int argcount, ectx_T *ectx, isn_T *iptr)
 	user_func_error(error, ufunc->uf_name);
 	return FAIL;
     }
-    if (called_emsg > called_emsg_before)
+    if (did_emsg > did_emsg_before)
 	// Error other than from calling the function itself.
 	return FAIL;
     return OK;

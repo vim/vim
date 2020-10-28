@@ -221,7 +221,6 @@ EXTERN int	emsg_skip INIT(= 0);	    // don't display errors for
 EXTERN int	emsg_severe INIT(= FALSE);  // use message of next of several
 					    // emsg() calls for throw
 // used by assert_fails()
-EXTERN int	emsg_assert_fails_used INIT(= FALSE);
 EXTERN char_u	*emsg_assert_fails_msg INIT(= NULL);
 EXTERN long	emsg_assert_fails_lnum INIT(= 0);
 EXTERN char_u	*emsg_assert_fails_context INIT(= NULL);
@@ -1129,6 +1128,8 @@ EXTERN int	msg_silent INIT(= 0);	// don't print messages
 EXTERN int	emsg_silent INIT(= 0);	// don't print error messages
 EXTERN int	emsg_noredir INIT(= 0);	// don't redirect error messages
 EXTERN int	cmd_silent INIT(= FALSE); // don't echo the command line
+
+EXTERN int	in_assert_fails INIT(= FALSE);	// assert_fails() active
 
 EXTERN int	swap_exists_action INIT(= SEA_NONE);
 					// For dialog when swap file already

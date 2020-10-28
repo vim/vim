@@ -194,7 +194,7 @@ func Test_autocmd_bufunload_avoiding_SEGV_01()
     exe 'autocmd BufUnload <buffer> ' . (lastbuf + 1) . 'bwipeout!'
   augroup END
 
-  call assert_fails('edit bb.txt', ['E937:', 'E517:'])
+  call assert_fails('edit bb.txt', 'E937:')
 
   autocmd! test_autocmd_bufunload
   augroup! test_autocmd_bufunload
@@ -1768,7 +1768,7 @@ endfunc
 func Test_nocatch_wipe_all_buffers()
   " Real nasty autocommand: wipe all buffers on any event.
   au * * bwipe *
-  call assert_fails('next x', ['E94:', 'E517:'])
+  call assert_fails('next x', ['E94:', 'E937:'])
   bwipe
   au!
 endfunc

@@ -200,8 +200,8 @@ while 1
       " setting an option can only fail when it's implemented.
       call add(script, "if exists('+" . name . "')")
       for val in a[1]
-	call add(script, "call assert_fails('set " . name . "=" . val . "')")
-	call add(script, "call assert_fails('set " . shortname . "=" . val . "')")
+	call add(script, "silent! call assert_fails('set " . name . "=" . val . "')")
+	call add(script, "silent! call assert_fails('set " . shortname . "=" . val . "')")
       endfor
       call add(script, "endif")
     endif

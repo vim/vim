@@ -2490,7 +2490,8 @@ check_for_delay(int check_msg_scroll)
 {
     if ((emsg_on_display || (check_msg_scroll && msg_scroll))
 	    && !did_wait_return
-	    && emsg_silent == 0)
+	    && emsg_silent == 0
+	    && !in_assert_fails)
     {
 	out_flush();
 	ui_delay(1006L, TRUE);

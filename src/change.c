@@ -115,7 +115,7 @@ changed(void)
 	    // Wait two seconds, to make sure the user reads this unexpected
 	    // message.  Since we could be anywhere, call wait_return() now,
 	    // and don't let the emsg() set msg_scroll.
-	    if (need_wait_return && emsg_silent == 0)
+	    if (need_wait_return && emsg_silent == 0 && !in_assert_fails)
 	    {
 		out_flush();
 		ui_delay(2002L, TRUE);

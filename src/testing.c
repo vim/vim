@@ -555,8 +555,7 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
     // trylevel must be zero for a ":throw" command to be considered failed
     trylevel = 0;
     suppress_errthrow = TRUE;
-    emsg_silent = TRUE;
-    emsg_assert_fails_used = TRUE;
+    in_assert_fails = TRUE;
 
     do_cmdline_cmd(cmd);
     if (called_emsg == called_emsg_before)
@@ -679,9 +678,13 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 theend:
     trylevel = save_trylevel;
     suppress_errthrow = FALSE;
-    emsg_silent = FALSE;
+    in_assert_fails = FALSE;
+    did_emsg = FALSE;
+    msg_col = 0;
+    need_wait_return = FALSE;
     emsg_on_display = FALSE;
-    emsg_assert_fails_used = FALSE;
+    msg_scrolled = 0;
+    lines_left = Rows;
     VIM_CLEAR(emsg_assert_fails_msg);
     set_vim_var_string(VV_ERRMSG, NULL, 0);
     if (wrong_arg_msg != NULL)

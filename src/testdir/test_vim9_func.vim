@@ -1467,14 +1467,14 @@ def SilentlyError()
   g:did_it = 'yes'
 enddef
 
-"func UserError()
-"  silent! invalid
-"endfunc
-"
-"def SilentlyUserError()
-"  UserError()
-"  g:did_it = 'yes'
-"enddef
+func UserError()
+  silent! invalid
+endfunc
+
+def SilentlyUserError()
+  UserError()
+  g:did_it = 'yes'
+enddef
 
 " This can't be a :def function, because the assert would not be reached.
 " And this must not be inside a try/endtry.
@@ -1483,10 +1483,9 @@ func Test_ignore_silent_error()
   call SilentlyError()
   call assert_equal('yes', g:did_it)
 
-"  this doesn't work yet
-"  let g:did_it = 'no'
-"  call SilentlyUserError()
-"  call assert_equal('yes', g:did_it)
+  let g:did_it = 'no'
+  call SilentlyUserError()
+  call assert_equal('yes', g:did_it)
 
   unlet g:did_it
 endfunc

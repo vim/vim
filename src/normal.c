@@ -1154,6 +1154,7 @@ getcount:
 	    && stuff_empty()
 	    && typebuf_typed()
 	    && emsg_silent == 0
+	    && !in_assert_fails
 	    && !did_wait_return
 	    && oap->op_type == OP_NOP)
     {

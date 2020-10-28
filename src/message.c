@@ -659,7 +659,7 @@ emsg_core(char_u *s)
 	    return TRUE;
 	}
 
-	if (emsg_assert_fails_used && emsg_assert_fails_msg == NULL)
+	if (in_assert_fails && emsg_assert_fails_msg == NULL)
 	{
 	    emsg_assert_fails_msg = vim_strsave(s);
 	    emsg_assert_fails_lnum = SOURCING_LNUM;

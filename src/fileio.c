@@ -4208,7 +4208,7 @@ buf_check_timestamp(
 			msg_puts_attr(mesg2, HL_ATTR(HLF_W) + MSG_HIST);
 		    msg_clr_eos();
 		    (void)msg_end();
-		    if (emsg_silent == 0)
+		    if (emsg_silent == 0 && !in_assert_fails)
 		    {
 			out_flush();
 #ifdef FEAT_GUI

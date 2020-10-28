@@ -1063,7 +1063,7 @@ vim_beep(
     called_vim_beep = TRUE;
 #endif
 
-    if (emsg_silent == 0)
+    if (emsg_silent == 0 && !in_assert_fails)
     {
 	if (!((bo_flags & val) || (bo_flags & BO_ALL)))
 	{
@@ -2568,6 +2568,7 @@ goto_im(void)
  * But don't allow a space in the path, so that this works:
  *   "/usr/bin/csh --rcfile ~/.cshrc"
  * But don't do that for Windows, it's common to have a space in the path.
+ * Returns NULL when out of memory.
  */
     char_u *
 get_isolated_shell_name(void)

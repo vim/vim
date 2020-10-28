@@ -65,7 +65,7 @@ func Test_terminal_make_change()
 
   setlocal modifiable
   exe "normal Axxx\<Esc>"
-  call assert_fails(buf . 'bwipe', ['E89:', 'E517:'])
+  call assert_fails(buf . 'bwipe', 'E89:')
   undo
 
   exe buf . 'bwipe'
@@ -89,7 +89,7 @@ endfunc
 
 func Test_terminal_wipe_buffer()
   let buf = Run_shell_in_terminal({})
-  call assert_fails(buf . 'bwipe', ['E89:', 'E517:'])
+  call assert_fails(buf . 'bwipe', 'E89:')
   exe buf . 'bwipe!'
   call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
   call assert_equal("", bufname(buf))
@@ -648,7 +648,7 @@ endfunc
 
 func Test_terminal_list_args()
   let buf = term_start([&shell, &shellcmdflag, 'echo "123"'])
-  call assert_fails(buf . 'bwipe', ['E89:', 'E517:'])
+  call assert_fails(buf . 'bwipe', 'E89:')
   exe buf . 'bwipe!'
   call assert_equal("", bufname(buf))
 endfunction
