@@ -416,6 +416,7 @@ NEW_TESTS_RES = \
 	test_listdict.res \
 	test_listener.res \
 	test_listlbr.res \
+	test_listlbr_utf8.res \
 	test_lua.res \
 	test_makeencoding.res \
 	test_man.res \
