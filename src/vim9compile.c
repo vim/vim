@@ -1687,12 +1687,12 @@ generate_PCALL(
 
 	    if (argcount < type->tt_min_argcount - varargs)
 	    {
-		semsg(_(e_toofewarg), "[reference]");
+		semsg(_(e_toofewarg), name);
 		return FAIL;
 	    }
 	    if (!varargs && argcount > type->tt_argcount)
 	    {
-		semsg(_(e_toomanyarg), "[reference]");
+		semsg(_(e_toomanyarg), name);
 		return FAIL;
 	    }
 	}

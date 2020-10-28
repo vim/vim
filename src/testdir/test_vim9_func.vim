@@ -322,6 +322,8 @@ def Test_call_wrong_args()
   CheckDefFailure(['bufnr(xxx)'], 'E1001:')
   CheckScriptFailure(['def Func(Ref: func(s: string))'], 'E475:')
 
+  CheckDefFailure(['echo {i -> 0}()'], 'E119: Not enough arguments for function: {i -> 0}()')
+
   var lines =<< trim END
     vim9script
     def Func(s: string)
@@ -1551,7 +1553,7 @@ def Test_restore_modifiers()
       set eventignore=
       autocmd QuickFixCmdPost * copen
       def AutocmdsDisabled()
-          eval 0
+        eval 0
       enddef
       func Func()
         noautocmd call s:AutocmdsDisabled()
