@@ -550,7 +550,7 @@ call_bfunc(int func_idx, int argcount, ectx_T *ectx)
 {
     typval_T	argvars[MAX_FUNC_ARGS];
     int		idx;
-    int		called_emsg_before = called_emsg;
+    int		did_emsg_before = did_emsg;
     ectx_T	*prev_ectx = current_ectx;
 
     if (call_prepare(argcount, argvars, ectx) == FAIL)
@@ -566,7 +566,7 @@ call_bfunc(int func_idx, int argcount, ectx_T *ectx)
     for (idx = 0; idx < argcount; ++idx)
 	clear_tv(&argvars[idx]);
 
-    if (called_emsg != called_emsg_before)
+    if (did_emsg != did_emsg_before)
 	return FAIL;
     return OK;
 }
@@ -834,6 +834,7 @@ call_def_function(
     msglist_T	*private_msg_list = NULL;
     cmdmod_T	save_cmdmod;
     int		restore_cmdmod = FALSE;
+    int		trylevel_at_start = trylevel;
 
 // Get pointer to item in the stack.
 #define STACK_TV(idx) (((typval_T *)ectx.ec_stack.ga_data) + idx)
@@ -2866,7 +2867,8 @@ func_return:
 	continue;
 
 on_error:
-	if (trylevel == 0)
+	// If we are not inside a try-catch started here, abort execution.
+	if (trylevel <= trylevel_at_start)
 	    goto failed;
     }
 
