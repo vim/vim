@@ -4258,8 +4258,10 @@ typedef struct
 // bonus for adjacent matches; this is higher than SEPARATOR_BONUS so that
 // matching a whole word is preferred.
 #define SEQUENTIAL_BONUS 40
-// bonus if match occurs after a separator
-#define SEPARATOR_BONUS 30
+// bonus if match occurs after a path separator
+#define PATH_SEPARATOR_BONUS 30
+// bonus if match occurs after a word separator
+#define WORD_SEPARATOR_BONUS 25
 // bonus if match is uppercase and prev is lower
 #define CAMEL_BONUS 30
 // bonus if the first letter is matched
@@ -4334,7 +4336,6 @@ fuzzy_match_compute_score(
 	    // Camel case
 	    int	neighbor = ' ';
 	    int	curr;
-	    int	neighborSeparator;
 
 	    if (has_mbyte)
 	    {
@@ -4355,10 +4356,11 @@ fuzzy_match_compute_score(
 	    if (vim_islower(neighbor) && vim_isupper(curr))
 		score += CAMEL_BONUS;
 
-	    // Separator
-	    neighborSeparator = neighbor == '_' || neighbor == ' ';
-	    if (neighborSeparator)
-		score += SEPARATOR_BONUS;
+	    // Bonus if the match follows a separator character
+	    if (neighbor == '/' || neighbor == '\\')
+		score += PATH_SEPARATOR_BONUS;
+	    else if (neighbor == ' ' || neighbor == '_')
+		score += WORD_SEPARATOR_BONUS;
 	}
 	else
 	{
