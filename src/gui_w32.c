@@ -2986,6 +2986,42 @@ gui_mch_flash(int msec)
 }
 
 /*
+ * Check if the specified point is on-screen. (multi-monitor aware)
+ */
+    static BOOL
+is_point_onscreen(int x, int y)
+{
+    POINT   pt = {x, y};
+
+    return MonitorFromPoint(pt, MONITOR_DEFAULTTONULL) != NULL;
+}
+
+/*
+ * Check if the whole area of the specified window is on-screen.
+ *
+ * Note about DirectX: Windows 10 1809 or above no longer maintains image of
+ * the window portion that is off-screen.  Scrolling by DWriteContext_Scroll()
+ * only works when the whole window is on-screen.
+ */
+    static BOOL
+is_window_onscreen(HWND hwnd)
+{
+    RECT    rc;
+
+    GetWindowRect(hwnd, &rc);
+
+    if (!is_point_onscreen(rc.left, rc.top))
+	return FALSE;
+    if (!is_point_onscreen(rc.left, rc.bottom))
+	return FALSE;
+    if (!is_point_onscreen(rc.right, rc.top))
+	return FALSE;
+    if (!is_point_onscreen(rc.right, rc.bottom))
+	return FALSE;
+    return TRUE;
+}
+
+/*
  * Return flags used for scrolling.
  * The SW_INVALIDATE is required when part of the window is covered or
  * off-screen. Refer to MS KB Q75236.
@@ -2996,15 +3032,12 @@ get_scroll_flags(void)
     HWND	hwnd;
     RECT	rcVim, rcOther, rcDest;
 
-    GetWindowRect(s_hwnd, &rcVim);
-
-    // Check if the window is partly above or below the screen.  We don't care
-    // about partly left or right of the screen, it is not relevant when
-    // scrolling up or down.
-    if (rcVim.top < 0 || rcVim.bottom > GetSystemMetrics(SM_CYFULLSCREEN))
+    // Check if the window is (partly) off-screen.
+    if (!is_window_onscreen(s_hwnd))
 	return SW_INVALIDATE;
 
     // Check if there is an window (partly) on top of us.
+    GetWindowRect(s_hwnd, &rcVim);
     for (hwnd = s_hwnd; (hwnd = GetWindow(hwnd, GW_HWNDPREV)) != (HWND)0; )
 	if (IsWindowVisible(hwnd))
 	{
@@ -3046,14 +3079,17 @@ gui_mch_delete_lines(
     rc.bottom = FILL_Y(gui.scroll_region_bot + 1);
 
 #if defined(FEAT_DIRECTX)
-    if (IS_ENABLE_DIRECTX())
+    if (IS_ENABLE_DIRECTX() && is_window_onscreen(s_hwnd))
     {
 	DWriteContext_Scroll(s_dwc, 0, -num_lines * gui.char_height, &rc);
-	DWriteContext_Flush(s_dwc);
     }
     else
 #endif
     {
+#if defined(FEAT_DIRECTX)
+	if (IS_ENABLE_DIRECTX())
+	    DWriteContext_Flush(s_dwc);
+#endif
 	intel_gpu_workaround();
 	ScrollWindowEx(s_textArea, 0, -num_lines * gui.char_height,
 				    &rc, &rc, NULL, NULL, get_scroll_flags());
@@ -3088,14 +3124,17 @@ gui_mch_insert_lines(
     rc.bottom = FILL_Y(gui.scroll_region_bot + 1);
 
 #if defined(FEAT_DIRECTX)
-    if (IS_ENABLE_DIRECTX())
+    if (IS_ENABLE_DIRECTX() && is_window_onscreen(s_hwnd))
     {
 	DWriteContext_Scroll(s_dwc, 0, num_lines * gui.char_height, &rc);
-	DWriteContext_Flush(s_dwc);
     }
     else
 #endif
     {
+#if defined(FEAT_DIRECTX)
+	if (IS_ENABLE_DIRECTX())
+	    DWriteContext_Flush(s_dwc);
+#endif
 	intel_gpu_workaround();
 	// The SW_INVALIDATE is required when part of the window is covered or
 	// off-screen.  How do we avoid it when it's not needed?
