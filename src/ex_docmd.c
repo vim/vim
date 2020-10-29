@@ -2763,7 +2763,7 @@ parse_command_modifiers(
 			    }
 #ifdef FEAT_EVAL
 			    // Avoid that "filter(arg)" is recognized.
-			    if (in_vim9script() && !VIM_ISWHITE(*p))
+			    if (in_vim9script() && !VIM_ISWHITE(p[-1]))
 				break;
 #endif
 			    if (skip_only)
