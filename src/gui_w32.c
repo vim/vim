@@ -3015,6 +3015,45 @@ get_scroll_flags(void)
     return 0;
 }
 
+#if defined(FEAT_DIRECTX)
+/*
+ * Check if the whole area of the specified window is on-screen.
+ * Windows 10 1809 or above no longer maintains image of the window portion
+ * that is off-screen.  Scrolling by DWriteContext_Scroll() only works when
+ * the whole window is on-screen.
+ */
+    static BOOL
+is_window_onscreen(HWND hwnd)
+{
+    RECT    rc;
+    POINT   pt;
+
+    GetWindowRect(hwnd, &rc);
+
+    pt.x = rc.left;
+    pt.y = rc.top;
+    if (MonitorFromPoint(pt, MONITOR_DEFAULTTONULL) == NULL)
+	return FALSE;
+
+    pt.x = rc.left;
+    pt.y = rc.bottom;
+    if (MonitorFromPoint(pt, MONITOR_DEFAULTTONULL) == NULL)
+	return FALSE;
+
+    pt.x = rc.right;
+    pt.y = rc.top;
+    if (MonitorFromPoint(pt, MONITOR_DEFAULTTONULL) == NULL)
+	return FALSE;
+
+    pt.x = rc.right;
+    pt.y = rc.bottom;
+    if (MonitorFromPoint(pt, MONITOR_DEFAULTTONULL) == NULL)
+	return FALSE;
+
+    return TRUE;
+}
+#endif
+
 /*
  * On some Intel GPUs, the regions drawn just prior to ScrollWindowEx()
  * may not be scrolled out properly.
@@ -3046,14 +3085,17 @@ gui_mch_delete_lines(
     rc.bottom = FILL_Y(gui.scroll_region_bot + 1);
 
 #if defined(FEAT_DIRECTX)
-    if (IS_ENABLE_DIRECTX())
+    if (IS_ENABLE_DIRECTX() && is_window_onscreen(s_hwnd))
     {
 	DWriteContext_Scroll(s_dwc, 0, -num_lines * gui.char_height, &rc);
-	DWriteContext_Flush(s_dwc);
     }
     else
 #endif
     {
+#if defined(FEAT_DIRECTX)
+	if (IS_ENABLE_DIRECTX())
+	    DWriteContext_Flush(s_dwc);
+#endif
 	intel_gpu_workaround();
 	ScrollWindowEx(s_textArea, 0, -num_lines * gui.char_height,
 				    &rc, &rc, NULL, NULL, get_scroll_flags());
@@ -3088,14 +3130,17 @@ gui_mch_insert_lines(
     rc.bottom = FILL_Y(gui.scroll_region_bot + 1);
 
 #if defined(FEAT_DIRECTX)
-    if (IS_ENABLE_DIRECTX())
+    if (IS_ENABLE_DIRECTX() && is_window_onscreen(s_hwnd))
     {
 	DWriteContext_Scroll(s_dwc, 0, num_lines * gui.char_height, &rc);
-	DWriteContext_Flush(s_dwc);
     }
     else
 #endif
     {
+#if defined(FEAT_DIRECTX)
+	if (IS_ENABLE_DIRECTX())
+	    DWriteContext_Flush(s_dwc);
+#endif
 	intel_gpu_workaround();
 	// The SW_INVALIDATE is required when part of the window is covered or
 	// off-screen.  How do we avoid it when it's not needed?
