@@ -312,6 +312,27 @@ def Test_filter_is_not_modifier()
   assert_equal([#{x: 3, y: 4}], tags)
 enddef
 
+def Test_filter_is_recognized()
+  var lines =<< trim END
+    final expected = "\nType Name Content\n  c  \"c   piyo"
+    final reg_a_save = @a
+    final reg_b_save = @b
+    final reg_c_save = @c
+
+    @a = 'hoge'
+    @b = 'fuga'
+    @c = 'piyo'
+
+    assert_equal(execute('filter /piyo/ registers abc'), expected)
+
+    @a = reg_a_save
+    @b = reg_b_save
+    @c = reg_c_save
+  END
+  CheckDefSuccess(lines)
+  CheckScriptSuccess(['vim9script'] + lines)
+enddef
+
 def Test_eval_command()
   var from = 3
   var to = 5
