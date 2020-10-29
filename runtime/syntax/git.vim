@@ -12,12 +12,12 @@ syn sync minlines=50
 
 syn include @gitDiff syntax/diff.vim
 
-syn region gitHead start=/\%^/ end=/^$/
-syn region gitHead start=/\%(^commit\%( \x\{40\}\)\{1,\}\%(\s*(.*)\)\=$\)\@=/ end=/^$/
+syn region gitHead start=/\%^/ end=/^$/ contains=@NoSpell
+syn region gitHead start=/\%(^commit\%( \x\{40\}\)\{1,\}\%(\s*(.*)\)\=$\)\@=/ end=/^$/ contains=@NoSpell
 
 " For git reflog and git show ...^{tree}, avoid sync issues
-syn match gitHead /^\d\{6\} \%(\w\{4} \)\=\x\{40\}\%( [0-3]\)\=\t.*/
-syn match gitHead /^\x\{40\} \x\{40}\t.*/
+syn match gitHead /^\d\{6\} \%(\w\{4} \)\=\x\{40\}\%( [0-3]\)\=\t.*/ contains=@NoSpell
+syn match gitHead /^\x\{40\} \x\{40}\t.*/ contains=@NoSpell
 
 syn region gitDiff start=/^\%(diff --git \)\@=/ end=/^\%(diff --\|$\)\@=/ contains=@gitDiff fold
 syn region gitDiff start=/^\%(@@ -\)\@=/ end=/^\%(diff --\%(git\|cc\|combined\) \|$\)\@=/ contains=@gitDiff
@@ -29,9 +29,9 @@ syn match gitDiffAdded "{+.*+}" contained containedin=gitDiff
 syn match gitDiffRemoved "^ \+-.*" contained containedin=gitDiffMerge
 syn match gitDiffRemoved "\[-.*-\]" contained containedin=gitDiff
 
-syn match  gitKeyword /^\%(object\|type\|tag\|commit\|tree\|parent\|encoding\)\>/ contained containedin=gitHead nextgroup=gitHash,gitType skipwhite
-syn match  gitKeyword /^\%(tag\>\|ref:\)/ contained containedin=gitHead nextgroup=gitReference skipwhite
-syn match  gitKeyword /^Merge:/  contained containedin=gitHead nextgroup=gitHashAbbrev skipwhite
+syn match  gitKeyword /^\%(object\|type\|tag\|commit\|tree\|parent\|encoding\)\>/ contained containedin=gitHead nextgroup=gitHash,gitType skipwhite contains=@NoSpell
+syn match  gitKeyword /^\%(tag\>\|ref:\)/ contained containedin=gitHead nextgroup=gitReference skipwhite contains=@NoSpell
+syn match  gitKeyword /^Merge:/  contained containedin=gitHead nextgroup=gitHashAbbrev skipwhite contains=@NoSpell
 syn match  gitMode    /^\d\{6\}\>/ contained containedin=gitHead nextgroup=gitType,gitHash skipwhite
 syn match  gitIdentityKeyword /^\%(author\|committer\|tagger\)\>/ contained containedin=gitHead nextgroup=gitIdentity skipwhite
 syn match  gitIdentityHeader /^\%(Author\|Commit\|Tagger\):/ contained containedin=gitHead nextgroup=gitIdentity skipwhite
@@ -47,10 +47,10 @@ syn match  gitDate      /\<\d\+ \l\+ ago\>/                    contained
 syn match  gitType      /\<\%(tag\|commit\|tree\|blob\)\>/     contained nextgroup=gitHash skipwhite
 syn match  gitStage     /\<\d\t\@=/                            contained
 syn match  gitReference /\S\+\S\@!/                            contained
-syn match  gitHash      /\<\x\{40\}\>/                         contained nextgroup=gitIdentity,gitStage,gitHash skipwhite
-syn match  gitHash      /^\<\x\{40\}\>/ containedin=gitHead contained nextgroup=gitHash skipwhite
-syn match  gitHashAbbrev /\<\x\{4,40\}\>/           contained nextgroup=gitHashAbbrev skipwhite
-syn match  gitHashAbbrev /\<\x\{4,39\}\.\.\./he=e-3 contained nextgroup=gitHashAbbrev skipwhite
+syn match  gitHash      /\<\x\{40\}\>/                         contained nextgroup=gitIdentity,gitStage,gitHash skipwhite contains=@NoSpell
+syn match  gitHash      /^\<\x\{40\}\>/ containedin=gitHead contained nextgroup=gitHash skipwhite contains=@NoSpell
+syn match  gitHashAbbrev /\<\x\{4,40\}\>/           contained nextgroup=gitHashAbbrev skipwhite contains=@NoSpell
+syn match  gitHashAbbrev /\<\x\{4,39\}\.\.\./he=e-3 contained nextgroup=gitHashAbbrev skipwhite contains=@NoSpell
 
 syn match  gitIdentity /\S.\{-\} <[^>]*>/ contained nextgroup=gitDate skipwhite
 syn region gitEmail matchgroup=gitEmailDelimiter start=/</ end=/>/ keepend oneline contained containedin=gitIdentity
