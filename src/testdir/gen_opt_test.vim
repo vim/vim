@@ -130,7 +130,7 @@ let test_values = {
       \ 'selectmode': [['', 'mouse', 'key,cmd'], ['xxx']],
       \ 'sessionoptions': [['', 'blank', 'help,options,slash'], ['xxx']],
       \ 'signcolumn': [['', 'auto', 'no'], ['xxx', 'no,yes']],
-      \ 'spellfile': [['', 'file.en.add'], ['xxx', '/tmp/file']],
+      \ 'spellfile': [['', 'file.en.add', '/tmp/dir\ with\ space/en.utf-8.add'], ['xxx', '/tmp/file']],
       \ 'spelllang': [['', 'xxx', 'sr@latin'], ['not&lang', "that\\\rthere"]],
       \ 'spelloptions': [['', 'camel'], ['xxx']],
       \ 'spellsuggest': [['', 'best', 'double,33'], ['xxx']],
