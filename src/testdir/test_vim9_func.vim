@@ -1477,7 +1477,6 @@ def SilentlyUserError()
 enddef
 
 " This can't be a :def function, because the assert would not be reached.
-" And this must not be inside a try/endtry.
 func Test_ignore_silent_error()
   let g:did_it = 'no'
   call SilentlyError()
@@ -1489,6 +1488,23 @@ func Test_ignore_silent_error()
 
   unlet g:did_it
 endfunc
+
+def Test_ignore_silent_error_in_filter()
+  var lines =<< trim END
+      vim9script
+      def Filter(winid: number, key: string): bool
+          if key == 'o'
+              silent! eval [][0]
+              return true
+          endif
+          return popup_filter_menu(winid, key)
+      enddef
+
+      popup_create('popup', #{filter: Filter})
+      feedkeys("o\r", 'xnt')
+  END
+  CheckScriptSuccess(lines)
+enddef
 
 def Fibonacci(n: number): number
   if n < 2

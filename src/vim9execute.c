@@ -2869,6 +2869,10 @@ func_return:
 	continue;
 
 on_error:
+	// If "emsg_silent" is set then ignore the error.
+	if (did_emsg == did_emsg_before && emsg_silent)
+	    continue;
+
 	// If we are not inside a try-catch started here, abort execution.
 	if (trylevel <= trylevel_at_start)
 	    goto failed;
