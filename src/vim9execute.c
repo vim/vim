@@ -2607,6 +2607,8 @@ call_def_function(
 		    tv = STACK_TV_BOT(-1);
 		    // no need to check for VAR_STRING, 2STRING will check.
 		    key = tv->vval.v_string;
+		    if (key == NULL)
+			key = (char_u *)"";
 
 		    if ((di = dict_find(dict, key, -1)) == NULL)
 		    {
