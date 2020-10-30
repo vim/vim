@@ -6998,12 +6998,11 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
     char	*errormsg = NULL;	// error message
     cctx_T	cctx;
     garray_T	*instr;
-    int		called_emsg_before = called_emsg;
+    int		did_emsg_before = did_emsg;
     int		ret = FAIL;
     sctx_T	save_current_sctx = current_sctx;
     int		save_estack_compiling = estack_compiling;
     int		do_estack_push;
-    int		emsg_before = called_emsg;
     int		new_def_function = FALSE;
 
     // When using a function that was compiled before: Free old instructions.
@@ -7107,7 +7106,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 
 	// Bail out on the first error to avoid a flood of errors and report
 	// the right line number when inside try/catch.
-	if (emsg_before != called_emsg)
+	if (did_emsg_before != did_emsg)
 	    goto erret;
 
 	if (line != NULL && *line == '|')
@@ -7127,7 +7126,6 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 		// beyond the last line
 		break;
 	}
-	emsg_before = called_emsg;
 
 	CLEAR_FIELD(ea);
 	ea.cmdlinep = &line;
@@ -7585,7 +7583,7 @@ erret:
 
 	if (errormsg != NULL)
 	    emsg(errormsg);
-	else if (called_emsg == called_emsg_before)
+	else if (did_emsg == did_emsg_before)
 	    emsg(_(e_compiling_def_function_failed));
     }
 
