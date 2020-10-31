@@ -276,6 +276,9 @@ typedef struct {
 // E.g. if "arg_idx" is 1, then (type - 1) is the first argument type.
 typedef int (*argcheck_T)(type_T *, argcontext_T *);
 
+/*
+ * Check "type" is a float or a number.
+ */
     static int
 arg_float_or_nr(type_T *type, argcontext_T *context)
 {
@@ -286,12 +289,27 @@ arg_float_or_nr(type_T *type, argcontext_T *context)
     return FAIL;
 }
 
+/*
+ * Check "type" is a number.
+ */
     static int
 arg_number(type_T *type, argcontext_T *context)
 {
     return check_type(&t_number, type, TRUE, context->arg_idx + 1);
 }
 
+/*
+ * Check "type" is a string.
+ */
+    static int
+arg_string(type_T *type, argcontext_T *context)
+{
+    return check_type(&t_string, type, TRUE, context->arg_idx + 1);
+}
+
+/*
+ * Check "type" is a list or a blob.
+ */
     static int
 arg_list_or_blob(type_T *type, argcontext_T *context)
 {
@@ -303,7 +321,32 @@ arg_list_or_blob(type_T *type, argcontext_T *context)
 }
 
 /*
- * Check the type is an item of the list or blob of the previous arg.
+ * Check "type" is a list or a dict.
+ */
+    static int
+arg_list_or_dict(type_T *type, argcontext_T *context)
+{
+    if (type->tt_type == VAR_ANY
+		     || type->tt_type == VAR_LIST || type->tt_type == VAR_DICT)
+	return OK;
+    arg_type_mismatch(&t_list_any, type, context->arg_idx + 1);
+    return FAIL;
+}
+
+/*
+ * Check "type" is the same type as the previous argument
+ * Must not be used for the first argcheck_T entry.
+ */
+    static int
+arg_same_as_prev(type_T *type, argcontext_T *context)
+{
+    type_T *prev_type = context->arg_types[context->arg_idx - 1];
+
+    return check_type(prev_type, type, TRUE, context->arg_idx + 1);
+}
+
+/*
+ * Check "type" is an item of the list or blob of the previous arg.
  * Must not be used for the first argcheck_T entry.
  */
     static int
@@ -324,9 +367,27 @@ arg_item_of_prev(type_T *type, argcontext_T *context)
 }
 
 /*
+ * Check "type" which is the third argument of extend().
+ */
+    static int
+arg_extend3(type_T *type, argcontext_T *context)
+{
+    type_T *first_type = context->arg_types[context->arg_idx - 2];
+
+    if (first_type->tt_type == VAR_LIST)
+	return arg_number(type, context);
+    if (first_type->tt_type == VAR_DICT)
+	return arg_string(type, context);
+    return OK;
+}
+
+
+/*
  * Lists of functions that check the argument types of a builtin function.
  */
 argcheck_T arg1_float_or_nr[] = {arg_float_or_nr};
+argcheck_T arg2_listblob_item[] = {arg_list_or_blob, arg_item_of_prev};
+argcheck_T arg23_extend[] = {arg_list_or_dict, arg_same_as_prev, arg_extend3};
 argcheck_T arg3_insert[] = {arg_list_or_blob, arg_item_of_prev, arg_number};
 
 /*
@@ -567,7 +628,7 @@ static funcentry_T global_functions[] =
 			ret_any,	    FLOAT_FUNC(f_abs)},
     {"acos",		1, 1, FEARG_1,	    NULL,
 			ret_float,	    FLOAT_FUNC(f_acos)},
-    {"add",		2, 2, FEARG_1,	    NULL,
+    {"add",		2, 2, FEARG_1,	    NULL /* arg2_listblob_item */,
 			ret_first_arg,	    f_add},
     {"and",		2, 2, FEARG_1,	    NULL,
 			ret_number,	    f_and},
@@ -793,7 +854,7 @@ static funcentry_T global_functions[] =
 			ret_any,	    f_expand},
     {"expandcmd",	1, 1, FEARG_1,	    NULL,
 			ret_string,	    f_expandcmd},
-    {"extend",		2, 3, FEARG_1,	    NULL,
+    {"extend",		2, 3, FEARG_1,	    arg23_extend,
 			ret_first_arg,	    f_extend},
     {"feedkeys",	1, 2, FEARG_1,	    NULL,
 			ret_void,	    f_feedkeys},
