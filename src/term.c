@@ -4462,7 +4462,8 @@ modifiers2keycode(int modifiers, int *key, char_u *string)
     if (modifiers != 0)
     {
 	// Some keys have the modifier included.  Need to handle that here to
-	// make mappings work.
+	// make mappings work.  This may result in a special key, such as
+	// K_S_TAB.
 	*key = simplify_key(*key, &modifiers);
 	if (modifiers != 0)
 	{
@@ -4793,7 +4794,13 @@ handle_key_with_modifier(
     // insert modifiers with KS_MODIFIER
     new_slen = modifiers2keycode(modifiers, &key, string);
 
-    if (has_mbyte)
+    if (IS_SPECIAL(key))
+    {
+	string[new_slen++] = K_SPECIAL;
+	string[new_slen++] = KEY2TERMCAP0(key);
+	string[new_slen++] = KEY2TERMCAP1(key);
+    }
+    else if (has_mbyte)
 	new_slen += (*mb_char2bytes)(key, string + new_slen);
     else
 	string[new_slen++] = key;

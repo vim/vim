@@ -2029,6 +2029,23 @@ func Test_modifyOtherKeys_mapped()
   set timeoutlen&
 endfunc
 
+" Whether Shift-Tab sends "ESC [ Z" or "ESC [ 27 ; 2 ; 9 ~" is unpredictable,
+" both should work.
+func Test_modifyOtherKeys_shift_tab()
+  set timeoutlen=10
+
+  call setline(1, '')
+  call feedkeys("a\<C-K>" .. GetEscCodeCSI27("\t", '2') .. "\<Esc>", 'Lx!')
+  eval getline(1)->assert_equal('<S-Tab>')
+
+  call setline(1, '')
+  call feedkeys("a\<C-K>\<Esc>[Z\<Esc>", 'Lx!')
+  eval getline(1)->assert_equal('<S-Tab>')
+
+  set timeoutlen&
+  bwipe!
+endfunc
+
 func RunTest_mapping_works_with_shift(func)
   new
   set timeoutlen=10
