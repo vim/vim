@@ -347,9 +347,11 @@ def Test_win_command_modifiers()
   assert_equal(2, winnr())
   close
 
-  browse set
-  assert_equal('option-window', expand('%'))
-  close
+  if has('browse')
+    browse set
+    assert_equal('option-window', expand('%'))
+    close
+  endif
 
   vsplit
   botright split
