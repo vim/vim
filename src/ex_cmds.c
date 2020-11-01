@@ -404,7 +404,7 @@ ex_sort(exarg_T *eap)
     if (nrs == NULL)
 	goto sortend;
 
-    sort_abort = sort_ic = sort_rx = sort_nr = 0;
+    sort_abort = sort_ic = sort_lc = sort_rx = sort_nr = 0;
 #ifdef FEAT_FLOAT
     sort_flt = 0;
 #endif

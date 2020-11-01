@@ -1516,6 +1516,7 @@ typedef struct
 typedef struct
 {
     int		item_compare_ic;
+    int		item_compare_lc;
     int		item_compare_numeric;
     int		item_compare_numbers;
 #ifdef FEAT_FLOAT
@@ -1594,10 +1595,10 @@ item_compare(const void *s1, const void *s2)
 	p2 = (char_u *)"";
     if (!sortinfo->item_compare_numeric)
     {
-	if (sortinfo->item_compare_ic)
-	    res = STRICMP(p1, p2);
+	if (sortinfo->item_compare_lc)
+	    res = strcoll((char *)p1, (char *)p2);
 	else
-	    res = STRCMP(p1, p2);
+	    res = sortinfo->item_compare_ic ? STRICMP(p1, p2): STRCMP(p1, p2);
     }
     else
     {
@@ -1706,6 +1707,7 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
 	    goto theend;	// short list sorts pretty quickly
 
 	info.item_compare_ic = FALSE;
+	info.item_compare_lc = FALSE;
 	info.item_compare_numeric = FALSE;
 	info.item_compare_numbers = FALSE;
 #ifdef FEAT_FLOAT
@@ -1772,6 +1774,11 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
 		    {
 			info.item_compare_func = NULL;
 			info.item_compare_ic = TRUE;
+		    }
+		    else if (STRCMP(info.item_compare_func, "l") == 0)
+		    {
+			info.item_compare_func = NULL;
+			info.item_compare_lc = TRUE;
 		    }
 		}
 	    }
