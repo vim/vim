@@ -2,6 +2,7 @@
 
 source check.vim
 source vim9.vim
+source term_util.vim
 source view_util.vim
 
 def Test_edit_wildcards()
@@ -312,7 +313,7 @@ def Test_filter_is_not_modifier()
   assert_equal([#{x: 3, y: 4}], tags)
 enddef
 
-def Test_filter_is_recognized()
+def Test_command_modifier_filter()
   var lines =<< trim END
     final expected = "\nType Name Content\n  c  \"c   piyo"
     @a = 'hoge'
@@ -322,6 +323,135 @@ def Test_filter_is_recognized()
     assert_equal(execute('filter /piyo/ registers abc'), expected)
   END
   CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_win_command_modifiers()
+  assert_equal(1, winnr('$'))
+
+  set splitright
+  vsplit
+  assert_equal(2, winnr())
+  close
+  aboveleft vsplit
+  assert_equal(1, winnr())
+  close
+  set splitright&
+
+  vsplit
+  assert_equal(1, winnr())
+  close
+  belowright vsplit
+  assert_equal(2, winnr())
+  close
+  rightbelow vsplit
+  assert_equal(2, winnr())
+  close
+
+  browse set
+  assert_equal('option-window', expand('%'))
+  close
+
+  vsplit
+  botright split
+  assert_equal(3, winnr())
+  assert_equal(&columns, winwidth(0))
+  close
+  close
+
+  vsplit
+  topleft split
+  assert_equal(1, winnr())
+  assert_equal(&columns, winwidth(0))
+  close
+  close
+
+  gettabinfo()->len()->assert_equal(1)
+  tab split
+  gettabinfo()->len()->assert_equal(2)
+  tabclose
+
+  vertical new
+  assert_inrange(&columns / 2 - 2, &columns / 2 + 1, winwidth(0))
+  close
+enddef
+
+func Test_command_modifier_confirm()
+  CheckNotGui
+  CheckRunVimInTerminal
+
+  " Test for saving all the modified buffers
+  let lines =<< trim END
+    call setline(1, 'changed')
+    def Getout()
+      confirm write Xfile
+    enddef
+  END
+  call writefile(lines, 'Xconfirmscript')
+  call writefile(['empty'], 'Xfile')
+  let buf = RunVimInTerminal('-S Xconfirmscript', {'rows': 8})
+  call term_sendkeys(buf, ":call Getout()\n")
+  call WaitForAssert({-> assert_match('(Y)es, \[N\]o: ', term_getline(buf, 8))}, 1000)
+  call term_sendkeys(buf, "y")
+  call StopVimInTerminal(buf)
+
+  call assert_equal(['changed'], readfile('Xfile'))
+  call delete('Xfile')
+  call delete('Xconfirmscript')
+endfunc
+
+def Test_command_modifiers_keep()
+  if has('unix')
+    def DoTest(addRflag: bool, keepMarks: bool, hasMarks: bool)
+      new
+      setline(1, ['one', 'two', 'three'])
+      normal 1Gma
+      normal 2Gmb
+      normal 3Gmc
+      if addRflag
+        set cpo+=R
+      else
+        set cpo-=R
+      endif
+      if keepMarks
+        keepmarks :%!cat
+      else
+        :%!cat
+      endif
+      if hasMarks
+        assert_equal(1, line("'a"))
+        assert_equal(2, line("'b"))
+        assert_equal(3, line("'c"))
+      else
+        assert_equal(0, line("'a"))
+        assert_equal(0, line("'b"))
+        assert_equal(0, line("'c"))
+      endif
+      quit!
+    enddef
+    DoTest(false, false, true)
+    DoTest(true, false, false)
+    DoTest(false, true, true)
+    DoTest(true, true, true)
+    set cpo&vim
+  endif
+
+  # TODO
+  # lockmarks
+  # keepalt
+  # keeppatterns
+  # keepjumps
+enddef
+
+def Test_command_modifier_other()
+  # TODO
+  # hide
+  # noautocmd
+  # noswapfile
+  # sandbox
+  # silent
+  # silent!
+  # unsilent
+  # verbose
 enddef
 
 def Test_eval_command()

@@ -2642,6 +2642,7 @@ compile_call(
 		type_T	    *type = ((type_T **)stack->ga_data)[
 							    stack->ga_len - 2];
 
+		// add() can be compiled to instructions if we know the type
 		if (type->tt_type == VAR_LIST)
 		{
 		    // inline "add(list, item)" so that the type can be checked
@@ -7173,10 +7174,6 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 		    continue;
 		}
 		break;
-
-	    case ':':
-		starts_with_colon = TRUE;
-		break;
 	}
 
 	/*
@@ -7194,6 +7191,16 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	}
 	generate_cmdmods(&cctx, &local_cmdmod);
 	undo_cmdmod(&local_cmdmod);
+
+	// Check if there was a colon after the last command modifier or before
+	// the current position.
+	for (p = ea.cmd; p >= line; --p)
+	{
+	    if (*p == ':')
+		starts_with_colon = TRUE;
+	    if (p < ea.cmd && !VIM_ISWHITE(*p))
+		break;
+	}
 
 	// Skip ":call" to get to the function name.
 	p = ea.cmd;
