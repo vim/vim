@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 8.2.  Last change: 2020 Aug 15
+*netbeans.txt*  For Vim version 8.2.  Last change: 2020 Nov 1
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
@@ -562,8 +562,9 @@ setModtime time
 		saved directly by the Vim Controller.
 		New in version 2.3.
 
-setReadOnly
-		Set a file as readonly
+setReadOnly readonly
+		When the boolean argument "readonly" is "T" mark the buffer as
+		readonly, when it is "F" mark it as not readonly.
 		Implemented in version 2.3.
 
 setStyle	Not implemented.
