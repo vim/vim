@@ -134,7 +134,7 @@ func RunVimInTerminal(arguments, options)
 endfunc
 
 " Stop a Vim running in terminal buffer "buf".
-func StopVimInTerminal(buf)
+func StopVimInTerminal(buf, kill = 1)
   " Using a terminal to run Vim is always considered flaky.
   let g:test_is_flaky = 1
 
@@ -151,7 +151,7 @@ func StopVimInTerminal(buf)
   call WaitForAssert({-> assert_equal("finished", term_getstatus(a:buf))})
 
   " If the buffer still exists forcefully wipe it.
-  if bufexists(a:buf)
+  if a:kill && bufexists(a:buf)
     exe a:buf .. 'bwipe!'
   endif
 endfunc
