@@ -1204,6 +1204,57 @@ func Test_sort_cmd()
 	\ },
 	\ ]
 
+    " The test with locale may of course not pass with all locale.
+    " For example, the Swedish locale sv_SE.utf8 would sort differently.
+    " It should at least pass with the following languages.
+    if execute('language collate') =~? '"\(en\|de\|fr\|it\|nl\).*\.utf8"'
+      let tests += [
+	\ {
+	\    'name' : 'sort with locale',
+	\    'cmd' : '%sort l',
+	\    'input' : [
+	\	'A',
+	\	'E',
+	\	'O',
+	\	'À',
+	\	'È',
+	\	'É',
+	\	'Ô',
+	\	'Œ',
+	\	'Z',
+	\	'a',
+	\	'e',
+	\	'o',
+	\	'à',
+	\	'è',
+	\	'é',
+	\	'ô',
+	\	'œ',
+	\	'z'
+	\    ],
+	\    'expected' : [
+	\	'a',
+	\	'A',
+	\	'à',
+	\	'À',
+	\	'e',
+	\	'E',
+	\	'é',
+	\	'É',
+	\	'è',
+	\	'È',
+	\	'o',
+	\	'O',
+	\	'ô',
+	\	'Ô',
+	\	'œ',
+	\	'Œ',
+	\	'z',
+	\	'Z'
+	\    ]
+	\ },
+	\ ]
+  endif
   if has('float')
     let tests += [
           \ {
