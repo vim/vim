@@ -147,8 +147,13 @@ func StopVimInTerminal(buf)
   " Wait for all the pending updates to terminal to complete
   call TermWait(a:buf)
 
+  " Wait for the terminal to end.
   call WaitForAssert({-> assert_equal("finished", term_getstatus(a:buf))})
-  only!
+
+  " If the buffer still exists forcefully wipe it.
+  if bufexists(a:buf)
+    exe a:buf .. 'bwipe!'
+  endif
 endfunc
 
 " Open a terminal with a shell, assign the job to g:job and return the buffer
