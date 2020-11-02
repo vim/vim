@@ -303,11 +303,22 @@ func Nb_basic(port)
         \ '56 "foo bar1\nfoo bar2\nfoo bar3\n"'], l[-2:])
   let g:last += 4
 
-  " setDot test
+  " setDot test with lnum/col
+  call cursor(1, 1)
   call appendbufline(cmdbufnr, '$', 'setDot_Test')
   call WaitFor('len(ReadXnetbeans()) >= (g:last + 3)')
   let l = ReadXnetbeans()
   call assert_equal('send: 2:setDot!57 3/6', l[-1])
+  call assert_equal([0, 3, 7, 0], getpos('.'))
+  let g:last += 3
+
+  " setDot test with an offset
+  call cursor(1, 1)
+  call appendbufline(cmdbufnr, '$', 'setDot2_Test')
+  call WaitFor('len(ReadXnetbeans()) >= (g:last + 3)')
+  let l = ReadXnetbeans()
+  call assert_equal('send: 2:setDot!57 9', l[-1])
+  call assert_equal([0, 2, 1, 0], getpos('.'))
   let g:last += 3
 
   " startDocumentListen test
@@ -517,8 +528,9 @@ func Nb_basic(port)
   call assert_equal([{'name': '1', 'texthl': 'NB_s1', 'text': '=>'},
         \ {'name': '10000', 'linehl': 'NBGuarded'}],
         \ sign_getdefined())
-  call assert_equal([{'lnum': 2, 'id': 1000000, 'name': '10000',
-        \ 'priority': 10, 'group': ''}], sign_getplaced()[0].signs)
+  let s = sign_getplaced()[0].signs[0]
+  call assert_equal(2, s.lnum)
+  call assert_equal('10000', s.name)
   let g:last += 3
 
   " setModified test
@@ -723,7 +735,7 @@ func Nb_basic(port)
         \ ["\<F8>", 'F8'], ["\<S-F8>", 'S-F8'],
         \ ["\<F9>", 'F9'], ["\<S-F9>", 'S-F9'],
         \ ["\<F11>", 'F11'], ["\<S-F11>", 'S-F11'],
-        \ ["\<F12>", 'F12'], ["\<S-F12>", 'S-F12'],
+        \ ["\<F12>", 'F12'], ["\<S-F12>", 'S-F12'], ['!', '!']
         \ ]
   for [key, name] in special_keys
     call feedkeys("\<F21>" .. key, 'xt')
@@ -763,6 +775,15 @@ func Nb_basic(port)
     sign undefine S2
   endif
 
+  " define a large number of annotations
+  call appendbufline(cmdbufnr, '$', 'AnnoScale_Test')
+  call WaitFor('len(ReadXnetbeans()) >= (g:last + 26)')
+  let l = ReadXnetbeans()
+  call assert_equal('2:defineAnnoType!60 25 "s25" "x" "=>" blue none', l[-1])
+  sleep 1m
+  call assert_true(len(sign_getdefined()) >= 25)
+  let g:last += 26
+
   " detach
   call appendbufline(cmdbufnr, '$', 'detach_Test')
   call WaitFor('len(ReadXnetbeans()) >= (g:last + 8)')
@@ -770,6 +791,10 @@ func Nb_basic(port)
 
   " the connection was closed
   call assert_false(has("netbeans_enabled"))
+
+  " Remove all the signs
+  call sign_unplace('*')
+  call sign_undefine()
 
   call delete("Xnetbeans")
   call delete('Xfile1')
