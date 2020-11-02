@@ -303,11 +303,22 @@ func Nb_basic(port)
         \ '56 "foo bar1\nfoo bar2\nfoo bar3\n"'], l[-2:])
   let g:last += 4
 
-  " setDot test
+  " setDot test with lnum/col
+  call cursor(1, 1)
   call appendbufline(cmdbufnr, '$', 'setDot_Test')
   call WaitFor('len(ReadXnetbeans()) >= (g:last + 3)')
   let l = ReadXnetbeans()
   call assert_equal('send: 2:setDot!57 3/6', l[-1])
+  call assert_equal([0, 3, 7, 0], getpos('.'))
+  let g:last += 3
+
+  " setDot test with an offset
+  call cursor(1, 1)
+  call appendbufline(cmdbufnr, '$', 'setDot2_Test')
+  call WaitFor('len(ReadXnetbeans()) >= (g:last + 3)')
+  let l = ReadXnetbeans()
+  call assert_equal('send: 2:setDot!57 9', l[-1])
+  call assert_equal([0, 2, 1, 0], getpos('.'))
   let g:last += 3
 
   " startDocumentListen test
@@ -327,6 +338,32 @@ func Nb_basic(port)
   call assert_match('2:insert=\d\+ 26 "\\n"', l[-2])
   call assert_match('2:remove=\d\+ 0 9', l[-1])
   let g:last += 3
+
+  " Change case using the ~ command with 'whichwrap' containing '~'
+  set whichwrap+=~
+  normal 2G$~
+  set whichwrap&
+  call WaitFor('len(ReadXnetbeans()) >= (g:last + 2)')
+  let l = ReadXnetbeans()
+  call assert_match('2:remove=\d\+ 16 1', l[-4])
+  call assert_match('2:insert=\d\+ 16 "Y"', l[-3])
+  call assert_match('2:remove=\d\+ 18 0', l[-2])
+  call assert_match('2:insert=\d\+ 18 ""', l[-1])
+  let g:last += 4
+
+  " Test for replacing spaces with a tab character using 'softtabstop' and
+  " 'noexpandtab'
+  setlocal softtabstop=4
+  setlocal noexpandtab
+  exe "normal I\<Tab>\<Tab>"
+  setlocal expandtab&
+  setlocal softtabstop&
+  call WaitFor('len(ReadXnetbeans()) >= (g:last + 18)')
+  let l = ReadXnetbeans()
+  call assert_match('2:insert=\d\+ 18 "        foo bar3"', l[-3])
+  call assert_match('2:remove=\d\+ 26 8', l[-2])
+  call assert_match('2:insert=\d\+ 26 "\t"', l[-1])
+  let g:last += 18
 
   " stopDocumentListen test
   call appendbufline(cmdbufnr, '$', 'stopDocumentListen_Test')
@@ -491,8 +528,9 @@ func Nb_basic(port)
   call assert_equal([{'name': '1', 'texthl': 'NB_s1', 'text': '=>'},
         \ {'name': '10000', 'linehl': 'NBGuarded'}],
         \ sign_getdefined())
-  call assert_equal([{'lnum': 2, 'id': 1000000, 'name': '10000',
-        \ 'priority': 10, 'group': ''}], sign_getplaced()[0].signs)
+  let s = sign_getplaced()[0].signs[0]
+  call assert_equal(2, s.lnum)
+  call assert_equal('10000', s.name)
   let g:last += 3
 
   " setModified test
@@ -500,7 +538,17 @@ func Nb_basic(port)
   call WaitFor('len(ReadXnetbeans()) >= (g:last + 3)')
   let l = ReadXnetbeans()
   call assert_equal('send: 3:setModified!77 T', l[-1])
+  sleep 1m
   call assert_equal(1, &modified)
+  let g:last += 3
+
+  " clear setModified test
+  call appendbufline(cmdbufnr, '$', 'setModifiedClear_Test')
+  call WaitFor('len(ReadXnetbeans()) >= (g:last + 3)')
+  let l = ReadXnetbeans()
+  call assert_equal('send: 3:setModified!77 F', l[-1])
+  sleep 1m
+  call assert_equal(0, &modified)
   let g:last += 3
 
   " insertDone test
@@ -586,15 +634,36 @@ func Nb_basic(port)
   call appendbufline(cmdbufnr, '$', 'setReadOnly_Test')
   call WaitFor('len(ReadXnetbeans()) >= (g:last + 3)')
   let l = ReadXnetbeans()
-  call assert_equal('send: 3:setReadOnly!87', l[-1])
+  call assert_equal('send: 3:setReadOnly!87 T', l[-1])
+  sleep 1m
+  call assert_equal(1, &readonly)
+  let g:last += 3
+
+  " clear setReadonly test
+  call appendbufline(cmdbufnr, '$', 'setReadOnlyClear_Test')
+  call WaitFor('len(ReadXnetbeans()) >= (g:last + 3)')
+  let l = ReadXnetbeans()
+  call assert_equal('send: 3:setReadOnly!88 F', l[-1])
+  sleep 1m
+  call assert_equal(0, &readonly)
+  let g:last += 3
+
+  " save test
+  call setbufvar(bufnr('Xfile4'), '&modified', 1)
+  call appendbufline(cmdbufnr, '$', 'save_Test')
+  call WaitFor('len(ReadXnetbeans()) >= (g:last + 3)')
+  let l = ReadXnetbeans()
+  call assert_equal('send: 3:save!89', l[-1])
+  sleep 1m
+  call assert_true(filereadable('Xfile4'))
   let g:last += 3
 
   " close test. Don't use buffer 10 after this
   call appendbufline(cmdbufnr, '$', 'close_Test')
   call WaitFor('len(ReadXnetbeans()) >= (g:last + 4)')
   let l = ReadXnetbeans()
-  call assert_equal('send: 3:close!88', l[-2])
-  call assert_equal('3:killed=88', l[-1])
+  call assert_equal('send: 3:close!90', l[-2])
+  call assert_equal('3:killed=90', l[-1])
   call assert_equal(1, winnr('$'))
   let g:last += 4
 
@@ -602,10 +671,11 @@ func Nb_basic(port)
   call appendbufline(cmdbufnr, '$', 'specialKeys_Test')
   call WaitFor('len(ReadXnetbeans()) >= (g:last + 3)')
   let l = ReadXnetbeans()
-  call assert_equal('send: 0:specialKeys!89 "F12 F13"', l[-1])
+  call assert_equal('send: 0:specialKeys!91 "F12 F13 C-F13"', l[-1])
   sleep 1m
   call assert_equal(':nbkey F12<CR>', maparg('<F12>', 'n'))
   call assert_equal(':nbkey F13<CR>', maparg('<F13>', 'n'))
+  call assert_equal(':nbkey C-F13<CR>', maparg('<C-F13>', 'n'))
   let g:last += 3
 
   " Open a buffer not monitored by netbeans
@@ -626,17 +696,110 @@ func Nb_basic(port)
   call WaitFor('len(ReadXnetbeans()) >= (g:last + 10)')
   let g:last += 10
 
+  if has('mouse')
+    " Test for mouse button release
+    let save_mouse = &mouse
+    set mouse=a
+    call feedkeys("\<LeftMouse>\<LeftRelease>", 'xt')
+    let &mouse = save_mouse
+    call WaitFor('len(ReadXnetbeans()) >= (g:last + 2)')
+    let l = ReadXnetbeans()
+    call assert_equal('4:newDotAndMark=93 0 0', l[-2])
+    call assert_equal('4:buttonRelease=93 0 1 -1', l[-1])
+    let g:last += 2
+  endif
+
+  " Test for startAtomic
+  call appendbufline(cmdbufnr, '$', 'startAtomic_Test')
+  call WaitFor('len(ReadXnetbeans()) >= (g:last + 3)')
+  let l = ReadXnetbeans()
+  call assert_equal('send: 0:startAtomic!94', l[-1])
+  let g:last += 3
+
+  " Test for endAtomic
+  call appendbufline(cmdbufnr, '$', 'endAtomic_Test')
+  call WaitFor('len(ReadXnetbeans()) >= (g:last + 3)')
+  let l = ReadXnetbeans()
+  call assert_equal('send: 0:endAtomic!95', l[-1])
+  let g:last += 3
+
+  " Test for invoking a netbeans key binding
+  let special_keys = [
+        \ ["\<F1>", 'F1'], ["\<S-F1>", 'S-F1'],
+        \ ["\<F2>", 'F2'], ["\<S-F2>", 'S-F2'],
+        \ ["\<F3>", 'F3'], ["\<S-F3>", 'S-F3'],
+        \ ["\<F4>", 'F4'], ["\<S-F4>", 'S-F4'],
+        \ ["\<F5>", 'F5'], ["\<S-F5>", 'S-F5'],
+        \ ["\<F6>", 'F6'], ["\<S-F6>", 'S-F6'],
+        \ ["\<F7>", 'F7'], ["\<S-F7>", 'S-F7'],
+        \ ["\<F8>", 'F8'], ["\<S-F8>", 'S-F8'],
+        \ ["\<F9>", 'F9'], ["\<S-F9>", 'S-F9'],
+        \ ["\<F11>", 'F11'], ["\<S-F11>", 'S-F11'],
+        \ ["\<F12>", 'F12'], ["\<S-F12>", 'S-F12'], ['!', '!']
+        \ ]
+  for [key, name] in special_keys
+    call feedkeys("\<F21>" .. key, 'xt')
+    call WaitFor('len(ReadXnetbeans()) >= (g:last + 3)')
+    let l = ReadXnetbeans()
+    call assert_match('4:keyCommand=\d\+ "' .. name .. '"', l[-2])
+    call assert_match('4:keyAtPos=\d\+ "' .. name .. '" 0 1/0', l[-1])
+    let g:last += 3
+  endfor
+  call feedkeys("\<F21>\<C-S-M-F9>", 'xt')
+  call WaitFor('len(ReadXnetbeans()) >= (g:last + 3)')
+  let l = ReadXnetbeans()
+  call assert_match('4:keyCommand=\d\+ "CSM-F9"', l[-2])
+  call assert_match('4:keyAtPos=\d\+ "CSM-F9" 0 1/0', l[-1])
+  let g:last += 3
+
+  if has('signs') && has('mouse')
+    sign define S1 linehl=Search text==>
+    sign define S2 linehl=ErrorMsg text=!!
+    sign place 10 line=1 name=S1
+    sign place 20 line=1 name=S2
+
+    let save_mouse = &mouse
+    set mouse=a
+    call assert_equal('S2', sign_getplaced()[0].signs[0].name)
+    call test_setmouse(1, 1)
+    call feedkeys("\<LeftMouse>\<LeftRelease>", 'xt')
+    call assert_equal('S1', sign_getplaced()[0].signs[0].name)
+    call test_setmouse(1, 1)
+    call feedkeys("\<LeftMouse>\<LeftRelease>", 'xt')
+    call assert_equal('S2', sign_getplaced()[0].signs[0].name)
+    let &mouse = save_mouse
+
+    sign unplace 10
+    sign unplace 20
+    sign undefine S1
+    sign undefine S2
+  endif
+
+  " define a large number of annotations
+  call appendbufline(cmdbufnr, '$', 'AnnoScale_Test')
+  call WaitFor('len(ReadXnetbeans()) >= (g:last + 26)')
+  let l = ReadXnetbeans()
+  call assert_equal('2:defineAnnoType!60 25 "s25" "x" "=>" blue none', l[-1])
+  sleep 1m
+  call assert_true(len(sign_getdefined()) >= 25)
+  let g:last += 26
+
   " detach
   call appendbufline(cmdbufnr, '$', 'detach_Test')
   call WaitFor('len(ReadXnetbeans()) >= (g:last + 8)')
-  call WaitForAssert({-> assert_equal('0:disconnect=93', ReadXnetbeans()[-1])})
+  call WaitForAssert({-> assert_equal('0:disconnect=97', ReadXnetbeans()[-1])})
 
   " the connection was closed
   call assert_false(has("netbeans_enabled"))
 
+  " Remove all the signs
+  call sign_unplace('*')
+  call sign_undefine()
+
   call delete("Xnetbeans")
   call delete('Xfile1')
   call delete('Xfile3')
+  call delete('Xfile4')
 endfunc
 
 func Test_nb_basic()

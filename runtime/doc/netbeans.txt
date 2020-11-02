@@ -562,9 +562,10 @@ setModtime time
 		saved directly by the Vim Controller.
 		New in version 2.3.
 
-setReadOnly
-		Set a file as readonly
-		Implemented in version 2.3.
+setReadOnly readonly
+		When the boolean argument "readonly" is "T" for True, mark the
+		buffer as readonly, when it is "F" for False, mark it as not
+		readonly.  Implemented in version 2.3.
 
 setStyle	Not implemented.
 

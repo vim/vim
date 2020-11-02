@@ -2929,10 +2929,12 @@ mouse_comp_pos(
 
     // skip line number and fold column in front of the line
     col -= win_col_off(win);
-    if (col < 0)
+    if (col <= 0)
     {
 #ifdef FEAT_NETBEANS_INTG
-	netbeans_gutter_click(lnum);
+	// if mouse is clicked on the gutter, then inform the netbeans server
+	if (*colp < win_col_off(win))
+	    netbeans_gutter_click(lnum);
 #endif
 	col = 0;
     }
