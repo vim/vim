@@ -460,6 +460,15 @@ def Test_command_modifier_other()
   # verbose
 enddef
 
+def Test_range_after_command_modifier()
+  CheckScriptFailure(['vim9script', 'silent keepjump 1d _'], 'E1050:', 2)
+  new
+  setline(1, 'xxx')
+  CheckScriptSuccess(['vim9script', 'silent keepjump :1d _'])
+  assert_equal('', getline(1))
+  bwipe!
+enddef
+
 def Test_eval_command()
   var from = 3
   var to = 5

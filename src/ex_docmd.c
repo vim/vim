@@ -1807,12 +1807,19 @@ do_one_cmd(
 	if (ea.cmd == cmd + 1 && *cmd == '$')
 	    // should be "$VAR = val"
 	    --ea.cmd;
-	else if (ea.cmd > cmd)
-	{
-	    emsg(_(e_colon_required_before_a_range));
-	    goto doend;
-	}
 	p = find_ex_command(&ea, NULL, lookup_scriptvar, NULL);
+	if (ea.cmdidx == CMD_SIZE)
+	{
+	    char_u *ar = skip_range(ea.cmd, TRUE, NULL);
+
+	    // If a ':' before the range is missing, give a clearer error
+	    // message.
+	    if (ar > ea.cmd)
+	    {
+		emsg(_(e_colon_required_before_a_range));
+		goto doend;
+	    }
+	}
     }
     else
 #endif
