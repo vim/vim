@@ -902,6 +902,8 @@ foldMoveTo(
 	// that moves the cursor is used.
 	lnum_off = 0;
 	gap = &curwin->w_folds;
+	if (gap->ga_len == 0)
+	    break;
 	use_level = FALSE;
 	maybe_small = FALSE;
 	lnum_found = curwin->w_cursor.lnum;
