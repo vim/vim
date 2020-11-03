@@ -309,6 +309,7 @@ func Nb_basic(port)
   call WaitFor('len(ReadXnetbeans()) >= (g:last + 3)')
   let l = ReadXnetbeans()
   call assert_equal('send: 2:setDot!57 3/6', l[-1])
+  sleep 10m
   call assert_equal([0, 3, 7, 0], getpos('.'))
   let g:last += 3
 
@@ -318,6 +319,7 @@ func Nb_basic(port)
   call WaitFor('len(ReadXnetbeans()) >= (g:last + 3)')
   let l = ReadXnetbeans()
   call assert_equal('send: 2:setDot!57 9', l[-1])
+  sleep 10m
   call assert_equal([0, 2, 1, 0], getpos('.'))
   let g:last += 3
 
