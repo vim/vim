@@ -40,7 +40,7 @@ endfunc
 
 func Test_sort_null_string()
   " null strings are sorted as empty strings.
-  call assert_equal(['', 'a', 'b'], sort(['b', test_null_string(), 'a'])
+  call assert_equal(['', 'a', 'b'], sort(['b', test_null_string(), 'a']))
 endfunc
 
 func Test_sort_numeric()
