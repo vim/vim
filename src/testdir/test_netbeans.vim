@@ -845,6 +845,7 @@ func Nb_quit_with_conn(port)
   call writefile([], "Xnetbeans")
   let after =<< trim END
     source shared.vim
+    set cpo&vim
 
     func ReadXnetbeans()
       let l = readfile("Xnetbeans")
