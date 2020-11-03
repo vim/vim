@@ -3238,7 +3238,7 @@ addsigntype(
 	    }
 	}
 
-	globalsignmap[i] = vim_strsave((char *)typeName);
+	globalsignmap[i] = (char *)vim_strsave(typeName);
 	globalsignmapused = i + 1;
     }
 
