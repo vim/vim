@@ -2552,8 +2552,11 @@ f_reduce(typval_T *argvars, typval_T *rettv)
     }
     else
 	func_name = tv_get_string(&argvars[1]);
-    if (*func_name == NUL)
-	return;		// type error or empty name
+    if (func_name == NULL || *func_name == NUL)
+    {
+	emsg(_(e_missing_function_argument));
+	return;
+    }
 
     vim_memset(&funcexe, 0, sizeof(funcexe));
     funcexe.evaluate = TRUE;

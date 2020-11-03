@@ -740,6 +740,9 @@ func Test_reduce()
 
   call assert_equal(42, reduce(test_null_list(), function('add'), 42))
   call assert_equal(42, reduce(test_null_blob(), function('add'), 42))
+
+  " should not crash
+  call assert_fails('echo reduce([1], test_null_function())', 'E1132:')
 endfunc
 
 " splitting a string to a List using split()

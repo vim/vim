@@ -286,4 +286,6 @@ EXTERN char e_cannot_add_to_null_list[]
 	INIT(= N_("E1130: Cannot add to null list"));
 EXTERN char e_cannot_add_to_null_blob[]
 	INIT(= N_("E1131: Cannot add to null blob"));
+EXTERN char e_missing_function_argument[]
+	INIT(= N_("E1132: Missing function argument"));
 #endif
