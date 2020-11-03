@@ -31,7 +31,7 @@ func Test_sort_strings()
       \            sort(['A', 'a', 'o', 'O', 'œ', 'œ', 'p', 'P', 'Ä', 'ä', 'ô', 'Ô'], 'l'))
     " ... whereas with a Swedish locale, the accentuated letters are ordered
     " after Z.
-    elseif lc =~? '"sv.*utf-\?8"'
+    elseif v:collate =~? '^sv.*utf-\?8$'
       call assert_equal(['a', 'A', 'o', 'O', 'p', 'P', 'ä', 'Ä', 'œ', 'œ', 'ô', 'Ô'],
       \            sort(['A', 'a', 'o', 'O', 'œ', 'œ', 'p', 'P', 'Ä', 'ä', 'ô', 'Ô'], 'l'))
     endif
