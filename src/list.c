@@ -2303,9 +2303,13 @@ f_extend(typval_T *argvars, typval_T *rettv)
 	int		error = FALSE;
 
 	l1 = argvars[0].vval.v_list;
+	if (l1 == NULL)
+	{
+	    emsg(_(e_cannot_extend_null_list));
+	    return;
+	}
 	l2 = argvars[1].vval.v_list;
-	if (l1 != NULL && !value_check_lock(l1->lv_lock, arg_errmsg, TRUE)
-		&& l2 != NULL)
+	if (!value_check_lock(l1->lv_lock, arg_errmsg, TRUE) && l2 != NULL)
 	{
 	    if (argvars[2].v_type != VAR_UNKNOWN)
 	    {
@@ -2339,9 +2343,13 @@ f_extend(typval_T *argvars, typval_T *rettv)
 	int	i;
 
 	d1 = argvars[0].vval.v_dict;
+	if (d1 == NULL)
+	{
+	    emsg(_(e_cannot_extend_null_dict));
+	    return;
+	}
 	d2 = argvars[1].vval.v_dict;
-	if (d1 != NULL && !value_check_lock(d1->dv_lock, arg_errmsg, TRUE)
-		&& d2 != NULL)
+	if (!value_check_lock(d1->dv_lock, arg_errmsg, TRUE) && d2 != NULL)
 	{
 	    // Check the third argument.
 	    if (argvars[2].v_type != VAR_UNKNOWN)

@@ -231,10 +231,14 @@ def Test_extend_list()
       var l: list<number>
       l += [123]
       assert_equal([123], l)
+  END
+  CheckScriptSuccess(lines)
 
-      var d: dict<number>
-      d['one'] = 1
-      assert_equal(#{one: 1}, d)
+  lines =<< trim END
+      vim9script
+      var list: list<string>
+      extend(list, ['x'])
+      assert_equal(['x'], list)
   END
   CheckScriptSuccess(lines)
 
@@ -249,6 +253,48 @@ def Test_extend_list()
       assert_equal(['a', 'b'], list)
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      var l: list<string> = test_null_list()
+      extend(l, ['x'])
+      assert_equal(['x'], l)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      extend(test_null_list(), ['x'])
+  END
+  CheckScriptFailure(lines, 'E1134:', 2)
+enddef
+
+def Test_extend_dict()
+  var lines =<< trim END
+      vim9script
+      var d: dict<number>
+      extend(d, #{a: 1})
+      assert_equal(#{a: 1}, d)
+
+      var d2: dict<number>
+      d2['one'] = 1
+      assert_equal(#{one: 1}, d2)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      var d: dict<string> = test_null_dict()
+      extend(d, #{a: 'x'})
+      assert_equal(#{a: 'x'}, d)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      extend(test_null_dict(), #{a: 'x'})
+  END
+  CheckScriptFailure(lines, 'E1133:', 2)
 enddef
 
 def Test_single_letter_vars()
