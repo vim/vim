@@ -1902,6 +1902,8 @@ def Test_expr7_dict()
   var dictdict: dict<dict<string>> = #{one: #{a: 'text'}, two: #{}}
   dictdict = #{one: #{}, two: #{a: 'text'}}
   dictdict = #{one: #{}, two: #{}}
+
+  assert_equal({'': 0}, {matchstr('string', 'wont match'): 0})
  
   CheckDefFailure(["var x = #{a:8}"], 'E1069:', 1)
   CheckDefFailure(["var x = #{a : 8}"], 'E1068:', 1)

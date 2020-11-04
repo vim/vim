@@ -1738,6 +1738,7 @@ call_def_function(
 		    int		count = iptr->isn_arg.number;
 		    dict_T	*dict = dict_alloc();
 		    dictitem_T	*item;
+		    char_u	*key;
 
 		    if (dict == NULL)
 			goto failed;
@@ -1746,15 +1747,17 @@ call_def_function(
 			// have already checked key type is VAR_STRING
 			tv = STACK_TV_BOT(2 * (idx - count));
 			// check key is unique
-			item = dict_find(dict, tv->vval.v_string, -1);
+			key = tv->vval.v_string == NULL
+					    ? (char_u *)"" : tv->vval.v_string;
+			item = dict_find(dict, key, -1);
 			if (item != NULL)
 			{
 			    SOURCING_LNUM = iptr->isn_lnum;
-			    semsg(_(e_duplicate_key), tv->vval.v_string);
+			    semsg(_(e_duplicate_key), key);
 			    dict_unref(dict);
 			    goto on_error;
 			}
-			item = dictitem_alloc(tv->vval.v_string);
+			item = dictitem_alloc(key);
 			clear_tv(tv);
 			if (item == NULL)
 			{
