@@ -108,7 +108,7 @@ get_list_type(type_T *member_type, garray_T *type_gap)
     type_T *type;
 
     // recognize commonly used types
-    if (member_type->tt_type == VAR_ANY)
+    if (member_type == NULL || member_type->tt_type == VAR_ANY)
 	return &t_list_any;
     if (member_type->tt_type == VAR_VOID
 	    || member_type->tt_type == VAR_UNKNOWN)
@@ -137,7 +137,7 @@ get_dict_type(type_T *member_type, garray_T *type_gap)
     type_T *type;
 
     // recognize commonly used types
-    if (member_type->tt_type == VAR_ANY)
+    if (member_type == NULL || member_type->tt_type == VAR_ANY)
 	return &t_dict_any;
     if (member_type->tt_type == VAR_VOID
 	    || member_type->tt_type == VAR_UNKNOWN)
@@ -408,6 +408,7 @@ typval2type_vimvar(typval_T *tv, garray_T *type_gap)
 
 /*
  * Return FAIL if "expected" and "actual" don't match.
+ * When "argidx" > 0 it is included in the error message.
  */
     int
 check_typval_type(type_T *expected, typval_T *actual_tv, int argidx)

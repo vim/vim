@@ -1749,6 +1749,15 @@ def Test_expr7_list_vim9script()
     var l: list<string> = [234, 'x']
   END
   CheckScriptFailure(lines, 'E1012:', 2)
+
+  lines =<< trim END
+      vim9script
+      def Failing()
+        job_stop()
+      enddef
+      var list = [Failing]
+  END
+  CheckScriptFailure(lines, 'E119:', 1)
 enddef
 
 def LambdaWithComments(): func
@@ -2009,6 +2018,15 @@ def Test_expr7_dict_vim9script()
     var l: dict<string> = #{a: 234, b: 'x'}
   END
   CheckScriptFailure(lines, 'E1012:', 2)
+
+  lines =<< trim END
+      vim9script
+      def Failing()
+        job_stop()
+      enddef
+      var dict = #{name: Failing}
+  END
+  CheckScriptFailure(lines, 'E119:', 1)
 enddef
 
 let g:oneString = 'one'
