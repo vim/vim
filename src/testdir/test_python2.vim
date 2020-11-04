@@ -353,12 +353,12 @@ func Test_python_list()
   call AssertException(["py t = vim.eval('[test_null_list()]')"],
         \ 'Vim(python):SystemError: error return without exception set')
 
-  " Try to bind a null List variable
+  " Try to bind a null List variable (works because an empty list is used)
   let cmds =<< trim END
     let l = test_null_list()
     py ll = vim.bindeval('l')
   END
-  call AssertException(cmds, 'Vim(python):SystemError: error return without exception set')
+  call AssertException(cmds, '')
 
   let l = []
   py l = vim.bindeval('l')

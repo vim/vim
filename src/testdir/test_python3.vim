@@ -545,13 +545,12 @@ func Test_python3_list()
   call AssertException(["py3 t = vim.eval('[test_null_list()]')"],
         \ 'Vim(py3):SystemError: <built-in function eval> returned NULL without setting an error')
 
-  " Try to bind a null List variable
+  " Try to bind a null List variable (works because an empty list is used)
   let cmds =<< trim END
     let l = test_null_list()
     py3 ll = vim.bindeval('l')
   END
-  call AssertException(cmds,
-        \ 'Vim(py3):SystemError: <built-in function bindeval> returned NULL without setting an error')
+  call AssertException(cmds, '')
 
   let l = []
   py3 l = vim.bindeval('l')
