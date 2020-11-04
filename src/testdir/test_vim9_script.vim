@@ -2859,6 +2859,28 @@ def Test_catch_exception_in_callback()
   unlet g:caught
 enddef
 
+def Test_no_unknown_error_after_error()
+  if !has('unix') || !has('job')
+    throw 'Skipped: not unix of missing +job feature'
+  endif
+  var lines =<< trim END
+      vim9script
+      var source: list<number>
+      def Out_cb(...l: any)
+          eval [][0]
+      enddef
+      def Exit_cb(...l: any)
+          sleep 1m
+          source += l
+      enddef
+      var myjob = job_start('echo burp', #{out_cb: Out_cb, exit_cb: Exit_cb, mode: 'raw'})
+      sleep 100m
+  END
+  writefile(lines, 'Xdef')
+  assert_fails('so Xdef', ['E684:', 'E1012:'])
+  delete('Xdef')
+enddef
+
 def Test_put_with_linebreak()
   new
   var lines =<< trim END

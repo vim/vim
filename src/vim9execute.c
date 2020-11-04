@@ -1071,8 +1071,15 @@ call_def_function(
 	{
 	    // execute Ex command line
 	    case ISN_EXEC:
-		SOURCING_LNUM = iptr->isn_lnum;
-		do_cmdline_cmd(iptr->isn_arg.string);
+		{
+		    int save_did_emsg = did_emsg;
+
+		    SOURCING_LNUM = iptr->isn_lnum;
+		    do_cmdline_cmd(iptr->isn_arg.string);
+		    // do_cmdline_cmd() will reset did_emsg, but we want to
+		    // keep track of the count to compare with did_emsg_before.
+		    did_emsg += save_did_emsg;
+		}
 		break;
 
 	    // execute Ex command from pieces on the stack

@@ -220,7 +220,11 @@ fill_assert_error(
 	vim_free(tofree);
     }
     else
+    {
+	ga_concat(gap, (char_u *)"'");
 	ga_concat_shorten_esc(gap, exp_str);
+	ga_concat(gap, (char_u *)"'");
+    }
     if (atype != ASSERT_NOTEQUAL)
     {
 	if (atype == ASSERT_MATCH)
@@ -571,6 +575,7 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
     {
 	char_u	buf[NUMBUFLEN];
 	char_u	*expected;
+	char_u	*expected_str = NULL;
 	int	error_found = FALSE;
 	int	error_found_index = 1;
 	char_u	*actual = emsg_assert_fails_msg == NULL ? (char_u *)"[unknown]"
@@ -598,6 +603,7 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 	    if (!pattern_match(expected, actual, FALSE))
 	    {
 		error_found = TRUE;
+		expected_str = expected;
 	    }
 	    else if (list->lv_len == 2)
 	    {
@@ -605,7 +611,10 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 		actual = get_vim_var_str(VV_ERRMSG);
 		expected = tv_get_string_buf_chk(tv, buf);
 		if (!pattern_match(expected, actual, FALSE))
+		{
 		    error_found = TRUE;
+		    expected_str = expected;
+		}
 	    }
 	}
 	else
@@ -665,7 +674,7 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 		actual_tv.v_type = VAR_STRING;
 		actual_tv.vval.v_string = actual;
 	    }
-	    fill_assert_error(&ga, &argvars[2], NULL,
+	    fill_assert_error(&ga, &argvars[2], expected_str,
 			&argvars[error_found_index], &actual_tv, ASSERT_OTHER);
 	    ga_concat(&ga, (char_u *)": ");
 	    assert_append_cmd_or_arg(&ga, argvars, cmd);
