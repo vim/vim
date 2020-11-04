@@ -581,6 +581,12 @@ EXTERN int	diff_need_scrollbind INIT(= FALSE);
 // ('lines' and 'rows') must not be changed.
 EXTERN int	updating_screen INIT(= FALSE);
 
+#ifdef MESSAGE_QUEUE
+// While closing windows or buffers messages should not be handled to avoid
+// using invalid windows or buffers.
+EXTERN int	dont_parse_messages INIT(= FALSE);
+#endif
+
 #ifdef FEAT_MENU
 // The root of the menu hierarchy.
 EXTERN vimmenu_T	*root_menu INIT(= NULL);

@@ -2155,7 +2155,8 @@ parse_queued_messages(void)
 
     // Do not handle messages while redrawing, because it may cause buffers to
     // change or be wiped while they are being redrawn.
-    if (updating_screen)
+    // Also bail out when parsing messages was explicitly disabled.
+    if (updating_screen || dont_parse_messages)
 	return;
 
     // If memory allocation fails during startup we'll exit but curbuf or

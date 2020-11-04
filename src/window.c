@@ -2569,7 +2569,12 @@ win_close(win_T *win, int free_buf)
 
     // Now we are really going to close the window.  Disallow any autocommand
     // to split a window to avoid trouble.
+    // Also bail out of parse_queued_messages() to avoid it tries to update the
+    // screen.
     ++split_disallowed;
+#ifdef MESSAGE_QUEUE
+    ++dont_parse_messages;
+#endif
 
     // Free the memory used for the window and get the window that received
     // the screen space.
@@ -2626,6 +2631,9 @@ win_close(win_T *win, int free_buf)
     }
 
     --split_disallowed;
+#ifdef MESSAGE_QUEUE
+    --dont_parse_messages;
+#endif
 
     /*
      * If last window has a status line now and we don't want one,
