@@ -439,13 +439,42 @@ def Test_command_modifiers_keep()
     DoTest(false, true, true)
     DoTest(true, true, true)
     set cpo&vim
+
+    new
+    setline(1, ['one', 'two', 'three', 'four'])
+    assert_equal(4, line("$"))
+    normal 1Gma
+    normal 2Gmb
+    normal 3Gmc
+    lockmarks :1,2!wc
+    # line is deleted, marks don't move
+    assert_equal(3, line("$"))
+    assert_equal('four', getline(3))
+    assert_equal(1, line("'a"))
+    assert_equal(2, line("'b"))
+    assert_equal(3, line("'c"))
+    quit!
   endif
 
-  # TODO
-  # lockmarks
-  # keepalt
-  # keeppatterns
-  # keepjumps
+  edit Xone
+  edit Xtwo
+  assert_equal('Xone', expand('#'))
+  keepalt edit Xthree
+  assert_equal('Xone', expand('#'))
+
+  normal /a*b*
+  assert_equal('a*b*', histget("search"))
+  keeppatterns normal /c*d*
+  assert_equal('a*b*', histget("search"))
+
+  new
+  setline(1, range(10))
+  :10
+  normal gg
+  assert_equal(10, getpos("''")[1])
+  keepjumps normal 5G
+  assert_equal(10, getpos("''")[1])
+  quit!
 enddef
 
 def Test_command_modifier_other()
