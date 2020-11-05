@@ -6873,7 +6873,7 @@ f_rand(typval_T *argvars, typval_T *rettv)
     static UINT32_T	gx, gy, gz, gw;
     static int	initialized = FALSE;
     listitem_T	*lx, *ly, *lz, *lw;
-    UINT32_T	x, y, z, w, t, result;
+    UINT32_T	x = 0, y, z, w, t, result;
 
     if (argvars[0].v_type == VAR_UNKNOWN)
     {
