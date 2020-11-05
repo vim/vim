@@ -5648,8 +5648,19 @@ buf_spname(buf_T *buf)
     }
 
     if (buf->b_fname == NULL)
-	return (char_u *)_("[No Name]");
+	return buf_get_fname(buf);
     return NULL;
+}
+
+/*
+ * Get "buf->b_fname", use "[No Name]" if it is NULL.
+ */
+    char_u *
+buf_get_fname(buf_T *buf)
+{
+    if (buf->b_fname == NULL)
+	return (char_u *)_("[No Name]");
+    return buf->b_fname;
 }
 
 /*

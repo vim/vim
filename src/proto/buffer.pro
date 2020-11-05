@@ -66,6 +66,7 @@ int bt_dontwrite(buf_T *buf);
 int bt_dontwrite_msg(buf_T *buf);
 int buf_hide(buf_T *buf);
 char_u *buf_spname(buf_T *buf);
+char_u *buf_get_fname(buf_T *buf);
 void set_buflisted(int on);
 int buf_contents_changed(buf_T *buf);
 void wipe_buffer(buf_T *buf, int aucmd);

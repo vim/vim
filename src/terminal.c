@@ -1598,7 +1598,7 @@ term_try_stop_job(buf_T *buf)
 	char_u	buff[DIALOG_MSG_SIZE];
 	int	ret;
 
-	dialog_msg(buff, _("Kill job in \"%s\"?"), buf->b_fname);
+	dialog_msg(buff, _("Kill job in \"%s\"?"), buf_get_fname(buf));
 	ret = vim_dialog_yesnocancel(VIM_QUESTION, NULL, buff, 1);
 	if (ret == VIM_YES)
 	    how = "kill";
@@ -4517,6 +4517,7 @@ term_get_status_text(term_T *term)
     {
 	char_u *txt;
 	size_t len;
+	char_u *fname;
 
 	if (term->tl_normal_mode)
 	{
@@ -4533,11 +4534,12 @@ term_get_status_text(term_T *term)
 	    txt = (char_u *)_("running");
 	else
 	    txt = (char_u *)_("finished");
-	len = 9 + STRLEN(term->tl_buffer->b_fname) + STRLEN(txt);
+	fname = buf_get_fname(term->tl_buffer);
+	len = 9 + STRLEN(fname) + STRLEN(txt);
 	term->tl_status_text = alloc(len);
 	if (term->tl_status_text != NULL)
 	    vim_snprintf((char *)term->tl_status_text, len, "%s [%s]",
-						term->tl_buffer->b_fname, txt);
+								   fname, txt);
     }
     return term->tl_status_text;
 }

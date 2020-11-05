@@ -41,6 +41,16 @@ func Test_terminal_basic()
   unlet g:job
 endfunc
 
+func Test_terminal_no_name()
+  let buf = Run_shell_in_terminal({})
+  call assert_match('^!', bufname(buf))
+  0file
+  call assert_equal("", bufname(buf))
+  call assert_match('\[No Name\]', execute('file'))
+  call StopShellInTerminal(buf)
+  call TermWait(buf)
+endfunc
+
 func Test_terminal_TerminalWinOpen()
   au TerminalWinOpen * let b:done = 'yes'
   let buf = Run_shell_in_terminal({})
