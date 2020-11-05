@@ -22,6 +22,7 @@ static dict_T		*first_dict = NULL;
 
 /*
  * Allocate an empty header for a dictionary.
+ * Caller should take care of the reference count.
  */
     dict_T *
 dict_alloc(void)

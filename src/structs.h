@@ -1688,7 +1688,8 @@ struct funccall_S
 #ifdef FEAT_PROFILE
     proftime_T	prof_child;	// time spent in a child
 #endif
-    funccall_T	*caller;	// calling function or NULL
+    funccall_T	*caller;	// calling function or NULL; or next funccal in
+				// list pointed to by previous_funccal.
 
     // for closure
     int		fc_refcount;	// number of user functions that reference this

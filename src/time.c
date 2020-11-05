@@ -497,10 +497,12 @@ check_due_timer(void)
 	    may_garbage_collect = FALSE;
 	    save_vimvars(&vvsave);
 
+	    // Invoke the callback.
 	    timer->tr_firing = TRUE;
 	    timer_callback(timer);
 	    timer->tr_firing = FALSE;
 
+	    // Restore stuff.
 	    timer_next = timer->tr_next;
 	    did_one = TRUE;
 	    timer_busy = save_timer_busy;
