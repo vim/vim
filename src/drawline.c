@@ -1873,6 +1873,7 @@ win_line(
 			char_u	*prev_ptr, *p;
 			int	len;
 			hlf_T	spell_hlf = HLF_COUNT;
+
 			if (has_mbyte)
 			{
 			    prev_ptr = ptr - mb_l;
@@ -2778,10 +2779,14 @@ win_line(
 	// Also highlight the 'colorcolumn' if 'breakindent' and/or 'showbreak'
 	// options are set
 	vcol_save_attr = -1;
-	if ((draw_state == WL_LINE ||
+	if (((draw_state == WL_LINE ||
 	     draw_state == WL_BRI ||
 	     draw_state == WL_SBR) && !lnum_in_visual_area
 		&& search_attr == 0 && area_attr == 0)
+# ifdef FEAT_DIFF
+			&& filler_todo <= 0
+# endif
+		)
 	{
 	    if (wp->w_p_cuc && VCOL_HLC == (long)wp->w_virtcol
 						 && lnum != wp->w_cursor.lnum)
