@@ -322,8 +322,6 @@ def Test_call_wrong_args()
   CheckDefFailure(['bufnr(xxx)'], 'E1001:')
   CheckScriptFailure(['def Func(Ref: func(s: string))'], 'E475:')
 
-  CheckDefFailure(['echo {i -> 0}()'], 'E119: Not enough arguments for function: {i -> 0}()')
-
   var lines =<< trim END
     vim9script
     def Func(s: string)
@@ -376,6 +374,17 @@ def Test_call_wrong_args()
   assert_true(didCatch)
 
   delete('Xscript')
+enddef
+
+def Test_call_lambda_args()
+  CheckDefFailure(['echo {i -> 0}()'],
+                  'E119: Not enough arguments for function: {i -> 0}()')
+
+  var lines =<< trim END
+      var Ref = {x: number, y: number -> x + y}
+      echo Ref(1, 'x')
+  END
+  CheckDefFailure(lines, 'E1013: Argument 2: type mismatch, expected number but got string')
 enddef
 
 " Default arg and varargs

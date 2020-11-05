@@ -54,11 +54,17 @@ func_tbl_get(void)
 /*
  * Get one function argument.
  * If "argtypes" is not NULL also get the type: "arg: type".
+ * If "types_optional" is TRUE a missing type is OK, use "any".
  * Return a pointer to after the type.
  * When something is wrong return "arg".
  */
     static char_u *
-one_function_arg(char_u *arg, garray_T *newargs, garray_T *argtypes, int skip)
+one_function_arg(
+	char_u	    *arg,
+	garray_T    *newargs,
+	garray_T    *argtypes,
+	int	    types_optional,
+	int	    skip)
 {
     char_u	*p = arg;
     char_u	*arg_copy = NULL;
@@ -105,7 +111,7 @@ one_function_arg(char_u *arg, garray_T *newargs, garray_T *argtypes, int skip)
     }
 
     // get any type from "arg: type"
-    if (argtypes != NULL && ga_grow(argtypes, 1) == OK)
+    if (argtypes != NULL && (skip || ga_grow(argtypes, 1) == OK))
     {
 	char_u *type = NULL;
 
@@ -118,22 +124,29 @@ one_function_arg(char_u *arg, garray_T *newargs, garray_T *argtypes, int skip)
 	if (*p == ':')
 	{
 	    ++p;
-	    if (!VIM_ISWHITE(*p))
+	    if (!skip && !VIM_ISWHITE(*p))
 	    {
 		semsg(_(e_white_space_required_after_str), ":");
 		return arg;
 	    }
 	    type = skipwhite(p);
 	    p = skip_type(type, TRUE);
-	    type = vim_strnsave(type, p - type);
+	    if (!skip)
+		type = vim_strnsave(type, p - type);
 	}
-	else if (*skipwhite(p) != '=')
+	else if (*skipwhite(p) != '=' && !types_optional)
 	{
 	    semsg(_(e_missing_argument_type_for_str),
 					    arg_copy == NULL ? arg : arg_copy);
 	    return arg;
 	}
-	((char_u **)argtypes->ga_data)[argtypes->ga_len++] = type;
+	if (!skip)
+	{
+	    if (type == NULL && types_optional)
+		// lambda arguments default to "any" type
+		type = vim_strsave((char_u *)"any");
+	    ((char_u **)argtypes->ga_data)[argtypes->ga_len++] = type;
+	}
     }
 
     return p;
@@ -148,6 +161,7 @@ get_function_args(
     char_u	endchar,
     garray_T	*newargs,
     garray_T	*argtypes,	// NULL unless using :def
+    int		types_optional,	// types optional if "argtypes" is not NULL
     int		*varargs,
     garray_T	*default_args,
     int		skip,
@@ -196,7 +210,7 @@ get_function_args(
 	{
 	    if (!skip)
 		semsg(_(e_invarg2), *argp);
-	    break;
+	    goto err_ret;
 	}
 	if (*p == endchar)
 	    break;
@@ -213,12 +227,14 @@ get_function_args(
 		// ...name: list<type>
 		if (!eval_isnamec1(*p))
 		{
-		    emsg(_(e_missing_name_after_dots));
-		    break;
+		    if (!skip)
+			emsg(_(e_missing_name_after_dots));
+		    goto err_ret;
 		}
 
 		arg = p;
-		p = one_function_arg(p, newargs, argtypes, skip);
+		p = one_function_arg(p, newargs, argtypes, types_optional,
+									 skip);
 		if (p == arg)
 		    break;
 	    }
@@ -226,7 +242,7 @@ get_function_args(
 	else
 	{
 	    arg = p;
-	    p = one_function_arg(p, newargs, argtypes, skip);
+	    p = one_function_arg(p, newargs, argtypes, types_optional, skip);
 	    if (p == arg)
 		break;
 
@@ -301,6 +317,63 @@ err_ret:
     if (default_args != NULL)
 	ga_clear_strings(default_args);
     return FAIL;
+}
+
+/*
+ * Parse the argument types, filling "fp->uf_arg_types".
+ * Return OK or FAIL.
+ */
+    static int
+parse_argument_types(ufunc_T *fp, garray_T *argtypes, int varargs)
+{
+    ga_init2(&fp->uf_type_list, sizeof(type_T *), 10);
+    if (argtypes->ga_len > 0)
+    {
+	// When "varargs" is set the last name/type goes into uf_va_name
+	// and uf_va_type.
+	int len = argtypes->ga_len - (varargs ? 1 : 0);
+
+	if (len > 0)
+	    fp->uf_arg_types = ALLOC_CLEAR_MULT(type_T *, len);
+	if (fp->uf_arg_types != NULL)
+	{
+	    int	i;
+	    type_T	*type;
+
+	    for (i = 0; i < len; ++ i)
+	    {
+		char_u *p = ((char_u **)argtypes->ga_data)[i];
+
+		if (p == NULL)
+		    // will get the type from the default value
+		    type = &t_unknown;
+		else
+		    type = parse_type(&p, &fp->uf_type_list);
+		if (type == NULL)
+		    return FAIL;
+		fp->uf_arg_types[i] = type;
+	    }
+	}
+	if (varargs)
+	{
+	    char_u *p;
+
+	    // Move the last argument "...name: type" to uf_va_name and
+	    // uf_va_type.
+	    fp->uf_va_name = ((char_u **)fp->uf_args.ga_data)
+						  [fp->uf_args.ga_len - 1];
+	    --fp->uf_args.ga_len;
+	    p = ((char_u **)argtypes->ga_data)[len];
+	    if (p == NULL)
+		// todo: get type from default value
+		fp->uf_va_type = &t_any;
+	    else
+		fp->uf_va_type = parse_type(&p, &fp->uf_type_list);
+	    if (fp->uf_va_type == NULL)
+		return FAIL;
+	}
+    }
+    return OK;
 }
 
 /*
@@ -386,16 +459,22 @@ register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
 
 /*
  * Parse a lambda expression and get a Funcref from "*arg".
+ * When "types_optional" is TRUE optionally take argument types.
  * Return OK or FAIL.  Returns NOTDONE for dict or {expr}.
  */
     int
-get_lambda_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
+get_lambda_tv(
+	char_u	    **arg,
+	typval_T    *rettv,
+	int	    types_optional,
+	evalarg_T   *evalarg)
 {
     int		evaluate = evalarg != NULL
 				      && (evalarg->eval_flags & EVAL_EVALUATE);
     garray_T	newargs;
     garray_T	newlines;
     garray_T	*pnewargs;
+    garray_T	argtypes;
     ufunc_T	*fp = NULL;
     partial_T   *pt = NULL;
     int		varargs;
@@ -411,8 +490,9 @@ get_lambda_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 
     // First, check if this is a lambda expression. "->" must exist.
     s = skipwhite(*arg + 1);
-    ret = get_function_args(&s, '-', NULL, NULL, NULL, NULL, TRUE,
-								   NULL, NULL);
+    ret = get_function_args(&s, '-', NULL,
+	    types_optional ? &argtypes : NULL, types_optional,
+						 NULL, NULL, TRUE, NULL, NULL);
     if (ret == FAIL || *s != '>')
 	return NOTDONE;
 
@@ -422,9 +502,9 @@ get_lambda_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
     else
 	pnewargs = NULL;
     *arg = skipwhite(*arg + 1);
-    // TODO: argument types
-    ret = get_function_args(arg, '-', pnewargs, NULL, &varargs, NULL, FALSE,
-								   NULL, NULL);
+    ret = get_function_args(arg, '-', pnewargs,
+	    types_optional ? &argtypes : NULL, types_optional,
+					    &varargs, NULL, FALSE, NULL, NULL);
     if (ret == FAIL || **arg != '>')
 	goto errret;
 
@@ -489,6 +569,10 @@ get_lambda_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	hash_add(&func_hashtab, UF2HIKEY(fp));
 	fp->uf_args = newargs;
 	ga_init(&fp->uf_def_args);
+	if (types_optional
+			 && parse_argument_types(fp, &argtypes, FALSE) == FAIL)
+	    goto errret;
+
 	fp->uf_lines = newlines;
 	if (current_funccal != NULL && eval_lavars)
 	{
@@ -523,11 +607,15 @@ get_lambda_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	evalarg->eval_tofree = tofree;
     else
 	vim_free(tofree);
+    if (types_optional)
+	ga_clear_strings(&argtypes);
     return OK;
 
 errret:
     ga_clear_strings(&newargs);
     ga_clear_strings(&newlines);
+    if (types_optional)
+	ga_clear_strings(&argtypes);
     vim_free(fp);
     vim_free(pt);
     if (evalarg != NULL && evalarg->eval_tofree == NULL)
@@ -2907,7 +2995,7 @@ define_function(exarg_T *eap, char_u *name_arg)
     // This may get more lines and make the pointers into the first line
     // invalid.
     if (get_function_args(&p, ')', &newargs,
-			eap->cmdidx == CMD_def ? &argtypes : NULL,
+			eap->cmdidx == CMD_def ? &argtypes : NULL, FALSE,
 			 &varargs, &default_args, eap->skip,
 			 eap, &line_to_free) == FAIL)
 	goto errret_2;
@@ -3502,58 +3590,12 @@ define_function(exarg_T *eap, char_u *name_arg)
 		cstack->cs_flags[i] |= CSF_FUNC_DEF;
 	}
 
-	// parse the argument types
-	ga_init2(&fp->uf_type_list, sizeof(type_T *), 10);
-	if (argtypes.ga_len > 0)
+	if (parse_argument_types(fp, &argtypes, varargs) == FAIL)
 	{
-	    // When "varargs" is set the last name/type goes into uf_va_name
-	    // and uf_va_type.
-	    int len = argtypes.ga_len - (varargs ? 1 : 0);
-
-	    if (len > 0)
-		fp->uf_arg_types = ALLOC_CLEAR_MULT(type_T *, len);
-	    if (fp->uf_arg_types != NULL)
-	    {
-		int	i;
-		type_T	*type;
-
-		for (i = 0; i < len; ++ i)
-		{
-		    p = ((char_u **)argtypes.ga_data)[i];
-		    if (p == NULL)
-			// will get the type from the default value
-			type = &t_unknown;
-		    else
-			type = parse_type(&p, &fp->uf_type_list);
-		    if (type == NULL)
-		    {
-			SOURCING_LNUM = lnum_save;
-			goto errret_2;
-		    }
-		    fp->uf_arg_types[i] = type;
-		}
-	    }
-	    if (varargs)
-	    {
-		// Move the last argument "...name: type" to uf_va_name and
-		// uf_va_type.
-		fp->uf_va_name = ((char_u **)fp->uf_args.ga_data)
-						      [fp->uf_args.ga_len - 1];
-		--fp->uf_args.ga_len;
-		p = ((char_u **)argtypes.ga_data)[len];
-		if (p == NULL)
-		    // todo: get type from default value
-		    fp->uf_va_type = &t_any;
-		else
-		    fp->uf_va_type = parse_type(&p, &fp->uf_type_list);
-		if (fp->uf_va_type == NULL)
-		{
-		    SOURCING_LNUM = lnum_save;
-		    goto errret_2;
-		}
-	    }
-	    varargs = FALSE;
+	    SOURCING_LNUM = lnum_save;
+	    goto errret_2;
 	}
+	varargs = FALSE;
 
 	// parse the return type, if any
 	if (ret_type == NULL)

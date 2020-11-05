@@ -788,6 +788,28 @@ def Test_disassemble_lambda()
         instr)
 enddef
 
+def LambdaWithType(): number
+  var Ref = {a: number -> a + 10}
+  return Ref(g:value)
+enddef
+
+def Test_disassemble_lambda_with_type()
+  g:value = 5
+  assert_equal(15, LambdaWithType())
+  var instr = execute('disassemble LambdaWithType')
+  assert_match('LambdaWithType\_s*' ..
+        'var Ref = {a: number -> a + 10}\_s*' ..
+        '\d FUNCREF <lambda>\d\+\_s*' ..
+        '\d STORE $0\_s*' ..
+        'return Ref(g:value)\_s*' ..
+        '\d LOADG g:value\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d CHECKTYPE number stack\[-2\]\_s*' ..
+        '\d PCALL (argc 1)\_s*' ..
+        '\d RETURN',
+        instr)
+enddef
+
 def NestedOuter()
   def g:Inner()
     echomsg "inner"

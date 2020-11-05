@@ -1695,6 +1695,30 @@ generate_PCALL(
 		semsg(_(e_toomanyarg), name);
 		return FAIL;
 	    }
+	    if (type->tt_args != NULL)
+	    {
+		int i;
+
+		for (i = 0; i < argcount; ++i)
+		{
+		    int	    offset = -argcount + i - 1;
+		    type_T *actual = ((type_T **)stack->ga_data)[
+						       stack->ga_len + offset];
+		    type_T *expected;
+
+		    if (varargs && i >= type->tt_min_argcount - 1)
+			expected = type->tt_args[
+					 type->tt_min_argcount - 1]->tt_member;
+		    else
+			expected = type->tt_args[i];
+		    if (need_type(actual, expected, offset,
+						    cctx, TRUE, FALSE) == FAIL)
+		    {
+			arg_type_mismatch(expected, actual, i + 1);
+			return FAIL;
+		    }
+		}
+	    }
 	}
 	ret_type = type->tt_member;
     }
@@ -2835,7 +2859,7 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     evalarg.eval_cctx = cctx;
 
     // Get the funcref in "rettv".
-    if (get_lambda_tv(arg, &rettv, &evalarg) != OK)
+    if (get_lambda_tv(arg, &rettv, TRUE, &evalarg) != OK)
     {
 	clear_evalarg(&evalarg, NULL);
 	return FAIL;
@@ -2844,7 +2868,6 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     ufunc = rettv.vval.v_partial->pt_func;
     ++ufunc->uf_refcount;
     clear_tv(&rettv);
-    ga_init2(&ufunc->uf_type_list, sizeof(type_T *), 10);
 
     // The function will have one line: "return {expr}".
     // Compile it into instructions.
@@ -2880,7 +2903,7 @@ compile_lambda_call(char_u **arg, cctx_T *cctx)
     int		ret = FAIL;
 
     // Get the funcref in "rettv".
-    if (get_lambda_tv(arg, &rettv, &EVALARG_EVALUATE) == FAIL)
+    if (get_lambda_tv(arg, &rettv, TRUE, &EVALARG_EVALUATE) == FAIL)
 	return FAIL;
 
     if (**arg != '(')
@@ -3796,10 +3819,12 @@ compile_expr7(
 	 */
 	case '{':   {
 			char_u *start = skipwhite(*arg + 1);
+			garray_T ga_arg;
 
 			// Find out what comes after the arguments.
 			ret = get_function_args(&start, '-', NULL,
-					   NULL, NULL, NULL, TRUE, NULL, NULL);
+					&ga_arg, TRUE, NULL, NULL,
+							     TRUE, NULL, NULL);
 			if (ret != FAIL && *start == '>')
 			    ret = compile_lambda(arg, cctx);
 			else

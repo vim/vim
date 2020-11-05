@@ -1,10 +1,10 @@
 /* userfunc.c */
 void func_init(void);
 hashtab_T *func_tbl_get(void);
-int get_function_args(char_u **argp, char_u endchar, garray_T *newargs, garray_T *argtypes, int *varargs, garray_T *default_args, int skip, exarg_T *eap, char_u **line_to_free);
+int get_function_args(char_u **argp, char_u endchar, garray_T *newargs, garray_T *argtypes, int types_optional, int *varargs, garray_T *default_args, int skip, exarg_T *eap, char_u **line_to_free);
 char_u *get_lambda_name(void);
 char_u *register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state);
-int get_lambda_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
+int get_lambda_tv(char_u **arg, typval_T *rettv, int types_optional, evalarg_T *evalarg);
 char_u *deref_func_name(char_u *name, int *lenp, partial_T **partialp, int no_autoload);
 void emsg_funcname(char *ermsg, char_u *name);
 int get_func_tv(char_u *name, int len, typval_T *rettv, char_u **arg, evalarg_T *evalarg, funcexe_T *funcexe);

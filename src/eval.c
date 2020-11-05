@@ -3266,7 +3266,7 @@ eval7(
      * Lambda: {arg, arg -> expr}
      * Dictionary: {'key': val, 'key': val}
      */
-    case '{':	ret = get_lambda_tv(arg, rettv, evalarg);
+    case '{':	ret = get_lambda_tv(arg, rettv, FALSE, evalarg);
 		if (ret == NOTDONE)
 		    ret = eval_dict(arg, rettv, evalarg, FALSE);
 		break;
@@ -3554,7 +3554,7 @@ eval_lambda(
     *arg += 2;
     rettv->v_type = VAR_UNKNOWN;
 
-    ret = get_lambda_tv(arg, rettv, evalarg);
+    ret = get_lambda_tv(arg, rettv, FALSE, evalarg);
     if (ret != OK)
 	return FAIL;
     else if (**arg != '(')
