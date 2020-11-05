@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2020 Oct 23
+" Last Change:	2020 Oct 27
 
 " If there already is an option window, jump to that one.
 let buf = bufnr('option-window')
@@ -848,7 +848,7 @@ if has("digraphs")
 endif
 call <SID>AddOption("tildeop", gettext("the \"~\" command behaves like an operator"))
 call <SID>BinOptionG("top", &top)
-call <SID>AddOption("operatorfunc", gettext("function called for the \"g@\"  operator"))
+call <SID>AddOption("operatorfunc", gettext("function called for the \"g@\" operator"))
 call <SID>OptionG("opfunc", &opfunc)
 call <SID>AddOption("showmatch", gettext("when inserting a bracket, briefly jump to its match"))
 call <SID>BinOptionG("sm", &sm)
@@ -1267,7 +1267,7 @@ endif
 
 
 call <SID>Header(gettext("multi-byte characters"))
-call <SID>AddOption("encoding", gettext("character encoding used in Vim: \"latin1\", \"utf-8\"\n\"euc-jp\", \"big5\", etc."))
+call <SID>AddOption("encoding", gettext("character encoding used in Vim: \"latin1\", \"utf-8\",\n\"euc-jp\", \"big5\", etc."))
 call <SID>OptionG("enc", &enc)
 call <SID>AddOption("fileencoding", gettext("character encoding for the current file"))
 call append("$", "\t" .. s:local_to_buffer)

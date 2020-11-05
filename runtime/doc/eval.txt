@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Oct 23
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Nov 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3798,7 +3798,7 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 		not need to be the first letter: >
 			confirm("file has been modified", "&Save\nSave &All")
 <		For the console, the first letter of each choice is used as
-		the default shortcut key.
+		the default shortcut key.  Case is ignored.
 
 		The optional {default} argument is the number of the choice
 		that is made if the user hits <CR>.  Use 1 to make the first
@@ -4427,10 +4427,10 @@ extend({expr1}, {expr2} [, {expr3}])			*extend()*
 		|Dictionaries|.
 
 		If they are |Lists|: Append {expr2} to {expr1}.
-		If {expr3} is given insert the items of {expr2} before item
-		{expr3} in {expr1}.  When {expr3} is zero insert before the
-		first item.  When {expr3} is equal to len({expr1}) then
-		{expr2} is appended.
+		If {expr3} is given insert the items of {expr2} before the
+		item with index {expr3} in {expr1}.  When {expr3} is zero
+		insert before the first item.  When {expr3} is equal to
+		len({expr1}) then {expr2} is appended.
 		Examples: >
 			:echo sort(extend(mylist, [7, 5]))
 			:call extend(mylist, [2, 3], 1)
@@ -8319,15 +8319,18 @@ reg_recording()						*reg_recording()*
 		Returns an empty string when not recording.  See |q|.
 
 reltime([{start} [, {end}]])				*reltime()*
-		Return an item that represents a time value.  The format of
-		the item depends on the system.  It can be passed to
-		|reltimestr()| to convert it to a string  or |reltimefloat()|
-		to convert to a Float.
-		Without an argument it returns the current time.
+		Return an item that represents a time value.  The item is a
+		list with items that depend on the system.  In Vim 9 script
+		list<any> can be used.
+		The item can be passed to |reltimestr()| to convert it to a
+		string or |reltimefloat()| to convert to a Float.
+
+		Without an argument reltime() returns the current time.
 		With one argument is returns the time passed since the time
 		specified in the argument.
 		With two arguments it returns the time passed between {start}
 		and {end}.
+
 		The {start} and {end} arguments must be values returned by
 		reltime().
 
@@ -9700,15 +9703,25 @@ sort({list} [, {func} [, {dict}]])			*sort()* *E702*
 		When {func} is given and it is '1' or 'i' then case is
 		ignored.
 
-		When {func} is given and it is 'l' then the current locale
-		is used for ordering. See `language collate` to check or set
-		the locale used for ordering.  For example, with "en_US.UTF8",
-		Ö will be ordered after O and before P, whereas with the
-		Swedish locale "sv_SE.UTF8", it will be after Z.
-		Case is typically ignored by the locale.
+		When {func} is given and it is 'l' then the current collation
+		locale is used for ordering. Implementation details: strcoll()
+		is used to compare strings. See |:language| check or set the
+		collation locale. |v:collate| can also be used to check the
+		current locale. Sorting using the locale typically ignores
+		case. Example: >
+			" ö is sorted similarly to o with English locale.
+			:language collate en_US.UTF8
+			:echo sort(['n', 'o', 'O', 'ö', 'p', 'z'], 'l')
+<			['n', 'o', 'O', 'ö', 'p', 'z'] ~
+>
+			" ö is sorted after z with Swedish locale.
+			:language collate sv_SE.UTF8
+			:echo sort(['n', 'o', 'O', 'ö', 'p', 'z'], 'l')
+<			['n', 'o', 'O', 'p', 'z', 'ö'] ~
+		This does not work properly on Mac.
 
 		When {func} is given and it is 'n' then all items will be
-		sorted numerical (Implementation detail: This uses the
+		sorted numerical (Implementation detail: this uses the
 		strtod() function to parse numbers, Strings, Lists, Dicts and
 		Funcrefs will be considered as being 0).
 
@@ -11593,7 +11606,7 @@ menu			Compiled with support for |:menu|.
 mksession		Compiled with support for |:mksession|.
 modify_fname		Compiled with file name modifiers. |filename-modifiers|
 			(always true)
-mouse			Compiled with support mouse.
+mouse			Compiled with support for mouse.
 mouse_dec		Compiled with support for Dec terminal mouse.
 mouse_gpm		Compiled with support for gpm (Linux console mouse)
 mouse_gpm_enabled	GPM mouse is working

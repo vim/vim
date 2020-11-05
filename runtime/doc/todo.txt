@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Oct 26
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Nov 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,12 +38,13 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Sign highlight in signcolumn disappears if there is line highlighting.
+test_vim9_func fails: type from default value not used.
+
+Without extra sleeps netbeans test has valgrind errors.
+PR #7248 from Yegappan - test doesn't fail without code changes
 
 Making everything work:
-- Test all  command modifiers.
-- Check many more builtin function arguments at compile time.
-- Closure arguments should be more strict, like any function call?
+- Closure argument call should not always set varargs, like any function call?
 - Invoke user command in a :def function
 - Make map() give an error if the resulting type is wrong.
   Add mapnew() or mapcopy() to create a new List/Dict for the result, which
@@ -54,6 +55,7 @@ Making everything work:
 - In autocmd: use legacy syntax, not whatever the current script uses?
 - need to check type when a declaration specifies a type: #6507
 	let nr: number = 'asdf'
+- Check many more builtin function arguments at compile time.
 - Make sure that in vim9script a function call without namespace only finds
   the script-local function, not a global one.
 - Make sure that where a callback is expected a function can be used (without
@@ -278,8 +280,6 @@ Patch to implement the vimtutor with a plugin: #6414
 Was originally written by Felipe Morales.
 
 Remove SPACE_IN_FILENAME ? It is only used for completion.
-
-Patch to use collation based sorting. (Christian Brabandt, #6229)
 
 Add 'termguiattr' option, use "gui=" attributes in the terminal?  Would work
 with 'termguicolors'. #1740
