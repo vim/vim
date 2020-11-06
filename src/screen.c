@@ -464,7 +464,8 @@ screen_line(
     // First char of a popup window may go on top of the right half of a
     // double-wide character. Clear the left half to avoid it getting the popup
     // window background color.
-    if (coloff > 0 && ScreenLines[off_to] == 0
+    if (coloff > 0 && enc_utf8
+		   && ScreenLines[off_to] == 0
 		   && ScreenLinesUC[off_to - 1] != 0
 		   && (*mb_char2cells)(ScreenLinesUC[off_to - 1]) > 1)
     {

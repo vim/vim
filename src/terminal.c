@@ -1830,6 +1830,10 @@ update_snapshot(term_T *term)
 			width = cell.width;
 
 			cell2cellattr(&cell, &p[pos.col]);
+			if (width == 2)
+			    // second cell of double-width character has the
+			    // same attributes.
+			    p[pos.col + 1] = p[pos.col];
 
 			// Each character can be up to 6 bytes.
 			if (ga_grow(&ga, VTERM_MAX_CHARS_PER_CELL * 6) == OK)
@@ -3639,6 +3643,7 @@ term_line2screenline(
 	    }
 #endif
 	    else
+		// This will only store the lower byte of "c".
 		ScreenLines[off] = c;
 	}
 	ScreenAttrs[off] = cell2attr(term, wp, cell.attrs, cell.fg, cell.bg);
@@ -3647,13 +3652,20 @@ term_line2screenline(
 	++off;
 	if (cell.width == 2)
 	{
-	    if (enc_utf8)
-		ScreenLinesUC[off] = NUL;
-
 	    // don't set the second byte to NUL for a DBCS encoding, it
 	    // has been set above
-	    if (enc_utf8 || !has_mbyte)
+	    if (enc_utf8)
+	    {
+		ScreenLinesUC[off] = NUL;
 		ScreenLines[off] = NUL;
+	    }
+	    else if (!has_mbyte)
+	    {
+		// Can't show a double-width character with a single-byte
+		// 'encoding', just use a space.
+		ScreenLines[off] = ' ';
+		ScreenAttrs[off] = ScreenAttrs[off - 1];
+	    }
 
 	    ++pos->col;
 	    ++off;
