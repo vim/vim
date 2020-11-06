@@ -34,9 +34,9 @@ endfunc
 " Read the "Xnetbeans" file and filter out geometry messages.
 func ReadXnetbeans()
   let l = readfile("Xnetbeans")
-  " Xnetbeans may include '0:geometry=' messages on GUI environment if window
+  " Xnetbeans may include '0:geometry=' messages in the GUI Vim if the window
   " position, size, or z order are changed.  Remove these messages because
-  " will causes troubles on check.
+  " these message will break the assert for the output.
   return filter(l, 'v:val !~ "^0:geometry="')
 endfunc
 
@@ -388,7 +388,7 @@ func Nb_basic(port)
   call assert_equal('send: 2:defineAnnoType!60 1 "s1" "x" "=>" blue none', l[-1])
   sleep 1m
   call assert_equal({'name': '1', 'texthl': 'NB_s1', 'text': '=>'},
-        \ sign_getdefined()[0])
+        \ sign_getdefined()->get(0, {}))
   let g:last += 3
 
   " defineAnnoType with a long color name
@@ -890,6 +890,46 @@ func Test_nb_quit_with_conn()
   " MS-Windows.
   CheckUnix
   call s:run_server('Nb_quit_with_conn')
+endfunc
+
+func Nb_bwipe_buffer(port)
+  call delete("Xnetbeans")
+  call writefile([], "Xnetbeans")
+
+  " Last line number in the Xnetbeans file. Used to verify the result of the
+  " communication with the netbeans server
+  let g:last = 0
+
+  " Establish the connection with the netbeans server
+  exe 'nbstart :localhost:' .. a:port .. ':bunny'
+  call WaitFor('len(ReadXnetbeans()) > (g:last + 2)')
+  let l = ReadXnetbeans()
+  call assert_equal(['AUTH bunny',
+        \ '0:version=0 "2.5"',
+        \ '0:startupDone=0'], l[-3:])
+  let g:last += 3
+
+  " Open the command buffer to communicate with the server
+  split Xcmdbuf
+  call WaitFor('len(ReadXnetbeans()) > (g:last + 2)')
+  let l = ReadXnetbeans()
+  call assert_equal('0:fileOpened=0 "Xcmdbuf" T F',
+        \ substitute(l[-3], '".*/', '"', ''))
+  call assert_equal('send: 1:putBufferNumber!15 "Xcmdbuf"',
+        \ substitute(l[-2], '".*/', '"', ''))
+  call assert_equal('1:startDocumentListen!16', l[-1])
+  let g:last += 3
+
+  sleep 10m
+endfunc
+
+" This test used to reference a buffer after it was freed leading to an ASAN
+" error.
+func Test_nb_bwipe_buffer()
+  call s:run_server('Nb_bwipe_buffer')
+  %bwipe!
+  sleep 100m
+  nbclose
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
