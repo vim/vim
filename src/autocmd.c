@@ -1572,7 +1572,7 @@ win_found:
     else
     {
 	// restore curwin
-	if (win_valid(aco->save_curwin))
+	if (win_valid(aco->save_curwin) && !WIN_IS_POPUP(aco->save_curwin))
 	{
 	    // Restore the buffer which was previously edited by curwin, if
 	    // it was changed, we are still the same window and the buffer is
