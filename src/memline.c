@@ -4978,7 +4978,14 @@ findswapname(
 				    process_still_running
 					? (char_u *)_("&Open Read-Only\n&Edit anyway\n&Recover\n&Quit\n&Abort") :
 # endif
-					(char_u *)_("&Open Read-Only\n&Edit anyway\n&Recover\n&Delete it\n&Quit\n&Abort"), 1, NULL, FALSE);
+					// Give a different hotkey for when the
+					// file has been modified, otherwise it
+					// is easy to delete unrecovered
+					// changes.
+					b0.b0_dirty ?
+					    (char_u *)_("&Open Read-Only\n&Edit anyway\n&Recover\nDelete &Modified\n&Quit\n&Abort") :
+					    (char_u *)_("&Open Read-Only\n&Edit anyway\n&Recover\n&Delete it\n&Quit\n&Abort"),
+					1, NULL, FALSE);
 
 # ifdef HAVE_PROCESS_STILL_RUNNING
 			if (process_still_running && choice >= 4)
