@@ -1292,26 +1292,26 @@ func Test_expr5_fails()
   call CheckDefFailure(["var x = '1' ..'2'"], msg, 1)
   call CheckDefFailure(["var x = '1'.. '2'"], msg, 1)
 
-  call CheckDefFailure(["var x = 0z1122 + 33"], 'E1051', 1)
-  call CheckDefFailure(["var x = 0z1122 + [3]"], 'E1051', 1)
-  call CheckDefFailure(["var x = 0z1122 + 'asd'"], 'E1051', 1)
-  call CheckDefFailure(["var x = 33 + 0z1122"], 'E1051', 1)
-  call CheckDefFailure(["var x = [3] + 0z1122"], 'E1051', 1)
-  call CheckDefFailure(["var x = 'asdf' + 0z1122"], 'E1051', 1)
-  call CheckDefFailure(["var x = 6 + xxx"], 'E1001', 1)
+  call CheckDefFailure(["var x = 0z1122 + 33"], 'E1051:', 1)
+  call CheckDefFailure(["var x = 0z1122 + [3]"], 'E1051:', 1)
+  call CheckDefFailure(["var x = 0z1122 + 'asd'"], 'E1051:', 1)
+  call CheckDefFailure(["var x = 33 + 0z1122"], 'E1051:', 1)
+  call CheckDefFailure(["var x = [3] + 0z1122"], 'E1051:', 1)
+  call CheckDefFailure(["var x = 'asdf' + 0z1122"], 'E1051:', 1)
+  call CheckDefFailure(["var x = 6 + xxx"], 'E1001:', 1)
 
-  call CheckDefFailure(["var x = 'a' .. [1]"], 'E1105', 1)
-  call CheckDefFailure(["var x = 'a' .. #{a: 1}"], 'E1105', 1)
-  call CheckDefFailure(["var x = 'a' .. test_void()"], 'E1105', 1)
-  call CheckDefFailure(["var x = 'a' .. 0z32"], 'E1105', 1)
-  call CheckDefFailure(["var x = 'a' .. function('len')"], 'E1105', 1)
-  call CheckDefFailure(["var x = 'a' .. function('len', ['a'])"], 'E1105', 1)
+  call CheckDefFailure(["var x = 'a' .. [1]"], 'E1105:', 1)
+  call CheckDefFailure(["var x = 'a' .. #{a: 1}"], 'E1105:', 1)
+  call CheckDefFailure(["var x = 'a' .. test_void()"], 'E1105:', 1)
+  call CheckDefFailure(["var x = 'a' .. 0z32"], 'E1105:', 1)
+  call CheckDefFailure(["var x = 'a' .. function('len')"], 'E1105:', 1)
+  call CheckDefFailure(["var x = 'a' .. function('len', ['a'])"], 'E1105:', 1)
 endfunc
 
 func Test_expr5_fails_channel()
   CheckFeature channel
-  call CheckDefFailure(["var x = 'a' .. test_null_job()"], 'E1105', 1)
-  call CheckDefFailure(["var x = 'a' .. test_null_channel()"], 'E1105', 1)
+  call CheckDefFailure(["var x = 'a' .. test_null_job()"], 'E1105:', 1)
+  call CheckDefFailure(["var x = 'a' .. test_null_channel()"], 'E1105:', 1)
 endfunc
 
 " test multiply, divide, modulo
@@ -1352,7 +1352,7 @@ def Test_expr6()
     			* yf[0])
   endif
 
-  CheckDefFailure(["var x = 6 * xxx"], 'E1001', 1)
+  CheckDefFailure(["var x = 6 * xxx"], 'E1001:', 1)
 enddef
 
 def Test_expr6_vim9script()
@@ -1757,7 +1757,11 @@ def Test_expr7_list_vim9script()
       enddef
       var list = [Failing]
   END
-  CheckScriptFailure(lines, 'E119:', 1)
+  if has('channel')
+    CheckScriptFailure(lines, 'E119:', 1)
+  else
+    CheckScriptFailure(lines, 'E117:', 1)
+  endif
 enddef
 
 def LambdaWithComments(): func
@@ -2028,7 +2032,11 @@ def Test_expr7_dict_vim9script()
       enddef
       var dict = #{name: Failing}
   END
-  CheckScriptFailure(lines, 'E119:', 1)
+  if has('channel')
+    CheckScriptFailure(lines, 'E119:', 1)
+  else
+    CheckScriptFailure(lines, 'E117:', 1)
+  endif
 enddef
 
 let g:oneString = 'one'
