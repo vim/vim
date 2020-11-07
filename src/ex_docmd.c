@@ -6506,7 +6506,7 @@ ex_open(exarg_T *eap)
 }
 
 /*
- * ":edit", ":badd", ":visual".
+ * ":edit", ":badd", ":balt", ":visual".
  */
     static void
 ex_edit(exarg_T *eap)
@@ -6621,7 +6621,8 @@ do_exedit(
 		    + (eap->forceit ? ECMD_FORCEIT : 0)
 		      // after a split we can use an existing buffer
 		    + (old_curwin != NULL ? ECMD_OLDBUF : 0)
-		    + (eap->cmdidx == CMD_badd ? ECMD_ADDBUF : 0 )
+		    + (eap->cmdidx == CMD_badd ? ECMD_ADDBUF : 0)
+		    + (eap->cmdidx == CMD_balt ? ECMD_ALTBUF : 0)
 		    , old_curwin == NULL ? curwin : NULL) == FAIL)
 	{
 	    // Editing the file failed.  If the window was split, close it.
@@ -8472,7 +8473,7 @@ find_cmdline_var(char_u *src, int *usedlen)
  * Evaluate cmdline variables.
  *
  * change '%'	    to curbuf->b_ffname
- *	  '#'	    to curwin->w_altfile
+ *	  '#'	    to curwin->w_alt_fnum
  *	  '<cword>' to word under the cursor
  *	  '<cWORD>' to WORD under the cursor
  *	  '<cexpr>' to C-expression under the cursor
