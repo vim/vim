@@ -3737,5 +3737,26 @@ func Test_popupwin_splitmove()
   bwipe
 endfunc
 
+func Test_popupwin_exiting_terminal()
+  CheckFeature terminal
+
+  " Tests that when creating a popup right after closing a terminal window does
+  " not make the popup the current window.
+  let winid = win_getid()
+  try
+    augroup Test_popupwin_exiting_terminal
+      autocmd!
+      autocmd WinEnter * :call popup_create('test', {})
+    augroup END
+    let bnr = term_start(&shell, #{term_finish: 'close'})
+    call term_sendkeys(bnr, "exit\r\n")
+    call WaitForAssert({-> assert_equal(winid, win_getid())})
+  finally
+    call popup_clear(1)
+    augroup Test_popupwin_exiting_terminal
+      autocmd!
+    augroup END
+  endtry
+endfunc
 
 " vim: shiftwidth=2 sts=2

@@ -5,6 +5,7 @@ int win_split(int size, int flags);
 int win_split_ins(int size, int flags, win_T *new_wp, int dir);
 int win_valid_popup(win_T *win);
 int win_valid(win_T *win);
+win_T *win_find_by_id(int id);
 int win_valid_any_tab(win_T *win);
 int win_count(void);
 int make_windows(int count, int vertical);
