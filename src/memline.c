@@ -1682,6 +1682,16 @@ ml_recover(int checkext)
     }
     else
     {
+#if defined(UNIX) || defined(MSWIN)
+	if (mch_process_running(char_to_long(b0p->b0_pid)))
+	{
+	    // Warn there could be an active vim on the same file
+	    // useful for `vim -r file.txt` that doesn't already display it.
+	    msg_puts(_("process ID: "));
+	    msg_outnum(char_to_long(b0p->b0_pid));
+	    msg_puts(_(" (STILL RUNNING)"));
+	}
+#endif
 	if (curbuf->b_changed)
 	{
 	    msg(_("Recovery completed. You should check if everything is OK."));
