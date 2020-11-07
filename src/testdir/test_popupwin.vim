@@ -3737,5 +3737,25 @@ func Test_popupwin_splitmove()
   bwipe
 endfunc
 
+func Test_popupwin_exiting_terminal()
+  " This is a test of https://github.com/vim/vim/pull/7272 .
+  CheckFeature terminal
+  try
+    augroup Test_popupwin_exiting_terminal
+      autocmd!
+      autocmd WinEnter * :call popup_create('test', {})
+    augroup END
+    let bnr = term_start(&shell, #{ term_finish: 'close', })
+    call term_sendkeys(bnr, "exit\r\n")
+    call term_wait(bnr)
+    sleep 100m
+    call assert_equal(win_gettype(), '')
+  finally
+    call popup_clear(1)
+    augroup Test_popupwin_exiting_terminal
+      autocmd!
+    augroup END
+  endtry
+endfunc
 
 " vim: shiftwidth=2 sts=2
