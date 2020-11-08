@@ -5484,6 +5484,73 @@ f_has(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * Return TRUE if "feature" can change later.
+ * Also when checking for the feature has side effects, such as loading a DLL.
+ */
+    int
+dynamic_feature(char_u *feature)
+{
+    return (feature == NULL
+#if defined(FEAT_BEVAL) && defined(FEAT_GUI_MSWIN)
+	    || STRICMP(feature, "balloon_multiline") == 0
+#endif
+#if defined(FEAT_GUI) && defined(FEAT_BROWSE)
+	    || (STRICMP(feature, "browse") == 0 && !gui.in_use)
+#endif
+#ifdef VIMDLL
+	    || STRICMP(feature, "filterpipe") == 0
+#endif
+#if defined(FEAT_GUI) && !defined(ALWAYS_USE_GUI)
+	    // this can only change on Unix where the ":gui" command could be
+	    // used.
+	    || (STRICMP(feature, "gui_running") == 0 && !gui.in_use)
+#endif
+#if defined(USE_ICONV) && defined(DYNAMIC_ICONV)
+	    || STRICMP(feature, "iconv") == 0
+#endif
+#ifdef DYNAMIC_LUA
+	    || STRICMP(feature, "lua") == 0
+#endif
+#ifdef FEAT_MOUSE_GPM
+	    || (STRICMP(feature, "mouse_gpm_enabled") == 0 && !gpm_enabled())
+#endif
+#ifdef DYNAMIC_MZSCHEME
+	    || STRICMP(feature, "mzscheme") == 0
+#endif
+#ifdef FEAT_NETBEANS_INTG
+	    || STRICMP(feature, "netbeans_enabled") == 0
+#endif
+#ifdef DYNAMIC_PERL
+	    || STRICMP(feature, "perl") == 0
+#endif
+#ifdef DYNAMIC_PYTHON
+	    || STRICMP(feature, "python") == 0
+#endif
+#ifdef DYNAMIC_PYTHON3
+	    || STRICMP(feature, "python3") == 0
+#endif
+#if defined(DYNAMIC_PYTHON) || defined(DYNAMIC_PYTHON3)
+	    || STRICMP(feature, "pythonx") == 0
+#endif
+#ifdef DYNAMIC_RUBY
+	    || STRICMP(feature, "ruby") == 0
+#endif
+#ifdef FEAT_SYN_HL
+	    || STRICMP(feature, "syntax_items") == 0
+#endif
+#ifdef DYNAMIC_TCL
+	    || STRICMP(feature, "tcl") == 0
+#endif
+	    // once "starting" is zero it will stay that way
+	    || (STRICMP(feature, "vim_starting") == 0 && starting != 0)
+	    || STRICMP(feature, "multi_byte_encoding") == 0
+#if defined(FEAT_TERMINAL) && defined(MSWIN)
+	    || STRICMP(feature, "conpty") == 0
+#endif
+	    );
+}
+
+/*
  * "haslocaldir()" function
  */
     static void

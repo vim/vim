@@ -629,6 +629,14 @@ def HasSomething()
   endif
 enddef
 
+def HasGuiRunning()
+  if has("gui_running")
+    echo "yes"
+  else
+    echo "no"
+  endif
+enddef
+
 def Test_disassemble_const_expr()
   assert_equal("\nyes", execute('HasEval()'))
   var instr = execute('disassemble HasEval')
@@ -676,6 +684,67 @@ def Test_disassemble_const_expr()
   assert_notmatch('PUSHS "something"', instr)
   assert_notmatch('PUSHS "less"', instr)
   assert_notmatch('JUMP', instr)
+
+  var result: string
+  var instr_expected: string
+  if has('gui')
+    if has('gui_running')
+      # GUI already running, always returns "yes"
+      result = "\nyes"
+      instr_expected = 'HasGuiRunning.*' ..
+          'if has("gui_running")\_s*' ..
+          '  echo "yes"\_s*' ..
+          '\d PUSHS "yes"\_s*' ..
+          '\d ECHO 1\_s*' ..
+          'else\_s*' ..
+          '  echo "no"\_s*' ..
+          'endif'
+    else
+      result = "\nno"
+      if has('unix')
+        # GUI not running but can start later, call has()
+        instr_expected = 'HasGuiRunning.*' ..
+            'if has("gui_running")\_s*' ..
+            '\d PUSHS "gui_running"\_s*' ..
+            '\d BCALL has(argc 1)\_s*' ..
+            '\d JUMP_IF_FALSE -> \d\_s*' ..
+            '  echo "yes"\_s*' ..
+            '\d PUSHS "yes"\_s*' ..
+            '\d ECHO 1\_s*' ..
+            'else\_s*' ..
+            '\d JUMP -> \d\_s*' ..
+            '  echo "no"\_s*' ..
+            '\d PUSHS "no"\_s*' ..
+            '\d ECHO 1\_s*' ..
+            'endif'
+      else
+        # GUI not running, always return "no"
+        instr_expected = 'HasGuiRunning.*' ..
+            'if has("gui_running")\_s*' ..
+            '  echo "yes"\_s*' ..
+            'else\_s*' ..
+            '  echo "no"\_s*' ..
+            '\d PUSHS "no"\_s*' ..
+            '\d ECHO 1\_s*' ..
+            'endif'
+      endif
+    endif
+  else
+    # GUI not supported, always return "no"
+    result = "\nno"
+    instr_expected = 'HasGuiRunning.*' ..
+        'if has("gui_running")\_s*' ..
+        '  echo "yes"\_s*' ..
+        'else\_s*' ..
+        '  echo "no"\_s*' ..
+        '\d PUSHS "no"\_s*' ..
+        '\d ECHO 1\_s*' ..
+        'endif'
+  endif
+
+  assert_equal(result, execute('HasGuiRunning()'))
+  instr = execute('disassemble HasGuiRunning')
+  assert_match(instr_expected, instr)
 enddef
 
 def ReturnInIf(): string
