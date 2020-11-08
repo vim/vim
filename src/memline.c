@@ -2230,14 +2230,33 @@ swapfile_unchanged(char_u *fname)
 	ret = FALSE;
 
 #if defined(UNIX) || defined(MSWIN)
+    // computer must be known and must have been written on the same computer,
+    // shared NFS is where this comes up, otherwise comparing pid is
+    // meaningless.
+    if (*(b0.b0_hname) == NUL)
+    {
+	ret = FALSE;
+    }
+    else
+    {
+	char_u	    hostname[B0_HNAME_SIZE];
+	mch_get_host_name(hostname, B0_HNAME_SIZE);
+	hostname[B0_HNAME_SIZE - 1] = NUL;
+	if (STRICMP(b0.b0_hname, hostname))
+	{
+	    ret = FALSE;
+	}
+    }
+
     // process must be known and not be running
     pid = char_to_long(b0.b0_pid);
     if (pid == 0L || mch_process_running(pid))
 	ret = FALSE;
-#endif
 
-    // TODO: Should we check if the swap file was created on the current
-    // system?  And the current user?
+    // TODO: Should we check if the swap file was created by the current user?
+    // But the file is unmodified, same hostname, and process isn't running,
+    // the other user isn't editing the file currently.
+#endif
 
     close(fd);
     return ret;
