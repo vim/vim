@@ -5936,7 +5936,11 @@ Writing files:
 7   When editing a file, check that it has been change outside of Vim more
     often, not only when writing over it.  E.g., at the time the swap file is
     flushed.  Or every ten seconds or so (use the time of day, check it before
-    waiting for a character to be typed).
+    waiting for a character to be typed).  Don't just check if the file time
+    has changed, but the contents has been changed (compaer to the last save
+    point, not changes since), for example a git rebase can revert, then update
+    the file to the same contents, :! for an unmodified file will detect this,
+    :w will complain even though the contents are identical.
 8   When a file was changed since editing started, show this in the status
     line of the window, like "[time]".
     Make it easier to reload all outdated files that don't have changes.
