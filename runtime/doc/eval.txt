@@ -8660,6 +8660,7 @@ screencol()							*screencol()*
 		the following mappings: >
 			nnoremap <expr> GG ":echom ".screencol()."\n"
 			nnoremap <silent> GG :echom screencol()<CR>
+			nnoremap GG <Cmd>echom screencol()<CR>
 <
 screenpos({winid}, {lnum}, {col})				*screenpos()*
 		The result is a Dict with the screen position of the text

@@ -271,7 +271,7 @@ For this reason the following is blocked:
 - The |:normal| command.
 - Moving the cursor is allowed, but it is restored afterwards.
 If you want the mapping to do any of these let the returned characters do
-that.
+that. (Or use a |<Cmd>| mapping instead.)
 
 You can use getchar(), it consumes typeahead if there is any. E.g., if you
 have these mappings: >
@@ -302,6 +302,38 @@ empty string, so that nothing is inserted.
 
 Note that using 0x80 as a single byte before other text does not work, it will
 be seen as a special key.
+
+						*<Cmd>* *:map-cmd*
+The <Cmd> pseudokey begins a "command mapping", which executes the command
+directly (without changing modes).  Where you might use ":...<CR>" in the
+{rhs} of a mapping, you can instead use "<Cmd>...<CR>".
+Example: >
+	noremap x <Cmd>echo mode(1)<cr>
+<
+This is more flexible than `:<C-U>` in visual and operator-pending mode, or
+`<C-O>:` in insert-mode, because the commands are executed directly in the
+current mode (instead of always going to normal-mode).  Visual-mode is
+preserved, so tricks with |gv| are not needed.  Commands can be invoked
+directly in cmdline-mode (which would otherwise require timer hacks).
+
+Unlike <expr> mappings, there are no special restrictions on the <Cmd>
+command: it is executed as if an (unrestricted) |autocmd| was invoked.
+
+Note:
+- Because <Cmd> avoids mode-changes (unlike ":") it does not trigger
+  |CmdlineEnter| and |CmdlineLeave| events. This helps performance.
+- For the same reason, |keycodes| like <C-R><C-W> are interpreted as plain,
+  unmapped keys.
+- In select-mode, |:map| and |:vmap| command mappings are executed in
+  visual-mode.  Use |:smap| to handle select-mode.
+
+							*E1135* *E1136*
+<Cmd> commands must terminate, that is, they must be followed by <CR> in the
+{rhs} of the mapping definition.  |Command-line| mode is never entered.
+
+							*E1137*
+<Cmd> command can have only normal characters and cannot contain special
+characters like Function keys.
 
 
 1.3 MAPPING AND MODES					*:map-modes*

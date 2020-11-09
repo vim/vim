@@ -293,3 +293,9 @@ EXTERN char e_cannot_extend_null_dict[]
 EXTERN char e_cannot_extend_null_list[]
 	INIT(= N_("E1134: Cannot extend a null list"));
 #endif
+EXTERN char e_cmdmap_err[]
+	INIT(=N_("E1135: <Cmd> mapping must end with <CR>"));
+EXTERN char e_cmdmap_repeated[]
+	INIT(=N_("E1136: <Cmd> mapping must end with <CR> before second <Cmd>"));
+EXTERN char e_cmdmap_key[]
+	INIT(= N_("E1137: <Cmd> mapping must not include %s key"));

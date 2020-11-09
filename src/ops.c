@@ -3490,7 +3490,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		    AppendToRedobuffLit(cap->searchbuf, -1);
 		AppendToRedobuff(NL_STR);
 	    }
-	    else if (cap->cmdchar == ':')
+	    else if (cap->cmdchar == ':' || cap->cmdchar == K_COMMAND)
 	    {
 		// do_cmdline() has stored the first typed line in
 		// "repeat_cmdline".  When several lines are typed repeating

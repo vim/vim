@@ -1031,6 +1031,10 @@ doESCkey:
 	case K_IGNORE:	// Something mapped to nothing
 	    break;
 
+	case K_COMMAND:		// some command
+	    do_cmdline(NULL, getcmdkeycmd, NULL, 0);
+	    break;
+
 	case K_CURSORHOLD:	// Didn't type something for a while.
 	    ins_apply_autocmds(EVENT_CURSORHOLDI);
 	    did_cursorhold = TRUE;
