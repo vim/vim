@@ -48,6 +48,7 @@ void f_sort(typval_T *argvars, typval_T *rettv);
 void f_uniq(typval_T *argvars, typval_T *rettv);
 void f_filter(typval_T *argvars, typval_T *rettv);
 void f_map(typval_T *argvars, typval_T *rettv);
+void f_mapnew(typval_T *argvars, typval_T *rettv);
 void f_add(typval_T *argvars, typval_T *rettv);
 void f_count(typval_T *argvars, typval_T *rettv);
 void f_extend(typval_T *argvars, typval_T *rettv);

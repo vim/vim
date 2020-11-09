@@ -479,13 +479,24 @@ ret_job(int argcount UNUSED, type_T **argtypes UNUSED)
 {
     return &t_job;
 }
-
     static type_T *
 ret_first_arg(int argcount, type_T **argtypes)
 {
     if (argcount > 0)
 	return argtypes[0];
     return &t_void;
+}
+// for map(): returns first argument but item type may differ
+    static type_T *
+ret_first_cont(int argcount UNUSED, type_T **argtypes)
+{
+    if (argtypes[0]->tt_type == VAR_LIST)
+	return &t_list_any;
+    if (argtypes[0]->tt_type == VAR_DICT)
+	return &t_dict_any;
+    if (argtypes[0]->tt_type == VAR_BLOB)
+	return argtypes[0];
+    return &t_any;
 }
 
 /*
@@ -1115,11 +1126,13 @@ static funcentry_T global_functions[] =
 #endif
 			},
     {"map",		2, 2, FEARG_1,	    NULL,
-			ret_any,	    f_map},
+			ret_first_cont,	    f_map},
     {"maparg",		1, 4, FEARG_1,	    NULL,
 			ret_maparg,	    f_maparg},
     {"mapcheck",	1, 3, FEARG_1,	    NULL,
 			ret_string,	    f_mapcheck},
+    {"mapnew",		2, 2, FEARG_1,	    NULL,
+			ret_first_cont,	    f_mapnew},
     {"mapset",		3, 3, FEARG_1,	    NULL,
 			ret_void,	    f_mapset},
     {"match",		2, 4, FEARG_1,	    NULL,

@@ -2669,8 +2669,9 @@ maparg({name} [, {mode} [, {abbr} [, {dict}]]])
 					rhs of mapping {name} in mode {mode}
 mapcheck({name} [, {mode} [, {abbr}]])
 				String	check for mappings matching {name}
-mapset({mode}, {abbr}, {dict})
-				none	restore mapping from |maparg()| result
+mapnew({expr1}, {expr2})	List/Dict  like |map()| but creates a new List
+					   or Dictionary
+mapset({mode}, {abbr}, {dict})	none	restore mapping from |maparg()| result
 match({expr}, {pat} [, {start} [, {count}]])
 				Number	position where {pat} matches in {expr}
 matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
@@ -6987,9 +6988,14 @@ luaeval({expr} [, {expr}])					*luaeval()*
 <		{only available when compiled with the |+lua| feature}
 
 map({expr1}, {expr2})					*map()*
-		{expr1} must be a |List| or a |Dictionary|.
+		{expr1} must be a |List|, |Blob| or |Dictionary|.
 		Replace each item in {expr1} with the result of evaluating
-		{expr2}.  {expr2} must be a |string| or |Funcref|.
+		{expr2}.  For a |Blob| each byte is replaced.
+		If the item type changes you may want to use |mapnew()| to
+		create a new List or Dictionary.  This is required when using
+		Vim9 script.
+
+		{expr2} must be a |string| or |Funcref|.
 
 		If {expr2} is a |string|, inside {expr2} |v:val| has the value
 		of the current item.  For a |Dictionary| |v:key| has the key
@@ -7024,11 +7030,11 @@ map({expr1}, {expr2})					*map()*
 		|Dictionary| to remain unmodified make a copy first: >
 			:let tlist = map(copy(mylist), ' v:val . "\t"')
 
-<		Returns {expr1}, the |List| or |Dictionary| that was filtered.
-		When an error is encountered while evaluating {expr2} no
-		further items in {expr1} are processed.  When {expr2} is a
-		Funcref errors inside a function are ignored, unless it was
-		defined with the "abort" flag.
+<		Returns {expr1}, the |List|, |Blob| or |Dictionary| that was
+		filtered.  When an error is encountered while evaluating
+		{expr2} no further items in {expr1} are processed.  When
+		{expr2} is a Funcref errors inside a function are ignored,
+		unless it was defined with the "abort" flag.
 
 		Can also be used as a |method|: >
 			mylist->map(expr2)
@@ -7137,7 +7143,13 @@ mapcheck({name} [, {mode} [, {abbr}]])			*mapcheck()*
 			GetKey()->mapcheck('n')
 
 
-mapset({mode}, {abbr}, {dict})				*mapset()*
+mapnew({expr1}, {expr2})					*mapnew()*
+		Like |map()| but instead of replacing items in {expr1} a new
+		List or Dictionary is created and returned.  {expr1} remains
+		unchanged.
+
+
+mapset({mode}, {abbr}, {dict})					*mapset()*
 		Restore a mapping from a dictionary returned by |maparg()|.
 		{mode} and {abbr} should be the same as for the call to
 		|maparg()|. *E460*
