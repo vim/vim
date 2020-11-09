@@ -165,12 +165,12 @@ TypeScript, can work:
 
 ``` vim
 def MyFunction(arg: number): number
-   let local = 1
-   let todo = arg
+   var local = 1
+   var todo = arg
    const ADD = 88
    while todo > 0
       local += ADD
-      --todo
+      todo -= 1
    endwhile
    return local
 enddef
@@ -248,10 +248,10 @@ END
   return luaeval('sum')
 endfunc
 
-def VimNew()
-  let sum = 0
+def VimNew(): number
+  var sum = 0
   for i in range(1, 2999999)
-    let sum += i
+    sum += i
   endfor
   return sum
 enddef
@@ -277,7 +277,7 @@ echo 'Vim new: ' .. reltimestr(reltime(start))
 
 ``` vim
 def VimNew(): number
-  let totallen = 0
+  var totallen = 0
   for i in range(1, 100000)
     setline(i, '    ' .. getline(i))
     totallen += len(getline(i))
