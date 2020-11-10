@@ -3532,7 +3532,10 @@ mch_get_acl(char_u *fname)
 
 	wn = enc_to_utf16(fname, NULL);
 	if (wn == NULL)
+	{
+	    vim_free(p);
 	    return NULL;
+	}
 
 	// Try to retrieve the entire security descriptor.
 	err = GetNamedSecurityInfoW(
