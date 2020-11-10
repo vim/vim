@@ -2185,8 +2185,13 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 		nli = li->li_next;
 		set_vim_var_nr(VV_KEY, idx);
 		if (filter_map_one(&li->li_tv, expr, filtermap,
-					     &newtv, &rem) == FAIL || did_emsg)
+							 &newtv, &rem) == FAIL)
 		    break;
+		if (did_emsg)
+		{
+		    clear_tv(&newtv);
+		    break;
+		}
 		if (filtermap == FILTERMAP_MAP)
 		{
 		    // map(): replace the list item value
