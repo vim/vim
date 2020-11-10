@@ -5513,7 +5513,7 @@ dynamic_feature(char_u *feature)
 #ifdef VIMDLL
 	    || STRICMP(feature, "filterpipe") == 0
 #endif
-#if defined(FEAT_GUI) && !defined(ALWAYS_USE_GUI)
+#if defined(FEAT_GUI) && !defined(ALWAYS_USE_GUI) && !defined(VIMDLL)
 	    // this can only change on Unix where the ":gui" command could be
 	    // used.
 	    || (STRICMP(feature, "gui_running") == 0 && !gui.in_use)
