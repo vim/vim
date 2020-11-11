@@ -22,6 +22,7 @@ static dict_T		*first_dict = NULL;
 
 /*
  * Allocate an empty header for a dictionary.
+ * Caller should take care of the reference count.
  */
     dict_T *
 dict_alloc(void)
@@ -236,11 +237,12 @@ dictitem_alloc(char_u *key)
 dictitem_copy(dictitem_T *org)
 {
     dictitem_T *di;
+    size_t	len = STRLEN(org->di_key);
 
-    di = alloc(offsetof(dictitem_T, di_key) + STRLEN(org->di_key) + 1);
+    di = alloc(offsetof(dictitem_T, di_key) + len + 1);
     if (di != NULL)
     {
-	STRCPY(di->di_key, org->di_key);
+	mch_memmove(di->di_key, org->di_key, len + 1);
 	di->di_flags = DI_FLAGS_ALLOC;
 	copy_tv(&org->di_tv, &di->di_tv);
     }
@@ -859,13 +861,10 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	    *arg = skipwhite(*arg);
 	if (**arg != ':')
 	{
-	    if (evaluate)
-	    {
-		if (*skipwhite(*arg) == ':')
-		    semsg(_(e_no_white_space_allowed_before_str), ":");
-		else
-		    semsg(_(e_missing_dict_colon), *arg);
-	    }
+	    if (*skipwhite(*arg) == ':')
+		semsg(_(e_no_white_space_allowed_before_str), ":");
+	    else
+		semsg(_(e_missing_dict_colon), *arg);
 	    clear_tv(&tvkey);
 	    goto failret;
 	}
@@ -898,8 +897,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	    item = dict_find(d, key, -1);
 	    if (item != NULL)
 	    {
-		if (evaluate)
-		    semsg(_(e_duplicate_key), key);
+		semsg(_(e_duplicate_key), key);
 		clear_tv(&tvkey);
 		clear_tv(&tv);
 		goto failret;
@@ -936,28 +934,24 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	    break;
 	if (!had_comma)
 	{
-	    if (evaluate)
-	    {
-		if (**arg == ',')
-		    semsg(_(e_no_white_space_allowed_before_str), ",");
-		else
-		    semsg(_(e_missing_dict_comma), *arg);
-	    }
+	    if (**arg == ',')
+		semsg(_(e_no_white_space_allowed_before_str), ",");
+	    else
+		semsg(_(e_missing_dict_comma), *arg);
 	    goto failret;
 	}
     }
 
     if (**arg != '}')
     {
-	if (evaluate)
-	    semsg(_(e_missing_dict_end), *arg);
+	semsg(_(e_missing_dict_end), *arg);
 failret:
 	if (d != NULL)
 	    dict_free(d);
 	return FAIL;
     }
 
-    *arg = skipwhite(*arg + 1);
+    *arg = *arg + 1;
     if (evaluate)
 	rettv_dict_set(rettv, d);
 
@@ -1009,7 +1003,7 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action)
 	    }
 	    else if (*action == 'f' && HI2DI(hi2) != di1)
 	    {
-		if (var_check_lock(di1->di_tv.v_lock, arg_errmsg, TRUE)
+		if (value_check_lock(di1->di_tv.v_lock, arg_errmsg, TRUE)
 			|| var_check_ro(di1->di_flags, arg_errmsg, TRUE))
 		    break;
 		clear_tv(&di1->di_tv);
@@ -1227,7 +1221,7 @@ dict_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
     if (argvars[2].v_type != VAR_UNKNOWN)
 	semsg(_(e_toomanyarg), "remove()");
     else if ((d = argvars[0].vval.v_dict) != NULL
-	    && !var_check_lock(d->dv_lock, arg_errmsg, TRUE))
+	    && !value_check_lock(d->dv_lock, arg_errmsg, TRUE))
     {
 	key = tv_get_string_chk(&argvars[1]);
 	if (key != NULL)

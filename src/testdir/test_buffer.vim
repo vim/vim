@@ -138,6 +138,7 @@ func Test_bdelete_cmd()
   %bwipe!
   call assert_fails('bdelete 5', 'E516:')
   call assert_fails('1,1bdelete 1 2', 'E488:')
+  call assert_fails('bdelete \)', 'E55:')
 
   " Deleting a unlisted and unloaded buffer
   edit Xfile1
@@ -359,6 +360,25 @@ func Test_sball_with_count()
   call assert_equal(0, getbufinfo('Xfile2')[0].loaded)
   call assert_equal(0, getbufinfo('Xfile3')[0].loaded)
   %bw!
+endfunc
+
+func Test_badd_options()
+  new SomeNewBuffer
+  setlocal numberwidth=3
+  wincmd p
+  badd +1 SomeNewBuffer
+  new SomeNewBuffer
+  call assert_equal(3, &numberwidth)
+  close
+  close
+  bwipe! SomeNewBuffer
+endfunc
+
+func Test_balt()
+  new SomeNewBuffer
+  balt +3 OtherBuffer
+  e #
+  call assert_equal('OtherBuffer', bufname())
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

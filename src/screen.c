@@ -464,7 +464,8 @@ screen_line(
     // First char of a popup window may go on top of the right half of a
     // double-wide character. Clear the left half to avoid it getting the popup
     // window background color.
-    if (coloff > 0 && ScreenLines[off_to] == 0
+    if (coloff > 0 && enc_utf8
+		   && ScreenLines[off_to] == 0
 		   && ScreenLinesUC[off_to - 1] != 0
 		   && (*mb_char2cells)(ScreenLinesUC[off_to - 1]) > 1)
     {
@@ -1196,8 +1197,8 @@ win_redr_custom(
     char_u	buf[MAXPATHL];
     char_u	*stl;
     char_u	*p;
-    struct	stl_hlrec hltab[STL_MAX_ITEM];
-    struct	stl_hlrec tabtab[STL_MAX_ITEM];
+    stl_hlrec_T *hltab;
+    stl_hlrec_T *tabtab;
     int		use_sandbox = FALSE;
     win_T	*ewp;
     int		p_crb_save;
@@ -1287,7 +1288,7 @@ win_redr_custom(
     stl = vim_strsave(stl);
     width = build_stl_str_hl(ewp, buf, sizeof(buf),
 				stl, use_sandbox,
-				fillchar, maxwidth, hltab, tabtab);
+				fillchar, maxwidth, &hltab, &tabtab);
     vim_free(stl);
     ewp->w_p_crb = p_crb_save;
 
@@ -2490,7 +2491,8 @@ check_for_delay(int check_msg_scroll)
 {
     if ((emsg_on_display || (check_msg_scroll && msg_scroll))
 	    && !did_wait_return
-	    && emsg_silent == 0)
+	    && emsg_silent == 0
+	    && !in_assert_fails)
     {
 	out_flush();
 	ui_delay(1006L, TRUE);

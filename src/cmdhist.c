@@ -304,7 +304,7 @@ add_to_history(
     if (hislen == 0)		// no history
 	return;
 
-    if (cmdmod.keeppatterns && histype == HIST_SEARCH)
+    if ((cmdmod.cmod_flags & CMOD_KEEPPATTERNS) && histype == HIST_SEARCH)
 	return;
 
     // Searches inside the same mapping overwrite each other, so that only

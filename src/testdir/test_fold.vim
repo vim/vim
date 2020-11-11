@@ -816,4 +816,42 @@ func Test_fold_expr_error()
   close!
 endfunc
 
+func Test_undo_fold_deletion()
+  new
+  set fdm=marker
+  let lines =<< trim END
+      " {{{
+      " }}}1
+      " {{{
+  END
+  call setline(1, lines)
+  3d
+  g/"/d
+  undo
+  redo
+  eval getline(1, '$')->assert_equal([''])
+
+  set fdm&vim
+  bwipe!
+endfunc
+
+" this was crashing
+func Test_move_no_folds()
+  new
+  fold
+  setlocal fdm=expr
+  normal zj
+  bwipe!
+endfunc
+
+" this was crashing
+func Test_fold_create_delete_create()
+  new
+  fold
+  fold
+  normal zd
+  fold
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

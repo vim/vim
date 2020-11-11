@@ -290,6 +290,9 @@ func Test_searchpair()
   new
   call setline(1, ['other code', 'here [', ' [', ' " cursor here', ' ]]'])
 
+  " should not give an error for using "42"
+  call assert_equal(0, searchpair('a', 'b', 'c', '', 42))
+
   4
   call assert_equal(3, searchpair('\[', '', ']', 'bW'))
   call assert_equal([0, 3, 2, 0], getpos('.'))
@@ -959,6 +962,20 @@ func Test_incsearch_substitute()
   call assert_equal('foo 7', getline(7))
 
   call Incsearch_cleanup()
+endfunc
+
+func Test_incsearch_substitute_long_line()
+  new
+  call test_override("char_avail", 1)
+  set incsearch
+
+  call repeat('x', 100000)->setline(1)
+  call feedkeys(':s/\%c', 'xt')
+  redraw
+  call feedkeys("\<Esc>", 'xt')
+
+  call Incsearch_cleanup()
+  bwipe!
 endfunc
 
 " Similar to Test_incsearch_substitute() but with a screendump halfway.

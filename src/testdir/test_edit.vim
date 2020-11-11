@@ -1446,31 +1446,40 @@ endfunc
 
 func Test_edit_InsertLeave()
   new
+  au InsertLeavePre * let g:did_au_pre = 1
   au InsertLeave * let g:did_au = 1
+  let g:did_au_pre = 0
   let g:did_au = 0
   call feedkeys("afoo\<Esc>", 'tx')
+  call assert_equal(1, g:did_au_pre)
   call assert_equal(1, g:did_au)
   call assert_equal('foo', getline(1))
 
+  let g:did_au_pre = 0
   let g:did_au = 0
   call feedkeys("Sbar\<C-C>", 'tx')
+  call assert_equal(1, g:did_au_pre)
   call assert_equal(0, g:did_au)
   call assert_equal('bar', getline(1))
 
   inoremap x xx<Esc>
+  let g:did_au_pre = 0
   let g:did_au = 0
   call feedkeys("Saax", 'tx')
+  call assert_equal(1, g:did_au_pre)
   call assert_equal(1, g:did_au)
   call assert_equal('aaxx', getline(1))
 
   inoremap x xx<C-C>
+  let g:did_au_pre = 0
   let g:did_au = 0
   call feedkeys("Sbbx", 'tx')
+  call assert_equal(1, g:did_au_pre)
   call assert_equal(0, g:did_au)
   call assert_equal('bbxx', getline(1))
 
   bwipe!
-  au! InsertLeave
+  au! InsertLeave InsertLeavePre
   iunmap x
 endfunc
 
@@ -1585,6 +1594,31 @@ func Test_edit_illegal_filename()
   redir END
   call assert_match("Illegal file name$", split(msg, "\n")[0])
   close!
+endfunc
+
+" Test for editing a directory
+func Test_edit_is_a_directory()
+  CheckEnglish
+  let dirname = getcwd() . "/Xdir"
+  call mkdir(dirname, 'p')
+
+  new
+  redir => msg
+  exe 'edit' dirname
+  redir END
+  call assert_match("is a directory$", split(msg, "\n")[0])
+  bwipe!
+
+  let dirname .= '/'
+
+  new
+  redir => msg
+  exe 'edit' dirname
+  redir END
+  call assert_match("is a directory$", split(msg, "\n")[0])
+  bwipe!
+
+  call delete(dirname, 'rf')
 endfunc
 
 " Test for editing a file using invalid file encoding
@@ -1778,6 +1812,31 @@ func Test_edit_lastline_scroll()
   call assert_equal(3, line('w0'))
 
   close!
+endfunc
+
+func Test_edit_browse()
+  " in the GUI this opens a file picker, we only test the terminal behavior
+  CheckNotGui
+
+  " ":browse xxx" checks for the FileExplorer augroup and assumes editing "."
+  " works then.
+  augroup FileExplorer
+    au!
+  augroup END
+
+  " When the USE_FNAME_CASE is defined this used to cause a crash.
+  browse enew
+  bwipe!
+
+  browse split
+  bwipe!
+endfunc
+
+func Test_read_invalid()
+  set encoding=latin1
+  " This was not properly checking for going past the end.
+  call assert_fails('r`=', 'E484')
+  set encoding=utf-8
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

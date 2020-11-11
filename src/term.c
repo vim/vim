@@ -1800,7 +1800,7 @@ report_default_term(char_u *term)
     mch_errmsg(_("defaulting to '"));
     mch_errmsg((char *)term);
     mch_errmsg("'\r\n");
-    if (emsg_silent == 0)
+    if (emsg_silent == 0 && !in_assert_fails)
     {
 	screen_start();	// don't know where cursor is now
 	out_flush();
@@ -4462,7 +4462,8 @@ modifiers2keycode(int modifiers, int *key, char_u *string)
     if (modifiers != 0)
     {
 	// Some keys have the modifier included.  Need to handle that here to
-	// make mappings work.
+	// make mappings work.  This may result in a special key, such as
+	// K_S_TAB.
 	*key = simplify_key(*key, &modifiers);
 	if (modifiers != 0)
 	{
@@ -4784,19 +4785,22 @@ handle_key_with_modifier(
 
     modifiers = decode_modifiers(arg[1]);
 
+    // Some keys need adjustment when the Ctrl modifier is used.
+    key = may_adjust_key_for_ctrl(modifiers, key);
+
     // May remove the shift modifier if it's already included in the key.
     modifiers = may_remove_shift_modifier(modifiers, key);
-
-    // When used with Ctrl we always make a letter upper case,
-    // so that mapping <C-H> and <C-h> are the same.  Typing
-    // <C-S-H> also uses "H" but modifier is different.
-    if ((modifiers & MOD_MASK_CTRL) && ASCII_ISALPHA(key))
-	key = TOUPPER_ASC(key);
 
     // insert modifiers with KS_MODIFIER
     new_slen = modifiers2keycode(modifiers, &key, string);
 
-    if (has_mbyte)
+    if (IS_SPECIAL(key))
+    {
+	string[new_slen++] = K_SPECIAL;
+	string[new_slen++] = KEY2TERMCAP0(key);
+	string[new_slen++] = KEY2TERMCAP1(key);
+    }
+    else if (has_mbyte)
 	new_slen += (*mb_char2bytes)(key, string + new_slen);
     else
 	string[new_slen++] = key;

@@ -221,7 +221,6 @@ EXTERN int	emsg_skip INIT(= 0);	    // don't display errors for
 EXTERN int	emsg_severe INIT(= FALSE);  // use message of next of several
 					    // emsg() calls for throw
 // used by assert_fails()
-EXTERN int	emsg_assert_fails_used INIT(= FALSE);
 EXTERN char_u	*emsg_assert_fails_msg INIT(= NULL);
 EXTERN long	emsg_assert_fails_lnum INIT(= 0);
 EXTERN char_u	*emsg_assert_fails_context INIT(= NULL);
@@ -288,6 +287,9 @@ EXTERN garray_T	exestack INIT5(0, 0, sizeof(estack_T), 50, NULL);
 #define SOURCING_LNUM (((estack_T *)exestack.ga_data)[exestack.ga_len - 1].es_lnum)
 
 #ifdef FEAT_EVAL
+// whether inside compile_def_function()
+EXTERN int	estack_compiling INIT(= FALSE);
+
 EXTERN int	ex_nesting_level INIT(= 0);	// nesting level
 EXTERN int	debug_break_level INIT(= -1);	// break below this level
 EXTERN int	debug_did_msg INIT(= FALSE);	// did "debug mode" message
@@ -391,42 +393,41 @@ EXTERN sctx_T	current_sctx INIT4(0, 0, 0, 0);
 
 
 // Commonly used types.
-EXTERN type_T t_unknown INIT6(VAR_UNKNOWN, 0, 0, 0, NULL, NULL);
-EXTERN type_T t_any INIT6(VAR_ANY, 0, 0, 0, NULL, NULL);
-EXTERN type_T t_void INIT6(VAR_VOID, 0, 0, 0, NULL, NULL);
-EXTERN type_T t_bool INIT6(VAR_BOOL, 0, 0, 0, NULL, NULL);
-EXTERN type_T t_special INIT6(VAR_SPECIAL, 0, 0, 0, NULL, NULL);
-EXTERN type_T t_number INIT6(VAR_NUMBER, 0, 0, 0, NULL, NULL);
-EXTERN type_T t_float INIT6(VAR_FLOAT, 0, 0, 0, NULL, NULL);
-EXTERN type_T t_string INIT6(VAR_STRING, 0, 0, 0, NULL, NULL);
-EXTERN type_T t_blob INIT6(VAR_BLOB, 0, 0, 0, NULL, NULL);
-EXTERN type_T t_job INIT6(VAR_JOB, 0, 0, 0, NULL, NULL);
-EXTERN type_T t_channel INIT6(VAR_CHANNEL, 0, 0, 0, NULL, NULL);
+EXTERN type_T t_unknown INIT6(VAR_UNKNOWN, 0, 0, TTFLAG_STATIC, NULL, NULL);
+EXTERN type_T t_any INIT6(VAR_ANY, 0, 0, TTFLAG_STATIC, NULL, NULL);
+EXTERN type_T t_void INIT6(VAR_VOID, 0, 0, TTFLAG_STATIC, NULL, NULL);
+EXTERN type_T t_bool INIT6(VAR_BOOL, 0, 0, TTFLAG_STATIC, NULL, NULL);
+EXTERN type_T t_special INIT6(VAR_SPECIAL, 0, 0, TTFLAG_STATIC, NULL, NULL);
+EXTERN type_T t_number INIT6(VAR_NUMBER, 0, 0, TTFLAG_STATIC, NULL, NULL);
+EXTERN type_T t_float INIT6(VAR_FLOAT, 0, 0, TTFLAG_STATIC, NULL, NULL);
+EXTERN type_T t_string INIT6(VAR_STRING, 0, 0, TTFLAG_STATIC, NULL, NULL);
+EXTERN type_T t_blob INIT6(VAR_BLOB, 0, 0, TTFLAG_STATIC, NULL, NULL);
+EXTERN type_T t_job INIT6(VAR_JOB, 0, 0, TTFLAG_STATIC, NULL, NULL);
+EXTERN type_T t_channel INIT6(VAR_CHANNEL, 0, 0, TTFLAG_STATIC, NULL, NULL);
 
-EXTERN type_T t_func_unknown INIT6(VAR_FUNC, -1, 0, 0, &t_unknown, NULL);
-EXTERN type_T t_func_void INIT6(VAR_FUNC, -1, 0, 0, &t_void, NULL);
-EXTERN type_T t_func_any INIT6(VAR_FUNC, -1, 0, 0, &t_any, NULL);
-EXTERN type_T t_func_number INIT6(VAR_FUNC, -1, 0, 0, &t_number, NULL);
-EXTERN type_T t_func_string INIT6(VAR_FUNC, -1, 0, 0, &t_string, NULL);
-EXTERN type_T t_func_0_void INIT6(VAR_FUNC, 0, 0, 0, &t_void, NULL);
-EXTERN type_T t_func_0_any INIT6(VAR_FUNC, 0, 0, 0, &t_any, NULL);
-EXTERN type_T t_func_0_number INIT6(VAR_FUNC, 0, 0, 0, &t_number, NULL);
-EXTERN type_T t_func_0_string INIT6(VAR_FUNC, 0, 0, 0, &t_string, NULL);
+EXTERN type_T t_func_unknown INIT6(VAR_FUNC, -1, 0, TTFLAG_STATIC, &t_unknown, NULL);
+EXTERN type_T t_func_void INIT6(VAR_FUNC, -1, 0, TTFLAG_STATIC, &t_void, NULL);
+EXTERN type_T t_func_any INIT6(VAR_FUNC, -1, 0, TTFLAG_STATIC, &t_any, NULL);
+EXTERN type_T t_func_number INIT6(VAR_FUNC, -1, 0, TTFLAG_STATIC, &t_number, NULL);
+EXTERN type_T t_func_string INIT6(VAR_FUNC, -1, 0, TTFLAG_STATIC, &t_string, NULL);
+EXTERN type_T t_func_0_void INIT6(VAR_FUNC, 0, 0, TTFLAG_STATIC, &t_void, NULL);
+EXTERN type_T t_func_0_any INIT6(VAR_FUNC, 0, 0, TTFLAG_STATIC, &t_any, NULL);
+EXTERN type_T t_func_0_number INIT6(VAR_FUNC, 0, 0, TTFLAG_STATIC, &t_number, NULL);
+EXTERN type_T t_func_0_string INIT6(VAR_FUNC, 0, 0, TTFLAG_STATIC, &t_string, NULL);
 
-EXTERN type_T t_list_any INIT6(VAR_LIST, 0, 0, 0, &t_any, NULL);
-EXTERN type_T t_dict_any INIT6(VAR_DICT, 0, 0, 0, &t_any, NULL);
-EXTERN type_T t_list_empty INIT6(VAR_LIST, 0, 0, 0, &t_unknown, NULL);
-EXTERN type_T t_dict_empty INIT6(VAR_DICT, 0, 0, 0, &t_unknown, NULL);
+EXTERN type_T t_list_any INIT6(VAR_LIST, 0, 0, TTFLAG_STATIC, &t_any, NULL);
+EXTERN type_T t_dict_any INIT6(VAR_DICT, 0, 0, TTFLAG_STATIC, &t_any, NULL);
+EXTERN type_T t_list_empty INIT6(VAR_LIST, 0, 0, TTFLAG_STATIC, &t_unknown, NULL);
+EXTERN type_T t_dict_empty INIT6(VAR_DICT, 0, 0, TTFLAG_STATIC, &t_unknown, NULL);
 
-EXTERN type_T t_list_bool INIT6(VAR_LIST, 0, 0, 0, &t_bool, NULL);
-EXTERN type_T t_list_number INIT6(VAR_LIST, 0, 0, 0, &t_number, NULL);
-EXTERN type_T t_list_string INIT6(VAR_LIST, 0, 0, 0, &t_string, NULL);
-EXTERN type_T t_list_dict_any INIT6(VAR_LIST, 0, 0, 0, &t_dict_any, NULL);
+EXTERN type_T t_list_bool INIT6(VAR_LIST, 0, 0, TTFLAG_STATIC, &t_bool, NULL);
+EXTERN type_T t_list_number INIT6(VAR_LIST, 0, 0, TTFLAG_STATIC, &t_number, NULL);
+EXTERN type_T t_list_string INIT6(VAR_LIST, 0, 0, TTFLAG_STATIC, &t_string, NULL);
+EXTERN type_T t_list_dict_any INIT6(VAR_LIST, 0, 0, TTFLAG_STATIC, &t_dict_any, NULL);
 
-EXTERN type_T t_dict_bool INIT6(VAR_DICT, 0, 0, 0, &t_bool, NULL);
-EXTERN type_T t_dict_number INIT6(VAR_DICT, 0, 0, 0, &t_number, NULL);
-EXTERN type_T t_dict_string INIT6(VAR_DICT, 0, 0, 0, &t_string, NULL);
-
+EXTERN type_T t_dict_bool INIT6(VAR_DICT, 0, 0, TTFLAG_STATIC, &t_bool, NULL);
+EXTERN type_T t_dict_number INIT6(VAR_DICT, 0, 0, TTFLAG_STATIC, &t_number, NULL);
+EXTERN type_T t_dict_string INIT6(VAR_DICT, 0, 0, TTFLAG_STATIC, &t_string, NULL);
 
 #endif
 
@@ -579,6 +580,12 @@ EXTERN int	diff_need_scrollbind INIT(= FALSE);
 // While redrawing the screen this flag is set.  It means the screen size
 // ('lines' and 'rows') must not be changed.
 EXTERN int	updating_screen INIT(= FALSE);
+
+#ifdef MESSAGE_QUEUE
+// While closing windows or buffers messages should not be handled to avoid
+// using invalid windows or buffers.
+EXTERN int	dont_parse_messages INIT(= FALSE);
+#endif
 
 #ifdef FEAT_MENU
 // The root of the menu hierarchy.
@@ -1128,6 +1135,8 @@ EXTERN int	emsg_silent INIT(= 0);	// don't print error messages
 EXTERN int	emsg_noredir INIT(= 0);	// don't redirect error messages
 EXTERN int	cmd_silent INIT(= FALSE); // don't echo the command line
 
+EXTERN int	in_assert_fails INIT(= FALSE);	// assert_fails() active
+
 EXTERN int	swap_exists_action INIT(= SEA_NONE);
 					// For dialog when swap file already
 					// exists.
@@ -1151,8 +1160,10 @@ EXTERN typebuf_T typebuf		// typeahead buffer
 		    = {NULL, NULL, 0, 0, 0, 0, 0, 0, 0}
 #endif
 		    ;
-EXTERN int	ex_normal_busy INIT(= 0); // recursiveness of ex_normal()
-EXTERN int	ex_normal_lock INIT(= 0); // forbid use of ex_normal()
+EXTERN int	ex_normal_busy INIT(= 0);   // recursiveness of ex_normal()
+EXTERN int	in_feedkeys INIT(= 0);	    // ex_normal_busy set in feedkeys()
+EXTERN int	ex_normal_lock INIT(= 0);   // forbid use of ex_normal()
+
 #ifdef FEAT_EVAL
 EXTERN int	ignore_script INIT(= FALSE);  // ignore script input
 #endif
@@ -1694,7 +1705,7 @@ EXTERN char e_invalblob[]	INIT(= N_("E978: Invalid operation for Blob"));
 EXTERN char e_toomanyarg[]	INIT(= N_("E118: Too many arguments for function: %s"));
 EXTERN char e_toofewarg[]	INIT(= N_("E119: Not enough arguments for function: %s"));
 EXTERN char e_func_deleted[]	INIT(= N_("E933: Function was deleted: %s"));
-EXTERN char e_dictkey[]		INIT(= N_("E716: Key not present in Dictionary: %s"));
+EXTERN char e_dictkey[]		INIT(= N_("E716: Key not present in Dictionary: \"%s\""));
 EXTERN char e_listreq[]		INIT(= N_("E714: List required"));
 EXTERN char e_listblobreq[]	INIT(= N_("E897: List or Blob required"));
 EXTERN char e_list_end[]	INIT(= N_("E697: Missing end of List ']': %s"));

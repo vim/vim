@@ -560,7 +560,6 @@ func Test_terminal_getwinpos()
   call TermWait(buf)
   call term_sendkeys(buf, ":q\<CR>")
   call StopVimInTerminal(buf)
-  exe buf . 'bwipe!'
   set splitright&
   only!
 endfunc

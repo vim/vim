@@ -4249,8 +4249,6 @@ msgstr "Для опции %s"
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: Незакрытая последовательность выражения"
 
-msgid "E541: too many items"
-msgstr "E541: Слишком много элементов"
 
 msgid "E542: unbalanced groups"
 msgstr "E542: Несбалансированные группы"

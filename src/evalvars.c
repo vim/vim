@@ -173,8 +173,6 @@ static char_u *list_arg_vars(exarg_T *eap, char_u *arg, int *first);
 static char_u *ex_let_one(char_u *arg, typval_T *tv, int copy, int flags, char_u *endchars, char_u *op);
 static int do_unlet_var(lval_T *lp, char_u *name_end, exarg_T *eap, int deep, void *cookie);
 static int do_lock_var(lval_T *lp, char_u *name_end, exarg_T *eap, int deep, void *cookie);
-static void item_lock(typval_T *tv, int deep, int lock, int check_refcount);
-static void delete_var(hashtab_T *ht, hashitem_T *hi);
 static void list_one_var(dictitem_T *v, char *prefix, int *first);
 static void list_one_var_a(char *prefix, char_u *name, int type, char_u *string, int *first);
 
@@ -215,8 +213,8 @@ evalvars_init(void)
 	    // add to compat scope dict
 	    hash_add(&compat_hashtab, p->vv_di.di_key);
     }
-    vimvars[VV_VERSION].vv_nr = VIM_VERSION_100;
-    vimvars[VV_VERSIONLONG].vv_nr = VIM_VERSION_100 * 10000 + highest_patch();
+    set_vim_var_nr(VV_VERSION, VIM_VERSION_100);
+    set_vim_var_nr(VV_VERSIONLONG, VIM_VERSION_100 * 10000 + highest_patch());
 
     set_vim_var_nr(VV_SEARCHFORWARD, 1L);
     set_vim_var_nr(VV_HLSEARCH, 1L);
@@ -301,11 +299,23 @@ garbage_collect_vimvars(int copyID)
     int
 garbage_collect_scriptvars(int copyID)
 {
-    int		i;
-    int		abort = FALSE;
+    int		    i;
+    int		    idx;
+    int		    abort = FALSE;
+    scriptitem_T    *si;
 
     for (i = 1; i <= script_items.ga_len; ++i)
+    {
 	abort = abort || set_ref_in_ht(&SCRIPT_VARS(i), copyID, NULL);
+
+	si = SCRIPT_ITEM(i);
+	for (idx = 0; idx < si->sn_var_vals.ga_len; ++idx)
+	{
+	    svar_T    *sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
+
+	    abort = abort || set_ref_in_item(sv->sv_tv, copyID, NULL, NULL);
+	}
+    }
 
     return abort;
 }
@@ -559,6 +569,7 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
     int		text_indent_len = 0;
     char_u	*text_indent = NULL;
     char_u	dot[] = ".";
+    int		comment_char = in_vim9script() ? '#' : '"';
 
     if (eap->getline == NULL)
     {
@@ -586,11 +597,11 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
     }
 
     // The marker is the next word.
-    if (*cmd != NUL && *cmd != '"')
+    if (*cmd != NUL && *cmd != comment_char)
     {
 	marker = skipwhite(cmd);
 	p = skiptowhite(marker);
-	if (*skipwhite(p) != NUL && *skipwhite(p) != '"')
+	if (*skipwhite(p) != NUL && *skipwhite(p) != comment_char)
 	{
 	    semsg(_(e_trailing_arg), p);
 	    return NULL;
@@ -670,6 +681,25 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 }
 
 /*
+ * Vim9 variable declaration:
+ * ":var name"
+ * ":var name: type"
+ * ":var name = expr"
+ * ":var name: type = expr"
+ * etc.
+ */
+    void
+ex_var(exarg_T *eap)
+{
+    if (!in_vim9script())
+    {
+	semsg(_(e_str_cannot_be_used_in_legacy_vim_script), ":var");
+	return;
+    }
+    ex_let(eap);
+}
+
+/*
  * ":let"			list all variable values
  * ":let var1 var2"		list variable values
  * ":let var = expr"		assignment command.
@@ -683,6 +713,9 @@ heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
  * ":let [var1, var2] = expr"	unpack list.
  * ":let var =<< ..."		heredoc
  * ":let var: string"		Vim9 declaration
+ *
+ * ":final var = expr"		assignment command.
+ * ":final [var1, var2] = expr"	unpack list.
  *
  * ":const"			list all variable values
  * ":const var1 var2"		list variable values
@@ -703,12 +736,27 @@ ex_let(exarg_T *eap)
     int		first = TRUE;
     int		concat;
     int		has_assign;
-    int		flags = eap->cmdidx == CMD_const ? LET_IS_CONST : 0;
+    int		flags = eap->cmdidx == CMD_const ? ASSIGN_CONST : 0;
     int		vim9script = in_vim9script();
+
+    if (eap->cmdidx == CMD_final && !vim9script)
+    {
+	    // In legacy Vim script ":final" is short for ":finally".
+	    ex_finally(eap);
+	    return;
+    }
+    if (eap->cmdidx == CMD_let && vim9script)
+    {
+	emsg(_(e_cannot_use_let_in_vim9_script));
+	return;
+    }
+    if (eap->cmdidx == CMD_const && !vim9script && !eap->forceit)
+	// In legacy Vim script ":const" works like ":final".
+	eap->cmdidx = CMD_final;
 
     // detect Vim9 assignment without ":let" or ":const"
     if (eap->arg == eap->cmd)
-	flags |= LET_NO_COMMAND;
+	flags |= ASSIGN_NO_DECL;
 
     argend = skip_var_list(arg, TRUE, &var_count, &semicolon, FALSE);
     if (argend == NULL)
@@ -778,7 +826,7 @@ ex_let(exarg_T *eap)
 	evalarg_T   evalarg;
 	int	    len = 1;
 
-	rettv.v_type = VAR_UNKNOWN;
+	CLEAR_FIELD(rettv);
 	i = FAIL;
 	if (has_assign || concat)
 	{
@@ -786,7 +834,7 @@ ex_let(exarg_T *eap)
 	    op[1] = NUL;
 	    if (*expr != '=')
 	    {
-		if (vim9script && (flags & LET_NO_COMMAND) == 0)
+		if (vim9script && (flags & ASSIGN_NO_DECL) == 0)
 		{
 		    // +=, /=, etc. require an existing variable
 		    semsg(_(e_cannot_use_operator_on_new_variable), eap->arg);
@@ -859,7 +907,7 @@ ex_let_vars(
     int		copy,		// copy values from "tv", don't move
     int		semicolon,	// from skip_var_list()
     int		var_count,	// from skip_var_list()
-    int		flags,		// LET_IS_CONST and/or LET_NO_COMMAND
+    int		flags,		// ASSIGN_CONST, ASSIGN_NO_DECL
     char_u	*op)
 {
     char_u	*arg = arg_start;
@@ -1214,7 +1262,7 @@ ex_let_one(
     char_u	*arg,		// points to variable name
     typval_T	*tv,		// value to assign to variable
     int		copy,		// copy value from "tv"
-    int		flags,		// LET_IS_CONST and/or LET_NO_COMMAND
+    int		flags,		// ASSIGN_CONST, ASSIGN_NO_DECL
     char_u	*endchars,	// valid chars after variable name  or NULL
     char_u	*op)		// "+", "-", "."  or NULL
 {
@@ -1226,7 +1274,7 @@ ex_let_one(
     int		opt_flags;
     char_u	*tofree = NULL;
 
-    if (in_vim9script() && (flags & LET_NO_COMMAND) == 0
+    if (in_vim9script() && (flags & ASSIGN_NO_DECL) == 0
 				  && vim_strchr((char_u *)"$@&", *arg) != NULL)
     {
 	vim9_declare_error(arg);
@@ -1236,7 +1284,7 @@ ex_let_one(
     // ":let $VAR = expr": Set environment variable.
     if (*arg == '$')
     {
-	if (flags & LET_IS_CONST)
+	if (flags & ASSIGN_CONST)
 	{
 	    emsg(_("E996: Cannot lock an environment variable"));
 	    return NULL;
@@ -1288,7 +1336,7 @@ ex_let_one(
     // ":let &g:option = expr": Set global option value.
     else if (*arg == '&')
     {
-	if (flags & LET_IS_CONST)
+	if (flags & ASSIGN_CONST)
 	{
 	    emsg(_(e_const_option));
 	    return NULL;
@@ -1372,7 +1420,7 @@ ex_let_one(
     // ":let @r = expr": Set register contents.
     else if (*arg == '@')
     {
-	if (flags & LET_IS_CONST)
+	if (flags & ASSIGN_CONST)
 	{
 	    emsg(_("E996: Cannot lock a register"));
 	    return NULL;
@@ -1559,9 +1607,9 @@ do_unlet_var(
 	*name_end = cc;
     }
     else if ((lp->ll_list != NULL
-		 && var_check_lock(lp->ll_list->lv_lock, lp->ll_name, FALSE))
+		 && value_check_lock(lp->ll_list->lv_lock, lp->ll_name, FALSE))
 	    || (lp->ll_dict != NULL
-		 && var_check_lock(lp->ll_dict->dv_lock, lp->ll_name, FALSE)))
+		&& value_check_lock(lp->ll_dict->dv_lock, lp->ll_name, FALSE)))
 	return FAIL;
     else if (lp->ll_range)
     {
@@ -1572,7 +1620,7 @@ do_unlet_var(
 	while (ll_li != NULL && (lp->ll_empty2 || lp->ll_n2 >= ll_n1))
 	{
 	    li = ll_li->li_next;
-	    if (var_check_lock(ll_li->li_tv.v_lock, lp->ll_name, FALSE))
+	    if (value_check_lock(ll_li->li_tv.v_lock, lp->ll_name, FALSE))
 		return FAIL;
 	    ll_li = li;
 	    ++ll_n1;
@@ -1645,7 +1693,7 @@ do_unlet(char_u *name, int forceit)
 	    di = HI2DI(hi);
 	    if (var_check_fixed(di->di_flags, name, FALSE)
 		    || var_check_ro(di->di_flags, name, FALSE)
-		    || var_check_lock(d->dv_lock, name, FALSE))
+		    || value_check_lock(d->dv_lock, name, FALSE))
 		return FAIL;
 
 	    delete_var(ht, hi);
@@ -1675,9 +1723,6 @@ do_lock_var(
     int		ret = OK;
     int		cc;
     dictitem_T	*di;
-
-    if (deep == 0)	// nothing to do
-	return OK;
 
     if (lp->ll_tv == NULL)
     {
@@ -1709,10 +1754,15 @@ do_lock_var(
 		    di->di_flags |= DI_FLAGS_LOCK;
 		else
 		    di->di_flags &= ~DI_FLAGS_LOCK;
-		item_lock(&di->di_tv, deep, lock, FALSE);
+		if (deep != 0)
+		    item_lock(&di->di_tv, deep, lock, FALSE);
 	    }
 	}
 	*name_end = cc;
+    }
+    else if (deep == 0)
+    {
+	// nothing to do
     }
     else if (lp->ll_range)
     {
@@ -1741,7 +1791,7 @@ do_lock_var(
  * When "check_refcount" is TRUE do not lock a list or dict with a reference
  * count larger than 1.
  */
-    static void
+    void
 item_lock(typval_T *tv, int deep, int lock, int check_refcount)
 {
     static int	recurse = 0;
@@ -1931,7 +1981,13 @@ get_user_var_name(expand_T *xp, int idx)
     }
 
     // b: variables
-    ht = &curbuf->b_vars->dv_hashtab;
+    ht =
+#ifdef FEAT_CMDWIN
+	// In cmdwin, the alternative buffer should be used.
+	(cmdwin_type != 0 && get_cmdline_type() == NUL) ?
+	&prevwin->w_buffer->b_vars->dv_hashtab :
+#endif
+	&curbuf->b_vars->dv_hashtab;
     if (bdone < ht->ht_used)
     {
 	if (bdone++ == 0)
@@ -1944,7 +2000,13 @@ get_user_var_name(expand_T *xp, int idx)
     }
 
     // w: variables
-    ht = &curwin->w_vars->dv_hashtab;
+    ht =
+#ifdef FEAT_CMDWIN
+	// In cmdwin, the alternative window should be used.
+	(cmdwin_type != 0 && get_cmdline_type() == NUL) ?
+	&prevwin->w_vars->dv_hashtab :
+#endif
+	&curwin->w_vars->dv_hashtab;
     if (wdone < ht->ht_used)
     {
 	if (wdone++ == 0)
@@ -2453,6 +2515,11 @@ eval_variable(
 		    rettv->vval.v_string = vim_strsave(import->imp_funcname);
 		}
 	    }
+	    else if (import->imp_all)
+	    {
+		emsg("Sorry, 'import * as X' not implemented yet");
+		ret = FAIL;
+	    }
 	    else
 	    {
 		scriptitem_T    *si = SCRIPT_ITEM(import->imp_sid);
@@ -2486,7 +2553,22 @@ eval_variable(
 	    ret = FAIL;
 	}
 	else if (rettv != NULL)
+	{
+	    // If a list or dict variable wasn't initialized, do it now.
+	    if (tv->v_type == VAR_DICT && tv->vval.v_dict == NULL)
+	    {
+		tv->vval.v_dict = dict_alloc();
+		if (tv->vval.v_dict != NULL)
+		    ++tv->vval.v_dict->dv_refcount;
+	    }
+	    else if (tv->v_type == VAR_LIST && tv->vval.v_list == NULL)
+	    {
+		tv->vval.v_list = list_alloc();
+		if (tv->vval.v_list != NULL)
+		    ++tv->vval.v_list->lv_refcount;
+	    }
 	    copy_tv(tv, rettv);
+	}
     }
 
     name[len] = cc;
@@ -2604,7 +2686,7 @@ find_var_in_ht(
 /*
  * Get the script-local hashtab.  NULL if not in a script context.
  */
-    static hashtab_T *
+    hashtab_T *
 get_script_local_ht(void)
 {
     scid_T sid = current_sctx.sc_sid;
@@ -2834,14 +2916,14 @@ vars_clear_ext(hashtab_T *ht, int free_val)
 	}
     }
     hash_clear(ht);
-    ht->ht_used = 0;
+    hash_init(ht);
 }
 
 /*
  * Delete a variable from hashtab "ht" at item "hi".
  * Clear the variable value and free the dictitem.
  */
-    static void
+    void
 delete_var(hashtab_T *ht, hashitem_T *hi)
 {
     dictitem_T	*di = HI2DI(hi);
@@ -2923,7 +3005,7 @@ set_var(
     typval_T	*tv,
     int		copy)	    // make copy of value in "tv"
 {
-    set_var_const(name, NULL, tv, copy, LET_NO_COMMAND);
+    set_var_const(name, NULL, tv, copy, ASSIGN_NO_DECL);
 }
 
 /*
@@ -2935,30 +3017,33 @@ set_var(
 set_var_const(
     char_u	*name,
     type_T	*type,
-    typval_T	*tv,
+    typval_T	*tv_arg,
     int		copy,	    // make copy of value in "tv"
-    int		flags)	    // LET_IS_CONST and/or LET_NO_COMMAND
+    int		flags)	    // ASSIGN_CONST, ASSIGN_NO_DECL
 {
+    typval_T	*tv = tv_arg;
+    typval_T	bool_tv;
     dictitem_T	*di;
     char_u	*varname;
     hashtab_T	*ht;
     int		is_script_local;
+    int		vim9script = in_vim9script();
 
     ht = find_var_ht(name, &varname);
     if (ht == NULL || *varname == NUL)
     {
 	semsg(_(e_illvar), name);
-	return;
+	goto failed;
     }
     is_script_local = ht == get_script_local_ht();
 
-    if (in_vim9script()
+    if (vim9script
 	    && !is_script_local
-	    && (flags & LET_NO_COMMAND) == 0
+	    && (flags & ASSIGN_NO_DECL) == 0
 	    && name[1] == ':')
     {
 	vim9_declare_error(name);
-	return;
+	goto failed;
     }
 
     di = find_var_in_ht(ht, 0, varname, TRUE);
@@ -2969,34 +3054,48 @@ set_var_const(
 
     if ((tv->v_type == VAR_FUNC || tv->v_type == VAR_PARTIAL)
 				      && var_wrong_func_name(name, di == NULL))
-	return;
+	goto failed;
+
+    if (need_convert_to_bool(type, tv))
+    {
+	// Destination is a bool and the value is not, but it can be converted.
+	CLEAR_FIELD(bool_tv);
+	bool_tv.v_type = VAR_BOOL;
+	bool_tv.vval.v_number = tv2bool(tv) ? VVAL_TRUE : VVAL_FALSE;
+	tv = &bool_tv;
+    }
 
     if (di != NULL)
     {
 	if ((di->di_flags & DI_FLAGS_RELOAD) == 0)
 	{
-	    if (flags & LET_IS_CONST)
+	    if (flags & ASSIGN_CONST)
 	    {
 		emsg(_(e_cannot_mod));
-		return;
+		goto failed;
 	    }
 
-	    if (is_script_local && in_vim9script())
+	    if (is_script_local && vim9script)
 	    {
-		if ((flags & LET_NO_COMMAND) == 0)
+		if ((flags & ASSIGN_NO_DECL) == 0)
 		{
 		    semsg(_(e_redefining_script_item_str), name);
-		    return;
+		    goto failed;
 		}
 
-		// check the type
+		// check the type and adjust to bool if needed
 		if (check_script_var_type(&di->di_tv, tv, name) == FAIL)
-		    return;
+		    goto failed;
 	    }
 
+	    // Check in this order for backwards compatibility:
+	    // - Whether the variable is read-only
+	    // - Whether the variable value is locked
+	    // - Whether the variable is locked
 	    if (var_check_ro(di->di_flags, name, FALSE)
-			       || var_check_lock(di->di_tv.v_lock, name, FALSE))
-		return;
+			    || value_check_lock(di->di_tv.v_lock, name, FALSE)
+			    || var_check_lock(di->di_flags, name, FALSE))
+		goto failed;
 	}
 	else
 	    // can only redefine once
@@ -3026,7 +3125,7 @@ set_var_const(
 		    di->di_tv.vval.v_string = tv->vval.v_string;
 		    tv->vval.v_string = NULL;
 		}
-		return;
+		goto failed;
 	    }
 	    else if (di->di_tv.v_type == VAR_NUMBER)
 	    {
@@ -3040,12 +3139,12 @@ set_var_const(
 		    redraw_all_later(SOME_VALID);
 		}
 #endif
-		return;
+		goto failed;
 	    }
 	    else if (di->di_tv.v_type != tv->v_type)
 	    {
 		semsg(_("E963: setting %s to value with wrong type"), name);
-		return;
+		goto failed;
 	    }
 	}
 
@@ -3057,50 +3156,30 @@ set_var_const(
 	if (ht == &vimvarht || ht == get_funccal_args_ht())
 	{
 	    semsg(_(e_illvar), name);
-	    return;
+	    goto failed;
 	}
 
 	// Make sure the variable name is valid.
 	if (!valid_varname(varname))
-	    return;
+	    goto failed;
 
 	di = alloc(sizeof(dictitem_T) + STRLEN(varname));
 	if (di == NULL)
-	    return;
+	    goto failed;
 	STRCPY(di->di_key, varname);
 	if (hash_add(ht, DI2HIKEY(di)) == FAIL)
 	{
 	    vim_free(di);
-	    return;
+	    goto failed;
 	}
 	di->di_flags = DI_FLAGS_ALLOC;
-	if (flags & LET_IS_CONST)
+	if (flags & ASSIGN_CONST)
 	    di->di_flags |= DI_FLAGS_LOCK;
 
-	if (is_script_local && in_vim9script())
-	{
-	    scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
-
-	    // Store a pointer to the typval_T, so that it can be found by
-	    // index instead of using a hastab lookup.
-	    if (ga_grow(&si->sn_var_vals, 1) == OK)
-	    {
-		svar_T *sv = ((svar_T *)si->sn_var_vals.ga_data)
-						      + si->sn_var_vals.ga_len;
-		sv->sv_name = di->di_key;
-		sv->sv_tv = &di->di_tv;
-		if (type == NULL)
-		    sv->sv_type = typval2type(tv, &si->sn_type_list);
-		else
-		    sv->sv_type = type;
-		sv->sv_const = (flags & LET_IS_CONST);
-		sv->sv_export = is_export;
-		++si->sn_var_vals.ga_len;
-
-		// let ex_export() know the export worked.
-		is_export = FALSE;
-	    }
-	}
+	// A Vim9 script-local variable is also added to sn_all_vars and
+	// sn_var_vals.
+	if (is_script_local && vim9script)
+	    add_vim9_script_var(di, tv, type);
     }
 
     if (copy || tv->v_type == VAR_NUMBER || tv->v_type == VAR_FLOAT)
@@ -3112,11 +3191,16 @@ set_var_const(
 	init_tv(tv);
     }
 
-    if (flags & LET_IS_CONST)
+    // ":const var = val" locks the value
+    if (flags & ASSIGN_CONST)
 	// Like :lockvar! name: lock the value and what it contains, but only
 	// if the reference count is up to one.  That locks only literal
 	// values.
 	item_lock(&di->di_tv, DICT_MAXNEST, TRUE, TRUE);
+    return;
+failed:
+    if (!copy)
+	clear_tv(tv_arg);
 }
 
 /*
@@ -3134,6 +3218,22 @@ var_check_ro(int flags, char_u *name, int use_gettext)
     if ((flags & DI_FLAGS_RO_SBX) && sandbox)
     {
 	semsg(_(e_readonlysbx), use_gettext ? (char_u *)_(name) : name);
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * Return TRUE if di_flags "flags" indicates variable "name" is locked.
+ * Also give an error message.
+ */
+    int
+var_check_lock(int flags, char_u *name, int use_gettext)
+{
+    if (flags & DI_FLAGS_LOCK)
+    {
+	semsg(_(e_variable_is_locked_str),
+				       use_gettext ? (char_u *)_(name) : name);
 	return TRUE;
     }
     return FALSE;
@@ -3186,12 +3286,12 @@ var_wrong_func_name(
 }
 
 /*
- * Return TRUE if "flags" indicates variable "name" is locked (immutable).
- * Also give an error message, using "name" or _("name") when use_gettext is
- * TRUE.
+ * Return TRUE if "flags" indicates variable "name" has a locked (immutable)
+ * value.  Also give an error message, using "name" or _("name") when
+ * "use_gettext" is TRUE.
  */
     int
-var_check_lock(int lock, char_u *name, int use_gettext)
+value_check_lock(int lock, char_u *name, int use_gettext)
 {
     if (lock & VAR_LOCKED)
     {
@@ -3504,9 +3604,11 @@ var_redir_start(char_u *name, int append)
     tv.v_type = VAR_STRING;
     tv.vval.v_string = (char_u *)"";
     if (append)
-	set_var_lval(redir_lval, redir_endp, &tv, TRUE, 0, (char_u *)".");
+	set_var_lval(redir_lval, redir_endp, &tv, TRUE,
+						ASSIGN_NO_DECL, (char_u *)".");
     else
-	set_var_lval(redir_lval, redir_endp, &tv, TRUE, 0, (char_u *)"=");
+	set_var_lval(redir_lval, redir_endp, &tv, TRUE,
+						ASSIGN_NO_DECL, (char_u *)"=");
     clear_lval(redir_lval);
     if (called_emsg > called_emsg_before)
     {

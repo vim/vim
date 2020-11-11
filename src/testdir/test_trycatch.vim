@@ -37,7 +37,7 @@ func T25_F()
         if loops == 2
           try
             Xpath 'f' . loops
-          finally
+          final
             Xpath 'g' . loops
           endtry
         endif
@@ -49,19 +49,20 @@ func T25_F()
   Xpath 'i'
 endfunc
 
+" Also try using "fina" and "final" and "finall" as abbraviations.
 func T25_G()
   if 1
     try
       Xpath 'A'
       call T25_F()
       Xpath 'B'
-    finally
+    fina
       Xpath 'C'
     endtry
   else
     try
       Xpath 'D'
-    finally
+    finall
       Xpath 'E'
     endtry
   endif

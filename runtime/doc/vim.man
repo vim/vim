@@ -345,6 +345,9 @@ OPTIONS
                    GTK  GUI only: Use the GtkPlug mechanism to run gvim in an‐
                    other window.
 
+       --startuptime {file}
+                   During startup write timing messages to the file {fname}.
+
        --version   Print version information and exit.
 
 ON-LINE HELP

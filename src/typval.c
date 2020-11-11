@@ -177,7 +177,7 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
     switch (varp->v_type)
     {
 	case VAR_NUMBER:
-	    if (want_bool && varp->vval.v_number != 0
+	    if (in_vim9script() && want_bool && varp->vval.v_number != 0
 						   && varp->vval.v_number != 1)
 	    {
 		semsg(_(e_using_number_as_bool_nr), varp->vval.v_number);
@@ -512,8 +512,8 @@ tv_check_lock(typval_T *tv, char_u *name, int use_gettext)
 	default:
 	    break;
     }
-    return var_check_lock(tv->v_lock, name, use_gettext)
-		    || (lock != 0 && var_check_lock(lock, name, use_gettext));
+    return value_check_lock(tv->v_lock, name, use_gettext)
+		   || (lock != 0 && value_check_lock(lock, name, use_gettext));
 }
 
 /*

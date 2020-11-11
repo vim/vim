@@ -640,7 +640,10 @@ foldCreate(linenr_T start, linenr_T end)
 		break;
 	    }
 	}
-	i = (int)(fp - (fold_T *)gap->ga_data);
+	if (gap->ga_len == 0)
+	    i = 0;
+	else
+	    i = (int)(fp - (fold_T *)gap->ga_data);
     }
 
     if (ga_grow(gap, 1) == OK)
@@ -902,6 +905,8 @@ foldMoveTo(
 	// that moves the cursor is used.
 	lnum_off = 0;
 	gap = &curwin->w_folds;
+	if (gap->ga_len == 0)
+	    break;
 	use_level = FALSE;
 	maybe_small = FALSE;
 	lnum_found = curwin->w_cursor.lnum;
@@ -2422,8 +2427,8 @@ foldUpdateIEMSRecurse(
 							      && flp->lvl > 0)
     {
 	(void)foldFind(gap, startlnum - 1, &fp);
-	if (fp >= ((fold_T *)gap->ga_data) + gap->ga_len
-						   || fp->fd_top >= startlnum)
+	if (fp != NULL && (fp >= ((fold_T *)gap->ga_data) + gap->ga_len
+						   || fp->fd_top >= startlnum))
 	    fp = NULL;
     }
 

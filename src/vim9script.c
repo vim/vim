@@ -51,8 +51,8 @@ ex_vim9script(exarg_T *eap)
 
     if (STRCMP(p_cpo, CPO_VIM) != 0)
     {
-	si->sn_save_cpo = p_cpo;
-	p_cpo = vim_strsave((char_u *)CPO_VIM);
+	si->sn_save_cpo = vim_strsave(p_cpo);
+	set_option_value((char_u *)"cpo", 0L, (char_u *)CPO_VIM, 0);
     }
 }
 
@@ -70,7 +70,7 @@ not_in_vim9(exarg_T *eap)
 	    case CMD_insert:
 	    case CMD_t:
 	    case CMD_xit:
-		semsg(_(e_missing_let_str), eap->cmd);
+		semsg(_(e_missing_var_str), eap->cmd);
 		return FAIL;
 	    default: break;
 	}
@@ -97,6 +97,8 @@ ex_export(exarg_T *eap)
     switch (eap->cmdidx)
     {
 	case CMD_let:
+	case CMD_var:
+	case CMD_final:
 	case CMD_const:
 	case CMD_def:
 	// case CMD_class:
@@ -132,7 +134,7 @@ new_imported(garray_T *gap)
  * Free all imported items in script "sid".
  */
     void
-free_imports(int sid)
+free_imports_and_script_vars(int sid)
 {
     scriptitem_T    *si = SCRIPT_ITEM(sid);
     int		    idx;
@@ -144,7 +146,9 @@ free_imports(int sid)
 	vim_free(imp->imp_name);
     }
     ga_clear(&si->sn_imports);
-    ga_clear(&si->sn_var_vals);
+
+    free_all_script_vars(si);
+
     clear_type_list(&si->sn_type_list);
 }
 
@@ -189,7 +193,8 @@ find_exported(
 	int	    sid,
 	char_u	    *name,
 	ufunc_T	    **ufunc,
-	type_T	    **type)
+	type_T	    **type,
+	cctx_T	    *cctx)
 {
     int		idx = -1;
     svar_T	*sv;
@@ -197,7 +202,7 @@ find_exported(
 
     // find name in "script"
     // TODO: also find script-local user function
-    idx = get_script_item_idx(sid, name, FALSE);
+    idx = get_script_item_idx(sid, name, FALSE, cctx);
     if (idx >= 0)
     {
 	sv = ((svar_T *)script->sn_var_vals.ga_data) + idx;
@@ -244,6 +249,7 @@ find_exported(
 /*
  * Handle an ":import" command and add the resulting imported_T to "gap", when
  * not NULL, or script "import_sid" sn_imports.
+ * "cctx" is NULL at the script level.
  * Returns a pointer to after the command or NULL in case of failure
  */
     char_u *
@@ -457,7 +463,7 @@ handle_import(
 	    ufunc_T	*ufunc = NULL;
 	    type_T	*type;
 
-	    idx = find_exported(sid, name, &ufunc, &type);
+	    idx = find_exported(sid, name, &ufunc, &type, cctx);
 
 	    if (idx < 0 && ufunc == NULL)
 		goto erret;
@@ -508,9 +514,12 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
     int		    called_emsg_before = called_emsg;
     typval_T	    init_tv;
 
-    if (eap->cmdidx == CMD_const)
+    if (eap->cmdidx == CMD_final || eap->cmdidx == CMD_const)
     {
-	emsg(_(e_const_requires_a_value));
+	if (eap->cmdidx == CMD_final)
+	    emsg(_(e_final_requires_a_value));
+	else
+	    emsg(_(e_const_requires_a_value));
 	return arg + STRLEN(arg);
     }
 
@@ -548,7 +557,11 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
 
     // Create the variable with 0/NULL value.
     CLEAR_FIELD(init_tv);
-    init_tv.v_type = type->tt_type;
+    if (type->tt_type == VAR_ANY)
+	// A variable of type "any" is not possible, just use zero instead
+	init_tv.v_type = VAR_NUMBER;
+    else
+	init_tv.v_type = type->tt_type;
     set_var_const(name, type, &init_tv, FALSE, 0);
 
     vim_free(name);
@@ -556,17 +569,172 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
 }
 
 /*
- * Check if the type of script variable "dest" allows assigning "value".
+ * Vim9 part of adding a script variable: add it to sn_all_vars (lookup by name
+ * with a hashtable) and sn_var_vals (lookup by index).
+ * When "type" is NULL use "tv" for the type.
  */
-    int
-check_script_var_type(typval_T *dest, typval_T *value, char_u *name)
+    void
+add_vim9_script_var(dictitem_T *di, typval_T *tv, type_T *type)
+{
+    scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
+
+    // Store a pointer to the typval_T, so that it can be found by
+    // index instead of using a hastab lookup.
+    if (ga_grow(&si->sn_var_vals, 1) == OK)
+    {
+	svar_T *sv = ((svar_T *)si->sn_var_vals.ga_data)
+						      + si->sn_var_vals.ga_len;
+	hashitem_T *hi;
+	sallvar_T *newsav = (sallvar_T *)alloc_clear(
+				       sizeof(sallvar_T) + STRLEN(di->di_key));
+
+	if (newsav == NULL)
+	    return;
+
+	sv->sv_tv = &di->di_tv;
+	if (type == NULL)
+	    sv->sv_type = typval2type(tv, &si->sn_type_list);
+	else
+	    sv->sv_type = type;
+	sv->sv_const = (di->di_flags & DI_FLAGS_LOCK) ? ASSIGN_CONST : 0;
+	sv->sv_export = is_export;
+	newsav->sav_var_vals_idx = si->sn_var_vals.ga_len;
+	++si->sn_var_vals.ga_len;
+
+	STRCPY(&newsav->sav_key, di->di_key);
+	sv->sv_name = newsav->sav_key;
+	newsav->sav_di = di;
+	newsav->sav_block_id = si->sn_current_block_id;
+
+	hi = hash_find(&si->sn_all_vars.dv_hashtab, newsav->sav_key);
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    sallvar_T *sav = HI2SAV(hi);
+
+	    // variable with this name exists in another block
+	    while (sav->sav_next != NULL)
+		sav = sav->sav_next;
+	    sav->sav_next = newsav;
+	}
+	else
+	    // new variable name
+	    hash_add(&si->sn_all_vars.dv_hashtab, newsav->sav_key);
+
+	// let ex_export() know the export worked.
+	is_export = FALSE;
+    }
+}
+
+/*
+ * Hide a script variable when leaving a block.
+ * "idx" is de index in sn_var_vals.
+ * When "func_defined" is non-zero then a function was defined in this block,
+ * the variable may be accessed by it.  Otherwise the variable can be cleared.
+ */
+    void
+hide_script_var(scriptitem_T *si, int idx, int func_defined)
+{
+    svar_T	*sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
+    hashtab_T	*script_ht = get_script_local_ht();
+    hashtab_T	*all_ht = &si->sn_all_vars.dv_hashtab;
+    hashitem_T	*script_hi;
+    hashitem_T	*all_hi;
+
+    // Remove a variable declared inside the block, if it still exists.
+    // If it was added in a nested block it will already have been removed.
+    // The typval is moved into the sallvar_T.
+    script_hi = hash_find(script_ht, sv->sv_name);
+    all_hi = hash_find(all_ht, sv->sv_name);
+    if (!HASHITEM_EMPTY(script_hi) && !HASHITEM_EMPTY(all_hi))
+    {
+	dictitem_T	*di = HI2DI(script_hi);
+	sallvar_T	*sav = HI2SAV(all_hi);
+	sallvar_T	*sav_prev = NULL;
+
+	// There can be multiple entries with the same name in different
+	// blocks, find the right one.
+	while (sav != NULL && sav->sav_var_vals_idx != idx)
+	{
+	    sav_prev = sav;
+	    sav = sav->sav_next;
+	}
+	if (sav != NULL)
+	{
+	    if (func_defined)
+	    {
+		// move the typval from the dictitem to the sallvar
+		sav->sav_tv = di->di_tv;
+		di->di_tv.v_type = VAR_UNKNOWN;
+		sav->sav_flags = di->di_flags;
+		sav->sav_di = NULL;
+		sv->sv_tv = &sav->sav_tv;
+	    }
+	    else
+	    {
+		if (sav_prev == NULL)
+		    hash_remove(all_ht, all_hi);
+		else
+		    sav_prev->sav_next = sav->sav_next;
+		sv->sv_name = NULL;
+		vim_free(sav);
+	    }
+	    delete_var(script_ht, script_hi);
+	}
+    }
+}
+
+/*
+ * Free the script variables from "sn_all_vars".
+ */
+    void
+free_all_script_vars(scriptitem_T *si)
+{
+    int		todo;
+    hashtab_T	*ht = &si->sn_all_vars.dv_hashtab;
+    hashitem_T	*hi;
+    sallvar_T	*sav;
+    sallvar_T	*sav_next;
+
+    hash_lock(ht);
+    todo = (int)ht->ht_used;
+    for (hi = ht->ht_array; todo > 0; ++hi)
+    {
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    --todo;
+
+	    // Free the variable.  Don't remove it from the hashtab, ht_array
+	    // might change then.  hash_clear() takes care of it later.
+	    sav = HI2SAV(hi);
+	    while (sav != NULL)
+	    {
+		sav_next = sav->sav_next;
+		if (sav->sav_di == NULL)
+		    clear_tv(&sav->sav_tv);
+		vim_free(sav);
+		sav = sav_next;
+	    }
+	}
+    }
+    hash_clear(ht);
+    hash_init(ht);
+
+    ga_clear(&si->sn_var_vals);
+}
+
+/*
+ * Find the script-local variable that links to "dest".
+ * Returns NULL if not found.
+ */
+    svar_T *
+find_typval_in_script(typval_T *dest)
 {
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
     int		    idx;
 
     if (si->sn_version != SCRIPT_VERSION_VIM9)
 	// legacy script doesn't store variable types
-	return OK;
+	return NULL;
 
     // Find the svar_T in sn_var_vals.
     for (idx = 0; idx < si->sn_var_vals.ga_len; ++idx)
@@ -574,16 +742,42 @@ check_script_var_type(typval_T *dest, typval_T *value, char_u *name)
 	svar_T    *sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
 
 	if (sv->sv_tv == dest)
-	{
-	    if (sv->sv_const)
-	    {
-		semsg(_(e_readonlyvar), name);
-		return FAIL;
-	    }
-	    return check_typval_type(sv->sv_type, value, 0);
-	}
+	    return sv;
     }
     iemsg("check_script_var_type(): not found");
+    return NULL;
+}
+
+/*
+ * Check if the type of script variable "dest" allows assigning "value".
+ * If needed convert "value" to a bool.
+ */
+    int
+check_script_var_type(typval_T *dest, typval_T *value, char_u *name)
+{
+    svar_T  *sv = find_typval_in_script(dest);
+    int	    ret;
+
+    if (sv != NULL)
+    {
+	if (sv->sv_const)
+	{
+	    semsg(_(e_readonlyvar), name);
+	    return FAIL;
+	}
+	ret = check_typval_type(sv->sv_type, value, 0);
+	if (ret == OK && need_convert_to_bool(sv->sv_type, value))
+	{
+	    int	val = tv2bool(value);
+
+	    clear_tv(value);
+	    value->v_type = VAR_BOOL;
+	    value->v_lock = 0;
+	    value->vval.v_number = val ? VVAL_TRUE : VVAL_FALSE;
+	}
+	return ret;
+    }
+
     return OK; // not really
 }
 

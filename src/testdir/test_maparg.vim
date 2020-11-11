@@ -83,13 +83,13 @@ endfunc
 
 def Test_vim9_maparg()
   nmap { w
-  let one: string = maparg('{')
+  var one: string = maparg('{')
   assert_equal('w', one)
-  let two: string = maparg('{', 'n')
+  var two: string = maparg('{', 'n')
   assert_equal('w', two)
-  let three: string = maparg('{', 'n', 0)
+  var three: string = maparg('{', 'n', 0)
   assert_equal('w', three)
-  let four: dict<any> = maparg('{', 'n', 0, 1)
+  var four: dict<any> = maparg('{', 'n', 0, 1)
   assert_equal(['{', 'w', 'n'], [four.lhs, four.rhs, four.mode])
   nunmap {
 enddef
@@ -238,6 +238,8 @@ func Test_mapset()
   iunmap K
   let &cpo = cpo_save
   bwipe!
+
+  call assert_fails('call mapset([], v:false, {})', 'E730:')
 endfunc
 
 func Check_ctrlb_map(d, check_alt)

@@ -98,10 +98,10 @@ func Test_map_filter_fails()
   call assert_fails("let l = filter([1, 2, 3], '{}')", 'E728:')
   call assert_fails("let l = filter({'k' : 10}, '{}')", 'E728:')
   call assert_fails("let l = filter([1, 2], {})", 'E731:')
-  call assert_equal(0, filter(test_null_list(), 0))
-  call assert_equal(0, filter(test_null_dict(), 0))
-  call assert_equal(0, map(test_null_list(), '"> " .. v:val'))
-  call assert_equal(0, map(test_null_dict(), '"> " .. v:val'))
+  call assert_equal(test_null_list(), filter(test_null_list(), 0))
+  call assert_equal(test_null_dict(), filter(test_null_dict(), 0))
+  call assert_equal(test_null_list(), map(test_null_list(), '"> " .. v:val'))
+  call assert_equal(test_null_dict(), map(test_null_dict(), '"> " .. v:val'))
   call assert_equal([1, 2, 3], filter([1, 2, 3], test_null_function()))
   call assert_fails("let l = filter([1, 2], function('min'))", 'E118:')
   call assert_equal([1, 2, 3], filter([1, 2, 3], test_null_partial()))
@@ -116,6 +116,27 @@ func Test_map_and_modify()
   let d = #{a: 1, b: 2, c: 3}
   call assert_fails('call map(d, "remove(d, v:key)[0]")', 'E741:')
   call assert_fails('echo map(d, {k,v -> remove(d, k)})', 'E741:')
+endfunc
+
+func Test_mapnew_dict()
+  let din = #{one: 1, two: 2}
+  let dout = mapnew(din, {k, v -> string(v)})
+  call assert_equal(#{one: 1, two: 2}, din)
+  call assert_equal(#{one: '1', two: '2'}, dout)
+endfunc
+
+func Test_mapnew_list()
+  let lin = [1, 2, 3]
+  let lout = mapnew(lin, {k, v -> string(v)})
+  call assert_equal([1, 2, 3], lin)
+  call assert_equal(['1', '2', '3'], lout)
+endfunc
+
+func Test_mapnew_blob()
+  let bin = 0z123456
+  let bout = mapnew(bin, {k, v -> k == 1 ? 0x99 : v})
+  call assert_equal(0z123456, bin)
+  call assert_equal(0z129956, bout)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

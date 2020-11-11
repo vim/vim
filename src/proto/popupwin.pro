@@ -50,6 +50,7 @@ int popup_do_filter(int c);
 int popup_no_mapping(void);
 void popup_check_cursor_pos(void);
 void may_update_popup_mask(int type);
+void may_update_popup_position(void);
 void update_popups(void (*win_update)(win_T *wp));
 int set_ref_in_popups(int copyID);
 int popup_is_popup(win_T *wp);

@@ -339,6 +339,7 @@ func Test_Debugger()
   call delete('Xtest.vim')
   %bw!
   call assert_fails('breakadd here', 'E32:')
+  call assert_fails('breakadd file Xtest.vim /\)/', 'E55:')
 endfunc
 
 func Test_Backtrace_Through_Source()
@@ -858,7 +859,7 @@ func Test_Backtrace_DefFunction()
     vim9script
 
     def DoAThing(): number
-      let a = 100 * 2
+      var a = 100 * 2
       a += 3
       return a
     enddef

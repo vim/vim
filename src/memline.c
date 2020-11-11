@@ -289,7 +289,7 @@ ml_open(buf_T *buf)
     buf->b_ml.ml_chunksize = NULL;
 #endif
 
-    if (cmdmod.noswapfile)
+    if (cmdmod.cmod_flags & CMOD_NOSWAPFILE)
 	buf->b_p_swf = FALSE;
 
     /*
@@ -635,7 +635,7 @@ ml_setname(buf_T *buf)
 	 * When 'updatecount' is 0 and 'noswapfile' there is no swap file.
 	 * For help files we will make a swap file now.
 	 */
-	if (p_uc != 0 && !cmdmod.noswapfile)
+	if (p_uc != 0 && (cmdmod.cmod_flags & CMOD_NOSWAPFILE) == 0)
 	    ml_open_file(buf);	    // create a swap file
 	return;
     }
@@ -747,7 +747,8 @@ ml_open_file(buf_T *buf)
     char_u	*dirp;
 
     mfp = buf->b_ml.ml_mfp;
-    if (mfp == NULL || mfp->mf_fd >= 0 || !buf->b_p_swf || cmdmod.noswapfile)
+    if (mfp == NULL || mfp->mf_fd >= 0 || !buf->b_p_swf
+				      || (cmdmod.cmod_flags & CMOD_NOSWAPFILE))
 	return;		// nothing to do
 
 #ifdef FEAT_SPELL
@@ -1689,7 +1690,17 @@ ml_recover(int checkext)
 	}
 	else
 	    msg(_("Recovery completed. Buffer contents equals file contents."));
-	msg_puts(_("\nYou may want to delete the .swp file now.\n\n"));
+	msg_puts(_("\nYou may want to delete the .swp file now."));
+#if defined(UNIX) || defined(MSWIN)
+	if (mch_process_running(char_to_long(b0p->b0_pid)))
+	{
+	    // Warn there could be an active Vim on the same file, the user may
+	    // want to kill it.
+	    msg_puts(_("\nNote: process STILL RUNNING: "));
+	    msg_outnum(char_to_long(b0p->b0_pid));
+	}
+#endif
+	msg_puts("\n\n");
 	cmdline_row = msg_row;
     }
 #ifdef FEAT_CRYPT
@@ -2229,14 +2240,30 @@ swapfile_unchanged(char_u *fname)
 	ret = FALSE;
 
 #if defined(UNIX) || defined(MSWIN)
+    // Host name must be known and must equal the current host name, otherwise
+    // comparing pid is meaningless.
+    if (*(b0.b0_hname) == NUL)
+    {
+	ret = FALSE;
+    }
+    else
+    {
+	char_u	    hostname[B0_HNAME_SIZE];
+
+	mch_get_host_name(hostname, B0_HNAME_SIZE);
+	hostname[B0_HNAME_SIZE - 1] = NUL;
+	if (STRICMP(b0.b0_hname, hostname) != 0)
+	    ret = FALSE;
+    }
+
     // process must be known and not be running
     pid = char_to_long(b0.b0_pid);
     if (pid == 0L || mch_process_running(pid))
 	ret = FALSE;
 #endif
 
-    // TODO: Should we check if the swap file was created on the current
-    // system?  And the current user?
+    // We do not check the user, it should be irrelevant for whether the swap
+    // file is still useful.
 
     close(fd);
     return ret;
@@ -2634,7 +2661,7 @@ add_text_props_for_append(
     int		n;
     char_u	*props;
     int		new_len = 0;  // init for gcc
-    char_u	*new_line;
+    char_u	*new_line = NULL;
     textprop_T	prop;
 
     // Make two rounds:

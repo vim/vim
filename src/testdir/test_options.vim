@@ -1,5 +1,6 @@
 " Test for options
 
+source shared.vim
 source check.vim
 source view_util.vim
 
@@ -371,7 +372,6 @@ func Test_set_errors()
   call assert_fails('set commentstring=x', 'E537:')
   call assert_fails('set complete=x', 'E539:')
   call assert_fails('set statusline=%{', 'E540:')
-  call assert_fails('set statusline=' . repeat("%p", 81), 'E541:')
   call assert_fails('set statusline=%(', 'E542:')
   if has('cursorshape')
     " This invalid value for 'guicursor' used to cause Vim to crash.
@@ -410,6 +410,7 @@ func Test_set_errors()
     call assert_fails('set pyxversion=6', 'E474:')
   endif
   call assert_fails("let &tabstop='ab'", 'E521:')
+  call assert_fails('set spellcapcheck=%\\(', 'E54:')
 endfunc
 
 func CheckWasSet(name)
@@ -586,6 +587,35 @@ func Test_backupskip()
       call assert_true(found, var . ' (' . varvalue . ') not in option bsk: ' . &bsk)
     endif
   endfor
+
+  " Duplicates from environment variables should be filtered out (option has
+  " P_NODUP).  Run this in a separate instance and write v:errors in a file,
+  " so that we see what happens on startup.
+  let after =<< trim [CODE]
+      let bsklist = split(&backupskip, ',')
+      call assert_equal(uniq(copy(bsklist)), bsklist)
+      call writefile(['errors:'] + v:errors, 'Xtestout')
+      qall
+  [CODE]
+  call writefile(after, 'Xafter')
+  let cmd = GetVimProg() . ' --not-a-term -S Xafter --cmd "set enc=utf8"'
+
+  let saveenv = {}
+  for var in ['TMPDIR', 'TMP', 'TEMP']
+    let saveenv[var] = getenv(var)
+    call setenv(var, '/duplicate/path')
+  endfor
+
+  exe 'silent !' . cmd
+  call assert_equal(['errors:'], readfile('Xtestout'))
+
+  " restore environment variables
+  for var in ['TMPDIR', 'TMP', 'TEMP']
+    call setenv(var, saveenv[var])
+  endfor
+
+  call delete('Xtestout')
+  call delete('Xafter')
 
   " Duplicates should be filtered out (option has P_NODUP)
   let backupskip = &backupskip

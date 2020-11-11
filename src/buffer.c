@@ -673,7 +673,7 @@ aucmd_abort:
     buf->b_nwindows = nwindows;
 
     buf_freeall(buf, (del_buf ? BFA_DEL : 0)
-	           + (wipe_buf ? BFA_WIPE : 0)
+		   + (wipe_buf ? BFA_WIPE : 0)
 		   + (ignore_abort ? BFA_IGNORE_ABORT : 0));
 
     // Autocommands may have deleted the buffer.
@@ -1006,6 +1006,22 @@ free_buffer_stuff(
 }
 
 /*
+ * Free one wininfo_T.
+ */
+    void
+free_wininfo(wininfo_T *wip)
+{
+    if (wip->wi_optset)
+    {
+	clear_winopt(&wip->wi_opt);
+#ifdef FEAT_FOLDING
+	deleteFoldRecurse(&wip->wi_folds);
+#endif
+    }
+    vim_free(wip);
+}
+
+/*
  * Free the b_wininfo list for buffer "buf".
  */
     static void
@@ -1017,14 +1033,7 @@ clear_wininfo(buf_T *buf)
     {
 	wip = buf->b_wininfo;
 	buf->b_wininfo = wip->wi_next;
-	if (wip->wi_optset)
-	{
-	    clear_winopt(&wip->wi_opt);
-#ifdef FEAT_FOLDING
-	    deleteFoldRecurse(&wip->wi_folds);
-#endif
-	}
-	vim_free(wip);
+	free_wininfo(wip);
     }
 }
 
@@ -1444,7 +1453,7 @@ do_buffer(
 	if (!forceit && bufIsChanged(buf))
 	{
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
-	    if ((p_confirm || cmdmod.confirm) && p_write)
+	    if ((p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM)) && p_write)
 	    {
 		dialog_changed(buf, FALSE);
 		if (!bufref_valid(&bufref))
@@ -1634,7 +1643,7 @@ do_buffer(
     if (action == DOBUF_GOTO && !can_abandon(curbuf, forceit))
     {
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
-	if ((p_confirm || cmdmod.confirm) && p_write)
+	if ((p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM)) && p_write)
 	{
 	    bufref_T bufref;
 
@@ -1689,7 +1698,7 @@ set_curbuf(buf_T *buf, int action)
     bufref_T	prevbufref;
 
     setpcmark();
-    if (!cmdmod.keepalt)
+    if ((cmdmod.cmod_flags & CMOD_KEEPALT) == 0)
 	curwin->w_alt_fnum = curbuf->b_fnum; // remember alternate file
     buflist_altfpos(curwin);			 // remember curpos
 
@@ -1974,7 +1983,8 @@ buflist_new(
     {
 	vim_free(ffname);
 	if (lnum != 0)
-	    buflist_setfpos(buf, curwin, lnum, (colnr_T)0, FALSE);
+	    buflist_setfpos(buf, (flags & BLN_NOCURWIN) ? NULL : curwin,
+						      lnum, (colnr_T)0, FALSE);
 
 	if ((flags & BLN_NOOPT) == 0)
 	    // copy the options now, if 'cpo' doesn't have 's' and not done
@@ -2144,7 +2154,7 @@ buflist_new(
 	if (top_file_num < 0)		// wrap around (may cause duplicates)
 	{
 	    emsg(_("W14: Warning: List of file names overflow"));
-	    if (emsg_silent == 0)
+	    if (emsg_silent == 0 && !in_assert_fails)
 	    {
 		out_flush();
 		ui_delay(3001L, TRUE);	// make sure it is noticed
@@ -2908,7 +2918,7 @@ buflist_nr2name(
     void
 buflist_setfpos(
     buf_T	*buf,
-    win_T	*win,
+    win_T	*win,		// may be NULL when using :badd
     linenr_T	lnum,
     colnr_T	col,
     int		copy_options)
@@ -2950,7 +2960,7 @@ buflist_setfpos(
 	wip->wi_fpos.lnum = lnum;
 	wip->wi_fpos.col = col;
     }
-    if (copy_options)
+    if (copy_options && win != NULL)
     {
 	// Save the window-specific option values.
 	copy_winopt(&win->w_onebuf_opt, &wip->wi_opt);
@@ -2997,6 +3007,7 @@ wininfo_other_tab_diff(wininfo_T *wip)
 /*
  * Find info for the current window in buffer "buf".
  * If not found, return the info for the most recently used window.
+ * When "need_options" is TRUE skip entries where wi_optset is FALSE.
  * When "skip_diff_buffer" is TRUE avoid windows with 'diff' set that is in
  * another tab page.
  * Returns NULL when there isn't any info.
@@ -3004,6 +3015,7 @@ wininfo_other_tab_diff(wininfo_T *wip)
     static wininfo_T *
 find_wininfo(
     buf_T	*buf,
+    int		need_options,
     int		skip_diff_buffer UNUSED)
 {
     wininfo_T	*wip;
@@ -3013,18 +3025,25 @@ find_wininfo(
 #ifdef FEAT_DIFF
 		&& (!skip_diff_buffer || !wininfo_other_tab_diff(wip))
 #endif
-	   )
+
+		&& (!need_options || wip->wi_optset))
 	    break;
 
     // If no wininfo for curwin, use the first in the list (that doesn't have
     // 'diff' set and is in another tab page).
+    // If "need_options" is TRUE skip entries that don't have options set,
+    // unless the window is editing "buf", so we can copy from the window
+    // itself.
     if (wip == NULL)
     {
 #ifdef FEAT_DIFF
 	if (skip_diff_buffer)
 	{
 	    FOR_ALL_BUF_WININFO(buf, wip)
-		if (!wininfo_other_tab_diff(wip))
+		if (!wininfo_other_tab_diff(wip)
+			&& (!need_options || wip->wi_optset
+			    || (wip->wi_win != NULL
+					     && wip->wi_win->w_buffer == buf)))
 		    break;
 	}
 	else
@@ -3050,7 +3069,7 @@ get_winopts(buf_T *buf)
     clearFolding(curwin);
 #endif
 
-    wip = find_wininfo(buf, TRUE);
+    wip = find_wininfo(buf, TRUE, TRUE);
     if (wip != NULL && wip->wi_win != NULL
 	    && wip->wi_win != curwin && wip->wi_win->w_buffer == buf)
     {
@@ -3097,7 +3116,7 @@ buflist_findfpos(buf_T *buf)
     wininfo_T	*wip;
     static pos_T no_position = {1, 0, 0};
 
-    wip = find_wininfo(buf, FALSE);
+    wip = find_wininfo(buf, FALSE, FALSE);
     if (wip != NULL)
 	return &(wip->wi_fpos);
     else
@@ -3435,7 +3454,7 @@ setaltfname(
 
     // Create a buffer.  'buflisted' is not set if it's a new buffer
     buf = buflist_new(ffname, sfname, lnum, 0);
-    if (buf != NULL && !cmdmod.keepalt)
+    if (buf != NULL && (cmdmod.cmod_flags & CMOD_KEEPALT) == 0)
 	curwin->w_alt_fnum = buf->b_fnum;
     return buf;
 }
@@ -3998,6 +4017,32 @@ free_titles(void)
 #endif // FEAT_TITLE
 
 #if defined(FEAT_STL_OPT) || defined(FEAT_GUI_TABLINE) || defined(PROTO)
+
+/*
+ * Used for building in the status line.
+ */
+typedef struct
+{
+    char_u	*stl_start;
+    int		stl_minwid;
+    int		stl_maxwid;
+    enum {
+	Normal,
+	Empty,
+	Group,
+	Middle,
+	Highlight,
+	TabPage,
+	Trunc
+    }		stl_type;
+} stl_item_T;
+
+static size_t		stl_items_len = 20; // Initial value, grows as needed.
+static stl_item_T      *stl_items = NULL;
+static int	       *stl_groupitem = NULL;
+static stl_hlrec_T     *stl_hltab = NULL;
+static stl_hlrec_T     *stl_tabtab = NULL;
+
 /*
  * Build a string from the status line items in "fmt".
  * Return length of string in screen cells.
@@ -4021,8 +4066,8 @@ build_stl_str_hl(
     int		use_sandbox UNUSED, // "fmt" was set insecurely, use sandbox
     int		fillchar,
     int		maxwidth,
-    struct stl_hlrec *hltab,	// return: HL attributes (can be NULL)
-    struct stl_hlrec *tabtab)	// return: tab page nrs (can be NULL)
+    stl_hlrec_T **hltab,	// return: HL attributes (can be NULL)
+    stl_hlrec_T **tabtab)	// return: tab page nrs (can be NULL)
 {
     linenr_T	lnum;
     size_t	len;
@@ -4050,24 +4095,7 @@ build_stl_str_hl(
     int		curitem;
     int		group_end_userhl;
     int		group_start_userhl;
-    int		groupitem[STL_MAX_ITEM];
     int		groupdepth;
-    struct stl_item
-    {
-	char_u		*start;
-	int		minwid;
-	int		maxwid;
-	enum
-	{
-	    Normal,
-	    Empty,
-	    Group,
-	    Middle,
-	    Highlight,
-	    TabPage,
-	    Trunc
-	}		type;
-    }		item[STL_MAX_ITEM];
     int		minwid;
     int		maxwid;
     int		zeropad;
@@ -4077,9 +4105,17 @@ build_stl_str_hl(
     char_u	buf_tmp[TMPLEN];
     char_u	win_tmp[TMPLEN];
     char_u	*usefmt = fmt;
-    struct stl_hlrec *sp;
+    stl_hlrec_T *sp;
     int		save_must_redraw = must_redraw;
     int		save_redr_type = curwin->w_redr_type;
+
+    if (stl_items == NULL)
+    {
+	stl_items = ALLOC_MULT(stl_item_T, stl_items_len);
+	stl_groupitem = ALLOC_MULT(int, stl_items_len);
+	stl_hltab  = ALLOC_MULT(stl_hlrec_T, stl_items_len);
+	stl_tabtab = ALLOC_MULT(stl_hlrec_T, stl_items_len);
+    }
 
 #ifdef FEAT_EVAL
     /*
@@ -4143,16 +4179,30 @@ build_stl_str_hl(
     prevchar_isitem = FALSE;
     for (s = usefmt; *s; )
     {
-	if (curitem == STL_MAX_ITEM)
+	if (curitem == (int)stl_items_len)
 	{
-	    // There are too many items.  Add the error code to the statusline
-	    // to give the user a hint about what went wrong.
-	    if (p + 6 < out + outlen)
-	    {
-		mch_memmove(p, " E541", (size_t)5);
-		p += 5;
-	    }
-	    break;
+	    size_t	new_len = stl_items_len * 3 / 2;
+	    stl_item_T	*new_items;
+	    int		*new_groupitem;
+	    stl_hlrec_T	*new_hlrec;
+
+	    new_items = vim_realloc(stl_items, sizeof(stl_item_T) * new_len);
+	    if (new_items == NULL)
+		break;
+	    stl_items = new_items;
+	    new_groupitem = vim_realloc(stl_groupitem, sizeof(int) * new_len);
+	    if (new_groupitem == NULL)
+		break;
+	    stl_groupitem = new_groupitem;
+	    new_hlrec = vim_realloc(stl_hltab, sizeof(stl_hlrec_T) * new_len);
+	    if (new_hlrec == NULL)
+		break;
+	    stl_hltab = new_hlrec;
+	    new_hlrec = vim_realloc(stl_tabtab, sizeof(stl_hlrec_T) * new_len);
+	    if (new_hlrec == NULL)
+		break;
+	    stl_tabtab = new_hlrec;
+	    stl_items_len = new_len;
 	}
 
 	if (*s != NUL && *s != '%')
@@ -4185,15 +4235,15 @@ build_stl_str_hl(
 	    s++;
 	    if (groupdepth > 0)
 		continue;
-	    item[curitem].type = Middle;
-	    item[curitem++].start = p;
+	    stl_items[curitem].stl_type = Middle;
+	    stl_items[curitem++].stl_start = p;
 	    continue;
 	}
 	if (*s == STL_TRUNCMARK)
 	{
 	    s++;
-	    item[curitem].type = Trunc;
-	    item[curitem++].start = p;
+	    stl_items[curitem].stl_type = Trunc;
+	    stl_items[curitem++].stl_start = p;
 	    continue;
 	}
 	if (*s == ')')
@@ -4203,83 +4253,85 @@ build_stl_str_hl(
 		continue;
 	    groupdepth--;
 
-	    t = item[groupitem[groupdepth]].start;
+	    t = stl_items[stl_groupitem[groupdepth]].stl_start;
 	    *p = NUL;
 	    l = vim_strsize(t);
-	    if (curitem > groupitem[groupdepth] + 1
-		    && item[groupitem[groupdepth]].minwid == 0)
+	    if (curitem > stl_groupitem[groupdepth] + 1
+		    && stl_items[stl_groupitem[groupdepth]].stl_minwid == 0)
 	    {
 		// remove group if all items are empty and highlight group
 		// doesn't change
 		group_start_userhl = group_end_userhl = 0;
-		for (n = groupitem[groupdepth] - 1; n >= 0; n--)
+		for (n = stl_groupitem[groupdepth] - 1; n >= 0; n--)
 		{
-		    if (item[n].type == Highlight)
+		    if (stl_items[n].stl_type == Highlight)
 		    {
-			group_start_userhl = group_end_userhl = item[n].minwid;
+			group_start_userhl = group_end_userhl =
+						       stl_items[n].stl_minwid;
 			break;
 		    }
 		}
-		for (n = groupitem[groupdepth] + 1; n < curitem; n++)
+		for (n = stl_groupitem[groupdepth] + 1; n < curitem; n++)
 		{
-		    if (item[n].type == Normal)
+		    if (stl_items[n].stl_type == Normal)
 			break;
-		    if (item[n].type == Highlight)
-			group_end_userhl = item[n].minwid;
+		    if (stl_items[n].stl_type == Highlight)
+			group_end_userhl = stl_items[n].stl_minwid;
 		}
 		if (n == curitem && group_start_userhl == group_end_userhl)
 		{
 		    // empty group
 		    p = t;
 		    l = 0;
-		    for (n = groupitem[groupdepth] + 1; n < curitem; n++)
+		    for (n = stl_groupitem[groupdepth] + 1; n < curitem; n++)
 		    {
 			// do not use the highlighting from the removed group
-			if (item[n].type == Highlight)
-			    item[n].type = Empty;
+			if (stl_items[n].stl_type == Highlight)
+			    stl_items[n].stl_type = Empty;
 			// adjust the start position of TabPage to the next
 			// item position
-			if (item[n].type == TabPage)
-			    item[n].start = p;
+			if (stl_items[n].stl_type == TabPage)
+			    stl_items[n].stl_start = p;
 		    }
 		}
 	    }
-	    if (l > item[groupitem[groupdepth]].maxwid)
+	    if (l > stl_items[stl_groupitem[groupdepth]].stl_maxwid)
 	    {
 		// truncate, remove n bytes of text at the start
 		if (has_mbyte)
 		{
 		    // Find the first character that should be included.
 		    n = 0;
-		    while (l >= item[groupitem[groupdepth]].maxwid)
+		    while (l >= stl_items[stl_groupitem[groupdepth]].stl_maxwid)
 		    {
 			l -= ptr2cells(t + n);
 			n += (*mb_ptr2len)(t + n);
 		    }
 		}
 		else
-		    n = (long)(p - t) - item[groupitem[groupdepth]].maxwid + 1;
+		    n = (long)(p - t) - stl_items[stl_groupitem[groupdepth]]
+							       .stl_maxwid + 1;
 
 		*t = '<';
 		mch_memmove(t + 1, t + n, (size_t)(p - (t + n)));
 		p = p - n + 1;
 
 		// Fill up space left over by half a double-wide char.
-		while (++l < item[groupitem[groupdepth]].minwid)
+		while (++l < stl_items[stl_groupitem[groupdepth]].stl_minwid)
 		    *p++ = fillchar;
 
 		// correct the start of the items for the truncation
-		for (l = groupitem[groupdepth] + 1; l < curitem; l++)
+		for (l = stl_groupitem[groupdepth] + 1; l < curitem; l++)
 		{
-		    item[l].start -= n;
-		    if (item[l].start < t)
-			item[l].start = t;
+		    stl_items[l].stl_start -= n;
+		    if (stl_items[l].stl_start < t)
+			stl_items[l].stl_start = t;
 		}
 	    }
-	    else if (abs(item[groupitem[groupdepth]].minwid) > l)
+	    else if (abs(stl_items[stl_groupitem[groupdepth]].stl_minwid) > l)
 	    {
 		// fill
-		n = item[groupitem[groupdepth]].minwid;
+		n = stl_items[stl_groupitem[groupdepth]].stl_minwid;
 		if (n < 0)
 		{
 		    // fill by appending characters
@@ -4295,8 +4347,8 @@ build_stl_str_hl(
 		    if (p + l >= out + outlen)
 			l = (long)((out + outlen) - p - 1);
 		    p += l;
-		    for (n = groupitem[groupdepth] + 1; n < curitem; n++)
-			item[n].start += l;
+		    for (n = stl_groupitem[groupdepth] + 1; n < curitem; n++)
+			stl_items[n].stl_start += l;
 		    for ( ; l > 0; l--)
 			*t++ = fillchar;
 		}
@@ -4325,9 +4377,9 @@ build_stl_str_hl(
 	}
 	if (*s == STL_USER_HL)
 	{
-	    item[curitem].type = Highlight;
-	    item[curitem].start = p;
-	    item[curitem].minwid = minwid > 9 ? 1 : minwid;
+	    stl_items[curitem].stl_type = Highlight;
+	    stl_items[curitem].stl_start = p;
+	    stl_items[curitem].stl_minwid = minwid > 9 ? 1 : minwid;
 	    s++;
 	    curitem++;
 	    continue;
@@ -4341,9 +4393,10 @@ build_stl_str_hl(
 		    // %X ends the close label, go back to the previously
 		    // define tab label nr.
 		    for (n = curitem - 1; n >= 0; --n)
-			if (item[n].type == TabPage && item[n].minwid >= 0)
+			if (stl_items[n].stl_type == TabPage
+					       && stl_items[n].stl_minwid >= 0)
 			{
-			    minwid = item[n].minwid;
+			    minwid = stl_items[n].stl_minwid;
 			    break;
 			}
 		}
@@ -4351,9 +4404,9 @@ build_stl_str_hl(
 		    // close nrs are stored as negative values
 		    minwid = - minwid;
 	    }
-	    item[curitem].type = TabPage;
-	    item[curitem].start = p;
-	    item[curitem].minwid = minwid;
+	    stl_items[curitem].stl_type = TabPage;
+	    stl_items[curitem].stl_start = p;
+	    stl_items[curitem].stl_minwid = minwid;
 	    s++;
 	    curitem++;
 	    continue;
@@ -4371,11 +4424,11 @@ build_stl_str_hl(
 	minwid = (minwid > 50 ? 50 : minwid) * l;
 	if (*s == '(')
 	{
-	    groupitem[groupdepth++] = curitem;
-	    item[curitem].type = Group;
-	    item[curitem].start = p;
-	    item[curitem].minwid = minwid;
-	    item[curitem].maxwid = maxwid;
+	    stl_groupitem[groupdepth++] = curitem;
+	    stl_items[curitem].stl_type = Group;
+	    stl_items[curitem].stl_start = p;
+	    stl_items[curitem].stl_minwid = minwid;
+	    stl_items[curitem].stl_maxwid = maxwid;
 	    s++;
 	    curitem++;
 	    continue;
@@ -4628,9 +4681,9 @@ build_stl_str_hl(
 		++s;
 	    if (*s == '#')
 	    {
-		item[curitem].type = Highlight;
-		item[curitem].start = p;
-		item[curitem].minwid = -syn_namen2id(t, (int)(s - t));
+		stl_items[curitem].stl_type = Highlight;
+		stl_items[curitem].stl_start = p;
+		stl_items[curitem].stl_minwid = -syn_namen2id(t, (int)(s - t));
 		curitem++;
 	    }
 	    if (*s != NUL)
@@ -4638,8 +4691,8 @@ build_stl_str_hl(
 	    continue;
 	}
 
-	item[curitem].start = p;
-	item[curitem].type = Normal;
+	stl_items[curitem].stl_start = p;
+	stl_items[curitem].stl_type = Normal;
 	if (str != NULL && *str)
 	{
 	    t = str;
@@ -4738,7 +4791,7 @@ build_stl_str_hl(
 	    p += STRLEN(p);
 	}
 	else
-	    item[curitem].type = Empty;
+	    stl_items[curitem].stl_type = Empty;
 
 	if (opt == STL_VIM_EXPR)
 	    vim_free(str);
@@ -4765,16 +4818,16 @@ build_stl_str_hl(
 	else
 	{
 	    for ( ; l < itemcnt; l++)
-		if (item[l].type == Trunc)
+		if (stl_items[l].stl_type == Trunc)
 		{
 		    // Truncate at %< item.
-		    s = item[l].start;
+		    s = stl_items[l].stl_start;
 		    break;
 		}
 	    if (l == itemcnt)
 	    {
 		// No %< item, truncate first item.
-		s = item[0].start;
+		s = stl_items[0].stl_start;
 		l = 0;
 	    }
 	}
@@ -4800,7 +4853,7 @@ build_stl_str_hl(
 	    else
 		s = out + maxwidth - 1;
 	    for (l = 0; l < itemcnt; l++)
-		if (item[l].start > s)
+		if (stl_items[l].stl_start > s)
 		    break;
 	    itemcnt = l;
 	    *s++ = '>';
@@ -4834,10 +4887,10 @@ build_stl_str_hl(
 	    --n;	// count the '<'
 	    for (; l < itemcnt; l++)
 	    {
-		if (item[l].start - n >= s)
-		    item[l].start -= n;
+		if (stl_items[l].stl_start - n >= s)
+		    stl_items[l].stl_start -= n;
 		else
-		    item[l].start = s;
+		    stl_items[l].stl_start = s;
 	    }
 	}
 	width = maxwidth;
@@ -4846,16 +4899,16 @@ build_stl_str_hl(
     {
 	// Apply STL_MIDDLE if any
 	for (l = 0; l < itemcnt; l++)
-	    if (item[l].type == Middle)
+	    if (stl_items[l].stl_type == Middle)
 		break;
 	if (l < itemcnt)
 	{
-	    p = item[l].start + maxwidth - width;
-	    STRMOVE(p, item[l].start);
-	    for (s = item[l].start; s < p; s++)
+	    p = stl_items[l].stl_start + maxwidth - width;
+	    STRMOVE(p, stl_items[l].stl_start);
+	    for (s = stl_items[l].stl_start; s < p; s++)
 		*s = fillchar;
 	    for (l++; l < itemcnt; l++)
-		item[l].start += maxwidth - width;
+		stl_items[l].stl_start += maxwidth - width;
 	    width = maxwidth;
 	}
     }
@@ -4863,13 +4916,14 @@ build_stl_str_hl(
     // Store the info about highlighting.
     if (hltab != NULL)
     {
-	sp = hltab;
+	*hltab = stl_hltab;
+	sp = stl_hltab;
 	for (l = 0; l < itemcnt; l++)
 	{
-	    if (item[l].type == Highlight)
+	    if (stl_items[l].stl_type == Highlight)
 	    {
-		sp->start = item[l].start;
-		sp->userhl = item[l].minwid;
+		sp->start = stl_items[l].stl_start;
+		sp->userhl = stl_items[l].stl_minwid;
 		sp++;
 	    }
 	}
@@ -4880,13 +4934,14 @@ build_stl_str_hl(
     // Store the info about tab pages labels.
     if (tabtab != NULL)
     {
-	sp = tabtab;
+	*tabtab = stl_tabtab;
+	sp = stl_tabtab;
 	for (l = 0; l < itemcnt; l++)
 	{
-	    if (item[l].type == TabPage)
+	    if (stl_items[l].stl_type == TabPage)
 	    {
-		sp->start = item[l].start;
-		sp->userhl = item[l].minwid;
+		sp->start = stl_items[l].stl_start;
+		sp->userhl = stl_items[l].stl_minwid;
 		sp++;
 	    }
 	}
@@ -5068,7 +5123,7 @@ ex_buffer_all(exarg_T *eap)
     int		r;
     int		count;		// Maximum number of windows to open.
     int		all;		// When TRUE also load inactive buffers.
-    int		had_tab = cmdmod.tab;
+    int		had_tab = cmdmod.cmod_tab;
     tabpage_T	*tpnext;
 
     if (eap->addr_count == 0)	// make as many windows as possible
@@ -5099,7 +5154,7 @@ ex_buffer_all(exarg_T *eap)
 	{
 	    wpnext = wp->w_next;
 	    if ((wp->w_buffer->b_nwindows > 1
-		    || ((cmdmod.split & WSP_VERT)
+		    || ((cmdmod.cmod_split & WSP_VERT)
 			? wp->w_height + wp->w_status_height < Rows - p_ch
 							    - tabline_height()
 			: wp->w_width != Columns)
@@ -5220,7 +5275,7 @@ ex_buffer_all(exarg_T *eap)
 #endif
 	// When ":tab" was used open a new tab for a new window repeatedly.
 	if (had_tab > 0 && tabpage_index(NULL) <= p_tpm)
-	    cmdmod.tab = 9999;
+	    cmdmod.cmod_tab = 9999;
     }
     --autocmd_no_enter;
     win_enter(firstwin, FALSE);		// back to first window
@@ -5515,8 +5570,8 @@ bt_nofile(buf_T *buf)
 bt_dontwrite(buf_T *buf)
 {
     return buf != NULL && (buf->b_p_bt[0] == 'n'
-	         || buf->b_p_bt[0] == 't'
-	         || buf->b_p_bt[0] == 'p');
+		 || buf->b_p_bt[0] == 't'
+		 || buf->b_p_bt[0] == 'p');
 }
 
 #if defined(FEAT_QUICKFIX) || defined(PROTO)
@@ -5547,7 +5602,7 @@ buf_hide(buf_T *buf)
 	case 'd': return FALSE;	    // "delete"
 	case 'h': return TRUE;	    // "hide"
     }
-    return (p_hid || cmdmod.hide);
+    return (p_hid || (cmdmod.cmod_flags & CMOD_HIDE));
 }
 
 /*
@@ -5593,8 +5648,19 @@ buf_spname(buf_T *buf)
     }
 
     if (buf->b_fname == NULL)
-	return (char_u *)_("[No Name]");
+	return buf_get_fname(buf);
     return NULL;
+}
+
+/*
+ * Get "buf->b_fname", use "[No Name]" if it is NULL.
+ */
+    char_u *
+buf_get_fname(buf_T *buf)
+{
+    if (buf->b_fname == NULL)
+	return (char_u *)_("[No Name]");
+    return buf->b_fname;
 }
 
 /*

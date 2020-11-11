@@ -710,6 +710,69 @@ repeat:
     return valid;
 }
 
+/*
+ * Shorten the path of a file from "~/foo/../.bar/fname" to "~/f/../.b/fname"
+ * "trim_len" specifies how many characters to keep for each directory.
+ * Must be 1 or more.
+ * It's done in-place.
+ */
+    static void
+shorten_dir_len(char_u *str, int trim_len)
+{
+    char_u	*tail, *s, *d;
+    int		skip = FALSE;
+    int		dirchunk_len = 0;
+
+    tail = gettail(str);
+    d = str;
+    for (s = str; ; ++s)
+    {
+	if (s >= tail)		    // copy the whole tail
+	{
+	    *d++ = *s;
+	    if (*s == NUL)
+		break;
+	}
+	else if (vim_ispathsep(*s))	    // copy '/' and next char
+	{
+	    *d++ = *s;
+	    skip = FALSE;
+	    dirchunk_len = 0;
+	}
+	else if (!skip)
+	{
+	    *d++ = *s;			// copy next char
+	    if (*s != '~' && *s != '.') // and leading "~" and "."
+	    {
+		++dirchunk_len; // only count word chars for the size
+
+		// keep copying chars until we have our preferred length (or
+		// until the above if/else branches move us along)
+		if (dirchunk_len >= trim_len)
+		    skip = TRUE;
+	    }
+
+	    if (has_mbyte)
+	    {
+		int l = mb_ptr2len(s);
+
+		while (--l > 0)
+		    *d++ = *++s;
+	    }
+	}
+    }
+}
+
+/*
+ * Shorten the path of a file from "~/foo/../.bar/fname" to "~/f/../.b/fname"
+ * It's done in-place.
+ */
+    void
+shorten_dir(char_u *str)
+{
+    shorten_dir_len(str, 1);
+}
+
 #if defined(FEAT_EVAL) || defined(PROTO)
 
 /*
@@ -1358,9 +1421,18 @@ f_mkdir(typval_T *argvars, typval_T *rettv)
 f_pathshorten(typval_T *argvars, typval_T *rettv)
 {
     char_u	*p;
+    int		trim_len = 1;
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	trim_len = (int)tv_get_number(&argvars[1]);
+	if (trim_len < 1)
+	    trim_len = 1;
+    }
 
     rettv->v_type = VAR_STRING;
     p = tv_get_string_chk(&argvars[0]);
+
     if (p == NULL)
 	rettv->vval.v_string = NULL;
     else
@@ -1368,7 +1440,7 @@ f_pathshorten(typval_T *argvars, typval_T *rettv)
 	p = vim_strsave(p);
 	rettv->vval.v_string = p;
 	if (p != NULL)
-	    shorten_dir(p);
+	    shorten_dir_len(p, trim_len);
     }
 }
 
@@ -1817,7 +1889,7 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 	    is_relative_to_current = TRUE;
 
 	len = STRLEN(p);
-	if (len > 0 && after_pathsep(p, p + len))
+	if (len > 1 && after_pathsep(p, p + len))
 	{
 	    has_trailing_pathsep = TRUE;
 	    p[len - 1] = NUL; // the trailing slash breaks readlink()
@@ -2141,11 +2213,11 @@ do_browse(
     char_u		*fname;
     static char_u	*last_dir = NULL;    // last used directory
     char_u		*tofree = NULL;
-    int			save_browse = cmdmod.browse;
+    int			save_cmod_flags = cmdmod.cmod_flags;
 
     // Must turn off browse to avoid that autocommands will get the
     // flag too!
-    cmdmod.browse = FALSE;
+    cmdmod.cmod_flags &= ~CMOD_BROWSE;
 
     if (title == NULL || *title == NUL)
     {
@@ -2278,7 +2350,7 @@ do_browse(
     }
 
     vim_free(tofree);
-    cmdmod.browse = save_browse;
+    cmdmod.cmod_flags = save_cmod_flags;
 
     return fname;
 }
@@ -2704,47 +2776,6 @@ vim_ispathsep_nocolon(int c)
 	&& c != ':'
 #endif
 	;
-}
-
-/*
- * Shorten the path of a file from "~/foo/../.bar/fname" to "~/f/../.b/fname"
- * It's done in-place.
- */
-    void
-shorten_dir(char_u *str)
-{
-    char_u	*tail, *s, *d;
-    int		skip = FALSE;
-
-    tail = gettail(str);
-    d = str;
-    for (s = str; ; ++s)
-    {
-	if (s >= tail)		    // copy the whole tail
-	{
-	    *d++ = *s;
-	    if (*s == NUL)
-		break;
-	}
-	else if (vim_ispathsep(*s))	    // copy '/' and next char
-	{
-	    *d++ = *s;
-	    skip = FALSE;
-	}
-	else if (!skip)
-	{
-	    *d++ = *s;		    // copy next char
-	    if (*s != '~' && *s != '.') // and leading "~" and "."
-		skip = TRUE;
-	    if (has_mbyte)
-	    {
-		int l = mb_ptr2len(s);
-
-		while (--l > 0)
-		    *d++ = *++s;
-	    }
-	}
-    }
 }
 
 /*

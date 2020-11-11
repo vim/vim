@@ -41,6 +41,16 @@ func Test_terminal_basic()
   unlet g:job
 endfunc
 
+func Test_terminal_no_name()
+  let buf = Run_shell_in_terminal({})
+  call assert_match('^!', bufname(buf))
+  0file
+  call assert_equal("", bufname(buf))
+  call assert_match('\[No Name\]', execute('file'))
+  call StopShellInTerminal(buf)
+  call TermWait(buf)
+endfunc
+
 func Test_terminal_TerminalWinOpen()
   au TerminalWinOpen * let b:done = 'yes'
   let buf = Run_shell_in_terminal({})
@@ -65,7 +75,7 @@ func Test_terminal_make_change()
 
   setlocal modifiable
   exe "normal Axxx\<Esc>"
-  call assert_fails(buf . 'bwipe', ['E89:', 'E517:'])
+  call assert_fails(buf . 'bwipe', 'E89:')
   undo
 
   exe buf . 'bwipe'
@@ -89,7 +99,7 @@ endfunc
 
 func Test_terminal_wipe_buffer()
   let buf = Run_shell_in_terminal({})
-  call assert_fails(buf . 'bwipe', ['E89:', 'E517:'])
+  call assert_fails(buf . 'bwipe', 'E89:')
   exe buf . 'bwipe!'
   call WaitForAssert({-> assert_equal('dead', job_status(g:job))})
   call assert_equal("", bufname(buf))
@@ -648,7 +658,7 @@ endfunc
 
 func Test_terminal_list_args()
   let buf = term_start([&shell, &shellcmdflag, 'echo "123"'])
-  call assert_fails(buf . 'bwipe', ['E89:', 'E517:'])
+  call assert_fails(buf . 'bwipe', 'E89:')
   exe buf . 'bwipe!'
   call assert_equal("", bufname(buf))
 endfunction
@@ -1230,7 +1240,7 @@ func Test_terminal_dumpwrite_errors()
   call assert_fails("call term_dumpwrite(buf, '')", 'E482:')
   call assert_fails("call term_dumpwrite(buf, test_null_string())", 'E482:')
   call test_garbagecollect_now()
-  call StopVimInTerminal(buf)
+  call StopVimInTerminal(buf, 0)
   call TermWait(buf)
   call assert_fails("call term_dumpwrite(buf, 'Xtest.dump')", 'E958:')
   call assert_fails('call term_sendkeys([], ":q\<CR>")', 'E745:')
@@ -1377,6 +1387,23 @@ func Test_terminal_statusline()
   exe tbuf . 'bwipe!'
   au! BufLeave
   set statusline=
+endfunc
+
+func Test_terminal_window_focus()
+  let winid1 = win_getid()
+  terminal
+  let winid2 = win_getid()
+  call feedkeys("\<C-W>j", 'xt')
+  call assert_equal(winid1, win_getid())
+  call feedkeys("\<C-W>k", 'xt')
+  call assert_equal(winid2, win_getid())
+  " can use a cursor key here
+  call feedkeys("\<C-W>\<Down>", 'xt')
+  call assert_equal(winid1, win_getid())
+  call feedkeys("\<C-W>\<Up>", 'xt')
+  call assert_equal(winid2, win_getid())
+
+  bwipe!
 endfunc
 
 func Api_drop_common(options)

@@ -30,7 +30,7 @@ func Test_CursorHold_autocmd()
   call writefile(before, 'Xinit')
   let buf = RunVimInTerminal('-S Xinit Xfile', {})
   call term_sendkeys(buf, "G")
-  call term_wait(buf, 20)
+  call term_wait(buf, 50)
   call term_sendkeys(buf, "gg")
   call term_wait(buf)
   call WaitForAssert({-> assert_equal(['1'], readfile('Xoutput')[-1:-1])})
@@ -77,9 +77,9 @@ if has('timers')
     " CursorHoldI event.
     let g:triggered = 0
     au CursorHoldI * let g:triggered += 1
-    set updatetime=500
+    set updatetime=100
     call job_start(has('win32') ? 'cmd /c echo:' : 'echo',
-          \ {'exit_cb': {-> timer_start(1000, 'ExitInsertMode')}})
+          \ {'exit_cb': {-> timer_start(200, 'ExitInsertMode')}})
     call feedkeys('a', 'x!')
     call assert_equal(1, g:triggered)
     unlet g:triggered
@@ -194,7 +194,7 @@ func Test_autocmd_bufunload_avoiding_SEGV_01()
     exe 'autocmd BufUnload <buffer> ' . (lastbuf + 1) . 'bwipeout!'
   augroup END
 
-  call assert_fails('edit bb.txt', ['E937:', 'E517:'])
+  call assert_fails('edit bb.txt', 'E937:')
 
   autocmd! test_autocmd_bufunload
   augroup! test_autocmd_bufunload
@@ -452,6 +452,7 @@ func Test_autocmd_bufwipe_in_SessLoadPost()
   mksession!
 
   let content =<< trim [CODE]
+    call test_override('ui_delay', 10)
     set nocp noswapfile
     let v:swapchoice="e"
     augroup test_autocmd_sessionload
@@ -1767,7 +1768,7 @@ endfunc
 func Test_nocatch_wipe_all_buffers()
   " Real nasty autocommand: wipe all buffers on any event.
   au * * bwipe *
-  call assert_fails('next x', ['E94:', 'E517:'])
+  call assert_fails('next x', ['E94:', 'E937:'])
   bwipe
   au!
 endfunc
@@ -2421,6 +2422,8 @@ endfunc
 " Test closing a window or editing another buffer from a FileChangedRO handler
 " in a readonly buffer
 func Test_FileChangedRO_winclose()
+  call test_override('ui_delay', 10)
+
   augroup FileChangedROTest
     au!
     autocmd FileChangedRO * quit
@@ -2440,6 +2443,7 @@ func Test_FileChangedRO_winclose()
   call assert_fails('normal i', 'E788:')
   close
   augroup! FileChangedROTest
+  call test_override('ALL', 0)
 endfunc
 
 func LogACmd()
@@ -2520,6 +2524,7 @@ func Test_autocmd_invalid_args()
   call assert_fails('doautocmd * BufEnter', 'E217:')
   call assert_fails('augroup! x1a2b3', 'E367:')
   call assert_fails('autocmd BufNew <buffer=999> pwd', 'E680:')
+  call assert_fails('autocmd BufNew \) set ff=unix', 'E55:')
 endfunc
 
 " Test for deep nesting of autocmds
@@ -2532,6 +2537,7 @@ endfunc
 " Tests for SigUSR1 autocmd event, which is only available on posix systems.
 func Test_autocmd_sigusr1()
   CheckUnix
+  CheckExecutable /bin/kill
 
   let g:sigusr1_passed = 0
   au SigUSR1 * let g:sigusr1_passed = 1

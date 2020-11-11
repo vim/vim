@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 8.2.  Last change: 2020 Apr 30
+*insert.txt*    For Vim version 8.2.  Last change: 2020 Oct 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -312,6 +312,7 @@ If you enter a value of 10, it will end up in the file as a 0.  The 10 is a
 the buffer to a file, the <NL> character is translated into <Nul>.  The <NL>
 character is written at the end of each line.  Thus if you want to insert a
 <NL> character in a file you will have to make a line break.
+Also see 'fileformat'.
 
 						*i_CTRL-X* *insert_expand*
 CTRL-X enters a sub-mode where several commands can be used.  Most of these
@@ -1843,6 +1844,7 @@ a			Append text after the cursor [count] times.  If the
 
 							*A*
 A			Append text at the end of the line [count] times.
+			For using "A" in Visual block mode see |v_b_A|.
 
 <insert>	or				*i* *insert* *<Insert>*
 i			Insert text before the cursor [count] times.
@@ -1855,6 +1857,7 @@ I			Insert text before the first non-blank in the line
 			When the 'H' flag is present in 'cpoptions' and the
 			line only contains blanks, insert start just before
 			the last blank.
+			For using "I" in Visual block mode see |v_b_I|.
 
 							*gI*
 gI			Insert text in column 1 [count] times.

@@ -118,6 +118,39 @@ func Test_normal01_keymodel()
   call feedkeys("Vkk\<Up>yy", 'tx')
   call assert_equal(['47', '48', '49', '50'], getreg(0, 0, 1))
 
+  " Test for using special keys to start visual selection
+  %d
+  call setline(1, ['red fox tail', 'red fox tail', 'red fox tail'])
+  set keymodel=startsel
+  " Test for <S-PageUp> and <S-PageDown>
+  call cursor(1, 1)
+  call feedkeys("\<S-PageDown>y", 'xt')
+  call assert_equal([0, 1, 1, 0], getpos("'<"))
+  call assert_equal([0, 3, 1, 0], getpos("'>"))
+  call feedkeys("Gz\<CR>8|\<S-PageUp>y", 'xt')
+  call assert_equal([0, 2, 1, 0], getpos("'<"))
+  call assert_equal([0, 3, 8, 0], getpos("'>"))
+  " Test for <S-C-Home> and <S-C-End>
+  call cursor(2, 12)
+  call feedkeys("\<S-C-Home>y", 'xt')
+  call assert_equal([0, 1, 1, 0], getpos("'<"))
+  call assert_equal([0, 2, 12, 0], getpos("'>"))
+  call cursor(1, 4)
+  call feedkeys("\<S-C-End>y", 'xt')
+  call assert_equal([0, 1, 4, 0], getpos("'<"))
+  call assert_equal([0, 3, 13, 0], getpos("'>"))
+  " Test for <S-C-Left> and <S-C-Right>
+  call cursor(2, 5)
+  call feedkeys("\<S-C-Right>y", 'xt')
+  call assert_equal([0, 2, 5, 0], getpos("'<"))
+  call assert_equal([0, 2, 9, 0], getpos("'>"))
+  call cursor(2, 9)
+  call feedkeys("\<S-C-Left>y", 'xt')
+  call assert_equal([0, 2, 5, 0], getpos("'<"))
+  call assert_equal([0, 2, 9, 0], getpos("'>"))
+
+  set keymodel&
+
   " clean up
   bw!
 endfunc
@@ -409,6 +442,14 @@ func Test_normal10_expand()
     call assert_equal(expected[i], expand('<cexpr>'), 'i == ' . i)
   endfor
 
+  " Test for <cexpr> in state.val and ptr->val
+  call setline(1, 'x = state.val;')
+  call cursor(1, 10)
+  call assert_equal('state.val', expand('<cexpr>'))
+  call setline(1, 'x = ptr->val;')
+  call cursor(1, 9)
+  call assert_equal('ptr->val', expand('<cexpr>'))
+
   if executable('echo')
     " Test expand(`...`) i.e. backticks command expansion.
     call assert_equal('abcde', expand('`echo abcde`'))
@@ -419,6 +460,19 @@ func Test_normal10_expand()
   call assert_equal('3.14', expand('`=3.14`'))
 
   " clean up
+  bw!
+endfunc
+
+" Test for expand() in latin1 encoding
+func Test_normal_expand_latin1()
+  new
+  let save_enc = &encoding
+  set encoding=latin1
+  call setline(1, 'val = item->color;')
+  call cursor(1, 11)
+  call assert_equal('color', expand("<cword>"))
+  call assert_equal('item->color', expand("<cexpr>"))
+  let &encoding = save_enc
   bw!
 endfunc
 
@@ -434,6 +488,25 @@ func Test_normal11_showcmd()
   call assert_equal(3, line('$'))
   exe "norm! 0d3\<del>2l"
   call assert_equal('obar2foobar3', getline('.'))
+  " test for the visual block size displayed in the status line
+  call setline(1, ['aaaaa', 'bbbbb', 'ccccc'])
+  call feedkeys("ggl\<C-V>lljj", 'xt')
+  redraw!
+  call assert_match('3x3$', Screenline(&lines))
+  call feedkeys("\<C-V>", 'xt')
+  " test for visually selecting a multi-byte character
+  call setline(1, ["\U2206"])
+  call feedkeys("ggv", 'xt')
+  redraw!
+  call assert_match('1-3$', Screenline(&lines))
+  call feedkeys("v", 'xt')
+  " test for visually selecting the end of line
+  call setline(1, ["foobar"])
+  call feedkeys("$vl", 'xt')
+  redraw!
+  call assert_match('2$', Screenline(&lines))
+  call feedkeys("y", 'xt')
+  call assert_equal("r\n", @")
   bw!
 endfunc
 
@@ -596,12 +669,31 @@ func Test_normal15_z_scroll_vert()
   call assert_equal(21, winsaveview()['topline'])
   call assert_equal([0, 21, 2, 0, 9], getcurpos())
 
+  " Test for z+ with [count] greater than buffer size
+  1
+  norm! 1000z+
+  call assert_equal('	100', getline('.'))
+  call assert_equal(100, winsaveview()['topline'])
+  call assert_equal([0, 100, 2, 0, 9], getcurpos())
+
+  " Test for z+ from the last buffer line
+  norm! Gz.z+
+  call assert_equal('	100', getline('.'))
+  call assert_equal(100, winsaveview()['topline'])
+  call assert_equal([0, 100, 2, 0, 9], getcurpos())
+
   " Test for z^
   norm! 22z+0
   norm! z^
   call assert_equal('	21', getline('.'))
   call assert_equal(12, winsaveview()['topline'])
   call assert_equal([0, 21, 2, 0, 9], getcurpos())
+
+  " Test for z^ from first buffer line
+  norm! ggz^
+  call assert_equal('1', getline('.'))
+  call assert_equal(1, winsaveview()['topline'])
+  call assert_equal([0, 1, 1, 0, 1], getcurpos())
 
   " Test for [count]z^
   1
@@ -679,6 +771,19 @@ func Test_normal16_z_scroll_hor()
   norm! ze
   call assert_equal(26, col('.'))
   call assert_equal(11, winsaveview()['leftcol'])
+  norm! yl
+  call assert_equal('z', @0)
+
+  " Test for zs and ze with folds
+  %fold
+  norm! $zs
+  call assert_equal(26, col('.'))
+  call assert_equal(0, winsaveview()['leftcol'])
+  norm! yl
+  call assert_equal('z', @0)
+  norm! ze
+  call assert_equal(26, col('.'))
+  call assert_equal(0, winsaveview()['leftcol'])
   norm! yl
   call assert_equal('z', @0)
 
@@ -775,6 +880,19 @@ func Test_vert_scroll_cmds()
   normal! 4H
   call assert_equal(33, line('.'))
 
+  " Test for using a large count value
+  %d
+  call setline(1, range(1, 4))
+  norm! 6H
+  call assert_equal(4, line('.'))
+
+  " Test for 'M' with folded lines
+  %d
+  call setline(1, range(1, 20))
+  1,5fold
+  norm! LM
+  call assert_equal(12, line('.'))
+
   " Test for the CTRL-E and CTRL-Y commands with folds
   %d
   call setline(1, range(1, 10))
@@ -792,6 +910,18 @@ func Test_vert_scroll_cmds()
   normal z-
   exe "normal \<C-Y>\<C-Y>"
   call assert_equal(h + 1, line('w$'))
+
+  " Test for CTRL-Y from the first line and CTRL-E from the last line
+  %d
+  set scrolloff=2
+  call setline(1, range(1, 4))
+  exe "normal gg\<C-Y>"
+  call assert_equal(1, line('w0'))
+  call assert_equal(1, line('.'))
+  exe "normal G4\<C-E>\<C-E>"
+  call assert_equal(4, line('w$'))
+  call assert_equal(4, line('.'))
+  set scrolloff&
 
   " Using <PageUp> and <PageDown> in an empty buffer should beep
   %d
@@ -840,6 +970,18 @@ func Test_vert_scroll_cmds()
   normal zt
   exe "normal \<C-D>"
   call assert_equal(50, line('w0'))
+
+  " Test for <S-CR>. Page down.
+  %d
+  call setline(1, range(1, 100))
+  call feedkeys("\<S-CR>", 'xt')
+  call assert_equal(14, line('w0'))
+  call assert_equal(28, line('w$'))
+
+  " Test for <S-->. Page up.
+  call feedkeys("\<S-->", 'xt')
+  call assert_equal(1, line('w0'))
+  call assert_equal(15, line('w$'))
 
   set foldenable&
   close!
@@ -1155,6 +1297,13 @@ func Test_normal18_z_fold()
   norm! j
   call assert_equal('55', getline('.'))
 
+  " Test for zm with a count
+  50
+  set foldlevel=2
+  norm! 3zm
+  call assert_equal(0, &foldlevel)
+  call assert_equal(49, foldclosed(line('.')))
+
   " Test for zM
   48
   set nofoldenable foldlevel=99
@@ -1355,6 +1504,14 @@ func Test_normal23_K()
   set iskeyword-=%
   set iskeyword-=\|
 
+  " Test for specifying a count to K
+  1
+  com! -nargs=* Kprog let g:Kprog_Args = <q-args>
+  set keywordprg=:Kprog
+  norm! 3K
+  call assert_equal('3 version8', g:Kprog_Args)
+  delcom Kprog
+
   " Only expect "man" to work on Unix
   if !has("unix")
     let &keywordprg = k
@@ -1386,6 +1543,8 @@ func Test_normal23_K()
   call setline(1, ['abc', 'xyz'])
   call assert_fails("normal! gg2lv2h\<C-]>", 'E433:')
   call assert_beeps("normal! ggVjK")
+  norm! V
+  call assert_beeps("norm! cK")
 
   " clean up
   let &keywordprg = k
@@ -1770,7 +1929,31 @@ func Test_normal29_brace()
   bw!
 endfunc
 
-" Test for ~ command
+" Test for section movements
+func Test_normal_section()
+  new
+  let lines =<< trim [END]
+    int foo()
+    {
+      if (1)
+      {
+        a = 1;
+      }
+    }
+  [END]
+  call setline(1, lines)
+
+  " jumping to a folded line using [[ should open the fold
+  2,3fold
+  call cursor(5, 1)
+  call feedkeys("[[", 'xt')
+  call assert_equal(2, line('.'))
+  call assert_equal(-1, foldclosedend(line('.')))
+
+  close!
+endfunc
+
+" Test for changing case using u, U, gu, gU and ~ (tilde) commands
 func Test_normal30_changecase()
   new
   call append(0, 'This is a simple test: äüöß')
@@ -1790,6 +1973,9 @@ func Test_normal30_changecase()
   call assert_equal('this is a SIMPLE TEST: ÄÜÖSS', getline('.'))
   norm! V~
   call assert_equal('THIS IS A simple test: äüöss', getline('.'))
+  call assert_beeps('norm! c~')
+  %d
+  call assert_beeps('norm! ~')
 
   " Test for changing case across lines using 'whichwrap'
   call setline(1, ['aaaaaa', 'aaaaaa'])
@@ -1895,6 +2081,13 @@ func Test_normal31_r_cmd()
   call setline(1, ["a\tb", "c\td", "e\tf"])
   normal gglvjjrx
   call assert_equal(['axx', 'xxx', 'xxf'], getline(1, '$'))
+
+  " replace with a multibyte character (with multiple composing characters)
+  %d
+  new
+  call setline(1, 'aaa')
+  exe "normal $ra\u0328\u0301"
+  call assert_equal("aaa\u0328\u0301", getline(1))
 
   " clean up
   set noautoindent
@@ -2744,25 +2937,26 @@ func Test_java_motion()
   call assert_beeps('normal! ]m')
   call assert_beeps('normal! [M')
   call assert_beeps('normal! ]M')
-  a
-Piece of Java
-{
-	tt m1 {
-		t1;
-	} e1
+  let lines =<< trim [CODE]
+	Piece of Java
+	{
+		tt m1 {
+			t1;
+		} e1
 
-	tt m2 {
-		t2;
-	} e2
+		tt m2 {
+			t2;
+		} e2
 
-	tt m3 {
-		if (x)
-		{
-			t3;
-		}
-	} e3
-}
-.
+		tt m3 {
+			if (x)
+			{
+				t3;
+			}
+		} e3
+	}
+  [CODE]
+  call setline(1, lines)
 
   normal gg
 
@@ -2814,6 +3008,15 @@ Piece of Java
   normal 3[MaL
   call assert_equal("{LF", getline('.'))
   call assert_equal([2, 2, 2], [line('.'), col('.'), virtcol('.')])
+
+  call cursor(2, 1)
+  call assert_beeps('norm! 5]m')
+
+  " jumping to a method in a fold should open the fold
+  6,10fold
+  call feedkeys("gg3]m", 'xt')
+  call assert_equal([7, 8, 15], [line('.'), col('.'), virtcol('.')])
+  call assert_equal(-1, foldclosedend(7))
 
   close!
 endfunc
@@ -3005,6 +3208,27 @@ func Test_normal_delete_cmd()
   close!
 endfunc
 
+" Test for deleting or changing characters across lines with 'whichwrap'
+" containing 's'. Should count <EOL> as one character.
+func Test_normal_op_across_lines()
+  new
+  set whichwrap&
+  call setline(1, ['one two', 'three four'])
+  exe "norm! $3d\<Space>"
+  call assert_equal(['one twhree four'], getline(1, '$'))
+
+  call setline(1, ['one two', 'three four'])
+  exe "norm! $3c\<Space>x"
+  call assert_equal(['one twxhree four'], getline(1, '$'))
+
+  set whichwrap+=l
+  call setline(1, ['one two', 'three four'])
+  exe "norm! $3x"
+  call assert_equal(['one twhree four'], getline(1, '$'))
+  close!
+  set whichwrap&
+endfunc
+
 " Test for 'w' and 'b' commands
 func Test_normal_word_move()
   new
@@ -3075,6 +3299,19 @@ func Test_normal_vert_scroll_longline()
   exe "normal \<C-B>\<C-B>"
   call assert_equal(5, line('.'))
   call assert_equal(5, winline())
+  close!
+endfunc
+
+" Test for jumping in a file using %
+func Test_normal_percent_jump()
+  new
+  call setline(1, range(1, 100))
+
+  " jumping to a folded line should open the fold
+  25,75fold
+  call feedkeys('50%', 'xt')
+  call assert_equal(50, line('.'))
+  call assert_equal(-1, foldclosedend(50))
   close!
 endfunc
 

@@ -274,6 +274,9 @@ func Test_get_register()
   call assert_fails('let r = getreg("=", [])', 'E745:')
   call assert_fails('let r = getreg("=", 1, [])', 'E745:')
   enew!
+
+  " Using a register in operator-pending mode should fail
+  call assert_beeps('norm! c"')
 endfunc
 
 func Test_set_register()
@@ -423,6 +426,12 @@ func Test_execute_register()
   @q
   @
   call assert_equal(3, i)
+
+  " try to execute expression register and use a backspace to cancel it
+  new
+  call feedkeys("@=\<BS>ax\<CR>y", 'xt')
+  call assert_equal(['x', 'y'], getline(1, '$'))
+  close!
 
   " cannot execute a register in operator pending mode
   call assert_beeps('normal! c@r')

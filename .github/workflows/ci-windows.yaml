@@ -3,7 +3,7 @@ name: GitHub CI
 on:
   push:
     branches:
-      - '*'
+      - '**'
   pull_request:
 
 env:
@@ -39,6 +39,7 @@ jobs:
     runs-on: windows-latest
 
     strategy:
+      fail-fast: false
       matrix:
         toolchain: [msvc, mingw]
         arch: [x64, x86]
@@ -74,8 +75,8 @@ jobs:
         git config --global core.autocrlf input
         python_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON_VER_DOT}/InstallPath/@")
         python3_dir=$(cat "/proc/${{ matrix.cygreg }}/HKEY_LOCAL_MACHINE/SOFTWARE/Python/PythonCore/${PYTHON3_VER_DOT}${{ matrix.pyreg }}/InstallPath/@")
-        echo "::set-env name=PYTHON_DIR::$python_dir"
-        echo "::set-env name=PYTHON3_DIR::$python3_dir"
+        echo "PYTHON_DIR=$python_dir" >> $GITHUB_ENV
+        echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
 
     - uses: msys2/setup-msys2@v2
       if: matrix.toolchain == 'mingw'
@@ -212,9 +213,9 @@ jobs:
         echo %COL_GREEN%Wait for vim tests to finish.%COL_RESET%
         cd ..\src2\testdir
         :: Wait about 10 minutes.
-        for /L %%i in (1,1,600) do (
+        for /L %%i in (1,1,60) do (
           if exist done.txt goto exitloop
-          ping -n 2 localhost > nul
+          timeout 10
         )
         set timeout=1
         :exitloop

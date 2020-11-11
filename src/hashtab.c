@@ -81,7 +81,7 @@ hash_clear(hashtab_T *ht)
 	vim_free(ht->ht_array);
 }
 
-#if defined(FEAT_SPELL) || defined(PROTO)
+#if defined(FEAT_SPELL) || defined(FEAT_TERMINAL) || defined(PROTO)
 /*
  * Free the array of a hash table and all the keys it contains.  The keys must
  * have been allocated.  "off" is the offset from the start of the allocate

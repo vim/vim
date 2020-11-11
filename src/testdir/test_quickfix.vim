@@ -1430,6 +1430,30 @@ func Test_quickfix_was_changed_by_autocmd()
   call XquickfixChangedByAutocmd('l')
 endfunc
 
+func Test_setloclist_in_autocommand()
+  call writefile(['test1', 'test2'], 'Xfile')
+  edit Xfile
+  let s:bufnr = bufnr()
+  call setloclist(1,
+        \ [{'bufnr' : s:bufnr, 'lnum' : 1, 'text' : 'test1'},
+        \  {'bufnr' : s:bufnr, 'lnum' : 2, 'text' : 'test2'}])
+
+  augroup Test_LocList
+    au!
+    autocmd BufEnter * call setloclist(1,
+          \ [{'bufnr' : s:bufnr, 'lnum' : 1, 'text' : 'test1'},
+          \  {'bufnr' : s:bufnr, 'lnum' : 2, 'text' : 'test2'}], 'r')
+  augroup END
+
+  lopen
+  call assert_fails('exe "normal j\<CR>"', 'E926:')
+
+  augroup Test_LocList
+    au!
+  augroup END
+  call delete('Xfile')
+endfunc
+
 func Test_caddbuffer_to_empty()
   helpgr quickfix
   call setqflist([], 'r')
@@ -3925,6 +3949,10 @@ func Test_lhelpgrep_autocmd()
     au BufEnter * call setqflist([], 'f')
   augroup END
   call assert_fails('helpgrep quickfix', 'E925:')
+  " run the test with a help window already open
+  help
+  wincmd w
+  call assert_fails('helpgrep quickfix', 'E925:')
   augroup QF_Test
     au! BufEnter
   augroup END
@@ -3972,6 +4000,18 @@ func Test_shorten_fname()
   " Displaying the quickfix list should simplify the file path
   silent! clist
   call assert_equal('test_quickfix.vim', bufname('test_quickfix.vim'))
+  " Add a few entries for the same file with different paths and check whether
+  " the buffer name is shortened
+  %bwipe
+  call setqflist([], 'f')
+  call setqflist([{'filename' : 'test_quickfix.vim', 'lnum' : 10},
+        \ {'filename' : '../testdir/test_quickfix.vim', 'lnum' : 20},
+        \ {'filename' : fname, 'lnum' : 30}], ' ')
+  copen
+  call assert_equal(['test_quickfix.vim|10| ',
+        \ 'test_quickfix.vim|20| ',
+        \ 'test_quickfix.vim|30| '], getline(1, '$'))
+  cclose
 endfunc
 
 " Quickfix title tests
@@ -4382,6 +4422,21 @@ func Test_viscol()
   call assert_equal([11, 17], [col('.'), virtcol('.')])
   cnext
   call assert_equal([16, 25], [col('.'), virtcol('.')])
+
+  " Use screen column number with a multi-line error message
+  enew
+  call writefile(["à test"], 'Xfile1')
+  set efm=%E===\ %f\ ===,%C%l:%v,%Z%m
+  cexpr ["=== Xfile1 ===", "1:3", "errormsg"]
+  call assert_equal('Xfile1', @%)
+  call assert_equal([0, 1, 4, 0], getpos('.'))
+
+  " Repeat previous test with byte offset %c: ensure that fix to issue #7145
+  " does not break this
+  set efm=%E===\ %f\ ===,%C%l:%c,%Z%m
+  cexpr ["=== Xfile1 ===", "1:3", "errormsg"]
+  call assert_equal('Xfile1', @%)
+  call assert_equal([0, 1, 3, 0], getpos('.'))
 
   enew | only
   set efm&

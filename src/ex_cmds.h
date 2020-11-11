@@ -178,6 +178,9 @@ EXCMD(CMD_ball,		"ball",		ex_buffer_all,
 EXCMD(CMD_badd,		"badd",		ex_edit,
 	EX_NEEDARG|EX_FILE1|EX_CMDARG|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
+EXCMD(CMD_balt,		"balt",		ex_edit,
+	EX_NEEDARG|EX_FILE1|EX_CMDARG|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
+	ADDR_NONE),
 EXCMD(CMD_bdelete,	"bdelete",	ex_bunload,
 	EX_BANG|EX_RANGE|EX_BUFNAME|EX_COUNT|EX_EXTRA|EX_TRLBAR,
 	ADDR_BUFFERS),
@@ -398,7 +401,7 @@ EXCMD(CMD_confirm,	"confirm",	ex_wrongmodifier,
 	EX_NEEDARG|EX_EXTRA|EX_NOTRLCOM|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
 EXCMD(CMD_const,	"const",	ex_let,
-	EX_EXTRA|EX_NOTRLCOM|EX_SBOXOK|EX_CMDWIN|EX_LOCK_OK,
+	EX_EXTRA|EX_BANG|EX_NOTRLCOM|EX_SBOXOK|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
 EXCMD(CMD_copen,	"copen",	ex_copen,
 	EX_RANGE|EX_COUNT|EX_TRLBAR,
@@ -592,6 +595,9 @@ EXCMD(CMD_filter,	"filter",	ex_wrongmodifier,
 EXCMD(CMD_find,		"find",		ex_find,
 	EX_RANGE|EX_BANG|EX_FILE1|EX_CMDARG|EX_ARGOPT|EX_TRLBAR|EX_NEEDARG,
 	ADDR_OTHER),
+EXCMD(CMD_final,	"final",	ex_let,
+	EX_EXTRA|EX_NOTRLCOM|EX_SBOXOK|EX_CMDWIN|EX_LOCK_OK,
+	ADDR_NONE),
 EXCMD(CMD_finally,	"finally",	ex_finally,
 	EX_TRLBAR|EX_SBOXOK|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
@@ -1648,6 +1654,9 @@ EXCMD(CMD_update,	"update",	ex_update,
 EXCMD(CMD_vglobal,	"vglobal",	ex_global,
 	EX_RANGE|EX_WHOLEFOLD|EX_EXTRA|EX_DFLALL|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_LINES),
+EXCMD(CMD_var,		"var",		ex_var,
+	EX_EXTRA|EX_NOTRLCOM|EX_SBOXOK|EX_CMDWIN|EX_LOCK_OK,
+	ADDR_NONE),
 EXCMD(CMD_version,	"version",	ex_version,
 	EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
@@ -1806,6 +1815,12 @@ EXCMD(CMD_rshift,	">",		ex_operators,
 EXCMD(CMD_at,		"@",		ex_at,
 	EX_RANGE|EX_WHOLEFOLD|EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_LINES),
+EXCMD(CMD_block,	"{{{{{{{{",	ex_block,  // not found normally
+	0,
+	ADDR_NONE),
+EXCMD(CMD_endblock,	"}",		ex_endblock,
+	EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
+	ADDR_NONE),
 EXCMD(CMD_tilde,	"~",		ex_substitute,
 	EX_RANGE|EX_WHOLEFOLD|EX_EXTRA|EX_CMDWIN|EX_LOCK_OK|EX_MODIFY,
 	ADDR_LINES),
@@ -1871,12 +1886,6 @@ struct exarg
     void	*cookie;	// argument for getline()
 #ifdef FEAT_EVAL
     cstack_T	*cstack;	// condition stack for ":if" etc.
-#endif
-    long	verbose_save;	 // saved value of p_verbose
-    int		save_msg_silent; // saved value of msg_silent
-    int		did_esilent;	 // how many times emsg_silent was incremented
-#ifdef HAVE_SANDBOX
-    int		did_sandbox;	// when TRUE did ++sandbox
 #endif
 };
 

@@ -2,14 +2,15 @@
 
 source check.vim
 source vim9.vim
+source term_util.vim
 source view_util.vim
 
 def Test_edit_wildcards()
-  let filename = 'Xtest'
+  var filename = 'Xtest'
   edit `=filename`
   assert_equal('Xtest', bufname())
 
-  let filenr = 123
+  var filenr = 123
   edit Xtest`=filenr`
   assert_equal('Xtest123', bufname())
 
@@ -25,7 +26,7 @@ def Test_hardcopy_wildcards()
   CheckUnix
   CheckFeature postscript
 
-  let outfile = 'print'
+  var outfile = 'print'
   hardcopy > X`=outfile`.ps
   assert_true(filereadable('Xprint.ps'))
 
@@ -34,10 +35,10 @@ enddef
 
 def Test_syn_include_wildcards()
   writefile(['syn keyword Found found'], 'Xthemine.vim')
-  let save_rtp = &rtp
+  var save_rtp = &rtp
   &rtp = '.'
 
-  let fname = 'mine'
+  var fname = 'mine'
   syn include @Group Xthe`=fname`.vim
   assert_match('Found.* contained found', execute('syn list Found'))
 
@@ -45,42 +46,8 @@ def Test_syn_include_wildcards()
   delete('Xthemine.vim')
 enddef
 
-def Test_assign_list()
-  let l: list<string> = []
-  l[0] = 'value'
-  assert_equal('value', l[0])
-
-  l[1] = 'asdf'
-  assert_equal('value', l[0])
-  assert_equal('asdf', l[1])
-  assert_equal('asdf', l[-1])
-  assert_equal('value', l[-2])
-
-  let nrl: list<number> = []
-  for i in range(5)
-    nrl[i] = i
-  endfor
-  assert_equal([0, 1, 2, 3, 4], nrl)
-enddef
-
-def Test_assign_dict()
-  let d: dict<string> = {}
-  d['key'] = 'value'
-  assert_equal('value', d['key'])
-
-  d[123] = 'qwerty'
-  assert_equal('qwerty', d[123])
-  assert_equal('qwerty', d['123'])
-
-  let nrd: dict<number> = {}
-  for i in range(3)
-    nrd[i] = i
-  endfor
-  assert_equal({'0': 0, '1': 1, '2': 2}, nrd)
-enddef
-
 def Test_echo_linebreak()
-  let lines =<< trim END
+  var lines =<< trim END
       vim9script
       redir @a
       echo 'one'
@@ -102,12 +69,80 @@ def Test_echo_linebreak()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_condition_types()
+  var lines =<< trim END
+      if 'text'
+      endif
+  END
+  CheckDefAndScriptFailure(lines, 'E1030:', 1)
+
+  lines =<< trim END
+      if [1]
+      endif
+  END
+  CheckDefFailure(lines, 'E1012:', 1)
+  CheckScriptFailure(['vim9script'] + lines, 'E745:', 2)
+
+  lines =<< trim END
+      g:cond = 'text'
+      if g:cond
+      endif
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1030:', 2)
+
+  lines =<< trim END
+      g:cond = 0
+      if g:cond
+      elseif 'text'
+      endif
+  END
+  CheckDefFailure(lines, 'E1012:', 3)
+  CheckScriptFailure(['vim9script'] + lines, 'E1030:', 4)
+
+  lines =<< trim END
+      if g:cond
+      elseif [1]
+      endif
+  END
+  CheckDefFailure(lines, 'E1012:', 2)
+  CheckScriptFailure(['vim9script'] + lines, 'E745:', 3)
+
+  lines =<< trim END
+      g:cond = 'text'
+      if 0
+      elseif g:cond
+      endif
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1030:', 3)
+
+  lines =<< trim END
+      while 'text'
+      endwhile
+  END
+  CheckDefFailure(lines, 'E1012:', 1)
+  CheckScriptFailure(['vim9script'] + lines, 'E1030:', 2)
+
+  lines =<< trim END
+      while [1]
+      endwhile
+  END
+  CheckDefFailure(lines, 'E1012:', 1)
+  CheckScriptFailure(['vim9script'] + lines, 'E745:', 2)
+
+  lines =<< trim END
+      g:cond = 'text'
+      while g:cond
+      endwhile
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1030:', 2)
+enddef
+
 def Test_if_linebreak()
-  let lines =<< trim END
+  var lines =<< trim END
       vim9script
       if 1 &&
-            2
-            || 3
+            true
+            || 1
         g:res = 42
       endif
       assert_equal(42, g:res)
@@ -132,9 +167,9 @@ def Test_if_linebreak()
 enddef
 
 def Test_while_linebreak()
-  let lines =<< trim END
+  var lines =<< trim END
       vim9script
-      let nr = 0
+      var nr = 0
       while nr <
               10 + 3
             nr = nr
@@ -146,7 +181,7 @@ def Test_while_linebreak()
 
   lines =<< trim END
       vim9script
-      let nr = 0
+      var nr = 0
       while nr
             <
               10
@@ -162,9 +197,9 @@ def Test_while_linebreak()
 enddef
 
 def Test_for_linebreak()
-  let lines =<< trim END
+  var lines =<< trim END
       vim9script
-      let nr = 0
+      var nr = 0
       for x
             in
               [1, 2, 3, 4]
@@ -176,7 +211,7 @@ def Test_for_linebreak()
 
   lines =<< trim END
       vim9script
-      let nr = 0
+      var nr = 0
       for x
             in
               [1, 2,
@@ -192,9 +227,9 @@ def Test_for_linebreak()
 enddef
 
 def Test_method_call_linebreak()
-  let lines =<< trim END
+  var lines =<< trim END
       vim9script
-      let res = []
+      var res = []
       func RetArg(
             arg
             )
@@ -208,17 +243,24 @@ def Test_method_call_linebreak()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_skipped_expr_linebreak()
+  if 0
+    var x = []
+               ->map({ -> 0})
+  endif
+enddef
+
 def Test_dict_member()
-   let test: dict<list<number>> = {'data': [3, 1, 2]}
+   var test: dict<list<number>> = {'data': [3, 1, 2]}
    test.data->sort()
    assert_equal(#{data: [1, 2, 3]}, test)
    test.data
       ->reverse()
    assert_equal(#{data: [3, 2, 1]}, test)
 
-  let lines =<< trim END
+  var lines =<< trim END
       vim9script
-      let test: dict<list<number>> = {'data': [3, 1, 2]}
+      var test: dict<list<number>> = {'data': [3, 1, 2]}
       test.data->sort()
       assert_equal(#{data: [1, 2, 3]}, test)
   END
@@ -227,14 +269,14 @@ enddef
 
 def Test_bar_after_command()
   def RedrawAndEcho()
-    let x = 'did redraw'
+    var x = 'did redraw'
     redraw | echo x
   enddef
   RedrawAndEcho()
   assert_match('did redraw', Screenline(&lines))
 
   def CallAndEcho()
-    let x = 'did redraw'
+    var x = 'did redraw'
     reg_executing() | echo x
   enddef
   CallAndEcho()
@@ -266,14 +308,246 @@ def Test_bar_after_command()
 enddef
 
 def Test_filter_is_not_modifier()
-  let tags = [{'a': 1, 'b': 2}, {'x': 3, 'y': 4}]
+  var tags = [{'a': 1, 'b': 2}, {'x': 3, 'y': 4}]
   filter(tags, { _, v -> has_key(v, 'x') ? 1 : 0 })
   assert_equal([#{x: 3, y: 4}], tags)
 enddef
 
+def Test_command_modifier_filter()
+  var lines =<< trim END
+    final expected = "\nType Name Content\n  c  \"c   piyo"
+    @a = 'hoge'
+    @b = 'fuga'
+    @c = 'piyo'
+
+    assert_equal(execute('filter /piyo/ registers abc'), expected)
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_win_command_modifiers()
+  assert_equal(1, winnr('$'))
+
+  set splitright
+  vsplit
+  assert_equal(2, winnr())
+  close
+  aboveleft vsplit
+  assert_equal(1, winnr())
+  close
+  set splitright&
+
+  vsplit
+  assert_equal(1, winnr())
+  close
+  belowright vsplit
+  assert_equal(2, winnr())
+  close
+  rightbelow vsplit
+  assert_equal(2, winnr())
+  close
+
+  if has('browse')
+    browse set
+    assert_equal('option-window', expand('%'))
+    close
+  endif
+
+  vsplit
+  botright split
+  assert_equal(3, winnr())
+  assert_equal(&columns, winwidth(0))
+  close
+  close
+
+  vsplit
+  topleft split
+  assert_equal(1, winnr())
+  assert_equal(&columns, winwidth(0))
+  close
+  close
+
+  gettabinfo()->len()->assert_equal(1)
+  tab split
+  gettabinfo()->len()->assert_equal(2)
+  tabclose
+
+  vertical new
+  assert_inrange(&columns / 2 - 2, &columns / 2 + 1, winwidth(0))
+  close
+enddef
+
+func Test_command_modifier_confirm()
+  CheckNotGui
+  CheckRunVimInTerminal
+
+  " Test for saving all the modified buffers
+  let lines =<< trim END
+    call setline(1, 'changed')
+    def Getout()
+      confirm write Xfile
+    enddef
+  END
+  call writefile(lines, 'Xconfirmscript')
+  call writefile(['empty'], 'Xfile')
+  let buf = RunVimInTerminal('-S Xconfirmscript', {'rows': 8})
+  call term_sendkeys(buf, ":call Getout()\n")
+  call WaitForAssert({-> assert_match('(Y)es, \[N\]o: ', term_getline(buf, 8))}, 1000)
+  call term_sendkeys(buf, "y")
+  call WaitForAssert({-> assert_match('(Y)es, \[N\]o: ', term_getline(buf, 8))}, 1000)
+  call term_sendkeys(buf, "\<CR>")
+  call TermWait(buf)
+  call StopVimInTerminal(buf)
+
+  call assert_equal(['changed'], readfile('Xfile'))
+  call delete('Xfile')
+  call delete('.Xfile.swp')  " in case Vim was killed
+  call delete('Xconfirmscript')
+endfunc
+
+def Test_command_modifiers_keep()
+  if has('unix')
+    def DoTest(addRflag: bool, keepMarks: bool, hasMarks: bool)
+      new
+      setline(1, ['one', 'two', 'three'])
+      normal 1Gma
+      normal 2Gmb
+      normal 3Gmc
+      if addRflag
+        set cpo+=R
+      else
+        set cpo-=R
+      endif
+      if keepMarks
+        keepmarks :%!cat
+      else
+        :%!cat
+      endif
+      if hasMarks
+        assert_equal(1, line("'a"))
+        assert_equal(2, line("'b"))
+        assert_equal(3, line("'c"))
+      else
+        assert_equal(0, line("'a"))
+        assert_equal(0, line("'b"))
+        assert_equal(0, line("'c"))
+      endif
+      quit!
+    enddef
+    DoTest(false, false, true)
+    DoTest(true, false, false)
+    DoTest(false, true, true)
+    DoTest(true, true, true)
+    set cpo&vim
+
+    new
+    setline(1, ['one', 'two', 'three', 'four'])
+    assert_equal(4, line("$"))
+    normal 1Gma
+    normal 2Gmb
+    normal 3Gmc
+    lockmarks :1,2!wc
+    # line is deleted, marks don't move
+    assert_equal(3, line("$"))
+    assert_equal('four', getline(3))
+    assert_equal(1, line("'a"))
+    assert_equal(2, line("'b"))
+    assert_equal(3, line("'c"))
+    quit!
+  endif
+
+  edit Xone
+  edit Xtwo
+  assert_equal('Xone', expand('#'))
+  keepalt edit Xthree
+  assert_equal('Xone', expand('#'))
+
+  normal /a*b*
+  assert_equal('a*b*', histget("search"))
+  keeppatterns normal /c*d*
+  assert_equal('a*b*', histget("search"))
+
+  new
+  setline(1, range(10))
+  :10
+  normal gg
+  assert_equal(10, getpos("''")[1])
+  keepjumps normal 5G
+  assert_equal(10, getpos("''")[1])
+  quit!
+enddef
+
+def Test_command_modifier_other()
+  new Xsomefile
+  setline(1, 'changed')
+  var buf = bufnr()
+  hide edit Xotherfile
+  var info = getbufinfo(buf)
+  assert_equal(1, info[0].hidden)
+  assert_equal(1, info[0].changed)
+  edit Xsomefile
+  bwipe!
+
+  au BufNewFile Xfile g:readFile = 1
+  g:readFile = 0
+  edit Xfile
+  assert_equal(1, g:readFile)
+  bwipe!
+  g:readFile = 0
+  noautocmd edit Xfile
+  assert_equal(0, g:readFile)
+
+  noswapfile edit XnoSwap
+  assert_equal(0, &l:swapfile)
+  bwipe!
+
+  var caught = false
+  try
+    sandbox !ls
+  catch /E48:/
+    caught = true
+  endtry
+  assert_true(caught)
+
+  :8verbose g:verbose_now = &verbose
+  assert_equal(8, g:verbose_now)
+  unlet g:verbose_now
+enddef
+
+def EchoHere()
+  echomsg 'here'
+enddef
+def EchoThere()
+  unsilent echomsg 'there'
+enddef
+
+def Test_modifier_silent_unsilent()
+  echomsg 'last one'
+  silent echomsg "text"
+  assert_equal("\nlast one", execute(':1messages'))
+
+  silent! echoerr "error"
+
+  echomsg 'last one'
+  silent EchoHere()
+  assert_equal("\nlast one", execute(':1messages'))
+
+  silent EchoThere()
+  assert_equal("\nthere", execute(':1messages'))
+enddef
+
+def Test_range_after_command_modifier()
+  CheckScriptFailure(['vim9script', 'silent keepjump 1d _'], 'E1050:', 2)
+  new
+  setline(1, 'xxx')
+  CheckScriptSuccess(['vim9script', 'silent keepjump :1d _'])
+  assert_equal('', getline(1))
+  bwipe!
+enddef
+
 def Test_eval_command()
-  let from = 3
-  let to = 5
+  var from = 3
+  var to = 5
   g:val = 111
   def Increment(nrs: list<number>)
     for nr in nrs
@@ -287,7 +561,7 @@ def Test_eval_command()
 enddef
 
 def Test_map_command()
-  let lines =<< trim END
+  var lines =<< trim END
       nnoremap <F3> :echo 'hit F3 #'<CR>
       assert_equal(":echo 'hit F3 #'<CR>", maparg("<F3>", "n"))
   END
@@ -298,7 +572,7 @@ enddef
 def Test_normal_command()
   new
   setline(1, 'doesnotexist')
-  let caught = 0
+  var caught = 0
   try
     exe "norm! \<C-]>"
   catch /E433/
@@ -313,6 +587,51 @@ def Test_normal_command()
   endtry
   assert_equal(3, caught)
   bwipe!
+enddef
+
+def Test_put_command()
+  new
+  @p = 'ppp'
+  put p
+  assert_equal('ppp', getline(2))
+
+  put ='below'
+  assert_equal('below', getline(3))
+  put! ='above'
+  assert_equal('above', getline(3))
+  assert_equal('below', getline(4))
+
+  bwipe!
+enddef
+
+def Test_command_star_range()
+  new
+  setline(1, ['xxx foo xxx', 'xxx bar xxx', 'xxx foo xx bar'])
+  setpos("'<", [0, 1, 0, 0])
+  setpos("'>", [0, 3, 0, 0])
+  :*s/\(foo\|bar\)/baz/g
+  getline(1, 3)->assert_equal(['xxx baz xxx', 'xxx baz xxx', 'xxx baz xx baz'])
+
+  bwipe!
+enddef
+
+def Test_f_args()
+  var lines =<< trim END
+    vim9script
+
+    func SaveCmdArgs(...)
+      let g:args = a:000
+    endfunc
+
+    command -nargs=* TestFArgs call SaveCmdArgs(<f-args>)
+
+    TestFArgs
+    assert_equal([], g:args)
+
+    TestFArgs one two three
+    assert_equal(['one', 'two', 'three'], g:args)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 

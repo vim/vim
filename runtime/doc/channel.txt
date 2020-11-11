@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.2.  Last change: 2020 Sep 03
+*channel.txt*      For Vim version 8.2.  Last change: 2020 Oct 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -965,6 +965,10 @@ job_status({job})					*job_status()* *E916*
 		"fail", because a fork happens before the failure can be
 		detected.
 
+		If in Vim9 script a variable is declared with type "job" but
+		never assigned to, passing that variable to job_status()
+		returns "fail".
+
 		If an exit callback was set with the "exit_cb" option and the
 		job is now detected to be "dead" the callback will be invoked.
 
@@ -1288,7 +1292,7 @@ prompt. >
 	  " Send the text to a shell with Enter appended.
 	  call ch_sendraw(g:shell_job, a:text .. "\n")
 	endfunc
-		
+
 	" Function handling output from the shell: Added above the prompt.
 	func GotOutput(channel, msg)
 	  call append(line("$") - 1, "- " . a:msg)

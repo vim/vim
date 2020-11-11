@@ -3557,8 +3557,6 @@ msgstr "E538: Geen muisondersteuning nie"
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: Onvoltooide uitdrukkingreeks"
 
-msgid "E541: too many items"
-msgstr "E541: te veel items"
 
 msgid "E542: unbalanced groups"
 msgstr "E542: ongebalanseerde groepe"

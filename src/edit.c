@@ -587,8 +587,11 @@ edit(
 		if (stop_insert_mode)
 		{
 		    // Insert mode ended, possibly from a callback.
+		    if (c != K_IGNORE && c != K_NOP)
+			vungetc(c);
 		    count = 0;
 		    nomove = TRUE;
+		    ins_compl_prep(ESC);
 		    goto doESCkey;
 		}
 	    } while (c == K_IGNORE || c == K_NOP);
@@ -3399,7 +3402,7 @@ ins_reg(void)
 	    AppendCharToRedobuff(literally);
 	    AppendCharToRedobuff(regname);
 
-	    do_put(regname, BACKWARD, 1L,
+	    do_put(regname, NULL, BACKWARD, 1L,
 		 (literally == Ctrl_P ? PUT_FIXINDENT : 0) | PUT_CURSEND);
 	}
 	else if (insert_reg(regname, literally) == FAIL)
@@ -3604,13 +3607,16 @@ ins_esc(
 	undisplay_dollar();
     }
 
+    if (cmdchar != 'r' && cmdchar != 'v')
+	ins_apply_autocmds(EVENT_INSERTLEAVEPRE);
+
     // When an autoindent was removed, curswant stays after the
     // indent
     if (restart_edit == NUL && (colnr_T)temp == curwin->w_cursor.col)
 	curwin->w_set_curswant = TRUE;
 
     // Remember the last Insert position in the '^ mark.
-    if (!cmdmod.keepjumps)
+    if ((cmdmod.cmod_flags & CMOD_KEEPJUMPS) == 0)
 	curbuf->b_last_insert = curwin->w_cursor;
 
     /*
@@ -4776,7 +4782,7 @@ ins_pagedown(void)
     static void
 ins_drop(void)
 {
-    do_put('~', BACKWARD, 1L, PUT_CURSEND);
+    do_put('~', NULL, BACKWARD, 1L, PUT_CURSEND);
 }
 #endif
 

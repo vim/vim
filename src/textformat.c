@@ -819,7 +819,7 @@ op_format(
 	// When there is no change: need to remove the Visual selection
 	redraw_curbuf_later(INVERTED);
 
-    if (!cmdmod.lockmarks)
+    if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
 	// Set '[ mark at the start of the formatted area
 	curbuf->b_op_start = oap->start;
 
@@ -839,7 +839,7 @@ op_format(
     old_line_count = curbuf->b_ml.ml_line_count - old_line_count;
     msgmore(old_line_count);
 
-    if (!cmdmod.lockmarks)
+    if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
 	// put '] mark on the end of the formatted area
 	curbuf->b_op_end = curwin->w_cursor;
 

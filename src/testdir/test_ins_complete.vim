@@ -313,6 +313,24 @@ func Test_CompleteDone_undo()
   au! CompleteDone
 endfunc
 
+func CompleteTest(findstart, query)
+  if a:findstart
+    return col('.')
+  endif
+  return ['matched']
+endfunc
+
+func Test_completefunc_info()
+  new
+  set completeopt=menuone
+  set completefunc=CompleteTest
+  call feedkeys("i\<C-X>\<C-U>\<C-R>\<C-R>=string(complete_info())\<CR>\<ESC>", "tx")
+  call assert_equal("matched{'pum_visible': 1, 'mode': 'function', 'selected': 0, 'items': [{'word': 'matched', 'menu': '', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''}]}", getline(1))
+  bwipe!
+  set completeopt&
+  set completefunc&
+endfunc
+
 " Check that when using feedkeys() typeahead does not interrupt searching for
 " completions.
 func Test_compl_feedkeys()
@@ -328,7 +346,10 @@ func Test_compl_in_cmdwin()
   set wildmenu wildchar=<Tab>
   com! -nargs=1 -complete=command GetInput let input = <q-args>
   com! -buffer TestCommand echo 'TestCommand'
+  let w:test_winvar = 'winvar'
+  let b:test_bufvar = 'bufvar'
 
+  " User-defined commands
   let input = ''
   call feedkeys("q:iGetInput T\<C-x>\<C-v>\<CR>", 'tx!')
   call assert_equal('TestCommand', input)
@@ -337,20 +358,42 @@ func Test_compl_in_cmdwin()
   call feedkeys("q::GetInput T\<Tab>\<CR>:q\<CR>", 'tx!')
   call assert_equal('T', input)
 
+
+  com! -nargs=1 -complete=var GetInput let input = <q-args>
+  " Window-local variables
+  let input = ''
+  call feedkeys("q:iGetInput w:test_\<C-x>\<C-v>\<CR>", 'tx!')
+  call assert_equal('w:test_winvar', input)
+
+  let input = ''
+  call feedkeys("q::GetInput w:test_\<Tab>\<CR>:q\<CR>", 'tx!')
+  call assert_equal('w:test_', input)
+
+  " Buffer-local variables
+  let input = ''
+  call feedkeys("q:iGetInput b:test_\<C-x>\<C-v>\<CR>", 'tx!')
+  call assert_equal('b:test_bufvar', input)
+
+  let input = ''
+  call feedkeys("q::GetInput b:test_\<Tab>\<CR>:q\<CR>", 'tx!')
+  call assert_equal('b:test_', input)
+
   delcom TestCommand
   delcom GetInput
+  unlet w:test_winvar
+  unlet b:test_bufvar
   set wildmenu& wildchar&
 endfunc
 
 " Test for insert path completion with completeslash option
 func Test_ins_completeslash()
   CheckMSWindows
-  
+
   call mkdir('Xdir')
   let orig_shellslash = &shellslash
   set cpt&
   new
-  
+
   set noshellslash
 
   set completeslash=
@@ -387,6 +430,28 @@ func Test_ins_completeslash()
 
   let &shellslash = orig_shellslash
   set completeslash=
+endfunc
+
+func Test_pum_stopped_by_timer()
+  CheckScreendump
+
+  let lines =<< trim END
+    call setline(1, ['hello', 'hullo', 'heeee', ''])
+    func StartCompl()
+      call timer_start(100, { -> execute('stopinsert') })
+      call feedkeys("Gah\<C-N>")
+    endfunc
+  END
+
+  call writefile(lines, 'Xpumscript')
+  let buf = RunVimInTerminal('-S Xpumscript', #{rows: 12})
+  call term_sendkeys(buf, ":call StartCompl()\<CR>")
+  call TermWait(buf, 200)
+  call term_sendkeys(buf, "k")
+  call VerifyScreenDump(buf, 'Test_pum_stopped_by_timer', {})
+
+  call StopVimInTerminal(buf)
+  call delete('Xpumscript')
 endfunc
 
 func Test_pum_with_folds_two_tabs()
@@ -634,6 +699,19 @@ func Test_complete_cmdline()
   exe "normal oabcxyz(\<C-X>\<C-V>"
   call assert_equal('abcxyz(', getline(3))
   close!
+endfunc
+
+func Test_issue_7021()
+  CheckMSWindows
+
+  let orig_shellslash = &shellslash
+  set noshellslash
+
+  set completeslash=slash
+  call assert_false(expand('~') =~ '/')
+
+  let &shellslash = orig_shellslash
+  set completeslash=
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

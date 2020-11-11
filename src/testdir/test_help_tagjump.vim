@@ -16,6 +16,11 @@ func Test_help_tagjump()
   call assert_true(getline('.') =~ '\*quote\*')
   helpclose
 
+  help *
+  call assert_equal("help", &filetype)
+  call assert_true(getline('.') =~ '\*star\*')
+  helpclose
+
   help "*
   call assert_equal("help", &filetype)
   call assert_true(getline('.') =~ '\*quotestar\*')
@@ -24,6 +29,11 @@ func Test_help_tagjump()
   help sm?le
   call assert_equal("help", &filetype)
   call assert_true(getline('.') =~ '\*:smile\*')
+  helpclose
+
+  help ??
+  call assert_equal("help", &filetype)
+  call assert_true(getline('.') =~ '\*??\*')
   helpclose
 
   help :?

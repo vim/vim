@@ -1197,16 +1197,16 @@ OutputGetattr(PyObject *self, char *name)
 
 #define BufferType_Check(obj) ((obj)->ob_type == &BufferType)
 
-static PyInt BufferAssItem(PyObject *, PyInt, PyObject *);
-static PyInt BufferAssSlice(PyObject *, PyInt, PyInt, PyObject *);
+static int BufferAssItem(PyObject *, PyInt, PyObject *);
+static int BufferAssSlice(PyObject *, PyInt, PyInt, PyObject *);
 
 // Line range type - Implementation functions
 // --------------------------------------
 
 #define RangeType_Check(obj) ((obj)->ob_type == &RangeType)
 
-static PyInt RangeAssItem(PyObject *, PyInt, PyObject *);
-static PyInt RangeAssSlice(PyObject *, PyInt, PyInt, PyObject *);
+static int RangeAssItem(PyObject *, PyInt, PyObject *);
+static int RangeAssSlice(PyObject *, PyInt, PyInt, PyObject *);
 
 // Current objects type - Implementation functions
 // -----------------------------------------------
@@ -1246,13 +1246,13 @@ BufferGetattr(PyObject *self, char *name)
 
 //////////////////
 
-    static PyInt
+    static int
 BufferAssItem(PyObject *self, PyInt n, PyObject *val)
 {
     return RBAsItem((BufferObject *)(self), n, val, 1, -1, NULL);
 }
 
-    static PyInt
+    static int
 BufferAssSlice(PyObject *self, PyInt lo, PyInt hi, PyObject *val)
 {
     return RBAsSlice((BufferObject *)(self), lo, hi, val, 1, -1, NULL);
@@ -1290,7 +1290,7 @@ RangeGetattr(PyObject *self, char *name)
 
 ////////////////
 
-    static PyInt
+    static int
 RangeAssItem(PyObject *self, PyInt n, PyObject *val)
 {
     return RBAsItem(((RangeObject *)(self))->buf, n, val,
@@ -1299,7 +1299,7 @@ RangeAssItem(PyObject *self, PyInt n, PyObject *val)
 		     &((RangeObject *)(self))->end);
 }
 
-    static PyInt
+    static int
 RangeAssSlice(PyObject *self, PyInt lo, PyInt hi, PyObject *val)
 {
     return RBAsSlice(((RangeObject *)(self))->buf, lo, hi, val,

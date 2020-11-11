@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.2.  Last change: 2020 Aug 15
+*version8.txt*  For Vim version 8.2.  Last change: 2020 Oct 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -42445,7 +42445,7 @@ Files:      src/filepath.c, src/testdir/test_fnamemodify.vim
 
 Patch 8.2.0216
 Problem:    Several Vim9 instructions are not tested.
-Solution:   Add more tests. Fix :disassamble output. Make catch with pattern
+Solution:   Add more tests. Fix :disassemble output. Make catch with pattern
             work.
 Files:      src/testdir/test_vim9_script.vim, src/vim9execute.c,
             src/vim9compile.c
@@ -42665,7 +42665,7 @@ Solution:   Change to int. (Mike Williams)
 Files:      src/vim9compile.c
 
 Patch 8.2.0253
-Problem:    Crash when using :disassamble without argument. (Dhiraj Mishra)
+Problem:    Crash when using :disassemble without argument. (Dhiraj Mishra)
 Solution:   Check for missing argument. (Dominique Pellé, closes #5635,
             closes #5637)
 Files:      src/vim9execute.c, src/testdir/test_vim9_disassemble.vim,
@@ -47698,7 +47698,7 @@ Files:      src/eval.c, src/testdir/test_vim9_expr.vim
 
 Patch 8.2.1064
 Problem:    Vim9: no line break allowed before comparators.
-Solution:   Check for comperator after line break.
+Solution:   Check for comparator after line break.
 Files:      src/eval.c, src/testdir/test_vim9_expr.vim
 
 Patch 8.2.1065
@@ -48515,7 +48515,7 @@ Solution:   Recognize true and false.
 Files:      src/eval.c, src/testdir/test_vim9_expr.vim
 
 Patch 8.2.1205
-Problem:    Vim9: && and || work different when not compiled.
+Problem:    Vim9: && and || work differently when not compiled.
 Solution:   Keep the value.
 Files:      src/eval.c, src/testdir/test_vim9_expr.vim
 

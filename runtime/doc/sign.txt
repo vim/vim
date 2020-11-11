@@ -1,4 +1,4 @@
-*sign.txt*      For Vim version 8.2.  Last change: 2020 Aug 31
+*sign.txt*      For Vim version 8.2.  Last change: 2020 Oct 28
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -80,6 +80,10 @@ Each placed sign is assigned a priority value. When multiple signs are placed
 on the same line, the attributes of the sign with the highest priority is used
 independently of the sign group. The default priority for a sign is 10. The
 priority is assigned at the time of placing a sign.
+
+When two signs with the same priority are present, and one has an icon or text
+in the signcolumn while the other has line highlighting, then both are
+displayed.
 
 When the line on which the sign is placed is deleted, the sign is moved to the
 next line (or the last line of the buffer, if there is no next line).  When
@@ -458,11 +462,11 @@ sign_getplaced([{expr} [, {dict}]])			*sign_getplaced()*
 				entries
 
 		The dictionary for each sign contains the following entries:
-			group	sign group. Set to '' for the global group.
-			id	identifier of the sign
-			lnum	line number where the sign is placed
-			name	name of the defined sign
-			priority	sign priority
+			group	 sign group. Set to '' for the global group.
+			id	 identifier of the sign
+			lnum	 line number where the sign is placed
+			name	 name of the defined sign
+			priority sign priority
 
 		The returned signs in a buffer are ordered by their line
 		number and priority.

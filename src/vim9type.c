@@ -22,10 +22,10 @@
 
 /*
  * Allocate memory for a type_T and add the pointer to type_gap, so that it can
- * be freed later.
+ * be easily freed later.
  */
-    static type_T *
-alloc_type(garray_T *type_gap)
+    type_T *
+get_type_ptr(garray_T *type_gap)
 {
     type_T *type;
 
@@ -48,13 +48,67 @@ clear_type_list(garray_T *gap)
     ga_clear(gap);
 }
 
+/*
+ * Take a type that is using entries in a growarray and turn it into a type
+ * with allocated entries.
+ */
+    type_T *
+alloc_type(type_T *type)
+{
+    type_T *ret;
+
+    if (type == NULL)
+	return NULL;
+
+    // A fixed type never contains allocated types, return as-is.
+    if (type->tt_flags & TTFLAG_STATIC)
+	return type;
+
+    ret = ALLOC_ONE(type_T);
+    *ret = *type;
+
+    if (ret->tt_member != NULL)
+	ret->tt_member = alloc_type(ret->tt_member);
+    if (type->tt_args != NULL)
+    {
+	int i;
+
+	ret->tt_args = ALLOC_MULT(type_T *, type->tt_argcount);
+	if (ret->tt_args != NULL)
+	    for (i = 0; i < type->tt_argcount; ++i)
+		ret->tt_args[i] = alloc_type(type->tt_args[i]);
+    }
+
+    return ret;
+}
+
+/*
+ * Free a type that was created with alloc_type().
+ */
+    void
+free_type(type_T *type)
+{
+    int i;
+
+    if (type == NULL || (type->tt_flags & TTFLAG_STATIC))
+	return;
+    if (type->tt_args != NULL)
+    {
+	for (i = 0; i < type->tt_argcount; ++i)
+	    free_type(type->tt_args[i]);
+	vim_free(type->tt_args);
+    }
+    free_type(type->tt_member);
+    vim_free(type);
+}
+
     type_T *
 get_list_type(type_T *member_type, garray_T *type_gap)
 {
     type_T *type;
 
     // recognize commonly used types
-    if (member_type->tt_type == VAR_ANY)
+    if (member_type == NULL || member_type->tt_type == VAR_ANY)
 	return &t_list_any;
     if (member_type->tt_type == VAR_VOID
 	    || member_type->tt_type == VAR_UNKNOWN)
@@ -67,7 +121,7 @@ get_list_type(type_T *member_type, garray_T *type_gap)
 	return &t_list_string;
 
     // Not a common type, create a new entry.
-    type = alloc_type(type_gap);
+    type = get_type_ptr(type_gap);
     if (type == NULL)
 	return &t_any;
     type->tt_type = VAR_LIST;
@@ -83,7 +137,7 @@ get_dict_type(type_T *member_type, garray_T *type_gap)
     type_T *type;
 
     // recognize commonly used types
-    if (member_type->tt_type == VAR_ANY)
+    if (member_type == NULL || member_type->tt_type == VAR_ANY)
 	return &t_dict_any;
     if (member_type->tt_type == VAR_VOID
 	    || member_type->tt_type == VAR_UNKNOWN)
@@ -96,7 +150,7 @@ get_dict_type(type_T *member_type, garray_T *type_gap)
 	return &t_dict_string;
 
     // Not a common type, create a new entry.
-    type = alloc_type(type_gap);
+    type = get_type_ptr(type_gap);
     if (type == NULL)
 	return &t_any;
     type->tt_type = VAR_DICT;
@@ -112,7 +166,7 @@ get_dict_type(type_T *member_type, garray_T *type_gap)
     type_T *
 alloc_func_type(type_T *ret_type, int argcount, garray_T *type_gap)
 {
-    type_T *type = alloc_type(type_gap);
+    type_T *type = get_type_ptr(type_gap);
 
     if (type == NULL)
 	return &t_any;
@@ -197,32 +251,35 @@ func_type_add_arg_types(
 
 /*
  * Get a type_T for a typval_T.
- * "type_list" is used to temporarily create types in.
+ * "type_gap" is used to temporarily create types in.
  */
-    type_T *
-typval2type(typval_T *tv, garray_T *type_gap)
+    static type_T *
+typval2type_int(typval_T *tv, garray_T *type_gap)
 {
-    type_T  *actual;
-    type_T  *member_type;
+    type_T  *type;
+    type_T  *member_type = &t_any;
+    int	    argcount = 0;
 
     if (tv->v_type == VAR_NUMBER)
 	return &t_number;
     if (tv->v_type == VAR_BOOL)
-	return &t_bool;  // not used
+	return &t_bool;
     if (tv->v_type == VAR_STRING)
 	return &t_string;
 
     if (tv->v_type == VAR_LIST)
     {
-	listitem_T *li;
+	list_T	    *l = tv->vval.v_list;
+	listitem_T  *li;
 
-	if (tv->vval.v_list == NULL || tv->vval.v_list->lv_first == NULL)
+	if (l == NULL || l->lv_first == NULL)
 	    return &t_list_empty;
+	if (l->lv_first == &range_list_item)
+	    return &t_list_number;
 
 	// Use the common type of all members.
-	member_type = typval2type(&tv->vval.v_list->lv_first->li_tv, type_gap);
-	for (li = tv->vval.v_list->lv_first->li_next; li != NULL;
-							     li = li->li_next)
+	member_type = typval2type(&l->lv_first->li_tv, type_gap);
+	for (li = l->lv_first->li_next; li != NULL; li = li->li_next)
 	    common_type(typval2type(&li->li_tv, type_gap),
 					  member_type, &member_type, type_gap);
 	return get_list_type(member_type, type_gap);
@@ -262,8 +319,18 @@ typval2type(typval_T *tv, garray_T *type_gap)
 	else
 	    name = tv->vval.v_string;
 	if (name != NULL)
-	    // TODO: how about a builtin function?
-	    ufunc = find_func(name, FALSE, NULL);
+	{
+	    int idx = find_internal_func(name);
+
+	    if (idx >= 0)
+	    {
+		// TODO: get actual arg count and types
+		argcount = -1;
+		member_type = internal_func_ret_type(idx, 0, NULL);
+	    }
+	    else
+		ufunc = find_func(name, FALSE, NULL);
+	}
 	if (ufunc != NULL)
 	{
 	    // May need to get the argument types from default values by
@@ -276,13 +343,52 @@ typval2type(typval_T *tv, garray_T *type_gap)
 	}
     }
 
-    actual = alloc_type(type_gap);
-    if (actual == NULL)
+    type = get_type_ptr(type_gap);
+    if (type == NULL)
 	return NULL;
-    actual->tt_type = tv->v_type;
-    actual->tt_member = &t_any;
+    type->tt_type = tv->v_type;
+    type->tt_argcount = argcount;
+    type->tt_member = member_type;
 
-    return actual;
+    return type;
+}
+
+/*
+ * Return TRUE if "tv" is not a bool but should be converted to bool.
+ */
+    int
+need_convert_to_bool(type_T *type, typval_T *tv)
+{
+    return type != NULL && type == &t_bool && tv->v_type != VAR_BOOL
+	    && (tv->v_type == VAR_NUMBER
+		       && (tv->vval.v_number == 0 || tv->vval.v_number == 1));
+}
+
+/*
+ * Get a type_T for a typval_T.
+ * "type_list" is used to temporarily create types in.
+ */
+    type_T *
+typval2type(typval_T *tv, garray_T *type_gap)
+{
+    type_T *type = typval2type_int(tv, type_gap);
+
+    if (type != NULL && type != &t_bool
+	    && (tv->v_type == VAR_NUMBER
+		    && (tv->vval.v_number == 0 || tv->vval.v_number == 1)))
+    {
+	type_T *newtype = get_type_ptr(type_gap);
+
+	// Number 0 and 1 and expression with "&&" or "||" can also be used
+	// for bool.
+	if (newtype != NULL)
+	{
+	    *newtype = *type;
+	    newtype->tt_flags = TTFLAG_BOOL_OK;
+	    type = newtype;
+	}
+    }
+    return type;
 }
 
 /*
@@ -302,6 +408,7 @@ typval2type_vimvar(typval_T *tv, garray_T *type_gap)
 
 /*
  * Return FAIL if "expected" and "actual" don't match.
+ * When "argidx" > 0 it is included in the error message.
  */
     int
 check_typval_type(type_T *expected, typval_T *actual_tv, int argidx)
@@ -357,8 +464,16 @@ check_type(type_T *expected, type_T *actual, int give_msg, int argidx)
 	    && !(expected->tt_type == VAR_ANY && actual->tt_type != VAR_VOID))
 
     {
-	if (expected->tt_type != actual->tt_type)
+	// tt_type should match, except that a "partial" can be assigned to a
+	// variable with type "func".
+	if (!(expected->tt_type == actual->tt_type
+		    || (expected->tt_type == VAR_FUNC
+					   && actual->tt_type == VAR_PARTIAL)))
 	{
+	    if (expected->tt_type == VAR_BOOL
+					&& (actual->tt_flags & TTFLAG_BOOL_OK))
+		// Using number 0 or 1 for bool is OK.
+		return OK;
 	    if (give_msg)
 		arg_type_mismatch(expected, actual, argidx);
 	    return FAIL;
@@ -376,6 +491,7 @@ check_type(type_T *expected, type_T *actual, int give_msg, int argidx)
 		ret = check_type(expected->tt_member, actual->tt_member,
 								     FALSE, 0);
 	    if (ret == OK && expected->tt_argcount != -1
+		    && actual->tt_argcount != -1
 		    && (actual->tt_argcount < expected->tt_min_argcount
 			|| actual->tt_argcount > expected->tt_argcount))
 		    ret = FAIL;
@@ -758,6 +874,19 @@ common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap)
 	return;
     }
 
+    // If either is VAR_UNKNOWN use the other type.  An empty list/dict has no
+    // specific type.
+    if (type1->tt_type == VAR_UNKNOWN)
+    {
+	*dest = type2;
+	return;
+    }
+    if (type2->tt_type == VAR_UNKNOWN)
+    {
+	*dest = type1;
+	return;
+    }
+
     if (type1->tt_type == type2->tt_type)
     {
 	if (type1->tt_type == VAR_LIST || type2->tt_type == VAR_DICT)
@@ -794,6 +923,10 @@ common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap)
 	    }
 	    else
 		*dest = alloc_func_type(common, -1, type_gap);
+	    // Use the minimum of min_argcount.
+	    (*dest)->tt_min_argcount =
+			type1->tt_min_argcount < type2->tt_min_argcount
+			     ? type1->tt_min_argcount : type2->tt_min_argcount;
 	    return;
 	}
     }
@@ -821,7 +954,7 @@ get_member_type_from_stack(
 
     // Use "any" for an empty list or dict.
     if (count == 0)
-	return &t_void;
+	return &t_unknown;
 
     // Use the first value type for the list member type, then find the common
     // type from following items.
@@ -896,7 +1029,6 @@ type_name(type_T *type, char **tofree)
 	ga_init2(&ga, 1, 100);
 	if (ga_grow(&ga, 20) == FAIL)
 	    return "[unknown]";
-	*tofree = ga.ga_data;
 	STRCPY(ga.ga_data, "func(");
 	ga.ga_len += 5;
 
@@ -919,20 +1051,19 @@ type_name(type_T *type, char **tofree)
 	    if (ga_grow(&ga, len + 8) == FAIL)
 	    {
 		vim_free(arg_free);
+		ga_clear(&ga);
 		return "[unknown]";
 	    }
-	    *tofree = ga.ga_data;
 	    if (varargs && i == type->tt_argcount - 1)
-	    {
-		STRCPY((char *)ga.ga_data + ga.ga_len, "...");
-		ga.ga_len += 3;
-	    }
+		ga_concat(&ga, (char_u *)"...");
 	    else if (i >= type->tt_min_argcount)
 		*((char *)ga.ga_data + ga.ga_len++) = '?';
-	    STRCPY((char *)ga.ga_data + ga.ga_len, arg_type);
-	    ga.ga_len += len;
+	    ga_concat(&ga, (char_u *)arg_type);
 	    vim_free(arg_free);
 	}
+	if (type->tt_argcount < 0)
+	    // any number of arguments
+	    ga_concat(&ga, (char_u *)"...");
 
 	if (type->tt_member == &t_void)
 	    STRCPY((char *)ga.ga_data + ga.ga_len, ")");
@@ -946,18 +1077,18 @@ type_name(type_T *type, char **tofree)
 	    if (ga_grow(&ga, len) == FAIL)
 	    {
 		vim_free(ret_free);
+		ga_clear(&ga);
 		return "[unknown]";
 	    }
-	    *tofree = ga.ga_data;
 	    STRCPY((char *)ga.ga_data + ga.ga_len, "): ");
 	    STRCPY((char *)ga.ga_data + ga.ga_len + 3, ret_name);
 	    vim_free(ret_free);
 	}
+	*tofree = ga.ga_data;
 	return ga.ga_data;
     }
 
     return name;
 }
-
 
 #endif // FEAT_EVAL

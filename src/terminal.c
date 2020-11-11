@@ -440,7 +440,7 @@ term_start(
     buf_T	*old_curbuf = NULL;
     int		res;
     buf_T	*newbuf;
-    int		vertical = opt->jo_vertical || (cmdmod.split & WSP_VERT);
+    int		vertical = opt->jo_vertical || (cmdmod.cmod_split & WSP_VERT);
     jobopt_T	orig_opt;  // only partly filled
 
     if (check_restricted() || check_secure())
@@ -529,7 +529,7 @@ term_start(
 	}
 
 	if (vertical)
-	    cmdmod.split |= WSP_VERT;
+	    cmdmod.cmod_split |= WSP_VERT;
 	ex_splitview(&split_ea);
 	if (curwin == old_curwin)
 	{
@@ -935,9 +935,30 @@ theend:
  * Return FAIL if writing fails.
  */
     int
-term_write_session(FILE *fd, win_T *wp)
+term_write_session(FILE *fd, win_T *wp, hashtab_T *terminal_bufs)
 {
-    term_T *term = wp->w_buffer->b_term;
+    const int	bufnr = wp->w_buffer->b_fnum;
+    term_T	*term = wp->w_buffer->b_term;
+
+    if (terminal_bufs != NULL && wp->w_buffer->b_nwindows > 1)
+    {
+	// There are multiple views into this terminal buffer. We don't want to
+	// create the terminal multiple times. If it's the first time, create,
+	// otherwise link to the first buffer.
+	char	    id_as_str[NUMBUFLEN];
+	hashitem_T  *entry;
+
+	vim_snprintf(id_as_str, sizeof(id_as_str), "%d", bufnr);
+
+	entry = hash_find(terminal_bufs, (char_u *)id_as_str);
+	if (!HASHITEM_EMPTY(entry))
+	{
+	    // we've already opened this terminal buffer
+	    if (fprintf(fd, "execute 'buffer ' . s:term_buf_%d", bufnr) < 0)
+		return FAIL;
+	    return put_eol(fd);
+	}
+    }
 
     // Create the terminal and run the command.  This is not without
     // risk, but let's assume the user only creates a session when this
@@ -951,6 +972,19 @@ term_write_session(FILE *fd, win_T *wp)
 #endif
     if (term->tl_command != NULL && fputs((char *)term->tl_command, fd) < 0)
 	return FAIL;
+    if (put_eol(fd) != OK)
+	return FAIL;
+
+    if (fprintf(fd, "let s:term_buf_%d = bufnr()", bufnr) < 0)
+	return FAIL;
+
+    if (terminal_bufs != NULL && wp->w_buffer->b_nwindows > 1)
+    {
+	char *hash_key = alloc(NUMBUFLEN);
+
+	vim_snprintf(hash_key, NUMBUFLEN, "%d", bufnr);
+	hash_add(terminal_bufs, (char_u *)hash_key);
+    }
 
     return put_eol(fd);
 }
@@ -1558,12 +1592,13 @@ term_try_stop_job(buf_T *buf)
     char    *how = (char *)buf->b_term->tl_kill;
 
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
-    if ((how == NULL || *how == NUL) && (p_confirm || cmdmod.confirm))
+    if ((how == NULL || *how == NUL)
+			  && (p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM)))
     {
 	char_u	buff[DIALOG_MSG_SIZE];
 	int	ret;
 
-	dialog_msg(buff, _("Kill job in \"%s\"?"), buf->b_fname);
+	dialog_msg(buff, _("Kill job in \"%s\"?"), buf_get_fname(buf));
 	ret = vim_dialog_yesnocancel(VIM_QUESTION, NULL, buff, 1);
 	if (ret == VIM_YES)
 	    how = "kill";
@@ -1795,6 +1830,10 @@ update_snapshot(term_T *term)
 			width = cell.width;
 
 			cell2cellattr(&cell, &p[pos.col]);
+			if (width == 2)
+			    // second cell of double-width character has the
+			    // same attributes.
+			    p[pos.col + 1] = p[pos.col];
 
 			// Each character can be up to 6 bytes.
 			if (ga_grow(&ga, VTERM_MAX_CHARS_PER_CELL * 6) == OK)
@@ -2606,12 +2645,13 @@ if (raw_c > 0)
 	    }
 	    else if (termwinkey == 0 || c != termwinkey)
 	    {
-		char_u buf[MB_MAXBYTES + 2];
+		// space for CTRL-W, modifier, multi-byte char and NUL
+		char_u buf[1 + 3 + MB_MAXBYTES + 1];
 
 		// Put the command into the typeahead buffer, when using the
 		// stuff buffer KeyStuffed is set and 'langmap' won't be used.
 		buf[0] = Ctrl_W;
-		buf[(*mb_char2bytes)(c, buf + 1) + 1] = NUL;
+		buf[special_to_buf(c, mod_mask, FALSE, buf + 1) + 1] = NUL;
 		ins_typebuf(buf, REMAP_NONE, 0, TRUE, FALSE);
 		ret = OK;
 		goto theend;
@@ -3603,6 +3643,7 @@ term_line2screenline(
 	    }
 #endif
 	    else
+		// This will only store the lower byte of "c".
 		ScreenLines[off] = c;
 	}
 	ScreenAttrs[off] = cell2attr(term, wp, cell.attrs, cell.fg, cell.bg);
@@ -3611,13 +3652,20 @@ term_line2screenline(
 	++off;
 	if (cell.width == 2)
 	{
-	    if (enc_utf8)
-		ScreenLinesUC[off] = NUL;
-
 	    // don't set the second byte to NUL for a DBCS encoding, it
 	    // has been set above
-	    if (enc_utf8 || !has_mbyte)
+	    if (enc_utf8)
+	    {
+		ScreenLinesUC[off] = NUL;
 		ScreenLines[off] = NUL;
+	    }
+	    else if (!has_mbyte)
+	    {
+		// Can't show a double-width character with a single-byte
+		// 'encoding', just use a space.
+		ScreenLines[off] = ' ';
+		ScreenAttrs[off] = ScreenAttrs[off - 1];
+	    }
 
 	    ++pos->col;
 	    ++off;
@@ -4481,6 +4529,7 @@ term_get_status_text(term_T *term)
     {
 	char_u *txt;
 	size_t len;
+	char_u *fname;
 
 	if (term->tl_normal_mode)
 	{
@@ -4497,11 +4546,12 @@ term_get_status_text(term_T *term)
 	    txt = (char_u *)_("running");
 	else
 	    txt = (char_u *)_("finished");
-	len = 9 + STRLEN(term->tl_buffer->b_fname) + STRLEN(txt);
+	fname = buf_get_fname(term->tl_buffer);
+	len = 9 + STRLEN(fname) + STRLEN(txt);
 	term->tl_status_text = alloc(len);
 	if (term->tl_status_text != NULL)
 	    vim_snprintf((char *)term->tl_status_text, len, "%s [%s]",
-						term->tl_buffer->b_fname, txt);
+								   fname, txt);
     }
     return term->tl_status_text;
 }
@@ -4683,6 +4733,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 	    {
 		int c = cell.chars[i];
 		int pc = prev_cell.chars[i];
+		int should_break = c == NUL || pc == NUL;
 
 		// For the first character NUL is the same as space.
 		if (i == 0)
@@ -4692,7 +4743,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 		}
 		if (c != pc)
 		    same_chars = FALSE;
-		if (c == NUL || pc == NUL)
+		if (should_break)
 		    break;
 	    }
 	    same_attr = vtermAttr2hl(cell.attrs)

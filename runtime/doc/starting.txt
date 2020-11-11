@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.2.  Last change: 2020 Feb 04
+*starting.txt*  For Vim version 8.2.  Last change: 2020 Sep 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -513,6 +513,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		  'nocompatible': use Vim defaults
 		- no |gvimrc| script is loaded
 		- no viminfo file is read or written
+		Note that a following "-u" argument overrules the effect of
+		"-u DEFAULTS".
 
 							*-x*
 -x		Use encryption to read/write files.  Will prompt for a key,

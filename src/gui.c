@@ -864,10 +864,10 @@ gui_shell_closed(void)
     // Only exit when there are no changed files
     exiting = TRUE;
 # ifdef FEAT_BROWSE
-    cmdmod.browse = TRUE;
+    cmdmod.cmod_flags |= CMOD_BROWSE;
 # endif
 # if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
-    cmdmod.confirm = TRUE;
+    cmdmod.cmod_flags |= CMOD_CONFIRM;
 # endif
     // If there are changed buffers, present the user with a dialog if
     // possible, otherwise give an error message.

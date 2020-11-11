@@ -992,7 +992,7 @@ set_one_cmd_context(
     }
 
     // 3. Skip over the range to find the command.
-    cmd = skip_range(cmd, &xp->xp_context);
+    cmd = skip_range(cmd, TRUE, &xp->xp_context);
     xp->xp_pattern = cmd;
     if (*cmd == NUL)
 	return NULL;
@@ -1513,8 +1513,10 @@ set_one_cmd_context(
 	    break;
 #endif
 #ifdef FEAT_EVAL
+	case CMD_final:
 	case CMD_const:
 	case CMD_let:
+	case CMD_var:
 	case CMD_if:
 	case CMD_elseif:
 	case CMD_while:

@@ -10,6 +10,7 @@ SRC_ALL =	\
 		.travis.yml \
 		.cirrus.yml \
 		.github/workflows/ci-windows.yaml \
+		.github/workflows/codeql-analysis.yml \
 		.github/CODEOWNERS \
 		appveyor.yml \
 		ci/appveyor.bat \
@@ -623,7 +624,7 @@ SRC_AMI =	\
 		README_amisrc.txt.info \
 		src.info \
 		src/INSTALLami.txt \
-		src/Make_morph.mak \
+		src/Make_ami.mak \
 		src/os_amiga.c \
 		src/os_amiga.h \
 		src/proto/os_amiga.pro \

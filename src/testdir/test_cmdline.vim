@@ -185,6 +185,8 @@ func Test_map_completion()
   unmap <Left>
   set cpo-=k
 
+  call assert_fails('call feedkeys(":map \\\\%(\<Tab>\<Home>\"\<CR>", "xt")', 'E53:')
+
   unmap <Middle>x
   set cpo&vim
 endfunc
@@ -753,6 +755,10 @@ func Test_cmdline_complete_various()
   " completion for the :doautocmd command
   call feedkeys(":doautocmd User MyCmd a.c\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"doautocmd User MyCmd a.c\<C-A>", @:)
+
+  " completion of autocmd group after comma
+  call feedkeys(":doautocmd BufNew,BufEn\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"doautocmd BufNew,BufEnter", @:)
 
   " completion for the :augroup command
   augroup XTest

@@ -1,7 +1,7 @@
 " The default vimrc file.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2019 Oct 27
+" Last change:	2020 Sep 30
 "
 " This is loaded if no vimrc file was found.
 " Except when Vim is run with "-u NONE" or "-C".
@@ -85,17 +85,6 @@ if has('mouse')
   endif
 endif
 
-" Switch syntax highlighting on when the terminal has colors or when using the
-" GUI (which always has colors).
-if &t_Co > 2 || has("gui_running")
-  " Revert with ":syntax off".
-  syntax on
-
-  " I like highlighting strings inside C comments.
-  " Revert with ":unlet c_comment_strings".
-  let c_comment_strings=1
-endif
-
 " Only do this part when Vim was compiled with the +eval feature.
 if 1
 
@@ -122,6 +111,17 @@ if 1
 
   augroup END
 
+endif
+
+" Switch syntax highlighting on when the terminal has colors or when using the
+" GUI (which always has colors).
+if &t_Co > 2 || has("gui_running")
+  " Revert with ":syntax off".
+  syntax on
+
+  " I like highlighting strings inside C comments.
+  " Revert with ":unlet c_comment_strings".
+  let c_comment_strings=1
 endif
 
 " Convenient command to see the difference between the current buffer and the

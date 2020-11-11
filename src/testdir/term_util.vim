@@ -5,6 +5,8 @@ if exists('*CanRunVimInTerminal')
   finish
 endif
 
+source shared.vim
+
 " For most tests we need to be able to run terminal Vim with 256 colors.  On
 " MS-Windows the console only has 16 colors and the GUI can't run in a
 " terminal.
@@ -51,6 +53,7 @@ endfunc
 " "rows" - height of the terminal window (max. 20)
 " "cols" - width of the terminal window (max. 78)
 " "statusoff" - number of lines the status is offset from default
+" "wait_for_ruler" - if zero then don't wait for ruler to show
 func RunVimInTerminal(arguments, options)
   " If Vim doesn't exit a swap file remains, causing other tests to fail.
   " Remove it here.
@@ -131,7 +134,7 @@ func RunVimInTerminal(arguments, options)
 endfunc
 
 " Stop a Vim running in terminal buffer "buf".
-func StopVimInTerminal(buf)
+func StopVimInTerminal(buf, kill = 1)
   " Using a terminal to run Vim is always considered flaky.
   let g:test_is_flaky = 1
 
@@ -144,8 +147,13 @@ func StopVimInTerminal(buf)
   " Wait for all the pending updates to terminal to complete
   call TermWait(a:buf)
 
+  " Wait for the terminal to end.
   call WaitForAssert({-> assert_equal("finished", term_getstatus(a:buf))})
-  only!
+
+  " If the buffer still exists forcefully wipe it.
+  if a:kill && bufexists(a:buf)
+    exe a:buf .. 'bwipe!'
+  endif
 endfunc
 
 " Open a terminal with a shell, assign the job to g:job and return the buffer

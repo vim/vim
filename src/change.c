@@ -115,7 +115,7 @@ changed(void)
 	    // Wait two seconds, to make sure the user reads this unexpected
 	    // message.  Since we could be anywhere, call wait_return() now,
 	    // and don't let the emsg() set msg_scroll.
-	    if (need_wait_return && emsg_silent == 0)
+	    if (need_wait_return && emsg_silent == 0 && !in_assert_fails)
 	    {
 		out_flush();
 		ui_delay(2002L, TRUE);
@@ -453,7 +453,7 @@ changed_common(
 #endif
 
     // set the '. mark
-    if (!cmdmod.keepjumps)
+    if ((cmdmod.cmod_flags & CMOD_KEEPJUMPS) == 0)
     {
 	curbuf->b_last_change.lnum = lnum;
 	curbuf->b_last_change.col = col;
@@ -693,7 +693,7 @@ changed_bytes(linenr_T lnum, colnr_T col)
  * Like changed_bytes() but also adjust text properties for "added" bytes.
  * When "added" is negative text was deleted.
  */
-    static void
+    void
 inserted_bytes(linenr_T lnum, colnr_T col, int added UNUSED)
 {
 #ifdef FEAT_PROP_POPUP

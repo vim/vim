@@ -2704,21 +2704,16 @@ read_stdin(void)
     no_wait_return = TRUE;
     i = msg_didany;
     set_buflisted(TRUE);
-    (void)open_buffer(TRUE, NULL, 0);	// create memfile and read file
+
+    // Create memfile and read from stdin.
+    // This will also dup stdin from stderr to read commands from.
+    (void)open_buffer(TRUE, NULL, 0);
+
     no_wait_return = FALSE;
     msg_didany = i;
     TIME_MSG("reading stdin");
 
     check_swap_exists_action();
-#if !(defined(AMIGA) || defined(MACOS_X))
-    /*
-     * Close stdin and dup it from stderr.  Required for GPM to work
-     * properly, and for running external commands.
-     * Is there any other system that cannot do this?
-     */
-    close(0);
-    vim_ignored = dup(2);
-#endif
 }
 
 /*

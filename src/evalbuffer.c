@@ -717,17 +717,19 @@ get_buffer_lines(
     void
 f_getbufline(typval_T *argvars, typval_T *rettv)
 {
-    linenr_T	lnum;
-    linenr_T	end;
+    linenr_T	lnum = 1;
+    linenr_T	end = 1;
     buf_T	*buf;
 
     buf = tv_get_buf_from_arg(&argvars[0]);
-
-    lnum = tv_get_lnum_buf(&argvars[1], buf);
-    if (argvars[2].v_type == VAR_UNKNOWN)
-	end = lnum;
-    else
-	end = tv_get_lnum_buf(&argvars[2], buf);
+    if (buf != NULL)
+    {
+	lnum = tv_get_lnum_buf(&argvars[1], buf);
+	if (argvars[2].v_type == VAR_UNKNOWN)
+	    end = lnum;
+	else
+	    end = tv_get_lnum_buf(&argvars[2], buf);
+    }
 
     get_buffer_lines(buf, lnum, end, TRUE, rettv);
 }

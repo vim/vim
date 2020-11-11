@@ -1,16 +1,18 @@
 /* userfunc.c */
 void func_init(void);
 hashtab_T *func_tbl_get(void);
-int get_function_args(char_u **argp, char_u endchar, garray_T *newargs, garray_T *argtypes, int *varargs, garray_T *default_args, int skip, exarg_T *eap, char_u **line_to_free);
+int get_function_args(char_u **argp, char_u endchar, garray_T *newargs, garray_T *argtypes, int types_optional, int *varargs, garray_T *default_args, int skip, exarg_T *eap, char_u **line_to_free);
 char_u *get_lambda_name(void);
 char_u *register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state);
-int get_lambda_tv(char_u **arg, typval_T *rettv, evalarg_T *evalarg);
+int get_lambda_tv(char_u **arg, typval_T *rettv, int types_optional, evalarg_T *evalarg);
 char_u *deref_func_name(char_u *name, int *lenp, partial_T **partialp, int no_autoload);
 void emsg_funcname(char *ermsg, char_u *name);
 int get_func_tv(char_u *name, int len, typval_T *rettv, char_u **arg, evalarg_T *evalarg, funcexe_T *funcexe);
 char_u *fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error);
 ufunc_T *find_func_even_dead(char_u *name, int is_global, cctx_T *cctx);
 ufunc_T *find_func(char_u *name, int is_global, cctx_T *cctx);
+int func_is_global(ufunc_T *ufunc);
+int func_name_refcount(char_u *name);
 void copy_func(char_u *lambda, char_u *global);
 int call_user_func_check(ufunc_T *fp, int argcount, typval_T *argvars, typval_T *rettv, funcexe_T *funcexe, dict_T *selfdict);
 void save_funccal(funccal_entry_T *entry);
@@ -27,7 +29,7 @@ int call_func(char_u *funcname, int len, typval_T *rettv, int argcount_in, typva
 char_u *printable_func_name(ufunc_T *fp);
 char_u *trans_function_name(char_u **pp, int *is_global, int skip, int flags, funcdict_T *fdp, partial_T **partial);
 char_u *untrans_function_name(char_u *name);
-ufunc_T *def_function(exarg_T *eap, char_u *name_arg);
+ufunc_T *define_function(exarg_T *eap, char_u *name_arg);
 void ex_function(exarg_T *eap);
 void ex_defcompile(exarg_T *eap);
 int eval_fname_script(char_u *p);

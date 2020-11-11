@@ -339,6 +339,8 @@ func Test_resolve_unix()
   call assert_equal('Xlink2', resolve('Xlink1'))
   call assert_equal('./Xlink2', resolve('./Xlink1'))
   call delete('Xlink1')
+
+  call assert_equal('/', resolve('/'))
 endfunc
 
 func s:normalize_fname(fname)
@@ -500,6 +502,24 @@ func Test_pathshorten()
   call assert_equal('.~f/bar', pathshorten('.~foo/bar'))
   call assert_equal('~/f/bar', pathshorten('~/foo/bar'))
   call assert_fails('call pathshorten([])', 'E730:')
+
+  " test pathshorten with optional variable to set preferred size of shortening
+  call assert_equal('', pathshorten('', 2))
+  call assert_equal('foo', pathshorten('foo', 2))
+  call assert_equal('/foo', pathshorten('/foo', 2))
+  call assert_equal('fo/', pathshorten('foo/', 2))
+  call assert_equal('fo/bar', pathshorten('foo/bar', 2))
+  call assert_equal('fo/ba/foobar', pathshorten('foo/bar/foobar', 2))
+  call assert_equal('/fo/ba/foobar', pathshorten('/foo/bar/foobar', 2))
+  call assert_equal('.fo/bar', pathshorten('.foo/bar', 2))
+  call assert_equal('~fo/bar', pathshorten('~foo/bar', 2))
+  call assert_equal('~.fo/bar', pathshorten('~.foo/bar', 2))
+  call assert_equal('.~fo/bar', pathshorten('.~foo/bar', 2))
+  call assert_equal('~/fo/bar', pathshorten('~/foo/bar', 2))
+  call assert_fails('call pathshorten([],2)', 'E730:')
+  call assert_notequal('~/fo/bar', pathshorten('~/foo/bar', 3))
+  call assert_equal('~/foo/bar', pathshorten('~/foo/bar', 3))
+  call assert_equal('~/f/bar', pathshorten('~/foo/bar', 0))
 endfunc
 
 func Test_strpart()
@@ -973,6 +993,7 @@ func Test_match_func()
   call assert_equal(4,  match('testing', 'ing', -1))
   call assert_fails("let x=match('testing', 'ing', 0, [])", 'E745:')
   call assert_equal(-1, match(test_null_list(), 2))
+  call assert_equal(-1, match('abc', '\\%('))
 endfunc
 
 func Test_matchend()
@@ -1938,6 +1959,8 @@ func Test_readdirex()
         \ ['bar.txt_file', 'dir_dir', 'foo.txt_file', 'link_link'])
   endif
   eval 'Xdir'->delete('rf')
+
+  call assert_fails('call readdirex("doesnotexist")', 'E484:')
 endfunc
 
 func Test_readdirex_sort()
@@ -2520,7 +2543,19 @@ func Test_getcurpos_setpos()
   call assert_equal('6', @")
   call assert_equal(-1, setpos('.', test_null_list()))
   call assert_equal(-1, setpos('.', {}))
+
+  let winid = win_getid()
+  normal G$
+  let pos = getcurpos()
+  wincmd w
+  call assert_equal(pos, getcurpos(winid))
+
+  wincmd w
   close!
+
+  call assert_equal(getcurpos(), getcurpos(0))
+  call assert_equal([0, 0, 0, 0, 0], getcurpos(-1))
+  call assert_equal([0, 0, 0, 0, 0], getcurpos(1999))
 endfunc
 
 " Test for glob()
