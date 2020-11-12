@@ -1711,6 +1711,10 @@ getcmdline_int(
 	    c = safe_vgetc();
 	while (c == K_IGNORE || c == K_NOP);
 
+	if (c == K_COMMAND
+		   && do_cmdline(NULL, getcmdkeycmd, NULL, DOCMD_NOWAIT) == OK)
+	    goto cmdline_changed;
+
 	if (KeyTyped)
 	{
 	    some_key_typed = TRUE;

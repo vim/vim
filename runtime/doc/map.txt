@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.2.  Last change: 2020 Oct 07
+*map.txt*       For Vim version 8.2.  Last change: 2020 Nov 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -271,7 +271,7 @@ For this reason the following is blocked:
 - The |:normal| command.
 - Moving the cursor is allowed, but it is restored afterwards.
 If you want the mapping to do any of these let the returned characters do
-that.
+that, or use a |<Cmd>| mapping instead.
 
 You can use getchar(), it consumes typeahead if there is any. E.g., if you
 have these mappings: >
@@ -302,6 +302,40 @@ empty string, so that nothing is inserted.
 
 Note that using 0x80 as a single byte before other text does not work, it will
 be seen as a special key.
+
+						*<Cmd>* *:map-cmd*
+The special text <Cmd> begins a "command mapping", it executes the command
+directly without changing modes.  Where you might use ":...<CR>" in the
+{rhs} of a mapping, you can instead use "<Cmd>...<CR>".
+Example: >
+	noremap x <Cmd>echo mode(1)<CR>
+<
+This is more flexible than `:<C-U>` in Visual and Operator-pending mode, or
+`<C-O>:` in Insert mode, because the commands are executed directly in the
+current mode, instead of always going to Normal mode.  Visual mode is
+preserved, so tricks with |gv| are not needed.  Commands can be invoked
+directly in Command-line mode (which would otherwise require timer hacks).
+Example of using <Cmd> halfway Insert mode: >
+	nnoremap <F3> aText <Cmd>echo mode(1)<CR> Added<Esc>
+
+Unlike <expr> mappings, there are no special restrictions on the <Cmd>
+command: it is executed as if an (unrestricted) |autocmd| was invoked.
+
+Note:
+- Because <Cmd> avoids mode-changes it does not trigger |CmdlineEnter| and
+  |CmdlineLeave| events, because no user interaction is expected.
+- For the same reason, |keycodes| like <C-R><C-W> are interpreted as plain,
+  unmapped keys.
+- In Select mode, |:map| and |:vmap| command mappings are executed in
+  Visual mode.  Use |:smap| to handle Select mode differently.
+
+							*E1135* *E1136*
+<Cmd> commands must terminate, that is, they must be followed by <CR> in the
+{rhs} of the mapping definition.  |Command-line| mode is never entered.
+
+							*E1137*
+<Cmd> commands can have only normal characters and cannot contain special
+characters like function keys.
 
 
 1.3 MAPPING AND MODES					*:map-modes*

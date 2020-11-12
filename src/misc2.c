@@ -2530,6 +2530,7 @@ static struct key_name_entry
     {K_PLUG,		(char_u *)"Plug"},
     {K_CURSORHOLD,	(char_u *)"CursorHold"},
     {K_IGNORE,		(char_u *)"Ignore"},
+    {K_COMMAND,		(char_u *)"Cmd"},
     {0,			NULL}
     // NOTE: When adding a long name update MAX_KEY_NAME_LEN.
 };
