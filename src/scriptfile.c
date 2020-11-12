@@ -1332,7 +1332,10 @@ do_source(
 	// set again.
 	ht = &SCRIPT_VARS(sid);
 	if (is_vim9)
+	{
 	    hashtab_free_contents(ht);
+	    hash_init(ht);
+	}
 	else
 	{
 	    int		todo = (int)ht->ht_used;

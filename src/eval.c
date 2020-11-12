@@ -3438,7 +3438,15 @@ eval7_leader(
 		}
 #ifdef FEAT_FLOAT
 		if (rettv->v_type == VAR_FLOAT)
-		    f = !f;
+		{
+		    if (in_vim9script())
+		    {
+			rettv->v_type = VAR_BOOL;
+			val = f == 0.0 ? VVAL_TRUE : VVAL_FALSE;
+		    }
+		    else
+			f = !f;
+		}
 		else
 #endif
 		{
