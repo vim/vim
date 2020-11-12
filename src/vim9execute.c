@@ -3630,6 +3630,15 @@ tv2bool(typval_T *tv)
     return FALSE;
 }
 
+    void
+emsg_using_string_as(typval_T *tv, int as_number)
+{
+    semsg(_(as_number ? e_using_string_as_number_str
+						 : e_using_string_as_bool_str),
+		       tv->vval.v_string == NULL
+					   ? (char_u *)"" : tv->vval.v_string);
+}
+
 /*
  * If "tv" is a string give an error and return FAIL.
  */
@@ -3638,7 +3647,7 @@ check_not_string(typval_T *tv)
 {
     if (tv->v_type == VAR_STRING)
     {
-	emsg(_(e_using_string_as_number));
+	emsg_using_string_as(tv, TRUE);
 	clear_tv(tv);
 	return FAIL;
     }

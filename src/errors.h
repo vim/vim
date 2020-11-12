@@ -89,8 +89,8 @@ EXTERN char e_compiling_def_function_failed[]
 	INIT(= N_("E1028: Compiling :def function failed"));
 EXTERN char e_expected_str_but_got_str[]
 	INIT(= N_("E1029: Expected %s but got %s"));
-EXTERN char e_using_string_as_number[]
-	INIT(= N_("E1030: Using a String as a Number"));
+EXTERN char e_using_string_as_number_str[]
+	INIT(= N_("E1030: Using a String as a Number: \"%s\""));
 EXTERN char e_cannot_use_void_value[]
 	INIT(= N_("E1031: Cannot use void value"));
 EXTERN char e_missing_catch_or_finally[]
@@ -292,4 +292,6 @@ EXTERN char e_cannot_extend_null_dict[]
 	INIT(= N_("E1133: Cannot extend a null dict"));
 EXTERN char e_cannot_extend_null_list[]
 	INIT(= N_("E1134: Cannot extend a null list"));
+EXTERN char e_using_string_as_bool_str[]
+	INIT(= N_("E1135: Using a String as a Bool: \"%s\""));
 #endif

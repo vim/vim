@@ -74,7 +74,7 @@ def Test_condition_types()
       if 'text'
       endif
   END
-  CheckDefAndScriptFailure(lines, 'E1030:', 1)
+  CheckDefAndScriptFailure(lines, 'E1135:', 1)
 
   lines =<< trim END
       if [1]
@@ -88,7 +88,7 @@ def Test_condition_types()
       if g:cond
       endif
   END
-  CheckDefExecAndScriptFailure(lines, 'E1030:', 2)
+  CheckDefExecAndScriptFailure(lines, 'E1135:', 2)
 
   lines =<< trim END
       g:cond = 0
@@ -97,7 +97,7 @@ def Test_condition_types()
       endif
   END
   CheckDefFailure(lines, 'E1012:', 3)
-  CheckScriptFailure(['vim9script'] + lines, 'E1030:', 4)
+  CheckScriptFailure(['vim9script'] + lines, 'E1135:', 4)
 
   lines =<< trim END
       if g:cond
@@ -113,14 +113,14 @@ def Test_condition_types()
       elseif g:cond
       endif
   END
-  CheckDefExecAndScriptFailure(lines, 'E1030:', 3)
+  CheckDefExecAndScriptFailure(lines, 'E1135:', 3)
 
   lines =<< trim END
       while 'text'
       endwhile
   END
   CheckDefFailure(lines, 'E1012:', 1)
-  CheckScriptFailure(['vim9script'] + lines, 'E1030:', 2)
+  CheckScriptFailure(['vim9script'] + lines, 'E1135:', 2)
 
   lines =<< trim END
       while [1]
@@ -134,7 +134,7 @@ def Test_condition_types()
       while g:cond
       endwhile
   END
-  CheckDefExecAndScriptFailure(lines, 'E1030:', 2)
+  CheckDefExecAndScriptFailure(lines, 'E1135:', 2)
 enddef
 
 def Test_if_linebreak()

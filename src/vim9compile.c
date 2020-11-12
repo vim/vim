@@ -880,6 +880,28 @@ need_type(
 }
 
 /*
+ * Check that the top of the type stack has a type that can be used as a
+ * condition.  Give an error and return FAIL if not.
+ */
+    static int
+bool_on_stack(cctx_T *cctx)
+{
+    garray_T	*stack = &cctx->ctx_type_stack;
+    type_T	*type;
+
+    type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+    if (type == &t_bool)
+	return OK;
+
+    if (type == &t_any || type == &t_number)
+	// Number 0 and 1 are OK to use as a bool.  "any" could also be a bool.
+	// This requires a runtime type check.
+	return generate_COND2BOOL(cctx);
+
+    return need_type(type, &t_bool, -1, cctx, FALSE, FALSE);
+}
+
+/*
  * Generate an ISN_PUSHNR instruction.
  */
     static int
@@ -4306,8 +4328,6 @@ compile_and_or(
     {
 	garray_T	*instr = &cctx->ctx_instr;
 	garray_T	end_ga;
-	garray_T	*stack = &cctx->ctx_type_stack;
-	int		all_bool_values = TRUE;
 
 	/*
 	 * Repeat until there is no following "||" or "&&"
@@ -4331,8 +4351,12 @@ compile_and_or(
 	    // evaluating to bool
 	    generate_ppconst(cctx, ppconst);
 
-	    if (((type_T **)stack->ga_data)[stack->ga_len - 1] != &t_bool)
-		all_bool_values = FALSE;
+	    // Every part must evaluate to a bool.
+	    if (bool_on_stack(cctx) == FAIL)
+	    {
+		ga_clear(&end_ga);
+		return FAIL;
+	    }
 
 	    if (ga_grow(&end_ga, 1) == FAIL)
 	    {
@@ -4360,6 +4384,13 @@ compile_and_or(
 	}
 	generate_ppconst(cctx, ppconst);
 
+	// Every part must evaluate to a bool.
+	if (bool_on_stack(cctx) == FAIL)
+	{
+	    ga_clear(&end_ga);
+	    return FAIL;
+	}
+
 	// Fill in the end label in all jumps.
 	while (end_ga.ga_len > 0)
 	{
@@ -4371,10 +4402,6 @@ compile_and_or(
 	    isn->isn_arg.jump.jump_where = instr->ga_len;
 	}
 	ga_clear(&end_ga);
-
-	// The resulting type is converted to bool if needed.
-	if (!all_bool_values)
-	    generate_COND2BOOL(cctx);
     }
 
     return OK;
@@ -4385,11 +4412,11 @@ compile_and_or(
  *
  * Produces instructions:
  *	EVAL expr4a		Push result of "expr4a"
+ *	COND2BOOL		convert to bool if needed
  *	JUMP_IF_COND_FALSE end
  *	EVAL expr4b		Push result of "expr4b"
  *	JUMP_IF_COND_FALSE end
  *	EVAL expr4c		Push result of "expr4c"
- *	COND2BOOL
  * end:
  */
     static int
@@ -4410,11 +4437,11 @@ compile_expr3(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
  *
  * Produces instructions:
  *	EVAL expr3a		Push result of "expr3a"
+ *	COND2BOOL		convert to bool if needed
  *	JUMP_IF_COND_TRUE end
  *	EVAL expr3b		Push result of "expr3b"
  *	JUMP_IF_COND_TRUE end
  *	EVAL expr3c		Push result of "expr3c"
- *	COND2BOOL
  * end:
  */
     static int
@@ -5965,23 +5992,6 @@ drop_scope(cctx_T *cctx)
 	    break;
     }
     vim_free(scope);
-}
-
-/*
- * Check that the top of the type stack has a type that can be used as a
- * condition.  Give an error and return FAIL if not.
- */
-    static int
-bool_on_stack(cctx_T *cctx)
-{
-    garray_T	*stack = &cctx->ctx_type_stack;
-    type_T	*type;
-
-    type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-    if (type != &t_bool && type != &t_number && type != &t_any
-	    && need_type(type, &t_bool, -1, cctx, FALSE, FALSE) == FAIL)
-	return FAIL;
-    return OK;
 }
 
 /*

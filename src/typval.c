@@ -196,7 +196,7 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 	case VAR_STRING:
 	    if (in_vim9script())
 	    {
-		emsg(_(e_using_string_as_number));
+		emsg_using_string_as(varp, !want_bool);
 		break;
 	    }
 	    if (varp->vval.v_string != NULL)

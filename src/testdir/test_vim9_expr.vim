@@ -131,7 +131,7 @@ def Test_expr1_trinary_vimscript()
       vim9script
       var name = 'x' ? 1 : 2
   END
-  CheckScriptFailure(lines, 'E1030:', 2)
+  CheckScriptFailure(lines, 'E1135:', 2)
 
   lines =<< trim END
       vim9script
@@ -180,7 +180,7 @@ func Test_expr1_trinary_fails()
   call CheckDefFailure(["var x = 1 ? 'one' :'two'"], msg, 1)
   call CheckDefFailure(["var x = 1 ? 'one':'two'"], msg, 1)
 
-  call CheckDefFailure(["var x = 'x' ? 'one' : 'two'"], 'E1030:', 1)
+  call CheckDefFailure(["var x = 'x' ? 'one' : 'two'"], 'E1135:', 1)
   call CheckDefFailure(["var x = 0z1234 ? 'one' : 'two'"], 'E974:', 1)
   call CheckDefExecFailure(["var x = [] ? 'one' : 'two'"], 'E745:', 1)
   call CheckDefExecFailure(["var x = {} ? 'one' : 'two'"], 'E728:', 1)
@@ -356,11 +356,12 @@ def Test_expr2_fails()
   call CheckDefFailure(["var x = 1|| 2"], msg, 1)
 
   call CheckDefFailure(["var x = 1 || xxx"], 'E1001:', 1)
+  call CheckDefFailure(["var x = [] || false"], 'E1012:', 1)
+  call CheckDefFailure(["if 'yes' || 0", 'echo 0', 'endif'], 'E1012: Type mismatch; expected bool but got string', 1)
 
   # TODO: should fail at compile time
   call CheckDefExecFailure(["var x = 3 || 7"], 'E1023:', 1)
   call CheckScriptFailure(["vim9script", "var x = 3 || 7"], 'E1023:', 2)
-  call CheckDefExecFailure(["var x = [] || false"], 'E745:', 1)
   call CheckScriptFailure(["vim9script", "var x = [] || false"], 'E745:', 2)
 enddef
 
@@ -492,6 +493,8 @@ func Test_expr3_fails()
   call CheckDefFailure(["var x = 1&&2"], msg, 1)
   call CheckDefFailure(["var x = 1 &&2"], msg, 1)
   call CheckDefFailure(["var x = 1&& 2"], msg, 1)
+
+  call CheckDefFailure(["if 'yes' && 0", 'echo 0', 'endif'], 'E1012: Type mismatch; expected bool but got string', 1)
 endfunc
 
 " global variables to use for tests with the "any" type
