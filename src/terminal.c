@@ -3450,15 +3450,19 @@ term_after_channel_closed(term_T *term)
 	if (term->tl_finish == TL_FINISH_OPEN
 				   && term->tl_buffer->b_nwindows == 0)
 	{
-	    char buf[50];
+	    char    *cmd = term->tl_opencmd == NULL
+				? "botright sbuf %d"
+				: (char *)term->tl_opencmd;
+	    size_t  len = strlen(cmd) + 50;
+	    char    *buf = alloc(len);
 
-	    // TODO: use term_opencmd
-	    ch_log(NULL, "terminal job finished, opening window");
-	    vim_snprintf(buf, sizeof(buf),
-		    term->tl_opencmd == NULL
-			    ? "botright sbuf %d"
-			    : (char *)term->tl_opencmd, fnum);
-	    do_cmdline_cmd((char_u *)buf);
+	    if (buf != NULL)
+	    {
+		ch_log(NULL, "terminal job finished, opening window");
+		vim_snprintf(buf, len, cmd, fnum);
+		do_cmdline_cmd((char_u *)buf);
+		vim_free(buf);
+	    }
 	}
 	else
 	    ch_log(NULL, "terminal job finished");

@@ -567,10 +567,12 @@ func Test_terminal_finish_open_close()
   call assert_fails("call term_start(cmd, {'term_opencmd': 'split %d and %s'})", 'E475:')
   call assert_fails("call term_start(cmd, {'term_opencmd': 'split % and %d'})", 'E475:')
 
-  call term_start(cmd, {'term_finish': 'open', 'term_opencmd': '4split | buffer %d'})
+  call term_start(cmd, {'term_finish': 'open', 'term_opencmd': '4split | buffer %d | let g:result = "opened the buffer in a window"'})
   close!
   call WaitForAssert({-> assert_equal(2, winnr('$'))}, waittime)
   call assert_equal(4, winheight(0))
+  call assert_equal('opened the buffer in a window', g:result)
+  unlet g:result
   bwipe
 endfunc
 
