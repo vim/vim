@@ -3645,7 +3645,11 @@ getcmdkeycmd(
     got_int = FALSE;
     while (c1 != NUL && !aborted)
     {
-	ga_grow(&line_ga, 32);
+	if (ga_grow(&line_ga, 32) != OK)
+	{
+	    aborted = TRUE;
+	    break;
+	}
 
 	if (vgetorpeek(FALSE) == NUL)
 	{
