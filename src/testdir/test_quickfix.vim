@@ -3091,6 +3091,66 @@ func Test_resize_from_copen()
   endtry
 endfunc
 
+func Test_vimgrep_with_textlock()
+  new
+
+  " Simple way to execute something with "textwinlock" set.
+  " Check that vimgrep without jumping can be executed.
+  au InsertCharPre * vimgrep /RunTheTest/j runtest.vim
+  normal ax
+  let qflist = getqflist()
+  call assert_true(len(qflist) > 0)
+  call assert_match('RunTheTest', qflist[0].text)
+  call setqflist([], 'r')
+  au! InsertCharPre
+
+  " Check that vimgrepadd without jumping can be executed.
+  au InsertCharPre * vimgrepadd /RunTheTest/j runtest.vim
+  normal ax
+  let qflist = getqflist()
+  call assert_true(len(qflist) > 0)
+  call assert_match('RunTheTest', qflist[0].text)
+  call setqflist([], 'r')
+  au! InsertCharPre
+
+  " Check that lvimgrep without jumping can be executed.
+  au InsertCharPre * lvimgrep /RunTheTest/j runtest.vim
+  normal ax
+  let qflist = getloclist(0)
+  call assert_true(len(qflist) > 0)
+  call assert_match('RunTheTest', qflist[0].text)
+  call setloclist(0, [], 'r')
+  au! InsertCharPre
+
+  " Check that lvimgrepadd without jumping can be executed.
+  au InsertCharPre * lvimgrepadd /RunTheTest/j runtest.vim
+  normal ax
+  let qflist = getloclist(0)
+  call assert_true(len(qflist) > 0)
+  call assert_match('RunTheTest', qflist[0].text)
+  call setloclist(0, [], 'r')
+  au! InsertCharPre
+
+  " trying to jump will give an error
+  au InsertCharPre * vimgrep /RunTheTest/ runtest.vim
+  call assert_fails('normal ax', 'E565:')
+  au! InsertCharPre
+
+  au InsertCharPre * vimgrepadd /RunTheTest/ runtest.vim
+  call assert_fails('normal ax', 'E565:')
+  au! InsertCharPre
+
+  au InsertCharPre * lvimgrep /RunTheTest/ runtest.vim
+  call assert_fails('normal ax', 'E565:')
+  au! InsertCharPre
+
+  au InsertCharPre * lvimgrepadd /RunTheTest/ runtest.vim
+  call assert_fails('normal ax', 'E565:')
+  au! InsertCharPre
+
+  bwipe!
+endfunc
+
 " Tests for the quickfix buffer b:changedtick variable
 func Xchangedtick_tests(cchar)
   call s:setup_commands(a:cchar)
