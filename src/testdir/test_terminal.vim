@@ -1237,6 +1237,24 @@ func Test_terminal_popup_with_cmd()
   unlet s:winid
 endfunc
 
+func Test_terminal_popup_insert_cmd()
+  CheckUnix
+
+  inoremap <F3> <Cmd>call StartTermInPopup()<CR>
+  func StartTermInPopup()
+    call term_start(['/bin/sh', '-c', 'cat'], #{hidden: v:true})->popup_create(#{highlight: 'Pmenu'})
+  endfunc
+  call feedkeys("i\<F3>")
+  sleep 10m
+  call assert_equal('n', mode())
+
+  call feedkeys("\<C-D>", 'xt')
+  sleep 20m
+  call feedkeys(":q\<CR>", 'xt')
+  delfunc StartTermInPopup
+  iunmap <F3>
+endfunc
+
 func Check_dump01(off)
   call assert_equal('one two three four five', trim(getline(a:off + 1)))
   call assert_equal('~           Select Word', trim(getline(a:off + 7)))

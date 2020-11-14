@@ -1033,6 +1033,11 @@ doESCkey:
 
 	case K_COMMAND:		// <Cmd>command<CR>
 	    do_cmdline(NULL, getcmdkeycmd, NULL, 0);
+#ifdef FEAT_TERMINAL
+	    if (term_use_loop())
+		// Started a terminal that gets the input, exit Insert mode.
+		goto doESCkey;
+#endif
 	    break;
 
 	case K_CURSORHOLD:	// Didn't type something for a while.
