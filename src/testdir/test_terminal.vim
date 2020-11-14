@@ -1225,6 +1225,18 @@ func Test_open_term_from_cmd()
   call delete('Xopenterm')
 endfunc
 
+func Test_terminal_popup_with_cmd()
+  " this was crashing
+  let buf = term_start(&shell, #{hidden: v:true})
+  let s:winid = popup_create(buf, {})
+  tnoremap <F3> <Cmd>call popup_close(s:winid)<CR>
+  call feedkeys("\<F3>", 'xt')
+
+  tunmap  <F3>
+  exe 'bwipe! ' .. buf
+  unlet s:winid
+endfunc
+
 func Check_dump01(off)
   call assert_equal('one two three four five', trim(getline(a:off + 1)))
   call assert_equal('~           Select Word', trim(getline(a:off + 7)))

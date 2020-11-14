@@ -2527,7 +2527,7 @@ terminal_loop(int blocking)
     while (blocking || vpeekc_nomap() != NUL)
     {
 #ifdef FEAT_GUI
-	if (!curbuf->b_term->tl_system)
+	if (curbuf->b_term != NULL && !curbuf->b_term->tl_system)
 #endif
 	    // TODO: skip screen update when handling a sequence of keys.
 	    // Repeat redrawing in case a message is received while redrawing.
@@ -2542,8 +2542,6 @@ terminal_loop(int blocking)
 	restore_cursor = TRUE;
 
 	raw_c = term_vgetc();
-if (raw_c > 0)
-    ch_log(NULL, "terminal_loop() got %d", raw_c);
 	if (!term_use_loop_check(TRUE) || in_terminal_loop != curbuf->b_term)
 	{
 	    // Job finished while waiting for a character.  Push back the
