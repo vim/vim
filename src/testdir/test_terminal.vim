@@ -1200,7 +1200,30 @@ func Test_terminal_open_autocmd()
 
   unlet s:called
   au! repro
-endfunction
+endfunc
+
+func Test_open_term_from_cmd()
+  CheckUnix
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+      call setline(1, ['a', 'b', 'c'])
+      3
+      set incsearch
+      cnoremap <F3> <Cmd>call term_start(['/bin/sh', '-c', ':'])<CR>
+  END
+  call writefile(lines, 'Xopenterm')
+  let buf = RunVimInTerminal('-S Xopenterm', {})
+
+  " this opens a window, incsearch should not use the old cursor position
+  call term_sendkeys(buf, "/\<F3>")
+  call VerifyScreenDump(buf, 'Test_terminal_from_cmd', {})
+  call term_sendkeys(buf, "\<Esc>")
+  call term_sendkeys(buf, ":q\<CR>")
+
+  call StopVimInTerminal(buf)
+  call delete('Xopenterm')
+endfunc
 
 func Check_dump01(off)
   call assert_equal('one two three four five', trim(getline(a:off + 1)))
