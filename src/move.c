@@ -868,7 +868,9 @@ validate_cursor_col(void)
 	curwin->w_wcol = col;
 
 	curwin->w_valid |= VALID_WCOL;
+#ifdef FEAT_PROP_POPUP
 	curwin->w_flags &= ~WFLAG_WCOL_OFF_ADDED;
+#endif
     }
 }
 
