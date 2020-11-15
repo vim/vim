@@ -2208,7 +2208,10 @@ position_cursor(win_T *wp, VTermPos *pos, int add_off UNUSED)
     {
 	wp->w_wrow += popup_top_extra(curwin);
 	wp->w_wcol += popup_left_extra(curwin);
+	wp->w_flags |= WFLAG_WCOL_OFF_ADDED | WFLAG_WROW_OFF_ADDED;
     }
+    else
+	wp->w_flags &= ~(WFLAG_WCOL_OFF_ADDED | WFLAG_WROW_OFF_ADDED);
 #endif
     wp->w_valid |= (VALID_WCOL|VALID_WROW);
 }

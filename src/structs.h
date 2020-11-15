@@ -3348,6 +3348,10 @@ struct window_S
 				    // top of the window
     char	w_topline_was_set;  // flag set to TRUE when topline is set,
 				    // e.g. by winrestview()
+
+    linenr_T	w_botline;	    // number of the line below the bottom of
+				    // the window
+
 #ifdef FEAT_DIFF
     int		w_topfill;	    // number of filler lines above w_topline
     int		w_old_topfill;	    // w_topfill at last redraw
@@ -3361,6 +3365,12 @@ struct window_S
     colnr_T	w_skipcol;	    // starting column when a single line
 				    // doesn't fit in the window
 
+    int		w_empty_rows;	    // number of ~ rows in window
+#ifdef FEAT_DIFF
+    int		w_filler_rows;	    // number of filler rows at the end of the
+				    // window
+#endif
+
     /*
      * Layout of the window in the screen.
      * May need to add "msg_scrolled" to "w_winrow" in rare situations.
@@ -3368,11 +3378,14 @@ struct window_S
     int		w_winrow;	    // first row of window in screen
     int		w_height;	    // number of rows in window, excluding
 				    // status/command/winbar line(s)
+
     int		w_status_height;    // number of status lines (0 or 1)
     int		w_wincol;	    // Leftmost column of window in screen.
     int		w_width;	    // Width of window, excluding separation.
     int		w_vsep_width;	    // Number of separator columns (0 or 1).
+
     pos_save_T	w_save_cursor;	    // backup of cursor pos and topline
+
 #ifdef FEAT_PROP_POPUP
     int		w_popup_flags;	    // POPF_ values
     int		w_popup_handled;    // POPUP_HANDLE[0-9] flags
@@ -3433,8 +3446,14 @@ struct window_S
 # if defined(FEAT_TIMERS)
     timer_T	*w_popup_timer;	    // timer for closing popup window
 # endif
-#endif
 
+    int		w_flags;	    // WFLAG_ flags
+
+# define WFLAG_WCOL_OFF_ADDED	1   // popup border and padding were added to
+				    // w_wcol
+# define WFLAG_WROW_OFF_ADDED	2   // popup border and padding were added to
+				    // w_wrow
+#endif
 
     /*
      * === start of cached values ====
@@ -3474,14 +3493,6 @@ struct window_S
      * buffer, thus w_wrow is relative to w_winrow.
      */
     int		w_wrow, w_wcol;	    // cursor position in window
-
-    linenr_T	w_botline;	    // number of the line below the bottom of
-				    // the window
-    int		w_empty_rows;	    // number of ~ rows in window
-#ifdef FEAT_DIFF
-    int		w_filler_rows;	    // number of filler rows at the end of the
-				    // window
-#endif
 
     /*
      * Info about the lines currently in the window is remembered to avoid

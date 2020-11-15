@@ -3743,13 +3743,17 @@ update_popups(void (*win_update)(win_T *wp))
 
 	wp->w_winrow -= top_off;
 	wp->w_wincol -= left_extra;
-	// cursor position matters in terminal in job mode
-#ifdef FEAT_TERMINAL
-	if (wp != curwin || !term_in_normal_mode())
-#endif
+
+	// Add offset for border and padding if not done already.
+	if ((wp->w_flags & WFLAG_WCOL_OFF_ADDED) == 0)
+	{
+	    wp->w_wcol += left_extra;
+	    wp->w_flags |= WFLAG_WCOL_OFF_ADDED;
+	}
+	if ((wp->w_flags & WFLAG_WROW_OFF_ADDED) == 0)
 	{
 	    wp->w_wrow += top_off;
-	    wp->w_wcol += left_extra;
+	    wp->w_flags |= WFLAG_WROW_OFF_ADDED;
 	}
 
 	total_width = popup_width(wp);
