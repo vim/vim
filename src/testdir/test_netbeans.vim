@@ -927,7 +927,7 @@ endfunc
 " error.
 func Test_nb_bwipe_buffer()
   call s:run_server('Nb_bwipe_buffer')
-  %bwipe!
+  silent! %bwipe!
   sleep 100m
   nbclose
 endfunc
