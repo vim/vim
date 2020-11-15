@@ -795,6 +795,10 @@ pum_set_selected(int n, int repeat UNUSED)
 		use_popup = USEPOPUP_NORMAL;
 	    else
 		use_popup = USEPOPUP_NONE;
+	    if (use_popup != USEPOPUP_NONE)
+		// don't use WinEnter or WinLeave autocommands for the info
+		// popup
+		block_autocmds();
 # endif
 	    // Open a preview window and set "curwin" to it.
 	    // 3 lines by default, prefer 'previewheight' if set and smaller.
@@ -972,6 +976,10 @@ pum_set_selected(int n, int repeat UNUSED)
 	    if (WIN_IS_POPUP(curwin))
 		// can't keep focus in a popup window
 		win_enter(firstwin, TRUE);
+# endif
+# ifdef FEAT_PROP_POPUP
+	    if (use_popup != USEPOPUP_NONE)
+		unblock_autocmds();
 # endif
 	}
 #endif
