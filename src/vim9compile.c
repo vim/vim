@@ -5384,14 +5384,14 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	member_type = type;
 	if (var_end > var_start + varlen)
 	{
-	    // Something follows after the variable: "var[idx]".
+	    // Something follows after the variable: "var[idx]" or "var.key".
 	    if (is_decl)
 	    {
 		emsg(_(e_cannot_use_index_when_declaring_variable));
 		goto theend;
 	    }
 
-	    if (var_start[varlen] == '[')
+	    if (var_start[varlen] == '[' || var_start[varlen] == '.')
 	    {
 		has_index = TRUE;
 		if (type->tt_member == NULL)
@@ -5635,21 +5635,33 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	{
 	    int r;
 
-	    // Compile the "idx" in "var[idx]".
+	    // Compile the "idx" in "var[idx]" or "key" in "var.key".
 	    if (new_local)
 		--cctx->ctx_locals.ga_len;
-	    p = skipwhite(var_start + varlen + 1);
-	    r = compile_expr0(&p, cctx);
+	    p = var_start + varlen;
+	    if (*p == '[')
+	    {
+		p = skipwhite(p + 1);
+		r = compile_expr0(&p, cctx);
+		if (r == OK && *skipwhite(p) != ']')
+		{
+		    // this should not happen
+		    emsg(_(e_missbrac));
+		    r = FAIL;
+		}
+	    }
+	    else // if (*p == '.')
+	    {
+		char_u *key_end = to_name_end(p + 1, TRUE);
+		char_u *key = vim_strnsave(p + 1, key_end - p - 1);
+
+		r = generate_PUSHS(cctx, key);
+	    }
 	    if (new_local)
 		++cctx->ctx_locals.ga_len;
 	    if (r == FAIL)
 		goto theend;
-	    if (*skipwhite(p) != ']')
-	    {
-		// this should not happen
-		emsg(_(e_missbrac));
-		goto theend;
-	    }
+
 	    if (type == &t_any)
 	    {
 		type_T	    *idx_type = ((type_T **)stack->ga_data)[

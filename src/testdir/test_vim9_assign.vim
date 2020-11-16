@@ -408,6 +408,15 @@ def Test_assignment_dict()
 
   # overwrite
   dict3['key'] = 'another'
+  assert_equal(dict3, #{key: 'another'})
+  dict3.key = 'yet another'
+  assert_equal(dict3, #{key: 'yet another'})
+
+  var lines =<< trim END
+    var dd = #{one: 1}
+    dd.one) = 2
+  END
+  CheckDefFailure(lines, 'E15:', 2)
 
   # empty key can be used
   var dd = {}
@@ -418,7 +427,7 @@ def Test_assignment_dict()
   var somedict = rand() > 0 ? #{a: 1, b: 2} : #{a: 'a', b: 'b'}
 
   # assignment to script-local dict
-  var lines =<< trim END
+  lines =<< trim END
     vim9script
     var test: dict<any> = {}
     def FillDict(): dict<any>
