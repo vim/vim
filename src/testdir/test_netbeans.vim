@@ -36,7 +36,7 @@ func ReadXnetbeans()
   let l = readfile("Xnetbeans")
   " Xnetbeans may include '0:geometry=' messages in the GUI Vim if the window
   " position, size, or z order are changed.  Remove these messages because
-  " these message will break the assert for the output.
+  " these messages will break the assert for the output.
   return filter(l, 'v:val !~ "^0:geometry="')
 endfunc
 
@@ -927,7 +927,7 @@ endfunc
 " error.
 func Test_nb_bwipe_buffer()
   call s:run_server('Nb_bwipe_buffer')
-  %bwipe!
+  silent! %bwipe!
   sleep 100m
   nbclose
 endfunc
