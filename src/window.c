@@ -1462,6 +1462,7 @@ win_valid(win_T *win)
 
 /*
  * Find window "id" in the current tab page.
+ * Also find popup windows.
  * Return NULL if not found.
  */
     win_T *
@@ -1472,6 +1473,14 @@ win_find_by_id(int id)
     FOR_ALL_WINDOWS(wp)
 	if (wp->w_id == id)
 	    return wp;
+#ifdef FEAT_PROP_POPUP
+    FOR_ALL_POPUPWINS(wp)
+	if (wp->w_id == id)
+	    return wp;
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
+	if (wp->w_id == id)
+	    return wp;
+#endif
     return NULL;
 }
 

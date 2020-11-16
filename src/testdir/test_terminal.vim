@@ -1237,6 +1237,23 @@ func Test_terminal_popup_with_cmd()
   unlet s:winid
 endfunc
 
+func Test_terminal_popup_bufload()
+  let termbuf = term_start(&shell, #{hidden: v:true, term_finish: 'close'})
+  let winid = popup_create(termbuf, {})
+  sleep 50m
+
+  let newbuf = bufadd('')
+  call bufload(newbuf)
+  call setbufline(newbuf, 1, 'foobar')
+
+  " must not have switched to another window
+  call assert_equal(winid, win_getid())
+
+  call feedkeys("exit\<CR>", 'xt')
+  sleep 50m
+  exe 'bwipe! ' .. newbuf
+endfunc
+
 func Test_terminal_popup_insert_cmd()
   CheckUnix
 
