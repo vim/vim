@@ -1249,8 +1249,8 @@ func Test_terminal_popup_bufload()
   " must not have switched to another window
   call assert_equal(winid, win_getid())
 
-  call feedkeys("exit\<CR>", 'xt')
-  sleep 50m
+  call StopShellInTerminal(termbuf)
+  call WaitFor({-> win_getid() != winid})
   exe 'bwipe! ' .. newbuf
 endfunc
 
