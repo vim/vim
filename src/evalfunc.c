@@ -295,7 +295,7 @@ arg_float_or_nr(type_T *type, argcontext_T *context)
     static int
 arg_number(type_T *type, argcontext_T *context)
 {
-    return check_type(&t_number, type, TRUE, context->arg_idx + 1);
+    return check_arg_type(&t_number, type, context->arg_idx + 1);
 }
 
 /*
@@ -304,7 +304,7 @@ arg_number(type_T *type, argcontext_T *context)
     static int
 arg_string(type_T *type, argcontext_T *context)
 {
-    return check_type(&t_string, type, TRUE, context->arg_idx + 1);
+    return check_arg_type(&t_string, type, context->arg_idx + 1);
 }
 
 /*
@@ -342,7 +342,7 @@ arg_same_as_prev(type_T *type, argcontext_T *context)
 {
     type_T *prev_type = context->arg_types[context->arg_idx - 1];
 
-    return check_type(prev_type, type, TRUE, context->arg_idx + 1);
+    return check_arg_type(prev_type, type, context->arg_idx + 1);
 }
 
 /*
@@ -363,7 +363,7 @@ arg_item_of_prev(type_T *type, argcontext_T *context)
 	// probably VAR_ANY, can't check
 	return OK;
 
-    return check_type(expected, type, TRUE, context->arg_idx + 1);
+    return check_arg_type(expected, type, context->arg_idx + 1);
 }
 
 /*

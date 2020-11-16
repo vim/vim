@@ -195,10 +195,16 @@ def Test_extend_arg_types()
   assert_equal([1, 2, 3], extend([1, 2], [3]))
   assert_equal([3, 1, 2], extend([1, 2], [3], 0))
   assert_equal([1, 3, 2], extend([1, 2], [3], 1))
+  assert_equal([1, 3, 2], extend([1, 2], [3], s:number_one))
 
   assert_equal(#{a: 1, b: 2, c: 3}, extend(#{a: 1, b: 2}, #{c: 3}))
   assert_equal(#{a: 1, b: 4}, extend(#{a: 1, b: 2}, #{b: 4}))
   assert_equal(#{a: 1, b: 2}, extend(#{a: 1, b: 2}, #{b: 4}, 'keep'))
+  assert_equal(#{a: 1, b: 2}, extend(#{a: 1, b: 2}, #{b: 4}, s:string_keep))
+
+  var res: list<dict<any>>
+  extend(res, map([1, 2], {_, v -> {}}))
+  assert_equal([{}, {}], res)
 
   CheckDefFailure(['extend([1, 2], 3)'], 'E1013: Argument 2: type mismatch, expected list<number> but got number')
   CheckDefFailure(['extend([1, 2], ["x"])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>')
@@ -338,6 +344,10 @@ def Test_index()
   index(['a', 'b', 'a', 'B'], 'b', 2, true)->assert_equal(3)
 enddef
 
+let s:number_one = 1
+let s:number_two = 2
+let s:string_keep = 'keep'
+
 def Test_insert()
   var l = insert([2, 1], 3)
   var res = 0
@@ -347,9 +357,12 @@ def Test_insert()
   res->assert_equal(6)
 
   assert_equal([1, 2, 3], insert([2, 3], 1))
+  assert_equal([1, 2, 3], insert([2, 3], s:number_one))
   assert_equal([1, 2, 3], insert([1, 2], 3, 2))
+  assert_equal([1, 2, 3], insert([1, 2], 3, s:number_two))
   assert_equal(['a', 'b', 'c'], insert(['b', 'c'], 'a'))
   assert_equal(0z1234, insert(0z34, 0x12))
+
   CheckDefFailure(['insert([2, 3], "a")'], 'E1013: Argument 2: type mismatch, expected number but got string', 1)
   CheckDefFailure(['insert([2, 3], 1, "x")'], 'E1013: Argument 3: type mismatch, expected number but got string', 1)
 enddef

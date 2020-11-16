@@ -820,7 +820,7 @@ generate_TYPECHECK(
  * Return TRUE if "actual" could be "expected" and a runtime typecheck is to be
  * used.  Return FALSE if the types will never match.
  */
-    static int
+    int
 use_typecheck(type_T *actual, type_T *expected)
 {
     if (actual->tt_type == VAR_ANY
