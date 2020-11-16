@@ -408,6 +408,9 @@ def Test_assignment_dict()
 
   # overwrite
   dict3['key'] = 'another'
+  assert_equal(dict3, #{key: 'another'})
+  dict3.key = 'yet another'
+  assert_equal(dict3, #{key: 'yet another'})
 
   # empty key can be used
   var dd = {}
