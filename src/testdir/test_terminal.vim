@@ -1259,15 +1259,14 @@ func Test_terminal_popup_insert_cmd()
 
   inoremap <F3> <Cmd>call StartTermInPopup()<CR>
   func StartTermInPopup()
-    call term_start(['/bin/sh', '-c', 'cat'], #{hidden: v:true})->popup_create(#{highlight: 'Pmenu'})
+    call term_start(['/bin/sh', '-c', 'cat'], #{hidden: v:true, term_finish: 'close'})->popup_create(#{highlight: 'Pmenu'})
   endfunc
   call feedkeys("i\<F3>")
   sleep 10m
   call assert_equal('n', mode())
 
   call feedkeys("\<C-D>", 'xt')
-  sleep 20m
-  call feedkeys(":q\<CR>", 'xt')
+  sleep 50m
   delfunc StartTermInPopup
   iunmap <F3>
 endfunc
