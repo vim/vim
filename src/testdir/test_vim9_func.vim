@@ -49,6 +49,36 @@ def TestCompilingError()
   call delete('XTest_compile_error')
 enddef
 
+def CallRecursive(n: number): number
+  return CallRecursive(n + 1)
+enddef
+
+def CallMapRecursive(l: list<number>): number
+  return map(l, {_, v -> CallMapRecursive([v])})[0]
+enddef
+
+def Test_funcdepth_error()
+  set maxfuncdepth=10
+
+  var caught = false
+  try
+    CallRecursive(1)
+  catch /E132:/
+    caught = true
+  endtry
+  assert_true(caught)
+
+  caught = false
+  try
+    CallMapRecursive([1])
+  catch /E132:/
+    caught = true
+  endtry
+  assert_true(caught)
+
+  set maxfuncdepth&
+enddef
+
 def ReturnString(): string
   return 'string'
 enddef

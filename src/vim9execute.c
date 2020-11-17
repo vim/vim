@@ -227,6 +227,10 @@ call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
 								       == FAIL)
 	return FAIL;
 
+    // If depth of calling is getting too high, don't execute the function.
+    if (funcdepth_increment() == FAIL)
+	return FAIL;
+
     // Move the vararg-list to below the missing optional arguments.
     if (vararg_count > 0 && arg_to_add > 0)
 	*STACK_TV_BOT(arg_to_add - 1) = *STACK_TV_BOT(-1);
@@ -503,6 +507,7 @@ func_return(ectx_T *ectx)
     ectx->ec_stack.ga_len = top + 1;
     *STACK_TV_BOT(-1) = *STACK_TV(idx);
 
+    funcdepth_decrement();
     return OK;
 }
 
@@ -835,6 +840,7 @@ call_def_function(
     cmdmod_T	save_cmdmod;
     int		restore_cmdmod = FALSE;
     int		trylevel_at_start = trylevel;
+    int		orig_funcdepth;
 
 // Get pointer to item in the stack.
 #define STACK_TV(idx) (((typval_T *)ectx.ec_stack.ga_data) + idx)
@@ -870,11 +876,19 @@ call_def_function(
 	}
     }
 
+    // If depth of calling is getting too high, don't execute the function.
+    orig_funcdepth = funcdepth_get();
+    if (funcdepth_increment() == FAIL)
+	return FAIL;
+
     CLEAR_FIELD(ectx);
     ectx.ec_dfunc_idx = ufunc->uf_dfunc_idx;
     ga_init2(&ectx.ec_stack, sizeof(typval_T), 500);
     if (ga_grow(&ectx.ec_stack, 20) == FAIL)
+    {
+	funcdepth_decrement();
 	return FAIL;
+    }
     ga_init2(&ectx.ec_trystack, sizeof(trycmd_T), 10);
     ga_init2(&ectx.ec_funcrefs, sizeof(partial_T *), 10);
 
@@ -2941,6 +2955,7 @@ failed_early:
     if (ret != OK && did_emsg == did_emsg_before)
 	semsg(_(e_unknown_error_while_executing_str),
 						   printable_func_name(ufunc));
+    funcdepth_restore(orig_funcdepth);
     return ret;
 }
 

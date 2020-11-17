@@ -1373,6 +1373,50 @@ failed:
     func_clear_free(fp, TRUE);
 }
 
+static int	funcdepth = 0;
+
+/*
+ * Increment the function call depth count.
+ * Return FAIL when going over 'maxfuncdepth'.
+ * Otherwise return OK, must call funcdepth_decrement() later!
+ */
+    int
+funcdepth_increment(void)
+{
+    if (funcdepth >= p_mfd)
+    {
+	emsg(_("E132: Function call depth is higher than 'maxfuncdepth'"));
+	return FAIL;
+    }
+    ++funcdepth;
+    return OK;
+}
+
+    void
+funcdepth_decrement(void)
+{
+    --funcdepth;
+}
+
+/*
+ * Get the current function call depth.
+ */
+    int
+funcdepth_get(void)
+{
+    return funcdepth;
+}
+
+/*
+ * Restore the function call depth.  This is for cases where there is no
+ * garantee funcdepth_decrement() can be called exactly the same number of
+ * times as funcdepth_increment().
+ */
+    void
+funcdepth_restore(int depth)
+{
+    funcdepth = depth;
+}
 
 /*
  * Call a user function.
@@ -1391,7 +1435,6 @@ call_user_func(
     funccall_T	*fc;
     int		save_did_emsg;
     int		default_arg_err = FALSE;
-    static int	depth = 0;
     dictitem_T	*v;
     int		fixvar_idx = 0;	// index in fixvar[]
     int		i;
@@ -1406,15 +1449,13 @@ call_user_func(
 #endif
     ESTACK_CHECK_DECLARATION
 
-    // If depth of calling is getting too high, don't execute the function
-    if (depth >= p_mfd)
+    // If depth of calling is getting too high, don't execute the function.
+    if (funcdepth_increment() == FAIL)
     {
-	emsg(_("E132: Function call depth is higher than 'maxfuncdepth'"));
 	rettv->v_type = VAR_NUMBER;
 	rettv->vval.v_number = -1;
 	return;
     }
-    ++depth;
 
     line_breakcheck();		// check for CTRL-C hit
 
@@ -1437,7 +1478,7 @@ call_user_func(
     {
 	// Execute the function, possibly compiling it first.
 	call_def_function(fp, argcount, argvars, funcexe->partial, rettv);
-	--depth;
+	funcdepth_decrement();
 	current_funccal = fc->caller;
 	free_funccal(fc);
 	return;
@@ -1783,8 +1824,7 @@ call_user_func(
     }
 
     did_emsg |= save_did_emsg;
-    --depth;
-
+    funcdepth_decrement();
     cleanup_function_call(fc);
 }
 
