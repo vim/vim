@@ -2455,7 +2455,9 @@ win_line(
 	    wp->w_wrow = row;
 	    did_wcol = TRUE;
 	    curwin->w_valid |= VALID_WCOL|VALID_WROW|VALID_VIRTCOL;
+#    ifdef FEAT_PROP_POPUP
 	    curwin->w_flags &= ~(WFLAG_WCOL_OFF_ADDED | WFLAG_WROW_OFF_ADDED);
+#    endif
 	}
 #endif
 
