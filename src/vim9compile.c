@@ -2712,13 +2712,19 @@ compile_call(
 	goto theend;
     }
 
-    // If we can find the function by name generate the right call.
-    // Skip global functions here, a local funcref takes precedence.
-    ufunc = find_func(name, FALSE, cctx);
-    if (ufunc != NULL && !func_is_global(ufunc))
+    // An argument or local variable can be a function reference, this
+    // overrules a function name.
+    if (lookup_local(namebuf, varlen, cctx) == NULL
+	    && arg_exists(namebuf, varlen, NULL, NULL, NULL, cctx) != OK)
     {
-	res = generate_CALL(cctx, ufunc, argcount);
-	goto theend;
+	// If we can find the function by name generate the right call.
+	// Skip global functions here, a local funcref takes precedence.
+	ufunc = find_func(name, FALSE, cctx);
+	if (ufunc != NULL && !func_is_global(ufunc))
+	{
+	    res = generate_CALL(cctx, ufunc, argcount);
+	    goto theend;
+	}
     }
 
     // If the name is a variable, load it and use PCALL.

@@ -1456,6 +1456,15 @@ def Test_nested_lambda()
   CheckScriptSuccess(lines)
 enddef
 
+def Shadowed(): list<number>
+  var FuncList: list<func: number> = [{ -> 42}]
+  return FuncList->map({_, Shadowed -> Shadowed()})
+enddef
+
+def Test_lambda_arg_shadows_func()
+  assert_equal([42], Shadowed())
+enddef
+
 def Line_continuation_in_def(dir: string = ''): string
   var path: string = empty(dir)
           \ ? 'empty'
