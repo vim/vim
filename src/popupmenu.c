@@ -362,7 +362,8 @@ pum_display(
 	// much room the window size will keep changing.
     } while (pum_set_selected(selected, redo_count) && ++redo_count <= 2);
 
-    pum_redraw();
+    if (redo_count > 0)
+	pum_redraw();
 }
 
 /*
