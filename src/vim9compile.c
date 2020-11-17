@@ -2626,7 +2626,7 @@ compile_call(
     char_u	fname_buf[FLEN_FIXED + 1];
     char_u	*tofree = NULL;
     int		error = FCERR_NONE;
-    ufunc_T	*ufunc;
+    ufunc_T	*ufunc = NULL;
     int		res = FAIL;
     int		is_autoload;
 
