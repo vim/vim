@@ -749,6 +749,9 @@ def Test_disassemble_const_expr()
 enddef
 
 def ReturnInIf(): string
+  if 1 < 0
+    return "maybe"
+  endif
   if g:cond
     return "yes"
   else
@@ -759,6 +762,9 @@ enddef
 def Test_disassemble_return_in_if()
   var instr = execute('disassemble ReturnInIf')
   assert_match('ReturnInIf\_s*' ..
+        'if 1 < 0\_s*' ..
+        '  return "maybe"\_s*' ..
+        'endif\_s*' ..
         'if g:cond\_s*' ..
         '0 LOADG g:cond\_s*' ..
         '1 COND2BOOL\_s*' ..

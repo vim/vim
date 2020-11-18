@@ -4694,21 +4694,24 @@ compile_return(char_u *arg, int set_return_type, cctx_T *cctx)
 	if (compile_expr0(&p, cctx) == FAIL)
 	    return NULL;
 
-	stack_type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-	if (set_return_type)
-	    cctx->ctx_ufunc->uf_ret_type = stack_type;
-	else
+	if (cctx->ctx_skip != SKIP_YES)
 	{
-	    if (cctx->ctx_ufunc->uf_ret_type->tt_type == VAR_VOID
-		    && stack_type->tt_type != VAR_VOID
-		    && stack_type->tt_type != VAR_UNKNOWN)
+	    stack_type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	    if (set_return_type)
+		cctx->ctx_ufunc->uf_ret_type = stack_type;
+	    else
 	    {
-		emsg(_(e_returning_value_in_function_without_return_type));
-		return NULL;
-	    }
-	    if (need_type(stack_type, cctx->ctx_ufunc->uf_ret_type, -1,
+		if (cctx->ctx_ufunc->uf_ret_type->tt_type == VAR_VOID
+			&& stack_type->tt_type != VAR_VOID
+			&& stack_type->tt_type != VAR_UNKNOWN)
+		{
+		    emsg(_(e_returning_value_in_function_without_return_type));
+		    return NULL;
+		}
+		if (need_type(stack_type, cctx->ctx_ufunc->uf_ret_type, -1,
 						   cctx, FALSE, FALSE) == FAIL)
-		return NULL;
+		    return NULL;
+	    }
 	}
     }
     else
@@ -4725,8 +4728,7 @@ compile_return(char_u *arg, int set_return_type, cctx_T *cctx)
 	// No argument, return zero.
 	generate_PUSHNR(cctx, 0);
     }
-
-    if (generate_instr(cctx, ISN_RETURN) == NULL)
+    if (cctx->ctx_skip != SKIP_YES && generate_instr(cctx, ISN_RETURN) == NULL)
 	return NULL;
 
     // "return val | endif" is possible
