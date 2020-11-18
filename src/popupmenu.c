@@ -361,9 +361,6 @@ pum_display(
 	// redo the positioning.  Limit this to two times, when there is not
 	// much room the window size will keep changing.
     } while (pum_set_selected(selected, redo_count) && ++redo_count <= 2);
-
-    if (redo_count > 0)
-	pum_redraw();
 }
 
 /*
@@ -1061,16 +1058,11 @@ pum_may_redraw(void)
     if (!pum_visible() || pum_will_redraw)
 	return;  // nothing to do
 
-    if (pum_window != curwin
-	    || (pum_win_row == curwin->w_wrow + W_WINROW(curwin)
-		&& pum_win_height == curwin->w_height
-		&& pum_win_col == curwin->w_wincol
-		&& pum_win_width == curwin->w_width))
-    {
-	// window position didn't change, redraw in the same position
-	pum_redraw();
-    }
-    else
+    if (pum_window == curwin
+	    && (pum_win_row != curwin->w_wrow + W_WINROW(curwin)
+		|| pum_win_height != curwin->w_height
+		|| pum_win_col != curwin->w_wincol
+		|| pum_win_width != curwin->w_width))
     {
 	int wcol = curwin->w_wcol;
 
@@ -1083,6 +1075,8 @@ pum_may_redraw(void)
 	pum_display(array, len, selected);
 	curwin->w_wcol = wcol;
     }
+
+    pum_redraw();
 }
 
 /*
@@ -1476,11 +1470,12 @@ pum_show_popupmenu(vimmenu_T *menu)
     mch_setmouse(TRUE);
 # endif
 
+    pum_redraw();
+
     for (;;)
     {
 	int	c;
 
-	pum_redraw();
 	setcursor_mayforce(TRUE);
 	out_flush();
 
