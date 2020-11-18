@@ -2300,12 +2300,29 @@ def Test_expr7_parens_vim9script()
   CheckScriptSuccess(lines)
 enddef
 
-def Test_expr7_negate()
+def Test_expr7_negate_add()
   assert_equal(-99, -99)
+  assert_equal(-99, - 99)
   assert_equal(99, --99)
+  assert_equal(99, -- 99)
+  assert_equal(99, - - 99)
+  assert_equal(99, +99)
+  assert_equal(-99, -+99)
+  assert_equal(-99, -+ 99)
+  assert_equal(-99, - +99)
+  assert_equal(-99, - + 99)
+  assert_equal(-99, +-99)
+  assert_equal(-99, + -99)
+  assert_equal(-99, + - 99)
+
   var nr = 88
   assert_equal(-88, -nr)
-  assert_equal(88, --nr)
+  assert_equal(-88, - nr)
+  assert_equal(-88, - +nr)
+  assert_equal(88, -- nr)
+  assert_equal(88, + nr)
+  assert_equal(88, --+ nr)
+  assert_equal(88, - - nr)
 enddef
 
 def Echo(arg: any): string
