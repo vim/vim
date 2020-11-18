@@ -205,17 +205,17 @@ dyn_libintl_init(char *dir)
     if (buf != NULL && buf2 != NULL)
     {
 	GetEnvironmentVariableW(L"PATH", buf, len);
-#ifdef _WIN64
+# ifdef _WIN64
 	_snwprintf(buf2, len2, L"%S\\GvimExt64;%s", dir, buf);
-#else
+# else
 	_snwprintf(buf2, len2, L"%S\\GvimExt32;%s", dir, buf);
-#endif
+# endif
 	SetEnvironmentVariableW(L"PATH", buf2);
 	hLibintlDLL = LoadLibrary(GETTEXT_DLL);
-#ifdef GETTEXT_DLL_ALT
+# ifdef GETTEXT_DLL_ALT
 	if (!hLibintlDLL)
 	    hLibintlDLL = LoadLibrary(GETTEXT_DLL_ALT);
-#endif
+# endif
 	SetEnvironmentVariableW(L"PATH", buf);
     }
     free(buf);
@@ -274,6 +274,7 @@ dyn_gettext_load(void)
 {
     char    szBuff[BUFSIZE];
     char    szLang[BUFSIZE];
+    LPWSTR  saved_lang = NULL;
     DWORD   len;
     HKEY    keyhandle;
     int	    gotlang = 0;
@@ -322,7 +323,12 @@ dyn_gettext_load(void)
 	}
     }
     if (gotlang)
+    {
+	LPWSTR p = _wgetenv(L"LANG");
+
+	saved_lang = _wcsdup(p == NULL ? L"" : p);
 	putenv(szLang);
+    }
 
     // Try to locate the runtime files.  The path is used to find libintl.dll
     // and the vim.mo files.
@@ -337,6 +343,23 @@ dyn_gettext_load(void)
 	    (*dyn_libintl_bindtextdomain)(VIMPACKAGE, szBuff);
 	    (*dyn_libintl_textdomain)(VIMPACKAGE);
 	}
+    }
+
+    // Restore $LANG to avoid the side effects on the process which loaded
+    // this DLL.
+    // gvimext.dll is (normally) compiled by MSVC, and libintl-8.dll is
+    // compiled by MinGW.  This means that the DLLs have separate environment
+    // variable areas.  So, restoring $LANG in gvimext.dll doesn't affect
+    // libintl-8.dll.
+    if (saved_lang != NULL)
+    {
+# ifdef _MSC_VER
+	WCHAR buf[BUFSIZE];
+
+	_snwprintf(buf, BUFSIZE, L"LANG=%s", saved_lang);
+	_wputenv(buf);
+# endif
+	free(saved_lang);
     }
 }
 
