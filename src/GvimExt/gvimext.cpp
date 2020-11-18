@@ -161,7 +161,6 @@ static char *null_libintl_bindtextdomain(const char *, const char *);
 static int dyn_libintl_init(char *dir);
 static void dyn_libintl_end(void);
 
-static wchar_t *oldenv = NULL;
 static HINSTANCE hLibintlDLL = 0;
 static char *(*dyn_libintl_gettext)(const char *) = null_libintl_gettext;
 static char *(*dyn_libintl_textdomain)(const char *) = null_libintl_textdomain;
@@ -273,62 +272,7 @@ null_libintl_textdomain(const char*  /* domainname */)
 dyn_gettext_load(void)
 {
     char    szBuff[BUFSIZE];
-    char    szLang[BUFSIZE];
-    LPWSTR  saved_lang = NULL;
     DWORD   len;
-    HKEY    keyhandle;
-    int	    gotlang = 0;
-
-    strcpy(szLang, "LANG=");
-
-    // First try getting the language from the registry, this can be
-    // used to overrule the system language.
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\Vim\\Gvim", 0,
-				       KEY_READ, &keyhandle) == ERROR_SUCCESS)
-    {
-	len = BUFSIZE;
-	if (RegQueryValueEx(keyhandle, "lang", 0, NULL, (BYTE*)szBuff, &len)
-							     == ERROR_SUCCESS)
-	{
-	    szBuff[len] = 0;
-	    strcat(szLang, szBuff);
-	    gotlang = 1;
-	}
-	RegCloseKey(keyhandle);
-    }
-
-    if (!gotlang && getenv("LANG") == NULL)
-    {
-	// Get the language from the system.
-	// Could use LOCALE_SISO639LANGNAME, but it's not in Win95.
-	// LOCALE_SABBREVLANGNAME gives us three letters, like "enu", we use
-	// only the first two.
-	len = GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SABBREVLANGNAME,
-						    (LPTSTR)szBuff, BUFSIZE);
-	if (len >= 2 && _strnicmp(szBuff, "en", 2) != 0)
-	{
-	    // There are a few exceptions (probably more)
-	    if (_strnicmp(szBuff, "cht", 3) == 0
-					  || _strnicmp(szBuff, "zht", 3) == 0)
-		strcpy(szBuff, "zh_TW");
-	    else if (_strnicmp(szBuff, "chs", 3) == 0
-					  || _strnicmp(szBuff, "zhc", 3) == 0)
-		strcpy(szBuff, "zh_CN");
-	    else if (_strnicmp(szBuff, "jp", 2) == 0)
-		strcpy(szBuff, "ja");
-	    else
-		szBuff[2] = 0;	// truncate to two-letter code
-	    strcat(szLang, szBuff);
-	    gotlang = 1;
-	}
-    }
-    if (gotlang)
-    {
-	LPWSTR p = _wgetenv(L"LANG");
-
-	saved_lang = _wcsdup(p == NULL ? L"" : p);
-	putenv(szLang);
-    }
 
     // Try to locate the runtime files.  The path is used to find libintl.dll
     // and the vim.mo files.
@@ -343,23 +287,6 @@ dyn_gettext_load(void)
 	    (*dyn_libintl_bindtextdomain)(VIMPACKAGE, szBuff);
 	    (*dyn_libintl_textdomain)(VIMPACKAGE);
 	}
-    }
-
-    // Restore $LANG to avoid the side effects on the process which loaded
-    // this DLL.
-    // gvimext.dll is (normally) compiled by MSVC, and libintl-8.dll is
-    // compiled by MinGW.  This means that the DLLs have separate environment
-    // variable areas.  So, restoring $LANG in gvimext.dll doesn't affect
-    // libintl-8.dll.
-    if (saved_lang != NULL)
-    {
-# ifdef _MSC_VER
-	WCHAR buf[BUFSIZE];
-
-	_snwprintf(buf, BUFSIZE, L"LANG=%s", saved_lang);
-	_wputenv(buf);
-# endif
-	free(saved_lang);
     }
 }
 
@@ -401,10 +328,8 @@ DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID  /* lpReserved */)
 inc_cRefThisDLL()
 {
 #ifdef FEAT_GETTEXT
-    if (g_cRefThisDll == 0) {
+    if (g_cRefThisDll == 0)
 	dyn_gettext_load();
-	oldenv = GetEnvironmentStringsW();
-    }
 #endif
     InterlockedIncrement((LPLONG)&g_cRefThisDll);
 }
@@ -413,13 +338,8 @@ inc_cRefThisDLL()
 dec_cRefThisDLL()
 {
 #ifdef FEAT_GETTEXT
-    if (InterlockedDecrement((LPLONG)&g_cRefThisDll) == 0) {
+    if (InterlockedDecrement((LPLONG)&g_cRefThisDll) == 0)
 	dyn_gettext_free();
-	if (oldenv != NULL) {
-	    FreeEnvironmentStringsW(oldenv);
-	    oldenv = NULL;
-	}
-    }
 #else
     InterlockedDecrement((LPLONG)&g_cRefThisDll);
 #endif
@@ -990,8 +910,8 @@ STDMETHODIMP CShellExt::InvokeGvim(HWND hParent,
 			NULL,		// Process handle not inheritable.
 			NULL,		// Thread handle not inheritable.
 			FALSE,		// Set handle inheritance to FALSE.
-			oldenv == NULL ? 0 : CREATE_UNICODE_ENVIRONMENT,
-			oldenv,		// Use unmodified environment block.
+			0,		// No creation flags.
+			NULL,		// Use parent's environment block.
 			NULL,		// Use parent's starting directory.
 			&si,		// Pointer to STARTUPINFO structure.
 			&pi)		// Pointer to PROCESS_INFORMATION structure.
@@ -1080,8 +1000,8 @@ STDMETHODIMP CShellExt::InvokeSingleGvim(HWND hParent,
 		NULL,		// Process handle not inheritable.
 		NULL,		// Thread handle not inheritable.
 		FALSE,		// Set handle inheritance to FALSE.
-		oldenv == NULL ? 0 : CREATE_UNICODE_ENVIRONMENT,
-		oldenv,		// Use unmodified environment block.
+		0,		// No creation flags.
+		NULL,		// Use parent's environment block.
 		NULL,		// Use parent's starting directory.
 		&si,		// Pointer to STARTUPINFO structure.
 		&pi)		// Pointer to PROCESS_INFORMATION structure.
