@@ -1292,6 +1292,13 @@ func Test_expr5_fails()
   call CheckDefFailure(["var x = 'a' .. 0z32"], 'E1105:', 1)
   call CheckDefFailure(["var x = 'a' .. function('len')"], 'E1105:', 1)
   call CheckDefFailure(["var x = 'a' .. function('len', ['a'])"], 'E1105:', 1)
+
+  call CheckScriptFailure(['vim9script', 'var x = 1 + v:none'], 'E611:', 2)
+  call CheckScriptFailure(['vim9script', 'var x = 1 + v:null'], 'E611:', 2)
+  call CheckScriptFailure(['vim9script', 'var x = 1 + v:true'], 'E1138:', 2)
+  call CheckScriptFailure(['vim9script', 'var x = 1 + v:false'], 'E1138:', 2)
+  call CheckScriptFailure(['vim9script', 'var x = 1 + true'], 'E1138:', 2)
+  call CheckScriptFailure(['vim9script', 'var x = 1 + false'], 'E1138:', 2)
 endfunc
 
 func Test_expr5_fails_channel()

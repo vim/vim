@@ -301,3 +301,5 @@ EXTERN char e_cmd_mapping_must_end_with_cr_before_second_cmd[]
 	INIT(=N_("E1136: <Cmd> mapping must end with <CR> before second <Cmd>"));
 EXTERN char e_cmd_maping_must_not_include_str_key[]
 	INIT(= N_("E1137: <Cmd> mapping must not include %s key"));
+EXTERN char e_using_bool_as_number[]
+	INIT(= N_("E1138: Using a Bool as a Number"));
