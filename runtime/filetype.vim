@@ -1305,6 +1305,7 @@ au BufNewFile,BufRead *.pml			setf promela
 
 " Google protocol buffers
 au BufNewFile,BufRead *.proto			setf proto
+au BufNewFile,BufRead *.pbtxt			setf pbtxt
 
 " Protocols
 au BufNewFile,BufRead */etc/protocols		setf protocols
