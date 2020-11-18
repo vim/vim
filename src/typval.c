@@ -210,6 +210,12 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 	    emsg(_("E728: Using a Dictionary as a Number"));
 	    break;
 	case VAR_BOOL:
+	    if (!want_bool && in_vim9script())
+	    {
+		emsg(_("E611: Using a Bool as a Number"));
+		break;
+	    }
+	    return varp->vval.v_number == VVAL_TRUE ? 1 : 0;
 	case VAR_SPECIAL:
 	    if (!want_bool && in_vim9script())
 	    {
