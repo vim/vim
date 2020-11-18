@@ -3691,11 +3691,7 @@ getcmdkeycmd(
 	else if (IS_SPECIAL(c1))
 	{
 	    if (c1 == K_SNR)
-	    {
-		ga_append(&line_ga, (char)K_SPECIAL);
-		ga_append(&line_ga, (char)KS_EXTRA);
-		ga_append(&line_ga, (char)KE_SNR);
-	    }
+		ga_concat(&line_ga, (char_u *)"<SNR>");
 	    else
 	    {
 		semsg(e_cmd_maping_must_not_include_str_key,

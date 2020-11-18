@@ -1324,4 +1324,40 @@ func Test_map_cmdkey_cmdline_mode()
   %bw!
 endfunc
 
+func Test_map_cmdkey_redo()
+  func SelectDash()
+    call search('^---\n\zs', 'bcW')
+    norm! V
+    call search('\n\ze---$', 'W')
+  endfunc
+
+  let text =<< trim END
+      ---
+      aaa
+      ---
+      bbb
+      bbb
+      ---
+      ccc
+      ccc
+      ccc
+      ---
+  END
+  new Xcmdtext
+  call setline(1, text)
+
+  onoremap <silent> i- <Cmd>call SelectDash()<CR>
+  call feedkeys('2Gdi-', 'xt')
+  call assert_equal(['---', '---'], getline(1, 2))
+  call feedkeys('j.', 'xt')
+  call assert_equal(['---', '---', '---'], getline(1, 3))
+  call feedkeys('j.', 'xt')
+  call assert_equal(['---', '---', '---', '---'], getline(1, 4))
+
+  bwipe!
+  call delete('Xcmdtext')
+  delfunc SelectDash
+  ounmap i-
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

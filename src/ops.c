@@ -3465,8 +3465,9 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	if ((redo_yank || oap->op_type != OP_YANK)
 		&& ((!VIsual_active || oap->motion_force)
 		    // Also redo Operator-pending Visual mode mappings
-		    || (VIsual_active && cap->cmdchar == ':'
-						 && oap->op_type != OP_COLON))
+		    || (VIsual_active
+			  && (cap->cmdchar == ':' || cap->cmdchar == K_COMMAND)
+						  && oap->op_type != OP_COLON))
 		&& cap->cmdchar != 'D'
 #ifdef FEAT_FOLDING
 		&& oap->op_type != OP_FOLD
@@ -3688,7 +3689,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 			    get_op_char(oap->op_type),
 			    get_extra_op_char(oap->op_type),
 			    oap->motion_force, cap->cmdchar, cap->nchar);
-		else if (cap->cmdchar != ':')
+		else if (cap->cmdchar != ':' && cap->cmdchar != K_COMMAND)
 		{
 		    int nchar = oap->op_type == OP_REPLACE ? cap->nchar : NUL;
 
