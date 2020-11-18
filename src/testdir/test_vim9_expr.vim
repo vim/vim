@@ -2299,6 +2299,9 @@ def Test_expr7_negate()
   var nr = 88
   assert_equal(-88, -nr)
   assert_equal(88, --nr)
+  assert_equal(-88, - nr)
+  assert_equal(88, - - nr)
+  assert_equal(88, + nr)
 enddef
 
 def Echo(arg: any): string

@@ -3362,6 +3362,8 @@ compile_leader(cctx_T *cctx, int numeric_only, char_u *start, char_u **end)
     while (p > start)
     {
 	--p;
+	while (VIM_ISWHITE(*p))
+	    --p;
 	if (*p == '-' || *p == '+')
 	{
 	    int	    negate = *p == '-';
