@@ -1266,7 +1266,7 @@ func Test_terminal_popup_insert_cmd()
   call assert_equal('n', mode())
 
   call feedkeys("\<C-D>", 'xt')
-  sleep 50m
+  call WaitFor({-> popup_list() == []})
   delfunc StartTermInPopup
   iunmap <F3>
 endfunc
