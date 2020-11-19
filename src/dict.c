@@ -111,6 +111,7 @@ dict_free_contents(dict_T *d)
 
 /*
  * Clear hashtab "ht" and dict items it contains.
+ * If "ht" is not freed then you should call hash_init() next!
  */
     void
 hashtab_free_contents(hashtab_T *ht)
@@ -850,10 +851,32 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
     *arg = skipwhite_and_linebreak(*arg + 1, evalarg);
     while (**arg != '}' && **arg != NUL)
     {
-	if ((literal
-		? get_literal_key(arg, &tvkey)
-		: eval1(arg, &tvkey, evalarg)) == FAIL)	// recursive!
-	    goto failret;
+	char_u *p = to_name_end(*arg, FALSE);
+
+	if (literal || (vim9script && *p == ':'))
+	{
+	    if (get_literal_key(arg, &tvkey) == FAIL)
+		goto failret;
+	}
+	else
+	{
+	    int		has_bracket = vim9script && **arg == '[';
+
+	    if (has_bracket)
+		*arg = skipwhite(*arg + 1);
+	    if (eval1(arg, &tvkey, evalarg) == FAIL)	// recursive!
+		goto failret;
+	    if (has_bracket)
+	    {
+		*arg = skipwhite(*arg);
+		if (**arg != ']')
+		{
+		    emsg(_(e_missing_matching_bracket_after_dict_key));
+		    return FAIL;
+		}
+		++*arg;
+	    }
+	}
 
 	// the colon should come right after the key, but this wasn't checked
 	// previously, so only require it in Vim9 script.
