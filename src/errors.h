@@ -303,3 +303,5 @@ EXTERN char e_cmd_maping_must_not_include_str_key[]
 	INIT(= N_("E1137: <Cmd> mapping must not include %s key"));
 EXTERN char e_using_bool_as_number[]
 	INIT(= N_("E1138: Using a Bool as a Number"));
+EXTERN char e_missing_matching_bracket_after_dict_key[]
+	INIT(= N_("E1139: Missing matching bracket after dict key"));

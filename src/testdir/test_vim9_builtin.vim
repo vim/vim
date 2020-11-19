@@ -226,7 +226,7 @@ enddef
 
 
 def Wrong_dict_key_type(items: list<number>): list<number>
-  return filter(items, {_, val -> get({val: 1}, 'x')})
+  return filter(items, {_, val -> get({[val]: 1}, 'x')})
 enddef
 
 def Test_filter_wrong_dict_key_type()

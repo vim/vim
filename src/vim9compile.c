@@ -2771,7 +2771,7 @@ theend:
  * Return a pointer to just after the name.  Equal to "arg" if there is no
  * valid name.
  */
-    static char_u *
+    char_u *
 to_name_end(char_u *arg, int namespace)
 {
     char_u	*p;
@@ -2988,7 +2988,8 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal, ppconst_T *ppconst)
     *arg = skipwhite(*arg + 1);
     for (;;)
     {
-	char_u *key = NULL;
+	char_u	    *key = NULL;
+	char_u	    *end;
 
 	if (may_get_next_line(whitep, arg, cctx) == FAIL)
 	{
@@ -2999,10 +3000,14 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal, ppconst_T *ppconst)
 	if (**arg == '}')
 	    break;
 
-	if (literal)
+	// Eventually {name: value} will use "name" as a literal key and
+	// {[expr]: value} for an evaluated key.
+	// Temporarily: if "name" is indeed a valid key, or "[expr]" is
+	// used, use the new method, like JavaScript.  Otherwise fall back
+	// to the old method.
+	end = to_name_end(*arg, FALSE);
+	if (literal || *end == ':')
 	{
-	    char_u *end = to_name_end(*arg, !literal);
-
 	    if (end == *arg)
 	    {
 		semsg(_(e_invalid_key_str), *arg);
@@ -3015,8 +3020,11 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal, ppconst_T *ppconst)
 	}
 	else
 	{
-	    isn_T		*isn;
+	    isn_T	*isn;
+	    int		has_bracket = **arg == '[';
 
+	    if (has_bracket)
+		*arg = skipwhite(*arg + 1);
 	    if (compile_expr0(arg, cctx) == FAIL)
 		return FAIL;
 	    isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
@@ -3025,10 +3033,20 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal, ppconst_T *ppconst)
 	    else
 	    {
 		type_T *keytype = ((type_T **)stack->ga_data)
-							   [stack->ga_len - 1];
+						       [stack->ga_len - 1];
 		if (need_type(keytype, &t_string, -1, cctx,
-							 FALSE, FALSE) == FAIL)
+						     FALSE, FALSE) == FAIL)
 		    return FAIL;
+	    }
+	    if (has_bracket)
+	    {
+		*arg = skipwhite(*arg);
+		if (**arg != ']')
+		{
+		    emsg(_(e_missing_matching_bracket_after_dict_key));
+		    return FAIL;
+		}
+		++*arg;
 	    }
 	}
 

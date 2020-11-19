@@ -1883,6 +1883,9 @@ def Test_epxr7_funcref()
   CheckDefAndScriptSuccess(lines)
 enddef
 
+let g:test_space_dict = {'': 'empty', ' ': 'space'}
+let g:test_hash_dict = #{one: 1, two: 2}
+
 def Test_expr7_dict()
   # dictionary
   var lines =<< trim END
@@ -1891,17 +1894,17 @@ def Test_expr7_dict()
       assert_equal(g:dict_one, {'one': 1})
       var key = 'one'
       var val = 1
-      assert_equal(g:dict_one, {key: val})
+      assert_equal(g:dict_one, {[key]: val})
 
-      var numbers: dict<number> = #{a: 1, b: 2, c: 3}
+      var numbers: dict<number> = {a: 1, b: 2, c: 3}
       numbers = #{a: 1}
       numbers = #{}
 
-      var strings: dict<string> = #{a: 'a', b: 'b', c: 'c'}
+      var strings: dict<string> = {a: 'a', b: 'b', c: 'c'}
       strings = #{a: 'x'}
       strings = #{}
 
-      var mixed: dict<any> = #{a: 'a', b: 42}
+      var mixed: dict<any> = {a: 'a', b: 42}
       mixed = #{a: 'x'}
       mixed = #{a: 234}
       mixed = #{}
@@ -1915,6 +1918,9 @@ def Test_expr7_dict()
       dictdict = #{one: #{}, two: #{}}
 
       assert_equal({'': 0}, {matchstr('string', 'wont match'): 0})
+
+      assert_equal(g:test_space_dict, {['']: 'empty', [' ']: 'space'})
+      assert_equal(g:test_hash_dict, {one: 1, two: 2})
   END
   CheckDefAndScriptSuccess(lines)
  
@@ -1929,7 +1935,7 @@ def Test_expr7_dict()
   CheckDefFailure(["var x = #{xxx: 1", "var y = 2"], 'E722:', 2)
   CheckDefFailure(["var x = #{xxx: 1,"], 'E723:', 2)
   CheckDefFailure(["var x = {'a': xxx}"], 'E1001:', 1)
-  CheckDefFailure(["var x = {xxx: 8}"], 'E1001:', 1)
+  CheckDefFailure(["var x = {xx-x: 8}"], 'E1001:', 1)
   CheckDefFailure(["var x = #{a: 1, a: 2}"], 'E721:', 1)
   CheckDefFailure(["var x = #"], 'E1015:', 1)
   CheckDefExecFailure(["var x = g:anint.member"], 'E715:', 1)

@@ -112,8 +112,7 @@ In Vi # is a command to list text with numbers.  In Vim9 script you can use
 	101 number
 
 To improve readability there must be a space between a command and the #
-that starts a comment.  Note that #{ is the start of a dictionary, therefore
-it does not start a comment.
+that starts a comment.
 
 
 Vim9 functions ~
@@ -303,8 +302,7 @@ identifier or can't be an Ex command.  Examples: >
 	myList->add(123)
 	g:myList->add(123)
 	[1, 2, 3]->Process()
-	#{a: 1, b: 2}->Process()
-	{'a': 1, 'b': 2}->Process()
+	{a: 1, b: 2}->Process()
 	"foobar"->Process()
 	("foobar")->Process()
 	'foobar'->Process()
@@ -346,7 +344,7 @@ those cases there is no need to prefix the line with a backslash
 		'two',
 		]
 And when a dict spans multiple lines: >
-	var mydict = #{
+	var mydict = {
 		one: 1,
 		two: 2,
 		}
@@ -428,6 +426,27 @@ Notes:
 No curly braces expansion ~
 
 |curly-braces-names| cannot be used.
+
+
+Dictionary literals ~
+
+Traditionally Vim has supported dictionary literals with a {} syntax: >
+	let dict = {'key': value}
+
+Later it became clear that using a simple key name is very common, thus
+literally dictionaries were introduced in a backwards compatible way: >
+	let dict = #{key: value}
+
+However, this #{} syntax is unlike any existing language.  As it appears that
+using a literaly key is much more common than using an expression, and
+considering that JavaScript uses this syntax, using the {} form for dictionary
+literals was considered a much more useful syntax.  In Vim9 script the {} form
+uses literal keys: >
+	let dict = {key: value}
+
+In case an expression needs to be used for the key, square brackets can be
+used, just like in JavaScript: >
+	let dict = {["key" .. nr]: value}
 
 
 No :xit, :t, :append, :change or :insert ~

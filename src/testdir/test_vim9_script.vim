@@ -416,7 +416,7 @@ def Test_try_catch()
 
   var nd: dict<any>
   try
-    nd = {g:anumber: 1}
+    nd = {[g:anumber]: 1}
   catch /E1012:/
     n = 266
   endtry
@@ -459,7 +459,7 @@ def Test_try_catch()
   assert_equal(322, n)
 
   try
-    d = {'text': 1, g:astring: 2}
+    d = {text: 1, [g:astring]: 2}
   catch /E721:/
     n = 333
   endtry
