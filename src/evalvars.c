@@ -2628,7 +2628,28 @@ find_var(char_u *name, hashtab_T **htp, int no_autoload)
 	return ret;
 
     // Search in parent scope for lambda
-    return find_var_in_scoped_ht(name, no_autoload || htp != NULL);
+    ret = find_var_in_scoped_ht(name, no_autoload || htp != NULL);
+    if (ret != NULL)
+	return ret;
+
+    // in Vim9 script items without a scope can be script-local
+    if (in_vim9script() && name[0] != NUL && name[1] != ':')
+    {
+	ht = get_script_local_ht();
+	if (ht != NULL)
+	{
+	    ret = find_var_in_ht(ht, *name, varname,
+						   no_autoload || htp != NULL);
+	    if (ret != NULL)
+	    {
+		if (htp != NULL)
+		    *htp = ht;
+		return ret;
+	    }
+	}
+    }
+
+    return NULL;
 }
 
 /*
