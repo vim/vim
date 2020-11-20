@@ -2767,12 +2767,12 @@ theend:
 /*
  * Find the end of a variable or function name.  Unlike find_name_end() this
  * does not recognize magic braces.
- * When "namespace" is TRUE recognize "b:", "s:", etc.
+ * When "use_namespace" is TRUE recognize "b:", "s:", etc.
  * Return a pointer to just after the name.  Equal to "arg" if there is no
  * valid name.
  */
     char_u *
-to_name_end(char_u *arg, int namespace)
+to_name_end(char_u *arg, int use_namespace)
 {
     char_u	*p;
 
@@ -2784,7 +2784,7 @@ to_name_end(char_u *arg, int namespace)
 	// Include a namespace such as "s:var" and "v:var".  But "n:" is not
 	// and can be used in slice "[n:]".
 	if (*p == ':' && (p != arg + 1
-			     || !namespace
+			     || !use_namespace
 			     || vim_strchr(VIM9_NAMESPACE_CHAR, *arg) == NULL))
 	    break;
     return p;
