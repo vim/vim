@@ -3698,6 +3698,8 @@ update_popups(void (*win_update)(win_T *wp))
     int	    sb_thumb_height = 0;
     int	    attr_scroll = 0;
     int	    attr_thumb = 0;
+    int	    title_len = 0;
+    int	    title_wincol = 0;
 
     // Find the window with the lowest zindex that hasn't been updated yet,
     // so that the window with a higher zindex is drawn later, thus goes on
@@ -3798,16 +3800,43 @@ update_popups(void (*win_update)(win_T *wp))
 		border_attr[i] = syn_name2attr(wp->w_border_highlight[i]);
 	}
 
+	// Title goes on top of border or padding.
+	title_len = 0;
+	title_wincol = wp->w_wincol + 1;
+	if (wp->w_popup_title != NULL)
+	{
+	    char_u  *title_text = NULL;
+
+	    title_len = (int)STRLEN(wp->w_popup_title);
+	    title_text = alloc(title_len + 1);
+	    trunc_string(wp->w_popup_title, title_text, total_width - 2, title_len + 1);
+	    screen_puts(title_text, wp->w_winrow, title_wincol,
+		    wp->w_popup_border[0] > 0 ? border_attr[0] : popup_attr);
+	    vim_free(title_text);
+	}
+
 	wincol = wp->w_wincol - wp->w_popup_leftoff;
 	top_padding = wp->w_popup_padding[0];
 	if (wp->w_popup_border[0] > 0)
 	{
 	    // top border
-	    screen_fill(wp->w_winrow, wp->w_winrow + 1,
-		    wincol < 0 ? 0 : wincol, wincol + total_width,
-		    wp->w_popup_border[3] != 0 && wp->w_popup_leftoff == 0
-					     ? border_char[4] : border_char[0],
-		    border_char[0], border_attr[0]);
+	    if (0 < title_len)
+	    {
+		screen_fill(wp->w_winrow, wp->w_winrow + 1,
+			wincol < 0 ? 0 : wincol, title_wincol,
+			wp->w_popup_border[3] != 0 && wp->w_popup_leftoff == 0
+						 ? border_char[4] : border_char[0],
+			border_char[0], border_attr[0]);
+		screen_fill(wp->w_winrow, wp->w_winrow + 1,
+			title_wincol + title_len, wincol + total_width,
+			border_char[0], border_char[0], border_attr[0]);
+	    }
+	    else
+		screen_fill(wp->w_winrow, wp->w_winrow + 1,
+			wincol < 0 ? 0 : wincol, wincol + total_width,
+			wp->w_popup_border[3] != 0 && wp->w_popup_leftoff == 0
+						 ? border_char[4] : border_char[0],
+			border_char[0], border_attr[0]);
 	    if (wp->w_popup_border[1] > 0 && wp->w_popup_rightoff == 0)
 	    {
 		buf[mb_char2bytes(border_char[5], buf)] = NUL;
@@ -3835,18 +3864,6 @@ update_popups(void (*win_update)(win_T *wp))
 	    row = wp->w_winrow + wp->w_popup_border[0];
 	    screen_fill(row, row + top_padding, padcol, padwidth,
 							 ' ', ' ', popup_attr);
-	}
-
-	// Title goes on top of border or padding.
-	if (wp->w_popup_title != NULL)
-	{
-	    int	    len = (int)STRLEN(wp->w_popup_title) + 1;
-	    char_u  *title = alloc(len);
-
-	    trunc_string(wp->w_popup_title, title, total_width - 2, len);
-	    screen_puts(title, wp->w_winrow, wp->w_wincol + 1,
-		    wp->w_popup_border[0] > 0 ? border_attr[0] : popup_attr);
-	    vim_free(title);
 	}
 
 	// Compute scrollbar thumb position and size.
