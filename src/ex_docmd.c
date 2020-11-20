@@ -3482,6 +3482,11 @@ find_ex_command(
 		break;
 	    }
 
+	// Not not recognize ":*" as the star command unless '*' is in
+	// 'cpoptions'.
+	if (eap->cmdidx == CMD_star && vim_strchr(p_cpo, CPO_STAR) == NULL)
+	    p = eap->cmd;
+
 	// Look for a user defined command as a last resort.  Let ":Print" be
 	// overruled by a user defined command.
 	if ((eap->cmdidx == CMD_SIZE || eap->cmdidx == CMD_Print)

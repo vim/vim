@@ -634,5 +634,19 @@ def Test_f_args()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_star_command()
+  var lines =<< trim END
+    vim9script
+    @s = 'g:success = 8'
+    set cpo+=*
+    exe '*s'
+    assert_equal(8, g:success)
+    unlet g:success
+    set cpo-=*
+    assert_fails("exe '*s'", 'E1050:')
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
