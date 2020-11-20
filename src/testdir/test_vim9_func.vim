@@ -1704,5 +1704,19 @@ def Test_block_scoped_var()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_reset_did_emsg()
+  var lines =<< trim END
+      @s = 'blah'
+      au BufWinLeave * #
+      def Func()
+        var winid = popup_create('popup', {})
+        exe '*s'
+        popup_close(winid)
+      enddef
+      Func()
+  END
+  CheckScriptFailure(lines, 'E492:', 8)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

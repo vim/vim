@@ -230,6 +230,8 @@ EXTERN int	did_endif INIT(= FALSE);    // just had ":endif"
 EXTERN int	did_emsg;		    // set by emsg() when the message
 					    // is displayed or thrown
 #ifdef FEAT_EVAL
+EXTERN int	did_emsg_cumul;		    // cumulative did_emsg, increased
+					    // when did_emsg is reset.
 EXTERN int	called_vim_beep;	    // set if vim_beep() is called
 EXTERN int	did_uncaught_emsg;	    // emsg() was called and did not
 					    // cause an exception
