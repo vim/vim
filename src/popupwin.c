@@ -3820,7 +3820,7 @@ update_popups(void (*win_update)(win_T *wp))
 	if (wp->w_popup_border[0] > 0)
 	{
 	    // top border
-	    if (0 < title_len)
+	    if (title_len > 0)
 	    {
 		screen_fill(wp->w_winrow, wp->w_winrow + 1,
 			wincol < 0 ? 0 : wincol, title_wincol,
