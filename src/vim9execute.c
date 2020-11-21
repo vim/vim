@@ -1200,7 +1200,10 @@ call_def_function(
 		    }
 		    ectx.ec_stack.ga_len -= count;
 		    if (failed)
+		    {
+			ga_clear(&ga);
 			goto on_error;
+		    }
 
 		    if (ga.ga_data != NULL)
 		    {
@@ -1209,7 +1212,10 @@ call_def_function(
 			    SOURCING_LNUM = iptr->isn_lnum;
 			    do_cmdline_cmd((char_u *)ga.ga_data);
 			    if (did_emsg)
+			    {
+				ga_clear(&ga);
 				goto on_error;
+			    }
 			}
 			else
 			{
