@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.2.  Last change: 2020 Nov 12
+*map.txt*       For Vim version 8.2.  Last change: 2020 Nov 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -319,13 +319,16 @@ Example of using <Cmd> halfway Insert mode: >
 	nnoremap <F3> aText <Cmd>echo mode(1)<CR> Added<Esc>
 
 Unlike <expr> mappings, there are no special restrictions on the <Cmd>
-command: it is executed as if an (unrestricted) |autocmd| was invoked.
+command: it is executed as if an (unrestricted) |autocommand| was invoked.
 
 Note:
 - Because <Cmd> avoids mode-changes it does not trigger |CmdlineEnter| and
   |CmdlineLeave| events, because no user interaction is expected.
 - For the same reason, |keycodes| like <C-R><C-W> are interpreted as plain,
   unmapped keys.
+- The command is not echo'ed, no need for <silent>.
+- In Visual mode  you can use `line('v')` and `col('v')` to get one end of the
+  Visual area, the cursor is at the other end.
 - In Select mode, |:map| and |:vmap| command mappings are executed in
   Visual mode.  Use |:smap| to handle Select mode differently.
 
@@ -1238,9 +1241,9 @@ Otherwise, using "<SID>" outside of a script context is an error.
 
 If you need to get the script number to use in a complicated script, you can
 use this function: >
-	function s:SID()
-	  return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_SID$')
-	endfun
+	func s:ScriptNumber()
+	  return matchstr(expand('<SID>'), '<SNR>\zs\d\+\ze_')
+	endfunc
 
 The "<SNR>" will be shown when listing functions and mappings.  This is useful
 to find out what they are defined to.

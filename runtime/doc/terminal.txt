@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.2.  Last change: 2020 Sep 04
+*terminal.txt*	For Vim version 8.2.  Last change: 2020 Nov 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -503,6 +503,8 @@ term_dumpdiff({filename}, {filename} [, {options}])
 			a	different attribute
 			+	missing position in first file
 			-	missing position in second file
+			>	cursor position in first file, not in second
+			<	cursor position in secone file, not in first
 
 		Using the "s" key the top and bottom parts are swapped.  This
 		makes it easy to spot a difference.
@@ -1411,16 +1413,18 @@ If you don't want this then disable it with: >
 
 Vim window width						*termdebug_wide*
 
-To change the width of the Vim window when debugging starts, and use a
-vertical split: >
-  let g:termdebug_wide = 163
-This will set &columns to 163 when `:Termdebug` is used.  The value is restored
-when quitting the debugger.
-If g:termdebug_wide is set and &columns is already larger than
-g:termdebug_wide then a vertical split will be used without changing &columns.
-Set it to 1 to get a vertical split without every changing &columns (useful
-for when the terminal can't be resized by Vim).
+To change the width of the Vim window when debugging starts and use a vertical
+split: >
+	let g:termdebug_wide = 163
 
+This will set 'columns' to 163 when `:Termdebug` is used.  The value is
+restored when quitting the debugger.
+
+If g:termdebug_wide is set and 'columns' is already a greater value, then a
+vertical split will be used without modifying 'columns'.
+
+Set g:termdebug_wide to 1 to use a vertical split without ever changing
+'columns'.  This is useful when the terminal can't be resized by Vim.
 
 
  vim:tw=78:ts=8:noet:ft=help:norl:

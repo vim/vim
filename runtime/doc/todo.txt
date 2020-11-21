@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Nov 04
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Nov 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,21 +38,18 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-test_vim9_func fails: type from default value not used.
+Coverity errors in October and November.
 
-Without extra sleeps netbeans test has valgrind errors.
-PR #7248 from Yegappan - test doesn't fail without code changes
-
-Making everything work:
-- Closure argument call should not always set varargs, like any function call?
-- Invoke user command in a :def function
-- Make map() give an error if the resulting type is wrong.
-  Add mapnew() or mapcopy() to create a new List/Dict for the result, which
-  can have a different value type.
-- Error message for "'yes && 0" is "using String as a Number", should be "using
-  String as a Bool".
+Vim9 - Change
+- Drop support for #{} early December.  Close #7310
+  -> Does it work to recognize lambda?
+	{x: int -> x + 5}
+	var int = 5
+	{x: int, y: int}
+Vim9 - Making everything work:
+- Make map() give an error if the resulting type of the first argument is
+  wrong.  Only works if the type is known?
 - Run the same tests in :def and Vim9 script, like in Test_expr7_not()
-- In autocmd: use legacy syntax, not whatever the current script uses?
 - need to check type when a declaration specifies a type: #6507
 	let nr: number = 'asdf'
 - Check many more builtin function arguments at compile time.
@@ -60,7 +57,7 @@ Making everything work:
   the script-local function, not a global one.
 - Make sure that where a callback is expected a function can be used (without
   quotes). E.g. sort() and map().  Also at the script level.
-- assignment to more complex lval: list[1][2][3] = 8
+- assignment to more complex lval: list[1][2][3] = 8   #7309
   Also "list[0] += value".  test in Test_assign_dict_unknown_type().
 - ":put" with ISN_PUT does not handle range correctly, e.g. ":$-2put".
   Add command to parse range at runtime?
@@ -91,11 +88,13 @@ Making everything work:
 - Check that when using a user function name without prefix, it does not find
   a global function.  Prefixing g: is required.
 - Compile: for [key, value] in items(map)
-- Assignment to dict doesn't work:
-      let ret: dict<string> = #{}
-      ret[i] = string(i)
-- Appending to dict item doesn't work:
-    let d[i] ..= value
+- Need the equivalent of get_lval() and set_var_lval() to implement assignment
+  to nested list and dict members.
+    - Assignment to dict doesn't work:
+	  let ret: dict<string> = #{}
+	  ret[i] = string(i)
+    - Appending to dict item doesn't work:
+	let d[i] ..= value
 - Using ".." at script level doesn't convert arguments to a string.
 - Compile replacement of :s command: s/pat/\=expr/
 - Compile redir to local variable: var_redir_start().
@@ -114,8 +113,6 @@ Making everything work:
 - expandcmd() with `=expr` in filename uses legacy expression.
 - eval_expr() in ex_cexpr()
 - eval_expr() call in dbg_parsearg() and debuggy_find()
-- has() is compiled as a constant, but some checks are dynamic.
-  Check for dynamic values, such as "gui_running".
 New syntax and functionality:
 Improve error checking:
 - "echo Func()" is an error if Func() does not return anything.
@@ -138,7 +135,7 @@ Also:
 - implement enum
 - Make accessing varargs faster: arg[expr]
 	EVAL expr
-	LOADVARARG (varags idx)
+	LOADVARARG (varargs idx)
 - Make debugging work - at least per function.  Need to recompile a function
   to step through it line-by-line?  Evaluate the stack and variables on the
   stack?
@@ -348,6 +345,8 @@ Patch to make :q work with local arglist. (Christian Brabandt, #6286)
 
 Why does Test_invalid_sid() not work in the GUI?
 
+":pedit" ignores the local working directory when 'pvp' is set (#7267)
+
 Lua: updating wrong buffer when using newly created, unloaded buffer.
 (#6539)
 
@@ -417,9 +416,6 @@ Another spurious BufDelete. (Dani Dickstein, #5701)
 
 Wrong error when using local arglist. (Harm te Hennepe, #6133)
 
-Request to support <Cmd> in mappings, similar to how Neovim does this.
-(Daniel Hahler, #4784)
-
 Test loose_clipboard() by selecting text before suspending.
 
 Undo puts cursor in wrong line after "cG<Esc>" undo.
@@ -440,9 +436,6 @@ May 20)
 Also put :argadd commands at the start for all buffers, so that their order
 remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
 Also #5326: netrw buffers are not restored.
-
-Alternate file is not set in the session file.  Use setwintabvar("@#") ?
-(#6714)
 
 When 'backupdir' has a path ending in double slash (meaning: use full path of
 the file) combined with 'patchmode' the file name is wrong. (#5791)
@@ -1067,7 +1060,7 @@ neovim #7431)
 Patch for improving detecting Ruby on Mac in configure. (Ilya Mikhaltsou, 2017
 Nov 21)
 
-When t_Co is changed from termresponse, the OptionSet autocmmand event isn't
+When t_Co is changed from termresponse, the OptionSet autocommand event isn't
 triggered.  Use the code from the end of set_num_option() in
 set_color_count().
 
@@ -1351,6 +1344,9 @@ no longer support.
 
 sort() is not stable when using numeric/float sort (Nikolay Pavlov, 2016 Sep
 4#1038)
+
+sort() does not use 'smartcase' for the skip pattern, even though 'ignorecase'
+is used. (Filipe Brandenburger, #7322)
 
 +channel:
 - Add a in_cb, invoked when the write buffer has become empty. (Matteo Landi)
@@ -2297,7 +2293,7 @@ Additional info by Dominique Pelle. (also on 2010 Apr 10)
 
 CreateFile and CreateFileW are used without sharing, filewritable() fails when
 the file was already open (e.g. script is being sourced).  Add FILE_SHARE_READ|
-FILE_SHARE_WRITE in mch_access()? (Phillippe Vaucher, 2010 Nov 2)
+FILE_SHARE_WRITE in mch_access()? (Philippe Vaucher, 2010 Nov 2)
 
 Is ~/bin (literally) in $PATH supposed to work?  (Paul, 2010 March 29)
 Looks like only bash can do it. (Yakov Lerner)
@@ -5933,7 +5929,7 @@ Writing files:
     losing the original when writing twice. (Slootman)
 7   On non-Unix machines, also overwrite the original file in some situations
     (file system full, it's a link on an NFS partition).
-7   When editing a file, check that it has been change outside of Vim more
+7   When editing a file, check that it has been changed outside of Vim more
     often, not only when writing over it.  E.g., at the time the swap file is
     flushed.  Or every ten seconds or so (use the time of day, check it before
     waiting for a character to be typed).

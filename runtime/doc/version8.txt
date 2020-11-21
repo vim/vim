@@ -42557,7 +42557,7 @@ Files:      src/buffer.c, src/testdir/test_statusline.vim,
             src/testdir/dumps/Test_statusline_1.dump
 
 Patch 8.2.0236
-Problem:    MS-Windows uninstall doesn't delete vimtutur.bat.
+Problem:    MS-Windows uninstall doesn't delete vimtutor.bat.
 Solution:   Change directory before deletion. (Ken Takata, closes #5603)
 Files:      src/uninstall.c
 

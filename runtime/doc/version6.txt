@@ -1331,7 +1331,7 @@ eventhandler()	Returns 1 when inside an event handler and interactive
 executable()	Checks if a program or batch script can be executed.
 filewritable()	Checks if a file can be written. (Ron Aaron)
 foldclosed()	Find out if there is a closed fold. (Johannes Zellner).
-foldcloseend()	Find the end of a closed fold.
+foldclosedend()	Find the end of a closed fold.
 foldlevel()	Find out the foldlevel. (Johannes Zellner)
 foreground()	Move the GUI window to the foreground.
 getchar()	Get one character from the user.  Can be used to define a

@@ -159,18 +159,18 @@ thing I have been thinking of is assignments without ":let".  I often
 make that mistake (after writing JavaScript especially).  I think it is
 possible, if we make local variables shadow commands.  That should be OK,
 if you shadow a command you want to use, just rename the variable.
-Using "let" and "const" to declare a variable, like in JavaScript and
+Using "var" and "const" to declare a variable, like in JavaScript and
 TypeScript, can work:
 
 
 ``` vim
 def MyFunction(arg: number): number
-   let local = 1
-   let todo = arg
+   var local = 1
+   var todo = arg
    const ADD = 88
    while todo > 0
       local += ADD
-      --todo
+      todo -= 1
    endwhile
    return local
 enddef
@@ -192,7 +192,7 @@ function and export it:
 ``` vim
 vim9script  " Vim9 script syntax used here
 
-let local = 'local variable is not exported, script-local'
+var local = 'local variable is not exported, script-local'
 
 export def MyFunction()  " exported function
 ...
@@ -248,10 +248,10 @@ END
   return luaeval('sum')
 endfunc
 
-def VimNew()
-  let sum = 0
+def VimNew(): number
+  var sum = 0
   for i in range(1, 2999999)
-    let sum += i
+    sum += i
   endfor
   return sum
 enddef
@@ -277,7 +277,7 @@ echo 'Vim new: ' .. reltimestr(reltime(start))
 
 ``` vim
 def VimNew(): number
-  let totallen = 0
+  var totallen = 0
   for i in range(1, 100000)
     setline(i, '    ' .. getline(i))
     totallen += len(getline(i))

@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.2.  Last change: 2020 Oct 17
+*popup.txt*  For Vim version 8.2.  Last change: 2020 Nov 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -101,7 +101,7 @@ CLOSING THE POPUP WINDOW				*popup-close*
 
 Normally the plugin that created the popup window is also in charge of closing
 it.  If somehow a popup hangs around, you can close all of them with: >
-	call popup_clear()
+	call popup_clear(1)
 Some popups, such as notifications, close after a specified time.  This can be
 set with the "time" property on `popup_create()`.
 Otherwise, a popup can be closed by clicking on the X in the top-right corner

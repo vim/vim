@@ -2125,6 +2125,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :bad	windows.txt	/*:bad*
 :badd	windows.txt	/*:badd*
 :ball	windows.txt	/*:ball*
+:balt	windows.txt	/*:balt*
 :bar	cmdline.txt	/*:bar*
 :bd	windows.txt	/*:bd*
 :bdel	windows.txt	/*:bdel*
@@ -2724,6 +2725,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :map-<unique>	map.txt	/*:map-<unique>*
 :map-alt-keys	map.txt	/*:map-alt-keys*
 :map-arguments	map.txt	/*:map-arguments*
+:map-cmd	map.txt	/*:map-cmd*
 :map-commands	map.txt	/*:map-commands*
 :map-expression	map.txt	/*:map-expression*
 :map-local	map.txt	/*:map-local*
@@ -3506,6 +3508,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 <CSI>	intro.txt	/*<CSI>*
 <Char->	map.txt	/*<Char->*
 <Char>	map.txt	/*<Char>*
+<Cmd>	map.txt	/*<Cmd>*
 <CursorHold>	autocmd.txt	/*<CursorHold>*
 <D-	intro.txt	/*<D-*
 <D-c>	os_mac.txt	/*<D-c>*
@@ -3923,6 +3926,9 @@ E1112	eval.txt	/*E1112*
 E1113	eval.txt	/*E1113*
 E112	eval.txt	/*E112*
 E113	eval.txt	/*E113*
+E1135	map.txt	/*E1135*
+E1136	map.txt	/*E1136*
+E1137	map.txt	/*E1137*
 E114	eval.txt	/*E114*
 E115	eval.txt	/*E115*
 E116	eval.txt	/*E116*
@@ -6549,7 +6555,7 @@ ft-php-syntax	syntax.txt	/*ft-php-syntax*
 ft-php3-syntax	syntax.txt	/*ft-php3-syntax*
 ft-phtml-syntax	syntax.txt	/*ft-phtml-syntax*
 ft-plaintex-syntax	syntax.txt	/*ft-plaintex-syntax*
-ft-posix-synax	syntax.txt	/*ft-posix-synax*
+ft-posix-syntax	syntax.txt	/*ft-posix-syntax*
 ft-postscr-syntax	syntax.txt	/*ft-postscr-syntax*
 ft-ppwiz-syntax	syntax.txt	/*ft-ppwiz-syntax*
 ft-printcap-syntax	syntax.txt	/*ft-printcap-syntax*
@@ -7745,6 +7751,7 @@ mapmode-s	map.txt	/*mapmode-s*
 mapmode-t	map.txt	/*mapmode-t*
 mapmode-v	map.txt	/*mapmode-v*
 mapmode-x	map.txt	/*mapmode-x*
+mapnew()	eval.txt	/*mapnew()*
 mapping	map.txt	/*mapping*
 mapping-functions	usr_41.txt	/*mapping-functions*
 mapset()	eval.txt	/*mapset()*

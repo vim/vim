@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Oct 17
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Nov 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -438,7 +438,7 @@ literally dictionaries were introduced in a backwards compatible way: >
 	let dict = #{key: value}
 
 However, this #{} syntax is unlike any existing language.  As it appears that
-using a literaly key is much more common than using an expression, and
+using a literal key is much more common than using an expression, and
 considering that JavaScript uses this syntax, using the {} form for dictionary
 literals was considered a much more useful syntax.  In Vim9 script the {} form
 uses literal keys: >
