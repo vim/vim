@@ -3871,9 +3871,10 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	    else
 	    {
 		(void)op_delete(oap);
-		if (oap->motion_type == MLINE && has_format_option(FO_AUTO))
-		    u_save_cursor();	    // cursor line wasn't saved yet
-		auto_format(FALSE, TRUE);
+		// save cursor line for undo if it wasn't saved yet
+		if (oap->motion_type == MLINE && has_format_option(FO_AUTO)
+						      && u_save_cursor() == OK)
+		    auto_format(FALSE, TRUE);
 	    }
 	    break;
 
