@@ -702,6 +702,8 @@ au BufNewFile,BufRead *.hsc,*.hsm		setf hamster
 au BufNewFile,BufRead *.hs,*.hs-boot		setf haskell
 au BufNewFile,BufRead *.lhs			setf lhaskell
 au BufNewFile,BufRead *.chs			setf chaskell
+au BufNewFile,BufRead cabal.project		setf cabalproject
+au BufNewFile,BufRead cabal.project.*		setf cabalproject
 
 " Haste
 au BufNewFile,BufRead *.ht			setf haste
