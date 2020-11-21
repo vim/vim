@@ -696,7 +696,13 @@ au BufNewFile,BufRead .gtkrc,gtkrc		setf gtkrc
 au BufNewFile,BufRead *.haml			setf haml
 
 " Hamster Classic | Playground files
-au BufNewFile,BufRead *.hsc,*.hsm		setf hamster
+au BufNewFile,BufRead *.hsm	  		setf hamster
+au BufNewFile,BufRead *.hsc
+	\ if match(join(getline(1,10), "\n"), '\%(^\|\n\)\s*\%({-#\_s*LANGUAGE\>\|\<module\>\)') != -1 |
+	\   setf haskell |
+	\ else |
+	\   setf hamster |
+	\ endif
 
 " Haskell
 au BufNewFile,BufRead *.hs,*.hs-boot		setf haskell
