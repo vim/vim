@@ -165,7 +165,7 @@ fun! tar#Browse(tarfile)
 
   elseif tarfile =~# '\.\(tgz\)$' || tarfile =~# '\.\(tbz\)$' || tarfile =~# '\.\(txz\)$'
    if has("unix") && executable("file")
-    let filekind= system("file ".shellescape(tarfile,1)) =~ "bzip2"
+    let filekind= system("file ".shellescape(tarfile,1))
    else
     let filekind= ""
    endif
