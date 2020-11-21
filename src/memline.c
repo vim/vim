@@ -2252,6 +2252,7 @@ swapfile_unchanged(char_u *fname)
 
 	mch_get_host_name(hostname, B0_HNAME_SIZE);
 	hostname[B0_HNAME_SIZE - 1] = NUL;
+	b0.b0_hname[B0_HNAME_SIZE - 1] = NUL; // in case of corruption
 	if (STRICMP(b0.b0_hname, hostname) != 0)
 	    ret = FALSE;
     }
