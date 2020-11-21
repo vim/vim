@@ -605,6 +605,7 @@ func Test_popup_drag_termwin()
 	endfor
 	%foldclose
 	set shell=/bin/sh noruler
+	unlet $PROMPT_COMMAND
 	let $PS1 = 'vim> '
         terminal ++rows=4
 	$wincmd w
