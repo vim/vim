@@ -791,7 +791,7 @@ get_lval(
     listitem_T	*ni;
     char_u	*key = NULL;
     int		len;
-    hashtab_T	*ht;
+    hashtab_T	*ht = NULL;
     int		quiet = flags & GLV_QUIET;
 
     // Clear everything in "lp".
