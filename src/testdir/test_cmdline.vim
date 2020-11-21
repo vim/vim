@@ -84,7 +84,7 @@ func Test_complete_wildmenu()
   call delete('Xdir1', 'd')
   set nowildmenu
 endfunc
-f
+
 func Test_wildmenu_screendump()
   CheckScreendump
 
@@ -111,7 +111,6 @@ func Test_wildmenu_screendump()
   call StopVimInTerminal(buf)
   call delete('XTest_wildmenu')
 endfunc
-
 
 func Test_map_completion()
   CheckFeature cmdline_compl
@@ -1629,6 +1628,36 @@ func Test_read_shellcmd()
     call assert_notmatch('^"r.*\<runtest.vim\>', @:)
     call assert_match('^"r ++enc\S\+ !.*\<rm\>', @:)
   endif
+endfunc
+
+" Test for going up and down the directory tree using 'wildmenu'
+func Test_wildmenu_dirstack()
+  CheckUnix
+  %bw!
+  call mkdir('Xdir1/dir2/dir3', 'p')
+  call writefile([], 'Xdir1/file1_1.txt')
+  call writefile([], 'Xdir1/file1_2.txt')
+  call writefile([], 'Xdir1/dir2/file2_1.txt')
+  call writefile([], 'Xdir1/dir2/file2_2.txt')
+  call writefile([], 'Xdir1/dir2/dir3/file3_1.txt')
+  call writefile([], 'Xdir1/dir2/dir3/file3_2.txt')
+  cd Xdir1/dir2/dir3
+  set wildmenu
+
+  call feedkeys(":e \<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e file3_1.txt', @:)
+  call feedkeys(":e \<Tab>\<Up>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e ../dir3/', @:)
+  call feedkeys(":e \<Tab>\<Up>\<Up>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e ../../dir2/', @:)
+  call feedkeys(":e \<Tab>\<Up>\<Up>\<Down>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e ../../dir2/dir3/', @:)
+  call feedkeys(":e \<Tab>\<Up>\<Up>\<Down>\<Down>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e ../../dir2/dir3/file3_1.txt', @:)
+
+  cd -
+  call delete('Xdir1', 'rf')
+  set wildmenu&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
