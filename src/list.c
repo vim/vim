@@ -867,6 +867,7 @@ list_concat(list_T *l1, list_T *l2, typval_T *tv)
     if (l == NULL)
 	return FAIL;
     tv->v_type = VAR_LIST;
+    tv->v_lock = 0;
     tv->vval.v_list = l;
     if (l1 == NULL)
 	++l->lv_refcount;
