@@ -1,7 +1,9 @@
 " Vim filetype plugin
 " Language:	roff(7)
-" Maintainer:	Chris Spiegel <cspiegel@gmail.com>
-" Last Change:	2020 Oct 15
+" Maintainer:	Aman Verma
+" Homepage:	https://github.com/a-vrma/vim-nroff-ftplugin
+" Previous Maintainer:	Chris Spiegel <cspiegel@gmail.com>
+" Last Change:	2020 Nov 21
 
 if exists("b:did_ftplugin")
   finish

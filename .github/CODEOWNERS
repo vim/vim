@@ -81,6 +81,7 @@ runtime/ftplugin/javascriptreact.vim	@dkearns
 runtime/ftplugin/liquid.vim		@tpope
 runtime/ftplugin/markdown.vim		@tpope
 runtime/ftplugin/matlab.vim		@cecamp
+runtime/ftplugin/nroff.vim		@a-vrma
 runtime/ftplugin/nsis.vim		@k-takata
 runtime/ftplugin/pdf.vim		@tpope
 runtime/ftplugin/ruby.vim		@tpope @dkearns
