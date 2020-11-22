@@ -905,6 +905,29 @@ def Test_nested_func()
         instr)
 enddef
 
+def NestedDefList()
+  def
+  def Info
+  def /Info
+  def /Info/
+enddef
+
+def Test_nested_def_list()
+   var instr = execute('disassemble NestedDefList')
+   assert_match('NestedDefList\_s*' ..
+        'def\_s*' ..
+        '\d DEF \_s*' ..
+        'def Info\_s*' ..
+        '\d DEF Info\_s*' ..
+        'def /Info\_s*' ..
+        '\d DEF /Info\_s*' ..
+        'def /Info/\_s*' ..
+        '\d DEF /Info/\_s*' ..
+        '\d PUSHNR 0\_s*' ..
+        '\d RETURN',
+        instr)
+enddef
+
 def AndOr(arg: any): string
   if arg == 1 && arg != 2 || arg == 4
     return 'yes'

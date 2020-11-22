@@ -274,7 +274,6 @@ static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 # define ex_continue		ex_ni
 # define ex_debug		ex_ni
 # define ex_debuggreedy		ex_ni
-# define ex_def			ex_ni
 # define ex_defcompile		ex_ni
 # define ex_delfunction		ex_ni
 # define ex_disassemble		ex_ni

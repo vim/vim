@@ -2748,7 +2748,7 @@ untrans_function_name(char_u *name)
  * List functions.  When "regmatch" is NULL all of then.
  * Otherwise functions matching "regmatch".
  */
-    static void
+    void
 list_functions(regmatch_T *regmatch)
 {
     int		changed = func_hashtab.ht_changed;

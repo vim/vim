@@ -1433,6 +1433,26 @@ generate_NEWFUNC(cctx_T *cctx, char_u *lambda_name, char_u *func_name)
 }
 
 /*
+ * Generate an ISN_DEF instruction: list functions
+ */
+    static int
+generate_DEF(cctx_T *cctx, char_u *name, size_t len)
+{
+    isn_T	*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_DEF)) == NULL)
+	return FAIL;
+    if (len > 0)
+    {
+	isn->isn_arg.string = vim_strnsave(name, len);
+	if (isn->isn_arg.string == NULL)
+	    return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Generate an ISN_JUMP instruction.
  */
     static int
@@ -4801,6 +4821,27 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 	return NULL;
     }
 
+    if (*name_start == '/')
+    {
+	name_end = skip_regexp(name_start + 1, '/', TRUE);
+	if (*name_end == '/')
+	    ++name_end;
+	eap->nextcmd = check_nextcmd(name_end);
+    }
+    if (name_end == name_start || *skipwhite(name_end) != '(')
+    {
+	if (!ends_excmd2(name_start, name_end))
+	{
+	    semsg(_(e_invalid_command_str), eap->cmd);
+	    return NULL;
+	}
+
+	// "def" or "def Name": list functions
+	if (generate_DEF(cctx, name_start, name_end - name_start) == FAIL)
+	    return NULL;
+	return eap->nextcmd == NULL ? (char_u *)"" : eap->nextcmd;
+    }
+
     // Only g:Func() can use a namespace.
     if (name_start[1] == ':' && !is_global)
     {
@@ -7736,22 +7777,23 @@ delete_instr(isn_T *isn)
 {
     switch (isn->isn_type)
     {
+	case ISN_DEF:
 	case ISN_EXEC:
+	case ISN_LOADB:
 	case ISN_LOADENV:
 	case ISN_LOADG:
-	case ISN_LOADB:
-	case ISN_LOADW:
-	case ISN_LOADT:
 	case ISN_LOADOPT:
-	case ISN_STRINGMEMBER:
+	case ISN_LOADT:
+	case ISN_LOADW:
 	case ISN_PUSHEXC:
+	case ISN_PUSHFUNC:
 	case ISN_PUSHS:
+	case ISN_STOREB:
 	case ISN_STOREENV:
 	case ISN_STOREG:
-	case ISN_STOREB:
-	case ISN_STOREW:
 	case ISN_STORET:
-	case ISN_PUSHFUNC:
+	case ISN_STOREW:
+	case ISN_STRINGMEMBER:
 	    vim_free(isn->isn_arg.string);
 	    break;
 

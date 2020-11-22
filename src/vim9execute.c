@@ -1970,6 +1970,20 @@ call_def_function(
 		}
 		break;
 
+	    // List functions
+	    case ISN_DEF:
+		if (iptr->isn_arg.string == NULL)
+		    list_functions(NULL);
+		else
+		{
+		    exarg_T ea;
+
+		    CLEAR_FIELD(ea);
+		    ea.cmd = ea.arg = iptr->isn_arg.string;
+		    define_function(&ea, NULL);
+		}
+		break;
+
 	    // jump if a condition is met
 	    case ISN_JUMP:
 		{
@@ -3368,6 +3382,15 @@ ex_disassemble(exarg_T *eap)
 
 		    smsg("%4d NEWFUNC %s %s", current,
 				       newfunc->nf_lambda, newfunc->nf_global);
+		}
+		break;
+
+	    case ISN_DEF:
+		{
+		    char_u *name = iptr->isn_arg.string;
+
+		    smsg("%4d DEF %s", current,
+					   name == NULL ? (char_u *)"" : name);
 		}
 		break;
 
