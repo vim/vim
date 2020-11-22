@@ -1273,7 +1273,14 @@ endfunc
 func Test_executable_longname()
   CheckMSWindows
 
-  let fname = 'X' . repeat('あ', 200) . '.bat'
+  " Maximum length of a filename (including the path) in MS-Windows is 255
+  " characters. Make sure the length of the temp filename is < 255.
+  let len = 255 - getcwd()->len() - 6
+  if len > 200
+    let len = 200
+  endif
+
+  let fname = 'X' . repeat('あ', len) . '.bat'
   call writefile([], fname)
   call assert_equal(1, executable(fname))
   call delete(fname)
