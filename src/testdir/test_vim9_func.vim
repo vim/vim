@@ -37,7 +37,7 @@ def TestCompilingError()
     for i in range(1, 9)
       text ..= term_getline(buf, i)
     endfor
-    if text =~ 'Error detected'
+    if text =~ 'Variable not found: nothing'
       break
     endif
     sleep 20m
