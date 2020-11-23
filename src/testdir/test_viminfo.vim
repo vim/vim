@@ -882,6 +882,7 @@ func Test_viminfo_option_error()
 endfunc
 
 func Test_viminfo_oldfiles_newfile()
+  CheckRunVimInTerminal
   let save_viminfo = &viminfo
   let save_viminfofile = &viminfofile
   set viminfo&vim
