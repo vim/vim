@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 8.2.  Last change: 2020 Mar 16
+*gui.txt*       For Vim version 8.2.  Last change: 2020 Sep 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -547,15 +547,6 @@ floating menus that do not appear on the main menu bar.
 5.2 Creating New Menus					*creating-menus*
 
 				*:me*  *:menu*   *:noreme*  *:noremenu*
-				*:am*  *:amenu*  *:an*      *:anoremenu*
-				*:nme* *:nmenu*  *:nnoreme* *:nnoremenu*
-				*:ome* *:omenu*  *:onoreme* *:onoremenu*
-				*:vme* *:vmenu*  *:vnoreme* *:vnoremenu*
-				*:xme* *:xmenu*  *:xnoreme* *:xnoremenu*
-				*:sme* *:smenu*  *:snoreme* *:snoremenu*
-				*:ime* *:imenu*  *:inoreme* *:inoremenu*
-				*:cme* *:cmenu*  *:cnoreme* *:cnoremenu*
-				*:tlm* *:tlmenu* *:tln*     *:tlnoremenu*
 				*E330* *E327* *E331* *E336* *E333*
 				*E328* *E329* *E337* *E792*
 To create a new menu item, use the ":menu" commands.  They are mostly like
@@ -596,6 +587,7 @@ With the shortcut "F" (while keeping the <Alt> key pressed), and then "O",
 this menu can be used.  The second part is shown as "Open     :e".  The ":e"
 is right aligned, and the "O" is underlined, to indicate it is the shortcut.
 
+					*:am*  *:amenu*  *:an*      *:anoremenu*
 The ":amenu" command can be used to define menu entries for all modes at once,
 except for Terminal mode.  To make the command work correctly, a character is
 automatically inserted for some modes:
@@ -633,6 +625,30 @@ included they make the <> form and raw key codes not being recognized).
 
 Note that <Esc> in Cmdline mode executes the command, like in a mapping.  This
 is Vi compatible.  Use CTRL-C to quit Cmdline mode.
+
+		*:nme* *:nmenu*  *:nnoreme* *:nnoremenu* *:nunme* *:nunmenu*
+Menu commands starting with "n" work in Normal mode. |mapmode-n|
+
+		*:ome* *:omenu*  *:onoreme* *:onoremenu* *:ounme* *:ounmenu*
+Menu commands starting with "o" work in Operator-pending mode. |mapmode-o|
+
+		*:vme* *:vmenu*  *:vnoreme* *:vnoremenu* *:vunme* *:vunmenu*
+Menu commands starting with "v" work in Visual mode. |mapmode-v|
+
+		*:xme* *:xmenu*  *:xnoreme* *:xnoremenu* *:xunme* *:xunmenu*
+Menu commands starting with "x" work in Visual and Select mode. |mapmode-x|
+
+		*:sme* *:smenu*  *:snoreme* *:snoremenu* *:sunme* *:sunmenu*
+Menu commands starting with "s" work in Select mode. |mapmode-s|
+
+		*:ime* *:imenu*  *:inoreme* *:inoremenu* *:iunme* *:iunmenu*
+Menu commands starting with "i" work in Insert mode. |mapmode-i|
+
+		*:cme* *:cmenu*  *:cnoreme* *:cnoremenu* *:cunme* *:cunmenu*
+Menu commands starting with "c" work in Cmdline mode. |mapmode-c|
+
+		*:tlm* *:tlmenu* *:tln*     *:tlnoremenu* *:tlu*   *:tlunmenu*
+Menu commands starting with "tl" work in Terminal mode. |mapmode-t|
 
 						*:menu-<silent>* *:menu-silent*
 To define a menu which will not be echoed on the command line, add
@@ -897,14 +913,6 @@ using the last visual selection.
 
 						*:unme*  *:unmenu*
 						*:aun*   *:aunmenu*
-						*:nunme* *:nunmenu*
-						*:ounme* *:ounmenu*
-						*:vunme* *:vunmenu*
-						*:xunme* *:xunmenu*
-						*:sunme* *:sunmenu*
-						*:iunme* *:iunmenu*
-						*:cunme* *:cunmenu*
-						*:tlu*   *:tlunmenu*
 To delete a menu item or a whole submenu, use the unmenu commands, which are
 analogous to the unmap commands.  Eg: >
     :unmenu! Edit.Paste
@@ -1096,8 +1104,9 @@ That's all.  XLFDs are not used.  For Chinese this is reported to work well: >
 
 For Mac OSX you can use something like this: >
     :set guifont=Monaco:h10
-Also see 'macatsui', it can help fix display problems.
-							*E236*
+
+Mono-spaced fonts					*E236*
+
 Note that the fonts must be mono-spaced (all characters have the same width).
 An exception is GTK: all fonts are accepted, but mono-spaced fonts look best.
 

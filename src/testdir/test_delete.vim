@@ -110,3 +110,5 @@ func Test_delete_errors()
   call assert_fails('call delete('''')', 'E474:')
   call assert_fails('call delete(''foo'', 0)', 'E15:')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

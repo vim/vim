@@ -51,3 +51,5 @@ function Test_exec_while_if()
         \ "8",
         \ "9x"], getline(1, 10))
 endfunction
+
+" vim: shiftwidth=2 sts=2 expandtab

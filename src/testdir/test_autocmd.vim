@@ -19,6 +19,34 @@ func Test_vim_did_enter()
   " becomes one.
 endfunc
 
+" Test for the CursorHold autocmd
+func Test_CursorHold_autocmd()
+  CheckRunVimInTerminal
+  call writefile(['one', 'two', 'three'], 'Xfile')
+  let before =<< trim END
+    set updatetime=10
+    au CursorHold * call writefile([line('.')], 'Xoutput', 'a')
+  END
+  call writefile(before, 'Xinit')
+  let buf = RunVimInTerminal('-S Xinit Xfile', {})
+  call term_sendkeys(buf, "G")
+  call term_wait(buf, 50)
+  call term_sendkeys(buf, "gg")
+  call term_wait(buf)
+  call WaitForAssert({-> assert_equal(['1'], readfile('Xoutput')[-1:-1])})
+  call term_sendkeys(buf, "j")
+  call term_wait(buf)
+  call WaitForAssert({-> assert_equal(['1', '2'], readfile('Xoutput')[-2:-1])})
+  call term_sendkeys(buf, "j")
+  call term_wait(buf)
+  call WaitForAssert({-> assert_equal(['1', '2', '3'], readfile('Xoutput')[-3:-1])})
+  call StopVimInTerminal(buf)
+
+  call delete('Xinit')
+  call delete('Xoutput')
+  call delete('Xfile')
+endfunc
+
 if has('timers')
 
   func ExitInsertMode(id)
@@ -41,9 +69,7 @@ if has('timers')
   endfunc
 
   func Test_cursorhold_insert_with_timer_interrupt()
-    if !has('job')
-      return
-    endif
+    CheckFeature job
     " Need to move the cursor.
     call feedkeys("ggG", "xt")
 
@@ -51,9 +77,9 @@ if has('timers')
     " CursorHoldI event.
     let g:triggered = 0
     au CursorHoldI * let g:triggered += 1
-    set updatetime=500
+    set updatetime=100
     call job_start(has('win32') ? 'cmd /c echo:' : 'echo',
-          \ {'exit_cb': {-> timer_start(1000, 'ExitInsertMode')}})
+          \ {'exit_cb': {-> timer_start(200, 'ExitInsertMode')}})
     call feedkeys('a', 'x!')
     call assert_equal(1, g:triggered)
     unlet g:triggered
@@ -168,9 +194,7 @@ func Test_autocmd_bufunload_avoiding_SEGV_01()
     exe 'autocmd BufUnload <buffer> ' . (lastbuf + 1) . 'bwipeout!'
   augroup END
 
-  " Todo: check for E937 generated first
-  " call assert_fails('edit bb.txt', 'E937:')
-  call assert_fails('edit bb.txt', 'E517:')
+  call assert_fails('edit bb.txt', 'E937:')
 
   autocmd! test_autocmd_bufunload
   augroup! test_autocmd_bufunload
@@ -428,6 +452,7 @@ func Test_autocmd_bufwipe_in_SessLoadPost()
   mksession!
 
   let content =<< trim [CODE]
+    call test_override('ui_delay', 10)
     set nocp noswapfile
     let v:swapchoice="e"
     augroup test_autocmd_sessionload
@@ -444,7 +469,7 @@ func Test_autocmd_bufwipe_in_SessLoadPost()
   call writefile(content, 'Xvimrc')
   call system(GetVimCommand('Xvimrc') .. ' --not-a-term --noplugins -S Session.vim -c cq')
   let errors = join(readfile('Xerrors'))
-  call assert_match('E814', errors)
+  call assert_match('E814:', errors)
 
   set swapfile
   for file in ['Session.vim', 'Xvimrc', 'Xerrors']
@@ -508,9 +533,7 @@ func s:AutoCommandOptionSet(match)
 endfunc
 
 func Test_OptionSet()
-  if !has("eval") || !exists("+autochdir")
-    return
-  endif
+  CheckOption autochdir
 
   badd test_autocmd.vim
 
@@ -616,7 +639,7 @@ func Test_OptionSet()
   " try twice, first time, shouldn't trigger because option name is invalid,
   " second time, it should trigger
   let bnum = bufnr('%')
-  call assert_fails("call setbufvar(bnum, '&l:bk', 1)", "E355")
+  call assert_fails("call setbufvar(bnum, '&l:bk', 1)", 'E355:')
   " should trigger, use correct option name
   call setbufvar(bnum, '&backup', 1)
   call assert_equal([], g:options)
@@ -1153,15 +1176,15 @@ func Test_OptionSet_diffmode_close()
   au OptionSet diff close
 
   call setline(1, ['buffer 1', 'line2', 'line3', 'line4'])
-  call assert_fails(':diffthis', 'E788')
+  call assert_fails(':diffthis', 'E788:')
   call assert_equal(1, &diff)
   vnew
   call setline(1, ['buffer 2', 'line 2', 'line 3', 'line4'])
-  call assert_fails(':diffthis', 'E788')
+  call assert_fails(':diffthis', 'E788:')
   call assert_equal(1, &diff)
   set diffopt-=closeoff
   bw!
-  call assert_fails(':diffoff!', 'E788')
+  call assert_fails(':diffoff!', 'E788:')
   bw!
 
   " Cleanup
@@ -1388,13 +1411,13 @@ func Test_BufWritePre()
   bdel Xtest
   e Xxx1
   " write it, will unload it and give an error msg
-  call assert_fails('w', 'E203')
+  call assert_fails('w', 'E203:')
   call assert_equal('Xxx2', bufname('%'))
   edit Xtest
   e! Xxx2
   bwipe Xtest
   " write it, will delete the buffer and give an error msg
-  call assert_fails('w', 'E203')
+  call assert_fails('w', 'E203:')
   call assert_equal('Xxx1', bufname('%'))
   au! BufWritePre
   call delete('Xxx1')
@@ -1469,7 +1492,7 @@ func Test_Cmd_Autocmds()
   au BufWriteCmd XtestA call append(line("$"), "write")
   write				" will append a line to the file
   call assert_equal('write', getline('$'))
-  call assert_fails('read XtestA', 'E484')	" should not read anything
+  call assert_fails('read XtestA', 'E484:')	" should not read anything
   call assert_equal('write', getline(4))
 
   " now we have:
@@ -1495,7 +1518,7 @@ func Test_Cmd_Autocmds()
   normal 4GA1
   4,5w XtestC			" will copy lines 4 and 5 to the end
   call assert_equal("\tabc21", getline(8))
-  call assert_fails('r XtestC', 'E484')	" should not read anything
+  call assert_fails('r XtestC', 'E484:')	" should not read anything
   call assert_equal("end of Xxx", getline(9))
 
   " now we have:
@@ -1513,7 +1536,7 @@ func Test_Cmd_Autocmds()
   au FileAppendCmd XtestD call extend(g:lines, getline(line("'["), line("']")))
   w >>XtestD			" will add lines to 'lines'
   call assert_equal(9, len(g:lines))
-  call assert_fails('$r XtestD', 'E484')	" should not read anything
+  call assert_fails('$r XtestD', 'E484:')	" should not read anything
   call assert_equal(9, line('$'))
   call assert_equal('end of Xxx', getline('$'))
 
@@ -1591,7 +1614,7 @@ func Test_change_mark_in_autocmds()
   write
   au! BufWritePre
 
-  if executable('cat')
+  if has('unix')
     write XtestFilter
     write >> XtestFilter
 
@@ -1745,20 +1768,17 @@ endfunc
 func Test_nocatch_wipe_all_buffers()
   " Real nasty autocommand: wipe all buffers on any event.
   au * * bwipe *
-  " Get E93 first?
-  " call assert_fails('next x', 'E93:')
-  call assert_fails('next x', 'E517:')
+  call assert_fails('next x', ['E94:', 'E937:'])
   bwipe
   au!
 endfunc
 
 func Test_nocatch_wipe_dummy_buffer()
-  if has('quickfix')
-    " Nasty autocommand: wipe buffer on any event.
-    au * x bwipe
-    call assert_fails('lv½ /x', 'E480')
-    au!
-  endif
+  CheckFeature quickfix
+  " Nasty autocommand: wipe buffer on any event.
+  au * x bwipe
+  call assert_fails('lv½ /x', 'E937:')
+  au!
 endfunc
 
 function s:Before_test_dirchanged()
@@ -1809,9 +1829,7 @@ function Test_dirchanged_local()
 endfunc
 
 function Test_dirchanged_auto()
-  if !exists('+autochdir')
-    return
-  endif
+  CheckOption autochdir
   call s:Before_test_dirchanged()
   call test_autochdir()
   autocmd test_dirchanged DirChanged auto call add(s:li, "auto:")
@@ -2062,9 +2080,8 @@ endfunc
 " - FileReadPost	decompress the file
 func Test_ReadWrite_Autocmds()
   " Run this test only on Unix-like systems and if gzip is available
-  if !has('unix') || !executable("gzip")
-    return
-  endif
+  CheckUnix
+  CheckExecutable gzip
 
   " Make $GZIP empty, "-v" would cause trouble.
   let $GZIP = ""
@@ -2405,6 +2422,8 @@ endfunc
 " Test closing a window or editing another buffer from a FileChangedRO handler
 " in a readonly buffer
 func Test_FileChangedRO_winclose()
+  call test_override('ui_delay', 10)
+
   augroup FileChangedROTest
     au!
     autocmd FileChangedRO * quit
@@ -2424,6 +2443,7 @@ func Test_FileChangedRO_winclose()
   call assert_fails('normal i', 'E788:')
   close
   augroup! FileChangedROTest
+  call test_override('ALL', 0)
 endfunc
 
 func LogACmd()
@@ -2504,6 +2524,7 @@ func Test_autocmd_invalid_args()
   call assert_fails('doautocmd * BufEnter', 'E217:')
   call assert_fails('augroup! x1a2b3', 'E367:')
   call assert_fails('autocmd BufNew <buffer=999> pwd', 'E680:')
+  call assert_fails('autocmd BufNew \) set ff=unix', 'E55:')
 endfunc
 
 " Test for deep nesting of autocmds
@@ -2516,6 +2537,7 @@ endfunc
 " Tests for SigUSR1 autocmd event, which is only available on posix systems.
 func Test_autocmd_sigusr1()
   CheckUnix
+  CheckExecutable /bin/kill
 
   let g:sigusr1_passed = 0
   au SigUSR1 * let g:sigusr1_passed = 1
@@ -2570,7 +2592,7 @@ func Test_BufDelete_changebuf()
   augroup END
   let save_cpo = &cpo
   set cpo+=f
-  call assert_fails('r Xfile', 'E484:')
+  call assert_fails('r Xfile', ['E812:', 'E484:'])
   call assert_equal('somefile', @%)
   let &cpo = save_cpo
   augroup TestAuCmd

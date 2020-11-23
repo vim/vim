@@ -1,4 +1,5 @@
 " Test using the window ID.
+
 source check.vim
 
 func Test_win_getid()

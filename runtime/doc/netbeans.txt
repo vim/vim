@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 8.2.  Last change: 2020 Apr 19
+*netbeans.txt*  For Vim version 8.2.  Last change: 2020 Nov 02
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
@@ -362,12 +362,12 @@ color		Argument with either a decimal number, "none" (without the
 offset		A number argument that indicates a byte position in a buffer.
 		The first byte has offset zero.  Line breaks are counted for
 		how they appear in the file (CR/LF counts for two bytes).
-		Note that a multi-byte character is counted for the number of
+		Note that a multibyte character is counted for the number of
 		bytes it takes.
 
 lnum/col	Argument with a line number and column number position.  The
 		line number starts with one, the column is the byte position,
-		starting with zero.  Note that a multi-byte character counts
+		starting with zero.  Note that a multibyte character counts
 		for several columns.
 
 pathname	String argument: file name with full path.
@@ -562,9 +562,10 @@ setModtime time
 		saved directly by the Vim Controller.
 		New in version 2.3.
 
-setReadOnly
-		Set a file as readonly
-		Implemented in version 2.3.
+setReadOnly readonly
+		When the boolean argument "readonly" is "T" for True, mark the
+		buffer as readonly, when it is "F" for False, mark it as not
+		readonly.  Implemented in version 2.3.
 
 setStyle	Not implemented.
 

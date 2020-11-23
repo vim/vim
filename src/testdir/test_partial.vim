@@ -1,5 +1,7 @@
 " Test binding arguments to a Funcref.
  
+source check.vim
+
 func MyFunc(arg1, arg2, arg3)
   return a:arg1 . '/' . a:arg2 . '/' . a:arg3
 endfunc
@@ -235,17 +237,16 @@ func Test_redefine_dict_func()
 endfunc
 
 func Test_bind_in_python()
-  if has('python')
-    let g:d = {}
-    function g:d.test2()
-    endfunction
-    python import vim
-    try
-      call assert_equal(pyeval('vim.bindeval("g:d.test2")'), g:d.test2)
-    catch
-      call assert_true(v:false, v:exception)
-    endtry
-  endif
+  CheckFeature python
+  let g:d = {}
+  function g:d.test2()
+  endfunction
+  python import vim
+  try
+    call assert_equal(pyeval('vim.bindeval("g:d.test2")'), g:d.test2)
+  catch
+    call assert_true(v:false, v:exception)
+  endtry
 endfunc
 
 " This caused double free on exit if EXITFREE is defined.
@@ -270,23 +271,21 @@ func Ignored3(job1, job2, status)
 endfunc
 
 func Test_cycle_partial_job()
-  if has('job')
-    let job = job_start('echo')
-    call job_setoptions(job, {'exit_cb': function('Ignored3', [job])})
-    unlet job
-  endif
+  CheckFeature job
+  let job = job_start('echo')
+  call job_setoptions(job, {'exit_cb': function('Ignored3', [job])})
+  unlet job
 endfunc
 
 func Ignored2(job, status)
 endfunc
 
 func Test_ref_job_partial_dict()
-  if has('job')
-    let g:ref_job = job_start('echo')
-    let d = {'a': 'b'}
-    call job_setoptions(g:ref_job, {'exit_cb': function('Ignored2', [], d)})
-    call test_garbagecollect_now()
-  endif
+  CheckFeature job
+  let g:ref_job = job_start('echo')
+  let d = {'a': 'b'}
+  call job_setoptions(g:ref_job, {'exit_cb': function('Ignored2', [], d)})
+  call test_garbagecollect_now()
 endfunc
 
 func Test_auto_partial_rebind()

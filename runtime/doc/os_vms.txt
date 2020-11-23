@@ -88,7 +88,7 @@ VAX C compiler is not fully ANSI C compatible in pre-processor directives
 semantics, therefore you have to use a converter program that will do the lion
 part of the job.  For detailed instructions read file INSTALLvms.txt
 
-MMS_VIM.EXE is build together with VIM.EXE, but for XXD.EXE you should
+MMS_VIM.EXE is built together with VIM.EXE, but for XXD.EXE you should
 change to a subdirectory and build it separately.
 
 CTAGS is not part of the Vim source distribution anymore, however the OpenVMS

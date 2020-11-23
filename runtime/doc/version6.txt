@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 8.2.  Last change: 2019 Jan 17
+*version6.txt*  For Vim version 8.2.  Last change: 2020 Aug 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -449,7 +449,7 @@ The help window is opened at the top, like ":topleft" was used, if the current
 window is fewer than 80 characters wide.
 
 A few options can be used to set the preferences for vertically split windows.
-They work similar to their existing horizontal equivalents:
+They work similarly to their existing horizontal equivalents:
 	horizontal	vertical ~
 	'splitbelow'	'splitright'
 	'winheight'	'winwidth'
@@ -623,7 +623,7 @@ For syntax items:
 
 Removed limit of matching only up to 32767 times with *, \+, etc.
 
-Added support to match multi-byte characters. (partly by Muraoka Taro)
+Added support to match multibyte characters. (partly by Muraoka Taro)
 Made "\<" and "\>" work for UTF-8. (Muraoka Taro)
 
 
@@ -664,10 +664,10 @@ Many new items for Multi-byte support:
 - Added 'guifontwide' to specify a font for double-wide characters.
 - Added Korean support for character class detection.  Also fix cls() in
   search.c. (Chong-Dae Park)
-- Win32: Typing multi-byte characters without IME. (Alexander Smishlajev)
+- Win32: Typing multibyte characters without IME. (Alexander Smishlajev)
 - Win32 with Mingw: compile with iconv library. (Ron Aaron)
 - Win32 with MSVC: dynamically load iconv.dll library. (Muraoka Taro)
-- Make it possible to build a version with multi-byte and iconv support with
+- Make it possible to build a version with multibyte and iconv support with
   Borland 5.5.  (Yasuhiro Matsumoto)
 - Added 'delcombine' option: Delete combining character separately. (Ron
   Aaron)
@@ -680,19 +680,19 @@ Many new items for Multi-byte support:
 - Support "CursorIM" for XIM.  (Nam SungHyun)
 - Added 'm' flag to 'formatoptions': When wrapping words, allow splitting at
   each multibyte character, not only at a space.
-- Made ":syntax keyword" work with multi-byte characters.
+- Made ":syntax keyword" work with multibyte characters.
 - Added support for Unicode upper/lowercase flipping and comparing. (based on
   patch by Raphael Finkel)
-  Let "~" on multi-byte characters that have a third case ("title case")
+  Let "~" on multibyte characters that have a third case ("title case")
   switch between the three cases. (Raphael Finkel)
 
-Allow defining digraphs for multi-byte characters.
+Allow defining digraphs for multibyte characters.
 Added RFC1345 digraphs for Unicode.
 Most Normal mode commands that accept a character argument, like "r", "t" and
 "f" now accept a digraph.  The 'D' flag in 'cpoptions' disables this to remain
 Vi compatible.
 
-Added Language mapping and 'keymap' to be able to type multi-byte characters:
+Added Language mapping and 'keymap' to be able to type multibyte characters:
 - Added the ":lmap" command and friends: Define mappings that are used when
   typing characters in the language of the text.  Also for "r", "t", etc.  In
   Insert and Command-line mode CTRL-^ switches the use of the mappings on/off.
@@ -715,7 +715,7 @@ Added Language mapping and 'keymap' to be able to type multi-byte characters:
 - When typing a mapping that's not finished yet, display the last character
   under the cursor in Insert mode and Command-line mode.  Looks good for dead
   characters.
-- Made the 'langmap' option recognize multi-byte characters.  But mapping only
+- Made the 'langmap' option recognize multibyte characters.  But mapping only
   works for 8-bit characters.  Helps when using UTF-8.
 - Use a different cursor for when ":lmap" mappings are active.  Can specify
   two highlight groups for an item in 'guicursor'.  By default "lCursor" and
@@ -726,7 +726,7 @@ Added Language mapping and 'keymap' to be able to type multi-byte characters:
   Also works for "f", which now works to find a character that includes a
   composing character.
 
-Other multi-byte character additions:
+Other multibyte character additions:
 - Support double-byte single-width characters for euc-jp: Characters starting
   with 0x8E.  Added ScreenLines2[] to store the second byte.
 
@@ -1004,7 +1004,7 @@ systems a PostScript file is generated, which can be printed with the
 (MS-Windows part by Vince Negri, Vipin Aravind, PostScript by Vince Negri and
 Mike Williams)
 
-Made ":hardcopy" work with multi-byte characters. (Muraoka Taro, Yasuhiro
+Made ":hardcopy" work with multibyte characters. (Muraoka Taro, Yasuhiro
 Matsumoto)
 
 Added options to tune the way printing works: (Vince Negri)
@@ -1331,7 +1331,7 @@ eventhandler()	Returns 1 when inside an event handler and interactive
 executable()	Checks if a program or batch script can be executed.
 filewritable()	Checks if a file can be written. (Ron Aaron)
 foldclosed()	Find out if there is a closed fold. (Johannes Zellner).
-foldcloseend()	Find the end of a closed fold.
+foldclosedend()	Find the end of a closed fold.
 foldlevel()	Find out the foldlevel. (Johannes Zellner)
 foreground()	Move the GUI window to the foreground.
 getchar()	Get one character from the user.  Can be used to define a
@@ -1703,7 +1703,7 @@ GUI:
 - Win32: Added "c" flag to 'guifont' to be able to specify the charset. (Artem
   Khodush)
 - When no --enable-xim argument is given, automatically enable it when a X GUI
-  is used.  Required for dead key support (and multi-byte input).
+  is used.  Required for dead key support (and multibyte input).
 - After a file selection dialog, check that the edited files were not changed
   or deleted.  The Win32 dialog allows deleting and renaming files.
 - Motif and Athena: Added support for "editres". (Marcin Dalecki)
@@ -2025,8 +2025,8 @@ Timestamps:
   file that steadily grows.
 
 Mapping <M-A> when 'encoding' is "latin1" and then setting 'encoding' to
-"utf-8" causes the first byte of a multi-byte to be mapped.  Can cause very
-hard to find problems.  Disallow mapping part of a multi-byte character.
+"utf-8" causes the first byte of a multibyte to be mapped.  Can cause very
+hard to find problems.  Disallow mapping part of a multibyte character.
 
 For ":python" and ":tcl" accept an in-line script. (Johannes Zellner)
 Also for ":ruby" and ":perl". (Benoit Cerrina)
@@ -2467,7 +2467,7 @@ Motif: When adding many menu items, the "Help" menu disappeared but the
 menubar didn't wrap.  Now manually set the menubar height.
 
 When using <BS> in Insert mode to remove a line break, or using "J" to join
-lines, the cursor could end up halfway a multi-byte character. (Muraoka Taro)
+lines, the cursor could end up halfway a multibyte character. (Muraoka Taro)
 
 Removed defining SVR4 in configure.  It causes problems for some X header
 files and doesn't appear to be used anywhere.
@@ -2617,12 +2617,12 @@ column.  Can't encode a larger number in a character.  Now limit the number to
 222, don't jump back to the first column.
 
 GUI: In some versions CSI would cause trouble, either when typed directly or
-when part of a multi-byte sequence.
+when part of a multibyte sequence.
 
 When using multibyte characters in a ":normal" command, a trailing byte that
 is CSI or K_SPECIAL caused problems.
 
-Wildmenu didn't handle multi-byte characters.
+Wildmenu didn't handle multibyte characters.
 
 ":sleep 10" could not be interrupted on Windows, while "gs" could.  Made them
 both work the same.
@@ -2673,7 +2673,7 @@ path.
 Multi-byte:
 - Using an any-but character range [^x] in a regexp didn't work for UTF-8.
   (Muraoka Taro)
-- When backspacing over inserted characters in Replace mode multi-byte
+- When backspacing over inserted characters in Replace mode multibyte
   characters were not handled correctly. (Muraoka Taro)
 - Search commands "#" and "*" didn't work with multibyte characters. (Muraoka
   Taro)
@@ -2690,9 +2690,9 @@ Multi-byte:
   wrong error number. (Muraoka Taro)
 - Using Alt-x in the GUI while 'encoding' was set to "utf-8" didn't produce
   the right character.
-- When using Visual block selection and only the left halve of a double-wide
+- When using Visual block selection and only the left half of a double-wide
   character is selected, the highlighting continued to the end of the line.
-- Visual-block delete didn't work properly when deleting the right halve of a
+- Visual-block delete didn't work properly when deleting the right half of a
   double-wide character.
 - Overstrike mode for the cmdline replaced only the first byte of a multibyte
   character.
@@ -2701,8 +2701,8 @@ Multi-byte:
 - When a multibyte character contained a 0x80 byte, it didn't work (was using
   a CSI byte instead). (Muraoka Taro)
 - Wordwise selection with the mouse didn't work.
-- Yanking a modeless selection of multi-byte characters didn't work.
-- When 'selection' is "exclusive", selecting a word that ends in a multi-byte
+- Yanking a modeless selection of multibyte characters didn't work.
+- When 'selection' is "exclusive", selecting a word that ends in a multibyte
   character used wrong highlighting for the following character.
 
 Win32 with Make_mvc.mak: Didn't compile for debugging. (Craig Barkhouse)
@@ -2795,13 +2795,13 @@ GTK: Crash when 'shell' doesn't exist and doing":!ls".  Use _exit() instead of
 exit() when the child couldn't execute the shell.
 
 Multi-byte:
-- GUI with double-byte encoding: a mouse click in left halve of double-wide
+- GUI with double-byte encoding: a mouse click in left half of double-wide
   character put the cursor in previous char.
 - Using double-byte encoding and 'selection' is "exclusive": "vey" and "^Vey"
   included the character after the word.
 - When using a double-byte encoding and there is a lead byte at the end of the
   line, the preceding line would be displayed.  "ga" also showed wrong info.
-- "gf" didn't include multi-byte characters before the cursor properly.
+- "gf" didn't include multibyte characters before the cursor properly.
   (Muraoka Taro)
 
 GUI: The cursor was sometimes not removed when scrolling.  Changed the policy
@@ -2919,7 +2919,7 @@ The message remembered for displaying later (keep_msg) was sometimes pointing
 into a generic buffer, which might be changed by the time the message is
 displayed.  Now make a copy of the message.
 
-When using multi-byte characters in a menu and a trailing byte is a backslash,
+When using multibyte characters in a menu and a trailing byte is a backslash,
 the menu would not be created correctly.  (Muraoka Taro)
 Using a multibyte character in the substitute string where a trail byte is a
 backslash didn't work.  (Muraoka Taro)
@@ -2958,7 +2958,7 @@ the output.
 Don't define the <NetMouse> termcode in an xterm, reduces the problem when
 someone types <Esc> } in Insert mode.
 
-Made slash_adjust() work correctly for multi-byte characters. (Yasuhiro
+Made slash_adjust() work correctly for multibyte characters. (Yasuhiro
 Matsumoto)
 Using a filename in Big5 encoding for autocommands didn't work (backslash in
 trailbyte).  (Yasuhiro Matsumoto)
@@ -3147,7 +3147,7 @@ available space correctly.  Was counting the menu height twice.
 Conversion of the docs to HTML didn't handle the line with the +quickfix tag
 correctly. (Antonio Colombo)
 
-Win32: fname_case() didn't handle multi-byte characters correctly. (Yasuhiro
+Win32: fname_case() didn't handle multibyte characters correctly. (Yasuhiro
 Matsumoto)
 
 The Cygwin version had trouble with fchdir().  Don't use that function for
@@ -3164,10 +3164,10 @@ the terminal it was started in.
 
 When using ESC in Insert mode, an autoindent that wraps to the next line
 caused the cursor to move to the end of the line temporarily.  When the
-character before the cursor was a double-wide multi-byte character the cursor
-would be on the right halve, which causes problems with some terminals.
+character before the cursor was a double-wide multibyte character the cursor
+would be on the right half, which causes problems with some terminals.
 
-Didn't handle multi-byte characters correctly when expanding a file name.
+Didn't handle multibyte characters correctly when expanding a file name.
 (Yasuhiro Matsumoto)
 
 Win32 GUI: Errors generated before the GUI is decided to start were not
@@ -3307,7 +3307,7 @@ started from the desktop (no place to display messages) it would hang.  Now
 open the GUI window early to be able to display the messages and pop up the
 dialog.
 
-"r<CR>" on a multi-byte character deleted only the first byte of the
+"r<CR>" on a multibyte character deleted only the first byte of the
 character.  "3r<CR>" deleted three bytes instead of three characters.
 
 When interrupting reading a file, Vi considers the buffer modified.  Added the
@@ -3431,7 +3431,7 @@ Solution:   Change slashes to backslashes in the directory passed to the file
 Files:	    src/gui_w48.c
 
 Athena file browser: On some systems wcstombs() can't be used to get the
-length of a multi-byte string.  Use the maximum length then. (Yasuhiro
+length of a multibyte string.  Use the maximum length then. (Yasuhiro
 Matsumoto)
 
 Patch 6.0ax.001
@@ -3784,7 +3784,7 @@ Solution:   Check for a NULL pointer.
 Files:	    src/mbyte.c
 
 Patch 6.0.019
-Problem:    Converting a string with multi-byte characters to a printable
+Problem:    Converting a string with multibyte characters to a printable
 	    string, e.g., with strtrans(), may cause a crash. (Tomas Zellerin)
 Solution:   Correctly compute the length of the result in transstr().
 Files:	    src/charset.c
@@ -4148,9 +4148,9 @@ Solution:   Position the system cursor before starting the shell.
 Files:	    src/os_msdos.c
 
 Patch 6.0.074
-Problem:    When using "&" in a substitute string a multi-byte character with
+Problem:    When using "&" in a substitute string a multibyte character with
 	    a trailbyte 0x5c is not handled correctly.
-Solution:   Recognize multi-byte characters inside the "&" part. (Muraoka Taro)
+Solution:   Recognize multibyte characters inside the "&" part. (Muraoka Taro)
 Files:	    src/regexp.c
 
 Patch 6.0.075
@@ -4311,7 +4311,7 @@ Files:	    src/ex_cmds.c
 
 Patch 6.0.097
 Problem:    Re-indenting in Insert mode with CTRL-F may cause a crash with a
-	    multi-byte encoding.
+	    multibyte encoding.
 Solution:   Avoid using a character before the start of a line. (Sergey
 	    Vlasov)
 Files:	    src/edit.c
@@ -4356,7 +4356,7 @@ Files:	    src/normal.c
 
 Patch 6.0.104
 Problem:    Multi-byte: When '$' is in 'cpoptions', typing a double-wide
-	    character that overwrites the left halve of an old double-wide
+	    character that overwrites the left half of an old double-wide
 	    character causes a redraw problem and the cursor stops blinking.
 Solution:   Clear the right half of the old character. (Yasuhiro Matsumoto)
 Files:	    src/edit.c, src/screen.c
@@ -4669,14 +4669,14 @@ Solution:   Correctly report "operand could be empty" when using "\{-}".
 Files:	    src/regexp.c
 
 Patch 6.0.150
-Problem:    When using a multi-byte encoding, patch 6.0.148 causes "p" to work
+Problem:    When using a multibyte encoding, patch 6.0.148 causes "p" to work
 	    like "P". (Sung-Hyun Nam)
-Solution:   Compute the byte length of a multi-byte character.
+Solution:   Compute the byte length of a multibyte character.
 Files:	    src/ops.c
 
 Patch 6.0.151
 Problem:    Redrawing the status line and ruler can be wrong when it contains
-	    multi-byte characters.
+	    multibyte characters.
 Solution:   Use character width and byte length correctly. (Yasuhiro Matsumoto)
 Files:	    src/screen.c
 
@@ -4878,7 +4878,7 @@ Solution:   Free the allocated memory.  Also avoid an uninitialized memory
 Files:	    src/misc2.c
 
 Patch 6.0.182
-Problem:    When using a regexp on multi-byte characters, could try to read a
+Problem:    When using a regexp on multibyte characters, could try to read a
 	    character before the start of the line.
 Solution:   Don't decrement a pointer to before the start of the line.
 Files:	    src/regexp.c
@@ -5060,7 +5060,7 @@ Files:	    src/edit.c
 
 Patch 6.0.209
 Problem:    GUI GTK: After selecting a 'guifont' with the font dialog there
-	    are redraw problems for multi-byte characters.
+	    are redraw problems for multibyte characters.
 Solution:   Separate the font dialog from setting the new font name to avoid
 	    that "*" is used to find wide and bold fonts.
 	    When redrawing extra characters for the bold trick, take care of
@@ -5203,14 +5203,14 @@ Files:	    src/ex_docmd.c, src/globals.h, src/normal.c, src/ops.c,
 
 Patch 6.0.229
 Problem:    Multi-byte: With 'm' in 'formatoptions', formatting doesn't break
-	    at a multi-byte char followed by an ASCII char, and the other way
+	    at a multibyte char followed by an ASCII char, and the other way
 	    around. (Muraoka Taro)
-	    When joining lines a space is inserted between multi-byte
+	    When joining lines a space is inserted between multibyte
 	    characters, which is not always wanted.
-Solution:   Check for multi-byte character before and after the breakpoint.
-	    Don't insert a space before or after a multi-byte character when
+Solution:   Check for multibyte character before and after the breakpoint.
+	    Don't insert a space before or after a multibyte character when
 	    joining lines and the 'M' flag is in 'formatoptions'.  Don't
-	    insert a space between multi-byte characters when the 'B' flag is
+	    insert a space between multibyte characters when the 'B' flag is
 	    in 'formatoptions'.
 Files:	    src/edit.c, src/ops.c, src/option.h
 
@@ -5290,7 +5290,7 @@ Patch 6.0.241
 Problem:    Win32: Expanding the old value of an option that is a path that
 	    starts with a backslash, an extra backslash is inserted.
 Solution:   Only insert backslashes where needed.
-	    Also handle multi-byte characters properly when removing
+	    Also handle multibyte characters properly when removing
 	    backslashes.
 Files:	    src/option.c
 
@@ -5312,7 +5312,7 @@ Problem:    Multi-byte: Problems with (illegal) UTF-8 characters in menu and
 	    file name (e.g., icon text, status line).
 Solution:   Correctly handle unprintable characters.  Catch illegal UTF-8
 	    characters and replace them with <xx>.  Truncating the status line
-	    wasn't done correctly at a multi-byte character. (Yasuhiro
+	    wasn't done correctly at a multibyte character. (Yasuhiro
 	    Matsumoto)
 	    Added correct_cmdspos() and transchar_byte().
 Files:	    src/buffer.c, src/charset.c, src/ex_getln.c, src/gui.c,
@@ -5424,7 +5424,7 @@ Solution:   Don't call gui_write() when still starting up.  Don't give error
 Files:	    src/fileio.c, src/gui.c, src/misc1.c, src/ui.c
 
 Patch 6.0.261
-Problem:    nr2char() and char2nr() don't work with multi-byte characters.
+Problem:    nr2char() and char2nr() don't work with multibyte characters.
 Solution:   Use 'encoding' for these functions. (Yasuhiro Matsumoto)
 Files:	    runtime/doc/eval.txt, src/eval.c
 
@@ -5517,7 +5517,7 @@ Solution:   Don't keep the driver context when using ":hardcopy!". (Vince
 Files:	    src/os_mswin.c
 
 Patch 6.1a.006
-Problem:    multi-byte: after setting 'encoding' the window title might be
+Problem:    multibyte: after setting 'encoding' the window title might be
 	    wrong.
 Solution:   Force resetting the title. (Yasuhiro Matsumoto)
 Files:	    src/option.c
@@ -5654,7 +5654,7 @@ Files:	    src/globals.h, src/mbyte.c, src/screen.c
 
 Patch 6.1a.029
 Problem:    After patch 6.1a.028 can't compile GTK version with XIM but
-	    without multi-byte chars.
+	    without multibyte chars.
 Solution:   Add an #ifdef. (Aschwin Marsman)
 Files:	    src/mbyte.c
 
@@ -5701,9 +5701,9 @@ Solution:   Remove the ACL checks, go back to how it worked in Vim 6.0.
 Files:	    src/os_win32.c
 
 Patch 6.1a.035
-Problem:    multi-byte: When using ":sh" in the GUI, typed and displayed
-	    multi-byte characters are not handled correctly.
-Solution:   Deal with multi-byte characters to and from the shell. (Yasuhiro
+Problem:    multibyte: When using ":sh" in the GUI, typed and displayed
+	    multibyte characters are not handled correctly.
+Solution:   Deal with multibyte characters to and from the shell. (Yasuhiro
 	    Matsumoto)  Also handle UTF-8 composing characters.
 Files:	    src/os_unix.c
 
@@ -5748,9 +5748,9 @@ Files:	    runtime/doc/diff.txt, src/diff.c, src/normal.c, src/proto/diff.pro
 
 
 Patch 6.1b.001 (extra)
-Problem:    Checking for wildcards in a path does not handle multi-byte
+Problem:    Checking for wildcards in a path does not handle multibyte
 	    characters with a trail byte which is a wildcard.
-Solution:   Handle multi-byte characters correctly. (Muraoka Taro)
+Solution:   Handle multibyte characters correctly. (Muraoka Taro)
 Files:	    src/os_amiga.c, src/os_mac.c, src/os_msdos.c, src/os_mswin.c,
 	    src/os_unix.c
 
@@ -6393,7 +6393,7 @@ wrong (back)slashes.
 
 Win32: printer dialog texts were not translated. (Yasuhiro Matsumoto)
 
-When using a multi-byte character with a K_SPECIAL byte or a special key code
+When using a multibyte character with a K_SPECIAL byte or a special key code
 with "--remote-send" the received byte sequence was mangled.  Put it in the
 typeahead buffer instead of the input buffer.
 
@@ -6438,7 +6438,7 @@ library version of fgets() to work correctly for Metrowerks 2.2. (Axel
 Kielhorn)
 
 When typing a password a "*" was shown for each byte instead of for each
-character.  Added multi-byte handling to displaying the stars. (Yasuhiro
+character.  Added multibyte handling to displaying the stars. (Yasuhiro
 Matsumoto)
 
 When using Perl 5.6 accessing $curbuf doesn't work.  Add an #ifdef to use
@@ -6690,9 +6690,9 @@ Solution:   Overrule 'lazyredraw' when do_redraw is set.
 Files:	    src/main.c, src/screen.c
 
 Patch 6.1.038
-Problem:    Multi-byte: When a ":s" command contains a multi-byte character
+Problem:    Multi-byte: When a ":s" command contains a multibyte character
 	    where the trail byte is '~' the text is messed up.
-Solution:   Properly skip multi-byte characters in regtilde() (Muraoka Taro)
+Solution:   Properly skip multibyte characters in regtilde() (Muraoka Taro)
 Files:	    src/regexp.c
 
 Patch 6.1.039
@@ -7069,7 +7069,7 @@ Solution:   Don't free the item on the stack.  Use NULL instead of "none" for
 Files:	    src/gui_x11.c
 
 Patch 6.1.096
-Problem:    When erasing the right halve of a double-byte character, it may
+Problem:    When erasing the right half of a double-byte character, it may
 	    cause further characters to be erased. (Yasuhiro Matsumoto)
 Solution:   Make sure only one character is erased.
 Files:	    src/screen.c
@@ -7105,7 +7105,7 @@ Solution:   Use ":setlocal" instead of ":set".  Change "aw" to "awa".
 Files:	    runtime/optwin.vim
 
 Patch 6.1.102
-Problem:    Unprintable and multi-byte characters in a statusline item are not
+Problem:    Unprintable and multibyte characters in a statusline item are not
 	    truncated correctly. (Yasuhiro Matsumoto)
 Solution:   Count the width of characters instead of the number of bytes.
 Files:	    src/buffer.c
@@ -7480,7 +7480,7 @@ Solution:   Take 'siso' into account when computing the horizontal scroll
 Files:	    src/normal.c
 
 Patch 6.1.159
-Problem:    When expanding an abbreviation that includes a multi-byte
+Problem:    When expanding an abbreviation that includes a multibyte
 	    character too many characters are deleted. (Andrey Urazov)
 Solution:   Delete the abbreviation counting characters instead of bytes.
 Files:	    src/getchar.c
@@ -7882,7 +7882,7 @@ Files:	    src/buffer.c, src/ex_cmds.c, src/fileio.c, src/globals.h,
 Patch 6.1.221
 Problem:    Changing case may not work properly, depending on the current
 	    locale.
-Solution:   Add the 'casemap' option to let the user chose how changing case
+Solution:   Add the 'casemap' option to let the user choose how changing case
 	    is to be done.
 	    Also fix lowering case when an UTF-8 character doesn't keep the
 	    same byte length.
@@ -7964,10 +7964,10 @@ Files:	    src/gui_w48.c
 
 Patch 6.1.231
 Problem:    Double clicking with the mouse to select a word does not work for
-	    multi-byte characters.
+	    multibyte characters.
 Solution:   Use vim_iswordc() instead of vim_isIDc().  This means 'iskeyword'
 	    is used instead of 'isident'.  Also fix that mixing ASCII with
-	    multi-byte word characters doesn't work, the mouse class for
+	    multibyte word characters doesn't work, the mouse class for
 	    punctuation and word characters was mixed up.
 Files:	    src/normal.c
 
@@ -8056,7 +8056,7 @@ Files:	    src/vim.h
 Patch 6.1.245
 Problem:    Comparing with ignored case does not work properly for Unicode
 	    with a locale where case folding an ASCII character results in a
-	    multi-byte character. (Glenn Maynard)
+	    multibyte character. (Glenn Maynard)
 Solution:   Handle ignore-case compare for Unicode differently.
 Files:	    src/mbyte.c
 
@@ -8081,8 +8081,8 @@ Files:	    src/eval.c
 
 Patch 6.1.249
 Problem:    Can't expand a path on the command line if it includes a "|" as a
-	    trail byte of a multi-byte character.
-Solution:   Check for multi-byte characters. (Yasuhiro Matsumoto)
+	    trail byte of a multibyte character.
+Solution:   Check for multibyte characters. (Yasuhiro Matsumoto)
 Files:	    src/ex_docmd.c
 
 Patch 6.1.250
@@ -8177,9 +8177,9 @@ Solution:   Set the previous context mark before jumping.
 Files:	    src/fold.c
 
 Patch 6.1.263
-Problem:    When typing a multi-byte character that triggers an abbreviation
+Problem:    When typing a multibyte character that triggers an abbreviation
 	    it is not inserted properly.
-Solution:   Handle adding the typed multi-byte character. (Yasuhiro Matsumoto)
+Solution:   Handle adding the typed multibyte character. (Yasuhiro Matsumoto)
 Files:	    src/getchar.c
 
 Patch 6.1.264 (depends on patch 6.1.254)
@@ -8207,7 +8207,7 @@ Solution:   Allocate enough memory for saving the register contents. (Muraoka
 Files:	    src/ops.c
 
 Patch 6.1.268
-Problem:    When triggering an abbreviation with a multi-byte character, this
+Problem:    When triggering an abbreviation with a multibyte character, this
 	    character is not correctly inserted after expanding the
 	    abbreviation. (Taro Muraoka)
 Solution:   Add ABBR_OFF to all characters above 0xff.
@@ -8321,7 +8321,7 @@ Files:	    runtime/doc/options.txt, src/buffer.c, src/option.c,
 	    src/quickfix.c
 
 Patch 6.1.286
-Problem:    'showbreak' cannot contain multi-byte characters.
+Problem:    'showbreak' cannot contain multibyte characters.
 Solution:   Allow using all printable characters for 'showbreak'.
 Files:	    src/charset.c, src/move.c, src/option.c
 
@@ -8343,9 +8343,9 @@ Solution:   Add a typecast for "  ".
 Files:	    src/screen.c
 
 Patch 6.1.290 (extra)
-Problem:    Truncating long text for message box may break multi-byte
+Problem:    Truncating long text for message box may break multibyte
 	    character.
-Solution:   Adjust to start of multi-byte character. (Yasuhiro Matsumoto)
+Solution:   Adjust to start of multibyte character. (Yasuhiro Matsumoto)
 Files:	    src/os_mswin.c
 
 Patch 6.1.291 (extra)
@@ -8368,7 +8368,7 @@ Solution:   Change ">=" to ">" in ml_find_line_or_offset(). (Bradford C Smith)
 Files:	    src/memline.c
 
 Patch 6.1.294
-Problem:    Can't include a multi-byte character in a string by its hex value.
+Problem:    Can't include a multibyte character in a string by its hex value.
 	    (Benji Fisher)
 Solution:   Add "\u....": a character specified with up to four hex numbers
 	    and stored according to the value of 'encoding'.
@@ -8791,7 +8791,7 @@ Solution:   Set Vim as the frontprocess.  Fix scrolling.  (Peter Cucka)
 Files:	    src/gui_mac.c
 
 Patch 6.1.360 (depends on 6.1.341)
-Problem:    In Insert mode CTRL-K ESC messes up a multi-byte character.
+Problem:    In Insert mode CTRL-K ESC messes up a multibyte character.
 	    (Anders Helmersson)
 Solution:   Save all bytes of a character when displaying a character
 	    temporarily.
@@ -8962,7 +8962,7 @@ Files:	    src/gui_w32.c
 
 Patch 6.1.383
 Problem:    The filling of the status line doesn't work properly for
-	    multi-byte characters. (Nam SungHyun)
+	    multibyte characters. (Nam SungHyun)
 	    There is no check for going past the end of the buffer.
 Solution:   Properly distinguish characters and bytes.  Properly check for
 	    running out of buffer space.
@@ -8976,13 +8976,13 @@ Files:	    runtime/doc/eval.txt, src/eval.c, src/proto/version.pro,
 	    src/version.c
 
 Patch 6.1.385 (depends on 6.1.383)
-Problem:    Can't compile without the multi-byte feature.
+Problem:    Can't compile without the multibyte feature.
 Solution:   Move an #ifdef.  (Christian J. Robinson)
 Files:	    src/buffer.c
 
 Patch 6.1.386
 Problem:    Get duplicate tags when running ":helptags".
-Solution:   Do the other halve of moving a section to another help file.
+Solution:   Do the other half of moving a section to another help file.
 Files:	    runtime/tagsrch.txt
 
 Patch 6.1.387 (depends on 6.1.373)
@@ -9201,10 +9201,10 @@ Solution:   Respect the GUARDEDOFFSET for sign IDs when checking for a guarded
 Files:	    src/netbeans.c
 
 Patch 6.1.417
-Problem:    Unprintable multi-byte characters are not handled correctly.
+Problem:    Unprintable multibyte characters are not handled correctly.
 	    Multi-byte characters above 0xffff are displayed as another
 	    character.
-Solution:   Handle unprintable multi-byte characters.  Display multi-byte
+Solution:   Handle unprintable multibyte characters.  Display multibyte
 	    characters above 0xffff with a marker.  Recognize UTF-16 words and
 	    BOM words as unprintable.  (Daniel Elstner)
 Files:	    src/charset.c, src/mbyte.c, src/screen.c
@@ -9326,7 +9326,7 @@ Solution:   Add the line number to the error message.
 Files:	    src/fileio.c
 
 Patch 6.1.437 (extra, depends on 6.1.421)
-Problem:    Using multi-byte functions when they are not available.
+Problem:    Using multibyte functions when they are not available.
 Solution:   Put the clipboard conversion inside an #ifdef. (Vince Negri)
 	    Also fix a pointer type mistake. (Walter Briscoe)
 Files:	    src/os_mswin.c
@@ -9526,8 +9526,8 @@ Solution:   Only store folds for a buffer with 'buftype' empty and help files.
 Files:	    src/ex_docmd.c
 
 Patch 6.1.469
-Problem:    'listchars' cannot contain multi-byte characters.
-Solution:   Handle multi-byte UTF-8 list characters. (Matthew Samsonoff)
+Problem:    'listchars' cannot contain multibyte characters.
+Solution:   Handle multibyte UTF-8 list characters. (Matthew Samsonoff)
 Files:	    src/message.c, src/option.c, src/screen.c
 
 Patch 6.1.470 (lang)
@@ -10009,7 +10009,7 @@ Files:	    nsis/gvim.nsi
 
 Patch 6.2.010
 Problem:    When 'virtualedit' is effective and a line starts with a
-	    multi-byte character, moving the cursor right doesn't work.
+	    multibyte character, moving the cursor right doesn't work.
 Solution:   Obtain the right character to compute the column offset. (Taro
 	    Muraoka)
 Files:	    src/charset.c
@@ -10109,7 +10109,7 @@ Files:	    src/fileio.c
 
 Patch 6.2.027
 Problem:    Warning for uninitialized variable.
-Solution:   Set mb_l to one when not using multi-byte characters.
+Solution:   Set mb_l to one when not using multibyte characters.
 Files:	    src/message.c
 
 Patch 6.2.028
@@ -10271,15 +10271,15 @@ Files:	    src/osdef1.h.in
 Patch 6.2.054
 Problem:    A double-byte character with a second byte that is a backslash
 	    causes problems inside a string.
-Solution:   Skip over multi-byte characters in a string properly. (Yasuhiro
+Solution:   Skip over multibyte characters in a string properly. (Yasuhiro
 	    Matsumoto)
 Files:	    src/eval.c
 
 Patch 6.2.055
 Problem:    Using col('.') from CTRL-O in Insert mode does not return the
-	    correct value for multi-byte characters.
+	    correct value for multibyte characters.
 Solution:   Correct the cursor position when it is necessary, move to the
-	    first byte of a multi-byte character. (Yasuhiro Matsumoto)
+	    first byte of a multibyte character. (Yasuhiro Matsumoto)
 Files:	    src/edit.c
 
 Patch 6.2.056 (extra)
@@ -10851,7 +10851,7 @@ Files:	    Makefile, src/Makefile, src/auto/configure, src/configure.in,
 
 Patch 6.2.143
 Problem:    Using "K" on Visually selected text doesn't work if it ends in
-	    a multi-byte character.
+	    a multibyte character.
 Solution:   Include all the bytes of the last character. (Taro Muraoka)
 Files:	    src/normal.c
 
@@ -11269,12 +11269,12 @@ Files:	    src/gui_w32.c, src/gui_w48.c
 Patch 6.2.206
 Problem:    Multi-byte characters cannot be used as hotkeys in a console
 	    dialog.  (Mattias Erkisson)
-Solution:   Handle multi-byte characters properly.  Also put () or [] around
+Solution:   Handle multibyte characters properly.  Also put () or [] around
 	    default hotkeys.
 Files:	    src/message.c, src/macros.h
 
 Patch 6.2.207
-Problem:    When 'encoding' is a multi-byte encoding, expanding an
+Problem:    When 'encoding' is a multibyte encoding, expanding an
 	    abbreviation that starts where insertion started results in
 	    characters before the insertion to be deleted.  (Xiangjiang Ma)
 Solution:   Stop searching leftwards for the start of the word at the position
@@ -11344,7 +11344,7 @@ Files:	    src/fileio.c, src/netbeans.c, src/proto/netbeans.pro,
 Patch 6.2.216 (after 6.2.206)
 Problem:    Multi-byte characters still cannot be used as hotkeys in a console
 	    dialog.  (Mattias Erkisson)
-Solution:   Make get_keystroke() handle multi-byte characters.
+Solution:   Make get_keystroke() handle multibyte characters.
 Files:	    src/misc1.c
 
 Patch 6.2.217
@@ -11710,7 +11710,7 @@ Files:	    src/gui.c
 Patch 6.2.269
 Problem:    Diff mode does not highlight a change in a combining character.
 	    (Raphael Finkel)
-Solution:   Make diff_find_change() multi-byte aware: find the start byte of
+Solution:   Make diff_find_change() multibyte aware: find the start byte of
 	    a character that contains a change.
 Files:	    src/diff.c
 
@@ -12505,7 +12505,7 @@ Solution:   Don't redraw the bottom line if no rows were inserted or deleted.
 Files:	    src/screen.c
 
 Patch 6.2.390
-Problem:    Using "r*" in Visual mode on multi-byte characters only replaces
+Problem:    Using "r*" in Visual mode on multibyte characters only replaces
 	    every other character. (Tyson Roberts)
 Solution:   Correct the cursor position after replacing each character.
 Files:	    src/ops.c
@@ -12745,7 +12745,7 @@ Solution:   Also use the line number of the position where the region
 Files:	    src/syntax.c
 
 Patch 6.2.427 (extra)
-Problem:    When pasting a lot of text in a multi-byte encoding, conversion
+Problem:    When pasting a lot of text in a multibyte encoding, conversion
 	    from 'termencoding' to 'encoding' may fail for some characters.
 	    (Kuang-che Wu)
 Solution:   When there is an incomplete byte sequence at the end of the read
@@ -12984,7 +12984,7 @@ Files:	    src/normal.c
 Patch 6.2.462
 Problem:    Finding a matching parenthesis does not correctly handle a
 	    backslash in a trailing byte.
-Solution:   Handle multi-byte characters correctly. (Taro Muraoka)
+Solution:   Handle multibyte characters correctly. (Taro Muraoka)
 Files:	    src/search.c
 
 Patch 6.2.463 (extra)
@@ -13015,7 +13015,7 @@ Solution:   Redefine wcsicmp() to wcscmpi() and add type casts. (Yasuhiro
 Files:	    src/os_win32.c
 
 Patch 6.2.467 (extra, after 6.2.463)
-Problem:    Win32: can't compile without multi-byte feature. (Ajit Thakkar)
+Problem:    Win32: can't compile without multibyte feature. (Ajit Thakkar)
 Solution:   Add #ifdefs around the info stream code.
 Files:	    src/os_win32.c
 
@@ -13183,8 +13183,8 @@ Solution:   Allow using "  " (two spaces) in 'paragraph' to match ".$" or
 Files:	    src/search.c
 
 Patch 6.2.491
-Problem:    Decrementing a position doesn't take care of multi-byte chars.
-Solution:   Adjust the column for multi-byte characters.  Remove mb_dec().
+Problem:    Decrementing a position doesn't take care of multibyte chars.
+Solution:   Adjust the column for multibyte characters.  Remove mb_dec().
 	    (Yasuhiro Matsumoto)
 Files:	    src/mbyte.c, src/misc2.c, src/proto/mbyte.pro
 
@@ -13354,12 +13354,12 @@ Files:	    runtime/doc/options.txt, runtime/doc/sign.txt, src/option.c,
 	    src/screen.c, src/syntax.c, src/vim.h
 
 Patch 6.2.517
-Problem:    Using "r*" in Visual mode on multi-byte characters replaces
+Problem:    Using "r*" in Visual mode on multibyte characters replaces
 	    too many characters.  In Visual Block mode replacing with a
-	    multi-byte character doesn't work.
+	    multibyte character doesn't work.
 Solution:   Adjust the operator end for the difference in byte length of the
 	    original and the replaced character.  Insert all bytes of a
-	    multi-byte character, take care of double-wide characters.
+	    multibyte character, take care of double-wide characters.
 Files:	    src/ops.c
 
 Patch 6.2.518
@@ -13438,7 +13438,7 @@ Problem:    NetBeans: Changes of the "~" command are not reported.
 Solution:   Call netbeans_inserted() after performing "~". (Gordon Prieur)
 	    Also change NetBeans debugging to append to the log file.
 	    Also fix that "~" in Visual block mode changes too much if there
-	    are multi-byte characters.
+	    are multibyte characters.
 Files:	    src/nbdebug.c, src/normal.c, src/ops.c
 
 Patch 6.2.529 (extra)
@@ -13552,7 +13552,7 @@ Solution:   Convert menu strings from 'encoding' to the active codepage.
 Files:	    src/gui_w32.c, src/gui_w48.c
 
 Patch 6.3a.014
-Problem:    Using multi-byte text and highlighting in a statusline causes gaps
+Problem:    Using multibyte text and highlighting in a statusline causes gaps
 	    to appear. (Helmut Stiegler)
 Solution:   Advance the column by text width instead of number of bytes.  Add
 	    the vim_strnsize() function.
@@ -14040,19 +14040,19 @@ Solution:   Correctly check that one character is being deleted.
 Files:	    src/misc1.c
 
 Patch 6.3.021
-Problem:    When the last character of a file name is a multi-byte character
+Problem:    When the last character of a file name is a multibyte character
 	    and the last byte is a path separator, the file cannot be edited.
-Solution:   Check for the last byte to be part of a multi-byte character.
+Solution:   Check for the last byte to be part of a multibyte character.
 	    (Taro Muraoka)
 Files:	    src/fileio.c
 
 Patch 6.3.022 (extra)
-Problem:    Win32: When the last character of a file name is a multi-byte
+Problem:    Win32: When the last character of a file name is a multibyte
 	    character and the last byte is a path separator, the file cannot
 	    be written.  A trail byte that is a space makes that a file cannot
 	    be opened from the command line.
 Solution:   Recognize double-byte characters when parsing the command line.
-	    In mch_stat() check for the last byte to be part of a multi-byte
+	    In mch_stat() check for the last byte to be part of a multibyte
 	    character.  (Taro Muraoka)
 Files:	    src/gui_w48.c, src/os_mswin.c
 
@@ -14222,7 +14222,7 @@ Solution:   Don't allow setting termcap options or 'printdevice' in a
 Files:	    src/option.c, runtime/doc/options.txt
 
 Patch 6.3.046
-Problem:    ":registers" doesn't show multi-byte characters properly.
+Problem:    ":registers" doesn't show multibyte characters properly.
 	    (Valery Kondakoff)
 Solution:   Get the length of each character before displaying it.
 Files:	    src/ops.c
@@ -14250,9 +14250,9 @@ Solution:   Ignore SIGHUP when exiting because of an error. (Scott Anderson)
 Files:	    src/misc1.c, src/main.c
 
 Patch 6.3.051
-Problem:    When 'wildmenu' is set and completed file names contain multi-byte
+Problem:    When 'wildmenu' is set and completed file names contain multibyte
 	    characters Vim may crash.
-Solution:   Reserve room for multi-byte characters. (Yasuhiro Matsumoto)
+Solution:   Reserve room for multibyte characters. (Yasuhiro Matsumoto)
 Files:	    src/screen.c
 
 Patch 6.3.052 (extra)
@@ -14286,9 +14286,9 @@ Solution:   When moving ccline out of the way for recursive use, make it
 Files:	    src/ex_getln.c
 
 Patch 6.3.056
-Problem:    The last characters of a multi-byte file name may not be displayed
+Problem:    The last characters of a multibyte file name may not be displayed
 	    in the window title.
-Solution:   Avoid to remove a multi-byte character where the last byte looks
+Solution:   Avoid to remove a multibyte character where the last byte looks
 	    like a path separator character. (Yasuhiro Matsumoto)
 Files:	    src/buffer.c, src/ex_getln.c
 
@@ -14319,9 +14319,9 @@ Files:	    src/edit.c
 
 Patch 6.3.061
 Problem:    When editing a utf-8 file in an utf-8 xterm and there is a
-	    multi-byte character in the last column, displaying is messed up.
+	    multibyte character in the last column, displaying is messed up.
 	    (Joël Rio)
-Solution:   Check for a multi-byte character, not a multi-column character.
+Solution:   Check for a multibyte character, not a multi-column character.
 Files:	    src/screen.c
 
 Patch 6.3.062
@@ -14384,7 +14384,7 @@ Files:	    src/edit.c
 Patch 6.3.072
 Problem:    Crash in giving substitute message when language is Chinese and
 	    encoding is utf-8. (Yongwei)
-Solution:   Make the msg_buf size larger when using multi-byte.
+Solution:   Make the msg_buf size larger when using multibyte.
 Files:	    src/vim.h
 
 Patch 6.3.073
@@ -14508,7 +14508,7 @@ Solution:   Change "a" to "b". (Tony Mechelynck)
 Files:	    src/version.h
 
 Patch 6.4b.002
-Problem:    In Insert mode, pasting a multi-byte character after the end of
+Problem:    In Insert mode, pasting a multibyte character after the end of
 	    the line leaves the cursor just before that character.
 Solution:   Make sure "gP" leaves the cursor in the right place when
 	    'virtualedit' is set.

@@ -1705,7 +1705,7 @@ special problem here is that it doesn't print information on leaving the
 directory and that it doesn't print the absolute path.
 
 To solve the problem with relative paths and missing "leave directory"
-messages Vim uses following algorithm:
+messages Vim uses the following algorithm:
 
 1) Check if the given directory is a subdirectory of the current directory.
    If this is true, store it as the current directory.
@@ -1938,7 +1938,7 @@ list window is:
 The values displayed in each line correspond to the "bufnr", "lnum", "col" and
 "text" fields returned by the |getqflist()| function.
 
-For some quickfix/location lists, the displayed text need to be customized.
+For some quickfix/location lists, the displayed text needs to be customized.
 For example, if only the filename is present for a quickfix entry, then the
 two "|" field separator characters after the filename are not needed.  Another
 use case is to customize the path displayed for a filename. By default, the
@@ -1964,7 +1964,10 @@ The function should return a single line of text to display in the quickfix
 window for each entry from start_idx to end_idx. The function can obtain
 information about the entries using the |getqflist()| function and specifying
 the quickfix list identifier "id". For a location list, getloclist() function
-can be used with the 'winid' argument.
+can be used with the 'winid' argument. If an empty list is returned, then the
+default format is used to display all the entries. If an item in the returned
+list is an empty string, then the default format is used to display the
+corresponding entry.
 
 If a quickfix or location list specific customization is needed, then the
 'quickfixtextfunc' attribute of the list can be set using the |setqflist()| or

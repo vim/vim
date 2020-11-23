@@ -62,7 +62,11 @@ let s:jsd3 = '{x:{a:1,b:2},y:{a:1,b:2}}'
 let s:vard4 = {"key": v:none}
 let s:vard4x = {"key": v:null}
 let s:jsond4 = '{"key":null}'
-let s:jsd4 = '{key:null}'
+let s:jsd4 = '{key:null}'    " js_encode puts no quotes around simple key.
+let s:vard5 = {"key!": v:none}
+let s:vard5x = {"key!": v:null}
+let s:jsond5 = '{"key!":null}'
+let s:jsd5 = '{"key!":null}' " js_encode puts quotes around non-simple key.
 
 let s:jsonvals = '[true,false,null,null]'
 let s:varvals = [v:true, v:false, v:null, v:null]
@@ -93,8 +97,15 @@ func Test_json_encode()
   call assert_equal(s:jsond2, json_encode(s:vard2))
   call assert_equal(s:jsond3, json_encode(s:vard3))
   call assert_equal(s:jsond4, json_encode(s:vard4))
+  call assert_equal(s:jsond5, json_encode(s:vard5))
 
   call assert_equal(s:jsonvals, json_encode(s:varvals))
+
+  " JSON is always encoded in utf-8 regardless of 'encoding' value.
+  let save_encoding = &encoding
+  set encoding=latin1
+  call assert_equal('"café"', json_encode("caf\xe9"))
+  let &encoding = save_encoding
 
   call assert_fails('echo json_encode(function("tr"))', 'E474:')
   call assert_fails('echo json_encode([function("tr")])', 'E474:')
@@ -133,6 +144,7 @@ func Test_json_decode()
   call assert_equal(s:vard2x, json_decode(s:jsond2s))
   call assert_equal(s:vard3, json_decode(s:jsond3))
   call assert_equal(s:vard4x, json_decode(s:jsond4))
+  call assert_equal(s:vard5x, json_decode(s:jsond5))
 
   call assert_equal(s:varvals, json_decode(s:jsonvals))
 
@@ -141,6 +153,15 @@ func Test_json_decode()
   call assert_equal(v:none, json_decode(''))
   call assert_equal(type(v:none), type(json_decode('')))
   call assert_equal("", json_decode('""'))
+
+  " Character in string after \ is ignored if not special.
+  call assert_equal("x", json_decode('"\x"'))
+
+  " JSON is always encoded in utf-8 regardless of 'encoding' value.
+  let save_encoding = &encoding
+  set encoding=latin1
+  call assert_equal("caf\xe9", json_decode('"café"'))
+  let &encoding = save_encoding
 
   " empty key is OK
   call assert_equal({'': 'ok'}, json_decode('{"": "ok"}'))
@@ -165,6 +186,9 @@ func Test_json_decode()
   call assert_fails('call json_decode("{\"n\":1,")', "E491:")
   call assert_fails('call json_decode("{\"n\",1}")', "E491:")
   call assert_fails('call json_decode("{-}")', "E491:")
+  if has('float')
+    call assert_fails('call json_decode("{3.14:1}")', "E806:")
+  endif
 
   call assert_fails('call json_decode("[foobar]")', "E491:")
   call assert_fails('call json_decode("[")', "E491:")
@@ -176,10 +200,17 @@ func Test_json_decode()
 
   call assert_fails('call json_decode("{{}:42}")', "E491:")
   call assert_fails('call json_decode("{[]:42}")', "E491:")
+  call assert_fails('call json_decode("{1:1{")', "E491:")
+
+  call assert_fails('call json_decode("-")', "E491:")
+  call assert_fails('call json_decode("-1x")', "E491:")
+  call assert_fails('call json_decode("infinit")', "E491:")
 
   call assert_fails('call json_decode("\"\\u111Z\"")', 'E491:')
   call assert_equal('[😂]', json_decode('"[\uD83D\uDE02]"'))
   call assert_equal('a😂b', json_decode('"a\uD83D\uDE02b"'))
+
+  call assert_fails('call json_decode("{\"\":{\"\":{")', 'E491:')
 endfunc
 
 let s:jsl5 = '[7,,,]'
@@ -211,6 +242,7 @@ func Test_js_encode()
   call assert_equal(s:jsd2, js_encode(s:vard2))
   call assert_equal(s:jsd3, js_encode(s:vard3))
   call assert_equal(s:jsd4, js_encode(s:vard4))
+  call assert_equal(s:jsd5, js_encode(s:vard5))
 
   call assert_equal(s:jsonvals, js_encode(s:varvals))
 
@@ -257,6 +289,8 @@ func Test_js_decode()
   call assert_equal(s:vard3, js_decode(s:jsd3))
   call assert_equal(s:vard4x, js_decode(s:jsond4))
   call assert_equal(s:vard4x, js_decode(s:jsd4))
+  call assert_equal(s:vard5x, js_decode(s:jsond5))
+  call assert_equal(s:vard5x, js_decode(s:jsd5))
 
   call assert_equal(s:varvals, js_decode(s:jsonvals))
 
@@ -271,25 +305,25 @@ func Test_js_decode()
   call assert_equal({'n': 1}, js_decode('{"n":1,}'))
   call assert_equal({'n': '1'}, js_decode("{'n':'1',}"))
 
-  call assert_fails('call js_decode("\"")', "E474:")
-  call assert_fails('call js_decode("blah")', "E474:")
-  call assert_fails('call js_decode("true blah")', "E474:")
-  call assert_fails('call js_decode("<foobar>")', "E474:")
+  call assert_fails('call js_decode("\"")', "E491:")
+  call assert_fails('call js_decode("blah")', "E491:")
+  call assert_fails('call js_decode("true blah")', "E488:")
+  call assert_fails('call js_decode("<foobar>")', "E491:")
 
-  call assert_fails('call js_decode("{")', "E474:")
-  call assert_fails('call js_decode("{foobar}")', "E474:")
-  call assert_fails('call js_decode("{\"n\",")', "E474:")
-  call assert_fails('call js_decode("{\"n\":")', "E474:")
-  call assert_fails('call js_decode("{\"n\":1")', "E474:")
-  call assert_fails('call js_decode("{\"n\":1,")', "E474:")
-  call assert_fails('call js_decode("{\"n\",1}")', "E474:")
-  call assert_fails('call js_decode("{-}")', "E474:")
+  call assert_fails('call js_decode("{")', "E491:")
+  call assert_fails('call js_decode("{foobar}")', "E491:")
+  call assert_fails('call js_decode("{\"n\",")', "E491:")
+  call assert_fails('call js_decode("{\"n\":")', "E491:")
+  call assert_fails('call js_decode("{\"n\":1")', "E491:")
+  call assert_fails('call js_decode("{\"n\":1,")', "E491:")
+  call assert_fails('call js_decode("{\"n\",1}")', "E491:")
+  call assert_fails('call js_decode("{-}")', "E491:")
 
-  call assert_fails('call js_decode("[foobar]")', "E474:")
-  call assert_fails('call js_decode("[")', "E474:")
-  call assert_fails('call js_decode("[1")', "E474:")
-  call assert_fails('call js_decode("[1,")', "E474:")
-  call assert_fails('call js_decode("[1 2]")', "E474:")
+  call assert_fails('call js_decode("[foobar]")', "E491:")
+  call assert_fails('call js_decode("[")', "E491:")
+  call assert_fails('call js_decode("[1")', "E491:")
+  call assert_fails('call js_decode("[1,")', "E491:")
+  call assert_fails('call js_decode("[1 2]")', "E491:")
 
   call assert_equal(s:varl5, js_decode(s:jsl5))
 endfunc
@@ -300,3 +334,5 @@ func Test_json_encode_long()
   let json = json_encode([repeat('a', 3996)])
   call assert_equal(4000, len(json))
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

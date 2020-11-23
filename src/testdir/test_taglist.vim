@@ -1,5 +1,6 @@
 " test taglist(), tagfiles() functions and :tags command
 
+source check.vim
 source view_util.vim
 
 func Test_taglist()
@@ -44,9 +45,8 @@ func Test_taglist()
 endfunc
 
 func Test_taglist_native_etags()
-  if !has('emacs_tags')
-    return
-  endif
+  CheckFeature emacs_tags
+
   call writefile([
 	\ "\x0c",
 	\ "src/os_unix.c,13491",
@@ -64,9 +64,8 @@ func Test_taglist_native_etags()
 endfunc
 
 func Test_taglist_ctags_etags()
-  if !has('emacs_tags')
-    return
-  endif
+  CheckFeature emacs_tags
+
   call writefile([
 	\ "\x0c",
 	\ "src/os_unix.c,13491",
@@ -84,7 +83,7 @@ func Test_taglist_ctags_etags()
 endfunc
 
 func Test_tags_too_long()
-  call assert_fails('tag ' . repeat('x', 1020), 'E426')
+  call assert_fails('tag ' . repeat('x', 1020), ['E433:', 'E426:'])
   tags
 endfunc
 

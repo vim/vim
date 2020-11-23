@@ -1,4 +1,5 @@
 " Tests for diff mode
+
 source shared.vim
 source screendump.vim
 source check.vim
@@ -654,9 +655,8 @@ endfunc
 
 func Test_diffpatch()
   " The patch program on MS-Windows may fail or hang.
-  if !executable('patch') || !has('unix')
-    return
-  endif
+  CheckExecutable patch
+  CheckUnix
   new
   insert
 ***************
@@ -1128,6 +1128,59 @@ func Test_diff_multilineconceal()
   call setline(1, ["a", "b"])
   diffthis
   redraw
+endfunc
+
+func Test_diff_and_scroll()
+  " this was causing an ml_get error
+  set ls=2
+  for i in range(winheight(0) * 2) 
+    call setline(i, i < winheight(0) - 10 ? i : i + 10) 
+  endfor
+  vnew
+  for i in range(winheight(0)*2 + 10) 
+    call setline(i, i < winheight(0) - 10 ? 0 : i) 
+  endfor
+  diffthis
+  wincmd p
+  diffthis
+  execute 'normal ' . winheight(0) . "\<C-d>"
+
+  bwipe!
+  bwipe!
+  set ls&
+endfunc
+
+func Test_diff_filler_cursorcolumn()
+  CheckScreendump
+
+  let content =<< trim END
+    call setline(1, ['aa', 'bb', 'cc'])
+    vnew
+    call setline(1, ['aa', 'cc'])
+    windo diffthis
+    wincmd p
+    setlocal cursorcolumn foldcolumn=0
+    norm! gg0
+    redraw!
+  END
+  call writefile(content, 'Xtest_diff_cuc')
+  let buf = RunVimInTerminal('-S Xtest_diff_cuc', {})
+
+  call VerifyScreenDump(buf, 'Test_diff_cuc_01', {})
+
+  call term_sendkeys(buf, "l")
+  call term_sendkeys(buf, "\<C-l>")
+  call VerifyScreenDump(buf, 'Test_diff_cuc_02', {})
+  call term_sendkeys(buf, "0j")
+  call term_sendkeys(buf, "\<C-l>")
+  call VerifyScreenDump(buf, 'Test_diff_cuc_03', {})
+  call term_sendkeys(buf, "l")
+  call term_sendkeys(buf, "\<C-l>")
+  call VerifyScreenDump(buf, 'Test_diff_cuc_04', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_diff_cuc')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -250,23 +250,23 @@ func Test_let_termcap()
     let &t_k1 = old_t_k1
   endif
 
-  call assert_fails('let x = &t_xx', 'E113')
+  call assert_fails('let x = &t_xx', 'E113:')
   let &t_xx = "yes"
   call assert_equal("yes", &t_xx)
   let &t_xx = ""
-  call assert_fails('let x = &t_xx', 'E113')
+  call assert_fails('let x = &t_xx', 'E113:')
 endfunc
 
 func Test_let_option_error()
   let _w = &tw
   let &tw = 80
-  call assert_fails('let &tw .= 1', 'E734')
+  call assert_fails('let &tw .= 1', 'E734:')
   call assert_equal(80, &tw)
   let &tw = _w
 
   let _w = &fillchars
   let &fillchars = "vert:|"
-  call assert_fails('let &fillchars += "diff:-"', 'E734')
+  call assert_fails('let &fillchars += "diff:-"', 'E734:')
   call assert_equal("vert:|", &fillchars)
   let &fillchars = _w
 endfunc
@@ -279,7 +279,7 @@ func Test_let_errors()
   let l = [1, 2, 3]
   call assert_fails('let l[:] = 5', 'E709:')
 
-  call assert_fails('let x:lnum=5', 'E488:')
+  call assert_fails('let x:lnum=5', ['E121:', 'E488:'])
   call assert_fails('let v:=5', 'E461:')
   call assert_fails('let [a]', 'E474:')
   call assert_fails('let [a, b] = [', 'E697:')
@@ -298,7 +298,7 @@ func Test_let_errors()
   let l = [[1,2]]
   call assert_fails('let l[:][0] = [5]', 'E708:')
   let d = {'k' : 4}
-  call assert_fails('let d.# = 5', 'E713:')
+  call assert_fails('let d.# = 5', 'E488:')
   call assert_fails('let d.m += 5', 'E734:')
   call assert_fails('let m = d[{]', 'E15:')
   let l = [1, 2]

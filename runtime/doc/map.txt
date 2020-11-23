@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.2.  Last change: 2020 Apr 23
+*map.txt*       For Vim version 8.2.  Last change: 2020 Nov 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -191,6 +191,12 @@ whether to use the "," mapping or the longer one.  To avoid this add the
 <nowait> argument.  Then the mapping will be used when it matches, Vim does
 not wait for more characters to be typed.  However, if the characters were
 already typed they are used.
+Note that this works when the <nowait> mapping fully matches and is found
+before any partial matches.  This works when:
+- There is only one matching buffer-local mapping, since these are always
+  found before global mappings.
+- There is another buffer-local mapping that partly matches, but it is
+  defined earlier (last defined mapping is found first).
 
 						*:map-<silent>* *:map-silent*
 To define a mapping which will not be echoed on the command line, add
@@ -246,6 +252,17 @@ For abbreviations |v:char| is set to the character that was typed to trigger
 the abbreviation.  You can use this to decide how to expand the {lhs}.  You
 should not either insert or change the v:char.
 
+In case you want the mapping to not do anything, you can have the expression
+evaluate to an empty string.  If something changed that requires Vim to
+go through the main loop (e.g. to update the display), return "\<Ignore>".
+This is similar to "nothing" but makes Vim return from the loop that waits for
+input. Example: >
+	func s:OpenPopup()
+	  call popup_create(... arguments ...)
+	  return "\<Ignore>"
+	endfunc
+	nnoremap <expr> <F3> <Sid>OpenPopup()
+
 Be very careful about side effects!  The expression is evaluated while
 obtaining characters, you may very well make the command dysfunctional.
 For this reason the following is blocked:
@@ -254,7 +271,7 @@ For this reason the following is blocked:
 - The |:normal| command.
 - Moving the cursor is allowed, but it is restored afterwards.
 If you want the mapping to do any of these let the returned characters do
-that.
+that, or use a |<Cmd>| mapping instead.
 
 You can use getchar(), it consumes typeahead if there is any. E.g., if you
 have these mappings: >
@@ -283,15 +300,45 @@ Here is an example that inserts a list number that increases: >
 CTRL-L inserts the next number, CTRL-R resets the count.  CTRL-R returns an
 empty string, so that nothing is inserted.
 
-Note that there are some tricks to make special keys work and escape CSI bytes
-in the text.  The |:map| command also does this, thus you must avoid that it
-is done twice.  This does not work: >
-	:imap <expr> <F3> "<Char-0x611B>"
-Because the <Char- sequence is escaped for being a |:imap| argument and then
-again for using <expr>.  This does work: >
-	:imap <expr> <F3> "\u611B"
-Using 0x80 as a single byte before other text does not work, it will be seen
-as a special key.
+Note that using 0x80 as a single byte before other text does not work, it will
+be seen as a special key.
+
+						*<Cmd>* *:map-cmd*
+The special text <Cmd> begins a "command mapping", it executes the command
+directly without changing modes.  Where you might use ":...<CR>" in the
+{rhs} of a mapping, you can instead use "<Cmd>...<CR>".
+Example: >
+	noremap x <Cmd>echo mode(1)<CR>
+<
+This is more flexible than `:<C-U>` in Visual and Operator-pending mode, or
+`<C-O>:` in Insert mode, because the commands are executed directly in the
+current mode, instead of always going to Normal mode.  Visual mode is
+preserved, so tricks with |gv| are not needed.  Commands can be invoked
+directly in Command-line mode (which would otherwise require timer hacks).
+Example of using <Cmd> halfway Insert mode: >
+	nnoremap <F3> aText <Cmd>echo mode(1)<CR> Added<Esc>
+
+Unlike <expr> mappings, there are no special restrictions on the <Cmd>
+command: it is executed as if an (unrestricted) |autocommand| was invoked.
+
+Note:
+- Because <Cmd> avoids mode-changes it does not trigger |CmdlineEnter| and
+  |CmdlineLeave| events, because no user interaction is expected.
+- For the same reason, |keycodes| like <C-R><C-W> are interpreted as plain,
+  unmapped keys.
+- The command is not echo'ed, no need for <silent>.
+- In Visual mode  you can use `line('v')` and `col('v')` to get one end of the
+  Visual area, the cursor is at the other end.
+- In Select mode, |:map| and |:vmap| command mappings are executed in
+  Visual mode.  Use |:smap| to handle Select mode differently.
+
+							*E1135* *E1136*
+<Cmd> commands must terminate, that is, they must be followed by <CR> in the
+{rhs} of the mapping definition.  |Command-line| mode is never entered.
+
+							*E1137*
+<Cmd> commands can have only normal characters and cannot contain special
+characters like function keys.
 
 
 1.3 MAPPING AND MODES					*:map-modes*
@@ -595,7 +642,7 @@ construct can be used:
 	<Char-033>	character 27
 	<Char-0x7f>	character 127
 	<S-Char-114>    character 114 ('r') shifted ('R')
-This is useful to specify a (multi-byte) character in a 'keymap' file.
+This is useful to specify a (multibyte) character in a 'keymap' file.
 Upper and lowercase differences are ignored.
 
 							*map-comments*
@@ -840,14 +887,20 @@ execute a shell command, e.g.: `!ls`  Or put the lines in your |vimrc|.
 
 When modifyOtherKeys is enabled you can map <C-[> and <C-S-{>: >
 	imap <C-[> [[[
-	imap <C-S-{> {{{
-Without modifyOtherKeys <C-[> and <C-S-{> are indistinguishable from Esc.
+	imap <C-{> {{{
+Without modifyOtherKeys <C-[> and <C-{> are indistinguishable from Esc.
+Note that <C-{> is used and not <C-S-[> or <C-S-{>.  This works on most
+keyboards.  Similarly, <C-}> is used instead of <C-S-]> or <C-S-}> and
+<C-|> instead of <C-S-\> or <C-S-|>.  Note that '|' has a special meaning in a
+mapping, see |map-bar|.
 
-A known side effect effect is that in Insert mode the raw escape sequence is
-inserted after the CTRL-V key.  This can be used to check whether
-modifyOtherKeys is enabled: In Insert mode type CTRL-SHIFT-V CTRL-V, if you
-get one byte then modifyOtherKeys is off, if you get <1b>27;5;118~ then it is
-on.
+WARNING: if you map <C-[> you may very well break any key codes that start
+with Esc.  Make sure it comes AFTER other mappings.
+
+A known side effect is that in Insert mode the raw escape sequence is inserted
+after the CTRL-V key.  This can be used to check whether modifyOtherKeys is
+enabled: In Insert mode type CTRL-SHIFT-V CTRL-V, if you get one byte then
+modifyOtherKeys is off, if you get <1b>27;5;118~ then it is on.
 
 When the 'esckeys' option is off, then modifyOtherKeys will be disabled in
 Insert mode to avoid every key with a modifier causing Insert mode to end.
@@ -876,35 +929,47 @@ g@{motion}		Call the function set by the 'operatorfunc' option.
 
 Here is an example that counts the number of spaces with <F4>: >
 
-	nmap <silent> <F4> :set opfunc=CountSpaces<CR>g@
-	vmap <silent> <F4> :<C-U>call CountSpaces(visualmode(), 1)<CR>
+	nnoremap <expr> <F4> CountSpaces()
+	xnoremap <expr> <F4> CountSpaces()
+	" doubling <F4> works on a line
+	nnoremap <expr> <F4><F4> CountSpaces() .. '_'
 
-	function! CountSpaces(type, ...)
+	function CountSpaces(type = '') abort
+	  if a:type == ''
+	    set opfunc=CountSpaces
+	    return 'g@'
+ 	  endif
+
 	  let sel_save = &selection
-	  let &selection = "inclusive"
-	  let reg_save = @@
+	  let reg_save = getreginfo('"')
+	  let cb_save = &clipboard
+	  let visual_marks_save = [getpos("'<"), getpos("'>")]
 
-	  if a:0  " Invoked from Visual mode, use gv command.
-	    silent exe "normal! gvy"
-	  elseif a:type == 'line'
-	    silent exe "normal! '[V']y"
-	  else
-	    silent exe "normal! `[v`]y"
-	  endif
-
-	  echomsg strlen(substitute(@@, '[^ ]', '', 'g'))
-
-	  let &selection = sel_save
-	  let @@ = reg_save
+	  try
+	    set clipboard= selection=inclusive
+	    let commands = #{line: "'[V']y", char: "`[v`]y", block: "`[\<c-v>`]y"}
+	    silent exe 'noautocmd keepjumps normal! ' .. get(commands, a:type, '')
+	    echom getreg('"')->count(' ')
+	  finally
+	    call setreg('"', reg_save)
+	    call setpos("'<", visual_marks_save[0])
+	    call setpos("'>", visual_marks_save[1])
+	    let &clipboard = cb_save
+	    let &selection = sel_save
+	  endtry
 	endfunction
+
+An <expr> mapping is used to be able to fetch any prefixed count and register.
+This also avoids using a command line, which would trigger CmdlineEnter and
+CmdlineLeave autocommands.
 
 Note that the 'selection' option is temporarily set to "inclusive" to be able
 to yank exactly the right text by using Visual mode from the '[ to the ']
 mark.
 
-Also note that there is a separate mapping for Visual mode.  It removes the
-"'<,'>" range that ":" inserts in Visual mode and invokes the function with
-visualmode() and an extra argument.
+Also note that the 'clipboard' option is temporarily emptied to avoid
+clobbering the `"*` or `"+` registers, if its value contains the item `unnamed`
+or `unnamedplus`.
 
 ==============================================================================
 2. Abbreviations			*abbreviations* *Abbreviations*
@@ -1168,13 +1233,17 @@ When executing an autocommand or a user command, it will run in the context of
 the script it was defined in.  This makes it possible that the command calls a
 local function or uses a local mapping.
 
+In case the value is used in a context where <SID> cannot be correctly
+expanded, use the expand() function: >
+	let &includexpr = expand('<SID>') .. 'My_includeexpr()'
+
 Otherwise, using "<SID>" outside of a script context is an error.
 
 If you need to get the script number to use in a complicated script, you can
 use this function: >
-	function s:SID()
-	  return matchstr(expand('<sfile>'), '<SNR>\zs\d\+\ze_SID$')
-	endfun
+	func s:ScriptNumber()
+	  return matchstr(expand('<SID>'), '<SNR>\zs\d\+\ze_')
+	endfunc
 
 The "<SNR>" will be shown when listing functions and mappings.  This is useful
 to find out what they are defined to.
@@ -1492,7 +1561,7 @@ The valid escape sequences are
 	<bang>	(See the '-bang' attribute) Expands to a ! if the
 		command was executed with a ! modifier, otherwise
 		expands to nothing.
-						*<mods>* *:command-modifiers*
+					*<mods>* *<q-mods>* *:command-modifiers*
 	<mods>  The command modifiers, if specified. Otherwise, expands to
 		nothing. Supported modifiers are |:aboveleft|, |:belowright|,
 		|:botright|, |:browse|, |:confirm|, |:hide|, |:keepalt|,

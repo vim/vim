@@ -99,3 +99,5 @@ func Test_wprevious()
   call delete('X3')
   call delete('X4')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

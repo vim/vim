@@ -1,5 +1,6 @@
 " Test for options
 
+source shared.vim
 source check.vim
 source view_util.vim
 
@@ -136,12 +137,11 @@ func Test_path_keep_commas()
 endfunc
 
 func Test_signcolumn()
-  if has('signs')
-    call assert_equal("auto", &signcolumn)
-    set signcolumn=yes
-    set signcolumn=no
-    call assert_fails('set signcolumn=nope')
-  endif
+  CheckFeature signs
+  call assert_equal("auto", &signcolumn)
+  set signcolumn=yes
+  set signcolumn=no
+  call assert_fails('set signcolumn=nope')
 endfunc
 
 func Test_filetype_valid()
@@ -162,9 +162,7 @@ func Test_filetype_valid()
 endfunc
 
 func Test_syntax_valid()
-  if !has('syntax')
-    return
-  endif
+  CheckFeature syntax
   set syn=valid_name
   call assert_equal("valid_name", &syntax)
   set syn=valid-name
@@ -182,9 +180,7 @@ func Test_syntax_valid()
 endfunc
 
 func Test_keymap_valid()
-  if !has('keymap')
-    return
-  endif
+  CheckFeature keymap
   call assert_fails(":set kmp=valid_name", "E544:")
   call assert_fails(":set kmp=valid_name", "valid_name")
   call assert_fails(":set kmp=valid-name", "E544:")
@@ -281,11 +277,11 @@ func Test_set_completion()
   " Expand directories.
   call feedkeys(":set cdpath=./\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_match(' ./samples/ ', @:)
-  call assert_notmatch(' ./small.vim ', @:)
+  call assert_notmatch(' ./summarize.vim ', @:)
 
   " Expand files and directories.
   call feedkeys(":set tags=./\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_match(' ./samples/.* ./small.vim', @:)
+  call assert_match(' ./samples/.* ./summarize.vim', @:)
 
   call feedkeys(":set tags=./\\\\ dif\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"set tags=./\\ diff diffexpr diffopt', @:)
@@ -376,7 +372,6 @@ func Test_set_errors()
   call assert_fails('set commentstring=x', 'E537:')
   call assert_fails('set complete=x', 'E539:')
   call assert_fails('set statusline=%{', 'E540:')
-  call assert_fails('set statusline=' . repeat("%p", 81), 'E541:')
   call assert_fails('set statusline=%(', 'E542:')
   if has('cursorshape')
     " This invalid value for 'guicursor' used to cause Vim to crash.
@@ -415,6 +410,7 @@ func Test_set_errors()
     call assert_fails('set pyxversion=6', 'E474:')
   endif
   call assert_fails("let &tabstop='ab'", 'E521:')
+  call assert_fails('set spellcapcheck=%\\(', 'E54:')
 endfunc
 
 func CheckWasSet(name)
@@ -591,6 +587,35 @@ func Test_backupskip()
       call assert_true(found, var . ' (' . varvalue . ') not in option bsk: ' . &bsk)
     endif
   endfor
+
+  " Duplicates from environment variables should be filtered out (option has
+  " P_NODUP).  Run this in a separate instance and write v:errors in a file,
+  " so that we see what happens on startup.
+  let after =<< trim [CODE]
+      let bsklist = split(&backupskip, ',')
+      call assert_equal(uniq(copy(bsklist)), bsklist)
+      call writefile(['errors:'] + v:errors, 'Xtestout')
+      qall
+  [CODE]
+  call writefile(after, 'Xafter')
+  let cmd = GetVimProg() . ' --not-a-term -S Xafter --cmd "set enc=utf8"'
+
+  let saveenv = {}
+  for var in ['TMPDIR', 'TMP', 'TEMP']
+    let saveenv[var] = getenv(var)
+    call setenv(var, '/duplicate/path')
+  endfor
+
+  exe 'silent !' . cmd
+  call assert_equal(['errors:'], readfile('Xtestout'))
+
+  " restore environment variables
+  for var in ['TMPDIR', 'TMP', 'TEMP']
+    call setenv(var, saveenv[var])
+  endfor
+
+  call delete('Xtestout')
+  call delete('Xafter')
 
   " Duplicates should be filtered out (option has P_NODUP)
   let backupskip = &backupskip
@@ -790,7 +815,13 @@ func Test_shell()
   CheckUnix
   let save_shell = &shell
   set shell=
-  call assert_fails('shell', 'E91:')
+  let caught_e91 = 0
+  try
+    shell
+  catch /E91:/
+    let caught_e91 = 1
+  endtry
+  call assert_equal(1, caught_e91)
   let &shell = save_shell
 endfunc
 
@@ -971,6 +1002,15 @@ func Test_opt_winminwidth()
   call assert_true(&winminwidth <= &columns)
   set winminwidth&
   set winwidth&
+endfunc
+
+" Test for setting option value containing spaces with isfname+=32
+func Test_isfname_with_options()
+  set isfname+=32
+  setlocal keywordprg=:term\ help.exe
+  call assert_equal(':term help.exe', &keywordprg)
+  set isfname&
+  setlocal keywordprg&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

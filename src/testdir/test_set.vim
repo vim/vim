@@ -25,3 +25,5 @@ function Test_set_add()
 
   let &wig = wig_save
 endfunction
+
+" vim: shiftwidth=2 sts=2 expandtab

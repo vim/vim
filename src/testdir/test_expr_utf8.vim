@@ -32,3 +32,5 @@ func Test_strcharpart()
   call assert_equal('̀', strcharpart('àxb', 1, 1))
   call assert_equal('x', strcharpart('àxb', 2, 1))
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

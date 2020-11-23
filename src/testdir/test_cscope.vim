@@ -31,9 +31,9 @@ func Test_cscopeWithCscopeConnections()
     catch
       call assert_report('exception thrown')
     endtry
-    call assert_fails('cscope add', 'E560')
-    call assert_fails('cscope add Xcscope.out', 'E568')
-    call assert_fails('cscope add doesnotexist.out', 'E563')
+    call assert_fails('cscope add', 'E560:')
+    call assert_fails('cscope add Xcscope.out', 'E568:')
+    call assert_fails('cscope add doesnotexist.out', 'E563:')
     if has('unix')
       call assert_fails('cscope add /dev/null', 'E564:')
     endif
@@ -189,7 +189,7 @@ func Test_cscopeWithCscopeConnections()
 
     " Test: 'cst' option
     set nocst
-    call assert_fails('tag TEST_COUNT', 'E426:')
+    call assert_fails('tag TEST_COUNT', 'E433:')
     set cst
     let a = execute('tag TEST_COUNT')
     call assert_match('(1 of 1): <<TEST_COUNT>> #define TEST_COUNT 50000', a)

@@ -375,6 +375,7 @@ static const struct nv_cmd
 #endif
     {K_CURSORHOLD, nv_cursorhold, NV_KEEPREG,		0},
     {K_PS,	nv_edit,	0,			0},
+    {K_COMMAND,	nv_colon,	0,			0},
 };
 
 // Number of commands in nv_cmds[].
@@ -499,6 +500,7 @@ normal_cmd(
 #ifdef FEAT_EVAL
     int		set_prevcount = FALSE;
 #endif
+    int		save_did_cursorhold = did_cursorhold;
 
     CLEAR_FIELD(ca);	// also resets ca.retval
     ca.oap = oap;
@@ -894,8 +896,28 @@ getcount:
 	    if (lang && curbuf->b_p_iminsert == B_IMODE_IM)
 		im_set_active(TRUE);
 #endif
+	    if ((State & INSERT) && !p_ek)
+	    {
+#ifdef FEAT_JOB_CHANNEL
+		ch_log_output = TRUE;
+#endif
+		// Disable bracketed paste and modifyOtherKeys here, we won't
+		// recognize the escape sequences with 'esckeys' off.
+		out_str(T_BD);
+		out_str(T_CTE);
+	    }
 
 	    *cp = plain_vgetc();
+
+	    if ((State & INSERT) && !p_ek)
+	    {
+#ifdef FEAT_JOB_CHANNEL
+		ch_log_output = TRUE;
+#endif
+		// Re-enable bracketed paste mode and modifyOtherKeys
+		out_str(T_BE);
+		out_str(T_CTI);
+	    }
 
 	    if (langmap_active)
 	    {
@@ -1025,7 +1047,12 @@ getcount:
 	out_flush();
 #endif
     if (ca.cmdchar != K_IGNORE)
-	did_cursorhold = FALSE;
+    {
+	if (ex_normal_busy)
+	    did_cursorhold = save_did_cursorhold;
+	else
+	    did_cursorhold = FALSE;
+    }
 
     State = NORMAL;
 
@@ -1128,6 +1155,7 @@ getcount:
 	    && stuff_empty()
 	    && typebuf_typed()
 	    && emsg_silent == 0
+	    && !in_assert_fails
 	    && !did_wait_return
 	    && oap->op_type == OP_NOP)
     {
@@ -3285,10 +3313,11 @@ nv_exmode(cmdarg_T *cap)
     static void
 nv_colon(cmdarg_T *cap)
 {
-    int	    old_p_im;
-    int	    cmd_result;
+    int	old_p_im;
+    int	cmd_result;
+    int	is_cmdkey = cap->cmdchar == K_COMMAND;
 
-    if (VIsual_active)
+    if (VIsual_active && !is_cmdkey)
 	nv_operator(cap);
     else
     {
@@ -3298,7 +3327,7 @@ nv_colon(cmdarg_T *cap)
 	    cap->oap->motion_type = MCHAR;
 	    cap->oap->inclusive = FALSE;
 	}
-	else if (cap->count0)
+	else if (cap->count0 && !is_cmdkey)
 	{
 	    // translate "count:" into ":.,.+(count - 1)"
 	    stuffcharReadbuff('.');
@@ -3316,7 +3345,7 @@ nv_colon(cmdarg_T *cap)
 	old_p_im = p_im;
 
 	// get a command line and execute it
-	cmd_result = do_cmdline(NULL, getexline, NULL,
+	cmd_result = do_cmdline(NULL, is_cmdkey ? getcmdkeycmd : getexline, NULL,
 			    cap->oap->op_type != OP_NOP ? DOCMD_KEEPLINE : 0);
 
 	// If 'insertmode' changed, enter or exit Insert mode
@@ -3638,8 +3667,10 @@ nv_ident(cmdarg_T *cap)
 	    {
 		if (g_cmd)
 		    STRCPY(buf, "tj ");
+		else if (cap->count0 == 0)
+		    STRCPY(buf, "ta ");
 		else
-		    sprintf((char *)buf, "%ldta ", cap->count0);
+		    sprintf((char *)buf, ":%ldta ", cap->count0);
 	    }
     }
 
@@ -5436,7 +5467,7 @@ nv_gomark(cmdarg_T *cap)
 }
 
 /*
- * Handle CTRL-O, CTRL-I, "g;" and "g," commands.
+ * Handle CTRL-O, CTRL-I, "g;", "g," and "CTRL-Tab" commands.
  */
     static void
 nv_pcmark(cmdarg_T *cap)
@@ -5450,6 +5481,12 @@ nv_pcmark(cmdarg_T *cap)
 
     if (!checkclearopq(cap->oap))
     {
+	if (cap->cmdchar == TAB && mod_mask == MOD_MASK_CTRL)
+	{
+	    if (goto_tabpage_lastused() == FAIL)
+		clearopbeep(cap->oap);
+	    return;
+	}
 	if (cap->cmdchar == 'g')
 	    pos = movechangelist((int)cap->count1);
 	else
@@ -6302,6 +6339,11 @@ nv_g_cmd(cmdarg_T *cap)
     case 'T':
 	if (!checkclearop(oap))
 	    goto_tabpage(-(int)cap->count1);
+	break;
+
+    case TAB:
+	if (!checkclearop(oap) && goto_tabpage_lastused() == FAIL)
+	    clearopbeep(oap);
 	break;
 
     case '+':
@@ -7388,7 +7430,7 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	    // May have been reset in do_put().
 	    VIsual_active = TRUE;
 	}
-	do_put(cap->oap->regname, dir, cap->count1, flags);
+	do_put(cap->oap->regname, NULL, dir, cap->count1, flags);
 
 	// If a register was saved, put it back now.
 	if (reg2 != NULL)
@@ -7461,7 +7503,7 @@ nv_nbcmd(cmdarg_T *cap)
     static void
 nv_drop(cmdarg_T *cap UNUSED)
 {
-    do_put('~', BACKWARD, 1L, PUT_CURSEND);
+    do_put('~', NULL, BACKWARD, 1L, PUT_CURSEND);
 }
 #endif
 

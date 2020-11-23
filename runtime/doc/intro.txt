@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 8.2.  Last change: 2020 May 30
+*intro.txt*     For Vim version 8.2.  Last change: 2020 Aug 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -232,8 +232,8 @@ Vim would never have become what it is now, without the help of these people!
 	Flemming Madsen		X11 client-server, various features and patches
 	Tony Mechelynck		answers many user questions
 	Paul Moore		Python interface extensions, many patches
-	Katsuhito Nagano	Work on multi-byte versions
-	Sung-Hyun Nam		Work on multi-byte versions
+	Katsuhito Nagano	Work on multibyte versions
+	Sung-Hyun Nam		Work on multibyte versions
 	Vince Negri		Win32 GUI and generic console enhancements
 	Steve Oualline		Author of the first Vim book |frombook|
 	Dominique Pelle		Valgrind reports and many fixes
@@ -510,7 +510,7 @@ the ":map" command.  The rules are:
 	   <M-a>		Meta- a  ('a' with bit 8 set)
 	   <M-A>		Meta- A  ('A' with bit 8 set)
 	   <t_kd>		"kd" termcap entry (cursor down key)
-    Although you can specify <M-{char}> with {char} being a multi-byte
+    Although you can specify <M-{char}> with {char} being a multibyte
     character, Vim may not be able to know what byte sequence that is and then
     it won't work.
 

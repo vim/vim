@@ -4124,8 +4124,6 @@ msgstr "E538: Ingen støtte for mus"
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: Uttrykkssekvens som ikke er lukket"
 
-msgid "E541: too many items"
-msgstr "E541: For mange elementer"
 
 msgid "E542: unbalanced groups"
 msgstr "E542: Ubalanserte grupper"

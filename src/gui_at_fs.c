@@ -179,9 +179,9 @@ static void SFdrawLists(int doScroll);
 static void SFdrawList(int n, int doScroll);
 static void SFclearList(int n, int doScroll);
 static char SFstatChar(stat_T *statBuf);
-static void SFmotionList(Widget w, int n, XMotionEvent *event);
+static void SFmotionList(Widget w, XtPointer np, XMotionEvent *event, Boolean *cont);
 static void SFvSliderMovedCallback(Widget w, int n, int nw);
-static Boolean SFworkProc(void);
+static Boolean SFworkProc(void *);
 static int SFcompareEntries(const void *p, const void *q);
 
 ////////////////// xstat.h
@@ -798,19 +798,22 @@ SFsetText(char *path)
 
     static void
 SFbuttonPressList(
-    Widget		w UNUSED,
-    int			n UNUSED,
-    XButtonPressedEvent	*event UNUSED)
+    Widget	w UNUSED,
+    XtPointer	np UNUSED,
+    XEvent	*event UNUSED,
+    Boolean	*cont UNUSED)
 {
     SFbuttonPressed = 1;
 }
 
     static void
 SFbuttonReleaseList(
-    Widget		 w,
-    int			 n,
-    XButtonReleasedEvent *event)
+    Widget	w UNUSED,
+    XtPointer	np,
+    XEvent	*event UNUSED,
+    Boolean	*cont UNUSED)
 {
+    long	n = (long)np;
     SFDir	*dir;
 
     SFbuttonPressed = 0;
@@ -823,7 +826,7 @@ SFbuttonReleaseList(
 	dir = &(SFdirs[SFdirPtr + n]);
 	SFreplaceText(dir,
 		       dir->entries[dir->vOrigin + SFcurrentInvert[n]].shown);
-	SFmotionList(w, n, (XMotionEvent *) event);
+	SFmotionList(w, (XtPointer)(long)n, (XMotionEvent *)event, 0);
     }
 }
 
@@ -1600,9 +1603,14 @@ SFnewInvertEntry(int n, XMotionEvent *event)
 }
 
     static void
-SFenterList(Widget w UNUSED, int n, XEnterWindowEvent *event)
+SFenterList(
+    Widget	w UNUSED,
+    XtPointer	np,
+    XEvent	*event,
+    Boolean	*cont UNUSED)
 {
-    int			nw;
+    long	n = (long)np;
+    int		nw;
 
     // sanity
     if (SFcurrentInvert[n] != -1)
@@ -1620,8 +1628,14 @@ SFenterList(Widget w UNUSED, int n, XEnterWindowEvent *event)
 }
 
     static void
-SFleaveList(Widget w UNUSED, int n, XEvent *event UNUSED)
+SFleaveList(
+    Widget	w UNUSED,
+    XtPointer	np,
+    XEvent	*event UNUSED,
+    Boolean	*cont UNUSED)
 {
+    long	n = (long)np;
+
     if (SFcurrentInvert[n] != -1)
     {
 	SFinvertEntry(n);
@@ -1630,8 +1644,13 @@ SFleaveList(Widget w UNUSED, int n, XEvent *event UNUSED)
 }
 
     static void
-SFmotionList(Widget w UNUSED, int n, XMotionEvent *event)
+SFmotionList(
+    Widget	    w UNUSED,
+    XtPointer	    np,
+    XMotionEvent    *event UNUSED,
+    Boolean	    *cont UNUSED)
 {
+    long	n = (long)np;
     int		nw;
 
     nw = SFnewInvertEntry(n, event);
@@ -1954,7 +1973,7 @@ SFpathAreaSelectedCallback(
 }
 
     static Boolean
-SFworkProc(void)
+SFworkProc(void *arg UNUSED)
 {
     SFDir	*dir;
     SFEntry	*entry;

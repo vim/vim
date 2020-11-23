@@ -497,10 +497,12 @@ check_due_timer(void)
 	    may_garbage_collect = FALSE;
 	    save_vimvars(&vvsave);
 
+	    // Invoke the callback.
 	    timer->tr_firing = TRUE;
 	    timer_callback(timer);
 	    timer->tr_firing = FALSE;
 
+	    // Restore stuff.
 	    timer_next = timer->tr_next;
 	    did_one = TRUE;
 	    timer_busy = save_timer_busy;
@@ -742,7 +744,7 @@ f_timer_info(typval_T *argvars, typval_T *rettv)
 f_timer_pause(typval_T *argvars, typval_T *rettv UNUSED)
 {
     timer_T	*timer = NULL;
-    int		paused = (int)tv_get_number(&argvars[1]);
+    int		paused = (int)tv_get_bool(&argvars[1]);
 
     if (argvars[0].v_type != VAR_NUMBER)
 	emsg(_(e_number_exp));

@@ -15,6 +15,7 @@ void ex_cclose(exarg_T *eap);
 void ex_copen(exarg_T *eap);
 void ex_cbottom(exarg_T *eap);
 linenr_T qf_current_entry(win_T *wp);
+int qf_process_qftf_option(void);
 int grep_internal(cmdidx_T cmdidx);
 void ex_make(exarg_T *eap);
 int qf_get_size(exarg_T *eap);

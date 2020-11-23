@@ -110,7 +110,7 @@ OPTIONS
                    read.   {command}  is interpreted as an Ex command.  If the
                    {command} contains spaces it must  be  enclosed  in  double
                    quotes  (this depends on the shell that is used).  Example:
-                   Vim "+set si" main.c
+                   vim "+set si" main.c
                    Note: You can use up to 10 "+" or "-c" commands.
 
        -S {file}   {file} will be sourced after the first file has been  read.
@@ -344,6 +344,9 @@ OPTIONS
        --socketid {id}
                    GTK  GUI only: Use the GtkPlug mechanism to run gvim in an‐
                    other window.
+
+       --startuptime {file}
+                   During startup write timing messages to the file {fname}.
 
        --version   Print version information and exit.
 

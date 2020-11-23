@@ -3897,8 +3897,6 @@ msgstr "E538: Bez podpory my¹i"
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: Neuzatvorené zoskupenie výrazov"
 
-msgid "E541: too many items"
-msgstr "E541: príli¹ mnoho polo¾iek"
 
 msgid "E542: unbalanced groups"
 msgstr "E542: nevyvá¾ené skupiny"

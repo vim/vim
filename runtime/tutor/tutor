@@ -319,6 +319,7 @@ NOTE:  Pressing just the motion while in Normal mode without an operator will
 --->  6)  Sugar is sweet
 --->  7)  And so are you.
 
+Doubling to operate on a line also works for operators mentioned below.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			 Lesson 2.7: THE UNDO COMMAND
@@ -432,7 +433,7 @@ NOTE: Remember that you should be learning by doing, not memorization.
 ---> This line has a few words that need changing using the change operator.
 
 Notice that  ce  deletes the word and places you in Insert mode.
-
+             cc  does the same for the whole line.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -802,7 +803,8 @@ NOTE:  Replace mode is like Insert mode, but every typed character deletes an
 --->  a) this is the first item.
       b)
 
-  NOTE: You can also use  y  as an operator;  yw  yanks one word.
+  NOTE: You can also use  y  as an operator:  yw  yanks one word,
+        yy  yanks the whole line, then  p  puts that line.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			    Lesson 6.5: SET OPTION
 

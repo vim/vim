@@ -169,6 +169,18 @@ func Test_string_html_objects()
   normal! k$vaty
   call assert_equal("<html>\n<title>welcome\n</html>", @")
 
+  " nested tag that has < in a different line from >
+  let t = "<div><div\n></div></div>"
+  $put =t
+  normal! k0vaty
+  call assert_equal("<div><div\n></div></div>", @")
+
+  " nested tag with attribute that has < in a different line from >
+  let t = "<div><div\nattr=\"attr\"\n></div></div>"
+  $put =t
+  normal! 2k0vaty
+  call assert_equal("<div><div\nattr=\"attr\"\n></div></div>", @")
+
   set quoteescape&
   enew!
 endfunc
@@ -201,28 +213,28 @@ func Test_match()
   call assert_equal("c", matchstr("abcd", ".", 2, 0))
   call assert_equal("a", matchstr("abcd", ".", 0, -1))
   call assert_equal(-1, match("abcd", ".", 0, 5))
-  call assert_equal(0 , match("abcd", ".", 0, -1))
-  call assert_equal(0 , match('abc', '.', 0, 1))
-  call assert_equal(1 , match('abc', '.', 0, 2))
-  call assert_equal(2 , match('abc', '.', 0, 3))
+  call assert_equal(0, match("abcd", ".", 0, -1))
+  call assert_equal(0, match('abc', '.', 0, 1))
+  call assert_equal(1, match('abc', '.', 0, 2))
+  call assert_equal(2, match('abc', '.', 0, 3))
   call assert_equal(-1, match('abc', '.', 0, 4))
-  call assert_equal(1 , match('abc', '.', 1, 1))
-  call assert_equal(2 , match('abc', '.', 2, 1))
+  call assert_equal(1, match('abc', '.', 1, 1))
+  call assert_equal(2, match('abc', '.', 2, 1))
   call assert_equal(-1, match('abc', '.', 3, 1))
-  call assert_equal(3 , match('abc', '$', 0, 1))
+  call assert_equal(3, match('abc', '$', 0, 1))
   call assert_equal(-1, match('abc', '$', 0, 2))
-  call assert_equal(3 , match('abc', '$', 1, 1))
-  call assert_equal(3 , match('abc', '$', 2, 1))
-  call assert_equal(3 , match('abc', '$', 3, 1))
+  call assert_equal(3, match('abc', '$', 1, 1))
+  call assert_equal(3, match('abc', '$', 2, 1))
+  call assert_equal(3, match('abc', '$', 3, 1))
   call assert_equal(-1, match('abc', '$', 4, 1))
-  call assert_equal(0 , match('abc', '\zs', 0, 1))
-  call assert_equal(1 , match('abc', '\zs', 0, 2))
-  call assert_equal(2 , match('abc', '\zs', 0, 3))
-  call assert_equal(3 , match('abc', '\zs', 0, 4))
+  call assert_equal(0, match('abc', '\zs', 0, 1))
+  call assert_equal(1, match('abc', '\zs', 0, 2))
+  call assert_equal(2, match('abc', '\zs', 0, 3))
+  call assert_equal(3, match('abc', '\zs', 0, 4))
   call assert_equal(-1, match('abc', '\zs', 0, 5))
-  call assert_equal(1 , match('abc', '\zs', 1, 1))
-  call assert_equal(2 , match('abc', '\zs', 2, 1))
-  call assert_equal(3 , match('abc', '\zs', 3, 1))
+  call assert_equal(1, match('abc', '\zs', 1, 1))
+  call assert_equal(2, match('abc', '\zs', 2, 1))
+  call assert_equal(3, match('abc', '\zs', 3, 1))
   call assert_equal(-1, match('abc', '\zs', 4, 1))
 endfunc
 

@@ -113,8 +113,10 @@ func Test_rename_fails()
   " Can't rename to en empty file name.
   call assert_notequal(0, rename('Xrenamefile', ''))
 
-  call assert_fails('call rename("Xrenamefile", [])', 'E730')
-  call assert_fails('call rename(0z, "Xrenamefile")', 'E976')
+  call assert_fails('call rename("Xrenamefile", [])', 'E730:')
+  call assert_fails('call rename(0z, "Xrenamefile")', 'E976:')
 
   call delete('Xrenamefile')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -26,6 +26,10 @@ typedef enum {
     ISN_LOADB,	    // push b: variable isn_arg.string
     ISN_LOADW,	    // push w: variable isn_arg.string
     ISN_LOADT,	    // push t: variable isn_arg.string
+    ISN_LOADGDICT,  // push g: dict
+    ISN_LOADBDICT,  // push b: dict
+    ISN_LOADWDICT,  // push w: dict
+    ISN_LOADTDICT,  // push t: dict
     ISN_LOADS,	    // push s: variable isn_arg.loadstore
     ISN_LOADOUTER,  // push variable from outer scope isn_arg.number
     ISN_LOADSCRIPT, // push script-local variable isn_arg.script.
@@ -54,6 +58,8 @@ typedef enum {
     ISN_UNLET,		// unlet variable isn_arg.unlet.ul_name
     ISN_UNLETENV,	// unlet environment variable isn_arg.unlet.ul_name
 
+    ISN_LOCKCONST,	// lock constant value
+
     // constants
     ISN_PUSHNR,		// push number isn_arg.number
     ISN_PUSHBOOL,	// push bool value isn_arg.number
@@ -75,6 +81,8 @@ typedef enum {
     ISN_PCALL_END,  // cleanup after ISN_PCALL with cpf_top set
     ISN_RETURN,	    // return, result is on top of stack
     ISN_FUNCREF,    // push a function ref to dfunc isn_arg.funcref
+    ISN_NEWFUNC,    // create a global function from a lambda function
+    ISN_DEF,	    // list functions
 
     // expression operations
     ISN_JUMP,	    // jump if condition is matched isn_arg.jump
@@ -88,9 +96,9 @@ typedef enum {
     ISN_CATCH,	    // drop v:exception
     ISN_ENDTRY,	    // take entry off from ec_trystack
 
-    // moreexpression operations
-    ISN_ADDLIST,
-    ISN_ADDBLOB,
+    // more expression operations
+    ISN_ADDLIST,    // add two lists
+    ISN_ADDBLOB,    // add two blobs
 
     // operation with two arguments; isn_arg.op.op_type is exptype_T
     ISN_OPNR,
@@ -111,19 +119,35 @@ typedef enum {
 
     // expression operations
     ISN_CONCAT,
-    ISN_INDEX,	    // [expr] list index
+    ISN_STRINDEX,   // [expr] string index
+    ISN_STRSLICE,   // [expr:expr] string slice
+    ISN_LISTAPPEND, // append to a list, like add()
+    ISN_LISTINDEX,  // [expr] list index
+    ISN_LISTSLICE,  // [expr:expr] list slice
+    ISN_ANYINDEX,   // [expr] runtime index
+    ISN_ANYSLICE,   // [expr:expr] runtime slice
     ISN_SLICE,	    // drop isn_arg.number items from start of list
+    ISN_BLOBAPPEND, // append to a blob, like add()
     ISN_GETITEM,    // push list item, isn_arg.number is the index
     ISN_MEMBER,	    // dict[member]
     ISN_STRINGMEMBER, // dict.member using isn_arg.string
-    ISN_2BOOL,	    // convert value to bool, invert if isn_arg.number != 0
+    ISN_2BOOL,	    // falsy/truthy to bool, invert if isn_arg.number != 0
+    ISN_COND2BOOL,  // convert value to bool
     ISN_2STRING,    // convert value to string at isn_arg.number on stack
+    ISN_2STRING_ANY, // like ISN_2STRING but check type
     ISN_NEGATENR,   // apply "-" to number
 
     ISN_CHECKNR,    // check value can be used as a number
     ISN_CHECKTYPE,  // check value type is isn_arg.type.tc_type
     ISN_CHECKLEN,   // check list length is isn_arg.checklen.cl_min_len
 
+    ISN_PUT,	    // ":put", uses isn_arg.put
+
+    ISN_CMDMOD,	    // set cmdmod
+    ISN_CMDMOD_REV, // undo ISN_CMDMOD
+
+    ISN_UNPACK,	    // unpack list into items, uses isn_arg.unpack
+    ISN_SHUFFLE,    // move item on stack up or down
     ISN_DROP	    // pop stack and discard value
 } isntype_T;
 
@@ -155,8 +179,10 @@ typedef struct {
 typedef enum {
     JUMP_ALWAYS,
     JUMP_IF_FALSE,		// pop and jump if false
-    JUMP_AND_KEEP_IF_TRUE,	// jump if top of stack is true, drop if not
-    JUMP_AND_KEEP_IF_FALSE,	// jump if top of stack is false, drop if not
+    JUMP_AND_KEEP_IF_TRUE,	// jump if top of stack is truthy, drop if not
+    JUMP_AND_KEEP_IF_FALSE,	// jump if top of stack is falsy, drop if not
+    JUMP_IF_COND_TRUE,		// jump if top of stack is true, drop if not
+    JUMP_IF_COND_FALSE,		// jump if top of stack is false, drop if not
 } jumpwhen_T;
 
 // arguments to ISN_JUMP
@@ -191,7 +217,7 @@ typedef struct {
 
 // arguments to ISN_CHECKTYPE
 typedef struct {
-    vartype_T	ct_type;
+    type_T	*ct_type;
     int		ct_off;	    // offset in stack, -1 is bottom
 } checktype_T;
 
@@ -228,14 +254,42 @@ typedef struct {
 // arguments to ISN_FUNCREF
 typedef struct {
     int		fr_func;	// function index
-    int		fr_var_idx;	// variable to store partial
 } funcref_T;
+
+// arguments to ISN_NEWFUNC
+typedef struct {
+    char_u	*nf_lambda;	// name of the lambda already defined
+    char_u	*nf_global;	// name of the global function to be created
+} newfunc_T;
 
 // arguments to ISN_CHECKLEN
 typedef struct {
     int		cl_min_len;	// minimum length
     int		cl_more_OK;	// longer is allowed
 } checklen_T;
+
+// arguments to ISN_SHUFFLE
+typedef struct {
+    int		shfl_item;	// item to move (relative to top of stack)
+    int		shfl_up;	// places to move upwards
+} shuffle_T;
+
+// arguments to ISN_PUT
+typedef struct {
+    int		put_regname;	// register, can be NUL
+    linenr_T	put_lnum;	// line number to put below
+} put_T;
+
+// arguments to ISN_CMDMOD
+typedef struct {
+    cmdmod_T	*cf_cmdmod;	// allocated
+} cmod_T;
+
+// arguments to ISN_UNPACK
+typedef struct {
+    int		unp_count;	// number of items to produce
+    int		unp_semicolon;	// last item gets list of remainder
+} unpack_T;
 
 /*
  * Instruction
@@ -269,7 +323,12 @@ struct isn_S {
 	script_T	    script;
 	unlet_T		    unlet;
 	funcref_T	    funcref;
+	newfunc_T	    newfunc;
 	checklen_T	    checklen;
+	shuffle_T	    shuffle;
+	put_T		    put;
+	cmod_T		    cmdmod;
+	unpack_T	    unpack;
     } isn_arg;
 };
 
@@ -286,14 +345,16 @@ struct dfunc_S {
     int		df_instr_count;
 
     int		df_varcount;	    // number of local variables
-    int		df_closure_count;   // number of closures created
+    int		df_has_closure;	    // one if a closure was created
 };
 
 // Number of entries used by stack frame for a function call.
-// - function index
-// - instruction index
-// - previous frame index
-#define STACK_FRAME_SIZE 3
+// - ec_dfunc_idx:   function index
+// - ec_iidx:        instruction index
+// - ec_outer_stack: stack used for closures  TODO: can we avoid this?
+// - ec_outer_frame: stack frame for closures
+// - ec_frame_idx:   previous frame index
+#define STACK_FRAME_SIZE 5
 
 
 #ifdef DEFINE_VIM9_GLOBALS

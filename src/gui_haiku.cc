@@ -654,7 +654,7 @@ docd(BPath &path)
 drop_callback(void *cookie)
 {
     // TODO here we could handle going to a specific position in the dropped
-    // file (see src/gui_mac.c)
+    // file (see src/gui_mac.c, deleted in 8.2.1422)
     // Update the screen display
     update_screen(NOT_VALID);
 }
@@ -3663,6 +3663,22 @@ gui_mch_set_scrollbar_pos(
 	vsb->MoveTo(vsbx, vsby);
 	gui.vimWindow->Unlock();
     }
+}
+
+    int
+gui_mch_get_scrollbar_xpadding(void)
+{
+    // TODO: Calculate the padding for adjust scrollbar position when the
+    // Window is maximized.
+    return 0;
+}
+
+    int
+gui_mch_get_scrollbar_ypadding(void)
+{
+    // TODO: Calculate the padding for adjust scrollbar position when the
+    // Window is maximized.
+    return 0;
 }
 
 void

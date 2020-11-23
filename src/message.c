@@ -461,13 +461,18 @@ get_emsg_source(void)
 
     if (SOURCING_NAME != NULL && other_sourcing_name())
     {
-	char_u	    *sname = estack_sfile();
+	char_u	    *sname = estack_sfile(ESTACK_NONE);
 	char_u	    *tofree = sname;
 
 	if (sname == NULL)
 	    sname = SOURCING_NAME;
 
-	p = (char_u *)_("Error detected while processing %s:");
+#ifdef FEAT_EVAL
+	if (estack_compiling)
+	    p = (char_u *)_("Error detected while compiling %s:");
+	else
+#endif
+	    p = (char_u *)_("Error detected while processing %s:");
 	Buf = alloc(STRLEN(sname) + STRLEN(p));
 	if (Buf != NULL)
 	    sprintf((char *)Buf, (char *)p, sname);
@@ -652,6 +657,15 @@ emsg_core(char_u *s)
 	    if (!ignore)
 		++did_emsg;
 	    return TRUE;
+	}
+
+	if (in_assert_fails && emsg_assert_fails_msg == NULL)
+	{
+	    emsg_assert_fails_msg = vim_strsave(s);
+	    emsg_assert_fails_lnum = SOURCING_LNUM;
+	    vim_free(emsg_assert_fails_context);
+	    emsg_assert_fails_context = vim_strsave(
+			 SOURCING_NAME == NULL ? (char_u *)"" : SOURCING_NAME);
 	}
 
 	// set "v:errmsg", also when using ":silent! cmd"
@@ -1537,6 +1551,10 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
     char_u	*s;
     int		mb_l;
     int		c;
+    int		save_got_int = got_int;
+
+    // Only quit when got_int was set in here.
+    got_int = FALSE;
 
     // if MSG_HIST flag set, add message to history
     if (attr & MSG_HIST)
@@ -1554,7 +1572,7 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
      * Go over the string.  Special characters are translated and printed.
      * Normal characters are printed several at a time.
      */
-    while (--len >= 0)
+    while (--len >= 0 && !got_int)
     {
 	if (enc_utf8)
 	    // Don't include composing chars after the end.
@@ -1604,9 +1622,11 @@ msg_outtrans_len_attr(char_u *msgstr, int len, int attr)
 	}
     }
 
-    if (str > plain_start)
+    if (str > plain_start && !got_int)
 	// print the printable chars at the end
 	msg_puts_attr_len((char *)plain_start, (int)(str - plain_start), attr);
+
+    got_int |= save_got_int;
 
     return retval;
 }
@@ -2299,10 +2319,10 @@ message_filtered(char_u *msg)
 {
     int match;
 
-    if (cmdmod.filter_regmatch.regprog == NULL)
+    if (cmdmod.cmod_filter_regmatch.regprog == NULL)
 	return FALSE;
-    match = vim_regexec(&cmdmod.filter_regmatch, msg, (colnr_T)0);
-    return cmdmod.filter_force ? match : !match;
+    match = vim_regexec(&cmdmod.cmod_filter_regmatch, msg, (colnr_T)0);
+    return cmdmod.cmod_filter_force ? match : !match;
 }
 
 /*

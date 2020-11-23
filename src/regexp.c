@@ -1691,9 +1691,9 @@ cstrchr(char_u *s, int c)
  * We should define ftpr as a pointer to a function returning a pointer to
  * a function returning a pointer to a function ...
  * This is impossible, so we declare a pointer to a function returning a
- * pointer to a function returning void. This should work for all compilers.
+ * void pointer. This should work for all compilers.
  */
-typedef void (*(*fptr_T)(int *, int))();
+typedef void (*(*fptr_T)(int *, int));
 
 static int vim_regsub_both(char_u *source, typval_T *expr, char_u *dest, int copy, int magic, int backslash);
 
@@ -2279,7 +2279,7 @@ vim_regsub_both(
 		    else if (*s == NUL) // we hit NUL.
 		    {
 			if (copy)
-			    emsg(_(e_re_damg));
+			    iemsg(_(e_re_damg));
 			goto exit;
 		    }
 		    else
@@ -2543,6 +2543,7 @@ reg_submatch_list(int no)
 	list_free(list);
 	return NULL;
     }
+    ++list->lv_refcount;
     return list;
 }
 #endif

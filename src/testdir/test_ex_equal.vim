@@ -30,3 +30,5 @@ func Test_ex_equal()
 
   bwipe!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

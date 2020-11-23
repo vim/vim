@@ -33,7 +33,7 @@ typedef struct {
     char_u	*name;	// funcref
     dict_T	*self;	// selfdict
 } luaV_Funcref;
-typedef void (*msgfunc_T)(char_u *);
+typedef int (*msgfunc_T)(char *);
 
 typedef struct {
     int lua_funcref;    // ref to a lua func
@@ -119,6 +119,9 @@ static void luaV_call_lua_func_free(void *state);
 #define luaL_loadfilex dll_luaL_loadfilex
 #define luaL_loadbufferx dll_luaL_loadbufferx
 #define luaL_argerror dll_luaL_argerror
+#endif
+#if LUA_VERSION_NUM >= 504
+#define luaL_typeerror dll_luaL_typeerror
 #endif
 #define luaL_checkany dll_luaL_checkany
 #define luaL_checklstring dll_luaL_checklstring
@@ -216,6 +219,9 @@ void (*dll_luaL_setfuncs) (lua_State *L, const luaL_Reg *l, int nup);
 int (*dll_luaL_loadfilex) (lua_State *L, const char *filename, const char *mode);
 int (*dll_luaL_loadbufferx) (lua_State *L, const char *buff, size_t sz, const char *name, const char *mode);
 int (*dll_luaL_argerror) (lua_State *L, int numarg, const char *extramsg);
+#endif
+#if LUA_VERSION_NUM >= 504
+int (*dll_luaL_typeerror) (lua_State *L, int narg, const char *tname);
 #endif
 void (*dll_luaL_checkany) (lua_State *L, int narg);
 const char *(*dll_luaL_checklstring) (lua_State *L, int numArg, size_t *l);
@@ -335,6 +341,9 @@ static const luaV_Reg luaV_dll[] = {
     {"luaL_loadfilex", (luaV_function) &dll_luaL_loadfilex},
     {"luaL_loadbufferx", (luaV_function) &dll_luaL_loadbufferx},
     {"luaL_argerror", (luaV_function) &dll_luaL_argerror},
+#endif
+#if LUA_VERSION_NUM >= 504
+    {"luaL_typeerror", (luaV_function) &dll_luaL_typeerror},
 #endif
     {"luaL_checkany", (luaV_function) &dll_luaL_checkany},
     {"luaL_checklstring", (luaV_function) &dll_luaL_checklstring},
@@ -457,7 +466,7 @@ lua_enabled(int verbose)
 }
 #endif
 
-#if LUA_VERSION_NUM > 501
+#if LUA_VERSION_NUM > 501 && LUA_VERSION_NUM < 504
     static int
 luaL_typeerror(lua_State *L, int narg, const char *tname)
 {
@@ -617,8 +626,10 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	case LUA_TFUNCTION:
 	{
 	    char_u *name;
+	    luaV_CFuncState *state;
+
 	    lua_pushvalue(L, pos);
-	    luaV_CFuncState *state = ALLOC_CLEAR_ONE(luaV_CFuncState);
+	    state = ALLOC_CLEAR_ONE(luaV_CFuncState);
 	    state->lua_funcref = luaL_ref(L, LUA_REGISTRYINDEX);
 	    state->L = L;
 	    state->lua_tableref = LUA_NOREF;
@@ -630,14 +641,17 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 	}
 	case LUA_TTABLE:
 	{
+	    int lua_tableref;
+
 	    lua_pushvalue(L, pos);
-	    int lua_tableref = luaL_ref(L, LUA_REGISTRYINDEX);
+	    lua_tableref = luaL_ref(L, LUA_REGISTRYINDEX);
 	    if (lua_getmetatable(L, pos)) {
 		lua_getfield(L, -1, LUA___CALL);
 		if (lua_isfunction(L, -1)) {
 		    char_u *name;
 		    int lua_funcref = luaL_ref(L, LUA_REGISTRYINDEX);
 		    luaV_CFuncState *state = ALLOC_CLEAR_ONE(luaV_CFuncState);
+
 		    state->lua_funcref = lua_funcref;
 		    state->L = L;
 		    state->lua_tableref = lua_tableref;
@@ -694,6 +708,7 @@ luaV_totypval(lua_State *L, int pos, typval_T *tv)
 		if (lua_rawequal(L, -1, -5))
 		{
 		    luaV_Funcref *f = (luaV_Funcref *) p;
+
 		    func_ref(f->name);
 		    tv->v_type = VAR_FUNC;
 		    tv->vval.v_string = vim_strsave(f->name);
@@ -773,11 +788,11 @@ luaV_msgfunc(lua_State *L, msgfunc_T mf)
     {
 	if (*p++ == '\0') // break?
 	{
-	    mf((char_u *) s);
+	    mf((char *)s);
 	    s = p;
 	}
     }
-    mf((char_u *) s);
+    mf((char *)s);
     lua_pop(L, 2); // original and modified strings
 }
 
@@ -2357,18 +2372,19 @@ lua_end(void)
     void
 ex_lua(exarg_T *eap)
 {
-    char *script;
-    if (lua_init() == FAIL) return;
-    script = (char *) script_get(eap, eap->arg);
-    if (!eap->skip)
+    char *script = (char *)script_get(eap, eap->arg);
+
+    if (!eap->skip && lua_init() == OK)
     {
-	char *s = (script) ? script :  (char *) eap->arg;
+	char *s = script != NULL ? script : (char *)eap->arg;
+
 	luaV_setrange(L, eap->line1, eap->line2);
 	if (luaL_loadbuffer(L, s, strlen(s), LUAVIM_CHUNKNAME)
 		|| lua_pcall(L, 0, 0, 0))
 	    luaV_emsg(L);
     }
-    if (script != NULL) vim_free(script);
+    if (script != NULL)
+	vim_free(script);
 }
 
     void

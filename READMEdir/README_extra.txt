@@ -16,10 +16,7 @@ src/os_amiga.*		Files for the Amiga port.
 src/os_msdos.*
 src/os_dos.*		Files for the MS-DOS port.
 
-src/gui_mac.*
 src/os_mac.*		Files for the Mac port.
-
-src/os_mint.8		Files for the Atari Mint port.
 
 src/os_vms*		Files for the VMS port.
 

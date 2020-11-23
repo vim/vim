@@ -43,7 +43,7 @@
 #  ifdef HAVE_OUTFUNTYPE
 #   define TPUTSFUNCAST (outfuntype)
 #  else
-#   define TPUTSFUNCAST (int (*)())
+#   define TPUTSFUNCAST (int (*)(int))
 #  endif
 # endif
 #endif
@@ -297,7 +297,7 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_UE,	"\033[0m"},
     {(int)KS_CZH,	"\033[3m"},
     {(int)KS_CZR,	"\033[0m"},
-#if defined(__MORPHOS__) || defined(__AROS__)
+#if defined(__amigaos4__) || defined(__MORPHOS__) || defined(__AROS__)
     {(int)KS_CCO,	"8"},		// allow 8 colors
 #  ifdef TERMINFO
     {(int)KS_CAB,	"\033[4%p1%dm"},// set background color
@@ -781,7 +781,7 @@ static struct builtin_term builtin_termcaps[] =
     {K_BS,		"\x7f"},	// for some reason 0177 doesn't work
 # endif
 
-# if defined(ALL_BUILTIN_TCAPS) || defined(__MINT__)
+# if defined(ALL_BUILTIN_TCAPS)
 /*
  * Ordinary vt52
  */
@@ -805,41 +805,8 @@ static struct builtin_term builtin_termcaps[] =
     {K_F1,		IF_EB("\033P", ESC_STR "P")},
     {K_F2,		IF_EB("\033Q", ESC_STR "Q")},
     {K_F3,		IF_EB("\033R", ESC_STR "R")},
-#  ifdef __MINT__
-    {(int)KS_CL,	IF_EB("\033E", ESC_STR "E")},
-    {(int)KS_VE,	IF_EB("\033e", ESC_STR "e")},
-    {(int)KS_VI,	IF_EB("\033f", ESC_STR "f")},
-    {(int)KS_SO,	IF_EB("\033p", ESC_STR "p")},
-    {(int)KS_SE,	IF_EB("\033q", ESC_STR "q")},
-    {K_S_UP,		IF_EB("\033a", ESC_STR "a")},
-    {K_S_DOWN,		IF_EB("\033b", ESC_STR "b")},
-    {K_S_LEFT,		IF_EB("\033d", ESC_STR "d")},
-    {K_S_RIGHT,		IF_EB("\033c", ESC_STR "c")},
-    {K_F4,		IF_EB("\033S", ESC_STR "S")},
-    {K_F5,		IF_EB("\033T", ESC_STR "T")},
-    {K_F6,		IF_EB("\033U", ESC_STR "U")},
-    {K_F7,		IF_EB("\033V", ESC_STR "V")},
-    {K_F8,		IF_EB("\033W", ESC_STR "W")},
-    {K_F9,		IF_EB("\033X", ESC_STR "X")},
-    {K_F10,		IF_EB("\033Y", ESC_STR "Y")},
-    {K_S_F1,		IF_EB("\033p", ESC_STR "p")},
-    {K_S_F2,		IF_EB("\033q", ESC_STR "q")},
-    {K_S_F3,		IF_EB("\033r", ESC_STR "r")},
-    {K_S_F4,		IF_EB("\033s", ESC_STR "s")},
-    {K_S_F5,		IF_EB("\033t", ESC_STR "t")},
-    {K_S_F6,		IF_EB("\033u", ESC_STR "u")},
-    {K_S_F7,		IF_EB("\033v", ESC_STR "v")},
-    {K_S_F8,		IF_EB("\033w", ESC_STR "w")},
-    {K_S_F9,		IF_EB("\033x", ESC_STR "x")},
-    {K_S_F10,		IF_EB("\033y", ESC_STR "y")},
-    {K_INS,		IF_EB("\033I", ESC_STR "I")},
-    {K_HOME,		IF_EB("\033E", ESC_STR "E")},
-    {K_PAGEDOWN,	IF_EB("\033b", ESC_STR "b")},
-    {K_PAGEUP,		IF_EB("\033a", ESC_STR "a")},
-#  else
     {(int)KS_CL,	IF_EB("\033H\033J", ESC_STR "H" ESC_STR_nc "J")},
     {(int)KS_MS,	"y"},
-#  endif
 # endif
 
 # if defined(UNIX) || defined(ALL_BUILTIN_TCAPS) || defined(SOME_BUILTIN_TCAPS)
@@ -1399,12 +1366,8 @@ termgui_mch_get_rgb(guicolor_T color)
 # define DEFAULT_TERM	(char_u *)"win32"
 #endif
 
-#if defined(UNIX) && !defined(__MINT__)
+#if defined(UNIX)
 # define DEFAULT_TERM	(char_u *)"ansi"
-#endif
-
-#ifdef __MINT__
-# define DEFAULT_TERM	(char_u *)"vt52"
 #endif
 
 #ifdef VMS
@@ -1800,6 +1763,7 @@ get_term_entries(int *height, int *width)
 report_term_error(char *error_msg, char_u *term)
 {
     struct builtin_term *termp;
+    int			i;
 
     mch_errmsg("\r\n");
     if (error_msg != NULL)
@@ -1824,6 +1788,10 @@ report_term_error(char *error_msg, char_u *term)
 	    mch_errmsg("\r\n");
 	}
     }
+    // Output extra 'cmdheight' line breaks to avoid that the following error
+    // message overwrites the last terminal name.
+    for (i = 1; i < p_ch; ++i)
+	mch_errmsg("\r\n");
 }
 
     static void
@@ -1832,7 +1800,7 @@ report_default_term(char_u *term)
     mch_errmsg(_("defaulting to '"));
     mch_errmsg((char *)term);
     mch_errmsg("'\r\n");
-    if (emsg_silent == 0)
+    if (emsg_silent == 0 && !in_assert_fails)
     {
 	screen_start();	// don't know where cursor is now
 	out_flush();
@@ -2547,6 +2515,14 @@ out_flush(void)
 	len = out_pos;
 	out_pos = 0;
 	ui_write(out_buf, len);
+#ifdef FEAT_JOB_CHANNEL
+	if (ch_log_output)
+	{
+	    out_buf[len] = NUL;
+	    ch_log(NULL, "raw terminal output: \"%s\"", out_buf);
+	    ch_log_output = FALSE;
+	}
+#endif
     }
 }
 
@@ -2618,13 +2594,14 @@ out_char(unsigned c)
 /*
  * Output "c" like out_char(), but don't flush when p_wd is set.
  */
-    static void
-out_char_nf(unsigned c)
+    static int
+out_char_nf(int c)
 {
-    out_buf[out_pos++] = c;
+    out_buf[out_pos++] = (unsigned)c;
 
     if (out_pos >= OUT_SIZE)
 	out_flush();
+    return (unsigned)c;
 }
 
 /*
@@ -3063,6 +3040,9 @@ term_ul_rgb_color(guicolor_T rgb)
     void
 term_settitle(char_u *title)
 {
+#ifdef FEAT_JOB_CHANNEL
+    ch_log_output = TRUE;
+#endif
     // t_ts takes one argument: column in status line
     OUT_STR(tgoto((char *)T_TS, 0, 0));	// set title start
     out_str_nf(title);
@@ -3561,6 +3541,9 @@ settmode(tmode_T tmode)
 	    if (termcap_active && tmode != TMODE_SLEEP
 						   && cur_tmode != TMODE_SLEEP)
 	    {
+#ifdef FEAT_JOB_CHANNEL
+		ch_log_output = TRUE;
+#endif
 		if (tmode != TMODE_RAW)
 		{
 		    out_str(T_BD);	// disable bracketed paste mode
@@ -3591,6 +3574,9 @@ starttermcap(void)
 {
     if (full_screen && !termcap_active)
     {
+#ifdef FEAT_JOB_CHANNEL
+	ch_log_output = TRUE;
+#endif
 	out_str(T_TI);			// start termcap mode
 	out_str(T_CTI);			// start "raw" mode
 	out_str(T_KS);			// start "keypad transmit" mode
@@ -3630,7 +3616,7 @@ stoptermcap(void)
 	    {
 # ifdef UNIX
 		// Give the terminal a chance to respond.
-		mch_delay(100L, FALSE);
+		mch_delay(100L, 0);
 # endif
 # ifdef TCIFLUSH
 		// Discard data received but not read.
@@ -3642,6 +3628,9 @@ stoptermcap(void)
 	    // get them.
 	    check_for_codes_from_term();
 	}
+#endif
+#ifdef FEAT_JOB_CHANNEL
+	ch_log_output = TRUE;
 #endif
 	out_str(T_BD);			// disable bracketed paste mode
 	out_str(T_KE);			// stop "keypad transmit" mode
@@ -3678,6 +3667,9 @@ may_req_termresponse(void)
 	    && starting == 0
 	    && *T_CRV != NUL)
     {
+#ifdef FEAT_JOB_CHANNEL
+	ch_log_output = TRUE;
+#endif
 	LOG_TR(("Sending CRV request"));
 	out_str(T_CRV);
 	termrequest_sent(&crv_status);
@@ -3716,6 +3708,9 @@ check_terminal_behavior(void)
 	// width, that will be (1, 2).  This function has the side effect that
 	// changes cursor position, so it must be called immediately after
 	// entering termcap mode.
+#ifdef FEAT_JOB_CHANNEL
+	ch_log_output = TRUE;
+#endif
 	LOG_TR(("Sending request for ambiwidth check"));
 	// Do this in the second row.  In the first row the returned sequence
 	// may be CSI 1;2R, which is the same as <S-F3>.
@@ -3732,6 +3727,7 @@ check_terminal_behavior(void)
 	screen_stop_highlight();
 	term_windgoto(1, 0);
 	out_str((char_u *)"  ");
+	line_was_clobbered(1);
     }
 
     if (xcc_status.tr_progress == STATUS_GET)
@@ -3743,6 +3739,9 @@ check_terminal_behavior(void)
 	// sequence is ignored and the cursor does not move.  If the terminal
 	// handles test sequence incorrectly, a garbage string is displayed and
 	// the cursor does move.
+#ifdef FEAT_JOB_CHANNEL
+	ch_log_output = TRUE;
+#endif
 	LOG_TR(("Sending xterm compatibility test sequence."));
 	// Do this in the third row.  Second row is used by ambiguous
 	// chararacter width check.
@@ -3761,6 +3760,7 @@ check_terminal_behavior(void)
 	screen_stop_highlight();
 	term_windgoto(2, 0);
 	out_str((char_u *)"           ");
+	line_was_clobbered(2);
     }
 
     if (did_send)
@@ -3792,6 +3792,9 @@ may_req_bg_color(void)
 	// Only request foreground if t_RF is set.
 	if (rfg_status.tr_progress == STATUS_GET && *T_RFG != NUL)
 	{
+#ifdef FEAT_JOB_CHANNEL
+	    ch_log_output = TRUE;
+#endif
 	    LOG_TR(("Sending FG request"));
 	    out_str(T_RFG);
 	    termrequest_sent(&rfg_status);
@@ -3802,6 +3805,9 @@ may_req_bg_color(void)
 	// Only request background if t_RB is set.
 	if (rbg_status.tr_progress == STATUS_GET && *T_RBG != NUL)
 	{
+#ifdef FEAT_JOB_CHANNEL
+	    ch_log_output = TRUE;
+#endif
 	    LOG_TR(("Sending BG request"));
 	    out_str(T_RBG);
 	    termrequest_sent(&rbg_status);
@@ -3865,6 +3871,9 @@ scroll_start(void)
 {
     if (*T_VS != NUL && *T_CVS != NUL)
     {
+#ifdef FEAT_JOB_CHANNEL
+	ch_log_output = TRUE;
+#endif
 	out_str(T_VS);
 	out_str(T_CVS);
 	screen_start();		// don't know where cursor is now
@@ -4453,7 +4462,8 @@ modifiers2keycode(int modifiers, int *key, char_u *string)
     if (modifiers != 0)
     {
 	// Some keys have the modifier included.  Need to handle that here to
-	// make mappings work.
+	// make mappings work.  This may result in a special key, such as
+	// K_S_TAB.
 	*key = simplify_key(*key, &modifiers);
 	if (modifiers != 0)
 	{
@@ -4715,6 +4725,9 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 		&& *T_CSH != NUL
 		&& *T_CRS != NUL)
 	{
+#ifdef FEAT_JOB_CHANNEL
+	    ch_log_output = TRUE;
+#endif
 	    LOG_TR(("Sending cursor style request"));
 	    out_str(T_CRS);
 	    termrequest_sent(&rcs_status);
@@ -4729,6 +4742,9 @@ handle_version_response(int first, int *arg, int argc, char_u *tp)
 		&& term_props[TPR_CURSOR_BLINK].tpr_status == TPR_YES
 		&& *T_CRC != NUL)
 	{
+#ifdef FEAT_JOB_CHANNEL
+	    ch_log_output = TRUE;
+#endif
 	    LOG_TR(("Sending cursor blink mode request"));
 	    out_str(T_CRC);
 	    termrequest_sent(&rbm_status);
@@ -4769,19 +4785,22 @@ handle_key_with_modifier(
 
     modifiers = decode_modifiers(arg[1]);
 
+    // Some keys need adjustment when the Ctrl modifier is used.
+    key = may_adjust_key_for_ctrl(modifiers, key);
+
     // May remove the shift modifier if it's already included in the key.
     modifiers = may_remove_shift_modifier(modifiers, key);
-
-    // When used with Ctrl we always make a letter upper case,
-    // so that mapping <C-H> and <C-h> are the same.  Typing
-    // <C-S-H> also uses "H" but modifier is different.
-    if ((modifiers & MOD_MASK_CTRL) && ASCII_ISALPHA(key))
-	key = TOUPPER_ASC(key);
 
     // insert modifiers with KS_MODIFIER
     new_slen = modifiers2keycode(modifiers, &key, string);
 
-    if (has_mbyte)
+    if (IS_SPECIAL(key))
+    {
+	string[new_slen++] = K_SPECIAL;
+	string[new_slen++] = KEY2TERMCAP0(key);
+	string[new_slen++] = KEY2TERMCAP1(key);
+    }
+    else if (has_mbyte)
 	new_slen += (*mb_char2bytes)(key, string + new_slen);
     else
 	string[new_slen++] = key;
@@ -6150,6 +6169,9 @@ req_more_codes_from_term(void)
     {
 	char *key_name = key_names[xt_index_out];
 
+#ifdef FEAT_JOB_CHANNEL
+	ch_log_output = TRUE;
+#endif
 	LOG_TR(("Requesting XT %d: %s", xt_index_out, key_name));
 	sprintf(buf, "\033P+q%02x%02x\033\\", key_name[0], key_name[1]);
 	out_str_nf((char_u *)buf);

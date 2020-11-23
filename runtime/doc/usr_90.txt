@@ -226,7 +226,7 @@ We will use "82" here, which is version 8.2.
 This is all you need for the second method.  Just launch the executable, and
 follow the prompts.
 
-For the first method you must chose one of the binary archives.  These are
+For the first method you must choose one of the binary archives.  These are
 available:
 
 	gvim82.zip		The normal MS-Windows GUI version.

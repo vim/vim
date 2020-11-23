@@ -34,7 +34,7 @@ That makes very clear what is defined where.
 Let's start with an example, a script that exports one function and has one
 private function: >
 
-	vim9script  " This indicates a Vim9 script file, 
+	vim9script  " This indicates a Vim9 script file.
 
 	export def GetMessage(): string
 	   let result = ''

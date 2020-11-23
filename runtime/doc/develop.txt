@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 8.2.  Last change: 2020 Apr 13
+*develop.txt*   For Vim version 8.2.  Last change: 2020 Aug 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -34,8 +34,8 @@ balance must be found between them.
 VIM IS... VI COMPATIBLE					*design-compatible*
 
 First of all, it should be possible to use Vim as a drop-in replacement for
-Vi.  When the user wants to, he can use Vim in compatible mode and hardly
-notice any difference with the original Vi.
+Vi.  When the user wants to, Vim can be used in compatible mode and hardly
+any differences with the original Vi will be noticed.
 
 Exceptions:
 - We don't reproduce obvious Vi bugs in Vim.
@@ -473,7 +473,7 @@ available spell checking libraries and programs.  Unfortunately, the result
 was that none of them provided sufficient capabilities to be used as the spell
 checking engine in Vim, for various reasons:
 
-- Missing support for multi-byte encodings.  At least UTF-8 must be supported,
+- Missing support for multibyte encodings.  At least UTF-8 must be supported,
   so that more than one language can be used in the same file.
   Doing on-the-fly conversion is not always possible (would require iconv
   support).

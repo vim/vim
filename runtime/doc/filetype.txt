@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 8.2.  Last change: 2019 Jul 16
+*filetype.txt*  For Vim version 8.2.  Last change: 2020 Sep 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -163,8 +163,8 @@ file.  It will be overwritten when installing a new version of Vim.
 
 A. If you want to overrule all default file type checks.
    This works by writing one file for each filetype.  The disadvantage is that
-   means there can be many files.  The advantage is that you can simply drop
-   this file in the right directory to make it work.
+   there can be many files.  The advantage is that you can simply drop this
+   file in the right directory to make it work.
 							*ftdetect*
    1. Create your user runtime directory.  You would normally use the first
       item of the 'runtimepath' option.  Then create the directory "ftdetect"
@@ -395,6 +395,13 @@ ways to change this:
 
 ==============================================================================
 3.  Docs for the default filetype plugins.		*ftplugin-docs*
+
+
+AWK							*ft-awk-plugin*
+
+Support for features specific to GNU Awk, like @include, can be enabled by
+setting: >
+	let g:awk_is_gawk = 1
 
 
 CHANGELOG						*ft-changelog-plugin*

@@ -1296,7 +1296,7 @@ ex_match(exarg_T *eap)
 	id = eap->line2;
     else
     {
-	emsg(_(e_invcmd));
+	emsg(_(e_invalid_command));
 	return;
     }
 
@@ -1329,7 +1329,7 @@ ex_match(exarg_T *eap)
 	    if (*end != NUL && !ends_excmd2(end, skipwhite(end + 1)))
 	    {
 		vim_free(g);
-		eap->errmsg = e_trailing;
+		eap->errmsg = ex_errmsg(e_trailing_arg, end);
 		return;
 	    }
 	    if (*end != *p)

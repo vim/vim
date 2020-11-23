@@ -235,7 +235,7 @@ func Test_substitute_errors()
 
   call assert_fails('s/FOO/bar/', 'E486:')
   call assert_fails('s/foo/bar/@', 'E488:')
-  call assert_fails('s/\(/bar/', 'E476:')
+  call assert_fails('s/\(/bar/', 'E54:')
   call assert_fails('s afooabara', 'E146:')
   call assert_fails('s\\a', 'E10:')
 
@@ -246,6 +246,7 @@ func Test_substitute_errors()
   call assert_fails("let s=substitute('abcda', [], 'A', 'g')", 'E730:')
   call assert_fails("let s=substitute('abcda', 'a', [], 'g')", 'E730:')
   call assert_fails("let s=substitute('abcda', 'a', 'A', [])", 'E730:')
+  call assert_fails("let s=substitute('abc', '\\%(', 'A', 'g')", 'E53:')
 
   bwipe!
 endfunc
@@ -449,7 +450,7 @@ func Test_substitute_partial()
 
    " 20 arguments plus one is too many
    let Replacer = function('SubReplacer20', repeat(['foo'], 20))
-   call assert_fails("call substitute('123', '2', Replacer, 'g')", 'E118')
+   call assert_fails("call substitute('123', '2', Replacer, 'g')", 'E118:')
 endfunc
 
 " Tests for *sub-replace-special* and *sub-replace-expression* on :substitute.
@@ -632,7 +633,7 @@ func Test_sub_cmd_7()
   call Run_SubCmd_Tests(tests)
 
   exe "normal oQ\nQ\<Esc>k"
-  call assert_fails('s/Q[^\n]Q/\=submatch(0)."foobar"/', 'E486')
+  call assert_fails('s/Q[^\n]Q/\=submatch(0)."foobar"/', 'E486:')
   enew!
 endfunc
 
@@ -817,9 +818,9 @@ endfunc
 func Test_sub_with_no_last_pat()
   let lines =<< trim [SCRIPT]
     call assert_fails('~', 'E33:')
-    call assert_fails('s//abc/g', 'E476:')
-    call assert_fails('s\/bar', 'E476:')
-    call assert_fails('s\&bar&', 'E476:')
+    call assert_fails('s//abc/g', 'E35:')
+    call assert_fails('s\/bar', 'E35:')
+    call assert_fails('s\&bar&', 'E33:')
     call writefile(v:errors, 'Xresult')
     qall!
   [SCRIPT]
@@ -879,6 +880,12 @@ func Test_invalid_submatch()
   call assert_equal('', submatch(1))
   call assert_equal([], submatch(0, 1))
   call assert_equal([], submatch(1, 1))
+endfunc
+
+func Test_submatch_list_concatenate()
+  let pat = 'A\(.\)'
+  let Rep = {-> string([submatch(0, 1)] + [[submatch(1)]])}
+  call substitute('A1', pat, Rep, '')->assert_equal("[['A1'], ['1']]")
 endfunc
 
 func Test_substitute_expr_arg()

@@ -264,11 +264,6 @@ For building 64 bit binaries you also need to install the SDK:
 "Microsoft Windows SDK for Windows 7 and .NET Framework 3.5 SP1"
 You don't need the examples and documentation.
 
-If you get an error that Win32.mak can't be found, you have to set the
-variable SDK_INCLUDE_DIR.  For example, on Windows 10, installation of MSVC
-puts include files in the following directory:
-    set SDK_INCLUDE_DIR=C:\Program Files\Microsoft SDKs\Windows\v6.0A\Include
-
 
 2. MSYS2 with MinGW
 ===================

@@ -1639,8 +1639,7 @@ eval_map_expr(
  * Returns NULL when out of memory.
  */
     char_u *
-vim_strsave_escape_csi(
-    char_u *p)
+vim_strsave_escape_csi(char_u *p)
 {
     char_u	*res;
     char_u	*s, *d;
@@ -1952,7 +1951,7 @@ put_escstr(FILE *fd, char_u *strstart, int what)
 	// when they are read back.
 	if (c == K_SPECIAL && what != 2)
 	{
-	    modifiers = 0x0;
+	    modifiers = 0;
 	    if (str[1] == KS_MODIFIER)
 	    {
 		modifiers = str[2];
@@ -2204,9 +2203,9 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 	which = tv_get_string_buf_chk(&argvars[1], buf);
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	{
-	    abbr = (int)tv_get_number(&argvars[2]);
+	    abbr = (int)tv_get_bool(&argvars[2]);
 	    if (argvars[3].v_type != VAR_UNKNOWN)
-		get_dict = (int)tv_get_number(&argvars[3]);
+		get_dict = (int)tv_get_bool(&argvars[3]);
 	}
     }
     else
@@ -2304,8 +2303,10 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
     char_u	*arg;
 
     which = tv_get_string_buf_chk(&argvars[0], buf);
+    if (which == NULL)
+	return;
     mode = get_map_mode(&which, 0);
-    is_abbr = (int)tv_get_number(&argvars[1]);
+    is_abbr = (int)tv_get_bool(&argvars[1]);
 
     if (argvars[2].v_type != VAR_DICT)
     {

@@ -701,9 +701,6 @@ EXTERN int	p_lpl;		// 'loadplugins'
 #if defined(DYNAMIC_LUA)
 EXTERN char_u	*p_luadll;	// 'luadll'
 #endif
-#ifdef FEAT_GUI_MAC
-EXTERN int	p_macatsui;	// 'macatsui'
-#endif
 EXTERN int	p_magic;	// 'magic'
 EXTERN char_u	*p_menc;	// 'makeencoding'
 #ifdef FEAT_QUICKFIX

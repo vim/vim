@@ -34,9 +34,6 @@
 static int file_owned(char *fname);
 #endif
 static void mainerr(int, char_u *);
-# if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
-static void init_locale(void);
-# endif
 static void early_arg_scan(mparm_T *parmp);
 #ifndef NO_VIM_MAIN
 static void usage(void);
@@ -299,33 +296,6 @@ main
 # endif
 	    )
 	params.want_full_screen = FALSE;
-#endif
-
-#if defined(FEAT_GUI_MAC) && defined(MACOS_X_DARWIN)
-    // When the GUI is started from Finder, need to display messages in a
-    // message box.  isatty(2) returns TRUE anyway, thus we need to check the
-    // name to know we're not started from a terminal.
-    if (gui.starting && (!isatty(2) || strcmp("/dev/console", ttyname(2)) == 0))
-    {
-	params.want_full_screen = FALSE;
-
-	// Avoid always using "/" as the current directory.  Note that when
-	// started from Finder the arglist will be filled later in
-	// HandleODocAE() and "fname" will be NULL.
-	if (getcwd((char *)NameBuff, MAXPATHL) != NULL
-						&& STRCMP(NameBuff, "/") == 0)
-	{
-	    if (params.fname != NULL)
-		(void)vim_chdirfile(params.fname, "drop");
-	    else
-	    {
-		expand_env((char_u *)"$HOME", NameBuff, MAXPATHL);
-		vim_chdir(NameBuff);
-	    }
-	    if (start_dir != NULL)
-		mch_dirname(start_dir, MAXPATHL);
-	}
-    }
 #endif
 
     /*
@@ -1716,56 +1686,6 @@ getout(int exitval)
     mch_exit(exitval);
 }
 
-#if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
-/*
- * Setup to use the current locale (for ctype() and many other things).
- */
-    static void
-init_locale(void)
-{
-    setlocale(LC_ALL, "");
-
-# ifdef FEAT_GUI_GTK
-    // Tell Gtk not to change our locale settings.
-    gtk_disable_setlocale();
-# endif
-# if defined(FEAT_FLOAT) && defined(LC_NUMERIC)
-    // Make sure strtod() uses a decimal point, not a comma.
-    setlocale(LC_NUMERIC, "C");
-# endif
-
-# ifdef MSWIN
-    // Apparently MS-Windows printf() may cause a crash when we give it 8-bit
-    // text while it's expecting text in the current locale.  This call avoids
-    // that.
-    setlocale(LC_CTYPE, "C");
-# endif
-
-# ifdef FEAT_GETTEXT
-    {
-	int	mustfree = FALSE;
-	char_u	*p;
-
-#  ifdef DYNAMIC_GETTEXT
-	// Initialize the gettext library
-	dyn_libintl_init();
-#  endif
-	// expand_env() doesn't work yet, because g_chartab[] is not
-	// initialized yet, call vim_getenv() directly
-	p = vim_getenv((char_u *)"VIMRUNTIME", &mustfree);
-	if (p != NULL && *p != NUL)
-	{
-	    vim_snprintf((char *)NameBuff, MAXPATHL, "%s/lang", p);
-	    bindtextdomain(VIMPACKAGE, (char *)NameBuff);
-	}
-	if (mustfree)
-	    vim_free(p);
-	textdomain(VIMPACKAGE);
-    }
-# endif
-}
-#endif
-
 /*
  * Get the name of the display, before gui_prepare() removes it from
  * argv[].  Used for the xterm-clipboard display.
@@ -1895,18 +1815,6 @@ parse_command_name(mparm_T *parmp)
     char_u	*initstr;
 
     initstr = gettail((char_u *)parmp->argv[0]);
-
-#ifdef FEAT_GUI_MAC
-    // An issue has been seen when launching Vim in such a way that
-    // $PWD/$ARGV[0] or $ARGV[0] is not the absolute path to the
-    // executable or a symbolic link of it. Until this issue is resolved
-    // we prohibit the GUI from being used.
-    if (STRCMP(initstr, parmp->argv[0]) == 0)
-	disallow_gui = TRUE;
-
-    // TODO: On MacOS X default to gui if argv[0] ends in:
-    //       /Vim.app/Contents/MacOS/Vim
-#endif
 
 #ifdef FEAT_EVAL
     set_vim_var_string(VV_PROGNAME, initstr, -1);
@@ -2796,21 +2704,16 @@ read_stdin(void)
     no_wait_return = TRUE;
     i = msg_didany;
     set_buflisted(TRUE);
-    (void)open_buffer(TRUE, NULL, 0);	// create memfile and read file
+
+    // Create memfile and read from stdin.
+    // This will also dup stdin from stderr to read commands from.
+    (void)open_buffer(TRUE, NULL, 0);
+
     no_wait_return = FALSE;
     msg_didany = i;
     TIME_MSG("reading stdin");
 
     check_swap_exists_action();
-#if !(defined(AMIGA) || defined(MACOS_X))
-    /*
-     * Close stdin and dup it from stderr.  Required for GPM to work
-     * properly, and for running external commands.
-     * Is there any other system that cannot do this?
-     */
-    close(0);
-    vim_ignored = dup(2);
-#endif
 }
 
 /*

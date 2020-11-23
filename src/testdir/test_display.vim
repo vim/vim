@@ -1,4 +1,5 @@
 " Test for displaying stuff
+
 if !has('gui_running') && has('unix')
   set term=ansi
 endif
@@ -220,3 +221,40 @@ func Test_unprintable_fileformats()
   call delete('Xmac.txt')
   call delete(filename)
 endfunc
+
+" Test for scrolling that modifies buffer during visual block
+func Test_visual_block_scroll()
+  CheckScreendump
+
+  let lines =<< trim END
+    source $VIMRUNTIME/plugin/matchparen.vim
+    set scrolloff=1
+    call setline(1, ['a', 'b', 'c', 'd', 'e', '', '{', '}', '{', 'f', 'g', '}'])
+    call cursor(5, 1)
+  END
+
+  let filename = 'Xvisualblockmodifiedscroll'
+  call writefile(lines, filename)
+
+  let buf = RunVimInTerminal('-S '.filename, #{rows: 7})
+  call term_sendkeys(buf, "V\<C-D>\<C-D>")
+
+  call VerifyScreenDump(buf, 'Test_display_visual_block_scroll', {})
+
+  call StopVimInTerminal(buf)
+  call delete(filename)
+endfunc
+
+func Test_display_scroll_at_topline()
+  CheckScreendump
+
+  let buf = RunVimInTerminal('', #{cols: 20})
+  call term_sendkeys(buf, ":call setline(1, repeat('a', 21))\<CR>")
+  call TermWait(buf)
+  call term_sendkeys(buf, "O\<Esc>")
+  call VerifyScreenDump(buf, 'Test_display_scroll_at_topline', #{rows: 4})
+
+  call StopVimInTerminal(buf)
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

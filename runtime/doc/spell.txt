@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 8.2.  Last change: 2020 Jun 10
+*spell.txt*	For Vim version 8.2.  Last change: 2020 Aug 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -653,11 +653,12 @@ ask you where to write the file (there must be a writable directory in
 'runtimepath' for this).
 
 The plugin has a default place where to look for spell files, on the Vim ftp
-server.  If you want to use another location or another protocol, set the
-g:spellfile_URL variable to the directory that holds the spell files.  The
-|netrw| plugin is used for getting the file, look there for the specific
-syntax of the URL.  Example: >
-	let g:spellfile_URL = 'http://ftp.vim.org/vim/runtime/spell'
+server.  The protocol used is SSL (https://) for security.  If you want to use
+another location or another protocol, set the g:spellfile_URL variable to the
+directory that holds the spell files.  You can use http:// or ftp://, but you
+are taking a security risk then.  The |netrw| plugin is used for getting the
+file, look there for the specific syntax of the URL.  Example: >
+	let g:spellfile_URL = 'https://ftp.nluug.nl/vim/runtime/spell'
 You may need to escape special characters.
 
 The plugin will only ask about downloading a language once.  If you want to
@@ -886,7 +887,7 @@ time ":mkspell" is used.  Vim will then convert everything to 'encoding' and
 generate a spell file for 'encoding'.  If some of the used characters to not
 fit in 'encoding' you will get an error message.
 							*spell-affix-mbyte*
-When using a multi-byte encoding it's possible to use more different affix
+When using a multibyte encoding it's possible to use more different affix
 flags.  But Myspell doesn't support that, thus you may not want to use it
 anyway.  For compatibility use an 8-bit encoding.
 
@@ -1444,7 +1445,7 @@ are spelling mistakes this may not be quite right.
 Common words can be specified with the COMMON item.  This will give better
 suggestions when editing a short file.  Example:
 
-	COMMON  the of to and a in is it you that he was for on are ~
+	COMMON  the of to and a in is it you that he she was for on are ~
 
 The words must be separated by white space, up to 25 per line.
 When multiple regions are specified in a ":mkspell" command the common words

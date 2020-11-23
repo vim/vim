@@ -517,6 +517,7 @@ buf_get_signattrs(win_T *wp, linenr_T lnum, sign_attrs_T *sattr)
 		sattr->sat_texthl = syn_id2attr(sp->sn_text_hl);
 	    if (sp->sn_line_hl > 0)
 		sattr->sat_linehl = syn_id2attr(sp->sn_line_hl);
+	    sattr->sat_priority = sign->se_priority;
 
 	    // If there is another sign next with the same priority, may
 	    // combine the text and the line highlighting.
@@ -1577,7 +1578,7 @@ parse_sign_cmd_args(
 	    filename = arg;
 	    *buf = buflist_findnr((int)getdigits(&arg));
 	    if (*skipwhite(arg) != NUL)
-		emsg(_(e_trailing));
+		semsg(_(e_trailing_arg), arg);
 	    break;
 	}
 	else

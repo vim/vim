@@ -571,11 +571,10 @@ valid_filetype(char_u *val)
     static char *
 check_stl_option(char_u *s)
 {
-    int		itemcnt = 0;
     int		groupdepth = 0;
     static char errbuf[80];
 
-    while (*s && itemcnt < STL_MAX_ITEM)
+    while (*s)
     {
 	// Check for valid keys after % sequences
 	while (*s && *s != '%')
@@ -583,8 +582,6 @@ check_stl_option(char_u *s)
 	if (!*s)
 	    break;
 	s++;
-	if (*s != '%' && *s != ')')
-	    ++itemcnt;
 	if (*s == '%' || *s == STL_TRUNCMARK || *s == STL_MIDDLEMARK)
 	{
 	    s++;
@@ -627,8 +624,6 @@ check_stl_option(char_u *s)
 		return N_("E540: Unclosed expression sequence");
 	}
     }
-    if (itemcnt >= STL_MAX_ITEM)
-	return N_("E541: too many items");
     if (groupdepth != 0)
 	return N_("E542: unbalanced groups");
     return NULL;
@@ -1434,6 +1429,9 @@ did_set_string_option(
 	}
 	if (varp == &T_BE && termcap_active)
 	{
+#ifdef FEAT_JOB_CHANNEL
+	    ch_log_output = TRUE;
+#endif
 	    if (*T_BE == NUL)
 		// When clearing t_BE we assume the user no longer wants
 		// bracketed paste, thus disable it by writing t_BD.
@@ -2249,8 +2247,18 @@ did_set_string_option(
     {
 	if (parse_completepopup(NULL) == FAIL)
 	    errmsg = e_invarg;
+	else
+	    popup_close_info();
     }
 # endif
+#endif
+
+#ifdef FEAT_QUICKFIX
+    else if (varp == &p_qftf)
+    {
+	if (qf_process_qftf_option() == FALSE)
+	    errmsg = e_invarg;
+    }
 #endif
 
     // Options that are a list of flags.

@@ -20,6 +20,8 @@ void ex_while(exarg_T *eap);
 void ex_continue(exarg_T *eap);
 void ex_break(exarg_T *eap);
 void ex_endwhile(exarg_T *eap);
+void ex_block(exarg_T *eap);
+void ex_endblock(exarg_T *eap);
 void ex_throw(exarg_T *eap);
 void do_throw(cstack_T *cstack);
 void ex_try(exarg_T *eap);

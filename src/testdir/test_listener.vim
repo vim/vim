@@ -210,8 +210,8 @@ func Test_listener_args()
 
   " Invalid arguments
   call assert_fails('call listener_add([])', 'E921:')
-  call assert_fails('call listener_add("s:StoreListArgs", [])', 'E158:')
-  call assert_fails('call listener_flush([])', 'E158:')
+  call assert_fails('call listener_add("s:StoreListArgs", [])', 'E730:')
+  call assert_fails('call listener_flush([])', 'E730:')
 endfunc
 
 func s:StoreBufList(buf, start, end, added, list)
@@ -358,14 +358,16 @@ func Test_listener_cleared_newbuf()
 endfunc
 
 func Test_col_after_deletion_moved_cur()
-	func Listener(bufnr, start, end, added, changes)
+  func Listener(bufnr, start, end, added, changes)
     call assert_equal([#{lnum: 1, end: 2, added: 0, col: 2}], a:changes)
-	endfunc
-	new
-	call setline(1, ['foo'])
-	let lid = listener_add('Listener')
-	call feedkeys("lD", 'xt')
+  endfunc
+  new
+  call setline(1, ['foo'])
+  let lid = listener_add('Listener')
+  call feedkeys("lD", 'xt')
   call listener_flush()
-	bwipe!
-	delfunc Listener
+  bwipe!
+  delfunc Listener
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

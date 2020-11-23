@@ -37,7 +37,7 @@ func T25_F()
         if loops == 2
           try
             Xpath 'f' . loops
-          finally
+          final
             Xpath 'g' . loops
           endtry
         endif
@@ -49,19 +49,20 @@ func T25_F()
   Xpath 'i'
 endfunc
 
+" Also try using "fina" and "final" and "finall" as abbraviations.
 func T25_G()
   if 1
     try
       Xpath 'A'
       call T25_F()
       Xpath 'B'
-    finally
+    fina
       Xpath 'C'
     endtry
   else
     try
       Xpath 'D'
-    finally
+    finall
       Xpath 'E'
     endtry
   endif
@@ -2000,7 +2001,7 @@ endfunc
 func Test_try_catch_errors()
   call assert_fails('throw |', 'E471:')
   call assert_fails("throw \n ", 'E471:')
-  call assert_fails('catch abc', 'E603:')
+  call assert_fails('catch abc', 'E654:')
   call assert_fails('try | let i = 1| finally | catch | endtry', 'E604:')
   call assert_fails('finally', 'E606:')
   call assert_fails('try | finally | finally | endtry', 'E607:')

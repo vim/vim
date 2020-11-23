@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 8.2.  Last change: 2020 Mar 05
+*textprop.txt*  For Vim version 8.2.  Last change: 2020 Oct 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -101,7 +101,7 @@ Manipulating text property types:
 prop_type_add({name}, {props})		define a new property type
 prop_type_change({name}, {props})	change an existing property type
 prop_type_delete({name} [, {props}])	delete a property type
-prop_type_get([{name} [, {props}]])	get property type values
+prop_type_get({name} [, {props}])	get property type values
 prop_type_list([{props}])		get list of property types
 
 
@@ -220,7 +220,7 @@ prop_list({lnum} [, {props}])				*prop_list()*
 		Can also be used as a |method|: >
 			GetLnum()->prop_list()
 <
-						*prop_remove()* *E968*
+						*prop_remove()* *E968* *E860*
 prop_remove({props} [, {lnum} [, {lnum-end}]])
 		Remove a matching text property from line {lnum}.  When
 		{lnum-end} is given, remove matching text properties from line
@@ -291,7 +291,7 @@ prop_type_delete({name} [, {props}])			*prop_type_delete()*
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_delete()
 
-prop_type_get([{name} [, {props}]])			*prop_type_get()*
+prop_type_get({name} [, {props}])			*prop_type_get()*
 		Returns the properties of property type {name}.  This is a
 		dictionary with the same fields as was given to
 		prop_type_add().

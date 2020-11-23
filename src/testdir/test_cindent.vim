@@ -1,5 +1,4 @@
 " Test for cinoptions and cindent
-"
 
 func Test_cino_hash()
   " Test that curbuf->b_ind_hash_comment is correctly reset

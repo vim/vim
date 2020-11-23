@@ -1,4 +1,5 @@
 " Test for the xxd command
+
 if empty($XXD) && executable('..\xxd\xxd.exe')
   let s:xxd_cmd = '..\xxd\xxd.exe'
 elseif empty($XXD) || !executable($XXD)
@@ -228,3 +229,5 @@ func Test_xxd_version()
   call assert_match("xxd V1.10 .* by Juergen Weigert", join(getline(1, 3)))
   bwipe!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

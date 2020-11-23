@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 8.2.  Last change: 2019 Jul 04
+*mbyte.txt*     For Vim version 8.2.  Last change: 2020 Aug 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -36,7 +36,7 @@ characters or boxes when using another encoding.
 This is a summary of the multibyte features in Vim.  If you are lucky it works
 as described and you can start using Vim without much trouble.  If something
 doesn't work you will have to read the rest.  Don't be surprised if it takes
-quite a bit of work and experimenting to make Vim use all the multi-byte
+quite a bit of work and experimenting to make Vim use all the multibyte
 features.  Unfortunately, every system has its own way to deal with multibyte
 languages and it is quite complicated.
 
@@ -123,12 +123,12 @@ You can also set 'guifont' alone, Vim will try to find a matching
 
 INPUT
 
-There are several ways to enter multi-byte characters:
+There are several ways to enter multibyte characters:
 - For X11 XIM can be used.  See |XIM|.
 - For MS-Windows IME can be used.  See |IME|.
 - For all systems keymaps can be used.  See |mbyte-keymap|.
 
-The options 'iminsert', 'imsearch' and 'imcmdline' can be used to chose
+The options 'iminsert', 'imsearch' and 'imcmdline' can be used to choose
 the different input methods or disable them temporarily.
 
 ==============================================================================
@@ -141,8 +141,8 @@ in, or just use a certain locale inside Vim.
 
 WHAT IS A LOCALE?					*locale*
 
-There are many of languages in the world.  And there are different cultures
-and environments at least as much as the number of languages.	A linguistic
+There are many languages in the world.  And there are different cultures and
+environments at least as many as the number of languages.  A linguistic
 environment corresponding to an area is called "locale".  This includes
 information about the used language, the charset, collating order for sorting,
 date format, currency format and so on.  For Vim only the language and charset
@@ -237,11 +237,11 @@ encoded with one byte, we call this a single-byte encoding.  The most often
 used one is called "latin1".  This limits the number of characters to 256.
 Some of these are control characters, thus even fewer can be used for text.
 
-When some characters use two or more bytes, we call this a multi-byte
+When some characters use two or more bytes, we call this a multibyte
 encoding.  This allows using much more than 256 characters, which is required
 for most East Asian languages.
 
-Most multi-byte encodings use one byte for the first 127 characters.  These
+Most multibyte encodings use one byte for the first 127 characters.  These
 are equal to ASCII, which makes it easy to exchange plain-ASCII text, no
 matter what language is used.  Thus you might see the right text even when the
 encoding was set wrong.
@@ -488,11 +488,11 @@ possible.
 ==============================================================================
 4. Using a terminal					*mbyte-terminal*
 
-The GUI fully supports multi-byte characters.  It is also possible in a
+The GUI fully supports multibyte characters.  It is also possible in a
 terminal, if the terminal supports the same encoding that Vim uses.  Thus this
 is less flexible.
 
-For example, you can run Vim in a xterm with added multi-byte support and/or
+For example, you can run Vim in a xterm with added multibyte support and/or
 |XIM|.  Examples are kterm (Kanji term) and hanterm (for Korean), Eterm
 (Enlightened terminal) and rxvt.
 
@@ -544,7 +544,7 @@ For Vim you may need to set 'encoding' to "utf-8".
 5.  Fonts on X11					*mbyte-fonts-X11*
 
 Unfortunately, using fonts in X11 is complicated.  The name of a single-byte
-font is a long string.  For multi-byte fonts we need several of these...
+font is a long string.  For multibyte fonts we need several of these...
 
 Note: Most of this is no longer relevant for GTK+ 2.  Selecting a font via
 its XLFD is not supported; see 'guifont' for an example of how to
@@ -610,7 +610,7 @@ written like:
 
 X FONTSET
 						*fontset* *xfontset*
-A single-byte charset is typically associated with one font.  For multi-byte
+A single-byte charset is typically associated with one font.  For multibyte
 charsets a combination of fonts is often used.  This means that one group of
 characters are used from one font and another group from another font (which
 might be double wide).  This collection of fonts is called a fontset.
@@ -889,7 +889,7 @@ input_server_name	is your |IM-server| name (check your |IM-server|
 your_input_style	is one of |OverTheSpot|, |OffTheSpot|, |Root|.  See
 			also |xim-input-style|.
 
-*international may not necessary if you use X11R6.
+*international may not be necessary if you use X11R6.
 *.inputMethod and *.preeditType are optional if you use X11R6.
 
 For example, when you are using kinput2 as |IM-server|, >
@@ -952,7 +952,7 @@ automatically.
 
 This works on not only insert-normal mode, but also search-command input and
 replace mode.
-The options 'iminsert', 'imsearch' and 'imcmdline' can be used to chose
+The options 'iminsert', 'imsearch' and 'imcmdline' can be used to choose
 the different input methods or disable them temporarily.
 
 WHAT IS IME
@@ -1436,7 +1436,7 @@ not everybody is able to type a composing character.
 ==============================================================================
 12. Overview of options					*mbyte-options*
 
-These options are relevant for editing multi-byte files.  Check the help in
+These options are relevant for editing multibyte files.  Check the help in
 options.txt for detailed information.
 
 'encoding'	Encoding used for the keyboard and display.  It is also the
@@ -1456,14 +1456,14 @@ options.txt for detailed information.
 		languages where a sequence of characters can be broken
 		anywhere.
 
-'guifontset'	The list of font names used for a multi-byte encoding.  When
+'guifontset'	The list of font names used for a multibyte encoding.  When
 		this option is not empty, it replaces 'guifont'.
 
 'keymap'	Specify the name of a keyboard mapping.
 
 ==============================================================================
 
-Contributions specifically for the multi-byte features by:
+Contributions specifically for the multibyte features by:
 	Chi-Deok Hwang <hwang@mizi.co.kr>
 	SungHyun Nam <goweol@gmail.com>
 	K.Nagano <nagano@atese.advantest.co.jp>

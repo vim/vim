@@ -361,6 +361,8 @@ pum_display(
 	// redo the positioning.  Limit this to two times, when there is not
 	// much room the window size will keep changing.
     } while (pum_set_selected(selected, redo_count) && ++redo_count <= 2);
+
+    pum_redraw();
 }
 
 /*
@@ -541,8 +543,23 @@ pum_redraw(void)
 			{
 			    if (st != NULL)
 			    {
-				screen_puts_len(st, (int)STRLEN(st), row, col,
-									attr);
+				int size = (int)STRLEN(st);
+				int cells = (*mb_string2cells)(st, size);
+
+				// only draw the text that fits
+				while (size > 0
+					  && col + cells > pum_width + pum_col)
+				{
+				    --size;
+				    if (has_mbyte)
+				    {
+					size -= (*mb_head_off)(st, st + size);
+					cells -= (*mb_ptr2cells)(st + size);
+				    }
+				    else
+					--cells;
+				}
+				screen_puts_len(st, size, row, col, attr);
 				vim_free(st);
 			    }
 			    col += width;
@@ -642,6 +659,7 @@ pum_position_info_popup(win_T *wp)
     int col = pum_col + pum_width + pum_scrollbar + 1;
     int row = pum_row;
     int botpos = POPPOS_BOTLEFT;
+    int	used_maxwidth_opt = FALSE;
 
     wp->w_popup_pos = POPPOS_TOPLEFT;
     if (Columns - col < 20 && Columns - col < pum_col)
@@ -654,6 +672,12 @@ pum_position_info_popup(win_T *wp)
     else
 	wp->w_maxwidth = Columns - col + 1;
     wp->w_maxwidth -= popup_extra_width(wp);
+    if (wp->w_maxwidth_opt > 0 && wp->w_maxwidth > wp->w_maxwidth_opt)
+    {
+	// option value overrules computed value
+	wp->w_maxwidth = wp->w_maxwidth_opt;
+	used_maxwidth_opt = TRUE;
+    }
 
     row -= popup_top_extra(wp);
     if (wp->w_popup_flags & POPF_INFO_MENU)
@@ -673,7 +697,7 @@ pum_position_info_popup(win_T *wp)
 	row += pum_selected - pum_first + 1;
 
     wp->w_popup_flags &= ~POPF_HIDDEN;
-    if (wp->w_maxwidth < 10)
+    if (wp->w_maxwidth < 10 && !used_maxwidth_opt)
 	// The popup is not going to fit or will overlap with the cursor
 	// position, hide the popup.
 	wp->w_popup_flags |= POPF_HIDDEN;
@@ -788,6 +812,10 @@ pum_set_selected(int n, int repeat UNUSED)
 		use_popup = USEPOPUP_NORMAL;
 	    else
 		use_popup = USEPOPUP_NONE;
+	    if (use_popup != USEPOPUP_NONE)
+		// don't use WinEnter or WinLeave autocommands for the info
+		// popup
+		block_autocmds();
 # endif
 	    // Open a preview window and set "curwin" to it.
 	    // 3 lines by default, prefer 'previewheight' if set and smaller.
@@ -966,6 +994,10 @@ pum_set_selected(int n, int repeat UNUSED)
 		// can't keep focus in a popup window
 		win_enter(firstwin, TRUE);
 # endif
+# ifdef FEAT_PROP_POPUP
+	    if (use_popup != USEPOPUP_NONE)
+		unblock_autocmds();
+# endif
 	}
 #endif
     }
@@ -974,9 +1006,6 @@ pum_set_selected(int n, int repeat UNUSED)
 	// hide any popup info window
 	popup_hide_info();
 #endif
-
-    if (!resized)
-	pum_redraw();
 
     return resized;
 }

@@ -1,4 +1,5 @@
 " Tests for the getbufinfo(), getwininfo() and gettabinfo() functions
+
 source check.vim
 
 func Test_getbufwintabinfo()
@@ -22,6 +23,9 @@ func Test_getbufwintabinfo()
   call assert_equal(bufnr('%'), l[0].bufnr)
   call assert_equal('vim', l[0].variables.editor)
   call assert_notequal(-1, index(l[0].windows, '%'->bufwinid()))
+
+  let l = '%'->getbufinfo()
+  call assert_equal(bufnr('%'), l[0].bufnr)
 
   " Test for getbufinfo() with 'bufmodified'
   call assert_equal(0, len(getbufinfo({'bufmodified' : 1})))
@@ -165,3 +169,5 @@ func Test_getbufinfo_lines()
   edit Xfoo
   bw!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

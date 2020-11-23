@@ -1,8 +1,7 @@
-"
 " Tests for register operations
-"
 
 source check.vim
+source view_util.vim
 
 " This test must be executed first to check for empty and unset registers.
 func Test_aaa_empty_reg_test()
@@ -164,6 +163,19 @@ func Test_register_one()
   bwipe!
 endfunc
 
+func Test_recording_status_in_ex_line()
+  norm qx
+  redraw!
+  call assert_equal('recording @x', Screenline(&lines))
+  set shortmess=q
+  redraw!
+  call assert_equal('recording', Screenline(&lines))
+  set shortmess&
+  norm q
+  redraw!
+  call assert_equal('', Screenline(&lines))
+endfunc
+
 " Check that replaying a typed sequence does not use an Esc and following
 " characters as an escape sequence.
 func Test_recording_esc_sequence()
@@ -262,6 +274,9 @@ func Test_get_register()
   call assert_fails('let r = getreg("=", [])', 'E745:')
   call assert_fails('let r = getreg("=", 1, [])', 'E745:')
   enew!
+
+  " Using a register in operator-pending mode should fail
+  call assert_beeps('norm! c"')
 endfunc
 
 func Test_set_register()
@@ -411,6 +426,12 @@ func Test_execute_register()
   @q
   @
   call assert_equal(3, i)
+
+  " try to execute expression register and use a backspace to cancel it
+  new
+  call feedkeys("@=\<BS>ax\<CR>y", 'xt')
+  call assert_equal(['x', 'y'], getline(1, '$'))
+  close!
 
   " cannot execute a register in operator pending mode
   call assert_beeps('normal! c@r')
@@ -656,6 +677,24 @@ func Test_clipboard_nul()
   call assert_match('"\*\s*\^@test\^J',b[1])
 
   set clipboard&vim
+  bwipe!
+endfunc
+
+func Test_ve_blockpaste()
+  new
+  set ve=all
+  0put =['QWERTZ','ASDFGH']
+  call cursor(1,1)
+  exe ":norm! \<C-V>3ljdP"
+  call assert_equal(1, col('.'))
+  call assert_equal(getline(1, 2), ['QWERTZ', 'ASDFGH'])
+  call cursor(1,1)
+  exe ":norm! \<C-V>3ljd"
+  call cursor(1,1)
+  norm! $3lP
+  call assert_equal(5, col('.'))
+  call assert_equal(getline(1, 2), ['TZ  QWER', 'GH  ASDF'])
+  set ve&vim
   bwipe!
 endfunc
 

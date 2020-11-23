@@ -9,24 +9,15 @@ default: nongui
 
 include Make_all.mak
 
-# These tests don't work (yet):
-# test2		"\\tmp" doesn't work
-# test10	'errorformat' is different
-# test52	only for Win32
-# test86, 87	no Python interface
+SCRIPTS = $(SCRIPTS_TINY_OUT)
 
-SCRIPTS = $(SCRIPTS_ALL) $(SCRIPTS_MORE4)
+.SUFFIXES: .in .out .res .vim
 
-# Must run test1 first to create small.vim.
-$(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS_RES): $(SCRIPTS_FIRST)
-
-.SUFFIXES: .in .out
-
-nongui:	/tmp $(SCRIPTS_FIRST) $(SCRIPTS)
+nongui:	/tmp $(SCRIPTS)
 	csh -c echo ALL DONE
 
 clean:
-	csh -c \rm -rf *.out Xdir1 Xfind XfakeHOME Xdotest small.vim tiny.vim mbyte.vim test.ok viminfo
+	csh -c \rm -rf *.out Xdir1 Xfind XfakeHOME Xdotest test.ok viminfo
 
 .in.out:
 	copy $*.ok test.ok

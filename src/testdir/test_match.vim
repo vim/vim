@@ -160,7 +160,7 @@ endfunc
 
 func Test_matchadd_error()
   call assert_fails("call matchadd('GroupDoesNotExist', 'X')", 'E28:')
-  call assert_fails("call matchadd('Search', '\\(')", 'E475:')
+  call assert_fails("call matchadd('Search', '\\(')", 'E54:')
   call assert_fails("call matchadd('Search', 'XXX', 1, 123, 1)", 'E715:')
   call assert_fails("call matchadd('Error', 'XXX', 1, 3)", 'E798:')
   call assert_fails("call matchadd('Error', 'XXX', 1, 0)", 'E799:')

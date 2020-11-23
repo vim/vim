@@ -120,7 +120,7 @@ func Test_gn_command()
   sil! %d_
 
   " search using the \zs atom
-  call setline(1, [' nnoremap', '' , 'nnoremap'])
+  call setline(1, [' nnoremap', '', 'nnoremap'])
   set wrapscan&vim
   let @/ = '\_s\zsnnoremap'
   $
@@ -172,7 +172,32 @@ func Test_gn_command()
   normal 0wgNy
   call assert_equal('one', @")
   set selection&
-endfu
+endfunc
+
+func Test_gN_repeat()
+  new
+  call setline(1, 'this list is a list with a list of a list.')
+  /list
+  normal $gNgNgNx
+  call assert_equal('list with a list of a list', @")
+  bwipe!
+endfunc
+
+func Test_gN_then_gn()
+  new
+
+  call setline(1, 'this list is a list with a list of a last.')
+  /l.st
+  normal $gNgNgnx
+  call assert_equal('last', @")
+
+  call setline(1, 'this list is a list with a lust of a last.')
+  /l.st
+  normal $gNgNgNgnx
+  call assert_equal('lust of a last', @")
+
+  bwipe!
+endfunc
 
 func Test_gn_multi_line()
   new

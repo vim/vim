@@ -163,11 +163,11 @@ func Ch_communicate(port)
   eval handle->ch_setoptions({'callback': 's:NotUsed'})
   call ch_setoptions(handle, {'timeout': 1111})
   call ch_setoptions(handle, {'mode': 'json'})
-  call assert_fails("call ch_setoptions(handle, {'waittime': 111})", "E475")
+  call assert_fails("call ch_setoptions(handle, {'waittime': 111})", 'E475:')
   call ch_setoptions(handle, {'callback': ''})
   call ch_setoptions(handle, {'drop': 'never'})
   call ch_setoptions(handle, {'drop': 'auto'})
-  call assert_fails("call ch_setoptions(handle, {'drop': 'bad'})", "E475")
+  call assert_fails("call ch_setoptions(handle, {'drop': 'bad'})", 'E475:')
   call assert_equal(0, ch_setoptions(handle, test_null_dict()))
   call assert_equal(0, ch_setoptions(test_null_channel(), {'drop' : 'never'}))
 
@@ -559,7 +559,7 @@ func Test_raw_pipe()
   call assert_equal(1, found)
 
   call assert_fails("call job_stop('abc')", 'E475:')
-  call assert_fails("call job_stop(job, [])", 'E474:')
+  call assert_fails("call job_stop(job, [])", 'E730:')
   call assert_fails("call job_stop(test_null_job())", 'E916:')
 
   " Try to use the job and channel where a number is expected. This is not
@@ -1348,9 +1348,7 @@ endfunction
 " This caused a crash, because messages were handled while peeking for a
 " character.
 func Test_exit_cb_wipes_buf()
-  if !has('timers')
-    return
-  endif
+  CheckFeature timers
   set cursorline lazyredraw
   call test_override('redraw_flag', 1)
   new
@@ -1641,15 +1639,15 @@ func Test_job_start_fails()
   call assert_fails("call job_start('ls', {'in_top' : -1})", 'E475:')
   call assert_fails("call job_start('ls', {'in_bot' : -1})", 'E475:')
   call assert_fails("call job_start('ls', {'channel' : -1})", 'E475:')
-  call assert_fails("call job_start('ls', {'callback' : -1})", 'E475:')
-  call assert_fails("call job_start('ls', {'out_cb' : -1})", 'E475:')
-  call assert_fails("call job_start('ls', {'err_cb' : -1})", 'E475:')
-  call assert_fails("call job_start('ls', {'close_cb' : -1})", 'E475:')
-  call assert_fails("call job_start('ls', {'exit_cb' : -1})", 'E475:')
+  call assert_fails("call job_start('ls', {'callback' : -1})", 'E921:')
+  call assert_fails("call job_start('ls', {'out_cb' : -1})", 'E921:')
+  call assert_fails("call job_start('ls', {'err_cb' : -1})", 'E921:')
+  call assert_fails("call job_start('ls', {'close_cb' : -1})", 'E921:')
+  call assert_fails("call job_start('ls', {'exit_cb' : -1})", 'E921:')
   call assert_fails("call job_start('ls', {'term_name' : []})", 'E475:')
   call assert_fails("call job_start('ls', {'term_finish' : 'run'})", 'E475:')
   call assert_fails("call job_start('ls', {'term_api' : []})", 'E475:')
-  call assert_fails("call job_start('ls', {'stoponexit' : []})", 'E475:')
+  call assert_fails("call job_start('ls', {'stoponexit' : []})", 'E730:')
   call assert_fails("call job_start('ls', {'in_io' : 'file'})", 'E920:')
   call assert_fails("call job_start('ls', {'out_io' : 'file'})", 'E920:')
   call assert_fails("call job_start('ls', {'err_io' : 'file'})", 'E920:')
@@ -2183,18 +2181,21 @@ func Test_issue_5150()
   else
     let cmd = 'grep foo'
   endif
+
   let g:job = job_start(cmd, {})
+  sleep 50m  " give the job time to start
   call job_stop(g:job)
-  sleep 50m
-  call assert_equal(-1, job_info(g:job).exitval)
+  call WaitForAssert({-> assert_equal(-1, job_info(g:job).exitval)})
+
   let g:job = job_start(cmd, {})
+  sleep 50m
   call job_stop(g:job, 'term')
-  sleep 50m
-  call assert_equal(-1, job_info(g:job).exitval)
+  call WaitForAssert({-> assert_equal(-1, job_info(g:job).exitval)})
+
   let g:job = job_start(cmd, {})
-  call job_stop(g:job, 'kill')
   sleep 50m
-  call assert_equal(-1, job_info(g:job).exitval)
+  call job_stop(g:job, 'kill')
+  call WaitForAssert({-> assert_equal(-1, job_info(g:job).exitval)})
 endfunc
 
 func Test_issue_5485()

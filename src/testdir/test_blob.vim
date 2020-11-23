@@ -271,6 +271,7 @@ endfunc
 
 " filter() item in blob
 func Test_blob_filter()
+  call assert_equal(test_null_blob(), filter(test_null_blob(), '0'))
   call assert_equal(0z, filter(0zDEADBEEF, '0'))
   call assert_equal(0zADBEEF, filter(0zDEADBEEF, 'v:val != 0xDE'))
   call assert_equal(0zDEADEF, filter(0zDEADBEEF, 'v:val != 0xBE'))

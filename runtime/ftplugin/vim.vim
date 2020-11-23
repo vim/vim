@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:	Vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2020 Jun 16
+" Last Change:	2020 Aug 14
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -49,14 +49,15 @@ setlocal isk+=#
 setlocal keywordprg=:help
 
 " Set 'comments' to format dashed lists in comments
-setlocal com=sO:\"\ -,mO:\"\ \ ,eO:\"\",:\"
+" Avoid that #{} starts a comment.
+setlocal com=sO:\"\ -,mO:\"\ \ ,sO:#\ -,mO:#\ \ ,eO:##,:\",b:#
 
 " Format comments to be up to 78 characters long
 if &tw == 0
   setlocal tw=78
 endif
 
-" Comments start with a double quote
+" Comments start with a double quote; in Vim9 script # would also work
 setlocal commentstring=\"%s
 
 if !exists("no_plugin_maps") && !exists("no_vim_maps")
@@ -83,7 +84,7 @@ endif
 if exists("loaded_matchit")
   let b:match_ignorecase = 0
   let b:match_words =
-	\ '\<\%(fu\%[nction]\|def\)\>:\<retu\%[rn]\>:\<\%(endf\%[unction]\|enddef\)\>,' .
+	\ '\<\%(fu\%[nction]\|def\)\>)\@!:\<retu\%[rn]\>:\<\%(endf\%[unction]\|enddef\)\>,' .
  	\ '\<\(wh\%[ile]\|for\)\>:\<brea\%[k]\>:\<con\%[tinue]\>:\<end\(w\%[hile]\|fo\%[r]\)\>,' .
 	\ '\<if\>:\<el\%[seif]\>:\<en\%[dif]\>,' .
 	\ '{:},' .

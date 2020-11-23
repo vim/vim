@@ -10,9 +10,8 @@ endfunc
 
 " Tests for 'directory' option.
 func Test_swap_directory()
-  if !has("unix")
-    return
-  endif
+  CheckUnix
+
   let content = ['start of testfile',
 	      \ 'line 2 Abcdefghij',
 	      \ 'line 3 Abcdefghij',
@@ -56,9 +55,8 @@ func Test_swap_directory()
 endfunc
 
 func Test_swap_group()
-  if !has("unix")
-    return
-  endif
+  CheckUnix
+
   let groups = split(system('groups'))
   if len(groups) <= 1
     throw 'Skipped: need at least two groups, got ' . string(groups)
@@ -375,6 +373,81 @@ func Test_swap_prompt_splitwin()
   call StopVimInTerminal(buf)
   %bwipe!
   call delete('Xfile1')
+endfunc
+
+func Test_swap_symlink()
+  CheckUnix
+
+  call writefile(['text'], 'Xtestfile')
+  silent !ln -s -f Xtestfile Xtestlink
+
+  set dir=.
+
+  " Test that swap file uses the name of the file when editing through a
+  " symbolic link (so that editing the file twice is detected)
+  edit Xtestlink
+  call assert_match('Xtestfile\.swp$', s:swapname())
+  bwipe!
+
+  call mkdir('Xswapdir')
+  exe 'set dir=' . getcwd() . '/Xswapdir//'
+
+  " Check that this also works when 'directory' ends with '//'
+  edit Xtestlink
+  call assert_match('Xtestfile\.swp$', s:swapname())
+  bwipe!
+
+  set dir&
+  call delete('Xtestfile')
+  call delete('Xtestlink')
+  call delete('Xswapdir', 'rf')
+endfunc
+
+func Test_swap_auto_delete()
+  " Create a valid swapfile by editing a file with a special extension.
+  split Xtest.scr
+  call setline(1, ['one', 'two', 'three'])
+  write  " file is written, not modified
+  write  " write again to make sure the swapfile is created
+  " read the swapfile as a Blob
+  let swapfile_name = swapname('%')
+  let swapfile_bytes = readfile(swapfile_name, 'B')
+
+  " Forget about the file, recreate the swap file, then edit it again.  The
+  " swap file should be automatically deleted.
+  bwipe!
+  " Change the process ID to avoid the "still running" warning.  Must add four
+  " for MS-Windows to see it as a different one.
+  let swapfile_bytes[24] = swapfile_bytes[24] + 4
+  call writefile(swapfile_bytes, swapfile_name)
+  edit Xtest.scr
+  " will end up using the same swap file after deleting the existing one
+  call assert_equal(swapfile_name, swapname('%'))
+  bwipe!
+
+  " create the swap file again, but change the host name so that it won't be
+  " deleted
+  autocmd! SwapExists
+  augroup test_swap_recover_ext
+    autocmd!
+    autocmd SwapExists * let v:swapchoice = 'e'
+  augroup END
+
+  " change the host name
+  let swapfile_bytes[28 + 40] = swapfile_bytes[28 + 40] + 2
+  call writefile(swapfile_bytes, swapfile_name)
+  edit Xtest.scr
+  call assert_equal(1, filereadable(swapfile_name))
+  " will use another same swap file name
+  call assert_notequal(swapfile_name, swapname('%'))
+  bwipe!
+
+  call delete('Xtest.scr')
+  call delete(swapfile_name)
+  augroup test_swap_recover_ext
+    autocmd!
+  augroup END
+  augroup! test_swap_recover_ext
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

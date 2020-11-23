@@ -4,7 +4,7 @@ source shared.vim
 
 func Test_cd_large_path()
   " This used to crash with a heap write overflow.
-  call assert_fails('cd ' . repeat('x', 5000), 'E472:')
+  call assert_fails('cd ' . repeat('x', 5000), 'E344:')
 endfunc
 
 func Test_cd_up_and_down()
@@ -93,7 +93,7 @@ func Test_chdir_func()
   call assert_equal('testdir', fnamemodify(getcwd(1, 1), ':t'))
 
   " Error case
-  call assert_fails("call chdir('dir-abcd')", 'E472:')
+  call assert_fails("call chdir('dir-abcd')", 'E344:')
   silent! let d = chdir("dir_abcd")
   call assert_equal("", d)
   " Should not crash
@@ -168,6 +168,15 @@ func Test_prev_dir()
   call delete('Xdir', 'rf')
 endfunc
 
+func Test_lcd_split()
+  let curdir = getcwd()
+  lcd ..
+  split
+  lcd -
+  call assert_equal(curdir, getcwd())
+  quit!
+endfunc
+
 func Test_cd_completion()
   call mkdir('XComplDir1', 'p')
   call mkdir('XComplDir2', 'p')
@@ -182,3 +191,5 @@ func Test_cd_completion()
   call delete('XComplDir2', 'd')
   call delete('XComplFile')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

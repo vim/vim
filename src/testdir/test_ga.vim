@@ -1,4 +1,5 @@
 " Test ga normal command, and :ascii Ex command.
+
 func Do_ga(c)
   call setline(1, a:c)
   let l:a = execute("norm 1goga")

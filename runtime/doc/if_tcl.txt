@@ -275,7 +275,7 @@ Options:
 	$win delcmd {cmd}				*tcl-window-delcmd*
 	Registers the Tcl command {cmd} as a deletion callback for the window.
 	This command is executed (in the global scope) just before the window
-	is closed.  Complex commands should be build with "list": >
+	is closed.  Complex commands should be built with "list": >
 		$win delcmd [list puts vimerr "window deleted"]
 <	See also |tcl-buffer-delcmd|.
 
@@ -357,7 +357,7 @@ Options:
 	$buf delcmd {cmd}				*tcl-buffer-delcmd*
 	Registers the Tcl command {cmd} as a deletion callback for the buffer.
 	This command is executed (in the global scope) just before the buffer
-	is deleted.  Complex commands should be build with "list": >
+	is deleted.  Complex commands should be built with "list": >
 		$buf delcmd [list puts vimerr "buffer [$buf number] gone"]
 <	See also |tcl-window-delcmd|.
 

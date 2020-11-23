@@ -1,4 +1,4 @@
-*digraph.txt*   For Vim version 8.2.  Last change: 2019 May 05
+*digraph.txt*   For Vim version 8.2.  Last change: 2020 Jul 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -33,6 +33,8 @@ An alternative is using the 'keymap' option.
 			it is the Unicode character, see |digraph-encoding|.
 			Example: >
 	:digr e: 235 a: 228
+<			You can use `:exe` to enter a hex number: >
+	:exe 'digr += ' .. 0x2A72
 <			Avoid defining a digraph with '_' (underscore) as the
 			first character, it has a special meaning in the
 			future.
@@ -919,6 +921,7 @@ char  digraph	hex	dec	official name ~
 ‟	9"	201F	8223	DOUBLE HIGH-REVERSED-9 QUOTATION MARK
 †	/-	2020	8224	DAGGER
 ‡	/=	2021	8225	DOUBLE DAGGER
+•	oo	2022	8226	BULLET
 ‥	..	2025	8229	TWO DOT LEADER
 …	,.	2026	8230	HORIZONTAL ELLIPSIS
 ‰	%0	2030	8240	PER MILLE SIGN

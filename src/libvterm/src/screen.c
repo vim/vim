@@ -186,7 +186,12 @@ static int putglyph(VTermGlyphInfo *info, VTermPos pos, void *user)
     cell->chars[i] = 0;
 
   for(col = 1; col < info->width; col++)
-    getcell(screen, pos.row, pos.col + col)->chars[0] = (uint32_t)-1;
+  {
+    ScreenCell *onecell = getcell(screen, pos.row, pos.col + col);
+    if (onecell == NULL)
+      break;
+    onecell->chars[0] = (uint32_t)-1;
+  }
 
   rect.start_row = pos.row;
   rect.end_row   = pos.row+1;

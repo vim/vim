@@ -4,6 +4,15 @@ source check.vim
 CheckFeature python3
 source shared.vim
 
+func Create_vim_list()
+  return [1]
+endfunction
+
+func Create_vim_dict()
+  return {'a': 1}
+endfunction
+
+
 " This function should be called first. This sets up python functions used by
 " the other tests.
 func Test_AAA_python3_setup()
@@ -14,6 +23,7 @@ func Test_AAA_python3_setup()
 
     py33_type_error_pattern = re.compile('^__call__\(\) takes (\d+) positional argument but (\d+) were given$')
     py37_exception_repr = re.compile(r'([^\(\),])(\)+)$')
+    py39_type_error_pattern = re.compile('\w+\.([^(]+\(\) takes)')
 
     def emsg(ei):
       return ei[0].__name__ + ':' + repr(ei[1].args)
@@ -47,6 +57,8 @@ func Test_AAA_python3_setup()
                         oldmsg2 = '''"Can't convert 'int' object to str implicitly"'''
                         if msg.find(newmsg2) > -1:
                             msg = msg.replace(newmsg2, oldmsg2)
+                        # Python 3.9 reports errors like "vim.command() takes ..." instead of "command() takes ..."
+                        msg = py39_type_error_pattern.sub(r'\1', msg)
                 elif sys.version_info >= (3, 5) and e.__class__ is ValueError and str(e) == 'embedded null byte':
                     msg = repr((TypeError, TypeError('expected bytes with no null')))
                 else:
@@ -90,7 +102,7 @@ func Test_py3do()
 
   " Try modifying a buffer with 'nomodifiable' set
   set nomodifiable
-  call assert_fails('py3do toupper(line)', 'cannot save undo information')
+  call assert_fails('py3do toupper(line)', 'E21:')
   set modifiable
 
   " Invalid command
@@ -290,7 +302,7 @@ func Test_python3_vim_val()
   call assert_equal("\nNone",          execute('py3 print(vim.eval("v:none"))'))
   call assert_equal("\nb'\\xab\\x12'", execute('py3 print(vim.eval("0zab12"))'))
 
-  call assert_fails('py3 vim.eval("1+")', 'vim.error: invalid expression')
+  call assert_fails('py3 vim.eval("1+")', 'E15: Invalid expression')
 endfunc
 
 " Test range objects, see :help python-range
@@ -305,10 +317,10 @@ func Test_python3_range()
   call assert_equal('3', py3eval('b[2]'))
   call assert_equal('4', py3eval('r[2]'))
 
-  call assert_fails('py3 r[3] = "x"', 'IndexError: line number out of range')
-  call assert_fails('py3 x = r[3]', 'IndexError: line number out of range')
-  call assert_fails('py3 r["a"] = "x"', 'TypeError: index must be int or slice, not str')
-  call assert_fails('py3 x = r["a"]', 'TypeError: index must be int or slice, not str')
+  call assert_fails('py3 r[3] = "x"', ['Traceback', 'IndexError: line number out of range'])
+  call assert_fails('py3 x = r[3]', ['Traceback', 'IndexError: line number out of range'])
+  call assert_fails('py3 r["a"] = "x"', ['Traceback', 'TypeError: index must be int or slice, not str'])
+  call assert_fails('py3 x = r["a"]', ['Traceback', 'TypeError: index must be int or slice, not str'])
 
   py3 del r[:]
   call assert_equal(['1', '5', '6'], getline(1, '$'))
@@ -533,13 +545,12 @@ func Test_python3_list()
   call AssertException(["py3 t = vim.eval('[test_null_list()]')"],
         \ 'Vim(py3):SystemError: <built-in function eval> returned NULL without setting an error')
 
-  " Try to bind a null List variable
+  " Try to bind a null List variable (works because an empty list is used)
   let cmds =<< trim END
     let l = test_null_list()
     py3 ll = vim.bindeval('l')
   END
-  call AssertException(cmds,
-        \ 'Vim(py3):SystemError: <built-in function bindeval> returned NULL without setting an error')
+  call AssertException(cmds, '')
 
   let l = []
   py3 l = vim.bindeval('l')
@@ -2582,7 +2593,7 @@ func Test_python3_chdir()
     cb.append(vim.eval('@%'))
     os.chdir('..')
     path = fnamemodify('.', ':p:h:t')
-    if path != b'src':
+    if path != b'src' and path != b'src2':
       # Running tests from a shadow directory, so move up another level
       # This will result in @% looking like shadow/testdir/Xfile, hence the
       # slicing to remove the leading path and path separator
@@ -2591,7 +2602,8 @@ func Test_python3_chdir()
       cb.append(vim.eval('@%')[len(path)+1:].replace(os.path.sep, '/'))
       os.chdir(path)
     else:
-      cb.append(str(fnamemodify('.', ':p:h:t')))
+      # Also accept running from src2/testdir/ for MS-Windows CI.
+      cb.append(str(fnamemodify('.', ':p:h:t').replace(b'src2', b'src')))
       cb.append(vim.eval('@%').replace(os.path.sep, '/'))
     del path
     os.chdir('testdir')
@@ -3802,7 +3814,16 @@ func Test_python3_errors()
     vim.current.xxx = True:(<class 'AttributeError'>, AttributeError('xxx',))
   END
 
-  call assert_equal(expected, getline(2, '$'))
+  let actual = getline(2, '$')
+  let n_expected = len(expected)
+  let n_actual = len(actual)
+  call assert_equal(n_expected, n_actual, 'number of lines to compare')
+
+  " Compare line by line so the errors are easier to understand.  Missing lines
+  " are compared with an empty string.
+  for i in range(n_expected > n_actual ? n_expected : n_actual)
+    call assert_equal(i >= n_expected ? '' : expected[i], i >= n_actual ? '' : actual[i])
+  endfor
   close!
 endfunc
 
@@ -3942,6 +3963,49 @@ func Test_python3_keyboard_interrupt()
   call assert_equal(expected, getline(2, '$'))
   call assert_equal('', output)
   close!
+endfunc
+
+" Regression: Iterator for a Vim object should hold a reference.
+func Test_python3_iter_ref()
+  let g:list_iter_ref_count_increase = -1
+  let g:dict_iter_ref_count_increase = -1
+  let g:bufmap_iter_ref_count_increase = -1
+  let g:options_iter_ref_count_increase = -1
+
+  py3 << trim EOF
+    import sys
+    import vim
+
+    def test_python3_iter_ref():
+      create_list = vim.Function('Create_vim_list')
+      v = create_list()
+      base_ref_count = sys.getrefcount(v)
+      for el in v:
+          vim.vars['list_iter_ref_count_increase'] = sys.getrefcount(v) - base_ref_count
+
+      create_dict = vim.Function('Create_vim_dict')
+      v = create_dict()
+      base_ref_count = sys.getrefcount(v)
+      for el in v:
+          vim.vars['dict_iter_ref_count_increase'] = sys.getrefcount(v) - base_ref_count
+
+      v = vim.buffers
+      base_ref_count = sys.getrefcount(v)
+      for el in v:
+          vim.vars['bufmap_iter_ref_count_increase'] = sys.getrefcount(v) - base_ref_count
+
+      v = vim.options
+      base_ref_count = sys.getrefcount(v)
+      for el in v:
+          vim.vars['options_iter_ref_count_increase'] = sys.getrefcount(v) - base_ref_count
+
+    test_python3_iter_ref()
+  EOF
+
+  call assert_equal(1, g:list_iter_ref_count_increase)
+  call assert_equal(1, g:dict_iter_ref_count_increase)
+  call assert_equal(1, g:bufmap_iter_ref_count_increase)
+  call assert_equal(1, g:options_iter_ref_count_increase)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

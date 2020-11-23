@@ -458,13 +458,13 @@ func Test_sign_funcs()
   call assert_fails('call sign_place(5, "", "sign1", "@", {"lnum" : 10})',
 	      \ 'E158:')
   call assert_fails('call sign_place(5, "", "sign1", [], {"lnum" : 10})',
-	      \ 'E158:')
+	      \ 'E730:')
   call assert_fails('call sign_place(21, "", "sign1", "Xsign",
 	      \ {"lnum" : -1})', 'E474:')
   call assert_fails('call sign_place(22, "", "sign1", "Xsign",
 	      \ {"lnum" : 0})', 'E474:')
   call assert_fails('call sign_place(22, "", "sign1", "Xsign",
-	      \ {"lnum" : []})', 'E474:')
+	      \ {"lnum" : []})', 'E745:')
   call assert_equal(-1, sign_place(1, "*", "sign1", "Xsign", {"lnum" : 10}))
 
   " Tests for sign_getplaced()
@@ -1724,7 +1724,7 @@ func Test_sign_jump_func()
   call assert_fails("call sign_jump(5, 'g5', 'foo')", 'E157:')
   call assert_fails('call sign_jump([], "", "foo")', 'E745:')
   call assert_fails('call sign_jump(2, [], "foo")', 'E730:')
-  call assert_fails('call sign_jump(2, "", {})', 'E158:')
+  call assert_fails('call sign_jump(2, "", {})', 'E731:')
   call assert_fails('call sign_jump(2, "", "baz")', 'E158:')
 
   sign unplace * group=*
@@ -1761,6 +1761,20 @@ func Test_sign_cursor_position()
   call term_sendkeys(buf, ":sign unplace 11\<CR>")
   call term_sendkeys(buf, ":sign unplace 10\<CR>")
   call VerifyScreenDump(buf, 'Test_sign_cursor_4', {})
+
+  " 'cursorline' highlighting overrules sign
+  call term_sendkeys(buf, ":sign place 12 line=2 name=s2\<CR>")
+  call term_sendkeys(buf, ":set cursorline\<CR>")
+  call term_sendkeys(buf, ":hi CursorLine ctermbg=Green\<CR>")
+  call term_sendkeys(buf, "2G")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_sign_cursor_5', {})
+
+  " sign highlighting overrules 'cursorline'
+  call term_sendkeys(buf, ":sign unplace 12\<CR>")
+  call term_sendkeys(buf, ":sign place 13 line=2 priority=100 name=s2\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_sign_cursor_6', {})
 
   " clean up
   call StopVimInTerminal(buf)
@@ -1980,7 +1994,7 @@ func Test_sign_funcs_multi()
   call assert_fails('call sign_unplacelist([[]])', "E715:")
   call assert_fails('call sign_unplacelist(["abc"])', "E715:")
   call assert_fails('call sign_unplacelist([100])', "E715:")
-  call assert_fails("call sign_unplacelist([{'id' : -1}])", 'E474')
+  call assert_fails("call sign_unplacelist([{'id' : -1}])", 'E474:')
 
   call assert_equal([0, 0, 0, 0],
 	      \ sign_undefine(['sign1', 'sign2', 'sign3', 'sign4']))
@@ -1997,3 +2011,5 @@ func Test_sign_funcs_multi()
   enew!
   call delete("Xsign")
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

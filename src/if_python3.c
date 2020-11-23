@@ -203,6 +203,9 @@ typedef PySliceObject PySliceObject_T;
 # define PySys_GetObject py3_PySys_GetObject
 # define PySys_SetArgv py3_PySys_SetArgv
 # define PyType_Ready py3_PyType_Ready
+# if PY_VERSION_HEX >= 0x030900b0
+#  define PyType_GetFlags py3_PyType_GetFlags
+# endif
 #undef Py_BuildValue
 # define Py_BuildValue py3_Py_BuildValue
 # define Py_SetPythonHome py3_Py_SetPythonHome
@@ -233,6 +236,9 @@ typedef PySliceObject PySliceObject_T;
 # define PyBytes_FromString py3_PyBytes_FromString
 # undef PyBytes_FromStringAndSize
 # define PyBytes_FromStringAndSize py3_PyBytes_FromStringAndSize
+# if defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030900b0
+#  define _Py_Dealloc py3__Py_Dealloc
+# endif
 # define PyFloat_FromDouble py3_PyFloat_FromDouble
 # define PyFloat_AsDouble py3_PyFloat_AsDouble
 # define PyObject_GenericGetAttr py3_PyObject_GenericGetAttr
@@ -247,7 +253,6 @@ typedef PySliceObject PySliceObject_T;
 # ifdef Py_DEBUG
 #  define _Py_NegativeRefcount py3__Py_NegativeRefcount
 #  define _Py_RefTotal (*py3__Py_RefTotal)
-#  define _Py_Dealloc py3__Py_Dealloc
 #  define PyModule_Create2TraceRefs py3_PyModule_Create2TraceRefs
 # else
 #  define PyModule_Create2 py3_PyModule_Create2
@@ -287,6 +292,10 @@ typedef PySliceObject PySliceObject_T;
 #  define PyObject_NEW(type, typeobj) \
 ( (type *) PyObject_Init( \
 	(PyObject *) _PyObject_DebugMalloc( _PyObject_SIZE(typeobj) ), (typeobj)) )
+# elif PY_VERSION_HEX >= 0x030900b0
+#  undef PyObject_NEW
+#  define PyObject_NEW(type, typeobj) \
+	((type *)py3__PyObject_New(typeobj))
 # endif
 
 /*
@@ -352,6 +361,9 @@ static PyObject* (*py3_PyObject_Repr)(PyObject *);
 static PyObject* (*py3_PyObject_GetItem)(PyObject *, PyObject *);
 static int (*py3_PyObject_IsTrue)(PyObject *);
 static PyObject* (*py3_Py_BuildValue)(char *, ...);
+# if PY_VERSION_HEX >= 0x030900b0
+static int (*py3_PyType_GetFlags)(PyTypeObject *o);
+# endif
 static int (*py3_PyType_Ready)(PyTypeObject *type);
 static int (*py3_PyDict_SetItemString)(PyObject *dp, char *key, PyObject *item);
 static PyObject* (*py3_PyUnicode_FromString)(const char *u);
@@ -396,6 +408,12 @@ static char* (*py3_PyBytes_AsString)(PyObject *bytes);
 static int (*py3_PyBytes_AsStringAndSize)(PyObject *bytes, char **buffer, Py_ssize_t *length);
 static PyObject* (*py3_PyBytes_FromString)(char *str);
 static PyObject* (*py3_PyBytes_FromStringAndSize)(char *str, Py_ssize_t length);
+# if defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030900b0
+static void (*py3__Py_Dealloc)(PyObject *obj);
+# endif
+# if PY_VERSION_HEX >= 0x030900b0
+static PyObject* (*py3__PyObject_New)(PyTypeObject *);
+# endif
 static PyObject* (*py3_PyFloat_FromDouble)(double num);
 static double (*py3_PyFloat_AsDouble)(PyObject *);
 static PyObject* (*py3_PyObject_GenericGetAttr)(PyObject *obj, PyObject *name);
@@ -414,7 +432,6 @@ static void* (*py3_PyCapsule_GetPointer)(PyObject *, char *);
 # ifdef Py_DEBUG
 static void (*py3__Py_NegativeRefcount)(const char *fname, int lineno, PyObject *op);
 static Py_ssize_t* py3__Py_RefTotal;
-static void (*py3__Py_Dealloc)(PyObject *obj);
 static PyObject* (*py3_PyModule_Create2TraceRefs)(struct PyModuleDef* module, int module_api_version);
 # else
 static PyObject* (*py3_PyModule_Create2)(struct PyModuleDef* module, int module_api_version);
@@ -525,6 +542,9 @@ static struct
     {"PyObject_IsTrue", (PYTHON_PROC*)&py3_PyObject_IsTrue},
     {"PyLong_FromLong", (PYTHON_PROC*)&py3_PyLong_FromLong},
     {"PyDict_New", (PYTHON_PROC*)&py3_PyDict_New},
+# if PY_VERSION_HEX >= 0x030900b0
+    {"PyType_GetFlags", (PYTHON_PROC*)&py3_PyType_GetFlags},
+# endif
     {"PyType_Ready", (PYTHON_PROC*)&py3_PyType_Ready},
     {"PyDict_SetItemString", (PYTHON_PROC*)&py3_PyDict_SetItemString},
     {"PyLong_AsLong", (PYTHON_PROC*)&py3_PyLong_AsLong},
@@ -562,6 +582,12 @@ static struct
     {"PyBytes_AsStringAndSize", (PYTHON_PROC*)&py3_PyBytes_AsStringAndSize},
     {"PyBytes_FromString", (PYTHON_PROC*)&py3_PyBytes_FromString},
     {"PyBytes_FromStringAndSize", (PYTHON_PROC*)&py3_PyBytes_FromStringAndSize},
+# if defined(Py_DEBUG) || PY_VERSION_HEX >= 0x030900b0
+    {"_Py_Dealloc", (PYTHON_PROC*)&py3__Py_Dealloc},
+# endif
+# if PY_VERSION_HEX >= 0x030900b0
+    {"_PyObject_New", (PYTHON_PROC*)&py3__PyObject_New},
+# endif
     {"PyFloat_FromDouble", (PYTHON_PROC*)&py3_PyFloat_FromDouble},
     {"PyFloat_AsDouble", (PYTHON_PROC*)&py3_PyFloat_AsDouble},
     {"PyObject_GenericGetAttr", (PYTHON_PROC*)&py3_PyObject_GenericGetAttr},
@@ -578,7 +604,6 @@ static struct
 # ifdef Py_DEBUG
     {"_Py_NegativeRefcount", (PYTHON_PROC*)&py3__Py_NegativeRefcount},
     {"_Py_RefTotal", (PYTHON_PROC*)&py3__Py_RefTotal},
-    {"_Py_Dealloc", (PYTHON_PROC*)&py3__Py_Dealloc},
     {"PyModule_Create2TraceRefs", (PYTHON_PROC*)&py3_PyModule_Create2TraceRefs},
 # else
     {"PyModule_Create2", (PYTHON_PROC*)&py3_PyModule_Create2},
@@ -632,6 +657,15 @@ py3__Py_XDECREF(PyObject *op)
 
 #  undef Py_XDECREF
 #  define Py_XDECREF(op) py3__Py_XDECREF(_PyObject_CAST(op))
+# endif
+
+# if PY_VERSION_HEX >= 0x030900b0
+    static inline int
+py3_PyType_HasFeature(PyTypeObject *type, unsigned long feature)
+{
+    return ((PyType_GetFlags(type) & feature) != 0);
+}
+#  define PyType_HasFeature(t,f) py3_PyType_HasFeature(t,f)
 # endif
 
 /*
@@ -873,6 +907,66 @@ python3_loaded(void)
 
 static wchar_t *py_home_buf = NULL;
 
+#if defined(MSWIN) && (PY_VERSION_HEX >= 0x030500f0)
+/*
+ * Return TRUE if stdin is readable from Python 3.
+ */
+    static BOOL
+is_stdin_readable(void)
+{
+    DWORD	    mode, eventnum;
+    struct _stat    st;
+    int		    fd = fileno(stdin);
+    HANDLE	    hstdin = (HANDLE)_get_osfhandle(fd);
+
+    // Check if stdin is connected to the console.
+    if (GetConsoleMode(hstdin, &mode))
+	// Check if it is opened as input.
+	return GetNumberOfConsoleInputEvents(hstdin, &eventnum);
+
+    return _fstat(fd, &st) == 0;
+}
+
+// Python 3.5 or later will abort inside Py_Initialize() when stdin has
+// been closed (i.e. executed by "vim -").  Reconnect stdin to CONIN$.
+// Note that the python DLL is linked to its own stdio DLL which can be
+// differ from Vim's stdio.
+    static void
+reset_stdin(void)
+{
+    FILE *(*py__acrt_iob_func)(unsigned) = NULL;
+    FILE *(*pyfreopen)(const char *, const char *, FILE *) = NULL;
+    HINSTANCE hinst;
+
+# ifdef DYNAMIC_PYTHON3
+    hinst = hinstPy3;
+# else
+    hinst = GetModuleHandle(PYTHON3_DLL);
+# endif
+    if (hinst == NULL || is_stdin_readable())
+	return;
+
+    // Get "freopen" and "stdin" which are used in the python DLL.
+    // "stdin" is defined as "__acrt_iob_func(0)" in VC++ 2015 or later.
+    py__acrt_iob_func = get_dll_import_func(hinst, "__acrt_iob_func");
+    if (py__acrt_iob_func)
+    {
+	HINSTANCE hpystdiodll = find_imported_module_by_funcname(hinst,
+							    "__acrt_iob_func");
+	if (hpystdiodll)
+	    pyfreopen = (void *)GetProcAddress(hpystdiodll, "freopen");
+    }
+
+    // Reconnect stdin to CONIN$.
+    if (pyfreopen != NULL)
+	pyfreopen("CONIN$", "r", py__acrt_iob_func(0));
+    else
+	freopen("CONIN$", "r", stdin);
+}
+#else
+# define reset_stdin()
+#endif
+
     static int
 Python3_Init(void)
 {
@@ -905,13 +999,13 @@ Python3_Init(void)
 
 	PyImport_AppendInittab("vim", Py3Init_vim);
 
+	reset_stdin();
 	Py_Initialize();
 
-	// Initialise threads, and below save the state using
-	// PyEval_SaveThread.  Without the call to PyEval_SaveThread, thread
-	// specific state (such as the system trace hook), will be lost
-	// between invocations of Python code.
+#if PY_VERSION_HEX < 0x03090000
+	// Initialise threads.  This is deprecated since Python 3.9.
 	PyEval_InitThreads();
+#endif
 #ifdef DYNAMIC_PYTHON3
 	get_py3_exceptions();
 #endif
@@ -929,12 +1023,14 @@ Python3_Init(void)
 	// sys.path.
 	PyRun_SimpleString("import vim; import sys; sys.path = list(filter(lambda x: not x.endswith('must>not&exist'), sys.path))");
 
-	// lock is created and acquired in PyEval_InitThreads() and thread
-	// state is created in Py_Initialize()
-	// there _PyGILState_NoteThreadState() also sets gilcounter to 1
-	// (python must have threads enabled!)
-	// so the following does both: unlock GIL and save thread state in TLS
-	// without deleting thread state
+	// Without the call to PyEval_SaveThread, thread specific state (such
+	// as the system trace hook), will be lost between invocations of
+	// Python code.
+	// GIL may have been created and acquired in PyEval_InitThreads() and
+	// thread state is created in Py_Initialize(); there
+	// _PyGILState_NoteThreadState() also sets gilcounter to 1 (python must
+	// have threads enabled!), so the following does both: unlock GIL and
+	// save thread state in TLS without deleting thread state
 	PyEval_SaveThread();
 
 	py3initialised = 1;
@@ -1156,7 +1252,7 @@ OutputSetattro(PyObject *self, PyObject *nameobj, PyObject *val)
 #define BufferType_Check(obj) ((obj)->ob_base.ob_type == &BufferType)
 
 static PyObject* BufferSubscript(PyObject *self, PyObject *idx);
-static Py_ssize_t BufferAsSubscript(PyObject *self, PyObject *idx, PyObject *val);
+static int BufferAsSubscript(PyObject *self, PyObject *idx, PyObject *val);
 
 // Line range type - Implementation functions
 // --------------------------------------
@@ -1164,8 +1260,8 @@ static Py_ssize_t BufferAsSubscript(PyObject *self, PyObject *idx, PyObject *val
 #define RangeType_Check(obj) ((obj)->ob_base.ob_type == &RangeType)
 
 static PyObject* RangeSubscript(PyObject *self, PyObject *idx);
-static Py_ssize_t RangeAsItem(PyObject *, Py_ssize_t, PyObject *);
-static Py_ssize_t RangeAsSubscript(PyObject *self, PyObject *idx, PyObject *val);
+static int RangeAsItem(PyObject *, Py_ssize_t, PyObject *);
+static int RangeAsSubscript(PyObject *self, PyObject *idx, PyObject *val);
 
 // Current objects type - Implementation functions
 // -----------------------------------------------
@@ -1250,7 +1346,7 @@ BufferSubscript(PyObject *self, PyObject* idx)
     }
 }
 
-    static Py_ssize_t
+    static int
 BufferAsSubscript(PyObject *self, PyObject* idx, PyObject* val)
 {
     if (PyLong_Check(idx))
@@ -1322,7 +1418,7 @@ RangeGetattro(PyObject *self, PyObject *nameobj)
 
 ////////////////
 
-    static Py_ssize_t
+    static int
 RangeAsItem(PyObject *self, Py_ssize_t n, PyObject *val)
 {
     return RBAsItem(((RangeObject *)(self))->buf, n, val,
@@ -1365,7 +1461,7 @@ RangeSubscript(PyObject *self, PyObject* idx)
     }
 }
 
-    static Py_ssize_t
+    static int
 RangeAsSubscript(PyObject *self, PyObject *idx, PyObject *val)
 {
     if (PyLong_Check(idx))

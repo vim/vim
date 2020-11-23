@@ -1131,7 +1131,7 @@ free_all_mem(void)
     free_signs();
 # endif
 # ifdef FEAT_EVAL
-    set_expr_line(NULL);
+    set_expr_line(NULL, NULL);
 # endif
 # ifdef FEAT_DIFF
     if (curtab != NULL)
@@ -2028,6 +2028,41 @@ ga_clear_strings(garray_T *gap)
 }
 
 /*
+ * Copy a growing array that contains a list of strings.
+ */
+    int
+ga_copy_strings(garray_T *from, garray_T *to)
+{
+    int		i;
+
+    ga_init2(to, sizeof(char_u *), 1);
+    if (ga_grow(to, from->ga_len) == FAIL)
+	return FAIL;
+
+    for (i = 0; i < from->ga_len; ++i)
+    {
+	char_u *orig = ((char_u **)from->ga_data)[i];
+	char_u *copy;
+
+	if (orig == NULL)
+	    copy = NULL;
+	else
+	{
+	    copy = vim_strsave(orig);
+	    if (copy == NULL)
+	    {
+		to->ga_len = i;
+		ga_clear_strings(to);
+		return FAIL;
+	    }
+	}
+	((char_u **)to->ga_data)[i] = copy;
+    }
+    to->ga_len = from->ga_len;
+    return OK;
+}
+
+/*
  * Initialize a growing array.	Don't forget to set ga_itemsize and
  * ga_growsize!  Or use ga_init2().
  */
@@ -2495,6 +2530,7 @@ static struct key_name_entry
     {K_PLUG,		(char_u *)"Plug"},
     {K_CURSORHOLD,	(char_u *)"CursorHold"},
     {K_IGNORE,		(char_u *)"Ignore"},
+    {K_COMMAND,		(char_u *)"Cmd"},
     {0,			NULL}
     // NOTE: When adding a long name update MAX_KEY_NAME_LEN.
 };
@@ -2912,9 +2948,37 @@ find_special_key(
 
 
 /*
+ * Some keys are used with Ctrl without Shift and are still expected to be
+ * mapped as if Shift was pressed:
+ * CTRL-2 is CTRL-@
+ * CTRL-6 is CTRL-^
+ * CTRL-- is CTRL-_
+ * Also, <C-H> and <C-h> mean the same thing, always use "H".
+ * Returns the possibly adjusted key.
+ */
+    int
+may_adjust_key_for_ctrl(int modifiers, int key)
+{
+    if (modifiers & MOD_MASK_CTRL)
+    {
+	if (ASCII_ISALPHA(key))
+	    return TOUPPER_ASC(key);
+	if (key == '2')
+	    return '@';
+	if (key == '6')
+	    return '^';
+	if (key == '-')
+	    return '_';
+    }
+    return key;
+}
+
+/*
  * Some keys already have Shift included, pass them as normal keys.
- * Not when Ctrl is also used, because <C-H> and <C-S-H> are different.
+ * When Ctrl is also used <C-H> and <C-S-H> are different, but <C-S-{> should
+ * be <C-{>.  Same for <C-S-}> and <C-S-|>.
  * Also for <A-S-a> and <M-S-a>.
+ * This includes all printable ASCII characters except numbers and a-z.
  */
     int
 may_remove_shift_modifier(int modifiers, int key)
@@ -2922,10 +2986,16 @@ may_remove_shift_modifier(int modifiers, int key)
     if ((modifiers == MOD_MASK_SHIFT
 		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_ALT)
 		|| modifiers == (MOD_MASK_SHIFT | MOD_MASK_META))
-	    && ((key >= '@' && key <= 'Z')
-		|| key == '^' || key == '_'
+	    && ((key >= '!' && key <= '/')
+		|| (key >= ':' && key <= 'Z')
+		|| (key >= '[' && key <= '`')
 		|| (key >= '{' && key <= '~')))
 	return modifiers & ~MOD_MASK_SHIFT;
+
+    if (modifiers == (MOD_MASK_SHIFT | MOD_MASK_CTRL)
+		&& (key == '{' || key == '}' || key == '|'))
+	return modifiers & ~MOD_MASK_SHIFT;
+
     return modifiers;
 }
 
@@ -3306,7 +3376,7 @@ same_directory(char_u *f1, char_u *f2)
 }
 
 #if defined(FEAT_SESSION) || defined(FEAT_AUTOCHDIR) \
-	|| defined(MSWIN) || defined(FEAT_GUI_MAC) || defined(FEAT_GUI_GTK) \
+	|| defined(MSWIN) || defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_NETBEANS_INTG) \
 	|| defined(PROTO)
 /*

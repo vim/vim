@@ -44,12 +44,13 @@
 # define PERL_NO_INLINE_FUNCTIONS
 #endif
 
-/* Work around for using MSVC and ActivePerl 5.18. */
 #ifdef _MSC_VER
+// Work around for using MSVC and ActivePerl 5.18.
 # define __inline__ __inline
-
 // Work around for using MSVC and Strawberry Perl 5.30.
 # define __builtin_expect(expr, val) (expr)
+// Work around for using MSVC and Strawberry Perl 5.32.
+# define NO_THREAD_SAFE_LOCALE
 #endif
 
 #ifdef __GNUC__
@@ -241,6 +242,9 @@ typedef int perl_key;
 # else
 #  define Perl_sv_2pv dll_Perl_sv_2pv
 # endif
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
+#  define Perl_sv_2pvbyte_flags dll_Perl_sv_2pvbyte_flags
+# endif
 # define Perl_sv_2pvbyte dll_Perl_sv_2pvbyte
 # define Perl_sv_bless dll_Perl_sv_bless
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 8)
@@ -397,6 +401,9 @@ static char* (*Perl_sv_2pv_nolen)(pTHX_ SV*);
 static char* (*Perl_sv_2pv)(pTHX_ SV*, STRLEN*);
 # endif
 static char* (*Perl_sv_2pvbyte)(pTHX_ SV*, STRLEN*);
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
+static char* (*Perl_sv_2pvbyte_flags)(pTHX_ SV*, STRLEN*, I32);
+# endif
 static SV* (*Perl_sv_bless)(pTHX_ SV*, HV*);
 # if (PERL_REVISION == 5) && (PERL_VERSION >= 8)
 static void (*Perl_sv_catpvn_flags)(pTHX_ SV* , const char*, STRLEN, I32);
@@ -553,6 +560,9 @@ static struct {
     {"Perl_sv_2pv", (PERL_PROC*)&Perl_sv_2pv},
 # endif
     {"Perl_sv_2pvbyte", (PERL_PROC*)&Perl_sv_2pvbyte},
+# if (PERL_REVISION == 5) && (PERL_VERSION >= 32)
+    {"Perl_sv_2pvbyte_flags", (PERL_PROC*)&Perl_sv_2pvbyte_flags},
+# endif
 # ifdef PERL589_OR_LATER
     {"Perl_sv_2iv_flags", (PERL_PROC*)&Perl_sv_2iv_flags},
     {"Perl_newXS_flags", (PERL_PROC*)&Perl_newXS_flags},

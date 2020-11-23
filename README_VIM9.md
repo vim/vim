@@ -5,8 +5,8 @@
 This is an experimental side of [Vim](https://github.com/vim/vim).
 It explores ways of making Vim script faster and better.
 
-WARNING: The Vim9 script features are in the early stages of development,
-anything can break!
+WARNING: The Vim9 script features are still under development, anything can
+break!
 
 # Why Vim9?
 
@@ -52,7 +52,7 @@ we can gain, and also that Vim script can be faster than builtin
 interfaces.
 
 In practice the script would not do something useless as counting but change
-the text.  For example, re-indent all the lines:
+the text.  For example, reindent all the lines:
 
 ``` vim
   let totallen = 0
@@ -80,7 +80,7 @@ e.g. each stack item is a typeval_T.  And one of the instructions is
 "execute Ex command", for commands that are not compiled.
 
 
-## 2. PHASING OUT INTERFACES
+## 2. DEPRIORITIZE INTERFACES
 
 Attempts have been made to implement functionality with built-in script
 languages such as Python, Perl, Lua, Tcl and Ruby.  This never gained much
@@ -91,14 +91,14 @@ Instead of using script language support in Vim:
   with them.  The job and channel support already makes this possible.
   Really any language can be used, also Java and Go, which are not
   available built-in.
-* Phase out the built-in language interfaces, make maintenance a bit easier
-  and executables easier to build.  They will be kept for backwards
-  compatibility, no new features.
+* No priority for the built-in language interfaces.  They will have to be kept
+  for backwards compatibility, but many users won't need a Vim build with these
+  interfaces.
 * Improve the Vim script language, it is used to communicate with the external
   tool and implements the Vim side of the interface.  Also, it can be used when
   an external tool is undesired.
 
-All together this creates a clear situation: Vim with the +eval feature
+Altogether this creates a clear situation: Vim with the +eval feature
 will be sufficient for most plugins, while some plugins require
 installing a tool that can be written in any language.  No confusion
 about having Vim but the plugin not working because some specific
@@ -140,6 +140,9 @@ Taking this one step further is also dropping "s:" for script-local variables;
 everything at the script level is script-local by default.  Since this is not
 backwards compatible it requires a new script style: Vim9 script!
 
+To avoid having more variations, the syntax inside a compiled function is the
+same as in Vim9 script.  Thus you have legacy syntax and Vim9 syntax.
+
 It should be possible to convert code from other languages to Vim
 script.  We can add functionality to make this easier.  This still needs
 to be discussed, but we can consider adding type checking and a simple
@@ -156,18 +159,18 @@ thing I have been thinking of is assignments without ":let".  I often
 make that mistake (after writing JavaScript especially).  I think it is
 possible, if we make local variables shadow commands.  That should be OK,
 if you shadow a command you want to use, just rename the variable.
-Using "let" and "const" to declare a variable, like in JavaScript and
+Using "var" and "const" to declare a variable, like in JavaScript and
 TypeScript, can work:
 
 
 ``` vim
 def MyFunction(arg: number): number
-   let local = 1
-   let todo = arg
+   var local = 1
+   var todo = arg
    const ADD = 88
    while todo > 0
       local += ADD
-      --todo
+      todo -= 1
    endwhile
    return local
 enddef
@@ -189,7 +192,7 @@ function and export it:
 ``` vim
 vim9script  " Vim9 script syntax used here
 
-let local = 'local variable is not exported, script-local'
+var local = 'local variable is not exported, script-local'
 
 export def MyFunction()  " exported function
 ...
@@ -245,10 +248,10 @@ END
   return luaeval('sum')
 endfunc
 
-def VimNew()
-  let sum = 0
+def VimNew(): number
+  var sum = 0
   for i in range(1, 2999999)
-    let sum += i
+    sum += i
   endfor
   return sum
 enddef
@@ -274,7 +277,7 @@ echo 'Vim new: ' .. reltimestr(reltime(start))
 
 ``` vim
 def VimNew(): number
-  let totallen = 0
+  var totallen = 0
   for i in range(1, 100000)
     setline(i, '    ' .. getline(i))
     totallen += len(getline(i))

@@ -41,10 +41,10 @@ func Test_backspace_option()
   set backspace-=eol
   call assert_equal('', &backspace)
   " Check the error
-  call assert_equal(0, match(Exec('set backspace=ABC'), '.*E474'))
-  call assert_equal(0, match(Exec('set backspace+=def'), '.*E474'))
+  call assert_equal(0, match(Exec('set backspace=ABC'), '.*E474:'))
+  call assert_equal(0, match(Exec('set backspace+=def'), '.*E474:'))
   " NOTE: Vim doesn't check following error...
-  "call assert_equal(0, match(Exec('set backspace-=ghi'), '.*E474'))
+  "call assert_equal(0, match(Exec('set backspace-=ghi'), '.*E474:'))
 
   " Check backwards compatibility with version 5.4 and earlier
   set backspace=0
@@ -55,8 +55,8 @@ func Test_backspace_option()
   call assert_equal('2', &backspace)
   set backspace=3
   call assert_equal('3', &backspace)
-  call assert_false(match(Exec('set backspace=4'), '.*E474'))
-  call assert_false(match(Exec('set backspace=10'), '.*E474'))
+  call assert_false(match(Exec('set backspace=4'), '.*E474:'))
+  call assert_false(match(Exec('set backspace=10'), '.*E474:'))
 
   " Cleared when 'compatible' is set
   set compatible

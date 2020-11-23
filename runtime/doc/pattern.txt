@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 8.2.  Last change: 2019 Dec 07
+*pattern.txt*   For Vim version 8.2.  Last change: 2020 Sep 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -797,11 +797,12 @@ An ordinary atom can be:
 	^beep(		the start of the C function "beep" (probably).
 
 							*/\^*
-\^	Matches literal '^'.  Can be used at any position in the pattern.
+\^	Matches literal '^'.  Can be used at any position in the pattern, but
+	not inside [].
 
 							*/\_^*
 \_^	Matches start-of-line. |/zero-width|  Can be used at any position in
-	the pattern.
+	the pattern, but not inside [].
 	Example		matches ~
 	\_s*\_^foo	white space and blank lines and then "foo" at
 			start-of-line
@@ -812,12 +813,13 @@ $	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
 	|/zero-width|
 
 							*/\$*
-\$	Matches literal '$'.  Can be used at any position in the pattern.
+\$	Matches literal '$'.  Can be used at any position in the pattern, but
+	not inside [].
 
 							*/\_$*
 \_$	Matches end-of-line. |/zero-width|  Can be used at any position in the
-	pattern.  Note that "a\_$b" never matches, since "b" cannot match an
-	end-of-line.  Use "a\nb" instead |/\n|.
+	pattern, but not inside [].  Note that "a\_$b" never matches, since
+	"b" cannot match an end-of-line.  Use "a\nb" instead |/\n|.
 	Example		matches ~
 	foo\_$\_s*	"foo" at end-of-line and following white space and
 			blank lines
@@ -840,8 +842,9 @@ $	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
 	|/zero-width|
 
 							*/\zs*
-\zs	Matches at any position, and sets the start of the match there: The
-	next char is the first char of the whole match. |/zero-width|
+\zs	Matches at any position, but not inside [], and sets the start of the
+	match there: The next char is the first char of the whole match.
+	|/zero-width|
 	Example: >
 		/^\s*\zsif
 <	matches an "if" at the start of a line, ignoring white space.
@@ -852,8 +855,9 @@ $	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
 	This cannot be followed by a multi. *E888*
 	{not available when compiled without the |+syntax| feature}
 							*/\ze*
-\ze	Matches at any position, and sets the end of the match there: The
-	previous char is the last char of the whole match. |/zero-width|
+\ze	Matches at any position, but not inside [], and sets the end of the
+	match there: The previous char is the last char of the whole match.
+	|/zero-width|
 	Can be used multiple times, the last one encountered in a matching
 	branch is used.
 	Example: "end\ze\(if\|for\)" matches the "end" in "endif" and
@@ -939,7 +943,7 @@ $	At end of pattern or in front of "\|", "\)" or "\n" ('magic' on):
 	These three can be used to match specific columns in a buffer or
 	string.  The "23" can be any column number.  The first column is 1.
 	Actually, the column is the byte number (thus it's not exactly right
-	for multi-byte characters).
+	for multibyte characters).
 	WARNING: When inserting or deleting text Vim does not automatically
 	update the matches.  This means Syntax highlighting quickly becomes
 	wrong.
@@ -994,7 +998,7 @@ Character classes:
 \p	printable character (see 'isprint' option)	*/\p*
 \P	like "\p", but excluding digits			*/\P*
 
-NOTE: the above also work for multi-byte characters.  The ones below only
+NOTE: the above also work for multibyte characters.  The ones below only
 match ASCII characters, as indicated by the range.
 
 						*whitespace* *white-space*
@@ -1131,9 +1135,9 @@ x	A single character, with no special meaning, matches itself
 	  a list of at least one character, each of which is either '-', '.',
 	  '/', alphabetic, numeric, '_' or '~'.
 	  These items only work for 8-bit characters, except [:lower:] and
-	  [:upper:] also work for multi-byte characters when using the new
+	  [:upper:] also work for multibyte characters when using the new
 	  regexp engine.  See |two-engines|.  In the future these items may
-	  work for multi-byte characters.  For now, to get all "alpha"
+	  work for multibyte characters.  For now, to get all "alpha"
 	  characters you can use: [[:lower:][:upper:]].
 
 	  The "Func" column shows what library function is used.  The
@@ -1257,8 +1261,8 @@ When working with expression evaluation, a <NL> character in the pattern
 matches a <NL> in the string.  The use of "\n" (backslash n) to match a <NL>
 doesn't work there, it only works to match text in the buffer.
 
-						*pattern-multi-byte*
-Patterns will also work with multi-byte characters, mostly as you would
+				*pattern-multi-byte* *pattern-multibyte*
+Patterns will also work with multibyte characters, mostly as you would
 expect.  But invalid bytes may cause trouble, a pattern with an invalid byte
 will probably never match.
 
@@ -1279,7 +1283,7 @@ not match in "càt" (where the a has the composing character 0x0300), but
 0xe1, it does not have a compositing character).  It does match "cat" (where
 the a is just an a).
 
-When a composing character appears at the start of the pattern of after an
+When a composing character appears at the start of the pattern or after an
 item that doesn't include the composing character, a match is found at any
 character that includes this composing character.
 

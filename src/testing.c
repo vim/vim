@@ -22,7 +22,7 @@
 prepare_assert_error(garray_T *gap)
 {
     char    buf[NUMBUFLEN];
-    char_u  *sname = estack_sfile();
+    char_u  *sname = estack_sfile(ESTACK_NONE);
 
     ga_init2(gap, 1, 100);
     if (sname != NULL)
@@ -66,7 +66,7 @@ ga_concat_esc(garray_T *gap, char_u *p, int clen)
 	case CAR: ga_concat(gap, (char_u *)"\\r"); break;
 	case '\\': ga_concat(gap, (char_u *)"\\\\"); break;
 	default:
-		   if (*p < ' ')
+		   if (*p < ' ' || *p == 0x7f)
 		   {
 		       vim_snprintf((char *)buf, NUMBUFLEN, "\\x%02x", *p);
 		       ga_concat(gap, buf);
@@ -142,7 +142,10 @@ fill_assert_error(
     int		did_copy = FALSE;
     int		omitted = 0;
 
-    if (opt_msg_tv->v_type != VAR_UNKNOWN)
+    if (opt_msg_tv->v_type != VAR_UNKNOWN
+	    && !(opt_msg_tv->v_type == VAR_STRING
+		&& (opt_msg_tv->vval.v_string == NULL
+		    || *opt_msg_tv->vval.v_string == NUL)))
     {
 	ga_concat(gap, echo_string(opt_msg_tv, &tofree, numbuf, 0));
 	vim_free(tofree);
@@ -217,7 +220,11 @@ fill_assert_error(
 	vim_free(tofree);
     }
     else
+    {
+	ga_concat(gap, (char_u *)"'");
 	ga_concat_shorten_esc(gap, exp_str);
+	ga_concat(gap, (char_u *)"'");
+    }
     if (atype != ASSERT_NOTEQUAL)
     {
 	if (atype == ASSERT_MATCH)
@@ -270,12 +277,12 @@ assert_match_common(typval_T *argvars, assert_type_T atype)
     garray_T	ga;
     char_u	buf1[NUMBUFLEN];
     char_u	buf2[NUMBUFLEN];
+    int		called_emsg_before = called_emsg;
     char_u	*pat = tv_get_string_buf_chk(&argvars[0], buf1);
     char_u	*text = tv_get_string_buf_chk(&argvars[1], buf2);
 
-    if (pat == NULL || text == NULL)
-	emsg(_(e_invarg));
-    else if (pattern_match(pat, text, FALSE) != (atype == ASSERT_MATCH))
+    if (called_emsg == called_emsg_before
+		 && pattern_match(pat, text, FALSE) != (atype == ASSERT_MATCH))
     {
 	prepare_assert_error(&ga);
 	fill_assert_error(&ga, &argvars[2], NULL, &argvars[0], &argvars[1],
@@ -379,6 +386,7 @@ assert_equalfile(typval_T *argvars)
 {
     char_u	buf1[NUMBUFLEN];
     char_u	buf2[NUMBUFLEN];
+    int		called_emsg_before = called_emsg;
     char_u	*fname1 = tv_get_string_buf_chk(&argvars[0], buf1);
     char_u	*fname2 = tv_get_string_buf_chk(&argvars[1], buf2);
     garray_T	ga;
@@ -388,7 +396,7 @@ assert_equalfile(typval_T *argvars)
     char	line2[200];
     int		lineidx = 0;
 
-    if (fname1 == NULL || fname2 == NULL)
+    if (called_emsg > called_emsg_before)
 	return 0;
 
     IObuff[0] = NUL;
@@ -546,11 +554,12 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
     garray_T	ga;
     int		save_trylevel = trylevel;
     int		called_emsg_before = called_emsg;
+    char	*wrong_arg_msg = NULL;
 
     // trylevel must be zero for a ":throw" command to be considered failed
     trylevel = 0;
     suppress_errthrow = TRUE;
-    emsg_silent = TRUE;
+    in_assert_fails = TRUE;
 
     do_cmdline_cmd(cmd);
     if (called_emsg == called_emsg_before)
@@ -565,14 +574,108 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
     else if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	char_u	buf[NUMBUFLEN];
-	char	*error = (char *)tv_get_string_buf_chk(&argvars[1], buf);
+	char_u	*expected;
+	char_u	*expected_str = NULL;
+	int	error_found = FALSE;
+	int	error_found_index = 1;
+	char_u	*actual = emsg_assert_fails_msg == NULL ? (char_u *)"[unknown]"
+						       : emsg_assert_fails_msg;
 
-	if (error == NULL
-		  || strstr((char *)get_vim_var_str(VV_ERRMSG), error) == NULL)
+	if (argvars[1].v_type == VAR_STRING)
 	{
+	    expected = tv_get_string_buf_chk(&argvars[1], buf);
+	    error_found = expected == NULL
+			   || strstr((char *)actual, (char *)expected) == NULL;
+	}
+	else if (argvars[1].v_type == VAR_LIST)
+	{
+	    list_T	*list = argvars[1].vval.v_list;
+	    typval_T	*tv;
+
+	    if (list == NULL || list->lv_len < 1 || list->lv_len > 2)
+	    {
+		wrong_arg_msg = e_assert_fails_second_arg;
+		goto theend;
+	    }
+	    CHECK_LIST_MATERIALIZE(list);
+	    tv = &list->lv_first->li_tv;
+	    expected = tv_get_string_buf_chk(tv, buf);
+	    if (!pattern_match(expected, actual, FALSE))
+	    {
+		error_found = TRUE;
+		expected_str = expected;
+	    }
+	    else if (list->lv_len == 2)
+	    {
+		tv = &list->lv_u.mat.lv_last->li_tv;
+		actual = get_vim_var_str(VV_ERRMSG);
+		expected = tv_get_string_buf_chk(tv, buf);
+		if (!pattern_match(expected, actual, FALSE))
+		{
+		    error_found = TRUE;
+		    expected_str = expected;
+		}
+	    }
+	}
+	else
+	{
+	    wrong_arg_msg = e_assert_fails_second_arg;
+	    goto theend;
+	}
+
+	if (!error_found && argvars[2].v_type != VAR_UNKNOWN
+		&& argvars[3].v_type != VAR_UNKNOWN)
+	{
+	    if (argvars[3].v_type != VAR_NUMBER)
+	    {
+		wrong_arg_msg = e_assert_fails_fourth_argument;
+		goto theend;
+	    }
+	    else if (argvars[3].vval.v_number >= 0
+			 && argvars[3].vval.v_number != emsg_assert_fails_lnum)
+	    {
+		error_found = TRUE;
+		error_found_index = 3;
+	    }
+	    if (!error_found && argvars[4].v_type != VAR_UNKNOWN)
+	    {
+		if (argvars[4].v_type != VAR_STRING)
+		{
+		    wrong_arg_msg = e_assert_fails_fifth_argument;
+		    goto theend;
+		}
+		else if (argvars[4].vval.v_string != NULL
+		    && !pattern_match(argvars[4].vval.v_string,
+					     emsg_assert_fails_context, FALSE))
+		{
+		    error_found = TRUE;
+		    error_found_index = 4;
+		}
+	    }
+	}
+
+	if (error_found)
+	{
+	    typval_T actual_tv;
+
 	    prepare_assert_error(&ga);
-	    fill_assert_error(&ga, &argvars[2], NULL, &argvars[1],
-				      get_vim_var_tv(VV_ERRMSG), ASSERT_OTHER);
+	    if (error_found_index == 3)
+	    {
+		actual_tv.v_type = VAR_NUMBER;
+		actual_tv.vval.v_number = emsg_assert_fails_lnum;
+	    }
+	    else if (error_found_index == 4)
+	    {
+		actual_tv.v_type = VAR_STRING;
+		actual_tv.vval.v_string = emsg_assert_fails_context;
+	    }
+	    else
+	    {
+		actual_tv.v_type = VAR_STRING;
+		actual_tv.vval.v_string = actual;
+	    }
+	    fill_assert_error(&ga, &argvars[2], expected_str,
+			&argvars[error_found_index], &actual_tv, ASSERT_OTHER);
 	    ga_concat(&ga, (char_u *)": ");
 	    assert_append_cmd_or_arg(&ga, argvars, cmd);
 	    assert_error(&ga);
@@ -581,11 +684,20 @@ f_assert_fails(typval_T *argvars, typval_T *rettv)
 	}
     }
 
+theend:
     trylevel = save_trylevel;
     suppress_errthrow = FALSE;
-    emsg_silent = FALSE;
+    in_assert_fails = FALSE;
+    did_emsg = FALSE;
+    msg_col = 0;
+    need_wait_return = FALSE;
     emsg_on_display = FALSE;
+    msg_scrolled = 0;
+    lines_left = Rows;
+    VIM_CLEAR(emsg_assert_fails_msg);
     set_vim_var_string(VV_ERRMSG, NULL, 0);
+    if (wrong_arg_msg != NULL)
+	emsg(_(wrong_arg_msg));
 }
 
 /*
