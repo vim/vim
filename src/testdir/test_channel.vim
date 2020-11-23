@@ -2304,8 +2304,14 @@ endfunc
 func Test_cb_with_input()
   let g:wait_exit_cb = 1
 
-  call job_start('echo "Vim''s test"',
-        \ {'out_cb': 'ExitCb_cb_with_input'})
+  if has('win32')
+    let cmd = 'cmd /c echo "Vim''s test"'
+  else
+    let cmd = 'echo "Vim''s test"'
+  endif
+
+  let job = job_start(cmd, {'out_cb': 'ExitCb_cb_with_input'})
+  call WaitFor({-> job_status(job) == "dead"})
   call WaitForAssert({-> assert_equal(0, g:wait_exit_cb)})
 
   unlet g:wait_exit_cb
