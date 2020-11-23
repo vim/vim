@@ -2579,6 +2579,12 @@ nofail:
 #endif
     }
 
+#ifdef FEAT_VIMINFO
+    // Make sure marks will be written out to the viminfo file later, even when
+    // the file is new.
+    curbuf->b_marks_read = TRUE;
+#endif
+
     got_int |= prev_got_int;
 
     return retval;
