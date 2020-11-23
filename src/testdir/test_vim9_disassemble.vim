@@ -1026,6 +1026,40 @@ def Test_disassemble_for_loop_eval()
         instr)
 enddef
 
+def ForLoopUnpack()
+  for [x1, x2] in [[1, 2], [3, 4]]
+    echo x1 x2
+  endfor
+enddef
+
+def Test_disassemble_for_loop_unpack()
+  var instr = execute('disassemble ForLoopUnpack')
+  assert_match('ForLoopUnpack\_s*' ..
+        'for \[x1, x2\] in \[\[1, 2\], \[3, 4\]\]\_s*' ..
+        '\d\+ STORE -1 in $0\_s*' ..
+        '\d\+ PUSHNR 1\_s*' ..
+        '\d\+ PUSHNR 2\_s*' ..
+        '\d\+ NEWLIST size 2\_s*' ..
+        '\d\+ PUSHNR 3\_s*' ..
+        '\d\+ PUSHNR 4\_s*' ..
+        '\d\+ NEWLIST size 2\_s*' ..
+        '\d\+ NEWLIST size 2\_s*' ..
+        '\d\+ FOR $0 -> 16\_s*' ..
+        '\d\+ UNPACK 2\_s*' ..
+        '\d\+ STORE $1\_s*' ..
+        '\d\+ STORE $2\_s*' ..
+        'echo x1 x2\_s*' ..
+        '\d\+ LOAD $1\_s*' ..
+        '\d\+ LOAD $2\_s*' ..
+        '\d\+ ECHO 2\_s*' ..
+        'endfor\_s*' ..
+        '\d\+ JUMP -> 8\_s*' ..
+        '\d\+ DROP\_s*' ..
+        '\d\+ PUSHNR 0\_s*' ..
+        '\d\+ RETURN',
+        instr)
+enddef
+
 let g:number = 42
 
 def TypeCast()

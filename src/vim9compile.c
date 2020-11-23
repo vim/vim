@@ -1888,6 +1888,19 @@ generate_EXECCONCAT(cctx_T *cctx, int count)
     return OK;
 }
 
+    static int
+generate_UNPACK(cctx_T *cctx, int var_count, int semicolon)
+{
+    isn_T	*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_UNPACK)) == NULL)
+	return FAIL;
+    isn->isn_arg.unpack.unp_count = var_count;
+    isn->isn_arg.unpack.unp_semicolon = semicolon;
+    return OK;
+}
+
 /*
  * Generate an instruction for any command modifiers.
  */
@@ -6323,12 +6336,12 @@ compile_endif(char_u *arg, cctx_T *cctx)
 }
 
 /*
- * compile "for var in expr"
+ * Compile "for var in expr":
  *
  * Produces instructions:
  *       PUSHNR -1
  *       STORE loop-idx		Set index to -1
- *       EVAL expr		Push result of "expr"
+ *       EVAL expr		result of "expr" on top of stack
  * top:  FOR loop-idx, end	Increment index, use list on bottom of stack
  *				- if beyond end, jump to "end"
  *				- otherwise get item from list and push it
@@ -6337,11 +6350,19 @@ compile_endif(char_u *arg, cctx_T *cctx)
  *       JUMP top		Jump back to repeat
  * end:	 DROP			Drop the result of "expr"
  *
+ * Compile "for [var1, var2] in expr" - as above, but instead of "STORE var":
+ *	 UNPACK 2		Split item in 2
+ *       STORE var1		Store item in "var1"
+ *       STORE var2		Store item in "var2"
  */
     static char_u *
-compile_for(char_u *arg, cctx_T *cctx)
+compile_for(char_u *arg_start, cctx_T *cctx)
 {
+    char_u	*arg;
+    char_u	*arg_end;
     char_u	*p;
+    int		var_count = 0;
+    int		semicolon = FALSE;
     size_t	varlen;
     garray_T	*instr = &cctx->ctx_instr;
     garray_T	*stack = &cctx->ctx_type_stack;
@@ -6349,18 +6370,12 @@ compile_for(char_u *arg, cctx_T *cctx)
     lvar_T	*loop_lvar;	// loop iteration variable
     lvar_T	*var_lvar;	// variable for "var"
     type_T	*vartype;
+    type_T	*item_type = &t_any;
+    int		idx;
 
-    // TODO: list of variables: "for [key, value] in dict"
-    // parse "var"
-    for (p = arg; eval_isnamec1(*p); ++p)
-	;
-    varlen = p - arg;
-    var_lvar = lookup_local(arg, varlen, cctx);
-    if (var_lvar != NULL)
-    {
-	semsg(_(e_variable_already_declared), arg);
-	return NULL;
-    }
+    p = skip_var_list(arg_start, TRUE, &var_count, &semicolon, FALSE);
+    if (var_count == 0)
+	var_count = 1;
 
     // consume "in"
     p = skipwhite(p);
@@ -6371,12 +6386,12 @@ compile_for(char_u *arg, cctx_T *cctx)
     }
     p = skipwhite(p + 2);
 
-
     scope = new_scope(cctx, FOR_SCOPE);
     if (scope == NULL)
 	return NULL;
 
-    // Reserve a variable to store the loop iteration counter.
+    // Reserve a variable to store the loop iteration counter and initialize it
+    // to -1.
     loop_lvar = reserve_local(cctx, (char_u *)"", 0, FALSE, &t_number);
     if (loop_lvar == NULL)
     {
@@ -6384,16 +6399,6 @@ compile_for(char_u *arg, cctx_T *cctx)
 	drop_scope(cctx);
 	return NULL;
     }
-
-    // Reserve a variable to store "var"
-    var_lvar = reserve_local(cctx, arg, varlen, FALSE, &t_any);
-    if (var_lvar == NULL)
-    {
-	// out of memory or used as an argument
-	drop_scope(cctx);
-	return NULL;
-    }
-
     generate_STORENR(cctx, loop_lvar->lv_idx, -1);
 
     // compile "expr", it remains on the stack until "endfor"
@@ -6403,6 +6408,7 @@ compile_for(char_u *arg, cctx_T *cctx)
 	drop_scope(cctx);
 	return NULL;
     }
+    arg_end = arg;
 
     // Now that we know the type of "var", check that it is a list, now or at
     // runtime.
@@ -6412,16 +6418,78 @@ compile_for(char_u *arg, cctx_T *cctx)
 	drop_scope(cctx);
 	return NULL;
     }
+
     if (vartype->tt_type == VAR_LIST && vartype->tt_member->tt_type != VAR_ANY)
-	var_lvar->lv_type = vartype->tt_member;
+    {
+	if (var_count == 1)
+	    item_type = vartype->tt_member;
+	else if (vartype->tt_member->tt_type == VAR_LIST
+		      && vartype->tt_member->tt_member->tt_type != VAR_ANY)
+	    item_type = vartype->tt_member->tt_member;
+    }
 
     // "for_end" is set when ":endfor" is found
     scope->se_u.se_for.fs_top_label = instr->ga_len;
-
     generate_FOR(cctx, loop_lvar->lv_idx);
-    generate_STORE(cctx, ISN_STORE, var_lvar->lv_idx, NULL);
 
-    return arg;
+    arg = arg_start;
+    if (var_count > 1)
+    {
+	generate_UNPACK(cctx, var_count, semicolon);
+	arg = skipwhite(arg + 1);	// skip white after '['
+
+	// the list item is replaced by a number of items
+	if (ga_grow(stack, var_count - 1) == FAIL)
+	{
+	    drop_scope(cctx);
+	    return NULL;
+	}
+	--stack->ga_len;
+	for (idx = 0; idx < var_count; ++idx)
+	{
+	    ((type_T **)stack->ga_data)[stack->ga_len] =
+				(semicolon && idx == 0) ? vartype : item_type;
+	    ++stack->ga_len;
+	}
+    }
+
+    for (idx = 0; idx < var_count; ++idx)
+    {
+	// TODO: use skip_var_one, also assign to @r, $VAR, etc.
+	p = arg;
+	while (eval_isnamec(*p))
+	    ++p;
+	varlen = p - arg;
+	var_lvar = lookup_local(arg, varlen, cctx);
+	if (var_lvar != NULL)
+	{
+	    semsg(_(e_variable_already_declared), arg);
+	    drop_scope(cctx);
+	    return NULL;
+	}
+
+	// Reserve a variable to store "var".
+	// TODO: check for type
+	var_lvar = reserve_local(cctx, arg, varlen, FALSE, &t_any);
+	if (var_lvar == NULL)
+	{
+	    // out of memory or used as an argument
+	    drop_scope(cctx);
+	    return NULL;
+	}
+
+	if (semicolon && idx == var_count - 1)
+	    var_lvar->lv_type = vartype;
+	else
+	    var_lvar->lv_type = item_type;
+	generate_STORE(cctx, ISN_STORE, var_lvar->lv_idx, NULL);
+
+	if (*p == ',' || *p == ';')
+	    ++p;
+	arg = skipwhite(p);
+    }
+
+    return arg_end;
 }
 
 /*
@@ -7957,6 +8025,7 @@ delete_instr(isn_T *isn)
 	case ISN_STRSLICE:
 	case ISN_THROW:
 	case ISN_TRY:
+	case ISN_UNPACK:
 	    // nothing allocated
 	    break;
     }

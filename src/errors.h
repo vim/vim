@@ -21,6 +21,10 @@ EXTERN char e_invalid_command[]
 #ifdef FEAT_EVAL
 EXTERN char e_invalid_command_str[]
 	INIT(= N_("E476: Invalid command: %s"));
+EXTERN char e_list_value_has_more_items_than_targets[]
+	INIT(= N_("E710: List value has more items than targets"));
+EXTERN char e_list_value_does_not_have_enough_items[]
+	INIT(= N_("E711: List value does not have enough items"));
 EXTERN char e_cannot_slice_dictionary[]
 	INIT(= N_("E719: Cannot slice a Dictionary"));
 EXTERN char e_assert_fails_second_arg[]
@@ -305,3 +309,5 @@ EXTERN char e_using_bool_as_number[]
 	INIT(= N_("E1138: Using a Bool as a Number"));
 EXTERN char e_missing_matching_bracket_after_dict_key[]
 	INIT(= N_("E1139: Missing matching bracket after dict key"));
+EXTERN char e_for_argument_must_be_sequence_of_lists[]
+	INIT(= N_("E1140: For argument must be a sequence of lists"));
