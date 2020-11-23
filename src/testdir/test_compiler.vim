@@ -60,7 +60,7 @@ endfunc
 
 func Test_compiler_completion()
   call feedkeys(":compiler \<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_match('^"compiler ant bcc .* xmlwf xo$', @:)
+  call assert_match('^"compiler ant bcc .* xmlwf xo zsh$', @:)
 
   call feedkeys(":compiler p\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"compiler pbx perl php pylint pyunit', @:)
