@@ -641,7 +641,7 @@ win_line(
 	    else
 		tocol = MAXCOL;
 	    // do at least one character; happens when past end of line
-	    if (fromcol == tocol)
+	    if (fromcol == tocol && search_match_endcol)
 		tocol = fromcol + 1;
 	    area_highlighting = TRUE;
 	    vi_attr = HL_ATTR(HLF_I);

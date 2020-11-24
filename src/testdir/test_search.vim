@@ -1776,4 +1776,40 @@ func Test_search_stopline()
   close!
 endfunc
 
+func Test_zzzz_incsearch_highlighting_newline()
+  CheckRunVimInTerminal
+  CheckOption incsearch
+  CheckScreendump
+  new
+  call test_override("char_avail", 1)
+
+  let commands =<< trim [CODE]
+    set incsearch nohls
+    call setline(1, ['test', 'xxx'])
+  [CODE]
+  call writefile(commands, 'Xincsearch_nl')
+  let buf = RunVimInTerminal('-S Xincsearch_nl', {'rows': 5, 'cols': 10})
+  " Need to send one key at a time to force a redraw
+  call term_sendkeys(buf, '/test')
+  sleep 100m
+  call VerifyScreenDump(buf, 'Test_incsearch_newline1', {})
+  call term_sendkeys(buf, '\n')
+  sleep 100m
+  call VerifyScreenDump(buf, 'Test_incsearch_newline2', {})
+  call term_sendkeys(buf, 'x')
+  sleep 100m
+  call VerifyScreenDump(buf, 'Test_incsearch_newline3', {})
+  call term_sendkeys(buf, 'x')
+  call VerifyScreenDump(buf, 'Test_incsearch_newline4', {})
+  call term_sendkeys(buf, "\<CR>")
+  sleep 100m
+  call VerifyScreenDump(buf, 'Test_incsearch_newline5', {})
+  call StopVimInTerminal(buf)
+
+  " clean up
+  call delete('Xincsearch_nl')
+  call test_override("char_avail", 0)
+  bw
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
