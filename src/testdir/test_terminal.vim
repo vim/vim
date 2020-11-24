@@ -123,7 +123,7 @@ func Test_terminal_split_quit()
   unlet g:job
 endfunc
 
-func Test_terminal_hide_buffer()
+func Test_terminal_hide_buffer_job_running()
   let buf = Run_shell_in_terminal({})
   setlocal bufhidden=hide
   quit
@@ -138,6 +138,25 @@ func Test_terminal_hide_buffer()
   exe buf . 'bwipe'
 
   unlet g:job
+endfunc
+
+func Test_terminal_hide_buffer_job_finished()
+  term echo hello
+  let buf = bufnr()
+  setlocal bufhidden=hide
+  call WaitForAssert({-> assert_equal('finished', term_getstatus(buf))})
+  call assert_true(bufloaded(buf))
+  call assert_true(buflisted(buf))
+  edit Xasdfasdf
+  call assert_true(bufloaded(buf))
+  call assert_true(buflisted(buf))
+  exe buf .. 'buf'
+  call assert_equal(buf, bufnr())
+  setlocal bufhidden=
+  edit Xasdfasdf
+  call assert_false(bufloaded(buf))
+  call assert_false(buflisted(buf))
+  bwipe Xasdfasdf
 endfunc
 
 func s:Nasty_exit_cb(job, st)

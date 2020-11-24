@@ -552,6 +552,11 @@ close_buffer(
 		unload_buf = FALSE;
 	    }
 	}
+	else if (buf->b_p_bh[0] == 'h' && !del_buf)
+	{
+	    // Hide a terminal buffer.
+	    unload_buf = FALSE;
+	}
 	else
 	{
 	    // A terminal buffer is wiped out if the job has finished.
