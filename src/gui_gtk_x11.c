@@ -4039,10 +4039,10 @@ gui_mch_new_colors(void)
 
 #if GTK_CHECK_VERSION(3,22,2)
 	GtkStyleContext * const context
-	    = gtk_widget_get_style_context(gui.drawarea);
+	    = gtk_widget_get_style_context(gui.mainwin);
 	GtkCssProvider * const provider = gtk_css_provider_new();
 	gchar * const css = g_strdup_printf(
-		"widget#vim-gui-drawarea {\n"
+		"widget#vim-gui-drawarea, #vim-main-window {\n"
 		"  background-color: #%.2lx%.2lx%.2lx;\n"
 		"}\n",
 		 (gui.back_pixel >> 16) & 0xff,
