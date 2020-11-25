@@ -467,6 +467,7 @@ funcstack_check_refcount(funcstack_T *funcstack)
 func_return(ectx_T *ectx)
 {
     int		idx;
+    int		ret_idx;
     dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
 							  + ectx->ec_dfunc_idx;
     int		argcount = ufunc_argcount(dfunc->df_ufunc);
@@ -490,6 +491,12 @@ func_return(ectx_T *ectx)
 					idx < ectx->ec_stack.ga_len - 1; ++idx)
 	clear_tv(STACK_TV(idx));
 
+    // The return value should be on top of the stack.  However, when aborting
+    // it may not be there and ec_frame_idx is the top of the stack.
+    ret_idx = ectx->ec_stack.ga_len - 1;
+    if (ret_idx == ectx->ec_frame_idx + 4)
+	ret_idx = 0;
+
     // Restore the previous frame.
     ectx->ec_dfunc_idx = STACK_TV(ectx->ec_frame_idx)->vval.v_number;
     ectx->ec_iidx = STACK_TV(ectx->ec_frame_idx + 1)->vval.v_number;
@@ -501,11 +508,16 @@ func_return(ectx_T *ectx)
     dfunc = ((dfunc_T *)def_functions.ga_data) + ectx->ec_dfunc_idx;
     ectx->ec_instr = dfunc->df_instr;
 
-    // Reset the stack to the position before the call, move the return value
-    // to the top of the stack.
-    idx = ectx->ec_stack.ga_len - 1;
-    ectx->ec_stack.ga_len = top + 1;
-    *STACK_TV_BOT(-1) = *STACK_TV(idx);
+    if (ret_idx > 0)
+    {
+	// Reset the stack to the position before the call, with a spot for the
+	// return value, moved there from above the frame.
+	ectx->ec_stack.ga_len = top + 1;
+	*STACK_TV_BOT(-1) = *STACK_TV(ret_idx);
+    }
+    else
+	// Reset the stack to the position before the call.
+	ectx->ec_stack.ga_len = top;
 
     funcdepth_decrement();
     return OK;

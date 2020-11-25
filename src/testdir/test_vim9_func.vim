@@ -1468,6 +1468,29 @@ def Test_nested_closure_fails()
   CheckScriptFailure(lines, 'E1012:')
 enddef
 
+def Test_failure_in_called_function()
+  # this was using the frame index as the return value
+  var lines =<< trim END
+      vim9script
+      au TerminalWinOpen * eval [][0]
+      def PopupTerm(a: any)
+        # make sure typvals on stack are string
+        ['a', 'b', 'c', 'd', 'e', 'f', 'g']->join()
+        FireEvent()
+      enddef
+      def FireEvent()
+          do TerminalWinOpen
+      enddef
+      # use try/catch to make eval fail
+      try
+          call PopupTerm(0)
+      catch
+      endtry
+      au! TerminalWinOpen
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_nested_lambda()
   var lines =<< trim END
     vim9script
