@@ -507,17 +507,6 @@ mf_free(memfile_T *mfp, bhdr_T *hp)
 	mf_ins_free(mfp, hp);	// put *hp in the free list
 }
 
-#if defined(__MORPHOS__) && defined(__libnix__)
-// function is missing in MorphOS libnix version
-extern unsigned long *__stdfiledes;
-
-    static unsigned long
-fdtofh(int filedescriptor)
-{
-    return __stdfiledes[filedescriptor];
-}
-#endif
-
 /*
  * Sync the memory file *mfp to disk.
  * Flags:
