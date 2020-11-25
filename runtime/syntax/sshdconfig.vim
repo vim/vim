@@ -80,16 +80,24 @@ syn match   sshdconfigMAC "\<umac-128-etm@openssh\.com\>"
 
 syn keyword sshdconfigHostKeyAlgo ssh-ed25519
 syn match sshdconfigHostKeyAlgo "\<ssh-ed25519-cert-v01@openssh\.com\>"
+syn match sshdconfigHostKeyAlgo "\<sk-ssh-ed25519@openssh\.com\>"
+syn match sshdconfigHostKeyAlgo "\<sk-ssh-ed25519-cert-v01@openssh\.com\>"
 syn keyword sshdconfigHostKeyAlgo ssh-rsa
+syn keyword sshdconfigHostKeyAlgo rsa-sha2-256
+syn keyword sshdconfigHostKeyAlgo rsa-sha2-512
 syn keyword sshdconfigHostKeyAlgo ssh-dss
 syn keyword sshdconfigHostKeyAlgo ecdsa-sha2-nistp256
 syn keyword sshdconfigHostKeyAlgo ecdsa-sha2-nistp384
 syn keyword sshdconfigHostKeyAlgo ecdsa-sha2-nistp521
 syn match sshdconfigHostKeyAlgo "\<ssh-rsa-cert-v01@openssh\.com\>"
+syn match sshdconfigHostKeyAlgo "\<rsa-sha2-256-cert-v01@openssh\.com\>"
+syn match sshdconfigHostKeyAlgo "\<rsa-sha2-512-cert-v01@openssh\.com\>"
 syn match sshdconfigHostKeyAlgo "\<ssh-dss-cert-v01@openssh\.com\>"
 syn match sshdconfigHostKeyAlgo "\<ecdsa-sha2-nistp256-cert-v01@openssh\.com\>"
 syn match sshdconfigHostKeyAlgo "\<ecdsa-sha2-nistp384-cert-v01@openssh\.com\>"
 syn match sshdconfigHostKeyAlgo "\<ecdsa-sha2-nistp521-cert-v01@openssh\.com\>"
+syn match sshdconfigHostKeyAlgo "\<sk-ecdsa-sha2-nistp256@openssh\.com\>"
+syn match sshdconfigHostKeyAlgo "\<sk-ecdsa-sha2-nistp256-cert-v01@openssh\.com\>"
 
 syn keyword sshdconfigRootLogin prohibit-password without-password forced-commands-only
 
@@ -109,12 +117,17 @@ syn keyword sshdconfigIPQoS	ef lowdelay throughput reliability
 
 syn keyword sshdconfigKexAlgo diffie-hellman-group1-sha1
 syn keyword sshdconfigKexAlgo diffie-hellman-group14-sha1
+syn keyword sshdconfigKexAlgo diffie-hellman-group14-sha256
+syn keyword sshdconfigKexAlgo diffie-hellman-group16-sha512
+syn keyword sshdconfigKexAlgo diffie-hellman-group18-sha512
 syn keyword sshdconfigKexAlgo diffie-hellman-group-exchange-sha1
 syn keyword sshdconfigKexAlgo diffie-hellman-group-exchange-sha256
 syn keyword sshdconfigKexAlgo ecdh-sha2-nistp256
 syn keyword sshdconfigKexAlgo ecdh-sha2-nistp384
 syn keyword sshdconfigKexAlgo ecdh-sha2-nistp521
+syn keyword sshdconfigKexAlgo curve25519-sha256
 syn match sshdconfigKexAlgo "\<curve25519-sha256@libssh\.org\>"
+syn match sshdconfigKexAlgo "\<sntrup4591761x25519-sha512@tinyssh\.org\>"
 
 syn keyword sshdconfigTunnel	point-to-point ethernet
 
