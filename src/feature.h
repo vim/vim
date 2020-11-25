@@ -1090,7 +1090,7 @@
  * +ARP			Amiga only. Use arp.library, DOS 2.0 is not required.
  */
 #if defined(AMIGA) && !defined(NO_ARP) && !defined(__amigaos4__) \
-	&& !defined(__MORPHOS__) || !defined(__AROS__)
+	&& !defined(__MORPHOS__) && !defined(__AROS__)
 # define FEAT_ARP
 #endif
 
