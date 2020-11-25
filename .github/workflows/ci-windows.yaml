@@ -215,7 +215,8 @@ jobs:
         :: Wait about 10 minutes.
         for /L %%i in (1,1,60) do (
           if exist done.txt goto exitloop
-          timeout 10
+          timeout 10 > NUL 2>&1
+          if ERRORLEVEL 1 ping -n 11 localhost > NUL
         )
         set timeout=1
         :exitloop
