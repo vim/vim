@@ -1,6 +1,7 @@
 /* ex_docmd.c */
 void do_exmode(int improved);
 int do_cmdline_cmd(char_u *cmd);
+int do_cmd_argument(char_u *cmd);
 int do_cmdline(char_u *cmdline, char_u *(*fgetline)(int, void *, int, getline_opt_T), void *cookie, int flags);
 int getline_equal(char_u *(*fgetline)(int, void *, int, getline_opt_T), void *cookie, char_u *(*func)(int, void *, int, getline_opt_T));
 void *getline_cookie(char_u *(*fgetline)(int, void *, int, getline_opt_T), void *cookie);

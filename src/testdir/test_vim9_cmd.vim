@@ -648,5 +648,17 @@ def Test_star_command()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_cmd_argument_without_colon()
+  new Xfile
+  setline(1, ['a', 'b', 'c', 'd'])
+  write
+  edit +3 %
+  assert_equal(3, getcurpos()[1])
+  edit +/a %
+  assert_equal(1, getcurpos()[1])
+  bwipe
+  delete('Xfile')
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

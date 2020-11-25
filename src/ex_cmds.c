@@ -3123,7 +3123,7 @@ do_ecmd(
 #endif
 
     if (command != NULL)
-	do_cmdline(command, NULL, NULL, DOCMD_VERBOSE);
+	do_cmdline(command, NULL, NULL, DOCMD_VERBOSE|DOCMD_RANGEOK);
 
 #ifdef FEAT_KEYMAP
     if (curbuf->b_kmap_state & KEYMAP_INIT)
