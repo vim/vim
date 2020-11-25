@@ -17,7 +17,7 @@
 
 #include "vim.h"
 
-#if !defined(FEAT_GUI_MAC) && !defined(PROTO)
+#if !defined(PROTO)
 # include <CoreServices/CoreServices.h>
 #endif
 
@@ -570,15 +570,24 @@ mac_lang_init(void)
 {
     if (mch_getenv((char_u *)"LANG") == NULL)
     {
-	char	buf[20];
+	char	buf[50];
+
+	// $LANG is not set, either because it was unset or Vim was started
+	// from the Dock.  Query the system locale.
 	if (LocaleRefGetPartString(NULL,
 		    kLocaleLanguageMask | kLocaleLanguageVariantMask |
 		    kLocaleRegionMask | kLocaleRegionVariantMask,
-		    sizeof buf, buf) == noErr && *buf)
+		    sizeof(buf) - 10, buf) == noErr && *buf)
 	{
+	    if (strcasestr(buf, "utf-8") == NULL)
+		strcat(buf, ".UTF-8");
 	    vim_setenv((char_u *)"LANG", (char_u *)buf);
 #   ifdef HAVE_LOCALE_H
 	    setlocale(LC_ALL, "");
+#   endif
+#   if defined(FEAT_FLOAT) && defined(LC_NUMERIC)
+	    // Make sure strtod() uses a decimal point, not a comma.
+	    setlocale(LC_NUMERIC, "C");
 #   endif
 	}
     }

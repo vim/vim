@@ -7,7 +7,7 @@
 " Usage: Vim -S <this-file>
 "
 " Author: Bram Moolenaar
-" Last Update: 2010 Jan 12
+" Last Update: 2020 Aug 24
 
 " Parse lines of UnicodeData.txt.  Creates a list of lists in s:dataprops.
 func! ParseDataToProps()
@@ -262,84 +262,147 @@ func! BuildWidthTable(pattern, tableName)
   wincmd p
 endfunc
 
-" Build the amoji width table in a new buffer.
-func! BuildEmojiTable(pattern, tableName)
-  let alltokens = []
-  let widthtokens = []
-  let lines = map(filter(filter(getline(1, '$'), 'v:val=~"^[1-9]"'), 'v:val=~a:pattern'), 'matchstr(v:val,"^\\S\\+")')
-  for n in range(len(lines))
-    let line = lines[n]
-    let token = split(line, '\.\.')
-    let first = ('0x' . token[0]) + 0
-    if len(token) == 1
+
+" Get characters from a list of lines in form "12ab .." or "12ab..56cd ..."
+" and put them in dictionary "chardict"
+func AddLinesToCharDict(lines, chardict)
+  for line in a:lines
+    let tokens = split(line, '\.\.')
+    let first = str2nr(tokens[0], 16)
+    if len(tokens) == 1
       let last = first
     else
-      let last = ('0x' . token[1]) + 0
+      let last = str2nr(tokens[1], 16)
     endif
+    for nr in range(first, last)
+      let a:chardict[nr] = 1
+    endfor
+  endfor
+endfunc
 
-    let token = [first, last]
-    if len(alltokens) > 0 && (token[0] - 1 == alltokens[-1][1])
-      let alltokens[-1][1] = token[1]
+func Test_AddLinesToCharDict()
+  let dict = {}
+  call AddLinesToCharDict([
+	\ '1234 blah blah',
+	\ '1235 blah blah',
+	\ '12a0..12a2 blah blah',
+	\ '12a1 blah blah',
+	\ ], dict)
+  call assert_equal({0x1234: 1, 0x1235: 1,
+	\ 0x12a0: 1, 0x12a1: 1, 0x12a2: 1,
+	\ }, dict)
+  if v:errors != []
+    echoerr 'AddLinesToCharDict' v:errors
+    return 1
+  endif
+  return 0
+endfunc
+
+
+func CharDictToPairList(chardict)
+  let result = []
+  let keys = keys(a:chardict)->map('str2nr(v:val)')->sort('N')
+  let low = keys[0]
+  let high = keys[0]
+  for key in keys
+    if key > high + 1
+      call add(result, [low, high])
+      let low = key
+      let high = key
     else
-      call add(alltokens, token)
-    endif
-
-    " Characters below 1F000 may be considered single width traditionally,
-    " making them double width causes problems.
-    if first < 0x1f000
-      continue
-    endif
-
-    " exclude characters that are in the "ambiguous" or "doublewidth" table
-    for ambi in s:ambitable
-      if first >= ambi[0] && first <= ambi[1]
-	let first = ambi[1] + 1
-      endif
-      if last >= ambi[0] && last <= ambi[1]
-	let last = ambi[0] - 1
-      endif
-    endfor
-    for double in s:doubletable
-      if first >= double[0] && first <= double[1]
-	let first = double[1] + 1
-      endif
-      if last >= double[0] && last <= double[1]
-	let last = double[0] - 1
-      endif
-    endfor
-
-    if first <= last
-      let token = [first, last]
-      if len(widthtokens) > 0 && (token[0] - 1 == widthtokens[-1][1])
-	let widthtokens[-1][1] = token[1]
-      else
-	call add(widthtokens, token)
-      endif
+      let high = key
     endif
   endfor
-  let allranges = map(alltokens, 'printf("\t{0x%04x, 0x%04x},", v:val[0], v:val[1])')
-  let widthranges = map(widthtokens, 'printf("\t{0x%04x, 0x%04x},", v:val[0], v:val[1])')
+  call add(result, [low, high])
+  return result
+endfunc
+
+func Test_CharDictToPairList()
+  let dict = {0x1020: 1, 0x1021: 1, 0x1022: 1,
+	\ 0x1024: 1,
+	\ 0x2022: 1,
+	\ 0x2024: 1, 0x2025: 1}
+  call assert_equal([
+	\ [0x1020, 0x1022],
+	\ [0x1024, 0x1024],
+	\ [0x2022, 0x2022],
+	\ [0x2024, 0x2025],
+	\ ], CharDictToPairList(dict))
+  if v:errors != []
+    echoerr 'CharDictToPairList' v:errors
+    return 1
+  endif
+  return 0
+endfunc
+
+
+" Build the amoji width table in a new buffer.
+func BuildEmojiTable()
+  " First make the table for all emojis.
+  let pattern = '; Emoji\s\+#\s'
+  let lines = map(filter(filter(getline(1, '$'), 'v:val=~"^[1-9]"'), 'v:val=~pattern'), 'matchstr(v:val,"^\\S\\+")')
+
+  " Make a dictionary with an entry for each character.
+  let chardict = {}
+  call AddLinesToCharDict(lines, chardict)
+  let pairlist = CharDictToPairList(chardict)
+  let allranges = map(pairlist, 'printf("    {0x%04x, 0x%04x},", v:val[0], v:val[1])')
 
   " New buffer to put the result in.
   new
-  exe "file " . a:tableName . '_all'
-  call setline(1, "    static struct interval " . a:tableName . "_all[] =")
-  call setline(2, "    {")
+  exe 'file emoji_all'
+  call setline(1, "static struct interval emoji_all[] =")
+  call setline(2, "{")
   call append('$', allranges)
   call setline('$', getline('$')[:-2])  " remove last comma
-  call setline(line('$') + 1, "    };")
+  call setline(line('$') + 1, "};")
   wincmd p
+
+  " Make the table for wide emojis.
+  let pattern = '; Emoji_\(Presentation\|Modifier_Base\)\s\+#\s'
+  let lines = map(filter(filter(getline(1, '$'), 'v:val=~"^[1-9]"'), 'v:val=~pattern'), 'matchstr(v:val,"^\\S\\+")')
+
+  " Make a dictionary with an entry for each character.
+  let chardict = {}
+  call AddLinesToCharDict(lines, chardict)
+
+  " exclude characters that are in the "ambiguous" or "doublewidth" table
+  for ambi in s:ambitable
+    for nr in range(ambi[0], ambi[1])
+      if has_key(chardict, nr)
+	call remove(chardict, nr)
+      endif
+    endfor
+  endfor
+
+  for wide in s:doubletable
+    for nr in range(wide[0], wide[1])
+      if has_key(chardict, nr)
+	call remove(chardict, nr)
+      endif
+    endfor
+  endfor
+
+  let pairlist = CharDictToPairList(chardict)
+  let wide_ranges = map(pairlist, 'printf("\t{0x%04x, 0x%04x},", v:val[0], v:val[1])')
 
   " New buffer to put the result in.
   new
-  exe "file " . a:tableName . '_width'
-  call setline(1, "    static struct interval " . a:tableName . "_width[] =")
+  exe 'file emoji_wide'
+  call setline(1, "    static struct interval emoji_wide[] =")
   call setline(2, "    {")
-  call append('$', widthranges)
+  call append('$', wide_ranges)
   call setline('$', getline('$')[:-2])  " remove last comma
   call setline(line('$') + 1, "    };")
   wincmd p
 endfunc
+
+" First test a few things
+let v:errors = []
+if Test_AddLinesToCharDict() || Test_CharDictToPairList()
+  finish
+endif
+
 
 " Try to avoid hitting E36
 set equalalways
@@ -383,9 +446,8 @@ let s:ambitable = []
 call BuildWidthTable('A', 'ambiguous')
 
 " Edit the emoji text file.  Requires the netrw plugin.
-edit https://www.unicode.org/Public/emoji/11.0/emoji-data.txt
-"edit http://www.unicode.org/Public/emoji/latest/emoji-data.txt
+edit https://unicode.org/Public/emoji/12.1/emoji-data.txt
 
 " Build the emoji table. Ver. 1.0 - 6.0
-" Must come after the "ambiguous" table
-call BuildEmojiTable('; Emoji\s\+#\s\+\d\+\.\d', 'emoji')
+" Must come after the "ambiguous" and "doublewidth" tables
+call BuildEmojiTable()

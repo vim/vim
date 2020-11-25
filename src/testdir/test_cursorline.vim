@@ -196,3 +196,5 @@ func Test_cursorline_screenline()
   call StopVimInTerminal(buf)
   call delete(filename)
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

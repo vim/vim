@@ -1,4 +1,5 @@
 " Tests for 'fixeol' and 'eol'
+
 func Test_fixeol()
   " first write two test files – with and without trailing EOL
   " use Unix fileformat for consistency
@@ -46,3 +47,5 @@ func Test_fixeol()
   set ff& fixeol& eol&
   enew!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -1,3 +1,4 @@
+" Test for 'fileformat'
 
 " Test behavior of fileformat after bwipeout of last buffer
 func Test_fileformat_after_bw()

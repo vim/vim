@@ -7,41 +7,50 @@
 NO_PLUGINS = --noplugin --not-a-term
 NO_INITS = -U NONE $(NO_PLUGINS)
 
-# The first script creates small.vim.
-SCRIPTS_FIRST = test1.out
+# Tests for tiny and small builds.
+SCRIPTS_TINY = \
+	test20 \
+	test21 \
+	test22 \
+	test23 \
+	test24 \
+	test25 \
+	test26 \
+	test27
 
-# Tests that run on all systems.
-SCRIPTS_ALL =
-
-# Tests that run on most systems, but not on Amiga.
-SCRIPTS_MORE1 =
-
-# Tests that run on most systems, but not on Amiga and DOS/Windows.
-SCRIPTS_MORE2 = test49.out
-
-# Tests that run on most systems, but not on VMS
-SCRIPTS_MORE4 = test59.out
-
-# Tests specifically for MS-Windows.
-SCRIPTS_WIN32 =
-
-# Tests for the GUI.
-SCRIPTS_GUI =
+SCRIPTS_TINY_OUT = \
+	test20.out \
+	test21.out \
+	test22.out \
+	test23.out \
+	test24.out \
+	test25.out \
+	test26.out \
+	test27.out
 
 # Tests for Vim9 script.
 TEST_VIM9 = \
+	test_vim9_assign \
+	test_vim9_builtin \
 	test_vim9_cmd \
 	test_vim9_disassemble \
 	test_vim9_expr \
+	test_vim9_fails \
 	test_vim9_func \
 	test_vim9_script
 
 TEST_VIM9_RES = \
+	test_vim9_assign.res \
+	test_vim9_builtin.res \
 	test_vim9_cmd.res \
 	test_vim9_disassemble.res \
 	test_vim9_expr.res \
+	test_vim9_fails.res \
 	test_vim9_func.res \
 	test_vim9_script.res
+
+# Benchmark scripts.
+SCRIPTS_BENCH = test_bench_regexp.res
 
 # Individual tests, including the ones part of test_alot.
 # Please keep sorted up to test_alot.
@@ -179,6 +188,7 @@ NEW_TESTS = \
 	test_match \
 	test_matchadd_conceal \
 	test_matchadd_conceal_utf8 \
+	test_matchfuzzy \
 	test_memory_usage \
 	test_menu \
 	test_messages \
@@ -242,6 +252,7 @@ NEW_TESTS = \
 	test_source \
 	test_source_utf8 \
 	test_spell \
+	test_spell_utf8 \
 	test_spellfile \
 	test_startup \
 	test_startup_utf8 \
@@ -405,6 +416,7 @@ NEW_TESTS_RES = \
 	test_listdict.res \
 	test_listener.res \
 	test_listlbr.res \
+	test_listlbr_utf8.res \
 	test_lua.res \
 	test_makeencoding.res \
 	test_man.res \
@@ -414,6 +426,7 @@ NEW_TESTS_RES = \
 	test_match.res \
 	test_matchadd_conceal.res \
 	test_matchadd_conceal_utf8.res \
+	test_matchfuzzy.res \
 	test_memory_usage.res \
 	test_menu.res \
 	test_messages.res \
@@ -464,6 +477,7 @@ NEW_TESTS_RES = \
 	test_sound.res \
 	test_source.res \
 	test_spell.res \
+	test_spell_utf8.res \
 	test_spellfile.res \
 	test_startup.res \
 	test_stat.res \

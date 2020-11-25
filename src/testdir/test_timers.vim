@@ -422,7 +422,7 @@ func Test_timer_garbage_collect()
 endfunc
 
 func Test_timer_invalid_callback()
-  call assert_fails('call timer_start(0, "0")', 'E921')
+  call assert_fails('call timer_start(0, "0")', 'E921:')
 endfunc
 
 func Test_timer_changing_function_list()
@@ -442,7 +442,7 @@ func Test_timer_changing_function_list()
   call term_sendkeys(buf, ":fu\<CR>")
   call WaitForAssert({-> assert_match('-- More --', term_getline(buf, 10))})
   call term_sendkeys(buf, "G")
-  call WaitForAssert({-> assert_match('E454', term_getline(buf, 9))})
+  call WaitForAssert({-> assert_match('E454:', term_getline(buf, 9))})
   call term_sendkeys(buf, "\<Esc>")
 
   call StopVimInTerminal(buf)

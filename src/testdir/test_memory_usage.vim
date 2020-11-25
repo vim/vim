@@ -162,3 +162,5 @@ func Test_memory_func_capture_lvars()
   call vim.stop()
   call delete(testfile)
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

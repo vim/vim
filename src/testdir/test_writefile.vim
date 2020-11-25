@@ -43,8 +43,9 @@ func Test_writefile_fails_gently()
 endfunc
 
 func Test_writefile_fails_conversion()
-  if !has('iconv') || has('sun')
-    return
+  CheckFeature iconv
+  if has('sun')
+    throw 'Skipped: does not work on SunOS'
   endif
   " Without a backup file the write won't happen if there is a conversion
   " error.
@@ -63,8 +64,9 @@ func Test_writefile_fails_conversion()
 endfunc
 
 func Test_writefile_fails_conversion2()
-  if !has('iconv') || has('sun')
-    return
+  CheckFeature iconv
+  if has('sun')
+    throw 'Skipped: does not work on SunOS'
   endif
   " With a backup file the write happens even if there is a conversion error,
   " but then the backup file must remain
@@ -136,9 +138,7 @@ func Test_writefile_sync_arg()
 endfunc
 
 func Test_writefile_sync_dev_stdout()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
   if filewritable('/dev/stdout')
     " Just check that this doesn't cause an error.
     call writefile(['one'], '/dev/stdout')
@@ -268,9 +268,9 @@ func Test_write_file_mtime()
   call writefile(["Line1", "Line2"], 'Xfile')
   let old_ftime = getftime('Xfile')
   let buf = RunVimInTerminal('Xfile', #{rows : 10})
-  call term_wait(buf)
+  call TermWait(buf)
   call term_sendkeys(buf, ":set noswapfile\<CR>")
-  call term_wait(buf)
+  call TermWait(buf)
 
   " Modify the file directly.  Make sure the file modification time is
   " different. Note that on Linux/Unix, the file is considered modified
@@ -286,17 +286,17 @@ func Test_write_file_mtime()
 
   " Try to overwrite the file and check for the prompt
   call term_sendkeys(buf, ":w\<CR>")
-  call term_wait(buf)
+  call TermWait(buf)
   call WaitForAssert({-> assert_equal("WARNING: The file has been changed since reading it!!!", term_getline(buf, 9))})
   call assert_equal("Do you really want to write to it (y/n)?",
         \ term_getline(buf, 10))
   call term_sendkeys(buf, "n\<CR>")
-  call term_wait(buf)
+  call TermWait(buf)
   call assert_equal(new_ftime, getftime('Xfile'))
   call term_sendkeys(buf, ":w\<CR>")
-  call term_wait(buf)
+  call TermWait(buf)
   call term_sendkeys(buf, "y\<CR>")
-  call term_wait(buf)
+  call TermWait(buf)
   call WaitForAssert({-> assert_equal('Line2', readfile('Xfile')[1])})
 
   " clean up
@@ -310,7 +310,7 @@ func Test_write_autocmd_unloadbuf_lockmark()
     autocmd BufWritePre Xfile enew | write
   augroup END
   e Xfile
-  call assert_fails('lockmarks write', ['E32', 'E203:'])
+  call assert_fails('lockmarks write', ['E32:', 'E203:'])
   augroup WriteTest
     au!
   augroup END
@@ -371,13 +371,10 @@ endfunc
 
 " Test for writing to a readonly file
 func Test_write_readonly()
-  " In Cirrus-CI, the freebsd tests are run under a root account. So this test
-  " doesn't fail.
-  CheckNotBSD
   call writefile([], 'Xfile')
   call setfperm('Xfile', "r--------")
   edit Xfile
-  set noreadonly
+  set noreadonly backupskip=
   call assert_fails('write', 'E505:')
   let save_cpo = &cpo
   set cpo+=W
@@ -386,37 +383,32 @@ func Test_write_readonly()
   call setline(1, ['line1'])
   write!
   call assert_equal(['line1'], readfile('Xfile'))
+  set backupskip&
   call delete('Xfile')
 endfunc
 
 " Test for 'patchmode'
 func Test_patchmode()
-  CheckNotBSD
   call writefile(['one'], 'Xfile')
-  set patchmode=.orig nobackup writebackup
+  set patchmode=.orig nobackup backupskip= writebackup
   new Xfile
   call setline(1, 'two')
   " first write should create the .orig file
   write
-  " TODO: Xfile.orig is not created in Cirrus FreeBSD CI test
   call assert_equal(['one'], readfile('Xfile.orig'))
   call setline(1, 'three')
   " subsequent writes should not create/modify the .orig file
   write
   call assert_equal(['one'], readfile('Xfile.orig'))
-  set patchmode& backup& writebackup&
+  set patchmode& backup& backupskip& writebackup&
   call delete('Xfile')
   call delete('Xfile.orig')
 endfunc
 
 " Test for writing to a file in a readonly directory
 func Test_write_readonly_dir()
-  if !has('unix') || has('bsd')
-    " On MS-Windows, modifying files in a read-only directory is allowed.
-    " In Cirrus-CI for Freebsd, tests are run under a root account where
-    " modifying files in a read-only directory are allowed.
-    return
-  endif
+  " On MS-Windows, modifying files in a read-only directory is allowed.
+  CheckUnix
   call mkdir('Xdir')
   call writefile(['one'], 'Xdir/Xfile1')
   call setfperm('Xdir', 'r-xr--r--')
@@ -426,12 +418,12 @@ func Test_write_readonly_dir()
   call assert_fails('write', 'E212:')
   " try to create a backup file in the directory
   edit! Xdir/Xfile1
-  set backupdir=./Xdir
+  set backupdir=./Xdir backupskip=
   set patchmode=.orig
   call assert_fails('write', 'E509:')
   call setfperm('Xdir', 'rwxr--r--')
   call delete('Xdir', 'rf')
-  set backupdir& patchmode&
+  set backupdir& backupskip& patchmode&
 endfunc
 
 " Test for writing a file using invalid file encoding
@@ -679,7 +671,7 @@ func Test_readwrite_file_with_bom()
   set cpoptions-=S
   let &fileencoding = save_fileencoding
   call delete('Xtest1')
-  call delete('Xtest2')
+  call delete('Xfile2')
   call delete('Xtest3')
   %bw!
 endfunc

@@ -1,5 +1,4 @@
 " Test for reset 'scroll'
-"
 
 func Test_reset_scroll()
   let scr = &l:scroll
@@ -34,3 +33,5 @@ func Test_reset_scroll()
 
   quit!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

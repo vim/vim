@@ -86,7 +86,7 @@ check_changed(buf_T *buf, int flags)
 	    && (!(flags & CCGD_AW) || autowrite(buf, forceit) == FAIL))
     {
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
-	if ((p_confirm || cmdmod.confirm) && p_write)
+	if ((p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM)) && p_write)
 	{
 	    buf_T	*buf2;
 	    int		count = 0;
@@ -96,7 +96,7 @@ check_changed(buf_T *buf, int flags)
 		    if (bufIsChanged(buf2)
 				     && (buf2->b_ffname != NULL
 # ifdef FEAT_BROWSE
-					 || cmdmod.browse
+					 || (cmdmod.cmod_flags & CMOD_BROWSE)
 # endif
 					))
 			++count;
@@ -197,7 +197,7 @@ dialog_changed(
 	    if (bufIsChanged(buf2)
 		    && (buf2->b_ffname != NULL
 #ifdef FEAT_BROWSE
-			|| cmdmod.browse
+			|| (cmdmod.cmod_flags & CMOD_BROWSE)
 #endif
 			)
 		    && !buf2->b_p_ro)
@@ -347,7 +347,7 @@ check_changed_any(
     /*
      * When ":confirm" used, don't give an error message.
      */
-    if (!(p_confirm || cmdmod.confirm))
+    if (!(p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM)))
 #endif
     {
 	// There must be a wait_return for this message, do_buffer()

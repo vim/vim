@@ -405,3 +405,5 @@ func Test_cursor_column_in_concealed_line_after_leftcol_change()
   call StopVimInTerminal(buf)
   call delete('Xcurs-columns')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -6,6 +6,8 @@ void clear_tv(typval_T *varp);
 void init_tv(typval_T *varp);
 varnumber_T tv_get_number(typval_T *varp);
 varnumber_T tv_get_number_chk(typval_T *varp, int *denote);
+varnumber_T tv_get_bool(typval_T *varp);
+varnumber_T tv_get_bool_chk(typval_T *varp, int *denote);
 float_T tv_get_float(typval_T *varp);
 char_u *tv_get_string(typval_T *varp);
 char_u *tv_get_string_buf(typval_T *varp, char_u *buf);
@@ -27,4 +29,5 @@ int eval_env_var(char_u **arg, typval_T *rettv, int evaluate);
 linenr_T tv_get_lnum(typval_T *argvars);
 linenr_T tv_get_lnum_buf(typval_T *argvars, buf_T *buf);
 buf_T *tv_get_buf(typval_T *tv, int curtab_only);
+buf_T *tv_get_buf_from_arg(typval_T *tv);
 /* vim: set ft=c : */

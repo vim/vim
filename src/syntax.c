@@ -3869,9 +3869,14 @@ syn_cmd_list(
 		msg_puts(_("no syncing"));
 	    else
 	    {
-		msg_puts(_("syncing starts "));
-		msg_outnum(curwin->w_s->b_syn_sync_minlines);
-		msg_puts(_(" lines before top line"));
+		if (curwin->w_s->b_syn_sync_minlines == MAXLNUM)
+		    msg_puts(_("syncing starts at the first line"));
+		else
+		{
+		    msg_puts(_("syncing starts "));
+		    msg_outnum(curwin->w_s->b_syn_sync_minlines);
+		    msg_puts(_(" lines before top line"));
+		}
 		syn_match_msg();
 	    }
 	    return;
@@ -3935,19 +3940,24 @@ syn_lines_msg(void)
 				      || curwin->w_s->b_syn_sync_minlines > 0)
     {
 	msg_puts("; ");
-	if (curwin->w_s->b_syn_sync_minlines > 0)
+	if (curwin->w_s->b_syn_sync_minlines == MAXLNUM)
+	    msg_puts(_("from the first line"));
+	else
 	{
-	    msg_puts(_("minimal "));
-	    msg_outnum(curwin->w_s->b_syn_sync_minlines);
-	    if (curwin->w_s->b_syn_sync_maxlines)
-		msg_puts(", ");
+	    if (curwin->w_s->b_syn_sync_minlines > 0)
+	    {
+		msg_puts(_("minimal "));
+		msg_outnum(curwin->w_s->b_syn_sync_minlines);
+		if (curwin->w_s->b_syn_sync_maxlines)
+		    msg_puts(", ");
+	    }
+	    if (curwin->w_s->b_syn_sync_maxlines > 0)
+	    {
+		msg_puts(_("maximal "));
+		msg_outnum(curwin->w_s->b_syn_sync_maxlines);
+	    }
+	    msg_puts(_(" lines before top line"));
 	}
-	if (curwin->w_s->b_syn_sync_maxlines > 0)
-	{
-	    msg_puts(_("maximal "));
-	    msg_outnum(curwin->w_s->b_syn_sync_maxlines);
-	}
-	msg_puts(_(" lines before top line"));
     }
 }
 
@@ -6316,9 +6326,11 @@ ex_ownsyntax(exarg_T *eap)
 #ifdef FEAT_SPELL
 	// TODO: keep the spell checking as it was.
 	curwin->w_p_spell = FALSE;	// No spell checking
+	// make sure option values are "empty_option" instead of NULL
 	clear_string_option(&curwin->w_s->b_p_spc);
 	clear_string_option(&curwin->w_s->b_p_spf);
 	clear_string_option(&curwin->w_s->b_p_spl);
+	clear_string_option(&curwin->w_s->b_p_spo);
 #endif
 	clear_string_option(&curwin->w_s->b_syn_isk);
     }

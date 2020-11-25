@@ -212,8 +212,8 @@ do_cscope_general(
 	    return;
 	}
 	postponed_split = -1;
-	postponed_split_flags = cmdmod.split;
-	postponed_split_tab = cmdmod.tab;
+	postponed_split_flags = cmdmod.cmod_split;
+	postponed_split_tab = cmdmod.cmod_tab;
     }
 
     cmdp->func(eap);
@@ -2243,7 +2243,7 @@ cs_release_csp(int i, int freefnpp)
 	    waitpid_errno = errno;
 	    if (pid != 0)
 		break;  // break unless the process is still running
-	    mch_delay(50L, FALSE); // sleep 50 ms
+	    mch_delay(50L, 0); // sleep 50 ms
 	}
 # endif
 	/*
@@ -2278,7 +2278,7 @@ cs_release_csp(int i, int freefnpp)
 			alive = FALSE; // cscope process no longer exists
 			break;
 		    }
-		    mch_delay(50L, FALSE); // sleep 50ms
+		    mch_delay(50L, 0); // sleep 50 ms
 		}
 	    }
 	    if (alive)

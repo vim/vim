@@ -761,7 +761,7 @@ script_prof_save(
 {
     scriptitem_T    *si;
 
-    if (current_sctx.sc_sid > 0 && current_sctx.sc_sid <= script_items.ga_len)
+    if (SCRIPT_ID_VALID(current_sctx.sc_sid))
     {
 	si = SCRIPT_ITEM(current_sctx.sc_sid);
 	if (si->sn_prof_on && si->sn_pr_nest++ == 0)
@@ -778,7 +778,7 @@ script_prof_restore(proftime_T *tm)
 {
     scriptitem_T    *si;
 
-    if (current_sctx.sc_sid > 0 && current_sctx.sc_sid <= script_items.ga_len)
+    if (SCRIPT_ID_VALID(current_sctx.sc_sid))
     {
 	si = SCRIPT_ITEM(current_sctx.sc_sid);
 	if (si->sn_prof_on && --si->sn_pr_nest == 0)
@@ -903,7 +903,7 @@ script_line_start(void)
     scriptitem_T    *si;
     sn_prl_T	    *pp;
 
-    if (current_sctx.sc_sid <= 0 || current_sctx.sc_sid > script_items.ga_len)
+    if (!SCRIPT_ID_VALID(current_sctx.sc_sid))
 	return;
     si = SCRIPT_ITEM(current_sctx.sc_sid);
     if (si->sn_prof_on && SOURCING_LNUM >= 1)
@@ -938,7 +938,7 @@ script_line_exec(void)
 {
     scriptitem_T    *si;
 
-    if (current_sctx.sc_sid <= 0 || current_sctx.sc_sid > script_items.ga_len)
+    if (!SCRIPT_ID_VALID(current_sctx.sc_sid))
 	return;
     si = SCRIPT_ITEM(current_sctx.sc_sid);
     if (si->sn_prof_on && si->sn_prl_idx >= 0)
@@ -954,7 +954,7 @@ script_line_end(void)
     scriptitem_T    *si;
     sn_prl_T	    *pp;
 
-    if (current_sctx.sc_sid <= 0 || current_sctx.sc_sid > script_items.ga_len)
+    if (!SCRIPT_ID_VALID(current_sctx.sc_sid))
 	return;
     si = SCRIPT_ITEM(current_sctx.sc_sid);
     if (si->sn_prof_on && si->sn_prl_idx >= 0

@@ -297,3 +297,5 @@ func Test_relativenumber_colors()
   call StopVimInTerminal(buf)
   call delete('XTest_relnr')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

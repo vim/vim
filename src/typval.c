@@ -169,30 +169,20 @@ init_tv(typval_T *varp)
 	CLEAR_POINTER(varp);
 }
 
-/*
- * Get the number value of a variable.
- * If it is a String variable, uses vim_str2nr().
- * For incompatible types, return 0.
- * tv_get_number_chk() is similar to tv_get_number(), but informs the
- * caller of incompatible types: it sets *denote to TRUE if "denote"
- * is not NULL or returns -1 otherwise.
- */
-    varnumber_T
-tv_get_number(typval_T *varp)
-{
-    int		error = FALSE;
-
-    return tv_get_number_chk(varp, &error);	// return 0L on error
-}
-
-    varnumber_T
-tv_get_number_chk(typval_T *varp, int *denote)
+    static varnumber_T
+tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 {
     varnumber_T	n = 0L;
 
     switch (varp->v_type)
     {
 	case VAR_NUMBER:
+	    if (in_vim9script() && want_bool && varp->vval.v_number != 0
+						   && varp->vval.v_number != 1)
+	    {
+		semsg(_(e_using_number_as_bool_nr), varp->vval.v_number);
+		break;
+	    }
 	    return varp->vval.v_number;
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
@@ -204,6 +194,11 @@ tv_get_number_chk(typval_T *varp, int *denote)
 	    emsg(_("E703: Using a Funcref as a Number"));
 	    break;
 	case VAR_STRING:
+	    if (in_vim9script())
+	    {
+		emsg_using_string_as(varp, !want_bool);
+		break;
+	    }
 	    if (varp->vval.v_string != NULL)
 		vim_str2nr(varp->vval.v_string, NULL, NULL,
 					    STR2NR_ALL, &n, NULL, 0, FALSE);
@@ -216,6 +211,14 @@ tv_get_number_chk(typval_T *varp, int *denote)
 	    break;
 	case VAR_BOOL:
 	case VAR_SPECIAL:
+	    if (!want_bool && in_vim9script())
+	    {
+		if (varp->v_type == VAR_BOOL)
+		    emsg(_(e_using_bool_as_number));
+		else
+		    emsg(_("E611: Using a Special as a Number"));
+		break;
+	    }
 	    return varp->vval.v_number == VVAL_TRUE ? 1 : 0;
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL
@@ -241,6 +244,48 @@ tv_get_number_chk(typval_T *varp, int *denote)
     else
 	*denote = TRUE;
     return n;
+}
+
+/*
+ * Get the number value of a variable.
+ * If it is a String variable, uses vim_str2nr().
+ * For incompatible types, return 0.
+ * tv_get_number_chk() is similar to tv_get_number(), but informs the
+ * caller of incompatible types: it sets *denote to TRUE if "denote"
+ * is not NULL or returns -1 otherwise.
+ */
+    varnumber_T
+tv_get_number(typval_T *varp)
+{
+    int		error = FALSE;
+
+    return tv_get_number_chk(varp, &error);	// return 0L on error
+}
+
+    varnumber_T
+tv_get_number_chk(typval_T *varp, int *denote)
+{
+    return tv_get_bool_or_number_chk(varp, denote, FALSE);
+}
+
+/*
+ * Get the boolean value of "varp".  This is like tv_get_number_chk(),
+ * but in Vim9 script accepts Number (0 and 1) and Bool/Special.
+ */
+    varnumber_T
+tv_get_bool(typval_T *varp)
+{
+    return tv_get_bool_or_number_chk(varp, NULL, TRUE);
+}
+
+/*
+ * Get the boolean value of "varp".  This is like tv_get_number_chk(),
+ * but in Vim9 script accepts Number and Bool.
+ */
+    varnumber_T
+tv_get_bool_chk(typval_T *varp, int *denote)
+{
+    return tv_get_bool_or_number_chk(varp, denote, TRUE);
 }
 
 #ifdef FEAT_FLOAT
@@ -470,8 +515,8 @@ tv_check_lock(typval_T *tv, char_u *name, int use_gettext)
 	default:
 	    break;
     }
-    return var_check_lock(tv->v_lock, name, use_gettext)
-		    || (lock != 0 && var_check_lock(lock, name, use_gettext));
+    return value_check_lock(tv->v_lock, name, use_gettext)
+		   || (lock != 0 && value_check_lock(lock, name, use_gettext));
 }
 
 /*
@@ -1461,9 +1506,10 @@ eval_env_var(char_u **arg, typval_T *rettv, int evaluate)
     linenr_T
 tv_get_lnum(typval_T *argvars)
 {
-    linenr_T	lnum;
+    linenr_T	lnum = 0;
 
-    lnum = (linenr_T)tv_get_number_chk(&argvars[0], NULL);
+    if (argvars[0].v_type != VAR_STRING || !in_vim9script())
+	lnum = (linenr_T)tv_get_number_chk(&argvars[0], NULL);
     if (lnum == 0)  // no valid number, try using arg like line()
     {
 	int	fnum;
@@ -1515,6 +1561,25 @@ tv_get_buf(typval_T *tv, int curtab_only)
     if (buf == NULL)
 	buf = find_buffer(tv);
 
+    return buf;
+}
+
+/*
+ * Like tv_get_buf() but give an error message is the type is wrong.
+ */
+    buf_T *
+tv_get_buf_from_arg(typval_T *tv)
+{
+    buf_T *buf;
+
+    ++emsg_off;
+    buf = tv_get_buf(tv, FALSE);
+    --emsg_off;
+    if (buf == NULL
+	    && tv->v_type != VAR_NUMBER
+	    && tv->v_type != VAR_STRING)
+	// issue errmsg for type error
+	(void)tv_get_number(tv);
     return buf;
 }
 

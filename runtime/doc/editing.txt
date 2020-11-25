@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.2.  Last change: 2020 Jul 05
+*editing.txt*   For Vim version 8.2.  Last change: 2020 Oct 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -73,10 +73,14 @@ g CTRL-G		Prints the current position of the cursor in five
 			ways: Column, Line, Word, Character and Byte.  If the
 			number of Characters and Bytes is the same then the
 			Character position is omitted.
+
 			If there are characters in the line that take more
 			than one position on the screen (<Tab> or special
-			character), both the "real" column and the screen
-			column are shown, separated with a dash.
+			character), or characters using more than one byte per
+			column (characters above 0x7F when 'encoding' is
+			utf-8), both the byte column and the screen column are
+			shown, separated by a dash.
+
 			Also see the 'ruler' option and the |wordcount()|
 			function.
 
@@ -652,7 +656,7 @@ list of the current window.
 				:args ## x
 <			This will add the "x" item and sort the new list.
 
-:argd[elete] {pattern} ..			*:argd* *:argdelete* *E480*
+:argd[elete] {pattern} ..		*:argd* *:argdelete* *E480* *E610*
 			Delete files from the argument list that match the
 			{pattern}s.  {pattern} is used like a file pattern,
 			see |file-pattern|.  "%" can be used to delete the
@@ -662,7 +666,7 @@ list of the current window.
 			Example: >
 				:argdel *.obj
 
-:[range]argd[elete]	Delete the {range} files from the argument list.
+:[range]argd[elete]	Delete the [range] files from the argument list.
 			Example: >
 				:10,$argdel
 <			Deletes arguments 10 and further, keeping 1-9. >

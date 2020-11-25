@@ -116,7 +116,7 @@ find_end_of_word(pos_T *pos)
 
 #if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) \
 	    || defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) \
-	    || defined(FEAT_GUI_MAC) || defined(FEAT_GUI_PHOTON) \
+	    || defined(FEAT_GUI_PHOTON) \
 	    || defined(FEAT_TERM_POPUP_MENU)
 # define USE_POPUP_SETPOS
 # define NEED_VCOL2COL
@@ -430,7 +430,8 @@ do_mouse(
 		    insert_reg(regname, TRUE);
 		else
 		{
-		    do_put(regname, BACKWARD, 1L, fixindent | PUT_CURSEND);
+		    do_put(regname, NULL, BACKWARD, 1L,
+						      fixindent | PUT_CURSEND);
 
 		    // Repeat it with CTRL-R CTRL-O r or CTRL-R CTRL-P r
 		    AppendCharToRedobuff(Ctrl_R);
@@ -532,7 +533,7 @@ do_mouse(
 	    if (gui.in_use)
 	    {
 #  if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) \
-			  || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC)
+			  || defined(FEAT_GUI_PHOTON)
 		if (!is_click)
 		    // Ignore right button release events, only shows the popup
 		    // menu on the button down event.
@@ -849,7 +850,7 @@ do_mouse(
 	// to this position
 	if (restart_edit != 0)
 	    where_paste_started = curwin->w_cursor;
-	do_put(regname, dir, count, fixindent | PUT_CURSEND);
+	do_put(regname, NULL, dir, count, fixindent | PUT_CURSEND);
     }
 
 #if defined(FEAT_QUICKFIX)
@@ -2928,10 +2929,12 @@ mouse_comp_pos(
 
     // skip line number and fold column in front of the line
     col -= win_col_off(win);
-    if (col < 0)
+    if (col <= 0)
     {
 #ifdef FEAT_NETBEANS_INTG
-	netbeans_gutter_click(lnum);
+	// if mouse is clicked on the gutter, then inform the netbeans server
+	if (*colp < win_col_off(win))
+	    netbeans_gutter_click(lnum);
 #endif
 	col = 0;
     }

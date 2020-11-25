@@ -551,3 +551,5 @@ func Test_profile_typed_func()
   call delete('XprofileTypedFunc')
   call delete('XtestProfile')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -10,7 +10,11 @@ If it isn't available then the test will be skipped.
 
 VMS does not have CKSUM but has a built in CHECKSUM - it should be used
 STARTTEST
-:so small.vim
+:silent! while 0
+:  e! test.ok
+:  w! test.out
+:  qa!
+:silent! endwhile
 :if !has("vms")
 : e! test.ok
 : w! test.out

@@ -135,9 +135,7 @@ func CheckCopyPaste()
 endfunc
 
 func Test_xrestore()
-  if !has('xterm_clipboard')
-    return
-  endif
+  CheckFeature xterm_clipboard
   let display = $DISPLAY
   new
   call CheckCopyPaste()

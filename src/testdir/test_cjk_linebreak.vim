@@ -1,3 +1,5 @@
+" Test for CJK linebreak
+
 scriptencoding utf-8
 
 func Run_cjk_linebreak_after(rigorous)
@@ -95,3 +97,5 @@ func Test_cjk_linebreak_join_punct()
     %d_
   endfor
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

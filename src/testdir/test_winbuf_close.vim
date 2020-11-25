@@ -27,7 +27,7 @@ func Test_winbuf_close()
   " test for failing :rew when hidden not set
   set nohidden
   call setline(1, 'testtext 2 2')
-  call assert_fails('rewind', 'E37')
+  call assert_fails('rewind', 'E37:')
   call assert_equal('Xtest2', bufname('%'))
   call assert_equal('testtext 2 2', getline(1))
 
@@ -66,7 +66,7 @@ func Test_winbuf_close()
 
   " test ":edit" failing in modified buffer when 'hidden' not set
   call setline(1, 'testtext 3 3')
-  call assert_fails('edit Xtest1', 'E37')
+  call assert_fails('edit Xtest1', 'E37:')
   call assert_equal('Xtest3', bufname('%'))
   call assert_equal('testtext 3 3', getline(1))
 
@@ -80,7 +80,7 @@ func Test_winbuf_close()
   split Xtest3
   set nohidden
   call setline(1, 'testtext 3 3 3')
-  call assert_fails('close', 'E37')
+  call assert_fails('close', 'E37:')
   call assert_equal('Xtest3', bufname('%'))
   call assert_equal('testtext 3 3 3', getline(1))
 
@@ -115,7 +115,7 @@ func Test_winbuf_close()
   call assert_equal('Xtest2', bufname('%'))
   quit!
   call assert_equal('Xtest3', bufname('%'))
-  call assert_fails('silent! quit!', 'E37')
+  call assert_fails('silent! quit!', 'E37:')
   call assert_equal('Xtest1', bufname('%'))
 
   call delete('Xtest1')
@@ -192,7 +192,23 @@ func Test_tabwin_close()
   call win_execute(l:wid, 'close')
   " Should not crash.
   call assert_true(v:true)
-  %bwipe!
+
+  " This tests closing a window in another tab, while leaving the tab open
+  " i.e. two windows in another tab.
+  tabedit
+  let w:this_win = 42
+  new
+  let othertab_wid = win_getid()
+  tabprevious
+  call win_execute(othertab_wid, 'q')
+  " drawing the tabline helps check that the other tab's windows and buffers
+  " are still valid
+  redrawtabline
+  " but to be certain, ensure we can focus the other tab too
+  tabnext
+  call assert_equal(42, w:this_win)
+
+  bwipe!
 endfunc
 
 " Test when closing a split window (above/below) restores space to the window
@@ -213,3 +229,4 @@ func Test_window_close_splitright_noequalalways()
   call assert_equal(w, win_getid(), "Did not return to original window after opening and closing a window")
 endfunc
 
+" vim: shiftwidth=2 sts=2 expandtab

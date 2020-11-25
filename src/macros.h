@@ -166,7 +166,15 @@
 # ifndef MSWIN
 #   define mch_access(n, p)	access((n), (p))
 # endif
-# define mch_fstat(n, p)	fstat((n), (p))
+
+// Use 64-bit fstat function if available.
+// NOTE: This condition is the same as for the stat_T type.
+# if (defined(_MSC_VER) && (_MSC_VER >= 1300)) || defined(__MINGW32__)
+#  define mch_fstat(n, p)	_fstat64((n), (p))
+# else
+#  define mch_fstat(n, p)	fstat((n), (p))
+# endif
+
 # ifdef MSWIN	// has its own mch_stat() function
 #  define mch_stat(n, p)	vim_stat((n), (p))
 # else

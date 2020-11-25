@@ -572,7 +572,7 @@ nb_free(void)
 	buf = buf_list[i];
 	vim_free(buf.displayname);
 	vim_free(buf.signmap);
-	if (buf.bufp != NULL)
+	if (buf.bufp != NULL && buf_valid(buf.bufp))
 	{
 	    buf.bufp->b_netbeans_file = FALSE;
 	    buf.bufp->b_was_netbeans_file = FALSE;
@@ -674,11 +674,19 @@ nb_get_buf(int bufno)
     {
 	if (bufno >= buf_list_size) // grow list
 	{
-	    nbbuf_T *t_buf_list = buf_list;
+	    nbbuf_T	*t_buf_list = buf_list;
+	    size_t	bufsize;
 
 	    incr = bufno - buf_list_size + 90;
 	    buf_list_size += incr;
-	    buf_list = vim_realloc(buf_list, buf_list_size * sizeof(nbbuf_T));
+	    bufsize = buf_list_size * sizeof(nbbuf_T);
+	    if (bufsize == 0 || bufsize / sizeof(nbbuf_T)
+						      != (size_t)buf_list_size)
+	    {
+		// list size overflow, bail out
+		return NULL;
+	    }
+	    buf_list = vim_realloc(buf_list, bufsize);
 	    if (buf_list == NULL)
 	    {
 		vim_free(t_buf_list);
@@ -1935,15 +1943,13 @@ nb_do_cmd(
 	    if (STRLEN(fg) > MAX_COLOR_LENGTH || STRLEN(bg) > MAX_COLOR_LENGTH)
 	    {
 		emsg("E532: highlighting color name too long in defineAnnoType");
-		vim_free(typeName);
+		VIM_CLEAR(typeName);
 		parse_error = TRUE;
 	    }
 	    else if (typeName != NULL && tooltip != NULL && glyphFile != NULL)
 		addsigntype(buf, typeNum, typeName, tooltip, glyphFile, fg, bg);
-	    else
-		vim_free(typeName);
 
-	    // don't free typeName; it's used directly in addsigntype()
+	    vim_free(typeName);
 	    vim_free(fg);
 	    vim_free(bg);
 	    vim_free(tooltip);
@@ -3232,7 +3238,7 @@ addsigntype(
 	    }
 	}
 
-	globalsignmap[i] = (char *)typeName;
+	globalsignmap[i] = (char *)vim_strsave(typeName);
 	globalsignmapused = i + 1;
     }
 

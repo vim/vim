@@ -353,12 +353,12 @@ func Test_python_list()
   call AssertException(["py t = vim.eval('[test_null_list()]')"],
         \ 'Vim(python):SystemError: error return without exception set')
 
-  " Try to bind a null List variable
+  " Try to bind a null List variable (works because an empty list is used)
   let cmds =<< trim END
     let l = test_null_list()
     py ll = vim.bindeval('l')
   END
-  call AssertException(cmds, 'Vim(python):SystemError: error return without exception set')
+  call AssertException(cmds, '')
 
   let l = []
   py l = vim.bindeval('l')
@@ -2412,7 +2412,7 @@ func Test_python_chdir()
     cb.append(vim.eval('@%'))
     os.chdir('..')
     path = fnamemodify('.', ':p:h:t')
-    if path != 'src':
+    if path != 'src' and path != 'src2':
       # Running tests from a shadow directory, so move up another level
       # This will result in @% looking like shadow/testdir/Xfile, hence the
       # extra fnamemodify
@@ -2422,7 +2422,8 @@ func Test_python_chdir()
       os.chdir(path)
       del path
     else:
-      cb.append(fnamemodify('.', ':p:h:t'))
+      # Also accept running from src2/testdir/ for MS-Windows CI.
+      cb.append(fnamemodify('.', ':p:h:t').replace('src2', 'src'))
       cb.append(vim.eval('@%').replace(os.path.sep, '/'))
     os.chdir('testdir')
     cb.append(fnamemodify('.', ':p:h:t'))

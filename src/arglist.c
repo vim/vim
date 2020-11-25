@@ -657,7 +657,7 @@ do_argfile(exarg_T *eap, int argn)
 #endif
 
 	// split window or create new tab page first
-	if (*eap->cmd == 's' || cmdmod.tab != 0)
+	if (*eap->cmd == 's' || cmdmod.cmod_tab != 0)
 	{
 	    if (win_split(0, 0) == FAIL)
 		return;
@@ -776,10 +776,20 @@ ex_argdelete(exarg_T *eap)
     int		i;
     int		n;
 
-    if (eap->addr_count > 0)
+    if (eap->addr_count > 0 || *eap->arg == NUL)
     {
-	// ":1,4argdel": Delete all arguments in the range.
-	if (eap->line2 > ARGCOUNT)
+	// ":argdel" works like ":.argdel"
+	if (eap->addr_count == 0)
+	{
+	    if (curwin->w_arg_idx >= ARGCOUNT)
+	    {
+		emsg(_("E610: No argument to delete"));
+		return;
+	    }
+	    eap->line1 = eap->line2 = curwin->w_arg_idx + 1;
+	}
+	else if (eap->line2 > ARGCOUNT)
+	    // ":1,4argdel": Delete all arguments in the range.
 	    eap->line2 = ARGCOUNT;
 	n = eap->line2 - eap->line1 + 1;
 	if (*eap->arg != NUL)
@@ -808,8 +818,6 @@ ex_argdelete(exarg_T *eap)
 		curwin->w_arg_idx = ARGCOUNT - 1;
 	}
     }
-    else if (*eap->arg == NUL)
-	emsg(_(e_argreq));
     else
 	do_arglist(eap->arg, AL_DEL, 0, FALSE);
 #ifdef FEAT_TITLE
@@ -870,7 +878,7 @@ do_arg_all(
     alist_T	*alist;		// argument list to be used
     buf_T	*buf;
     tabpage_T	*tpnext;
-    int		had_tab = cmdmod.tab;
+    int		had_tab = cmdmod.cmod_tab;
     win_T	*old_curwin, *last_curwin;
     tabpage_T	*old_curtab, *last_curtab;
     win_T	*new_curwin = NULL;
@@ -1108,7 +1116,7 @@ do_arg_all(
 
 	// When ":tab" was used open a new tab for a new window repeatedly.
 	if (had_tab > 0 && tabpage_index(NULL) <= p_tpm)
-	    cmdmod.tab = 9999;
+	    cmdmod.cmod_tab = 9999;
     }
 
     // Remove the "lock" on the argument list.

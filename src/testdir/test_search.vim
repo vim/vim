@@ -266,7 +266,7 @@ func Test_search_cmdline2()
   " In that case Vim should return "E35 no previous regular expression",
   " but it looks like Vim still sees /foo and therefore the test fails.
   " Therefore, disabling this test
-  "call assert_fails(feedkeys("/foo\<c-w>\<cr>", 'tx'), 'E35')
+  "call assert_fails(feedkeys("/foo\<c-w>\<cr>", 'tx'), 'E35:')
   "call assert_equal({'lnum': 1, 'leftcol': 0, 'col': 0, 'topfill': 0, 'topline': 1, 'coladd': 0, 'skipcol': 0, 'curswant': 0}, winsaveview())
 
   " clean up
@@ -289,6 +289,9 @@ endfunc
 func Test_searchpair()
   new
   call setline(1, ['other code', 'here [', ' [', ' " cursor here', ' ]]'])
+
+  " should not give an error for using "42"
+  call assert_equal(0, searchpair('a', 'b', 'c', '', 42))
 
   4
   call assert_equal(3, searchpair('\[', '', ']', 'bW'))
@@ -470,7 +473,7 @@ func Test_search_cmdline3s()
   call feedkeys(":%smagic/the.e/xxx\<cr>", 'tx')
   call assert_equal('  2 xxx', getline('.'))
   undo
-  call assert_fails(":%snomagic/the.e/xxx\<cr>", 'E486')
+  call assert_fails(":%snomagic/the.e/xxx\<cr>", 'E486:')
   "
   call feedkeys(":%snomagic/the\\.e/xxx\<cr>", 'tx')
   call assert_equal('  2 xxx', getline('.'))
@@ -961,6 +964,20 @@ func Test_incsearch_substitute()
   call Incsearch_cleanup()
 endfunc
 
+func Test_incsearch_substitute_long_line()
+  new
+  call test_override("char_avail", 1)
+  set incsearch
+
+  call repeat('x', 100000)->setline(1)
+  call feedkeys(':s/\%c', 'xt')
+  redraw
+  call feedkeys("\<Esc>", 'xt')
+
+  call Incsearch_cleanup()
+  bwipe!
+endfunc
+
 " Similar to Test_incsearch_substitute() but with a screendump halfway.
 func Test_incsearch_substitute_dump()
   CheckOption incsearch
@@ -1278,8 +1295,8 @@ endfunc
 func Test_search_sentence()
   new
   " this used to cause a crash
-  call assert_fails("/\\%')", 'E486')
-  call assert_fails("/", 'E486')
+  call assert_fails("/\\%')", 'E486:')
+  call assert_fails("/", 'E486:')
   /\%'(
   /
 endfunc

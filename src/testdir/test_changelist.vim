@@ -1,10 +1,10 @@
 " Tests for the changelist functionality
 
+source check.vim
+
 " Tests for the getchangelist() function
 func Test_getchangelist()
-  if !has("jumplist")
-    return
-  endif
+  CheckFeature jumplist
 
   bwipe!
   enew

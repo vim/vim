@@ -11,6 +11,7 @@ func Test_fnamemodify()
   call assert_equal('/', fnamemodify('.', ':p')[-1:])
   call assert_equal('r', fnamemodify('.', ':p:h')[-1:])
   call assert_equal('t', fnamemodify('test.out', ':p')[-1:])
+  call assert_equal($HOME .. "/foo" , fnamemodify('~/foo', ':p'))
   call assert_equal('test.out', fnamemodify('test.out', ':.'))
   call assert_equal('a', fnamemodify('../testdir/a', ':.'))
   call assert_equal('~/testdir/test.out', fnamemodify('test.out', ':~'))
@@ -91,6 +92,11 @@ func Test_fnamemodify_er()
   call assert_equal('b.c', fnamemodify('a.b.c.d.e', ':r:r:e:e:e:e'))
 
   call assert_equal('', fnamemodify(test_null_string(), test_null_string()))
+endfunc
+
+func Test_fnamemodify_fail()
+  call assert_fails('call fnamemodify({}, ":p")', 'E731:')
+  call assert_fails('call fnamemodify("x", {})', 'E731:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

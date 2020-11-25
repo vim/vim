@@ -24,3 +24,5 @@ func Test_scriptnames()
   bwipe
   call delete('Xscripting')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -298,33 +298,6 @@ main
 	params.want_full_screen = FALSE;
 #endif
 
-#if defined(FEAT_GUI_MAC) && defined(MACOS_X_DARWIN)
-    // When the GUI is started from Finder, need to display messages in a
-    // message box.  isatty(2) returns TRUE anyway, thus we need to check the
-    // name to know we're not started from a terminal.
-    if (gui.starting && (!isatty(2) || strcmp("/dev/console", ttyname(2)) == 0))
-    {
-	params.want_full_screen = FALSE;
-
-	// Avoid always using "/" as the current directory.  Note that when
-	// started from Finder the arglist will be filled later in
-	// HandleODocAE() and "fname" will be NULL.
-	if (getcwd((char *)NameBuff, MAXPATHL) != NULL
-						&& STRCMP(NameBuff, "/") == 0)
-	{
-	    if (params.fname != NULL)
-		(void)vim_chdirfile(params.fname, "drop");
-	    else
-	    {
-		expand_env((char_u *)"$HOME", NameBuff, MAXPATHL);
-		vim_chdir(NameBuff);
-	    }
-	    if (start_dir != NULL)
-		mch_dirname(start_dir, MAXPATHL);
-	}
-    }
-#endif
-
     /*
      * mch_init() sets up the terminal (window) for use.  This must be
      * done after resetting full_screen, otherwise it may move the cursor.
@@ -1843,18 +1816,6 @@ parse_command_name(mparm_T *parmp)
 
     initstr = gettail((char_u *)parmp->argv[0]);
 
-#ifdef FEAT_GUI_MAC
-    // An issue has been seen when launching Vim in such a way that
-    // $PWD/$ARGV[0] or $ARGV[0] is not the absolute path to the
-    // executable or a symbolic link of it. Until this issue is resolved
-    // we prohibit the GUI from being used.
-    if (STRCMP(initstr, parmp->argv[0]) == 0)
-	disallow_gui = TRUE;
-
-    // TODO: On MacOS X default to gui if argv[0] ends in:
-    //       /Vim.app/Contents/MacOS/Vim
-#endif
-
 #ifdef FEAT_EVAL
     set_vim_var_string(VV_PROGNAME, initstr, -1);
     set_progpath((char_u *)parmp->argv[0]);
@@ -2743,21 +2704,16 @@ read_stdin(void)
     no_wait_return = TRUE;
     i = msg_didany;
     set_buflisted(TRUE);
-    (void)open_buffer(TRUE, NULL, 0);	// create memfile and read file
+
+    // Create memfile and read from stdin.
+    // This will also dup stdin from stderr to read commands from.
+    (void)open_buffer(TRUE, NULL, 0);
+
     no_wait_return = FALSE;
     msg_didany = i;
     TIME_MSG("reading stdin");
 
     check_swap_exists_action();
-#if !(defined(AMIGA) || defined(MACOS_X))
-    /*
-     * Close stdin and dup it from stderr.  Required for GPM to work
-     * properly, and for running external commands.
-     * Is there any other system that cannot do this?
-     */
-    close(0);
-    vim_ignored = dup(2);
-#endif
 }
 
 /*

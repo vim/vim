@@ -150,3 +150,5 @@ func Test_get_func()
 endfunc
 
 " get({partial}, {what} [, {default}]) - in test_partial.vim
+
+" vim: shiftwidth=2 sts=2 expandtab

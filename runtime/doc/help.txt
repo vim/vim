@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 8.2.  Last change: 2020 Apr 05
+*help.txt*	For Vim version 8.2.  Last change: 2020 Aug 15
 
 			VIM - main help file
 									 k
@@ -158,7 +158,7 @@ Programming language support ~
 
 Language support ~
 |digraph.txt|	list of available digraphs
-|mbyte.txt|	multi-byte text support
+|mbyte.txt|	multibyte text support
 |mlang.txt|	non-English language support
 |rileft.txt|	right-to-left editing mode
 |arabic.txt|	Arabic language support and editing

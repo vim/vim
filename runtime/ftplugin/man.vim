@@ -2,7 +2,7 @@
 " Language:	man
 " Maintainer:	Jason Franklin <vim@justemail.net>
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
-" Last Change: 	2020 Jun 01
+" Last Change: 	2020 Oct 09
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.
@@ -76,7 +76,7 @@ catch /E145:/
   " Ignore the error in restricted mode
 endtry
 
-func <SID>PreGetPage(cnt)
+func s:PreGetPage(cnt)
   if a:cnt == 0
     let old_isk = &iskeyword
     if &ft == 'man'
@@ -99,24 +99,27 @@ func <SID>PreGetPage(cnt)
   call s:GetPage('', sect, page)
 endfunc
 
-func <SID>GetCmdArg(sect, page)
-  if a:sect == ''
-    return a:page
+func s:GetCmdArg(sect, page)
+
+  if empty(a:sect)
+    return shellescape(a:page)
   endif
-  return s:man_sect_arg.' '.a:sect.' '.a:page
+
+  return s:man_sect_arg . ' ' . shellescape(a:sect) . ' ' . shellescape(a:page)
 endfunc
 
-func <SID>FindPage(sect, page)
-  let where = system("man ".s:man_find_arg.' '.s:GetCmdArg(a:sect, a:page))
-  if where !~ "^/"
-    if matchstr(where, " [^ ]*$") !~ "^ /"
-      return 0
-    endif
+func s:FindPage(sect, page)
+  let l:cmd = printf('man %s %s', s:man_find_arg, s:GetCmdArg(a:sect, a:page))
+  call system(l:cmd)
+
+  if v:shell_error
+    return 0
   endif
+
   return 1
 endfunc
 
-func <SID>GetPage(cmdmods, ...)
+func s:GetPage(cmdmods, ...)
   if a:0 >= 2
     let sect = a:1
     let page = a:2
@@ -226,7 +229,7 @@ func <SID>GetPage(cmdmods, ...)
   setl noma
 endfunc
 
-func <SID>PopPage()
+func s:PopPage()
   if s:man_tag_depth > 0
     let s:man_tag_depth = s:man_tag_depth - 1
     exec "let s:man_tag_buf=s:man_tag_buf_".s:man_tag_depth

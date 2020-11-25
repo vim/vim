@@ -40,11 +40,11 @@ func Test_if()
     call assert_true(false, 'one in string is true')
   endif
 
-  call assert_fails('if [1]', 'E745')
-  call assert_fails('if {1: 1}', 'E728')
-  call assert_fails('if function("string")', 'E703')
+  call assert_fails('if [1]', 'E745:')
+  call assert_fails('if {1: 1}', 'E728:')
+  call assert_fails('if function("string")', 'E703:')
   if has('float')
-    call assert_fails('if 1.3")', 'E805')
+    call assert_fails('if 1.3")', 'E805:')
   endif
 endfunc
 
@@ -153,3 +153,5 @@ func Test_non_zero_arg()
     call assert_equal('', r, 'result for ' . v . ' is not "" but ' . r)
   endfor
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

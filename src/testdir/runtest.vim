@@ -46,7 +46,9 @@
 
 
 " Without the +eval feature we can't run these tests, bail out.
-so small.vim
+silent! while 0
+  qa!
+silent! endwhile
 
 " In the GUI we can always change the screen size.
 if has('gui_running')
@@ -91,6 +93,9 @@ set encoding=utf-8
 let s:test_script_fname = expand('%')
 au! SwapExists * call HandleSwapExists()
 func HandleSwapExists()
+  if exists('g:ignoreSwapExists')
+    return
+  endif
   " Ignore finding a swap file for the test script (the user might be
   " editing it and do ":make test_name") and the output file.
   " Report finding another swap file and chose 'q' to avoid getting stuck.
@@ -129,6 +134,13 @@ if has('win32')
 else
   let s:t_bold = &t_md
   let s:t_normal = &t_me
+endif
+
+if has('mac')
+  " In MacOS, when starting a shell in a terminal, a bash deprecation warning
+  " message is displayed. This breaks the terminal test. Disable the warning
+  " message.
+  let $BASH_SILENCE_DEPRECATION_WARNING = 1
 endif
 
 " Prepare for calling test_garbagecollect_now().
@@ -222,7 +234,12 @@ func RunTheTest(test)
 
   " Close any extra tab pages and windows and make the current one not modified.
   while tabpagenr('$') > 1
+    let winid = win_getid()
     quit!
+    if winid == win_getid()
+      echoerr 'Could not quit window'
+      break
+    endif
   endwhile
 
   while 1
@@ -377,7 +394,9 @@ endif
 
 " Names of flaky tests.
 let s:flaky_tests = [
+      \ 'Test_BufWrite_lockmarks()',
       \ 'Test_autocmd_SafeState()',
+      \ 'Test_bufunload_all()',
       \ 'Test_client_server()',
       \ 'Test_close_and_exit_cb()',
       \ 'Test_close_output_buffer()',

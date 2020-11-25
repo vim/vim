@@ -1,4 +1,4 @@
-*undo.txt*      For Vim version 8.2.  Last change: 2019 Dec 07
+*undo.txt*      For Vim version 8.2.  Last change: 2020 Oct 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -392,7 +392,7 @@ back the text of three deletes ago with '"3P'.
 						*redo-register*
 If you want to get back more than one part of deleted text, you can use a
 special feature of the repeat command ".".  It will increase the number of the
-register used.  So if you first do ""1P", the following "." will result in a
+register used.  So if you first do '"1P', the following "." will result in a
 '"2P'.  Repeating this will result in all numbered registers being inserted.
 
 Example:	If you deleted text with 'dd....' it can be restored with

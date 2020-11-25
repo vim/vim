@@ -1,4 +1,5 @@
 " Tests for complicated + argument to :edit command
+
 function Test_edit()
   call writefile(["foo|bar"], "Xfile1")
   call writefile(["foo/bar"], "Xfile2")

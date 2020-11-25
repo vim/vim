@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 8.2.  Last change: 2020 Jun 07
+*vi_diff.txt*   For Vim version 8.2.  Last change: 2020 Aug 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -467,7 +467,7 @@ Editing binary files.					|edit-binary|
 			last line in the file.
 
 Multi-language support.					|multi-lang|
-	Files in double-byte or multi-byte encodings can be edited.  There is
+	Files in double-byte or multibyte encodings can be edited.  There is
 	UTF-8 support to be able to edit various languages at the same time,
 	without switching fonts. |UTF-8|
 	Messages and menus are available in different languages.

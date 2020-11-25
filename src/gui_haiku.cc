@@ -654,7 +654,7 @@ docd(BPath &path)
 drop_callback(void *cookie)
 {
     // TODO here we could handle going to a specific position in the dropped
-    // file (see src/gui_mac.c)
+    // file (see src/gui_mac.c, deleted in 8.2.1422)
     // Update the screen display
     update_screen(NOT_VALID);
 }

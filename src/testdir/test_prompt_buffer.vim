@@ -9,14 +9,10 @@ source screendump.vim
 func CanTestPromptBuffer()
   " We need to use a terminal window to be able to feed keys without leaving
   " Insert mode.
-  if !has('terminal')
-    return 0
-  endif
-  if has('win32')
-    " TODO: make the tests work on MS-Windows
-    return 0
-  endif
-  return 1
+  CheckFeature terminal
+
+  " TODO: make the tests work on MS-Windows
+  CheckNotMSWindows
 endfunc
 
 func WriteScript(name)
@@ -54,9 +50,7 @@ func WriteScript(name)
 endfunc
 
 func Test_prompt_basic()
-  if !CanTestPromptBuffer()
-    return
-  endif
+  call CanTestPromptBuffer()
   let scriptName = 'XpromptscriptBasic'
   call WriteScript(scriptName)
 
@@ -76,9 +70,7 @@ func Test_prompt_basic()
 endfunc
 
 func Test_prompt_editing()
-  if !CanTestPromptBuffer()
-    return
-  endif
+  call CanTestPromptBuffer()
   let scriptName = 'XpromptscriptEditing'
   call WriteScript(scriptName)
 
@@ -93,9 +85,12 @@ func Test_prompt_editing()
   call term_sendkeys(buf, left . left . left . bs . '-')
   call WaitForAssert({-> assert_equal('cmd: -hel', term_getline(buf, 1))})
 
+  call term_sendkeys(buf, "\<C-O>lz")
+  call WaitForAssert({-> assert_equal('cmd: -hzel', term_getline(buf, 1))})
+
   let end = "\<End>"
   call term_sendkeys(buf, end . "x")
-  call WaitForAssert({-> assert_equal('cmd: -helx', term_getline(buf, 1))})
+  call WaitForAssert({-> assert_equal('cmd: -hzelx', term_getline(buf, 1))})
 
   call term_sendkeys(buf, "\<C-U>exit\<CR>")
   call WaitForAssert({-> assert_equal('other buffer', term_getline(buf, 1))})
@@ -130,6 +125,14 @@ func Test_prompt_garbage_collect()
   bwipe!
 endfunc
 
+func Test_prompt_backspace()
+  new
+  set buftype=prompt
+  call feedkeys("A123456\<Left>\<BS>\<Esc>", 'xt')
+  call assert_equal('% 12346', getline(1))
+  bwipe!
+endfunc
+
 " Test for editing the prompt buffer
 func Test_prompt_buffer_edit()
   new
@@ -154,6 +157,73 @@ func Test_prompt_buffer_edit()
   wincmd w
   close!
   call assert_equal(0, prompt_setprompt([], ''))
+endfunc
+
+func Test_prompt_buffer_getbufinfo()
+  new
+  call assert_equal('', prompt_getprompt('%'))
+  call assert_equal('', prompt_getprompt(bufnr('%')))
+  let another_buffer = bufnr('%')
+
+  set buftype=prompt
+  call assert_equal('% ', prompt_getprompt('%'))
+  call prompt_setprompt( bufnr( '%' ), 'This is a test: ' )
+  call assert_equal('This is a test: ', prompt_getprompt('%'))
+
+  call prompt_setprompt( bufnr( '%' ), '' )
+  call assert_equal('', '%'->prompt_getprompt())
+
+  call prompt_setprompt( bufnr( '%' ), 'Another: ' )
+  call assert_equal('Another: ', prompt_getprompt('%'))
+  let another = bufnr('%')
+
+  new
+
+  call assert_equal('', prompt_getprompt('%'))
+  call assert_equal('Another: ', prompt_getprompt(another))
+
+  " Doesn't exist
+  let buffers_before = len( getbufinfo() )
+  call assert_equal('', prompt_getprompt( bufnr('$') + 1))
+  call assert_equal(buffers_before, len( getbufinfo()))
+
+  " invalid type
+  call assert_fails('call prompt_getprompt({})', 'E728:')
+
+  %bwipe!
+endfunc
+
+function! Test_prompt_while_writing_to_hidden_buffer()
+  call CanTestPromptBuffer()
+  CheckUnix
+
+  " Make a job continuously write to a hidden buffer, check that the prompt
+  " buffer is not affected.
+  let scriptName = 'XpromptscriptHiddenBuf'
+  let script =<< trim END
+    set buftype=prompt
+    call prompt_setprompt( bufnr(), 'cmd:' )
+    let job = job_start(['/bin/sh', '-c',
+        \ 'while true;
+        \   do echo line;
+        \   sleep 0.1;
+        \ done'], #{out_io: 'buffer', out_name: ''})
+    startinsert
+  END
+  eval script->writefile(scriptName)
+
+  let buf = RunVimInTerminal('-S ' .. scriptName, {})
+  call WaitForAssert({-> assert_equal('cmd:', term_getline(buf, 1))})
+
+  call term_sendkeys(buf, 'test')
+  call WaitForAssert({-> assert_equal('cmd:test', term_getline(buf, 1))})
+  call term_sendkeys(buf, 'test')
+  call WaitForAssert({-> assert_equal('cmd:testtest', term_getline(buf, 1))})
+  call term_sendkeys(buf, 'test')
+  call WaitForAssert({-> assert_equal('cmd:testtesttest', term_getline(buf, 1))})
+
+  call StopVimInTerminal(buf)
+  call delete(scriptName)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

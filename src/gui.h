@@ -39,25 +39,6 @@
 # include <X11/Intrinsic.h>
 #endif
 
-#ifdef FEAT_GUI_MAC
-# include <Types.h>
-/*# include <Memory.h>*/
-# include <Quickdraw.h>
-# include <Fonts.h>
-# include <Events.h>
-# include <Menus.h>
-# if !(defined (TARGET_API_MAC_CARBON) && (TARGET_API_MAC_CARBON))
-#  include <Windows.h>
-# endif
-# include <Controls.h>
-/*# include <TextEdit.h>*/
-# include <Dialogs.h>
-# include <OSUtils.h>
-/*
-# include <ToolUtils.h>
-# include <SegLoad.h>*/
-#endif
-
 #ifdef FEAT_GUI_PHOTON
 # include <Ph.h>
 # include <Pt.h>
@@ -68,7 +49,7 @@
  * On some systems scrolling needs to be done right away instead of in the
  * main loop.
  */
-#if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MAC) || defined(FEAT_GUI_GTK)
+#if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_GTK)
 # define USE_ON_FLY_SCROLL
 #endif
 
@@ -77,7 +58,6 @@
  */
 #if (defined(FEAT_DND) && defined(FEAT_GUI_GTK)) \
 	|| defined(FEAT_GUI_MSWIN) \
-	|| defined(FEAT_GUI_MAC) \
 	|| defined(FEAT_GUI_HAIKU)
 # define HAVE_DROP_FILE
 #endif
@@ -208,9 +188,6 @@ typedef struct GuiScrollbar
 
 #if FEAT_GUI_HAIKU
     VimScrollBar *id;		// Pointer to real scroll bar
-#endif
-#ifdef FEAT_GUI_MAC
-    ControlHandle id;		// A handle to the scrollbar
 #endif
 #ifdef FEAT_GUI_PHOTON
     PtWidget_t	*id;
@@ -435,7 +412,7 @@ typedef struct Gui
 
 #if defined(FEAT_GUI_TABLINE) \
 	&& (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) \
-		|| defined(FEAT_GUI_MAC) || defined(FEAT_GUI_HAIKU))
+		|| defined(FEAT_GUI_HAIKU))
     int		tabline_height;
 #endif
 
@@ -471,14 +448,6 @@ typedef struct Gui
     VimFormView *vimForm;
     VimTextAreaView *vimTextArea;
     int	vdcmp;			    // Vim Direct Communication Message Port
-#endif
-
-#ifdef FEAT_GUI_MAC
-    WindowPtr	VimWindow;
-    MenuHandle	MacOSHelpMenu;	    // Help menu provided by the MacOS
-    int		MacOSHelpItems;	    // Nr of help-items supplied by MacOS
-    WindowPtr	wid;		    // Window id of text area
-    int		visibility;	    // Is window partially/fully obscured?
 #endif
 
 #ifdef FEAT_GUI_PHOTON
@@ -599,6 +568,6 @@ typedef enum
 # endif
 #endif // FEAT_GUI_GTK
 
-#if defined(UNIX) && !defined(FEAT_GUI_MAC)
+#if defined(UNIX)
 # define GUI_MAY_FORK
 #endif

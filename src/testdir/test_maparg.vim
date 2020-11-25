@@ -81,6 +81,19 @@ func Test_maparg()
   abclear
 endfunc
 
+def Test_vim9_maparg()
+  nmap { w
+  var one: string = maparg('{')
+  assert_equal('w', one)
+  var two: string = maparg('{', 'n')
+  assert_equal('w', two)
+  var three: string = maparg('{', 'n', 0)
+  assert_equal('w', three)
+  var four: dict<any> = maparg('{', 'n', 0, 1)
+  assert_equal(['{', 'w', 'n'], [four.lhs, four.rhs, four.mode])
+  nunmap {
+enddef
+
 func Test_mapcheck()
   call assert_equal('', mapcheck('a'))
   call assert_equal('', mapcheck('abc'))
@@ -225,6 +238,8 @@ func Test_mapset()
   iunmap K
   let &cpo = cpo_save
   bwipe!
+
+  call assert_fails('call mapset([], v:false, {})', 'E730:')
 endfunc
 
 func Check_ctrlb_map(d, check_alt)

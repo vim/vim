@@ -39,6 +39,9 @@ ex_help(exarg_T *eap)
     int		old_KeyTyped = KeyTyped;
 #endif
 
+    if (ERROR_IF_ANY_POPUP_WINDOW)
+	return;
+
     if (eap != NULL)
     {
 	// A ":help" command ends at the first LF, or at a '|' that is
@@ -120,9 +123,9 @@ ex_help(exarg_T *eap)
 
     // Re-use an existing help window or open a new one.
     // Always open a new one for ":tab help".
-    if (!bt_help(curwin->w_buffer) || cmdmod.tab != 0)
+    if (!bt_help(curwin->w_buffer) || cmdmod.cmod_tab != 0)
     {
-	if (cmdmod.tab != 0)
+	if (cmdmod.cmod_tab != 0)
 	    wp = NULL;
 	else
 	    FOR_ALL_WINDOWS(wp)
@@ -145,7 +148,7 @@ ex_help(exarg_T *eap)
 	    // specified, the current window is vertically split and
 	    // narrow.
 	    n = WSP_HELP;
-	    if (cmdmod.split == 0 && curwin->w_width != Columns
+	    if (cmdmod.cmod_split == 0 && curwin->w_width != Columns
 						  && curwin->w_width < 80)
 		n |= WSP_TOP;
 	    if (win_split(0, n) == FAIL)
@@ -161,7 +164,7 @@ ex_help(exarg_T *eap)
 	    (void)do_ecmd(0, NULL, NULL, NULL, ECMD_LASTL,
 			  ECMD_HIDE + ECMD_SET_HELP,
 			  NULL);  // buffer is still open, don't store info
-	    if (!cmdmod.keepalt)
+	    if ((cmdmod.cmod_flags & CMOD_KEEPALT) == 0)
 		curwin->w_alt_fnum = alt_fnum;
 	    empty_fnum = curbuf->b_fnum;
 	}
@@ -190,7 +193,8 @@ ex_help(exarg_T *eap)
     }
 
     // keep the previous alternate file
-    if (alt_fnum != 0 && curwin->w_alt_fnum == empty_fnum && !cmdmod.keepalt)
+    if (alt_fnum != 0 && curwin->w_alt_fnum == empty_fnum
+				    && (cmdmod.cmod_flags & CMOD_KEEPALT) == 0)
 	curwin->w_alt_fnum = alt_fnum;
 
 erret:
@@ -320,33 +324,57 @@ find_help_tags(
 {
     char_u	*s, *d;
     int		i;
-    static char *(mtable[]) = {"*", "g*", "[*", "]*", ":*",
-			       "/*", "/\\*", "\"*", "**",
-			       "cpo-*", "/\\(\\)", "/\\%(\\)",
-			       "?", ":?", "?<CR>", "g?", "g?g?", "g??",
-			       "-?", "q?", "v_g?",
-			       "/\\?", "/\\z(\\)", "\\=", ":s\\=",
-			       "[count]", "[quotex]",
-			       "[range]", ":[range]",
-			       "[pattern]", "\\|", "\\%$",
-			       "s/\\~", "s/\\U", "s/\\L",
-			       "s/\\1", "s/\\2", "s/\\3", "s/\\9"};
-    static char *(rtable[]) = {"star", "gstar", "[star", "]star", ":star",
-			       "/star", "/\\\\star", "quotestar", "starstar",
-			       "cpo-star", "/\\\\(\\\\)", "/\\\\%(\\\\)",
-			       "?", ":?", "?<CR>", "g?", "g?g?", "g??",
-			       "-?", "q?", "v_g?",
-			       "/\\\\?", "/\\\\z(\\\\)", "\\\\=", ":s\\\\=",
-			       "\\[count]", "\\[quotex]",
-			       "\\[range]", ":\\[range]",
-			       "\\[pattern]", "\\\\bar", "/\\\\%\\$",
-			       "s/\\\\\\~", "s/\\\\U", "s/\\\\L",
-			       "s/\\\\1", "s/\\\\2", "s/\\\\3", "s/\\\\9"};
+    // Specific tags that either have a specific replacement or won't go
+    // throught the generic rules.
+    static char *(except_tbl[][2]) = {
+	{"*",		"star"},
+	{"g*",		"gstar"},
+	{"[*",		"[star"},
+	{"]*",		"]star"},
+	{":*",		":star"},
+	{"/*",		"/star"},
+	{"/\\*",	"/\\\\star"},
+	{"\"*",		"quotestar"},
+	{"**",		"starstar"},
+	{"cpo-*",	"cpo-star"},
+	{"/\\(\\)",	"/\\\\(\\\\)"},
+	{"/\\%(\\)",	"/\\\\%(\\\\)"},
+	{"?",		"?"},
+	{"??",		"??"},
+	{":?",		":?"},
+	{"?<CR>",	"?<CR>"},
+	{"g?",		"g?"},
+	{"g?g?",	"g?g?"},
+	{"g??",		"g??"},
+	{"-?",		"-?"},
+	{"q?",		"q?"},
+	{"v_g?",	"v_g?"},
+	{"/\\?",	"/\\\\?"},
+	{"/\\z(\\)",	"/\\\\z(\\\\)"},
+	{"\\=",		"\\\\="},
+	{":s\\=",	":s\\\\="},
+	{"[count]",	"\\[count]"},
+	{"[quotex]",	"\\[quotex]"},
+	{"[range]",	"\\[range]"},
+	{":[range]",	":\\[range]"},
+	{"[pattern]",	"\\[pattern]"},
+	{"\\|",		"\\\\bar"},
+	{"\\%$",	"/\\\\%\\$"},
+	{"s/\\~",	"s/\\\\\\~"},
+	{"s/\\U",	"s/\\\\U"},
+	{"s/\\L",	"s/\\\\L"},
+	{"s/\\1",	"s/\\\\1"},
+	{"s/\\2",	"s/\\\\2"},
+	{"s/\\3",	"s/\\\\3"},
+	{"s/\\9",	"s/\\\\9"},
+	{NULL, NULL}
+    };
     static char *(expr_table[]) = {"!=?", "!~?", "<=?", "<?", "==?", "=~?",
-				">=?", ">?", "is?", "isnot?"};
+				   ">=?", ">?", "is?", "isnot?"};
     int flags;
 
     d = IObuff;		    // assume IObuff is long enough!
+    d[0] = NUL;
 
     if (STRNICMP(arg, "expr-", 5) == 0)
     {
@@ -373,16 +401,16 @@ find_help_tags(
     else
     {
 	// Recognize a few exceptions to the rule.  Some strings that contain
-	// '*' with "star".  Otherwise '*' is recognized as a wildcard.
-	for (i = (int)(sizeof(mtable) / sizeof(char *)); --i >= 0; )
-	    if (STRCMP(arg, mtable[i]) == 0)
+	// '*'are changed to "star", otherwise '*' is recognized as a wildcard.
+	for (i = 0; except_tbl[i][0] != NULL; ++i)
+	    if (STRCMP(arg, except_tbl[i][0]) == 0)
 	    {
-		STRCPY(d, rtable[i]);
+		STRCPY(d, except_tbl[i][1]);
 		break;
 	    }
     }
 
-    if (i < 0)	// no match in table
+    if (d[0] == NUL)	// no match in table
     {
 	// Replace "\S" with "/\\S", etc.  Otherwise every tag is matched.
 	// Also replace "\%^" and "\%(", they match every tag too.

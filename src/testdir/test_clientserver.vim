@@ -30,7 +30,7 @@ endfunc
 func Test_client_server()
   let cmd = GetVimCommand()
   if cmd == ''
-    return
+    throw 'GetVimCommand() failed'
   endif
   call Check_X11_Connection()
 
@@ -63,14 +63,15 @@ func Test_client_server()
       call remote_send(name, ":gui -f\<CR>")
     endif
     " Wait for the server to be up and answering requests.
-    sleep 100m
-    call WaitForAssert({-> assert_true(name->remote_expr("v:version", "", 1) != "")})
+    " When using valgrind this can be very, very slow.
+    sleep 1
+    call WaitForAssert({-> assert_match('\d', name->remote_expr("v:version", "", 1))}, 10000)
 
     call remote_send(name, ":let testvar = 'maybe'\<CR>")
     call WaitForAssert({-> assert_equal('maybe', remote_expr(name, "testvar", "", 2))})
   endif
 
-  call assert_fails('call remote_send("XXX", ":let testvar = ''yes''\<CR>")', 'E241')
+  call assert_fails('call remote_send("XXX", ":let testvar = ''yes''\<CR>")', 'E241:')
 
   " Expression evaluated locally.
   if v:servername == ''

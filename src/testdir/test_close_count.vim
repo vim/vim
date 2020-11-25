@@ -1,5 +1,5 @@
-
 " Tests for :[count]close! command
+
 func Test_close_count()
   enew! | only
 
@@ -172,3 +172,5 @@ func Test_winclose_command()
   set nohidden
   only!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

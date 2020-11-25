@@ -222,10 +222,10 @@ mch_avail_mem(int special)
 
 /*
  * Waits a specified amount of time, or until input arrives if
- * ignoreinput is FALSE.
+ * flags does not have MCH_DELAY_IGNOREINPUT.
  */
     void
-mch_delay(long msec, int ignoreinput)
+mch_delay(long msec, int flags)
 {
 #ifndef LATTICE		// SAS declares void Delay(ULONG)
     void	    Delay(long);
@@ -233,7 +233,7 @@ mch_delay(long msec, int ignoreinput)
 
     if (msec > 0)
     {
-	if (ignoreinput)
+	if (flags & MCH_DELAY_IGNOREINPUT)
 	    Delay(msec / 20L);	    // Delay works with 20 msec intervals
 	else
 	    WaitForChar(raw_in, msec * 1000L);

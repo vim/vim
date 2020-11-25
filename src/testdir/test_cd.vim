@@ -168,6 +168,15 @@ func Test_prev_dir()
   call delete('Xdir', 'rf')
 endfunc
 
+func Test_lcd_split()
+  let curdir = getcwd()
+  lcd ..
+  split
+  lcd -
+  call assert_equal(curdir, getcwd())
+  quit!
+endfunc
+
 func Test_cd_completion()
   call mkdir('XComplDir1', 'p')
   call mkdir('XComplDir2', 'p')
@@ -182,3 +191,5 @@ func Test_cd_completion()
   call delete('XComplDir2', 'd')
   call delete('XComplFile')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

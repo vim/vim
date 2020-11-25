@@ -111,3 +111,5 @@ func Test_ex_shift_errors()
   call assert_fails('2,1>', 'E493:')
   call assert_fails('2,1<', 'E493:')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

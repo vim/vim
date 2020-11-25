@@ -80,6 +80,7 @@ blob_copy(blob_T *from, typval_T *to)
 		len = 0;
 	}
 	to->vval.v_blob->bv_ga.ga_len = len;
+	to->vval.v_blob->bv_ga.ga_maxlen = len;
     }
     return ret;
 }

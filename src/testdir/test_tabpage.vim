@@ -130,7 +130,7 @@ function Test_tabpage()
   1tabmove
   call assert_equal(2, tabpagenr())
 
-  call assert_fails('let t = tabpagenr("#")', 'E15:')
+  call assert_fails('let t = tabpagenr("@")', 'E15:')
   call assert_equal(0, tabpagewinnr(-1))
   call assert_fails("99tabmove", 'E16:')
   call assert_fails("+99tabmove", 'E16:')
@@ -683,15 +683,19 @@ func Test_tabline_tabmenu()
   call assert_equal(3, tabpagenr('$'))
 
   " go to tab page 2 in operator-pending mode (should beep)
-  call assert_beeps('call feedkeys("f" .. TabLineSelectPageCode(2), "Lx!")')
+  call assert_beeps('call feedkeys("c" .. TabLineSelectPageCode(2), "Lx!")')
+  call assert_equal(2, tabpagenr())
+  call assert_equal(3, tabpagenr('$'))
 
   " open new tab page before tab page 1 in operator-pending mode (should beep)
-  call assert_beeps('call feedkeys("f" .. TabMenuNewItemCode(1), "Lx!")')
+  call assert_beeps('call feedkeys("c" .. TabMenuNewItemCode(1), "Lx!")')
+  call assert_equal(1, tabpagenr())
+  call assert_equal(4, tabpagenr('$'))
 
   " open new tab page after tab page 3 in normal mode
   call feedkeys(TabMenuNewItemCode(4), "Lx!")
   call assert_equal(4, tabpagenr())
-  call assert_equal(4, tabpagenr('$'))
+  call assert_equal(5, tabpagenr('$'))
 
   " go to tab page 2 in insert mode
   call feedkeys("i" .. TabLineSelectPageCode(2) .. "\<C-C>", "Lx!")
@@ -699,17 +703,17 @@ func Test_tabline_tabmenu()
 
   " close tab page 2 in insert mode
   call feedkeys("i" .. TabMenuCloseItemCode(2) .. "\<C-C>", "Lx!")
-  call assert_equal(3, tabpagenr('$'))
+  call assert_equal(4, tabpagenr('$'))
 
   " open new tab page before tab page 3 in insert mode
   call feedkeys("i" .. TabMenuNewItemCode(3) .. "\<C-C>", "Lx!")
   call assert_equal(3, tabpagenr())
-  call assert_equal(4, tabpagenr('$'))
+  call assert_equal(5, tabpagenr('$'))
 
   " open new tab page after tab page 4 in insert mode
   call feedkeys("i" .. TabMenuNewItemCode(5) .. "\<C-C>", "Lx!")
   call assert_equal(5, tabpagenr())
-  call assert_equal(5, tabpagenr('$'))
+  call assert_equal(6, tabpagenr('$'))
 
   %bw!
 endfunc
@@ -775,6 +779,75 @@ func Test_tabpage_close_on_switch()
   augroup END
   augroup! T2
   %bw!
+endfunc
+
+" Test for jumping to last accessed tabpage
+func Test_lastused_tabpage()
+  tabonly!
+  call assert_equal(0, tabpagenr('#'))
+  call assert_beeps('call feedkeys("g\<Tab>", "xt")')
+  call assert_beeps('call feedkeys("\<C-Tab>", "xt")')
+  call assert_beeps('call feedkeys("\<C-W>g\<Tab>", "xt")')
+  call assert_fails('tabnext #', 'E475:')
+
+  " open four tab pages
+  tabnew
+  tabnew
+  tabnew
+
+  2tabnext
+
+  " Test for g<Tab>
+  call assert_equal(4, tabpagenr('#'))
+  call feedkeys("g\<Tab>", "xt")
+  call assert_equal(4, tabpagenr())
+  call assert_equal(2, tabpagenr('#'))
+
+  " Test for <C-Tab>
+  call feedkeys("\<C-Tab>", "xt")
+  call assert_equal(2, tabpagenr())
+  call assert_equal(4, tabpagenr('#'))
+
+  " Test for <C-W>g<Tab>
+  call feedkeys("\<C-W>g\<Tab>", "xt")
+  call assert_equal(4, tabpagenr())
+  call assert_equal(2, tabpagenr('#'))
+
+  " Test for :tabnext #
+  tabnext #
+  call assert_equal(2, tabpagenr())
+  call assert_equal(4, tabpagenr('#'))
+
+  " Try to jump to a closed tab page
+  tabclose #
+  call assert_equal(0, tabpagenr('#'))
+  call feedkeys("g\<Tab>", "xt")
+  call assert_equal(2, tabpagenr())
+  call feedkeys("\<C-Tab>", "xt")
+  call assert_equal(2, tabpagenr())
+  call feedkeys("\<C-W>g\<Tab>", "xt")
+  call assert_equal(2, tabpagenr())
+  call assert_fails('tabnext #', 'E475:')
+  call assert_equal(2, tabpagenr())
+
+  " Test for :tabonly #
+  let wnum = win_getid()
+  $tabnew
+  tabonly #
+  call assert_equal(wnum, win_getid())
+  call assert_equal(1, tabpagenr('$'))
+
+  " Test for :tabmove #
+  tabnew
+  let wnum = win_getid()
+  tabnew
+  tabnew
+  tabnext 2
+  tabmove #
+  call assert_equal(4, tabpagenr())
+  call assert_equal(wnum, win_getid())
+
+  tabonly!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
