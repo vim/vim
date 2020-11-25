@@ -1828,6 +1828,9 @@ def Test_expr7_lambda()
 
       assert_equal(false, LambdaUsingArg(0)())
       assert_equal(true, LambdaUsingArg(1)())
+
+      var res = map([1, 2, 3], {i: number, v: number -> i + v})
+      assert_equal([1, 3, 5], res)
   END
   CheckDefAndScriptSuccess(lines)
 
