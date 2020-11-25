@@ -6826,14 +6826,21 @@ compatible_set(void)
     int
 has_breakat_chars(int c)
 {
-    int	*p = breakat_chars;
-    if (p == NULL)
-	return FALSE;
+    int		h, m, l;
 
-    while (*p) {
-	if (*p == c)
+    if (breakat_chars == NULL)
+	return FALSE;
+    l = 0;
+    h = breakat_chars_len;
+    while (l < h)
+    {
+	m = (l + h) / 2;
+	if (breakat_chars[m] == c)
 	    return TRUE;
-	++p;
+	if (breakat_chars[m] < c)
+	    h = m;
+	else
+	    l = m + 1;
     }
     return FALSE;
 }
@@ -6854,6 +6861,7 @@ fill_breakat_flags(void)
     {
 	vim_free(breakat_chars);
 	breakat_chars = NULL;
+	breakat_chars_len = 0;
     }
 
     ga_init2(&ga, sizeof(int), 100);
@@ -6873,7 +6881,9 @@ fill_breakat_flags(void)
 	    } else
 		breakat_flags[*p] = TRUE;
 	}
+	qsort(ga.ga_data, ga.ga_len, sizeof(int), NULL);
 	breakat_chars = ga.ga_data;
+	breakat_chars_len = ga.ga_len;
     }
 }
 #endif
