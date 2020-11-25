@@ -1334,6 +1334,9 @@ check_visual_highlight(void)
 end_visual_mode(void)
 {
 #ifdef FEAT_CLIPBOARD
+    oparg_T	oa;
+    yankreg_T	*reg;
+
     /*
      * If we are using the clipboard, then remember what was selected in case
      * we need to paste it somewhere while we still own the selection.
@@ -1342,6 +1345,32 @@ end_visual_mode(void)
      */
     if (clip_star.available && clip_star.owned)
 	clip_auto_select();
+
+#if defined(FEAT_EVAL)
+    // Emit a TextYankPost for the automatic copy of the selection into the star
+    // or plus register.
+    if (has_textyankpost()) {
+	if (clip_isautosel_star()) {
+	    clear_oparg(&oa);
+	    oa.regname = '*';
+	    oa.op_type = OP_YANK;
+	    oa.is_VIsual = TRUE;
+	    reg = get_register('*', TRUE);
+	    yank_do_autocmd(&oa, reg);
+	    free_register(reg);
+	}
+
+	if (clip_isautosel_plus()) {
+	    clear_oparg(&oa);
+	    oa.regname = '+';
+	    oa.op_type = OP_YANK;
+	    oa.is_VIsual = TRUE;
+	    reg = get_register('+', TRUE);
+	    yank_do_autocmd(&oa, reg);
+	    free_register(reg);
+	}
+    }
+#endif
 #endif
 
     VIsual_active = FALSE;

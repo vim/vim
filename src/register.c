@@ -322,8 +322,7 @@ put_register(int name, void *reg)
 #endif
 }
 
-#if (defined(FEAT_CLIPBOARD) && defined(FEAT_X11) && defined(USE_SYSTEM)) \
-	|| defined(PROTO)
+#if defined(FEAT_CLIPBOARD) || defined(PROTO)
     void
 free_register(void *reg)
 {
