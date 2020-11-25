@@ -144,6 +144,7 @@ runtime/syntax/sass.vim			@tpope
 runtime/syntax/scss.vim			@tpope
 runtime/syntax/sh.vim			@cecamp
 runtime/syntax/sm.vim			@cecamp
+runtime/syntax/sshdconfig.vim		@Jakuje
 runtime/syntax/tags.vim			@cecamp
 runtime/syntax/teraterm.vim		@k-takata
 runtime/syntax/tex.vim			@cecamp
