@@ -6707,7 +6707,7 @@ syntime_report(void)
 {
     int		idx;
     synpat_T	*spp;
-# ifdef FEAT_FLOAT
+# if defined(FEAT_RELTIME) && defined(FEAT_FLOAT)
     proftime_T	tm;
 # endif
     int		len;
@@ -6737,7 +6737,7 @@ syntime_report(void)
 	    p->match = spp->sp_time.match;
 	    total_count += spp->sp_time.count;
 	    p->slowest = spp->sp_time.slowest;
-# ifdef FEAT_FLOAT
+# if defined(FEAT_RELTIME) && defined(FEAT_FLOAT)
 	    profile_divide(&spp->sp_time.total, spp->sp_time.count, &tm);
 	    p->average = tm;
 # endif
