@@ -2412,21 +2412,13 @@ gui_outstr_nowrap(
 
     if (highlight_mask & (HL_INVERSE | HL_STANDOUT))
     {
-#if defined(AMIGA)
-	gui_mch_set_colors(bg_color, fg_color);
-#else
 	gui_mch_set_fg_color(bg_color);
 	gui_mch_set_bg_color(fg_color);
-#endif
     }
     else
     {
-#if defined(AMIGA)
-	gui_mch_set_colors(fg_color, bg_color);
-#else
 	gui_mch_set_fg_color(fg_color);
 	gui_mch_set_bg_color(bg_color);
-#endif
     }
     gui_mch_set_sp_color(sp_color);
 
