@@ -1760,6 +1760,28 @@ func Test_TextYankPost()
 
   call assert_equal({}, v:event)
 
+  if has('clipboard_working') && !has('gui_running')
+    " Test that when the visual selection is automatically copied to clipboard
+    " register a TextYankPost is emitted
+    call setline(1, ['foobar'])
+
+    let @* = ''
+    set clipboard=autoselect
+    exe "norm! ggviw\<Esc>"
+    call assert_equal(
+        \{'regcontents': ['foobar'], 'regname': '*', 'operator': 'y', 'regtype': 'v', 'visual': v:true},
+        \g:event)
+
+    let @+ = ''
+    set clipboard=autoselectplus
+    exe "norm! ggviw\<Esc>"
+    call assert_equal(
+        \{'regcontents': ['foobar'], 'regname': '+', 'operator': 'y', 'regtype': 'v', 'visual': v:true},
+        \g:event)
+
+    set clipboard&vim
+  endif
+
   au! TextYankPost
   unlet g:event
   bwipe!
