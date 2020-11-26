@@ -5167,7 +5167,7 @@ vim_tempname(
 # ifdef MSWIN
     WCHAR	wszTempFile[_MAX_PATH + 1];
     WCHAR	buf4[4];
-    WCHAR	*chartab = L"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_";
+    WCHAR	*chartab = L"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     char_u	*retval;
     char_u	*p;
     long	i;
@@ -5181,8 +5181,8 @@ vim_tempname(
     }
     wcscpy(buf4, L"VIM");
     i = mch_get_pid() + extra_char;
-    buf4[1] = chartab[i % 37];		// make it a bit random
-    buf4[2] = chartab[101 * i % 37];
+    buf4[1] = chartab[i % 36];		// make it a bit random
+    buf4[2] = chartab[101 * i % 36];
     if (GetTempFileNameW(wszTempFile, buf4, 0, itmp) == 0)
 	return NULL;
     if (!keep)
