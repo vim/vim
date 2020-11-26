@@ -3593,7 +3593,13 @@ fi
 
 AC_MSG_CHECKING(for SVR4 ptys)
 if test -c /dev/ptmx ; then
-  AC_TRY_LINK([], [ptsname(0);grantpt(0);unlockpt(0);],
+  AC_TRY_LINK([], [
+#if STDC_HEADERS
+# include <stdlib.h>
+#endif
+		ptsname(0);
+		grantpt(0);
+		unlockpt(0);],
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SVR4_PTYS),
 	AC_MSG_RESULT(no))
 else
