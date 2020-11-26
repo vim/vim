@@ -5167,17 +5167,24 @@ vim_tempname(
 # ifdef MSWIN
     WCHAR	wszTempFile[_MAX_PATH + 1];
     WCHAR	buf4[4];
+    WCHAR	*chartab = L"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     char_u	*retval;
     char_u	*p;
+    long	i;
 
     wcscpy(itmp, L"");
     if (GetTempPathW(_MAX_PATH, wszTempFile) == 0)
     {
 	wszTempFile[0] = L'.';	// GetTempPathW() failed, use current dir
-	wszTempFile[1] = NUL;
+	wszTempFile[1] = L'\\';
+	wszTempFile[2] = NUL;
     }
     wcscpy(buf4, L"VIM");
-    buf4[2] = extra_char;   // make it "VIa", "VIb", etc.
+
+    // randomize the name to avoid collisions
+    i = mch_get_pid() + extra_char;
+    buf4[1] = chartab[i % 36];
+    buf4[2] = chartab[101 * i % 36];
     if (GetTempFileNameW(wszTempFile, buf4, 0, itmp) == 0)
 	return NULL;
     if (!keep)
