@@ -1896,14 +1896,14 @@ endfunc
 
 func Test_list_builtin_terminals()
   CheckRunVimInTerminal
-  let buf = RunVimInTerminal('', #{rows: 14})
-  call term_sendkeys(buf, ":set cmdheight=3\<CR>")
-  call TermWait(buf, 100)
-  call term_sendkeys(buf, ":set term=xxx\<CR>")
-  call TermWait(buf, 100)
-  call assert_match('builtin_dumb', term_getline(buf, 11))
-  call assert_match('Not found in termcap', term_getline(buf, 12))
-  call StopVimInTerminal(buf)
+  call RunVimInTerminal('', #{rows: 14})
+  call term_sendkeys('', ":set cmdheight=3\<CR>")
+  call TermWait('', 100)
+  call term_sendkeys('', ":set term=xxx\<CR>")
+  call TermWait('', 100)
+  call assert_match('builtin_dumb', term_getline('', 11))
+  call assert_match('Not found in termcap', term_getline('', 12))
+  call StopVimInTerminal('')
 endfunc
 
 func GetEscCodeCSI27(key, modifier)

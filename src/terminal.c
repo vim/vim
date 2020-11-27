@@ -4595,12 +4595,12 @@ term_get_buf(typval_T *argvars, char *where)
 {
     buf_T *buf;
 
-    (void)tv_get_number(&argvars[0]);	    // issue errmsg if type error
     ++emsg_off;
     buf = tv_get_buf(&argvars[0], FALSE);
     --emsg_off;
     if (buf == NULL || buf->b_term == NULL)
     {
+	(void)tv_get_number(&argvars[0]);    // issue errmsg if type error
 	ch_log(NULL, "%s: invalid buffer argument", where);
 	return NULL;
     }
