@@ -460,9 +460,9 @@ put_view(
 		    (long)wp->w_height / 2, (long)wp->w_height) < 0
 		|| put_eol(fd) == FAIL
 		|| put_line(fd, "if s:l < 1 | let s:l = 1 | endif") == FAIL
-		|| put_line(fd, "exe s:l") == FAIL
+		|| put_line(fd, "keepjumps exe s:l") == FAIL
 		|| put_line(fd, "normal! zt") == FAIL
-		|| fprintf(fd, "%ld", (long)wp->w_cursor.lnum) < 0
+		|| fprintf(fd, "keepjumps %ld", (long)wp->w_cursor.lnum) < 0
 		|| put_eol(fd) == FAIL)
 	    return FAIL;
 	// Restore the cursor column and left offset when not wrapping.
