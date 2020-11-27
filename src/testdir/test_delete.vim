@@ -1,5 +1,7 @@
 " Test for delete().
 
+source check.vim
+
 func Test_file_delete()
   split Xfile
   call setline(1, ['a', 'b'])
