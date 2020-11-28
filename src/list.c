@@ -2164,7 +2164,7 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 	    int	    prev_lock = l->lv_lock;
 	    list_T  *l_ret = NULL;
 
-	    if (filtermap == FILTERMAP_MAPNEW || l->lv_first == &range_list_item)
+	    if (filtermap == FILTERMAP_MAPNEW)
 	    {
 		if (rettv_list_alloc(rettv) == FAIL)
 		    return;
@@ -2179,8 +2179,15 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 	    if (l->lv_first == &range_list_item)
 	    {
 		varnumber_T	val = l->lv_u.nonmat.lv_start;
+		int		len = l->lv_len;
+		int	    	stride = l->lv_u.nonmat.lv_stride;
 
-		for (idx = 0; idx < l->lv_len; ++idx)
+		l->lv_first = NULL;
+		l->lv_u.mat.lv_last = NULL;
+		l->lv_len = 0;
+		l->lv_u.mat.lv_idx_item = NULL;
+
+		for (idx = 0; idx < len; ++idx)
 		{
 		    typval_T tv;
 		    typval_T newtv;
@@ -2199,17 +2206,17 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 		    if (filtermap != FILTERMAP_FILTER)
 		    {
 			// map(), mapnew(): always append the new value to the list
-			if (list_append_tv_move(l_ret, &newtv) == FAIL)
+			if (list_append_tv_move(filtermap == FILTERMAP_MAP ? l : l_ret, &newtv) == FAIL)
 			    break;
 		    }
 		    else if (!rem)
 		    {
 			// filter(): append the list item value when not rem
-			if (list_append_tv_move(l_ret, &tv) == FAIL)
+			if (list_append_tv_move(l, &tv) == FAIL)
 			    break;
 		    }
 
-		    val += l->lv_u.nonmat.lv_stride;
+		    val += stride;
 		}
 	    }
 	    else
