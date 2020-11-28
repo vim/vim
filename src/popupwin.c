@@ -3699,6 +3699,9 @@ update_popups(void (*win_update)(win_T *wp))
     int	    attr_scroll = 0;
     int	    attr_thumb = 0;
 
+    // hide the cursor until redrawing is done.
+    cursor_off();
+
     // Find the window with the lowest zindex that hasn't been updated yet,
     // so that the window with a higher zindex is drawn later, thus goes on
     // top.
