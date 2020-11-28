@@ -2207,10 +2207,8 @@ position_cursor(win_T *wp, VTermPos *pos)
 #ifdef FEAT_PROP_POPUP
     if (popup_is_popup(wp))
     {
-	if ((wp->w_flags & WFLAG_WROW_OFF_ADDED) == 0)
-	    wp->w_wrow += popup_top_extra(wp);
-	if ((wp->w_flags & WFLAG_WCOL_OFF_ADDED) == 0)
-	    wp->w_wcol += popup_left_extra(wp);
+	wp->w_wrow += popup_top_extra(wp);
+	wp->w_wcol += popup_left_extra(wp);
 	wp->w_flags |= WFLAG_WCOL_OFF_ADDED | WFLAG_WROW_OFF_ADDED;
     }
     else
