@@ -866,18 +866,17 @@ def Test_assign_dict_unknown_type()
   END
   CheckScriptSuccess(lines)
 
-  # doesn't work yet
-  #lines =<< trim END
-  #    vim9script
-  #    var mylist = [[]]
-  #    mylist[0] += [#{one: 'one'}]
-  #    def Func()
-  #      var dd = mylist[0][0]
-  #      assert_equal('one', dd.one)
-  #    enddef
-  #    Func()
-  #END
-  #CheckScriptSuccess(lines)
+  lines =<< trim END
+      vim9script
+      var mylist = [[]]
+      mylist[0] += [#{one: 'one'}]
+      def Func()
+        var dd = mylist[0][0]
+        assert_equal('one', dd.one)
+      enddef
+      Func()
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_assign_lambda()

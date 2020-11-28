@@ -3332,9 +3332,13 @@ find_ex_command(
 
 		// When followed by "=" or "+=" then it is an assignment.
 		++emsg_silent;
-		if (skip_expr(&after, NULL) == OK
-				  && (*after == '='
-				      || (*after != NUL && after[1] == '=')))
+		if (skip_expr(&after, NULL) == OK)
+		    after = skipwhite(after);
+		else
+		    after = (char_u *)"";
+		if (*after == '=' || (*after != NUL && after[1] == '=')
+					 || (after[0] == '.' && after[1] == '.'
+							   && after[2] == '='))
 		    eap->cmdidx = CMD_var;
 		else
 		    eap->cmdidx = CMD_eval;
