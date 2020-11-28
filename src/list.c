@@ -2173,43 +2173,95 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 	    // set_vim_var_nr() doesn't set the type
 	    set_vim_var_type(VV_KEY, VAR_NUMBER);
 
-	    CHECK_LIST_MATERIALIZE(l);
 	    if (filtermap != FILTERMAP_FILTER && l->lv_lock == 0)
 		l->lv_lock = VAR_LOCKED;
-	    for (li = l->lv_first; li != NULL; li = nli)
-	    {
-		typval_T newtv;
 
-		if (filtermap != FILTERMAP_FILTER
-		       && value_check_lock(li->li_tv.v_lock, arg_errmsg, TRUE))
-		    break;
-		nli = li->li_next;
-		set_vim_var_nr(VV_KEY, idx);
-		if (filter_map_one(&li->li_tv, expr, filtermap,
-							 &newtv, &rem) == FAIL)
-		    break;
-		if (did_emsg)
+	    if (l->lv_first == &range_list_item)
+	    {
+		varnumber_T	val = l->lv_u.nonmat.lv_start;
+		int		len = l->lv_len;
+		int		stride = l->lv_u.nonmat.lv_stride;
+
+		// List from range(): loop over the numbers
+		l->lv_first = NULL;
+		l->lv_u.mat.lv_last = NULL;
+		l->lv_len = 0;
+		l->lv_u.mat.lv_idx_item = NULL;
+
+		for (idx = 0; idx < len; ++idx)
 		{
-		    clear_tv(&newtv);
-		    break;
-		}
-		if (filtermap == FILTERMAP_MAP)
-		{
-		    // map(): replace the list item value
-		    clear_tv(&li->li_tv);
-		    newtv.v_lock = 0;
-		    li->li_tv = newtv;
-		}
-		else if (filtermap == FILTERMAP_MAPNEW)
-		{
-		    // mapnew(): append the list item value
-		    if (list_append_tv_move(l_ret, &newtv) == FAIL)
+		    typval_T tv;
+		    typval_T newtv;
+
+		    tv.v_type = VAR_NUMBER;
+		    tv.v_lock = 0;
+		    tv.vval.v_number = val;
+		    set_vim_var_nr(VV_KEY, idx);
+		    if (filter_map_one(&tv, expr, filtermap, &newtv, &rem)
+								       == FAIL)
 			break;
+		    if (did_emsg)
+		    {
+			clear_tv(&newtv);
+			break;
+		    }
+		    if (filtermap != FILTERMAP_FILTER)
+		    {
+			// map(), mapnew(): always append the new value to the
+			// list
+			if (list_append_tv_move(filtermap == FILTERMAP_MAP
+						  ? l : l_ret, &newtv) == FAIL)
+			    break;
+		    }
+		    else if (!rem)
+		    {
+			// filter(): append the list item value when not rem
+			if (list_append_tv_move(l, &tv) == FAIL)
+			    break;
+		    }
+
+		    val += stride;
 		}
-		else if (filtermap == FILTERMAP_FILTER && rem)
-		    listitem_remove(l, li);
-		++idx;
 	    }
+	    else
+	    {
+		// Materialized list from range(): loop over the items
+		for (li = l->lv_first; li != NULL; li = nli)
+		{
+		    typval_T newtv;
+
+		    if (filtermap != FILTERMAP_FILTER && value_check_lock(
+					   li->li_tv.v_lock, arg_errmsg, TRUE))
+			break;
+		    nli = li->li_next;
+		    set_vim_var_nr(VV_KEY, idx);
+		    if (filter_map_one(&li->li_tv, expr, filtermap,
+				&newtv, &rem) == FAIL)
+			break;
+		    if (did_emsg)
+		    {
+			clear_tv(&newtv);
+			break;
+		    }
+		    if (filtermap == FILTERMAP_MAP)
+		    {
+			// map(): replace the list item value
+			clear_tv(&li->li_tv);
+			newtv.v_lock = 0;
+			li->li_tv = newtv;
+		    }
+		    else if (filtermap == FILTERMAP_MAPNEW)
+		    {
+			// mapnew(): append the list item value
+			if (list_append_tv_move(l_ret, &newtv) == FAIL)
+			    break;
+		    }
+		    else if (filtermap == FILTERMAP_FILTER && rem)
+			listitem_remove(l, li);
+		    ++idx;
+		}
+	    }
+
 	    l->lv_lock = prev_lock;
 	}
 
