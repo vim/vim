@@ -4961,6 +4961,7 @@ typedef enum {
     dest_vimvar,
     dest_script,
     dest_reg,
+    dest_expr,
 } assign_dest_T;
 
 /*
@@ -5013,7 +5014,32 @@ generate_loadvar(
 	    else
 		generate_LOAD(cctx, ISN_LOAD, lvar->lv_idx, NULL, type);
 	    break;
+	case dest_expr:
+	    // list or dict value should already be on the stack.
+	    break;
     }
+}
+
+/*
+ * Skip over "[expr]" or ".member".
+ * Does not check for any errors.
+ */
+    static char_u *
+skip_index(char_u *start)
+{
+    char_u *p = start;
+
+    if (*p == '[')
+    {
+	p = skipwhite(p + 1);
+	(void)skip_expr(&p, NULL);
+	p = skipwhite(p);
+	if (*p == ']')
+	    return p + 1;
+	return p;
+    }
+    // if (*p == '.')
+    return to_name_end(p + 1, TRUE);
 }
 
     void
@@ -5069,6 +5095,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     int		heredoc = FALSE;
     type_T	*type = &t_any;
     type_T	*member_type = &t_any;
+    type_T	*rhs_type = &t_any;
     char_u	*name = NULL;
     char_u	*sp;
     int		is_decl = cmdidx == CMD_let || cmdidx == CMD_var
@@ -5157,6 +5184,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    // TODO: check the length of a constant list here
 	    generate_CHECKLEN(cctx, semicolon ? var_count - 1 : var_count,
 								    semicolon);
+	    if (stacktype->tt_member != NULL)
+		rhs_type = stacktype->tt_member;
 	}
     }
 
@@ -5467,6 +5496,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	if (var_end > var_start + varlen)
 	{
 	    // Something follows after the variable: "var[idx]" or "var.key".
+	    // TODO: should we also handle "->func()" here?
 	    if (is_decl)
 	    {
 		emsg(_(e_cannot_use_index_when_declaring_variable));
@@ -5475,6 +5505,27 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 
 	    if (var_start[varlen] == '[' || var_start[varlen] == '.')
 	    {
+		char_u	    *after = var_start + varlen;
+
+		// Only the last index is used below, if there are others
+		// before it generate code for the expression.  Thus for
+		// "ll[1][2]" the expression is "ll[1]" and "[2]" is the index.
+		for (;;)
+		{
+		    p = skip_index(after);
+		    if (*p != '[' && *p != '.')
+			break;
+		    after = p;
+		}
+		if (after > var_start + varlen)
+		{
+		    varlen = after - var_start;
+		    dest = dest_expr;
+		    // We don't know the type before evaluating the expression,
+		    // use "any" until then.
+		    type = &t_any;
+		}
+
 		has_index = TRUE;
 		if (type->tt_member == NULL)
 		    member_type = &t_any;
@@ -5511,7 +5562,6 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    }
 	    else if (oplen > 0)
 	    {
-		type_T	*stacktype;
 		int	is_const = FALSE;
 
 		// For "var = expr" evaluate the expression.
@@ -5558,18 +5608,18 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			return FAIL;
 		}
 
-		stacktype = stack->ga_len == 0 ? &t_void
+		rhs_type = stack->ga_len == 0 ? &t_void
 			      : ((type_T **)stack->ga_data)[stack->ga_len - 1];
 		if (lvar != NULL && (is_decl || !has_type))
 		{
-		    if ((stacktype->tt_type == VAR_FUNC
-				|| stacktype->tt_type == VAR_PARTIAL)
+		    if ((rhs_type->tt_type == VAR_FUNC
+				|| rhs_type->tt_type == VAR_PARTIAL)
 			    && var_wrong_func_name(name, TRUE))
 			goto theend;
 
 		    if (new_local && !has_type)
 		    {
-			if (stacktype->tt_type == VAR_VOID)
+			if (rhs_type->tt_type == VAR_VOID)
 			{
 			    emsg(_(e_cannot_use_void_value));
 			    goto theend;
@@ -5578,14 +5628,14 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			{
 			    // An empty list or dict has a &t_unknown member,
 			    // for a variable that implies &t_any.
-			    if (stacktype == &t_list_empty)
+			    if (rhs_type == &t_list_empty)
 				lvar->lv_type = &t_list_any;
-			    else if (stacktype == &t_dict_empty)
+			    else if (rhs_type == &t_dict_empty)
 				lvar->lv_type = &t_dict_any;
-			    else if (stacktype == &t_unknown)
+			    else if (rhs_type == &t_unknown)
 				lvar->lv_type = &t_any;
 			    else
-				lvar->lv_type = stacktype;
+				lvar->lv_type = rhs_type;
 			}
 		    }
 		    else if (*op == '=')
@@ -5595,17 +5645,17 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			// without operator check type here, otherwise below
 			if (has_index)
 			{
-			    use_type = use_type->tt_member;
-			    if (use_type == NULL)
+			    use_type = member_type;
+			    if (member_type == NULL)
 				// could be indexing "any"
 				use_type = &t_any;
 			}
-			if (need_type(stacktype, use_type, -1, cctx,
+			if (need_type(rhs_type, use_type, -1, cctx,
 						      FALSE, is_const) == FAIL)
 			    goto theend;
 		    }
 		}
-		else if (*p != '=' && need_type(stacktype, member_type, -1,
+		else if (*p != '=' && need_type(rhs_type, member_type, -1,
 						   cctx, FALSE, FALSE) == FAIL)
 		    goto theend;
 	    }
@@ -5771,7 +5821,31 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    // - value
 	    // - index
 	    // - variable
-	    generate_loadvar(cctx, dest, name, lvar, type);
+	    if (dest == dest_expr)
+	    {
+		int	    c = var_start[varlen];
+
+		// Evaluate "ll[expr]" of "ll[expr][idx]"
+		p = var_start;
+		var_start[varlen] = NUL;
+		if (compile_expr0(&p, cctx) == OK && p != var_start + varlen)
+		{
+		    // this should not happen
+		    emsg(_(e_missbrac));
+		    goto theend;
+		}
+		var_start[varlen] = c;
+
+		type = stack->ga_len == 0 ? &t_void
+			  : ((type_T **)stack->ga_data)[stack->ga_len - 1];
+		// now we can properly check the type
+		if (type->tt_member != NULL
+			&& need_type(rhs_type, type->tt_member, -2, cctx,
+							 FALSE, FALSE) == FAIL)
+		    goto theend;
+	    }
+	    else
+		generate_loadvar(cctx, dest, name, lvar, type);
 
 	    if (type->tt_type == VAR_LIST)
 	    {
@@ -5785,7 +5859,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    }
 	    else
 	    {
-		emsg(_(e_listreq));
+		emsg(_(e_indexable_type_required));
 		goto theend;
 	    }
 	}
@@ -5881,6 +5955,9 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			else
 			    generate_STORE(cctx, ISN_STORE, lvar->lv_idx, NULL);
 		    }
+		    break;
+		case dest_expr:
+		    // cannot happen
 		    break;
 	    }
 	}
