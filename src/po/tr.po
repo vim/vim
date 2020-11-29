@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Vim Turkish Localization Project\n"
-"Report-Msgid-Bugs-To: \n"
+"Report-Msgid-Bugs-To: Emir SARI <bitigchi@me.com>\n"
 "POT-Creation-Date: 2020-11-29 00:20+0300\n"
 "PO-Revision-Date: 2020-11-29 20:00+0300\n"
 "Last-Translator: Emir SARI <bitigchi@me.com>\n"
@@ -45,7 +45,7 @@ msgid "E367: No such group: \"%s\""
 msgstr "E367: Böyle bir grup yok: \"%s\""
 
 msgid "E936: Cannot delete the current group"
-msgstr "E936: Mevcut grup silinemiyor"
+msgstr "E936: Geçerli grup silinemiyor"
 
 msgid "W19: Deleting augroup that is still in use"
 msgstr "W19: Kullanımda olan otokomut grubu siliniyor"
@@ -4324,10 +4324,10 @@ msgid "E553: No more items"
 msgstr "E553: Öge yok"
 
 msgid "E925: Current quickfix list was changed"
-msgstr "E925: Mevcut hızlı düzelt listesi değiştirildi"
+msgstr "E925: Geçerli hızlı düzelt listesi değiştirildi"
 
 msgid "E926: Current location list was changed"
-msgstr "E926: Mevcut konum listesi değiştirildi"
+msgstr "E926: Geçerli konum listesi değiştirildi"
 
 #, c-format
 msgid "E372: Too many %%%c in format string"
@@ -4359,7 +4359,7 @@ msgid "E379: Missing or empty directory name"
 msgstr "E379: Eksik veya boş dizin adı"
 
 msgid "E924: Current window was closed"
-msgstr "E924: Mevcut pencere kapatıldı"
+msgstr "E924: Geçerli pencere kapatıldı"
 
 #, c-format
 msgid "(%d of %d)%s%s: "
@@ -5520,7 +5520,7 @@ msgid "Duplicate field name: %s"
 msgstr "Yinelenen alan adı: %s"
 
 msgid "' not known. Available builtin terminals are:"
-msgstr "' bilinmiyor. Mevcut uçbirimler şunlar:"
+msgstr "' bilinmiyor. Kullanılabilir uçbirimler şunlar:"
 
 msgid "defaulting to '"
 msgstr "öntanımlı olarak '"
@@ -7131,7 +7131,7 @@ msgstr "E11: Komut satırı penceresinde geçersiz; <CR> çalıştırır, CTRL-C
 
 msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
 msgstr ""
-"E12: Mevcut dizin veya etiket aramasında exrc veya vimrc'den komutlara izin "
+"E12: Geçerli dizin veya etiket aramasında exrc veya vimrc'den komutlara izin "
 "verilmiyor"
 
 msgid "E171: Missing :endif"
@@ -8014,8 +8014,7 @@ msgstr ""
 
 msgid "\" Hit <Enter> on a help line to open a help window on this option."
 msgstr ""
-"\" Bir seçeneğin yardım penceresini açmak için bir yardım satırının üzerinde\n"
-"\" <Enter>'a basın."
+"\" Yardım penceresini açmak için seçenek adı üzerinde <Enter>'a basın."
 
 msgid "\" Hit <Enter> on an index line to jump there."
 msgstr ""
