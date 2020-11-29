@@ -5269,13 +5269,13 @@ msgid "syntax foldlevel minimum"
 msgstr "sözdizim kıvırma düzeyi an az"
 
 msgid "syntax spell toplevel"
-msgstr "sözdizim yazım denetimi üst düzeyde"
+msgstr "bir sözdizim içinde olmayan metinde yazım denetimi yap"
 
 msgid "syntax spell notoplevel"
-msgstr "sözdizim yazım denetimi üst düzeyde değil"
+msgstr "bir sözdizim içinde olmayan metinde yazım denetimi yapma"
 
 msgid "syntax spell default"
-msgstr "sözdizim yazım denetimi varsayılan"
+msgstr "@Spell kümesi varsa yazım denetimi yapma (öntanımlı)"
 
 msgid "syntax iskeyword "
 msgstr "sözdizim anahtar sözcük"
@@ -5294,7 +5294,7 @@ msgid "no syncing"
 msgstr "eşitleme yok"
 
 msgid "syncing starts at the first line"
-msgstr "eşitleme ilk satırda başlar "
+msgstr "eşitleme ilk satırda başlar"
 
 msgid "syncing starts "
 msgstr "eşitleme başlangıcı "
@@ -7423,7 +7423,7 @@ msgstr "E933: İşlev silinmiş: %s"
 
 #, c-format
 msgid "E716: Key not present in Dictionary: \"%s\""
-msgstr "E716: Anahtar sözlükte mevcut değil: %s"
+msgstr "E716: Anahtar sözlükte mevcut değil: \"%s\""
 
 msgid "E714: List required"
 msgstr "E714: Liste gerekiyor"
