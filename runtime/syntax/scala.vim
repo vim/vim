@@ -3,7 +3,9 @@
 " Maintainer:           Derek Wyatt
 " URL:                  https://github.com/derekwyatt/vim-scala
 " License:              Same as Vim
-" Last Change:          20 May 2016
+" Last Change:          29 Nov 2020
+" History:              Added basic support for Scala 3 keywords
+"                       by Abdulla Abdurakhmanov.
 " ----------------------------------------------------------------------------
 
 if !exists('main_syntax')
@@ -43,6 +45,9 @@ syn keyword scalaKeyword class trait object extends with nextgroup=scalaInstance
 syn keyword scalaKeyword case nextgroup=scalaKeyword,scalaCaseFollowing skipwhite
 syn keyword scalaKeyword val nextgroup=scalaNameDefinition,scalaQuasiQuotes skipwhite
 syn keyword scalaKeyword def var nextgroup=scalaNameDefinition skipwhite
+" Scala 3 additional keywords (https://dotty.epfl.ch/docs/internals/syntax.html#keywords)
+syn keyword scalaKeyword enum nextgroup=scalaKeyword,scalaCaseFollowing skipwhite
+syn keyword scalaKeyword export given then export type
 hi link scalaKeyword Keyword
 
 exe 'syn region scalaBlock start=/{/ end=/}/ contains=' . s:ContainedGroup() . ' fold'
@@ -127,6 +132,8 @@ syn match scalaCaseFollowing /`[^`]\+`/ contained
 hi link scalaCaseFollowing Special
 
 syn keyword scalaKeywordModifier abstract override final lazy implicit implicitly private protected sealed null require super
+" Scala 3 additional soft keywords as modifiers (https://dotty.epfl.ch/docs/internals/syntax.html#keywords)
+syn keyword scalaKeywordModifier as derives end extension inline opaque open [transparent] using
 hi link scalaKeywordModifier Function
 
 syn keyword scalaSpecial this true false ne eq
