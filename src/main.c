@@ -1521,6 +1521,11 @@ getout(int exitval)
     if (exmode_active)
 	exitval += ex_exitval;
 
+#ifdef FEAT_EVAL
+    set_vim_var_type(VV_EXITING, VAR_NUMBER);
+    set_vim_var_nr(VV_EXITING, exitval);
+#endif
+
     // Position the cursor on the last screen line, below all the text
 #ifdef FEAT_GUI
     if (!gui.in_use)
