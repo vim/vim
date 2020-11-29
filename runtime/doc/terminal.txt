@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.2.  Last change: 2020 Nov 15
+*terminal.txt*	For Vim version 8.2.  Last change: 2020 Nov 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -123,12 +123,14 @@ use |:tlmenu| instead of |:tmenu|.
 
 							*options-in-terminal*
 After opening the terminal window and setting 'buftype' to "terminal" the
-TerminalOpen autocommand event is triggered.  This makes it possible to set
-options specifically for the window and buffer.  Example: >
-   au TerminalOpen * if &buftype == 'terminal' | setlocal bufhidden=hide | endif
-The <abuf> is set to the terminal buffer, but if there is no window (hidden
-terminal) then setting options will happen in the wrong buffer, therefore the
-check for &buftype in the example.
+|TerminalWinOpen| autocommand event is triggered.  This makes it possible to set
+options specifically for the terminal window and buffer.  Example: >
+   au TerminalWinOpen * setlocal bufhidden=hide
+
+There is also the |TerminalOpen| event, but this may be triggered for a hidden
+terminal, and the current window and buffer may not be for the new terminal.
+You need to use <abuf>, which is set to the terminal buffer.  Example: >
+    au TerminalOpen * call setbufvar(+expand('<abuf>'), '&colorcolumn', 123)
 
 Mouse events (click and drag) are passed to the terminal.  Mouse move events
 are only passed when Vim itself is receiving them.  For a terminal that is
@@ -504,7 +506,7 @@ term_dumpdiff({filename}, {filename} [, {options}])
 			+	missing position in first file
 			-	missing position in second file
 			>	cursor position in first file, not in second
-			<	cursor position in secone file, not in first
+			<	cursor position in second file, not in first
 
 		Using the "s" key the top and bottom parts are swapped.  This
 		makes it easy to spot a difference.

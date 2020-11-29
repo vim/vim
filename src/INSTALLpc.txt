@@ -380,7 +380,7 @@ The original 'mingw32' compiler is outdated, and may no longer work:
 Once you have downloaded the compiler binaries, unpack them on your hard disk
 somewhere, and put them on your PATH.  Go to the Control Panel, (Performance
 and Maintenance), System, Advanced, and edit the environment from there.  If
-you use the standalone MinGW-w64 compiler, the path may depends on your
+you use the standalone MinGW-w64 compiler, the path may depend on your
 installation.  If you use msys2 compilers, set your installed paths (normally
 one of the following):
 

@@ -15,7 +15,7 @@ GenericName[eo]=Tekstoredaktilo
 GenericName[fr]=Éditeur de texte
 GenericName[ja]=テキストエディタ
 GenericName[ru]=Текстовый редактор
-GenericName[sr]=Текст Едитор
+GenericName[sr]=Едитор текст
 GenericName[tr]=Metin Düzenleyici
 GenericName=Text Editor
 # Translators: This is the comment used in the Vim desktop file
@@ -24,7 +24,7 @@ Comment[eo]=Redakti tekstajn dosierojn
 Comment[fr]=Éditer des fichiers texte
 Comment[ja]=テキストファイルを編集します
 Comment[ru]=Редактирование текстовых файлов
-Comment[sr]=Уређивање текст фајлова
+Comment[sr]=Уређујте текст фајлове
 Comment[tr]=Metin dosyaları düzenleyin
 Comment=Edit text files
 # The translations should come from the po file. Leave them here for now, they will
@@ -112,7 +112,6 @@ Icon[de]=gvim
 Icon[eo]=gvim
 Icon[fr]=gvim
 Icon[ru]=gvim
-Icon[sr]=gvim
 Icon=gvim
 Categories=Utility;TextEditor;
 StartupNotify=true
