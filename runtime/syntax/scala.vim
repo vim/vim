@@ -47,7 +47,7 @@ syn keyword scalaKeyword val nextgroup=scalaNameDefinition,scalaQuasiQuotes skip
 syn keyword scalaKeyword def var nextgroup=scalaNameDefinition skipwhite
 " Scala 3 additional keywords (https://dotty.epfl.ch/docs/internals/syntax.html#keywords)
 syn keyword scalaKeyword enum nextgroup=scalaKeyword,scalaCaseFollowing skipwhite
-syn keyword scalaKeyword export given then export type
+syn keyword scalaKeyword export given then type
 hi link scalaKeyword Keyword
 
 exe 'syn region scalaBlock start=/{/ end=/}/ contains=' . s:ContainedGroup() . ' fold'
