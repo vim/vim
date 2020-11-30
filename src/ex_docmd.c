@@ -3356,7 +3356,14 @@ find_ex_command(
 	    if (*eap->cmd == '[')
 	    {
 		p = to_name_const_end(eap->cmd);
-		if (p == eap->cmd || *skipwhite(p) != '=')
+		if (p == eap->cmd && *p == '[')
+		{
+		    int count = 0;
+		    int	semicolon = FALSE;
+
+		    p = skip_var_list(eap->cmd, TRUE, &count, &semicolon, TRUE);
+		}
+		if (p == NULL || p == eap->cmd || *skipwhite(p) != '=')
 		{
 		    eap->cmdidx = CMD_eval;
 		    return eap->cmd;

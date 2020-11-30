@@ -632,30 +632,33 @@ def Test_assignment_default()
 enddef
 
 def Test_assignment_var_list()
-  var v1: string
-  var v2: string
-  var vrem: list<string>
-  [v1] = ['aaa']
-  assert_equal('aaa', v1)
+  var lines =<< trim END
+      var v1: string
+      var v2: string
+      var vrem: list<string>
+      [v1] = ['aaa']
+      assert_equal('aaa', v1)
 
-  [v1, v2] = ['one', 'two']
-  assert_equal('one', v1)
-  assert_equal('two', v2)
+      [v1, v2] = ['one', 'two']
+      assert_equal('one', v1)
+      assert_equal('two', v2)
 
-  [v1, v2; vrem] = ['one', 'two']
-  assert_equal('one', v1)
-  assert_equal('two', v2)
-  assert_equal([], vrem)
+      [v1, v2; vrem] = ['one', 'two']
+      assert_equal('one', v1)
+      assert_equal('two', v2)
+      assert_equal([], vrem)
 
-  [v1, v2; vrem] = ['one', 'two', 'three']
-  assert_equal('one', v1)
-  assert_equal('two', v2)
-  assert_equal(['three'], vrem)
+      [v1, v2; vrem] = ['one', 'two', 'three']
+      assert_equal('one', v1)
+      assert_equal('two', v2)
+      assert_equal(['three'], vrem)
 
-  [&ts, &sw] = [3, 4]
-  assert_equal(3, &ts)
-  assert_equal(4, &sw)
-  set ts=8 sw=4
+      [&ts, &sw] = [3, 4]
+      assert_equal(3, &ts)
+      assert_equal(4, &sw)
+      set ts=8 sw=4
+  END
+  CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_assignment_vim9script()
