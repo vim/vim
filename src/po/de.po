@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-07-06 12:56+0200\n"
+"POT-Creation-Date: 2020-11-23 13:13+0100\n"
 "PO-Revision-Date: 2008-05-24 17:26+0200\n"
 "Last-Translator: Christian Brabandt <cb@256bit.org>\n"
 "Language-Team: German\n"
@@ -29,6 +29,9 @@ msgstr "E164: Kann nicht vor die erste Datei hinausgehen."
 
 msgid "E165: Cannot go beyond last file"
 msgstr "E165: Kann nicht über die letzte Datei hinausgehen"
+
+msgid "E610: No argument to delete"
+msgstr "E610: Fehlendes zu löschendes Argument"
 
 msgid "E249: window layout changed unexpectedly"
 msgstr "E249: Fensterlayout änderte sich unerwartet"
@@ -71,7 +74,7 @@ msgstr ""
 
 #, c-format
 msgid "E680: <buffer=%d>: invalid buffer number "
-msgstr "E680: <buffer=%d>: Ungültige Puffernummer "
+msgstr "E680: <buffer=%d>: Ungültige Buffernummer "
 
 msgid "E217: Can't execute autocommands for ALL events"
 msgstr "E217: Autokommandos können nicht für ALL Ereignisse ausgeführt werden"
@@ -119,64 +122,64 @@ msgid "E855: Autocommands caused command to abort"
 msgstr "E855: Autokommandos führten zu einem Abbruch."
 
 msgid "E82: Cannot allocate any buffer, exiting..."
-msgstr "E82: Kann keinen Puffer zuweisen; beende..."
+msgstr "E82: Kann keinen Buffer zuweisen; beende..."
 
 msgid "E83: Cannot allocate buffer, using other one..."
-msgstr "E83: Kann den Puffer nicht zuweisen; benutze einen anderen..."
+msgstr "E83: Kann den Buffer nicht zuweisen; benutze einen anderen..."
 
 msgid "E931: Buffer cannot be registered"
-msgstr "E931: Puffer kann nicht registriert werden."
+msgstr "E931: Buffer kann nicht registriert werden."
 
 #, c-format
 msgid "E937: Attempt to delete a buffer that is in use: %s"
-msgstr "E937: Versuch, Puffer %s zu löschen, der noch benutzt wird."
+msgstr "E937: Versuch, Buffer %s zu löschen, der noch benutzt wird."
 
 msgid "E515: No buffers were unloaded"
-msgstr "E515: Kein Puffer wurde entladen."
+msgstr "E515: Kein Buffer wurde entladen."
 
 msgid "E516: No buffers were deleted"
-msgstr "E516: Kein Puffer wurde gelöscht."
+msgstr "E516: Kein Buffer wurde gelöscht."
 
 msgid "E517: No buffers were wiped out"
-msgstr "E517: Kein Puffer wurde vollständig gelöscht."
+msgstr "E517: Kein Buffer wurde vollständig gelöscht."
 
 #, c-format
 msgid "%d buffer unloaded"
 msgid_plural "%d buffers unloaded"
-msgstr[0] "%d Puffer entladen"
-msgstr[1] "%d Puffer entladen"
+msgstr[0] "%d Buffer entladen"
+msgstr[1] "%d Buffer entladen"
 
 #, c-format
 msgid "%d buffer deleted"
 msgid_plural "%d buffers deleted"
-msgstr[0] "%d Puffer gelöscht"
-msgstr[1] "%d Puffer gelöscht"
+msgstr[0] "%d Buffer gelöscht"
+msgstr[1] "%d Buffer gelöscht"
 
 #, c-format
 msgid "%d buffer wiped out"
 msgid_plural "%d buffers wiped out"
-msgstr[0] "%d Puffer vollständig gelöscht"
-msgstr[1] "%d Puffer vollständig gelöscht"
+msgstr[0] "%d Buffer vollständig gelöscht"
+msgstr[1] "%d Buffer vollständig gelöscht"
 
 msgid "E90: Cannot unload last buffer"
-msgstr "E90: Kann letzten Puffer nicht entladen"
+msgstr "E90: Kann letzten Buffer nicht entladen"
 
 msgid "E84: No modified buffer found"
-msgstr "E84: Keinen veränderter Puffer gefunden"
+msgstr "E84: Keinen veränderter Buffer gefunden"
 
 msgid "E85: There is no listed buffer"
-msgstr "E85: Es gibt keine angezeigten Puffer."
+msgstr "E85: Es gibt keine angezeigten Buffer."
 
 msgid "E87: Cannot go beyond last buffer"
-msgstr "E87: Kann nicht über den letzten Puffer hinaus gehen."
+msgstr "E87: Kann nicht über den letzten Buffer hinaus gehen."
 
 msgid "E88: Cannot go before first buffer"
-msgstr "E88: Kann nicht vor den ersten Puffer gehen."
+msgstr "E88: Kann nicht vor den ersten Buffer gehen."
 
 #, c-format
 msgid "E89: No write since last change for buffer %d (add ! to override)"
 msgstr ""
-"E89: Puffer %d seit der letzten Änderung nicht gesichert (erzwinge mit !)"
+"E89: Buffer %d seit der letzten Änderung nicht gesichert (erzwinge mit !)"
 
 msgid "E948: Job still running (add ! to end the job)"
 msgstr "E948: Job läuft noch (Beenden mit !)"
@@ -195,7 +198,7 @@ msgstr "W14: Achtung: Überlauf der Dateinamensliste."
 
 #, c-format
 msgid "E92: Buffer %d not found"
-msgstr "E92: Puffer %d nicht gefunden."
+msgstr "E92: Buffer %d nicht gefunden."
 
 #, c-format
 msgid "E93: More than one match for %s"
@@ -203,14 +206,14 @@ msgstr "E93: Mehr als ein Treffer für %s."
 
 #, c-format
 msgid "E94: No matching buffer for %s"
-msgstr "E94: Kein übereinstimmender Puffer für %s."
+msgstr "E94: Kein übereinstimmender Buffer für %s."
 
 #, c-format
 msgid "line %ld"
 msgstr "Zeile %ld"
 
 msgid "E95: Buffer with this name already exists"
-msgstr "E95: Ein Puffer mit diesem Namen existiert bereits."
+msgstr "E95: Ein Buffer mit diesem Namen existiert bereits."
 
 msgid " [Modified]"
 msgstr " [Verändert]"
@@ -283,11 +286,11 @@ msgid "[New File]"
 msgstr "[Neue Datei]"
 
 msgid "E676: No matching autocommands for acwrite buffer"
-msgstr "E676: Keine übereinstimmenden Autokommandos für acwrite Puffer"
+msgstr "E676: Keine übereinstimmenden Autokommandos für acwrite Buffer"
 
 msgid "E203: Autocommands deleted or unloaded buffer to be written"
 msgstr ""
-"E203: Autokommandos haben den zu schreibenden Puffer gelöscht oder entladen"
+"E203: Autokommandos haben den zu schreibenden Buffer gelöscht oder entladen"
 
 msgid "E204: Autocommand changed number of lines in unexpected way"
 msgstr ""
@@ -295,10 +298,10 @@ msgstr ""
 "verändert"
 
 msgid "NetBeans disallows writes of unmodified buffers"
-msgstr "NetBeans verweigert das Schreiben von unveränderten Puffern."
+msgstr "NetBeans verweigert das Schreiben von unveränderten Buffern."
 
 msgid "Partial writes disallowed for NetBeans buffers"
-msgstr "Partielles Schreiben für NetBeans Puffer verweigert"
+msgstr "Partielles Schreiben für NetBeans Buffer verweigert"
 
 msgid "is a directory"
 msgstr "ist ein Verzeichnis"
@@ -457,19 +460,6 @@ msgstr ""
 "E912: Kann ch_evalexpr()/ch_sendexpr() nicht mit einem Raw oder NL Channel "
 "benutzen."
 
-msgid "E920: _io file requires _name to be set"
-msgstr "E920: Für _io Datei muss _name gesetzt ist."
-
-msgid "E915: in_io buffer requires in_buf or in_name to be set"
-msgstr "E915: Für in_io Puffer muss in_buf oder in_name gesetzt sein."
-
-#, c-format
-msgid "E918: buffer must be loaded: %s"
-msgstr "E918: Puffer muss geladen sein: %s."
-
-msgid "E916: not a valid job"
-msgstr "E916: kein gültiger Job"
-
 msgid "No display"
 msgstr "Keine Anzeige"
 
@@ -592,12 +582,12 @@ msgstr "E737: Schlüssel existiert bereits: %s"
 
 #, c-format
 msgid "E96: Cannot diff more than %d buffers"
-msgstr "E96: Kann Diff für mehr als %d Puffer nicht erstellen."
+msgstr "E96: Kann Diff für mehr als %d Buffer nicht erstellen."
 
 #, c-format
 msgid "Not enough memory to use internal diff for buffer \"%s\""
 msgstr ""
-"Nicht genügend Speicher vorhanden, um Puffer \"%s\" mit internem "
+"Nicht genügend Speicher vorhanden, um Buffer \"%s\" mit internem "
 "Diffalgorithmus zu nutzen."
 
 msgid "E810: Cannot read or write temp files"
@@ -622,27 +612,27 @@ msgid "E959: Invalid diff format."
 msgstr "E959: Ungültiges Diff-Format"
 
 msgid "E99: Current buffer is not in diff mode"
-msgstr "E99: Aktueller Puffer ist nicht im Diff-Modus."
+msgstr "E99: Aktueller Buffer ist nicht im Diff-Modus."
 
 msgid "E793: No other buffer in diff mode is modifiable"
-msgstr "E793: Kein weiterer Puffer im diff-Modues ist modifizierbar."
+msgstr "E793: Kein weiterer Buffer im diff-Modues ist modifizierbar."
 
 msgid "E100: No other buffer in diff mode"
-msgstr "E100: Kein weiterer Puffer ist im Diff-Modus."
+msgstr "E100: Kein weiterer Buffer ist im Diff-Modus."
 
 msgid "E101: More than two buffers in diff mode, don't know which one to use"
-msgstr "E101: Mehrdeutigkeit: Mehr als zwei Puffer im Diff-Modus."
+msgstr "E101: Mehrdeutigkeit: Mehr als zwei Buffer im Diff-Modus."
 
 #, c-format
 msgid "E102: Can't find buffer \"%s\""
-msgstr "E102: Kann Puffer \"%s\" nicht finden."
+msgstr "E102: Kann Buffer \"%s\" nicht finden."
 
 #, c-format
 msgid "E103: Buffer \"%s\" is not in diff mode"
-msgstr "E103: Puffer \"%s\" ist nicht im Diff-Modus."
+msgstr "E103: Buffer \"%s\" ist nicht im Diff-Modus."
 
 msgid "E787: Buffer changed unexpectedly"
-msgstr "E787: Puffer änderte sich unerwartet."
+msgstr "E787: Buffer änderte sich unerwartet."
 
 msgid "E104: Escape not allowed in digraph"
 msgstr "E104: <Escape> ist in einem Digraphen nicht erlaubt."
@@ -731,9 +721,6 @@ msgstr "E105: :loadkeymap außerhalb einer eingelesenen Datei."
 msgid "E791: Empty keymap entry"
 msgstr "E791: Leerer keymap Eintrag"
 
-msgid "E719: Cannot use [:] with a Dictionary"
-msgstr "E719: Kann [:] nicht mit einem Dictionary verwenden"
-
 msgid "E689: Can only index a List, Dictionary or Blob"
 msgstr "E689: Kann nur Listen, Dictionary oder Blob indizieren"
 
@@ -749,12 +736,6 @@ msgstr "E972: Blobwert hat nicht die richtige Anzahl an Bytes"
 msgid "E996: Cannot lock a range"
 msgstr "E996: Kann Bereich nicht sperren"
 
-msgid "E710: List value has more items than target"
-msgstr "E710: Listenwert hat mehr Einträge als das Ziel."
-
-msgid "E711: List value has not enough items"
-msgstr "E711: Listenwert hat nicht genügend Einträge."
-
 msgid "E996: Cannot lock a list or dict"
 msgstr "E996: Kann List oder Dictionary nicht sperren"
 
@@ -763,9 +744,6 @@ msgstr "E260: Fehlende Name nach ->"
 
 msgid "E695: Cannot index a Funcref"
 msgstr "E695: Kann keine Funktionsreferenz indizieren."
-
-msgid "E909: Cannot index a special variable"
-msgstr "E909: Kann Spezialvariable nicht indexieren."
 
 msgid "Not enough memory to set references, garbage collection aborted!"
 msgstr ""
@@ -790,7 +768,7 @@ msgstr "E808: Zahl oder Float benötigt."
 
 #, c-format
 msgid "E158: Invalid buffer name: %s"
-msgstr "E158: ungültige Puffernummer: %s"
+msgstr "E158: ungültige Buffernummer: %s"
 
 msgid "&Ok"
 msgstr "&Ok"
@@ -853,7 +831,7 @@ msgstr "E172: Fehlende Markierung"
 msgid "E990: Missing end marker '%s'"
 msgstr "E990: Fehlende Endmarkierung nach '%s'"
 
-msgid "E985: .= is not supported with script version 2"
+msgid "E985: .= is not supported with script version >= 2"
 msgstr "E985: .= wird mit Scriptversion 2 nicht mehr unterstützt."
 
 msgid "E687: Less targets than List items"
@@ -881,13 +859,6 @@ msgstr "E108: Keine solche Variable: \"%s\""
 
 msgid "E743: variable nested too deep for (un)lock"
 msgstr "E743: Variable ist zu tief verschachtelt zum (ent)sperren."
-
-msgid "E1063: type mismatch for v: variable"
-msgstr "E1063: Typendiskrepanz für v: Variable"
-
-#, c-format
-msgid "E1041: Redefining script item %s"
-msgstr "E1041: Neudefinition von Scriptelement %s"
 
 #, c-format
 msgid "E963: setting %s to value with wrong type"
@@ -958,7 +929,7 @@ msgid "%ld lines filtered"
 msgstr "%ld Zeilen gefiltert"
 
 msgid "E135: *Filter* Autocommands must not change current buffer"
-msgstr "E135: *Filter*-Autokommandos dürfen den aktuellen Puffer nicht ändern"
+msgstr "E135: *Filter*-Autokommandos dürfen den aktuellen Buffer nicht ändern"
 
 msgid "[No write since last change]\n"
 msgstr "[Nicht geschrieben seit der letzten Änderung]\n"
@@ -970,7 +941,7 @@ msgid "Write partial file?"
 msgstr "Partielle Datei schreiben?"
 
 msgid "E140: Use ! to write partial buffer"
-msgstr "E140: Zum Schreiben von partiellen Puffern ! verwenden"
+msgstr "E140: Zum Schreiben von partiellen Buffern ! verwenden"
 
 #, c-format
 msgid "Overwrite existing file \"%s\"?"
@@ -986,7 +957,7 @@ msgstr "E768: Auslagerungsdatei existiert bereits: %s (mit :silent! erzwingen)"
 
 #, c-format
 msgid "E141: No file name for buffer %ld"
-msgstr "E141: Kein Dateiname für Puffer %ld"
+msgstr "E141: Kein Dateiname für Buffer %ld"
 
 msgid "E142: File not written: Writing is disabled by 'write' option"
 msgstr ""
@@ -1020,7 +991,7 @@ msgstr "Öffne Datei"
 
 #, c-format
 msgid "E143: Autocommands unexpectedly deleted new buffer %s"
-msgstr "E143: Autokommandos löschten unerwartet neuen Puffer %s"
+msgstr "E143: Autokommandos löschten unerwartet neuen Buffer %s"
 
 msgid "E144: non-numeric argument to :z"
 msgstr "E144: Nicht-numerisches Argument für :z"
@@ -1078,46 +1049,6 @@ msgstr "Muster in jeder Zeile gefunden: %s"
 msgid "Pattern not found: %s"
 msgstr "Muster nicht gefunden: %s"
 
-msgid "E478: Don't panic!"
-msgstr "E478: Nur keine Panik!"
-
-#, c-format
-msgid "E661: Sorry, no '%s' help for %s"
-msgstr "E661: Schade, keine '%s' Hilfe für %s"
-
-#, c-format
-msgid "E149: Sorry, no help for %s"
-msgstr "E149: Schade, keine Hilfe für %s"
-
-#, c-format
-msgid "Sorry, help file \"%s\" not found"
-msgstr "Hilfe-Datei \"%s\" nicht gefunden"
-
-#, c-format
-msgid "E151: No match: %s"
-msgstr "E151: Kein Treffer: %s"
-
-#, c-format
-msgid "E152: Cannot open %s for writing"
-msgstr "E152: %s kann nicht zum Schreiben geöffnet werden."
-
-#, c-format
-msgid "E153: Unable to open %s for reading"
-msgstr "E153: %s kann nicht zum Lesen geöffnet werden."
-
-#, c-format
-msgid "E670: Mix of help file encodings within a language: %s"
-msgstr ""
-"E670: Mischung von Kodierungen einer Hilfedatei innerhalb einer Sprache: %s"
-
-#, c-format
-msgid "E154: Duplicate tag \"%s\" in file %s/%s"
-msgstr "E154: Doppelter Tag \"%s\" in der Datei %s/%s"
-
-#, c-format
-msgid "E150: Not a directory: %s"
-msgstr "E150: Kein Verzeichnis: %s"
-
 msgid "No old files"
 msgstr "Keine Alt-Dateien"
 
@@ -1127,15 +1058,15 @@ msgstr "Änderungen in \"%s\" speichern?"
 
 #, c-format
 msgid "E947: Job still running in buffer \"%s\""
-msgstr "E947: Job noch aktiv in Puffer \"%s\""
+msgstr "E947: Job noch aktiv in Buffer \"%s\""
 
 #, c-format
 msgid "E162: No write since last change for buffer \"%s\""
-msgstr "E162: Puffer \"%s\" wurde seit der letzten Änderung nicht geschrieben."
+msgstr "E162: Buffer \"%s\" wurde seit der letzten Änderung nicht geschrieben."
 
 msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
 msgstr ""
-"Achtung: Unerwartetet einen andren Puffer geöffnet (überprüfen Sie die "
+"Achtung: Unerwartetet einen andren Buffer geöffnet (überprüfen Sie die "
 "Autokommandos)"
 
 #, c-format
@@ -1151,14 +1082,6 @@ msgstr ""
 msgid "W21: Required python version 3.x not supported, ignoring file: %s"
 msgstr ""
 "W21: Erforderliche Python Version 3.x nicht unterstützt, ignoriere Datei: %s"
-
-#, c-format
-msgid "Current %slanguage: \"%s\""
-msgstr "Momentane %sSprache: \"%s\""
-
-#, c-format
-msgid "E197: Cannot set language to \"%s\""
-msgstr "E197: Sprache kann nicht auf \"%s\" gesetzt werden"
 
 msgid "Entering Ex mode.  Type \"visual\" to go to Normal mode."
 msgstr ""
@@ -1202,15 +1125,15 @@ msgstr "Bereichsgrenzen rückwärts; vertauschen"
 msgid "E494: Use w or w>>"
 msgstr "E494: Verwenden Sie w oder w>>"
 
+msgid "E943: Command table needs to be updated, run 'make cmdidxs'"
+msgstr ""
+"E943: Befehlstabelle muss aktualisiert werden, führe 'make cmdidxs' aus"
+
 msgid ""
 "INTERNAL: Cannot use EX_DFLALL with ADDR_NONE, ADDR_UNSIGNED or ADDR_QUICKFIX"
 msgstr ""
 "INTERN: Kann EX_DFLALL nicht zusammen mit ADDR_NONE, ADDR_UNSIGNED oder "
 "ADDR_QUICKFIX nutzen"
-
-msgid "E943: Command table needs to be updated, run 'make cmdidxs'"
-msgstr ""
-"E943: Befehlstabelle muss aktualisiert werden, führe 'make cmdidxs' aus"
 
 msgid "E319: Sorry, the command is not available in this version"
 msgstr "E319: Der Befehl ist in dieser Version nicht implementiert"
@@ -1261,7 +1184,7 @@ msgstr "Füge Datei an"
 
 msgid "E747: Cannot change directory, buffer is modified (add ! to override)"
 msgstr ""
-"E747: Kann das Verzeichnis nicht wechseln, da der Puffer verändert wurde "
+"E747: Kann das Verzeichnis nicht wechseln, da der Buffer verändert wurde "
 "(erzwinge mit !)"
 
 msgid "E186: No previous directory"
@@ -1321,7 +1244,7 @@ msgid "E495: no autocommand file name to substitute for \"<afile>\""
 msgstr "E495: Kein Autokommando-Dateiname zur Ersetzung mit \"<afile>\""
 
 msgid "E496: no autocommand buffer number to substitute for \"<abuf>\""
-msgstr "E496: Keine Autokommando-Puffernummer zur Ersetzung mit \"<abuf>\""
+msgstr "E496: Keine Autokommando-Buffernummer zur Ersetzung mit \"<abuf>\""
 
 msgid "E497: no autocommand match name to substitute for \"<amatch>\""
 msgstr ""
@@ -1329,6 +1252,9 @@ msgstr ""
 
 msgid "E498: no :source file name to substitute for \"<sfile>\""
 msgstr "E498: kein :source Dateiname zur Ersetzung mit \"<sfile>\""
+
+msgid "E489: no call stack to substitute for \"<stack>\""
+msgstr "E489: kein CallStack zur Ersetzung mit \"<stack>\" vorhanden"
 
 msgid "E842: no line number to use for \"<slnum>\""
 msgstr "E842: Keine Zeilennummer für  \"<slnum>\" vorhanden."
@@ -1414,6 +1340,9 @@ msgstr "E732: Nutzung von :endfor mit :while"
 msgid "E733: Using :endwhile with :for"
 msgstr "E733: Nutzung von :endwhile mit :for"
 
+msgid "E579: block nesting too deep"
+msgstr "E579: Block Schachtelung zu tief"
+
 msgid "E601: :try nesting too deep"
 msgstr "E601: :try Schachtelung zu tief"
 
@@ -1427,16 +1356,16 @@ msgid "E193: :endfunction not inside a function"
 msgstr "E193: :endfunction außerhalb einer Funktion"
 
 msgid "E788: Not allowed to edit another buffer now"
-msgstr "E788: Einen weiteren Puffer zu editieren ist im Moment nicht erlaubt"
+msgstr "E788: Einen weiteren Buffer zu editieren ist im Moment nicht erlaubt"
 
 msgid "E811: Not allowed to change buffer information now"
-msgstr "E811: Puffer Information darf momentan nicht geändert werden."
+msgstr "E811: Buffer Information darf momentan nicht geändert werden."
 
 msgid "E199: Active window or buffer deleted"
-msgstr "E199: Aktives Fenster oder Puffer gelöscht"
+msgstr "E199: Aktives Fenster oder Buffer gelöscht"
 
 msgid "E812: Autocommands changed buffer or buffer name"
-msgstr "E812: Autokommandos veränderten Puffer oder Puffername."
+msgstr "E812: Autokommandos veränderten Buffer oder Buffername."
 
 msgid "Illegal file name"
 msgstr "Unzulässiger Dateiname"
@@ -1461,7 +1390,7 @@ msgstr "E200: *ReadPre Autokommandos haben die Datei unlesbar gemacht"
 
 msgid "E201: *ReadPre autocommands must not change current buffer"
 msgstr ""
-"E201: *ReadPre Autokommandos dürfen nicht den aktuellen Puffer wechseln"
+"E201: *ReadPre Autokommandos dürfen nicht den aktuellen Buffer wechseln"
 
 msgid "Vim: Reading from stdin...\n"
 msgstr "Vim: Lese von stdin...\n"
@@ -1556,7 +1485,7 @@ msgid "E210: Error reading \"%s\""
 msgstr "E210: Fehler beim Lesen von \"%s\""
 
 msgid "E246: FileChangedShell autocommand deleted buffer"
-msgstr "E246: FileChangedShell-Autokommando löschte Puffer"
+msgstr "E246: FileChangedShell-Autokommando löschte Buffer"
 
 #, c-format
 msgid "E211: File \"%s\" no longer available"
@@ -1567,7 +1496,7 @@ msgid ""
 "W12: Warning: File \"%s\" has changed and the buffer was changed in Vim as "
 "well"
 msgstr ""
-"W12: Achtung: Datei \"%s\" wurde verändert und der Puffer wurde in Vim "
+"W12: Achtung: Datei \"%s\" wurde verändert und der Buffer wurde in Vim "
 "ebenfalls verändert"
 
 msgid "See \":help W12\" for more info."
@@ -1767,14 +1696,14 @@ msgstr ""
 "E232: BalloonEval kann nicht sowohl mit \"message\" als auch \"callback\" "
 "erzeugt werden"
 
-msgid "_Cancel"
-msgstr "_Abbrechen"
-
 msgid "_Save"
 msgstr "_Speichern"
 
 msgid "_Open"
 msgstr "_Öffnen"
+
+msgid "_Cancel"
+msgstr "_Abbrechen"
 
 msgid "_OK"
 msgstr "_OK"
@@ -2101,6 +2030,46 @@ msgstr "E365: Druck der PostScript-Datei schlug fehl"
 msgid "Print job sent."
 msgstr "Druckauftrag abgeschickt"
 
+msgid "E478: Don't panic!"
+msgstr "E478: Nur keine Panik!"
+
+#, c-format
+msgid "E661: Sorry, no '%s' help for %s"
+msgstr "E661: Schade, keine '%s' Hilfe für %s"
+
+#, c-format
+msgid "E149: Sorry, no help for %s"
+msgstr "E149: Schade, keine Hilfe für %s"
+
+#, c-format
+msgid "Sorry, help file \"%s\" not found"
+msgstr "Hilfe-Datei \"%s\" nicht gefunden"
+
+#, c-format
+msgid "E151: No match: %s"
+msgstr "E151: Kein Treffer: %s"
+
+#, c-format
+msgid "E152: Cannot open %s for writing"
+msgstr "E152: %s kann nicht zum Schreiben geöffnet werden."
+
+#, c-format
+msgid "E153: Unable to open %s for reading"
+msgstr "E153: %s kann nicht zum Lesen geöffnet werden."
+
+#, c-format
+msgid "E670: Mix of help file encodings within a language: %s"
+msgstr ""
+"E670: Mischung von Kodierungen einer Hilfedatei innerhalb einer Sprache: %s"
+
+#, c-format
+msgid "E154: Duplicate tag \"%s\" in file %s/%s"
+msgstr "E154: Doppelter Tag \"%s\" in der Datei %s/%s"
+
+#, c-format
+msgid "E150: Not a directory: %s"
+msgstr "E150: Kein Verzeichnis: %s"
+
 msgid "E679: recursive loop loading syncolor.vim"
 msgstr "E679: Rekursive Schleife beim Laden von syncolor.vim"
 
@@ -2367,7 +2336,7 @@ msgid "window index is out of range"
 msgstr "Fensterindex außerhalb des zulässigen Bereichs"
 
 msgid "couldn't open buffer"
-msgstr "konnte Puffer nicht öffnen"
+msgstr "konnte Buffer nicht öffnen"
 
 msgid "cannot delete line"
 msgstr "Zeile kann nicht gelöscht werden"
@@ -2391,7 +2360,7 @@ msgid "Vim error"
 msgstr "Vim Fehler"
 
 msgid "buffer is invalid"
-msgstr "ungültiger Puffer"
+msgstr "ungültiger Buffer"
 
 msgid "window is invalid"
 msgstr "ungültiges Fenster"
@@ -2457,7 +2426,7 @@ msgid "E273: unknown longjmp status %d"
 msgstr "E273: Unbekannter longjmp Status %d"
 
 msgid "invalid buffer number"
-msgstr "ungültige Puffernummer"
+msgstr "ungültige Buffernummer"
 
 msgid "not implemented yet"
 msgstr "nicht implementiert"
@@ -2492,12 +2461,12 @@ msgstr "Tastatur-Interrupt"
 
 msgid "cannot create buffer/window command: object is being deleted"
 msgstr ""
-"Puffer/Fenster-Befehl kann nicht ausgeführt werden: das Objekt wird gelöscht"
+"Buffer/Fenster-Befehl kann nicht ausgeführt werden: das Objekt wird gelöscht"
 
 msgid ""
 "cannot register callback command: buffer/window is already being deleted"
 msgstr ""
-"kann keinen Callback-Befehl registrieren: Puffer/Fenster ist bereits gelöscht"
+"kann keinen Callback-Befehl registrieren: Buffer/Fenster ist bereits gelöscht"
 
 msgid ""
 "E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim."
@@ -2508,7 +2477,7 @@ msgstr ""
 
 msgid "cannot register callback command: buffer/window reference not found"
 msgstr ""
-"kann keinen Callback-Befehl registrieren: Puffer/Fenster-Referenz nicht "
+"kann keinen Callback-Befehl registrieren: Buffer/Fenster-Referenz nicht "
 "gefunden"
 
 msgid ""
@@ -2650,6 +2619,19 @@ msgstr "Treffer %d von %d"
 msgid "match %d"
 msgstr "Treffer %d"
 
+msgid "E920: _io file requires _name to be set"
+msgstr "E920: Für _io Datei muss _name gesetzt ist."
+
+msgid "E915: in_io buffer requires in_buf or in_name to be set"
+msgstr "E915: Für in_io Buffer muss in_buf oder in_name gesetzt sein."
+
+#, c-format
+msgid "E918: buffer must be loaded: %s"
+msgstr "E918: Buffer muss geladen sein: %s."
+
+msgid "E916: not a valid job"
+msgstr "E916: kein gültiger Job"
+
 #, c-format
 msgid "E491: json decode error at '%s'"
 msgstr "E491: JSON Dekodierungsfehler in Zeile '%s'"
@@ -2687,6 +2669,9 @@ msgstr "E882: Die Uniq Vergleichsfunktion ist fehlgeschlagen."
 msgid "map() argument"
 msgstr "map() Argument"
 
+msgid "mapnew() argument"
+msgstr "mapnew() Argument"
+
 msgid "filter() argument"
 msgstr "filter() Argument"
 
@@ -2701,6 +2686,14 @@ msgstr "remove() Argument"
 
 msgid "reverse() argument"
 msgstr "reverse() Argument"
+
+#, c-format
+msgid "Current %slanguage: \"%s\""
+msgstr "Momentane %sSprache: \"%s\""
+
+#, c-format
+msgid "E197: Cannot set language to \"%s\""
+msgstr "E197: Sprache kann nicht auf \"%s\" gesetzt werden"
 
 msgid "Unknown option argument"
 msgstr "Unbekanntes Optionsargument"
@@ -3431,16 +3424,21 @@ msgstr ""
 "und \"diff\" mit der Original-Datei ausführen, um Änderungen zu prüfen)"
 
 msgid "Recovery completed. Buffer contents equals file contents."
-msgstr "Recovery durchgeführt. Pufferinhalt entspricht Dateiinhalt."
+msgstr "Recovery durchgeführt. Bufferinhalt entspricht Dateiinhalt."
 
 msgid ""
 "\n"
-"You may want to delete the .swp file now.\n"
-"\n"
+"You may want to delete the .swp file now."
 msgstr ""
 "\n"
-"Sie können die Swap Datei jetzt löschen.\n"
+"Sie können die Swap Datei .swp jetzt löschen."
+
+msgid ""
 "\n"
+"Note: process STILL RUNNING: "
+msgstr ""
+"\n"
+" (Prozess LÄUFT NOCH)"
 
 msgid "Using crypt key from swap file for the text file.\n"
 msgstr "Benutze den Schlüssel der Swap Datei für die Textdatei.\n"
@@ -3553,7 +3551,7 @@ msgstr "E315: ml_get: unzulässige Zeilennummer: %ld"
 
 #, c-format
 msgid "E316: ml_get: cannot find line %ld in buffer %d %s"
-msgstr "E316: ml_get: kann Zeile %ld in Puffer %d %s nicht finden"
+msgstr "E316: ml_get: kann Zeile %ld in Buffer %d %s nicht finden"
 
 msgid "E317: pointer block id wrong 3"
 msgstr "E317: Zeiger Block id falsch 3"
@@ -3747,6 +3745,10 @@ msgid "E337: Menu not found - check menu names"
 msgstr "E337: Menü nicht gefunden - überprüfe Menü-Namen"
 
 #, c-format
+msgid "Error detected while compiling %s:"
+msgstr "Fehler beim Ausführen von %s:"
+
+#, c-format
 msgid "Error detected while processing %s:"
 msgstr "Fehler beim Ausführen von \"%s\":"
 
@@ -3813,11 +3815,12 @@ msgstr "E767: Zu viele Argumente für printf()"
 
 msgid "Type number and <Enter> or click with the mouse (q or empty cancels): "
 msgstr ""
-"Bitte Nummer und <Enter> eingeben oder mit der Maus auswählen "
-"(abbrechen mit q oder <Enter>): "
+"Bitte Nummer und <Enter> eingeben oder mit der Maus auswählen (abbrechen mit "
+"q oder <Enter>): "
 
 msgid "Type number and <Enter> (q or empty cancels): "
-msgstr "Gewünschte Nummer und <Enter> eingeben (abbrechen mit q oder <Enter>): "
+msgstr ""
+"Gewünschte Nummer und <Enter> eingeben (abbrechen mit q oder <Enter>): "
 
 #, c-format
 msgid "%ld more line"
@@ -3894,7 +3897,7 @@ msgstr ""
 
 #, c-format
 msgid "E658: NetBeans connection lost for buffer %d"
-msgstr "E658: Verbindung zu NetBeans für Puffer %d verloren"
+msgstr "E658: Verbindung zu NetBeans für Buffer %d verloren"
 
 msgid "E838: netbeans is not supported with this GUI"
 msgstr "E838: netbeans wird nicht unterstützt mit dieser GUI."
@@ -4097,7 +4100,6 @@ msgstr "Für Option %s"
 
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: Nicht-geschlossene Ausdrucksfolge"
-
 
 msgid "E542: unbalanced groups"
 msgstr "E542: Unausgewogene Gruppen"
@@ -4401,7 +4403,7 @@ msgid "E861: Cannot open a second popup with a terminal"
 msgstr "E861: Kann kein zweites Popup mit Terminal öffen"
 
 msgid "E450: buffer number, text or a list required"
-msgstr "E450: Puffernummer, Text oder Liste erforderlich"
+msgstr "E450: Buffernummer, Text oder Liste erforderlich"
 
 #, c-format
 msgid "E997: Tabpage not found: %d"
@@ -4422,6 +4424,9 @@ msgstr "E750: Benutze vorher :profile start <fname>"
 
 msgid "E553: No more items"
 msgstr "E553: Keine weiteren Einträge"
+
+msgid "E925: Current quickfix list was changed"
+msgstr "E925: Aktuelle Quickfix Liste wurde geändert."
 
 msgid "E926: Current location list was changed"
 msgstr "E926: Aktuelle Positionsliste wurde geändert."
@@ -4458,9 +4463,6 @@ msgstr "E379: Fehlender oder leerer Verzeichnisname"
 msgid "E924: Current window was closed"
 msgstr "E924: Aktuelles Fenster wurde geschlossen."
 
-msgid "E925: Current quickfix was changed"
-msgstr "E925: Aktuelle Quickfix wurde geändert."
-
 #, c-format
 msgid "(%d of %d)%s%s: "
 msgstr "(%d aus %d)%s%s: "
@@ -4495,7 +4497,7 @@ msgid "cannot have both a list and a \"what\" argument"
 msgstr "Kann nicht sowohl Liste und ein \"what\" Argument haben"
 
 msgid "E681: Buffer is not loaded"
-msgstr "E681: Puffer ist nicht geladen"
+msgstr "E681: Buffer ist nicht geladen"
 
 msgid "E777: String or List expected"
 msgstr "E777: Zeichenkette oder Liste erwartet"
@@ -4846,9 +4848,6 @@ msgstr "E167: :scriptencoding außerhalb einer eingelesenen Datei"
 msgid "E984: :scriptversion used outside of a sourced file"
 msgstr "E984: :scriptversion außerhalb einer eingelesenen Datei"
 
-msgid "E1040: Cannot use :scriptversion after :vim9script"
-msgstr "E1040: :scriptversion kann nicht nach :vim9script verwendet werden"
-
 #, c-format
 msgid "E999: scriptversion not supported: %d"
 msgstr "E999: scriptversion nicht unterstützt: %d"
@@ -4966,7 +4965,7 @@ msgid "E157: Invalid sign ID: %d"
 msgstr "E157: Ungültige Zeichen-ID: %d"
 
 msgid "E934: Cannot jump to a buffer that does not have a name"
-msgstr "E934: Kann nicht zu einem Puffer ohne Namen springen."
+msgstr "E934: Kann nicht zu einem Buffer ohne Namen springen."
 
 #, c-format
 msgid "E160: Unknown sign command: %s"
@@ -4992,7 +4991,7 @@ msgstr ""
 "Achtung: Kann Wortliste \"%s.%s.spl\" oder \"%s.ascii.spl\" nicht finden"
 
 msgid "E797: SpellFileMissing autocommand deleted buffer"
-msgstr "E797: SpellFileMissing-Autokommando löschte Puffer"
+msgstr "E797: SpellFileMissing-Autokommando löschte Buffer"
 
 #, c-format
 msgid "Warning: region %s not supported"
@@ -5354,7 +5353,7 @@ msgid "E390: Illegal argument: %s"
 msgstr "E390: Unerlaubtes Argument: %s"
 
 msgid "No Syntax items defined for this buffer"
-msgstr "Keine Syntax-Elemente für diesen Puffer definiert"
+msgstr "Keine Syntax-Elemente für diesen Buffer definiert"
 
 msgid "'redrawtime' exceeded, syntax highlighting disabled"
 msgstr "'redrawtime' überschritten, Syntaxhighlighting deaktiviert"
@@ -5404,6 +5403,9 @@ msgstr "Synchronisation an C-Stil Kommentaren"
 msgid "no syncing"
 msgstr "keine Synchronisation"
 
+msgid "syncing starts at the first line"
+msgstr "Synchronisation beginnt in der ersten Zeile"
+
 msgid "syncing starts "
 msgstr "Synchronisation beginnt "
 
@@ -5434,6 +5436,9 @@ msgstr ""
 #, c-format
 msgid "E392: No such syntax cluster: %s"
 msgstr "E392: Kein solcher Syntax-Cluster: %s"
+
+msgid "from the first line"
+msgstr " aus der ersten Zeile"
 
 msgid "minimal "
 msgstr "minimal "
@@ -5693,7 +5698,7 @@ msgid "E953: File exists: %s"
 msgstr "E953: Datei existiert bereits: %s"
 
 msgid "E955: Not a terminal buffer"
-msgstr "E955: Kein Terminal Puffer"
+msgstr "E955: Kein Terminal Buffer"
 
 msgid "E982: ConPTY is not available"
 msgstr "E982: ConPTY ist nicht verfügbar"
@@ -5714,7 +5719,7 @@ msgid "E965: missing property type name"
 msgstr "E965: Fehlender Eigenschaften Typname"
 
 msgid "E275: Cannot add text property to unloaded buffer"
-msgstr "E275: Kann Texteigenschaft nicht einem entladenen Puffer hinzufügen"
+msgstr "E275: Kann Texteigenschaft nicht einem entladenen Buffer hinzufügen"
 
 msgid "E967: text property info corrupted"
 msgstr "E967: Texteigenschaft-Info beschädigt"
@@ -5757,6 +5762,9 @@ msgstr "E745: Liste als Zahl verwendet."
 
 msgid "E728: Using a Dictionary as a Number"
 msgstr "E728: Dictionary als Zahl verwendet."
+
+msgid "E611: Using a Special as a Number"
+msgstr "E611: Special als Zahl verwendet."
 
 msgid "E910: Using a Job as a Number"
 msgstr "E910: Job als Zahl verwendet."
@@ -6065,17 +6073,6 @@ msgstr "E125: Unzulässiges Argument: %s"
 msgid "E853: Duplicate argument name: %s"
 msgstr "E853: Doppelter Argumentname: %s"
 
-#, c-format
-msgid "E1059: No white space allowed before colon: %s"
-msgstr "E1059: Keine Leerzeichen erlaubt vor : %s"
-
-#, c-format
-msgid "E1077: Missing argument type for %s"
-msgstr "E1077: Fehlender Argumenttyp für %s"
-
-msgid "E1055: Missing name after ..."
-msgstr "E1055: Fehlender Name nach ..."
-
 msgid "E989: Non-default argument follows default argument"
 msgstr "E989: Nicht-default Argument folgt auf default Argument"
 
@@ -6154,16 +6151,9 @@ msgid "E862: Cannot use g: here"
 msgstr "E862: g: kann hier nicht genutzt werden"
 
 #, c-format
-msgid "E1056: expected a type: %s"
-msgstr "E1056: Typ erwartet: %s"
-
-#, c-format
 msgid "E932: Closure function should not be at top level: %s"
 msgstr ""
 "E932: Closure Funktion kann nicht auf äussersten Level definiert sein: %s"
-
-msgid "E1057: Missing :enddef"
-msgstr "E1057: Fehlendes :enddef"
 
 msgid "E126: Missing :endfunction"
 msgstr "E126: Fehlendes :endfunction"
@@ -6175,9 +6165,6 @@ msgstr "W1001: Überschüssiger Text nach :enddef: %s"
 #, c-format
 msgid "W22: Text found after :endfunction: %s"
 msgstr "W22: Überschüssiger Text nach :endfunction: %s"
-
-msgid "E1058: function nesting too deep"
-msgstr "E1058: Funktions-Schachtelung zu tief"
 
 #, c-format
 msgid "E707: Function name conflicts with variable: %s"
@@ -6195,10 +6182,6 @@ msgstr ""
 #, c-format
 msgid "E131: Cannot delete function %s: It is in use"
 msgstr "E131: Funktion %s kann nicht gelöscht werden: sie ist in Verwendung"
-
-#, c-format
-msgid "E1084: Cannot delete Vim9 script function %s"
-msgstr "E1084: Vim9 Funktion %s kann nicht gelöscht werden"
 
 msgid "E133: :return not inside a function"
 msgstr "E133: :return außerhalb einer Funktion"
@@ -6365,12 +6348,6 @@ msgstr "mit Photon GUI."
 msgid "with GUI."
 msgstr "mit GUI."
 
-msgid "with Carbon GUI."
-msgstr "mit Carbon GUI."
-
-msgid "with Cocoa GUI."
-msgstr "mit Cocoa GUI."
-
 msgid "  Features included (+) or not (-):\n"
 msgstr " Ein- (+) oder ausschließlich (-) der Eigenschaften:\n"
 
@@ -6499,107 +6476,14 @@ msgstr "Tippe  :help register<Enter>    für mehr Informationen    "
 msgid "menu  Help->Sponsor/Register  for information    "
 msgstr "Menü   Hilfe->Sponsor/Register  für mehr Informationen    "
 
-#, c-format
-msgid "E1001: variable not found: %s"
-msgstr "E1001: Variable nicht gefunden: %s"
-
-#, c-format
-msgid "E1002: Syntax error at %s"
-msgstr "E1002: Syntaxfehler bei %s"
-
-#, c-format
-msgid "E1006: %s is used as an argument"
-msgstr "E1006: %s wird als Argument verwendet"
-
-msgid "E1031: Cannot use void value"
-msgstr "E1031: Kann nicht void Wert verwenden"
-
-#, c-format
-msgid "E1013: type mismatch, expected %s but got %s"
-msgstr "E1013: Typendiskrepanz, erwartete %s erhielt jedoch %s"
-
-#, c-format
-msgid "E1013: argument %d: type mismatch, expected %s but got %s"
-msgstr "E1013: Argument %d: Typendiskrepanz, erwartete %s erhielt jedoch %s"
-
-msgid "E1051: wrong argument type for +"
-msgstr "E1051: Falscher Argumenttyp für +"
-
-#, c-format
-msgid "E1036: %c requires number or float arguments"
-msgstr "E1036: %c benötigt Nummer oder Float als Argument"
-
-msgid "E1035: % requires number arguments"
-msgstr "E1035: % benötigt numerische Argumente"
-
-#, c-format
-msgid "E1037: Cannot use \"%s\" with %s"
-msgstr "E1037: Kann nicht \"%s\" mit %s verwenden"
-
-#, c-format
-msgid "E1072: Cannot compare %s with %s"
-msgstr "E1072: Kann %s nicht mit %s vergleichen"
-
-#, c-format
-msgid "E1085: Not a callable type: %s"
-msgstr "E1085: Kein aufrufbarer Typ: %s"
-
-msgid "E1008: Missing <type>"
-msgstr "E1008: Fehlendes <type>"
-
-msgid "E1009: Missing > after type"
-msgstr "E1009: Fehlendes '>' nach Typ"
-
-msgid "E1076: This Vim is not compiled with float support"
-msgstr "E1076: Vim wurde nicht mit der \"float\"-Eigenschaft übersetzt."
-
-msgid "E1007: mandatory argument after optional argument"
-msgstr "E1007: obligatories Argument nach optionalem Argument"
-
-msgid "E740: Too many argument types"
-msgstr "E740: Zu viele Argumenttypen"
-
-#, c-format
-msgid "E1010: Type not recognized: %s"
-msgstr "E1010: Unbekannter Typ: %s"
-
-#, c-format
-msgid "E1060: expected dot after name: %s"
-msgstr "E1060: erwarte Punkt nach Name: %s"
-
-msgid "E1074: no white space allowed after dot"
-msgstr "E1074: Keine Leerzeichen nach Punkt erlaubt"
-
-#, c-format
-msgid "E1050: Item not found: %s"
-msgstr "E1050: Element nicht gefunden: %s"
-
-#, c-format
-msgid "E1011: name too long: %s"
-msgstr "E1011: Name zu lang: %s"
-
-#, c-format
-msgid "E1014: Invalid key: %s"
-msgstr "E1014: Ungültiger Schlüssel: %s"
-
 msgid "[end of lines]"
 msgstr "[Zeilenende]"
-
-#, c-format
-msgid "E1015: Name expected: %s"
-msgstr "E1015: Name erwartet: %s"
-
-msgid "E1096: Returning a value in a function without a return type"
-msgstr "E1096: Rückgabe eines Wertes einer Funktion ohne Rückgabetyp"
-
-msgid "E1003: Missing return value"
-msgstr "E1003: Fehlender Returnwert"
 
 msgid "global"
 msgstr "global"
 
 msgid "buffer"
-msgstr "Puffer"
+msgstr "Buffer"
 
 msgid "window"
 msgstr "Fenster"
@@ -6607,180 +6491,12 @@ msgstr "Fenster"
 msgid "tab"
 msgstr "Reiter"
 
-msgid "E1092: Cannot use a list for a declaration"
-msgstr "E1092: Kann Liste nicht als Deklaration verwenden"
-
-#, c-format
-msgid "E1052: Cannot declare an option: %s"
-msgstr "E1052: Kann keine Option deklarieren: %s"
-
-#, c-format
-msgid "E1066: Cannot declare a register: %s"
-msgstr "E1066: Kann kein Register deklarieren: %s"
-
-#, c-format
-msgid "E1034: Cannot use reserved name %s"
-msgstr "E1034: Kann reservierten Namen nicht benutzen %s"
-
-#, c-format
-msgid "E1017: Variable already declared: %s"
-msgstr "E1017: Variable bereits deklariert: %s"
-
-#, c-format
-msgid "E1018: Cannot assign to a constant: %s"
-msgstr "E1018: Kann nicht einer Konstante zuweisen: %s"
-
-#, c-format
-msgid "E1054: Variable already declared in the script: %s"
-msgstr "E1054: Variable bereits in Script %s deklariert"
-
-#, c-format
-msgid "E1082: Cannot use a namespaced variable: %s"
-msgstr "E1082: Kann eine Variable im Namesraum nicht verwenden: %s"
-
-#, c-format
-msgid "E1089: unknown variable: %s"
-msgstr "E1089: Unbekannte Variable: %s"
-
-msgid "E1019: Can only concatenate to string"
-msgstr "E1019: Kann nur zu einer Zeichenkette verkettet werden"
-
-#, c-format
-msgid "E1020: cannot use an operator on a new variable: %s"
-msgstr "E1020: kann Operator nicht auf eine neue Variable %s anwenden"
-
-msgid "E1087: cannot use an index when declaring a variable"
-msgstr "E1087: Kann Index nicht verwenden, wenn eine Variable deklariert wird"
-
-#, c-format
-msgid "E1088: cannot use an index on %s"
-msgstr "E1088: Kann Index auf: %s nicht verwenden"
-
-#, c-format
-msgid "E1090: Cannot assign to argument %s"
-msgstr "E1090: Kann dem Argument nicht zuweisen %s"
-
-#, c-format
-msgid "E1081: Cannot unlet %s"
-msgstr "E1081: Kann Variable nicht entfernen %s"
-
-#, c-format
-msgid "E1023: variable already defined: %s"
-msgstr "E1023: Variable existiert bereits: %s"
-
-msgid "E1033: catch unreachable after catch-all"
-msgstr "E1033: catch unerreichbar nach catch-all"
-
-#, c-format
-msgid "E1067: Separator mismatch: %s"
-msgstr "E1067: Separator-Unstimmigkeit %s"
-
-msgid "E1032: missing :catch or :finally"
-msgstr "E1032: fehlendes :catch oder :finally"
-
-msgid "E1083: missing backtick"
-msgstr "E1083: Fehlender Backtick"
-
-#, c-format
-msgid "E488: Trailing characters: %s"
-msgstr "E488: Überschüssige Zeichen: %s"
-
-msgid "E1025: using } outside of a block scope"
-msgstr "E1025: } außerhalb eines Blockbereichs verwendet"
-
-msgid "E1095: Unreachable code after :return"
-msgstr "E1095: Nicht erreichbarer Code nach :return"
-
-msgid "E1086: Cannot use :function inside :def"
-msgstr "E1086: Kann :function nicht innerhalb von :def verwenden"
-
-msgid "E1026: Missing }"
-msgstr "E1026: Fehlendes }"
-
-msgid "E1027: Missing return statement"
-msgstr "E1027: Fehlende Return Anweisung"
-
-msgid "E1028: compile_def_function failed"
-msgstr "E1028: compile_def_function fehlgeschlagen"
-
-#, c-format
-msgid "E1091: Function is not compiled: %s"
-msgstr "E1091: Funktion ist nicht kompiliert: %s"
-
-#, c-format
-msgid "E121: Undefined variable: %c:%s"
-msgstr "E121: Undefinierte Variable: %c:%s"
-
-#, c-format
-msgid "E1029: Expected %s but got %s"
-msgstr "E1029: Erwartete %s, aber erhielt %s"
-
-#, c-format
-msgid "E1093: Expected %d items but got %d"
-msgstr "E1093: Erwartete %d Einträge, aber erhielt %d"
-
-#, c-format
-msgid "E1061: Cannot find function %s"
-msgstr "E1061: Funktion %s nicht gefunden"
-
-#, c-format
-msgid "E1062: Function %s is not compiled"
-msgstr "E1062: Funktion %s ist nicht kompiliert"
-
-msgid "E1030: Using a String as a Number"
-msgstr "E1030: Verwende Zeichenkette als Nummer"
-
-msgid "E1042: export can only be used in vim9script"
-msgstr "E1042: export kann nur für Vim9script verwendet werden"
-
-msgid "E1038: vim9script can only be used in a script"
-msgstr "E1038: vim9script kann nur innerhalb eines Scripts verwendet werden"
-
-msgid "E1039: vim9script must be the first command in a script"
-msgstr "E1039: vim9script muss erster Befehl in einem Script sein"
-
-msgid "E1044: export with invalid argument"
-msgstr "E1044: export mit ungültigem Argument"
-
-msgid "E1043: Invalid command after :export"
-msgstr "E1043: Ungültiger Befehl nach :export"
-
-msgid "E1094: import can only be used in a script"
-msgstr "E1094: import kann nur innerhalb eines Scripts verwendet werden"
-
-#, c-format
-msgid "E1049: Item not exported in script: %s"
-msgstr "E1049: Element nicht exportiert in Script: %s"
-
-#, c-format
-msgid "E1048: Item not found in script: %s"
-msgstr "E1048: Element nicht in Script %s gefunden"
-
-msgid "E1047: syntax error in import"
-msgstr "E1047: Syntaxfehler in import"
-
-msgid "E1046: Missing comma in import"
-msgstr "E1046: Fehlendes Komma in import"
-
-msgid "E1045: Missing \"as\" after *"
-msgstr "E1045: Fehlendes \"as\" nach *"
-
-msgid "E1070: Missing \"from\""
-msgstr "E1070: Fehlendes \"from\""
-
-msgid "E1071: Invalid string after \"from\""
-msgstr "E1071: Ungültige Zeichenkette nach \"from\""
-
-#, c-format
-msgid "E1053: Could not import \"%s\""
-msgstr "E1053: Konnte \"%s\" nicht importieren"
-
 msgid ""
 "\n"
 "# Buffer list:\n"
 msgstr ""
 "\n"
-"# Liste der Puffer:\n"
+"# Liste der Buffer:\n"
 
 #, c-format
 msgid ""
@@ -6947,7 +6663,7 @@ msgstr "Bereits nur ein Fenster"
 
 #, c-format
 msgid "E92: Buffer %ld not found"
-msgstr "E92: Puffer %ld nicht gefunden."
+msgstr "E92: Buffer %ld nicht gefunden."
 
 msgid "E441: There is no preview window"
 msgstr "E441: Es gibt kein Vorschaufenster"
@@ -7020,8 +6736,514 @@ msgstr "gvimext.dll Fehler"
 msgid "Path length too long!"
 msgstr "Die Länge des Pfads ist zu groß!"
 
+#, c-format
+msgid "E121: Undefined variable: %s"
+msgstr "E121: Undefinierte Variable: %s"
+
+#, c-format
+msgid "E121: Undefined variable: %c:%s"
+msgstr "E121: Undefinierte Variable: %c:%s"
+
+msgid "E476: Invalid command"
+msgstr "E476: Ungültiger Befehl"
+
+#, c-format
+msgid "E476: Invalid command: %s"
+msgstr "E476: Ungültiger Befehl: %s"
+
+msgid "E710: List value has more items than targets"
+msgstr "E710: Listenwert hat mehr Einträge als das Ziel"
+
+msgid "E711: List value does not have enough items"
+msgstr "E711: Listenwert hat nicht genügend Einträge"
+
+msgid "E719: Cannot slice a Dictionary"
+msgstr "E719: Kann Slice [:] nicht mit einem Dictionary verwenden"
+
+msgid ""
+"E856: \"assert_fails()\" second argument must be a string or a list with one "
+"or two strings"
+msgstr ""
+"E856: \"assert_fails()\" zweites Argument muss eine Zeichenkette oder eine Liste  "
+"von ein oder zwei Zeichenketten sein"
+
+msgid "E909: Cannot index a special variable"
+msgstr "E909: Kann Spezialvariable nicht indexieren."
+
+#, c-format
+msgid "E1100: Missing :var: %s"
+msgstr "E1100: Fehlende Variable: %s"
+
+#, c-format
+msgid "E1001: Variable not found: %s"
+msgstr "E1001: Variable nicht gefunden: %s"
+
+#, c-format
+msgid "E1002: Syntax error at %s"
+msgstr "E1002: Syntaxfehler bei %s"
+
+msgid "E1003: Missing return value"
+msgstr "E1003: Fehlender Returnwert"
+
+#, c-format
+msgid "E1004: White space required before and after '%s'"
+msgstr "E1004: Leerzeichen vor und nach '%s' benötigt"
+
+msgid "E1005: Too many argument types"
+msgstr "E1005: Zu viele Argumenttypen"
+
+#, c-format
+msgid "E1006: %s is used as an argument"
+msgstr "E1006: %s wird als Argument verwendet"
+
+msgid "E1007: Mandatory argument after optional argument"
+msgstr "E1007: obligatorisches Argument nach optionalem Argument"
+
+msgid "E1008: Missing <type>"
+msgstr "E1008: Fehlendes <type>"
+
+msgid "E1009: Missing > after type"
+msgstr "E1009: Fehlendes '>' nach Typ"
+
+#, c-format
+msgid "E1010: Type not recognized: %s"
+msgstr "E1010: Unbekannter Typ: %s"
+
+#, c-format
+msgid "E1011: Name too long: %s"
+msgstr "E1011: Name zu lang: %s"
+
+#, c-format
+msgid "E1012: Type mismatch; expected %s but got %s"
+msgstr "E1012: Typendiskrepanz, erwartete %s erhielt jedoch %s"
+
+#, c-format
+msgid "E1013: Argument %d: type mismatch, expected %s but got %s"
+msgstr "E1013: Argument %d: Typendiskrepanz, erwartete %s erhielt jedoch %s"
+
+#, c-format
+msgid "E1014: Invalid key: %s"
+msgstr "E1014: Ungültiger Schlüssel: %s"
+
+#, c-format
+msgid "E1015: Name expected: %s"
+msgstr "E1015: Name erwartet: %s"
+
+#, c-format
+msgid "E1016: Cannot declare a %s variable: %s"
+msgstr "E1016: Kann eine %s Variable nicht deklarieren: %s"
+
+#, c-format
+msgid "E1016: Cannot declare an environment variable: %s"
+msgstr "E1016: Kann eine Umgebungsvariable nicht deklarieren: %s"
+
+#, c-format
+msgid "E1017: Variable already declared: %s"
+msgstr "E1017: Variable bereits deklariert: %s"
+
+#, c-format
+msgid "E1018: Cannot assign to a constant: %s"
+msgstr "E1018: Kann nicht einer Konstante zuweisen: %s"
+
+msgid "E1019: Can only concatenate to string"
+msgstr "E1019: Kann nur zu einer Zeichenkette verkettet werden"
+
+#, c-format
+msgid "E1020: Cannot use an operator on a new variable: %s"
+msgstr "E1020: kann Operator nicht auf eine neue Variable %s anwenden"
+
+msgid "E1021: Const requires a value"
+msgstr "E1021: const erfordert einen Wert"
+
+msgid "E1022: Type or initialization required"
+msgstr "E1022: Typ oder Initialisierung erforderlich"
+
+#, c-format
+msgid "E1023: Using a Number as a Bool: %d"
+msgstr "E1023: Zahl: %d als Bool verwendet"
+
+msgid "E1024: Using a Number as a String"
+msgstr "E1024: Zahl als String verwendet"
+
+msgid "E1025: Using } outside of a block scope"
+msgstr "E1025: } außerhalb eines Blockbereichs verwendet"
+
+msgid "E1026: Missing }"
+msgstr "E1026: Fehlendes }"
+
+msgid "E1027: Missing return statement"
+msgstr "E1027: Fehlende Return Anweisung"
+
+msgid "E1028: Compiling :def function failed"
+msgstr "E1028: Kompilieren von :def Funktion fehlgeschlagen"
+
+#, c-format
+msgid "E1029: Expected %s but got %s"
+msgstr "E1029: Erwartete %s, aber erhielt %s"
+
+#, c-format
+msgid "E1030: Using a String as a Number: \"%s\""
+msgstr "E1030: Verwende Zeichenkette als Nummer: \"%s\""
+
+msgid "E1031: Cannot use void value"
+msgstr "E1031: Kann nicht void Wert verwenden"
+
+msgid "E1032: Missing :catch or :finally"
+msgstr "E1032: fehlendes :catch oder :finally"
+
+msgid "E1033: Catch unreachable after catch-all"
+msgstr "E1033: catch unerreichbar nach catch-all"
+
+#, c-format
+msgid "E1034: Cannot use reserved name %s"
+msgstr "E1034: Kann reservierten Namen nicht benutzen %s"
+
+msgid "E1035: % requires number arguments"
+msgstr "E1035: % benötigt numerische Argumente"
+
+#, c-format
+msgid "E1036: %c requires number or float arguments"
+msgstr "E1036: %c benötigt Nummer oder Float als Argument"
+
+#, c-format
+msgid "E1037: Cannot use \"%s\" with %s"
+msgstr "E1037: Kann nicht \"%s\" mit %s verwenden"
+
+msgid "E1038: \"vim9script\" can only be used in a script"
+msgstr "E1038: \"vim9script\" kann nur innerhalb eines Scripts verwendet werden"
+
+msgid "E1039: \"vim9script\" must be the first command in a script"
+msgstr "E1039: \"vim9script\" muss erster Befehl in einem Script sein"
+
+msgid "E1040: Cannot use :scriptversion after :vim9script"
+msgstr "E1040: :scriptversion kann nicht nach :vim9script verwendet werden"
+
+#, c-format
+msgid "E1041: Redefining script item %s"
+msgstr "E1041: Neudefinition von Scriptelement %s"
+
+msgid "E1042: Export can only be used in vim9script"
+msgstr "E1042: Export kann nur für Vim9script verwendet werden"
+
+msgid "E1043: Invalid command after :export"
+msgstr "E1043: Ungültiger Befehl nach :export"
+
+msgid "E1044: Export with invalid argument"
+msgstr "E1044: export mit ungültigem Argument"
+
+msgid "E1045: Missing \"as\" after *"
+msgstr "E1045: Fehlendes \"as\" nach *"
+
+msgid "E1046: Missing comma in import"
+msgstr "E1046: Fehlendes Komma in import"
+
+msgid "E1047: Syntax error in import"
+msgstr "E1047: Syntaxfehler in import"
+
+#, c-format
+msgid "E1048: Item not found in script: %s"
+msgstr "E1048: Element nicht in Script %s gefunden"
+
+#, c-format
+msgid "E1049: Item not exported in script: %s"
+msgstr "E1049: Element nicht exportiert in Script: %s"
+
+msgid "E1050: Colon required before a range"
+msgstr "E1050: Doppelpunkt vor einem Bereich benötigt"
+
+msgid "E1051: Wrong argument type for +"
+msgstr "E1051: Falscher Argumenttyp für +"
+
+#, c-format
+msgid "E1052: Cannot declare an option: %s"
+msgstr "E1052: Kann keine Option deklarieren: %s"
+
+#, c-format
+msgid "E1053: Could not import \"%s\""
+msgstr "E1053: Konnte \"%s\" nicht importieren"
+
+#, c-format
+msgid "E1054: Variable already declared in the script: %s"
+msgstr "E1054: Variable bereits in Script %s deklariert"
+
+msgid "E1055: Missing name after ..."
+msgstr "E1055: Fehlender Name nach ..."
+
+#, c-format
+msgid "E1056: Expected a type: %s"
+msgstr "E1056: Typ erwartet: %s"
+
+msgid "E1057: Missing :enddef"
+msgstr "E1057: Fehlendes :enddef"
+
+msgid "E1058: Function nesting too deep"
+msgstr "E1058: Funktions-Schachtelung zu tief"
+
+#, c-format
+msgid "E1059: No white space allowed before colon: %s"
+msgstr "E1059: Keine Leerzeichen erlaubt vor : %s"
+
+#, c-format
+msgid "E1060: Expected dot after name: %s"
+msgstr "E1060: erwarte Punkt nach Name: %s"
+
+#, c-format
+msgid "E1061: Cannot find function %s"
+msgstr "E1061: Funktion %s nicht gefunden"
+
+msgid "E1062: Cannot index a Number"
+msgstr "E1062: Kann Index nicht mit Zahl verwenden"
+
+msgid "E1063: Type mismatch for v: variable"
+msgstr "E1063: Typendiskrepanz für v: Variable"
+
+#, c-format
+msgid "E1066: Cannot declare a register: %s"
+msgstr "E1066: Kann kein Register deklarieren: %s"
+
+#, c-format
+msgid "E1067: Separator mismatch: %s"
+msgstr "E1067: Separator-Unstimmigkeit %s"
+
+#, c-format
+msgid "E1068: No white space allowed before '%s'"
+msgstr "E1068: Keine Leerzeichen vor '%s' erlaubt"
+
+#, c-format
+msgid "E1069: White space required after '%s'"
+msgstr "E1069: Leerzeichen benötigt nach '%s'"
+
+msgid "E1070: Missing \"from\""
+msgstr "E1070: Fehlendes \"from\""
+
+msgid "E1071: Invalid string after \"from\""
+msgstr "E1071: Ungültige Zeichenkette nach \"from\""
+
+#, c-format
+msgid "E1072: Cannot compare %s with %s"
+msgstr "E1072: Kann %s nicht mit %s vergleichen"
+
+#, c-format
+msgid "E1073: Name already defined: %s"
+msgstr "E1073: Name existiert bereits: %s"
+
+msgid "E1074: No white space allowed after dot"
+msgstr "E1074: Keine Leerzeichen nach Punkt erlaubt"
+
+#, c-format
+msgid "E1075: Namespace not supported: %s"
+msgstr "E1075: Namespace nicht unterstützt: %s"
+
+msgid "E1076: This Vim is not compiled with float support"
+msgstr "E1076: Vim wurde nicht mit der \"float\"-Eigenschaft übersetzt."
+
+#, c-format
+msgid "E1077: Missing argument type for %s"
+msgstr "E1077: Fehlender Argumenttyp für %s"
+
+#, c-format
+msgid "E1081: Cannot unlet %s"
+msgstr "E1081: Kann Variable nicht entfernen %s"
+
+#, c-format
+msgid "E1082: Cannot use a namespaced variable: %s"
+msgstr "E1082: Kann eine Variable im Namesraum nicht verwenden: %s"
+
+msgid "E1083: Missing backtick"
+msgstr "E1083: Fehlender Backtick:"
+
+#, c-format
+msgid "E1084: Cannot delete Vim9 script function %s"
+msgstr "E1084: Vim9 Funktion %s kann nicht gelöscht werden"
+
+#, c-format
+msgid "E1085: Not a callable type: %s"
+msgstr "E1085: Kein aufrufbarer Typ: %s"
+
+msgid "E1086: Cannot use :function inside :def"
+msgstr "E1086: Kann :function nicht innerhalb von :def verwenden"
+
+msgid "E1087: Cannot use an index when declaring a variable"
+msgstr "E1087: Kann Index nicht verwenden, wenn eine Variable deklariert wird"
+
+#, c-format
+msgid "E1089: Unknown variable: %s"
+msgstr "E1089: Unbekannte Variable: %s"
+
+#, c-format
+msgid "E1090: Cannot assign to argument %s"
+msgstr "E1090: Kann dem Argument nicht zuweisen %s"
+
+#, c-format
+msgid "E1091: Function is not compiled: %s"
+msgstr "E1091: Funktion ist nicht kompiliert: %s"
+
+msgid "E1092: Cannot use a list for a declaration"
+msgstr "E1092: Kann Liste nicht als Deklaration verwenden"
+
+#, c-format
+msgid "E1093: Expected %d items but got %d"
+msgstr "E1093: Erwartete %d Einträge, aber erhielt %d"
+
+msgid "E1094: Import can only be used in a script"
+msgstr "E1094: import kann nur innerhalb eines Scripts verwendet werden"
+
+msgid "E1095: Unreachable code after :return"
+msgstr "E1095: Nicht erreichbarer Code nach :return"
+
+msgid "E1096: Returning a value in a function without a return type"
+msgstr "E1096: Rückgabe eines Wertes einer Funktion ohne Rückgabetyp"
+
+msgid "E1097: Line incomplete"
+msgstr "E1097: Zeile unvollständig"
+
+#, c-format
+msgid "E1099: Unknown error while executing %s"
+msgstr "E1099: Unbekannter Fehler beim Ausführen von %s"
+
+#, c-format
+msgid "E1101: Cannot declare a script variable in a function: %s"
+msgstr "E1101: Kann eine Scriptvariable nicht in einer Funktion deklarieren:  %s"
+
+#, c-format
+msgid "E1102: Lambda function not found: %s"
+msgstr "E1102: Lambdafunktion nicht gefunden: %s"
+
+msgid "E1103: Dictionary not set"
+msgstr "E1103: Dictionary nicht gesetzt"
+
+msgid "E1104: Missing >"
+msgstr "E1104: Fehlendes >"
+
+#, c-format
+msgid "E1105: Cannot convert %s to string"
+msgstr "E1105: kann %s nicht in Zeichenkette umwandeln"
+
+msgid "E1106: One argument too many"
+msgstr "E1106: Ein Argument zu viel"
+
+#, c-format
+msgid "E1106: %d arguments too many"
+msgstr "E1106: %d Argumente zu viel"
+
+msgid "E1107: String, List, Dict or Blob required"
+msgstr "E1107: Zeichenkette, Liste, Dictionary oder Blob benötigt"
+
+#, c-format
+msgid "E1108: Item not found: %s"
+msgstr "E1108: Element nicht gefunden: %s"
+
+#, c-format
+msgid "E1109: List item %d is not a List"
+msgstr "E1109: Listenwert %d ist keine Liste"
+
+#, c-format
+msgid "E1110: List item %d does not contain 3 numbers"
+msgstr "E1110: Listenwert %d enthält keine 3 Zahlen"
+
+#, c-format
+msgid "E1111: List item %d range invalid"
+msgstr "E1111: Listenwert %d Bereich ungültig"
+
+#, c-format
+msgid "E1112: List item %d cell width invalid"
+msgstr "E1112: Listenwert %d Zellbreite ungültig"
+
+#, c-format
+msgid "E1113: Overlapping ranges for 0x%lx"
+msgstr "E1113: Überlappender Bereich für 0x%lx"
+
+msgid "E1114: Only values of 0x100 and higher supported"
+msgstr "E1114: Nur Werte oberhalb 0x100 unterstützt"
+
+msgid "E1115: \"assert_fails()\" fourth argument must be a number"
+msgstr "E1115: \"assert_fails()\" viertes Argument muss eine Zahl sein"
+
+msgid "E1116: \"assert_fails()\" fifth argument must be a string"
+msgstr "E1116: \"assert_fails()\" fünftes Argument muss eine Zahl sein"
+
+msgid "E1117: Cannot use ! with nested :def"
+msgstr "E1117: Kann nicht ! innerhalb verschachtelter :def verwenden"
+
+msgid "E1118: Cannot change list"
+msgstr "E1118: Kann Liste nicht ändern"
+
+msgid "E1119: Cannot change list item"
+msgstr "E1119: Kann Listenwert nicht ändern"
+
+msgid "E1120: Cannot change dict"
+msgstr "E1120: Kann Dictionary nicht ändern"
+
+msgid "E1121: Cannot change dict item"
+msgstr "E1121: Kann Dictionarywert nicht ändern"
+
+#, c-format
+msgid "E1122: Variable is locked: %s"
+msgstr "E1122: Variable ist gesperrt: %s"
+
+#, c-format
+msgid "E1123: Missing comma before argument: %s"
+msgstr "E1123: Fehlendes Komma vor Argument: %s"
+
+#, c-format
+msgid "E1124: \"%s\" cannot be used in legacy Vim script"
+msgstr "E1124: \"%s\" kann nicht innerhalb von Legacy Vim Script verwendet werden"
+
+msgid "E1125: Final requires a value"
+msgstr "E1125: Final benötigt einen Wert"
+
+msgid "E1126: Cannot use :let in Vim9 script"
+msgstr "E1126: Kann :let nicht in Vim9 Script verwenden"
+
+msgid "E1127: Missing name after dot"
+msgstr "E1127: Fehlender Name nach Punkt"
+
+msgid "E1128: } without {"
+msgstr "E1128: } ohne { verwendet"
+
+msgid "E1129: Throw with empty string"
+msgstr "E1129: throw mit leerer Zeichenkette"
+
+msgid "E1130: Cannot add to null list"
+msgstr "E1130: Kann nicht zu Null-Liste hinzufügen"
+
+msgid "E1131: Cannot add to null blob"
+msgstr "E1131: Kann nicht zu Null-Blob hinzufügen"
+
+msgid "E1132: Missing function argument"
+msgstr "E1132: Fehlendes Funktionsargument"
+
+msgid "E1133: Cannot extend a null dict"
+msgstr "E1133: Kann Null-Dictionary nicht erweitern"
+
+msgid "E1134: Cannot extend a null list"
+msgstr "E1134: Kann Null-Liste nicht erweitern"
+
+#, c-format
+msgid "E1135: Using a String as a Bool: \"%s\""
+msgstr "E1135: Verwende Zeichenkette als Bool: \"%s\""
+
+msgid "E1135: <Cmd> mapping must end with <CR>"
+msgstr "E1135: <Cmd> Mapping muss mit <CR> enden"
+
+msgid "E1136: <Cmd> mapping must end with <CR> before second <Cmd>"
+msgstr "E1136: <Cmd> Mapping muss mit <CR> vor weiterem <Cmd> enden"
+
+#, c-format
+msgid "E1137: <Cmd> mapping must not include %s key"
+msgstr "E1137: <Cmd> Mapping darf %s Taste nicht enthalten"
+
+msgid "E1138: Using a Bool as a Number"
+msgstr "E1138: Bool als Zahl verwendet"
+
+msgid "E1139: Missing matching bracket after dict key"
+msgstr "E1139: Fehlende zugehörige eckige Klammer nach Dict Schlüssel"
+
+msgid "E1140: For argument must be a sequence of lists"
+msgstr "E1140: Argument muss eine Folge von Listen sein."
+
 msgid "--No lines in buffer--"
-msgstr "--Keine Zeilen im Puffer--"
+msgstr "--Keine Zeilen im Buffer--"
 
 msgid "E470: Command aborted"
 msgstr "E470: Befehl abgebrochen"
@@ -7033,7 +7255,7 @@ msgid "E10: \\ should be followed by /, ? or &"
 msgstr "E10: \\ sollte von /, ? oder & gefolgt werden"
 
 msgid "E11: Invalid in command-line window; <CR> executes, CTRL-C quits"
-msgstr "E11: Ungültig im Kommandozeilenfenster; <CR> führt aus, CTRL-C beendet"
+msgstr "E11: Ungültig im Kommandozeilen-Fenster; <CR> führt aus, CTRL-C beendet"
 
 msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
 msgstr ""
@@ -7123,9 +7345,6 @@ msgstr "E15: ungültiger Ausdruck: %s"
 
 msgid "E16: Invalid range"
 msgstr "E16: Ungültiger Bereich"
-
-msgid "E476: Invalid command"
-msgstr "E476: Ungültiger Befehl"
 
 #, c-format
 msgid "E17: \"%s\" is a directory"
@@ -7286,10 +7505,6 @@ msgid "E45: 'readonly' option is set (add ! to override)"
 msgstr "E45: Die Option 'readonly' ist gesetzt (erzwinge mit !)"
 
 #, c-format
-msgid "E121: Undefined variable: %s"
-msgstr "E121: Undefinierte Variable: %s"
-
-#, c-format
 msgid "E734: Wrong variable type for %s="
 msgstr "E734: Falscher Variablentyp für %s="
 
@@ -7341,14 +7556,11 @@ msgid "E933: Function was deleted: %s"
 msgstr "E933: Funktion wurde gelöscht: %s"
 
 #, c-format
-msgid "E716: Key not present in Dictionary: %s"
-msgstr "E716: Schlüssel %s nicht im Dictionary vorhanden."
+msgid "E716: Key not present in Dictionary: \"%s\""
+msgstr "E716: Schlüssel \"%s\" nicht im Dictionary vorhanden."
 
 msgid "E714: List required"
 msgstr "E714: Liste benötigt"
-
-msgid "E1090: List, Dict or Blob required"
-msgstr "E1090: Liste, Dictionary oder Blob benötigt"
 
 msgid "E897: List or Blob required"
 msgstr "E897: Liste oder Blob benötigt"
@@ -7437,6 +7649,10 @@ msgstr "E77: Zu viele Dateinamen"
 msgid "E488: Trailing characters"
 msgstr "E488: Überschüssige Zeichen"
 
+#, c-format
+msgid "E488: Trailing characters: %s"
+msgstr "E488: Überschüssige Zeichen: %s"
+
 msgid "E78: Unknown mark"
 msgstr "E78: Unbekannte Markierung"
 
@@ -7494,17 +7710,17 @@ msgid "E363: pattern uses more memory than 'maxmempattern'"
 msgstr "E363: Muster benötigt mehr Speicher als 'maxmempattern'"
 
 msgid "E749: empty buffer"
-msgstr "E749: Leerer Puffer"
+msgstr "E749: Leerer Buffer"
 
 #, c-format
 msgid "E86: Buffer %ld does not exist"
-msgstr "E86: Puffer %ld existiert nicht."
+msgstr "E86: Buffer %ld existiert nicht."
 
 msgid "E682: Invalid search pattern or delimiter"
 msgstr "E682: Ungültiges Suchmuster oder Trennzeichen"
 
 msgid "E139: File is loaded in another buffer"
-msgstr "E139: Datei ist in einem anderen Puffer geladen"
+msgstr "E139: Datei ist in einem anderen Buffer geladen"
 
 #, c-format
 msgid "E764: Option '%s' is not set"
@@ -7569,37 +7785,8 @@ msgid "E274: No white space allowed before parenthesis"
 msgstr "E274: Keine Leerzeichen vor Klammern erlaubt"
 
 #, c-format
-msgid "E1004: white space required before and after '%s'"
-msgstr "E1004: Leerzeichen vor und nach '%s' benötigt"
-
-#, c-format
-msgid "E1069: white space required after '%s'"
-msgstr "E1069: Leerzeichen benötigt nach '%s'"
-
-#, c-format
-msgid "E1068: No white space allowed before '%s'"
-msgstr "E1068: Keine Leerzeichen vor '%s' erlaubt"
-
-#, c-format
 msgid "E940: Cannot lock or unlock variable %s"
 msgstr "E940: Kann Variable \"%s\" nicht sperren bzw. entsperren."
-
-msgid "E1021: const requires a value"
-msgstr "E1021: const erfordert einen Wert"
-
-msgid "E1022: type or initialization required"
-msgstr "E1022: Typ oder Initialisierung erforderlich"
-
-#, c-format
-msgid "E1016: Cannot declare a %s variable: %s"
-msgstr "E1016: Kann eine %s Variable nicht deklarieren: %s"
-
-#, c-format
-msgid "E1016: Cannot declare an environment variable: %s"
-msgstr "E1016: Kann eine Umgebungsvariable nicht deklarieren: %s"
-
-msgid "E1050: Colon required before a range"
-msgstr "E1050: Doppelpunkt vor einem Bereich benötigt"
 
 #, c-format
 msgid "E254: Cannot allocate color %s"
@@ -7793,30 +7980,30 @@ msgid "attempt to refer to deleted window"
 msgstr "Versuch, Bezug auf eine gelöschtes Fenster zu nehmen"
 
 msgid "readonly attribute: buffer"
-msgstr "nur-Lesen Attribut: Puffer"
+msgstr "nur-Lesen Attribut: Buffer"
 
 msgid "cursor position outside buffer"
-msgstr "Cursor Position außerhalb des Puffers"
+msgstr "Cursor Position außerhalb des Buffers"
 
 msgid "no such window"
 msgstr "ungültiges Fenster"
 
 msgid "attempt to refer to deleted buffer"
-msgstr "Versuch, Bezug auf einen gelöschten Puffer zu nehmen"
+msgstr "Versuch, Bezug auf einen gelöschten Buffer zu nehmen"
 
 msgid "failed to rename buffer"
-msgstr "Umbenennen des Puffers fehlgeschlagen"
+msgstr "Umbenennen des Buffers fehlgeschlagen"
 
 msgid "mark name must be a single character"
 msgstr "Markierung muss ein einzelner Buchstabe sein"
 
 #, c-format
 msgid "expected vim.Buffer object, but got %s"
-msgstr "erwartete vim.Puffer Objekt, erhielt jedoch %s"
+msgstr "erwartete vim.Buffer Objekt, erhielt jedoch %s"
 
 #, c-format
 msgid "failed to switch to buffer %d"
-msgstr "Wechsel zu Puffer %d fehlgeschlagen"
+msgstr "Wechsel zu Buffer %d fehlgeschlagen"
 
 #, c-format
 msgid "expected vim.Window object, but got %s"
@@ -7944,4 +8131,1363 @@ msgstr "gvim"
 msgid "Vim"
 msgstr "Vim"
 
+msgid "(local to window)"
+msgstr "(lokal zum Fenster)"
 
+msgid "(local to buffer)"
+msgstr "(lokal zum Buffer)"
+
+msgid "(global or local to buffer)"
+msgstr "(global oder lokal zum Buffer)"
+
+msgid ""
+"\" Each \"set\" line shows the current value of an option (on the left)."
+msgstr ""
+"\" Jede \"set\" Zeile zeigt den aktuellen Werte der Option auf der linken Seite."
+
+msgid "\" Hit <Enter> on a \"set\" line to execute it."
+msgstr "\" Drücke <Enter> auf einer \"set\" Zeile zum auführen."
+
+msgid "\"            A boolean option will be toggled."
+msgstr "\"           Eine Bool-Option wird umgeschaltet."
+
+msgid ""
+"\"            For other options you can edit the value before hitting "
+"<Enter>."
+msgstr ""
+"\"            Andere Optionen können editiert werden vor den Drücken von "
+"<Enter>."
+
+msgid "\" Hit <Enter> on a help line to open a help window on this option."
+msgstr "\" Drücke <Enter> auf einer Hilfe-Zeile um die zugehörige Hilfe dieser Option anzuzeigen."
+
+msgid "\" Hit <Enter> on an index line to jump there."
+msgstr "\" Drücke <Enter> auf einer Index Zeile um dorthin zu springen."
+
+msgid "\" Hit <Space> on a \"set\" line to refresh it."
+msgstr "\" Drücke <Space> auf einer \"set\" Zeile um sie zu aktualisieren."
+
+msgid "important"
+msgstr "wichtig"
+
+msgid "behave very Vi compatible (not advisable)"
+msgstr "sich sehr Vi kompatibel verhalten (nicht ratsam)"
+
+msgid "list of flags to specify Vi compatibility"
+msgstr "Liste Flags um Vi-Kompatibilität zu spezifizieren"
+
+msgid "use Insert mode as the default mode"
+msgstr "nutze Einfüge-Modus als Standard Modus"
+
+msgid "paste mode, insert typed text literally"
+msgstr "Paste Modus, um getippten Text literal einzufügen"
+
+msgid "key sequence to toggle paste mode"
+msgstr "Tastenkombination zum Umschalten des Paste Modus"
+
+msgid "list of directories used for runtime files and plugins"
+msgstr "Liste von Verzeichnissen für die Runtime Dateien und Plugins"
+
+msgid "list of directories used for plugin packages"
+msgstr "Liste von Verzeichnissen für die Plugin Pakete"
+
+msgid "name of the main help file"
+msgstr "Dateiname der Haupthilfe"
+
+msgid "moving around, searching and patterns"
+msgstr "Bewegen, Suchen und Muster"
+
+msgid "list of flags specifying which commands wrap to another line"
+msgstr "Liste von Flags zum Definieren welche Befehle zur nächsten Zeile umbrechen"
+
+msgid ""
+"many jump commands move the cursor to the first non-blank\n"
+"character of a line"
+msgstr ""
+"viele Sprungbefehle bewegen den Cursor zum ersten Nicht-Leerzeichen\n"
+"einer Zeile"
+
+msgid "nroff macro names that separate paragraphs"
+msgstr "nroff Makros die Absätze trennen"
+
+msgid "nroff macro names that separate sections"
+msgstr "nroff Makros die Abschnitte trennen"
+
+msgid "list of directory names used for file searching"
+msgstr "Liste von Verzeichnissen zum Suchen von Dateien"
+
+msgid "list of directory names used for :cd"
+msgstr "Liste von Verzeichnissen für :cd Befehl"
+
+msgid "change to directory of file in buffer"
+msgstr "Ins Verzeichnis der zugehörigen Datei wechseln"
+
+msgid "search commands wrap around the end of the buffer"
+msgstr "Such-Befehle beginne von vorn am Ende des Buffers"
+
+msgid "show match for partly typed search command"
+msgstr "Zeige Übereinstimmung für eingetippten Suchbefehl"
+
+msgid "change the way backslashes are used in search patterns"
+msgstr "Ändert die Art wie Backslashes in Suchmustern verwendet werden"
+
+msgid "select the default regexp engine used"
+msgstr "Wählt die Standard-Regexp-Engine aus "
+
+msgid "ignore case when using a search pattern"
+msgstr "Groß-/Kleinbuchstaben ignorieren bei der Suche"
+
+msgid "override 'ignorecase' when pattern has upper case characters"
+msgstr "'ignorecase' Option aufheben, wenn Muster mit Großbuchstaben beginnt"
+
+msgid "what method to use for changing case of letters"
+msgstr "Welche Methode verwendet werden soll zum Ändern von Groß-/Kleinbuchstaben"
+
+msgid "maximum amount of memory in Kbyte used for pattern matching"
+msgstr "Maximaler zu nutzender Speichers für die Suche in Kbyte"
+
+msgid "pattern for a macro definition line"
+msgstr "Muster um eine Makrodefinition zu finden"
+
+msgid "pattern for an include-file line"
+msgstr "Muster um eine \"include\" Zeile zu finden"
+
+msgid "expression used to transform an include line to a file name"
+msgstr "Ausdruck um eine \"include\" Zeile zu einem Dateinamen umzuwandeln"
+
+msgid "tags"
+msgstr "tags"
+
+msgid "use binary searching in tags files"
+msgstr "Binärsuche für die Suche in Tags-Dateien verwenden"
+
+msgid "number of significant characters in a tag name or zero"
+msgstr "Anzahl signifikanter Buchstaben in einem Tagnamen (oder Null)"
+
+msgid "list of file names to search for tags"
+msgstr "Liste an Dateinamen zum Suchen für Tags"
+
+msgid ""
+"how to handle case when searching in tags files:\n"
+"\"followic\" to follow 'ignorecase', \"ignore\" or \"match\""
+msgstr ""
+"wie Unterschiede in Groß-/Kleinschreibung für die Suche in Tag-Dateien:\n"
+"\"followic\" folgt 'ignorecase' Option, \"ignore\" oder \"match\""
+
+msgid "file names in a tags file are relative to the tags file"
+msgstr "Dateinamen in einer Tags-Datei sind relativ zur selbigen"
+
+msgid "a :tag command will use the tagstack"
+msgstr "ein :tag Befehl nutzt den Tagstack"
+
+msgid "when completing tags in Insert mode show more info"
+msgstr "beim vervollständigen von Tags im Einfüge-Modus weitere Infos anzeigen"
+
+msgid "a function to be used to perform tag searches"
+msgstr "eine Funktion für die Tag-Suche verwenden"
+
+msgid "command for executing cscope"
+msgstr "Befehl zum Ausführen von cscope"
+
+msgid "use cscope for tag commands"
+msgstr "Benutze cscope für tag Befehle"
+
+msgid "0 or 1; the order in which \":cstag\" performs a search"
+msgstr "0 oder 1; Reihenfolge wie \":cstag\" eine Suche durchführt"
+
+msgid "give messages when adding a cscope database"
+msgstr "Nachricht geben, wenn eine cscope-Datenbank hinzugefügt wird"
+
+msgid "how many components of the path to show"
+msgstr "wie viele Komponenten des Pfades anzuzeigen"
+
+msgid "when to open a quickfix window for cscope"
+msgstr "Ob das Quickfix Fenster für cscope zu nutzen ist"
+
+msgid "file names in a cscope file are relative to that file"
+msgstr "Dateinamen in einer cscope Datei sind relativ zu dieser"
+
+msgid "displaying text"
+msgstr "anzuzeigender Text"
+
+msgid "number of lines to scroll for CTRL-U and CTRL-D"
+msgstr "Anzahl zu scrollender Zeilen für CTRL-U und CTRL-D"
+
+msgid "number of screen lines to show around the cursor"
+msgstr "Anzahl anzuzeigender Zeilen um den Cursor herum"
+
+msgid "long lines wrap"
+msgstr "lange Zeilen umbrechen"
+
+msgid "wrap long lines at a character in 'breakat'"
+msgstr "lange Zeilen an Zeichen in 'breakat' umbrechen"
+
+msgid "preserve indentation in wrapped text"
+msgstr "Einrückungen beibehalten in umbrochenen Text"
+
+msgid "adjust breakindent behaviour"
+msgstr "breakindent Verhalten anpassen"
+
+msgid "which characters might cause a line break"
+msgstr "welche Zeichen einen Zeilenumbruch verursachen können"
+
+msgid "string to put before wrapped screen lines"
+msgstr "Zeichenkette die vor einem Zeilenbumbruch angezeigt wird"
+
+msgid "minimal number of columns to scroll horizontally"
+msgstr "minimale Spaltenanzahl zum horizontalen Scrollen "
+
+msgid "minimal number of columns to keep left and right of the cursor"
+msgstr "minimale anzuzeigende Spaltenanzahl rechts und links des Cursor"
+
+msgid ""
+"include \"lastline\" to show the last line even if it doesn't fit\n"
+"include \"uhex\" to show unprintable characters as a hex number"
+msgstr ""
+"füge \"lastline\" hinzu um die letzte Zeile anzuzeigen, auch wenn sie nicht passt\n"
+"füge \"uhex\" hinzu um nicht druckbare Zeichen als Hex-Wert anzuzeigen"
+
+msgid "characters to use for the status line, folds and filler lines"
+msgstr "zu verwendende Zeichen für die Statuszeile, Folds und Füllzeilen"
+
+msgid "number of lines used for the command-line"
+msgstr "Anzahl zu verwendender Zeilen für die Commandline"
+
+msgid "width of the display"
+msgstr "Anzahl an Spalten des Displays"
+
+msgid "number of lines in the display"
+msgstr "Anzahl an Zeilen des Displays"
+
+msgid "number of lines to scroll for CTRL-F and CTRL-B"
+msgstr "Anzahl zu scrollender Zeilen für CTRL-F und CTRL-B"
+
+msgid "don't redraw while executing macros"
+msgstr "währed der Ausführung von Makros nicht neu zeichnen"
+
+msgid "timeout for 'hlsearch' and :match highlighting in msec"
+msgstr "Timeout für 'hlsearch' und :match Highlights in msec"
+
+msgid ""
+"delay in msec for each char written to the display\n"
+"(for debugging)"
+msgstr ""
+"Verzögerung in msec für jedes zu zeichnendes Zeichen\n"
+"(zum Debuggen)"
+
+msgid "show <Tab> as ^I and end-of-line as $"
+msgstr "zeige <Tab> als ^I und Zeilenende als $"
+
+msgid "list of strings used for list mode"
+msgstr "Liste an Zeichenketten für die Nutzung des List Modus"
+
+msgid "show the line number for each line"
+msgstr "Zeilennummerierung anzeigen"
+
+msgid "show the relative line number for each line"
+msgstr "relative Zeilennummerierung anzeigen"
+
+msgid "number of columns to use for the line number"
+msgstr "zu verwendede Spaltenanzahl für die Zeilennummerierung"
+
+msgid "controls whether concealable text is hidden"
+msgstr "ob verdeckter Text anzuzeigen ist"
+
+msgid "modes in which text in the cursor line can be concealed"
+msgstr "Modi in denen Text innhalb der Cursorzeile verdeckt werden kann"
+
+msgid "syntax, highlighting and spelling"
+msgstr "Syntax, Hervorhebung und Rechtschreibprüfung"
+
+msgid "\"dark\" or \"light\"; the background color brightness"
+msgstr "\"dark\" oder \"light\"; die Helligkeit des Hintergrunds"
+
+msgid "type of file; triggers the FileType event when set"
+msgstr "Dateityp; löst das FileType Autokommando aus"
+
+msgid "name of syntax highlighting used"
+msgstr "Name der zu verwendenen Syntax Hervorhebung"
+
+msgid "maximum column to look for syntax items"
+msgstr "maximale Spaltenanzahl, in der nach Syntaxelementen gesucht werden soll"
+
+msgid "which highlighting to use for various occasions"
+msgstr "welche Hervorherbung für unterschiedlice Gelegenheiten genutzt werden soll"
+
+msgid "highlight all matches for the last used search pattern"
+msgstr "Hervorhebung des letzten Suchmuchsters"
+
+msgid "highlight group to use for the window"
+msgstr "für das Fenster zu verwendende Hervorhebungsgruppe"
+
+msgid "use GUI colors for the terminal"
+msgstr "GUI Farben im Terminal nutzen"
+
+msgid "highlight the screen column of the cursor"
+msgstr "Cursorspalte hervorheben"
+
+msgid "highlight the screen line of the cursor"
+msgstr "Cursorzeile hervorheben"
+
+msgid "specifies which area 'cursorline' highlights"
+msgstr "angeben wo 'cursorline' hervorhebt"
+
+msgid "columns to highlight"
+msgstr "extra hervorzuhebende Spalten"
+
+msgid "highlight spelling mistakes"
+msgstr "Rechtschreibfehler hervorheben"
+
+msgid "list of accepted languages"
+msgstr "Liste zu prüfender Sprachen"
+
+msgid "file that \"zg\" adds good words to"
+msgstr "Datei zu der \"zg\" richtige Wörter hinzufügt"
+
+msgid "pattern to locate the end of a sentence"
+msgstr "Muster um Ende eines Satzes zu finden"
+
+msgid "flags to change how spell checking works"
+msgstr "Flags, welche die Rechtschreibprüfung beeinflussen"
+
+msgid "methods used to suggest corrections"
+msgstr "Methoden um Korrekturen vorzuschlagen"
+
+msgid "amount of memory used by :mkspell before compressing"
+msgstr "Speichermenge die von :mkspell vor der Komprimierung verwendet wird"
+
+msgid "multiple windows"
+msgstr "mehrere Fenster"
+
+msgid "0, 1 or 2; when to use a status line for the last window"
+msgstr "0, 1 oder 2; wann eine Statuszeile verwendet wird"
+
+msgid "alternate format to be used for a status line"
+msgstr "Format das für die Statuszeile verwendet wird"
+
+msgid "make all windows the same size when adding/removing windows"
+msgstr "alle Fenster gleich groß machen, wenn ein neues Fenster hinzukommt oder entfernt wird"
+
+msgid "in which direction 'equalalways' works: \"ver\", \"hor\" or \"both\""
+msgstr "für welche Richtung 'equalalways' verwendet wird: \"ver\", \"hor\" oder \"both\""
+
+msgid "minimal number of lines used for the current window"
+msgstr "minimal zu verwendende Zeilenanzahl für aktuelles Fenster"
+
+msgid "minimal number of lines used for any window"
+msgstr "minmal zu verwendende Zeilenanzahl für alle Fenster"
+
+msgid "keep the height of the window"
+msgstr "aktuelle Größe des Fenster beibehalten"
+
+msgid "keep the width of the window"
+msgstr "aktuelle Breite des Fensters beibehalten"
+
+msgid "minimal number of columns used for the current window"
+msgstr "minimale Spaltenanzahl für das aktuelle Fenster"
+
+msgid "minimal number of columns used for any window"
+msgstr "minimale Spaltenanzahl für alle Fenster"
+
+msgid "initial height of the help window"
+msgstr "initiale Größe des Hilfefensters "
+
+msgid "use a popup window for preview"
+msgstr "ein Popup-Fenster als Vorschaufenster nutzen"
+
+msgid "default height for the preview window"
+msgstr "Standard Höhe für das Vorschaufenster"
+
+msgid "identifies the preview window"
+msgstr "identifiziert ein Vorschaufenster"
+
+msgid "don't unload a buffer when no longer shown in a window"
+msgstr "Buffer nicht entladen, wenn er nicht länger in einem Fenster angezeigt wird"
+
+msgid ""
+"\"useopen\" and/or \"split\"; which window to use when jumping\n"
+"to a buffer"
+msgstr ""
+"\"useopen\" und/oder/or \"split\"; welches Fenster beim Springen zum Buffer zu verwenden ist"
+
+msgid "a new window is put below the current one"
+msgstr "neues Fenster wird unter dem aktuellen geöffnet"
+
+msgid "a new window is put right of the current one"
+msgstr "neues Fenster wird rechts neben dem aktuellen geöffnet"
+
+msgid "this window scrolls together with other bound windows"
+msgstr "dieses Fenster scrollt zusammen mit anderen verbundenen Fenstern"
+
+msgid "\"ver\", \"hor\" and/or \"jump\"; list of options for 'scrollbind'"
+msgstr "\"ver\", \"hor\" und/oder \"jump\"; Liste von Optionen für 'scrollbind'"
+
+msgid "this window's cursor moves together with other bound windows"
+msgstr "Cursor des aktuellen Fensters bewegt sich gleichzeitig mit anderen verbundenen Fenstern"
+
+msgid "size of a terminal window"
+msgstr "Größe des Terminal Fensters"
+
+msgid "key that precedes Vim commands in a terminal window"
+msgstr "Taste, die anderen Vim Befehlen im Terminalfenster vorausgeht"
+
+msgid "max number of lines to keep for scrollback in a terminal window"
+msgstr "maximale zu behaltende Zeilenanzahl für das Zurückscrollen im Terminalfenster"
+
+msgid "type of pty to use for a terminal window"
+msgstr "Typ des zu verwendenen ptys für das Terminalfenster"
+
+msgid "name of the winpty dynamic library"
+msgstr "Name der winpty-dynamischen Bibliothek"
+
+msgid "multiple tab pages"
+msgstr "mehrere Tab Seiten"
+
+msgid "0, 1 or 2; when to use a tab pages line"
+msgstr "0, 1, oder 2; wann eine Tabseitenzeile verwendet wird"
+
+msgid "maximum number of tab pages to open for -p and \"tab all\""
+msgstr "maximale Anzahl an zu öffnenden Tabseiten (für -p und \"tab all\")"
+
+msgid "custom tab pages line"
+msgstr "benutzerdefinierte Tabseitenzeile"
+
+msgid "custom tab page label for the GUI"
+msgstr "benutzerdefinierte Tabseitenbeschriftung für die GUI"
+
+msgid "custom tab page tooltip for the GUI"
+msgstr "benutzerdefinierter Tabseiten-Tooltip für die GUI"
+
+msgid "terminal"
+msgstr "Terminal"
+
+msgid "name of the used terminal"
+msgstr "Name des zu verwendenen Terminals"
+
+msgid "alias for 'term'"
+msgstr "Alias für 'term'"
+
+msgid "check built-in termcaps first"
+msgstr "eingebautes Termcap zuerst prüfen"
+
+msgid "terminal connection is fast"
+msgstr "schnelle Terminalverbindung"
+
+msgid "terminal that requires extra redrawing"
+msgstr "Terminal benötigt zusätzliche Redraws"
+
+msgid "recognize keys that start with <Esc> in Insert mode"
+msgstr "erkennt Tasten die mit <Esc> in Einfüge-Modus anfangen"
+
+msgid "minimal number of lines to scroll at a time"
+msgstr "minimale gleichzeitig zu scrollende Zeilenanzahl"
+
+msgid "maximum number of lines to use scrolling instead of redrawing"
+msgstr "maximal zu scrollende Zeilenanzahl bevor neu gezeichnet wird"
+
+msgid "specifies what the cursor looks like in different modes"
+msgstr "definiert wie der Cursor in unterschiedlichen Modi aussieht"
+
+msgid "show info in the window title"
+msgstr "zeige Infos im Fenstertitel"
+
+msgid "percentage of 'columns' used for the window title"
+msgstr "für den Fentertitel zu verwendender Prozentsatz"
+
+msgid "when not empty, string to be used for the window title"
+msgstr "wenn nicht leer, Zeichenkette, die im Fenstertitel angezeigt wird"
+
+msgid "string to restore the title to when exiting Vim"
+msgstr "Zeichenkette zum Wiederherstellen des Fenstertitels beim Beenden"
+
+msgid "set the text of the icon for this window"
+msgstr "den Symboltext für das Fenster setzen"
+
+msgid "when not empty, text for the icon of this window"
+msgstr "wenn nicht leer, Symboltext des Fensters setzen"
+
+msgid "restore the screen contents when exiting Vim"
+msgstr "den Bildschirminhalt beim Beenden wiederherstellen"
+
+msgid "using the mouse"
+msgstr "Mausnutzung"
+
+msgid "list of flags for using the mouse"
+msgstr "Liste an Flags zur Nutzung der Maus"
+
+msgid "the window with the mouse pointer becomes the current one"
+msgstr "das Fenster mit dem Mauszeiger wird das aktuelle"
+
+msgid "the window with the mouse pointer scrolls with the mouse wheel"
+msgstr "das Fenster mit dem Mauszeiger wird mit der Maus gescrollt"
+
+msgid "hide the mouse pointer while typing"
+msgstr "den Mauszeiger beim Tippen verstecken"
+
+msgid ""
+"\"extend\", \"popup\" or \"popup_setpos\"; what the right\n"
+"mouse button is used for"
+msgstr ""
+"\"extend\", \"popup\" oder \"popup_setpos\"; wofür die rechte\n"
+"Maustaste genutzt wird"
+
+msgid "maximum time in msec to recognize a double-click"
+msgstr "maximale Anzahl in msec um einen Doppelclick zu erkennen"
+
+msgid "\"xterm\", \"xterm2\", \"sgr\", etc.; type of mouse"
+msgstr "\"xterm\", \"xterm2\", \"sgr\", etc.; Maustyp"
+
+msgid "what the mouse pointer looks like in different modes"
+msgstr "wie der Mauszeiger in unterschiedliechen Modi aussieht"
+
+msgid "GUI"
+msgstr "GUI"
+
+msgid "list of font names to be used in the GUI"
+msgstr "Liste an zu verwendenden Schriften für die GUI"
+
+msgid "pair of fonts to be used, for multibyte editing"
+msgstr "zu verwendende Schriftartenpaar für die Multibyte-Bearbeitung"
+
+msgid "list of font names to be used for double-wide characters"
+msgstr "Liste der zu verwendenden Schriftarten für doppelt-breite Zeichen"
+
+msgid "use smooth, antialiased fonts"
+msgstr "glatte, antialiasierte Schriften verwenden"
+
+msgid "list of flags that specify how the GUI works"
+msgstr "Liste von Flags, die das Verhalten der GUI beeinflußen"
+
+msgid "\"icons\", \"text\" and/or \"tooltips\"; how to show the toolbar"
+msgstr "\"icons\", \"text\" und/oder \"tooltips\"; wie die Toolbar angezeigt wird"
+
+msgid "size of toolbar icons"
+msgstr "Größe der Toolbar Icons"
+
+msgid "room (in pixels) left above/below the window"
+msgstr "reservierter Platz (in Pixel) oberhalb/unterhalb des Fensters"
+
+msgid "options for text rendering"
+msgstr "Optionen zum Textrendering"
+
+msgid "use a pseudo-tty for I/O to external commands"
+msgstr "ein Pseudo-TTY für I/O zu externen Befehlen verwenden"
+
+msgid ""
+"\"last\", \"buffer\" or \"current\": which directory used for the file "
+"browser"
+msgstr ""
+"\"last\", \"buffer\" oder \"current\": zu nutzendes Verzeichnis für den Dateibrowser"
+
+msgid "language to be used for the menus"
+msgstr "zu verwendende Sprache für die Menüs"
+
+msgid "maximum number of items in one menu"
+msgstr "maximale Anzahl an Elementen in einem Menü"
+
+msgid "\"no\", \"yes\" or \"menu\"; how to use the ALT key"
+msgstr "\"no\", \"yes\" oder \"menu\"; wie die ALT Taste genutzt wird"
+
+msgid "number of pixel lines to use between characters"
+msgstr "Anzahl an zu nutzenden Pixelzeilen zwischen Zeichen"
+
+msgid "delay in milliseconds before a balloon may pop up"
+msgstr "Verzögerung in msec bevor ein Ballon erscheint"
+
+msgid "use balloon evaluation in the GUI"
+msgstr "verwende die Ballon-eval Funktion in der GUI"
+
+msgid "use balloon evaluation in the terminal"
+msgstr "verwende die Ballon-eval Funktion im Terminal"
+
+msgid "expression to show in balloon eval"
+msgstr "Textausdruck, der bei der Verwendung des Ballons angezeigt werden soll"
+
+msgid "printing"
+msgstr "Drucken"
+
+msgid "list of items that control the format of :hardcopy output"
+msgstr "Anzahl an Elementen die das Format der :hardcopy Ausgabe steuern"
+
+msgid "name of the printer to be used for :hardcopy"
+msgstr "zu verwendender Druckername"
+
+msgid "expression used to print the PostScript file for :hardcopy"
+msgstr "Ausdruck der zum Drucken der PostScriptdatei für :hardcopy genutzt wird"
+
+msgid "name of the font to be used for :hardcopy"
+msgstr "Schriftname, der für :hardcopy genutzt wird"
+
+msgid "format of the header used for :hardcopy"
+msgstr "Format der Kopfzeile die für :hardcopy verwendet wird"
+
+msgid "encoding used to print the PostScript file for :hardcopy"
+msgstr "zum Drucken der PostScriptdatei verwendete Kodierung für :hardcopy"
+
+msgid "the CJK character set to be used for CJK output from :hardcopy"
+msgstr "der für die CJK-Ausgabe zu verwendende CJK-Zeichensatz von :hardcopy"
+
+msgid "list of font names to be used for CJK output from :hardcopy"
+msgstr "List an Schriftarten die für die CJK-Ausgabe von :hardcopy genutzt wird"
+
+msgid "messages and info"
+msgstr "Meldungen und Informationen"
+
+msgid "add 's' flag in 'shortmess' (don't show search message)"
+msgstr "füge 's' Flag in 'shortmess' hinzu (keine Suchmeldung anzeigen)"
+
+msgid "list of flags to make messages shorter"
+msgstr "Liste an Flags um Meldungen kürzer auszugeben"
+
+msgid "show (partial) command keys in the status line"
+msgstr "zeige (partielle) Befehlstasten in der Statuszeile"
+
+msgid "display the current mode in the status line"
+msgstr "zeige aktuellen Modus in der Statuszeile"
+
+msgid "show cursor position below each window"
+msgstr "zeige Cursor Position unter jedem Fenster"
+
+msgid "alternate format to be used for the ruler"
+msgstr "alternatives Format für die 'ruler' Option"
+
+msgid "threshold for reporting number of changed lines"
+msgstr "Schwellwert für die Meldung der Anzeige geänderter Zeilen"
+
+msgid "the higher the more messages are given"
+msgstr "je höher desto mehr Meldungen werden ausgegeben"
+
+msgid "file to write messages in"
+msgstr "Datei in die Meldungen geschrieben werden"
+
+msgid "pause listings when the screen is full"
+msgstr "halte Auflistung von Meldungen an, wenn der Bildschirm voll ist"
+
+msgid "start a dialog when a command fails"
+msgstr "führe einen Dialog aus, wenn ein Befehl fehlschlägt"
+
+msgid "ring the bell for error messages"
+msgstr "bei Fehlermeldungen piepen"
+
+msgid "use a visual bell instead of beeping"
+msgstr "nutze eine grafische Klingel"
+
+msgid "do not ring the bell for these reasons"
+msgstr "aus den folgenden Gründen nicht piepen"
+
+msgid "list of preferred languages for finding help"
+msgstr "Liste der bevorzugten Sprachen für die Hilfe"
+
+msgid "selecting text"
+msgstr "Textauswahl"
+
+msgid "\"old\", \"inclusive\" or \"exclusive\"; how selecting text behaves"
+msgstr "\"old\", \"inclusive\" oder \"exclusive\"; wie sich die Textauswahl verhält"
+
+msgid ""
+"\"mouse\", \"key\" and/or \"cmd\"; when to start Select mode\n"
+"instead of Visual mode"
+msgstr ""
+"\"mouse\", \"key\" und/oder \"cmd\"; wann Select Modus\n"
+"anstelle von Visual Modus genutzt wird"
+
+msgid ""
+"\"unnamed\" to use the * register like unnamed register\n"
+"\"autoselect\" to always put selected text on the clipboard"
+msgstr ""
+"\"unnamed\" nutzt das * Register wie das unbenannte Register\n"
+"\"autoselect\" ausgewählten Text automatisch in der Zwischenablage speichern"
+
+msgid "\"startsel\" and/or \"stopsel\"; what special keys can do"
+msgstr "\"startsel\" und/oder \"stopsel\"; was bestimmte Tasten machen"
+
+msgid "editing text"
+msgstr "Textbearbeitung"
+
+msgid "maximum number of changes that can be undone"
+msgstr "maximale Anzahl an Änderungen, die rückgängig gemacht werden können"
+
+msgid "automatically save and restore undo history"
+msgstr "automatisches Sichern und Wiederherstellen der Undo-Historie"
+
+msgid "list of directories for undo files"
+msgstr "Verzeichnisliste für Undo-Dateien"
+
+msgid "maximum number lines to save for undo on a buffer reload"
+msgstr "maximale Anzahl zu speichernder Zeilen beim neu laden des Buffers"
+
+msgid "changes have been made and not written to a file"
+msgstr "Änderungen wurde gemacht und nicht in die Datei zurück geschrieben"
+
+msgid "buffer is not to be written"
+msgstr "Buffer soll nicht geschrieben werden"
+
+msgid "changes to the text are possible"
+msgstr "Änderungen am Text sind möglich"
+
+msgid "line length above which to break a line"
+msgstr "Zeilenlänge ab wann umgebrochen wird"
+
+msgid "margin from the right in which to break a line"
+msgstr "Rand von rechts an dem eine Zeile umbrochen wird"
+
+msgid "specifies what <BS>, CTRL-W, etc. can do in Insert mode"
+msgstr "definiert, wie sich <BS>, CTRL-W etc. im Einfüge-Modus verhält"
+
+msgid "definition of what comment lines look like"
+msgstr "Definition einer Kommentarzeile"
+
+msgid "list of flags that tell how automatic formatting works"
+msgstr "Liste von Flags, die automatisches Formatieren beeinflußen"
+
+msgid "pattern to recognize a numbered list"
+msgstr "Muster um eine Aufzählungsliste zu erkennen"
+
+msgid "expression used for \"gq\" to format lines"
+msgstr "Ausdruck für \"gq\" zur Formatierung von Zeilen"
+
+msgid "specifies how Insert mode completion works for CTRL-N and CTRL-P"
+msgstr "legt fest, wie Vervollständigen im Einfüge-Modus mit CTRL-N und CTRL-P funktioniert"
+
+msgid "whether to use a popup menu for Insert mode completion"
+msgstr "ob ein Popup-Menü bei der Verfollständigen im Einfüge-Modus genutzt wird"
+
+msgid "options for the Insert mode completion info popup"
+msgstr "Optionen für das Popup bei der Einfüge-Modus Vervollständigung"
+
+msgid "maximum height of the popup menu"
+msgstr "maximale Höhe des Popup-Menüs"
+
+msgid "minimum width of the popup menu"
+msgstr "minimale Breite des Popup-Menüs"
+
+msgid "user defined function for Insert mode completion"
+msgstr "benutzerdefinierte Funktion für Vervollständigung im Einfüge-Modus"
+
+msgid "function for filetype-specific Insert mode completion"
+msgstr "Funktion für Dateityp-spezifische Vervollständigung im Einfüge-Modus"
+
+msgid "list of dictionary files for keyword completion"
+msgstr "Liste von Wörterbuchdateien für Keyword-Vervollständigung"
+
+msgid "list of thesaurus files for keyword completion"
+msgstr "List von Thesaurusdateien für Keyword-Vervollständigung"
+
+msgid "adjust case of a keyword completion match"
+msgstr "Groß-/Kleinschreibung für Keyword-Vervollständigung anpassen"
+
+msgid "enable entering digraphs with c1 <BS> c2"
+msgstr "erlaubt das Eingeben von Digraphs mittels c1 <BS> c2"
+
+msgid "the \"~\" command behaves like an operator"
+msgstr "der \"~\" Befehl verhält sich wie ein Operator"
+
+msgid "function called for the \"g@\" operator"
+msgstr "aufzurufende Funktion für den \"g@\" Operator"
+
+msgid "when inserting a bracket, briefly jump to its match"
+msgstr "bei der Eingabe von Klammern, kurz zur zugehörigen Klammer springen"
+
+msgid "tenth of a second to show a match for 'showmatch'"
+msgstr "Anzahl an Zentelsekunden um zugehörige Klammer anzuzeigen"
+
+msgid "list of pairs that match for the \"%\" command"
+msgstr "Liste an zugehörigen Paaren für den \"%\" Befehl"
+
+msgid "use two spaces after '.' when joining a line"
+msgstr "nutze zwei Leerzeichen nach einem '.' beim Verbinden einer Zeile"
+
+msgid ""
+"\"alpha\", \"octal\", \"hex\", \"bin\" and/or \"unsigned\"; number formats\n"
+"recognized for CTRL-A and CTRL-X commands"
+msgstr ""
+"\"alpha\", \"octal\", \"hex\", \"bin\" und/oder \"unsigned\"; zu erkennende Zahlenformate\n"
+"für CTRL-A und CTRL-X Befehle"
+
+msgid "tabs and indenting"
+msgstr "Tabs und Einrückungen"
+
+msgid "number of spaces a <Tab> in the text stands for"
+msgstr "Anzahl an Leerzeichen für einen <Tab> im Text"
+
+msgid "number of spaces used for each step of (auto)indent"
+msgstr "zu nutzende Anzahl an Leerzeichen je Einrückungsebene"
+
+msgid "list of number of spaces a tab counts for"
+msgstr "Anzahl an Leerzeichen für einen <Tab>"
+
+msgid "list of number of spaces a soft tabsstop counts for"
+msgstr "Anzahl an Leerzeichen für einen Soft-Tabstop"
+
+msgid "a <Tab> in an indent inserts 'shiftwidth' spaces"
+msgstr "ein <Tab> beim Einrücken fügt 'shiftwidth' Leerzeichen ein"
+
+msgid "if non-zero, number of spaces to insert for a <Tab>"
+msgstr "wenn ungleich 0, Anzahl an einzufügenden Leerzeichen für einen <Tab>"
+
+msgid "round to 'shiftwidth' for \"<<\" and \">>\""
+msgstr "runde Einrückung zum nächsten 'shiftwidth' für \"<<\" und \">>\""
+
+msgid "expand <Tab> to spaces in Insert mode"
+msgstr "ersetze <Tab> durch Leerzeichen im Einfüge-Modus"
+
+msgid "automatically set the indent of a new line"
+msgstr "automatisches Einrücken neuer Zeilen"
+
+msgid "do clever autoindenting"
+msgstr "cleveres automatisches Einrücken vornehmen"
+
+msgid "enable specific indenting for C code"
+msgstr "erlaube C-Code spezifisches Einrücken"
+
+msgid "options for C-indenting"
+msgstr "Optionen für C-Code spezifisches Einrücken"
+
+msgid "keys that trigger C-indenting in Insert mode"
+msgstr "Tasten, die C-Code Einrücken im Einfüge-Modus auslösen"
+
+msgid "list of words that cause more C-indent"
+msgstr "Liste an Wörtern, die ein eweiteres C-Code Einrücken auslösen"
+
+msgid "expression used to obtain the indent of a line"
+msgstr "Ausdruck um den Einzug einer Zeile zu erhalten"
+
+msgid "keys that trigger indenting with 'indentexpr' in Insert mode"
+msgstr "Tasten, die das Einrücken von 'indentexpr' im Einfüge-Modus auslösen"
+
+msgid "copy whitespace for indenting from previous line"
+msgstr "Einfügen von Leerzeichen aus der vorherigen Zeile kopieren"
+
+msgid "preserve kind of whitespace when changing indent"
+msgstr "Art von Leerzeichen beim Ändern des Einzugs beibehalten"
+
+msgid "enable lisp mode"
+msgstr "aktiviere Lisp Modus"
+
+msgid "words that change how lisp indenting works"
+msgstr "Wörter, die die Funktionsweise des Lisp-Einzugs ändern"
+
+msgid "folding"
+msgstr "Faltung"
+
+msgid "unset to display all folds open"
+msgstr "ausschalten um alle Faltungen zu öffnen"
+
+msgid "folds with a level higher than this number will be closed"
+msgstr "Faltungen eines höheren Levels werden geschlossen"
+
+msgid "value for 'foldlevel' when starting to edit a file"
+msgstr "Wert von 'foldlevel' beim Start des Editierens einer Datei"
+
+msgid "width of the column used to indicate folds"
+msgstr "Breite der Spalte die Faltungen anzeigt"
+
+msgid "expression used to display the text of a closed fold"
+msgstr "Ausdruck, der verwendet wird, um den Text einer geschlossene Faltung anzuzeigen"
+
+msgid "set to \"all\" to close a fold when the cursor leaves it"
+msgstr "setze auf \"all\" um eine Faltung zu schließen, wenn der Cursor sie verlässt"
+
+msgid "specifies for which commands a fold will be opened"
+msgstr "definiert für welche Befehle eine Faltung geöffnet wird"
+
+msgid "minimum number of screen lines for a fold to be closed"
+msgstr "minimale Anzahl an Bildschirmzeilen damit Faltung geschlossen wird"
+
+msgid "template for comments; used to put the marker in"
+msgstr "Template für Kommentare; wird verwendet um Faltungs-Marker einzufügen"
+
+msgid ""
+"folding type: \"manual\", \"indent\", \"expr\", \"marker\",\n"
+"\"syntax\" or \"diff\""
+msgstr ""
+"Faltungstypen: \"manual\", \"indent\", \"expr\", \"marker\",\n"
+"\"syntax\" oder \"diff\""
+
+msgid "expression used when 'foldmethod' is \"expr\""
+msgstr "Ausdruck der genutzt wird, wenn 'foldmethod' \"expr\" ist"
+
+msgid "used to ignore lines when 'foldmethod' is \"indent\""
+msgstr "wird genutzt um Zeilen zu ignorieren wenn 'foldmethod' \"indent\" ist"
+
+msgid "markers used when 'foldmethod' is \"marker\""
+msgstr "genutzte Marker wenn 'foldmethod' \"marker\" ist"
+
+msgid "maximum fold depth for when 'foldmethod' is \"indent\" or \"syntax\""
+msgstr "maximale Faltungstiefe, wenn 'foldmethod' \"indent\" oder \"syntax\" ist"
+
+msgid "diff mode"
+msgstr "Diff Modus"
+
+msgid "use diff mode for the current window"
+msgstr "nutze Diff Modus im aktuellen Fenster"
+
+msgid "options for using diff mode"
+msgstr "Optionen für den Diff Modus"
+
+msgid "expression used to obtain a diff file"
+msgstr "Ausdrücke um einen Diff zu erhalten"
+
+msgid "expression used to patch a file"
+msgstr "verwendeter Ausdruck um einen Datei zu patchen"
+
+msgid "mapping"
+msgstr "Mapping"
+
+msgid "maximum depth of mapping"
+msgstr "maximale Tiefe eins Mappings"
+
+msgid "recognize mappings in mapped keys"
+msgstr "erkenne Mappings in gemappten Tasten"
+
+msgid "allow timing out halfway into a mapping"
+msgstr "erlaube Timeouts von Mappings"
+
+msgid "allow timing out halfway into a key code"
+msgstr "erlaube Timeouts von Tasten"
+
+msgid "time in msec for 'timeout'"
+msgstr "Zeit in msec für 'timeout'"
+
+msgid "time in msec for 'ttimeout'"
+msgstr "Zeit in msec für 'ttimeout'"
+
+msgid "reading and writing files"
+msgstr "Lesen und Schreiben von Dateien"
+
+msgid "enable using settings from modelines when reading a file"
+msgstr "erlaube das Setzen von Optionen in Modelines beim Lesen einer Datei"
+
+msgid "allow setting expression options from a modeline"
+msgstr "erlaube das Setzen von Ausdrucks-Optionen ('*expr') aus einer Modeline"
+
+msgid "number of lines to check for modelines"
+msgstr "zu checkende Zeilenanzahl für Modelines"
+
+msgid "binary file editing"
+msgstr "binäres Dateibearbeiten"
+
+msgid "last line in the file has an end-of-line"
+msgstr "letzte Zeile einer Datei hat ein Zeilenendezeichen"
+
+msgid "fixes missing end-of-line at end of text file"
+msgstr "behebt ein fehlendes Zeilenendezeichen am Ende einer Textdatei"
+
+msgid "prepend a Byte Order Mark to the file"
+msgstr "Byte Order Mark am Anfang einer Datei hinzufügen"
+
+msgid "end-of-line format: \"dos\", \"unix\" or \"mac\""
+msgstr "Zeilenendezeichenformat: \"dos\", \"unix\" oder \"mac\""
+
+msgid "list of file formats to look for when editing a file"
+msgstr "List von zu erkennenden Zeilenformaten beim Bearbeiten einer Datei"
+
+msgid "obsolete, use 'fileformat'"
+msgstr "veraltet, verwende 'fileformat'"
+
+msgid "obsolete, use 'fileformats'"
+msgstr "veraltet, verwende 'fileformats'"
+
+msgid "writing files is allowed"
+msgstr "Schreiben von Dateien ist erlaubt"
+
+msgid "write a backup file before overwriting a file"
+msgstr "eine Backupdatei vor dem Überschreiben anlegen"
+
+msgid "keep a backup after overwriting a file"
+msgstr "behalte Backup nach dem Überschreiben einer Datei"
+
+msgid "patterns that specify for which files a backup is not made"
+msgstr "Muster, das angibt für welche Dateien kein Backup erstellt wird"
+
+msgid "whether to make the backup as a copy or rename the existing file"
+msgstr "ob ein Backup als Kopie oder die vorhandene Datei umbenannt werden soll"
+
+msgid "list of directories to put backup files in"
+msgstr "Liste an Verzeichnissen, wo Backupdateien gespeichert werden"
+
+msgid "file name extension for the backup file"
+msgstr "Dateiendung für die Backupdatei"
+
+msgid "automatically write a file when leaving a modified buffer"
+msgstr "Datei automatisch schreiben beim Verlassen eines geänderten Buffers"
+
+msgid "as 'autowrite', but works with more commands"
+msgstr "wie 'autowrite', aber funktioniert mit mehr Befehlen"
+
+msgid "always write without asking for confirmation"
+msgstr "immer schreiben, ohne nach einer Bestätigung zu fragen"
+
+msgid "automatically read a file when it was modified outside of Vim"
+msgstr "Datei automatisch lesen wenn sie außerhalb von Vim geändert wurde"
+
+msgid "keep oldest version of a file; specifies file name extension"
+msgstr "älteste Version einer Datei behalten; definiert Dateiendung"
+
+msgid "forcibly sync the file to disk after writing it"
+msgstr "nach dem Schreiben die Datei zwangsweise mit der Festplatte synchronisieren"
+
+msgid "use 8.3 file names"
+msgstr "nutze 8.3 Dateinamen"
+
+msgid "encryption method for file writing: zip, blowfish or blowfish2"
+msgstr "Verschlüsselungsmethode: zip, blowfish oder blowfish2"
+
+msgid "the swap file"
+msgstr "Keine Auslagerungsdatei"
+
+msgid "list of directories for the swap file"
+msgstr "Liste an Verzeichnissen, wo Auslagerungsdateien gespeichert werden"
+
+msgid "use a swap file for this buffer"
+msgstr "eine Auslagerungsdatei für diesen Buffer nutzen"
+
+msgid "\"sync\", \"fsync\" or empty; how to flush a swap file to disk"
+msgstr "\"sync\", \"fsync\" oder leer; wie eine Auslagerungsdatei auf Festplatte geschrieben wird"
+
+msgid "number of characters typed to cause a swap file update"
+msgstr "Anzahl eingegebenen Zeichen nachdem eine Auslagerungsdatei aktualisiert wird"
+
+msgid "time in msec after which the swap file will be updated"
+msgstr "Zeit in msec nachdem eine Auslagerungsdatei aktualisiert wird"
+
+msgid "maximum amount of memory in Kbyte used for one buffer"
+msgstr "maximale Speichermenge in Kilobyte für einen Buffer"
+
+msgid "maximum amount of memory in Kbyte used for all buffers"
+msgstr "maximale Speichermenge in Kilobyte für alle Buffer"
+
+msgid "command line editing"
+msgstr "Befehlszeile"
+
+msgid "how many command lines are remembered"
+msgstr "wie viele Befehle gespeichert werden"
+
+msgid "key that triggers command-line expansion"
+msgstr "Taste, welche die Kommandozeilen-Vervollständigung auslöst"
+
+msgid "like 'wildchar' but can also be used in a mapping"
+msgstr "wie 'wildchar' aber für Makros"
+
+msgid "specifies how command line completion works"
+msgstr "definiert wie die Kommandozeilen-Vervollständigung funktioniert"
+
+msgid "empty or \"tagfile\" to list file name of matching tags"
+msgstr "leer oder \"tagfile\" um Dateinamen von passenden Tags anzuzeigen"
+
+msgid "list of file name extensions that have a lower priority"
+msgstr "Liste von Dateieindungen mit einer geringen Priorität"
+
+msgid "list of file name extensions added when searching for a file"
+msgstr "Liste von zusätzlichen Dateiendungen wenn Dateien gesucht werden"
+
+msgid "list of patterns to ignore files for file name completion"
+msgstr "Liste an zu ignorierenden Dateimustern für die Dateinamens-Vervollständigung"
+
+msgid "ignore case when using file names"
+msgstr "Groß-/Kleinschreibung bei Dateinamen ignorieren"
+
+msgid "ignore case when completing file names"
+msgstr "Groß-/Kleinschreibug bei Dateinamens-Vervollständigung ignorieren"
+
+msgid "command-line completion shows a list of matches"
+msgstr "Kommandozeilen-Vervollständigung zeigt Vorschläge an"
+
+msgid "key used to open the command-line window"
+msgstr "Taste um das Kommandozeilen-Fenster zu öffnen"
+
+msgid "height of the command-line window"
+msgstr "Höhe des Kommandozeilen-Fensters"
+
+msgid "executing external commands"
+msgstr "externe Befehle ausführen"
+
+msgid "name of the shell program used for external commands"
+msgstr "Name der Shell zum Ausführen externer Befehle"
+
+msgid "when to use the shell or directly execute a command"
+msgstr "wann eine Shell oder direkt der Befehl ausgeführt wird"
+
+msgid "character(s) to enclose a shell command in"
+msgstr "Zeichen zum Einschließen eines Shell-Befehls"
+
+msgid "like 'shellquote' but include the redirection"
+msgstr "wie 'shellquote', aber schließen auch die Umleitung ein"
+
+msgid "characters to escape when 'shellxquote' is ("
+msgstr "Zeichen, die zu escapen sind, wenn 'shellxquote' \"(\" ist"
+
+msgid "argument for 'shell' to execute a command"
+msgstr "Argument für 'shell' um ein Befehl auszuführen"
+
+msgid "used to redirect command output to a file"
+msgstr "verwendet um Befehl in eine Datei umzuleiten"
+
+msgid "use a temp file for shell commands instead of using a pipe"
+msgstr "nutzt eine temporäre Datei für Shell-Befehle anstatt einer Pipe"
+
+msgid "program used for \"=\" command"
+msgstr "zu verwendendes Programm für \"=\" Befehl"
+
+msgid "program used to format lines with \"gq\" command"
+msgstr "zu verwendendes Programm für \"gq\" Befehl"
+
+msgid "program used for the \"K\" command"
+msgstr "zu verwendendes Programm für \"K\" Befehl"
+
+msgid "warn when using a shell command and a buffer has changes"
+msgstr "warne wenn ein Shell-Befehl genutzt wird und ein Buffer Änderung hat"
+
+msgid "running make and jumping to errors (quickfix)"
+msgstr "Make aufrufen und zu Fehler springen (Quickfix)"
+
+msgid "name of the file that contains error messages"
+msgstr "Dateiname der Datei mit den Fehlermeldungen"
+
+msgid "list of formats for error messages"
+msgstr "Liste an Formaten für Fehlermeldungen"
+
+msgid "program used for the \":make\" command"
+msgstr "zu verwendendes Programm für \":make\" Befehl"
+
+msgid "string used to put the output of \":make\" in the error file"
+msgstr "Zeichenkette um Ausgabe von \":make\" in Fehlerdatei umzuleiten"
+
+msgid "name of the errorfile for the 'makeprg' command"
+msgstr "Name der Fehlerdatei für 'makeprg' Befehl"
+
+msgid "program used for the \":grep\" command"
+msgstr "zu verwendendes Programm für \":grep\" Befehl"
+
+msgid "list of formats for output of 'grepprg'"
+msgstr "Liste an Formaten für die Ausgabe von 'grepprg'"
+
+msgid "encoding of the \":make\" and \":grep\" output"
+msgstr "Kodierung von \":make\" und \":grep\" Ausgabe"
+
+msgid "function to display text in the quickfix window"
+msgstr "Funktion um Text im Quickfix Fenster anzuzeigen"
+
+msgid "system specific"
+msgstr "System spezifisch"
+
+msgid "use forward slashes in file names; for Unix-like shells"
+msgstr "nutze (vorwärts) Schrägstriche in Dateinamen; für Unix-artige Shells"
+
+msgid "specifies slash/backslash used for completion"
+msgstr "spezifiziert Slash/Backslash für Vervollständigung"
+
+msgid "language specific"
+msgstr "Sprachspezifisch"
+
+msgid "specifies the characters in a file name"
+msgstr "spezifiziert Zeichen in einem Dateinamen"
+
+msgid "specifies the characters in an identifier"
+msgstr "spezifiziert Zeichen in einer Kennung (identifier)"
+
+msgid "specifies the characters in a keyword"
+msgstr "spezifiziert Zeichen in einem Keyword"
+
+msgid "specifies printable characters"
+msgstr "spezifiziert druckbare Zeichen"
+
+msgid "specifies escape characters in a string"
+msgstr "spezifiziert Escape-Zeichen einer Zeichenkette"
+
+msgid "display the buffer right-to-left"
+msgstr "den Inhalt eines Buffers von rechts nach links anzeigen"
+
+msgid "when to edit the command-line right-to-left"
+msgstr "wann die Kommandozeile von rechts nach links zu bearbeiten ist"
+
+msgid "insert characters backwards"
+msgstr "Zeichen rückwärts einfügen"
+
+msgid "allow CTRL-_ in Insert and Command-line mode to toggle 'revins'"
+msgstr "erlaubt CTRL-_ im Einfüge- und Kommandozeilen-Modus"
+
+msgid "the ASCII code for the first letter of the Hebrew alphabet"
+msgstr "der ASCII Code für den ersten Buchstaben des hebräischen Alphabets"
+
+msgid "use Hebrew keyboard mapping"
+msgstr "hebräische Tastaturbelegung nutzen"
+
+msgid "use phonetic Hebrew keyboard mapping"
+msgstr "phonetische hebräische Tastaturbelegung nutzen"
+
+msgid "prepare for editing Arabic text"
+msgstr "beginne Bearbeitung von arabischen Text"
+
+msgid "perform shaping of Arabic characters"
+msgstr "Formen arabischer Zeichen durchführen"
+
+msgid "terminal will perform bidi handling"
+msgstr "Terminal führt Bidi-Handhabung durch"
+
+msgid "name of a keyboard mapping"
+msgstr "Name einer Tastatusbelegung"
+
+msgid "list of characters that are translated in Normal mode"
+msgstr "Liste von Zeichen, die im Normal-Modus übersetzt werden"
+
+msgid "apply 'langmap' to mapped characters"
+msgstr "'langmap' auf gemappted Zeichen anwenden"
+
+msgid "when set never use IM; overrules following IM options"
+msgstr "wenn gesetzt, nutzt kein IM, überstimmt folgende IM Optionen"
+
+msgid "in Insert mode: 1: use :lmap; 2: use IM; 0: neither"
+msgstr "im Einfüge-Modus: 1: nutzt :lmap; 2: nutzt IM; 0: keine"
+
+msgid "input method style, 0: on-the-spot, 1: over-the-spot"
+msgstr "Eingabemethode: 0: On-the-spot, 1: Over-the-spot"
+
+msgid "entering a search pattern: 1: use :lmap; 2: use IM; 0: neither"
+msgstr "Eingabe eines Suchmusters: 1: nutzt :lmap; 2: nutzt IM; 0: keine"
+
+msgid "when set always use IM when starting to edit a command line"
+msgstr "wenn gesetzt, nutzt immer IM beim Bearbeiten der Kommandozeile"
+
+msgid "function to obtain IME status"
+msgstr "Funktion um den IME Status zu erhalten"
+
+msgid "function to enable/disable IME"
+msgstr "Funktion um IME zu aktivieren/deaktivieren"
+
+msgid "multi-byte characters"
+msgstr "Multi-Byte Zeichen"
+
+msgid ""
+"character encoding used in Vim: \"latin1\", \"utf-8\",\n"
+"\"euc-jp\", \"big5\", etc."
+msgstr ""
+"in Vim genutzte Zeichenkodierung: \"latin1\", \"utf-8\",\n"
+"\"euc-jp\", \"big5\", etc."
+
+msgid "character encoding for the current file"
+msgstr "Zeichenkodierung der aktuellen Datei"
+
+msgid "automatically detected character encodings"
+msgstr "automatisch erkannte Zeichenkodierung"
+
+msgid "character encoding used by the terminal"
+msgstr "Zeichenkodierung des Terminals"
+
+msgid "expression used for character encoding conversion"
+msgstr "zur Zeichenkonvertierung zu nutzender Ausdruck"
+
+msgid "delete combining (composing) characters on their own"
+msgstr "kombinierende (composing) Zeichen einzeln löschen"
+
+msgid "maximum number of combining (composing) characters displayed"
+msgstr "maximale Anzahl an anzuzeigenden kombinierenden (composing) Zeichen"
+
+msgid "key that activates the X input method"
+msgstr "Taste, die die X-Eingabemethode aktiviert"
+
+msgid "width of ambiguous width characters"
+msgstr "Breite von ambiguous-width Zeichen"
+
+msgid "emoji characters are full width"
+msgstr "Emoji Zeichen haben volle Breite"
+
+msgid "various"
+msgstr "Verschiedenes"
+
+msgid ""
+"when to use virtual editing: \"block\", \"insert\", \"all\"\n"
+"and/or \"onemore\""
+msgstr ""
+"Wann virtuelles Bearbeiteni genutzt wird: \"block\", \"insert\", \"all\"\n"
+"und/oder \"onemore\""
+
+msgid "list of autocommand events which are to be ignored"
+msgstr "Liste von zu ignorierenden Autokommando Ereignisse"
+
+msgid "load plugin scripts when starting up"
+msgstr "Lade Plugins beim Start"
+
+msgid "enable reading .vimrc/.exrc/.gvimrc in the current directory"
+msgstr "erlaube das Lesen von .vimrc/.exrc/.gvimrc im aktuellen Verzeichnis"
+
+msgid "safer working with script files in the current directory"
+msgstr "sicheres Arbeiten von Script Dateien im aktuellen Verzeichnis"
+
+msgid "use the 'g' flag for \":substitute\""
+msgstr "nutze das 'g' Flag für \":substitute\""
+
+msgid "'g' and 'c' flags of \":substitute\" toggle"
+msgstr "'g' und 'c' Flags für \":substitute\" umschalten"
+
+msgid "allow reading/writing devices"
+msgstr "erlaube Lesen/Schreiben von Geräten"
+
+msgid "maximum depth of function calls"
+msgstr "maximale Tiefe von Funktionsaufrufen"
+
+msgid "list of words that specifies what to put in a session file"
+msgstr "Liste von Wörtern, die konfigurieren, was in einer Session Datei gespeichert wird"
+
+msgid "list of words that specifies what to save for :mkview"
+msgstr "Liste von Wörtern, die konfigurieren, was in einer Datei für :mkview gespeichert wird"
+
+msgid "directory where to store files with :mkview"
+msgstr "Verzeichnis in dem Dateien für :mkview gespeichert werden"
+
+msgid "list that specifies what to write in the viminfo file"
+msgstr "Liste die definiert, was in der Viminfo Datei gespeichert wird"
+
+msgid "file name used for the viminfo file"
+msgstr "Dateiname für die Viminfo Datei"
+
+msgid "what happens with a buffer when it's no longer in a window"
+msgstr "was passiert, wenn ein Buffer nicht länger in einem Fenster angezeigt wird"
+
+msgid "empty, \"nofile\", \"nowrite\", \"quickfix\", etc.: type of buffer"
+msgstr "leer, \"nofile\", \"nowrite\", \"quickfix\", etc: Buffertyp"
+
+msgid "whether the buffer shows up in the buffer list"
+msgstr "ob der Buffer in der Bufferliste angezeigt wird"
+
+msgid "set to \"msg\" to see all error messages"
+msgstr "setze auf \"msg\" um alle Fehlermeldungen zu sehen"
+
+msgid "whether to show the signcolumn"
+msgstr "ob die Zeichenspalte (signcolumn) angezeigt wird"
+
+msgid "interval in milliseconds between polls for MzScheme threads"
+msgstr "Intervall in Millisekunden zwischen Abrufen der MzScheme Threads"
+
+msgid "name of the Lua dynamic library"
+msgstr "Name der dynamischen Lua Bibliothek"
+
+msgid "name of the Perl dynamic library"
+msgstr "Name der dynamischen Perl Bibliothek"
+
+msgid "whether to use Python 2 or 3"
+msgstr "ob Python 2 oder 3 verwendet wird"
+
+msgid "name of the Python 2 dynamic library"
+msgstr "Name der dynamischen Python 2 Bibliothek"
+
+msgid "name of the Python 2 home directory"
+msgstr "Name des Python 2 Home-Verzeichnis"
+
+msgid "name of the Python 3 dynamic library"
+msgstr "Name der dynamischen Python 3 Bibliothek"
+
+msgid "name of the Python 3 home directory"
+msgstr "Name des Python 3 Home-Verzeichnis"
+
+msgid "name of the Ruby dynamic library"
+msgstr "Name der dynamischen Ruby Bibliothek"
+
+msgid "name of the Tcl dynamic library"
+msgstr "Name der dynamischen Tcl Bibliothek"
+
+msgid "name of the MzScheme dynamic library"
+msgstr "Name der dynamischen MzScheme Bibliothek"
+
+msgid "name of the MzScheme GC dynamic library"
+msgstr "Name der dynamischen MzScheme GC Bibliothek"

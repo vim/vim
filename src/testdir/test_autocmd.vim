@@ -1689,9 +1689,7 @@ func Test_change_mark_in_autocmds()
 endfunc
 
 func Test_Filter_noshelltemp()
-  if !executable('cat')
-    return
-  endif
+  CheckExecutable cat
 
   enew!
   call setline(1, ['a', 'b', 'c', 'd'])
@@ -1759,6 +1757,28 @@ func Test_TextYankPost()
     \g:event)
 
   call assert_equal({}, v:event)
+
+  if has('clipboard_working') && !has('gui_running')
+    " Test that when the visual selection is automatically copied to clipboard
+    " register a TextYankPost is emitted
+    call setline(1, ['foobar'])
+
+    let @* = ''
+    set clipboard=autoselect
+    exe "norm! ggviw\<Esc>"
+    call assert_equal(
+        \{'regcontents': ['foobar'], 'regname': '*', 'operator': 'y', 'regtype': 'v', 'visual': v:true},
+        \g:event)
+
+    let @+ = ''
+    set clipboard=autoselectplus
+    exe "norm! ggviw\<Esc>"
+    call assert_equal(
+        \{'regcontents': ['foobar'], 'regname': '+', 'operator': 'y', 'regtype': 'v', 'visual': v:true},
+        \g:event)
+
+    set clipboard&vim
+  endif
 
   au! TextYankPost
   unlet g:event

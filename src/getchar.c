@@ -3675,6 +3675,14 @@ getcmdkeycmd(
 	    }
 	    c1 = TO_SPECIAL(c1, c2);
 	}
+	if (c1 == Ctrl_V)
+	{
+	    // CTRL-V is followed by octal, hex or other characters, reverses
+	    // what AppendToRedobuffLit() does.
+	    no_reduce_keys = TRUE;  //  don't merge modifyOtherKeys
+	    c1 = get_literal();
+	    no_reduce_keys = FALSE;
+	}
 
 	if (got_int)
 	    aborted = TRUE;

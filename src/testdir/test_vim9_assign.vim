@@ -225,6 +225,78 @@ def Test_assignment()
   END
 enddef
 
+def Test_assign_index()
+  # list of list
+  var l1: list<number>
+  l1[0] = 123
+  assert_equal([123], l1)
+
+  var l2: list<list<number>>
+  l2[0] = []
+  l2[0][0] = 123
+  assert_equal([[123]], l2)
+
+  var l3: list<list<list<number>>>
+  l3[0] = []
+  l3[0][0] = []
+  l3[0][0][0] = 123
+  assert_equal([[[123]]], l3)
+
+  var lines =<< trim END
+      var l3: list<list<number>>
+      l3[0] = []
+      l3[0][0] = []
+  END
+  CheckDefFailure(lines, 'E1012: Type mismatch; expected number but got list<unknown>', 3)
+
+  # dict of dict
+  var d1: dict<number>
+  d1.one = 1
+  assert_equal({one: 1}, d1)
+
+  var d2: dict<dict<number>>
+  d2.one = {}
+  d2.one.two = 123
+  assert_equal({one: {two: 123}}, d2)
+
+  var d3: dict<dict<dict<number>>>
+  d3.one = {}
+  d3.one.two = {}
+  d3.one.two.three = 123
+  assert_equal({one: {two: {three: 123}}}, d3)
+
+  lines =<< trim END
+      var d3: dict<dict<number>>
+      d3.one = {}
+      d3.one.two = {}
+  END
+  CheckDefFailure(lines, 'E1012: Type mismatch; expected number but got dict<unknown>', 3)
+
+  # list of dict
+  var ld: list<dict<number>>
+  ld[0] = {}
+  ld[0].one = 123
+  assert_equal([{one: 123}], ld)
+
+  lines =<< trim END
+      var ld: list<dict<number>>
+      ld[0] = []
+  END
+  CheckDefFailure(lines, 'E1012: Type mismatch; expected dict<number> but got list<unknown>', 2)
+
+  # dict of list
+  var dl: dict<list<number>>
+  dl.one = []
+  dl.one[0] = 123
+  assert_equal({one: [123]}, dl)
+
+  lines =<< trim END
+      var dl: dict<list<number>>
+      dl.one = {}
+  END
+  CheckDefFailure(lines, 'E1012: Type mismatch; expected list<number> but got dict<unknown>', 2)
+enddef
+
 def Test_extend_list()
   var lines =<< trim END
       vim9script
@@ -794,18 +866,17 @@ def Test_assign_dict_unknown_type()
   END
   CheckScriptSuccess(lines)
 
-  # doesn't work yet
-  #lines =<< trim END
-  #    vim9script
-  #    var mylist = [[]]
-  #    mylist[0] += [#{one: 'one'}]
-  #    def Func()
-  #      var dd = mylist[0][0]
-  #      assert_equal('one', dd.one)
-  #    enddef
-  #    Func()
-  #END
-  #CheckScriptSuccess(lines)
+  lines =<< trim END
+      vim9script
+      var mylist = [[]]
+      mylist[0] += [#{one: 'one'}]
+      def Func()
+        var dd = mylist[0][0]
+        assert_equal('one', dd.one)
+      enddef
+      Func()
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_assign_lambda()

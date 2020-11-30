@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.2.  Last change: 2020 Aug 15
+*syntax.txt*	For Vim version 8.2.  Last change: 2020 Nov 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5304,6 +5304,12 @@ If you like Question highlighting for C comments, put this in your vimrc file: >
 	:highlight link cComment Question
 Without the "default" in the C syntax file, the highlighting would be
 overruled when the syntax file is loaded.
+
+To have a link survive `:highlight clear`, which is useful if you have
+highlighting for a specific filetype and you want to keep it when selecting
+another color scheme, put a command like this in the
+"after/syntax/{filetype}.vim" file: >
+    highlight! default link cComment Question
 
 ==============================================================================
 15. Cleaning up						*:syn-clear* *E391*

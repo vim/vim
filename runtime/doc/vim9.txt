@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Nov 20
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Nov 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -387,6 +387,9 @@ Like this: >
 This will assign "start" and print a line: >
 	var result = start
 	:+ print
+
+Note that the colon is not required for the |+cmd| argument: >
+	edit +6 fname
 
 It is also possible to split a function header over multiple lines, in between
 arguments: >
@@ -1122,7 +1125,7 @@ are used.  That is different, thus it's good to use a different command:
 `:var`.  This is used in many languages.  The semantics might be slightly
 different, but it's easily recognized as a declaration.
 
-Using `:const`  for constants is common, but the semantics vary.  Some
+Using `:const`  for constants is common, but the semantics varies.  Some
 languages only make the variable immutable, others also make the value
 immutable.  Since "final" is well known from Java for only making the variable
 immutable we decided to use that.  And then `:const` can be used for making
@@ -1182,7 +1185,7 @@ text not starting with a number would be converted to zero, which is
 considered false.  Thus using a string for a condition would often not give an
 error and be considered false.  That is confusing.
 
-In Vim9 type checking is more strict to avoid mistakes.  Where a condition is
+In Vim9 type checking is stricter to avoid mistakes.  Where a condition is
 used, e.g. with the `:if` command and the `||` operator, only boolean-like
 values are accepted:
 	true:  `true`, `v:true`, `1`, `0 < 9`

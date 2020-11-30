@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Nov 19
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Nov 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,8 +38,6 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Coverity errors in October and November.
-
 Vim9 - Change
 - Drop support for #{} early December.  Close #7310
   -> Does it work to recognize lambda?
@@ -47,8 +45,10 @@ Vim9 - Change
 	var int = 5
 	{x: int, y: int}
 Vim9 - Making everything work:
+- Compile: for [key, value] in items(map): Also support @r, $VAR, etc.
 - Make map() give an error if the resulting type of the first argument is
-  wrong.  Only works if the type is known?
+  wrong.  Only works if the type is known?  Is this slow (need to go over all
+  items)?
 - Run the same tests in :def and Vim9 script, like in Test_expr7_not()
 - need to check type when a declaration specifies a type: #6507
 	let nr: number = 'asdf'
@@ -57,8 +57,6 @@ Vim9 - Making everything work:
   the script-local function, not a global one.
 - Make sure that where a callback is expected a function can be used (without
   quotes). E.g. sort() and map().  Also at the script level.
-- assignment to more complex lval: list[1][2][3] = 8   #7309
-  Also "list[0] += value".  test in Test_assign_dict_unknown_type().
 - ":put" with ISN_PUT does not handle range correctly, e.g. ":$-2put".
   Add command to parse range at runtime?
 - When defining an :autocmd or :command, how to specify using Vim9 syntax?
@@ -77,9 +75,6 @@ Vim9 - Making everything work:
 - Expand `=expr` in :next, :argedit, :argadd, :argdelete, :drop
 - Expand `=expr` in :vimgrep, :vimgrepadd, :lvimgrep, :lvimgrepadd
 - Expand `=expr` in :mkspell
-- Test that a function defined inside a :def function is local to that
-  function, g: functions can be defined and script-local functions cannot be
-  defined.
 - Does this work already: can use func as reference:
 	def SomeFunc() ...
 	map(list, SomeFunc)
@@ -87,7 +82,6 @@ Vim9 - Making everything work:
 - make 0 == 'string' fail on the script level, like inside :def.
 - Check that when using a user function name without prefix, it does not find
   a global function.  Prefixing g: is required.
-- Compile: for [key, value] in items(map)
 - Need the equivalent of get_lval() and set_var_lval() to implement assignment
   to nested list and dict members.
     - Assignment to dict doesn't work:
@@ -127,8 +121,9 @@ Also:
 - Test each level of expressions properly, with type checking
 - Test try/catch and throw better, also nested.
   Test return inside try/finally jumps to finally and then returns.
-- Test: Function declared inside a :def function is local, disappears at the
-  end of the function.  Unless g: is used, just like with variables.
+- Test that a function defined inside a :def function is local to that
+  function, g: functions can be defined and script-local functions cannot be
+  defined.
 - implement :type
 - import type declaration?
 - Future work: See |vim9-classes|
@@ -160,7 +155,6 @@ Popup windows:
 	     current window.
     ? - switch between current window and all popup windows
     Esc in popup window goes back to previous current window
-- Cursor not updated before a redraw, making it jump. (#5943)
 - Add a termcap entry for changing the cursor when it goes under the popup and
   back.  like t_SI and t_EI  (t_SU and t_EU, where "U" means under?)
 - With terminal in popup, allow for popup_hide() to temporarily hide it.?
@@ -278,6 +272,9 @@ Was originally written by Felipe Morales.
 
 Remove SPACE_IN_FILENAME ? It is only used for completion.
 
+Making breakat support multibyte characters (Yasuhiro Matsumoto, #6598)
+Scroll doesn't work correctly, why?
+
 Add 'termguiattr' option, use "gui=" attributes in the terminal?  Would work
 with 'termguicolors'. #1740
 
@@ -291,9 +288,6 @@ changes.
 Add an option to start_timer() to return from the input loop with K_IGNORE.
 This is useful e.g. when a popup was created that disables mappings, we need
 to return from vgetc() to make this happen.  #7011
-
-Making breakat support multibyte characters (Yasuhiro Matsumoto, #6598)
-Scroll doesn't work correctly, why?
 
 Expanding <mods> should put the tab number from cmdmod.tab before "tab".
 Any way to convert "$" back by using a special value? (#6901)
@@ -322,6 +316,9 @@ autocommands for the buffer lifecycle:
     BufIsWiped    (after buffer ID was wiped)
     BufIsRenamed  (after buffer ID gets another name)
 The buffer list and windows are locked, no changes possible
+
+Add a ModeChanged autocommand that has an argument indicating the old and new
+mode, as what's returned from mode().  Also used for switching Terminal mode.
 
 Matchparen doesn't remove highlight after undo. (#7054)
 Is OK when syntax HL is active.
@@ -766,6 +763,7 @@ Make ":interactive !cmd" stop termcap mode, also when used in an autocommand.
 
 Add buffer argument to undotree(). (#4001)
 
+Memory leak in test_debugger
 Using uninitialized value in test_crypt (can't explain why).
 Memory leak in test_terminal_fail
 TODO: be able to run all parts of test_alot with valgrind separately
@@ -895,9 +893,6 @@ Try out background make plugin:
   https://github.com/AndrewVos/vim-make-background
 or asyncmake:
   https://github.com/yegappan/asyncmake
-
-Add a ModeChanged autocommand that has an argument indicating the old and new
-mode, as what's returned from mode().  Also used for switching Terminal mode.
 
 Add an option with file patterns, to be used when unloading a buffer: If there
 is a match, remove entries for the buffer from marks, jumplist, etc.  To be

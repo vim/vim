@@ -432,6 +432,13 @@ vim_main2(void)
     if (p_lpl)
     {
 	char_u *rtp_copy = NULL;
+	char_u *plugin_pattern = (char_u *)
+# if defined(VMS) || defined(AMIGA) // VMS and Amiga don't handle the "**".
+		"plugin/*.vim"
+# else
+		"plugin/**/*.vim"
+# endif
+		;
 
 	// First add all package directories to 'runtimepath', so that their
 	// autoload directories can be found.  Only if not done already with a
@@ -444,12 +451,7 @@ vim_main2(void)
 	    add_pack_start_dirs();
 	}
 
-	source_in_path(rtp_copy == NULL ? p_rtp : rtp_copy,
-# ifdef VMS	// Somehow VMS doesn't handle the "**".
-		(char_u *)"plugin/*.vim",
-# else
-		(char_u *)"plugin/**/*.vim",
-# endif
+	source_in_path(rtp_copy == NULL ? p_rtp : rtp_copy, plugin_pattern,
 		DIP_ALL | DIP_NOAFTER, NULL);
 	TIME_MSG("loading plugins");
 	vim_free(rtp_copy);
@@ -460,13 +462,8 @@ vim_main2(void)
 	    load_start_packages();
 	TIME_MSG("loading packages");
 
-# ifdef VMS	// Somehow VMS doesn't handle the "**".
-	source_runtime((char_u *)"plugin/*.vim", DIP_ALL | DIP_AFTER);
-# else
-	source_runtime((char_u *)"plugin/**/*.vim", DIP_ALL | DIP_AFTER);
-# endif
+	source_runtime(plugin_pattern, DIP_ALL | DIP_AFTER);
 	TIME_MSG("loading after plugins");
-
     }
 #endif
 
@@ -1508,7 +1505,8 @@ getout_preserve_modified(int exitval)
 
 
 /*
- * Exit properly.
+ * Exit properly.  This is the only way to exit Vim after startup has
+ * succeeded.  We are certain to exit here, no way to abort it.
  */
     void
 getout(int exitval)
@@ -1523,6 +1521,11 @@ getout(int exitval)
     // standard.
     if (exmode_active)
 	exitval += ex_exitval;
+
+#ifdef FEAT_EVAL
+    set_vim_var_type(VV_EXITING, VAR_NUMBER);
+    set_vim_var_nr(VV_EXITING, exitval);
+#endif
 
     // Position the cursor on the last screen line, below all the text
 #ifdef FEAT_GUI

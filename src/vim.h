@@ -1996,7 +1996,8 @@ typedef int sock_T;
 #define VV_ECHOSPACE	93
 #define VV_ARGV		94
 #define VV_COLLATE      95
-#define VV_LEN		96	// number of v: vars
+#define VV_EXITING	96
+#define VV_LEN		97	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL

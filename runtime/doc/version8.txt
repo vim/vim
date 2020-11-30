@@ -76,7 +76,7 @@ Timers ~
 Also asynchronous are timers.  They can fire once or repeatedly and invoke a
 function to do any work.  For example: >
 	let tempTimer = timer_start(4000, 'CheckTemp')
-This will call the CheckTemp() function four seconds (4000 milli seconds)
+This will call the CheckTemp() function four seconds (4000 milliseconds)
 later.  See |timer_start()|.
 
 

@@ -1214,6 +1214,7 @@ VimLeave			Before exiting Vim, just after writing the
 				To detect an abnormal exit use |v:dying|.
 				When v:dying is 2 or more this event is not
 				triggered.
+				To get the exit code use |v:exiting|.
 							*VimLeavePre*
 VimLeavePre			Before exiting Vim, just before writing the
 				.viminfo file.  This is executed only once,
@@ -1224,6 +1225,7 @@ VimLeavePre			Before exiting Vim, just before writing the
 <				To detect an abnormal exit use |v:dying|.
 				When v:dying is 2 or more this event is not
 				triggered.
+				To get the exit code use |v:exiting|.
 							*VimResized*
 VimResized			After the Vim window was resized, thus 'lines'
 				and/or 'columns' changed.  Not when starting

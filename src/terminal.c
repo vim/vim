@@ -1202,6 +1202,7 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
 	return;
     }
     ch_log(channel, "writing %d bytes to terminal", (int)len);
+    cursor_off();
     term_write_job_output(term, msg, len);
 
 #ifdef FEAT_GUI
@@ -2199,15 +2200,15 @@ send_keys_to_term(term_T *term, int c, int modmask, int typed)
 }
 
     static void
-position_cursor(win_T *wp, VTermPos *pos, int add_off UNUSED)
+position_cursor(win_T *wp, VTermPos *pos)
 {
     wp->w_wrow = MIN(pos->row, MAX(0, wp->w_height - 1));
     wp->w_wcol = MIN(pos->col, MAX(0, wp->w_width - 1));
 #ifdef FEAT_PROP_POPUP
-    if (add_off && popup_is_popup(curwin))
+    if (popup_is_popup(wp))
     {
-	wp->w_wrow += popup_top_extra(curwin);
-	wp->w_wcol += popup_left_extra(curwin);
+	wp->w_wrow += popup_top_extra(wp);
+	wp->w_wcol += popup_left_extra(wp);
 	wp->w_flags |= WFLAG_WCOL_OFF_ADDED | WFLAG_WROW_OFF_ADDED;
     }
     else
@@ -2524,7 +2525,7 @@ terminal_loop(int blocking)
 	if (termwinkey == Ctrl_W)
 	    termwinkey = 0;
     }
-    position_cursor(curwin, &curbuf->b_term->tl_cursor_pos, TRUE);
+    position_cursor(curwin, &curbuf->b_term->tl_cursor_pos);
     may_set_cursor_props(curbuf->b_term);
 
     while (blocking || vpeekc_nomap() != NUL)
@@ -3059,13 +3060,10 @@ handle_movecursor(
     while (for_all_windows_and_curwin(&wp, &did_curwin))
     {
 	if (wp->w_buffer == term->tl_buffer)
-	    position_cursor(wp, &pos, FALSE);
+	    position_cursor(wp, &pos);
     }
     if (term->tl_buffer == curbuf && !term->tl_normal_mode)
-    {
-	may_toggle_cursor(term);
 	update_cursor(term, term->tl_cursor_visible);
-    }
 
     return 1;
 }
@@ -3818,7 +3816,7 @@ term_update_window(win_T *wp)
 
     // The cursor may have been moved when resizing.
     vterm_state_get_cursorpos(state, &pos);
-    position_cursor(wp, &pos, FALSE);
+    position_cursor(wp, &pos);
 
     for (pos.row = term->tl_dirty_row_start; pos.row < term->tl_dirty_row_end
 					  && pos.row < wp->w_height; ++pos.row)
@@ -4595,12 +4593,12 @@ term_get_buf(typval_T *argvars, char *where)
 {
     buf_T *buf;
 
-    (void)tv_get_number(&argvars[0]);	    // issue errmsg if type error
     ++emsg_off;
     buf = tv_get_buf(&argvars[0], FALSE);
     --emsg_off;
     if (buf == NULL || buf->b_term == NULL)
     {
+	(void)tv_get_number(&argvars[0]);    // issue errmsg if type error
 	ch_log(NULL, "%s: invalid buffer argument", where);
 	return NULL;
     }
