@@ -2819,7 +2819,7 @@ syn_list_header(
     }
     else if (msg_col + outlen + 1 >= Columns)
     {
-	msg_putchar('\n');
+	msg_putchar(' ');
 	if (got_int)
 	    return TRUE;
     }
