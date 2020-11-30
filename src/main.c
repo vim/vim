@@ -1505,7 +1505,8 @@ getout_preserve_modified(int exitval)
 
 
 /*
- * Exit properly.
+ * Exit properly.  This is the only way to exit Vim after startup has
+ * succeeded.  We are certain to exit here, no way to abort it.
  */
     void
 getout(int exitval)
@@ -1520,6 +1521,11 @@ getout(int exitval)
     // standard.
     if (exmode_active)
 	exitval += ex_exitval;
+
+#ifdef FEAT_EVAL
+    set_vim_var_type(VV_EXITING, VAR_NUMBER);
+    set_vim_var_nr(VV_EXITING, exitval);
+#endif
 
     // Position the cursor on the last screen line, below all the text
 #ifdef FEAT_GUI
