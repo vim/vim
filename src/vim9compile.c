@@ -5123,7 +5123,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	// can be something like "[1, 2]->func()"
 	return arg;
 
-    if (oplen > 0 && (!VIM_ISWHITE(*sp) || !VIM_ISWHITE(op[oplen])))
+    if (oplen > 0 && (!VIM_ISWHITE(*sp) || !IS_WHITE_OR_NUL(op[oplen])))
     {
 	error_white_both(op, oplen);
 	return NULL;
@@ -5159,10 +5159,16 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     }
     else if (var_count > 0)
     {
+	char_u *wp;
+
 	// for "[var, var] = expr" evaluate the expression here, loop over the
 	// list of variables below.
+	// A line break may follow the "=".
 
-	p = skipwhite(op + oplen);
+	wp = op + oplen;
+	p = skipwhite(wp);
+	if (may_get_next_line(wp, &p, cctx) == FAIL)
+	    return FAIL;
 	if (compile_expr0(&p, cctx) == FAIL)
 	    return NULL;
 	end = p;

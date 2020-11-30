@@ -657,6 +657,24 @@ def Test_assignment_var_list()
       assert_equal(3, &ts)
       assert_equal(4, &sw)
       set ts=8 sw=4
+
+      [@a, @z] = ['aa', 'zz']
+      assert_equal('aa', @a)
+      assert_equal('zz', @z)
+
+      [$SOME_VAR, $OTHER_VAR] = ['some', 'other']
+      assert_equal('some', $SOME_VAR)
+      assert_equal('other', $OTHER_VAR)
+
+      [g:globalvar, s:scriptvar, b:bufvar, w:winvar, t:tabvar, v:errmsg] =
+            ['global', 'script', 'buf', 'win', 'tab', 'error']
+      assert_equal('global', g:globalvar)
+      assert_equal('script', s:scriptvar)
+      assert_equal('buf', b:bufvar)
+      assert_equal('win', w:winvar)
+      assert_equal('tab', t:tabvar)
+      assert_equal('error', v:errmsg)
+      unlet g:globalvar
   END
   CheckDefAndScriptSuccess(lines)
 enddef
