@@ -7995,9 +7995,13 @@ save_current_state(save_state_T *sst)
     sst->save_opcount = opcount;
     sst->save_reg_executing = reg_executing;
 
-    msg_scroll = FALSE;	    // no msg scrolling in Normal mode
-    restart_edit = 0;	    // don't go to Insert mode
-    p_im = FALSE;	    // don't use 'insertmode'
+    msg_scroll = FALSE;		    // no msg scrolling in Normal mode
+    restart_edit = 0;		    // don't go to Insert mode
+    p_im = FALSE;		    // don't use 'insertmode'
+#ifdef FEAT_EVAL
+    sst->save_script_version = current_sctx.sc_version;
+    current_sctx.sc_version = 1;    // not in Vim9 script
+#endif
 
     /*
      * Save the current typeahead.  This is required to allow using ":normal"
@@ -8021,6 +8025,9 @@ restore_current_state(save_state_T *sst)
     opcount = sst->save_opcount;
     reg_executing = sst->save_reg_executing;
     msg_didout |= sst->save_msg_didout;	// don't reset msg_didout now
+#ifdef FEAT_EVAL
+    current_sctx.sc_version = sst->save_script_version;
+#endif
 
     // Restore the state (needed when called from a function executed for
     // 'indentexpr'). Update the mouse and cursor, they may have changed.

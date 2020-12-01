@@ -2065,7 +2065,7 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 
 		    --todo;
 		    di = HI2DI(hi);
-		    if (filtermap != FILTERMAP_FILTER
+		    if (filtermap == FILTERMAP_MAP
 					 && (value_check_lock(di->di_tv.v_lock,
 							   arg_errmsg, TRUE)
 				|| var_check_ro(di->di_flags,
@@ -2225,12 +2225,12 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 	    }
 	    else
 	    {
-		// Materialized list from range(): loop over the items
+		// Materialized list: loop over the items
 		for (li = l->lv_first; li != NULL; li = nli)
 		{
 		    typval_T newtv;
 
-		    if (filtermap != FILTERMAP_FILTER && value_check_lock(
+		    if (filtermap == FILTERMAP_MAP && value_check_lock(
 					   li->li_tv.v_lock, arg_errmsg, TRUE))
 			break;
 		    nli = li->li_next;

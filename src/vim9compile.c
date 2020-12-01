@@ -5066,6 +5066,184 @@ vim9_declare_error(char_u *name)
 }
 
 /*
+ * For one assignment figure out the type of destination.  Return it in "dest".
+ * When not recognized "dest" is not set.
+ * For an option "opt_flags" is set.
+ * For a v:var "vimvaridx" is set.
+ * "type" is set to the destination type if known, unchanted otherwise.
+ * Return FAIL if an error message was given.
+ */
+    static int
+get_var_dest(
+	char_u		*name,
+	assign_dest_T	*dest,
+	int		cmdidx,
+	int		*opt_flags,
+	int		*vimvaridx,
+	type_T		**type,
+	cctx_T		*cctx)
+{
+    char_u *p;
+
+    if (*name == '&')
+    {
+	int	cc;
+	long	numval;
+	int	opt_type;
+
+	*dest = dest_option;
+	if (cmdidx == CMD_final || cmdidx == CMD_const)
+	{
+	    emsg(_(e_const_option));
+	    return FAIL;
+	}
+	p = name;
+	p = find_option_end(&p, opt_flags);
+	if (p == NULL)
+	{
+	    // cannot happen?
+	    emsg(_(e_letunexp));
+	    return FAIL;
+	}
+	cc = *p;
+	*p = NUL;
+	opt_type = get_option_value(skip_option_env_lead(name),
+						    &numval, NULL, *opt_flags);
+	*p = cc;
+	if (opt_type == -3)
+	{
+	    semsg(_(e_unknown_option), name);
+	    return FAIL;
+	}
+	if (opt_type == -2 || opt_type == 0)
+	    *type = &t_string;
+	else
+	    *type = &t_number;	// both number and boolean option
+    }
+    else if (*name == '$')
+    {
+	*dest = dest_env;
+	*type = &t_string;
+    }
+    else if (*name == '@')
+    {
+	if (!valid_yank_reg(name[1], FALSE) || name[1] == '.')
+	{
+	    emsg_invreg(name[1]);
+	    return FAIL;
+	}
+	*dest = dest_reg;
+	*type = &t_string;
+    }
+    else if (STRNCMP(name, "g:", 2) == 0)
+    {
+	*dest = dest_global;
+    }
+    else if (STRNCMP(name, "b:", 2) == 0)
+    {
+	*dest = dest_buffer;
+    }
+    else if (STRNCMP(name, "w:", 2) == 0)
+    {
+	*dest = dest_window;
+    }
+    else if (STRNCMP(name, "t:", 2) == 0)
+    {
+	*dest = dest_tab;
+    }
+    else if (STRNCMP(name, "v:", 2) == 0)
+    {
+	typval_T	*vtv;
+	int		di_flags;
+
+	*vimvaridx = find_vim_var(name + 2, &di_flags);
+	if (*vimvaridx < 0)
+	{
+	    semsg(_(e_variable_not_found_str), name);
+	    return FAIL;
+	}
+	// We use the current value of "sandbox" here, is that OK?
+	if (var_check_ro(di_flags, name, FALSE))
+	    return FAIL;
+	*dest = dest_vimvar;
+	vtv = get_vim_var_tv(*vimvaridx);
+	*type = typval2type_vimvar(vtv, cctx->ctx_type_list);
+    }
+    return OK;
+}
+
+/*
+ * Generate a STORE instruction for "dest", not being "dest_local".
+ * Return FAIL when out of memory.
+ */
+    static int
+generate_store_var(
+	cctx_T		*cctx,
+	assign_dest_T	dest,
+	int		opt_flags,
+	int		vimvaridx,
+	int		scriptvar_idx,
+	int		scriptvar_sid,
+	type_T		*type,
+	char_u		*name)
+{
+    switch (dest)
+    {
+	case dest_option:
+	    return generate_STOREOPT(cctx, skip_option_env_lead(name),
+								    opt_flags);
+	case dest_global:
+	    // include g: with the name, easier to execute that way
+	    return generate_STORE(cctx, ISN_STOREG, 0, name);
+	case dest_buffer:
+	    // include b: with the name, easier to execute that way
+	    return generate_STORE(cctx, ISN_STOREB, 0, name);
+	case dest_window:
+	    // include w: with the name, easier to execute that way
+	    return generate_STORE(cctx, ISN_STOREW, 0, name);
+	case dest_tab:
+	    // include t: with the name, easier to execute that way
+	    return generate_STORE(cctx, ISN_STORET, 0, name);
+	case dest_env:
+	    return generate_STORE(cctx, ISN_STOREENV, 0, name + 1);
+	case dest_reg:
+	    return generate_STORE(cctx, ISN_STOREREG, name[1], NULL);
+	case dest_vimvar:
+	    return generate_STORE(cctx, ISN_STOREV, vimvaridx, NULL);
+	case dest_script:
+	    if (scriptvar_idx < 0)
+	    {
+		char_u  *name_s = name;
+		int	    r;
+
+		// Include s: in the name for store_var()
+		if (name[1] != ':')
+		{
+		    int len = (int)STRLEN(name) + 3;
+
+		    name_s = alloc(len);
+		    if (name_s == NULL)
+			name_s = name;
+		    else
+			vim_snprintf((char *)name_s, len, "s:%s", name);
+		}
+		r = generate_OLDSCRIPT(cctx, ISN_STORES, name_s,
+							  scriptvar_sid, type);
+		if (name_s != name)
+		    vim_free(name_s);
+		return r;
+	    }
+	    return generate_VIM9SCRIPT(cctx, ISN_STORESCRIPT,
+					   scriptvar_sid, scriptvar_idx, type);
+	case dest_local:
+	case dest_expr:
+	    // cannot happen
+	    break;
+    }
+    return FAIL;
+}
+
+/*
  * Compile declaration and assignment:
  * "let name"
  * "var name = expr"
@@ -5205,12 +5383,12 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	var_start = arg;
     for (var_idx = 0; var_idx == 0 || var_idx < var_count; var_idx++)
     {
-	char_u		*var_end = skip_var_one(var_start, FALSE);
+	char_u		*var_end;
+	char_u		*dest_end;
 	size_t		varlen;
 	int		new_local = FALSE;
-	int		opt_type;
-	int		opt_flags = 0;
 	assign_dest_T	dest = dest_local;
+	int		opt_flags = 0;
 	int		vimvaridx = -1;
 	lvar_T		*lvar = NULL;
 	lvar_T		arg_lvar;
@@ -5218,22 +5396,27 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	int		has_index = FALSE;
 	int		instr_count = -1;
 
+	// "dest_end" is the end of the destination, including "[expr]" or
+	// ".name".
+	// "var_end" is the end of the variable/option/etc. name.
+	dest_end = skip_var_one(var_start, FALSE);
 	if (*var_start == '@')
-	    p = var_start + 2;
+	    var_end = var_start + 2;
 	else
 	{
 	    // skip over the leading "&", "&l:", "&g:" and "$"
-	    p = skip_option_env_lead(var_start);
-	    p = to_name_end(p, TRUE);
+	    var_end = skip_option_env_lead(var_start);
+	    var_end = to_name_end(var_end, TRUE);
 	}
 
-	// "a: type" is declaring variable "a" with a type, not "a:".
+	// "a: type" is declaring variable "a" with a type, not dict "a:".
+	if (is_decl && dest_end == var_start + 2 && dest_end[-1] == ':')
+	    --dest_end;
 	if (is_decl && var_end == var_start + 2 && var_end[-1] == ':')
 	    --var_end;
-	if (is_decl && p == var_start + 2 && p[-1] == ':')
-	    --p;
 
-	varlen = p - var_start;
+	// compute the length of the destination without "[expr]" or ".name"
+	varlen = var_end - var_start;
 	vim_free(name);
 	name = vim_strnsave(var_start, varlen);
 	if (name == NULL)
@@ -5245,101 +5428,19 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	{
 	    int	    declare_error = FALSE;
 
-	    if (*var_start == '&')
+	    if (get_var_dest(name, &dest, cmdidx, &opt_flags,
+					      &vimvaridx, &type, cctx) == FAIL)
+		goto theend;
+	    if (dest != dest_local)
 	    {
-		int	    cc;
-		long	    numval;
-
-		dest = dest_option;
-		if (cmdidx == CMD_final || cmdidx == CMD_const)
-		{
-		    emsg(_(e_const_option));
-		    goto theend;
-		}
-		declare_error = is_decl;
-		p = var_start;
-		p = find_option_end(&p, &opt_flags);
-		if (p == NULL)
-		{
-		    // cannot happen?
-		    emsg(_(e_letunexp));
-		    goto theend;
-		}
-		cc = *p;
-		*p = NUL;
-		opt_type = get_option_value(skip_option_env_lead(var_start),
-						     &numval, NULL, opt_flags);
-		*p = cc;
-		if (opt_type == -3)
-		{
-		    semsg(_(e_unknown_option), var_start);
-		    goto theend;
-		}
-		if (opt_type == -2 || opt_type == 0)
-		    type = &t_string;
-		else
-		    type = &t_number;	// both number and boolean option
-	    }
-	    else if (*var_start == '$')
-	    {
-		dest = dest_env;
-		type = &t_string;
-		declare_error = is_decl;
-	    }
-	    else if (*var_start == '@')
-	    {
-		if (!valid_yank_reg(var_start[1], FALSE) || var_start[1] == '.')
-		{
-		    emsg_invreg(var_start[1]);
-		    goto theend;
-		}
-		dest = dest_reg;
-		type = &t_string;
-		declare_error = is_decl;
-	    }
-	    else if (varlen > 1 && STRNCMP(var_start, "g:", 2) == 0)
-	    {
-		dest = dest_global;
-		declare_error = is_decl;
-	    }
-	    else if (varlen > 1 && STRNCMP(var_start, "b:", 2) == 0)
-	    {
-		dest = dest_buffer;
-		declare_error = is_decl;
-	    }
-	    else if (varlen > 1 && STRNCMP(var_start, "w:", 2) == 0)
-	    {
-		dest = dest_window;
-		declare_error = is_decl;
-	    }
-	    else if (varlen > 1 && STRNCMP(var_start, "t:", 2) == 0)
-	    {
-		dest = dest_tab;
-		declare_error = is_decl;
-	    }
-	    else if (varlen > 1 && STRNCMP(var_start, "v:", 2) == 0)
-	    {
-		typval_T	*vtv;
-		int		di_flags;
-
-		vimvaridx = find_vim_var(name + 2, &di_flags);
-		if (vimvaridx < 0)
-		{
-		    semsg(_(e_variable_not_found_str), var_start);
-		    goto theend;
-		}
-		// We use the current value of "sandbox" here, is that OK?
-		if (var_check_ro(di_flags, name, FALSE))
-		    goto theend;
-		dest = dest_vimvar;
-		vtv = get_vim_var_tv(vimvaridx);
-		type = typval2type_vimvar(vtv, cctx->ctx_type_list);
+		// Specific kind of variable recognized.
 		declare_error = is_decl;
 	    }
 	    else
 	    {
 		int	    idx;
 
+		// No specific kind of variable recognized, just a name.
 		for (idx = 0; reserved[idx] != NULL; ++idx)
 		    if (STRCMP(reserved[idx], name) == 0)
 		    {
@@ -5450,19 +5551,19 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 
 	// handle "a:name" as a name, not index "name" on "a"
 	if (varlen > 1 || var_start[varlen] != ':')
-	    p = var_end;
+	    var_end = dest_end;
 
 	if (dest != dest_option)
 	{
-	    if (is_decl && *p == ':')
+	    if (is_decl && *var_end == ':')
 	    {
 		// parse optional type: "let var: type = expr"
-		if (!VIM_ISWHITE(p[1]))
+		if (!VIM_ISWHITE(var_end[1]))
 		{
 		    semsg(_(e_white_space_required_after_str), ":");
 		    goto theend;
 		}
-		p = skipwhite(p + 1);
+		p = skipwhite(var_end + 1);
 		type = parse_type(&p, cctx->ctx_type_list);
 		has_type = TRUE;
 	    }
@@ -5499,7 +5600,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	}
 
 	member_type = type;
-	if (var_end > var_start + varlen)
+	if (dest_end > var_start + varlen)
 	{
 	    // Something follows after the variable: "var[idx]" or "var.key".
 	    // TODO: should we also handle "->func()" here?
@@ -5856,12 +5957,12 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    if (type->tt_type == VAR_LIST)
 	    {
 		if (generate_instr_drop(cctx, ISN_STORELIST, 3) == FAIL)
-		    return FAIL;
+		    goto theend;
 	    }
 	    else if (type->tt_type == VAR_DICT)
 	    {
 		if (generate_instr_drop(cctx, ISN_STOREDICT, 3) == FAIL)
-		    return FAIL;
+		    goto theend;
 	    }
 	    else
 	    {
@@ -5876,100 +5977,40 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		// ":const var": lock the value, but not referenced variables
 		generate_LOCKCONST(cctx);
 
-	    switch (dest)
+	    if (dest != dest_local)
 	    {
-		case dest_option:
-		    generate_STOREOPT(cctx, skip_option_env_lead(name),
-								    opt_flags);
-		    break;
-		case dest_global:
-		    // include g: with the name, easier to execute that way
-		    generate_STORE(cctx, ISN_STOREG, 0, name);
-		    break;
-		case dest_buffer:
-		    // include b: with the name, easier to execute that way
-		    generate_STORE(cctx, ISN_STOREB, 0, name);
-		    break;
-		case dest_window:
-		    // include w: with the name, easier to execute that way
-		    generate_STORE(cctx, ISN_STOREW, 0, name);
-		    break;
-		case dest_tab:
-		    // include t: with the name, easier to execute that way
-		    generate_STORE(cctx, ISN_STORET, 0, name);
-		    break;
-		case dest_env:
-		    generate_STORE(cctx, ISN_STOREENV, 0, name + 1);
-		    break;
-		case dest_reg:
-		    generate_STORE(cctx, ISN_STOREREG, name[1], NULL);
-		    break;
-		case dest_vimvar:
-		    generate_STORE(cctx, ISN_STOREV, vimvaridx, NULL);
-		    break;
-		case dest_script:
-		    {
-			if (scriptvar_idx < 0)
-			{
-			    char_u *name_s = name;
+		if (generate_store_var(cctx, dest, opt_flags, vimvaridx,
+			     scriptvar_idx, scriptvar_sid, type, name) == FAIL)
+		    goto theend;
+	    }
+	    else if (lvar != NULL)
+	    {
+		isn_T *isn = ((isn_T *)instr->ga_data)
+						   + instr->ga_len - 1;
 
-			    // Include s: in the name for store_var()
-			    if (name[1] != ':')
-			    {
-				int len = (int)STRLEN(name) + 3;
+		// optimization: turn "var = 123" from ISN_PUSHNR +
+		// ISN_STORE into ISN_STORENR
+		if (!lvar->lv_from_outer
+				&& instr->ga_len == instr_count + 1
+				&& isn->isn_type == ISN_PUSHNR)
+		{
+		    varnumber_T val = isn->isn_arg.number;
 
-				name_s = alloc(len);
-				if (name_s == NULL)
-				    name_s = name;
-				else
-				    vim_snprintf((char *)name_s, len,
-								 "s:%s", name);
-			    }
-			    generate_OLDSCRIPT(cctx, ISN_STORES, name_s,
-							  scriptvar_sid, type);
-			    if (name_s != name)
-				vim_free(name_s);
-			}
-			else
-			    generate_VIM9SCRIPT(cctx, ISN_STORESCRIPT,
-					   scriptvar_sid, scriptvar_idx, type);
-		    }
-		    break;
-		case dest_local:
-		    if (lvar != NULL)
-		    {
-			isn_T *isn = ((isn_T *)instr->ga_data)
-							   + instr->ga_len - 1;
-
-			// optimization: turn "var = 123" from ISN_PUSHNR +
-			// ISN_STORE into ISN_STORENR
-			if (!lvar->lv_from_outer
-					&& instr->ga_len == instr_count + 1
-					&& isn->isn_type == ISN_PUSHNR)
-			{
-			    varnumber_T val = isn->isn_arg.number;
-
-			    isn->isn_type = ISN_STORENR;
-			    isn->isn_arg.storenr.stnr_idx = lvar->lv_idx;
-			    isn->isn_arg.storenr.stnr_val = val;
-			    if (stack->ga_len > 0)
-				--stack->ga_len;
-			}
-			else if (lvar->lv_from_outer)
-			    generate_STORE(cctx, ISN_STOREOUTER, lvar->lv_idx,
-									 NULL);
-			else
-			    generate_STORE(cctx, ISN_STORE, lvar->lv_idx, NULL);
-		    }
-		    break;
-		case dest_expr:
-		    // cannot happen
-		    break;
+		    isn->isn_type = ISN_STORENR;
+		    isn->isn_arg.storenr.stnr_idx = lvar->lv_idx;
+		    isn->isn_arg.storenr.stnr_val = val;
+		    if (stack->ga_len > 0)
+			--stack->ga_len;
+		}
+		else if (lvar->lv_from_outer)
+		    generate_STORE(cctx, ISN_STOREOUTER, lvar->lv_idx, NULL);
+		else
+		    generate_STORE(cctx, ISN_STORE, lvar->lv_idx, NULL);
 	    }
 	}
 
 	if (var_idx + 1 < var_count)
-	    var_start = skipwhite(var_end + 1);
+	    var_start = skipwhite(dest_end + 1);
     }
 
     // for "[var, var] = expr" drop the "expr" value
@@ -6443,6 +6484,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 {
     char_u	*arg;
     char_u	*arg_end;
+    char_u	*name = NULL;
     char_u	*p;
     int		var_count = 0;
     int		semicolon = FALSE;
@@ -6538,41 +6580,62 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 
     for (idx = 0; idx < var_count; ++idx)
     {
-	// TODO: use skip_var_one, also assign to @r, $VAR, etc.
-	p = arg;
-	while (eval_isnamec(*p))
-	    ++p;
+	assign_dest_T	dest = dest_local;
+	int		opt_flags = 0;
+	int		vimvaridx = -1;
+	type_T		*type = &t_any;
+
+	p = skip_var_one(arg, FALSE);
 	varlen = p - arg;
-	var_lvar = lookup_local(arg, varlen, cctx);
-	if (var_lvar != NULL)
-	{
-	    semsg(_(e_variable_already_declared), arg);
-	    drop_scope(cctx);
-	    return NULL;
-	}
+	name = vim_strnsave(arg, varlen);
+	if (name == NULL)
+	    goto failed;
 
-	// Reserve a variable to store "var".
-	// TODO: check for type
-	var_lvar = reserve_local(cctx, arg, varlen, FALSE, &t_any);
-	if (var_lvar == NULL)
+	// TODO: script var not supported?
+	if (get_var_dest(name, &dest, CMD_for, &opt_flags,
+					      &vimvaridx, &type, cctx) == FAIL)
+	    goto failed;
+	if (dest != dest_local)
 	{
-	    // out of memory or used as an argument
-	    drop_scope(cctx);
-	    return NULL;
+	    if (generate_store_var(cctx, dest, opt_flags, vimvaridx,
+						     0, 0, type, name) == FAIL)
+		goto failed;
 	}
-
-	if (semicolon && idx == var_count - 1)
-	    var_lvar->lv_type = vartype;
 	else
-	    var_lvar->lv_type = item_type;
-	generate_STORE(cctx, ISN_STORE, var_lvar->lv_idx, NULL);
+	{
+	    var_lvar = lookup_local(arg, varlen, cctx);
+	    if (var_lvar != NULL)
+	    {
+		semsg(_(e_variable_already_declared), arg);
+		goto failed;
+	    }
+
+	    // Reserve a variable to store "var".
+	    // TODO: check for type
+	    var_lvar = reserve_local(cctx, arg, varlen, FALSE, &t_any);
+	    if (var_lvar == NULL)
+		// out of memory or used as an argument
+		goto failed;
+
+	    if (semicolon && idx == var_count - 1)
+		var_lvar->lv_type = vartype;
+	    else
+		var_lvar->lv_type = item_type;
+	    generate_STORE(cctx, ISN_STORE, var_lvar->lv_idx, NULL);
+	}
 
 	if (*p == ',' || *p == ';')
 	    ++p;
 	arg = skipwhite(p);
+	vim_free(name);
     }
 
     return arg_end;
+
+failed:
+    vim_free(name);
+    drop_scope(cctx);
+    return NULL;
 }
 
 /*
