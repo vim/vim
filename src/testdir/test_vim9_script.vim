@@ -2958,6 +2958,19 @@ def Test_put_with_linebreak()
   bwipe!
 enddef
 
+def InvokeNormal()
+  exe "norm! :m+1\r"
+enddef
+
+def Test_invoke_normal_in_visual_mode()
+  xnoremap <F3> <Cmd>call <SID>InvokeNormal()<CR>
+  new
+  setline(1, ['aaa', 'bbb'])
+  feedkeys("V\<F3>", 'xt')
+  assert_equal(['bbb', 'aaa'], getline(1, 2))
+  xunmap <F3>
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new
