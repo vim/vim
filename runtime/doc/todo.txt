@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Oct 10
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Nov 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,44 +38,25 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Making everything work:
-- If a function is defined in a block it may need to keep the block-locals,
-  like a compiled closure.
-- Fix memory leaks in test_vim9_assign, remove "if 0"
-- Fix memory leaks in test_vim9_script
-- Closure arguments should be more strict, like any function call?
-- Remove v:disallow_let
-- Recognize call to assert_fails() and execute it in the function context?
-  Won't work if the command itself fails, not an expression failure:
-	assert_fails("unknown", "E99:")
-  Use try/catch is complicated:
-    let did_catch = false
-    try
-	unknown
-    catch
-	assert_caught('E99:')
-	did_catch = true
-    endtry
-    assert_true('did_catch')
-  Add a new command perhaps:
-    assertfail
-       unknown
-    endassertfail E99:.*unknown
-- Make map() give an error if the resulting type is wrong.
-  Add mapnew() or mapcopy() to create a new List/Dict for the result, which
-  can have a different value type.
-- Error message for "'yes && 0" is "using String as a Number", should be "using
-  String as a Bool".
+Vim9 - Change
+- Drop support for #{} early December.  Close #7310
+  -> Does it work to recognize lambda?
+	{x: int -> x + 5}
+	var int = 5
+	{x: int, y: int}
+Vim9 - Making everything work:
+- Compile: for [key, value] in items(map): Also support @r, $VAR, etc.
+- Make map() give an error if the resulting type of the first argument is
+  wrong.  Only works if the type is known?  Is this slow (need to go over all
+  items)?
 - Run the same tests in :def and Vim9 script, like in Test_expr7_not()
-- In autocmd: use legacy syntax, not whatever the current script uses?
 - need to check type when a declaration specifies a type: #6507
 	let nr: number = 'asdf'
+- Check many more builtin function arguments at compile time.
 - Make sure that in vim9script a function call without namespace only finds
   the script-local function, not a global one.
 - Make sure that where a callback is expected a function can be used (without
   quotes). E.g. sort() and map().  Also at the script level.
-- assignment to more complex lval: list[1][2][3] = 8
-  Also "list[0] += value".  test in Test_assign_dict_unknown_type().
 - ":put" with ISN_PUT does not handle range correctly, e.g. ":$-2put".
   Add command to parse range at runtime?
 - When defining an :autocmd or :command, how to specify using Vim9 syntax?
@@ -94,9 +75,6 @@ Making everything work:
 - Expand `=expr` in :next, :argedit, :argadd, :argdelete, :drop
 - Expand `=expr` in :vimgrep, :vimgrepadd, :lvimgrep, :lvimgrepadd
 - Expand `=expr` in :mkspell
-- Test that a function defined inside a :def function is local to that
-  function, g: functions can be defined and script-local functions cannot be
-  defined.
 - Does this work already: can use func as reference:
 	def SomeFunc() ...
 	map(list, SomeFunc)
@@ -104,12 +82,13 @@ Making everything work:
 - make 0 == 'string' fail on the script level, like inside :def.
 - Check that when using a user function name without prefix, it does not find
   a global function.  Prefixing g: is required.
-- Compile: for [key, value] in items(map)
-- Assignment to dict doesn't work:
-      let ret: dict<string> = #{}
-      ret[i] = string(i)
-- Appending to dict item doesn't work:
-    let d[i] ..= value
+- Need the equivalent of get_lval() and set_var_lval() to implement assignment
+  to nested list and dict members.
+    - Assignment to dict doesn't work:
+	  let ret: dict<string> = #{}
+	  ret[i] = string(i)
+    - Appending to dict item doesn't work:
+	let d[i] ..= value
 - Using ".." at script level doesn't convert arguments to a string.
 - Compile replacement of :s command: s/pat/\=expr/
 - Compile redir to local variable: var_redir_start().
@@ -124,12 +103,10 @@ Making everything work:
 - Make "++nr" work.
 - Make closures work:
   - Create closure in a loop.  Need to make a list of them.
+  - nested closure only uses one context, not all (#7150)
 - expandcmd() with `=expr` in filename uses legacy expression.
 - eval_expr() in ex_cexpr()
 - eval_expr() call in dbg_parsearg() and debuggy_find()
-- has() is compiled as a constant, but some checks are dynamic.
-  Check for dynamic values, such as "gui_running".
-- Implement command modifiers, such as "silent". (#6530)
 New syntax and functionality:
 Improve error checking:
 - "echo Func()" is an error if Func() does not return anything.
@@ -144,15 +121,16 @@ Also:
 - Test each level of expressions properly, with type checking
 - Test try/catch and throw better, also nested.
   Test return inside try/finally jumps to finally and then returns.
-- Test: Function declared inside a :def function is local, disappears at the
-  end of the function.  Unless g: is used, just like with variables.
+- Test that a function defined inside a :def function is local to that
+  function, g: functions can be defined and script-local functions cannot be
+  defined.
 - implement :type
 - import type declaration?
 - Future work: See |vim9-classes|
 - implement enum
 - Make accessing varargs faster: arg[expr]
 	EVAL expr
-	LOADVARARG (varags idx)
+	LOADVARARG (varargs idx)
 - Make debugging work - at least per function.  Need to recompile a function
   to step through it line-by-line?  Evaluate the stack and variables on the
   stack?
@@ -177,7 +155,6 @@ Popup windows:
 	     current window.
     ? - switch between current window and all popup windows
     Esc in popup window goes back to previous current window
-- Cursor not updated before a redraw, making it jump. (#5943)
 - Add a termcap entry for changing the cursor when it goes under the popup and
   back.  like t_SI and t_EI  (t_SU and t_EU, where "U" means under?)
 - With terminal in popup, allow for popup_hide() to temporarily hide it.?
@@ -295,12 +272,15 @@ Was originally written by Felipe Morales.
 
 Remove SPACE_IN_FILENAME ? It is only used for completion.
 
-Patch to use collation based sorting. (Christian Brabandt, #6229)
+Making breakat support multibyte characters (Yasuhiro Matsumoto, #6598)
+Scroll doesn't work correctly, why?
 
 Add 'termguiattr' option, use "gui=" attributes in the terminal?  Would work
 with 'termguicolors'. #1740
 
 Patch for blockwise paste reporting changes: #6660.
+
+Missing filetype test for bashrc, PKGBUILD, etc.
 
 Add an option to not fetch terminal codes in xterm, to avoid flicker when t_Co
 changes.
@@ -308,9 +288,6 @@ changes.
 Add an option to start_timer() to return from the input loop with K_IGNORE.
 This is useful e.g. when a popup was created that disables mappings, we need
 to return from vgetc() to make this happen.  #7011
-
-Making breakat support multibyte characters (Yasuhiro Matsumoto, #6598)
-Scroll doesn't work correctly, why?
 
 Expanding <mods> should put the tab number from cmdmod.tab before "tab".
 Any way to convert "$" back by using a special value? (#6901)
@@ -340,6 +317,9 @@ autocommands for the buffer lifecycle:
     BufIsRenamed  (after buffer ID gets another name)
 The buffer list and windows are locked, no changes possible
 
+Add a ModeChanged autocommand that has an argument indicating the old and new
+mode, as what's returned from mode().  Also used for switching Terminal mode.
+
 Matchparen doesn't remove highlight after undo. (#7054)
 Is OK when syntax HL is active.
 
@@ -351,8 +331,6 @@ work.
 Using "au!" after "filetype on" is a bit slow.  Can the matching of
 autocommands be made faster?  (#7056)
 
-Valgrind warns for uninitialized values in f_term_dumpwrite().
-
 Add the <=> (spaceship) operator and "cond ?< expr ?= expr ?> expr"
     replace this:
 	let left = GetLeftFunc()
@@ -363,6 +341,8 @@ Add the <=> (spaceship) operator and "cond ?< expr ?= expr ?> expr"
 Patch to make :q work with local arglist. (Christian Brabandt, #6286)
 
 Why does Test_invalid_sid() not work in the GUI?
+
+":pedit" ignores the local working directory when 'pvp' is set (#7267)
 
 Lua: updating wrong buffer when using newly created, unloaded buffer.
 (#6539)
@@ -433,9 +413,6 @@ Another spurious BufDelete. (Dani Dickstein, #5701)
 
 Wrong error when using local arglist. (Harm te Hennepe, #6133)
 
-Request to support <Cmd> in mappings, similar to how Neovim does this.
-(Daniel Hahler, #4784)
-
 Test loose_clipboard() by selecting text before suspending.
 
 Undo puts cursor in wrong line after "cG<Esc>" undo.
@@ -455,11 +432,7 @@ Patch to fix session file when using multiple tab pages. (Jason Franklin, 2019
 May 20)
 Also put :argadd commands at the start for all buffers, so that their order
 remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
-Also #4994: window-local options not always restored, related to using :badd.
 Also #5326: netrw buffers are not restored.
-
-Alternate file is not set in the session file.  Use setwintabvar("@#") ?
-(#6714)
 
 When 'backupdir' has a path ending in double slash (meaning: use full path of
 the file) combined with 'patchmode' the file name is wrong. (#5791)
@@ -594,10 +567,6 @@ it's in a mapping. (2018 Oct 6, #2302, #3522)
 Patch to have text objects defined by arbitrary single characters. (Daniel
 Thau, 2013 Nov 20, 2014 Jan 29, 2014 Jan 31)
 Added tests (James McCoy, 2016 Aug 3, #958).  Still needs more work.
-
-":2resize +10" uses size of the current window, adds 10 and applies it to
-window 2.  User expects 10 to be added to size of window 2. (Daniel Steinberg,
-#5443)
 
 Would be nice to set tab-local values for 'diffexpr' and 'diffopt'.  Use
 t:diffexpr_option t:diffopt_option? (#4782)
@@ -794,6 +763,7 @@ Make ":interactive !cmd" stop termcap mode, also when used in an autocommand.
 
 Add buffer argument to undotree(). (#4001)
 
+Memory leak in test_debugger
 Using uninitialized value in test_crypt (can't explain why).
 Memory leak in test_terminal_fail
 TODO: be able to run all parts of test_alot with valgrind separately
@@ -923,9 +893,6 @@ Try out background make plugin:
   https://github.com/AndrewVos/vim-make-background
 or asyncmake:
   https://github.com/yegappan/asyncmake
-
-Add a ModeChanged autocommand that has an argument indicating the old and new
-mode, as what's returned from mode().  Also used for switching Terminal mode.
 
 Add an option with file patterns, to be used when unloading a buffer: If there
 is a match, remove entries for the buffer from marks, jumplist, etc.  To be
@@ -1088,7 +1055,7 @@ neovim #7431)
 Patch for improving detecting Ruby on Mac in configure. (Ilya Mikhaltsou, 2017
 Nov 21)
 
-When t_Co is changed from termresponse, the OptionSet autocmmand event isn't
+When t_Co is changed from termresponse, the OptionSet autocommand event isn't
 triggered.  Use the code from the end of set_num_option() in
 set_color_count().
 
@@ -1372,6 +1339,9 @@ no longer support.
 
 sort() is not stable when using numeric/float sort (Nikolay Pavlov, 2016 Sep
 4#1038)
+
+sort() does not use 'smartcase' for the skip pattern, even though 'ignorecase'
+is used. (Filipe Brandenburger, #7322)
 
 +channel:
 - Add a in_cb, invoked when the write buffer has become empty. (Matteo Landi)
@@ -2318,7 +2288,7 @@ Additional info by Dominique Pelle. (also on 2010 Apr 10)
 
 CreateFile and CreateFileW are used without sharing, filewritable() fails when
 the file was already open (e.g. script is being sourced).  Add FILE_SHARE_READ|
-FILE_SHARE_WRITE in mch_access()? (Phillippe Vaucher, 2010 Nov 2)
+FILE_SHARE_WRITE in mch_access()? (Philippe Vaucher, 2010 Nov 2)
 
 Is ~/bin (literally) in $PATH supposed to work?  (Paul, 2010 March 29)
 Looks like only bash can do it. (Yakov Lerner)
@@ -3858,10 +3828,6 @@ Macintosh:
     on the status line (caused by 'winheight').  Select window on button up,
     instead of on button down.
 8   Dragging the status line doesn't scroll but redraw.
-9   Evaluating 'statusline' in build_stl_str_hl() does not properly check for
-    reaching the end of the available buffer.
-    Patch to dynamically allocate the buffer for % items. (Eric Arnold, 2006
-    May 14)
 8   When performing incremental search, should abort searching as soon as a
     character is typed.
 8   When the value of $MAKE contains a path, configure can't handle this.
@@ -5958,7 +5924,7 @@ Writing files:
     losing the original when writing twice. (Slootman)
 7   On non-Unix machines, also overwrite the original file in some situations
     (file system full, it's a link on an NFS partition).
-7   When editing a file, check that it has been change outside of Vim more
+7   When editing a file, check that it has been changed outside of Vim more
     often, not only when writing over it.  E.g., at the time the swap file is
     flushed.  Or every ten seconds or so (use the time of day, check it before
     waiting for a character to be typed).

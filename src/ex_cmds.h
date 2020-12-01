@@ -178,6 +178,9 @@ EXCMD(CMD_ball,		"ball",		ex_buffer_all,
 EXCMD(CMD_badd,		"badd",		ex_edit,
 	EX_NEEDARG|EX_FILE1|EX_CMDARG|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
 	ADDR_NONE),
+EXCMD(CMD_balt,		"balt",		ex_edit,
+	EX_NEEDARG|EX_FILE1|EX_CMDARG|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
+	ADDR_NONE),
 EXCMD(CMD_bdelete,	"bdelete",	ex_bunload,
 	EX_BANG|EX_RANGE|EX_BUFNAME|EX_COUNT|EX_EXTRA|EX_TRLBAR,
 	ADDR_BUFFERS),
@@ -926,10 +929,10 @@ EXCMD(CMD_luafile,	"luafile",	ex_luafile,
 	EX_RANGE|EX_FILE1|EX_NEEDARG|EX_CMDWIN|EX_LOCK_OK|EX_RESTRICT,
 	ADDR_LINES),
 EXCMD(CMD_lvimgrep,	"lvimgrep",	ex_vimgrep,
-	EX_RANGE|EX_BANG|EX_NEEDARG|EX_EXTRA|EX_NOTRLCOM|EX_TRLBAR|EX_XFILE,
+	EX_RANGE|EX_BANG|EX_NEEDARG|EX_EXTRA|EX_NOTRLCOM|EX_TRLBAR|EX_XFILE|EX_LOCK_OK,
 	ADDR_OTHER),
 EXCMD(CMD_lvimgrepadd,	"lvimgrepadd",	ex_vimgrep,
-	EX_RANGE|EX_BANG|EX_NEEDARG|EX_EXTRA|EX_NOTRLCOM|EX_TRLBAR|EX_XFILE,
+	EX_RANGE|EX_BANG|EX_NEEDARG|EX_EXTRA|EX_NOTRLCOM|EX_TRLBAR|EX_XFILE|EX_LOCK_OK,
 	ADDR_OTHER),
 EXCMD(CMD_lwindow,	"lwindow",	ex_cwindow,
 	EX_RANGE|EX_COUNT|EX_TRLBAR,
@@ -1670,10 +1673,10 @@ EXCMD(CMD_view,		"view",		ex_edit,
 	EX_BANG|EX_FILE1|EX_CMDARG|EX_ARGOPT|EX_TRLBAR,
 	ADDR_NONE),
 EXCMD(CMD_vimgrep,	"vimgrep",	ex_vimgrep,
-	EX_RANGE|EX_BANG|EX_NEEDARG|EX_EXTRA|EX_NOTRLCOM|EX_TRLBAR|EX_XFILE,
+	EX_RANGE|EX_BANG|EX_NEEDARG|EX_EXTRA|EX_NOTRLCOM|EX_TRLBAR|EX_XFILE|EX_LOCK_OK,
 	ADDR_OTHER),
 EXCMD(CMD_vimgrepadd,	"vimgrepadd",	ex_vimgrep,
-	EX_RANGE|EX_BANG|EX_NEEDARG|EX_EXTRA|EX_NOTRLCOM|EX_TRLBAR|EX_XFILE,
+	EX_RANGE|EX_BANG|EX_NEEDARG|EX_EXTRA|EX_NOTRLCOM|EX_TRLBAR|EX_XFILE|EX_LOCK_OK,
 	ADDR_OTHER),
 EXCMD(CMD_vim9script,	"vim9script",	ex_vim9script,
 	EX_CMDWIN|EX_LOCK_OK,
@@ -1883,12 +1886,6 @@ struct exarg
     void	*cookie;	// argument for getline()
 #ifdef FEAT_EVAL
     cstack_T	*cstack;	// condition stack for ":if" etc.
-#endif
-    long	verbose_save;	 // saved value of p_verbose
-    int		save_msg_silent; // saved value of msg_silent
-    int		did_esilent;	 // how many times emsg_silent was incremented
-#ifdef HAVE_SANDBOX
-    int		did_sandbox;	// when TRUE did ++sandbox
 #endif
 };
 

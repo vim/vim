@@ -1639,8 +1639,7 @@ eval_map_expr(
  * Returns NULL when out of memory.
  */
     char_u *
-vim_strsave_escape_csi(
-    char_u *p)
+vim_strsave_escape_csi(char_u *p)
 {
     char_u	*res;
     char_u	*s, *d;

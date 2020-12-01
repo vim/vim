@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Oct 05
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Nov 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -120,7 +120,7 @@ base, use |str2nr()|.
 
 						*TRUE* *FALSE* *Boolean*
 For boolean operators Numbers are used.  Zero is FALSE, non-zero is TRUE.
-You can also use |v:false| and |v:true|.  In Vim9 script |false| and |true|. 
+You can also use |v:false| and |v:true|.  In Vim9 script |false| and |true|.
 When TRUE is returned from a function it is the Number one, FALSE is the
 number zero.
 
@@ -1850,6 +1850,13 @@ v:dying		Normally zero.  When a deadly signal is caught it's set to
 <		Note: if another deadly signal is caught when v:dying is one,
 		VimLeave autocommands will not be executed.
 
+					*v:exiting* *exiting-variable*
+v:exiting	Vim exit code.  Normally zero, non-zero when something went
+		wrong.  The value is v:null before invoking the |VimLeavePre|
+		and |VimLeave| autocmds.  See |:q|, |:x| and |:cquit|.
+		Example: >
+			:au VimLeave * echo "Exit value is " .. v:exiting
+<
 					*v:echospace* *echospace-variable*
 v:echospace	Number of screen cells that can be used for an `:echo` message
 		in the last screen line before causing the |hit-enter-prompt|.
@@ -2669,8 +2676,9 @@ maparg({name} [, {mode} [, {abbr} [, {dict}]]])
 					rhs of mapping {name} in mode {mode}
 mapcheck({name} [, {mode} [, {abbr}]])
 				String	check for mappings matching {name}
-mapset({mode}, {abbr}, {dict})
-				none	restore mapping from |maparg()| result
+mapnew({expr1}, {expr2})	List/Dict  like |map()| but creates a new List
+					   or Dictionary
+mapset({mode}, {abbr}, {dict})	none	restore mapping from |maparg()| result
 match({expr}, {pat} [, {start} [, {count}]])
 				Number	position where {pat} matches in {expr}
 matchadd({group}, {pattern} [, {priority} [, {id} [, {dict}]]])
@@ -2746,7 +2754,7 @@ prop_type_change({name}, {props})
 				none	change an existing property type
 prop_type_delete({name} [, {props}])
 				none	delete a property type
-prop_type_get([{name} [, {props}]])
+prop_type_get({name} [, {props}])
 				Dict	get property type values
 prop_type_list([{props}])	List	get list of property types
 pum_getpos()			Dict	position and size of pum if visible
@@ -3126,7 +3134,7 @@ appendbufline({expr}, {lnum}, {text})			*appendbufline()*
 		error message is given. Example: >
 			:let failed = appendbufline(13, 0, "# THE START")
 <
-<		Can also be used as a |method| after a List, the base is
+		Can also be used as a |method| after a List, the base is
 		passed as the second argument: >
 			mylist->appendbufline(buf, lnum)
 
@@ -3472,8 +3480,8 @@ byteidx({expr}, {nr})					*byteidx()*
 		Return byte index of the {nr}'th character in the string
 		{expr}.  Use zero for the first character, it then returns
 		zero.
-		This function is only useful when there are multibyte
-		characters, otherwise the returned value is equal to {nr}.
+		If there are no multibyte characters the returned value is
+		equal to {nr}.
 		Composing characters are not counted separately, their byte
 		length is added to the preceding base character.  See
 		|byteidxcomp()| below for counting composing characters
@@ -3798,7 +3806,7 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 		not need to be the first letter: >
 			confirm("file has been modified", "&Save\nSave &All")
 <		For the console, the first letter of each choice is used as
-		the default shortcut key.
+		the default shortcut key.  Case is ignored.
 
 		The optional {default} argument is the number of the choice
 		that is made if the user hits <CR>.  Use 1 to make the first
@@ -4427,10 +4435,10 @@ extend({expr1}, {expr2} [, {expr3}])			*extend()*
 		|Dictionaries|.
 
 		If they are |Lists|: Append {expr2} to {expr1}.
-		If {expr3} is given insert the items of {expr2} before item
-		{expr3} in {expr1}.  When {expr3} is zero insert before the
-		first item.  When {expr3} is equal to len({expr1}) then
-		{expr2} is appended.
+		If {expr3} is given insert the items of {expr2} before the
+		item with index {expr3} in {expr1}.  When {expr3} is zero
+		insert before the first item.  When {expr3} is equal to
+		len({expr1}) then {expr2} is appended.
 		Examples: >
 			:echo sort(extend(mylist, [7, 5]))
 			:call extend(mylist, [2, 3], 1)
@@ -6987,9 +6995,14 @@ luaeval({expr} [, {expr}])					*luaeval()*
 <		{only available when compiled with the |+lua| feature}
 
 map({expr1}, {expr2})					*map()*
-		{expr1} must be a |List| or a |Dictionary|.
+		{expr1} must be a |List|, |Blob| or |Dictionary|.
 		Replace each item in {expr1} with the result of evaluating
-		{expr2}.  {expr2} must be a |string| or |Funcref|.
+		{expr2}.  For a |Blob| each byte is replaced.
+		If the item type changes you may want to use |mapnew()| to
+		create a new List or Dictionary.  This is required when using
+		Vim9 script.
+
+		{expr2} must be a |string| or |Funcref|.
 
 		If {expr2} is a |string|, inside {expr2} |v:val| has the value
 		of the current item.  For a |Dictionary| |v:key| has the key
@@ -7024,11 +7037,11 @@ map({expr1}, {expr2})					*map()*
 		|Dictionary| to remain unmodified make a copy first: >
 			:let tlist = map(copy(mylist), ' v:val . "\t"')
 
-<		Returns {expr1}, the |List| or |Dictionary| that was filtered.
-		When an error is encountered while evaluating {expr2} no
-		further items in {expr1} are processed.  When {expr2} is a
-		Funcref errors inside a function are ignored, unless it was
-		defined with the "abort" flag.
+<		Returns {expr1}, the |List|, |Blob| or |Dictionary| that was
+		filtered.  When an error is encountered while evaluating
+		{expr2} no further items in {expr1} are processed.  When
+		{expr2} is a Funcref errors inside a function are ignored,
+		unless it was defined with the "abort" flag.
 
 		Can also be used as a |method|: >
 			mylist->map(expr2)
@@ -7137,7 +7150,13 @@ mapcheck({name} [, {mode} [, {abbr}]])			*mapcheck()*
 			GetKey()->mapcheck('n')
 
 
-mapset({mode}, {abbr}, {dict})				*mapset()*
+mapnew({expr1}, {expr2})					*mapnew()*
+		Like |map()| but instead of replacing items in {expr1} a new
+		List or Dictionary is created and returned.  {expr1} remains
+		unchanged.
+
+
+mapset({mode}, {abbr}, {dict})					*mapset()*
 		Restore a mapping from a dictionary returned by |maparg()|.
 		{mode} and {abbr} should be the same as for the call to
 		|maparg()|. *E460*
@@ -7367,8 +7386,15 @@ matchfuzzy({list}, {str} [, {dict}])			*matchfuzzy()*
 		the strings in {list} that fuzzy match {str}. The strings in
 		the returned list are sorted based on the matching score.
 
+		The optional {dict} argument always supports the following
+		items:
+		    matchseq	When this item is present and {str} contains
+				multiple words separated by white space, then
+				returns only matches that contain the words in
+				the given sequence.
+
 		If {list} is a list of dictionaries, then the optional {dict}
-		argument supports the following items:
+		argument supports the following additional items:
 		    key		key of the item which is fuzzy matched against
 				{str}. The value of this item should be a
 				string.
@@ -7381,6 +7407,9 @@ matchfuzzy({list}, {str} [, {dict}])			*matchfuzzy()*
 		{str} is treated as a literal string and regular expression
 		matching is NOT supported.  The maximum supported {str} length
 		is 256.
+
+		When {str} has multiple words each separated by white space,
+		then the list of strings that have all the words is returned.
 
 		If there are no matching strings or there is an error, then an
 		empty list is returned. If length of {str} is greater than
@@ -7401,12 +7430,19 @@ matchfuzzy({list}, {str} [, {dict}])			*matchfuzzy()*
 		   :echo v:oldfiles->matchfuzzy("test")
 <		results in a list of file names fuzzy matching "test". >
 		   :let l = readfile("buffer.c")->matchfuzzy("str")
-<		results in a list of lines in "buffer.c" fuzzy matching "str".
+<		results in a list of lines in "buffer.c" fuzzy matching "str". >
+		   :echo ['one two', 'two one']->matchfuzzy('two one')
+<		results in ['two one', 'one two']. >
+		   :echo ['one two', 'two one']->matchfuzzy('two one',
+						\ {'matchseq': 1})
+<		results in ['two one'].
 
 matchfuzzypos({list}, {str} [, {dict}])			*matchfuzzypos()*
 		Same as |matchfuzzy()|, but returns the list of matched
 		strings and the list of character positions where characters
-		in {str} matches.
+		in {str} matches.  You can use |byteidx()|to convert a
+		character position to a byte position.
+
 
 		If {str} matches multiple times in a string, then only the
 		positions for the best match is returned.
@@ -7957,8 +7993,8 @@ printf({fmt}, {expr1} ...)				*printf()*
 
 
 prompt_getprompt({buf})					*prompt_getprompt()*
-		Returns the effective prompt text for buffer {buf}. {buf} can
-		be a buffer name or number. |prompt-buffer|.
+		Returns the effective prompt text for buffer {buf}.  {buf} can
+		be a buffer name or number.  See |prompt-buffer|.
 
 		If the buffer doesn't exist or isn't a prompt buffer, an empty
 		string is returned.
@@ -8304,15 +8340,18 @@ reg_recording()						*reg_recording()*
 		Returns an empty string when not recording.  See |q|.
 
 reltime([{start} [, {end}]])				*reltime()*
-		Return an item that represents a time value.  The format of
-		the item depends on the system.  It can be passed to
-		|reltimestr()| to convert it to a string  or |reltimefloat()|
-		to convert to a Float.
-		Without an argument it returns the current time.
+		Return an item that represents a time value.  The item is a
+		list with items that depend on the system.  In Vim 9 script
+		list<any> can be used.
+		The item can be passed to |reltimestr()| to convert it to a
+		string or |reltimefloat()| to convert to a Float.
+
+		Without an argument reltime() returns the current time.
 		With one argument is returns the time passed since the time
 		specified in the argument.
 		With two arguments it returns the time passed between {start}
 		and {end}.
+
 		The {start} and {end} arguments must be values returned by
 		reltime().
 
@@ -8630,6 +8669,7 @@ screencol()							*screencol()*
 		the following mappings: >
 			nnoremap <expr> GG ":echom ".screencol()."\n"
 			nnoremap <silent> GG :echom screencol()<CR>
+			nnoremap GG <Cmd>echom screencol()<CR>
 <
 screenpos({winid}, {lnum}, {col})				*screenpos()*
 		The result is a Dict with the screen position of the text
@@ -8697,11 +8737,16 @@ search({pattern} [, {flags} [, {stopline} [, {timeout} [, {skip}]]]])
 
 		'ignorecase', 'smartcase' and 'magic' are used.
 
-		When the 'z' flag is not given, searching always starts in
-		column zero and then matches before the cursor are skipped.
-		When the 'c' flag is present in 'cpo' the next search starts
-		after the match.  Without the 'c' flag the next search starts
-		one column further.
+		When the 'z' flag is not given, forward searching always
+		starts in column zero and then matches before the cursor are
+		skipped.  When the 'c' flag is present in 'cpo' the next
+		search starts after the match.  Without the 'c' flag the next
+		search starts one column further.  This matters for
+		overlapping matches.
+		When searching backwards and the 'z' flag is given then the
+		search starts in column zero, thus no match in the current
+		line will be found (unless wrapping around the end of the
+		file).
 
 		When the {stopline} argument is given then the search stops
 		after searching this line.  This is useful to restrict the
@@ -9685,8 +9730,25 @@ sort({list} [, {func} [, {dict}]])			*sort()* *E702*
 		When {func} is given and it is '1' or 'i' then case is
 		ignored.
 
+		When {func} is given and it is 'l' then the current collation
+		locale is used for ordering. Implementation details: strcoll()
+		is used to compare strings. See |:language| check or set the
+		collation locale. |v:collate| can also be used to check the
+		current locale. Sorting using the locale typically ignores
+		case. Example: >
+			" ö is sorted similarly to o with English locale.
+			:language collate en_US.UTF8
+			:echo sort(['n', 'o', 'O', 'ö', 'p', 'z'], 'l')
+<			['n', 'o', 'O', 'ö', 'p', 'z'] ~
+>
+			" ö is sorted after z with Swedish locale.
+			:language collate sv_SE.UTF8
+			:echo sort(['n', 'o', 'O', 'ö', 'p', 'z'], 'l')
+<			['n', 'o', 'O', 'p', 'z', 'ö'] ~
+		This does not work properly on Mac.
+
 		When {func} is given and it is 'n' then all items will be
-		sorted numerical (Implementation detail: This uses the
+		sorted numerical (Implementation detail: this uses the
 		strtod() function to parse numbers, Strings, Lists, Dicts and
 		Funcrefs will be considered as being 0).
 
@@ -10694,8 +10756,8 @@ terminalprops()						*terminalprops()*
 		detected from the response to |t_RV| request.  See
 		|v:termresponse| for the response itself.  If |v:termresponse|
 		is empty most values here will be 'u' for unknown.
-		   cursor_style		wether sending |t_RS| works  **
-		   cursor_blink_mode	wether sending |t_RC| works  **
+		   cursor_style		whether sending |t_RS| works  **
+		   cursor_blink_mode	whether sending |t_RC| works  **
 		   underline_rgb	whether |t_8u| works **
 		   mouse		mouse type supported
 
@@ -11351,7 +11413,8 @@ winsaveview()	Returns a |Dictionary| that contains information to restore
 			curswant	column for vertical movement
 			topline		first line in the window
 			topfill		filler lines, only in diff mode
-			leftcol		first column displayed
+			leftcol		first column displayed; only used when
+					'wrap' is off
 			skipcol		columns skipped
 		Note that no option values are saved.
 
@@ -11570,7 +11633,7 @@ menu			Compiled with support for |:menu|.
 mksession		Compiled with support for |:mksession|.
 modify_fname		Compiled with file name modifiers. |filename-modifiers|
 			(always true)
-mouse			Compiled with support mouse.
+mouse			Compiled with support for mouse.
 mouse_dec		Compiled with support for Dec terminal mouse.
 mouse_gpm		Compiled with support for gpm (Linux console mouse)
 mouse_gpm_enabled	GPM mouse is working
@@ -12125,8 +12188,9 @@ be used to pass settings to the autoload script before it's loaded: >
 
 Note that when you make a mistake and call a function that is supposed to be
 defined in an autoload script, but the script doesn't actually define the
-function, the script will be sourced every time you try to call the function.
-And you will get an error message every time.
+function, you will get an error message for the missing function.  If you fix
+the autoload script it won't be automatically loaded again.  Either restart
+Vim or manually source the script.
 
 Also note that if you have two script files, and one calls a function in the
 other and vice versa, before the used function is defined, it won't work.

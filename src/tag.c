@@ -3463,7 +3463,7 @@ jumpto_tag(
 	}
     }
     if (getfile_result == GETFILE_UNUSED
-				       && (postponed_split || cmdmod.tab != 0))
+				  && (postponed_split || cmdmod.cmod_tab != 0))
     {
 	if (win_split(postponed_split > 0 ? postponed_split : 0,
 						postponed_split_flags) == FAIL)

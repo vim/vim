@@ -296,6 +296,25 @@ def Test_block_local_vars()
   delete('Xdidit')
 enddef
 
+def Test_block_local_vars_with_func()
+  var lines =<< trim END
+      vim9script
+      if true
+        var foo = 'foo'
+        if true
+          var bar = 'bar'
+          def Func(): list<string>
+            return [foo, bar]
+          enddef
+        endif
+      endif
+      # function is compiled here, after blocks have finished, can still access
+      # "foo" and "bar"
+      assert_equal(['foo', 'bar'], Func())
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 func g:NoSuchFunc()
   echo 'none'
 endfunc
@@ -397,7 +416,7 @@ def Test_try_catch()
 
   var nd: dict<any>
   try
-    nd = {g:anumber: 1}
+    nd = {[g:anumber]: 1}
   catch /E1012:/
     n = 266
   endtry
@@ -440,7 +459,7 @@ def Test_try_catch()
   assert_equal(322, n)
 
   try
-    d = {'text': 1, g:astring: 2}
+    d = {text: 1, [g:astring]: 2}
   catch /E721:/
     n = 333
   endtry
@@ -1843,6 +1862,44 @@ def Test_for_loop_fails()
   CheckDefFailure(['for i in range(3)', 'echo 3'], 'E170:')
 enddef
 
+def Test_for_loop_unpack()
+  var result = []
+  for [v1, v2] in [[1, 2], [3, 4]]
+    result->add(v1)
+    result->add(v2)
+  endfor
+  assert_equal([1, 2, 3, 4], result)
+
+  result = []
+  for [v1, v2; v3] in [[1, 2], [3, 4, 5, 6]]
+    result->add(v1)
+    result->add(v2)
+    result->add(v3)
+  endfor
+  assert_equal([1, 2, [], 3, 4, [5, 6]], result)
+
+  var lines =<< trim END
+      for [v1, v2] in [[1, 2, 3], [3, 4]]
+        echo v1 v2
+      endfor
+  END
+  CheckDefExecFailure(lines, 'E710:', 1)
+
+  lines =<< trim END
+      for [v1, v2] in [[1], [3, 4]]
+        echo v1 v2
+      endfor
+  END
+  CheckDefExecFailure(lines, 'E711:', 1)
+
+  lines =<< trim END
+      for [v1, v1] in [[1, 2], [3, 4]]
+        echo v1
+      endfor
+  END
+  CheckDefExecFailure(lines, 'E1017:', 1)
+enddef
+
 def Test_while_loop()
   var result = ''
   var cnt = 0
@@ -2838,6 +2895,40 @@ def Test_catch_exception_in_callback()
   CheckScriptSuccess(lines)
 
   unlet g:caught
+enddef
+
+def Test_no_unknown_error_after_error()
+  if !has('unix') || !has('job')
+    throw 'Skipped: not unix of missing +job feature'
+  endif
+  var lines =<< trim END
+      vim9script
+      var source: list<number>
+      def Out_cb(...l: any)
+          eval [][0]
+      enddef
+      def Exit_cb(...l: any)
+          sleep 1m
+          source += l
+      enddef
+      var myjob = job_start('echo burp', #{out_cb: Out_cb, exit_cb: Exit_cb, mode: 'raw'})
+      sleep 100m
+  END
+  writefile(lines, 'Xdef')
+  assert_fails('so Xdef', ['E684:', 'E1012:'])
+  delete('Xdef')
+enddef
+
+def Test_put_with_linebreak()
+  new
+  var lines =<< trim END
+    vim9script
+    pu=split('abc', '\zs')
+            ->join()
+  END
+  CheckScriptSuccess(lines)
+  getline(2)->assert_equal('a b c')
+  bwipe!
 enddef
 
 " Keep this last, it messes up highlighting.

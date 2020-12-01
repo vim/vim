@@ -1055,17 +1055,23 @@ install.exe: dosinst.c dosinst.h version.h
 uninstall.exe: uninstall.c dosinst.h version.h
 	$(CC) $(CFLAGS) -o uninstall.exe uninstall.c $(LIB) -lole32
 
+$(OBJ): | $(OUTDIR)
+
+$(EXEOBJG): | $(OUTDIR)
+
+$(EXEOBJC): | $(OUTDIR)
+
 ifeq ($(VIMDLL),yes)
-$(TARGET): $(OUTDIR) $(OBJ)
+$(TARGET): $(OBJ)
 	$(LINK) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid -lgdi32 $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)
 
-$(GVIMEXE): $(OUTDIR) $(EXEOBJG) $(VIMDLLBASE).dll
+$(GVIMEXE): $(EXEOBJG) $(VIMDLLBASE).dll
 	$(CC) -L. $(EXELFLAGS) -mwindows -o $@ $(EXEOBJG) -l$(VIMDLLBASE)
 
-$(VIMEXE): $(OUTDIR) $(EXEOBJC) $(VIMDLLBASE).dll
+$(VIMEXE): $(EXEOBJC) $(VIMDLLBASE).dll
 	$(CC) -L. $(EXELFLAGS) -o $@ $(EXEOBJC) -l$(VIMDLLBASE)
 else
-$(TARGET): $(OUTDIR) $(OBJ)
+$(TARGET): $(OBJ)
 	$(LINK) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)
 endif
 
@@ -1280,7 +1286,7 @@ $(OUTDIR)/%.o : xdiff/%.c $(XDIFF_DEPS)
 	$(CC) -c $(CFLAGS) $< -o $@
 
 
-$(PATHDEF_SRC): Make_cyg_ming.mak Make_cyg.mak Make_ming.mak
+$(PATHDEF_SRC): Make_cyg_ming.mak Make_cyg.mak Make_ming.mak | $(OUTDIR)
 ifneq (sh.exe, $(SHELL))
 	@echo creating $(PATHDEF_SRC)
 	@echo '/* pathdef.c */' > $(PATHDEF_SRC)

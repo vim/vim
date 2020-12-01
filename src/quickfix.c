@@ -1362,8 +1362,10 @@ qf_parse_multiline_pfx(
 	if (!qfprev->qf_lnum)
 	    qfprev->qf_lnum = fields->lnum;
 	if (!qfprev->qf_col)
+	{
 	    qfprev->qf_col = fields->col;
-	qfprev->qf_viscol = fields->use_viscol;
+	    qfprev->qf_viscol = fields->use_viscol;
+	}
 	if (!qfprev->qf_fnum)
 	    qfprev->qf_fnum = qf_get_fnum(qfl,
 		    qfl->qf_directory,
@@ -2832,7 +2834,7 @@ jump_to_help_window(qf_info_T *qi, int newwin, int *opened_window)
     win_T	*wp;
     int		flags;
 
-    if (cmdmod.tab != 0 || newwin)
+    if (cmdmod.cmod_tab != 0 || newwin)
 	wp = NULL;
     else
 	wp = qf_find_help_win();
@@ -2843,7 +2845,7 @@ jump_to_help_window(qf_info_T *qi, int newwin, int *opened_window)
 	// Split off help window; put it at far top if no position
 	// specified, the current window is vertically split and narrow.
 	flags = WSP_HELP;
-	if (cmdmod.split == 0 && curwin->w_width != Columns
+	if (cmdmod.cmod_split == 0 && curwin->w_width != Columns
 		&& curwin->w_width < 80)
 	    flags |= WSP_TOP;
 	// If the user asks to open a new window, then copy the location list.
@@ -3276,7 +3278,8 @@ qf_jump_open_window(
     qfltype_T	qfl_type = qfl->qfl_type;
 
     // For ":helpgrep" find a help window or open one.
-    if (qf_ptr->qf_type == 1 && (!bt_help(curwin->w_buffer) || cmdmod.tab != 0))
+    if (qf_ptr->qf_type == 1 && (!bt_help(curwin->w_buffer)
+						      || cmdmod.cmod_tab != 0))
 	if (jump_to_help_window(qi, newwin, opened_window) == FAIL)
 	    return FAIL;
     if (old_qf_curlist != qi->qf_curlist
@@ -4123,12 +4126,12 @@ qf_open_new_cwindow(qf_info_T *qi, int height)
     // The current window becomes the previous window afterwards.
     win = curwin;
 
-    if (IS_QF_STACK(qi) && cmdmod.split == 0)
+    if (IS_QF_STACK(qi) && cmdmod.cmod_split == 0)
 	// Create the new quickfix window at the very bottom, except when
 	// :belowright or :aboveleft is used.
 	win_goto(lastwin);
     // Default is to open the window below the current window
-    if (cmdmod.split == 0)
+    if (cmdmod.cmod_split == 0)
 	flags = WSP_BELOW;
     flags |= WSP_NEWLOC;
     if (win_split(height, flags) == FAIL)
@@ -4148,13 +4151,15 @@ qf_open_new_cwindow(qf_info_T *qi, int height)
     if (qf_buf != NULL)
     {
 	// Use the existing quickfix buffer
-	(void)do_ecmd(qf_buf->b_fnum, NULL, NULL, NULL, ECMD_ONE,
-		ECMD_HIDE + ECMD_OLDBUF, oldwin);
+	if (do_ecmd(qf_buf->b_fnum, NULL, NULL, NULL, ECMD_ONE,
+				      ECMD_HIDE + ECMD_OLDBUF, oldwin) == FAIL)
+	    return FAIL;
     }
     else
     {
 	// Create a new quickfix buffer
-	(void)do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE, oldwin);
+	if (do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE, oldwin) == FAIL)
+	    return FAIL;
 
 	// save the number of the new buffer
 	qi->qf_bufnr = curbuf->b_fnum;
@@ -4206,9 +4211,9 @@ ex_copen(exarg_T *eap)
 #endif
 
     // Find an existing quickfix window, or open a new one.
-    if (cmdmod.tab == 0)
+    if (cmdmod.cmod_tab == 0)
 	status = qf_goto_cwindow(qi, eap->addr_count != 0, height,
-						cmdmod.split & WSP_VERT);
+						cmdmod.cmod_split & WSP_VERT);
     if (status == FAIL)
 	if (qf_open_new_cwindow(qi, height) == FAIL)
 	{
@@ -4671,14 +4676,17 @@ qf_fill_buffer(qf_list_T *qfl, buf_T *buf, qfline_T *old_last, int qf_winid)
 	*dirname = NUL;
 
 	// Add one line for each error
-	if (old_last == NULL || old_last->qf_next == NULL)
+	if (old_last == NULL)
 	{
 	    qfp = qfl->qf_start;
 	    lnum = 0;
 	}
 	else
 	{
-	    qfp = old_last->qf_next;
+	    if (old_last->qf_next != NULL)
+		qfp = old_last->qf_next;
+	    else
+		qfp = old_last;
 	    lnum = buf->b_ml.ml_line_count;
 	}
 
@@ -5691,7 +5699,7 @@ ex_cfile(exarg_T *eap)
 
     enc = (*curbuf->b_p_menc != NUL) ? curbuf->b_p_menc : p_menc;
 #ifdef FEAT_BROWSE
-    if (cmdmod.browse)
+    if (cmdmod.cmod_flags & CMOD_BROWSE)
     {
 	char_u *browse_file = do_browse(0, (char_u *)_("Error file"), eap->arg,
 				   NULL, NULL,
@@ -6162,7 +6170,7 @@ vgr_process_files(
 		    wipe_dummy_buffer(buf, dirname_start);
 		    buf = NULL;
 		}
-		else if (!cmdmod.hide
+		else if ((cmdmod.cmod_flags & CMOD_HIDE) == 0
 			    || buf->b_p_bh[0] == 'u'	// "unload"
 			    || buf->b_p_bh[0] == 'w'	// "wipe"
 			    || buf->b_p_bh[0] == 'd')	// "delete"
@@ -7341,7 +7349,7 @@ qf_setprop_items_from_lines(
     if (action == 'r')
 	qf_free_items(&qi->qf_lists[qf_idx]);
     if (qf_init_ext(qi, qf_idx, NULL, NULL, &di->di_tv, errorformat,
-		FALSE, (linenr_T)0, (linenr_T)0, NULL, NULL) > 0)
+		FALSE, (linenr_T)0, (linenr_T)0, NULL, NULL) >= 0)
 	retval = OK;
 
     return retval;
@@ -7466,8 +7474,10 @@ qf_set_properties(qf_info_T *qi, dict_T *what, int action, char_u *title)
     if ((di = dict_find(what, (char_u *)"quickfixtextfunc", -1)) != NULL)
 	retval = qf_setprop_qftf(qi, qfl, di);
 
-    if (retval == OK)
+    if (newlist || retval == OK)
 	qf_list_changed(qfl);
+    if (newlist)
+	qf_update_buffer(qi, NULL);
 
     return retval;
 }

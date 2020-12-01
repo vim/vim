@@ -1896,14 +1896,14 @@ endfunc
 
 func Test_list_builtin_terminals()
   CheckRunVimInTerminal
-  let buf = RunVimInTerminal('', #{rows: 14})
-  call term_sendkeys(buf, ":set cmdheight=3\<CR>")
-  call TermWait(buf, 100)
-  call term_sendkeys(buf, ":set term=xxx\<CR>")
-  call TermWait(buf, 100)
-  call assert_match('builtin_dumb', term_getline(buf, 11))
-  call assert_match('Not found in termcap', term_getline(buf, 12))
-  call StopVimInTerminal(buf)
+  call RunVimInTerminal('', #{rows: 14})
+  call term_sendkeys('', ":set cmdheight=3\<CR>")
+  call TermWait('', 100)
+  call term_sendkeys('', ":set term=xxx\<CR>")
+  call TermWait('', 100)
+  call assert_match('builtin_dumb', term_getline('', 11))
+  call assert_match('Not found in termcap', term_getline('', 12))
+  call StopVimInTerminal('')
 endfunc
 
 func GetEscCodeCSI27(key, modifier)
@@ -2027,6 +2027,23 @@ func Test_modifyOtherKeys_mapped()
   iunmap '
   iunmap <C-W><C-A>
   set timeoutlen&
+endfunc
+
+" Whether Shift-Tab sends "ESC [ Z" or "ESC [ 27 ; 2 ; 9 ~" is unpredictable,
+" both should work.
+func Test_modifyOtherKeys_shift_tab()
+  set timeoutlen=10
+
+  call setline(1, '')
+  call feedkeys("a\<C-K>" .. GetEscCodeCSI27("\t", '2') .. "\<Esc>", 'Lx!')
+  eval getline(1)->assert_equal('<S-Tab>')
+
+  call setline(1, '')
+  call feedkeys("a\<C-K>\<Esc>[Z\<Esc>", 'Lx!')
+  eval getline(1)->assert_equal('<S-Tab>')
+
+  set timeoutlen&
+  bwipe!
 endfunc
 
 func RunTest_mapping_works_with_shift(func)

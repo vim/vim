@@ -142,6 +142,7 @@ restore_viewstate(viewstate_T *vs)
 typedef struct {
     pos_T	search_start;	// where 'incsearch' starts searching
     pos_T	save_cursor;
+    int		winid;		// window where this state is valid
     viewstate_T	init_viewstate;
     viewstate_T	old_viewstate;
     pos_T	match_start;
@@ -154,6 +155,7 @@ typedef struct {
     static void
 init_incsearch_state(incsearch_state_T *is_state)
 {
+    is_state->winid = curwin->w_id;
     is_state->match_start = curwin->w_cursor;
     is_state->did_incsearch = FALSE;
     is_state->incsearch_postponed = FALSE;
@@ -195,7 +197,7 @@ do_incsearch_highlighting(
 	int		    *patlen)
 {
     char_u	*cmd;
-    cmdmod_T	save_cmdmod = cmdmod;
+    cmdmod_T	dummy_cmdmod;
     char_u	*p;
     int		delim_optional = FALSE;
     int		delim;
@@ -231,8 +233,8 @@ do_incsearch_highlighting(
     ea.cmd = ccline.cmdbuff;
     ea.addr_type = ADDR_LINES;
 
-    parse_command_modifiers(&ea, &dummy, TRUE);
-    cmdmod = save_cmdmod;
+    CLEAR_FIELD(dummy_cmdmod);
+    parse_command_modifiers(&ea, &dummy, &dummy_cmdmod, TRUE);
 
     cmd = skip_range(ea.cmd, TRUE, NULL);
     if (vim_strchr((char_u *)"sgvl", *cmd) == NULL)
@@ -1703,13 +1705,17 @@ getcmdline_int(
 	// Trigger SafeState if nothing is pending.
 	may_trigger_safestate(xpc.xp_numfiles <= 0);
 
-	cursorcmd();		// set the cursor on the right spot
-
 	// Get a character.  Ignore K_IGNORE and K_NOP, they should not do
 	// anything, such as stop completion.
 	do
+	{
+	    cursorcmd();		// set the cursor on the right spot
 	    c = safe_vgetc();
-	while (c == K_IGNORE || c == K_NOP);
+	} while (c == K_IGNORE || c == K_NOP);
+
+	if (c == K_COMMAND
+		   && do_cmdline(NULL, getcmdkeycmd, NULL, DOCMD_NOWAIT) == OK)
+	    goto cmdline_changed;
 
 	if (KeyTyped)
 	{
@@ -2323,6 +2329,11 @@ cmdline_not_changed:
 #endif
 
 cmdline_changed:
+#ifdef FEAT_SEARCH_EXTRA
+	// If the window changed incremental search state is not valid.
+	if (is_state.winid != curwin->w_id)
+	    init_incsearch_state(&is_state);
+#endif
 	// Trigger CmdlineChanged autocommands.
 	trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINECHANGED);
 
@@ -4163,8 +4174,8 @@ open_cmdwin(void)
     pum_undisplay();
 
     // don't use a new tab page
-    cmdmod.tab = 0;
-    cmdmod.noswapfile = 1;
+    cmdmod.cmod_tab = 0;
+    cmdmod.cmod_flags |= CMOD_NOSWAPFILE;
 
     // Create a window for the command-line buffer.
     if (win_split((int)p_cwh, WSP_BOT) == FAIL)

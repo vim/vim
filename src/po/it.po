@@ -4136,8 +4136,6 @@ msgstr "E538: Manca supporto mouse"
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: Espressione non terminata"
 
-msgid "E541: too many items"
-msgstr "E541: troppi elementi"
 
 msgid "E542: unbalanced groups"
 msgstr "E542: gruppi sbilanciati"

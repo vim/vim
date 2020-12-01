@@ -196,7 +196,7 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 	case VAR_STRING:
 	    if (in_vim9script())
 	    {
-		emsg(_(e_using_string_as_number));
+		emsg_using_string_as(varp, !want_bool);
 		break;
 	    }
 	    if (varp->vval.v_string != NULL)
@@ -213,7 +213,10 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 	case VAR_SPECIAL:
 	    if (!want_bool && in_vim9script())
 	    {
-		emsg(_("E611: Using a Special as a Number"));
+		if (varp->v_type == VAR_BOOL)
+		    emsg(_(e_using_bool_as_number));
+		else
+		    emsg(_("E611: Using a Special as a Number"));
 		break;
 	    }
 	    return varp->vval.v_number == VVAL_TRUE ? 1 : 0;

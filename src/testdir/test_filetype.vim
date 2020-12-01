@@ -87,6 +87,8 @@ let s:filename_checks = {
     \ 'bzr': ['bzr_log.any', 'bzr_log.file'],
     \ 'c': ['enlightenment/file.cfg', 'file.qc', 'file.c', 'some-enlightenment/file.cfg'],
     \ 'cabal': ['file.cabal'],
+    \ 'cabalconfig': ['cabal.config'],
+    \ 'cabalproject': ['cabal.project', 'cabal.project.local'],
     \ 'calendar': ['calendar', '/.calendar/file', '/share/calendar/any/calendar.file', '/share/calendar/calendar.file', 'any/share/calendar/any/calendar.file', 'any/share/calendar/calendar.file'],
     \ 'catalog': ['catalog', 'sgml.catalogfile', 'sgml.catalog', 'sgml.catalog-file'],
     \ 'cdl': ['file.cdl'],
@@ -110,7 +112,7 @@ let s:filename_checks = {
     \ 'conaryrecipe': ['file.recipe'],
     \ 'conf': ['auto.master'],
     \ 'config': ['configure.in', 'configure.ac', 'Pipfile', '/etc/hostname.file'],
-    \ 'context': ['tex/context/any/file.tex', 'file.mkii', 'file.mkiv', 'file.mkvi'],
+    \ 'context': ['tex/context/any/file.tex', 'file.mkii', 'file.mkiv', 'file.mkvi', 'file.mkxl', 'file.mklx'],
     \ 'cpp': ['file.cxx', 'file.c++', 'file.hh', 'file.hxx', 'file.hpp', 'file.ipp', 'file.moc', 'file.tcc', 'file.inl', 'file.tlh'],
     \ 'crm': ['file.crm'],
     \ 'crontab': ['crontab', 'crontab.file', '/etc/cron.d/file', 'any/etc/cron.d/file'],
@@ -202,8 +204,8 @@ let s:filename_checks = {
     \ 'gsp': ['file.gsp'],
     \ 'gtkrc': ['.gtkrc', 'gtkrc', '.gtkrc-file', 'gtkrc-file'],
     \ 'haml': ['file.haml'],
-    \ 'hamster': ['file.hsc', 'file.hsm'],
-    \ 'haskell': ['file.hs', 'file.hs-boot'],
+    \ 'hamster': ['file.hsm'],
+    \ 'haskell': ['file.hs', 'file.hsc', 'file.hs-boot'],
     \ 'haste': ['file.ht'],
     \ 'hastepreproc': ['file.htpp'],
     \ 'hb': ['file.hb'],
@@ -345,6 +347,7 @@ let s:filename_checks = {
     \ 'papp': ['file.papp', 'file.pxml', 'file.pxsl'],
     \ 'pascal': ['file.pas', 'file.pp', 'file.dpr', 'file.lpr'],
     \ 'passwd': ['any/etc/passwd', 'any/etc/passwd-', 'any/etc/passwd.edit', 'any/etc/shadow', 'any/etc/shadow-', 'any/etc/shadow.edit', 'any/var/backups/passwd.bak', 'any/var/backups/shadow.bak', '/etc/passwd', '/etc/passwd-', '/etc/passwd.edit', '/etc/shadow', '/etc/shadow-', '/etc/shadow.edit', '/var/backups/passwd.bak', '/var/backups/shadow.bak'],
+    \ 'pbtxt': ['file.pbtxt'],
     \ 'pccts': ['file.g'],
     \ 'pdf': ['file.pdf'],
     \ 'perl': ['file.plx', 'file.al', 'file.psgi', 'gitolite.rc', '.gitolite.rc', 'example.gitolite.rc'],
@@ -549,6 +552,7 @@ let s:filename_case_checks = {
     \ }
 
 func CheckItems(checks)
+  set noswapfile
   for [ft, names] in items(a:checks)
     for i in range(0, len(names) - 1)
       new
@@ -565,6 +569,7 @@ func CheckItems(checks)
       bwipe!
     endfor
   endfor
+  set swapfile&
 endfunc
 
 func Test_filetype_detection()

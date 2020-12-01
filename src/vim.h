@@ -931,6 +931,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define BLN_NOOPT	16	// don't copy options to existing buffer
 #define BLN_DUMMY_OK	32	// also find an existing dummy buffer
 #define BLN_REUSE	64	// may re-use number from buf_reuse
+#define BLN_NOCURWIN	128	// buffer is not associated with curwin
 
 // Values for in_cinkeys()
 #define KEY_OPEN_FORW	0x101
@@ -1028,6 +1029,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define ECMD_OLDBUF	0x04	// use existing buffer if it exists
 #define ECMD_FORCEIT	0x08	// ! used in Ex command
 #define ECMD_ADDBUF	0x10	// don't edit, just add to buffer list
+#define ECMD_ALTBUF	0x20	// like ECMD_ADDBUF and set the alternate file
 
 // for lnum argument in do_ecmd()
 #define ECMD_LASTL	(linenr_T)0	// use last position in loaded file
@@ -1041,6 +1043,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define DOCMD_KEYTYPED	0x08	// don't reset KeyTyped
 #define DOCMD_EXCRESET	0x10	// reset exception environment (for debugging)
 #define DOCMD_KEEPLINE  0x20	// keep typed line for repeating with "."
+#define DOCMD_RANGEOK	0240	// can use a range without ":" in Vim9 script
 
 // flags for beginline()
 #define BL_WHITE	1	// cursor on first non-white in the line
@@ -1298,7 +1301,8 @@ enum auto_event
     EVENT_INSERTCHANGE,		// when changing Insert/Replace mode
     EVENT_INSERTCHARPRE,	// before inserting a char
     EVENT_INSERTENTER,		// when entering Insert mode
-    EVENT_INSERTLEAVE,		// when leaving Insert mode
+    EVENT_INSERTLEAVEPRE,	// just before leaving Insert mode
+    EVENT_INSERTLEAVE,		// just after leaving Insert mode
     EVENT_MENUPOPUP,		// just before popup menu is displayed
     EVENT_OPTIONSET,		// option was set
     EVENT_QUICKFIXCMDPOST,	// after :make, :grep etc.
@@ -1325,7 +1329,8 @@ enum auto_event
     EVENT_TABNEW,		// when entering a new tab page
     EVENT_TERMCHANGED,		// after changing 'term'
     EVENT_TERMINALOPEN,		// after a terminal buffer was created
-    EVENT_TERMINALWINOPEN,	// after a terminal buffer was created and entering its window
+    EVENT_TERMINALWINOPEN,	// after a terminal buffer was created and
+				// entering its window
     EVENT_TERMRESPONSE,		// after setting "v:termresponse"
     EVENT_TEXTCHANGED,		// text was modified not in Insert mode
     EVENT_TEXTCHANGEDI,         // text was modified in Insert mode
@@ -1696,7 +1701,6 @@ typedef unsigned short disptick_T;	// display tick type
 #endif
 
 #define SHOWCMD_COLS 10			// columns needed by shown command
-#define STL_MAX_ITEM 80			// max nr of %<flag> in statusline
 
 typedef void	    *vim_acl_T;		// dummy to pass an ACL to a function
 
@@ -1992,7 +1996,7 @@ typedef int sock_T;
 #define VV_ECHOSPACE	93
 #define VV_ARGV		94
 #define VV_COLLATE      95
-#define VV_DISALLOW_LET 96	// TODO: remove again
+#define VV_EXITING	96
 #define VV_LEN		97	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL

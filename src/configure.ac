@@ -3593,7 +3593,15 @@ fi
 
 AC_MSG_CHECKING(for SVR4 ptys)
 if test -c /dev/ptmx ; then
-  AC_TRY_LINK([], [ptsname(0);grantpt(0);unlockpt(0);],
+  AC_TRY_LINK([
+// These should be in stdlib.h, but it depends on _XOPEN_SOURCE.
+char *ptsname(int);
+int unlockpt(int);
+int grantpt(int);
+	       ], [
+		ptsname(0);
+		grantpt(0);
+		unlockpt(0);],
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SVR4_PTYS),
 	AC_MSG_RESULT(no))
 else

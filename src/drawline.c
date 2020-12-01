@@ -641,7 +641,7 @@ win_line(
 	    else
 		tocol = MAXCOL;
 	    // do at least one character; happens when past end of line
-	    if (fromcol == tocol)
+	    if (fromcol == tocol && search_match_endcol)
 		tocol = fromcol + 1;
 	    area_highlighting = TRUE;
 	    vi_attr = HL_ATTR(HLF_I);
@@ -1873,6 +1873,7 @@ win_line(
 			char_u	*prev_ptr, *p;
 			int	len;
 			hlf_T	spell_hlf = HLF_COUNT;
+
 			if (has_mbyte)
 			{
 			    prev_ptr = ptr - mb_l;
@@ -2445,15 +2446,18 @@ win_line(
 		&& conceal_cursor_line(wp)
 		&& (int)wp->w_virtcol <= vcol + n_skip)
 	{
-#  ifdef FEAT_RIGHTLEFT
+# ifdef FEAT_RIGHTLEFT
 	    if (wp->w_p_rl)
 		wp->w_wcol = wp->w_width - col + boguscols - 1;
 	    else
-#  endif
+# endif
 		wp->w_wcol = col - boguscols;
 	    wp->w_wrow = row;
 	    did_wcol = TRUE;
 	    curwin->w_valid |= VALID_WCOL|VALID_WROW|VALID_VIRTCOL;
+# ifdef FEAT_PROP_POPUP
+	    curwin->w_flags &= ~(WFLAG_WCOL_OFF_ADDED | WFLAG_WROW_OFF_ADDED);
+# endif
 	}
 #endif
 
@@ -2778,10 +2782,14 @@ win_line(
 	// Also highlight the 'colorcolumn' if 'breakindent' and/or 'showbreak'
 	// options are set
 	vcol_save_attr = -1;
-	if ((draw_state == WL_LINE ||
+	if (((draw_state == WL_LINE ||
 	     draw_state == WL_BRI ||
 	     draw_state == WL_SBR) && !lnum_in_visual_area
 		&& search_attr == 0 && area_attr == 0)
+# ifdef FEAT_DIFF
+			&& filler_todo <= 0
+# endif
+		)
 	{
 	    if (wp->w_p_cuc && VCOL_HLC == (long)wp->w_virtcol
 						 && lnum != wp->w_cursor.lnum)

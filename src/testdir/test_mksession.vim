@@ -586,6 +586,53 @@ func Test_mkview_no_file_name()
   %bwipe
 endfunc
 
+func Test_mkview_loadview_jumplist()
+  set viewdir=Xviewdir
+  au BufWinLeave * silent mkview
+  au BufWinEnter * silent loadview
+
+  edit Xfile1
+  call setline(1, ['a', 'bbbbbbb', 'c'])
+  normal j3l
+  call assert_equal([2, 4], getcurpos()[1:2])
+  write
+
+  edit Xfile2
+  call setline(1, ['d', 'eeeeeee', 'f'])
+  normal j5l
+  call assert_equal([2, 6], getcurpos()[1:2])
+  write
+
+  edit Xfile3
+  call setline(1, ['g', 'h', 'iiiii'])
+  normal jj3l
+  call assert_equal([3, 4], getcurpos()[1:2])
+  write
+
+  edit Xfile1
+  call assert_equal([2, 4], getcurpos()[1:2])
+  edit Xfile2
+  call assert_equal([2, 6], getcurpos()[1:2])
+  edit Xfile3
+  call assert_equal([3, 4], getcurpos()[1:2])
+
+  exe "normal \<C-O>"
+  call assert_equal('Xfile2', expand('%'))
+  call assert_equal([2, 6], getcurpos()[1:2])
+  exe "normal \<C-O>"
+  call assert_equal('Xfile1', expand('%'))
+  call assert_equal([2, 4], getcurpos()[1:2])
+
+  au! BufWinLeave
+  au! BufWinEnter
+  bwipe!
+  call delete('Xviewdir', 'rf')
+  call delete('Xfile1')
+  call delete('Xfile2')
+  call delete('Xfile3')
+  set viewdir&
+endfunc
+
 " A clean session (one empty buffer, one window, and one tab) should not
 " set any error messages when sourced because no commands should fail.
 func Test_mksession_no_errmsg()
@@ -857,6 +904,42 @@ func Test_mkvimrc()
 
   call s:ClearMappings()
   call delete('Xtestvimrc')
+endfunc
+
+func Test_scrolloff()
+  set sessionoptions+=localoptions
+  setlocal so=1 siso=1
+  mksession! Xtest_mks.out
+  setlocal so=-1 siso=-1
+  source Xtest_mks.out
+  call assert_equal(1, &l:so)
+  call assert_equal(1, &l:siso)
+  call delete('Xtest_mks.out')
+  setlocal so& siso&
+  set sessionoptions&
+endfunc
+
+func Test_altfile()
+  edit Xone
+  split Xtwo
+  edit Xtwoalt
+  edit #
+  wincmd w
+  edit Xonealt
+  edit #
+  mksession! Xtest_altfile
+  only
+  bwipe Xonealt
+  bwipe Xtwoalt
+  bwipe!
+  source Xtest_altfile
+  call assert_equal('Xone', bufname())
+  call assert_equal('Xonealt', bufname('#'))
+  wincmd w
+  call assert_equal('Xtwo', bufname())
+  call assert_equal('Xtwoalt', bufname('#'))
+  only
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

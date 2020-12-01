@@ -625,24 +625,40 @@ typedef struct
  */
 typedef struct
 {
-    int		hide;			// TRUE when ":hide" was used
-# ifdef FEAT_BROWSE_CMD
-    int		browse;			// TRUE to invoke file dialog
-# endif
-    int		split;			// flags for win_split()
-    int		tab;			// > 0 when ":tab" was used
-# if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
-    int		confirm;		// TRUE to invoke yes/no dialog
-# endif
-    int		keepalt;		// TRUE when ":keepalt" was used
-    int		keepmarks;		// TRUE when ":keepmarks" was used
-    int		keepjumps;		// TRUE when ":keepjumps" was used
-    int		lockmarks;		// TRUE when ":lockmarks" was used
-    int		keeppatterns;		// TRUE when ":keeppatterns" was used
-    int		noswapfile;		// TRUE when ":noswapfile" was used
-    char_u	*save_ei;		// saved value of 'eventignore'
-    regmatch_T	filter_regmatch;	// set by :filter /pat/
-    int		filter_force;		// set for :filter!
+    int		cmod_flags;		// CMOD_ flags
+#define CMOD_SANDBOX	    0x0001	// ":sandbox"
+#define CMOD_SILENT	    0x0002	// ":silent"
+#define CMOD_ERRSILENT	    0x0004	// ":silent!"
+#define CMOD_UNSILENT	    0x0008	// ":unsilent"
+#define CMOD_NOAUTOCMD	    0x0010	// ":noautocmd"
+#define CMOD_HIDE	    0x0020	// ":hide"
+#define CMOD_BROWSE	    0x0040	// ":browse" - invoke file dialog
+#define CMOD_CONFIRM	    0x0080	// ":confirm" - invoke yes/no dialog
+#define CMOD_KEEPALT	    0x0100	// ":keepalt"
+#define CMOD_KEEPMARKS	    0x0200	// ":keepmarks"
+#define CMOD_KEEPJUMPS	    0x0400	// ":keepjumps"
+#define CMOD_LOCKMARKS	    0x0800	// ":lockmarks"
+#define CMOD_KEEPPATTERNS   0x1000	// ":keeppatterns"
+#define CMOD_NOSWAPFILE	    0x2000	// ":noswapfile"
+
+    int		cmod_split;		// flags for win_split()
+    int		cmod_tab;		// > 0 when ":tab" was used
+    regmatch_T	cmod_filter_regmatch;	// set by :filter /pat/
+    int		cmod_filter_force;	// set for :filter!
+
+    int		cmod_verbose;		// non-zero to set 'verbose'
+
+    // values for undo_cmdmod()
+    char_u	*cmod_save_ei;		// saved value of 'eventignore'
+#ifdef HAVE_SANDBOX
+    int		cmod_did_sandbox;	// set when "sandbox" was incremented
+#endif
+    long	cmod_verbose_save;	// if 'verbose' was set: value of
+					// p_verbose plus one
+    int		cmod_save_msg_silent;	// if non-zero: saved value of
+					// msg_silent + 1
+    int		cmod_save_msg_scroll;	// for restoring msg_scroll
+    int		cmod_did_esilent;	// incremented when emsg_silent is
 } cmdmod_T;
 
 #define MF_SEED_LEN	8
@@ -917,6 +933,8 @@ typedef struct {
 # define CSF_SILENT	0x1000	// "emsg_silent" reset by ":try"
 // Note that CSF_ELSE is only used when CSF_TRY and CSF_WHILE are unset
 // (an ":if"), and CSF_SILENT is only used when CSF_TRY is set.
+//
+#define CSF_FUNC_DEF	0x2000	// a function was defined in this block
 
 /*
  * What's pending for being reactivated at the ":endtry" of this try
@@ -1211,14 +1229,15 @@ struct mapblock
 #endif
 };
 
+
 /*
  * Used for highlighting in the status line.
  */
-struct stl_hlrec
+typedef struct
 {
     char_u	*start;
     int		userhl;		// 0: no HL, 1-9: User HL, < 0 for syn ID
-};
+} stl_hlrec_T;
 
 
 /*
@@ -1669,7 +1688,8 @@ struct funccall_S
 #ifdef FEAT_PROFILE
     proftime_T	prof_child;	// time spent in a child
 #endif
-    funccall_T	*caller;	// calling function or NULL
+    funccall_T	*caller;	// calling function or NULL; or next funccal in
+				// list pointed to by previous_funccal.
 
     // for closure
     int		fc_refcount;	// number of user functions that reference this
@@ -3328,6 +3348,10 @@ struct window_S
 				    // top of the window
     char	w_topline_was_set;  // flag set to TRUE when topline is set,
 				    // e.g. by winrestview()
+
+    linenr_T	w_botline;	    // number of the line below the bottom of
+				    // the window
+
 #ifdef FEAT_DIFF
     int		w_topfill;	    // number of filler lines above w_topline
     int		w_old_topfill;	    // w_topfill at last redraw
@@ -3341,6 +3365,12 @@ struct window_S
     colnr_T	w_skipcol;	    // starting column when a single line
 				    // doesn't fit in the window
 
+    int		w_empty_rows;	    // number of ~ rows in window
+#ifdef FEAT_DIFF
+    int		w_filler_rows;	    // number of filler rows at the end of the
+				    // window
+#endif
+
     /*
      * Layout of the window in the screen.
      * May need to add "msg_scrolled" to "w_winrow" in rare situations.
@@ -3348,11 +3378,14 @@ struct window_S
     int		w_winrow;	    // first row of window in screen
     int		w_height;	    // number of rows in window, excluding
 				    // status/command/winbar line(s)
+
     int		w_status_height;    // number of status lines (0 or 1)
     int		w_wincol;	    // Leftmost column of window in screen.
     int		w_width;	    // Width of window, excluding separation.
     int		w_vsep_width;	    // Number of separator columns (0 or 1).
+
     pos_save_T	w_save_cursor;	    // backup of cursor pos and topline
+
 #ifdef FEAT_PROP_POPUP
     int		w_popup_flags;	    // POPF_ values
     int		w_popup_handled;    // POPUP_HANDLE[0-9] flags
@@ -3413,8 +3446,14 @@ struct window_S
 # if defined(FEAT_TIMERS)
     timer_T	*w_popup_timer;	    // timer for closing popup window
 # endif
-#endif
 
+    int		w_flags;	    // WFLAG_ flags
+
+# define WFLAG_WCOL_OFF_ADDED	1   // popup border and padding were added to
+				    // w_wcol
+# define WFLAG_WROW_OFF_ADDED	2   // popup border and padding were added to
+				    // w_wrow
+#endif
 
     /*
      * === start of cached values ====
@@ -3454,14 +3493,6 @@ struct window_S
      * buffer, thus w_wrow is relative to w_winrow.
      */
     int		w_wrow, w_wcol;	    // cursor position in window
-
-    linenr_T	w_botline;	    // number of the line below the bottom of
-				    // the window
-    int		w_empty_rows;	    // number of ~ rows in window
-#ifdef FEAT_DIFF
-    int		w_filler_rows;	    // number of filler rows at the end of the
-				    // window
-#endif
 
     /*
      * Info about the lines currently in the window is remembered to avoid
@@ -3869,13 +3900,13 @@ typedef int vimmenu_T;
  */
 typedef struct
 {
-    buf_T	*save_curbuf;	// saved curbuf
-    int		use_aucmd_win;	// using aucmd_win
-    win_T	*save_curwin;	// saved curwin
-    win_T	*new_curwin;	// new curwin
-    win_T	*save_prevwin;	// saved prevwin
-    bufref_T	new_curbuf;	// new curbuf
-    char_u	*globaldir;	// saved value of globaldir
+    buf_T	*save_curbuf;	    // saved curbuf
+    int		use_aucmd_win;	    // using aucmd_win
+    int		save_curwin_id;	    // ID of saved curwin
+    int		new_curwin_id;	    // ID of new curwin
+    int		save_prevwin_id;    // ID of saved prevwin
+    bufref_T	new_curbuf;	    // new curbuf
+    char_u	*globaldir;	    // saved value of globaldir
 } aco_save_T;
 
 /*

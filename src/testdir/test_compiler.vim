@@ -4,9 +4,7 @@ source check.vim
 source shared.vim
 
 func Test_compiler()
-  if !executable('perl')
-    return
-  endif
+  CheckExecutable perl
   CheckFeature quickfix
 
   " $LANG changes the output of Perl.
@@ -41,12 +39,19 @@ func Test_compiler()
   bw!
 endfunc
 
+func GetCompilerNames()
+  return glob('$VIMRUNTIME/compiler/*.vim', 0, 1)
+        \ ->map({i, v -> substitute(v, '.*[\\/]\([a-zA-Z0-9_\-]*\).vim', '\1', '')})
+        \ ->sort()
+endfunc
+
 func Test_compiler_without_arg()
   let runtime = substitute($VIMRUNTIME, '\\', '/', 'g')
   let a = split(execute('compiler'))
-  call assert_match(runtime .. '/compiler/ant.vim$',   a[0])
-  call assert_match(runtime .. '/compiler/bcc.vim$',   a[1])
-  call assert_match(runtime .. '/compiler/xo.vim$', a[-1])
+  let exp = GetCompilerNames()
+  call assert_match(runtime .. '/compiler/' .. exp[0] .. '.vim$',  a[0])
+  call assert_match(runtime .. '/compiler/' .. exp[1] .. '.vim$',  a[1])
+  call assert_match(runtime .. '/compiler/' .. exp[-1] .. '.vim$', a[-1])
 endfunc
 
 " Test executing :compiler from the command line, not from a script
@@ -59,8 +64,9 @@ func Test_compiler_commandline()
 endfunc
 
 func Test_compiler_completion()
+  let clist = GetCompilerNames()->join(' ')
   call feedkeys(":compiler \<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_match('^"compiler ant bcc .* xmlwf xo$', @:)
+  call assert_match('^"compiler ' .. clist .. '$', @:)
 
   call feedkeys(":compiler p\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"compiler pbx perl php pylint pyunit', @:)

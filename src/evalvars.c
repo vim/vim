@@ -146,7 +146,7 @@ static struct vimvar
     {VV_NAME("echospace",	 VAR_NUMBER), VV_RO},
     {VV_NAME("argv",		 VAR_LIST), VV_RO},
     {VV_NAME("collate",		 VAR_STRING), VV_RO},
-    {VV_NAME("disallow_let",	 VAR_NUMBER), 0}, // TODO: remove
+    {VV_NAME("exiting",		 VAR_SPECIAL), VV_RO},
 };
 
 // shorthand
@@ -219,6 +219,7 @@ evalvars_init(void)
 
     set_vim_var_nr(VV_SEARCHFORWARD, 1L);
     set_vim_var_nr(VV_HLSEARCH, 1L);
+    set_vim_var_nr(VV_EXITING, VVAL_NULL);
     set_vim_var_dict(VV_COMPLETED_ITEM, dict_alloc_lock(VAR_FIXED));
     set_vim_var_list(VV_ERRORS, list_alloc());
     set_vim_var_dict(VV_EVENT, dict_alloc_lock(VAR_FIXED));
@@ -242,9 +243,6 @@ evalvars_init(void)
     set_vim_var_nr(VV_TYPE_BLOB,    VAR_TYPE_BLOB);
 
     set_vim_var_nr(VV_ECHOSPACE,    sc_col - 1);
-
-    // TODO: remove later
-    set_vim_var_nr(VV_DISALLOW_LET, 1);
 
     // Default for v:register is not 0 but '"'.  This is adjusted once the
     // clipboard has been setup by calling reset_reg_var().
@@ -749,8 +747,7 @@ ex_let(exarg_T *eap)
 	    ex_finally(eap);
 	    return;
     }
-    if (get_vim_var_nr(VV_DISALLOW_LET)
-				      && eap->cmdidx == CMD_let && vim9script)
+    if (eap->cmdidx == CMD_let && vim9script)
     {
 	emsg(_(e_cannot_use_let_in_vim9_script));
 	return;
@@ -1986,7 +1983,13 @@ get_user_var_name(expand_T *xp, int idx)
     }
 
     // b: variables
-    ht = &curbuf->b_vars->dv_hashtab;
+    ht =
+#ifdef FEAT_CMDWIN
+	// In cmdwin, the alternative buffer should be used.
+	(cmdwin_type != 0 && get_cmdline_type() == NUL) ?
+	&prevwin->w_buffer->b_vars->dv_hashtab :
+#endif
+	&curbuf->b_vars->dv_hashtab;
     if (bdone < ht->ht_used)
     {
 	if (bdone++ == 0)
@@ -1999,7 +2002,13 @@ get_user_var_name(expand_T *xp, int idx)
     }
 
     // w: variables
-    ht = &curwin->w_vars->dv_hashtab;
+    ht =
+#ifdef FEAT_CMDWIN
+	// In cmdwin, the alternative window should be used.
+	(cmdwin_type != 0 && get_cmdline_type() == NUL) ?
+	&prevwin->w_vars->dv_hashtab :
+#endif
+	&curwin->w_vars->dv_hashtab;
     if (wdone < ht->ht_used)
     {
 	if (wdone++ == 0)
@@ -2546,7 +2555,22 @@ eval_variable(
 	    ret = FAIL;
 	}
 	else if (rettv != NULL)
+	{
+	    // If a list or dict variable wasn't initialized, do it now.
+	    if (tv->v_type == VAR_DICT && tv->vval.v_dict == NULL)
+	    {
+		tv->vval.v_dict = dict_alloc();
+		if (tv->vval.v_dict != NULL)
+		    ++tv->vval.v_dict->dv_refcount;
+	    }
+	    else if (tv->v_type == VAR_LIST && tv->vval.v_list == NULL)
+	    {
+		tv->vval.v_list = list_alloc();
+		if (tv->vval.v_list != NULL)
+		    ++tv->vval.v_list->lv_refcount;
+	    }
 	    copy_tv(tv, rettv);
+	}
     }
 
     name[len] = cc;
@@ -2606,7 +2630,28 @@ find_var(char_u *name, hashtab_T **htp, int no_autoload)
 	return ret;
 
     // Search in parent scope for lambda
-    return find_var_in_scoped_ht(name, no_autoload || htp != NULL);
+    ret = find_var_in_scoped_ht(name, no_autoload || htp != NULL);
+    if (ret != NULL)
+	return ret;
+
+    // in Vim9 script items without a scope can be script-local
+    if (in_vim9script() && name[0] != NUL && name[1] != ':')
+    {
+	ht = get_script_local_ht();
+	if (ht != NULL)
+	{
+	    ret = find_var_in_ht(ht, *name, varname,
+						   no_autoload || htp != NULL);
+	    if (ret != NULL)
+	    {
+		if (htp != NULL)
+		    *htp = ht;
+		return ret;
+	    }
+	}
+    }
+
+    return NULL;
 }
 
 /*
@@ -3582,9 +3627,11 @@ var_redir_start(char_u *name, int append)
     tv.v_type = VAR_STRING;
     tv.vval.v_string = (char_u *)"";
     if (append)
-	set_var_lval(redir_lval, redir_endp, &tv, TRUE, 0, (char_u *)".");
+	set_var_lval(redir_lval, redir_endp, &tv, TRUE,
+						ASSIGN_NO_DECL, (char_u *)".");
     else
-	set_var_lval(redir_lval, redir_endp, &tv, TRUE, 0, (char_u *)"=");
+	set_var_lval(redir_lval, redir_endp, &tv, TRUE,
+						ASSIGN_NO_DECL, (char_u *)"=");
     clear_lval(redir_lval);
     if (called_emsg > called_emsg_before)
     {

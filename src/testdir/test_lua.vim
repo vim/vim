@@ -1,6 +1,14 @@
 " Tests for Lua.
 
 source check.vim
+
+" This test also works without the lua feature.
+func Test_skip_lua()
+  if 0
+    lua print("Not executed")
+  endif
+endfunc
+
 CheckFeature lua
 CheckFeature float
 

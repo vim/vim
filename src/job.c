@@ -1628,7 +1628,7 @@ init_prompt(int cmdchar_todo)
 
     if (cmdchar_todo == 'A')
 	coladvance((colnr_T)MAXCOL);
-    if (cmdchar_todo == 'I' || curwin->w_cursor.col <= (int)STRLEN(prompt))
+    if (curwin->w_cursor.col < (int)STRLEN(prompt))
 	curwin->w_cursor.col = (int)STRLEN(prompt);
     // Make sure the cursor is in a valid position.
     check_cursor();

@@ -85,9 +85,12 @@ func Test_prompt_editing()
   call term_sendkeys(buf, left . left . left . bs . '-')
   call WaitForAssert({-> assert_equal('cmd: -hel', term_getline(buf, 1))})
 
+  call term_sendkeys(buf, "\<C-O>lz")
+  call WaitForAssert({-> assert_equal('cmd: -hzel', term_getline(buf, 1))})
+
   let end = "\<End>"
   call term_sendkeys(buf, end . "x")
-  call WaitForAssert({-> assert_equal('cmd: -helx', term_getline(buf, 1))})
+  call WaitForAssert({-> assert_equal('cmd: -hzelx', term_getline(buf, 1))})
 
   call term_sendkeys(buf, "\<C-U>exit\<CR>")
   call WaitForAssert({-> assert_equal('other buffer', term_getline(buf, 1))})
@@ -119,6 +122,14 @@ func Test_prompt_garbage_collect()
   call assert_equal(0, prompt_setinterrupt({}, ''))
 
   delfunc MyPromptCallback
+  bwipe!
+endfunc
+
+func Test_prompt_backspace()
+  new
+  set buftype=prompt
+  call feedkeys("A123456\<Left>\<BS>\<Esc>", 'xt')
+  call assert_equal('% 12346', getline(1))
   bwipe!
 endfunc
 

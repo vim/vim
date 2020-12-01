@@ -543,9 +543,7 @@ endfunc
 
 " Test for command-line completion of expressions
 func Test_expr_completion()
-  if !has('cmdline_compl')
-    return
-  endif
+  CheckFeature cmdline_compl
   for cmd in [
 	\ 'let a = ',
 	\ 'const a = ',

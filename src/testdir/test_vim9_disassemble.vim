@@ -273,6 +273,62 @@ def Test_disassemble_list_assign()
         res)
 enddef
 
+def s:ListAdd()
+  var l: list<number> = []
+  add(l, 123)
+  add(l, g:aNumber)
+enddef
+
+def Test_disassemble_list_add()
+  var res = execute('disass s:ListAdd')
+  assert_match('<SNR>\d*_ListAdd\_s*' ..
+        'var l: list<number> = []\_s*' ..
+        '\d NEWLIST size 0\_s*' ..
+        '\d STORE $0\_s*' ..
+        'add(l, 123)\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d PUSHNR 123\_s*' ..
+        '\d LISTAPPEND\_s*' ..
+        '\d DROP\_s*' ..
+        'add(l, g:aNumber)\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d\+ LOADG g:aNumber\_s*' ..
+        '\d\+ CHECKTYPE number stack\[-1\]\_s*' ..
+        '\d\+ LISTAPPEND\_s*' ..
+        '\d\+ DROP\_s*' ..
+        '\d\+ PUSHNR 0\_s*' ..
+        '\d\+ RETURN',
+        res)
+enddef
+
+def s:BlobAdd()
+  var b: blob = 0z
+  add(b, 123)
+  add(b, g:aNumber)
+enddef
+
+def Test_disassemble_blob_add()
+  var res = execute('disass s:BlobAdd')
+  assert_match('<SNR>\d*_BlobAdd\_s*' ..
+        'var b: blob = 0z\_s*' ..
+        '\d PUSHBLOB 0z\_s*' ..
+        '\d STORE $0\_s*' ..
+        'add(b, 123)\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d PUSHNR 123\_s*' ..
+        '\d BLOBAPPEND\_s*' ..
+        '\d DROP\_s*' ..
+        'add(b, g:aNumber)\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d\+ LOADG g:aNumber\_s*' ..
+        '\d\+ CHECKTYPE number stack\[-1\]\_s*' ..
+        '\d\+ BLOBAPPEND\_s*' ..
+        '\d\+ DROP\_s*' ..
+        '\d\+ PUSHNR 0\_s*' ..
+        '\d\+ RETURN',
+        res)
+enddef
+
 def s:ScriptFuncUnlet()
   g:somevar = "value"
   unlet g:somevar
@@ -573,6 +629,14 @@ def HasSomething()
   endif
 enddef
 
+def HasGuiRunning()
+  if has("gui_running")
+    echo "yes"
+  else
+    echo "no"
+  endif
+enddef
+
 def Test_disassemble_const_expr()
   assert_equal("\nyes", execute('HasEval()'))
   var instr = execute('disassemble HasEval')
@@ -620,9 +684,74 @@ def Test_disassemble_const_expr()
   assert_notmatch('PUSHS "something"', instr)
   assert_notmatch('PUSHS "less"', instr)
   assert_notmatch('JUMP', instr)
+
+  var result: string
+  var instr_expected: string
+  if has('gui')
+    if has('gui_running')
+      # GUI already running, always returns "yes"
+      result = "\nyes"
+      instr_expected = 'HasGuiRunning.*' ..
+          'if has("gui_running")\_s*' ..
+          '  echo "yes"\_s*' ..
+          '\d PUSHS "yes"\_s*' ..
+          '\d ECHO 1\_s*' ..
+          'else\_s*' ..
+          '  echo "no"\_s*' ..
+          'endif'
+    else
+      result = "\nno"
+      if has('unix')
+        # GUI not running but can start later, call has()
+        instr_expected = 'HasGuiRunning.*' ..
+            'if has("gui_running")\_s*' ..
+            '\d PUSHS "gui_running"\_s*' ..
+            '\d BCALL has(argc 1)\_s*' ..
+            '\d COND2BOOL\_s*' ..
+            '\d JUMP_IF_FALSE -> \d\_s*' ..
+            '  echo "yes"\_s*' ..
+            '\d PUSHS "yes"\_s*' ..
+            '\d ECHO 1\_s*' ..
+            'else\_s*' ..
+            '\d JUMP -> \d\_s*' ..
+            '  echo "no"\_s*' ..
+            '\d PUSHS "no"\_s*' ..
+            '\d ECHO 1\_s*' ..
+            'endif'
+      else
+        # GUI not running, always return "no"
+        instr_expected = 'HasGuiRunning.*' ..
+            'if has("gui_running")\_s*' ..
+            '  echo "yes"\_s*' ..
+            'else\_s*' ..
+            '  echo "no"\_s*' ..
+            '\d PUSHS "no"\_s*' ..
+            '\d ECHO 1\_s*' ..
+            'endif'
+      endif
+    endif
+  else
+    # GUI not supported, always return "no"
+    result = "\nno"
+    instr_expected = 'HasGuiRunning.*' ..
+        'if has("gui_running")\_s*' ..
+        '  echo "yes"\_s*' ..
+        'else\_s*' ..
+        '  echo "no"\_s*' ..
+        '\d PUSHS "no"\_s*' ..
+        '\d ECHO 1\_s*' ..
+        'endif'
+  endif
+
+  assert_equal(result, execute('HasGuiRunning()'))
+  instr = execute('disassemble HasGuiRunning')
+  assert_match(instr_expected, instr)
 enddef
 
 def ReturnInIf(): string
+  if 1 < 0
+    return "maybe"
+  endif
   if g:cond
     return "yes"
   else
@@ -633,16 +762,20 @@ enddef
 def Test_disassemble_return_in_if()
   var instr = execute('disassemble ReturnInIf')
   assert_match('ReturnInIf\_s*' ..
+        'if 1 < 0\_s*' ..
+        '  return "maybe"\_s*' ..
+        'endif\_s*' ..
         'if g:cond\_s*' ..
         '0 LOADG g:cond\_s*' ..
-        '1 JUMP_IF_FALSE -> 4\_s*' ..
+        '1 COND2BOOL\_s*' ..
+        '2 JUMP_IF_FALSE -> 5\_s*' ..
         'return "yes"\_s*' ..
-        '2 PUSHS "yes"\_s*' ..
-        '3 RETURN\_s*' ..
+        '3 PUSHS "yes"\_s*' ..
+        '4 RETURN\_s*' ..
         'else\_s*' ..
         ' return "no"\_s*' ..
-        '4 PUSHS "no"\_s*' ..
-        '5 RETURN$',
+        '5 PUSHS "no"\_s*' ..
+        '6 RETURN$',
         instr)
 enddef
 
@@ -732,6 +865,28 @@ def Test_disassemble_lambda()
         instr)
 enddef
 
+def LambdaWithType(): number
+  var Ref = {a: number -> a + 10}
+  return Ref(g:value)
+enddef
+
+def Test_disassemble_lambda_with_type()
+  g:value = 5
+  assert_equal(15, LambdaWithType())
+  var instr = execute('disassemble LambdaWithType')
+  assert_match('LambdaWithType\_s*' ..
+        'var Ref = {a: number -> a + 10}\_s*' ..
+        '\d FUNCREF <lambda>\d\+\_s*' ..
+        '\d STORE $0\_s*' ..
+        'return Ref(g:value)\_s*' ..
+        '\d LOADG g:value\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d CHECKTYPE number stack\[-2\]\_s*' ..
+        '\d PCALL (argc 1)\_s*' ..
+        '\d RETURN',
+        instr)
+enddef
+
 def NestedOuter()
   def g:Inner()
     echomsg "inner"
@@ -745,6 +900,29 @@ def Test_nested_func()
         'echomsg "inner"\_s*' ..
         'enddef\_s*' ..
         '\d NEWFUNC <lambda>\d\+ Inner\_s*' ..
+        '\d PUSHNR 0\_s*' ..
+        '\d RETURN',
+        instr)
+enddef
+
+def NestedDefList()
+  def
+  def Info
+  def /Info
+  def /Info/
+enddef
+
+def Test_nested_def_list()
+   var instr = execute('disassemble NestedDefList')
+   assert_match('NestedDefList\_s*' ..
+        'def\_s*' ..
+        '\d DEF \_s*' ..
+        'def Info\_s*' ..
+        '\d DEF Info\_s*' ..
+        'def /Info\_s*' ..
+        '\d DEF /Info\_s*' ..
+        'def /Info/\_s*' ..
+        '\d DEF /Info/\_s*' ..
         '\d PUSHNR 0\_s*' ..
         '\d RETURN',
         instr)
@@ -803,7 +981,7 @@ def Test_disassemble_for_loop()
         'res->add(i)\_s*' ..
         '\d LOAD $0\_s*' ..
         '\d LOAD $2\_s*' ..
-        '\d\+ BCALL add(argc 2)\_s*' ..
+        '\d\+ LISTAPPEND\_s*' ..
         '\d\+ DROP\_s*' ..
         'endfor\_s*' ..
         '\d\+ JUMP -> \d\+\_s*' ..
@@ -844,6 +1022,40 @@ def Test_disassemble_for_loop_eval()
         '\d\+ DROP\_s*' ..
         'return res\_s*' ..
         '\d\+ LOAD $0\_s*' ..
+        '\d\+ RETURN',
+        instr)
+enddef
+
+def ForLoopUnpack()
+  for [x1, x2] in [[1, 2], [3, 4]]
+    echo x1 x2
+  endfor
+enddef
+
+def Test_disassemble_for_loop_unpack()
+  var instr = execute('disassemble ForLoopUnpack')
+  assert_match('ForLoopUnpack\_s*' ..
+        'for \[x1, x2\] in \[\[1, 2\], \[3, 4\]\]\_s*' ..
+        '\d\+ STORE -1 in $0\_s*' ..
+        '\d\+ PUSHNR 1\_s*' ..
+        '\d\+ PUSHNR 2\_s*' ..
+        '\d\+ NEWLIST size 2\_s*' ..
+        '\d\+ PUSHNR 3\_s*' ..
+        '\d\+ PUSHNR 4\_s*' ..
+        '\d\+ NEWLIST size 2\_s*' ..
+        '\d\+ NEWLIST size 2\_s*' ..
+        '\d\+ FOR $0 -> 16\_s*' ..
+        '\d\+ UNPACK 2\_s*' ..
+        '\d\+ STORE $1\_s*' ..
+        '\d\+ STORE $2\_s*' ..
+        'echo x1 x2\_s*' ..
+        '\d\+ LOAD $1\_s*' ..
+        '\d\+ LOAD $2\_s*' ..
+        '\d\+ ECHO 2\_s*' ..
+        'endfor\_s*' ..
+        '\d\+ JUMP -> 8\_s*' ..
+        '\d\+ DROP\_s*' ..
+        '\d\+ PUSHNR 0\_s*' ..
         '\d\+ RETURN',
         instr)
 enddef
@@ -1210,16 +1422,17 @@ def Test_disassemble_return_bool()
   assert_match('ReturnBool\_s*' ..
         'var name: bool = 1 && 0 || 1\_s*' ..
         '0 PUSHNR 1\_s*' ..
-        '1 JUMP_IF_COND_FALSE -> 3\_s*' ..
-        '2 PUSHNR 0\_s*' ..
-        '3 COND2BOOL\_s*' ..
-        '4 JUMP_IF_COND_TRUE -> 6\_s*' ..
-        '5 PUSHNR 1\_s*' ..
-        '6 2BOOL (!!val)\_s*' ..
+        '1 2BOOL (!!val)\_s*' ..
+        '2 JUMP_IF_COND_FALSE -> 5\_s*' ..
+        '3 PUSHNR 0\_s*' ..
+        '4 2BOOL (!!val)\_s*' ..
+        '5 JUMP_IF_COND_TRUE -> 8\_s*' ..
+        '6 PUSHNR 1\_s*' ..
+        '7 2BOOL (!!val)\_s*' ..
         '\d STORE $0\_s*' ..
         'return name\_s*' ..
-        '\d LOAD $0\_s*' ..   
-        '\d RETURN',
+        '\d\+ LOAD $0\_s*' ..   
+        '\d\+ RETURN',
         instr)
   assert_equal(true, InvertBool())
 enddef
@@ -1556,6 +1769,30 @@ def Test_shuffle()
         '\d SHUFFLE 2 up 1\_s*' ..
         '\d BCALL append(argc 2)\_s*' ..
         '\d DROP\_s*' ..
+        '\d PUSHNR 0\_s*' ..
+        '\d RETURN',
+        res)
+enddef
+
+
+def s:SilentMessage()
+  silent echomsg "text"
+  silent! echoerr "error"
+enddef
+
+def Test_silent()
+  var res = execute('disass s:SilentMessage')
+  assert_match('<SNR>\d*_SilentMessage\_s*' ..
+        'silent echomsg "text"\_s*' ..
+        '\d CMDMOD silent\_s*' ..
+        '\d PUSHS "text"\_s*' ..
+        '\d ECHOMSG 1\_s*' ..
+        '\d CMDMOD_REV\_s*' ..
+        'silent! echoerr "error"\_s*' ..
+        '\d CMDMOD silent!\_s*' ..
+        '\d PUSHS "error"\_s*' ..
+        '\d ECHOERR 1\_s*' ..
+        '\d CMDMOD_REV\_s*' ..
         '\d PUSHNR 0\_s*' ..
         '\d RETURN',
         res)

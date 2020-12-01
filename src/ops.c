@@ -204,7 +204,7 @@ op_shift(oparg_T *oap, int curs_top, int amount)
 	msg_attr_keep((char *)IObuff, 0, TRUE);
     }
 
-    if (!cmdmod.lockmarks)
+    if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
     {
 	// Set "'[" and "']" marks.
 	curbuf->b_op_start = oap->start;
@@ -943,7 +943,7 @@ op_delete(oparg_T *oap)
     msgmore(curbuf->b_ml.ml_line_count - old_lcount);
 
 setmarks:
-    if (!cmdmod.lockmarks)
+    if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
     {
 	if (oap->block_mode)
 	{
@@ -1216,7 +1216,7 @@ op_replace(oparg_T *oap, int c)
     check_cursor();
     changed_lines(oap->start.lnum, oap->start.col, oap->end.lnum + 1, 0L);
 
-    if (!cmdmod.lockmarks)
+    if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
     {
 	// Set "'[" and "']" marks.
 	curbuf->b_op_start = oap->start;
@@ -1329,7 +1329,7 @@ op_tilde(oparg_T *oap)
 	// No change: need to remove the Visual selection
 	redraw_curbuf_later(INVERTED);
 
-    if (!cmdmod.lockmarks)
+    if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
     {
 	// Set '[ and '] marks.
 	curbuf->b_op_start = oap->start;
@@ -1942,7 +1942,7 @@ do_join(
 #ifdef FEAT_PROP_POPUP
 	propcount += count_props((linenr_T) (curwin->w_cursor.lnum + t), t > 0);
 #endif
-	if (t == 0 && setmark && !cmdmod.lockmarks)
+	if (t == 0 && setmark && (cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
 	{
 	    // Set the '[ mark.
 	    curwin->w_buffer->b_op_start.lnum = curwin->w_cursor.lnum;
@@ -2088,7 +2088,7 @@ do_join(
 
     ml_replace_len(curwin->w_cursor.lnum, newp, (colnr_T)newp_len, TRUE, FALSE);
 
-    if (setmark && !cmdmod.lockmarks)
+    if (setmark && (cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
     {
 	// Set the '] mark.
 	curwin->w_buffer->b_op_end.lnum = curwin->w_cursor.lnum;
@@ -2405,7 +2405,7 @@ op_addsub(
 
 	// Set '[ mark if something changed. Keep the last end
 	// position from do_addsub().
-	if (change_cnt > 0 && !cmdmod.lockmarks)
+	if (change_cnt > 0 && (cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
 	    curbuf->b_op_start = startpos;
 
 	if (change_cnt > p_report)
@@ -2852,7 +2852,7 @@ do_addsub(
 	    --curwin->w_cursor.col;
     }
 
-    if (did_change && !cmdmod.lockmarks)
+    if (did_change && (cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
     {
 	// set the '[ and '] marks
 	curbuf->b_op_start = startpos;
@@ -3301,7 +3301,7 @@ op_function(oparg_T *oap UNUSED)
 	(void)call_func_retnr(p_opfunc, 1, argv);
 
 	virtual_op = save_virtual_op;
-	if (cmdmod.lockmarks)
+	if (cmdmod.cmod_flags & CMOD_LOCKMARKS)
 	{
 	    curbuf->b_op_start = orig_start;
 	    curbuf->b_op_end = orig_end;
@@ -3465,8 +3465,9 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	if ((redo_yank || oap->op_type != OP_YANK)
 		&& ((!VIsual_active || oap->motion_force)
 		    // Also redo Operator-pending Visual mode mappings
-		    || (VIsual_active && cap->cmdchar == ':'
-						 && oap->op_type != OP_COLON))
+		    || (VIsual_active
+			  && (cap->cmdchar == ':' || cap->cmdchar == K_COMMAND)
+						  && oap->op_type != OP_COLON))
 		&& cap->cmdchar != 'D'
 #ifdef FEAT_FOLDING
 		&& oap->op_type != OP_FOLD
@@ -3490,7 +3491,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		    AppendToRedobuffLit(cap->searchbuf, -1);
 		AppendToRedobuff(NL_STR);
 	    }
-	    else if (cap->cmdchar == ':')
+	    else if (cap->cmdchar == ':' || cap->cmdchar == K_COMMAND)
 	    {
 		// do_cmdline() has stored the first typed line in
 		// "repeat_cmdline".  When several lines are typed repeating
@@ -3688,7 +3689,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 			    get_op_char(oap->op_type),
 			    get_extra_op_char(oap->op_type),
 			    oap->motion_force, cap->cmdchar, cap->nchar);
-		else if (cap->cmdchar != ':')
+		else if (cap->cmdchar != ':' && cap->cmdchar != K_COMMAND)
 		{
 		    int nchar = oap->op_type == OP_REPLACE ? cap->nchar : NUL;
 
@@ -3870,9 +3871,10 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	    else
 	    {
 		(void)op_delete(oap);
-		if (oap->motion_type == MLINE && has_format_option(FO_AUTO))
-		    u_save_cursor();	    // cursor line wasn't saved yet
-		auto_format(FALSE, TRUE);
+		// save cursor line for undo if it wasn't saved yet
+		if (oap->motion_type == MLINE && has_format_option(FO_AUTO)
+						      && u_save_cursor() == OK)
+		    auto_format(FALSE, TRUE);
 	    }
 	    break;
 

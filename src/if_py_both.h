@@ -324,7 +324,7 @@ static char *OutputAttrs[] = {
 };
 
     static PyObject *
-OutputDir(PyObject *self)
+OutputDir(PyObject *self, PyObject *args UNUSED)
 {
     return ObjectDir(self, OutputAttrs);
 }
@@ -468,30 +468,33 @@ OutputWritelines(OutputObject *self, PyObject *seq)
 }
 
     static PyObject *
-AlwaysNone(PyObject *self UNUSED)
+AlwaysNone(PyObject *self UNUSED, PyObject *args UNUSED)
 {
     // do nothing
     Py_INCREF(Py_None);
     return Py_None;
 }
+#define ALWAYS_NONE AlwaysNone(NULL, NULL)
 
     static PyObject *
-AlwaysFalse(PyObject *self UNUSED)
+AlwaysFalse(PyObject *self UNUSED, PyObject *args UNUSED)
 {
     // do nothing
     PyObject	*ret = Py_False;
     Py_INCREF(ret);
     return ret;
 }
+#define ALWAYS_FALSE AlwaysFalse(NULL, NULL)
 
     static PyObject *
-AlwaysTrue(PyObject *self UNUSED)
+AlwaysTrue(PyObject *self UNUSED, PyObject *args UNUSED)
 {
     // do nothing
     PyObject	*ret = Py_True;
     Py_INCREF(ret);
     return ret;
 }
+#define ALWAYS_TRUE AlwaysTrue(NULL, NULL)
 
 /***************/
 
@@ -1179,7 +1182,7 @@ map_finder_callback(char_u *path, void *_data)
 }
 
     static PyObject *
-Vim_GetPaths(PyObject *self UNUSED)
+Vim_GetPaths(PyObject *self UNUSED, PyObject *args UNUSED)
 {
     PyObject	*ret;
 
@@ -1209,7 +1212,7 @@ FinderFindSpec(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "s|O", &fullname, &target))
 	return NULL;
 
-    if (!(paths = Vim_GetPaths(self)))
+    if (!(paths = Vim_GetPaths(self, NULL)))
 	return NULL;
 
     spec = PyObject_CallFunction(py_find_spec, "sOO", fullname, paths, target);
@@ -1344,7 +1347,7 @@ FinderFindModule(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "s", &fullname))
 	return NULL;
 
-    if (!(new_path = Vim_GetPaths(self)))
+    if (!(new_path = Vim_GetPaths(self, NULL)))
 	return NULL;
 
     result = find_module(fullname, fullname, new_path);
@@ -1408,8 +1411,8 @@ static struct PyMethodDef VimMethods[] = {
     {"eval",	    VimEval,			METH_VARARGS,			"Evaluate an expression using Vim evaluator" },
     {"bindeval",    VimEvalPy,			METH_O,				"Like eval(), but returns objects attached to Vim ones"},
     {"strwidth",    VimStrwidth,		METH_O,				"Screen string width, counts <Tab> as having width 1"},
-    {"chdir",	    (PyCFunction)VimChdir,	METH_VARARGS|METH_KEYWORDS,	"Change directory"},
-    {"fchdir",	    (PyCFunction)VimFchdir,	METH_VARARGS|METH_KEYWORDS,	"Change directory"},
+    {"chdir",	    (PyCFunction)(void *)VimChdir,	METH_VARARGS|METH_KEYWORDS,	"Change directory"},
+    {"fchdir",	    (PyCFunction)(void *)VimFchdir,	METH_VARARGS|METH_KEYWORDS,	"Change directory"},
     {"foreach_rtp", VimForeachRTP,		METH_O,				"Call given callable for each path in &rtp"},
 #if PY_VERSION_HEX >= 0x030700f0
     {"find_spec",   FinderFindSpec,		METH_VARARGS,			"Internal use only, returns spec object for any input it receives"},
@@ -1643,7 +1646,7 @@ static char *DictionaryAttrs[] = {
 };
 
     static PyObject *
-DictionaryDir(PyObject *self)
+DictionaryDir(PyObject *self, PyObject *args UNUSED)
 {
     return ObjectDir(self, DictionaryAttrs);
 }
@@ -1850,11 +1853,11 @@ DictionaryIter(DictionaryObject *self)
     dii->dii_todo = ht->ht_used;
 
     return IterNew(dii,
-	    (destructorfun) PyMem_Free, (nextfun) DictionaryIterNext,
+	    (destructorfun)(void *) PyMem_Free, (nextfun) DictionaryIterNext,
 	    NULL, NULL, (PyObject *)self);
 }
 
-    static PyInt
+    static int
 DictionaryAssItem(
 	DictionaryObject *self, PyObject *keyObject, PyObject *valObject)
 {
@@ -1970,7 +1973,7 @@ dict_key(hashitem_T *hi)
 }
 
     static PyObject *
-DictionaryListKeys(DictionaryObject *self)
+DictionaryListKeys(DictionaryObject *self, PyObject *args UNUSED)
 {
     return DictionaryListObjects(self, dict_key);
 }
@@ -1985,7 +1988,7 @@ dict_val(hashitem_T *hi)
 }
 
     static PyObject *
-DictionaryListValues(DictionaryObject *self)
+DictionaryListValues(DictionaryObject *self, PyObject *args UNUSED)
 {
     return DictionaryListObjects(self, dict_val);
 }
@@ -2015,7 +2018,7 @@ dict_item(hashitem_T *hi)
 }
 
     static PyObject *
-DictionaryListItems(DictionaryObject *self)
+DictionaryListItems(DictionaryObject *self, PyObject *args UNUSED)
 {
     return DictionaryListObjects(self, dict_item);
 }
@@ -2166,7 +2169,7 @@ DictionaryPop(DictionaryObject *self, PyObject *args)
 }
 
     static PyObject *
-DictionaryPopItem(DictionaryObject *self)
+DictionaryPopItem(DictionaryObject *self, PyObject *args UNUSED)
 {
     hashitem_T	*hi;
     PyObject	*ret;
@@ -2229,7 +2232,7 @@ static struct PyMethodDef DictionaryMethods[] = {
     {"keys",	(PyCFunction)DictionaryListKeys,	METH_NOARGS,	""},
     {"values",	(PyCFunction)DictionaryListValues,	METH_NOARGS,	""},
     {"items",	(PyCFunction)DictionaryListItems,	METH_NOARGS,	""},
-    {"update",	(PyCFunction)DictionaryUpdate,		METH_VARARGS|METH_KEYWORDS, ""},
+    {"update",	(PyCFunction)(void *)DictionaryUpdate,		METH_VARARGS|METH_KEYWORDS, ""},
     {"get",	(PyCFunction)DictionaryGet,		METH_VARARGS,	""},
     {"pop",	(PyCFunction)DictionaryPop,		METH_VARARGS,	""},
     {"popitem",	(PyCFunction)DictionaryPopItem,		METH_NOARGS,	""},
@@ -2742,21 +2745,21 @@ ListAssIndex(ListObject *self, Py_ssize_t index, PyObject *obj)
     return 0;
 }
 
-    static Py_ssize_t
+    static int
 ListAssItem(ListObject *self, PyObject *idx, PyObject *obj)
 {
 #if PY_MAJOR_VERSION < 3
     if (PyInt_Check(idx))
     {
 	long _idx = PyInt_AsLong(idx);
-	return ListAssIndex(self, _idx, obj);
+	return (int)ListAssIndex(self, _idx, obj);
     }
     else
 #endif
     if (PyLong_Check(idx))
     {
 	long _idx = PyLong_AsLong(idx);
-	return ListAssIndex(self, _idx, obj);
+	return (int)ListAssIndex(self, _idx, obj);
     }
     else if (PySlice_Check(idx))
     {
@@ -2765,7 +2768,7 @@ ListAssItem(ListObject *self, PyObject *idx, PyObject *obj)
 	if (PySlice_GetIndicesEx((PySliceObject_T *)idx, ListLength(self),
 				 &start, &stop, &step, &slicelen) < 0)
 	    return -1;
-	return ListAssSlice(self, start, step, slicelen,
+	return (int)ListAssSlice(self, start, step, slicelen,
 		obj);
     }
     else
@@ -2858,7 +2861,7 @@ static char *ListAttrs[] = {
 };
 
     static PyObject *
-ListDir(PyObject *self)
+ListDir(PyObject *self, PyObject *args UNUSED)
 {
     return ObjectDir(self, ListAttrs);
 }
@@ -3113,7 +3116,7 @@ static char *FunctionAttrs[] = {
 };
 
     static PyObject *
-FunctionDir(PyObject *self)
+FunctionDir(PyObject *self, PyObject *args UNUSED)
 {
     return ObjectDir(self, FunctionAttrs);
 }
@@ -3128,7 +3131,7 @@ FunctionAttr(FunctionObject *self, char *name)
     else if (strcmp(name, "args") == 0)
     {
 	if (self->argv == NULL || (list = list_alloc()) == NULL)
-	    return AlwaysNone(NULL);
+	    return ALWAYS_NONE;
 
 	for (i = 0; i < self->argc; ++i)
 	    list_append_tv(list, &self->argv[i]);
@@ -3136,12 +3139,12 @@ FunctionAttr(FunctionObject *self, char *name)
     }
     else if (strcmp(name, "self") == 0)
 	return self->self == NULL
-	    ? AlwaysNone(NULL)
+	    ? ALWAYS_NONE
 	    : NEW_DICTIONARY(self->self);
     else if (strcmp(name, "auto_rebind") == 0)
 	return self->auto_rebind
-	    ? AlwaysTrue(NULL)
-	    : AlwaysFalse(NULL);
+	    ? ALWAYS_TRUE
+	    : ALWAYS_FALSE;
     else if (strcmp(name, "__members__") == 0)
 	return ObjectDir(NULL, FunctionAttrs);
     return NULL;
@@ -3497,7 +3500,7 @@ OptionsIter(OptionsObject *self)
     oii->lastoption = NULL;
 
     return IterNew(oii,
-	    (destructorfun) PyMem_Free, (nextfun) OptionsIterNext,
+	    (destructorfun)(void *) PyMem_Free, (nextfun) OptionsIterNext,
 	    NULL, NULL, (PyObject *)self);
 }
 
@@ -3742,7 +3745,7 @@ static char *TabPageAttrs[] = {
 };
 
     static PyObject *
-TabPageDir(PyObject *self)
+TabPageDir(PyObject *self, PyObject *args UNUSED)
 {
     return ObjectDir(self, TabPageAttrs);
 }
@@ -3968,7 +3971,7 @@ static char *WindowAttrs[] = {
 };
 
     static PyObject *
-WindowDir(PyObject *self)
+WindowDir(PyObject *self, PyObject *args UNUSED)
 {
     return ObjectDir(self, WindowAttrs);
 }
@@ -5106,7 +5109,7 @@ static char *RangeAttrs[] = {
 };
 
     static PyObject *
-RangeDir(PyObject *self)
+RangeDir(PyObject *self, PyObject *args UNUSED)
 {
     return ObjectDir(self, RangeAttrs);
 }
@@ -5223,7 +5226,7 @@ static char *BufferAttrs[] = {
 };
 
     static PyObject *
-BufferDir(PyObject *self)
+BufferDir(PyObject *self, PyObject *args UNUSED)
 {
     return ObjectDir(self, BufferAttrs);
 }
@@ -5520,7 +5523,7 @@ static char *CurrentAttrs[] = {
 };
 
     static PyObject *
-CurrentDir(PyObject *self)
+CurrentDir(PyObject *self, PyObject *args UNUSED)
 {
     return ObjectDir(self, CurrentAttrs);
 }
@@ -6424,10 +6427,10 @@ ConvertToPyObject(typval_T *tv)
 	case VAR_SPECIAL:
 	    switch (tv->vval.v_number)
 	    {
-		case VVAL_FALSE: return AlwaysFalse(NULL);
-		case VVAL_TRUE:  return AlwaysTrue(NULL);
+		case VVAL_FALSE: return ALWAYS_FALSE;
+		case VVAL_TRUE:  return ALWAYS_TRUE;
 		case VVAL_NONE:
-		case VVAL_NULL:  return AlwaysNone(NULL);
+		case VVAL_NULL:  return ALWAYS_NONE;
 	    }
 	    PyErr_SET_VIM(N_("internal error: invalid value type"));
 	    return NULL;

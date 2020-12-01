@@ -2181,18 +2181,21 @@ func Test_issue_5150()
   else
     let cmd = 'grep foo'
   endif
+
   let g:job = job_start(cmd, {})
+  sleep 50m  " give the job time to start
   call job_stop(g:job)
-  sleep 50m
-  call assert_equal(-1, job_info(g:job).exitval)
+  call WaitForAssert({-> assert_equal(-1, job_info(g:job).exitval)})
+
   let g:job = job_start(cmd, {})
+  sleep 50m
   call job_stop(g:job, 'term')
-  sleep 50m
-  call assert_equal(-1, job_info(g:job).exitval)
+  call WaitForAssert({-> assert_equal(-1, job_info(g:job).exitval)})
+
   let g:job = job_start(cmd, {})
-  call job_stop(g:job, 'kill')
   sleep 50m
-  call assert_equal(-1, job_info(g:job).exitval)
+  call job_stop(g:job, 'kill')
+  call WaitForAssert({-> assert_equal(-1, job_info(g:job).exitval)})
 endfunc
 
 func Test_issue_5485()
@@ -2301,8 +2304,14 @@ endfunc
 func Test_cb_with_input()
   let g:wait_exit_cb = 1
 
-  call job_start('echo "Vim''s test"',
-        \ {'out_cb': 'ExitCb_cb_with_input'})
+  if has('win32')
+    let cmd = 'cmd /c echo "Vim''s test"'
+  else
+    let cmd = 'echo "Vim''s test"'
+  endif
+
+  let job = job_start(cmd, {'out_cb': 'ExitCb_cb_with_input'})
+  call WaitFor({-> job_status(job) == "dead"})
   call WaitForAssert({-> assert_equal(0, g:wait_exit_cb)})
 
   unlet g:wait_exit_cb

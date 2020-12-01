@@ -979,7 +979,7 @@ cmd_source(char_u *fname, exarg_T *eap)
 ex_source(exarg_T *eap)
 {
 #ifdef FEAT_BROWSE
-    if (cmdmod.browse)
+    if (cmdmod.cmod_flags & CMOD_BROWSE)
     {
 	char_u *fname = NULL;
 
@@ -1009,7 +1009,7 @@ ex_options(
     int	    multi_mods = 0;
 
     buf[0] = NUL;
-    (void)add_win_cmd_modifers(buf, &multi_mods);
+    (void)add_win_cmd_modifers(buf, &cmdmod, &multi_mods);
 
     vim_setenv((char_u *)"OPTWIN_CMD", buf);
     cmd_source((char_u *)SYS_OPTWIN_FILE, NULL);
@@ -1332,7 +1332,10 @@ do_source(
 	// set again.
 	ht = &SCRIPT_VARS(sid);
 	if (is_vim9)
+	{
 	    hashtab_free_contents(ht);
+	    hash_init(ht);
+	}
 	else
 	{
 	    int		todo = (int)ht->ht_used;

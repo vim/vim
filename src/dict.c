@@ -22,6 +22,7 @@ static dict_T		*first_dict = NULL;
 
 /*
  * Allocate an empty header for a dictionary.
+ * Caller should take care of the reference count.
  */
     dict_T *
 dict_alloc(void)
@@ -110,6 +111,7 @@ dict_free_contents(dict_T *d)
 
 /*
  * Clear hashtab "ht" and dict items it contains.
+ * If "ht" is not freed then you should call hash_init() next!
  */
     void
 hashtab_free_contents(hashtab_T *ht)
@@ -849,10 +851,32 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
     *arg = skipwhite_and_linebreak(*arg + 1, evalarg);
     while (**arg != '}' && **arg != NUL)
     {
-	if ((literal
-		? get_literal_key(arg, &tvkey)
-		: eval1(arg, &tvkey, evalarg)) == FAIL)	// recursive!
-	    goto failret;
+	char_u *p = to_name_end(*arg, FALSE);
+
+	if (literal || (vim9script && *p == ':'))
+	{
+	    if (get_literal_key(arg, &tvkey) == FAIL)
+		goto failret;
+	}
+	else
+	{
+	    int		has_bracket = vim9script && **arg == '[';
+
+	    if (has_bracket)
+		*arg = skipwhite(*arg + 1);
+	    if (eval1(arg, &tvkey, evalarg) == FAIL)	// recursive!
+		goto failret;
+	    if (has_bracket)
+	    {
+		*arg = skipwhite(*arg);
+		if (**arg != ']')
+		{
+		    emsg(_(e_missing_matching_bracket_after_dict_key));
+		    return FAIL;
+		}
+		++*arg;
+	    }
+	}
 
 	// the colon should come right after the key, but this wasn't checked
 	// previously, so only require it in Vim9 script.
@@ -860,13 +884,10 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	    *arg = skipwhite(*arg);
 	if (**arg != ':')
 	{
-	    if (evaluate)
-	    {
-		if (*skipwhite(*arg) == ':')
-		    semsg(_(e_no_white_space_allowed_before_str), ":");
-		else
-		    semsg(_(e_missing_dict_colon), *arg);
-	    }
+	    if (*skipwhite(*arg) == ':')
+		semsg(_(e_no_white_space_allowed_before_str), ":");
+	    else
+		semsg(_(e_missing_dict_colon), *arg);
 	    clear_tv(&tvkey);
 	    goto failret;
 	}
@@ -899,8 +920,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	    item = dict_find(d, key, -1);
 	    if (item != NULL)
 	    {
-		if (evaluate)
-		    semsg(_(e_duplicate_key), key);
+		semsg(_(e_duplicate_key), key);
 		clear_tv(&tvkey);
 		clear_tv(&tv);
 		goto failret;
@@ -937,28 +957,24 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	    break;
 	if (!had_comma)
 	{
-	    if (evaluate)
-	    {
-		if (**arg == ',')
-		    semsg(_(e_no_white_space_allowed_before_str), ",");
-		else
-		    semsg(_(e_missing_dict_comma), *arg);
-	    }
+	    if (**arg == ',')
+		semsg(_(e_no_white_space_allowed_before_str), ",");
+	    else
+		semsg(_(e_missing_dict_comma), *arg);
 	    goto failret;
 	}
     }
 
     if (**arg != '}')
     {
-	if (evaluate)
-	    semsg(_(e_missing_dict_end), *arg);
+	semsg(_(e_missing_dict_end), *arg);
 failret:
 	if (d != NULL)
 	    dict_free(d);
 	return FAIL;
     }
 
-    *arg = skipwhite(*arg + 1);
+    *arg = *arg + 1;
     if (evaluate)
 	rettv_dict_set(rettv, d);
 

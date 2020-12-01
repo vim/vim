@@ -1031,6 +1031,15 @@ doESCkey:
 	case K_IGNORE:	// Something mapped to nothing
 	    break;
 
+	case K_COMMAND:		// <Cmd>command<CR>
+	    do_cmdline(NULL, getcmdkeycmd, NULL, 0);
+#ifdef FEAT_TERMINAL
+	    if (term_use_loop())
+		// Started a terminal that gets the input, exit Insert mode.
+		goto doESCkey;
+#endif
+	    break;
+
 	case K_CURSORHOLD:	// Didn't type something for a while.
 	    ins_apply_autocmds(EVENT_CURSORHOLDI);
 	    did_cursorhold = TRUE;
@@ -3607,13 +3616,16 @@ ins_esc(
 	undisplay_dollar();
     }
 
+    if (cmdchar != 'r' && cmdchar != 'v')
+	ins_apply_autocmds(EVENT_INSERTLEAVEPRE);
+
     // When an autoindent was removed, curswant stays after the
     // indent
     if (restart_edit == NUL && (colnr_T)temp == curwin->w_cursor.col)
 	curwin->w_set_curswant = TRUE;
 
     // Remember the last Insert position in the '^ mark.
-    if (!cmdmod.keepjumps)
+    if ((cmdmod.cmod_flags & CMOD_KEEPJUMPS) == 0)
 	curbuf->b_last_insert = curwin->w_cursor;
 
     /*
@@ -3943,8 +3955,11 @@ ins_bs(
 #endif
 		((curwin->w_cursor.lnum == 1 && curwin->w_cursor.col == 0)
 		    || (!can_bs(BS_START)
-			&& (arrow_used
-			    || (curwin->w_cursor.lnum == Insstart_orig.lnum
+			&& ((arrow_used
+#ifdef FEAT_JOB_CHANNEL
+				&& !bt_prompt(curbuf)
+#endif
+			) || (curwin->w_cursor.lnum == Insstart_orig.lnum
 				&& curwin->w_cursor.col <= Insstart_orig.col)))
 		    || (!can_bs(BS_INDENT) && !arrow_used && ai_col > 0
 					 && curwin->w_cursor.col <= ai_col)

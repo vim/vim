@@ -1242,7 +1242,6 @@ add_pixmap_args(vimmenu_T *menu, Arg *args, int n)
     }
     else
     {
-	// Test_colorscheme()
 	if (menu->xpm_fname != NULL)
 	{
 	    XtSetArg(args[n], XmNpixmapFile, menu->xpm_fname); n++;

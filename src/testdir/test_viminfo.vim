@@ -1,6 +1,8 @@
 " Test for reading and writing .viminfo
 
 source check.vim
+source term_util.vim
+source shared.vim
 
 function Test_viminfo_read_and_write()
   " First clear 'history', so that "hislen" is zero.  Then set it again,
@@ -877,6 +879,34 @@ func Test_viminfo_option_error()
 
   " Missing ' setting
   call assert_fails('set viminfo=%10', 'E528:')
+endfunc
+
+func Test_viminfo_oldfiles_newfile()
+  CheckRunVimInTerminal
+
+  let save_viminfo = &viminfo
+  let save_viminfofile = &viminfofile
+  set viminfo&vim
+  let v:oldfiles = []
+  let commands =<< trim [CODE]
+    set viminfofile=Xviminfofile
+    set viminfo&vim
+    w! Xnew-file.txt
+    qall
+  [CODE]
+  call writefile(commands, 'Xviminfotest')
+  let buf = RunVimInTerminal('-S Xviminfotest', #{wait_for_ruler: 0})
+  call WaitForAssert({-> assert_equal("finished", term_getstatus(buf))})
+
+  let &viminfofile = 'Xviminfofile'
+  rviminfo! Xviminfofile
+  call assert_match('Xnew-file.txt$', v:oldfiles[0])
+  call assert_equal(1, len(v:oldfiles))
+  call delete('Xviminfofile')
+  call delete('Xviminfotest')
+  call delete('Xnew-file.txt')
+  let &viminfo = save_viminfo
+  let &viminfofile = save_viminfofile
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

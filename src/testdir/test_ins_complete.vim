@@ -325,7 +325,7 @@ func Test_completefunc_info()
   set completeopt=menuone
   set completefunc=CompleteTest
   call feedkeys("i\<C-X>\<C-U>\<C-R>\<C-R>=string(complete_info())\<CR>\<ESC>", "tx")
-  call assert_equal("matched{'pum_visible': 1, 'mode': 'function', 'selected': -1, 'items': [{'word': 'matched', 'menu': '', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''}]}", getline(1))
+  call assert_equal("matched{'pum_visible': 1, 'mode': 'function', 'selected': 0, 'items': [{'word': 'matched', 'menu': '', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''}]}", getline(1))
   bwipe!
   set completeopt&
   set completefunc&
@@ -346,7 +346,10 @@ func Test_compl_in_cmdwin()
   set wildmenu wildchar=<Tab>
   com! -nargs=1 -complete=command GetInput let input = <q-args>
   com! -buffer TestCommand echo 'TestCommand'
+  let w:test_winvar = 'winvar'
+  let b:test_bufvar = 'bufvar'
 
+  " User-defined commands
   let input = ''
   call feedkeys("q:iGetInput T\<C-x>\<C-v>\<CR>", 'tx!')
   call assert_equal('TestCommand', input)
@@ -355,8 +358,30 @@ func Test_compl_in_cmdwin()
   call feedkeys("q::GetInput T\<Tab>\<CR>:q\<CR>", 'tx!')
   call assert_equal('T', input)
 
+
+  com! -nargs=1 -complete=var GetInput let input = <q-args>
+  " Window-local variables
+  let input = ''
+  call feedkeys("q:iGetInput w:test_\<C-x>\<C-v>\<CR>", 'tx!')
+  call assert_equal('w:test_winvar', input)
+
+  let input = ''
+  call feedkeys("q::GetInput w:test_\<Tab>\<CR>:q\<CR>", 'tx!')
+  call assert_equal('w:test_', input)
+
+  " Buffer-local variables
+  let input = ''
+  call feedkeys("q:iGetInput b:test_\<C-x>\<C-v>\<CR>", 'tx!')
+  call assert_equal('b:test_bufvar', input)
+
+  let input = ''
+  call feedkeys("q::GetInput b:test_\<Tab>\<CR>:q\<CR>", 'tx!')
+  call assert_equal('b:test_', input)
+
   delcom TestCommand
   delcom GetInput
+  unlet w:test_winvar
+  unlet b:test_bufvar
   set wildmenu& wildchar&
 endfunc
 

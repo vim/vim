@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 8.2.  Last change: 2020 Aug 15
+*version7.txt*  For Vim version 8.2.  Last change: 2020 Oct 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -10260,7 +10260,7 @@ Commands:
 	Brabandt)
 
 Other:
-	Lua interface now also uses userdata binded to Vim structures. (Taro
+	Lua interface now also uses userdata bound to Vim structures. (Taro
 	Muraoka, Luis Carvalho)
 
 	glob() and autocommand patterns used to work with the undocumented

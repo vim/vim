@@ -225,16 +225,92 @@ def Test_assignment()
   END
 enddef
 
+def Test_assign_index()
+  # list of list
+  var l1: list<number>
+  l1[0] = 123
+  assert_equal([123], l1)
+
+  var l2: list<list<number>>
+  l2[0] = []
+  l2[0][0] = 123
+  assert_equal([[123]], l2)
+
+  var l3: list<list<list<number>>>
+  l3[0] = []
+  l3[0][0] = []
+  l3[0][0][0] = 123
+  assert_equal([[[123]]], l3)
+
+  var lines =<< trim END
+      var l3: list<list<number>>
+      l3[0] = []
+      l3[0][0] = []
+  END
+  CheckDefFailure(lines, 'E1012: Type mismatch; expected number but got list<unknown>', 3)
+
+  # dict of dict
+  var d1: dict<number>
+  d1.one = 1
+  assert_equal({one: 1}, d1)
+
+  var d2: dict<dict<number>>
+  d2.one = {}
+  d2.one.two = 123
+  assert_equal({one: {two: 123}}, d2)
+
+  var d3: dict<dict<dict<number>>>
+  d3.one = {}
+  d3.one.two = {}
+  d3.one.two.three = 123
+  assert_equal({one: {two: {three: 123}}}, d3)
+
+  lines =<< trim END
+      var d3: dict<dict<number>>
+      d3.one = {}
+      d3.one.two = {}
+  END
+  CheckDefFailure(lines, 'E1012: Type mismatch; expected number but got dict<unknown>', 3)
+
+  # list of dict
+  var ld: list<dict<number>>
+  ld[0] = {}
+  ld[0].one = 123
+  assert_equal([{one: 123}], ld)
+
+  lines =<< trim END
+      var ld: list<dict<number>>
+      ld[0] = []
+  END
+  CheckDefFailure(lines, 'E1012: Type mismatch; expected dict<number> but got list<unknown>', 2)
+
+  # dict of list
+  var dl: dict<list<number>>
+  dl.one = []
+  dl.one[0] = 123
+  assert_equal({one: [123]}, dl)
+
+  lines =<< trim END
+      var dl: dict<list<number>>
+      dl.one = {}
+  END
+  CheckDefFailure(lines, 'E1012: Type mismatch; expected list<number> but got dict<unknown>', 2)
+enddef
+
 def Test_extend_list()
   var lines =<< trim END
       vim9script
       var l: list<number>
       l += [123]
       assert_equal([123], l)
+  END
+  CheckScriptSuccess(lines)
 
-      var d: dict<number>
-      d['one'] = 1
-      assert_equal(#{one: 1}, d)
+  lines =<< trim END
+      vim9script
+      var list: list<string>
+      extend(list, ['x'])
+      assert_equal(['x'], list)
   END
   CheckScriptSuccess(lines)
 
@@ -249,6 +325,48 @@ def Test_extend_list()
       assert_equal(['a', 'b'], list)
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      var l: list<string> = test_null_list()
+      extend(l, ['x'])
+      assert_equal(['x'], l)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      extend(test_null_list(), ['x'])
+  END
+  CheckScriptFailure(lines, 'E1134:', 2)
+enddef
+
+def Test_extend_dict()
+  var lines =<< trim END
+      vim9script
+      var d: dict<number>
+      extend(d, #{a: 1})
+      assert_equal(#{a: 1}, d)
+
+      var d2: dict<number>
+      d2['one'] = 1
+      assert_equal(#{one: 1}, d2)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      var d: dict<string> = test_null_dict()
+      extend(d, #{a: 'x'})
+      assert_equal(#{a: 'x'}, d)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      extend(test_null_dict(), #{a: 'x'})
+  END
+  CheckScriptFailure(lines, 'E1133:', 2)
 enddef
 
 def Test_single_letter_vars()
@@ -362,6 +480,15 @@ def Test_assignment_dict()
 
   # overwrite
   dict3['key'] = 'another'
+  assert_equal(dict3, #{key: 'another'})
+  dict3.key = 'yet another'
+  assert_equal(dict3, #{key: 'yet another'})
+
+  var lines =<< trim END
+    var dd = #{one: 1}
+    dd.one) = 2
+  END
+  CheckDefFailure(lines, 'E15:', 2)
 
   # empty key can be used
   var dd = {}
@@ -372,7 +499,7 @@ def Test_assignment_dict()
   var somedict = rand() > 0 ? #{a: 1, b: 2} : #{a: 'a', b: 'b'}
 
   # assignment to script-local dict
-  var lines =<< trim END
+  lines =<< trim END
     vim9script
     var test: dict<any> = {}
     def FillDict(): dict<any>
@@ -505,30 +632,51 @@ def Test_assignment_default()
 enddef
 
 def Test_assignment_var_list()
-  var v1: string
-  var v2: string
-  var vrem: list<string>
-  [v1] = ['aaa']
-  assert_equal('aaa', v1)
+  var lines =<< trim END
+      var v1: string
+      var v2: string
+      var vrem: list<string>
+      [v1] = ['aaa']
+      assert_equal('aaa', v1)
 
-  [v1, v2] = ['one', 'two']
-  assert_equal('one', v1)
-  assert_equal('two', v2)
+      [v1, v2] = ['one', 'two']
+      assert_equal('one', v1)
+      assert_equal('two', v2)
 
-  [v1, v2; vrem] = ['one', 'two']
-  assert_equal('one', v1)
-  assert_equal('two', v2)
-  assert_equal([], vrem)
+      [v1, v2; vrem] = ['one', 'two']
+      assert_equal('one', v1)
+      assert_equal('two', v2)
+      assert_equal([], vrem)
 
-  [v1, v2; vrem] = ['one', 'two', 'three']
-  assert_equal('one', v1)
-  assert_equal('two', v2)
-  assert_equal(['three'], vrem)
+      [v1, v2; vrem] = ['one', 'two', 'three']
+      assert_equal('one', v1)
+      assert_equal('two', v2)
+      assert_equal(['three'], vrem)
 
-  [&ts, &sw] = [3, 4]
-  assert_equal(3, &ts)
-  assert_equal(4, &sw)
-  set ts=8 sw=4
+      [&ts, &sw] = [3, 4]
+      assert_equal(3, &ts)
+      assert_equal(4, &sw)
+      set ts=8 sw=4
+
+      [@a, @z] = ['aa', 'zz']
+      assert_equal('aa', @a)
+      assert_equal('zz', @z)
+
+      [$SOME_VAR, $OTHER_VAR] = ['some', 'other']
+      assert_equal('some', $SOME_VAR)
+      assert_equal('other', $OTHER_VAR)
+
+      [g:globalvar, s:scriptvar, b:bufvar, w:winvar, t:tabvar, v:errmsg] =
+            ['global', 'script', 'buf', 'win', 'tab', 'error']
+      assert_equal('global', g:globalvar)
+      assert_equal('script', s:scriptvar)
+      assert_equal('buf', b:bufvar)
+      assert_equal('win', w:winvar)
+      assert_equal('tab', t:tabvar)
+      assert_equal('error', v:errmsg)
+      unlet g:globalvar
+  END
+  CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_assignment_vim9script()
@@ -702,6 +850,9 @@ def Test_assign_list()
     nrl[i] = i
   endfor
   assert_equal([0, 1, 2, 3, 4], nrl)
+
+  CheckDefFailure(["var l: list<number> = ['', true]"], 'E1012: Type mismatch; expected list<number> but got list<any>', 1)
+  CheckDefFailure(["var l: list<list<number>> = [['', true]]"], 'E1012: Type mismatch; expected list<list<number>> but got list<list<any>>', 1)
 enddef
 
 def Test_assign_dict()
@@ -718,6 +869,9 @@ def Test_assign_dict()
     nrd[i] = i
   endfor
   assert_equal({'0': 0, '1': 1, '2': 2}, nrd)
+
+  CheckDefFailure(["var d: dict<number> = #{a: '', b: true}"], 'E1012: Type mismatch; expected dict<number> but got dict<any>', 1)
+  CheckDefFailure(["var d: dict<dict<number>> = #{x: #{a: '', b: true}}"], 'E1012: Type mismatch; expected dict<dict<number>> but got dict<dict<any>>', 1)
 enddef
 
 def Test_assign_dict_unknown_type()
@@ -733,18 +887,17 @@ def Test_assign_dict_unknown_type()
   END
   CheckScriptSuccess(lines)
 
-  # doesn't work yet
-  #lines =<< trim END
-  #    vim9script
-  #    var mylist = [[]]
-  #    mylist[0] += [#{one: 'one'}]
-  #    def Func()
-  #      var dd = mylist[0][0]
-  #      assert_equal('one', dd.one)
-  #    enddef
-  #    Func()
-  #END
-  #CheckScriptSuccess(lines)
+  lines =<< trim END
+      vim9script
+      var mylist = [[]]
+      mylist[0] += [#{one: 'one'}]
+      def Func()
+        var dd = mylist[0][0]
+        assert_equal('one', dd.one)
+      enddef
+      Func()
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_assign_lambda()

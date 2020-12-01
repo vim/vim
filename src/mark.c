@@ -145,7 +145,7 @@ setpcmark(void)
 #endif
 
     // for :global the mark is set only once
-    if (global_busy || listcmd_busy || cmdmod.keepjumps)
+    if (global_busy || listcmd_busy || (cmdmod.cmod_flags & CMOD_KEEPJUMPS))
 	return;
 
     curwin->w_prev_pcmark = curwin->w_pcmark;
@@ -1068,7 +1068,7 @@ mark_adjust_internal(
     if (line2 < line1 && amount_after == 0L)	    // nothing to do
 	return;
 
-    if (!cmdmod.lockmarks)
+    if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
     {
 	// named marks, lower case and upper case
 	for (i = 0; i < NMARKS; i++)
@@ -1133,7 +1133,7 @@ mark_adjust_internal(
     FOR_ALL_TAB_WINDOWS(tab, win)
     {
 #ifdef FEAT_JUMPLIST
-	if (!cmdmod.lockmarks)
+	if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
 	    // Marks in the jumplist.  When deleting lines, this may create
 	    // duplicate marks in the jumplist, they will be removed later.
 	    for (i = 0; i < win->w_jumplistlen; ++i)
@@ -1143,7 +1143,7 @@ mark_adjust_internal(
 
 	if (win->w_buffer == curbuf)
 	{
-	    if (!cmdmod.lockmarks)
+	    if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
 		// marks in the tag stack
 		for (i = 0; i < win->w_tagstacklen; i++)
 		    if (win->w_tagstack[i].fmark.fnum == fnum)
@@ -1249,7 +1249,8 @@ mark_col_adjust(
     win_T	*win;
     pos_T	*posp;
 
-    if ((col_amount == 0L && lnum_amount == 0L) || cmdmod.lockmarks)
+    if ((col_amount == 0L && lnum_amount == 0L)
+				       || (cmdmod.cmod_flags & CMOD_LOCKMARKS))
 	return; // nothing to do
 
     // named marks, lower case and upper case

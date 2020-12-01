@@ -123,9 +123,9 @@ ex_help(exarg_T *eap)
 
     // Re-use an existing help window or open a new one.
     // Always open a new one for ":tab help".
-    if (!bt_help(curwin->w_buffer) || cmdmod.tab != 0)
+    if (!bt_help(curwin->w_buffer) || cmdmod.cmod_tab != 0)
     {
-	if (cmdmod.tab != 0)
+	if (cmdmod.cmod_tab != 0)
 	    wp = NULL;
 	else
 	    FOR_ALL_WINDOWS(wp)
@@ -148,7 +148,7 @@ ex_help(exarg_T *eap)
 	    // specified, the current window is vertically split and
 	    // narrow.
 	    n = WSP_HELP;
-	    if (cmdmod.split == 0 && curwin->w_width != Columns
+	    if (cmdmod.cmod_split == 0 && curwin->w_width != Columns
 						  && curwin->w_width < 80)
 		n |= WSP_TOP;
 	    if (win_split(0, n) == FAIL)
@@ -164,7 +164,7 @@ ex_help(exarg_T *eap)
 	    (void)do_ecmd(0, NULL, NULL, NULL, ECMD_LASTL,
 			  ECMD_HIDE + ECMD_SET_HELP,
 			  NULL);  // buffer is still open, don't store info
-	    if (!cmdmod.keepalt)
+	    if ((cmdmod.cmod_flags & CMOD_KEEPALT) == 0)
 		curwin->w_alt_fnum = alt_fnum;
 	    empty_fnum = curbuf->b_fnum;
 	}
@@ -193,7 +193,8 @@ ex_help(exarg_T *eap)
     }
 
     // keep the previous alternate file
-    if (alt_fnum != 0 && curwin->w_alt_fnum == empty_fnum && !cmdmod.keepalt)
+    if (alt_fnum != 0 && curwin->w_alt_fnum == empty_fnum
+				    && (cmdmod.cmod_flags & CMOD_KEEPALT) == 0)
 	curwin->w_alt_fnum = alt_fnum;
 
 erret:

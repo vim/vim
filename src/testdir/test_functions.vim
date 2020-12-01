@@ -1273,7 +1273,16 @@ endfunc
 func Test_executable_longname()
   CheckMSWindows
 
-  let fname = 'X' . repeat('あ', 200) . '.bat'
+  " Create a temporary .bat file with 205 characters in the name.
+  " Maximum length of a filename (including the path) on MS-Windows is 259
+  " characters.
+  " See https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation
+  let len = 259 - getcwd()->len() - 6
+  if len > 200
+    let len = 200
+  endif
+
+  let fname = 'X' . repeat('あ', len) . '.bat'
   call writefile([], fname)
   call assert_equal(1, executable(fname))
   call delete(fname)
@@ -2293,6 +2302,7 @@ func Test_range()
 
   " filter()
   call assert_equal([1, 3], filter(range(5), 'v:val % 2'))
+  call assert_equal([1, 5, 7, 11, 13], filter(filter(range(15), 'v:val % 2'), 'v:val % 3'))
 
   " funcref()
   call assert_equal([0, 1], funcref('TwoArgs', range(2))())
@@ -2349,6 +2359,9 @@ func Test_range()
 
   " map()
   call assert_equal([0, 2, 4, 6, 8], map(range(5), 'v:val * 2'))
+  call assert_equal([3, 5, 7, 9, 11], map(map(range(5), 'v:val * 2'), 'v:val + 3'))
+  call assert_equal([2, 6], map(filter(range(5), 'v:val % 2'), 'v:val * 2'))
+  call assert_equal([2, 4, 8], filter(map(range(5), 'v:val * 2'), 'v:val % 3'))
 
   " match()
   call assert_equal(3, match(range(5), 3))

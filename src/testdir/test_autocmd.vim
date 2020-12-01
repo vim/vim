@@ -194,7 +194,7 @@ func Test_autocmd_bufunload_avoiding_SEGV_01()
     exe 'autocmd BufUnload <buffer> ' . (lastbuf + 1) . 'bwipeout!'
   augroup END
 
-  call assert_fails('edit bb.txt', ['E937:', 'E517:'])
+  call assert_fails('edit bb.txt', 'E937:')
 
   autocmd! test_autocmd_bufunload
   augroup! test_autocmd_bufunload
@@ -300,28 +300,28 @@ func Test_augroup_warning()
   augroup TheWarning
     au VimEnter * echo 'entering'
   augroup END
-  call assert_true(match(execute('au VimEnter'), "TheWarning.*VimEnter") >= 0)
+  call assert_match("TheWarning.*VimEnter", execute('au VimEnter'))
   redir => res
   augroup! TheWarning
   redir END
-  call assert_true(match(res, "W19:") >= 0)
-  call assert_true(match(execute('au VimEnter'), "-Deleted-.*VimEnter") >= 0)
+  call assert_match("W19:", res)
+  call assert_match("-Deleted-.*VimEnter", execute('au VimEnter'))
 
   " check "Another" does not take the pace of the deleted entry
   augroup Another
   augroup END
-  call assert_true(match(execute('au VimEnter'), "-Deleted-.*VimEnter") >= 0)
+  call assert_match("-Deleted-.*VimEnter", execute('au VimEnter'))
   augroup! Another
 
   " no warning for postpone aucmd delete
   augroup StartOK
     au VimEnter * call RemoveGroup()
   augroup END
-  call assert_true(match(execute('au VimEnter'), "StartOK.*VimEnter") >= 0)
+  call assert_match("StartOK.*VimEnter", execute('au VimEnter'))
   redir => res
   doautocmd VimEnter
   redir END
-  call assert_true(match(res, "W19:") < 0)
+  call assert_notmatch("W19:", res)
   au! VimEnter
 
   call assert_fails('augroup!', 'E471:')
@@ -351,7 +351,7 @@ func Test_augroup_deleted()
     au VimEnter * echo
   augroup end
   augroup! x
-  call assert_true(match(execute('au VimEnter'), "-Deleted-.*VimEnter") >= 0)
+  call assert_match("-Deleted-.*VimEnter", execute('au VimEnter'))
   au! VimEnter
 endfunc
 
@@ -1689,9 +1689,7 @@ func Test_change_mark_in_autocmds()
 endfunc
 
 func Test_Filter_noshelltemp()
-  if !executable('cat')
-    return
-  endif
+  CheckExecutable cat
 
   enew!
   call setline(1, ['a', 'b', 'c', 'd'])
@@ -1760,6 +1758,28 @@ func Test_TextYankPost()
 
   call assert_equal({}, v:event)
 
+  if has('clipboard_working') && !has('gui_running')
+    " Test that when the visual selection is automatically copied to clipboard
+    " register a TextYankPost is emitted
+    call setline(1, ['foobar'])
+
+    let @* = ''
+    set clipboard=autoselect
+    exe "norm! ggviw\<Esc>"
+    call assert_equal(
+        \{'regcontents': ['foobar'], 'regname': '*', 'operator': 'y', 'regtype': 'v', 'visual': v:true},
+        \g:event)
+
+    let @+ = ''
+    set clipboard=autoselectplus
+    exe "norm! ggviw\<Esc>"
+    call assert_equal(
+        \{'regcontents': ['foobar'], 'regname': '+', 'operator': 'y', 'regtype': 'v', 'visual': v:true},
+        \g:event)
+
+    set clipboard&vim
+  endif
+
   au! TextYankPost
   unlet g:event
   bwipe!
@@ -1768,7 +1788,7 @@ endfunc
 func Test_nocatch_wipe_all_buffers()
   " Real nasty autocommand: wipe all buffers on any event.
   au * * bwipe *
-  call assert_fails('next x', ['E94:', 'E517:'])
+  call assert_fails('next x', ['E94:', 'E937:'])
   bwipe
   au!
 endfunc

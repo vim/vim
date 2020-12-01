@@ -79,6 +79,7 @@ set_y_previous(yankreg_T *yreg)
  * Keep the last expression line here, for repeating.
  */
 static char_u	*expr_line = NULL;
+static exarg_T	*expr_eap = NULL;
 
 /*
  * Get an expression for the "\"=expr1" or "CTRL-R =expr1"
@@ -95,19 +96,22 @@ get_expr_register(void)
     if (*new_line == NUL)	// use previous line
 	vim_free(new_line);
     else
-	set_expr_line(new_line);
+	set_expr_line(new_line, NULL);
     return '=';
 }
 
 /*
  * Set the expression for the '=' register.
  * Argument must be an allocated string.
+ * "eap" may be used if the next line needs to be checked when evaluating the
+ * expression.
  */
     void
-set_expr_line(char_u *new_line)
+set_expr_line(char_u *new_line, exarg_T *eap)
 {
     vim_free(expr_line);
     expr_line = new_line;
+    expr_eap = eap;
 }
 
 /*
@@ -136,7 +140,7 @@ get_expr_line(void)
 	return expr_copy;
 
     ++nested;
-    rv = eval_to_string(expr_copy, TRUE);
+    rv = eval_to_string_eap(expr_copy, TRUE, expr_eap);
     --nested;
     vim_free(expr_copy);
     return rv;
@@ -318,8 +322,7 @@ put_register(int name, void *reg)
 #endif
 }
 
-#if (defined(FEAT_CLIPBOARD) && defined(FEAT_X11) && defined(USE_SYSTEM)) \
-	|| defined(PROTO)
+#if defined(FEAT_CLIPBOARD) || defined(PROTO)
     void
 free_register(void *reg)
 {
@@ -1358,7 +1361,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	}
     }
 
-    if (!cmdmod.lockmarks)
+    if ((cmdmod.cmod_flags & CMOD_LOCKMARKS) == 0)
     {
 	// Set "'[" and "']" marks.
 	curbuf->b_op_start = oap->start;
@@ -2170,7 +2173,7 @@ error:
     curwin->w_set_curswant = TRUE;
 
 end:
-    if (cmdmod.lockmarks)
+    if (cmdmod.cmod_flags & CMOD_LOCKMARKS)
     {
 	curbuf->b_op_start = orig_start;
 	curbuf->b_op_end = orig_end;
@@ -2774,7 +2777,7 @@ write_reg_contents_ex(
 	    vim_free(p);
 	    p = s;
 	}
-	set_expr_line(p);
+	set_expr_line(p, NULL);
 	return;
     }
 

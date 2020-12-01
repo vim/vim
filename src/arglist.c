@@ -657,7 +657,7 @@ do_argfile(exarg_T *eap, int argn)
 #endif
 
 	// split window or create new tab page first
-	if (*eap->cmd == 's' || cmdmod.tab != 0)
+	if (*eap->cmd == 's' || cmdmod.cmod_tab != 0)
 	{
 	    if (win_split(0, 0) == FAIL)
 		return;
@@ -878,7 +878,7 @@ do_arg_all(
     alist_T	*alist;		// argument list to be used
     buf_T	*buf;
     tabpage_T	*tpnext;
-    int		had_tab = cmdmod.tab;
+    int		had_tab = cmdmod.cmod_tab;
     win_T	*old_curwin, *last_curwin;
     tabpage_T	*old_curtab, *last_curtab;
     win_T	*new_curwin = NULL;
@@ -1116,7 +1116,7 @@ do_arg_all(
 
 	// When ":tab" was used open a new tab for a new window repeatedly.
 	if (had_tab > 0 && tabpage_index(NULL) <= p_tpm)
-	    cmdmod.tab = 9999;
+	    cmdmod.cmod_tab = 9999;
     }
 
     // Remove the "lock" on the argument list.

@@ -563,16 +563,15 @@ Local mappings:
 
 MAN					*ft-man-plugin* *:Man* *man.vim*
 
-Displays a manual page in a nice way.  Also see the user manual
-|find-manpage|.
+This plugin displays a manual page in a nice way.  See |find-manpage| in the
+user manual for more information.
 
-To start using the ":Man" command before any manual page was loaded, source
-this script from your startup vimrc file: >
-
+To start using the |:Man| command before any manual page has been loaded,
+source this script from your startup |vimrc| file: >
 	runtime ftplugin/man.vim
 
 Options:
-'iskeyword'	the '.' character is added to be able to use CTRL-] on the
+'iskeyword'	The '.' character is added to support the use of CTRL-] on the
 		manual page name.
 
 Commands:
@@ -582,24 +581,25 @@ Man {number} {name}
 
 Global mapping:
 <Leader>K	Displays the manual page for the word under the cursor.
-<Plug>ManPreGetPage  idem, allows for using a mapping: >
-			nmap <F1> <Plug>ManPreGetPage<CR>
+<Plug>ManPreGetPage
+		idem, allows for using a mapping: >
+			nmap <F1> <Plug>ManPreGetPage
 
 Local mappings:
 CTRL-]		Jump to the manual page for the word under the cursor.
 CTRL-T		Jump back to the previous manual page.
-q		Same as ":quit"
+q		Same as the |:quit| command.
 
 To use a vertical split instead of horizontal: >
 	let g:ft_man_open_mode = 'vert'
 To use a new tab: >
 	let g:ft_man_open_mode = 'tab'
 
-To enable folding use this: >
-  	let g:ft_man_folding_enable = 1
-If you do not like the default folding, use an autocommand to add your desired
+To enable |folding|, use this: >
+	let g:ft_man_folding_enable = 1
+If you do not like the default folding, use an |autocommand| to add your desired
 folding style instead.  For example: >
-        autocmd FileType man setlocal foldmethod=indent foldenable
+	autocmd FileType man setlocal foldmethod=indent foldenable
 
 If you would like :Man {number} {name} to behave like man {number} {name} by
 not running man {name} if no page is found, then use this: >
@@ -612,7 +612,7 @@ page in a Vim window: >
 
 MANPAGER				      *manpager.vim*
 
-The :Man command allows you to turn Vim into a manpager (that syntax highlights
+The |:Man| command allows you to turn Vim into a manpager (that syntax highlights
 manpages and follows linked manpages on hitting CTRL-]).
 
 For bash,zsh,ksh or dash, add to the config file (.bashrc,.zshrc, ...)

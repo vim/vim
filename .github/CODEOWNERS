@@ -63,6 +63,7 @@ runtime/doc/pi_netrw.txt		@cecamp
 runtime/doc/pi_tar.txt			@cecamp
 runtime/doc/pi_vimball.txt		@cecamp
 runtime/doc/pi_zip.txt			@cecamp
+runtime/ftplugin/awk.vim		@dkearns
 runtime/ftplugin/bst.vim		@tpope
 runtime/ftplugin/css.vim		@dkearns
 runtime/ftplugin/cucumber.vim		@tpope
@@ -107,6 +108,9 @@ runtime/plugin/tarPlugin.vim		@cecamp
 runtime/plugin/vimballPlugin.vim	@cecamp
 runtime/plugin/zipPlugin.vim		@cecamp
 runtime/syntax/amiga.vim		@cecamp
+runtime/syntax/asm.vim			@dkearns
+runtime/syntax/asmh8300.vim		@dkearns
+runtime/syntax/awk.vim			@dkearns
 runtime/syntax/bst.vim			@tpope
 runtime/syntax/csh.vim			@cecamp
 runtime/syntax/cucumber.vim		@tpope

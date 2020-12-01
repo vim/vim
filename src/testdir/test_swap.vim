@@ -403,4 +403,84 @@ func Test_swap_symlink()
   call delete('Xswapdir', 'rf')
 endfunc
 
+func s:get_unused_pid(base)
+  if has('job')
+    " Execute 'echo' as a temporary job, and return its pid as an unused pid.
+    if has('win32')
+      let cmd = 'cmd /c echo'
+    else
+      let cmd = 'echo'
+    endif
+    let j = job_start(cmd)
+    while job_status(j) ==# 'run'
+      sleep 10m
+    endwhile
+    if job_status(j) ==# 'dead'
+      return job_info(j).process
+    endif
+  endif
+  " Must add four for MS-Windows to see it as a different one.
+  return a:base + 4
+endfunc
+
+func s:blob_to_pid(b)
+  return a:b[3] * 16777216 + a:b[2] * 65536 + a:b[1] * 256 + a:b[0]
+endfunc
+
+func s:pid_to_blob(i)
+  let b = 0z
+  let b[0] = and(a:i, 0xff)
+  let b[1] = and(a:i / 256, 0xff)
+  let b[2] = and(a:i / 65536, 0xff)
+  let b[3] = and(a:i / 16777216, 0xff)
+  return b
+endfunc
+
+func Test_swap_auto_delete()
+  " Create a valid swapfile by editing a file with a special extension.
+  split Xtest.scr
+  call setline(1, ['one', 'two', 'three'])
+  write  " file is written, not modified
+  write  " write again to make sure the swapfile is created
+  " read the swapfile as a Blob
+  let swapfile_name = swapname('%')
+  let swapfile_bytes = readfile(swapfile_name, 'B')
+
+  " Forget about the file, recreate the swap file, then edit it again.  The
+  " swap file should be automatically deleted.
+  bwipe!
+  " Change the process ID to avoid the "still running" warning.
+  let swapfile_bytes[24:27] = s:pid_to_blob(s:get_unused_pid(
+        \ s:blob_to_pid(swapfile_bytes[24:27])))
+  call writefile(swapfile_bytes, swapfile_name)
+  edit Xtest.scr
+  " will end up using the same swap file after deleting the existing one
+  call assert_equal(swapfile_name, swapname('%'))
+  bwipe!
+
+  " create the swap file again, but change the host name so that it won't be
+  " deleted
+  autocmd! SwapExists
+  augroup test_swap_recover_ext
+    autocmd!
+    autocmd SwapExists * let v:swapchoice = 'e'
+  augroup END
+
+  " change the host name
+  let swapfile_bytes[28 + 40] = swapfile_bytes[28 + 40] + 2
+  call writefile(swapfile_bytes, swapfile_name)
+  edit Xtest.scr
+  call assert_equal(1, filereadable(swapfile_name))
+  " will use another same swap file name
+  call assert_notequal(swapfile_name, swapname('%'))
+  bwipe!
+
+  call delete('Xtest.scr')
+  call delete(swapfile_name)
+  augroup test_swap_recover_ext
+    autocmd!
+  augroup END
+  augroup! test_swap_recover_ext
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

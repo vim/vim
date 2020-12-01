@@ -2213,11 +2213,11 @@ do_browse(
     char_u		*fname;
     static char_u	*last_dir = NULL;    // last used directory
     char_u		*tofree = NULL;
-    int			save_browse = cmdmod.browse;
+    int			save_cmod_flags = cmdmod.cmod_flags;
 
     // Must turn off browse to avoid that autocommands will get the
     // flag too!
-    cmdmod.browse = FALSE;
+    cmdmod.cmod_flags &= ~CMOD_BROWSE;
 
     if (title == NULL || *title == NUL)
     {
@@ -2350,7 +2350,7 @@ do_browse(
     }
 
     vim_free(tofree);
-    cmdmod.browse = save_browse;
+    cmdmod.cmod_flags = save_cmod_flags;
 
     return fname;
 }

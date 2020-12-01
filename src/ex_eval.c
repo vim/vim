@@ -930,16 +930,22 @@ leave_block(cstack_T *cstack)
     {
 	scriptitem_T	*si = SCRIPT_ITEM(current_sctx.sc_sid);
 	int		i;
+	int		func_defined =
+			       cstack->cs_flags[cstack->cs_idx] & CSF_FUNC_DEF;
 
 	for (i = cstack->cs_script_var_len[cstack->cs_idx];
 					       i < si->sn_var_vals.ga_len; ++i)
 	{
 	    svar_T	*sv = ((svar_T *)si->sn_var_vals.ga_data) + i;
 
+	    // sv_name is set to NULL if it was already removed.  This happens
+	    // when it was defined in an inner block and no functions were
+	    // defined there.
 	    if (sv->sv_name != NULL)
 		// Remove a variable declared inside the block, if it still
-		// exists, from sn_vars and move the value into sn_all_vars.
-		hide_script_var(si, i);
+		// exists, from sn_vars and move the value into sn_all_vars
+		// if "func_defined" is non-zero.
+		hide_script_var(si, i, func_defined);
 	}
 
 	// TODO: is this needed?

@@ -2,6 +2,7 @@
 
 source check.vim
 source vim9.vim
+source term_util.vim
 source view_util.vim
 
 def Test_edit_wildcards()
@@ -73,7 +74,7 @@ def Test_condition_types()
       if 'text'
       endif
   END
-  CheckDefAndScriptFailure(lines, 'E1030:', 1)
+  CheckDefAndScriptFailure(lines, 'E1135:', 1)
 
   lines =<< trim END
       if [1]
@@ -87,7 +88,7 @@ def Test_condition_types()
       if g:cond
       endif
   END
-  CheckDefExecAndScriptFailure(lines, 'E1030:', 2)
+  CheckDefExecAndScriptFailure(lines, 'E1135:', 2)
 
   lines =<< trim END
       g:cond = 0
@@ -96,7 +97,7 @@ def Test_condition_types()
       endif
   END
   CheckDefFailure(lines, 'E1012:', 3)
-  CheckScriptFailure(['vim9script'] + lines, 'E1030:', 4)
+  CheckScriptFailure(['vim9script'] + lines, 'E1135:', 4)
 
   lines =<< trim END
       if g:cond
@@ -112,14 +113,14 @@ def Test_condition_types()
       elseif g:cond
       endif
   END
-  CheckDefExecAndScriptFailure(lines, 'E1030:', 3)
+  CheckDefExecAndScriptFailure(lines, 'E1135:', 3)
 
   lines =<< trim END
       while 'text'
       endwhile
   END
   CheckDefFailure(lines, 'E1012:', 1)
-  CheckScriptFailure(['vim9script'] + lines, 'E1030:', 2)
+  CheckScriptFailure(['vim9script'] + lines, 'E1135:', 2)
 
   lines =<< trim END
       while [1]
@@ -133,7 +134,7 @@ def Test_condition_types()
       while g:cond
       endwhile
   END
-  CheckDefExecAndScriptFailure(lines, 'E1030:', 2)
+  CheckDefExecAndScriptFailure(lines, 'E1135:', 2)
 enddef
 
 def Test_if_linebreak()
@@ -242,6 +243,13 @@ def Test_method_call_linebreak()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_skipped_expr_linebreak()
+  if 0
+    var x = []
+               ->map({ -> 0})
+  endif
+enddef
+
 def Test_dict_member()
    var test: dict<list<number>> = {'data': [3, 1, 2]}
    test.data->sort()
@@ -303,6 +311,238 @@ def Test_filter_is_not_modifier()
   var tags = [{'a': 1, 'b': 2}, {'x': 3, 'y': 4}]
   filter(tags, { _, v -> has_key(v, 'x') ? 1 : 0 })
   assert_equal([#{x: 3, y: 4}], tags)
+enddef
+
+def Test_command_modifier_filter()
+  var lines =<< trim END
+    final expected = "\nType Name Content\n  c  \"c   piyo"
+    @a = 'hoge'
+    @b = 'fuga'
+    @c = 'piyo'
+
+    assert_equal(execute('filter /piyo/ registers abc'), expected)
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_win_command_modifiers()
+  assert_equal(1, winnr('$'))
+
+  set splitright
+  vsplit
+  assert_equal(2, winnr())
+  close
+  aboveleft vsplit
+  assert_equal(1, winnr())
+  close
+  set splitright&
+
+  vsplit
+  assert_equal(1, winnr())
+  close
+  belowright vsplit
+  assert_equal(2, winnr())
+  close
+  rightbelow vsplit
+  assert_equal(2, winnr())
+  close
+
+  if has('browse')
+    browse set
+    assert_equal('option-window', expand('%'))
+    close
+  endif
+
+  vsplit
+  botright split
+  assert_equal(3, winnr())
+  assert_equal(&columns, winwidth(0))
+  close
+  close
+
+  vsplit
+  topleft split
+  assert_equal(1, winnr())
+  assert_equal(&columns, winwidth(0))
+  close
+  close
+
+  gettabinfo()->len()->assert_equal(1)
+  tab split
+  gettabinfo()->len()->assert_equal(2)
+  tabclose
+
+  vertical new
+  assert_inrange(&columns / 2 - 2, &columns / 2 + 1, winwidth(0))
+  close
+enddef
+
+func Test_command_modifier_confirm()
+  CheckNotGui
+  CheckRunVimInTerminal
+
+  " Test for saving all the modified buffers
+  let lines =<< trim END
+    call setline(1, 'changed')
+    def Getout()
+      confirm write Xfile
+    enddef
+  END
+  call writefile(lines, 'Xconfirmscript')
+  call writefile(['empty'], 'Xfile')
+  let buf = RunVimInTerminal('-S Xconfirmscript', {'rows': 8})
+  call term_sendkeys(buf, ":call Getout()\n")
+  call WaitForAssert({-> assert_match('(Y)es, \[N\]o: ', term_getline(buf, 8))}, 1000)
+  call term_sendkeys(buf, "y")
+  call WaitForAssert({-> assert_match('(Y)es, \[N\]o: ', term_getline(buf, 8))}, 1000)
+  call term_sendkeys(buf, "\<CR>")
+  call TermWait(buf)
+  call StopVimInTerminal(buf)
+
+  call assert_equal(['changed'], readfile('Xfile'))
+  call delete('Xfile')
+  call delete('.Xfile.swp')  " in case Vim was killed
+  call delete('Xconfirmscript')
+endfunc
+
+def Test_command_modifiers_keep()
+  if has('unix')
+    def DoTest(addRflag: bool, keepMarks: bool, hasMarks: bool)
+      new
+      setline(1, ['one', 'two', 'three'])
+      normal 1Gma
+      normal 2Gmb
+      normal 3Gmc
+      if addRflag
+        set cpo+=R
+      else
+        set cpo-=R
+      endif
+      if keepMarks
+        keepmarks :%!cat
+      else
+        :%!cat
+      endif
+      if hasMarks
+        assert_equal(1, line("'a"))
+        assert_equal(2, line("'b"))
+        assert_equal(3, line("'c"))
+      else
+        assert_equal(0, line("'a"))
+        assert_equal(0, line("'b"))
+        assert_equal(0, line("'c"))
+      endif
+      quit!
+    enddef
+    DoTest(false, false, true)
+    DoTest(true, false, false)
+    DoTest(false, true, true)
+    DoTest(true, true, true)
+    set cpo&vim
+
+    new
+    setline(1, ['one', 'two', 'three', 'four'])
+    assert_equal(4, line("$"))
+    normal 1Gma
+    normal 2Gmb
+    normal 3Gmc
+    lockmarks :1,2!wc
+    # line is deleted, marks don't move
+    assert_equal(3, line("$"))
+    assert_equal('four', getline(3))
+    assert_equal(1, line("'a"))
+    assert_equal(2, line("'b"))
+    assert_equal(3, line("'c"))
+    quit!
+  endif
+
+  edit Xone
+  edit Xtwo
+  assert_equal('Xone', expand('#'))
+  keepalt edit Xthree
+  assert_equal('Xone', expand('#'))
+
+  normal /a*b*
+  assert_equal('a*b*', histget("search"))
+  keeppatterns normal /c*d*
+  assert_equal('a*b*', histget("search"))
+
+  new
+  setline(1, range(10))
+  :10
+  normal gg
+  assert_equal(10, getpos("''")[1])
+  keepjumps normal 5G
+  assert_equal(10, getpos("''")[1])
+  quit!
+enddef
+
+def Test_command_modifier_other()
+  new Xsomefile
+  setline(1, 'changed')
+  var buf = bufnr()
+  hide edit Xotherfile
+  var info = getbufinfo(buf)
+  assert_equal(1, info[0].hidden)
+  assert_equal(1, info[0].changed)
+  edit Xsomefile
+  bwipe!
+
+  au BufNewFile Xfile g:readFile = 1
+  g:readFile = 0
+  edit Xfile
+  assert_equal(1, g:readFile)
+  bwipe!
+  g:readFile = 0
+  noautocmd edit Xfile
+  assert_equal(0, g:readFile)
+
+  noswapfile edit XnoSwap
+  assert_equal(0, &l:swapfile)
+  bwipe!
+
+  var caught = false
+  try
+    sandbox !ls
+  catch /E48:/
+    caught = true
+  endtry
+  assert_true(caught)
+
+  :8verbose g:verbose_now = &verbose
+  assert_equal(8, g:verbose_now)
+  unlet g:verbose_now
+enddef
+
+def EchoHere()
+  echomsg 'here'
+enddef
+def EchoThere()
+  unsilent echomsg 'there'
+enddef
+
+def Test_modifier_silent_unsilent()
+  echomsg 'last one'
+  silent echomsg "text"
+  assert_equal("\nlast one", execute(':1messages'))
+
+  silent! echoerr "error"
+
+  echomsg 'last one'
+  silent EchoHere()
+  assert_equal("\nlast one", execute(':1messages'))
+
+  silent EchoThere()
+  assert_equal("\nthere", execute(':1messages'))
+enddef
+
+def Test_range_after_command_modifier()
+  CheckScriptFailure(['vim9script', 'silent keepjump 1d _'], 'E1050:', 2)
+  new
+  setline(1, 'xxx')
+  CheckScriptSuccess(['vim9script', 'silent keepjump :1d _'])
+  assert_equal('', getline(1))
+  bwipe!
 enddef
 
 def Test_eval_command()
@@ -375,6 +615,50 @@ def Test_command_star_range()
   bwipe!
 enddef
 
+def Test_f_args()
+  var lines =<< trim END
+    vim9script
+
+    func SaveCmdArgs(...)
+      let g:args = a:000
+    endfunc
+
+    command -nargs=* TestFArgs call SaveCmdArgs(<f-args>)
+
+    TestFArgs
+    assert_equal([], g:args)
+
+    TestFArgs one two three
+    assert_equal(['one', 'two', 'three'], g:args)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
+def Test_star_command()
+  var lines =<< trim END
+    vim9script
+    @s = 'g:success = 8'
+    set cpo+=*
+    exe '*s'
+    assert_equal(8, g:success)
+    unlet g:success
+    set cpo-=*
+    assert_fails("exe '*s'", 'E1050:')
+  END
+  CheckScriptSuccess(lines)
+enddef
+
+def Test_cmd_argument_without_colon()
+  new Xfile
+  setline(1, ['a', 'b', 'c', 'd'])
+  write
+  edit +3 %
+  assert_equal(3, getcurpos()[1])
+  edit +/a %
+  assert_equal(1, getcurpos()[1])
+  bwipe
+  delete('Xfile')
+enddef
 
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -130,7 +130,7 @@ let test_values = {
       \ 'selectmode': [['', 'mouse', 'key,cmd'], ['xxx']],
       \ 'sessionoptions': [['', 'blank', 'help,options,slash'], ['xxx']],
       \ 'signcolumn': [['', 'auto', 'no'], ['xxx', 'no,yes']],
-      \ 'spellfile': [['', 'file.en.add'], ['xxx', '/tmp/file']],
+      \ 'spellfile': [['', 'file.en.add', '/tmp/dir\ with\ space/en.utf-8.add'], ['xxx', '/tmp/file']],
       \ 'spelllang': [['', 'xxx', 'sr@latin'], ['not&lang', "that\\\rthere"]],
       \ 'spelloptions': [['', 'camel'], ['xxx']],
       \ 'spellsuggest': [['', 'best', 'double,33'], ['xxx']],
@@ -200,8 +200,8 @@ while 1
       " setting an option can only fail when it's implemented.
       call add(script, "if exists('+" . name . "')")
       for val in a[1]
-	call add(script, "call assert_fails('set " . name . "=" . val . "')")
-	call add(script, "call assert_fails('set " . shortname . "=" . val . "')")
+	call add(script, "silent! call assert_fails('set " . name . "=" . val . "')")
+	call add(script, "silent! call assert_fails('set " . shortname . "=" . val . "')")
       endfor
       call add(script, "endif")
     endif

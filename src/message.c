@@ -659,7 +659,7 @@ emsg_core(char_u *s)
 	    return TRUE;
 	}
 
-	if (emsg_assert_fails_used && emsg_assert_fails_msg == NULL)
+	if (in_assert_fails && emsg_assert_fails_msg == NULL)
 	{
 	    emsg_assert_fails_msg = vim_strsave(s);
 	    emsg_assert_fails_lnum = SOURCING_LNUM;
@@ -2319,10 +2319,10 @@ message_filtered(char_u *msg)
 {
     int match;
 
-    if (cmdmod.filter_regmatch.regprog == NULL)
+    if (cmdmod.cmod_filter_regmatch.regprog == NULL)
 	return FALSE;
-    match = vim_regexec(&cmdmod.filter_regmatch, msg, (colnr_T)0);
-    return cmdmod.filter_force ? match : !match;
+    match = vim_regexec(&cmdmod.cmod_filter_regmatch, msg, (colnr_T)0);
+    return cmdmod.cmod_filter_force ? match : !match;
 }
 
 /*

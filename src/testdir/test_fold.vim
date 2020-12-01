@@ -95,9 +95,7 @@ func Test_indent_fold2()
 endfunc
 
 func Test_manual_fold_with_filter()
-  if !executable('cat')
-    return
-  endif
+  CheckExecutable cat
   for type in ['manual', 'marker']
     exe 'set foldmethod=' . type
     new
@@ -832,6 +830,25 @@ func Test_undo_fold_deletion()
   eval getline(1, '$')->assert_equal([''])
 
   set fdm&vim
+  bwipe!
+endfunc
+
+" this was crashing
+func Test_move_no_folds()
+  new
+  fold
+  setlocal fdm=expr
+  normal zj
+  bwipe!
+endfunc
+
+" this was crashing
+func Test_fold_create_delete_create()
+  new
+  fold
+  fold
+  normal zd
+  fold
   bwipe!
 endfunc
 

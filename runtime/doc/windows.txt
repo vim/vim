@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.2.  Last change: 2020 Sep 02
+*windows.txt*   For Vim version 8.2.  Last change: 2020 Nov 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1118,6 +1118,11 @@ list of buffers. |unlisted-buffer|
 		If "lnum" is specified, the cursor will be positioned at that
 		line when the buffer is first entered.  Note that other
 		commands after the + will be ignored.
+
+						 *:balt*
+:balt [+lnum] {fname}
+		Like `:badd` and also set the alternate file for the current
+		window to {fname}.
 
 :[N]bd[elete][!]			*:bd* *:bdel* *:bdelete* *E516*
 :bd[elete][!] [N]

@@ -2606,8 +2606,6 @@ update_si_attr(int idx)
 	{
 	    sip->si_attr = CUR_STATE(idx - 1).si_attr;
 	    sip->si_trans_id = CUR_STATE(idx - 1).si_trans_id;
-	    sip->si_h_startpos = CUR_STATE(idx - 1).si_h_startpos;
-	    sip->si_h_endpos = CUR_STATE(idx - 1).si_h_endpos;
 	    if (sip->si_cont_list == NULL)
 	    {
 		sip->si_flags |= HL_TRANS_CONT;
@@ -3869,9 +3867,14 @@ syn_cmd_list(
 		msg_puts(_("no syncing"));
 	    else
 	    {
-		msg_puts(_("syncing starts "));
-		msg_outnum(curwin->w_s->b_syn_sync_minlines);
-		msg_puts(_(" lines before top line"));
+		if (curwin->w_s->b_syn_sync_minlines == MAXLNUM)
+		    msg_puts(_("syncing starts at the first line"));
+		else
+		{
+		    msg_puts(_("syncing starts "));
+		    msg_outnum(curwin->w_s->b_syn_sync_minlines);
+		    msg_puts(_(" lines before top line"));
+		}
 		syn_match_msg();
 	    }
 	    return;
@@ -3935,19 +3938,24 @@ syn_lines_msg(void)
 				      || curwin->w_s->b_syn_sync_minlines > 0)
     {
 	msg_puts("; ");
-	if (curwin->w_s->b_syn_sync_minlines > 0)
+	if (curwin->w_s->b_syn_sync_minlines == MAXLNUM)
+	    msg_puts(_("from the first line"));
+	else
 	{
-	    msg_puts(_("minimal "));
-	    msg_outnum(curwin->w_s->b_syn_sync_minlines);
-	    if (curwin->w_s->b_syn_sync_maxlines)
-		msg_puts(", ");
+	    if (curwin->w_s->b_syn_sync_minlines > 0)
+	    {
+		msg_puts(_("minimal "));
+		msg_outnum(curwin->w_s->b_syn_sync_minlines);
+		if (curwin->w_s->b_syn_sync_maxlines)
+		    msg_puts(", ");
+	    }
+	    if (curwin->w_s->b_syn_sync_maxlines > 0)
+	    {
+		msg_puts(_("maximal "));
+		msg_outnum(curwin->w_s->b_syn_sync_maxlines);
+	    }
+	    msg_puts(_(" lines before top line"));
 	}
-	if (curwin->w_s->b_syn_sync_maxlines > 0)
-	{
-	    msg_puts(_("maximal "));
-	    msg_outnum(curwin->w_s->b_syn_sync_maxlines);
-	}
-	msg_puts(_(" lines before top line"));
     }
 }
 
@@ -6697,7 +6705,7 @@ syntime_report(void)
 {
     int		idx;
     synpat_T	*spp;
-# ifdef FEAT_FLOAT
+# if defined(FEAT_RELTIME) && defined(FEAT_FLOAT)
     proftime_T	tm;
 # endif
     int		len;
@@ -6727,7 +6735,7 @@ syntime_report(void)
 	    p->match = spp->sp_time.match;
 	    total_count += spp->sp_time.count;
 	    p->slowest = spp->sp_time.slowest;
-# ifdef FEAT_FLOAT
+# if defined(FEAT_RELTIME) && defined(FEAT_FLOAT)
 	    profile_divide(&spp->sp_time.total, spp->sp_time.count, &tm);
 	    p->average = tm;
 # endif

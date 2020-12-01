@@ -44,12 +44,13 @@
 # define PERL_NO_INLINE_FUNCTIONS
 #endif
 
-/* Work around for using MSVC and ActivePerl 5.18. */
 #ifdef _MSC_VER
+// Work around for using MSVC and ActivePerl 5.18.
 # define __inline__ __inline
-
 // Work around for using MSVC and Strawberry Perl 5.30.
 # define __builtin_expect(expr, val) (expr)
+// Work around for using MSVC and Strawberry Perl 5.32.
+# define NO_THREAD_SAFE_LOCALE
 #endif
 
 #ifdef __GNUC__

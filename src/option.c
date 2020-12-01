@@ -1125,7 +1125,7 @@ ex_set(exarg_T *eap)
     else if (eap->cmdidx == CMD_setglobal)
 	flags = OPT_GLOBAL;
 #if defined(FEAT_EVAL) && defined(FEAT_BROWSE)
-    if (cmdmod.browse && flags == 0)
+    if ((cmdmod.cmod_flags & CMOD_BROWSE) && flags == 0)
 	ex_options(eap);
     else
 #endif
@@ -5774,7 +5774,7 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_ml_nobin = p_ml_nobin;
 	    buf->b_p_inf = p_inf;
 	    COPY_OPT_SCTX(buf, BV_INF);
-	    if (cmdmod.noswapfile)
+	    if (cmdmod.cmod_flags & CMOD_NOSWAPFILE)
 		buf->b_p_swf = FALSE;
 	    else
 	    {

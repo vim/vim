@@ -440,7 +440,7 @@ term_start(
     buf_T	*old_curbuf = NULL;
     int		res;
     buf_T	*newbuf;
-    int		vertical = opt->jo_vertical || (cmdmod.split & WSP_VERT);
+    int		vertical = opt->jo_vertical || (cmdmod.cmod_split & WSP_VERT);
     jobopt_T	orig_opt;  // only partly filled
 
     if (check_restricted() || check_secure())
@@ -529,7 +529,7 @@ term_start(
 	}
 
 	if (vertical)
-	    cmdmod.split |= WSP_VERT;
+	    cmdmod.cmod_split |= WSP_VERT;
 	ex_splitview(&split_ea);
 	if (curwin == old_curwin)
 	{
@@ -1202,6 +1202,7 @@ write_to_term(buf_T *buffer, char_u *msg, channel_T *channel)
 	return;
     }
     ch_log(channel, "writing %d bytes to terminal", (int)len);
+    cursor_off();
     term_write_job_output(term, msg, len);
 
 #ifdef FEAT_GUI
@@ -1592,12 +1593,13 @@ term_try_stop_job(buf_T *buf)
     char    *how = (char *)buf->b_term->tl_kill;
 
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
-    if ((how == NULL || *how == NUL) && (p_confirm || cmdmod.confirm))
+    if ((how == NULL || *how == NUL)
+			  && (p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM)))
     {
 	char_u	buff[DIALOG_MSG_SIZE];
 	int	ret;
 
-	dialog_msg(buff, _("Kill job in \"%s\"?"), buf->b_fname);
+	dialog_msg(buff, _("Kill job in \"%s\"?"), buf_get_fname(buf));
 	ret = vim_dialog_yesnocancel(VIM_QUESTION, NULL, buff, 1);
 	if (ret == VIM_YES)
 	    how = "kill";
@@ -1829,6 +1831,10 @@ update_snapshot(term_T *term)
 			width = cell.width;
 
 			cell2cellattr(&cell, &p[pos.col]);
+			if (width == 2)
+			    // second cell of double-width character has the
+			    // same attributes.
+			    p[pos.col + 1] = p[pos.col];
 
 			// Each character can be up to 6 bytes.
 			if (ga_grow(&ga, VTERM_MAX_CHARS_PER_CELL * 6) == OK)
@@ -2175,6 +2181,10 @@ send_keys_to_term(term_T *term, int c, int modmask, int typed)
 		    return FAIL;
 		}
 	    }
+	    break;
+
+	case K_COMMAND:
+	    return do_cmdline(NULL, getcmdkeycmd, NULL, 0);
     }
     if (typed)
 	mouse_was_outside = FALSE;
@@ -2190,16 +2200,19 @@ send_keys_to_term(term_T *term, int c, int modmask, int typed)
 }
 
     static void
-position_cursor(win_T *wp, VTermPos *pos, int add_off UNUSED)
+position_cursor(win_T *wp, VTermPos *pos)
 {
     wp->w_wrow = MIN(pos->row, MAX(0, wp->w_height - 1));
     wp->w_wcol = MIN(pos->col, MAX(0, wp->w_width - 1));
 #ifdef FEAT_PROP_POPUP
-    if (add_off && popup_is_popup(curwin))
+    if (popup_is_popup(wp))
     {
-	wp->w_wrow += popup_top_extra(curwin);
-	wp->w_wcol += popup_left_extra(curwin);
+	wp->w_wrow += popup_top_extra(wp);
+	wp->w_wcol += popup_left_extra(wp);
+	wp->w_flags |= WFLAG_WCOL_OFF_ADDED | WFLAG_WROW_OFF_ADDED;
     }
+    else
+	wp->w_flags &= ~(WFLAG_WCOL_OFF_ADDED | WFLAG_WROW_OFF_ADDED);
 #endif
     wp->w_valid |= (VALID_WCOL|VALID_WROW);
 }
@@ -2512,13 +2525,13 @@ terminal_loop(int blocking)
 	if (termwinkey == Ctrl_W)
 	    termwinkey = 0;
     }
-    position_cursor(curwin, &curbuf->b_term->tl_cursor_pos, TRUE);
+    position_cursor(curwin, &curbuf->b_term->tl_cursor_pos);
     may_set_cursor_props(curbuf->b_term);
 
     while (blocking || vpeekc_nomap() != NUL)
     {
 #ifdef FEAT_GUI
-	if (!curbuf->b_term->tl_system)
+	if (curbuf->b_term != NULL && !curbuf->b_term->tl_system)
 #endif
 	    // TODO: skip screen update when handling a sequence of keys.
 	    // Repeat redrawing in case a message is received while redrawing.
@@ -2533,8 +2546,6 @@ terminal_loop(int blocking)
 	restore_cursor = TRUE;
 
 	raw_c = term_vgetc();
-if (raw_c > 0)
-    ch_log(NULL, "terminal_loop() got %d", raw_c);
 	if (!term_use_loop_check(TRUE) || in_terminal_loop != curbuf->b_term)
 	{
 	    // Job finished while waiting for a character.  Push back the
@@ -3049,13 +3060,10 @@ handle_movecursor(
     while (for_all_windows_and_curwin(&wp, &did_curwin))
     {
 	if (wp->w_buffer == term->tl_buffer)
-	    position_cursor(wp, &pos, FALSE);
+	    position_cursor(wp, &pos);
     }
     if (term->tl_buffer == curbuf && !term->tl_normal_mode)
-    {
-	may_toggle_cursor(term);
 	update_cursor(term, term->tl_cursor_visible);
-    }
 
     return 1;
 }
@@ -3441,15 +3449,19 @@ term_after_channel_closed(term_T *term)
 	if (term->tl_finish == TL_FINISH_OPEN
 				   && term->tl_buffer->b_nwindows == 0)
 	{
-	    char buf[50];
+	    char    *cmd = term->tl_opencmd == NULL
+				? "botright sbuf %d"
+				: (char *)term->tl_opencmd;
+	    size_t  len = strlen(cmd) + 50;
+	    char    *buf = alloc(len);
 
-	    // TODO: use term_opencmd
-	    ch_log(NULL, "terminal job finished, opening window");
-	    vim_snprintf(buf, sizeof(buf),
-		    term->tl_opencmd == NULL
-			    ? "botright sbuf %d"
-			    : (char *)term->tl_opencmd, fnum);
-	    do_cmdline_cmd((char_u *)buf);
+	    if (buf != NULL)
+	    {
+		ch_log(NULL, "terminal job finished, opening window");
+		vim_snprintf(buf, len, cmd, fnum);
+		do_cmdline_cmd((char_u *)buf);
+		vim_free(buf);
+	    }
 	}
 	else
 	    ch_log(NULL, "terminal job finished");
@@ -3638,6 +3650,7 @@ term_line2screenline(
 	    }
 #endif
 	    else
+		// This will only store the lower byte of "c".
 		ScreenLines[off] = c;
 	}
 	ScreenAttrs[off] = cell2attr(term, wp, cell.attrs, cell.fg, cell.bg);
@@ -3646,13 +3659,20 @@ term_line2screenline(
 	++off;
 	if (cell.width == 2)
 	{
-	    if (enc_utf8)
-		ScreenLinesUC[off] = NUL;
-
 	    // don't set the second byte to NUL for a DBCS encoding, it
 	    // has been set above
-	    if (enc_utf8 || !has_mbyte)
+	    if (enc_utf8)
+	    {
+		ScreenLinesUC[off] = NUL;
 		ScreenLines[off] = NUL;
+	    }
+	    else if (!has_mbyte)
+	    {
+		// Can't show a double-width character with a single-byte
+		// 'encoding', just use a space.
+		ScreenLines[off] = ' ';
+		ScreenAttrs[off] = ScreenAttrs[off - 1];
+	    }
 
 	    ++pos->col;
 	    ++off;
@@ -3796,7 +3816,7 @@ term_update_window(win_T *wp)
 
     // The cursor may have been moved when resizing.
     vterm_state_get_cursorpos(state, &pos);
-    position_cursor(wp, &pos, FALSE);
+    position_cursor(wp, &pos);
 
     for (pos.row = term->tl_dirty_row_start; pos.row < term->tl_dirty_row_end
 					  && pos.row < wp->w_height; ++pos.row)
@@ -4516,6 +4536,7 @@ term_get_status_text(term_T *term)
     {
 	char_u *txt;
 	size_t len;
+	char_u *fname;
 
 	if (term->tl_normal_mode)
 	{
@@ -4532,11 +4553,12 @@ term_get_status_text(term_T *term)
 	    txt = (char_u *)_("running");
 	else
 	    txt = (char_u *)_("finished");
-	len = 9 + STRLEN(term->tl_buffer->b_fname) + STRLEN(txt);
+	fname = buf_get_fname(term->tl_buffer);
+	len = 9 + STRLEN(fname) + STRLEN(txt);
 	term->tl_status_text = alloc(len);
 	if (term->tl_status_text != NULL)
 	    vim_snprintf((char *)term->tl_status_text, len, "%s [%s]",
-						term->tl_buffer->b_fname, txt);
+								   fname, txt);
     }
     return term->tl_status_text;
 }
@@ -4571,12 +4593,12 @@ term_get_buf(typval_T *argvars, char *where)
 {
     buf_T *buf;
 
-    (void)tv_get_number(&argvars[0]);	    // issue errmsg if type error
     ++emsg_off;
     buf = tv_get_buf(&argvars[0], FALSE);
     --emsg_off;
     if (buf == NULL || buf->b_term == NULL)
     {
+	(void)tv_get_number(&argvars[0]);    // issue errmsg if type error
 	ch_log(NULL, "%s: invalid buffer argument", where);
 	return NULL;
     }
@@ -4718,6 +4740,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 	    {
 		int c = cell.chars[i];
 		int pc = prev_cell.chars[i];
+		int should_break = c == NUL || pc == NUL;
 
 		// For the first character NUL is the same as space.
 		if (i == 0)
@@ -4727,7 +4750,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 		}
 		if (c != pc)
 		    same_chars = FALSE;
-		if (c == NUL || pc == NUL)
+		if (should_break)
 		    break;
 	    }
 	    same_attr = vtermAttr2hl(cell.attrs)

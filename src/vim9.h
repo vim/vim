@@ -82,6 +82,7 @@ typedef enum {
     ISN_RETURN,	    // return, result is on top of stack
     ISN_FUNCREF,    // push a function ref to dfunc isn_arg.funcref
     ISN_NEWFUNC,    // create a global function from a lambda function
+    ISN_DEF,	    // list functions
 
     // expression operations
     ISN_JUMP,	    // jump if condition is matched isn_arg.jump
@@ -96,8 +97,8 @@ typedef enum {
     ISN_ENDTRY,	    // take entry off from ec_trystack
 
     // more expression operations
-    ISN_ADDLIST,
-    ISN_ADDBLOB,
+    ISN_ADDLIST,    // add two lists
+    ISN_ADDBLOB,    // add two blobs
 
     // operation with two arguments; isn_arg.op.op_type is exptype_T
     ISN_OPNR,
@@ -120,11 +121,13 @@ typedef enum {
     ISN_CONCAT,
     ISN_STRINDEX,   // [expr] string index
     ISN_STRSLICE,   // [expr:expr] string slice
+    ISN_LISTAPPEND, // append to a list, like add()
     ISN_LISTINDEX,  // [expr] list index
     ISN_LISTSLICE,  // [expr:expr] list slice
     ISN_ANYINDEX,   // [expr] runtime index
     ISN_ANYSLICE,   // [expr:expr] runtime slice
     ISN_SLICE,	    // drop isn_arg.number items from start of list
+    ISN_BLOBAPPEND, // append to a blob, like add()
     ISN_GETITEM,    // push list item, isn_arg.number is the index
     ISN_MEMBER,	    // dict[member]
     ISN_STRINGMEMBER, // dict.member using isn_arg.string
@@ -140,6 +143,10 @@ typedef enum {
 
     ISN_PUT,	    // ":put", uses isn_arg.put
 
+    ISN_CMDMOD,	    // set cmdmod
+    ISN_CMDMOD_REV, // undo ISN_CMDMOD
+
+    ISN_UNPACK,	    // unpack list into items, uses isn_arg.unpack
     ISN_SHUFFLE,    // move item on stack up or down
     ISN_DROP	    // pop stack and discard value
 } isntype_T;
@@ -273,6 +280,17 @@ typedef struct {
     linenr_T	put_lnum;	// line number to put below
 } put_T;
 
+// arguments to ISN_CMDMOD
+typedef struct {
+    cmdmod_T	*cf_cmdmod;	// allocated
+} cmod_T;
+
+// arguments to ISN_UNPACK
+typedef struct {
+    int		unp_count;	// number of items to produce
+    int		unp_semicolon;	// last item gets list of remainder
+} unpack_T;
+
 /*
  * Instruction
  */
@@ -309,6 +327,8 @@ struct isn_S {
 	checklen_T	    checklen;
 	shuffle_T	    shuffle;
 	put_T		    put;
+	cmod_T		    cmdmod;
+	unpack_T	    unpack;
     } isn_arg;
 };
 
