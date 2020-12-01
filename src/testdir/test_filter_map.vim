@@ -123,6 +123,9 @@ func Test_mapnew_dict()
   let dout = mapnew(din, {k, v -> string(v)})
   call assert_equal(#{one: 1, two: 2}, din)
   call assert_equal(#{one: '1', two: '2'}, dout)
+
+  const dconst = #{one: 1, two: 2, three: 3}
+  call assert_equal(#{one: 2, two: 3, three: 4}, mapnew(dconst, {_, v -> v + 1}))
 endfunc
 
 func Test_mapnew_list()
@@ -130,6 +133,9 @@ func Test_mapnew_list()
   let lout = mapnew(lin, {k, v -> string(v)})
   call assert_equal([1, 2, 3], lin)
   call assert_equal(['1', '2', '3'], lout)
+
+  const lconst = [1, 2, 3]
+  call assert_equal([2, 3, 4], mapnew(lconst, {_, v -> v + 1}))
 endfunc
 
 func Test_mapnew_blob()
