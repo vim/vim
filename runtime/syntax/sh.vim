@@ -15,11 +15,11 @@ endif
 
 " trying to answer the question: which shell is /bin/sh, really?
 " If the user has not specified any of g:is_kornshell, g:is_bash, g:is_posix, g:is_sh, then guess.
-if getline(1) =~ '\<ksh$'
+if getline(1) =~ '\<ksh\>'
  let b:is_kornshell = 1
-elseif getline(1) =~ '\<bash$'
+elseif getline(1) =~ '\<bash\>'
  let b:is_bash      = 1
-elseif getline(1) =~ '\<dash$'
+elseif getline(1) =~ '\<dash\>'
  let b:is_dash      = 1
 elseif !exists("g:is_kornshell") && !exists("g:is_bash") && !exists("g:is_posix") && !exists("g:is_sh") && !exists("g:is_dash")
  let s:shell = ""
