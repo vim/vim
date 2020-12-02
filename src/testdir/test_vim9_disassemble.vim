@@ -390,7 +390,7 @@ enddef
 
 def s:ScriptFuncNew()
   var ll = [1, "two", 333]
-  var dd = #{one: 1, two: "val"}
+  var dd = {one: 1, two: "val"}
 enddef
 
 def Test_disassemble_new()
@@ -402,7 +402,7 @@ def Test_disassemble_new()
         '\d PUSHNR 333\_s*' ..
         '\d NEWLIST size 3\_s*' ..
         '\d STORE $0\_s*' ..
-        'var dd = #{one: 1, two: "val"}\_s*' ..
+        'var dd = {one: 1, two: "val"}\_s*' ..
         '\d PUSHS "one"\_s*' ..
         '\d PUSHNR 1\_s*' ..
         '\d PUSHS "two"\_s*' ..
@@ -1292,7 +1292,7 @@ def Test_disassemble_list_slice()
 enddef
 
 def DictMember(): number
-  var d = #{item: 1}
+  var d = {item: 1}
   var res = d.item
   res = d["item"]
   return res
@@ -1301,7 +1301,7 @@ enddef
 def Test_disassemble_dict_member()
   var instr = execute('disassemble DictMember')
   assert_match('DictMember\_s*' ..
-        'var d = #{item: 1}\_s*' ..
+        'var d = {item: 1}\_s*' ..
         '\d PUSHS "item"\_s*' ..
         '\d PUSHNR 1\_s*' ..
         '\d NEWDICT size 1\_s*' ..
@@ -1473,10 +1473,10 @@ def Test_disassemble_compare()
         ['[1, 2] is aList', 'COMPARELIST is'],
         ['[1, 2] isnot aList', 'COMPARELIST isnot'],
 
-        ['#{a: 1} == aDict', 'COMPAREDICT =='],
-        ['#{a: 1} != aDict', 'COMPAREDICT !='],
-        ['#{a: 1} is aDict', 'COMPAREDICT is'],
-        ['#{a: 1} isnot aDict', 'COMPAREDICT isnot'],
+        ['{a: 1} == aDict', 'COMPAREDICT =='],
+        ['{a: 1} != aDict', 'COMPAREDICT !='],
+        ['{a: 1} is aDict', 'COMPAREDICT is'],
+        ['{a: 1} isnot aDict', 'COMPAREDICT isnot'],
 
         ['{->33} == {->44}', 'COMPAREFUNC =='],
         ['{->33} != {->44}', 'COMPAREFUNC !='],
@@ -1519,7 +1519,7 @@ def Test_disassemble_compare()
              '  var aString = "yy"',
              '  var aBlob = 0z22',
              '  var aList = [3, 4]',
-             '  var aDict = #{x: 2}',
+             '  var aDict = {x: 2}',
              floatDecl,
              '  if ' .. case[0],
              '    echo 42'

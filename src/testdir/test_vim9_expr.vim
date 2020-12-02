@@ -27,7 +27,7 @@ def Test_expr1_trinary()
                             : 'two')
       assert_equal('one', !!0z1234 ? 'one' : 'two')
       assert_equal('one', !![0] ? 'one' : 'two')
-      assert_equal('one', !!#{x: 0} ? 'one' : 'two')
+      assert_equal('one', !!{x: 0} ? 'one' : 'two')
       var name = 1
       assert_equal('one', name ? 'one' : 'two')
 
@@ -206,7 +206,7 @@ def Test_expr1_falsy()
       assert_equal(123, 123 ?? 456)
       assert_equal('yes', 'yes' ?? 456)
       assert_equal([1], [1] ?? 456)
-      assert_equal(#{one: 1}, #{one: 1} ?? 456)
+      assert_equal({one: 1}, {one: 1} ?? 456)
       if has('float')
         assert_equal(0.1, 0.1 ?? 456)
       endif
@@ -553,12 +553,12 @@ def Test_expr4_equal()
       assert_equal(false, [1, 2, 3] == [])
       assert_equal(false, [1, 2, 3] == ['1', '2', '3'])
 
-      assert_equal(true, #{one: 1, two: 2} == #{one: 1, two: 2})
-      assert_equal(false, #{one: 1, two: 2} == #{one: 2, two: 2})
-      assert_equal(false, #{one: 1, two: 2} == #{two: 2})
-      assert_equal(false, #{one: 1, two: 2} == #{})
-      assert_equal(true, g:adict == #{bbb: 8, aaa: 2})
-      assert_equal(false, #{ccc: 9, aaa: 2} == g:adict)
+      assert_equal(true, {one: 1, two: 2} == {one: 1, two: 2})
+      assert_equal(false, {one: 1, two: 2} == {one: 2, two: 2})
+      assert_equal(false, {one: 1, two: 2} == {two: 2})
+      assert_equal(false, {one: 1, two: 2} == {})
+      assert_equal(true, g:adict == {bbb: 8, aaa: 2})
+      assert_equal(false, {ccc: 9, aaa: 2} == g:adict)
 
       assert_equal(true, function('g:Test_expr4_equal') == function('g:Test_expr4_equal'))
       assert_equal(false, function('g:Test_expr4_equal') == function('g:Test_expr4_is'))
@@ -650,12 +650,12 @@ def Test_expr4_notequal()
       assert_equal(true, [1, 2, 3] != [])
       assert_equal(true, [1, 2, 3] != ['1', '2', '3'])
 
-      assert_equal(false, #{one: 1, two: 2} != #{one: 1, two: 2})
-      assert_equal(true, #{one: 1, two: 2} != #{one: 2, two: 2})
-      assert_equal(true, #{one: 1, two: 2} != #{two: 2})
-      assert_equal(true, #{one: 1, two: 2} != #{})
-      assert_equal(false, g:adict != #{bbb: 8, aaa: 2})
-      assert_equal(true, #{ccc: 9, aaa: 2} != g:adict)
+      assert_equal(false, {one: 1, two: 2} != {one: 1, two: 2})
+      assert_equal(true, {one: 1, two: 2} != {one: 2, two: 2})
+      assert_equal(true, {one: 1, two: 2} != {two: 2})
+      assert_equal(true, {one: 1, two: 2} != {})
+      assert_equal(false, g:adict != {bbb: 8, aaa: 2})
+      assert_equal(true, {ccc: 9, aaa: 2} != g:adict)
 
       assert_equal(false, function('g:Test_expr4_equal') != function('g:Test_expr4_equal'))
       assert_equal(true, function('g:Test_expr4_equal') != function('g:Test_expr4_is'))
@@ -1197,7 +1197,7 @@ def Test_expr5_vim9script()
   CheckScriptFailure(lines, 'E730:', 2)
   lines =<< trim END
       vim9script
-      echo 'a' .. #{a: 1}
+      echo 'a' .. {a: 1}
   END
   CheckScriptFailure(lines, 'E731:', 2)
   lines =<< trim END
@@ -1287,7 +1287,7 @@ func Test_expr5_fails()
   call CheckDefFailure(["var x = 6 + xxx"], 'E1001:', 1)
 
   call CheckDefFailure(["var x = 'a' .. [1]"], 'E1105:', 1)
-  call CheckDefFailure(["var x = 'a' .. #{a: 1}"], 'E1105:', 1)
+  call CheckDefFailure(["var x = 'a' .. {a: 1}"], 'E1105:', 1)
   call CheckDefFailure(["var x = 'a' .. test_void()"], 'E1105:', 1)
   call CheckDefFailure(["var x = 'a' .. 0z32"], 'E1105:', 1)
   call CheckDefFailure(["var x = 'a' .. function('len')"], 'E1105:', 1)
@@ -1469,9 +1469,9 @@ func Test_expr6_fails()
   call CheckDefFailure(["var x = [1] / [2]"], 'E1036:', 1)
   call CheckDefFailure(["var x = [1] % [2]"], 'E1035:', 1)
 
-  call CheckDefFailure(["var x = #{one: 1} * #{two: 2}"], 'E1036:', 1)
-  call CheckDefFailure(["var x = #{one: 1} / #{two: 2}"], 'E1036:', 1)
-  call CheckDefFailure(["var x = #{one: 1} % #{two: 2}"], 'E1035:', 1)
+  call CheckDefFailure(["var x = {one: 1} * {two: 2}"], 'E1036:', 1)
+  call CheckDefFailure(["var x = {one: 1} / {two: 2}"], 'E1036:', 1)
+  call CheckDefFailure(["var x = {one: 1} % {two: 2}"], 'E1035:', 1)
 
   call CheckDefFailure(["var x = 0xff[1]"], 'E1107:', 1)
   if has('float')
@@ -1796,9 +1796,9 @@ def Test_expr7_lambda()
       # line continuation inside lambda with "cond ? expr : expr" works
       var ll = range(3)
       map(ll, {k, v -> v % 2 ? {
-                '111': 111 } : {}
+                ['111']: 111 } : {}
             })
-      assert_equal([{}, {'111': 111}, {}], ll)
+      assert_equal([{}, {111: 111}, {}], ll)
 
       ll = range(3)
       map(ll, {k, v -> v == 8 || v
@@ -1814,11 +1814,11 @@ def Test_expr7_lambda()
             })
       assert_equal([111, 222, 111], ll)
 
-      var dl = [{'key': 0}, {'key': 22}]->filter({ _, v -> v['key'] })
-      assert_equal([{'key': 22}], dl)
+      var dl = [{key: 0}, {key: 22}]->filter({ _, v -> v['key'] })
+      assert_equal([{key: 22}], dl)
 
-      dl = [{'key': 12}, {'foo': 34}]
-      assert_equal([{'key': 12}], filter(dl,
+      dl = [{key: 12}, {['foo']: 34}]
+      assert_equal([{key: 12}], filter(dl,
             {_, v -> has_key(v, 'key') ? v['key'] == 12 : 0}))
 
       assert_equal(false, LambdaWithComments()(0))
@@ -1846,9 +1846,9 @@ def Test_expr7_lambda()
         'E1106: 2 arguments too many')
   CheckDefFailure(["echo 'asdf'->{a -> a}(x)"], 'E1001:', 1)
 
-  CheckDefSuccess(['var Fx = {a -> #{k1: 0,', ' k2: 1}}'])
-  CheckDefFailure(['var Fx = {a -> #{k1: 0', ' k2: 1}}'], 'E722:', 2)
-  CheckDefFailure(['var Fx = {a -> #{k1: 0,', ' k2 1}}'], 'E720:', 2)
+  CheckDefSuccess(['var Fx = {a -> {k1: 0,', ' k2: 1}}'])
+  CheckDefFailure(['var Fx = {a -> {k1: 0', ' k2: 1}}'], 'E722:', 2)
+  CheckDefFailure(['var Fx = {a -> {k1: 0,', ' k2 1}}'], 'E720:', 2)
 
   CheckDefSuccess(['var Fx = {a -> [0,', ' 1]}'])
   CheckDefFailure(['var Fx = {a -> [0', ' 1]}'], 'E696:', 2)
@@ -1894,59 +1894,68 @@ def Test_expr7_dict()
   var lines =<< trim END
       assert_equal(g:dict_empty, {})
       assert_equal(g:dict_empty, {  })
-      assert_equal(g:dict_one, {'one': 1})
+      assert_equal(g:dict_one, {['one']: 1})
       var key = 'one'
       var val = 1
       assert_equal(g:dict_one, {[key]: val})
 
       var numbers: dict<number> = {a: 1, b: 2, c: 3}
-      numbers = #{a: 1}
-      numbers = #{}
+      numbers = {a: 1}
+      numbers = {}
 
       var strings: dict<string> = {a: 'a', b: 'b', c: 'c'}
-      strings = #{a: 'x'}
-      strings = #{}
+      strings = {a: 'x'}
+      strings = {}
+
+      var dash = {xx-x: 8}
+      assert_equal({['xx-x']: 8}, dash)
+
+      var dnr = {8: 8}
+      assert_equal({['8']: 8}, dnr)
 
       var mixed: dict<any> = {a: 'a', b: 42}
-      mixed = #{a: 'x'}
-      mixed = #{a: 234}
-      mixed = #{}
+      mixed = {a: 'x'}
+      mixed = {a: 234}
+      mixed = {}
 
-      var dictlist: dict<list<string>> = #{absent: [], present: ['hi']}
-      dictlist = #{absent: ['hi'], present: []}
-      dictlist = #{absent: [], present: []}
+      var dictlist: dict<list<string>> = {absent: [], present: ['hi']}
+      dictlist = {absent: ['hi'], present: []}
+      dictlist = {absent: [], present: []}
 
-      var dictdict: dict<dict<string>> = #{one: #{a: 'text'}, two: #{}}
-      dictdict = #{one: #{}, two: #{a: 'text'}}
-      dictdict = #{one: #{}, two: #{}}
+      var dictdict: dict<dict<string>> = {one: {a: 'text'}, two: {}}
+      dictdict = {one: {}, two: {a: 'text'}}
+      dictdict = {one: {}, two: {}}
 
-      assert_equal({'': 0}, {matchstr('string', 'wont match'): 0})
+      assert_equal({['']: 0}, {[matchstr('string', 'wont match')]: 0})
 
       assert_equal(g:test_space_dict, {['']: 'empty', [' ']: 'space'})
       assert_equal(g:test_hash_dict, {one: 1, two: 2})
   END
   CheckDefAndScriptSuccess(lines)
  
-  CheckDefFailure(["var x = #{a:8}"], 'E1069:', 1)
-  CheckDefFailure(["var x = #{a : 8}"], 'E1068:', 1)
-  CheckDefFailure(["var x = #{a :8}"], 'E1068:', 1)
-  CheckDefFailure(["var x = #{a: 8 , b: 9}"], 'E1068:', 1)
-  CheckDefFailure(["var x = #{a: 1,b: 2}"], 'E1069:', 1)
+  # legacy syntax doesn't work
+  CheckDefFailure(["var x = #{key: 8}"], 'E1097:', 2)
+  CheckDefFailure(["var x = {'key': 8}"], 'E1014:', 1)
+  CheckDefFailure(["var x = 'a' .. #{a: 1}"], 'E1097:', 2)
 
-  CheckDefFailure(["var x = #{8: 8}"], 'E1014:', 1)
-  CheckDefFailure(["var x = #{xxx}"], 'E720:', 1)
-  CheckDefFailure(["var x = #{xxx: 1", "var y = 2"], 'E722:', 2)
-  CheckDefFailure(["var x = #{xxx: 1,"], 'E723:', 2)
-  CheckDefFailure(["var x = {'a': xxx}"], 'E1001:', 1)
-  CheckDefFailure(["var x = {xx-x: 8}"], 'E1001:', 1)
-  CheckDefFailure(["var x = #{a: 1, a: 2}"], 'E721:', 1)
+  CheckDefFailure(["var x = {a:8}"], 'E1069:', 1)
+  CheckDefFailure(["var x = {a : 8}"], 'E1059:', 1)
+  CheckDefFailure(["var x = {a :8}"], 'E1059:', 1)
+  CheckDefFailure(["var x = {a: 8 , b: 9}"], 'E1068:', 1)
+  CheckDefFailure(["var x = {a: 1,b: 2}"], 'E1069:', 1)
+
+  CheckDefFailure(["var x = {xxx}"], 'E720:', 1)
+  CheckDefFailure(["var x = {xxx: 1", "var y = 2"], 'E722:', 2)
+  CheckDefFailure(["var x = {xxx: 1,"], 'E723:', 2)
+  CheckDefFailure(["var x = {['a']: xxx}"], 'E1001:', 1)
+  CheckDefFailure(["var x = {a: 1, a: 2}"], 'E721:', 1)
   CheckDefExecFailure(["var x = g:anint.member"], 'E715:', 1)
   CheckDefExecFailure(["var x = g:dict_empty.member"], 'E716:', 1)
 
-  CheckDefExecFailure(['var x: dict<number> = #{a: 234, b: "1"}'], 'E1012:', 1)
-  CheckDefExecFailure(['var x: dict<number> = #{a: "x", b: 134}'], 'E1012:', 1)
-  CheckDefExecFailure(['var x: dict<string> = #{a: 234, b: "1"}'], 'E1012:', 1)
-  CheckDefExecFailure(['var x: dict<string> = #{a: "x", b: 134}'], 'E1012:', 1)
+  CheckDefExecFailure(['var x: dict<number> = {a: 234, b: "1"}'], 'E1012:', 1)
+  CheckDefExecFailure(['var x: dict<number> = {a: "x", b: 134}'], 'E1012:', 1)
+  CheckDefExecFailure(['var x: dict<string> = {a: 234, b: "1"}'], 'E1012:', 1)
+  CheckDefExecFailure(['var x: dict<string> = {a: "x", b: 134}'], 'E1012:', 1)
 
   CheckDefFailure(['var x = ({'], 'E723:', 2)
   CheckDefExecFailure(['{}[getftype("")]'], 'E716: Key not present in Dictionary: ""', 1)
@@ -1956,89 +1965,89 @@ def Test_expr7_dict_vim9script()
   var lines =<< trim END
       vim9script
       var d = {
-		'one':
+		['one']:
 		   1,
-		'two': 2,
+		['two']: 2,
 		   }
-      assert_equal({'one': 1, 'two': 2}, d)
+      assert_equal({one: 1, two: 2}, d)
 
       d = {  # comment
-		'one':
+		['one']:
                 # comment
 
 		   1,
                 # comment
                 # comment
-		'two': 2,
+		['two']: 2,
 		   }
-      assert_equal({'one': 1, 'two': 2}, d)
+      assert_equal({one: 1, two: 2}, d)
   END
   CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
-      var d = { "one": "one", "two": "two", }
-      assert_equal({'one': 'one', 'two': 'two'}, d)
+      var d = { ["one"]: "one", ["two"]: "two", }
+      assert_equal({one: 'one', two: 'two'}, d)
   END
   CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
-      var d = #{one: 1,
+      var d = {one: 1,
 		two: 2,
 	       }
-      assert_equal({'one': 1, 'two': 2}, d)
+      assert_equal({one: 1, two: 2}, d)
   END
   CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
-      var d = #{one:1, two: 2}
+      var d = {one:1, two: 2}
   END
   CheckScriptFailure(lines, 'E1069:', 2)
 
   lines =<< trim END
       vim9script
-      var d = #{one: 1,two: 2}
+      var d = {one: 1,two: 2}
   END
   CheckScriptFailure(lines, 'E1069:', 2)
 
   lines =<< trim END
       vim9script
-      var d = #{one : 1}
+      var d = {one : 1}
+  END
+  CheckScriptFailure(lines, 'E1059:', 2)
+
+  lines =<< trim END
+      vim9script
+      var d = {one:1}
+  END
+  CheckScriptFailure(lines, 'E1069:', 2)
+
+  lines =<< trim END
+      vim9script
+      var d = {one: 1 , two: 2}
   END
   CheckScriptFailure(lines, 'E1068:', 2)
 
   lines =<< trim END
-      vim9script
-      var d = #{one:1}
-  END
-  CheckScriptFailure(lines, 'E1069:', 2)
-
-  lines =<< trim END
-      vim9script
-      var d = #{one: 1 , two: 2}
-  END
-  CheckScriptFailure(lines, 'E1068:', 2)
-
-  lines =<< trim END
     vim9script
-    var l: dict<number> = #{a: 234, b: 'x'}
+    var l: dict<number> = {a: 234, b: 'x'}
   END
   CheckScriptFailure(lines, 'E1012:', 2)
   lines =<< trim END
     vim9script
-    var l: dict<number> = #{a: 'x', b: 234}
+    var l: dict<number> = {a: 'x', b: 234}
   END
   CheckScriptFailure(lines, 'E1012:', 2)
   lines =<< trim END
     vim9script
-    var l: dict<string> = #{a: 'x', b: 234}
+    var l: dict<string> = {a: 'x', b: 234}
   END
   CheckScriptFailure(lines, 'E1012:', 2)
   lines =<< trim END
     vim9script
-    var l: dict<string> = #{a: 234, b: 'x'}
+    var l: dict<string> = {a: 234, b: 'x'}
   END
   CheckScriptFailure(lines, 'E1012:', 2)
 
@@ -2047,7 +2056,7 @@ def Test_expr7_dict_vim9script()
       def Failing()
         job_stop()
       enddef
-      var dict = #{name: Failing}
+      var dict = {name: Failing}
   END
   if has('channel')
     CheckScriptFailure(lines, 'E119:', 1)
@@ -2067,15 +2076,15 @@ def Test_expr_member()
 		  ])
   assert_equal(1, d
   	.one)
-  d = {'1': 1, '_': 2}
+  d = {1: 1, _: 2}
   assert_equal(1, d
   	.1)
   assert_equal(2, d
   	._)
 
   # getting the one member should clear the dict after getting the item
-  assert_equal('one', #{one: 'one'}.one)
-  assert_equal('one', #{one: 'one'}[g:oneString])
+  assert_equal('one', {one: 'one'}.one)
+  assert_equal('one', {one: 'one'}[g:oneString])
 
   CheckDefFailure(["var x = g:dict_one.#$!"], 'E1002:', 1)
   CheckDefExecFailure(["var d: dict<any>", "echo d['a']"], 'E716:', 2)
@@ -2141,7 +2150,7 @@ def Test_expr7_any_index_slice()
     assert_equal([], g:testlist[1:-4])
     assert_equal([], g:testlist[1:-9])
 
-    g:testdict = #{a: 1, b: 2}
+    g:testdict = {a: 1, b: 2}
     assert_equal(1, g:testdict['a'])
     assert_equal(2, g:testdict['b'])
   END
@@ -2172,7 +2181,7 @@ enddef
 def Test_expr_member_vim9script()
   var lines =<< trim END
       vim9script
-      var d = #{one:
+      var d = {one:
       		'one',
 		two: 'two',
 		1: 1,
@@ -2406,7 +2415,7 @@ def Test_expr7_not()
 
       assert_equal(true, !test_null_dict())
       assert_equal(true, !{})
-      assert_equal(false, !{'yes': 'no'})
+      assert_equal(false, !{yes: 'no'})
 
       if has('channel')
 	assert_equal(true, !test_null_job())
@@ -2433,7 +2442,7 @@ func Test_expr7_fails()
   call CheckDefFailure(["var x = +'xx'"], "E1030:", 1)
   call CheckDefFailure(["var x = -0z12"], "E974:", 1)
   call CheckDefExecFailure(["var x = -[8]"], "E39:", 1)
-  call CheckDefExecFailure(["var x = -{'a': 1}"], "E39:", 1)
+  call CheckDefExecFailure(["var x = -{a: 1}"], "E39:", 1)
 
   call CheckDefFailure(["var x = @"], "E1002:", 1)
   call CheckDefFailure(["var x = @<"], "E354:", 1)
@@ -2464,8 +2473,8 @@ func Test_expr7_fails()
   call CheckDefFailure(["'yes'->", "Echo()"], 'E488: Trailing characters: ->', 1)
 
   call CheckDefExecFailure(["[1, 2->len()"], 'E697:', 2)
-  call CheckDefExecFailure(["#{a: 1->len()"], 'E722:', 1)
-  call CheckDefExecFailure(["{'a': 1->len()"], 'E723:', 2)
+  call CheckDefExecFailure(["{a: 1->len()"], 'E451:', 1)
+  call CheckDefExecFailure(["{['a']: 1->len()"], 'E723:', 2)
 endfunc
 
 let g:Funcrefs = [function('add')]
@@ -2507,7 +2516,7 @@ def Test_expr7_trailing()
   assert_equal([2, 5, 8], l)
 
   # dict member
-  var d = #{key: 123}
+  var d = {key: 123}
   assert_equal(123, d.key)
 enddef
 
@@ -2594,7 +2603,7 @@ enddef
 def Test_expr7_dict_subscript()
   var lines =<< trim END
       vim9script
-      var l = [#{lnum: 2}, #{lnum: 1}]
+      var l = [{lnum: 2}, {lnum: 1}]
       var res = l[0].lnum > l[1].lnum
       assert_true(res)
   END
@@ -2629,7 +2638,7 @@ def Test_expr7_subscript_linebreak()
   assert_equal('1', l[
 	1])
 
-  var d = #{one: 33}
+  var d = {one: 33}
   assert_equal(33, d.
 	one)
 enddef
@@ -2643,9 +2652,9 @@ def Test_expr7_method_call()
   bwipe!
 
   var bufnr = bufnr()
-  var loclist = [#{bufnr: bufnr, lnum: 42, col: 17, text: 'wrong'}]
+  var loclist = [{bufnr: bufnr, lnum: 42, col: 17, text: 'wrong'}]
   loclist->setloclist(0)
-  assert_equal([#{bufnr: bufnr,
+  assert_equal([{bufnr: bufnr,
   		lnum: 42,
 		col: 17,
 		text: 'wrong',
@@ -2657,7 +2666,7 @@ def Test_expr7_method_call()
 		module: ''}
 		], getloclist(0))
 
-  var result: bool = get(#{n: 0}, 'n', 0)
+  var result: bool = get({n: 0}, 'n', 0)
   assert_equal(false, result)
 enddef
 

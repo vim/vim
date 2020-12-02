@@ -177,14 +177,14 @@ def Test_const()
     cl[1] = 88
     constlist->assert_equal([1, [77, 88], 3])
 
-    var vardict = #{five: 5, six: 6}
-    const constdict = #{one: 1, two: vardict, three: 3}
+    var vardict = {five: 5, six: 6}
+    const constdict = {one: 1, two: vardict, three: 3}
     vardict['five'] = 55
     # TODO: does not work yet
     # constdict['two']['six'] = 66
     var cd = constdict['two']
     cd['six'] = 66
-    constdict->assert_equal(#{one: 1, two: #{five: 55, six: 66}, three: 3})
+    constdict->assert_equal({one: 1, two: {five: 55, six: 66}, three: 3})
   END
   CheckDefAndScriptSuccess(lines)
 enddef
@@ -212,14 +212,14 @@ def Test_const_bang()
   CheckScriptFailure(['vim9script'] + lines, 'E684:', 3)
 
   lines =<< trim END
-      const dd = #{one: 1, two: 2}
+      const dd = {one: 1, two: 2}
       dd["one"] = 99
   END
   CheckDefExecFailure(lines, 'E1121:', 2)
   CheckScriptFailure(['vim9script'] + lines, 'E741:', 3)
 
   lines =<< trim END
-      const dd = #{one: 1, two: 2}
+      const dd = {one: 1, two: 2}
       dd["three"] = 99
   END
   CheckDefExecFailure(lines, 'E1120:')
@@ -385,7 +385,7 @@ def Test_try_catch()
   endtry
   assert_equal(121, n)
 
-  var d = #{one: 1}
+  var d = {one: 1}
   try
     n = d[g:astring]
   catch /E716:/
@@ -775,7 +775,7 @@ def Test_vim9_import_export()
     g:imported_func = Exported()
 
     def GetExported(): string
-      var local_dict = #{ref: Exported}
+      var local_dict = {ref: Exported}
       return local_dict.ref()
     enddef
     g:funcref_result = GetExported()
@@ -1133,7 +1133,7 @@ def Run_Test_import_fails_on_command_line()
   END
   writefile(export, 'XexportCmd.vim')
 
-  var buf = RunVimInTerminal('-c "import Foo from ''./XexportCmd.vim''"', #{
+  var buf = RunVimInTerminal('-c "import Foo from ''./XexportCmd.vim''"', {
                 rows: 6, wait_for_ruler: 0})
   WaitForAssert({-> assert_match('^E1094:', term_getline(buf, 5))})
 
@@ -1733,7 +1733,7 @@ def Test_execute_cmd()
   execute 'echomsg' (n ? '"true"' : '"no"')
   assert_match('^true$', Screenline(&lines))
 
-  echomsg [1, 2, 3] #{a: 1, b: 2}
+  echomsg [1, 2, 3] {a: 1, b: 2}
   assert_match('^\[1, 2, 3\] {''a'': 1, ''b'': 2}$', Screenline(&lines))
 
   CheckDefFailure(['execute xxx'], 'E1001:', 1)
@@ -2024,26 +2024,26 @@ def Test_automatic_line_continuation()
   assert_equal(['one', 'two', 'three'], mylist)
 
   var mydict = {
-      'one': 1,
-      'two': 2,
-      'three':
+      ['one']: 1,
+      ['two']: 2,
+      ['three']:
           3,
       } # comment
-  assert_equal({'one': 1, 'two': 2, 'three': 3}, mydict)
-  mydict = #{
+  assert_equal({one: 1, two: 2, three: 3}, mydict)
+  mydict = {
       one: 1,  # comment
       two:     # comment
            2,  # comment
       three: 3 # comment
       }
-  assert_equal(#{one: 1, two: 2, three: 3}, mydict)
-  mydict = #{
+  assert_equal({one: 1, two: 2, three: 3}, mydict)
+  mydict = {
       one: 1, 
       two: 
            2, 
       three: 3 
       }
-  assert_equal(#{one: 1, two: 2, three: 3}, mydict)
+  assert_equal({one: 1, two: 2, three: 3}, mydict)
 
   assert_equal(
         ['one', 'two', 'three'],
@@ -2864,7 +2864,7 @@ def Run_Test_define_func_at_command_line()
   END
   writefile([''], 'Xdidcmd')
   writefile(lines, 'XcallFunc')
-  var buf = RunVimInTerminal('-S XcallFunc', #{rows: 6})
+  var buf = RunVimInTerminal('-S XcallFunc', {rows: 6})
   # define Afunc() on the command line
   term_sendkeys(buf, ":def Afunc()\<CR>Bfunc()\<CR>enddef\<CR>")
   term_sendkeys(buf, ":call CheckAndQuit()\<CR>")
@@ -2959,7 +2959,7 @@ def Test_catch_exception_in_callback()
         g:caught = 'yes'
       endtry
     enddef
-    popup_menu('popup', #{callback: Callback})
+    popup_menu('popup', {callback: Callback})
     feedkeys("\r", 'xt')
   END
   CheckScriptSuccess(lines)
@@ -2981,7 +2981,7 @@ def Test_no_unknown_error_after_error()
           sleep 1m
           source += l
       enddef
-      var myjob = job_start('echo burp', #{out_cb: Out_cb, exit_cb: Exit_cb, mode: 'raw'})
+      var myjob = job_start('echo burp', {out_cb: Out_cb, exit_cb: Exit_cb, mode: 'raw'})
       sleep 100m
   END
   writefile(lines, 'Xdef')

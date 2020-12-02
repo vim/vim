@@ -2172,7 +2172,7 @@ func Test_popup_scrollbar()
     endfunc
 
     def CreatePopup(text: list<string>)
-      popup_create(text, #{
+      popup_create(text, {
 	    \ minwidth: 30,
 	    \ maxwidth: 30,
 	    \ minheight: 4,
@@ -2717,7 +2717,7 @@ def Popupwin_close_prevwin()
   split
   wincmd b
   assert_equal(2, winnr())
-  var buf = term_start(&shell, #{hidden: 1})
+  var buf = term_start(&shell, {hidden: 1})
   popup_create(buf, {})
   TermWait(buf, 100)
   popup_clear(true)

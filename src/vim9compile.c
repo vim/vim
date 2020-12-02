@@ -2127,12 +2127,12 @@ free_imported(cctx_T *cctx)
 }
 
 /*
- * Return TRUE if "p" points at a "#" but not at "#{".
+ * Return TRUE if "p" points at a "#".  Does not check for white space.
  */
     int
 vim9_comment_start(char_u *p)
 {
-    return p[0] == '#' && p[1] != '{';
+    return p[0] == '#';
 }
 
 /*
@@ -2840,14 +2840,6 @@ to_name_const_end(char_u *arg)
 	if (eval_list(&p, &rettv, NULL, FALSE) == FAIL)
 	    p = arg;
     }
-    else if (p == arg && *arg == '#' && arg[1] == '{')
-    {
-	// Can be "#{a: 1}->Func()".
-	++p;
-	if (eval_dict(&p, &rettv, NULL, TRUE) == FAIL)
-	    p = arg;
-    }
-
     return p;
 }
 
@@ -2999,12 +2991,12 @@ compile_lambda_call(char_u **arg, cctx_T *cctx)
 }
 
 /*
- * parse a dict: {'key': val} or #{key: val}
+ * parse a dict: {key: val, [key]: val}
  * "*arg" points to the '{'.
  * ppconst->pp_is_const is set if all item values are a constant.
  */
     static int
-compile_dict(char_u **arg, cctx_T *cctx, int literal, ppconst_T *ppconst)
+compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 {
     garray_T	*instr = &cctx->ctx_instr;
     garray_T	*stack = &cctx->ctx_type_stack;
@@ -3022,7 +3014,6 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal, ppconst_T *ppconst)
     for (;;)
     {
 	char_u	    *key = NULL;
-	char_u	    *end;
 
 	if (may_get_next_line(whitep, arg, cctx) == FAIL)
 	{
@@ -3033,14 +3024,12 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal, ppconst_T *ppconst)
 	if (**arg == '}')
 	    break;
 
-	// Eventually {name: value} will use "name" as a literal key and
-	// {[expr]: value} for an evaluated key.
-	// Temporarily: if "name" is indeed a valid key, or "[expr]" is
-	// used, use the new method, like JavaScript.  Otherwise fall back
-	// to the old method.
-	end = to_name_end(*arg, FALSE);
-	if (literal || *end == ':')
+	// {name: value} uses "name" as a literal key and
+	// {[expr]: value} uses an evaluated key.
+	if (**arg != '[')
 	{
+	    char_u  *end = skip_literal_key(*arg);
+
 	    if (end == *arg)
 	    {
 		semsg(_(e_invalid_key_str), *arg);
@@ -3054,10 +3043,8 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal, ppconst_T *ppconst)
 	else
 	{
 	    isn_T	*isn;
-	    int		has_bracket = **arg == '[';
 
-	    if (has_bracket)
-		*arg = skipwhite(*arg + 1);
+	    *arg = skipwhite(*arg + 1);
 	    if (compile_expr0(arg, cctx) == FAIL)
 		return FAIL;
 	    isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
@@ -3071,16 +3058,13 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal, ppconst_T *ppconst)
 						     FALSE, FALSE) == FAIL)
 		    return FAIL;
 	    }
-	    if (has_bracket)
+	    *arg = skipwhite(*arg);
+	    if (**arg != ']')
 	    {
-		*arg = skipwhite(*arg);
-		if (**arg != ']')
-		{
-		    emsg(_(e_missing_matching_bracket_after_dict_key));
-		    return FAIL;
-		}
-		++*arg;
+		emsg(_(e_missing_matching_bracket_after_dict_key));
+		return FAIL;
 	    }
+	    ++*arg;
 	}
 
 	// Check for duplicate keys, if using string keys.
@@ -3766,8 +3750,7 @@ compile_subscript(
  *  $VAR		environment variable
  *  (expression)	nested expression
  *  [expr, expr]	List
- *  {key: val, key: val}   Dictionary
- *  #{key: val, key: val}  Dictionary with literal keys
+ *  {key: val, [key]: val}   Dictionary
  *
  *  Also handle:
  *  ! in front		logical NOT
@@ -3884,18 +3867,6 @@ compile_expr7(
 		    break;
 
 	/*
-	 * Dictionary: #{key: val, key: val}
-	 */
-	case '#':   if ((*arg)[1] == '{')
-		    {
-			++*arg;
-			ret = compile_dict(arg, cctx, TRUE, ppconst);
-		    }
-		    else
-			ret = NOTDONE;
-		    break;
-
-	/*
 	 * Lambda: {arg, arg -> expr}
 	 * Dictionary: {'key': val, 'key': val}
 	 */
@@ -3910,7 +3881,7 @@ compile_expr7(
 			if (ret != FAIL && *start == '>')
 			    ret = compile_lambda(arg, cctx);
 			else
-			    ret = compile_dict(arg, cctx, FALSE, ppconst);
+			    ret = compile_dict(arg, cctx, ppconst);
 		    }
 		    break;
 
@@ -4200,7 +4171,7 @@ compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	}
 
 	*arg = skipwhite(op + oplen);
-	if (may_get_next_line(op + oplen, arg, cctx) == FAIL)
+	if (may_get_next_line_error(op + oplen, arg, cctx) == FAIL)
 	    return FAIL;
 
 	// get the second expression
@@ -7484,13 +7455,9 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	switch (*ea.cmd)
 	{
 	    case '#':
-		// "#" starts a comment, but "#{" does not.
-		if (ea.cmd[1] != '{')
-		{
-		    line = (char_u *)"";
-		    continue;
-		}
-		break;
+		// "#" starts a comment
+		line = (char_u *)"";
+		continue;
 
 	    case '}':
 		{

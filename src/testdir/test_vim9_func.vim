@@ -30,7 +30,7 @@ def TestCompilingError()
   END
   call writefile(lines, 'XTest_compile_error')
   var buf = RunVimInTerminal('-S XTest_compile_error',
-              #{rows: 10, wait_for_ruler: 0})
+              {rows: 10, wait_for_ruler: 0})
   var text = ''
   for loop in range(100)
     text = ''
@@ -838,16 +838,16 @@ def Test_vim9script_call()
     def DictFunc(arg: dict<number>)
        dictvar = arg
     enddef
-    {'a': 1, 'b': 2}->DictFunc()
-    dictvar->assert_equal(#{a: 1, b: 2})
+    {a: 1, b: 2}->DictFunc()
+    dictvar->assert_equal({a: 1, b: 2})
     def CompiledDict()
-      {'a': 3, 'b': 4}->DictFunc()
+      {a: 3, b: 4}->DictFunc()
     enddef
     CompiledDict()
-    dictvar->assert_equal(#{a: 3, b: 4})
+    dictvar->assert_equal({a: 3, b: 4})
 
-    #{a: 3, b: 4}->DictFunc()
-    dictvar->assert_equal(#{a: 3, b: 4})
+    {a: 3, b: 4}->DictFunc()
+    dictvar->assert_equal({a: 3, b: 4})
 
     ('text')->MyFunc()
     name->assert_equal('text')
@@ -1272,7 +1272,7 @@ def Test_error_reporting()
   lines =<< trim END
     vim9script
     def Func()
-      var db = #{foo: 1, bar: 2}
+      var db = {foo: 1, bar: 2}
       # comment
       var x = db.asdf
     enddef
@@ -1607,7 +1607,7 @@ def Test_ignore_silent_error_in_filter()
           return popup_filter_menu(winid, key)
       enddef
 
-      popup_create('popup', #{filter: Filter})
+      popup_create('popup', {filter: Filter})
       feedkeys("o\r", 'xnt')
   END
   CheckScriptSuccess(lines)
@@ -1639,7 +1639,7 @@ def Test_closure_in_map()
   writefile(['222'], 'XclosureDir/file2')
   writefile(['333'], 'XclosureDir/tdir/file3')
 
-  TreeWalk('XclosureDir')->assert_equal(['file1', 'file2', {'tdir': ['file3']}])
+  TreeWalk('XclosureDir')->assert_equal(['file1', 'file2', {tdir: ['file3']}])
 
   delete('XclosureDir', 'rf')
 enddef
@@ -1672,20 +1672,20 @@ enddef
 
 def Test_partial_call()
   var Xsetlist = function('setloclist', [0])
-  Xsetlist([], ' ', {'title': 'test'})
-  getloclist(0, {'title': 1})->assert_equal({'title': 'test'})
+  Xsetlist([], ' ', {title: 'test'})
+  getloclist(0, {title: 1})->assert_equal({title: 'test'})
 
   Xsetlist = function('setloclist', [0, [], ' '])
-  Xsetlist({'title': 'test'})
-  getloclist(0, {'title': 1})->assert_equal({'title': 'test'})
+  Xsetlist({title: 'test'})
+  getloclist(0, {title: 1})->assert_equal({title: 'test'})
 
   Xsetlist = function('setqflist')
-  Xsetlist([], ' ', {'title': 'test'})
-  getqflist({'title': 1})->assert_equal({'title': 'test'})
+  Xsetlist([], ' ', {title: 'test'})
+  getqflist({title: 1})->assert_equal({title: 'test'})
 
   Xsetlist = function('setqflist', [[], ' '])
-  Xsetlist({'title': 'test'})
-  getqflist({'title': 1})->assert_equal({'title': 'test'})
+  Xsetlist({title: 'test'})
+  getqflist({title: 1})->assert_equal({title: 'test'})
 
   var Len: func: number = function('len', ['word'])
   assert_equal(4, Len())

@@ -783,19 +783,30 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
 }
 
 /*
+ * Advance over a literal key, including "-".  If the first character is not a
+ * literal key character then "key" is returned.
+ */
+    char_u *
+skip_literal_key(char_u *key)
+{
+    char_u *p;
+
+    for (p = key; ASCII_ISALNUM(*p) || *p == '_' || *p == '-'; ++p)
+	;
+    return p;
+}
+
+/*
  * Get the key for #{key: val} into "tv" and advance "arg".
  * Return FAIL when there is no valid key.
  */
     static int
 get_literal_key(char_u **arg, typval_T *tv)
 {
-    char_u *p;
+    char_u *p = skip_literal_key(*arg);
 
-    if (!ASCII_ISALNUM(**arg) && **arg != '_' && **arg != '-')
+    if (p == *arg)
 	return FAIL;
-
-    for (p = *arg; ASCII_ISALNUM(*p) || *p == '_' || *p == '-'; ++p)
-	;
     tv->v_type = VAR_STRING;
     tv->vval.v_string = vim_strnsave(*arg, p - *arg);
 
@@ -851,17 +862,15 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
     *arg = skipwhite_and_linebreak(*arg + 1, evalarg);
     while (**arg != '}' && **arg != NUL)
     {
-	char_u *p = to_name_end(*arg, FALSE);
+	int	has_bracket = vim9script && **arg == '[';
 
-	if (literal || (vim9script && *p == ':'))
+	if (literal || (vim9script && !has_bracket))
 	{
 	    if (get_literal_key(arg, &tvkey) == FAIL)
 		goto failret;
 	}
 	else
 	{
-	    int		has_bracket = vim9script && **arg == '[';
-
 	    if (has_bracket)
 		*arg = skipwhite(*arg + 1);
 	    if (eval1(arg, &tvkey, evalarg) == FAIL)	// recursive!

@@ -360,26 +360,26 @@ def Test_extend_dict()
   var lines =<< trim END
       vim9script
       var d: dict<number>
-      extend(d, #{a: 1})
-      assert_equal(#{a: 1}, d)
+      extend(d, {a: 1})
+      assert_equal({a: 1}, d)
 
       var d2: dict<number>
       d2['one'] = 1
-      assert_equal(#{one: 1}, d2)
+      assert_equal({one: 1}, d2)
   END
   CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
       var d: dict<string> = test_null_dict()
-      extend(d, #{a: 'x'})
-      assert_equal(#{a: 'x'}, d)
+      extend(d, {a: 'x'})
+      assert_equal({a: 'x'}, d)
   END
   CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
-      extend(test_null_dict(), #{a: 'x'})
+      extend(test_null_dict(), {a: 'x'})
   END
   CheckScriptFailure(lines, 'E1133:', 2)
 enddef
@@ -487,20 +487,20 @@ def Test_assignment_list_vim9script()
 enddef
 
 def Test_assignment_dict()
-  var dict1: dict<bool> = #{one: false, two: true}
-  var dict2: dict<number> = #{one: 1, two: 2}
-  var dict3: dict<string> = #{key: 'value'}
-  var dict4: dict<any> = #{one: 1, two: '2'}
-  var dict5: dict<blob> = #{one: 0z01, two: 0z02}
+  var dict1: dict<bool> = {one: false, two: true}
+  var dict2: dict<number> = {one: 1, two: 2}
+  var dict3: dict<string> = {key: 'value'}
+  var dict4: dict<any> = {one: 1, two: '2'}
+  var dict5: dict<blob> = {one: 0z01, two: 0z02}
 
   # overwrite
   dict3['key'] = 'another'
-  assert_equal(dict3, #{key: 'another'})
+  assert_equal(dict3, {key: 'another'})
   dict3.key = 'yet another'
-  assert_equal(dict3, #{key: 'yet another'})
+  assert_equal(dict3, {key: 'yet another'})
 
   var lines =<< trim END
-    var dd = #{one: 1}
+    var dd = {one: 1}
     dd.one) = 2
   END
   CheckDefFailure(lines, 'E15:', 2)
@@ -508,10 +508,10 @@ def Test_assignment_dict()
   # empty key can be used
   var dd = {}
   dd[""] = 6
-  assert_equal({'': 6}, dd)
+  assert_equal({['']: 6}, dd)
 
   # type becomes dict<any>
-  var somedict = rand() > 0 ? #{a: 1, b: 2} : #{a: 'a', b: 'b'}
+  var somedict = rand() > 0 ? {a: 1, b: 2} : {a: 'a', b: 'b'}
 
   # assignment to script-local dict
   lines =<< trim END
@@ -521,7 +521,7 @@ def Test_assignment_dict()
       test['a'] = 43
       return test
     enddef
-    assert_equal(#{a: 43}, FillDict())
+    assert_equal({a: 43}, FillDict())
   END
   CheckScriptSuccess(lines)
 
@@ -544,7 +544,7 @@ def Test_assignment_dict()
       g:test['a'] = 43
       return g:test
     enddef
-    assert_equal(#{a: 43}, FillDict())
+    assert_equal({a: 43}, FillDict())
   END
   CheckScriptSuccess(lines)
 
@@ -556,7 +556,7 @@ def Test_assignment_dict()
       b:test['a'] = 43
       return b:test
     enddef
-    assert_equal(#{a: 43}, FillDict())
+    assert_equal({a: 43}, FillDict())
   END
   CheckScriptSuccess(lines)
 enddef
@@ -636,7 +636,7 @@ def Test_assignment_default()
 
     if has('unix') && executable('cat')
       # check with non-null job and channel, types must match
-      thejob = job_start("cat ", #{})
+      thejob = job_start("cat ", {})
       thechannel = job_getchannel(thejob)
       job_stop(thejob, 'kill')
     endif
@@ -827,8 +827,8 @@ def Test_assignment_failure()
   CheckDefFailure(['var name: list<string> = [123]'], 'expected list<string> but got list<number>')
   CheckDefFailure(['var name: list<number> = ["xx"]'], 'expected list<number> but got list<string>')
 
-  CheckDefFailure(['var name: dict<string> = #{key: 123}'], 'expected dict<string> but got dict<number>')
-  CheckDefFailure(['var name: dict<number> = #{key: "xx"}'], 'expected dict<number> but got dict<string>')
+  CheckDefFailure(['var name: dict<string> = {key: 123}'], 'expected dict<string> but got dict<number>')
+  CheckDefFailure(['var name: dict<number> = {key: "xx"}'], 'expected dict<number> but got dict<string>')
 
   CheckDefFailure(['var name = feedkeys("0")'], 'E1031:')
   CheckDefFailure(['var name: number = feedkeys("0")'], 'expected number but got void')
@@ -883,17 +883,17 @@ def Test_assign_dict()
   for i in range(3)
     nrd[i] = i
   endfor
-  assert_equal({'0': 0, '1': 1, '2': 2}, nrd)
+  assert_equal({0: 0, 1: 1, 2: 2}, nrd)
 
-  CheckDefFailure(["var d: dict<number> = #{a: '', b: true}"], 'E1012: Type mismatch; expected dict<number> but got dict<any>', 1)
-  CheckDefFailure(["var d: dict<dict<number>> = #{x: #{a: '', b: true}}"], 'E1012: Type mismatch; expected dict<dict<number>> but got dict<dict<any>>', 1)
+  CheckDefFailure(["var d: dict<number> = {a: '', b: true}"], 'E1012: Type mismatch; expected dict<number> but got dict<any>', 1)
+  CheckDefFailure(["var d: dict<dict<number>> = {x: {a: '', b: true}}"], 'E1012: Type mismatch; expected dict<dict<number>> but got dict<dict<any>>', 1)
 enddef
 
 def Test_assign_dict_unknown_type()
   var lines =<< trim END
       vim9script
       var mylist = []
-      mylist += [#{one: 'one'}]
+      mylist += [{one: 'one'}]
       def Func()
         var dd = mylist[0]
         assert_equal('one', dd.one)
@@ -905,7 +905,7 @@ def Test_assign_dict_unknown_type()
   lines =<< trim END
       vim9script
       var mylist = [[]]
-      mylist[0] += [#{one: 'one'}]
+      mylist[0] += [{one: 'one'}]
       def Func()
         var dd = mylist[0][0]
         assert_equal('one', dd.one)
@@ -1010,7 +1010,7 @@ def Test_let_declaration()
     g:other_var = other
 
     # type is inferred
-    s:dict = {'a': 222}
+    s:dict = {['a']: 222}
     def GetDictVal(key: any)
       g:dict_val = s:dict[key]
     enddef

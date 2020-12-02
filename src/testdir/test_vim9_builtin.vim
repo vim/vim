@@ -32,7 +32,7 @@ func Test_InternalFuncRetType()
     enddef
 
     def RetListAny(): list<any>
-      return items({'k': 'v'})
+      return items({k: 'v'})
     enddef
 
     def RetListString(): list<string>
@@ -197,10 +197,10 @@ def Test_extend_arg_types()
   assert_equal([1, 3, 2], extend([1, 2], [3], 1))
   assert_equal([1, 3, 2], extend([1, 2], [3], s:number_one))
 
-  assert_equal(#{a: 1, b: 2, c: 3}, extend(#{a: 1, b: 2}, #{c: 3}))
-  assert_equal(#{a: 1, b: 4}, extend(#{a: 1, b: 2}, #{b: 4}))
-  assert_equal(#{a: 1, b: 2}, extend(#{a: 1, b: 2}, #{b: 4}, 'keep'))
-  assert_equal(#{a: 1, b: 2}, extend(#{a: 1, b: 2}, #{b: 4}, s:string_keep))
+  assert_equal({a: 1, b: 2, c: 3}, extend({a: 1, b: 2}, {c: 3}))
+  assert_equal({a: 1, b: 4}, extend({a: 1, b: 2}, {b: 4}))
+  assert_equal({a: 1, b: 2}, extend({a: 1, b: 2}, {b: 4}, 'keep'))
+  assert_equal({a: 1, b: 2}, extend({a: 1, b: 2}, {b: 4}, s:string_keep))
 
   var res: list<dict<any>>
   extend(res, map([1, 2], {_, v -> {}}))
@@ -210,9 +210,9 @@ def Test_extend_arg_types()
   CheckDefFailure(['extend([1, 2], ["x"])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>')
   CheckDefFailure(['extend([1, 2], [3], "x")'], 'E1013: Argument 3: type mismatch, expected number but got string')
 
-  CheckDefFailure(['extend(#{a: 1}, 42)'], 'E1013: Argument 2: type mismatch, expected dict<number> but got number')
-  CheckDefFailure(['extend(#{a: 1}, #{b: "x"})'], 'E1013: Argument 2: type mismatch, expected dict<number> but got dict<string>')
-  CheckDefFailure(['extend(#{a: 1}, #{b: 2}, 1)'], 'E1013: Argument 3: type mismatch, expected string but got number')
+  CheckDefFailure(['extend({a: 1}, 42)'], 'E1013: Argument 2: type mismatch, expected dict<number> but got number')
+  CheckDefFailure(['extend({a: 1}, {b: "x"})'], 'E1013: Argument 2: type mismatch, expected dict<number> but got dict<string>')
+  CheckDefFailure(['extend({a: 1}, {b: 2}, 1)'], 'E1013: Argument 3: type mismatch, expected string but got number')
 enddef
 
 def Test_extend_return_type()
@@ -254,7 +254,7 @@ def Test_getbufinfo()
   edit Xtestfile1
   hide edit Xtestfile2
   hide enew
-  getbufinfo(#{bufloaded: true, buflisted: true, bufmodified: false})
+  getbufinfo({bufloaded: true, buflisted: true, bufmodified: false})
       ->len()->assert_equal(3)
   bwipe Xtestfile1 Xtestfile2
 enddef
@@ -297,16 +297,16 @@ def Test_getloclist_return_type()
   var l = getloclist(1)
   l->assert_equal([])
 
-  var d = getloclist(1, #{items: 0})
-  d->assert_equal(#{items: []})
+  var d = getloclist(1, {items: 0})
+  d->assert_equal({items: []})
 enddef
 
 def Test_getqflist_return_type()
   var l = getqflist()
   l->assert_equal([])
 
-  var d = getqflist(#{items: 0})
-  d->assert_equal(#{items: []})
+  var d = getqflist({items: 0})
+  d->assert_equal({items: []})
 enddef
 
 def Test_getreg()
@@ -368,7 +368,7 @@ def Test_insert()
 enddef
 
 def Test_keys_return_type()
-  const var: list<string> = #{a: 1, b: 2}->keys()
+  const var: list<string> = {a: 1, b: 2}->keys()
   var->assert_equal(['a', 'b'])
 enddef
 
@@ -388,7 +388,7 @@ enddef
 def Test_maparg()
   var lnum = str2nr(expand('<sflnum>'))
   map foo bar
-  maparg('foo', '', false, true)->assert_equal(#{
+  maparg('foo', '', false, true)->assert_equal({
         lnum: lnum + 1,
         script: 0,
         mode: ' ',
@@ -428,7 +428,7 @@ def Test_readdir()
 enddef
 
 def Test_remove_return_type()
-  var l = remove(#{one: [1, 2], two: [3, 4]}, 'one')
+  var l = remove({one: [1, 2], two: [3, 4]}, 'one')
   var res = 0
   for n in l
     res += n
@@ -466,8 +466,8 @@ def Test_searchcount()
   new
   setline(1, "foo bar")
   :/foo
-  searchcount(#{recompute: true})
-      ->assert_equal(#{
+  searchcount({recompute: true})
+      ->assert_equal({
           exact_match: 1,
           current: 1,
           total: 1,
@@ -496,8 +496,8 @@ def Test_setbufvar()
 enddef
 
 def Test_setloclist()
-  var items = [#{filename: '/tmp/file', lnum: 1, valid: true}]
-  var what = #{items: items}
+  var items = [{filename: '/tmp/file', lnum: 1, valid: true}]
+  var what = {items: items}
   setqflist([], ' ', what)
   setloclist(0, [], ' ', what)
 enddef
@@ -570,7 +570,7 @@ def Test_term_start()
   else
     botright new
     var winnr = winnr()
-    term_start(&shell, #{curwin: true})
+    term_start(&shell, {curwin: true})
     winnr()->assert_equal(winnr)
     bwipe!
   endif
@@ -586,7 +586,7 @@ enddef
 
 def Test_win_splitmove()
   split
-  win_splitmove(1, 2, #{vertical: true, rightbelow: true})
+  win_splitmove(1, 2, {vertical: true, rightbelow: true})
   close
 enddef
 
