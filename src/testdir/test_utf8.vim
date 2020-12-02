@@ -180,4 +180,13 @@ func Test_setcellwidths()
   call assert_fails('call setcellwidths([[0x33, 0x44, 2]])', 'E1114:')
 endfunc
 
+func Test_print_overlong()
+  " Text with more composing characters than MB_MAXBYTES.
+  new
+  call setline(1, 'axxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+  s/x/\=nr2char(1629)/g
+  print
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
