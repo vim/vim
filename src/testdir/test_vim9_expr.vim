@@ -1940,7 +1940,6 @@ def Test_expr7_dict()
   CheckDefFailure(["var x = {'a': xxx}"], 'E1001:', 1)
   CheckDefFailure(["var x = {xx-x: 8}"], 'E1001:', 1)
   CheckDefFailure(["var x = #{a: 1, a: 2}"], 'E721:', 1)
-  CheckDefFailure(["var x = #"], 'E1015:', 1)
   CheckDefExecFailure(["var x = g:anint.member"], 'E715:', 1)
   CheckDefExecFailure(["var x = g:dict_empty.member"], 'E716:', 1)
 

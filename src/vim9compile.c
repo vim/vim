@@ -5670,6 +5670,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    else if (oplen > 0)
 	    {
 		int	is_const = FALSE;
+		char_u	*wp;
 
 		// For "var = expr" evaluate the expression.
 		if (var_count == 0)
@@ -5694,7 +5695,10 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    if (new_local)
 			--cctx->ctx_locals.ga_len;
 		    instr_count = instr->ga_len;
-		    p = skipwhite(op + oplen);
+		    wp = op + oplen;
+		    p = skipwhite(wp);
+		    if (may_get_next_line_error(wp, &p, cctx) == FAIL)
+			goto theend;
 		    r = compile_expr0_ext(&p, cctx, &is_const);
 		    if (new_local)
 			++cctx->ctx_locals.ga_len;
@@ -5712,7 +5716,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    // For "[var, var] = expr" get the "var_idx" item from the
 		    // list.
 		    if (generate_GETITEM(cctx, var_idx) == FAIL)
-			return FAIL;
+			goto theend;
 		}
 
 		rhs_type = stack->ga_len == 0 ? &t_void

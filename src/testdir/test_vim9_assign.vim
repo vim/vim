@@ -225,6 +225,21 @@ def Test_assignment()
   END
 enddef
 
+def Test_assign_linebreak()
+  var nr: number
+  nr =
+      123
+  assert_equal(123, nr)
+
+  var n2: number
+  [nr, n2] =
+     [12, 34]
+  assert_equal(12, nr)
+  assert_equal(34, n2)
+
+  CheckDefFailure(["var x = #"], 'E1097:', 2)
+enddef
+
 def Test_assign_index()
   # list of list
   var l1: list<number>
