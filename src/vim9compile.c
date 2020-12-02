@@ -6486,6 +6486,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
     char_u	*arg_end;
     char_u	*name = NULL;
     char_u	*p;
+    char_u	*wp;
     int		var_count = 0;
     int		semicolon = FALSE;
     size_t	varlen;
@@ -6503,13 +6504,19 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	var_count = 1;
 
     // consume "in"
+    wp = p;
     p = skipwhite(p);
-    if (STRNCMP(p, "in", 2) != 0 || !VIM_ISWHITE(p[2]))
+    if (may_get_next_line_error(wp, &p, cctx) == FAIL)
+	return NULL;
+    if (STRNCMP(p, "in", 2) != 0 || !IS_WHITE_OR_NUL(p[2]))
     {
 	emsg(_(e_missing_in));
 	return NULL;
     }
-    p = skipwhite(p + 2);
+    wp = p + 2;
+    p = skipwhite(wp);
+    if (may_get_next_line_error(wp, &p, cctx) == FAIL)
+	return NULL;
 
     scope = new_scope(cctx, FOR_SCOPE);
     if (scope == NULL)

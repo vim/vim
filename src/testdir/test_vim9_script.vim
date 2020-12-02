@@ -1849,6 +1849,28 @@ def Test_for_loop()
     concat ..= str
   endfor
   assert_equal('onetwo', concat)
+
+  var total = 0
+  for nr in
+      [1, 2, 3]
+    total += nr
+  endfor
+  assert_equal(6, total)
+
+  total = 0
+  for nr
+    in [1, 2, 3]
+    total += nr
+  endfor
+  assert_equal(6, total)
+
+  total = 0
+  for nr
+    in
+    [1, 2, 3]
+    total += nr
+  endfor
+  assert_equal(6, total)
 enddef
 
 def Test_for_loop_fails()
