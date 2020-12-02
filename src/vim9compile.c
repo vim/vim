@@ -6617,6 +6617,12 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 		goto failed;
 	    }
 
+	    if (STRNCMP(name, "s:", 2) == 0)
+	    {
+		semsg(_(e_cannot_declare_script_variable_in_function), name);
+		goto failed;
+	    }
+
 	    // Reserve a variable to store "var".
 	    // TODO: check for type
 	    var_lvar = reserve_local(cctx, arg, varlen, FALSE, &t_any);

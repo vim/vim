@@ -1884,6 +1884,27 @@ def Test_for_loop_fails()
   CheckDefFailure(['for i in range(3)', 'echo 3'], 'E170:')
 enddef
 
+def Test_for_loop_script_var()
+  # cannot use s:var in a :def function
+  CheckDefFailure(['for s:var in range(3)', 'echo 3'], 'E1101:')
+
+  # can use s:var in Vim9 script, with or without s:
+  var lines =<< trim END
+    vim9script
+    var total = 0
+    for s:var in [1, 2, 3]
+      total += s:var
+    endfor
+    assert_equal(6, total)
+
+    total = 0
+    for var in [1, 2, 3]
+      total += var
+    endfor
+    assert_equal(6, total)
+  END
+enddef
+
 def Test_for_loop_unpack()
   var lines =<< trim END
       var result = []
