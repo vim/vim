@@ -1768,5 +1768,19 @@ def Test_reset_did_emsg()
   CheckScriptFailure(lines, 'E492:', 8)
 enddef
 
+def Test_abort_even_with_silent()
+  var lines =<< trim END
+      vim9script
+      g:result = 'none'
+      def Func()
+        eval {-> ''}() .. '' .. {}['X']
+        g:result = 'yes'
+      enddef
+      sil! Func()
+      assert_equal('none', g:result)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

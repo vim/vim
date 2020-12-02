@@ -2669,12 +2669,12 @@ call_def_function(
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
 			semsg(_(e_dictkey), key);
-			goto on_error;
+			goto on_fatal_error;
 		    }
 		    clear_tv(tv);
 		    --ectx.ec_stack.ga_len;
-		    // Clear the dict after getting the item, to avoid that it
-		    // make the item invalid.
+		    // Clear the dict only after getting the item, to avoid
+		    // that it makes the item invalid.
 		    tv = STACK_TV_BOT(-1);
 		    temp_tv = *tv;
 		    copy_tv(&di->di_tv, tv);
@@ -2997,10 +2997,12 @@ func_return:
 	continue;
 
 on_error:
+	// Jump here for an error that does not require aborting execution.
 	// If "emsg_silent" is set then ignore the error.
 	if (did_emsg_cumul + did_emsg == did_emsg_before && emsg_silent)
 	    continue;
-
+on_fatal_error:
+	// Jump here for an error that messes up the stack.
 	// If we are not inside a try-catch started here, abort execution.
 	if (trylevel <= trylevel_at_start)
 	    goto failed;
