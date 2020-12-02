@@ -6868,15 +6868,15 @@ fill_breakat_flags(void)
     if (p_breakat != NULL)
     {
 	int n = 0;
-	for (p = p_breakat; *p; p++) {
+	for (p = p_breakat; *p; p++)
+	{
 	    int	len = (*mb_ptr2len)(p);
 	    if (len > 1)
 	    {
-		if (ga_grow(&ga, ga.ga_len + 2) == OK)
+		if (ga_grow(&ga, ga.ga_len + 1) == OK)
 		{
 		    ((int *)ga.ga_data)[n++] = (*mb_ptr2char)(p);
-		    ((int *)ga.ga_data)[n] = 0;
-		    ga.ga_len += len - 1;
+		    ga.ga_len += len;
 		}
 	    } else
 		breakat_flags[*p] = TRUE;
