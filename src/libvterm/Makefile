@@ -78,7 +78,7 @@ t/harness.lo: t/harness.c $(HFILES)
 	$(LIBTOOL) --mode=compile --tag=CC $(CC) $(CFLAGS) -o $@ -c $<
 
 t/harness: t/harness.lo $(LIBRARY)
-	$(LIBTOOL) --mode=link --tag=CC $(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	$(LIBTOOL) --mode=link --tag=CC $(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) -static
 
 .PHONY: test
 test: $(LIBRARY) t/harness
