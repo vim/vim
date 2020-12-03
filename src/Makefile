@@ -2293,11 +2293,10 @@ run_message_test: $(MESSAGE_TEST_TARGET)
 	$(VALGRIND) ./$(MESSAGE_TEST_TARGET) || exit 1; echo $* passed;
 
 # Run the libvterm tests.
-# This currently doesn't work on Mac, only run on Linux for now.
+# This works only on GNU make, not on BSD make.
 test_libvterm:
-	@if test `uname` = "Linux"; then \
-		cd libvterm; $(MAKE) -f Makefile test \
-			CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"; \
+	@if $(MAKE) --version 2>/dev/null | grep -qs "GNU Make"; then \
+		cd libvterm; $(MAKE) -f Makefile test CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"; \
 	fi
 
 # Run individual OLD style test.

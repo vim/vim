@@ -240,8 +240,6 @@ jobs:
       env:
         - *linux-huge
         - *coverage
-        # Clang cannot compile test_libvterm with "--coverage" flag.
-        - TEST=scripttests
       after_success: *eval-coverage
     - <<: *linux
       name: huge+coverage/gcc
