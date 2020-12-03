@@ -2206,13 +2206,14 @@ getcmdline_int(
 	case Ctrl_V:
 	case Ctrl_Q:
 		{
-		    int	 prev_mod_mask = mod_mask;
-
 		    ignore_drag_release = TRUE;
 		    putcmdline('^', TRUE);
-		    no_reduce_keys = TRUE;  //  don't merge modifyOtherKeys
-		    c = get_literal();	    // get next (two) character(s)
-		    no_reduce_keys = FALSE;
+
+		    // Get next (two) character(s).  Do not change any
+		    // modifyOtherKeys ESC sequence to a normal key for
+		    // CTRL-SHIFT-V.
+		    c = get_literal(mod_mask & MOD_MASK_SHIFT);
+
 		    do_abbr = FALSE;	    // don't do abbreviation now
 		    extra_char = NUL;
 		    // may need to remove ^ when composing char was typed
@@ -2223,13 +2224,6 @@ getcmdline_int(
 			msg_putchar(' ');
 			cursorcmd();
 		    }
-
-		    if ((c == ESC || c == CSI)
-					  && !(prev_mod_mask & MOD_MASK_SHIFT))
-			// Using CTRL-V: Change any modifyOtherKeys ESC
-			// sequence to a normal key.  Don't do this for
-			// CTRL-SHIFT-V.
-			c = decodeModifyOtherKeys(c);
 		}
 
 		break;

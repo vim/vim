@@ -10,7 +10,7 @@ void display_dollar(colnr_T col);
 void undisplay_dollar(void);
 void truncate_spaces(char_u *line);
 void backspace_until_column(int col);
-int get_literal(void);
+int get_literal(int noReduceKeys);
 void insertchar(int c, int flags, int second_indent);
 void start_arrow(pos_T *end_insert_pos);
 int stop_arrow(void);

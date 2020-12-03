@@ -2580,11 +2580,10 @@ handle_mapping(
 						    typebuf.tb_off] == RM_YES))
 		&& !*timedout)
 	{
-	    keylen = check_termcode(max_mlen + 1,
-					       NULL, 0, NULL);
+	    keylen = check_termcode(max_mlen + 1, NULL, 0, NULL);
 
-	    // If no termcode matched but 'pastetoggle' matched partially it's
-	    // like an incomplete key sequence.
+	    // If no termcode matched but 'pastetoggle' matched partially
+	    // it's like an incomplete key sequence.
 	    if (keylen == 0 && save_keylen == KEYLEN_PART_KEY)
 		keylen = KEYLEN_PART_KEY;
 
@@ -3680,7 +3679,7 @@ getcmdkeycmd(
 	    // CTRL-V is followed by octal, hex or other characters, reverses
 	    // what AppendToRedobuffLit() does.
 	    no_reduce_keys = TRUE;  //  don't merge modifyOtherKeys
-	    c1 = get_literal();
+	    c1 = get_literal(TRUE);
 	    no_reduce_keys = FALSE;
 	}
 

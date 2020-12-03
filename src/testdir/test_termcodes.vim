@@ -1966,6 +1966,16 @@ func RunTest_modifyOtherKeys(func)
   bwipe aaa
   bwipe bbb
 
+  " Ctrl-V X 33 is 3
+  call setline(1, '')
+  call feedkeys("a\<C-V>" .. a:func('X', 2) .. "33\<Esc>", 'Lx!')
+  call assert_equal("3", getline(1))
+
+  " Ctrl-V U 12345 is Unicode 12345
+  call setline(1, '')
+  call feedkeys("a\<C-V>" .. a:func('U', 2) .. "12345\<Esc>", 'Lx!')
+  call assert_equal("\U12345", getline(1))
+
   bwipe!
   set timeoutlen&
 endfunc
