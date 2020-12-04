@@ -14861,6 +14861,8 @@ else
 $as_echo "no" >&6; }
 fi
 
+LDFLAGS=`echo "$LDFLAGS" | sed -e 's/-L /-L/g'`
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking linker --as-needed support" >&5
 $as_echo_n "checking linker --as-needed support... " >&6; }
 LINK_AS_NEEDED=
