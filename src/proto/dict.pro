@@ -34,6 +34,7 @@ varnumber_T dict_get_number_check(dict_T *d, char_u *key);
 varnumber_T dict_get_bool(dict_T *d, char_u *key, int def);
 char_u *dict2string(typval_T *tv, int copyID, int restore_copyID);
 char_u *skip_literal_key(char_u *key);
+char_u *get_literal_key(char_u **arg);
 int eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal);
 void dict_extend(dict_T *d1, dict_T *d2, char_u *action);
 dictitem_T *dict_lookup(hashitem_T *hi);

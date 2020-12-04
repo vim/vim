@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Nov 25
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Dec 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -436,19 +436,25 @@ Dictionary literals ~
 Traditionally Vim has supported dictionary literals with a {} syntax: >
 	let dict = {'key': value}
 
-Later it became clear that using a simple key name is very common, thus
-literally dictionaries were introduced in a backwards compatible way: >
+Later it became clear that using a simple text key is very common, thus
+literal dictionaries were introduced in a backwards compatible way: >
 	let dict = #{key: value}
 
-However, this #{} syntax is unlike any existing language.  As it appears that
-using a literal key is much more common than using an expression, and
+However, this #{} syntax is unlike any existing language.  As it turns out
+that using a literal key is much more common than using an expression, and
 considering that JavaScript uses this syntax, using the {} form for dictionary
-literals was considered a much more useful syntax.  In Vim9 script the {} form
+literals is considered a much more useful syntax.  In Vim9 script the {} form
 uses literal keys: >
 	let dict = {key: value}
 
-In case an expression needs to be used for the key, square brackets can be
-used, just like in JavaScript: >
+This works for alphanumeric characters, underscore and dash.  If you want to
+use another character, use a single or double quoted string: >
+	let dict = {'key with space': value}
+	let dict = {"key\twith\ttabs": value}
+	let dict = {'': value}  		# empty key
+
+In case the key needs to be an expression, square brackets can be used, just
+like in JavaScript: >
 	let dict = {["key" .. nr]: value}
 
 

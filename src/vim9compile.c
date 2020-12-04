@@ -3024,26 +3024,11 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	if (**arg == '}')
 	    break;
 
-	// {name: value} uses "name" as a literal key and
-	// {[expr]: value} uses an evaluated key.
-	if (**arg != '[')
-	{
-	    char_u  *end = skip_literal_key(*arg);
-
-	    if (end == *arg)
-	    {
-		semsg(_(e_invalid_key_str), *arg);
-		return FAIL;
-	    }
-	    key = vim_strnsave(*arg, end - *arg);
-	    if (generate_PUSHS(cctx, key) == FAIL)
-		return FAIL;
-	    *arg = end;
-	}
-	else
+	if (**arg == '[')
 	{
 	    isn_T	*isn;
 
+	    // {[expr]: value} uses an evaluated key.
 	    *arg = skipwhite(*arg + 1);
 	    if (compile_expr0(arg, cctx) == FAIL)
 		return FAIL;
@@ -3065,6 +3050,17 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 		return FAIL;
 	    }
 	    ++*arg;
+	}
+	else
+	{
+	    // {"name": value},
+	    // {'name': value},
+	    // {name: value} use "name" as a literal key
+	    key = get_literal_key(arg);
+	    if (key == NULL)
+		return FAIL;
+	    if (generate_PUSHS(cctx, key) == FAIL)
+		return FAIL;
 	}
 
 	// Check for duplicate keys, if using string keys.

@@ -1930,12 +1930,13 @@ def Test_expr7_dict()
 
       assert_equal(g:test_space_dict, {['']: 'empty', [' ']: 'space'})
       assert_equal(g:test_hash_dict, {one: 1, two: 2})
+
+      assert_equal({['a a']: 1, ['b/c']: 2}, {'a a': 1, "b/c": 2})
   END
   CheckDefAndScriptSuccess(lines)
  
   # legacy syntax doesn't work
   CheckDefFailure(["var x = #{key: 8}"], 'E1097:', 2)
-  CheckDefFailure(["var x = {'key': 8}"], 'E1014:', 1)
   CheckDefFailure(["var x = 'a' .. #{a: 1}"], 'E1097:', 2)
 
   CheckDefFailure(["var x = {a:8}"], 'E1069:', 1)

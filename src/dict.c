@@ -801,7 +801,7 @@ skip_literal_key(char_u *key)
  * Return FAIL when there is no valid key.
  */
     static int
-get_literal_key(char_u **arg, typval_T *tv)
+get_literal_key_tv(char_u **arg, typval_T *tv)
 {
     char_u *p = skip_literal_key(*arg);
 
@@ -812,6 +812,47 @@ get_literal_key(char_u **arg, typval_T *tv)
 
     *arg = p;
     return OK;
+}
+
+/*
+ * Get a literal key for a Vim9 dict:
+ * {"name": value},
+ * {'name': value},
+ * {name: value} use "name" as a literal key
+ * Return the key in allocated memory or NULL in the case of an error.
+ * "arg" is advanced to just after the key.
+ */
+    char_u *
+get_literal_key(char_u **arg)
+{
+    char_u	*key;
+    char_u	*end;
+    typval_T	rettv;
+
+    if (**arg == '\'')
+    {
+	if (eval_lit_string(arg, &rettv, TRUE) == FAIL)
+	    return NULL;
+	key = rettv.vval.v_string;
+    }
+    else if (**arg == '"')
+    {
+	if (eval_string(arg, &rettv, TRUE) == FAIL)
+	    return NULL;
+	key = rettv.vval.v_string;
+    }
+    else
+    {
+	end = skip_literal_key(*arg);
+	if (end == *arg)
+	{
+	    semsg(_(e_invalid_key_str), *arg);
+	    return NULL;
+	}
+	key = vim_strnsave(*arg, end - *arg);
+	*arg = end;
+    }
+    return key;
 }
 
 /*
@@ -864,10 +905,17 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
     {
 	int	has_bracket = vim9script && **arg == '[';
 
-	if (literal || (vim9script && !has_bracket))
+	if (literal)
 	{
-	    if (get_literal_key(arg, &tvkey) == FAIL)
+	    if (get_literal_key_tv(arg, &tvkey) == FAIL)
 		goto failret;
+	}
+	else if (vim9script && !has_bracket)
+	{
+	    tvkey.vval.v_string = get_literal_key(arg);
+	    if (tvkey.vval.v_string == NULL)
+		goto failret;
+	    tvkey.v_type = VAR_STRING;
 	}
 	else
 	{
