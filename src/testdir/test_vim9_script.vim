@@ -1945,6 +1945,7 @@ def Test_for_loop_unpack()
         slist->add(t:tabvar)
       endfor
       assert_equal(['global', 'buf', 'win', 'tab', '1', '2', '3', '4'], slist)
+      unlet! g:globalvar b:bufvar w:winvar t:tabvar
   END
   CheckDefAndScriptSuccess(lines)
 
