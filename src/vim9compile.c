@@ -5669,7 +5669,11 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    wp = op + oplen;
 		    p = skipwhite(wp);
 		    if (may_get_next_line_error(wp, &p, cctx) == FAIL)
+		    {
+			if (new_local)
+			    ++cctx->ctx_locals.ga_len;
 			goto theend;
+		    }
 		    r = compile_expr0_ext(&p, cctx, &is_const);
 		    if (new_local)
 			++cctx->ctx_locals.ga_len;
