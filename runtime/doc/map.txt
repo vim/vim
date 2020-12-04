@@ -909,7 +909,7 @@ Insert mode to avoid every key with a modifier causing Insert mode to end.
 1.12 MAPPING AN OPERATOR				*:map-operator*
 
 An operator is used before a {motion} command.  To define your own operator
-you must create mapping that first sets the 'operatorfunc' option and then
+you must create a mapping that first sets the 'operatorfunc' option and then
 invoke the |g@| operator.  After the user types the {motion} command the
 specified function will be called.
 
