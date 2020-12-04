@@ -860,6 +860,12 @@ win32_enable_privilege(LPTSTR lpszPrivilege, BOOL bEnable)
 }
 #endif
 
+#ifdef _MSC_VER
+// Suppress the deprecation warning for using GetVersionEx().
+// It is needed for implementing "windowsversion()".
+# pragma warning(push)
+# pragma warning(disable: 4996)
+#endif
 /*
  * Set "win8_or_later" and fill in "windowsVersion" if possible.
  */
@@ -890,6 +896,9 @@ PlatformId(void)
 	done = TRUE;
     }
 }
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 

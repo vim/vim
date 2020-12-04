@@ -1861,7 +1861,7 @@ msg_prt_line(char_u *s, int list)
 	    col += (*mb_ptr2cells)(s);
 	    if (l >= MB_MAXBYTES)
 	    {
-		STRCPY(buf, "¿");
+		STRCPY(buf, "?");
 	    }
 	    else if (lcs_nbsp != NUL && list
 		    && (mb_ptr2char(s) == 160
