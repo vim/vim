@@ -1,11 +1,17 @@
 " Utility functions for testing vim9 script
 
-" Check that "lines" inside ":def" has no error.
+" Use a different file name for each run.
+let s:sequence = 1
+
+" Check that "lines" inside a ":def" function has no error.
 func CheckDefSuccess(lines)
-  call writefile(['def Func()'] + a:lines + ['enddef', 'defcompile'], 'Xdef')
-  so Xdef
+  let fname = 'Xdef' .. s:sequence
+  let s:sequence += 1
+  call writefile(['def Func()'] + a:lines + ['enddef', 'defcompile'], fname)
+  exe 'so ' .. fname
   call Func()
-  call delete('Xdef')
+  delfunc! Func
+  call delete(fname)
 endfunc
 
 " Check that "lines" inside ":def" results in an "error" message.
@@ -13,9 +19,12 @@ endfunc
 " Add a line before and after to make it less likely that the line number is
 " accidentally correct.
 func CheckDefFailure(lines, error, lnum = -3)
-  call writefile(['def Func()', '# comment'] + a:lines + ['#comment', 'enddef', 'defcompile'], 'Xdef')
-  call assert_fails('so Xdef', a:error, a:lines, a:lnum + 1)
-  call delete('Xdef')
+  let fname = 'Xdef' .. s:sequence
+  call writefile(['def Func()', '# comment'] + a:lines + ['#comment', 'enddef', 'defcompile'], fname)
+  call assert_fails('so ' .. fname, a:error, a:lines, a:lnum + 1)
+  delfunc! Func
+  call delete(fname)
+  let s:sequence += 1
 endfunc
 
 " Check that "lines" inside ":def" results in an "error" message when executed.
@@ -23,22 +32,29 @@ endfunc
 " Add a line before and after to make it less likely that the line number is
 " accidentally correct.
 func CheckDefExecFailure(lines, error, lnum = -3)
-  call writefile(['def Func()', '# comment'] + a:lines + ['#comment', 'enddef'], 'Xdef')
-  so Xdef
+  let fname = 'Xdef' .. s:sequence
+  let s:sequence += 1
+  call writefile(['def Func()', '# comment'] + a:lines + ['#comment', 'enddef'], fname)
+  exe 'so ' .. fname
   call assert_fails('call Func()', a:error, a:lines, a:lnum + 1)
-  call delete('Xdef')
+  delfunc! Func
+  call delete(fname)
 endfunc
 
 def CheckScriptFailure(lines: list<string>, error: string, lnum = -3)
-  writefile(lines, 'Xdef')
-  assert_fails('so Xdef', error, lines, lnum)
-  delete('Xdef')
+  var fname = 'Xdef' .. s:sequence
+  s:sequence += 1
+  writefile(lines, fname)
+  assert_fails('so ' .. fname, error, lines, lnum)
+  delete(fname)
 enddef
 
 def CheckScriptSuccess(lines: list<string>)
-  writefile(lines, 'Xdef')
-  so Xdef
-  delete('Xdef')
+  var fname = 'Xdef' .. s:sequence
+  s:sequence += 1
+  writefile(lines, fname)
+  exe 'so ' .. fname
+  delete(fname)
 enddef
 
 def CheckDefAndScriptSuccess(lines: list<string>)
@@ -46,15 +62,15 @@ def CheckDefAndScriptSuccess(lines: list<string>)
   CheckScriptSuccess(['vim9script'] + lines)
 enddef
 
-" Check that a command fails both when used in a :def function and when used
-" in Vim9 script.
+" Check that a command fails with the same error when used in a :def function
+" and when used in Vim9 script.
 def CheckDefAndScriptFailure(lines: list<string>, error: string, lnum = -3)
   CheckDefFailure(lines, error, lnum)
   CheckScriptFailure(['vim9script'] + lines, error, lnum + 1)
 enddef
 
-" Check that a command fails both when executed in a :def function and when
-" used in Vim9 script.
+" Check that a command fails with the same error  when executed in a :def
+" function and when used in Vim9 script.
 def CheckDefExecAndScriptFailure(lines: list<string>, error: string, lnum = -3)
   CheckDefExecFailure(lines, error, lnum)
   CheckScriptFailure(['vim9script'] + lines, error, lnum + 1)

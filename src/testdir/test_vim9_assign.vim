@@ -953,6 +953,7 @@ def Test_heredoc()
       call Func()
   [END]
   CheckScriptFailure(lines, 'E990:')
+  delfunc! g:Func
 enddef
 
 def Test_let_func_call()

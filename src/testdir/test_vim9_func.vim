@@ -199,7 +199,9 @@ def Test_call_default_args()
   MyDefaultSecond('test', false)->assert_equal('none')
 
   CheckScriptFailure(['def Func(arg: number = asdf)', 'enddef', 'defcompile'], 'E1001:')
+  delfunc g:Func
   CheckScriptFailure(['def Func(arg: number = "text")', 'enddef', 'defcompile'], 'E1013: Argument 1: type mismatch, expected number but got string')
+  delfunc g:Func
 enddef
 
 def Test_nested_function()
@@ -326,6 +328,7 @@ def Test_global_local_function()
       enddef
       g:Func()->assert_equal('global')
       Func()->assert_equal('local')
+      delfunc g:Func
   END
   CheckScriptSuccess(lines)
 
@@ -605,6 +608,7 @@ def Test_assign_to_argument()
   l[0]->assert_equal('value')
 
   CheckScriptFailure(['def Func(arg: number)', 'arg = 3', 'enddef', 'defcompile'], 'E1090:')
+  delfunc! g:Func
 enddef
 
 " These argument names are reserved in legacy functions.
@@ -763,33 +767,41 @@ def Test_return_type_wrong()
         'return "a"',
         'enddef',
         'defcompile'], 'expected number but got string')
+  delfunc! g:Func
   CheckScriptFailure([
         'def Func(): string',
         'return 1',
         'enddef',
         'defcompile'], 'expected string but got number')
+  delfunc! g:Func
   CheckScriptFailure([
         'def Func(): void',
         'return "a"',
         'enddef',
         'defcompile'],
         'E1096: Returning a value in a function without a return type')
+  delfunc! g:Func
   CheckScriptFailure([
         'def Func()',
         'return "a"',
         'enddef',
         'defcompile'],
         'E1096: Returning a value in a function without a return type')
+  delfunc! g:Func
 
   CheckScriptFailure([
         'def Func(): number',
         'return',
         'enddef',
         'defcompile'], 'E1003:')
+  delfunc! g:Func
 
   CheckScriptFailure(['def Func(): list', 'return []', 'enddef'], 'E1008:')
+  delfunc! g:Func
   CheckScriptFailure(['def Func(): dict', 'return {}', 'enddef'], 'E1008:')
+  delfunc! g:Func
   CheckScriptFailure(['def Func()', 'return 1'], 'E1057:')
+  delfunc! g:Func
 
   CheckScriptFailure([
         'vim9script',
@@ -1248,6 +1260,7 @@ def Test_error_reporting()
     v:exception->assert_match('Invalid command: invalid')
     v:throwpoint->assert_match(', line 3$')
   endtry
+  delfunc! g:Func
 
   # comment lines after the start of the function
   lines =<< trim END
@@ -1268,6 +1281,7 @@ def Test_error_reporting()
     v:exception->assert_match('Invalid command: invalid')
     v:throwpoint->assert_match(', line 4$')
   endtry
+  delfunc! g:Func
 
   lines =<< trim END
     vim9script
@@ -1286,6 +1300,7 @@ def Test_error_reporting()
   catch /E716:/
     v:throwpoint->assert_match('_Func, line 3$')
   endtry
+  delfunc! g:Func
 
   delete('Xdef')
 enddef
@@ -1766,6 +1781,7 @@ def Test_reset_did_emsg()
       Func()
   END
   CheckScriptFailure(lines, 'E492:', 8)
+  delfunc! g:Func
 enddef
 
 def Test_abort_even_with_silent()

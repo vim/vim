@@ -1878,6 +1878,7 @@ def Test_for_loop_fails()
   CheckDefFailure(['for i In range(5)'], 'E690:')
   CheckDefFailure(['var x = 5', 'for x in range(5)'], 'E1017:')
   CheckScriptFailure(['def Func(arg: any)', 'for arg in range(5)', 'enddef', 'defcompile'], 'E1006:')
+  delfunc! g:Func
   CheckDefFailure(['for i in "text"'], 'E1012:')
   CheckDefFailure(['for i in xxx'], 'E1001:')
   CheckDefFailure(['endfor'], 'E588:')
@@ -2360,12 +2361,14 @@ def Test_vim9_comment()
       'vim9script',
       'command Echo echo # comment',
       'command Echo # comment',
+      'delcommand Echo',
       ])
   CheckScriptFailure([
       'vim9script',
       'command Echo echo# comment',
       'Echo',
       ], 'E121:')
+  delcommand Echo
   CheckScriptFailure([
       'vim9script',
       'command Echo# comment',
@@ -2375,6 +2378,7 @@ def Test_vim9_comment()
       'command Echo echo',
       'command Echo# comment',
       ], 'E182:')
+  delcommand Echo
 
   CheckScriptSuccess([
       'vim9script',
@@ -2432,6 +2436,7 @@ def Test_vim9_comment()
   CheckScriptSuccess([
       'func Test() " comment',
       'endfunc',
+      'delfunc Test',
       ])
   CheckScriptSuccess([
       'vim9script',
