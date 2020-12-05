@@ -1,14 +1,15 @@
 ![Vim Logo](https://github.com/vim/vim/blob/master/runtime/vimlogo.gif)
 
+[![Github Build status](https://github.com/vim/vim/workflows/GitHub%20CI/badge.svg)](https://github.com/vim/vim/actions?query=workflow%3A%22GitHub+CI%22)
 [![Travis Build Status](https://travis-ci.org/vim/vim.svg?branch=master)](https://travis-ci.org/vim/vim)
 [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/o2qht2kjm02sgghk?svg=true)](https://ci.appveyor.com/project/chrisbra/vim)
-[![Github Build status](https://github.com/vim/vim/workflows/GitHub%20CI/badge.svg)](https://github.com/vim/vim/actions?query=workflow%3A%22GitHub+CI%22)
 [![Cirrus Build Status](https://api.cirrus-ci.com/github/vim/vim.svg)](https://cirrus-ci.com/github/vim/vim)
 [![Coverage Status](https://codecov.io/gh/vim/vim/coverage.svg?branch=master)](https://codecov.io/gh/vim/vim?branch=master)
 [![Coverity Scan](https://scan.coverity.com/projects/241/badge.svg)](https://scan.coverity.com/projects/vim)
 [![Language Grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/vim/vim.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/vim/vim/context:cpp)
 [![Debian CI](https://badges.debian.net/badges/debian/testing/vim/version.svg)](https://buildd.debian.org/vim)
 [![Packages](https://repology.org/badge/tiny-repos/vim.svg)](https://repology.org/metapackage/vim)
+
 For translations of this README see the end.
 
 
