@@ -1784,6 +1784,22 @@ def Test_reset_did_emsg()
   delfunc! g:Func
 enddef
 
+def Test_continues_with_silent_error()
+  var lines =<< trim END
+      vim9script
+      g:result = 'none'
+      def Func()
+        silent!  g:result += 3
+        g:result = 'yes'
+      enddef
+      # error is silenced, function does not abort
+      Func()
+      assert_equal('yes', g:result)
+      unlet g:result
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_abort_even_with_silent()
   var lines =<< trim END
       vim9script
@@ -1792,11 +1808,36 @@ def Test_abort_even_with_silent()
         eval {-> ''}() .. '' .. {}['X']
         g:result = 'yes'
       enddef
-      sil! Func()
+      silent! Func()
       assert_equal('none', g:result)
       unlet g:result
   END
   CheckScriptSuccess(lines)
+enddef
+
+def Test_cmdmod_silent_restored()
+  var lines =<< trim END
+      vim9script
+      def Func()
+        g:result = 'none'
+        silent! g:result += 3
+        g:result = 'none'
+        g:result += 3
+      enddef
+      Func()
+  END
+  # can't use CheckScriptFailure, it ignores the :silent!
+  var fname = 'Xdefsilent'
+  writefile(lines, fname)
+  var caught = 'no'
+  try
+    exe 'source ' .. fname
+  catch /E1030:/
+    caught = 'yes'
+    assert_match('Func, line 4', v:throwpoint)
+  endtry
+  assert_equal('yes', caught)
+  delete(fname)
 enddef
 
 def Test_dict_member_with_silent()

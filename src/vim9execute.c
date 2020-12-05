@@ -2432,6 +2432,7 @@ call_def_function(
 		    else
 #endif
 		    {
+			SOURCING_LNUM = iptr->isn_lnum;
 			n1 = tv_get_number_chk(tv1, &error);
 			if (error)
 			    goto on_error;

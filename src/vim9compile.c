@@ -1933,14 +1933,8 @@ generate_cmdmods(cctx_T *cctx, cmdmod_T *cmod)
     static int
 generate_undo_cmdmods(cctx_T *cctx)
 {
-    isn_T	*isn;
-
-    if (cctx->ctx_has_cmdmod)
-    {
-	if ((isn = generate_instr(cctx, ISN_CMDMOD_REV)) == NULL)
-	    return FAIL;
-    }
-
+    if (cctx->ctx_has_cmdmod && generate_instr(cctx, ISN_CMDMOD_REV) == NULL)
+	return FAIL;
     return OK;
 }
 
@@ -7578,7 +7572,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 			line = compile_assignment(ea.cmd, &ea, CMD_SIZE, &cctx);
 			if (line == NULL || line == ea.cmd)
 			    goto erret;
-			continue;
+			goto nextline;
 		    }
 		}
 	    }
@@ -7590,7 +7584,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 		if (line == NULL)
 		    goto erret;
 		if (line != ea.cmd)
-		    continue;
+		    goto nextline;
 	    }
 	}
 
@@ -7629,7 +7623,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	    if (cctx.ctx_skip == SKIP_YES)
 	    {
 		line += STRLEN(line);
-		continue;
+		goto nextline;
 	    }
 
 	    // Expression or function call.
