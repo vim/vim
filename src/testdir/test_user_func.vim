@@ -465,6 +465,8 @@ func Test_func_range()
     echo a:firstline
     echo a:lastline
   endfunc
+  3
+  call assert_equal("\n3\n3", execute('call FuncRange()'))
   call assert_equal("\n4\n6", execute('4,6 call FuncRange()'))
   call assert_equal("\n   function FuncRange() range"
   \              .. "\n1      echo a:firstline"
