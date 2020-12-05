@@ -47,7 +47,6 @@ func Test_play_silent()
   sleep 20m
   call sound_clear()
   call WaitForAssert({-> assert_equal(id2, g:id)})
-  call assert_equal(id2, g:id)
   call assert_equal(1, g:result)  " sound was aborted
 
   " recursive use was causing a crash
