@@ -741,7 +741,9 @@ find_typval_in_script(typval_T *dest)
     {
 	svar_T    *sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
 
-	if (sv->sv_tv == dest)
+	// If "sv_name" is NULL the variable was hidden when leaving a block,
+	// don't check "sv_tv" then, it might be used for another variable now.
+	if (sv->sv_name != NULL && sv->sv_tv == dest)
 	    return sv;
     }
     iemsg("check_script_var_type(): not found");
