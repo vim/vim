@@ -558,6 +558,19 @@ def Test_eval_command()
         ->Increment()
   assert_equal(111 + 3 + 4 + 5, g:val)
   unlet g:val
+
+  var lines =<< trim END
+    vim9script
+    g:caught = 'no'
+    try
+      eval 123 || 0
+    catch
+      g:caught = 'yes'
+    endtry
+    assert_equal('yes', g:caught)
+    unlet g:caught
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_map_command()
