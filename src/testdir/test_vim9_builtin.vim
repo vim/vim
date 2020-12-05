@@ -229,6 +229,18 @@ def Wrong_dict_key_type(items: list<number>): list<number>
   return filter(items, {_, val -> get({[val]: 1}, 'x')})
 enddef
 
+def Test_map_function_arg()
+  var lines =<< trim END
+      def MapOne(i: number, v: string): string
+        return i .. ':' .. v
+      enddef
+      var l = ['a', 'b', 'c']
+      map(l, MapOne)
+      assert_equal(['0:a', '1:b', '2:c'], l)
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
 def Test_filter_wrong_dict_key_type()
   assert_fails('Wrong_dict_key_type([1, 2, 3])', 'E1012:')
 enddef
@@ -523,8 +535,18 @@ def Test_sort_return_type()
 enddef
 
 def Test_sort_argument()
-  var res = ['b', 'a', 'c']->sort('i')
-  res->assert_equal(['a', 'b', 'c'])
+  var lines =<< trim END
+    var res = ['b', 'a', 'c']->sort('i')
+    res->assert_equal(['a', 'b', 'c'])
+
+    def Compare(a: number, b: number): number
+      return a - b
+    enddef
+    var l = [3, 6, 7, 1, 8, 2, 4, 5]
+    sort(l, Compare)
+    assert_equal([1, 2, 3, 4, 5, 6, 7, 8], l)
+  END
+  CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_split()
