@@ -2669,6 +2669,15 @@ call_def_function(
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
 			semsg(_(e_dictkey), key);
+
+			// If :silent! is used we will continue, make sure the
+			// stack contents makes sense.
+			clear_tv(tv);
+			--ectx.ec_stack.ga_len;
+			tv = STACK_TV_BOT(-1);
+			clear_tv(tv);
+			tv->v_type = VAR_NUMBER;
+			tv->vval.v_number = 0;
 			goto on_fatal_error;
 		    }
 		    clear_tv(tv);

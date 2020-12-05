@@ -1794,6 +1794,25 @@ def Test_abort_even_with_silent()
       enddef
       sil! Func()
       assert_equal('none', g:result)
+      unlet g:result
+  END
+  CheckScriptSuccess(lines)
+enddef
+
+def Test_dict_member_with_silent()
+  var lines =<< trim END
+      vim9script
+      g:result = 'none'
+      var d: dict<any>
+      def Func()
+        try
+          g:result = map([], {_, v -> {}[v]})->join() .. d['']
+        catch
+        endtry
+      enddef
+      silent! Func()
+      assert_equal('0', g:result)
+      unlet g:result
   END
   CheckScriptSuccess(lines)
 enddef
