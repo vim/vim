@@ -851,6 +851,8 @@ call_def_function(
     msglist_T	*private_msg_list = NULL;
     cmdmod_T	save_cmdmod;
     int		restore_cmdmod = FALSE;
+    int		save_emsg_silent_def = emsg_silent_def;
+    int		save_did_emsg_def = did_emsg_def;
     int		trylevel_at_start = trylevel;
     int		orig_funcdepth;
 
@@ -1020,6 +1022,11 @@ call_def_function(
 
     // Do turn errors into exceptions.
     suppress_errthrow = FALSE;
+
+    // When ":silent!" was used before calling then we still abort the
+    // function.  If ":silent!" is used in the function then we don't.
+    emsg_silent_def = emsg_silent;
+    did_emsg_def = 0;
 
     // Decide where to start execution, handles optional arguments.
     init_instr_idx(ufunc, argc, &ectx);
@@ -3008,8 +3015,10 @@ func_return:
 
 on_error:
 	// Jump here for an error that does not require aborting execution.
-	// If "emsg_silent" is set then ignore the error.
-	if (did_emsg_cumul + did_emsg == did_emsg_before && emsg_silent)
+	// If "emsg_silent" is set then ignore the error, unless it was set
+	// when calling the function.
+	if (did_emsg_cumul + did_emsg == did_emsg_before
+					   && emsg_silent && did_emsg_def == 0)
 	    continue;
 on_fatal_error:
 	// Jump here for an error that messes up the stack.
@@ -3056,6 +3065,8 @@ failed:
 	undo_cmdmod(&cmdmod);
 	cmdmod = save_cmdmod;
     }
+    emsg_silent_def = save_emsg_silent_def;
+    did_emsg_def += save_did_emsg_def;
 
 failed_early:
     // Free all local variables, but not arguments.

@@ -697,6 +697,12 @@ emsg_core(char_u *s)
 		}
 		redir_write(s, -1);
 	    }
+#ifdef FEAT_EVAL
+	    // Only increment did_emsg_def when :silent! wasn't used inside the
+	    // :def function.
+	    if (emsg_silent == emsg_silent_def)
+		++did_emsg_def;
+#endif
 #ifdef FEAT_JOB_CHANNEL
 	    ch_log(NULL, "ERROR silent: %s", (char *)s);
 #endif

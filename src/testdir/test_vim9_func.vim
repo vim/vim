@@ -1784,6 +1784,22 @@ def Test_reset_did_emsg()
   delfunc! g:Func
 enddef
 
+def Test_abort_with_silent_call()
+  var lines =<< trim END
+      vim9script
+      g:result = 'none'
+      def Func()
+        g:result += 3
+        g:result = 'yes'
+      enddef
+      # error is silenced, but function aborts on error
+      silent! Func()
+      assert_equal('none', g:result)
+      unlet g:result
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_continues_with_silent_error()
   var lines =<< trim END
       vim9script

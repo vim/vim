@@ -230,6 +230,8 @@ EXTERN int	did_endif INIT(= FALSE);    // just had ":endif"
 EXTERN int	did_emsg;		    // set by emsg() when the message
 					    // is displayed or thrown
 #ifdef FEAT_EVAL
+EXTERN int	did_emsg_def;		    // set by emsg() when emsg_silent
+					    // is set before calling a function
 EXTERN int	did_emsg_cumul;		    // cumulative did_emsg, increased
 					    // when did_emsg is reset.
 EXTERN int	called_vim_beep;	    // set if vim_beep() is called
@@ -1134,6 +1136,10 @@ EXTERN int	is_export INIT(= FALSE);    // :export {cmd}
 
 EXTERN int	msg_silent INIT(= 0);	// don't print messages
 EXTERN int	emsg_silent INIT(= 0);	// don't print error messages
+#ifdef FEAT_EVAL
+EXTERN int	emsg_silent_def INIT(= 0);  // value of emsg_silent when a :def
+					    // function is called
+#endif
 EXTERN int	emsg_noredir INIT(= 0);	// don't redirect error messages
 EXTERN int	cmd_silent INIT(= FALSE); // don't echo the command line
 
