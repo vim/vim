@@ -1300,13 +1300,19 @@ vim_blob(VALUE self UNUSED, VALUE str)
 }
 
     static VALUE
-buffer_s_current(void)
+buffer_s_current(VALUE self UNUSED)
 {
     return buffer_new(curbuf);
 }
 
     static VALUE
-buffer_s_count(void)
+buffer_s_current_getter(ID id UNUSED, VALUE *x UNUSED)
+{
+    return buffer_new(curbuf);
+}
+
+    static VALUE
+buffer_s_count(VALUE self UNUSED)
 {
     buf_T *b;
     int n = 0;
@@ -1566,7 +1572,13 @@ get_win(VALUE obj)
 }
 
     static VALUE
-window_s_current(void)
+window_s_current(VALUE self UNUSED)
+{
+    return window_new(curwin);
+}
+
+    static VALUE
+window_s_current_getter(ID id UNUSED, VALUE *x UNUSED)
 {
     return window_new(curwin);
 }
@@ -1576,7 +1588,7 @@ window_s_current(void)
  *    SegPhault - 03/07/05
  */
     static VALUE
-line_s_current(void)
+line_s_current(VALUE self UNUSED)
 {
     return get_buffer_line(curbuf, curwin->w_cursor.lnum);
 }
@@ -1588,13 +1600,13 @@ set_current_line(VALUE self UNUSED, VALUE str)
 }
 
     static VALUE
-current_line_number(void)
+current_line_number(VALUE self UNUSED)
 {
     return INT2FIX((int)curwin->w_cursor.lnum);
 }
 
     static VALUE
-window_s_count(void)
+window_s_count(VALUE self UNUSED)
 {
     win_T	*w;
     int n = 0;
@@ -1794,8 +1806,8 @@ ruby_vim_init(void)
     rb_define_method(cVimWindow, "cursor", window_cursor, 0);
     rb_define_method(cVimWindow, "cursor=", window_set_cursor, 1);
 
-    rb_define_virtual_variable("$curbuf", buffer_s_current, 0);
-    rb_define_virtual_variable("$curwin", window_s_current, 0);
+    rb_define_virtual_variable("$curbuf", buffer_s_current_getter, 0);
+    rb_define_virtual_variable("$curwin", window_s_current_getter, 0);
 }
 
     void
