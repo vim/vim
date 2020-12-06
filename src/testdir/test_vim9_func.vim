@@ -217,22 +217,47 @@ def Test_nested_function()
   CheckDefFailure(['def s:Nested()', 'enddef'], 'E1075:')
   CheckDefFailure(['def b:Nested()', 'enddef'], 'E1075:')
 
-  CheckDefFailure([
-        'def Outer()',
-        '  def Inner()',
-        '    # comment',
-        '  enddef',
-        '  def Inner()',
-        '  enddef',
-        'enddef'], 'E1073:')
-  CheckDefFailure([
-        'def Outer()',
-        '  def Inner()',
-        '    # comment',
-        '  enddef',
-        '  def! Inner()',
-        '  enddef',
-        'enddef'], 'E1117:')
+  var lines =<< trim END
+      def Outer()
+        def Inner()
+          # comment
+        enddef
+        def Inner()
+        enddef
+      enddef
+  END
+  CheckDefFailure(lines, 'E1073:')
+
+  lines =<< trim END
+      def Outer()
+        def Inner()
+          # comment
+        enddef
+        def! Inner()
+        enddef
+      enddef
+  END
+  CheckDefFailure(lines, 'E1117:')
+
+  # nested function inside conditional
+  # TODO: should it work when "thecount" is inside the "if"?
+  lines =<< trim END
+      vim9script
+      var thecount = 0
+      if true
+        def Test(): number
+          def TheFunc(): number
+            thecount += 1
+            return thecount
+          enddef
+          return TheFunc()
+        enddef
+      endif
+      defcompile
+      assert_equal(1, Test())
+      assert_equal(2, Test())
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 func Test_call_default_args_from_func()
@@ -315,6 +340,15 @@ def Test_nested_def_list()
   assert_true(funcs->index('def DefListAll()') >= 0)
   assert_true(funcs->index('def DefListOne()') >= 0)
   assert_true(funcs->index('def DefListMatches()') >= 0)
+
+  var lines =<< trim END
+    vim9script
+    def Func()
+      def +Func+
+    enddef
+    defcompile
+  END
+  CheckScriptFailure(lines, 'E476:', 1)
 enddef
 
 def Test_global_local_function()
