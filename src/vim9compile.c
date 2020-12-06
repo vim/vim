@@ -5179,19 +5179,9 @@ generate_store_var(
 	    if (scriptvar_idx < 0)
 	    {
 		char_u  *name_s = name;
-		int	    r;
+		int	r;
 
-		// Include s: in the name for store_var()
-		if (name[1] != ':')
-		{
-		    int len = (int)STRLEN(name) + 3;
-
-		    name_s = alloc(len);
-		    if (name_s == NULL)
-			name_s = name;
-		    else
-			vim_snprintf((char *)name_s, len, "s:%s", name);
-		}
+		// "s:" is included in the name.
 		r = generate_OLDSCRIPT(cctx, ISN_STORES, name_s,
 							  scriptvar_sid, type);
 		if (name_s != name)
