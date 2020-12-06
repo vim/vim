@@ -1,5 +1,7 @@
 " Tests for the sound feature
 
+source shared.vim
+
 if !has('sound')
   throw 'Skipped: sound feature not available'
 endif
@@ -13,6 +15,7 @@ func Test_play_event()
   if has('win32')
     throw 'Skipped: Playing event with callback is not supported on Windows'
   endif
+  let g:id = 0
   let id = 'bell'->sound_playevent('PlayCallback')
   if id == 0
     throw 'Skipped: bell event not available'
@@ -20,8 +23,7 @@ func Test_play_event()
   " Stop it quickly, avoid annoying the user.
   sleep 20m
   eval id->sound_stop()
-  sleep 30m
-  call assert_equal(id, g:id)
+  call WaitForAssert({-> assert_equal(id, g:id)})
   call assert_equal(1, g:result)  " sound was aborted
 endfunc
 
@@ -37,17 +39,15 @@ func Test_play_silent()
   " play until the end
   let id2 = fname->sound_playfile('PlayCallback')
   call assert_true(id2 > 0)
-  sleep 500m
-  call assert_equal(id2, g:id)
+  call WaitForAssert({-> assert_equal(id2, g:id)})
   call assert_equal(0, g:result)
 
   let id2 = sound_playfile(fname, 'PlayCallback')
   call assert_true(id2 > 0)
   sleep 20m
   call sound_clear()
-  sleep 30m
-  call assert_equal(id2, g:id)
-  call assert_equal(1, g:result)
+  call WaitForAssert({-> assert_equal(id2, g:id)})
+  call assert_equal(1, g:result)  " sound was aborted
 
   " recursive use was causing a crash
   func PlayAgain(id, fname)
@@ -59,8 +59,7 @@ func Test_play_silent()
   call assert_true(id3 > 0)
   sleep 50m
   call sound_clear()
-  sleep 30m
-  call assert_true(g:id_again > 0)
+  call WaitForAssert({-> assert_true(g:id > 0)})
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
