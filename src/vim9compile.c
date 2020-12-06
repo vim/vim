@@ -2503,7 +2503,8 @@ compile_load(
 		case 'w': isn_type = ISN_LOADW; break;
 		case 't': isn_type = ISN_LOADT; break;
 		case 'b': isn_type = ISN_LOADB; break;
-		default:  semsg(_(e_namespace_not_supported_str), *arg);
+		default:  // cannot happen, just in case
+			  semsg(_(e_namespace_not_supported_str), *arg);
 			  goto theend;
 	    }
 	    if (isn_type != ISN_DROP)
@@ -3581,7 +3582,7 @@ compile_subscript(
 		else
 		{
 		    if (compile_expr0(arg, cctx) == FAIL)
-		    return FAIL;
+			return FAIL;
 		    if (may_get_next_line_error(p, arg, cctx) == FAIL)
 			return FAIL;
 		    *arg = skipwhite(*arg);
@@ -4084,7 +4085,7 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    return FAIL;
 	}
 	*arg = skipwhite(op + 1);
-	if (may_get_next_line(op + 1, arg, cctx) == FAIL)
+	if (may_get_next_line_error(op + 1, arg, cctx) == FAIL)
 	    return FAIL;
 
 	// get the second expression
@@ -4291,7 +4292,7 @@ compile_expr4(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 
 	// get the second variable
 	*arg = skipwhite(p + len);
-	if (may_get_next_line(p + len, arg, cctx) == FAIL)
+	if (may_get_next_line_error(p + len, arg, cctx) == FAIL)
 	    return FAIL;
 
 	if (compile_expr5(arg, cctx, ppconst) == FAIL)
@@ -4390,7 +4391,7 @@ compile_and_or(
 
 	    // eval the next expression
 	    *arg = skipwhite(p + 2);
-	    if (may_get_next_line(p + 2, arg, cctx) == FAIL)
+	    if (may_get_next_line_error(p + 2, arg, cctx) == FAIL)
 		return FAIL;
 
 	    if ((opchar == '|' ? compile_expr3(arg, cctx, ppconst)
@@ -4584,7 +4585,7 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
 
 	// evaluate the second expression; any type is accepted
 	*arg = skipwhite(p + 1 + op_falsy);
-	if (may_get_next_line(p + 1 + op_falsy, arg, cctx) == FAIL)
+	if (may_get_next_line_error(p + 1 + op_falsy, arg, cctx) == FAIL)
 	    return FAIL;
 	if (compile_expr1(arg, cctx, ppconst) == FAIL)
 	    return FAIL;
@@ -4634,7 +4635,7 @@ compile_expr1(char_u **arg,  cctx_T *cctx, ppconst_T *ppconst)
 		cctx->ctx_skip = save_skip == SKIP_YES || const_value
 							 ? SKIP_YES : SKIP_NOT;
 	    *arg = skipwhite(p + 1);
-	    if (may_get_next_line(p + 1, arg, cctx) == FAIL)
+	    if (may_get_next_line_error(p + 1, arg, cctx) == FAIL)
 		return FAIL;
 	    if (compile_expr1(arg, cctx, ppconst) == FAIL)
 		return FAIL;

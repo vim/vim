@@ -962,6 +962,18 @@ def Test_vim9_import_export()
   writefile(import_already_defined, 'Ximport.vim')
   assert_fails('source Ximport.vim', 'E1073:', '', 3, 'Ximport.vim')
 
+  # try changing an imported const
+  var import_assign_to_const =<< trim END
+    vim9script
+    import CONST from './Xexport.vim'
+    def Assign()
+      CONST = 987
+    enddef
+    defcompile
+  END
+  writefile(import_assign_to_const, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E46:', '', 1, '_Assign')
+
   # import a very long name, requires making a copy
   var import_long_name_lines =<< trim END
     vim9script

@@ -188,6 +188,12 @@ func Test_expr1_trinary_fails()
   call CheckDefExecFailure(["var x = [] ? 'one' : 'two'"], 'E745:', 1)
   call CheckDefExecFailure(["var x = {} ? 'one' : 'two'"], 'E728:', 1)
 
+  call CheckDefExecFailure(["var x = false ? "], 'E1097:', 2)
+  call CheckDefExecFailure(["var x = false ? 'one' : "], 'E1097:', 2)
+
+  call CheckDefExecFailure(["var x = true ? xxx : 'foo'"], 'E1001:', 1)
+  call CheckDefExecFailure(["var x = false ? 'foo' : xxx"], 'E1001:', 1)
+
   if has('float')
     call CheckDefFailure(["var x = 0.1 ? 'one' : 'two'"], 'E805:', 1)
   endif
@@ -345,6 +351,8 @@ def Test_expr2_fails()
   call CheckDefFailure(["var x = 1||2"], msg, 1)
   call CheckDefFailure(["var x = 1 ||2"], msg, 1)
   call CheckDefFailure(["var x = 1|| 2"], msg, 1)
+
+  call CheckDefFailure(["var x = false || "], 'E1097:', 2)
 
   call CheckDefFailure(["var x = 1 || xxx"], 'E1001:', 1)
   call CheckDefFailure(["var x = [] || false"], 'E1012:', 1)
@@ -579,6 +587,8 @@ def Test_expr4_equal()
   CheckDefAndScriptSuccess(lines)
 
   CheckDefFailure(["var x = 'a' == xxx"], 'E1001:', 1)
+  CheckDefFailure(["var x = 'a' == "], 'E1097:', 2)
+
   CheckDefExecFailure(['var items: any', 'eval 1', 'eval 2', 'if items == []', 'endif'], 'E691:', 4)
 enddef
 
@@ -1349,6 +1359,7 @@ def Test_expr6()
   CheckDefAndScriptSuccess(lines)
 
   CheckDefFailure(["var x = 6 * xxx"], 'E1001:', 1)
+  CheckDefFailure(["var d = 6 * "], 'E1097:', 2)
 enddef
 
 def Test_expr6_vim9script()
@@ -1520,6 +1531,7 @@ def Test_expr7t()
   assert_equal(234, nr)
 
   CheckDefFailure(["var x = <nr>123"], 'E1010:', 1)
+  CheckDefFailure(["var x = <number>"], 'E1097:', 2)
   CheckDefFailure(["var x = <number >123"], 'E1068:', 1)
   CheckDefFailure(["var x = <number 123"], 'E1104:', 1)
 enddef
@@ -2053,6 +2065,33 @@ def Test_expr7_dict_vim9script()
   CheckScriptFailure(lines, 'E1012:', 2)
 
   lines =<< trim END
+    vim9script
+    var d = {['a']: 234, ['b': 'x'}
+  END
+  CheckScriptFailure(lines, 'E1139:', 2)
+  lines =<< trim END
+    vim9script
+    def Func()
+      var d = {['a']: 234, ['b': 'x'}
+    enddef
+    defcompile
+  END
+  CheckScriptFailure(lines, 'E1139:', 1)
+  lines =<< trim END
+    vim9script
+    var d = {'a':
+  END
+  CheckScriptFailure(lines, 'E15:', 2)
+  lines =<< trim END
+    vim9script
+    def Func()
+      var d = {'a':
+    enddef
+    defcompile
+  END
+  CheckScriptFailure(lines, 'E723:', 1)
+
+  lines =<< trim END
       vim9script
       def Failing()
         job_stop()
@@ -2566,6 +2605,39 @@ def Test_expr7_string_subscript()
   END
   CheckDefSuccess(lines)
   CheckScriptSuccess(['vim9script'] + lines)
+
+  lines =<< trim END
+      var d = 'asdf'[1:
+  END
+  CheckDefFailure(lines, 'E1097:', 2)
+  lines =<< trim END
+      var d = 'asdf'[1:xxx]
+  END
+  CheckDefFailure(lines, 'E1001:', 1)
+  lines =<< trim END
+      var d = 'asdf'[1:2
+  END
+  CheckDefFailure(lines, 'E1097:', 2)
+  lines =<< trim END
+      var d = 'asdf'[1:2
+      echo d
+  END
+  CheckDefFailure(lines, 'E111:', 2)
+  lines =<< trim END
+      var d = 'asdf'['1']
+      echo d
+  END
+  CheckDefFailure(lines, 'E1012: Type mismatch; expected number but got string', 1)
+  lines =<< trim END
+      var d = 'asdf'['1':2]
+      echo d
+  END
+  CheckDefFailure(lines, 'E1012: Type mismatch; expected number but got string', 1)
+  lines =<< trim END
+      var d = 'asdf'[1:'2']
+      echo d
+  END
+  CheckDefFailure(lines, 'E1012: Type mismatch; expected number but got string', 1)
 enddef
 
 def Test_expr7_list_subscript()
