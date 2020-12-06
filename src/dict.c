@@ -929,6 +929,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 		if (**arg != ']')
 		{
 		    emsg(_(e_missing_matching_bracket_after_dict_key));
+		    clear_tv(&tvkey);
 		    return FAIL;
 		}
 		++*arg;

@@ -4392,7 +4392,10 @@ compile_and_or(
 	    // eval the next expression
 	    *arg = skipwhite(p + 2);
 	    if (may_get_next_line_error(p + 2, arg, cctx) == FAIL)
+	    {
+		ga_clear(&end_ga);
 		return FAIL;
+	    }
 
 	    if ((opchar == '|' ? compile_expr3(arg, cctx, ppconst)
 				  : compile_expr4(arg, cctx, ppconst)) == FAIL)
