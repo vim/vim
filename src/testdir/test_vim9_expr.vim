@@ -188,8 +188,8 @@ func Test_expr1_trinary_fails()
   call CheckDefExecFailure(["var x = [] ? 'one' : 'two'"], 'E745:', 1)
   call CheckDefExecFailure(["var x = {} ? 'one' : 'two'"], 'E728:', 1)
 
-  call CheckDefExecFailure(["var x = false ? "], 'E1097:', 2)
-  call CheckDefExecFailure(["var x = false ? 'one' : "], 'E1097:', 2)
+  call CheckDefExecFailure(["var x = false ? "], 'E1097:', 3)
+  call CheckDefExecFailure(["var x = false ? 'one' : "], 'E1097:', 3)
 
   call CheckDefExecFailure(["var x = true ? xxx : 'foo'"], 'E1001:', 1)
   call CheckDefExecFailure(["var x = false ? 'foo' : xxx"], 'E1001:', 1)
@@ -352,7 +352,7 @@ def Test_expr2_fails()
   call CheckDefFailure(["var x = 1 ||2"], msg, 1)
   call CheckDefFailure(["var x = 1|| 2"], msg, 1)
 
-  call CheckDefFailure(["var x = false || "], 'E1097:', 2)
+  call CheckDefFailure(["var x = false || "], 'E1097:', 3)
 
   call CheckDefFailure(["var x = 1 || xxx"], 'E1001:', 1)
   call CheckDefFailure(["var x = [] || false"], 'E1012:', 1)
@@ -587,7 +587,7 @@ def Test_expr4_equal()
   CheckDefAndScriptSuccess(lines)
 
   CheckDefFailure(["var x = 'a' == xxx"], 'E1001:', 1)
-  CheckDefFailure(["var x = 'a' == "], 'E1097:', 2)
+  CheckDefFailure(["var x = 'a' == "], 'E1097:', 3)
 
   CheckDefExecFailure(['var items: any', 'eval 1', 'eval 2', 'if items == []', 'endif'], 'E691:', 4)
 enddef
@@ -1359,7 +1359,7 @@ def Test_expr6()
   CheckDefAndScriptSuccess(lines)
 
   CheckDefFailure(["var x = 6 * xxx"], 'E1001:', 1)
-  CheckDefFailure(["var d = 6 * "], 'E1097:', 2)
+  CheckDefFailure(["var d = 6 * "], 'E1097:', 3)
 enddef
 
 def Test_expr6_vim9script()
@@ -1531,7 +1531,7 @@ def Test_expr7t()
   assert_equal(234, nr)
 
   CheckDefFailure(["var x = <nr>123"], 'E1010:', 1)
-  CheckDefFailure(["var x = <number>"], 'E1097:', 2)
+  CheckDefFailure(["var x = <number>"], 'E1097:', 3)
   CheckDefFailure(["var x = <number >123"], 'E1068:', 1)
   CheckDefFailure(["var x = <number 123"], 'E1104:', 1)
 enddef
@@ -1684,8 +1684,8 @@ def Test_expr7_list()
   CheckDefExecFailure(["echo 1", "var x = [][0]", "echo 3"], 'E684:', 2)
 
   CheckDefExecFailure(["var x = g:list_mixed['xx']"], 'E1012:', 1)
-  CheckDefFailure(["var x = g:list_mixed["], 'E1097:', 2)
-  CheckDefFailure(["var x = g:list_mixed[0"], 'E1097:', 2)
+  CheckDefFailure(["var x = g:list_mixed["], 'E1097:', 3)
+  CheckDefFailure(["var x = g:list_mixed[0"], 'E1097:', 3)
   CheckDefExecFailure(["var x = g:list_empty[3]"], 'E684:', 1)
   CheckDefExecFailure(["var l: list<number> = [234, 'x']"], 'E1012:', 1)
   CheckDefExecFailure(["var l: list<number> = ['x', 234]"], 'E1012:', 1)
@@ -1948,8 +1948,8 @@ def Test_expr7_dict()
   CheckDefAndScriptSuccess(lines)
  
   # legacy syntax doesn't work
-  CheckDefFailure(["var x = #{key: 8}"], 'E1097:', 2)
-  CheckDefFailure(["var x = 'a' .. #{a: 1}"], 'E1097:', 2)
+  CheckDefFailure(["var x = #{key: 8}"], 'E1097:', 3)
+  CheckDefFailure(["var x = 'a' .. #{a: 1}"], 'E1097:', 3)
 
   CheckDefFailure(["var x = {a:8}"], 'E1069:', 1)
   CheckDefFailure(["var x = {a : 8}"], 'E1059:', 1)
@@ -2609,7 +2609,7 @@ def Test_expr7_string_subscript()
   lines =<< trim END
       var d = 'asdf'[1:
   END
-  CheckDefFailure(lines, 'E1097:', 2)
+  CheckDefFailure(lines, 'E1097:', 3)
   lines =<< trim END
       var d = 'asdf'[1:xxx]
   END
@@ -2617,7 +2617,7 @@ def Test_expr7_string_subscript()
   lines =<< trim END
       var d = 'asdf'[1:2
   END
-  CheckDefFailure(lines, 'E1097:', 2)
+  CheckDefFailure(lines, 'E1097:', 3)
   lines =<< trim END
       var d = 'asdf'[1:2
       echo d

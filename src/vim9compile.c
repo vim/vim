@@ -2229,6 +2229,7 @@ may_get_next_line_error(char_u *whitep, char_u **arg, cctx_T *cctx)
 {
     if (may_get_next_line(whitep, arg, cctx) == FAIL)
     {
+	SOURCING_LNUM = cctx->ctx_lnum + 1;
 	emsg(_(e_line_incomplete));
 	return FAIL;
     }
@@ -5300,7 +5301,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 
 	wp = op + oplen;
 	p = skipwhite(wp);
-	if (may_get_next_line(wp, &p, cctx) == FAIL)
+	if (may_get_next_line_error(wp, &p, cctx) == FAIL)
 	    return FAIL;
 	if (compile_expr0(&p, cctx) == FAIL)
 	    return NULL;

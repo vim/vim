@@ -225,6 +225,45 @@ def Test_assignment()
   END
 enddef
 
+def Test_assign_unpack()
+  var lines =<< trim END
+    var v1: number
+    var v2: number
+    [v1, v2] = [1, 2]
+    assert_equal(1, v1)
+    assert_equal(2, v2)
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      var v1: number
+      var v2: number
+      [v1, v2] = 
+  END
+  CheckDefFailure(lines, 'E1097:', 5)
+
+  lines =<< trim END
+      var v1: number
+      var v2: number
+      [v1, v2] = xxx
+  END
+  CheckDefFailure(lines, 'E1001:', 3)
+
+  lines =<< trim END
+      var v1: number
+      var v2: number
+      [v1, v2] = popup_clear()
+  END
+  CheckDefFailure(lines, 'E1031:', 3)
+
+  lines =<< trim END
+      var v1: number
+      var v2: number
+      [v1, v2] = ''
+  END
+  CheckDefFailure(lines, 'E1012: Type mismatch; expected list<any> but got string', 3)
+enddef
+
 def Test_assign_linebreak()
   var nr: number
   nr =
@@ -237,7 +276,7 @@ def Test_assign_linebreak()
   assert_equal(12, nr)
   assert_equal(34, n2)
 
-  CheckDefFailure(["var x = #"], 'E1097:', 2)
+  CheckDefFailure(["var x = #"], 'E1097:', 3)
 enddef
 
 def Test_assign_index()
