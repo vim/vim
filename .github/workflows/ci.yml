@@ -3,8 +3,8 @@ name: GitHub CI
 on: [push, pull_request]
 
 jobs:
-  unixlike:
-    runs-on: ${{ matrix.os }}
+  linux:
+    runs-on: ubuntu-18.04
 
     env:
       CC: ${{ matrix.compiler }}
@@ -17,60 +17,44 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-10.15, ubuntu-18.04]
         features: [tiny, small, normal, huge]
         compiler: [clang, gcc]
         extra: [none]
         include:
-          - os: ubuntu-18.04
-            features: tiny
+          - features: tiny
             compiler: clang
             extra: nogui
-          - os: ubuntu-18.04
-            features: tiny
+          - features: tiny
             compiler: gcc
             extra: nogui
-          - os: ubuntu-18.04
-            features: normal
+          - features: normal
             shadow: ./src/shadow
-          - os: ubuntu-18.04
-            features: huge
+          - features: huge
             coverage: true
-          - os: ubuntu-18.04
-            features: huge
+          - features: huge
             compiler: gcc
             coverage: true
             extra: testgui
-          - os: ubuntu-18.04
-            features: huge
+          - features: huge
             compiler: clang-11
             extra: asan
-          - os: ubuntu-18.04
-            features: huge
+          - features: huge
             compiler: gcc
             coverage: true
             extra: unittests
-          - os: ubuntu-18.04
-            features: normal
+          - features: normal
             compiler: gcc
             extra: vimtags
-        exclude:
-          - os: macos-10.15
-            features: small
-          - os: macos-10.15
-            features: normal
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install packages (Linux)
-        if: ${{ startsWith(matrix.os, 'ubuntu-') }}
+      - name: Install packages
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
           sudo apt-get install -y \
             autoconf \
-            clang \
             lcov \
             gettext \
             libcanberra-dev \
@@ -91,14 +75,6 @@ jobs:
             sudo apt-get install -y clang-11
           fi
 
-      - name: Install packages (macOS)
-        if: ${{ startsWith(matrix.os, 'macos-') }}
-        env:
-          HOMEBREW_NO_AUTO_UPDATE: 1
-        run: |
-          brew install lua
-          echo "LUA_PREFIX=/usr/local" >> $GITHUB_ENV
-
       - name: Set up environment
         run: |
           mkdir -p "${LOG_DIR}"
@@ -116,12 +92,8 @@ jobs:
           normal)
             ;;
           huge)
-            if ${{ startsWith(matrix.os, 'ubuntu-') }}; then
-              echo "TEST=scripttests test_libvterm"
-              echo "CONFOPT=--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
-            else
-              echo "CONFOPT=--enable-perlinterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
-            fi
+            echo "TEST=scripttests test_libvterm"
+            echo "CONFOPT=--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
             ;;
           esac
           if ${{ matrix.coverage == true }}; then
@@ -145,10 +117,9 @@ jobs:
           fi
           ) >> $GITHUB_ENV
 
-      - name: Set up system (Linux)
-        if: ${{ startsWith(matrix.os, 'ubuntu-') }}
+      - name: Set up system
         run: |
-          if [[ ${CC} = clang ]]; then
+          if [[ ${CC} =~ ^clang ]]; then
             # Use llvm-cov instead of gcov when compiler is clang.
             # NOTE: On GitHub Actions, /usr/bin/clang is provided as alternative.
             ln -fs "$(update-alternatives --list clang | sed 's/clang-/llvm-cov-/')" ${HOME}/bin/gcov
@@ -163,18 +134,17 @@ jobs:
           sudo usermod -a -G audio ${USER}
 
       - name: Set up Xvfb
-        if: ${{ startsWith(matrix.os, 'ubuntu-') }}
         run: |
           echo "DISPLAY=:99" >> $GITHUB_ENV
           sudo bash ci/setup-xvfb.sh
 
       - name: Check autoconf
-        if: ${{ contains(matrix.extra, 'unittests') }}
+        if: contains(matrix.extra, 'unittests')
         run: |
           make -C src autoconf
 
       - name: Set up shadow dir
-        if: ${{ matrix.shadow }}
+        if: matrix.shadow
         run: |
           make -C src shadow
           echo "SRCDIR=${{ matrix.shadow }}" >> $GITHUB_ENV
@@ -186,20 +156,19 @@ jobs:
           # Append various warning flags to CFLAGS.
           # BSD sed needs backup extension specified.
           sed -i.bak -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
-          if ${{ startsWith(matrix.os, 'macos-') }} || [[ ${CC} =~ ^clang ]]; then
-            # On macOS, the entity of gcc is clang.
+          if [[ ${CC} =~ ^clang ]]; then
             sed -i.bak -f ci/config.mk.clang.sed ${SRCDIR}/auto/config.mk
           else
             sed -i.bak -f ci/config.mk.${CC}.sed ${SRCDIR}/auto/config.mk
           fi
 
       - name: Build
-        if: ${{ ! contains(matrix.extra, 'unittests') }}
+        if: (!contains(matrix.extra, 'unittests'))
         run: |
           make ${SHADOWOPT} -j${NPROC}
 
       - name: Check version
-        if: ${{ ! contains(matrix.extra, 'unittests') }}
+        if: (!contains(matrix.extra, 'unittests'))
         run: |
           "${SRCDIR}"/vim --version
           "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
@@ -208,28 +177,90 @@ jobs:
       - name: Test
         timeout-minutes: 20
         run: |
-          if ${{ startsWith(matrix.os, 'ubuntu-') }}; then
-            do_test() { sg audio "sg $(id -gn) '$*'"; }
-          else
-            do_test() { "$@"; }
-          fi
+          do_test() { sg audio "sg $(id -gn) '$*'"; }
           do_test make ${SHADOWOPT} ${TEST}
 
       - name: Coverage
-        if: ${{ matrix.coverage && success() }}
+        if: matrix.coverage && success()
         run: |
+          sudo apt-get install -y python3-setuptools python3-wheel
           # needed for https support for coveralls building cffi only works with gcc, not with clang
-          CC=gcc pip install --user cpp-coveralls pyopenssl ndg-httpsclient pyasn1
-          ~/.local/bin/coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --encodings utf-8
+          CC=gcc pip3 install --user cpp-coveralls pyopenssl ndg-httpsclient pyasn1
+          ~/.local/bin/coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --encodings utf-8 -t "${{ secrets.GITHUB_TOKEN }}"
           (cd "${SRCDIR}" && bash <(curl -s https://codecov.io/bash))
 
       - name: ASan logs
-        if: ${{ contains(matrix.extra, 'asan') && (! cancelled()) }}
+        if: contains(matrix.extra, 'asan') && !cancelled()
         run: |
           for f in $(grep -lR '#[[:digit:]]* *0x[[:digit:]a-fA-F]*' "${LOG_DIR}"); do
             asan_symbolize-11 -l "$f"
             false # in order to fail a job
           done
+
+  macos:
+    runs-on: macos-10.15
+
+    env:
+      CC: ${{ matrix.compiler }}
+      TEST: test
+      SRCDIR: ./src
+      LEAK_CFLAGS: -DEXITFREE
+      TERM: xterm
+
+    strategy:
+      fail-fast: false
+      matrix:
+        features: [tiny, huge]
+        compiler: [clang, gcc]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install packages
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+        run: |
+          brew install lua
+          echo "LUA_PREFIX=/usr/local" >> $GITHUB_ENV
+
+      - name: Set up environment
+        run: |
+          (
+          echo "NPROC=$(getconf _NPROCESSORS_ONLN)"
+          case "${{ matrix.features }}" in
+          tiny)
+            echo "TEST=testtiny"
+            echo "CONFOPT=--disable-gui"
+            ;;
+          huge)
+            echo "CONFOPT=--enable-perlinterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp"
+            ;;
+          esac
+          ) >> $GITHUB_ENV
+
+      - name: Configure
+        run: |
+          ./configure --with-features=${{ matrix.features }} ${CONFOPT} --enable-fail-if-missing
+          # Append various warning flags to CFLAGS.
+          # BSD sed needs backup extension specified.
+          sed -i.bak -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
+          # On macOS, the entity of gcc is clang.
+          sed -i.bak -f ci/config.mk.clang.sed ${SRCDIR}/auto/config.mk
+
+      - name: Build
+        run: |
+          make -j${NPROC}
+
+      - name: Check version
+        run: |
+          "${SRCDIR}"/vim --version
+          "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
+          "${SRCDIR}"/vim -u NONE -i NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
+
+      - name: Test
+        timeout-minutes: 20
+        run: |
+          make ${TEST}
 
   windows:
     runs-on: windows-latest
@@ -300,7 +331,7 @@ jobs:
           echo "PYTHON3_DIR=$python3_dir" >> $GITHUB_ENV
 
       - uses: msys2/setup-msys2@v2
-        if: ${{ matrix.toolchain == 'mingw' }}
+        if: matrix.toolchain == 'mingw'
         with:
           msystem: ${{ matrix.msystem }}
           release: false
@@ -355,7 +386,7 @@ jobs:
           xcopy src src2\ /E > nul
 
       - name: Build (MSVC)
-        if: ${{ matrix.toolchain == 'msvc' }}
+        if: matrix.toolchain == 'msvc'
         shell: cmd
         run: |
           call "%VCVARSALL%" ${{ matrix.vcarch }}
@@ -380,7 +411,7 @@ jobs:
           )
 
       - name: Build (MinGW)
-        if: ${{ matrix.toolchain == 'mingw' }}
+        if: matrix.toolchain == 'mingw'
         shell: msys2 {0}
         run: |
           cd src
