@@ -36,7 +36,7 @@ jobs:
             coverage: true
             extra: testgui
           - features: huge
-            compiler: clang-11
+            compiler: clang
             extra: asan
           - features: huge
             compiler: gcc
@@ -53,8 +53,11 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          sudo add-apt-repository -y "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main"
           sudo apt-get install -y \
             autoconf \
+            clang-11 \
             lcov \
             gettext \
             libcanberra-dev \
@@ -69,11 +72,9 @@ jobs:
             libgtk2.0-dev \
             desktop-file-utils \
             libtool-bin
-          if [[ ${CC} = clang-11 ]]; then
-            wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-            sudo add-apt-repository -y "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main"
-            sudo apt-get install -y clang-11
-          fi
+          # set clang-11 to /usr/bin/clang
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-11 200
+          sudo update-alternatives --set clang /usr/bin/clang-11
 
       - name: Set up environment
         run: |
@@ -119,10 +120,9 @@ jobs:
 
       - name: Set up system
         run: |
-          if [[ ${CC} =~ ^clang ]]; then
+          if [[ ${CC} = clang ]]; then
             # Use llvm-cov instead of gcov when compiler is clang.
-            # NOTE: On GitHub Actions, /usr/bin/clang is provided as alternative.
-            ln -fs "$(update-alternatives --list clang | sed 's/clang-/llvm-cov-/')" ${HOME}/bin/gcov
+            ln -fs /usr/bin/llvm-cov-11 ${HOME}/bin/gcov
           fi
           # Setup lua5.3 manually since its package doesn't provide alternative.
           # https://bugs.launchpad.net/ubuntu/+source/lua5.3/+bug/1707212
@@ -156,11 +156,7 @@ jobs:
           # Append various warning flags to CFLAGS.
           # BSD sed needs backup extension specified.
           sed -i.bak -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
-          if [[ ${CC} =~ ^clang ]]; then
-            sed -i.bak -f ci/config.mk.clang.sed ${SRCDIR}/auto/config.mk
-          else
-            sed -i.bak -f ci/config.mk.${CC}.sed ${SRCDIR}/auto/config.mk
-          fi
+          sed -i.bak -f ci/config.mk.${CC}.sed ${SRCDIR}/auto/config.mk
 
       - name: Build
         if: (!contains(matrix.extra, 'unittests'))
