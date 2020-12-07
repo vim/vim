@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   linux:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     env:
       CC: ${{ matrix.compiler }}
@@ -198,7 +198,7 @@ jobs:
           done
 
   macos:
-    runs-on: macos-10.15
+    runs-on: macos-latest
 
     env:
       CC: ${{ matrix.compiler }}
