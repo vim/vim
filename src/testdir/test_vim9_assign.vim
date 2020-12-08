@@ -1045,6 +1045,9 @@ def Test_var_declaration()
     s:name = 'prefixed'
     g:var_prefixed = s:name
 
+    const FOO: number = 123
+    assert_equal(123, FOO)
+
     var s:other: number
     other = 1234
     g:other_var = other
@@ -1087,6 +1090,10 @@ def Test_var_declaration_fails()
     var 9var: string
   END
   CheckScriptFailure(lines, 'E475:')
+
+  CheckDefFailure(['var foo.bar = 2'], 'E1087:')
+  CheckDefFailure(['var foo[3] = 2'], 'E1087:')
+  CheckDefFailure(['const foo: number'], 'E1021:')
 enddef
 
 def Test_var_type_check()

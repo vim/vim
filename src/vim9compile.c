@@ -5705,12 +5705,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 
 			// without operator check type here, otherwise below
 			if (has_index)
-			{
 			    use_type = member_type;
-			    if (member_type == NULL)
-				// could be indexing "any"
-				use_type = &t_any;
-			}
 			if (need_type(rhs_type, use_type, -1, cctx,
 						      FALSE, is_const) == FAIL)
 			    goto theend;
