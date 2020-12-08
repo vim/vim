@@ -381,7 +381,7 @@ func Test_mksession_terminal_no_restore_cmdarg()
   let term_cmd = ''
   for line in lines
     if line =~ '^terminal'
-      call assert_report('session must not restore teminal')
+      call assert_report('session must not restore terminal')
     endif
   endfor
 
@@ -398,7 +398,7 @@ func Test_mksession_terminal_no_restore_funcarg()
   let term_cmd = ''
   for line in lines
     if line =~ '^terminal'
-      call assert_report('session must not restore teminal')
+      call assert_report('session must not restore terminal')
     endif
   endfor
 
@@ -416,7 +416,7 @@ func Test_mksession_terminal_no_restore_func()
   let term_cmd = ''
   for line in lines
     if line =~ '^terminal'
-      call assert_report('session must not restore teminal')
+      call assert_report('session must not restore terminal')
     endif
   endfor
 
@@ -434,7 +434,7 @@ func Test_mksession_terminal_no_ssop()
   let term_cmd = ''
   for line in lines
     if line =~ '^terminal'
-      call assert_report('session must not restore teminal')
+      call assert_report('session must not restore terminal')
     endif
   endfor
 
@@ -940,6 +940,7 @@ func Test_altfile()
   call assert_equal('Xtwoalt', bufname('#'))
   only
   bwipe!
+  call delete('Xtest_altfile')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

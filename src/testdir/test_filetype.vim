@@ -722,7 +722,7 @@ func Test_ts_file()
   call assert_equal('typescript', &filetype)
   bwipe!
 
-  call delete('Xfile.hook')
+  call delete('Xfile.ts')
   filetype off
 endfunc
 

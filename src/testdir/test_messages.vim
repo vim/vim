@@ -323,7 +323,7 @@ func Test_quit_long_message()
 
   " clean up
   call StopVimInTerminal(buf)
-  call delete('Xtest_diff_rnu')
+  call delete('Xtest_quit_message')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
