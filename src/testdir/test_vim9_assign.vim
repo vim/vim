@@ -995,7 +995,7 @@ def Test_heredoc()
   delfunc! g:Func
 enddef
 
-def Test_let_func_call()
+def Test_var_func_call()
   var lines =<< trim END
     vim9script
     func GetValue()
@@ -1019,7 +1019,7 @@ def Test_let_func_call()
   delete('Xfinished')
 enddef
 
-def Test_let_missing_type()
+def Test_var_missing_type()
   var lines =<< trim END
     vim9script
     var name = g:unknown
@@ -1034,7 +1034,7 @@ def Test_let_missing_type()
   CheckScriptSuccess(lines)
 enddef
 
-def Test_let_declaration()
+def Test_var_declaration()
   var lines =<< trim END
     vim9script
     var name: string
@@ -1069,7 +1069,7 @@ def Test_let_declaration()
   unlet g:other_var
 enddef
 
-def Test_let_declaration_fails()
+def Test_var_declaration_fails()
   var lines =<< trim END
     vim9script
     final var: string
@@ -1089,7 +1089,7 @@ def Test_let_declaration_fails()
   CheckScriptFailure(lines, 'E475:')
 enddef
 
-def Test_let_type_check()
+def Test_var_type_check()
   var lines =<< trim END
     vim9script
     var name: string
@@ -1126,7 +1126,7 @@ enddef
 
 let g:dict_number = #{one: 1, two: 2}
 
-def Test_let_list_dict_type()
+def Test_var_list_dict_type()
   var ll: list<number>
   ll = [1, 2, 2, 3, 3, 3]->uniq()
   ll->assert_equal([1, 2, 3])
@@ -1140,6 +1140,10 @@ def Test_let_list_dict_type()
       ll = [1, 2, 3]->map('"one"')
   END
   CheckDefExecFailure(lines, 'E1012: Type mismatch; expected list<number> but got list<string>')
+enddef
+
+def Test_cannot_use_let()
+  CheckDefAndScriptFailure(['let a = 34'], 'E1126:', 1)
 enddef
 
 def Test_unlet()
