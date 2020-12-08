@@ -182,9 +182,21 @@ func Test_perleval()
 
   call assert_equal('*VIM', perleval('"*VIM"'))
   call assert_true(perleval('\\0') =~ 'SCALAR(0x\x\+)')
+
+  " typeglob
+  call assert_equal('*main::STDOUT', perleval('*STDOUT'))
+'
+  call perleval("++-$foo")
+  let messages = split(execute('message'), "\n")
+  call assert_match("Can't modify negation", messages[-1])
 endfunc
 
 func Test_perldo()
+  new
+  " :perldo in empty buffer does nothing.
+  perldo ++$counter
+  call assert_equal(0, perleval("$counter"))
+
   sp __TEST__
   exe 'read ' g:testname
   perldo s/perl/vieux_chameau/g
@@ -204,8 +216,7 @@ func Test_perldo()
   call setline(1, ['one', 'two', 'three'])
   perldo VIM::DoCommand("new")
   call assert_equal(wincount + 1, winnr('$'))
-  bwipe!
-  bwipe!
+  %bwipe!
 endfunc
 
 func Test_VIM_package()
@@ -309,6 +320,12 @@ VIM::DoCommand('let s ..= "B"')
     VIM::DoCommand('let s ..= "E"')
   eof
   call assert_equal('ABCDE', s)
+endfunc
+
+func Test_perl_in_sandbox()
+  sandbox perl print 'test'
+  let messages = split(execute('message'), "\n")
+  call assert_match("'print' trapped by operation mask", messages[-1])
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
