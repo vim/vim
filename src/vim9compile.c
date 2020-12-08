@@ -5483,16 +5483,6 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			    }
 			}
 		    }
-		    else if (name[1] == ':' && name[2] != NUL)
-		    {
-			semsg(_(e_cannot_use_namespaced_variable), name);
-			goto theend;
-		    }
-		    else if (!is_decl)
-		    {
-			semsg(_(e_unknown_variable_str), name);
-			goto theend;
-		    }
 		    else if (check_defined(var_start, varlen, cctx) == FAIL)
 			goto theend;
 		}
