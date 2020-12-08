@@ -239,7 +239,8 @@ public:
 	if (mItems[n].pTextFormat != item.pTextFormat)
 	{
 	    SafeRelease(&mItems[n].pTextFormat);
-	    item.pTextFormat->AddRef();
+	    if (item.pTextFormat != NULL)
+		item.pTextFormat->AddRef();
 	}
 	mItems[n] = item;
 	slide(n);
