@@ -57,7 +57,6 @@ jobs:
           sudo add-apt-repository -y "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main"
           sudo apt-get install -y \
             autoconf \
-            clang-11 \
             lcov \
             gettext \
             libcanberra-dev \
@@ -72,9 +71,13 @@ jobs:
             libgtk2.0-dev \
             desktop-file-utils \
             libtool-bin
-          # set clang-11 to /usr/bin/clang
-          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-11 200
-          sudo update-alternatives --set clang /usr/bin/clang-11
+          if [[ ${CC} = clang ]]; then
+            sudo apt-get install -y clang-11
+            # set clang-11 to /usr/bin/clang
+            sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-11 200
+            sudo update-alternatives --set clang /usr/bin/clang-11
+            sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-11 100
+          fi
 
       - name: Set up environment
         run: |
@@ -122,7 +125,7 @@ jobs:
         run: |
           if [[ ${CC} = clang ]]; then
             # Use llvm-cov instead of gcov when compiler is clang.
-            ln -fs /usr/bin/llvm-cov-11 ${HOME}/bin/gcov
+            ln -fs /usr/bin/llvm-cov ${HOME}/bin/gcov
           fi
           # Setup lua5.3 manually since its package doesn't provide alternative.
           # https://bugs.launchpad.net/ubuntu/+source/lua5.3/+bug/1707212
