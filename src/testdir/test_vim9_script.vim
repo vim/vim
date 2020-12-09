@@ -2857,6 +2857,17 @@ def Test_invalid_sid()
   delete('Xdidit')
 enddef
 
+def Test_restoring_cpo()
+  writefile(['vim9script', 'set nocp'], 'Xsourced')
+  writefile(['call writefile(["done"], "Xdone")', 'quit!'], 'Xclose')
+  if RunVim([], [], '-u NONE +"set cpo+=a" -S Xsourced -S Xclose')
+    assert_equal(['done'], readfile('Xdone'))
+  endif
+  delete('Xsourced')
+  delete('Xclose')
+enddef
+
+
 def Test_unset_any_variable()
   var lines =<< trim END
     var name: any
