@@ -341,6 +341,22 @@ tv_get_float(typval_T *varp)
 #endif
 
 /*
+ * Give an error and return FAIL unless "tv" is a non-empty string.
+ */
+    int
+check_for_string(typval_T *tv)
+{
+    if (tv->v_type != VAR_STRING
+	    || tv->vval.v_string == NULL
+	    || *tv->vval.v_string == NUL)
+    {
+	emsg(_(e_stringreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Get the string value of a variable.
  * If it is a Number variable, the number is converted into a string.
  * tv_get_string() uses a single, static buffer.  YOU CAN ONLY USE IT ONCE!

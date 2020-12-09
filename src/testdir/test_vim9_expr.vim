@@ -1971,7 +1971,7 @@ def Test_expr7_dict()
   CheckDefExecFailure(['var x: dict<string> = {a: "x", b: 134}'], 'E1012:', 1)
 
   CheckDefFailure(['var x = ({'], 'E723:', 2)
-  CheckDefExecFailure(['{}[getftype("")]'], 'E716: Key not present in Dictionary: ""', 1)
+  CheckDefExecFailure(['{}[getftype("file")]'], 'E716: Key not present in Dictionary: ""', 1)
 enddef
 
 def Test_expr7_dict_vim9script()

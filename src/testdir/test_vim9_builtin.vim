@@ -185,6 +185,18 @@ def Test_count()
   count('ABC ABC ABC', 'b', false)->assert_equal(0)
 enddef
 
+def Test_executable()
+  CheckDefExecFailure(['echo executable(true)'], 'E928:')
+  CheckDefExecFailure(['echo executable(v:null)'], 'E928:')
+  CheckDefExecFailure(['echo executable("")'], 'E928:')
+enddef
+
+def Test_exepath()
+  CheckDefExecFailure(['echo exepath(true)'], 'E928:')
+  CheckDefExecFailure(['echo exepath(v:null)'], 'E928:')
+  CheckDefExecFailure(['echo exepath("")'], 'E928:')
+enddef
+
 def Test_expand()
   split SomeFile
   expand('%', true, true)->assert_equal(['SomeFile'])
@@ -239,6 +251,39 @@ def Test_map_function_arg()
       assert_equal(['0:a', '1:b', '2:c'], l)
   END
   CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_filereadable()
+  CheckDefExecFailure(['echo filereadable(true)'], 'E928:')
+  CheckDefExecFailure(['echo filereadable(v:null)'], 'E928:')
+  CheckDefExecFailure(['echo filereadable("")'], 'E928:')
+enddef
+
+def Test_filewritable()
+  CheckDefExecFailure(['echo filewritable(true)'], 'E928:')
+  CheckDefExecFailure(['echo filewritable(v:null)'], 'E928:')
+  CheckDefExecFailure(['echo filewritable("")'], 'E928:')
+enddef
+
+def Test_finddir()
+  CheckDefExecFailure(['echo finddir(true)'], 'E928:')
+  CheckDefExecFailure(['echo finddir(v:null)'], 'E928:')
+  CheckDefExecFailure(['echo finddir("")'], 'E928:')
+enddef
+
+def Test_findfile()
+  CheckDefExecFailure(['echo findfile(true)'], 'E928:')
+  CheckDefExecFailure(['echo findfile(v:null)'], 'E928:')
+  CheckDefExecFailure(['echo findfile("")'], 'E928:')
+enddef
+
+def Test_fnamemodify()
+  CheckDefExecFailure(['echo fnamemodify(true, ":p")'], 'E928:')
+  CheckDefExecFailure(['echo fnamemodify(v:null, ":p")'], 'E928:')
+  CheckDefExecFailure(['echo fnamemodify("", ":p")'], 'E928:')
+  CheckDefExecFailure(['echo fnamemodify("file", true)'], 'E928:')
+  CheckDefExecFailure(['echo fnamemodify("file", v:null)'], 'E928:')
+  CheckDefExecFailure(['echo fnamemodify("file", "")'], 'E928:')
 enddef
 
 def Test_filter_wrong_dict_key_type()
@@ -311,6 +356,30 @@ def Test_getloclist_return_type()
 
   var d = getloclist(1, {items: 0})
   d->assert_equal({items: []})
+enddef
+
+def Test_getfperm()
+  CheckDefExecFailure(['echo getfperm(true)'], 'E928:')
+  CheckDefExecFailure(['echo getfperm(v:null)'], 'E928:')
+  CheckDefExecFailure(['echo getfperm("")'], 'E928:')
+enddef
+
+def Test_getfsize()
+  CheckDefExecFailure(['echo getfsize(true)'], 'E928:')
+  CheckDefExecFailure(['echo getfsize(v:null)'], 'E928:')
+  CheckDefExecFailure(['echo getfsize("")'], 'E928:')
+enddef
+
+def Test_getftime()
+  CheckDefExecFailure(['echo getftime(true)'], 'E928:')
+  CheckDefExecFailure(['echo getftime(v:null)'], 'E928:')
+  CheckDefExecFailure(['echo getftime("")'], 'E928:')
+enddef
+
+def Test_getftype()
+  CheckDefExecFailure(['echo getftype(true)'], 'E928:')
+  CheckDefExecFailure(['echo getftype(v:null)'], 'E928:')
+  CheckDefExecFailure(['echo getftype("")'], 'E928:')
 enddef
 
 def Test_getqflist_return_type()

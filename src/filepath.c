@@ -861,10 +861,11 @@ f_delete(typval_T *argvars, typval_T *rettv)
     void
 f_executable(typval_T *argvars, typval_T *rettv)
 {
-    char_u *name = tv_get_string(&argvars[0]);
+    if (in_vim9script() && check_for_string(&argvars[0]) == FAIL)
+	return;
 
     // Check in $PATH and also check directly if there is a directory name.
-    rettv->vval.v_number = mch_can_exe(name, NULL, TRUE);
+    rettv->vval.v_number = mch_can_exe(tv_get_string(&argvars[0]), NULL, TRUE);
 }
 
 /*
@@ -875,6 +876,8 @@ f_exepath(typval_T *argvars, typval_T *rettv)
 {
     char_u *p = NULL;
 
+    if (in_vim9script() && check_for_string(&argvars[0]) == FAIL)
+	return;
     (void)mch_can_exe(tv_get_string(&argvars[0]), &p, TRUE);
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = p;
@@ -890,6 +893,8 @@ f_filereadable(typval_T *argvars, typval_T *rettv)
     char_u	*p;
     int		n;
 
+    if (in_vim9script() && check_for_string(&argvars[0]) == FAIL)
+	return;
 #ifndef O_NONBLOCK
 # define O_NONBLOCK 0
 #endif
@@ -913,6 +918,8 @@ f_filereadable(typval_T *argvars, typval_T *rettv)
     void
 f_filewritable(typval_T *argvars, typval_T *rettv)
 {
+    if (in_vim9script() && check_for_string(&argvars[0]) == FAIL)
+	return;
     rettv->vval.v_number = filewritable(tv_get_string(&argvars[0]));
 }
 
@@ -935,6 +942,8 @@ findfilendir(
 
     rettv->vval.v_string = NULL;
     rettv->v_type = VAR_STRING;
+    if (in_vim9script() && check_for_string(&argvars[0]) == FAIL)
+	return;
 
 #ifdef FEAT_SEARCHPATH
     fname = tv_get_string(&argvars[0]);
@@ -1014,6 +1023,9 @@ f_fnamemodify(typval_T *argvars, typval_T *rettv)
     char_u	*fbuf = NULL;
     char_u	buf[NUMBUFLEN];
 
+    if (in_vim9script() && (check_for_string(&argvars[0]) == FAIL
+	    || check_for_string(&argvars[1]) == FAIL))
+	return;
     fname = tv_get_string_chk(&argvars[0]);
     mods = tv_get_string_buf_chk(&argvars[1], buf);
     if (fname == NULL || mods == NULL)
@@ -1122,6 +1134,8 @@ f_getfperm(typval_T *argvars, typval_T *rettv)
     char_u	*perm = NULL;
     char_u	permbuf[] = "---------";
 
+    if (in_vim9script() && check_for_string(&argvars[0]) == FAIL)
+	return;
     fname = tv_get_string(&argvars[0]);
 
     rettv->v_type = VAR_STRING;
@@ -1139,10 +1153,10 @@ f_getfsize(typval_T *argvars, typval_T *rettv)
     char_u	*fname;
     stat_T	st;
 
+    if (in_vim9script() && check_for_string(&argvars[0]) == FAIL)
+	return;
+
     fname = tv_get_string(&argvars[0]);
-
-    rettv->v_type = VAR_NUMBER;
-
     if (mch_stat((char *)fname, &st) >= 0)
     {
 	if (mch_isdir(fname))
@@ -1169,8 +1183,9 @@ f_getftime(typval_T *argvars, typval_T *rettv)
     char_u	*fname;
     stat_T	st;
 
+    if (in_vim9script() && check_for_string(&argvars[0]) == FAIL)
+	return;
     fname = tv_get_string(&argvars[0]);
-
     if (mch_stat((char *)fname, &st) >= 0)
 	rettv->vval.v_number = (varnumber_T)st.st_mtime;
     else
@@ -1214,6 +1229,8 @@ f_getftype(typval_T *argvars, typval_T *rettv)
     stat_T	st;
     char_u	*type = NULL;
 
+    if (in_vim9script() && check_for_string(&argvars[0]) == FAIL)
+	return;
     fname = tv_get_string(&argvars[0]);
 
     rettv->v_type = VAR_STRING;
