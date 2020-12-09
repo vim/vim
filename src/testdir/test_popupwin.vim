@@ -3215,6 +3215,9 @@ func Get_popupmenu_lines()
       call setline(1, 'text text text text text text text ')
       func ChangeColor()
 	let id = popup_findinfo()
+	if buflisted(winbufnr(id))
+	  call setline(1, 'buffer is listed')
+	endif
 	eval id->popup_setoptions(#{highlight: 'InfoPopup'})
       endfunc
 

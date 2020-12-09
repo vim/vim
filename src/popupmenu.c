@@ -858,6 +858,7 @@ pum_set_selected(int n, int repeat UNUSED)
 			// Edit a new, empty buffer. Set options for a "wipeout"
 			// buffer.
 			set_option_value((char_u *)"swf", 0L, NULL, OPT_LOCAL);
+			set_option_value((char_u *)"bl", 0L, NULL, OPT_LOCAL);
 			set_option_value((char_u *)"bt", 0L,
 					       (char_u *)"nofile", OPT_LOCAL);
 			set_option_value((char_u *)"bh", 0L,
