@@ -887,6 +887,11 @@ job_any_running()
 }
 #endif
 
+// Unix uses argv[] for the command, other systems use a string.
+#if defined(UNIX)
+# define USE_ARGV
+#endif
+
 #if !defined(USE_ARGV) || defined(PROTO)
 /*
  * Escape one argument for an external command.
@@ -1269,9 +1274,7 @@ job_start(
     char	**argv = NULL;
     int		argc = 0;
     int		i;
-#if defined(UNIX)
-# define USE_ARGV
-#else
+#ifndef USE_ARGV
     garray_T	ga;
 #endif
     jobopt_T	opt;
