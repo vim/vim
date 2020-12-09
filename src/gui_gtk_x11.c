@@ -4031,13 +4031,14 @@ set_cairo_source_rgba_from_color(cairo_t *cr, guicolor_T color)
     void
 gui_mch_new_colors(void)
 {
-    if (gui.formwin != NULL && gtk_widget_get_window(gui.formwin) != NULL)
+    if (gui.drawarea != NULL && gtk_widget_get_window(gui.drawarea) != NULL)
     {
 #if !GTK_CHECK_VERSION(3,22,2)
-	GdkWindow * const da_win = gtk_widget_get_window(gui.formwin);
+	GdkWindow * const da_win = gtk_widget_get_window(gui.drawarea);
 #endif
 
 #if GTK_CHECK_VERSION(3,22,2)
+	if (gui.formwin == NULL) return;
 	GtkStyleContext * const context
 	    = gtk_widget_get_style_context(gui.formwin);
 	GtkCssProvider * const provider = gtk_css_provider_new();
