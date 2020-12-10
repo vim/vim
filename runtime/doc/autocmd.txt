@@ -305,6 +305,9 @@ Name			triggered by ~
 |VimLeavePre|		before exiting Vim, before writing the viminfo file
 |VimLeave|		before exiting Vim, after writing the viminfo file
 
+|VimSuspend|		before suspending Vim
+|VimResume|		after Vim is resumed
+
 	Terminal
 |TerminalOpen|		after a terminal buffer was created
 |TerminalWinOpen|	after a terminal buffer was created in a new window
@@ -1230,6 +1233,8 @@ VimLeavePre			Before exiting Vim, just before writing the
 VimResized			After the Vim window was resized, thus 'lines'
 				and/or 'columns' changed.  Not when starting
 				up though.
+							*VimResumed*
+VimResumed			After the Vim instance is resumed.
 							*WinEnter*
 WinEnter			After entering another window.  Not done for
 				the first window, when Vim has just started.

@@ -5864,6 +5864,7 @@ ex_stop(exarg_T *eap)
     {
 	if (!eap->forceit)
 	    autowrite_all();
+	apply_autocmds(EVENT_VIMSUSPEND, NULL, NULL, FALSE, NULL);
 	windgoto((int)Rows - 1, 0);
 	out_char('\n');
 	out_flush();
@@ -5881,6 +5882,7 @@ ex_stop(exarg_T *eap)
 	scroll_start();		// scroll screen before redrawing
 	redraw_later_clear();
 	shell_resized();	// may have resized window
+	apply_autocmds(EVENT_VIMRESUME, NULL, NULL, FALSE, NULL);
     }
 }
 
