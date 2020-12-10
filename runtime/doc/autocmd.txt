@@ -1233,8 +1233,14 @@ VimLeavePre			Before exiting Vim, just before writing the
 VimResized			After the Vim window was resized, thus 'lines'
 				and/or 'columns' changed.  Not when starting
 				up though.
-							*VimResumed*
-VimResumed			After the Vim instance is resumed.
+							*VimResume*
+VimResume			After the Vim instance is resumed.  Useful for
+				triggering |:checktime| and ensure the buffers
+				content did not change while Vim was
+				suspended: >
+	:autocmd VimResume * checktime
+<							*VimSuspend*
+VimSuspend			Before the Vim instance is suspended.
 							*WinEnter*
 WinEnter			After entering another window.  Not done for
 				the first window, when Vim has just started.
