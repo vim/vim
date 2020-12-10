@@ -133,6 +133,21 @@ def Test_disassemble_put_expr()
         res)
 enddef
 
+def s:PutRange()
+  :$-2put a
+enddef
+
+def Test_disassemble_put_range()
+  var res = execute('disass s:PutRange')
+  assert_match('<SNR>\d*_PutRange.*' ..
+        ' :$-2put a\_s*' ..
+        '\d RANGE $-2\_s*' ..
+        '\d PUT a range\_s*' ..
+        '\d PUSHNR 0\_s*' ..
+        '\d RETURN',
+        res)
+enddef
+
 def s:ScriptFuncPush()
   var localbool = true
   var localspec = v:none

@@ -18,6 +18,7 @@ typedef enum {
     ISN_EXECUTE,    // execute Ex commands isn_arg.number items on top of stack
     ISN_ECHOMSG,    // echo Ex commands isn_arg.number items on top of stack
     ISN_ECHOERR,    // echo Ex commands isn_arg.number items on top of stack
+    ISN_RANGE,	    // compute range from isn_arg.string, push to stack
 
     // get and set variables
     ISN_LOAD,	    // push local variable isn_arg.number
@@ -366,3 +367,8 @@ garray_T def_functions = {0, 0, sizeof(dfunc_T), 50, NULL};
 extern garray_T def_functions;
 #endif
 
+// Used for "lnum" when a range is to be taken from the stack.
+#define LNUM_VARIABLE_RANGE -999
+
+// Used for "lnum" when a range is to be taken from the stack and "!" is used.
+#define LNUM_VARIABLE_RANGE_ABOVE -888

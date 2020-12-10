@@ -614,6 +614,17 @@ def Test_put_command()
   assert_equal('above', getline(3))
   assert_equal('below', getline(4))
 
+  # compute range at runtime
+  setline(1, range(1, 8))
+  @a = 'aaa'
+  :$-2put a
+  assert_equal('aaa', getline(7))
+
+  setline(1, range(1, 8))
+  :2
+  :+2put! a
+  assert_equal('aaa', getline(4))
+
   bwipe!
 enddef
 

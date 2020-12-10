@@ -2861,6 +2861,26 @@ call_def_function(
 		}
 		break;
 
+	    case ISN_RANGE:
+		{
+		    exarg_T	ea;
+		    char	*errormsg;
+
+		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
+			goto failed;
+		    ++ectx.ec_stack.ga_len;
+		    tv = STACK_TV_BOT(-1);
+		    ea.addr_type = ADDR_LINES;
+		    ea.cmd = iptr->isn_arg.string;
+		    if (parse_cmd_address(&ea, &errormsg, FALSE) == FAIL)
+			goto failed;
+		    if (ea.addr_count == 0)
+			tv->vval.v_number = curwin->w_cursor.lnum;
+		    else
+			tv->vval.v_number = ea.line2;
+		}
+		break;
+
 	    case ISN_PUT:
 		{
 		    int		regname = iptr->isn_arg.put.put_regname;
@@ -2880,7 +2900,16 @@ call_def_function(
 			}
 			--ectx.ec_stack.ga_len;
 		    }
-		    if (lnum == -2)
+		    if (lnum < -2)
+		    {
+			// line number was put on the stack by ISN_RANGE
+			tv = STACK_TV_BOT(-1);
+			curwin->w_cursor.lnum = tv->vval.v_number;
+			if (lnum == LNUM_VARIABLE_RANGE_ABOVE)
+			    dir = BACKWARD;
+			--ectx.ec_stack.ga_len;
+		    }
+		    else if (lnum == -2)
 			// :put! above cursor
 			dir = BACKWARD;
 		    else if (lnum >= 0)
@@ -3690,8 +3719,18 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_2STRING_ANY: smsg("%4d 2STRING_ANY stack[%lld]", current,
 					 (long long)(iptr->isn_arg.number));
 			      break;
+	    case ISN_RANGE: smsg("%4d RANGE %s", current, iptr->isn_arg.string);
+			    break;
 	    case ISN_PUT:
-		smsg("%4d PUT %c %ld", current, iptr->isn_arg.put.put_regname,
+	        if (iptr->isn_arg.put.put_lnum == LNUM_VARIABLE_RANGE_ABOVE)
+		    smsg("%4d PUT %c above range",
+				       current, iptr->isn_arg.put.put_regname);
+		else if (iptr->isn_arg.put.put_lnum == LNUM_VARIABLE_RANGE)
+		    smsg("%4d PUT %c range",
+				       current, iptr->isn_arg.put.put_regname);
+		else
+		    smsg("%4d PUT %c %ld", current,
+						 iptr->isn_arg.put.put_regname,
 					     (long)iptr->isn_arg.put.put_lnum);
 		break;
 
