@@ -512,6 +512,10 @@ static void (*dll_rb_gc_writebarrier_unprotect)(VALUE obj);
 #  endif
 # endif
 
+# if RUBY_VERSION >= 26
+void rb_ary_detransient_stub(VALUE x);
+# endif
+
 # if (RUBY_VERSION >= 19) && !defined(PROTO)
 #  if RUBY_VERSION >= 22
     long
