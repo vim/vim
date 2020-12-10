@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Dec 04
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Dec 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -123,8 +123,8 @@ often 10x to 100x times.
 Many errors are already found when compiling, before the function is executed.
 The syntax is strict, to enforce code that is easy to read and understand.
 
-Compilation is done when:
-- the function is first called
+Compilation is done when either of these is encountered:
+- the first time the function is called
 - when the `:defcompile` command is encountered in the script where the
   function was defined
 - `:disassemble` is used for the function.
@@ -132,8 +132,9 @@ Compilation is done when:
   reference
 
 `:def` has no options like `:function` does: "range", "abort", "dict" or
-"closure".  A `:def` function always aborts on an error, does not get a range
-passed and cannot be a "dict" function.
+"closure".  A `:def` function always aborts on an error (unless `:silent!` was
+used for the command or inside a `:try` block), does not get a range passed
+and cannot be a "dict" function.
 
 The argument types and return type need to be specified.  The "any" type can
 be used, type checking will then be done at runtime, like with legacy

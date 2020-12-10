@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Nov 11
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Dec 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5059,9 +5059,9 @@ getbufvar({expr}, {varname} [, {def}])				*getbufvar()*
 		The result is the value of option or local buffer variable
 		{varname} in buffer {expr}.  Note that the name without "b:"
 		must be used.
-		When {varname} is empty returns a dictionary with all the
+		When {varname} is empty returns a |Dictionary| with all the
 		buffer-local variables.
-		When {varname} is equal to "&" returns a dictionary with all
+		When {varname} is equal to "&" returns a |Dictionary| with all
 		the buffer-local options.
 		Otherwise, when {varname} starts with "&" returns the value of
 		a buffer-local option.
@@ -5533,8 +5533,8 @@ getloclist({nr} [, {what}])				*getloclist()*
 					|location-list-file-window| for more
 					details.
 
-		Returns a Dictionary with default values if there is no location
-		list for the window {nr}.
+		Returns a |Dictionary| with default values if there is no
+		location list for the window {nr}.
 		Returns an empty Dictionary if window {nr} does not exist.
 
 		Examples (See also |getqflist-examples|): >
@@ -5647,7 +5647,7 @@ getpos({expr})	Get the position for {expr}.  For possible values of {expr}
 
 
 getqflist([{what}])					*getqflist()*
-		Returns a list with all the current quickfix errors.  Each
+		Returns a |List| with all the current quickfix errors.  Each
 		list item is a dictionary with these entries:
 			bufnr	number of buffer that has the file name, use
 				bufname() to get the name
@@ -7153,7 +7153,8 @@ mapcheck({name} [, {mode} [, {abbr}]])			*mapcheck()*
 mapnew({expr1}, {expr2})					*mapnew()*
 		Like |map()| but instead of replacing items in {expr1} a new
 		List or Dictionary is created and returned.  {expr1} remains
-		unchanged.
+		unchanged.  Items can still be changed by {expr2}, if you
+		don't want that use |deepcopy()| first.
 
 
 mapset({mode}, {abbr}, {dict})					*mapset()*
@@ -7382,7 +7383,7 @@ matchend({expr}, {pat} [, {start} [, {count}]])			*matchend()*
 
 
 matchfuzzy({list}, {str} [, {dict}])			*matchfuzzy()*
-		If {list} is a list of strings, then returns a list with all
+		If {list} is a list of strings, then returns a |List| with all
 		the strings in {list} that fuzzy match {str}. The strings in
 		the returned list are sorted based on the matching score.
 
@@ -10660,7 +10661,7 @@ tagfiles()	Returns a |List| with the file names used to search for tags
 
 
 taglist({expr} [, {filename}])				*taglist()*
-		Returns a list of tags matching the regular expression {expr}.
+		Returns a |List| of tags matching the regular expression {expr}.
 
 		If {filename} is passed it is used to prioritize the results
 		in the same way that |:tselect| does. See |tag-priority|.
@@ -10752,7 +10753,7 @@ term_ functions are documented here: |terminal-function-details|
 
 
 terminalprops()						*terminalprops()*
-		Returns a dictionary with properties of the terminal that Vim
+		Returns a |Dictionary| with properties of the terminal that Vim
 		detected from the response to |t_RV| request.  See
 		|v:termresponse| for the response itself.  If |v:termresponse|
 		is empty most values here will be 'u' for unknown.
@@ -11159,7 +11160,7 @@ win_execute({id}, {command} [, {silent}])		*win_execute()*
 			GetCommand()->win_execute(winid)
 
 win_findbuf({bufnr})					*win_findbuf()*
-		Returns a list with |window-ID|s for windows that contain
+		Returns a |List| with |window-ID|s for windows that contain
 		buffer {bufnr}.  When there is none the list is empty.
 
 		Can also be used as a |method|: >

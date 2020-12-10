@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.2.  Last change: 2020 Nov 22
+*syntax.txt*	For Vim version 8.2.  Last change: 2020 Dec 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3183,6 +3183,7 @@ redrawing can become slow.
 
 
 TEX				*tex.vim* *ft-tex-syntax* *latex-syntax*
+				*syntax-tex* *syntax-latex*
 
 			Tex Contents~
 	Tex: Want Syntax Folding?			|tex-folding|
@@ -3199,6 +3200,7 @@ TEX				*tex.vim* *ft-tex-syntax* *latex-syntax*
 	Tex: Selective Conceal Mode			|g:tex_conceal|
 	Tex: Controlling iskeyword			|g:tex_isk|
 	Tex: Fine Subscript and Superscript Control	|tex-supersub|
+	Tex: Match Check Control			|tex-matchcheck|
 
 				*tex-folding* *g:tex_fold_enabled*
  Tex: Want Syntax Folding? ~
@@ -3422,6 +3424,22 @@ syntax highlighting script handles this with the following logic:
 <	in ~/.vim/ftplugin/tex/tex.vim in order to avoid having inscrutable
 	utf-8 glyphs appear.
 
+					*tex-matchcheck* *g:tex_matchcheck*
+ Tex: Match Check Control~
+
+	Sometimes one actually wants mismatched parentheses, square braces,
+	and or curly braces; for example, \text{(1,10] is a range from but
+	not including 1 to and including 10}.  This wish, of course, conflicts
+	with the desire to provide delimiter mismatch detection.  To
+	accommodate these conflicting goals, syntax/tex.vim provides >
+		g:tex_matchcheck = '[({[]'
+<	which is shown along with its default setting.  So, if one doesn't
+	want [] and () to be checked for mismatches, try using >
+		let g:tex_matchcheck= '[{}]'
+<	If you don't want matching to occur inside bold and italicized
+	regions, >
+		let g:tex_excludematcher= 1
+<	will prevent the texMatcher group from being included in those regions.
 
 TF						*tf.vim* *ft-tf-syntax*
 

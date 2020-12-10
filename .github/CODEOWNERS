@@ -20,6 +20,7 @@ runtime/autoload/rubycomplete.vim	@segfault @dkearns
 runtime/autoload/tar.vim		@cecamp
 runtime/autoload/vimball.vim		@cecamp
 runtime/autoload/zip.vim		@cecamp
+runtime/autoload/xmlformat.vim		@chrisbra
 runtime/compiler/checkstyle.vim		@dkearns
 runtime/compiler/cucumber.vim		@tpope
 runtime/compiler/dart.vim		@dkearns
@@ -57,6 +58,7 @@ runtime/compiler/tsc.vim		@dkearns
 runtime/compiler/typedoc.vim		@dkearns
 runtime/compiler/xmllint.vim		@dkearns
 runtime/compiler/xo.vim			@dkearns
+runtime/compiler/zsh.vim		@dkearns
 runtime/doc/pi_getscript.txt		@cecamp
 runtime/doc/pi_logipat.txt		@cecamp
 runtime/doc/pi_netrw.txt		@cecamp
@@ -65,6 +67,7 @@ runtime/doc/pi_vimball.txt		@cecamp
 runtime/doc/pi_zip.txt			@cecamp
 runtime/ftplugin/awk.vim		@dkearns
 runtime/ftplugin/bst.vim		@tpope
+runtime/ftplugin/cfg.vim		@chrisbra
 runtime/ftplugin/css.vim		@dkearns
 runtime/ftplugin/cucumber.vim		@tpope
 runtime/ftplugin/eiffel.vim		@dkearns
@@ -78,9 +81,11 @@ runtime/ftplugin/haml.vim		@tpope
 runtime/ftplugin/hgcommit.vim		@k-takata
 runtime/ftplugin/javascript.vim		@dkearns
 runtime/ftplugin/javascriptreact.vim	@dkearns
+runtime/ftplugin/kconfig.vim		@chrisbra
 runtime/ftplugin/liquid.vim		@tpope
 runtime/ftplugin/markdown.vim		@tpope
 runtime/ftplugin/matlab.vim		@cecamp
+runtime/ftplugin/nroff.vim		@a-vrma
 runtime/ftplugin/nsis.vim		@k-takata
 runtime/ftplugin/pdf.vim		@tpope
 runtime/ftplugin/ruby.vim		@tpope @dkearns
@@ -89,7 +94,10 @@ runtime/ftplugin/scss.vim		@tpope
 runtime/ftplugin/tmux.vim		@ericpruitt
 runtime/ftplugin/typescript.vim		@dkearns
 runtime/ftplugin/typescriptreact.vim	@dkearns
+runtime/ftplugin/xml.vim		@chrisbra
+runtime/ftplugin/zsh.vim		@chrisbra
 runtime/indent/bst.vim			@tpope
+runtime/syntax/cs.vim			@nickspoons
 runtime/indent/cucumber.vim		@tpope
 runtime/indent/dosbatch.vim		@k-takata
 runtime/indent/eruby.vim		@tpope @dkearns
@@ -100,7 +108,11 @@ runtime/indent/nsis.vim			@k-takata
 runtime/indent/ruby.vim			@AndrewRadev @dkearns
 runtime/indent/sass.vim			@tpope
 runtime/indent/scss.vim			@tpope
+runtime/indent/sh.vim			@chrisbra
+runtime/indent/xml.vim			@chrisbra
+runtime/indent/zsh.vim			@chrisbra
 runtime/indent/teraterm.vim		@k-takata
+runtime/pack/dist/opt/matchit/		@chrisbra
 runtime/plugin/getscriptPlugin.vim	@cecamp
 runtime/plugin/logiPat.vim		@cecamp
 runtime/plugin/netrwPlugin.vim		@cecamp
@@ -112,9 +124,13 @@ runtime/syntax/asm.vim			@dkearns
 runtime/syntax/asmh8300.vim		@dkearns
 runtime/syntax/awk.vim			@dkearns
 runtime/syntax/bst.vim			@tpope
+runtime/syntax/cabalconfig.vim		@coot
+runtime/syntax/cabalproject.vim		@coot
+runtime/syntax/cs.vim			@nickspoons
 runtime/syntax/csh.vim			@cecamp
 runtime/syntax/cucumber.vim		@tpope
 runtime/syntax/dcl.vim			@cecamp
+runtime/syntax/dtd.vim			@chrisbra
 runtime/syntax/elmfilt.vim		@cecamp
 runtime/syntax/eruby.vim		@tpope @dkearns
 runtime/syntax/exports.vim		@cecamp
@@ -123,7 +139,9 @@ runtime/syntax/gitcommit.vim		@tpope
 runtime/syntax/gitconfig.vim		@tpope
 runtime/syntax/gitrebase.vim		@tpope
 runtime/syntax/haml.vim			@tpope
+runtime/syntax/haskell.vim		@coot
 runtime/syntax/hgcommit.vim		@k-takata
+runtime/syntax/kconfig.vim		@chrisbra
 runtime/syntax/lex.vim			@cecamp
 runtime/syntax/liquid.vim		@tpope
 runtime/syntax/lisp.vim			@cecamp
@@ -138,12 +156,15 @@ runtime/syntax/nsis.vim			@k-takata
 runtime/syntax/pdf.vim			@tpope
 runtime/syntax/php.vim			@TysonAndre
 runtime/syntax/privoxy.vim		@dkearns
+runtime/syntax/rc.vim			@chrisbra
 runtime/syntax/rpcgen.vim		@cecamp
 runtime/syntax/ruby.vim			@dkearns
 runtime/syntax/sass.vim			@tpope
 runtime/syntax/scss.vim			@tpope
 runtime/syntax/sh.vim			@cecamp
 runtime/syntax/sm.vim			@cecamp
+runtime/syntax/sqloracle.vim		@chrisbra
+runtime/syntax/sshdconfig.vim		@Jakuje
 runtime/syntax/tags.vim			@cecamp
 runtime/syntax/teraterm.vim		@k-takata
 runtime/syntax/tex.vim			@cecamp
@@ -154,5 +175,8 @@ runtime/syntax/wget.vim			@dkearns
 runtime/syntax/xbl.vim			@dkearns
 runtime/syntax/xmath.vim		@cecamp
 runtime/syntax/xslt.vim			@Boobies
+runtime/syntax/xml.vim			@chrisbra
 runtime/syntax/xxd.vim			@cecamp
 runtime/syntax/yacc.vim			@cecamp
+runtime/syntax/zsh.vim			@chrisbra
+src/po/de.po				@chrisbra
