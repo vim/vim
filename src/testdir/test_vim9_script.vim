@@ -2381,6 +2381,27 @@ def Test_vim9_comment()
       'Echo',
       ], 'E121:')
   delcommand Echo
+
+  var curdir = getcwd()
+  CheckScriptSuccess([
+      'command Echo cd " comment',
+      'Echo',
+      'delcommand Echo',
+      ])
+  CheckScriptSuccess([
+      'vim9script'
+      'command Echo cd # comment',
+      'Echo',
+      'delcommand Echo',
+      ])
+  CheckScriptFailure([
+      'vim9script',
+      'command Echo cd " comment',
+      'Echo',
+      ], 'E344:')
+  delcommand Echo
+  chdir(curdir)
+
   CheckScriptFailure([
       'vim9script',
       'command Echo# comment',
