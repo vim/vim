@@ -4082,6 +4082,7 @@ ins_complete(int c, int enable_pum)
 		// Space for 10 text chars. + 2x10-digit no.s = 31.
 		// Translations may need more than twice that.
 		static char_u match_ref[81];
+		msg_hist_off = TRUE;
 
 		if (compl_matches > 0)
 		    vim_snprintf((char *)match_ref, sizeof(match_ref),
@@ -4091,6 +4092,7 @@ ins_complete(int c, int enable_pum)
 		    vim_snprintf((char *)match_ref, sizeof(match_ref),
 				_("match %d"),
 				compl_curr_match->cp_number);
+		msg_hist_off = FALSE;
 		edit_submode_extra = match_ref;
 		edit_submode_highl = HLF_R;
 		if (dollar_vcol >= 0)
