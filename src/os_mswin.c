@@ -387,21 +387,13 @@ mch_FullName(
     int
 mch_isFullName(char_u *fname)
 {
-    // WinNT and later can use _MAX_PATH wide characters for a pathname, which
-    // means that the maximum pathname is _MAX_PATH * 3 bytes when 'enc' is
-    // UTF-8.
-    char szName[_MAX_PATH * 3 + 1];
-
-    // A name like "d:/foo" and "//server/share" is absolute
-    if ((fname[0] && fname[1] == ':' && (fname[2] == '/' || fname[2] == '\\'))
-	    || (fname[0] == fname[1] && (fname[0] == '/' || fname[0] == '\\')))
-	return TRUE;
-
-    // A name that can't be made absolute probably isn't absolute.
-    if (mch_FullName(fname, (char_u *)szName, sizeof(szName) - 1, FALSE) == FAIL)
-	return FALSE;
-
-    return pathcmp((const char *)fname, (const char *)szName, -1) == 0;
+    // A name like "d:/foo" and "//server/share" is absolute.  "d:foo" is not.
+    // Another way to check is to use mch_FullName() and see if the result is
+    // the same as the name or mch_FullName() fails.  However, this has quite a
+    // bit of overhead, so let's not do that.
+    return ((ASCII_ISALPHA(fname[0]) && fname[1] == ':'
+				      && (fname[2] == '/' || fname[2] == '\\'))
+	    || (fname[0] == fname[1] && (fname[0] == '/' || fname[0] == '\\')));
 }
 
 /*
