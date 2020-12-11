@@ -720,12 +720,10 @@ func Test_z1_complete_no_history()
   messages clear
   let currmess = execute('messages')
   setlocal dictionary=README.txt
-  setlocal tags=./tags;
   " without 'c', messages of the type "match n of N" are still recorded
   let oldshm = &shortmess
   set shortmess+=c
   exe "normal owh\<C-X>\<C-K>"
-  exe "normal owh\<C-X>\<C-]>"
   exe "normal owh\<C-N>"
   call assert_equal(currmess, execute('messages'))
   let &shortmess = oldshm
