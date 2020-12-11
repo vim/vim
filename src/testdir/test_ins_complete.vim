@@ -714,4 +714,21 @@ func Test_issue_7021()
   set completeslash=
 endfunc
 
+" Test to ensure 'Scanning...' messages are not recorded in messages history
+func Test_z1_complete_no_history()
+  new
+  messages clear
+  let currmess = execute('messages')
+  setlocal dictionary=README.txt
+  setlocal tags=./tags;
+  " without 'c', messages of the type "match n of N" are still recorded
+  let oldshm = &shortmess
+  set shortmess+=c
+  exe "normal owh\<C-X>\<C-K>"
+  exe "normal owh\<C-X>\<C-]>"
+  exe "normal owh\<C-N>"
+  call assert_equal(currmess, execute('messages'))
+  let &shortmess = oldshm
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
