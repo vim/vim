@@ -729,6 +729,7 @@ func Test_z1_complete_no_history()
   exe "normal owh\<C-N>"
   call assert_equal(currmess, execute('messages'))
   let &shortmess = oldshm
+  close!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
