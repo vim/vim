@@ -191,6 +191,8 @@ static struct event_name
     {"WinLeave",	EVENT_WINLEAVE},
     {"VimResized",	EVENT_VIMRESIZED},
     {"TextYankPost",	EVENT_TEXTYANKPOST},
+    {"VimSuspend",	EVENT_VIMSUSPEND},
+    {"VimResume",	EVENT_VIMRESUME},
     {NULL,		(event_T)0}
 };
 

@@ -306,6 +306,9 @@ Name			triggered by ~
 |VimLeavePre|		before exiting Vim, before writing the viminfo file
 |VimLeave|		before exiting Vim, after writing the viminfo file
 
+|VimSuspend|		when suspending Vim
+|VimResume|		when Vim is resumed after being suspended
+
 	Terminal
 |TerminalOpen|		after a terminal buffer was created
 |TerminalWinOpen|	after a terminal buffer was created in a new window
@@ -1231,6 +1234,17 @@ VimLeavePre			Before exiting Vim, just before writing the
 VimResized			After the Vim window was resized, thus 'lines'
 				and/or 'columns' changed.  Not when starting
 				up though.
+							*VimResume*
+VimResume			When the Vim instance is resumed after being
+				suspended and |VimSuspend| was triggered.
+				Useful for triggering |:checktime| and ensure
+				the buffers content did not change while Vim
+				was suspended: >
+	:autocmd VimResume * checktime
+<							*VimSuspend*
+VimSuspend			When the Vim instance is suspended.  Only when
+				CTRL-Z was typed inside Vim, not when the
+				SIGSTOP or SIGTSTP signal was sent to Vim.
 							*WinEnter*
 WinEnter			After entering another window.  Not done for
 				the first window, when Vim has just started.

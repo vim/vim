@@ -1344,6 +1344,8 @@ enum auto_event
     EVENT_WINENTER,		// after entering a window
     EVENT_WINLEAVE,		// before leaving a window
     EVENT_WINNEW,		// when entering a new window
+    EVENT_VIMSUSPEND,		// before Vim is suspended
+    EVENT_VIMRESUME,		// after Vim is resumed
 
     NUM_EVENTS			// MUST be the last one
 };
