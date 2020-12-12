@@ -583,7 +583,7 @@ call_bfunc(int func_idx, int argcount, ectx_T *ectx)
     for (idx = 0; idx < argcount; ++idx)
 	clear_tv(&argvars[idx]);
 
-    if (did_emsg != did_emsg_before)
+    if (did_emsg > did_emsg_before)
 	return FAIL;
     return OK;
 }

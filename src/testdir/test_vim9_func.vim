@@ -1824,6 +1824,26 @@ def Test_reset_did_emsg()
   delfunc! g:Func
 enddef
 
+def Test_did_emsg_reset()
+  # executing an autocommand resets did_emsg, this should not result in a
+  # builtin function considered failing
+  var lines =<< trim END
+      vim9script
+      au BufWinLeave * #
+      def Func()
+          popup_menu('', {callback: {-> popup_create('', {})->popup_close()}})
+          eval [][0]
+      enddef
+      nno <F3> <cmd>call <sid>Func()<cr>
+      feedkeys("\<F3>\e", 'xt')
+  END
+  writefile(lines, 'XemsgReset')
+  assert_fails('so XemsgReset', ['E684:', 'E684:'], lines, 2)
+  delete('XemsgReset')
+  nunmap <F3>
+  au! BufWinLeave
+enddef
+
 def Test_abort_with_silent_call()
   var lines =<< trim END
       vim9script
