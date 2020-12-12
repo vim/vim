@@ -170,7 +170,7 @@ endif
 
   fun! s:DxyCreateSmallSpecial( kword, name )
 
-    let mx='[-:0-9A-Za-z_%=&+*/!~>|]\@<!\([-0-9A-Za-z_%=+*/!~>|#]\+[-0-9A-Za-z_%=+*/!~>|]\@!\|\\[\\<>&.]@\|[.,][0-9a-zA-Z_]\@=\|::\|([^)]*)\|&[0-9a-zA-Z]\{2,7};\)\+'
+    let mx='[-:0-9A-Za-z_%=&+*/!~>|]\@<!\([-0-9A-Za-z_%=+*/!~>|#]\+[-0-9A-Za-z_%=+*/!~>|]\@!\|\\[\\<>&.]@\|[.,]\w\@=\|::\|([^)]*)\|&[0-9a-zA-Z]\{2,7};\)\+'
     exe 'syn region doxygenSpecial'.a:name.'Word contained start=+'.a:kword.'+ end=+\(\_s\+'.mx.'\)\@<=[-a-zA-Z_0-9+*/^%|~!=&\\]\@!+ skipwhite contains=doxygenContinueCommentWhite,doxygen'.a:name.'Word'
     exe 'syn match doxygen'.a:name.'Word contained "\_s\@<='.mx.'" contains=doxygenHtmlSpecial,@Spell keepend'
   endfun
@@ -257,7 +257,7 @@ endif
   syn match doxygenContinueLinkComment contained +^\s*\*\=[^/]+me=e-1 nextgroup=doxygenLinkRest
   syn match doxygenLinkError "\*/" contained
   " #Link hilighting.
-  syn match doxygenHashLink /\([a-zA-Z_][0-9a-zA-Z_]*\)\?#\(\.[0-9a-zA-Z_]\@=\|[a-zA-Z0-9_]\+\|::\|()\)\+/ contained contains=doxygenHashSpecial
+  syn match doxygenHashLink /\(\h\w*\)\?#\(\.\w\@=\|\w\+\|::\|()\)\+/ contained contains=doxygenHashSpecial
   syn match doxygenHashSpecial /#/ contained
   syn match doxygenHyperLink /\(\s\|^\s*\*\?\)\@<=\(http\|https\|ftp\):\/\/[-0-9a-zA-Z_?&=+#%/.!':;@~]\+/ contained
 
@@ -265,12 +265,12 @@ endif
   syn match doxygenPage "[\\@]page\>"me=s+1 contained skipwhite nextgroup=doxygenPagePage
   syn keyword doxygenPagePage page contained skipwhite nextgroup=doxygenPageIdent
   syn region doxygenPageDesc  start=+.\++ end=+$+ contained skipwhite contains=doxygenSmallSpecial,@doxygenHtmlGroup keepend skipwhite skipnl nextgroup=doxygenBody
-  syn match doxygenPageIdent "\<[a-zA-Z_0-9]\+\>" contained nextgroup=doxygenPageDesc
+  syn match doxygenPageIdent "\<\w\+\>" contained nextgroup=doxygenPageDesc
 
   " Handle section
   syn keyword doxygenOther defgroup section subsection subsubsection weakgroup contained skipwhite nextgroup=doxygenSpecialIdent
   syn region doxygenSpecialSectionDesc  start=+.\++ end=+$+ contained skipwhite contains=doxygenSmallSpecial,@doxygenHtmlGroup keepend skipwhite skipnl nextgroup=doxygenContinueCommentWhite
-  syn match doxygenSpecialIdent "\<[a-zA-Z_0-9]\+\>" contained nextgroup=doxygenSpecialSectionDesc
+  syn match doxygenSpecialIdent "\<\w\+\>" contained nextgroup=doxygenSpecialSectionDesc
 
   " Does the one-line description for the one-line type identifiers.
   syn region doxygenSpecialTypeOnelineDesc  start=+.\++ end=+$+ contained skipwhite contains=doxygenSmallSpecial,@doxygenHtmlGroup keepend
@@ -422,7 +422,7 @@ endif
             if &guifont == ''
               let font="font='FreeSerif 12'"
             else
-              let font="font='".substitute(&guifont, '^.\{-}\([0-9]\+\)$', 'FreeSerif \1','')."'"
+              let font="font='".substitute(&guifont, '^.\{-}\(\d\+\)$', 'FreeSerif \1','')."'"
             endif
 
           elseif has('gui_win32') || has('gui_win16') || has('gui_win95')
