@@ -2069,7 +2069,21 @@ def Test_vim9_comment()
   CheckScriptSuccess([
       'vim9script',
       '# something',
+      '#something',
+      '#{something',
       ])
+
+  split Xfile
+  CheckScriptSuccess([
+      'vim9script',
+      'edit #something',
+      ])
+  CheckScriptSuccess([
+      'vim9script',
+      'edit #{something',
+      ])
+  close
+
   CheckScriptFailure([
       'vim9script',
       ':# something',

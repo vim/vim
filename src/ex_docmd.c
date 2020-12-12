@@ -1683,7 +1683,7 @@ comment_start(char_u *p, int starts_with_colon UNUSED)
 {
 #ifdef FEAT_EVAL
     if (in_vim9script())
-	return p[0] == '#' && p[1] != '{' && !starts_with_colon;
+	return p[0] == '#' && !starts_with_colon;
 #endif
     return *p == '"';
 }
@@ -4780,7 +4780,6 @@ separate_nextcmd(exarg_T *eap)
 		|| (*p == '#'
 		    && in_vim9script()
 		    && !(eap->argt & EX_NOTRLCOM)
-		    && p[1] != '{'
 		    && p > eap->cmd && VIM_ISWHITE(p[-1]))
 #endif
 		|| *p == '|' || *p == '\n')
