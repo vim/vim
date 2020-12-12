@@ -3868,20 +3868,19 @@ update_popups(void (*win_update)(win_T *wp))
 	}
 	if (top_padding > 0)
 	{
-	    // top padding; do not draw over the title
 	    row = wp->w_winrow + wp->w_popup_border[0];
-	    if (title_len > 0)
+	    if (title_len > 0 && row == wp->w_winrow)
 	    {
-		screen_fill(row, row + top_padding, padcol, title_wincol,
+		// top padding and no border; do not draw over the title
+		screen_fill(row, row + 1, padcol, title_wincol,
 							 ' ', ' ', popup_attr);
-		screen_fill(row, row + top_padding, title_wincol + title_len,
+		screen_fill(row, row + 1, title_wincol + title_len,
 					      padendcol, ' ', ' ', popup_attr);
+		row += 1;
+		top_padding -= 1;
 	    }
-	    else
-	    {
-		screen_fill(row, row + top_padding, padcol, padendcol,
+	    screen_fill(row, row + top_padding, padcol, padendcol,
 							 ' ', ' ', popup_attr);
-	    }
 	}
 
 	// Compute scrollbar thumb position and size.
