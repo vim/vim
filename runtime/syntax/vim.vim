@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Vim 8.0 script
 " Maintainer:	Charles E. Campbell <NcampObell@SdrPchip.AorgM-NOSPAM>
-" Last Change:	October 06, 2020
-" Version:	8.0-45
+" Last Change:	December 12, 2020
+" Version:	8.0-46
 " URL:	http://www.drchip.org/astronaut/vim/index.html#SYNTAX_VIM
 " Automatically generated keyword lists: {{{1
 
@@ -172,7 +172,10 @@ endif
 syn match vimNumber	"\<\d\+\%(\.\d\+\%([eE][+-]\=\d\+\)\=\)\=" skipwhite nextgroup=vimGlobal,vimSubst,vimCommand,vimComment,vim9Comment
 syn match vimNumber	"-\d\+\%(\.\d\+\%([eE][+-]\=\d\+\)\=\)\="  skipwhite nextgroup=vimGlobal,vimSubst,vimCommand,vimComment,vim9Comment
 syn match vimNumber	"\<0[xX]\x\+"		       skipwhite nextgroup=vimGlobal,vimSubst,vimCommand,vimComment,vim9Comment
-syn match vimNumber	"\%(^\|\A\)\zs#\x\{6}"             	       skipwhite nextgroup=vimGlobal,vimSubst,vimCommand,vimComment,vim9Comment
+syn match vimNumber	"\%(^\|\A\)\zs#\x\{6}"	       skipwhite nextgroup=vimGlobal,vimSubst,vimCommand,vimComment,vim9Comment
+syn match vimNumber	"\<0[zZ]\(\x\x\)\+\x\@!"	       skipwhite nextgroup=vimGlobal,vimSubst,vimCommand,vimComment,vim9Comment
+syn match vimNumber	"\<0[oO]\o\+"		       skipwhite nextgroup=vimGlobal,vimSubst,vimCommand,vimComment,vim9Comment
+syn match vimNumber	"\<0[bB][01]\+"		       skipwhite nextgroup=vimGlobal,vimSubst,vimCommand,vimComment,vim9Comment
 
 " All vimCommands are contained by vimIsCommand. {{{2
 syn match vimCmdSep	"[:|]\+"	skipwhite nextgroup=vimAddress,vimAutoCmd,vimEcho,vimIsCommand,vimExtCmd,vimFilter,vimLet,vimMap,vimMark,vimSet,vimSyntax,vimUserCmd
