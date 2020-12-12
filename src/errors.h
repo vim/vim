@@ -313,3 +313,5 @@ EXTERN char e_for_argument_must_be_sequence_of_lists[]
 	INIT(= N_("E1140: For argument must be a sequence of lists"));
 EXTERN char e_indexable_type_required[]
 	INIT(= N_("E1141: Indexable type required"));
+EXTERN char e_non_empty_string_required[]
+	INIT(= N_("E1142: Non-empty string required"));

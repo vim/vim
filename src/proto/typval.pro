@@ -10,6 +10,7 @@ varnumber_T tv_get_bool(typval_T *varp);
 varnumber_T tv_get_bool_chk(typval_T *varp, int *denote);
 float_T tv_get_float(typval_T *varp);
 int check_for_string(typval_T *tv);
+int check_for_nonempty_string(typval_T *tv);
 char_u *tv_get_string(typval_T *varp);
 char_u *tv_get_string_buf(typval_T *varp, char_u *buf);
 char_u *tv_get_string_chk(typval_T *varp);

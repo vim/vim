@@ -341,16 +341,30 @@ tv_get_float(typval_T *varp)
 #endif
 
 /*
- * Give an error and return FAIL unless "tv" is a non-empty string.
+ * Give an error and return FAIL unless "tv" is a string.
  */
     int
 check_for_string(typval_T *tv)
 {
-    if (tv->v_type != VAR_STRING
-	    || tv->vval.v_string == NULL
-	    || *tv->vval.v_string == NUL)
+    if (tv->v_type != VAR_STRING)
     {
 	emsg(_(e_stringreq));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Give an error and return FAIL unless "tv" is a non-empty string.
+ */
+    int
+check_for_nonempty_string(typval_T *tv)
+{
+    if (check_for_string(tv) == FAIL)
+	return FAIL;
+    if (tv->vval.v_string == NULL || *tv->vval.v_string == NUL)
+    {
+	emsg(_(e_non_empty_string_required));
 	return FAIL;
     }
     return OK;
