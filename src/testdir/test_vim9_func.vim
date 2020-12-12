@@ -481,6 +481,12 @@ def Test_call_lambda_args()
   CheckDefFailure(lines, 'E1013: Argument 2: type mismatch, expected number but got string')
 enddef
 
+def Test_lambda_uses_assigned_var()
+  CheckDefSuccess([
+        'var x: any = "aaa"'
+        'x = filter(["bbb"], {_, v -> v =~ x})'])
+enddef
+
 " Default arg and varargs
 def MyDefVarargs(one: string, two = 'foo', ...rest: list<string>): string
   var res = one .. ',' .. two

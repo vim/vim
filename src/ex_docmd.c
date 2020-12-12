@@ -3271,7 +3271,7 @@ skip_option_env_lead(char_u *start)
 find_ex_command(
 	exarg_T *eap,
 	int	*full UNUSED,
-	void	*(*lookup)(char_u *, size_t, cctx_T *) UNUSED,
+	int	(*lookup)(char_u *, size_t, void *, cctx_T *) UNUSED,
 	cctx_T	*cctx UNUSED)
 {
     int		len;
@@ -3387,7 +3387,7 @@ find_ex_command(
 			|| *eap->cmd == '&'
 			|| *eap->cmd == '$'
 			|| *eap->cmd == '@'
-			|| lookup(eap->cmd, p - eap->cmd, cctx) != NULL)
+			|| lookup(eap->cmd, p - eap->cmd, NULL, cctx) == OK)
 		{
 		    eap->cmdidx = CMD_var;
 		    return eap->cmd;
