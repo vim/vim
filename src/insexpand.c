@@ -1298,6 +1298,7 @@ ins_compl_files(
 	fp = mch_fopen((char *)files[i], "r");  // open dictionary file
 	if (flags != DICT_EXACT)
 	{
+	    msg_hist_off = TRUE;	// reset in msg_trunc_attr()
 	    vim_snprintf((char *)IObuff, IOSIZE,
 			      _("Scanning dictionary: %s"), (char *)files[i]);
 	    (void)msg_trunc_attr((char *)IObuff, TRUE, HL_ATTR(HLF_R));
@@ -2778,6 +2779,7 @@ ins_compl_get_exp(pos_T *ini)
 		    dict = ins_buf->b_fname;
 		    dict_f = DICT_EXACT;
 		}
+		msg_hist_off = TRUE;	// reset in msg_trunc_attr()
 		vim_snprintf((char *)IObuff, IOSIZE, _("Scanning: %s"),
 			ins_buf->b_fname == NULL
 			    ? buf_spname(ins_buf)
@@ -2812,6 +2814,7 @@ ins_compl_get_exp(pos_T *ini)
 #endif
 		else if (*e_cpt == ']' || *e_cpt == 't')
 		{
+		    msg_hist_off = TRUE;	// reset in msg_trunc_attr()
 		    type = CTRL_X_TAGS;
 		    vim_snprintf((char *)IObuff, IOSIZE, _("Scanning tags."));
 		    (void)msg_trunc_attr((char *)IObuff, TRUE, HL_ATTR(HLF_R));
@@ -3423,9 +3426,11 @@ ins_compl_next(
 		    MB_PTR_ADV(s);
 		}
 	    }
+	    msg_hist_off = TRUE;
 	    vim_snprintf((char *)IObuff, IOSIZE, "%s %s%s", lead,
 				s > compl_shown_match->cp_fname ? "<" : "", s);
 	    msg((char *)IObuff);
+	    msg_hist_off = FALSE;
 	    redraw_cmdline = FALSE;	    // don't overwrite!
 	}
     }
@@ -4105,9 +4110,13 @@ ins_complete(int c, int enable_pum)
 	    if (edit_submode_extra != NULL)
 	    {
 		if (!p_smd)
+		{
+		    msg_hist_off = TRUE;
 		    msg_attr((char *)edit_submode_extra,
 			    edit_submode_highl < HLF_COUNT
 			    ? HL_ATTR(edit_submode_highl) : 0);
+		    msg_hist_off = FALSE;
+		}
 	    }
 	    else
 		msg_clr_cmdline();	// necessary for "noshowmode"
