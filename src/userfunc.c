@@ -3705,6 +3705,7 @@ errret_2:
 ret_free:
     ga_clear_strings(&argtypes);
     vim_free(skip_until);
+    vim_free(heredoc_trimmed);
     vim_free(line_to_free);
     vim_free(fudi.fd_newkey);
     if (name != name_arg)
