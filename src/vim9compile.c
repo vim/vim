@@ -5993,7 +5993,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     // for "[var, var] = expr" drop the "expr" value
     if (var_count > 0 && !semicolon)
     {
-	    if (generate_instr_drop(cctx, ISN_DROP, 1) == NULL)
+	if (generate_instr_drop(cctx, ISN_DROP, 1) == NULL)
 	    goto theend;
     }
 
@@ -6072,12 +6072,6 @@ compile_unletlock(char_u *arg, exarg_T *eap, cctx_T *cctx)
     {
 	emsg("Sorry, :lock and unlock not implemented yet");
 	return NULL;
-    }
-
-    if (*p == '!')
-    {
-	p = skipwhite(p + 1);
-	eap->forceit = TRUE;
     }
 
     ex_unletlock(eap, p, 0, GLV_NO_AUTOLOAD, compile_unlet, cctx);
