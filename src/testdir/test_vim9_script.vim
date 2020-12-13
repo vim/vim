@@ -620,7 +620,7 @@ def Test_try_catch_fails()
   CheckDefFailure(['if 1', 'endtry'], 'E171:')
   CheckDefFailure(['try', 'echo 1', 'endtry'], 'E1032:')
 
-  CheckDefFailure(['throw'], 'E1015:')
+  CheckDefFailure(['throw'], 'E1143:')
   CheckDefFailure(['throw xxx'], 'E1001:')
 enddef
 
@@ -1719,6 +1719,10 @@ def Test_nested_if()
 enddef
 
 def Test_execute_cmd()
+  # missing argument is ignored
+  execute
+  execute # comment
+
   new
   setline(1, 'default')
   execute 'setline(1, "execute-string")'
@@ -2137,9 +2141,6 @@ def Test_vim9_comment()
       'vim9script',
       'exe "echo"# something',
       ], 'E121:')
-  CheckDefFailure([
-      'exe # comment',
-      ], 'E1015:')
   CheckScriptFailure([
       'vim9script',
       'exe# something',
@@ -2164,7 +2165,7 @@ def Test_vim9_comment()
       '  throw#comment',
       'catch',
       'endtry',
-      ], 'E1015:')
+      ], 'E1143:')
   CheckDefFailure([
       'try',
       '  throw "yes"#comment',

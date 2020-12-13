@@ -61,7 +61,7 @@ EXTERN char e_argument_nr_type_mismatch_expected_str_but_got_str[]
 	INIT(= N_("E1013: Argument %d: type mismatch, expected %s but got %s"));
 EXTERN char e_invalid_key_str[]
 	INIT(= N_("E1014: Invalid key: %s"));
-EXTERN char e_name_expected[]
+EXTERN char e_name_expected_str[]
 	INIT(= N_("E1015: Name expected: %s"));
 EXTERN char e_cannot_declare_a_scope_variable[]
 	INIT(= N_("E1016: Cannot declare a %s variable: %s"));
@@ -315,3 +315,5 @@ EXTERN char e_indexable_type_required[]
 	INIT(= N_("E1141: Indexable type required"));
 EXTERN char e_non_empty_string_required[]
 	INIT(= N_("E1142: Non-empty string required"));
+EXTERN char e_empty_expression_str[]
+	INIT(= N_("E1143: empty expression: \"%s\""));

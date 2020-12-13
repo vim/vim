@@ -15,6 +15,7 @@ let t:tabpagevar = 't'
 def s:ScriptFuncLoad(arg: string)
   var local = 1
   buffers
+  echo
   echo arg
   echo local
   echo &lines
@@ -43,14 +44,27 @@ def Test_disassemble_load()
 
   var res = execute('disass s:ScriptFuncLoad')
   assert_match('<SNR>\d*_ScriptFuncLoad.*' ..
-        'buffers.*' ..
-        ' EXEC \+buffers.*' ..
-        ' LOAD arg\[-1\].*' ..
-        ' LOAD $0.*' ..
-        ' LOADOPT &lines.*' ..
-        ' LOADV v:version.*' ..
-        ' LOADS s:scriptvar from .*test_vim9_disassemble.vim.*' ..
-        ' LOADG g:globalvar.*' ..
+        'buffers\_s*' ..
+        '\d\+ EXEC \+buffers\_s*' ..
+        'echo\_s*' ..
+        'echo arg\_s*' ..
+        '\d\+ LOAD arg\[-1\]\_s*' ..
+        '\d\+ ECHO 1\_s*' ..
+        'echo local\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ ECHO 1\_s*' ..
+        'echo &lines\_s*' ..
+        '\d\+ LOADOPT &lines\_s*' ..
+        '\d\+ ECHO 1\_s*' ..
+        'echo v:version\_s*' ..
+        '\d\+ LOADV v:version\_s*' ..
+        '\d\+ ECHO 1\_s*' ..
+        'echo s:scriptvar\_s*' ..
+        '\d\+ LOADS s:scriptvar from .*test_vim9_disassemble.vim\_s*' ..
+        '\d\+ ECHO 1\_s*' ..
+        'echo g:globalvar\_s*' ..
+        '\d\+ LOADG g:globalvar\_s*' ..
+        '\d\+ ECHO 1\_s*' ..
         'echo get(g:, "global")\_s*' ..
         '\d\+ LOAD g:\_s*' ..
         '\d\+ PUSHS "global"\_s*' ..
