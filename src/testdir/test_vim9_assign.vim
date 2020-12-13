@@ -326,6 +326,18 @@ def Test_assign_index()
   END
   CheckDefFailure(lines, 'E1012: Type mismatch; expected number but got dict<unknown>', 3)
 
+  lines =<< trim END
+    var lines: list<string>
+    lines['a'] = 'asdf'
+  END
+  CheckDefFailure(lines, 'E39:', 2)
+
+  lines =<< trim END
+    var lines: string
+    lines[9] = 'asdf'
+  END
+  CheckDefFailure(lines, 'E1141:', 2)
+
   # list of dict
   var ld: list<dict<number>>
   ld[0] = {}

@@ -5856,8 +5856,6 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    int r;
 
 	    // Compile the "idx" in "var[idx]" or "key" in "var.key".
-	    if (new_local)
-		--cctx->ctx_locals.ga_len;
 	    p = var_start + varlen;
 	    if (*p == '[')
 	    {
@@ -5877,8 +5875,6 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 
 		r = generate_PUSHS(cctx, key);
 	    }
-	    if (new_local)
-		++cctx->ctx_locals.ga_len;
 	    if (r == FAIL)
 		goto theend;
 
