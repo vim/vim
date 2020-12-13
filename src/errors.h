@@ -316,4 +316,8 @@ EXTERN char e_indexable_type_required[]
 EXTERN char e_non_empty_string_required[]
 	INIT(= N_("E1142: Non-empty string required"));
 EXTERN char e_empty_expression_str[]
-	INIT(= N_("E1143: empty expression: \"%s\""));
+	INIT(= N_("E1143: Empty expression: \"%s\""));
+EXTERN char e_command_not_followed_by_white_space_str[]
+	INIT(= N_("E1144: Command is not followed by white space: %s"));
+EXTERN char e_missing_heredoc_end_marker_str[]
+	INIT(= N_("E1145: Missing heredoc end marker: %s"));

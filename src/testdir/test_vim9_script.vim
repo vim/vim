@@ -3058,7 +3058,7 @@ def Test_put_with_linebreak()
   new
   var lines =<< trim END
     vim9script
-    pu=split('abc', '\zs')
+    pu =split('abc', '\zs')
             ->join()
   END
   CheckScriptSuccess(lines)
@@ -3077,6 +3077,13 @@ def Test_invoke_normal_in_visual_mode()
   feedkeys("V\<F3>", 'xt')
   assert_equal(['bbb', 'aaa'], getline(1, 2))
   xunmap <F3>
+enddef
+
+def Test_white_space_after_command()
+  var lines =<< trim END
+    exit_cb: Func})
+  END
+  CheckDefAndScriptFailure(lines, 'E1144:', 1)
 enddef
 
 " Keep this last, it messes up highlighting.

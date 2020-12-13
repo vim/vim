@@ -3528,6 +3528,14 @@ find_ex_command(
     if (eap->cmdidx == CMD_final && p - eap->cmd == 4)
 	eap->cmdidx = CMD_finally;
 
+    if (eap->cmdidx != CMD_SIZE && in_vim9script()
+	    && !IS_WHITE_OR_NUL(*p) && !ends_excmd(*p) && *p != '!'
+	    && (cmdnames[eap->cmdidx].cmd_argt & EX_NONWHITE_OK) == 0)
+    {
+	semsg(_(e_command_not_followed_by_white_space_str), eap->cmd);
+	eap->cmdidx = CMD_SIZE;
+    }
+
     return p;
 }
 
@@ -5114,7 +5122,7 @@ ex_blast(exarg_T *eap)
 
 /*
  * Check if "c" ends an Ex command.
- * In Vim9 script does not check for white space before # or #{.
+ * In Vim9 script does not check for white space before #.
  */
     int
 ends_excmd(int c)

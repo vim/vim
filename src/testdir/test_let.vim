@@ -338,7 +338,7 @@ func Test_let_heredoc_fails()
   endfunc
   END
   call writefile(text, 'XheredocFail')
-  call assert_fails('source XheredocFail', 'E126:')
+  call assert_fails('source XheredocFail', 'E1145:')
   call delete('XheredocFail')
 
   let text =<< trim CodeEnd
@@ -347,7 +347,7 @@ func Test_let_heredoc_fails()
   endfunc
   CodeEnd
   call writefile(text, 'XheredocWrong')
-  call assert_fails('source XheredocWrong', 'E126:')
+  call assert_fails('source XheredocWrong', 'E1145:')
   call delete('XheredocWrong')
 
   let text =<< trim TEXTend

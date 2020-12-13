@@ -3185,7 +3185,9 @@ define_function(exarg_T *eap, char_u *name_arg)
 	    lines_left = Rows - 1;
 	if (theline == NULL)
 	{
-	    if (eap->cmdidx == CMD_def)
+	    if (skip_until != NULL)
+		semsg(_(e_missing_heredoc_end_marker_str), skip_until);
+	    else if (eap->cmdidx == CMD_def)
 		emsg(_(e_missing_enddef));
 	    else
 		emsg(_("E126: Missing :endfunction"));
@@ -3352,18 +3354,24 @@ define_function(exarg_T *eap, char_u *name_arg)
 
 	    // Check for ":cmd v =<< [trim] EOF"
 	    //       and ":cmd [a, b] =<< [trim] EOF"
+	    //       and "lines =<< [trim] EOF" for Vim9
 	    // Where "cmd" can be "let", "var", "final" or "const".
 	    arg = skipwhite(skiptowhite(p));
 	    if (*arg == '[')
 		arg = vim_strchr(arg, ']');
 	    if (arg != NULL)
 	    {
-		arg = skipwhite(skiptowhite(arg));
-		if (arg[0] == '=' && arg[1] == '<' && arg[2] =='<'
+		int found = (eap->cmdidx == CMD_def && arg[0] == '='
+					     && arg[1] == '<' && arg[2] =='<');
+
+		if (!found)
+		    // skip over the argument after "cmd"
+		    arg = skipwhite(skiptowhite(arg));
+		if (found || (arg[0] == '=' && arg[1] == '<' && arg[2] =='<'
 			&& (checkforcmd(&p, "let", 2)
 			    || checkforcmd(&p, "var", 3)
 			    || checkforcmd(&p, "final", 5)
-			    || checkforcmd(&p, "const", 5)))
+			    || checkforcmd(&p, "const", 5))))
 		{
 		    p = skipwhite(arg + 3);
 		    if (STRNCMP(p, "trim", 4) == 0)

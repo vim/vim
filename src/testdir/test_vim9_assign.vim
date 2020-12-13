@@ -982,6 +982,17 @@ def Test_heredoc()
         var&lines =<< trim END
         x
         x
+      enddef
+      defcompile
+  [END]
+  CheckScriptFailure(lines, 'E1145: Missing heredoc end marker: END')
+  delfunc! g:Func
+
+  lines =<< trim [END]
+      def Func()
+        var lines =<< trim END
+        x
+        x
         x
         x
         x
@@ -991,7 +1002,7 @@ def Test_heredoc()
       enddef
       call Func()
   [END]
-  CheckScriptFailure(lines, 'E990:')
+  CheckScriptFailure(lines, 'E1145: Missing heredoc end marker: END')
   delfunc! g:Func
 enddef
 
