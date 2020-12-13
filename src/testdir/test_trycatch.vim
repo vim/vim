@@ -2199,5 +2199,30 @@ func Test_BufEnter_exception()
   %bwipe!
 endfunc
 
+" Test for using try/catch in a user command with a failing expression    {{{1
+func Test_user_command_try_catch()
+  let lines =<< trim END
+      function s:throw() abort
+        throw 'error'
+      endfunction
+
+      command! Execute
+      \   try
+      \ |   let s:x = s:throw()
+      \ | catch
+      \ |   let g:caught = 'caught'
+      \ | endtry
+
+      let g:caught = 'no'
+      Execute
+      call assert_equal('caught', g:caught)
+  END
+  call writefile(lines, 'XtestTryCatch')
+  source XtestTryCatch
+
+  call delete('XtestTryCatch')
+  unlet g:caught
+endfunc
+
 " Modeline								    {{{1
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
