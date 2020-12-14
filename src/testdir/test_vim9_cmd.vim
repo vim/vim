@@ -20,6 +20,9 @@ def Test_edit_wildcards()
 
   edit X`=filename`xx`=filenr`yy
   assert_equal('XXtestxx77yy', bufname())
+
+  CheckDefFailure(['edit `=xxx`'], 'E1001:')
+  CheckDefFailure(['edit `="foo"'], 'E1083:')
 enddef
 
 def Test_hardcopy_wildcards()
@@ -625,6 +628,20 @@ def Test_put_command()
   :+2put! a
   assert_equal('aaa', getline(4))
 
+  bwipe!
+
+  CheckDefFailure(['put =xxx'], 'E1001:')
+enddef
+
+def Test_put_with_linebreak()
+  new
+  var lines =<< trim END
+    vim9script
+    pu =split('abc', '\zs')
+            ->join()
+  END
+  CheckScriptSuccess(lines)
+  getline(2)->assert_equal('a b c')
   bwipe!
 enddef
 

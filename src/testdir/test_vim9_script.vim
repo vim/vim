@@ -23,6 +23,11 @@ def Test_range_only()
   list
   assert_equal('three$', Screenline(&lines))
   bwipe!
+
+  # won't generate anything
+  if false
+    :123
+  endif
 enddef
 
 let g:alist = [7]
@@ -1890,6 +1895,9 @@ def Test_for_loop()
 enddef
 
 def Test_for_loop_fails()
+  CheckDefFailure(['for '], 'E1097:')
+  CheckDefFailure(['for x'], 'E1097:')
+  CheckDefFailure(['for x in'], 'E1097:')
   CheckDefFailure(['for # in range(5)'], 'E690:')
   CheckDefFailure(['for i In range(5)'], 'E690:')
   CheckDefFailure(['var x = 5', 'for x in range(5)'], 'E1017:')
@@ -3052,18 +3060,6 @@ def Test_no_unknown_error_after_error()
   writefile(lines, 'Xdef')
   assert_fails('so Xdef', ['E684:', 'E1012:'])
   delete('Xdef')
-enddef
-
-def Test_put_with_linebreak()
-  new
-  var lines =<< trim END
-    vim9script
-    pu =split('abc', '\zs')
-            ->join()
-  END
-  CheckScriptSuccess(lines)
-  getline(2)->assert_equal('a b c')
-  bwipe!
 enddef
 
 def InvokeNormal()
