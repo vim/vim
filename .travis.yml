@@ -102,7 +102,7 @@ _anchors:
     # not with clang
     - CC=gcc pip install --user cpp-coveralls pyopenssl ndg-httpsclient pyasn1
     - ~/.local/bin/coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --encodings utf-8
-    - (cd "${SRCDIR}" && bash <(curl -s https://codecov.io/bash))
+    - (cd "${SRCDIR}" && bash <(curl -s https://codecov.io/bash) -F linux)
 
   asan_symbolize: &asan_symbolize
     # Update pyenv to fix the error "/opt/pyenv/libexec/pyenv: line 43: cd: asan_symbolize-6.0: Not a directory".

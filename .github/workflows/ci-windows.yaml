@@ -82,6 +82,7 @@ jobs:
       if: matrix.toolchain == 'mingw'
       with:
         msystem: ${{ matrix.msystem }}
+        path-type: inherit
         release: false
 
     - uses: actions/checkout@v2
@@ -170,6 +171,7 @@ jobs:
             DYNAMIC_LUA=yes LUA=${LUA_DIR} \
             DYNAMIC_PYTHON=yes PYTHON=${PYTHON_DIR} \
             DYNAMIC_PYTHON3=yes PYTHON3=${PYTHON3_DIR} \
+            COVERAGE=yes \
             STATIC_STDCPLUS=yes
         else
           mingw32-make -f Make_ming.mak -j2 \
@@ -228,3 +230,12 @@ jobs:
           echo %COL_RED%Timed out.%COL_RESET%
           exit 1
         )
+
+    - name: Coverage (MinGW)
+      if: matrix.toolchain == 'mingw'
+      shell: msys2 {0}
+      run: |
+        cd src
+        export ARCH=${{ matrix.arch }}
+        export TOOLCHAIN=${{ matrix.toolchain }}
+        bash <(curl -s https://codecov.io/bash) -e TOOLCHAIN,ARCH -F windows
