@@ -1317,6 +1317,23 @@ func Test_expr5_fails_channel()
   call CheckDefFailure(["var x = 'a' .. test_null_channel()"], 'E1105:', 1)
 endfunc
 
+def Test_expr5_list_add()
+  # concatenating two lists with same member types is OK
+  var d = {}
+  for i in ['a'] + ['b']
+    d = {[i]: 0}
+  endfor
+
+  # concatenating two lists with different member types results in "any"
+  var lines =<< trim END
+      var d = {}
+      for i in ['a'] + [0]
+        d = {[i]: 0}
+      endfor
+  END
+  CheckDefExecFailure(lines, 'E1012:')
+enddef
+
 " test multiply, divide, modulo
 def Test_expr6()
   var lines =<< trim END

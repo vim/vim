@@ -538,14 +538,15 @@ generate_add_instr(
 	type_T *type1,
 	type_T *type2)
 {
-    isn_T *isn = generate_instr_drop(cctx,
-	      vartype == VAR_NUMBER ? ISN_OPNR
-	    : vartype == VAR_LIST ? ISN_ADDLIST
-	    : vartype == VAR_BLOB ? ISN_ADDBLOB
+    garray_T	*stack = &cctx->ctx_type_stack;
+    isn_T	*isn = generate_instr_drop(cctx,
+		      vartype == VAR_NUMBER ? ISN_OPNR
+		    : vartype == VAR_LIST ? ISN_ADDLIST
+		    : vartype == VAR_BLOB ? ISN_ADDBLOB
 #ifdef FEAT_FLOAT
-	    : vartype == VAR_FLOAT ? ISN_OPFLOAT
+		    : vartype == VAR_FLOAT ? ISN_OPFLOAT
 #endif
-	    : ISN_OPANY, 1);
+		    : ISN_OPANY, 1);
 
     if (vartype != VAR_LIST && vartype != VAR_BLOB
 	    && type1->tt_type != VAR_ANY
@@ -556,6 +557,14 @@ generate_add_instr(
 
     if (isn != NULL)
 	isn->isn_arg.op.op_type = EXPR_ADD;
+
+    // When concatenating two lists with different member types the member type
+    // becomes "any".
+    if (vartype == VAR_LIST
+	    && type1->tt_type == VAR_LIST && type2->tt_type == VAR_LIST
+	    && type1->tt_member != type2->tt_member)
+	(((type_T **)stack->ga_data)[stack->ga_len - 1]) = &t_list_any;
+
     return isn == NULL ? FAIL : OK;
 }
 
@@ -7172,6 +7181,7 @@ compile_put(char_u *arg, exarg_T *eap, cctx_T *cctx)
 	// Either no range or a number.
 	// "errormsg" will not be set because the range is ADDR_LINES.
 	if (parse_cmd_address(eap, &errormsg, FALSE) == FAIL)
+	    // cannot happen
 	    return NULL;
 	if (eap->addr_count == 0)
 	    lnum = -1;
