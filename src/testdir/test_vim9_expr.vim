@@ -1989,6 +1989,14 @@ def Test_expr7_dict()
 
   CheckDefFailure(['var x = ({'], 'E723:', 2)
   CheckDefExecFailure(['{}[getftype("file")]'], 'E716: Key not present in Dictionary: ""', 1)
+
+  # no automatic conversion from number to string
+  lines =<< trim END
+      var n = 123
+      var d = {[n]: 1}
+  END
+  CheckDefFailure(lines, 'E1012:', 2)
+  CheckScriptFailure(['vim9script'] + lines, 'E928:', 3)
 enddef
 
 def Test_expr7_dict_vim9script()
