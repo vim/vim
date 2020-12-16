@@ -4431,21 +4431,26 @@ qf_process_qftf_option(void)
 }
 
 /*
- * Update the w:quickfix_title variable in the quickfix/location list window
+ * Update the w:quickfix_title variable in the quickfix/location list window in
+ * all the tab pages.
  */
     static void
 qf_update_win_titlevar(qf_info_T *qi)
 {
+    qf_list_T	*qfl = qf_get_curlist(qi);
+    tabpage_T	*tp;
     win_T	*win;
-    win_T	*curwin_save;
+    win_T	*save_curwin = curwin;
 
-    if ((win = qf_find_win(qi)) != NULL)
+    FOR_ALL_TAB_WINDOWS(tp, win)
     {
-	curwin_save = curwin;
-	curwin = win;
-	qf_set_title_var(qf_get_curlist(qi));
-	curwin = curwin_save;
+	if (is_qf_win(win, qi))
+	{
+	    curwin = win;
+	    qf_set_title_var(qfl);
+	}
     }
+    curwin = save_curwin;
 }
 
 /*
