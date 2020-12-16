@@ -3520,7 +3520,7 @@ find_ex_command(
 		++p;
 	    p = find_ucmd(eap, p, full, NULL, NULL);
 	}
-	if (p == eap->cmd)
+	if (p == NULL || p == eap->cmd)
 	    eap->cmdidx = CMD_SIZE;
     }
 

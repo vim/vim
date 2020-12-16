@@ -701,5 +701,14 @@ def Test_cmd_argument_without_colon()
   delete('Xfile')
 enddef
 
+def Test_ambiguous_user_cmd()
+  var lines =<< trim END
+      com Cmd1 eval 0
+      com Cmd2 eval 0
+      Cmd
+  END
+  CheckScriptFailure(lines, 'E464:')
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
