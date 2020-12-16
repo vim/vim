@@ -91,6 +91,7 @@ runtime/ftplugin/pdf.vim		@tpope
 runtime/ftplugin/ruby.vim		@tpope @dkearns
 runtime/ftplugin/sass.vim		@tpope
 runtime/ftplugin/scss.vim		@tpope
+runtime/ftplugin/spec.vim		@ignatenkobrain
 runtime/ftplugin/tmux.vim		@ericpruitt
 runtime/ftplugin/typescript.vim		@dkearns
 runtime/ftplugin/typescriptreact.vim	@dkearns
@@ -163,6 +164,7 @@ runtime/syntax/sass.vim			@tpope
 runtime/syntax/scss.vim			@tpope
 runtime/syntax/sh.vim			@cecamp
 runtime/syntax/sm.vim			@cecamp
+runtime/syntax/spec.vim			@ignatenkobrain
 runtime/syntax/sqloracle.vim		@chrisbra
 runtime/syntax/sshdconfig.vim		@Jakuje
 runtime/syntax/tags.vim			@cecamp
