@@ -110,7 +110,7 @@ if !exists("*s:SpecChangelog")
 			elseif (option == 2)
 				call append(line("."),"%changelog")
 				normal j
-				chgline = line(".")
+				let chgline = line(".")
 			endif
 		endif
 		if (chgline != -1)
