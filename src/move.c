@@ -1247,7 +1247,7 @@ textpos2screenpos(
 	    // character is left or right of the window
 	    row = scol = ccol = ecol = 0;
     }
-    *rowp = wp->w_winrow + row + rowoff;
+    *rowp = W_WINROW(wp) + row + rowoff;
     *scolp = scol + coloff;
     *ccolp = ccol + coloff;
     *ecolp = ecol + coloff;
