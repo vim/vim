@@ -172,56 +172,56 @@ script:
 # Linux: 2 compilers on some of the environments + gcc on os390
 jobs:
   include:
-    - <<: *osx
-      name: tiny-nogui/clang
-      compiler: clang
-      env: *tiny-nogui
-    - <<: *osx
-      name: tiny-nogui/gcc
-      compiler: gcc
-      env: *tiny-nogui
-    - <<: *osx
-      <<: *osx-homebrew
-      name: huge/clang
-      compiler: clang
-      env: *osx-huge
-    - <<: *osx
-      <<: *osx-homebrew
-      name: huge/gcc
-      compiler: gcc
-      env: *osx-huge
-    - <<: *linux
-      name: tiny-nogui/clang
-      compiler: clang
-      env: *tiny-nogui
-    - <<: *linux
-      name: tiny-nogui/gcc
-      compiler: gcc
-      env: *tiny-nogui
-    - <<: *linux
-      name: tiny/clang
-      compiler: clang
-      env: *tiny
-    - <<: *linux
-      name: tiny/gcc
-      compiler: gcc
-      env: *tiny
-    - <<: *linux
-      name: small/gcc
-      compiler: gcc
-      env: *small
-    - <<: *linux
-      name: normal+shadow/clang
-      compiler: clang
-      env:
-        - *normal
-        - *shadowopt
-    - <<: *linux
-      name: normal+shadow/gcc
-      compiler: gcc
-      env:
-        - *normal
-        - *shadowopt
+    #- <<: *osx
+    #  name: tiny-nogui/clang
+    #  compiler: clang
+    #  env: *tiny-nogui
+    #- <<: *osx
+    #  name: tiny-nogui/gcc
+    #  compiler: gcc
+    #  env: *tiny-nogui
+    #- <<: *osx
+    #  <<: *osx-homebrew
+    #  name: huge/clang
+    #  compiler: clang
+    #  env: *osx-huge
+    #- <<: *osx
+    #  <<: *osx-homebrew
+    #  name: huge/gcc
+    #  compiler: gcc
+    #  env: *osx-huge
+    #- <<: *linux
+    #  name: tiny-nogui/clang
+    #  compiler: clang
+    #  env: *tiny-nogui
+    #- <<: *linux
+    #  name: tiny-nogui/gcc
+    #  compiler: gcc
+    #  env: *tiny-nogui
+    #- <<: *linux
+    #  name: tiny/clang
+    #  compiler: clang
+    #  env: *tiny
+    #- <<: *linux
+    #  name: tiny/gcc
+    #  compiler: gcc
+    #  env: *tiny
+    #- <<: *linux
+    #  name: small/gcc
+    #  compiler: gcc
+    #  env: *small
+    #- <<: *linux
+    #  name: normal+shadow/clang
+    #  compiler: clang
+    #  env:
+    #    - *normal
+    #    - *shadowopt
+    #- <<: *linux
+    #  name: normal+shadow/gcc
+    #  compiler: gcc
+    #  env:
+    #    - *normal
+    #    - *shadowopt
     - <<: *linux
       arch: s390x
       name: huge/gcc-s390x
@@ -234,55 +234,55 @@ jobs:
       compiler: gcc
       env: *linux-huge
       services: []
-    - <<: *linux
-      name: huge+coverage/clang
-      compiler: clang
-      env:
-        - *linux-huge
-        - *coverage
-      after_success: *eval-coverage
-    - <<: *linux
-      name: huge+coverage/gcc
-      compiler: gcc
-      env:
-        - *linux-huge
-        - *coverage
-      after_success: *eval-coverage
-    - <<: *linux # ASAN
-      name: huge+asan/clang
-      compiler: clang-11
-      addons:
-        apt:
-          sources:
-            - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main'
-              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
-          packages:
-            - *apt-packages
-            - clang-11
-      env:
-        - *linux-huge
-        - *asan
-      after_failure: *asan_symbolize
-    - <<: *linux
-      name: huge-testgui+coverage/gcc
-      compiler: gcc
-      env:
-        - *linux-huge
-        - *coverage
-        - TEST="-C src testgui"
-      after_success: *eval-coverage
-    - <<: *linux
-      name: unittests+coverage/gcc
-      compiler: gcc
-      env:
-        - *unittests
-        - *coverage
-      after_success: *eval-coverage
-    - <<: *linux
-      name: vimtags/gcc
-      compiler: gcc
-      env:
-        - *normal
-        - TEST="-C runtime/doc vimtags VIMEXE=../../${SRCDIR}/vim"
+    #- <<: *linux
+    #  name: huge+coverage/clang
+    #  compiler: clang
+    #  env:
+    #    - *linux-huge
+    #    - *coverage
+    #  after_success: *eval-coverage
+    #- <<: *linux
+    #  name: huge+coverage/gcc
+    #  compiler: gcc
+    #  env:
+    #    - *linux-huge
+    #    - *coverage
+    #  after_success: *eval-coverage
+    #- <<: *linux # ASAN
+    #  name: huge+asan/clang
+    #  compiler: clang-11
+    #  addons:
+    #    apt:
+    #      sources:
+    #        - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main'
+    #          key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+    #      packages:
+    #        - *apt-packages
+    #        - clang-11
+    #  env:
+    #    - *linux-huge
+    #    - *asan
+    #  after_failure: *asan_symbolize
+    #- <<: *linux
+    #  name: huge-testgui+coverage/gcc
+    #  compiler: gcc
+    #  env:
+    #    - *linux-huge
+    #    - *coverage
+    #    - TEST="-C src testgui"
+    #  after_success: *eval-coverage
+    #- <<: *linux
+    #  name: unittests+coverage/gcc
+    #  compiler: gcc
+    #  env:
+    #    - *unittests
+    #    - *coverage
+    #  after_success: *eval-coverage
+    #- <<: *linux
+    #  name: vimtags/gcc
+    #  compiler: gcc
+    #  env:
+    #    - *normal
+    #    - TEST="-C runtime/doc vimtags VIMEXE=../../${SRCDIR}/vim"
 
 # vim:set sts=2 sw=2 tw=0 et:
