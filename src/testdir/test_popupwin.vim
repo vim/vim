@@ -3722,6 +3722,10 @@ func Test_popupwin_latin1_encoding()
       terminal cat Xmultibyte
       call popup_create(['one', 'two', 'three', 'four'], #{line: 1, col: 10})
       redraw
+      " wait for "cat" to finish
+      while execute('ls!') !~ 'finished'
+	sleep 10m
+      endwhile
       echo "Done"
   END
   call writefile(lines, 'XtestPopupLatin')
