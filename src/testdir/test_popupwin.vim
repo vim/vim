@@ -2673,13 +2673,14 @@ func Test_popupwin_terminal_buffer()
 
   let termbuf = term_start(&shell, #{hidden: 1})
   let winid = popup_create(termbuf, #{minwidth: 40, minheight: 10, border: []})
-  " Wait for shell to start and show a prompt
+  " Wait for shell to start
   call WaitForAssert({-> assert_equal("run", job_status(term_getjob(termbuf)))})
-  sleep 20m
+  " Wait for a prompt (see border char first, then space after prompt)
+  call WaitForAssert({ -> assert_equal(' ', screenstring(screenrow(), screencol() - 1))})
 
   " When typing a character, the cursor is after it.
   call feedkeys("x", 'xt')
-  sleep 10m
+  call term_wait(termbuf)
   redraw
   call WaitForAssert({ -> assert_equal('x', screenstring(screenrow(), screencol() - 1))})
   call feedkeys("\<BS>", 'xt')
