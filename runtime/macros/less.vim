@@ -36,7 +36,14 @@ if argc() > 0
 endif
 
 set nocp
-syntax on
+
+" Only enable syntax if it hasn't already been enabled.
+"
+" (This prevents clobbering of user-set highlights)
+if !exists("g:syntax_on")
+  syntax on
+endif
+
 set so=0
 set hlsearch
 set incsearch
