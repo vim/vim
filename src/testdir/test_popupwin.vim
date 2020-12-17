@@ -3721,11 +3721,14 @@ func Test_popupwin_latin1_encoding()
       set encoding=latin1
       terminal cat Xmultibyte
       call popup_create(['one', 'two', 'three', 'four'], #{line: 1, col: 10})
+      redraw
+      echo "Done"
   END
   call writefile(lines, 'XtestPopupLatin')
   call writefile([repeat("\u3042 ", 120)], 'Xmultibyte')
 
   let buf = RunVimInTerminal('-S XtestPopupLatin', #{rows: 10})
+  call WaitForAssert({-> assert_match('Done', term_getline(buf, 10))})
 
   call term_sendkeys(buf, ":q\<CR>")
   call StopVimInTerminal(buf)
