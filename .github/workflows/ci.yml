@@ -213,8 +213,11 @@ jobs:
 
       - name: Codecov
         if: matrix.coverage && success()
-        run: |
-          cd "${SRCDIR}" && bash <(curl -s https://codecov.io/bash)
+        uses: codecov/codecov-action@v1
+        with:
+          flags: ${{ matrix.features }}-${{ matrix.compiler }}-${{ matrix.extra }}
+          fail_ci_if_error: true
+          working-directory: ${{ env.SRCDIR }}
 
       - name: ASan logs
         if: contains(matrix.extra, 'asan') && !cancelled()
