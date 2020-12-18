@@ -635,7 +635,7 @@ static void GUIDtochar(const GUID &guid, char *GUID, int length)
     LPOLESTR wGUID = NULL;
     StringFromCLSID(guid, &wGUID);
 
-    // Covert from wide characters to non-wide
+    // Convert from wide characters to non-wide
     wcstombs(GUID, wGUID, length);
 
     // Free memory

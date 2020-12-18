@@ -4631,7 +4631,7 @@ set_ref_in_item(
  * "numbuf" is used for a number.
  * When "copyID" is not NULL replace recursive lists and dicts with "...".
  * When both "echo_style" and "composite_val" are FALSE, put quotes around
- * stings as "string()", otherwise does not put quotes around strings, as
+ * strings as "string()", otherwise does not put quotes around strings, as
  * ":echo" displays values.
  * When "restore_copyID" is FALSE, repeated items in dictionaries and lists
  * are replaced with "...".

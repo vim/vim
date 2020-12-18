@@ -1409,7 +1409,7 @@ funcdepth_get(void)
 
 /*
  * Restore the function call depth.  This is for cases where there is no
- * garantee funcdepth_decrement() can be called exactly the same number of
+ * guarantee funcdepth_decrement() can be called exactly the same number of
  * times as funcdepth_increment().
  */
     void

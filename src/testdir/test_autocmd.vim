@@ -2324,7 +2324,7 @@ func Test_autocmd_SafeState()
   call writefile(lines, 'XSafeState')
   let buf = RunVimInTerminal('-S XSafeState', #{rows: 6})
 
-  " Sometimes we loop to handle a K_IGNORE, SafeState may be trigered once or
+  " Sometimes we loop to handle a K_IGNORE, SafeState may be triggered once or
   " more often.
   call term_sendkeys(buf, ":echo g:safe\<CR>")
   call WaitForAssert({-> assert_match('^\d ', term_getline(buf, 6))}, 1000)

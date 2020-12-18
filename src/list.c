@@ -2693,7 +2693,7 @@ f_reverse(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "reduce(list, { accumlator, element -> value } [, initial])" function
+ * "reduce(list, { accumulator, element -> value } [, initial])" function
  */
     void
 f_reduce(typval_T *argvars, typval_T *rettv)

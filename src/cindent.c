@@ -2121,7 +2121,7 @@ get_c_indent(void)
     }
 
     // #defines and so on go at the left when included in 'cinkeys',
-    // exluding pragmas when customized in 'cinoptions'
+    // excluding pragmas when customized in 'cinoptions'
     if (*theline == '#' && (*linecopy == '#' || in_cinkeys('#', ' ', TRUE)))
     {
 	char_u *directive = skipwhite(theline + 1);

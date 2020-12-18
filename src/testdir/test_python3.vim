@@ -3882,7 +3882,7 @@ func Test_python3_import()
   call assert_equal(expected, getline(2, '$'))
   close!
 
-  " Try to import a non-existing moudle with a dot (.)
+  " Try to import a non-existing module with a dot (.)
   call AssertException(['py3 import a.b.c'], "No module named 'a'")
 endfunc
 

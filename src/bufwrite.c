@@ -2138,7 +2138,7 @@ restore_backup:
     if (!checking_conversion)
     {
 #if defined(UNIX) && defined(HAVE_FSYNC)
-	// On many journalling file systems there is a bug that causes both the
+	// On many journaling file systems there is a bug that causes both the
 	// original and the backup file to be lost when halting the system
 	// right after writing the file.  That's because only the meta-data is
 	// journalled.  Syncing the file slows down the system, but assures it

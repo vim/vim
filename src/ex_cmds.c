@@ -2660,7 +2660,7 @@ do_ecmd(
 		    if (tlnum <= 0)
 			tlnum = 1L;
 		}
-		// Add BLN_NOCURWIN to avoid a new wininfo items are assocated
+		// Add BLN_NOCURWIN to avoid a new wininfo items are associated
 		// with the current window.
 		newbuf = buflist_new(ffname, sfname, tlnum,
 						    BLN_LISTED | BLN_NOCURWIN);

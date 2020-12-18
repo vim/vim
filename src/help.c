@@ -325,7 +325,7 @@ find_help_tags(
     char_u	*s, *d;
     int		i;
     // Specific tags that either have a specific replacement or won't go
-    // throught the generic rules.
+    // through the generic rules.
     static char *(except_tbl[][2]) = {
 	{"*",		"star"},
 	{"g*",		"gstar"},

@@ -287,7 +287,7 @@ func Test_zz1_terminal_in_gui()
   unlet g:job
 endfunc
 
-" TODO: reenable when this no longer hangs on Travis
+" TODO: re-enable when this no longer hangs on Travis
 "func Test_zz2_terminal_guioptions_bang()
 "  CheckGui
 "  set guioptions+=!
@@ -338,7 +338,7 @@ func Test_terminal_switch_mode()
   let bnr = bufnr('$')
   call WaitForAssert({-> assert_equal('running', term_getstatus(bnr))})
   " In the GUI the first switch sometimes doesn't work.  Switch twice to avoid
-  " flakyness.
+  " flakiness.
   call feedkeys("\<C-W>N", 'xt')
   call feedkeys("A", 'xt')
   call WaitForAssert({-> assert_equal('running', term_getstatus(bnr))})
