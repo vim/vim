@@ -743,6 +743,7 @@ endfunc
 
 " Test the '-T' argument which sets the 'term' option.
 func Test_T_arg()
+  CheckNotGui
   let after =<< trim [CODE]
     call writefile([&term], "Xtest_T_arg")
     qall
