@@ -391,6 +391,16 @@ def Test_extend_list()
       assert_equal(['a', 'b'], list)
   END
   CheckScriptSuccess(lines)
+  lines =<< trim END
+      vim9script
+      var list: list<string>
+      def Func()
+        extend(list, ['x', 'b'])
+      enddef
+      Func()
+      assert_equal(['x', 'b'], list)
+  END
+  CheckScriptSuccess(lines)
 
   lines =<< trim END
       vim9script
@@ -584,8 +594,9 @@ def Test_assignment_dict()
       return test
     enddef
     FillDict()
+    assert_equal({a: 43}, test)
   END
-  CheckScriptFailure(lines, 'E1103:')
+  CheckScriptSuccess(lines)
 
   # assignment to global dict
   lines =<< trim END

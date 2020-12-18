@@ -791,6 +791,26 @@ store_var(char_u *name, typval_T *tv)
     restore_funccal();
 }
 
+/*
+ * When the value of "sv" is a null list of dict, allocate it.
+ */
+    static void
+allocate_if_null(typval_T *tv)
+{
+    switch (tv->v_type)
+    {
+	case VAR_LIST:
+	    if (tv->vval.v_list == NULL)
+		rettv_list_alloc(tv);
+	    break;
+	case VAR_DICT:
+	    if (tv->vval.v_dict == NULL)
+		rettv_dict_alloc(tv);
+	    break;
+	default:
+	    break;
+    }
+}
 
 /*
  * Execute a function by "name".
@@ -1289,6 +1309,7 @@ call_def_function(
 
 		    sv = ((svar_T *)si->sn_var_vals.ga_data)
 					     + iptr->isn_arg.script.script_idx;
+		    allocate_if_null(sv->sv_tv);
 		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
 		    copy_tv(sv->sv_tv, STACK_TV_BOT(0));
