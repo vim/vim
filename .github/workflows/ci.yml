@@ -231,7 +231,7 @@ jobs:
     runs-on: ubuntu-latest
 
     needs: linux
-    if: github.event_name != 'pull_request'
+    if: always() && github.event_name != 'pull_request'
 
     steps:
       - name: Parallel finished
