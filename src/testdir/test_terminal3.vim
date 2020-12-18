@@ -145,7 +145,7 @@ func Test_terminal_in_popup()
   call delete('XtermPopup')
 endfunc
 
-" Check a terminal in popup window uses the default mininum size.
+" Check a terminal in popup window uses the default minimum size.
 func Test_terminal_in_popup_min_size()
   CheckRunVimInTerminal
 

@@ -3692,7 +3692,7 @@ func Test_python_import()
   call assert_equal(expected, getline(2, '$'))
   close!
 
-  " Try to import a non-existing moudle with a dot (.)
+  " Try to import a non-existing module with a dot (.)
   call AssertException(['py import a.b.c'], 'ImportError:')
 endfunc
 

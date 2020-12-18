@@ -318,7 +318,7 @@ find_script_var(char_u *name, size_t len, cctx_T *cctx)
 }
 
 /*
- * Returnd TRUE if the script context is Vim9 script.
+ * Return TRUE if the script context is Vim9 script.
  */
     static int
 script_is_vim9()
@@ -1958,7 +1958,7 @@ generate_cmdmods(cctx_T *cctx, cmdmod_T *cmod)
 	if (isn->isn_arg.cmdmod.cf_cmdmod == NULL)
 	    return FAIL;
 	mch_memmove(isn->isn_arg.cmdmod.cf_cmdmod, cmod, sizeof(cmdmod_T));
-	// filter progam now belongs to the instruction
+	// filter program now belongs to the instruction
 	cmod->cmod_filter_regmatch.regprog = NULL;
     }
 
@@ -3507,7 +3507,7 @@ compile_subscript(
 	    }
 	}
 
-	// Do not skip over white space to find the "(", "exeucte 'x' ()" is
+	// Do not skip over white space to find the "(", "execute 'x' ()" is
 	// not a function call.
 	if (**arg == '(')
 	{
@@ -6835,7 +6835,7 @@ compile_endblock(cctx_T *cctx)
  *	    ... try block
  *	" catch {expr}"
  *	    JUMP -> finally
- * catch1:  PUSH exeception
+ * catch1:  PUSH exception
  *	    EVAL {expr}
  *	    MATCH
  *	    JUMP nomatch -> catch2
@@ -7132,7 +7132,7 @@ compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
 }
 
 /*
- * If "eap" has a range that is not a contstant generate an ISN_RANGE
+ * If "eap" has a range that is not a constant generate an ISN_RANGE
  * instruction to compute it and return OK.
  * Otherwise return FAIL, the caller must deal with any range.
  */

@@ -1049,7 +1049,7 @@ set_one_cmd_context(
 		++p;
     }
 
-    // If the cursor is touching the command, and it ends in an alpha-numeric
+    // If the cursor is touching the command, and it ends in an alphanumeric
     // character, complete the command name.
     if (*p == NUL && ASCII_ISALNUM(p[-1]))
 	return NULL;

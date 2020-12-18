@@ -3744,7 +3744,7 @@ check_terminal_behavior(void)
 #endif
 	LOG_TR(("Sending xterm compatibility test sequence."));
 	// Do this in the third row.  Second row is used by ambiguous
-	// chararacter width check.
+	// character width check.
 	term_windgoto(2, 0);
 	// send the test DCS string.
 	out_str((char_u *)"\033Pzz\033\\");
@@ -4531,7 +4531,7 @@ handle_u7_response(int *arg, char_u *tp UNUSED, int csi_len UNUSED)
 
 /*
  * Handle a response to T_CRV: {lead}{first}{x};{vers};{y}c
- * Xterm and alikes use '>' for {first}.
+ * Xterm and alike use '>' for {first}.
  * Rxvt sends "{lead}?1;2c".
  */
     static void

@@ -53,7 +53,7 @@ typedef enum {
     // ISN_STOREOTHER, // pop into other script variable isn_arg.other.
 
     ISN_STORENR,    // store number into local variable isn_arg.storenr.stnr_idx
-    ISN_STORELIST,	// store into list, value/index/varable on stack
+    ISN_STORELIST,	// store into list, value/index/variable on stack
     ISN_STOREDICT,	// store into dictionary, value/index/variable on stack
 
     ISN_UNLET,		// unlet variable isn_arg.unlet.ul_name

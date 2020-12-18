@@ -2221,7 +2221,7 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
     if (did_simplify)
     {
 	// When the lhs is being simplified the not-simplified keys are
-	// preferred for priting, like in do_map().
+	// preferred for printing, like in do_map().
 	// The "rhs" and "buffer_local" values are not expected to change.
 	mp_simplified = mp;
 	(void)replace_termcodes(keys, &alt_keys_buf,

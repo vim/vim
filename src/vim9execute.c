@@ -3137,7 +3137,7 @@ failed_early:
 }
 
 /*
- * ":dissassemble".
+ * ":disassemble".
  * We don't really need this at runtime, but we do have tests that require it,
  * so always include this.
  */

@@ -524,7 +524,7 @@ func Test_argdo()
   bwipe Xa.c Xb.c Xc.c
 endfunc
 
-" Test for quiting Vim with unedited files in the argument list
+" Test for quitting Vim with unedited files in the argument list
 func Test_quit_with_arglist()
   CheckRunVimInTerminal
   let buf = RunVimInTerminal('', {'rows': 6})
