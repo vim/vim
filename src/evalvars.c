@@ -1663,10 +1663,20 @@ do_unlet(char_u *name, int forceit)
     dict_T	*d;
     dictitem_T	*di;
 
+    // can't :unlet a script variable in Vim9 script
     if (in_vim9script() && check_vim9_unlet(name) == FAIL)
 	return FAIL;
 
     ht = find_var_ht(name, &varname);
+
+    // can't :unlet a script variable in Vim9 script from a function
+    if (ht == get_script_local_ht()
+	    && SCRIPT_ID_VALID(current_sctx.sc_sid)
+	    && SCRIPT_ITEM(current_sctx.sc_sid)->sn_version
+							 == SCRIPT_VERSION_VIM9
+	    && check_vim9_unlet(name) == FAIL)
+	return FAIL;
+
     if (ht != NULL && *varname != NUL)
     {
 	d = get_current_funccal_dict(ht);

@@ -1211,6 +1211,14 @@ def Test_unlet()
   CheckScriptFailure([
    'vim9script',
    'var svar = 123',
+   'func Func()',
+   '  unlet s:svar',
+   'endfunc',
+   'Func()',
+   ], 'E1081:')
+  CheckScriptFailure([
+   'vim9script',
+   'var svar = 123',
    'def Func()',
    '  unlet s:svar',
    'enddef',
