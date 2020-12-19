@@ -2654,8 +2654,18 @@ trans_function_name(
 	goto theend;
     }
 
-    // In Vim9 script a user function is script-local by default.
+    // In Vim9 script a user function is script-local by default, unless it
+    // starts with a lower case character: dict.func().
     vim9script = ASCII_ISUPPER(*start) && in_vim9script();
+    if (vim9script)
+    {
+	char_u *p;
+
+	// SomeScript#func() is a global function.
+	for (p = start; *p != NUL && *p != '('; ++p)
+	    if (*p == AUTOLOAD_CHAR)
+		vim9script = FALSE;
+    }
 
     /*
      * Copy the function name to allocated memory.

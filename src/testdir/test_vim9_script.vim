@@ -2799,6 +2799,16 @@ def Test_vim9_autoload()
   g:some#other = 'other'
   assert_equal('other', g:some#other)
 
+  # upper case script name works
+  lines =<< trim END
+     vim9script
+     def Other#getOther(): string
+       return 'other'
+     enddef
+  END
+  writefile(lines, 'Xdir/autoload/Other.vim')
+  assert_equal('other', g:Other#getOther())
+
   delete('Xdir', 'rf')
   &rtp = save_rtp
 enddef
