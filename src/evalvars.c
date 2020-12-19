@@ -1464,7 +1464,8 @@ ex_let_one(
     {
 	lval_T	lv;
 
-	p = get_lval(arg, tv, &lv, FALSE, FALSE, 0, FNE_CHECK_START);
+	p = get_lval(arg, tv, &lv, FALSE, FALSE,
+		(flags & ASSIGN_NO_DECL) ? GLV_NO_DECL : 0, FNE_CHECK_START);
 	if (p != NULL && lv.ll_name != NULL)
 	{
 	    if (endchars != NULL && vim_strchr(endchars,

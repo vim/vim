@@ -874,6 +874,13 @@ get_lval(
     if (v == NULL)
 	return NULL;
 
+    if (in_vim9script() && (flags & GLV_NO_DECL) == 0)
+    {
+	if (!quiet)
+	    semsg(_(e_variable_already_declared), lp->ll_name);
+	return NULL;
+    }
+
     /*
      * Loop until no more [idx] or .key is following.
      */

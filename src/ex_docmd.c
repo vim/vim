@@ -3332,6 +3332,8 @@ find_ex_command(
 
 		// When followed by "=" or "+=" then it is an assignment.
 		++emsg_silent;
+		if (*after == '.')
+		    after = skipwhite(after + 1);
 		if (skip_expr(&after, NULL) == OK)
 		    after = skipwhite(after);
 		else
