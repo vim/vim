@@ -606,6 +606,8 @@ discard_exception(except_T *excp, int was_finished)
 {
     char_u		*saved_IObuff;
 
+    if (current_exception == excp)
+	current_exception = NULL;
     if (excp == NULL)
     {
 	internal_error("discard_exception()");
@@ -654,10 +656,7 @@ discard_exception(except_T *excp, int was_finished)
 discard_current_exception(void)
 {
     if (current_exception != NULL)
-    {
 	discard_exception(current_exception, FALSE);
-	current_exception = NULL;
-    }
     did_throw = FALSE;
     need_rethrow = FALSE;
 }
@@ -2284,8 +2283,8 @@ cleanup_conditionals(
 				// Cancel the pending exception.  This is in the
 				// finally clause, so that the stack of the
 				// caught exceptions is not involved.
-				discard_exception((except_T *)
-					cstack->cs_exception[idx],
+				discard_exception(
+					(except_T *)cstack->cs_exception[idx],
 					FALSE);
 			    }
 			    else
