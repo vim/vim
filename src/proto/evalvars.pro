@@ -75,7 +75,7 @@ int var_check_lock(int flags, char_u *name, int use_gettext);
 int var_check_fixed(int flags, char_u *name, int use_gettext);
 int var_wrong_func_name(char_u *name, int new_var);
 int value_check_lock(int lock, char_u *name, int use_gettext);
-int valid_varname(char_u *varname);
+int valid_varname(char_u *varname, int autoload);
 void reset_v_option_vars(void);
 void assert_error(garray_T *gap);
 int var_exists(char_u *var);

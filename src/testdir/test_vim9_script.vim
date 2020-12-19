@@ -2779,8 +2779,32 @@ def Test_vim9_copen()
   quit
 enddef
 
-" test using a vim9script that is auto-loaded from an autocmd
+" test using an auto-loaded function and variable
 def Test_vim9_autoload()
+  var lines =<< trim END
+     vim9script
+     def some#gettest(): string
+       return 'test'
+     enddef
+     g:some#name = 'name'
+  END
+
+  mkdir('Xdir/autoload', 'p')
+  writefile(lines, 'Xdir/autoload/some.vim')
+  var save_rtp = &rtp
+  exe 'set rtp^=' .. getcwd() .. '/Xdir'
+
+  assert_equal('test', g:some#gettest())
+  assert_equal('name', g:some#name)
+  g:some#other = 'other'
+  assert_equal('other', g:some#other)
+
+  delete('Xdir', 'rf')
+  &rtp = save_rtp
+enddef
+
+" test using a vim9script that is auto-loaded from an autocmd
+def Test_vim9_aucmd_autoload()
   var lines =<< trim END
      vim9script
      def foo#test()
@@ -2842,6 +2866,12 @@ def Test_vim9_autoload_error()
   delete('Xdidit')
   delete('Xscript')
   delete('Xruntime', 'rf')
+
+  lines =<< trim END
+    vim9script
+    var foo#bar = 'asdf'
+  END
+  CheckScriptFailure(lines, 'E461: Illegal variable name: foo#bar', 2)
 enddef
 
 def Test_script_var_in_autocmd()

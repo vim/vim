@@ -1391,6 +1391,21 @@ call_def_function(
 		}
 		break;
 
+	    // load autoload variable
+	    case ISN_LOADAUTO:
+		{
+		    char_u *name = iptr->isn_arg.string;
+
+		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
+			goto failed;
+		    SOURCING_LNUM = iptr->isn_lnum;
+		    if (eval_variable(name, STRLEN(name),
+				  STACK_TV_BOT(0), NULL, TRUE, FALSE) == FAIL)
+			goto on_error;
+		    ++ectx.ec_stack.ga_len;
+		}
+		break;
+
 	    // load g:/b:/w:/t: namespace
 	    case ISN_LOADGDICT:
 	    case ISN_LOADBDICT:
@@ -1609,6 +1624,14 @@ call_def_function(
 			di->di_tv = *STACK_TV_BOT(0);
 		    }
 		}
+		break;
+
+	    // store an autoload variable
+	    case ISN_STOREAUTO:
+		SOURCING_LNUM = iptr->isn_lnum;
+		set_var(iptr->isn_arg.string, STACK_TV_BOT(-1), TRUE);
+		clear_tv(STACK_TV_BOT(-1));
+		--ectx.ec_stack.ga_len;
 		break;
 
 	    // store number in local variable
@@ -3286,6 +3309,9 @@ ex_disassemble(exarg_T *eap)
 				 iptr->isn_arg.loadstore.ls_name, si->sn_name);
 		}
 		break;
+	    case ISN_LOADAUTO:
+		smsg("%4d LOADAUTO %s", current, iptr->isn_arg.string);
+		break;
 	    case ISN_LOADG:
 		smsg("%4d LOADG g:%s", current, iptr->isn_arg.string);
 		break;
@@ -3336,6 +3362,9 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_STOREV:
 		smsg("%4d STOREV v:%s", current,
 				       get_vim_var_name(iptr->isn_arg.number));
+		break;
+	    case ISN_STOREAUTO:
+		smsg("%4d STOREAUTO %s", current, iptr->isn_arg.string);
 		break;
 	    case ISN_STOREG:
 		smsg("%4d STOREG %s", current, iptr->isn_arg.string);

@@ -1073,7 +1073,7 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action)
 			&& HI2DI(hi2)->di_tv.v_type == VAR_FUNC
 			&& var_wrong_func_name(hi2->hi_key, di1 == NULL))
 		    break;
-		if (!valid_varname(hi2->hi_key))
+		if (!valid_varname(hi2->hi_key, TRUE))
 		    break;
 	    }
 	    if (di1 == NULL)

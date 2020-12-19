@@ -23,6 +23,7 @@ def s:ScriptFuncLoad(arg: string)
   echo s:scriptvar
   echo g:globalvar
   echo get(g:, "global")
+  echo g:auto#var
   echo b:buffervar
   echo get(b:, "buffer")
   echo w:windowvar
@@ -68,8 +69,14 @@ def Test_disassemble_load()
         'echo get(g:, "global")\_s*' ..
         '\d\+ LOAD g:\_s*' ..
         '\d\+ PUSHS "global"\_s*' ..
-        '\d\+ BCALL get(argc 2).*' ..
-        ' LOADB b:buffervar.*' ..
+        '\d\+ BCALL get(argc 2)\_s*' ..
+        '\d\+ ECHO 1\_s*' ..
+        'echo g:auto#var\_s*' ..
+        '\d\+ LOADAUTO g:auto#var\_s*' ..
+        '\d\+ ECHO 1\_s*' ..
+        'echo b:buffervar\_s*' ..
+        '\d\+ LOADB b:buffervar\_s*' ..
+        '\d\+ ECHO 1\_s*' ..
         'echo get(b:, "buffer")\_s*' ..
         '\d\+ LOAD b:\_s*' ..
         '\d\+ PUSHS "buffer"\_s*' ..
@@ -197,6 +204,7 @@ def s:ScriptFuncStore()
   v:char = 'abc'
   s:scriptvar = 'sv'
   g:globalvar = 'gv'
+  g:auto#var = 'av'
   b:buffervar = 'bv'
   w:windowvar = 'wv'
   t:tabpagevar = 'tv'
@@ -220,6 +228,8 @@ def Test_disassemble_store()
         ' STORES s:scriptvar in .*test_vim9_disassemble.vim.*' ..
         'g:globalvar = ''gv''.*' ..
         ' STOREG g:globalvar.*' ..
+        'g:auto#var = ''av''.*' ..
+        ' STOREAUTO g:auto#var.*' ..
         'b:buffervar = ''bv''.*' ..
         ' STOREB b:buffervar.*' ..
         'w:windowvar = ''wv''.*' ..

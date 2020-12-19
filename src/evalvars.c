@@ -3195,8 +3195,10 @@ set_var_const(
 	    goto failed;
 	}
 
-	// Make sure the variable name is valid.
-	if (!valid_varname(varname))
+	// Make sure the variable name is valid.  In Vim9 script an autoload
+	// variable must be prefixed with "g:".
+	if (!valid_varname(varname, !vim9script
+					       || STRNCMP(name, "g:", 2) == 0))
 	    goto failed;
 
 	di = alloc(sizeof(dictitem_T) + STRLEN(varname));
@@ -3349,17 +3351,17 @@ value_check_lock(int lock, char_u *name, int use_gettext)
 }
 
 /*
- * Check if a variable name is valid.
+ * Check if a variable name is valid.  When "autoload" is true "#" is allowed.
  * Return FALSE and give an error if not.
  */
     int
-valid_varname(char_u *varname)
+valid_varname(char_u *varname, int autoload)
 {
     char_u *p;
 
     for (p = varname; *p != NUL; ++p)
 	if (!eval_isnamec1(*p) && (p == varname || !VIM_ISDIGIT(*p))
-						   && *p != AUTOLOAD_CHAR)
+					 && !(autoload && *p == AUTOLOAD_CHAR))
 	{
 	    semsg(_(e_illvar), varname);
 	    return FALSE;
