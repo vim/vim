@@ -2412,7 +2412,7 @@ def Test_vim9_comment()
       'delcommand Echo',
       ])
   CheckScriptSuccess([
-      'vim9script'
+      'vim9script',
       'command Echo cd # comment',
       'Echo',
       'delcommand Echo',
@@ -2949,6 +2949,7 @@ def Test_restoring_cpo()
   endif
   delete('Xsourced')
   delete('Xclose')
+  delete('Xdone')
 enddef
 
 

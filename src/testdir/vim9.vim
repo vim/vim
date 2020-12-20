@@ -5,7 +5,7 @@ let s:sequence = 1
 
 " Check that "lines" inside a ":def" function has no error.
 func CheckDefSuccess(lines)
-  let fname = 'Xdef' .. s:sequence
+  let fname = 'XdefSuccess' .. s:sequence
   let s:sequence += 1
   call writefile(['def Func()'] + a:lines + ['enddef', 'defcompile'], fname)
   exe 'so ' .. fname
@@ -19,7 +19,7 @@ endfunc
 " Add a line before and after to make it less likely that the line number is
 " accidentally correct.
 func CheckDefFailure(lines, error, lnum = -3)
-  let fname = 'Xdef' .. s:sequence
+  let fname = 'XdefFailure' .. s:sequence
   call writefile(['def Func()', '# comment'] + a:lines + ['#comment', 'enddef', 'defcompile'], fname)
   call assert_fails('so ' .. fname, a:error, a:lines, a:lnum + 1)
   delfunc! Func
@@ -32,7 +32,7 @@ endfunc
 " Add a line before and after to make it less likely that the line number is
 " accidentally correct.
 func CheckDefExecFailure(lines, error, lnum = -3)
-  let fname = 'Xdef' .. s:sequence
+  let fname = 'XdefExecFailure' .. s:sequence
   let s:sequence += 1
   call writefile(['def Func()', '# comment'] + a:lines + ['#comment', 'enddef'], fname)
   exe 'so ' .. fname
@@ -42,7 +42,7 @@ func CheckDefExecFailure(lines, error, lnum = -3)
 endfunc
 
 def CheckScriptFailure(lines: list<string>, error: string, lnum = -3)
-  var fname = 'Xdef' .. s:sequence
+  var fname = 'XScriptFailure' .. s:sequence
   s:sequence += 1
   writefile(lines, fname)
   assert_fails('so ' .. fname, error, lines, lnum)
@@ -50,7 +50,7 @@ def CheckScriptFailure(lines: list<string>, error: string, lnum = -3)
 enddef
 
 def CheckScriptSuccess(lines: list<string>)
-  var fname = 'Xdef' .. s:sequence
+  var fname = 'XScriptSuccess' .. s:sequence
   s:sequence += 1
   writefile(lines, fname)
   exe 'so ' .. fname
