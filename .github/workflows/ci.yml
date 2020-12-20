@@ -292,6 +292,8 @@ jobs:
           sed -i.bak -f ci/config.mk.clang.sed ${SRCDIR}/auto/config.mk
 
       - name: Build
+        env:
+          LANG: C
         run: |
           make -j${NPROC}
 
