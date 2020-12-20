@@ -18,6 +18,7 @@ int funcdepth_increment(void);
 void funcdepth_decrement(void);
 int funcdepth_get(void);
 void funcdepth_restore(int depth);
+int check_user_func_argcount(ufunc_T *fp, int argcount);
 int call_user_func_check(ufunc_T *fp, int argcount, typval_T *argvars, typval_T *rettv, funcexe_T *funcexe, dict_T *selfdict);
 void save_funccal(funccal_entry_T *entry);
 void restore_funccal(void);

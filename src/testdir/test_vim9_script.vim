@@ -1312,12 +1312,12 @@ def Test_vim9script_reload_delfunc()
   # FuncNo() is not redefined
   writefile(first_lines + nono_lines, 'Xreloaded.vim')
   source Xreloaded.vim
-  g:DoCheck()
+  g:DoCheck(false)
 
   # FuncNo() is back
   writefile(first_lines + withno_lines, 'Xreloaded.vim')
   source Xreloaded.vim
-  g:DoCheck()
+  g:DoCheck(false)
 
   delete('Xreloaded.vim')
 enddef

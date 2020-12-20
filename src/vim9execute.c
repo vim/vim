@@ -606,6 +606,17 @@ call_ufunc(ufunc_T *ufunc, int argcount, ectx_T *ectx, isn_T *iptr)
 	return FAIL;
     if (ufunc->uf_def_status == UF_COMPILED)
     {
+	int error = check_user_func_argcount(ufunc, argcount);
+
+	if (error != FCERR_UNKNOWN)
+	{
+	    if (error == FCERR_TOOMANY)
+		semsg(_(e_toomanyarg), ufunc->uf_name);
+	    else
+		semsg(_(e_toofewarg), ufunc->uf_name);
+	    return FAIL;
+	}
+
 	// The function has been compiled, can call it quickly.  For a function
 	// that was defined later: we can call it directly next time.
 	if (iptr != NULL)

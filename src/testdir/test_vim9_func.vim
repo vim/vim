@@ -470,6 +470,25 @@ def Test_call_wrong_args()
   delete('Xscript')
 enddef
 
+def Test_call_funcref_wrong_args()
+  var head =<< trim END
+      vim9script
+      def Func3(a1: string, a2: number, a3: list<number>)
+        echo a1 .. a2 .. a3[0]
+      enddef
+      def Testme()
+        var funcMap: dict<func> = {func: Func3}
+  END
+  var tail =<< trim END
+      enddef
+      Testme()
+  END
+  CheckScriptSuccess(head + ["funcMap['func']('str', 123, [1, 2, 3])"] + tail)
+
+  CheckScriptFailure(head + ["funcMap['func']('str', 123)"] + tail, 'E119:')
+  CheckScriptFailure(head + ["funcMap['func']('str', 123, [1], 4)"] + tail, 'E118:')
+enddef
+
 def Test_call_lambda_args()
   CheckDefFailure(['echo {i -> 0}()'],
                   'E119: Not enough arguments for function: {i -> 0}()')
