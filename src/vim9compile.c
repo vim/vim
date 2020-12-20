@@ -5876,7 +5876,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 
 	if (has_index)
 	{
-	    int r;
+	    int		r;
+	    vartype_T	dest_type;
 
 	    // Compile the "idx" in "var[idx]" or "key" in "var.key".
 	    p = var_start + varlen;
@@ -5913,10 +5914,11 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		else
 		    type = &t_dict_any;
 	    }
-	    if (type->tt_type == VAR_DICT
+	    dest_type = type->tt_type;
+	    if (dest_type == VAR_DICT
 		    && may_generate_2STRING(-1, cctx) == FAIL)
 		goto theend;
-	    if (type->tt_type == VAR_LIST
+	    if (dest_type == VAR_LIST
 		    && ((type_T **)stack->ga_data)[stack->ga_len - 1]->tt_type
 								 != VAR_NUMBER)
 	    {
@@ -5954,12 +5956,12 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    else
 		generate_loadvar(cctx, dest, name, lvar, type);
 
-	    if (type->tt_type == VAR_LIST)
+	    if (dest_type == VAR_LIST)
 	    {
 		if (generate_instr_drop(cctx, ISN_STORELIST, 3) == FAIL)
 		    goto theend;
 	    }
-	    else if (type->tt_type == VAR_DICT)
+	    else if (dest_type == VAR_DICT)
 	    {
 		if (generate_instr_drop(cctx, ISN_STOREDICT, 3) == FAIL)
 		    goto theend;
