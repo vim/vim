@@ -1225,6 +1225,8 @@ func_clear_items(ufunc_T *fp)
     VIM_CLEAR(fp->uf_block_ids);
     VIM_CLEAR(fp->uf_va_name);
     clear_type_list(&fp->uf_type_list);
+    partial_unref(fp->uf_partial);
+    fp->uf_partial = NULL;
 
 #ifdef FEAT_LUA
     if (fp->uf_cb_free != NULL)
@@ -1305,12 +1307,13 @@ func_clear_free(ufunc_T *fp, int force)
 /*
  * Copy already defined function "lambda" to a new function with name "global".
  * This is for when a compiled function defines a global function.
+ * Caller should take care of adding a partial for a closure.
  */
-    void
+    ufunc_T *
 copy_func(char_u *lambda, char_u *global)
 {
     ufunc_T *ufunc = find_func_even_dead(lambda, TRUE, NULL);
-    ufunc_T *fp;
+    ufunc_T *fp = NULL;
 
     if (ufunc == NULL)
 	semsg(_(e_lambda_function_not_found_str), lambda);
@@ -1321,12 +1324,12 @@ copy_func(char_u *lambda, char_u *global)
 	if (fp != NULL)
 	{
 	    semsg(_(e_funcexts), global);
-	    return;
+	    return NULL;
 	}
 
 	fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(global) + 1);
 	if (fp == NULL)
-	    return;
+	    return NULL;
 
 	fp->uf_varargs = ufunc->uf_varargs;
 	fp->uf_flags = (ufunc->uf_flags & ~FC_VIM9) | FC_COPY;
@@ -1362,15 +1365,17 @@ copy_func(char_u *lambda, char_u *global)
 	    if (fp->uf_va_name == NULL)
 		goto failed;
 	}
+	fp->uf_ret_type = ufunc->uf_ret_type;
 
 	fp->uf_refcount = 1;
 	STRCPY(fp->uf_name, global);
 	hash_add(&func_hashtab, UF2HIKEY(fp));
     }
-    return;
+    return fp;
 
 failed:
     func_clear_free(fp, TRUE);
+    return NULL;
 }
 
 static int	funcdepth = 0;

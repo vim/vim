@@ -845,6 +845,49 @@ call_eval_func(char_u *name, int argcount, ectx_T *ectx, isn_T *iptr)
 }
 
 /*
+ * When a function reference is used, fill a partial with the information
+ * needed, especially when it is used as a closure.
+ */
+    static int
+fill_partial_and_closure(partial_T *pt, ufunc_T *ufunc, ectx_T *ectx)
+{
+    pt->pt_func = ufunc;
+    pt->pt_refcount = 1;
+
+    if (pt->pt_func->uf_flags & FC_CLOSURE)
+    {
+	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
+							  + ectx->ec_dfunc_idx;
+
+	// The closure needs to find arguments and local
+	// variables in the current stack.
+	pt->pt_ectx_stack = &ectx->ec_stack;
+	pt->pt_ectx_frame = ectx->ec_frame_idx;
+
+	// If this function returns and the closure is still
+	// being used, we need to make a copy of the context
+	// (arguments and local variables). Store a reference
+	// to the partial so we can handle that.
+	if (ga_grow(&ectx->ec_funcrefs, 1) == FAIL)
+	{
+	    vim_free(pt);
+	    return FAIL;
+	}
+	// Extra variable keeps the count of closures created
+	// in the current function call.
+	++(((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_frame_idx
+		       + STACK_FRAME_SIZE + dfunc->df_varcount)->vval.v_number;
+
+	((partial_T **)ectx->ec_funcrefs.ga_data)
+			       [ectx->ec_funcrefs.ga_len] = pt;
+	++pt->pt_refcount;
+	++ectx->ec_funcrefs.ga_len;
+    }
+    ++pt->pt_func->uf_refcount;
+    return OK;
+}
+
+/*
  * Call a "def" function from old Vim script.
  * Return OK or FAIL.
  */
@@ -1002,6 +1045,11 @@ call_def_function(
 	    ectx.ec_outer_stack = partial->pt_ectx_stack;
 	    ectx.ec_outer_frame = partial->pt_ectx_frame;
 	}
+    }
+    else if (ufunc->uf_partial != NULL)
+    {
+	ectx.ec_outer_stack = ufunc->uf_partial->pt_ectx_stack;
+	ectx.ec_outer_frame = ufunc->uf_partial->pt_ectx_frame;
     }
 
     // dummy frame entries
@@ -1969,10 +2017,10 @@ call_def_function(
 	    // push a function reference to a compiled function
 	    case ISN_FUNCREF:
 		{
-		    partial_T   *pt = NULL;
-		    dfunc_T	*pt_dfunc;
+		    partial_T   *pt = ALLOC_CLEAR_ONE(partial_T);
+		    dfunc_T	*pt_dfunc = ((dfunc_T *)def_functions.ga_data)
+					       + iptr->isn_arg.funcref.fr_func;
 
-		    pt = ALLOC_CLEAR_ONE(partial_T);
 		    if (pt == NULL)
 			goto failed;
 		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
@@ -1980,41 +2028,9 @@ call_def_function(
 			vim_free(pt);
 			goto failed;
 		    }
-		    pt_dfunc = ((dfunc_T *)def_functions.ga_data)
-					       + iptr->isn_arg.funcref.fr_func;
-		    pt->pt_func = pt_dfunc->df_ufunc;
-		    pt->pt_refcount = 1;
-
-		    if (pt_dfunc->df_ufunc->uf_flags & FC_CLOSURE)
-		    {
-			dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
-							   + ectx.ec_dfunc_idx;
-
-			// The closure needs to find arguments and local
-			// variables in the current stack.
-			pt->pt_ectx_stack = &ectx.ec_stack;
-			pt->pt_ectx_frame = ectx.ec_frame_idx;
-
-			// If this function returns and the closure is still
-			// being used, we need to make a copy of the context
-			// (arguments and local variables). Store a reference
-			// to the partial so we can handle that.
-			if (ga_grow(&ectx.ec_funcrefs, 1) == FAIL)
-			{
-			    vim_free(pt);
-			    goto failed;
-			}
-			// Extra variable keeps the count of closures created
-			// in the current function call.
-			tv = STACK_TV_VAR(dfunc->df_varcount);
-			++tv->vval.v_number;
-
-			((partial_T **)ectx.ec_funcrefs.ga_data)
-					       [ectx.ec_funcrefs.ga_len] = pt;
-			++pt->pt_refcount;
-			++ectx.ec_funcrefs.ga_len;
-		    }
-		    ++pt_dfunc->df_ufunc->uf_refcount;
+		    if (fill_partial_and_closure(pt, pt_dfunc->df_ufunc,
+								&ectx) == FAIL)
+			goto failed;
 
 		    tv = STACK_TV_BOT(0);
 		    ++ectx.ec_stack.ga_len;
@@ -2028,8 +2044,25 @@ call_def_function(
 	    case ISN_NEWFUNC:
 		{
 		    newfunc_T	*newfunc = &iptr->isn_arg.newfunc;
+		    ufunc_T	*new_ufunc;
 
-		    copy_func(newfunc->nf_lambda, newfunc->nf_global);
+		    new_ufunc = copy_func(
+				       newfunc->nf_lambda, newfunc->nf_global);
+		    if (new_ufunc != NULL
+					 && (new_ufunc->uf_flags & FC_CLOSURE))
+		    {
+			partial_T   *pt = ALLOC_CLEAR_ONE(partial_T);
+
+			// Need to create a partial to store the context of the
+			// function.
+			if (pt == NULL)
+			    goto failed;
+			if (fill_partial_and_closure(pt, new_ufunc,
+								&ectx) == FAIL)
+			    goto failed;
+			new_ufunc->uf_partial = pt;
+			--pt->pt_refcount;  // not referenced here
+		    }
 		}
 		break;
 
@@ -3114,7 +3147,10 @@ failed:
 
     // Deal with any remaining closures, they may be in use somewhere.
     if (ectx.ec_funcrefs.ga_len > 0)
+    {
 	handle_closure_in_use(&ectx, FALSE);
+	ga_clear(&ectx.ec_funcrefs);  // TODO: should not be needed?
+    }
 
     estack_pop();
     current_sctx = save_current_sctx;

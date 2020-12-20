@@ -1598,6 +1598,9 @@ typedef struct
     garray_T	uf_type_list;	// types used in arg and return types
     int		*uf_def_arg_idx; // instruction indexes for evaluating
 				// uf_def_args; length: uf_def_args.ga_len + 1
+    partial_T	*uf_partial;	// for closure created inside :def function:
+				// information about the context
+
     char_u	*uf_va_name;	// name from "...name" or NULL
     type_T	*uf_va_type;	// type from "...name: type" or NULL
     type_T	*uf_func_type;	// type of the function, &t_func_any if unknown

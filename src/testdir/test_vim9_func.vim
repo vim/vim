@@ -1523,6 +1523,29 @@ def Test_nested_closure_fails()
   CheckScriptFailure(lines, 'E1012:')
 enddef
 
+def Test_global_closure()
+  var lines =<< trim END
+      vim9script
+      def ReverseEveryNLines(n: number, line1: number, line2: number)
+        var mods = 'sil keepj keepp lockm '
+        var range = ':' .. line1 .. ',' .. line2
+        def g:Offset(): number
+            var offset = (line('.') - line1 + 1) % n
+            return offset != 0 ? offset : n
+        enddef
+        exe mods .. range .. 'g/^/exe "m .-" .. g:Offset()'
+      enddef
+
+      new
+      repeat(['aaa', 'bbb', 'ccc'], 3)->setline(1)
+      ReverseEveryNLines(3, 1, 9)
+  END
+  CheckScriptSuccess(lines)
+  var expected = repeat(['ccc', 'bbb', 'aaa'], 3)
+  assert_equal(expected, getline(1, 9))
+  bwipe!
+enddef
+
 def Test_failure_in_called_function()
   # this was using the frame index as the return value
   var lines =<< trim END
