@@ -561,10 +561,24 @@ def Test_assignment_dict()
   assert_equal(dict3, {key: 'yet another'})
 
   var lines =<< trim END
+    vim9script
+    var dd = {}
+    dd.two = 2
+    assert_equal({two: 2}, dd)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
     var dd = {one: 1}
     dd.one) = 2
   END
-  CheckDefFailure(lines, 'E15:', 2)
+  CheckDefFailure(lines, 'E488:', 2)
+
+  lines =<< trim END
+    var dd = {one: 1}
+    var dd.one = 2
+  END
+  CheckDefAndScriptFailure(lines, 'E1017:', 2)
 
   # empty key can be used
   var dd = {}
