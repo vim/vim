@@ -710,5 +710,16 @@ def Test_ambiguous_user_cmd()
   CheckScriptFailure(lines, 'E464:')
 enddef
 
+def Test_command_not_recognized()
+  var lines =<< trim END
+    d.key = 'asdf'
+  END
+  CheckDefFailure(lines, 'E1146:', 1)
+
+  lines =<< trim END
+    d['key'] = 'asdf'
+  END
+  CheckDefFailure(lines, 'E1146:', 1)
+enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

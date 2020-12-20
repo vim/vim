@@ -7681,8 +7681,9 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	    // Expression or function call.
 	    if (ea.cmdidx != CMD_eval)
 	    {
-		// CMD_var cannot happen, compile_assignment() above is used
-		iemsg("Command from find_ex_command() not handled");
+		// CMD_var cannot happen, compile_assignment() above would be
+		// used.  Most likely an assignment to a non-existing variable.
+		semsg(_(e_command_not_recognized_str), ea.cmd);
 		goto erret;
 	    }
 	}

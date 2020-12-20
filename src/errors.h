@@ -321,3 +321,5 @@ EXTERN char e_command_not_followed_by_white_space_str[]
 	INIT(= N_("E1144: Command is not followed by white space: %s"));
 EXTERN char e_missing_heredoc_end_marker_str[]
 	INIT(= N_("E1145: Missing heredoc end marker: %s"));
+EXTERN char e_command_not_recognized_str[]
+	INIT(= N_("E1146: Command not recognized: %s"));
