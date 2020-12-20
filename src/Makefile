@@ -3079,6 +3079,12 @@ auto/os_haiku.rdef: os_haiku.rdef.in
 	sed -i "s|@MAJOR@|$(VIMMAJOR)|" auto/os_haiku.rdef
 	sed -i "s|@MINOR@|$(VIMMINOR)|" auto/os_haiku.rdef
 
+# Reformat the compiler flags by stripping out extra whitespace so they look
+# prettier in :version output.
+ALL_CFLAGS_PRETTY=$(shell sh -c 'printf "%q" "$$1" && shift && printf " %q" "$$@"' -- $(ALL_CFLAGS))
+ALL_LFLAGS=$(ALL_LIB_DIRS) $(LDFLAGS) -o $(VIMTARGET) $(ALL_LIBS)
+ALL_LFLAGS_PRETTY=$(shell sh -c 'printf "%q" "$$1" && shift && printf " %q" "$$@"' -- $(ALL_LFLAGS))
+
 auto/pathdef.c: Makefile auto/config.mk
 	-@echo creating $@
 	-@echo '/* pathdef.c */' > $@
@@ -3087,8 +3093,8 @@ auto/pathdef.c: Makefile auto/config.mk
 	-@echo '#include "vim.h"' >> $@
 	-@echo 'char_u *default_vim_dir = (char_u *)"$(VIMRCLOC)";' | $(QUOTESED) >> $@
 	-@echo 'char_u *default_vimruntime_dir = (char_u *)"$(VIMRUNTIMEDIR)";' | $(QUOTESED) >> $@
-	-@echo 'char_u *all_cflags = (char_u *)"$(CC) -c -I$(srcdir) $(ALL_CFLAGS)";' | $(QUOTESED) >>  $@
-	-@echo 'char_u *all_lflags = (char_u *)"$(CC) $(ALL_LIB_DIRS) $(LDFLAGS) -o $(VIMTARGET) $(ALL_LIBS) ";' | $(QUOTESED) >>  $@
+	-@echo 'char_u *all_cflags = (char_u *)"$(CC) -c -I$(srcdir) $(ALL_CFLAGS_PRETTY)";' | $(QUOTESED) >>  $@
+	-@echo 'char_u *all_lflags = (char_u *)"$(CC) $(ALL_LFLAGS_PRETTY)";' | $(QUOTESED) >>  $@
 	-@echo 'char_u *compiled_user = (char_u *)"' | tr -d $(NL) >> $@
 	-@if test -n "$(COMPILEDBY)"; then \
 		echo "$(COMPILEDBY)" | tr -d $(NL) >> $@; \
