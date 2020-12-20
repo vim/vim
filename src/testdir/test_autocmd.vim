@@ -221,6 +221,29 @@ func Test_autocmd_bufunload_avoiding_SEGV_02()
   bwipe! a.txt
 endfunc
 
+func Test_autocmd_dummy_wipeout()
+  " prepare files
+  call writefile([''], 'Xdummywipetest1.txt')
+  call writefile([''], 'Xdummywipetest2.txt')
+  augroup test_bufunload_group
+    autocmd!
+    autocmd BufUnload * call add(s:li, "bufunload")
+    autocmd BufDelete * call add(s:li, "bufdelete")
+    autocmd BufWipeout * call add(s:li, "bufwipeout")
+  augroup END
+
+  let s:li=[]
+  split Xdummywipetest1.txt
+  silent! vimgrep /notmatched/ Xdummywipetest*
+  call assert_equal(["bufunload", "bufwipeout"], s:li)
+
+  bwipeout
+  call delete('Xdummywipetest1.txt')
+  call delete('Xdummywipetest2.txt')
+  au! test_bufunload_group
+  augroup! test_bufunload_group
+endfunc
+
 func Test_win_tab_autocmd()
   let g:record = []
 

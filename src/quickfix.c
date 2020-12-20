@@ -6513,7 +6513,7 @@ wipe_dummy_buffer(buf_T *buf, char_u *dirname_start)
 	enter_cleanup(&cs);
 #endif
 
-	wipe_buffer(buf, FALSE);
+	wipe_buffer(buf, TRUE);
 
 #if defined(FEAT_EVAL)
 	// Restore the error/interrupt/exception state if not discarded by a
