@@ -802,6 +802,38 @@ store_var(char_u *name, typval_T *tv)
 }
 
 /*
+ * Convert "tv" to a string.
+ * Return FAIL if not allowed.
+ */
+    static int
+do_2string(typval_T *tv, int is_2string_any)
+{
+    if (tv->v_type != VAR_STRING)
+    {
+	char_u *str;
+
+	if (is_2string_any)
+	{
+	    switch (tv->v_type)
+	    {
+		case VAR_SPECIAL:
+		case VAR_BOOL:
+		case VAR_NUMBER:
+		case VAR_FLOAT:
+		case VAR_BLOB:	break;
+		default:	to_string_error(tv->v_type);
+				return FAIL;
+	    }
+	}
+	str = typval_tostring(tv);
+	clear_tv(tv);
+	tv->v_type = VAR_STRING;
+	tv->vval.v_string = str;
+    }
+    return OK;
+}
+
+/*
  * When the value of "sv" is a null list of dict, allocate it.
  */
     static void
@@ -1700,92 +1732,126 @@ call_def_function(
 		tv->vval.v_number = iptr->isn_arg.storenr.stnr_val;
 		break;
 
-	    // store value in list variable
-	    case ISN_STORELIST:
+	    // store value in list or dict variable
+	    case ISN_STOREINDEX:
 		{
+		    vartype_T	dest_type = iptr->isn_arg.vartype;
 		    typval_T	*tv_idx = STACK_TV_BOT(-2);
-		    varnumber_T	lidx = tv_idx->vval.v_number;
-		    typval_T	*tv_list = STACK_TV_BOT(-1);
-		    list_T	*list = tv_list->vval.v_list;
+		    typval_T	*tv_dest = STACK_TV_BOT(-1);
+		    int		status = OK;
 
-		    SOURCING_LNUM = iptr->isn_lnum;
-		    if (lidx < 0 && list->lv_len + lidx >= 0)
-			// negative index is relative to the end
-			lidx = list->lv_len + lidx;
-		    if (lidx < 0 || lidx > list->lv_len)
-		    {
-			semsg(_(e_listidx), lidx);
-			goto on_error;
-		    }
 		    tv = STACK_TV_BOT(-3);
-		    if (lidx < list->lv_len)
+		    SOURCING_LNUM = iptr->isn_lnum;
+		    if (dest_type == VAR_ANY)
 		    {
-			listitem_T *li = list_find(list, lidx);
+			dest_type = tv_dest->v_type;
+			if (dest_type == VAR_DICT)
+			    status = do_2string(tv_idx, TRUE);
+			else if (dest_type == VAR_LIST
+					       && tv_idx->v_type != VAR_NUMBER)
+			{
+			    emsg(_(e_number_exp));
+			    status = FAIL;
+			}
+		    }
+		    else if (dest_type != tv_dest->v_type)
+		    {
+			// just in case, should be OK
+			semsg(_(e_expected_str_but_got_str),
+				    vartype_name(dest_type),
+				    vartype_name(tv_dest->v_type));
+			status = FAIL;
+		    }
 
-			if (error_if_locked(li->li_tv.v_lock,
+		    if (status == OK && dest_type == VAR_LIST)
+		    {
+			varnumber_T	lidx = tv_idx->vval.v_number;
+			list_T		*list = tv_dest->vval.v_list;
+
+			if (list == NULL)
+			{
+			    emsg(_(e_list_not_set));
+			    goto on_error;
+			}
+			if (lidx < 0 && list->lv_len + lidx >= 0)
+			    // negative index is relative to the end
+			    lidx = list->lv_len + lidx;
+			if (lidx < 0 || lidx > list->lv_len)
+			{
+			    semsg(_(e_listidx), lidx);
+			    goto on_error;
+			}
+			if (lidx < list->lv_len)
+			{
+			    listitem_T *li = list_find(list, lidx);
+
+			    if (error_if_locked(li->li_tv.v_lock,
 						    e_cannot_change_list_item))
-			    goto failed;
-			// overwrite existing list item
-			clear_tv(&li->li_tv);
-			li->li_tv = *tv;
+				goto on_error;
+			    // overwrite existing list item
+			    clear_tv(&li->li_tv);
+			    li->li_tv = *tv;
+			}
+			else
+			{
+			    if (error_if_locked(list->lv_lock,
+							 e_cannot_change_list))
+				goto on_error;
+			    // append to list, only fails when out of memory
+			    if (list_append_tv(list, tv) == FAIL)
+				goto failed;
+			    clear_tv(tv);
+			}
+		    }
+		    else if (status == OK && dest_type == VAR_DICT)
+		    {
+			char_u		*key = tv_idx->vval.v_string;
+			dict_T		*dict = tv_dest->vval.v_dict;
+			dictitem_T	*di;
+
+			SOURCING_LNUM = iptr->isn_lnum;
+			if (dict == NULL)
+			{
+			    emsg(_(e_dictionary_not_set));
+			    goto on_error;
+			}
+			if (key == NULL)
+			    key = (char_u *)"";
+			di = dict_find(dict, key, -1);
+			if (di != NULL)
+			{
+			    if (error_if_locked(di->di_tv.v_lock,
+						    e_cannot_change_dict_item))
+				goto on_error;
+			    // overwrite existing value
+			    clear_tv(&di->di_tv);
+			    di->di_tv = *tv;
+			}
+			else
+			{
+			    if (error_if_locked(dict->dv_lock,
+							 e_cannot_change_dict))
+				goto on_error;
+			    // add to dict, only fails when out of memory
+			    if (dict_add_tv(dict, (char *)key, tv) == FAIL)
+				goto failed;
+			    clear_tv(tv);
+			}
 		    }
 		    else
 		    {
-			if (error_if_locked(list->lv_lock,
-							 e_cannot_change_list))
-			    goto failed;
-			// append to list, only fails when out of memory
-			if (list_append_tv(list, tv) == FAIL)
-			    goto failed;
-			clear_tv(tv);
+			status = FAIL;
+			semsg(_(e_cannot_index_str), vartype_name(dest_type));
 		    }
+
 		    clear_tv(tv_idx);
-		    clear_tv(tv_list);
+		    clear_tv(tv_dest);
 		    ectx.ec_stack.ga_len -= 3;
-		}
-		break;
-
-	    // store value in dict variable
-	    case ISN_STOREDICT:
-		{
-		    typval_T	*tv_key = STACK_TV_BOT(-2);
-		    char_u	*key = tv_key->vval.v_string;
-		    typval_T	*tv_dict = STACK_TV_BOT(-1);
-		    dict_T	*dict = tv_dict->vval.v_dict;
-		    dictitem_T	*di;
-
-		    SOURCING_LNUM = iptr->isn_lnum;
-		    if (dict == NULL)
+		    if (status == FAIL)
 		    {
-			emsg(_(e_dictionary_not_set));
+			clear_tv(tv);
 			goto on_error;
 		    }
-		    if (key == NULL)
-			key = (char_u *)"";
-		    tv = STACK_TV_BOT(-3);
-		    di = dict_find(dict, key, -1);
-		    if (di != NULL)
-		    {
-			if (error_if_locked(di->di_tv.v_lock,
-						    e_cannot_change_dict_item))
-			    goto failed;
-			// overwrite existing value
-			clear_tv(&di->di_tv);
-			di->di_tv = *tv;
-		    }
-		    else
-		    {
-			if (error_if_locked(dict->dv_lock,
-							 e_cannot_change_dict))
-			    goto failed;
-			// add to dict, only fails when out of memory
-			if (dict_add_tv(dict, (char *)key, tv) == FAIL)
-			    goto failed;
-			clear_tv(tv);
-		    }
-		    clear_tv(tv_key);
-		    clear_tv(tv_dict);
-		    ectx.ec_stack.ga_len -= 3;
 		}
 		break;
 
@@ -2921,31 +2987,9 @@ call_def_function(
 
 	    case ISN_2STRING:
 	    case ISN_2STRING_ANY:
-		{
-		    char_u *str;
-
-		    tv = STACK_TV_BOT(iptr->isn_arg.number);
-		    if (tv->v_type != VAR_STRING)
-		    {
-			if (iptr->isn_type == ISN_2STRING_ANY)
-			{
-			    switch (tv->v_type)
-			    {
-				case VAR_SPECIAL:
-				case VAR_BOOL:
-				case VAR_NUMBER:
-				case VAR_FLOAT:
-				case VAR_BLOB:	break;
-				default:	to_string_error(tv->v_type);
-						goto on_error;
-			    }
-			}
-			str = typval_tostring(tv);
-			clear_tv(tv);
-			tv->v_type = VAR_STRING;
-			tv->vval.v_string = str;
-		    }
-		}
+		if (do_2string(STACK_TV_BOT(iptr->isn_arg.number),
+			iptr->isn_type == ISN_2STRING_ANY) == FAIL)
+			    goto on_error;
 		break;
 
 	    case ISN_RANGE:
@@ -3462,12 +3506,20 @@ ex_disassemble(exarg_T *eap)
 				iptr->isn_arg.storenr.stnr_idx);
 		break;
 
-	    case ISN_STORELIST:
-		smsg("%4d STORELIST", current);
-		break;
-
-	    case ISN_STOREDICT:
-		smsg("%4d STOREDICT", current);
+	    case ISN_STOREINDEX:
+		switch (iptr->isn_arg.vartype)
+		{
+		    case VAR_LIST:
+			    smsg("%4d STORELIST", current);
+			    break;
+		    case VAR_DICT:
+			    smsg("%4d STOREDICT", current);
+			    break;
+		    case VAR_ANY:
+			    smsg("%4d STOREINDEX", current);
+			    break;
+		    default: break;
+		}
 		break;
 
 	    // constants

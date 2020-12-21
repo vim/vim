@@ -323,3 +323,7 @@ EXTERN char e_missing_heredoc_end_marker_str[]
 	INIT(= N_("E1145: Missing heredoc end marker: %s"));
 EXTERN char e_command_not_recognized_str[]
 	INIT(= N_("E1146: Command not recognized: %s"));
+EXTERN char e_list_not_set[]
+	INIT(= N_("E1147: List not set"));
+EXTERN char e_cannot_index_str[]
+	INIT(= N_("E1148: Cannot index a %s"));

@@ -533,6 +533,12 @@ def Test_assignment_list()
 
   # type becomes list<any>
   var somelist = rand() > 0 ? [1, 2, 3] : ['a', 'b', 'c']
+
+  var lines =<< trim END
+    var d = {dd: test_null_list()}
+    d.dd[0] = 0
+  END
+  CheckDefExecFailure(lines, 'E1147:', 2)
 enddef
 
 def Test_assignment_list_vim9script()
@@ -567,12 +573,20 @@ def Test_assignment_dict()
   assert_equal({nest: {this: 123, that: 456}, nr: 0}, anydict)
 
   var lines =<< trim END
-    vim9script
     var dd = {}
     dd.two = 2
     assert_equal({two: 2}, dd)
   END
-  CheckScriptSuccess(lines)
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+    var d = {dd: {}}
+    d.dd[0] = 2
+    d.dd['x'] = 3
+    d.dd.y = 4
+    assert_equal({dd: {0: 2, x: 3, y: 4}}, d)
+  END
+  CheckDefAndScriptSuccess(lines)
 
   lines =<< trim END
     var dd = {one: 1}
@@ -641,6 +655,18 @@ def Test_assignment_dict()
     assert_equal({a: 43}, FillDict())
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+    var d = {dd: test_null_dict()}
+    d.dd[0] = 0
+  END
+  CheckDefExecFailure(lines, 'E1103:', 2)
+
+  lines =<< trim END
+    var d = {dd: 'string'}
+    d.dd[0] = 0
+  END
+  CheckDefExecFailure(lines, 'E1148:', 2)
 enddef
 
 def Test_assignment_local()

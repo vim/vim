@@ -276,6 +276,30 @@ def Test_disassemble_store_member()
         res)
 enddef
 
+def s:ScriptFuncStoreIndex()
+  var d = {dd: {}}
+  d.dd[0] = 0
+enddef
+
+def Test_disassemble_store_index()
+  var res = execute('disass s:ScriptFuncStoreIndex')
+  assert_match('<SNR>\d*_ScriptFuncStoreIndex\_s*' ..
+        'var d = {dd: {}}\_s*' ..
+        '\d PUSHS "dd"\_s*' ..
+        '\d NEWDICT size 0\_s*' ..
+        '\d NEWDICT size 1\_s*' ..
+        '\d STORE $0\_s*' ..
+        'd.dd\[0\] = 0\_s*' ..
+        '\d PUSHNR 0\_s*' ..
+        '\d PUSHNR 0\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d MEMBER dd\_s*' ..
+        '\d STOREINDEX\_s*' ..
+        '\d\+ PUSHNR 0\_s*' ..
+        '\d\+ RETURN',
+        res)
+enddef
+
 def s:ListAssign()
   var x: string
   var y: string

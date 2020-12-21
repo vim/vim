@@ -5904,26 +5904,22 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 
 	    if (type == &t_any)
 	    {
-		type_T	    *idx_type = ((type_T **)stack->ga_data)[
-							    stack->ga_len - 1];
-		// Index on variable of unknown type: guess the type from the
-		// index type: number is dict, otherwise dict.
-		// TODO: should do the assignment at runtime
-		if (idx_type->tt_type == VAR_NUMBER)
-		    type = &t_list_any;
-		else
-		    type = &t_dict_any;
+		// Index on variable of unknown type: check at runtime.
+		dest_type = VAR_ANY;
 	    }
-	    dest_type = type->tt_type;
-	    if (dest_type == VAR_DICT
-		    && may_generate_2STRING(-1, cctx) == FAIL)
-		goto theend;
-	    if (dest_type == VAR_LIST
-		    && ((type_T **)stack->ga_data)[stack->ga_len - 1]->tt_type
-								 != VAR_NUMBER)
+	    else
 	    {
-		emsg(_(e_number_exp));
-		goto theend;
+		dest_type = type->tt_type;
+		if (dest_type == VAR_DICT
+			&& may_generate_2STRING(-1, cctx) == FAIL)
+		    goto theend;
+		if (dest_type == VAR_LIST
+		     && ((type_T **)stack->ga_data)[stack->ga_len - 1]->tt_type
+								 != VAR_NUMBER)
+		{
+		    emsg(_(e_number_exp));
+		    goto theend;
+		}
 	    }
 
 	    // Load the dict or list.  On the stack we then have:
@@ -5956,15 +5952,14 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    else
 		generate_loadvar(cctx, dest, name, lvar, type);
 
-	    if (dest_type == VAR_LIST)
+	    if (dest_type == VAR_LIST || dest_type == VAR_DICT
+						       || dest_type == VAR_ANY)
 	    {
-		if (generate_instr_drop(cctx, ISN_STORELIST, 3) == FAIL)
+		isn_T	*isn = generate_instr_drop(cctx, ISN_STOREINDEX, 3);
+
+		if (isn == NULL)
 		    goto theend;
-	    }
-	    else if (dest_type == VAR_DICT)
-	    {
-		if (generate_instr_drop(cctx, ISN_STOREDICT, 3) == FAIL)
-		    goto theend;
+		isn->isn_arg.vartype = dest_type;
 	    }
 	    else
 	    {
@@ -8194,8 +8189,7 @@ delete_instr(isn_T *isn)
 	case ISN_SHUFFLE:
 	case ISN_SLICE:
 	case ISN_STORE:
-	case ISN_STOREDICT:
-	case ISN_STORELIST:
+	case ISN_STOREINDEX:
 	case ISN_STORENR:
 	case ISN_STOREOUTER:
 	case ISN_STOREREG:
