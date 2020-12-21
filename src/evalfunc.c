@@ -2615,6 +2615,8 @@ f_cursor(typval_T *argvars, typval_T *rettv)
     else
     {
 	line = tv_get_lnum(argvars);
+	if (line < 0)
+	    semsg(_(e_invarg2), tv_get_string(&argvars[0]));
 	col = (long)tv_get_number_chk(&argvars[1], NULL);
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	    coladd = (long)tv_get_number_chk(&argvars[2], NULL);

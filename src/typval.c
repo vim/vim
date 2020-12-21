@@ -1536,11 +1536,11 @@ eval_env_var(char_u **arg, typval_T *rettv, int evaluate)
     linenr_T
 tv_get_lnum(typval_T *argvars)
 {
-    linenr_T	lnum = 0;
+    linenr_T	lnum = -1;
 
     if (argvars[0].v_type != VAR_STRING || !in_vim9script())
 	lnum = (linenr_T)tv_get_number_chk(&argvars[0], NULL);
-    if (lnum == 0)  // no valid number, try using arg like line()
+    if (lnum <= 0)  // no valid number, try using arg like line()
     {
 	int	fnum;
 	pos_T	*fp = var2fpos(&argvars[0], TRUE, &fnum);

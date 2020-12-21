@@ -185,6 +185,20 @@ def Test_count()
   count('ABC ABC ABC', 'b', false)->assert_equal(0)
 enddef
 
+def Test_cursor()
+  new
+  setline(1, range(4))
+  cursor(2, 1)
+  assert_equal(2, getcurpos()[1])
+  cursor('$', 1)
+  assert_equal(4, getcurpos()[1])
+
+  var lines =<< trim END
+    cursor('2', 1)
+  END
+  CheckDefExecAndScriptFailure(lines, 'E475:')
+enddef
+
 def Test_executable()
   assert_false(executable(""))
   assert_false(executable(test_null_string()))
