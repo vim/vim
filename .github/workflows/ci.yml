@@ -17,6 +17,7 @@ jobs:
       LOG_DIR: ${{ github.workspace }}/logs
       TERM: xterm
       DISPLAY: ':99'
+      DEBIAN_FRONTEND: noninteractive
 
     strategy:
       fail-fast: false
@@ -54,8 +55,6 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Install packages
-        env:
-          DEBIAN_FRONTEND: noninteractive
         run: |
           sudo apt-get install -y \
             autoconf \
@@ -73,14 +72,17 @@ jobs:
             libgtk2.0-dev \
             desktop-file-utils \
             libtool-bin
-          if [[ ${CC} = clang ]]; then
-            wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-            sudo add-apt-repository -y "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main"
-            sudo apt-get install -y clang-11
-            sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-11 100
-            sudo update-alternatives --set clang /usr/bin/clang-11
-            sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-11 100
-          fi
+
+      - name: Install clang-11
+        if: matrix.compiler == 'clang'
+        run: |
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          . /etc/lsb-release
+          sudo add-apt-repository -y "deb http://apt.llvm.org/${DISTRIB_CODENAME}/ llvm-toolchain-${DISTRIB_CODENAME}-11 main"
+          sudo apt-get install -y clang-11
+          sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-11 100
+          sudo update-alternatives --set clang /usr/bin/clang-11
+          sudo update-alternatives --install /usr/bin/llvm-cov llvm-cov /usr/bin/llvm-cov-11 100
 
       - name: Set up environment
         run: |
@@ -177,9 +179,8 @@ jobs:
         run: |
           ./configure --with-features=${{ matrix.features }} ${CONFOPT} --enable-fail-if-missing
           # Append various warning flags to CFLAGS.
-          # BSD sed needs backup extension specified.
-          sed -i.bak -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
-          sed -i.bak -f ci/config.mk.${CC}.sed ${SRCDIR}/auto/config.mk
+          sed -i -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
+          sed -i -f ci/config.mk.${CC}.sed ${SRCDIR}/auto/config.mk
 
       - name: Build
         if: (!contains(matrix.extra, 'unittests'))
@@ -291,6 +292,8 @@ jobs:
           sed -i.bak -f ci/config.mk.clang.sed ${SRCDIR}/auto/config.mk
 
       - name: Build
+        env:
+          LANG: C
         run: |
           make -j${NPROC}
 
