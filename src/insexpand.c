@@ -1216,7 +1216,7 @@ ins_compl_dictionaries(
     }
     else
     {
-	regmatch.regprog = vim_regcomp(pat, p_magic ? RE_MAGIC : 0);
+	regmatch.regprog = vim_regcomp(pat, magic_isset() ? RE_MAGIC : 0);
 	if (regmatch.regprog == NULL)
 	    goto theend;
     }
@@ -4175,7 +4175,7 @@ quote_meta(char_u *dest, char_u *src, int len)
 		    break;
 		// FALLTHROUGH
 	    case '~':
-		if (!p_magic)	// quote these only if magic is set
+		if (!magic_isset())	// quote these only if magic is set
 		    break;
 		// FALLTHROUGH
 	    case '\\':

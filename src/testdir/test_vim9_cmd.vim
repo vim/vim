@@ -722,4 +722,22 @@ def Test_command_not_recognized()
   CheckDefFailure(lines, 'E1146:', 1)
 enddef
 
+def Test_magic_not_used()
+  new
+  for cmd in ['set magic', 'set nomagic']
+    exe cmd
+    setline(1, 'aaa')
+    s/.../bbb/
+    assert_equal('bbb', getline(1))
+  endfor
+
+  set magic
+  setline(1, 'aaa')
+  assert_fails('s/.\M../bbb/', 'E486:')
+  assert_fails('snomagic/.../bbb/', 'E486:')
+  assert_equal('aaa', getline(1))
+
+  bwipe!
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

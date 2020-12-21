@@ -409,7 +409,7 @@ do_arglist(
 	    p = file_pat_to_reg_pat(p, NULL, NULL, FALSE);
 	    if (p == NULL)
 		break;
-	    regmatch.regprog = vim_regcomp(p, p_magic ? RE_MAGIC : 0);
+	    regmatch.regprog = vim_regcomp(p, magic_isset() ? RE_MAGIC : 0);
 	    if (regmatch.regprog == NULL)
 	    {
 		vim_free(p);

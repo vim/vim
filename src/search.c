@@ -134,7 +134,7 @@ search_regcomp(
     int		i;
 
     rc_did_emsg = FALSE;
-    magic = p_magic;
+    magic = magic_isset();
 
     /*
      * If no pattern given, use a previously defined pattern.
@@ -1341,7 +1341,8 @@ do_search(
 	     * If there is a matching '/' or '?', toss it.
 	     */
 	    ps = strcopy;
-	    p = skip_regexp_ex(pat, search_delim, (int)p_magic, &strcopy, NULL);
+	    p = skip_regexp_ex(pat, search_delim, magic_isset(),
+							       &strcopy, NULL);
 	    if (strcopy != ps)
 	    {
 		// made a copy of "pat" to change "\?" to "?"
@@ -3385,7 +3386,7 @@ find_pattern_in_path(
 	sprintf((char *)pat, whole ? "\\<%.*s\\>" : "%.*s", len, ptr);
 	// ignore case according to p_ic, p_scs and pat
 	regmatch.rm_ic = ignorecase(pat);
-	regmatch.regprog = vim_regcomp(pat, p_magic ? RE_MAGIC : 0);
+	regmatch.regprog = vim_regcomp(pat, magic_isset() ? RE_MAGIC : 0);
 	vim_free(pat);
 	if (regmatch.regprog == NULL)
 	    goto fpip_end;
@@ -3393,7 +3394,8 @@ find_pattern_in_path(
     inc_opt = (*curbuf->b_p_inc == NUL) ? p_inc : curbuf->b_p_inc;
     if (*inc_opt != NUL)
     {
-	incl_regmatch.regprog = vim_regcomp(inc_opt, p_magic ? RE_MAGIC : 0);
+	incl_regmatch.regprog = vim_regcomp(inc_opt,
+						 magic_isset() ? RE_MAGIC : 0);
 	if (incl_regmatch.regprog == NULL)
 	    goto fpip_end;
 	incl_regmatch.rm_ic = FALSE;	// don't ignore case in incl. pat.
@@ -3401,7 +3403,8 @@ find_pattern_in_path(
     if (type == FIND_DEFINE && (*curbuf->b_p_def != NUL || *p_def != NUL))
     {
 	def_regmatch.regprog = vim_regcomp(*curbuf->b_p_def == NUL
-			   ? p_def : curbuf->b_p_def, p_magic ? RE_MAGIC : 0);
+			   ? p_def : curbuf->b_p_def,
+						 magic_isset() ? RE_MAGIC : 0);
 	if (def_regmatch.regprog == NULL)
 	    goto fpip_end;
 	def_regmatch.rm_ic = FALSE;	// don't ignore case in define pat.

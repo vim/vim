@@ -1391,7 +1391,7 @@ set_one_cmd_context(
 		if (*arg != NUL)
 		{
 		    xp->xp_context = EXPAND_NOTHING;
-		    arg = skip_regexp(arg + 1, *arg, p_magic);
+		    arg = skip_regexp(arg + 1, *arg, magic_isset());
 		}
 	    }
 	    return find_nextcmd(arg);
@@ -1429,7 +1429,7 @@ set_one_cmd_context(
 	    {
 		// skip "from" part
 		++arg;
-		arg = skip_regexp(arg, delim, p_magic);
+		arg = skip_regexp(arg, delim, magic_isset());
 	    }
 	    // skip "to" part
 	    while (arg[0] != NUL && arg[0] != delim)
@@ -2077,7 +2077,7 @@ ExpandFromContext(
 	pat = tofree;
     }
 
-    regmatch.regprog = vim_regcomp(pat, p_magic ? RE_MAGIC : 0);
+    regmatch.regprog = vim_regcomp(pat, magic_isset() ? RE_MAGIC : 0);
     if (regmatch.regprog == NULL)
 	return FAIL;
 

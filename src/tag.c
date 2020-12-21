@@ -1271,7 +1271,7 @@ prepare_pats(pat_T *pats, int has_re)
 	else
 	    for (pats->headlen = 0; pats->head[pats->headlen] != NUL;
 							      ++pats->headlen)
-		if (vim_strchr((char_u *)(p_magic ? ".[~*\\$" : "\\$"),
+		if (vim_strchr((char_u *)(magic_isset() ? ".[~*\\$" : "\\$"),
 					   pats->head[pats->headlen]) != NULL)
 		    break;
 	if (p_tl != 0 && pats->headlen > p_tl)	// adjust for 'taglength'
@@ -1279,7 +1279,8 @@ prepare_pats(pat_T *pats, int has_re)
     }
 
     if (has_re)
-	pats->regmatch.regprog = vim_regcomp(pats->pat, p_magic ? RE_MAGIC : 0);
+	pats->regmatch.regprog = vim_regcomp(pats->pat,
+						 magic_isset() ? RE_MAGIC : 0);
     else
 	pats->regmatch.regprog = NULL;
 }
@@ -3311,7 +3312,7 @@ jumpto_tag(
     int		keep_help)	// keep help flag (FALSE for cscope)
 {
     int		save_secure;
-    int		save_magic;
+    int		save_magic_overruled;
     int		save_p_ws, save_p_scs, save_p_ic;
     linenr_T	save_lnum;
     char_u	*str;
@@ -3503,8 +3504,8 @@ jumpto_tag(
 #ifdef HAVE_SANDBOX
 	++sandbox;
 #endif
-	save_magic = p_magic;
-	p_magic = FALSE;	// always execute with 'nomagic'
+	save_magic_overruled = magic_overruled;
+	magic_overruled = MAGIC_OFF;	// always execute with 'nomagic'
 #ifdef FEAT_SEARCH_EXTRA
 	// Save value of no_hlsearch, jumping to a tag is not a real search
 	save_no_hlsearch = no_hlsearch;
@@ -3626,7 +3627,7 @@ jumpto_tag(
 	if (secure == 2)
 	    wait_return(TRUE);
 	secure = save_secure;
-	p_magic = save_magic;
+	magic_overruled = save_magic_overruled;
 #ifdef HAVE_SANDBOX
 	--sandbox;
 #endif

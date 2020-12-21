@@ -3951,7 +3951,7 @@ get_address(
 		}
 		if (skip)	// skip "/pat/"
 		{
-		    cmd = skip_regexp(cmd, c, (int)p_magic);
+		    cmd = skip_regexp(cmd, c, magic_isset());
 		    if (*cmd == c)
 			++cmd;
 		}
@@ -6535,9 +6535,9 @@ ex_open(exarg_T *eap)
     {
 	// ":open /pattern/": put cursor in column found with pattern
 	++eap->arg;
-	p = skip_regexp(eap->arg, '/', p_magic);
+	p = skip_regexp(eap->arg, '/', magic_isset());
 	*p = NUL;
-	regmatch.regprog = vim_regcomp(eap->arg, p_magic ? RE_MAGIC : 0);
+	regmatch.regprog = vim_regcomp(eap->arg, magic_isset() ? RE_MAGIC : 0);
 	if (regmatch.regprog != NULL)
 	{
 	    regmatch.rm_ic = p_ic;
@@ -7529,11 +7529,11 @@ ex_may_print(exarg_T *eap)
     static void
 ex_submagic(exarg_T *eap)
 {
-    int		magic_save = p_magic;
+    magic_T saved = magic_overruled;
 
-    p_magic = (eap->cmdidx == CMD_smagic);
+    magic_overruled = eap->cmdidx == CMD_smagic ? MAGIC_ON : MAGIC_OFF;
     ex_substitute(eap);
-    p_magic = magic_save;
+    magic_overruled = saved;
 }
 
 /*
@@ -8333,7 +8333,7 @@ ex_findpat(exarg_T *eap)
     {
 	whole = FALSE;
 	++eap->arg;
-	p = skip_regexp(eap->arg, '/', p_magic);
+	p = skip_regexp(eap->arg, '/', magic_isset());
 	if (*p)
 	{
 	    *p++ = NUL;

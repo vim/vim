@@ -149,7 +149,7 @@ typedef struct {
     pos_T	match_end;
     int		did_incsearch;
     int		incsearch_postponed;
-    int		magic_save;
+    magic_T	magic_overruled_save;
 } incsearch_state_T;
 
     static void
@@ -159,7 +159,7 @@ init_incsearch_state(incsearch_state_T *is_state)
     is_state->match_start = curwin->w_cursor;
     is_state->did_incsearch = FALSE;
     is_state->incsearch_postponed = FALSE;
-    is_state->magic_save = p_magic;
+    is_state->magic_overruled_save = magic_overruled;
     CLEAR_POS(&is_state->match_end);
     is_state->save_cursor = curwin->w_cursor;  // may be restored later
     is_state->search_start = curwin->w_cursor;
@@ -252,9 +252,9 @@ do_incsearch_highlighting(
 	    || STRNCMP(cmd, "vglobal", p - cmd) == 0)
     {
 	if (*cmd == 's' && cmd[1] == 'm')
-	    p_magic = TRUE;
+	    magic_overruled = MAGIC_ON;
 	else if (*cmd == 's' && cmd[1] == 'n')
-	    p_magic = FALSE;
+	    magic_overruled = MAGIC_OFF;
     }
     else if (STRNCMP(cmd, "sort", MAX(p - cmd, 3)) == 0)
     {
@@ -288,7 +288,7 @@ do_incsearch_highlighting(
     p = skipwhite(p);
     delim = (delim_optional && vim_isIDc(*p)) ? ' ' : *p++;
     *search_delim = delim;
-    end = skip_regexp(p, delim, p_magic);
+    end = skip_regexp(p, delim, magic_isset());
 
     use_last_pat = end == p && *end == delim;
 
@@ -372,7 +372,7 @@ finish_incsearch_highlighting(
 	search_first_line = 0;
 	search_last_line = MAXLNUM;
 
-	p_magic = is_state->magic_save;
+	magic_overruled = is_state->magic_overruled_save;
 
 	validate_cursor();	// needed for TAB
 	redraw_all_later(SOME_VALID);
@@ -713,7 +713,7 @@ may_add_char_to_search(int firstc, int *c, incsearch_state_T *is_state)
 	    if (p_ic && p_scs && !pat_has_uppercase(ccline.cmdbuff + skiplen))
 		*c = MB_TOLOWER(*c);
 	    if (*c == search_delim || vim_strchr((char_u *)(
-			       p_magic ? "\\~^$.*[" : "\\^$"), *c) != NULL)
+			     magic_isset() ? "\\~^$.*[" : "\\^$"), *c) != NULL)
 	    {
 		// put a backslash before special characters
 		stuffcharReadbuff(*c);

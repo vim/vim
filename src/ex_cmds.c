@@ -3671,7 +3671,8 @@ ex_substitute(exarg_T *eap)
 	    which_pat = RE_LAST;	    // use last used regexp
 	    delimiter = *cmd++;		    // remember delimiter character
 	    pat = cmd;			    // remember start of search pat
-	    cmd = skip_regexp_ex(cmd, delimiter, p_magic, &eap->arg, NULL);
+	    cmd = skip_regexp_ex(cmd, delimiter, magic_isset(),
+							      &eap->arg, NULL);
 	    if (cmd[0] == delimiter)	    // end delimiter found
 		*cmd++ = NUL;		    // replace it with a NUL
 	}
@@ -3763,7 +3764,7 @@ ex_substitute(exarg_T *eap)
 	}
 
 	if ((cmdmod.cmod_flags & CMOD_KEEPPATTERNS) == 0)
-	    save_re_pat(RE_SUBST, pat, p_magic);
+	    save_re_pat(RE_SUBST, pat, magic_isset());
 	// put pattern in history
 	add_to_history(HIST_SEARCH, pat, TRUE, NUL);
 
@@ -3897,7 +3898,7 @@ ex_substitute(exarg_T *eap)
      * But don't do it when it starts with "\=", then it's an expression.
      */
     if (!(sub[0] == '\\' && sub[1] == '='))
-	sub = regtilde(sub, p_magic);
+	sub = regtilde(sub, magic_isset());
 
     /*
      * Check for a match on each line.
@@ -4309,7 +4310,7 @@ ex_substitute(exarg_T *eap)
 		// get length of substitution part
 		sublen = vim_regsub_multi(&regmatch,
 				    sub_firstlnum - regmatch.startpos[0].lnum,
-				    sub, sub_firstline, FALSE, p_magic, TRUE);
+			       sub, sub_firstline, FALSE, magic_isset(), TRUE);
 #ifdef FEAT_EVAL
 		// If getting the substitute string caused an error, don't do
 		// the replacement.
@@ -4413,7 +4414,7 @@ ex_substitute(exarg_T *eap)
 
 		(void)vim_regsub_multi(&regmatch,
 				    sub_firstlnum - regmatch.startpos[0].lnum,
-					   sub, new_end, TRUE, p_magic, TRUE);
+				      sub, new_end, TRUE, magic_isset(), TRUE);
 		sub_nsubs++;
 		did_sub = TRUE;
 
@@ -4846,7 +4847,7 @@ ex_global(exarg_T *eap)
 	if (delim)
 	    ++cmd;		// skip delimiter if there is one
 	pat = cmd;		// remember start of pattern
-	cmd = skip_regexp_ex(cmd, delim, p_magic, &eap->arg, NULL);
+	cmd = skip_regexp_ex(cmd, delim, magic_isset(), &eap->arg, NULL);
 	if (cmd[0] == delim)		    // end delimiter found
 	    *cmd++ = NUL;		    // replace it with a NUL
     }

@@ -75,4 +75,5 @@ unsigned int get_bkc_value(buf_T *buf);
 char_u *get_showbreak_value(win_T *win);
 dict_T *get_winbuf_options(int bufopt);
 int fill_culopt_flags(char_u *val, win_T *wp);
+int magic_isset(void);
 /* vim: set ft=c : */

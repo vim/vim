@@ -2605,7 +2605,7 @@ buflist_findpat(
 		p = pat;
 		if (*p == '^' && !(attempt & 1))	 // add/remove '^'
 		    ++p;
-		regmatch.regprog = vim_regcomp(p, p_magic ? RE_MAGIC : 0);
+		regmatch.regprog = vim_regcomp(p, magic_isset() ? RE_MAGIC : 0);
 		if (regmatch.regprog == NULL)
 		{
 		    vim_free(pat);
