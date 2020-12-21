@@ -3096,7 +3096,10 @@ def Test_no_unknown_error_after_error()
           source += l
       enddef
       var myjob = job_start('echo burp', {out_cb: Out_cb, exit_cb: Exit_cb, mode: 'raw'})
-      sleep 100m
+      while job_status(myjob) == 'run'
+        sleep 10m
+      endwhile
+      sleep 10m
   END
   writefile(lines, 'Xdef')
   assert_fails('so Xdef', ['E684:', 'E1012:'])
