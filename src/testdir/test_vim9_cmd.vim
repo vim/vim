@@ -740,4 +740,17 @@ def Test_magic_not_used()
   bwipe!
 enddef
 
+def Test_gdefault_not_used()
+  new
+  for cmd in ['set gdefault', 'set nogdefault']
+    exe cmd
+    setline(1, 'aaa')
+    s/./b/
+    assert_equal('baa', getline(1))
+  endfor
+
+  set nogdefault
+  bwipe!
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

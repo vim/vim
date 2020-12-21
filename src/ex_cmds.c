@@ -3778,6 +3778,15 @@ ex_substitute(exarg_T *eap)
 	++cmd;
     else
     {
+#ifdef FEAT_EVAL
+	if (in_vim9script())
+	{
+	    // ignore 'gdefault' and 'edcompatible'
+	    subflags.do_all = FALSE;
+	    subflags.do_ask = FALSE;
+	}
+	else
+#endif
 	if (!p_ed)
 	{
 	    if (p_gd)		// default is global on
