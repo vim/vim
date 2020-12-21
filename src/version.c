@@ -751,6 +751,8 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    2174,
+/**/
     2173,
 /**/
     2172,
@@ -5332,6 +5334,11 @@ list_version(void)
     msg_puts(_("\nmacOS version"));
 # else
     msg_puts(_("\nmacOS version w/o darwin feat."));
+# endif
+# if defined(__arm64__)
+    msg_puts(" - arm64");
+# elif defined(__x86_64__)
+    msg_puts(" - x86_64");
 # endif
 #endif
 
