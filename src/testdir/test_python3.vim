@@ -4008,4 +4008,11 @@ func Test_python3_iter_ref()
   call assert_equal(1, g:options_iter_ref_count_increase)
 endfunc
 
+func Test_python3_non_utf8_string()
+  smap <Esc>@ <A-@>
+  py3 vim.command('redir => _tmp_smaps | smap | redir END')
+  py3 vim.eval('_tmp_smaps').splitlines()
+  sunmap <Esc>@
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

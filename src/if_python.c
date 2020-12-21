@@ -69,6 +69,10 @@
 # undef PY_SSIZE_T_CLEAN
 #endif
 
+// these are NULL for Python 2
+#define ERRORS_DECODE_ARG NULL
+#define ERRORS_ENCODE_ARG ERRORS_DECODE_ARG
+
 #undef main // Defined in python.h - aargh
 #undef HAVE_FCNTL_H // Clash with os_win32.h
 

@@ -3775,4 +3775,11 @@ func Test_python_keyboard_interrupt()
   close!
 endfunc
 
+func Test_python_non_utf8_string()
+  smap <Esc>@ <A-@>
+  python vim.command('redir => _tmp_smaps | smap | redir END')
+  python vim.eval('_tmp_smaps').splitlines()
+  sunmap <Esc>@
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

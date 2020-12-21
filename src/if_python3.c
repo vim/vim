@@ -81,12 +81,15 @@
 // Python 3 does not support CObjects, always use Capsules
 #define PY_USE_CAPSULE
 
+#define ERRORS_DECODE_ARG CODEC_ERROR_HANDLER
+#define ERRORS_ENCODE_ARG ERRORS_DECODE_ARG
+
 #define PyInt Py_ssize_t
 #ifndef PyString_Check
 # define PyString_Check(obj) PyUnicode_Check(obj)
 #endif
 #define PyString_FromString(repr) \
-    PyUnicode_Decode(repr, STRLEN(repr), ENC_OPT, NULL)
+    PyUnicode_Decode(repr, STRLEN(repr), ENC_OPT, ERRORS_DECODE_ARG)
 #define PyString_FromFormat PyUnicode_FromFormat
 #ifndef PyInt_Check
 # define PyInt_Check(obj) PyLong_Check(obj)
@@ -1088,8 +1091,8 @@ DoPyCommand(const char *cmd, rangeinitializer init_range, runner run, void *arg)
     // PyRun_SimpleString expects a UTF-8 string. Wrong encoding may cause
     // SyntaxError (unicode error).
     cmdstr = PyUnicode_Decode(cmd, strlen(cmd),
-					(char *)ENC_OPT, CODEC_ERROR_HANDLER);
-    cmdbytes = PyUnicode_AsEncodedString(cmdstr, "utf-8", CODEC_ERROR_HANDLER);
+					(char *)ENC_OPT, ERRORS_DECODE_ARG);
+    cmdbytes = PyUnicode_AsEncodedString(cmdstr, "utf-8", ERRORS_ENCODE_ARG);
     Py_XDECREF(cmdstr);
 
     run(PyBytes_AsString(cmdbytes), arg, &pygilstate);
@@ -1745,7 +1748,7 @@ LineToString(const char *str)
     }
     *p = '\0';
 
-    result = PyUnicode_Decode(tmp, len, (char *)ENC_OPT, CODEC_ERROR_HANDLER);
+    result = PyUnicode_Decode(tmp, len, (char *)ENC_OPT, ERRORS_DECODE_ARG);
 
     vim_free(tmp);
     return result;
