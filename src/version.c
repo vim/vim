@@ -5333,6 +5333,11 @@ list_version(void)
 # else
     msg_puts(_("\nmacOS version w/o darwin feat."));
 # endif
+# if defined(__arm64__)
+    msg_puts(" - arm64");
+# elif defined(__x86_64__)
+    msg_puts(" - x86_64");
+# endif
 #endif
 
 #ifdef VMS
