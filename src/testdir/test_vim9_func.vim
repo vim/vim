@@ -303,6 +303,19 @@ def Test_nested_global_function()
 
   lines =<< trim END
       vim9script
+      def Outer()
+        def g:Inner()
+          echo map([1, 2, 3], {_, v -> v + 1})
+        enddef
+        g:Inner()
+      enddef
+      Outer()
+  END
+  CheckScriptSuccess(lines)
+  delfunc g:Inner
+
+  lines =<< trim END
+      vim9script
       def Func()
         echo 'script'
       enddef

@@ -1428,20 +1428,27 @@ generate_FUNCREF(cctx_T *cctx, ufunc_T *ufunc)
 
 /*
  * Generate an ISN_NEWFUNC instruction.
+ * "lambda_name" and "func_name" must be in allocated memory and will be
+ * consumed.
  */
     static int
 generate_NEWFUNC(cctx_T *cctx, char_u *lambda_name, char_u *func_name)
 {
     isn_T	*isn;
-    char_u	*name;
 
-    RETURN_OK_IF_SKIP(cctx);
-    name = vim_strsave(lambda_name);
-    if (name == NULL)
-	return FAIL;
+    if (cctx->ctx_skip == SKIP_YES)
+    {
+	vim_free(lambda_name);
+	vim_free(func_name);
+	return OK;
+    }
     if ((isn = generate_instr(cctx, ISN_NEWFUNC)) == NULL)
+    {
+	vim_free(lambda_name);
+	vim_free(func_name);
 	return FAIL;
-    isn->isn_arg.newfunc.nf_lambda = name;
+    }
+    isn->isn_arg.newfunc.nf_lambda = lambda_name;
     isn->isn_arg.newfunc.nf_global = func_name;
 
     return OK;
@@ -4840,7 +4847,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
     char_u	*name_end = to_name_end(eap->arg, TRUE);
     char_u	*lambda_name;
     ufunc_T	*ufunc;
-    int		r;
+    int		r = FAIL;
 
     if (eap->forceit)
     {
@@ -4883,16 +4890,21 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
     eap->cookie = cctx;
     eap->skip = cctx->ctx_skip == SKIP_YES;
     eap->forceit = FALSE;
-    lambda_name = get_lambda_name();
+    lambda_name = vim_strsave(get_lambda_name());
+    if (lambda_name == NULL)
+	return NULL;
     ufunc = define_function(eap, lambda_name);
 
     if (ufunc == NULL)
-	return eap->skip ? (char_u *)"" : NULL;
+    {
+	r = eap->skip ? OK : FAIL;
+	goto theend;
+    }
     if (ufunc->uf_def_status == UF_TO_BE_COMPILED
 	    && compile_def_function(ufunc, TRUE, cctx) == FAIL)
     {
 	func_ptr_unref(ufunc);
-	return NULL;
+	goto theend;
     }
 
     if (is_global)
@@ -4903,7 +4915,10 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 	if (func_name == NULL)
 	    r = FAIL;
 	else
+	{
 	    r = generate_NEWFUNC(cctx, lambda_name, func_name);
+	    lambda_name = NULL;
+	}
     }
     else
     {
@@ -4913,9 +4928,9 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 	int block_depth = cctx->ctx_ufunc->uf_block_depth;
 
 	if (lvar == NULL)
-	    return NULL;
+	    goto theend;
 	if (generate_FUNCREF(cctx, ufunc) == FAIL)
-	    return NULL;
+	    goto theend;
 	r = generate_STORE(cctx, ISN_STORE, lvar->lv_idx, NULL);
 
 	// copy over the block scope IDs
@@ -4930,8 +4945,11 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 	    }
 	}
     }
-
     // TODO: warning for trailing text?
+    r = OK;
+
+theend:
+    vim_free(lambda_name);
     return r == FAIL ? NULL : (char_u *)"";
 }
 
