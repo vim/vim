@@ -1334,7 +1334,7 @@ set_var_lval(
 	{
 	    typval_T tv;
 
-	    if (flags & ASSIGN_CONST)
+	    if (flags & (ASSIGN_CONST | ASSIGN_FINAL))
 	    {
 		emsg(_(e_cannot_mod));
 		*endp = cc;
@@ -1372,7 +1372,7 @@ set_var_lval(
 	listitem_T *ll_li = lp->ll_li;
 	int	    ll_n1 = lp->ll_n1;
 
-	if (flags & ASSIGN_CONST)
+	if (flags & (ASSIGN_CONST | ASSIGN_FINAL))
 	{
 	    emsg(_("E996: Cannot lock a range"));
 	    return;
@@ -1431,7 +1431,7 @@ set_var_lval(
 	/*
 	 * Assign to a List or Dictionary item.
 	 */
-	if (flags & ASSIGN_CONST)
+	if (flags & (ASSIGN_CONST | ASSIGN_FINAL))
 	{
 	    emsg(_("E996: Cannot lock a list or dict"));
 	    return;

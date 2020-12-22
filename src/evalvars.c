@@ -752,9 +752,6 @@ ex_let(exarg_T *eap)
 	emsg(_(e_cannot_use_let_in_vim9_script));
 	return;
     }
-    if (eap->cmdidx == CMD_const && !vim9script && !eap->forceit)
-	// In legacy Vim script ":const" works like ":final".
-	eap->cmdidx = CMD_final;
 
     if (eap->cmdidx == CMD_const)
 	flags |= ASSIGN_CONST;
@@ -3231,7 +3228,8 @@ set_var_const(
 	init_tv(tv);
     }
 
-    // ":const var = val" locks the value
+    // ":const var = value" locks the value
+    // ":final var = value" locks "var"
     if (flags & ASSIGN_CONST)
 	// Like :lockvar! name: lock the value and what it contains, but only
 	// if the reference count is up to one.  That locks only literal
