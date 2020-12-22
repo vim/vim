@@ -8081,9 +8081,10 @@ delete_instr(isn_T *isn)
 	    {
 		dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
 					       + isn->isn_arg.funcref.fr_func;
+		ufunc_T *ufunc = dfunc->df_ufunc;
 
-		if (func_name_refcount(dfunc->df_ufunc->uf_name))
-		    func_ptr_unref(dfunc->df_ufunc);
+		if (ufunc != NULL && func_name_refcount(ufunc->uf_name))
+		    func_ptr_unref(ufunc);
 	    }
 	    break;
 

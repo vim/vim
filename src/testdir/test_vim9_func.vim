@@ -2011,5 +2011,27 @@ def Test_opfunc()
   nunmap <F3>
 enddef
 
+" this was crashing on exit
+def Test_nested_lambda_in_closure()
+  var lines =<< trim END
+      vim9script
+      def Outer()
+          def g:Inner()
+              echo map([1, 2, 3], {_, v -> v + 1})
+          enddef
+          g:Inner()
+      enddef
+      defcompile
+      writefile(['Done'], 'XnestedDone')
+      quit
+  END
+  if !RunVim([], lines, '--clean')
+    return
+  endif
+  assert_equal(['Done'], readfile('XnestedDone'))
+  delete('XnestedDone')
+enddef
+
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
