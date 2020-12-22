@@ -1976,5 +1976,20 @@ def Test_dict_member_with_silent()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_opfunc()
+  nnoremap <F3> <cmd>set opfunc=Opfunc<cr>g@
+  def g:Opfunc(_: any): string
+    setline(1, 'ASDF')
+    return ''
+  enddef
+  new
+  setline(1, 'asdf')
+  feedkeys("\<F3>$", 'x')
+  assert_equal('ASDF', getline(1))
+
+  bwipe!
+  nunmap <F3>
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

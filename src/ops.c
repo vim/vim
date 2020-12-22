@@ -3299,7 +3299,7 @@ op_function(oparg_T *oap UNUSED)
 	// function.
 	virtual_op = MAYBE;
 
-	(void)call_func_retnr(p_opfunc, 1, argv);
+	(void)call_func_noret(p_opfunc, 1, argv);
 
 	virtual_op = save_virtual_op;
 	if (cmdmod.cmod_flags & CMOD_LOCKMARKS)

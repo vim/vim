@@ -655,10 +655,27 @@ call_func_retnr(
 }
 
 /*
+ * Call Vim script function like call_func_retnr() and drop the result.
+ * Returns FAIL when calling the function fails.
+ */
+    int
+call_func_noret(
+    char_u      *func,
+    int		argc,
+    typval_T	*argv)
+{
+    typval_T	rettv;
+
+    if (call_vim_function(func, argc, argv, &rettv) == FAIL)
+	return FAIL;
+    clear_tv(&rettv);
+    return OK;
+}
+
+/*
  * Call Vim script function "func" and return the result as a string.
+ * Uses "argv" and "argc" as call_func_retnr().
  * Returns NULL when calling the function fails.
- * Uses argv[0] to argv[argc - 1] for the function arguments. argv[argc] should
- * have type VAR_UNKNOWN.
  */
     void *
 call_func_retstr(
@@ -679,8 +696,7 @@ call_func_retstr(
 
 /*
  * Call Vim script function "func" and return the result as a List.
- * Uses argv[0] to argv[argc - 1] for the function arguments. argv[argc] should
- * have type VAR_UNKNOWN.
+ * Uses "argv" and "argc" as call_func_retnr().
  * Returns NULL when there is something wrong.
  */
     void *

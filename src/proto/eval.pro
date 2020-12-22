@@ -18,6 +18,7 @@ varnumber_T eval_to_number(char_u *expr);
 typval_T *eval_expr(char_u *arg, exarg_T *eap);
 int call_vim_function(char_u *func, int argc, typval_T *argv, typval_T *rettv);
 varnumber_T call_func_retnr(char_u *func, int argc, typval_T *argv);
+int call_func_noret(char_u *func, int argc, typval_T *argv);
 void *call_func_retstr(char_u *func, int argc, typval_T *argv);
 void *call_func_retlist(char_u *func, int argc, typval_T *argv);
 int eval_foldexpr(char_u *arg, int *cp);
