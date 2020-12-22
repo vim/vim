@@ -9,7 +9,7 @@ SRC_ALL =	\
 		.lgtm.yml \
 		.travis.yml \
 		.cirrus.yml \
-		.github/workflows/ci-windows.yaml \
+		.github/workflows/ci.yml \
 		.github/workflows/codeql-analysis.yml \
 		.github/CODEOWNERS \
 		appveyor.yml \
