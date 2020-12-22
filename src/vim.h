@@ -2144,7 +2144,7 @@ typedef enum {
 // Flags for assignment functions.
 #define ASSIGN_FINAL	1   // ":final"
 #define ASSIGN_CONST	2   // ":const"
-#define ASSIGN_NO_DECL	4   // "name = expr" without ":let" or ":const"
+#define ASSIGN_NO_DECL	4   // "name = expr" without ":let"/":const"/":final"
 
 #include "ex_cmds.h"	    // Ex command defines
 #include "spell.h"	    // spell checking stuff

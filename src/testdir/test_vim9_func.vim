@@ -1032,7 +1032,7 @@ def Test_vim9script_call_fail_const()
       call Change()
       unlet g:Aconst
   END
-  CheckScriptFailure(lines, 'E741: Value is locked: Aconst', 2)
+  CheckScriptFailure(lines, 'E1122: Variable is locked: Aconst', 2)
 enddef
 
 " Test that inside :function a Python function can be defined, :def is not

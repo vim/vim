@@ -1127,6 +1127,30 @@ def Test_var_declaration()
 
     const FOO: number = 123
     assert_equal(123, FOO)
+    const FOOS = 'foos'
+    assert_equal('foos', FOOS)
+    final FLIST = [1]
+    assert_equal([1], FLIST)
+    FLIST[0] = 11
+    assert_equal([11], FLIST)
+
+    const g:FOO: number = 321
+    assert_equal(321, g:FOO)
+    const g:FOOS = 'gfoos'
+    assert_equal('gfoos', g:FOOS)
+    final g:FLIST = [2]
+    assert_equal([2], g:FLIST)
+    g:FLIST[0] = 22
+    assert_equal([22], g:FLIST)
+
+    const w:FOO: number = 46
+    assert_equal(46, w:FOO)
+    const w:FOOS = 'wfoos'
+    assert_equal('wfoos', w:FOOS)
+    final w:FLIST = [3]
+    assert_equal([3], w:FLIST)
+    w:FLIST[0] = 33
+    assert_equal([33], w:FLIST)
 
     var s:other: number
     other = 1234
@@ -1150,6 +1174,12 @@ def Test_var_declaration()
   unlet g:var_test
   unlet g:var_prefixed
   unlet g:other_var
+  unlet g:FOO
+  unlet g:FOOS
+  unlet g:FLIST
+  unlet w:FOO
+  unlet w:FOOS
+  unlet w:FLIST
 enddef
 
 def Test_var_declaration_fails()
@@ -1158,6 +1188,22 @@ def Test_var_declaration_fails()
     final var: string
   END
   CheckScriptFailure(lines, 'E1125:')
+
+  lines =<< trim END
+    vim9script
+    const g:constvar = 'string'
+    g:constvar = 'xx'
+  END
+  CheckScriptFailure(lines, 'E741:')
+  unlet g:constvar
+
+  lines =<< trim END
+    vim9script
+    final w:finalvar = [9]
+    w:finalvar = [8]
+  END
+  CheckScriptFailure(lines, 'E1122:')
+  unlet w:finalvar
 
   lines =<< trim END
     vim9script
