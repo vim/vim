@@ -9,7 +9,7 @@
 
 /*
  * ops.c: implementation of various operators: op_shift, op_delete, op_tilde,
- *	  op_change, op_yank, do_put, do_join
+ *	  op_change, op_yank, do_join
  */
 
 #include "vim.h"

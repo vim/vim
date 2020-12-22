@@ -809,7 +809,14 @@ insert_reg(
 	{
 	    for (i = 0; i < y_current->y_size; ++i)
 	    {
-		stuffescaped(y_current->y_array[i], literally);
+		if (regname == '-')
+		{
+		    AppendCharToRedobuff(Ctrl_R);
+		    AppendCharToRedobuff(regname);
+		    do_put(regname, NULL, BACKWARD, 1L, PUT_CURSEND);
+		}
+		else
+		    stuffescaped(y_current->y_array[i], literally);
 		// Insert a newline between lines and after last line if
 		// y_type is MLINE.
 		if (y_current->y_type == MLINE || i < y_current->y_size - 1)
