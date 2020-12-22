@@ -18,7 +18,7 @@ int check_vim9_unlet(char_u *name);
 int compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx);
 void set_function_type(ufunc_T *ufunc);
 void delete_instr(isn_T *isn);
-void clear_def_function(ufunc_T *ufunc);
 void unlink_def_function(ufunc_T *ufunc);
+void link_def_function(ufunc_T *ufunc);
 void free_def_functions(void);
 /* vim: set ft=c : */

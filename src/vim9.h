@@ -341,8 +341,10 @@ struct isn_S {
  */
 struct dfunc_S {
     ufunc_T	*df_ufunc;	    // struct containing most stuff
+    int		df_refcount;	    // how many ufunc_T point to this dfunc_T
     int		df_idx;		    // index in def_functions
     int		df_deleted;	    // if TRUE function was deleted
+    char_u	*df_name;	    // name used for error messages
 
     garray_T	df_def_args_isn;    // default argument instructions
     isn_T	*df_instr;	    // function body to be executed

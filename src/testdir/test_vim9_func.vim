@@ -299,6 +299,7 @@ def Test_nested_global_function()
       Outer()
   END
   CheckScriptFailure(lines, "E122:")
+  delfunc g:Inner
 
   lines =<< trim END
       vim9script
@@ -1563,6 +1564,25 @@ def Test_global_closure()
   var expected = repeat(['ccc', 'bbb', 'aaa'], 3)
   assert_equal(expected, getline(1, 9))
   bwipe!
+enddef
+
+def Test_global_closure_called_directly()
+  var lines =<< trim END
+      vim9script
+      def Outer()
+        var x = 1
+        def g:Inner()
+          var y = x
+          x += 1
+          assert_equal(1, y)
+        enddef
+        g:Inner()
+        assert_equal(2, x)
+      enddef
+      Outer()
+  END
+  CheckScriptSuccess(lines)
+  delfunc g:Inner
 enddef
 
 def Test_failure_in_called_function()

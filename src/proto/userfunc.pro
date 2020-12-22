@@ -13,7 +13,7 @@ ufunc_T *find_func_even_dead(char_u *name, int is_global, cctx_T *cctx);
 ufunc_T *find_func(char_u *name, int is_global, cctx_T *cctx);
 int func_is_global(ufunc_T *ufunc);
 int func_name_refcount(char_u *name);
-ufunc_T *copy_func(char_u *lambda, char_u *global);
+int copy_func(char_u *lambda, char_u *global, ectx_T *ectx);
 int funcdepth_increment(void);
 void funcdepth_decrement(void);
 int funcdepth_get(void);

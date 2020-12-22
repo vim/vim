@@ -54,7 +54,7 @@ typedef struct {
 /*
  * Execution context.
  */
-typedef struct {
+struct ectx_S {
     garray_T	ec_stack;	// stack of typval_T values
     int		ec_frame_idx;	// index in ec_stack: context of ec_dfunc_idx
 
@@ -69,7 +69,7 @@ typedef struct {
     int		ec_iidx;	// index in ec_instr: instruction to execute
 
     garray_T	ec_funcrefs;	// partials that might be a closure
-} ectx_T;
+};
 
 // Get pointer to item relative to the bottom of the stack, -1 is the last one.
 #define STACK_TV_BOT(idx) (((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_stack.ga_len + (idx))
@@ -173,7 +173,9 @@ call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
 
     if (dfunc->df_deleted)
     {
-	emsg_funcname(e_func_deleted, ufunc->uf_name);
+	// don't use ufunc->uf_name, it may have been freed
+	emsg_funcname(e_func_deleted,
+		dfunc->df_name == NULL ? (char_u *)"unknown" : dfunc->df_name);
 	return FAIL;
     }
 
@@ -259,6 +261,12 @@ call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
 	tv->vval.v_number = 0;
     }
     ectx->ec_stack.ga_len += STACK_FRAME_SIZE + varcount;
+
+    if (ufunc->uf_partial != NULL)
+    {
+	ectx->ec_outer_stack = ufunc->uf_partial->pt_ectx_stack;
+	ectx->ec_outer_frame = ufunc->uf_partial->pt_ectx_frame;
+    }
 
     // Set execution state to the start of the called function.
     ectx->ec_dfunc_idx = cdf_idx;
@@ -618,6 +626,7 @@ call_ufunc(ufunc_T *ufunc, int argcount, ectx_T *ectx, isn_T *iptr)
 
 	// The function has been compiled, can call it quickly.  For a function
 	// that was defined later: we can call it directly next time.
+	// TODO: what if the function was deleted and then defined again?
 	if (iptr != NULL)
 	{
 	    delete_instr(iptr);
@@ -890,7 +899,7 @@ call_eval_func(char_u *name, int argcount, ectx_T *ectx, isn_T *iptr)
  * When a function reference is used, fill a partial with the information
  * needed, especially when it is used as a closure.
  */
-    static int
+    int
 fill_partial_and_closure(partial_T *pt, ufunc_T *ufunc, ectx_T *ectx)
 {
     pt->pt_func = ufunc;
@@ -2120,25 +2129,10 @@ call_def_function(
 	    case ISN_NEWFUNC:
 		{
 		    newfunc_T	*newfunc = &iptr->isn_arg.newfunc;
-		    ufunc_T	*new_ufunc;
 
-		    new_ufunc = copy_func(
-				       newfunc->nf_lambda, newfunc->nf_global);
-		    if (new_ufunc != NULL
-					 && (new_ufunc->uf_flags & FC_CLOSURE))
-		    {
-			partial_T   *pt = ALLOC_CLEAR_ONE(partial_T);
-
-			// Need to create a partial to store the context of the
-			// function.
-			if (pt == NULL)
-			    goto failed;
-			if (fill_partial_and_closure(pt, new_ufunc,
+		    if (copy_func(newfunc->nf_lambda, newfunc->nf_global,
 								&ectx) == FAIL)
-			    goto failed;
-			new_ufunc->uf_partial = pt;
-			--pt->pt_refcount;  // not referenced here
-		    }
+			goto failed;
 		}
 		break;
 
