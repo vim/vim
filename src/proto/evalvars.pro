@@ -70,6 +70,7 @@ void vars_clear_ext(hashtab_T *ht, int free_val);
 void delete_var(hashtab_T *ht, hashitem_T *hi);
 void set_var(char_u *name, typval_T *tv, int copy);
 void set_var_const(char_u *name, type_T *type, typval_T *tv_arg, int copy, int flags);
+int var_check_permission(dictitem_T *di, char_u *name);
 int var_check_ro(int flags, char_u *name, int use_gettext);
 int var_check_lock(int flags, char_u *name, int use_gettext);
 int var_check_fixed(int flags, char_u *name, int use_gettext);

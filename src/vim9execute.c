@@ -1693,8 +1693,10 @@ call_def_function(
 	    case ISN_STOREW:
 	    case ISN_STORET:
 		{
-		    dictitem_T *di;
-		    hashtab_T *ht;
+		    dictitem_T	*di;
+		    hashtab_T	*ht;
+		    char_u	*name = iptr->isn_arg.string + 2;
+
 		    switch (iptr->isn_type)
 		    {
 			case ISN_STOREG:
@@ -1714,11 +1716,14 @@ call_def_function(
 		    }
 
 		    --ectx.ec_stack.ga_len;
-		    di = find_var_in_ht(ht, 0, iptr->isn_arg.string + 2, TRUE);
+		    di = find_var_in_ht(ht, 0, name, TRUE);
 		    if (di == NULL)
 			store_var(iptr->isn_arg.string, STACK_TV_BOT(0));
 		    else
 		    {
+			SOURCING_LNUM = iptr->isn_lnum;
+			if (var_check_permission(di, name) == FAIL)
+			    goto on_error;
 			clear_tv(&di->di_tv);
 			di->di_tv = *STACK_TV_BOT(0);
 		    }

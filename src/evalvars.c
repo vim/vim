@@ -3125,13 +3125,7 @@ set_var_const(
 		    goto failed;
 	    }
 
-	    // Check in this order for backwards compatibility:
-	    // - Whether the variable is read-only
-	    // - Whether the variable value is locked
-	    // - Whether the variable is locked
-	    if (var_check_ro(di->di_flags, name, FALSE)
-			    || value_check_lock(di->di_tv.v_lock, name, FALSE)
-			    || var_check_lock(di->di_flags, name, FALSE))
+	    if (var_check_permission(di, name) == FAIL)
 		goto failed;
 	}
 	else
@@ -3240,6 +3234,22 @@ set_var_const(
 failed:
     if (!copy)
 	clear_tv(tv_arg);
+}
+
+/*
+ * Check in this order for backwards compatibility:
+ * - Whether the variable is read-only
+ * - Whether the variable value is locked
+ * - Whether the variable is locked
+ */
+    int
+var_check_permission(dictitem_T *di, char_u *name)
+{
+    if (var_check_ro(di->di_flags, name, FALSE)
+		    || value_check_lock(di->di_tv.v_lock, name, FALSE)
+		    || var_check_lock(di->di_flags, name, FALSE))
+	return FAIL;
+    return OK;
 }
 
 /*

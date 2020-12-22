@@ -1022,6 +1022,17 @@ def Test_vim9script_call_fail_const()
   writefile(lines, 'Xcall_const.vim')
   assert_fails('source Xcall_const.vim', 'E46:', '', 1, 'MyFunc')
   delete('Xcall_const.vim')
+
+  lines =<< trim END
+      const g:Aconst = 77
+      def Change()
+        # comment
+        g:Aconst = 99
+      enddef
+      call Change()
+      unlet g:Aconst
+  END
+  CheckScriptFailure(lines, 'E741: Value is locked: Aconst', 2)
 enddef
 
 " Test that inside :function a Python function can be defined, :def is not
