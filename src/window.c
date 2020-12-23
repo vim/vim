@@ -6325,9 +6325,13 @@ win_new_width(win_T *wp, int width)
     void
 win_comp_scroll(win_T *wp)
 {
+    int old_w_p_scr = wp->w_p_scr;
+
     wp->w_p_scr = ((unsigned)wp->w_height >> 1);
     if (wp->w_p_scr == 0)
 	wp->w_p_scr = 1;
+    if (wp->w_p_scr != old_w_p_scr)
+	CLEAR_FIELD(wp->w_p_script_ctx[WV_SCROLL]);
 }
 
 /*
