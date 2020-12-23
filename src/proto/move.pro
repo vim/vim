@@ -13,6 +13,7 @@ void changed_cline_bef_curs_win(win_T *wp);
 void changed_line_abv_curs(void);
 void changed_line_abv_curs_win(win_T *wp);
 void validate_botline(void);
+void validate_botline_win(win_T *wp);
 void invalidate_botline(void);
 void invalidate_botline_win(win_T *wp);
 void approximate_botline_win(win_T *wp);
