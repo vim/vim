@@ -683,7 +683,7 @@ func Test_read_write_bin()
 
   " when file is read 'eol' is off
   set ff=unix nofixeol
-  e XNoEolSetEol
+  e! XNoEolSetEol
   call assert_equal(0, &eol)
 
   " writing with 'eol' set adds the newline
@@ -692,6 +692,8 @@ func Test_read_write_bin()
   call assert_equal(0z6E6F656F6C0A, readfile('XNoEolSetEol', 'B'))
 
   call delete('XNoEolSetEol')
+  set ff&
+  bwipe! XNoEolSetEol
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
