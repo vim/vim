@@ -1863,6 +1863,10 @@ def Test_expr7_lambda()
   END
   CheckDefAndScriptSuccess(lines)
 
+  CheckDefFailure(["var Ref = {a->a + 1}"], 'E720:')
+  CheckDefFailure(["var Ref = {a-> a + 1}"], 'E720:')
+  CheckDefFailure(["var Ref = {a ->a + 1}"], 'E720:')
+
   CheckDefFailure(["filter([1, 2], {k,v -> 1})"], 'E1069:', 1)
   # error is in first line of the lambda
   CheckDefFailure(["var L = {a -> a + b}"], 'E1001:', 0)
@@ -2538,7 +2542,7 @@ func Test_expr7_fails()
   call CheckDefFailure(["'yes'->", "Echo()"], 'E488: Trailing characters: ->', 1)
 
   call CheckDefExecFailure(["[1, 2->len()"], 'E697:', 2)
-  call CheckDefExecFailure(["{a: 1->len()"], 'E451:', 1)
+  call CheckDefExecFailure(["{a: 1->len()"], 'E723:', 2)
   call CheckDefExecFailure(["{['a']: 1->len()"], 'E723:', 2)
 endfunc
 

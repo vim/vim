@@ -3915,14 +3915,19 @@ compile_expr7(
 	 * Dictionary: {'key': val, 'key': val}
 	 */
 	case '{':   {
-			char_u *start = skipwhite(*arg + 1);
-			garray_T ga_arg;
+			char_u	    *start = skipwhite(*arg + 1);
+			char_u	    *after = start;
+			garray_T    ga_arg;
 
 			// Find out what comes after the arguments.
-			ret = get_function_args(&start, '-', NULL,
+			ret = get_function_args(&after, '-', NULL,
 					&ga_arg, TRUE, NULL, NULL,
 							     TRUE, NULL, NULL);
-			if (ret != FAIL && *start == '>')
+			if (ret != FAIL && after[0] == '>'
+				&& ((after > start + 2
+						     && VIM_ISWHITE(after[-2]))
+				|| after == start + 1)
+				&& IS_WHITE_OR_NUL(after[1]))
 			    ret = compile_lambda(arg, cctx);
 			else
 			    ret = compile_dict(arg, cctx, ppconst);

@@ -1541,10 +1541,10 @@ def Test_disassemble_compare()
         ['{a: 1} is aDict', 'COMPAREDICT is'],
         ['{a: 1} isnot aDict', 'COMPAREDICT isnot'],
 
-        ['{->33} == {->44}', 'COMPAREFUNC =='],
-        ['{->33} != {->44}', 'COMPAREFUNC !='],
-        ['{->33} is {->44}', 'COMPAREFUNC is'],
-        ['{->33} isnot {->44}', 'COMPAREFUNC isnot'],
+        ['{-> 33} == {-> 44}', 'COMPAREFUNC =='],
+        ['{-> 33} != {-> 44}', 'COMPAREFUNC !='],
+        ['{-> 33} is {-> 44}', 'COMPAREFUNC is'],
+        ['{-> 33} isnot {-> 44}', 'COMPAREFUNC isnot'],
 
         ['77 == g:xx', 'COMPAREANY =='],
         ['77 != g:xx', 'COMPAREANY !='],
