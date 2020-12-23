@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Dec 05
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Dec 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6,7 +6,7 @@
 
 THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
-Vim9 script commands and expressions.			*vim9*
+Vim9 script commands and expressions.			*Vim9*
 
 Most expression help is in |eval.txt|.  This file is about the new syntax and
 features in Vim9 script.
@@ -134,7 +134,7 @@ Compilation is done when either of these is encountered:
 `:def` has no options like `:function` does: "range", "abort", "dict" or
 "closure".  A `:def` function always aborts on an error (unless `:silent!` was
 used for the command or inside a `:try` block), does not get a range passed
-and cannot be a "dict" function.
+cannot be a "dict" function, and can always be a closure.
 
 The argument types and return type need to be specified.  The "any" type can
 be used, type checking will then be done at runtime, like with legacy
@@ -186,6 +186,11 @@ variables could be defined anywhere (good luck finding out where!).
 Global functions can still be defined and deleted at nearly any time.  In
 Vim9 script script-local functions are defined once when the script is sourced
 and cannot be deleted or replaced.
+
+When compiling a function and a function call is encountered for a function
+that is not (yet) defined, the |FuncUndefined| autocommand is not triggered.
+You can use an autoload function if needed, or call a legacy function and have
+|FuncUndefined| triggered there.
 
 
 Variable declarations with :var, :final and :const ~
@@ -398,6 +403,16 @@ arguments: >
 		text: string,
 		separator = '-'
 		): string
+
+Since a continuation line cannot be easily recognized the parsing of commands
+has been made sticter.  E.g., because of the error in the first line, the
+second line is seen as a separate command: >
+	popup_create(some invalid expression, {
+	   exit_cb: Func})
+Now "exit_cb: Func})" is actually a valid command: save any changes to the
+file "_cb: Func})" and exit.  To avoid this kind of mistake in Vim9 script
+there must be white space between most command names and the argument.
+
 
 Notes:
 - "enddef" cannot be used at the start of a continuation line, it ends the
@@ -626,6 +641,13 @@ command.  This will give an error for missing `endif`: >
 	  if has('feature') | use-feature | endif
 	enddef
 
+Other differences ~
+
+Patterns are used like 'magic' is set, unless explicitly overruled.
+The 'edcompatible' option value is not used.
+The 'gdefault' option value is not used.
+
+
 ==============================================================================
 
 3. New style functions					*fast-functions*
@@ -795,12 +817,14 @@ compiled code the "any" type is assumed.
 This can be a problem when the "any" type is undesired and the actual type is
 expected to always be the same.  For example, when declaring a list: >
 	var l: list<number> = [1, g:two]
-This will give an error, because "g:two" has type "any".  To avoid this, use a
-type cast: >
+At compile time Vim doesn't know the type of "g:two" and the expression type
+becomes list<any>.  An instruction is generated to check the list type before
+doing the assignment, which is a bit inefficient.
+							*type-casting*
+To avoid this, use a type cast: >
 	var l: list<number> = [1, <number>g:two]
-<							*type-casting*
-The compiled code will then check that "g:two" is a number at runtime and give
-an error if it isn't.  This is called type casting.
+The compiled code will then only check that "g:two" is a number and give an
+error if it isn't.  This is called type casting.
 
 The syntax of a type cast is:  "<" {type} ">".  There cannot be white space
 after the "<" or before the ">" (to avoid them being confused with

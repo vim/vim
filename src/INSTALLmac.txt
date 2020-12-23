@@ -3,7 +3,7 @@ INSTALLmac.txt - Installation of Vim on Macintosh
 This file contains instructions for compiling Vim. If you already have an
 executable version of Vim, you don't need this.
 
-First, make sure you've installed Xcode or CommandLineToots.  If not, open a
+First, make sure you've installed Xcode or CommandLineTools.  If not, open a
 terminal and do
 
 	$ make --version

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Dec 10
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Dec 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,6 +38,11 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Rewrite the section on "magic".  Say that 'magic' is normally on, then this
+happens...  If 'magic' is off, then this is different..
+
+test_vim9_cmd: uses uninitialized var
+
 Vim9 - Make everything work:
 - For an :autocmd and :command argument defined in Vim9 script, if a following
   line starts with "|" append it.  It's like line continuation. (#6702)
@@ -45,6 +50,7 @@ Vim9 - Make everything work:
   a range from "a" to "b"?  To avoid confusion, require white space before
   (and after) the colon?  #7409
 - Implement "export {one, two three}".
+- Use "null" for v:null, like true and false?  #7495
 - ISN_CHECKTYPE could use check_argtype()
 - Using a script variable inside a :def function doesn't work if the variable
   is inside a block, see Test_nested_function().  Should it work?
@@ -62,6 +68,8 @@ Vim9 - Make everything work:
 	map(list, SomeFunc)
 - For builtin functions using tv_get_string*() use check_for_string() to be
   more strict about the argument type.
+- Allow function names that will be script-local to start with lower case
+  letter?
 - Support passing v:none to use the default argument value. (#6504)
 - Make map() give an error if the resulting type of the first argument is
   wrong.  Only works if the type is known?  Is this slow (need to go over all
@@ -81,6 +89,7 @@ Vim9 - Make everything work:
 - Using ".." at script level doesn't convert arguments to a string.
 - Compile replacement of :s command: s/pat/\=expr/
 - Compile redir to local variable: var_redir_start().
+- Implement type cast at the script level.
 - Compile builtin functions that access local variables:
     islocked()
 - When evaluating constants for script variables, some functions could work:
@@ -127,6 +136,10 @@ Also:
   stack?
 - Make profiling work - Add ISN_PROFILE instructions after every line?
 - List commands when 'verbose' is set or :verbose is used.
+Once Vim9 is stable:
+- Change the help to prefer Vim9 syntax where appropriate
+- Use Vim9 for runtime files.
+    PR #7497 for autoload/ccomplete.vim
 Further improvements:
 - compile options that are an expression, e.g. "expr:" in 'spellsuggest',
   'foldexpr', 'foldtext', 'printexpr', 'diffexpr', 'patchexpr', 'charconvert',
@@ -1272,9 +1285,6 @@ Expanding /**/ is slow.  Idea by Luc Hermitte, 2017 Apr 14.
 Once .exe with updated installer is available: Add remark to download page
 about /S and /D options (Ken Takata, 2016 Apr 13)
 Or point to nightly builds: https://github.com/vim/vim-win32-installer/releases
-
-Problem passing non-UTF-8 strings to Python 3. (Björn Linse, 2016 Sep 11,
-#1053)  With patch, does it work?
 
 ":sbr" docs state it respects 'switchbuf', but "vsplit" does not cause a
 vertical split. (Haldean Brown, 2017 Mar 1)
@@ -3998,8 +4008,6 @@ Documentation:
     - if it can be undone (u/CTRL-R) and redone (.)
     - how it works for folded lines
     - how it works with multibyte characters
-9   In change.txt, remark about Javadoc isn't right.  Right alignment would
-    work too.
 8   Spread the windows commands over the other files.  For example, ":stag"
     should be with ":tag".  Cross-link with tags to avoid too much double
     text.

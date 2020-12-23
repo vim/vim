@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 8.2.  Last change: 2020 Sep 06
+*testing.txt*	For Vim version 8.2.  Last change: 2020 Dec 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -308,8 +308,11 @@ assert_fails({cmd} [, {error} [, {msg} [, {lnum} [, {context}]]]])
 		first reported error: >
 			assert_fails('cmd', ['E987:.*expected bool'])
 <		The second pattern, if present, is matched against the last
-		reported error.  To only match the last error use an empty
-		string for the first error: >
+		reported error.
+		If there is only one error then both patterns must match. This
+		can be used to check that there is only one error.
+		To only match the last error use an empty string for the first
+		error: >
 			assert_fails('cmd', ['', 'E987:'])
 <
 		If {msg} is empty then it is not used.  Do this to get the

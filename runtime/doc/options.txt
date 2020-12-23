@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2020 Oct 10
+*options.txt*	For Vim version 8.2.  Last change: 2020 Dec 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2801,6 +2801,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	toggled each time the flag is given.  See |complex-change|.  See
 	also 'gdefault' option.
 	Switching this option on may break plugins!
+	This option is not used in |Vim9| script.
 
 					*'emoji'* *'emo'* *'noemoji'* *'noemo'*
 'emoji' 'emo'	boolean (default: on)
@@ -3121,7 +3122,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			local to buffer
 	This gives the <EOL> of the current buffer, which is used for
 	reading/writing the buffer from/to a file:
-	    dos	    <CR> <NL>
+	    dos	    <CR><NL>
 	    unix    <NL>
 	    mac	    <CR>
 	When "dos" is used, CTRL-Z at the end of a file is ignored.
@@ -3570,6 +3571,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	DEPRECATED: Setting this option may break plugins that are not aware
 	of this option.  Also, many users get confused that adding the /g flag
 	has the opposite effect of that it normally does.
+	This option is not used in |Vim9| script.
 
 						*'grepformat'* *'gfm'*
 'grepformat' 'gfm'	string	(default "%f:%l:%m,%f:%l%m,%f  %l%m")
@@ -4943,6 +4945,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Only switch it off when working with old Vi scripts.  In any other
 	situation write patterns that work when 'magic' is on.  Include "\M"
 	when you want to |/\M|.
+	In |Vim9| script the value of 'magic' is ignored, patterns behave like
+	it is always set.
 
 						*'makeef'* *'mef'*
 'makeef' 'mef'		string	(default: "")

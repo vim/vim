@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.2.  Last change: 2020 Nov 09
+*usr_41.txt*	For Vim version 8.2.  Last change: 2020 Dec 19
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -1765,7 +1765,7 @@ Here is a summary of items that apply to Vim scripts.  They are also mentioned
 elsewhere, but form a nice checklist.
 
 The end-of-line character depends on the system.  For Unix a single <NL>
-character is used.  For MS-Windows and the like, <CR><LF> is used.  This is
+character is used.  For MS-Windows and the like, <CR><NL> is used.  This is
 important when using mappings that end in a <CR>.  See |:source_crnl|.
 
 

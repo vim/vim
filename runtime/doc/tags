@@ -5151,10 +5151,13 @@ VIMINIT	starting.txt	/*VIMINIT*
 VMS	os_vms.txt	/*VMS*
 Vi	intro.txt	/*Vi*
 View	starting.txt	/*View*
+Vim9	vim9.txt	/*Vim9*
 VimEnter	autocmd.txt	/*VimEnter*
 VimLeave	autocmd.txt	/*VimLeave*
 VimLeavePre	autocmd.txt	/*VimLeavePre*
 VimResized	autocmd.txt	/*VimResized*
+VimResume	autocmd.txt	/*VimResume*
+VimSuspend	autocmd.txt	/*VimSuspend*
 Vimball-copyright	pi_vimball.txt	/*Vimball-copyright*
 Virtual-Replace-mode	insert.txt	/*Virtual-Replace-mode*
 VisVim	if_ole.txt	/*VisVim*
@@ -10055,7 +10058,6 @@ vim-variable	eval.txt	/*vim-variable*
 vim.vim	syntax.txt	/*vim.vim*
 vim7	version7.txt	/*vim7*
 vim8	version8.txt	/*vim8*
-vim9	vim9.txt	/*vim9*
 vim9-classes	vim9.txt	/*vim9-classes*
 vim9-const	vim9.txt	/*vim9-const*
 vim9-declaration	vim9.txt	/*vim9-declaration*

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Dec 02
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Dec 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4740,7 +4740,8 @@ fnamemodify({fname}, {mods})				*fnamemodify()*
 			:echo fnamemodify("main.c", ":p:h")
 <		results in: >
 			/home/mool/vim/vim/src
-<		Note: Environment variables don't work in {fname}, use
+<		If {mods} is empty then {fname} is returned.
+		Note: Environment variables don't work in {fname}, use
 		|expand()| first then.
 
 		Can also be used as a |method|: >
@@ -5143,7 +5144,10 @@ getchar([expr])						*getchar()*
 		|xterm-bracketed-paste|.
 
 		There is no prompt, you will somehow have to make clear to the
-		user that a character has to be typed.
+		user that a character has to be typed.  The screen is not
+		redrawn, e.g. when resizing the window.  When using a popup
+		window it should work better with a |popup-filter|.
+
 		There is no mapping for the character.
 		Key codes are replaced, thus when the user presses the <Del>
 		key you get the code for the <Del> key, not the raw character
@@ -10842,6 +10846,8 @@ timer_start({time}, {callback} [, {options}])
 		function or a |Funcref|.  It is called with one argument, which
 		is the timer ID.  The callback is only invoked when Vim is
 		waiting for input.
+		If you want to show a message look at |popup_notification()|
+		to avoid intefering with what the user is doing.
 
 		{options} is a dictionary.  Supported entries:
 		   "repeat"	Number of times to repeat calling the
