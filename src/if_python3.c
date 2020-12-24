@@ -671,6 +671,58 @@ py3_PyType_HasFeature(PyTypeObject *type, unsigned long feature)
 #  define PyType_HasFeature(t,f) py3_PyType_HasFeature(t,f)
 # endif
 
+# ifdef MSWIN
+    static char *
+py3_get_system_libname(const char *libname)
+{
+    const char *cp = libname;
+    char subkey[128];
+    HKEY hKey;
+    char installpath[MAXPATHL];
+    LONG len = sizeof(installpath);
+    LSTATUS rc;
+    size_t sysliblen;
+    char *syslibname;
+    while (*cp != '\0')
+    {
+	if (*cp == ':' || *cp == '\\' || *cp == '/')
+	{
+	    // Ignore if libname contains path separator.
+	    // Assume it is absolute path.
+	    return NULL;
+	}
+	++cp;
+    }
+    vim_snprintf(subkey, sizeof(subkey),
+#  ifdef _WIN64
+		 "Software\\Python\\PythonCore\\%d.%d\\InstallPath",
+#  else
+		 "Software\\Python\\PythonCore\\%d.%d-32\\InstallPath",
+#  endif
+		 PY_MAJOR_VERSION, PY_MINOR_VERSION);
+    if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, subkey, 0, KEY_QUERY_VALUE, &hKey) != ERROR_SUCCESS)
+	return NULL;
+    rc = RegQueryValueA(hKey, NULL, installpath, &len);
+    RegCloseKey(hKey);
+    if (ERROR_SUCCESS != rc)
+	return NULL;
+    cp = installpath + len;
+    // Just in case registry value contains null terminators.
+    while (cp > installpath && *(cp-1) == '\0')
+	--cp;
+    // Remove trailing path separators.
+    while (cp > installpath && (*(cp-1) == '\\' || *(cp-1) == '/'))
+	--cp;
+    // Ignore if InstallPath is effectively empty.
+    if (cp <= installpath)
+	return NULL;
+    sysliblen = (cp - installpath) + 1 + STRLEN(libname) + 1;
+    syslibname = alloc(sysliblen);
+    vim_snprintf(syslibname, sysliblen, "%.*s\\%s", (int)(cp - installpath), installpath, libname);
+    return syslibname;
+}
+# endif
+
 /*
  * Load library and get all pointers.
  * Parameter 'libname' provides name of DLL.
@@ -700,6 +752,19 @@ py3_runtime_link_init(char *libname, int verbose)
     if (hinstPy3 != 0)
 	return OK;
     hinstPy3 = load_dll(libname);
+
+# ifdef MSWIN
+    if (!hinstPy3)
+    {
+	// Attempt to load from InstallPath as stored in registry.
+	char *syslibname = py3_get_system_libname(libname);
+	if (syslibname != NULL)
+	{
+	    hinstPy3 = load_dll(syslibname);
+	    vim_free(syslibname);
+	}
+    }
+# endif
 
     if (!hinstPy3)
     {
