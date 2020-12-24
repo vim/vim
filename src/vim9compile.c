@@ -2967,12 +2967,12 @@ compile_lambda(char_u **arg, cctx_T *cctx)
 	return FAIL;
     }
 
+    // "rettv" will now be a partial referencing the function.
     ufunc = rettv.vval.v_partial->pt_func;
     ++ufunc->uf_refcount;
     clear_tv(&rettv);
 
-    // The function will have one line: "return {expr}".
-    // Compile it into instructions.
+    // Compile the function into instructions.
     compile_def_function(ufunc, TRUE, cctx);
 
     clear_evalarg(&evalarg, NULL);
@@ -3565,6 +3565,15 @@ compile_subscript(
 	    if (**arg == '{')
 	    {
 		// lambda call:  list->{lambda}
+		// TODO: remove this
+		if (compile_lambda_call(arg, cctx) == FAIL)
+		    return FAIL;
+	    }
+	    else if (**arg == '(')
+	    {
+		// Funcref call:  list->(Refs[2])()
+		// or lambda:	  list->((arg) => expr)()
+		// TODO: make this work
 		if (compile_lambda_call(arg, cctx) == FAIL)
 		    return FAIL;
 	    }
@@ -3928,6 +3937,8 @@ compile_expr7(
 						     && VIM_ISWHITE(after[-2]))
 				|| after == start + 1)
 				&& IS_WHITE_OR_NUL(after[1]))
+			    // TODO: if we go with the "(arg) => expr" syntax
+			    // remove this
 			    ret = compile_lambda(arg, cctx);
 			else
 			    ret = compile_dict(arg, cctx, ppconst);
@@ -3959,28 +3970,55 @@ compile_expr7(
 			break;
 	/*
 	 * nested expression: (expression).
+	 * lambda: (arg, arg) => expr
+	 * funcref: (arg, arg) => { statement }
 	 */
-	case '(':   *arg = skipwhite(*arg + 1);
+	case '(':   {
+			char_u	    *start = skipwhite(*arg + 1);
+			char_u	    *after = start;
+			garray_T    ga_arg;
 
-		    // recursive!
-		    if (ppconst->pp_used <= PPSIZE - 10)
-		    {
-			ret = compile_expr1(arg, cctx, ppconst);
-		    }
-		    else
-		    {
-			// Not enough space in ppconst, flush constants.
-			if (generate_ppconst(cctx, ppconst) == FAIL)
-			    return FAIL;
-			ret = compile_expr0(arg, cctx);
-		    }
-		    *arg = skipwhite(*arg);
-		    if (**arg == ')')
-			++*arg;
-		    else if (ret == OK)
-		    {
-			emsg(_(e_missing_close));
-			ret = FAIL;
+			// Find out if "=>" comes after the ().
+			ret = get_function_args(&after, ')', NULL,
+						     &ga_arg, TRUE, NULL, NULL,
+							     TRUE, NULL, NULL);
+			if (ret == OK && VIM_ISWHITE(
+					    *after == ':' ? after[1] : *after))
+			{
+			    if (*after == ':')
+				// Skip over type in "(arg): type".
+				after = skip_type(skipwhite(after + 1), TRUE);
+
+			    after = skipwhite(after);
+			    if (after[0] == '=' && after[1] == '>'
+						  && IS_WHITE_OR_NUL(after[2]))
+			    {
+				ret = compile_lambda(arg, cctx);
+				break;
+			    }
+			}
+
+			// (expression): recursive!
+			*arg = skipwhite(*arg + 1);
+			if (ppconst->pp_used <= PPSIZE - 10)
+			{
+			    ret = compile_expr1(arg, cctx, ppconst);
+			}
+			else
+			{
+			    // Not enough space in ppconst, flush constants.
+			    if (generate_ppconst(cctx, ppconst) == FAIL)
+				return FAIL;
+			    ret = compile_expr0(arg, cctx);
+			}
+			*arg = skipwhite(*arg);
+			if (**arg == ')')
+			    ++*arg;
+			else if (ret == OK)
+			{
+			    emsg(_(e_missing_close));
+			    ret = FAIL;
+			}
 		    }
 		    break;
 

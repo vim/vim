@@ -154,6 +154,7 @@ one_function_arg(
 
 /*
  * Get function arguments.
+ * "argp" is advanced just after "endchar".
  */
     int
 get_function_args(
@@ -458,7 +459,31 @@ register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
 #endif
 
 /*
+ * Skip over "->" or "=>" after the arguments of a lambda.
+ * Return NULL if no valid arrow found.
+ */
+    static char_u *
+skip_arrow(char_u *start, int equal_arrow)
+{
+    char_u *s = start;
+
+    if (equal_arrow)
+    {
+	if (*s == ':')
+	    s = skip_type(skipwhite(s + 1), TRUE);
+	s = skipwhite(s);
+	if (*s != '=')
+	    return NULL;
+	++s;
+    }
+    if (*s != '>')
+	return NULL;
+    return skipwhite(s + 1);
+}
+
+/*
  * Parse a lambda expression and get a Funcref from "*arg".
+ * "arg" points to the { in "{arg -> expr}" or the ( in "(arg) => expr"
  * When "types_optional" is TRUE optionally take argument types.
  * Return OK or FAIL.  Returns NOTDONE for dict or {expr}.
  */
@@ -484,16 +509,20 @@ get_lambda_tv(
     int		*old_eval_lavars = eval_lavars_used;
     int		eval_lavars = FALSE;
     char_u	*tofree = NULL;
+    int		equal_arrow = **arg == '(';
+
+    if (equal_arrow && !in_vim9script())
+	return NOTDONE;
 
     ga_init(&newargs);
     ga_init(&newlines);
 
-    // First, check if this is a lambda expression. "->" must exist.
+    // First, check if this is a lambda expression. "->" or "=>" must exist.
     s = skipwhite(*arg + 1);
-    ret = get_function_args(&s, '-', NULL,
+    ret = get_function_args(&s, equal_arrow ? ')' : '-', NULL,
 	    types_optional ? &argtypes : NULL, types_optional,
 						 NULL, NULL, TRUE, NULL, NULL);
-    if (ret == FAIL || *s != '>')
+    if (ret == FAIL || skip_arrow(s, equal_arrow) == NULL)
 	return NOTDONE;
 
     // Parse the arguments again.
@@ -502,18 +531,28 @@ get_lambda_tv(
     else
 	pnewargs = NULL;
     *arg = skipwhite(*arg + 1);
-    ret = get_function_args(arg, '-', pnewargs,
+    ret = get_function_args(arg, equal_arrow ? ')' : '-', pnewargs,
 	    types_optional ? &argtypes : NULL, types_optional,
 					    &varargs, NULL, FALSE, NULL, NULL);
-    if (ret == FAIL || **arg != '>')
-	goto errret;
+    if (ret == FAIL || (*arg = skip_arrow(*arg, equal_arrow)) == NULL)
+	return NOTDONE;
 
     // Set up a flag for checking local variables and arguments.
     if (evaluate)
 	eval_lavars_used = &eval_lavars;
 
+    *arg = skipwhite_and_linebreak(*arg, evalarg);
+
+    // Only recognize "{" as the start of a function body when followed by
+    // white space, "{key: val}" is a dict.
+    if (equal_arrow && **arg == '{' && IS_WHITE_OR_NUL((*arg)[1]))
+    {
+	// TODO: process the function body upto the "}".
+	emsg("Lambda function body not supported yet");
+	goto errret;
+    }
+
     // Get the start and the end of the expression.
-    *arg = skipwhite_and_linebreak(*arg + 1, evalarg);
     start = *arg;
     ret = skip_expr_concatenate(arg, &start, &end, evalarg);
     if (ret == FAIL)
@@ -525,13 +564,16 @@ get_lambda_tv(
 	evalarg->eval_tofree = NULL;
     }
 
-    *arg = skipwhite_and_linebreak(*arg, evalarg);
-    if (**arg != '}')
+    if (!equal_arrow)
     {
-	semsg(_("E451: Expected }: %s"), *arg);
-	goto errret;
+	*arg = skipwhite_and_linebreak(*arg, evalarg);
+	if (**arg != '}')
+	{
+	    semsg(_("E451: Expected }: %s"), *arg);
+	    goto errret;
+	}
+	++*arg;
     }
-    ++*arg;
 
     if (evaluate)
     {

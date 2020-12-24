@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Dec 23
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Dec 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -340,6 +340,40 @@ When using `function()` the resulting type is "func", a function with any
 number of arguments and any return type.  The function can be defined later.
 
 
+Lamba using => instead of -> ~
+
+In legacy script there can be confusion between using "->" for a method call
+and for a lambda.  Also, when a "{" is found the parser needs to figure out if
+it is the start of a lambda or a dictionary, which is now more complicated
+because of the use of argument types.
+
+To avoid these problems Vim9 script uses a different syntax for a lambda,
+which is similar to Javascript: >
+	var Lambda = (arg) => expression
+
+No line break is allowed in the arguments of a lambda up to and includeing the
+"=>".  This is OK: >
+	filter(list, (k, v) =>
+			v > 0)
+This does not work: >
+	filter(list, (k, v)
+			=> v > 0)
+This also does not work:
+	filter(list, (k,
+			v) => v > 0)
+
+Additionally, a lambda can contain statements in {}: >
+	var Lambda = (arg) => {
+		g:was_called = 'yes'
+		return expression
+	    }
+NOT IMPLEMENTED YET
+
+Note that the "{" must be followed by white space, otherwise it is assumed to
+be the start of a dictionary: >
+	var Lambda = (arg) => {key: 42}
+
+
 Automatic line continuation ~
 
 In many cases it is obvious that an expression continues on the next line.  In
@@ -405,7 +439,7 @@ arguments: >
 		): string
 
 Since a continuation line cannot be easily recognized the parsing of commands
-has been made sticter.  E.g., because of the error in the first line, the
+has been made stricter.  E.g., because of the error in the first line, the
 second line is seen as a separate command: >
 	popup_create(some invalid expression, {
 	   exit_cb: Func})
@@ -433,14 +467,6 @@ Notes:
 <  This does not work: >
 	echo [1, 2]
 		[3, 4]
-- No line break is allowed in the arguments of a lambda, between the "{" and
-  "->".  This is OK: >
-	filter(list, {k, v ->
-			v > 0})
-<  This does not work: >
-	filter(list, {k,
-			v -> v > 0})
-
 
 No curly braces expansion ~
 
