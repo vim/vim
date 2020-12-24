@@ -523,7 +523,11 @@ get_lambda_tv(
 	    types_optional ? &argtypes : NULL, types_optional,
 						 NULL, NULL, TRUE, NULL, NULL);
     if (ret == FAIL || skip_arrow(s, equal_arrow) == NULL)
+    {
+	if (types_optional)
+	    ga_clear_strings(&argtypes);
 	return NOTDONE;
+    }
 
     // Parse the arguments again.
     if (evaluate)
@@ -535,7 +539,11 @@ get_lambda_tv(
 	    types_optional ? &argtypes : NULL, types_optional,
 					    &varargs, NULL, FALSE, NULL, NULL);
     if (ret == FAIL || (*arg = skip_arrow(*arg, equal_arrow)) == NULL)
+    {
+	if (types_optional)
+	    ga_clear_strings(&argtypes);
 	return NOTDONE;
+    }
 
     // Set up a flag for checking local variables and arguments.
     if (evaluate)
