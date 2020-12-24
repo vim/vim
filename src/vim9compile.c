@@ -1316,6 +1316,8 @@ generate_VIM9SCRIPT(
 	type_T	    *type)
 {
     isn_T	*isn;
+    scriptref_T	*sref;
+    scriptitem_T *si = SCRIPT_ITEM(sid);
 
     RETURN_OK_IF_SKIP(cctx);
     if (isn_type == ISN_LOADSCRIPT)
@@ -1324,8 +1326,16 @@ generate_VIM9SCRIPT(
 	isn = generate_instr_drop(cctx, isn_type, 1);
     if (isn == NULL)
 	return FAIL;
-    isn->isn_arg.script.script_sid = sid;
-    isn->isn_arg.script.script_idx = idx;
+
+    // This requires three arguments, which doesn't fit in an instruction, thus
+    // we need to allocate a struct for this.
+    sref = ALLOC_ONE(scriptref_T);
+    if (sref == NULL)
+	return FAIL;
+    isn->isn_arg.script.scriptref = sref;
+    sref->sref_sid = sid;
+    sref->sref_idx = idx;
+    sref->sref_seq = si->sn_script_seq;
     return OK;
 }
 
@@ -7970,6 +7980,7 @@ nextline:
 	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
 							 + ufunc->uf_dfunc_idx;
 	dfunc->df_deleted = FALSE;
+	dfunc->df_script_seq = current_sctx.sc_seq;
 	dfunc->df_instr = instr->ga_data;
 	dfunc->df_instr_count = instr->ga_len;
 	dfunc->df_varcount = cctx.ctx_locals_count;
@@ -8186,6 +8197,11 @@ delete_instr(isn_T *isn)
 	    vim_free(isn->isn_arg.cmdmod.cf_cmdmod);
 	    break;
 
+	case ISN_LOADSCRIPT:
+	case ISN_STORESCRIPT:
+	    vim_free(isn->isn_arg.script.scriptref);
+	    break;
+
 	case ISN_2BOOL:
 	case ISN_2STRING:
 	case ISN_2STRING_ANY:
@@ -8229,7 +8245,6 @@ delete_instr(isn_T *isn)
 	case ISN_LOADGDICT:
 	case ISN_LOADOUTER:
 	case ISN_LOADREG:
-	case ISN_LOADSCRIPT:
 	case ISN_LOADTDICT:
 	case ISN_LOADV:
 	case ISN_LOADWDICT:
@@ -8256,7 +8271,6 @@ delete_instr(isn_T *isn)
 	case ISN_STORENR:
 	case ISN_STOREOUTER:
 	case ISN_STOREREG:
-	case ISN_STORESCRIPT:
 	case ISN_STOREV:
 	case ISN_STRINDEX:
 	case ISN_STRSLICE:

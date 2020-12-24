@@ -1391,6 +1391,7 @@ do_source(
 	if (ret_sid != NULL)
 	    *ret_sid = current_sctx.sc_sid;
     }
+    si->sn_script_seq = current_sctx.sc_seq;
 
 # ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)

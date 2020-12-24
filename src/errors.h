@@ -327,3 +327,5 @@ EXTERN char e_list_not_set[]
 	INIT(= N_("E1147: List not set"));
 EXTERN char e_cannot_index_str[]
 	INIT(= N_("E1148: Cannot index a %s"));
+EXTERN char e_script_variable_invalid_after_reload_in_function_str[]
+	INIT(= N_("E1149: Script variable is invalid after reload in function %s"));

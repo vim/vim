@@ -3126,6 +3126,67 @@ def Test_white_space_after_command()
   CheckDefAndScriptFailure(lines, 'E1144:', 1)
 enddef
 
+def Test_script_var_gone_when_sourced_twice()
+  var lines =<< trim END
+      vim9script
+      if exists('g:guard')
+        finish
+      endif
+      g:guard = 1
+      var name = 'thename'
+      def g:GetName(): string
+        return name
+      enddef
+      def g:SetName(arg: string)
+        name = arg
+      enddef
+  END
+  writefile(lines, 'XscriptTwice.vim')
+  so XscriptTwice.vim
+  assert_equal('thename', g:GetName())
+  g:SetName('newname')
+  assert_equal('newname', g:GetName())
+  so XscriptTwice.vim
+  assert_fails('call g:GetName()', 'E1149:')
+  assert_fails('call g:SetName("x")', 'E1149:')
+
+  delfunc g:GetName
+  delfunc g:SetName
+  delete('XscriptTwice.vim')
+  unlet g:guard
+enddef
+
+def Test_import_gone_when_sourced_twice()
+  var exportlines =<< trim END
+      vim9script
+      if exists('g:guard')
+        finish
+      endif
+      g:guard = 1
+      export var name = 'someName'
+  END
+  writefile(exportlines, 'XexportScript.vim')
+
+  var lines =<< trim END
+      vim9script
+      import name from './XexportScript.vim'
+      def g:GetName(): string
+        return name
+      enddef
+  END
+  writefile(lines, 'XscriptImport.vim')
+  so XscriptImport.vim
+  assert_equal('someName', g:GetName())
+
+  so XexportScript.vim
+  assert_fails('call g:GetName()', 'E1149:')
+
+  delfunc g:GetName
+  delete('XexportScript.vim')
+  delete('XscriptImport.vim')
+  unlet g:guard
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new

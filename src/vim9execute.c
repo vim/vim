@@ -1402,12 +1402,21 @@ call_def_function(
 	    // load s: variable in Vim9 script
 	    case ISN_LOADSCRIPT:
 		{
-		    scriptitem_T *si =
-				  SCRIPT_ITEM(iptr->isn_arg.script.script_sid);
+		    scriptref_T	*sref = iptr->isn_arg.script.scriptref;
+		    dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
+							  + ectx.ec_dfunc_idx;
+		    scriptitem_T *si = SCRIPT_ITEM(sref->sref_sid);
 		    svar_T	 *sv;
 
-		    sv = ((svar_T *)si->sn_var_vals.ga_data)
-					     + iptr->isn_arg.script.script_idx;
+		    if (sref->sref_seq != si->sn_script_seq)
+		    {
+			// The script was reloaded after the function was
+			// compiled, the script_idx may not be valid.
+			semsg(_(e_script_variable_invalid_after_reload_in_function_str),
+						  dfunc->df_ufunc->uf_name_exp);
+			goto failed;
+		    }
+		    sv = ((svar_T *)si->sn_var_vals.ga_data) + sref->sref_idx;
 		    allocate_if_null(sv->sv_tv);
 		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
@@ -1616,11 +1625,22 @@ call_def_function(
 	    // store script-local variable in Vim9 script
 	    case ISN_STORESCRIPT:
 		{
-		    scriptitem_T *si = SCRIPT_ITEM(
-					      iptr->isn_arg.script.script_sid);
-		    svar_T	 *sv = ((svar_T *)si->sn_var_vals.ga_data)
-					     + iptr->isn_arg.script.script_idx;
+		    scriptref_T	*sref = iptr->isn_arg.script.scriptref;
+		    dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
+							  + ectx.ec_dfunc_idx;
+		    scriptitem_T *si = SCRIPT_ITEM(sref->sref_sid);
+		    svar_T	 *sv;
 
+		    if (sref->sref_seq != si->sn_script_seq)
+		    {
+			// The script was reloaded after the function was
+			// compiled, the script_idx may not be valid.
+			SOURCING_LNUM = iptr->isn_lnum;
+			semsg(_(e_script_variable_invalid_after_reload_in_function_str),
+						  dfunc->df_ufunc->uf_name_exp);
+			goto failed;
+		    }
+		    sv = ((svar_T *)si->sn_var_vals.ga_data) + sref->sref_idx;
 		    --ectx.ec_stack.ga_len;
 		    clear_tv(sv->sv_tv);
 		    *sv->sv_tv = *STACK_TV_BOT(0);
@@ -3378,14 +3398,14 @@ ex_disassemble(exarg_T *eap)
 		break;
 	    case ISN_LOADSCRIPT:
 		{
-		    scriptitem_T *si =
-				  SCRIPT_ITEM(iptr->isn_arg.script.script_sid);
+		    scriptref_T	*sref = iptr->isn_arg.script.scriptref;
+		    scriptitem_T *si = SCRIPT_ITEM(sref->sref_sid);
 		    svar_T *sv = ((svar_T *)si->sn_var_vals.ga_data)
-					     + iptr->isn_arg.script.script_idx;
+							      + sref->sref_idx;
 
 		    smsg("%4d LOADSCRIPT %s-%d from %s", current,
 					    sv->sv_name,
-					    iptr->isn_arg.script.script_idx,
+					    sref->sref_idx,
 					    si->sn_name);
 		}
 		break;
@@ -3478,14 +3498,14 @@ ex_disassemble(exarg_T *eap)
 		break;
 	    case ISN_STORESCRIPT:
 		{
-		    scriptitem_T *si =
-				  SCRIPT_ITEM(iptr->isn_arg.script.script_sid);
+		    scriptref_T	*sref = iptr->isn_arg.script.scriptref;
+		    scriptitem_T *si = SCRIPT_ITEM(sref->sref_sid);
 		    svar_T *sv = ((svar_T *)si->sn_var_vals.ga_data)
-					     + iptr->isn_arg.script.script_idx;
+							      + sref->sref_idx;
 
 		    smsg("%4d STORESCRIPT %s-%d in %s", current,
 					     sv->sv_name,
-					     iptr->isn_arg.script.script_idx,
+					     sref->sref_idx,
 					     si->sn_name);
 		}
 		break;

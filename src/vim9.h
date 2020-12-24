@@ -244,8 +244,13 @@ typedef struct {
 
 // arguments to ISN_LOADSCRIPT and ISN_STORESCRIPT
 typedef struct {
-    int		script_sid;	// script ID
-    int		script_idx;	// index in sn_var_vals
+    int		sref_sid;	// script ID
+    int		sref_idx;	// index in sn_var_vals
+    int		sref_seq;	// sn_script_seq when compiled
+} scriptref_T;
+
+typedef struct {
+    scriptref_T	*scriptref;
 } script_T;
 
 // arguments to ISN_UNLET
@@ -345,6 +350,8 @@ struct dfunc_S {
     int		df_idx;		    // index in def_functions
     int		df_deleted;	    // if TRUE function was deleted
     char_u	*df_name;	    // name used for error messages
+    int		df_script_seq;	    // Value of sctx_T sc_seq when the function
+				    // was compiled.
 
     garray_T	df_def_args_isn;    // default argument instructions
     isn_T	*df_instr;	    // function body to be executed

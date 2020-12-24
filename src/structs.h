@@ -1790,13 +1790,12 @@ typedef struct {
 } imported_T;
 
 /*
- * Growarray to store info about already sourced scripts.
- * For Unix also store the dev/ino, so that we don't have to stat() each
- * script when going through the list.
+ * Info about an already sourced scripts.
  */
 typedef struct
 {
     char_u	*sn_name;
+    int		sn_script_seq;	    // latest sctx_T sc_seq value
 
     // "sn_vars" stores the s: variables currently valid.  When leaving a block
     // variables local to that block are removed.
