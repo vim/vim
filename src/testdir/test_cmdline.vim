@@ -673,6 +673,17 @@ func Test_cmdline_complete_env_variable()
   unlet $X_VIM_TEST_COMPLETE_ENV
 endfunc
 
+func Test_cmdline_complete_expression()
+  let g:SomeVar = 'blah'
+  for cmd in ['exe', 'echo', 'echon', 'echomsg']
+    call feedkeys(":" .. cmd .. " SomeV\<Tab>\<C-B>\"\<CR>", 'tx')
+    call assert_match('"' .. cmd .. ' SomeVar', @:)
+    call feedkeys(":" .. cmd .. " foo SomeV\<Tab>\<C-B>\"\<CR>", 'tx')
+    call assert_match('"' .. cmd .. ' foo SomeVar', @:)
+  endfor
+  unlet g:SomeVar
+endfunc
+
 " Test for various command-line completion
 func Test_cmdline_complete_various()
   " completion for a command starting with a comment
