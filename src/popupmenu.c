@@ -1458,10 +1458,21 @@ pum_show_popupmenu(vimmenu_T *menu)
 	return;
 
     FOR_ALL_CHILD_MENUS(menu, mp)
+    {
+	char_u *s = NULL;
+
+	// Make a copy of the text, the menu may be redefined in a callback.
 	if (menu_is_separator(mp->dname))
-	    array[idx++].pum_text = (char_u *)"";
+	    s = (char_u *)"";
 	else if (mp->modes & mp->enabled & mode)
-	    array[idx++].pum_text = mp->dname;
+	    s = mp->dname;
+	if (s != NULL)
+	{
+	    s = vim_strsave(s);
+	    if (s != NULL)
+		array[idx++].pum_text = s;
+	}
+    }
 
     pum_array = array;
     pum_compute_size();
@@ -1542,6 +1553,8 @@ pum_show_popupmenu(vimmenu_T *menu)
 	}
     }
 
+    for (idx = 0; idx < pum_size; ++idx)
+	vim_free(array[idx].pum_text);
     vim_free(array);
     pum_undisplay();
 # ifdef FEAT_BEVAL_TERM
