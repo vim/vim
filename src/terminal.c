@@ -4372,7 +4372,7 @@ parse_osc(int command, VTermStringFragment frag, void *user)
     garray_T	*gap = &term->tl_osc_buf;
 
     // We recognize only OSC {7, 5 1} ; {command}
-    if (command == 7)
+    if (p_asd && command == 7)
     {
 	sync_shell_dir(&frag);
 	return 1;

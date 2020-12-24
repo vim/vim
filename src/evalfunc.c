@@ -5377,6 +5377,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"autoshelldir",
+#ifdef FEAT_AUTOSHELLDIR
+		1
+#else
+		0
+#endif
+		},
 	{"textobjects",
 #ifdef FEAT_TEXTOBJ
 		1

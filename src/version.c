@@ -609,6 +609,11 @@ static char *(features[]) =
 #else
 	"-terminal",
 #endif
+#ifdef FEAT_AUTOSHELLDIR
+       "+autoshelldir",
+#else
+       "-autoshelldir",
+#endif
 #if defined(UNIX)
 // only Unix can have terminfo instead of termcap
 # ifdef TERMINFO
