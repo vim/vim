@@ -130,16 +130,16 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
     # TODO: join previous line if it makes sense
     var line = getline('.')
     var col = col('.')
-    if line[: col - 1]->stridx(';') != -1
+    if line[ : col - 1]->stridx(';') != -1
       # Handle multiple declarations on the same line.
       var col2 = col - 1
       while line[col2] != ';'
 	col2 -= 1
       endwhile
-      line = line[col2 + 1 :]
+      line = line[col2 + 1 : ]
       col -= col2
     endif
-    if line[: col - 1]->stridx(',') != -1
+    if line[ : col - 1]->stridx(',') != -1
       # Handle multiple declarations on the same line in a function
       # declaration.
       var col2 = col - 1
@@ -147,7 +147,7 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
 	col2 -= 1
       endwhile
       if line[col2 + 1 : col - 1] =~ ' *[^ ][^ ]*  *[^ ]'
-	line = line[col2 + 1 :]
+	line = line[col2 + 1 : ]
 	col -= col2
       endif
     endif
@@ -159,7 +159,7 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
       if match(line, '\<' .. match .. '\s*\[') > 0
 	match ..= '['
       else
-	res = line[: col - 1]->Nextitem([''], 0, 1)
+	res = line[ : col - 1]->Nextitem([''], 0, 1)
 	if len(res) > 0
 	  # There are members, thus add "." or "->".
 	  if match(line, '\*[ \t(]*' .. match .. '\>') > 0
@@ -179,7 +179,7 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
       res = [{match: match, tagline: tagline, kind: kind, info: line}]
     else
       # Completing "var.", "var.something", etc.
-      res = line[: col - 1]->Nextitem(items[1:], 0, 1)
+      res = line[ : col - 1]->Nextitem(items[1 : ], 0, 1)
     endif
   endif
 
@@ -193,14 +193,14 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
     endif
 
     # Remove members, these can't appear without something in front.
-    filter(tags, {_, v -> has_key(v, 'kind') ? v.kind != 'm' : 1})
+    filter(tags, (_, v: dict<any>) => has_key(v, 'kind') ? v.kind != 'm' : true)
 
     # Remove static matches in other files.
-    filter(tags, {_, v -> !has_key(v, 'static')
-    || !v['static']
-    || bufnr('%') == bufnr(v['filename'])})
+    filter(tags, (_, v: dict<any>) => !has_key(v, 'static')
+      || !v['static']
+      || bufnr('%') == bufnr(v['filename']))
 
-    extend(res, map(tags, {_, v -> Tag2item(v)}))
+    extend(res, map(tags, (_, v: dict<any>) => Tag2item(v)))
   endif
 
   if len(res) == 0
@@ -208,24 +208,24 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
     var diclist = taglist('^' .. items[0] .. '$')
 
     # Remove members, these can't appear without something in front.
-    filter(diclist, {_, v -> has_key(v, 'kind') ? v.kind != 'm' : 1})
+    filter(diclist, (_, v: dict<string>) => has_key(v, 'kind') ? v.kind != 'm' : true)
 
     res = []
     for i in len(diclist)->range()
       # New ctags has the "typeref" field.  Patched version has "typename".
       if has_key(diclist[i], 'typename')
-	extend(res, StructMembers(diclist[i]['typename'], items[1:], 1))
+	extend(res, StructMembers(diclist[i]['typename'], items[1 : ], 1))
       elseif has_key(diclist[i], 'typeref')
-	extend(res, StructMembers(diclist[i]['typeref'], items[1:], 1))
+	extend(res, StructMembers(diclist[i]['typeref'], items[1 : ], 1))
       endif
 
       # For a variable use the command, which must be a search pattern that
       # shows the declaration of the variable.
       if diclist[i]['kind'] == 'v'
 	var line = diclist[i]['cmd']
-	if line[:1] == '/^'
+	if line[ : 1] == '/^'
 	  var col = match(line, '\<' .. items[0] .. '\>')
-	  extend(res, line[2 : col - 1]->Nextitem(items[1:], 0, 1))
+	  extend(res, line[2 : col - 1]->Nextitem(items[1 : ], 0, 1))
 	endif
       endif
     endfor
@@ -236,7 +236,7 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
     # TODO: join previous line if it makes sense
     var line = getline('.')
     var col = col('.')
-    res = line[: col - 1]->Nextitem(items[1:], 0, 1)
+    res = line[ : col - 1]->Nextitem(items[1 : ], 0, 1)
   endif
 
   # If the last item(s) are [...] they need to be added to the matches.
@@ -250,7 +250,7 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
     last -= 1
   endwhile
 
-  return map(res, {_, v -> Tagline2item(v, brackets)})
+  return map(res, (_, v: dict<any>) => Tagline2item(v, brackets))
 enddef
 
 # GetAddition {{{1
@@ -313,7 +313,7 @@ def Dict2info(dict: dict<any>): string #{{{1
     info  ..= k .. repeat(' ', 10 - len(k))
     if k == 'cmd'
       info ..= matchstr(dict['cmd'], '/^\s*\zs.*\ze$/')
-      ->substitute('\\\(.\)', '\1', 'g')
+	->substitute('\\\(.\)', '\1', 'g')
     else
       var dictk = dict[k]
       if type(dictk) != v:t_string
@@ -413,9 +413,9 @@ def Tagcmd2extra(
   if cmd =~ '^/^'
     # The command is a search command, useful to see what it is.
     x = matchstr(cmd, '^/^\s*\zs.*\ze$/')
-    ->substitute('\<' .. name .. '\>', '@@', '')
-    ->substitute('\\\(.\)', '\1', 'g')
-    .. ' - ' .. fname
+      ->substitute('\<' .. name .. '\>', '@@', '')
+      ->substitute('\\\(.\)', '\1', 'g')
+      .. ' - ' .. fname
   elseif cmd =~ '^\d*$'
     # The command is a line number, the file name is more useful.
     x = fname .. ' - ' .. cmd
@@ -498,7 +498,7 @@ def Nextitem(
       var cmd = item['cmd']
       var ei = matchend(cmd, 'typedef\s\+')
       if ei > 1
-	var cmdtokens = cmd[ei :]->split('\s\+\|\<')
+	var cmdtokens = cmd[ei : ]->split('\s\+\|\<')
 	if len(cmdtokens) > 1
 	  if cmdtokens[0] == 'struct'
 	    || cmdtokens[0] == 'union'
@@ -512,8 +512,7 @@ def Nextitem(
 	      endif
 	    endfor
 	    if name != ''
-	      extend(res,
-	      StructMembers(cmdtokens[0] .. ':' .. name, items, all))
+	      extend(res, StructMembers(cmdtokens[0] .. ':' .. name, items, all))
 	    endif
 	  elseif depth < 10
 	    # Could be "typedef other_T some_T".
@@ -543,8 +542,8 @@ def StructMembers(
 # When "all" is non-zero find all, otherwise just return 1 if there is any
 # member.
 
-  # TODO: What about local structures?
-  var fnames = tagfiles()->map({_, v -> escape(v, ' \#%')})->join()
+  # Todo: What about local structures?
+  var fnames = tagfiles()->map((_, v: string) => escape(v, ' \#%'))->join()
   if fnames == ''
     return []
   endif
@@ -565,7 +564,7 @@ def StructMembers(
   if !cached
     while 1
       exe 'silent! keepj noautocmd ' .. n .. 'vimgrep '
-      .. '/\t' .. typename .. '\(\t\|$\)/j ' .. fnames
+	.. '/\t' .. typename .. '\(\t\|$\)/j ' .. fnames
 
       qflist = getqflist()
       if len(qflist) > 0 || match(typename, '::') < 0
@@ -634,7 +633,7 @@ def StructMembers(
 
     # More items following.  For each of the possible members find the
     # matching following members.
-    return SearchMembers(matches, items[idx :], all)
+    return SearchMembers(matches, items[idx : ], all)
   endif
 
   # Failed to find anything.
