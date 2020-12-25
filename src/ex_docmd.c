@@ -3532,7 +3532,7 @@ find_ex_command(
 
 #ifdef FEAT_EVAL
     if (eap->cmdidx != CMD_SIZE && in_vim9script()
-	    && !IS_WHITE_OR_NUL(*p) && !ends_excmd(*p) && *p != '!'
+	    && !IS_WHITE_OR_NUL(*p) && *p != '\n' && *p != '!'
 	    && (cmdnames[eap->cmdidx].cmd_argt & EX_NONWHITE_OK) == 0)
     {
 	semsg(_(e_command_not_followed_by_white_space_str), eap->cmd);

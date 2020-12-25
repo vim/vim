@@ -2132,7 +2132,7 @@ def Test_vim9_comment()
   CheckScriptFailure([
       'vim9script',
       'echo# something',
-      ], 'E121:')
+      ], 'E1144:')
   CheckScriptFailure([
       'echo "yes" # something',
       ], 'E121:')
@@ -2152,7 +2152,7 @@ def Test_vim9_comment()
   CheckScriptFailure([
       'vim9script',
       'exe# something',
-      ], 'E121:')
+      ], 'E1144:')
   CheckScriptFailure([
       'exe "echo" # something',
       ], 'E121:')
@@ -2162,18 +2162,18 @@ def Test_vim9_comment()
       '  echo "yes"',
       'catch',
       'endtry',
-      ], 'E488:')
+      ], 'E1144:')
   CheckScriptFailure([
       'vim9script',
       'try# comment',
       'echo "yes"',
-      ], 'E488:')
+      ], 'E1144:')
   CheckDefFailure([
       'try',
       '  throw#comment',
       'catch',
       'endtry',
-      ], 'E1143:')
+      ], 'E1144:')
   CheckDefFailure([
       'try',
       '  throw "yes"#comment',
@@ -2185,14 +2185,14 @@ def Test_vim9_comment()
       '  echo "yes"',
       'catch# comment',
       'endtry',
-      ], 'E488:')
+      ], 'E1144:')
   CheckScriptFailure([
       'vim9script',
       'try',
       '  echo "yes"',
       'catch# comment',
       'endtry',
-      ], 'E654:')
+      ], 'E1144:')
   CheckDefFailure([
       'try',
       '  echo "yes"',
@@ -2204,14 +2204,14 @@ def Test_vim9_comment()
       'echo "yes"',
       'catch',
       'endtry# comment',
-      ], 'E488:')
+      ], 'E1144:')
   CheckScriptFailure([
       'vim9script',
       'try',
       '  echo "yes"',
       'catch',
       'endtry# comment',
-      ], 'E488:')
+      ], 'E1144:')
 
   CheckScriptSuccess([
       'vim9script',
@@ -2220,7 +2220,7 @@ def Test_vim9_comment()
   CheckScriptFailure([
       'vim9script',
       'hi# comment',
-      ], 'E416:')
+      ], 'E1144:')
   CheckScriptSuccess([
       'vim9script',
       'hi Search # comment',
@@ -2266,7 +2266,7 @@ def Test_vim9_comment()
   CheckScriptFailure([
       'vim9script',
       'match# comment',
-      ], 'E475:')
+      ], 'E1144:')
   CheckScriptSuccess([
       'vim9script',
       'match none # comment',
@@ -2402,7 +2402,7 @@ def Test_vim9_comment()
       'vim9script',
       'command Echo echo# comment',
       'Echo',
-      ], 'E121:')
+      ], 'E1144:')
   delcommand Echo
 
   var curdir = getcwd()
@@ -2447,7 +2447,7 @@ def Test_vim9_comment()
   CheckScriptFailure([
       'vim9script',
       'function# comment',
-      ], 'E129:')
+      ], 'E1144:')
   CheckScriptSuccess([
       'vim9script',
       'function CheckScriptSuccess # comment',
@@ -2516,7 +2516,7 @@ def Test_vim9_comment_gui()
   CheckScriptFailure([
       'vim9script',
       'gui#comment'
-      ], 'E499:')
+      ], 'E1144:')
   CheckScriptFailure([
       'vim9script',
       'gui -f#comment'
@@ -3122,6 +3122,11 @@ enddef
 def Test_white_space_after_command()
   var lines =<< trim END
     exit_cb: Func})
+  END
+  CheckDefAndScriptFailure(lines, 'E1144:', 1)
+
+  lines =<< trim END
+    e#
   END
   CheckDefAndScriptFailure(lines, 'E1144:', 1)
 enddef
