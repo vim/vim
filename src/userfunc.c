@@ -574,6 +574,7 @@ get_lambda_tv(
     {
 	if (types_optional)
 	    ga_clear_strings(&argtypes);
+	ga_clear_strings(&newargs);
 	return white_error ? FAIL : NOTDONE;
     }
     *arg = s;
