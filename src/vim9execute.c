@@ -1020,8 +1020,11 @@ call_def_function(
     ga_init2(&ectx.ec_trystack, sizeof(trycmd_T), 10);
     ga_init2(&ectx.ec_funcrefs, sizeof(partial_T *), 10);
 
-    // Put arguments on the stack.
-    for (idx = 0; idx < argc; ++idx)
+    // Put arguments on the stack, but no more than what the function expects.
+    // A lambda can be called with more arguments than it uses.
+    for (idx = 0; idx < argc
+	    && (ufunc->uf_va_name != NULL || idx < ufunc->uf_args.ga_len);
+									 ++idx)
     {
 	if (ufunc->uf_arg_types != NULL && idx < ufunc->uf_args.ga_len
 		&& check_typval_type(ufunc->uf_arg_types[idx], &argv[idx],

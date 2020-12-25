@@ -321,6 +321,11 @@ def Test_filter_return_type()
   res->assert_equal(6)
 enddef
 
+def Test_filter_missing_argument()
+  var dict = {aa: [1], ab: [2], ac: [3], de: [4]}
+  var res = dict->filter({k -> k =~ 'a' && k !~ 'b'})
+  res->assert_equal({aa: [1], ac: [3]})
+enddef
 
 def Test_garbagecollect()
   garbagecollect(true)
