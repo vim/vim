@@ -2560,6 +2560,39 @@ def Test_expr7_call()
   delete('Xruntime', 'rf')
 enddef
 
+def Test_expr7_method_call()
+  new
+  setline(1, ['first', 'last'])
+  'second'->append(1)
+  "third"->append(2)
+  assert_equal(['first', 'second', 'third', 'last'], getline(1, '$'))
+  bwipe!
+
+  var bufnr = bufnr()
+  var loclist = [{bufnr: bufnr, lnum: 42, col: 17, text: 'wrong'}]
+  loclist->setloclist(0)
+  assert_equal([{bufnr: bufnr,
+  		lnum: 42,
+		col: 17,
+		text: 'wrong',
+		pattern: '',
+		valid: 1,
+		vcol: 0,
+		nr: 0,
+		type: '',
+		module: ''}
+		], getloclist(0))
+
+  var result: bool = get({n: 0}, 'n', 0)
+  assert_equal(false, result)
+
+  assert_equal('+string+', 'string'->((s) => '+' .. s .. '+')())
+  assert_equal('-text-', 'text'->((s, c) => c .. s .. c)('-'))
+
+  var Join = (l) => join(l, 'x')
+  assert_equal('axb', ['a', 'b']->(Join)())
+enddef
+
 
 def Test_expr7_not()
   var lines =<< trim END
@@ -2850,33 +2883,6 @@ def Test_expr7_subscript_linebreak()
   var d = {one: 33}
   assert_equal(33, d.
 	one)
-enddef
-
-def Test_expr7_method_call()
-  new
-  setline(1, ['first', 'last'])
-  'second'->append(1)
-  "third"->append(2)
-  assert_equal(['first', 'second', 'third', 'last'], getline(1, '$'))
-  bwipe!
-
-  var bufnr = bufnr()
-  var loclist = [{bufnr: bufnr, lnum: 42, col: 17, text: 'wrong'}]
-  loclist->setloclist(0)
-  assert_equal([{bufnr: bufnr,
-  		lnum: 42,
-		col: 17,
-		text: 'wrong',
-		pattern: '',
-		valid: 1,
-		vcol: 0,
-		nr: 0,
-		type: '',
-		module: ''}
-		], getloclist(0))
-
-  var result: bool = get({n: 0}, 'n', 0)
-  assert_equal(false, result)
 enddef
 
 func Test_expr7_trailing_fails()
