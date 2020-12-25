@@ -1839,7 +1839,7 @@ do_one_cmd(
 	    // message.
 	    if (ar > ea.cmd)
 	    {
-		emsg(_(e_colon_required_before_a_range));
+		semsg(_(e_colon_required_before_range_str), ea.cmd);
 		goto doend;
 	    }
 	}

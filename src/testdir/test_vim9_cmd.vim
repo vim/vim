@@ -549,7 +549,7 @@ def Test_modifier_silent_unsilent()
 enddef
 
 def Test_range_after_command_modifier()
-  CheckScriptFailure(['vim9script', 'silent keepjump 1d _'], 'E1050:', 2)
+  CheckScriptFailure(['vim9script', 'silent keepjump 1d _'], 'E1050: Colon required before a range: 1d _', 2)
   new
   setline(1, 'xxx')
   CheckScriptSuccess(['vim9script', 'silent keepjump :1d _'])

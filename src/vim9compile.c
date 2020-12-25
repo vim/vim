@@ -7727,7 +7727,7 @@ compile_def_function(ufunc_T *ufunc, int check_return_type, cctx_T *outer_cctx)
 	    {
 		if (!starts_with_colon)
 		{
-		    emsg(_(e_colon_required_before_a_range));
+		    semsg(_(e_colon_required_before_range_str), cmd);
 		    goto erret;
 		}
 		if (ends_excmd2(line, ea.cmd))
