@@ -376,18 +376,9 @@ typval2type(typval_T *tv, garray_T *type_gap)
     if (type != NULL && type != &t_bool
 	    && (tv->v_type == VAR_NUMBER
 		    && (tv->vval.v_number == 0 || tv->vval.v_number == 1)))
-    {
-	type_T *newtype = get_type_ptr(type_gap);
-
-	// Number 0 and 1 and expression with "&&" or "||" can also be used
-	// for bool.
-	if (newtype != NULL)
-	{
-	    *newtype = *type;
-	    newtype->tt_flags = TTFLAG_BOOL_OK;
-	    type = newtype;
-	}
-    }
+	// Number 0 and 1 and expression with "&&" or "||" can also be used for
+	// bool.
+	type = &t_number_bool;
     return type;
 }
 

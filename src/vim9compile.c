@@ -931,17 +931,8 @@ generate_PUSHNR(cctx_T *cctx, varnumber_T number)
     isn->isn_arg.number = number;
 
     if (number == 0 || number == 1)
-    {
-	type_T	*type = get_type_ptr(cctx->ctx_type_list);
-
 	// A 0 or 1 number can also be used as a bool.
-	if (type != NULL)
-	{
-	    type->tt_type = VAR_NUMBER;
-	    type->tt_flags = TTFLAG_BOOL_OK;
-	    ((type_T **)stack->ga_data)[stack->ga_len - 1] = type;
-	}
-    }
+	((type_T **)stack->ga_data)[stack->ga_len - 1] = &t_number_bool;
     return OK;
 }
 
