@@ -546,6 +546,13 @@ def Test_modifier_silent_unsilent()
 
   silent EchoThere()
   assert_equal("\nthere", execute(':1messages'))
+
+  try
+    silent eval [][0]
+  catch
+    echomsg "caught"
+  endtry
+  assert_equal("\ncaught", execute(':1messages'))
 enddef
 
 def Test_range_after_command_modifier()

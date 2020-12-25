@@ -2286,6 +2286,13 @@ call_def_function(
 		{
 		    garray_T	*trystack = &ectx.ec_trystack;
 
+		    if (restore_cmdmod)
+		    {
+			cmdmod.cmod_filter_regmatch.regprog = NULL;
+			undo_cmdmod(&cmdmod);
+			cmdmod = save_cmdmod;
+			restore_cmdmod = FALSE;
+		    }
 		    if (trystack->ga_len > 0)
 		    {
 			trycmd_T    *trycmd = ((trycmd_T *)trystack->ga_data)
