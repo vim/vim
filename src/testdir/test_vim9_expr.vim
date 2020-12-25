@@ -1953,15 +1953,25 @@ def Test_expr7_new_lambda()
       # Lambda returning a dict
       var Lmb = () => ({key: 42})
       assert_equal({key: 42}, Lmb())
+
+      var RefOne: func(number): string = (a: number): string => 'x'
+      var RefTwo: func(number): any = (a: number): any => 'x'
+
+      var Fx = (a) => ({k1: 0,
+                         k2: 1})
+      var Fy = (a) => [0,
+                       1]
   END
-  CheckDefSuccess(lines)
+  CheckDefAndScriptSuccess(lines)
 
   CheckDefFailure(["var Ref = (a)=>a + 1"], 'E1001:')
   CheckDefFailure(["var Ref = (a)=> a + 1"], 'E1001:')
   CheckDefFailure(["var Ref = (a) =>a + 1"], 'E1001:')
 
-  CheckDefSuccess(["var Ref: func(number): string = (a: number): string => 'x'"])
-  CheckDefSuccess(["var Ref: func(number): any = (a: number): any => 'x'"])
+  CheckScriptFailure(["vim9script", "var Ref = (a)=>a + 1"], 'E1004:')
+  CheckScriptFailure(["vim9script", "var Ref = (a)=> a + 1"], 'E1004:')
+  CheckScriptFailure(["vim9script", "var Ref = (a) =>a + 1"], 'E1004:')
+
   CheckDefFailure(["var Ref: func(number): number = (a: number): string => 'x'"], 'E1012:')
   CheckDefFailure(["var Ref: func(number): string = (a: number): string => 99"], 'E1012:')
 
@@ -1978,11 +1988,9 @@ def Test_expr7_new_lambda()
 #        'E1106: 2 arguments too many')
 #  CheckDefFailure(["echo 'asdf'->{a -> a}(x)"], 'E1001:', 1)
 
-  CheckDefSuccess(['var Fx = (a) => ({k1: 0,', ' k2: 1})'])
   CheckDefFailure(['var Fx = (a) => ({k1: 0', ' k2: 1})'], 'E722:', 2)
   CheckDefFailure(['var Fx = (a) => ({k1: 0,', ' k2 1})'], 'E720:', 2)
 
-  CheckDefSuccess(['var Fx = (a) => [0,', ' 1]'])
   CheckDefFailure(['var Fx = (a) => [0', ' 1]'], 'E696:', 2)
 enddef
 

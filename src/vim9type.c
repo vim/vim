@@ -338,6 +338,8 @@ typval2type_int(typval_T *tv, garray_T *type_gap)
 	    if (ufunc->uf_def_status == UF_TO_BE_COMPILED
 			    && compile_def_function(ufunc, TRUE, NULL) == FAIL)
 		return NULL;
+	    if (ufunc->uf_func_type == NULL)
+		set_function_type(ufunc);
 	    if (ufunc->uf_func_type != NULL)
 		return ufunc->uf_func_type;
 	}

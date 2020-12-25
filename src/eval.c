@@ -3349,8 +3349,13 @@ eval7(
 
     /*
      * nested expression: (expression).
+     * lambda: (arg) => expr
      */
-    case '(':	{
+    case '(':	ret = NOTDONE;
+		if (in_vim9script())
+		    ret = get_lambda_tv(arg, rettv, TRUE, evalarg);
+		if (ret == NOTDONE)
+		{
 		    *arg = skipwhite_and_linebreak(*arg + 1, evalarg);
 		    ret = eval1(arg, rettv, evalarg);	// recursive!
 
