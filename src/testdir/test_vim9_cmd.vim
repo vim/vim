@@ -25,6 +25,15 @@ def Test_edit_wildcards()
   CheckDefFailure(['edit `="foo"'], 'E1083:')
 enddef
 
+def Test_global_backtick_expansion()
+  new
+  setline(1, 'xx')
+  var name = 'foobar'
+  g/^xx/s/.*/`=name`
+  assert_equal('foobar', getline(1))
+  bwipe!
+enddef
+
 def Test_hardcopy_wildcards()
   CheckUnix
   CheckFeature postscript

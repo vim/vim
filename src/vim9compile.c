@@ -2947,7 +2947,7 @@ compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 }
 
 /*
- * parse a lambda: {arg, arg -> expr}
+ * parse a lambda: "{arg, arg -> expr}" or "(arg, arg) => expr"
  * "*arg" points to the '{'.
  */
     static int
@@ -7313,6 +7313,19 @@ compile_exec(char_u *line, exarg_T *eap, cctx_T *cctx)
 	eap->arg = skipwhite(eap->arg + 7);
 	if (*eap->arg == '@')
 	    eap->arg = skiptowhite(eap->arg);
+    }
+
+    if ((eap->cmdidx == CMD_global || eap->cmdidx == CMD_vglobal)
+						       && STRLEN(eap->arg) > 4)
+    {
+	int delim = *eap->arg;
+
+	p = skip_regexp_ex(eap->arg + 1, delim, TRUE, NULL, NULL);
+	if (*p == delim)
+	{
+	    eap->arg = p + 1;
+	    has_expr = TRUE;
+	}
     }
 
     if (has_expr && (p = (char_u *)strstr((char *)eap->arg, "`=")) != NULL)
