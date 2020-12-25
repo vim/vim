@@ -511,7 +511,6 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
     char_u	    *name;
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
     type_T	    *type;
-    int		    called_emsg_before = called_emsg;
     typval_T	    init_tv;
 
     if (eap->cmdidx == CMD_final || eap->cmdidx == CMD_const)
@@ -548,8 +547,8 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
 
     // parse type
     p = skipwhite(p + 1);
-    type = parse_type(&p, &si->sn_type_list);
-    if (called_emsg != called_emsg_before)
+    type = parse_type(&p, &si->sn_type_list, TRUE);
+    if (type == NULL)
     {
 	vim_free(name);
 	return p;

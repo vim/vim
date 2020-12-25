@@ -868,7 +868,9 @@ get_lval(
 		char_u	 *tp = skipwhite(p + 1);
 
 		// parse the type after the name
-		lp->ll_type = parse_type(&tp, &si->sn_type_list);
+		lp->ll_type = parse_type(&tp, &si->sn_type_list, !quiet);
+		if (lp->ll_type == NULL && !quiet)
+		    return NULL;
 		lp->ll_name_end = tp;
 	    }
 	}

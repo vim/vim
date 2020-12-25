@@ -1951,7 +1951,7 @@ def Test_expr7_new_lambda()
       assert_equal([1, 3, 5], res)
 
       # Lambda returning a dict
-      var Lmb = () => {key: 42}
+      var Lmb = () => ({key: 42})
       assert_equal({key: 42}, Lmb())
   END
   CheckDefSuccess(lines)
@@ -1960,11 +1960,16 @@ def Test_expr7_new_lambda()
   CheckDefFailure(["var Ref = (a)=> a + 1"], 'E1001:')
   CheckDefFailure(["var Ref = (a) =>a + 1"], 'E1001:')
 
+  CheckDefSuccess(["var Ref: func(number): string = (a: number): string => 'x'"])
+  CheckDefSuccess(["var Ref: func(number): any = (a: number): any => 'x'"])
+  CheckDefFailure(["var Ref: func(number): number = (a: number): string => 'x'"], 'E1012:')
+  CheckDefFailure(["var Ref: func(number): string = (a: number): string => 99"], 'E1012:')
+
   CheckDefFailure(["filter([1, 2], (k,v) => 1)"], 'E1069:', 1)
   # error is in first line of the lambda
   CheckDefFailure(["var L = (a) -> a + b"], 'E1001:', 1)
 
-# TODO: lambda after -> doesn't work yet
+# TODO: ->(lambda)() doesn't work yet
 #  assert_equal('xxxyyy', 'xxx'->((a, b) => a .. b)('yyy'))
 
 #  CheckDefExecFailure(["var s = 'asdf'->{a -> a}('x')"],
@@ -1973,9 +1978,9 @@ def Test_expr7_new_lambda()
 #        'E1106: 2 arguments too many')
 #  CheckDefFailure(["echo 'asdf'->{a -> a}(x)"], 'E1001:', 1)
 
-  CheckDefSuccess(['var Fx = (a) => {k1: 0,', ' k2: 1}'])
-  CheckDefFailure(['var Fx = (a) => {k1: 0', ' k2: 1}'], 'E722:', 2)
-  CheckDefFailure(['var Fx = (a) => {k1: 0,', ' k2 1}'], 'E720:', 2)
+  CheckDefSuccess(['var Fx = (a) => ({k1: 0,', ' k2: 1})'])
+  CheckDefFailure(['var Fx = (a) => ({k1: 0', ' k2: 1})'], 'E722:', 2)
+  CheckDefFailure(['var Fx = (a) => ({k1: 0,', ' k2 1})'], 'E720:', 2)
 
   CheckDefSuccess(['var Fx = (a) => [0,', ' 1]'])
   CheckDefFailure(['var Fx = (a) => [0', ' 1]'], 'E696:', 2)

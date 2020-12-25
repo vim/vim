@@ -596,28 +596,38 @@ skip_type(char_u *start, int optional)
  * Returns NULL in case of failure.
  */
     static type_T *
-parse_type_member(char_u **arg, type_T *type, garray_T *type_gap)
+parse_type_member(
+	char_u	    **arg,
+	type_T	    *type,
+	garray_T    *type_gap,
+	int	    give_error)
 {
     type_T  *member_type;
     int	    prev_called_emsg = called_emsg;
 
     if (**arg != '<')
     {
-	if (*skipwhite(*arg) == '<')
-	    semsg(_(e_no_white_space_allowed_before_str), "<");
-	else
-	    emsg(_(e_missing_type));
-	return type;
+	if (give_error)
+	{
+	    if (*skipwhite(*arg) == '<')
+		semsg(_(e_no_white_space_allowed_before_str), "<");
+	    else
+		emsg(_(e_missing_type));
+	}
+	return NULL;
     }
     *arg = skipwhite(*arg + 1);
 
-    member_type = parse_type(arg, type_gap);
+    member_type = parse_type(arg, type_gap, give_error);
+    if (member_type == NULL)
+	return NULL;
 
     *arg = skipwhite(*arg);
     if (**arg != '>' && called_emsg == prev_called_emsg)
     {
-	emsg(_(e_missing_gt_after_type));
-	return type;
+	if (give_error)
+	    emsg(_(e_missing_gt_after_type));
+	return NULL;
     }
     ++*arg;
 
@@ -628,10 +638,11 @@ parse_type_member(char_u **arg, type_T *type, garray_T *type_gap)
 
 /*
  * Parse a type at "arg" and advance over it.
- * Return &t_any for failure.
+ * When "give_error" is TRUE give error messages, otherwise be quiet.
+ * Return NULL for failure.
  */
     type_T *
-parse_type(char_u **arg, garray_T *type_gap)
+parse_type(char_u **arg, garray_T *type_gap, int give_error)
 {
     char_u  *p = *arg;
     size_t  len;
@@ -673,7 +684,8 @@ parse_type(char_u **arg, garray_T *type_gap)
 	    if (len == 4 && STRNCMP(*arg, "dict", len) == 0)
 	    {
 		*arg += len;
-		return parse_type_member(arg, &t_dict_any, type_gap);
+		return parse_type_member(arg, &t_dict_any,
+							 type_gap, give_error);
 	    }
 	    break;
 	case 'f':
@@ -683,8 +695,9 @@ parse_type(char_u **arg, garray_T *type_gap)
 		*arg += len;
 		return &t_float;
 #else
-		emsg(_(e_this_vim_is_not_compiled_with_float_support));
-		return &t_any;
+		if (give_error)
+		    emsg(_(e_this_vim_is_not_compiled_with_float_support));
+		return NULL;
 #endif
 	    }
 	    if (len == 4 && STRNCMP(*arg, "func", len) == 0)
@@ -721,11 +734,15 @@ parse_type(char_u **arg, garray_T *type_gap)
 			}
 			else if (first_optional != -1)
 			{
-			    emsg(_(e_mandatory_argument_after_optional_argument));
-			    return &t_any;
+			    if (give_error)
+				emsg(_(e_mandatory_argument_after_optional_argument));
+			    return NULL;
 			}
 
-			arg_type[argcount++] = parse_type(&p, type_gap);
+			type = parse_type(&p, type_gap, give_error);
+			if (type == NULL)
+			    return NULL;
+			arg_type[argcount++] = type;
 
 			// Nothing comes after "...{type}".
 			if (flags & TTFLAG_VARARGS)
@@ -733,31 +750,35 @@ parse_type(char_u **arg, garray_T *type_gap)
 
 			if (*p != ',' && *skipwhite(p) == ',')
 			{
-			    semsg(_(e_no_white_space_allowed_before_str), ",");
-			    return &t_any;
+			    if (give_error)
+				semsg(_(e_no_white_space_allowed_before_str), ",");
+			    return NULL;
 			}
 			if (*p == ',')
 			{
 			    ++p;
 			    if (!VIM_ISWHITE(*p))
 			    {
-				semsg(_(e_white_space_required_after_str), ",");
-				return &t_any;
+				if (give_error)
+				    semsg(_(e_white_space_required_after_str), ",");
+				return NULL;
 			    }
 			}
 			p = skipwhite(p);
 			if (argcount == MAX_FUNC_ARGS)
 			{
-			    emsg(_(e_too_many_argument_types));
-			    return &t_any;
+			    if (give_error)
+				emsg(_(e_too_many_argument_types));
+			    return NULL;
 			}
 		    }
 
 		    p = skipwhite(p);
 		    if (*p != ')')
 		    {
-			emsg(_(e_missing_close));
-			return &t_any;
+			if (give_error)
+			    emsg(_(e_missing_close));
+			return NULL;
 		    }
 		    *arg = p + 1;
 		}
@@ -765,10 +786,12 @@ parse_type(char_u **arg, garray_T *type_gap)
 		{
 		    // parse return type
 		    ++*arg;
-		    if (!VIM_ISWHITE(**arg))
+		    if (!VIM_ISWHITE(**arg) && give_error)
 			semsg(_(e_white_space_required_after_str), ":");
 		    *arg = skipwhite(*arg);
-		    ret_type = parse_type(arg, type_gap);
+		    ret_type = parse_type(arg, type_gap, give_error);
+		    if (ret_type == NULL)
+			return NULL;
 		}
 		if (flags == 0 && first_optional == -1 && argcount <= 0)
 		    type = get_func_type(ret_type, argcount, type_gap);
@@ -783,7 +806,7 @@ parse_type(char_u **arg, garray_T *type_gap)
 						   ? argcount : first_optional;
 			if (func_type_add_arg_types(type, argcount,
 							     type_gap) == FAIL)
-			    return &t_any;
+			    return NULL;
 			mch_memmove(type->tt_args, arg_type,
 						  sizeof(type_T *) * argcount);
 		    }
@@ -802,7 +825,8 @@ parse_type(char_u **arg, garray_T *type_gap)
 	    if (len == 4 && STRNCMP(*arg, "list", len) == 0)
 	    {
 		*arg += len;
-		return parse_type_member(arg, &t_list_any, type_gap);
+		return parse_type_member(arg, &t_list_any,
+							 type_gap, give_error);
 	    }
 	    break;
 	case 'n':
@@ -828,8 +852,9 @@ parse_type(char_u **arg, garray_T *type_gap)
 	    break;
     }
 
-    semsg(_(e_type_not_recognized_str), *arg);
-    return &t_any;
+    if (give_error)
+	semsg(_(e_type_not_recognized_str), *arg);
+    return NULL;
 }
 
 /*
@@ -1016,9 +1041,12 @@ vartype_name(vartype_T type)
     char *
 type_name(type_T *type, char **tofree)
 {
-    char *name = vartype_name(type->tt_type);
+    char *name;
 
     *tofree = NULL;
+    if (type == NULL)
+	return "[unknown]";
+    name = vartype_name(type->tt_type);
     if (type->tt_type == VAR_LIST || type->tt_type == VAR_DICT)
     {
 	char *member_free;

@@ -349,7 +349,7 @@ parse_argument_types(ufunc_T *fp, garray_T *argtypes, int varargs)
 		    // will get the type from the default value
 		    type = &t_unknown;
 		else
-		    type = parse_type(&p, &fp->uf_type_list);
+		    type = parse_type(&p, &fp->uf_type_list, TRUE);
 		if (type == NULL)
 		    return FAIL;
 		fp->uf_arg_types[i] = type;
@@ -369,7 +369,7 @@ parse_argument_types(ufunc_T *fp, garray_T *argtypes, int varargs)
 		// todo: get type from default value
 		fp->uf_va_type = &t_any;
 	    else
-		fp->uf_va_type = parse_type(&p, &fp->uf_type_list);
+		fp->uf_va_type = parse_type(&p, &fp->uf_type_list, TRUE);
 	    if (fp->uf_va_type == NULL)
 		return FAIL;
 	}
@@ -460,17 +460,22 @@ register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state)
 
 /*
  * Skip over "->" or "=>" after the arguments of a lambda.
+ * If ": type" is found make "ret_type" point to "type".
  * Return NULL if no valid arrow found.
  */
     static char_u *
-skip_arrow(char_u *start, int equal_arrow)
+skip_arrow(char_u *start, int equal_arrow, char_u **ret_type)
 {
     char_u *s = start;
 
     if (equal_arrow)
     {
 	if (*s == ':')
-	    s = skip_type(skipwhite(s + 1), TRUE);
+	{
+	    s = skipwhite(s + 1);
+	    *ret_type = s;
+	    s = skip_type(s, TRUE);
+	}
 	s = skipwhite(s);
 	if (*s != '=')
 	    return NULL;
@@ -503,6 +508,7 @@ get_lambda_tv(
     ufunc_T	*fp = NULL;
     partial_T   *pt = NULL;
     int		varargs;
+    char_u	*ret_type = NULL;
     int		ret;
     char_u	*s;
     char_u	*start, *end;
@@ -517,19 +523,20 @@ get_lambda_tv(
     ga_init(&newargs);
     ga_init(&newlines);
 
-    // First, check if this is a lambda expression. "->" or "=>" must exist.
+    // First, check if this is really a lambda expression. "->" or "=>" must
+    // be found after the arguments.
     s = skipwhite(*arg + 1);
     ret = get_function_args(&s, equal_arrow ? ')' : '-', NULL,
 	    types_optional ? &argtypes : NULL, types_optional,
 						 NULL, NULL, TRUE, NULL, NULL);
-    if (ret == FAIL || skip_arrow(s, equal_arrow) == NULL)
+    if (ret == FAIL || skip_arrow(s, equal_arrow, &ret_type) == NULL)
     {
 	if (types_optional)
 	    ga_clear_strings(&argtypes);
 	return NOTDONE;
     }
 
-    // Parse the arguments again.
+    // Parse the arguments for real.
     if (evaluate)
 	pnewargs = &newargs;
     else
@@ -538,7 +545,8 @@ get_lambda_tv(
     ret = get_function_args(arg, equal_arrow ? ')' : '-', pnewargs,
 	    types_optional ? &argtypes : NULL, types_optional,
 					    &varargs, NULL, FALSE, NULL, NULL);
-    if (ret == FAIL || (*arg = skip_arrow(*arg, equal_arrow)) == NULL)
+    if (ret == FAIL
+		  || (*arg = skip_arrow(*arg, equal_arrow, &ret_type)) == NULL)
     {
 	if (types_optional)
 	    ga_clear_strings(&argtypes);
@@ -551,11 +559,11 @@ get_lambda_tv(
 
     *arg = skipwhite_and_linebreak(*arg, evalarg);
 
-    // Only recognize "{" as the start of a function body when followed by
-    // white space, "{key: val}" is a dict.
-    if (equal_arrow && **arg == '{' && IS_WHITE_OR_NUL((*arg)[1]))
+    // Recognize "{" as the start of a function body.
+    if (equal_arrow && **arg == '{')
     {
 	// TODO: process the function body upto the "}".
+	// Return type is required then.
 	emsg("Lambda function body not supported yet");
 	goto errret;
     }
@@ -619,9 +627,18 @@ get_lambda_tv(
 	hash_add(&func_hashtab, UF2HIKEY(fp));
 	fp->uf_args = newargs;
 	ga_init(&fp->uf_def_args);
-	if (types_optional
-			 && parse_argument_types(fp, &argtypes, FALSE) == FAIL)
-	    goto errret;
+	if (types_optional)
+	{
+	    if (parse_argument_types(fp, &argtypes, FALSE) == FAIL)
+		goto errret;
+	    if (ret_type != NULL)
+	    {
+		fp->uf_ret_type = parse_type(&ret_type,
+						      &fp->uf_type_list, TRUE);
+		if (fp->uf_ret_type == NULL)
+		    goto errret;
+	    }
+	}
 
 	fp->uf_lines = newlines;
 	if (current_funccal != NULL && eval_lavars)
@@ -3752,7 +3769,7 @@ define_function(exarg_T *eap, char_u *name_arg)
 	else
 	{
 	    p = ret_type;
-	    fp->uf_ret_type = parse_type(&p, &fp->uf_type_list);
+	    fp->uf_ret_type = parse_type(&p, &fp->uf_type_list, TRUE);
 	}
 	SOURCING_LNUM = lnum_save;
     }
