@@ -570,7 +570,7 @@ get_lambda_tv(
 					    &varargs, NULL, FALSE, NULL, NULL);
     if (ret == FAIL
 		  || (s = skip_arrow(*arg, equal_arrow, &ret_type,
-							&white_error)) == NULL)
+				   equal_arrow ? &white_error : NULL)) == NULL)
     {
 	if (types_optional)
 	    ga_clear_strings(&argtypes);
