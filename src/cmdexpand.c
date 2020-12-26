@@ -2680,7 +2680,10 @@ wildmenu_process_key(cmdline_info_T *cclp, int key, expand_T *xp)
 	// Hitting <Down> after "emenu Name.": complete submenu
 	if (c == K_DOWN && cclp->cmdpos > 0
 		&& cclp->cmdbuff[cclp->cmdpos - 1] == '.')
+	{
 	    c = p_wc;
+	    KeyTyped = TRUE;  // in case the key was mapped
+	}
 	else if (c == K_UP)
 	{
 	    // Hitting <Up>: Remove one submenu name in front of the
@@ -2714,6 +2717,7 @@ wildmenu_process_key(cmdline_info_T *cclp, int key, expand_T *xp)
 	    if (i > 0)
 		cmdline_del(cclp, i);
 	    c = p_wc;
+	    KeyTyped = TRUE;  // in case the key was mapped
 	    xp->xp_context = EXPAND_NOTHING;
 	}
     }
@@ -2738,6 +2742,7 @@ wildmenu_process_key(cmdline_info_T *cclp, int key, expand_T *xp)
 	{
 	    // go down a directory
 	    c = p_wc;
+	    KeyTyped = TRUE;  // in case the key was mapped
 	}
 	else if (STRNCMP(xp->xp_pattern, upseg + 1, 3) == 0 && c == K_DOWN)
 	{
@@ -2763,6 +2768,7 @@ wildmenu_process_key(cmdline_info_T *cclp, int key, expand_T *xp)
 	    {
 		cmdline_del(cclp, j - 2);
 		c = p_wc;
+		KeyTyped = TRUE;  // in case the key was mapped
 	    }
 	}
 	else if (c == K_UP)
