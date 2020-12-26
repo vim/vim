@@ -853,7 +853,7 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 /*
  * Check if "type1" and "type2" are exactly the same.
  */
-    static int
+    int
 equal_type(type_T *type1, type_T *type2)
 {
     int i;

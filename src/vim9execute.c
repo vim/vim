@@ -863,6 +863,31 @@ allocate_if_null(typval_T *tv)
     }
 }
 
+    static svar_T *
+get_script_svar(scriptref_T *sref, ectx_T *ectx)
+{
+    scriptitem_T    *si = SCRIPT_ITEM(sref->sref_sid);
+    dfunc_T	    *dfunc = ((dfunc_T *)def_functions.ga_data)
+							  + ectx->ec_dfunc_idx;
+    svar_T	    *sv;
+
+    if (sref->sref_seq != si->sn_script_seq)
+    {
+	// The script was reloaded after the function was
+	// compiled, the script_idx may not be valid.
+	semsg(_(e_script_variable_invalid_after_reload_in_function_str),
+						 dfunc->df_ufunc->uf_name_exp);
+	return NULL;
+    }
+    sv = ((svar_T *)si->sn_var_vals.ga_data) + sref->sref_idx;
+    if (!equal_type(sv->sv_type, sref->sref_type))
+    {
+	emsg(_(e_script_variable_type_changed));
+	return NULL;
+    }
+    return sv;
+}
+
 /*
  * Execute a function by "name".
  * This can be a builtin function, user function or a funcref.
@@ -1406,20 +1431,11 @@ call_def_function(
 	    case ISN_LOADSCRIPT:
 		{
 		    scriptref_T	*sref = iptr->isn_arg.script.scriptref;
-		    dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
-							  + ectx.ec_dfunc_idx;
-		    scriptitem_T *si = SCRIPT_ITEM(sref->sref_sid);
 		    svar_T	 *sv;
 
-		    if (sref->sref_seq != si->sn_script_seq)
-		    {
-			// The script was reloaded after the function was
-			// compiled, the script_idx may not be valid.
-			semsg(_(e_script_variable_invalid_after_reload_in_function_str),
-						  dfunc->df_ufunc->uf_name_exp);
+		    sv = get_script_svar(sref, &ectx);
+		    if (sv == NULL)
 			goto failed;
-		    }
-		    sv = ((svar_T *)si->sn_var_vals.ga_data) + sref->sref_idx;
 		    allocate_if_null(sv->sv_tv);
 		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
@@ -1628,22 +1644,12 @@ call_def_function(
 	    // store script-local variable in Vim9 script
 	    case ISN_STORESCRIPT:
 		{
-		    scriptref_T	*sref = iptr->isn_arg.script.scriptref;
-		    dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
-							  + ectx.ec_dfunc_idx;
-		    scriptitem_T *si = SCRIPT_ITEM(sref->sref_sid);
-		    svar_T	 *sv;
+		    scriptref_T	    *sref = iptr->isn_arg.script.scriptref;
+		    svar_T	    *sv;
 
-		    if (sref->sref_seq != si->sn_script_seq)
-		    {
-			// The script was reloaded after the function was
-			// compiled, the script_idx may not be valid.
-			SOURCING_LNUM = iptr->isn_lnum;
-			semsg(_(e_script_variable_invalid_after_reload_in_function_str),
-						  dfunc->df_ufunc->uf_name_exp);
+		    sv = get_script_svar(sref, &ectx);
+		    if (sv == NULL)
 			goto failed;
-		    }
-		    sv = ((svar_T *)si->sn_var_vals.ga_data) + sref->sref_idx;
 		    --ectx.ec_stack.ga_len;
 		    clear_tv(sv->sv_tv);
 		    *sv->sv_tv = *STACK_TV_BOT(0);

@@ -247,6 +247,7 @@ typedef struct {
     int		sref_sid;	// script ID
     int		sref_idx;	// index in sn_var_vals
     int		sref_seq;	// sn_script_seq when compiled
+    type_T	*sref_type;	// type of the variable when compiled
 } scriptref_T;
 
 typedef struct {

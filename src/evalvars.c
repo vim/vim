@@ -784,7 +784,7 @@ ex_let(exarg_T *eap)
 	{
 	    if (vim9script)
 	    {
-		// Vim9 declaration ":let var: type"
+		// Vim9 declaration ":var name: type"
 		arg = vim9_declare_scriptvar(eap, arg);
 	    }
 	    else
@@ -3133,8 +3133,15 @@ set_var_const(
 		goto failed;
 	}
 	else
+	{
 	    // can only redefine once
 	    di->di_flags &= ~DI_FLAGS_RELOAD;
+
+	    // A Vim9 script-local variable is also present in sn_all_vars and
+	    // sn_var_vals.
+	    if (is_script_local && vim9script)
+		update_vim9_script_var(FALSE, di, tv, type);
+	}
 
 	// existing variable, need to clear the value
 
@@ -3216,7 +3223,7 @@ set_var_const(
 	// A Vim9 script-local variable is also added to sn_all_vars and
 	// sn_var_vals.
 	if (is_script_local && vim9script)
-	    add_vim9_script_var(di, tv, type);
+	    update_vim9_script_var(TRUE, di, tv, type);
     }
 
     if (copy || tv->v_type == VAR_NUMBER || tv->v_type == VAR_FLOAT)

@@ -591,36 +591,37 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
 /*
  * Vim9 part of adding a script variable: add it to sn_all_vars (lookup by name
  * with a hashtable) and sn_var_vals (lookup by index).
+ * When "create" is TRUE this is a new variable, otherwise find and update an
+ * existing variable.
  * When "type" is NULL use "tv" for the type.
  */
     void
-add_vim9_script_var(dictitem_T *di, typval_T *tv, type_T *type)
+update_vim9_script_var(int create, dictitem_T *di, typval_T *tv, type_T *type)
 {
-    scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
+    scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
+    hashitem_T	    *hi;
+    svar_T	    *sv;
 
-    // Store a pointer to the typval_T, so that it can be found by
-    // index instead of using a hastab lookup.
-    if (ga_grow(&si->sn_var_vals, 1) == OK)
+    if (create)
     {
-	svar_T *sv = ((svar_T *)si->sn_var_vals.ga_data)
-						      + si->sn_var_vals.ga_len;
-	hashitem_T *hi;
-	sallvar_T *newsav = (sallvar_T *)alloc_clear(
-				       sizeof(sallvar_T) + STRLEN(di->di_key));
+	sallvar_T	    *newsav;
 
+	// Store a pointer to the typval_T, so that it can be found by index
+	// instead of using a hastab lookup.
+	if (ga_grow(&si->sn_var_vals, 1) == FAIL)
+	    return;
+
+	sv = ((svar_T *)si->sn_var_vals.ga_data) + si->sn_var_vals.ga_len;
+	newsav = (sallvar_T *)alloc_clear(
+				       sizeof(sallvar_T) + STRLEN(di->di_key));
 	if (newsav == NULL)
 	    return;
 
 	sv->sv_tv = &di->di_tv;
-	if (type == NULL)
-	    sv->sv_type = typval2type(tv, &si->sn_type_list);
-	else
-	    sv->sv_type = type;
 	sv->sv_const = (di->di_flags & DI_FLAGS_LOCK) ? ASSIGN_CONST : 0;
 	sv->sv_export = is_export;
 	newsav->sav_var_vals_idx = si->sn_var_vals.ga_len;
 	++si->sn_var_vals.ga_len;
-
 	STRCPY(&newsav->sav_key, di->di_key);
 	sv->sv_name = newsav->sav_key;
 	newsav->sav_di = di;
@@ -639,10 +640,21 @@ add_vim9_script_var(dictitem_T *di, typval_T *tv, type_T *type)
 	else
 	    // new variable name
 	    hash_add(&si->sn_all_vars.dv_hashtab, newsav->sav_key);
-
-	// let ex_export() know the export worked.
-	is_export = FALSE;
     }
+    else
+    {
+	sv = find_typval_in_script(&di->di_tv);
+    }
+    if (sv != NULL)
+    {
+	if (type == NULL)
+	    sv->sv_type = typval2type(tv, &si->sn_type_list);
+	else
+	    sv->sv_type = type;
+    }
+
+    // let ex_export() know the export worked.
+    is_export = FALSE;
 }
 
 /*

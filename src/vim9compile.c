@@ -1327,6 +1327,7 @@ generate_VIM9SCRIPT(
     sref->sref_sid = sid;
     sref->sref_idx = idx;
     sref->sref_seq = si->sn_script_seq;
+    sref->sref_type = type;
     return OK;
 }
 

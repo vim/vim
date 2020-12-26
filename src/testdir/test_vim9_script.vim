@@ -1247,6 +1247,32 @@ def Test_vim9script_reload_import()
   delete('Ximport.vim')
 enddef
 
+" if a script is reloaded with a script-local variable that changed its type, a
+" compiled function using that variable must fail.
+def Test_script_reload_change_type()
+  var lines =<< trim END
+    vim9script noclear
+    var str = 'string'
+    def g:GetStr(): string
+      return str .. 'xxx'
+    enddef
+  END
+  writefile(lines, 'Xreload.vim')
+  source Xreload.vim
+  echo g:GetStr()
+
+  lines =<< trim END
+    vim9script noclear
+    var str = 1234
+  END
+  writefile(lines, 'Xreload.vim')
+  source Xreload.vim
+  assert_fails('echo g:GetStr()', 'E1150:')
+
+  delfunc g:GetStr
+  delete('Xreload.vim')
+enddef
+
 def s:RetSome(): string
   return 'some'
 enddef
