@@ -1174,10 +1174,7 @@ def Test_vim9script_reload_noclear()
     var s:notReloaded = 'yes'
     s:reloaded = 'first'
     def g:Values(): list<string>
-      return [s:reloaded, s:notReloaded, Once()]
-    enddef
-    def g:CallAgain(): string
-      return Again()
+      return [s:reloaded, s:notReloaded, Again(), Once()]
     enddef
 
     def Once(): string
@@ -1188,20 +1185,16 @@ def Test_vim9script_reload_noclear()
   g:loadCount = 0
   source XReloaded
   assert_equal(1, g:loadCount)
-  assert_equal(['first', 'yes', 'once'], g:Values())
-  assert_equal('again', g:CallAgain())
+  assert_equal(['first', 'yes', 'again', 'once'], g:Values())
   source XReloaded
   assert_equal(2, g:loadCount)
-  assert_equal(['init', 'yes', 'once'], g:Values())
-  assert_fails('call g:CallAgain()', 'E933:')
+  assert_equal(['init', 'yes', 'again', 'once'], g:Values())
   source XReloaded
   assert_equal(3, g:loadCount)
-  assert_equal(['init', 'yes', 'once'], g:Values())
-  assert_fails('call g:CallAgain()', 'E933:')
+  assert_equal(['init', 'yes', 'again', 'once'], g:Values())
 
   delete('Xreloaded')
   delfunc g:Values
-  delfunc g:CallAgain
   unlet g:loadCount
 enddef
 

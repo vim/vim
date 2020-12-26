@@ -219,23 +219,6 @@ some point when loaded again.  E.g. when a buffer local option is set: >
 	def g:SomeFunc()
 	....
 
-There is one gotcha: If a compiled function is replaced and it is called from
-another compiled function that is not replaced, it will try to call the
-function from before it was replaced, which no longer exists.  This doesn't
-work: >
-	vimscript noclear
-
-	def ReplaceMe()
-	  echo 'function redefined every time'
-	enddef
-
-	if exists('s:loaded') | finish | endif
-	var s:loaded = true
-
-	def NotReplaced()
-	  ReplaceMe()  # Error if ReplaceMe() was redefined
-	enddef
-
 
 Variable declarations with :var, :final and :const ~
 						*vim9-declaration* *:var*

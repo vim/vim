@@ -145,7 +145,7 @@ struct cctx_S {
     int		ctx_has_cmdmod;	    // ISN_CMDMOD was generated
 };
 
-static void delete_def_function_contents(dfunc_T *dfunc);
+static void delete_def_function_contents(dfunc_T *dfunc, int mark_deleted);
 
 /*
  * Lookup variable "name" in the local scope and return it in "lvar".
@@ -7498,12 +7498,12 @@ compile_def_function(ufunc_T *ufunc, int check_return_type, cctx_T *outer_cctx)
     int		new_def_function = FALSE;
 
     // When using a function that was compiled before: Free old instructions.
-    // Otherwise add a new entry in "def_functions".
+    // The index is reused.  Otherwise add a new entry in "def_functions".
     if (ufunc->uf_dfunc_idx > 0)
     {
 	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
 							 + ufunc->uf_dfunc_idx;
-	delete_def_function_contents(dfunc);
+	delete_def_function_contents(dfunc, FALSE);
     }
     else
     {
@@ -8344,7 +8344,7 @@ delete_instr(isn_T *isn)
  * Free all instructions for "dfunc" except df_name.
  */
     static void
-delete_def_function_contents(dfunc_T *dfunc)
+delete_def_function_contents(dfunc_T *dfunc, int mark_deleted)
 {
     int idx;
 
@@ -8355,9 +8355,13 @@ delete_def_function_contents(dfunc_T *dfunc)
 	for (idx = 0; idx < dfunc->df_instr_count; ++idx)
 	    delete_instr(dfunc->df_instr + idx);
 	VIM_CLEAR(dfunc->df_instr);
+	dfunc->df_instr = NULL;
     }
 
-    dfunc->df_deleted = TRUE;
+    if (mark_deleted)
+	dfunc->df_deleted = TRUE;
+    if (dfunc->df_ufunc != NULL)
+	dfunc->df_ufunc->uf_def_status = UF_NOT_COMPILED;
 }
 
 /*
@@ -8374,7 +8378,7 @@ unlink_def_function(ufunc_T *ufunc)
 							 + ufunc->uf_dfunc_idx;
 
 	if (--dfunc->df_refcount <= 0)
-	    delete_def_function_contents(dfunc);
+	    delete_def_function_contents(dfunc, TRUE);
 	ufunc->uf_def_status = UF_NOT_COMPILED;
 	ufunc->uf_dfunc_idx = 0;
 	if (dfunc->df_ufunc == ufunc)
@@ -8410,7 +8414,7 @@ free_def_functions(void)
     {
 	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data) + idx;
 
-	delete_def_function_contents(dfunc);
+	delete_def_function_contents(dfunc, TRUE);
 	vim_free(dfunc->df_name);
     }
 
