@@ -851,6 +851,10 @@ f_win_gotoid(typval_T *argvars, typval_T *rettv)
 	    rettv->vval.v_number = 1;
 	    return;
 	}
+
+    wp = win_id2wp(id);
+    if (wp != NULL && WIN_IS_POPUP(wp))
+	win_enter(wp, TRUE);
 }
 
 /*
