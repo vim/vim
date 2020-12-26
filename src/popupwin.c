@@ -689,6 +689,15 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    wp->w_popup_flags &= ~POPF_DRAG;
     }
 
+    nr = dict_get_bool(dict, (char_u *)"focusable", -1);
+    if (nr != -1)
+    {
+	if (nr)
+	    wp->w_popup_flags |= POPF_FOCUSABLE;
+	else
+	    wp->w_popup_flags &= ~POPF_FOCUSABLE;
+    }
+
     nr = dict_get_bool(dict, (char_u *)"posinvert", -1);
     if (nr != -1)
     {
@@ -2996,6 +3005,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	dict_add_string(dict, "title", wp->w_popup_title);
 	dict_add_number(dict, "wrap", wp->w_p_wrap);
 	dict_add_number(dict, "drag", (wp->w_popup_flags & POPF_DRAG) != 0);
+	dict_add_number(dict, "focusable", (wp->w_popup_flags & POPF_FOCUSABLE) != 0);
 	dict_add_number(dict, "mapping",
 				      (wp->w_popup_flags & POPF_MAPPING) != 0);
 	dict_add_number(dict, "resize", (wp->w_popup_flags & POPF_RESIZE) != 0);

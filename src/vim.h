@@ -623,6 +623,8 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define POPF_INFO	0x80	// used for info of popup menu
 #define POPF_INFO_MENU	0x100	// align info popup with popup menu
 #define POPF_POSINVERT	0x200	// vertical position can be inverted
+#define POPF_FOCUSABLE	0x400	// popup can be focused
+
 
 // flags used in w_popup_handled
 #define POPUP_HANDLED_1	    0x01    // used by mouse_find_win()
