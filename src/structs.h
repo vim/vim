@@ -1821,7 +1821,7 @@ typedef struct
     int		sn_last_block_id;  // Unique ID for each script block
 
     int		sn_version;	// :scriptversion
-    int		sn_had_command;	// TRUE if any command was executed
+    int		sn_state;	// SN_STATE_ values
     char_u	*sn_save_cpo;	// 'cpo' value when :vim9script found
 
 # ifdef FEAT_PROFILE
@@ -1844,6 +1844,10 @@ typedef struct
     int		sn_prl_execed;	// line being timed was executed
 # endif
 } scriptitem_T;
+
+#define SN_STATE_NEW		0   // newly loaded script, nothing done
+#define SN_STATE_RELOAD		1   // script loaded before, nothing done
+#define SN_STATE_HAD_COMMAND	9   // a command was executed
 
 // Struct passed through eval() functions.
 // See EVALARG_EVALUATE for a fixed value with eval_flags set to EVAL_EVALUATE.

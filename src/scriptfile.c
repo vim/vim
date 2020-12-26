@@ -1320,43 +1320,27 @@ do_source(
     if (sid > 0)
     {
 	hashtab_T	*ht;
-	int		is_vim9 = si->sn_version == SCRIPT_VERSION_VIM9;
+	int		todo;
+	hashitem_T	*hi;
+	dictitem_T	*di;
 
 	// loading the same script again
-	si->sn_had_command = FALSE;
+	si->sn_state = SN_STATE_RELOAD;
 	si->sn_version = 1;
 	current_sctx.sc_sid = sid;
 
-	// In Vim9 script all script-local variables are removed when reloading
-	// the same script.  In legacy script they remain but "const" can be
-	// set again.
+	// Script-local variables remain but "const" can be set again.
+	// In Vim9 script variables will be cleared when "vim9script" is
+	// encountered without the "noclear" argument.
 	ht = &SCRIPT_VARS(sid);
-	if (is_vim9)
-	{
-	    hashtab_free_contents(ht);
-	    hash_init(ht);
-	}
-	else
-	{
-	    int		todo = (int)ht->ht_used;
-	    hashitem_T	*hi;
-	    dictitem_T	*di;
-
-	    for (hi = ht->ht_array; todo > 0; ++hi)
-		if (!HASHITEM_EMPTY(hi))
-		{
-		    --todo;
-		    di = HI2DI(hi);
-		    di->di_flags |= DI_FLAGS_RELOAD;
-		}
-	}
-
-	// old imports and script variables are no longer valid
-	free_imports_and_script_vars(sid);
-
-	// in Vim9 script functions are marked deleted
-	if (is_vim9)
-	    delete_script_functions(sid);
+	todo = (int)ht->ht_used;
+	for (hi = ht->ht_array; todo > 0; ++hi)
+	    if (!HASHITEM_EMPTY(hi))
+	    {
+		--todo;
+		di = HI2DI(hi);
+		di->di_flags |= DI_FLAGS_RELOAD;
+	    }
     }
     else
     {
@@ -1390,8 +1374,10 @@ do_source(
 	fname_exp = vim_strsave(si->sn_name);  // used for autocmd
 	if (ret_sid != NULL)
 	    *ret_sid = current_sctx.sc_sid;
+
+	// Used to check script variable index is still valid.
+	si->sn_script_seq = current_sctx.sc_seq;
     }
-    si->sn_script_seq = current_sctx.sc_seq;
 
 # ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)

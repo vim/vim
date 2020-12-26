@@ -2594,7 +2594,7 @@ do_one_cmd(
     // Set flag that any command was executed, used by ex_vim9script().
     if (getline_equal(ea.getline, ea.cookie, getsourceline)
 						    && current_sctx.sc_sid > 0)
-	SCRIPT_ITEM(current_sctx.sc_sid)->sn_had_command = TRUE;
+	SCRIPT_ITEM(current_sctx.sc_sid)->sn_state = SN_STATE_HAD_COMMAND;
 
     /*
      * If the command just executed called do_cmdline(), any throw or ":return"

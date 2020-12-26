@@ -1158,6 +1158,53 @@ def Run_Test_import_fails_on_command_line()
   StopVimInTerminal(buf)
 enddef
 
+def Test_vim9script_reload_noclear()
+  var lines =<< trim END
+    vim9script noclear
+    g:loadCount += 1
+    var s:reloaded = 'init'
+
+    def Again(): string
+      return 'again'
+    enddef
+
+    if exists('s:loaded') | finish | endif
+    var s:loaded = true
+
+    var s:notReloaded = 'yes'
+    s:reloaded = 'first'
+    def g:Values(): list<string>
+      return [s:reloaded, s:notReloaded, Once()]
+    enddef
+    def g:CallAgain(): string
+      return Again()
+    enddef
+
+    def Once(): string
+      return 'once'
+    enddef
+  END
+  writefile(lines, 'XReloaded')
+  g:loadCount = 0
+  source XReloaded
+  assert_equal(1, g:loadCount)
+  assert_equal(['first', 'yes', 'once'], g:Values())
+  assert_equal('again', g:CallAgain())
+  source XReloaded
+  assert_equal(2, g:loadCount)
+  assert_equal(['init', 'yes', 'once'], g:Values())
+  assert_fails('call g:CallAgain()', 'E933:')
+  source XReloaded
+  assert_equal(3, g:loadCount)
+  assert_equal(['init', 'yes', 'once'], g:Values())
+  assert_fails('call g:CallAgain()', 'E933:')
+
+  delete('Xreloaded')
+  delfunc g:Values
+  delfunc g:CallAgain
+  unlet g:loadCount
+enddef
+
 def Test_vim9script_reload_import()
   var lines =<< trim END
     vim9script

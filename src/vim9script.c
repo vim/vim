@@ -32,6 +32,7 @@ in_vim9script(void)
     void
 ex_vim9script(exarg_T *eap)
 {
+    int		    sid = current_sctx.sc_sid;
     scriptitem_T    *si;
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
@@ -39,15 +40,35 @@ ex_vim9script(exarg_T *eap)
 	emsg(_(e_vim9script_can_only_be_used_in_script));
 	return;
     }
-    si = SCRIPT_ITEM(current_sctx.sc_sid);
-    if (si->sn_had_command)
+
+    si = SCRIPT_ITEM(sid);
+    if (si->sn_state == SN_STATE_HAD_COMMAND)
     {
 	emsg(_(e_vim9script_must_be_first_command_in_script));
 	return;
     }
+    if (!IS_WHITE_OR_NUL(*eap->arg) && STRCMP(eap->arg, "noclear") != 0)
+    {
+	semsg(_(e_invarg2), eap->arg);
+	return;
+    }
+    if (si->sn_state == SN_STATE_RELOAD && IS_WHITE_OR_NUL(*eap->arg))
+    {
+	hashtab_T	*ht = &SCRIPT_VARS(sid);
+
+	// Reloading a script without the "noclear" argument: clear
+	// script-local variables and functions.
+	hashtab_free_contents(ht);
+	hash_init(ht);
+	delete_script_functions(sid);
+
+	// old imports and script variables are no longer valid
+	free_imports_and_script_vars(sid);
+    }
+    si->sn_state = SN_STATE_HAD_COMMAND;
+
     current_sctx.sc_version = SCRIPT_VERSION_VIM9;
     si->sn_version = SCRIPT_VERSION_VIM9;
-    si->sn_had_command = TRUE;
 
     if (STRCMP(p_cpo, CPO_VIM) != 0)
     {
@@ -719,6 +740,9 @@ free_all_script_vars(scriptitem_T *si)
     hash_init(ht);
 
     ga_clear(&si->sn_var_vals);
+
+    // existing commands using script variable indexes are no longer valid
+    si->sn_script_seq = current_sctx.sc_seq;
 }
 
 /*

@@ -25,7 +25,7 @@ THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 ==============================================================================
 
-1. What is Vim9 script?					*vim9-script*
+1. What is Vim9 script?					*Vim9-script*
 
 THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
@@ -112,7 +112,12 @@ In Vi # is a command to list text with numbers.  In Vim9 script you can use
 	101 number
 
 To improve readability there must be a space between a command and the #
-that starts a comment.
+that starts a comment: >
+	var = value # comment
+	var = value# error!
+
+In legacy script # is also used for the alternate file name.  In Vim9 script
+you need to use %% instead.  Instead of ## use %%% (stands for all arguments).
 
 
 Vim9 functions ~
@@ -191,6 +196,45 @@ When compiling a function and a function call is encountered for a function
 that is not (yet) defined, the |FuncUndefined| autocommand is not triggered.
 You can use an autoload function if needed, or call a legacy function and have
 |FuncUndefined| triggered there.
+
+
+Reloading a Vim9 script clears functions and variables by default ~
+							*vim9-reload*
+When loading a legacy Vim script a second time nothing is removed, the
+commands will replace existing variables and functions and create new ones.
+
+When loading a Vim9 script a second time all existing script-local functions
+and variables are deleted, thus you start with a clean slate.  This is useful
+if you are developing a plugin and want to try a new version.  If you renamed
+something you don't have to worry about the old name still hanging around.
+
+If you do want to keep items, use: >
+	vimscript noclear
+
+You want to use this in scripts that use a `finish` command to bail out at
+some point when loaded again.  E.g. when a buffer local option is set: >
+	vimscript noclear
+	setlocal completefunc=SomeFunc
+	if exists('*SomeFunc') | finish | endif
+	def g:SomeFunc()
+	....
+
+There is one gotcha: If a compiled function is replaced and it is called from
+another compiled function that is not replaced, it will try to call the
+function from before it was replaced, which no longer exists.  This doesn't
+work: >
+	vimscript noclear
+
+	def ReplaceMe()
+	  echo 'function redefined every time'
+	enddef
+
+	if exists('s:loaded') | finish | endif
+	var s:loaded = true
+
+	def NotReplaced()
+	  ReplaceMe()  # Error if ReplaceMe() was redefined
+	enddef
 
 
 Variable declarations with :var, :final and :const ~
@@ -340,7 +384,7 @@ When using `function()` the resulting type is "func", a function with any
 number of arguments and any return type.  The function can be defined later.
 
 
-Lamba using => instead of -> ~
+Lambda using => instead of -> ~
 
 In legacy script there can be confusion between using "->" for a method call
 and for a lambda.  Also, when a "{" is found the parser needs to figure out if
@@ -351,7 +395,7 @@ To avoid these problems Vim9 script uses a different syntax for a lambda,
 which is similar to Javascript: >
 	var Lambda = (arg) => expression
 
-No line break is allowed in the arguments of a lambda up to and includeing the
+No line break is allowed in the arguments of a lambda up to and including the
 "=>".  This is OK: >
 	filter(list, (k, v) =>
 			v > 0)
@@ -369,9 +413,9 @@ Additionally, a lambda can contain statements in {}: >
 	    }
 NOT IMPLEMENTED YET
 
-Note that the "{" must be followed by white space, otherwise it is assumed to
-be the start of a dictionary: >
-	var Lambda = (arg) => {key: 42}
+To avoid the "{" of a dictionary literal to be recognized as a statement block
+wrap it in parenthesis: >
+	var Lambda = (arg) => ({key: 42})
 
 
 Automatic line continuation ~
@@ -737,18 +781,24 @@ prefix and they do not need to exist (they can be deleted any time).
 Limitations ~
 
 Local variables will not be visible to string evaluation.  For example: >
-	def EvalString(): list<string>
+	def MapList(): list<string>
 	  var list = ['aa', 'bb', 'cc', 'dd']
 	  return range(1, 2)->map('list[v:val]')
 	enddef
 
 The map argument is a string expression, which is evaluated without the
 function scope.  Instead, use a lambda: >
-	def EvalString(): list<string>
+	def MapList(): list<string>
 	  var list = ['aa', 'bb', 'cc', 'dd']
-	  return range(1, 2)->map({ _, v -> list[v] })
+	  return range(1, 2)->map(( _, v) => list[v])
 	enddef
 
+The same is true for commands that are not compiled, such as `:global`.
+For these the backtick expansion can be used.  Example: >
+	def Replace()
+	  var newText = 'blah'
+	  g/pattern/s/^/`=newText`/
+	enddef
 
 ==============================================================================
 
