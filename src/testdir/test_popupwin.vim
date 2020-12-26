@@ -4148,6 +4148,8 @@ func Test_popupwin_focus()
   call win_gotoid(popup_winid)
   call assert_equal(popup_winid, win_getid())
 
+  " TODO: we shouldn't be needing this.
+  " popup_close should automatically go to the correct last winid.
   call win_gotoid(winid)
   call popup_close(popup_winid)
 endfunc
