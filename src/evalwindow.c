@@ -852,9 +852,11 @@ f_win_gotoid(typval_T *argvars, typval_T *rettv)
 	    return;
 	}
 
+#if defined(FEAT_PROP_POPUP) || defined(PROTO)
     wp = win_id2wp(id);
-    if (wp != NULL && WIN_IS_POPUP(wp))
+    if (wp != NULL && WIN_IS_POPUP(wp) && wp->w_popup_flags & POPF_FOCUSABLE)
 	win_enter(wp, TRUE);
+#endif
 }
 
 /*

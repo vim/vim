@@ -4131,12 +4131,23 @@ func Test_popupwin_latin1_encoding()
   call StopVimInTerminal(buf)
 endfunc
 
-func Test_popupwin_focus()
+func Test_popupwin_non_focusable()
   let winid = win_getid()
   let popup_winid = popup_create(['hello', 'world'], #{line: 1, col: 2})
+  call assert_equal(0, popup_getoptions(popup_winid)['focusable'])
+  call assert_equal(winid, win_getid())
+  call win_gotoid(popup_winid)
+  call assert_equal(winid, win_getid())
+  call popup_close(popup_winid)
+endfunc
+
+func Test_popupwin_focus()
+  let winid = win_getid()
+  let popup_winid = popup_create(['hello', 'world'], #{line: 1, col: 2, focusable: 1})
+  call assert_equal(1, popup_getoptions(popup_winid)['focusable'])
   call assert_equal(winid, win_getid())
 
-  " first focus to popup
+  " first focus to popup window
   call win_gotoid(popup_winid)
   call assert_equal(popup_winid, win_getid())
 
