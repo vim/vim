@@ -2475,6 +2475,8 @@ ch_status({handle} [, {options}])
 changenr()			Number	current change number
 char2nr({expr} [, {utf8}])	Number	ASCII/UTF8 value of first char in {expr}
 charclass({string})		Number	character class of {string}
+charidx({string}, {idx} [, {countcc}])
+				Number  character index of byte {idx} in {expr}
 chdir({dir})			String	change current working directory
 cindent({lnum})			Number	C indent for line {lnum}
 clearmatches([{win}])		none	clear all matches
@@ -3588,7 +3590,26 @@ charclass({string})					*charclass()*
 			other	specific Unicode class
 		The class is used in patterns and word motions.
 
-
+							*charidx()*
+charidx({string}, {idx} [, {countcc}])
+		Return the character index of the byte at {idx} in {string}.
+		The index of the first character is zero.
+		If there are no multibyte characters the returned value is
+		equal to {idx}.
+		When {countcc} is omitted or zero, then composing characters
+		are not counted separately, their byte length is added to the
+		preceding base character.
+		When {countcc} is set to 1, then composing character are
+		counted as separate characters.
+		Returns -1 if the arguments are invalid or if {idx} is greater
+		than the index of the last byte in {string}.
+		See |byteidx()| and |byteidxcomp()| for getting the byte index
+		from the character index.
+		Examples: >
+			echo charidx('áb́ć', 3)
+			echo charidx('áb́ć', 6, 1)
+			echo charidx('áb́ć', 16)
+<
 chdir({dir})						*chdir()*
 		Change the current working directory to {dir}.  The scope of
 		the directory change depends on the directory of the current
