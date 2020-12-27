@@ -1863,9 +1863,9 @@ def Test_expr7_lambda()
   END
   CheckDefAndScriptSuccess(lines)
 
-  CheckDefFailure(["var Ref = {a->a + 1}"], 'E720:')
-  CheckDefFailure(["var Ref = {a-> a + 1}"], 'E720:')
-  CheckDefFailure(["var Ref = {a ->a + 1}"], 'E720:')
+  CheckDefFailure(["var Ref = {a->a + 1}"], 'E1004:')
+  CheckDefFailure(["var Ref = {a-> a + 1}"], 'E1004:')
+  CheckDefFailure(["var Ref = {a ->a + 1}"], 'E1004:')
 
   CheckDefFailure(["filter([1, 2], {k,v -> 1})"], 'E1069:', 1)
   # error is in first line of the lambda
@@ -1964,13 +1964,9 @@ def Test_expr7_new_lambda()
   END
   CheckDefAndScriptSuccess(lines)
 
-  CheckDefFailure(["var Ref = (a)=>a + 1"], 'E1001:')
-  CheckDefFailure(["var Ref = (a)=> a + 1"], 'E1001:')
-  CheckDefFailure(["var Ref = (a) =>a + 1"], 'E1001:')
-
-  CheckScriptFailure(["vim9script", "var Ref = (a)=>a + 1"], 'E1004:')
-  CheckScriptFailure(["vim9script", "var Ref = (a)=> a + 1"], 'E1004:')
-  CheckScriptFailure(["vim9script", "var Ref = (a) =>a + 1"], 'E1004:')
+  CheckDefAndScriptFailure(["var Ref = (a)=>a + 1"], 'E1004:')
+  CheckDefAndScriptFailure(["var Ref = (a)=> a + 1"], 'E1004:')
+  CheckDefAndScriptFailure(["var Ref = (a) =>a + 1"], 'E1004:')
 
   CheckDefFailure(["var Ref: func(number): number = (a: number): string => 'x'"], 'E1012:')
   CheckDefFailure(["var Ref: func(number): string = (a: number): string => 99"], 'E1012:')
@@ -2682,7 +2678,7 @@ func Test_expr7_fails()
   call CheckDefFailure(["'yes'->", "Echo()"], 'E488: Trailing characters: ->', 1)
 
   call CheckDefExecFailure(["[1, 2->len()"], 'E697:', 2)
-  call CheckDefExecFailure(["{a: 1->len()"], 'E723:', 2)
+  call CheckDefExecFailure(["{a: 1->len()"], 'E1004:', 1)
   call CheckDefExecFailure(["{['a']: 1->len()"], 'E723:', 2)
 endfunc
 

@@ -2949,10 +2949,12 @@ compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 /*
  * parse a lambda: "{arg, arg -> expr}" or "(arg, arg) => expr"
  * "*arg" points to the '{'.
+ * Returns OK/FAIL when a lambda is recognized, NOTDONE if it's not a lambda.
  */
     static int
 compile_lambda(char_u **arg, cctx_T *cctx)
 {
+    int		r;
     typval_T	rettv;
     ufunc_T	*ufunc;
     evalarg_T	evalarg;
@@ -2962,10 +2964,11 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     evalarg.eval_cctx = cctx;
 
     // Get the funcref in "rettv".
-    if (get_lambda_tv(arg, &rettv, TRUE, &evalarg) != OK)
+    r = get_lambda_tv(arg, &rettv, TRUE, &evalarg);
+    if (r != OK)
     {
 	clear_evalarg(&evalarg, NULL);
-	return FAIL;
+	return r;
     }
 
     // "rettv" will now be a partial referencing the function.
@@ -4001,26 +4004,13 @@ compile_expr7(
 	 * Lambda: {arg, arg -> expr}
 	 * Dictionary: {'key': val, 'key': val}
 	 */
-	case '{':   {
-			char_u	    *start = skipwhite(*arg + 1);
-			char_u	    *after = start;
-			garray_T    ga_arg;
-
-			// Find out what comes after the arguments.
-			ret = get_function_args(&after, '-', NULL,
-					&ga_arg, TRUE, NULL, NULL,
-							     TRUE, NULL, NULL);
-			if (ret != FAIL && after[0] == '>'
-				&& ((after > start + 2
-						     && VIM_ISWHITE(after[-2]))
-				|| after == start + 1)
-				&& IS_WHITE_OR_NUL(after[1]))
-			    // TODO: if we go with the "(arg) => expr" syntax
-			    // remove this
-			    ret = compile_lambda(arg, cctx);
-			else
-			    ret = compile_dict(arg, cctx, ppconst);
-		    }
+	case '{':   // Try parsing as a lambda, if NOTDONE is returned it
+		    // must be a dict.
+		    // TODO: if we go with the "(arg) => expr" syntax remove
+		    // this
+		    ret = compile_lambda(arg, cctx);
+		    if (ret == NOTDONE)
+			ret = compile_dict(arg, cctx, ppconst);
 		    break;
 
 	/*
@@ -4051,32 +4041,10 @@ compile_expr7(
 	 * lambda: (arg, arg) => expr
 	 * funcref: (arg, arg) => { statement }
 	 */
-	case '(':   {
-			char_u	    *start = skipwhite(*arg + 1);
-			char_u	    *after = start;
-			garray_T    ga_arg;
-
-			// Find out if "=>" comes after the ().
-			ret = get_function_args(&after, ')', NULL,
-						     &ga_arg, TRUE, NULL, NULL,
-							     TRUE, NULL, NULL);
-			if (ret == OK && VIM_ISWHITE(
-					    *after == ':' ? after[1] : *after))
-			{
-			    if (*after == ':')
-				// Skip over type in "(arg): type".
-				after = skip_type(skipwhite(after + 1), TRUE);
-
-			    after = skipwhite(after);
-			    if (after[0] == '=' && after[1] == '>'
-						  && IS_WHITE_OR_NUL(after[2]))
-			    {
-				ret = compile_lambda(arg, cctx);
-				break;
-			    }
-			}
+	case '(':   // if compile_lambda returns NOTDONE then it must be (expr)
+		    ret = compile_lambda(arg, cctx);
+		    if (ret == NOTDONE)
 			ret = compile_parenthesis(arg, cctx, ppconst);
-		    }
 		    break;
 
 	default:    ret = NOTDONE;
