@@ -1341,6 +1341,8 @@ do_source(
 		di = HI2DI(hi);
 		di->di_flags |= DI_FLAGS_RELOAD;
 	    }
+	// imports can be redefined once
+	mark_imports_for_reload(sid);
     }
     else
     {
