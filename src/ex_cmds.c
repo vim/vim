@@ -5171,6 +5171,15 @@ ex_drop(exarg_T *eap)
 	    {
 		goto_tabpage_win(tp, wp);
 		curwin->w_arg_idx = 0;
+		if (!bufIsChanged(curbuf))
+		{
+		    int save_ar = curbuf->b_p_ar;
+
+		    // reload the file if it is newer
+		    curbuf->b_p_ar = TRUE;
+		    buf_check_timestamp(curbuf, FALSE);
+		    curbuf->b_p_ar = save_ar;
+		}
 		return;
 	    }
 	}
