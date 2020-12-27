@@ -816,4 +816,23 @@ def Test_gdefault_not_used()
   bwipe!
 enddef
 
+def g:SomeComplFunc(findstart: number, base: string): any
+  if findstart
+    return 0
+  else
+    return ['aaa', 'bbb']
+  endif
+enddef
+
+def Test_insert_complete()
+  # this was running into an error with the matchparen hack
+  new
+  set completefunc=SomeComplFunc
+  feedkeys("i\<c-x>\<c-u>\<Esc>", 'ntx')
+  assert_equal('aaa', getline(1))
+
+  set completefunc=
+  bwipe!
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

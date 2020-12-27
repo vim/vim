@@ -1020,7 +1020,7 @@ ins_compl_show_pum(void)
 
 #if defined(FEAT_EVAL)
     // Dirty hard-coded hack: remove any matchparen highlighting.
-    do_cmdline_cmd((char_u *)"if exists('g:loaded_matchparen')|3match none|endif");
+    do_cmdline_cmd((char_u *)"if exists('g:loaded_matchparen')|:3match none|endif");
 #endif
 
     // Update the screen later, before drawing the popup menu over it.
