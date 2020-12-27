@@ -8653,9 +8653,8 @@ eval_vars(
 #ifdef FEAT_EVAL
 		// "%%" alternate file
 		off = 1;
-		// FALLTHROUGH
 #endif
-
+		// FALLTHROUGH
 	case SPEC_HASH:		// '#' or "#99": alternate file
 		if (off == 0 ? src[1] == '#' : src[2] == '%')
 		{
