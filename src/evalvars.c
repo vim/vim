@@ -2531,7 +2531,7 @@ eval_variable(
 		    rettv->vval.v_string = vim_strsave(import->imp_funcname);
 		}
 	    }
-	    else if (import->imp_all)
+	    else if (import->imp_flags & IMP_FLAGS_STAR)
 	    {
 		emsg("Sorry, 'import * as X' not implemented yet");
 		ret = FAIL;

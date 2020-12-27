@@ -2416,7 +2416,7 @@ compile_load_scriptvar(
     import = find_imported(name, 0, cctx);
     if (import != NULL)
     {
-	if (import->imp_all)
+	if (import->imp_flags & IMP_FLAGS_STAR)
 	{
 	    char_u	*p = skipwhite(*end);
 	    char_u	*exp_name;

@@ -899,6 +899,16 @@ def Test_vim9_import_export()
   writefile(import_star_as_lines_dot_space, 'Ximport.vim')
   assert_fails('source Ximport.vim', 'E1074:', '', 1, 'Func')
 
+  var import_star_as_duplicated =<< trim END
+    vim9script
+    import * as Export from './Xexport.vim'
+    var some = 'other'
+    import * as Export from './Xexport.vim'
+    defcompile
+  END
+  writefile(import_star_as_duplicated, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E1073:', '', 4, 'Ximport.vim')
+
   var import_star_as_lines_missing_name =<< trim END
     vim9script
     import * as Export from './Xexport.vim'
@@ -1160,9 +1170,15 @@ enddef
 
 def Test_vim9script_reload_noclear()
   var lines =<< trim END
+    vim9script
+    export var exported = 'thexport'
+  END
+  writefile(lines, 'XExportReload')
+  lines =<< trim END
     vim9script noclear
     g:loadCount += 1
     var s:reloaded = 'init'
+    import exported from './XExportReload'
 
     def Again(): string
       return 'again'
@@ -1174,7 +1190,7 @@ def Test_vim9script_reload_noclear()
     var s:notReloaded = 'yes'
     s:reloaded = 'first'
     def g:Values(): list<string>
-      return [s:reloaded, s:notReloaded, Again(), Once()]
+      return [s:reloaded, s:notReloaded, Again(), Once(), exported]
     enddef
 
     def Once(): string
@@ -1185,15 +1201,16 @@ def Test_vim9script_reload_noclear()
   g:loadCount = 0
   source XReloaded
   assert_equal(1, g:loadCount)
-  assert_equal(['first', 'yes', 'again', 'once'], g:Values())
+  assert_equal(['first', 'yes', 'again', 'once', 'thexport'], g:Values())
   source XReloaded
   assert_equal(2, g:loadCount)
-  assert_equal(['init', 'yes', 'again', 'once'], g:Values())
+  assert_equal(['init', 'yes', 'again', 'once', 'thexport'], g:Values())
   source XReloaded
   assert_equal(3, g:loadCount)
-  assert_equal(['init', 'yes', 'again', 'once'], g:Values())
+  assert_equal(['init', 'yes', 'again', 'once', 'thexport'], g:Values())
 
   delete('Xreloaded')
+  delete('XExportReload')
   delfunc g:Values
   unlet g:loadCount
 enddef
@@ -2762,6 +2779,17 @@ def Test_forward_declaration()
 enddef
 
 def Test_source_vim9_from_legacy()
+  var vim9_lines =<< trim END
+    vim9script
+    var local = 'local'
+    g:global = 'global'
+    export var exported = 'exported'
+    export def GetText(): string
+       return 'text'
+    enddef
+  END
+  writefile(vim9_lines, 'Xvim9_script.vim')
+
   var legacy_lines =<< trim END
     source Xvim9_script.vim
 
@@ -2783,19 +2811,7 @@ def Test_source_vim9_from_legacy()
   END
   writefile(legacy_lines, 'Xlegacy_script.vim')
 
-  var vim9_lines =<< trim END
-    vim9script
-    var local = 'local'
-    g:global = 'global'
-    export var exported = 'exported'
-    export def GetText(): string
-       return 'text'
-    enddef
-  END
-  writefile(vim9_lines, 'Xvim9_script.vim')
-
   source Xlegacy_script.vim
-
   assert_equal('global', g:global)
   unlet g:global
 

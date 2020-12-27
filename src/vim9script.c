@@ -174,6 +174,24 @@ free_imports_and_script_vars(int sid)
 }
 
 /*
+ * Mark all imports as possible to redefine.  Used when a script is loaded
+ * again but not cleared.
+ */
+    void
+mark_imports_for_reload(int sid)
+{
+    scriptitem_T    *si = SCRIPT_ITEM(sid);
+    int		    idx;
+
+    for (idx = 0; idx < si->sn_imports.ga_len; ++idx)
+    {
+	imported_T *imp = ((imported_T *)si->sn_imports.ga_data) + idx;
+
+	imp->imp_flags |= IMP_FLAGS_RELOAD;
+    }
+}
+
+/*
  * ":import Item from 'filename'"
  * ":import Item as Alias from 'filename'"
  * ":import {Item} from 'filename'".
@@ -459,15 +477,29 @@ handle_import(
 
     if (*arg_start == '*')
     {
-	imported_T *imported = new_imported(gap != NULL ? gap
-					: &SCRIPT_ITEM(import_sid)->sn_imports);
+	imported_T *imported;
 
+	imported = find_imported(as_name, STRLEN(as_name), cctx);
+	if (imported != NULL && imported->imp_sid == sid)
+	{
+	    if (imported->imp_flags & IMP_FLAGS_RELOAD)
+		// import already defined on a previous script load
+		imported->imp_flags &= ~IMP_FLAGS_RELOAD;
+	    else
+	    {
+		semsg(_(e_name_already_defined_str), as_name);
+		goto erret;
+	    }
+	}
+
+	imported = new_imported(gap != NULL ? gap
+					: &SCRIPT_ITEM(import_sid)->sn_imports);
 	if (imported == NULL)
 	    goto erret;
 	imported->imp_name = as_name;
 	as_name = NULL;
 	imported->imp_sid = sid;
-	imported->imp_all = TRUE;
+	imported->imp_flags = IMP_FLAGS_STAR;
     }
     else
     {
@@ -479,6 +511,7 @@ handle_import(
 	for (i = 0; i < names.ga_len; ++i)
 	{
 	    char_u	*name = ((char_u **)names.ga_data)[i];
+	    size_t	len = STRLEN(name);
 	    int		idx;
 	    imported_T	*imported;
 	    ufunc_T	*ufunc = NULL;
@@ -489,28 +522,47 @@ handle_import(
 	    if (idx < 0 && ufunc == NULL)
 		goto erret;
 
-	    if (check_defined(name, STRLEN(name), cctx) == FAIL)
-		goto erret;
-
-	    imported = new_imported(gap != NULL ? gap
-				       : &SCRIPT_ITEM(import_sid)->sn_imports);
-	    if (imported == NULL)
-		goto erret;
-
-	    // TODO: check for "as" following
-	    // imported->imp_name = vim_strsave(as_name);
-	    imported->imp_name = name;
-	    ((char_u **)names.ga_data)[i] = NULL;
-	    imported->imp_sid = sid;
-	    if (idx >= 0)
+	    // If already imported with the same propertis and the
+	    // IMP_FLAGS_RELOAD set then we keep that entry.  Otherwise create
+	    // a new one (and give an error for an existing import).
+	    imported = find_imported(name, len, cctx);
+	    if (imported != NULL
+		    && (imported->imp_flags & IMP_FLAGS_RELOAD)
+		    && imported->imp_sid == sid
+		    && (idx >= 0
+			? (equal_type(imported->imp_type, type)
+			    && imported->imp_var_vals_idx == idx)
+			: (equal_type(imported->imp_type, ufunc->uf_func_type)
+			    && STRCMP(imported->imp_funcname,
+							ufunc->uf_name) == 0)))
 	    {
-		imported->imp_type = type;
-		imported->imp_var_vals_idx = idx;
+		imported->imp_flags &= ~IMP_FLAGS_RELOAD;
 	    }
 	    else
 	    {
-		imported->imp_type = ufunc->uf_func_type;
-		imported->imp_funcname = ufunc->uf_name;
+		if (check_defined(name, len, cctx) == FAIL)
+		    goto erret;
+
+		imported = new_imported(gap != NULL ? gap
+				       : &SCRIPT_ITEM(import_sid)->sn_imports);
+		if (imported == NULL)
+		    goto erret;
+
+		// TODO: check for "as" following
+		// imported->imp_name = vim_strsave(as_name);
+		imported->imp_name = name;
+		((char_u **)names.ga_data)[i] = NULL;
+		imported->imp_sid = sid;
+		if (idx >= 0)
+		{
+		    imported->imp_type = type;
+		    imported->imp_var_vals_idx = idx;
+		}
+		else
+		{
+		    imported->imp_type = ufunc->uf_func_type;
+		    imported->imp_funcname = ufunc->uf_name;
+		}
 	    }
 	}
     }

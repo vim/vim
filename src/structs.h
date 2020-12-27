@@ -1778,16 +1778,18 @@ typedef struct {
     char_u	*imp_name;	    // name imported as (allocated)
     int		imp_sid;	    // script ID of "from"
 
-    // for "import * as Name", "imp_name" is "Name"
-    int		imp_all;
+    int		imp_flags;	    // IMP_FLAGS_ values
 
-    // for variable
+    // for a variable
     type_T	*imp_type;
     int		imp_var_vals_idx;   // index in sn_var_vals of "from"
 
-    // for function
+    // for a function
     char_u	*imp_funcname;	    // user func name (NOT allocated)
 } imported_T;
+
+#define IMP_FLAGS_STAR		1   // using "import * as Name"
+#define IMP_FLAGS_RELOAD	2   // script reloaded, OK to redefine
 
 /*
  * Info about an already sourced scripts.
