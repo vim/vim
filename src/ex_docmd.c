@@ -8535,18 +8535,19 @@ find_cmdline_var(char_u *src, int *usedlen)
 /*
  * Evaluate cmdline variables.
  *
- * change '%'	    to curbuf->b_ffname
- *	  '#'	    to curwin->w_alt_fnum
- *	  '<cword>' to word under the cursor
- *	  '<cWORD>' to WORD under the cursor
- *	  '<cexpr>' to C-expression under the cursor
- *	  '<cfile>' to path name under the cursor
- *	  '<sfile>' to sourced file name
- *	  '<stack>' to call stack
- *	  '<slnum>' to sourced file line number
- *	  '<afile>' to file name for autocommand
- *	  '<abuf>'  to buffer number for autocommand
- *	  '<amatch>' to matching name for autocommand
+ * change "%"	    to curbuf->b_ffname
+ *	  "#"	    to curwin->w_alt_fnum
+ *	  "%%"	    to curwin->w_alt_fnum in Vim9 script
+ *	  "<cword>" to word under the cursor
+ *	  "<cWORD>" to WORD under the cursor
+ *	  "<cexpr>" to C-expression under the cursor
+ *	  "<cfile>" to path name under the cursor
+ *	  "<sfile>" to sourced file name
+ *	  "<stack>" to call stack
+ *	  "<slnum>" to sourced file line number
+ *	  "<afile>" to file name for autocommand
+ *	  "<abuf>"  to buffer number for autocommand
+ *	  "<amatch>" to matching name for autocommand
  *
  * When an error is detected, "errormsg" is set to a non-NULL pointer (may be
  * "" for error without a message) and NULL is returned.
@@ -8627,47 +8628,57 @@ eval_vars(
      */
     else
     {
+	int off = 0;
+
 	switch (spec_idx)
 	{
-	case SPEC_PERC:		// '%': current file
-		if (curbuf->b_fname == NULL)
+	case SPEC_PERC:
+		if (!in_vim9script() || src[1] != '%')
 		{
-		    result = (char_u *)"";
-		    valid = 0;	    // Must have ":p:h" to be valid
+		    // '%': current file
+		    if (curbuf->b_fname == NULL)
+		    {
+			result = (char_u *)"";
+			valid = 0;	    // Must have ":p:h" to be valid
+		    }
+		    else
+		    {
+			result = curbuf->b_fname;
+			tilde_file = STRCMP(result, "~") == 0;
+		    }
+		    break;
 		}
-		else
-		{
-		    result = curbuf->b_fname;
-		    tilde_file = STRCMP(result, "~") == 0;
-		}
-		break;
+		// "%%" alternate file
+		off = 1;
+		// FALLTHROUGH
 
 	case SPEC_HASH:		// '#' or "#99": alternate file
-		if (src[1] == '#')  // "##": the argument list
+		if (off == 0 ? src[1] == '#' : src[2] == '%')
 		{
+		    // "##" or "%%%": the argument list
 		    result = arg_all();
 		    resultbuf = result;
-		    *usedlen = 2;
+		    *usedlen = off + 2;
 		    if (escaped != NULL)
 			*escaped = TRUE;
 		    skip_mod = TRUE;
 		    break;
 		}
-		s = src + 1;
+		s = src + off + 1;
 		if (*s == '<')		// "#<99" uses v:oldfiles
 		    ++s;
 		i = (int)getdigits(&s);
-		if (s == src + 2 && src[1] == '-')
+		if (s == src + off + 2 && src[off + 1] == '-')
 		    // just a minus sign, don't skip over it
 		    s--;
 		*usedlen = (int)(s - src); // length of what we expand
 
-		if (src[1] == '<' && i != 0)
+		if (src[off + 1] == '<' && i != 0)
 		{
-		    if (*usedlen < 2)
+		    if (*usedlen < off + 2)
 		    {
 			// Should we give an error message for #<text?
-			*usedlen = 1;
+			*usedlen = off + 1;
 			return NULL;
 		    }
 #ifdef FEAT_EVAL
@@ -8685,8 +8696,8 @@ eval_vars(
 		}
 		else
 		{
-		    if (i == 0 && src[1] == '<' && *usedlen > 1)
-			*usedlen = 1;
+		    if (i == 0 && src[off + 1] == '<' && *usedlen > off + 1)
+			*usedlen = off + 1;
 		    buf = buflist_findnr(i);
 		    if (buf == NULL)
 		    {
