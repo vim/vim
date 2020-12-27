@@ -8633,7 +8633,9 @@ eval_vars(
 	switch (spec_idx)
 	{
 	case SPEC_PERC:
+#ifdef FEAT_EVAL
 		if (!in_vim9script() || src[1] != '%')
+#endif
 		{
 		    // '%': current file
 		    if (curbuf->b_fname == NULL)
@@ -8648,9 +8650,11 @@ eval_vars(
 		    }
 		    break;
 		}
+#ifdef FEAT_EVAL
 		// "%%" alternate file
 		off = 1;
 		// FALLTHROUGH
+#endif
 
 	case SPEC_HASH:		// '#' or "#99": alternate file
 		if (off == 0 ? src[1] == '#' : src[2] == '%')
