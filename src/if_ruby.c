@@ -32,8 +32,9 @@
 # define RUBYEXTERN extern
 #endif
 
-#if defined(DYNAMIC_RUBY) && RUBY_VERSION >= 24
-# define USE_RUBY_INTEGER
+// suggested by Ariya Mizutani
+#if (_MSC_VER == 1200)
+# undef _WIN32_WINNT
 #endif
 
 #ifdef DYNAMIC_RUBY
@@ -42,6 +43,10 @@
  * definition.  This function use these variables.  But we want function to
  * use dll_* variables.
  */
+# if RUBY_VERSION >= 24
+#  define USE_RUBY_INTEGER
+# endif
+
 # define rb_cFalseClass		(*dll_rb_cFalseClass)
 # define rb_cFixnum		(*dll_rb_cFixnum)
 # if defined(USE_RUBY_INTEGER)
@@ -54,6 +59,7 @@
 # define rb_cString		(*dll_rb_cString)
 # define rb_cSymbol		(*dll_rb_cSymbol)
 # define rb_cTrueClass		(*dll_rb_cTrueClass)
+
 # if RUBY_VERSION >= 18
 /*
  * On ver 1.8, all Ruby functions are exported with "__declspec(dllimport)"
@@ -64,40 +70,41 @@
 #  define RUBY_EXPORT
 # endif
 
-#endif  // ifdef DYNAMIC_RUBY
-
-// suggested by Ariya Mizutani
-#if (_MSC_VER == 1200)
-# undef _WIN32_WINNT
-#endif
-
-#if defined(DYNAMIC_RUBY) && RUBY_VERSION >= 19
+# if RUBY_VERSION >= 19
 // Ruby 1.9 defines a number of static functions which use rb_num2long and
 // rb_int2big
-# define rb_num2long rb_num2long_stub
-# define rb_int2big rb_int2big_stub
-#endif
+#  define rb_num2long rb_num2long_stub
+#  define rb_int2big rb_int2big_stub
 
-#if defined(DYNAMIC_RUBY) && RUBY_VERSION >= 19 \
-	&& VIM_SIZEOF_INT < VIM_SIZEOF_LONG
+#  if RUBY_VERSION >= 30 || VIM_SIZEOF_INT < VIM_SIZEOF_LONG
 // Ruby 1.9 defines a number of static functions which use rb_fix2int and
 // rb_num2int if VIM_SIZEOF_INT < VIM_SIZEOF_LONG (64bit)
-# define rb_fix2int rb_fix2int_stub
-# define rb_num2int rb_num2int_stub
-#endif
+#   define rb_fix2int rb_fix2int_stub
+#   define rb_num2int rb_num2int_stub
+#  endif
+# endif
 
-#if defined(DYNAMIC_RUBY) && RUBY_VERSION == 21
+# if RUBY_VERSION == 21
 // Ruby 2.1 adds new GC called RGenGC and RARRAY_PTR uses
 // rb_gc_writebarrier_unprotect_promoted if USE_RGENGC
-# define rb_gc_writebarrier_unprotect_promoted rb_gc_writebarrier_unprotect_promoted_stub
-#endif
-#if defined(DYNAMIC_RUBY) && RUBY_VERSION >= 22
-# define rb_gc_writebarrier_unprotect rb_gc_writebarrier_unprotect_stub
-#endif
+#  define rb_gc_writebarrier_unprotect_promoted rb_gc_writebarrier_unprotect_promoted_stub
+# endif
 
-#if defined(DYNAMIC_RUBY) && RUBY_VERSION >= 26
-# define rb_ary_detransient rb_ary_detransient_stub
-#endif
+# if RUBY_VERSION >= 22
+#  define rb_gc_writebarrier_unprotect rb_gc_writebarrier_unprotect_stub
+# endif
+
+# if RUBY_VERSION >= 26
+#  define rb_ary_detransient rb_ary_detransient_stub
+# endif
+
+# if RUBY_VERSION >= 30
+#  define rb_check_type rb_check_type_stub
+#  define rb_num2uint rb_num2uint_stub
+#  define ruby_malloc_size_overflow ruby_malloc_size_overflow_stub
+# endif
+
+#endif  // ifdef DYNAMIC_RUBY
 
 // On macOS pre-installed Ruby defines "SIZEOF_TIME_T" as "SIZEOF_LONG" so it
 // conflicts with the definition in config.h then causes a macro-redefined
@@ -232,7 +239,9 @@ static int ruby_convert_to_vim_value(VALUE val, typval_T *rettv);
 # define rb_assoc_new			dll_rb_assoc_new
 # define rb_cObject			(*dll_rb_cObject)
 # define rb_class_new_instance		dll_rb_class_new_instance
-# define rb_check_type			dll_rb_check_type
+# if RUBY_VERSION < 30
+#  define rb_check_type			dll_rb_check_type
+# endif
 # ifdef USE_TYPEDDATA
 #  define rb_check_typeddata		dll_rb_check_typeddata
 # endif
@@ -283,7 +292,9 @@ static int ruby_convert_to_vim_value(VALUE val, typval_T *rettv);
 #   define rb_fix2int			dll_rb_fix2int
 #   define rb_num2int			dll_rb_num2int
 #  endif
-#  define rb_num2uint			dll_rb_num2uint
+#  if RUBY_VERSION < 30
+#   define rb_num2uint			dll_rb_num2uint
+#  endif
 # endif
 # define rb_num2dbl			dll_rb_num2dbl
 # define rb_lastline_get			dll_rb_lastline_get
@@ -501,7 +512,7 @@ static rb_encoding* (*dll_rb_enc_find) (const char*);
 static VALUE (*dll_rb_enc_str_new) (const char*, long, rb_encoding*);
 static VALUE (*dll_rb_sprintf) (const char*, ...);
 static VALUE (*dll_rb_require) (const char*);
-static void* (*ruby_options)(int, char**);
+static void* (*dll_ruby_options)(int, char**);
 # endif
 
 # if defined(USE_RGENGC) && USE_RGENGC
@@ -512,32 +523,38 @@ static void (*dll_rb_gc_writebarrier_unprotect)(VALUE obj);
 #  endif
 # endif
 
+# if RUBY_VERSION >= 30
+NORETURN(static void (*dll_ruby_malloc_size_overflow)(size_t, size_t));
+# endif
+
 # if RUBY_VERSION >= 26
 void rb_ary_detransient_stub(VALUE x);
 # endif
 
-# if (RUBY_VERSION >= 19) && !defined(PROTO)
-#  if RUBY_VERSION >= 22
+// Do not generate a prototype here, VALUE isn't always defined.
+# ifndef PROTO
+#  if RUBY_VERSION >= 19
+#   if RUBY_VERSION >= 22
     long
 rb_num2long_stub(VALUE x)
-#  else
+#   else
     SIGNED_VALUE
 rb_num2long_stub(VALUE x)
-#  endif
+#   endif
 {
     return dll_rb_num2long(x);
 }
-#  if RUBY_VERSION >= 26
+#   if RUBY_VERSION >= 26
     VALUE
 rb_int2big_stub(intptr_t x)
-#  else
+#   else
     VALUE
 rb_int2big_stub(SIGNED_VALUE x)
-#  endif
+#   endif
 {
     return dll_rb_int2big(x);
 }
-#  if (RUBY_VERSION >= 19) && (VIM_SIZEOF_INT < VIM_SIZEOF_LONG)
+#   if VIM_SIZEOF_INT < VIM_SIZEOF_LONG
     long
 rb_fix2int_stub(VALUE x)
 {
@@ -548,50 +565,65 @@ rb_num2int_stub(VALUE x)
 {
     return dll_rb_num2int(x);
 }
-#  endif
-#  if RUBY_VERSION >= 20
+#   endif
+#   if RUBY_VERSION >= 20
     VALUE
 rb_float_new_in_heap(double d)
 {
     return dll_rb_float_new(d);
 }
-#   if RUBY_VERSION >= 22
+#    if RUBY_VERSION >= 22
     unsigned long
 rb_num2ulong(VALUE x)
-#   else
+#    else
     VALUE
 rb_num2ulong(VALUE x)
-#   endif
+#    endif
 {
     return (long)RSHIFT((SIGNED_VALUE)(x),1);
 }
+#   endif
 #  endif
-# endif
-
-   // Do not generate a prototype here, VALUE isn't always defined.
-# if defined(USE_RGENGC) && USE_RGENGC && !defined(PROTO)
-#  if RUBY_VERSION == 21
+#  if defined(USE_RGENGC) && USE_RGENGC
+#   if RUBY_VERSION == 21
     void
 rb_gc_writebarrier_unprotect_promoted_stub(VALUE obj)
 {
     dll_rb_gc_writebarrier_unprotect_promoted(obj);
 }
-#  else
+#   else
     void
 rb_gc_writebarrier_unprotect_stub(VALUE obj)
 {
     dll_rb_gc_writebarrier_unprotect(obj);
 }
+#   endif
 #  endif
-# endif
-
-# if RUBY_VERSION >= 26
+#  if RUBY_VERSION >= 26
     void
 rb_ary_detransient_stub(VALUE x)
 {
     dll_rb_ary_detransient(x);
 }
-# endif
+#  endif
+#  if RUBY_VERSION >= 30
+    void
+rb_check_type_stub(VALUE obj, int t)
+{
+    dll_rb_check_type(obj, t);
+}
+    unsigned long
+rb_num2uint_stub(VALUE x)
+{
+    return dll_rb_num2uint(x);
+}
+    void
+ruby_malloc_size_overflow_stub(size_t x, size_t y)
+{
+    dll_ruby_malloc_size_overflow(x, y);
+}
+#  endif
+# endif // ifndef PROTO
 
 static HINSTANCE hinstRuby = NULL; // Instance of ruby.dll
 
@@ -747,6 +779,9 @@ static struct
 #  else
     {"rb_gc_writebarrier_unprotect", (RUBY_PROC*)&dll_rb_gc_writebarrier_unprotect},
 #  endif
+# endif
+# if RUBY_VERSION >= 30
+    {"ruby_malloc_size_overflow", (RUBY_PROC*)&dll_ruby_malloc_size_overflow},
 # endif
     {"", NULL},
 };
@@ -1827,7 +1862,7 @@ convert_hash2dict(VALUE key, VALUE val, VALUE arg)
     dict_T *d = (dict_T *)arg;
     dictitem_T *di;
 
-    di = dictitem_alloc((char_u *)RSTRING_PTR(RSTRING(rb_obj_as_string(key))));
+    di = dictitem_alloc((char_u *)RSTRING_PTR(rb_obj_as_string(key)));
     if (di == NULL || ruby_convert_to_vim_value(val, &di->di_tv) != OK
 						     || dict_add(d, di) != OK)
     {
