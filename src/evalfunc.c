@@ -47,6 +47,7 @@ static void f_ceil(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_changenr(typval_T *argvars, typval_T *rettv);
 static void f_char2nr(typval_T *argvars, typval_T *rettv);
+static void f_charidx(typval_T *argvars, typval_T *rettv);
 static void f_col(typval_T *argvars, typval_T *rettv);
 static void f_confirm(typval_T *argvars, typval_T *rettv);
 static void f_copy(typval_T *argvars, typval_T *rettv);
@@ -789,6 +790,8 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_char2nr},
     {"charclass",	1, 1, FEARG_1,	    NULL,
 			ret_number,	    f_charclass},
+    {"charidx",		2, 3, FEARG_1,	    NULL,
+			ret_number,	    f_charidx},
     {"chdir",		1, 1, FEARG_1,	    NULL,
 			ret_string,	    f_chdir},
     {"cindent",		1, 1, FEARG_1,	    NULL,
@@ -2418,6 +2421,57 @@ f_char2nr(typval_T *argvars, typval_T *rettv)
     }
     else
 	rettv->vval.v_number = tv_get_string(&argvars[0])[0];
+}
+
+/*
+ * "charidx()" function
+ */
+    static void
+f_charidx(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*str;
+    varnumber_T	idx;
+    int		countcc = FALSE;
+    char_u	*p;
+    int		len;
+    int		(*ptr2len)(char_u *);
+
+    rettv->vval.v_number = -1;
+
+    if (argvars[0].v_type != VAR_STRING || argvars[1].v_type != VAR_NUMBER
+	    || (argvars[2].v_type != VAR_UNKNOWN
+					   && argvars[2].v_type != VAR_NUMBER))
+    {
+	emsg(_(e_invarg));
+	return;
+    }
+
+    str = tv_get_string_chk(&argvars[0]);
+    idx = tv_get_number_chk(&argvars[1], NULL);
+    if (str == NULL || idx < 0)
+	return;
+
+    if (argvars[2].v_type != VAR_UNKNOWN)
+	countcc = (int)tv_get_bool(&argvars[2]);
+    if (countcc < 0 || countcc > 1)
+    {
+	semsg(_(e_using_number_as_bool_nr), countcc);
+	return;
+    }
+
+    if (enc_utf8 && countcc)
+	ptr2len = utf_ptr2len;
+    else
+	ptr2len = mb_ptr2len;
+
+    for (p = str, len = 0; p <= str + idx; len++)
+    {
+	if (*p == NUL)
+	    return;
+	p += ptr2len(p);
+    }
+
+    rettv->vval.v_number = len > 0 ? len - 1 : 0;
 }
 
     win_T *
