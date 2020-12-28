@@ -1021,9 +1021,10 @@ func Test_opt_reset_scroll()
     set laststatus=2
   [CODE]
   call writefile(vimrc, 'Xscroll')
-  let buf = RunVimInTerminal('-S Xscroll', {'rows': 16, 'cols': 40})
+  let buf = RunVimInTerminal('-S Xscroll', {'rows': 16, 'cols': 45})
   call term_sendkeys(buf, ":verbose set scroll?\n")
-  call WaitForAssert({-> assert_match('^\s*scroll=7$', term_getline(buf, 16))})
+  call WaitForAssert({-> assert_match('Last set.*window size', term_getline(buf, 15))})
+  call assert_match('^\s*scroll=7$', term_getline(buf, 14))
   call StopVimInTerminal(buf)
 
   " clean up
