@@ -1553,6 +1553,7 @@ scriptnames_slash_adjust(void)
 
 /*
  * Get a pointer to a script name.  Used for ":verbose set".
+ * Message appended to "Last set from "
  */
     char_u *
 get_scriptname(scid_T id)
@@ -1567,6 +1568,8 @@ get_scriptname(scid_T id)
 	return (char_u *)_("environment variable");
     if (id == SID_ERROR)
 	return (char_u *)_("error handler");
+    if (id == SID_WINLAYOUT)
+	return (char_u *)_("changed window size");
     return SCRIPT_ITEM(id)->sn_name;
 }
 

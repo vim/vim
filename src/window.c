@@ -6325,9 +6325,21 @@ win_new_width(win_T *wp, int width)
     void
 win_comp_scroll(win_T *wp)
 {
+#if defined(FEAT_EVAL)
+    int old_w_p_scr = wp->w_p_scr;
+#endif
+
     wp->w_p_scr = ((unsigned)wp->w_height >> 1);
     if (wp->w_p_scr == 0)
 	wp->w_p_scr = 1;
+#if defined(FEAT_EVAL)
+    if (wp->w_p_scr != old_w_p_scr)
+    {
+	// Used by "verbose set scroll".
+	wp->w_p_script_ctx[WV_SCROLL].sc_sid = SID_WINLAYOUT;
+	wp->w_p_script_ctx[WV_SCROLL].sc_lnum = 0;
+    }
+#endif
 }
 
 /*
