@@ -6,7 +6,7 @@
 
 THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
-Vim9 script commands and expressions.			*Vim9*
+Vim9 script commands and expressions.			*Vim9* *vim9*
 
 Most expression help is in |eval.txt|.  This file is about the new syntax and
 features in Vim9 script.
@@ -113,11 +113,12 @@ In Vi # is a command to list text with numbers.  In Vim9 script you can use
 
 To improve readability there must be a space between a command and the #
 that starts a comment: >
-	var = value # comment
-	var = value# error!
+	var name = value # comment
+	var name = value# error!
 
-In legacy script # is also used for the alternate file name.  In Vim9 script
-you need to use %% instead.  Instead of ## use %%% (stands for all arguments).
+In legacy Vim script # is also used for the alternate file name.  In Vim9
+script you need to use %% instead.  Instead of ## use %%% (stands for all
+arguments).
 
 
 Vim9 functions ~
@@ -209,13 +210,13 @@ if you are developing a plugin and want to try a new version.  If you renamed
 something you don't have to worry about the old name still hanging around.
 
 If you do want to keep items, use: >
-	vimscript noclear
+	vim9script noclear
 
 You want to use this in scripts that use a `finish` command to bail out at
 some point when loaded again.  E.g. when a buffer local option is set: >
-	vimscript noclear
+	vim9script noclear
 	setlocal completefunc=SomeFunc
-	if exists('*SomeFunc') | finish | endif
+	if exists('*g:SomeFunc') | finish | endif
 	def g:SomeFunc()
 	....
 
@@ -385,9 +386,13 @@ No line break is allowed in the arguments of a lambda up to and including the
 This does not work: >
 	filter(list, (k, v)
 			=> v > 0)
-This also does not work:
+This also does not work: >
 	filter(list, (k,
 			v) => v > 0)
+But you can use a backslash to concatenate the lines before parsing: >
+	filter(list, (k,
+		\	v)
+		\	=> v > 0)
 
 Additionally, a lambda can contain statements in {}: >
 	var Lambda = (arg) => {
@@ -404,8 +409,8 @@ wrap it in parenthesis: >
 Automatic line continuation ~
 
 In many cases it is obvious that an expression continues on the next line.  In
-those cases there is no need to prefix the line with a backslash
-|line-continuation|.  For example, when a list spans multiple lines: >
+those cases there is no need to prefix the line with a backslash (see
+|line-continuation|).  For example, when a list spans multiple lines: >
 	var mylist = [
 		'one',
 		'two',
@@ -441,6 +446,12 @@ before it: >
 			->BuilderBuild()
 	var result = MyDict
 			.member
+
+For commands that have an argument that is a list of commands, the | character
+at the start of the line indicates line continuation: >
+	autocmd BufNewFile *.match if condition
+		|   echo 'match'
+		| endif
 
 <							*E1050*
 To make it possible for the operator at the start of the line to be
@@ -941,7 +952,7 @@ that you don't do that.
 
 
 Namespace ~
-							*:vim9script* *:vim9*
+							*vim9-namespace*
 To recognize a file that can be imported the `vim9script` statement must
 appear as the first statement in the file.  It tells Vim to interpret the
 script in its own namespace, instead of the global namespace.  If a file

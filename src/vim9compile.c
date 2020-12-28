@@ -2165,15 +2165,6 @@ free_imported(cctx_T *cctx)
 }
 
 /*
- * Return TRUE if "p" points at a "#".  Does not check for white space.
- */
-    int
-vim9_comment_start(char_u *p)
-{
-    return p[0] == '#';
-}
-
-/*
  * Return a pointer to the next line that isn't empty or only contains a
  * comment. Skips over white space.
  * Returns NULL if there is none.

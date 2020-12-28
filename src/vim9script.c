@@ -103,6 +103,15 @@ not_in_vim9(exarg_T *eap)
     return OK;
 }
 
+/*
+ * Return TRUE if "p" points at a "#".  Does not check for white space.
+ */
+    int
+vim9_comment_start(char_u *p)
+{
+    return p[0] == '#';
+}
+
 #if defined(FEAT_EVAL) || defined(PROTO)
 
 /*

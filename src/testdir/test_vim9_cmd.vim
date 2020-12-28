@@ -548,13 +548,33 @@ def Test_command_modifier_other()
   bwipe!
 
   au BufNewFile Xfile g:readFile = 1
+      | g:readExtra = 2
   g:readFile = 0
+  g:readExtra = 0
   edit Xfile
   assert_equal(1, g:readFile)
+  assert_equal(2, g:readExtra)
   bwipe!
   g:readFile = 0
   noautocmd edit Xfile
   assert_equal(0, g:readFile)
+  au! BufNewFile
+
+  au BufNewFile Xfile g:readFile = 1
+      | g:readExtra = 2
+      | g:readMore = 3
+  g:readFile = 0
+  g:readExtra = 0
+  g:readMore = 0
+  edit Xfile
+  assert_equal(1, g:readFile)
+  assert_equal(2, g:readExtra)
+  assert_equal(3, g:readMore)
+  bwipe!
+  au! BufNewFile
+  unlet g:readFile
+  unlet g:readExtra
+  unlet g:readMore
 
   noswapfile edit XnoSwap
   assert_equal(0, &l:swapfile)

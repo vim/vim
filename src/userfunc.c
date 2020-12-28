@@ -2960,7 +2960,7 @@ define_function(exarg_T *eap, char_u *name_arg)
     static int	func_nr = 0;	    // number for nameless function
     int		paren;
     hashitem_T	*hi;
-    getline_opt_T getline_options = GETLINE_CONCAT_CONT;
+    getline_opt_T getline_options;
     linenr_T	sourcing_lnum_off;
     linenr_T	sourcing_lnum_top;
     int		is_heredoc = FALSE;
@@ -3291,6 +3291,8 @@ define_function(exarg_T *eap, char_u *name_arg)
     indent = 2;
     nesting = 0;
     nesting_def[nesting] = (eap->cmdidx == CMD_def);
+    getline_options = eap->cmdidx == CMD_def
+				? GETLINE_CONCAT_CONTDEF : GETLINE_CONCAT_CONT;
     for (;;)
     {
 	if (KeyTyped)
@@ -3365,7 +3367,8 @@ define_function(exarg_T *eap, char_u *name_arg)
 		{
 		    VIM_CLEAR(skip_until);
 		    VIM_CLEAR(heredoc_trimmed);
-		    getline_options = GETLINE_CONCAT_CONT;
+		    getline_options = eap->cmdidx == CMD_def
+				? GETLINE_CONCAT_CONTDEF : GETLINE_CONCAT_CONT;
 		    is_heredoc = FALSE;
 		}
 	    }

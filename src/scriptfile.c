@@ -1739,6 +1739,10 @@ getsourceline(
     struct source_cookie *sp = (struct source_cookie *)cookie;
     char_u		*line;
     char_u		*p;
+    int			do_vim9_all = in_vim9script()
+					      && options == GETLINE_CONCAT_ALL;
+    int			do_vim9_cont = do_vim9_all
+					 || options == GETLINE_CONCAT_CONTDEF;
 
 #ifdef FEAT_EVAL
     // If breakpoints have been added/deleted need to check for it.
@@ -1785,17 +1789,15 @@ getsourceline(
 	// backslash. We always need to read the next line, keep it in
 	// sp->nextline.
 	/* Also check for a comment in between continuation lines: "\ */
-	// Also check for a Vim9 comment and empty line.
+	// Also check for a Vim9 comment, empty line, line starting with '|',
+	// but not "||".
 	sp->nextline = get_one_sourceline(sp);
 	if (sp->nextline != NULL
 		&& (*(p = skipwhite(sp->nextline)) == '\\'
 			      || (p[0] == '"' && p[1] == '\\' && p[2] == ' ')
-#ifdef FEAT_EVAL
-			      || (in_vim9script()
-				      && options == GETLINE_CONCAT_ALL
-				      && (*p == NUL || vim9_comment_start(p)))
-#endif
-			      ))
+			      || (do_vim9_all && (*p == NUL
+						     || vim9_comment_start(p)))
+			      || (do_vim9_cont && p[0] == '|' && p[1] != '|')))
 	{
 	    garray_T    ga;
 
@@ -1803,6 +1805,11 @@ getsourceline(
 	    ga_concat(&ga, line);
 	    if (*p == '\\')
 		ga_concat(&ga, p + 1);
+	    else if (*p == '|')
+	    {
+		ga_concat(&ga, (char_u *)" ");
+		ga_concat(&ga, p);
+	    }
 	    for (;;)
 	    {
 		vim_free(sp->nextline);
@@ -1810,7 +1817,7 @@ getsourceline(
 		if (sp->nextline == NULL)
 		    break;
 		p = skipwhite(sp->nextline);
-		if (*p == '\\')
+		if (*p == '\\' || (do_vim9_cont && p[0] == '|' && p[1] != '|'))
 		{
 		    // Adjust the growsize to the current length to speed up
 		    // concatenating many lines.
@@ -1821,15 +1828,16 @@ getsourceline(
 			else
 			    ga.ga_growsize = ga.ga_len;
 		    }
-		    ga_concat(&ga, p + 1);
+		    if (*p == '\\')
+			ga_concat(&ga, p + 1);
+		    else
+		    {
+			ga_concat(&ga, (char_u *)" ");
+			ga_concat(&ga, p);
+		    }
 		}
 		else if (!(p[0] == '"' && p[1] == '\\' && p[2] == ' ')
-#ifdef FEAT_EVAL
-			&& !(in_vim9script()
-				&& options == GETLINE_CONCAT_ALL
-				&& (*p == NUL || vim9_comment_start(p)))
-#endif
-			)
+		     && !(do_vim9_all && (*p == NUL || vim9_comment_start(p))))
 		    break;
 		/* drop a # comment or "\ comment line */
 	    }
