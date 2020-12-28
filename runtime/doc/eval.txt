@@ -3606,10 +3606,13 @@ charidx({string}, {idx} [, {countcc}])
 		See |byteidx()| and |byteidxcomp()| for getting the byte index
 		from the character index.
 		Examples: >
-			echo charidx('áb́ć', 3)
-			echo charidx('áb́ć', 6, 1)
-			echo charidx('áb́ć', 16)
+			echo charidx('áb́ć', 3)		returns 1
+			echo charidx('áb́ć', 6, 1)	returns 4
+			echo charidx('áb́ć', 16)		returns -1
 <
+		Can also be used as a |method|: >
+			GetName()->charidx(idx)
+
 chdir({dir})						*chdir()*
 		Change the current working directory to {dir}.  The scope of
 		the directory change depends on the directory of the current
