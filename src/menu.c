@@ -2310,11 +2310,7 @@ execute_menu(exarg_T *eap, vimmenu_T *menu, int mode_idx)
     if (idx < 0)
     {
 	// Use the Insert mode entry when returning to Insert mode.
-	if (restart_edit
-#ifdef FEAT_EVAL
-		&& !current_sctx.sc_sid
-#endif
-		)
+	if (restart_edit && !current_sctx.sc_sid)
 	{
 	    idx = MENU_INDEX_INSERT;
 	}
@@ -2384,11 +2380,7 @@ execute_menu(exarg_T *eap, vimmenu_T *menu, int mode_idx)
 	// When executing a script or function execute the commands right now.
 	// Also for the window toolbar.
 	// Otherwise put them in the typeahead buffer.
-	if (eap == NULL
-#ifdef FEAT_EVAL
-		|| current_sctx.sc_sid != 0
-#endif
-	   )
+	if (eap == NULL || current_sctx.sc_sid != 0)
 	{
 	    save_state_T save_state;
 

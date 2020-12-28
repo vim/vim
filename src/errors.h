@@ -31,8 +31,10 @@ EXTERN char e_assert_fails_second_arg[]
 	INIT(= N_("E856: \"assert_fails()\" second argument must be a string or a list with one or two strings"));
 EXTERN char e_cannot_index_special_variable[]
 	INIT(= N_("E909: Cannot index a special variable"));
-EXTERN char e_missing_var_str[]
-	INIT(= N_("E1100: Missing :var: %s"));
+#endif
+EXTERN char e_command_not_supported_in_vim9_script_missing_var_str[]
+	INIT(= N_("E1100: Command not supported in Vim9 script (missing :var?): %s"));
+#ifdef FEAT_EVAL
 EXTERN char e_variable_not_found_str[]
 	INIT(= N_("E1001: Variable not found: %s"));
 EXTERN char e_syntax_error_at_str[]
@@ -113,8 +115,10 @@ EXTERN char e_vim9script_can_only_be_used_in_script[]
 	INIT(= N_("E1038: \"vim9script\" can only be used in a script"));
 EXTERN char e_vim9script_must_be_first_command_in_script[]
 	INIT(= N_("E1039: \"vim9script\" must be the first command in a script"));
+#endif
 EXTERN char e_cannot_use_scriptversion_after_vim9script[]
 	INIT(= N_("E1040: Cannot use :scriptversion after :vim9script"));
+#ifdef FEAT_EVAL
 EXTERN char e_redefining_script_item_str[]
 	INIT(= N_("E1041: Redefining script item %s"));
 EXTERN char e_export_can_only_be_used_in_vim9script[]

@@ -290,6 +290,14 @@ EXTERN garray_T	exestack INIT5(0, 0, sizeof(estack_T), 50, NULL);
 // line number in the message source or zero
 #define SOURCING_LNUM (((estack_T *)exestack.ga_data)[exestack.ga_len - 1].es_lnum)
 
+// Script CTX being sourced or was sourced to define the current function.
+EXTERN sctx_T	current_sctx
+#ifdef FEAT_EVAL
+    INIT4(0, 0, 0, 0);
+#else
+    INIT(= {0});
+#endif
+
 #ifdef FEAT_EVAL
 // whether inside compile_def_function()
 EXTERN int	estack_compiling INIT(= FALSE);
@@ -391,9 +399,6 @@ EXTERN except_T *caught_stack INIT(= NULL);
 EXTERN int	may_garbage_collect INIT(= FALSE);
 EXTERN int	want_garbage_collect INIT(= FALSE);
 EXTERN int	garbage_collect_at_exit INIT(= FALSE);
-
-// Script CTX being sourced or was sourced to define the current function.
-EXTERN sctx_T	current_sctx INIT4(0, 0, 0, 0);
 
 
 // Commonly used types.

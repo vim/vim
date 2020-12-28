@@ -13,9 +13,9 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
-
-#include "vim9.h"
+#if defined(FEAT_EVAL)
+# include "vim9.h"
+#endif
 
     int
 in_vim9script(void)
@@ -30,8 +30,9 @@ in_vim9script(void)
  * ":vim9script".
  */
     void
-ex_vim9script(exarg_T *eap)
+ex_vim9script(exarg_T *eap UNUSED)
 {
+#ifdef FEAT_EVAL
     int		    sid = current_sctx.sc_sid;
     scriptitem_T    *si;
 
@@ -75,6 +76,10 @@ ex_vim9script(exarg_T *eap)
 	si->sn_save_cpo = vim_strsave(p_cpo);
 	set_option_value((char_u *)"cpo", 0L, (char_u *)CPO_VIM, 0);
     }
+#else
+    // No check for this being the first command, it doesn't matter.
+    current_sctx.sc_version = SCRIPT_VERSION_VIM9;
+#endif
 }
 
 /*
@@ -91,12 +96,14 @@ not_in_vim9(exarg_T *eap)
 	    case CMD_insert:
 	    case CMD_t:
 	    case CMD_xit:
-		semsg(_(e_missing_var_str), eap->cmd);
+		semsg(_(e_command_not_supported_in_vim9_script_missing_var_str), eap->cmd);
 		return FAIL;
 	    default: break;
 	}
     return OK;
 }
+
+#if defined(FEAT_EVAL) || defined(PROTO)
 
 /*
  * ":export let Name: type"

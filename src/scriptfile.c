@@ -1135,8 +1135,8 @@ do_source(
     char_u		    *fname_exp;
     char_u		    *firstline = NULL;
     int			    retval = FAIL;
-#ifdef FEAT_EVAL
     sctx_T		    save_current_sctx;
+#ifdef FEAT_EVAL
     static scid_T	    last_current_SID = 0;
     static int		    last_current_SID_seq = 0;
     funccal_entry_T	    funccalp_entry;
@@ -1300,6 +1300,9 @@ do_source(
 	time_push(&tv_rel, &tv_start);
 #endif
 
+    save_current_sctx = current_sctx;
+    current_sctx.sc_version = 1;  // default script version
+
 #ifdef FEAT_EVAL
 # ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
@@ -1310,9 +1313,7 @@ do_source(
     // Also starts profiling timer for nested script.
     save_funccal(&funccalp_entry);
 
-    save_current_sctx = current_sctx;
     current_sctx.sc_lnum = 0;
-    current_sctx.sc_version = 1;  // default script version
 
     // Check if this script was sourced before to finds its SID.
     // Always use a new sequence number.
@@ -1326,7 +1327,6 @@ do_source(
 
 	// loading the same script again
 	si->sn_state = SN_STATE_RELOAD;
-	si->sn_version = 1;
 	current_sctx.sc_sid = sid;
 
 	// Script-local variables remain but "const" can be set again.
@@ -1484,13 +1484,14 @@ almosttheend:
 	CLEAR_POINTER(si->sn_save_cpo);
     }
 
-    current_sctx = save_current_sctx;
     restore_funccal();
 # ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
 	prof_child_exit(&wait_start);		// leaving a child now
 # endif
 #endif
+    current_sctx = save_current_sctx;
+
     fclose(cookie.fp);
     vim_free(cookie.nextline);
     vim_free(firstline);
@@ -1903,7 +1904,6 @@ ex_scriptencoding(exarg_T *eap)
     void
 ex_scriptversion(exarg_T *eap UNUSED)
 {
-#ifdef FEAT_EVAL
     int		nr;
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
@@ -1925,9 +1925,10 @@ ex_scriptversion(exarg_T *eap UNUSED)
     else
     {
 	current_sctx.sc_version = nr;
+#ifdef FEAT_EVAL
 	SCRIPT_ITEM(current_sctx.sc_sid)->sn_version = nr;
-    }
 #endif
+    }
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
