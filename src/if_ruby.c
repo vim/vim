@@ -239,7 +239,7 @@ static int ruby_convert_to_vim_value(VALUE val, typval_T *rettv);
 # define rb_assoc_new			dll_rb_assoc_new
 # define rb_cObject			(*dll_rb_cObject)
 # define rb_class_new_instance		dll_rb_class_new_instance
-# if RUBY_VERSION <= 29
+# if RUBY_VERSION < 30
 #  define rb_check_type			dll_rb_check_type
 # endif
 # ifdef USE_TYPEDDATA
@@ -292,7 +292,7 @@ static int ruby_convert_to_vim_value(VALUE val, typval_T *rettv);
 #   define rb_fix2int			dll_rb_fix2int
 #   define rb_num2int			dll_rb_num2int
 #  endif
-#  if RUBY_VERSION <= 29
+#  if RUBY_VERSION < 30
 #   define rb_num2uint			dll_rb_num2uint
 #  endif
 # endif
@@ -531,28 +531,30 @@ NORETURN(static void (*dll_ruby_malloc_size_overflow)(size_t, size_t));
 void rb_ary_detransient_stub(VALUE x);
 # endif
 
-# if (RUBY_VERSION >= 19) && !defined(PROTO)
-#  if RUBY_VERSION >= 22
+// Do not generate a prototype here, VALUE isn't always defined.
+# ifndef PROTO
+#  if RUBY_VERSION >= 19
+#   if RUBY_VERSION >= 22
     long
 rb_num2long_stub(VALUE x)
-#  else
+#   else
     SIGNED_VALUE
 rb_num2long_stub(VALUE x)
-#  endif
+#   endif
 {
     return dll_rb_num2long(x);
 }
-#  if RUBY_VERSION >= 26
+#   if RUBY_VERSION >= 26
     VALUE
 rb_int2big_stub(intptr_t x)
-#  else
+#   else
     VALUE
 rb_int2big_stub(SIGNED_VALUE x)
-#  endif
+#   endif
 {
     return dll_rb_int2big(x);
 }
-#  if (RUBY_VERSION >= 19) && (VIM_SIZEOF_INT < VIM_SIZEOF_LONG)
+#   if VIM_SIZEOF_INT < VIM_SIZEOF_LONG
     long
 rb_fix2int_stub(VALUE x)
 {
@@ -563,52 +565,48 @@ rb_num2int_stub(VALUE x)
 {
     return dll_rb_num2int(x);
 }
-#  endif
-#  if RUBY_VERSION >= 20
+#   endif
+#   if RUBY_VERSION >= 20
     VALUE
 rb_float_new_in_heap(double d)
 {
     return dll_rb_float_new(d);
 }
-#   if RUBY_VERSION >= 22
+#    if RUBY_VERSION >= 22
     unsigned long
 rb_num2ulong(VALUE x)
-#   else
+#    else
     VALUE
 rb_num2ulong(VALUE x)
-#   endif
+#    endif
 {
     return (long)RSHIFT((SIGNED_VALUE)(x),1);
 }
+#   endif
 #  endif
-# endif
-
-   // Do not generate a prototype here, VALUE isn't always defined.
-# if defined(USE_RGENGC) && USE_RGENGC && !defined(PROTO)
-#  if RUBY_VERSION == 21
+#  if defined(USE_RGENGC) && USE_RGENGC
+#   if RUBY_VERSION == 21
     void
 rb_gc_writebarrier_unprotect_promoted_stub(VALUE obj)
 {
     dll_rb_gc_writebarrier_unprotect_promoted(obj);
 }
-#  else
+#   else
     void
 rb_gc_writebarrier_unprotect_stub(VALUE obj)
 {
     dll_rb_gc_writebarrier_unprotect(obj);
 }
+#   endif
 #  endif
-# endif
-
-# if RUBY_VERSION >= 26 && !defined(PROTO)
+#  if RUBY_VERSION >= 26
     void
 rb_ary_detransient_stub(VALUE x)
 {
     dll_rb_ary_detransient(x);
 }
-# endif
-
-# if RUBY_VERSION >= 30 && !defined(PROTO)
+#  endif
+#  if RUBY_VERSION >= 30
     void
 rb_check_type_stub(VALUE obj, int t)
 {
@@ -624,7 +622,8 @@ ruby_malloc_size_overflow_stub(size_t x, size_t y)
 {
     dll_ruby_malloc_size_overflow(x, y);
 }
-# endif
+#  endif
+# endif // ifndef PROTO
 
 static HINSTANCE hinstRuby = NULL; // Instance of ruby.dll
 
