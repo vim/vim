@@ -3292,7 +3292,7 @@ define_function(exarg_T *eap, char_u *name_arg)
     nesting = 0;
     nesting_def[nesting] = (eap->cmdidx == CMD_def);
     getline_options = eap->cmdidx == CMD_def
-				? GETLINE_CONCAT_CONTDEF : GETLINE_CONCAT_CONT;
+				? GETLINE_CONCAT_CONTBAR : GETLINE_CONCAT_CONT;
     for (;;)
     {
 	if (KeyTyped)
@@ -3368,7 +3368,7 @@ define_function(exarg_T *eap, char_u *name_arg)
 		    VIM_CLEAR(skip_until);
 		    VIM_CLEAR(heredoc_trimmed);
 		    getline_options = eap->cmdidx == CMD_def
-				? GETLINE_CONCAT_CONTDEF : GETLINE_CONCAT_CONT;
+				? GETLINE_CONCAT_CONTBAR : GETLINE_CONCAT_CONT;
 		    is_heredoc = FALSE;
 		}
 	    }

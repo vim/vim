@@ -889,7 +889,8 @@ do_cmdline(
 #else
 		    0
 #endif
-		    , TRUE)) == NULL)
+		    , in_vim9script() ? GETLINE_CONCAT_CONTBAR
+					       : GETLINE_CONCAT_CONT)) == NULL)
 	    {
 		// Don't call wait_return for aborted command line.  The NULL
 		// returned for the end of a sourced file or executed function

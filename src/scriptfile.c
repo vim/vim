@@ -1741,8 +1741,8 @@ getsourceline(
     char_u		*p;
     int			do_vim9_all = in_vim9script()
 					      && options == GETLINE_CONCAT_ALL;
-    int			do_vim9_cont = do_vim9_all
-					 || options == GETLINE_CONCAT_CONTDEF;
+    int			do_bar_cont = do_vim9_all
+					 || options == GETLINE_CONCAT_CONTBAR;
 
 #ifdef FEAT_EVAL
     // If breakpoints have been added/deleted need to check for it.
@@ -1797,7 +1797,7 @@ getsourceline(
 			      || (p[0] == '"' && p[1] == '\\' && p[2] == ' ')
 			      || (do_vim9_all && (*p == NUL
 						     || vim9_comment_start(p)))
-			      || (do_vim9_cont && p[0] == '|' && p[1] != '|')))
+			      || (do_bar_cont && p[0] == '|' && p[1] != '|')))
 	{
 	    garray_T    ga;
 
@@ -1817,7 +1817,7 @@ getsourceline(
 		if (sp->nextline == NULL)
 		    break;
 		p = skipwhite(sp->nextline);
-		if (*p == '\\' || (do_vim9_cont && p[0] == '|' && p[1] != '|'))
+		if (*p == '\\' || (do_bar_cont && p[0] == '|' && p[1] != '|'))
 		{
 		    // Adjust the growsize to the current length to speed up
 		    // concatenating many lines.

@@ -1565,8 +1565,8 @@ typedef void (*cfunc_free_T)(void *state);
 // type of getline() last argument
 typedef enum {
     GETLINE_NONE,	    // do not concatenate any lines
-    GETLINE_CONCAT_CONT,    // concatenate continuation lines in Vim9 script
-    GETLINE_CONCAT_CONTDEF, // concatenate continuation lines always
+    GETLINE_CONCAT_CONT,    // concatenate continuation lines with backslash
+    GETLINE_CONCAT_CONTBAR, // concatenate continuation lines with \ and |
     GETLINE_CONCAT_ALL	    // concatenate continuation and Vim9 # comment lines
 } getline_opt_T;
 
