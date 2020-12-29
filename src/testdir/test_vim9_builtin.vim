@@ -716,5 +716,15 @@ def Test_win_splitmove()
   close
 enddef
 
+def Test_winrestcmd()
+  split
+  var cmd = winrestcmd()
+  wincmd _
+  exe cmd
+  assert_equal(cmd, winrestcmd())
+  close
+enddef
+
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
