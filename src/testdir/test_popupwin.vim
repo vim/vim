@@ -821,6 +821,10 @@ func Test_popup_with_mask()
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestPopupMask')
+
+  " this was causing a crash
+  call popup_create('test', #{mask: [[0, 0, 0, 0]]})
+  call popup_clear()
 endfunc
 
 func Test_popup_select()

@@ -3346,21 +3346,29 @@ popup_update_mask(win_T *wp, int width, int height)
 	cols = tv_get_number(&li->li_tv);
 	if (cols < 0)
 	    cols = width + cols + 1;
+	if (cols <= 0)
+	    cols = 1;
 	li = li->li_next;
 	cole = tv_get_number(&li->li_tv);
 	if (cole < 0)
 	    cole = width + cole + 1;
+	if (cole > width)
+	    cole = width;
 	li = li->li_next;
 	lines = tv_get_number(&li->li_tv);
 	if (lines < 0)
 	    lines = height + lines + 1;
+	if (lines <= 0)
+	    lines = 1;
 	li = li->li_next;
 	linee = tv_get_number(&li->li_tv);
 	if (linee < 0)
 	    linee = height + linee + 1;
+	if (linee > height)
+	    linee = height;
 
-	for (row = lines - 1; row < linee && row < height; ++row)
-	    for (col = cols - 1; col < cole && col < width; ++col)
+	for (row = lines - 1; row < linee; ++row)
+	    for (col = cols - 1; col < cole; ++col)
 		cells[row * width + col] = 1;
     }
 }
