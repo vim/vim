@@ -2662,7 +2662,7 @@ vim_regcomp(char_u *expr_arg, int re_flags)
     if (prog == NULL)
     {
 #ifdef BT_REGEXP_DEBUG_LOG
-	if (regexp_engine != BACKTRACKING_ENGINE)   // debugging log for NFA
+	if (regexp_engine == BACKTRACKING_ENGINE)   // debugging log for BT engine
 	{
 	    FILE *f;
 	    f = fopen(BT_REGEXP_DEBUG_LOG_NAME, "a");
