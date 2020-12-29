@@ -11206,7 +11206,7 @@ win_gettype([{nr}])					*win_gettype()*
 
 win_gotoid({expr})					*win_gotoid()*
 		Go to window with ID {expr}.  This may also change the current
-		tabpage.
+		tabpage. This can also be used to focus on a focusable popup.
 		Return 1 if successful, 0 if the window cannot be found.
 
 		Can also be used as a |method|: >
