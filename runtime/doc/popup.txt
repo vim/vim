@@ -683,6 +683,9 @@ The second argument of |popup_create()| is a dictionary with options:
 			horizontally centered.  The first column is 1.
 			When using "textprop" the number is relative to the
 			text property and can be negative.
+	focusable	When FALSE (the default) the popup is not focusable.
+			When TRUE the popup is focusable. Popup can be focused
+			using |win_gotoid| function.
 	pos		"topleft", "topright", "botleft" or "botright":
 			defines what corner of the popup "line" and "col" are
 			used for.  When not set "topleft" is used.
