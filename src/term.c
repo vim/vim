@@ -3411,9 +3411,9 @@ set_shellsize(int width, int height, int mustset)
 	return;
 
     // curwin->w_buffer can be NULL when we are closing a window and the
-    // buffer has already been closed and removing a scrollbar causes a resize
+    // buffer (or window) has already been closed and removing a scrollbar causes a resize
     // event. Don't resize then, it will happen after entering another buffer.
-    if (curwin->w_buffer == NULL)
+    if (curwin->w_buffer == NULL || curwin->w_lines == NULL)
 	return;
 
     ++busy;
