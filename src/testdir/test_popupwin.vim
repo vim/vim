@@ -4148,15 +4148,18 @@ func Test_popupwin_focus()
   call assert_equal(winid, win_getid())
 
   " first focus to popup window
-  call win_gotoid(popup_winid)
+  let win_gotoid_result = win_gotoid(popup_winid)
+  call assert_equal(1, win_gotoid_result)
   call assert_equal(popup_winid, win_getid())
 
   " focus back to main window
-  call win_gotoid(winid)
+  let win_gotoid_result = win_gotoid(winid)
+  call assert_equal(1, win_gotoid_result)
   call assert_equal(winid, win_getid())
 
   " second focus to popup window
-  call win_gotoid(popup_winid)
+  let win_gotoid_result = win_gotoid(popup_winid)
+  call assert_equal(1, win_gotoid_result)
   call assert_equal(popup_winid, win_getid())
 
   " TODO: we shouldn't be needing this.
