@@ -217,6 +217,10 @@ it's different from Alt).  They can be combined.  Examples: >
 Another speciality about these codes is that they are not overwritten by
 another code.  That is to avoid that the codes obtained from xterm directly
 |t_RV| overwrite them.
+
+Another special value is a termcap entry ending in "@;*X".  This is for cursor
+keys, which either use "CSI X" or "CSI 1 ; modifier X".  Thus the "@"
+stands for either "1" if a modifier follows, or nothing.
 							*xterm-scroll-region*
 The default termcap entry for xterm on Sun and other platforms does not
 contain the entry for scroll regions.  Add ":cs=\E[%i%d;%dr:" to the xterm
