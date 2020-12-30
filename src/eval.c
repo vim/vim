@@ -3777,7 +3777,7 @@ eval_index(
 	{
 	    range = TRUE;
 	    ++*arg;
-	    if (!IS_WHITE_OR_NUL(**arg) && **arg != ']')
+	    if (vim9 && !IS_WHITE_OR_NUL(**arg) && **arg != ']')
 	    {
 		semsg(_(e_white_space_required_before_and_after_str), ":");
 		if (!empty1)
