@@ -158,8 +158,8 @@
 # define mch_access(n, p)	access(vms_fixfilename(n), (p))
 				// see mch_open() comment
 # define mch_fopen(n, p)	fopen(vms_fixfilename(n), (p))
-# define mch_fstat(n, p)	fstat(vms_fixfilename(n), (p))
-	// VMS does not have lstat()
+# define mch_fstat(n, p)	fstat((n), (p))
+# undef HAVE_LSTAT	        // VMS does not have lstat()
 # define mch_stat(n, p)		stat(vms_fixfilename(n), (p))
 # define mch_rmdir(n)		rmdir(vms_fixfilename(n))
 #else

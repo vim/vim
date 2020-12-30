@@ -38,7 +38,7 @@
  * argument for tputs().
  */
 # ifdef VMS
-#  define TPUTSFUNCAST
+#  define TPUTSFUNCAST (void (*)(unsigned int))
 # else
 #  ifdef HAVE_OUTFUNTYPE
 #   define TPUTSFUNCAST (outfuntype)

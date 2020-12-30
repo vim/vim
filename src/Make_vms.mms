@@ -2,7 +2,7 @@
 # Makefile for Vim on OpenVMS
 #
 # Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-# Last change:  2020 Aug 13
+# Last change:  2020 Dec 30
 #
 # This script has been tested on VMS 6.2 to 8.4 on DEC Alpha, VAX and IA64
 # with MMS and MMK
@@ -49,7 +49,7 @@ GUI = YES
 
 # GUI/Motif with XPM
 # If you have XPM installed you might want to build Motif version with toolbar
-# XPM = YES
+XPM = YES
 
 # Comment out if you want the compiler version with :ver command.
 # NOTE: This part can make some complications if you're using some
@@ -97,7 +97,7 @@ CCVER = YES
 .IFDEF MMSVAX
 .IFDEF DECC	     # VAX with DECC
 CC_DEF  = cc # /decc # some versions require /decc switch but when it is not required /ver might fail
-PREFIX  = /prefix=all
+PREFIX  = /prefix=all/name=(upper,short)
 OPTIMIZE= /noopt     # do not optimize on VAX. The compiler has hard time with crypto functions
 .ELSE		     # VAX with VAXC
 CC_DEF	= cc
@@ -107,7 +107,7 @@ CCVER	=
 .ENDIF
 .ELSE		     # AXP and IA64 with DECC
 CC_DEF  = cc
-PREFIX  = /prefix=all
+PREFIX  = /prefix=all/name=(upper,short)
 OPTIMIZE= /opt
 .ENDIF
 
@@ -165,7 +165,7 @@ GTK = ""
 GTK_DIR  = DKA0:[WORK.GTK1210.]
 DEFS     = "HAVE_CONFIG_H","FEAT_GUI_GTK"
 LIBS     = ,OS_VMS_GTK.OPT/OPT
-GUI_FLAG = /name=(as_is,short)/float=ieee/ieee=denorm
+GUI_FLAG = /float=ieee/ieee=denorm
 GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_gtk_x11.c gui_beval.c pty.c
 GUI_OBJ  = gui.obj gui_gtk.obj gui_gtk_f.obj gui_gtk_x11.obj gui_beval.obj pty.obj
 GUI_INC  = ,"/gtk_root/gtk","/gtk_root/glib"
@@ -177,6 +177,7 @@ MOTIF	 = YES
 .IFDEF XPM
 DEFS     = "HAVE_CONFIG_H","FEAT_GUI_MOTIF","HAVE_XPM"
 XPM_INC  = ,[.xpm.include]
+XPM_LIB  = ,OS_VMS_XPM.OPT/OPT
 .ELSE
 DEFS     = "HAVE_CONFIG_H","FEAT_GUI_MOTIF"
 XPM_INC  = 
@@ -291,7 +292,7 @@ ALL_CFLAGS_VER = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF) -
  /include=($(C_INC)$(GUI_INC_DIR)$(GUI_INC_VER)$(PERL_INC)$(PYTHON_INC) -
  $(TCL_INC)$(XDIFF_INC)$(XPM_INC))
 
-ALL_LIBS = $(LIBS) $(GUI_LIB_DIR) $(GUI_LIB) \
+ALL_LIBS = $(LIBS) $(GUI_LIB_DIR) $(GUI_LIB) $(XPM_LIB)\
 	   $(PERL_LIB) $(PYTHON_LIB) $(TCL_LIB) $(RUBY_LIB)
 
 SRC = \
@@ -546,6 +547,7 @@ clean :
 	-@ if "''F$SEARCH("pathdef.c")'" .NES. "" then delete/noconfirm/nolog pathdef.c;*
 	-@ if "''F$SEARCH("if_perl.c")'" .NES. "" then delete/noconfirm/nolog if_perl.c;*
 	-@ if "''F$SEARCH("*.opt")'" .NES. "" then delete/noconfirm/nolog *.opt;*
+	-@ if "''F$SEARCH("*.dmp")'" .NES. "" then delete/noconfirm/nolog *.dmp;*
 
 # Link the target
 $(TARGET) : $(OBJ)
@@ -599,6 +601,18 @@ check_ccver :
 motif_env :
 .IFDEF XPM
 	-@ write sys$output "using DECW/Motif/XPM environment."
+        -@ write sys$output "creating OS_VMS_XPM.OPT file."
+	-@ open/write opt_file OS_VMS_XPM.OPT
+.IFDEF MMSVAX
+	-@ write opt_file "[.xpm.vms.vax]libxpm.olb/lib"
+.ENDIF
+.IFDEF MMSALPHA
+	-@ write opt_file "[.xpm.vms.axp]libxpm.olb/lib"
+.ENDIF
+.IFDEF MMSIA64
+	-@ write opt_file "[.xpm.vms.ia64]libxpm.olb/lib"
+.ENDIF 
+	-@ close opt_file
 .ELSE
 	-@ write sys$output "using DECW/Motif environment."
 .ENDIF

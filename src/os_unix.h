@@ -199,10 +199,11 @@
 # include <libdef.h>
 # include <libdtdef.h>
 
-# ifdef FEAT_GUI_GTK
-#  include "gui_gtk_vms.h"
+# if defined(FEAT_GUI_MOTIF)
+#  define XFree XFREE
+#  define XmRepTypeInstallTearOffModelCon XMREPTYPEINSTALLTEAROFFMODELCON
 # endif
-#endif
+#endif // VMS
 
 #ifdef HAVE_FLOCK
 # include <sys/file.h>
