@@ -1285,7 +1285,7 @@ enddef
 
 def StringSlice(): string
   var s = "abcd"
-  var res = s[1:8]
+  var res = s[1 : 8]
   return res
 enddef
 
@@ -1295,7 +1295,7 @@ def Test_disassemble_string_slice()
         'var s = "abcd"\_s*' ..
         '\d PUSHS "abcd"\_s*' ..
         '\d STORE $0\_s*' ..
-        'var res = s\[1:8]\_s*' ..
+        'var res = s\[1 : 8]\_s*' ..
         '\d LOAD $0\_s*' ..
         '\d PUSHNR 1\_s*' ..
         '\d PUSHNR 8\_s*' ..
@@ -1331,7 +1331,7 @@ enddef
 
 def ListSlice(): list<number>
   var l = [1, 2, 3]
-  var res = l[1:8]
+  var res = l[1 : 8]
   return res
 enddef
 
@@ -1344,7 +1344,7 @@ def Test_disassemble_list_slice()
         '\d PUSHNR 3\_s*' ..
         '\d NEWLIST size 3\_s*' ..
         '\d STORE $0\_s*' ..
-        'var res = l\[1:8]\_s*' ..
+        'var res = l\[1 : 8]\_s*' ..
         '\d LOAD $0\_s*' ..
         '\d PUSHNR 1\_s*' ..
         '\d PUSHNR 8\_s*' ..
@@ -1405,14 +1405,14 @@ def Test_disassemble_any_index()
 enddef
 
 def AnySlice(): list<number>
-  var res = g:somelist[1:3]
+  var res = g:somelist[1 : 3]
   return res
 enddef
 
 def Test_disassemble_any_slice()
   var instr = execute('disassemble AnySlice')
   assert_match('AnySlice\_s*' ..
-        'var res = g:somelist\[1:3\]\_s*' ..
+        'var res = g:somelist\[1 : 3\]\_s*' ..
         '\d LOADG g:somelist\_s*' ..
         '\d PUSHNR 1\_s*' ..
         '\d PUSHNR 3\_s*' ..

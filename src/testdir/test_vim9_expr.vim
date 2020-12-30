@@ -1718,6 +1718,15 @@ def Test_expr7_list()
       Main()
   END
   CheckScriptFailure(lines, 'E1127:')
+
+  lines =<< trim END
+      var numbers = [1, 2, 3, 4]
+      var a = 1
+      var b = 2
+  END
+  CheckDefAndScriptFailure(lines + ['echo numbers[1:b]'], 'E1004:', 4)
+  CheckDefAndScriptFailure(lines + ['echo numbers[1: b]'], 'E1004:', 4)
+  CheckDefAndScriptFailure(lines + ['echo numbers[a :b]'], 'E1004:', 4)
 enddef
 
 def Test_expr7_list_vim9script()
@@ -2274,13 +2283,13 @@ def Test_expr7_any_index_slice()
     assert_equal('', g:teststring[-1])
     assert_equal('', g:teststring[99])
 
-    assert_equal('b', g:teststring[1:1])
-    assert_equal('bcdef', g:teststring[1:])
-    assert_equal('abcd', g:teststring[:3])
-    assert_equal('cdef', g:teststring[-4:])
-    assert_equal('abcdef', g:teststring[-9:])
-    assert_equal('abcd', g:teststring[:-3])
-    assert_equal('', g:teststring[:-9])
+    assert_equal('b', g:teststring[1 : 1])
+    assert_equal('bcdef', g:teststring[1 :])
+    assert_equal('abcd', g:teststring[: 3])
+    assert_equal('cdef', g:teststring[-4 :])
+    assert_equal('abcdef', g:teststring[-9 :])
+    assert_equal('abcd', g:teststring[: -3])
+    assert_equal('', g:teststring[: -9])
 
     # blob index cannot be out of range
     g:testblob = 0z01ab
@@ -2290,13 +2299,13 @@ def Test_expr7_any_index_slice()
     assert_equal(0x01, g:testblob[-2])
 
     # blob slice accepts out of range
-    assert_equal(0z01ab, g:testblob[0:1])
-    assert_equal(0z01, g:testblob[0:0])
-    assert_equal(0z01, g:testblob[-2:-2])
-    assert_equal(0zab, g:testblob[1:1])
-    assert_equal(0zab, g:testblob[-1:-1])
-    assert_equal(0z, g:testblob[2:2])
-    assert_equal(0z, g:testblob[0:-3])
+    assert_equal(0z01ab, g:testblob[0 : 1])
+    assert_equal(0z01, g:testblob[0 : 0])
+    assert_equal(0z01, g:testblob[-2 : -2])
+    assert_equal(0zab, g:testblob[1 : 1])
+    assert_equal(0zab, g:testblob[-1 : -1])
+    assert_equal(0z, g:testblob[2 : 2])
+    assert_equal(0z, g:testblob[0 : -3])
 
     # list index cannot be out of range
     g:testlist = [0, 1, 2, 3]
@@ -2308,19 +2317,19 @@ def Test_expr7_any_index_slice()
     assert_equal(1, g:testlist[g:theone])
 
     # list slice accepts out of range
-    assert_equal([0], g:testlist[0:0])
-    assert_equal([3], g:testlist[3:3])
-    assert_equal([0, 1], g:testlist[0:1])
-    assert_equal([0, 1, 2, 3], g:testlist[0:3])
-    assert_equal([0, 1, 2, 3], g:testlist[0:9])
-    assert_equal([], g:testlist[-1:1])
-    assert_equal([1], g:testlist[-3:1])
-    assert_equal([0, 1], g:testlist[-4:1])
-    assert_equal([0, 1], g:testlist[-9:1])
-    assert_equal([1, 2, 3], g:testlist[1:-1])
-    assert_equal([1], g:testlist[1:-3])
-    assert_equal([], g:testlist[1:-4])
-    assert_equal([], g:testlist[1:-9])
+    assert_equal([0], g:testlist[0 : 0])
+    assert_equal([3], g:testlist[3 : 3])
+    assert_equal([0, 1], g:testlist[0 : 1])
+    assert_equal([0, 1, 2, 3], g:testlist[0 : 3])
+    assert_equal([0, 1, 2, 3], g:testlist[0 : 9])
+    assert_equal([], g:testlist[-1 : 1])
+    assert_equal([1], g:testlist[-3 : 1])
+    assert_equal([0, 1], g:testlist[-4 : 1])
+    assert_equal([0, 1], g:testlist[-9 : 1])
+    assert_equal([1, 2, 3], g:testlist[1 : -1])
+    assert_equal([1], g:testlist[1 : -3])
+    assert_equal([], g:testlist[1 : -4])
+    assert_equal([], g:testlist[1 : -9])
 
     g:testdict = {a: 1, b: 2}
     assert_equal(1, g:testdict['a'])
@@ -2340,8 +2349,8 @@ def Test_expr7_any_index_slice()
   CheckDefExecFailure(['echo g:testlist[-5]'], 'E684:', 1)
   CheckScriptFailure(['vim9script', 'echo g:testlist[-5]'], 'E684:', 2)
 
-  CheckDefExecFailure(['echo g:testdict["a":"b"]'], 'E719:', 1)
-  CheckScriptFailure(['vim9script', 'echo g:testdict["a":"b"]'], 'E719:', 2)
+  CheckDefExecFailure(['echo g:testdict["a" : "b"]'], 'E719:', 1)
+  CheckScriptFailure(['vim9script', 'echo g:testdict["a" : "b"]'], 'E719:', 2)
   CheckDefExecFailure(['echo g:testdict[1]'], 'E716:', 1)
   CheckScriptFailure(['vim9script', 'echo g:testdict[1]'], 'E716:', 2)
 
@@ -2746,45 +2755,45 @@ def Test_expr7_string_subscript()
     assert_equal('', text[6])
     assert_equal('', text[999])
 
-    assert_equal('ábçdëf', text[0:-1])
-    assert_equal('ábçdëf', text[0 :-1])
-    assert_equal('ábçdëf', text[0: -1])
+    assert_equal('ábçdëf', text[0 : -1])
+    assert_equal('ábçdëf', text[0 : -1])
+    assert_equal('ábçdëf', text[0 : -1])
     assert_equal('ábçdëf', text[0 : -1])
     assert_equal('ábçdëf', text[0
-                  :-1])
-    assert_equal('ábçdëf', text[0:
+                  : -1])
+    assert_equal('ábçdëf', text[0 :
                   -1])
     assert_equal('ábçdëf', text[0 : -1
                   ])
-    assert_equal('bçdëf', text[1:-1])
-    assert_equal('çdëf', text[2:-1])
-    assert_equal('dëf', text[3:-1])
-    assert_equal('ëf', text[4:-1])
-    assert_equal('f', text[5:-1])
-    assert_equal('', text[6:-1])
-    assert_equal('', text[999:-1])
+    assert_equal('bçdëf', text[1 : -1])
+    assert_equal('çdëf', text[2 : -1])
+    assert_equal('dëf', text[3 : -1])
+    assert_equal('ëf', text[4 : -1])
+    assert_equal('f', text[5 : -1])
+    assert_equal('', text[6 : -1])
+    assert_equal('', text[999 : -1])
 
-    assert_equal('ábçd', text[:3])
-    assert_equal('bçdëf', text[1:])
+    assert_equal('ábçd', text[: 3])
+    assert_equal('bçdëf', text[1 :])
     assert_equal('ábçdëf', text[:])
   END
   CheckDefSuccess(lines)
   CheckScriptSuccess(['vim9script'] + lines)
 
   lines =<< trim END
-      var d = 'asdf'[1:
+      var d = 'asdf'[1 :
   END
   CheckDefFailure(lines, 'E1097:', 3)
   lines =<< trim END
-      var d = 'asdf'[1:xxx]
+      var d = 'asdf'[1 : xxx]
   END
   CheckDefFailure(lines, 'E1001:', 1)
   lines =<< trim END
-      var d = 'asdf'[1:2
+      var d = 'asdf'[1 : 2
   END
   CheckDefFailure(lines, 'E1097:', 3)
   lines =<< trim END
-      var d = 'asdf'[1:2
+      var d = 'asdf'[1 : 2
       echo d
   END
   CheckDefFailure(lines, 'E111:', 2)
@@ -2794,12 +2803,12 @@ def Test_expr7_string_subscript()
   END
   CheckDefFailure(lines, 'E1012: Type mismatch; expected number but got string', 1)
   lines =<< trim END
-      var d = 'asdf'['1':2]
+      var d = 'asdf'['1' : 2]
       echo d
   END
   CheckDefFailure(lines, 'E1012: Type mismatch; expected number but got string', 1)
   lines =<< trim END
-      var d = 'asdf'[1:'2']
+      var d = 'asdf'[1 : '2']
       echo d
   END
   CheckDefFailure(lines, 'E1012: Type mismatch; expected number but got string', 1)
@@ -2813,22 +2822,22 @@ def Test_expr7_list_subscript()
     assert_equal(4, list[-1])
     assert_equal(0, list[-5])
 
-    assert_equal([0, 1, 2, 3, 4], list[0:4])
+    assert_equal([0, 1, 2, 3, 4], list[0 : 4])
     assert_equal([0, 1, 2, 3, 4], list[:])
-    assert_equal([1, 2, 3, 4], list[1:])
-    assert_equal([2, 3, 4], list[2:-1])
-    assert_equal([4], list[4:-1])
-    assert_equal([], list[5:-1])
-    assert_equal([], list[999:-1])
-    assert_equal([1, 2, 3, 4], list[g:theone:g:thefour])
+    assert_equal([1, 2, 3, 4], list[1 :])
+    assert_equal([2, 3, 4], list[2 : -1])
+    assert_equal([4], list[4 : -1])
+    assert_equal([], list[5 : -1])
+    assert_equal([], list[999 : -1])
+    assert_equal([1, 2, 3, 4], list[g:theone : g:thefour])
 
-    assert_equal([0, 1, 2, 3], list[0:3])
-    assert_equal([0], list[0:0])
-    assert_equal([0, 1, 2, 3, 4], list[0:-1])
-    assert_equal([0, 1, 2], list[0:-3])
-    assert_equal([0], list[0:-5])
-    assert_equal([], list[0:-6])
-    assert_equal([], list[0:-99])
+    assert_equal([0, 1, 2, 3], list[0 : 3])
+    assert_equal([0], list[0 : 0])
+    assert_equal([0, 1, 2, 3, 4], list[0 : -1])
+    assert_equal([0, 1, 2], list[0 : -3])
+    assert_equal([0], list[0 : -5])
+    assert_equal([], list[0 : -6])
+    assert_equal([], list[0 : -99])
   END
   CheckDefSuccess(lines)
   CheckScriptSuccess(['vim9script'] + lines)

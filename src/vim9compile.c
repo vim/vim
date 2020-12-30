@@ -3695,19 +3695,33 @@ compile_subscript(
 	    if (may_get_next_line_error(p, arg, cctx) == FAIL)
 		return FAIL;
 	    if (**arg == ':')
+	    {
 		// missing first index is equal to zero
 		generate_PUSHNR(cctx, 0);
+	    }
 	    else
 	    {
 		if (compile_expr0(arg, cctx) == FAIL)
 		    return FAIL;
+		if (**arg == ':')
+		{
+		    semsg(_(e_white_space_required_before_and_after_str), ":");
+		    return FAIL;
+		}
 		if (may_get_next_line_error(p, arg, cctx) == FAIL)
 		    return FAIL;
 		*arg = skipwhite(*arg);
 	    }
 	    if (**arg == ':')
 	    {
-		*arg = skipwhite(*arg + 1);
+		is_slice = TRUE;
+		++*arg;
+		if (!IS_WHITE_OR_NUL(**arg) && **arg != ']')
+		{
+		    semsg(_(e_white_space_required_before_and_after_str), ":");
+		    return FAIL;
+		}
+		*arg = skipwhite(*arg);
 		if (may_get_next_line_error(p, arg, cctx) == FAIL)
 		    return FAIL;
 		if (**arg == ']')
@@ -3721,7 +3735,6 @@ compile_subscript(
 			return FAIL;
 		    *arg = skipwhite(*arg);
 		}
-		is_slice = TRUE;
 	    }
 
 	    if (**arg != ']')
