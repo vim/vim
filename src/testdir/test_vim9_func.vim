@@ -260,6 +260,11 @@ def Test_nested_function()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_not_nested_function()
+  echo printf('%d',
+      function('len')('xxx'))
+enddef
+
 func Test_call_default_args_from_func()
   call MyDefaultArgs()->assert_equal('string')
   call MyDefaultArgs('one')->assert_equal('one')

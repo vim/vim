@@ -2925,6 +2925,27 @@ list_functions(regmatch_T *regmatch)
 }
 
 /*
+ * Check if "*cmd" points to a function command and if so advance "*cmd" and
+ * return TRUE.
+ * Otherwise return FALSE;
+ * Do not consider "function(" to be a command.
+ */
+    static int
+is_function_cmd(char_u **cmd)
+{
+    char_u *p = *cmd;
+
+    if (checkforcmd(&p, "function", 2))
+    {
+	if (*p == '(')
+	    return FALSE;
+	*cmd = p;
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
  * ":function" also supporting nested ":def".
  * When "name_arg" is not NULL this is a nested function, using "name_arg" for
  * the function name.
@@ -3426,7 +3447,7 @@ define_function(exarg_T *eap, char_u *name_arg)
 	    // Only recognize "def" inside "def", not inside "function",
 	    // For backwards compatibility, see Test_function_python().
 	    c = *p;
-	    if (checkforcmd(&p, "function", 2)
+	    if (is_function_cmd(&p)
 		    || (eap->cmdidx == CMD_def && checkforcmd(&p, "def", 3)))
 	    {
 		if (*p == '!')
