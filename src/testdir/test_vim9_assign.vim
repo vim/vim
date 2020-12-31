@@ -66,7 +66,7 @@ def Test_assignment()
   CheckDefFailure(['var x:string'], 'E1069:')
   CheckDefFailure(['var x:string = "x"'], 'E1069:')
   CheckDefFailure(['var a:string = "x"'], 'E1069:')
-  CheckDefFailure(['var lambda = {-> "lambda"}'], 'E704:')
+  CheckDefFailure(['var lambda = () => "lambda"'], 'E704:')
   CheckScriptFailure(['var x = "x"'], 'E1124:')
 
   var nr: number = 1234
@@ -1032,11 +1032,11 @@ def Test_assign_lambda()
   # check if assign a lambda to a variable which type is func or any.
   var lines =<< trim END
       vim9script
-      var FuncRef = {-> 123}
+      var FuncRef = () => 123
       assert_equal(123, FuncRef())
-      var FuncRef_Func: func = {-> 123}
+      var FuncRef_Func: func = () => 123
       assert_equal(123, FuncRef_Func())
-      var FuncRef_Any: any = {-> 123}
+      var FuncRef_Any: any = () => 123
       assert_equal(123, FuncRef_Any())
   END
   CheckScriptSuccess(lines)

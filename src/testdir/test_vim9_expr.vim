@@ -1806,58 +1806,56 @@ def Test_expr7_list_vim9script()
 enddef
 
 def LambdaWithComments(): func
-  return {x ->
+  return (x) =>
             # some comment
             x == 1
             # some comment
             ||
             x == 2
-        }
 enddef
 
 def LambdaUsingArg(x: number): func
-  return {->
+  return () =>
             # some comment
             x == 1
             # some comment
             ||
             x == 2
-        }
 enddef
 
 def Test_expr7_lambda()
   var lines =<< trim END
-      var La = { -> 'result'}
+      var La = () => 'result'
       assert_equal('result', La())
-      assert_equal([1, 3, 5], [1, 2, 3]->map({key, val -> key + val}))
+      assert_equal([1, 3, 5], [1, 2, 3]->map((key, val) => key + val))
 
       # line continuation inside lambda with "cond ? expr : expr" works
       var ll = range(3)
-      map(ll, {k, v -> v % 2 ? {
+      map(ll, (k, v) => v % 2 ? {
                 ['111']: 111 } : {}
-            })
+            )
       assert_equal([{}, {111: 111}, {}], ll)
 
       ll = range(3)
-      map(ll, {k, v -> v == 8 || v
+      map(ll, (k, v) => v == 8 || v
                     == 9
                     || v % 2 ? 111 : 222
-            })
+            )
       assert_equal([222, 111, 222], ll)
 
       ll = range(3)
-      map(ll, {k, v -> v != 8 && v
+      map(ll, (k, v) => v != 8 && v
                     != 9
                     && v % 2 == 0 ? 111 : 222
-            })
+            )
       assert_equal([111, 222, 111], ll)
 
-      var dl = [{key: 0}, {key: 22}]->filter({ _, v -> v['key'] })
+      var dl = [{key: 0}, {key: 22}]->filter(( _, v) => v['key'] )
       assert_equal([{key: 22}], dl)
 
       dl = [{key: 12}, {['foo']: 34}]
       assert_equal([{key: 12}], filter(dl,
-            {_, v -> has_key(v, 'key') ? v['key'] == 12 : 0}))
+            (_, v) => has_key(v, 'key') ? v['key'] == 12 : 0))
 
       assert_equal(false, LambdaWithComments()(0))
       assert_equal(true, LambdaWithComments()(1))
@@ -1867,33 +1865,31 @@ def Test_expr7_lambda()
       assert_equal(false, LambdaUsingArg(0)())
       assert_equal(true, LambdaUsingArg(1)())
 
-      var res = map([1, 2, 3], {i: number, v: number -> i + v})
+      var res = map([1, 2, 3], (i: number, v: number) => i + v)
       assert_equal([1, 3, 5], res)
   END
   CheckDefAndScriptSuccess(lines)
 
-  CheckDefFailure(["var Ref = {a->a + 1}"], 'E1004:')
-  CheckDefFailure(["var Ref = {a-> a + 1}"], 'E1004:')
-  CheckDefFailure(["var Ref = {a ->a + 1}"], 'E1004:')
+  CheckDefFailure(["var Ref = (a)=>a + 1"], 'E1004:')
+  CheckDefFailure(["var Ref = (a)=> a + 1"], 'E1004:')
+  CheckDefFailure(["var Ref = (a) =>a + 1"], 'E1004:')
 
-  CheckDefFailure(["filter([1, 2], {k,v -> 1})"], 'E1069:', 1)
+  CheckDefFailure(["filter([1, 2], (k,v) => 1)"], 'E1069:', 1)
   # error is in first line of the lambda
-  CheckDefFailure(["var L = {a -> a + b}"], 'E1001:', 0)
+  CheckDefFailure(["var L = (a) => a + b"], 'E1001:', 0)
 
-  assert_equal('xxxyyy', 'xxx'->{a, b -> a .. b}('yyy'))
+  assert_equal('xxxyyy', 'xxx'->((a, b) => a .. b)('yyy'))
 
-  CheckDefExecFailure(["var s = 'asdf'->{a -> a}('x')"],
-        'E1106: One argument too many')
-  CheckDefExecFailure(["var s = 'asdf'->{a -> a}('x', 'y')"],
-        'E1106: 2 arguments too many')
-  CheckDefFailure(["echo 'asdf'->{a -> a}(x)"], 'E1001:', 1)
+  CheckDefExecFailure(["var s = 'asdf'->((a) => a)('x')"], 'E118:')
+  CheckDefExecFailure(["var s = 'asdf'->((a) => a)('x', 'y')"], 'E118:')
+  CheckDefFailure(["echo 'asdf'->((a) => a)(x)"], 'E1001:', 1)
 
-  CheckDefSuccess(['var Fx = {a -> {k1: 0,', ' k2: 1}}'])
-  CheckDefFailure(['var Fx = {a -> {k1: 0', ' k2: 1}}'], 'E722:', 2)
-  CheckDefFailure(['var Fx = {a -> {k1: 0,', ' k2 1}}'], 'E720:', 2)
+  CheckDefSuccess(['var Fx = (a) => ({k1: 0,', ' k2: 1})'])
+  CheckDefFailure(['var Fx = (a) => ({k1: 0', ' k2: 1})'], 'E722:', 2)
+  CheckDefFailure(['var Fx = (a) => ({k1: 0,', ' k2 1})'], 'E720:', 2)
 
-  CheckDefSuccess(['var Fx = {a -> [0,', ' 1]}'])
-  CheckDefFailure(['var Fx = {a -> [0', ' 1]}'], 'E696:', 2)
+  CheckDefSuccess(['var Fx = (a) => [0,', ' 1]'])
+  CheckDefFailure(['var Fx = (a) => [0', ' 1]'], 'E696:', 2)
 enddef
 
 def NewLambdaWithComments(): func
@@ -2002,10 +1998,10 @@ enddef
 def Test_expr7_lambda_vim9script()
   var lines =<< trim END
       vim9script
-      var v = 10->{a ->
+      var v = 10->((a) =>
 	    a
 	      + 2
-	  }()
+            )()
       assert_equal(12, v)
   END
   CheckScriptSuccess(lines)
@@ -2013,9 +2009,9 @@ def Test_expr7_lambda_vim9script()
   # nested lambda with line breaks
   lines =<< trim END
       vim9script
-      search('"', 'cW', 0, 0, {->
+      search('"', 'cW', 0, 0, () =>
 	synstack('.', col('.'))
-	->map({_, v -> synIDattr(v, 'name')})->len()})
+          ->map((_, v) => synIDattr(v, 'name'))->len())
   END
   CheckScriptSuccess(lines)
 enddef
@@ -2089,8 +2085,8 @@ def Test_expr7_dict()
   CheckDefFailure(["var x = 'a' .. #{a: 1}"], 'E1097:', 3)
 
   CheckDefFailure(["var x = {a:8}"], 'E1069:', 1)
-  CheckDefFailure(["var x = {a : 8}"], 'E1059:', 1)
-  CheckDefFailure(["var x = {a :8}"], 'E1059:', 1)
+  CheckDefFailure(["var x = {a : 8}"], 'E1068:', 1)
+  CheckDefFailure(["var x = {a :8}"], 'E1068:', 1)
   CheckDefFailure(["var x = {a: 8 , b: 9}"], 'E1068:', 1)
   CheckDefFailure(["var x = {a: 1,b: 2}"], 'E1069:', 1)
 
@@ -2139,6 +2135,9 @@ def Test_expr7_dict_vim9script()
 		['two']: 2,
 		   }
       assert_equal({one: 1, two: 2}, d)
+
+      var dd = {k: 123->len()}
+      assert_equal(3, dd.k)
   END
   CheckScriptSuccess(lines)
 
@@ -2174,7 +2173,7 @@ def Test_expr7_dict_vim9script()
       vim9script
       var d = {one : 1}
   END
-  CheckScriptFailure(lines, 'E1059:', 2)
+  CheckScriptFailure(lines, 'E1068:', 2)
 
   lines =<< trim END
       vim9script
@@ -2629,7 +2628,7 @@ def Test_expr7_not()
       unlet g:false
 
       assert_equal(true, !test_null_partial())
-      assert_equal(false, !{-> 'yes'})
+      assert_equal(false, !() => 'yes')
 
       assert_equal(true, !test_null_dict())
       assert_equal(true, !{})
@@ -2668,8 +2667,8 @@ func Test_expr7_fails()
   call CheckDefFailure(["var x = [1, 2"], "E697:", 2)
   call CheckDefFailure(["var x = [notfound]"], "E1001:", 1)
 
-  call CheckDefFailure(["var x = { -> 123) }"], "E451:", 1)
-  call CheckDefFailure(["var x = 123->{x -> x + 5) }"], "E451:", 1)
+  call CheckDefFailure(["var X = () => 123)"], "E488:", 1)
+  call CheckDefFailure(["var x = 123->((x) => x + 5)"], "E107:", 1)
 
   call CheckDefFailure(["var x = &notexist"], 'E113:', 1)
   call CheckDefFailure(["&grepprg = [343]"], 'E1012:', 1)
@@ -2691,7 +2690,7 @@ func Test_expr7_fails()
   call CheckDefFailure(["'yes'->", "Echo()"], 'E488: Trailing characters: ->', 1)
 
   call CheckDefExecFailure(["[1, 2->len()"], 'E697:', 2)
-  call CheckDefExecFailure(["{a: 1->len()"], 'E1004:', 1)
+  call CheckDefExecFailure(["{a: 1->len()"], 'E723:', 2)
   call CheckDefExecFailure(["{['a']: 1->len()"], 'E723:', 2)
 endfunc
 
@@ -2725,12 +2724,12 @@ def Test_expr7_trailing()
 
   # method call
   l = [2, 5, 6]
-  l->map({k, v -> k + v})
+  l->map((k, v) => k + v)
   assert_equal([2, 6, 8], l)
 
   # lambda method call
   l = [2, 5]
-  l->{l -> add(l, 8)}()
+  l->((l) => add(l, 8))()
   assert_equal([2, 5, 8], l)
 
   # dict member
@@ -2895,8 +2894,8 @@ def Test_expr7_subscript_linebreak()
 enddef
 
 func Test_expr7_trailing_fails()
-  call CheckDefFailure(['var l = [2]', 'l->{l -> add(l, 8)}'], 'E107:', 2)
-  call CheckDefFailure(['var l = [2]', 'l->{l -> add(l, 8)} ()'], 'E274:', 2)
+  call CheckDefFailure(['var l = [2]', 'l->((l) => add(l, 8))'], 'E107:', 2)
+  call CheckDefFailure(['var l = [2]', 'l->((l) => add(l, 8)) ()'], 'E274:', 2)
 endfunc
 
 func Test_expr_fails()

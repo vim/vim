@@ -2938,7 +2938,7 @@ compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 }
 
 /*
- * parse a lambda: "{arg, arg -> expr}" or "(arg, arg) => expr"
+ * Parse a lambda: "(arg, arg) => expr"
  * "*arg" points to the '{'.
  * Returns OK/FAIL when a lambda is recognized, NOTDONE if it's not a lambda.
  */
@@ -2985,52 +2985,6 @@ compile_lambda(char_u **arg, cctx_T *cctx)
 
     func_ptr_unref(ufunc);
     return FAIL;
-}
-
-/*
- * Compile a lamda call: expr->{lambda}(args)
- * "arg" points to the "{".
- */
-    static int
-compile_lambda_call(char_u **arg, cctx_T *cctx)
-{
-    ufunc_T	*ufunc;
-    typval_T	rettv;
-    int		argcount = 1;
-    int		ret = FAIL;
-
-    // Get the funcref in "rettv".
-    if (get_lambda_tv(arg, &rettv, TRUE, &EVALARG_EVALUATE) == FAIL)
-	return FAIL;
-
-    if (**arg != '(')
-    {
-	if (*skipwhite(*arg) == '(')
-	    emsg(_(e_nowhitespace));
-	else
-	    semsg(_(e_missing_paren), "lambda");
-	clear_tv(&rettv);
-	return FAIL;
-    }
-
-    ufunc = rettv.vval.v_partial->pt_func;
-    ++ufunc->uf_refcount;
-    clear_tv(&rettv);
-    ga_init2(&ufunc->uf_type_list, sizeof(type_T *), 10);
-
-    // The function will have one line: "return {expr}".  Compile it into
-    // instructions so that we get any errors right now.
-    compile_def_function(ufunc, TRUE, cctx);
-
-    // compile the arguments
-    *arg = skipwhite(*arg + 1);
-    if (compile_arguments(arg, cctx, &argcount) == OK)
-	// call the compiled function
-	ret = generate_CALL(cctx, ufunc, argcount);
-
-    if (ret == FAIL)
-	func_ptr_unref(ufunc);
-    return ret;
 }
 
 /*
@@ -3602,14 +3556,7 @@ compile_subscript(
 	    p += 2;
 	    *arg = skipwhite(p);
 	    // No line break supported right after "->".
-	    if (**arg == '{')
-	    {
-		// lambda call:  list->{lambda}
-		// TODO: remove this
-		if (compile_lambda_call(arg, cctx) == FAIL)
-		    return FAIL;
-	    }
-	    else if (**arg == '(')
+	    if (**arg == '(')
 	    {
 		int	    argcount = 1;
 		char_u	    *expr;
@@ -3631,7 +3578,10 @@ compile_subscript(
 		++*arg;
 		if (**arg != '(')
 		{
-		    semsg(_(e_missing_paren), *arg);
+		    if (*skipwhite(*arg) == '(')
+			emsg(_(e_nowhitespace));
+		    else
+			semsg(_(e_missing_paren), *arg);
 		    return FAIL;
 		}
 
@@ -4005,16 +3955,9 @@ compile_expr7(
 		    break;
 
 	/*
-	 * Lambda: {arg, arg -> expr}
 	 * Dictionary: {'key': val, 'key': val}
 	 */
-	case '{':   // Try parsing as a lambda, if NOTDONE is returned it
-		    // must be a dict.
-		    // TODO: if we go with the "(arg) => expr" syntax remove
-		    // this
-		    ret = compile_lambda(arg, cctx);
-		    if (ret == NOTDONE)
-			ret = compile_dict(arg, cctx, ppconst);
+	case '{':   ret = compile_dict(arg, cctx, ppconst);
 		    break;
 
 	/*

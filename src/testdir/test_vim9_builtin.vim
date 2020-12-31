@@ -231,7 +231,7 @@ def Test_extend_arg_types()
   assert_equal({a: 1, b: 2}, extend({a: 1, b: 2}, {b: 4}, s:string_keep))
 
   var res: list<dict<any>>
-  extend(res, map([1, 2], {_, v -> {}}))
+  extend(res, map([1, 2], (_, v) => ({})))
   assert_equal([{}, {}], res)
 
   CheckDefFailure(['extend([1, 2], 3)'], 'E1013: Argument 2: type mismatch, expected list<number> but got number')
@@ -254,7 +254,7 @@ enddef
 
 
 def Wrong_dict_key_type(items: list<number>): list<number>
-  return filter(items, {_, val -> get({[val]: 1}, 'x')})
+  return filter(items, (_, val) => get({[val]: 1}, 'x'))
 enddef
 
 def Test_map_function_arg()
@@ -313,7 +313,7 @@ def Test_filter_wrong_dict_key_type()
 enddef
 
 def Test_filter_return_type()
-  var l = filter([1, 2, 3], {-> 1})
+  var l = filter([1, 2, 3], () => 1)
   var res = 0
   for n in l
     res += n
@@ -323,7 +323,7 @@ enddef
 
 def Test_filter_missing_argument()
   var dict = {aa: [1], ab: [2], ac: [3], de: [4]}
-  var res = dict->filter({k -> k =~ 'a' && k !~ 'b'})
+  var res = dict->filter((k) => k =~ 'a' && k !~ 'b')
   res->assert_equal({aa: [1], ac: [3]})
 enddef
 
@@ -539,8 +539,8 @@ def Test_nr2char()
 enddef
 
 def Test_readdir()
-   eval expand('sautest')->readdir({e -> e[0] !=# '.'})
-   eval expand('sautest')->readdirex({e -> e.name[0] !=# '.'})
+   eval expand('sautest')->readdir((e) => e[0] !=# '.')
+   eval expand('sautest')->readdirex((e) => e.name[0] !=# '.')
 enddef
 
 def Test_remove_return_type()
@@ -566,16 +566,16 @@ def Test_search()
   setline(1, ['foo', 'bar'])
   var val = 0
   # skip expr returns boolean
-  search('bar', 'W', 0, 0, {-> val == 1})->assert_equal(2)
+  search('bar', 'W', 0, 0, () => val == 1)->assert_equal(2)
   :1
-  search('bar', 'W', 0, 0, {-> val == 0})->assert_equal(0)
+  search('bar', 'W', 0, 0, () => val == 0)->assert_equal(0)
   # skip expr returns number, only 0 and 1 are accepted
   :1
-  search('bar', 'W', 0, 0, {-> 0})->assert_equal(2)
+  search('bar', 'W', 0, 0, () => 0)->assert_equal(2)
   :1
-  search('bar', 'W', 0, 0, {-> 1})->assert_equal(0)
-  assert_fails("search('bar', '', 0, 0, {-> -1})", 'E1023:')
-  assert_fails("search('bar', '', 0, 0, {-> -1})", 'E1023:')
+  search('bar', 'W', 0, 0, () => 1)->assert_equal(0)
+  assert_fails("search('bar', '', 0, 0, () => -1)", 'E1023:')
+  assert_fails("search('bar', '', 0, 0, () => -1)", 'E1023:')
 enddef
 
 def Test_searchcount()
@@ -667,7 +667,7 @@ enddef
 
 def Test_submatch()
   var pat = 'A\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)'
-  var Rep = {-> range(10)->map({_, v -> submatch(v, true)})->string()}
+  var Rep = () => range(10)->map((_, v) => submatch(v, true))->string()
   var actual = substitute('A123456789', pat, Rep, '')
   var expected = "[['A123456789'], ['1'], ['2'], ['3'], ['4'], ['5'], ['6'], ['7'], ['8'], ['9']]"
   actual->assert_equal(expected)
@@ -703,7 +703,7 @@ def Test_term_start()
 enddef
 
 def Test_timer_paused()
-  var id = timer_start(50, {-> 0})
+  var id = timer_start(50, () => 0)
   timer_pause(id, true)
   var info = timer_info(id)
   info[0]['paused']->assert_equal(1)

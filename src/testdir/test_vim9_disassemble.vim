@@ -896,7 +896,7 @@ def Test_disassemble_channel()
 enddef
 
 def WithLambda(): string
-  var F = {a -> "X" .. a .. "X"}
+  var F = (a) => "X" .. a .. "X"
   return F("x")
 enddef
 
@@ -904,7 +904,7 @@ def Test_disassemble_lambda()
   assert_equal("XxX", WithLambda())
   var instr = execute('disassemble WithLambda')
   assert_match('WithLambda\_s*' ..
-        'var F = {a -> "X" .. a .. "X"}\_s*' ..
+        'var F = (a) => "X" .. a .. "X"\_s*' ..
         '\d FUNCREF <lambda>\d\+\_s*' ..
         '\d STORE $0\_s*' ..
         'return F("x")\_s*' ..
@@ -929,7 +929,7 @@ def Test_disassemble_lambda()
 enddef
 
 def LambdaWithType(): number
-  var Ref = {a: number -> a + 10}
+  var Ref = (a: number) => a + 10
   return Ref(g:value)
 enddef
 
@@ -938,7 +938,7 @@ def Test_disassemble_lambda_with_type()
   assert_equal(15, LambdaWithType())
   var instr = execute('disassemble LambdaWithType')
   assert_match('LambdaWithType\_s*' ..
-        'var Ref = {a: number -> a + 10}\_s*' ..
+        'var Ref = (a: number) => a + 10\_s*' ..
         '\d FUNCREF <lambda>\d\+\_s*' ..
         '\d STORE $0\_s*' ..
         'return Ref(g:value)\_s*' ..
@@ -1541,10 +1541,10 @@ def Test_disassemble_compare()
         ['{a: 1} is aDict', 'COMPAREDICT is'],
         ['{a: 1} isnot aDict', 'COMPAREDICT isnot'],
 
-        ['{-> 33} == {-> 44}', 'COMPAREFUNC =='],
-        ['{-> 33} != {-> 44}', 'COMPAREFUNC !='],
-        ['{-> 33} is {-> 44}', 'COMPAREFUNC is'],
-        ['{-> 33} isnot {-> 44}', 'COMPAREFUNC isnot'],
+        ['(() => 33) == (() => 44)', 'COMPAREFUNC =='],
+        ['(() => 33) != (() => 44)', 'COMPAREFUNC !='],
+        ['(() => 33) is (() => 44)', 'COMPAREFUNC is'],
+        ['(() => 33) isnot (() => 44)', 'COMPAREFUNC isnot'],
 
         ['77 == g:xx', 'COMPAREANY =='],
         ['77 != g:xx', 'COMPAREANY !='],

@@ -1162,7 +1162,7 @@ def Run_Test_import_fails_on_command_line()
 
   var buf = RunVimInTerminal('-c "import Foo from ''./XexportCmd.vim''"', {
                 rows: 6, wait_for_ruler: 0})
-  WaitForAssert({-> assert_match('^E1094:', term_getline(buf, 5))})
+  WaitForAssert(() => assert_match('^E1094:', term_getline(buf, 5)))
 
   delete('XexportCmd.vim')
   StopVimInTerminal(buf)
@@ -3064,7 +3064,7 @@ def Run_Test_define_func_at_command_line()
   # define Afunc() on the command line
   term_sendkeys(buf, ":def Afunc()\<CR>Bfunc()\<CR>enddef\<CR>")
   term_sendkeys(buf, ":call CheckAndQuit()\<CR>")
-  WaitForAssert({-> assert_equal(['errors: []'], readfile('Xdidcmd'))})
+  WaitForAssert(() => assert_equal(['errors: []'], readfile('Xdidcmd')))
 
   call StopVimInTerminal(buf)
   delete('XcallFunc')
