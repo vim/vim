@@ -664,6 +664,8 @@ get_lambda_tv(
 		if (fp->uf_ret_type == NULL)
 		    goto errret;
 	    }
+	    else
+		fp->uf_ret_type = &t_unknown;
 	}
 
 	fp->uf_lines = newlines;
