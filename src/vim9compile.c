@@ -4837,7 +4837,8 @@ compile_return(char_u *arg, int check_return_type, cctx_T *cctx)
 	if (cctx->ctx_skip != SKIP_YES)
 	{
 	    stack_type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-	    if (check_return_type && cctx->ctx_ufunc->uf_ret_type == NULL)
+	    if (check_return_type && (cctx->ctx_ufunc->uf_ret_type == NULL
+				|| cctx->ctx_ufunc->uf_ret_type == &t_unknown))
 	    {
 		cctx->ctx_ufunc->uf_ret_type = stack_type;
 	    }

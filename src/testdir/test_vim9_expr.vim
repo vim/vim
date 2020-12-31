@@ -2077,6 +2077,10 @@ def Test_expr7_dict()
       assert_equal(g:test_hash_dict, {one: 1, two: 2})
 
       assert_equal({['a a']: 1, ['b/c']: 2}, {'a a': 1, "b/c": 2})
+
+      var d = {a: () => 3, b: () => 7}
+      assert_equal(3, d.a())
+      assert_equal(7, d.b())
   END
   CheckDefAndScriptSuccess(lines)
  
