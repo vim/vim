@@ -45,6 +45,9 @@ def Test_assignment_bool()
     assert_equal(true, flag)
     flag = 1 && false
     assert_equal(false, flag)
+
+    var cp: bool = &cp
+    var fen: bool = &l:fen
   END
   CheckScriptSuccess(lines)
   CheckDefAndScriptFailure(['var x: bool = 2'], 'E1012:')
@@ -118,6 +121,8 @@ def Test_assignment()
   assert_equal('new', s:newVar)
 
   set ts=7
+  var ts: number = &ts
+  assert_equal(7, ts)
   &ts += 1
   assert_equal(8, &ts)
   &ts -= 3

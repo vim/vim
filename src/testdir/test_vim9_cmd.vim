@@ -590,7 +590,7 @@ def Test_command_modifier_other()
   unlet g:readFile
 
   noswapfile edit XnoSwap
-  assert_equal(0, &l:swapfile)
+  assert_equal(false, &l:swapfile)
   bwipe!
 
   var caught = false

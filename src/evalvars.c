@@ -1354,7 +1354,7 @@ ex_let_one(
 	else
 	{
 	    long	n = 0;
-	    int		opt_type;
+	    getoption_T	opt_type;
 	    long	numval;
 	    char_u	*stringval = NULL;
 	    char_u	*s = NULL;
@@ -1364,7 +1364,10 @@ ex_let_one(
 	    *p = NUL;
 
 	    opt_type = get_option_value(arg, &numval, &stringval, opt_flags);
-	    if ((opt_type == 1 || opt_type == -1)
+	    if ((opt_type == gov_bool
+			|| opt_type == gov_number
+			|| opt_type == gov_hidden_bool
+			|| opt_type == gov_hidden_number)
 			     && (tv->v_type != VAR_STRING || !in_vim9script()))
 		// number, possibly hidden
 		n = (long)tv_get_number(tv);
@@ -1377,8 +1380,9 @@ ex_let_one(
 
 	    if (op != NULL && *op != '=')
 	    {
-		if ((opt_type == 1 && *op == '.')
-			|| (opt_type == 0 && *op != '.'))
+		if (((opt_type == gov_bool || opt_type == gov_number)
+								 && *op == '.')
+			|| (opt_type == gov_string && *op != '.'))
 		{
 		    semsg(_(e_letwrong), op);
 		    failed = TRUE;  // don't set the value
@@ -1386,7 +1390,9 @@ ex_let_one(
 		}
 		else
 		{
-		    if (opt_type == 1)  // number
+		    // number, in legacy script also bool
+		    if (opt_type == gov_number
+				 || (opt_type == gov_bool && !in_vim9script()))
 		    {
 			switch (*op)
 			{
@@ -1397,7 +1403,8 @@ ex_let_one(
 			    case '%': n = (long)num_modulus(numval, n); break;
 			}
 		    }
-		    else if (opt_type == 0 && stringval != NULL && s != NULL)
+		    else if (opt_type == gov_string
+					     && stringval != NULL && s != NULL)
 		    {
 			// string
 			s = concat_str(stringval, s);
@@ -1409,7 +1416,7 @@ ex_let_one(
 
 	    if (!failed)
 	    {
-		if (opt_type != 0 || s != NULL)
+		if (opt_type != gov_string || s != NULL)
 		{
 		    set_option_value(arg, n, s, opt_flags);
 		    arg_end = p;

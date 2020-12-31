@@ -5191,9 +5191,9 @@ get_var_dest(
 
     if (*name == '&')
     {
-	int	cc;
-	long	numval;
-	int	opt_type;
+	int		cc;
+	long		numval;
+	getoption_T	opt_type;
 
 	*dest = dest_option;
 	if (cmdidx == CMD_final || cmdidx == CMD_const)
@@ -5214,15 +5214,24 @@ get_var_dest(
 	opt_type = get_option_value(skip_option_env_lead(name),
 						    &numval, NULL, *opt_flags);
 	*p = cc;
-	if (opt_type == -3)
+	switch (opt_type)
 	{
-	    semsg(_(e_unknown_option), name);
-	    return FAIL;
+	    case gov_unknown:
+		    semsg(_(e_unknown_option), name);
+		    return FAIL;
+	    case gov_string:
+	    case gov_hidden_string:
+		    *type = &t_string;
+		    break;
+	    case gov_bool:
+	    case gov_hidden_bool:
+		    *type = &t_bool;
+		    break;
+	    case gov_number:
+	    case gov_hidden_number:
+		    *type = &t_number;
+		    break;
 	}
-	if (opt_type == -2 || opt_type == 0)
-	    *type = &t_string;
-	else
-	    *type = &t_number;	// both number and boolean option
     }
     else if (*name == '$')
     {

@@ -1712,7 +1712,7 @@ get_option(void *data, int argc, Scheme_Object **argv)
     Vim_Prim	    *prim = (Vim_Prim *)data;
     long	    value;
     char	    *strval;
-    int		    rc;
+    getoption_T	    rc;
     Scheme_Object   *rval = NULL;
     Scheme_Object   *name = NULL;
     int		    opt_flags = 0;
@@ -1754,27 +1754,30 @@ get_option(void *data, int argc, Scheme_Object **argv)
 	    scheme_wrong_type(prim->name, "vim-buffer/window", 1, argc, argv);
     }
 
-    rc = get_option_value(BYTE_STRING_VALUE(name), &value, (char_u **)&strval, opt_flags);
+    rc = get_option_value(BYTE_STRING_VALUE(name), &value, (char_u **)&strval,
+								    opt_flags);
     curbuf = save_curb;
     curwin = save_curw;
 
     switch (rc)
     {
-    case 1:
+    case gov_bool:
+    case gov_number:
 	MZ_GC_UNREG();
 	return scheme_make_integer_value(value);
-    case 0:
+    case gov_string:
 	rval = scheme_make_byte_string(strval);
 	MZ_GC_CHECK();
 	vim_free(strval);
 	MZ_GC_UNREG();
 	return rval;
-    case -1:
-    case -2:
+    case gov_hidden_bool:
+    case gov_hidden_number:
+    case gov_hidden_string:
 	MZ_GC_UNREG();
 	raise_vim_exn(_("hidden option"));
 	//NOTREACHED
-    case -3:
+    case gov_unknown:
 	MZ_GC_UNREG();
 	raise_vim_exn(_("unknown option"));
 	//NOTREACHED
