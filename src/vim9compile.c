@@ -3656,7 +3656,8 @@ compile_subscript(
 		    return FAIL;
 		if (**arg == ':')
 		{
-		    semsg(_(e_white_space_required_before_and_after_str), ":");
+		    semsg(_(e_white_space_required_before_and_after_str_at_str),
+								    ":", *arg);
 		    return FAIL;
 		}
 		if (may_get_next_line_error(p, arg, cctx) == FAIL)
@@ -3669,7 +3670,8 @@ compile_subscript(
 		++*arg;
 		if (!IS_WHITE_OR_NUL(**arg) && **arg != ']')
 		{
-		    semsg(_(e_white_space_required_before_and_after_str), ":");
+		    semsg(_(e_white_space_required_before_and_after_str_at_str),
+								    ":", *arg);
 		    return FAIL;
 		}
 		*arg = skipwhite(*arg);
@@ -4067,7 +4069,7 @@ error_white_both(char_u *op, int len)
     char_u	buf[10];
 
     vim_strncpy(buf, op, len);
-    semsg(_(e_white_space_required_before_and_after_str), buf);
+    semsg(_(e_white_space_required_before_and_after_str_at_str), buf, op);
 }
 
 /*
@@ -4434,7 +4436,8 @@ compile_and_or(
 
 	    if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[2]))
 	    {
-		semsg(_(e_white_space_required_before_and_after_str), op);
+		semsg(_(e_white_space_required_before_and_after_str_at_str),
+								     op, *arg);
 		return FAIL;
 	    }
 
@@ -4608,8 +4611,8 @@ compile_expr1(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 
 	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[1 + op_falsy]))
 	{
-	    semsg(_(e_white_space_required_before_and_after_str),
-							op_falsy ? "??" : "?");
+	    semsg(_(e_white_space_required_before_and_after_str_at_str),
+						  op_falsy ? "??" : "?", *arg);
 	    return FAIL;
 	}
 
@@ -4695,7 +4698,8 @@ compile_expr1(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 
 	    if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[1]))
 	    {
-		semsg(_(e_white_space_required_before_and_after_str), ":");
+		semsg(_(e_white_space_required_before_and_after_str_at_str),
+								       ":", p);
 		return FAIL;
 	    }
 

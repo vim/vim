@@ -501,8 +501,8 @@ skip_arrow(
 		|| !IS_WHITE_OR_NUL(s[1])))
     {
 	*white_error = TRUE;
-	semsg(_(e_white_space_required_before_and_after_str),
-						    equal_arrow ? "=>" : "->");
+	semsg(_(e_white_space_required_before_and_after_str_at_str),
+					       equal_arrow ? "=>" : "->", bef);
 	return NULL;
     }
     return skipwhite(s + 1);

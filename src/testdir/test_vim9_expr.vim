@@ -108,7 +108,7 @@ def Test_expr1_trinary_vimscript()
       vim9script
       var name = v:true?1:2
   END
-  CheckScriptFailure(lines, 'E1004:', 2)
+  CheckScriptFailure(lines, 'E1004: White space required before and after ''?'' at "?1:2"', 2)
   lines =<< trim END
       vim9script
       var name = v:true? 1 : 2
@@ -123,7 +123,7 @@ def Test_expr1_trinary_vimscript()
       vim9script
       var name = v:true ? 1: 2
   END
-  CheckScriptFailure(lines, 'E1004:', 2)
+  CheckScriptFailure(lines, 'E1004: White space required before and after '':'' at ": 2"', 2)
   lines =<< trim END
       vim9script
       var name = v:true ? 1 :2
@@ -333,7 +333,7 @@ def Test_expr2_vimscript()
       vim9script
       var name = v:true||v:true
   END
-  CheckScriptFailure(lines, 'E1004:', 2)
+  CheckScriptFailure(lines, 'E1004: White space required before and after ''||'' at "||v:true"', 2)
   lines =<< trim END
       vim9script
       var name = v:true ||v:true
@@ -454,7 +454,7 @@ def Test_expr3_vimscript()
       vim9script
       var name = v:true &&v:true
   END
-  CheckScriptFailure(lines, 'E1004:', 2)
+  CheckScriptFailure(lines, 'E1004: White space required before and after ''&&'' at "&&v:true"', 2)
   lines =<< trim END
       vim9script
       var name = v:true&& v:true
@@ -920,7 +920,7 @@ def Test_expr4_vim9script()
     vim9script
     echo 2>3
   END
-  CheckScriptFailure(lines, 'E1004:', 2)
+  CheckScriptFailure(lines, 'E1004: White space required before and after ''>'' at ">3"', 2)
   lines =<< trim END
     vim9script
     echo 2 >3
@@ -940,7 +940,7 @@ def Test_expr4_vim9script()
     vim9script
     echo 2 !=3
   END
-  CheckScriptFailure(lines, 'E1004:', 2)
+  CheckScriptFailure(lines, 'E1004: White space required before and after ''!'' at "!=3"', 2)
   lines =<< trim END
     vim9script
     echo 2!= 3
@@ -1192,7 +1192,7 @@ def Test_expr5_vim9script()
       vim9script
       echo 'a'..'b'
   END
-  CheckScriptFailure(lines, 'E1004:', 2)
+  CheckScriptFailure(lines, 'E1004: White space required before and after ''..'' at "..''b''"', 2)
   lines =<< trim END
       vim9script
       echo 'a' ..'b'
@@ -1729,7 +1729,8 @@ def Test_expr7_list()
       var a = 1
       var b = 2
   END
-  CheckDefAndScriptFailure(lines + ['echo numbers[1:b]'], 'E1004:', 4)
+  CheckDefAndScriptFailure(lines + ['echo numbers[1:b]'],
+      'E1004: White space required before and after '':'' at ":b]"', 4)
   CheckDefAndScriptFailure(lines + ['echo numbers[1: b]'], 'E1004:', 4)
   CheckDefAndScriptFailure(lines + ['echo numbers[a :b]'], 'E1004:', 4)
 enddef
@@ -1876,7 +1877,7 @@ def Test_expr7_lambda()
   CheckDefAndScriptSuccess(lines)
 
   CheckDefFailure(["var Ref = (a)=>a + 1"], 'E1004:')
-  CheckDefFailure(["var Ref = (a)=> a + 1"], 'E1004:')
+  CheckDefFailure(["var Ref = (a)=> a + 1"], 'E1004: White space required before and after ''=>'' at "=> a + 1"')
   CheckDefFailure(["var Ref = (a) =>a + 1"], 'E1004:')
 
   CheckDefFailure(["filter([1, 2], (k,v) => 1)"], 'E1069:', 1)
@@ -1976,7 +1977,8 @@ def Test_expr7_new_lambda()
 
   CheckDefAndScriptFailure(["var Ref = (a)=>a + 1"], 'E1004:')
   CheckDefAndScriptFailure(["var Ref = (a)=> a + 1"], 'E1004:')
-  CheckDefAndScriptFailure(["var Ref = (a) =>a + 1"], 'E1004:')
+  CheckDefAndScriptFailure(["var Ref = (a) =>a + 1"],
+      'E1004: White space required before and after ''=>'' at " =>a + 1"')
 
   CheckDefFailure(["var Ref: func(number): number = (a: number): string => 'x'"], 'E1012:')
   CheckDefFailure(["var Ref: func(number): string = (a: number): string => 99"], 'E1012:')

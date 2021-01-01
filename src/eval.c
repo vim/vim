@@ -3778,7 +3778,8 @@ eval_index(
 	    return FAIL;
 	else if (vim9 && **arg == ':')
 	{
-	    semsg(_(e_white_space_required_before_and_after_str), ":");
+	    semsg(_(e_white_space_required_before_and_after_str_at_str),
+								    ":", *arg);
 	    clear_tv(&var1);
 	    return FAIL;
 	}
@@ -3799,7 +3800,8 @@ eval_index(
 	    ++*arg;
 	    if (vim9 && !IS_WHITE_OR_NUL(**arg) && **arg != ']')
 	    {
-		semsg(_(e_white_space_required_before_and_after_str), ":");
+		semsg(_(e_white_space_required_before_and_after_str_at_str),
+								":", *arg - 1);
 		if (!empty1)
 		    clear_tv(&var1);
 		return FAIL;
