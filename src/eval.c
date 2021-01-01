@@ -1748,7 +1748,7 @@ next_for_item(void *fi_void, char_u *arg)
 {
     forinfo_T	*fi = (forinfo_T *)fi_void;
     int		result;
-    int		flag = in_vim9script() ?  ASSIGN_NO_DECL : 0;
+    int		flag = in_vim9script() ? ASSIGN_DECL : 0;
     listitem_T	*item;
 
     if (fi->fi_blob != NULL)

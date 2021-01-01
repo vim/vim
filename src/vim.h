@@ -2146,6 +2146,7 @@ typedef enum {
 #define ASSIGN_FINAL	1   // ":final"
 #define ASSIGN_CONST	2   // ":const"
 #define ASSIGN_NO_DECL	4   // "name = expr" without ":let"/":const"/":final"
+#define ASSIGN_DECL	8   // may declare variable if it does not exist
 
 #include "ex_cmds.h"	    // Ex command defines
 #include "spell.h"	    // spell checking stuff

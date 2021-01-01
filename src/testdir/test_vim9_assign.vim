@@ -262,6 +262,12 @@ def Test_assign_unpack()
   CheckDefFailure(lines, 'E1031:', 3)
 
   lines =<< trim END
+      [v1, v2] = [1, 2]
+  END
+  CheckDefFailure(lines, 'E1089', 1)
+  CheckScriptFailure(['vim9script'] + lines, 'E1089', 2)
+
+  lines =<< trim END
       var v1: number
       var v2: number
       [v1, v2] = ''
@@ -759,6 +765,8 @@ def Test_assignment_default()
   assert_equal(5678, nr)
 enddef
 
+let scriptvar = 'init'
+
 def Test_assignment_var_list()
   var lines =<< trim END
       var v1: string
@@ -794,10 +802,9 @@ def Test_assignment_var_list()
       assert_equal('some', $SOME_VAR)
       assert_equal('other', $OTHER_VAR)
 
-      [g:globalvar, s:scriptvar, b:bufvar, w:winvar, t:tabvar, v:errmsg] =
-            ['global', 'script', 'buf', 'win', 'tab', 'error']
+      [g:globalvar, b:bufvar, w:winvar, t:tabvar, v:errmsg] =
+            ['global', 'buf', 'win', 'tab', 'error']
       assert_equal('global', g:globalvar)
-      assert_equal('script', s:scriptvar)
       assert_equal('buf', b:bufvar)
       assert_equal('win', w:winvar)
       assert_equal('tab', t:tabvar)
@@ -805,6 +812,21 @@ def Test_assignment_var_list()
       unlet g:globalvar
   END
   CheckDefAndScriptSuccess(lines)
+
+  [g:globalvar, s:scriptvar, b:bufvar] = ['global', 'script', 'buf']
+  assert_equal('global', g:globalvar)
+  assert_equal('script', s:scriptvar)
+  assert_equal('buf', b:bufvar)
+
+  lines =<< trim END
+      vim9script
+      var s:scriptvar = 'init'
+      [g:globalvar, s:scriptvar, w:winvar] = ['global', 'script', 'win']
+      assert_equal('global', g:globalvar)
+      assert_equal('script', s:scriptvar)
+      assert_equal('win', w:winvar)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_assignment_vim9script()
@@ -1182,7 +1204,7 @@ def Test_var_declaration()
     g:other_var = other
 
     # type is inferred
-    s:dict = {['a']: 222}
+    var s:dict = {['a']: 222}
     def GetDictVal(key: any)
       g:dict_val = s:dict[key]
     enddef

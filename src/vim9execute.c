@@ -806,7 +806,7 @@ store_var(char_u *name, typval_T *tv)
     funccal_entry_T entry;
 
     save_funccal(&entry);
-    set_var_const(name, NULL, tv, FALSE, ASSIGN_NO_DECL);
+    set_var_const(name, NULL, tv, FALSE, ASSIGN_DECL);
     restore_funccal();
 }
 

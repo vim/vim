@@ -5634,6 +5634,11 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		semsg(_(e_cannot_use_operator_on_new_variable), name);
 		goto theend;
 	    }
+	    if (!is_decl)
+	    {
+		semsg(_(e_unknown_variable_str), name);
+		goto theend;
+	    }
 
 	    // new local variable
 	    if ((type->tt_type == VAR_FUNC || type->tt_type == VAR_PARTIAL)
@@ -6140,6 +6145,7 @@ compile_unletlock(char_u *arg, exarg_T *eap, cctx_T *cctx)
 	return NULL;
     }
 
+    // TODO: this doesn't work for local variables
     ex_unletlock(eap, p, 0, GLV_NO_AUTOLOAD, compile_unlet, cctx);
     return eap->nextcmd == NULL ? (char_u *)"" : eap->nextcmd;
 }
