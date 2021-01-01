@@ -335,3 +335,7 @@ EXTERN char e_script_variable_invalid_after_reload_in_function_str[]
 	INIT(= N_("E1149: Script variable is invalid after reload in function %s"));
 EXTERN char e_script_variable_type_changed[]
 	INIT(= N_("E1150: Script variable type changed"));
+EXTERN char e_mismatched_endfunction[]
+	INIT(= N_("E1151: Mismatched endfunction"));
+EXTERN char e_mismatched_enddef[]
+	INIT(= N_("E1152: Mismatched enddef"));
