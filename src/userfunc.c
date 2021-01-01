@@ -3352,6 +3352,8 @@ define_function(exarg_T *eap, char_u *name_arg)
 	    lines_left = Rows - 1;
 	if (theline == NULL)
 	{
+	    // Use the start of the function for the line number.
+	    SOURCING_LNUM = sourcing_lnum_top;
 	    if (skip_until != NULL)
 		semsg(_(e_missing_heredoc_end_marker_str), skip_until);
 	    else if (eap->cmdidx == CMD_def)
