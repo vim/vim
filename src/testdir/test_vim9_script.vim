@@ -361,6 +361,35 @@ def Test_try_catch()
   endtry
   assert_equal(99, n)
 
+  var done = 'no'
+  if 0
+    try | catch | endtry
+  else
+    done = 'yes'
+  endif
+  assert_equal('yes', done)
+
+  done = 'no'
+  if 1
+    done = 'yes'
+  else
+    try | catch | endtry
+    done = 'never'
+  endif
+  assert_equal('yes', done)
+
+  if 1
+  else
+    try | catch /pat/ | endtry
+    try | catch /pat/ 
+    endtry
+    try 
+    catch /pat/ | endtry
+    try 
+    catch /pat/ 
+    endtry
+  endif
+
   try
     # string slice returns a string, not a number
     n = g:astring[3]
