@@ -2417,6 +2417,11 @@ def Test_expr7_option()
   &grepprg = test_null_string()
   assert_equal('', &grepprg)
   set grepprg&
+
+  # check matching type
+  var bval: bool = &tgc
+  var nval: number = &ts
+  var sval: string = &path
 enddef
 
 def Test_expr7_environment()
