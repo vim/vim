@@ -1056,13 +1056,18 @@ def Test_expr5()
       assert_equal('123 hello', 123 .. ' hello')
       assert_equal('123456', 123 .. 456)
 
-      assert_equal('av:true', 'a' .. true)
-      assert_equal('av:false', 'a' .. false)
+      assert_equal('atrue', 'a' .. true)
+      assert_equal('afalse', 'a' .. false)
       assert_equal('av:null', 'a' .. v:null)
       assert_equal('av:none', 'a' .. v:none)
       if has('float')
         assert_equal('a0.123', 'a' .. 0.123)
       endif
+
+      set digraph
+      assert_equal('val: true', 'val: ' .. &digraph)
+      set nodigraph
+      assert_equal('val: false', 'val: ' .. &digraph)
 
       assert_equal([1, 2, 3, 4], [1, 2] + [3, 4])
       assert_equal(0z11223344, 0z1122 + 0z3344)

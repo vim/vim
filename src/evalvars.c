@@ -2068,8 +2068,8 @@ get_var_special_name(int nr)
 {
     switch (nr)
     {
-	case VVAL_FALSE: return "v:false";
-	case VVAL_TRUE:  return "v:true";
+	case VVAL_FALSE: return in_vim9script() ? "false" : "v:false";
+	case VVAL_TRUE:  return in_vim9script() ? "true" : "v:true";
 	case VVAL_NONE:  return "v:none";
 	case VVAL_NULL:  return "v:null";
     }

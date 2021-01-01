@@ -182,7 +182,7 @@ def Test_disassemble_push()
   var res = execute('disass s:ScriptFuncPush')
   assert_match('<SNR>\d*_ScriptFuncPush.*' ..
         'localbool = true.*' ..
-        ' PUSH v:true.*' ..
+        ' PUSH true.*' ..
         'localspec = v:none.*' ..
         ' PUSH v:none.*' ..
         'localblob = 0z1234.*' ..
@@ -1461,7 +1461,7 @@ def Test_disassemble_invert_bool()
   var instr = execute('disassemble InvertBool')
   assert_match('InvertBool\_s*' ..
         'var flag = true\_s*' ..
-        '\d PUSH v:true\_s*' ..
+        '\d PUSH true\_s*' ..
         '\d STORE $0\_s*' ..
         'var invert = !flag\_s*' ..
         '\d LOAD $0\_s*' ..
