@@ -1566,7 +1566,7 @@ ex_unletlock(
 	{
 	    // Parse the name and find the end.
 	    name_end = get_lval(arg, NULL, &lv, TRUE, eap->skip || error,
-						   glv_flags, FNE_CHECK_START);
+				     glv_flags | GLV_NO_DECL, FNE_CHECK_START);
 	    if (lv.ll_name == NULL)
 		error = TRUE;	    // error but continue parsing
 	    if (name_end == NULL || (!VIM_ISWHITE(*name_end)
