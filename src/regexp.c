@@ -294,6 +294,7 @@ init_class_tab(void)
 
 static char_u	*regparse;	// Input-scan pointer.
 static int	regnpar;	// () count.
+static int	wants_nfa;	// regex should use NFA engine
 #ifdef FEAT_SYN_HL
 static int	regnzpar;	// \z() count.
 static int	re_has_z;	// \z item detected
@@ -381,6 +382,9 @@ static int	cstrncmp(char_u *s1, char_u *s2, int *n);
 static char_u	*cstrchr(char_u *, int);
 static int	re_mult_next(char *what);
 static int	reg_iswordc(int);
+#ifdef FEAT_EVAL
+static void report_re_switch(char_u *pat);
+#endif
 
 static regengine_T bt_regengine;
 static regengine_T nfa_regengine;
@@ -2662,7 +2666,7 @@ vim_regcomp(char_u *expr_arg, int re_flags)
     if (prog == NULL)
     {
 #ifdef BT_REGEXP_DEBUG_LOG
-	if (regexp_engine != BACKTRACKING_ENGINE)   // debugging log for NFA
+	if (regexp_engine == BACKTRACKING_ENGINE)   // debugging log for BT engine
 	{
 	    FILE *f;
 	    f = fopen(BT_REGEXP_DEBUG_LOG_NAME, "a");
@@ -2686,6 +2690,9 @@ vim_regcomp(char_u *expr_arg, int re_flags)
 					  && called_emsg == called_emsg_before)
 	{
 	    regexp_engine = BACKTRACKING_ENGINE;
+#ifdef FEAT_EVAL
+	    report_re_switch(expr);
+#endif
 	    prog = bt_regengine.regcomp(expr, re_flags);
 	}
     }
