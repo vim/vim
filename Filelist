@@ -4,7 +4,7 @@
 # source files for all source archives
 SRC_ALL =	\
 		.cirrus.yml \
-		.coveralls.yml
+		.coveralls.yml \
 		.gitattributes \
 		.github/CODEOWNERS \
 		.github/workflows/ci.yml \
