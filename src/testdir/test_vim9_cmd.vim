@@ -868,4 +868,14 @@ def Test_insert_complete()
   bwipe!
 enddef
 
+def Test_wincmd()
+  split
+  var id1 = win_getid()
+  if true
+    try | wincmd w | catch | endtry
+  endif
+  assert_notequal(id1, win_getid())
+  close
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

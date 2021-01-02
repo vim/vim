@@ -7329,6 +7329,20 @@ compile_exec(char_u *line, exarg_T *eap, cctx_T *cctx)
 	    if (eap->nextcmd != NULL)
 		nextcmd = eap->nextcmd;
 	}
+	else if (eap->cmdidx == CMD_wincmd)
+	{
+	    p = eap->arg;
+	    if (*p != NUL)
+		++p;
+	    if (*p == 'g' || *p == Ctrl_G)
+		++p;
+	    p = skipwhite(p);
+	    if (*p == '|')
+	    {
+		*p = NUL;
+		nextcmd = p + 1;
+	    }
+	}
     }
 
     if (eap->cmdidx == CMD_syntax && STRNCMP(eap->arg, "include ", 8) == 0)
