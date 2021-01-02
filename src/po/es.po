@@ -5329,8 +5329,8 @@ msgid "E663: At end of changelist"
 msgstr "E663: Al final de la lista de cambios"
 
 #: normal.c:8734
-msgid "Type  :quit<Enter>  to exit Vim"
-msgstr "Escriba \":quit<intro>\" para salir de Vim"
+msgid "Type \":qa!\" and press <Enter> to abandon all changes and exit Vim"
+msgstr "Escriba \":qa!\" y presione <Intro> para salir de Vim sin guardar"
 
 #: ops.c:293
 #, c-format
