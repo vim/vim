@@ -252,6 +252,57 @@ def Test_extend_return_type()
   res->assert_equal(6)
 enddef
 
+func g:ExtendDict(d)
+  call extend(a:d, #{xx: 'x'})
+endfunc
+
+def Test_extend_dict_item_type()
+  var lines =<< trim END
+       var d: dict<number> = {a: 1}
+       extend(d, {b: 2})
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+       var d: dict<number> = {a: 1}
+       extend(d, {b: 'x'})
+  END
+  CheckDefFailure(lines, 'E1013: Argument 2: type mismatch, expected dict<number> but got dict<string>', 2)
+  CheckScriptFailure(['vim9script'] + lines, 'E1012:', 3)
+
+  lines =<< trim END
+       var d: dict<number> = {a: 1}
+       g:ExtendDict(d)
+  END
+  CheckDefExecFailure(lines, 'E1012: Type mismatch; expected number but got string', 0)
+  CheckScriptFailure(['vim9script'] + lines, 'E1012:', 1)
+enddef
+
+func g:ExtendList(l)
+  call extend(a:l, ['x'])
+endfunc
+
+def Test_extend_list_item_type()
+  var lines =<< trim END
+       var l: list<number> = [1]
+       extend(l, [2])
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+       var l: list<number> = [1]
+       extend(l, ['x'])
+  END
+  CheckDefFailure(lines, 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>', 2)
+  CheckScriptFailure(['vim9script'] + lines, 'E1012:', 3)
+
+  lines =<< trim END
+       var l: list<number> = [1]
+       g:ExtendList(l)
+  END
+  CheckDefExecFailure(lines, 'E1012: Type mismatch; expected number but got string', 0)
+  CheckScriptFailure(['vim9script'] + lines, 'E1012:', 1)
+enddef
 
 def Wrong_dict_key_type(items: list<number>): list<number>
   return filter(items, (_, val) => get({[val]: 1}, 'x'))

@@ -661,10 +661,10 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
  * with a hashtable) and sn_var_vals (lookup by index).
  * When "create" is TRUE this is a new variable, otherwise find and update an
  * existing variable.
- * When "type" is NULL use "tv" for the type.
+ * When "*type" is NULL use "tv" for the type and update "*type".
  */
     void
-update_vim9_script_var(int create, dictitem_T *di, typval_T *tv, type_T *type)
+update_vim9_script_var(int create, dictitem_T *di, typval_T *tv, type_T **type)
 {
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
     hashitem_T	    *hi;
@@ -715,10 +715,9 @@ update_vim9_script_var(int create, dictitem_T *di, typval_T *tv, type_T *type)
     }
     if (sv != NULL)
     {
-	if (type == NULL)
-	    sv->sv_type = typval2type(tv, &si->sn_type_list);
-	else
-	    sv->sv_type = type;
+	if (*type == NULL)
+	    *type = typval2type(tv, &si->sn_type_list);
+	sv->sv_type = *type;
     }
 
     // let ex_export() know the export worked.

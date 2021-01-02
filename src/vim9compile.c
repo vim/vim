@@ -831,6 +831,20 @@ generate_TYPECHECK(
     return OK;
 }
 
+    static int
+generate_SETTYPE(
+	cctx_T	    *cctx,
+	type_T	    *expected)
+{
+    isn_T	*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_SETTYPE)) == NULL)
+	return FAIL;
+    isn->isn_arg.type.ct_type = alloc_type(expected);
+    return OK;
+}
+
 /*
  * Return TRUE if "actual" could be "expected" and a runtime typecheck is to be
  * used.  Return FALSE if the types will never match.
@@ -6025,6 +6039,15 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		// ":const var": lock the value, but not referenced variables
 		generate_LOCKCONST(cctx);
 
+	    if (is_decl
+		    && (type->tt_type == VAR_DICT || type->tt_type == VAR_LIST)
+		    && type->tt_member != NULL
+		    && type->tt_member != &t_any
+		    && type->tt_member != &t_unknown)
+		// Set the type in the list or dict, so that it can be checked,
+		// also in legacy script.
+		generate_SETTYPE(cctx, type);
+
 	    if (dest != dest_local)
 	    {
 		if (generate_store_var(cctx, dest, opt_flags, vimvaridx,
@@ -8193,6 +8216,7 @@ delete_instr(isn_T *isn)
 	    break;
 
 	case ISN_CHECKTYPE:
+	case ISN_SETTYPE:
 	    free_type(isn->isn_arg.type.ct_type);
 	    break;
 

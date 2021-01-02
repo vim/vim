@@ -2994,6 +2994,24 @@ call_def_function(
 		}
 		break;
 
+	    case ISN_SETTYPE:
+		{
+		    checktype_T *ct = &iptr->isn_arg.type;
+
+		    tv = STACK_TV_BOT(-1);
+		    if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
+		    {
+			free_type(tv->vval.v_dict->dv_type);
+			tv->vval.v_dict->dv_type = alloc_type(ct->ct_type);
+		    }
+		    else if (tv->v_type == VAR_LIST && tv->vval.v_list != NULL)
+		    {
+			free_type(tv->vval.v_list->lv_type);
+			tv->vval.v_list->lv_type = alloc_type(ct->ct_type);
+		    }
+		}
+		break;
+
 	    case ISN_2BOOL:
 	    case ISN_COND2BOOL:
 		{
@@ -3890,6 +3908,15 @@ ex_disassemble(exarg_T *eap)
 				iptr->isn_arg.checklen.cl_more_OK ? ">= " : "",
 				iptr->isn_arg.checklen.cl_min_len);
 			       break;
+	    case ISN_SETTYPE:
+		  {
+		      char *tofree;
+
+		      smsg("%4d SETTYPE %s", current,
+			      type_name(iptr->isn_arg.type.ct_type, &tofree));
+		      vim_free(tofree);
+		      break;
+		  }
 	    case ISN_COND2BOOL: smsg("%4d COND2BOOL", current); break;
 	    case ISN_2BOOL: if (iptr->isn_arg.number)
 				smsg("%4d INVERT (!val)", current);

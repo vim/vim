@@ -270,6 +270,7 @@ list_free_list(list_T  *l)
     if (l->lv_used_next != NULL)
 	l->lv_used_next->lv_used_prev = l->lv_used_prev;
 
+    free_type(l->lv_type);
     vim_free(l);
 }
 
@@ -689,13 +690,17 @@ list_append_number(list_T *l, varnumber_T n)
 /*
  * Insert typval_T "tv" in list "l" before "item".
  * If "item" is NULL append at the end.
- * Return FAIL when out of memory.
+ * Return FAIL when out of memory or the type is wrong.
  */
     int
 list_insert_tv(list_T *l, typval_T *tv, listitem_T *item)
 {
-    listitem_T	*ni = listitem_alloc();
+    listitem_T	*ni;
 
+    if (l->lv_type != NULL && l->lv_type->tt_member != NULL
+		    && check_typval_type(l->lv_type->tt_member, tv, 0) == FAIL)
+	return FAIL;
+    ni = listitem_alloc();
     if (ni == NULL)
 	return FAIL;
     copy_tv(tv, &ni->li_tv);

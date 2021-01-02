@@ -3147,9 +3147,9 @@ set_var_const(
 	    di->di_flags &= ~DI_FLAGS_RELOAD;
 
 	    // A Vim9 script-local variable is also present in sn_all_vars and
-	    // sn_var_vals.
+	    // sn_var_vals.  It may set "type" from "tv".
 	    if (is_script_local && vim9script)
-		update_vim9_script_var(FALSE, di, tv, type);
+		update_vim9_script_var(FALSE, di, tv, &type);
 	}
 
 	// existing variable, need to clear the value
@@ -3237,9 +3237,9 @@ set_var_const(
 	    di->di_flags |= DI_FLAGS_LOCK;
 
 	// A Vim9 script-local variable is also added to sn_all_vars and
-	// sn_var_vals.
+	// sn_var_vals. It may set "type" from "tv".
 	if (is_script_local && vim9script)
-	    update_vim9_script_var(TRUE, di, tv, type);
+	    update_vim9_script_var(TRUE, di, tv, &type);
     }
 
     if (copy || tv->v_type == VAR_NUMBER || tv->v_type == VAR_FLOAT)
@@ -3249,6 +3249,14 @@ set_var_const(
 	di->di_tv = *tv;
 	di->di_tv.v_lock = 0;
 	init_tv(tv);
+    }
+
+    if (vim9script && type != NULL)
+    {
+	if (type->tt_type == VAR_DICT && di->di_tv.vval.v_dict != NULL)
+	    di->di_tv.vval.v_dict->dv_type = alloc_type(type);
+	else if (type->tt_type == VAR_LIST && di->di_tv.vval.v_list != NULL)
+	    di->di_tv.vval.v_list->lv_type = alloc_type(type);
     }
 
     // ":const var = value" locks the value
