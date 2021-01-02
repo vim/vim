@@ -2047,6 +2047,8 @@ clip_get_selection(Clipboard_T *cbd)
 	ca.count1 = 1;
 	ca.retval = CA_NO_ADJ_OP_END;
 	do_pending_operator(&ca, 0, TRUE);
+
+	// restore things
 	set_y_previous(old_y_previous);
 	set_y_current(old_y_current);
 	curwin->w_cursor = old_cursor;

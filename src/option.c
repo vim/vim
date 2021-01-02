@@ -3835,7 +3835,7 @@ findoption(char_u *arg)
  *
  * Returns:
  * Number option: gov_number, *numval gets value.
- * Tottle option: gov_bool,   *numval gets value.
+ * Toggle option: gov_bool,   *numval gets value.
  * String option: gov_string, *stringval gets allocated string.
  * Hidden Number option: gov_hidden_number.
  * Hidden Toggle option: gov_hidden_bool.

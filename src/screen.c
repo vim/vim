@@ -3087,7 +3087,6 @@ windgoto(int row, int col)
     // Can't use ScreenLines unless initialized
     if (ScreenLines == NULL)
 	return;
-
     if (col != screen_cur_col || row != screen_cur_row)
     {
 	// Check for valid position.
