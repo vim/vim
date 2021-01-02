@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Dec 24
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Jan 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -14,7 +14,7 @@ features in Vim9 script.
 THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 
-1.  What is Vim9 script?		|vim9-script|
+1.  What is Vim9 script?		|Vim9-script|
 2.  Differences				|vim9-differences|
 3.  New style functions			|fast-functions|
 4.  Types				|vim9-types|
@@ -565,6 +565,13 @@ command: >
 
 White space is required around most operators.
 
+White space is required in a sublist (list slice) around the ":", except at
+the start and end: >
+	otherlist = mylist[v : count]  	# v:count has a different meaning
+	otherlist = mylist[:]		# make a copy of the List
+	otherlist = mylist[v :]
+	otherlist = mylist[: v]
+
 White space is not allowed:
 - Between a function name and the "(": >
 	call Func (arg)	   # Error!
@@ -595,7 +602,7 @@ is either falsy or truthy.  This is mostly like JavaScript, except that an
 empty list and dict is falsy:
 
 	type		truthy when ~
-	bool		v:true or 1
+	bool		true, v:true or 1
 	number		non-zero
 	float		non-zero
 	string		non-empty
@@ -603,11 +610,11 @@ empty list and dict is falsy:
 	list		non-empty (different from JavaScript)
 	dictionary	non-empty (different from JavaScript)
 	func		when there is a function name
-	special		v:true
+	special		true or v:true
 	job		when not NULL
 	channel		when not NULL
 	class		when not NULL
-	object		when not NULL (TODO: when isTrue() returns v:true)
+	object		when not NULL (TODO: when isTrue() returns true)
 
 The boolean operators "||" and "&&" expect the values to be boolean, zero or
 one: >
@@ -629,12 +636,15 @@ result is a boolean.  "!!" can be used to turn any value into boolean: >
 When using "`.."` for string concatenation arguments of simple types are
 always converted to string: >
 	'hello ' .. 123  == 'hello 123'
-	'hello ' .. v:true  == 'hello v:true'
+	'hello ' .. v:true  == 'hello true'
 
 Simple types are string, float, special and bool.  For other types |string()|
 can be used.
 							*false* *true*
-In Vim9 script one can use "true" for v:true and "false" for v:false.
+In Vim9 script one can use "true" for v:true and "false" for v:false.  When
+converting a boolean to a string "false" and "true" are used, not "v:false"
+and "v:true" like in legacy script.  "v:none" and "v:null" are not changed,
+they are only used in JSON.
 
 Indexing a string with [idx] or [idx, idx] uses character indexes instead of
 byte indexes. Example: >

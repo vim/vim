@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 8.2.  Last change: 2020 Oct 09
+*repeat.txt*    For Vim version 8.2.  Last change: 2021 Jan 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -354,6 +354,14 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			Vim version, or update Vim to a newer version.  See
 			|vimscript-version| for what changed between versions.
 
+:vim9script [noclear]				*:vim9* *:vim9script*
+			Marks a script file as containing |Vim9-script|
+			commands.  Also see |vim9-namespace|.
+			Must be the first command in the file.
+			For [noclear] see |vim9-reload|.
+			Without the |+eval| feature this changes the syntax
+			for some commands.
+			 
 						*:scr* *:scriptnames*
 :scr[iptnames]		List all sourced script names, in the order they were
 			first sourced.  The number is used for the script ID

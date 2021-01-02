@@ -2072,6 +2072,11 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :_#<	cmdline.txt	/*:_#<*
 :_#n	cmdline.txt	/*:_#n*
 :_%	cmdline.txt	/*:_%*
+:_%%	cmdline.txt	/*:_%%*
+:_%%%	cmdline.txt	/*:_%%%*
+:_%%0	cmdline.txt	/*:_%%0*
+:_%%<	cmdline.txt	/*:_%%<*
+:_%%n	cmdline.txt	/*:_%%n*
 :_%:	cmdline.txt	/*:_%:*
 :_%<	cmdline.txt	/*:_%<*
 :a	insert.txt	/*:a*
@@ -3389,8 +3394,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :vie	editing.txt	/*:vie*
 :view	editing.txt	/*:view*
 :vim	quickfix.txt	/*:vim*
-:vim9	vim9.txt	/*:vim9*
-:vim9script	vim9.txt	/*:vim9script*
+:vim9	repeat.txt	/*:vim9*
+:vim9script	repeat.txt	/*:vim9script*
 :vimgrep	quickfix.txt	/*:vimgrep*
 :vimgrepa	quickfix.txt	/*:vimgrepa*
 :vimgrepadd	quickfix.txt	/*:vimgrepadd*
@@ -5152,6 +5157,7 @@ VMS	os_vms.txt	/*VMS*
 Vi	intro.txt	/*Vi*
 View	starting.txt	/*View*
 Vim9	vim9.txt	/*Vim9*
+Vim9-script	vim9.txt	/*Vim9-script*
 VimEnter	autocmd.txt	/*VimEnter*
 VimLeave	autocmd.txt	/*VimLeave*
 VimLeavePre	autocmd.txt	/*VimLeavePre*
@@ -5563,6 +5569,10 @@ c_##	cmdline.txt	/*c_##*
 c_#<	cmdline.txt	/*c_#<*
 c_#n	cmdline.txt	/*c_#n*
 c_%	cmdline.txt	/*c_%*
+c_%%	cmdline.txt	/*c_%%*
+c_%%%#	cmdline.txt	/*c_%%%#*
+c_%%<	cmdline.txt	/*c_%%<*
+c_%%n	cmdline.txt	/*c_%%n*
 c_<BS>	cmdline.txt	/*c_<BS>*
 c_<C-Left>	cmdline.txt	/*c_<C-Left>*
 c_<C-R>	cmdline.txt	/*c_<C-R>*
@@ -5748,6 +5758,7 @@ characterwise-visual	visual.txt	/*characterwise-visual*
 charclass()	eval.txt	/*charclass()*
 charconvert_from-variable	eval.txt	/*charconvert_from-variable*
 charconvert_to-variable	eval.txt	/*charconvert_to-variable*
+charidx()	eval.txt	/*charidx()*
 charity	uganda.txt	/*charity*
 charset	mbyte.txt	/*charset*
 charset-conversion	mbyte.txt	/*charset-conversion*
@@ -7147,6 +7158,7 @@ hebrew	hebrew.txt	/*hebrew*
 hebrew.txt	hebrew.txt	/*hebrew.txt*
 help	helphelp.txt	/*help*
 help-context	help.txt	/*help-context*
+help-curwin	tips.txt	/*help-curwin*
 help-summary	usr_02.txt	/*help-summary*
 help-tags	tags	1
 help-translated	helphelp.txt	/*help-translated*
@@ -10058,6 +10070,7 @@ vim-variable	eval.txt	/*vim-variable*
 vim.vim	syntax.txt	/*vim.vim*
 vim7	version7.txt	/*vim7*
 vim8	version8.txt	/*vim8*
+vim9	vim9.txt	/*vim9*
 vim9-classes	vim9.txt	/*vim9-classes*
 vim9-const	vim9.txt	/*vim9-const*
 vim9-declaration	vim9.txt	/*vim9-declaration*
@@ -10067,9 +10080,10 @@ vim9-export	vim9.txt	/*vim9-export*
 vim9-final	vim9.txt	/*vim9-final*
 vim9-gotchas	vim9.txt	/*vim9-gotchas*
 vim9-import	vim9.txt	/*vim9-import*
+vim9-namespace	vim9.txt	/*vim9-namespace*
 vim9-rationale	vim9.txt	/*vim9-rationale*
+vim9-reload	vim9.txt	/*vim9-reload*
 vim9-scopes	vim9.txt	/*vim9-scopes*
-vim9-script	vim9.txt	/*vim9-script*
 vim9-script-intro	usr_46.txt	/*vim9-script-intro*
 vim9-types	vim9.txt	/*vim9-types*
 vim9.txt	vim9.txt	/*vim9.txt*

@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.2.  Last change: 2020 Nov 25
+*terminal.txt*	For Vim version 8.2.  Last change: 2020 Dec 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -741,6 +741,9 @@ term_setapi({buf}, {expr})				*term_setapi()*
 <
 		The default is "Tapi_".  When {expr} is an empty string then
 		no |terminal-api| function can be used for {buf}.
+
+		When used as a method the base is used for {buf}: >
+			GetBufnr()->term_setapi({expr})
 
 term_setansicolors({buf}, {colors})			*term_setansicolors()*
 		Set the ANSI color palette used by terminal {buf}.

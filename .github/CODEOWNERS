@@ -132,7 +132,6 @@ runtime/syntax/cabal.vim		@coot
 runtime/syntax/cabalconfig.vim		@coot
 runtime/syntax/cabalproject.vim		@coot
 runtime/syntax/cs.vim			@nickspoons
-runtime/syntax/cs.vim			@nickspoons
 runtime/syntax/csh.vim			@cecamp
 runtime/syntax/cucumber.vim		@tpope
 runtime/syntax/datascript.vim		@dpelle
