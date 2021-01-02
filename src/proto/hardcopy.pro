@@ -1,6 +1,6 @@
 /* hardcopy.c */
-char_u *parse_printoptions(void);
-char_u *parse_printmbfont(void);
+char *parse_printoptions(void);
+char *parse_printmbfont(void);
 int prt_header_height(void);
 int prt_use_number(void);
 int prt_get_unit(int idx);

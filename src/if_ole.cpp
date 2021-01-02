@@ -6,30 +6,20 @@
  * Do ":help credits" in Vim to see a list of people who contributed.
  */
 
-#if defined(FEAT_OLE) && defined(FEAT_GUI_W32)
+#if defined(FEAT_OLE) && defined(FEAT_GUI_MSWIN)
 /*
  * OLE server implementation.
  *
  * See os_mswin.c for the client side.
  */
-
-/*
- * We have some trouble with order of includes here.  For Borland it needs to
- * be different from MSVC...
- */
-#ifndef __BORLANDC__
 extern "C" {
 # include "vim.h"
 }
-#endif
 
 #include <windows.h>
 #include <oleauto.h>
 
 extern "C" {
-#ifdef __BORLANDC__
-# include "vim.h"
-#endif
 extern HWND s_hwnd;
 extern HWND vim_parent_hwnd;
 }
@@ -340,7 +330,7 @@ CVim::SendKeys(BSTR keys)
     }
 
     /* Translate key codes like <Esc> */
-    str = replace_termcodes((char_u *)buffer, &ptr, FALSE, TRUE, FALSE);
+    str = replace_termcodes((char_u *)buffer, &ptr, REPTERM_DO_LT, NULL);
 
     /* If ptr was set, then a new buffer was allocated,
      * so we can free the old one.
@@ -386,7 +376,7 @@ CVim::Eval(BSTR expr, BSTR *result)
     if (len == 0)
 	return E_INVALIDARG;
 
-    buffer = (char *)alloc((unsigned)len);
+    buffer = (char *)alloc(len);
 
     if (buffer == NULL)
 	return E_OUTOFMEMORY;
@@ -398,7 +388,7 @@ CVim::Eval(BSTR expr, BSTR *result)
 
     /* Evaluate the expression */
     ++emsg_skip;
-    str = (char *)eval_to_string((char_u *)buffer, NULL, TRUE);
+    str = (char *)eval_to_string((char_u *)buffer, TRUE);
     --emsg_skip;
     vim_free(buffer);
     if (str == NULL)
@@ -645,7 +635,7 @@ static void GUIDtochar(const GUID &guid, char *GUID, int length)
     LPOLESTR wGUID = NULL;
     StringFromCLSID(guid, &wGUID);
 
-    // Covert from wide characters to non-wide
+    // Convert from wide characters to non-wide
     wcstombs(GUID, wGUID, length);
 
     // Free memory

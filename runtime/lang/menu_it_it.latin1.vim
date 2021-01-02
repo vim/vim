@@ -2,7 +2,7 @@
 " Maintainer:		Antonio Colombo <azc100@gmail.com>
 "			Vlad Sandrini <vlad.gently@gmail.com>
 "			Luciano Montanaro <mikelima@cirulla.net>
-" Last Change:	2018 May 16
+" Last Change:	2020 Apr 23
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -116,8 +116,8 @@ menut Toggle\ &List\ Mode<Tab>:set\ list!		Modo\ &List\ Sì/No<Tab>:set\ list!
 menut Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		Linee\ &Continuate\ Sì/No<Tab>:set\ wrap!
 menut Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!	A\ capo\ alla\ &Parola\ Sì/No<Tab>:set\ lbr!
 menut Toggle\ Tab\ &expanding<Tab>:set\ et!		&Espandi\ Tabulazione\ Sì/No<Tab>:set\ et!
-menut Toggle\ &Auto\ Indenting<Tab>:set\ ai!		Indentazione\ &Automatica\ Sì/No<Tab>:set ai!
-menut Toggle\ &C-Style\ Indenting<Tab>:set\ cin!	Indentazione\ stile\ &C\ Sì/No<Tab>:set cin!
+menut Toggle\ &Auto\ Indenting<Tab>:set\ ai!		Indentazione\ &Automatica\ Sì/No<Tab>:set\ ai!
+menut Toggle\ &C-Style\ Indenting<Tab>:set\ cin!	Indentazione\ stile\ &C\ Sì/No<Tab>:set\ cin!
 " -SEP2-
 menut &Shiftwidth					&Spazi\ rientranza
 "menut &Shiftwidth.2<Tab>:set\ sw=2\ sw?<CR>		&Spazi\ rientranza.2<Tab>:set\ sw=2\ sw?<CR>
@@ -360,8 +360,8 @@ menut Copy		Copia
 menut Paste		Incolla
 " -sep3-
 menut Find	Cerca
-menut FindNext	Cerca Successivo
-menut FindPrev	Cerca Precedente
+menut FindNext	Cerca\ Successivo
+menut FindPrev	Cerca\ Precedente
 menut Replace	Sostituisci
 " -sep4-
 menut New		Nuova\ finestra

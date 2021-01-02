@@ -1,6 +1,6 @@
 " Menu Translations:	Norwegian / Norsk (Bokmål)
 " Maintainer:		Øyvind A. Holm <sunny@sunbase.org>
-" Last Change:		2012 May 01
+" Last Change:		2020 Apr 23
 " menu_no_no.latin1.vim 289 2004-05-16 18:00:52Z sunny
 
 " Quit when menu translations have already been done.
@@ -46,7 +46,7 @@ menutrans &Edit		&Rediger
 	menutrans Settings\ &Window					&Innstillinger
 	menutrans &Global\ Settings					Glo&bale\ innstillinger
 		menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!		&Utheving\ av\ søketekst\ av/på<Tab>:set\ hls!
-		menutrans Toggle\ &Ignore-case<Tab>:set\ ic!			&Forskjell\ mellom\ store/små bokstaver\ av/på<Tab>:set\ ic!
+		menutrans Toggle\ &Ignore-case<Tab>:set\ ic!			&Forskjell\ mellom\ store/små\ bokstaver\ av/på<Tab>:set\ ic!
 		menutrans Toggle\ &Showmatch<Tab>:set\ sm!			&Indikering\ av\ samsvarende\ parentes\ av/på<Tab>:set\ sm!
 		menutrans &Context\ lines					&Kontekstlinjer
 		menutrans &Virtual\ Edit					Vi&rtuell\ redigering

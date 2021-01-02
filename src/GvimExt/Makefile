@@ -10,6 +10,9 @@ TARGETOS = WINNT
 !ifndef APPVER
 APPVER = 5.01
 !endif
+!ifndef WINVER
+WINVER = 0x0501
+!endif
 
 !if "$(DEBUG)" != "yes"
 NODEBUG = 1
@@ -25,6 +28,8 @@ PLATFORM = $(TARGET_CPU)
 !  ifdef PLATFORM
 !   if ("$(PLATFORM)" == "x64") || ("$(PLATFORM)" == "X64")
 CPU = AMD64
+!   elseif ("$(PLATFORM)" == "arm64") || ("$(PLATFORM)" == "ARM64")
+CPU = ARM64
 !   elseif ("$(PLATFORM)" != "x86") && ("$(PLATFORM)" != "X86")
 !    error *** ERROR Unknown target platform "$(PLATFORM)". Make aborted.
 !   endif
@@ -51,16 +56,29 @@ olelibsdll = ole32.lib uuid.lib oleaut32.lib user32.lib gdi32.lib advapi32.lib
 # include CPUARG
 cflags = $(cflags) $(CPUARG)
 
+# set WINVER and _WIN32_WINNT
+cflags = $(cflags) -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER)
+
+!if "$(CL)" == "/D_USING_V110_SDK71_"
+rcflags = $(rcflags) /D_USING_V110_SDK71_
+!endif
+
 SUBSYSTEM = console
 !if "$(SUBSYSTEM_VER)" != ""
 SUBSYSTEM = $(SUBSYSTEM),$(SUBSYSTEM_VER)
+!endif
+
+!if "$(CPU)" == "AMD64" || "$(CPU)" == "ARM64"
+OFFSET = 0x11C000000
+!else
+OFFSET = 0x1C000000
 !endif
 
 all: gvimext.dll
 
 gvimext.dll:    gvimext.obj	\
 		gvimext.res
-	$(link) $(lflags) -dll -def:gvimext.def -base:0x1C000000 -out:$*.dll $** $(olelibsdll) shell32.lib comctl32.lib -subsystem:$(SUBSYSTEM)
+	$(link) $(lflags) -dll -def:gvimext.def -base:$(OFFSET) -out:$*.dll $** $(olelibsdll) shell32.lib comctl32.lib -subsystem:$(SUBSYSTEM)
 	if exist $*.dll.manifest mt -nologo -manifest $*.dll.manifest -outputresource:$*.dll;2
 
 gvimext.obj: gvimext.h

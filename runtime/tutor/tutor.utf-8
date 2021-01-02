@@ -7,7 +7,7 @@
      enough of the commands that you will be able to easily use Vim as
      an all-purpose editor.
 
-     The approximate time required to complete the tutor is 25-30 minutes,
+     The approximate time required to complete the tutor is 30 minutes,
      depending upon how much time is spent with experimentation.
 
      ATTENTION:
@@ -99,7 +99,7 @@ NOTE: As you go through this tutor, do not try to memorize, learn by usage.
   1. Move the cursor to the first line below marked --->.
 
   2. To make the first line the same as the second, move the cursor on top
-     of the first character AFTER where the text is to be inserted.
+     of the character BEFORE which the text is to be inserted.
 
   3. Press  i  and type in the necessary additions.
 
@@ -319,6 +319,7 @@ NOTE:  Pressing just the motion while in Normal mode without an operator will
 --->  6)  Sugar is sweet
 --->  7)  And so are you.
 
+Doubling to operate on a line also works for operators mentioned below.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			 Lesson 2.7: THE UNDO COMMAND
@@ -432,7 +433,7 @@ NOTE: Remember that you should be learning by doing, not memorization.
 ---> This line has a few words that need changing using the change operator.
 
 Notice that  ce  deletes the word and places you in Insert mode.
-
+             cc  does the same for the whole line.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -802,7 +803,8 @@ NOTE:  Replace mode is like Insert mode, but every typed character deletes an
 --->  a) this is the first item.
       b)
 
-  NOTE: You can also use  y  as an operator;  yw  yanks one word.
+  NOTE: You can also use  y  as an operator:  yw  yanks one word,
+        yy  yanks the whole line, then  p  puts that line.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			    Lesson 6.5: SET OPTION
 

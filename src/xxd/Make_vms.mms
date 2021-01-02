@@ -11,7 +11,8 @@
 #	  or if you use mmk
 #	mmk/descrip=Make_vms.mms
 #
-
+# To cleanup: mms/descrip=Make_vms.mms clean 
+#
 ######################################################################
 # Configuration section.
 ######################################################################
@@ -58,7 +59,7 @@ LDFLAGS =
 SOURCES	= xxd.c
 OBJ     = xxd.obj
 
-.obj.c :
+.c.obj :
 	$(CC_DEF) $(CFLAGS) $<
 
 $(TARGET) : $(OBJ)
@@ -67,3 +68,5 @@ $(TARGET) : $(OBJ)
 clean :
 	-@ if "''F$SEARCH("*.obj")'" .NES. ""  then delete/noconfirm/nolog *.obj;*
 	-@ if "''F$SEARCH("*.exe")'" .NES. ""  then delete/noconfirm/nolog *.exe;*
+
+xxd.obj : xxd.c

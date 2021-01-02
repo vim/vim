@@ -14,14 +14,13 @@
 #undef NDEBUG
 #include <assert.h>
 
-/* Must include main.c because it contains much more than just main() */
+// Must include main.c because it contains much more than just main()
 #define NO_VIM_MAIN
 #include "main.c"
 
-/* This file has to be included because the tested functions are static */
+// This file has to be included because the tested functions are static
 #include "charset.c"
 
-#ifdef FEAT_MBYTE
 /*
  * Test the results of vim_iswordc() and vim_iswordp() are matched.
  */
@@ -31,7 +30,7 @@ test_isword_funcs_utf8(void)
     buf_T buf;
     int c;
 
-    vim_memset(&buf, 0, sizeof(buf));
+    CLEAR_FIELD(buf);
     p_enc = (char_u *)"utf-8";
     p_isi = (char_u *)"";
     p_isp = (char_u *)"";
@@ -39,7 +38,7 @@ test_isword_funcs_utf8(void)
     buf.b_p_isk = (char_u *)"@,48-57,_,128-167,224-235";
 
     curbuf = &buf;
-    mb_init(); /* calls init_chartab() */
+    mb_init(); // calls init_chartab()
 
     for (c = 0; c < 0x10000; ++c)
     {
@@ -73,13 +72,11 @@ test_isword_funcs_utf8(void)
 	}
     }
 }
-#endif
 
     int
 main(void)
 {
-#ifdef FEAT_MBYTE
+    estack_init();
     test_isword_funcs_utf8();
-#endif
     return 0;
 }

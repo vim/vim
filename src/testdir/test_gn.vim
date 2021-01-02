@@ -2,7 +2,7 @@
 
 func Test_gn_command()
   noautocmd new
-  " replace a single char by itsself quoted:
+  " replace a single char by itself quoted:
   call setline('.', 'abc x def x ghi x jkl')
   let @/ = 'x'
   exe "norm! cgn'x'\<esc>.."
@@ -120,7 +120,7 @@ func Test_gn_command()
   sil! %d_
 
   " search using the \zs atom
-  call setline(1, [' nnoremap', '' , 'nnoremap'])
+  call setline(1, [' nnoremap', '', 'nnoremap'])
   set wrapscan&vim
   let @/ = '\_s\zsnnoremap'
   $
@@ -128,7 +128,94 @@ func Test_gn_command()
   call assert_equal([' nnoremap', '', 'match'], getline(1,'$'))
   sil! %d_
 
+  " make sure it works correctly for one-char wide search items
+  call setline('.', ['abcdefghi'])
+  let @/ = 'a'
+  exe "norm! 0fhvhhgNgU"
+  call assert_equal(['ABCDEFGHi'], getline(1,'$'))
+  call setline('.', ['abcdefghi'])
+  let @/ = 'b'
+  " this gn wraps around the end of the file
+  exe "norm! 0fhvhhgngU"
+  call assert_equal(['aBCDEFGHi'], getline(1,'$'))
+  sil! %d _
+  call setline('.', ['abcdefghi'])
+  let @/ = 'f'
+  exe "norm! 0vllgngU"
+  call assert_equal(['ABCDEFghi'], getline(1,'$'))
+  sil! %d _
+  call setline('.', ['12345678'])
+  let @/ = '5'
+  norm! gg0f7vhhhhgnd
+  call assert_equal(['12348'], getline(1,'$'))
+  sil! %d _
+  call setline('.', ['12345678'])
+  let @/ = '5'
+  norm! gg0f2vf7gNd
+  call assert_equal(['1678'], getline(1,'$'))
+  sil! %d _
   set wrapscan&vim
-endfu
+
+  " Without 'wrapscan', in visual mode, running gn without a match should fail
+  " but the visual mode should be kept.
+  set nowrapscan
+  call setline('.', 'one two')
+  let @/ = 'one'
+  call assert_beeps('normal 0wvlgn')
+  exe "normal y"
+  call assert_equal('tw', @")
+
+  " with exclusive selection, run gn and gN
+  set selection=exclusive
+  normal 0gny
+  call assert_equal('one', @")
+  normal 0wgNy
+  call assert_equal('one', @")
+  set selection&
+endfunc
+
+func Test_gN_repeat()
+  new
+  call setline(1, 'this list is a list with a list of a list.')
+  /list
+  normal $gNgNgNx
+  call assert_equal('list with a list of a list', @")
+  bwipe!
+endfunc
+
+func Test_gN_then_gn()
+  new
+
+  call setline(1, 'this list is a list with a list of a last.')
+  /l.st
+  normal $gNgNgnx
+  call assert_equal('last', @")
+
+  call setline(1, 'this list is a list with a lust of a last.')
+  /l.st
+  normal $gNgNgNgnx
+  call assert_equal('lust of a last', @")
+
+  bwipe!
+endfunc
+
+func Test_gn_multi_line()
+  new
+  call setline(1, [
+        \ 'func Tm1()',
+        \ ' echo "one"',
+        \ 'endfunc',
+        \ 'func Tm2()',
+        \ ' echo "two"',
+        \ 'endfunc',
+        \ 'func Tm3()',
+        \ ' echo "three"',
+        \ 'endfunc',
+        \])
+  /\v^func Tm\d\(\)\n.*\zs".*"\ze$
+  normal jgnrx
+  call assert_equal(' echo xxxxx', getline(5))
+  bwipe!
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

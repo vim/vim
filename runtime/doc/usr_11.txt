@@ -1,4 +1,4 @@
-*usr_11.txt*	For Vim version 8.1.  Last change: 2018 Apr 13
+*usr_11.txt*	For Vim version 8.2.  Last change: 2020 Oct 25
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -120,7 +120,7 @@ the resulting files if they are what you expected.
 USING A SPECIFIC SWAP FILE
 
 If you know which swap file needs to be used, you can recover by giving the
-swap file name.  Vim will then finds out the name of the original file from
+swap file name.  Vim will then find out the name of the original file from
 the swap file.
 
 Example: >
@@ -205,7 +205,17 @@ something wrong.  It may be one of these two situations.
       NEWER than swap file! ~
 
 
-UNREADABLE SWAP FILE
+NOTE that in the following situation Vim knows the swap file is not useful and
+will automatically delete it:
+- The file is a valid swap file (Magic number is correct).
+- The flag that the file was modified is not set.
+- The process is not running.
+
+You can programmatically deal with this situation with the |FileChangedShell|
+autocommand event.
+
+
+UNREADABLE SWAP FILE ~
 
 Sometimes the line
 
@@ -246,7 +256,7 @@ O  Open the file readonly.  Use this when you just want to view the file and
 
 E  Edit the file anyway.  Use this with caution!  If the file is being edited
    in another Vim, you might end up with two versions of the file.  Vim will
-   try to warn you when this happens, but better be safe then sorry.
+   try to warn you when this happens, but better be safe than sorry.
 
 R  Recover the file from the swap file.  Use this if you know that the swap
    file contains changes that you want to recover.
@@ -284,7 +294,7 @@ If you really don't want to see this message, you can add the 'A' flag to the
 'shortmess' option.  But it's very unusual that you need this.
 
 For remarks about encryption and the swap file, see |:recover-crypt|.
-For programatic access to the swap file, see |swapinfo()|.
+For programmatic access to the swap file, see |swapinfo()|.
 
 ==============================================================================
 *11.4*	Further reading

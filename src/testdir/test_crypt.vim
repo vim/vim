@@ -1,8 +1,7 @@
 " Tests for encryption.
 
-if !has('cryptv')
-  finish
-endif
+source check.vim
+CheckFeature cryptv
 
 func Common_head_only(text)
   " This was crashing Vim
@@ -34,6 +33,7 @@ func Crypt_uncrypt(method)
 	\ 'line 3 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx']
   call setline(1, text)
   call feedkeys(":X\<CR>foobar\<CR>foobar\<CR>", 'xt')
+  call assert_equal('*****', &key)
   w!
   bwipe!
   call feedkeys(":split Xtest.txt\<CR>foobar\<CR>", 'xt')
@@ -81,3 +81,60 @@ endfunc
 func Test_uncrypt_blowfish2()
   call Uncrypt_stable('blowfish', "VimCrypt~03!\u001e\u00d1N\u00e3;\u00d3\u00c0\u00a0^C)\u0004\u00f7\u007f.\u00b6\u00abF\u000eS\u0019\u00e0\u008b6\u00d2[T\u00cb\u00a7\u0085\u00d8\u00be9\u000b\u00812\u000bQ\u00b3\u00cc@\u0097\u000f\u00df\u009a\u00adIv\u00aa.\u00d8\u00c9\u00ee\u009e`\u00bd$\u00af%\u00d0", "barburp", ["abcdefghijklmnopqrstuvwxyz", "!@#$%^&*()_+=-`~"])
 endfunc
+
+func Test_uncrypt_unknown_method()
+  split Xuncrypt_unknown.txt
+  set bin noeol key= fenc=latin1
+  call setline(1, "VimCrypt~93!\u001e\u00d1")
+  w!
+  bwipe!
+  set nobin
+  call assert_fails(":split Xuncrypt_unknown.txt", 'E821:')
+
+  bwipe!
+  call delete('Xuncrypt_unknown.txt')
+  set key=
+endfunc
+
+func Test_crypt_key_mismatch()
+  set cryptmethod=blowfish
+
+  split Xtest.txt
+  call setline(1, 'nothing')
+  call feedkeys(":X\<CR>foobar\<CR>nothing\<CR>", 'xt')
+  call assert_match("Keys don't match!", execute(':2messages'))
+  call assert_equal('', &key)
+  call feedkeys("\<CR>\<CR>", 'xt')
+
+  set cryptmethod&
+  bwipe!
+endfunc
+
+func Test_crypt_set_key_changes_buffer()
+
+  new Xtest1.txt
+  call setline(1, 'nothing')
+  set cryptmethod=blowfish2
+  call feedkeys(":X\<CR>foobar\<CR>foobar\<CR>", 'xt')
+  call assert_fails(":q", "E37:")
+  w
+  set key=anotherkey
+  call assert_fails(":bw")
+  w
+  call feedkeys(":X\<CR>foobar\<CR>foobar\<CR>", 'xt')
+  call assert_fails(":bw")
+  w
+  let winnr = winnr()
+  wincmd p
+  call setwinvar(winnr, '&key', 'yetanotherkey')
+  wincmd p
+  call assert_fails(":bw")
+  w
+
+  set cryptmethod&
+  set key=
+  bwipe!
+  call delete('Xtest1.txt')
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

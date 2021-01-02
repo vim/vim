@@ -1,4 +1,4 @@
-*if_mzsch.txt*  For Vim version 8.1.  Last change: 2017 Oct 08
+*if_mzsch.txt*  For Vim version 8.2.  Last change: 2020 Oct 14
 
 
 		  VIM REFERENCE MANUAL    by Sergey Khorev
@@ -15,10 +15,7 @@ The MzScheme Interface to Vim				*mzscheme* *MzScheme*
 7. Dynamic loading			|mzscheme-dynamic|
 8. MzScheme setup			|mzscheme-setup|
 
-{Vi does not have any of these commands}
-
-The MzScheme interface is available only if Vim was compiled with the
-|+mzscheme| feature.
+{only available when Vim was compiled with the |+mzscheme| feature}
 
 Based on the work of Brent Fulgham.
 Dynamic loading added by Sergey Khorev
@@ -40,18 +37,24 @@ To speed up the process, you might also want to use --disable-gracket and
 
 							*:mzscheme* *:mz*
 :[range]mz[scheme] {stmt}
-			Execute MzScheme statement {stmt}.  {not in Vi}
+			Execute MzScheme statement {stmt}.
 
-:[range]mz[scheme] << {endmarker}
+:[range]mz[scheme] << [trim] [{endmarker}]
 {script}
 {endmarker}
 			Execute inlined MzScheme script {script}.
-			Note: This command doesn't work if the MzScheme
+			Note: This command doesn't work when the MzScheme
 			feature wasn't compiled in.  To avoid errors, see
 			|script-here|.
 
+			If [endmarker] is omitted from after the "<<", a dot
+			'.' must be used after {script}, like for the
+			|:append| and |:insert| commands.  Refer to
+			|:let-heredoc| for more information.
+
+
 							*:mzfile* *:mzf*
-:[range]mzf[ile] {file}	Execute the MzScheme script in {file}.  {not in Vi}
+:[range]mzf[ile] {file}	Execute the MzScheme script in {file}.
 
 All of these commands do essentially the same thing - they execute a piece of
 MzScheme code, with the "current range" set to the given line
@@ -83,7 +86,7 @@ To avoid clashes with MzScheme, consider using prefix when requiring module,
 e.g.: >
 	:mzscheme (require (prefix vim- vimext))
 <
-All the examples below assume this naming scheme. 
+All the examples below assume this naming scheme.
 
 							*mzscheme-sandbox*
 When executed in the |sandbox|, access to some filesystem and Vim interface

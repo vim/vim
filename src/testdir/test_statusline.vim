@@ -1,12 +1,11 @@
 " Test 'statusline'
 "
 " Not tested yet:
-"   %a
 "   %N
-"   %T
-"   %X
 
 source view_util.vim
+source check.vim
+source screendump.vim
 
 func s:get_statusline()
   return ScreenLines(&lines - 1, &columns)[0]
@@ -29,7 +28,9 @@ endfunc
 
 " Function used to display syntax group.
 func SyntaxItem()
-  return synIDattr(synID(line("."),col("."),1),"name")
+  call assert_equal(s:expected_curbuf, g:actual_curbuf)
+  call assert_equal(s:expected_curwin, g:actual_curwin)
+  return synIDattr(synID(line("."), col("."),1), "name")
 endfunc
 
 func Test_caught_error_in_statusline()
@@ -58,27 +59,39 @@ func Test_statusline_will_be_disabled_with_error()
 endfunc
 
 func Test_statusline()
-  new Xstatusline
+  CheckFeature quickfix
+
+  " %a: Argument list ({current} of {max})
+  set statusline=%a
+  call assert_match('^\s*$', s:get_statusline())
+  arglocal a1 a2
+  rewind
+  call assert_match('^ (1 of 2)\s*$', s:get_statusline())
+  next
+  call assert_match('^ (2 of 2)\s*$', s:get_statusline())
+  e Xstatusline
+  call assert_match('^ ((2) of 2)\s*$', s:get_statusline())
+
   only
   set laststatus=2
   set splitbelow
-  call setline(1, range(1, 200))
+  call setline(1, range(1, 10000))
 
   " %b: Value of character under cursor.
   " %B: As above, in hexadecimal.
-  call cursor(180, 2)
+  call cursor(9000, 1)
   set statusline=%b,%B
-  call assert_match('^56,38\s*$', s:get_statusline())
+  call assert_match('^57,39\s*$', s:get_statusline())
 
   " %o: Byte number in file of byte under cursor, first byte is 1.
   " %O: As above, in hexadecimal.
   set statusline=%o,%O
   set fileformat=dos
-  call assert_match('^789,315\s*$', s:get_statusline())
+  call assert_match('^52888,CE98\s*$', s:get_statusline())
   set fileformat=mac
-  call assert_match('^610,262\s*$', s:get_statusline())
+  call assert_match('^43889,AB71\s*$', s:get_statusline())
   set fileformat=unix
-  call assert_match('^610,262\s*$', s:get_statusline())
+  call assert_match('^43889,AB71\s*$', s:get_statusline())
   set fileformat&
 
   " %f: Path to the file in the buffer, as typed or relative to current dir.
@@ -88,6 +101,18 @@ func Test_statusline()
   " %F: Full path to the file in the buffer.
   set statusline=%F
   call assert_match('/testdir/Xstatusline\s*$', s:get_statusline())
+
+  " Test for min and max width with %(. For some reason, if this test is moved
+  " after the below test for the help buffer flag, then the code to truncate
+  " the string is not executed.
+  set statusline=%015(%f%)
+  call assert_match('^    Xstatusline\s*$', s:get_statusline())
+  set statusline=%.6(%f%)
+  call assert_match('^<sline\s*$', s:get_statusline())
+  set statusline=%14f
+  call assert_match('^   Xstatusline\s*$', s:get_statusline())
+  set statusline=%.4L
+  call assert_match('^10>3\s*$', s:get_statusline())
 
   " %h: Help buffer flag, text is "[help]".
   " %H: Help buffer flag, text is ",HLP".
@@ -112,7 +137,7 @@ func Test_statusline()
   " %L: Number of line in buffer.
   " %c: Column number.
   set statusline=%l/%L,%c
-  call assert_match('^180/200,2\s*$', s:get_statusline())
+  call assert_match('^9000/10000,1\s*$', s:get_statusline())
 
   " %m: Modified flag, text is "[+]", "[-]" if 'modifiable' is off.
   " %M: Modified flag, text is ",+" or ",-".
@@ -136,7 +161,7 @@ func Test_statusline()
   call assert_match('^0,Top\s*$', s:get_statusline())
   norm G
   call assert_match('^100,Bot\s*$', s:get_statusline())
-  180
+  9000
   " Don't check the exact percentage as it depends on the window size
   call assert_match('^90,\(Top\|Bot\|\d\+%\)\s*$', s:get_statusline())
 
@@ -165,7 +190,7 @@ func Test_statusline()
 
   " %v: Virtual column number.
   " %V: Virtual column number as -{num}. Not displayed if equal to 'c'.
-  call cursor(180, 2)
+  call cursor(9000, 2)
   set statusline=%v,%V
   call assert_match('^2,\s*$', s:get_statusline())
   set virtualedit=all
@@ -195,23 +220,31 @@ func Test_statusline()
 
   " Test min/max width, leading zeroes, left/right justify.
   set statusline=%04B
-  call cursor(180, 2)
-  call assert_match('^0038\s*$', s:get_statusline())
+  call cursor(9000, 1)
+  call assert_match('^0039\s*$', s:get_statusline())
   set statusline=#%4B#
-  call assert_match('^#  38#\s*$', s:get_statusline())
+  call assert_match('^#  39#\s*$', s:get_statusline())
   set statusline=#%-4B#
-  call assert_match('^#38  #\s*$', s:get_statusline())
+  call assert_match('^#39  #\s*$', s:get_statusline())
   set statusline=%.6f
   call assert_match('^<sline\s*$', s:get_statusline())
 
   " %<: Where to truncate.
-  exe 'set statusline=a%<b' . repeat('c', 1000) . 'd'
-  call assert_match('^a<c*d$', s:get_statusline())
-  exe 'set statusline=a' . repeat('b', 1000) . '%<c'
-  call assert_match('^ab*>$', s:get_statusline())
+  " First check with when %< should not truncate with many columns
+  exe 'set statusline=a%<b' . repeat('c', &columns - 3) . 'd'
+  call assert_match('^abc\+d$', s:get_statusline())
+  exe 'set statusline=a' . repeat('b', &columns - 2) . '%<c'
+  call assert_match('^ab\+c$', s:get_statusline())
+  " Then check when %< should truncate when there with too few columns.
+  exe 'set statusline=a%<b' . repeat('c', &columns - 2) . 'd'
+  call assert_match('^a<c\+d$', s:get_statusline())
+  exe 'set statusline=a' . repeat('b', &columns - 1) . '%<c'
+  call assert_match('^ab\+>$', s:get_statusline())
 
   "%{: Evaluate expression between '%{' and '}' and substitute result.
   syntax on
+  let s:expected_curbuf = string(bufnr(''))
+  let s:expected_curwin = string(win_getid())
   set statusline=%{SyntaxItem()}
   call assert_match('^vimNumber\s*$', s:get_statusline())
   s/^/"/
@@ -326,6 +359,38 @@ func Test_statusline()
   set statusline=%!2*3+1
   call assert_match('7\s*$', s:get_statusline())
 
+  func GetNested()
+    call assert_equal(string(win_getid()), g:actual_curwin)
+    call assert_equal(string(bufnr('')), g:actual_curbuf)
+    return 'nested'
+  endfunc
+  func GetStatusLine()
+    call assert_equal(win_getid(), g:statusline_winid)
+    return 'the %{GetNested()} line'
+  endfunc
+  set statusline=%!GetStatusLine()
+  call assert_match('the nested line', s:get_statusline())
+  call assert_false(exists('g:actual_curwin'))
+  call assert_false(exists('g:actual_curbuf'))
+  call assert_false(exists('g:statusline_winid'))
+  delfunc GetNested
+  delfunc GetStatusLine
+
+  " Test statusline works with 80+ items
+  function! StatusLabel()
+    redrawstatus
+    return '[label]'	
+  endfunc
+  let statusline = '%{StatusLabel()}'
+  for i in range(150)
+    let statusline .= '%#TabLine' . (i % 2 == 0 ? 'Fill' : 'Sel') . '#' . string(i)[0]
+  endfor
+  let &statusline = statusline
+  redrawstatus
+  set statusline&
+  delfunc StatusLabel
+
+
   " Check statusline in current and non-current window
   " with the 'fillchars' option.
   set fillchars=stl:^,stlnc:=,vert:\|,fold:-,diff:-
@@ -341,3 +406,63 @@ func Test_statusline()
   set laststatus&
   set splitbelow&
 endfunc
+
+func Test_statusline_visual()
+  func CallWordcount()
+    call wordcount()
+  endfunc
+  new x1
+  setl statusline=count=%{CallWordcount()}
+  " buffer must not be empty
+  call setline(1, 'hello')
+
+  " window with more lines than x1
+  new x2
+  call setline(1, range(10))
+  $
+  " Visual mode in line below liast line in x1 should not give ml_get error
+  call feedkeys("\<C-V>", "xt")
+  redraw
+
+  delfunc CallWordcount
+  bwipe! x1
+  bwipe! x2
+endfunc
+
+func Test_statusline_removed_group()
+  CheckScreendump
+
+  let lines =<< trim END
+    scriptencoding utf-8
+    set laststatus=2
+    let &statusline = '%#StatColorHi2#%(✓%#StatColorHi2#%) Q≡'
+  END
+  call writefile(lines, 'XTest_statusline')
+
+  let buf = RunVimInTerminal('-S XTest_statusline', {'rows': 10, 'cols': 50})
+  call TermWait(buf, 50)
+  call VerifyScreenDump(buf, 'Test_statusline_1', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XTest_statusline')
+endfunc
+
+func Test_statusline_after_split_vsplit()
+  only
+
+  " Make the status line of each window show the window number.
+  set ls=2 stl=%{winnr()}
+
+  split | redraw
+  vsplit | redraw
+
+  " The status line of the third window should read '3' here.
+  call assert_equal('3', nr2char(screenchar(&lines - 1, 1)))
+
+  only
+  set ls& stl&
+endfunc
+
+
+" vim: shiftwidth=2 sts=2 expandtab

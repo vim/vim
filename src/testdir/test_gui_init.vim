@@ -2,9 +2,8 @@
 " startup to take effect at runtime.
 
 source shared.vim
-if !CanRunGui()
-  finish
-endif
+source check.vim
+CheckCanRunGui
 
 source setup_gui.vim
 
@@ -59,3 +58,5 @@ func Test_set_guioptions_for_p()
     throw skipped
   endif
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

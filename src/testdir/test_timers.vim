@@ -1,11 +1,11 @@
 " Test for timers
 
-if !has('timers')
-  finish
-endif
+source check.vim
+CheckFeature timers
 
-source shared.vim
 source screendump.vim
+source shared.vim
+source term_util.vim
 
 func MyHandler(timer)
   let g:val += 1
@@ -15,39 +15,55 @@ func MyHandlerWithLists(lists, timer)
   let x = string(a:lists)
 endfunc
 
-func Test_oneshot()
+func Test_timer_oneshot()
   let g:val = 0
   let timer = timer_start(50, 'MyHandler')
   let slept = WaitFor('g:val == 1')
   call assert_equal(1, g:val)
-  if has('reltime')
-    call assert_inrange(49, 100, slept)
+  if has('mac')
+    " Mac on Travis can be very slow.
+    let limit = 180
   else
-    call assert_inrange(20, 100, slept)
+    let limit = 100
+  endif
+  if has('reltime')
+    call assert_inrange(49, limit, slept)
+  else
+    call assert_inrange(20, limit, slept)
   endif
 endfunc
 
-func Test_repeat_three()
+func Test_timer_repeat_three()
   let g:val = 0
   let timer = timer_start(50, 'MyHandler', {'repeat': 3})
   let slept = WaitFor('g:val == 3')
   call assert_equal(3, g:val)
   if has('reltime')
-    call assert_inrange(149, 250, slept)
+    if has('mac')
+      " Mac on Travis can be slow.
+      call assert_inrange(149, 400, slept)
+    else
+      call assert_inrange(149, 250, slept)
+    endif
   else
     call assert_inrange(80, 200, slept)
   endif
 endfunc
 
-func Test_repeat_many()
+func Test_timer_repeat_many()
   let g:val = 0
   let timer = timer_start(50, 'MyHandler', {'repeat': -1})
   sleep 200m
   call timer_stop(timer)
-  call assert_inrange(2, 4, g:val)
+  " Mac on Travis can be slow.
+  if has('mac')
+    call assert_inrange(1, 5, g:val)
+  else
+    call assert_inrange(2, 5, g:val)
+  endif
 endfunc
 
-func Test_with_partial_callback()
+func Test_timer_with_partial_callback()
   let g:val = 0
   let meow = {'one': 1}
   function meow.bite(...)
@@ -58,21 +74,26 @@ func Test_with_partial_callback()
   let slept = WaitFor('g:val == 1')
   call assert_equal(1, g:val)
   if has('reltime')
-    call assert_inrange(49, 130, slept)
+    " Mac on Travis can be slow.
+    if has('mac')
+      call assert_inrange(49, 180, slept)
+    else
+      call assert_inrange(49, 130, slept)
+    endif
   else
     call assert_inrange(20, 100, slept)
   endif
 endfunc
 
-func Test_retain_partial()
+func Test_timer_retain_partial()
   call timer_start(50, function('MyHandlerWithLists', [['a']]))
   call test_garbagecollect_now()
   sleep 100m
 endfunc
 
-func Test_info()
+func Test_timer_info()
   let id = timer_start(1000, 'MyHandler')
-  let info = timer_info(id)
+  let info = id->timer_info()
   call assert_equal(id, info[0]['id'])
   call assert_equal(1000, info[0]['time'])
   call assert_true(info[0]['remaining'] > 500)
@@ -90,9 +111,11 @@ func Test_info()
 
   call timer_stop(id)
   call assert_equal([], timer_info(id))
+
+  call assert_fails('call timer_info("abc")', 'E39:')
 endfunc
 
-func Test_stopall()
+func Test_timer_stopall()
   let id1 = timer_start(1000, 'MyHandler')
   let id2 = timer_start(2000, 'MyHandler')
   let info = timer_info()
@@ -103,14 +126,14 @@ func Test_stopall()
   call assert_equal(0, len(info))
 endfunc
 
-func Test_paused()
+func Test_timer_paused()
   let g:val = 0
 
   let id = timer_start(50, 'MyHandler')
   let info = timer_info(id)
   call assert_equal(0, info[0]['paused'])
 
-  call timer_pause(id, 1)
+  eval id->timer_pause(1)
   let info = timer_info(id)
   call assert_equal(1, info[0]['paused'])
   sleep 100m
@@ -125,13 +148,15 @@ func Test_paused()
   if has('reltime')
     if has('mac')
       " The travis Mac machines appear to be very busy.
-      call assert_inrange(0, 50, slept)
+      call assert_inrange(0, 90, slept)
     else
       call assert_inrange(0, 30, slept)
     endif
   else
     call assert_inrange(0, 10, slept)
   endif
+
+  call assert_fails('call timer_pause("abc", 1)', 'E39:')
 endfunc
 
 func StopMyself(timer)
@@ -141,7 +166,7 @@ func StopMyself(timer)
   endif
 endfunc
 
-func Test_delete_myself()
+func Test_timer_delete_myself()
   let g:called = 0
   let t = timer_start(10, 'StopMyself', {'repeat': -1})
   call WaitForAssert({-> assert_equal(2, g:called)})
@@ -150,32 +175,48 @@ func Test_delete_myself()
 endfunc
 
 func StopTimer1(timer)
-  let g:timer2 = timer_start(10, 'StopTimer2')
+  let g:timer2 = 10->timer_start('StopTimer2')
   " avoid maxfuncdepth error
   call timer_pause(g:timer1, 1)
-  sleep 40m
+  sleep 20m
 endfunc
 
 func StopTimer2(timer)
   call timer_stop(g:timer1)
 endfunc
 
-func Test_stop_in_callback()
+func Test_timer_stop_in_callback()
+  call assert_equal(0, len(timer_info()))
   let g:timer1 = timer_start(10, 'StopTimer1')
-  sleep 40m
+  let slept = 0
+  for i in range(10)
+    if len(timer_info()) == 0
+      break
+    endif
+    sleep 10m
+    let slept += 10
+  endfor
+  " This should take only 30 msec, but on Mac it's often longer
+  call assert_inrange(0, 50, slept)
 endfunc
 
 func StopTimerAll(timer)
   call timer_stopall()
 endfunc
 
-func Test_stop_all_in_callback()
-  let g:timer1 = timer_start(10, 'StopTimerAll')
-  let info = timer_info()
-  call assert_equal(1, len(info))
-  sleep 40m
-  let info = timer_info()
-  call assert_equal(0, len(info))
+func Test_timer_stop_all_in_callback()
+  call assert_equal(0, len(timer_info()))
+  call timer_start(10, 'StopTimerAll')
+  call assert_equal(1, len(timer_info()))
+  let slept = 0
+  for i in range(10)
+    if len(timer_info()) == 0
+      break
+    endif
+    sleep 10m
+    let slept += 10
+  endfor
+  call assert_inrange(0, 30, slept)
 endfunc
 
 func FeedkeysCb(timer)
@@ -188,7 +229,7 @@ func InputCb(timer)
   call Resume()
 endfunc
 
-func Test_input_in_timer()
+func Test_timer_input_in_timer()
   let g:val = ''
   call timer_start(10, 'InputCb')
   call Standby(1000)
@@ -210,6 +251,10 @@ func Test_timer_errors()
   call WaitForAssert({-> assert_equal(3, g:call_count)})
   sleep 50m
   call assert_equal(3, g:call_count)
+
+  call assert_fails('call timer_start(100, "MyHandler", "abc")', 'E475:')
+  call assert_fails('call timer_start(100, [])', 'E921:')
+  call assert_fails('call timer_stop("abc")', 'E39:')
 endfunc
 
 func FuncWithCaughtError(timer)
@@ -236,35 +281,51 @@ func FeedAndPeek(timer)
 endfunc
 
 func Interrupt(timer)
-  call test_feedinput("\<C-C>")
+  eval "\<C-C>"->test_feedinput()
 endfunc
 
-func Test_peek_and_get_char()
-  if !has('unix') && !has('gui_running')
-    return
-  endif
+func Test_timer_peek_and_get_char()
+  CheckUnix
+  CheckGui
+
   call timer_start(0, 'FeedAndPeek')
   let intr = timer_start(100, 'Interrupt')
   let c = getchar()
   call assert_equal(char2nr('a'), c)
-  call timer_stop(intr)
+  eval intr->timer_stop()
 endfunc
 
-func Test_ex_mode()
+func Test_timer_getchar_zero()
+  if has('win32') && !has('gui_running')
+    throw 'Skipped: cannot get low-level input'
+  endif
+  CheckFunction reltimefloat
+
+  " Measure the elapsed time to avoid a hang when it fails.
+  let start = reltime()
+  let id = timer_start(20, {-> feedkeys('x', 'L')})
+  let c = 0
+  while c == 0 && reltimefloat(reltime(start)) < 0.2
+    let c = getchar(0)
+    sleep 10m
+  endwhile
+  call assert_equal('x', nr2char(c))
+  call timer_stop(id)
+endfunc
+
+func Test_timer_ex_mode()
   " Function with an empty line.
   func Foo(...)
 
   endfunc
-  let timer =  timer_start(40, function('g:Foo'), {'repeat':-1})
+  let timer = timer_start(40, function('g:Foo'), {'repeat':-1})
   " This used to throw error E749.
   exe "normal Qsleep 100m\rvi\r"
   call timer_stop(timer)
 endfunc
 
-func Test_restore_count()
-  if !CanRunVimInTerminal()
-    return
-  endif
+func Test_timer_restore_count()
+  CheckRunVimInTerminal
   " Check that v:count is saved and restored, not changed by a timer.
   call writefile([
         \ 'nnoremap <expr><silent> L v:count ? v:count . "l" : "l"',
@@ -290,6 +351,102 @@ func Test_restore_count()
   call StopVimInTerminal(buf)
   call delete('Xtrcscript')
   call delete('Xtrctext')
+endfunc
+
+" Test that the garbage collector isn't triggered if a timer callback invokes
+" vgetc().
+func Test_timer_nocatch_garbage_collect()
+  " 'uptimetime. must be bigger than the timer timeout
+  set ut=200
+  call test_garbagecollect_soon()
+  call test_override('no_wait_return', 0)
+  func CauseAnError(id)
+    " This will show an error and wait for Enter.
+    let a = {'foo', 'bar'}
+  endfunc
+  func FeedChar(id)
+    call feedkeys('x', 't')
+  endfunc
+  call timer_start(300, 'FeedChar')
+  call timer_start(100, 'CauseAnError')
+  let x = getchar()
+
+  set ut&
+  call test_override('no_wait_return', 1)
+  delfunc CauseAnError
+  delfunc FeedChar
+endfunc
+
+func Test_timer_error_in_timer_callback()
+  if !has('terminal') || (has('win32') && has('gui_running'))
+    throw 'Skipped: cannot run Vim in a terminal window'
+  endif
+
+  let lines =<< trim [CODE]
+  func Func(timer)
+    " fail to create list
+    let x = [
+  endfunc
+  set updatetime=50
+  call timer_start(1, 'Func')
+  [CODE]
+  call writefile(lines, 'Xtest.vim')
+
+  let buf = term_start(GetVimCommandCleanTerm() .. ' -S Xtest.vim', {'term_rows': 8})
+  let job = term_getjob(buf)
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 8))})
+
+  " GC must not run during timer callback, which can make Vim crash.
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "\<CR>")
+  call TermWait(buf, 50)
+  call assert_equal('run', job_status(job))
+
+  call term_sendkeys(buf, ":qall!\<CR>")
+  call WaitFor({-> job_status(job) ==# 'dead'})
+  if has('unix')
+    call assert_equal('', job_info(job).termsig)
+  endif
+
+  call delete('Xtest.vim')
+  exe buf .. 'bwipe!'
+endfunc
+
+" Test for garbage collection when a timer is still running
+func Test_timer_garbage_collect()
+  let timer = timer_start(1000, function('MyHandler'), {'repeat' : 10})
+  call test_garbagecollect_now()
+  let l = timer_info(timer)
+  call assert_equal(function('MyHandler'), l[0].callback)
+  call timer_stop(timer)
+endfunc
+
+func Test_timer_invalid_callback()
+  call assert_fails('call timer_start(0, "0")', 'E921:')
+endfunc
+
+func Test_timer_changing_function_list()
+  CheckRunVimInTerminal
+
+  " Create a large number of functions.  Should get the "more" prompt.
+  " The typing "G" triggers the timer, which changes the function table.
+  let lines =<< trim END
+    for func in map(range(1,99), "'Func' .. v:val")
+      exe "func " .. func .. "()"
+      endfunc
+    endfor
+    au CmdlineLeave : call timer_start(0, {-> 0})
+  END
+  call writefile(lines, 'XTest_timerchange')
+  let buf = RunVimInTerminal('-S XTest_timerchange', #{rows: 10})
+  call term_sendkeys(buf, ":fu\<CR>")
+  call WaitForAssert({-> assert_match('-- More --', term_getline(buf, 10))})
+  call term_sendkeys(buf, "G")
+  call WaitForAssert({-> assert_match('E454:', term_getline(buf, 9))})
+  call term_sendkeys(buf, "\<Esc>")
+
+  call StopVimInTerminal(buf)
+  call delete('XTest_timerchange')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

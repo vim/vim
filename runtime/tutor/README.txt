@@ -24,7 +24,7 @@ Translation
 -----------
 
 The tutor.xx and tutor.xx.utf-8 files are translated files (where xx is the
-langage code).  The encoding of tutor.xx might be latin1 or other traditional
+language code).  The encoding of tutor.xx might be latin1 or other traditional
 encoding.  If you don't need a translation with such traditional encoding,
 you just need to prepare the tutor.xx.utf-8 file.
 If you need another encoding, you can also prepare a file named tutor.xx.enc

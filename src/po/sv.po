@@ -1582,9 +1582,6 @@ msgstr "E509: Kan inte skapa säkerhetskopia (lägg till ! för att tvinga)"
 msgid "E510: Can't make backup file (add ! to override)"
 msgstr "E510: Kan inte göra säkerhetskopia (lägg till ! för att tvinga)"
 
-msgid "E460: The resource fork would be lost (add ! to override)"
-msgstr "E460: Resursgrenen skulle tappas bort (lägg till ! för att tvinga)"
-
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: Kan inte hitta temporär fil för skrivning"
 
@@ -2589,40 +2586,11 @@ msgstr "Visa docu av"
 msgid "Generate docu for"
 msgstr "Generera docu för"
 
-msgid ""
-"Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
-"$PATH).\n"
-msgstr ""
-"Kan inte ansluta till SNiFF+. Kontrollera miljö (sniffemacs måste kunna "
-"hittas i $PATH).\n"
-
-msgid "E274: Sniff: Error during read. Disconnected"
-msgstr "E274: Sniff: Fel vid läsning. Frånkopplad"
-
-msgid "SNiFF+ is currently "
-msgstr "SNiFF+ är för närvarande "
-
 msgid "not "
 msgstr "inte "
 
 msgid "connected"
 msgstr "ansluten"
-
-#, c-format
-msgid "E275: Unknown SNiFF+ request: %s"
-msgstr "E275: Okänd SNiFF+-begäran: %s"
-
-msgid "E276: Error connecting to SNiFF+"
-msgstr "E276: Fel vid anslutning till SNiFF+"
-
-msgid "E278: SNiFF+ not connected"
-msgstr "E278: SNiFF+ inte ansluten"
-
-msgid "E279: Not a SNiFF+ buffer"
-msgstr "E279: Inte en SNiFF+-buffert"
-
-msgid "Sniff: Error during write. Disconnected"
-msgstr "Sniff: Fel vid skrivning. Frånkopplad"
 
 msgid "invalid buffer number"
 msgstr "ogiltigt buffertnummer"
@@ -2652,9 +2620,6 @@ msgstr "okänd vimOption"
 
 msgid "keyboard interrupt"
 msgstr "tangentbordsavbrott"
-
-msgid "vim error"
-msgstr "vim-fel"
 
 msgid "cannot create buffer/window command: object is being deleted"
 msgstr "kan inte skapa buffert/fönster-kommando: objekt håller på att tas bort"
@@ -2954,8 +2919,8 @@ msgstr "-W <utskript>\tSkriv alla skrivna kommandon till fil <utskript>"
 msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\tRedigera krypterade filer"
 
-msgid "-display <display>\tConnect vim to this particular X-server"
-msgstr "-display <display>\tAnslut vim till just denna X-server"
+msgid "-display <display>\tConnect Vim to this particular X-server"
+msgstr "-display <display>\tAnslut Vim till just denna X-server"
 
 msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\tAnslut inte till X server"
@@ -3027,11 +2992,11 @@ msgstr ""
 "\n"
 "Argument som stöds av gvim (Athena-version):\n"
 
-msgid "-display <display>\tRun vim on <display>"
-msgstr "-display <display>\tKör vim på <display>"
+msgid "-display <display>\tRun Vim on <display>"
+msgstr "-display <display>\tKör Vim på <display>"
 
-msgid "-iconic\t\tStart vim iconified"
-msgstr "-iconic\t\tStarta vim som ikon"
+msgid "-iconic\t\tStart Vim iconified"
+msgstr "-iconic\t\tStarta Vim som ikon"
 
 msgid "-name <name>\t\tUse resource as if vim was <name>"
 msgstr "-name <namn>\t\tAnvänd resurs som om vim var <namn>"
@@ -3097,8 +3062,8 @@ msgstr ""
 "\n"
 "Argument igenkända av gvim (GTK+-version):\n"
 
-msgid "-display <display>\tRun vim on <display> (also: --display)"
-msgstr "-display <display>\tKör vim på <display> (även: --display)"
+msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgstr "-display <display>\tKör Vim på <display> (även: --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"
 msgstr "--role <roll>\tStäll in en unik roll för att identifiera huvudfönstret"
@@ -3210,14 +3175,8 @@ msgstr "E288: inmatningsmetod stöder inte någon stil"
 msgid "E289: input method doesn't support my preedit type"
 msgstr "E289: inmatningsmetod stöder inte min förredigeringstyp"
 
-msgid "E290: over-the-spot style requires fontset"
-msgstr "E290: över-pricken-stil kräver typsnittsuppsättning"
-
 msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
 msgstr "E291: Din GTK+ är äldre än 1.2.3. Statusområde inaktiverat"
-
-msgid "E292: Input Method Server is not running"
-msgstr "E292: Inmatningsmetodserver körs inte"
 
 msgid "E293: block was not locked"
 msgstr "E293: block låstes inte"
@@ -4144,8 +4103,6 @@ msgstr "E538: Inget musstöd"
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: Ostängd uttryckssekvens"
 
-msgid "E541: too many items"
-msgstr "E541: för många föremål"
 
 msgid "E542: unbalanced groups"
 msgstr "E542: obalanserade grupper"

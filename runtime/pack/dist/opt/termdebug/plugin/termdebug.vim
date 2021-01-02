@@ -2,7 +2,7 @@
 "
 " Author: Bram Moolenaar
 " Copyright: Vim license applies, see ":help license"
-" Last Update: 2018 Jun 3
+" Last Change: 2020 Dec 07
 "
 " WORK IN PROGRESS - Only the basics work
 " Note: On MS-Windows you need a recent version of gdb.  The one included with
@@ -65,8 +65,8 @@ command -nargs=* -complete=file -bang Termdebug call s:StartDebug(<bang>0, <f-ar
 command -nargs=+ -complete=file -bang TermdebugCommand call s:StartDebugCommand(<bang>0, <f-args>)
 
 " Name of the gdb command, defaults to "gdb".
-if !exists('termdebugger')
-  let termdebugger = 'gdb'
+if !exists('g:termdebugger')
+  let g:termdebugger = 'gdb'
 endif
 
 let s:pc_id = 12
@@ -104,9 +104,14 @@ endfunc
 
 func s:StartDebug_internal(dict)
   if exists('s:gdbwin')
-    echoerr 'Terminal debugger already running'
+    echoerr 'Terminal debugger already running, cannot run two'
     return
   endif
+  if !executable(g:termdebugger)
+    echoerr 'Cannot execute debugger program "' .. g:termdebugger .. '"'
+    return
+  endif
+
   let s:ptywin = 0
   let s:pid = 0
 
@@ -114,13 +119,21 @@ func s:StartDebug_internal(dict)
   " call ch_logfile('debuglog', 'w')
 
   let s:sourcewin = win_getid(winnr())
-  let s:startsigncolumn = &signcolumn
+
+  " Remember the old value of 'signcolumn' for each buffer that it's set in, so
+  " that we can restore the value for all buffers.
+  let b:save_signcolumn = &signcolumn
+  let s:signcolumn_buflist = [bufnr()]
 
   let s:save_columns = 0
+  let s:allleft = 0
   if exists('g:termdebug_wide')
     if &columns < g:termdebug_wide
       let s:save_columns = &columns
       let &columns = g:termdebug_wide
+      " If we make the Vim window wider, use the whole left halve for the debug
+      " windows.
+      let s:allleft = 1
     endif
     let s:vertical = 1
   else
@@ -142,12 +155,19 @@ func s:StartDebug_internal(dict)
   endif
 endfunc
 
+" Use when debugger didn't start or ended.
+func s:CloseBuffers()
+  exe 'bwipe! ' . s:ptybuf
+  exe 'bwipe! ' . s:commbuf
+  unlet! s:gdbwin
+endfunc
+
 func s:StartDebug_term(dict)
   " Open a terminal window without a job, to run the debugged program in.
   let s:ptybuf = term_start('NONE', {
-        \ 'term_name': 'debugged program',
-        \ 'vertical': s:vertical,
-        \ })
+	\ 'term_name': 'debugged program',
+	\ 'vertical': s:vertical,
+	\ })
   if s:ptybuf == 0
     echoerr 'Failed to open the program terminal window'
     return
@@ -158,14 +178,18 @@ func s:StartDebug_term(dict)
     " Assuming the source code window will get a signcolumn, use two more
     " columns for that, thus one less for the terminal window.
     exe (&columns / 2 - 1) . "wincmd |"
+    if s:allleft
+      " use the whole left column
+      wincmd H
+    endif
   endif
 
   " Create a hidden terminal window to communicate with gdb
   let s:commbuf = term_start('NONE', {
-        \ 'term_name': 'gdb communication',
-        \ 'out_cb': function('s:CommOutput'),
-        \ 'hidden': 1,
-        \ })
+	\ 'term_name': 'gdb communication',
+	\ 'out_cb': function('s:CommOutput'),
+	\ 'hidden': 1,
+	\ })
   if s:commbuf == 0
     echoerr 'Failed to open the communication terminal window'
     exe 'bwipe! ' . s:ptybuf
@@ -181,13 +205,11 @@ func s:StartDebug_term(dict)
   let cmd = [g:termdebugger, '-quiet', '-tty', pty] + gdb_args
   call ch_log('executing "' . join(cmd) . '"')
   let s:gdbbuf = term_start(cmd, {
-        \ 'exit_cb': function('s:EndTermDebug'),
-        \ 'term_finish': 'close',
-        \ })
+	\ 'term_finish': 'close',
+	\ })
   if s:gdbbuf == 0
     echoerr 'Failed to open the gdb terminal window'
-    exe 'bwipe! ' . s:ptybuf
-    exe 'bwipe! ' . s:commbuf
+    call s:CloseBuffers()
     return
   endif
   let s:gdbwin = win_getid(winnr())
@@ -204,21 +226,32 @@ func s:StartDebug_term(dict)
   " why the debugger doesn't work.
   let try_count = 0
   while 1
+    let gdbproc = term_getjob(s:gdbbuf)
+    if gdbproc == v:null || job_status(gdbproc) !=# 'run'
+      echoerr string(g:termdebugger) . ' exited unexpectedly'
+      call s:CloseBuffers()
+      return
+    endif
+
     let response = ''
-    for lnum in range(1,200)
-      if term_getline(s:gdbbuf, lnum) =~ 'new-ui mi '
-        " response can be in the same line or the next line
-        let response = term_getline(s:gdbbuf, lnum) . term_getline(s:gdbbuf, lnum + 1)
-        if response =~ 'Undefined command'
-          echoerr 'Sorry, your gdb is too old, gdb 7.12 is required'
-          exe 'bwipe! ' . s:ptybuf
-          exe 'bwipe! ' . s:commbuf
-          return
-        endif
-        if response =~ 'New UI allocated'
-          " Success!
-          break
-        endif
+    for lnum in range(1, 200)
+      let line1 = term_getline(s:gdbbuf, lnum)
+      let line2 = term_getline(s:gdbbuf, lnum + 1)
+      if line1 =~ 'new-ui mi '
+	" response can be in the same line or the next line
+	let response = line1 . line2
+	if response =~ 'Undefined command'
+	  echoerr 'Sorry, your gdb is too old, gdb 7.12 is required'
+	  call s:CloseBuffers()
+	  return
+	endif
+	if response =~ 'New UI allocated'
+	  " Success!
+	  break
+	endif
+      elseif line1 =~ 'Reading symbols from' && line2 !~ 'new-ui mi '
+	" Reading symbols might take a while, try more times
+	let try_count -= 1
       endif
     endfor
     if response =~ 'New UI allocated'
@@ -232,7 +265,7 @@ func s:StartDebug_term(dict)
     sleep 10m
   endwhile
 
-  " Interpret commands while the target is running.  This should usualy only be
+  " Interpret commands while the target is running.  This should usually only be
   " exec-interrupt, since many commands don't work properly while the target is
   " running.
   call s:SendCommand('-gdb-set mi-async on')
@@ -243,6 +276,7 @@ func s:StartDebug_term(dict)
   " "Type <return> to continue" prompt.
   call s:SendCommand('set pagination off')
 
+  call job_setoptions(gdbproc, {'exit_cb': function('s:EndTermDebug')})
   call s:StartDebugCommon(a:dict)
 endfunc
 
@@ -275,9 +309,9 @@ func s:StartDebug_prompt(dict)
   call ch_log('executing "' . join(cmd) . '"')
 
   let s:gdbjob = job_start(cmd, {
-        \ 'exit_cb': function('s:EndPromptDebug'),
-        \ 'out_cb': function('s:GdbOutCallback'),
-        \ })
+	\ 'exit_cb': function('s:EndPromptDebug'),
+	\ 'out_cb': function('s:GdbOutCallback'),
+	\ })
   if job_status(s:gdbjob) != "run"
     echoerr 'Failed to start gdb'
     exe 'bwipe! ' . s:promptbuf
@@ -287,7 +321,7 @@ func s:StartDebug_prompt(dict)
   set modified
   let s:gdb_channel = job_getchannel(s:gdbjob)  
 
-  " Interpret commands while the target is running.  This should usualy only
+  " Interpret commands while the target is running.  This should usually only
   " be exec-interrupt, since many commands don't work properly while the
   " target is running.
   call s:SendCommand('-gdb-set mi-async on')
@@ -302,8 +336,8 @@ func s:StartDebug_prompt(dict)
     " Unix: Run the debugged program in a terminal window.  Open it below the
     " gdb window.
     belowright let s:ptybuf = term_start('NONE', {
-          \ 'term_name': 'debugged program',
-          \ })
+	  \ 'term_name': 'debugged program',
+	  \ })
     if s:ptybuf == 0
       echoerr 'Failed to open the program terminal window'
       call job_stop(s:gdbjob)
@@ -483,9 +517,14 @@ func s:DecodeMessage(quotedText)
     if a:quotedText[i] == '\'
       let i += 1
       if a:quotedText[i] == 'n'
-        " drop \n
-        let i += 1
-        continue
+	" drop \n
+	let i += 1
+	continue
+      elseif a:quotedText[i] == 't'
+	" append \t
+	let i += 1
+	let result .= "\t"
+	continue
       endif
     endif
     let result .= a:quotedText[i]
@@ -521,8 +560,20 @@ func s:EndDebugCommon()
     exe 'bwipe! ' . s:ptybuf
   endif
 
+  " Restore 'signcolumn' in all buffers for which it was set.
   call win_gotoid(s:sourcewin)
-  let &signcolumn = s:startsigncolumn
+  let was_buf = bufnr()
+  for bufnr in s:signcolumn_buflist
+    if bufexists(bufnr)
+      exe bufnr .. "buf"
+      if exists('b:save_signcolumn')
+	let &signcolumn = b:save_signcolumn
+	unlet b:save_signcolumn
+      endif
+    endif
+  endfor
+  exe was_buf .. "buf"
+
   call s:DeleteCommands()
 
   call win_gotoid(curwinid)
@@ -569,20 +620,30 @@ func s:CommOutput(chan, msg)
     endif
     if msg != ''
       if msg =~ '^\(\*stopped\|\*running\|=thread-selected\)'
-        call s:HandleCursor(msg)
+	call s:HandleCursor(msg)
       elseif msg =~ '^\^done,bkpt=' || msg =~ '^=breakpoint-created,'
-        call s:HandleNewBreakpoint(msg)
+	call s:HandleNewBreakpoint(msg)
       elseif msg =~ '^=breakpoint-deleted,'
-        call s:HandleBreakpointDelete(msg)
+	call s:HandleBreakpointDelete(msg)
       elseif msg =~ '^=thread-group-started'
-        call s:HandleProgramRun(msg)
+	call s:HandleProgramRun(msg)
       elseif msg =~ '^\^done,value='
-        call s:HandleEvaluate(msg)
+	call s:HandleEvaluate(msg)
       elseif msg =~ '^\^error,msg='
-        call s:HandleError(msg)
+	call s:HandleError(msg)
       endif
     endif
   endfor
+endfunc
+
+func s:GotoProgram()
+  if has('win32')
+    if executable('powershell')
+      call system(printf('powershell -Command "add-type -AssemblyName microsoft.VisualBasic;[Microsoft.VisualBasic.Interaction]::AppActivate(%d);"', s:pid))
+    endif
+  else
+    call win_gotoid(s:ptywin)
+  endif
 endfunc
 
 " Install commands in the current window to control the debugger.
@@ -590,7 +651,7 @@ func s:InstallCommands()
   let save_cpo = &cpo
   set cpo&vim
 
-  command Break call s:SetBreakpoint()
+  command -nargs=? Break call s:SetBreakpoint(<q-args>)
   command Clear call s:ClearBreakpoint()
   command Step call s:SendCommand('-exec-step')
   command Over call s:SendCommand('-exec-next')
@@ -608,12 +669,14 @@ func s:InstallCommands()
 
   command -range -nargs=* Evaluate call s:Evaluate(<range>, <q-args>)
   command Gdb call win_gotoid(s:gdbwin)
-  command Program call win_gotoid(s:ptywin)
+  command Program call s:GotoProgram()
   command Source call s:GotoSourcewinOrCreateIt()
   command Winbar call s:InstallWinbar()
 
-  " TODO: can the K mapping be restored?
-  nnoremap K :Evaluate<CR>
+  if !exists('g:termdebug_map_K') || g:termdebug_map_K
+    let s:k_map_saved = maparg('K', 'n', 0, 1)
+    nnoremap K :Evaluate<CR>
+  endif
 
   if has('menu') && &mouse != ''
     call s:InstallWinbar()
@@ -663,19 +726,26 @@ func s:DeleteCommands()
   delcommand Source
   delcommand Winbar
 
-  nunmap K
+  if exists('s:k_map_saved')
+    if empty(s:k_map_saved)
+      nunmap K
+    else
+      call mapset('n', 0, s:k_map_saved)
+    endif
+    unlet s:k_map_saved
+  endif
 
   if has('menu')
     " Remove the WinBar entries from all windows where it was added.
     let curwinid = win_getid(winnr())
     for winid in s:winbar_winids
       if win_gotoid(winid)
-        aunmenu WinBar.Step
-        aunmenu WinBar.Next
-        aunmenu WinBar.Finish
-        aunmenu WinBar.Cont
-        aunmenu WinBar.Stop
-        aunmenu WinBar.Eval
+	aunmenu WinBar.Step
+	aunmenu WinBar.Next
+	aunmenu WinBar.Finish
+	aunmenu WinBar.Cont
+	aunmenu WinBar.Stop
+	aunmenu WinBar.Eval
       endif
     endfor
     call win_gotoid(curwinid)
@@ -708,7 +778,7 @@ func s:DeleteCommands()
 endfunc
 
 " :Break - Set a breakpoint at the cursor position.
-func s:SetBreakpoint()
+func s:SetBreakpoint(at)
   " Setting a breakpoint may not work while the program is running.
   " Interrupt to make it work.
   let do_continue = 0
@@ -721,9 +791,11 @@ func s:SetBreakpoint()
     endif
     sleep 10m
   endif
+
   " Use the fname:lnum format, older gdb can't handle --source.
-  call s:SendCommand('-break-insert '
-        \ . fnameescape(expand('%:p')) . ':' . line('.'))
+  let at = empty(a:at) ?
+        \ fnameescape(expand('%:p')) . ':' . line('.') : a:at
+  call s:SendCommand('-break-insert ' . at)
   if do_continue
     call s:SendCommand('-exec-continue')
   endif
@@ -738,14 +810,14 @@ func s:ClearBreakpoint()
     let idx = 0
     for id in s:breakpoint_locations[bploc]
       if has_key(s:breakpoints, id)
-        " Assume this always works, the reply is simply "^done".
-        call s:SendCommand('-break-delete ' . id)
-        for subid in keys(s:breakpoints[id])
-          exe 'sign unplace ' . s:Breakpoint2SignNumber(id, subid)
-        endfor
-        unlet s:breakpoints[id]
-        unlet s:breakpoint_locations[bploc][idx]
-        break
+	" Assume this always works, the reply is simply "^done".
+	call s:SendCommand('-break-delete ' . id)
+	for subid in keys(s:breakpoints[id])
+	  exe 'sign unplace ' . s:Breakpoint2SignNumber(id, subid)
+	endfor
+	unlet s:breakpoints[id]
+	unlet s:breakpoint_locations[bploc][idx]
+	break
       else
 	let idx += 1
       endif
@@ -818,12 +890,12 @@ endfunc
 " if there is any.
 func TermDebugBalloonExpr()
   if v:beval_winid != s:sourcewin
-    return
+    return ''
   endif
   if !s:stopped
     " Only evaluate when stopped, otherwise setting a breakpoint using the
     " mouse triggers a balloon.
-    return
+    return ''
   endif
   let s:evalFromBalloonExpr = 1
   let s:evalFromBalloonExprResult = ''
@@ -874,18 +946,22 @@ func s:HandleCursor(msg)
     if lnum =~ '^[0-9]*$'
     call s:GotoSourcewinOrCreateIt()
       if expand('%:p') != fnamemodify(fname, ':p')
-        if &modified
-          " TODO: find existing window
-          exe 'split ' . fnameescape(fname)
-          let s:sourcewin = win_getid(winnr())
-          call s:InstallWinbar()
-        else
-          exe 'edit ' . fnameescape(fname)
-        endif
+	if &modified
+	  " TODO: find existing window
+	  exe 'split ' . fnameescape(fname)
+	  let s:sourcewin = win_getid(winnr())
+	  call s:InstallWinbar()
+	else
+	  exe 'edit ' . fnameescape(fname)
+	endif
       endif
       exe lnum
       exe 'sign unplace ' . s:pc_id
-      exe 'sign place ' . s:pc_id . ' line=' . lnum . ' name=debugPC file=' . fname
+      exe 'sign place ' . s:pc_id . ' line=' . lnum . ' name=debugPC priority=110 file=' . fname
+      if !exists('b:save_signcolumn')
+	let b:save_signcolumn = &signcolumn
+	call add(s:signcolumn_buflist, bufnr())
+      endif
       setlocal signcolumn=yes
     endif
   elseif !s:stopped || fname != ''
@@ -962,7 +1038,7 @@ endfunc
 
 func s:PlaceSign(id, subid, entry)
   let nr = printf('%d.%d', a:id, a:subid)
-  exe 'sign place ' . s:Breakpoint2SignNumber(a:id, a:subid) . ' line=' . a:entry['lnum'] . ' name=debugBreakpoint' . nr . ' file=' . a:entry['fname']
+  exe 'sign place ' . s:Breakpoint2SignNumber(a:id, a:subid) . ' line=' . a:entry['lnum'] . ' name=debugBreakpoint' . nr . ' priority=110 file=' . a:entry['fname']
   let a:entry['placed'] = 1
 endfunc
 
@@ -976,8 +1052,8 @@ func s:HandleBreakpointDelete(msg)
   if has_key(s:breakpoints, id)
     for [subid, entry] in items(s:breakpoints[id])
       if has_key(entry, 'placed')
-        exe 'sign unplace ' . s:Breakpoint2SignNumber(id, subid)
-        unlet entry['placed']
+	exe 'sign unplace ' . s:Breakpoint2SignNumber(id, subid)
+	unlet entry['placed']
       endif
     endfor
     unlet s:breakpoints[id]
@@ -1001,7 +1077,7 @@ func s:BufRead()
   for [id, entries] in items(s:breakpoints)
     for [subid, entry] in items(entries)
       if entry['fname'] == fname
-        call s:PlaceSign(id, subid, entry)
+	call s:PlaceSign(id, subid, entry)
       endif
     endfor
   endfor
@@ -1013,7 +1089,7 @@ func s:BufUnloaded()
   for [id, entries] in items(s:breakpoints)
     for [subid, entry] in items(entries)
       if entry['fname'] == fname
-        let entry['placed'] = 0
+	let entry['placed'] = 0
       endif
     endfor
   endfor

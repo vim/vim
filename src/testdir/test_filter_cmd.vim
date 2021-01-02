@@ -1,5 +1,7 @@
 " Test the :filter command modifier
 
+source check.vim
+
 func Test_filter()
   edit Xdoesnotmatch
   edit Xwillmatch
@@ -45,6 +47,14 @@ func Test_filter_fails()
   call assert_fails('filter /pat', 'E476:')
   call assert_fails('filter /pat/', 'E476:')
   call assert_fails('filter /pat/ asdf', 'E492:')
+  " Using assert_fails() causes E476 instead of E866. So use a try-catch.
+  let caught_e866 = 0
+  try
+    filter /\@>b/ ls
+  catch /E866:/
+    let caught_e866 = 1
+  endtry
+  call assert_equal(1, caught_e866)
 
   call assert_fails('filter!', 'E471:')
   call assert_fails('filter! pat', 'E476:')
@@ -89,6 +99,8 @@ func Test_filter_cmd_with_filter()
 endfunction
 
 func Test_filter_commands()
+  CheckFeature quickfix
+
   let g:test_filter_a = 1
   let b:test_filter_b = 2
   let test_filter_c = 3
@@ -126,7 +138,56 @@ func Test_filter_commands()
   let res = split(execute("filter /\.c$/ jumps"), "\n")[1:]
   call assert_equal(["   2     1    0 file.c", ">"], res)
 
-  bwipe file.c
-  bwipe file.h
-  bwipe file.hs
+  " Test filtering :marks command
+  b file.c
+  mark A
+  b file.h
+  mark B
+  let res = split(execute("filter /\.c$/ marks"), "\n")[1:]
+  call assert_equal([" A      1    0 file.c"], res)
+
+  " Test filtering :highlight command
+  highlight MyHlGroup ctermfg=10
+  let res = split(execute("filter /MyHlGroup/ highlight"), "\n")
+  call assert_equal(["MyHlGroup      xxx ctermfg=10"], res)
+
+  call setline(1, ['one', 'two', 'three'])
+  1mark a
+  2mark b
+  3mark c
+  let res = split(execute("filter /two/ marks abc"), "\n")[1:]
+  call assert_equal([" b      2    0 two"], res)
+
+  bwipe! file.c
+  bwipe! file.h
+  bwipe! file.hs
 endfunc
+
+func Test_filter_display()
+  edit Xdoesnotmatch
+  let @a = '!!willmatch'
+  let @b = '!!doesnotmatch'
+  let @c = "oneline\ntwoline\nwillmatch\n"
+  let @/ = '!!doesnotmatch'
+  call feedkeys(":echo '!!doesnotmatch:'\<CR>", 'ntx')
+  let lines = map(split(execute('filter /willmatch/ display'), "\n"), 'v:val[5:6]')
+
+  call assert_true(index(lines, '"a') >= 0)
+  call assert_false(index(lines, '"b') >= 0)
+  call assert_true(index(lines, '"c') >= 0)
+  call assert_false(index(lines, '"/') >= 0)
+  call assert_false(index(lines, '":') >= 0)
+  call assert_false(index(lines, '"%') >= 0)
+
+  let lines = map(split(execute('filter /doesnotmatch/ display'), "\n"), 'v:val[5:6]')
+  call assert_true(index(lines, '"a') < 0)
+  call assert_false(index(lines, '"b') < 0)
+  call assert_true(index(lines, '"c') < 0)
+  call assert_false(index(lines, '"/') < 0)
+  call assert_false(index(lines, '":') < 0)
+  call assert_false(index(lines, '"%') < 0)
+
+  bwipe!
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

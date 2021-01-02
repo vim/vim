@@ -1,14 +1,12 @@
 " Tests for 'makeencoding'.
-if !has('multi_byte')
-  finish
-endif
 
 source shared.vim
+source check.vim
 
+CheckFeature quickfix
 let s:python = PythonProg()
 if s:python == ''
-  " Can't run this test.
-  finish
+  throw 'Skipped: python program missing'
 endif
 
 let s:script = 'test_makeencoding.py'
@@ -104,3 +102,5 @@ func Test_make()
     lclose
   endfor
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

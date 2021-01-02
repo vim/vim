@@ -1,10 +1,10 @@
 " Test for variable tabstops
 
-if !has("vartabs")
-  finish
-endif
+source check.vim
+CheckFeature vartabs
 
 source view_util.vim
+
 func s:compare_lines(expect, actual)
   call assert_equal(join(a:expect, "\n"), join(a:actual, "\n"))
 endfunc
@@ -91,6 +91,18 @@ func Test_vartabs()
   let expect = "l\<tab>  l\<tab>l     l\<tab>    l\<tab>  l"
   call assert_equal(expect, getline(1))
 
+  " Test for 'retab' with vts
+  set ts=8 sts=0 vts=5,3,6,2 vsts=
+  exe "norm! S                l"
+  .retab!
+  call assert_equal("\t\t\t\tl", getline(1))
+
+  " Test for 'retab' with same values as vts
+  set ts=8 sts=0 vts=5,3,6,2 vsts=
+  exe "norm! S                l"
+  .retab! 5,3,6,2
+  call assert_equal("\t\t\t\tl", getline(1))
+
   " Check that global and local values are set.
   set ts=4 vts=6 sts=8 vsts=10
   call assert_equal(&ts, 4)
@@ -134,10 +146,8 @@ func Test_vartabs()
   bwipeout!
 endfunc
 
-func! Test_vartabs_breakindent()
-  if !exists("+breakindent")
-    return
-  endif
+func Test_vartabs_breakindent()
+  CheckOption breakindent
   new
   %d
 
@@ -329,7 +339,7 @@ func Test_vartabs_shiftwidth()
   let lines = ScreenLines([1, 2], winwidth(0))
   call s:compare_lines(expect2, lines)
   call assert_equal(20, shiftwidth(virtcol('.')-2))
-  call assert_equal(30, shiftwidth(virtcol('.')))
+  call assert_equal(30, virtcol('.')->shiftwidth())
   norm! $>>
   let expect3 = ['                                        ', '                    x                   ', '~                                       ']
   let lines = ScreenLines([1, 3], winwidth(0))
@@ -357,6 +367,8 @@ func Test_vartabs_shiftwidth()
   let lines = ScreenLines([1, 3], winwidth(0))
   call s:compare_lines(expect4, lines)
 
+  call assert_fails('call shiftwidth([])', 'E745:')
+
   " cleanup
   bw!
   bw!
@@ -372,3 +384,39 @@ func Test_vartabs_failures()
   call assert_fails('set vts=,8')
   call assert_fails('set vsts=,8')
 endfunc
+
+func Test_vartabs_reset()
+  set vts=8
+  set all&
+  call assert_equal('', &vts)
+endfunc
+
+func s:SaveCol(l)
+  call add(a:l, [col('.'), virtcol('.')])
+  return ''
+endfunc
+
+" Test for 'varsofttabstop'
+func Test_varsofttabstop()
+  new
+  inoremap <expr> <F2>  s:SaveCol(g:cols)
+
+  set backspace=indent,eol,start
+  set varsofttabstop=6,2,5,3
+  let g:cols = []
+  call feedkeys("a\t\<F2>\t\<F2>\t\<F2>\t\<F2> ", 'xt')
+  call assert_equal("\t\t ", getline(1))
+  call assert_equal([[7, 7], [2, 9], [7, 14], [3, 17]], g:cols)
+
+  let g:cols = []
+  call feedkeys("a\<bs>\<F2>\<bs>\<F2>\<bs>\<F2>\<bs>\<F2>\<bs>\<F2>", 'xt')
+  call assert_equal('', getline(1))
+  call assert_equal([[3, 17], [7, 14], [2, 9], [7, 7], [1, 1]], g:cols)
+
+  set varsofttabstop&
+  set backspace&
+  iunmap <F2>
+  close!
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

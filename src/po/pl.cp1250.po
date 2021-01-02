@@ -1731,9 +1731,6 @@ msgstr "E509: Nie mogê stworzyæ pliku zabezpieczenia (wymuœ przez !)"
 msgid "E510: Can't make backup file (add ! to override)"
 msgstr "E510: Nie mogê zrobiæ pliku zabezpieczenia (wymuœ przez !)"
 
-msgid "E460: The resource fork would be lost (add ! to override)"
-msgstr "E460: Rozdzia³ zasobów zostanie utracony (wymuœ przez !)"
-
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: Nie mogê znaleŸæ pliku tymczasowego do zapisania"
 
@@ -2729,40 +2726,11 @@ msgstr "Poka¿ dokumentacjê dla"
 msgid "Generate docu for"
 msgstr "Utwórz dokumentacjê dla"
 
-msgid ""
-"Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
-"$PATH).\n"
-msgstr ""
-"Nie mogê pod³¹czyæ do SNiFF+. SprawdŸ œrodowisko (sniffemacs musi byæ "
-"odnaleziony w $PATH).\n"
-
-msgid "E274: Sniff: Error during read. Disconnected"
-msgstr "E274: Sniff: B³¹d podczas czytania. Roz³¹czenie"
-
-msgid "SNiFF+ is currently "
-msgstr "SNiFF+ jest obecnie "
-
 msgid "not "
 msgstr "nie "
 
 msgid "connected"
 msgstr "pod³¹czony"
-
-#, c-format
-msgid "E275: Unknown SNiFF+ request: %s"
-msgstr "E275: Nieznane zapytanie SNiFF+: %s"
-
-msgid "E276: Error connecting to SNiFF+"
-msgstr "E276: B³¹d w trakcie pod³¹czania do SNiFF+"
-
-msgid "E278: SNiFF+ not connected"
-msgstr "E278: SNiFF+ niepod³¹czony"
-
-msgid "E279: Not a SNiFF+ buffer"
-msgstr "E279: Nie jest buforem SNiFF+"
-
-msgid "Sniff: Error during write. Disconnected"
-msgstr "Sniff: B³¹d w trakcie zapisu. Roz³¹czony"
 
 msgid "invalid buffer number"
 msgstr "niew³aœciwy numer bufora"
@@ -2799,8 +2767,6 @@ msgstr "nieznane vimOption"
 msgid "keyboard interrupt"
 msgstr "przerwanie klawiatury"
 
-msgid "vim error"
-msgstr "b³¹d vima"
 
 msgid "cannot create buffer/window command: object is being deleted"
 msgstr "nie mogê stworzyæ bufora/okna komendy: obiekt jest kasowany"
@@ -3110,7 +3076,7 @@ msgstr ""
 msgid "-x\t\t\tEdit encrypted files"
 msgstr "-x\t\t\tEdytuj zakodowane pliki"
 
-msgid "-display <display>\tConnect vim to this particular X-server"
+msgid "-display <display>\tConnect Vim to this particular X-server"
 msgstr "-display <display>\tPod³¹cz vima to danego X-serwera"
 
 msgid "-X\t\t\tDo not connect to X server"
@@ -3185,10 +3151,10 @@ msgstr ""
 "\n"
 "Argumenty rozpoznawane przez gvim (wersja Athena):\n"
 
-msgid "-display <display>\tRun vim on <display>"
-msgstr "-display <display>\tZa³aduj vim na <display>"
+msgid "-display <display>\tRun Vim on <display>"
+msgstr "-display <display>\tZa³aduj Vim na <display>"
 
-msgid "-iconic\t\tStart vim iconified"
+msgid "-iconic\t\tStart Vim iconified"
 msgstr "-iconic\t\tZacznij Vim jako ikonê"
 
 msgid "-background <color>\tUse <color> for the background (also: -bg)"
@@ -3238,8 +3204,8 @@ msgstr ""
 "\n"
 "Argumenty rozpoznawane przez gvim (wersja GTK+):\n"
 
-msgid "-display <display>\tRun vim on <display> (also: --display)"
-msgstr "-display <display>\tZastartuj vim na <display> (równie¿: --display)"
+msgid "-display <display>\tRun Vim on <display> (also: --display)"
+msgstr "-display <display>\tZastartuj Vim na <display> (równie¿: --display)"
 
 msgid "--role <role>\tSet a unique role to identify the main window"
 msgstr "--role <role>\tUstaw unikatow¹ rolê do identyfikacji g³ównego okna"
@@ -4342,8 +4308,6 @@ msgstr "E538: Brak wspomagania myszki"
 msgid "E540: Unclosed expression sequence"
 msgstr "E540: Niedomkniêty ci¹g wyra¿eñ"
 
-msgid "E541: too many items"
-msgstr "E541: zbyt wiele elementów"
 
 msgid "E542: unbalanced groups"
 msgstr "E542: niezbalansowane grupy"
@@ -6675,14 +6639,14 @@ msgstr "indeks listy poza zakresem"
 
 #. No more suitable format specifications in python-2.3
 #, c-format
-msgid "internal error: failed to get vim list item %d"
+msgid "internal error: failed to get Vim list item %d"
 msgstr "b³¹d wewnêtrzny: nie powiod³o siê pobranie z listy Vima elementu %d"
 
 msgid "failed to add item to list"
 msgstr "nie powiod³o siê dodanie elementu do listy"
 
 #, c-format
-msgid "internal error: no vim list item %d"
+msgid "internal error: no Vim list item %d"
 msgstr "b³¹d wewnêtrzny: w liœcie Vima brak elementu %d"
 
 msgid "internal error: failed to add item to list"
@@ -6784,7 +6748,7 @@ msgstr "uruchomienie kodu siê nie powiod³o"
 msgid "E858: Eval did not return a valid python object"
 msgstr "E858: eval nie zwróci³o odpowiedniego obiektu pythona"
 
-msgid "E859: Failed to convert returned python object to vim value"
+msgid "E859: Failed to convert returned python object to a Vim value"
 msgstr "E859: Nie powiod³a siê konwersja obiektu pythona do wartoœci Vima"
 
 #, c-format
@@ -6882,14 +6846,8 @@ msgstr ""
 #~ msgid "Font Selection"
 #~ msgstr "Wybór czcionki"
 
-#~ msgid "E290: over-the-spot style requires fontset"
-#~ msgstr "E290: styl nadpunktowy wymaga +fontset"
-
 #~ msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
 #~ msgstr "E291: Twój GTK+ jest starszy ni¿ 1.2.3. Pole statusu wy³¹czono"
-
-#~ msgid "E292: Input Method Server is not running"
-#~ msgstr "E292: Serwer metod wprowadzeñ nie jest uruchomiony"
 
 #~ msgid "with GTK-GNOME GUI."
 #~ msgstr "z GTK-GNOME GUI."

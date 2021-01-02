@@ -74,11 +74,11 @@
  *************************************************************************
  */
 
-/* INTRINSIC.H omits proto if XtFree is defined */
-/* VMS_BEGIN_C_PLUS_PLUS */
+// INTRINSIC.H omits proto if XtFree is defined
+// VMS_BEGIN_C_PLUS_PLUS
 extern void XtFree(char*);
 extern void XTFREE(char*);
-/* VMS_END_C_PLUS_PLUS */
+// VMS_END_C_PLUS_PLUS
 
 #define _XRegisterFilterByType _XREGISTERFILTERBYTYPE
 
@@ -435,6 +435,7 @@ extern void XTFREE(char*);
 #define XmRemoveProtocolCallback XMREMOVEPROTOCOLCALLBACK
 #define XmRepTypeGetId XMREPTYPEGETID
 #define XmRepTypeGetRecord XMREPTYPEGETRECORD
+#define XmRepTypeInstallTearOffModelCon XMREPTYPEINSTALLTEAROFFMODELCON
 #define XmRepTypeRegister XMREPTYPEREGISTER
 #define XmRepTypeValidValue XMREPTYPEVALIDVALUE
 #define XmScrollBarSetValues XMSCROLLBARSETVALUES
@@ -719,22 +720,11 @@ extern void XTFREE(char*);
 ** named None. So for now hard code this is R5....
 */
 #ifndef VMS_X11R6
-/* R5 or earlier */
+// R5 or earlier
 #define _XtRegisterWindow _XTREGISTERWINDOW
 #define _XtUnregisterWindow _XTUNREGISTERWINDOW
-/* original code is fixed so we don't need this now */
-#if 0
-#define XtRegisterDrawable(display,drawable,widget) \
-{  extern void _XtRegisterWindow(Window,Widget); \
-   _XtRegisterWindow(drawable,widget); \
-}
-#define XtUnregisterDrawable(display,drawable) \
-{  extern void _XtUnregisterWindow(Window,Widget); \
-   _XtUnregisterWindow(drawable,XtWindowToWidget(display,drawable)); \
-}
-#endif
 #else
-/* R6 or later */
+// R6 or later
 #define XtRegisterDrawable XTREGISTERDRAWABLE
 #define XtUnregisterDrawable XTUNREGISTERDRAWABLE
 #endif

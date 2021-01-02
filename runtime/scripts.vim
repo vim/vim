@@ -1,7 +1,7 @@
 " Vim support file to detect file types in scripts
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2018 Feb 03
+" Last change:	2020 Aug 15
 
 " This file is called by an autocommand for every file that has just been
 " loaded into a buffer.  It checks if the type of file can be recognized by
@@ -35,10 +35,12 @@ let s:line1 = getline(1)
 if s:line1 =~# "^#!"
   " A script that starts with "#!".
 
-  " Check for a line like "#!/usr/bin/env VAR=val bash".  Turn it into
+  " Check for a line like "#!/usr/bin/env {options} bash".  Turn it into
   " "#!/usr/bin/bash" to make matching easier.
+  " Recognize only a few {options} that are commonly used.
   if s:line1 =~# '^#!\s*\S*\<env\s'
     let s:line1 = substitute(s:line1, '\S\+=\S\+', '', 'g')
+    let s:line1 = substitute(s:line1, '\(-[iS]\|--ignore-environment\|--split-string\)', '', '')
     let s:line1 = substitute(s:line1, '\<env\s\+', '', '')
   endif
 
@@ -148,7 +150,7 @@ if s:line1 =~# "^#!"
   elseif s:name =~# 'ocaml'
     set ft=ocaml
 
-    " Awk scripts
+    " Awk scripts; also finds "gawk"
   elseif s:name =~# 'awk\>'
     set ft=awk
 
@@ -195,7 +197,7 @@ else
   if s:line1 =~# '^:$'
     call dist#ft#SetFileTypeSH(s:line1)	" defined in filetype.vim
 
-    " Z shell scripts
+  " Z shell scripts
   elseif s:line1 =~# '^#compdef\>' || s:line1 =~# '^#autoload\>' ||
         \ "\n".s:line1."\n".s:line2."\n".s:line3."\n".s:line4."\n".s:line5 =~# '\n\s*emulate\s\+\%(-[LR]\s\+\)\=[ckz]\=sh\>'
     set ft=zsh
@@ -204,15 +206,20 @@ else
   elseif s:line1 =~# '^From \([a-zA-Z][a-zA-Z_0-9\.=-]*\(@[^ ]*\)\=\|-\) .* \(19\|20\)\d\d$'
     set ft=mail
 
-    " Mason
+  " Mason
   elseif s:line1 =~# '^<[%&].*>'
     set ft=mason
 
-    " Vim scripts (must have '" vim' as the first line to trigger this)
+  " Vim scripts (must have '" vim' as the first line to trigger this)
   elseif s:line1 =~# '^" *[vV]im$'
     set ft=vim
 
-    " MOO
+  " libcxx and libstdc++ standard library headers like "iostream" do not have
+  " an extension, recognize the Emacs file mode.
+  elseif s:line1 =~? '-\*-.*C++.*-\*-'
+    set ft=cpp
+
+  " MOO
   elseif s:line1 =~# '^\*\* LambdaMOO Database, Format Version \%([1-3]\>\)\@!\d\+ \*\*$'
     set ft=moo
 
@@ -370,6 +377,10 @@ else
   " (See also: http://www.gnu.org/software/emacs/manual/html_node/emacs/Choosing-Modes.html#Choosing-Modes)
   elseif s:line1 =~? '-\*-.*erlang.*-\*-'
     set ft=erlang
+
+  " YAML
+  elseif s:line1 =~# '^%YAML'
+    set ft=yaml
 
   " CVS diff
   else

@@ -238,7 +238,7 @@ Change history
 - Added an option to do a :cd before opening the file (having a file opened
   by clicking it but finding out to be still in C:\Windows\system when trying to
   open another file by ":e" can be annoying). Change directory can be
-  done to the source file's directory or it's parent directory.
+  done to the source file's directory or its parent directory.
 - Added some explanations to the error message for the CO_E_CLASSSTRING error
   ("Use OLE Vim and make sure to register...").
 

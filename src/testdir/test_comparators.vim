@@ -1,3 +1,5 @@
+" Test for comparators
+
 function Test_Comparators()
   try
     let oldisident=&isident
@@ -7,3 +9,5 @@ function Test_Comparators()
     let &isident=oldisident
   endtry
 endfunction
+
+" vim: shiftwidth=2 sts=2 expandtab

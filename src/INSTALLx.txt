@@ -131,14 +131,6 @@ vim_cv_toupper_broken:
 	Whether the "toupper" C library function works correctly. Set to "yes"
 	if you know it's broken, otherwise set to "no".
 
-vim_cv_tty_group:
-	The default group of pseudo terminals. Either set to the numeric value
-	of your tty group or to "world" if they are world accessible.
-
-vim_cv_tty_mode:
-	The default mode of pseudo terminals if they are not world accessible.
-	Most probably the value "0620".
-
 
 4. EXAMPLE:
 ===========
@@ -153,7 +145,6 @@ vim_cv_stat_ignores_slash=yes \
 vim_cv_tgetent=zero \
 vim_cv_terminfo=yes \
 vim_cv_toupper_broken=no \
-vim_cv_tty_group=world \
 ./configure \
 	--build=i586-linux \
 	--host=armeb-xscale-linux-gnu \

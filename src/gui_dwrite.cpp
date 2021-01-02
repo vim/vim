@@ -239,7 +239,8 @@ public:
 	if (mItems[n].pTextFormat != item.pTextFormat)
 	{
 	    SafeRelease(&mItems[n].pTextFormat);
-	    item.pTextFormat->AddRef();
+	    if (item.pTextFormat != NULL)
+		item.pTextFormat->AddRef();
 	}
 	mItems[n] = item;
 	slide(n);
@@ -822,7 +823,7 @@ DWriteContext::CreateTextFormatFromLOGFONT(const LOGFONTW &logFont,
 
     if (SUCCEEDED(hr))
 	hr = pTextFormat->SetParagraphAlignment(
-		DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+		DWRITE_PARAGRAPH_ALIGNMENT_FAR);
 
     if (SUCCEEDED(hr))
 	hr = pTextFormat->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
@@ -930,6 +931,8 @@ DWriteContext::BindDC(HDC hdc, const RECT *rect)
     }
 }
 
+extern "C" void redraw_later_clear(void);
+
     HRESULT
 DWriteContext::SetDrawingMode(DrawingMode mode)
 {
@@ -947,11 +950,12 @@ DWriteContext::SetDrawingMode(DrawingMode mode)
 	    if (mDrawing)
 	    {
 		hr = mRT->EndDraw();
-		if (hr == D2DERR_RECREATE_TARGET)
+		if (hr == (HRESULT)D2DERR_RECREATE_TARGET)
 		{
 		    hr = S_OK;
 		    DiscardDeviceResources();
 		    CreateDeviceResources();
+		    redraw_later_clear();
 		}
 		mDrawing = false;
 	    }
@@ -1031,7 +1035,7 @@ DWriteContext::DrawText(const WCHAR *text, int len,
 
 	TextRenderer renderer(this);
 	TextRendererContext context = { color, FLOAT(cellWidth), 0.0f };
-	textLayout->Draw(&context, &renderer, FLOAT(x), FLOAT(y) - 0.5f);
+	textLayout->Draw(&context, &renderer, FLOAT(x), FLOAT(y));
     }
 
     SafeRelease(&textLayout);

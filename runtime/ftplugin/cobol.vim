@@ -1,7 +1,8 @@
 " Vim filetype plugin file
 " Language:	cobol
-" Author:	Tim Pope <vimNOSPAM@tpope.info>
-" Last Update:	By ZyX: use shiftwidth()
+" Maintainer: Ankit Jain <ajatkj@yahoo.co.in>
+"     (formerly Tim Pope <vimNOSPAM@tpope.info>)
+" Last Update:	By Ankit Jain (add gtk support) on 15.08.2020
 
 " Insert mode mappings: <C-T> <C-D> <Tab>
 " Normal mode mappings: < > << >> [[ ]] [] ][
@@ -36,7 +37,8 @@ if exists("loaded_matchit")
     \ '-\@<!\<\%(delete\|rewrite\|start\|write\|read\)\>\%(.*\(\%$\|\%(\n\%(\%(\s*\|.\{6\}\)[*/].*\n\)*\)\=\s*\%(invalid\s\+key\|at\s\+end\|no\s\+data\|at\s\+end-of-page\)\>\)\)\@=:\%(\<not\s\+\)\@<!\<\%(not\s\+\)\=\%(invalid\s\+key\|at\s\+end\|no\s\+data\|at\s\+end-of-page\)\>:\<end-\%(delete\|rewrite\|start\|write\|read\)\>' .s:ordot
 endif
 
-if has("gui_win32") && !exists("b:browsefilter")
+" add gtk support
+if (has("gui_win32") || has("gui_gtk")) && !exists("b:browsefilter")
   let b:browsefilter = "COBOL Source Files (*.cbl, *.cob)\t*.cbl;*.cob;*.lib\n".
 		     \ "All Files (*.*)\t*.*\n"
 endif

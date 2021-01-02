@@ -1,9 +1,5 @@
 " Test for wordcount() function
 
-if !has('multi_byte')
-  finish
-endif
-
 func Test_wordcount()
   let save_enc = &enc
   set encoding=utf-8
@@ -106,3 +102,5 @@ func Test_wordcount()
   enew!
   close
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

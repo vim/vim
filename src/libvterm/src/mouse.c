@@ -83,7 +83,7 @@ void vterm_mouse_button(VTerm *vt, int button, int pressed, VTermModifier mod)
       state->mouse_buttons &= ~(1 << (button-1));
   }
 
-  /* Most of the time we don't get button releases from 4/5 */
+  /* Most of the time we don't get button releases from 4/5/6/7 */
   if(state->mouse_buttons == old_buttons && button < 4)
     return;
   if (!(state->mouse_flags & MOUSE_WANT_CLICK))
@@ -92,7 +92,7 @@ void vterm_mouse_button(VTerm *vt, int button, int pressed, VTermModifier mod)
   if(button < 4) {
     output_mouse(state, button-1, pressed, mod, state->mouse_col, state->mouse_row);
   }
-  else if(button < 6) {
+  else if(button < 8) {
     output_mouse(state, button-4 + 0x40, pressed, mod, state->mouse_col, state->mouse_row);
   }
 }

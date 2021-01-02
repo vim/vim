@@ -1,7 +1,8 @@
 /* vim:set ts=4 sw=4:
- * this program makes a tags file for vim_ref.txt
  *
- * Usage: doctags vim_ref.txt vim_win.txt ... >tags
+ * This program makes a tags file for help text.
+ *
+ * Usage: doctags *.txt ... >tags
  *
  * A tag in this context is an identifier between stars, e.g. *c_files*
  */

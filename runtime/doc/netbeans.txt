@@ -1,10 +1,10 @@
-*netbeans.txt*  For Vim version 8.1.  Last change: 2016 Jul 15
+*netbeans.txt*  For Vim version 8.2.  Last change: 2020 Nov 02
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
 
 
-					*netbeans* *netbeans-support*
+					*netbeans* *NetBeans* *netbeans-support*
 
 Vim NetBeans Protocol: a socket interface for Vim integration into an IDE.
 
@@ -24,7 +24,6 @@ Vim NetBeans Protocol: a socket interface for Vim integration into an IDE.
     10.4. Obtaining the External Editor Module	|obtaining-exted|
     10.5. Setting up NetBeans to run with Vim	|netbeans-setup|
 
-{Vi does not have any of these features}
 {only available when compiled with the |+netbeans_intg| feature}
 
 ==============================================================================
@@ -41,21 +40,26 @@ or environment providing a socket interface can control Vim using this
 protocol. There are existing implementations in C, C++, Python and Java. The
 name NetBeans is kept today for historical reasons.
 
-Current projects using the NetBeans protocol of Vim are:
-- VimIntegration, description of various projects doing Vim Integration:
+Active project using the NetBeans protocol of Vim:
+- Eclim, http://eclim.org/
+
+VimIntegration, description of various projects doing Vim Integration:
 	http://www.freehackers.org/VimIntegration
-- Agide, an IDE for the AAP project, written in Python:
-	http://www.a-a-p.org
+
+Projects using the NetBeans protocol of Vim are or were:
+- Agide, an IDE for the AAP project, written in Python (now replaced by
+  |:Termdebug|): http://www.a-a-p.org
 - Clewn, a gdb integration into Vim, written in C:
 	http://clewn.sourceforge.net/
 - Pyclewn, a gdb integration into Vim, written in Python:
 	http://pyclewn.sourceforge.net/
+- VimWrapper, library to easy Vim integration into IDE:
+	http://www.freehackers.org/VimWrapper
+Outdated projects (links don't work):
 - VimPlugin, integration of Vim inside Eclipse:
 	http://vimplugin.sourceforge.net/wiki/pmwiki.php
 - PIDA, IDE written in Python integrating Vim:
 	http://pida.co.uk/
-- VimWrapper, library to easy Vim integration into IDE:
-	http://www.freehackers.org/VimWrapper
 
 Check the specific project pages to see how to use Vim with these projects.
 
@@ -123,8 +127,18 @@ Currently the NetBeans interface is supported by Vim running in a terminal and
 by gvim when it is run with one of the following GUIs: GTK, GNOME, Windows,
 Athena and Motif.
 
-If Motif support is required the user must supply XPM libraries.  See
-|workshop-xpm| for details on obtaining the latest version of XPM.
+							*netbeans-xpm*
+If Motif support is required the user must supply XPM libraries.
+The XPM library is required to show images within Vim with Motif or Athena.
+Without it the toolbar and signs will be disabled.
+
+The XPM library is provided by Arnaud Le Hors of the French National Institute
+for Research in Computer Science and Control.  It can be downloaded from
+http://cgit.freedesktop.org/xorg/lib/libXpm.  The current release, as of this
+writing, is xpm-3.4k-solaris.tgz, which is a gzip'ed tar file.  If you create
+the directory /usr/local/xpm and untar the file there you can use the
+uncommented lines in the Makefile without changing them.  If you use another
+xpm directory you will need to change the XPM_DIR in src/Makefile.
 
 
 On MS-Windows:
@@ -348,12 +362,12 @@ color		Argument with either a decimal number, "none" (without the
 offset		A number argument that indicates a byte position in a buffer.
 		The first byte has offset zero.  Line breaks are counted for
 		how they appear in the file (CR/LF counts for two bytes).
-		Note that a multi-byte character is counted for the number of
+		Note that a multibyte character is counted for the number of
 		bytes it takes.
 
 lnum/col	Argument with a line number and column number position.  The
 		line number starts with one, the column is the byte position,
-		starting with zero.  Note that a multi-byte character counts
+		starting with zero.  Note that a multibyte character counts
 		for several columns.
 
 pathname	String argument: file name with full path.
@@ -452,11 +466,13 @@ guard off len
 initDone	Mark the buffer as ready for use.  Implicitly makes the buffer
 		the current buffer.  Fires the BufReadPost autocommand event.
 
-insertDone
+insertDone starteol readonly
 		Sent by Vim Controller to tell Vim an initial file insert is
-		done.  This triggers a read message being printed.  Prior to
-		version 2.3, no read messages were displayed after opening a
-		file.  New in version 2.3.
+		done.  This triggers a read message being printed.  If
+		"starteol" is "F" then the last line doesn't have a EOL. If
+		"readonly" is "T" then the file is marked as readonly. Prior
+		to version 2.3, no read messages were displayed after opening
+		a file.  New in version 2.3.
 
 moveAnnoToFront serNum
 		Not implemented.
@@ -546,9 +562,10 @@ setModtime time
 		saved directly by the Vim Controller.
 		New in version 2.3.
 
-setReadOnly
-		Set a file as readonly
-		Implemented in version 2.3.
+setReadOnly readonly
+		When the boolean argument "readonly" is "T" for True, mark the
+		buffer as readonly, when it is "F" for False, mark it as not
+		readonly.  Implemented in version 2.3.
 
 setStyle	Not implemented.
 

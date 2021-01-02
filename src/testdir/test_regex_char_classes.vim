@@ -1,9 +1,6 @@
 " Tests for regexp with backslash and other special characters inside []
 " Also test backslash for hex/octal numbered character.
 "
-if !has('multi_byte')
-  finish
-endif
 
 scriptencoding utf-8
 
@@ -296,3 +293,5 @@ func Test_regex_char_classes()
   enew!
   close
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

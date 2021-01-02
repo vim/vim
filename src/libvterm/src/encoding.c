@@ -157,8 +157,8 @@ static void decode_utf8(VTermEncoding *enc UNUSED, void *data_,
 }
 
 static VTermEncoding encoding_utf8 = {
-  &init_utf8,  /* init */
-  &decode_utf8 /* decode */
+  &init_utf8,  // init
+  &decode_utf8 // decode
 };
 
 static void decode_usascii(VTermEncoding *enc UNUSED, void *data UNUSED,
@@ -178,8 +178,8 @@ static void decode_usascii(VTermEncoding *enc UNUSED, void *data UNUSED,
 }
 
 static VTermEncoding encoding_usascii = {
-  NULL,           /* init */
-  &decode_usascii /* decode */
+  NULL,           // init
+  &decode_usascii // decode
 };
 
 struct StaticTableEncoding {

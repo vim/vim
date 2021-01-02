@@ -1,15 +1,15 @@
 " Tests for the changelist functionality
 
+source check.vim
+
 " Tests for the getchangelist() function
 func Test_getchangelist()
-  if !has("jumplist")
-    return
-  endif
+  CheckFeature jumplist
 
   bwipe!
   enew
-  call assert_equal([], getchangelist(10))
-  call assert_equal([[], 0], getchangelist('%'))
+  call assert_equal([], 10->getchangelist())
+  call assert_equal([[], 0], getchangelist())
 
   call writefile(['line1', 'line2', 'line3'], 'Xfile1.txt')
   call writefile(['line1', 'line2', 'line3'], 'Xfile2.txt')
@@ -46,3 +46,5 @@ func Test_getchangelist()
   call delete('Xfile1.txt')
   call delete('Xfile2.txt')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

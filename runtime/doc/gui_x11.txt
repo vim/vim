@@ -1,4 +1,4 @@
-*gui_x11.txt*   For Vim version 8.1.  Last change: 2018 May 06
+*gui_x11.txt*   For Vim version 8.2.  Last change: 2020 Jun 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -19,7 +19,6 @@ Vim's Graphical User Interface				*gui-x11* *GUI-X11*
 Other relevant documentation:
 |gui.txt|	For generic items of the GUI.
 
-{Vi does not have any of these commands}
 
 ==============================================================================
 1. Starting the X11 GUI					*gui-x11-start* *E665*
@@ -48,7 +47,7 @@ that waits for gvim to exit), start gvim with "gvim -f", "vim -gf" or use
 ":gui -f".  Don't use "vim -fg", because "-fg" specifies the foreground
 color.
 
-When using "gvim -f" and then ":gui", Vim will run in the foreground.  The
+When using "vim -f" and then ":gui", Vim will run in the foreground.  The
 "-f" argument will be remembered.  To force running Vim in the background use
 ":gui -b".
 
@@ -357,6 +356,9 @@ need to set those up in some sort of gtkrc file.  You'll have to refer
 to the GTK documentation, however little there is, on how to do this.
 See http://developer.gnome.org/doc/API/2.0/gtk/gtk-Resource-Files.html
 for more information.
+							*gtk3-slow*
+If you are using GTK3 and Vim appears to be slow, try setting the environment
+variable $GDK_RENDERING to "image".
 
 
 Tooltip Colors ~

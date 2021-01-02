@@ -1,4 +1,4 @@
-*print.txt*     For Vim version 8.1.  Last change: 2010 Jul 20
+*print.txt*     For Vim version 8.2.  Last change: 2020 Aug 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -15,7 +15,6 @@ Printing						*printing*
 7. PostScript Utilities			|postscript-print-util|
 8. Formfeed Characters			|printing-formfeed|
 
-{Vi has None of this}
 {only available when compiled with the |+printer| feature}
 
 ==============================================================================
@@ -95,7 +94,7 @@ If the option is empty, then vim will use the system default printer for
 
 							*penc-option* *E620*
 'printencoding' 'penc'	String	(default empty, except for:
-					Windows, OS/2: cp1252,
+					MS-Windows: cp1252,
 					Macintosh: mac-roman,
 					VMS: dec-mcs,
 					HPUX: hp-roman8,
@@ -111,12 +110,11 @@ not recognized by Vim will just be converted to lower case and underscores
 replaced with '-' signs.
 
 If 'printencoding' is empty or Vim cannot find the file then it will use
-'encoding' (if Vim is compiled with |+multi_byte| and it is set an 8-bit
-encoding) to find the print character encoding file.  If Vim is unable to find
-a character encoding file then it will use the "latin1" print character
-encoding file.
+'encoding' (if it is set an 8-bit encoding) to find the print character
+encoding file.  If Vim is unable to find a character encoding file then it
+will use the "latin1" print character encoding file.
 
-When 'encoding' is set to a multi-byte encoding, Vim will try to convert
+When 'encoding' is set to a multibyte encoding, Vim will try to convert
 characters to the printing encoding for printing (if 'printencoding' is empty
 then the conversion will be to latin1).  Conversion to a printing encoding
 other than latin1 will require Vim to be compiled with the |+iconv| feature.
@@ -126,7 +124,7 @@ cannot be converted will be replaced with upside down question marks.
 Four print character encoding files are provided to support default Mac, VMS,
 HPUX, and EBCDIC character encodings and are used by default on these
 platforms.  Code page 1252 print character encoding is used by default on
-Windows and OS/2 platforms.
+MS-Windows platform.
 
 							*pexpr-option*
 'printexpr' 'pexpr'	String	(default: see below)
@@ -144,8 +142,8 @@ the file: >
     system('lpr' . (&printdevice == '' ? '' : ' -P' . &printdevice)
 	. ' ' . v:fname_in) . delete(v:fname_in) + v:shell_error
 
-On MS-Dos, MS-Windows and OS/2 machines the default is to copy the file to the
-currently specified printdevice: >
+On MS-Windows machines the default is to copy the file to the currently
+specified printdevice: >
 
     system('copy' . ' ' . v:fname_in . (&printdevice == ''
 		? ' LPT1:' : (' \"' . &printdevice . '\"')))
@@ -255,9 +253,9 @@ possible.  The following tables show the valid combinations:
   Japanese	JIS_C_1978	   x	   x
 		JIS_X_1983	   x	   x
 		JIS_X_1990	   x		  x	  x
-		MSWINDOWS	   x
-		KANJITALK6	   x
-		KANJITALK7	   x
+		MSWINDOWS		   x
+		KANJITALK6		   x
+		KANJITALK7		   x
 
 				euc-kr	 cp949	ucs-2	utf-8 ~
   Korean	KS_X_1992	   x
@@ -271,7 +269,7 @@ Japanese text you would do the following; >
 	:set printmbcharset=JIS_X_1983
 
 If 'printmbcharset' is not one of the above values then it is assumed to
-specify a custom multi-byte character set and no check will be made that it is
+specify a custom multibyte character set and no check will be made that it is
 compatible with the value for 'printencoding'.  Vim will look for a file
 defining the character set in the "print" directory in 'runtimepath'.
 
@@ -306,7 +304,7 @@ printing of characters in the ASCII code range.
   a:yes			Use ASCII character set for codes in the ASCII
   a:no (default)	code range.
 
-The following is an example of specifying two multi-byte fonts, one for normal
+The following is an example of specifying two multibyte fonts, one for normal
 and italic printing and one for bold and bold-italic printing, and using
 Courier to print codes in the ASCII code range but using the national
 character set: >
@@ -422,10 +420,10 @@ There are currently a number of limitations with PostScript printing:
   possible to get all the characters in an encoding to print by installing a
   new version of the Courier font family.
 
-- Multi-byte support - Currently Vim will try to convert multi-byte characters
+- Multi-byte support - Currently Vim will try to convert multibyte characters
   to the 8-bit encoding specified by 'printencoding' (or latin1 if it is
   empty).  Any characters that are not successfully converted are shown as
-  unknown characters.  Printing will fail if Vim cannot convert the multi-byte
+  unknown characters.  Printing will fail if Vim cannot convert the multibyte
   to the 8-bit encoding.
 
 ==============================================================================
@@ -510,7 +508,7 @@ print ASCII text using the national character set you may see some unexpected
 characters.  If you want true ASCII code printing then you need to configure
 Vim to output ASCII characters for the ASCII code range with 'printmbfont'.
 
-It is possible to define your own multi-byte character set although this
+It is possible to define your own multibyte character set although this
 should not be attempted lightly.  A discussion on the process if beyond the
 scope of these help files.  You can find details on CMap (character map) files
 in the document 'Adobe CMap and CIDFont Files Specification, Version 1.0',
@@ -623,22 +621,15 @@ OpenVMS
 
     http://wwwthep.physik.uni-mainz.de/~plass/gv/
 
-Windows and OS/2
+MS-Windows
 
 - GSview.  Obtainable from:
 
     http://www.cs.wisc.edu/~ghost/gsview/
 
-DOS
-
-- ps_view.  Obtainable from:
-
-    ftp://ftp.pg.gda.pl/pub/TeX/support/ps_view/
-    ftp://ftp.dante.de/tex-archive/support/ps_view/
-
 Linux
 
-- GSview.  Linux version of the popular Windows and OS/2 previewer.
+- GSview.  Linux version of the popular MS-Windows previewer.
   Obtainable from:
 
     http://www.cs.wisc.edu/~ghost/gsview/

@@ -1,5 +1,5 @@
 /* os_vms.c */
-void mch_settmode(int tmode);
+void mch_settmode(tmode_T tmode);
 int mch_get_shellsize(void);
 void mch_set_shellsize(void);
 char_u *mch_getenv(char_u *lognam);

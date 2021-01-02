@@ -88,3 +88,5 @@ func Test_softtabstop()
   set sts=0 sw=0 backspace& nosmarttab
   bwipe!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

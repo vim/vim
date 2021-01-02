@@ -1,9 +1,8 @@
 " Tests specifically for the GUI
 
 source shared.vim
-if !CanRunGui()
-  finish
-endif
+source check.vim
+CheckCanRunGui
 
 source setup_gui.vim
 
@@ -25,13 +24,14 @@ endfunc
 
 " As for non-GUI, a balloon_show() test was already added with patch 8.0.0401
 func Test_balloon_show()
-  if has('balloon_eval')
-    " This won't do anything but must not crash either.
-    call balloon_show('hi!')
-  endif
+  CheckFeature balloon_eval
+  " This won't do anything but must not crash either.
+  call balloon_show('hi!')
 endfunc
 
 func Test_colorscheme()
+  call assert_equal('16777216', &t_Co)
+
   let colorscheme_saved = exists('g:colors_name') ? g:colors_name : 'default'
   let g:color_count = 0
   augroup TestColors
@@ -42,10 +42,15 @@ func Test_colorscheme()
 
   colorscheme torte
   redraw!
-  sleep 200m
   call assert_equal('dark', &background)
   call assert_equal(1, g:before_colors)
   call assert_equal(2, g:after_colors)
+  call assert_equal("\ntorte", execute('colorscheme'))
+
+  let a = substitute(execute('hi Search'), "\n\\s\\+", ' ', 'g')
+  call assert_match("\nSearch         xxx term=reverse ctermfg=0 ctermbg=12 gui=bold guifg=Black guibg=Red", a)
+
+  call assert_fails('colorscheme does_not_exist', 'E185:')
 
   exec 'colorscheme' colorscheme_saved
   augroup TestColors
@@ -71,6 +76,7 @@ func Test_getfontname_with_arg()
   elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
     " Invalid font name. The result should be the name plus the default size.
     call assert_equal('notexist 10', getfontname('notexist'))
+    call assert_equal('', getfontname('*'))
 
     " Valid font name. This is usually the real name of Monospace by default.
     let fname = 'Bitstream Vera Sans Mono 12'
@@ -123,10 +129,9 @@ func Test_quoteplus()
 
     let test_call     = 'Can you hear me?'
     let test_response = 'Yes, I can.'
-    let vim_exe = exepath(v:progpath)
+    let vim_exe = GetVimCommand()
     let testee = 'VIMRUNTIME=' . $VIMRUNTIME . '; export VIMRUNTIME;'
-          \ . vim_exe
-	  \ . ' -u NONE -U NONE --noplugin --not-a-term -c ''%s'''
+          \ . vim_exe . ' --noplugin --not-a-term -c ''%s'''
     " Ignore the "failed to create input context" error.
     let cmd = 'call test_ignore_error("E285") | '
 	  \ . 'gui -f | '
@@ -171,9 +176,7 @@ func Test_set_background()
 endfunc
 
 func Test_set_balloondelay()
-  if !exists('+balloondelay')
-    return
-  endif
+  CheckOption balloondelay
 
   let balloondelay_saved = &balloondelay
 
@@ -208,9 +211,7 @@ func Test_set_balloondelay()
 endfunc
 
 func Test_set_ballooneval()
-  if !exists('+ballooneval')
-    return
-  endif
+  CheckOption ballooneval
 
   let ballooneval_saved = &ballooneval
 
@@ -227,9 +228,7 @@ func Test_set_ballooneval()
 endfunc
 
 func Test_set_balloonexpr()
-  if !exists('+balloonexpr')
-    return
-  endif
+  CheckOption balloonexpr
 
   let balloonexpr_saved = &balloonexpr
 
@@ -384,6 +383,23 @@ func Test_set_guifont()
     call assert_equal('Monospace 10', getfontname())
   endif
 
+  if has('win32')
+    " Invalid font names are accepted in GTK GUI
+    call assert_fails('set guifont=xa1bc23d7f', 'E596:')
+  endif
+
+  if exists('+renderoptions')
+    " doing this four times used to cause a crash
+    set renderoptions=type:directx
+    for i in range(5)
+      set guifont=
+    endfor
+    set renderoptions=
+    for i in range(5)
+      set guifont=
+    endfor
+  endif
+
   if has('xfontset')
     let &guifontset = guifontset_saved
   endif
@@ -395,71 +411,70 @@ func Test_set_guifont()
 endfunc
 
 func Test_set_guifontset()
+  CheckFeature xfontset
   let skipped = ''
 
-  if !has('xfontset')
-    let skipped = g:not_supported . 'xfontset'
-  else
-    let ctype_saved = v:ctype
+  call assert_fails('set guifontset=*', 'E597:')
 
-    " First, since XCreateFontSet(3) is very sensitive to locale, fonts must
-    " be chosen meticulously.
-    let font_head = '-misc-fixed-medium-r-normal--14'
+  let ctype_saved = v:ctype
 
-    let font_aw70 = font_head . '-130-75-75-c-70'
-    let font_aw140 = font_head . '-130-75-75-c-140'
+  " First, since XCreateFontSet(3) is very sensitive to locale, fonts must
+  " be chosen meticulously.
+  let font_head = '-misc-fixed-medium-r-normal--14'
 
-    let font_jisx0201 = font_aw70 . '-jisx0201.1976-0'
-    let font_jisx0208 = font_aw140 . '-jisx0208.1983-0'
+  let font_aw70 = font_head . '-130-75-75-c-70'
+  let font_aw140 = font_head . '-130-75-75-c-140'
 
-    let full_XLFDs = join([ font_jisx0208, font_jisx0201 ], ',')
-    let short_XLFDs = join([ font_aw140, font_aw70 ], ',')
-    let singleton = font_head . '-*'
-    let aliases = 'k14,r14'
+  let font_jisx0201 = font_aw70 . '-jisx0201.1976-0'
+  let font_jisx0208 = font_aw140 . '-jisx0208.1983-0'
 
-    " Second, among 'locales', look up such a locale that gets 'set
-    " guifontset=' to work successfully with every fontset specified with
-    " 'fontsets'.
-    let locales = [ 'ja_JP.UTF-8', 'ja_JP.eucJP', 'ja_JP.SJIS' ]
-    let fontsets = [ full_XLFDs, short_XLFDs, singleton, aliases ]
+  let full_XLFDs = join([ font_jisx0208, font_jisx0201 ], ',')
+  let short_XLFDs = join([ font_aw140, font_aw70 ], ',')
+  let singleton = font_head . '-*'
+  let aliases = 'k14,r14'
 
-    let feasible = 0
-    for locale in locales
+  " Second, among 'locales', look up such a locale that gets 'set
+  " guifontset=' to work successfully with every fontset specified with
+  " 'fontsets'.
+  let locales = [ 'ja_JP.UTF-8', 'ja_JP.eucJP', 'ja_JP.SJIS' ]
+  let fontsets = [ full_XLFDs, short_XLFDs, singleton, aliases ]
+
+  let feasible = 0
+  for locale in locales
+    try
+      exec 'language ctype' locale
+    catch /^Vim\%((\a\+)\)\=:E197/
+      continue
+    endtry
+    let done = 0
+    for fontset in fontsets
       try
-        exec 'language ctype' locale
-      catch /^Vim\%((\a\+)\)\=:E197/
-        continue
+	exec 'set guifontset=' . fontset
+      catch /^Vim\%((\a\+)\)\=:E\%(250\|252\|234\|597\|598\)/
+	break
       endtry
-      let done = 0
-      for fontset in fontsets
-        try
-          exec 'set guifontset=' . fontset
-        catch /^Vim\%((\a\+)\)\=:E\%(250\|252\|234\|597\|598\)/
-          break
-        endtry
-        let done += 1
-      endfor
-      if done == len(fontsets)
-        let feasible = 1
-        break
-      endif
+      let done += 1
     endfor
-
-    " Third, give a set of tests if it is found feasible.
-    if !feasible
-      let skipped = g:not_hosted
-    else
-      " N.B. 'v:ctype' has already been set to an appropriate value in the
-      " previous loop.
-      for fontset in fontsets
-        exec 'set guifontset=' . fontset
-        call assert_equal(fontset, &guifontset)
-      endfor
+    if done == len(fontsets)
+      let feasible = 1
+      break
     endif
+  endfor
 
-    " Finally, restore ctype.
-    exec 'language ctype' ctype_saved
+  " Third, give a set of tests if it is found feasible.
+  if !feasible
+    let skipped = g:not_hosted
+  else
+    " N.B. 'v:ctype' has already been set to an appropriate value in the
+    " previous loop.
+    for fontset in fontsets
+      exec 'set guifontset=' . fontset
+      call assert_equal(fontset, &guifontset)
+    endfor
   endif
+
+  " Finally, restore ctype.
+  exec 'language ctype' ctype_saved
 
   if !empty(skipped)
     throw skipped
@@ -467,6 +482,7 @@ func Test_set_guifontset()
 endfunc
 
 func Test_set_guifontwide()
+  call assert_fails('set guifontwide=*', 'E533:')
   let skipped = ''
 
   if !g:x11_based_gui
@@ -521,7 +537,7 @@ func Test_set_guifontwide()
         set guifontset=-*-notexist-*
         call assert_report("'set guifontset=-*-notexist-*' should have failed")
       catch
-        call assert_exception('E598')
+        call assert_exception('E598:')
       endtry
       " Set it to an invalid value brutally for preparation.
       let &guifontset = '-*-notexist-*'
@@ -643,6 +659,15 @@ func Test_set_guioptions()
       call assert_equal('aegi', &guioptions)
     endif
 
+    if has('gui_gtk3')
+      set guioptions+=d
+      exec 'sleep' . duration
+      call assert_equal('aegid', &guioptions)
+      set guioptions-=d
+      exec 'sleep' . duration
+      call assert_equal('aegi', &guioptions)
+    endif
+
     " Restore GUI ornaments to the default state.
     set guioptions+=m
     exec 'sleep' . duration
@@ -674,7 +699,7 @@ func Test_scrollbars()
   set guioptions+=rlb
 
   " scroll to move line 11 at top, moves the cursor there
-  call test_scrollbar('left', 10, 0)
+  eval 10->test_scrollbar('left', 0)
   redraw
   call assert_equal(1, winline())
   call assert_equal(11, line('.'))
@@ -689,17 +714,47 @@ func Test_scrollbars()
   call setline(11, repeat('x', 150))
   redraw
   call assert_equal(1, wincol())
+  set number
+  redraw
+  call assert_equal(5, wincol())
+  set nonumber
+  redraw
   call assert_equal(1, col('.'))
 
   " scroll to character 11, cursor is moved
   call test_scrollbar('hor', 10, 0)
   redraw
   call assert_equal(1, wincol())
+  set number
+  redraw
+  call assert_equal(5, wincol())
+  set nonumber
+  redraw
   call assert_equal(11, col('.'))
 
   set guioptions&
   set wrap&
   bwipe!
+endfunc
+
+func Test_menu()
+  CheckFeature quickfix
+
+  " Check Help menu exists
+  let help_menu = execute('menu Help')
+  call assert_match('Overview', help_menu)
+
+  " Check Help menu works
+  emenu Help.Overview
+  call assert_equal('help', &buftype)
+  close
+
+  " Check deleting menu doesn't cause trouble.
+  aunmenu Help
+  if exists(':tlmenu')
+    tlunmenu Help
+  endif
+  call assert_fails('menu Help', 'E329:')
 endfunc
 
 func Test_set_guipty()
@@ -713,6 +768,20 @@ func Test_set_guipty()
   call assert_equal(0, &guipty)
 
   let &guipty = guipty_saved
+endfunc
+
+func Test_encoding_conversion()
+  " GTK supports conversion between 'encoding' and "utf-8"
+  CheckFeature gui_gtk
+  let encoding_saved = &encoding
+  set encoding=latin1
+
+  " would be nice if we could take a screenshot
+  intro
+  " sets the window title
+  edit SomeFile
+
+  let &encoding = encoding_saved
 endfunc
 
 func Test_shell_command()
@@ -733,6 +802,7 @@ func Test_set_term()
   " It's enough to check the current value since setting 'term' to anything
   " other than builtin_gui makes no sense at all.
   call assert_equal('builtin_gui', &term)
+  call assert_fails('set term=xterm', 'E530:')
 endfunc
 
 func Test_windowid_variable()
@@ -747,10 +817,11 @@ endfunc
 func Test_gui_dash_g()
   let cmd = GetVimCommand('Xscriptgui')
   call writefile([""], "Xtestgui")
-  call writefile([
-	\ 'au GUIEnter * call writefile(["insertmode: " . &insertmode], "Xtestgui")',
-	\ 'au GUIEnter * qall',
-	\ ], 'Xscriptgui')
+  let lines =<< trim END
+	au GUIEnter * call writefile(["insertmode: " . &insertmode], "Xtestgui")
+	au GUIEnter * qall
+  END
+  call writefile(lines, 'Xscriptgui')
   call system(cmd . ' -g')
   call WaitForAssert({-> assert_equal(['insertmode: 0'], readfile('Xtestgui'))})
 
@@ -762,13 +833,44 @@ endfunc
 func Test_gui_dash_y()
   let cmd = GetVimCommand('Xscriptgui')
   call writefile([""], "Xtestgui")
-  call writefile([
-	\ 'au GUIEnter * call writefile(["insertmode: " . &insertmode], "Xtestgui")',
-	\ 'au GUIEnter * qall',
-	\ ], 'Xscriptgui')
+  let lines =<< trim END
+	au GUIEnter * call writefile(["insertmode: " . &insertmode], "Xtestgui")
+	au GUIEnter * qall
+  END
+  call writefile(lines, 'Xscriptgui')
   call system(cmd . ' -y')
   call WaitForAssert({-> assert_equal(['insertmode: 1'], readfile('Xtestgui'))})
 
   call delete('Xscriptgui')
   call delete('Xtestgui')
 endfunc
+
+" Test for "!" option in 'guioptions'. Use a terminal for running external
+" commands
+func Test_gui_run_cmd_in_terminal()
+  CheckFeature terminal
+  let save_guioptions = &guioptions
+  set guioptions+=!
+  if has('win32')
+    let cmd = 'type'
+  else
+    " assume all the other systems have a cat command
+    let cmd = 'cat'
+  endif
+  exe "silent !" . cmd . " test_gui.vim"
+  " TODO: how to check that the command ran in a separate terminal?
+  " Maybe check for $TERM (dumb vs xterm) in the spawned shell?
+  let &guioptions = save_guioptions
+endfunc
+
+func Test_gui_recursive_mapping()
+  nmap ' <C-W>
+  nmap <C-W>a :let didit = 1<CR>
+  call feedkeys("'a", 'xt')
+  call assert_equal(1, didit)
+
+  nunmap '
+  nunmap <C-W>a
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

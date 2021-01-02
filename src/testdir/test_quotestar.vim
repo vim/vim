@@ -1,10 +1,9 @@
 " *-register (quotestar) tests
 
-if !has('clipboard')
-  finish
-endif
-
 source shared.vim
+source check.vim
+
+CheckFeature clipboard_working
 
 func Do_test_quotestar_for_macunix()
   if empty(exepath('pbcopy')) || empty(exepath('pbpaste'))
@@ -37,7 +36,7 @@ func Do_test_quotestar_for_x11()
 
   let cmd = GetVimCommand()
   if cmd == ''
-    return 'GetVimCommand() failed'
+    throw 'GetVimCommand() failed'
   endif
   try
     call remote_send('xxx', '')
@@ -97,10 +96,8 @@ func Do_test_quotestar_for_x11()
   if has('unix') && has('gui') && !has('gui_running')
     let @* = ''
 
-    " Running in a terminal and the GUI is avaiable: Tell the server to open
+    " Running in a terminal and the GUI is available: Tell the server to open
     " the GUI and check that the remote command still works.
-    " Need to wait for the GUI to start up, otherwise the send hangs in trying
-    " to send to the terminal window.
     if has('gui_athena') || has('gui_motif')
       " For those GUIs, ignore the 'failed to create input context' error.
       call remote_send(name, ":call test_ignore_error('E285') | gui -f\<CR>")
@@ -108,7 +105,11 @@ func Do_test_quotestar_for_x11()
       call remote_send(name, ":gui -f\<CR>")
     endif
     " Wait for the server in the GUI to be up and answering requests.
-    call WaitForAssert({-> assert_match("1", remote_expr(name, "has('gui_running')", "", 1))})
+    " First need to wait for the GUI to start up, otherwise the send hangs in
+    " trying to send to the terminal window.
+    " On some systems and with valgrind this can be very slow.
+    sleep 1
+    call WaitForAssert({-> assert_match("1", remote_expr(name, "has('gui_running')", "", 1))}, 10000)
 
     call remote_send(name, ":let @* = 'maybe'\<CR>")
     call WaitForAssert({-> assert_equal("maybe", remote_expr(name, "@*", "", 2))})
@@ -152,3 +153,5 @@ func Test_quotestar()
     throw 'Skipped: ' . skipped
   endif
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

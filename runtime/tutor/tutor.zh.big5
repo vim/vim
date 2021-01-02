@@ -26,7 +26,7 @@
 	     ^
 	     k		    矗ボ h 龄オ娩–Ω碞穦オ簿笆
        < h	 l >		   l 龄娩–Ω碞穦簿笆
-	     j			   j 龄癬ㄓ禜や狠よ绰絙繷
+	     j			   j 龄怇ㄓ禜や狠よ绰絙繷
 	     v
 
   1. 叫繦種辊ず簿笆夹眤谋眔滴狝ゎ
@@ -105,7 +105,7 @@
 
   3. 礛 i 龄钡帝块ゲ璶ゅセ才
 
-  4. ┮Τゅセ常タЧ拨叫 <ESC> 龄タ盽家Α
+  4. ┮Τゅセ恗タЧ拨叫 <ESC> 龄タ盽家Α
      確˙艼2˙艼4獽タ
 
 ---> There is text misng this .
@@ -128,7 +128,7 @@
 
 	<ESC>   :q!	 <ó>
 
-     ┪块㏑玂┮Τэ
+     ┪幫块㏑玂┮Τэ
 
 	<ESC>   :wq	 <ó>
 
@@ -138,7 +138,7 @@
 
 	 i     块ゲ璶ゅセ	<ESC>
 
-疭矗ボ <ESC> 龄穦盿眤タ盽家Α┪ぃ戳辨┪场だЧΘ
+疭矗ボ <ESC> 龄穦盿眤タ盽家Α┪幫ぃ戳辨┪幫场だЧΘ
 ㏑
 
 材量挡钡ㄓ膥尿材量ず甧
@@ -196,7 +196,7 @@
 
   埃㏑ d Α
 
-	 [number]   d	object	    ┪     d	 [number]   object
+	 [number]   d	object	    ┪幫     d	 [number]   object
 
   ㄤ種
     number - 磅︽㏑Ω计(匡兜砞竚 1 )
@@ -209,7 +209,7 @@
     $ - 眖讽玡夹讽玡竚讽玡︽ソ
 
 疭矗ボ
-    癸玦贝叫タ盽家Α度莱癸禜龄τぃㄏノ㏑玥
+    癸玦贝幫叫タ盽家Α度莱癸禜龄τぃㄏノ㏑玥
     盢夹簿笆タ癸禜┮妓
 
 
@@ -221,7 +221,7 @@
 
 	       ** 块 dd 埃俱讽玡︽ **
 
-  懦俱︽埃蔼繵VIM 砞璸∕﹚璶虏て俱︽埃度惠璶︽
+  懦俱︽埃蔼繵VIM 砞璸幫∕﹚璶虏て俱︽埃度惠璶︽
   阑ゴㄢΩ d 碞埃奔夹┮俱︽
 
   1. 叫盢夹簿笆セ竊い祏琿辅い材︽
@@ -249,14 +249,14 @@
   2. 块 x 埃材ぃ稱玂痙ダ
   3. 礛块 u 篗程磅︽(Ω)㏑
   4. 硂Ω璶ㄏノ x タセ︽┮Τ岿粇
-  5. 瞷块糶 U 確赣︽﹍篈
+  5. 瞷块糶 U 灘確赣︽﹍篈
   6. 钡帝Ω块 u 篗 U の玡㏑
   7. 礛Ω块 CTRL-R ( CTRL 龄ぃ秨钡帝块 R 龄) 硂妓碞
-     磅︽確㏑碞琌篗奔篗㏑
+     磅︽灘確㏑碞琌篗奔篗㏑
 
 ---> Fiix the errors oon thhis line and reeplace them witth undo.
 
-  8. 硂ㄇ常琌獶盽Τノ㏑琌材量挡
+  8. 硂ㄇ恗琌獶盽Τノ㏑琌材量挡
 
 
 
@@ -273,7 +273,7 @@
 
   4. タ盽家Α㏑Α琌
 
-       [number]   command   object     ┪     command	[number]   object
+       [number]   command   object     ┪幫     command	[number]   object
      ㄤ種琌
        number - 琌㏑磅︽Ω计
        command - 璶暗ㄆ薄ゑ d 埃
@@ -282,7 +282,7 @@
 
   5. 饼篗玡巨叫块u (糶u)
      饼篗︽い┮暗э笆叫块U (糶U)
-     饼篗玡篗㏑確玡巨挡狦叫块CTRL-R
+     饼篗玡篗㏑灘確玡巨挡狦叫块CTRL-R
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			 材量材竊竚摸㏑
@@ -334,7 +334,7 @@
 			材量材竊э摸㏑
 
 
-	   ** 璶э跑虫/虫迭场だ┪场叫块 cw **
+	   ** 璶э跑虫/虫迭场だ┪幫场叫块 cw **
 
   1. 叫盢夹簿笆セ竊い夹癘Τ ---> 材︽
 
@@ -361,7 +361,7 @@
 
   1. э摸よΑ蛤埃摸㏑琌璓巨Α琌
 
-       [number]   c   object	   ┪	    c	[number]   object
+       [number]   c   object	   ┪幫	    c	[number]   object
 
   2. 癸禜把计琌妓ゑ w 虫/虫迭$︽ソ单单
 
@@ -393,7 +393,7 @@
 
   4. э摸㏑Α琌
 
-	 [number]   c	object	      ┪	c   [number]   object
+	 [number]   c	object	      ┪幫	c   [number]   object
 
 и膥尿厩策量
 
@@ -427,7 +427,7 @@
 
      ** 块 / のЮ繦才﹃ノ讽玡ゅンい琩т赣才﹃**
 
-  1. タ盽家Α块 / 才眤穦猔種赣才㎝夹常穦瞷辊┏
+  1. タ盽家Α块 / 才眤穦猔種赣才㎝夹恗穦瞷辊┏
      场硂蛤 : ㏑琌妓
 
   2. 钡帝块 errroor <ó>êerrroor碞琌眤璶琩т才﹃
@@ -500,7 +500,7 @@
   2. 块 / 礛候繦才﹃琌玥琌讽玡┮絪胯ゅ郎い琩т赣才﹃
      块拜腹 ? 礛候繦才﹃琌玥琌讽玡┮絪胯ゅ郎い玡琩т赣
      才﹃ЧΘΩ琩тぇ n 龄玥琌確Ω㏑よ琩
-     т才﹃┮┪ Shift-N はよ琩т赣才﹃┮
+     т才﹃┮┪幫 Shift-N はよ琩т赣才﹃┮
 
   3. 狦夹讽玡竚琌珹腹()[]{} % 盢夹簿笆皌癸
      珹腹
@@ -523,12 +523,12 @@
   2. 钡帝块稰鼓腹 ! 硂才硂妓碞す砛眤磅︽场 shell ㏑
 
   3. и ls ㏑ㄒ块 !ls <ó> 赣㏑碞穦羭眤讽玡ヘ魁
-     ず甧碞眤㏑︽矗ボ才块 ls ㏑挡狦妓狦 !ls ⊿癬
+     ず甧碞眤㏑︽矗ボ才块 ls ㏑挡狦妓狦 !ls ⊿怇
      ノ眤刚刚 :!dir 
 
----> 矗ボ ┮Τ场㏑常硂贺よΑ磅︽
+---> 矗ボ ┮Τ场㏑恗硂贺よΑ磅︽
 
----> 矗ボ ┮Τ : ㏑常ゲ斗 <ó> 沧
+---> 矗ボ ┮Τ : ㏑恗ゲ斗 <ó> 沧
 
 
 
@@ -539,7 +539,7 @@
 
 	     ** 璶盢癸ゅンэ笆玂ゅンい叫块 :w FILENAME **
 
-  1. 块 :!dir ┪ :!ls 莉讽玡ヘ魁ず甧眤莱讽笵程临眔篤
+  1. 块 :!dir ┪幫 :!ls 莉讽玡ヘ魁ず甧眤莱讽笵程临眔篤
      <ó> 
 
   2. 匡拒﹟ゼゅンゑ TEST 
@@ -562,13 +562,13 @@
 
 		** 璶玂ゅン场だず甧叫块 :#,# w FILENAME **
 
-  1. ㄓ磅︽Ω :!dir ┪ :!ls 莉讽玡ヘ魁ず甧礛匡拒続
+  1. ㄓ磅︽Ω :!dir ┪幫 :!ls 莉讽玡ヘ魁ず甧礛匡拒続
      ぃゅンゑ TEST 
 
   2. 钡帝盢夹簿笆セ程郴狠礛 CTRL-g т赣︽︽腹а
      ︽腹瓳
 
-  3. 钡帝р夹簿笆セ程┏狠Ω CTRL-g а硂︽瓳
+  3. 钡帝р夹簿笆セ程┏狠Ω CTRL-g а硂︽腹瓳
 
   4. 玂ゅ彻琘场だ叫块 :#,# w TEST 硂柑 #,# 碞琌
      璶―眤癘︽腹(郴狠︽腹,┏狠︽腹)τ TEST 碞琌匡﹚ゅン
@@ -700,7 +700,7 @@ Open up a line above this by typing Shift-O while the cursor is on this line.
 			    材せ量材竊砞竚摸㏑匡兜
 
 
-		  ** 砞竚ㄏ琩т┪蠢传┛菠糶匡兜 **
+		  ** 砞竚ㄏ琩т┪幫蠢传┛菠糶匡兜 **
 
 
   1. 璶琩т虫迭 ignore タ盽家Α块 /ignore 璶確琩т赣迭
@@ -772,7 +772,7 @@ Open up a line above this by typing Shift-O while the cursor is on this line.
 
 			 ** 币ノvim **
 
-  Vim疭┦璶ゑvi眔场だ常⊿Τ縀币笆
+  Vim疭┦璶ゑvi眔场だ恗⊿Τ縀币笆
   眤眔承vimrcゅン
 
   1. 秨﹍絪胯vimrcゅン硂∕眤┮ㄏノ巨╰参
@@ -801,15 +801,15 @@ Open up a line above this by typing Shift-O while the cursor is on this line.
 
   秈˙把σ㎝厩策硂セ眔崩滤
 
-	Vim - Vi Improved - Steve Oualline
+	Vim - Vi Improved - 幫Steve Oualline
 	New Riders
 
-  硂琌材セЧ量秆vim膟癸厩疭Τノㄤい临Τ秖龟ㄒ
+  硂琌材セЧ量秆vim膟癸厩幫疭Τノㄤい临Τ秖龟ㄒ
   ㎝瓜ボ饼冈薄叫砐拜 http://iccf-holland.org/click5.html
 
   硂セゑ耕ρτず甧璶琌viτぃ琌vim琌眔崩滤
 
-	Learning the Vi Editor - Linda Lamb
+	Learning the Vi Editor - 幫Linda Lamb
 	O'Reilly & Associates Inc.
 
   硂琌セぃ岿硄筁ウ眤碭镑秆场vi镑暗ㄆ薄材
@@ -817,7 +817,7 @@ Open up a line above this by typing Shift-O while the cursor is on this line.
 
   セ毙祘琌パㄓCalorado School of MineseMichael C. PierceRobert K.
   Ware ┮絪糶ㄤいㄓColorado State UniversityCharles Smith矗ㄑ
-  承種絪硄獺琌
+  承種絪幫硄獺琌
 
 	bware@mines.colorado.edu
 
@@ -825,9 +825,9 @@ Open up a line above this by typing Shift-O while the cursor is on this line.
 
 
 
-  亩ē
+  亩幫ē
   ===========
-      虏砰いゅ毙祘陆亩ぇ亩辩 <beos@turbolinux.com.cn>临Τ
+      虏砰いゅ毙祘陆亩ぇ亩幫辩 <beos@turbolinux.com.cn>临Τ
       羛╰linuxrat@gnuchina.org
 
       羉砰いゅ毙祘琌眖虏砰いゅ毙祘陆亩ㄏノ Debian GNU/Linux いゅ兜ヘ

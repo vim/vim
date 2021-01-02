@@ -1,4 +1,4 @@
-*gui_w32.txt*   For Vim version 8.1.  Last change: 2017 Oct 27
+*gui_w32.txt*   For Vim version 8.2.  Last change: 2020 Mar 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -19,7 +19,6 @@ Other relevant documentation:
 |gui.txt|	For generic items of the GUI.
 |os_win32.txt| 	For Win32 specific items.
 
-{Vi does not have a Windows GUI}
 
 ==============================================================================
 1. Starting the GUI					*gui-w32-start*
@@ -31,6 +30,17 @@ The GUI will always run in the Windows subsystem.  Mostly shells automatically
 return with a command prompt after starting gvim.  If not, you should use the
 "start" command: >
 	start gvim [options] file ..
+<							*E988*
+The console version with the |-g| option may also start the GUI by executing
+gvim.exe: >
+	vim -g [options] file ..
+To make this work, gvim.exe must exist in the same directory as the vim.exe,
+and this feature must be enabled at compile time.
+
+One may also use `:gui` from the console version.  However, this is an
+experimental feature and this feature must be enabled at compile time.
+It uses a session file to recreate the current state of the console Vim in the
+GUI Vim.
 
 Note: All fonts (bold, italic) must be of the same size!!!  If you don't do
 this, text will disappear or mess up the display.  Vim does not check the font
@@ -96,8 +106,6 @@ when you have got a new version):
 You can also install Vim in the "Send To" menu:
 1. Start a Windows Explorer
 2. Navigate to your sendto directory:
-   Windows NT: %windir%\profiles\%user%\sendto (e.g.
-	       "c:\winnt\profiles\mattha\sendto")
    Windows XP: C:\Documents and Settings\%user%\SendTo
    Windows Vista: C:\Users\%user%\AppData\Roaming\Microsoft\Windows\SendTo .
 3. Right-click in the file pane and select New->Shortcut
@@ -105,7 +113,8 @@ You can also install Vim in the "Send To" menu:
 
 When you 'send a file to Vim', Vim changes to that file's directory.  Note,
 however, that any long directory names will appear in their short (MS-DOS)
-form.  This is a limitation of the Windows "Send To" mechanism.
+form on some Windows versions.  This is a limitation of the Windows "Send To"
+mechanism.
 
 						*notepad*
 You could replace notepad.exe with gvim.exe, but that has a few side effects.
@@ -159,16 +168,16 @@ you can.
 					    Vim Shell Extension
    HKEY_LOCAL_MACHINE\Software\Vim\Gvim
 		path			    {path}\gvim.exe
-   HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\vim 5.6
-		DisplayName		    Vim 5.6: Edit with Vim popup menu entry
-		UninstallString		    {path}\uninstal.exe
+   HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\vim 8.2
+		DisplayName		    Vim 8.2: Edit with Vim popup menu entry
+		UninstallString		    {path}\uninstall.exe
 
    Replace {path} with the path that leads to the executable.
    Don't type {default}, this is the value for the key itself.
 
 To remove "Edit with Vim" from the popup menu, just remove the registry
-entries mentioned above.  The "uninstal.exe" program can do this for you.  You
-can also use the entry in the Windows standard "Add/Remove Programs" list.
+entries mentioned above.  The "uninstall.exe" program can do this for you.
+You can also use the entry in the Windows standard "Add/Remove Programs" list.
 
 If you notice that this entry overrules other file type associations, set
 those associations again by hand (using Windows Explorer, see above).  This
@@ -190,7 +199,7 @@ With..." menu.  This means you can use Vim to edit many files.  Not every file
 One reason to add this is to be able to edit HTML files directly from Internet
 Explorer.  To enable this use the "Tools" menu, "Internet Options..." entry.
 In the dialog select the "Programs" tab and select Vim in the "HTML editor"
-choice.  If it's not there than installing didn't work properly.
+choice.  If it's not there then installing didn't work properly.
 
 Doing this manually can be done with this script:
 
@@ -204,7 +213,7 @@ REGEDIT4
 [HKEY_CLASSES_ROOT\Applications\gvim.exe\shell\edit]
 
 [HKEY_CLASSES_ROOT\Applications\gvim.exe\shell\edit\command]
-@="c:\\vim\\vim62\\gvim.exe \"%1\""
+@="c:\\vim\\vim82\\gvim.exe \"%1\""
 
 [HKEY_CLASSES_ROOT\.htm\OpenWithList\gvim.exe]
 
@@ -212,7 +221,7 @@ REGEDIT4
 
 ----------------------------------------------------------
 
-Change the "c:\\vim\\vim62" bit to where gvim.exe is actually located.
+Change the "c:\\vim\\vim82" bit to where gvim.exe is actually located.
 
 To uninstall this run the Vim uninstall program or manually delete the
 registry entries with "regedit".
@@ -403,7 +412,7 @@ be opened as normal.  See |drag-n-drop|.
 
 							*:simalt* *:sim*
 :sim[alt] {key}		simulate pressing {key} while holding Alt pressed.
-			{not in Vi} {only for Win32 versions}
+			{only for Win32 versions}
 			Note: ":si" means ":s" with the "i" flag.
 
 Normally, Vim takes control of all Alt-<Key> combinations, to increase the
@@ -442,13 +451,17 @@ with the Intellimouse driver 2.2 and when "Universal Scrolling" is turned on.
 
 XPM support						*w32-xpm-support*
 
-GVim can be build on MS-Windows with support for XPM files.  |+xpm_w32|
+GVim can be built on MS-Windows with support for XPM files.  |+xpm_w32|
 See the Make_mvc.mak file for instructions, search for XPM.
 
 To try out if XPM support works do this: >
 	:help
-	:exe 'sign define vimxpm icon=' . $VIMRUNTIME . '\\vim16x16.xpm'
-	:exe 'sign place 1 line=1 name=vimxpm file=' . expand('%:p')
+	:let runtime = escape($VIMRUNTIME, ' \')
+	:exe 'sign define vimxpm icon=' .. runtime .. '\\vim16x16.xpm'
+	:exe 'sign place 1 line=1 name=vimxpm file=' .. expand('%:p')
 <
+You may need to get the vim16x16.xpm file from github:
+https://github.com/vim/vim/blob/master/runtime/vim16x16.xpm
+
 
  vim:tw=78:sw=4:ts=8:noet:ft=help:norl:

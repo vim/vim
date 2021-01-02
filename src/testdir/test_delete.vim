@@ -1,5 +1,7 @@
 " Test for delete().
 
+source check.vim
+
 func Test_file_delete()
   split Xfile
   call setline(1, ['a', 'b'])
@@ -32,7 +34,7 @@ func Test_recursive_delete()
   call assert_equal(['a', 'b'], readfile('Xdir1/Xfile'))
   call assert_true(isdirectory('Xdir1/subdir'))
   call assert_equal(['a', 'b'], readfile('Xdir1/subdir/Xfile'))
-  call assert_true(isdirectory('Xdir1/empty'))
+  call assert_true('Xdir1/empty'->isdirectory())
   call assert_equal(0, delete('Xdir1', 'rf'))
   call assert_false(isdirectory('Xdir1'))
   call assert_equal(-1, delete('Xdir1', 'd'))
@@ -41,9 +43,7 @@ func Test_recursive_delete()
 endfunc
 
 func Test_symlink_delete()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
   split Xfile
   call setline(1, ['a', 'b'])
   wq
@@ -56,9 +56,7 @@ func Test_symlink_delete()
 endfunc
 
 func Test_symlink_dir_delete()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
   call mkdir('Xdir1')
   silent !ln -s Xdir1 Xlink
   call assert_true(isdirectory('Xdir1'))
@@ -70,9 +68,7 @@ func Test_symlink_dir_delete()
 endfunc
 
 func Test_symlink_recursive_delete()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
   call mkdir('Xdir3')
   call mkdir('Xdir3/subdir')
   call mkdir('Xdir4')
@@ -105,3 +101,10 @@ func Test_symlink_recursive_delete()
   bwipe Xdir3/subdir/Xfile
   bwipe Xdir4/Xfile
 endfunc
+
+func Test_delete_errors()
+  call assert_fails('call delete('''')', 'E474:')
+  call assert_fails('call delete(''foo'', 0)', 'E15:')
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

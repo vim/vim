@@ -15,6 +15,9 @@ while lnum <= line('$')
       continue		" don't increment lnum, it's already at the next word
     endif
   endif
+  if lnum%1000 == 0
+    echon "\r Processing line ".lnum. printf(" [ %02d%%]", lnum*100/line('$'))
+  endif
   let lnum += 1
 endwhile
 

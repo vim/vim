@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.1.  Last change: 2018 Dec 18
+*usr_41.txt*	For Vim version 8.2.  Last change: 2020 Dec 19
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -40,6 +40,12 @@ prefer.  And you can use any colon command in it (commands that start with a
    Syntax files are also Vim scripts.  As are files that set options for a
 specific file type.  A complicated macro can be defined by a separate Vim
 script file.  You can think of other uses yourself.
+
+	If you are familiar with Python, you can find a comparison between
+	Python and Vim script here, with pointers to other documents:
+	   https://gist.github.com/yegappan/16d964a37ead0979b05e655aa036cad0
+	And if you are familiar with JavaScript:
+	   https://w0rp.com/blog/post/vim-script-for-the-javascripter/
 
 Let's start with a simple example: >
 
@@ -93,6 +99,8 @@ and the value of the variable i.  Since i is one, this will print:
 Then there is the ":let i += 1" command.  This does the same thing as
 ":let i = i + 1".  This adds one to the variable i and assigns the new value
 to the same variable.
+Note: this is how it works in legacy Vim script, which is what we discuss in
+this file.  In Vim9 script it's a bit different, see |usr_46.txt|.
 
 The example was given to explain the commands, but would you really want to
 make such a loop, it can be written much more compact: >
@@ -105,20 +113,21 @@ We won't explain how |:for| and |range()| work until later.  Follow the links
 if you are impatient.
 
 
-THREE KINDS OF NUMBERS
+FOUR KINDS OF NUMBERS
 
-Numbers can be decimal, hexadecimal or octal.  A hexadecimal number starts
-with "0x" or "0X".  For example "0x1f" is decimal 31.  An octal number starts
-with a zero.  "017" is decimal 15.  Careful: don't put a zero before a decimal
-number, it will be interpreted as an octal number!
+Numbers can be decimal, hexadecimal, octal or binary.  A hexadecimal number
+starts with "0x" or "0X".  For example "0x1f" is decimal 31.  An octal number
+starts with a zero.  "017" is decimal 15.  A binary number starts with "0b" or
+"0B".  For example "0b101" is decimal 5.  Careful: don't put a zero before a
+decimal number, it will be interpreted as an octal number!
    The ":echo" command always prints decimal numbers.  Example: >
 
 	:echo 0x7f 036
 <	127 30 ~
 
-A number is made negative with a minus sign.  This also works for hexadecimal
-and octal numbers.   A minus sign is also used for subtraction.  Compare this
-with the previous example: >
+A number is made negative with a minus sign.  This also works for hexadecimal,
+octal and binary numbers.  A minus sign is also used for subtraction.  Compare
+this with the previous example: >
 
 	:echo 0x7f -036
 <	97 ~
@@ -318,9 +327,9 @@ Grouping is done with parentheses.  No surprises here.  Example: >
 	:echo (10 + 5) * 2
 <	30 ~
 
-Strings can be concatenated with ".".  Example: >
+Strings can be concatenated with ".." (see |expr6|).  Example: >
 
-	:echo "foo" . "bar"
+	:echo "foo" .. "bar"
 <	foobar ~
 
 When the ":echo" command gets multiple arguments, it separates them with a
@@ -487,9 +496,9 @@ So far the commands in the script were executed by Vim directly.  The
 very powerful way to build commands and execute them.
    An example is to jump to a tag, which is contained in a variable: >
 
-	:execute "tag " . tag_name
+	:execute "tag " .. tag_name
 
-The "." is used to concatenate the string "tag " with the value of variable
+The ".." is used to concatenate the string "tag " with the value of variable
 "tag_name".  Suppose "tag_name" has the value "get_cmd", then the command that
 will be executed is: >
 
@@ -505,7 +514,7 @@ This jumps to the first line and formats all lines with the "=" operator.
    To make ":normal" work with an expression, combine ":execute" with it.
 Example: >
 
-	:execute "normal " . normal_commands
+	:execute "normal " .. normal_commands
 
 The variable "normal_commands" must contain the Normal mode commands.
    Make sure that the argument for ":normal" is a complete command.  Otherwise
@@ -522,12 +531,12 @@ If you don't want to execute a string but evaluate it to get its expression
 value, you can use the eval() function: >
 
 	:let optname = "path"
-	:let optval = eval('&' . optname)
+	:let optval = eval('&' .. optname)
 
 A "&" character is prepended to "path", thus the argument to eval() is
 "&path".  The result will then be the value of the 'path' option.
    The same thing can be done with: >
-	:exe 'let optval = &' . optname
+	:exe 'let optval = &' .. optname
 
 ==============================================================================
 *41.6*	Using functions
@@ -577,8 +586,10 @@ used for.  You can find an alphabetical list here: |functions|.  Use CTRL-] on
 the function name to jump to detailed help on it.
 
 String manipulation:					*string-functions*
-	nr2char()		get a character by its ASCII value
-	char2nr()		get ASCII value of a character
+	nr2char()		get a character by its number value
+	list2str()		get a character string from a list of numbers
+	char2nr()		get number value of a character
+	str2list()		get list of numbers from a string
 	str2nr()		convert a string to a Number
 	str2float()		convert a string to a Float
 	printf()		format a string according to % items
@@ -589,8 +600,11 @@ String manipulation:					*string-functions*
 	strtrans()		translate a string to make it printable
 	tolower()		turn a string to lowercase
 	toupper()		turn a string to uppercase
+	charclass()		class of a character
 	match()			position where a pattern matches in a string
 	matchend()		position where a pattern match ends in a string
+	matchfuzzy()		fuzzy matches a string in a list of strings
+	matchfuzzypos()		fuzzy matches a string in a list of strings
 	matchstr()		match of a pattern in a string
 	matchstrpos()		match and positions of a pattern in a string
 	matchlist()		like matchstr() and also return submatches
@@ -600,19 +614,24 @@ String manipulation:					*string-functions*
 	strchars()		length of a string in characters
 	strwidth()		size of string when displayed
 	strdisplaywidth()	size of string when displayed, deals with tabs
+	setcellwidths()		set character cell width overrides
 	substitute()		substitute a pattern match with a string
 	submatch()		get a specific match in ":s" and substitute()
 	strpart()		get part of a string using byte index
 	strcharpart()		get part of a string using char index
 	strgetchar()		get character from a string using char index
 	expand()		expand special keywords
+	expandcmd()		expand a command like done for `:edit`
 	iconv()			convert text from one encoding to another
 	byteidx()		byte index of a character in a string
 	byteidxcomp()		like byteidx() but count composing characters
+	charidx()		character index of a byte in a string
 	repeat()		repeat a string multiple times
 	eval()			evaluate a string expression
 	execute()		execute an Ex command and get the output
+	win_execute()		like execute() but in a specified window
 	trim()			trim characters from a string
+	gettext()		lookup message translation
 
 List manipulation:					*list-functions*
 	get()			get an item without error for wrong index
@@ -626,6 +645,8 @@ List manipulation:					*list-functions*
 	deepcopy()		make a full copy of a List
 	filter()		remove selected items from a List
 	map()			change each List item
+	mapnew()		make a new List with changed items
+	reduce()		reduce a List to a value
 	sort()			sort a List
 	reverse()		reverse the order of a List
 	uniq()			remove copies of repeated adjacent items
@@ -639,6 +660,7 @@ List manipulation:					*list-functions*
 	min()			minimum value in a List
 	count()			count number of times a value appears in a List
 	repeat()		repeat a List multiple times
+	flatten()		flatten a List
 
 Dictionary manipulation:				*dict-functions*
 	get()			get an entry without an error for a wrong key
@@ -649,6 +671,7 @@ Dictionary manipulation:				*dict-functions*
 	extend()		add entries from one Dictionary to another
 	filter()		remove selected entries from a Dictionary
 	map()			change each Dictionary entry
+	mapnew()		make a new Dictionary with changed items
 	keys()			get List of Dictionary keys
 	values()		get List of Dictionary values
 	items()			get List of Dictionary key-value pairs
@@ -682,6 +705,7 @@ Floating point computation:				*float-functions*
 	sinh()			hyperbolic sine
 	cosh()			hyperbolic cosine
 	tanh()			hyperbolic tangent
+	isinf()			check for infinity
 	isnan()			check for not a number
 
 Other computation:					*bitwise-function*
@@ -690,6 +714,8 @@ Other computation:					*bitwise-function*
 	or()			bitwise OR
 	xor()			bitwise XOR
 	sha256()		SHA-256 hash
+	rand()			get a pseudo-random number
+	srand()			initialize seed used by rand()
 
 Variables:						*var-functions*
 	type()			type of a variable
@@ -715,14 +741,18 @@ Cursor and mark position:		*cursor-functions* *mark-functions*
 	cursor()		position the cursor at a line/column
 	screencol()		get screen column of the cursor
 	screenrow()		get screen row of the cursor
+	screenpos()		screen row and col of a text character
 	getcurpos()		get position of the cursor
 	getpos()		get position of cursor, mark, etc.
 	setpos()		set position of cursor, mark, etc.
+	getmarklist()		list of global/local marks
 	byte2line()		get line number at a specific byte count
 	line2byte()		byte count at a specific line
 	diff_filler()		get the number of filler lines above a line
 	screenattr()		get attribute at a screen line/row
 	screenchar()		get character code at a screen line/row
+	screenchars()		get character codes at a screen line/row
+	screenstring()		get string of characters at a screen line/row
 
 Working with text in the current buffer:		*text-functions*
 	getline()		get a line or list of lines from the buffer
@@ -735,11 +765,18 @@ Working with text in the current buffer:		*text-functions*
 	prevnonblank()		find previous non-blank line
 	search()		find a match for a pattern
 	searchpos()		find a match for a pattern
+	searchcount()		get number of matches before/after the cursor
 	searchpair()		find the other end of a start/skip/end
 	searchpairpos()		find the other end of a start/skip/end
 	searchdecl()		search for the declaration of a name
 	getcharsearch()		return character search information
 	setcharsearch()		set character search information
+
+Working with text in another buffer:
+	getbufline()		get a list of lines from the specified buffer
+	setbufline()		replace a line in the specified buffer
+	appendbufline()		append a list of lines in the specified buffer
+	deletebufline()		delete lines from a specified buffer
 
 					*system-functions* *file-functions*
 System functions and manipulation of files:
@@ -762,21 +799,28 @@ System functions and manipulation of files:
 	isdirectory()		check if a directory exists
 	getfsize()		get the size of a file
 	getcwd()		get the current working directory
-	haslocaldir()		check if current window used |:lcd|
+	haslocaldir()		check if current window used |:lcd| or |:tcd|
 	tempname()		get the name of a temporary file
 	mkdir()			create a new directory
+	chdir()			change current working directory
 	delete()		delete a file
 	rename()		rename a file
 	system()		get the result of a shell command as a string
 	systemlist()		get the result of a shell command as a list
+	environ()		get all environment variables
+	getenv()		get one environment variable
+	setenv()		set an environment variable
 	hostname()		name of the system
 	readfile()		read a file into a List of lines
-	writefile()		write a List of lines into a file
+	readdir()		get a List of file names in a directory
+	readdirex()		get a List of file information in a directory
+	writefile()		write a List of lines or Blob into a file
 
 Date and Time:				*date-functions* *time-functions*
 	getftime()		get last modification time of a file
 	localtime()		get current time in seconds
 	strftime()		convert time to a string
+	strptime()		convert a date/time string to time
 	reltime()		get the current or elapsed time accurately
 	reltimestr()		convert reltime() result to a string
 	reltimefloat()		convert reltime() result to a Float
@@ -787,8 +831,10 @@ Buffers, windows and the argument list:
 	argidx()		current position in the argument list
 	arglistid()		get id of the argument list
 	argv()			get one entry from the argument list
+	bufadd()		add a file to the list of buffers
 	bufexists()		check if a buffer exists
 	buflisted()		check if a buffer exists and is listed
+	bufload()		ensure a buffer is loaded
 	bufloaded()		check if a buffer exists and is loaded
 	bufname()		get the name of a specific buffer
 	bufnr()			get the buffer number of a specific buffer
@@ -799,15 +845,16 @@ Buffers, windows and the argument list:
 	bufwinid()		get the window ID of a specific buffer
 	bufwinnr()		get the window number of a specific buffer
 	winbufnr()		get the buffer number of a specific window
-	getbufline()		get a list of lines from the specified buffer
-	setbufline()		replace a line in the specified buffer
-	appendbufline()		append a list of lines in the specified buffer
-	deletebufline()		delete lines from a specified buffer
+	listener_add()		add a callback to listen to changes
+	listener_flush()	invoke listener callbacks
+	listener_remove()	remove a listener callback
 	win_findbuf()		find windows containing a buffer
 	win_getid()		get window ID of a window
+	win_gettype()		get type of window
 	win_gotoid()		go to window with ID
 	win_id2tabwin()		get tab and window nr from window ID
 	win_id2win()		get window nr from window ID
+	win_splitmove()		move window to a split of another window
 	getbufinfo()		get a list with buffer information
 	gettabinfo()		get a list with tab page information
 	getwininfo()		get a list with window information
@@ -834,7 +881,9 @@ Insert mode completion:				*completion-functions*
 	complete()		set found matches
 	complete_add()		add to found matches
 	complete_check()	check if completion should be aborted
+	complete_info()		get current completion information
 	pumvisible()		check if the popup menu is displayed
+	pum_getpos()		position and size of popup menu if visible
 
 Folding:					*folding-functions*
 	foldclosed()		check for a closed fold at a specific line
@@ -881,6 +930,8 @@ Interactive:					*interactive-functions*
 	confirm()		let the user make a choice
 	getchar()		get a character from the user
 	getcharmod()		get modifiers for the last typed character
+	getmousepos()		get last known mouse position
+	echoraw()		output characters as-is
 	feedkeys()		put characters in the typeahead queue
 	input()			get a line from the user
 	inputlist()		let the user pick an entry from a list
@@ -896,6 +947,7 @@ GUI:						*gui-functions*
 	getwinposy()		Y position of the Vim window
 	balloon_show()		set the balloon content
 	balloon_split()		split a message for a balloon
+	balloon_gettext()	get the text in the balloon
 
 Vim server:					*server-functions*
 	serverlist()		return the list of server names
@@ -917,10 +969,12 @@ Window size and position:			*window-size-functions*
 	winsaveview()		get view of current window
 	winrestview()		restore saved view of current window
 
-Mappings:				    *mapping-functions*
+Mappings and Menus:			    *mapping-functions*
 	hasmapto()		check if a mapping exists
 	mapcheck()		check if a matching mapping exists
 	maparg()		get rhs of a mapping
+	mapset()		restore a mapping
+	menu_info()		get information about a menu item
 	wildmenumode()		check if the wildmode is active
 
 Testing:				    *test-functions*
@@ -940,17 +994,26 @@ Testing:				    *test-functions*
 	test_autochdir()	enable 'autochdir' during startup
 	test_override()		test with Vim internal overrides
 	test_garbagecollect_now()   free memory right now
+	test_garbagecollect_soon()  set a flag to free memory soon
+	test_getvalue()		get value of an internal variable
 	test_ignore_error()	ignore a specific error message
+	test_null_blob()	return a null Blob
 	test_null_channel()	return a null Channel
 	test_null_dict()	return a null Dict
+	test_null_function()	return a null Funcref
 	test_null_job()		return a null Job
 	test_null_list()	return a null List
 	test_null_partial()	return a null Partial function
 	test_null_string()	return a null String
 	test_settime()		set the time Vim uses internally
+	test_setmouse()		set the mouse position
 	test_feedinput()	add key sequence to input buffer
 	test_option_not_set()	reset flag indicating option was set
 	test_scrollbar()	simulate scrollbar movement in the GUI
+	test_refcount()		return an expression's reference count
+	test_srand_seed()	set the seed value for srand()
+	test_unknown()		return a value with unknown type
+	test_void()		return a value with void type
 
 Inter-process communication:		    *channel-functions*
 	ch_canread()		check if there is something to read
@@ -958,11 +1021,12 @@ Inter-process communication:		    *channel-functions*
 	ch_close()		close a channel
 	ch_close_in()		close the in part of a channel
 	ch_read()		read a message from a channel
+	ch_readblob()		read a Blob from a channel
 	ch_readraw()		read a raw message from a channel
 	ch_sendexpr()		send a JSON message over a channel
 	ch_sendraw()		send a raw message over a channel
-	ch_evalexpr()		evaluates an expression over channel
-	ch_evalraw()		evaluates a raw string over channel
+	ch_evalexpr()		evaluate an expression over channel
+	ch_evalraw()		evaluate a raw string over channel
 	ch_status()		get status of a channel
 	ch_getbufnr()		get the buffer number of a channel
 	ch_getjob()		get the job associated with a channel
@@ -975,13 +1039,24 @@ Inter-process communication:		    *channel-functions*
 	js_encode()		encode an expression to a JSON string
 	js_decode()		decode a JSON string to Vim types
 
-Jobs:		    			        *job-functions*
+Jobs:						*job-functions*
 	job_start()		start a job
 	job_stop()		stop a job
 	job_status()		get the status of a job
 	job_getchannel()	get the channel used by a job
 	job_info()		get information about a job
 	job_setoptions()	set options for a job
+
+Signs:						*sign-functions*
+	sign_define()		define or update a sign
+	sign_getdefined()	get a list of defined signs
+	sign_getplaced()	get a list of placed signs
+	sign_jump()		jump to a sign
+	sign_place()		place a sign
+	sign_placelist()	place a list of signs
+	sign_undefine()		undefine a sign
+	sign_unplace()		unplace a sign
+	sign_unplacelist()	unplace a list of signs
 
 Terminal window:				*terminal-functions*
 	term_start()		open a terminal window and run a job
@@ -1007,6 +1082,32 @@ Terminal window:				*terminal-functions*
 	term_setkill()		set signal to stop job in a terminal
 	term_setrestore()	set command to restore a terminal
 	term_setsize()		set the size of a terminal
+	term_setapi()		set terminal JSON API function name prefix
+
+Popup window:					*popup-window-functions*
+	popup_create()		create popup centered in the screen
+	popup_atcursor()	create popup just above the cursor position,
+				closes when the cursor moves away
+	popup_beval()		at the position indicated by v:beval_
+				variables, closes when the mouse moves away
+	popup_notification()	show a notification for three seconds
+	popup_dialog()		create popup centered with padding and border
+	popup_menu()		prompt for selecting an item from a list
+	popup_hide()		hide a popup temporarily
+	popup_show()		show a previously hidden popup
+	popup_move()		change the position and size of a popup
+	popup_setoptions()	override options of a popup
+	popup_settext()		replace the popup buffer contents
+	popup_close()		close one popup
+	popup_clear()		close all popups
+	popup_filter_menu()	select from a list of items
+	popup_filter_yesno()	block until 'y' or 'n' is pressed
+	popup_getoptions()	get current options for a popup
+	popup_getpos()		get actual position and size of a popup
+	popup_findinfo()	get window ID for popup info window
+	popup_findpreview()	get window ID for popup preview window
+	popup_list()		get list of all popup window IDs
+	popup_locate()		get popup window ID from its screen position
 
 Timers:						*timer-functions*
 	timer_start()		create a timer
@@ -1022,12 +1123,32 @@ Tags:						*tag-functions*
 	settagstack()		modify the tag stack of a window
 
 Prompt Buffer:					*promptbuffer-functions*
+	prompt_getprompt()	get the effective prompt text for a buffer
 	prompt_setcallback()	set prompt callback for a buffer
 	prompt_setinterrupt()	set interrupt callback for a buffer
 	prompt_setprompt()	set the prompt text for a buffer
 
+Text Properties:				*text-property-functions*
+	prop_add()		attach a property at a position
+	prop_clear()		remove all properties from a line or lines
+	prop_find()		search for a property
+	prop_list()		return a list of all properties in a line
+	prop_remove()		remove a property from a line
+	prop_type_add()		add/define a property type
+	prop_type_change()	change properties of a type
+	prop_type_delete()	remove a text property type
+	prop_type_get()		return the properties of a type
+	prop_type_list()	return a list of all property types
+
+Sound:							*sound-functions*
+	sound_clear()		stop playing all sounds
+	sound_playevent()	play an event's sound
+	sound_playfile()	play a sound file
+	sound_stop()		stop playing a sound
+
 Various:					*various-functions*
 	mode()			get current editing mode
+	state()			get current busy state
 	visualmode()		last visual mode used
 	exists()		check if a variable, function, etc. exists
 	has()			check if a feature is supported in Vim
@@ -1036,6 +1157,10 @@ Various:					*various-functions*
 	did_filetype()		check if a FileType autocommand was used
 	eventhandler()		check if invoked by an event handler
 	getpid()		get process ID of Vim
+	getimstatus()		check if IME status is active
+	interrupt()		interrupt script execution
+	windowsversion()	get MS-Windows version
+	terminalprops()		properties of the terminal
 
 	libcall()		call a function in an external library
 	libcallnr()		idem, returning a number
@@ -1044,6 +1169,7 @@ Various:					*various-functions*
 	undotree()		return the state of the undo tree
 
 	getreg()		get contents of a register
+	getreginfo()		get information about a register
 	getregtype()		get type of a register
 	setreg()		set contents and type of a register
 	reg_executing()		return the name of the register being executed
@@ -1053,12 +1179,14 @@ Various:					*various-functions*
 
 	wordcount()		get byte/word/char count of buffer
 
-	luaeval()		evaluate Lua expression
+	luaeval()		evaluate |Lua| expression
 	mzeval()		evaluate |MzScheme| expression
 	perleval()		evaluate Perl expression (|+perl|)
 	py3eval()		evaluate Python expression (|+python3|)
 	pyeval()		evaluate Python expression (|+python|)
 	pyxeval()		evaluate |python_x| expression
+	rubyeval()		evaluate |Ruby| expression
+
 	debugbreak()		interrupt a program being debugged
 
 ==============================================================================
@@ -1165,7 +1293,7 @@ Example: >
 	:    let n = n + len(split(getline(lnum)))
 	:    let lnum = lnum + 1
 	:  endwhile
-	:  echo "found " . n . " words"
+	:  echo "found " .. n .. " words"
 	:endfunction
 
 You can call this function with: >
@@ -1178,7 +1306,7 @@ It will be executed once and echo the number of words.
 range, with the cursor in that line.  Example: >
 
 	:function  Number()
-	:  echo "line " . line(".") . " contains: " . getline(".")
+	:  echo "line " .. line(".") .. " contains: " .. getline(".")
 	:endfunction
 
 If you call this function with: >
@@ -1202,11 +1330,11 @@ so on.  The variable "a:0" contains the number of extra arguments.
 
 	:function Show(start, ...)
 	:  echohl Title
-	:  echo "start is " . a:start
+	:  echo "start is " .. a:start
 	:  echohl None
 	:  let index = 1
 	:  while index <= a:0
-	:    echo "  Arg " . index . " is " . a:{index}
+	:    echo "  Arg " .. index .. " is " .. a:{index}
 	:    let index = index + 1
 	:  endwhile
 	:  echo ""
@@ -1614,10 +1742,10 @@ Another useful mechanism is the ":finally" command: >
 
 	:let tmp = tempname()
 	:try
-	:   exe ".,$write " . tmp
-	:   exe "!filter " . tmp
+	:   exe ".,$write " .. tmp
+	:   exe "!filter " .. tmp
 	:   .,$delete
-	:   exe "$read " . tmp
+	:   exe "$read " .. tmp
 	:finally
 	:   call delete(tmp)
 	:endtry
@@ -1638,8 +1766,8 @@ Here is a summary of items that apply to Vim scripts.  They are also mentioned
 elsewhere, but form a nice checklist.
 
 The end-of-line character depends on the system.  For Unix a single <NL>
-character is used.  For MS-DOS, Windows, OS/2 and the like, <CR><LF> is used.
-This is important when using mappings that end in a <CR>.  See |:source_crnl|.
+character is used.  For MS-Windows and the like, <CR><NL> is used.  This is
+important when using mappings that end in a <CR>.  See |:source_crnl|.
 
 
 WHITE SPACE
@@ -1824,7 +1952,7 @@ First of all you must choose a name for your plugin.  The features provided
 by the plugin should be clear from its name.  And it should be unlikely that
 someone else writes a plugin with the same name but which does something
 different.  And please limit the name to 8 characters, to avoid problems on
-old Windows systems.
+old MS-Windows systems.
 
 A script that corrects typing mistakes could be called "typecorr.vim".  We
 will use it here as an example.
@@ -1925,9 +2053,9 @@ for this mapping, but the user might already use it for something else.  To
 allow the user to define which keys a mapping in a plugin uses, the <Leader>
 item can be used: >
 
- 22	  map <unique> <Leader>a  <Plug>TypecorrAdd
+ 22	  map <unique> <Leader>a  <Plug>TypecorrAdd;
 
-The "<Plug>TypecorrAdd" thing will do the work, more about that further on.
+The "<Plug>TypecorrAdd;" thing will do the work, more about that further on.
 
 The user can set the "mapleader" variable to the key sequence that he wants
 this mapping to start with.  Thus if the user has done: >
@@ -1943,15 +2071,15 @@ already happened to exist. |:map-<unique>|
 But what if the user wants to define his own key sequence?  We can allow that
 with this mechanism: >
 
- 21	if !hasmapto('<Plug>TypecorrAdd')
- 22	  map <unique> <Leader>a  <Plug>TypecorrAdd
+ 21	if !hasmapto('<Plug>TypecorrAdd;')
+ 22	  map <unique> <Leader>a  <Plug>TypecorrAdd;
  23	endif
 
-This checks if a mapping to "<Plug>TypecorrAdd" already exists, and only
+This checks if a mapping to "<Plug>TypecorrAdd;" already exists, and only
 defines the mapping from "<Leader>a" if it doesn't.  The user then has a
 chance of putting this in his vimrc file: >
 
-	map ,c  <Plug>TypecorrAdd
+	map ,c  <Plug>TypecorrAdd;
 
 Then the mapped key sequence will be ",c" instead of "_a" or "\a".
 
@@ -1968,8 +2096,8 @@ prepending it with "s:".
 We will define a function that adds a new typing correction: >
 
  30	function s:Add(from, correct)
- 31	  let to = input("type the correction for " . a:from . ": ")
- 32	  exe ":iabbrev " . a:from . " " . to
+ 31	  let to = input("type the correction for " .. a:from .. ": ")
+ 32	  exe ":iabbrev " .. a:from .. " " .. to
  ..
  36	endfunction
 
@@ -1981,15 +2109,15 @@ function (without the "s:"), which is again another function.
 <SID> can be used with mappings.  It generates a script ID, which identifies
 the current script.  In our typing correction plugin we use it like this: >
 
- 24	noremap <unique> <script> <Plug>TypecorrAdd  <SID>Add
+ 24	noremap <unique> <script> <Plug>TypecorrAdd;  <SID>Add
  ..
  28	noremap <SID>Add  :call <SID>Add(expand("<cword>"), 1)<CR>
 
 Thus when a user types "\a", this sequence is invoked: >
 
-	\a  ->  <Plug>TypecorrAdd  ->  <SID>Add  ->  :call <SID>Add()
+	\a  ->  <Plug>TypecorrAdd;  ->  <SID>Add  ->  :call <SID>Add()
 
-If another script would also map <SID>Add, it would get another script ID and
+If another script also maps <SID>Add, it will get another script ID and
 thus define another mapping.
 
 Note that instead of s:Add() we use <SID>Add() here.  That is because the
@@ -2030,9 +2158,9 @@ difference between using <SID> and <Plug>:
 	To make it very unlikely that other plugins use the same sequence of
 	characters, use this structure: <Plug> scriptname mapname
 	In our example the scriptname is "Typecorr" and the mapname is "Add".
-	This results in "<Plug>TypecorrAdd".  Only the first character of
-	scriptname and mapname is uppercase, so that we can see where mapname
-	starts.
+	We add a semicolon as the terminator.  This results in
+	"<Plug>TypecorrAdd;".  Only the first character of scriptname and
+	mapname is uppercase, so that we can see where mapname starts.
 
 <SID>	is the script ID, a unique identifier for a script.
 	Internally Vim translates <SID> to "<SNR>123_", where "123" can be any
@@ -2074,7 +2202,7 @@ a few lines to count the number of corrections: >
  30	function s:Add(from, correct)
  ..
  34	  let s:count = s:count + 1
- 35	  echo s:count . " corrections now"
+ 35	  echo s:count .. " corrections now"
  36	endfunction
 
 First s:count is initialized to 4 in the script itself.  When later the
@@ -2107,21 +2235,21 @@ Here is the resulting complete example: >
  18		\ synchronization
  19	let s:count = 4
  20
- 21	if !hasmapto('<Plug>TypecorrAdd')
- 22	  map <unique> <Leader>a  <Plug>TypecorrAdd
+ 21	if !hasmapto('<Plug>TypecorrAdd;')
+ 22	  map <unique> <Leader>a  <Plug>TypecorrAdd;
  23	endif
- 24	noremap <unique> <script> <Plug>TypecorrAdd  <SID>Add
+ 24	noremap <unique> <script> <Plug>TypecorrAdd;  <SID>Add
  25
  26	noremenu <script> Plugin.Add\ Correction      <SID>Add
  27
  28	noremap <SID>Add  :call <SID>Add(expand("<cword>"), 1)<CR>
  29
  30	function s:Add(from, correct)
- 31	  let to = input("type the correction for " . a:from . ": ")
- 32	  exe ":iabbrev " . a:from . " " . to
+ 31	  let to = input("type the correction for " .. a:from .. ": ")
+ 32	  exe ":iabbrev " .. a:from .. " " .. to
  33	  if a:correct | exe "normal viws\<C-R>\" \b\e" | endif
  34	  let s:count = s:count + 1
- 35	  echo s:count . " corrections now"
+ 35	  echo s:count .. " corrections now"
  36	endfunction
  37
  38	if !exists(":Correct")
@@ -2160,7 +2288,7 @@ Here is a simple example for a plugin help file, called "typecorr.txt": >
   6	There are currently only a few corrections.  Add your own if you like.
   7
   8	Mappings:
-  9	<Leader>a   or   <Plug>TypecorrAdd
+  9	<Leader>a   or   <Plug>TypecorrAdd;
  10		Add a correction for the word under the cursor.
  11
  12	Commands:
@@ -2298,13 +2426,13 @@ To make sure mappings will only work in the current buffer use the >
 command.  This needs to be combined with the two-step mapping explained above.
 An example of how to define functionality in a filetype plugin: >
 
-	if !hasmapto('<Plug>JavaImport')
-	  map <buffer> <unique> <LocalLeader>i <Plug>JavaImport
+	if !hasmapto('<Plug>JavaImport;')
+	  map <buffer> <unique> <LocalLeader>i <Plug>JavaImport;
 	endif
-	noremap <buffer> <unique> <Plug>JavaImport oimport ""<Left><Esc>
+	noremap <buffer> <unique> <Plug>JavaImport; oimport ""<Left><Esc>
 
 |hasmapto()| is used to check if the user has already defined a map to
-<Plug>JavaImport.  If not, then the filetype plugin defines the default
+<Plug>JavaImport;.  If not, then the filetype plugin defines the default
 mapping.  This starts with |<LocalLeader>|, which allows the user to select
 the key(s) he wants filetype plugin mappings to start with.  The default is a
 backslash.
@@ -2321,12 +2449,12 @@ plugin for the mail filetype: >
 	" Add mappings, unless the user didn't want this.
 	if !exists("no_plugin_maps") && !exists("no_mail_maps")
 	  " Quote text by inserting "> "
-	  if !hasmapto('<Plug>MailQuote')
-	    vmap <buffer> <LocalLeader>q <Plug>MailQuote
-	    nmap <buffer> <LocalLeader>q <Plug>MailQuote
+	  if !hasmapto('<Plug>MailQuote;')
+	    vmap <buffer> <LocalLeader>q <Plug>MailQuote;
+	    nmap <buffer> <LocalLeader>q <Plug>MailQuote;
 	  endif
-	  vnoremap <buffer> <Plug>MailQuote :s/^/> /<CR>
-	  nnoremap <buffer> <Plug>MailQuote :.,$s/^/> /<CR>
+	  vnoremap <buffer> <Plug>MailQuote; :s/^/> /<CR>
+	  nnoremap <buffer> <Plug>MailQuote; :.,$s/^/> /<CR>
 	endif
 
 Two global variables are used:
@@ -2369,7 +2497,7 @@ should be undone.  Set the b:undo_ftplugin variable to the commands that will
 undo the settings in your filetype plugin.  Example: >
 
 	let b:undo_ftplugin = "setlocal fo< com< tw< commentstring<"
-		\ . "| unlet b:match_ignorecase b:match_words b:match_skip"
+		\ .. "| unlet b:match_ignorecase b:match_words b:match_skip"
 
 Using ":setlocal" with "<" after the option name resets the option to its
 global value.  That is mostly the best way to reset the option value.
@@ -2490,17 +2618,17 @@ The following example shows how it's done: >
 		map <F19> :call BufNetWrite('something')<CR>
 
 		let s:did_load = 1
-		exe 'au FuncUndefined BufNet* source ' . expand('<sfile>')
+		exe 'au FuncUndefined BufNet* source ' .. expand('<sfile>')
 		finish
 	endif
 
 	function BufNetRead(...)
-		echo 'BufNetRead(' . string(a:000) . ')'
+		echo 'BufNetRead(' .. string(a:000) .. ')'
 		" read functionality here
 	endfunction
 
 	function BufNetWrite(...)
-		echo 'BufNetWrite(' . string(a:000) . ')'
+		echo 'BufNetWrite(' .. string(a:000) .. ')'
 		" write functionality here
 	endfunction
 

@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 8.1.  Last change: 2018 Dec 14
+*help.txt*	For Vim version 8.2.  Last change: 2020 Aug 15
 
 			VIM - main help file
 									 k
@@ -10,7 +10,7 @@ Close this window:  Use ":q<Enter>".
 Jump to a subject:  Position the cursor on a tag (e.g. |bars|) and hit CTRL-].
    With the mouse:  ":set mouse=a" to enable the mouse (in xterm or GUI).
 		    Double-click the left mouse button on a tag, e.g. |bars|.
-	Jump back:  Type CTRL-T or CTRL-O.  Repeat to go further back.
+	Jump back:  Type CTRL-O.  Repeat to go further back.
 
 Get specific help:  It is possible to go directly to whatever you want help
 		    on, by giving an argument to the |:help| command.
@@ -31,13 +31,17 @@ Get specific help:  It is possible to go directly to whatever you want help
 		    help entries for "word".
 		    Or use ":helpgrep word". |:helpgrep|
 
+  Getting started:  Do the Vim tutor, a 30-minute interactive course for the
+		    basic commands, see |vimtutor|.
+		    Read the user manual from start to end: |usr_01.txt|
+
 Vim stands for Vi IMproved.  Most of Vim was made by Bram Moolenaar, but only
 through the help of many others.  See |credits|.
 ------------------------------------------------------------------------------
 						*doc-file-list* *Q_ct*
 BASIC:
 |quickref|	Overview of the most common commands you will use
-|tutor|		30 minutes training course for beginners
+|tutor|		30-minute interactive course for beginners
 |copying|	About copyrights
 |iccf|		Helping poor children in Uganda
 |sponsor|	Sponsor Vim development, become a registered Vim user
@@ -135,10 +139,12 @@ Advanced editing ~
 |fold.txt|	hide (fold) ranges of lines
 
 Special issues ~
+|testing.txt|	testing Vim and Vim scripts
 |print.txt|	printing
 |remote.txt|	using Vim as a server or client
 |term.txt|	using different terminals and mice
 |terminal.txt|	Terminal window support
+|popup.txt|	popup window support
 
 Programming language support ~
 |indent.txt|	automatic indenting for C and other languages
@@ -152,7 +158,7 @@ Programming language support ~
 
 Language support ~
 |digraph.txt|	list of available digraphs
-|mbyte.txt|	multi-byte text support
+|mbyte.txt|	multibyte text support
 |mlang.txt|	non-English language support
 |rileft.txt|	right-to-left editing mode
 |arabic.txt|	Arabic language support and editing
@@ -176,7 +182,6 @@ Interfaces ~
 |if_ole.txt|	OLE automation interface for Win32
 |if_ruby.txt|	Ruby interface
 |debugger.txt|	Interface with a debugger
-|workshop.txt|	Sun Visual Workshop interface
 |netbeans.txt|	NetBeans External Editor interface
 |sign.txt|	debugging signs
 
@@ -192,7 +197,8 @@ Remarks about specific systems ~
 |os_390.txt|	OS/390 Unix
 |os_amiga.txt|	Amiga
 |os_beos.txt|	BeOS and BeBox
-|os_dos.txt|	MS-DOS and MS-Windows NT/95 common items
+|os_dos.txt|	MS-DOS and MS-Windows common items
+|os_haiku.txt|	Haiku
 |os_mac.txt|	Macintosh
 |os_mint.txt|	Atari MiNT
 |os_msdos.txt|	MS-DOS (plain DOS and DOS box under Windows)
@@ -201,7 +207,7 @@ Remarks about specific systems ~
 |os_risc.txt|	RISC-OS
 |os_unix.txt|	Unix
 |os_vms.txt|	VMS
-|os_win32.txt|	MS-Windows 95/98/NT
+|os_win32.txt|	MS-Windows
 						*standard-plugin-list*
 Standard plugins ~
 |pi_getscript.txt| Downloading latest version of Vim scripts

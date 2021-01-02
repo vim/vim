@@ -14,16 +14,16 @@
 #undef NDEBUG
 #include <assert.h>
 
-/* Must include main.c because it contains much more than just main() */
+// Must include main.c because it contains much more than just main()
 #define NO_VIM_MAIN
 #include "main.c"
 
-/* This file has to be included because the tested functions are static */
+// This file has to be included because the tested functions are static
 #include "json.c"
 
 #if defined(FEAT_EVAL)
 /*
- * Test json_find_end() with imcomplete items.
+ * Test json_find_end() with incomplete items.
  */
     static void
 test_decode_find_end(void)
@@ -33,7 +33,7 @@ test_decode_find_end(void)
     reader.js_fill = NULL;
     reader.js_used = 0;
 
-    /* string and incomplete string */
+    // string and incomplete string
     reader.js_buf = (char_u *)"\"hello\"";
     assert(json_find_end(&reader, 0) == OK);
     reader.js_buf = (char_u *)"  \"hello\" ";
@@ -41,13 +41,13 @@ test_decode_find_end(void)
     reader.js_buf = (char_u *)"\"hello";
     assert(json_find_end(&reader, 0) == MAYBE);
 
-    /* number and dash (incomplete number) */
+    // number and dash (incomplete number)
     reader.js_buf = (char_u *)"123";
     assert(json_find_end(&reader, 0) == OK);
     reader.js_buf = (char_u *)"-";
     assert(json_find_end(&reader, 0) == MAYBE);
 
-    /* false, true and null, also incomplete */
+    // false, true and null, also incomplete
     reader.js_buf = (char_u *)"false";
     assert(json_find_end(&reader, 0) == OK);
     reader.js_buf = (char_u *)"f";
@@ -77,7 +77,7 @@ test_decode_find_end(void)
     reader.js_buf = (char_u *)"nul";
     assert(json_find_end(&reader, 0) == MAYBE);
 
-    /* object without white space */
+    // object without white space
     reader.js_buf = (char_u *)"{\"a\":123}";
     assert(json_find_end(&reader, 0) == OK);
     reader.js_buf = (char_u *)"{\"a\":123";
@@ -93,7 +93,7 @@ test_decode_find_end(void)
     reader.js_buf = (char_u *)"{";
     assert(json_find_end(&reader, 0) == MAYBE);
 
-    /* object with white space */
+    // object with white space
     reader.js_buf = (char_u *)"  {  \"a\"  :  123  }  ";
     assert(json_find_end(&reader, 0) == OK);
     reader.js_buf = (char_u *)"  {  \"a\"  :  123  ";
@@ -107,13 +107,13 @@ test_decode_find_end(void)
     reader.js_buf = (char_u *)"  {   ";
     assert(json_find_end(&reader, 0) == MAYBE);
 
-    /* JS object with white space */
+    // JS object with white space
     reader.js_buf = (char_u *)"  {  a  :  123  }  ";
     assert(json_find_end(&reader, JSON_JS) == OK);
     reader.js_buf = (char_u *)"  {  a  :   ";
     assert(json_find_end(&reader, JSON_JS) == MAYBE);
 
-    /* array without white space */
+    // array without white space
     reader.js_buf = (char_u *)"[\"a\",123]";
     assert(json_find_end(&reader, 0) == OK);
     reader.js_buf = (char_u *)"[\"a\",123";
@@ -129,7 +129,7 @@ test_decode_find_end(void)
     reader.js_buf = (char_u *)"[";
     assert(json_find_end(&reader, 0) == MAYBE);
 
-    /* array with white space */
+    // array with white space
     reader.js_buf = (char_u *)"  [  \"a\"  ,  123  ]  ";
     assert(json_find_end(&reader, 0) == OK);
     reader.js_buf = (char_u *)"  [  \"a\"  ,  123  ";

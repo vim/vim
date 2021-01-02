@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 8.1.  Last change: 2018 May 02
+*develop.txt*   For Vim version 8.2.  Last change: 2020 Aug 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -34,8 +34,8 @@ balance must be found between them.
 VIM IS... VI COMPATIBLE					*design-compatible*
 
 First of all, it should be possible to use Vim as a drop-in replacement for
-Vi.  When the user wants to, he can use Vim in compatible mode and hardly
-notice any difference with the original Vi.
+Vi.  When the user wants to, Vim can be used in compatible mode and hardly
+any differences with the original Vi will be noticed.
 
 Exceptions:
 - We don't reproduce obvious Vi bugs in Vim.
@@ -151,7 +151,8 @@ VIM IS... NOT						*design-not*
   A satirical way to say this: "Unlike Emacs, Vim does not attempt to include
   everything but the kitchen sink, but some people say that you can clean one
   with it.  ;-)"
-  To use Vim with gdb see: http://www.agide.org and http://clewn.sf.net.
+  To use Vim with gdb see |terminal-debugger|.  Other (older) tools can be
+  found at http://www.agide.org and http://clewn.sf.net.
 - Vim is not a fancy GUI editor that tries to look nice at the cost of
   being less consistent over all platforms.  But functional GUI features are
   welcomed.
@@ -195,10 +196,14 @@ problems for existing patches.  Only use them for new and changed code.
 
 Comments ~
 
-Traditionally Vim uses /* comments */.  We intend to keep it that way,
-especially for file and function headers.  For new code or lines of code that
-change, it is allowed to use // comments.  Especially when it comes after
-code:
+Traditionally Vim uses /* comments */.  We intend to keep it that way
+for file and function headers and larger blocks of code, E.g.:
+	/*
+	 * The "foo" argument does something useful.
+	 * Return OK or FAIL.
+	 */
+For new code or lines of code that change, it is preferred to use // comments.
+Especially when it comes after code:
 	int some_var;  // single line comment useful here
 
 Enums ~
@@ -278,7 +283,6 @@ wait		don't use as argument to a function, conflicts with types.h
 index		shadows global declaration
 time		shadows global declaration
 new		C++ reserved keyword
-try		Borland C++ doesn't like it to be used as a variable.
 
 clear		Mac curses.h
 echo		Mac curses.h
@@ -355,6 +359,24 @@ OK:	    if (cond)
                cmd;
 	    }
 
+When a block has one line the braces can be left out.  When an if/else has
+braces on one block, it usually looks better when the other block also has
+braces:
+OK:	    if (cond)
+	       cmd;
+	    else
+               cmd;
+
+OK:	    if (cond)
+	    {
+	       cmd;
+	    }
+	    else
+	    {
+               cmd;
+               cmd;
+	    }
+
 Use ANSI (new style) function declarations with the return type on a separate
 indented line.
 
@@ -367,10 +389,10 @@ OK:	/*
 	 */
 	    int
 	function_name(
-	    int		arg1,		/* short comment about arg1 */
-	    int		arg2)		/* short comment about arg2 */
+	    int		arg1,		// short comment about arg1
+	    int		arg2)		// short comment about arg2
 	{
-	    int		local;		/* comment about local */
+	    int		local;		// comment about local
 
 	    local = arg1 * arg2;
 
@@ -451,7 +473,7 @@ available spell checking libraries and programs.  Unfortunately, the result
 was that none of them provided sufficient capabilities to be used as the spell
 checking engine in Vim, for various reasons:
 
-- Missing support for multi-byte encodings.  At least UTF-8 must be supported,
+- Missing support for multibyte encodings.  At least UTF-8 must be supported,
   so that more than one language can be used in the same file.
   Doing on-the-fly conversion is not always possible (would require iconv
   support).
@@ -512,7 +534,7 @@ the best method is.  Alternatives:
    memory use, but takes a long time.  On a fast PC it takes a couple of
    seconds for English, which can be acceptable for interactive use.  But for
    some languages it takes more than ten seconds (e.g., German, Catalan),
-   which is unacceptable slow.  For batch processing (automatic corrections)
+   which is unacceptably slow.  For batch processing (automatic corrections)
    it's too slow for all languages.
 2. Use a trie for the soundfolded words, so that searching can be done just
    like how it works without soundfolding.  This requires remembering a list

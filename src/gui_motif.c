@@ -34,9 +34,12 @@
 #include <X11/Xatom.h>
 #include <X11/StringDefs.h>
 #include <X11/Intrinsic.h>
-
 #ifdef HAVE_X11_XPM_H
-# include <X11/xpm.h>
+# if defined(VMS)
+#  include <xpm.h>
+# else
+#  include <X11/xpm.h>
+# endif
 #else
 # ifdef HAVE_XM_XPMP_H
 #  include <Xm/XpmP.h>
@@ -46,7 +49,7 @@
 # include <Xm/Notebook.h>
 #endif
 
-#include "gui_xmebw.h"	/* for our Enhanced Button Widget */
+#include "gui_xmebw.h"	// for our Enhanced Button Widget
 
 #if defined(FEAT_GUI_DIALOG) && defined(HAVE_XPM)
 # include "../pixmaps/alert.xpm"
@@ -77,7 +80,7 @@ static Widget footer;
 #endif
 #ifdef FEAT_MENU
 # if (XmVersion >= 1002)
-/* remember the last set value for the tearoff item */
+// remember the last set value for the tearoff item
 static int tearoff_val = (int)XmTEAR_OFF_ENABLED;
 # endif
 static Widget menuBar;
@@ -175,10 +178,10 @@ tabline_scroller_clicked(
 	XtVaGetValues(tab_scroll_w, XmNx, &pos_x, XmNy, &pos_y, XmNwidth,
 		      &width, XmNheight, &height, NULL);
 	if (pos_x >= 0) {
-	    /* Tab scroller (next) is visible */
+	    // Tab scroller (next) is visible
 	    if ((event->x >= pos_x) && (event->x <= pos_x + width) &&
 		(event->y >= pos_y) && (event->y <= pos_y + height)) {
-		/* Clicked on the scroller */
+		// Clicked on the scroller
 		return TRUE;
 	    }
 	}
@@ -235,7 +238,7 @@ tabline_menu_cb(
     if (event->button != Button3)
 	return;
 
-    /* When ignoring events don't show the menu. */
+    // When ignoring events don't show the menu.
     if (hold_gui_events
 # ifdef FEAT_CMDWIN
 	    || cmdwin_type != 0
@@ -246,7 +249,7 @@ tabline_menu_cb(
     if (event->subwindow != None)
     {
 	tab_w = XtWindowToWidget(XtDisplay(w), event->subwindow);
-	/* LINTED: avoid warning: dubious operation on enum */
+	// LINTED: avoid warning: dubious operation on enum
 	if (tab_w != (Widget)0 && XmIsPushButton(tab_w))
 	    XtVaGetValues(tab_w, XmNpageNumber, &tab_idx, NULL);
     }
@@ -313,7 +316,7 @@ label_expose(Widget _w, XEvent *_event, Region _region)
 
 	_XmFontListGetDefaultFont(lw->label.font, &fs);
 
-	/* FIXME: we should be doing the whole drawing ourself here. */
+	// FIXME: we should be doing the whole drawing ourself here.
 	insensitiveGC = lw->label.insensitive_GC;
 
 	mask = GCForeground | GCBackground | GCGraphicsExposures;
@@ -404,7 +407,7 @@ gui_x11_create_widgets(void)
     XmRepTypeInstallTearOffModelConverter();
 #endif
 
-    /* Make sure the "Quit" menu entry of the window manager is ignored */
+    // Make sure the "Quit" menu entry of the window manager is ignored
     XtVaSetValues(vimShell, XmNdeleteResponse, XmDO_NOTHING, NULL);
 
     vimForm = XtVaCreateManagedWidget("vimForm",
@@ -420,7 +423,7 @@ gui_x11_create_widgets(void)
 
 #ifdef FEAT_MENU
     {
-	Arg al[7]; /* Make sure there is enough room for arguments! */
+	Arg al[7]; // Make sure there is enough room for arguments!
 	int ac = 0;
 
 # if (XmVersion >= 1002)
@@ -430,14 +433,14 @@ gui_x11_create_widgets(void)
 	XtSetArg(al[ac], XmNtopAttachment,   XmATTACH_FORM); ac++;
 	XtSetArg(al[ac], XmNrightAttachment, XmATTACH_FORM); ac++;
 # ifndef FEAT_TOOLBAR
-	/* Always stick to right hand side. */
+	// Always stick to right hand side.
 	XtSetArg(al[ac], XmNrightOffset, 0); ac++;
 # endif
 	XtSetArg(al[ac], XmNmarginHeight, 0); ac++;
 	menuBar = XmCreateMenuBar(vimForm, "menuBar", al, ac);
 	XtManageChild(menuBar);
 
-	/* Remember the default colors, needed for ":hi clear". */
+	// Remember the default colors, needed for ":hi clear".
 	XtVaGetValues(menuBar,
 	    XmNbackground, &gui.menu_def_bg_pixel,
 	    XmNforeground, &gui.menu_def_fg_pixel,
@@ -480,7 +483,7 @@ gui_x11_create_widgets(void)
 #endif
 
 #ifdef FEAT_GUI_TABLINE
-    /* Create the Vim GUI tabline */
+    // Create the Vim GUI tabline
     n = 0;
     XtSetArg(args[n], XmNbindingType, XmNONE); n++;
     XtSetArg(args[n], XmNorientation, XmVERTICAL); n++;
@@ -600,7 +603,7 @@ gui_x11_create_widgets(void)
      */
     gui_x11_callbacks(textArea, vimForm);
 
-    /* Pretend we don't have input focus, we will get an event if we do. */
+    // Pretend we don't have input focus, we will get an event if we do.
     gui.in_focus = FALSE;
 }
 
@@ -624,7 +627,7 @@ gui_mch_set_text_area_pos(
     int	    h UNUSED)
 {
 #ifdef FEAT_TOOLBAR
-    /* Give keyboard focus to the textArea instead of the toolbar. */
+    // Give keyboard focus to the textArea instead of the toolbar.
     reset_focus();
 #endif
 }
@@ -656,19 +659,19 @@ manage_centered(Widget dialog_child)
     int x, y, win_x, win_y, maxX, maxY;
     Boolean mappedWhenManaged;
 
-    /* Temporarily set value of XmNmappedWhenManaged
-       to stop the dialog from popping up right away */
+    // Temporarily set value of XmNmappedWhenManaged
+    // to stop the dialog from popping up right away
     XtVaGetValues(shell, XmNmappedWhenManaged, &mappedWhenManaged, NULL);
     XtVaSetValues(shell, XmNmappedWhenManaged, False, NULL);
 
     XtManageChild(dialog_child);
 
-    /* Get the pointer position (x, y) */
+    // Get the pointer position (x, y)
     XQueryPointer(XtDisplay(shell), XtWindow(shell), &root, &child,
 		  &x, &y, &win_x, &win_y, &mask);
 
-    /* Translate the pointer position (x, y) into a position for the new
-       window that will place the pointer at its center */
+    // Translate the pointer position (x, y) into a position for the new
+    // window that will place the pointer at its center
     XGetGeometry(XtDisplay(shell), XtWindow(shell), &root, &win_x, &win_y,
 		 &width, &height, &border_width, &depth);
     width += 2 * border_width;
@@ -676,7 +679,7 @@ manage_centered(Widget dialog_child)
     x -= width / 2;
     y -= height / 2;
 
-    /* Ensure that the dialog remains on screen */
+    // Ensure that the dialog remains on screen
     maxX = XtScreen(shell)->width - width;
     maxY = XtScreen(shell)->height - height;
     if (x < 0)
@@ -688,18 +691,17 @@ manage_centered(Widget dialog_child)
     if (y > maxY)
 	y = maxY;
 
-    /* Set desired window position in the DialogShell */
+    // Set desired window position in the DialogShell
     XtVaSetValues(shell, XmNx, x, XmNy, y, NULL);
 
-    /* Map the widget */
+    // Map the widget
     XtMapWidget(shell);
 
-    /* Restore the value of XmNmappedWhenManaged */
+    // Restore the value of XmNmappedWhenManaged
     XtVaSetValues(shell, XmNmappedWhenManaged, mappedWhenManaged, NULL);
 }
 
-#if defined(FEAT_MENU) || defined(FEAT_SUN_WORKSHOP) \
-	|| defined(FEAT_GUI_DIALOG) || defined(PROTO)
+#if defined(FEAT_MENU) || defined(FEAT_GUI_DIALOG) || defined(PROTO)
 
 /*
  * Encapsulate the way an XmFontList is created.
@@ -710,10 +712,10 @@ gui_motif_create_fontlist(XFontStruct *font)
     XmFontList font_list;
 
 # if (XmVersion <= 1001)
-    /* Motif 1.1 method */
+    // Motif 1.1 method
     font_list = XmFontListCreate(font, STRING_TAG);
 # else
-    /* Motif 1.2 method */
+    // Motif 1.2 method
     XmFontListEntry font_list_entry;
 
     font_list_entry = XmFontListEntryCreate(STRING_TAG, XmFONT_IS_FONT,
@@ -730,7 +732,7 @@ gui_motif_fontset2fontlist(XFontSet *fontset)
 {
     XmFontList font_list;
 
-    /* Motif 1.2 method */
+    // Motif 1.2 method
     XmFontListEntry font_list_entry;
 
     font_list_entry = XmFontListEntryCreate(STRING_TAG,
@@ -768,7 +770,7 @@ gui_mch_enable_menu(int flag)
 #ifdef FEAT_TOOLBAR
 	if (XtIsManaged(XtParent(toolBar)))
 	{
-	    /* toolBar is attached to top form */
+	    // toolBar is attached to top form
 	    XtVaSetValues(XtParent(toolBar),
 		XmNtopAttachment, XmATTACH_WIDGET,
 		XmNtopWidget, menuBar,
@@ -887,7 +889,7 @@ do_set_mnemonics(int enable)
 {
     vimmenu_T	*menu;
 
-    for (menu = root_menu; menu != NULL; menu = menu->next)
+    FOR_ALL_MENUS(menu)
 	if (menu->id != (Widget)0)
 	    XtVaSetValues(menu->id,
 		    XmNmnemonic, enable ? menu->mnemonic : NUL,
@@ -907,8 +909,8 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
 	Arg arg[2];
 	int n = 0;
 
-	/* Only create the popup menu when it's actually used, otherwise there
-	 * is a delay when using the right mouse button. */
+	// Only create the popup menu when it's actually used, otherwise there
+	// is a delay when using the right mouse button.
 # if (XmVersion <= 1002)
 	if (mouse_model_popup())
 # endif
@@ -942,7 +944,7 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
 	    XmNlabelString, label,
 	    XmNmnemonic, p_wak[0] == 'n' ? NUL : menu->mnemonic,
 #if (XmVersion >= 1002)
-	    /* submenu: count the tearoff item (needed for LessTif) */
+	    // submenu: count the tearoff item (needed for LessTif)
 	    XmNpositionIndex, idx + (parent != NULL
 			   && tearoff_val == (int)XmTEAR_OFF_ENABLED ? 1 : 0),
 #endif
@@ -951,10 +953,10 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
     gui_motif_menu_fontlist(menu->id);
     XmStringFree(label);
 
-    if (menu->id == (Widget)0)		/* failed */
+    if (menu->id == (Widget)0)		// failed
 	return;
 
-    /* add accelerator text */
+    // add accelerator text
     gui_motif_add_actext(menu);
 
     shell = XtVaCreateWidget("subMenuShell",
@@ -969,11 +971,11 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
 	NULL);
     gui_motif_menu_colors(menu->submenu_id);
 
-    if (menu->submenu_id == (Widget)0)		/* failed */
+    if (menu->submenu_id == (Widget)0)		// failed
 	return;
 
 #if (XmVersion >= 1002)
-    /* Set the colors for the tear off widget */
+    // Set the colors for the tear off widget
     toggle_tearoff(menu->submenu_id);
 #endif
 
@@ -1007,7 +1009,7 @@ gui_motif_add_actext(vimmenu_T *menu)
 {
     XmString	label;
 
-    /* Add accelerator text, if there is one */
+    // Add accelerator text, if there is one
     if (menu->actext != NULL && menu->id != (Widget)0)
     {
 	label = XmStringCreate((char *)menu->actext, STRING_TAG);
@@ -1079,12 +1081,12 @@ gui_mch_text_area_extra_height(void)
  */
     void
 gui_mch_compute_menu_height(
-    Widget	id)		    /* can be NULL when deleting menu */
+    Widget	id)		    // can be NULL when deleting menu
 {
     Dimension	y, maxy;
     Dimension	margin, shadow;
     vimmenu_T	*mp;
-    static Dimension	height = 21;	/* normal height of a menu item */
+    static Dimension	height = 21;	// normal height of a menu item
 
     /*
      * Get the height of the new item, before managing it, because it will
@@ -1094,9 +1096,9 @@ gui_mch_compute_menu_height(
     if (id != (Widget)0)
 	XtVaGetValues(id, XmNheight, &height, NULL);
 
-    /* Find any menu Widget, to be able to call XtManageChild() */
+    // Find any menu Widget, to be able to call XtManageChild()
     else
-	for (mp = root_menu; mp != NULL; mp = mp->next)
+	FOR_ALL_MENUS(mp)
 	    if (mp->id != (Widget)0 && menu_is_menubar(mp->name))
 	    {
 		id = mp->id;
@@ -1114,7 +1116,7 @@ gui_mch_compute_menu_height(
      * Now find the menu item that is the furthest down, and get its position.
      */
     maxy = 0;
-    for (mp = root_menu; mp != NULL; mp = mp->next)
+    FOR_ALL_MENUS(mp)
     {
 	if (mp->id != (Widget)0 && menu_is_menubar(mp->name))
 	{
@@ -1141,9 +1143,9 @@ gui_mch_compute_menu_height(
      */
     gui.menu_height = maxy + height - 2 * shadow + 2 * margin + 4;
 
-    /* Somehow the menu bar doesn't resize automatically.  Set it here,
-     * even though this is a catch 22.  Don't do this when starting up,
-     * somehow the menu gets very high then. */
+    // Somehow the menu bar doesn't resize automatically.  Set it here,
+    // even though this is a catch 22.  Don't do this when starting up,
+    // somehow the menu gets very high then.
     if (gui.shell_created)
 	XtVaSetValues(menuBar, XmNheight, gui.menu_height, NULL);
 }
@@ -1170,7 +1172,7 @@ check_xpm(char_u *path)
 
     attrs.valuemask = 0;
 
-    /* Create the "sensitive" pixmap */
+    // Create the "sensitive" pixmap
     status = XpmReadFileToPixmap(gui.dpy,
 	    RootWindow(gui.dpy, DefaultScreen(gui.dpy)),
 	    (char *)path, &map, &mask, &attrs);
@@ -1191,20 +1193,20 @@ check_xpm(char_u *path)
     static char **
 get_toolbar_pixmap(vimmenu_T *menu, char **fname)
 {
-    char_u	buf[MAXPATHL];		/* buffer storing expanded pathname */
-    char	**xpm = NULL;		/* xpm array */
+    char_u	buf[MAXPATHL];		// buffer storing expanded pathname
+    char	**xpm = NULL;		// xpm array
     int		res;
 
     *fname = NULL;
-    buf[0] = NUL;			/* start with NULL path */
+    buf[0] = NUL;			// start with NULL path
 
     if (menu->iconfile != NULL)
     {
-	/* Use the "icon="  argument. */
+	// Use the "icon="  argument.
 	gui_find_iconfile(menu->iconfile, buf, "xpm");
 	res = check_xpm(buf);
 
-	/* If it failed, try using the menu name. */
+	// If it failed, try using the menu name.
 	if (res == FAIL && gui_find_bitmap(menu->name, buf, "xpm") == OK)
 	    res = check_xpm(buf);
 	if (res == OK)
@@ -1249,7 +1251,7 @@ add_pixmap_args(vimmenu_T *menu, Arg *args, int n)
     }
     return n;
 }
-#endif /* FEAT_TOOLBAR */
+#endif // FEAT_TOOLBAR
 
     void
 gui_mch_add_menu_item(vimmenu_T *menu, int idx)
@@ -1262,7 +1264,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 # endif
 
 # if (XmVersion <= 1002)
-    /* Don't add Popup menu items when the popup menu isn't used. */
+    // Don't add Popup menu items when the popup menu isn't used.
     if (menu_is_child_of_popup(menu) && !mouse_model_popup())
 	return;
 # endif
@@ -1271,7 +1273,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
     if (menu_is_toolbar(parent->name))
     {
 	WidgetClass	type;
-	XmString	xms = NULL;    /* fallback label if pixmap not found */
+	XmString	xms = NULL;    // fallback label if pixmap not found
 	int		n;
 	Arg		args[18];
 
@@ -1299,17 +1301,16 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 	}
 	else
 	{
-	    /* Without shadows one can't sense whatever the button has been
-	     * pressed or not! However we want to save a bit of space...
-	     * Need the highlightThickness to see the focus.
-	     */
+	    // Without shadows one can't sense whatever the button has been
+	    // pressed or not! However we want to save a bit of space...
+	    // Need the highlightThickness to see the focus.
 	    XtSetArg(args[n], XmNhighlightThickness, 1); n++;
 	    XtSetArg(args[n], XmNhighlightOnEnter, True); n++;
 	    XtSetArg(args[n], XmNmarginWidth, 0); n++;
 	    XtSetArg(args[n], XmNmarginHeight, 0); n++;
 	    XtSetArg(args[n], XmNtraversalOn, False); n++;
-	    /* Set the label here, so that we can switch between icons/text
-	     * by changing the XmNlabelType resource. */
+	    // Set the label here, so that we can switch between icons/text
+	    // by changing the XmNlabelType resource.
 	    xms = XmStringCreate((char *)menu->dname, STRING_TAG);
 	    XtSetArg(args[n], XmNlabelString, xms); n++;
 
@@ -1346,28 +1347,28 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 
 	menu->parent = parent;
 	menu->submenu_id = NULL;
-	/* When adding first item to toolbar it might have to be enabled .*/
+	// When adding first item to toolbar it might have to be enabled .
 	if (!XtIsManaged(XtParent(toolBar))
 		    && vim_strchr(p_go, GO_TOOLBAR) != NULL)
 	    gui_mch_show_toolbar(TRUE);
 	gui.toolbar_height = gui_mch_compute_toolbar_height();
 	return;
-    } /* toolbar menu item */
+    } // toolbar menu item
 # endif
 
-    /* No parent, must be a non-menubar menu */
+    // No parent, must be a non-menubar menu
     if (parent->submenu_id == (Widget)0)
 	return;
 
     menu->submenu_id = (Widget)0;
 
-    /* Add menu separator */
+    // Add menu separator
     if (menu_is_separator(menu->name))
     {
 	menu->id = XtVaCreateWidget("subMenu",
 		xmSeparatorGadgetClass, parent->submenu_id,
 #if (XmVersion >= 1002)
-		/* count the tearoff item (needed for LessTif) */
+		// count the tearoff item (needed for LessTif)
 		XmNpositionIndex, idx + (tearoff_val == (int)XmTEAR_OFF_ENABLED
 								     ? 1 : 0),
 #endif
@@ -1384,7 +1385,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 	XmNlabelString, label,
 	XmNmnemonic, menu->mnemonic,
 #if (XmVersion >= 1002)
-	/* count the tearoff item (needed for LessTif) */
+	// count the tearoff item (needed for LessTif)
 	XmNpositionIndex, idx + (tearoff_val == (int)XmTEAR_OFF_ENABLED
 								     ? 1 : 0),
 #endif
@@ -1397,7 +1398,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
     {
 	XtAddCallback(menu->id, XmNactivateCallback, gui_x11_menu_cb,
 		(XtPointer)menu);
-	/* add accelerator text */
+	// add accelerator text
 	gui_motif_add_actext(menu);
     }
 }
@@ -1414,7 +1415,7 @@ gui_motif_update_mousemodel(vimmenu_T *menu)
 {
     int		idx = 0;
 
-    /* When GUI hasn't started the menus have not been created. */
+    // When GUI hasn't started the menus have not been created.
     if (!gui.in_use)
       return;
 
@@ -1426,13 +1427,13 @@ gui_motif_update_mousemodel(vimmenu_T *menu)
 	  {
 	      if (mouse_model_popup())
 	      {
-		  /* Popup menu will be used.  Create the popup menus. */
+		  // Popup menu will be used.  Create the popup menus.
 		  gui_mch_add_menu(menu, idx);
 		  gui_motif_update_mousemodel(menu->children);
 	      }
 	      else
 	      {
-		  /* Popup menu will not be used.  Destroy the popup menus. */
+		  // Popup menu will not be used.  Destroy the popup menus.
 		  gui_motif_update_mousemodel(menu->children);
 		  gui_mch_destroy_menu(menu);
 	      }
@@ -1524,7 +1525,7 @@ gui_mch_new_tooltip_colors(void)
     static void
 submenu_change(
     vimmenu_T	*menu,
-    int		colors)		/* TRUE for colors, FALSE for font */
+    int		colors)		// TRUE for colors, FALSE for font
 {
     vimmenu_T	*mp;
 
@@ -1536,8 +1537,8 @@ submenu_change(
 	    {
 		gui_motif_menu_colors(mp->id);
 #ifdef FEAT_TOOLBAR
-		/* For a toolbar item: Free the pixmap and allocate a new one,
-		 * so that the background color is right. */
+		// For a toolbar item: Free the pixmap and allocate a new one,
+		// so that the background color is right.
 		if (mp->xpm != NULL)
 		{
 		    int		n = 0;
@@ -1547,7 +1548,7 @@ submenu_change(
 		    XtSetValues(mp->id, args, n);
 		}
 # ifdef FEAT_BEVAL_GUI
-		/* If we have a tooltip, then we need to change its font */
+		// If we have a tooltip, then we need to change its font
 		if (mp->tip != NULL)
 		{
 		    Arg args[2];
@@ -1565,7 +1566,7 @@ submenu_change(
 	    {
 		gui_motif_menu_fontlist(mp->id);
 #ifdef FEAT_BEVAL_GUI
-		/* If we have a tooltip, then we need to change its font */
+		// If we have a tooltip, then we need to change its font
 		if (mp->tip != NULL)
 		{
 		    Arg args[1];
@@ -1582,7 +1583,7 @@ submenu_change(
 	if (mp->children != NULL)
 	{
 #if (XmVersion >= 1002)
-	    /* Set the colors/font for the tear off widget */
+	    // Set the colors/font for the tear off widget
 	    if (mp->submenu_id != (Widget)0)
 	    {
 		if (colors)
@@ -1592,7 +1593,7 @@ submenu_change(
 		toggle_tearoff(mp->submenu_id);
 	    }
 #endif
-	    /* Set the colors for the children */
+	    // Set the colors for the children
 	    submenu_change(mp->children, colors);
 	}
     }
@@ -1604,13 +1605,12 @@ submenu_change(
     void
 gui_mch_destroy_menu(vimmenu_T *menu)
 {
-    /* Please be sure to destroy the parent widget first (i.e. menu->id).
-     * On the other hand, problems have been reported that the submenu must be
-     * deleted first...
-     *
-     * This code should be basically identical to that in the file gui_athena.c
-     * because they are both Xt based.
-     */
+    // Please be sure to destroy the parent widget first (i.e. menu->id).
+    // On the other hand, problems have been reported that the submenu must be
+    // deleted first...
+    //
+    // This code should be basically identical to that in the file gui_athena.c
+    // because they are both Xt based.
     if (menu->submenu_id != (Widget)0)
     {
 	XtDestroyWidget(menu->submenu_id);
@@ -1625,15 +1625,14 @@ gui_mch_destroy_menu(vimmenu_T *menu)
 #if defined(FEAT_TOOLBAR) && defined(FEAT_BEVAL_GUI)
 	if (parent == toolBar && menu->tip != NULL)
 	{
-	    /* We try to destroy this before the actual menu, because there are
-	     * callbacks, etc. that will be unregistered during the tooltip
-	     * destruction.
-	     *
-	     * If you call "gui_mch_destroy_beval_area()" after destroying
-	     * menu->id, then the tooltip's window will have already been
-	     * deallocated by Xt, and unknown behaviour will ensue (probably
-	     * a core dump).
-	     */
+	    // We try to destroy this before the actual menu, because there are
+	    // callbacks, etc. that will be unregistered during the tooltip
+	    // destruction.
+	    //
+	    // If you call "gui_mch_destroy_beval_area()" after destroying
+	    // menu->id, then the tooltip's window will have already been
+	    // deallocated by Xt, and unknown behaviour will ensue (probably
+	    // a core dump).
 	    gui_mch_destroy_beval_area(menu->tip);
 	    menu->tip = NULL;
 	}
@@ -1647,7 +1646,7 @@ gui_mch_destroy_menu(vimmenu_T *menu)
 	{
 	    Cardinal    num_children;
 
-	    /* When removing last toolbar item, don't display the toolbar. */
+	    // When removing last toolbar item, don't display the toolbar.
 	    XtVaGetValues(toolBar, XmNnumChildren, &num_children, NULL);
 	    if (num_children == 0)
 		gui_mch_show_toolbar(FALSE);
@@ -1667,7 +1666,7 @@ gui_mch_show_popupmenu(vimmenu_T *menu UNUSED)
 #endif
 }
 
-#endif /* FEAT_MENU */
+#endif // FEAT_MENU
 
 /*
  * Set the menu and scrollbar colors to their default values.
@@ -1677,8 +1676,8 @@ gui_mch_def_colors(void)
 {
     if (gui.in_use)
     {
-	/* Use the values saved when starting up.  These should come from the
-	 * window manager or a resources file. */
+	// Use the values saved when starting up.  These should come from the
+	// window manager or a resources file.
 	gui.menu_fg_pixel = gui.menu_def_fg_pixel;
 	gui.menu_bg_pixel = gui.menu_def_bg_pixel;
 	gui.scroll_fg_pixel = gui.scroll_def_fg_pixel;
@@ -1709,7 +1708,7 @@ gui_mch_set_scrollbar_thumb(
 		  XmNvalue, val,
 		  XmNsliderSize, size,
 		  XmNpageIncrement, (size > 2 ? size - 2 : 1),
-		  XmNmaximum, max + 1,	    /* Motif has max one past the end */
+		  XmNmaximum, max + 1,	    // Motif has max one past the end
 		  NULL);
 }
 
@@ -1747,6 +1746,22 @@ gui_mch_set_scrollbar_pos(
     }
 }
 
+    int
+gui_mch_get_scrollbar_xpadding(void)
+{
+    // TODO: Calculate the padding for adjust scrollbar position when the
+    // Window is maximized.
+    return 0;
+}
+
+    int
+gui_mch_get_scrollbar_ypadding(void)
+{
+    // TODO: Calculate the padding for adjust scrollbar position when the
+    // Window is maximized.
+    return 0;
+}
+
     void
 gui_mch_enable_scrollbar(scrollbar_T *sb, int flag)
 {
@@ -1779,8 +1794,8 @@ gui_mch_enable_scrollbar(scrollbar_T *sb, int flag)
 	{
 	    if (!gui.which_scrollbars[sb->type])
 	    {
-		/* The scrollbars of this type are all disabled, adjust the
-		 * textArea attachment offset. */
+		// The scrollbars of this type are all disabled, adjust the
+		// textArea attachment offset.
 		switch (sb->type)
 		{
 		    case SBAR_LEFT:
@@ -1805,7 +1820,7 @@ gui_mch_enable_scrollbar(scrollbar_T *sb, int flag)
     void
 gui_mch_create_scrollbar(
     scrollbar_T *sb,
-    int		orient)	/* SBAR_VERT or SBAR_HORIZ */
+    int		orient)	// SBAR_VERT or SBAR_HORIZ
 {
     Arg		args[16];
     int		n;
@@ -1839,7 +1854,7 @@ gui_mch_create_scrollbar(
     sb->id = XtCreateWidget("scrollBar",
 	    xmScrollBarWidgetClass, textAreaForm, args, n);
 
-    /* Remember the default colors, needed for ":hi clear". */
+    // Remember the default colors, needed for ":hi clear".
     if (gui.scroll_def_bg_pixel == (guicolor_T)0
 	    && gui.scroll_def_fg_pixel == (guicolor_T)0)
 	XtVaGetValues(sb->id,
@@ -1891,7 +1906,7 @@ gui_mch_set_scrollbar_colors(scrollbar_T *sb)
 		    NULL);
     }
 
-    /* This is needed for the rectangle below the vertical scrollbars. */
+    // This is needed for the rectangle below the vertical scrollbars.
     if (sb == &gui.bottom_sbar && textAreaForm != (Widget)0)
 	gui_motif_scroll_colors(textAreaForm);
 }
@@ -1963,7 +1978,7 @@ do_mnemonic(Widget w, unsigned int keycode)
 
 		    XmProcessTraversal(w, XmTRAVERSE_CURRENT);
 
-		    vim_memset((char *) &keyEvent, 0, sizeof(XKeyPressedEvent));
+		    CLEAR_FIELD(keyEvent);
 		    keyEvent.type = KeyPress;
 		    keyEvent.serial = 1;
 		    keyEvent.send_event = True;
@@ -2086,8 +2101,8 @@ set_fontlist(Widget id)
 	    {
 		XtUnmanageChild(id);
 		XtVaSetValues(id, XmNfontList, fl, NULL);
-		/* We should force the widget to recalculate its
-		 * geometry now. */
+		// We should force the widget to recalculate its
+		// geometry now.
 		XtManageChild(id);
 	    }
 	    else
@@ -2105,8 +2120,8 @@ set_fontlist(Widget id)
 	    {
 		XtUnmanageChild(id);
 		XtVaSetValues(id, XmNfontList, fl, NULL);
-		/* We should force the widget to recalculate its
-		 * geometry now. */
+		// We should force the widget to recalculate its
+		// geometry now.
 		XtManageChild(id);
 	    }
 	    else
@@ -2129,14 +2144,14 @@ set_fontlist(Widget id)
 
 typedef struct dialog_callback_arg
 {
-    char *  args;   /* not used right now */
+    char *  args;   // not used right now
     int	    id;
 } dcbarg_T;
 
 static Widget dialog_wgt;
 static char *browse_fname = NULL;
 static XmStringCharSet charset = (XmStringCharSet) XmSTRING_DEFAULT_CHARSET;
-				/* used to set up XmStrings */
+				// used to set up XmStrings
 
 static void DialogCancelCB(Widget, XtPointer, XtPointer);
 static void DialogAcceptCB(Widget, XtPointer, XtPointer);
@@ -2212,22 +2227,21 @@ set_predefined_fontlist(Widget parent, String name)
  */
     char_u *
 gui_mch_browse(
-    int		saving UNUSED,	/* select file to write */
-    char_u	*title,		/* title for the window */
-    char_u	*dflt,		/* default name */
-    char_u	*ext UNUSED,	/* not used (extension added) */
-    char_u	*initdir,	/* initial directory, NULL for current dir */
-    char_u	*filter)	/* file name filter */
+    int		saving UNUSED,	// select file to write
+    char_u	*title,		// title for the window
+    char_u	*dflt,		// default name
+    char_u	*ext UNUSED,	// not used (extension added)
+    char_u	*initdir,	// initial directory, NULL for current dir
+    char_u	*filter)	// file name filter
 {
     char_u	dirbuf[MAXPATHL];
     char_u	dfltbuf[MAXPATHL];
     char_u	*pattern;
     char_u	*tofree = NULL;
 
-    /* There a difference between the resource name and value, Therefore, we
-     * avoid to (ab-)use the (maybe internationalized!) dialog title as a
-     * dialog name.
-     */
+    // There a difference between the resource name and value, Therefore, we
+    // avoid to (ab-)use the (maybe internationalized!) dialog title as a
+    // dialog name.
 
     dialog_wgt = XmCreateFileSelectionDialog(vimShell, "browseDialog", NULL, 0);
 
@@ -2241,16 +2255,16 @@ gui_mch_browse(
 	dflt = (char_u *)"";
     else if (STRLEN(initdir) + STRLEN(dflt) + 2 < MAXPATHL)
     {
-	/* The default selection should be the full path, "dflt" is only the
-	 * file name. */
+	// The default selection should be the full path, "dflt" is only the
+	// file name.
 	STRCPY(dfltbuf, initdir);
 	add_pathsep(dfltbuf);
 	STRCAT(dfltbuf, dflt);
 	dflt = dfltbuf;
     }
 
-    /* Can only use one pattern for a file name.  Get the first pattern out of
-     * the filter.  An empty pattern means everything matches. */
+    // Can only use one pattern for a file name.  Get the first pattern out of
+    // the filter.  An empty pattern means everything matches.
     if (filter == NULL)
 	pattern = (char_u *)"";
     else
@@ -2260,9 +2274,9 @@ gui_mch_browse(
 	s = filter;
 	for (p = filter; *p != NUL; ++p)
 	{
-	    if (*p == '\t')	/* end of description, start of pattern */
+	    if (*p == '\t')	// end of description, start of pattern
 		s = p + 1;
-	    if (*p == ';' || *p == '\n')	/* end of (first) pattern */
+	    if (*p == ';' || *p == '\n')	// end of (first) pattern
 		break;
 	}
 	pattern = vim_strnsave(s, p - s);
@@ -2291,9 +2305,8 @@ gui_mch_browse(
     set_predefined_label(dialog_wgt, "OK", _("&OK"));
     set_predefined_label(dialog_wgt, "Selection", _("Selection"));
 
-    /* This is to save us from silly external settings using not fixed with
-     * fonts for file selection.
-     */
+    // This is to save us from silly external settings using not fixed with
+    // fonts for file selection.
     set_predefined_fontlist(dialog_wgt, "DirListSW.DirList");
     set_predefined_fontlist(dialog_wgt, "ItemsListSW.ItemsList");
 
@@ -2303,14 +2316,14 @@ gui_mch_browse(
 
     XtAddCallback(dialog_wgt, XmNokCallback, DialogAcceptCB, (XtPointer)0);
     XtAddCallback(dialog_wgt, XmNcancelCallback, DialogCancelCB, (XtPointer)0);
-    /* We have no help in this window, so hide help button */
+    // We have no help in this window, so hide help button
     XtUnmanageChild(XmFileSelectionBoxGetChild(dialog_wgt,
 					(unsigned char)XmDIALOG_HELP_BUTTON));
 
     manage_centered(dialog_wgt);
     activate_dialog_mnemonics(dialog_wgt);
 
-    /* sit in a loop until the dialog box has gone away */
+    // sit in a loop until the dialog box has gone away
     do
     {
 	XtAppProcessEvent(XtWidgetToApplicationContext(dialog_wgt),
@@ -2337,9 +2350,9 @@ gui_mch_browse(
  */
     static void
 DialogCancelCB(
-    Widget	w UNUSED,		/*  widget id		*/
-    XtPointer	client_data UNUSED,	/*  data from application   */
-    XtPointer	call_data UNUSED)	/*  data from widget class  */
+    Widget	w UNUSED,		//  widget id
+    XtPointer	client_data UNUSED,	//  data from application
+    XtPointer	call_data UNUSED)	//  data from widget class
 {
     if (browse_fname != NULL)
     {
@@ -2354,9 +2367,9 @@ DialogCancelCB(
  */
     static void
 DialogAcceptCB(
-    Widget	w UNUSED,		/*  widget id		*/
-    XtPointer	client_data UNUSED,	/*  data from application   */
-    XtPointer	call_data)		/*  data from widget class  */
+    Widget	w UNUSED,		//  widget id
+    XtPointer	client_data UNUSED,	//  data from application
+    XtPointer	call_data)		//  data from widget class
 {
     XmFileSelectionBoxCallbackStruct *fcb;
 
@@ -2367,14 +2380,14 @@ DialogAcceptCB(
     }
     fcb = (XmFileSelectionBoxCallbackStruct *)call_data;
 
-    /* get the filename from the file selection box */
+    // get the filename from the file selection box
     XmStringGetLtoR(fcb->value, charset, &browse_fname);
 
-    /* popdown the file selection box */
+    // popdown the file selection box
     XtUnmanageChild(dialog_wgt);
 }
 
-#endif /* FEAT_BROWSE */
+#endif // FEAT_BROWSE
 
 #if defined(FEAT_GUI_DIALOG) || defined(PROTO)
 
@@ -2487,7 +2500,7 @@ gui_mch_dialog(
     char_u	*message,
     char_u	*button_names,
     int		dfltbutton,
-    char_u	*textfield,		/* buffer of size IOSIZE */
+    char_u	*textfield,		// buffer of size IOSIZE
     int		ex_cmd UNUSED)
 {
     char_u		*buts;
@@ -2513,15 +2526,15 @@ gui_mch_dialog(
     if (title == NULL)
 	title = (char_u *)_("Vim dialog");
 
-    /* if our pointer is currently hidden, then we should show it. */
+    // if our pointer is currently hidden, then we should show it.
     gui_mch_mousehide(FALSE);
 
     dialogform = XmCreateFormDialog(vimShell, (char *)"dialog", NULL, 0);
 
-    /* Check 'v' flag in 'guioptions': vertical button placement. */
+    // Check 'v' flag in 'guioptions': vertical button placement.
     vertical = (vim_strchr(p_go, GO_VERTICAL) != NULL);
 
-    /* Set the title of the Dialog window */
+    // Set the title of the Dialog window
     label = XmStringCreateSimple((char *)title);
     if (label == NULL)
 	return -1;
@@ -2532,17 +2545,17 @@ gui_mch_dialog(
 	    NULL);
     XmStringFree(label);
 
-    /* make a copy, so that we can insert NULs */
+    // make a copy, so that we can insert NULs
     buts = vim_strsave(button_names);
     if (buts == NULL)
 	return -1;
 
-    /* Count the number of buttons and allocate buttons[]. */
+    // Count the number of buttons and allocate buttons[].
     butcount = 1;
     for (p = buts; *p; ++p)
 	if (*p == DLG_BUTTON_SEP)
 	    ++butcount;
-    buttons = (Widget *)alloc((unsigned)(butcount * sizeof(Widget)));
+    buttons = ALLOC_MULT(Widget, butcount);
     if (buttons == NULL)
     {
 	vim_free(buts);
@@ -2592,7 +2605,7 @@ gui_mch_dialog(
 	XmStringFree(label);
 	gui_motif_menu_fontlist(buttons[butcount]);
 
-	/* Layout properly. */
+	// Layout properly.
 
 	if (butcount > 0)
 	{
@@ -2609,7 +2622,7 @@ gui_mch_dialog(
 			    XmNrightOffset, 4,
 			    NULL);
 
-		    /* fill in a form as invisible separator */
+		    // fill in a form as invisible separator
 		    sep_form = XtVaCreateWidget("separatorForm",
 			    xmFormWidgetClass,	dialogform,
 			    XmNleftAttachment, XmATTACH_WIDGET,
@@ -2639,7 +2652,7 @@ gui_mch_dialog(
 			XmNrightOffset, 4,
 			NULL);
 
-		/* fill in a form as invisible separator */
+		// fill in a form as invisible separator
 		sep_form = XtVaCreateWidget("separatorForm",
 			xmFormWidgetClass, dialogform,
 			XmNleftAttachment, XmATTACH_FORM,
@@ -2667,7 +2680,7 @@ gui_mch_dialog(
     separator = (Widget) 0;
     if (butcount > 0)
     {
-	/* Create the separator for beauty. */
+	// Create the separator for beauty.
 	n = 0;
 	XtSetArg(args[n], XmNorientation, XmHORIZONTAL); n++;
 	XtSetArg(args[n], XmNbottomAttachment, XmATTACH_WIDGET); n++;
@@ -2703,7 +2716,7 @@ gui_mch_dialog(
 			    (XtEventHandler)keyhit_callback, (XtPointer)NULL);
     }
 
-    /* Form holding both message and pixmap labels */
+    // Form holding both message and pixmap labels
     form = XtVaCreateWidget("separatorForm",
 	    xmFormWidgetClass, dialogform,
 	    XmNleftAttachment, XmATTACH_FORM,
@@ -2713,7 +2726,7 @@ gui_mch_dialog(
     XtManageChild(form);
 
 #ifdef HAVE_XPM
-    /* Add a pixmap, left of the message. */
+    // Add a pixmap, left of the message.
     switch (type)
     {
 	case VIM_GENERIC:
@@ -2748,12 +2761,11 @@ gui_mch_dialog(
     XtManageChild(dialogpixmap);
 #endif
 
-    /* Create the dialog message.
-     * Since LessTif is apparently having problems with the creation of
-     * properly localized string, we use LtoR here. The symptom is that the
-     * string sill not show properly in multiple lines as it does in native
-     * Motif.
-     */
+    // Create the dialog message.
+    // Since LessTif is apparently having problems with the creation of
+    // properly localized string, we use LtoR here. The symptom is that the
+    // string sill not show properly in multiple lines as it does in native
+    // Motif.
     label = XmStringCreateLtoR((char *)message, STRING_TAG);
     if (label == NULL)
 	return -1;
@@ -2815,7 +2827,7 @@ gui_mch_dialog(
 
     if (textfield != NULL && *textfield != NUL)
     {
-	/* This only works after the textfield has been realised. */
+	// This only works after the textfield has been realised.
 	XmTextFieldSetSelection(dialogtextfield,
 			 (XmTextPosition)0, (XmTextPosition)STRLEN(textfield),
 					   XtLastTimestampProcessed(gui.dpy));
@@ -2825,7 +2837,7 @@ gui_mch_dialog(
 
     app = XtWidgetToApplicationContext(dialogform);
 
-    /* Loop until a button is pressed or the dialog is killed somehow. */
+    // Loop until a button is pressed or the dialog is killed somehow.
     dialogStatus = -1;
     for (;;)
     {
@@ -2851,17 +2863,17 @@ gui_mch_dialog(
 
     return dialogStatus;
 }
-#endif /* FEAT_GUI_DIALOG */
+#endif // FEAT_GUI_DIALOG
 
 #if defined(FEAT_FOOTER) || defined(PROTO)
 
     static int
 gui_mch_compute_footer_height(void)
 {
-    Dimension	height;		    /* total Toolbar height */
-    Dimension	top;		    /* XmNmarginTop */
-    Dimension	bottom;		    /* XmNmarginBottom */
-    Dimension	shadow;		    /* XmNshadowThickness */
+    Dimension	height;		    // total Toolbar height
+    Dimension	top;		    // XmNmarginTop
+    Dimension	bottom;		    // XmNmarginBottom
+    Dimension	shadow;		    // XmNshadowThickness
 
     XtVaGetValues(footer,
 	    XmNheight, &height,
@@ -2909,16 +2921,15 @@ gui_mch_set_footer(char_u *s)
     void
 gui_mch_show_toolbar(int showit)
 {
-    Cardinal	numChildren;	    /* how many children toolBar has */
+    Cardinal	numChildren;	    // how many children toolBar has
 
     if (toolBar == (Widget)0)
 	return;
     XtVaGetValues(toolBar, XmNnumChildren, &numChildren, NULL);
     if (showit && numChildren > 0)
     {
-	/* Assume that we want to show the toolbar if p_toolbar contains
-	 * valid option settings, therefore p_toolbar must not be NULL.
-	 */
+	// Assume that we want to show the toolbar if p_toolbar contains
+	// valid option settings, therefore p_toolbar must not be NULL.
 	WidgetList  children;
 
 	XtVaGetValues(toolBar, XmNchildren, &children, NULL);
@@ -2939,15 +2950,14 @@ gui_mch_show_toolbar(int showit)
 		vimmenu_T   *toolbar;
 		vimmenu_T   *cur;
 
-		for (toolbar = root_menu; toolbar; toolbar = toolbar->next)
+		FOR_ALL_MENUS(toolbar)
 		    if (menu_is_toolbar(toolbar->dname))
 			break;
-		/* Assumption: toolbar is NULL if there is no toolbar,
-		 *	       otherwise it contains the toolbar menu structure.
-		 *
-		 * Assumption: "numChildren" == the number of items in the list
-		 *	       of items beginning with toolbar->children.
-		 */
+		// Assumption: toolbar is NULL if there is no toolbar,
+		//	       otherwise it contains the toolbar menu structure.
+		//
+		// Assumption: "numChildren" == the number of items in the list
+		//	       of items beginning with toolbar->children.
 		if (toolbar)
 		{
 		    for (cur = toolbar->children; cur; cur = cur->next)
@@ -2955,8 +2965,8 @@ gui_mch_show_toolbar(int showit)
 			Arg	    args[1];
 			int	    n = 0;
 
-			/* Enable/Disable tooltip (OK to enable while
-			 * currently enabled). */
+			// Enable/Disable tooltip (OK to enable while
+			// currently enabled).
 			if (cur->tip != NULL)
 			    (*action)(cur->tip);
 			if (!menu_is_separator(cur->name))
@@ -3072,16 +3082,16 @@ reset_focus(void)
 gui_mch_compute_toolbar_height(void)
 {
     Dimension	borders;
-    Dimension	height;		    /* total Toolbar height */
-    Dimension	whgt;		    /* height of each widget */
-    WidgetList	children;	    /* list of toolBar's children */
-    Cardinal	numChildren;	    /* how many children toolBar has */
+    Dimension	height;		    // total Toolbar height
+    Dimension	whgt;		    // height of each widget
+    WidgetList	children;	    // list of toolBar's children
+    Cardinal	numChildren;	    // how many children toolBar has
     int		i;
 
     borders = 0;
     height = 0;
     if (toolBar != (Widget)0 && toolBarFrame != (Widget)0)
-    {				    /* get height of XmFrame parent */
+    {				    // get height of XmFrame parent
 	Dimension	fst;
 	Dimension	fmh;
 	Dimension	tst;
@@ -3107,7 +3117,7 @@ gui_mch_compute_toolbar_height(void)
 	}
     }
 #ifdef LESSTIF_VERSION
-    /* Hack: When starting up we get wrong dimensions. */
+    // Hack: When starting up we get wrong dimensions.
     if (height < 10)
 	height = 24;
 #endif
@@ -3260,7 +3270,7 @@ gui_mch_update_tabline(void)
     if (tabLine == (Widget)0)
 	return;
 
-    /* Add a label for each tab page.  They all contain the same text area. */
+    // Add a label for each tab page.  They all contain the same text area.
     for (tp = first_tabpage; tp != NULL; tp = tp->tp_next, ++nr)
     {
 	if (tp == curtab)
@@ -3270,7 +3280,7 @@ gui_mch_update_tabline(void)
 	if (page_status == XmPAGE_INVALID
 		|| page_info.major_tab_widget == (Widget)0)
 	{
-	    /* Add the tab */
+	    // Add the tab
 	    n = 0;
 	    XtSetArg(args[n], XmNnotebookChildType, XmMAJOR_TAB); n++;
 	    XtSetArg(args[n], XmNtraversalOn, False); n++;
@@ -3313,7 +3323,7 @@ gui_mch_update_tabline(void)
 
     XtVaGetValues(tabLine, XmNlastPageNumber, &last_page, NULL);
 
-    /* Remove any old labels. */
+    // Remove any old labels.
     while (nr <= last_page)
     {
 	if (XmNotebookGetPageInfo(tabLine, nr, &page_info) != XmPAGE_INVALID
@@ -3404,8 +3414,8 @@ gui_motif_menu_fontlist(Widget id UNUSED)
 	    {
 		XtUnmanageChild(id);
 		XtVaSetValues(id, XmNfontList, fl, NULL);
-		/* We should force the widget to recalculate its
-		 * geometry now. */
+		// We should force the widget to recalculate its
+		// geometry now.
 		XtManageChild(id);
 	    }
 	    else
@@ -3425,8 +3435,8 @@ gui_motif_menu_fontlist(Widget id UNUSED)
 	    {
 		XtUnmanageChild(id);
 		XtVaSetValues(id, XmNfontList, fl, NULL);
-		/* We should force the widget to recalculate its
-		 * geometry now. */
+		// We should force the widget to recalculate its
+		// geometry now.
 		XtManageChild(id);
 	    }
 	    else
@@ -3445,17 +3455,17 @@ gui_motif_menu_fontlist(Widget id UNUSED)
 
 typedef struct _SharedFindReplace
 {
-    Widget dialog;	/* the main dialog widget */
-    Widget wword;	/* 'Exact match' check button */
-    Widget mcase;	/* 'match case' check button */
-    Widget up;		/* search direction 'Up' radio button */
-    Widget down;	/* search direction 'Down' radio button */
-    Widget what;	/* 'Find what' entry text widget */
-    Widget with;	/* 'Replace with' entry text widget */
-    Widget find;	/* 'Find Next' action button */
-    Widget replace;	/* 'Replace With' action button */
-    Widget all;		/* 'Replace All' action button */
-    Widget undo;	/* 'Undo' action button */
+    Widget dialog;	// the main dialog widget
+    Widget wword;	// 'Exact match' check button
+    Widget mcase;	// 'match case' check button
+    Widget up;		// search direction 'Up' radio button
+    Widget down;	// search direction 'Down' radio button
+    Widget what;	// 'Find what' entry text widget
+    Widget with;	// 'Replace with' entry text widget
+    Widget find;	// 'Find Next' action button
+    Widget replace;	// 'Replace With' action button
+    Widget all;		// 'Replace All' action button
+    Widget undo;	// 'Undo' action button
 
     Widget cancel;
 } SharedFindReplace;
@@ -3472,7 +3482,7 @@ find_replace_destroy_callback(
     SharedFindReplace *cd = (SharedFindReplace *)client_data;
 
     if (cd != NULL)
-       /* suppress_dialog_mnemonics(cd->dialog); */
+       // suppress_dialog_mnemonics(cd->dialog);
 	cd->dialog = (Widget)0;
 }
 
@@ -3514,7 +3524,7 @@ find_replace_callback(
     {
 	char_u	*save_cpo = p_cpo;
 
-	/* No need to be Vi compatible here. */
+	// No need to be Vi compatible here.
 	p_cpo = (char_u *)"";
 	u_undo(1);
 	p_cpo = save_cpo;
@@ -3522,7 +3532,7 @@ find_replace_callback(
 	return;
     }
 
-    /* Get the search/replace strings from the dialog */
+    // Get the search/replace strings from the dialog
     if (flags == FRD_FINDNEXT)
     {
 	repl_text = NULL;
@@ -3564,7 +3574,7 @@ find_replace_keypress(
 
     keysym = XLookupKeysym(event, 0);
 
-    /* the scape key pops the whole dialog down */
+    // the scape key pops the whole dialog down
     if (keysym == XK_Escape)
 	XtUnmanageChild(frdp->dialog);
 }
@@ -3629,15 +3639,15 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 
     frdp = do_replace ? &repl_widgets : &find_widgets;
 
-    /* Get the search string to use. */
+    // Get the search string to use.
     entry_text = get_find_dialog_text(arg, &wword, &mcase);
 
-    /* If the dialog already exists, just raise it. */
+    // If the dialog already exists, just raise it.
     if (frdp->dialog)
     {
 	gui_motif_synch_fonts();
 
-	/* If the window is already up, just pop it to the top */
+	// If the window is already up, just pop it to the top
 	if (XtIsManaged(frdp->dialog))
 	    XMapRaised(XtDisplay(frdp->dialog),
 					    XtWindow(XtParent(frdp->dialog)));
@@ -3654,7 +3664,7 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 	return;
     }
 
-    /* Create a fresh new dialog window */
+    // Create a fresh new dialog window
     if (do_replace)
 	 str = XmStringCreateSimple(_("VIM - Search and Replace..."));
     else
@@ -3836,8 +3846,7 @@ find_replace_dialog_create(char_u *arg, int do_replace)
 			    (XtEventHandler)find_replace_keypress,
 			    (XtPointer)frdp);
 
-	/* Get the maximum width between the label widgets and line them up.
-	 */
+	// Get the maximum width between the label widgets and line them up.
 	n = 0;
 	XtSetArg(args[n], XmNwidth, &width); n++;
 	XtGetValues(label_what, args, n);
@@ -3994,15 +4003,15 @@ gui_motif_synch_fonts(void)
     XFontStruct	    *font;
     XmFontList	    font_list;
 
-    /* FIXME: Unless we find out how to create a XmFontList from a XFontSet,
-     * we just give up here on font synchronization. */
+    // FIXME: Unless we find out how to create a XmFontList from a XFontSet,
+    // we just give up here on font synchronization.
     font = (XFontStruct *)gui.norm_font;
     if (font == NULL)
 	return;
 
     font_list = gui_motif_create_fontlist(font);
 
-    /* OK this loop is a bit tricky... */
+    // OK this loop is a bit tricky...
     for (do_replace = 0; do_replace <= 1; ++do_replace)
     {
 	frdp = (do_replace) ? (&repl_widgets) : (&find_widgets);

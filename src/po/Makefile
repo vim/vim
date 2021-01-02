@@ -32,10 +32,11 @@ MSGMERGE = OLD_PO_FILE_INPUT=yes OLD_PO_FILE_OUTPUT=yes msgmerge
 	$(VIM) -u NONE -e -X -S check.vim -c "if error == 0 | q | endif" -c cq $<
 	touch $@
 
-all: $(MOFILES) $(MOCONVERTED)
+all: $(MOFILES) $(MOCONVERTED) $(MSGFMT_DESKTOP)
 
 check: $(CHECKFILES)
 
+# installing for real
 install: $(MOFILES) $(MOCONVERTED)
 	@$(MAKE) prefixcheck
 	for lang in $(LANGUAGES); do \
@@ -59,6 +60,24 @@ uninstall:
 	  cat=`basename $$cat`; \
 	  lang=`echo $$cat | sed 's/\$(CATOBJEXT)$$//'`; \
 	  rm -f $(LOCALEDIR)/$$lang/LC_MESSAGES/$(PACKAGE).mo; \
+	done
+
+# installing for local tryout into ../../runtime/lang
+tryoutinstall: $(MOFILES) $(MOCONVERTED)
+	@$(MAKE) prefixcheck
+	for lang in $(LANGUAGES); do \
+	  dir=../../runtime/lang/$$lang/; \
+	  if test ! -x "$$dir"; then \
+	    mkdir $$dir; chmod 755 $$dir; \
+	  fi; \
+	  dir=../../runtime/lang/$$lang/LC_MESSAGES; \
+	  if test ! -x "$$dir"; then \
+	    mkdir $$dir; chmod 755 $$dir; \
+	  fi; \
+	  if test -r $$lang.mo; then \
+	    cp $$lang.mo $$dir/$(PACKAGE).mo; \
+	    chmod 644 $$dir/$(PACKAGE).mo; \
+	  fi; \
 	done
 
 converted: $(MOCONVERTED)
@@ -151,17 +170,56 @@ prefixcheck:
 
 clean: checkclean
 	rm -f core core.* *.old.po *.mo *.pot sjiscorr
+	rm -f LINGUAS vim.desktop gvim.desktop tmp_*desktop
 
 distclean: clean
 
 checkclean:
 	rm -f *.ck
 
-$(PACKAGE).pot: ../*.c ../if_perl.xs ../GvimExt/gvimext.cpp ../globals.h ../if_py_both.h ../vim.h
-	cd ..; $(XGETTEXT) --default-domain=$(PACKAGE) \
-		--add-comments --keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 \
-		*.c if_perl.xs GvimExt/gvimext.cpp globals.h if_py_both.h vim.h
-	mv -f ../$(PACKAGE).po $(PACKAGE).pot
+PO_INPUTLIST = \
+	../*.c \
+	../if_perl.xs \
+	../GvimExt/gvimext.cpp \
+	../errors.h \
+	../globals.h \
+	../if_py_both.h \
+	../vim.h \
+	gvim.desktop.in \
+	vim.desktop.in
+
+PO_VIM_INPUTLIST = \
+	../../runtime/optwin.vim
+
+PO_VIM_JSLIST = \
+	optwin.js
+
+$(PACKAGE).pot: $(PO_INPUTLIST) $(PO_VIM_INPUTLIST)
+	# Convert the Vim scripts to (what looks like) Javascript
+	$(VIM) -u NONE --not-a-term -S tojavascript.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
+	# create vim.pot
+	$(XGETTEXT) --default-domain=$(PACKAGE) --add-comments \
+		--keyword=_ --keyword=N_ --keyword=NGETTEXT:1,2 \
+		$(PO_INPUTLIST) $(PO_VIM_JSLIST)
+	mv -f $(PACKAGE).po $(PACKAGE).pot
+	# Fix Vim scripts names, so that "gf" works
+	$(VIM) -u NONE --not-a-term -S fixfilenames.vim $(PACKAGE).pot $(PO_VIM_INPUTLIST)
+	# Delete the temporary files
+	rm *.js
+
+vim.desktop: vim.desktop.in $(POFILES)
+	echo $(LANGUAGES) | tr " " "\n" |sed -e '/\./d' | sort > LINGUAS
+	$(MSGFMT) --desktop -d . --template vim.desktop.in -o tmp_vim.desktop
+	rm -f LINGUAS
+	if command -v desktop-file-validate; then desktop-file-validate tmp_vim.desktop; fi
+	mv tmp_vim.desktop vim.desktop
+
+gvim.desktop: gvim.desktop.in $(POFILES)
+	echo $(LANGUAGES) | tr " " "\n" |sed -e '/\./d' | sort > LINGUAS
+	$(MSGFMT) --desktop -d . --template gvim.desktop.in -o tmp_gvim.desktop
+	rm -f LINGUAS
+	if command -v desktop-file-validate; then desktop-file-validate tmp_gvim.desktop; fi
+	mv tmp_gvim.desktop gvim.desktop
 
 update-po: $(LANGUAGES)
 

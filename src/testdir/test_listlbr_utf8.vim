@@ -3,21 +3,22 @@
 set encoding=utf-8
 scriptencoding utf-8
 
-if !exists("+linebreak") || !has("conceal") || !has("signs")
-  finish
-endif
+source check.vim
+CheckOption linebreak
+CheckFeature conceal
+CheckFeature signs
 
 source view_util.vim
 
-function s:screen_lines(lnum, width) abort
+func s:screen_lines(lnum, width) abort
   return ScreenLines(a:lnum, a:width)
-endfunction
+endfunc
 
-function! s:compare_lines(expect, actual)
+func s:compare_lines(expect, actual)
   call assert_equal(a:expect, a:actual)
-endfunction
+endfunc
 
-function s:screen_attr(lnum, chars, ...) abort
+func s:screen_attr(lnum, chars, ...) abort
   let line = getline(a:lnum)
   let attr = []
   let prefix = get(a:000, 0, 0)
@@ -26,18 +27,18 @@ function s:screen_attr(lnum, chars, ...) abort
     let attr += [screenattr(a:lnum, scol + prefix)]
   endfor
   return attr
-endfunction
+endfunc
 
-function s:test_windows(...)
+func s:test_windows(...)
   call NewWindow(10, 20)
   setl ts=4 sw=4 sts=4 linebreak sbr=+ wrap
   exe get(a:000, 0, '')
-endfunction
+endfunc
 
-function s:close_windows(...)
+func s:close_windows(...)
   call CloseWindow()
   exe get(a:000, 0, '')
-endfunction
+endfunc
 
 func Test_linebreak_with_fancy_listchars()
   call s:test_windows("setl list listchars=nbsp:\u2423,tab:\u2595\u2014,trail:\u02d1,eol:\ub6")
@@ -268,4 +269,6 @@ func Test_chinese_char_on_wrap_column()
   let lines = s:screen_lines([1, 10], winwidth(0))
   call s:compare_lines(expect, lines)
   call s:close_windows()
-endfu
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

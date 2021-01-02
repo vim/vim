@@ -3,7 +3,7 @@
 " Maintainer:	Tom Picton <tom@tompicton.co.uk>
 " Previous Maintainer: James Sully <sullyj3@gmail.com>
 " Previous Maintainer: Johannes Zellner <johannes@zellner.org>
-" Last Change:	Sun, 15 April 2018
+" Last Change:	Mon, 5 October 2020
 " https://github.com/tpict/vim-ftplugin-python
 
 if exists("b:did_ftplugin") | finish | endif
@@ -14,6 +14,7 @@ set cpo&vim
 setlocal cinkeys-=0#
 setlocal indentkeys-=0#
 setlocal include=^\\s*\\(from\\\|import\\)
+setlocal define=^\\s*\\(def\\\|class\\)
 
 " For imports with leading .., append / and replace additional .s with ../
 let b:grandparent_match = '^\(.\.\)\(\.*\)'
@@ -37,9 +38,10 @@ setlocal suffixesadd=.py
 setlocal comments=b:#,fb:-
 setlocal commentstring=#\ %s
 
-setlocal omnifunc=pythoncomplete#Complete
 if has('python3')
-       setlocal omnifunc=python3complete#Complete
+  setlocal omnifunc=python3complete#Complete
+elseif has('python')
+  setlocal omnifunc=pythoncomplete#Complete
 endif
 
 set wildignore+=*.pyc
@@ -53,32 +55,34 @@ let b:prev='\v^\s*(class\|def\|async def)>'
 let b:next_end='\v\S\n*(%$\|^(\s*\n*)*(class\|def\|async def)\|^\S)'
 let b:prev_end='\v\S\n*(^(\s*\n*)*(class\|def\|async def)\|^\S)'
 
-execute "nnoremap <silent> <buffer> ]] :call <SID>Python_jump('n', '". b:next_toplevel."', 'W', v:count1)<cr>"
-execute "nnoremap <silent> <buffer> [[ :call <SID>Python_jump('n', '". b:prev_toplevel."', 'Wb', v:count1)<cr>"
-execute "nnoremap <silent> <buffer> ][ :call <SID>Python_jump('n', '". b:next_endtoplevel."', 'W', 0, v:count1)<cr>"
-execute "nnoremap <silent> <buffer> [] :call <SID>Python_jump('n', '". b:prev_endtoplevel."', 'Wb', 0, v:count1)<cr>"
-execute "nnoremap <silent> <buffer> ]m :call <SID>Python_jump('n', '". b:next."', 'W', v:count1)<cr>"
-execute "nnoremap <silent> <buffer> [m :call <SID>Python_jump('n', '". b:prev."', 'Wb', v:count1)<cr>"
-execute "nnoremap <silent> <buffer> ]M :call <SID>Python_jump('n', '". b:next_end."', 'W', 0, v:count1)<cr>"
-execute "nnoremap <silent> <buffer> [M :call <SID>Python_jump('n', '". b:prev_end."', 'Wb', 0, v:count1)<cr>"
+if !exists('g:no_plugin_maps') && !exists('g:no_python_maps')
+    execute "nnoremap <silent> <buffer> ]] :call <SID>Python_jump('n', '". b:next_toplevel."', 'W', v:count1)<cr>"
+    execute "nnoremap <silent> <buffer> [[ :call <SID>Python_jump('n', '". b:prev_toplevel."', 'Wb', v:count1)<cr>"
+    execute "nnoremap <silent> <buffer> ][ :call <SID>Python_jump('n', '". b:next_endtoplevel."', 'W', v:count1, 0)<cr>"
+    execute "nnoremap <silent> <buffer> [] :call <SID>Python_jump('n', '". b:prev_endtoplevel."', 'Wb', v:count1, 0)<cr>"
+    execute "nnoremap <silent> <buffer> ]m :call <SID>Python_jump('n', '". b:next."', 'W', v:count1)<cr>"
+    execute "nnoremap <silent> <buffer> [m :call <SID>Python_jump('n', '". b:prev."', 'Wb', v:count1)<cr>"
+    execute "nnoremap <silent> <buffer> ]M :call <SID>Python_jump('n', '". b:next_end."', 'W', v:count1, 0)<cr>"
+    execute "nnoremap <silent> <buffer> [M :call <SID>Python_jump('n', '". b:prev_end."', 'Wb', v:count1, 0)<cr>"
 
-execute "onoremap <silent> <buffer> ]] :call <SID>Python_jump('o', '". b:next_toplevel."', 'W', v:count1)<cr>"
-execute "onoremap <silent> <buffer> [[ :call <SID>Python_jump('o', '". b:prev_toplevel."', 'Wb', v:count1)<cr>"
-execute "onoremap <silent> <buffer> ][ :call <SID>Python_jump('o', '". b:next_endtoplevel."', 'W', 0, v:count1)<cr>"
-execute "onoremap <silent> <buffer> [] :call <SID>Python_jump('o', '". b:prev_endtoplevel."', 'Wb', 0, v:count1)<cr>"
-execute "onoremap <silent> <buffer> ]m :call <SID>Python_jump('o', '". b:next."', 'W', v:count1)<cr>"
-execute "onoremap <silent> <buffer> [m :call <SID>Python_jump('o', '". b:prev."', 'Wb', v:count1)<cr>"
-execute "onoremap <silent> <buffer> ]M :call <SID>Python_jump('o', '". b:next_end."', 'W', 0, v:count1)<cr>"
-execute "onoremap <silent> <buffer> [M :call <SID>Python_jump('o', '". b:prev_end."', 'Wb', 0, v:count1)<cr>"
+    execute "onoremap <silent> <buffer> ]] :call <SID>Python_jump('o', '". b:next_toplevel."', 'W', v:count1)<cr>"
+    execute "onoremap <silent> <buffer> [[ :call <SID>Python_jump('o', '". b:prev_toplevel."', 'Wb', v:count1)<cr>"
+    execute "onoremap <silent> <buffer> ][ :call <SID>Python_jump('o', '". b:next_endtoplevel."', 'W', v:count1, 0)<cr>"
+    execute "onoremap <silent> <buffer> [] :call <SID>Python_jump('o', '". b:prev_endtoplevel."', 'Wb', v:count1, 0)<cr>"
+    execute "onoremap <silent> <buffer> ]m :call <SID>Python_jump('o', '". b:next."', 'W', v:count1)<cr>"
+    execute "onoremap <silent> <buffer> [m :call <SID>Python_jump('o', '". b:prev."', 'Wb', v:count1)<cr>"
+    execute "onoremap <silent> <buffer> ]M :call <SID>Python_jump('o', '". b:next_end."', 'W', v:count1, 0)<cr>"
+    execute "onoremap <silent> <buffer> [M :call <SID>Python_jump('o', '". b:prev_end."', 'Wb', v:count1, 0)<cr>"
 
-execute "xnoremap <silent> <buffer> ]] :call <SID>Python_jump('x', '". b:next_toplevel."', 'W', v:count1)<cr>"
-execute "xnoremap <silent> <buffer> [[ :call <SID>Python_jump('x', '". b:prev_toplevel."', 'Wb', v:count1)<cr>"
-execute "xnoremap <silent> <buffer> ][ :call <SID>Python_jump('x', '". b:next_endtoplevel."', 'W', 0, v:count1)<cr>"
-execute "xnoremap <silent> <buffer> [] :call <SID>Python_jump('x', '". b:prev_endtoplevel."', 'Wb', 0, v:count1)<cr>"
-execute "xnoremap <silent> <buffer> ]m :call <SID>Python_jump('x', '". b:next."', 'W', v:count1)<cr>"
-execute "xnoremap <silent> <buffer> [m :call <SID>Python_jump('x', '". b:prev."', 'Wb', v:count1)<cr>"
-execute "xnoremap <silent> <buffer> ]M :call <SID>Python_jump('x', '". b:next_end."', 'W', 0, v:count1)<cr>"
-execute "xnoremap <silent> <buffer> [M :call <SID>Python_jump('x', '". b:prev_end."', 'Wb', 0, v:count1)<cr>"
+    execute "xnoremap <silent> <buffer> ]] :call <SID>Python_jump('x', '". b:next_toplevel."', 'W', v:count1)<cr>"
+    execute "xnoremap <silent> <buffer> [[ :call <SID>Python_jump('x', '". b:prev_toplevel."', 'Wb', v:count1)<cr>"
+    execute "xnoremap <silent> <buffer> ][ :call <SID>Python_jump('x', '". b:next_endtoplevel."', 'W', v:count1, 0)<cr>"
+    execute "xnoremap <silent> <buffer> [] :call <SID>Python_jump('x', '". b:prev_endtoplevel."', 'Wb', v:count1, 0)<cr>"
+    execute "xnoremap <silent> <buffer> ]m :call <SID>Python_jump('x', '". b:next."', 'W', v:count1)<cr>"
+    execute "xnoremap <silent> <buffer> [m :call <SID>Python_jump('x', '". b:prev."', 'Wb', v:count1)<cr>"
+    execute "xnoremap <silent> <buffer> ]M :call <SID>Python_jump('x', '". b:next_end."', 'W', v:count1, 0)<cr>"
+    execute "xnoremap <silent> <buffer> [M :call <SID>Python_jump('x', '". b:prev_end."', 'Wb', v:count1, 0)<cr>"
+endif
 
 if !exists('*<SID>Python_jump')
   fun! <SID>Python_jump(mode, motion, flags, count, ...) range
@@ -112,21 +116,74 @@ endif
 
 if !exists("g:python_recommended_style") || g:python_recommended_style != 0
     " As suggested by PEP8.
-    setlocal expandtab shiftwidth=4 softtabstop=4 tabstop=8
+    setlocal expandtab tabstop=4 softtabstop=4 shiftwidth=4
 endif
 
-" First time: try finding "pydoc".
-if !exists('g:pydoc_executable')
-    if executable('pydoc')
-        let g:pydoc_executable = 1
-    else
-        let g:pydoc_executable = 0
-    endif
+" Use pydoc for keywordprg.
+" Unix users preferentially get pydoc3, then pydoc2.
+" Windows doesn't have a standalone pydoc executable in $PATH by default, nor
+" does it have separate python2/3 executables, so Windows users just get
+" whichever version corresponds to their installed Python version.
+if executable('python3')
+  setlocal keywordprg=python3\ -m\ pydoc
+elseif executable('python')
+  setlocal keywordprg=python\ -m\ pydoc
 endif
-" If "pydoc" was found use it for keywordprg.
-if g:pydoc_executable
-    setlocal keywordprg=pydoc
-endif
+
+" Script for filetype switching to undo the local stuff we may have changed
+let b:undo_ftplugin = 'setlocal cinkeys<'
+      \ . '|setlocal comments<'
+      \ . '|setlocal commentstring<'
+      \ . '|setlocal expandtab<'
+      \ . '|setlocal include<'
+      \ . '|setlocal includeexpr<'
+      \ . '|setlocal indentkeys<'
+      \ . '|setlocal keywordprg<'
+      \ . '|setlocal omnifunc<'
+      \ . '|setlocal shiftwidth<'
+      \ . '|setlocal softtabstop<'
+      \ . '|setlocal suffixesadd<'
+      \ . '|setlocal tabstop<'
+      \ . '|silent! nunmap <buffer> [M'
+      \ . '|silent! nunmap <buffer> [['
+      \ . '|silent! nunmap <buffer> []'
+      \ . '|silent! nunmap <buffer> [m'
+      \ . '|silent! nunmap <buffer> ]M'
+      \ . '|silent! nunmap <buffer> ]['
+      \ . '|silent! nunmap <buffer> ]]'
+      \ . '|silent! nunmap <buffer> ]m'
+      \ . '|silent! ounmap <buffer> [M'
+      \ . '|silent! ounmap <buffer> [['
+      \ . '|silent! ounmap <buffer> []'
+      \ . '|silent! ounmap <buffer> [m'
+      \ . '|silent! ounmap <buffer> ]M'
+      \ . '|silent! ounmap <buffer> ]['
+      \ . '|silent! ounmap <buffer> ]]'
+      \ . '|silent! ounmap <buffer> ]m'
+      \ . '|silent! xunmap <buffer> [M'
+      \ . '|silent! xunmap <buffer> [['
+      \ . '|silent! xunmap <buffer> []'
+      \ . '|silent! xunmap <buffer> [m'
+      \ . '|silent! xunmap <buffer> ]M'
+      \ . '|silent! xunmap <buffer> ]['
+      \ . '|silent! xunmap <buffer> ]]'
+      \ . '|silent! xunmap <buffer> ]m'
+      \ . '|unlet! b:browsefilter'
+      \ . '|unlet! b:child_match'
+      \ . '|unlet! b:child_sub'
+      \ . '|unlet! b:grandparent_match'
+      \ . '|unlet! b:grandparent_sub'
+      \ . '|unlet! b:next'
+      \ . '|unlet! b:next_end'
+      \ . '|unlet! b:next_endtoplevel'
+      \ . '|unlet! b:next_toplevel'
+      \ . '|unlet! b:parent_match'
+      \ . '|unlet! b:parent_sub'
+      \ . '|unlet! b:prev'
+      \ . '|unlet! b:prev_end'
+      \ . '|unlet! b:prev_endtoplevel'
+      \ . '|unlet! b:prev_toplevel'
+      \ . '|unlet! b:undo_ftplugin'
 
 let &cpo = s:keepcpo
 unlet s:keepcpo

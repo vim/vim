@@ -21,35 +21,28 @@
 /*
  * Position comparisons
  */
-#ifdef FEAT_VIRTUALEDIT
-# define LT_POS(a, b) (((a).lnum != (b).lnum) \
+#define LT_POS(a, b) (((a).lnum != (b).lnum) \
 		   ? (a).lnum < (b).lnum \
 		   : (a).col != (b).col \
 		       ? (a).col < (b).col \
 		       : (a).coladd < (b).coladd)
-# define LT_POSP(a, b) (((a)->lnum != (b)->lnum) \
+#define LT_POSP(a, b) (((a)->lnum != (b)->lnum) \
 		   ? (a)->lnum < (b)->lnum \
 		   : (a)->col != (b)->col \
 		       ? (a)->col < (b)->col \
 		       : (a)->coladd < (b)->coladd)
-# define EQUAL_POS(a, b) (((a).lnum == (b).lnum) && ((a).col == (b).col) && ((a).coladd == (b).coladd))
-# define CLEAR_POS(a) {(a)->lnum = 0; (a)->col = 0; (a)->coladd = 0;}
-#else
-# define LT_POS(a, b) (((a).lnum != (b).lnum) \
-		   ? ((a).lnum < (b).lnum) : ((a).col < (b).col))
-# define LT_POSP(a, b) (((a)->lnum != (b)->lnum) \
-		   ? ((a)->lnum < (b)->lnum) : ((a)->col < (b)->col))
-# define EQUAL_POS(a, b) (((a).lnum == (b).lnum) && ((a).col == (b).col))
-# define CLEAR_POS(a) {(a)->lnum = 0; (a)->col = 0;}
-#endif
+#define EQUAL_POS(a, b) (((a).lnum == (b).lnum) && ((a).col == (b).col) && ((a).coladd == (b).coladd))
+#define CLEAR_POS(a) do {(a)->lnum = 0; (a)->col = 0; (a)->coladd = 0;} while (0)
+#define EMPTY_POS(a) ((a).lnum == 0 && (a).col == 0 && (a).coladd == 0)
 
 #define LTOREQ_POS(a, b) (LT_POS(a, b) || EQUAL_POS(a, b))
 
 /*
- * VIM_ISWHITE() is used for "^" and the like. It differs from isspace()
- * because it doesn't include <CR> and <LF> and the like.
+ * VIM_ISWHITE() differs from isspace() because it doesn't include <CR> and
+ * <LF> and the like.
  */
-#define VIM_ISWHITE(x)	((x) == ' ' || (x) == '\t')
+#define VIM_ISWHITE(x)		((x) == ' ' || (x) == '\t')
+#define IS_WHITE_OR_NUL(x)	((x) == ' ' || (x) == '\t' || (x) == NUL)
 
 /*
  * LINEEMPTY() - return TRUE if the line is empty
@@ -83,7 +76,7 @@
 # endif
 #endif
 
-/* toupper() and tolower() for ASCII only and ignore the current locale. */
+// toupper() and tolower() for ASCII only and ignore the current locale.
 #ifdef EBCDIC
 # define TOUPPER_ASC(c)	(islower(c) ? toupper(c) : (c))
 # define TOLOWER_ASC(c)	(isupper(c) ? tolower(c) : (c))
@@ -96,25 +89,19 @@
  * MB_ISLOWER() and MB_ISUPPER() are to be used on multi-byte characters.  But
  * don't use them for negative values!
  */
-#ifdef FEAT_MBYTE
-# define MB_ISLOWER(c)	vim_islower(c)
-# define MB_ISUPPER(c)	vim_isupper(c)
-# define MB_TOLOWER(c)	vim_tolower(c)
-# define MB_TOUPPER(c)	vim_toupper(c)
-#else
-# define MB_ISLOWER(c)	islower(c)
-# define MB_ISUPPER(c)	isupper(c)
-# define MB_TOLOWER(c)	TOLOWER_LOC(c)
-# define MB_TOUPPER(c)	TOUPPER_LOC(c)
-#endif
+#define MB_ISLOWER(c)	vim_islower(c)
+#define MB_ISUPPER(c)	vim_isupper(c)
+#define MB_TOLOWER(c)	vim_tolower(c)
+#define MB_TOUPPER(c)	vim_toupper(c)
+#define MB_CASEFOLD(c)	(enc_utf8 ? utf_fold(c) : MB_TOLOWER(c))
 
-/* Use our own isdigit() replacement, because on MS-Windows isdigit() returns
- * non-zero for superscript 1.  Also avoids that isdigit() crashes for numbers
- * below 0 and above 255.  */
+// Use our own isdigit() replacement, because on MS-Windows isdigit() returns
+// non-zero for superscript 1.  Also avoids that isdigit() crashes for numbers
+// below 0 and above 255.
 #define VIM_ISDIGIT(c) ((unsigned)(c) - '0' < 10)
 
-/* Like isalpha() but reject non-ASCII characters.  Can't be used with a
- * special key (negative value). */
+// Like isalpha() but reject non-ASCII characters.  Can't be used with a
+// special key (negative value).
 #ifdef EBCDIC
 # define ASCII_ISALPHA(c) isalpha(c)
 # define ASCII_ISALNUM(c) isalnum(c)
@@ -127,7 +114,7 @@
 # define ASCII_ISALNUM(c) (ASCII_ISALPHA(c) || VIM_ISDIGIT(c))
 #endif
 
-/* Returns empty string if it is NULL. */
+// Returns empty string if it is NULL.
 #define EMPTY_IF_NULL(x) ((x) ? (x) : (char_u *)"")
 
 #ifdef FEAT_LANGMAP
@@ -139,8 +126,7 @@
  * a mapping and the langnoremap option was set.
  * The do-while is just to ignore a ';' after the macro.
  */
-# ifdef FEAT_MBYTE
-#  define LANGMAP_ADJUST(c, condition) \
+# define LANGMAP_ADJUST(c, condition) \
     do { \
 	if (*p_langmap \
 		&& (condition) \
@@ -154,19 +140,8 @@
 		c = langmap_adjust_mb(c); \
 	} \
     } while (0)
-# else
-#  define LANGMAP_ADJUST(c, condition) \
-    do { \
-	if (*p_langmap \
-		&& (condition) \
-		&& (p_lrm || (!p_lrm && KeyTyped)) \
-		&& !KeyStuffed \
-		&& (c) >= 0 && (c) < 256) \
-	    c = langmap_mapchar[c]; \
-    } while (0)
-# endif
 #else
-# define LANGMAP_ADJUST(c, condition) /* nop */
+# define LANGMAP_ADJUST(c, condition) // nop
 #endif
 
 /*
@@ -181,18 +156,26 @@
  */
 #ifdef VMS
 # define mch_access(n, p)	access(vms_fixfilename(n), (p))
-				/* see mch_open() comment */
+				// see mch_open() comment
 # define mch_fopen(n, p)	fopen(vms_fixfilename(n), (p))
-# define mch_fstat(n, p)	fstat(vms_fixfilename(n), (p))
-	/* VMS does not have lstat() */
+# define mch_fstat(n, p)	fstat((n), (p))
+# undef HAVE_LSTAT	        // VMS does not have lstat()
 # define mch_stat(n, p)		stat(vms_fixfilename(n), (p))
 # define mch_rmdir(n)		rmdir(vms_fixfilename(n))
 #else
-# ifndef WIN32
+# ifndef MSWIN
 #   define mch_access(n, p)	access((n), (p))
 # endif
-# define mch_fstat(n, p)	fstat((n), (p))
-# ifdef MSWIN	/* has its own mch_stat() function */
+
+// Use 64-bit fstat function if available.
+// NOTE: This condition is the same as for the stat_T type.
+# if (defined(_MSC_VER) && (_MSC_VER >= 1300)) || defined(__MINGW32__)
+#  define mch_fstat(n, p)	_fstat64((n), (p))
+# else
+#  define mch_fstat(n, p)	fstat((n), (p))
+# endif
+
+# ifdef MSWIN	// has its own mch_stat() function
 #  define mch_stat(n, p)	vim_stat((n), (p))
 # else
 #  ifdef STAT_IGNORES_SLASH
@@ -218,11 +201,11 @@
 # define mch_open(n, m, p)	open(vms_fixfilename(n), (m), (p))
 #endif
 
-/* mch_open_rw(): invoke mch_open() with third argument for user R/W. */
-#if defined(UNIX) || defined(VMS)  /* open in rw------- mode */
+// mch_open_rw(): invoke mch_open() with third argument for user R/W.
+#if defined(UNIX) || defined(VMS)  // open in rw------- mode
 # define mch_open_rw(n, f)	mch_open((n), (f), (mode_t)0600)
 #else
-# if defined(MSWIN)  /* open read/write */
+# if defined(MSWIN)  // open read/write
 #  define mch_open_rw(n, f)	mch_open((n), (f), S_IREAD | S_IWRITE)
 # else
 #  define mch_open_rw(n, f)	mch_open((n), (f), 0)
@@ -238,13 +221,14 @@
 #define REPLACE_NORMAL(s) (((s) & REPLACE_FLAG) && !((s) & VREPLACE_FLAG))
 
 #ifdef FEAT_ARABIC
+# define ARABIC_CHAR(ch)            (((ch) & 0xFF00) == 0x0600)
 # define UTF_COMPOSINGLIKE(p1, p2)  utf_composinglike((p1), (p2))
 #else
 # define UTF_COMPOSINGLIKE(p1, p2)  utf_iscomposing(utf_ptr2char(p2))
 #endif
 
 #ifdef FEAT_RIGHTLEFT
-    /* Whether to draw the vertical bar on the right side of the cell. */
+    // Whether to draw the vertical bar on the right side of the cell.
 # define CURSOR_BAR_RIGHT (curwin->w_p_rl && (!(State & CMDLINE) || cmdmsg_rl))
 #endif
 
@@ -256,33 +240,19 @@
  * MB_COPY_CHAR(f, t): copy one char from "f" to "t" and advance the pointers.
  * PTR2CHAR(): get character from pointer.
  */
-#ifdef FEAT_MBYTE
-/* Get the length of the character p points to, including composing chars */
-# define MB_PTR2LEN(p)	    (has_mbyte ? (*mb_ptr2len)(p) : 1)
-/* Advance multi-byte pointer, skip over composing chars. */
-# define MB_PTR_ADV(p)	    p += has_mbyte ? (*mb_ptr2len)(p) : 1
-/* Advance multi-byte pointer, do not skip over composing chars. */
-# define MB_CPTR_ADV(p)	    p += enc_utf8 ? utf_ptr2len(p) : has_mbyte ? (*mb_ptr2len)(p) : 1
-/* Backup multi-byte pointer. Only use with "p" > "s" ! */
-# define MB_PTR_BACK(s, p)  p -= has_mbyte ? ((*mb_head_off)(s, p - 1) + 1) : 1
-/* get length of multi-byte char, not including composing chars */
-# define MB_CPTR2LEN(p)	    (enc_utf8 ? utf_ptr2len(p) : (*mb_ptr2len)(p))
+// Advance multi-byte pointer, skip over composing chars.
+#define MB_PTR_ADV(p)	    p += (*mb_ptr2len)(p)
+// Advance multi-byte pointer, do not skip over composing chars.
+#define MB_CPTR_ADV(p)	    p += enc_utf8 ? utf_ptr2len(p) : (*mb_ptr2len)(p)
+// Backup multi-byte pointer. Only use with "p" > "s" !
+#define MB_PTR_BACK(s, p)  p -= has_mbyte ? ((*mb_head_off)(s, p - 1) + 1) : 1
+// get length of multi-byte char, not including composing chars
+#define MB_CPTR2LEN(p)	    (enc_utf8 ? utf_ptr2len(p) : (*mb_ptr2len)(p))
 
-# define MB_COPY_CHAR(f, t) if (has_mbyte) mb_copy_char(&f, &t); else *t++ = *f++
-# define MB_CHARLEN(p)	    (has_mbyte ? mb_charlen(p) : (int)STRLEN(p))
-# define MB_CHAR2LEN(c)	    (has_mbyte ? mb_char2len(c) : 1)
-# define PTR2CHAR(p)	    (has_mbyte ? mb_ptr2char(p) : (int)*(p))
-#else
-# define MB_PTR2LEN(p)		1
-# define MB_CPTR2LEN(p)		1
-# define MB_PTR_ADV(p)		++p
-# define MB_CPTR_ADV(p)		++p
-# define MB_PTR_BACK(s, p)	--p
-# define MB_COPY_CHAR(f, t)	*t++ = *f++
-# define MB_CHARLEN(p)		STRLEN(p)
-# define MB_CHAR2LEN(c)		1
-# define PTR2CHAR(p)		((int)*(p))
-#endif
+#define MB_COPY_CHAR(f, t) do { if (has_mbyte) mb_copy_char(&f, &t); else *t++ = *f++; } while (0)
+#define MB_CHARLEN(p)	    (has_mbyte ? mb_charlen(p) : (int)STRLEN(p))
+#define MB_CHAR2LEN(c)	    (has_mbyte ? mb_char2len(c) : 1)
+#define PTR2CHAR(p)	    (has_mbyte ? mb_ptr2char(p) : (int)*(p))
 
 #ifdef FEAT_AUTOCHDIR
 # define DO_AUTOCHDIR do { if (p_acd) do_autochdir(); } while (0)
@@ -290,7 +260,8 @@
 # define DO_AUTOCHDIR do { /**/ } while (0)
 #endif
 
-#define RESET_BINDING(wp)  (wp)->w_p_scb = FALSE; (wp)->w_p_crb = FALSE
+#define RESET_BINDING(wp)  do { (wp)->w_p_scb = FALSE; (wp)->w_p_crb = FALSE; \
+			    } while (0)
 
 #ifdef FEAT_DIFF
 # define PLINES_NOFILL(x) plines_nofill(x)
@@ -305,11 +276,11 @@
 #if defined(FEAT_EVAL) && defined(FEAT_FLOAT)
 # include <float.h>
 # if defined(HAVE_MATH_H)
-   /* for isnan() and isinf() */
+   // for isnan() and isinf()
 #  include <math.h>
 # endif
 # ifdef USING_FLOAT_STUFF
-#  if defined(WIN32)
+#  ifdef MSWIN
 #   ifndef isnan
 #    define isnan(x) _isnan(x)
      static __inline int isinf(double x) { return !_finite(x) && !_isnan(x); }
@@ -340,6 +311,10 @@
 #   define DBL_EPSILON 2.2204460492503131e-16
 #  endif
 # endif
+#endif
+
+#ifdef FEAT_EVAL
+# define FUNCARG(fp, j)	((char_u **)(fp->uf_args.ga_data))[j]
 #endif
 
 /*
@@ -374,3 +349,43 @@
 	    (p) = NULL; \
 	} \
     } while (0)
+
+// Whether a command index indicates a user command.
+#define IS_USER_CMDIDX(idx) ((int)(idx) < 0)
+
+// Give an error in curwin is a popup window and evaluate to TRUE.
+#ifdef FEAT_PROP_POPUP
+# define WIN_IS_POPUP(wp) ((wp)->w_popup_flags != 0)
+# define ERROR_IF_POPUP_WINDOW error_if_popup_window(FALSE)
+# define ERROR_IF_ANY_POPUP_WINDOW error_if_popup_window(TRUE)
+#else
+# define WIN_IS_POPUP(wp) 0
+# define ERROR_IF_POPUP_WINDOW 0
+# define ERROR_IF_ANY_POPUP_WINDOW 0
+#endif
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_TERMINAL)
+# define ERROR_IF_TERM_POPUP_WINDOW error_if_term_popup_window()
+#else
+# define ERROR_IF_TERM_POPUP_WINDOW 0
+#endif
+
+
+#ifdef ABORT_ON_INTERNAL_ERROR
+# define ESTACK_CHECK_DECLARATION int estack_len_before;
+# define ESTACK_CHECK_SETUP estack_len_before = exestack.ga_len;
+# define ESTACK_CHECK_NOW if (estack_len_before != exestack.ga_len) \
+	siemsg("Exestack length expected: %d, actual: %d", estack_len_before, exestack.ga_len);
+# define CHECK_CURBUF if (curwin != NULL && curwin->w_buffer != curbuf) \
+		iemsg("curbuf != curwin->w_buffer")
+#else
+# define ESTACK_CHECK_DECLARATION
+# define ESTACK_CHECK_SETUP
+# define ESTACK_CHECK_NOW
+# define CHECK_CURBUF
+#endif
+
+// Inline the condition for performance.
+#define CHECK_LIST_MATERIALIZE(l) if ((l)->lv_first == &range_list_item) range_list_materialize(l)
+
+// Inlined version of ga_grow().  Especially useful if "n" is a constant.
+#define GA_GROW(gap, n) (((gap)->ga_maxlen - (gap)->ga_len < n) ? ga_grow_inner((gap), (n)) : OK)

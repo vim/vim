@@ -1,15 +1,17 @@
-" Test for :cd
+" Test for :cd and chdir()
+
+source shared.vim
 
 func Test_cd_large_path()
   " This used to crash with a heap write overflow.
-  call assert_fails('cd ' . repeat('x', 5000), 'E472:')
+  call assert_fails('cd ' . repeat('x', 5000), 'E344:')
 endfunc
 
 func Test_cd_up_and_down()
   let path = getcwd()
   cd ..
   call assert_notequal(path, getcwd())
-  exe 'cd ' . path
+  exe 'cd ' .. fnameescape(path)
   call assert_equal(path, getcwd())
 endfunc
 
@@ -20,7 +22,7 @@ func Test_cd_no_arg()
     cd
     call assert_equal($HOME, getcwd())
     call assert_notequal(path, getcwd())
-    exe 'cd ' . path
+    exe 'cd ' .. fnameescape(path)
     call assert_equal(path, getcwd())
   else
     " Test that cd without argument echoes cwd on non-Unix systems.
@@ -40,28 +42,154 @@ func Test_cd_minus()
   call assert_equal(path_dotdot, getcwd())
   cd -
   call assert_equal(path, getcwd())
+
+  " Test for :cd - without a previous directory
+  let lines =<< trim [SCRIPT]
+    call assert_fails('cd -', 'E186:')
+    call assert_fails('call chdir("-")', 'E186:')
+    call writefile(v:errors, 'Xresult')
+    qall!
+  [SCRIPT]
+  call writefile(lines, 'Xscript')
+  if RunVim([], [], '--clean -S Xscript')
+    call assert_equal([], readfile('Xresult'))
+  endif
+  call delete('Xscript')
+  call delete('Xresult')
 endfunc
 
-func Test_cd_with_cpo_chdir()
-  e Xfoo
-  call setline(1, 'foo')
-  let path = getcwd()
-  set cpo+=.
+" Test for chdir()
+func Test_chdir_func()
+  let topdir = getcwd()
+  call mkdir('Xdir/y/z', 'p')
 
-  " :cd should fail when buffer is modified and 'cpo' contains dot.
-  call assert_fails('cd ..', 'E747:')
-  call assert_equal(path, getcwd())
+  " Create a few tabpages and windows with different directories
+  new
+  cd Xdir
+  tabnew
+  tcd y
+  below new
+  below new
+  lcd z
 
-  " :cd with exclamation mark should succeed.
-  cd! ..
-  call assert_notequal(path, getcwd())
+  tabfirst
+  call assert_match('^\[global\] .*/Xdir$', trim(execute('verbose pwd')))
+  call chdir('..')
+  call assert_equal('y', fnamemodify(getcwd(1, 2), ':t'))
+  call assert_equal('z', fnamemodify(3->getcwd(2), ':t'))
+  tabnext | wincmd t
+  call assert_match('^\[tabpage\] .*/y$', trim(execute('verbose pwd')))
+  eval '..'->chdir()
+  call assert_equal('Xdir', fnamemodify(getcwd(1, 2), ':t'))
+  call assert_equal('Xdir', fnamemodify(getcwd(2, 2), ':t'))
+  call assert_equal('z', fnamemodify(getcwd(3, 2), ':t'))
+  call assert_equal('testdir', fnamemodify(getcwd(1, 1), ':t'))
+  3wincmd w
+  call assert_match('^\[window\] .*/z$', trim(execute('verbose pwd')))
+  call chdir('..')
+  call assert_equal('Xdir', fnamemodify(getcwd(1, 2), ':t'))
+  call assert_equal('Xdir', fnamemodify(getcwd(2, 2), ':t'))
+  call assert_equal('y', fnamemodify(getcwd(3, 2), ':t'))
+  call assert_equal('testdir', fnamemodify(getcwd(1, 1), ':t'))
 
-  " :cd should succeed when buffer has been written.
-  w!
-  exe 'cd ' . path
-  call assert_equal(path, getcwd())
+  " Error case
+  call assert_fails("call chdir('dir-abcd')", 'E344:')
+  silent! let d = chdir("dir_abcd")
+  call assert_equal("", d)
+  " Should not crash
+  call chdir(d)
+  call assert_equal('', chdir([]))
 
-  call delete('Xfoo')
-  set cpo&
-  bw!
+  only | tabonly
+  call chdir(topdir)
+  call delete('Xdir', 'rf')
 endfunc
+
+" Test for changing to the previous directory '-'
+func Test_prev_dir()
+  let topdir = getcwd()
+  call mkdir('Xdir/a/b/c', 'p')
+
+  " Create a few tabpages and windows with different directories
+  new | only
+  tabnew | new
+  tabnew
+  tabfirst
+  cd Xdir
+  tabnext | wincmd t
+  tcd a
+  wincmd w
+  lcd b
+  tabnext
+  tcd a/b/c
+
+  " Change to the previous directory twice in all the windows.
+  tabfirst
+  cd - | cd -
+  tabnext | wincmd t
+  tcd - | tcd -
+  wincmd w
+  lcd - | lcd -
+  tabnext
+  tcd - | tcd -
+
+  " Check the directory of all the windows
+  tabfirst
+  call assert_equal('Xdir', fnamemodify(getcwd(), ':t'))
+  tabnext | wincmd t
+  call assert_equal('a', fnamemodify(getcwd(), ':t'))
+  wincmd w
+  call assert_equal('b', fnamemodify(getcwd(), ':t'))
+  tabnext
+  call assert_equal('c', fnamemodify(getcwd(), ':t'))
+
+  " Change to the previous directory using chdir()
+  tabfirst
+  call chdir("-") | call chdir("-")
+  tabnext | wincmd t
+  call chdir("-") | call chdir("-")
+  wincmd w
+  call chdir("-") | call chdir("-")
+  tabnext
+  call chdir("-") | call chdir("-")
+
+  " Check the directory of all the windows
+  tabfirst
+  call assert_equal('Xdir', fnamemodify(getcwd(), ':t'))
+  tabnext | wincmd t
+  call assert_equal('a', fnamemodify(getcwd(), ':t'))
+  wincmd w
+  call assert_equal('b', fnamemodify(getcwd(), ':t'))
+  tabnext
+  call assert_equal('c', fnamemodify(getcwd(), ':t'))
+
+  only | tabonly
+  call chdir(topdir)
+  call delete('Xdir', 'rf')
+endfunc
+
+func Test_lcd_split()
+  let curdir = getcwd()
+  lcd ..
+  split
+  lcd -
+  call assert_equal(curdir, getcwd())
+  quit!
+endfunc
+
+func Test_cd_completion()
+  call mkdir('XComplDir1', 'p')
+  call mkdir('XComplDir2', 'p')
+  call writefile([], 'XComplFile')
+
+  for cmd in ['cd', 'chdir', 'lcd', 'lchdir', 'tcd', 'tchdir']
+    call feedkeys(':' .. cmd .. " XCompl\<C-A>\<C-B>\"\<CR>", 'tx')
+    call assert_equal('"' .. cmd .. ' XComplDir1/ XComplDir2/', @:)
+  endfor
+
+  call delete('XComplDir1', 'd')
+  call delete('XComplDir2', 'd')
+  call delete('XComplFile')
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

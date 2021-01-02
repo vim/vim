@@ -1,4 +1,4 @@
-*usr_08.txt*	For Vim version 8.1.  Last change: 2017 Aug 11
+*usr_08.txt*	For Vim version 8.2.  Last change: 2017 Aug 11
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -402,7 +402,7 @@ Another way to start in diff mode can be done from inside Vim.  Edit the
 "main.c" file, then make a split and show the differences: >
 
 	:edit main.c
-	:vertical diffsplit main.c~ 
+	:vertical diffsplit main.c~
 
 The ":vertical" command is used to make the window split vertically.  If you
 omit this, you will get a horizontal split.

@@ -1,9 +1,8 @@
 " Vim indent script for HTML
-" Header: "{{{
 " Maintainer:	Bram Moolenaar
 " Original Author: Andy Wokula <anwoku@yahoo.de>
-" Last Change:	2018 Mar 28
-" Version:	1.0
+" Last Change:	2020 Dec 11
+" Version:	1.0 "{{{
 " Description:	HTML indent script with cached state for faster indenting on a
 "		range of lines.
 "		Supports template systems through hooks.
@@ -223,7 +222,7 @@ endfunc "}}}
 call s:AddITags(s:indent_tags, [
     \ 'a', 'abbr', 'acronym', 'address', 'b', 'bdo', 'big',
     \ 'blockquote', 'body', 'button', 'caption', 'center', 'cite', 'code',
-    \ 'colgroup', 'del', 'dfn', 'dir', 'div', 'dl', 'em', 'fieldset', 'font',
+    \ 'colgroup', 'dd', 'del', 'dfn', 'dir', 'div', 'dl', 'dt', 'em', 'fieldset', 'font',
     \ 'form', 'frameset', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'html',
     \ 'i', 'iframe', 'ins', 'kbd', 'label', 'legend', 'li',
     \ 'map', 'menu', 'noframes', 'noscript', 'object', 'ol',
@@ -587,7 +586,7 @@ func! s:Alien3()
     return eval(b:hi_js1indent)
   endif
   if b:hi_indent.scripttype == "javascript"
-    return GetJavascriptIndent()
+    return eval(b:hi_js1indent) + GetJavascriptIndent()
   else
     return -1
   endif
@@ -816,7 +815,7 @@ func! s:Alien5()
   let idx = match(prevtext, '^\s*\zs<!--')
   if idx >= 0
     " just below comment start, add a shiftwidth
-    return idx + shiftwidth()
+    return indent(prevlnum) + shiftwidth()
   endif
 
   " Some files add 4 spaces just below a TODO line.  It's difficult to detect
@@ -902,11 +901,18 @@ func! s:InsideTag(foundHtmlString)
   "{{{
   if a:foundHtmlString
     " Inside an attribute string.
-    " Align with the previous line or use an external function.
+    " Align with the opening quote or use an external function.
     let lnum = v:lnum - 1
     if lnum > 1
       if exists('b:html_indent_tag_string_func')
         return b:html_indent_tag_string_func(lnum)
+      endif
+      " If there is a double quote in the previous line, indent with the
+      " character after it.
+      if getline(lnum) =~ '"'
+	call cursor(lnum, 0)
+	normal f"
+	return virtcol('.')
       endif
       return indent(lnum)
     endif

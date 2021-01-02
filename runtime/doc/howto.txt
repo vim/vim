@@ -1,4 +1,4 @@
-*howto.txt*	For Vim version 8.1.  Last change: 2006 Apr 02
+*howto.txt*	For Vim version 8.2.  Last change: 2006 Apr 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar

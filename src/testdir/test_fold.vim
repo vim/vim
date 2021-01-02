@@ -1,5 +1,6 @@
 " Test for folding
 
+source check.vim
 source view_util.vim
 source screendump.vim
 
@@ -88,15 +89,13 @@ func Test_indent_fold2()
     setl fen fdm=marker
     2
     norm! >>
-    let a=map(range(1,5), 'foldclosed(v:val)')
+    let a=map(range(1,5), 'v:val->foldclosed()')
     call assert_equal([-1,-1,-1,4,4], a)
     bw!
 endfunc
 
 func Test_manual_fold_with_filter()
-  if !executable('cat')
-    return
-  endif
+  CheckExecutable cat
   for type in ['manual', 'marker']
     exe 'set foldmethod=' . type
     new
@@ -132,7 +131,7 @@ func Test_indent_fold_with_read()
   call assert_equal(0, foldlevel(3))
   call assert_equal(0, foldlevel(4))
   call assert_equal(1, foldlevel(5))
-  call assert_equal(7, foldclosedend(5))
+  call assert_equal(7, 5->foldclosedend())
 
   bwipe!
   set foldmethod&
@@ -207,7 +206,7 @@ func Test_update_folds_expr_read()
   %foldclose
   call assert_equal(2, foldclosedend(1))
   call assert_equal(0, foldlevel(3))
-  call assert_equal(0, foldlevel(4))
+  call assert_equal(0, 4->foldlevel())
   call assert_equal(6, foldclosedend(5))
   call assert_equal(10, foldclosedend(7))
   call assert_equal(14, foldclosedend(11))
@@ -513,17 +512,18 @@ func Test_fold_create_marker_in_C()
   set fdm=marker fdl=9
   set filetype=c
 
-  let content = [
-	\ '/*',
-	\ ' * comment',
-	\ ' * ',
-	\ ' *',
-	\ ' */',
-	\ 'int f(int* p) {',
-	\ '    *p = 3;',
-	\ '    return 0;',
-	\ '}'
-	\]
+  let content =<< trim [CODE]
+    /*
+     * comment
+     * 
+     *
+     */
+    int f(int* p) {
+        *p = 3;
+        return 0;
+    }
+  [CODE]
+
   for c in range(len(content) - 1)
     bw!
     call append(0, content)
@@ -555,9 +555,7 @@ endfunc
 
 " test syntax folding
 func Test_fold_syntax()
-  if !has('syntax')
-    return
-  endif
+  CheckFeature syntax
 
   enew!
   set fdm=syntax fdl=0
@@ -654,7 +652,7 @@ func Test_fold_move()
   call assert_equal(10, foldclosed(10))
   call assert_equal(11, foldclosedend(10))
   call assert_equal('+--  2 lines: Line2', foldtextresult(2))
-  call assert_equal('+--  2 lines: Line8', foldtextresult(10))
+  call assert_equal('+--  2 lines: Line8', 10->foldtextresult())
 
   set fdm& sw& fdl&
   enew!
@@ -706,9 +704,7 @@ func Test_fold_last_line_with_pagedown()
 endfunc
 
 func Test_folds_with_rnu()
-  if !CanRunVimInTerminal()
-    return
-  endif
+  CheckScreendump
 
   call writefile([
 	\ 'set fdm=marker rnu foldcolumn=2',
@@ -741,3 +737,126 @@ func Test_folds_marker_in_comment2()
   set foldmethod&
   bwipe!
 endfunc
+
+func Test_fold_delete_with_marker()
+  new
+  call setline(1, ['func Func() {{{1', 'endfunc'])
+  1,2yank
+  new
+  set fdm=marker
+  call setline(1, 'x')
+  normal! Vp
+  normal! zd
+  call assert_equal(['func Func() ', 'endfunc'], getline(1, '$'))
+
+  set fdm&
+  bwipe!
+  bwipe!
+endfunc
+
+func Test_fold_delete_with_marker_and_whichwrap()
+  new
+  let content1 = ['']
+  let content2 = ['folded line 1 "{{{1', '  test', '  test2', '  test3', '', 'folded line 2 "{{{1', '  test', '  test2', '  test3']
+  call setline(1, content1 + content2)
+  set fdm=marker ww+=l
+  normal! x
+  call assert_equal(content2, getline(1, '$'))
+  set fdm& ww&
+  bwipe!
+endfunc
+
+func Test_fold_delete_first_line()
+  new
+  call setline(1, [
+	\ '" x {{{1',
+	\ '" a',
+	\ '" aa',
+	\ '" x {{{1',
+	\ '" b',
+	\ '" bb',
+	\ '" x {{{1',
+	\ '" c',
+	\ '" cc',
+	\ ])
+  set foldmethod=marker
+  1
+  normal dj
+  call assert_equal([
+	\ '" x {{{1',
+	\ '" c',
+	\ '" cc',
+	\ ], getline(1,'$'))
+  bwipe!
+  set foldmethod&
+endfunc
+
+" Test for errors in 'foldexpr'
+func Test_fold_expr_error()
+  new
+  call setline(1, ['one', 'two', 'three'])
+
+  " Return a list from the expression
+  set foldexpr=[]
+  set foldmethod=expr
+  for i in range(3)
+    call assert_equal(0, foldlevel(i))
+  endfor
+
+  " expression error
+  set foldexpr=[{]
+  set foldmethod=expr
+  for i in range(3)
+    call assert_equal(0, foldlevel(i))
+  endfor
+
+  set foldmethod& foldexpr&
+  close!
+endfunc
+
+func Test_undo_fold_deletion()
+  new
+  set fdm=marker
+  let lines =<< trim END
+      " {{{
+      " }}}1
+      " {{{
+  END
+  call setline(1, lines)
+  3d
+  g/"/d
+  undo
+  redo
+  eval getline(1, '$')->assert_equal([''])
+
+  set fdm&vim
+  bwipe!
+endfunc
+
+" this was crashing
+func Test_move_no_folds()
+  new
+  fold
+  setlocal fdm=expr
+  normal zj
+  bwipe!
+endfunc
+
+" this was crashing
+func Test_fold_create_delete_create()
+  new
+  fold
+  fold
+  normal zd
+  fold
+  bwipe!
+endfunc
+
+" this was crashing
+func Test_fold_create_delete()
+  new
+  norm zFzFzdzj
+  bwipe!
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

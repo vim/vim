@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 8.1.  Last change: 2018 Dec 18
+*repeat.txt*    For Vim version 8.2.  Last change: 2021 Jan 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -79,7 +79,7 @@ The default for [range] is the whole buffer (1,$).  Use "CTRL-C" to interrupt
 the command.  If an error message is given for a line, the command for that
 line is aborted and the global command continues with the next marked or
 unmarked line.
-								*E147* 
+								*E147*
 When the command is used recursively, it only works on one line.  Giving a
 range is then not allowed. This is useful to find all lines that match a
 pattern and do not match another pattern: >
@@ -124,11 +124,16 @@ q{0-9a-zA-Z"}		Record typed characters into register {0-9a-zA-Z"}
 			used for |y| and |p| the result is most likely not
 			what is expected, because the put will paste the
 			recorded macro and the yank will overwrite the
-			recorded macro. {Vi: no recording}
+			recorded macro.
+
+			Note: The recording happens while you type, replaying
+			the register happens as if the keys come from a
+			mapping.  This matters, for example, for undo, which
+			only syncs when commands were typed.
 
 q			Stops recording.  (Implementation note: The 'q' that
 			stops recording is not stored in the register, unless
-			it was the result of a mapping)  {Vi: no recording}
+			it was the result of a mapping)
 
 							*@*
 @{0-9a-z".=*+}		Execute the contents of register {0-9a-z".=*+} [count]
@@ -137,10 +142,10 @@ q			Stops recording.  (Implementation note: The 'q' that
 			used.
 			The register is executed like a mapping, that means
 			that the difference between 'wildchar' and 'wildcharm'
-			applies.
+			applies, and undo might not be synced in the same way.
 			For "@=" you are prompted to enter an expression.  The
 			result of the expression is then executed.
-			See also |@:|.  {Vi: only named registers}
+			See also |@:|.
 
 							*@@* *E748*
 @@			Repeat the previous @{0-9a-z":*} [count] times.
@@ -158,17 +163,21 @@ q			Stops recording.  (Implementation note: The 'q' that
 			result of evaluating the expression is executed as an
 			Ex command.
 			Mappings are not recognized in these commands.
-			{Vi: only in some versions} Future: Will execute the
-			register for each line in the address range.
+			When the |line-continuation| character (\) is present
+			at the beginning of a line in a linewise register,
+			then it is combined with the previous line. This is
+			useful for yanking and executing parts of a Vim
+			script.
+			Future: Will execute the register for each line in the
+			address range.
 
 							*:@:*
 :[addr]@:		Repeat last command-line.  First set cursor at line
-			[addr] (default is current line).  {not in Vi}
+			[addr] (default is current line).
 
 :[addr]@							*:@@*
-:[addr]@@		Repeat the previous :@{0-9a-z"}.  First set cursor at
-			line [addr] (default is current line).  {Vi: only in
-			some versions}
+:[addr]@@		Repeat the previous :@{register}.  First set cursor at
+			line [addr] (default is current line).
 
 ==============================================================================
 4. Using Vim scripts					*using-scripts*
@@ -179,7 +188,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 :so[urce] {file}	Read Ex commands from {file}.  These are commands that
 			start with a ":".
 			Triggers the |SourcePre| autocommand.
-
+							*:source!*
 :so[urce]! {file}	Read Vim commands from {file}.  These are commands
 			that are executed from Normal mode, like you type
 			them.
@@ -187,14 +196,14 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			|:bufdo|, in a loop or when another command follows
 			the display won't be updated while executing the
 			commands.
-			{not in Vi}
+			Cannot be used in the |sandbox|.
 
 							*:ru* *:runtime*
 :ru[ntime][!] [where] {file} ..
 			Read Ex commands from {file} in each directory given
 			by 'runtimepath' and/or 'packpath'.  There is no error
 			for non-existing files.
-			
+
 			Example: >
 				:runtime syntax/c.vim
 
@@ -220,17 +229,16 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 
 			When {file} contains wildcards it is expanded to all
 			matching files.  Example: >
-				:runtime! plugin/*.vim
+				:runtime! plugin/**/*.vim
 <			This is what Vim uses to load the plugin files when
 			starting up.  This similar command: >
-				:runtime plugin/*.vim
+				:runtime plugin/**/*.vim
 <			would source the first file only.
 
 			When 'verbose' is one or higher, there is a message
 			when no file could be found.
 			When 'verbose' is two or higher, there is a message
 			about each searched file.
-			{not in Vi}
 
 							*:pa* *:packadd* *E919*
 :pa[ckadd][!] {name}	Search for an optional plugin directory in 'packpath'
@@ -263,6 +271,9 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			directories are added to 'runtimepath'.  This is
 			useful in your .vimrc.  The plugins will then be
 			loaded during initialization, see |load-plugins|.
+			Note that for ftdetect scripts to be loaded
+			you will need to write `filetype plugin indent on`
+			AFTER all `packadd!` commands.
 
 			Also see |pack-add|.
 			{only available when compiled with |+eval|}
@@ -270,7 +281,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 						*:packl* *:packloadall*
 :packl[oadall][!]	Load all packages in the "start" directory under each
 			entry in 'packpath'.
-			
+
 			First all the directories found are added to
 			'runtimepath', then the plugins found in the
 			directories are sourced.  This allows for a plugin to
@@ -282,9 +293,16 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			after loading your .vimrc file.  With this command it
 			can be done earlier.
 
-			Packages will be loaded only once.  After this command
-			it won't happen again.  When the optional ! is added
-			this command will load packages even when done before.
+			Packages will be loaded only once.  Using
+			`:packloadall` a second time will have no effect.
+			When the optional ! is added this command will load
+			packages even when done before.
+
+			Note that when using `:packloadall` in the |vimrc|
+			file, the 'runtimepath' option is updated, and later
+			all plugins in 'runtimepath' will be loaded, which
+			means they are loaded again.  Plugins are expected to
+			handle that.
 
 			An error only causes sourcing the script where it
 			happens to be aborted, further plugins will be loaded.
@@ -323,16 +341,33 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 				set encoding=utf-8
 				scriptencoding utf-8
 <
-			When compiled without the |+multi_byte| feature this
-			command is ignored.
-			{not in Vi}
 
+:scriptv[ersion] {version}		*:scriptv* *:scriptversion*
+								*E999* *E984*
+			Specify the version of Vim for the lines that follow
+			in the same file.  Only applies at the toplevel of
+			sourced scripts, not inside functions.
+
+			If {version} is higher than what the current Vim
+			version supports E999 will be given.  You either need
+			to rewrite the script to make it work with an older
+			Vim version, or update Vim to a newer version.  See
+			|vimscript-version| for what changed between versions.
+
+:vim9script [noclear]				*:vim9* *:vim9script*
+			Marks a script file as containing |Vim9-script|
+			commands.  Also see |vim9-namespace|.
+			Must be the first command in the file.
+			For [noclear] see |vim9-reload|.
+			Without the |+eval| feature this changes the syntax
+			for some commands.
+			 
 						*:scr* *:scriptnames*
 :scr[iptnames]		List all sourced script names, in the order they were
 			first sourced.  The number is used for the script ID
 			|<SID>|.
-			{not in Vi} {not available when compiled without the
-			|+eval| feature}
+			{not available when compiled without the |+eval|
+			feature}
 
 :scr[iptnames][!] {scriptId}			*:script*
 			Edit script {scriptId}.  Although ":scriptnames name"
@@ -348,7 +383,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			following the ":finally" up to the matching |:endtry|
 			are executed first.  This process applies to all
 			nested ":try"s in the script.  The outermost ":endtry"
-			then stops sourcing the script.  {not in Vi}
+			then stops sourcing the script.
 
 All commands and command sequences can be repeated by putting them in a named
 register and then executing it.  There are two ways to get the commands in the
@@ -400,13 +435,13 @@ with CTRL-V followed by the three digit decimal code.  This does NOT work for
 the <t_xx> termcap codes, these can only be used in mappings.
 
 							*:source_crnl* *W15*
-MS-DOS, Win32 and OS/2: Files that are read with ":source" normally have
-<CR><NL> <EOL>s.  These always work.  If you are using a file with <NL> <EOL>s
-(for example, a file made on Unix), this will be recognized if 'fileformats'
-is not empty and the first line does not end in a <CR>.  This fails if the
-first line has something like ":map <F1> :help^M", where "^M" is a <CR>.  If
-the first line ends in a <CR>, but following ones don't, you will get an error
-message, because the <CR> from the first lines will be lost.
+Win32: Files that are read with ":source" normally have <CR><NL> <EOL>s.
+These always work.  If you are using a file with <NL> <EOL>s (for example, a
+file made on Unix), this will be recognized if 'fileformats' is not empty and
+the first line does not end in a <CR>.  This fails if the first line has
+something like ":map <F1> :help^M", where "^M" is a <CR>.  If the first line
+ends in a <CR>, but following ones don't, you will get an error message,
+because the <CR> from the first lines will be lost.
 
 Mac Classic: Files that are read with ":source" normally have <CR> <EOL>s.
 These always work.  If you are using a file with <NL> <EOL>s (for example, a
@@ -416,7 +451,7 @@ linebreaks which has a <CR> in first line.
 
 On other systems, Vim expects ":source"ed files to end in a <NL>.  These
 always work.  If you are using a file with <CR><NL> <EOL>s (for example, a
-file made on MS-DOS), all lines will have a trailing <CR>.  This may cause
+file made on MS-Windows), all lines will have a trailing <CR>.  This may cause
 problems for some commands (e.g., mappings).  There is no automatic <EOL>
 detection, because it's common to start with a line that defines a mapping
 that ends in a <CR>, which will confuse the automaton.
@@ -533,7 +568,7 @@ When Vim starts up, after processing your .vimrc, it scans all directories in
 directories are added to 'runtimepath'.  Then all the plugins are loaded.
 See |packload-two-steps| for how these two steps can be useful.
 
-In the example Vim will find "pack/foo/start/foobar/plugin/foo.vim" and adds 
+In the example Vim will find "pack/foo/start/foobar/plugin/foo.vim" and adds
 "~/.vim/pack/foo/start/foobar" to 'runtimepath'.
 
 If the "foobar" plugin kicks in and sets the 'filetype' to "some", Vim will
@@ -618,8 +653,8 @@ disallowed though.
 This assumes you write one or more plugins that you distribute as a package.
 
 If you have two unrelated plugins you would use two packages, so that Vim
-users can chose what they include or not.  Or you can decide to use one
-package with optional plugins, and tell the user to add the ones he wants with
+users can choose what they include or not.  Or you can decide to use one
+package with optional plugins, and tell the user to add the preferred ones with
 `:packadd`.
 
 Decide how you want to distribute the package.  You can create an archive or
@@ -655,7 +690,7 @@ You could add this packadd command in one of your plugins, to be executed when
 the optional plugin is needed.
 
 Run the `:helptags` command to generate the doc/tags file.  Including this
-generated file in the package means that the user can drop the package in his
+generated file in the package means that the user can drop the package in the
 pack directory and the help command works right away.  Don't forget to re-run
 the command after changing the plugin help: >
 	:helptags path/start/foobar/doc
@@ -688,7 +723,6 @@ sourced file or user function and set breakpoints.
 NOTE: The debugging mode is far from perfect.  Debugging will have side
 effects on how Vim works.  You cannot use it to debug everything.  For
 example, the display is messed up by the debugging messages.
-{Vi does not have a debug mode}
 
 An alternative to debug mode is setting the 'verbose' option.  With a bigger
 number it will give more verbose messages about what Vim is doing.
@@ -922,7 +956,6 @@ OBSCURE
 Profiling means that Vim measures the time that is spent on executing
 functions and/or scripts.  The |+profile| feature is required for this.
 It is only included when Vim was compiled with "huge" features.
-{Vi does not have profiling}
 
 You can also use the |reltime()| function to measure time.  This only requires
 the |+reltime| feature, which is present more often.

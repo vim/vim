@@ -1,6 +1,9 @@
 " Tests for startup.
 
 source shared.vim
+source screendump.vim
+source term_util.vim
+source check.vim
 
 " Check that loading startup.vim works.
 func Test_startup_script()
@@ -8,6 +11,9 @@ func Test_startup_script()
   source $VIMRUNTIME/defaults.vim
 
   call assert_equal(0, &compatible)
+  " Restore some options, so that the following tests doesn't break
+  set nomore
+  set noshowmode
 endfunc
 
 " Verify the order in which plugins are loaded:
@@ -15,28 +21,28 @@ endfunc
 " 2. packages
 " 3. plugins in after directories
 func Test_after_comes_later()
-  if !has('packages')
-    return
-  endif
-  let before = [
-	\ 'set nocp viminfo+=nviminfo',
-	\ 'set guioptions+=M',
-	\ 'let $HOME = "/does/not/exist"',
-	\ 'set loadplugins',
-	\ 'set rtp=Xhere,Xafter,Xanother',
-	\ 'set packpath=Xhere,Xafter',
-	\ 'set nomore',
-	\ 'let g:sequence = ""',
-	\ ]
-  let after = [
-	\ 'redir! > Xtestout',
-	\ 'scriptnames',
-	\ 'redir END',
-	\ 'redir! > Xsequence',
-	\ 'echo g:sequence',
-	\ 'redir END',
-	\ 'quit',
-	\ ]
+  CheckFeature packages
+  let before =<< trim [CODE]
+    set nocp viminfo+=nviminfo
+    set guioptions+=M
+    let $HOME = "/does/not/exist"
+    set loadplugins
+    set rtp=Xhere,Xafter,Xanother
+    set packpath=Xhere,Xafter
+    set nomore
+    let g:sequence = ""
+  [CODE]
+
+  let after =<< trim [CODE]
+    redir! > Xtestout
+    scriptnames
+    redir END
+    redir! > Xsequence
+    echo g:sequence
+    redir END
+    quit
+  [CODE]
+
   call mkdir('Xhere/plugin', 'p')
   call writefile(['let g:sequence .= "here "'], 'Xhere/plugin/here.vim')
   call mkdir('Xanother/plugin', 'p')
@@ -72,18 +78,17 @@ func Test_after_comes_later()
 endfunc
 
 func Test_pack_in_rtp_when_plugins_run()
-  if !has('packages')
-    return
-  endif
-  let before = [
-	\ 'set nocp viminfo+=nviminfo',
-	\ 'set guioptions+=M',
-	\ 'let $HOME = "/does/not/exist"',
-	\ 'set loadplugins',
-	\ 'set rtp=Xhere',
-	\ 'set packpath=Xhere',
-	\ 'set nomore',
-	\ ]
+  CheckFeature packages
+  let before =<< trim [CODE]
+    set nocp viminfo+=nviminfo
+    set guioptions+=M
+    let $HOME = "/does/not/exist"
+    set loadplugins
+    set rtp=Xhere
+    set packpath=Xhere
+    set nomore
+  [CODE]
+
   let after = [
 	\ 'quit',
 	\ ]
@@ -104,9 +109,8 @@ func Test_pack_in_rtp_when_plugins_run()
 endfunc
 
 func Test_help_arg()
-  if !has('unix') && has('gui')
-    " this doesn't work with gvim on MS-Windows
-    return
+  if !has('unix') && has('gui_running')
+    throw 'Skipped: does not work with gvim on MS-Windows'
   endif
   if RunVim([], [], '--help >Xtestout')
     let lines = readfile('Xtestout')
@@ -130,11 +134,12 @@ func Test_help_arg()
 endfunc
 
 func Test_compatible_args()
-  let after = [
-	\ 'call writefile([string(&compatible)], "Xtestout")',
-	\ 'set viminfo+=nviminfo',
-	\ 'quit',
-	\ ]
+  let after =<< trim [CODE]
+    call writefile([string(&compatible)], "Xtestout")
+    set viminfo+=nviminfo
+    quit
+  [CODE]
+
   if RunVim([], after, '-C')
     let lines = readfile('Xtestout')
     call assert_equal('1', lines[0])
@@ -151,14 +156,16 @@ endfunc
 " Test the -o[N] and -O[N] arguments to open N windows split
 " horizontally or vertically.
 func Test_o_arg()
-  let after = [
-	\ 'call writefile([winnr("$"),
-	\		   winheight(1), winheight(2), &lines,
-	\		   winwidth(1), winwidth(2), &columns,
-	\		   bufname(winbufnr(1)), bufname(winbufnr(2))],
-	\		   "Xtestout")',
-	\ 'qall',
-	\ ]
+  let after =<< trim [CODE]
+    set cpo&vim
+    call writefile([winnr("$"),
+		\ winheight(1), winheight(2), &lines,
+		\ winwidth(1), winwidth(2), &columns,
+		\ bufname(winbufnr(1)), bufname(winbufnr(2))],
+		\ "Xtestout")
+    qall
+  [CODE]
+
   if RunVim([], after, '-o2')
     " Open 2 windows split horizontally. Expect:
     " - 2 windows
@@ -227,10 +234,11 @@ endfunc
 
 " Test the -p[N] argument to open N tabpages.
 func Test_p_arg()
-  let after = [
-	\ 'call writefile(split(execute("tabs"), "\n"), "Xtestout")',
-	\ 'qall',
-	\ ]
+  let after =<< trim [CODE]
+    call writefile(split(execute("tabs"), "\n"), "Xtestout")
+    qall
+  [CODE]
+
   if RunVim([], after, '-p2')
     let lines = readfile('Xtestout')
     call assert_equal(4, len(lines))
@@ -254,19 +262,80 @@ endfunc
 
 " Test the -V[N] argument to set the 'verbose' option to [N]
 func Test_V_arg()
-  if has('gui_running')
-    " Can't catch the output of gvim.
-    return
-  endif
+  " Can't catch the output of gvim.
+  CheckNotGui
+
   let out = system(GetVimCommand() . ' --clean -es -X -V0 -c "set verbose?" -cq')
   call assert_equal("  verbose=0\n", out)
 
   let out = system(GetVimCommand() . ' --clean -es -X -V2 -c "set verbose?" -cq')
-  call assert_match("sourcing \"$VIMRUNTIME[\\/]defaults\.vim\"\r\nSearching for \"filetype\.vim\".*\n", out)
+  call assert_match("sourcing \"$VIMRUNTIME[\\/]defaults\.vim\"\r\nline \\d\\+: sourcing \"[^\"]*runtime[\\/]filetype\.vim\".*\n", out)
   call assert_match("  verbose=2\n", out)
 
   let out = system(GetVimCommand() . ' --clean -es -X -V15 -c "set verbose?" -cq')
    call assert_match("sourcing \"$VIMRUNTIME[\\/]defaults\.vim\"\r\nline 1: \" The default vimrc file\..*  verbose=15\n", out)
+endfunc
+
+" Test the '-q [errorfile]' argument.
+func Test_q_arg()
+  CheckFeature quickfix
+
+  let lines =<< trim END
+    /* some file with an error */
+    main() {
+      functionCall(arg; arg, arg);
+      return 666
+    }
+  END
+  call writefile(lines, 'Xbadfile.c')
+
+  let after =<< trim [CODE]
+    call writefile([&errorfile, string(getpos("."))], "Xtestout")
+    copen
+    w >> Xtestout
+    qall
+  [CODE]
+
+  " Test with default argument '-q'.
+  call assert_equal('errors.err', &errorfile)
+  call writefile(["Xbadfile.c:4:12: error: expected ';' before '}' token"], 'errors.err')
+  if RunVim([], after, '-q')
+    let lines = readfile('Xtestout')
+    call assert_equal(['errors.err',
+	\              '[0, 4, 12, 0]',
+	\              "Xbadfile.c|4 col 12| error: expected ';' before '}' token"],
+	\             lines)
+  endif
+  call delete('Xtestout')
+  call delete('errors.err')
+
+  " Test with explicit argument '-q Xerrors' (with space).
+  call writefile(["Xbadfile.c:4:12: error: expected ';' before '}' token"], 'Xerrors')
+  if RunVim([], after, '-q Xerrors')
+    let lines = readfile('Xtestout')
+    call assert_equal(['Xerrors',
+	\              '[0, 4, 12, 0]',
+	\              "Xbadfile.c|4 col 12| error: expected ';' before '}' token"],
+	\             lines)
+  endif
+  call delete('Xtestout')
+
+  " Test with explicit argument '-qXerrors' (without space).
+  if RunVim([], after, '-qXerrors')
+    let lines = readfile('Xtestout')
+    call assert_equal(['Xerrors',
+	\              '[0, 4, 12, 0]',
+	\              "Xbadfile.c|4 col 12| error: expected ';' before '}' token"],
+	\             lines)
+  endif
+
+  " Test with a non-existing error file (exits with value 3)
+  let out = system(GetVimCommand() .. ' -q xyz.err')
+  call assert_equal(3, v:shell_error)
+
+  call delete('Xbadfile.c')
+  call delete('Xtestout')
+  call delete('Xerrors')
 endfunc
 
 " Test the -V[N]{filename} argument to set the 'verbose' option to N
@@ -287,10 +356,11 @@ endfunc
 " -M resets 'modifiable' and 'write'
 " -R sets 'readonly'
 func Test_m_M_R()
-  let after = [
-	\ 'call writefile([&write, &modifiable, &readonly, &updatecount], "Xtestout")',
-	\ 'qall',
-	\ ]
+  let after =<< trim [CODE]
+    call writefile([&write, &modifiable, &readonly, &updatecount], "Xtestout")
+    qall
+  [CODE]
+
   if RunVim([], after, '')
     let lines = readfile('Xtestout')
     call assert_equal(['1', '1', '0', '200'], lines)
@@ -313,10 +383,11 @@ endfunc
 
 " Test the -A, -F and -H arguments (Arabic, Farsi and Hebrew modes).
 func Test_A_F_H_arg()
-  let after = [
-	\ 'call writefile([&rightleft, &arabic, &fkmap, &hkmap], "Xtestout")',
-	\ 'qall',
-	\ ]
+  let after =<< trim [CODE]
+    call writefile([&rightleft, &arabic, &fkmap, &hkmap], "Xtestout")
+    qall
+  [CODE]
+
   " Use silent Ex mode to avoid the hit-Enter prompt for the warning that
   " 'encoding' is not utf-8.
   if has('arabic') && &encoding == 'utf-8' && RunVim([], after, '-e -s -A')
@@ -337,11 +408,108 @@ func Test_A_F_H_arg()
   call delete('Xtestout')
 endfunc
 
+func Test_invalid_args()
+  " must be able to get the output of Vim.
+  CheckUnix
+  CheckNotGui
+
+  for opt in ['-Y', '--does-not-exist']
+    let out = split(system(GetVimCommand() .. ' ' .. opt), "\n")
+    call assert_equal(1, v:shell_error)
+    call assert_match('^VIM - Vi IMproved .* (.*)$',              out[0])
+    call assert_equal('Unknown option argument: "' .. opt .. '"', out[1])
+    call assert_equal('More info with: "vim -h"',                 out[2])
+  endfor
+
+  for opt in ['-c', '-i', '-s', '-t', '-T', '-u', '-U', '-w', '-W', '--cmd', '--startuptime']
+    let out = split(system(GetVimCommand() .. ' '  .. opt), "\n")
+    call assert_equal(1, v:shell_error)
+    call assert_match('^VIM - Vi IMproved .* (.*)$',             out[0])
+    call assert_equal('Argument missing after: "' .. opt .. '"', out[1])
+    call assert_equal('More info with: "vim -h"',                out[2])
+  endfor
+
+  if has('clientserver')
+    for opt in ['--remote', '--remote-send', '--remote-silent', '--remote-expr',
+          \     '--remote-tab', '--remote-tab-wait',
+          \     '--remote-tab-wait-silent', '--remote-tab-silent',
+          \     '--remote-wait', '--remote-wait-silent',
+          \     '--servername',
+          \    ]
+      let out = split(system(GetVimCommand() .. ' '  .. opt), "\n")
+      call assert_equal(1, v:shell_error)
+      call assert_match('^VIM - Vi IMproved .* (.*)$',             out[0])
+      call assert_equal('Argument missing after: "' .. opt .. '"', out[1])
+      call assert_equal('More info with: "vim -h"',                out[2])
+    endfor
+  endif
+
+  if has('gui_gtk')
+    let out = split(system(GetVimCommand() .. ' --display'), "\n")
+    call assert_equal(1, v:shell_error)
+    call assert_match('^VIM - Vi IMproved .* (.*)$',         out[0])
+    call assert_equal('Argument missing after: "--display"', out[1])
+    call assert_equal('More info with: "vim -h"',            out[2])
+  endif
+
+  if has('xterm_clipboard')
+    let out = split(system(GetVimCommand() .. ' -display'), "\n")
+    call assert_equal(1, v:shell_error)
+    call assert_match('^VIM - Vi IMproved .* (.*)$',         out[0])
+    call assert_equal('Argument missing after: "-display"', out[1])
+    call assert_equal('More info with: "vim -h"',            out[2])
+  endif
+
+  let out = split(system(GetVimCommand() .. ' -ix'), "\n")
+  call assert_equal(1, v:shell_error)
+  call assert_match('^VIM - Vi IMproved .* (.*)$',          out[0])
+  call assert_equal('Garbage after option argument: "-ix"', out[1])
+  call assert_equal('More info with: "vim -h"',             out[2])
+
+  let out = split(system(GetVimCommand() .. ' - xxx'), "\n")
+  call assert_equal(1, v:shell_error)
+  call assert_match('^VIM - Vi IMproved .* (.*)$',    out[0])
+  call assert_equal('Too many edit arguments: "xxx"', out[1])
+  call assert_equal('More info with: "vim -h"',       out[2])
+
+  if has('quickfix')
+    " Detect invalid repeated arguments '-t foo -t foo", '-q foo -q foo'.
+    for opt in ['-t', '-q']
+      let out = split(system(GetVimCommand() .. repeat(' ' .. opt .. ' foo', 2)), "\n")
+      call assert_equal(1, v:shell_error)
+      call assert_match('^VIM - Vi IMproved .* (.*)$',              out[0])
+      call assert_equal('Too many edit arguments: "' .. opt .. '"', out[1])
+      call assert_equal('More info with: "vim -h"',                 out[2])
+    endfor
+  endif
+
+  for opt in [' -cq', ' --cmd q', ' +', ' -S foo']
+    let out = split(system(GetVimCommand() .. repeat(opt, 11)), "\n")
+    call assert_equal(1, v:shell_error)
+    " FIXME: The error message given by Vim is not ideal in case of repeated
+    " -S foo since it does not mention -S.
+    call assert_match('^VIM - Vi IMproved .* (.*)$',                                    out[0])
+    call assert_equal('Too many "+command", "-c command" or "--cmd command" arguments', out[1])
+    call assert_equal('More info with: "vim -h"',                                       out[2])
+  endfor
+
+  if has('gui_gtk')
+    for opt in ['--socketid x', '--socketid 0xg']
+      let out = split(system(GetVimCommand() .. ' ' .. opt), "\n")
+      call assert_equal(1, v:shell_error)
+      call assert_match('^VIM - Vi IMproved .* (.*)$',        out[0])
+      call assert_equal('Invalid argument for: "--socketid"', out[1])
+      call assert_equal('More info with: "vim -h"',           out[2])
+    endfor
+  endif
+endfunc
+
 func Test_file_args()
-  let after = [
-	\ 'call writefile(argv(), "Xtestout")',
-	\ 'qall',
-	\ ]
+  let after =<< trim [CODE]
+    call writefile(argv(), "Xtestout")
+    qall
+  [CODE]
+
   if RunVim([], after, '')
     let lines = readfile('Xtestout')
     call assert_equal(0, len(lines))
@@ -381,9 +549,7 @@ func Test_file_args()
 endfunc
 
 func Test_startuptime()
-  if !has('startuptime')
-    return
-  endif
+  CheckFeature startuptime
   let after = ['qall']
   if RunVim([], after, '--startuptime Xtestout one')
     let lines = readfile('Xtestout')
@@ -403,10 +569,11 @@ func Test_startuptime()
 endfunc
 
 func Test_read_stdin()
-  let after = [
-	\ 'write Xtestout',
-	\ 'quit!',
-	\ ]
+  let after =<< trim [CODE]
+    write Xtestout
+    quit!
+  [CODE]
+
   if RunVimPiped([], after, '-', 'echo something | ')
     let lines = readfile('Xtestout')
     " MS-Windows adds a space after the word
@@ -416,15 +583,22 @@ func Test_read_stdin()
 endfunc
 
 func Test_set_shell()
-  let after = [
-	\ 'call writefile([&shell], "Xtestout")',
-	\ 'quit!',
-	\ ]
-  let $SHELL = '/bin/with space/sh'
+  let after =<< trim [CODE]
+    call writefile([&shell], "Xtestout")
+    quit!
+  [CODE]
+
+  if has('win32')
+    let $SHELL = 'C:\with space\cmd.exe'
+    let expected = '"C:\with space\cmd.exe"'
+  else
+    let $SHELL = '/bin/with space/sh'
+    let expected = '/bin/with\ space/sh'
+  endif
+
   if RunVimPiped([], after, '', '')
     let lines = readfile('Xtestout')
-    " MS-Windows adds a space after the word
-    call assert_equal('/bin/with\ space/sh', lines[0])
+    call assert_equal(expected, lines[0])
   endif
   call delete('Xtestout')
 endfunc
@@ -444,10 +618,9 @@ func Test_progpath()
 endfunc
 
 func Test_silent_ex_mode()
-  if !has('unix') || has('gui_running')
-    " can't get output of Vim.
-    return
-  endif
+  " must be able to get the output of Vim.
+  CheckUnix
+  CheckNotGui
 
   " This caused an ml_get error.
   let out = system(GetVimCommand() . '-u NONE -es -c''set verbose=1|h|exe "%norm\<c-y>\<c-d>"'' -c cq')
@@ -455,10 +628,9 @@ func Test_silent_ex_mode()
 endfunc
 
 func Test_default_term()
-  if !has('unix') || has('gui_running')
-    " can't get output of Vim.
-    return
-  endif
+  " must be able to get the output of Vim.
+  CheckUnix
+  CheckNotGui
 
   let save_term = $TERM
   let $TERM = 'unknownxxx'
@@ -470,23 +642,364 @@ endfunc
 func Test_zzz_startinsert()
   " Test :startinsert
   call writefile(['123456'], 'Xtestout')
-  let after = [
-	\ ':startinsert',
-	\ 'call feedkeys("foobar\<c-o>:wq\<cr>","t")'
-	\ ]
+  let after =<< trim [CODE]
+    :startinsert
+    call feedkeys("foobar\<c-o>:wq\<cr>","t")
+  [CODE]
+
   if RunVim([], after, 'Xtestout')
     let lines = readfile('Xtestout')
     call assert_equal(['foobar123456'], lines)
   endif
   " Test :startinsert!
   call writefile(['123456'], 'Xtestout')
-  let after = [
-	\ ':startinsert!',
-	\ 'call feedkeys("foobar\<c-o>:wq\<cr>","t")'
-	\ ]
+  let after =<< trim [CODE]
+    :startinsert!
+    call feedkeys("foobar\<c-o>:wq\<cr>","t")
+  [CODE]
+
   if RunVim([], after, 'Xtestout')
     let lines = readfile('Xtestout')
     call assert_equal(['123456foobar'], lines)
   endif
   call delete('Xtestout')
 endfunc
+
+func Test_issue_3969()
+  " Can't catch the output of gvim.
+  CheckNotGui
+
+  " Check that message is not truncated.
+  let out = system(GetVimCommand() . ' -es -X -V1 -c "echon ''hello''" -cq')
+  call assert_equal('hello', out)
+endfunc
+
+func Test_start_with_tabs()
+  CheckRunVimInTerminal
+
+  let buf = RunVimInTerminal('-p a b c', {})
+  call VerifyScreenDump(buf, 'Test_start_with_tabs', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+endfunc
+
+func Test_v_argv()
+  " Can't catch the output of gvim.
+  CheckNotGui
+
+  let out = system(GetVimCommand() . ' -es -V1 -X arg1 --cmd "echo v:argv" --cmd q')
+  let list = out->split("', '")
+  call assert_match('vim', list[0])
+  let idx = index(list, 'arg1')
+  call assert_true(idx > 2)
+  call assert_equal(['arg1', '--cmd', 'echo v:argv', '--cmd', 'q'']'], list[idx:])
+endfunc
+
+" Test for the "-r" recovery mode option
+func Test_r_arg()
+  " Can't catch the output of gvim.
+  CheckNotGui
+  CheckUnix
+  CheckEnglish
+  let cmd = GetVimCommand()
+  " There can be swap files anywhere, only check for the headers.
+  let expected =<< trim END
+    Swap files found:.*
+    In current directory:.*
+    In directory \~/tmp:.*
+    In directory /var/tmp:.*
+    In directory /tmp:.*
+  END
+  call assert_match(join(expected, ""), system(cmd .. " -r")->substitute("[\r\n]\\+", '', ''))
+endfunc
+
+" Test for the '-t' option to jump to a tag
+func Test_t_arg()
+  let before =<< trim [CODE]
+    set tags=Xtags
+  [CODE]
+  let after =<< trim [CODE]
+    let s = bufname('') .. ':L' .. line('.') .. 'C' .. col('.')
+    call writefile([s], "Xtestout")
+    qall
+  [CODE]
+
+  call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "first\tXfile1\t/^    \\zsfirst$/",
+        \ "second\tXfile1\t/^    \\zssecond$/",
+        \ "third\tXfile1\t/^    \\zsthird$/"],
+        \ 'Xtags')
+  call writefile(['    first', '    second', '    third'], 'Xfile1')
+
+  if RunVim(before, after, '-t second')
+    call assert_equal(['Xfile1:L2C5'], readfile('Xtestout'))
+    call delete('Xtestout')
+  endif
+
+  call delete('Xtags')
+  call delete('Xfile1')
+endfunc
+
+" Test the '-T' argument which sets the 'term' option.
+func Test_T_arg()
+  CheckNotGui
+  let after =<< trim [CODE]
+    call writefile([&term], "Xtest_T_arg")
+    qall
+  [CODE]
+
+  for t in ['builtin_dumb', 'builtin_ansi']
+    if RunVim([], after, '-T ' .. t)
+      let lines = readfile('Xtest_T_arg')
+      call assert_equal([t], lines)
+    endif
+  endfor
+
+  call delete('Xtest_T_arg')
+endfunc
+
+" Test the '-x' argument to read/write encrypted files.
+func Test_x_arg()
+  CheckRunVimInTerminal
+  CheckFeature cryptv
+
+  " Create an encrypted file Xtest_x_arg.
+  let buf = RunVimInTerminal('-n -x Xtest_x_arg', #{rows: 10, wait_for_ruler: 0})
+  call WaitForAssert({-> assert_match('^Enter encryption key: ', term_getline(buf, 10))})
+  call term_sendkeys(buf, "foo\n")
+  call WaitForAssert({-> assert_match('^Enter same key again: ', term_getline(buf, 10))})
+  call term_sendkeys(buf, "foo\n")
+  call WaitForAssert({-> assert_match(' All$', term_getline(buf, 10))})
+  call term_sendkeys(buf, "itest\<Esc>:w\<Enter>")
+  call WaitForAssert({-> assert_match('"Xtest_x_arg" \[New\]\[blowfish2\] 1L, 5B written',
+        \            term_getline(buf, 10))})
+  call StopVimInTerminal(buf)
+
+  " Read the encrypted file and check that it contains the expected content "test"
+  let buf = RunVimInTerminal('-n -x Xtest_x_arg', #{rows: 10, wait_for_ruler: 0})
+  call WaitForAssert({-> assert_match('^Enter encryption key: ', term_getline(buf, 10))})
+  call term_sendkeys(buf, "foo\n")
+  call WaitForAssert({-> assert_match('^Enter same key again: ', term_getline(buf, 10))})
+  call term_sendkeys(buf, "foo\n")
+  call WaitForAssert({-> assert_match('^test', term_getline(buf, 1))})
+  call StopVimInTerminal(buf)
+
+  call delete('Xtest_x_arg')
+endfunc
+
+" Test for entering the insert mode on startup
+func Test_start_insertmode()
+  let before =<< trim [CODE]
+    set insertmode
+  [CODE]
+  let after =<< trim [CODE]
+    call writefile(['insertmode=' .. &insertmode], 'Xtestout')
+    qall
+  [CODE]
+  if RunVim(before, after, '')
+    call assert_equal(['insertmode=1'], readfile('Xtestout'))
+    call delete('Xtestout')
+  endif
+endfunc
+
+" Test for enabling the binary mode on startup
+func Test_b_arg()
+  let after =<< trim [CODE]
+    call writefile(['binary=' .. &binary], 'Xtestout')
+    qall
+  [CODE]
+  if RunVim([], after, '-b')
+    call assert_equal(['binary=1'], readfile('Xtestout'))
+    call delete('Xtestout')
+  endif
+endfunc
+
+" Test for enabling the lisp mode on startup
+func Test_l_arg()
+  let after =<< trim [CODE]
+    let s = 'lisp=' .. &lisp .. ', showmatch=' .. &showmatch
+    call writefile([s], 'Xtestout')
+    qall
+  [CODE]
+  if RunVim([], after, '-l')
+    call assert_equal(['lisp=1, showmatch=1'], readfile('Xtestout'))
+    call delete('Xtestout')
+  endif
+endfunc
+
+" Test for specifying a non-existing vimrc file using "-u"
+func Test_missing_vimrc()
+  CheckRunVimInTerminal
+  let after =<< trim [CODE]
+    call assert_match('^E282:', v:errmsg)
+    call writefile(v:errors, 'Xtestout')
+  [CODE]
+  call writefile(after, 'Xafter')
+
+  let cmd = GetVimCommandCleanTerm() . ' -u Xvimrc_missing -S Xafter'
+  let buf = term_start(cmd, {'term_rows' : 10})
+  call WaitForAssert({-> assert_equal("running", term_getstatus(buf))})
+  call TermWait(buf)
+  call term_sendkeys(buf, "\n:")
+  call TermWait(buf)
+  call WaitForAssert({-> assert_match(':', term_getline(buf, 10))})
+  call StopVimInTerminal(buf)
+  call assert_equal([], readfile('Xtestout'))
+  call delete('Xafter')
+  call delete('Xtestout')
+endfunc
+
+" Test for using the $VIMINIT environment variable
+func Test_VIMINIT()
+  let after =<< trim [CODE]
+    call assert_equal(1, exists('viminit_found'))
+    call assert_equal('yes', viminit_found)
+    call writefile(v:errors, 'Xtestout')
+    qall
+  [CODE]
+  call writefile(after, 'Xafter')
+  let cmd = GetVimProg() . ' --not-a-term -S Xafter --cmd "set enc=utf8"'
+  call setenv('VIMINIT', 'let viminit_found="yes"')
+  exe "silent !" . cmd
+  call assert_equal([], readfile('Xtestout'))
+  call delete('Xtestout')
+  call delete('Xafter')
+endfunc
+
+" Test for using the $EXINIT environment variable
+func Test_EXINIT()
+  let after =<< trim [CODE]
+    call assert_equal(1, exists('exinit_found'))
+    call assert_equal('yes', exinit_found)
+    call writefile(v:errors, 'Xtestout')
+    qall
+  [CODE]
+  call writefile(after, 'Xafter')
+  let cmd = GetVimProg() . ' --not-a-term -S Xafter --cmd "set enc=utf8"'
+  call setenv('EXINIT', 'let exinit_found="yes"')
+  exe "silent !" . cmd
+  call assert_equal([], readfile('Xtestout'))
+  call delete('Xtestout')
+  call delete('Xafter')
+endfunc
+
+" Test for using the 'exrc' option
+func Test_exrc()
+  let after =<< trim [CODE]
+    call assert_equal(1, &exrc)
+    call assert_equal(1, &secure)
+    call assert_equal(37, exrc_found)
+    call writefile(v:errors, 'Xtestout')
+    qall
+  [CODE]
+  call mkdir('Xdir')
+  call writefile(['let exrc_found=37'], 'Xdir/.exrc')
+  call writefile(after, 'Xdir/Xafter')
+  let cmd = GetVimProg() . ' --not-a-term -S Xafter --cmd "cd Xdir" --cmd "set enc=utf8 exrc secure"'
+  exe "silent !" . cmd
+  call assert_equal([], readfile('Xdir/Xtestout'))
+  call delete('Xdir', 'rf')
+endfunc
+
+" Test for starting Vim with a non-terminal as input/output
+func Test_io_not_a_terminal()
+  " Can't catch the output of gvim.
+  CheckNotGui
+  CheckUnix
+  CheckEnglish
+  let l = systemlist(GetVimProg() .. ' --ttyfail')
+  call assert_equal(['Vim: Warning: Output is not to a terminal',
+        \ 'Vim: Warning: Input is not from a terminal'], l)
+endfunc
+
+" Test for the "-w scriptout" argument
+func Test_w_arg()
+  " Can't catch the output of gvim.
+  CheckNotGui
+  call writefile(["iVim Editor\<Esc>:q!\<CR>"], 'Xscriptin', 'b')
+  if RunVim([], [], '-s Xscriptin -w Xscriptout')
+    call assert_equal(["iVim Editor\e:q!\r"], readfile('Xscriptout'))
+    call delete('Xscriptout')
+  endif
+  call delete('Xscriptin')
+
+  " Test for failing to open the script output file. This test works only when
+  " the language is English.
+  if v:lang == "C" || v:lang =~ '^[Ee]n'
+    call mkdir("Xdir")
+    let m = system(GetVimCommand() .. " -w Xdir")
+    call assert_equal("Cannot open for script output: \"Xdir\"\n", m)
+    call delete("Xdir", 'rf')
+  endif
+endfunc
+
+" Test for the "-s scriptin" argument
+func Test_s_arg()
+  " Can't catch the output of gvim.
+  CheckNotGui
+  CheckEnglish
+  " Test for failing to open the script input file.
+  let m = system(GetVimCommand() .. " -s abcxyz")
+  call assert_equal("Cannot open for reading: \"abcxyz\"\n", m)
+
+  call writefile([], 'Xinput')
+  let m = system(GetVimCommand() .. " -s Xinput -s Xinput")
+  call assert_equal("Attempt to open script file again: \"-s Xinput\"\n", m)
+  call delete('Xinput')
+endfunc
+
+" Test for the "-n" (no swap file) argument
+func Test_n_arg()
+  let after =<< trim [CODE]
+    call assert_equal(0, &updatecount)
+    call writefile(v:errors, 'Xtestout')
+    qall
+  [CODE]
+  if RunVim([], after, '-n')
+    call assert_equal([], readfile('Xtestout'))
+    call delete('Xtestout')
+  endif
+endfunc
+
+" Test for the "-h" (help) argument
+func Test_h_arg()
+  " Can't catch the output of gvim.
+  CheckNotGui
+  let l = systemlist(GetVimProg() .. ' -h')
+  call assert_match('^VIM - Vi IMproved', l[0])
+  let l = systemlist(GetVimProg() .. ' -?')
+  call assert_match('^VIM - Vi IMproved', l[0])
+endfunc
+
+" Test for the "-F" (farsi) argument
+func Test_F_arg()
+  " Can't catch the output of gvim.
+  CheckNotGui
+  let l = systemlist(GetVimProg() .. ' -F')
+  call assert_match('^E27:', l[0])
+endfunc
+
+" Test for the "-E" (improved Ex mode) argument
+func Test_E_arg()
+  let after =<< trim [CODE]
+    call assert_equal('cv', mode(1))
+    call writefile(v:errors, 'Xtestout')
+    qall
+  [CODE]
+  if RunVim([], after, '-E')
+    call assert_equal([], readfile('Xtestout'))
+    call delete('Xtestout')
+  endif
+endfunc
+
+" Test for too many edit argument errors
+func Test_too_many_edit_args()
+  " Can't catch the output of gvim.
+  CheckNotGui
+  CheckEnglish
+  let l = systemlist(GetVimProg() .. ' - -')
+  call assert_match('^Too many edit arguments: "-"', l[1])
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

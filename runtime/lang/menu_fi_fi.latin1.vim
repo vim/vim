@@ -1,6 +1,6 @@
 " Menu Translations:	Finnish
 " Maintainer:		Flammie Pirinen <flammie@iki.fi>
-" Last Change:		2012 May 01
+" Last Change:		2020 Apr 23
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -70,7 +70,7 @@ menutrans &Context\ lines				&Huomioitavat\ kontekstirivit
 " Subsubmenu:
 " Accels: ELSOA
 menutrans &Virtual\ Edit				&Virtuaalimuokkaus
-menutrans Never							&Ei koskaan
+menutrans Never							&Ei\ koskaan
 menutrans Block\ Selection					&Lohkovalinta
 menutrans Insert\ mode						&Syöttötila
 menutrans Block\ and\ Insert					L&ohkosyöttötila
@@ -95,7 +95,7 @@ menutrans F&ile\ Settings			Tiedostoasetu&kset
 menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!	Rivi&numerointi<Tab>:set\ nu!
 menutrans Toggle\ &List\ Mode<Tab>:set\ list!		&Listaustila<Tab>:set\ list!
 menutrans Toggle\ Line\ &Wrap<Tab>:set\ wrap!		&Rivitys<Tab>:set\ wrap!
-menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!	&Sanoittainen rivitys<Tab>:set\ lbr!
+menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!	&Sanoittainen\ rivitys<Tab>:set\ lbr!
 menutrans Toggle\ &expand-tab<Tab>:set\ et!		Muuta\ &tabit\ väleiksi<Tab>:set\ et!
 menutrans Toggle\ &auto-indent<Tab>:set\ ai!		&Automaattinen\ sisennys<Tab>:set\ ai!
 menutrans Toggle\ &C-indenting<Tab>:set\ cin!		&C-kielen\ sisennys<Tab>:set\ cin!
@@ -111,7 +111,7 @@ let g:menutrans_fileformat_choices = " &Unix \n &Dos \n &Mac \n &Peru "
 
 menutrans C&olor\ Scheme			&Väriteema
 menutrans &Keymap				&Näppäinkartta
-menutrans None						Ei mikään
+menutrans None					Ei\ mikään
 menutrans Select\ Fo&nt\.\.\.			Valitse\ &fontti\.\.\.
 
 

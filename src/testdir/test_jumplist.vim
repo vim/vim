@@ -1,10 +1,10 @@
 " Tests for the jumplist functionality
 
+source check.vim
+
 " Tests for the getjumplist() function
 func Test_getjumplist()
-  if !has("jumplist")
-    return
-  endif
+  CheckFeature jumplist
 
   %bwipe
   clearjumps
@@ -28,28 +28,32 @@ func Test_getjumplist()
   normal G
   normal gg
 
-  call assert_equal([[
+  let expected = [[
 	      \ {'lnum': 1, 'bufnr': bnr, 'col': 0, 'coladd': 0},
 	      \ {'lnum': 50, 'bufnr': bnr, 'col': 0, 'coladd': 0},
-	      \ {'lnum': 100, 'bufnr': bnr, 'col': 0, 'coladd': 0}], 4],
-	      \ getjumplist())
+	      \ {'lnum': 100, 'bufnr': bnr, 'col': 0, 'coladd': 0}], 3]
+  call assert_equal(expected, getjumplist())
+  " jumplist doesn't change in between calls
+  call assert_equal(expected, getjumplist())
 
   " Traverse the jump list and verify the results
   5
   exe "normal \<C-O>"
-  call assert_equal(2, getjumplist(1)[1])
+  call assert_equal(2, 1->getjumplist()[1])
   exe "normal 2\<C-O>"
   call assert_equal(0, getjumplist(1, 1)[1])
   exe "normal 3\<C-I>"
   call assert_equal(3, getjumplist()[1])
   exe "normal \<C-O>"
   normal 20%
-  call assert_equal([[
+  let expected = [[
 	      \ {'lnum': 1, 'bufnr': bnr, 'col': 0, 'coladd': 0},
 	      \ {'lnum': 50, 'bufnr': bnr, 'col': 0, 'coladd': 0},
 	      \ {'lnum': 5, 'bufnr': bnr, 'col': 0, 'coladd': 0},
-	      \ {'lnum': 100, 'bufnr': bnr, 'col': 0, 'coladd': 0}], 5],
-	      \ getjumplist())
+	      \ {'lnum': 100, 'bufnr': bnr, 'col': 0, 'coladd': 0}], 4]
+  call assert_equal(expected, getjumplist())
+  " jumplist doesn't change in between calls
+  call assert_equal(expected, getjumplist())
 
   let l = getjumplist()
   call test_garbagecollect_now()
@@ -60,3 +64,5 @@ func Test_getjumplist()
 
   call delete("Xtest")
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

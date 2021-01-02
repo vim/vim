@@ -1,7 +1,4 @@
 " Tests for expressions using utf-8.
-if !has('multi_byte')
-  finish
-endif
 
 func Test_strgetchar()
   call assert_equal(char2nr('á'), strgetchar('áxb', 0))
@@ -35,3 +32,5 @@ func Test_strcharpart()
   call assert_equal('̀', strcharpart('àxb', 1, 1))
   call assert_equal('x', strcharpart('àxb', 2, 1))
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

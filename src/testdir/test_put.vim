@@ -1,9 +1,6 @@
 " Tests for put commands, e.g. ":put", "p", "gp", "P", "gP", etc.
 
 func Test_put_block()
-  if !has('multi_byte')
-    return
-  endif
   new
   call feedkeys("i\<C-V>u2500\<CR>x\<ESC>", 'x')
   call feedkeys("\<C-V>y", 'x')
@@ -25,15 +22,13 @@ endfunc
 
 func Test_put_char_block2()
   new
-  let a = [ getreg('a'), getregtype('a') ]
   call setreg('a', ' one ', 'v')
   call setline(1, ['Line 1', '', 'Line 3', ''])
   " visually select the first 3 lines and put register a over it
   exe "norm! ggl\<c-v>2j2l\"ap"
-  call assert_equal(['L one  1', '', 'L one  3', ''], getline(1,4))
+  call assert_equal(['L one  1', '', 'L one  3', ''], getline(1, 4))
   " clean up
   bw!
-  call setreg('a', a[0], a[1])
 endfunc
 
 func Test_put_lines()
@@ -41,10 +36,10 @@ func Test_put_lines()
   let a = [ getreg('a'), getregtype('a') ]
   call setline(1, ['Line 1', 'Line2', 'Line 3', ''])
   exe 'norm! gg"add"AddG""p'
-  call assert_equal(['Line 3', '', 'Line 1', 'Line2'], getline(1,'$'))
+  call assert_equal(['Line 3', '', 'Line 1', 'Line2'], getline(1, '$'))
   " clean up
   bw!
-  call setreg('a', a[0], a[1])
+  eval a[0]->setreg('a', a[1])
 endfunc
 
 func Test_put_expr()
@@ -56,7 +51,7 @@ func Test_put_expr()
   exec "4norm! \"=\<cr>P"
   norm! j0.
   norm! j0.
-  call assert_equal(['A1','A2','A3','4A','5A','6A'], getline(1,'$'))
+  call assert_equal(['A1','A2','A3','4A','5A','6A'], getline(1, '$'))
   bw!
 endfunc
 
@@ -65,16 +60,16 @@ func Test_put_fails_when_nomodifiable()
   setlocal nomodifiable
 
   normal! yy
-  call assert_fails(':put', 'E21')
-  call assert_fails(':put!', 'E21')
-  call assert_fails(':normal! p', 'E21')
-  call assert_fails(':normal! gp', 'E21')
-  call assert_fails(':normal! P', 'E21')
-  call assert_fails(':normal! gP', 'E21')
+  call assert_fails(':put', 'E21:')
+  call assert_fails(':put!', 'E21:')
+  call assert_fails(':normal! p', 'E21:')
+  call assert_fails(':normal! gp', 'E21:')
+  call assert_fails(':normal! P', 'E21:')
+  call assert_fails(':normal! gP', 'E21:')
 
   if has('mouse')
     set mouse=n
-    call assert_fails('execute "normal! \<MiddleMouse>"', 'E21')
+    call assert_fails('execute "normal! \<MiddleMouse>"', 'E21:')
     set mouse&
   endif
 
@@ -104,3 +99,27 @@ func Test_put_p_errmsg_nodup()
   delfunction Capture_p_error
   bwipeout!
 endfunc
+
+func Test_put_p_indent_visual()
+  new
+  call setline(1, ['select this text', 'select that text'])
+  " yank "that" from the second line
+  normal 2Gwvey
+  " select "this" in the first line and put
+  normal k0wve[p
+  call assert_equal('select that text', getline(1))
+  call assert_equal('select that text', getline(2))
+  bwipe!
+endfunc
+
+" Test for deleting all the contents of a buffer with a put
+func Test_put_visual_delete_all_lines()
+  new
+  call setline(1, ['one', 'two', 'three'])
+  let @r = ''
+  normal! VG"rgp
+  call assert_equal(1, line('$'))
+  close!
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

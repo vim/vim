@@ -1,7 +1,11 @@
 " Vim Compiler File
-" Compiler:	ocaml
-" Maintainer:	See ftplugin/ocaml.vim (?)
-" Last Change:	June 2013 by Marc Weber
+" Compiler:    ocaml
+" Maintainer:  Markus Mottl <markus.mottl@gmail.com>
+" URL:         https://github.com/ocaml/vim-ocaml
+" Last Change:
+"              2020 Mar 28 - Improved error format (Thomas Leonard)
+"              2017 Nov 26 - Improved error format (Markus Mottl)
+"              2013 Aug 27 - Added a new OCaml error format (Markus Mottl)
 "
 " Marc Weber's comments:
 " Setting makeprg doesn't make sense, because there is ocamlc, ocamlopt,
@@ -27,7 +31,9 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 CompilerSet errorformat =
+      \%EFile\ \"%f\"\\,\ lines\ %*\\d-%l\\,\ characters\ %c-%*\\d:,
       \%EFile\ \"%f\"\\,\ line\ %l\\,\ characters\ %c-%*\\d:,
+      \%EFile\ \"%f\"\\,\ line\ %l\\,\ characters\ %c-%*\\d\ %.%#,
       \%EFile\ \"%f\"\\,\ line\ %l\\,\ character\ %c:%m,
       \%+EReference\ to\ unbound\ regexp\ name\ %m,
       \%Eocamlyacc:\ e\ -\ line\ %l\ of\ \"%f\"\\,\ %m,
@@ -38,6 +44,12 @@ CompilerSet errorformat =
       \%X%*\\a[%*\\d]:\ Leaving\ directory\ `%f',
       \%D%*\\a:\ Entering\ directory\ `%f',
       \%X%*\\a:\ Leaving\ directory\ `%f',
+      \%D%*\\a[%*\\d]:\ Entering\ directory\ '%f',
+      \%X%*\\a[%*\\d]:\ Leaving\ directory\ '%f',
+      \%D%*\\a:\ Entering\ directory\ '%f',
+      \%X%*\\a:\ Leaving\ directory\ '%f',
+      \%DEntering\ directory\ '%f',
+      \%XLeaving\ directory\ '%f',
       \%DMaking\ %*\\a\ in\ %f
 
 let &cpo = s:cpo_save
