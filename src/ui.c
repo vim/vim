@@ -1012,13 +1012,11 @@ fill_input_buf(int exit_on_error UNUSED)
 	}
 	while (len-- > 0)
 	{
-	    /*
-	     * If a CTRL-C was typed, remove it from the buffer and set
-	     * got_int.  Also recognize CTRL-C with modifyOtherKeys set, in two
-	     * forms.
-	     */
+	    // If a CTRL-C was typed, remove it from the buffer and set
+	    // got_int.  Also recognize CTRL-C with modifyOtherKeys set, in two
+	    // forms.
 	    if (ctrl_c_interrupts && (inbuf[inbufcount] == 3
-			|| (len >= 9 && STRNCMP(inbuf + inbufcount,
+			|| (len >= 10 && STRNCMP(inbuf + inbufcount,
 						   "\033[27;5;99~", 10) == 0)
 			|| (len >= 7 && STRNCMP(inbuf + inbufcount,
 						       "\033[99;5u", 7) == 0)))
