@@ -1526,7 +1526,7 @@ call_def_function(
 		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
 		    SOURCING_LNUM = iptr->isn_lnum;
-		    if (eval_variable(name, STRLEN(name),
+		    if (eval_variable(name, (int)STRLEN(name),
 				  STACK_TV_BOT(0), NULL, TRUE, FALSE) == FAIL)
 			goto on_error;
 		    ++ectx.ec_stack.ga_len;
