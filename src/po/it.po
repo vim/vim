@@ -3931,8 +3931,8 @@ msgstr "E663: Alla fine della lista modifiche"
 msgid "Type \":qa!\" and press <Enter> to abandon all changes and exit Vim"
 msgstr "Batti \":qa!\" e premi <Invio> per ignorare le modifiche e uscire da Vim"
 
-msgid "Type  :qa  and press <Enter> to exit Vim"
-msgstr "Batti  :qa  e premi <Invio> per uscire da Vim"
+msgid "Type \":qa\" and press <Enter> to exit Vim"
+msgstr "Batti \":qa\" e premi <Invio> per uscire da Vim"
 
 msgid "%ld line %sed %d time"
 msgid_plural "%ld line %sed %d times"

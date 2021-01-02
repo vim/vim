@@ -3837,12 +3837,12 @@ msgstr "E662: Değişiklik listesinin başında"
 msgid "E663: At end of changelist"
 msgstr "E663: Değişiklik listesinin sonunda"
 
-msgid "Type  :qa!  and press <Enter> to abandon all changes and exit Vim"
+msgid "Type \":qa!\" and press <Enter> to abandon all changes and exit Vim"
 msgstr ""
-"Değişikliklerden vazgeçip Vim'den çıkmak için :qa! yazıp <Enter>'a basın"
+"Değişikliklerden vazgeçip Vim'den çıkmak için \":qa!\" yazıp <Enter>'a basın"
 
-msgid "Type  :qa  and press <Enter> to exit Vim"
-msgstr "Vim'den çıkmak için :qa yazıp <Enter>'a basın"
+msgid "Type \":qa\" and press <Enter> to exit Vim"
+msgstr "Vim'den çıkmak için \":qa\" yazıp <Enter>'a basın"
 
 #, c-format
 msgid "%ld line %sed %d time"

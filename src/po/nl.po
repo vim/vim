@@ -3514,6 +3514,9 @@ msgstr "E663: einde van wijzigingslijst"
 msgid "Type \":qa!\" and press <Enter> to abandon all changes and exit Vim"
 msgstr "Typ \":qa!\" en druk op <Enter> om Vim te verlaten zonder opslaan"
 
+msgid "Type \":qa\" and press <Enter> to exit Vim"
+msgstr "Typ \":qa\" en druk op <Enter> om Vim te verlaten"
+
 #, c-format
 msgid "1 line %sed 1 time"
 msgstr "1 regel %sed 1 maal"

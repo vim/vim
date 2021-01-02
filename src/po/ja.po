@@ -3992,8 +3992,8 @@ msgstr ""
 "すべての変更を破棄し、Vimを終了するには \":qa!\" と入力し <Enter> を押してくだ"
 "さい"
 
-msgid "Type  :qa  and press <Enter> to exit Vim"
-msgstr "Vimを終了するには  :qa  と入力し <Enter> を押してください"
+msgid "Type \":qa\" and press <Enter> to exit Vim"
+msgstr "Vimを終了するには \":qa\" と入力し <Enter> を押してください"
 
 #, c-format
 msgid "%ld line %sed %d time"

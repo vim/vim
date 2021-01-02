@@ -4092,8 +4092,8 @@ msgid "Type \":qa!\" and press <Enter> to abandon all changes and exit Vim"
 msgstr ""
 "¬ведите \":qa!\" и нажмите <Enter> дл€ отмены всех изменений и выхода из Vim"
 
-msgid "Type  :qa  and press <Enter> to exit Vim"
-msgstr "¬ведите  :qa  и нажмите <Enter> дл€ выхода из Vim"
+msgid "Type \":qa\" and press <Enter> to exit Vim"
+msgstr "¬ведите \":qa\" и нажмите <Enter> дл€ выхода из Vim"
 
 #, c-format
 msgid "%ld line %sed %d time"

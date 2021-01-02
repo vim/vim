@@ -3880,8 +3880,8 @@ msgstr ""
 "Tajpu \":qa!\" kaj premu <Enenklavon> por forlasi ĉiujn ŝanĝojn kaj eliri el "
 "Vim"
 
-msgid "Type  :qa  and press <Enter> to exit Vim"
-msgstr "Tajpu  :qa!  kaj premu <Enenklavon> por eliri el Vim"
+msgid "Type \":qa\" and press <Enter> to exit Vim"
+msgstr "Tajpu \":qa\" kaj premu <Enenklavon> por eliri el Vim"
 
 #, c-format
 msgid "%ld line %sed %d time"
