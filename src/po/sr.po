@@ -4119,9 +4119,9 @@ msgstr "E662: На почетку листе промена"
 msgid "E663: At end of changelist"
 msgstr "E663: На крају листе промена"
 
-msgid "Type  :qa!  and press <Enter> to abandon all changes and exit Vim"
+msgid "Type \":qa!\" and press <Enter> to abandon all changes and exit Vim"
 msgstr ""
-"Откуцајте  :qa!  и притисните <Ентер> да одбаците све измене и напустите Vim"
+"Откуцајте \":qa!\" и притисните <Ентер> да одбаците све измене и напустите Vim"
 
 #, c-format
 msgid "1 line %sed 1 time"

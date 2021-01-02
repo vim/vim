@@ -4073,8 +4073,8 @@ msgstr "E662: Muutoslistan alussa"
 msgid "E663: At end of changelist"
 msgstr "E663: Muutoslistan lopussa"
 
-msgid "Type  :qa!  and press <Enter> to abandon all changes and exit Vim"
-msgstr "Kirjoita :qa! ja <Enter> niin hylkäät muutokset ja lopetat Vimin"
+msgid "Type \":qa!\" and press <Enter> to abandon all changes and exit Vim"
+msgstr "Kirjoita \":qa!\" ja <Enter> niin hylkäät muutokset ja lopetat Vimin"
 
 #, c-format
 msgid "1 line %sed 1 time"

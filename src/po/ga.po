@@ -4144,8 +4144,8 @@ msgstr "E662: Ag tosach liosta na n-athruithe"
 msgid "E663: At end of changelist"
 msgstr "E663: Ag deireadh liosta na n-athruithe"
 
-msgid "Type  :qa!  and press <Enter> to abandon all changes and exit Vim"
-msgstr "Clóscríobh  :qa!  agus brúigh <Enter> le fágáil ó Vim gan athruithe a shábháil"
+msgid "Type \":qa!\" and press <Enter> to abandon all changes and exit Vim"
+msgstr "Clóscríobh \":qa!\" agus brúigh <Enter> le fágáil ó Vim gan athruithe a shábháil"
 
 # ouch - English -ed ?
 #, c-format

@@ -4113,9 +4113,9 @@ msgstr "E662: Ved begyndelsen af ændringsliste"
 msgid "E663: At end of changelist"
 msgstr "E663: Ved slutningen af ændringsliste"
 
-msgid "Type  :qa!  and press <Enter> to abandon all changes and exit Vim"
+msgid "Type \":qa!\" and press <Enter> to abandon all changes and exit Vim"
 msgstr ""
-"Skriv  :qa!  og tryk på <Enter> for at droppe alle ændringer og afslut Vim"
+"Skriv \":qa!\" og tryk på <Enter> for at droppe alle ændringer og afslut Vim"
 
 #, c-format
 msgid "1 line %sed 1 time"

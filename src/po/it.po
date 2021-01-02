@@ -3856,8 +3856,8 @@ msgstr "E662: All'inizio della lista modifiche"
 msgid "E663: At end of changelist"
 msgstr "E663: Alla fine della lista modifiche"
 
-msgid "Type  :qa!  and press <Enter> to abandon all changes and exit Vim"
-msgstr "Batti  :qa! e premi <Invio> per ignorare le modifiche e uscire da Vim"
+msgid "Type \":qa!\" and press <Enter> to abandon all changes and exit Vim"
+msgstr "Batti \":qa!\" e premi <Invio> per ignorare le modifiche e uscire da Vim"
 
 msgid "1 line %sed 1 time"
 msgstr "1 riga %sa 1 volta"

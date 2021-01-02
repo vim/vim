@@ -4088,9 +4088,9 @@ msgstr "E662: 変更リストの先頭"
 msgid "E663: At end of changelist"
 msgstr "E663: 変更リストの末尾"
 
-msgid "Type  :qa!  and press <Enter> to abandon all changes and exit Vim"
+msgid "Type \":qa!\" and press <Enter> to abandon all changes and exit Vim"
 msgstr ""
-"すべての変更を破棄し、Vimを終了するには  :qa!  と入力し <Enter> を押してくだ"
+"すべての変更を破棄し、Vimを終了するには \":qa!\" と入力し <Enter> を押してくだ"
 "さい"
 
 #, c-format

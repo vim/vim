@@ -4030,8 +4030,8 @@ msgstr "E662: Us trobeu a l'inici de la llista de canvis"
 msgid "E663: At end of changelist"
 msgstr "E663: Us trobeu al final de la llista de canvis"
 
-msgid "Type  :qa!  and press <Enter> to abandon all changes and exit Vim"
-msgstr "Escriviu  :qa!  i premeu <Entrar> per a abandonar els canvis i sortir"
+msgid "Type \":qa!\" and press <Enter> to abandon all changes and exit Vim"
+msgstr "Escriviu \":qa!\" i premeu <Entrar> per a abandonar els canvis i sortir"
 
 # la substitució és ">" o "<"
 #, c-format

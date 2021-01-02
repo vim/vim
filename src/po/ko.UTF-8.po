@@ -4051,8 +4051,8 @@ msgstr "E664: changelist가 비었습니다"
 #~ msgid "E663: At end of changelist"
 #~ msgstr ""
 
-msgid "Type  :qa!  and press <Enter> to abandon all changes and exit Vim"
-msgstr ":qa! 입력 후에 <엔터> 키를 누르시면 수정을 취소하고 빔을 종료합니다"
+msgid "Type \":qa!\" and press <Enter> to abandon all changes and exit Vim"
+msgstr "\":qa!\" 입력 후에 <엔터> 키를 누르시면 수정을 취소하고 빔을 종료합니다"
 
 #, c-format
 msgid "1 line %sed 1 time"
