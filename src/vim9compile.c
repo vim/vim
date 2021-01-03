@@ -6130,6 +6130,12 @@ compile_unlet(
 
 	// Normal name.  Only supports g:, w:, t: and b: namespaces.
 	*name_end = NUL;
+	if (vim_strchr(p, '.') != NULL || vim_strchr(p, '[') != NULL)
+	{
+	    *name_end = cc;
+	    goto failed;
+	}
+
 	if (*p == '$')
 	    ret = generate_UNLET(cctx, ISN_UNLETENV, p + 1, eap->forceit);
 	else if (check_vim9_unlet(p) == FAIL)
@@ -6141,8 +6147,11 @@ compile_unlet(
 	return ret;
     }
 
+failed:
     // TODO: unlet {list}[idx]
     // TODO: unlet {dict}[key]
+    // complication: {list} can be global while "idx" is local, thus we can't
+    // call ex_unlet().
     emsg("Sorry, :unlet not fully implemented yet");
     return FAIL;
 }
@@ -6163,7 +6172,8 @@ compile_unletlock(char_u *arg, exarg_T *eap, cctx_T *cctx)
     }
 
     // TODO: this doesn't work for local variables
-    ex_unletlock(eap, p, 0, GLV_NO_AUTOLOAD, compile_unlet, cctx);
+    ex_unletlock(eap, p, 0, GLV_NO_AUTOLOAD | GLV_COMPILING,
+							  compile_unlet, cctx);
     return eap->nextcmd == NULL ? (char_u *)"" : eap->nextcmd;
 }
 

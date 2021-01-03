@@ -1340,6 +1340,15 @@ def Test_unlet()
   assert_false(exists('s:somevar'))
   unlet! s:somevar
 
+  # can compile unlet before variable exists
+  # This doesn't work yet
+  #g:someDict = {key: 'val'}
+  #var k = 'key'
+  #unlet g:someDict[k]
+  #assert_equal({}, g:someDict)
+  #unlet g:someDict
+  #assert_false(exists('g:someDict'))
+
   CheckScriptFailure([
    'vim9script',
    'var svar = 123',
