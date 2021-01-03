@@ -2256,6 +2256,7 @@ next_line_from_context(cctx_T *cctx, int skip_comment)
 }
 
 /*
+ * Skip over white space at "whitep" and assign to "*arg".
  * If "*arg" is at the end of the line, advance to the next line.
  * Also when "whitep" points to white space and "*arg" is on a "#".
  * Return FAIL if beyond the last line, "*arg" is unmodified then.
@@ -2263,6 +2264,7 @@ next_line_from_context(cctx_T *cctx, int skip_comment)
     static int
 may_get_next_line(char_u *whitep, char_u **arg, cctx_T *cctx)
 {
+    *arg = skipwhite(whitep);
     if (**arg == NUL || (VIM_ISWHITE(*whitep) && vim9_comment_start(*arg)))
     {
 	char_u *next = next_line_from_context(cctx, TRUE);
@@ -3018,14 +3020,13 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     int		count = 0;
     dict_T	*d = dict_alloc();
     dictitem_T	*item;
-    char_u	*whitep = *arg;
+    char_u	*whitep = *arg + 1;
     char_u	*p;
     int		is_const;
     int		is_all_const = TRUE;	// reset when non-const encountered
 
     if (d == NULL)
 	return FAIL;
-    *arg = skipwhite(*arg + 1);
     for (;;)
     {
 	char_u	    *key = NULL;
@@ -3112,7 +3113,6 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    return FAIL;
 	}
 
-	*arg = skipwhite(*arg + 1);
 	if (may_get_next_line(whitep, arg, cctx) == FAIL)
 	{
 	    *arg = NULL;
@@ -3126,7 +3126,6 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	++count;
 
 	whitep = *arg;
-	*arg = skipwhite(*arg);
 	if (may_get_next_line(whitep, arg, cctx) == FAIL)
 	{
 	    *arg = NULL;
@@ -3474,7 +3473,7 @@ compile_leader(cctx_T *cctx, int numeric_only, char_u *start, char_u **end)
     static int
 compile_parenthesis(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 {
-    int ret;
+    int	    ret;
 
     *arg = skipwhite(*arg + 1);
     if (ppconst->pp_used <= PPSIZE - 10)
@@ -3488,7 +3487,8 @@ compile_parenthesis(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    return FAIL;
 	ret = compile_expr0(arg, cctx);
     }
-    *arg = skipwhite(*arg);
+    if (may_get_next_line_error(*arg, arg, cctx) == FAIL)
+	return FAIL;
     if (**arg == ')')
 	++*arg;
     else if (ret == OK)
@@ -3660,7 +3660,6 @@ compile_subscript(
 	    ppconst->pp_is_const = FALSE;
 
 	    ++p;
-	    *arg = skipwhite(p);
 	    if (may_get_next_line_error(p, arg, cctx) == FAIL)
 		return FAIL;
 	    if (**arg == ':')
@@ -3678,7 +3677,7 @@ compile_subscript(
 								    ":", *arg);
 		    return FAIL;
 		}
-		if (may_get_next_line_error(p, arg, cctx) == FAIL)
+		if (may_get_next_line_error(*arg, arg, cctx) == FAIL)
 		    return FAIL;
 		*arg = skipwhite(*arg);
 	    }
@@ -3692,8 +3691,7 @@ compile_subscript(
 								    ":", *arg);
 		    return FAIL;
 		}
-		*arg = skipwhite(*arg);
-		if (may_get_next_line_error(p, arg, cctx) == FAIL)
+		if (may_get_next_line_error(*arg, arg, cctx) == FAIL)
 		    return FAIL;
 		if (**arg == ']')
 		    // missing second index is equal to end of string
@@ -3702,7 +3700,7 @@ compile_subscript(
 		{
 		    if (compile_expr0(arg, cctx) == FAIL)
 			return FAIL;
-		    if (may_get_next_line_error(p, arg, cctx) == FAIL)
+		    if (may_get_next_line_error(*arg, arg, cctx) == FAIL)
 			return FAIL;
 		    *arg = skipwhite(*arg);
 		}
@@ -4115,7 +4113,7 @@ compile_expr7t(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    return FAIL;
 	}
 	++*arg;
-	if (may_get_next_line_error(*arg - 1, arg, cctx) == FAIL)
+	if (may_get_next_line_error(*arg, arg, cctx) == FAIL)
 	    return FAIL;
     }
 
@@ -4174,7 +4172,6 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    error_white_both(op, 1);
 	    return FAIL;
 	}
-	*arg = skipwhite(op + 1);
 	if (may_get_next_line_error(op + 1, arg, cctx) == FAIL)
 	    return FAIL;
 
@@ -4251,7 +4248,6 @@ compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    return FAIL;
 	}
 
-	*arg = skipwhite(op + oplen);
 	if (may_get_next_line_error(op + oplen, arg, cctx) == FAIL)
 	    return FAIL;
 
@@ -4381,7 +4377,6 @@ compile_expr4(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	}
 
 	// get the second variable
-	*arg = skipwhite(p + len);
 	if (may_get_next_line_error(p + len, arg, cctx) == FAIL)
 	    return FAIL;
 
@@ -4481,7 +4476,6 @@ compile_and_or(
 				 ?  JUMP_IF_COND_TRUE : JUMP_IF_COND_FALSE, 0);
 
 	    // eval the next expression
-	    *arg = skipwhite(p + 2);
 	    if (may_get_next_line_error(p + 2, arg, cctx) == FAIL)
 	    {
 		ga_clear(&end_ga);
@@ -4674,7 +4668,6 @@ compile_expr1(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	}
 
 	// evaluate the second expression; any type is accepted
-	*arg = skipwhite(p + 1 + op_falsy);
 	if (may_get_next_line_error(p + 1 + op_falsy, arg, cctx) == FAIL)
 	    return FAIL;
 	if (compile_expr1(arg, cctx, ppconst) == FAIL)
@@ -4725,7 +4718,6 @@ compile_expr1(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    if (has_const_expr)
 		cctx->ctx_skip = save_skip == SKIP_YES || const_value
 							 ? SKIP_YES : SKIP_NOT;
-	    *arg = skipwhite(p + 1);
 	    if (may_get_next_line_error(p + 1, arg, cctx) == FAIL)
 		return FAIL;
 	    if (compile_expr1(arg, cctx, ppconst) == FAIL)
@@ -5414,7 +5406,6 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	// A line break may follow the "=".
 
 	wp = op + oplen;
-	p = skipwhite(wp);
 	if (may_get_next_line_error(wp, &p, cctx) == FAIL)
 	    return FAIL;
 	if (compile_expr0(&p, cctx) == FAIL)
@@ -5766,7 +5757,6 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			--cctx->ctx_locals.ga_len;
 		    instr_count = instr->ga_len;
 		    wp = op + oplen;
-		    p = skipwhite(wp);
 		    if (may_get_next_line_error(wp, &p, cctx) == FAIL)
 		    {
 			if (new_local)
@@ -6575,7 +6565,6 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 
     // consume "in"
     wp = p;
-    p = skipwhite(p);
     if (may_get_next_line_error(wp, &p, cctx) == FAIL)
 	return NULL;
     if (STRNCMP(p, "in", 2) != 0 || !IS_WHITE_OR_NUL(p[2]))
@@ -6584,7 +6573,6 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	return NULL;
     }
     wp = p + 2;
-    p = skipwhite(wp);
     if (may_get_next_line_error(wp, &p, cctx) == FAIL)
 	return NULL;
 
