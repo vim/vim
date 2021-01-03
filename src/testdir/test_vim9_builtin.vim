@@ -662,6 +662,8 @@ def Test_setbufvar()
   settabwinvar(1, 1, '&ts', 15)
   &ts->assert_equal(15)
   setlocal ts=8
+  settabwinvar(1, 1, '&list', false)
+  &list->assert_equal(false)
   settabwinvar(1, 1, '&list', true)
   &list->assert_equal(true)
   setlocal list&

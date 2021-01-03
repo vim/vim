@@ -3509,10 +3509,16 @@ set_option_from_tv(char_u *varname, typval_T *varp)
     int		error = FALSE;
 
     if (varp->v_type == VAR_BOOL)
+    {
 	numval = (long)varp->vval.v_number;
-    else if (!in_vim9script() || varp->v_type != VAR_STRING)
-	numval = (long)tv_get_number_chk(varp, &error);
-    strval = tv_get_string_buf_chk(varp, nbuf);
+	strval = (char_u *)"0";  // avoid using "false"
+    }
+    else
+    {
+	if (!in_vim9script() || varp->v_type != VAR_STRING)
+	    numval = (long)tv_get_number_chk(varp, &error);
+	strval = tv_get_string_buf_chk(varp, nbuf);
+    }
     if (!error && strval != NULL)
 	set_option_value(varname, numval, strval, OPT_LOCAL);
 }
