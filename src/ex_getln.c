@@ -52,7 +52,9 @@ static void	restore_cmdline(cmdline_info_T *ccp);
 static int	cmdline_paste(int regname, int literally, int remcr);
 static void	redrawcmdprompt(void);
 static int	ccheck_abbr(int);
+#ifdef FEAT_SEARCH_EXTRA
 static int	empty_pattern_magic(char_u *pat, size_t len, int magic_val);
+#endif
 
 #ifdef FEAT_CMDWIN
 static int	open_cmdwin(void);
