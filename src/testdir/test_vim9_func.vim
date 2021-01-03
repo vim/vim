@@ -554,6 +554,18 @@ def Test_call_lambda_args()
       echo Ref(1, 'x')
   END
   CheckDefFailure(lines, 'E1013: Argument 2: type mismatch, expected number but got string')
+
+  lines =<< trim END
+    var Ref: func(job, string, number)
+    Ref = (x, y) => 0
+  END
+  CheckDefAndScriptFailure(lines, 'E1012:')
+
+  lines =<< trim END
+    var Ref: func(job, string)
+    Ref = (x, y, z) => 0
+  END
+  CheckDefAndScriptFailure(lines, 'E1012:')
 enddef
 
 def Test_lambda_uses_assigned_var()

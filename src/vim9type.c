@@ -490,8 +490,9 @@ check_type(type_T *expected, type_T *actual, int give_msg, int argidx)
 		    && actual->tt_argcount != -1
 		    && (actual->tt_argcount < expected->tt_min_argcount
 			|| actual->tt_argcount > expected->tt_argcount))
-		    ret = FAIL;
-	    if (expected->tt_args != NULL && actual->tt_args != NULL)
+		ret = FAIL;
+	    if (ret == OK && expected->tt_args != NULL
+						    && actual->tt_args != NULL)
 	    {
 		int i;
 
