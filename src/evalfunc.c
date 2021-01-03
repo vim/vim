@@ -6316,7 +6316,7 @@ find_some_match(typval_T *argvars, typval_T *rettv, matchtype_T type)
 
     // Make 'cpoptions' empty, the 'l' flag should not be used here.
     save_cpo = p_cpo;
-    p_cpo = (char_u *)"";
+    p_cpo = empty_option;
 
     rettv->vval.v_number = -1;
     if (type == MATCH_LIST || type == MATCH_POS)
@@ -8024,8 +8024,14 @@ theend:
     if (p_cpo == empty_option)
 	p_cpo = save_cpo;
     else
+    {
 	// Darn, evaluating the {skip} expression changed the value.
+	// If it's still empty it was changed and restored, need to restore in
+	// the complicated way.
+	if (*p_cpo == NUL)
+	    set_option_value((char_u *)"cpo", 0L, save_cpo, 0);
 	free_string_option(save_cpo);
+    }
 
     return retval;
 }
@@ -8723,7 +8729,7 @@ f_split(typval_T *argvars, typval_T *rettv)
 
     // Make 'cpoptions' empty, the 'l' flag should not be used here.
     save_cpo = p_cpo;
-    p_cpo = (char_u *)"";
+    p_cpo = empty_option;
 
     str = tv_get_string(&argvars[0]);
     if (argvars[1].v_type != VAR_UNKNOWN)

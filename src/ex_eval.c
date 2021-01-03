@@ -1695,7 +1695,7 @@ ex_catch(exarg_T *eap)
 		    *end = NUL;
 		}
 		save_cpo  = p_cpo;
-		p_cpo = (char_u *)"";
+		p_cpo = empty_option;
 		// Disable error messages, it will make current_exception
 		// invalid.
 		++emsg_off;

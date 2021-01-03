@@ -702,6 +702,26 @@ func Test_helpgrep()
   call s:test_xhelpgrep('l')
 endfunc
 
+def Test_helpgrep_vim9_restore_cpo()
+  assert_equal('aABceFs', &cpo)
+
+  var rtp_save = &rtp
+  var dir = 'Xruntime/after'
+  &rtp ..= ',' .. dir
+  mkdir(dir .. '/ftplugin', 'p')
+  writefile(['vim9'], dir .. '/ftplugin/qf.vim')
+  filetype plugin on
+  silent helpgrep grail
+  cwindow
+  silent helpgrep grail
+
+  assert_equal('aABceFs', &cpo)
+  delete(dir, 'rf')
+  &rtp = rtp_save
+  cclose
+  helpclose
+enddef
+
 func Test_errortitle()
   augroup QfBufWinEnter
     au!
