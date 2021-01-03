@@ -652,11 +652,19 @@ def Test_setbufvar()
   &syntax->assert_equal('vim')
   setbufvar(bufnr('%'), '&ts', 16)
   &ts->assert_equal(16)
+  setbufvar(bufnr('%'), '&ai', true)
+  &ai->assert_equal(true)
+  setbufvar(bufnr('%'), '&ft', 'filetype')
+  &ft->assert_equal('filetype')
+
   settabwinvar(1, 1, '&syntax', 'vam')
   &syntax->assert_equal('vam')
   settabwinvar(1, 1, '&ts', 15)
   &ts->assert_equal(15)
   setlocal ts=8
+  settabwinvar(1, 1, '&list', true)
+  &list->assert_equal(true)
+  setlocal list&
 
   setbufvar('%', 'myvar', 123)
   getbufvar('%', 'myvar')->assert_equal(123)
