@@ -2072,8 +2072,8 @@ get_var_special_name(int nr)
     {
 	case VVAL_FALSE: return in_vim9script() ? "false" : "v:false";
 	case VVAL_TRUE:  return in_vim9script() ? "true" : "v:true";
+	case VVAL_NULL:  return in_vim9script() ? "null" : "v:null";
 	case VVAL_NONE:  return "v:none";
-	case VVAL_NULL:  return "v:null";
     }
     internal_error("get_var_special_name()");
     return "42";

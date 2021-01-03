@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Jan 02
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Jan 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -640,11 +640,11 @@ always converted to string: >
 
 Simple types are string, float, special and bool.  For other types |string()|
 can be used.
-							*false* *true*
-In Vim9 script one can use "true" for v:true and "false" for v:false.  When
-converting a boolean to a string "false" and "true" are used, not "v:false"
-and "v:true" like in legacy script.  "v:none" and "v:null" are not changed,
-they are only used in JSON.
+							*false* *true* *null*
+In Vim9 script one can use "true" for v:true, "false" for v:false and "null"
+for v:null.  When converting a boolean to a string "false" and "true" are
+used, not "v:false" and "v:true" like in legacy script.  "v:none" is not
+changed, it is only used in JSON and has no equivalent in other languages.
 
 Indexing a string with [idx] or [idx, idx] uses character indexes instead of
 byte indexes. Example: >

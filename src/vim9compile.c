@@ -3968,6 +3968,20 @@ compile_expr7(
 		    break;
 
 	/*
+	 * "null" constant
+	 */
+	case 'n':   if (STRNCMP(*arg, "null", 4) == 0
+						   && !eval_isnamec((*arg)[5]))
+		    {
+			*arg += 4;
+			rettv->v_type = VAR_SPECIAL;
+			rettv->vval.v_number = VVAL_NULL;
+		    }
+		    else
+			ret = NOTDONE;
+		    break;
+
+	/*
 	 * List: [expr, expr]
 	 */
 	case '[':   ret = compile_list(arg, cctx, ppconst);
@@ -5006,6 +5020,7 @@ assignment_len(char_u *p, int *heredoc)
 static char *reserved[] = {
     "true",
     "false",
+    "null",
     NULL
 };
 

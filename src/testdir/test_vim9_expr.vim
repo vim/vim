@@ -511,6 +511,8 @@ def Test_expr4_equal()
       assert_equal(true, v:none == v:none)
       assert_equal(false, v:none == v:null)
       assert_equal(true, g:anone == v:none)
+      assert_equal(true, null == v:null)
+      assert_equal(true, null == g:anull)
       assert_equal(false, v:none == g:anull)
 
       var nr0 = 0
@@ -1063,7 +1065,7 @@ def Test_expr5()
 
       assert_equal('atrue', 'a' .. true)
       assert_equal('afalse', 'a' .. false)
-      assert_equal('av:null', 'a' .. v:null)
+      assert_equal('anull', 'a' .. v:null)
       assert_equal('av:none', 'a' .. v:none)
       if has('float')
         assert_equal('a0.123', 'a' .. 0.123)
@@ -1657,6 +1659,7 @@ def Test_expr7_special()
       assert_equal(false, f)
 
       assert_equal(g:special_null, v:null)
+      assert_equal(g:special_null, null)
       assert_equal(g:special_none, v:none)
   END
   CheckDefAndScriptSuccess(lines)
