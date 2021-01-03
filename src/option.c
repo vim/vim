@@ -7009,9 +7009,9 @@ magic_isset(void)
 {
     switch (magic_overruled)
     {
-	case MAGIC_ON:      return TRUE;
-	case MAGIC_OFF:     return FALSE;
-	case MAGIC_NOT_SET: break;
+	case OPTION_MAGIC_ON:      return TRUE;
+	case OPTION_MAGIC_OFF:     return FALSE;
+	case OPTION_MAGIC_NOT_SET: break;
     }
 #ifdef FEAT_EVAL
     if (in_vim9script())

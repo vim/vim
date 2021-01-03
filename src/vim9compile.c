@@ -7035,7 +7035,7 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 	// Push v:exception, push {expr} and MATCH
 	generate_instr_type(cctx, ISN_PUSHEXC, &t_string);
 
-	end = skip_regexp_ex(p + 1, *p, TRUE, &tofree, &dropped);
+	end = skip_regexp_ex(p + 1, *p, TRUE, &tofree, &dropped, NULL);
 	if (*end != *p)
 	{
 	    semsg(_(e_separator_mismatch_str), p);
@@ -7359,7 +7359,7 @@ compile_exec(char_u *line, exarg_T *eap, cctx_T *cctx)
     {
 	int delim = *eap->arg;
 
-	p = skip_regexp_ex(eap->arg + 1, delim, TRUE, NULL, NULL);
+	p = skip_regexp_ex(eap->arg + 1, delim, TRUE, NULL, NULL, NULL);
 	if (*p == delim)
 	{
 	    eap->arg = p + 1;

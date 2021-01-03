@@ -1948,4 +1948,10 @@ EXTERN int channel_need_redraw INIT(= FALSE);
 // While executing a regexp and set to MAGIC_ON or MAGIC_OFF this overrules
 // p_magic.  Otherwise set to MAGIC_NOT_SET.
 
-EXTERN magic_T magic_overruled INIT(= MAGIC_NOT_SET);
+EXTERN magic_T magic_overruled INIT(= OPTION_MAGIC_NOT_SET);
+
+// Magicness of a pattern
+#define MAGIC_NONE	1	// "\V" very unmagic
+#define MAGIC_OFF	2	// "\M" or 'magic' off
+#define MAGIC_ON	3	// "\m" or 'magic'
+#define MAGIC_ALL	4	// "\v" very magic

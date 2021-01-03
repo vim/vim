@@ -4322,7 +4322,7 @@ typedef struct
 #define ICONV_MULT 8
 
 typedef enum {
-    MAGIC_NOT_SET,	// p_magic not overruled
-    MAGIC_ON,		// magic on inside regexp
-    MAGIC_OFF		// magic off inside regexp
+    OPTION_MAGIC_NOT_SET,	// p_magic not overruled
+    OPTION_MAGIC_ON,		// magic on inside regexp
+    OPTION_MAGIC_OFF		// magic off inside regexp
 } magic_T;

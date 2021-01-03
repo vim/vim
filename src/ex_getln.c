@@ -52,6 +52,7 @@ static void	restore_cmdline(cmdline_info_T *ccp);
 static int	cmdline_paste(int regname, int literally, int remcr);
 static void	redrawcmdprompt(void);
 static int	ccheck_abbr(int);
+static int	empty_pattern_magic(char_u *pat, size_t len, int magic_val);
 
 #ifdef FEAT_CMDWIN
 static int	open_cmdwin(void);
@@ -89,15 +90,33 @@ abandon_cmdline(void)
  * as a trailing \|, which can happen while typing a pattern.
  */
     static int
-empty_pattern(char_u *p)
+empty_pattern(char_u *p, int delim)
 {
     size_t n = STRLEN(p);
+    int magic_val = 0;
 
+
+    if (n > 0)
+	(void) skip_regexp_ex(p, delim, magic_isset(), NULL, NULL, &magic_val);
+    else
+	return TRUE;
+    
+    return empty_pattern_magic(p, n, magic_val);
+}
+
+    static int
+empty_pattern_magic(char_u *p, size_t len, int magic_val)
+{
     // remove trailing \v and the like
-    while (n >= 2 && p[n - 2] == '\\'
-			  && vim_strchr((char_u *)"mMvVcCZ", p[n - 1]) != NULL)
-	n -= 2;
-    return n == 0 || (n >= 2 && p[n - 2] == '\\' && p[n - 1] == '|');
+    while (len >= 2 && p[len - 2] == '\\'
+                        && vim_strchr((char_u *)"mMvVcCZ", p[len - 1]) != NULL)
+       len -= 2;
+
+    // true, if the pattern is empty, or the pattern ends with \| and magic is set
+    // (or it ends with '|' and very magic is set)
+    return len == 0 || (len > 1 &&
+	((p[len - 2] == '\\' && p[len - 1] == '|' && magic_val == MAGIC_ON) ||
+	(p[len - 2] != '\\' && p[len - 1] == '|' && magic_val == MAGIC_ALL)));
 }
 
 // Struct to store the viewstate during 'incsearch' highlighting.
@@ -207,6 +226,7 @@ do_incsearch_highlighting(
     pos_T	save_cursor;
     int		use_last_pat;
     int		retval = FALSE;
+    int         magic = 0;
 
     *skiplen = 0;
     *patlen = ccline.cmdlen;
@@ -288,7 +308,7 @@ do_incsearch_highlighting(
     p = skipwhite(p);
     delim = (delim_optional && vim_isIDc(*p)) ? ' ' : *p++;
     *search_delim = delim;
-    end = skip_regexp(p, delim, magic_isset());
+    end = skip_regexp_ex(p, delim, magic_isset(), NULL, NULL, &magic);
 
     use_last_pat = end == p && *end == delim;
 
@@ -302,7 +322,7 @@ do_incsearch_highlighting(
 	int  empty;
 
 	*end = NUL;
-	empty = empty_pattern(p);
+	empty = empty_pattern_magic(p, STRLEN(p), magic);
 	*end = c;
 	if (empty)
 	    goto theend;
@@ -535,7 +555,7 @@ may_do_incsearch_highlighting(
     {
 	next_char = ccline.cmdbuff[skiplen + patlen];
 	ccline.cmdbuff[skiplen + patlen] = NUL;
-	if (empty_pattern(ccline.cmdbuff) && !no_hlsearch)
+	if (empty_pattern(ccline.cmdbuff + skiplen, search_delim) && !no_hlsearch)
 	{
 	    redraw_all_later(SOME_VALID);
 	    set_no_hlsearch(TRUE);
