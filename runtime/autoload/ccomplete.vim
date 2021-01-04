@@ -124,7 +124,7 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
   # 1. in current function (like with "gd")
   # 2. in tags file(s) (like with ":tag")
   # 3. in current file (like with "gD")
-  var res: list<dict<string>>
+  var res: list<dict<any>>
   if searchdecl(items[0], 0, 1) == 0
     # Found, now figure out the type.
     # TODO: join previous line if it makes sense
