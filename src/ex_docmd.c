@@ -7529,9 +7529,10 @@ ex_may_print(exarg_T *eap)
     static void
 ex_submagic(exarg_T *eap)
 {
-    magic_T saved = magic_overruled;
+    optmagic_T saved = magic_overruled;
 
-    magic_overruled = eap->cmdidx == CMD_smagic ? MAGIC_ON : MAGIC_OFF;
+    magic_overruled = eap->cmdidx == CMD_smagic
+					  ? OPTION_MAGIC_ON : OPTION_MAGIC_OFF;
     ex_substitute(eap);
     magic_overruled = saved;
 }

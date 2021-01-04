@@ -304,11 +304,7 @@ static unsigned	regflags;	// RF_ flags for prog
 static int	had_eol;	// TRUE when EOL found by vim_regcomp()
 #endif
 
-static int	reg_magic;	// magicness of the pattern:
-#define MAGIC_NONE	1	// "\V" very unmagic
-#define MAGIC_OFF	2	// "\M" or 'magic' off
-#define MAGIC_ON	3	// "\m" or 'magic'
-#define MAGIC_ALL	4	// "\v" very magic
+static magic_T	reg_magic;	// magicness of the pattern
 
 static int	reg_string;	// matching with a string instead of a buffer
 				// line
@@ -548,7 +544,7 @@ skip_regexp(
     int		delim,
     int		magic)
 {
-    return skip_regexp_ex(startp, delim, magic, NULL, NULL);
+    return skip_regexp_ex(startp, delim, magic, NULL, NULL, NULL);
 }
 
 /*
@@ -577,6 +573,7 @@ skip_regexp_err(
  * expression and change "\?" to "?".  If "*newp" is not NULL the expression
  * is changed in-place.
  * If a "\?" is changed to "?" then "dropped" is incremented, unless NULL.
+ * If "magic_val" is not NULL, returns the effective magicness of the pattern
  */
     char_u *
 skip_regexp_ex(
@@ -584,9 +581,10 @@ skip_regexp_ex(
     int		dirc,
     int		magic,
     char_u	**newp,
-    int		*dropped)
+    int		*dropped,
+    magic_T	*magic_val)
 {
-    int		mymagic;
+    magic_T	mymagic;
     char_u	*p = startp;
 
     if (magic)
@@ -632,6 +630,8 @@ skip_regexp_ex(
 		mymagic = MAGIC_NONE;
 	}
     }
+    if (magic_val != NULL)
+	*magic_val = mymagic;
     return p;
 }
 

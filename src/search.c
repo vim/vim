@@ -1342,7 +1342,7 @@ do_search(
 	     */
 	    ps = strcopy;
 	    p = skip_regexp_ex(pat, search_delim, magic_isset(),
-							       &strcopy, NULL);
+							&strcopy, NULL, NULL);
 	    if (strcopy != ps)
 	    {
 		// made a copy of "pat" to change "\?" to "?"

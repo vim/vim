@@ -3312,7 +3312,7 @@ jumpto_tag(
     int		keep_help)	// keep help flag (FALSE for cscope)
 {
     int		save_secure;
-    int		save_magic_overruled;
+    optmagic_T	save_magic_overruled;
     int		save_p_ws, save_p_scs, save_p_ic;
     linenr_T	save_lnum;
     char_u	*str;
@@ -3505,7 +3505,7 @@ jumpto_tag(
 	++sandbox;
 #endif
 	save_magic_overruled = magic_overruled;
-	magic_overruled = MAGIC_OFF;	// always execute with 'nomagic'
+	magic_overruled = OPTION_MAGIC_OFF;	// always execute with 'nomagic'
 #ifdef FEAT_SEARCH_EXTRA
 	// Save value of no_hlsearch, jumping to a tag is not a real search
 	save_no_hlsearch = no_hlsearch;

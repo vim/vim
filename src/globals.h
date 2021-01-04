@@ -1945,7 +1945,6 @@ EXTERN int channel_need_redraw INIT(= FALSE);
 #define FOR_ALL_LIST_ITEMS(l, li) \
     for ((li) = (l)->lv_first; (li) != NULL; (li) = (li)->li_next)
 
-// While executing a regexp and set to MAGIC_ON or MAGIC_OFF this overrules
-// p_magic.  Otherwise set to MAGIC_NOT_SET.
-
-EXTERN magic_T magic_overruled INIT(= MAGIC_NOT_SET);
+// While executing a regexp and set to OPTION_MAGIC_ON or OPTION_MAGIC_OFF this
+// overrules p_magic.  Otherwise set to OPTION_MAGIC_NOT_SET.
+EXTERN optmagic_T magic_overruled INIT(= OPTION_MAGIC_NOT_SET);
