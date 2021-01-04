@@ -154,9 +154,10 @@ one_function_arg(
 
 /*
  * Get function arguments.
+ * "argp" should point to just after the "(", possibly to white space.
  * "argp" is advanced just after "endchar".
  */
-    int
+    static int
 get_function_args(
     char_u	**argp,
     char_u	endchar,
@@ -170,12 +171,12 @@ get_function_args(
     char_u	**line_to_free)
 {
     int		mustend = FALSE;
-    char_u	*arg = *argp;
-    char_u	*p = arg;
+    char_u	*arg;
+    char_u	*p;
     int		c;
     int		any_default = FALSE;
     char_u	*expr;
-    char_u	*whitep = arg;
+    char_u	*whitep = *argp;
 
     if (newargs != NULL)
 	ga_init2(newargs, (int)sizeof(char_u *), 3);
@@ -190,6 +191,8 @@ get_function_args(
     /*
      * Isolate the arguments: "arg1, arg2, ...)"
      */
+    arg = skipwhite(*argp);
+    p = arg;
     while (*p != endchar)
     {
 	while (eap != NULL && eap->getline != NULL
@@ -548,7 +551,7 @@ get_lambda_tv(
 
     // First, check if this is really a lambda expression. "->" or "=>" must
     // be found after the arguments.
-    s = skipwhite(*arg + 1);
+    s = *arg + 1;
     ret = get_function_args(&s, equal_arrow ? ')' : '-', NULL,
 	    types_optional ? &argtypes : NULL, types_optional,
 						 NULL, NULL, TRUE, NULL, NULL);
@@ -564,7 +567,7 @@ get_lambda_tv(
 	pnewargs = &newargs;
     else
 	pnewargs = NULL;
-    *arg = skipwhite(*arg + 1);
+    *arg += 1;
     ret = get_function_args(arg, equal_arrow ? ')' : '-', pnewargs,
 	    types_optional ? &argtypes : NULL, types_optional,
 					    &varargs, NULL, FALSE, NULL, NULL);
@@ -2964,6 +2967,7 @@ define_function(exarg_T *eap, char_u *name_arg)
     int		is_global = FALSE;
     char_u	*p;
     char_u	*arg;
+    char_u	*whitep;
     char_u	*line_arg = NULL;
     garray_T	newargs;
     garray_T	argtypes;
@@ -3159,7 +3163,6 @@ define_function(exarg_T *eap, char_u *name_arg)
 	if (vim_strchr(p, '(') != NULL)
 	    p = vim_strchr(p, '(');
     }
-    p = skipwhite(p + 1);
 
     // In Vim9 script only global functions can be redefined.
     if (vim9script && eap->forceit && !is_global)
@@ -3199,11 +3202,13 @@ define_function(exarg_T *eap, char_u *name_arg)
 
     // This may get more lines and make the pointers into the first line
     // invalid.
+    ++p;
     if (get_function_args(&p, ')', &newargs,
 			eap->cmdidx == CMD_def ? &argtypes : NULL, FALSE,
 			 &varargs, &default_args, eap->skip,
 			 eap, &line_to_free) == FAIL)
 	goto errret_2;
+    whitep = p;
 
     if (eap->cmdidx == CMD_def)
     {
@@ -3215,6 +3220,7 @@ define_function(exarg_T *eap, char_u *name_arg)
 	    if (p > ret_type)
 	    {
 		ret_type = vim_strnsave(ret_type, p - ret_type);
+		whitep = p;
 		p = skipwhite(p);
 	    }
 	    else
@@ -3229,6 +3235,7 @@ define_function(exarg_T *eap, char_u *name_arg)
 	// find extra arguments "range", "dict", "abort" and "closure"
 	for (;;)
 	{
+	    whitep = p;
 	    p = skipwhite(p);
 	    if (STRNCMP(p, "range", 5) == 0)
 	    {
@@ -3267,7 +3274,8 @@ define_function(exarg_T *eap, char_u *name_arg)
     else if (*p != NUL
 	    && !(*p == '"' && (!vim9script || eap->cmdidx == CMD_function)
 						     && eap->cmdidx != CMD_def)
-	    && !(*p == '#' && (vim9script || eap->cmdidx == CMD_def))
+	    && !(VIM_ISWHITE(*whitep) && *p == '#'
+				     && (vim9script || eap->cmdidx == CMD_def))
 	    && !eap->skip
 	    && !did_emsg)
 	semsg(_(e_trailing_arg), p);

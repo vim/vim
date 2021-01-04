@@ -241,6 +241,42 @@ def Test_call_default_args()
   delfunc g:Func
 enddef
 
+def FuncWithComment(  # comment
+  a: number, #comment
+  b: bool, # comment
+  c: string) #comment
+  assert_equal(4, a)
+  assert_equal(true, b)
+  assert_equal('yes', c)
+enddef
+
+def Test_func_with_comments()
+  FuncWithComment(4, true, 'yes')
+
+  var lines =<< trim END
+      def Func(# comment
+        arg: string)
+      enddef
+  END
+  CheckScriptFailure(lines, 'E125:', 1)
+
+  lines =<< trim END
+      def Func(
+        arg: string# comment
+        )
+      enddef
+  END
+  CheckScriptFailure(lines, 'E475:', 2)
+
+  lines =<< trim END
+      def Func(
+        arg: string
+        )# comment
+      enddef
+  END
+  CheckScriptFailure(lines, 'E488:', 3)
+enddef
+
 def Test_nested_function()
   def Nested(arg: string): string
     return 'nested ' .. arg

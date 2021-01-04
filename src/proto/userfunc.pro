@@ -1,7 +1,6 @@
 /* userfunc.c */
 void func_init(void);
 hashtab_T *func_tbl_get(void);
-int get_function_args(char_u **argp, char_u endchar, garray_T *newargs, garray_T *argtypes, int types_optional, int *varargs, garray_T *default_args, int skip, exarg_T *eap, char_u **line_to_free);
 char_u *get_lambda_name(void);
 char_u *register_cfunc(cfunc_T cb, cfunc_free_T cb_free, void *state);
 int get_lambda_tv(char_u **arg, typval_T *rettv, int types_optional, evalarg_T *evalarg);
