@@ -2,7 +2,7 @@
 # Makefile for Vim on OpenVMS
 #
 # Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-# Last change:  2020 Dec 30
+# Last change:  2021 Jan 04
 #
 # This script has been tested on VMS 6.2 to 8.4 on DEC Alpha, VAX and IA64
 # with MMS and MMK
@@ -38,18 +38,18 @@ MODEL = HUGE
 # GUI or terminal mode executable.
 # Comment out if you want just the character terminal mode only.
 # GUI with Motif
-GUI = YES
+# GUI = YES
 
 # GUI with GTK
 # If you have GTK installed you might want to enable this option.
 # NOTE: you will need to properly define GTK_DIR below
-# NOTE: since Vim 7.3 GTK 2+ is used that is not ported to VMS, 
-#       therefore this option should not be used  
+# NOTE: since Vim 7.3 GTK 2+ is used that is not ported to VMS,
+#       therefore this option should not be used
 # GTK = YES
 
 # GUI/Motif with XPM
 # If you have XPM installed you might want to build Motif version with toolbar
-XPM = YES
+# XPM = YES
 
 # Comment out if you want the compiler version with :ver command.
 # NOTE: This part can make some complications if you're using some
@@ -59,7 +59,7 @@ CCVER = YES
 
 # Uncomment if want a debug version. Resulting executable is DVIM.EXE
 # Development purpose only! Normally, it should not be defined. !!!
-# DEBUG = YES 
+# DEBUG = YES
 
 # Languages support for Perl, Python, TCL etc.
 # If you don't need it really, leave them behind the comment.
@@ -68,6 +68,7 @@ CCVER = YES
 # VIM_PERL   = YES
 # VIM_PYTHON = YES
 # VIM_RUBY   = YES
+# VIM_LUA    = YES
 
 # X Input Method.  For entering special languages like chinese and
 # Japanese.
@@ -180,7 +181,7 @@ XPM_INC  = ,[.xpm.include]
 XPM_LIB  = ,OS_VMS_XPM.OPT/OPT
 .ELSE
 DEFS     = "HAVE_CONFIG_H","FEAT_GUI_MOTIF"
-XPM_INC  = 
+XPM_INC  =
 .ENDIF
 LIBS     = ,OS_VMS_MOTIF.OPT/OPT
 GUI_FLAG =
@@ -237,6 +238,15 @@ RUBY_LIB = ,OS_VMS_RUBY.OPT/OPT
 RUBY_INC =
 .ENDIF
 
+.IFDEF VIM_LUA
+# LUA related setup.
+LUA_DEF = ,"FEAT_LUA"
+LUA_SRC = if_lua.c
+LUA_OBJ = if_lua.obj
+LUA_LIB = ,OS_VMS_LUA.OPT/OPT
+LUA_INC = ,LUA$ROOT:[INCLUDE]
+.ENDIF
+
 .IFDEF VIM_XIM
 # XIM related setup.
 .IFDEF GUI
@@ -247,7 +257,7 @@ XIM_DEF = ,"FEAT_XIM"
 .IFDEF VIM_MZSCHEME
 # MZSCHEME related setup
 MZSCH_DEF = ,"FEAT_MZSCHEME"
-MZSCH_SRC = if_mzsch.c 
+MZSCH_SRC = if_mzsch.c
 MZSCH_OBJ = if_mzsch.obj
 .ENDIF
 
@@ -258,7 +268,7 @@ ICONV_DEF = ,"USE_ICONV"
 
 # XDIFF related setup.
 XDIFF_SRC = xdiffi.c,xemit.c,xprepare.c,xutils.c,xhistogram.c,xpatience.c
-XDIFF_OBJ = xdiffi.obj,xemit.obj,xprepare.obj,xutils.obj,xhistogram.obj,xpatience.obj 
+XDIFF_OBJ = xdiffi.obj,xemit.obj,xprepare.obj,xutils.obj,xhistogram.obj,xpatience.obj
 XDIFF_INC = ,[.xdiff]
 
 ######################################################################
@@ -275,7 +285,7 @@ VIMHOST = "''F$TRNLNM("SYS$NODE")'''F$TRNLNM("UCX$INET_HOST")'.''F$TRNLNM("UCX$I
 .SUFFIXES : .obj .c
 
 ALL_CFLAGS = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF) -
- $(TCL_DEF)$(RUBY_DEF)$(XIM_DEF)$(TAG_DEF)$(MZSCH_DEF) -
+ $(TCL_DEF)$(RUBY_DEF)$(LUA_DEF)$(XIM_DEF)$(TAG_DEF)$(MZSCH_DEF) -
  $(ICONV_DEF)) -
  $(CFLAGS)$(GUI_FLAG) -
  /include=($(C_INC)$(GUI_INC_DIR)$(GUI_INC)$(PERL_INC)$(PYTHON_INC) -
@@ -286,14 +296,14 @@ ALL_CFLAGS = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF) -
 # as $(GUI_INC) - replaced with $(GUI_INC_VER)
 # Otherwise should not be any other difference.
 ALL_CFLAGS_VER = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF) -
- $(TCL_DEF)$(RUBY_DEF)$(XIM_DEF)$(TAG_DEF)$(MZSCH_DEF) - 
+ $(TCL_DEF)$(RUBY_DEF)$(LUA_DEF)$(XIM_DEF)$(TAG_DEF)$(MZSCH_DEF) -
  $(ICONV_DEF)) -
  $(CFLAGS)$(GUI_FLAG) -
  /include=($(C_INC)$(GUI_INC_DIR)$(GUI_INC_VER)$(PERL_INC)$(PYTHON_INC) -
  $(TCL_INC)$(XDIFF_INC)$(XPM_INC))
 
 ALL_LIBS = $(LIBS) $(GUI_LIB_DIR) $(GUI_LIB) $(XPM_LIB)\
-	   $(PERL_LIB) $(PYTHON_LIB) $(TCL_LIB) $(RUBY_LIB)
+	   $(PERL_LIB) $(PYTHON_LIB) $(TCL_LIB) $(RUBY_LIB) $(LUA_LIB)
 
 SRC = \
 	arabic.c \
@@ -408,6 +418,7 @@ SRC = \
 	$(PYTHON_SRC) \
 	$(TCL_SRC) \
 	$(RUBY_SRC) \
+	$(LUA_SRC) \
 	$(MZSCH_SRC) \
 	$(XDIFF_SRC)
 
@@ -525,11 +536,12 @@ OBJ = \
 	$(PYTHON_OBJ) \
 	$(TCL_OBJ) \
 	$(RUBY_OBJ) \
+	$(LUA_OBJ) \
 	$(MZSCH_OBJ) \
 	$(XDIFF_OBJ)
 
 # Default target is making the executable
-all : [.auto]config.h mmk_compat motif_env gtk_env perl_env python_env tcl_env ruby_env $(TARGET)
+all : [.auto]config.h mmk_compat motif_env gtk_env perl_env python_env tcl_env ruby_env lua_env $(TARGET)
 	! $@
 
 [.auto]config.h : $(CONFIG_H)
@@ -611,7 +623,7 @@ motif_env :
 .ENDIF
 .IFDEF MMSIA64
 	-@ write opt_file "[.xpm.vms.ia64]libxpm.olb/lib"
-.ENDIF 
+.ENDIF
 	-@ close opt_file
 .ELSE
 	-@ write sys$output "using DECW/Motif environment."
@@ -709,11 +721,24 @@ ruby_env :
 	-@ !
 .ENDIF
 
+.IFDEF VIM_LUA
+lua_env :
+	-@ write sys$output "using LUA environment:"
+	-@ write sys$output "    include path: ""$(LUA_INC)"""
+	-@ write sys$output "creating OS_VMS_LUA.OPT file."
+	-@ open/write opt_file OS_VMS_LUA.OPT
+	-@ write opt_file "LUA$ROOT:[LIB]LUA$SHR.EXE /share"
+	-@ close opt_file
+.ELSE
+lua_env :
+	-@ !
+.ENDIF
+
 arabic.obj : arabic.c vim.h
 arglist.obj : arglist.c vim.h [.auto]config.h feature.h os_unix.h
 autocmd.obj : autocmd.c vim.h [.auto]config.h feature.h os_unix.h
 blowfish.obj : blowfish.c vim.h [.auto]config.h feature.h os_unix.h
-blob.obj : blob.c vim.h [.auto]config.h feature.h os_unix.h	
+blob.obj : blob.c vim.h [.auto]config.h feature.h os_unix.h
 buffer.obj : buffer.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
@@ -873,7 +898,7 @@ if_xcmdsrv.obj : if_xcmdsrv.c vim.h [.auto]config.h feature.h os_unix.h \
 if_mzsch.obj : if_mzsch.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h beval.h [.proto]gui_beval.pro ex_cmds.h proto.h \
- errors.h globals.h if_mzsch.h 
+ errors.h globals.h if_mzsch.h
 indent.obj : indent.c vim.h [.auto]config.h feature.h os_unix.h
 insexpand.obj : insexpand.c vim.h [.auto]config.h feature.h os_unix.h
 json.obj : json.c vim.h [.auto]config.h feature.h os_unix.h   \
@@ -1167,6 +1192,8 @@ if_ruby.obj : if_ruby.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  errors.h globals.h version.h
+if_lua.obj : if_lua.c vim.h [.auto]config.h feature.h os_unix.h \
+ errors.h globals.h version.h
 beval.obj : beval.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h beval.h option.h ex_cmds.h proto.h \
@@ -1186,4 +1213,4 @@ xemit.obj : [.xdiff]xemit.c [.xdiff]xinclude.h [.auto]config.h vim.h feature.h o
 xprepare.obj : [.xdiff]xprepare.c [.xdiff]xinclude.h [.auto]config.h vim.h feature.h os_unix.h
 xutils.obj : [.xdiff]xutils.c [.xdiff]xinclude.h [.auto]config.h vim.h feature.h os_unix.h
 xhistogram.obj : [.xdiff]xhistogram.c [.xdiff]xinclude.h [.auto]config.h vim.h feature.h os_unix.h
-xpatience.obj : [.xdiff]xpatience.c [.xdiff]xinclude.h [.auto]config.h vim.h feature.h os_unix.h	
+xpatience.obj : [.xdiff]xpatience.c [.xdiff]xinclude.h [.auto]config.h vim.h feature.h os_unix.h

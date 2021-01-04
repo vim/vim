@@ -147,7 +147,6 @@
 #undef  HAVE_FCHDIR
 #undef  HAVE_LSTAT
 #undef  HAVE_STDINT_H
-#undef  HAVE_XOS_R_H
 
 // Hardware specific
 #ifdef  VAX
@@ -157,12 +156,12 @@
 #undef  HAVE_STRINGS_H
 #undef  HAVE_SIGSETJMP
 #undef  HAVE_ISNAN
+#undef  HAVE_XOS_R_H
 #define HAVE_NO_LONG_LONG
 #define VIM_SIZEOF_LONG 4
-#define LONG_LONG_MIN  (-2147483647-1)                                                                                                    
-#define LONG_LONG_MAX  (2147483647)                                                                                                     
+#define LONG_LONG_MIN  (-2147483647-1)
+#define LONG_LONG_MAX  (2147483647)
 #define ULONG_LONG_MAX (4294967295U)
-#undef  XTHREADS
 #else // AXP and IA64
 #define HAVE_GETTIMEOFDAY
 #define HAVE_USLEEP
@@ -170,12 +169,12 @@
 #define HAVE_STRINGS_H
 #define HAVE_SIGSETJMP
 #define HAVE_ISNAN
+#define HAVE_XOS_R_H
 #define HAVE_NO_LONG_LONG
 #define VIM_SIZEOF_LONG 8
-#define LONG_LONG_MIN  (-9223372036854775807-1)                                                                                                    
-#define LONG_LONG_MAX  (9223372036854775807)                                                                                                     
+#define LONG_LONG_MIN  (-9223372036854775807-1)
+#define LONG_LONG_MAX  (9223372036854775807)
 #define ULONG_LONG_MAX (18446744073709551615U)
-#define XTHREADS
 #endif
 
 // Compiler specific

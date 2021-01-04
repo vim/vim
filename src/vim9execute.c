@@ -3389,7 +3389,7 @@ ex_disassemble(exarg_T *eap)
 		break;
 	    case ISN_EXECCONCAT:
 		smsg("%4d EXECCONCAT %lld", current,
-					      (long long)iptr->isn_arg.number);
+					      (varnumber_T)iptr->isn_arg.number);
 		break;
 	    case ISN_ECHO:
 		{
@@ -3402,15 +3402,15 @@ ex_disassemble(exarg_T *eap)
 		break;
 	    case ISN_EXECUTE:
 		smsg("%4d EXECUTE %lld", current,
-					    (long long)(iptr->isn_arg.number));
+					    (varnumber_T)(iptr->isn_arg.number));
 		break;
 	    case ISN_ECHOMSG:
 		smsg("%4d ECHOMSG %lld", current,
-					    (long long)(iptr->isn_arg.number));
+					    (varnumber_T)(iptr->isn_arg.number));
 		break;
 	    case ISN_ECHOERR:
 		smsg("%4d ECHOERR %lld", current,
-					    (long long)(iptr->isn_arg.number));
+					    (varnumber_T)(iptr->isn_arg.number));
 		break;
 	    case ISN_LOAD:
 	    case ISN_LOADOUTER:
@@ -3419,11 +3419,11 @@ ex_disassemble(exarg_T *eap)
 
 		    if (iptr->isn_arg.number < 0)
 			smsg("%4d LOAD%s arg[%lld]", current, add,
-				(long long)(iptr->isn_arg.number
+				(varnumber_T)(iptr->isn_arg.number
 							  + STACK_FRAME_SIZE));
 		    else
 			smsg("%4d LOAD%s $%lld", current, add,
-					    (long long)(iptr->isn_arg.number));
+					    (varnumber_T)(iptr->isn_arg.number));
 		}
 		break;
 	    case ISN_LOADV:
@@ -3496,10 +3496,10 @@ ex_disassemble(exarg_T *eap)
 
 		if (iptr->isn_arg.number < 0)
 		    smsg("%4d STORE%s arg[%lld]", current, add,
-			 (long long)(iptr->isn_arg.number + STACK_FRAME_SIZE));
+			 (varnumber_T)(iptr->isn_arg.number + STACK_FRAME_SIZE));
 		else
 		    smsg("%4d STORE%s $%lld", current, add,
-					    (long long)(iptr->isn_arg.number));
+					    (varnumber_T)(iptr->isn_arg.number));
 		}
 		break;
 	    case ISN_STOREV:
@@ -3578,7 +3578,7 @@ ex_disassemble(exarg_T *eap)
 	    // constants
 	    case ISN_PUSHNR:
 		smsg("%4d PUSHNR %lld", current,
-					    (long long)(iptr->isn_arg.number));
+					    (varnumber_T)(iptr->isn_arg.number));
 		break;
 	    case ISN_PUSHBOOL:
 	    case ISN_PUSHSPEC:
@@ -3653,11 +3653,11 @@ ex_disassemble(exarg_T *eap)
 		break;
 	    case ISN_NEWLIST:
 		smsg("%4d NEWLIST size %lld", current,
-					    (long long)(iptr->isn_arg.number));
+					    (varnumber_T)(iptr->isn_arg.number));
 		break;
 	    case ISN_NEWDICT:
 		smsg("%4d NEWDICT size %lld", current,
-					    (long long)(iptr->isn_arg.number));
+					    (varnumber_T)(iptr->isn_arg.number));
 		break;
 
 	    // function call
@@ -3924,10 +3924,10 @@ ex_disassemble(exarg_T *eap)
 				smsg("%4d 2BOOL (!!val)", current);
 			    break;
 	    case ISN_2STRING: smsg("%4d 2STRING stack[%lld]", current,
-					 (long long)(iptr->isn_arg.number));
+					 (varnumber_T)(iptr->isn_arg.number));
 			      break;
 	    case ISN_2STRING_ANY: smsg("%4d 2STRING_ANY stack[%lld]", current,
-					 (long long)(iptr->isn_arg.number));
+					 (varnumber_T)(iptr->isn_arg.number));
 			      break;
 	    case ISN_RANGE: smsg("%4d RANGE %s", current, iptr->isn_arg.string);
 			    break;

@@ -161,7 +161,6 @@
 # define mch_fstat(n, p)	fstat((n), (p))
 # undef HAVE_LSTAT	        // VMS does not have lstat()
 # define mch_stat(n, p)		stat(vms_fixfilename(n), (p))
-# define mch_rmdir(n)		rmdir(vms_fixfilename(n))
 #else
 # ifndef MSWIN
 #   define mch_access(n, p)	access((n), (p))

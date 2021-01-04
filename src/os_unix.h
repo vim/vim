@@ -73,8 +73,9 @@
 // always use unlink() to remove files
 #ifndef PROTO
 # ifdef VMS
-#  define mch_remove(x) delete((char *)(x))
-#  define vim_mkdir(x, y) mkdir((char *)(x), y)
+#  define vim_mkdir(x, y) mkdir((char *)vms_fixfilename(x), y)
+#  define mch_rmdir(x)  delete((char *)vms_fixfilename(x))
+#  define mch_remove(x) delete((char *)vms_fixfilename(x))
 # else
 #  define vim_mkdir(x, y) mkdir((char *)(x), y)
 #  define mch_rmdir(x) rmdir((char *)(x))
