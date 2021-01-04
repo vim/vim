@@ -2025,7 +2025,7 @@ do_one_cmd(
     if (p == NULL)
     {
 	if (!ea.skip)
-	    errormsg = _("E464: Ambiguous use of user-defined command");
+	    errormsg = _(e_ambiguous_use_of_user_defined_command);
 	goto doend;
     }
     // Check for wrong commands.
@@ -3531,9 +3531,11 @@ find_ex_command(
 	eap->cmdidx = CMD_finally;
 
 #ifdef FEAT_EVAL
-    if (eap->cmdidx != CMD_SIZE && in_vim9script()
+    if (eap->cmdidx < CMD_SIZE
+	    && in_vim9script()
 	    && !IS_WHITE_OR_NUL(*p) && *p != '\n' && *p != '!'
-	    && (cmdnames[eap->cmdidx].cmd_argt & EX_NONWHITE_OK) == 0)
+	    && (eap->cmdidx < 0 ||
+		(cmdnames[eap->cmdidx].cmd_argt & EX_NONWHITE_OK) == 0))
     {
 	semsg(_(e_command_not_followed_by_white_space_str), eap->cmd);
 	eap->cmdidx = CMD_SIZE;

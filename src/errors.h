@@ -16,6 +16,8 @@ EXTERN char e_undefined_variable_str[]
 EXTERN char e_undefined_variable_char_str[]
 	INIT(= N_("E121: Undefined variable: %c:%s"));
 #endif
+EXTERN char e_ambiguous_use_of_user_defined_command[]
+	INIT(= N_("E464: Ambiguous use of user-defined command"));
 EXTERN char e_invalid_command[]
 	INIT(= N_("E476: Invalid command"));
 #ifdef FEAT_EVAL

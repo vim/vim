@@ -3054,6 +3054,7 @@ call_def_function(
 			goto failed;
 		    ++ectx.ec_stack.ga_len;
 		    tv = STACK_TV_BOT(-1);
+		    ea.addr_count = 0;
 		    ea.addr_type = ADDR_LINES;
 		    ea.cmd = iptr->isn_arg.string;
 		    if (parse_cmd_address(&ea, &errormsg, FALSE) == FAIL)

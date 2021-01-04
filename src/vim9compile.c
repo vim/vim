@@ -7797,6 +7797,13 @@ compile_def_function(ufunc_T *ufunc, int check_return_type, cctx_T *outer_cctx)
 		   : (int (*)(char_u *, size_t, void *, cctx_T *))lookup_local,
 									&cctx);
 
+	if (p == NULL)
+	{
+	    if (cctx.ctx_skip != SKIP_YES)
+		emsg(_(e_ambiguous_use_of_user_defined_command));
+	    goto erret;
+	}
+
 	if (p == ea.cmd && ea.cmdidx != CMD_SIZE)
 	{
 	    if (cctx.ctx_skip == SKIP_YES)
