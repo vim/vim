@@ -3797,4 +3797,10 @@ func Test_popupwin_exiting_terminal()
   endtry
 endfunc
 
+func Test_popup_filter_menu()
+  let colors = ['red', 'green', 'blue']
+  call popup_menu(colors, #{callback: {_, result -> assert_equal('green', colors[result - 1])}})
+  call feedkeys("\<c-n>\<c-n>\<c-p>\<cr>", 'xt')
+endfunc
+
 " vim: shiftwidth=2 sts=2

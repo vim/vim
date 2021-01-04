@@ -309,8 +309,8 @@ popup_dialog({what}, {options})				*popup_dialog()*
 
 popup_filter_menu({id}, {key})				*popup_filter_menu()*
 		Filter that can be used for a popup. These keys can be used:
-		    j <Down>		select item below
-		    k <Up>		select item above
+		    j <Down> <C-N>	select item below
+		    k <Up> <C-P>	select item above
 		    <Space> <Enter>	accept current selection
 		    x Esc CTRL-C	cancel the menu
 		Other keys are ignored.
