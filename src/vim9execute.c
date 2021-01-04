@@ -1783,6 +1783,10 @@ call_def_function(
 		    typval_T	*tv_dest = STACK_TV_BOT(-1);
 		    int		status = OK;
 
+		    // Stack contains:
+		    // -3 value to be stored
+		    // -2 index
+		    // -1 dict or list
 		    tv = STACK_TV_BOT(-3);
 		    SOURCING_LNUM = iptr->isn_lnum;
 		    if (dest_type == VAR_ANY)
@@ -1895,6 +1899,91 @@ call_def_function(
 			clear_tv(tv);
 			goto on_error;
 		    }
+		}
+		break;
+
+	    // unlet item in list or dict variable
+	    case ISN_UNLETINDEX:
+		{
+		    typval_T	*tv_idx = STACK_TV_BOT(-2);
+		    typval_T	*tv_dest = STACK_TV_BOT(-1);
+		    int		status = OK;
+
+		    // Stack contains:
+		    // -2 index
+		    // -1 dict or list
+		    if (tv_dest->v_type == VAR_DICT)
+		    {
+			// unlet a dict item, index must be a string
+			if (tv_idx->v_type != VAR_STRING)
+			{
+			    semsg(_(e_expected_str_but_got_str),
+					vartype_name(VAR_STRING),
+					vartype_name(tv_idx->v_type));
+			    status = FAIL;
+			}
+			else
+			{
+			    dict_T	*d = tv_dest->vval.v_dict;
+			    char_u	*key = tv_idx->vval.v_string;
+			    dictitem_T  *di = NULL;
+
+			    if (key == NULL)
+				key = (char_u *)"";
+			    if (d != NULL)
+				di = dict_find(d, key, (int)STRLEN(key));
+			    if (di == NULL)
+			    {
+				// NULL dict is equivalent to empty dict
+				semsg(_(e_dictkey), key);
+				status = FAIL;
+			    }
+			    else
+			    {
+				// TODO: check for dict or item locked
+				dictitem_remove(d, di);
+			    }
+			}
+		    }
+		    else if (tv_dest->v_type == VAR_LIST)
+		    {
+			// unlet a List item, index must be a number
+			if (tv_idx->v_type != VAR_NUMBER)
+			{
+			    semsg(_(e_expected_str_but_got_str),
+					vartype_name(VAR_NUMBER),
+					vartype_name(tv_idx->v_type));
+			    status = FAIL;
+			}
+			else
+			{
+			    list_T	*l = tv_dest->vval.v_list;
+			    varnumber_T	n = tv_idx->vval.v_number;
+			    listitem_T	*li = NULL;
+
+			    li = list_find(l, n);
+			    if (li == NULL)
+			    {
+				semsg(_(e_listidx), n);
+				status = FAIL;
+			    }
+			    else
+				// TODO: check for list or item locked
+				listitem_remove(l, li);
+			}
+		    }
+		    else
+		    {
+			status = FAIL;
+			semsg(_(e_cannot_index_str),
+						vartype_name(tv_dest->v_type));
+		    }
+
+		    clear_tv(tv_idx);
+		    clear_tv(tv_dest);
+		    ectx.ec_stack.ga_len -= 2;
+		    if (status == FAIL)
+			goto on_error;
 		}
 		break;
 
@@ -3648,6 +3737,9 @@ ex_disassemble(exarg_T *eap)
 		smsg("%4d UNLETENV%s $%s", current,
 			iptr->isn_arg.unlet.ul_forceit ? "!" : "",
 			iptr->isn_arg.unlet.ul_name);
+		break;
+	    case ISN_UNLETINDEX:
+		smsg("%4d UNLETINDEX", current);
 		break;
 	    case ISN_LOCKCONST:
 		smsg("%4d LOCKCONST", current);

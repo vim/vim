@@ -1349,14 +1349,47 @@ def Test_unlet()
   assert_false(exists('s:somevar'))
   unlet! s:somevar
 
+  # dict unlet
+  var dd = {a: 1, b: 2, c: 3}
+  unlet dd['a']
+  unlet dd.c
+  assert_equal({b: 2}, dd)
+
+  # list unlet
+  var ll = [1, 2, 3, 4]
+  unlet ll[1]
+  unlet ll[-1]
+  assert_equal([1, 3], ll)
+
+  # list of dict unlet
+  var dl = [{a: 1, b: 2}, {c: 3}]
+  unlet dl[0]['b']
+  assert_equal([{a: 1}, {c: 3}], dl)
+
+  CheckDefExecFailure([
+   'var ll = test_null_list()',
+   'unlet ll[0]',
+   ], 'E684:')
+  CheckDefExecFailure([
+   'var ll = [1]',
+   'unlet ll[2]',
+   ], 'E684:')
+  CheckDefExecFailure([
+   'var dd = test_null_dict()',
+   'unlet dd["a"]',
+   ], 'E716:')
+  CheckDefExecFailure([
+   'var dd = {a: 1}',
+   'unlet dd["b"]',
+   ], 'E716:')
+
   # can compile unlet before variable exists
-  # This doesn't work yet
-  #g:someDict = {key: 'val'}
-  #var k = 'key'
-  #unlet g:someDict[k]
-  #assert_equal({}, g:someDict)
-  #unlet g:someDict
-  #assert_false(exists('g:someDict'))
+  g:someDict = {key: 'val'}
+  var k = 'key'
+  unlet g:someDict[k]
+  assert_equal({}, g:someDict)
+  unlet g:someDict
+  assert_false(exists('g:someDict'))
 
   CheckScriptFailure([
    'vim9script',

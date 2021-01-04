@@ -60,6 +60,7 @@ typedef enum {
 
     ISN_UNLET,		// unlet variable isn_arg.unlet.ul_name
     ISN_UNLETENV,	// unlet environment variable isn_arg.unlet.ul_name
+    ISN_UNLETINDEX,	// unlet item of list or dict
 
     ISN_LOCKCONST,	// lock constant value
 
