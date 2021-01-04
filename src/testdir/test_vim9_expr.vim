@@ -1094,6 +1094,8 @@ def Test_expr5()
 
       $ENVVAR = 'env'
       assert_equal('aenv', 'a' .. $ENVVAR)
+
+      assert_equal('val', '' .. {key: 'val'}['key'])
   END
   CheckDefAndScriptSuccess(lines)
 enddef
