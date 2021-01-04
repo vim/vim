@@ -255,8 +255,7 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
   return map(res, (_, v: dict<any>): dict<string> => Tagline2item(v, brackets))
 enddef
 
-# GetAddition {{{1
-def GetAddition(
+def GetAddition( #{{{1
   line: string,
   match: string,
   memarg: list<dict<any>>,
@@ -404,8 +403,7 @@ def Tagline2item(val: dict<any>, brackets: string): dict<string> #{{{1
   return res
 enddef
 
-# Tagcmd2extra {{{1
-def Tagcmd2extra(
+def Tagcmd2extra( #{{{1
   cmd: string,
   name: string,
   fname: string
@@ -428,8 +426,7 @@ def Tagcmd2extra(
   return x
 enddef
 
-# Nextitem {{{1
-def Nextitem(
+def Nextitem( #{{{1
   lead: string,
   items: list<string>,
   depth: number,
@@ -531,8 +528,7 @@ def Nextitem(
   return res
 enddef
 
-# StructMembers {{{1
-def StructMembers(
+def StructMembers( #{{{1
   atypename: string,
   items: list<string>,
   all: number
@@ -643,8 +639,7 @@ def StructMembers(
   return []
 enddef
 
-# SearchMembers {{{1
-def SearchMembers(
+def SearchMembers( #{{{1
   matches: list<dict<any>>,
   items: list<string>,
   all: number
