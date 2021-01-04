@@ -1370,8 +1370,14 @@ ex_let_one(
 			|| opt_type == gov_hidden_bool
 			|| opt_type == gov_hidden_number)
 			     && (tv->v_type != VAR_STRING || !in_vim9script()))
-		// number, possibly hidden
-		n = (long)tv_get_number(tv);
+	    {
+		if (opt_type == gov_bool || opt_type == gov_hidden_bool)
+		    // bool, possibly hidden
+		    n = (long)tv_get_bool(tv);
+		else
+		    // number, possibly hidden
+		    n = (long)tv_get_number(tv);
+	    }
 
 	    // Avoid setting a string option to the text "v:false" or similar.
 	    // In Vim9 script also don't convert a number to string.

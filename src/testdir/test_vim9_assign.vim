@@ -161,6 +161,15 @@ def Test_assignment()
     assert_equal(6, &g:ts)
     &g:ts += 2
     assert_equal(8, &g:ts)
+
+    &number = true
+    assert_equal(true, &number)
+    &number = 0
+    assert_equal(false, &number)
+    &number = 1
+    assert_equal(true, &number)
+    &number = false
+    assert_equal(false, &number)
   END
   CheckDefAndScriptSuccess(lines)
 
