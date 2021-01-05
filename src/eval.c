@@ -3188,6 +3188,28 @@ eval6(
     return OK;
 }
 
+    int
+eval_leader(char_u **arg, int vim9)
+{
+    char_u	*s = *arg;
+    char_u	*p = *arg;
+
+    while (*p == '!' || *p == '-' || *p == '+')
+    {
+	char_u *n = skipwhite(p + 1);
+
+	// ++, --, -+ and +- are not accepted in Vim9 script
+	if (vim9 && (*p == '-' || *p == '+') && (*n == '-' || *n == '+'))
+	{
+	    semsg(_(e_invexpr2), s);
+	    return FAIL;
+	}
+	p = n;
+    }
+    *arg = p;
+    return OK;
+}
+
 /*
  * Handle sixth level expression:
  *  number		number constant
@@ -3243,8 +3265,8 @@ eval7(
      * Skip '!', '-' and '+' characters.  They are handled later.
      */
     start_leader = *arg;
-    while (**arg == '!' || **arg == '-' || **arg == '+')
-	*arg = skipwhite(*arg + 1);
+    if (eval_leader(arg, in_vim9script()) == FAIL)
+	return FAIL;
     end_leader = *arg;
 
     if (**arg == '.' && (!isdigit(*(*arg + 1))

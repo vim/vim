@@ -3887,8 +3887,8 @@ compile_expr7(
      * Skip '!', '-' and '+' characters.  They are handled later.
      */
     start_leader = *arg;
-    while (**arg == '!' || **arg == '-' || **arg == '+')
-	*arg = skipwhite(*arg + 1);
+    if (eval_leader(arg, TRUE) == FAIL)
+	return FAIL;
     end_leader = *arg;
 
     rettv->v_type = VAR_UNKNOWN;
