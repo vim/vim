@@ -1117,6 +1117,7 @@ eval_option(
     }
     else if (rettv != NULL)
     {
+	rettv->v_lock = 0;
 	if (opt_type == gov_hidden_string)
 	{
 	    rettv->v_type = VAR_STRING;

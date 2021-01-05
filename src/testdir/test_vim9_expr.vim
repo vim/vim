@@ -2426,6 +2426,10 @@ def Test_expr_member_vim9script()
   CheckScriptSuccess(lines)
 enddef
 
+def SetSomeVar()
+  b:someVar = &fdm
+enddef
+
 def Test_expr7_option()
   # option
   set ts=11
@@ -2443,6 +2447,11 @@ def Test_expr7_option()
   var bval: bool = &tgc
   var nval: number = &ts
   var sval: string = &path
+
+  # check v_lock is cleared (requires using valgrind, doesn't always show)
+  SetSomeVar()
+  b:someVar = 0
+  unlet b:someVar
 enddef
 
 def Test_expr7_environment()
