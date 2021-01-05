@@ -164,6 +164,7 @@ runtime/syntax/nsis.vim			@k-takata
 runtime/syntax/pdf.vim			@tpope
 runtime/syntax/php.vim			@TysonAndre
 runtime/syntax/privoxy.vim		@dkearns
+runtime/syntax/prolog.vim		@XVilka
 runtime/syntax/rc.vim			@chrisbra
 runtime/syntax/rpcgen.vim		@cecamp
 runtime/syntax/ruby.vim			@dkearns
