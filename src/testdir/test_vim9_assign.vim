@@ -1349,6 +1349,11 @@ def Test_unlet()
   assert_false(exists('s:somevar'))
   unlet! s:somevar
 
+  CheckDefExecFailure([
+    'var dd = 111',
+    'unlet dd',
+    ], 'E1081:', 2)
+
   # dict unlet
   var dd = {a: 1, b: 2, c: 3}
   unlet dd['a']
@@ -1367,21 +1372,29 @@ def Test_unlet()
   assert_equal([{a: 1}, {c: 3}], dl)
 
   CheckDefExecFailure([
-   'var ll = test_null_list()',
-   'unlet ll[0]',
-   ], 'E684:')
+    'var ll = test_null_list()',
+    'unlet ll[0]',
+    ], 'E684:', 2)
   CheckDefExecFailure([
-   'var ll = [1]',
-   'unlet ll[2]',
-   ], 'E684:')
+    'var ll = [1]',
+    'unlet ll[2]',
+    ], 'E684:', 2)
   CheckDefExecFailure([
-   'var dd = test_null_dict()',
-   'unlet dd["a"]',
-   ], 'E716:')
+    'var ll = [1]',
+    'unlet ll[g:astring]',
+    ], 'E39:', 2)
   CheckDefExecFailure([
-   'var dd = {a: 1}',
-   'unlet dd["b"]',
-   ], 'E716:')
+    'var dd = test_null_dict()',
+    'unlet dd["a"]',
+    ], 'E716:', 2)
+  CheckDefExecFailure([
+    'var dd = {a: 1}',
+    'unlet dd["b"]',
+    ], 'E716:', 2)
+  CheckDefExecFailure([
+    'var dd = {a: 1}',
+    'unlet dd[g:alist]',
+    ], 'E1105:', 2)
 
   # can compile unlet before variable exists
   g:someDict = {key: 'val'}
@@ -1425,6 +1438,18 @@ def Test_unlet()
    'enddef',
    'defcompile',
    ], 'E1081:')
+
+  writefile(['vim9script', 'export var svar = 1234'], 'XunletExport.vim')
+  var lines =<< trim END
+    vim9script
+    import svar from './XunletExport.vim'
+    def UnletSvar()
+      unlet svar
+    enddef
+    defcompile
+  END
+  CheckScriptFailure(lines, 'E1081:', 1)
+  delete('XunletExport.vim')
 
   $ENVVAR = 'foobar'
   assert_equal('foobar', $ENVVAR)

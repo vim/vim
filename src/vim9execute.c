@@ -1917,6 +1917,7 @@ call_def_function(
 			// unlet a dict item, index must be a string
 			if (tv_idx->v_type != VAR_STRING)
 			{
+			    SOURCING_LNUM = iptr->isn_lnum;
 			    semsg(_(e_expected_str_but_got_str),
 					vartype_name(VAR_STRING),
 					vartype_name(tv_idx->v_type));
@@ -1935,6 +1936,7 @@ call_def_function(
 			    if (di == NULL)
 			    {
 				// NULL dict is equivalent to empty dict
+				SOURCING_LNUM = iptr->isn_lnum;
 				semsg(_(e_dictkey), key);
 				status = FAIL;
 			    }
@@ -1950,6 +1952,7 @@ call_def_function(
 			// unlet a List item, index must be a number
 			if (tv_idx->v_type != VAR_NUMBER)
 			{
+			    SOURCING_LNUM = iptr->isn_lnum;
 			    semsg(_(e_expected_str_but_got_str),
 					vartype_name(VAR_NUMBER),
 					vartype_name(tv_idx->v_type));
@@ -1964,6 +1967,7 @@ call_def_function(
 			    li = list_find(l, n);
 			    if (li == NULL)
 			    {
+				SOURCING_LNUM = iptr->isn_lnum;
 				semsg(_(e_listidx), n);
 				status = FAIL;
 			    }
@@ -3129,6 +3133,7 @@ call_def_function(
 
 	    case ISN_2STRING:
 	    case ISN_2STRING_ANY:
+		SOURCING_LNUM = iptr->isn_lnum;
 		if (do_2string(STACK_TV_BOT(iptr->isn_arg.number),
 			iptr->isn_type == ISN_2STRING_ANY) == FAIL)
 			    goto on_error;
