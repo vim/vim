@@ -81,6 +81,23 @@ def Test_global_backtick_expansion()
   bwipe!
 enddef
 
+def Test_folddo_backtick_expansion()
+  new
+  var name = 'xxx'
+  folddoopen edit `=name`
+  assert_equal('xxx', bufname())
+  bwipe!
+
+  new
+  setline(1, ['one', 'two'])
+  set nomodified
+  :1,2fold
+  foldclose
+  folddoclose edit `=name`
+  assert_equal('xxx', bufname())
+  bwipe!
+enddef
+
 def Test_hardcopy_wildcards()
   CheckUnix
   CheckFeature postscript

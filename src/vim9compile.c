@@ -7505,6 +7505,13 @@ compile_exec(char_u *line, exarg_T *eap, cctx_T *cctx)
 	}
     }
 
+    if (eap->cmdidx == CMD_folddoopen || eap->cmdidx == CMD_folddoclosed)
+    {
+	// TODO: should only expand when appropriate for the command
+	eap->arg = skiptowhite(eap->arg);
+	has_expr = TRUE;
+    }
+
     if (has_expr && (p = (char_u *)strstr((char *)eap->arg, "`=")) != NULL)
     {
 	int	count = 0;
