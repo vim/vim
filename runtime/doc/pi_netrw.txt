@@ -1095,6 +1095,7 @@ QUICK REFERENCE: MAPS				*netrw-browse-maps* {{{2
 	   gf	Force treatment as file                              |netrw-gf|
 	   gh	Quick hide/unhide of dot-files                       |netrw-gh|
 	   gn	Make top of tree the directory below the cursor      |netrw-gn|
+	   gp	Change file permission                               |netrw-gp|
 	   i	Cycle between thin, long, wide, and tree listings    |netrw-i|
 	   I	Toggle the displaying of the banner                  |netrw-I|
 	   mb	Bookmark current directory                           |netrw-mb|
