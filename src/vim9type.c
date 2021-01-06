@@ -528,6 +528,46 @@ check_arg_type(type_T *expected, type_T *actual, int argidx)
 }
 
 /*
+ * Check that the arguments of "type" match "argvars[argcount]".
+ * Return OK/FAIL.
+ */
+    int
+check_argument_types(type_T *type, typval_T *argvars, int argcount, char_u *name)
+{
+    int	    varargs = (type->tt_flags & TTFLAG_VARARGS) ? 1 : 0;
+    int	    i;
+
+    if (type->tt_type != VAR_FUNC && type->tt_type != VAR_PARTIAL)
+	return OK;  // just in case
+    if (argcount < type->tt_min_argcount - varargs)
+    {
+	semsg(_(e_toofewarg), name);
+	return FAIL;
+    }
+    if (!varargs && type->tt_argcount >= 0 && argcount > type->tt_argcount)
+    {
+	semsg(_(e_toomanyarg), name);
+	return FAIL;
+    }
+    if (type->tt_args == NULL)
+	return OK;  // cannot check
+
+
+    for (i = 0; i < argcount; ++i)
+    {
+	type_T	*expected;
+
+	if (varargs && i >= type->tt_argcount - 1)
+	    expected = type->tt_args[type->tt_argcount - 1]->tt_member;
+	else
+	    expected = type->tt_args[i];
+	if (check_typval_type(expected, &argvars[i], i + 1) == FAIL)
+	    return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Skip over a type definition and return a pointer to just after it.
  * When "optional" is TRUE then a leading "?" is accepted.
  */

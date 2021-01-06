@@ -16,6 +16,7 @@ void type_mismatch(type_T *expected, type_T *actual);
 void arg_type_mismatch(type_T *expected, type_T *actual, int argidx);
 int check_type(type_T *expected, type_T *actual, int give_msg, int argidx);
 int check_arg_type(type_T *expected, type_T *actual, int argidx);
+int check_argument_types(type_T *type, typval_T *argvars, int argcount, char_u *name);
 char_u *skip_type(char_u *start, int optional);
 type_T *parse_type(char_u **arg, garray_T *type_gap, int give_error);
 int equal_type(type_T *type1, type_T *type2);

@@ -3423,7 +3423,7 @@ ex_disassemble(exarg_T *eap)
     }
     else
 	fname = trans_function_name(&arg, &is_global, FALSE,
-			    TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD, NULL, NULL);
+		      TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD, NULL, NULL, NULL);
     if (fname == NULL)
     {
 	semsg(_(e_invarg2), eap->arg);

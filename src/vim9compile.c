@@ -1790,9 +1790,9 @@ generate_PCALL(
 						       stack->ga_len + offset];
 		    type_T *expected;
 
-		    if (varargs && i >= type->tt_min_argcount - 1)
+		    if (varargs && i >= type->tt_argcount - 1)
 			expected = type->tt_args[
-					 type->tt_min_argcount - 1]->tt_member;
+					     type->tt_argcount - 1]->tt_member;
 		    else
 			expected = type->tt_args[i];
 		    if (need_type(actual, expected, offset,

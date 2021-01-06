@@ -727,47 +727,68 @@ errret:
  * name it contains, otherwise return "name".
  * If "partialp" is not NULL, and "name" is of type VAR_PARTIAL also set
  * "partialp".
+ * If "type" is not NULL and a Vim9 script-local variable is found look up the
+ * type of the variable.
  */
     char_u *
-deref_func_name(char_u *name, int *lenp, partial_T **partialp, int no_autoload)
+deref_func_name(
+	char_u	    *name,
+	int	    *lenp,
+	partial_T   **partialp,
+	type_T	    **type,
+	int	    no_autoload)
 {
     dictitem_T	*v;
     int		cc;
-    char_u	*s;
+    char_u	*s = NULL;
+    hashtab_T	*ht;
 
     if (partialp != NULL)
 	*partialp = NULL;
 
     cc = name[*lenp];
     name[*lenp] = NUL;
-    v = find_var(name, NULL, no_autoload);
+    v = find_var(name, &ht, no_autoload);
     name[*lenp] = cc;
-    if (v != NULL && v->di_tv.v_type == VAR_FUNC)
+    if (v != NULL)
     {
-	if (v->di_tv.vval.v_string == NULL)
+	if (v->di_tv.v_type == VAR_FUNC)
 	{
-	    *lenp = 0;
-	    return (char_u *)"";	// just in case
+	    if (v->di_tv.vval.v_string == NULL)
+	    {
+		*lenp = 0;
+		return (char_u *)"";	// just in case
+	    }
+	    s = v->di_tv.vval.v_string;
+	    *lenp = (int)STRLEN(s);
 	}
-	s = v->di_tv.vval.v_string;
-	*lenp = (int)STRLEN(s);
-	return s;
-    }
 
-    if (v != NULL && v->di_tv.v_type == VAR_PARTIAL)
-    {
-	partial_T *pt = v->di_tv.vval.v_partial;
-
-	if (pt == NULL)
+	if (v->di_tv.v_type == VAR_PARTIAL)
 	{
-	    *lenp = 0;
-	    return (char_u *)"";	// just in case
+	    partial_T *pt = v->di_tv.vval.v_partial;
+
+	    if (pt == NULL)
+	    {
+		*lenp = 0;
+		return (char_u *)"";	// just in case
+	    }
+	    if (partialp != NULL)
+		*partialp = pt;
+	    s = partial_name(pt);
+	    *lenp = (int)STRLEN(s);
 	}
-	if (partialp != NULL)
-	    *partialp = pt;
-	s = partial_name(pt);
-	*lenp = (int)STRLEN(s);
-	return s;
+
+	if (s != NULL)
+	{
+	    if (type != NULL && ht == get_script_local_ht())
+	    {
+		svar_T  *sv = find_typval_in_script(&v->di_tv);
+
+		if (sv != NULL)
+		    *type = sv->sv_type;
+	    }
+	    return s;
+	}
     }
 
     return name;
@@ -2387,6 +2408,14 @@ call_func(
 	}
     }
 
+    if (error == FCERR_NONE && funcexe->check_type != NULL && funcexe->evaluate)
+    {
+	// Check that the argument types are OK for the types of the funcref.
+	if (check_argument_types(funcexe->check_type, argvars, argcount,
+								 name) == FAIL)
+	    error = FCERR_OTHER;
+    }
+
     if (error == FCERR_NONE && funcexe->evaluate)
     {
 	char_u *rfname = fname;
@@ -2629,7 +2658,8 @@ trans_function_name(
     int		skip,		// only find the end, don't evaluate
     int		flags,
     funcdict_T	*fdp,		// return: info about dictionary used
-    partial_T	**partial)	// return: partial of a FuncRef
+    partial_T	**partial,	// return: partial of a FuncRef
+    type_T	**type)		// return: type of funcref if not NULL
 {
     char_u	*name = NULL;
     char_u	*start;
@@ -2733,7 +2763,7 @@ trans_function_name(
     if (lv.ll_exp_name != NULL)
     {
 	len = (int)STRLEN(lv.ll_exp_name);
-	name = deref_func_name(lv.ll_exp_name, &len, partial,
+	name = deref_func_name(lv.ll_exp_name, &len, partial, type,
 						     flags & TFN_NO_AUTOLOAD);
 	if (name == lv.ll_exp_name)
 	    name = NULL;
@@ -2741,7 +2771,8 @@ trans_function_name(
     else if (!(flags & TFN_NO_DEREF))
     {
 	len = (int)(end - *pp);
-	name = deref_func_name(*pp, &len, partial, flags & TFN_NO_AUTOLOAD);
+	name = deref_func_name(*pp, &len, partial, type,
+						      flags & TFN_NO_AUTOLOAD);
 	if (name == *pp)
 	    name = NULL;
     }
@@ -3064,7 +3095,7 @@ define_function(exarg_T *eap, char_u *name_arg)
     else
     {
 	name = trans_function_name(&p, &is_global, eap->skip,
-						 TFN_NO_AUTOLOAD, &fudi, NULL);
+					   TFN_NO_AUTOLOAD, &fudi, NULL, NULL);
 	paren = (vim_strchr(p, '(') != NULL);
 	if (name == NULL && (fudi.fd_dict == NULL || !paren) && !eap->skip)
 	{
@@ -3479,7 +3510,8 @@ define_function(exarg_T *eap, char_u *name_arg)
 		if (*p == '!')
 		    p = skipwhite(p + 1);
 		p += eval_fname_script(p);
-		vim_free(trans_function_name(&p, NULL, TRUE, 0, NULL, NULL));
+		vim_free(trans_function_name(&p, NULL, TRUE, 0, NULL,
+								  NULL, NULL));
 		if (*skipwhite(p) == '(')
 		{
 		    if (nesting == MAX_FUNC_NESTING - 1)
@@ -3616,7 +3648,7 @@ define_function(exarg_T *eap, char_u *name_arg)
     {
 	hashtab_T	*ht;
 
-	v = find_var(name, &ht, FALSE);
+	v = find_var(name, &ht, TRUE);
 	if (v != NULL && v->di_tv.v_type == VAR_FUNC)
 	{
 	    emsg_funcname(N_("E707: Function name conflicts with variable: %s"),
@@ -4007,7 +4039,7 @@ function_exists(char_u *name, int no_deref)
     flag = TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD;
     if (no_deref)
 	flag |= TFN_NO_DEREF;
-    p = trans_function_name(&nm, &is_global, FALSE, flag, NULL, NULL);
+    p = trans_function_name(&nm, &is_global, FALSE, flag, NULL, NULL, NULL);
     nm = skipwhite(nm);
 
     // Only accept "funcname", "funcname ", "funcname (..." and
@@ -4027,7 +4059,7 @@ get_expanded_name(char_u *name, int check)
     int		is_global = FALSE;
 
     p = trans_function_name(&nm, &is_global, FALSE,
-						TFN_INT|TFN_QUIET, NULL, NULL);
+					  TFN_INT|TFN_QUIET, NULL, NULL, NULL);
 
     if (p != NULL && *nm == NUL
 		       && (!check || translated_function_exists(p, is_global)))
@@ -4097,7 +4129,8 @@ ex_delfunction(exarg_T *eap)
     int		is_global = FALSE;
 
     p = eap->arg;
-    name = trans_function_name(&p, &is_global, eap->skip, 0, &fudi, NULL);
+    name = trans_function_name(&p, &is_global, eap->skip, 0, &fudi,
+								   NULL, NULL);
     vim_free(fudi.fd_newkey);
     if (name == NULL)
     {
@@ -4328,6 +4361,7 @@ ex_call(exarg_T *eap)
     funcdict_T	fudi;
     partial_T	*partial = NULL;
     evalarg_T	evalarg;
+    type_T	*type = NULL;
 
     fill_evalarg_from_eap(&evalarg, eap, eap->skip);
     if (eap->skip)
@@ -4343,8 +4377,8 @@ ex_call(exarg_T *eap)
 	return;
     }
 
-    tofree = trans_function_name(&arg, NULL, eap->skip,
-						     TFN_INT, &fudi, &partial);
+    tofree = trans_function_name(&arg, NULL, eap->skip, TFN_INT,
+			      &fudi, &partial, in_vim9script() ? &type : NULL);
     if (fudi.fd_newkey != NULL)
     {
 	// Still need to give an error message for missing key.
@@ -4363,8 +4397,8 @@ ex_call(exarg_T *eap)
     // contents.  For VAR_PARTIAL get its partial, unless we already have one
     // from trans_function_name().
     len = (int)STRLEN(tofree);
-    name = deref_func_name(tofree, &len,
-				    partial != NULL ? NULL : &partial, FALSE);
+    name = deref_func_name(tofree, &len, partial != NULL ? NULL : &partial,
+			in_vim9script() && type == NULL ? &type : NULL, FALSE);
 
     // Skip white space to allow ":call func ()".  Not good, but required for
     // backward compatibility.
@@ -4416,6 +4450,7 @@ ex_call(exarg_T *eap)
 	funcexe.evaluate = !eap->skip;
 	funcexe.partial = partial;
 	funcexe.selfdict = fudi.fd_dict;
+	funcexe.check_type = type;
 	if (get_func_tv(name, -1, &rettv, &arg, &evalarg, &funcexe) == FAIL)
 	{
 	    failed = TRUE;

@@ -579,6 +579,22 @@ def Test_call_funcref_wrong_args()
 
   CheckScriptFailure(head + ["funcMap['func']('str', 123)"] + tail, 'E119:')
   CheckScriptFailure(head + ["funcMap['func']('str', 123, [1], 4)"] + tail, 'E118:')
+
+  var lines =<< trim END
+      vim9script
+      var Ref: func(number): any
+      Ref = (j) => !j
+      echo Ref(false)
+  END
+  CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected number but got bool', 4)
+
+  lines =<< trim END
+      vim9script
+      var Ref: func(number): any
+      Ref = (j) => !j
+      call Ref(false)
+  END
+  CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected number but got bool', 4)
 enddef
 
 def Test_call_lambda_args()

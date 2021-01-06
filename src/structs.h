@@ -1944,6 +1944,7 @@ typedef struct {
     partial_T	*partial;	// for extra arguments
     dict_T	*selfdict;	// Dictionary for "self"
     typval_T	*basetv;	// base for base->method()
+    type_T	*check_type;	// type from funcref or NULL
 } funcexe_T;
 
 /*

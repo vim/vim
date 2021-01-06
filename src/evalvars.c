@@ -2639,8 +2639,7 @@ check_vars(char_u *name, int len)
  * Find variable "name" in the list of variables.
  * Return a pointer to it if found, NULL if not found.
  * Careful: "a:0" variables don't have a name.
- * When "htp" is not NULL we are writing to the variable, set "htp" to the
- * hashtab_T used.
+ * When "htp" is not NULL  set "htp" to the hashtab_T used.
  */
     dictitem_T *
 find_var(char_u *name, hashtab_T **htp, int no_autoload)
@@ -2654,12 +2653,12 @@ find_var(char_u *name, hashtab_T **htp, int no_autoload)
 	*htp = ht;
     if (ht == NULL)
 	return NULL;
-    ret = find_var_in_ht(ht, *name, varname, no_autoload || htp != NULL);
+    ret = find_var_in_ht(ht, *name, varname, no_autoload);
     if (ret != NULL)
 	return ret;
 
     // Search in parent scope for lambda
-    ret = find_var_in_scoped_ht(name, no_autoload || htp != NULL);
+    ret = find_var_in_scoped_ht(name, no_autoload);
     if (ret != NULL)
 	return ret;
 
@@ -2669,8 +2668,7 @@ find_var(char_u *name, hashtab_T **htp, int no_autoload)
 	ht = get_script_local_ht();
 	if (ht != NULL)
 	{
-	    ret = find_var_in_ht(ht, *name, varname,
-						   no_autoload || htp != NULL);
+	    ret = find_var_in_ht(ht, *name, varname, no_autoload);
 	    if (ret != NULL)
 	    {
 		if (htp != NULL)

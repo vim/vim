@@ -721,8 +721,10 @@ call_func_retlist(
 
 #ifdef FEAT_FOLDING
 /*
- * Evaluate 'foldexpr'.  Returns the foldlevel, and any character preceding
- * it in "*cp".  Doesn't give error messages.
+ * Evaluate "arg", which is 'foldexpr'.
+ * Note: caller must set "curwin" to match "arg".
+ * Returns the foldlevel, and any character preceding it in "*cp".  Doesn't
+ * give error messages.
  */
     int
 eval_foldexpr(char_u *arg, int *cp)
@@ -809,6 +811,7 @@ get_lval(
     int		len;
     hashtab_T	*ht = NULL;
     int		quiet = flags & GLV_QUIET;
+    int		writing;
 
     // Clear everything in "lp".
     CLEAR_POINTER(lp);
@@ -882,10 +885,10 @@ get_lval(
 
     cc = *p;
     *p = NUL;
-    // Only pass &ht when we would write to the variable, it prevents autoload
-    // as well.
-    v = find_var(lp->ll_name, (flags & GLV_READ_ONLY) ? NULL : &ht,
-						      flags & GLV_NO_AUTOLOAD);
+    // When we would write to the variable pass &ht and prevent autoload.
+    writing = !(flags & GLV_READ_ONLY);
+    v = find_var(lp->ll_name, writing ? &ht : NULL,
+					 (flags & GLV_NO_AUTOLOAD) || writing);
     if (v == NULL && !quiet)
 	semsg(_(e_undefined_variable_str), lp->ll_name);
     *p = cc;
@@ -1972,13 +1975,15 @@ eval_func(
     int		len = name_len;
     partial_T	*partial;
     int		ret = OK;
+    type_T	*type = NULL;
 
     if (!evaluate)
 	check_vars(s, len);
 
     // If "s" is the name of a variable of type VAR_FUNC
     // use its contents.
-    s = deref_func_name(s, &len, &partial, !evaluate);
+    s = deref_func_name(s, &len, &partial,
+				    in_vim9script() ? &type : NULL, !evaluate);
 
     // Need to make a copy, in case evaluating the arguments makes
     // the name invalid.
@@ -1996,6 +2001,7 @@ eval_func(
 	funcexe.evaluate = evaluate;
 	funcexe.partial = partial;
 	funcexe.basetv = basetv;
+	funcexe.check_type = type;
 	ret = get_func_tv(s, len, rettv, arg, evalarg, &funcexe);
     }
     vim_free(s);
