@@ -1753,7 +1753,7 @@ static funcentry_T global_functions[] =
     {"winrestview",	1, 1, FEARG_1,	    NULL,
 			ret_void,	    f_winrestview},
     {"winsaveview",	0, 0, 0,	    NULL,
-			ret_dict_any,	    f_winsaveview},
+			ret_dict_number,    f_winsaveview},
     {"winwidth",	1, 1, FEARG_1,	    NULL,
 			ret_number,	    f_winwidth},
     {"wordcount",	0, 0, 0,	    NULL,

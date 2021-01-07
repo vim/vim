@@ -786,6 +786,16 @@ def Test_winrestcmd()
   close
 enddef
 
+def Test_winsaveview()
+  var view: dict<number> = winsaveview()
+
+  var lines =<< trim END
+      var view: list<number> = winsaveview()
+  END
+  CheckDefAndScriptFailure(lines, 'E1012: Type mismatch; expected list<number> but got dict<number>', 1)
+enddef
+
+
 
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
