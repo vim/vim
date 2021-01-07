@@ -857,7 +857,9 @@ use_typecheck(type_T *actual, type_T *expected)
 	    || (actual->tt_type == VAR_FUNC
 		&& (expected->tt_type == VAR_FUNC
 					   || expected->tt_type == VAR_PARTIAL)
-		&& (actual->tt_member == &t_any || actual->tt_argcount < 0)))
+		&& (actual->tt_member == &t_any || actual->tt_argcount < 0)
+		&& ((actual->tt_member == &t_void)
+					 == (expected->tt_member == &t_void))))
 	return TRUE;
     if ((actual->tt_type == VAR_LIST || actual->tt_type == VAR_DICT)
 				       && actual->tt_type == expected->tt_type)
@@ -4812,7 +4814,8 @@ compile_return(char_u *arg, int check_return_type, cctx_T *cctx)
 	{
 	    stack_type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
 	    if (check_return_type && (cctx->ctx_ufunc->uf_ret_type == NULL
-				|| cctx->ctx_ufunc->uf_ret_type == &t_unknown))
+				|| cctx->ctx_ufunc->uf_ret_type == &t_unknown
+				|| cctx->ctx_ufunc->uf_ret_type == &t_any))
 	    {
 		cctx->ctx_ufunc->uf_ret_type = stack_type;
 	    }

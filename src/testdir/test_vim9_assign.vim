@@ -1091,6 +1091,13 @@ def Test_assign_lambda()
       assert_equal(123, FuncRef_Any())
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      var Ref: func(number)
+      Ref = (j) => !j
+  END
+  CheckDefFailure(lines, 'E1012: Type mismatch; expected func(number) but got func(any): bool')
+  CheckScriptFailure(['vim9script'] + lines, 'E1012: Type mismatch; expected func(number) but got func(any): any')
 enddef
 
 def Test_heredoc()

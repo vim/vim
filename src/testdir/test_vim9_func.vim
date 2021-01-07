@@ -1508,7 +1508,7 @@ def Test_unknown_function()
       'delfunc g:NotExist'], 'E700:')
 enddef
 
-def RefFunc(Ref: func(string): string): string
+def RefFunc(Ref: func(any): any): string
   return Ref('more')
 enddef
 
