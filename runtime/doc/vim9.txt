@@ -70,28 +70,28 @@ Overview ~
 Brief summary of the differences you will most often encounter when using Vim9
 script and `:def` functions; details are below:
 - Comments start with #, not ": >
-  	echo "hello"   # comment
+	echo "hello"   # comment
 - Using a backslash for line continuation is hardly ever needed: >
-  	echo "hello "
+	echo "hello "
 	     .. yourName
 	     .. ", how are you?"
 - White space is required in many places.
 - Assign values without `:let`, declare variables with `:var`: >
-  	var count = 0
+	var count = 0
 	count += 3
 - Constants can be declared with `:final` and `:const`: >
-  	final matches = []		  # add matches
+	final matches = []		  # add matches
 	const names = ['Betty', 'Peter']  # cannot be changed
 - `:final` cannot be used as an abbreviation of `:finally`.
 - Variables and functions are script-local by default.
 - Functions are declared with argument types and return type: >
 	def CallMe(count: number, message: string): bool
 - Call functions without `:call`: >
-  	writefile(['done'], 'file.txt')
+	writefile(['done'], 'file.txt')
 - You cannot use `:xit`, `:t`, `:append`, `:change`, `:insert` or curly-braces
   names.
 - A range before a command must be prefixed with a colon: >
-  	:%s/this/that
+	:%s/this/that
 
 
 Comments starting with # ~
@@ -315,7 +315,7 @@ The constant only applies to the value itself, not what it refers to. >
 	NAMES[0] = ["Jack"]     # Error!
 	NAMES[0][0] = "Jack"    # Error!
 	NAMES[1] = ["Emma"]     # Error!
-	Names[1][0] = "Emma"    # OK, now females[0] == "Emma"
+	NAMES[1][0] = "Emma"    # OK, now females[0] == "Emma"
 
 <							*E1092*
 Declaring more than one variable at a time, using the unpack notation, is
@@ -432,7 +432,7 @@ possible just before or after the operator.  For example: >
 		   .. middle
 		   .. end
 	var total = start +
-	            end -
+		    end -
 		    correction
 	var result = positive
 			? PosFunc(arg)
@@ -629,9 +629,9 @@ one: >
 
 When using "!" for inverting, there is no error for using any type and the
 result is a boolean.  "!!" can be used to turn any value into boolean: >
-	!'yes'	    		== false
+	!'yes'			== false
 	!![]			== false
-	!![1, 2, 3]    		== true
+	!![1, 2, 3]		== true
 
 When using "`.."` for string concatenation arguments of simple types are
 always converted to string: >
@@ -1055,14 +1055,14 @@ actually needed.  A recommended mechanism:
 
 1. In the plugin define user commands, functions and/or mappings that refer to
    an autoload script. >
-   	command -nargs=1 SearchForStuff call searchfor#Stuff(<f-args>)
+	command -nargs=1 SearchForStuff call searchfor#Stuff(<f-args>)
 
 <   This goes in .../plugin/anyname.vim.  "anyname.vim" can be freely chosen.
 
 2. In the autoload script do the actual work.  You can import items from
    other files to split up functionality in appropriate pieces. >
 	vim9script
-        import FilterFunc from "../import/someother.vim"
+	import FilterFunc from "../import/someother.vim"
 	def searchfor#Stuff(arg: string)
 	  var filtered = FilterFunc(arg)
 	  ...
