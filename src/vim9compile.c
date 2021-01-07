@@ -6217,6 +6217,77 @@ theend:
 }
 
 /*
+ * Check for an assignment at "eap->cmd", compile it if found.
+ * Return NOTDONE if there is none, FAIL for failure, OK if done.
+ */
+    static int
+may_compile_assignment(exarg_T *eap, char_u **line, cctx_T *cctx)
+{
+    char_u  *pskip;
+    char_u  *p;
+
+    // Assuming the command starts with a variable or function name,
+    // find what follows.
+    // Skip over "var.member", "var[idx]" and the like.
+    // Also "&opt = val", "$ENV = val" and "@r = val".
+    pskip = (*eap->cmd == '&' || *eap->cmd == '$' || *eap->cmd == '@')
+						 ? eap->cmd + 1 : eap->cmd;
+    p = to_name_end(pskip, TRUE);
+    if (p > eap->cmd && *p != NUL)
+    {
+	char_u *var_end;
+	int	oplen;
+	int	heredoc;
+
+	if (eap->cmd[0] == '@')
+	    var_end = eap->cmd + 2;
+	else
+	    var_end = find_name_end(pskip, NULL, NULL,
+					FNE_CHECK_START | FNE_INCL_BR);
+	oplen = assignment_len(skipwhite(var_end), &heredoc);
+	if (oplen > 0)
+	{
+	    size_t len = p - eap->cmd;
+
+	    // Recognize an assignment if we recognize the variable
+	    // name:
+	    // "g:var = expr"
+	    // "local = expr"  where "local" is a local var.
+	    // "script = expr"  where "script" is a script-local var.
+	    // "import = expr"  where "import" is an imported var
+	    // "&opt = expr"
+	    // "$ENV = expr"
+	    // "@r = expr"
+	    if (*eap->cmd == '&'
+		    || *eap->cmd == '$'
+		    || *eap->cmd == '@'
+		    || ((len) > 2 && eap->cmd[1] == ':')
+		    || lookup_local(eap->cmd, len, NULL, cctx) == OK
+		    || arg_exists(eap->cmd, len, NULL, NULL, NULL, cctx) == OK
+		    || script_var_exists(eap->cmd, len, FALSE, cctx) == OK
+		    || find_imported(eap->cmd, len, cctx) != NULL)
+	    {
+		*line = compile_assignment(eap->cmd, eap, CMD_SIZE, cctx);
+		if (*line == NULL || *line == eap->cmd)
+		    return FAIL;
+		return OK;
+	    }
+	}
+    }
+
+    if (*eap->cmd == '[')
+    {
+	// [var, var] = expr
+	*line = compile_assignment(eap->cmd, eap, CMD_SIZE, cctx);
+	if (*line == NULL)
+	    return FAIL;
+	if (*line != eap->cmd)
+	    return OK;
+    }
+    return NOTDONE;
+}
+
+/*
  * Check if "name" can be "unlet".
  */
     int
@@ -7838,68 +7909,14 @@ compile_def_function(ufunc_T *ufunc, int check_return_type, cctx_T *outer_cctx)
 
 	if (!starts_with_colon)
 	{
-	    char_u *pskip;
+	    int	    assign;
 
-	    // Assuming the command starts with a variable or function name,
-	    // find what follows.
-	    // Skip over "var.member", "var[idx]" and the like.
-	    // Also "&opt = val", "$ENV = val" and "@r = val".
-	    pskip = (*ea.cmd == '&' || *ea.cmd == '$' || *ea.cmd == '@')
-							 ? ea.cmd + 1 : ea.cmd;
-	    p = to_name_end(pskip, TRUE);
-	    if (p > ea.cmd && *p != NUL)
-	    {
-		char_u *var_end;
-		int	oplen;
-		int	heredoc;
-
-		if (ea.cmd[0] == '@')
-		    var_end = ea.cmd + 2;
-		else
-		    var_end = find_name_end(pskip, NULL, NULL,
-						FNE_CHECK_START | FNE_INCL_BR);
-		oplen = assignment_len(skipwhite(var_end), &heredoc);
-		if (oplen > 0)
-		{
-		    size_t len = p - ea.cmd;
-
-		    // Recognize an assignment if we recognize the variable
-		    // name:
-		    // "g:var = expr"
-		    // "local = expr"  where "local" is a local var.
-		    // "script = expr"  where "script" is a script-local var.
-		    // "import = expr"  where "import" is an imported var
-		    // "&opt = expr"
-		    // "$ENV = expr"
-		    // "@r = expr"
-		    if (*ea.cmd == '&'
-			    || *ea.cmd == '$'
-			    || *ea.cmd == '@'
-			    || ((len) > 2 && ea.cmd[1] == ':')
-			    || lookup_local(ea.cmd, len, NULL, &cctx) == OK
-			    || arg_exists(ea.cmd, len, NULL, NULL,
-							     NULL, &cctx) == OK
-			    || script_var_exists(ea.cmd, len,
-							    FALSE, &cctx) == OK
-			    || find_imported(ea.cmd, len, &cctx) != NULL)
-		    {
-			line = compile_assignment(ea.cmd, &ea, CMD_SIZE, &cctx);
-			if (line == NULL || line == ea.cmd)
-			    goto erret;
-			goto nextline;
-		    }
-		}
-	    }
-
-	    if (*ea.cmd == '[')
-	    {
-		// [var, var] = expr
-		line = compile_assignment(ea.cmd, &ea, CMD_SIZE, &cctx);
-		if (line == NULL)
-		    goto erret;
-		if (line != ea.cmd)
-		    goto nextline;
-	    }
+	    // Check for assignment after command modifiers.
+	    assign = may_compile_assignment(&ea, &line, &cctx);
+	    if (assign == OK)
+		goto nextline;
+	    if (assign == FAIL)
+		goto erret;
 	}
 
 	/*

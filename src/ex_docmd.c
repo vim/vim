@@ -2738,6 +2738,25 @@ parse_command_modifiers(
 	}
 
 	p = skip_range(eap->cmd, TRUE, NULL);
+
+	// In Vim9 script a variable can shadow a command modifier:
+	//   verbose = 123
+	//   verbose += 123
+	//   silent! verbose = func()
+	//   verbose.member = 2
+	//   verbose[expr] = 2
+	if (in_vim9script())
+	{
+	    char_u *s;
+
+	    for (s = p; ASCII_ISALPHA(*s); ++s)
+		;
+	    s = skipwhite(s);
+	    if (vim_strchr((char_u *)".[=", *s) != NULL
+						 || (*s != NUL && s[1] == '='))
+		break;
+	}
+
 	switch (*p)
 	{
 	    // When adding an entry, also modify cmd_exists().

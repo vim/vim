@@ -1464,5 +1464,26 @@ def Test_unlet()
   assert_equal('', $ENVVAR)
 enddef
 
+def Test_assign_command_modifier()
+  var lines =<< trim END
+    var verbose = 0
+    verbose = 1
+    assert_equal(1, verbose)
+    silent verbose = 2
+    assert_equal(2, verbose)
+    silent verbose += 2
+    assert_equal(4, verbose)
+    silent verbose -= 1
+    assert_equal(3, verbose)
+
+    var topleft = {one: 1}
+    sandbox topleft.one = 3
+    assert_equal({one: 3}, topleft)
+    leftabove topleft[' '] = 4
+    assert_equal({one: 3, ' ': 4}, topleft)
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
