@@ -46,6 +46,7 @@ char_u *skiptohex(char_u *q);
 int vim_isdigit(int c);
 int vim_isxdigit(int c);
 int vim_isbdigit(int c);
+int vim_isodigit(int c);
 int vim_islower(int c);
 int vim_isupper(int c);
 int vim_toupper(int c);
