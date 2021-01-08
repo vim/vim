@@ -612,11 +612,13 @@ rb_check_type_stub(VALUE obj, int t)
 {
     dll_rb_check_type(obj, t);
 }
+#   if VIM_SIZEOF_INT < VIM_SIZEOF_LONG // 64 bits only
     unsigned long
 rb_num2uint_stub(VALUE x)
 {
     return dll_rb_num2uint(x);
 }
+#   endif
     void
 ruby_malloc_size_overflow_stub(size_t x, size_t y)
 {
