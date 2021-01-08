@@ -661,6 +661,12 @@ def Test_range_after_command_modifier()
   bwipe!
 enddef
 
+def Test_silent_pattern()
+  new
+  silent! :/pat/put _
+  bwipe!
+enddef
+
 def Test_eval_command()
   var from = 3
   var to = 5
