@@ -3094,7 +3094,15 @@ define_function(exarg_T *eap, char_u *name_arg)
     }
     else
     {
-	name = trans_function_name(&p, &is_global, eap->skip,
+	if (STRNCMP(p, "<lambda>", 8) == 0)
+	{
+	    p += 8;
+	    (void)getdigits(&p);
+	    name = vim_strnsave(eap->arg, p - eap->arg);
+	    CLEAR_FIELD(fudi);
+	}
+	else
+	    name = trans_function_name(&p, &is_global, eap->skip,
 					   TFN_NO_AUTOLOAD, &fudi, NULL, NULL);
 	paren = (vim_strchr(p, '(') != NULL);
 	if (name == NULL && (fudi.fd_dict == NULL || !paren) && !eap->skip)

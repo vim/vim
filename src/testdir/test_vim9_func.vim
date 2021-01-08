@@ -1802,6 +1802,16 @@ def Test_line_continuation_in_lambda()
   Line_continuation_in_lambda()->assert_equal(['D', 'C', 'B', 'A'])
 enddef
 
+def Test_list_lambda()
+  timer_start(1000, (_) => 0)
+  var body = execute(timer_info()[0].callback
+         ->string()
+         ->substitute("('", ' ', '')
+         ->substitute("')", '', '')
+         ->substitute('function\zs', ' ', ''))
+  assert_match('def <lambda>\d\+(_: any, ...): number\n1  return 0\n   enddef', body)
+enddef
+
 func Test_silent_echo()
   CheckScreendump
 
