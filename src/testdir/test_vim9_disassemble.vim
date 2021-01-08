@@ -117,8 +117,7 @@ def Test_disassemble_exec_expr()
         '\d 2STRING stack\[-1\]\_s*' ..
         '\d\+ PUSHS ".txt"\_s*' ..
         '\d\+ EXECCONCAT 4\_s*' ..
-        '\d\+ PUSHNR 0\_s*' ..
-        '\d\+ RETURN',
+        '\d\+ RETURN 0',
         res)
 enddef
 
@@ -134,8 +133,7 @@ def Test_disassemble_yank_range()
         '\d EXEC   norm! m\[jjm\]\_s*' ..
         '  :''\[,''\]yank\_s*' ..
         '\d EXEC   :''\[,''\]yank\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         res)
 enddef
 
@@ -149,8 +147,7 @@ def Test_disassemble_put_expr()
         ' :3put ="text"\_s*' ..
         '\d PUSHS "text"\_s*' ..
         '\d PUT = 3\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         res)
 enddef
 
@@ -164,8 +161,7 @@ def Test_disassemble_put_range()
         ' :$-2put a\_s*' ..
         '\d RANGE $-2\_s*' ..
         '\d PUT a range\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         res)
 enddef
 
@@ -273,8 +269,7 @@ def Test_disassemble_store_member()
         '\d\+ PUSHS "a"\_s*' ..
         '\d\+ LOAD $1\_s*' ..
         '\d\+ STOREDICT\_s*' ..
-        '\d\+ PUSHNR 0\_s*' ..
-        '\d\+ RETURN',
+        '\d\+ RETURN 0',
         res)
 enddef
 
@@ -297,8 +292,7 @@ def Test_disassemble_store_index()
         '\d LOAD $0\_s*' ..
         '\d MEMBER dd\_s*' ..
         '\d STOREINDEX\_s*' ..
-        '\d\+ PUSHNR 0\_s*' ..
-        '\d\+ RETURN',
+        '\d\+ RETURN 0',
         res)
 enddef
 
@@ -333,8 +327,7 @@ def Test_disassemble_list_assign()
         '\d\+ STORE $1\_s*' ..
         '\d\+ SLICE 2\_s*' ..
         '\d\+ STORE $2\_s*' ..
-        '\d\+ PUSHNR 0\_s*' ..
-        '\d\+ RETURN',
+        '\d\+ RETURN 0',
         res)
 enddef
 
@@ -362,8 +355,7 @@ def Test_disassemble_list_add()
         '\d\+ CHECKTYPE number stack\[-1\]\_s*' ..
         '\d\+ LISTAPPEND\_s*' ..
         '\d\+ DROP\_s*' ..
-        '\d\+ PUSHNR 0\_s*' ..
-        '\d\+ RETURN',
+        '\d\+ RETURN 0',
         res)
 enddef
 
@@ -390,8 +382,7 @@ def Test_disassemble_blob_add()
         '\d\+ CHECKTYPE number stack\[-1\]\_s*' ..
         '\d\+ BLOBAPPEND\_s*' ..
         '\d\+ DROP\_s*' ..
-        '\d\+ PUSHNR 0\_s*' ..
-        '\d\+ RETURN',
+        '\d\+ RETURN 0',
         res)
 enddef
 
@@ -580,8 +571,7 @@ def Test_disassemble_closure()
         '\d LOAD arg\[-1\]\_s*' ..
         '\d CONCAT\_s*' ..
         '\d STOREOUTER $0\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         res)
 
   res = execute('disass g:Get')
@@ -615,8 +605,7 @@ def Test_disassemble_pcall()
         '\d PCALL top (argc 1)\_s*' ..
         '\d PCALL end\_s*' ..
         '\d DROP\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         res)
 enddef
 
@@ -865,8 +854,7 @@ def Test_disassemble_function()
         '\d PUSHS "UserFunc"\_s*' ..
         '\d BCALL funcref(argc 1)\_s*' ..
         '\d STORE $2\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         instr)
 enddef
 
@@ -893,8 +881,7 @@ def Test_disassemble_channel()
         'var chan1: channel\_s*' ..
         '\d PUSHCHANNEL 0\_s*' ..
         '\d STORE $2\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         instr)
 enddef
 
@@ -966,8 +953,7 @@ def Test_nested_func()
         'echomsg "inner"\_s*' ..
         'enddef\_s*' ..
         '\d NEWFUNC <lambda>\d\+ Inner\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         instr)
 enddef
 
@@ -989,8 +975,7 @@ def Test_nested_def_list()
         '\d DEF /Info\_s*' ..
         'def /Info/\_s*' ..
         '\d DEF /Info/\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         instr)
 enddef
 
@@ -1122,8 +1107,7 @@ def Test_disassemble_for_loop_unpack()
         'endfor\_s*' ..
         '\d\+ JUMP -> 8\_s*' ..
         '\d\+ DROP\_s*' ..
-        '\d\+ PUSHNR 0\_s*' ..
-        '\d\+ RETURN',
+        '\d\+ RETURN 0',
         instr)
 enddef
 
@@ -1143,8 +1127,7 @@ def Test_disassemble_typecast()
         '\d NEWLIST size 2\_s*' ..
         '\d SETTYPE list<number>\_s*' ..
         '\d STORE $0\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN\_s*',
+        '\d RETURN 0\_s*',
         instr)
 enddef
 
@@ -1631,8 +1614,7 @@ def Test_dsassemble_falsy_op()
       'echo "" ?? "empty string"\_s*' ..
       '\d\+ PUSHS "empty string"\_s*' ..
       '\d\+ ECHO 1\_s*' ..
-      '\d\+ PUSHNR 0\_s*' ..
-      '\d\+ RETURN',
+      '\d\+ RETURN 0',
       res)
 enddef
 
@@ -1659,8 +1641,7 @@ def Test_disassemble_compare_const()
           'if ' .. substitute(case[0], '[[~]', '\\\0', 'g') .. '.*' ..
           '\d PUSHNR 42.*' ..
           '\d ECHO 1.*' ..
-          '\d PUSHNR 0.*' ..
-          '\d RETURN.*',
+          '\d RETURN 0',
           instr)
     else
       # condition false, function just returns
@@ -1668,8 +1649,7 @@ def Test_disassemble_compare_const()
           'if ' .. substitute(case[0], '[[~]', '\\\0', 'g') .. '[ \n]*' ..
           'echo 42[ \n]*' ..
           'endif[ \n]*' ..
-          '\s*\d PUSHNR 0.*' ..
-          '\d RETURN.*',
+          '\d RETURN 0',
           instr)
     endif
 
@@ -1707,8 +1687,7 @@ def Test_disassemble_execute()
         '\d\+ LOAD $1\_s*' ..
         '\d\+ CONCAT\_s*' ..
         '\d\+ EXECUTE 1\_s*' ..
-        '\d\+ PUSHNR 0\_s*' ..
-        '\d\+ RETURN',
+        '\d\+ RETURN 0',
         res)
 enddef
 
@@ -1727,8 +1706,7 @@ def Test_disassemble_echomsg()
         "echoerr 'went' .. 'wrong'\\_s*" ..
         '\d PUSHS "wentwrong"\_s*' ..
         '\d ECHOERR 1\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         res)
 enddef
 
@@ -1837,8 +1815,7 @@ def Test_shuffle()
         '\d SHUFFLE 2 up 1\_s*' ..
         '\d BCALL append(argc 2)\_s*' ..
         '\d DROP\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         res)
 enddef
 
@@ -1861,8 +1838,7 @@ def Test_silent()
         '\d PUSHS "error"\_s*' ..
         '\d ECHOERR 1\_s*' ..
         '\d CMDMOD_REV\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         res)
 enddef
 

@@ -2205,6 +2205,16 @@ call_def_function(
 		break;
 
 	    // return from a :def function call
+	    case ISN_RETURN_ZERO:
+		if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
+		    goto failed;
+		tv = STACK_TV_BOT(0);
+		++ectx.ec_stack.ga_len;
+		tv->v_type = VAR_NUMBER;
+		tv->vval.v_number = 0;
+		tv->v_lock = 0;
+		// FALLTHROUGH
+
 	    case ISN_RETURN:
 		{
 		    garray_T	*trystack = &ectx.ec_trystack;
@@ -3803,6 +3813,9 @@ ex_disassemble(exarg_T *eap)
 		break;
 	    case ISN_RETURN:
 		smsg("%4d RETURN", current);
+		break;
+	    case ISN_RETURN_ZERO:
+		smsg("%4d RETURN 0", current);
 		break;
 	    case ISN_FUNCREF:
 		{

@@ -8190,8 +8190,7 @@ nextline:
 	}
 
 	// Return zero if there is no return at the end.
-	generate_PUSHNR(&cctx, 0);
-	generate_instr(&cctx, ISN_RETURN);
+	generate_instr(&cctx, ISN_RETURN_ZERO);
     }
 
     {
@@ -8483,6 +8482,7 @@ delete_instr(isn_T *isn)
 	case ISN_PUSHSPEC:
 	case ISN_PUT:
 	case ISN_RETURN:
+	case ISN_RETURN_ZERO:
 	case ISN_SHUFFLE:
 	case ISN_SLICE:
 	case ISN_STORE:
