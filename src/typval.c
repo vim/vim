@@ -834,6 +834,30 @@ typval_compare(
 	    default:  break;  // avoid gcc warning
 	}
     }
+    else if (in_vim9script() && (typ1->v_type == VAR_BOOL
+						 || typ2->v_type == VAR_BOOL))
+    {
+	if (typ1->v_type != typ2->v_type)
+	{
+	    semsg(_(e_cannot_compare_str_with_str),
+		       vartype_name(typ1->v_type), vartype_name(typ2->v_type));
+	    clear_tv(typ1);
+	    return FAIL;
+	}
+	n1 = typ1->vval.v_number;
+	n2 = typ2->vval.v_number;
+	switch (type)
+	{
+	    case EXPR_IS:
+	    case EXPR_EQUAL:    n1 = (n1 == n2); break;
+	    case EXPR_ISNOT:
+	    case EXPR_NEQUAL:   n1 = (n1 != n2); break;
+	    default:
+		emsg(_(e_invalid_operation_for_bool));
+		clear_tv(typ1);
+		return FAIL;
+	}
+    }
     else
     {
 	s1 = tv_get_string_buf(typ1, buf1);

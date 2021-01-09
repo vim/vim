@@ -597,6 +597,18 @@ def Test_expr4_equal()
   CheckDefFailure(["var x = 'a' == "], 'E1097:', 3)
 
   CheckDefExecFailure(['var items: any', 'eval 1', 'eval 2', 'if items == []', 'endif'], 'E691:', 4)
+
+  CheckDefExecFailure(['var x: any = "a"', 'echo x == true'], 'E1072: Cannot compare string with bool', 2)
+  CheckDefExecFailure(["var x: any = true", 'echo x == ""'], 'E1072: Cannot compare bool with string', 2)
+  CheckDefExecFailure(["var x: any = 99", 'echo x == true'], 'E1138', 2)
+  CheckDefExecFailure(["var x: any = 'a'", 'echo x == 99'], 'E1030:', 2)
+
+  for op in ['>', '>=', '<', '<=', '=~', '!~']
+    CheckDefExecFailure([
+        "var a: any = 'a'",
+        'var b: any = true',
+        'echo a ' .. op .. ' b'], 'E1072:', 3)
+  endfor
 enddef
 
 " test != comperator
