@@ -4201,7 +4201,7 @@ tagstack_push_items(win_T *wp, list_T *l)
 	// parse 'from' for the cursor position before the tag jump
 	if ((di = dict_find(itemdict, (char_u *)"from", -1)) == NULL)
 	    continue;
-	if (list2fpos(&di->di_tv, &mark, &fnum, NULL) != OK)
+	if (list2fpos(&di->di_tv, &mark, &fnum, NULL, FALSE) != OK)
 	    continue;
 	if ((tagname =
 		dict_get_string(itemdict, (char_u *)"tagname", TRUE)) == NULL)
