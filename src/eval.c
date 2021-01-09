@@ -2655,7 +2655,7 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 {
     char_u	*p;
     int		getnext;
-    exptype_T	type = EXPR_UNKNOWN;
+    exprtype_T	type = EXPR_UNKNOWN;
     int		len = 2;
     int		type_is = FALSE;
 

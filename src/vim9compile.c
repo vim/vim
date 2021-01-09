@@ -669,7 +669,7 @@ generate_two_op(cctx_T *cctx, char_u *op)
  * Return ISN_DROP when failed.
  */
     static isntype_T
-get_compare_isn(exptype_T exptype, vartype_T type1, vartype_T type2)
+get_compare_isn(exprtype_T exprtype, vartype_T type1, vartype_T type2)
 {
     isntype_T	isntype = ISN_DROP;
 
@@ -699,22 +699,22 @@ get_compare_isn(exptype_T exptype, vartype_T type1, vartype_T type2)
 	      && (type2 == VAR_NUMBER || type2 ==VAR_FLOAT)))
 	isntype = ISN_COMPAREANY;
 
-    if ((exptype == EXPR_IS || exptype == EXPR_ISNOT)
+    if ((exprtype == EXPR_IS || exprtype == EXPR_ISNOT)
 	    && (isntype == ISN_COMPAREBOOL
 	    || isntype == ISN_COMPARESPECIAL
 	    || isntype == ISN_COMPARENR
 	    || isntype == ISN_COMPAREFLOAT))
     {
 	semsg(_(e_cannot_use_str_with_str),
-		exptype == EXPR_IS ? "is" : "isnot" , vartype_name(type1));
+		exprtype == EXPR_IS ? "is" : "isnot" , vartype_name(type1));
 	return ISN_DROP;
     }
     if (isntype == ISN_DROP
-	    || ((exptype != EXPR_EQUAL && exptype != EXPR_NEQUAL
+	    || ((exprtype != EXPR_EQUAL && exprtype != EXPR_NEQUAL
 		    && (type1 == VAR_BOOL || type1 == VAR_SPECIAL
 		       || type2 == VAR_BOOL || type2 == VAR_SPECIAL)))
-	    || ((exptype != EXPR_EQUAL && exptype != EXPR_NEQUAL
-				 && exptype != EXPR_IS && exptype != EXPR_ISNOT
+	    || ((exprtype != EXPR_EQUAL && exprtype != EXPR_NEQUAL
+				 && exprtype != EXPR_IS && exprtype != EXPR_ISNOT
 		    && (type1 == VAR_BLOB || type2 == VAR_BLOB
 			|| type1 == VAR_LIST || type2 == VAR_LIST))))
     {
@@ -726,7 +726,7 @@ get_compare_isn(exptype_T exptype, vartype_T type1, vartype_T type2)
 }
 
     int
-check_compare_types(exptype_T type, typval_T *tv1, typval_T *tv2)
+check_compare_types(exprtype_T type, typval_T *tv1, typval_T *tv2)
 {
     if (get_compare_isn(type, tv1->v_type, tv2->v_type) == ISN_DROP)
 	return FAIL;
@@ -737,7 +737,7 @@ check_compare_types(exptype_T type, typval_T *tv1, typval_T *tv2)
  * Generate an ISN_COMPARE* instruction with a boolean result.
  */
     static int
-generate_COMPARE(cctx_T *cctx, exptype_T exptype, int ic)
+generate_COMPARE(cctx_T *cctx, exprtype_T exprtype, int ic)
 {
     isntype_T	isntype;
     isn_T	*isn;
@@ -752,13 +752,13 @@ generate_COMPARE(cctx_T *cctx, exptype_T exptype, int ic)
     // checking.
     type1 = ((type_T **)stack->ga_data)[stack->ga_len - 2]->tt_type;
     type2 = ((type_T **)stack->ga_data)[stack->ga_len - 1]->tt_type;
-    isntype = get_compare_isn(exptype, type1, type2);
+    isntype = get_compare_isn(exprtype, type1, type2);
     if (isntype == ISN_DROP)
 	return FAIL;
 
     if ((isn = generate_instr(cctx, isntype)) == NULL)
 	return FAIL;
-    isn->isn_arg.op.op_type = exptype;
+    isn->isn_arg.op.op_type = exprtype;
     isn->isn_arg.op.op_ic = ic;
 
     // takes two arguments, puts one bool back
@@ -3348,10 +3348,10 @@ get_vim_constant(char_u **arg, typval_T *rettv)
     }
 }
 
-    exptype_T
+    exprtype_T
 get_compare_type(char_u *p, int *len, int *type_is)
 {
-    exptype_T	type = EXPR_UNKNOWN;
+    exprtype_T	type = EXPR_UNKNOWN;
     int		i;
 
     switch (p[0])
@@ -4346,7 +4346,7 @@ compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     static int
 compile_expr4(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 {
-    exptype_T	type = EXPR_UNKNOWN;
+    exprtype_T	type = EXPR_UNKNOWN;
     char_u	*p;
     char_u	*next;
     int		len = 2;

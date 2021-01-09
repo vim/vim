@@ -4029,7 +4029,7 @@ typedef enum
     EXPR_MULT,		// *
     EXPR_DIV,		// /
     EXPR_REM,		// %
-} exptype_T;
+} exprtype_T;
 
 /*
  * Structure used for reading in json_decode().

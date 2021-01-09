@@ -649,7 +649,7 @@ copy_tv(typval_T *from, typval_T *to)
 typval_compare(
     typval_T	*typ1,   // first operand
     typval_T	*typ2,   // second operand
-    exptype_T	type,    // operator
+    exprtype_T	type,    // operator
     int		ic)      // ignore case
 {
     int		i;
