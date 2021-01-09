@@ -2304,7 +2304,7 @@ def Test_expr7_any_index_slice()
     # string is permissive, index out of range accepted
     g:teststring = 'abcdef'
     assert_equal('b', g:teststring[1])
-    assert_equal('', g:teststring[-1])
+    assert_equal('f', g:teststring[-1])
     assert_equal('', g:teststring[99])
 
     assert_equal('b', g:teststring[1 : 1])
@@ -2368,10 +2368,10 @@ def Test_expr7_any_index_slice()
   CheckDefExecFailure(['echo g:testblob[-3]'], 'E979:', 1)
   CheckScriptFailure(['vim9script', 'echo g:testblob[-3]'], 'E979:', 2)
 
-  CheckDefExecFailure(['echo g:testlist[4]'], 'E684:', 1)
+  CheckDefExecFailure(['echo g:testlist[4]'], 'E684: list index out of range: 4', 1)
   CheckScriptFailure(['vim9script', 'echo g:testlist[4]'], 'E684:', 2)
   CheckDefExecFailure(['echo g:testlist[-5]'], 'E684:', 1)
-  CheckScriptFailure(['vim9script', 'echo g:testlist[-5]'], 'E684:', 2)
+  CheckScriptFailure(['vim9script', 'echo g:testlist[-5]'], 'E684: list index out of range: -5', 2)
 
   CheckDefExecFailure(['echo g:testdict["a" : "b"]'], 'E719:', 1)
   CheckScriptFailure(['vim9script', 'echo g:testdict["a" : "b"]'], 'E719:', 2)
@@ -2802,15 +2802,23 @@ enddef
 def Test_expr7_string_subscript()
   var lines =<< trim END
     var text = 'abcdef'
-    assert_equal('', text[-1])
+    assert_equal('f', text[-1])
     assert_equal('a', text[0])
     assert_equal('e', text[4])
     assert_equal('f', text[5])
     assert_equal('', text[6])
 
+    text = 'ábçdë'
+    assert_equal('ë', text[-1])
+    assert_equal('d', text[-2])
+    assert_equal('ç', text[-3])
+    assert_equal('b', text[-4])
+    assert_equal('á', text[-5])
+    assert_equal('', text[-6])
+
     text = 'ábçdëf'
     assert_equal('', text[-999])
-    assert_equal('', text[-1])
+    assert_equal('f', text[-1])
     assert_equal('á', text[0])
     assert_equal('b', text[1])
     assert_equal('ç', text[2])
@@ -2904,8 +2912,7 @@ def Test_expr7_list_subscript()
     assert_equal([], list[0 : -6])
     assert_equal([], list[0 : -99])
   END
-  CheckDefSuccess(lines)
-  CheckScriptSuccess(['vim9script'] + lines)
+  CheckDefAndScriptSuccess(lines)
 
   lines = ['var l = [0, 1, 2]', 'echo l[g:astring : g:theone]']
   CheckDefExecFailure(lines, 'E1012:')

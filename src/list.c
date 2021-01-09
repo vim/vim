@@ -924,7 +924,7 @@ list_slice_or_index(
 	if (!range)
 	{
 	    if (verbose)
-		semsg(_(e_listidx), n1);
+		semsg(_(e_listidx), n1_arg);
 	    return FAIL;
 	}
 	n1 = n1 < 0 ? 0 : len;
