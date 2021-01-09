@@ -1466,21 +1466,27 @@ enddef
 
 def Test_assign_command_modifier()
   var lines =<< trim END
-    var verbose = 0
-    verbose = 1
-    assert_equal(1, verbose)
-    silent verbose = 2
-    assert_equal(2, verbose)
-    silent verbose += 2
-    assert_equal(4, verbose)
-    silent verbose -= 1
-    assert_equal(3, verbose)
+      var verbose = 0
+      verbose = 1
+      assert_equal(1, verbose)
+      silent verbose = 2
+      assert_equal(2, verbose)
+      silent verbose += 2
+      assert_equal(4, verbose)
+      silent verbose -= 1
+      assert_equal(3, verbose)
 
-    var topleft = {one: 1}
-    sandbox topleft.one = 3
-    assert_equal({one: 3}, topleft)
-    leftabove topleft[' '] = 4
-    assert_equal({one: 3, ' ': 4}, topleft)
+      var topleft = {one: 1}
+      sandbox topleft.one = 3
+      assert_equal({one: 3}, topleft)
+      leftabove topleft[' '] = 4
+      assert_equal({one: 3, ' ': 4}, topleft)
+
+      var x: number
+      var y: number
+      silent [x, y] = [1, 2]
+      assert_equal(1, x)
+      assert_equal(2, y)
   END
   CheckDefAndScriptSuccess(lines)
 enddef

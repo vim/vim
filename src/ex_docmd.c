@@ -2745,15 +2745,18 @@ parse_command_modifiers(
 	//   silent! verbose = func()
 	//   verbose.member = 2
 	//   verbose[expr] = 2
+	// But not:
+	//   verbose [a, b] = list
 	if (in_vim9script())
 	{
-	    char_u *s;
+	    char_u *s, *n;
 
 	    for (s = p; ASCII_ISALPHA(*s); ++s)
 		;
-	    s = skipwhite(s);
-	    if (vim_strchr((char_u *)".[=", *s) != NULL
-						 || (*s != NUL && s[1] == '='))
+	    n = skipwhite(s);
+	    if (vim_strchr((char_u *)".=", *n) != NULL
+		    || *s == '['
+		    || (*n != NUL && n[1] == '='))
 		break;
 	}
 
