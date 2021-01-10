@@ -55,8 +55,10 @@ char_u *echo_string_core(typval_T *tv, char_u **tofree, char_u *numbuf, int copy
 char_u *echo_string(typval_T *tv, char_u **tofree, char_u *numbuf, int copyID);
 char_u *string_quote(char_u *str, int function);
 int string2float(char_u *text, float_T *value);
-pos_T *var2fpos(typval_T *varp, int dollar_lnum, int *fnum);
-int list2fpos(typval_T *arg, pos_T *posp, int *fnump, colnr_T *curswantp);
+int buf_byteidx_to_charidx(buf_T *buf, int lnum, int byteidx);
+int buf_charidx_to_byteidx(buf_T *buf, int lnum, int charidx);
+pos_T *var2fpos(typval_T *varp, int dollar_lnum, int *fnum, int charcol);
+int list2fpos(typval_T *arg, pos_T *posp, int *fnump, colnr_T *curswantp, int char_col);
 int get_env_len(char_u **arg);
 int get_id_len(char_u **arg);
 int get_name_len(char_u **arg, char_u **alias, int evaluate, int verbose);

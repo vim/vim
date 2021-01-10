@@ -1579,7 +1579,7 @@ tv_get_lnum(typval_T *argvars)
     if (lnum <= 0)  // no valid number, try using arg like line()
     {
 	int	fnum;
-	pos_T	*fp = var2fpos(&argvars[0], TRUE, &fnum);
+	pos_T	*fp = var2fpos(&argvars[0], TRUE, &fnum, FALSE);
 
 	if (fp != NULL)
 	    lnum = fp->lnum;
