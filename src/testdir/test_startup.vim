@@ -1005,7 +1005,13 @@ endfunc
 " Test starting vim with various names: vim, ex, view, evim, etc.
 func Test_progname()
   CheckUnix
+
   call mkdir('Xprogname', 'p')
+  call writefile(['silent !date',
+  \               'call writefile([mode(1), '
+  \               .. '&insertmode, &diff, &readonly, &updatecount, '
+  \               .. 'join(split(execute("message"), "\n")[1:])], "Xprogname_out")',
+  \               'qall'], 'Xprogname_after')
 
   "  +---------------------------------------------- progname
   "  |            +--------------------------------- mode(1)
@@ -1036,12 +1042,19 @@ func Test_progname()
   \                'vimdiff', 'gvimdiff']
 
   for progname in prognames
+    if empty($DISPLAY)
+      if progname =~# 'g'
+        " Can't run gvim, gview (etc.) if $DISPLAY is not setup.
+        continue
+      endif
+      if has('gui') && (progname ==# 'evim' || progname ==# 'eview')
+        " evim or eview will start the GUI if there is gui support.
+        " So don't try to start them either if $DISPLAY is not setup.
+        continue
+      endif
+    endif
+
     exe 'silent !ln -s -f ' ..exepath(GetVimProg()) .. ' Xprogname/' .. progname
-    call writefile(['silent !date',
-    \               'call writefile([mode(1), '
-    \               .. '&insertmode, &diff, &readonly, &updatecount, '
-    \               .. 'join(split(execute("message"), "\n")[1:])], "Xprogname_out")',
-    \               'qall'], 'Xprogname_after')
 
     let stdout_stderr = ''
     if progname =~# 'g'
@@ -1059,9 +1072,9 @@ func Test_progname()
 
     call delete('Xprogname/' .. progname)
     call delete('Xprogname_out')
-    call delete('Xprogname_after')
   endfor
 
+  call delete('Xprogname_after')
   call delete('Xprogname', 'd')
 endfunc
 
