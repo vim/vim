@@ -1822,6 +1822,13 @@ def Test_nested_closure_using_argument()
   assert_equal(['x', 'x2'], DoFilterThis('x'))
 enddef
 
+def Test_triple_nested_closure()
+  var what = 'x'
+  var Match = (val: string, cmp: string): bool => stridx(val, cmp) == 0
+  var Filter = (l) => filter(l, (_, v) => Match(v, what))
+  assert_equal(['x', 'x2'], ['x', 'y', 'a', 'x2', 'c']->Filter())
+enddef
+
 func Test_silent_echo()
   CheckScreendump
 

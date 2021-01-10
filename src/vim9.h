@@ -307,7 +307,7 @@ typedef struct {
 typedef struct {
     int		outer_idx;	// index
     int		outer_depth;	// nesting level, stack frames to go up
-} outer_T;
+} isn_outer_T;
 
 /*
  * Instruction
@@ -348,7 +348,7 @@ struct isn_S {
 	put_T		    put;
 	cmod_T		    cmdmod;
 	unpack_T	    unpack;
-	outer_T		    outer;
+	isn_outer_T	    outer;
     } isn_arg;
 };
 
@@ -375,10 +375,13 @@ struct dfunc_S {
 // Number of entries used by stack frame for a function call.
 // - ec_dfunc_idx:   function index
 // - ec_iidx:        instruction index
-// - ec_outer_stack: stack used for closures  TODO: can we avoid this?
-// - ec_outer_frame: stack frame for closures
+// - ec_outer:	     stack used for closures
 // - ec_frame_idx:   previous frame index
-#define STACK_FRAME_SIZE 5
+#define STACK_FRAME_FUNC_OFF 0
+#define STACK_FRAME_IIDX_OFF 1
+#define STACK_FRAME_OUTER_OFF 2
+#define STACK_FRAME_IDX_OFF 3
+#define STACK_FRAME_SIZE 4
 
 
 #ifdef DEFINE_VIM9_GLOBALS

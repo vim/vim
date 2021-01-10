@@ -1965,6 +1965,14 @@ typedef struct funcstack_S
     int		fs_copyID;	// for garray_T collection
 } funcstack_T;
 
+typedef struct outer_S outer_T;
+struct outer_S {
+    garray_T	*out_stack;	    // stack from outer scope
+    int		out_frame_idx;	    // index of stack frame in out_stack
+    outer_T	*out_up;	    // outer scope of outer scope or NULL
+    int		out_up_is_copy;	    // don't free out_up
+};
+
 struct partial_S
 {
     int		pt_refcount;	// reference count
@@ -1975,13 +1983,11 @@ struct partial_S
     int		pt_auto;	// when TRUE the partial was created for using
 				// dict.member in handle_subscript()
 
-    // For a compiled closure: the arguments and local variables.
-    garray_T	*pt_ectx_stack;	    // where to find local vars
-    int		pt_ectx_frame;	    // index of function frame in uf_ectx_stack
-    garray_T	*pt_outer_stack;    // pt_ectx_stack one level up
-    int		pt_outer_frame;	    // pt_ectx_frame one level up.
-    funcstack_T	*pt_funcstack;	    // copy of stack, used after context
-				    // function returns
+    // For a compiled closure: the arguments and local variables scope
+    outer_T	pt_outer;
+
+    funcstack_T	*pt_funcstack;	// copy of stack, used after context
+				// function returns
 
     int		pt_argc;	// number of arguments
     typval_T	*pt_argv;	// arguments in allocated array
