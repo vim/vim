@@ -2929,6 +2929,16 @@ def Test_expr7_list_subscript()
   lines = ['var l = [0, 1, 2]', 'echo l[g:astring : g:theone]']
   CheckDefExecFailure(lines, 'E1012:')
   CheckScriptFailure(['vim9script'] + lines, 'E1030:', 3)
+
+  lines =<< trim END
+      vim9script
+      var ld = []
+      def Func()
+        eval ld[0].key
+      enddef
+      defcompile
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_expr7_dict_subscript()
@@ -2937,6 +2947,15 @@ def Test_expr7_dict_subscript()
       var l = [{lnum: 2}, {lnum: 1}]
       var res = l[0].lnum > l[1].lnum
       assert_true(res)
+
+      var dd = {}
+      def Func1()
+        eval dd.key1.key2
+      enddef
+      def Func2()
+        eval dd['key1'].key2
+      enddef
+      defcompile
   END
   CheckScriptSuccess(lines)
 enddef
