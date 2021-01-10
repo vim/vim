@@ -80,6 +80,7 @@ func Test_client_server()
   call WaitForAssert({-> assert_equal('one', remote_expr(name, "getline(1)", "", 2))})
   call writefile(['one', 'two'], 'Xclientfile')
   call system(cmd)
+  call delete('Xclientfile')
   call WaitForAssert({-> assert_equal('two', remote_expr(name, "getline(2)", "", 2))})
 
   " Expression evaluated locally.
