@@ -1859,10 +1859,10 @@ def Test_expr7_lambda()
 
       # line continuation inside lambda with "cond ? expr : expr" works
       var ll = range(3)
-      map(ll, (k, v) => v % 2 ? {
+      var dll = mapnew(ll, (k, v) => v % 2 ? {
                 ['111']: 111 } : {}
             )
-      assert_equal([{}, {111: 111}, {}], ll)
+      assert_equal([{}, {111: 111}, {}], dll)
 
       ll = range(3)
       map(ll, (k, v) => v == 8 || v
@@ -1946,10 +1946,10 @@ def Test_expr7_new_lambda()
 
       # line continuation inside lambda with "cond ? expr : expr" works
       var ll = range(3)
-      map(ll, (k, v) => v % 2 ? {
+      var dll = mapnew(ll, (k, v) => v % 2 ? {
                 ['111']: 111 } : {}
             )
-      assert_equal([{}, {111: 111}, {}], ll)
+      assert_equal([{}, {111: 111}, {}], dll)
 
       ll = range(3)
       map(ll, (k, v) => v == 8 || v
@@ -2964,25 +2964,25 @@ def Test_expr7_subscript_linebreak()
   var range = range(
   		3)
   var l = range
-	->map('string(v:key)')
+	->mapnew('string(v:key)')
   assert_equal(['0', '1', '2'], l)
 
   l = range
-  	->map('string(v:key)')
+  	->mapnew('string(v:key)')
   assert_equal(['0', '1', '2'], l)
 
   l = range # comment
-  	->map('string(v:key)')
+  	->mapnew('string(v:key)')
   assert_equal(['0', '1', '2'], l)
 
   l = range
 
-  	->map('string(v:key)')
+  	->mapnew('string(v:key)')
   assert_equal(['0', '1', '2'], l)
 
   l = range
 	# comment
-  	->map('string(v:key)')
+  	->mapnew('string(v:key)')
   assert_equal(['0', '1', '2'], l)
 
   assert_equal('1', l[

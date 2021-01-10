@@ -1930,6 +1930,15 @@ internal_func_ret_type(int idx, int argcount, type_T **argtypes)
 }
 
 /*
+ * Return TRUE if "idx" is for the map() function.
+ */
+    int
+internal_func_is_map(int idx)
+{
+    return global_functions[idx].f_func == f_map;
+}
+
+/*
  * Check the argument count to use for internal function "idx".
  * Returns -1 for failure, 0 if no method base accepted, 1 if method base is
  * first argument, 2 if method base is second argument, etc.  9 if method base

@@ -231,7 +231,7 @@ def Test_extend_arg_types()
   assert_equal({a: 1, b: 2}, extend({a: 1, b: 2}, {b: 4}, s:string_keep))
 
   var res: list<dict<any>>
-  extend(res, map([1, 2], (_, v) => ({})))
+  extend(res, mapnew([1, 2], (_, v) => ({})))
   assert_equal([{}, {}], res)
 
   CheckDefFailure(['extend([1, 2], 3)'], 'E1013: Argument 2: type mismatch, expected list<number> but got number')
@@ -316,6 +316,15 @@ def Test_map_function_arg()
       var l = ['a', 'b', 'c']
       map(l, MapOne)
       assert_equal(['0:a', '1:b', '2:c'], l)
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_map_item_type()
+  var lines =<< trim END
+      var l = ['a', 'b', 'c']
+      map(l, (k, v) => k .. '/' .. v )
+      assert_equal(['0/a', '1/b', '2/c'], l)
   END
   CheckDefAndScriptSuccess(lines)
 enddef
@@ -728,7 +737,7 @@ enddef
 
 def Test_submatch()
   var pat = 'A\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)'
-  var Rep = () => range(10)->map((_, v) => submatch(v, true))->string()
+  var Rep = () => range(10)->mapnew((_, v) => submatch(v, true))->string()
   var actual = substitute('A123456789', pat, Rep, '')
   var expected = "[['A123456789'], ['1'], ['2'], ['3'], ['4'], ['5'], ['6'], ['7'], ['8'], ['9']]"
   actual->assert_equal(expected)
