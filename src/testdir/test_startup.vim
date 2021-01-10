@@ -1002,4 +1002,67 @@ func Test_too_many_edit_args()
   call assert_match('^Too many edit arguments: "-"', l[1])
 endfunc
 
+" Test starting vim with various names: vim, ex, view, evim, etc.
+func Test_progname()
+  CheckUnix
+  call mkdir('Xprogname', 'p')
+
+  "  +---------------------------------------------- progname
+  "  |            +--------------------------------- mode(1)
+  "  |            |     +--------------------------- &insertmode
+  "  |            |     |    +---------------------- &diff
+  "  |            |     |    |    +----------------- &readonly
+  "  |            |     |    |    |        +-------- &updatecount
+  "  |            |     |    |    |        |    +--- :messages
+  "  |            |     |    |    |        |    |
+  let expectations = {
+  \ 'vim':      ['n',  '0', '0', '0',   '200', ''],
+  \ 'gvim':     ['n',  '0', '0', '0',   '200', ''],
+  \ 'ex':       ['ce', '0', '0', '0',   '200', ''],
+  \ 'exim':     ['cv', '0', '0', '0',   '200', ''],
+  \ 'view':     ['n',  '0', '0', '1', '10000', ''],
+  \ 'gview':    ['n',  '0', '0', '1', '10000', ''],
+  \ 'evim':     ['n',  '1', '0', '0',   '200', ''],
+  \ 'eview':    ['n',  '1', '0', '1', '10000', ''],
+  \ 'rvim':     ['n',  '0', '0', '0',   '200', 'line    1: E145: Shell commands and some functionality not allowed in rvim'],
+  \ 'rgvim':    ['n',  '0', '0', '0',   '200', 'line    1: E145: Shell commands and some functionality not allowed in rvim'],
+  \ 'rview':    ['n',  '0', '0', '1', '10000', 'line    1: E145: Shell commands and some functionality not allowed in rvim'],
+  \ 'rgview':   ['n',  '0', '0', '1', '10000', 'line    1: E145: Shell commands and some functionality not allowed in rvim'],
+  \ 'vimdiff':  ['n',  '0', '1', '0',   '200', ''],
+  \ 'gvimdiff': ['n',  '0', '1', '0',   '200', '']}
+
+  let prognames = ['vim', 'gvim', 'ex', 'exim', 'view', 'gview',
+  \                'evim', 'eview', 'rvim', 'rgvim', 'rview', 'rgview',
+  \                'vimdiff', 'gvimdiff']
+
+  for progname in prognames
+    exe 'silent !ln -s -f ' ..exepath(GetVimProg()) .. ' Xprogname/' .. progname
+    call writefile(['silent !date',
+    \               'call writefile([mode(1), '
+    \               .. '&insertmode, &diff, &readonly, &updatecount, '
+    \               .. 'join(split(execute("message"), "\n")[1:])], "Xprogname_out")',
+    \               'qall'], 'Xprogname_after')
+
+    let stdout_stderr = ''
+    if progname =~# 'g'
+      let stdout_stderr = system('Xprogname/'..progname..' -f --clean --not-a-term -S Xprogname_after')
+    else
+      exe 'sil !Xprogname/'..progname..' -f --clean --not-a-term -S Xprogname_after'
+    endif
+
+    if progname =~# 'g' && !has('gui')
+      call assert_equal("E25: GUI cannot be used: Not enabled at compile time\n", stdout_stderr, progname)
+    else
+      call assert_equal('', stdout_stderr, progname)
+      call assert_equal(expectations[progname], readfile('Xprogname_out'), progname)
+    endif
+
+    call delete('Xprogname/' .. progname)
+    call delete('Xprogname_out')
+    call delete('Xprogname_after')
+  endfor
+
+  call delete('Xprogname', 'd')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
