@@ -60,6 +60,8 @@ struct ectx_S {
 
     garray_T	*ec_outer_stack;    // stack used for closures
     int		ec_outer_frame;	    // stack frame in ec_outer_stack
+    garray_T	*ec_outer_up_stack;   // ec_outer_stack one level up
+    int		ec_outer_up_frame;    // ec_outer_frame one level up
 
     garray_T	ec_trystack;	// stack of trycmd_T values
     int		ec_in_catch;	// when TRUE in catch or finally block
@@ -149,6 +151,8 @@ exe_newlist(int count, ectx_T *ectx)
 
 /*
  * Call compiled function "cdf_idx" from compiled code.
+ * This adds a stack frame and sets the instruction pointer to the start of the
+ * called function.
  *
  * Stack has:
  * - current arguments (already there)
@@ -248,6 +252,7 @@ call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
     STACK_TV_BOT(2)->vval.v_string = (void *)ectx->ec_outer_stack;
     STACK_TV_BOT(3)->vval.v_number = ectx->ec_outer_frame;
     STACK_TV_BOT(4)->vval.v_number = ectx->ec_frame_idx;
+    // TODO: save ec_outer_up_stack as well?
     ectx->ec_frame_idx = ectx->ec_stack.ga_len;
 
     // Initialize local variables
@@ -266,6 +271,15 @@ call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
     {
 	ectx->ec_outer_stack = ufunc->uf_partial->pt_ectx_stack;
 	ectx->ec_outer_frame = ufunc->uf_partial->pt_ectx_frame;
+	ectx->ec_outer_up_stack = ufunc->uf_partial->pt_outer_stack;
+	ectx->ec_outer_up_frame = ufunc->uf_partial->pt_outer_frame;
+    }
+    else if (ufunc->uf_flags & FC_CLOSURE)
+    {
+	ectx->ec_outer_stack = &ectx->ec_stack;
+	ectx->ec_outer_frame = ectx->ec_frame_idx;
+	ectx->ec_outer_up_stack = ectx->ec_outer_stack;
+	ectx->ec_outer_up_frame = ectx->ec_outer_frame;
     }
 
     // Set execution state to the start of the called function.
@@ -417,6 +431,8 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 		pt->pt_funcstack = funcstack;
 		pt->pt_ectx_stack = &funcstack->fs_ga;
 		pt->pt_ectx_frame = ectx->ec_frame_idx - top;
+		pt->pt_outer_stack = ectx->ec_outer_stack;
+		pt->pt_outer_frame = ectx->ec_outer_frame;
 	    }
 	}
     }
@@ -598,6 +614,9 @@ call_bfunc(int func_idx, int argcount, ectx_T *ectx)
 
 /*
  * Execute a user defined function.
+ * If the function is compiled this will add a stack frame and set the
+ * instruction pointer at the start of the function.
+ * Otherwise the function is called here.
  * "iptr" can be used to replace the instruction with a more efficient one.
  */
     static int
@@ -743,11 +762,18 @@ call_partial(typval_T *tv, int argcount_arg, ectx_T *ectx)
 
 	if (pt->pt_func != NULL)
 	{
+	    int frame_idx = ectx->ec_frame_idx;
 	    int ret = call_ufunc(pt->pt_func, argcount, ectx, NULL);
 
-	    // closure may need the function context where it was defined
-	    ectx->ec_outer_stack = pt->pt_ectx_stack;
-	    ectx->ec_outer_frame = pt->pt_ectx_frame;
+	    if (ectx->ec_frame_idx != frame_idx)
+	    {
+		// call_dfunc() added a stack frame, closure may need the
+		// function context where it was defined.
+		ectx->ec_outer_stack = pt->pt_ectx_stack;
+		ectx->ec_outer_frame = pt->pt_ectx_frame;
+		ectx->ec_outer_up_stack = pt->pt_outer_stack;
+		ectx->ec_outer_up_frame = pt->pt_outer_frame;
+	    }
 
 	    return ret;
 	}
@@ -1041,6 +1067,8 @@ fill_partial_and_closure(partial_T *pt, ufunc_T *ufunc, ectx_T *ectx)
 	// variables in the current stack.
 	pt->pt_ectx_stack = &ectx->ec_stack;
 	pt->pt_ectx_frame = ectx->ec_frame_idx;
+	pt->pt_outer_stack = ectx->ec_outer_stack;
+	pt->pt_outer_frame = ectx->ec_outer_frame;
 
 	// If this function returns and the closure is still
 	// being used, we need to make a copy of the context
@@ -1220,17 +1248,23 @@ call_def_function(
 	    // TODO: is this always the right way?
 	    ectx.ec_outer_stack = &current_ectx->ec_stack;
 	    ectx.ec_outer_frame = current_ectx->ec_frame_idx;
+	    ectx.ec_outer_up_stack = current_ectx->ec_outer_stack;
+	    ectx.ec_outer_up_frame = current_ectx->ec_outer_frame;
 	}
 	else
 	{
 	    ectx.ec_outer_stack = partial->pt_ectx_stack;
 	    ectx.ec_outer_frame = partial->pt_ectx_frame;
+	    ectx.ec_outer_up_stack = partial->pt_outer_stack;
+	    ectx.ec_outer_up_frame = partial->pt_outer_frame;
 	}
     }
     else if (ufunc->uf_partial != NULL)
     {
 	ectx.ec_outer_stack = ufunc->uf_partial->pt_ectx_stack;
 	ectx.ec_outer_frame = ufunc->uf_partial->pt_ectx_frame;
+	ectx.ec_outer_up_stack = ufunc->uf_partial->pt_outer_stack;
+	ectx.ec_outer_up_frame = ufunc->uf_partial->pt_outer_frame;
     }
 
     // dummy frame entries
@@ -1514,11 +1548,30 @@ call_def_function(
 
 	    // load variable or argument from outer scope
 	    case ISN_LOADOUTER:
-		if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
-		    goto failed;
-		copy_tv(STACK_OUT_TV_VAR(iptr->isn_arg.number),
+		{
+		    typval_T	*stack;
+		    int		depth = iptr->isn_arg.outer.outer_depth;
+
+		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
+			goto failed;
+		    if (depth <= 1)
+			stack = ((typval_T *)ectx.ec_outer_stack->ga_data)
+							 + ectx.ec_outer_frame;
+		    else if (depth == 2)
+			stack = ((typval_T *)ectx.ec_outer_up_stack->ga_data)
+						      + ectx.ec_outer_up_frame;
+		    else
+		    {
+			SOURCING_LNUM = iptr->isn_lnum;
+			iemsg("LOADOUTER level > 2 not supported yet");
+			goto failed;
+		    }
+
+		    copy_tv(stack + STACK_FRAME_SIZE
+					       + iptr->isn_arg.outer.outer_idx,
 							      STACK_TV_BOT(0));
-		++ectx.ec_stack.ga_len;
+		    ++ectx.ec_stack.ga_len;
+		}
 		break;
 
 	    // load v: variable
@@ -1719,7 +1772,8 @@ call_def_function(
 	    // store variable or argument in outer scope
 	    case ISN_STOREOUTER:
 		--ectx.ec_stack.ga_len;
-		tv = STACK_OUT_TV_VAR(iptr->isn_arg.number);
+		// TODO: use outer_depth
+		tv = STACK_OUT_TV_VAR(iptr->isn_arg.outer.outer_idx);
 		clear_tv(tv);
 		*tv = *STACK_TV_BOT(0);
 		break;
@@ -3622,17 +3676,27 @@ ex_disassemble(exarg_T *eap)
 					    (varnumber_T)(iptr->isn_arg.number));
 		break;
 	    case ISN_LOAD:
-	    case ISN_LOADOUTER:
 		{
-		    char *add = iptr->isn_type == ISN_LOAD ? "" : "OUTER";
-
 		    if (iptr->isn_arg.number < 0)
-			smsg("%4d LOAD%s arg[%lld]", current, add,
+			smsg("%4d LOAD arg[%lld]", current,
 				(varnumber_T)(iptr->isn_arg.number
 							  + STACK_FRAME_SIZE));
 		    else
-			smsg("%4d LOAD%s $%lld", current, add,
-					    (varnumber_T)(iptr->isn_arg.number));
+			smsg("%4d LOAD $%lld", current,
+					  (varnumber_T)(iptr->isn_arg.number));
+		}
+		break;
+	    case ISN_LOADOUTER:
+		{
+		    if (iptr->isn_arg.number < 0)
+			smsg("%4d LOADOUTER level %d arg[%d]", current,
+				iptr->isn_arg.outer.outer_depth,
+				iptr->isn_arg.outer.outer_idx
+							  + STACK_FRAME_SIZE);
+		    else
+			smsg("%4d LOADOUTER level %d $%d", current,
+					      iptr->isn_arg.outer.outer_depth,
+					      iptr->isn_arg.outer.outer_idx);
 		}
 		break;
 	    case ISN_LOADV:
@@ -3699,16 +3763,22 @@ ex_disassemble(exarg_T *eap)
 		break;
 
 	    case ISN_STORE:
+		if (iptr->isn_arg.number < 0)
+		    smsg("%4d STORE arg[%lld]", current,
+				      iptr->isn_arg.number + STACK_FRAME_SIZE);
+		else
+		    smsg("%4d STORE $%lld", current, iptr->isn_arg.number);
+		break;
 	    case ISN_STOREOUTER:
 		{
-		    char *add = iptr->isn_type == ISN_STORE ? "" : "OUTER";
-
 		if (iptr->isn_arg.number < 0)
-		    smsg("%4d STORE%s arg[%lld]", current, add,
-			 (varnumber_T)(iptr->isn_arg.number + STACK_FRAME_SIZE));
+		    smsg("%4d STOREOUTEr level %d arg[%d]", current,
+			    iptr->isn_arg.outer.outer_depth,
+			    iptr->isn_arg.outer.outer_idx + STACK_FRAME_SIZE);
 		else
-		    smsg("%4d STORE%s $%lld", current, add,
-					    (varnumber_T)(iptr->isn_arg.number));
+		    smsg("%4d STOREOUTER level %d $%d", current,
+			    iptr->isn_arg.outer.outer_depth,
+			    iptr->isn_arg.outer.outer_idx);
 		}
 		break;
 	    case ISN_STOREV:

@@ -1812,6 +1812,16 @@ def Test_list_lambda()
   assert_match('def <lambda>\d\+(_: any, ...): number\n1  return 0\n   enddef', body)
 enddef
 
+def DoFilterThis(a: string): list<string>
+  # closure nested inside another closure using argument
+  var Filter = (l) => filter(l, (_, v) => stridx(v, a) == 0)
+  return ['x', 'y', 'a', 'x2', 'c']->Filter()
+enddef
+
+def Test_nested_closure_using_argument()
+  assert_equal(['x', 'x2'], DoFilterThis('x'))
+enddef
+
 func Test_silent_echo()
   CheckScreendump
 

@@ -33,7 +33,7 @@ typedef enum {
     ISN_LOADWDICT,  // push w: dict
     ISN_LOADTDICT,  // push t: dict
     ISN_LOADS,	    // push s: variable isn_arg.loadstore
-    ISN_LOADOUTER,  // push variable from outer scope isn_arg.number
+    ISN_LOADOUTER,  // push variable from outer scope isn_arg.outer
     ISN_LOADSCRIPT, // push script-local variable isn_arg.script.
     ISN_LOADOPT,    // push option isn_arg.string
     ISN_LOADENV,    // push environment variable isn_arg.string
@@ -47,7 +47,7 @@ typedef enum {
     ISN_STOREW,	    // pop into window-local variable isn_arg.string
     ISN_STORET,	    // pop into tab-local variable isn_arg.string
     ISN_STORES,	    // pop into script variable isn_arg.loadstore
-    ISN_STOREOUTER,  // pop variable into outer scope isn_arg.number
+    ISN_STOREOUTER,  // pop variable into outer scope isn_arg.outer
     ISN_STORESCRIPT, // pop into script variable isn_arg.script
     ISN_STOREOPT,    // pop into option isn_arg.string
     ISN_STOREENV,    // pop into environment variable isn_arg.string
@@ -303,6 +303,12 @@ typedef struct {
     int		unp_semicolon;	// last item gets list of remainder
 } unpack_T;
 
+// arguments to ISN_LOADOUTER and ISN_STOREOUTER
+typedef struct {
+    int		outer_idx;	// index
+    int		outer_depth;	// nesting level, stack frames to go up
+} outer_T;
+
 /*
  * Instruction
  */
@@ -342,6 +348,7 @@ struct isn_S {
 	put_T		    put;
 	cmod_T		    cmdmod;
 	unpack_T	    unpack;
+	outer_T		    outer;
     } isn_arg;
 };
 

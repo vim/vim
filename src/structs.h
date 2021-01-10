@@ -1978,6 +1978,8 @@ struct partial_S
     // For a compiled closure: the arguments and local variables.
     garray_T	*pt_ectx_stack;	    // where to find local vars
     int		pt_ectx_frame;	    // index of function frame in uf_ectx_stack
+    garray_T	*pt_outer_stack;    // pt_ectx_stack one level up
+    int		pt_outer_frame;	    // pt_ectx_frame one level up.
     funcstack_T	*pt_funcstack;	    // copy of stack, used after context
 				    // function returns
 

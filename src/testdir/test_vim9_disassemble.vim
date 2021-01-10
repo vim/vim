@@ -567,17 +567,17 @@ def Test_disassemble_closure()
   var res = execute('disass g:Append')
   assert_match('<lambda>\d\_s*' ..
         'local ..= arg\_s*' ..
-        '\d LOADOUTER $0\_s*' ..
+        '\d LOADOUTER level 1 $0\_s*' ..
         '\d LOAD arg\[-1\]\_s*' ..
         '\d CONCAT\_s*' ..
-        '\d STOREOUTER $0\_s*' ..
+        '\d STOREOUTER level 1 $0\_s*' ..
         '\d RETURN 0',
         res)
 
   res = execute('disass g:Get')
   assert_match('<lambda>\d\_s*' ..
         'return local\_s*' ..
-        '\d LOADOUTER $0\_s*' ..
+        '\d LOADOUTER level 1 $0\_s*' ..
         '\d RETURN',
         res)
 

@@ -108,7 +108,7 @@ typedef struct {
     char_u	*lv_name;
     type_T	*lv_type;
     int		lv_idx;		// index of the variable on the stack
-    int		lv_from_outer;	// when TRUE using ctx_outer scope
+    int		lv_from_outer;	// nesting level, using ctx_outer scope
     int		lv_const;	// when TRUE cannot be assigned to
     int		lv_arg;		// when TRUE this is an argument
 } lvar_T;
@@ -149,7 +149,7 @@ static void delete_def_function_contents(dfunc_T *dfunc, int mark_deleted);
 
 /*
  * Lookup variable "name" in the local scope and return it in "lvar".
- * "lvar->lv_from_outer" is set accordingly.
+ * "lvar->lv_from_outer" is incremented accordingly.
  * If "lvar" is NULL only check if the variable can be found.
  * Return FAIL if not found.
  */
@@ -172,7 +172,7 @@ lookup_local(char_u *name, size_t len, lvar_T *lvar, cctx_T *cctx)
 	    if (lvar != NULL)
 	    {
 		*lvar = *lvp;
-		lvar->lv_from_outer = FALSE;
+		lvar->lv_from_outer = 0;
 	    }
 	    return OK;
 	}
@@ -186,7 +186,7 @@ lookup_local(char_u *name, size_t len, lvar_T *lvar, cctx_T *cctx)
 	    if (lvar != NULL)
 	    {
 		cctx->ctx_outer_used = TRUE;
-		lvar->lv_from_outer = TRUE;
+		++lvar->lv_from_outer;
 	    }
 	    return OK;
 	}
@@ -258,7 +258,7 @@ arg_exists(
 	if (arg_exists(name, len, idxp, type, gen_load_outer, cctx->ctx_outer)
 									 == OK)
 	{
-	    *gen_load_outer = TRUE;
+	    ++*gen_load_outer;
 	    return OK;
 	}
     }
@@ -1176,6 +1176,23 @@ generate_STORE(cctx_T *cctx, isntype_T isn_type, int idx, char_u *name)
 }
 
 /*
+ * Generate an ISN_STOREOUTER instruction.
+ */
+    static int
+generate_STOREOUTER(cctx_T *cctx, int idx, int level)
+{
+    isn_T	*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr_drop(cctx, ISN_STOREOUTER, 1)) == NULL)
+	return FAIL;
+    isn->isn_arg.outer.outer_idx = idx;
+    isn->isn_arg.outer.outer_depth = level;
+
+    return OK;
+}
+
+/*
  * Generate an ISN_STORENR instruction (short for ISN_PUSHNR + ISN_STORE)
  */
     static int
@@ -1229,6 +1246,27 @@ generate_LOAD(
 	isn->isn_arg.string = vim_strsave(name);
     else
 	isn->isn_arg.number = idx;
+
+    return OK;
+}
+
+/*
+ * Generate an ISN_LOADOUTER instruction
+ */
+    static int
+generate_LOADOUTER(
+	cctx_T	    *cctx,
+	int	    idx,
+	int	    nesting,
+	type_T	    *type)
+{
+    isn_T	*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr_type(cctx, ISN_LOADOUTER, type)) == NULL)
+	return FAIL;
+    isn->isn_arg.outer.outer_idx = idx;
+    isn->isn_arg.outer.outer_depth = nesting;
 
     return OK;
 }
@@ -1438,6 +1476,11 @@ generate_FUNCREF(cctx_T *cctx, ufunc_T *ufunc)
 	return FAIL;
     isn->isn_arg.funcref.fr_func = ufunc->uf_dfunc_idx;
     cctx->ctx_has_closure = 1;
+
+    // if the referenced function is a closure, it may use items further up in
+    // the nested context, including this one.
+    if (ufunc->uf_flags & FC_CLOSURE)
+	cctx->ctx_ufunc->uf_flags |= FC_CLOSURE;
 
     if (ga_grow(stack, 1) == FAIL)
 	return FAIL;
@@ -2589,7 +2632,7 @@ compile_load(
 	size_t	    len = end - *arg;
 	int	    idx;
 	int	    gen_load = FALSE;
-	int	    gen_load_outer = FALSE;
+	int	    gen_load_outer = 0;
 
 	name = vim_strnsave(*arg, end - *arg);
 	if (name == NULL)
@@ -2597,7 +2640,7 @@ compile_load(
 
 	if (arg_exists(*arg, len, &idx, &type, &gen_load_outer, cctx) == OK)
 	{
-	    if (!gen_load_outer)
+	    if (gen_load_outer == 0)
 		gen_load = TRUE;
 	}
 	else
@@ -2608,8 +2651,8 @@ compile_load(
 	    {
 		type = lvar.lv_type;
 		idx = lvar.lv_idx;
-		if (lvar.lv_from_outer)
-		    gen_load_outer = TRUE;
+		if (lvar.lv_from_outer != 0)
+		    gen_load_outer = lvar.lv_from_outer;
 		else
 		    gen_load = TRUE;
 	    }
@@ -2631,9 +2674,9 @@ compile_load(
 	}
 	if (gen_load)
 	    res = generate_LOAD(cctx, ISN_LOAD, idx, NULL, type);
-	if (gen_load_outer)
+	if (gen_load_outer > 0)
 	{
-	    res = generate_LOAD(cctx, ISN_LOADOUTER, idx, NULL, type);
+	    res = generate_LOADOUTER(cctx, idx, gen_load_outer, type);
 	    cctx->ctx_outer_used = TRUE;
 	}
     }
@@ -5120,9 +5163,9 @@ generate_loadvar(
 	    generate_LOADV(cctx, name + 2, TRUE);
 	    break;
 	case dest_local:
-	    if (lvar->lv_from_outer)
-		generate_LOAD(cctx, ISN_LOADOUTER, lvar->lv_idx,
-							   NULL, type);
+	    if (lvar->lv_from_outer > 0)
+		generate_LOADOUTER(cctx, lvar->lv_idx, lvar->lv_from_outer,
+									 type);
 	    else
 		generate_LOAD(cctx, ISN_LOAD, lvar->lv_idx, NULL, type);
 	    break;
@@ -6178,7 +6221,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 
 		// optimization: turn "var = 123" from ISN_PUSHNR +
 		// ISN_STORE into ISN_STORENR
-		if (!lhs.lhs_lvar->lv_from_outer
+		if (lhs.lhs_lvar->lv_from_outer == 0
 				&& instr->ga_len == instr_count + 1
 				&& isn->isn_type == ISN_PUSHNR)
 		{
@@ -6190,9 +6233,9 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    if (stack->ga_len > 0)
 			--stack->ga_len;
 		}
-		else if (lhs.lhs_lvar->lv_from_outer)
-		    generate_STORE(cctx, ISN_STOREOUTER,
-						   lhs.lhs_lvar->lv_idx, NULL);
+		else if (lhs.lhs_lvar->lv_from_outer > 0)
+		    generate_STOREOUTER(cctx, lhs.lhs_lvar->lv_idx,
+						  lhs.lhs_lvar->lv_from_outer);
 		else
 		    generate_STORE(cctx, ISN_STORE, lhs.lhs_lvar->lv_idx, NULL);
 	    }
