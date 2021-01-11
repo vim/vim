@@ -408,6 +408,9 @@ func dist#ft#FTprogress_asm()
   setf progress
 endfunc
 
+let s:ft_pascal_comments = '^\s*\%({\|(\*\|//\)'
+let s:ft_pascal_keywords = '^\s*\%(program\|unit\|library\|uses\|begin\|procedure\|function\|const\|type\|var\)\>'
+
 func dist#ft#FTprogress_pascal()
   if exists("g:filetype_p")
     exe "setf " . g:filetype_p
@@ -419,8 +422,7 @@ func dist#ft#FTprogress_pascal()
   let lnum = 1
   while lnum <= 10 && lnum < line('$')
     let line = getline(lnum)
-    if line =~ '^\s*\(program\|unit\|procedure\|function\|const\|type\|var\)\>'
-	\ || line =~ '^\s*{' || line =~ '^\s*(\*'
+    if line =~ s:ft_pascal_comments || line =~? s:ft_pascal_keywords
       setf pascal
       return
     elseif line !~ '^\s*$' || line =~ '^/\*'
@@ -431,6 +433,19 @@ func dist#ft#FTprogress_pascal()
     let lnum = lnum + 1
   endw
   setf progress
+endfunc
+
+func dist#ft#FTpp()
+  if exists("g:filetype_pp")
+    exe "setf " . g:filetype_pp
+  else
+    let line = getline(nextnonblank(1))
+    if line =~ s:ft_pascal_comments || line =~? s:ft_pascal_keywords
+      setf pascal
+    else
+      setf puppet
+    endif
+  endif
 endfunc
 
 func dist#ft#FTr()
