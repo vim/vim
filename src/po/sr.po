@@ -6367,7 +6367,7 @@ msgid "type  :q<Enter>               to exit         "
 msgstr "откуцајте  :q<Ентер>               за излаз         "
 
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
-msgstr "откуцајте  :help<Ентер>  или  <F1> за директну помоћ "
+msgstr "откуцајте  :help<Ентер>  или  <F1> за директну помоћ"
 
 msgid "type  :help version8<Enter>   for version info"
 msgstr "откуцајте  :help version8<Ентер>   за инфо о верзији"
