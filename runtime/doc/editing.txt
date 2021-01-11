@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.2.  Last change: 2020 Dec 19
+*editing.txt*   For Vim version 8.2.  Last change: 2021 Jan 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1014,7 +1014,7 @@ to write anyway add a '!' to the command.
 
 							*write-permissions*
 When writing a new file the permissions are read-write.  For unix the mask is
-0666 with additionally umask applied.  When writing a file that was read Vim
+0o666 with additionally umask applied.  When writing a file that was read Vim
 will preserve the permissions, but clear the s-bit.
 
 							*write-readonly*

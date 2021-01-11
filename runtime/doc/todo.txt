@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Jan 02
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Jan 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,18 +38,29 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Reload: How to make sure type of script function hasn't changed?
-
-Valgrind: test_vim9_cmd: uses uninitialized var
+no error for:
+  echo extend([0], ['a', true])
+like it does for:
+  echo extend([0], ['a'])
+At script level this does not give an error:
+  echo map([0], (_, v) => [])
+Or:
+  var l: list<number> = [0]
+  echo map(l, (_, v) => [])
 
 Vim9 - Make everything work:
+- Expand `=expr` in :next, :argedit, :argadd, :argdelete, :drop
+- Expand `=expr` in :vimgrep, :vimgrepadd, :lvimgrep, :lvimgrepadd
+- Expand `=expr` in :mkspell
+- Unlet with range: "unlet list[a : b]"
 - Implement "export {one, two three}".
-- Use "null" for v:null, like true and false?  #7495
 - ISN_CHECKTYPE could use check_argtype()
 - Using a script variable inside a :def function doesn't work if the variable
   is inside a block, see Test_nested_function().  Should it work?
 - give error for variable name:
       let p = function('NoSuchFunc')
+- Make closures work better:
+  - Create closure in a loop.  Need to make a list of them.
 - If a :def function is called with a function reference, compile it to get
   the function type.
 	def Filter(x: string, Cond: func(string): bool)
@@ -63,25 +74,18 @@ Vim9 - Make everything work:
 	    statement
 	    statement
 	}
-- implement { cmd } compiled
-- implement { cmd } at script level
-- Expand `=expr` in :next, :argedit, :argadd, :argdelete, :drop
-- Expand `=expr` in :vimgrep, :vimgrepadd, :lvimgrep, :lvimgrepadd
-- Expand `=expr` in :mkspell
 - Does this work already: can use func as reference:
 	def SomeFunc() ...
 	map(list, SomeFunc)
 - For builtin functions using tv_get_string*() use check_for_string() to be
   more strict about the argument type.
+- Possible memory leaks in test_vim9_func
 - Implement :lockvar and :unlockvar.  How about local variables?  Perhaps only
   allow this for global variables.  Use :final or :const otherwise.
 - Allow function names that will be script-local to start with lower case
   letter?  Or also require names with s: prefix to use upper case?
   Also apply this function references "var ref = SomeFunc"
 - Support passing v:none to use the default argument value. (#6504)
-- Make map() give an error if the resulting type of the first argument is
-  wrong.  Only works if the type is known?  Is this slow (need to go over all
-  items)?
 - Run the same tests in :def and Vim9 script, like in Test_expr7_not()
 - Check many more builtin function arguments at compile time.
 - make 0 == 'string' fail on the script level, like inside :def.
@@ -105,57 +109,59 @@ Vim9 - Make everything work:
 - Implement "as Name" in "import Item as Name from ..."
 - Implement using imported items at script level from "import * as X" in
   eval_variable().  Should pass the ".xxx" that follows and return that.
-- Disallow unlet for local/script/imported vars
 - Make "++nr" work.  "++g:count" doesn't work, thinks it is a range.
-- Make closures work:
-  - Create closure in a loop.  Need to make a list of them.
-  - nested closure only uses one context, not all (#7150)
+- Reload: How to make sure type of script function hasn't changed?
 - expandcmd() with `=expr` in filename uses legacy expression.
 - eval_expr() in ex_cexpr()
 - eval_expr() call in dbg_parsearg() and debuggy_find()
-Improve error checking:
-- "echo Func()" is an error if Func() does not return anything.
-Before launch:
+- compile "skip" argument of searchpair()
+- compile "expr" and "call" expression of a channel in channel_exe_cmd()?
+- give an error for "echo Func()" if Func() does not return anything.
+
+Once Vim9 is stable:
+- Change the help to prefer Vim9 syntax where appropriate
+- Use Vim9 for runtime files.
+    PR #7497 for autoload/ccomplete.vim
 - Add all the error numbers in a good place in documentation.
 - In the generic eval docs, point out the Vim9 syntax where it differs.
-Also:
-- For range: make table of first ASCII character with flag to quickly check if
-  it can be a Vim9 command. E.g. "+" can, but "." can't.
+
+Also for Vim9:
 - better implementation for partial and tests for that.
 - Make "g:imported = Export.exported" work in Vim9 script.
 - Make Foo.Bar() work to call the dict function. (#5676)
 - Error in any command in "vim9script" aborts sourcing.
 - Find a way to test expressions in legacy and Vim9 script without duplication
-- Test each level of expressions properly, with type checking
 - Test try/catch and throw better, also nested.
-  Test return inside try/finally jumps to finally and then returns.
+  Test that return inside try/finally jumps to finally and then returns.
 - Test that a function defined inside a :def function is local to that
   function, g: functions can be defined and script-local functions cannot be
   defined.
-- implement :type
-- import type declaration?
+- compile options that are an expression, e.g. "expr:" in 'spellsuggest',
+  'foldexpr', 'foldtext', 'printexpr', 'diffexpr', 'patchexpr', 'charconvert',
+  'balloonexpr', 'includeexpr', 'indentexpr', 'formatexpr'.
+  Give an error if compilation fails. (#7625)
+  Use the location where the option was set for deciding whether it's to be
+  evaluated in Vim9 script context.
+- implement :type; import type declaration.
+- implement enum;  import enum.
 - Future work: See |vim9-classes|
-- implement enum
-- Make accessing varargs faster: arg[expr]
-	EVAL expr
-	LOADVARARG (varargs idx)
+	Define the keywords and commands to make sure it will be backwards
+	compatible.
 - Make debugging work - at least per function.  Need to recompile a function
   to step through it line-by-line?  Evaluate the stack and variables on the
   stack?
 - Make profiling work - Add ISN_PROFILE instructions after every line?
 - List commands when 'verbose' is set or :verbose is used.
-Once Vim9 is stable:
-- Change the help to prefer Vim9 syntax where appropriate
-- Use Vim9 for runtime files.
-    PR #7497 for autoload/ccomplete.vim
-Further improvements:
-- compile options that are an expression, e.g. "expr:" in 'spellsuggest',
-  'foldexpr', 'foldtext', 'printexpr', 'diffexpr', 'patchexpr', 'charconvert',
-  'balloonexpr', 'includeexpr', 'indentexpr', 'formatexpr'.
+
+Further Vim9 improvements, possibly after launch:
+- For range: make table of first ASCII character with flag to quickly check if
+  it can be a Vim9 command. E.g. "+" can, but "." can't.
 - compile get_lambda_tv() in popup_add_timeout()
 - inline call to map() and filter()
-- compile "skip" argument of searchpair()
-- compile "expr" and "call" expression of a channel in channel_exe_cmd()?
+- Make accessing varargs faster: arg[expr]
+	EVAL expr
+	LOADVARARG (varargs idx)
+
 
 Popup windows:
 - Add a flag to make a popup window focusable?
@@ -308,6 +314,18 @@ Any way to convert "$" back by using a special value? (#6901)
 Can we detect true color support?  https://gist.github.com/XVilka/8346728
 Try setting a color then request the current color, like using t_u7.
 
+Regexp to search for duplicate lines does not work correctly:
+/\(^.*\n\)\1  (Chris Morgan, #6239)
+
+Changing a capturing group to non-capturing changes the result: #7607
+    :echo matchstr('aaa bbb', '\(.\{-1,}\>\)\|.*')
+    aaa
+    :echo matchstr('aaa bbb', '\%(.\{-1,}\>\)\|.*')
+    aaa bbb
+Should also work without any group:
+    :echo matchstr('aaa bbb', '.\{-1,}\>\|.*')
+    aaa bbb  (should be aaa)
+
 Check out PR #543 (Roland Puntaier).
 Patch for multibyte characters in langmap and applying a mapping on them.
 (Christian Brabandt, 2015 Jun 12, update July 25)
@@ -392,9 +410,6 @@ corruption.  (#6631)
 
 When 'lazyredraw' is set sometimes the title is not updated.
 (Jason Franklin, 2020 Feb 3)  Looks like a race condition.
-
-Regexp to search for duplicate lines does not work correctly:
-/\(^.*\n\)\1  (Chris Morgan, #6239)
 
 With bash ":make" does not set v:shell_error.  Possible solution: set
 'shellpipe' to "2>&1| tee %s; exit ${PIPESTATUS[0]}"  #5994
@@ -1152,7 +1167,7 @@ Overlong utf-8 sequence is displayed wrong. (Harm te Hennepe, 2017 Sep 14,
 #2089)  Patch with possible solution by Björn Linse.
 
 The change list index is local to a buffer, but it doesn't make sense using it
-for another buffer.  (lacygolil) Copy w_changelistidx to wininfo_S and back.
+for another buffer.  (lacygoill) Copy w_changelistidx to wininfo_S and back.
 
 X11: Putting more than about 262040 characters of text on the clipboard and
 pasting it in another Vim doesn't work.  (Dominique Pelle, 2008 Aug 21-23)
@@ -5474,7 +5489,7 @@ Mappings and Abbreviations:
     not the <Space>.
 8   Give a warning when using CTRL-C in the lhs of a mapping.  It will never
     (?) work.
-7   Add <0x8f> (hex), <033> (octal) and <123> (decimal) to <> notation?
+7   Add <0x8f> (hex), <0o33> (octal) and <123> (decimal) to <> notation?
 7   When someone tries to unmap with a trailing space, and it fails, try
     unmapping without the trailing space.  Helps for ":unmap xx | unmap yy".
 6   Context-sensitive abbreviations: Specify syntax group(s) in which the

@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2020 Dec 21
+*options.txt*	For Vim version 8.2.  Last change: 2021 Jan 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -438,7 +438,7 @@ the system, mostly it is something like 256 or 1024 characters.
 				  CTRL-?	CTRL-H
 				not CTRL-?	CTRL-?
 
-			(CTRL-? is 0177 octal, 0x7f hex)
+			(CTRL-? is 0o177 octal, 0x7f hex)
 
 			If your delete key terminal code is wrong, but the
 			code for backspace is alright, you can put this in

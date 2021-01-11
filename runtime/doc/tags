@@ -1783,6 +1783,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 09.2	usr_09.txt	/*09.2*
 09.3	usr_09.txt	/*09.3*
 09.4	usr_09.txt	/*09.4*
+0o	eval.txt	/*0o*
+0x	eval.txt	/*0x*
 10.1	usr_10.txt	/*10.1*
 10.2	usr_10.txt	/*10.2*
 10.3	usr_10.txt	/*10.3*
@@ -1994,6 +1996,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :AdaTagFile	ft_ada.txt	/*:AdaTagFile*
 :AdaTypes	ft_ada.txt	/*:AdaTypes*
 :Arguments	terminal.txt	/*:Arguments*
+:Asm	terminal.txt	/*:Asm*
 :Break	terminal.txt	/*:Break*
 :Cfilter	quickfix.txt	/*:Cfilter*
 :Clear	terminal.txt	/*:Clear*
@@ -5756,6 +5759,7 @@ characterwise	motion.txt	/*characterwise*
 characterwise-register	change.txt	/*characterwise-register*
 characterwise-visual	visual.txt	/*characterwise-visual*
 charclass()	eval.txt	/*charclass()*
+charcol()	eval.txt	/*charcol()*
 charconvert_from-variable	eval.txt	/*charconvert_from-variable*
 charconvert_to-variable	eval.txt	/*charconvert_to-variable*
 charidx()	eval.txt	/*charidx()*
@@ -6951,6 +6955,7 @@ getbufvar()	eval.txt	/*getbufvar()*
 getchangelist()	eval.txt	/*getchangelist()*
 getchar()	eval.txt	/*getchar()*
 getcharmod()	eval.txt	/*getcharmod()*
+getcharpos()	eval.txt	/*getcharpos()*
 getcharsearch()	eval.txt	/*getcharsearch()*
 getcmdline()	eval.txt	/*getcmdline()*
 getcmdpos()	eval.txt	/*getcmdpos()*
@@ -6958,6 +6963,7 @@ getcmdtype()	eval.txt	/*getcmdtype()*
 getcmdwintype()	eval.txt	/*getcmdwintype()*
 getcompletion()	eval.txt	/*getcompletion()*
 getcurpos()	eval.txt	/*getcurpos()*
+getcursorcharpos()	eval.txt	/*getcursorcharpos()*
 getcwd()	eval.txt	/*getcwd()*
 getenv()	eval.txt	/*getenv()*
 getfontname()	eval.txt	/*getfontname()*
@@ -8260,6 +8266,7 @@ notation	intro.txt	/*notation*
 notepad	gui_w32.txt	/*notepad*
 nr2char()	eval.txt	/*nr2char()*
 nroff.vim	syntax.txt	/*nroff.vim*
+null	vim9.txt	/*null*
 null-variable	eval.txt	/*null-variable*
 number_relativenumber	options.txt	/*number_relativenumber*
 numbered-function	eval.txt	/*numbered-function*
@@ -8871,8 +8878,10 @@ set-spc-auto	spell.txt	/*set-spc-auto*
 setbufline()	eval.txt	/*setbufline()*
 setbufvar()	eval.txt	/*setbufvar()*
 setcellwidths()	eval.txt	/*setcellwidths()*
+setcharpos()	eval.txt	/*setcharpos()*
 setcharsearch()	eval.txt	/*setcharsearch()*
 setcmdpos()	eval.txt	/*setcmdpos()*
+setcursorcharpos()	eval.txt	/*setcursorcharpos()*
 setenv()	eval.txt	/*setenv()*
 setfperm()	eval.txt	/*setfperm()*
 setline()	eval.txt	/*setline()*
@@ -9553,6 +9562,7 @@ termdebug-prompt	terminal.txt	/*termdebug-prompt*
 termdebug-starting	terminal.txt	/*termdebug-starting*
 termdebug-stepping	terminal.txt	/*termdebug-stepping*
 termdebug-variables	terminal.txt	/*termdebug-variables*
+termdebug_disasm_window	terminal.txt	/*termdebug_disasm_window*
 termdebug_map_K	terminal.txt	/*termdebug_map_K*
 termdebug_popup	terminal.txt	/*termdebug_popup*
 termdebug_shortcuts	terminal.txt	/*termdebug_shortcuts*
@@ -10086,6 +10096,7 @@ vim9-reload	vim9.txt	/*vim9-reload*
 vim9-scopes	vim9.txt	/*vim9-scopes*
 vim9-script-intro	usr_46.txt	/*vim9-script-intro*
 vim9-types	vim9.txt	/*vim9-types*
+vim9-user-command	vim9.txt	/*vim9-user-command*
 vim9.txt	vim9.txt	/*vim9.txt*
 vim9script	vim9.txt	/*vim9script*
 vim:	options.txt	/*vim:*

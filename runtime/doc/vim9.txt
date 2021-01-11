@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Jan 03
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Jan 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52,8 +52,9 @@ The Vim9 script syntax and semantics are used in:
 - a script file where the first command is `vim9script`
 - an autocommand defined in the context of the above
 
-When using `:function` in a Vim9 script file the legacy syntax is used.
-However, this can be confusing and is therefore discouraged.
+When using `:function` in a Vim9 script file the legacy syntax is used, with
+the highest |scriptversion|.  However, this can be confusing and is therefore
+discouraged.
 
 Vim9 script and legacy Vim script can be mixed.  There is no requirement to
 rewrite old scripts, they keep working as before.  You may want to use a few
@@ -70,28 +71,29 @@ Overview ~
 Brief summary of the differences you will most often encounter when using Vim9
 script and `:def` functions; details are below:
 - Comments start with #, not ": >
-  	echo "hello"   # comment
+	echo "hello"   # comment
 - Using a backslash for line continuation is hardly ever needed: >
-  	echo "hello "
+	echo "hello "
 	     .. yourName
 	     .. ", how are you?"
 - White space is required in many places.
 - Assign values without `:let`, declare variables with `:var`: >
-  	var count = 0
+	var count = 0
 	count += 3
 - Constants can be declared with `:final` and `:const`: >
-  	final matches = []		  # add matches
+	final matches = []		  # add matches
 	const names = ['Betty', 'Peter']  # cannot be changed
 - `:final` cannot be used as an abbreviation of `:finally`.
 - Variables and functions are script-local by default.
 - Functions are declared with argument types and return type: >
 	def CallMe(count: number, message: string): bool
 - Call functions without `:call`: >
-  	writefile(['done'], 'file.txt')
+	writefile(['done'], 'file.txt')
 - You cannot use `:xit`, `:t`, `:append`, `:change`, `:insert` or curly-braces
   names.
 - A range before a command must be prefixed with a colon: >
-  	:%s/this/that
+	:%s/this/that
+- Unless mentioned specifically, the highest |scriptversion| is used.
 
 
 Comments starting with # ~
@@ -315,7 +317,7 @@ The constant only applies to the value itself, not what it refers to. >
 	NAMES[0] = ["Jack"]     # Error!
 	NAMES[0][0] = "Jack"    # Error!
 	NAMES[1] = ["Emma"]     # Error!
-	Names[1][0] = "Emma"    # OK, now females[0] == "Emma"
+	NAMES[1][0] = "Emma"    # OK, now females[0] == "Emma"
 
 <							*E1092*
 Declaring more than one variable at a time, using the unpack notation, is
@@ -432,7 +434,7 @@ possible just before or after the operator.  For example: >
 		   .. middle
 		   .. end
 	var total = start +
-	            end -
+		    end -
 		    correction
 	var result = positive
 			? PosFunc(arg)
@@ -629,9 +631,9 @@ one: >
 
 When using "!" for inverting, there is no error for using any type and the
 result is a boolean.  "!!" can be used to turn any value into boolean: >
-	!'yes'	    		== false
+	!'yes'			== false
 	!![]			== false
-	!![1, 2, 3]    		== true
+	!![1, 2, 3]		== true
 
 When using "`.."` for string concatenation arguments of simple types are
 always converted to string: >
@@ -651,6 +653,14 @@ byte indexes. Example: >
 	echo 'bár'[1]
 In legacy script this results in the character 0xc3 (an illegal byte), in Vim9
 script this results in the string 'á'.
+A negative index is counting from the end, "[-1]" is the last character.
+If the index is out of range then an empty string results.
+
+In legacy script "++var" and "--var" would be silently accepted and have no
+effect.  This is an error in Vim9 script.
+
+Numbers starting with zero are not considered to be octal, only numbers
+starting with "0o" are octal: "0o744". |scriptversion-4|
 
 
 What to watch out for ~
@@ -689,7 +699,7 @@ Vim9 functions are compiled as a whole: >
 	  if !has('feature')
 	    return
 	  endif
-	  use-feature  # May give compilation error
+	  use-feature  # May give a compilation error
 	enddef
 For a workaround, split it in two functions: >
 	func Maybe()
@@ -709,6 +719,25 @@ evaluates to false: >
 	    use-feature
 	  endif
 	enddef
+<							*vim9-user-command*
+Another side effect of compiling a function is that the precense of a user
+command is checked at compile time.  If the user command is defined later an
+error will result.  This works: >
+	command -nargs=1 MyCommand echom <q-args>
+	def Works()
+	  MyCommand 123
+	enddef
+This will give an error for "MyCommand" not being defined: >
+	def Works()
+	  command -nargs=1 MyCommand echom <q-args>
+	  MyCommand 123
+	enddef
+A workaround is to invoke the command indirectly with `:execute`: >
+	def Works()
+	  command -nargs=1 MyCommand echom <q-args>
+	  execute 'MyCommand 123'
+	enddef
+
 Note that for unrecognized commands there is no check for "|" and a following
 command.  This will give an error for missing `endif`: >
 	def Maybe()
@@ -946,6 +975,12 @@ an error, thus breaking backwards compatibility.  For example:
 - Using a string value when setting a number options.
 - Using a number where a string is expected.   *E1024*
 
+One consequence is that the item type of a list or dict given to map() must
+not change.  This will give an error in compiled code: >
+	map([1, 2, 3], (i, v) => 'item ' .. i)
+	E1012: Type mismatch; expected list<number> but got list<string>
+Instead use |mapnew()|.
+
 ==============================================================================
 
 5. Namespace, Import and Export
@@ -1055,14 +1090,14 @@ actually needed.  A recommended mechanism:
 
 1. In the plugin define user commands, functions and/or mappings that refer to
    an autoload script. >
-   	command -nargs=1 SearchForStuff call searchfor#Stuff(<f-args>)
+	command -nargs=1 SearchForStuff call searchfor#Stuff(<f-args>)
 
 <   This goes in .../plugin/anyname.vim.  "anyname.vim" can be freely chosen.
 
 2. In the autoload script do the actual work.  You can import items from
    other files to split up functionality in appropriate pieces. >
 	vim9script
-        import FilterFunc from "../import/someother.vim"
+	import FilterFunc from "../import/someother.vim"
 	def searchfor#Stuff(arg: string)
 	  var filtered = FilterFunc(arg)
 	  ...
