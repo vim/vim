@@ -1238,7 +1238,7 @@ def Test_vim9script_reload_noclear()
   assert_equal(3, g:loadCount)
   assert_equal(['init', 'yes', 'again', 'once', 'thexport'], g:Values())
 
-  delete('Xreloaded')
+  delete('XReloaded')
   delete('XExportReload')
   delfunc g:Values
   unlet g:loadCount
@@ -2966,7 +2966,7 @@ def Test_vim9_autoload_error()
           invalid
       endfu
       try
-          invalid
+          alsoinvalid
       catch /wontmatch/
       endtry
   END
