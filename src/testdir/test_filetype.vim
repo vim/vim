@@ -636,6 +636,7 @@ let s:script_checks = {
       \ 'cpp': [['// Standard iostream objects -*- C++ -*-'],
       \         ['// -*- C++ -*-']],
       \ 'yaml': [['%YAML 1.2']],
+      \ 'pascal': [['#!/path/instantfpc']],
       \ }
 
 " Various forms of "env" optional arguments.
