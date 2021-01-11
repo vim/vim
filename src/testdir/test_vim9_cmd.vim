@@ -921,4 +921,11 @@ def Test_wincmd()
   close
 enddef
 
+def Test_windo_missing_endif()
+  var lines =<< trim END
+      windo if 1
+  END
+  CheckDefExecFailure(lines, 'E171:', 1)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

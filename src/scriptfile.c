@@ -1019,30 +1019,6 @@ ex_options(
 /*
  * ":source" and associated commands.
  */
-/*
- * Structure used to store info for each sourced file.
- * It is shared between do_source() and getsourceline().
- * This is required, because it needs to be handed to do_cmdline() and
- * sourcing can be done recursively.
- */
-struct source_cookie
-{
-    FILE	*fp;		// opened file for sourcing
-    char_u	*nextline;	// if not NULL: line that was read ahead
-    linenr_T	sourcing_lnum;	// line number of the source file
-    int		finished;	// ":finish" used
-#ifdef USE_CRNL
-    int		fileformat;	// EOL_UNKNOWN, EOL_UNIX or EOL_DOS
-    int		error;		// TRUE if LF found after CR-LF
-#endif
-#ifdef FEAT_EVAL
-    linenr_T	breakpoint;	// next line with breakpoint or zero
-    char_u	*fname;		// name of sourced file
-    int		dbg_tick;	// debug_tick when breakpoint was set
-    int		level;		// top nesting level of sourced file
-#endif
-    vimconv_T	conv;		// type of conversion
-};
 
 #ifdef FEAT_EVAL
 /*
@@ -1051,7 +1027,7 @@ struct source_cookie
     linenr_T *
 source_breakpoint(void *cookie)
 {
-    return &((struct source_cookie *)cookie)->breakpoint;
+    return &((source_cookie_T *)cookie)->breakpoint;
 }
 
 /*
@@ -1060,7 +1036,7 @@ source_breakpoint(void *cookie)
     int *
 source_dbg_tick(void *cookie)
 {
-    return &((struct source_cookie *)cookie)->dbg_tick;
+    return &((source_cookie_T *)cookie)->dbg_tick;
 }
 
 /*
@@ -1069,7 +1045,7 @@ source_dbg_tick(void *cookie)
     int
 source_level(void *cookie)
 {
-    return ((struct source_cookie *)cookie)->level;
+    return ((source_cookie_T *)cookie)->level;
 }
 
 /*
@@ -1079,7 +1055,7 @@ source_level(void *cookie)
     char_u *
 source_nextline(void *cookie)
 {
-    return ((struct source_cookie *)cookie)->nextline;
+    return ((source_cookie_T *)cookie)->nextline;
 }
 #endif
 
@@ -1130,7 +1106,7 @@ do_source(
     int		is_vimrc,	    // DOSO_ value
     int		*ret_sid UNUSED)
 {
-    struct source_cookie    cookie;
+    source_cookie_T	    cookie;
     char_u		    *p;
     char_u		    *fname_exp;
     char_u		    *firstline = NULL;
@@ -1613,12 +1589,12 @@ get_sourced_lnum(
 	void *cookie)
 {
     return fgetline == getsourceline
-			? ((struct source_cookie *)cookie)->sourcing_lnum
+			? ((source_cookie_T *)cookie)->sourcing_lnum
 			: SOURCING_LNUM;
 }
 
     static char_u *
-get_one_sourceline(struct source_cookie *sp)
+get_one_sourceline(source_cookie_T *sp)
 {
     garray_T		ga;
     int			len;
@@ -1736,7 +1712,7 @@ getsourceline(
 	int indent UNUSED,
 	getline_opt_T options)
 {
-    struct source_cookie *sp = (struct source_cookie *)cookie;
+    source_cookie_T	*sp = (source_cookie_T *)cookie;
     char_u		*line;
     char_u		*p;
     int			do_vim9_all = in_vim9script()
@@ -1761,8 +1737,8 @@ getsourceline(
     SOURCING_LNUM = sp->sourcing_lnum + 1;
 
     // Get current line.  If there is a read-ahead line, use it, otherwise get
-    // one now.
-    if (sp->finished)
+    // one now.  "fp" is NULL if actually using a string.
+    if (sp->finished || sp->fp == NULL)
 	line = NULL;
     else if (sp->nextline == NULL)
 	line = get_one_sourceline(sp);
@@ -1880,8 +1856,8 @@ getsourceline(
     void
 ex_scriptencoding(exarg_T *eap)
 {
-    struct source_cookie	*sp;
-    char_u			*name;
+    source_cookie_T	*sp;
+    char_u		*name;
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
     {
@@ -1899,7 +1875,7 @@ ex_scriptencoding(exarg_T *eap)
 	name = eap->arg;
 
     // Setup for conversion from the specified encoding to 'encoding'.
-    sp = (struct source_cookie *)getline_cookie(eap->getline, eap->cookie);
+    sp = (source_cookie_T *)getline_cookie(eap->getline, eap->cookie);
     convert_setup(&sp->conv, name, p_enc);
 
     if (name != eap->arg)
@@ -1963,7 +1939,7 @@ do_finish(exarg_T *eap, int reanimate)
     int		idx;
 
     if (reanimate)
-	((struct source_cookie *)getline_cookie(eap->getline,
+	((source_cookie_T *)getline_cookie(eap->getline,
 					      eap->cookie))->finished = FALSE;
 
     // Cleanup (and inactivate) conditionals, but stop when a try conditional
@@ -1977,7 +1953,7 @@ do_finish(exarg_T *eap, int reanimate)
 	report_make_pending(CSTP_FINISH, NULL);
     }
     else
-	((struct source_cookie *)getline_cookie(eap->getline,
+	((source_cookie_T *)getline_cookie(eap->getline,
 					       eap->cookie))->finished = TRUE;
 }
 
@@ -1993,7 +1969,7 @@ source_finished(
     void	*cookie)
 {
     return (getline_equal(fgetline, cookie, getsourceline)
-	    && ((struct source_cookie *)getline_cookie(
+	    && ((source_cookie_T *)getline_cookie(
 						fgetline, cookie))->finished);
 }
 

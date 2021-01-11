@@ -4300,6 +4300,32 @@ typedef struct
     int		sa_wrapped;	// search wrapped around
 } searchit_arg_T;
 
+/*
+ * Cookie used by getsourceline().
+ */
+/*
+ * Cookie used to store info for each sourced file.
+ * It is shared between do_source() and getsourceline().
+ * This is passed to do_cmdline().
+ */
+typedef struct {
+    FILE	*fp;		// opened file for sourcing
+    char_u	*nextline;	// if not NULL: line that was read ahead
+    linenr_T	sourcing_lnum;	// line number of the source file
+    int		finished;	// ":finish" used
+#ifdef USE_CRNL
+    int		fileformat;	// EOL_UNKNOWN, EOL_UNIX or EOL_DOS
+    int		error;		// TRUE if LF found after CR-LF
+#endif
+#ifdef FEAT_EVAL
+    linenr_T	breakpoint;	// next line with breakpoint or zero
+    char_u	*fname;		// name of sourced file
+    int		dbg_tick;	// debug_tick when breakpoint was set
+    int		level;		// top nesting level of sourced file
+#endif
+    vimconv_T	conv;		// type of conversion
+} source_cookie_T;
+
 
 #define WRITEBUFSIZE	8192	// size of normal write buffer
 
