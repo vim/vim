@@ -362,6 +362,10 @@ func dist#ft#FTinc()
       setf aspvbs
     elseif lines =~ "<?"
       setf php
+    " Pascal supports // comments but they're vary rarely used for file
+    " headers so assume POV-Ray
+    elseif lines =~ '^\s*\%({\|(\*\)' || lines =~? s:ft_pascal_keywords
+      setf pascal
     else
       call dist#ft#FTasmsyntax()
       if exists("b:asmsyntax")
