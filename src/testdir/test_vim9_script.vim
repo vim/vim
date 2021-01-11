@@ -324,7 +324,7 @@ func g:NoSuchFunc()
   echo 'none'
 endfunc
 
-def Test_try_catch()
+def Test_try_catch_throw()
   var l = []
   try # comment
     add(l, '1')
@@ -556,6 +556,12 @@ def Test_try_catch()
     n = 411
   endtry
   assert_equal(411, n)
+enddef
+
+def Test_throw_skipped()
+  if 0
+    throw dontgethere
+  endif
 enddef
 
 def DeletedFunc(): list<any>

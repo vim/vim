@@ -474,8 +474,10 @@ may_generate_2STRING(int offset, cctx_T *cctx)
     isn_T	*isn;
     isntype_T	isntype = ISN_2STRING;
     garray_T	*stack = &cctx->ctx_type_stack;
-    type_T	**type = ((type_T **)stack->ga_data) + stack->ga_len + offset;
+    type_T	**type;
 
+    RETURN_OK_IF_SKIP(cctx);
+    type = ((type_T **)stack->ga_data) + stack->ga_len + offset;
     switch ((*type)->tt_type)
     {
 	// nothing to be done
@@ -7461,6 +7463,8 @@ compile_throw(char_u *arg, cctx_T *cctx UNUSED)
 
     if (compile_expr0(&p, cctx) == FAIL)
 	return NULL;
+    if (cctx->ctx_skip == SKIP_YES)
+	return p;
     if (may_generate_2STRING(-1, cctx) == FAIL)
 	return NULL;
     if (generate_instr_drop(cctx, ISN_THROW, 1) == NULL)
