@@ -1225,6 +1225,12 @@ def Test_var_declaration()
       g:dict_val = s:dict[key]
     enddef
     GetDictVal('a')
+
+    final adict: dict<string> = {}
+    def ChangeAdict()
+      adict.foo = 'foo'
+    enddef
+    ChangeAdict()
   END
   CheckScriptSuccess(lines)
   assert_equal('', g:var_uninit)
@@ -1259,6 +1265,16 @@ def Test_var_declaration_fails()
   END
   CheckScriptFailure(lines, 'E741:')
   unlet g:constvar
+
+  lines =<< trim END
+    vim9script
+    const cdict: dict<string> = {}
+    def Change()
+      cdict.foo = 'foo'
+    enddef
+    defcompile
+  END
+  CheckScriptFailure(lines, 'E46:')
 
   lines =<< trim END
     vim9script

@@ -257,7 +257,7 @@ find_exported(
 
     // find name in "script"
     // TODO: also find script-local user function
-    idx = get_script_item_idx(sid, name, FALSE, cctx);
+    idx = get_script_item_idx(sid, name, 0, cctx);
     if (idx >= 0)
     {
 	sv = ((svar_T *)script->sn_var_vals.ga_data) + idx;
@@ -661,10 +661,16 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
  * with a hashtable) and sn_var_vals (lookup by index).
  * When "create" is TRUE this is a new variable, otherwise find and update an
  * existing variable.
+ * "flags" can have ASSIGN_FINAL or ASSIGN_CONST.
  * When "*type" is NULL use "tv" for the type and update "*type".
  */
     void
-update_vim9_script_var(int create, dictitem_T *di, typval_T *tv, type_T **type)
+update_vim9_script_var(
+	int	    create,
+	dictitem_T  *di,
+	int	    flags,
+	typval_T    *tv,
+	type_T	    **type)
 {
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
     hashitem_T	    *hi;
@@ -686,7 +692,8 @@ update_vim9_script_var(int create, dictitem_T *di, typval_T *tv, type_T **type)
 	    return;
 
 	sv->sv_tv = &di->di_tv;
-	sv->sv_const = (di->di_flags & DI_FLAGS_LOCK) ? ASSIGN_CONST : 0;
+	sv->sv_const = (flags & ASSIGN_FINAL) ? ASSIGN_FINAL
+				   : (flags & ASSIGN_CONST) ? ASSIGN_CONST : 0;
 	sv->sv_export = is_export;
 	newsav->sav_var_vals_idx = si->sn_var_vals.ga_len;
 	++si->sn_var_vals.ga_len;
@@ -864,7 +871,7 @@ check_script_var_type(typval_T *dest, typval_T *value, char_u *name)
 
     if (sv != NULL)
     {
-	if (sv->sv_const)
+	if (sv->sv_const != 0)
 	{
 	    semsg(_(e_readonlyvar), name);
 	    return FAIL;

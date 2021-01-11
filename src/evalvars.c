@@ -3153,7 +3153,7 @@ set_var_const(
 	    // A Vim9 script-local variable is also present in sn_all_vars and
 	    // sn_var_vals.  It may set "type" from "tv".
 	    if (is_script_local && vim9script)
-		update_vim9_script_var(FALSE, di, tv, &type);
+		update_vim9_script_var(FALSE, di, flags, tv, &type);
 	}
 
 	// existing variable, need to clear the value
@@ -3243,7 +3243,7 @@ set_var_const(
 	// A Vim9 script-local variable is also added to sn_all_vars and
 	// sn_var_vals. It may set "type" from "tv".
 	if (is_script_local && vim9script)
-	    update_vim9_script_var(TRUE, di, tv, &type);
+	    update_vim9_script_var(TRUE, di, flags, tv, &type);
     }
 
     if (copy || tv->v_type == VAR_NUMBER || tv->v_type == VAR_FLOAT)
