@@ -5056,12 +5056,14 @@ string2float(
 /*
  * Convert the specified byte index of line 'lnum' in buffer 'buf' to a
  * character index.  Works only for loaded buffers. Returns -1 on failure.
- * The index of the first character is one.
+ * The index of the first byte and the first character is zero.
  */
     int
 buf_byteidx_to_charidx(buf_T *buf, int lnum, int byteidx)
 {
     char_u	*str;
+    char_u	*t;
+    int		count;
 
     if (buf == NULL || buf->b_ml.ml_mfp == NULL)
 	return -1;
@@ -5074,15 +5076,26 @@ buf_byteidx_to_charidx(buf_T *buf, int lnum, int byteidx)
 	return -1;
 
     if (*str == NUL)
-	return 1;
+	return 0;
 
-    return mb_charlen_len(str, byteidx + 1);
+    // count the number of characters
+    t = str;
+    for (count = 0; *t != NUL && t <= str + byteidx; count++)
+	t += mb_ptr2len(t);
+
+    // In insert mode, when the cursor is at the end of a non-empty line,
+    // byteidx points to the NUL character immediately past the end of the
+    // string. In this case, add one to the character count.
+    if (*t == NUL && byteidx != 0 && t == str + byteidx)
+	count++;
+
+    return count - 1;
 }
 
 /*
  * Convert the specified character index of line 'lnum' in buffer 'buf' to a
- * byte index.  Works only for loaded buffers. Returns -1 on failure. The index
- * of the first byte and the first character is one.
+ * byte index.  Works only for loaded buffers. Returns -1 on failure.
+ * The index of the first byte and the first character is zero.
  */
     int
 buf_charidx_to_byteidx(buf_T *buf, int lnum, int charidx)
@@ -5105,7 +5118,7 @@ buf_charidx_to_byteidx(buf_T *buf, int lnum, int charidx)
     while (*t != NUL && --charidx > 0)
 	t += mb_ptr2len(t);
 
-    return t - str + 1;
+    return t - str;
 }
 
 /*
@@ -5180,7 +5193,7 @@ var2fpos(
     {
 	pos = curwin->w_cursor;
 	if (charcol)
-	    pos.col = buf_byteidx_to_charidx(curbuf, pos.lnum, pos.col) - 1;
+	    pos.col = buf_byteidx_to_charidx(curbuf, pos.lnum, pos.col);
 	return &pos;
     }
     if (name[0] == 'v' && name[1] == NUL)	// Visual start
@@ -5190,7 +5203,7 @@ var2fpos(
 	else
 	    pos = curwin->w_cursor;
 	if (charcol)
-	    pos.col = buf_byteidx_to_charidx(curbuf, pos.lnum, pos.col) - 1;
+	    pos.col = buf_byteidx_to_charidx(curbuf, pos.lnum, pos.col);
 	return &pos;
     }
     if (name[0] == '\'')			// mark
@@ -5199,7 +5212,7 @@ var2fpos(
 	if (pp == NULL || pp == (pos_T *)-1 || pp->lnum <= 0)
 	    return NULL;
 	if (charcol)
-	    pp->col = buf_byteidx_to_charidx(curbuf, pp->lnum, pp->col) - 1;
+	    pp->col = buf_byteidx_to_charidx(curbuf, pp->lnum, pp->col);
 	return pp;
     }
 
@@ -5300,7 +5313,7 @@ list2fpos(
 	if (buf == NULL || buf->b_ml.ml_mfp == NULL)
 	    return FAIL;
 
-	n = buf_charidx_to_byteidx(buf, posp->lnum, n);
+	n = buf_charidx_to_byteidx(buf, posp->lnum, n) + 1;
     }
     posp->col = n;
 
