@@ -2055,6 +2055,7 @@ generate_undo_cmdmods(cctx_T *cctx)
 {
     if (cctx->ctx_has_cmdmod && generate_instr(cctx, ISN_CMDMOD_REV) == NULL)
 	return FAIL;
+    cctx->ctx_has_cmdmod = FALSE;
     return OK;
 }
 
@@ -4933,6 +4934,10 @@ compile_return(char_u *arg, int check_return_type, cctx_T *cctx)
 	// No argument, return zero.
 	generate_PUSHNR(cctx, 0);
     }
+
+    // Undo any command modifiers.
+    generate_undo_cmdmods(cctx);
+
     if (cctx->ctx_skip != SKIP_YES && generate_instr(cctx, ISN_RETURN) == NULL)
 	return NULL;
 
