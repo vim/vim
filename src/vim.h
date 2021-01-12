@@ -1232,6 +1232,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define SID_ENV		-4	// for sourcing environment variable
 #define SID_ERROR	-5	// option was reset because of an error
 #define SID_NONE	-6	// don't set scriptID
+#define SID_WINLAYOUT	-7	// changing window size
 
 /*
  * Events for autocommands.
@@ -2144,7 +2145,8 @@ typedef enum {
 // Flags for assignment functions.
 #define ASSIGN_FINAL	1   // ":final"
 #define ASSIGN_CONST	2   // ":const"
-#define ASSIGN_NO_DECL	4   // "name = expr" without ":let" or ":const"
+#define ASSIGN_NO_DECL	4   // "name = expr" without ":let"/":const"/":final"
+#define ASSIGN_DECL	8   // may declare variable if it does not exist
 
 #include "ex_cmds.h"	    // Ex command defines
 #include "spell.h"	    // spell checking stuff
@@ -2536,16 +2538,20 @@ typedef enum {
 #define COPYID_MASK (~0x1)
 
 // Values for trans_function_name() argument:
-#define TFN_INT		1	// internal function name OK
-#define TFN_QUIET	2	// no error messages
-#define TFN_NO_AUTOLOAD	4	// do not use script autoloading
-#define TFN_NO_DEREF	8	// do not dereference a Funcref
-#define TFN_READ_ONLY	16	// will not change the var
+#define TFN_INT		0x01	// internal function name OK
+#define TFN_QUIET	0x02	// no error messages
+#define TFN_NO_AUTOLOAD	0x04	// do not use script autoloading
+#define TFN_NO_DEREF	0x08	// do not dereference a Funcref
+#define TFN_READ_ONLY	0x10	// will not change the var
+#define TFN_NO_DECL	0x20	// only used for GLV_NO_DECL
+#define TFN_COMPILING	0x40	// only used for GLV_COMPILING
 
 // Values for get_lval() flags argument:
 #define GLV_QUIET	TFN_QUIET	// no error messages
 #define GLV_NO_AUTOLOAD	TFN_NO_AUTOLOAD	// do not use script autoloading
 #define GLV_READ_ONLY	TFN_READ_ONLY	// will not change the var
+#define GLV_NO_DECL	TFN_NO_DECL	// assignment without :var or :let
+#define GLV_COMPILING	TFN_COMPILING	// variable may be defined later
 
 #define DO_NOT_FREE_CNT 99999	// refcount for dict or list that should not
 				// be freed.

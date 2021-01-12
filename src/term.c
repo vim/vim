@@ -38,7 +38,7 @@
  * argument for tputs().
  */
 # ifdef VMS
-#  define TPUTSFUNCAST
+#  define TPUTSFUNCAST (void (*)(unsigned int))
 # else
 #  ifdef HAVE_OUTFUNTYPE
 #   define TPUTSFUNCAST (outfuntype)
@@ -914,10 +914,10 @@ static struct builtin_term builtin_termcaps[] =
     {K_RIGHT,		IF_EB("\033O*C", ESC_STR "O*C")},
     {K_LEFT,		IF_EB("\033O*D", ESC_STR "O*D")},
     // An extra set of cursor keys for vt100 mode
-    {K_XUP,		IF_EB("\033[1;*A", ESC_STR "[1;*A")},
-    {K_XDOWN,		IF_EB("\033[1;*B", ESC_STR "[1;*B")},
-    {K_XRIGHT,		IF_EB("\033[1;*C", ESC_STR "[1;*C")},
-    {K_XLEFT,		IF_EB("\033[1;*D", ESC_STR "[1;*D")},
+    {K_XUP,		IF_EB("\033[@;*A", ESC_STR "[@;*A")},
+    {K_XDOWN,		IF_EB("\033[@;*B", ESC_STR "[@;*B")},
+    {K_XRIGHT,		IF_EB("\033[@;*C", ESC_STR "[@;*C")},
+    {K_XLEFT,		IF_EB("\033[@;*D", ESC_STR "[@;*D")},
     // An extra set of function keys for vt100 mode
     {K_XF1,		IF_EB("\033O*P", ESC_STR "O*P")},
     {K_XF2,		IF_EB("\033O*Q", ESC_STR "O*Q")},
@@ -3411,9 +3411,10 @@ set_shellsize(int width, int height, int mustset)
 	return;
 
     // curwin->w_buffer can be NULL when we are closing a window and the
-    // buffer has already been closed and removing a scrollbar causes a resize
-    // event. Don't resize then, it will happen after entering another buffer.
-    if (curwin->w_buffer == NULL)
+    // buffer (or window) has already been closed and removing a scrollbar
+    // causes a resize event. Don't resize then, it will happen after entering
+    // another buffer.
+    if (curwin->w_buffer == NULL || curwin->w_lines == NULL)
 	return;
 
     ++busy;
@@ -3744,7 +3745,7 @@ check_terminal_behavior(void)
 #endif
 	LOG_TR(("Sending xterm compatibility test sequence."));
 	// Do this in the third row.  Second row is used by ambiguous
-	// chararacter width check.
+	// character width check.
 	term_windgoto(2, 0);
 	// send the test DCS string.
 	out_str((char_u *)"\033Pzz\033\\");
@@ -4230,7 +4231,12 @@ add_termcode(char_u *name, char_u *string, int flags)
     termcodes[i].modlen = 0;
     j = termcode_star(s, len);
     if (j > 0)
+    {
 	termcodes[i].modlen = len - 1 - j;
+	// For "CSI[@;X" the "@" is not included in "modlen".
+	if (termcodes[i].code[termcodes[i].modlen - 1] == '@')
+	    --termcodes[i].modlen;
+    }
     ++tc_len;
 }
 
@@ -4242,7 +4248,7 @@ add_termcode(char_u *name, char_u *string, int flags)
     static int
 termcode_star(char_u *code, int len)
 {
-    // Shortest is <M-O>*X.  With ; shortest is <CSI>1;*X
+    // Shortest is <M-O>*X.  With ; shortest is <CSI>@;*X
     if (len >= 3 && code[len - 2] == '*')
     {
 	if (len >= 5 && code[len - 3] == ';')
@@ -4531,7 +4537,7 @@ handle_u7_response(int *arg, char_u *tp UNUSED, int csi_len UNUSED)
 
 /*
  * Handle a response to T_CRV: {lead}{first}{x};{vers};{y}c
- * Xterm and alikes use '>' for {first}.
+ * Xterm and alike use '>' for {first}.
  * Rxvt sends "{lead}?1;2c".
  */
     static void
@@ -5329,15 +5335,19 @@ check_termcode(
 		/*
 		 * Check for code with modifier, like xterm uses:
 		 * <Esc>[123;*X  (modslen == slen - 3)
+		 * <Esc>[@;*X    (matches <Esc>[X and <Esc>[1;9X )
 		 * Also <Esc>O*X and <M-O>*X (modslen == slen - 2).
 		 * When there is a modifier the * matches a number.
 		 * When there is no modifier the ;* or * is omitted.
 		 */
 		if (termcodes[idx].modlen > 0)
 		{
+		    int at_code;
+
 		    modslen = termcodes[idx].modlen;
 		    if (cpo_koffset && offset && len < modslen)
 			continue;
+		    at_code = termcodes[idx].code[modslen] == '@';
 		    if (STRNCMP(termcodes[idx].code, tp,
 				(size_t)(modslen > len ? len : modslen)) == 0)
 		    {
@@ -5347,9 +5357,14 @@ check_termcode(
 			    return -1;		// need to get more chars
 
 			if (tp[modslen] == termcodes[idx].code[slen - 1])
-			    slen = modslen + 1;	// no modifiers
+			    // no modifiers
+			    slen = modslen + 1;
 			else if (tp[modslen] != ';' && modslen == slen - 3)
-			    continue;	// no match
+			    // no match for "code;*X" with "code;"
+			    continue;
+			else if (at_code && tp[modslen] != '1')
+			    // no match for "<Esc>[@" with "<Esc>[1"
+			    continue;
 			else
 			{
 			    // Skip over the digits, the final char must

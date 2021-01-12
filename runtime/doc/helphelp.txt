@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 8.2.  Last change: 2020 Dec 05
+*helphelp.txt*	For Vim version 8.2.  Last change: 2020 Dec 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -92,9 +92,9 @@ Help on help files					*helphelp*
 				:help k| only
 <			Note that a space before the '|' is seen as part of
 			the ":help" argument.
-			You can also use <LF> or <CR> to separate the help
+			You can also use <NL> or <CR> to separate the help
 			command from a following command.  You need to type
-			CTRL-V first to insert the <LF> or <CR>.  Example: >
+			CTRL-V first to insert the <NL> or <CR>.  Example: >
 				:help so<C-V><CR>only
 
 :h[elp]! [subject]	Like ":help", but in non-English help files prefer to
@@ -157,6 +157,9 @@ Help on help files					*helphelp*
 When no argument is given to |:help| the file given with the 'helpfile' option
 will be opened.  Otherwise the specified tag is searched for in all "doc/tags"
 files in the directories specified in the 'runtimepath' option.
+
+If you would like to open the help in the current window, see this tip:
+|help-curwin|.
 
 The initial height of the help window can be set with the 'helpheight' option
 (default 20).

@@ -1358,4 +1358,24 @@ func Test_prop_block_insert()
   call prop_type_delete('test')
 endfunc
 
+" this was causing an ml_get error because w_botline was wrong
+func Test_prop_one_line_window()
+  enew
+  call range(2)->setline(1)
+  call prop_type_add('testprop', {})
+  call prop_add(1, 1, {'type': 'testprop'})
+  call popup_create('popup', {'textprop': 'testprop'})
+  $
+  new
+  wincmd _
+  call feedkeys("\r", 'xt')
+  redraw
+
+  call popup_clear()
+  call prop_type_delete('testprop')
+  close
+  bwipe!
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab

@@ -253,6 +253,12 @@ static int nfa_re_flags; // re_flags passed to nfa_regcomp()
 static int *post_start;  // holds the postfix form of r.e.
 static int *post_end;
 static int *post_ptr;
+
+// Set when the pattern should use the NFA engine.
+// E.g. [[:upper:]] only allows 8bit characters for BT engine,
+// while NFA engine handles multibyte characters correctly.
+static int wants_nfa;
+
 static int nstate;	// Number of states in the NFA.
 static int istate;	// Index in the state vector, used in alloc_state()
 
@@ -306,6 +312,7 @@ nfa_regcomp_start(
 	return FAIL;
     post_ptr = post_start;
     post_end = post_start + nstate_max;
+    wants_nfa = FALSE;
     rex.nfa_has_zend = FALSE;
     rex.nfa_has_backref = FALSE;
 
@@ -1707,6 +1714,7 @@ collection:
 				    EMIT(NFA_CLASS_GRAPH);
 				    break;
 				case CLASS_LOWER:
+				    wants_nfa = TRUE;
 				    EMIT(NFA_CLASS_LOWER);
 				    break;
 				case CLASS_PRINT:
@@ -1719,6 +1727,7 @@ collection:
 				    EMIT(NFA_CLASS_SPACE);
 				    break;
 				case CLASS_UPPER:
+				    wants_nfa = TRUE;
 				    EMIT(NFA_CLASS_UPPER);
 				    break;
 				case CLASS_XDIGIT:
@@ -2137,9 +2146,15 @@ nfa_regpiece(void)
 
 	    // The engine is very inefficient (uses too many states) when the
 	    // maximum is much larger than the minimum and when the maximum is
-	    // large.  Bail out if we can use the other engine.
+	    // large.  However, when maxval is MAX_LIMIT, it is okay, as this
+	    // will emit NFA_STAR.
+	    // Bail out if we can use the other engine, but only, when the
+	    // pattern does not need the NFA engine like (e.g. [[:upper:]]\{2,\}
+	    // does not work with with characters > 8 bit with the BT engine)
 	    if ((nfa_re_flags & RE_AUTO)
-				   && (maxval > 500 || maxval > minval + 200))
+				   && (maxval > 500 || maxval > minval + 200)
+				   && (maxval != MAX_LIMIT && minval < 200)
+				   && !wants_nfa)
 		return FAIL;
 
 	    // Ignore previous call to nfa_regatom()
@@ -5754,9 +5769,11 @@ nfa_regmatch(
 	    {
 	    case NFA_MATCH:
 	      {
-		// If the match ends before a composing characters and
-		// rex.reg_icombine is not set, that is not really a match.
-		if (enc_utf8 && !rex.reg_icombine && utf_iscomposing(curc))
+		// If the match is not at the start of the line, ends before a
+		// composing characters and rex.reg_icombine is not set, that
+		// is not really a match.
+		if (enc_utf8 && !rex.reg_icombine
+			     && rex.input != rex.line && utf_iscomposing(curc))
 		    break;
 
 		nfa_match = TRUE;
@@ -7225,21 +7242,24 @@ nfa_regexec_both(
 #endif
 
 theend:
-    // Make sure the end is never before the start.  Can happen when \zs and
-    // \ze are used.
-    if (REG_MULTI)
+    if (retval > 0)
     {
-	lpos_T *start = &rex.reg_mmatch->startpos[0];
-	lpos_T *end = &rex.reg_mmatch->endpos[0];
+	// Make sure the end is never before the start.  Can happen when \zs and
+	// \ze are used.
+	if (REG_MULTI)
+	{
+	    lpos_T *start = &rex.reg_mmatch->startpos[0];
+	    lpos_T *end = &rex.reg_mmatch->endpos[0];
 
-	if (end->lnum < start->lnum
+	    if (end->lnum < start->lnum
 			|| (end->lnum == start->lnum && end->col < start->col))
-	    rex.reg_mmatch->endpos[0] = rex.reg_mmatch->startpos[0];
-    }
-    else
-    {
-	if (rex.reg_match->endp[0] < rex.reg_match->startp[0])
-	    rex.reg_match->endp[0] = rex.reg_match->startp[0];
+		rex.reg_mmatch->endpos[0] = rex.reg_mmatch->startpos[0];
+	}
+	else
+	{
+	    if (rex.reg_match->endp[0] < rex.reg_match->startp[0])
+		rex.reg_match->endp[0] = rex.reg_match->startp[0];
+	}
     }
 
     return retval;

@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.2.  Last change: 2020 Oct 25
+*version8.txt*  For Vim version 8.2.  Last change: 2020 Dec 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -3282,7 +3282,7 @@ Solution:   Convert the printer name from the active codepage to 'encoding'.
 Files:	    src/os_mswin.c
 
 Patch 7.4.472
-Problem:    The "precedes" entry in 'listchar' will be drawn when 'showbreak'
+Problem:    The "precedes" entry in 'listchars' will be drawn when 'showbreak'
 	    is set and 'list' is not.
 Solution:   Only draw this character when 'list' is on. (Christian Brabandt)
 Files:	    src/screen.c
@@ -35835,7 +35835,7 @@ Files:	    src/ex_cmds2.c, src/getchar.c, src/testdir/test_mapping.vim,
 Patch 8.1.1592
 Problem:    May start file dialog while exiting.
 Solution:   Ignore the "browse" modifier when exiting. (Ozaki Kiichi,
-            closes #4582
+            closes #4582)
 Files:	    src/ex_cmds.c, src/terminal.c
 
 Patch 8.1.1593
@@ -46431,7 +46431,7 @@ Files:      src/buffer.c, src/change.c, src/diff.c, src/evalbuffer.c,
 
 Patch 8.2.0854
 Problem:    Xxd cannot show offset as a decimal number.
-Solution:   Add the "-d" flag. (Aapo Rantalainen, closes #5616
+Solution:   Add the "-d" flag. (Aapo Rantalainen, closes #5616)
 Files:      src/testdir/test_xxd.vim, src/xxd/xxd.c
 
 Patch 8.2.0855
@@ -46661,7 +46661,7 @@ Solution:   Use // comments. (Yegappan Lakshmanan, closes #6190)
 Files:      src/gui_xim.c
 
 Patch 8.2.0890
-Problem:    No color in terminal window when 'termguicolor' is set.
+Problem:    No color in terminal window when 'termguicolors' is set.
 Solution:   Clear the underline color. (closes #6186)
 Files:      src/highlight.c
 
@@ -46728,7 +46728,7 @@ Files:      runtime/doc/change.txt, src/mbyte.c, src/ops.c, src/option.h,
 
 Patch 8.2.0902
 Problem:    Using searchcount() in 'statusline' causes an error.
-Solution:   Avoid saving/restoring the search patten recursively.
+Solution:   Avoid saving/restoring the search pattern recursively.
             (closes #6194)
 Files:      src/search.c, src/testdir/test_search_stat.vim,
             src/testdir/dumps/Test_searchstat_4.dump
@@ -48832,7 +48832,7 @@ Files:      src/buffer.c, src/testdir/test_tabline.vim
 Patch 8.2.1260
 Problem:    There is no good test for CursorHold.
 Solution:   Add a test.  Remove duplicated test. (Yegappan Lakshmanan,
-            closes #6503
+            closes #6503)
 Files:      src/testdir/test_autocmd.vim, src/testdir/test_buffer.vim,
             src/testdir/test_normal.vim
 

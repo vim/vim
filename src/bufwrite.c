@@ -2031,7 +2031,7 @@ restore_backup:
 	    if (end == 0
 		    || (lnum == end
 			&& (write_bin || !buf->b_p_fixeol)
-			&& (lnum == buf->b_no_eol_lnum
+			&& ((write_bin && lnum == buf->b_no_eol_lnum)
 			    || (lnum == buf->b_ml.ml_line_count
 							   && !buf->b_p_eol))))
 	    {
@@ -2138,7 +2138,7 @@ restore_backup:
     if (!checking_conversion)
     {
 #if defined(UNIX) && defined(HAVE_FSYNC)
-	// On many journalling file systems there is a bug that causes both the
+	// On many journaling file systems there is a bug that causes both the
 	// original and the backup file to be lost when halting the system
 	// right after writing the file.  That's because only the meta-data is
 	// journalled.  Syncing the file slows down the system, but assures it

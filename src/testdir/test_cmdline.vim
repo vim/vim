@@ -58,6 +58,22 @@ func Test_complete_wildmenu()
   call feedkeys(":e Xdir1/\<Tab>\<Down>\<Up>\<Right>\<CR>", 'tx')
   call assert_equal('testfile1', getline(1))
 
+  " this fails in some Unix GUIs, not sure why
+  if !has('unix') || !has('gui_running')
+    " <C-J>/<C-K> mappings to go up/down directories when 'wildcharm' is
+    " different than 'wildchar'.
+    set wildcharm=<C-Z>
+    cnoremap <C-J> <Down><C-Z>
+    cnoremap <C-K> <Up><C-Z>
+    call feedkeys(":e Xdir1/\<Tab>\<C-J>\<CR>", 'tx')
+    call assert_equal('testfile3', getline(1))
+    call feedkeys(":e Xdir1/\<Tab>\<C-J>\<C-K>\<CR>", 'tx')
+    call assert_equal('testfile1', getline(1))
+    set wildcharm=0
+    cunmap <C-J>
+    cunmap <C-K>
+  endif
+
   " Test for canceling the wild menu by adding a character
   redrawstatus
   call feedkeys(":e Xdir1/\<Tab>x\<C-B>\"\<CR>", 'xt')
@@ -671,6 +687,17 @@ func Test_cmdline_complete_env_variable()
   call feedkeys(":edit $X_VIM_TEST_COMPLETE_E\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_match('"edit $X_VIM_TEST_COMPLETE_ENV', @:)
   unlet $X_VIM_TEST_COMPLETE_ENV
+endfunc
+
+func Test_cmdline_complete_expression()
+  let g:SomeVar = 'blah'
+  for cmd in ['exe', 'echo', 'echon', 'echomsg']
+    call feedkeys(":" .. cmd .. " SomeV\<Tab>\<C-B>\"\<CR>", 'tx')
+    call assert_match('"' .. cmd .. ' SomeVar', @:)
+    call feedkeys(":" .. cmd .. " foo SomeV\<Tab>\<C-B>\"\<CR>", 'tx')
+    call assert_match('"' .. cmd .. ' foo SomeVar', @:)
+  endfor
+  unlet g:SomeVar
 endfunc
 
 " Test for various command-line completion

@@ -839,7 +839,7 @@ func Test_nb_file_auth()
   call s:run_server('Nb_file_auth')
 endfunc
 
-" Test for quiting Vim with an open netbeans connection
+" Test for quitting Vim with an open netbeans connection
 func Nb_quit_with_conn(port)
   call delete("Xnetbeans")
   call writefile([], "Xnetbeans")

@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.2.  Last change: 2020 Dec 10
+*autocmd.txt*   For Vim version 8.2.  Last change: 2020 Dec 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -851,6 +851,8 @@ FuncUndefined			When a user function is used but it isn't
 				when it's used.  The pattern is matched
 				against the function name.  Both <amatch> and
 				<afile> are set to the name of the function.
+				Not triggered when compiling a |Vim9|
+				function.
 				NOTE: When writing Vim scripts a better
 				alternative is to use an autoloaded function.
 				See |autoload-functions|.

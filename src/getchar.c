@@ -2264,7 +2264,7 @@ at_ctrl_x_key(void)
 }
 
 /*
- * Check if typebuf.tb_buf[] contains a modifer plus key that can be changed
+ * Check if typebuf.tb_buf[] contains a modifier plus key that can be changed
  * into just a key, apply that.
  * Check from typebuf.tb_buf[typebuf.tb_off] to typebuf.tb_buf[typebuf.tb_off
  * + "max_offset"].

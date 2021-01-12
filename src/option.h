@@ -60,6 +60,17 @@
 #define P_RWINONLY   0x10000000L // only redraw current window
 #define P_MLE	     0x20000000L // under control of 'modelineexpr'
 
+// Returned by get_option_value().
+typedef enum {
+    gov_unknown,
+    gov_bool,
+    gov_number,
+    gov_string,
+    gov_hidden_bool,
+    gov_hidden_number,
+    gov_hidden_string
+} getoption_T;
+
 /*
  * Default values for 'errorformat'.
  * The "%f|%l| %m" one is used for when the contents of the quickfix window is

@@ -185,6 +185,20 @@ def Test_count()
   count('ABC ABC ABC', 'b', false)->assert_equal(0)
 enddef
 
+def Test_cursor()
+  new
+  setline(1, range(4))
+  cursor(2, 1)
+  assert_equal(2, getcurpos()[1])
+  cursor('$', 1)
+  assert_equal(4, getcurpos()[1])
+
+  var lines =<< trim END
+    cursor('2', 1)
+  END
+  CheckDefExecAndScriptFailure(lines, 'E475:')
+enddef
+
 def Test_executable()
   assert_false(executable(""))
   assert_false(executable(test_null_string()))
@@ -217,7 +231,7 @@ def Test_extend_arg_types()
   assert_equal({a: 1, b: 2}, extend({a: 1, b: 2}, {b: 4}, s:string_keep))
 
   var res: list<dict<any>>
-  extend(res, map([1, 2], {_, v -> {}}))
+  extend(res, mapnew([1, 2], (_, v) => ({})))
   assert_equal([{}, {}], res)
 
   CheckDefFailure(['extend([1, 2], 3)'], 'E1013: Argument 2: type mismatch, expected list<number> but got number')
@@ -238,9 +252,60 @@ def Test_extend_return_type()
   res->assert_equal(6)
 enddef
 
+func g:ExtendDict(d)
+  call extend(a:d, #{xx: 'x'})
+endfunc
+
+def Test_extend_dict_item_type()
+  var lines =<< trim END
+       var d: dict<number> = {a: 1}
+       extend(d, {b: 2})
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+       var d: dict<number> = {a: 1}
+       extend(d, {b: 'x'})
+  END
+  CheckDefFailure(lines, 'E1013: Argument 2: type mismatch, expected dict<number> but got dict<string>', 2)
+  CheckScriptFailure(['vim9script'] + lines, 'E1012:', 3)
+
+  lines =<< trim END
+       var d: dict<number> = {a: 1}
+       g:ExtendDict(d)
+  END
+  CheckDefExecFailure(lines, 'E1012: Type mismatch; expected number but got string', 0)
+  CheckScriptFailure(['vim9script'] + lines, 'E1012:', 1)
+enddef
+
+func g:ExtendList(l)
+  call extend(a:l, ['x'])
+endfunc
+
+def Test_extend_list_item_type()
+  var lines =<< trim END
+       var l: list<number> = [1]
+       extend(l, [2])
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+       var l: list<number> = [1]
+       extend(l, ['x'])
+  END
+  CheckDefFailure(lines, 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>', 2)
+  CheckScriptFailure(['vim9script'] + lines, 'E1012:', 3)
+
+  lines =<< trim END
+       var l: list<number> = [1]
+       g:ExtendList(l)
+  END
+  CheckDefExecFailure(lines, 'E1012: Type mismatch; expected number but got string', 0)
+  CheckScriptFailure(['vim9script'] + lines, 'E1012:', 1)
+enddef
 
 def Wrong_dict_key_type(items: list<number>): list<number>
-  return filter(items, {_, val -> get({[val]: 1}, 'x')})
+  return filter(items, (_, val) => get({[val]: 1}, 'x'))
 enddef
 
 def Test_map_function_arg()
@@ -251,6 +316,15 @@ def Test_map_function_arg()
       var l = ['a', 'b', 'c']
       map(l, MapOne)
       assert_equal(['0:a', '1:b', '2:c'], l)
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_map_item_type()
+  var lines =<< trim END
+      var l = ['a', 'b', 'c']
+      map(l, (k, v) => k .. '/' .. v )
+      assert_equal(['0/a', '1/b', '2/c'], l)
   END
   CheckDefAndScriptSuccess(lines)
 enddef
@@ -299,7 +373,7 @@ def Test_filter_wrong_dict_key_type()
 enddef
 
 def Test_filter_return_type()
-  var l = filter([1, 2, 3], {-> 1})
+  var l = filter([1, 2, 3], () => 1)
   var res = 0
   for n in l
     res += n
@@ -307,6 +381,11 @@ def Test_filter_return_type()
   res->assert_equal(6)
 enddef
 
+def Test_filter_missing_argument()
+  var dict = {aa: [1], ab: [2], ac: [3], de: [4]}
+  var res = dict->filter((k) => k =~ 'a' && k !~ 'b')
+  res->assert_equal({aa: [1], ac: [3]})
+enddef
 
 def Test_garbagecollect()
   garbagecollect(true)
@@ -520,8 +599,8 @@ def Test_nr2char()
 enddef
 
 def Test_readdir()
-   eval expand('sautest')->readdir({e -> e[0] !=# '.'})
-   eval expand('sautest')->readdirex({e -> e.name[0] !=# '.'})
+   eval expand('sautest')->readdir((e) => e[0] !=# '.')
+   eval expand('sautest')->readdirex((e) => e.name[0] !=# '.')
 enddef
 
 def Test_remove_return_type()
@@ -547,16 +626,16 @@ def Test_search()
   setline(1, ['foo', 'bar'])
   var val = 0
   # skip expr returns boolean
-  search('bar', 'W', 0, 0, {-> val == 1})->assert_equal(2)
+  search('bar', 'W', 0, 0, () => val == 1)->assert_equal(2)
   :1
-  search('bar', 'W', 0, 0, {-> val == 0})->assert_equal(0)
+  search('bar', 'W', 0, 0, () => val == 0)->assert_equal(0)
   # skip expr returns number, only 0 and 1 are accepted
   :1
-  search('bar', 'W', 0, 0, {-> 0})->assert_equal(2)
+  search('bar', 'W', 0, 0, () => 0)->assert_equal(2)
   :1
-  search('bar', 'W', 0, 0, {-> 1})->assert_equal(0)
-  assert_fails("search('bar', '', 0, 0, {-> -1})", 'E1023:')
-  assert_fails("search('bar', '', 0, 0, {-> -1})", 'E1023:')
+  search('bar', 'W', 0, 0, () => 1)->assert_equal(0)
+  assert_fails("search('bar', '', 0, 0, () => -1)", 'E1023:')
+  assert_fails("search('bar', '', 0, 0, () => -1)", 'E1023:')
 enddef
 
 def Test_searchcount()
@@ -582,11 +661,21 @@ def Test_setbufvar()
   &syntax->assert_equal('vim')
   setbufvar(bufnr('%'), '&ts', 16)
   &ts->assert_equal(16)
+  setbufvar(bufnr('%'), '&ai', true)
+  &ai->assert_equal(true)
+  setbufvar(bufnr('%'), '&ft', 'filetype')
+  &ft->assert_equal('filetype')
+
   settabwinvar(1, 1, '&syntax', 'vam')
   &syntax->assert_equal('vam')
   settabwinvar(1, 1, '&ts', 15)
   &ts->assert_equal(15)
   setlocal ts=8
+  settabwinvar(1, 1, '&list', false)
+  &list->assert_equal(false)
+  settabwinvar(1, 1, '&list', true)
+  &list->assert_equal(true)
+  setlocal list&
 
   setbufvar('%', 'myvar', 123)
   getbufvar('%', 'myvar')->assert_equal(123)
@@ -648,7 +737,7 @@ enddef
 
 def Test_submatch()
   var pat = 'A\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)\(.\)'
-  var Rep = {-> range(10)->map({_, v -> submatch(v, true)})->string()}
+  var Rep = () => range(10)->mapnew((_, v) => submatch(v, true))->string()
   var actual = substitute('A123456789', pat, Rep, '')
   var expected = "[['A123456789'], ['1'], ['2'], ['3'], ['4'], ['5'], ['6'], ['7'], ['8'], ['9']]"
   actual->assert_equal(expected)
@@ -684,7 +773,7 @@ def Test_term_start()
 enddef
 
 def Test_timer_paused()
-  var id = timer_start(50, {-> 0})
+  var id = timer_start(50, () => 0)
   timer_pause(id, true)
   var info = timer_info(id)
   info[0]['paused']->assert_equal(1)
@@ -696,6 +785,26 @@ def Test_win_splitmove()
   win_splitmove(1, 2, {vertical: true, rightbelow: true})
   close
 enddef
+
+def Test_winrestcmd()
+  split
+  var cmd = winrestcmd()
+  wincmd _
+  exe cmd
+  assert_equal(cmd, winrestcmd())
+  close
+enddef
+
+def Test_winsaveview()
+  var view: dict<number> = winsaveview()
+
+  var lines =<< trim END
+      var view: list<number> = winsaveview()
+  END
+  CheckDefAndScriptFailure(lines, 'E1012: Type mismatch; expected list<number> but got dict<number>', 1)
+enddef
+
+
 
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -3692,7 +3692,7 @@ func Test_python_import()
   call assert_equal(expected, getline(2, '$'))
   close!
 
-  " Try to import a non-existing moudle with a dot (.)
+  " Try to import a non-existing module with a dot (.)
   call AssertException(['py import a.b.c'], 'ImportError:')
 endfunc
 
@@ -3773,6 +3773,13 @@ func Test_python_keyboard_interrupt()
   call assert_equal(expected, getline(2, '$'))
   call assert_equal('', output)
   close!
+endfunc
+
+func Test_python_non_utf8_string()
+  smap <Esc>@ <A-@>
+  python vim.command('redir => _tmp_smaps | smap | redir END')
+  python vim.eval('_tmp_smaps').splitlines()
+  sunmap <Esc>@
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

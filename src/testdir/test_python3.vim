@@ -12,6 +12,7 @@ func Create_vim_dict()
   return {'a': 1}
 endfunction
 
+let s:system_error_pat = 'Vim(py3):SystemError: \(<built-in function eval> returned NULL without setting an error\|error return without exception set\)'
 
 " This function should be called first. This sets up python functions used by
 " the other tests.
@@ -539,11 +540,11 @@ endfunc
 func Test_python3_list()
   " Try to convert a null List
   call AssertException(["py3 t = vim.eval('test_null_list()')"],
-        \ 'Vim(py3):SystemError: <built-in function eval> returned NULL without setting an error')
+        \ s:system_error_pat)
 
   " Try to convert a List with a null List item
   call AssertException(["py3 t = vim.eval('[test_null_list()]')"],
-        \ 'Vim(py3):SystemError: <built-in function eval> returned NULL without setting an error')
+        \ s:system_error_pat)
 
   " Try to bind a null List variable (works because an empty list is used)
   let cmds =<< trim END
@@ -582,11 +583,11 @@ endfunc
 func Test_python3_dict()
   " Try to convert a null Dict
   call AssertException(["py3 t = vim.eval('test_null_dict()')"],
-        \ 'Vim(py3):SystemError: <built-in function eval> returned NULL without setting an error')
+        \ s:system_error_pat)
 
   " Try to convert a Dict with a null List value
   call AssertException(["py3 t = vim.eval(\"{'a' : test_null_list()}\")"],
-        \ 'Vim(py3):SystemError: <built-in function eval> returned NULL without setting an error')
+        \ s:system_error_pat)
 
   " Try to convert a Dict with a null string key
   py3 t = vim.eval("{test_null_string() : 10}")
@@ -1119,7 +1120,7 @@ func Test_python3_list_slice()
   let l = [test_null_list()]
   py3 ll = vim.bindeval('l')
   call AssertException(["py3 x = ll[:]"],
-        \ "Vim(py3):SystemError: error return without exception set")
+        \ s:system_error_pat)
 endfunc
 
 " Vars
@@ -3882,7 +3883,7 @@ func Test_python3_import()
   call assert_equal(expected, getline(2, '$'))
   close!
 
-  " Try to import a non-existing moudle with a dot (.)
+  " Try to import a non-existing module with a dot (.)
   call AssertException(['py3 import a.b.c'], "No module named 'a'")
 endfunc
 
@@ -4006,6 +4007,46 @@ func Test_python3_iter_ref()
   call assert_equal(1, g:dict_iter_ref_count_increase)
   call assert_equal(1, g:bufmap_iter_ref_count_increase)
   call assert_equal(1, g:options_iter_ref_count_increase)
+endfunc
+
+func Test_python3_non_utf8_string()
+  smap <Esc>@ <A-@>
+  py3 vim.command('redir => _tmp_smaps | smap | redir END')
+  py3 vim.eval('_tmp_smaps').splitlines()
+  sunmap <Esc>@
+endfunc
+
+func Test_python3_fold_hidden_buffer()
+  CheckFeature folding
+
+  set fdm=expr fde=Fde(v:lnum)
+  let b:regex = '^'
+  func Fde(lnum)
+    let ld = [{}]
+    let lines = bufnr('%')->getbufline(1, '$')
+    let was_import = 0
+    for lnum in range(1, len(lines))
+      let line = lines[lnum]
+      call add(ld, {'a': b:regex})
+      let ld[lnum].foldexpr = was_import ? 1 : '>1'
+      let was_import = 1
+    endfor
+    return ld[a:lnum].foldexpr
+  endfunc
+
+  call setline(1, repeat([''], 15) + repeat(['from'], 3))
+  eval repeat(['x'], 17)->writefile('Xa.txt')
+  split Xa.txt
+  py3 import vim
+  py3 b = vim.current.buffer
+  py3 aaa = b[:]
+  hide
+  py3 b[:] = aaa
+
+  call delete('Xa.txt')
+  set fdm& fde&
+  delfunc Fde
+  bwipe! Xa.txt
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

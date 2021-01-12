@@ -3738,9 +3738,9 @@ nv_ident(cmdarg_T *cap)
     else
     {
 	if (cmdchar == '*')
-	    aux_ptr = (char_u *)(p_magic ? "/.*~[^$\\" : "/^$\\");
+	    aux_ptr = (char_u *)(magic_isset() ? "/.*~[^$\\" : "/^$\\");
 	else if (cmdchar == '#')
-	    aux_ptr = (char_u *)(p_magic ? "/?.*~[^$\\" : "/?^$\\");
+	    aux_ptr = (char_u *)(magic_isset() ? "/?.*~[^$\\" : "/?^$\\");
 	else if (tag_cmd)
 	{
 	    if (curbuf->b_help)
@@ -5372,7 +5372,7 @@ v_visop(cmdarg_T *cap)
 nv_subst(cmdarg_T *cap)
 {
 #ifdef FEAT_TERMINAL
-    // When showing output of term_dumpdiff() swap the top and botom.
+    // When showing output of term_dumpdiff() swap the top and bottom.
     if (term_swap_diff() == OK)
 	return;
 #endif

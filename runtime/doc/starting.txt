@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.2.  Last change: 2020 Sep 23
+*starting.txt*  For Vim version 8.2.  Last change: 2020 Dec 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -996,7 +996,7 @@ version 5.0) are not recognized.
 
 MS-Windows line separators ~
 
-On MS-Windows, Vim assumes that all the vimrc files have <CR> <NL> pairs as
+On MS-Windows, Vim assumes that all the vimrc files have <CR><NL> pairs as
 line separators.  This will give problems if you have a file with only <NL>s
 and have a line like ":map xx yy^M".  The trailing ^M will be ignored.
 

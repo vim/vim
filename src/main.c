@@ -3269,9 +3269,8 @@ process_env(
     int		is_viminit) // when TRUE, called for VIMINIT
 {
     char_u	*initstr;
-#ifdef FEAT_EVAL
     sctx_T	save_current_sctx;
-#endif
+
     ESTACK_CHECK_DECLARATION
 
     if ((initstr = mch_getenv(env)) != NULL && *initstr != NUL)
@@ -3280,20 +3279,19 @@ process_env(
 	    vimrc_found(NULL, NULL);
 	estack_push(ETYPE_ENV, env, 0);
 	ESTACK_CHECK_SETUP
-#ifdef FEAT_EVAL
 	save_current_sctx = current_sctx;
+	current_sctx.sc_version = 1;
+#ifdef FEAT_EVAL
 	current_sctx.sc_sid = SID_ENV;
 	current_sctx.sc_seq = 0;
 	current_sctx.sc_lnum = 0;
-	current_sctx.sc_version = 1;
 #endif
+
 	do_cmdline_cmd(initstr);
 
 	ESTACK_CHECK_NOW
 	estack_pop();
-#ifdef FEAT_EVAL
 	current_sctx = save_current_sctx;
-#endif
 	return OK;
     }
     return FAIL;

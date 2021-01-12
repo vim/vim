@@ -937,7 +937,7 @@
  * +mouse_sgr		Unix only: Include code for for SGR-styled mouse.
  * +mouse_sysmouse	Unix only: Include code for FreeBSD and DragonFly
  *			console mouse handling.
- * +mouse_urxvt		Unix only: Include code for for urxvt mosue handling.
+ * +mouse_urxvt		Unix only: Include code for for urxvt mouse handling.
  * +mouse		Any mouse support (any of the above enabled).
  *			Always included, since either FEAT_MOUSE_XTERM or
  *			DOS_MOUSE is defined.

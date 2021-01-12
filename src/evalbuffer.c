@@ -68,7 +68,7 @@ buflist_find_by_name(char_u *name, int curtab_only)
     save_magic = p_magic;
     p_magic = TRUE;
     save_cpo = p_cpo;
-    p_cpo = (char_u *)"";
+    p_cpo = empty_option;
 
     buf = buflist_findnr(buflist_findpat(name, name + STRLEN(name),
 						    TRUE, FALSE, curtab_only));
@@ -807,6 +807,9 @@ f_setline(typval_T *argvars, typval_T *rettv)
 switch_buffer(bufref_T *save_curbuf, buf_T *buf)
 {
     block_autocmds();
+#ifdef FEAT_FOLDING
+    ++disable_fold_update;
+#endif
     set_bufref(save_curbuf, curbuf);
     --curbuf->b_nwindows;
     curbuf = buf;
@@ -821,6 +824,9 @@ switch_buffer(bufref_T *save_curbuf, buf_T *buf)
 restore_buffer(bufref_T *save_curbuf)
 {
     unblock_autocmds();
+#ifdef FEAT_FOLDING
+    --disable_fold_update;
+#endif
     // Check for valid buffer, just in case.
     if (bufref_valid(save_curbuf))
     {

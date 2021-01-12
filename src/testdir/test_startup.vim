@@ -741,6 +741,53 @@ func Test_t_arg()
   call delete('Xfile1')
 endfunc
 
+" Test the '-T' argument which sets the 'term' option.
+func Test_T_arg()
+  CheckNotGui
+  let after =<< trim [CODE]
+    call writefile([&term], "Xtest_T_arg")
+    qall
+  [CODE]
+
+  for t in ['builtin_dumb', 'builtin_ansi']
+    if RunVim([], after, '-T ' .. t)
+      let lines = readfile('Xtest_T_arg')
+      call assert_equal([t], lines)
+    endif
+  endfor
+
+  call delete('Xtest_T_arg')
+endfunc
+
+" Test the '-x' argument to read/write encrypted files.
+func Test_x_arg()
+  CheckRunVimInTerminal
+  CheckFeature cryptv
+
+  " Create an encrypted file Xtest_x_arg.
+  let buf = RunVimInTerminal('-n -x Xtest_x_arg', #{rows: 10, wait_for_ruler: 0})
+  call WaitForAssert({-> assert_match('^Enter encryption key: ', term_getline(buf, 10))})
+  call term_sendkeys(buf, "foo\n")
+  call WaitForAssert({-> assert_match('^Enter same key again: ', term_getline(buf, 10))})
+  call term_sendkeys(buf, "foo\n")
+  call WaitForAssert({-> assert_match(' All$', term_getline(buf, 10))})
+  call term_sendkeys(buf, "itest\<Esc>:w\<Enter>")
+  call WaitForAssert({-> assert_match('"Xtest_x_arg" \[New\]\[blowfish2\] 1L, 5B written',
+        \            term_getline(buf, 10))})
+  call StopVimInTerminal(buf)
+
+  " Read the encrypted file and check that it contains the expected content "test"
+  let buf = RunVimInTerminal('-n -x Xtest_x_arg', #{rows: 10, wait_for_ruler: 0})
+  call WaitForAssert({-> assert_match('^Enter encryption key: ', term_getline(buf, 10))})
+  call term_sendkeys(buf, "foo\n")
+  call WaitForAssert({-> assert_match('^Enter same key again: ', term_getline(buf, 10))})
+  call term_sendkeys(buf, "foo\n")
+  call WaitForAssert({-> assert_match('^test', term_getline(buf, 1))})
+  call StopVimInTerminal(buf)
+
+  call delete('Xtest_x_arg')
+endfunc
+
 " Test for entering the insert mode on startup
 func Test_start_insertmode()
   let before =<< trim [CODE]
@@ -953,6 +1000,82 @@ func Test_too_many_edit_args()
   CheckEnglish
   let l = systemlist(GetVimProg() .. ' - -')
   call assert_match('^Too many edit arguments: "-"', l[1])
+endfunc
+
+" Test starting vim with various names: vim, ex, view, evim, etc.
+func Test_progname()
+  CheckUnix
+
+  call mkdir('Xprogname', 'p')
+  call writefile(['silent !date',
+  \               'call writefile([mode(1), '
+  \               .. '&insertmode, &diff, &readonly, &updatecount, '
+  \               .. 'join(split(execute("message"), "\n")[1:])], "Xprogname_out")',
+  \               'qall'], 'Xprogname_after')
+
+  "  +---------------------------------------------- progname
+  "  |            +--------------------------------- mode(1)
+  "  |            |     +--------------------------- &insertmode
+  "  |            |     |    +---------------------- &diff
+  "  |            |     |    |    +----------------- &readonly
+  "  |            |     |    |    |        +-------- &updatecount
+  "  |            |     |    |    |        |    +--- :messages
+  "  |            |     |    |    |        |    |
+  let expectations = {
+  \ 'vim':      ['n',  '0', '0', '0',   '200', ''],
+  \ 'gvim':     ['n',  '0', '0', '0',   '200', ''],
+  \ 'ex':       ['ce', '0', '0', '0',   '200', ''],
+  \ 'exim':     ['cv', '0', '0', '0',   '200', ''],
+  \ 'view':     ['n',  '0', '0', '1', '10000', ''],
+  \ 'gview':    ['n',  '0', '0', '1', '10000', ''],
+  \ 'evim':     ['n',  '1', '0', '0',   '200', ''],
+  \ 'eview':    ['n',  '1', '0', '1', '10000', ''],
+  \ 'rvim':     ['n',  '0', '0', '0',   '200', 'line    1: E145: Shell commands and some functionality not allowed in rvim'],
+  \ 'rgvim':    ['n',  '0', '0', '0',   '200', 'line    1: E145: Shell commands and some functionality not allowed in rvim'],
+  \ 'rview':    ['n',  '0', '0', '1', '10000', 'line    1: E145: Shell commands and some functionality not allowed in rvim'],
+  \ 'rgview':   ['n',  '0', '0', '1', '10000', 'line    1: E145: Shell commands and some functionality not allowed in rvim'],
+  \ 'vimdiff':  ['n',  '0', '1', '0',   '200', ''],
+  \ 'gvimdiff': ['n',  '0', '1', '0',   '200', '']}
+
+  let prognames = ['vim', 'gvim', 'ex', 'exim', 'view', 'gview',
+  \                'evim', 'eview', 'rvim', 'rgvim', 'rview', 'rgview',
+  \                'vimdiff', 'gvimdiff']
+
+  for progname in prognames
+    if empty($DISPLAY)
+      if progname =~# 'g'
+        " Can't run gvim, gview (etc.) if $DISPLAY is not setup.
+        continue
+      endif
+      if has('gui') && (progname ==# 'evim' || progname ==# 'eview')
+        " evim or eview will start the GUI if there is gui support.
+        " So don't try to start them either if $DISPLAY is not setup.
+        continue
+      endif
+    endif
+
+    exe 'silent !ln -s -f ' ..exepath(GetVimProg()) .. ' Xprogname/' .. progname
+
+    let stdout_stderr = ''
+    if progname =~# 'g'
+      let stdout_stderr = system('Xprogname/'..progname..' -f --clean --not-a-term -S Xprogname_after')
+    else
+      exe 'sil !Xprogname/'..progname..' -f --clean --not-a-term -S Xprogname_after'
+    endif
+
+    if progname =~# 'g' && !has('gui')
+      call assert_equal("E25: GUI cannot be used: Not enabled at compile time\n", stdout_stderr, progname)
+    else
+      call assert_equal('', stdout_stderr, progname)
+      call assert_equal(expectations[progname], readfile('Xprogname_out'), progname)
+    endif
+
+    call delete('Xprogname/' .. progname)
+    call delete('Xprogname_out')
+  endfor
+
+  call delete('Xprogname_after')
+  call delete('Xprogname', 'd')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

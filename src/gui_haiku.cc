@@ -3411,7 +3411,7 @@ gui_mch_exit(int vim_exitcode)
 	thread_id tid = gui.vimWindow->Thread();
 	gui.vimWindow->Lock();
 	gui.vimWindow->Quit();
-	// Wait until it is truely gone
+	// Wait until it is truly gone
 	int32 exitcode;
 	wait_for_thread(tid, &exitcode);
     }

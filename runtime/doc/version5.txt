@@ -1,4 +1,4 @@
-*version5.txt*  For Vim version 8.2.  Last change: 2020 Sep 02
+*version5.txt*  For Vim version 8.2.  Last change: 2020 Dec 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -805,7 +805,7 @@ Using "~" for $HOME now works for all systems.  |$HOME|
 Unix: Besides using CTRL-C, also use the INTR character from the tty settings.
 Somebody has INTR set to DEL.
 
-Allow a <LF> in a ":help" command argument to end the help command, so another
+Allow a <NL> in a ":help" command argument to end the help command, so another
 command can follow.
 
 Doing "%" on a line that starts with "   #if" didn't jump to matching "#else".

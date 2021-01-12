@@ -302,7 +302,7 @@ prop_add_common(
 	if (length < 0)
 	    length = 0;		// zero-width property
 
-	// Allocate the new line with space for the new proprety.
+	// Allocate the new line with space for the new property.
 	newtext = alloc(buf->b_ml.ml_line_len + sizeof(textprop_T));
 	if (newtext == NULL)
 	    return;
@@ -419,7 +419,7 @@ find_visible_prop(win_T *wp, int type_id, int id, textprop_T *prop,
     int			i;
 
     // w_botline may not have been updated yet.
-    validate_botline();
+    validate_botline_win(wp);
     for (lnum = wp->w_topline; lnum < wp->w_botline; ++lnum)
     {
 	count = get_text_props(wp->w_buffer, lnum, &props, FALSE);
@@ -1485,7 +1485,7 @@ prepend_joined_props(
 	end = !(prop.tp_flags & TP_FLAG_CONT_NEXT);
 
 	adjust_prop(&prop, 0, -removed, 0); // Remove leading spaces
-	adjust_prop(&prop, -1, col, 0); // Make line start at its final colum
+	adjust_prop(&prop, -1, col, 0); // Make line start at its final column
 
 	if (add_all || end)
 	    mch_memmove(new_props + --(*props_remaining) * sizeof(prop),

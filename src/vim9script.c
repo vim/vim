@@ -13,9 +13,9 @@
 
 #include "vim.h"
 
-#if defined(FEAT_EVAL) || defined(PROTO)
-
-#include "vim9.h"
+#if defined(FEAT_EVAL)
+# include "vim9.h"
+#endif
 
     int
 in_vim9script(void)
@@ -30,8 +30,10 @@ in_vim9script(void)
  * ":vim9script".
  */
     void
-ex_vim9script(exarg_T *eap)
+ex_vim9script(exarg_T *eap UNUSED)
 {
+#ifdef FEAT_EVAL
+    int		    sid = current_sctx.sc_sid;
     scriptitem_T    *si;
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
@@ -39,21 +41,45 @@ ex_vim9script(exarg_T *eap)
 	emsg(_(e_vim9script_can_only_be_used_in_script));
 	return;
     }
-    si = SCRIPT_ITEM(current_sctx.sc_sid);
-    if (si->sn_had_command)
+
+    si = SCRIPT_ITEM(sid);
+    if (si->sn_state == SN_STATE_HAD_COMMAND)
     {
 	emsg(_(e_vim9script_must_be_first_command_in_script));
 	return;
     }
+    if (!IS_WHITE_OR_NUL(*eap->arg) && STRCMP(eap->arg, "noclear") != 0)
+    {
+	semsg(_(e_invarg2), eap->arg);
+	return;
+    }
+    if (si->sn_state == SN_STATE_RELOAD && IS_WHITE_OR_NUL(*eap->arg))
+    {
+	hashtab_T	*ht = &SCRIPT_VARS(sid);
+
+	// Reloading a script without the "noclear" argument: clear
+	// script-local variables and functions.
+	hashtab_free_contents(ht);
+	hash_init(ht);
+	delete_script_functions(sid);
+
+	// old imports and script variables are no longer valid
+	free_imports_and_script_vars(sid);
+    }
+    si->sn_state = SN_STATE_HAD_COMMAND;
+
     current_sctx.sc_version = SCRIPT_VERSION_VIM9;
     si->sn_version = SCRIPT_VERSION_VIM9;
-    si->sn_had_command = TRUE;
 
     if (STRCMP(p_cpo, CPO_VIM) != 0)
     {
 	si->sn_save_cpo = vim_strsave(p_cpo);
 	set_option_value((char_u *)"cpo", 0L, (char_u *)CPO_VIM, 0);
     }
+#else
+    // No check for this being the first command, it doesn't matter.
+    current_sctx.sc_version = SCRIPT_VERSION_VIM9;
+#endif
 }
 
 /*
@@ -70,12 +96,23 @@ not_in_vim9(exarg_T *eap)
 	    case CMD_insert:
 	    case CMD_t:
 	    case CMD_xit:
-		semsg(_(e_missing_var_str), eap->cmd);
+		semsg(_(e_command_not_supported_in_vim9_script_missing_var_str), eap->cmd);
 		return FAIL;
 	    default: break;
 	}
     return OK;
 }
+
+/*
+ * Return TRUE if "p" points at a "#".  Does not check for white space.
+ */
+    int
+vim9_comment_start(char_u *p)
+{
+    return p[0] == '#';
+}
+
+#if defined(FEAT_EVAL) || defined(PROTO)
 
 /*
  * ":export let Name: type"
@@ -153,6 +190,24 @@ free_imports_and_script_vars(int sid)
 }
 
 /*
+ * Mark all imports as possible to redefine.  Used when a script is loaded
+ * again but not cleared.
+ */
+    void
+mark_imports_for_reload(int sid)
+{
+    scriptitem_T    *si = SCRIPT_ITEM(sid);
+    int		    idx;
+
+    for (idx = 0; idx < si->sn_imports.ga_len; ++idx)
+    {
+	imported_T *imp = ((imported_T *)si->sn_imports.ga_data) + idx;
+
+	imp->imp_flags |= IMP_FLAGS_RELOAD;
+    }
+}
+
+/*
  * ":import Item from 'filename'"
  * ":import Item as Alias from 'filename'"
  * ":import {Item} from 'filename'".
@@ -202,7 +257,7 @@ find_exported(
 
     // find name in "script"
     // TODO: also find script-local user function
-    idx = get_script_item_idx(sid, name, FALSE, cctx);
+    idx = get_script_item_idx(sid, name, 0, cctx);
     if (idx >= 0)
     {
 	sv = ((svar_T *)script->sn_var_vals.ga_data) + idx;
@@ -438,15 +493,29 @@ handle_import(
 
     if (*arg_start == '*')
     {
-	imported_T *imported = new_imported(gap != NULL ? gap
-					: &SCRIPT_ITEM(import_sid)->sn_imports);
+	imported_T *imported;
 
+	imported = find_imported(as_name, STRLEN(as_name), cctx);
+	if (imported != NULL && imported->imp_sid == sid)
+	{
+	    if (imported->imp_flags & IMP_FLAGS_RELOAD)
+		// import already defined on a previous script load
+		imported->imp_flags &= ~IMP_FLAGS_RELOAD;
+	    else
+	    {
+		semsg(_(e_name_already_defined_str), as_name);
+		goto erret;
+	    }
+	}
+
+	imported = new_imported(gap != NULL ? gap
+					: &SCRIPT_ITEM(import_sid)->sn_imports);
 	if (imported == NULL)
 	    goto erret;
 	imported->imp_name = as_name;
 	as_name = NULL;
 	imported->imp_sid = sid;
-	imported->imp_all = TRUE;
+	imported->imp_flags = IMP_FLAGS_STAR;
     }
     else
     {
@@ -458,6 +527,7 @@ handle_import(
 	for (i = 0; i < names.ga_len; ++i)
 	{
 	    char_u	*name = ((char_u **)names.ga_data)[i];
+	    size_t	len = STRLEN(name);
 	    int		idx;
 	    imported_T	*imported;
 	    ufunc_T	*ufunc = NULL;
@@ -468,28 +538,47 @@ handle_import(
 	    if (idx < 0 && ufunc == NULL)
 		goto erret;
 
-	    if (check_defined(name, STRLEN(name), cctx) == FAIL)
-		goto erret;
-
-	    imported = new_imported(gap != NULL ? gap
-				       : &SCRIPT_ITEM(import_sid)->sn_imports);
-	    if (imported == NULL)
-		goto erret;
-
-	    // TODO: check for "as" following
-	    // imported->imp_name = vim_strsave(as_name);
-	    imported->imp_name = name;
-	    ((char_u **)names.ga_data)[i] = NULL;
-	    imported->imp_sid = sid;
-	    if (idx >= 0)
+	    // If already imported with the same propertis and the
+	    // IMP_FLAGS_RELOAD set then we keep that entry.  Otherwise create
+	    // a new one (and give an error for an existing import).
+	    imported = find_imported(name, len, cctx);
+	    if (imported != NULL
+		    && (imported->imp_flags & IMP_FLAGS_RELOAD)
+		    && imported->imp_sid == sid
+		    && (idx >= 0
+			? (equal_type(imported->imp_type, type)
+			    && imported->imp_var_vals_idx == idx)
+			: (equal_type(imported->imp_type, ufunc->uf_func_type)
+			    && STRCMP(imported->imp_funcname,
+							ufunc->uf_name) == 0)))
 	    {
-		imported->imp_type = type;
-		imported->imp_var_vals_idx = idx;
+		imported->imp_flags &= ~IMP_FLAGS_RELOAD;
 	    }
 	    else
 	    {
-		imported->imp_type = ufunc->uf_func_type;
-		imported->imp_funcname = ufunc->uf_name;
+		if (check_defined(name, len, cctx) == FAIL)
+		    goto erret;
+
+		imported = new_imported(gap != NULL ? gap
+				       : &SCRIPT_ITEM(import_sid)->sn_imports);
+		if (imported == NULL)
+		    goto erret;
+
+		// TODO: check for "as" following
+		// imported->imp_name = vim_strsave(as_name);
+		imported->imp_name = name;
+		((char_u **)names.ga_data)[i] = NULL;
+		imported->imp_sid = sid;
+		if (idx >= 0)
+		{
+		    imported->imp_type = type;
+		    imported->imp_var_vals_idx = idx;
+		}
+		else
+		{
+		    imported->imp_type = ufunc->uf_func_type;
+		    imported->imp_funcname = ufunc->uf_name;
+		}
 	    }
 	}
     }
@@ -511,7 +600,6 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
     char_u	    *name;
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
     type_T	    *type;
-    int		    called_emsg_before = called_emsg;
     typval_T	    init_tv;
 
     if (eap->cmdidx == CMD_final || eap->cmdidx == CMD_const)
@@ -548,8 +636,8 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
 
     // parse type
     p = skipwhite(p + 1);
-    type = parse_type(&p, &si->sn_type_list);
-    if (called_emsg != called_emsg_before)
+    type = parse_type(&p, &si->sn_type_list, TRUE);
+    if (type == NULL)
     {
 	vim_free(name);
 	return p;
@@ -571,36 +659,44 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
 /*
  * Vim9 part of adding a script variable: add it to sn_all_vars (lookup by name
  * with a hashtable) and sn_var_vals (lookup by index).
- * When "type" is NULL use "tv" for the type.
+ * When "create" is TRUE this is a new variable, otherwise find and update an
+ * existing variable.
+ * "flags" can have ASSIGN_FINAL or ASSIGN_CONST.
+ * When "*type" is NULL use "tv" for the type and update "*type".
  */
     void
-add_vim9_script_var(dictitem_T *di, typval_T *tv, type_T *type)
+update_vim9_script_var(
+	int	    create,
+	dictitem_T  *di,
+	int	    flags,
+	typval_T    *tv,
+	type_T	    **type)
 {
-    scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
+    scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
+    hashitem_T	    *hi;
+    svar_T	    *sv;
 
-    // Store a pointer to the typval_T, so that it can be found by
-    // index instead of using a hastab lookup.
-    if (ga_grow(&si->sn_var_vals, 1) == OK)
+    if (create)
     {
-	svar_T *sv = ((svar_T *)si->sn_var_vals.ga_data)
-						      + si->sn_var_vals.ga_len;
-	hashitem_T *hi;
-	sallvar_T *newsav = (sallvar_T *)alloc_clear(
-				       sizeof(sallvar_T) + STRLEN(di->di_key));
+	sallvar_T	    *newsav;
 
+	// Store a pointer to the typval_T, so that it can be found by index
+	// instead of using a hastab lookup.
+	if (ga_grow(&si->sn_var_vals, 1) == FAIL)
+	    return;
+
+	sv = ((svar_T *)si->sn_var_vals.ga_data) + si->sn_var_vals.ga_len;
+	newsav = (sallvar_T *)alloc_clear(
+				       sizeof(sallvar_T) + STRLEN(di->di_key));
 	if (newsav == NULL)
 	    return;
 
 	sv->sv_tv = &di->di_tv;
-	if (type == NULL)
-	    sv->sv_type = typval2type(tv, &si->sn_type_list);
-	else
-	    sv->sv_type = type;
-	sv->sv_const = (di->di_flags & DI_FLAGS_LOCK) ? ASSIGN_CONST : 0;
+	sv->sv_const = (flags & ASSIGN_FINAL) ? ASSIGN_FINAL
+				   : (flags & ASSIGN_CONST) ? ASSIGN_CONST : 0;
 	sv->sv_export = is_export;
 	newsav->sav_var_vals_idx = si->sn_var_vals.ga_len;
 	++si->sn_var_vals.ga_len;
-
 	STRCPY(&newsav->sav_key, di->di_key);
 	sv->sv_name = newsav->sav_key;
 	newsav->sav_di = di;
@@ -619,10 +715,20 @@ add_vim9_script_var(dictitem_T *di, typval_T *tv, type_T *type)
 	else
 	    // new variable name
 	    hash_add(&si->sn_all_vars.dv_hashtab, newsav->sav_key);
-
-	// let ex_export() know the export worked.
-	is_export = FALSE;
     }
+    else
+    {
+	sv = find_typval_in_script(&di->di_tv);
+    }
+    if (sv != NULL)
+    {
+	if (*type == NULL)
+	    *type = typval2type(tv, &si->sn_type_list);
+	sv->sv_type = *type;
+    }
+
+    // let ex_export() know the export worked.
+    is_export = FALSE;
 }
 
 /*
@@ -720,6 +826,9 @@ free_all_script_vars(scriptitem_T *si)
     hash_init(ht);
 
     ga_clear(&si->sn_var_vals);
+
+    // existing commands using script variable indexes are no longer valid
+    si->sn_script_seq = current_sctx.sc_seq;
 }
 
 /*
@@ -762,7 +871,7 @@ check_script_var_type(typval_T *dest, typval_T *value, char_u *name)
 
     if (sv != NULL)
     {
-	if (sv->sv_const)
+	if (sv->sv_const != 0)
 	{
 	    semsg(_(e_readonlyvar), name);
 	    return FAIL;

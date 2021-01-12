@@ -21,8 +21,8 @@ typedef struct ucmd
     long	uc_def;		// The default value for a range/count
     int		uc_compl;	// completion type
     cmd_addr_T	uc_addr_type;	// The command's address type
-# ifdef FEAT_EVAL
     sctx_T	uc_script_ctx;	// SCTX where the command was defined
+# ifdef FEAT_EVAL
     char_u	*uc_compl_arg;	// completion argument if any
 # endif
 } ucmd_T;
@@ -954,8 +954,8 @@ uc_add_command(
     cmd->uc_argt = argt;
     cmd->uc_def = def;
     cmd->uc_compl = compl;
-#ifdef FEAT_EVAL
     cmd->uc_script_ctx = current_sctx;
+#ifdef FEAT_EVAL
     cmd->uc_script_ctx.sc_lnum += SOURCING_LNUM;
     cmd->uc_compl_arg = compl_arg;
 #endif
@@ -1573,9 +1573,7 @@ do_ucmd(exarg_T *eap)
     size_t	split_len = 0;
     char_u	*split_buf = NULL;
     ucmd_T	*cmd;
-#ifdef FEAT_EVAL
     sctx_T	save_current_sctx = current_sctx;
-#endif
 
     if (eap->cmdidx == CMD_USER)
 	cmd = USER_CMD(eap->useridx);
@@ -1674,15 +1672,13 @@ do_ucmd(exarg_T *eap)
 	}
     }
 
+    current_sctx.sc_version = cmd->uc_script_ctx.sc_version;
 #ifdef FEAT_EVAL
     current_sctx.sc_sid = cmd->uc_script_ctx.sc_sid;
-    current_sctx.sc_version = cmd->uc_script_ctx.sc_version;
 #endif
     (void)do_cmdline(buf, eap->getline, eap->cookie,
 				   DOCMD_VERBOSE|DOCMD_NOWAIT|DOCMD_KEYTYPED);
-#ifdef FEAT_EVAL
     current_sctx = save_current_sctx;
-#endif
     vim_free(buf);
     vim_free(split_buf);
 }

@@ -18,7 +18,7 @@ char_u *tv_get_string_buf_chk(typval_T *varp, char_u *buf);
 char_u *tv_stringify(typval_T *varp, char_u *buf);
 int tv_check_lock(typval_T *tv, char_u *name, int use_gettext);
 void copy_tv(typval_T *from, typval_T *to);
-int typval_compare(typval_T *typ1, typval_T *typ2, exptype_T type, int ic);
+int typval_compare(typval_T *typ1, typval_T *typ2, exprtype_T type, int ic);
 char_u *typval_tostring(typval_T *arg);
 int tv_islocked(typval_T *tv);
 int tv_equal(typval_T *tv1, typval_T *tv2, int ic, int recursive);

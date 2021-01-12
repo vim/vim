@@ -7113,13 +7113,12 @@ mch_fopen(const char *name, const char *mode)
 /*
  * SUB STREAM (aka info stream) handling:
  *
- * NTFS can have sub streams for each file.  Normal contents of file is
- * stored in the main stream, and extra contents (author information and
- * title and so on) can be stored in sub stream.  After Windows 2000, user
- * can access and store those informations in sub streams via explorer's
- * property menuitem in right click menu.  Those informations in sub streams
- * were lost when copying only the main stream.  So we have to copy sub
- * streams.
+ * NTFS can have sub streams for each file.  The normal contents of a file is
+ * stored in the main stream, and extra contents (author information, title and
+ * so on) can be stored in a sub stream.  After Windows 2000, the user can
+ * access and store this information in sub streams via an explorer's property
+ * menu item in the right click menu.  This information in sub streams was lost
+ * when copying only the main stream.  Therefore we have to copy sub streams.
  *
  * Incomplete explanation:
  *	http://msdn.microsoft.com/library/en-us/dnw2k/html/ntfs5.asp

@@ -3525,7 +3525,7 @@ find_replace_callback(
 	char_u	*save_cpo = p_cpo;
 
 	// No need to be Vi compatible here.
-	p_cpo = (char_u *)"";
+	p_cpo = empty_option;
 	u_undo(1);
 	p_cpo = save_cpo;
 	gui_update_screen();

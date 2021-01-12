@@ -437,9 +437,9 @@ fi
 
 dnl Set QUOTESED. Needs additional backslashes on zOS
 if test "$zOSUnix" = "yes"; then
-    QUOTESED="sed -e 's/[[\\\\\"]]/\\\\\\\\&/g' -e 's/\\\\\\\\\"/\"/' -e 's/\\\\\\\\\";\$\$/\";/'"
+    QUOTESED="sed -e 's/[[\\\\\"]]/\\\\\\\\&/g' -e 's/\\\\\\\\\"/\"/' -e 's/\\\\\\\\\";\$\$/\";/' -e 's/  */ /g'"
 else
-    QUOTESED="sed -e 's/[[\\\\\"]]/\\\\&/g' -e 's/\\\\\"/\"/' -e 's/\\\\\";\$\$/\";/'"
+    QUOTESED="sed -e 's/[[\\\\\"]]/\\\\&/g' -e 's/\\\\\"/\"/' -e 's/\\\\\";\$\$/\";/' -e 's/  */ /g'"
 fi
 AC_SUBST(QUOTESED)
 
@@ -2000,6 +2000,9 @@ if test "$enable_rubyinterp" = "yes" -o "$enable_rubyinterp" = "dynamic"; then
 	  AC_DEFINE(DYNAMIC_RUBY)
 	  RUBY_CFLAGS="-DDYNAMIC_RUBY_DLL=\\\"$libruby_soname\\\" $RUBY_CFLAGS"
 	  RUBY_LIBS=
+	fi
+	if test "X$CLANG_VERSION" != "X" -a "$rubyversion" -ge 30; then
+	  RUBY_CFLAGS="$RUBY_CFLAGS -fdeclspec"
 	fi
       else
 	AC_MSG_RESULT(not found; disabling Ruby)

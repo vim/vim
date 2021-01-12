@@ -73,6 +73,16 @@ func Test_client_server()
 
   call assert_fails('call remote_send("XXX", ":let testvar = ''yes''\<CR>")', 'E241:')
 
+  call writefile(['one'], 'Xclientfile')
+  let cmd = GetVimProg() .. ' --servername ' .. name .. ' --remote Xclientfile'
+  call system(cmd)
+  call WaitForAssert({-> assert_equal('Xclientfile', remote_expr(name, "bufname()", "", 2))})
+  call WaitForAssert({-> assert_equal('one', remote_expr(name, "getline(1)", "", 2))})
+  call writefile(['one', 'two'], 'Xclientfile')
+  call system(cmd)
+  call WaitForAssert({-> assert_equal('two', remote_expr(name, "getline(2)", "", 2))})
+  call delete('Xclientfile')
+
   " Expression evaluated locally.
   if v:servername == ''
     eval 'MYSELF'->remote_startserver()
@@ -125,19 +135,19 @@ func Test_client_server()
 
     " Edit multiple files using --remote
     call system(cmd .. ' --remote Xfile1 Xfile2 Xfile3')
-    call assert_equal("Xfile1\nXfile2\nXfile3\n", remote_expr(name, 'argv()'))
+    call assert_match(".*Xfile1\n.*Xfile2\n.*Xfile3\n", remote_expr(name, 'argv()'))
     eval name->remote_send(":%bw!\<CR>")
 
     " Edit files in separate tab pages
     call system(cmd .. ' --remote-tab Xfile1 Xfile2 Xfile3')
     call WaitForAssert({-> assert_equal('3', remote_expr(name, 'tabpagenr("$")'))})
-    call assert_equal('Xfile2', remote_expr(name, 'bufname(tabpagebuflist(2)[0])'))
+    call assert_match('.*\<Xfile2', remote_expr(name, 'bufname(tabpagebuflist(2)[0])'))
     eval name->remote_send(":%bw!\<CR>")
 
     " Edit a file using --remote-wait
     eval name->remote_send(":source $VIMRUNTIME/plugin/rrhelper.vim\<CR>")
     call system(cmd .. ' --remote-wait +enew Xfile1')
-    call assert_equal("Xfile1", remote_expr(name, 'bufname("#")'))
+    call assert_match('.*\<Xfile1', remote_expr(name, 'bufname("#")'))
     eval name->remote_send(":%bw!\<CR>")
 
     " Edit files using --remote-tab-wait

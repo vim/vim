@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.2.  Last change: 2020 Nov 25
+*terminal.txt*	For Vim version 8.2.  Last change: 2021 Jan 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -742,6 +742,9 @@ term_setapi({buf}, {expr})				*term_setapi()*
 		The default is "Tapi_".  When {expr} is an empty string then
 		no |terminal-api| function can be used for {buf}.
 
+		When used as a method the base is used for {buf}: >
+			GetBufnr()->term_setapi({expr})
+
 term_setansicolors({buf}, {colors})			*term_setansicolors()*
 		Set the ANSI color palette used by terminal {buf}.
 		{colors} must be a List of 16 valid color names or hexadecimal
@@ -1327,6 +1330,8 @@ Other commands ~
  *:Program*    jump to the window with the running program
  *:Source*     jump to the window with the source code, create it if there
 	     isn't one
+ *:Asm*	     jump to the window with the disassembly, create it if there
+	     isn't one
 
 
 Prompt mode ~
@@ -1349,6 +1354,12 @@ Prompt mode can be used even when the |+terminal| feature is present with: >
 The K key is normally mapped to :Evaluate. If you do not want this use: >
 	let g:termdebug_map_K = 0
 
+<
+						*termdebug_disasm_window*
+If you want the Asm window shown by default, set this to 1. Setting to
+any value greater than 1 will set the Asm window height to that value: >
+	let g:termdebug_disasm_window = 15
+<
 
 Communication ~
 						*termdebug-communication*

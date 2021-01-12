@@ -16,9 +16,12 @@
 #if defined(__TANDEM)
 # include <limits.h>		// for SSIZE_MAX
 #endif
-#if defined(UNIX) && defined(FEAT_EVAL)
+#if (defined(UNIX) || defined(VMS)) && defined(FEAT_EVAL)
 # include <pwd.h>
 # include <grp.h>
+#endif
+#if defined(VMS) && defined(HAVE_XOS_R_H)
+# include <x11/xos_r.h>
 #endif
 
 // Is there any system that doesn't have access()?
@@ -338,7 +341,7 @@ readfile(
 
     if (!read_stdin && !read_buffer && !read_fifo)
     {
-#ifdef UNIX
+#if defined(UNIX) || defined(VMS)
 	/*
 	 * On Unix it is possible to read a directory, so we have to
 	 * check for it before the mch_open().
@@ -2280,6 +2283,7 @@ failed:
     else
     {
 	int fdflags = fcntl(fd, F_GETFD);
+
 	if (fdflags >= 0 && (fdflags & FD_CLOEXEC) == 0)
 	    (void)fcntl(fd, F_SETFD, fdflags | FD_CLOEXEC);
     }
@@ -4622,11 +4626,13 @@ create_readdirex_item(char_u *path, char_u *name)
 	    q = (char_u*)pw->pw_name;
 	if (dict_add_string(item, "user", q) == FAIL)
 	    goto theend;
+#  if !defined(VMS) || (defined(VMS) && defined(HAVE_XOS_R_H))
 	gr = getgrgid(st.st_gid);
 	if (gr == NULL)
 	    q = (char_u*)"";
 	else
 	    q = (char_u*)gr->gr_name;
+#  endif
 	if (dict_add_string(item, "group", q) == FAIL)
 	    goto theend;
     }

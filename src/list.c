@@ -270,6 +270,7 @@ list_free_list(list_T  *l)
     if (l->lv_used_next != NULL)
 	l->lv_used_next->lv_used_prev = l->lv_used_prev;
 
+    free_type(l->lv_type);
     vim_free(l);
 }
 
@@ -689,13 +690,17 @@ list_append_number(list_T *l, varnumber_T n)
 /*
  * Insert typval_T "tv" in list "l" before "item".
  * If "item" is NULL append at the end.
- * Return FAIL when out of memory.
+ * Return FAIL when out of memory or the type is wrong.
  */
     int
 list_insert_tv(list_T *l, typval_T *tv, listitem_T *item)
 {
-    listitem_T	*ni = listitem_alloc();
+    listitem_T	*ni;
 
+    if (l->lv_type != NULL && l->lv_type->tt_member != NULL
+		    && check_typval_type(l->lv_type->tt_member, tv, 0) == FAIL)
+	return FAIL;
+    ni = listitem_alloc();
     if (ni == NULL)
 	return FAIL;
     copy_tv(tv, &ni->li_tv);
@@ -919,7 +924,7 @@ list_slice_or_index(
 	if (!range)
 	{
 	    if (verbose)
-		semsg(_(e_listidx), n1);
+		semsg(_(e_listidx), n1_arg);
 	    return FAIL;
 	}
 	n1 = n1 < 0 ? 0 : len;
@@ -2183,10 +2188,13 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 		int		stride = l->lv_u.nonmat.lv_stride;
 
 		// List from range(): loop over the numbers
-		l->lv_first = NULL;
-		l->lv_u.mat.lv_last = NULL;
-		l->lv_len = 0;
-		l->lv_u.mat.lv_idx_item = NULL;
+		if (filtermap != FILTERMAP_MAPNEW)
+		{
+		    l->lv_first = NULL;
+		    l->lv_u.mat.lv_last = NULL;
+		    l->lv_len = 0;
+		    l->lv_u.mat.lv_idx_item = NULL;
+		}
 
 		for (idx = 0; idx < len; ++idx)
 		{
@@ -2693,7 +2701,7 @@ f_reverse(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "reduce(list, { accumlator, element -> value } [, initial])" function
+ * "reduce(list, { accumulator, element -> value } [, initial])" function
  */
     void
 f_reduce(typval_T *argvars, typval_T *rettv)
