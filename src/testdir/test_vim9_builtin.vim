@@ -800,6 +800,11 @@ def Test_timer_paused()
   timer_stop(id)
 enddef
 
+def Test_win_execute()
+  assert_equal("\n" .. winnr(), win_execute(win_getid(), 'echo winnr()'))
+  assert_equal('', win_execute(342343, 'echo winnr()'))
+enddef
+
 def Test_win_splitmove()
   split
   win_splitmove(1, 2, {vertical: true, rightbelow: true})

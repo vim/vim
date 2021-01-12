@@ -673,6 +673,10 @@ f_win_execute(typval_T *argvars, typval_T *rettv)
     win_T	*save_curwin;
     tabpage_T	*save_curtab;
 
+    // Return an empty string if something fails.
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+
     if (wp != NULL && tp != NULL)
     {
 	pos_T	curpos = wp->w_cursor;
