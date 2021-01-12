@@ -243,6 +243,16 @@ def Test_extend_arg_types()
   CheckDefFailure(['extend({a: 1}, {b: 2}, 1)'], 'E1013: Argument 3: type mismatch, expected string but got number')
 enddef
 
+def Test_extendnew()
+  assert_equal([1, 2, 'a'], extendnew([1, 2], ['a']))
+  assert_equal({one: 1, two: 'a'}, extendnew({one: 1}, {two: 'a'}))
+
+  CheckDefFailure(['extendnew({a: 1}, 42)'], 'E1013: Argument 2: type mismatch, expected dict<number> but got number')
+  CheckDefFailure(['extendnew({a: 1}, [42])'], 'E1013: Argument 2: type mismatch, expected dict<number> but got list<number>')
+  CheckDefFailure(['extendnew([1, 2], "x")'], 'E1013: Argument 2: type mismatch, expected list<number> but got string')
+  CheckDefFailure(['extendnew([1, 2], {x: 1})'], 'E1013: Argument 2: type mismatch, expected list<number> but got dict<number>')
+enddef
+
 def Test_extend_return_type()
   var l = extend([1, 2], [3])
   var res = 0

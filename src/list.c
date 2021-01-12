@@ -2454,14 +2454,11 @@ f_count(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "extend(list, list [, idx])" function
- * "extend(dict, dict [, action])" function
+ * "extend()" or "extendnew()" function.  "is_new" is TRUE for extendnew().
  */
-    void
-f_extend(typval_T *argvars, typval_T *rettv)
+    static void
+extend(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg, int is_new)
 {
-    char_u      *arg_errmsg = (char_u *)N_("extend() argument");
-
     if (argvars[0].v_type == VAR_LIST && argvars[1].v_type == VAR_LIST)
     {
 	list_T		*l1, *l2;
@@ -2476,8 +2473,16 @@ f_extend(typval_T *argvars, typval_T *rettv)
 	    return;
 	}
 	l2 = argvars[1].vval.v_list;
-	if (!value_check_lock(l1->lv_lock, arg_errmsg, TRUE) && l2 != NULL)
+	if ((is_new || !value_check_lock(l1->lv_lock, arg_errmsg, TRUE))
+								 && l2 != NULL)
 	{
+	    if (is_new)
+	    {
+		l1 = list_copy(l1, FALSE, get_copyID());
+		if (l1 == NULL)
+		    return;
+	    }
+
 	    if (argvars[2].v_type != VAR_UNKNOWN)
 	    {
 		before = (long)tv_get_number_chk(&argvars[2], &error);
@@ -2500,7 +2505,14 @@ f_extend(typval_T *argvars, typval_T *rettv)
 		item = NULL;
 	    list_extend(l1, l2, item);
 
-	    copy_tv(&argvars[0], rettv);
+	    if (is_new)
+	    {
+		rettv->v_type = VAR_LIST;
+		rettv->vval.v_list = l1;
+		rettv->v_lock = FALSE;
+	    }
+	    else
+		copy_tv(&argvars[0], rettv);
 	}
     }
     else if (argvars[0].v_type == VAR_DICT && argvars[1].v_type == VAR_DICT)
@@ -2516,8 +2528,16 @@ f_extend(typval_T *argvars, typval_T *rettv)
 	    return;
 	}
 	d2 = argvars[1].vval.v_dict;
-	if (!value_check_lock(d1->dv_lock, arg_errmsg, TRUE) && d2 != NULL)
+	if ((is_new || !value_check_lock(d1->dv_lock, arg_errmsg, TRUE))
+								 && d2 != NULL)
 	{
+	    if (is_new)
+	    {
+		d1 = dict_copy(d1, FALSE, get_copyID());
+		if (d1 == NULL)
+		    return;
+	    }
+
 	    // Check the third argument.
 	    if (argvars[2].v_type != VAR_UNKNOWN)
 	    {
@@ -2540,11 +2560,42 @@ f_extend(typval_T *argvars, typval_T *rettv)
 
 	    dict_extend(d1, d2, action);
 
-	    copy_tv(&argvars[0], rettv);
+	    if (is_new)
+	    {
+		rettv->v_type = VAR_DICT;
+		rettv->vval.v_dict = d1;
+		rettv->v_lock = FALSE;
+	    }
+	    else
+		copy_tv(&argvars[0], rettv);
 	}
     }
     else
-	semsg(_(e_listdictarg), "extend()");
+	semsg(_(e_listdictarg), is_new ? "extendnew()" : "extend()");
+}
+
+/*
+ * "extend(list, list [, idx])" function
+ * "extend(dict, dict [, action])" function
+ */
+    void
+f_extend(typval_T *argvars, typval_T *rettv)
+{
+    char_u      *errmsg = (char_u *)N_("extend() argument");
+
+    extend(argvars, rettv, errmsg, FALSE);
+}
+
+/*
+ * "extendnew(list, list [, idx])" function
+ * "extendnew(dict, dict [, action])" function
+ */
+    void
+f_extendnew(typval_T *argvars, typval_T *rettv)
+{
+    char_u      *errmsg = (char_u *)N_("extendnew() argument");
+
+    extend(argvars, rettv, errmsg, TRUE);
 }
 
 /*

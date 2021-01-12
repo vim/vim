@@ -52,6 +52,7 @@ void f_mapnew(typval_T *argvars, typval_T *rettv);
 void f_add(typval_T *argvars, typval_T *rettv);
 void f_count(typval_T *argvars, typval_T *rettv);
 void f_extend(typval_T *argvars, typval_T *rettv);
+void f_extendnew(typval_T *argvars, typval_T *rettv);
 void f_insert(typval_T *argvars, typval_T *rettv);
 void f_remove(typval_T *argvars, typval_T *rettv);
 void f_reverse(typval_T *argvars, typval_T *rettv);
