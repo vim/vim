@@ -3016,7 +3016,8 @@ tr({src}, {fromstr}, {tostr})	String	translate chars of {src} in {fromstr}
 trim({text} [, {mask} [, {dir}]])
 				String	trim characters in {mask} from {text}
 trunc({expr})			Float	truncate Float {expr}
-type({name})			Number	type of variable {name}
+type({expr})			Number	type of value {expr}
+typename({expr})		String	representation of the type of {expr}
 undofile({name})		String	undo file name for {name}
 undotree()			List	undo file tree
 uniq({list} [, {func} [, {dict}]])
@@ -11128,6 +11129,14 @@ type({expr})	The result is a Number representing the type of {expr}.
 
 <		Can also be used as a |method|: >
 			mylist->type()
+
+
+typename({expr})					*typename()*
+		Return a string representation of the type of {expr}.
+		Example: >
+			echo typename([1, 2, 3])
+			list<number>
+
 
 undofile({name})					*undofile()*
 		Return the name of the undo file that would be used for a file

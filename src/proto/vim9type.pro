@@ -24,4 +24,5 @@ void common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap
 type_T *get_member_type_from_stack(type_T **stack_top, int count, int skip, garray_T *type_gap);
 char *vartype_name(vartype_T type);
 char *type_name(type_T *type, char **tofree);
+void f_typename(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

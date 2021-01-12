@@ -318,8 +318,8 @@ def Test_job_info_return_type()
   if has('job')
     job_start(&shell)
     var jobs = job_info()
-    assert_equal(v:t_list, type(jobs))
-    assert_equal(v:t_dict, type(job_info(jobs[0])))
+    assert_equal('list<job>', typename(jobs))
+    assert_equal('dict<any>', typename(job_info(jobs[0])))
     job_stop(jobs[0])
   endif
 enddef

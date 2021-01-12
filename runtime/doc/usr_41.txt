@@ -720,7 +720,8 @@ Other computation:					*bitwise-function*
 	srand()			initialize seed used by rand()
 
 Variables:						*var-functions*
-	type()			type of a variable
+	type()			type of a variable as a number
+	typename()		type of a variable as text
 	islocked()		check if a variable is locked
 	funcref()		get a Funcref for a function reference
 	function()		get a Funcref for a function name

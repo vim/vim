@@ -1170,4 +1170,29 @@ type_name(type_T *type, char **tofree)
     return name;
 }
 
+/*
+ * "typename(expr)" function
+ */
+    void
+f_typename(typval_T *argvars, typval_T *rettv)
+{
+    garray_T	type_list;
+    type_T	*type;
+    char	*tofree;
+    char	*name;
+
+    rettv->v_type = VAR_STRING;
+    ga_init2(&type_list, sizeof(type_T *), 10);
+    type = typval2type(argvars, &type_list);
+    name = type_name(type, &tofree);
+    if (tofree != NULL)
+	rettv->vval.v_string = (char_u *)tofree;
+    else
+    {
+	rettv->vval.v_string = vim_strsave((char_u *)name);
+	vim_free(tofree);
+    }
+    clear_type_list(&type_list);
+}
+
 #endif // FEAT_EVAL

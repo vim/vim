@@ -1742,6 +1742,8 @@ static funcentry_T global_functions[] =
 			ret_float,	    FLOAT_FUNC(f_trunc)},
     {"type",		1, 1, FEARG_1,	    NULL,
 			ret_number,	    f_type},
+    {"typename",	1, 1, FEARG_1,	    NULL,
+			ret_string,	    f_typename},
     {"undofile",	1, 1, FEARG_1,	    NULL,
 			ret_string,	    f_undofile},
     {"undotree",	0, 0, 0,	    NULL,
