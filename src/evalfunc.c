@@ -472,6 +472,13 @@ ret_dict_any(int argcount UNUSED, type_T **argtypes UNUSED)
     return &t_dict_any;
 }
     static type_T *
+ret_job_info(int argcount, type_T **argtypes UNUSED)
+{
+    if (argcount == 0)
+	return &t_list_job;
+    return &t_dict_any;
+}
+    static type_T *
 ret_dict_number(int argcount UNUSED, type_T **argtypes UNUSED)
 {
     return &t_dict_number;
@@ -1100,7 +1107,7 @@ static funcentry_T global_functions[] =
     {"job_getchannel",	1, 1, FEARG_1,	    NULL,
 			ret_channel,	    JOB_FUNC(f_job_getchannel)},
     {"job_info",	0, 1, FEARG_1,	    NULL,
-			ret_dict_any,	    JOB_FUNC(f_job_info)},
+			ret_job_info,	    JOB_FUNC(f_job_info)},
     {"job_setoptions",	2, 2, FEARG_1,	    NULL,
 			ret_void,	    JOB_FUNC(f_job_setoptions)},
     {"job_start",	1, 2, FEARG_1,	    NULL,

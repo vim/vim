@@ -314,6 +314,16 @@ def Test_extend_list_item_type()
   CheckScriptFailure(['vim9script'] + lines, 'E1012:', 1)
 enddef
 
+def Test_job_info_return_type()
+  if has('job')
+    job_start(&shell)
+    var jobs = job_info()
+    assert_equal(v:t_list, type(jobs))
+    assert_equal(v:t_dict, type(job_info(jobs[0])))
+    job_stop(jobs[0])
+  endif
+enddef
+
 def Wrong_dict_key_type(items: list<number>): list<number>
   return filter(items, (_, val) => get({[val]: 1}, 'x'))
 enddef
