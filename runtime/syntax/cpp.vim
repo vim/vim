@@ -9,6 +9,9 @@ if exists("b:current_syntax")
   finish
 endif
 
+" inform C syntax that the file was included from cpp.vim
+let b:filetype_in_cpp_family = 1
+
 " Read the C syntax to start with
 runtime! syntax/c.vim
 unlet b:current_syntax
