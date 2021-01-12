@@ -754,7 +754,7 @@ call_partial(typval_T *tv, int argcount_arg, ectx_T *ectx)
     int		argcount = argcount_arg;
     char_u	*name = NULL;
     int		called_emsg_before = called_emsg;
-    int		res;
+    int		res = FAIL;
 
     if (tv->v_type == VAR_PARTIAL)
     {
@@ -800,7 +800,7 @@ call_partial(typval_T *tv, int argcount_arg, ectx_T *ectx)
 	vim_free(tofree);
     }
 
-    if (name == NULL || res == FAIL)
+    if (res == FAIL)
     {
 	if (called_emsg == called_emsg_before)
 	    semsg(_(e_unknownfunc),
