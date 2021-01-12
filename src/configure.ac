@@ -2583,6 +2583,7 @@ AC_DEFUN(AM_PATH_GTK,
 	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
     }
     else
+      AC_MSG_CHECKING(for GTK+ 2 or 3)
       no_gtk=yes
     fi
 
