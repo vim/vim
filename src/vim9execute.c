@@ -965,10 +965,11 @@ char_idx2byte(char_u *str, size_t str_len, varnumber_T idx)
 
 /*
  * Return the slice "str[first:last]" using character indexes.
+ * "exclusive" is TRUE for slice().
  * Return NULL when the result is empty.
  */
     char_u *
-string_slice(char_u *str, varnumber_T first, varnumber_T last)
+string_slice(char_u *str, varnumber_T first, varnumber_T last, int exclusive)
 {
     long	start_byte, end_byte;
     size_t	slen;
@@ -979,12 +980,12 @@ string_slice(char_u *str, varnumber_T first, varnumber_T last)
     start_byte = char_idx2byte(str, slen, first);
     if (start_byte < 0)
 	start_byte = 0; // first index very negative: use zero
-    if (last == -1)
+    if ((last == -1 && !exclusive) || last == VARNUM_MAX)
 	end_byte = (long)slen;
     else
     {
 	end_byte = char_idx2byte(str, slen, last);
-	if (end_byte >= 0 && end_byte < (long)slen)
+	if (!exclusive && end_byte >= 0 && end_byte < (long)slen)
 	    // end index is inclusive
 	    end_byte += MB_CPTR2LEN(str + end_byte);
     }
@@ -2992,7 +2993,7 @@ call_def_function(
 		    tv = STACK_TV_BOT(-1);
 		    if (is_slice)
 			// Slice: Select the characters from the string
-			res = string_slice(tv->vval.v_string, n1, n2);
+			res = string_slice(tv->vval.v_string, n1, n2, FALSE);
 		    else
 			// Index: The resulting variable is a string of a
 			// single character.  If the index is too big or
@@ -3030,8 +3031,8 @@ call_def_function(
 		    ectx.ec_stack.ga_len -= is_slice ? 2 : 1;
 		    tv = STACK_TV_BOT(-1);
 		    SOURCING_LNUM = iptr->isn_lnum;
-		    if (list_slice_or_index(list, is_slice, n1, n2, tv, TRUE)
-								       == FAIL)
+		    if (list_slice_or_index(list, is_slice, n1, n2, FALSE,
+							     tv, TRUE) == FAIL)
 			goto on_error;
 		}
 		break;
@@ -3052,8 +3053,8 @@ call_def_function(
 			goto on_error;
 		    var1 = is_slice ? STACK_TV_BOT(-2) : STACK_TV_BOT(-1);
 		    var2 = is_slice ? STACK_TV_BOT(-1) : NULL;
-		    res = eval_index_inner(tv, is_slice,
-						   var1, var2, NULL, -1, TRUE);
+		    res = eval_index_inner(tv, is_slice, var1, var2,
+							FALSE, NULL, -1, TRUE);
 		    clear_tv(var1);
 		    if (is_slice)
 			clear_tv(var2);

@@ -905,14 +905,15 @@ list_slice(list_T *ol, long n1, long n2)
 list_slice_or_index(
 	    list_T	*list,
 	    int		range,
-	    long	n1_arg,
-	    long	n2_arg,
+	    varnumber_T	n1_arg,
+	    varnumber_T	n2_arg,
+	    int		exclusive,
 	    typval_T	*rettv,
 	    int		verbose)
 {
     long	len = list_len(list);
-    long	n1 = n1_arg;
-    long	n2 = n2_arg;
+    varnumber_T	n1 = n1_arg;
+    varnumber_T	n2 = n2_arg;
     typval_T	var1;
 
     if (n1 < 0)
@@ -936,7 +937,9 @@ list_slice_or_index(
 	if (n2 < 0)
 	    n2 = len + n2;
 	else if (n2 >= len)
-	    n2 = len - 1;
+	    n2 = len - (exclusive ? 0 : 1);
+	if (exclusive)
+	    --n2;
 	if (n2 < 0 || n2 + 1 < n1)
 	    n2 = -1;
 	l = list_slice(list, n1, n2);

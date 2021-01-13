@@ -1500,6 +1500,8 @@ static funcentry_T global_functions[] =
 			ret_float,	    FLOAT_FUNC(f_sin)},
     {"sinh",		1, 1, FEARG_1,	    NULL,
 			ret_float,	    FLOAT_FUNC(f_sinh)},
+    {"slice",		2, 3, FEARG_1,	    NULL,
+			ret_first_arg,	    f_slice},
     {"sort",		1, 3, FEARG_1,	    NULL,
 			ret_first_arg,	    f_sort},
     {"sound_clear",	0, 0, 0,	    NULL,

@@ -314,6 +314,9 @@ similar to -1. >
 	:let shortlist = mylist[2:2]	" List with one item: [3]
 	:let otherlist = mylist[:]	" make a copy of the List
 
+Notice that the last index is inclusive.  If you prefer using an exclusive
+index use the |slice()| method.
+
 If the first index is beyond the last item of the List or the second item is
 before the first item, the result is an empty list.  There is no error
 message.
@@ -1216,6 +1219,9 @@ a Number it is first converted to a String.
 
 In Vim9 script the indexes are character indexes.  To use byte indexes use
 |strpart()|.
+
+The item at index expr1b is included, it is inclusive.  For an exclusive index
+use the |slice()| function.
 
 If expr1a is omitted zero is used.  If expr1b is omitted the length of the
 string minus one is used.
@@ -2884,6 +2890,8 @@ sign_unplacelist({list})	List	unplace a list of signs
 simplify({filename})		String	simplify filename as much as possible
 sin({expr})			Float	sine of {expr}
 sinh({expr})			Float	hyperbolic sine of {expr}
+slice({expr}, {start} [, {end}])  String, List or Blob
+					slice of a String, List or Blob
 sort({list} [, {func} [, {dict}]])
 				List	sort {list}, using {func} to compare
 sound_clear()			none	stop playing all sounds
@@ -9860,6 +9868,18 @@ sinh({expr})						*sinh()*
 			Compute()->sinh()
 <
 		{only available when compiled with the |+float| feature}
+
+
+slice({expr}, {start} [, {end}])			*slice()* 
+		Similar to using a |slice| "expr[start : end]", but "end" is
+		used exclusive.  And for a string the indexes are used as
+		character indexes instead of byte indexes, like in
+		|vim9script|.
+		When {end} is omitted the slice continues to the last item.
+		When {end} is -1 the last item is omitted.
+
+		Can also be used as a |method|: >
+			GetList()->slice(offset)
 
 
 sort({list} [, {func} [, {dict}]])			*sort()* *E702*

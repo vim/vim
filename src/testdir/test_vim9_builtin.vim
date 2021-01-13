@@ -741,6 +741,29 @@ def Test_setreg()
   getreginfo('a')->assert_equal(reginfo)
 enddef 
 
+def Test_slice()
+  assert_equal('12345', slice('012345', 1))
+  assert_equal('123', slice('012345', 1, 4))
+  assert_equal('1234', slice('012345', 1, -1))
+  assert_equal('1', slice('012345', 1, -4))
+  assert_equal('', slice('012345', 1, -5))
+  assert_equal('', slice('012345', 1, -6))
+
+  assert_equal([1, 2, 3, 4, 5], slice(range(6), 1))
+  assert_equal([1, 2, 3], slice(range(6), 1, 4))
+  assert_equal([1, 2, 3, 4], slice(range(6), 1, -1))
+  assert_equal([1], slice(range(6), 1, -4))
+  assert_equal([], slice(range(6), 1, -5))
+  assert_equal([], slice(range(6), 1, -6))
+
+  assert_equal(0z1122334455, slice(0z001122334455, 1))
+  assert_equal(0z112233, slice(0z001122334455, 1, 4))
+  assert_equal(0z11223344, slice(0z001122334455, 1, -1))
+  assert_equal(0z11, slice(0z001122334455, 1, -4))
+  assert_equal(0z, slice(0z001122334455, 1, -5))
+  assert_equal(0z, slice(0z001122334455, 1, -6))
+enddef
+
 def Test_spellsuggest()
   if !has('spell')
     MissingFeature 'spell'

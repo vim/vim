@@ -3877,8 +3877,9 @@ eval_index(
     if (evaluate)
     {
 	int res = eval_index_inner(rettv, range,
-		empty1 ? NULL : &var1, empty2 ? NULL : &var2,
+		empty1 ? NULL : &var1, empty2 ? NULL : &var2, FALSE,
 		key, keylen, verbose);
+
 	if (!empty1)
 	    clear_tv(&var1);
 	if (range)
@@ -3938,9 +3939,26 @@ check_can_index(typval_T *rettv, int evaluate, int verbose)
 }
 
 /*
+ * slice() function
+ */
+    void
+f_slice(typval_T *argvars, typval_T *rettv)
+{
+    if (check_can_index(argvars, TRUE, FALSE) == OK)
+    {
+	copy_tv(argvars, rettv);
+	eval_index_inner(rettv, TRUE, argvars + 1,
+		argvars[2].v_type == VAR_UNKNOWN ? NULL : argvars + 2,
+		TRUE, NULL, 0, FALSE);
+    }
+}
+
+/*
  * Apply index or range to "rettv".
  * "var1" is the first index, NULL for [:expr].
  * "var2" is the second index, NULL for [expr] and [expr: ]
+ * "exclusive" is TRUE for slice(): second index is exclusive, use character
+ * index for string.
  * Alternatively, "key" is not NULL, then key[keylen] is the dict index.
  */
     int
@@ -3949,12 +3967,13 @@ eval_index_inner(
 	int	    is_range,
 	typval_T    *var1,
 	typval_T    *var2,
+	int	    exclusive,
 	char_u	    *key,
 	int	    keylen,
 	int	    verbose)
 {
-    long	n1, n2 = 0;
-    long	len;
+    varnumber_T	    n1, n2 = 0;
+    long	    len;
 
     n1 = 0;
     if (var1 != NULL && rettv->v_type != VAR_DICT)
@@ -3968,10 +3987,10 @@ eval_index_inner(
 		emsg(_(e_cannot_slice_dictionary));
 	    return FAIL;
 	}
-	if (var2 == NULL)
-	    n2 = -1;
-	else
+	if (var2 != NULL)
 	    n2 = tv_get_number(var2);
+	else
+	    n2 = VARNUM_MAX;
     }
 
     switch (rettv->v_type)
@@ -3994,10 +4013,10 @@ eval_index_inner(
 		char_u	*s = tv_get_string(rettv);
 
 		len = (long)STRLEN(s);
-		if (in_vim9script())
+		if (in_vim9script() || exclusive)
 		{
 		    if (is_range)
-			s = string_slice(s, n1, n2);
+			s = string_slice(s, n1, n2, exclusive);
 		    else
 			s = char_from_string(s, n1);
 		}
@@ -4015,6 +4034,8 @@ eval_index_inner(
 			n2 = len + n2;
 		    else if (n2 >= len)
 			n2 = len;
+		    if (exclusive)
+			--n2;
 		    if (n1 >= len || n2 < 0 || n1 > n2)
 			s = NULL;
 		    else
@@ -4051,7 +4072,9 @@ eval_index_inner(
 		if (n2 < 0)
 		    n2 = len + n2;
 		else if (n2 >= len)
-		    n2 = len - 1;
+		    n2 = len - (exclusive ? 0 : 1);
+		if (exclusive)
+		    --n2;
 		if (n1 >= len || n2 < 0 || n1 > n2)
 		{
 		    clear_tv(rettv);
@@ -4103,9 +4126,9 @@ eval_index_inner(
 	    if (var1 == NULL)
 		n1 = 0;
 	    if (var2 == NULL)
-		n2 = -1;
+		n2 = VARNUM_MAX;
 	    if (list_slice_or_index(rettv->vval.v_list,
-				    is_range, n1, n2, rettv, verbose) == FAIL)
+			  is_range, n1, n2, exclusive, rettv, verbose) == FAIL)
 		return FAIL;
 	    break;
 
