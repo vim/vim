@@ -1640,11 +1640,11 @@ f_readdirex(typval_T *argvars, typval_T *rettv)
 /*
  * "readfile()" function
  */
-    void
-f_readfile(typval_T *argvars, typval_T *rettv)
+    static void
+read_file_or_blob(typval_T *argvars, typval_T *rettv, int always_blob)
 {
     int		binary = FALSE;
-    int		blob = FALSE;
+    int		blob = always_blob;
     int		failed = FALSE;
     char_u	*fname;
     FILE	*fd;
@@ -1796,7 +1796,8 @@ f_readfile(typval_T *argvars, typval_T *rettv)
 
 			if (dest < buf)
 			{
-			    adjust_prevlen = (int)(buf - dest); // must be 1 or 2
+			    // must be 1 or 2
+			    adjust_prevlen = (int)(buf - dest);
 			    dest = buf;
 			}
 			if (readlen > p - buf + 1)
@@ -1864,6 +1865,24 @@ f_readfile(typval_T *argvars, typval_T *rettv)
 
     vim_free(prev);
     fclose(fd);
+}
+
+/*
+ * "readblob()" function
+ */
+    void
+f_readblob(typval_T *argvars, typval_T *rettv)
+{
+    read_file_or_blob(argvars, rettv, TRUE);
+}
+
+/*
+ * "readfile()" function
+ */
+    void
+f_readfile(typval_T *argvars, typval_T *rettv)
+{
+    read_file_or_blob(argvars, rettv, FALSE);
 }
 
 /*

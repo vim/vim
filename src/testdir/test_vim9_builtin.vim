@@ -623,6 +623,32 @@ def Test_readdir()
    eval expand('sautest')->readdirex((e) => e.name[0] !=# '.')
 enddef
 
+def Test_readblob()
+  var blob = 0z12341234
+  writefile(blob, 'Xreadblob')
+  var read: blob = readblob('Xreadblob')
+  assert_equal(blob, read)
+
+  var lines =<< trim END
+      var read: list<string> = readblob('Xreadblob')
+  END
+  CheckDefAndScriptFailure(lines, 'E1012: Type mismatch; expected list<string> but got blob', 1)
+  delete('Xreadblob')
+enddef
+
+def Test_readfile()
+  var text = ['aaa', 'bbb', 'ccc']
+  writefile(text, 'Xreadfile')
+  var read: list<string> = readfile('Xreadfile')
+  assert_equal(text, read)
+
+  var lines =<< trim END
+      var read: dict<string> = readfile('Xreadfile')
+  END
+  CheckDefAndScriptFailure(lines, 'E1012: Type mismatch; expected dict<string> but got list<string>', 1)
+  delete('Xreadfile')
+enddef
+
 def Test_remove_return_type()
   var l = remove({one: [1, 2], two: [3, 4]}, 'one')
   var res = 0

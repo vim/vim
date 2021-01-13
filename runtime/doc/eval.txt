@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2021 Jan 10
+*eval.txt*	For Vim version 8.2.  Last change: 2021 Jan 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2775,6 +2775,7 @@ pyxeval({expr})			any	evaluate |python_x| expression
 rand([{expr}])			Number	get pseudo-random number
 range({expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
+readblob({fname})		Blob	read a |Blob| from {fname}
 readdir({dir} [, {expr} [, {dict}]])
 				List	file names in {dir} selected by {expr}
 readdirex({dir} [, {expr} [, {dict}]])
@@ -8265,6 +8266,14 @@ rand([{expr}])						*rand()* *random*
 			:echo rand(seed)
 			:echo rand(seed) % 16  " random number 0 - 15
 <
+
+readblob({fname})					*readblob()*
+		Read file {fname} in binary mode and return a |Blob|.
+		When the file can't be opened an error message is given and
+		the result is an empty |Blob|.
+		Also see |readfile()| and |writefile()|.
+
+
 readdir({directory} [, {expr} [, {dict}]])			*readdir()*
 		Return a list with file and directory names in {directory}.
 		You can also use |glob()| if you don't need to do complicated
@@ -8379,6 +8388,7 @@ readdirex({directory} [, {expr} [, {dict}]])			*readdirex()*
 		Can also be used as a |method|: >
 			GetDirName()->readdirex()
 <
+
 							*readfile()*
 readfile({fname} [, {type} [, {max}]])
 		Read file {fname} and return a |List|, each line of the file
@@ -8390,8 +8400,6 @@ readfile({fname} [, {type} [, {max}]])
 		- When the last line ends in a NL an extra empty list item is
 		  added.
 		- No CR characters are removed.
-		When {type} contains "B" a |Blob| is returned with the binary
-		data of the file unmodified.
 		Otherwise:
 		- CR characters that appear before a NL are removed.
 		- Whether the last line ends in a NL or not does not matter.
@@ -8409,6 +8417,9 @@ readfile({fname} [, {type} [, {max}]])
 		Note that without {max} the whole file is read into memory.
 		Also note that there is no recognition of encoding.  Read a
 		file into a buffer if you need to.
+		Deprecated (use |readblob()| instead): When {type} contains
+		"B" a |Blob| is returned with the binary data of the file
+		unmodified.
 		When the file can't be opened an error message is given and
 		the result is an empty list.
 		Also see |writefile()|.
@@ -11295,9 +11306,11 @@ win_execute({id}, {command} [, {silent}])		*win_execute()*
 			call win_execute(winid, 'set syntax=python')
 <		Doing the same with `setwinvar()` would not trigger
 		autocommands and not actually show syntax highlighting.
+
 							*E994*
 		Not all commands are allowed in popup windows.
-		When window {id} does not exist then no error is given.
+		When window {id} does not exist then no error is given and
+		an empty string is returned.
 
 		Can also be used as a |method|, the base is passed as the
 		second argument: >
