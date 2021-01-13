@@ -1822,7 +1822,11 @@ get_function_name(expand_T *xp, int idx)
     {
 	name = get_user_func_name(xp, idx);
 	if (name != NULL)
+	{
+	    if (*name != '<' && STRNCMP("g:", xp->xp_pattern, 2) == 0)
+		return cat_prefix_varname('g', name);
 	    return name;
+	}
     }
     if (++intidx < (int)(sizeof(global_functions) / sizeof(funcentry_T)))
     {

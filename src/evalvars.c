@@ -1952,7 +1952,7 @@ static int	varnamebuflen = 0;
 /*
  * Function to concatenate a prefix and a variable name.
  */
-    static char_u *
+    char_u *
 cat_prefix_varname(int prefix, char_u *name)
 {
     int		len;
