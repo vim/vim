@@ -2748,7 +2748,7 @@ set_cursorpos(typval_T *argvars, typval_T *rettv, int charcol)
 	    semsg(_(e_invarg2), tv_get_string(&argvars[0]));
 	col = (long)tv_get_number_chk(&argvars[1], NULL);
 	if (charcol)
-	    col = buf_charidx_to_byteidx(curbuf, line, col);
+	    col = buf_charidx_to_byteidx(curbuf, line, col) + 1;
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	    coladd = (long)tv_get_number_chk(&argvars[2], NULL);
     }
@@ -4011,8 +4011,8 @@ getpos_both(
 	    if (fp != NULL && charcol)
 	    {
 		pos = *fp;
-		pos.col = buf_byteidx_to_charidx(wp->w_buffer, pos.lnum,
-								pos.col) - 1;
+		pos.col =
+		    buf_byteidx_to_charidx(wp->w_buffer, pos.lnum, pos.col);
 		fp = &pos;
 	    }
 	}
