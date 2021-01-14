@@ -5708,29 +5708,19 @@ check_termcode(
 		&& key_name[0] == KS_EXTRA
 	    )
 	{
-	    int did_aucmd = FALSE;
-
 	    if (key_name[1] == KE_FOCUSGAINED && !focus_state)
 	    {
-		did_aucmd = apply_autocmds(EVENT_FOCUSGAINED,
-						    NULL, NULL, FALSE, curbuf);
+		ui_focus_change(TRUE);
 		did_cursorhold = TRUE;
 		focus_state = TRUE;
 		key_name[1] = (int)KE_IGNORE;
 	    }
 	    else if (key_name[1] == KE_FOCUSLOST && focus_state)
 	    {
-		did_aucmd = apply_autocmds(EVENT_FOCUSLOST,
-						    NULL, NULL, FALSE, curbuf);
+		ui_focus_change(FALSE);
 		did_cursorhold = TRUE;
 		focus_state = FALSE;
 		key_name[1] = (int)KE_IGNORE;
-	    }
-	    if (did_aucmd && (State & (NORMAL | INSERT | TERMINAL)))
-	    {
-		// in case a message was displayed: reposition the cursor
-		setcursor();
-		out_flush();
 	    }
 	}
 #endif

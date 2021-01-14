@@ -1101,7 +1101,6 @@ check_row(int row)
     return row;
 }
 
-#if defined(FEAT_GUI) || defined(MSWIN) || defined(PROTO)
 /*
  * Called when focus changed.  Used for the GUI or for systems where this can
  * be done in the console (Win32).
@@ -1164,7 +1163,6 @@ ui_focus_change(
 	maketitle();
 #endif
 }
-#endif
 
 #if defined(HAVE_INPUT_METHOD) || defined(PROTO)
 /*
