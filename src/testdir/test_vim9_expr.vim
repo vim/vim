@@ -2523,18 +2523,26 @@ enddef
 
 def Test_expr7_parens()
   # (expr)
-  assert_equal(4, (6 * 4) / 6)
-  assert_equal(0, 6 * ( 4 / 6 ))
-
-  assert_equal(6, +6)
-  assert_equal(-6, -6)
-  assert_equal(false, !-3)
-  assert_equal(true, !+0)
-enddef
-
-def Test_expr7_parens_vim9script()
   var lines =<< trim END
-      vim9script
+      assert_equal(4, (6 * 4) / 6)
+      assert_equal(0, 6 * ( 4 / 6 ))
+
+      assert_equal(6, +6)
+      assert_equal(-6, -6)
+      assert_equal(false, !-3)
+      assert_equal(true, !+0)
+
+      assert_equal(7, 5 + (
+                    2))
+      assert_equal(7, 5 + (
+                    2
+                    ))
+      assert_equal(7, 5 + ( # comment
+                    2))
+      assert_equal(7, 5 + ( # comment
+                    # comment
+                    2))
+
       var s = (
 		'one'
 		..
@@ -2542,7 +2550,7 @@ def Test_expr7_parens_vim9script()
 		)
       assert_equal('onetwo', s)
   END
-  CheckScriptSuccess(lines)
+  CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_expr7_negate_add()

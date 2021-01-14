@@ -3554,8 +3554,10 @@ compile_leader(cctx_T *cctx, int numeric_only, char_u *start, char_u **end)
 compile_parenthesis(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 {
     int	    ret;
+    char_u  *p = *arg + 1;
 
-    *arg = skipwhite(*arg + 1);
+    if (may_get_next_line_error(p, arg, cctx) == FAIL)
+	return FAIL;
     if (ppconst->pp_used <= PPSIZE - 10)
     {
 	ret = compile_expr1(arg, cctx, ppconst);
