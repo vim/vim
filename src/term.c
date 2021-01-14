@@ -5708,18 +5708,24 @@ check_termcode(
 		&& key_name[0] == KS_EXTRA
 	    )
 	{
-	    if (key_name[1] == KE_FOCUSGAINED && !focus_state)
+	    if (key_name[1] == KE_FOCUSGAINED)
 	    {
-		ui_focus_change(TRUE);
-		did_cursorhold = TRUE;
-		focus_state = TRUE;
+		if (!focus_state)
+		{
+		    ui_focus_change(TRUE);
+		    did_cursorhold = TRUE;
+		    focus_state = TRUE;
+		}
 		key_name[1] = (int)KE_IGNORE;
 	    }
-	    else if (key_name[1] == KE_FOCUSLOST && focus_state)
+	    else if (key_name[1] == KE_FOCUSLOST)
 	    {
-		ui_focus_change(FALSE);
-		did_cursorhold = TRUE;
-		focus_state = FALSE;
+		if (focus_state)
+		{
+		    ui_focus_change(FALSE);
+		    did_cursorhold = TRUE;
+		    focus_state = FALSE;
+		}
 		key_name[1] = (int)KE_IGNORE;
 	    }
 	}
