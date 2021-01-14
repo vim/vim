@@ -564,6 +564,19 @@ def Test_throw_skipped()
   endif
 enddef
 
+def Test_nocatch_throw_silenced()
+  var lines =<< trim END
+    vim9script
+    def Func()
+      throw 'error'
+    enddef
+    silent! Func()
+  END
+  writefile(lines, 'XthrowSilenced')
+  source XthrowSilenced
+  delete('XthrowSilenced')
+enddef
+
 def DeletedFunc(): list<any>
   return ['delete me']
 enddef

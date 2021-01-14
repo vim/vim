@@ -2605,6 +2605,17 @@ call_def_function(
 		break;
 
 	    case ISN_THROW:
+		if (ectx.ec_trystack.ga_len == 0 && trylevel == 0
+								&& emsg_silent)
+		{
+		    // throwing an exception while using "silent!" causes the
+		    // function to abort but not display an error.
+		    tv = STACK_TV_BOT(-1);
+		    clear_tv(tv);
+		    tv->v_type = VAR_NUMBER;
+		    tv->vval.v_number = 0;
+		    goto done;
+		}
 		--ectx.ec_stack.ga_len;
 		tv = STACK_TV_BOT(0);
 		if (tv->vval.v_string == NULL
