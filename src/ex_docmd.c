@@ -1268,7 +1268,7 @@ do_cmdline(
 	 */
 	if (did_throw)
 	{
-	    void	*p = NULL;
+	    char	*p = NULL;
 	    msglist_T	*messages = NULL, *next;
 
 	    /*
@@ -1283,7 +1283,7 @@ do_cmdline(
 		    vim_snprintf((char *)IObuff, IOSIZE,
 			    _("E605: Exception not caught: %s"),
 			    current_exception->value);
-		    p = vim_strsave(IObuff);
+		    p = (char *)vim_strsave(IObuff);
 		    break;
 		case ET_ERROR:
 		    messages = current_exception->messages;
