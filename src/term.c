@@ -2550,8 +2550,10 @@ out_flush(void)
 	{
 	    out_buf[len] = NUL;
 	    ch_log(NULL, "raw %s output: \"%s\"",
-			(gui.in_use && !gui.dying && !gui.starting)
-							  ? "GUI" : "terminal",
+# ifdef FEAT_GUI
+			(gui.in_use && !gui.dying && !gui.starting) ? "GUI" :
+# endif
+			"terminal",
 			out_buf);
 	    ch_log_output = FALSE;
 	}
