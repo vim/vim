@@ -3886,6 +3886,12 @@ define_function(exarg_T *eap, char_u *name_arg)
 	{
 	    p = ret_type;
 	    fp->uf_ret_type = parse_type(&p, &fp->uf_type_list, TRUE);
+	    if (fp->uf_ret_type == NULL)
+	    {
+		fp->uf_ret_type = &t_void;
+		SOURCING_LNUM = lnum_save;
+		goto erret;
+	    }
 	}
 	SOURCING_LNUM = lnum_save;
     }

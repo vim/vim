@@ -197,6 +197,17 @@ def Test_return_nothing()
   s:nothing->assert_equal(1)
 enddef
 
+def Test_return_invalid()
+  var lines =<< trim END
+    vim9script
+    def Func(): invalid
+      return xxx
+    enddef
+    defcompile
+  END
+  CheckScriptFailure(lines, 'E1010:', 2)
+enddef
+
 func Increment()
   let g:counter += 1
 endfunc
