@@ -492,8 +492,10 @@ can_unload_buffer(buf_T *buf)
  * supposed to close the window but autocommands close all other windows.
  *
  * When "ignore_abort" is TRUE don't abort even when aborting() returns TRUE.
+ *
+ * Return TRUE when we got to the end and b_nwindows was decremented.
  */
-    void
+    int
 close_buffer(
     win_T	*win,		// if not NULL, set b_last_cursor
     buf_T	*buf,
@@ -540,7 +542,7 @@ close_buffer(
 	    if (wipe_buf || unload_buf)
 	    {
 		if (!can_unload_buffer(buf))
-		    return;
+		    return FALSE;
 
 		// Wiping out or unloading a terminal buffer kills the job.
 		free_terminal(buf);
@@ -571,7 +573,7 @@ close_buffer(
     // Disallow deleting the buffer when it is locked (already being closed or
     // halfway a command that relies on it). Unloading is allowed.
     if ((del_buf || wipe_buf) && !can_unload_buffer(buf))
-	return;
+	return FALSE;
 
     // check no autocommands closed the window
     if (win != NULL && win_valid_any_tab(win))
@@ -600,7 +602,7 @@ close_buffer(
 	    // Autocommands deleted the buffer.
 aucmd_abort:
 	    emsg(_(e_auabort));
-	    return;
+	    return FALSE;
 	}
 	--buf->b_locked;
 	if (abort_if_last && one_window())
@@ -625,7 +627,7 @@ aucmd_abort:
 #ifdef FEAT_EVAL
 	// autocmds may abort script processing
 	if (!ignore_abort && aborting())
-	    return;
+	    return FALSE;
 #endif
     }
 
@@ -653,7 +655,7 @@ aucmd_abort:
     // Return when a window is displaying the buffer or when it's not
     // unloaded.
     if (buf->b_nwindows > 0 || !unload_buf)
-	return;
+	return FALSE;
 
     // Always remove the buffer when there is no file name.
     if (buf->b_ffname == NULL)
@@ -683,11 +685,11 @@ aucmd_abort:
 
     // Autocommands may have deleted the buffer.
     if (!bufref_valid(&bufref))
-	return;
+	return FALSE;
 #ifdef FEAT_EVAL
     // autocmds may abort script processing
     if (!ignore_abort && aborting())
-	return;
+	return FALSE;
 #endif
 
     /*
@@ -698,7 +700,7 @@ aucmd_abort:
      * deleted buffer.
      */
     if (buf == curbuf && !is_curbuf)
-	return;
+	return FALSE;
 
     if (win_valid_any_tab(win) && win->w_buffer == buf)
 	win->w_buffer = NULL;  // make sure we don't use the buffer now
@@ -755,6 +757,7 @@ aucmd_abort:
 	    buf->b_p_bl = FALSE;
     }
     // NOTE: at this point "curbuf" may be invalid!
+    return TRUE;
 }
 
 /*

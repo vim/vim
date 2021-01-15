@@ -2742,6 +2742,8 @@ do_ecmd(
 	    else
 	    {
 		win_T	    *the_curwin = curwin;
+		int	    did_decrement;
+		buf_T	    *was_curbuf = curbuf;
 
 		// Set the w_closing flag to avoid that autocommands close the
 		// window.  And set b_locked for the same reason.
@@ -2754,7 +2756,7 @@ do_ecmd(
 		// Close the link to the current buffer. This will set
 		// oldwin->w_buffer to NULL.
 		u_sync(FALSE);
-		close_buffer(oldwin, curbuf,
+		did_decrement = close_buffer(oldwin, curbuf,
 			 (flags & ECMD_HIDE) ? 0 : DOBUF_UNLOAD, FALSE, FALSE);
 
 		the_curwin->w_closing = FALSE;
@@ -2776,7 +2778,15 @@ do_ecmd(
 		    goto theend;
 		}
 		if (buf == curbuf)		// already in new buffer
+		{
+		    // close_buffer() has decremented the window count,
+		    // increment it again here and restore w_buffer.
+		    if (did_decrement && buf_valid(was_curbuf))
+			++was_curbuf->b_nwindows;
+		    if (win_valid_any_tab(oldwin) && oldwin->w_buffer == NULL)
+			oldwin->w_buffer = was_curbuf;
 		    auto_buf = TRUE;
+		}
 		else
 		{
 #ifdef FEAT_SYN_HL
