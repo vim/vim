@@ -467,6 +467,45 @@ skip_expr_concatenate(
 }
 
 /*
+ * Convert "tv" to a string.
+ * When "convert" is TRUE convert a List into a sequence of lines and convert
+ * a Float to a String.
+ * Returns an allocated string (NULL when out of memory).
+ */
+    char_u *
+typval2string(typval_T *tv, int convert)
+{
+    garray_T	ga;
+    char_u	*retval;
+#ifdef FEAT_FLOAT
+    char_u	numbuf[NUMBUFLEN];
+#endif
+
+    if (convert && tv->v_type == VAR_LIST)
+    {
+	ga_init2(&ga, (int)sizeof(char), 80);
+	if (tv->vval.v_list != NULL)
+	{
+	    list_join(&ga, tv->vval.v_list, (char_u *)"\n", TRUE, FALSE, 0);
+	    if (tv->vval.v_list->lv_len > 0)
+		ga_append(&ga, NL);
+	}
+	ga_append(&ga, NUL);
+	retval = (char_u *)ga.ga_data;
+    }
+#ifdef FEAT_FLOAT
+    else if (convert && tv->v_type == VAR_FLOAT)
+    {
+	vim_snprintf((char *)numbuf, NUMBUFLEN, "%g", tv->vval.v_float);
+	retval = vim_strsave(numbuf);
+    }
+#endif
+    else
+	retval = vim_strsave(tv_get_string(tv));
+    return retval;
+}
+
+/*
  * Top level evaluation function, returning a string.  Does not handle line
  * breaks.
  * When "convert" is TRUE convert a List into a sequence of lines and convert
@@ -481,10 +520,6 @@ eval_to_string_eap(
 {
     typval_T	tv;
     char_u	*retval;
-    garray_T	ga;
-#ifdef FEAT_FLOAT
-    char_u	numbuf[NUMBUFLEN];
-#endif
     evalarg_T	evalarg;
 
     fill_evalarg_from_eap(&evalarg, eap, eap != NULL && eap->skip);
@@ -492,27 +527,7 @@ eval_to_string_eap(
 	retval = NULL;
     else
     {
-	if (convert && tv.v_type == VAR_LIST)
-	{
-	    ga_init2(&ga, (int)sizeof(char), 80);
-	    if (tv.vval.v_list != NULL)
-	    {
-		list_join(&ga, tv.vval.v_list, (char_u *)"\n", TRUE, FALSE, 0);
-		if (tv.vval.v_list->lv_len > 0)
-		    ga_append(&ga, NL);
-	    }
-	    ga_append(&ga, NUL);
-	    retval = (char_u *)ga.ga_data;
-	}
-#ifdef FEAT_FLOAT
-	else if (convert && tv.v_type == VAR_FLOAT)
-	{
-	    vim_snprintf((char *)numbuf, NUMBUFLEN, "%g", tv.vval.v_float);
-	    retval = vim_strsave(numbuf);
-	}
-#endif
-	else
-	    retval = vim_strsave(tv_get_string(&tv));
+	retval = typval2string(&tv, convert);
 	clear_tv(&tv);
     }
     clear_evalarg(&evalarg, NULL);

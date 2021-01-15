@@ -736,6 +736,9 @@ def Test_put_command()
   assert_equal('above', getline(3))
   assert_equal('below', getline(4))
 
+  :2put =['a', 'b', 'c']
+  assert_equal(['ppp', 'a', 'b', 'c', 'above'], getline(2, 6))
+
   # compute range at runtime
   setline(1, range(1, 8))
   @a = 'aaa'

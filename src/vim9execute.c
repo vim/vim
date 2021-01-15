@@ -3357,7 +3357,7 @@ call_def_function(
 			    expr = tv->vval.v_string;
 			else
 			{
-			    expr = typval_tostring(tv);  // allocates value
+			    expr = typval2string(tv, TRUE); // allocates value
 			    clear_tv(tv);
 			}
 			--ectx.ec_stack.ga_len;
