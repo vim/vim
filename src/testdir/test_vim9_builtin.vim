@@ -241,6 +241,9 @@ def Test_extend_arg_types()
   CheckDefFailure(['extend({a: 1}, 42)'], 'E1013: Argument 2: type mismatch, expected dict<number> but got number')
   CheckDefFailure(['extend({a: 1}, {b: "x"})'], 'E1013: Argument 2: type mismatch, expected dict<number> but got dict<string>')
   CheckDefFailure(['extend({a: 1}, {b: 2}, 1)'], 'E1013: Argument 3: type mismatch, expected string but got number')
+
+  CheckDefFailure(['extend([1], ["b"])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>')
+  CheckDefExecFailure(['extend([1], ["b", 1])'], 'E1012: Type mismatch; expected list<number> but got list<any>')
 enddef
 
 def Test_extendnew()

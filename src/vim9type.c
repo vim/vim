@@ -514,25 +514,15 @@ check_type(type_T *expected, type_T *actual, int give_msg, int argidx)
 }
 
 /*
- * Like check_type() but also allow for a runtime type check. E.g. "any" can be
- * used for "number".
- */
-    int
-check_arg_type(type_T *expected, type_T *actual, int argidx)
-{
-    if (check_type(expected, actual, FALSE, 0) == OK
-					    || use_typecheck(actual, expected))
-	return OK;
-    // TODO: should generate a TYPECHECK instruction.
-    return check_type(expected, actual, TRUE, argidx);
-}
-
-/*
  * Check that the arguments of "type" match "argvars[argcount]".
  * Return OK/FAIL.
  */
     int
-check_argument_types(type_T *type, typval_T *argvars, int argcount, char_u *name)
+check_argument_types(
+	type_T	    *type,
+	typval_T    *argvars,
+	int	    argcount,
+	char_u	    *name)
 {
     int	    varargs = (type->tt_flags & TTFLAG_VARARGS) ? 1 : 0;
     int	    i;
