@@ -2713,7 +2713,7 @@ out_str_cf(char_u *s)
 		else
 		{
 		    ++p;
-		    do_sleep(duration);
+		    do_sleep(duration, FALSE);
 		}
 # else
 		// Rely on the terminal library to sleep.

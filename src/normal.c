@@ -993,7 +993,7 @@ getcount:
 		// something different from CTRL-N.  Can't be avoided.
 		while ((c = vpeekc()) <= 0 && towait > 0L)
 		{
-		    do_sleep(towait > 50L ? 50L : towait);
+		    do_sleep(towait > 50L ? 50L : towait, FALSE);
 		    towait -= 50L;
 		}
 		if (c > 0)
@@ -6230,7 +6230,7 @@ nv_g_cmd(cmdarg_T *cap)
      * "gs": Goto sleep.
      */
     case 's':
-	do_sleep(cap->count1 * 1000L);
+	do_sleep(cap->count1 * 1000L, FALSE);
 	break;
 
     /*

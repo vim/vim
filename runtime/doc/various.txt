@@ -707,12 +707,12 @@ K			Run a program to lookup the keyword under the
 			not more than one line.
 
 [N]gs							*gs* *:sl* *:sleep*
-:[N]sl[eep] [N]	[m]	Do nothing for [N] seconds.  When [m] is included,
+:[N]sl[eep] [N][m]	Do nothing for [N] seconds.  When [m] is included,
 			sleep for [N] milliseconds.  The count for "gs" always
 			uses seconds.  The default is one second. >
 			     :sleep	     "sleep for one second
 			     :5sleep	     "sleep for five seconds
-			     :sleep 100m     "sleep for a hundred milliseconds
+			     :sleep 100m     "sleep for 100 milliseconds
 			     10gs	     "sleep for ten seconds
 <			Can be interrupted with CTRL-C (CTRL-Break on
 			MS-Windows).  "gs" stands for "goto sleep".
