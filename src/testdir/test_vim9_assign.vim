@@ -1351,7 +1351,7 @@ def Test_var_list_dict_type()
       var ll: list<number>
       ll = [1, 2, 3]->map('"one"')
   END
-  CheckDefExecFailure(lines, 'E1012: Type mismatch; expected list<number> but got list<string>')
+  CheckDefExecFailure(lines, 'E1012: Type mismatch; expected number but got string')
 enddef
 
 def Test_cannot_use_let()
