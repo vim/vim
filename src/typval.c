@@ -180,7 +180,7 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 	    if (in_vim9script() && want_bool && varp->vval.v_number != 0
 						   && varp->vval.v_number != 1)
 	    {
-		semsg(_(e_using_number_as_bool_nr), varp->vval.v_number);
+		semsg(_(e_using_number_as_bool_nr), (long long)varp->vval.v_number);
 		break;
 	    }
 	    return varp->vval.v_number;
