@@ -2767,7 +2767,8 @@ set_cursorpos(typval_T *argvars, typval_T *rettv, int charcol)
     }
     else if ((argvars[0].v_type == VAR_NUMBER ||
 					argvars[0].v_type == VAR_STRING)
-	    && argvars[1].v_type == VAR_NUMBER)
+	    && (argvars[1].v_type == VAR_NUMBER ||
+					argvars[1].v_type == VAR_STRING))
     {
 	line = tv_get_lnum(argvars);
 	if (line < 0)
