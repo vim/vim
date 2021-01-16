@@ -2,6 +2,7 @@
 int check_defined(char_u *p, size_t len, cctx_T *cctx);
 int check_compare_types(exprtype_T type, typval_T *tv1, typval_T *tv2);
 int use_typecheck(type_T *actual, type_T *expected);
+int need_type(type_T *actual, type_T *expected, int offset, int arg_idx, cctx_T *cctx, int silent, int actual_is_const);
 int get_script_item_idx(int sid, char_u *name, int check_writable, cctx_T *cctx);
 imported_T *find_imported(char_u *name, size_t len, cctx_T *cctx);
 imported_T *find_imported_in_script(char_u *name, size_t len, int sid);

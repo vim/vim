@@ -241,6 +241,9 @@ def Test_extend_arg_types()
   CheckDefFailure(['extend({a: 1}, 42)'], 'E1013: Argument 2: type mismatch, expected dict<number> but got number')
   CheckDefFailure(['extend({a: 1}, {b: "x"})'], 'E1013: Argument 2: type mismatch, expected dict<number> but got dict<string>')
   CheckDefFailure(['extend({a: 1}, {b: 2}, 1)'], 'E1013: Argument 3: type mismatch, expected string but got number')
+
+  CheckDefFailure(['extend([1], ["b"])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>')
+  CheckDefExecFailure(['extend([1], ["b", 1])'], 'E1012: Type mismatch; expected list<number> but got list<any>')
 enddef
 
 def Test_extendnew()
@@ -326,27 +329,6 @@ enddef
 
 def Wrong_dict_key_type(items: list<number>): list<number>
   return filter(items, (_, val) => get({[val]: 1}, 'x'))
-enddef
-
-def Test_map_function_arg()
-  var lines =<< trim END
-      def MapOne(i: number, v: string): string
-        return i .. ':' .. v
-      enddef
-      var l = ['a', 'b', 'c']
-      map(l, MapOne)
-      assert_equal(['0:a', '1:b', '2:c'], l)
-  END
-  CheckDefAndScriptSuccess(lines)
-enddef
-
-def Test_map_item_type()
-  var lines =<< trim END
-      var l = ['a', 'b', 'c']
-      map(l, (k, v) => k .. '/' .. v )
-      assert_equal(['0/a', '1/b', '2/c'], l)
-  END
-  CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_filereadable()
@@ -579,6 +561,45 @@ def SID(): number
   return expand('<SID>')
           ->matchstr('<SNR>\zs\d\+\ze_$')
           ->str2nr()
+enddef
+
+def Test_map_function_arg()
+  var lines =<< trim END
+      def MapOne(i: number, v: string): string
+        return i .. ':' .. v
+      enddef
+      var l = ['a', 'b', 'c']
+      map(l, MapOne)
+      assert_equal(['0:a', '1:b', '2:c'], l)
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_map_item_type()
+  var lines =<< trim END
+      var l = ['a', 'b', 'c']
+      map(l, (k, v) => k .. '/' .. v )
+      assert_equal(['0/a', '1/b', '2/c'], l)
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+    var l: list<number> = [0]
+    echo map(l, (_, v) => [])
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got list<unknown>', 2)
+
+  lines =<< trim END
+    var l: list<number> = range(2)
+    echo map(l, (_, v) => [])
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got list<unknown>', 2)
+
+  lines =<< trim END
+    var d: dict<number> = {key: 0}
+    echo map(d, (_, v) => [])
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got list<unknown>', 2)
 enddef
 
 def Test_maparg()

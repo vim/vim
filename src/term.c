@@ -2053,20 +2053,20 @@ set_termname(char_u *term)
     set_mouse_termcode(KS_MOUSE, (char_u *)"\233M");
 #endif
 
-#if (defined(UNIX) || defined(VMS))
+#ifdef FEAT_MOUSE_XTERM
     // focus reporting is supported by xterm compatible terminals and tmux.
     if (use_xterm_like_mouse(term))
     {
 	char_u name[3];
-	name[0] = (int)KS_EXTRA;
-	name[2] = NUL;
 
 	// handle focus in event
-	name[1] = (int)KE_FOCUSGAINED;
+	name[0] = KS_EXTRA;
+	name[1] = KE_FOCUSGAINED;
+	name[2] = NUL;
 	add_termcode(name, (char_u *)"\033[I", FALSE);
 
 	// handle focus out event
-	name[1] = (int)KE_FOCUSLOST;
+	name[1] = KE_FOCUSLOST;
 	add_termcode(name, (char_u *)"\033[O", FALSE);
 
 	focus_mode = TRUE;

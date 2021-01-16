@@ -275,12 +275,29 @@ typedef struct {
     int		arg_count;	// actual argument count
     type_T	**arg_types;	// list of argument types
     int		arg_idx;	// current argument index (first arg is zero)
+    cctx_T	*arg_cctx;
 } argcontext_T;
 
 // A function to check one argument type.  The first argument is the type to
 // check.  If needed, other argument types can be obtained with the context.
 // E.g. if "arg_idx" is 1, then (type - 1) is the first argument type.
 typedef int (*argcheck_T)(type_T *, argcontext_T *);
+
+/*
+ * Call need_type() to check an argument type.
+ */
+    static int
+check_arg_type(
+	type_T		*expected,
+	type_T		*actual,
+	argcontext_T	*context)
+{
+    // TODO: would be useful to know if "actual" is a constant and pass it to
+    // need_type() to get a compile time error if possible.
+    return need_type(actual, expected,
+	    context->arg_idx - context->arg_count, context->arg_idx + 1,
+	    context->arg_cctx, FALSE, FALSE);
+}
 
 /*
  * Check "type" is a float or a number.
@@ -301,7 +318,7 @@ arg_float_or_nr(type_T *type, argcontext_T *context)
     static int
 arg_number(type_T *type, argcontext_T *context)
 {
-    return check_arg_type(&t_number, type, context->arg_idx + 1);
+    return check_arg_type(&t_number, type, context);
 }
 
 /*
@@ -310,7 +327,7 @@ arg_number(type_T *type, argcontext_T *context)
     static int
 arg_string(type_T *type, argcontext_T *context)
 {
-    return check_arg_type(&t_string, type, context->arg_idx + 1);
+    return check_arg_type(&t_string, type, context);
 }
 
 /*
@@ -348,7 +365,7 @@ arg_same_as_prev(type_T *type, argcontext_T *context)
 {
     type_T *prev_type = context->arg_types[context->arg_idx - 1];
 
-    return check_arg_type(prev_type, type, context->arg_idx + 1);
+    return check_arg_type(prev_type, type, context);
 }
 
 /*
@@ -362,7 +379,7 @@ arg_same_struct_as_prev(type_T *type, argcontext_T *context)
     type_T *prev_type = context->arg_types[context->arg_idx - 1];
 
     if (prev_type->tt_type != context->arg_types[context->arg_idx]->tt_type)
-	return check_arg_type(prev_type, type, context->arg_idx + 1);
+	return check_arg_type(prev_type, type, context);
     return OK;
 }
 
@@ -384,7 +401,7 @@ arg_item_of_prev(type_T *type, argcontext_T *context)
 	// probably VAR_ANY, can't check
 	return OK;
 
-    return check_arg_type(expected, type, context->arg_idx + 1);
+    return check_arg_type(expected, type, context);
 }
 
 /*
@@ -1931,7 +1948,11 @@ internal_func_name(int idx)
  * Return FAIL and gives an error message when a type is wrong.
  */
     int
-internal_func_check_arg_types(type_T **types, int idx, int argcount)
+internal_func_check_arg_types(
+	type_T	**types,
+	int	idx,
+	int	argcount,
+	cctx_T	*cctx)
 {
     argcheck_T	*argchecks = global_functions[idx].f_argcheck;
     int		i;
@@ -1942,6 +1963,7 @@ internal_func_check_arg_types(type_T **types, int idx, int argcount)
 
 	context.arg_count = argcount;
 	context.arg_types = types;
+	context.arg_cctx = cctx;
 	for (i = 0; i < argcount; ++i)
 	    if (argchecks[i] != NULL)
 	    {
@@ -2745,7 +2767,8 @@ set_cursorpos(typval_T *argvars, typval_T *rettv, int charcol)
     }
     else if ((argvars[0].v_type == VAR_NUMBER ||
 					argvars[0].v_type == VAR_STRING)
-	    && argvars[1].v_type == VAR_NUMBER)
+	    && (argvars[1].v_type == VAR_NUMBER ||
+					argvars[1].v_type == VAR_STRING))
     {
 	line = tv_get_lnum(argvars);
 	if (line < 0)

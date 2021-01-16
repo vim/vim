@@ -1811,6 +1811,18 @@ enddef
 
 def Test_line_continuation_in_lambda()
   Line_continuation_in_lambda()->assert_equal(['D', 'C', 'B', 'A'])
+
+  var lines =<< trim END
+      vim9script
+      var res = [{n: 1, m: 2, s: 'xxx'}]
+                ->mapnew((_, v: dict<any>): string => printf('%d:%d:%s',
+                    v.n,
+                    v.m,
+                    substitute(v.s, '.*', 'yyy', '')
+                    ))
+      assert_equal(['1:2:yyy'], res)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_list_lambda()

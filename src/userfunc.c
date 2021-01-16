@@ -539,7 +539,8 @@ get_lambda_tv(
     char_u	*start, *end;
     int		*old_eval_lavars = eval_lavars_used;
     int		eval_lavars = FALSE;
-    char_u	*tofree = NULL;
+    char_u	*tofree1 = NULL;
+    char_u	*tofree2 = NULL;
     int		equal_arrow = **arg == '(';
     int		white_error = FALSE;
 
@@ -582,6 +583,13 @@ get_lambda_tv(
     }
     *arg = s;
 
+    // Skipping over linebreaks may make "ret_type" invalid, make a copy.
+    if (ret_type != NULL)
+    {
+	ret_type = vim_strsave(ret_type);
+	tofree2 = ret_type;
+    }
+
     // Set up a flag for checking local variables and arguments.
     if (evaluate)
 	eval_lavars_used = &eval_lavars;
@@ -605,7 +613,7 @@ get_lambda_tv(
     if (evalarg != NULL)
     {
 	// avoid that the expression gets freed when another line break follows
-	tofree = evalarg->eval_tofree;
+	tofree1 = evalarg->eval_tofree;
 	evalarg->eval_tofree = NULL;
     }
 
@@ -700,9 +708,10 @@ get_lambda_tv(
 
     eval_lavars_used = old_eval_lavars;
     if (evalarg != NULL && evalarg->eval_tofree == NULL)
-	evalarg->eval_tofree = tofree;
+	evalarg->eval_tofree = tofree1;
     else
-	vim_free(tofree);
+	vim_free(tofree1);
+    vim_free(tofree2);
     if (types_optional)
 	ga_clear_strings(&argtypes);
     return OK;
@@ -715,9 +724,10 @@ errret:
     vim_free(fp);
     vim_free(pt);
     if (evalarg != NULL && evalarg->eval_tofree == NULL)
-	evalarg->eval_tofree = tofree;
+	evalarg->eval_tofree = tofree1;
     else
-	vim_free(tofree);
+	vim_free(tofree1);
+    vim_free(tofree2);
     eval_lavars_used = old_eval_lavars;
     return FAIL;
 }
