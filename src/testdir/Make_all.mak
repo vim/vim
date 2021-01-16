@@ -246,6 +246,7 @@ NEW_TESTS = \
 	test_shortpathname \
 	test_signals \
 	test_signs \
+	test_sleepbang \
 	test_smartindent \
 	test_sort \
 	test_sound \
@@ -472,6 +473,7 @@ NEW_TESTS_RES = \
 	test_shortpathname.res \
 	test_signals.res \
 	test_signs.res \
+	test_sleepbang.res \
 	test_smartindent.res \
 	test_sort.res \
 	test_sound.res \

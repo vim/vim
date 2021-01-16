@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 8.2.  Last change: 2020 Oct 05
+*index.txt*     For Vim version 8.2.  Last change: 2021 Jan 15
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1590,6 +1590,8 @@ tag		command		action ~
 |:sign|		:sig[n]		manipulate signs
 |:silent|	:sil[ent]	run a command silently
 |:sleep|	:sl[eep]	do nothing for a few seconds
+|:sleep!|	:sl[eep]!	do nothing for a few seconds, without the
+				cursor visible
 |:slast|	:sla[st]	split window and go to last file in the
 				argument list
 |:smagic|	:sm[agic]	:substitute with 'magic'
