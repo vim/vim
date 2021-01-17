@@ -762,7 +762,7 @@ def Test_disassemble_const_expr()
             'if has("gui_running")\_s*' ..
             '\d PUSHS "gui_running"\_s*' ..
             '\d BCALL has(argc 1)\_s*' ..
-            '\d COND2BOOL\_s*' ..
+            '\d 2BOOL (!!val)\_s*' ..
             '\d JUMP_IF_FALSE -> \d\_s*' ..
             '  echo "yes"\_s*' ..
             '\d PUSHS "yes"\_s*' ..

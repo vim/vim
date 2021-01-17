@@ -115,6 +115,21 @@ def Test_add_blob()
   CheckDefExecFailure(lines, 'E1131:', 2)
 enddef
 
+def Test_append()
+  new
+  setline(1, range(3))
+  var res1: number = append(1, 'one')
+  assert_equal(0, res1)
+  var res2: bool = append(3, 'two')
+  assert_equal(false, res2)
+  assert_equal(['0', 'one', '1', 'two', '2'], getline(1, 6))
+enddef
+
+def Test_buflisted()
+  var res: bool = buflisted('asdf')
+  assert_equal(false, res)
+enddef
+
 def Test_bufname()
   split SomeFile
   bufname('%')->assert_equal('SomeFile')
@@ -197,6 +212,11 @@ def Test_cursor()
     cursor('2', 1)
   END
   CheckDefExecAndScriptFailure(lines, 'E475:')
+enddef
+
+def Test_delete()
+  var res: bool = delete('doesnotexist')
+  assert_equal(true, res)
 enddef
 
 def Test_executable()
