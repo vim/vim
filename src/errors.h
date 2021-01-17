@@ -84,7 +84,7 @@ EXTERN char e_const_requires_a_value[]
 EXTERN char e_type_or_initialization_required[]
 	INIT(= N_("E1022: Type or initialization required"));
 EXTERN char e_using_number_as_bool_nr[]
-	INIT(= N_("E1023: Using a Number as a Bool: %d"));
+	INIT(= N_("E1023: Using a Number as a Bool: %lld"));
 EXTERN char e_using_number_as_string[]
 	INIT(= N_("E1024: Using a Number as a String"));
 EXTERN char e_using_rcurly_outside_if_block_scope[]

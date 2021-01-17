@@ -2567,7 +2567,7 @@ f_charidx(typval_T *argvars, typval_T *rettv)
 {
     char_u	*str;
     varnumber_T	idx;
-    int		countcc = FALSE;
+    varnumber_T	countcc = FALSE;
     char_u	*p;
     int		len;
     int		(*ptr2len)(char_u *);
@@ -2588,7 +2588,7 @@ f_charidx(typval_T *argvars, typval_T *rettv)
 	return;
 
     if (argvars[2].v_type != VAR_UNKNOWN)
-	countcc = (int)tv_get_bool(&argvars[2]);
+	countcc = tv_get_bool(&argvars[2]);
     if (countcc < 0 || countcc > 1)
     {
 	semsg(_(e_using_number_as_bool_nr), countcc);
@@ -2848,11 +2848,11 @@ f_debugbreak(typval_T *argvars, typval_T *rettv)
     static void
 f_deepcopy(typval_T *argvars, typval_T *rettv)
 {
-    int		noref = 0;
+    varnumber_T	noref = 0;
     int		copyID;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
-	noref = (int)tv_get_bool_chk(&argvars[1], NULL);
+	noref = tv_get_bool_chk(&argvars[1], NULL);
     if (noref < 0 || noref > 1)
 	semsg(_(e_using_number_as_bool_nr), noref);
     else
@@ -9185,12 +9185,12 @@ f_strlen(typval_T *argvars, typval_T *rettv)
 f_strchars(typval_T *argvars, typval_T *rettv)
 {
     char_u		*s = tv_get_string(&argvars[0]);
-    int			skipcc = FALSE;
+    varnumber_T		skipcc = FALSE;
     varnumber_T		len = 0;
     int			(*func_mb_ptr2char_adv)(char_u **pp);
 
     if (argvars[1].v_type != VAR_UNKNOWN)
-	skipcc = (int)tv_get_bool(&argvars[1]);
+	skipcc = tv_get_bool(&argvars[1]);
     if (skipcc < 0 || skipcc > 1)
 	semsg(_(e_using_number_as_bool_nr), skipcc);
     else

@@ -925,7 +925,7 @@ list_slice_or_index(
 	if (!range)
 	{
 	    if (verbose)
-		semsg(_(e_listidx), n1_arg);
+		semsg(_(e_listidx), (long)n1_arg);
 	    return FAIL;
 	}
 	n1 = n1 < 0 ? 0 : len;
@@ -1452,7 +1452,7 @@ list_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
     listitem_T	*item, *item2;
     listitem_T	*li;
     int		error = FALSE;
-    int		idx;
+    long	idx;
 
     if ((l = argvars[0].vval.v_list) == NULL
 			     || value_check_lock(l->lv_lock, arg_errmsg, TRUE))
@@ -1475,7 +1475,7 @@ list_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
 	else
 	{
 	    // Remove range of items, return list with values.
-	    int end = (long)tv_get_number_chk(&argvars[2], &error);
+	    long end = (long)tv_get_number_chk(&argvars[2], &error);
 
 	    if (error)
 		;		// type error: do nothing
