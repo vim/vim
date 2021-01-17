@@ -350,7 +350,7 @@ def Test_assign_index()
     var lines: list<string>
     lines['a'] = 'asdf'
   END
-  CheckDefFailure(lines, 'E39:', 2)
+  CheckDefFailure(lines, 'E1012:', 2)
 
   lines =<< trim END
     var lines: string
@@ -559,6 +559,15 @@ def Test_assignment_list()
     d.dd[0] = 0
   END
   CheckDefExecFailure(lines, 'E1147:', 2)
+enddef
+
+def Test_assignment_list_any_index()
+   var l: list<number> = [1, 2]
+  for  [x, y, _]
+  in  [[0, 1, ''], [1, 3, '']]
+      l[x] = l[x] + y
+  endfor
+  assert_equal([2, 5], l)
 enddef
 
 def Test_assignment_list_vim9script()
@@ -1405,7 +1414,7 @@ def Test_unlet()
   CheckDefExecFailure([
     'var ll = [1]',
     'unlet ll[g:astring]',
-    ], 'E39:', 2)
+    ], 'E1012:', 2)
   CheckDefExecFailure([
     'var dd = test_null_dict()',
     'unlet dd["a"]',

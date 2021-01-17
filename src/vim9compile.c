@@ -5802,12 +5802,9 @@ compile_assign_unlet(
 	if (dest_type == VAR_DICT && may_generate_2STRING(-1, cctx) == FAIL)
 	    return FAIL;
 	if (dest_type == VAR_LIST
-		     && ((type_T **)stack->ga_data)[stack->ga_len - 1]->tt_type
-								 != VAR_NUMBER)
-	{
-	    emsg(_(e_number_exp));
+		&& need_type(((type_T **)stack->ga_data)[stack->ga_len - 1],
+				 &t_number, -1, 0, cctx, FALSE, FALSE) == FAIL)
 	    return FAIL;
-	}
     }
 
     // Load the dict or list.  On the stack we then have:
