@@ -2060,6 +2060,12 @@ def Test_for_loop()
     total += nr
   endfor
   assert_equal(6, total)
+
+  var res = ""
+  for [n: number, s: string] in [[1, 'a'], [2, 'b']]
+    res ..= n .. s
+  endfor
+  assert_equal('1a2b', res)
 enddef
 
 def Test_for_loop_fails()

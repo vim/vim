@@ -6884,6 +6884,8 @@ compile_for(char_u *arg_start, cctx_T *cctx)
     int		idx;
 
     p = skip_var_list(arg_start, TRUE, &var_count, &semicolon, FALSE);
+    if (p == NULL)
+	return NULL;
     if (var_count == 0)
 	var_count = 1;
 
@@ -7018,6 +7020,8 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	    generate_STORE(cctx, ISN_STORE, var_lvar->lv_idx, NULL);
 	}
 
+	if (*p == ':')
+	    p = skip_type(skipwhite(p + 1), FALSE);
 	if (*p == ',' || *p == ';')
 	    ++p;
 	arg = skipwhite(p);
