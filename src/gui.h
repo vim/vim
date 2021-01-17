@@ -24,7 +24,8 @@
 #  ifdef MIN
 #   undef MIN
 #  endif
-# endif
+#  include "gui_gtk_vms.h"
+# endif // VMS
 # include <X11/Intrinsic.h>
 # include <gtk/gtk.h>
 #endif

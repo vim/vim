@@ -117,8 +117,7 @@ def Test_disassemble_exec_expr()
         '\d 2STRING stack\[-1\]\_s*' ..
         '\d\+ PUSHS ".txt"\_s*' ..
         '\d\+ EXECCONCAT 4\_s*' ..
-        '\d\+ PUSHNR 0\_s*' ..
-        '\d\+ RETURN',
+        '\d\+ RETURN 0',
         res)
 enddef
 
@@ -134,8 +133,7 @@ def Test_disassemble_yank_range()
         '\d EXEC   norm! m\[jjm\]\_s*' ..
         '  :''\[,''\]yank\_s*' ..
         '\d EXEC   :''\[,''\]yank\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         res)
 enddef
 
@@ -149,8 +147,7 @@ def Test_disassemble_put_expr()
         ' :3put ="text"\_s*' ..
         '\d PUSHS "text"\_s*' ..
         '\d PUT = 3\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         res)
 enddef
 
@@ -164,8 +161,7 @@ def Test_disassemble_put_range()
         ' :$-2put a\_s*' ..
         '\d RANGE $-2\_s*' ..
         '\d PUT a range\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         res)
 enddef
 
@@ -182,7 +178,7 @@ def Test_disassemble_push()
   var res = execute('disass s:ScriptFuncPush')
   assert_match('<SNR>\d*_ScriptFuncPush.*' ..
         'localbool = true.*' ..
-        ' PUSH v:true.*' ..
+        ' PUSH true.*' ..
         'localspec = v:none.*' ..
         ' PUSH v:none.*' ..
         'localblob = 0z1234.*' ..
@@ -257,6 +253,7 @@ def Test_disassemble_store_member()
   assert_match('<SNR>\d*_ScriptFuncStoreMember\_s*' ..
         'var locallist: list<number> = []\_s*' ..
         '\d NEWLIST size 0\_s*' ..
+        '\d SETTYPE list<number>\_s*' ..
         '\d STORE $0\_s*' ..
         'locallist\[0\] = 123\_s*' ..
         '\d PUSHNR 123\_s*' ..
@@ -265,14 +262,14 @@ def Test_disassemble_store_member()
         '\d STORELIST\_s*' ..
         'var localdict: dict<number> = {}\_s*' ..
         '\d NEWDICT size 0\_s*' ..
+        '\d SETTYPE dict<number>\_s*' ..
         '\d STORE $1\_s*' ..
         'localdict\["a"\] = 456\_s*' ..
         '\d\+ PUSHNR 456\_s*' ..
         '\d\+ PUSHS "a"\_s*' ..
         '\d\+ LOAD $1\_s*' ..
         '\d\+ STOREDICT\_s*' ..
-        '\d\+ PUSHNR 0\_s*' ..
-        '\d\+ RETURN',
+        '\d\+ RETURN 0',
         res)
 enddef
 
@@ -295,8 +292,7 @@ def Test_disassemble_store_index()
         '\d LOAD $0\_s*' ..
         '\d MEMBER dd\_s*' ..
         '\d STOREINDEX\_s*' ..
-        '\d\+ PUSHNR 0\_s*' ..
-        '\d\+ RETURN',
+        '\d\+ RETURN 0',
         res)
 enddef
 
@@ -331,8 +327,7 @@ def Test_disassemble_list_assign()
         '\d\+ STORE $1\_s*' ..
         '\d\+ SLICE 2\_s*' ..
         '\d\+ STORE $2\_s*' ..
-        '\d\+ PUSHNR 0\_s*' ..
-        '\d\+ RETURN',
+        '\d\+ RETURN 0',
         res)
 enddef
 
@@ -347,6 +342,7 @@ def Test_disassemble_list_add()
   assert_match('<SNR>\d*_ListAdd\_s*' ..
         'var l: list<number> = []\_s*' ..
         '\d NEWLIST size 0\_s*' ..
+        '\d SETTYPE list<number>\_s*' ..
         '\d STORE $0\_s*' ..
         'add(l, 123)\_s*' ..
         '\d LOAD $0\_s*' ..
@@ -359,8 +355,7 @@ def Test_disassemble_list_add()
         '\d\+ CHECKTYPE number stack\[-1\]\_s*' ..
         '\d\+ LISTAPPEND\_s*' ..
         '\d\+ DROP\_s*' ..
-        '\d\+ PUSHNR 0\_s*' ..
-        '\d\+ RETURN',
+        '\d\+ RETURN 0',
         res)
 enddef
 
@@ -387,8 +382,7 @@ def Test_disassemble_blob_add()
         '\d\+ CHECKTYPE number stack\[-1\]\_s*' ..
         '\d\+ BLOBAPPEND\_s*' ..
         '\d\+ DROP\_s*' ..
-        '\d\+ PUSHNR 0\_s*' ..
-        '\d\+ RETURN',
+        '\d\+ RETURN 0',
         res)
 enddef
 
@@ -573,18 +567,17 @@ def Test_disassemble_closure()
   var res = execute('disass g:Append')
   assert_match('<lambda>\d\_s*' ..
         'local ..= arg\_s*' ..
-        '\d LOADOUTER $0\_s*' ..
+        '\d LOADOUTER level 1 $0\_s*' ..
         '\d LOAD arg\[-1\]\_s*' ..
         '\d CONCAT\_s*' ..
-        '\d STOREOUTER $0\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d STOREOUTER level 1 $0\_s*' ..
+        '\d RETURN 0',
         res)
 
   res = execute('disass g:Get')
   assert_match('<lambda>\d\_s*' ..
         'return local\_s*' ..
-        '\d LOADOUTER $0\_s*' ..
+        '\d LOADOUTER level 1 $0\_s*' ..
         '\d RETURN',
         res)
 
@@ -612,8 +605,7 @@ def Test_disassemble_pcall()
         '\d PCALL top (argc 1)\_s*' ..
         '\d PCALL end\_s*' ..
         '\d DROP\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         res)
 enddef
 
@@ -862,8 +854,7 @@ def Test_disassemble_function()
         '\d PUSHS "UserFunc"\_s*' ..
         '\d BCALL funcref(argc 1)\_s*' ..
         '\d STORE $2\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         instr)
 enddef
 
@@ -890,13 +881,12 @@ def Test_disassemble_channel()
         'var chan1: channel\_s*' ..
         '\d PUSHCHANNEL 0\_s*' ..
         '\d STORE $2\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         instr)
 enddef
 
 def WithLambda(): string
-  var F = {a -> "X" .. a .. "X"}
+  var F = (a) => "X" .. a .. "X"
   return F("x")
 enddef
 
@@ -904,7 +894,7 @@ def Test_disassemble_lambda()
   assert_equal("XxX", WithLambda())
   var instr = execute('disassemble WithLambda')
   assert_match('WithLambda\_s*' ..
-        'var F = {a -> "X" .. a .. "X"}\_s*' ..
+        'var F = (a) => "X" .. a .. "X"\_s*' ..
         '\d FUNCREF <lambda>\d\+\_s*' ..
         '\d STORE $0\_s*' ..
         'return F("x")\_s*' ..
@@ -929,7 +919,7 @@ def Test_disassemble_lambda()
 enddef
 
 def LambdaWithType(): number
-  var Ref = {a: number -> a + 10}
+  var Ref = (a: number) => a + 10
   return Ref(g:value)
 enddef
 
@@ -938,7 +928,7 @@ def Test_disassemble_lambda_with_type()
   assert_equal(15, LambdaWithType())
   var instr = execute('disassemble LambdaWithType')
   assert_match('LambdaWithType\_s*' ..
-        'var Ref = {a: number -> a + 10}\_s*' ..
+        'var Ref = (a: number) => a + 10\_s*' ..
         '\d FUNCREF <lambda>\d\+\_s*' ..
         '\d STORE $0\_s*' ..
         'return Ref(g:value)\_s*' ..
@@ -963,8 +953,7 @@ def Test_nested_func()
         'echomsg "inner"\_s*' ..
         'enddef\_s*' ..
         '\d NEWFUNC <lambda>\d\+ Inner\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         instr)
 enddef
 
@@ -986,8 +975,7 @@ def Test_nested_def_list()
         '\d DEF /Info\_s*' ..
         'def /Info/\_s*' ..
         '\d DEF /Info/\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         instr)
 enddef
 
@@ -1034,6 +1022,7 @@ def Test_disassemble_for_loop()
   assert_match('ForLoop\_s*' ..
         'var res: list<number>\_s*' ..
         '\d NEWLIST size 0\_s*' ..
+        '\d SETTYPE list<number>\_s*' ..
         '\d STORE $0\_s*' ..
         'for i in range(3)\_s*' ..
         '\d STORE -1 in $1\_s*' ..
@@ -1118,8 +1107,7 @@ def Test_disassemble_for_loop_unpack()
         'endfor\_s*' ..
         '\d\+ JUMP -> 8\_s*' ..
         '\d\+ DROP\_s*' ..
-        '\d\+ PUSHNR 0\_s*' ..
-        '\d\+ RETURN',
+        '\d\+ RETURN 0',
         instr)
 enddef
 
@@ -1137,9 +1125,9 @@ def Test_disassemble_typecast()
         '\d LOADG g:number\_s*' ..
         '\d CHECKTYPE number stack\[-1\]\_s*' ..
         '\d NEWLIST size 2\_s*' ..
+        '\d SETTYPE list<number>\_s*' ..
         '\d STORE $0\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN\_s*',
+        '\d RETURN 0\_s*',
         instr)
 enddef
 
@@ -1285,7 +1273,7 @@ enddef
 
 def StringSlice(): string
   var s = "abcd"
-  var res = s[1:8]
+  var res = s[1 : 8]
   return res
 enddef
 
@@ -1295,7 +1283,7 @@ def Test_disassemble_string_slice()
         'var s = "abcd"\_s*' ..
         '\d PUSHS "abcd"\_s*' ..
         '\d STORE $0\_s*' ..
-        'var res = s\[1:8]\_s*' ..
+        'var res = s\[1 : 8]\_s*' ..
         '\d LOAD $0\_s*' ..
         '\d PUSHNR 1\_s*' ..
         '\d PUSHNR 8\_s*' ..
@@ -1331,7 +1319,7 @@ enddef
 
 def ListSlice(): list<number>
   var l = [1, 2, 3]
-  var res = l[1:8]
+  var res = l[1 : 8]
   return res
 enddef
 
@@ -1344,7 +1332,7 @@ def Test_disassemble_list_slice()
         '\d PUSHNR 3\_s*' ..
         '\d NEWLIST size 3\_s*' ..
         '\d STORE $0\_s*' ..
-        'var res = l\[1:8]\_s*' ..
+        'var res = l\[1 : 8]\_s*' ..
         '\d LOAD $0\_s*' ..
         '\d PUSHNR 1\_s*' ..
         '\d PUSHNR 8\_s*' ..
@@ -1405,14 +1393,14 @@ def Test_disassemble_any_index()
 enddef
 
 def AnySlice(): list<number>
-  var res = g:somelist[1:3]
+  var res = g:somelist[1 : 3]
   return res
 enddef
 
 def Test_disassemble_any_slice()
   var instr = execute('disassemble AnySlice')
   assert_match('AnySlice\_s*' ..
-        'var res = g:somelist\[1:3\]\_s*' ..
+        'var res = g:somelist\[1 : 3\]\_s*' ..
         '\d LOADG g:somelist\_s*' ..
         '\d PUSHNR 1\_s*' ..
         '\d PUSHNR 3\_s*' ..
@@ -1461,7 +1449,7 @@ def Test_disassemble_invert_bool()
   var instr = execute('disassemble InvertBool')
   assert_match('InvertBool\_s*' ..
         'var flag = true\_s*' ..
-        '\d PUSH v:true\_s*' ..
+        '\d PUSH true\_s*' ..
         '\d STORE $0\_s*' ..
         'var invert = !flag\_s*' ..
         '\d LOAD $0\_s*' ..
@@ -1541,10 +1529,10 @@ def Test_disassemble_compare()
         ['{a: 1} is aDict', 'COMPAREDICT is'],
         ['{a: 1} isnot aDict', 'COMPAREDICT isnot'],
 
-        ['{-> 33} == {-> 44}', 'COMPAREFUNC =='],
-        ['{-> 33} != {-> 44}', 'COMPAREFUNC !='],
-        ['{-> 33} is {-> 44}', 'COMPAREFUNC is'],
-        ['{-> 33} isnot {-> 44}', 'COMPAREFUNC isnot'],
+        ['(() => 33) == (() => 44)', 'COMPAREFUNC =='],
+        ['(() => 33) != (() => 44)', 'COMPAREFUNC !='],
+        ['(() => 33) is (() => 44)', 'COMPAREFUNC is'],
+        ['(() => 33) isnot (() => 44)', 'COMPAREFUNC isnot'],
 
         ['77 == g:xx', 'COMPAREANY =='],
         ['77 != g:xx', 'COMPAREANY !='],
@@ -1626,8 +1614,7 @@ def Test_dsassemble_falsy_op()
       'echo "" ?? "empty string"\_s*' ..
       '\d\+ PUSHS "empty string"\_s*' ..
       '\d\+ ECHO 1\_s*' ..
-      '\d\+ PUSHNR 0\_s*' ..
-      '\d\+ RETURN',
+      '\d\+ RETURN 0',
       res)
 enddef
 
@@ -1654,8 +1641,7 @@ def Test_disassemble_compare_const()
           'if ' .. substitute(case[0], '[[~]', '\\\0', 'g') .. '.*' ..
           '\d PUSHNR 42.*' ..
           '\d ECHO 1.*' ..
-          '\d PUSHNR 0.*' ..
-          '\d RETURN.*',
+          '\d RETURN 0',
           instr)
     else
       # condition false, function just returns
@@ -1663,8 +1649,7 @@ def Test_disassemble_compare_const()
           'if ' .. substitute(case[0], '[[~]', '\\\0', 'g') .. '[ \n]*' ..
           'echo 42[ \n]*' ..
           'endif[ \n]*' ..
-          '\s*\d PUSHNR 0.*' ..
-          '\d RETURN.*',
+          '\d RETURN 0',
           instr)
     endif
 
@@ -1702,8 +1687,7 @@ def Test_disassemble_execute()
         '\d\+ LOAD $1\_s*' ..
         '\d\+ CONCAT\_s*' ..
         '\d\+ EXECUTE 1\_s*' ..
-        '\d\+ PUSHNR 0\_s*' ..
-        '\d\+ RETURN',
+        '\d\+ RETURN 0',
         res)
 enddef
 
@@ -1722,8 +1706,7 @@ def Test_disassemble_echomsg()
         "echoerr 'went' .. 'wrong'\\_s*" ..
         '\d PUSHS "wentwrong"\_s*' ..
         '\d ECHOERR 1\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         res)
 enddef
 
@@ -1832,8 +1815,7 @@ def Test_shuffle()
         '\d SHUFFLE 2 up 1\_s*' ..
         '\d BCALL append(argc 2)\_s*' ..
         '\d DROP\_s*' ..
-        '\d PUSHNR 0\_s*' ..
-        '\d RETURN',
+        '\d RETURN 0',
         res)
 enddef
 
@@ -1856,7 +1838,21 @@ def Test_silent()
         '\d PUSHS "error"\_s*' ..
         '\d ECHOERR 1\_s*' ..
         '\d CMDMOD_REV\_s*' ..
-        '\d PUSHNR 0\_s*' ..
+        '\d RETURN 0',
+        res)
+enddef
+
+def s:SilentReturn(): string
+  silent return "done"
+enddef
+
+def Test_silent_return()
+  var res = execute('disass s:SilentReturn')
+  assert_match('<SNR>\d*_SilentReturn\_s*' ..
+        'silent return "done"\_s*' ..
+        '\d CMDMOD silent\_s*' ..
+        '\d PUSHS "done"\_s*' ..
+        '\d CMDMOD_REV\_s*' ..
         '\d RETURN',
         res)
 enddef

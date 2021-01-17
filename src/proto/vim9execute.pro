@@ -1,6 +1,8 @@
 /* vim9execute.c */
 void to_string_error(vartype_T vartype);
 void funcstack_check_refcount(funcstack_T *funcstack);
+char_u *char_from_string(char_u *str, varnumber_T index);
+char_u *string_slice(char_u *str, varnumber_T first, varnumber_T last, int exclusive);
 int fill_partial_and_closure(partial_T *pt, ufunc_T *ufunc, ectx_T *ectx);
 int call_def_function(ufunc_T *ufunc, int argc_arg, typval_T *argv, partial_T *partial, typval_T *rettv);
 void ex_disassemble(exarg_T *eap);

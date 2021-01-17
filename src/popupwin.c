@@ -2380,9 +2380,10 @@ f_popup_filter_menu(typval_T *argvars, typval_T *rettv)
     res.v_type = VAR_NUMBER;
 
     old_lnum = wp->w_cursor.lnum;
-    if ((c == 'k' || c == 'K' || c == K_UP) && wp->w_cursor.lnum > 1)
+    if ((c == 'k' || c == 'K' || c == K_UP || c == Ctrl_P)
+						      && wp->w_cursor.lnum > 1)
 	--wp->w_cursor.lnum;
-    if ((c == 'j' || c == 'J' || c == K_DOWN)
+    if ((c == 'j' || c == 'J' || c == K_DOWN || c == Ctrl_N)
 		       && wp->w_cursor.lnum < wp->w_buffer->b_ml.ml_line_count)
 	++wp->w_cursor.lnum;
     if (old_lnum != wp->w_cursor.lnum)
@@ -3346,21 +3347,29 @@ popup_update_mask(win_T *wp, int width, int height)
 	cols = tv_get_number(&li->li_tv);
 	if (cols < 0)
 	    cols = width + cols + 1;
+	if (cols <= 0)
+	    cols = 1;
 	li = li->li_next;
 	cole = tv_get_number(&li->li_tv);
 	if (cole < 0)
 	    cole = width + cole + 1;
+	if (cole > width)
+	    cole = width;
 	li = li->li_next;
 	lines = tv_get_number(&li->li_tv);
 	if (lines < 0)
 	    lines = height + lines + 1;
+	if (lines <= 0)
+	    lines = 1;
 	li = li->li_next;
 	linee = tv_get_number(&li->li_tv);
 	if (linee < 0)
 	    linee = height + linee + 1;
+	if (linee > height)
+	    linee = height;
 
-	for (row = lines - 1; row < linee && row < height; ++row)
-	    for (col = cols - 1; col < cole && col < width; ++col)
+	for (row = lines - 1; row < linee; ++row)
+	    for (col = cols - 1; col < cole; ++col)
 		cells[row * width + col] = 1;
     }
 }

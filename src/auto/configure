@@ -9561,6 +9561,8 @@ $as_echo_n "checking for GTK - version >= $min_gtk_version... " >&6; }
 	     sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\3/'`
     }
     else
+                  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GTK -dev package" >&5
+$as_echo_n "checking for GTK -dev package... " >&6; }
       no_gtk=yes
     fi
 
@@ -9814,6 +9816,8 @@ $as_echo_n "checking for GTK - version >= $min_gtk_version... " >&6; }
 	     sed 's/\([0-9]*\)\.\([0-9]*\)\.\([0-9]*\)/\3/'`
     }
     else
+                  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GTK -dev package" >&5
+$as_echo_n "checking for GTK -dev package... " >&6; }
       no_gtk=yes
     fi
 

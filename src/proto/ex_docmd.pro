@@ -42,7 +42,7 @@ void free_cd_dir(void);
 void post_chdir(cdscope_T scope);
 int changedir_func(char_u *new_dir, int forceit, cdscope_T scope);
 void ex_cd(exarg_T *eap);
-void do_sleep(long msec);
+void do_sleep(long msec, int hide_cursor);
 void ex_may_print(exarg_T *eap);
 void ex_redraw(exarg_T *eap);
 int vim_mkdir_emsg(char_u *name, int prot);

@@ -2,7 +2,7 @@
 "
 " Author: Bram Moolenaar
 " Copyright: Vim license applies, see ":help license"
-" Last Change: 2020 Dec 07
+" Last Change: 2021 Jan 03
 "
 " WORK IN PROGRESS - Only the basics work
 " Note: On MS-Windows you need a recent version of gdb.  The one included with
@@ -70,8 +70,13 @@ if !exists('g:termdebugger')
 endif
 
 let s:pc_id = 12
-let s:break_id = 13  " breakpoint number is added to this
+let s:asm_id = 13
+let s:break_id = 14  " breakpoint number is added to this
 let s:stopped = 1
+
+let s:parsing_disasm_msg = 0
+let s:asm_lines = []
+let s:asm_addr = ''
 
 " Take a breakpoint number as used by GDB and turn it into an integer.
 " The breakpoint may contain a dot: 123.4 -> 123004
@@ -114,6 +119,7 @@ func s:StartDebug_internal(dict)
 
   let s:ptywin = 0
   let s:pid = 0
+  let s:asmwin = 0
 
   " Uncomment this line to write logging in "debuglog".
   " call ch_logfile('debuglog', 'w')
@@ -152,6 +158,14 @@ func s:StartDebug_internal(dict)
     call s:StartDebug_prompt(a:dict)
   else
     call s:StartDebug_term(a:dict)
+  endif
+
+  if exists('g:termdebug_disasm_window')
+    if g:termdebug_disasm_window
+      let curwinid = win_getid(winnr())
+      call s:GotoAsmwinOrCreateIt()
+      call win_gotoid(curwinid)
+    endif
   endif
 endfunc
 
@@ -546,6 +560,14 @@ func s:GetFullname(msg)
   return name
 endfunc
 
+" Extract the "addr" value from a gdb message with addr="0x0001234".
+func s:GetAsmAddr(msg)
+  if a:msg !~ 'addr='
+    return ''
+  endif
+  let addr = s:DecodeMessage(substitute(a:msg, '.*addr=', '', ''))
+  return addr
+endfunc
 func s:EndTermDebug(job, status)
   exe 'bwipe! ' . s:commbuf
   unlet s:gdbwin
@@ -609,6 +631,69 @@ func s:EndPromptDebug(job, status)
   call ch_log("Returning from EndPromptDebug()")
 endfunc
 
+" Disassembly window - added by Michael Sartain
+"
+" - CommOutput: disassemble $pc
+" - CommOutput: &"disassemble $pc\n"
+" - CommOutput: ~"Dump of assembler code for function main(int, char**):\n"
+" - CommOutput: ~"   0x0000555556466f69 <+0>:\tpush   rbp\n"
+" ...
+" - CommOutput: ~"   0x0000555556467cd0:\tpop    rbp\n"
+" - CommOutput: ~"   0x0000555556467cd1:\tret    \n"
+" - CommOutput: ~"End of assembler dump.\n"
+" - CommOutput: ^done
+
+" - CommOutput: disassemble $pc
+" - CommOutput: &"disassemble $pc\n"
+" - CommOutput: &"No function contains specified address.\n"
+" - CommOutput: ^error,msg="No function contains specified address."
+func s:HandleDisasmMsg(msg)
+  if a:msg =~ '^\^done'
+    let curwinid = win_getid(winnr())
+    if win_gotoid(s:asmwin)
+      silent normal! gg0"_dG
+      call setline(1, s:asm_lines)
+      set nomodified
+      set filetype=asm
+
+      let lnum = search('^' . s:asm_addr)
+      if lnum != 0
+        exe 'sign unplace ' . s:asm_id
+        exe 'sign place ' . s:asm_id . ' line=' . lnum . ' name=debugPC'
+      endif
+
+      call win_gotoid(curwinid)
+    endif
+
+    let s:parsing_disasm_msg = 0
+    let s:asm_lines = []
+  elseif a:msg =~ '^\^error,msg='
+    if s:parsing_disasm_msg == 1
+      " Disassemble call ran into an error. This can happen when gdb can't
+      " find the function frame address, so let's try to disassemble starting
+      " at current PC
+      call s:SendCommand('disassemble $pc,+100')
+    endif
+    let s:parsing_disasm_msg = 0
+  elseif a:msg =~ '\&\"disassemble \$pc'
+    if a:msg =~ '+100'
+      " This is our second disasm attempt
+      let s:parsing_disasm_msg = 2
+    endif
+  else
+    let value = substitute(a:msg, '^\~\"[ ]*', '', '')
+    let value = substitute(value, '^=>[ ]*', '', '')
+    let value = substitute(value, '\\n\"$', '', '')
+    let value = substitute(value, '\\n\"$', '', '')
+    let value = substitute(value, '', '', '')
+    let value = substitute(value, '\\t', ' ', 'g')
+
+    if value != '' || !empty(s:asm_lines)
+      call add(s:asm_lines, value)
+    endif
+  endif
+endfunc
+
 " Handle a message received from gdb on the GDB/MI interface.
 func s:CommOutput(chan, msg)
   let msgs = split(a:msg, "\r")
@@ -618,7 +703,10 @@ func s:CommOutput(chan, msg)
     if msg[0] == "\n"
       let msg = msg[1:]
     endif
-    if msg != ''
+
+    if s:parsing_disasm_msg
+      call s:HandleDisasmMsg(msg)
+    elseif msg != ''
       if msg =~ '^\(\*stopped\|\*running\|=thread-selected\)'
 	call s:HandleCursor(msg)
       elseif msg =~ '^\^done,bkpt=' || msg =~ '^=breakpoint-created,'
@@ -631,6 +719,9 @@ func s:CommOutput(chan, msg)
 	call s:HandleEvaluate(msg)
       elseif msg =~ '^\^error,msg='
 	call s:HandleError(msg)
+      elseif msg =~ '^disassemble'
+        let s:parsing_disasm_msg = 1
+        let s:asm_lines = []
       endif
     endif
   endfor
@@ -671,6 +762,7 @@ func s:InstallCommands()
   command Gdb call win_gotoid(s:gdbwin)
   command Program call s:GotoProgram()
   command Source call s:GotoSourcewinOrCreateIt()
+  command Asm call s:GotoAsmwinOrCreateIt()
   command Winbar call s:InstallWinbar()
 
   if !exists('g:termdebug_map_K') || g:termdebug_map_K
@@ -724,6 +816,7 @@ func s:DeleteCommands()
   delcommand Gdb
   delcommand Program
   delcommand Source
+  delcommand Asm
   delcommand Winbar
 
   if exists('s:k_map_saved')
@@ -923,6 +1016,48 @@ func s:GotoSourcewinOrCreateIt()
   endif
 endfunc
 
+func s:GotoAsmwinOrCreateIt()
+  if !win_gotoid(s:asmwin)
+    if win_gotoid(s:sourcewin)
+      exe 'rightbelow new'
+    else
+      exe 'new'
+    endif
+
+    let s:asmwin = win_getid(winnr())
+
+    setlocal nowrap
+    setlocal number
+    setlocal noswapfile
+    setlocal buftype=nofile
+
+    let asmbuf = bufnr('Termdebug-asm-listing')
+    if asmbuf > 0
+      exe 'buffer' . asmbuf
+    else
+      exe 'file Termdebug-asm-listing'
+    endif
+
+    if exists('g:termdebug_disasm_window')
+      if g:termdebug_disasm_window > 1
+        exe 'resize ' . g:termdebug_disasm_window
+      endif
+    endif
+  endif
+
+  if s:asm_addr != ''
+    let lnum = search('^' . s:asm_addr)
+    if lnum == 0
+      if s:stopped
+        call s:SendCommand('disassemble $pc')
+      endif
+    else
+      exe 'sign unplace ' . s:asm_id
+      exe 'sign place ' . s:asm_id . ' line=' . lnum . ' name=debugPC'
+    endif
+  endif
+endfunc
+
 " Handle stopping and running message from gdb.
 " Will update the sign that shows the current position.
 func s:HandleCursor(msg)
@@ -941,6 +1076,27 @@ func s:HandleCursor(msg)
   else
     let fname = ''
   endif
+
+  if a:msg =~ 'addr='
+    let asm_addr = s:GetAsmAddr(a:msg)
+    if asm_addr != ''
+      let s:asm_addr = asm_addr
+
+      let curwinid = win_getid(winnr())
+      if win_gotoid(s:asmwin)
+        let lnum = search('^' . s:asm_addr)
+        if lnum == 0
+          call s:SendCommand('disassemble $pc')
+        else
+          exe 'sign unplace ' . s:asm_id
+          exe 'sign place ' . s:asm_id . ' line=' . lnum . ' name=debugPC'
+        endif
+
+        call win_gotoid(curwinid)
+      endif
+    endif
+  endif
+
   if a:msg =~ '^\(\*stopped\|=thread-selected\)' && filereadable(fname)
     let lnum = substitute(a:msg, '.*line="\([^"]*\)".*', '\1', '')
     if lnum =~ '^[0-9]*$'

@@ -8099,6 +8099,7 @@ ex_helpgrep(exarg_T *eap)
     int		new_qi = FALSE;
     char_u	*au_name =  NULL;
     char_u	*lang = NULL;
+    int		updated = FALSE;
 
     switch (eap->cmdidx)
     {
@@ -8150,14 +8151,24 @@ ex_helpgrep(exarg_T *eap)
 	qfl->qf_ptr = qfl->qf_start;
 	qfl->qf_index = 1;
 	qf_list_changed(qfl);
-	qf_update_buffer(qi, NULL);
+	updated = TRUE;
     }
 
     if (p_cpo == empty_option)
 	p_cpo = save_cpo;
     else
-	// Darn, some plugin changed the value.
+    {
+	// Darn, some plugin changed the value.  If it's still empty it was
+	// changed and restored, need to restore in the complicated way.
+	if (*p_cpo == NUL)
+	    set_option_value((char_u *)"cpo", 0L, save_cpo, 0);
 	free_string_option(save_cpo);
+    }
+
+    if (updated)
+	// This may open a window and source scripts, do this after 'cpo' was
+	// restored.
+	qf_update_buffer(qi, NULL);
 
     if (au_name != NULL)
     {

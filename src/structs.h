@@ -1481,6 +1481,7 @@ struct listvar_S
 	    int		lv_idx;		// cached index of an item
 	} mat;
     } lv_u;
+    type_T	*lv_type;	// allocated by alloc_type()
     list_T	*lv_copylist;	// copied list used by deepcopy()
     list_T	*lv_used_next;	// next list in used lists list
     list_T	*lv_used_prev;	// previous list in used lists list
@@ -1544,6 +1545,7 @@ struct dictvar_S
     int		dv_refcount;	// reference count
     int		dv_copyID;	// ID used by deepcopy()
     hashtab_T	dv_hashtab;	// hashtab that refers to the items
+    type_T	*dv_type;	// allocated by alloc_type()
     dict_T	*dv_copydict;	// copied dict used by deepcopy()
     dict_T	*dv_used_next;	// next dict in used dicts list
     dict_T	*dv_used_prev;	// previous dict in used dicts list
@@ -1565,8 +1567,8 @@ typedef void (*cfunc_free_T)(void *state);
 // type of getline() last argument
 typedef enum {
     GETLINE_NONE,	    // do not concatenate any lines
-    GETLINE_CONCAT_CONT,    // concatenate continuation lines in Vim9 script
-    GETLINE_CONCAT_CONTDEF, // concatenate continuation lines always
+    GETLINE_CONCAT_CONT,    // concatenate continuation lines with backslash
+    GETLINE_CONCAT_CONTBAR, // concatenate continuation lines with \ and |
     GETLINE_CONCAT_ALL	    // concatenate continuation and Vim9 # comment lines
 } getline_opt_T;
 
@@ -1775,7 +1777,7 @@ struct svar_S {
     char_u	*sv_name;	// points into "sn_all_vars" di_key
     typval_T	*sv_tv;		// points into "sn_vars" or "sn_all_vars" di_tv
     type_T	*sv_type;
-    int		sv_const;
+    int		sv_const;	// 0, ASSIGN_CONST or ASSIGN_FINAL
     int		sv_export;	// "export let var = val"
 };
 
@@ -1942,6 +1944,7 @@ typedef struct {
     partial_T	*partial;	// for extra arguments
     dict_T	*selfdict;	// Dictionary for "self"
     typval_T	*basetv;	// base for base->method()
+    type_T	*check_type;	// type from funcref or NULL
 } funcexe_T;
 
 /*
@@ -1962,6 +1965,14 @@ typedef struct funcstack_S
     int		fs_copyID;	// for garray_T collection
 } funcstack_T;
 
+typedef struct outer_S outer_T;
+struct outer_S {
+    garray_T	*out_stack;	    // stack from outer scope
+    int		out_frame_idx;	    // index of stack frame in out_stack
+    outer_T	*out_up;	    // outer scope of outer scope or NULL
+    int		out_up_is_copy;	    // don't free out_up
+};
+
 struct partial_S
 {
     int		pt_refcount;	// reference count
@@ -1972,11 +1983,11 @@ struct partial_S
     int		pt_auto;	// when TRUE the partial was created for using
 				// dict.member in handle_subscript()
 
-    // For a compiled closure: the arguments and local variables.
-    garray_T	*pt_ectx_stack;	    // where to find local vars
-    int		pt_ectx_frame;	    // index of function frame in uf_ectx_stack
-    funcstack_T	*pt_funcstack;	    // copy of stack, used after context
-				    // function returns
+    // For a compiled closure: the arguments and local variables scope
+    outer_T	pt_outer;
+
+    funcstack_T	*pt_funcstack;	// copy of stack, used after context
+				// function returns
 
     int		pt_argc;	// number of arguments
     typval_T	*pt_argv;	// arguments in allocated array
@@ -4026,7 +4037,7 @@ typedef enum
     EXPR_MULT,		// *
     EXPR_DIV,		// /
     EXPR_REM,		// %
-} exptype_T;
+} exprtype_T;
 
 /*
  * Structure used for reading in json_decode().
@@ -4289,6 +4300,32 @@ typedef struct
     int		sa_wrapped;	// search wrapped around
 } searchit_arg_T;
 
+/*
+ * Cookie used by getsourceline().
+ */
+/*
+ * Cookie used to store info for each sourced file.
+ * It is shared between do_source() and getsourceline().
+ * This is passed to do_cmdline().
+ */
+typedef struct {
+    FILE	*fp;		// opened file for sourcing
+    char_u	*nextline;	// if not NULL: line that was read ahead
+    linenr_T	sourcing_lnum;	// line number of the source file
+    int		finished;	// ":finish" used
+#ifdef USE_CRNL
+    int		fileformat;	// EOL_UNKNOWN, EOL_UNIX or EOL_DOS
+    int		error;		// TRUE if LF found after CR-LF
+#endif
+#ifdef FEAT_EVAL
+    linenr_T	breakpoint;	// next line with breakpoint or zero
+    char_u	*fname;		// name of sourced file
+    int		dbg_tick;	// debug_tick when breakpoint was set
+    int		level;		// top nesting level of sourced file
+#endif
+    vimconv_T	conv;		// type of conversion
+} source_cookie_T;
+
 
 #define WRITEBUFSIZE	8192	// size of normal write buffer
 
@@ -4319,8 +4356,20 @@ typedef struct
 // with iconv() to be able to allocate a buffer.
 #define ICONV_MULT 8
 
+// Used for "magic_overruled".
 typedef enum {
-    MAGIC_NOT_SET,	// p_magic not overruled
-    MAGIC_ON,		// magic on inside regexp
-    MAGIC_OFF		// magic off inside regexp
+    OPTION_MAGIC_NOT_SET,	// p_magic not overruled
+    OPTION_MAGIC_ON,		// magic on inside regexp
+    OPTION_MAGIC_OFF		// magic off inside regexp
+} optmagic_T;
+
+// Magicness of a pattern, used by regexp code.
+// The order and values matter:
+//  magic <= MAGIC_OFF includes MAGIC_NONE
+//  magic >= MAGIC_ON  includes MAGIC_ALL
+typedef enum {
+    MAGIC_NONE = 1,		// "\V" very unmagic
+    MAGIC_OFF = 2,		// "\M" or 'magic' off
+    MAGIC_ON = 3,		// "\m" or 'magic'
+    MAGIC_ALL = 4		// "\v" very magic
 } magic_T;

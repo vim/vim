@@ -1594,6 +1594,12 @@ vim_isbdigit(int c)
     return (c == '0' || c == '1');
 }
 
+    static int
+vim_isodigit(int c)
+{
+    return (c >= '0' && c <= '7');
+}
+
 /*
  * Vim's own character class functions.  These exist because many library
  * islower()/toupper() etc. do not work properly: they crash when used with
@@ -1831,7 +1837,7 @@ vim_str2nr(
 	    // binary
 	    ptr += 2;
 	else if ((what & STR2NR_OOCT)
-		&& (pre == 'O' || pre == 'o') && vim_isbdigit(ptr[2])
+		&& (pre == 'O' || pre == 'o') && vim_isodigit(ptr[2])
 		&& (maxlen == 0 || maxlen > 2))
 	    // octal with prefix "0o"
 	    ptr += 2;

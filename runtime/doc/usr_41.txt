@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.2.  Last change: 2020 Dec 19
+*usr_41.txt*	For Vim version 8.2.  Last change: 2021 Jan 08
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -122,14 +122,14 @@ starts with a zero.  "017" is decimal 15.  A binary number starts with "0b" or
 decimal number, it will be interpreted as an octal number!
    The ":echo" command always prints decimal numbers.  Example: >
 
-	:echo 0x7f 036
+	:echo 0x7f 0o36
 <	127 30 ~
 
 A number is made negative with a minus sign.  This also works for hexadecimal,
 octal and binary numbers.  A minus sign is also used for subtraction.  Compare
 this with the previous example: >
 
-	:echo 0x7f -036
+	:echo 0x7f -0o36
 <	97 ~
 
 White space in an expression is ignored.  However, it's recommended to use it
@@ -137,7 +137,7 @@ for separating items, to make the expression easier to read.  For example, to
 avoid the confusion with a negative number above, put a space between the
 minus sign and the following number: >
 
-	:echo 0x7f - 036
+	:echo 0x7f - 0o36
 
 ==============================================================================
 *41.2*	Variables
@@ -619,6 +619,8 @@ String manipulation:					*string-functions*
 	submatch()		get a specific match in ":s" and substitute()
 	strpart()		get part of a string using byte index
 	strcharpart()		get part of a string using char index
+	slice()			take a slice of a string, using char index in
+				Vim9 script
 	strgetchar()		get character from a string using char index
 	expand()		expand special keywords
 	expandcmd()		expand a command like done for `:edit`
@@ -640,6 +642,7 @@ List manipulation:					*list-functions*
 	insert()		insert an item somewhere in a List
 	add()			append an item to a List
 	extend()		append a List to a List
+	extendnew()		make a new List and append items
 	remove()		remove one or more items from a List
 	copy()			make a shallow copy of a List
 	deepcopy()		make a full copy of a List
@@ -647,6 +650,7 @@ List manipulation:					*list-functions*
 	map()			change each List item
 	mapnew()		make a new List with changed items
 	reduce()		reduce a List to a value
+	slice()			take a slice of a List
 	sort()			sort a List
 	reverse()		reverse the order of a List
 	uniq()			remove copies of repeated adjacent items
@@ -669,6 +673,7 @@ Dictionary manipulation:				*dict-functions*
 	empty()			check if Dictionary is empty
 	remove()		remove an entry from a Dictionary
 	extend()		add entries from one Dictionary to another
+	extendnew()		make a new Dictionary and append items
 	filter()		remove selected entries from a Dictionary
 	map()			change each Dictionary entry
 	mapnew()		make a new Dictionary with changed items
@@ -718,7 +723,8 @@ Other computation:					*bitwise-function*
 	srand()			initialize seed used by rand()
 
 Variables:						*var-functions*
-	type()			type of a variable
+	type()			type of a variable as a number
+	typename()		type of a variable as text
 	islocked()		check if a variable is locked
 	funcref()		get a Funcref for a function reference
 	function()		get a Funcref for a function name
@@ -753,6 +759,11 @@ Cursor and mark position:		*cursor-functions* *mark-functions*
 	screenchar()		get character code at a screen line/row
 	screenchars()		get character codes at a screen line/row
 	screenstring()		get string of characters at a screen line/row
+	charcol()		character number of the cursor or a mark
+	getcharpos()		get character position of cursor, mark, etc.
+	setcharpos()		set character position of cursor, mark, etc.
+	getcursorcharpos()	get character position of the cursor
+	setcursorcharpos()	set character position of the cursor
 
 Working with text in the current buffer:		*text-functions*
 	getline()		get a line or list of lines from the buffer
@@ -812,6 +823,7 @@ System functions and manipulation of files:
 	setenv()		set an environment variable
 	hostname()		name of the system
 	readfile()		read a file into a List of lines
+	readblob()		read a file into a Blob
 	readdir()		get a List of file names in a directory
 	readdirex()		get a List of file information in a directory
 	writefile()		write a List of lines or Blob into a file

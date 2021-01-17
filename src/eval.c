@@ -467,6 +467,45 @@ skip_expr_concatenate(
 }
 
 /*
+ * Convert "tv" to a string.
+ * When "convert" is TRUE convert a List into a sequence of lines and convert
+ * a Float to a String.
+ * Returns an allocated string (NULL when out of memory).
+ */
+    char_u *
+typval2string(typval_T *tv, int convert)
+{
+    garray_T	ga;
+    char_u	*retval;
+#ifdef FEAT_FLOAT
+    char_u	numbuf[NUMBUFLEN];
+#endif
+
+    if (convert && tv->v_type == VAR_LIST)
+    {
+	ga_init2(&ga, (int)sizeof(char), 80);
+	if (tv->vval.v_list != NULL)
+	{
+	    list_join(&ga, tv->vval.v_list, (char_u *)"\n", TRUE, FALSE, 0);
+	    if (tv->vval.v_list->lv_len > 0)
+		ga_append(&ga, NL);
+	}
+	ga_append(&ga, NUL);
+	retval = (char_u *)ga.ga_data;
+    }
+#ifdef FEAT_FLOAT
+    else if (convert && tv->v_type == VAR_FLOAT)
+    {
+	vim_snprintf((char *)numbuf, NUMBUFLEN, "%g", tv->vval.v_float);
+	retval = vim_strsave(numbuf);
+    }
+#endif
+    else
+	retval = vim_strsave(tv_get_string(tv));
+    return retval;
+}
+
+/*
  * Top level evaluation function, returning a string.  Does not handle line
  * breaks.
  * When "convert" is TRUE convert a List into a sequence of lines and convert
@@ -481,10 +520,6 @@ eval_to_string_eap(
 {
     typval_T	tv;
     char_u	*retval;
-    garray_T	ga;
-#ifdef FEAT_FLOAT
-    char_u	numbuf[NUMBUFLEN];
-#endif
     evalarg_T	evalarg;
 
     fill_evalarg_from_eap(&evalarg, eap, eap != NULL && eap->skip);
@@ -492,27 +527,7 @@ eval_to_string_eap(
 	retval = NULL;
     else
     {
-	if (convert && tv.v_type == VAR_LIST)
-	{
-	    ga_init2(&ga, (int)sizeof(char), 80);
-	    if (tv.vval.v_list != NULL)
-	    {
-		list_join(&ga, tv.vval.v_list, (char_u *)"\n", TRUE, FALSE, 0);
-		if (tv.vval.v_list->lv_len > 0)
-		    ga_append(&ga, NL);
-	    }
-	    ga_append(&ga, NUL);
-	    retval = (char_u *)ga.ga_data;
-	}
-#ifdef FEAT_FLOAT
-	else if (convert && tv.v_type == VAR_FLOAT)
-	{
-	    vim_snprintf((char *)numbuf, NUMBUFLEN, "%g", tv.vval.v_float);
-	    retval = vim_strsave(numbuf);
-	}
-#endif
-	else
-	    retval = vim_strsave(tv_get_string(&tv));
+	retval = typval2string(&tv, convert);
 	clear_tv(&tv);
     }
     clear_evalarg(&evalarg, NULL);
@@ -721,8 +736,10 @@ call_func_retlist(
 
 #ifdef FEAT_FOLDING
 /*
- * Evaluate 'foldexpr'.  Returns the foldlevel, and any character preceding
- * it in "*cp".  Doesn't give error messages.
+ * Evaluate "arg", which is 'foldexpr'.
+ * Note: caller must set "curwin" to match "arg".
+ * Returns the foldlevel, and any character preceding it in "*cp".  Doesn't
+ * give error messages.
  */
     int
 eval_foldexpr(char_u *arg, int *cp)
@@ -809,13 +826,14 @@ get_lval(
     int		len;
     hashtab_T	*ht = NULL;
     int		quiet = flags & GLV_QUIET;
+    int		writing;
 
     // Clear everything in "lp".
     CLEAR_POINTER(lp);
 
-    if (skip)
+    if (skip || (flags & GLV_COMPILING))
     {
-	// When skipping just find the end of the name.
+	// When skipping or compiling just find the end of the name.
 	lp->ll_name = name;
 	lp->ll_name_end = find_name_end(name, NULL, NULL,
 						      FNE_INCL_BR | fne_flags);
@@ -882,10 +900,10 @@ get_lval(
 
     cc = *p;
     *p = NUL;
-    // Only pass &ht when we would write to the variable, it prevents autoload
-    // as well.
-    v = find_var(lp->ll_name, (flags & GLV_READ_ONLY) ? NULL : &ht,
-						      flags & GLV_NO_AUTOLOAD);
+    // When we would write to the variable pass &ht and prevent autoload.
+    writing = !(flags & GLV_READ_ONLY);
+    v = find_var(lp->ll_name, writing ? &ht : NULL,
+					 (flags & GLV_NO_AUTOLOAD) || writing);
     if (v == NULL && !quiet)
 	semsg(_(e_undefined_variable_str), lp->ll_name);
     *p = cc;
@@ -1748,7 +1766,7 @@ next_for_item(void *fi_void, char_u *arg)
 {
     forinfo_T	*fi = (forinfo_T *)fi_void;
     int		result;
-    int		flag = in_vim9script() ?  ASSIGN_NO_DECL : 0;
+    int		flag = in_vim9script() ? ASSIGN_DECL : 0;
     listitem_T	*item;
 
     if (fi->fi_blob != NULL)
@@ -1940,7 +1958,7 @@ pattern_match(char_u *pat, char_u *text, int ic)
 
     // avoid 'l' flag in 'cpoptions'
     save_cpo = p_cpo;
-    p_cpo = (char_u *)"";
+    p_cpo = empty_option;
     regmatch.regprog = vim_regcomp(pat, RE_MAGIC + RE_STRING);
     if (regmatch.regprog != NULL)
     {
@@ -1972,13 +1990,15 @@ eval_func(
     int		len = name_len;
     partial_T	*partial;
     int		ret = OK;
+    type_T	*type = NULL;
 
     if (!evaluate)
 	check_vars(s, len);
 
     // If "s" is the name of a variable of type VAR_FUNC
     // use its contents.
-    s = deref_func_name(s, &len, &partial, !evaluate);
+    s = deref_func_name(s, &len, &partial,
+				    in_vim9script() ? &type : NULL, !evaluate);
 
     // Need to make a copy, in case evaluating the arguments makes
     // the name invalid.
@@ -1996,6 +2016,7 @@ eval_func(
 	funcexe.evaluate = evaluate;
 	funcexe.partial = partial;
 	funcexe.basetv = basetv;
+	funcexe.check_type = type;
 	ret = get_func_tv(s, len, rettv, arg, evalarg, &funcexe);
     }
     vim_free(s);
@@ -2649,7 +2670,7 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 {
     char_u	*p;
     int		getnext;
-    exptype_T	type = EXPR_UNKNOWN;
+    exprtype_T	type = EXPR_UNKNOWN;
     int		len = 2;
     int		type_is = FALSE;
 
@@ -3188,6 +3209,28 @@ eval6(
     return OK;
 }
 
+    int
+eval_leader(char_u **arg, int vim9)
+{
+    char_u	*s = *arg;
+    char_u	*p = *arg;
+
+    while (*p == '!' || *p == '-' || *p == '+')
+    {
+	char_u *n = skipwhite(p + 1);
+
+	// ++, --, -+ and +- are not accepted in Vim9 script
+	if (vim9 && (*p == '-' || *p == '+') && (*n == '-' || *n == '+'))
+	{
+	    semsg(_(e_invexpr2), s);
+	    return FAIL;
+	}
+	p = n;
+    }
+    *arg = p;
+    return OK;
+}
+
 /*
  * Handle sixth level expression:
  *  number		number constant
@@ -3243,8 +3286,8 @@ eval7(
      * Skip '!', '-' and '+' characters.  They are handled later.
      */
     start_leader = *arg;
-    while (**arg == '!' || **arg == '-' || **arg == '+')
-	*arg = skipwhite(*arg + 1);
+    if (eval_leader(arg, in_vim9script()) == FAIL)
+	return FAIL;
     end_leader = *arg;
 
     if (**arg == '.' && (!isdigit(*(*arg + 1))
@@ -3316,7 +3359,10 @@ eval7(
      * Lambda: {arg, arg -> expr}
      * Dictionary: {'key': val, 'key': val}
      */
-    case '{':	ret = get_lambda_tv(arg, rettv, in_vim9script(), evalarg);
+    case '{':	if (in_vim9script())
+		    ret = NOTDONE;
+		else
+		    ret = get_lambda_tv(arg, rettv, in_vim9script(), evalarg);
 		if (ret == NOTDONE)
 		    ret = eval_dict(arg, rettv, evalarg, FALSE);
 		break;
@@ -3410,10 +3456,17 @@ eval7(
 		    ret = OK;
 		}
 		else if (len == 5 && in_vim9script()
-						&& STRNCMP(s, "false", 4) == 0)
+						&& STRNCMP(s, "false", 5) == 0)
 		{
 		    rettv->v_type = VAR_BOOL;
 		    rettv->vval.v_number = VVAL_FALSE;
+		    ret = OK;
+		}
+		else if (len == 4 && in_vim9script()
+						&& STRNCMP(s, "null", 4) == 0)
+		{
+		    rettv->v_type = VAR_SPECIAL;
+		    rettv->vval.v_number = VVAL_NULL;
 		    ret = OK;
 		}
 		else
@@ -3617,7 +3670,24 @@ eval_lambda(
     *arg += 2;
     rettv->v_type = VAR_UNKNOWN;
 
-    ret = get_lambda_tv(arg, rettv, FALSE, evalarg);
+    if (**arg == '{')
+    {
+	// ->{lambda}()
+	ret = get_lambda_tv(arg, rettv, FALSE, evalarg);
+    }
+    else
+    {
+	// ->(lambda)()
+	++*arg;
+	ret = eval1(arg, rettv, evalarg);
+	*arg = skipwhite_and_linebreak(*arg, evalarg);
+	if (**arg != ')')
+	{
+	    emsg(_(e_missing_close));
+	    ret = FAIL;
+	}
+	++*arg;
+    }
     if (ret != OK)
 	return FAIL;
     else if (**arg != '(')
@@ -3725,6 +3795,7 @@ eval_index(
     int		range = FALSE;
     char_u	*key = NULL;
     int		keylen = -1;
+    int		vim9 = in_vim9script();
 
     if (check_can_index(rettv, evaluate, verbose) == FAIL)
 	return FAIL;
@@ -3755,6 +3826,13 @@ eval_index(
 	    empty1 = TRUE;
 	else if (eval1(arg, &var1, evalarg) == FAIL)	// recursive!
 	    return FAIL;
+	else if (vim9 && **arg == ':')
+	{
+	    semsg(_(e_white_space_required_before_and_after_str_at_str),
+								    ":", *arg);
+	    clear_tv(&var1);
+	    return FAIL;
+	}
 	else if (evaluate && tv_get_string_chk(&var1) == NULL)
 	{
 	    // not a number or string
@@ -3769,7 +3847,16 @@ eval_index(
 	if (**arg == ':')
 	{
 	    range = TRUE;
-	    *arg = skipwhite_and_linebreak(*arg + 1, evalarg);
+	    ++*arg;
+	    if (vim9 && !IS_WHITE_OR_NUL(**arg) && **arg != ']')
+	    {
+		semsg(_(e_white_space_required_before_and_after_str_at_str),
+								":", *arg - 1);
+		if (!empty1)
+		    clear_tv(&var1);
+		return FAIL;
+	    }
+	    *arg = skipwhite_and_linebreak(*arg, evalarg);
 	    if (**arg == ']')
 		empty2 = TRUE;
 	    else if (eval1(arg, &var2, evalarg) == FAIL)	// recursive!
@@ -3805,8 +3892,9 @@ eval_index(
     if (evaluate)
     {
 	int res = eval_index_inner(rettv, range,
-		empty1 ? NULL : &var1, empty2 ? NULL : &var2,
+		empty1 ? NULL : &var1, empty2 ? NULL : &var2, FALSE,
 		key, keylen, verbose);
+
 	if (!empty1)
 	    clear_tv(&var1);
 	if (range)
@@ -3866,9 +3954,26 @@ check_can_index(typval_T *rettv, int evaluate, int verbose)
 }
 
 /*
+ * slice() function
+ */
+    void
+f_slice(typval_T *argvars, typval_T *rettv)
+{
+    if (check_can_index(argvars, TRUE, FALSE) == OK)
+    {
+	copy_tv(argvars, rettv);
+	eval_index_inner(rettv, TRUE, argvars + 1,
+		argvars[2].v_type == VAR_UNKNOWN ? NULL : argvars + 2,
+		TRUE, NULL, 0, FALSE);
+    }
+}
+
+/*
  * Apply index or range to "rettv".
  * "var1" is the first index, NULL for [:expr].
  * "var2" is the second index, NULL for [expr] and [expr: ]
+ * "exclusive" is TRUE for slice(): second index is exclusive, use character
+ * index for string.
  * Alternatively, "key" is not NULL, then key[keylen] is the dict index.
  */
     int
@@ -3877,12 +3982,13 @@ eval_index_inner(
 	int	    is_range,
 	typval_T    *var1,
 	typval_T    *var2,
+	int	    exclusive,
 	char_u	    *key,
 	int	    keylen,
 	int	    verbose)
 {
-    long	n1, n2 = 0;
-    long	len;
+    varnumber_T	    n1, n2 = 0;
+    long	    len;
 
     n1 = 0;
     if (var1 != NULL && rettv->v_type != VAR_DICT)
@@ -3896,10 +4002,10 @@ eval_index_inner(
 		emsg(_(e_cannot_slice_dictionary));
 	    return FAIL;
 	}
-	if (var2 == NULL)
-	    n2 = -1;
-	else
+	if (var2 != NULL)
 	    n2 = tv_get_number(var2);
+	else
+	    n2 = VARNUM_MAX;
     }
 
     switch (rettv->v_type)
@@ -3922,10 +4028,10 @@ eval_index_inner(
 		char_u	*s = tv_get_string(rettv);
 
 		len = (long)STRLEN(s);
-		if (in_vim9script())
+		if (in_vim9script() || exclusive)
 		{
 		    if (is_range)
-			s = string_slice(s, n1, n2);
+			s = string_slice(s, n1, n2, exclusive);
 		    else
 			s = char_from_string(s, n1);
 		}
@@ -3943,6 +4049,8 @@ eval_index_inner(
 			n2 = len + n2;
 		    else if (n2 >= len)
 			n2 = len;
+		    if (exclusive)
+			--n2;
 		    if (n1 >= len || n2 < 0 || n1 > n2)
 			s = NULL;
 		    else
@@ -3979,7 +4087,9 @@ eval_index_inner(
 		if (n2 < 0)
 		    n2 = len + n2;
 		else if (n2 >= len)
-		    n2 = len - 1;
+		    n2 = len - (exclusive ? 0 : 1);
+		if (exclusive)
+		    --n2;
 		if (n1 >= len || n2 < 0 || n1 > n2)
 		{
 		    clear_tv(rettv);
@@ -4031,9 +4141,9 @@ eval_index_inner(
 	    if (var1 == NULL)
 		n1 = 0;
 	    if (var2 == NULL)
-		n2 = -1;
+		n2 = VARNUM_MAX;
 	    if (list_slice_or_index(rettv->vval.v_list,
-				    is_range, n1, n2, rettv, verbose) == FAIL)
+			  is_range, n1, n2, exclusive, rettv, verbose) == FAIL)
 		return FAIL;
 	    break;
 
@@ -4982,6 +5092,74 @@ string2float(
 #endif
 
 /*
+ * Convert the specified byte index of line 'lnum' in buffer 'buf' to a
+ * character index.  Works only for loaded buffers. Returns -1 on failure.
+ * The index of the first byte and the first character is zero.
+ */
+    int
+buf_byteidx_to_charidx(buf_T *buf, int lnum, int byteidx)
+{
+    char_u	*str;
+    char_u	*t;
+    int		count;
+
+    if (buf == NULL || buf->b_ml.ml_mfp == NULL)
+	return -1;
+
+    if (lnum > buf->b_ml.ml_line_count)
+	lnum = buf->b_ml.ml_line_count;
+
+    str = ml_get_buf(buf, lnum, FALSE);
+    if (str == NULL)
+	return -1;
+
+    if (*str == NUL)
+	return 0;
+
+    // count the number of characters
+    t = str;
+    for (count = 0; *t != NUL && t <= str + byteidx; count++)
+	t += mb_ptr2len(t);
+
+    // In insert mode, when the cursor is at the end of a non-empty line,
+    // byteidx points to the NUL character immediately past the end of the
+    // string. In this case, add one to the character count.
+    if (*t == NUL && byteidx != 0 && t == str + byteidx)
+	count++;
+
+    return count - 1;
+}
+
+/*
+ * Convert the specified character index of line 'lnum' in buffer 'buf' to a
+ * byte index.  Works only for loaded buffers. Returns -1 on failure.
+ * The index of the first byte and the first character is zero.
+ */
+    int
+buf_charidx_to_byteidx(buf_T *buf, int lnum, int charidx)
+{
+    char_u	*str;
+    char_u	*t;
+
+    if (buf == NULL || buf->b_ml.ml_mfp == NULL)
+	return -1;
+
+    if (lnum > buf->b_ml.ml_line_count)
+	lnum = buf->b_ml.ml_line_count;
+
+    str = ml_get_buf(buf, lnum, FALSE);
+    if (str == NULL)
+	return -1;
+
+    // Convert the character offset to a byte offset
+    t = str;
+    while (*t != NUL && --charidx > 0)
+	t += mb_ptr2len(t);
+
+    return t - str;
+}
+
+/*
  * Translate a String variable into a position.
  * Returns NULL when there is an error.
  */
@@ -4989,7 +5167,8 @@ string2float(
 var2fpos(
     typval_T	*varp,
     int		dollar_lnum,	// TRUE when $ is last line
-    int		*fnum)		// set to fnum for '0, 'A, etc.
+    int		*fnum,		// set to fnum for '0, 'A, etc.
+    int		charcol)	// return character column
 {
     char_u		*name;
     static pos_T	pos;
@@ -5011,7 +5190,10 @@ var2fpos(
 	pos.lnum = list_find_nr(l, 0L, &error);
 	if (error || pos.lnum <= 0 || pos.lnum > curbuf->b_ml.ml_line_count)
 	    return NULL;	// invalid line number
-	len = (long)STRLEN(ml_get(pos.lnum));
+	if (charcol)
+	    len = (long)mb_charlen(ml_get(pos.lnum));
+	else
+	    len = (long)STRLEN(ml_get(pos.lnum));
 
 	// Get the column number
 	// We accept "$" for the column number: last column.
@@ -5046,18 +5228,29 @@ var2fpos(
     if (name == NULL)
 	return NULL;
     if (name[0] == '.')				// cursor
-	return &curwin->w_cursor;
+    {
+	pos = curwin->w_cursor;
+	if (charcol)
+	    pos.col = buf_byteidx_to_charidx(curbuf, pos.lnum, pos.col);
+	return &pos;
+    }
     if (name[0] == 'v' && name[1] == NUL)	// Visual start
     {
 	if (VIsual_active)
-	    return &VIsual;
-	return &curwin->w_cursor;
+	    pos = VIsual;
+	else
+	    pos = curwin->w_cursor;
+	if (charcol)
+	    pos.col = buf_byteidx_to_charidx(curbuf, pos.lnum, pos.col);
+	return &pos;
     }
     if (name[0] == '\'')			// mark
     {
 	pp = getmark_buf_fnum(curbuf, name[1], FALSE, fnum);
 	if (pp == NULL || pp == (pos_T *)-1 || pp->lnum <= 0)
 	    return NULL;
+	if (charcol)
+	    pp->col = buf_byteidx_to_charidx(curbuf, pp->lnum, pp->col);
 	return pp;
     }
 
@@ -5092,7 +5285,10 @@ var2fpos(
 	else
 	{
 	    pos.lnum = curwin->w_cursor.lnum;
-	    pos.col = (colnr_T)STRLEN(ml_get_curline());
+	    if (charcol)
+		pos.col = (colnr_T)mb_charlen(ml_get_curline());
+	    else
+		pos.col = (colnr_T)STRLEN(ml_get_curline());
 	}
 	return &pos;
     }
@@ -5112,7 +5308,8 @@ list2fpos(
     typval_T	*arg,
     pos_T	*posp,
     int		*fnump,
-    colnr_T	*curswantp)
+    colnr_T	*curswantp,
+    int		charcol)
 {
     list_T	*l = arg->vval.v_list;
     long	i = 0;
@@ -5144,6 +5341,18 @@ list2fpos(
     n = list_find_nr(l, i++, NULL);	// col
     if (n < 0)
 	return FAIL;
+    // If character position is specified, then convert to byte position
+    if (charcol)
+    {
+	buf_T	*buf;
+
+	// Get the text for the specified line in a loaded buffer
+	buf = buflist_findnr(fnump == NULL ? curbuf->b_fnum : *fnump);
+	if (buf == NULL || buf->b_ml.ml_mfp == NULL)
+	    return FAIL;
+
+	n = buf_charidx_to_byteidx(buf, posp->lnum, n) + 1;
+    }
     posp->col = n;
 
     n = list_find_nr(l, i, NULL);	// off
@@ -5477,97 +5686,6 @@ eval_isdictc(int c)
 }
 
 /*
- * Return the character "str[index]" where "index" is the character index.  If
- * "index" is out of range NULL is returned.
- */
-    char_u *
-char_from_string(char_u *str, varnumber_T index)
-{
-    size_t	    nbyte = 0;
-    varnumber_T	    nchar = index;
-    size_t	    slen;
-
-    if (str == NULL || index < 0)
-	return NULL;
-    slen = STRLEN(str);
-    while (nchar > 0 && nbyte < slen)
-    {
-	nbyte += MB_CPTR2LEN(str + nbyte);
-	--nchar;
-    }
-    if (nbyte >= slen)
-	return NULL;
-    return vim_strnsave(str + nbyte, MB_CPTR2LEN(str + nbyte));
-}
-
-/*
- * Get the byte index for character index "idx" in string "str" with length
- * "str_len".
- * If going over the end return "str_len".
- * If "idx" is negative count from the end, -1 is the last character.
- * When going over the start return -1.
- */
-    static long
-char_idx2byte(char_u *str, size_t str_len, varnumber_T idx)
-{
-    varnumber_T nchar = idx;
-    size_t	nbyte = 0;
-
-    if (nchar >= 0)
-    {
-	while (nchar > 0 && nbyte < str_len)
-	{
-	    nbyte += MB_CPTR2LEN(str + nbyte);
-	    --nchar;
-	}
-    }
-    else
-    {
-	nbyte = str_len;
-	while (nchar < 0 && nbyte > 0)
-	{
-	    --nbyte;
-	    nbyte -= mb_head_off(str, str + nbyte);
-	    ++nchar;
-	}
-	if (nchar < 0)
-	    return -1;
-    }
-    return (long)nbyte;
-}
-
-/*
- * Return the slice "str[first:last]" using character indexes.
- * Return NULL when the result is empty.
- */
-    char_u *
-string_slice(char_u *str, varnumber_T first, varnumber_T last)
-{
-    long	start_byte, end_byte;
-    size_t	slen;
-
-    if (str == NULL)
-	return NULL;
-    slen = STRLEN(str);
-    start_byte = char_idx2byte(str, slen, first);
-    if (start_byte < 0)
-	start_byte = 0; // first index very negative: use zero
-    if (last == -1)
-	end_byte = (long)slen;
-    else
-    {
-	end_byte = char_idx2byte(str, slen, last);
-	if (end_byte >= 0 && end_byte < (long)slen)
-	    // end index is inclusive
-	    end_byte += MB_CPTR2LEN(str + end_byte);
-    }
-
-    if (start_byte >= (long)slen || end_byte <= start_byte)
-	return NULL;
-    return vim_strnsave(str + start_byte, end_byte - start_byte);
-}
-
-/*
  * Handle:
  * - expr[expr], expr[expr:expr] subscript
  * - ".name" lookup
@@ -5630,8 +5748,8 @@ handle_subscript(
 	    *arg = p;
 	    if (ret == OK)
 	    {
-		if ((*arg)[2] == '{')
-		    // expr->{lambda}()
+		if (((*arg)[2] == '{' && !in_vim9script()) || (*arg)[2] == '(')
+		    // expr->{lambda}() or expr->(lambda)()
 		    ret = eval_lambda(arg, rettv, evalarg, verbose);
 		else
 		    // expr->name()
@@ -6163,8 +6281,14 @@ do_string_sub(
     if (p_cpo == empty_option)
 	p_cpo = save_cpo;
     else
+    {
 	// Darn, evaluating {sub} expression or {expr} changed the value.
+	// If it's still empty it was changed and restored, need to restore in
+	// the complicated way.
+	if (*p_cpo == NUL)
+	    set_option_value((char_u *)"cpo", 0L, save_cpo, 0);
 	free_string_option(save_cpo);
+    }
 
     return ret;
 }

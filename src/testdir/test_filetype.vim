@@ -153,6 +153,7 @@ let s:filename_checks = {
     \ 'dsl': ['file.dsl'],
     \ 'dtd': ['file.dtd'],
     \ 'dts': ['file.dts', 'file.dtsi'],
+    \ 'dune': ['jbuild', 'dune', 'dune-project', 'dune-workspace'],
     \ 'dylan': ['file.dylan'],
     \ 'dylanintr': ['file.intr'],
     \ 'dylanlid': ['file.lid'],
@@ -338,15 +339,16 @@ let s:filename_checks = {
     \ 'nroff': ['file.tr', 'file.nr', 'file.roff', 'file.tmac', 'file.mom', 'tmac.file'],
     \ 'nsis': ['file.nsi', 'file.nsh'],
     \ 'obj': ['file.obj'],
-    \ 'ocaml': ['file.ml', 'file.mli', 'file.mll', 'file.mly', '.ocamlinit'],
+    \ 'ocaml': ['file.ml', 'file.mli', 'file.mll', 'file.mly', '.ocamlinit', 'file.mlt', 'file.mlp', 'file.mlip', 'file.mli.cppo', 'file.ml.cppo'],
     \ 'occam': ['file.occ'],
     \ 'omnimark': ['file.xom', 'file.xin'],
+    \ 'opam': ['opam', 'file.opam', 'file.opam.template'],
     \ 'openroad': ['file.or'],
     \ 'ora': ['file.ora'],
     \ 'pamconf': ['/etc/pam.conf', '/etc/pam.d/file', 'any/etc/pam.conf', 'any/etc/pam.d/file'],
     \ 'pamenv': ['/etc/security/pam_env.conf', '/home/user/.pam_environment', '.pam_environment', 'pam_env.conf'],
     \ 'papp': ['file.papp', 'file.pxml', 'file.pxsl'],
-    \ 'pascal': ['file.pas', 'file.pp', 'file.dpr', 'file.lpr'],
+    \ 'pascal': ['file.pas', 'file.dpr', 'file.lpr'],
     \ 'passwd': ['any/etc/passwd', 'any/etc/passwd-', 'any/etc/passwd.edit', 'any/etc/shadow', 'any/etc/shadow-', 'any/etc/shadow.edit', 'any/var/backups/passwd.bak', 'any/var/backups/shadow.bak', '/etc/passwd', '/etc/passwd-', '/etc/passwd.edit', '/etc/shadow', '/etc/shadow-', '/etc/shadow.edit', '/var/backups/passwd.bak', '/var/backups/shadow.bak'],
     \ 'pbtxt': ['file.pbtxt'],
     \ 'pccts': ['file.g'],
@@ -382,6 +384,7 @@ let s:filename_checks = {
     \ 'proto': ['file.proto'],
     \ 'protocols': ['/etc/protocols', 'any/etc/protocols'],
     \ 'psf': ['file.psf'],
+    \ 'puppet': ['file.pp'],
     \ 'pyrex': ['file.pyx', 'file.pxd'],
     \ 'python': ['file.py', 'file.pyw', '.pythonstartup', '.pythonrc', 'file.ptl', 'file.pyi', 'SConstruct'],
     \ 'quake': ['anybaseq2/file.cfg', 'anyid1/file.cfg', 'quake3/file.cfg', 'baseq2/file.cfg', 'id1/file.cfg', 'quake1/file.cfg', 'some-baseq2/file.cfg', 'some-id1/file.cfg', 'some-quake1/file.cfg'],
@@ -414,6 +417,7 @@ let s:filename_checks = {
     \ 'scheme': ['file.scm', 'file.ss', 'file.rkt'],
     \ 'scilab': ['file.sci', 'file.sce'],
     \ 'screen': ['.screenrc', 'screenrc'],
+    \ 'sexplib': ['file.sexp'],
     \ 'scss': ['file.scss'],
     \ 'sd': ['file.sd'],
     \ 'sdc': ['file.sdc'],
@@ -441,6 +445,7 @@ let s:filename_checks = {
     \ 'smith': ['file.smt', 'file.smith'],
     \ 'sml': ['file.sml'],
     \ 'snobol4': ['file.sno', 'file.spt'],
+    \ 'sparql': ['file.rq', 'file.sparql'],
     \ 'spec': ['file.spec'],
     \ 'spice': ['file.sp', 'file.spice'],
     \ 'spup': ['file.speedup', 'file.spdata', 'file.spd'],
@@ -633,6 +638,7 @@ let s:script_checks = {
       \ 'cpp': [['// Standard iostream objects -*- C++ -*-'],
       \         ['// -*- C++ -*-']],
       \ 'yaml': [['%YAML 1.2']],
+      \ 'pascal': [['#!/path/instantfpc']],
       \ }
 
 " Various forms of "env" optional arguments.
@@ -724,6 +730,34 @@ func Test_ts_file()
   bwipe!
 
   call delete('Xfile.ts')
+  filetype off
+endfunc
+
+func Test_pp_file()
+  filetype on
+
+  call writefile(['looks like puppet'], 'Xfile.pp')
+  split Xfile.pp
+  call assert_equal('puppet', &filetype)
+  bwipe!
+
+  let g:filetype_pp = 'pascal'
+  split Xfile.pp
+  call assert_equal('pascal', &filetype)
+  bwipe!
+
+  " Test dist#ft#FTpp()
+  call writefile(['{ pascal comment'], 'Xfile.pp')
+  split Xfile.pp
+  call assert_equal('pascal', &filetype)
+  bwipe!
+
+  call writefile(['procedure pascal'], 'Xfile.pp')
+  split Xfile.pp
+  call assert_equal('pascal', &filetype)
+  bwipe!
+
+  call delete('Xfile.pp')
   filetype off
 endfunc
 

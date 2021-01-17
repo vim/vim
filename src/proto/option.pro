@@ -24,7 +24,7 @@ void set_option_sctx_idx(int opt_idx, int opt_flags, sctx_T script_ctx);
 void set_term_option_sctx_idx(char *name, int opt_idx);
 void check_redraw(long_u flags);
 int findoption(char_u *arg);
-int get_option_value(char_u *name, long *numval, char_u **stringval, int opt_flags);
+getoption_T get_option_value(char_u *name, long *numval, char_u **stringval, int opt_flags);
 int get_option_value_strict(char_u *name, long *numval, char_u **stringval, int opt_type, void *from);
 char_u *option_iter_next(void **option, int opt_type);
 long_u get_option_flags(int opt_idx);

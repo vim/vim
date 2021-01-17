@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2020 Dec 07
+" Last Change:	2020 Dec 24
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -498,6 +498,9 @@ au BufNewFile,BufRead *.com			call dist#ft#BindzoneCheck('dcl')
 
 " DOT
 au BufNewFile,BufRead *.dot,*.gv		setf dot
+
+" Dune
+au BufNewFile,BufRead jbuild,dune,dune-project,dune-workspace setf dune
 
 " Dylan - lid files
 au BufNewFile,BufRead *.lid			setf dylanlid
@@ -1125,14 +1128,17 @@ au BufNewFile,BufRead *.nse			setf lua
 " NSIS
 au BufNewFile,BufRead *.nsi,*.nsh		setf nsis
 
-" OCAML
-au BufNewFile,BufRead *.ml,*.mli,*.mll,*.mly,.ocamlinit	setf ocaml
+" OCaml
+au BufNewFile,BufRead *.ml,*.mli,*.mll,*.mly,.ocamlinit,*.mlt,*.mlp,*.mlip,*.mli.cppo,*.ml.cppo setf ocaml
 
 " Occam
 au BufNewFile,BufRead *.occ			setf occam
 
 " Omnimark
 au BufNewFile,BufRead *.xom,*.xin		setf omnimark
+
+" OPAM
+au BufNewFile,BufRead opam,*.opam,*.opam.template setf opam
 
 " OpenROAD
 au BufNewFile,BufRead *.or			setf openroad
@@ -1168,7 +1174,9 @@ au BufNewFile,BufRead *.papp,*.pxml,*.pxsl	setf papp
 au BufNewFile,BufRead */etc/passwd,*/etc/passwd-,*/etc/passwd.edit,*/etc/shadow,*/etc/shadow-,*/etc/shadow.edit,*/var/backups/passwd.bak,*/var/backups/shadow.bak setf passwd
 
 " Pascal (also *.p)
-au BufNewFile,BufRead *.pas,*.pp		setf pascal
+au BufNewFile,BufRead *.pas			setf pascal
+
+au BufNewFile,BufRead *.pp			call dist#ft#FTpp()
 
 " Delphi or Lazarus program file
 au BufNewFile,BufRead *.dpr,*.lpr		setf pascal
@@ -1547,6 +1555,9 @@ au BufNewFile,BufRead *.scm,*.ss,*.rkt		setf scheme
 " Screen RC
 au BufNewFile,BufRead .screenrc,screenrc	setf screen
 
+" Sexplib
+au BufNewFile,BufRead *.sexp setf sexplib
+
 " Simula
 au BufNewFile,BufRead *.sim			setf simula
 
@@ -1606,6 +1617,9 @@ au BufNewFile,BufRead *.mib,*.my		setf mib
 " Snort Configuration
 au BufNewFile,BufRead *.hog,snort.conf,vision.conf	setf hog
 au BufNewFile,BufRead *.rules			call dist#ft#FTRules()
+
+" SPARQL queries
+au BufNewFile,BufRead *.rq,*.sparql		setf sparql
 
 " Spec (Linux RPM)
 au BufNewFile,BufRead *.spec			setf spec

@@ -4299,7 +4299,7 @@ mb_charlen(char_u *str)
     return count;
 }
 
-#if defined(FEAT_SPELL) || defined(PROTO)
+#if (defined(FEAT_SPELL) || defined(FEAT_EVAL)) || defined(PROTO)
 /*
  * Like mb_charlen() but for a string with specified length.
  */

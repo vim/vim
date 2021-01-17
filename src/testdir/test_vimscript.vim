@@ -6600,6 +6600,14 @@ func Test_type()
     call ChangeYourMind()
 endfunc
 
+func Test_typename()
+  call assert_equal('number', typename(123))
+  call assert_equal('string', typename('x'))
+  call assert_equal('list<number>', typename([123]))
+  call assert_equal('dict<number>', typename(#{key: 123}))
+  call assert_equal('list<dict<number>>', typename([#{key: 123}]))
+endfunc
+
 "-------------------------------------------------------------------------------
 " Test 92:  skipping code					    {{{1
 "-------------------------------------------------------------------------------

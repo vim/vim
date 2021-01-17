@@ -433,6 +433,7 @@ EXTERN type_T t_dict_empty INIT6(VAR_DICT, 0, 0, TTFLAG_STATIC, &t_unknown, NULL
 EXTERN type_T t_list_bool INIT6(VAR_LIST, 0, 0, TTFLAG_STATIC, &t_bool, NULL);
 EXTERN type_T t_list_number INIT6(VAR_LIST, 0, 0, TTFLAG_STATIC, &t_number, NULL);
 EXTERN type_T t_list_string INIT6(VAR_LIST, 0, 0, TTFLAG_STATIC, &t_string, NULL);
+EXTERN type_T t_list_job INIT6(VAR_LIST, 0, 0, TTFLAG_STATIC, &t_job, NULL);
 EXTERN type_T t_list_dict_any INIT6(VAR_LIST, 0, 0, TTFLAG_STATIC, &t_dict_any, NULL);
 
 EXTERN type_T t_dict_bool INIT6(VAR_DICT, 0, 0, TTFLAG_STATIC, &t_bool, NULL);
@@ -1945,7 +1946,6 @@ EXTERN int channel_need_redraw INIT(= FALSE);
 #define FOR_ALL_LIST_ITEMS(l, li) \
     for ((li) = (l)->lv_first; (li) != NULL; (li) = (li)->li_next)
 
-// While executing a regexp and set to MAGIC_ON or MAGIC_OFF this overrules
-// p_magic.  Otherwise set to MAGIC_NOT_SET.
-
-EXTERN magic_T magic_overruled INIT(= MAGIC_NOT_SET);
+// While executing a regexp and set to OPTION_MAGIC_ON or OPTION_MAGIC_OFF this
+// overrules p_magic.  Otherwise set to OPTION_MAGIC_NOT_SET.
+EXTERN optmagic_T magic_overruled INIT(= OPTION_MAGIC_NOT_SET);

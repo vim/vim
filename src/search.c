@@ -1342,7 +1342,7 @@ do_search(
 	     */
 	    ps = strcopy;
 	    p = skip_regexp_ex(pat, search_delim, magic_isset(),
-							       &strcopy, NULL);
+							&strcopy, NULL, NULL);
 	    if (strcopy != ps)
 	    {
 		// made a copy of "pat" to change "\?" to "?"
@@ -4723,10 +4723,10 @@ fuzzy_match_in_list(
 
 	// For matchfuzzy(), return a list of matched strings.
 	//	    ['str1', 'str2', 'str3']
-	// For matchfuzzypos(), return a list with two items.
+	// For matchfuzzypos(), return a list with three items.
 	// The first item is a list of matched strings. The second item
 	// is a list of lists where each list item is a list of matched
-	// character positions.
+	// character positions. The third item is a list of matching scores.
 	//	[['str1', 'str2', 'str3'], [[1, 3], [1, 3], [1, 3]]]
 	if (retmatchpos)
 	{
@@ -4749,7 +4749,7 @@ fuzzy_match_in_list(
 	// next copy the list of matching positions
 	if (retmatchpos)
 	{
-	    li = list_find(fmatchlist, -1);
+	    li = list_find(fmatchlist, -2);
 	    if (li == NULL || li->li_tv.vval.v_list == NULL)
 		goto done;
 	    l = li->li_tv.vval.v_list;
@@ -4760,6 +4760,19 @@ fuzzy_match_in_list(
 		    break;
 		if (ptrs[i].lmatchpos != NULL &&
 			list_append_list(l, ptrs[i].lmatchpos) == FAIL)
+		    goto done;
+	    }
+
+	    // copy the matching scores
+	    li = list_find(fmatchlist, -1);
+	    if (li == NULL || li->li_tv.vval.v_list == NULL)
+		goto done;
+	    l = li->li_tv.vval.v_list;
+	    for (i = 0; i < len; i++)
+	    {
+		if (ptrs[i].score == SCORE_NONE)
+		    break;
+		if (list_append_number(l, ptrs[i].score) == FAIL)
 		    goto done;
 	    }
 	}
@@ -4842,9 +4855,15 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
     {
 	list_T	*l;
 
-	// For matchfuzzypos(), a list with two items are returned. First item
-	// is a list of matching strings and the second item is a list of
-	// lists with matching positions within each string.
+	// For matchfuzzypos(), a list with three items are returned. First
+	// item is a list of matching strings, the second item is a list of
+	// lists with matching positions within each string and the third item
+	// is the list of scores of the matches.
+	l = list_alloc();
+	if (l == NULL)
+	    goto done;
+	if (list_append_list(rettv->vval.v_list, l) == FAIL)
+	    goto done;
 	l = list_alloc();
 	if (l == NULL)
 	    goto done;

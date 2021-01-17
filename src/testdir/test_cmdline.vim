@@ -619,6 +619,10 @@ func Test_cmdline_complete_user_func()
   call assert_match('"func Test_cmdline_complete_user', @:)
   call feedkeys(":func s:ScriptL\<Tab>\<Home>\"\<cr>", 'tx')
   call assert_match('"func <SNR>\d\+_ScriptLocalFunction', @:)
+
+  " g: prefix also works
+  call feedkeys(":echo g:Test_cmdline_complete_user_f\<Tab>\<Home>\"\<cr>", 'tx')
+  call assert_match('"echo g:Test_cmdline_complete_user_func', @:)
 endfunc
 
 func Test_cmdline_complete_user_names()

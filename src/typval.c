@@ -649,7 +649,7 @@ copy_tv(typval_T *from, typval_T *to)
 typval_compare(
     typval_T	*typ1,   // first operand
     typval_T	*typ2,   // second operand
-    exptype_T	type,    // operator
+    exprtype_T	type,    // operator
     int		ic)      // ignore case
 {
     int		i;
@@ -832,6 +832,30 @@ typval_compare(
 	    case EXPR_UNKNOWN:
 	    case EXPR_MATCH:
 	    default:  break;  // avoid gcc warning
+	}
+    }
+    else if (in_vim9script() && (typ1->v_type == VAR_BOOL
+						 || typ2->v_type == VAR_BOOL))
+    {
+	if (typ1->v_type != typ2->v_type)
+	{
+	    semsg(_(e_cannot_compare_str_with_str),
+		       vartype_name(typ1->v_type), vartype_name(typ2->v_type));
+	    clear_tv(typ1);
+	    return FAIL;
+	}
+	n1 = typ1->vval.v_number;
+	n2 = typ2->vval.v_number;
+	switch (type)
+	{
+	    case EXPR_IS:
+	    case EXPR_EQUAL:    n1 = (n1 == n2); break;
+	    case EXPR_ISNOT:
+	    case EXPR_NEQUAL:   n1 = (n1 != n2); break;
+	    default:
+		emsg(_(e_invalid_operation_for_bool));
+		clear_tv(typ1);
+		return FAIL;
 	}
     }
     else
@@ -1083,7 +1107,7 @@ eval_option(
     char_u	*option_end;
     long	numval;
     char_u	*stringval;
-    int		opt_type;
+    getoption_T	opt_type;
     int		c;
     int		working = (**arg == '+');    // has("+option")
     int		ret = OK;
@@ -1109,7 +1133,7 @@ eval_option(
     opt_type = get_option_value(*arg, &numval,
 			       rettv == NULL ? NULL : &stringval, opt_flags);
 
-    if (opt_type == -3)			// invalid name
+    if (opt_type == gov_unknown)
     {
 	if (rettv != NULL)
 	    semsg(_(e_unknown_option), *arg);
@@ -1117,20 +1141,30 @@ eval_option(
     }
     else if (rettv != NULL)
     {
-	if (opt_type == -2)		// hidden string option
+	rettv->v_lock = 0;
+	if (opt_type == gov_hidden_string)
 	{
 	    rettv->v_type = VAR_STRING;
 	    rettv->vval.v_string = NULL;
 	}
-	else if (opt_type == -1)	// hidden number option
+	else if (opt_type == gov_hidden_bool || opt_type == gov_hidden_number)
 	{
-	    rettv->v_type = VAR_NUMBER;
+	    rettv->v_type = in_vim9script() && opt_type == gov_hidden_bool
+						       ? VAR_BOOL : VAR_NUMBER;
 	    rettv->vval.v_number = 0;
 	}
-	else if (opt_type == 1)		// number option
+	else if (opt_type == gov_bool || opt_type == gov_number)
 	{
-	    rettv->v_type = VAR_NUMBER;
-	    rettv->vval.v_number = numval;
+	    if (in_vim9script() && opt_type == gov_bool)
+	    {
+		rettv->v_type = VAR_BOOL;
+		rettv->vval.v_number = numval ? VVAL_TRUE : VVAL_FALSE;
+	    }
+	    else
+	    {
+		rettv->v_type = VAR_NUMBER;
+		rettv->vval.v_number = numval;
+	    }
 	}
 	else				// string option
 	{
@@ -1138,7 +1172,9 @@ eval_option(
 	    rettv->vval.v_string = stringval;
 	}
     }
-    else if (working && (opt_type == -2 || opt_type == -1))
+    else if (working && (opt_type == gov_hidden_bool
+			|| opt_type == gov_hidden_number
+			|| opt_type == gov_hidden_string))
 	ret = FAIL;
 
     *option_end = c;		    // put back for error messages
@@ -1543,7 +1579,7 @@ tv_get_lnum(typval_T *argvars)
     if (lnum <= 0)  // no valid number, try using arg like line()
     {
 	int	fnum;
-	pos_T	*fp = var2fpos(&argvars[0], TRUE, &fnum);
+	pos_T	*fp = var2fpos(&argvars[0], TRUE, &fnum, FALSE);
 
 	if (fp != NULL)
 	    lnum = fp->lnum;

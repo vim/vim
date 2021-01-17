@@ -26,6 +26,7 @@ void ex_unletlock(exarg_T *eap, char_u *argstart, int deep, int glv_flags, int (
 int do_unlet(char_u *name, int forceit);
 void item_lock(typval_T *tv, int deep, int lock, int check_refcount);
 void del_menutrans_vars(void);
+char_u *cat_prefix_varname(int prefix, char_u *name);
 char_u *get_user_var_name(expand_T *xp, int idx);
 char *get_var_special_name(int nr);
 dict_T *get_globvar_dict(void);

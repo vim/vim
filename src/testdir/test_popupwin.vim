@@ -821,6 +821,10 @@ func Test_popup_with_mask()
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestPopupMask')
+
+  " this was causing a crash
+  call popup_create('test', #{mask: [[0, 0, 0, 0]]})
+  call popup_clear()
 endfunc
 
 func Test_popup_select()
@@ -3791,6 +3795,12 @@ func Test_popupwin_exiting_terminal()
       autocmd!
     augroup END
   endtry
+endfunc
+
+func Test_popup_filter_menu()
+  let colors = ['red', 'green', 'blue']
+  call popup_menu(colors, #{callback: {_, result -> assert_equal('green', colors[result - 1])}})
+  call feedkeys("\<c-n>\<c-n>\<c-p>\<cr>", 'xt')
 endfunc
 
 " vim: shiftwidth=2 sts=2

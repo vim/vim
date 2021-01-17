@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.2.  Last change: 2020 Sep 14
+*cmdline.txt*   For Vim version 8.2.  Last change: 2020 Dec 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -849,6 +849,16 @@ function |expand()|.
 		file name n.  See |:oldfiles| or |v:oldfiles| to get the
 		number.							*E809*
 		{only when compiled with the |+eval| and |+viminfo| features}
+In |Vim9-script| # is used to start a comment, use %% for the alternate file
+name:
+	%	Is replaced with the current file name.
+	%%	Is replaced with the alternate file name.	*:_%%* *c_%%*
+	%%n	(where n is a number) is replaced with		*:_%%0* *:_%%n*
+		the file name of buffer n.  "%%0" is the same as "%%".   *c_%%n*
+	%%%	Is replaced with all names in the argument	*:_%%%* *c_%%%#*
+		list concatenated, separated by spaces.
+	%%<n	(where n is a number > 0) is replaced with old  *:_%%<* *c_%%<*
+		file name n.
 
 Note that these, except "#<n", give the file name as it was typed.  If an
 absolute path is needed (when using the file name from a different directory),

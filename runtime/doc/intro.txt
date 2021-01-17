@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 8.2.  Last change: 2020 Dec 19
+*intro.txt*     For Vim version 8.2.  Last change: 2020 Dec 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -678,8 +678,8 @@ Normal mode from any other mode.  This can be used to make sure Vim is in
 Normal mode, without causing a beep like <Esc> would.  However, this does not
 work in Ex mode.  When used after a command that takes an argument, such as
 |f| or |m|, the timeout set with 'ttimeoutlen' applies.
-When focus is in a terminal window, CTRL-\ CTRL-N goes to Normal mode for only
-one command, see |t_CTRL-\_CTRL-N|.
+When focus is in a terminal window, CTRL-\ CTRL-N goes to Normal mode until an
+edit command is entered, see |t_CTRL-\_CTRL-N|.
 
 	*CTRL-\_CTRL-G* *i_CTRL-\_CTRL-G* *c_CTRL-\_CTRL-G* *v_CTRL-\_CTRL-G*
 The command CTRL-\ CTRL-G or <C-\><C-G> can be used to go to Insert mode when

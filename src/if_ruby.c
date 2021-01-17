@@ -612,11 +612,13 @@ rb_check_type_stub(VALUE obj, int t)
 {
     dll_rb_check_type(obj, t);
 }
+#   if VIM_SIZEOF_INT < VIM_SIZEOF_LONG // 64 bits only
     unsigned long
 rb_num2uint_stub(VALUE x)
 {
     return dll_rb_num2uint(x);
 }
+#   endif
     void
 ruby_malloc_size_overflow_stub(size_t x, size_t y)
 {
@@ -865,13 +867,11 @@ ex_ruby(exarg_T *eap)
 vim_str2rb_enc_str(const char *s)
 {
 #if RUBY_VERSION >= 19
-    int isnum;
     long lval;
     char_u *sval;
     rb_encoding *enc;
 
-    isnum = get_option_value((char_u *)"enc", &lval, &sval, 0);
-    if (isnum == 0)
+    if (get_option_value((char_u *)"enc", &lval, &sval, 0) == gov_string)
     {
 	enc = rb_enc_find((char *)sval);
 	vim_free(sval);
@@ -886,14 +886,12 @@ vim_str2rb_enc_str(const char *s)
 eval_enc_string_protect(const char *str, int *state)
 {
 #if RUBY_VERSION >= 19
-    int isnum;
     long lval;
     char_u *sval;
     rb_encoding *enc;
     VALUE v;
 
-    isnum = get_option_value((char_u *)"enc", &lval, &sval, 0);
-    if (isnum == 0)
+    if (get_option_value((char_u *)"enc", &lval, &sval, 0) == gov_string)
     {
 	enc = rb_enc_find((char *)sval);
 	vim_free(sval);

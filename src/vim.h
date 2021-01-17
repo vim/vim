@@ -2146,6 +2146,7 @@ typedef enum {
 #define ASSIGN_FINAL	1   // ":final"
 #define ASSIGN_CONST	2   // ":const"
 #define ASSIGN_NO_DECL	4   // "name = expr" without ":let"/":const"/":final"
+#define ASSIGN_DECL	8   // may declare variable if it does not exist
 
 #include "ex_cmds.h"	    // Ex command defines
 #include "spell.h"	    // spell checking stuff
@@ -2543,12 +2544,14 @@ typedef enum {
 #define TFN_NO_DEREF	0x08	// do not dereference a Funcref
 #define TFN_READ_ONLY	0x10	// will not change the var
 #define TFN_NO_DECL	0x20	// only used for GLV_NO_DECL
+#define TFN_COMPILING	0x40	// only used for GLV_COMPILING
 
 // Values for get_lval() flags argument:
 #define GLV_QUIET	TFN_QUIET	// no error messages
 #define GLV_NO_AUTOLOAD	TFN_NO_AUTOLOAD	// do not use script autoloading
 #define GLV_READ_ONLY	TFN_READ_ONLY	// will not change the var
 #define GLV_NO_DECL	TFN_NO_DECL	// assignment without :var or :let
+#define GLV_COMPILING	TFN_COMPILING	// variable may be defined later
 
 #define DO_NOT_FREE_CNT 99999	// refcount for dict or list that should not
 				// be freed.

@@ -109,10 +109,12 @@ enum SpecialKey
     KS_CST,	// save window title
     KS_CRT,	// restore window title
     KS_SSI,	// save icon text
-    KS_SRI	// restore icon text
+    KS_SRI,	// restore icon text
+    KS_FD,	// disable focus event tracking
+    KS_FE	// enable focus event tracking
 };
 
-#define KS_LAST	    KS_SRI
+#define KS_LAST	    KS_FE
 
 /*
  * the terminal capabilities are stored in this array
@@ -212,6 +214,8 @@ extern char_u *(term_strings[]);    // current terminal strings
 #define T_CRT	(TERM_STR(KS_CRT))	// restore window title
 #define T_SSI	(TERM_STR(KS_SSI))	// save icon text
 #define T_SRI	(TERM_STR(KS_SRI))	// restore icon text
+#define T_FD	(TERM_STR(KS_FD))	// disable focus event tracking
+#define T_FE	(TERM_STR(KS_FE))	// enable focus event tracking
 
 typedef enum {
     TMODE_COOK,	    // terminal mode for external cmds and Ex mode

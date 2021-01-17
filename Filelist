@@ -3,20 +3,23 @@
 
 # source files for all source archives
 SRC_ALL =	\
-		.gitignore \
+		.cirrus.yml \
+		.coveralls.yml \
 		.gitattributes \
+		.github/CODEOWNERS \
+		.github/workflows/ci.yml \
+		.github/workflows/codeql-analysis.yml \
+		.gitignore \
 		.hgignore \
 		.lgtm.yml \
 		.travis.yml \
-		.cirrus.yml \
-		.github/workflows/ci.yml \
-		.github/workflows/codeql-analysis.yml \
-		.github/CODEOWNERS \
 		appveyor.yml \
 		ci/appveyor.bat \
+		ci/build-snd-dummy.sh \
+		ci/config.mk*.sed \
 		ci/if_ver*.vim \
 		ci/load-snd-dummy.sh \
-		ci/config.mk*.sed \
+		ci/setup-xvfb.sh \
 		src/Make_all.mak \
 		src/README.md \
 		src/alloc.h \

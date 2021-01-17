@@ -2583,6 +2583,9 @@ AC_DEFUN(AM_PATH_GTK,
 	     sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
     }
     else
+      dnl Put some text before the "no" to hint at installing the gtk-dev
+      dnl packages.
+      AC_MSG_CHECKING(for GTK -dev package)
       no_gtk=yes
     fi
 

@@ -1360,8 +1360,8 @@ do_shell(
 #endif
 #ifdef MSWIN
     int		winstart = FALSE;
-    int		keep_termcap = FALSE;
 #endif
+    int		keep_termcap = !termcap_active;
 
     /*
      * Disallow shell commands for "rvim".
@@ -1395,9 +1395,7 @@ do_shell(
     msg_putchar('\r');			// put cursor at start of line
     if (!autocmd_busy)
     {
-#ifdef MSWIN
 	if (!keep_termcap)
-#endif
 	    stoptermcap();
     }
 #ifdef MSWIN
@@ -1488,9 +1486,7 @@ do_shell(
 	}
 #endif // FEAT_GUI_MSWIN
 
-#ifdef MSWIN
 	if (!keep_termcap)	// if keep_termcap is TRUE didn't stop termcap
-#endif
 	    starttermcap();	// start termcap if not done by wait_return()
 
 	/*
@@ -2746,6 +2742,8 @@ do_ecmd(
 	    else
 	    {
 		win_T	    *the_curwin = curwin;
+		int	    did_decrement;
+		buf_T	    *was_curbuf = curbuf;
 
 		// Set the w_closing flag to avoid that autocommands close the
 		// window.  And set b_locked for the same reason.
@@ -2758,7 +2756,7 @@ do_ecmd(
 		// Close the link to the current buffer. This will set
 		// oldwin->w_buffer to NULL.
 		u_sync(FALSE);
-		close_buffer(oldwin, curbuf,
+		did_decrement = close_buffer(oldwin, curbuf,
 			 (flags & ECMD_HIDE) ? 0 : DOBUF_UNLOAD, FALSE, FALSE);
 
 		the_curwin->w_closing = FALSE;
@@ -2780,7 +2778,15 @@ do_ecmd(
 		    goto theend;
 		}
 		if (buf == curbuf)		// already in new buffer
+		{
+		    // close_buffer() has decremented the window count,
+		    // increment it again here and restore w_buffer.
+		    if (did_decrement && buf_valid(was_curbuf))
+			++was_curbuf->b_nwindows;
+		    if (win_valid_any_tab(oldwin) && oldwin->w_buffer == NULL)
+			oldwin->w_buffer = was_curbuf;
 		    auto_buf = TRUE;
+		}
 		else
 		{
 #ifdef FEAT_SYN_HL
@@ -3672,7 +3678,7 @@ ex_substitute(exarg_T *eap)
 	    delimiter = *cmd++;		    // remember delimiter character
 	    pat = cmd;			    // remember start of search pat
 	    cmd = skip_regexp_ex(cmd, delimiter, magic_isset(),
-							      &eap->arg, NULL);
+							&eap->arg, NULL, NULL);
 	    if (cmd[0] == delimiter)	    // end delimiter found
 		*cmd++ = NUL;		    // replace it with a NUL
 	}
@@ -4152,6 +4158,7 @@ ex_substitute(exarg_T *eap)
 			{
 			    char_u *orig_line = NULL;
 			    int    len_change = 0;
+			    int	   save_p_lz = p_lz;
 #ifdef FEAT_FOLDING
 			    int save_p_fen = curwin->w_p_fen;
 
@@ -4161,6 +4168,9 @@ ex_substitute(exarg_T *eap)
 			    // Remove the inversion afterwards.
 			    temp = RedrawingDisabled;
 			    RedrawingDisabled = 0;
+
+			    // avoid calling update_screen() in vgetorpeek()
+			    p_lz = FALSE;
 
 			    if (new_start != NULL)
 			    {
@@ -4237,6 +4247,7 @@ ex_substitute(exarg_T *eap)
 			    msg_didout = FALSE;	// don't scroll up
 			    msg_col = 0;
 			    gotocmdline(TRUE);
+			    p_lz = save_p_lz;
 
 			    // restore the line
 			    if (orig_line != NULL)
@@ -4856,7 +4867,7 @@ ex_global(exarg_T *eap)
 	if (delim)
 	    ++cmd;		// skip delimiter if there is one
 	pat = cmd;		// remember start of pattern
-	cmd = skip_regexp_ex(cmd, delim, magic_isset(), &eap->arg, NULL);
+	cmd = skip_regexp_ex(cmd, delim, magic_isset(), &eap->arg, NULL, NULL);
 	if (cmd[0] == delim)		    // end delimiter found
 	    *cmd++ = NUL;		    // replace it with a NUL
     }

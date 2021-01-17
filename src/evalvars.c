@@ -863,7 +863,8 @@ ex_let(exarg_T *eap)
 						   || !IS_WHITE_OR_NUL(*expr)))
 	    {
 		vim_strncpy(op, expr - len, len);
-		semsg(_(e_white_space_required_before_and_after_str), op);
+		semsg(_(e_white_space_required_before_and_after_str_at_str),
+								   op, argend);
 		i = FAIL;
 	    }
 
@@ -911,7 +912,7 @@ ex_let_vars(
     int		copy,		// copy values from "tv", don't move
     int		semicolon,	// from skip_var_list()
     int		var_count,	// from skip_var_list()
-    int		flags,		// ASSIGN_FINAL, ASSIGN_CONST, ASSIGN_NO_DECL
+    int		flags,		// ASSIGN_FINAL, ASSIGN_CONST, etc.
     char_u	*op)
 {
     char_u	*arg = arg_start;
@@ -1266,7 +1267,7 @@ ex_let_one(
     char_u	*arg,		// points to variable name
     typval_T	*tv,		// value to assign to variable
     int		copy,		// copy value from "tv"
-    int		flags,		// ASSIGN_CONST, ASSIGN_FINAL, ASSIGN_NO_DECL
+    int		flags,		// ASSIGN_CONST, ASSIGN_FINAL, etc.
     char_u	*endchars,	// valid chars after variable name  or NULL
     char_u	*op)		// "+", "-", "."  or NULL
 {
@@ -1278,7 +1279,7 @@ ex_let_one(
     int		opt_flags;
     char_u	*tofree = NULL;
 
-    if (in_vim9script() && (flags & ASSIGN_NO_DECL) == 0
+    if (in_vim9script() && (flags & (ASSIGN_NO_DECL | ASSIGN_DECL)) == 0
 			&& (flags & (ASSIGN_CONST | ASSIGN_FINAL)) == 0
 				  && vim_strchr((char_u *)"$@&", *arg) != NULL)
     {
@@ -1354,7 +1355,7 @@ ex_let_one(
 	else
 	{
 	    long	n = 0;
-	    int		opt_type;
+	    getoption_T	opt_type;
 	    long	numval;
 	    char_u	*stringval = NULL;
 	    char_u	*s = NULL;
@@ -1364,10 +1365,19 @@ ex_let_one(
 	    *p = NUL;
 
 	    opt_type = get_option_value(arg, &numval, &stringval, opt_flags);
-	    if ((opt_type == 1 || opt_type == -1)
+	    if ((opt_type == gov_bool
+			|| opt_type == gov_number
+			|| opt_type == gov_hidden_bool
+			|| opt_type == gov_hidden_number)
 			     && (tv->v_type != VAR_STRING || !in_vim9script()))
-		// number, possibly hidden
-		n = (long)tv_get_number(tv);
+	    {
+		if (opt_type == gov_bool || opt_type == gov_hidden_bool)
+		    // bool, possibly hidden
+		    n = (long)tv_get_bool(tv);
+		else
+		    // number, possibly hidden
+		    n = (long)tv_get_number(tv);
+	    }
 
 	    // Avoid setting a string option to the text "v:false" or similar.
 	    // In Vim9 script also don't convert a number to string.
@@ -1377,8 +1387,9 @@ ex_let_one(
 
 	    if (op != NULL && *op != '=')
 	    {
-		if ((opt_type == 1 && *op == '.')
-			|| (opt_type == 0 && *op != '.'))
+		if (((opt_type == gov_bool || opt_type == gov_number)
+								 && *op == '.')
+			|| (opt_type == gov_string && *op != '.'))
 		{
 		    semsg(_(e_letwrong), op);
 		    failed = TRUE;  // don't set the value
@@ -1386,7 +1397,9 @@ ex_let_one(
 		}
 		else
 		{
-		    if (opt_type == 1)  // number
+		    // number, in legacy script also bool
+		    if (opt_type == gov_number
+				 || (opt_type == gov_bool && !in_vim9script()))
 		    {
 			switch (*op)
 			{
@@ -1397,7 +1410,8 @@ ex_let_one(
 			    case '%': n = (long)num_modulus(numval, n); break;
 			}
 		    }
-		    else if (opt_type == 0 && stringval != NULL && s != NULL)
+		    else if (opt_type == gov_string
+					     && stringval != NULL && s != NULL)
 		    {
 			// string
 			s = concat_str(stringval, s);
@@ -1409,7 +1423,7 @@ ex_let_one(
 
 	    if (!failed)
 	    {
-		if (opt_type != 0 || s != NULL)
+		if (opt_type != gov_string || s != NULL)
 		{
 		    set_option_value(arg, n, s, opt_flags);
 		    arg_end = p;
@@ -1468,7 +1482,8 @@ ex_let_one(
 	lval_T	lv;
 
 	p = get_lval(arg, tv, &lv, FALSE, FALSE,
-		(flags & ASSIGN_NO_DECL) ? GLV_NO_DECL : 0, FNE_CHECK_START);
+		(flags & (ASSIGN_NO_DECL | ASSIGN_DECL))
+					   ? GLV_NO_DECL : 0, FNE_CHECK_START);
 	if (p != NULL && lv.ll_name != NULL)
 	{
 	    if (endchars != NULL && vim_strchr(endchars,
@@ -1558,7 +1573,7 @@ ex_unletlock(
 	{
 	    // Parse the name and find the end.
 	    name_end = get_lval(arg, NULL, &lv, TRUE, eap->skip || error,
-						   glv_flags, FNE_CHECK_START);
+				     glv_flags | GLV_NO_DECL, FNE_CHECK_START);
 	    if (lv.ll_name == NULL)
 		error = TRUE;	    // error but continue parsing
 	    if (name_end == NULL || (!VIM_ISWHITE(*name_end)
@@ -1937,7 +1952,7 @@ static int	varnamebuflen = 0;
 /*
  * Function to concatenate a prefix and a variable name.
  */
-    static char_u *
+    char_u *
 cat_prefix_varname(int prefix, char_u *name)
 {
     int		len;
@@ -2061,10 +2076,10 @@ get_var_special_name(int nr)
 {
     switch (nr)
     {
-	case VVAL_FALSE: return "v:false";
-	case VVAL_TRUE:  return "v:true";
+	case VVAL_FALSE: return in_vim9script() ? "false" : "v:false";
+	case VVAL_TRUE:  return in_vim9script() ? "true" : "v:true";
+	case VVAL_NULL:  return in_vim9script() ? "null" : "v:null";
 	case VVAL_NONE:  return "v:none";
-	case VVAL_NULL:  return "v:null";
     }
     internal_error("get_var_special_name()");
     return "42";
@@ -2624,8 +2639,7 @@ check_vars(char_u *name, int len)
  * Find variable "name" in the list of variables.
  * Return a pointer to it if found, NULL if not found.
  * Careful: "a:0" variables don't have a name.
- * When "htp" is not NULL we are writing to the variable, set "htp" to the
- * hashtab_T used.
+ * When "htp" is not NULL  set "htp" to the hashtab_T used.
  */
     dictitem_T *
 find_var(char_u *name, hashtab_T **htp, int no_autoload)
@@ -2639,12 +2653,12 @@ find_var(char_u *name, hashtab_T **htp, int no_autoload)
 	*htp = ht;
     if (ht == NULL)
 	return NULL;
-    ret = find_var_in_ht(ht, *name, varname, no_autoload || htp != NULL);
+    ret = find_var_in_ht(ht, *name, varname, no_autoload);
     if (ret != NULL)
 	return ret;
 
     // Search in parent scope for lambda
-    ret = find_var_in_scoped_ht(name, no_autoload || htp != NULL);
+    ret = find_var_in_scoped_ht(name, no_autoload);
     if (ret != NULL)
 	return ret;
 
@@ -2654,8 +2668,7 @@ find_var(char_u *name, hashtab_T **htp, int no_autoload)
 	ht = get_script_local_ht();
 	if (ht != NULL)
 	{
-	    ret = find_var_in_ht(ht, *name, varname,
-						   no_autoload || htp != NULL);
+	    ret = find_var_in_ht(ht, *name, varname, no_autoload);
 	    if (ret != NULL)
 	    {
 		if (htp != NULL)
@@ -3045,7 +3058,7 @@ set_var(
     typval_T	*tv,
     int		copy)	    // make copy of value in "tv"
 {
-    set_var_const(name, NULL, tv, copy, ASSIGN_NO_DECL);
+    set_var_const(name, NULL, tv, copy, ASSIGN_DECL);
 }
 
 /*
@@ -3059,7 +3072,7 @@ set_var_const(
     type_T	*type,
     typval_T	*tv_arg,
     int		copy,	    // make copy of value in "tv"
-    int		flags)	    // ASSIGN_CONST, ASSIGN_FINAL, ASSIGN_NO_DECL
+    int		flags)	    // ASSIGN_CONST, ASSIGN_FINAL, etc.
 {
     typval_T	*tv = tv_arg;
     typval_T	bool_tv;
@@ -3079,7 +3092,7 @@ set_var_const(
 
     if (vim9script
 	    && !is_script_local
-	    && (flags & ASSIGN_NO_DECL) == 0
+	    && (flags & (ASSIGN_NO_DECL | ASSIGN_DECL)) == 0
 	    && (flags & (ASSIGN_CONST | ASSIGN_FINAL)) == 0
 	    && name[1] == ':')
     {
@@ -3118,7 +3131,7 @@ set_var_const(
 
 	    if (is_script_local && vim9script)
 	    {
-		if ((flags & ASSIGN_NO_DECL) == 0)
+		if ((flags & (ASSIGN_NO_DECL | ASSIGN_DECL)) == 0)
 		{
 		    semsg(_(e_redefining_script_item_str), name);
 		    goto failed;
@@ -3138,9 +3151,9 @@ set_var_const(
 	    di->di_flags &= ~DI_FLAGS_RELOAD;
 
 	    // A Vim9 script-local variable is also present in sn_all_vars and
-	    // sn_var_vals.
+	    // sn_var_vals.  It may set "type" from "tv".
 	    if (is_script_local && vim9script)
-		update_vim9_script_var(FALSE, di, tv, type);
+		update_vim9_script_var(FALSE, di, flags, tv, &type);
 	}
 
 	// existing variable, need to clear the value
@@ -3192,8 +3205,15 @@ set_var_const(
 
 	clear_tv(&di->di_tv);
     }
-    else		    // add a new variable
+    else
     {
+	// add a new variable
+	if (vim9script && is_script_local && (flags & ASSIGN_NO_DECL))
+	{
+	    semsg(_(e_unknown_variable_str), name);
+	    goto failed;
+	}
+
 	// Can't add "v:" or "a:" variable.
 	if (ht == &vimvarht || ht == get_funccal_args_ht())
 	{
@@ -3221,9 +3241,9 @@ set_var_const(
 	    di->di_flags |= DI_FLAGS_LOCK;
 
 	// A Vim9 script-local variable is also added to sn_all_vars and
-	// sn_var_vals.
+	// sn_var_vals. It may set "type" from "tv".
 	if (is_script_local && vim9script)
-	    update_vim9_script_var(TRUE, di, tv, type);
+	    update_vim9_script_var(TRUE, di, flags, tv, &type);
     }
 
     if (copy || tv->v_type == VAR_NUMBER || tv->v_type == VAR_FLOAT)
@@ -3233,6 +3253,14 @@ set_var_const(
 	di->di_tv = *tv;
 	di->di_tv.v_lock = 0;
 	init_tv(tv);
+    }
+
+    if (vim9script && type != NULL)
+    {
+	if (type->tt_type == VAR_DICT && di->di_tv.vval.v_dict != NULL)
+	    di->di_tv.vval.v_dict->dv_type = alloc_type(type);
+	else if (type->tt_type == VAR_LIST && di->di_tv.vval.v_list != NULL)
+	    di->di_tv.vval.v_list->lv_type = alloc_type(type);
     }
 
     // ":const var = value" locks the value
@@ -3484,9 +3512,17 @@ set_option_from_tv(char_u *varname, typval_T *varp)
     char_u	nbuf[NUMBUFLEN];
     int		error = FALSE;
 
-    if (!in_vim9script() || varp->v_type != VAR_STRING)
-	numval = (long)tv_get_number_chk(varp, &error);
-    strval = tv_get_string_buf_chk(varp, nbuf);
+    if (varp->v_type == VAR_BOOL)
+    {
+	numval = (long)varp->vval.v_number;
+	strval = (char_u *)"0";  // avoid using "false"
+    }
+    else
+    {
+	if (!in_vim9script() || varp->v_type != VAR_STRING)
+	    numval = (long)tv_get_number_chk(varp, &error);
+	strval = tv_get_string_buf_chk(varp, nbuf);
+    }
     if (!error && strval != NULL)
 	set_option_value(varname, numval, strval, OPT_LOCAL);
 }

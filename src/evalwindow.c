@@ -673,6 +673,10 @@ f_win_execute(typval_T *argvars, typval_T *rettv)
     win_T	*save_curwin;
     tabpage_T	*save_curtab;
 
+    // Return an empty string if something fails.
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+
     if (wp != NULL && tp != NULL)
     {
 	pos_T	curpos = wp->w_cursor;
@@ -1010,9 +1014,9 @@ f_winrestcmd(typval_T *argvars UNUSED, typval_T *rettv)
     ga_init2(&ga, (int)sizeof(char), 70);
     FOR_ALL_WINDOWS(wp)
     {
-	sprintf((char *)buf, "%dresize %d|", winnr, wp->w_height);
+	sprintf((char *)buf, ":%dresize %d|", winnr, wp->w_height);
 	ga_concat(&ga, buf);
-	sprintf((char *)buf, "vert %dresize %d|", winnr, wp->w_width);
+	sprintf((char *)buf, "vert :%dresize %d|", winnr, wp->w_width);
 	ga_concat(&ga, buf);
 	++winnr;
     }

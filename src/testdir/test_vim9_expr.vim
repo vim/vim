@@ -43,6 +43,11 @@ def Test_expr1_trinary()
       name = 0
       assert_equal('two', name ? 'one' : 'two')
 
+      echo ['a'] + (1 ? ['b'] : ['c']
+                )
+      echo ['a'] + (1 ? ['b'] : ['c'] # comment
+                )
+
       # with constant condition expression is not evaluated 
       assert_equal('one', 1 ? 'one' : xxx)
 
@@ -108,7 +113,7 @@ def Test_expr1_trinary_vimscript()
       vim9script
       var name = v:true?1:2
   END
-  CheckScriptFailure(lines, 'E1004:', 2)
+  CheckScriptFailure(lines, 'E1004: White space required before and after ''?'' at "?1:2"', 2)
   lines =<< trim END
       vim9script
       var name = v:true? 1 : 2
@@ -123,7 +128,7 @@ def Test_expr1_trinary_vimscript()
       vim9script
       var name = v:true ? 1: 2
   END
-  CheckScriptFailure(lines, 'E1004:', 2)
+  CheckScriptFailure(lines, 'E1004: White space required before and after '':'' at ": 2"', 2)
   lines =<< trim END
       vim9script
       var name = v:true ? 1 :2
@@ -333,7 +338,7 @@ def Test_expr2_vimscript()
       vim9script
       var name = v:true||v:true
   END
-  CheckScriptFailure(lines, 'E1004:', 2)
+  CheckScriptFailure(lines, 'E1004: White space required before and after ''||'' at "||v:true"', 2)
   lines =<< trim END
       vim9script
       var name = v:true ||v:true
@@ -454,7 +459,7 @@ def Test_expr3_vimscript()
       vim9script
       var name = v:true &&v:true
   END
-  CheckScriptFailure(lines, 'E1004:', 2)
+  CheckScriptFailure(lines, 'E1004: White space required before and after ''&&'' at "&&v:true"', 2)
   lines =<< trim END
       vim9script
       var name = v:true&& v:true
@@ -506,6 +511,8 @@ def Test_expr4_equal()
       assert_equal(true, v:none == v:none)
       assert_equal(false, v:none == v:null)
       assert_equal(true, g:anone == v:none)
+      assert_equal(true, null == v:null)
+      assert_equal(true, null == g:anull)
       assert_equal(false, v:none == g:anull)
 
       var nr0 = 0
@@ -590,6 +597,18 @@ def Test_expr4_equal()
   CheckDefFailure(["var x = 'a' == "], 'E1097:', 3)
 
   CheckDefExecFailure(['var items: any', 'eval 1', 'eval 2', 'if items == []', 'endif'], 'E691:', 4)
+
+  CheckDefExecFailure(['var x: any = "a"', 'echo x == true'], 'E1072: Cannot compare string with bool', 2)
+  CheckDefExecFailure(["var x: any = true", 'echo x == ""'], 'E1072: Cannot compare bool with string', 2)
+  CheckDefExecFailure(["var x: any = 99", 'echo x == true'], 'E1138', 2)
+  CheckDefExecFailure(["var x: any = 'a'", 'echo x == 99'], 'E1030:', 2)
+
+  for op in ['>', '>=', '<', '<=', '=~', '!~']
+    CheckDefExecFailure([
+        "var a: any = 'a'",
+        'var b: any = true',
+        'echo a ' .. op .. ' b'], 'E1072:', 3)
+  endfor
 enddef
 
 " test != comperator
@@ -920,7 +939,7 @@ def Test_expr4_vim9script()
     vim9script
     echo 2>3
   END
-  CheckScriptFailure(lines, 'E1004:', 2)
+  CheckScriptFailure(lines, 'E1004: White space required before and after ''>'' at ">3"', 2)
   lines =<< trim END
     vim9script
     echo 2 >3
@@ -940,7 +959,7 @@ def Test_expr4_vim9script()
     vim9script
     echo 2 !=3
   END
-  CheckScriptFailure(lines, 'E1004:', 2)
+  CheckScriptFailure(lines, 'E1004: White space required before and after ''!'' at "!=3"', 2)
   lines =<< trim END
     vim9script
     echo 2!= 3
@@ -1056,13 +1075,18 @@ def Test_expr5()
       assert_equal('123 hello', 123 .. ' hello')
       assert_equal('123456', 123 .. 456)
 
-      assert_equal('av:true', 'a' .. true)
-      assert_equal('av:false', 'a' .. false)
-      assert_equal('av:null', 'a' .. v:null)
+      assert_equal('atrue', 'a' .. true)
+      assert_equal('afalse', 'a' .. false)
+      assert_equal('anull', 'a' .. v:null)
       assert_equal('av:none', 'a' .. v:none)
       if has('float')
         assert_equal('a0.123', 'a' .. 0.123)
       endif
+
+      set digraph
+      assert_equal('val: true', 'val: ' .. &digraph)
+      set nodigraph
+      assert_equal('val: false', 'val: ' .. &digraph)
 
       assert_equal([1, 2, 3, 4], [1, 2] + [3, 4])
       assert_equal(0z11223344, 0z1122 + 0z3344)
@@ -1082,6 +1106,8 @@ def Test_expr5()
 
       $ENVVAR = 'env'
       assert_equal('aenv', 'a' .. $ENVVAR)
+
+      assert_equal('val', '' .. {key: 'val'}['key'])
   END
   CheckDefAndScriptSuccess(lines)
 enddef
@@ -1187,7 +1213,7 @@ def Test_expr5_vim9script()
       vim9script
       echo 'a'..'b'
   END
-  CheckScriptFailure(lines, 'E1004:', 2)
+  CheckScriptFailure(lines, 'E1004: White space required before and after ''..'' at "..''b''"', 2)
   lines =<< trim END
       vim9script
       echo 'a' ..'b'
@@ -1647,6 +1673,7 @@ def Test_expr7_special()
       assert_equal(false, f)
 
       assert_equal(g:special_null, v:null)
+      assert_equal(g:special_null, null)
       assert_equal(g:special_none, v:none)
   END
   CheckDefAndScriptSuccess(lines)
@@ -1718,6 +1745,16 @@ def Test_expr7_list()
       Main()
   END
   CheckScriptFailure(lines, 'E1127:')
+
+  lines =<< trim END
+      var numbers = [1, 2, 3, 4]
+      var a = 1
+      var b = 2
+  END
+  CheckDefAndScriptFailure(lines + ['echo numbers[1:b]'],
+      'E1004: White space required before and after '':'' at ":b]"', 4)
+  CheckDefAndScriptFailure(lines + ['echo numbers[1: b]'], 'E1004:', 4)
+  CheckDefAndScriptFailure(lines + ['echo numbers[a :b]'], 'E1004:', 4)
 enddef
 
 def Test_expr7_list_vim9script()
@@ -1797,58 +1834,56 @@ def Test_expr7_list_vim9script()
 enddef
 
 def LambdaWithComments(): func
-  return {x ->
+  return (x) =>
             # some comment
             x == 1
             # some comment
             ||
             x == 2
-        }
 enddef
 
 def LambdaUsingArg(x: number): func
-  return {->
+  return () =>
             # some comment
             x == 1
             # some comment
             ||
             x == 2
-        }
 enddef
 
 def Test_expr7_lambda()
   var lines =<< trim END
-      var La = { -> 'result'}
+      var La = () => 'result'
       assert_equal('result', La())
-      assert_equal([1, 3, 5], [1, 2, 3]->map({key, val -> key + val}))
+      assert_equal([1, 3, 5], [1, 2, 3]->map((key, val) => key + val))
 
       # line continuation inside lambda with "cond ? expr : expr" works
       var ll = range(3)
-      map(ll, {k, v -> v % 2 ? {
+      var dll = mapnew(ll, (k, v) => v % 2 ? {
                 ['111']: 111 } : {}
-            })
-      assert_equal([{}, {111: 111}, {}], ll)
+            )
+      assert_equal([{}, {111: 111}, {}], dll)
 
       ll = range(3)
-      map(ll, {k, v -> v == 8 || v
+      map(ll, (k, v) => v == 8 || v
                     == 9
                     || v % 2 ? 111 : 222
-            })
+            )
       assert_equal([222, 111, 222], ll)
 
       ll = range(3)
-      map(ll, {k, v -> v != 8 && v
+      map(ll, (k, v) => v != 8 && v
                     != 9
                     && v % 2 == 0 ? 111 : 222
-            })
+            )
       assert_equal([111, 222, 111], ll)
 
-      var dl = [{key: 0}, {key: 22}]->filter({ _, v -> v['key'] })
+      var dl = [{key: 0}, {key: 22}]->filter(( _, v) => v['key'] )
       assert_equal([{key: 22}], dl)
 
       dl = [{key: 12}, {['foo']: 34}]
       assert_equal([{key: 12}], filter(dl,
-            {_, v -> has_key(v, 'key') ? v['key'] == 12 : 0}))
+            (_, v) => has_key(v, 'key') ? v['key'] == 12 : 0))
 
       assert_equal(false, LambdaWithComments()(0))
       assert_equal(true, LambdaWithComments()(1))
@@ -1858,33 +1893,31 @@ def Test_expr7_lambda()
       assert_equal(false, LambdaUsingArg(0)())
       assert_equal(true, LambdaUsingArg(1)())
 
-      var res = map([1, 2, 3], {i: number, v: number -> i + v})
+      var res = map([1, 2, 3], (i: number, v: number) => i + v)
       assert_equal([1, 3, 5], res)
   END
   CheckDefAndScriptSuccess(lines)
 
-  CheckDefFailure(["var Ref = {a->a + 1}"], 'E1004:')
-  CheckDefFailure(["var Ref = {a-> a + 1}"], 'E1004:')
-  CheckDefFailure(["var Ref = {a ->a + 1}"], 'E1004:')
+  CheckDefFailure(["var Ref = (a)=>a + 1"], 'E1004:')
+  CheckDefFailure(["var Ref = (a)=> a + 1"], 'E1004: White space required before and after ''=>'' at "=> a + 1"')
+  CheckDefFailure(["var Ref = (a) =>a + 1"], 'E1004:')
 
-  CheckDefFailure(["filter([1, 2], {k,v -> 1})"], 'E1069:', 1)
+  CheckDefFailure(["filter([1, 2], (k,v) => 1)"], 'E1069:', 1)
   # error is in first line of the lambda
-  CheckDefFailure(["var L = {a -> a + b}"], 'E1001:', 0)
+  CheckDefFailure(["var L = (a) => a + b"], 'E1001:', 0)
 
-  assert_equal('xxxyyy', 'xxx'->{a, b -> a .. b}('yyy'))
+  assert_equal('xxxyyy', 'xxx'->((a, b) => a .. b)('yyy'))
 
-  CheckDefExecFailure(["var s = 'asdf'->{a -> a}('x')"],
-        'E1106: One argument too many')
-  CheckDefExecFailure(["var s = 'asdf'->{a -> a}('x', 'y')"],
-        'E1106: 2 arguments too many')
-  CheckDefFailure(["echo 'asdf'->{a -> a}(x)"], 'E1001:', 1)
+  CheckDefExecFailure(["var s = 'asdf'->((a) => a)('x')"], 'E118:')
+  CheckDefExecFailure(["var s = 'asdf'->((a) => a)('x', 'y')"], 'E118:')
+  CheckDefFailure(["echo 'asdf'->((a) => a)(x)"], 'E1001:', 1)
 
-  CheckDefSuccess(['var Fx = {a -> {k1: 0,', ' k2: 1}}'])
-  CheckDefFailure(['var Fx = {a -> {k1: 0', ' k2: 1}}'], 'E722:', 2)
-  CheckDefFailure(['var Fx = {a -> {k1: 0,', ' k2 1}}'], 'E720:', 2)
+  CheckDefSuccess(['var Fx = (a) => ({k1: 0,', ' k2: 1})'])
+  CheckDefFailure(['var Fx = (a) => ({k1: 0', ' k2: 1})'], 'E722:', 2)
+  CheckDefFailure(['var Fx = (a) => ({k1: 0,', ' k2 1})'], 'E720:', 2)
 
-  CheckDefSuccess(['var Fx = {a -> [0,', ' 1]}'])
-  CheckDefFailure(['var Fx = {a -> [0', ' 1]}'], 'E696:', 2)
+  CheckDefSuccess(['var Fx = (a) => [0,', ' 1]'])
+  CheckDefFailure(['var Fx = (a) => [0', ' 1]'], 'E696:', 2)
 enddef
 
 def NewLambdaWithComments(): func
@@ -1913,10 +1946,10 @@ def Test_expr7_new_lambda()
 
       # line continuation inside lambda with "cond ? expr : expr" works
       var ll = range(3)
-      map(ll, (k, v) => v % 2 ? {
+      var dll = mapnew(ll, (k, v) => v % 2 ? {
                 ['111']: 111 } : {}
             )
-      assert_equal([{}, {111: 111}, {}], ll)
+      assert_equal([{}, {111: 111}, {}], dll)
 
       ll = range(3)
       map(ll, (k, v) => v == 8 || v
@@ -1966,7 +1999,8 @@ def Test_expr7_new_lambda()
 
   CheckDefAndScriptFailure(["var Ref = (a)=>a + 1"], 'E1004:')
   CheckDefAndScriptFailure(["var Ref = (a)=> a + 1"], 'E1004:')
-  CheckDefAndScriptFailure(["var Ref = (a) =>a + 1"], 'E1004:')
+  CheckDefAndScriptFailure(["var Ref = (a) =>a + 1"],
+      'E1004: White space required before and after ''=>'' at " =>a + 1"')
 
   CheckDefFailure(["var Ref: func(number): number = (a: number): string => 'x'"], 'E1012:')
   CheckDefFailure(["var Ref: func(number): string = (a: number): string => 99"], 'E1012:')
@@ -1993,10 +2027,10 @@ enddef
 def Test_expr7_lambda_vim9script()
   var lines =<< trim END
       vim9script
-      var v = 10->{a ->
+      var v = 10->((a) =>
 	    a
 	      + 2
-	  }()
+            )()
       assert_equal(12, v)
   END
   CheckScriptSuccess(lines)
@@ -2004,9 +2038,9 @@ def Test_expr7_lambda_vim9script()
   # nested lambda with line breaks
   lines =<< trim END
       vim9script
-      search('"', 'cW', 0, 0, {->
+      search('"', 'cW', 0, 0, () =>
 	synstack('.', col('.'))
-	->map({_, v -> synIDattr(v, 'name')})->len()})
+          ->map((_, v) => synIDattr(v, 'name'))->len())
   END
   CheckScriptSuccess(lines)
 enddef
@@ -2068,6 +2102,14 @@ def Test_expr7_dict()
       assert_equal(g:test_hash_dict, {one: 1, two: 2})
 
       assert_equal({['a a']: 1, ['b/c']: 2}, {'a a': 1, "b/c": 2})
+
+      var d = {a: () => 3, b: () => 7}
+      assert_equal(3, d.a())
+      assert_equal(7, d.b())
+
+      var cd = { # comment
+                key: 'val' # comment
+               }
   END
   CheckDefAndScriptSuccess(lines)
  
@@ -2076,8 +2118,8 @@ def Test_expr7_dict()
   CheckDefFailure(["var x = 'a' .. #{a: 1}"], 'E1097:', 3)
 
   CheckDefFailure(["var x = {a:8}"], 'E1069:', 1)
-  CheckDefFailure(["var x = {a : 8}"], 'E1059:', 1)
-  CheckDefFailure(["var x = {a :8}"], 'E1059:', 1)
+  CheckDefFailure(["var x = {a : 8}"], 'E1068:', 1)
+  CheckDefFailure(["var x = {a :8}"], 'E1068:', 1)
   CheckDefFailure(["var x = {a: 8 , b: 9}"], 'E1068:', 1)
   CheckDefFailure(["var x = {a: 1,b: 2}"], 'E1069:', 1)
 
@@ -2126,6 +2168,9 @@ def Test_expr7_dict_vim9script()
 		['two']: 2,
 		   }
       assert_equal({one: 1, two: 2}, d)
+
+      var dd = {k: 123->len()}
+      assert_equal(3, dd.k)
   END
   CheckScriptSuccess(lines)
 
@@ -2161,7 +2206,7 @@ def Test_expr7_dict_vim9script()
       vim9script
       var d = {one : 1}
   END
-  CheckScriptFailure(lines, 'E1059:', 2)
+  CheckScriptFailure(lines, 'E1068:', 2)
 
   lines =<< trim END
       vim9script
@@ -2271,16 +2316,16 @@ def Test_expr7_any_index_slice()
     # string is permissive, index out of range accepted
     g:teststring = 'abcdef'
     assert_equal('b', g:teststring[1])
-    assert_equal('', g:teststring[-1])
+    assert_equal('f', g:teststring[-1])
     assert_equal('', g:teststring[99])
 
-    assert_equal('b', g:teststring[1:1])
-    assert_equal('bcdef', g:teststring[1:])
-    assert_equal('abcd', g:teststring[:3])
-    assert_equal('cdef', g:teststring[-4:])
-    assert_equal('abcdef', g:teststring[-9:])
-    assert_equal('abcd', g:teststring[:-3])
-    assert_equal('', g:teststring[:-9])
+    assert_equal('b', g:teststring[1 : 1])
+    assert_equal('bcdef', g:teststring[1 :])
+    assert_equal('abcd', g:teststring[: 3])
+    assert_equal('cdef', g:teststring[-4 :])
+    assert_equal('abcdef', g:teststring[-9 :])
+    assert_equal('abcd', g:teststring[: -3])
+    assert_equal('', g:teststring[: -9])
 
     # blob index cannot be out of range
     g:testblob = 0z01ab
@@ -2290,13 +2335,13 @@ def Test_expr7_any_index_slice()
     assert_equal(0x01, g:testblob[-2])
 
     # blob slice accepts out of range
-    assert_equal(0z01ab, g:testblob[0:1])
-    assert_equal(0z01, g:testblob[0:0])
-    assert_equal(0z01, g:testblob[-2:-2])
-    assert_equal(0zab, g:testblob[1:1])
-    assert_equal(0zab, g:testblob[-1:-1])
-    assert_equal(0z, g:testblob[2:2])
-    assert_equal(0z, g:testblob[0:-3])
+    assert_equal(0z01ab, g:testblob[0 : 1])
+    assert_equal(0z01, g:testblob[0 : 0])
+    assert_equal(0z01, g:testblob[-2 : -2])
+    assert_equal(0zab, g:testblob[1 : 1])
+    assert_equal(0zab, g:testblob[-1 : -1])
+    assert_equal(0z, g:testblob[2 : 2])
+    assert_equal(0z, g:testblob[0 : -3])
 
     # list index cannot be out of range
     g:testlist = [0, 1, 2, 3]
@@ -2308,19 +2353,19 @@ def Test_expr7_any_index_slice()
     assert_equal(1, g:testlist[g:theone])
 
     # list slice accepts out of range
-    assert_equal([0], g:testlist[0:0])
-    assert_equal([3], g:testlist[3:3])
-    assert_equal([0, 1], g:testlist[0:1])
-    assert_equal([0, 1, 2, 3], g:testlist[0:3])
-    assert_equal([0, 1, 2, 3], g:testlist[0:9])
-    assert_equal([], g:testlist[-1:1])
-    assert_equal([1], g:testlist[-3:1])
-    assert_equal([0, 1], g:testlist[-4:1])
-    assert_equal([0, 1], g:testlist[-9:1])
-    assert_equal([1, 2, 3], g:testlist[1:-1])
-    assert_equal([1], g:testlist[1:-3])
-    assert_equal([], g:testlist[1:-4])
-    assert_equal([], g:testlist[1:-9])
+    assert_equal([0], g:testlist[0 : 0])
+    assert_equal([3], g:testlist[3 : 3])
+    assert_equal([0, 1], g:testlist[0 : 1])
+    assert_equal([0, 1, 2, 3], g:testlist[0 : 3])
+    assert_equal([0, 1, 2, 3], g:testlist[0 : 9])
+    assert_equal([], g:testlist[-1 : 1])
+    assert_equal([1], g:testlist[-3 : 1])
+    assert_equal([0, 1], g:testlist[-4 : 1])
+    assert_equal([0, 1], g:testlist[-9 : 1])
+    assert_equal([1, 2, 3], g:testlist[1 : -1])
+    assert_equal([1], g:testlist[1 : -3])
+    assert_equal([], g:testlist[1 : -4])
+    assert_equal([], g:testlist[1 : -9])
 
     g:testdict = {a: 1, b: 2}
     assert_equal(1, g:testdict['a'])
@@ -2335,13 +2380,13 @@ def Test_expr7_any_index_slice()
   CheckDefExecFailure(['echo g:testblob[-3]'], 'E979:', 1)
   CheckScriptFailure(['vim9script', 'echo g:testblob[-3]'], 'E979:', 2)
 
-  CheckDefExecFailure(['echo g:testlist[4]'], 'E684:', 1)
+  CheckDefExecFailure(['echo g:testlist[4]'], 'E684: list index out of range: 4', 1)
   CheckScriptFailure(['vim9script', 'echo g:testlist[4]'], 'E684:', 2)
   CheckDefExecFailure(['echo g:testlist[-5]'], 'E684:', 1)
-  CheckScriptFailure(['vim9script', 'echo g:testlist[-5]'], 'E684:', 2)
+  CheckScriptFailure(['vim9script', 'echo g:testlist[-5]'], 'E684: list index out of range: -5', 2)
 
-  CheckDefExecFailure(['echo g:testdict["a":"b"]'], 'E719:', 1)
-  CheckScriptFailure(['vim9script', 'echo g:testdict["a":"b"]'], 'E719:', 2)
+  CheckDefExecFailure(['echo g:testdict["a" : "b"]'], 'E719:', 1)
+  CheckScriptFailure(['vim9script', 'echo g:testdict["a" : "b"]'], 'E719:', 2)
   CheckDefExecFailure(['echo g:testdict[1]'], 'E716:', 1)
   CheckScriptFailure(['vim9script', 'echo g:testdict[1]'], 'E716:', 2)
 
@@ -2393,6 +2438,10 @@ def Test_expr_member_vim9script()
   CheckScriptSuccess(lines)
 enddef
 
+def SetSomeVar()
+  b:someVar = &fdm
+enddef
+
 def Test_expr7_option()
   # option
   set ts=11
@@ -2405,6 +2454,16 @@ def Test_expr7_option()
   &grepprg = test_null_string()
   assert_equal('', &grepprg)
   set grepprg&
+
+  # check matching type
+  var bval: bool = &tgc
+  var nval: number = &ts
+  var sval: string = &path
+
+  # check v_lock is cleared (requires using valgrind, doesn't always show)
+  SetSomeVar()
+  b:someVar = 0
+  unlet b:someVar
 enddef
 
 def Test_expr7_environment()
@@ -2464,21 +2523,26 @@ enddef
 
 def Test_expr7_parens()
   # (expr)
-  assert_equal(4, (6 * 4) / 6)
-  assert_equal(0, 6 * ( 4 / 6 ))
-
-  assert_equal(6, +6)
-  assert_equal(-6, -6)
-  assert_equal(6, --6)
-  assert_equal(6, -+-6)
-  assert_equal(-6, ---6)
-  assert_equal(false, !-3)
-  assert_equal(true, !+-+0)
-enddef
-
-def Test_expr7_parens_vim9script()
   var lines =<< trim END
-      vim9script
+      assert_equal(4, (6 * 4) / 6)
+      assert_equal(0, 6 * ( 4 / 6 ))
+
+      assert_equal(6, +6)
+      assert_equal(-6, -6)
+      assert_equal(false, !-3)
+      assert_equal(true, !+0)
+
+      assert_equal(7, 5 + (
+                    2))
+      assert_equal(7, 5 + (
+                    2
+                    ))
+      assert_equal(7, 5 + ( # comment
+                    2))
+      assert_equal(7, 5 + ( # comment
+                    # comment
+                    2))
+
       var s = (
 		'one'
 		..
@@ -2486,32 +2550,62 @@ def Test_expr7_parens_vim9script()
 		)
       assert_equal('onetwo', s)
   END
-  CheckScriptSuccess(lines)
+  CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_expr7_negate_add()
   assert_equal(-99, -99)
   assert_equal(-99, - 99)
-  assert_equal(99, --99)
-  assert_equal(99, -- 99)
-  assert_equal(99, - - 99)
   assert_equal(99, +99)
-  assert_equal(-99, -+99)
-  assert_equal(-99, -+ 99)
-  assert_equal(-99, - +99)
-  assert_equal(-99, - + 99)
-  assert_equal(-99, +-99)
-  assert_equal(-99, + -99)
-  assert_equal(-99, + - 99)
 
   var nr = 88
   assert_equal(-88, -nr)
   assert_equal(-88, - nr)
-  assert_equal(-88, - +nr)
-  assert_equal(88, -- nr)
   assert_equal(88, + nr)
-  assert_equal(88, --+ nr)
-  assert_equal(88, - - nr)
+
+  var lines =<< trim END
+    var n = 12
+    echo ++n
+  END
+  CheckDefAndScriptFailure(lines, 'E15:')
+  lines =<< trim END
+    var n = 12
+    echo --n
+  END
+  CheckDefAndScriptFailure(lines, 'E15:')
+  lines =<< trim END
+    var n = 12
+    echo +-n
+  END
+  CheckDefAndScriptFailure(lines, 'E15:')
+  lines =<< trim END
+    var n = 12
+    echo -+n
+  END
+  CheckDefAndScriptFailure(lines, 'E15:')
+  lines =<< trim END
+    var n = 12
+    echo - -n
+  END
+  CheckDefAndScriptFailure(lines, 'E15:')
+  lines =<< trim END
+    var n = 12
+    echo + +n
+  END
+  CheckDefAndScriptFailure(lines, 'E15:')
+
+  lines =<< trim END
+    var n = 12
+    :1
+    ++n
+  END
+  CheckDefAndScriptFailure(lines, 'E1050:')
+  lines =<< trim END
+    var n = 12
+    :1
+    --n
+  END
+  CheckDefAndScriptFailure(lines, 'E1050:')
 enddef
 
 def Echo(arg: any): string
@@ -2526,7 +2620,7 @@ def Test_expr7_call()
   var lines =<< trim END
       assert_equal('yes', 'yes'->Echo())
       assert_equal(true, !range(5)->empty())
-      assert_equal([0, 1, 2], --3->range())
+      assert_equal([0, 1, 2], 3->range())
   END
   CheckDefAndScriptSuccess(lines)
 
@@ -2616,7 +2710,7 @@ def Test_expr7_not()
       unlet g:false
 
       assert_equal(true, !test_null_partial())
-      assert_equal(false, !{-> 'yes'})
+      assert_equal(false, !() => 'yes')
 
       assert_equal(true, !test_null_dict())
       assert_equal(true, !{})
@@ -2641,7 +2735,7 @@ def Test_expr7_not()
 enddef
 
 func Test_expr7_fails()
-  call CheckDefFailure(["var x = (12"], "E110:", 1)
+  call CheckDefFailure(["var x = (12"], "E1097:", 3)
 
   call CheckDefFailure(["var x = -'xx'"], "E1030:", 1)
   call CheckDefFailure(["var x = +'xx'"], "E1030:", 1)
@@ -2655,8 +2749,8 @@ func Test_expr7_fails()
   call CheckDefFailure(["var x = [1, 2"], "E697:", 2)
   call CheckDefFailure(["var x = [notfound]"], "E1001:", 1)
 
-  call CheckDefFailure(["var x = { -> 123) }"], "E451:", 1)
-  call CheckDefFailure(["var x = 123->{x -> x + 5) }"], "E451:", 1)
+  call CheckDefFailure(["var X = () => 123)"], "E488:", 1)
+  call CheckDefFailure(["var x = 123->((x) => x + 5)"], "E107:", 1)
 
   call CheckDefFailure(["var x = &notexist"], 'E113:', 1)
   call CheckDefFailure(["&grepprg = [343]"], 'E1012:', 1)
@@ -2678,7 +2772,7 @@ func Test_expr7_fails()
   call CheckDefFailure(["'yes'->", "Echo()"], 'E488: Trailing characters: ->', 1)
 
   call CheckDefExecFailure(["[1, 2->len()"], 'E697:', 2)
-  call CheckDefExecFailure(["{a: 1->len()"], 'E1004:', 1)
+  call CheckDefExecFailure(["{a: 1->len()"], 'E723:', 2)
   call CheckDefExecFailure(["{['a']: 1->len()"], 'E723:', 2)
 endfunc
 
@@ -2712,12 +2806,12 @@ def Test_expr7_trailing()
 
   # method call
   l = [2, 5, 6]
-  l->map({k, v -> k + v})
+  l->map((k, v) => k + v)
   assert_equal([2, 6, 8], l)
 
   # lambda method call
   l = [2, 5]
-  l->{l -> add(l, 8)}()
+  l->((l) => add(l, 8))()
   assert_equal([2, 5, 8], l)
 
   # dict member
@@ -2728,15 +2822,23 @@ enddef
 def Test_expr7_string_subscript()
   var lines =<< trim END
     var text = 'abcdef'
-    assert_equal('', text[-1])
+    assert_equal('f', text[-1])
     assert_equal('a', text[0])
     assert_equal('e', text[4])
     assert_equal('f', text[5])
     assert_equal('', text[6])
 
+    text = 'ábçdë'
+    assert_equal('ë', text[-1])
+    assert_equal('d', text[-2])
+    assert_equal('ç', text[-3])
+    assert_equal('b', text[-4])
+    assert_equal('á', text[-5])
+    assert_equal('', text[-6])
+
     text = 'ábçdëf'
     assert_equal('', text[-999])
-    assert_equal('', text[-1])
+    assert_equal('f', text[-1])
     assert_equal('á', text[0])
     assert_equal('b', text[1])
     assert_equal('ç', text[2])
@@ -2746,45 +2848,45 @@ def Test_expr7_string_subscript()
     assert_equal('', text[6])
     assert_equal('', text[999])
 
-    assert_equal('ábçdëf', text[0:-1])
-    assert_equal('ábçdëf', text[0 :-1])
-    assert_equal('ábçdëf', text[0: -1])
+    assert_equal('ábçdëf', text[0 : -1])
+    assert_equal('ábçdëf', text[0 : -1])
+    assert_equal('ábçdëf', text[0 : -1])
     assert_equal('ábçdëf', text[0 : -1])
     assert_equal('ábçdëf', text[0
-                  :-1])
-    assert_equal('ábçdëf', text[0:
+                  : -1])
+    assert_equal('ábçdëf', text[0 :
                   -1])
     assert_equal('ábçdëf', text[0 : -1
                   ])
-    assert_equal('bçdëf', text[1:-1])
-    assert_equal('çdëf', text[2:-1])
-    assert_equal('dëf', text[3:-1])
-    assert_equal('ëf', text[4:-1])
-    assert_equal('f', text[5:-1])
-    assert_equal('', text[6:-1])
-    assert_equal('', text[999:-1])
+    assert_equal('bçdëf', text[1 : -1])
+    assert_equal('çdëf', text[2 : -1])
+    assert_equal('dëf', text[3 : -1])
+    assert_equal('ëf', text[4 : -1])
+    assert_equal('f', text[5 : -1])
+    assert_equal('', text[6 : -1])
+    assert_equal('', text[999 : -1])
 
-    assert_equal('ábçd', text[:3])
-    assert_equal('bçdëf', text[1:])
+    assert_equal('ábçd', text[: 3])
+    assert_equal('bçdëf', text[1 :])
     assert_equal('ábçdëf', text[:])
   END
   CheckDefSuccess(lines)
   CheckScriptSuccess(['vim9script'] + lines)
 
   lines =<< trim END
-      var d = 'asdf'[1:
+      var d = 'asdf'[1 :
   END
   CheckDefFailure(lines, 'E1097:', 3)
   lines =<< trim END
-      var d = 'asdf'[1:xxx]
+      var d = 'asdf'[1 : xxx]
   END
   CheckDefFailure(lines, 'E1001:', 1)
   lines =<< trim END
-      var d = 'asdf'[1:2
+      var d = 'asdf'[1 : 2
   END
   CheckDefFailure(lines, 'E1097:', 3)
   lines =<< trim END
-      var d = 'asdf'[1:2
+      var d = 'asdf'[1 : 2
       echo d
   END
   CheckDefFailure(lines, 'E111:', 2)
@@ -2794,12 +2896,12 @@ def Test_expr7_string_subscript()
   END
   CheckDefFailure(lines, 'E1012: Type mismatch; expected number but got string', 1)
   lines =<< trim END
-      var d = 'asdf'['1':2]
+      var d = 'asdf'['1' : 2]
       echo d
   END
   CheckDefFailure(lines, 'E1012: Type mismatch; expected number but got string', 1)
   lines =<< trim END
-      var d = 'asdf'[1:'2']
+      var d = 'asdf'[1 : '2']
       echo d
   END
   CheckDefFailure(lines, 'E1012: Type mismatch; expected number but got string', 1)
@@ -2813,29 +2915,38 @@ def Test_expr7_list_subscript()
     assert_equal(4, list[-1])
     assert_equal(0, list[-5])
 
-    assert_equal([0, 1, 2, 3, 4], list[0:4])
+    assert_equal([0, 1, 2, 3, 4], list[0 : 4])
     assert_equal([0, 1, 2, 3, 4], list[:])
-    assert_equal([1, 2, 3, 4], list[1:])
-    assert_equal([2, 3, 4], list[2:-1])
-    assert_equal([4], list[4:-1])
-    assert_equal([], list[5:-1])
-    assert_equal([], list[999:-1])
-    assert_equal([1, 2, 3, 4], list[g:theone:g:thefour])
+    assert_equal([1, 2, 3, 4], list[1 :])
+    assert_equal([2, 3, 4], list[2 : -1])
+    assert_equal([4], list[4 : -1])
+    assert_equal([], list[5 : -1])
+    assert_equal([], list[999 : -1])
+    assert_equal([1, 2, 3, 4], list[g:theone : g:thefour])
 
-    assert_equal([0, 1, 2, 3], list[0:3])
-    assert_equal([0], list[0:0])
-    assert_equal([0, 1, 2, 3, 4], list[0:-1])
-    assert_equal([0, 1, 2], list[0:-3])
-    assert_equal([0], list[0:-5])
-    assert_equal([], list[0:-6])
-    assert_equal([], list[0:-99])
+    assert_equal([0, 1, 2, 3], list[0 : 3])
+    assert_equal([0], list[0 : 0])
+    assert_equal([0, 1, 2, 3, 4], list[0 : -1])
+    assert_equal([0, 1, 2], list[0 : -3])
+    assert_equal([0], list[0 : -5])
+    assert_equal([], list[0 : -6])
+    assert_equal([], list[0 : -99])
   END
-  CheckDefSuccess(lines)
-  CheckScriptSuccess(['vim9script'] + lines)
+  CheckDefAndScriptSuccess(lines)
 
   lines = ['var l = [0, 1, 2]', 'echo l[g:astring : g:theone]']
   CheckDefExecFailure(lines, 'E1012:')
   CheckScriptFailure(['vim9script'] + lines, 'E1030:', 3)
+
+  lines =<< trim END
+      vim9script
+      var ld = []
+      def Func()
+        eval ld[0].key
+      enddef
+      defcompile
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_expr7_dict_subscript()
@@ -2844,6 +2955,15 @@ def Test_expr7_dict_subscript()
       var l = [{lnum: 2}, {lnum: 1}]
       var res = l[0].lnum > l[1].lnum
       assert_true(res)
+
+      var dd = {}
+      def Func1()
+        eval dd.key1.key2
+      enddef
+      def Func2()
+        eval dd['key1'].key2
+      enddef
+      defcompile
   END
   CheckScriptSuccess(lines)
 enddef
@@ -2852,25 +2972,25 @@ def Test_expr7_subscript_linebreak()
   var range = range(
   		3)
   var l = range
-	->map('string(v:key)')
+	->mapnew('string(v:key)')
   assert_equal(['0', '1', '2'], l)
 
   l = range
-  	->map('string(v:key)')
+  	->mapnew('string(v:key)')
   assert_equal(['0', '1', '2'], l)
 
   l = range # comment
-  	->map('string(v:key)')
+  	->mapnew('string(v:key)')
   assert_equal(['0', '1', '2'], l)
 
   l = range
 
-  	->map('string(v:key)')
+  	->mapnew('string(v:key)')
   assert_equal(['0', '1', '2'], l)
 
   l = range
 	# comment
-  	->map('string(v:key)')
+  	->mapnew('string(v:key)')
   assert_equal(['0', '1', '2'], l)
 
   assert_equal('1', l[
@@ -2882,8 +3002,8 @@ def Test_expr7_subscript_linebreak()
 enddef
 
 func Test_expr7_trailing_fails()
-  call CheckDefFailure(['var l = [2]', 'l->{l -> add(l, 8)}'], 'E107:', 2)
-  call CheckDefFailure(['var l = [2]', 'l->{l -> add(l, 8)} ()'], 'E274:', 2)
+  call CheckDefFailure(['var l = [2]', 'l->((l) => add(l, 8))'], 'E107:', 2)
+  call CheckDefFailure(['var l = [2]', 'l->((l) => add(l, 8)) ()'], 'E274:', 2)
 endfunc
 
 func Test_expr_fails()

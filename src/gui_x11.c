@@ -95,8 +95,8 @@ static Atom   wm_atoms[2];	// Window Manager Atoms
  * normal font (current_fontset == NULL, use gui.text_gc and gui.back_gc).
  */
 static XFontSet current_fontset = NULL;
-
-#define XDrawString(dpy, win, gc, x, y, str, n) \
+# if !defined(XDrawString)
+#  define XDrawString(dpy, win, gc, x, y, str, n) \
 	do \
 	{ \
 	    if (current_fontset != NULL) \
@@ -104,8 +104,9 @@ static XFontSet current_fontset = NULL;
 	    else \
 		XDrawString(dpy, win, gc, x, y, str, n); \
 	} while (0)
-
-#define XDrawString16(dpy, win, gc, x, y, str, n) \
+# endif
+# if !defined(XDrawString16)
+#  define XDrawString16(dpy, win, gc, x, y, str, n) \
 	do \
 	{ \
 	    if (current_fontset != NULL) \
@@ -113,8 +114,9 @@ static XFontSet current_fontset = NULL;
 	    else \
 		XDrawString16(dpy, win, gc, x, y, (XChar2b *)str, n); \
 	} while (0)
-
-#define XDrawImageString16(dpy, win, gc, x, y, str, n) \
+# endif
+# if !defined(XDrawImageString16)
+#  define XDrawImageString16(dpy, win, gc, x, y, str, n) \
 	do \
 	{ \
 	    if (current_fontset != NULL) \
@@ -122,7 +124,7 @@ static XFontSet current_fontset = NULL;
 	    else \
 		XDrawImageString16(dpy, win, gc, x, y, (XChar2b *)str, n); \
 	} while (0)
-
+# endif
 static int check_fontset_sanity(XFontSet fs);
 static int fontset_width(XFontSet fs);
 static int fontset_ascent(XFontSet fs);

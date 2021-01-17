@@ -47,6 +47,7 @@ static void f_ceil(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_changenr(typval_T *argvars, typval_T *rettv);
 static void f_char2nr(typval_T *argvars, typval_T *rettv);
+static void f_charcol(typval_T *argvars, typval_T *rettv);
 static void f_charidx(typval_T *argvars, typval_T *rettv);
 static void f_col(typval_T *argvars, typval_T *rettv);
 static void f_confirm(typval_T *argvars, typval_T *rettv);
@@ -87,12 +88,14 @@ static void f_function(typval_T *argvars, typval_T *rettv);
 static void f_garbagecollect(typval_T *argvars, typval_T *rettv);
 static void f_get(typval_T *argvars, typval_T *rettv);
 static void f_getchangelist(typval_T *argvars, typval_T *rettv);
+static void f_getcharpos(typval_T *argvars, typval_T *rettv);
 static void f_getcharsearch(typval_T *argvars, typval_T *rettv);
 static void f_getenv(typval_T *argvars, typval_T *rettv);
 static void f_getfontname(typval_T *argvars, typval_T *rettv);
 static void f_getjumplist(typval_T *argvars, typval_T *rettv);
 static void f_getpid(typval_T *argvars, typval_T *rettv);
 static void f_getcurpos(typval_T *argvars, typval_T *rettv);
+static void f_getcursorcharpos(typval_T *argvars, typval_T *rettv);
 static void f_getpos(typval_T *argvars, typval_T *rettv);
 static void f_getreg(typval_T *argvars, typval_T *rettv);
 static void f_getreginfo(typval_T *argvars, typval_T *rettv);
@@ -190,7 +193,9 @@ static void f_searchdecl(typval_T *argvars, typval_T *rettv);
 static void f_searchpair(typval_T *argvars, typval_T *rettv);
 static void f_searchpairpos(typval_T *argvars, typval_T *rettv);
 static void f_searchpos(typval_T *argvars, typval_T *rettv);
+static void f_setcharpos(typval_T *argvars, typval_T *rettv);
 static void f_setcharsearch(typval_T *argvars, typval_T *rettv);
+static void f_setcursorcharpos(typval_T *argvars, typval_T *rettv);
 static void f_setenv(typval_T *argvars, typval_T *rettv);
 static void f_setfperm(typval_T *argvars, typval_T *rettv);
 static void f_setpos(typval_T *argvars, typval_T *rettv);
@@ -270,12 +275,29 @@ typedef struct {
     int		arg_count;	// actual argument count
     type_T	**arg_types;	// list of argument types
     int		arg_idx;	// current argument index (first arg is zero)
+    cctx_T	*arg_cctx;
 } argcontext_T;
 
 // A function to check one argument type.  The first argument is the type to
 // check.  If needed, other argument types can be obtained with the context.
 // E.g. if "arg_idx" is 1, then (type - 1) is the first argument type.
 typedef int (*argcheck_T)(type_T *, argcontext_T *);
+
+/*
+ * Call need_type() to check an argument type.
+ */
+    static int
+check_arg_type(
+	type_T		*expected,
+	type_T		*actual,
+	argcontext_T	*context)
+{
+    // TODO: would be useful to know if "actual" is a constant and pass it to
+    // need_type() to get a compile time error if possible.
+    return need_type(actual, expected,
+	    context->arg_idx - context->arg_count, context->arg_idx + 1,
+	    context->arg_cctx, FALSE, FALSE);
+}
 
 /*
  * Check "type" is a float or a number.
@@ -296,7 +318,7 @@ arg_float_or_nr(type_T *type, argcontext_T *context)
     static int
 arg_number(type_T *type, argcontext_T *context)
 {
-    return check_arg_type(&t_number, type, context->arg_idx + 1);
+    return check_arg_type(&t_number, type, context);
 }
 
 /*
@@ -305,7 +327,7 @@ arg_number(type_T *type, argcontext_T *context)
     static int
 arg_string(type_T *type, argcontext_T *context)
 {
-    return check_arg_type(&t_string, type, context->arg_idx + 1);
+    return check_arg_type(&t_string, type, context);
 }
 
 /*
@@ -335,7 +357,7 @@ arg_list_or_dict(type_T *type, argcontext_T *context)
 }
 
 /*
- * Check "type" is the same type as the previous argument
+ * Check "type" is the same type as the previous argument.
  * Must not be used for the first argcheck_T entry.
  */
     static int
@@ -343,7 +365,22 @@ arg_same_as_prev(type_T *type, argcontext_T *context)
 {
     type_T *prev_type = context->arg_types[context->arg_idx - 1];
 
-    return check_arg_type(prev_type, type, context->arg_idx + 1);
+    return check_arg_type(prev_type, type, context);
+}
+
+/*
+ * Check "type" is the same basic type as the previous argument, checks list or
+ * dict vs other type, but not member type.
+ * Must not be used for the first argcheck_T entry.
+ */
+    static int
+arg_same_struct_as_prev(type_T *type, argcontext_T *context)
+{
+    type_T *prev_type = context->arg_types[context->arg_idx - 1];
+
+    if (prev_type->tt_type != context->arg_types[context->arg_idx]->tt_type)
+	return check_arg_type(prev_type, type, context);
+    return OK;
 }
 
 /*
@@ -364,7 +401,7 @@ arg_item_of_prev(type_T *type, argcontext_T *context)
 	// probably VAR_ANY, can't check
 	return OK;
 
-    return check_arg_type(expected, type, context->arg_idx + 1);
+    return check_arg_type(expected, type, context);
 }
 
 /*
@@ -389,6 +426,7 @@ arg_extend3(type_T *type, argcontext_T *context)
 argcheck_T arg1_float_or_nr[] = {arg_float_or_nr};
 argcheck_T arg2_listblob_item[] = {arg_list_or_blob, arg_item_of_prev};
 argcheck_T arg23_extend[] = {arg_list_or_dict, arg_same_as_prev, arg_extend3};
+argcheck_T arg23_extendnew[] = {arg_list_or_dict, arg_same_struct_as_prev, arg_extend3};
 argcheck_T arg3_insert[] = {arg_list_or_blob, arg_item_of_prev, arg_number};
 
 /*
@@ -448,6 +486,13 @@ ret_list_dict_any(int argcount UNUSED, type_T **argtypes UNUSED)
     static type_T *
 ret_dict_any(int argcount UNUSED, type_T **argtypes UNUSED)
 {
+    return &t_dict_any;
+}
+    static type_T *
+ret_job_info(int argcount, type_T **argtypes UNUSED)
+{
+    if (argcount == 0)
+	return &t_list_job;
     return &t_dict_any;
 }
     static type_T *
@@ -790,6 +835,8 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_char2nr},
     {"charclass",	1, 1, FEARG_1,	    NULL,
 			ret_number,	    f_charclass},
+    {"charcol",		1, 1, FEARG_1,	    NULL,
+			ret_number,	    f_charcol},
     {"charidx",		2, 3, FEARG_1,	    NULL,
 			ret_number,	    f_charidx},
     {"chdir",		1, 1, FEARG_1,	    NULL,
@@ -870,6 +917,8 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_expandcmd},
     {"extend",		2, 3, FEARG_1,	    arg23_extend,
 			ret_first_arg,	    f_extend},
+    {"extendnew",	2, 3, FEARG_1,	    arg23_extendnew,
+			ret_first_cont,	    f_extendnew},
     {"feedkeys",	1, 2, FEARG_1,	    NULL,
 			ret_void,	    f_feedkeys},
     {"file_readable",	1, 1, FEARG_1,	    NULL,	// obsolete
@@ -928,6 +977,8 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_getchar},
     {"getcharmod",	0, 0, 0,	    NULL,
 			ret_number,	    f_getcharmod},
+    {"getcharpos",	1, 1, FEARG_1,	    NULL,
+			ret_list_number,    f_getcharpos},
     {"getcharsearch",	0, 0, 0,	    NULL,
 			ret_dict_any,	    f_getcharsearch},
     {"getcmdline",	0, 0, 0,	    NULL,
@@ -942,6 +993,8 @@ static funcentry_T global_functions[] =
 			ret_list_string,    f_getcompletion},
     {"getcurpos",	0, 1, FEARG_1,	    NULL,
 			ret_list_number,    f_getcurpos},
+    {"getcursorcharpos",	0, 1, FEARG_1,	    NULL,
+			ret_list_number,    f_getcursorcharpos},
     {"getcwd",		0, 2, FEARG_1,	    NULL,
 			ret_string,	    f_getcwd},
     {"getenv",		1, 1, FEARG_1,	    NULL,
@@ -1071,7 +1124,7 @@ static funcentry_T global_functions[] =
     {"job_getchannel",	1, 1, FEARG_1,	    NULL,
 			ret_channel,	    JOB_FUNC(f_job_getchannel)},
     {"job_info",	0, 1, FEARG_1,	    NULL,
-			ret_dict_any,	    JOB_FUNC(f_job_info)},
+			ret_job_info,	    JOB_FUNC(f_job_info)},
     {"job_setoptions",	2, 2, FEARG_1,	    NULL,
 			ret_void,	    JOB_FUNC(f_job_setoptions)},
     {"job_start",	1, 2, FEARG_1,	    NULL,
@@ -1308,12 +1361,14 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_rand},
     {"range",		1, 3, FEARG_1,	    NULL,
 			ret_list_number,    f_range},
+    {"readblob",	1, 1, FEARG_1,	    NULL,
+			ret_blob,	    f_readblob},
     {"readdir",		1, 3, FEARG_1,	    NULL,
 			ret_list_string,    f_readdir},
     {"readdirex",	1, 3, FEARG_1,	    NULL,
 			ret_list_dict_any,  f_readdirex},
     {"readfile",	1, 3, FEARG_1,	    NULL,
-			ret_any,	    f_readfile},
+			ret_list_string,    f_readfile},
     {"reduce",		2, 3, FEARG_1,	    NULL,
 			ret_any,	    f_reduce},
     {"reg_executing",	0, 0, 0,	    NULL,
@@ -1394,10 +1449,14 @@ static funcentry_T global_functions[] =
 			ret_void,	    f_setbufvar},
     {"setcellwidths",	1, 1, FEARG_1,	    NULL,
 			ret_void,	    f_setcellwidths},
+    {"setcharpos",	2, 2, FEARG_2,	    NULL,
+			ret_number,	    f_setcharpos},
     {"setcharsearch",	1, 1, FEARG_1,	    NULL,
 			ret_void,	    f_setcharsearch},
     {"setcmdpos",	1, 1, FEARG_1,	    NULL,
 			ret_number,	    f_setcmdpos},
+    {"setcursorcharpos",	1, 3, FEARG_1,	    NULL,
+			ret_number,	    f_setcursorcharpos},
     {"setenv",		2, 2, FEARG_2,	    NULL,
 			ret_void,	    f_setenv},
     {"setfperm",	2, 2, FEARG_1,	    NULL,
@@ -1458,6 +1517,8 @@ static funcentry_T global_functions[] =
 			ret_float,	    FLOAT_FUNC(f_sin)},
     {"sinh",		1, 1, FEARG_1,	    NULL,
 			ret_float,	    FLOAT_FUNC(f_sinh)},
+    {"slice",		2, 3, FEARG_1,	    NULL,
+			ret_first_arg,	    f_slice},
     {"sort",		1, 3, FEARG_1,	    NULL,
 			ret_first_arg,	    f_sort},
     {"sound_clear",	0, 0, 0,	    NULL,
@@ -1702,6 +1763,8 @@ static funcentry_T global_functions[] =
 			ret_float,	    FLOAT_FUNC(f_trunc)},
     {"type",		1, 1, FEARG_1,	    NULL,
 			ret_number,	    f_type},
+    {"typename",	1, 1, FEARG_1,	    NULL,
+			ret_string,	    f_typename},
     {"undofile",	1, 1, FEARG_1,	    NULL,
 			ret_string,	    f_undofile},
     {"undotree",	0, 0, 0,	    NULL,
@@ -1753,7 +1816,7 @@ static funcentry_T global_functions[] =
     {"winrestview",	1, 1, FEARG_1,	    NULL,
 			ret_void,	    f_winrestview},
     {"winsaveview",	0, 0, 0,	    NULL,
-			ret_dict_any,	    f_winsaveview},
+			ret_dict_number,    f_winsaveview},
     {"winwidth",	1, 1, FEARG_1,	    NULL,
 			ret_number,	    f_winwidth},
     {"wordcount",	0, 0, 0,	    NULL,
@@ -1780,7 +1843,11 @@ get_function_name(expand_T *xp, int idx)
     {
 	name = get_user_func_name(xp, idx);
 	if (name != NULL)
+	{
+	    if (*name != '<' && STRNCMP("g:", xp->xp_pattern, 2) == 0)
+		return cat_prefix_varname('g', name);
 	    return name;
+	}
     }
     if (++intidx < (int)(sizeof(global_functions) / sizeof(funcentry_T)))
     {
@@ -1881,7 +1948,11 @@ internal_func_name(int idx)
  * Return FAIL and gives an error message when a type is wrong.
  */
     int
-internal_func_check_arg_types(type_T **types, int idx, int argcount)
+internal_func_check_arg_types(
+	type_T	**types,
+	int	idx,
+	int	argcount,
+	cctx_T	*cctx)
 {
     argcheck_T	*argchecks = global_functions[idx].f_argcheck;
     int		i;
@@ -1892,6 +1963,7 @@ internal_func_check_arg_types(type_T **types, int idx, int argcount)
 
 	context.arg_count = argcount;
 	context.arg_types = types;
+	context.arg_cctx = cctx;
 	for (i = 0; i < argcount; ++i)
 	    if (argchecks[i] != NULL)
 	    {
@@ -1912,6 +1984,15 @@ internal_func_check_arg_types(type_T **types, int idx, int argcount)
 internal_func_ret_type(int idx, int argcount, type_T **argtypes)
 {
     return global_functions[idx].f_retfunc(argcount, argtypes);
+}
+
+/*
+ * Return TRUE if "idx" is for the map() function.
+ */
+    int
+internal_func_is_map(int idx)
+{
+    return global_functions[idx].f_func == f_map;
 }
 
 /*
@@ -2424,6 +2505,61 @@ f_char2nr(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * Get the current cursor column and store it in 'rettv'. If 'charcol' is TRUE,
+ * returns the character index of the column. Otherwise, returns the byte index
+ * of the column.
+ */
+    static void
+get_col(typval_T *argvars, typval_T *rettv, int charcol)
+{
+    colnr_T	col = 0;
+    pos_T	*fp;
+    int		fnum = curbuf->b_fnum;
+
+    fp = var2fpos(&argvars[0], FALSE, &fnum, charcol);
+    if (fp != NULL && fnum == curbuf->b_fnum)
+    {
+	if (fp->col == MAXCOL)
+	{
+	    // '> can be MAXCOL, get the length of the line then
+	    if (fp->lnum <= curbuf->b_ml.ml_line_count)
+		col = (colnr_T)STRLEN(ml_get(fp->lnum)) + 1;
+	    else
+		col = MAXCOL;
+	}
+	else
+	{
+	    col = fp->col + 1;
+	    // col(".") when the cursor is on the NUL at the end of the line
+	    // because of "coladd" can be seen as an extra column.
+	    if (virtual_active() && fp == &curwin->w_cursor)
+	    {
+		char_u	*p = ml_get_cursor();
+
+		if (curwin->w_cursor.coladd >= (colnr_T)chartabsize(p,
+				 curwin->w_virtcol - curwin->w_cursor.coladd))
+		{
+		    int		l;
+
+		    if (*p != NUL && p[(l = (*mb_ptr2len)(p))] == NUL)
+			col += l;
+		}
+	    }
+	}
+    }
+    rettv->vval.v_number = col;
+}
+
+/*
+ * "charcol()" function
+ */
+    static void
+f_charcol(typval_T *argvars, typval_T *rettv)
+{
+    get_col(argvars, rettv, TRUE);
+}
+
+/*
  * "charidx()" function
  */
     static void
@@ -2431,7 +2567,7 @@ f_charidx(typval_T *argvars, typval_T *rettv)
 {
     char_u	*str;
     varnumber_T	idx;
-    int		countcc = FALSE;
+    varnumber_T	countcc = FALSE;
     char_u	*p;
     int		len;
     int		(*ptr2len)(char_u *);
@@ -2452,7 +2588,7 @@ f_charidx(typval_T *argvars, typval_T *rettv)
 	return;
 
     if (argvars[2].v_type != VAR_UNKNOWN)
-	countcc = (int)tv_get_bool(&argvars[2]);
+	countcc = tv_get_bool(&argvars[2]);
     if (countcc < 0 || countcc > 1)
     {
 	semsg(_(e_using_number_as_bool_nr), countcc);
@@ -2497,42 +2633,7 @@ get_optional_window(typval_T *argvars, int idx)
     static void
 f_col(typval_T *argvars, typval_T *rettv)
 {
-    colnr_T	col = 0;
-    pos_T	*fp;
-    int		fnum = curbuf->b_fnum;
-
-    fp = var2fpos(&argvars[0], FALSE, &fnum);
-    if (fp != NULL && fnum == curbuf->b_fnum)
-    {
-	if (fp->col == MAXCOL)
-	{
-	    // '> can be MAXCOL, get the length of the line then
-	    if (fp->lnum <= curbuf->b_ml.ml_line_count)
-		col = (colnr_T)STRLEN(ml_get(fp->lnum)) + 1;
-	    else
-		col = MAXCOL;
-	}
-	else
-	{
-	    col = fp->col + 1;
-	    // col(".") when the cursor is on the NUL at the end of the line
-	    // because of "coladd" can be seen as an extra column.
-	    if (virtual_active() && fp == &curwin->w_cursor)
-	    {
-		char_u	*p = ml_get_cursor();
-
-		if (curwin->w_cursor.coladd >= (colnr_T)chartabsize(p,
-				 curwin->w_virtcol - curwin->w_cursor.coladd))
-		{
-		    int		l;
-
-		    if (*p != NUL && p[(l = (*mb_ptr2len)(p))] == NUL)
-			col += l;
-		}
-	    }
-	}
-    }
-    rettv->vval.v_number = col;
+    get_col(argvars, rettv, FALSE);
 }
 
 /*
@@ -2633,26 +2734,24 @@ f_cosh(typval_T *argvars, typval_T *rettv)
 #endif
 
 /*
- * "cursor(lnum, col)" function, or
- * "cursor(list)"
- *
- * Moves the cursor to the specified line and column.
- * Returns 0 when the position could be set, -1 otherwise.
+ * Set the cursor position.
+ * If 'charcol' is TRUE, then use the column number as a character offet.
+ * Otherwise use the column number as a byte offset.
  */
     static void
-f_cursor(typval_T *argvars, typval_T *rettv)
+set_cursorpos(typval_T *argvars, typval_T *rettv, int charcol)
 {
     long	line, col;
     long	coladd = 0;
     int		set_curswant = TRUE;
 
     rettv->vval.v_number = -1;
-    if (argvars[1].v_type == VAR_UNKNOWN)
+    if (argvars[0].v_type == VAR_LIST)
     {
 	pos_T	    pos;
 	colnr_T	    curswant = -1;
 
-	if (list2fpos(argvars, &pos, NULL, &curswant) == FAIL)
+	if (list2fpos(argvars, &pos, NULL, &curswant, charcol) == FAIL)
 	{
 	    emsg(_(e_invarg));
 	    return;
@@ -2666,14 +2765,24 @@ f_cursor(typval_T *argvars, typval_T *rettv)
 	    set_curswant = FALSE;
 	}
     }
-    else
+    else if ((argvars[0].v_type == VAR_NUMBER ||
+					argvars[0].v_type == VAR_STRING)
+	    && (argvars[1].v_type == VAR_NUMBER ||
+					argvars[1].v_type == VAR_STRING))
     {
 	line = tv_get_lnum(argvars);
 	if (line < 0)
 	    semsg(_(e_invarg2), tv_get_string(&argvars[0]));
 	col = (long)tv_get_number_chk(&argvars[1], NULL);
+	if (charcol)
+	    col = buf_charidx_to_byteidx(curbuf, line, col) + 1;
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	    coladd = (long)tv_get_number_chk(&argvars[2], NULL);
+    }
+    else
+    {
+	emsg(_(e_invarg));
+	return;
     }
     if (line < 0 || col < 0 || coladd < 0)
 	return;		// type error; errmsg already given
@@ -2691,6 +2800,19 @@ f_cursor(typval_T *argvars, typval_T *rettv)
 
     curwin->w_set_curswant = set_curswant;
     rettv->vval.v_number = 0;
+}
+
+/*
+ * "cursor(lnum, col)" function, or
+ * "cursor(list)"
+ *
+ * Moves the cursor to the specified line and column.
+ * Returns 0 when the position could be set, -1 otherwise.
+ */
+    static void
+f_cursor(typval_T *argvars, typval_T *rettv)
+{
+    set_cursorpos(argvars, rettv, FALSE);
 }
 
 #ifdef MSWIN
@@ -2726,11 +2848,11 @@ f_debugbreak(typval_T *argvars, typval_T *rettv)
     static void
 f_deepcopy(typval_T *argvars, typval_T *rettv)
 {
-    int		noref = 0;
+    varnumber_T	noref = 0;
     int		copyID;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
-	noref = (int)tv_get_bool_chk(&argvars[1], NULL);
+	noref = tv_get_bool_chk(&argvars[1], NULL);
     if (noref < 0 || noref > 1)
 	semsg(_(e_using_number_as_bool_nr), noref);
     else
@@ -3497,7 +3619,8 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
     {
 	name = s;
 	trans_name = trans_function_name(&name, &is_global, FALSE,
-	     TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD | TFN_NO_DEREF, NULL, NULL);
+	     TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD | TFN_NO_DEREF,
+							     NULL, NULL, NULL);
 	if (*name != NUL)
 	    s = NULL;
     }
@@ -3886,6 +4009,88 @@ f_getchangelist(typval_T *argvars, typval_T *rettv)
 #endif
 }
 
+    static void
+getpos_both(
+    typval_T	*argvars,
+    typval_T	*rettv,
+    int		getcurpos,
+    int		charcol)
+{
+    pos_T	*fp = NULL;
+    pos_T	pos;
+    win_T	*wp = curwin;
+    list_T	*l;
+    int		fnum = -1;
+
+    if (rettv_list_alloc(rettv) == OK)
+    {
+	l = rettv->vval.v_list;
+	if (getcurpos)
+	{
+	    if (argvars[0].v_type != VAR_UNKNOWN)
+	    {
+		wp = find_win_by_nr_or_id(&argvars[0]);
+		if (wp != NULL)
+		    fp = &wp->w_cursor;
+	    }
+	    else
+		fp = &curwin->w_cursor;
+	    if (fp != NULL && charcol)
+	    {
+		pos = *fp;
+		pos.col =
+		    buf_byteidx_to_charidx(wp->w_buffer, pos.lnum, pos.col);
+		fp = &pos;
+	    }
+	}
+	else
+	    fp = var2fpos(&argvars[0], TRUE, &fnum, charcol);
+	if (fnum != -1)
+	    list_append_number(l, (varnumber_T)fnum);
+	else
+	    list_append_number(l, (varnumber_T)0);
+	list_append_number(l, (fp != NULL) ? (varnumber_T)fp->lnum
+							    : (varnumber_T)0);
+	list_append_number(l, (fp != NULL)
+		     ? (varnumber_T)(fp->col == MAXCOL ? MAXCOL : fp->col + 1)
+							    : (varnumber_T)0);
+	list_append_number(l, (fp != NULL) ? (varnumber_T)fp->coladd :
+							      (varnumber_T)0);
+	if (getcurpos)
+	{
+	    int	    save_set_curswant = curwin->w_set_curswant;
+	    colnr_T save_curswant = curwin->w_curswant;
+	    colnr_T save_virtcol = curwin->w_virtcol;
+
+	    if (wp == curwin)
+		update_curswant();
+	    list_append_number(l, wp == NULL ? 0 : wp->w_curswant == MAXCOL
+		    ?  (varnumber_T)MAXCOL : (varnumber_T)wp->w_curswant + 1);
+
+	    // Do not change "curswant", as it is unexpected that a get
+	    // function has a side effect.
+	    if (wp == curwin && save_set_curswant)
+	    {
+		curwin->w_set_curswant = save_set_curswant;
+		curwin->w_curswant = save_curswant;
+		curwin->w_virtcol = save_virtcol;
+		curwin->w_valid &= ~VALID_VIRTCOL;
+	    }
+	}
+    }
+    else
+	rettv->vval.v_number = FALSE;
+}
+
+/*
+ * "getcharpos()" function
+ */
+    static void
+f_getcharpos(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    getpos_both(argvars, rettv, FALSE, TRUE);
+}
+
 /*
  * "getcharsearch()" function
  */
@@ -4018,77 +4223,19 @@ f_getpid(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_number = mch_get_pid();
 }
 
-    static void
-getpos_both(
-    typval_T	*argvars,
-    typval_T	*rettv,
-    int		getcurpos)
-{
-    pos_T	*fp = NULL;
-    win_T	*wp = curwin;
-    list_T	*l;
-    int		fnum = -1;
-
-    if (rettv_list_alloc(rettv) == OK)
-    {
-	l = rettv->vval.v_list;
-	if (getcurpos)
-	{
-	    if (argvars[0].v_type != VAR_UNKNOWN)
-	    {
-		wp = find_win_by_nr_or_id(&argvars[0]);
-		if (wp != NULL)
-		    fp = &wp->w_cursor;
-	    }
-	    else
-		fp = &curwin->w_cursor;
-	}
-	else
-	    fp = var2fpos(&argvars[0], TRUE, &fnum);
-	if (fnum != -1)
-	    list_append_number(l, (varnumber_T)fnum);
-	else
-	    list_append_number(l, (varnumber_T)0);
-	list_append_number(l, (fp != NULL) ? (varnumber_T)fp->lnum
-							    : (varnumber_T)0);
-	list_append_number(l, (fp != NULL)
-		     ? (varnumber_T)(fp->col == MAXCOL ? MAXCOL : fp->col + 1)
-							    : (varnumber_T)0);
-	list_append_number(l, (fp != NULL) ? (varnumber_T)fp->coladd :
-							      (varnumber_T)0);
-	if (getcurpos)
-	{
-	    int	    save_set_curswant = curwin->w_set_curswant;
-	    colnr_T save_curswant = curwin->w_curswant;
-	    colnr_T save_virtcol = curwin->w_virtcol;
-
-	    if (wp == curwin)
-		update_curswant();
-	    list_append_number(l, wp == NULL ? 0 : wp->w_curswant == MAXCOL
-		    ?  (varnumber_T)MAXCOL : (varnumber_T)wp->w_curswant + 1);
-
-	    // Do not change "curswant", as it is unexpected that a get
-	    // function has a side effect.
-	    if (wp == curwin && save_set_curswant)
-	    {
-		curwin->w_set_curswant = save_set_curswant;
-		curwin->w_curswant = save_curswant;
-		curwin->w_virtcol = save_virtcol;
-		curwin->w_valid &= ~VALID_VIRTCOL;
-	    }
-	}
-    }
-    else
-	rettv->vval.v_number = FALSE;
-}
-
 /*
  * "getcurpos()" function
  */
     static void
 f_getcurpos(typval_T *argvars, typval_T *rettv)
 {
-    getpos_both(argvars, rettv, TRUE);
+    getpos_both(argvars, rettv, TRUE, FALSE);
+}
+
+    static void
+f_getcursorcharpos(typval_T *argvars, typval_T *rettv)
+{
+    getpos_both(argvars, rettv, TRUE, TRUE);
 }
 
 /*
@@ -4097,7 +4244,7 @@ f_getcurpos(typval_T *argvars, typval_T *rettv)
     static void
 f_getpos(typval_T *argvars, typval_T *rettv)
 {
-    getpos_both(argvars, rettv, FALSE);
+    getpos_both(argvars, rettv, FALSE, FALSE);
 }
 
 /*
@@ -6182,14 +6329,14 @@ f_line(typval_T *argvars, typval_T *rettv)
 									 == OK)
 	    {
 		check_cursor();
-		fp = var2fpos(&argvars[0], TRUE, &fnum);
+		fp = var2fpos(&argvars[0], TRUE, &fnum, FALSE);
 	    }
 	    restore_win_noblock(save_curwin, save_curtab, TRUE);
 	}
     }
     else
 	// use current window
-	fp = var2fpos(&argvars[0], TRUE, &fnum);
+	fp = var2fpos(&argvars[0], TRUE, &fnum, FALSE);
 
     if (fp != NULL)
 	lnum = fp->lnum;
@@ -6316,7 +6463,7 @@ find_some_match(typval_T *argvars, typval_T *rettv, matchtype_T type)
 
     // Make 'cpoptions' empty, the 'l' flag should not be used here.
     save_cpo = p_cpo;
-    p_cpo = (char_u *)"";
+    p_cpo = empty_option;
 
     rettv->vval.v_number = -1;
     if (type == MATCH_LIST || type == MATCH_POS)
@@ -8024,8 +8171,14 @@ theend:
     if (p_cpo == empty_option)
 	p_cpo = save_cpo;
     else
+    {
 	// Darn, evaluating the {skip} expression changed the value.
+	// If it's still empty it was changed and restored, need to restore in
+	// the complicated way.
+	if (*p_cpo == NUL)
+	    set_option_value((char_u *)"cpo", 0L, save_cpo, 0);
 	free_string_option(save_cpo);
+    }
 
     return retval;
 }
@@ -8056,6 +8209,60 @@ f_searchpos(typval_T *argvars, typval_T *rettv)
     list_append_number(rettv->vval.v_list, (varnumber_T)col);
     if (flags & SP_SUBPAT)
 	list_append_number(rettv->vval.v_list, (varnumber_T)n);
+}
+
+/*
+ * Set the cursor or mark position.
+ * If 'charpos' is TRUE, then use the column number as a character offet.
+ * Otherwise use the column number as a byte offset.
+ */
+    static void
+set_position(typval_T *argvars, typval_T *rettv, int charpos)
+{
+    pos_T	pos;
+    int		fnum;
+    char_u	*name;
+    colnr_T	curswant = -1;
+
+    rettv->vval.v_number = -1;
+
+    name = tv_get_string_chk(argvars);
+    if (name != NULL)
+    {
+	if (list2fpos(&argvars[1], &pos, &fnum, &curswant, charpos) == OK)
+	{
+	    if (pos.col != MAXCOL && --pos.col < 0)
+		pos.col = 0;
+	    if ((name[0] == '.' && name[1] == NUL))
+	    {
+		// set cursor; "fnum" is ignored
+		curwin->w_cursor = pos;
+		if (curswant >= 0)
+		{
+		    curwin->w_curswant = curswant - 1;
+		    curwin->w_set_curswant = FALSE;
+		}
+		check_cursor();
+		rettv->vval.v_number = 0;
+	    }
+	    else if (name[0] == '\'' && name[1] != NUL && name[2] == NUL)
+	    {
+		// set mark
+		if (setmark_pos(name[1], &pos, fnum) == OK)
+		    rettv->vval.v_number = 0;
+	    }
+	    else
+		emsg(_(e_invarg));
+	}
+    }
+}
+/*
+ * "setcharpos()" function
+ */
+    static void
+f_setcharpos(typval_T *argvars, typval_T *rettv)
+{
+    set_position(argvars, rettv, TRUE);
 }
 
     static void
@@ -8097,6 +8304,15 @@ f_setcharsearch(typval_T *argvars, typval_T *rettv UNUSED)
 	if (di != NULL)
 	    set_csearch_until(!!tv_get_number(&di->di_tv));
     }
+}
+
+/*
+ * "setcursorcharpos" function
+ */
+    static void
+f_setcursorcharpos(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    set_cursorpos(argvars, rettv, TRUE);
 }
 
 /*
@@ -8158,41 +8374,7 @@ f_setfperm(typval_T *argvars, typval_T *rettv)
     static void
 f_setpos(typval_T *argvars, typval_T *rettv)
 {
-    pos_T	pos;
-    int		fnum;
-    char_u	*name;
-    colnr_T	curswant = -1;
-
-    rettv->vval.v_number = -1;
-    name = tv_get_string_chk(argvars);
-    if (name != NULL)
-    {
-	if (list2fpos(&argvars[1], &pos, &fnum, &curswant) == OK)
-	{
-	    if (pos.col != MAXCOL && --pos.col < 0)
-		pos.col = 0;
-	    if (name[0] == '.' && name[1] == NUL)
-	    {
-		// set cursor; "fnum" is ignored
-		curwin->w_cursor = pos;
-		if (curswant >= 0)
-		{
-		    curwin->w_curswant = curswant - 1;
-		    curwin->w_set_curswant = FALSE;
-		}
-		check_cursor();
-		rettv->vval.v_number = 0;
-	    }
-	    else if (name[0] == '\'' && name[1] != NUL && name[2] == NUL)
-	    {
-		// set mark
-		if (setmark_pos(name[1], &pos, fnum) == OK)
-		    rettv->vval.v_number = 0;
-	    }
-	    else
-		emsg(_(e_invarg));
-	}
-    }
+    set_position(argvars, rettv, FALSE);
 }
 
 /*
@@ -8723,7 +8905,7 @@ f_split(typval_T *argvars, typval_T *rettv)
 
     // Make 'cpoptions' empty, the 'l' flag should not be used here.
     save_cpo = p_cpo;
-    p_cpo = (char_u *)"";
+    p_cpo = empty_option;
 
     str = tv_get_string(&argvars[0]);
     if (argvars[1].v_type != VAR_UNKNOWN)
@@ -9003,12 +9185,12 @@ f_strlen(typval_T *argvars, typval_T *rettv)
 f_strchars(typval_T *argvars, typval_T *rettv)
 {
     char_u		*s = tv_get_string(&argvars[0]);
-    int			skipcc = FALSE;
+    varnumber_T		skipcc = FALSE;
     varnumber_T		len = 0;
     int			(*func_mb_ptr2char_adv)(char_u **pp);
 
     if (argvars[1].v_type != VAR_UNKNOWN)
-	skipcc = (int)tv_get_bool(&argvars[1]);
+	skipcc = tv_get_bool(&argvars[1]);
     if (skipcc < 0 || skipcc > 1)
 	semsg(_(e_using_number_as_bool_nr), skipcc);
     else
@@ -9940,7 +10122,7 @@ f_virtcol(typval_T *argvars, typval_T *rettv)
     int		fnum = curbuf->b_fnum;
     int		len;
 
-    fp = var2fpos(&argvars[0], FALSE, &fnum);
+    fp = var2fpos(&argvars[0], FALSE, &fnum, FALSE);
     if (fp != NULL && fp->lnum <= curbuf->b_ml.ml_line_count
 						    && fnum == curbuf->b_fnum)
     {

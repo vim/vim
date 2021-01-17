@@ -54,7 +54,7 @@ def CallRecursive(n: number): number
 enddef
 
 def CallMapRecursive(l: list<number>): number
-  return map(l, {_, v -> CallMapRecursive([v])})[0]
+  return map(l, (_, v) => CallMapRecursive([v]))[0]
 enddef
 
 def Test_funcdepth_error()
@@ -77,6 +77,51 @@ def Test_funcdepth_error()
   assert_true(caught)
 
   set maxfuncdepth&
+enddef
+
+def Test_endfunc_enddef()
+  var lines =<< trim END
+    def Test()
+      echo 'test'
+      endfunc
+    enddef
+  END
+  CheckScriptFailure(lines, 'E1151:', 3)
+
+  lines =<< trim END
+    def Test()
+      func Nested()
+        echo 'test'
+      enddef
+    enddef
+  END
+  CheckScriptFailure(lines, 'E1152:', 4)
+enddef
+
+def Test_missing_endfunc_enddef()
+  var lines =<< trim END
+    vim9script
+    def Test()
+      echo 'test'
+    endef
+  END
+  CheckScriptFailure(lines, 'E1057:', 2)
+
+  lines =<< trim END
+    vim9script
+    func Some()
+      echo 'test'
+    enfffunc
+  END
+  CheckScriptFailure(lines, 'E126:', 2)
+enddef
+
+def Test_enddef_dict_key()
+  var d = {
+    enddef: 'x',
+    endfunc: 'y',
+  }
+  assert_equal({enddef: 'x', endfunc: 'y'}, d)
 enddef
 
 def ReturnString(): string
@@ -152,6 +197,17 @@ def Test_return_nothing()
   s:nothing->assert_equal(1)
 enddef
 
+def Test_return_invalid()
+  var lines =<< trim END
+    vim9script
+    def Func(): invalid
+      return xxx
+    enddef
+    defcompile
+  END
+  CheckScriptFailure(lines, 'E1010:', 2)
+enddef
+
 func Increment()
   let g:counter += 1
 endfunc
@@ -202,6 +258,42 @@ def Test_call_default_args()
   delfunc g:Func
   CheckScriptFailure(['def Func(arg: number = "text")', 'enddef', 'defcompile'], 'E1013: Argument 1: type mismatch, expected number but got string')
   delfunc g:Func
+enddef
+
+def FuncWithComment(  # comment
+  a: number, #comment
+  b: bool, # comment
+  c: string) #comment
+  assert_equal(4, a)
+  assert_equal(true, b)
+  assert_equal('yes', c)
+enddef
+
+def Test_func_with_comments()
+  FuncWithComment(4, true, 'yes')
+
+  var lines =<< trim END
+      def Func(# comment
+        arg: string)
+      enddef
+  END
+  CheckScriptFailure(lines, 'E125:', 1)
+
+  lines =<< trim END
+      def Func(
+        arg: string# comment
+        )
+      enddef
+  END
+  CheckScriptFailure(lines, 'E475:', 2)
+
+  lines =<< trim END
+      def Func(
+        arg: string
+        )# comment
+      enddef
+  END
+  CheckScriptFailure(lines, 'E488:', 3)
 enddef
 
 def Test_nested_function()
@@ -260,6 +352,11 @@ def Test_nested_function()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_not_nested_function()
+  echo printf('%d',
+      function('len')('xxx'))
+enddef
+
 func Test_call_default_args_from_func()
   call MyDefaultArgs()->assert_equal('string')
   call MyDefaultArgs('one')->assert_equal('one')
@@ -305,7 +402,7 @@ def Test_nested_global_function()
       vim9script
       def Outer()
         def g:Inner()
-          echo map([1, 2, 3], {_, v -> v + 1})
+          echo map([1, 2, 3], (_, v) => v + 1)
         enddef
         g:Inner()
       enddef
@@ -501,23 +598,51 @@ def Test_call_funcref_wrong_args()
 
   CheckScriptFailure(head + ["funcMap['func']('str', 123)"] + tail, 'E119:')
   CheckScriptFailure(head + ["funcMap['func']('str', 123, [1], 4)"] + tail, 'E118:')
+
+  var lines =<< trim END
+      vim9script
+      var Ref: func(number): any
+      Ref = (j) => !j
+      echo Ref(false)
+  END
+  CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected number but got bool', 4)
+
+  lines =<< trim END
+      vim9script
+      var Ref: func(number): any
+      Ref = (j) => !j
+      call Ref(false)
+  END
+  CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch, expected number but got bool', 4)
 enddef
 
 def Test_call_lambda_args()
-  CheckDefFailure(['echo {i -> 0}()'],
-                  'E119: Not enough arguments for function: {i -> 0}()')
+  CheckDefFailure(['echo ((i) => 0)()'],
+                  'E119: Not enough arguments for function: ((i) => 0)()')
 
   var lines =<< trim END
-      var Ref = {x: number, y: number -> x + y}
+      var Ref = (x: number, y: number) => x + y
       echo Ref(1, 'x')
   END
   CheckDefFailure(lines, 'E1013: Argument 2: type mismatch, expected number but got string')
+
+  lines =<< trim END
+    var Ref: func(job, string, number)
+    Ref = (x, y) => 0
+  END
+  CheckDefAndScriptFailure(lines, 'E1012:')
+
+  lines =<< trim END
+    var Ref: func(job, string)
+    Ref = (x, y, z) => 0
+  END
+  CheckDefAndScriptFailure(lines, 'E1012:')
 enddef
 
 def Test_lambda_uses_assigned_var()
   CheckDefSuccess([
         'var x: any = "aaa"'
-        'x = filter(["bbb"], {_, v -> v =~ x})'])
+        'x = filter(["bbb"], (_, v) => v =~ x)'])
 enddef
 
 " Default arg and varargs
@@ -1402,18 +1527,18 @@ def Test_unknown_function()
       'delfunc g:NotExist'], 'E700:')
 enddef
 
-def RefFunc(Ref: func(string): string): string
+def RefFunc(Ref: func(any): any): string
   return Ref('more')
 enddef
 
 def Test_closure_simple()
   var local = 'some '
-  RefFunc({s -> local .. s})->assert_equal('some more')
+  RefFunc((s) => local .. s)->assert_equal('some more')
 enddef
 
 def MakeRef()
   var local = 'some '
-  g:Ref = {s -> local .. s}
+  g:Ref = (s) => local .. s
 enddef
 
 def Test_closure_ref_after_return()
@@ -1424,8 +1549,8 @@ enddef
 
 def MakeTwoRefs()
   var local = ['some']
-  g:Extend = {s -> local->add(s)}
-  g:Read = {-> local}
+  g:Extend = (s) => local->add(s)
+  g:Read = () => local
 enddef
 
 def Test_closure_two_refs()
@@ -1462,12 +1587,12 @@ enddef
 
 def MakeArgRefs(theArg: string)
   var local = 'loc_val'
-  g:UseArg = {s -> theArg .. '/' .. local .. '/' .. s}
+  g:UseArg = (s) => theArg .. '/' .. local .. '/' .. s
 enddef
 
 def MakeArgRefsVarargs(theArg: string, ...rest: list<string>)
   var local = 'the_loc'
-  g:UseVararg = {s -> theArg .. '/' .. local .. '/' .. s .. '/' .. join(rest)}
+  g:UseVararg = (s) => theArg .. '/' .. local .. '/' .. s .. '/' .. join(rest)
 enddef
 
 def Test_closure_using_argument()
@@ -1521,7 +1646,7 @@ endfunc
 
 def Test_call_closure_not_compiled()
   var text = 'text'
-  g:Ref = {s ->  s .. text}
+  g:Ref = (s) =>  s .. text
   GetResult(g:Ref)->assert_equal('sometext')
 enddef
 
@@ -1531,7 +1656,7 @@ def Test_double_closure_fails()
     def Func()
       var name = 0
       for i in range(2)
-          timer_start(0, {-> name})
+          timer_start(0, () => name)
       endfor
     enddef
     Func()
@@ -1544,8 +1669,8 @@ def Test_nested_closure_used()
       vim9script
       def Func()
         var x = 'hello'
-        var Closure = {-> x}
-        g:Myclosure = {-> Closure()}
+        var Closure = () => x
+        g:Myclosure = () => Closure()
       enddef
       Func()
       assert_equal('hello', g:Myclosure())
@@ -1560,7 +1685,7 @@ def Test_nested_closure_fails()
       FuncB(0)
     enddef
     def FuncB(n: number): list<string>
-      return map([0], {_, v -> n})
+      return map([0], (_, v) => n)
     enddef
     FuncA()
   END
@@ -1637,8 +1762,8 @@ def Test_nested_lambda()
     vim9script
     def Func()
       var x = 4
-      var Lambda1 = {-> 7}
-      var Lambda2 = {-> [Lambda1(), x]}
+      var Lambda1 = () => 7
+      var Lambda2 = () => [Lambda1(), x]
       var res = Lambda2()
       assert_equal([7, 4], res)
     enddef
@@ -1648,8 +1773,8 @@ def Test_nested_lambda()
 enddef
 
 def Shadowed(): list<number>
-  var FuncList: list<func: number> = [{ -> 42}]
-  return FuncList->map({_, Shadowed -> Shadowed()})
+  var FuncList: list<func: number> = [() => 42]
+  return FuncList->mapnew((_, Shadowed) => Shadowed())
 enddef
 
 def Test_lambda_arg_shadows_func()
@@ -1671,21 +1796,60 @@ def Test_script_var_in_lambda()
   var lines =<< trim END
       vim9script
       var script = 'test'
-      assert_equal(['test'], map(['one'], {-> script}))
+      assert_equal(['test'], map(['one'], () => script))
   END
   CheckScriptSuccess(lines)
 enddef
 
 def Line_continuation_in_lambda(): list<string>
   var x = range(97, 100)
-      ->map({_, v -> nr2char(v)
-          ->toupper()})
+      ->mapnew((_, v) => nr2char(v)
+          ->toupper())
       ->reverse()
   return x
 enddef
 
 def Test_line_continuation_in_lambda()
   Line_continuation_in_lambda()->assert_equal(['D', 'C', 'B', 'A'])
+
+  var lines =<< trim END
+      vim9script
+      var res = [{n: 1, m: 2, s: 'xxx'}]
+                ->mapnew((_, v: dict<any>): string => printf('%d:%d:%s',
+                    v.n,
+                    v.m,
+                    substitute(v.s, '.*', 'yyy', '')
+                    ))
+      assert_equal(['1:2:yyy'], res)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
+def Test_list_lambda()
+  timer_start(1000, (_) => 0)
+  var body = execute(timer_info()[0].callback
+         ->string()
+         ->substitute("('", ' ', '')
+         ->substitute("')", '', '')
+         ->substitute('function\zs', ' ', ''))
+  assert_match('def <lambda>\d\+(_: any, ...): number\n1  return 0\n   enddef', body)
+enddef
+
+def DoFilterThis(a: string): list<string>
+  # closure nested inside another closure using argument
+  var Filter = (l) => filter(l, (_, v) => stridx(v, a) == 0)
+  return ['x', 'y', 'a', 'x2', 'c']->Filter()
+enddef
+
+def Test_nested_closure_using_argument()
+  assert_equal(['x', 'x2'], DoFilterThis('x'))
+enddef
+
+def Test_triple_nested_closure()
+  var what = 'x'
+  var Match = (val: string, cmp: string): bool => stridx(val, cmp) == 0
+  var Filter = (l) => filter(l, (_, v) => Match(v, what))
+  assert_equal(['x', 'x2'], ['x', 'y', 'a', 'x2', 'c']->Filter())
 enddef
 
 func Test_silent_echo()
@@ -1767,11 +1931,11 @@ def Test_recursive_call()
 enddef
 
 def TreeWalk(dir: string): list<any>
-  return readdir(dir)->map({_, val ->
+  return readdir(dir)->mapnew((_, val) =>
             fnamemodify(dir .. '/' .. val, ':p')->isdirectory()
                ? {[val]: TreeWalk(dir .. '/' .. val)}
                : val
-             })
+             )
 enddef
 
 def Test_closure_in_map()
@@ -1885,7 +2049,7 @@ def Test_block_scoped_var()
         var x = ['a', 'b', 'c']
         if 1
           var y = 'x'
-          map(x, {-> y})
+          map(x, () => y)
         endif
         var z = x
         assert_equal(['x', 'x', 'x'], z)
@@ -1917,7 +2081,7 @@ def Test_did_emsg_reset()
       vim9script
       au BufWinLeave * #
       def Func()
-          popup_menu('', {callback: {-> popup_create('', {})->popup_close()}})
+          popup_menu('', {callback: () => popup_create('', {})->popup_close()})
           eval [][0]
       enddef
       nno <F3> <cmd>call <sid>Func()<cr>
@@ -2009,7 +2173,7 @@ def Test_dict_member_with_silent()
       var d: dict<any>
       def Func()
         try
-          g:result = map([], {_, v -> {}[v]})->join() .. d['']
+          g:result = map([], (_, v) => ({}[v]))->join() .. d['']
         catch
         endtry
       enddef

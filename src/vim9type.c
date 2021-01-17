@@ -480,15 +480,19 @@ check_type(type_T *expected, type_T *actual, int give_msg, int argidx)
 	}
 	else if (expected->tt_type == VAR_FUNC)
 	{
-	    if (expected->tt_member != &t_unknown)
+	    // If the return type is unknown it can be anything, including
+	    // nothing, thus there is no point in checking.
+	    if (expected->tt_member != &t_unknown
+					    && actual->tt_member != &t_unknown)
 		ret = check_type(expected->tt_member, actual->tt_member,
 								     FALSE, 0);
 	    if (ret == OK && expected->tt_argcount != -1
 		    && actual->tt_argcount != -1
 		    && (actual->tt_argcount < expected->tt_min_argcount
 			|| actual->tt_argcount > expected->tt_argcount))
-		    ret = FAIL;
-	    if (expected->tt_args != NULL && actual->tt_args != NULL)
+		ret = FAIL;
+	    if (ret == OK && expected->tt_args != NULL
+						    && actual->tt_args != NULL)
 	    {
 		int i;
 
@@ -510,17 +514,47 @@ check_type(type_T *expected, type_T *actual, int give_msg, int argidx)
 }
 
 /*
- * Like check_type() but also allow for a runtime type check. E.g. "any" can be
- * used for "number".
+ * Check that the arguments of "type" match "argvars[argcount]".
+ * Return OK/FAIL.
  */
     int
-check_arg_type(type_T *expected, type_T *actual, int argidx)
+check_argument_types(
+	type_T	    *type,
+	typval_T    *argvars,
+	int	    argcount,
+	char_u	    *name)
 {
-    if (check_type(expected, actual, FALSE, 0) == OK
-					    || use_typecheck(actual, expected))
-	return OK;
-    // TODO: should generate a TYPECHECK instruction.
-    return check_type(expected, actual, TRUE, argidx);
+    int	    varargs = (type->tt_flags & TTFLAG_VARARGS) ? 1 : 0;
+    int	    i;
+
+    if (type->tt_type != VAR_FUNC && type->tt_type != VAR_PARTIAL)
+	return OK;  // just in case
+    if (argcount < type->tt_min_argcount - varargs)
+    {
+	semsg(_(e_toofewarg), name);
+	return FAIL;
+    }
+    if (!varargs && type->tt_argcount >= 0 && argcount > type->tt_argcount)
+    {
+	semsg(_(e_toomanyarg), name);
+	return FAIL;
+    }
+    if (type->tt_args == NULL)
+	return OK;  // cannot check
+
+
+    for (i = 0; i < argcount; ++i)
+    {
+	type_T	*expected;
+
+	if (varargs && i >= type->tt_argcount - 1)
+	    expected = type->tt_args[type->tt_argcount - 1]->tt_member;
+	else
+	    expected = type->tt_args[i];
+	if (check_typval_type(expected, &argvars[i], i + 1) == FAIL)
+	    return FAIL;
+    }
+    return OK;
 }
 
 /*
@@ -1124,6 +1158,31 @@ type_name(type_T *type, char **tofree)
     }
 
     return name;
+}
+
+/*
+ * "typename(expr)" function
+ */
+    void
+f_typename(typval_T *argvars, typval_T *rettv)
+{
+    garray_T	type_list;
+    type_T	*type;
+    char	*tofree;
+    char	*name;
+
+    rettv->v_type = VAR_STRING;
+    ga_init2(&type_list, sizeof(type_T *), 10);
+    type = typval2type(argvars, &type_list);
+    name = type_name(type, &tofree);
+    if (tofree != NULL)
+	rettv->vval.v_string = (char_u *)tofree;
+    else
+    {
+	rettv->vval.v_string = vim_strsave((char_u *)name);
+	vim_free(tofree);
+    }
+    clear_type_list(&type_list);
 }
 
 #endif // FEAT_EVAL
