@@ -2572,6 +2572,7 @@ call_def_function(
 			trycmd->tcd_caught = TRUE;
 		    }
 		    did_emsg = got_int = did_throw = FALSE;
+		    force_abort = need_rethrow = FALSE;
 		    catch_exception(current_exception);
 		}
 		break;
