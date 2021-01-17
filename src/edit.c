@@ -1586,7 +1586,7 @@ decodeModifyOtherKeys(int c)
     // Recognize:
     // form 0: {lead}{key};{modifier}u
     // form 1: {lead}27;{modifier};{key}~
-    if ((c == CSI || (c == ESC && *p == '[')) && typebuf.tb_len >= 4)
+    if (typebuf.tb_len >= 4 && (c == CSI || (c == ESC && *p == '[')))
     {
 	idx = (*p == '[');
 	if (p[idx] == '2' && p[idx + 1] == '7' && p[idx + 2] == ';')
