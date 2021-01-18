@@ -3273,7 +3273,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	See the 'endofline' option.
 
 					*'fkmap'* *'fk'* *'nofkmap'* *'nofk'*
-'fkmap' 'fk'		boolean (default off)			*E198*
+'fkmap' 'fk'		boolean (default off)
 			global
 			{only available when compiled with the |+rightleft|
 			feature}
@@ -5221,7 +5221,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
 
-						*'mouse'* *E538*
+						*'mouse'*
 'mouse'			string	(default "", "a" for GUI and Win32,
 					set to "a" or "nvi" in |defaults.vim|)
 			global

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2021 Jan 13
+*eval.txt*	For Vim version 8.2.  Last change: 2021 Jan 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4084,8 +4084,9 @@ delete({fname} [, {flags}])					*delete()*
 
 		A symbolic link itself is deleted, not what it points to.
 
-		The result is a Number, which is 0 if the delete operation was
-		successful and -1 when the deletion failed or partly failed.
+		The result is a Number, which is 0/false if the delete
+		operation was successful and -1/true when the deletion failed
+		or partly failed.
 
 		Use |remove()| to delete an item from a |List|.
 		To delete a line from the buffer use |:delete| or
@@ -6222,8 +6223,8 @@ has({feature} [, {check}])
 
 
 has_key({dict}, {key})					*has_key()*
-		The result is a Number, which is 1 if |Dictionary| {dict} has
-		an entry with key {key}.  Zero otherwise.
+		The result is a Number, which is TRUE if |Dictionary| {dict}
+		has an entry with key {key}.  FALSE otherwise.
 
 		Can also be used as a |method|: >
 			mydict->has_key(key)
@@ -6266,16 +6267,16 @@ haslocaldir([{winnr} [, {tabnr}]])			*haslocaldir()*
 			GetWinnr()->haslocaldir()
 
 hasmapto({what} [, {mode} [, {abbr}]])			*hasmapto()*
-		The result is a Number, which is 1 if there is a mapping that
-		contains {what} in somewhere in the rhs (what it is mapped to)
-		and this mapping exists in one of the modes indicated by
-		{mode}.
+		The result is a Number, which is TRUE if there is a mapping
+		that contains {what} in somewhere in the rhs (what it is
+		mapped to) and this mapping exists in one of the modes
+		indicated by {mode}.
 		When {abbr} is there and it is |TRUE| use abbreviations
 		instead of mappings.  Don't forget to specify Insert and/or
 		Command-line mode.
 		Both the global mappings and the mappings local to the current
 		buffer are checked for a match.
-		If no matching mapping is found 0 is returned.
+		If no matching mapping is found FALSE is returned.
 		The following characters are recognized in {mode}:
 			n	Normal mode
 			v	Visual and Select mode
@@ -6311,8 +6312,8 @@ histadd({history}, {item})				*histadd()*
 		character is sufficient.
 		If {item} does already exist in the history, it will be
 		shifted to become the newest entry.
-		The result is a Number: 1 if the operation was successful,
-		otherwise 0 is returned.
+		The result is a Number: TRUE if the operation was successful,
+		otherwise FALSE is returned.
 
 		Example: >
 			:call histadd("input", strftime("%Y %b %d"))
@@ -6335,8 +6336,8 @@ histdel({history} [, {item}])				*histdel()*
 		an index, see |:history-indexing|.  The respective entry will
 		be removed if it exists.
 
-		The result is a Number: 1 for a successful operation,
-		otherwise 0 is returned.
+		The result is TRUE for a successful operation, otherwise FALSE
+		is returned.
 
 		Examples:
 		Clear expression register history: >
@@ -6388,7 +6389,7 @@ histnr({history})					*histnr()*
 			GetHistory()->histnr()
 <
 hlexists({name})					*hlexists()*
-		The result is a Number, which is non-zero if a highlight group
+		The result is a Number, which is TRUE if a highlight group
 		called {name} exists.  This is when the group has been
 		defined in some way.  Not necessarily when highlighting has
 		been defined for it, it may also have been used for a syntax
@@ -6561,7 +6562,7 @@ inputrestore()						*inputrestore()*
 		Restore typeahead that was saved with a previous |inputsave()|.
 		Should be called the same number of times inputsave() is
 		called.  Calling it more often is harmless though.
-		Returns 1 when there is nothing to restore, 0 otherwise.
+		Returns TRUE when there is nothing to restore, FALSE otherwise.
 
 inputsave()						*inputsave()*
 		Preserve typeahead (also from mappings) and clear it, so that
@@ -6569,7 +6570,7 @@ inputsave()						*inputsave()*
 		followed by a matching inputrestore() after the prompt.  Can
 		be used several times, in which case there must be just as
 		many inputrestore() calls.
-		Returns 1 when out of memory, 0 otherwise.
+		Returns TRUE when out of memory, FALSE otherwise.
 
 inputsecret({prompt} [, {text}])			*inputsecret()*
 		This function acts much like the |input()| function with but
@@ -7045,7 +7046,7 @@ listener_flush([{buf}])					*listener_flush()*
 
 listener_remove({id})					*listener_remove()*
 		Remove a listener previously added with listener_add().
-		Returns zero when {id} could not be found, one when {id} was
+		Returns FALSE when {id} could not be found, TRUE when {id} was
 		removed.
 
 		Can also be used as a |method|: >
@@ -7728,8 +7729,8 @@ mkdir({name} [, {path} [, {prot}]])
 		flag is passed (since patch 8.0.1708).  However, without the
 		"p" option the call will fail.
 
-		The function result is a Number, which is 1 if the call was
-		successful or 0 if the directory creation failed or partly
+		The function result is a Number, which is TRUE if the call was
+		successful or FALSE if the directory creation failed or partly
 		failed.
 
 		Not available on all systems.  To check use: >
@@ -9205,6 +9206,7 @@ server2client({clientid}, {string})			*server2client()*
 		Send a reply string to {clientid}.  The most recent {clientid}
 		that sent a string can be retrieved with expand("<client>").
 		{only available when compiled with the |+clientserver| feature}
+		Returns zero for success, -1 for failure.
 		Note:
 		This id has to be stored before the next command can be
 		received.  I.e. before returning from the received command and
@@ -9342,8 +9344,8 @@ setcmdpos({pos})					*setcmdpos()*
 		before inserting the resulting text.
 		When the number is too big the cursor is put at the end of the
 		line.  A number smaller than one has undefined results.
-		Returns 0 when successful, 1 when not editing the command
-		line.
+		Returns FALSE when successful, TRUE when not editing the
+		command line.
 
 		Can also be used as a |method|: >
 			GetPos()->setcmdpos()
@@ -9402,8 +9404,8 @@ setline({lnum}, {text})					*setline()*
 		When {lnum} is just below the last line the {text} will be
 		added below the last line.
 
-		If this succeeds, 0 is returned.  If this fails (most likely
-		because {lnum} is invalid) 1 is returned.
+		If this succeeds, FALSE is returned.  If this fails (most likely
+		because {lnum} is invalid) TRUE is returned.
 
 		Example: >
 			:call setline(5, strftime("%c"))
@@ -11378,7 +11380,7 @@ win_gettype([{nr}])					*win_gettype()*
 win_gotoid({expr})					*win_gotoid()*
 		Go to window with ID {expr}.  This may also change the current
 		tabpage.
-		Return 1 if successful, 0 if the window cannot be found.
+		Return TRUE if successful, FALSE if the window cannot be found.
 
 		Can also be used as a |method|: >
 			GetWinid()->win_gotoid()

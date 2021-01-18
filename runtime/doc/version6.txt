@@ -9661,7 +9661,7 @@ Solution:   Check for tcsetattr() to return an error, retry when it does.
 Files:	    src/os_unix.c
 
 Patch 6.2f.018
-Problem:    Mac OS X 10.2: OK is defined to zero in cursus.h while Vim uses
+Problem:    Mac OS X 10.2: OK is defined to zero in curses.h while Vim uses
 	    one.  Redefining it causes a warning message.
 Solution:   Undefine OK before defining it to one. (Taro Muraoka)
 Files:	    src/vim.h

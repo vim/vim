@@ -1045,6 +1045,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 't_da'	term.txt	/*'t_da'*
 't_db'	term.txt	/*'t_db'*
 't_dl'	term.txt	/*'t_dl'*
+'t_fd'	term.txt	/*'t_fd'*
+'t_fe'	term.txt	/*'t_fe'*
 't_fs'	term.txt	/*'t_fs'*
 't_k1'	term.txt	/*'t_k1'*
 't_k2'	term.txt	/*'t_k2'*
@@ -3112,9 +3114,11 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :sip	change.txt	/*:sip*
 :sir	change.txt	/*:sir*
 :sl	various.txt	/*:sl*
+:sl!	various.txt	/*:sl!*
 :sla	windows.txt	/*:sla*
 :slast	windows.txt	/*:slast*
 :sleep	various.txt	/*:sleep*
+:sleep!	various.txt	/*:sleep!*
 :sm	change.txt	/*:sm*
 :smagic	change.txt	/*:smagic*
 :smap	map.txt	/*:smap*
@@ -4028,7 +4032,6 @@ E194	message.txt	/*E194*
 E195	starting.txt	/*E195*
 E196	various.txt	/*E196*
 E197	mlang.txt	/*E197*
-E198	options.txt	/*E198*
 E199	cmdline.txt	/*E199*
 E20	motion.txt	/*E20*
 E200	autocmd.txt	/*E200*
@@ -4114,7 +4117,6 @@ E274	eval.txt	/*E274*
 E275	textprop.txt	/*E275*
 E276	eval.txt	/*E276*
 E277	remote.txt	/*E277*
-E278	popup.txt	/*E278*
 E279	terminal.txt	/*E279*
 E28	syntax.txt	/*E28*
 E280	if_tcl.txt	/*E280*
@@ -4180,7 +4182,6 @@ E337	gui.txt	/*E337*
 E338	editing.txt	/*E338*
 E339	message.txt	/*E339*
 E34	various.txt	/*E34*
-E340	vi_diff.txt	/*E340*
 E341	message.txt	/*E341*
 E342	message.txt	/*E342*
 E343	options.txt	/*E343*
@@ -4388,7 +4389,6 @@ E534	options.txt	/*E534*
 E535	options.txt	/*E535*
 E536	options.txt	/*E536*
 E537	options.txt	/*E537*
-E538	options.txt	/*E538*
 E539	options.txt	/*E539*
 E54	pattern.txt	/*E54*
 E540	options.txt	/*E540*
@@ -6351,6 +6351,7 @@ expression-commands	eval.txt	/*expression-commands*
 expression-syntax	eval.txt	/*expression-syntax*
 exrc	starting.txt	/*exrc*
 extend()	eval.txt	/*extend()*
+extendnew()	eval.txt	/*extendnew()*
 extension-removal	cmdline.txt	/*extension-removal*
 extensions-improvements	todo.txt	/*extensions-improvements*
 f	motion.txt	/*f*
@@ -8680,6 +8681,7 @@ read-in-close-cb	channel.txt	/*read-in-close-cb*
 read-messages	insert.txt	/*read-messages*
 read-only-share	editing.txt	/*read-only-share*
 read-stdin	version5.txt	/*read-stdin*
+readblob()	eval.txt	/*readblob()*
 readdir()	eval.txt	/*readdir()*
 readdirex()	eval.txt	/*readdirex()*
 readfile()	eval.txt	/*readfile()*
@@ -8945,6 +8947,7 @@ sinh()	eval.txt	/*sinh()*
 skeleton	autocmd.txt	/*skeleton*
 skip_defaults_vim	starting.txt	/*skip_defaults_vim*
 slice	eval.txt	/*slice*
+slice()	eval.txt	/*slice()*
 slow-fast-terminal	term.txt	/*slow-fast-terminal*
 slow-start	starting.txt	/*slow-start*
 slow-terminal	term.txt	/*slow-terminal*
@@ -9340,6 +9343,8 @@ t_f6	version4.txt	/*t_f6*
 t_f7	version4.txt	/*t_f7*
 t_f8	version4.txt	/*t_f8*
 t_f9	version4.txt	/*t_f9*
+t_fd	term.txt	/*t_fd*
+t_fe	term.txt	/*t_fe*
 t_float-variable	eval.txt	/*t_float-variable*
 t_fs	term.txt	/*t_fs*
 t_func-variable	eval.txt	/*t_func-variable*
@@ -9714,6 +9719,7 @@ type-inference	vim9.txt	/*type-inference*
 type-mistakes	tips.txt	/*type-mistakes*
 typecorr-settings	usr_41.txt	/*typecorr-settings*
 typecorr.txt	usr_41.txt	/*typecorr.txt*
+typename()	eval.txt	/*typename()*
 u	undo.txt	/*u*
 uganda	uganda.txt	/*uganda*
 uganda.txt	uganda.txt	/*uganda.txt*
@@ -10314,6 +10320,7 @@ xterm-command-server	term.txt	/*xterm-command-server*
 xterm-copy-paste	term.txt	/*xterm-copy-paste*
 xterm-cursor-keys	term.txt	/*xterm-cursor-keys*
 xterm-end-home-keys	term.txt	/*xterm-end-home-keys*
+xterm-focus-event	term.txt	/*xterm-focus-event*
 xterm-function-keys	term.txt	/*xterm-function-keys*
 xterm-modifier-keys	term.txt	/*xterm-modifier-keys*
 xterm-mouse	options.txt	/*xterm-mouse*

@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Jan 10
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Jan 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -487,6 +487,9 @@ Now "exit_cb: Func})" is actually a valid command: save any changes to the
 file "_cb: Func})" and exit.  To avoid this kind of mistake in Vim9 script
 there must be white space between most command names and the argument.
 
+However, the argument of a command that is a command won't be recognized.  For
+example, after "windo echo expr" a line break inside "expr" will not be seen.
+
 
 Notes:
 - "enddef" cannot be used at the start of a continuation line, it ends the
@@ -527,17 +530,17 @@ that using a literal key is much more common than using an expression, and
 considering that JavaScript uses this syntax, using the {} form for dictionary
 literals is considered a much more useful syntax.  In Vim9 script the {} form
 uses literal keys: >
-	let dict = {key: value}
+	var dict = {key: value}
 
 This works for alphanumeric characters, underscore and dash.  If you want to
 use another character, use a single or double quoted string: >
-	let dict = {'key with space': value}
-	let dict = {"key\twith\ttabs": value}
-	let dict = {'': value}  		# empty key
+	var dict = {'key with space': value}
+	var dict = {"key\twith\ttabs": value}
+	var dict = {'': value}  		# empty key
 
 In case the key needs to be an expression, square brackets can be used, just
 like in JavaScript: >
-	let dict = {["key" .. nr]: value}
+	var dict = {["key" .. nr]: value}
 
 
 No :xit, :t, :append, :change or :insert ~
@@ -550,6 +553,29 @@ Instead of `:t` you can use `:copy`.
 Comparators ~
 
 The 'ignorecase' option is not used for comparators that use strings.
+
+
+For loop ~
+
+Legacy Vim script has some tricks to make a for loop over a list handle
+deleting items at the current or previous item.  In Vim9 script it just uses
+the index, if items are deleted then items in the list will be skipped.
+Example legacy script: >
+	let l = [1, 2, 3, 4]
+	for i in l
+	   echo i
+	   call remove(l, index(l, i))
+	endfor
+Would echo:
+	1
+	2
+	3
+	4
+In compiled Vim9 script you get:
+	1
+	3
+Generally, you should not change the list that is iterated over.  Make a copy
+first if needed.
 
 
 White space ~
@@ -576,15 +602,17 @@ the start and end: >
 
 White space is not allowed:
 - Between a function name and the "(": >
-	call Func (arg)	   # Error!
-	call Func
+	Func (arg)	   # Error!
+	Func
 	     \ (arg)	   # Error!
-	call Func(arg)	   # OK
-	call Func(
-	     \ arg)	   # OK
-	call Func(
-	     \ arg	   # OK
-	     \ )
+	Func
+	      (arg)	   # Error!
+	Func(arg)	   # OK
+	Func(
+	      arg)	   # OK
+	Func(
+	      arg	   # OK
+	      )
 
 
 Conditions and expressions ~
@@ -648,12 +676,13 @@ for v:null.  When converting a boolean to a string "false" and "true" are
 used, not "v:false" and "v:true" like in legacy script.  "v:none" is not
 changed, it is only used in JSON and has no equivalent in other languages.
 
-Indexing a string with [idx] or [idx, idx] uses character indexes instead of
+Indexing a string with [idx] or [idx : idx] uses character indexes instead of
 byte indexes. Example: >
 	echo 'bár'[1]
 In legacy script this results in the character 0xc3 (an illegal byte), in Vim9
 script this results in the string 'á'.
 A negative index is counting from the end, "[-1]" is the last character.
+To exclude the last character use |slice()|.
 If the index is out of range then an empty string results.
 
 In legacy script "++var" and "--var" would be silently accepted and have no
@@ -670,21 +699,22 @@ same time tries to support the legacy Vim commands.  Some compromises had to
 be made.  Here is a summary of what might be unexpected.
 
 Ex command ranges need to be prefixed with a colon. >
-	->		# legacy Vim: shifts the previous line to the right
-	->func()	# Vim9: method call in continuation line
-	:->		# Vim9: shifts the previous line to the right
+	->		  legacy Vim: shifts the previous line to the right
+	->func()	  Vim9: method call in a continuation line
+	:->		  Vim9: shifts the previous line to the right
 
-	%s/a/b		# legacy Vim: substitute on all lines
+	%s/a/b		  legacy Vim: substitute on all lines
 	x = alongname
-	     % another	# Vim9: line continuation without a backslash
-	:%s/a/b		# Vim9: substitute on all lines
-	'text'->func()	# Vim9: method call
-	:'t		# legacy Vim: jump to mark m
+	     % another	  Vim9: modulo operator in a continuation line
+	:%s/a/b		  Vim9: substitute on all lines
+	't		  legacy Vim: jump to mark t
+	'text'->func()	  Vim9: method call
+	:'t		  Vim9: jump to mark t
 
 Some Ex commands can be confused with assignments in Vim9 script: >
-	g:name = value  # assignment
-	g:pattern:cmd	# invalid command - ERROR
-	:g:pattern:cmd	# :global command
+	g:name = value    # assignment
+	g:pattern:cmd	  # invalid command - ERROR
+	:g:pattern:cmd	  # :global command
 
 Functions defined with `:def` compile the whole function.  Legacy functions
 can bail out, and the following lines are not parsed: >
@@ -704,7 +734,7 @@ Vim9 functions are compiled as a whole: >
 For a workaround, split it in two functions: >
 	func Maybe()
 	  if has('feature')
-	    call MaybyInner()
+	    call MaybeInner()
 	  endif
 	endfunc
 	if has('feature')
@@ -720,7 +750,7 @@ evaluates to false: >
 	  endif
 	enddef
 <							*vim9-user-command*
-Another side effect of compiling a function is that the precense of a user
+Another side effect of compiling a function is that the presence of a user
 command is checked at compile time.  If the user command is defined later an
 error will result.  This works: >
 	command -nargs=1 MyCommand echom <q-args>
@@ -1090,7 +1120,7 @@ actually needed.  A recommended mechanism:
 
 1. In the plugin define user commands, functions and/or mappings that refer to
    an autoload script. >
-	command -nargs=1 SearchForStuff call searchfor#Stuff(<f-args>)
+	command -nargs=1 SearchForStuff searchfor#Stuff(<f-args>)
 
 <   This goes in .../plugin/anyname.vim.  "anyname.vim" can be freely chosen.
 
@@ -1183,12 +1213,12 @@ When compiling lines of Vim commands into instructions as much as possible
 should be done at compile time.  Postponing it to runtime makes the execution
 slower and means mistakes are found only later.  For example, when
 encountering the "+" character and compiling this into a generic add
-instruction, at execution time the instruction would have to inspect the type
-of the arguments and decide what kind of addition to do.  And when the
-type is dictionary throw an error.  If the types are known to be numbers then
-an "add number" instruction can be used, which is faster.  The error can be
-given at compile time, no error handling is needed at runtime, since adding
-two numbers cannot fail.
+instruction, at runtime the instruction would have to inspect the type of the
+arguments and decide what kind of addition to do.  And when the type is
+dictionary throw an error.  If the types are known to be numbers then an "add
+number" instruction can be used, which is faster.  The error can be given at
+compile time, no error handling is needed at runtime, since adding two numbers
+cannot fail.
 
 The syntax for types, using <type> for compound types, is similar to Java.  It
 is easy to understand and widely used.  The type names are what were used in

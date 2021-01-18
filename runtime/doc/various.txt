@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.2.  Last change: 2020 Nov 16
+*various.txt*   For Vim version 8.2.  Last change: 2021 Jan 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -411,7 +411,7 @@ N  *+mouse_sysmouse*	Unix only: *BSD console mouse handling |sysmouse|
 B  *+mouse_sgr*		Unix only: sgr mouse handling |sgr-mouse|
 B  *+mouse_urxvt*	Unix only: urxvt mouse handling |urxvt-mouse|
 N  *+mouse_xterm*	Unix only: xterm mouse handling |xterm-mouse|
-N  *+multi_byte*	16 and 32 bit characters |multibyte|
+T  *+multi_byte*	Unicode support, 16 and 32 bit characters |multibyte|
    *+multi_byte_ime*	Win32 input method for multibyte chars |multibyte-ime|
 N  *+multi_lang*	non-English language support |multi-lang|
 m  *+mzscheme*		Mzscheme interface |mzscheme|
@@ -721,6 +721,9 @@ K			Run a program to lookup the keyword under the
 			Also process the received netbeans messages. {only
 			available when compiled with the |+netbeans_intg|
 			feature}
+
+							*:sl!* *:sleep!*
+:[N]sl[eep]! [N] [m]	Same as above, but hide the cursor
 
 							*:xrestore* *:xr*
 :xr[estore] [display]	Reinitializes the connection to the X11 server. Useful
