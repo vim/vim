@@ -53,10 +53,10 @@ if "\n" .. getline(1, 10)->join("\n") =~# '\n\s*vim9\%[script]\>'
   setlocal com=sO:#\ -,mO:#\ \ ,eO:##,:#
   " Comments start with a double quote in a legacy script;
   " with # in a Vim9 script
-  setlocal commentstring=\"%s
+  setlocal commentstring=#%s
 else
   setlocal com=sO:\"\ -,mO:\"\ \ ,:\"
-  setlocal commentstring=#%s
+  setlocal commentstring=\"%s
 endif
 
 
