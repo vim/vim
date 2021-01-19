@@ -4300,9 +4300,11 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    {
 		case '*': res = tv1->vval.v_number * tv2->vval.v_number;
 			  break;
-		case '/': res = tv1->vval.v_number / tv2->vval.v_number;
+		case '/': res = num_divide(tv1->vval.v_number,
+							   tv2->vval.v_number);
 			  break;
-		case '%': res = tv1->vval.v_number % tv2->vval.v_number;
+		case '%': res = num_modulus(tv1->vval.v_number,
+							   tv2->vval.v_number);
 			  break;
 	    }
 	    tv1->vval.v_number = res;
