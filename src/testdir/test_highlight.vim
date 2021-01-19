@@ -781,8 +781,9 @@ func Test_highlight_User()
 endfunc
 
 " Test for using RGB color values in a highlight group
-func Test_highlight_RGB_color()
-  CheckGui
+func Test_xxlast_highlight_RGB_color()
+  CheckCanRunGui
+  gui -f
   hi MySearch guifg=#110000 guibg=#001100 guisp=#000011
   call assert_equal('#110000', synIDattr(synIDtrans(hlID('MySearch')), 'fg#'))
   call assert_equal('#001100', synIDattr(synIDtrans(hlID('MySearch')), 'bg#'))
