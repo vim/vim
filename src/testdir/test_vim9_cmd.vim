@@ -750,6 +750,10 @@ def Test_put_command()
   :+2put! a
   assert_equal('aaa', getline(4))
 
+  []->mapnew(() => 0)
+  :$put ='end'
+  assert_equal('end', getline('$'))
+
   bwipe!
 
   CheckDefFailure(['put =xxx'], 'E1001:')

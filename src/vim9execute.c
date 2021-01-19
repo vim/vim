@@ -3326,10 +3326,6 @@ call_def_function(
 		    exarg_T	ea;
 		    char	*errormsg;
 
-		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
-			goto failed;
-		    ++ectx.ec_stack.ga_len;
-		    tv = STACK_TV_BOT(-1);
 		    ea.line2 = 0;
 		    ea.addr_count = 0;
 		    ea.addr_type = ADDR_LINES;
@@ -3337,6 +3333,13 @@ call_def_function(
 		    ea.skip = FALSE;
 		    if (parse_cmd_address(&ea, &errormsg, FALSE) == FAIL)
 			goto on_error;
+
+		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
+			goto failed;
+		    ++ectx.ec_stack.ga_len;
+		    tv = STACK_TV_BOT(-1);
+		    tv->v_type = VAR_NUMBER;
+		    tv->v_lock = 0;
 		    if (ea.addr_count == 0)
 			tv->vval.v_number = curwin->w_cursor.lnum;
 		    else
@@ -3351,18 +3354,6 @@ call_def_function(
 		    char_u	*expr = NULL;
 		    int		dir = FORWARD;
 
-		    if (regname == '=')
-		    {
-			tv = STACK_TV_BOT(-1);
-			if (tv->v_type == VAR_STRING)
-			    expr = tv->vval.v_string;
-			else
-			{
-			    expr = typval2string(tv, TRUE); // allocates value
-			    clear_tv(tv);
-			}
-			--ectx.ec_stack.ga_len;
-		    }
 		    if (lnum < -2)
 		    {
 			// line number was put on the stack by ISN_RANGE
@@ -3377,6 +3368,19 @@ call_def_function(
 			dir = BACKWARD;
 		    else if (lnum >= 0)
 			curwin->w_cursor.lnum = iptr->isn_arg.put.put_lnum;
+
+		    if (regname == '=')
+		    {
+			tv = STACK_TV_BOT(-1);
+			if (tv->v_type == VAR_STRING)
+			    expr = tv->vval.v_string;
+			else
+			{
+			    expr = typval2string(tv, TRUE); // allocates value
+			    clear_tv(tv);
+			}
+			--ectx.ec_stack.ga_len;
+		    }
 		    check_cursor();
 		    do_put(regname, expr, dir, 1L, PUT_LINE|PUT_CURSLINE);
 		    vim_free(expr);
