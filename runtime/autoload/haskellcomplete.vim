@@ -17,9 +17,9 @@
 
 
 " Available completions
-let b:completingLangExtension = 0
-let b:completingOptionsGHC    = 0
-let b:completingModule        = 0
+let g:completingLangExtension = 0
+let g:completingOptionsGHC    = 0
+let g:completingModule        = 0
 
 function! haskellcomplete#Complete(findstart, base)
     if a:findstart
@@ -30,21 +30,21 @@ function! haskellcomplete#Complete(findstart, base)
             while l:start >= 0 && l:line[l:start - 1] !~ '[, ]'
                 let l:start -= 1
             endwhile
-            let b:completingLangExtension = 1
+            let g:completingLangExtension = 1
             return l:start
 
         elseif l:line =~ '^\s*{-#\s*OPTIONS_GHC.*'
             while l:start >= 0 && l:line[l:start - 1] !~ '[, ]'
                 let l:start -= 1
             endwhile
-            let b:completingOptionsGHC = 1
+            let g:completingOptionsGHC = 1
             return l:start
 
         elseif l:line =~ '^\s*import\s*.*'
             while l:start >= 0 && l:line[l:start - 1] !~ ' '
                 let l:start -= 1
             endwhile
-            let b:completingModule = 1
+            let g:completingModule = 1
             return l:start
 
         endif
@@ -52,7 +52,7 @@ function! haskellcomplete#Complete(findstart, base)
         return start
     endif
 
-    if b:completingLangExtension
+    if g:completingLangExtension
         if a:base ==? ""
             " Return all posible Lang extensions
             return s:langExtensions
@@ -63,12 +63,12 @@ function! haskellcomplete#Complete(findstart, base)
                     call add(l:matches, extension)
                 endif
             endfor
-            let b:completingLangExtension = 0
+            let g:completingLangExtension = 0
             return l:matches
         endif
 
 
-    elseif b:completingOptionsGHC
+    elseif g:completingOptionsGHC
         if a:base ==? ""
             " Return all posible GHC options
             return s:optionsGHC
@@ -79,12 +79,12 @@ function! haskellcomplete#Complete(findstart, base)
                     call add(l:matches, flag)
                 endif
             endfor
-            let b:completingOptionsGHC = 0
+            let g:completingOptionsGHC = 0
             return l:matches
         endif
 
 
-    elseif b:completingModule
+    elseif g:completingModule
         if a:base ==? ""
             " Return all posible modules
             return s:commonModules
@@ -95,7 +95,7 @@ function! haskellcomplete#Complete(findstart, base)
                     call add(l:matches, module)
                 endif
             endfor
-            let b:completingModule = 0
+            let g:completingModule = 0
             return l:matches
         endif
 
