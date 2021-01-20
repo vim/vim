@@ -770,6 +770,7 @@ spell_find_suggest(
     int		c;
     int		i;
     langp_T	*lp;
+    int		did_intern = FALSE;
 
     // Set the info in "*su".
     CLEAR_POINTER(su);
@@ -863,12 +864,13 @@ spell_find_suggest(
 	else if (STRNCMP(buf, "file:", 5) == 0)
 	    // Use list of suggestions in a file.
 	    spell_suggest_file(su, buf + 5);
-	else
+	else if (!did_intern)
 	{
-	    // Use internal method.
+	    // Use internal method once.
 	    spell_suggest_intern(su, interactive);
 	    if (sps_flags & SPS_DOUBLE)
 		do_combine = TRUE;
+	    did_intern = TRUE;
 	}
     }
 
