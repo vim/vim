@@ -863,7 +863,7 @@ spell_find_suggest(
 	else if (STRNCMP(buf, "file:", 5) == 0)
 	    // Use list of suggestions in a file.
 	    spell_suggest_file(su, buf + 5);
-	else
+	else if (!VIM_ISDIGIT(*buf))
 	{
 	    // Use internal method.
 	    spell_suggest_intern(su, interactive);
