@@ -343,3 +343,5 @@ EXTERN char e_mismatched_enddef[]
 	INIT(= N_("E1152: Mismatched enddef"));
 EXTERN char e_invalid_operation_for_bool[]
 	INIT(= N_("E1153: Invalid operation for bool"));
+EXTERN char e_divide_by_zero[]
+	INIT(= N_("E1154: Divide by zero"));

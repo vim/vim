@@ -63,8 +63,10 @@ num_divide(varnumber_T n1, varnumber_T n2)
 {
     varnumber_T	result;
 
-    if (n2 == 0)	// give an error message?
+    if (n2 == 0)
     {
+	if (in_vim9script())
+	    emsg(_(e_divide_by_zero));
 	if (n1 == 0)
 	    result = VARNUM_MIN; // similar to NaN
 	else if (n1 < 0)
@@ -84,7 +86,8 @@ num_divide(varnumber_T n1, varnumber_T n2)
 	varnumber_T
 num_modulus(varnumber_T n1, varnumber_T n2)
 {
-    // Give an error when n2 is 0?
+    if (n2 == 0 && in_vim9script())
+	emsg(_(e_divide_by_zero));
     return (n2 == 0) ? 0 : (n1 % n2);
 }
 

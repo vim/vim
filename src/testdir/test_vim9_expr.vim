@@ -1376,7 +1376,6 @@ def Test_expr6()
       assert_equal(1, g:anint / 6)
       assert_equal(2, g:anint
                             / g:thefour)
-      assert_true(1 / 0 > 99999)
 
       assert_equal(5, 11 % 6)
       assert_equal(4, g:anint % 6)
@@ -1384,7 +1383,6 @@ def Test_expr6()
                             g:anint)
       assert_equal(2, g:anint
                             % g:thefour)
-      assert_equal(0, 1 % 0)
 
       assert_equal(4, 6 * 4 / 6)
 
@@ -1405,6 +1403,9 @@ def Test_expr6()
 
   CheckDefFailure(["var x = 6 * xxx"], 'E1001:', 1)
   CheckDefFailure(["var d = 6 * "], 'E1097:', 3)
+
+  CheckDefExecAndScriptFailure(['echo 1 / 0'], 'E1154', 1)
+  CheckDefExecAndScriptFailure(['echo 1 % 0'], 'E1154', 1)
 enddef
 
 def Test_expr6_vim9script()
