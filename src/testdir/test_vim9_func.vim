@@ -2184,6 +2184,24 @@ def Test_dict_member_with_silent()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_skip_cmds_with_silent()
+  var lines =<< trim END
+      vim9script
+
+      def Func(b: bool)
+        Crash()
+      enddef
+
+      def Crash()
+        sil! :/not found/d _
+        sil! :/not found/put _
+      enddef
+
+      Func(true)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_opfunc()
   nnoremap <F3> <cmd>set opfunc=Opfunc<cr>g@
   def g:Opfunc(_: any): string

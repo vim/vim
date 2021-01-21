@@ -1124,6 +1124,7 @@ call_def_function(
     msglist_T	*private_msg_list = NULL;
     cmdmod_T	save_cmdmod;
     int		restore_cmdmod = FALSE;
+    int		restore_cmdmod_stacklen = 0;
     int		save_emsg_silent_def = emsg_silent_def;
     int		save_did_emsg_def = did_emsg_def;
     int		trylevel_at_start = trylevel;
@@ -3398,6 +3399,7 @@ call_def_function(
 	    case ISN_CMDMOD:
 		save_cmdmod = cmdmod;
 		restore_cmdmod = TRUE;
+		restore_cmdmod_stacklen = ectx.ec_stack.ga_len;
 		cmdmod = *iptr->isn_arg.cmdmod.cf_cmdmod;
 		apply_cmdmod(&cmdmod);
 		break;
@@ -3523,7 +3525,22 @@ on_error:
 	// when calling the function.
 	if (did_emsg_cumul + did_emsg == did_emsg_before
 					   && emsg_silent && did_emsg_def == 0)
+	{
+	    // If a sequence of instructions causes an error while ":silent!"
+	    // was used, restore the stack length and jump ahead to restoring
+	    // the cmdmod.
+	    if (restore_cmdmod)
+	    {
+		while (ectx.ec_stack.ga_len > restore_cmdmod_stacklen)
+		{
+		    --ectx.ec_stack.ga_len;
+		    clear_tv(STACK_TV_BOT(0));
+		}
+		while (ectx.ec_instr[ectx.ec_iidx].isn_type != ISN_CMDMOD_REV)
+		    ++ectx.ec_iidx;
+	    }
 	    continue;
+	}
 on_fatal_error:
 	// Jump here for an error that messes up the stack.
 	// If we are not inside a try-catch started here, abort execution.
