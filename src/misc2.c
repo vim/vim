@@ -2531,6 +2531,8 @@ static struct key_name_entry
     {K_CURSORHOLD,	(char_u *)"CursorHold"},
     {K_IGNORE,		(char_u *)"Ignore"},
     {K_COMMAND,		(char_u *)"Cmd"},
+    {K_FOCUSGAINED,	(char_u *)"FocusGained"},
+    {K_FOCUSLOST,	(char_u *)"FocusLost"},
     {0,			NULL}
     // NOTE: When adding a long name update MAX_KEY_NAME_LEN.
 };
