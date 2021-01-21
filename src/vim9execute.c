@@ -3242,7 +3242,8 @@ call_def_function(
 
 		    tv = STACK_TV_BOT(ct->ct_off);
 		    SOURCING_LNUM = iptr->isn_lnum;
-		    if (check_typval_type(ct->ct_type, tv, 0) == FAIL)
+		    if (check_typval_type(ct->ct_type, tv, ct->ct_arg_idx)
+								       == FAIL)
 			goto on_error;
 
 		    // number 0 is FALSE, number 1 is TRUE
@@ -4235,11 +4236,18 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_CHECKNR: smsg("%4d CHECKNR", current); break;
 	    case ISN_CHECKTYPE:
 		  {
+		      checktype_T *ct = &iptr->isn_arg.type;
 		      char *tofree;
 
-		      smsg("%4d CHECKTYPE %s stack[%d]", current,
-			      type_name(iptr->isn_arg.type.ct_type, &tofree),
-			      iptr->isn_arg.type.ct_off);
+		      if (ct->ct_arg_idx == 0)
+			  smsg("%4d CHECKTYPE %s stack[%d]", current,
+					  type_name(ct->ct_type, &tofree),
+					  (int)ct->ct_off);
+		      else
+			  smsg("%4d CHECKTYPE %s stack[%d] arg %d", current,
+					  type_name(ct->ct_type, &tofree),
+					  (int)ct->ct_off,
+					  (int)ct->ct_arg_idx);
 		      vim_free(tofree);
 		      break;
 		  }

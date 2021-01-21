@@ -144,6 +144,22 @@ def Test_return_something()
   assert_fails('ReturnGlobal()', 'E1012: Type mismatch; expected number but got string', '', 1, 'ReturnGlobal')
 enddef
 
+def Test_check_argument_type()
+  var lines =<< trim END
+      vim9script
+      def Val(a: number, b: number): number
+        return 0
+      enddef
+      def Func()
+        var x: any = true
+        Val(0, x)
+      enddef
+      disass Func
+      Func()
+  END
+  CheckScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected number but got bool', 2)
+enddef
+
 def Test_missing_return()
   CheckDefFailure(['def Missing(): number',
                    '  if g:cond',

@@ -934,7 +934,7 @@ def Test_disassemble_lambda_with_type()
         'return Ref(g:value)\_s*' ..
         '\d LOADG g:value\_s*' ..
         '\d LOAD $0\_s*' ..
-        '\d CHECKTYPE number stack\[-2\]\_s*' ..
+        '\d CHECKTYPE number stack\[-2\] arg 1\_s*' ..
         '\d PCALL (argc 1)\_s*' ..
         '\d RETURN',
         instr)
