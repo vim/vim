@@ -224,7 +224,7 @@ typedef struct {
 // arguments to ISN_CHECKTYPE
 typedef struct {
     type_T	*ct_type;
-    char	ct_off;		// offset in stack, -1 is bottom
+    char	ct_off;		// offset in stack (positive), 1 is bottom
     char	ct_arg_idx;	// argument index or zero
 } checktype_T;
 
