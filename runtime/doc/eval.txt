@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2021 Jan 17
+*eval.txt*	For Vim version 8.2.  Last change: 2021 Jan 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2081,6 +2081,12 @@ v:null		An empty String. Used to put "null" in JSON.  See
 <			v:null ~
 		That is so that eval() can parse the string back to the same
 		value.  Read-only.
+
+					*v:numbermax* *numbermax-variable*
+v:numbermax	Maximum value of a number.
+
+					*v:numbermix* *numbermix-variable*
+v:numbermin	Minimum value of a number (negative)
 
 					*v:numbersize* *numbersize-variable*
 v:numbersize	Number of bits in a Number.  This is normally 64, but on some

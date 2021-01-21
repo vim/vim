@@ -256,10 +256,13 @@ func Test_execute_cmd_with_null()
   endif
 endfunc
 
-func Test_numbersize()
-  " This will fail on systems without 64 bit int support or when not configured
-  " correctly.
+func Test_number_max_min_size()
+  " This will fail on systems without 64 bit number support or when not
+  " configured correctly.
   call assert_equal(64, v:numbersize)
+
+  call assert_true(v:numbermin < -9999999)
+  call assert_true(v:numbermax > 9999999)
 endfunc
 
 func Assert_reg(name, type, value, valuestr, expr, exprstr)

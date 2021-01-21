@@ -1975,32 +1975,34 @@ typedef int sock_T;
 #define VV_TRUE		69
 #define VV_NONE		70
 #define VV_NULL		71
-#define VV_NUMBERSIZE	72
-#define VV_VIM_DID_ENTER 73
-#define VV_TESTING	74
-#define VV_TYPE_NUMBER	75
-#define VV_TYPE_STRING	76
-#define VV_TYPE_FUNC	77
-#define VV_TYPE_LIST	78
-#define VV_TYPE_DICT	79
-#define VV_TYPE_FLOAT	80
-#define VV_TYPE_BOOL	81
-#define VV_TYPE_NONE	82
-#define VV_TYPE_JOB	83
-#define VV_TYPE_CHANNEL	84
-#define VV_TYPE_BLOB	85
-#define VV_TERMRFGRESP	86
-#define VV_TERMRBGRESP	87
-#define VV_TERMU7RESP	88
-#define VV_TERMSTYLERESP 89
-#define VV_TERMBLINKRESP 90
-#define VV_EVENT	91
-#define VV_VERSIONLONG	92
-#define VV_ECHOSPACE	93
-#define VV_ARGV		94
-#define VV_COLLATE      95
-#define VV_EXITING	96
-#define VV_LEN		97	// number of v: vars
+#define VV_NUMBERMAX	72
+#define VV_NUMBERMIN	73
+#define VV_NUMBERSIZE	74
+#define VV_VIM_DID_ENTER 75
+#define VV_TESTING	76
+#define VV_TYPE_NUMBER	77
+#define VV_TYPE_STRING	78
+#define VV_TYPE_FUNC	79
+#define VV_TYPE_LIST	80
+#define VV_TYPE_DICT	81
+#define VV_TYPE_FLOAT	82
+#define VV_TYPE_BOOL	83
+#define VV_TYPE_NONE	84
+#define VV_TYPE_JOB	85
+#define VV_TYPE_CHANNEL	86
+#define VV_TYPE_BLOB	87
+#define VV_TERMRFGRESP	88
+#define VV_TERMRBGRESP	89
+#define VV_TERMU7RESP	90
+#define VV_TERMSTYLERESP 91
+#define VV_TERMBLINKRESP 92
+#define VV_EVENT	93
+#define VV_VERSIONLONG	94
+#define VV_ECHOSPACE	95
+#define VV_ARGV		96
+#define VV_COLLATE      97
+#define VV_EXITING	98
+#define VV_LEN		99	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL

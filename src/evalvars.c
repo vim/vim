@@ -122,6 +122,8 @@ static struct vimvar
     {VV_NAME("true",		 VAR_BOOL), VV_RO},
     {VV_NAME("none",		 VAR_SPECIAL), VV_RO},
     {VV_NAME("null",		 VAR_SPECIAL), VV_RO},
+    {VV_NAME("numbermax",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("numbermin",	 VAR_NUMBER), VV_RO},
     {VV_NAME("numbersize",	 VAR_NUMBER), VV_RO},
     {VV_NAME("vim_did_enter",	 VAR_NUMBER), VV_RO},
     {VV_NAME("testing",		 VAR_NUMBER), 0},
@@ -228,6 +230,8 @@ evalvars_init(void)
     set_vim_var_nr(VV_TRUE, VVAL_TRUE);
     set_vim_var_nr(VV_NONE, VVAL_NONE);
     set_vim_var_nr(VV_NULL, VVAL_NULL);
+    set_vim_var_nr(VV_NUMBERMAX, VARNUM_MAX);
+    set_vim_var_nr(VV_NUMBERMIN, VARNUM_MIN);
     set_vim_var_nr(VV_NUMBERSIZE, sizeof(varnumber_T) * 8);
 
     set_vim_var_nr(VV_TYPE_NUMBER,  VAR_TYPE_NUMBER);
