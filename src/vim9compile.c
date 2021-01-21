@@ -4291,9 +4291,10 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 		&& ppconst->pp_tv[ppconst_used].v_type == VAR_NUMBER
 		&& ppconst->pp_tv[ppconst_used + 1].v_type == VAR_NUMBER)
 	{
-	    typval_T *tv1 = &ppconst->pp_tv[ppconst_used];
-	    typval_T *tv2 = &ppconst->pp_tv[ppconst_used + 1];
-	    varnumber_T res = 0;
+	    typval_T	    *tv1 = &ppconst->pp_tv[ppconst_used];
+	    typval_T	    *tv2 = &ppconst->pp_tv[ppconst_used + 1];
+	    varnumber_T	    res = 0;
+	    int		    failed = FALSE;
 
 	    // both are numbers: compute the result
 	    switch (*op)
@@ -4301,12 +4302,14 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 		case '*': res = tv1->vval.v_number * tv2->vval.v_number;
 			  break;
 		case '/': res = num_divide(tv1->vval.v_number,
-							   tv2->vval.v_number);
+						  tv2->vval.v_number, &failed);
 			  break;
 		case '%': res = num_modulus(tv1->vval.v_number,
-							   tv2->vval.v_number);
+						  tv2->vval.v_number, &failed);
 			  break;
 	    }
+	    if (failed)
+		return FAIL;
 	    tv1->vval.v_number = res;
 	    --ppconst->pp_used;
 	}

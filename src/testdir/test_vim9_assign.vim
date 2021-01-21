@@ -1489,6 +1489,30 @@ def Test_unlet()
   assert_equal('', $ENVVAR)
 enddef
 
+def Test_expr_error_no_assign()
+  var lines =<< trim END
+      vim9script
+      var x = invalid
+      echo x
+  END
+  CheckScriptFailureList(lines, ['E121:', 'E121:'])
+
+  lines =<< trim END
+      vim9script
+      var x = 1 / 0
+      echo x
+  END
+  CheckScriptFailureList(lines, ['E1154:', 'E121:'])
+
+  lines =<< trim END
+      vim9script
+      var x = 1 % 0
+      echo x
+  END
+  CheckScriptFailureList(lines, ['E1154:', 'E121:'])
+enddef
+
+
 def Test_assign_command_modifier()
   var lines =<< trim END
       var verbose = 0

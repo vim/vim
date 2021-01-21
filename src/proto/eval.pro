@@ -1,6 +1,6 @@
 /* eval.c */
-varnumber_T num_divide(varnumber_T n1, varnumber_T n2);
-varnumber_T num_modulus(varnumber_T n1, varnumber_T n2);
+varnumber_T num_divide(varnumber_T n1, varnumber_T n2, int *failed);
+varnumber_T num_modulus(varnumber_T n1, varnumber_T n2, int *failed);
 void eval_init(void);
 void eval_clear(void);
 void fill_evalarg_from_eap(evalarg_T *evalarg, exarg_T *eap, int skip);

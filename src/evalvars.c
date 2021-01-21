@@ -1410,8 +1410,10 @@ ex_let_one(
 			    case '+': n = numval + n; break;
 			    case '-': n = numval - n; break;
 			    case '*': n = numval * n; break;
-			    case '/': n = (long)num_divide(numval, n); break;
-			    case '%': n = (long)num_modulus(numval, n); break;
+			    case '/': n = (long)num_divide(numval, n,
+							       &failed); break;
+			    case '%': n = (long)num_modulus(numval, n,
+							       &failed); break;
 			}
 		    }
 		    else if (opt_type == gov_string

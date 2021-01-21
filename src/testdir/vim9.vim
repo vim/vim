@@ -69,6 +69,19 @@ def CheckScriptFailure(lines: list<string>, error: string, lnum = -3)
   endtry
 enddef
 
+def CheckScriptFailureList(lines: list<string>, errors: list<string>, lnum = -3)
+  var cwd = getcwd()
+  var fname = 'XScriptFailure' .. s:sequence
+  s:sequence += 1
+  writefile(lines, fname)
+  try
+    assert_fails('so ' .. fname, errors, lines, lnum)
+  finally
+    chdir(cwd)
+    delete(fname)
+  endtry
+enddef
+
 def CheckScriptSuccess(lines: list<string>)
   var cwd = getcwd()
   var fname = 'XScriptSuccess' .. s:sequence
