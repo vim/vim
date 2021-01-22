@@ -385,6 +385,10 @@ else
   " YAML
   elseif s:line1 =~# '^%YAML'
     set ft=yaml
+  
+  " Fennel
+  elseif s:line1 =~# '^#!.*/bin/env\s\+fennel\>'
+    set ft=fennel
 
   " CVS diff
   else

@@ -590,10 +590,7 @@ au BufNewFile,BufRead *.fan,*.fwt		setf fan
 au BufNewFile,BufRead *.factor			setf factor
 
 " Fennel
-if getline(1) =~# '^#!.*/bin/env\s\+fennel\>'
-  au BufNewFile,BufRead * 			setf fennel
-endif
-autocmd BufRead,BufNewFile *.fnl setf fennel
+autocmd BufRead,BufNewFile *.fnl 		setf fennel
 
 " Fetchmail RC file
 au BufNewFile,BufRead .fetchmailrc		setf fetchmail
