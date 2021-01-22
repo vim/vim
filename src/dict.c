@@ -1032,7 +1032,8 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 
     if (**arg != '}')
     {
-	semsg(_(e_missing_dict_end), *arg);
+	if (evalarg != NULL)
+	    semsg(_(e_missing_dict_end), *arg);
 failret:
 	if (d != NULL)
 	    dict_free(d);

@@ -815,6 +815,12 @@ def Test_list_vimscript()
       # comment 6
   END
   assert_equal(['# comment 1', 'two', '# comment 3', '', 'five', '# comment 6'], lines)
+
+  lines =<< trim END
+    [{
+      a: 0}]->string()->assert_equal("[{'a': 0}]")
+  END
+  CheckDefAndScriptSuccess(lines)
 enddef
 
 if has('channel')
