@@ -263,7 +263,8 @@ call_dfunc(int cdf_idx, partial_T *pt, int argcount_arg, ectx_T *ectx)
     }
     ectx->ec_stack.ga_len += STACK_FRAME_SIZE + varcount;
 
-    if (pt != NULL || ufunc->uf_partial != NULL || ufunc->uf_flags & FC_CLOSURE)
+    if (pt != NULL || ufunc->uf_partial != NULL
+					     || (ufunc->uf_flags & FC_CLOSURE))
     {
 	outer_T *outer = ALLOC_CLEAR_ONE(outer_T);
 
@@ -1062,7 +1063,7 @@ fill_partial_and_closure(partial_T *pt, ufunc_T *ufunc, ectx_T *ectx)
     pt->pt_func = ufunc;
     pt->pt_refcount = 1;
 
-    if (pt->pt_func->uf_flags & FC_CLOSURE)
+    if (ufunc->uf_flags & FC_CLOSURE)
     {
 	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
 							  + ectx->ec_dfunc_idx;
@@ -1093,7 +1094,7 @@ fill_partial_and_closure(partial_T *pt, ufunc_T *ufunc, ectx_T *ectx)
 	++pt->pt_refcount;
 	++ectx->ec_funcrefs.ga_len;
     }
-    ++pt->pt_func->uf_refcount;
+    ++ufunc->uf_refcount;
     return OK;
 }
 
@@ -1243,24 +1244,32 @@ call_def_function(
     ectx.ec_frame_idx = ectx.ec_stack.ga_len;
     initial_frame_idx = ectx.ec_frame_idx;
 
-    if (partial != NULL || ufunc->uf_partial != NULL)
     {
-	ectx.ec_outer = ALLOC_CLEAR_ONE(outer_T);
-	if (ectx.ec_outer == NULL)
-	    goto failed_early;
-	if (partial != NULL)
+	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
+							 + ufunc->uf_dfunc_idx;
+	ufunc_T *base_ufunc = dfunc->df_ufunc;
+
+	// "uf_partial" is on the ufunc that "df_ufunc" points to, as is done
+	// by copy_func().
+	if (partial != NULL || base_ufunc->uf_partial != NULL)
 	{
-	    if (partial->pt_outer.out_stack == NULL && current_ectx != NULL)
+	    ectx.ec_outer = ALLOC_CLEAR_ONE(outer_T);
+	    if (ectx.ec_outer == NULL)
+		goto failed_early;
+	    if (partial != NULL)
 	    {
-		if (current_ectx->ec_outer != NULL)
-		    *ectx.ec_outer = *current_ectx->ec_outer;
+		if (partial->pt_outer.out_stack == NULL && current_ectx != NULL)
+		{
+		    if (current_ectx->ec_outer != NULL)
+			*ectx.ec_outer = *current_ectx->ec_outer;
+		}
+		else
+		    *ectx.ec_outer = partial->pt_outer;
 	    }
 	    else
-		*ectx.ec_outer = partial->pt_outer;
+		*ectx.ec_outer = base_ufunc->uf_partial->pt_outer;
+	    ectx.ec_outer->out_up_is_copy = TRUE;
 	}
-	else
-	    *ectx.ec_outer = ufunc->uf_partial->pt_outer;
-	ectx.ec_outer->out_up_is_copy = TRUE;
     }
 
     // dummy frame entries

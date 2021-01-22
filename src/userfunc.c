@@ -1352,8 +1352,13 @@ func_clear_items(ufunc_T *fp)
     VIM_CLEAR(fp->uf_block_ids);
     VIM_CLEAR(fp->uf_va_name);
     clear_type_list(&fp->uf_type_list);
+
+    // Increment the refcount of this function to avoid it being freed
+    // recursively when the partial is freed.
+    fp->uf_refcount += 3;
     partial_unref(fp->uf_partial);
     fp->uf_partial = NULL;
+    fp->uf_refcount -= 3;
 
 #ifdef FEAT_LUA
     if (fp->uf_cb_free != NULL)
@@ -1446,10 +1451,10 @@ copy_func(char_u *lambda, char_u *global, ectx_T *ectx)
 	return FAIL;
     }
 
-    // TODO: handle ! to overwrite
     fp = find_func(global, TRUE, NULL);
     if (fp != NULL)
     {
+	// TODO: handle ! to overwrite
 	semsg(_(e_funcexts), global);
 	return FAIL;
     }
@@ -1501,8 +1506,9 @@ copy_func(char_u *lambda, char_u *global, ectx_T *ectx)
     // the referenced dfunc_T is now used one more time
     link_def_function(fp);
 
-    // Create a partial to store the context of the function, if not done
-    // already.
+    // Create a partial to store the context of the function where it was
+    // instantiated.  Only needs to be done once.  Do this on the original
+    // function, "dfunc->df_ufunc" will point to it.
     if ((ufunc->uf_flags & FC_CLOSURE) && ufunc->uf_partial == NULL)
     {
 	partial_T   *pt = ALLOC_CLEAR_ONE(partial_T);
@@ -1510,14 +1516,12 @@ copy_func(char_u *lambda, char_u *global, ectx_T *ectx)
 	if (pt == NULL)
 	    goto failed;
 	if (fill_partial_and_closure(pt, ufunc, ectx) == FAIL)
+	{
+            vim_free(pt);
 	    goto failed;
+	}
 	ufunc->uf_partial = pt;
-	--pt->pt_refcount;  // not referenced here yet
-    }
-    if (ufunc->uf_partial != NULL)
-    {
-	fp->uf_partial = ufunc->uf_partial;
-	++fp->uf_partial->pt_refcount;
+	--pt->pt_refcount;  // not actually referenced here
     }
 
     return OK;
@@ -4243,23 +4247,21 @@ func_unref(char_u *name)
 #endif
 	    internal_error("func_unref()");
     }
-    if (fp != NULL && --fp->uf_refcount <= 0)
-    {
-	// Only delete it when it's not being used.  Otherwise it's done
-	// when "uf_calls" becomes zero.
-	if (fp->uf_calls == 0)
-	    func_clear_free(fp, FALSE);
-    }
+    func_ptr_unref(fp);
 }
 
 /*
  * Unreference a Function: decrement the reference count and free it when it
  * becomes zero.
+ * Also when it becomes one and uf_partial points to the function.
  */
     void
 func_ptr_unref(ufunc_T *fp)
 {
-    if (fp != NULL && --fp->uf_refcount <= 0)
+    if (fp != NULL && (--fp->uf_refcount <= 0
+		|| (fp->uf_refcount == 1 && fp->uf_partial != NULL
+					 && fp->uf_partial->pt_refcount <= 1
+					 && fp->uf_partial->pt_func == fp)))
     {
 	// Only delete it when it's not being used.  Otherwise it's done
 	// when "uf_calls" becomes zero.
