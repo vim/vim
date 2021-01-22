@@ -826,10 +826,8 @@ generate_TYPECHECK(
     if ((isn = generate_instr(cctx, ISN_CHECKTYPE)) == NULL)
 	return FAIL;
     isn->isn_arg.type.ct_type = alloc_type(expected);
-    // Use the negated offset so that it's always positive.  Some systems don't
-    // support negative numbers for "char".
-    isn->isn_arg.type.ct_off = (char)-offset;
-    isn->isn_arg.type.ct_arg_idx = argidx;
+    isn->isn_arg.type.ct_off = (int8_T)offset;
+    isn->isn_arg.type.ct_arg_idx = (int8_T)argidx;
 
     // type becomes expected
     ((type_T **)stack->ga_data)[stack->ga_len + offset] = expected;
