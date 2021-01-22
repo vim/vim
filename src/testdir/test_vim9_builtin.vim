@@ -655,6 +655,34 @@ def Test_maparg_mapset()
   nunmap <F3>
 enddef
 
+def Test_max()
+  g:flag = true
+  var l1: list<number> = g:flag
+          ? [1, max([2, 3])]
+          : [4, 5]
+  assert_equal([1, 3], l1)
+
+  g:flag = false
+  var l2: list<number> = g:flag
+          ? [1, max([2, 3])]
+          : [4, 5]
+  assert_equal([4, 5], l2)
+enddef
+
+def Test_min()
+  g:flag = true
+  var l1: list<number> = g:flag
+          ? [1, min([2, 3])]
+          : [4, 5]
+  assert_equal([1, 2], l1)
+
+  g:flag = false
+  var l2: list<number> = g:flag
+          ? [1, min([2, 3])]
+          : [4, 5]
+  assert_equal([4, 5], l2)
+enddef
+
 def Test_nr2char()
   nr2char(97, true)->assert_equal('a')
 enddef
