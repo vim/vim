@@ -174,6 +174,7 @@ let s:filename_checks = {
     \ 'factor': ['file.factor'],
     \ 'falcon': ['file.fal'],
     \ 'fan': ['file.fan', 'file.fwt'],
+    \ 'fennel': ['file.fnl'],
     \ 'fetchmail': ['.fetchmailrc'],
     \ 'fgl': ['file.4gl', 'file.4gh', 'file.m4gl'],
     \ 'focexec': ['file.fex', 'file.focexec'],
@@ -639,6 +640,7 @@ let s:script_checks = {
       \         ['// -*- C++ -*-']],
       \ 'yaml': [['%YAML 1.2']],
       \ 'pascal': [['#!/path/instantfpc']],
+      \ 'fennel': [['#!/path/fennel']],
       \ }
 
 " Various forms of "env" optional arguments.
