@@ -186,6 +186,10 @@ if s:line1 =~# "^#!"
   elseif s:name =~# 'instantfpc\>'
     set ft=pascal
 
+    " Fennel
+  elseif s:name =~# 'fennel\>'
+    set ft=fennel
+
   endif
   unlet s:name
 
@@ -386,10 +390,6 @@ else
   elseif s:line1 =~# '^%YAML'
     set ft=yaml
   
-  " Fennel
-  elseif s:line1 =~# '^#!.*/bin/env\s\+fennel\>'
-    set ft=fennel
-
   " CVS diff
   else
     let s:lnum = 1
