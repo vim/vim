@@ -2564,12 +2564,15 @@ buflist_findpat(
     char_u	*p;
     int		toggledollar;
 
-    if (pattern_end == pattern + 1 && (*pattern == '%' || *pattern == '#'))
+    // "%" is current file, "%%" or "#" is alternate file
+    if ((pattern_end == pattern + 1 && (*pattern == '%' || *pattern == '#'))
+	    || (in_vim9script() && pattern_end == pattern + 2
+				    && pattern[0] == '%' && pattern[1] == '%'))
     {
-	if (*pattern == '%')
-	    match = curbuf->b_fnum;
-	else
+	if (*pattern == '#' || pattern_end == pattern + 2)
 	    match = curwin->w_alt_fnum;
+	else
+	    match = curbuf->b_fnum;
 #ifdef FEAT_DIFF
 	if (diffmode && !diff_mode_buf(buflist_findnr(match)))
 	    match = -1;

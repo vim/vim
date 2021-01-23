@@ -68,6 +68,17 @@ def Test_expand_alternate_file()
     edit Xfiletwo
     edit %%:r
     assert_equal('Xfileone', bufname())
+
+    assert_false(bufexists('altfoo'))
+    edit altfoo
+    edit bar
+    assert_true(bufexists('altfoo'))
+    assert_true(buflisted('altfoo'))
+    bdel %%
+    assert_true(bufexists('altfoo'))
+    assert_false(buflisted('altfoo'))
+    bwipe! altfoo
+    bwipe! bar
   END
   CheckDefAndScriptSuccess(lines)
 enddef
