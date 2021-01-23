@@ -35,6 +35,7 @@ static char *(p_cm_values[]) = {"zip", "blowfish", "blowfish2",
 #endif
 static char *(p_cmp_values[]) = {"internal", "keepascii", NULL};
 static char *(p_dy_values[]) = {"lastline", "truncate", "uhex", NULL};
+static char *(p_jop_values[]) = {"stack", NULL};
 #ifdef FEAT_FOLDING
 static char *(p_fdo_values[]) = {"all", "block", "hor", "mark", "percent",
 				 "quickfix", "search", "tag", "insert",
@@ -120,6 +121,7 @@ didset_string_options(void)
     (void)opt_strings_flags(p_fdo, p_fdo_values, &fdo_flags, TRUE);
 #endif
     (void)opt_strings_flags(p_dy, p_dy_values, &dy_flags, TRUE);
+    (void)opt_strings_flags(p_jop, p_jop_values, &jop_flags, TRUE);
     (void)opt_strings_flags(p_tc, p_tc_values, &tc_flags, FALSE);
     (void)opt_strings_flags(p_ve, p_ve_values, &ve_flags, TRUE);
 #if defined(UNIX) || defined(VMS)
@@ -1848,6 +1850,18 @@ did_set_isopt(optset_T *args)
 	args->os_restore_chartab = TRUE;// need to restore the chartab.
 	return e_invalid_argument;	// error in value
     }
+
+    return NULL;
+}
+
+/*
+ * The 'jumpoptions' option is changed.
+ */
+    char *
+did_set_jumpoptions(optset_T *args)
+{
+    if (opt_strings_flags(p_jop, p_jop_values, &jop_flags, TRUE) != OK)
+	return e_invalid_argument;
 
     return NULL;
 }

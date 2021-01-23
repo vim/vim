@@ -1459,6 +1459,9 @@ static struct vimoption options[] =
     {"joinspaces",  "js",   P_BOOL|P_VI_DEF|P_VIM,
 			    (char_u *)&p_js, PV_NONE, NULL,
 			    {(char_u *)TRUE, (char_u *)0L} SCTX_INIT},
+    {"jumpoptions", "jop",  P_STRING|P_VI_DEF|P_VIM|P_ONECOMMA|P_NODUP,
+			    (char_u *)&p_jop, PV_NONE, did_set_jumpoptions,
+			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
     {"key",	    NULL,   P_STRING|P_ALLOCED|P_VI_DEF|P_NO_MKRC,
 #ifdef FEAT_CRYPT
 			    (char_u *)&p_key, PV_KEY, did_set_cryptkey,
