@@ -28,6 +28,7 @@ static char *(p_cm_values[]) = {"zip", "blowfish", "blowfish2", NULL};
 #endif
 static char *(p_cmp_values[]) = {"internal", "keepascii", NULL};
 static char *(p_dy_values[]) = {"lastline", "truncate", "uhex", NULL};
+static char *(p_jop_values[]) = {"stack", NULL};
 #ifdef FEAT_FOLDING
 static char *(p_fdo_values[]) = {"all", "block", "hor", "mark", "percent",
 				 "quickfix", "search", "tag", "insert",
@@ -110,6 +111,7 @@ didset_string_options(void)
     (void)opt_strings_flags(p_fdo, p_fdo_values, &fdo_flags, TRUE);
 #endif
     (void)opt_strings_flags(p_dy, p_dy_values, &dy_flags, TRUE);
+    (void)opt_strings_flags(p_jop, p_jop_values, &jop_flags, TRUE);
     (void)opt_strings_flags(p_tc, p_tc_values, &tc_flags, FALSE);
     (void)opt_strings_flags(p_ve, p_ve_values, &ve_flags, TRUE);
 #if defined(UNIX) || defined(VMS)
@@ -2290,12 +2292,20 @@ ambw_end:
 #endif
 
 #ifdef FEAT_QUICKFIX
+    // 'quickfixtextfunc'
     else if (varp == &p_qftf)
     {
 	if (qf_process_qftf_option() == FALSE)
 	    errmsg = e_invarg;
     }
 #endif
+
+    // 'jumpoptions'
+    else if (varp == &p_jop)
+    {
+	if (opt_strings_flags(p_jop, p_jop_values, &jop_flags, TRUE) != OK)
+	    errmsg = e_invarg;
+    }
 
     // Options that are a list of flags.
     else

@@ -111,6 +111,7 @@ let test_values = {
       \ 'isident': [['', '@', '@,48-52'], ['xxx', '@48']],
       \ 'iskeyword': [['', '@', '@,48-52'], ['xxx', '@48']],
       \ 'isprint': [['', '@', '@,48-52'], ['xxx', '@48']],
+      \ 'jumpoptions': [['', 'stack'], ['xxx']],
       \ 'keymap': [['', 'accents'], ['xxx']],
       \ 'keymodel': [['', 'startsel', 'startsel,stopsel'], ['xxx']],
       \ 'langmap': [['', 'xX', 'aA,bB'], ['xxx']],
