@@ -319,6 +319,20 @@ def Test_method_call_linebreak()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_method_call_whitespace()
+  var lines =<< trim END
+    new
+    var yank = 'text'
+    yank->setline(1)
+    yank  ->setline(2)
+    yank->  setline(3)
+    yank  ->  setline(4)
+    assert_equal(['text', 'text', 'text', 'text'], getline(1, 4))
+    bwipe!
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
 def Test_skipped_expr_linebreak()
   if 0
     var x = []

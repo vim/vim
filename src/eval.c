@@ -3671,7 +3671,7 @@ call_func_rettv(
 
 /*
  * Evaluate "->method()".
- * "*arg" points to the '-'.
+ * "*arg" points to "method".
  * Returns FAIL or OK. "*arg" is advanced to after the ')'.
  */
     static int
@@ -3686,8 +3686,6 @@ eval_lambda(
     typval_T	base = *rettv;
     int		ret;
 
-    // Skip over the ->.
-    *arg += 2;
     rettv->v_type = VAR_UNKNOWN;
 
     if (**arg == '{')
@@ -3735,7 +3733,7 @@ eval_lambda(
 
 /*
  * Evaluate "->method()".
- * "*arg" points to the '-'.
+ * "*arg" points to "method".
  * Returns FAIL or OK. "*arg" is advanced to after the ')'.
  */
     static int
@@ -3753,8 +3751,6 @@ eval_method(
     int		evaluate = evalarg != NULL
 				      && (evalarg->eval_flags & EVAL_EVALUATE);
 
-    // Skip over the ->.
-    *arg += 2;
     rettv->v_type = VAR_UNKNOWN;
 
     name = *arg;
@@ -5765,10 +5761,10 @@ handle_subscript(
 	}
 	else if (p[0] == '-' && p[1] == '>')
 	{
-	    *arg = p;
+	    *arg = skipwhite(p + 2);
 	    if (ret == OK)
 	    {
-		if (((*arg)[2] == '{' && !in_vim9script()) || (*arg)[2] == '(')
+		if ((**arg == '{' && !in_vim9script()) || **arg == '(')
 		    // expr->{lambda}() or expr->(lambda)()
 		    ret = eval_lambda(arg, rettv, evalarg, verbose);
 		else
