@@ -55,6 +55,8 @@ def Test_assignment_bool()
   CheckDefAndScriptFailure(['var x: bool = [1]'], 'E1012:')
   CheckDefAndScriptFailure(['var x: bool = {}'], 'E1012:')
   CheckDefAndScriptFailure(['var x: bool = "x"'], 'E1012:')
+
+  CheckDefAndScriptFailure(['var x: bool = "x"', '', 'eval 0'], 'E1012:', 1)
 enddef
 
 def Test_syntax()

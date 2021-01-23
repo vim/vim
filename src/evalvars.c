@@ -838,6 +838,8 @@ ex_let(exarg_T *eap)
 	i = FAIL;
 	if (has_assign || concat)
 	{
+	    int cur_lnum;
+
 	    op[0] = '=';
 	    op[1] = NUL;
 	    if (*expr != '=')
@@ -882,10 +884,15 @@ ex_let(exarg_T *eap)
 		evalarg.eval_cookie = eap->cookie;
 	    }
 	    expr = skipwhite_and_linebreak(expr, &evalarg);
+	    cur_lnum = SOURCING_LNUM;
 	    i = eval0(expr, &rettv, eap, &evalarg);
 	    if (eap->skip)
 		--emsg_skip;
 	    clear_evalarg(&evalarg, eap);
+
+	    // Restore the line number so that any type error is given for the
+	    // declaration, not the expression.
+	    SOURCING_LNUM = cur_lnum;
 	}
 	if (eap->skip)
 	{
