@@ -44,6 +44,7 @@ struct endlabel_S {
  */
 typedef struct {
     int		is_seen_else;
+    int		is_seen_skip_not;   // a block was unconditionally executed
     int		is_had_return;	    // every block ends in :return
     int		is_if_label;	    // instruction idx at IF or ELSEIF
     endlabel_T	*is_end_label;	    // instructions to set end label
@@ -2098,13 +2099,7 @@ generate_undo_cmdmods(cctx_T *cctx)
 may_generate_prof_end(cctx_T *cctx, int prof_lnum)
 {
     if (cctx->ctx_profiling && prof_lnum >= 0)
-    {
-	int save_lnum = cctx->ctx_lnum;
-
-	cctx->ctx_lnum = prof_lnum;
 	generate_instr(cctx, ISN_PROF_END);
-	cctx->ctx_lnum = save_lnum;
-    }
 }
 #endif
 
@@ -6735,6 +6730,18 @@ compile_if(char_u *arg, cctx_T *cctx)
     else
 	scope->se_u.se_if.is_if_label = -1;
 
+#ifdef FEAT_PROFILE
+    if (cctx->ctx_profiling && cctx->ctx_skip == SKIP_YES
+						      && skip_save != SKIP_YES)
+    {
+	// generated a profile start, need to generate a profile end, since it
+	// won't be done after returning
+	cctx->ctx_skip = SKIP_NOT;
+	generate_instr(cctx, ISN_PROF_END);
+	cctx->ctx_skip = SKIP_YES;
+    }
+#endif
+
     return p;
 }
 
@@ -6758,6 +6765,25 @@ compile_elseif(char_u *arg, cctx_T *cctx)
     if (!cctx->ctx_had_return)
 	scope->se_u.se_if.is_had_return = FALSE;
 
+    if (cctx->ctx_skip == SKIP_NOT)
+    {
+	// previous block was executed, this one and following will not
+	cctx->ctx_skip = SKIP_YES;
+	scope->se_u.se_if.is_seen_skip_not = TRUE;
+    }
+    if (scope->se_u.se_if.is_seen_skip_not)
+    {
+	// A previous block was executed, skip over expression and bail out.
+	// Do not count the "elseif" for profiling.
+#ifdef FEAT_PROFILE
+	if (cctx->ctx_profiling && ((isn_T *)instr->ga_data)[instr->ga_len - 1]
+						   .isn_type == ISN_PROF_START)
+	    --instr->ga_len;
+#endif
+	skip_expr_cctx(&p, cctx);
+	return p;
+    }
+
     if (cctx->ctx_skip == SKIP_UNKNOWN)
     {
 	if (compile_jump_to_end(&scope->se_u.se_if.is_end_label,
@@ -6771,7 +6797,17 @@ compile_elseif(char_u *arg, cctx_T *cctx)
     // compile "expr"; if we know it evaluates to FALSE skip the block
     CLEAR_FIELD(ppconst);
     if (cctx->ctx_skip == SKIP_YES)
+    {
 	cctx->ctx_skip = SKIP_UNKNOWN;
+#ifdef FEAT_PROFILE
+	if (cctx->ctx_profiling)
+	{
+	    // the previous block was skipped, need to profile this line
+	    generate_instr(cctx, ISN_PROF_START);
+	    instr_count = instr->ga_len;
+	}
+#endif
+    }
     if (compile_expr1(&p, cctx, &ppconst) == FAIL)
     {
 	clear_ppconst(&ppconst);
@@ -6829,7 +6865,27 @@ compile_else(char_u *arg, cctx_T *cctx)
 	scope->se_u.se_if.is_had_return = FALSE;
     scope->se_u.se_if.is_seen_else = TRUE;
 
-    if (scope->se_skip_save != SKIP_YES)
+#ifdef FEAT_PROFILE
+    if (cctx->ctx_profiling)
+    {
+	if (cctx->ctx_skip == SKIP_NOT
+		&& ((isn_T *)instr->ga_data)[instr->ga_len - 1]
+						   .isn_type == ISN_PROF_START)
+	    // the previous block was executed, do not count "else" for profiling
+	    --instr->ga_len;
+	if (cctx->ctx_skip == SKIP_YES && !scope->se_u.se_if.is_seen_skip_not)
+	{
+	    // the previous block was not executed, this one will, do count the
+	    // "else" for profiling
+	    cctx->ctx_skip = SKIP_NOT;
+	    generate_instr(cctx, ISN_PROF_END);
+	    generate_instr(cctx, ISN_PROF_START);
+	    cctx->ctx_skip = SKIP_YES;
+	}
+    }
+#endif
+
+    if (!scope->se_u.se_if.is_seen_skip_not && scope->se_skip_save != SKIP_YES)
     {
 	// jump from previous block to the end, unless the else block is empty
 	if (cctx->ctx_skip == SKIP_UNKNOWN)
@@ -6884,6 +6940,17 @@ compile_endif(char_u *arg, cctx_T *cctx)
     }
     // Fill in the "end" label in jumps at the end of the blocks.
     compile_fill_jump_to_end(&ifscope->is_end_label, cctx);
+
+#ifdef FEAT_PROFILE
+    // even when skipping we count the endif as executed, unless the block it's
+    // in is skipped
+    if (cctx->ctx_profiling && cctx->ctx_skip == SKIP_YES
+					    && scope->se_skip_save != SKIP_YES)
+    {
+	cctx->ctx_skip = SKIP_NOT;
+	generate_instr(cctx, ISN_PROF_START);
+    }
+#endif
     cctx->ctx_skip = scope->se_skip_save;
 
     // If all the blocks end in :return and there is an :else then the
@@ -8005,7 +8072,8 @@ compile_def_function(
 	    {
 		// beyond the last line
 #ifdef FEAT_PROFILE
-		may_generate_prof_end(&cctx, prof_lnum);
+		if (cctx.ctx_skip != SKIP_YES)
+		    may_generate_prof_end(&cctx, prof_lnum);
 #endif
 		break;
 	    }
@@ -8023,7 +8091,8 @@ compile_def_function(
 	}
 
 #ifdef FEAT_PROFILE
-	if (cctx.ctx_profiling && cctx.ctx_lnum != prof_lnum)
+	if (cctx.ctx_profiling && cctx.ctx_lnum != prof_lnum &&
+						     cctx.ctx_skip != SKIP_YES)
 	{
 	    may_generate_prof_end(&cctx, prof_lnum);
 

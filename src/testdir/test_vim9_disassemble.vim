@@ -1857,8 +1857,8 @@ def Test_profiled()
         '\d PROFILE START line 1\_s*' ..
         '\d PUSHS "profiled"\_s*' ..
         '\d ECHO 1\_s*' ..
-        '\d PROFILE END\_s*' ..
         'return "done"\_s*' ..
+        '\d PROFILE END\_s*' ..
         '\d PROFILE START line 2\_s*' ..
         '\d PUSHS "done"\_s*' ..
         '\d RETURN\_s*' ..
