@@ -8837,6 +8837,15 @@ delete_def_function_contents(dfunc_T *dfunc, int mark_deleted)
 	VIM_CLEAR(dfunc->df_instr);
 	dfunc->df_instr = NULL;
     }
+#ifdef FEAT_PROFILE
+    if (dfunc->df_instr_prof != NULL)
+    {
+	for (idx = 0; idx < dfunc->df_instr_prof_count; ++idx)
+	    delete_instr(dfunc->df_instr_prof + idx);
+	VIM_CLEAR(dfunc->df_instr_prof);
+	dfunc->df_instr_prof = NULL;
+    }
+#endif
 
     if (mark_deleted)
 	dfunc->df_deleted = TRUE;
