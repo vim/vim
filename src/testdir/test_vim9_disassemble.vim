@@ -1848,6 +1848,9 @@ def s:Profiled(): string
 enddef
 
 def Test_profiled()
+  if !has('profile')
+    MissingFeature 'profile'
+  endif
   var res = execute('disass! s:Profiled')
   assert_match('<SNR>\d*_Profiled\_s*' ..
         'echo "profiled"\_s*' ..

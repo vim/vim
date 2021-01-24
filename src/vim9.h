@@ -373,8 +373,10 @@ struct dfunc_S {
     // After compiling "df_instr" and/or "df_instr_prof" is not NULL.
     isn_T	*df_instr;	    // function body to be executed
     int		df_instr_count;	    // size of "df_instr"
-    isn_T	*df_instr_prof;		// like "df_instr" with profiling
-    int		df_instr_prof_count;	// size of "df_instr_prof"
+#ifdef FEAT_PROFILE
+    isn_T	*df_instr_prof;	     // like "df_instr" with profiling
+    int		df_instr_prof_count; // size of "df_instr_prof"
+#endif
 
     int		df_varcount;	    // number of local variables
     int		df_has_closure;	    // one if a closure was created

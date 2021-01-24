@@ -645,7 +645,11 @@ call_ufunc(
     int		error;
     int		idx;
     int		did_emsg_before = did_emsg;
+#ifdef FEAT_PROFILE
     int		profiling = do_profiling == PROF_YES && ufunc->uf_profiling;
+#else
+# define profiling FALSE
+#endif
 
     if (func_needs_compiling(ufunc, profiling)
 		&& compile_def_function(ufunc, FALSE, profiling, NULL) == FAIL)
@@ -1131,7 +1135,11 @@ call_def_function(
     int		save_did_emsg_def = did_emsg_def;
     int		trylevel_at_start = trylevel;
     int		orig_funcdepth;
+#ifdef FEAT_PROFILE
     int		profiling = do_profiling == PROF_YES && ufunc->uf_profiling;
+#else
+# define profiling FALSE
+#endif
 
 // Get pointer to item in the stack.
 #define STACK_TV(idx) (((typval_T *)ectx.ec_stack.ga_data) + idx)
@@ -1158,7 +1166,11 @@ call_def_function(
 	// Check the function was really compiled.
 	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
 							 + ufunc->uf_dfunc_idx;
-	if ((profiling ? dfunc->df_instr_prof : dfunc->df_instr) == NULL)
+	if ((
+#ifdef FEAT_PROFILE
+		    profiling ? dfunc->df_instr_prof :
+#endif
+		    dfunc->df_instr) == NULL)
 	{
 	    iemsg("using call_def_function() on not compiled function");
 	    return FAIL;
@@ -1297,7 +1309,11 @@ call_def_function(
 	    ++ectx.ec_stack.ga_len;
 	}
 
+#ifdef FEAT_PROFILE
 	ectx.ec_instr = profiling ? dfunc->df_instr_prof : dfunc->df_instr;
+#else
+	ectx.ec_instr = dfunc->df_instr;
+#endif
     }
 
     // Following errors are in the function, not the caller.
@@ -3501,6 +3517,7 @@ call_def_function(
 	    case ISN_PROF_START:
 	    case ISN_PROF_END:
 		{
+#ifdef FEAT_PROFILE
 		    funccall_T cookie;
 		    ufunc_T	    *cur_ufunc =
 				    (((dfunc_T *)def_functions.ga_data)
@@ -3515,6 +3532,7 @@ call_def_function(
 		    }
 		    else
 			func_line_end(&cookie);
+#endif
 		}
 		break;
 
@@ -3715,9 +3733,14 @@ ex_disassemble(exarg_T *eap)
 	msg((char *)ufunc->uf_name);
 
     dfunc = ((dfunc_T *)def_functions.ga_data) + ufunc->uf_dfunc_idx;
+#ifdef FEAT_PROFILE
     instr = eap->forceit ? dfunc->df_instr_prof : dfunc->df_instr;
     instr_count = eap->forceit ? dfunc->df_instr_prof_count
 						       : dfunc->df_instr_count;
+#else
+    instr = dfunc->df_instr;
+    instr_count = dfunc->df_instr_count;
+#endif
     for (current = 0; current < instr_count; ++current)
     {
 	isn_T	    *iptr = &instr[current];

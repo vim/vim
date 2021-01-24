@@ -1906,6 +1906,11 @@ typedef struct {
     proftime_T	pi_call_start;
 } profinfo_T;
 
+# else
+typedef struct
+{
+    int	    dummy;
+} profinfo_T;
 # endif
 #else
 // dummy typedefs for use in function prototypes

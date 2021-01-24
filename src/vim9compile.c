@@ -1699,22 +1699,27 @@ generate_BLOBAPPEND(cctx_T *cctx)
  * "profile" indicates profiling is to be done.
  */
     int
-func_needs_compiling(ufunc_T *ufunc, int profile)
+func_needs_compiling(ufunc_T *ufunc, int profile UNUSED)
 {
     switch (ufunc->uf_def_status)
     {
-	case UF_NOT_COMPILED: return FALSE;
+	case UF_NOT_COMPILED: break;
 	case UF_TO_BE_COMPILED: return TRUE;
 	case UF_COMPILED:
 	{
+#ifdef FEAT_PROFILE
 	    dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
 							 + ufunc->uf_dfunc_idx;
 
 	    return profile ? dfunc->df_instr_prof == NULL
 			   : dfunc->df_instr == NULL;
+#else
+	    break;
+#endif
 	}
-	case UF_COMPILING: return FALSE;
+	case UF_COMPILING: break;
     }
+    return FALSE;
 }
 
 /*
@@ -2088,6 +2093,7 @@ generate_undo_cmdmods(cctx_T *cctx)
     return OK;
 }
 
+#ifdef FEAT_PROFILE
     static void
 may_generate_prof_end(cctx_T *cctx, int prof_lnum)
 {
@@ -2100,6 +2106,7 @@ may_generate_prof_end(cctx_T *cctx, int prof_lnum)
 	cctx->ctx_lnum = save_lnum;
     }
 }
+#endif
 
 /*
  * Reserve space for a local variable.
@@ -7143,9 +7150,11 @@ compile_while(char_u *arg, cctx_T *cctx)
 
     // "endwhile" jumps back here, one before when profiling
     scope->se_u.se_while.ws_top_label = instr->ga_len;
+#ifdef FEAT_PROFILE
     if (cctx->ctx_profiling && ((isn_T *)instr->ga_data)[instr->ga_len - 1]
 						   .isn_type == ISN_PROF_START)
 	--scope->se_u.se_while.ws_top_label;
+#endif
 
     // compile "expr"
     if (compile_expr0(&p, cctx) == FAIL)
@@ -7178,8 +7187,10 @@ compile_endwhile(char_u *arg, cctx_T *cctx)
     cctx->ctx_scope = scope->se_outer;
     unwind_locals(cctx, scope->se_local_count);
 
+#ifdef FEAT_PROFILE
     // count the endwhile before jumping
     may_generate_prof_end(cctx, cctx->ctx_lnum);
+#endif
 
     // At end of ":for" scope jump back to the FOR instruction.
     generate_JUMP(cctx, JUMP_ALWAYS, scope->se_u.se_while.ws_top_label);
@@ -7851,7 +7862,7 @@ add_def_function(ufunc_T *ufunc)
 compile_def_function(
 	ufunc_T	    *ufunc,
 	int	    check_return_type,
-	int	    profiling,
+	int	    profiling UNUSED,
 	cctx_T	    *outer_cctx)
 {
     char_u	*line = NULL;
@@ -7865,7 +7876,9 @@ compile_def_function(
     int		save_estack_compiling = estack_compiling;
     int		do_estack_push;
     int		new_def_function = FALSE;
+#ifdef FEAT_PROFILE
     int		prof_lnum = -1;
+#endif
 
     // When using a function that was compiled before: Free old instructions.
     // The index is reused.  Otherwise add a new entry in "def_functions".
@@ -7886,7 +7899,9 @@ compile_def_function(
 
     CLEAR_FIELD(cctx);
 
+#ifdef FEAT_PROFILE
     cctx.ctx_profiling = profiling;
+#endif
     cctx.ctx_ufunc = ufunc;
     cctx.ctx_lnum = -1;
     cctx.ctx_outer = outer_cctx;
@@ -7989,7 +8004,9 @@ compile_def_function(
 	    if (cctx.ctx_lnum >= ufunc->uf_lines.ga_len)
 	    {
 		// beyond the last line
+#ifdef FEAT_PROFILE
 		may_generate_prof_end(&cctx, prof_lnum);
+#endif
 		break;
 	    }
 	}
@@ -8005,6 +8022,7 @@ compile_def_function(
 	    continue;
 	}
 
+#ifdef FEAT_PROFILE
 	if (cctx.ctx_profiling && cctx.ctx_lnum != prof_lnum)
 	{
 	    may_generate_prof_end(&cctx, prof_lnum);
@@ -8012,6 +8030,7 @@ compile_def_function(
 	    prof_lnum = cctx.ctx_lnum;
 	    generate_instr(&cctx, ISN_PROF_START);
 	}
+#endif
 
 	// Some things can be recognized by the first character.
 	switch (*ea.cmd)
@@ -8376,12 +8395,14 @@ nextline:
 							 + ufunc->uf_dfunc_idx;
 	dfunc->df_deleted = FALSE;
 	dfunc->df_script_seq = current_sctx.sc_seq;
+#ifdef FEAT_PROFILE
 	if (cctx.ctx_profiling)
 	{
 	    dfunc->df_instr_prof = instr->ga_data;
 	    dfunc->df_instr_prof_count = instr->ga_len;
 	}
 	else
+#endif
 	{
 	    dfunc->df_instr = instr->ga_data;
 	    dfunc->df_instr_count = instr->ga_len;
