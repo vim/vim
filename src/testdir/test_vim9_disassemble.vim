@@ -1842,6 +1842,27 @@ def Test_silent()
         res)
 enddef
 
+def s:Profiled(): string
+  echo "profiled"
+  return "done"
+enddef
+
+def Test_profiled()
+  var res = execute('disass! s:Profiled')
+  assert_match('<SNR>\d*_Profiled\_s*' ..
+        'echo "profiled"\_s*' ..
+        '\d PROFILE START line 1\_s*' ..
+        '\d PUSHS "profiled"\_s*' ..
+        '\d ECHO 1\_s*' ..
+        '\d PROFILE END\_s*' ..
+        'return "done"\_s*' ..
+        '\d PROFILE START line 2\_s*' ..
+        '\d PUSHS "done"\_s*' ..
+        '\d RETURN\_s*' ..
+        '\d PROFILE END',
+        res)
+enddef
+
 def s:SilentReturn(): string
   silent return "done"
 enddef

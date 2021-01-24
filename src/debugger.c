@@ -864,7 +864,7 @@ has_profiling(
  */
     static linenr_T
 debuggy_find(
-    int		file,	    // TRUE for a file, FALSE for a function
+    int		is_file,    // TRUE for a file, FALSE for a function
     char_u	*fname,	    // file or function name
     linenr_T	after,	    // after this line number
     garray_T	*gap,	    // either &dbg_breakp or &prof_ga
@@ -873,20 +873,25 @@ debuggy_find(
     struct debuggy *bp;
     int		i;
     linenr_T	lnum = 0;
-    char_u	*name = fname;
+    char_u	*name = NULL;
+    char_u	*short_name = fname;
     int		prev_got_int;
 
     // Return quickly when there are no breakpoints.
     if (gap->ga_len == 0)
 	return (linenr_T)0;
 
-    // Replace K_SNR in function name with "<SNR>".
-    if (!file && fname[0] == K_SPECIAL)
+    // For a script-local function remove the prefix, so that
+    // "profile func Func" matches "Func" in any script.  Otherwise it's very
+    // difficult to profile/debug a script-local function.  It may match a
+    // function in the wrong script, but that is much better than not being
+    // able to profile/debug a function in a script with unknown ID.
+    // Also match a script-specific name.
+    if (!is_file && fname[0] == K_SPECIAL)
     {
+	short_name = vim_strchr(fname, '_') + 1;
 	name = alloc(STRLEN(fname) + 3);
-	if (name == NULL)
-	    name = fname;
-	else
+	if (name != NULL)
 	{
 	    STRCPY(name, "<SNR>");
 	    STRCPY(name + 5, fname + 3);
@@ -898,8 +903,8 @@ debuggy_find(
 	// Skip entries that are not useful or are for a line that is beyond
 	// an already found breakpoint.
 	bp = &DEBUGGY(gap, i);
-	if (((bp->dbg_type == DBG_FILE) == file &&
-		bp->dbg_type != DBG_EXPR && (
+	if (((bp->dbg_type == DBG_FILE) == is_file
+		    && bp->dbg_type != DBG_EXPR && (
 #ifdef FEAT_PROFILE
 		gap == &prof_ga ||
 #endif
@@ -910,7 +915,10 @@ debuggy_find(
 	    // while matching should abort it.
 	    prev_got_int = got_int;
 	    got_int = FALSE;
-	    if (vim_regexec_prog(&bp->dbg_prog, FALSE, name, (colnr_T)0))
+	    if ((name != NULL
+		   && vim_regexec_prog(&bp->dbg_prog, FALSE, name, (colnr_T)0))
+		    || vim_regexec_prog(&bp->dbg_prog, FALSE,
+						       short_name, (colnr_T)0))
 	    {
 		lnum = bp->dbg_lnum;
 		if (fp != NULL)

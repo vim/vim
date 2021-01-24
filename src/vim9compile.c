@@ -123,6 +123,8 @@ struct cctx_S {
     char_u	*ctx_line_start;    // start of current line or NULL
     garray_T	ctx_instr;	    // generated instructions
 
+    int		ctx_profiling;	    // when TRUE generate ISN_PROF_START
+
     garray_T	ctx_locals;	    // currently visible local variables
     int		ctx_locals_count;   // total number of local variables
 
@@ -1693,6 +1695,29 @@ generate_BLOBAPPEND(cctx_T *cctx)
 }
 
 /*
+ * Return TRUE if "ufunc" should be compiled, taking into account whether
+ * "profile" indicates profiling is to be done.
+ */
+    int
+func_needs_compiling(ufunc_T *ufunc, int profile)
+{
+    switch (ufunc->uf_def_status)
+    {
+	case UF_NOT_COMPILED: return FALSE;
+	case UF_TO_BE_COMPILED: return TRUE;
+	case UF_COMPILED:
+	{
+	    dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
+							 + ufunc->uf_dfunc_idx;
+
+	    return profile ? dfunc->df_instr_prof == NULL
+			   : dfunc->df_instr == NULL;
+	}
+	case UF_COMPILING: return FALSE;
+    }
+}
+
+/*
  * Generate an ISN_DCALL or ISN_UCALL instruction.
  * Return FAIL if the number of arguments is wrong.
  */
@@ -1744,10 +1769,10 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 		return FAIL;
 	    }
 	}
-	if (ufunc->uf_def_status == UF_TO_BE_COMPILED)
-	    if (compile_def_function(ufunc, ufunc->uf_ret_type == NULL, NULL)
-								       == FAIL)
-		return FAIL;
+	if (func_needs_compiling(ufunc, cctx->ctx_profiling)
+		&& compile_def_function(ufunc, ufunc->uf_ret_type == NULL,
+					    cctx->ctx_profiling, NULL) == FAIL)
+	    return FAIL;
     }
 
     if ((isn = generate_instr(cctx,
@@ -2061,6 +2086,19 @@ generate_undo_cmdmods(cctx_T *cctx)
 	return FAIL;
     cctx->ctx_has_cmdmod = FALSE;
     return OK;
+}
+
+    static void
+may_generate_prof_end(cctx_T *cctx, int prof_lnum)
+{
+    if (cctx->ctx_profiling && prof_lnum >= 0)
+    {
+	int save_lnum = cctx->ctx_lnum;
+
+	cctx->ctx_lnum = prof_lnum;
+	generate_instr(cctx, ISN_PROF_END);
+	cctx->ctx_lnum = save_lnum;
+    }
 }
 
 /*
@@ -2575,9 +2613,10 @@ generate_funcref(cctx_T *cctx, char_u *name)
 	return FAIL;
 
     // Need to compile any default values to get the argument types.
-    if (ufunc->uf_def_status == UF_TO_BE_COMPILED)
-	if (compile_def_function(ufunc, TRUE, NULL) == FAIL)
-	    return FAIL;
+    if (func_needs_compiling(ufunc, cctx->ctx_profiling)
+	    && compile_def_function(ufunc, TRUE, cctx->ctx_profiling, NULL)
+								       == FAIL)
+	return FAIL;
     return generate_PUSHFUNC(cctx, ufunc->uf_name, ufunc->uf_func_type);
 }
 
@@ -3070,7 +3109,7 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     clear_tv(&rettv);
 
     // Compile the function into instructions.
-    compile_def_function(ufunc, TRUE, cctx);
+    compile_def_function(ufunc, TRUE, cctx->ctx_profiling, cctx);
 
     clear_evalarg(&evalarg, NULL);
 
@@ -5047,8 +5086,9 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 	r = eap->skip ? OK : FAIL;
 	goto theend;
     }
-    if (ufunc->uf_def_status == UF_TO_BE_COMPILED
-	    && compile_def_function(ufunc, TRUE, cctx) == FAIL)
+    if (func_needs_compiling(ufunc, cctx->ctx_profiling)
+	    && compile_def_function(ufunc, TRUE, cctx->ctx_profiling, cctx)
+								       == FAIL)
     {
 	func_ptr_unref(ufunc);
 	goto theend;
@@ -7101,7 +7141,11 @@ compile_while(char_u *arg, cctx_T *cctx)
     if (scope == NULL)
 	return NULL;
 
+    // "endwhile" jumps back here, one before when profiling
     scope->se_u.se_while.ws_top_label = instr->ga_len;
+    if (cctx->ctx_profiling && ((isn_T *)instr->ga_data)[instr->ga_len - 1]
+						   .isn_type == ISN_PROF_START)
+	--scope->se_u.se_while.ws_top_label;
 
     // compile "expr"
     if (compile_expr0(&p, cctx) == FAIL)
@@ -7133,6 +7177,9 @@ compile_endwhile(char_u *arg, cctx_T *cctx)
     }
     cctx->ctx_scope = scope->se_outer;
     unwind_locals(cctx, scope->se_local_count);
+
+    // count the endwhile before jumping
+    may_generate_prof_end(cctx, cctx->ctx_lnum);
 
     // At end of ":for" scope jump back to the FOR instruction.
     generate_JUMP(cctx, JUMP_ALWAYS, scope->se_u.se_while.ws_top_label);
@@ -7794,13 +7841,18 @@ add_def_function(ufunc_T *ufunc)
  * When "check_return_type" is set then set ufunc->uf_ret_type to the type of
  * the return statement (used for lambda).  When uf_ret_type is already set
  * then check that it matches.
+ * When "profiling" is true add ISN_PROF_START instructions.
  * "outer_cctx" is set for a nested function.
  * This can be used recursively through compile_lambda(), which may reallocate
  * "def_functions".
  * Returns OK or FAIL.
  */
     int
-compile_def_function(ufunc_T *ufunc, int check_return_type, cctx_T *outer_cctx)
+compile_def_function(
+	ufunc_T	    *ufunc,
+	int	    check_return_type,
+	int	    profiling,
+	cctx_T	    *outer_cctx)
 {
     char_u	*line = NULL;
     char_u	*p;
@@ -7813,6 +7865,7 @@ compile_def_function(ufunc_T *ufunc, int check_return_type, cctx_T *outer_cctx)
     int		save_estack_compiling = estack_compiling;
     int		do_estack_push;
     int		new_def_function = FALSE;
+    int		prof_lnum = -1;
 
     // When using a function that was compiled before: Free old instructions.
     // The index is reused.  Otherwise add a new entry in "def_functions".
@@ -7832,6 +7885,8 @@ compile_def_function(ufunc_T *ufunc, int check_return_type, cctx_T *outer_cctx)
     ufunc->uf_def_status = UF_COMPILING;
 
     CLEAR_FIELD(cctx);
+
+    cctx.ctx_profiling = profiling;
     cctx.ctx_ufunc = ufunc;
     cctx.ctx_lnum = -1;
     cctx.ctx_outer = outer_cctx;
@@ -7932,22 +7987,35 @@ compile_def_function(ufunc_T *ufunc, int check_return_type, cctx_T *outer_cctx)
 	{
 	    line = next_line_from_context(&cctx, FALSE);
 	    if (cctx.ctx_lnum >= ufunc->uf_lines.ga_len)
+	    {
 		// beyond the last line
+		may_generate_prof_end(&cctx, prof_lnum);
 		break;
+	    }
 	}
 
 	CLEAR_FIELD(ea);
 	ea.cmdlinep = &line;
 	ea.cmd = skipwhite(line);
 
+	if (*ea.cmd == '#')
+	{
+	    // "#" starts a comment
+	    line = (char_u *)"";
+	    continue;
+	}
+
+	if (cctx.ctx_profiling && cctx.ctx_lnum != prof_lnum)
+	{
+	    may_generate_prof_end(&cctx, prof_lnum);
+
+	    prof_lnum = cctx.ctx_lnum;
+	    generate_instr(&cctx, ISN_PROF_START);
+	}
+
 	// Some things can be recognized by the first character.
 	switch (*ea.cmd)
 	{
-	    case '#':
-		// "#" starts a comment
-		line = (char_u *)"";
-		continue;
-
 	    case '}':
 		{
 		    // "}" ends a block scope
@@ -8308,8 +8376,16 @@ nextline:
 							 + ufunc->uf_dfunc_idx;
 	dfunc->df_deleted = FALSE;
 	dfunc->df_script_seq = current_sctx.sc_seq;
-	dfunc->df_instr = instr->ga_data;
-	dfunc->df_instr_count = instr->ga_len;
+	if (cctx.ctx_profiling)
+	{
+	    dfunc->df_instr_prof = instr->ga_data;
+	    dfunc->df_instr_prof_count = instr->ga_len;
+	}
+	else
+	{
+	    dfunc->df_instr = instr->ga_data;
+	    dfunc->df_instr_count = instr->ga_len;
+	}
 	dfunc->df_varcount = cctx.ctx_locals_count;
 	dfunc->df_has_closure = cctx.ctx_has_closure;
 	if (cctx.ctx_outer_used)
@@ -8586,6 +8662,8 @@ delete_instr(isn_T *isn)
 	case ISN_OPNR:
 	case ISN_PCALL:
 	case ISN_PCALL_END:
+	case ISN_PROF_END:
+	case ISN_PROF_START:
 	case ISN_PUSHBOOL:
 	case ISN_PUSHF:
 	case ISN_PUSHNR:

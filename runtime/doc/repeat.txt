@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 8.2.  Last change: 2021 Jan 02
+*repeat.txt*    For Vim version 8.2.  Last change: 2021 Jan 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -354,7 +354,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			Vim version, or update Vim to a newer version.  See
 			|vimscript-version| for what changed between versions.
 
-:vim9script [noclear]				*:vim9* *:vim9script*
+:vim9[script] [noclear]				*:vim9* *:vim9script*
 			Marks a script file as containing |Vim9-script|
 			commands.  Also see |vim9-namespace|.
 			Must be the first command in the file.
@@ -899,8 +899,9 @@ matches ".../plugin/explorer.vim", ".../plugin/iexplorer.vim", etc. >
 matches ".../plugin/explorer.vim" and "explorer.vim" in any other directory.
 
 The match for functions is done against the name as it's shown in the output
-of ":function".  For local functions this means that something like "<SNR>99_"
-is prepended.
+of ":function".  However, for local functions the script-specific prefix such
+as "<SNR>99_" is ignored to make it easier to match script-local functions
+without knowing the ID of the script.
 
 Note that functions are first loaded and later executed.  When they are loaded
 the "file" breakpoints are checked, when they are executed the "func"
@@ -955,10 +956,10 @@ OBSCURE
 
 Profiling means that Vim measures the time that is spent on executing
 functions and/or scripts.  The |+profile| feature is required for this.
-It is only included when Vim was compiled with "huge" features.
+It is included when Vim was compiled with "huge" features.
 
 You can also use the |reltime()| function to measure time.  This only requires
-the |+reltime| feature, which is present more often.
+the |+reltime| feature, which is present in more builds.
 
 For profiling syntax highlighting see |:syntime|.
 
@@ -1005,7 +1006,12 @@ For example, to profile the one_script.vim script file: >
 
 
 You must always start with a ":profile start fname" command.  The resulting
-file is written when Vim exits.  Here is an example of the output, with line
+file is written when Vim exits.  For example, to profile one specific
+function: >
+	profile start /tmp/vimprofile
+	profile func MyFunc
+
+Here is an example of the output, with line
 numbers prepended for the explanation:
 
   1 FUNCTION  Test2() ~

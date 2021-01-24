@@ -866,7 +866,7 @@ do_cmdline(
 	    if (do_profiling == PROF_YES)
 	    {
 		if (getline_is_func)
-		    func_line_start(real_cookie);
+		    func_line_start(real_cookie, SOURCING_LNUM);
 		else if (getline_equal(fgetline, cookie, getsourceline))
 		    script_line_start();
 	    }

@@ -336,7 +336,8 @@ typval2type_int(typval_T *tv, garray_T *type_gap)
 	    // May need to get the argument types from default values by
 	    // compiling the function.
 	    if (ufunc->uf_def_status == UF_TO_BE_COMPILED
-			    && compile_def_function(ufunc, TRUE, NULL) == FAIL)
+			    && compile_def_function(ufunc, TRUE, FALSE, NULL)
+								       == FAIL)
 		return NULL;
 	    if (ufunc->uf_func_type == NULL)
 		set_function_type(ufunc);
