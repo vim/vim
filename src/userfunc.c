@@ -3199,6 +3199,12 @@ define_function(exarg_T *eap, char_u *name_arg)
 	    p = vim_strchr(p, '(');
     }
 
+    if ((vim9script || eap->cmdidx == CMD_def) && VIM_ISWHITE(p[-1]))
+    {
+	semsg(_(e_no_white_space_allowed_before_str), "(");
+	goto ret_free;
+    }
+
     // In Vim9 script only global functions can be redefined.
     if (vim9script && eap->forceit && !is_global)
     {

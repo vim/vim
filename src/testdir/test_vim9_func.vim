@@ -116,6 +116,38 @@ def Test_missing_endfunc_enddef()
   CheckScriptFailure(lines, 'E126:', 2)
 enddef
 
+def Test_white_space_before_paren()
+  var lines =<< trim END
+    vim9script
+    def Test ()
+      echo 'test'
+    enddef
+  END
+  CheckScriptFailure(lines, 'E1068:', 2)
+
+  lines =<< trim END
+    vim9script
+    func Test ()
+      echo 'test'
+    endfunc
+  END
+  CheckScriptFailure(lines, 'E1068:', 2)
+
+  lines =<< trim END
+    def Test ()
+      echo 'test'
+    enddef
+  END
+  CheckScriptFailure(lines, 'E1068:', 1)
+
+  lines =<< trim END
+    func Test ()
+      echo 'test'
+    endfunc
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_enddef_dict_key()
   var d = {
     enddef: 'x',
