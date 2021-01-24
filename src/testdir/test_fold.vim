@@ -864,7 +864,7 @@ func Test_fold_relative_move()
   set fdm=indent sw=2 wrap tw=80
 
   let content = [ '  foo', '  bar', '  baz',
-              \   repeat('x', 100),
+              \   repeat('x', &columns + 1),
               \   '  foo', '  bar', '  baz'
               \ ]
   call append(0, content)
