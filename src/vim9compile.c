@@ -6566,7 +6566,7 @@ compile_jump_to_end(endlabel_T **el, jumpwhen_T when, cctx_T *cctx)
 }
 
     static void
-compile_fill_jump_to_end(endlabel_T **el, cctx_T *cctx)
+compile_fill_jump_to_end(endlabel_T **el, int jump_where, cctx_T *cctx)
 {
     garray_T	*instr = &cctx->ctx_instr;
 
@@ -6576,7 +6576,7 @@ compile_fill_jump_to_end(endlabel_T **el, cctx_T *cctx)
 	isn_T	    *isn;
 
 	isn = ((isn_T *)instr->ga_data) + cur->el_end_label;
-	isn->isn_arg.jump.jump_where = instr->ga_len;
+	isn->isn_arg.jump.jump_where = jump_where;
 	*el = cur->el_next;
 	vim_free(cur);
     }
@@ -6939,7 +6939,7 @@ compile_endif(char_u *arg, cctx_T *cctx)
 	isn->isn_arg.jump.jump_where = instr->ga_len;
     }
     // Fill in the "end" label in jumps at the end of the blocks.
-    compile_fill_jump_to_end(&ifscope->is_end_label, cctx);
+    compile_fill_jump_to_end(&ifscope->is_end_label, instr->ga_len, cctx);
 
 #ifdef FEAT_PROFILE
     // even when skipping we count the endif as executed, unless the block it's
@@ -7182,7 +7182,7 @@ compile_endfor(char_u *arg, cctx_T *cctx)
     isn->isn_arg.forloop.for_end = instr->ga_len;
 
     // Fill in the "end" label any BREAK statements
-    compile_fill_jump_to_end(&forscope->fs_end_label, cctx);
+    compile_fill_jump_to_end(&forscope->fs_end_label, instr->ga_len, cctx);
 
     // Below the ":for" scope drop the "expr" list from the stack.
     if (generate_instr_drop(cctx, ISN_DROP, 1) == NULL)
@@ -7245,6 +7245,7 @@ compile_while(char_u *arg, cctx_T *cctx)
 compile_endwhile(char_u *arg, cctx_T *cctx)
 {
     scope_T	*scope = cctx->ctx_scope;
+    garray_T	*instr = &cctx->ctx_instr;
 
     if (scope == NULL || scope->se_type != WHILE_SCOPE)
     {
@@ -7264,7 +7265,8 @@ compile_endwhile(char_u *arg, cctx_T *cctx)
 
     // Fill in the "end" label in the WHILE statement so it can jump here.
     // And in any jumps for ":break"
-    compile_fill_jump_to_end(&scope->se_u.se_while.ws_end_label, cctx);
+    compile_fill_jump_to_end(&scope->se_u.se_while.ws_end_label,
+							  instr->ga_len, cctx);
 
     vim_free(scope);
 
@@ -7446,6 +7448,12 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 
     if (cctx->ctx_skip != SKIP_YES)
     {
+#ifdef FEAT_PROFILE
+	// the profile-start should be after the jump
+	if (cctx->ctx_profiling && ((isn_T *)instr->ga_data)[instr->ga_len - 1]
+						   .isn_type == ISN_PROF_START)
+	    --instr->ga_len;
+#endif
 	// Jump from end of previous block to :finally or :endtry
 	if (compile_jump_to_end(&scope->se_u.se_try.ts_end_label,
 						    JUMP_ALWAYS, cctx) == FAIL)
@@ -7461,6 +7469,15 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 	    isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_catch_label;
 	    isn->isn_arg.jump.jump_where = instr->ga_len;
 	}
+#ifdef FEAT_PROFILE
+	if (cctx->ctx_profiling)
+	{
+	    // a "throw" that jumps here needs to be counted
+	    generate_instr(cctx, ISN_PROF_END);
+	    // the "catch" is also counted
+	    generate_instr(cctx, ISN_PROF_START);
+	}
+#endif
     }
 
     p = skipwhite(arg);
@@ -7521,6 +7538,7 @@ compile_finally(char_u *arg, cctx_T *cctx)
     scope_T	*scope = cctx->ctx_scope;
     garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
+    int		this_instr;
 
     // end block scope from :try or :catch
     if (scope != NULL && scope->se_type == BLOCK_SCOPE)
@@ -7542,15 +7560,24 @@ compile_finally(char_u *arg, cctx_T *cctx)
 	return NULL;
     }
 
-    // Fill in the "end" label in jumps at the end of the blocks.
-    compile_fill_jump_to_end(&scope->se_u.se_try.ts_end_label, cctx);
+    this_instr = instr->ga_len;
+#ifdef FEAT_PROFILE
+    if (cctx->ctx_profiling && ((isn_T *)instr->ga_data)[instr->ga_len - 1]
+						   .isn_type == ISN_PROF_START)
+	// jump to the profile start of the "finally"
+	--this_instr;
+#endif
 
-    isn->isn_arg.try.try_finally = instr->ga_len;
+    // Fill in the "end" label in jumps at the end of the blocks.
+    compile_fill_jump_to_end(&scope->se_u.se_try.ts_end_label,
+							     this_instr, cctx);
+
+    isn->isn_arg.try.try_finally = this_instr;
     if (scope->se_u.se_try.ts_catch_label != 0)
     {
 	// Previous catch without match jumps here
 	isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_catch_label;
-	isn->isn_arg.jump.jump_where = instr->ga_len;
+	isn->isn_arg.jump.jump_where = this_instr;
 	scope->se_u.se_try.ts_catch_label = 0;
     }
 
@@ -7595,9 +7622,18 @@ compile_endtry(char_u *arg, cctx_T *cctx)
 	    return NULL;
 	}
 
+#ifdef FEAT_PROFILE
+    if (cctx->ctx_profiling && ((isn_T *)instr->ga_data)[instr->ga_len - 1]
+						   .isn_type == ISN_PROF_START)
+	// move the profile start after "endtry" so that it's not counted when
+	// the exception is rethrown.
+	--instr->ga_len;
+#endif
+
 	// Fill in the "end" label in jumps at the end of the blocks, if not
 	// done by ":finally".
-	compile_fill_jump_to_end(&scope->se_u.se_try.ts_end_label, cctx);
+	compile_fill_jump_to_end(&scope->se_u.se_try.ts_end_label,
+							  instr->ga_len, cctx);
 
 	// End :catch or :finally scope: set value in ISN_TRY instruction
 	if (isn->isn_arg.try.try_catch == 0)
@@ -7617,6 +7653,10 @@ compile_endtry(char_u *arg, cctx_T *cctx)
 
     if (cctx->ctx_skip != SKIP_YES && generate_instr(cctx, ISN_ENDTRY) == NULL)
 	return NULL;
+#ifdef FEAT_PROFILE
+	if (cctx->ctx_profiling)
+	    generate_instr(cctx, ISN_PROF_START);
+#endif
     return arg;
 }
 

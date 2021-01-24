@@ -2613,7 +2613,7 @@ call_def_function(
 
 		    if (trystack->ga_len > 0)
 		    {
-			trycmd_T    *trycmd = NULL;
+			trycmd_T    *trycmd;
 
 			--trystack->ga_len;
 			--trylevel;
@@ -2635,34 +2635,54 @@ call_def_function(
 		break;
 
 	    case ISN_THROW:
-		if (ectx.ec_trystack.ga_len == 0 && trylevel == 0
-								&& emsg_silent)
 		{
-		    // throwing an exception while using "silent!" causes the
-		    // function to abort but not display an error.
-		    tv = STACK_TV_BOT(-1);
-		    clear_tv(tv);
-		    tv->v_type = VAR_NUMBER;
-		    tv->vval.v_number = 0;
-		    goto done;
-		}
-		--ectx.ec_stack.ga_len;
-		tv = STACK_TV_BOT(0);
-		if (tv->vval.v_string == NULL
-				       || *skipwhite(tv->vval.v_string) == NUL)
-		{
-		    vim_free(tv->vval.v_string);
-		    SOURCING_LNUM = iptr->isn_lnum;
-		    emsg(_(e_throw_with_empty_string));
-		    goto failed;
-		}
+		    garray_T	*trystack = &ectx.ec_trystack;
 
-		if (throw_exception(tv->vval.v_string, ET_USER, NULL) == FAIL)
-		{
-		    vim_free(tv->vval.v_string);
-		    goto failed;
+		    if (trystack->ga_len == 0 && trylevel == 0 && emsg_silent)
+		    {
+			// throwing an exception while using "silent!" causes
+			// the function to abort but not display an error.
+			tv = STACK_TV_BOT(-1);
+			clear_tv(tv);
+			tv->v_type = VAR_NUMBER;
+			tv->vval.v_number = 0;
+			goto done;
+		    }
+		    --ectx.ec_stack.ga_len;
+		    tv = STACK_TV_BOT(0);
+		    if (tv->vval.v_string == NULL
+				       || *skipwhite(tv->vval.v_string) == NUL)
+		    {
+			vim_free(tv->vval.v_string);
+			SOURCING_LNUM = iptr->isn_lnum;
+			emsg(_(e_throw_with_empty_string));
+			goto failed;
+		    }
+
+		    // Inside a "catch" we need to first discard the caught
+		    // exception.
+		    if (trystack->ga_len > 0)
+		    {
+			trycmd_T    *trycmd = ((trycmd_T *)trystack->ga_data)
+							+ trystack->ga_len - 1;
+			if (trycmd->tcd_caught && current_exception != NULL)
+			{
+			    // discard the exception
+			    if (caught_stack == current_exception)
+				caught_stack = caught_stack->caught;
+			    discard_current_exception();
+			    trycmd->tcd_caught = FALSE;
+			}
+		    }
+
+		    if (throw_exception(tv->vval.v_string, ET_USER, NULL)
+								       == FAIL)
+		    {
+			vim_free(tv->vval.v_string);
+			goto failed;
+		    }
+		    did_throw = TRUE;
 		}
-		did_throw = TRUE;
 		break;
 
 	    // compare with special values
