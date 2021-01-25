@@ -1121,7 +1121,9 @@ stored in the viminfo file and restored when starting Vim.
 							*jumplist-stack*
 When 'jumpoptions' option includes "stack", the jumplist behaves like the tag
 stack.  When jumping to a new location from the middle of the jumplist, the
-locations after the current position will be discarded.
+locations after the current position will be discarded. With this option set
+you can move through a tree of jump locations. When going back up a branch and
+then down another branch, CTRL-O still takes you further up the tree. 
 
 Given a jumplist like the following in which CTRL-O has been used to move back
 three times to location X:
