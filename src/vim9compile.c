@@ -1775,9 +1775,9 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 		return FAIL;
 	    }
 	}
-	if (func_needs_compiling(ufunc, cctx->ctx_profiling)
+	if (func_needs_compiling(ufunc, PROFILING(ufunc))
 		&& compile_def_function(ufunc, ufunc->uf_ret_type == NULL,
-					    cctx->ctx_profiling, NULL) == FAIL)
+					       PROFILING(ufunc), NULL) == FAIL)
 	    return FAIL;
     }
 
@@ -2615,8 +2615,8 @@ generate_funcref(cctx_T *cctx, char_u *name)
 	return FAIL;
 
     // Need to compile any default values to get the argument types.
-    if (func_needs_compiling(ufunc, cctx->ctx_profiling)
-	    && compile_def_function(ufunc, TRUE, cctx->ctx_profiling, NULL)
+    if (func_needs_compiling(ufunc, PROFILING(ufunc))
+	    && compile_def_function(ufunc, TRUE, PROFILING(ufunc), NULL)
 								       == FAIL)
 	return FAIL;
     return generate_PUSHFUNC(cctx, ufunc->uf_name, ufunc->uf_func_type);
@@ -3111,7 +3111,7 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     clear_tv(&rettv);
 
     // Compile the function into instructions.
-    compile_def_function(ufunc, TRUE, cctx->ctx_profiling, cctx);
+    compile_def_function(ufunc, TRUE, PROFILING(ufunc), cctx);
 
     clear_evalarg(&evalarg, NULL);
 
@@ -5088,8 +5088,8 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 	r = eap->skip ? OK : FAIL;
 	goto theend;
     }
-    if (func_needs_compiling(ufunc, cctx->ctx_profiling)
-	    && compile_def_function(ufunc, TRUE, cctx->ctx_profiling, cctx)
+    if (func_needs_compiling(ufunc, PROFILING(ufunc))
+	    && compile_def_function(ufunc, TRUE, PROFILING(ufunc), cctx)
 								       == FAIL)
     {
 	func_ptr_unref(ufunc);

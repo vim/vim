@@ -181,6 +181,16 @@ call_dfunc(int cdf_idx, partial_T *pt, int argcount_arg, ectx_T *ectx)
 	return FAIL;
     }
 
+#ifdef FEAT_PROFILE
+    // Profiling might be enabled/disabled along the way.  This should not
+    // fail, since the function was compiled before and toggling profiling
+    // doesn't change any errors.
+    if (func_needs_compiling(ufunc, PROFILING(ufunc))
+	    && compile_def_function(ufunc, FALSE, PROFILING(ufunc), NULL)
+								       == FAIL)
+	return FAIL;
+#endif
+
     if (ufunc->uf_va_name != NULL)
     {
 	// Need to make a list out of the vararg arguments.
@@ -293,7 +303,7 @@ call_dfunc(int cdf_idx, partial_T *pt, int argcount_arg, ectx_T *ectx)
 
     // Set execution state to the start of the called function.
     ectx->ec_dfunc_idx = cdf_idx;
-    ectx->ec_instr = dfunc->df_instr;
+    ectx->ec_instr = INSTRUCTIONS(dfunc);
     entry = estack_push_ufunc(ufunc, 1);
     if (entry != NULL)
     {
@@ -542,7 +552,7 @@ func_return(ectx_T *ectx)
     ectx->ec_frame_idx = STACK_TV(ectx->ec_frame_idx
 				       + STACK_FRAME_IDX_OFF)->vval.v_number;
     dfunc = ((dfunc_T *)def_functions.ga_data) + ectx->ec_dfunc_idx;
-    ectx->ec_instr = dfunc->df_instr;
+    ectx->ec_instr = INSTRUCTIONS(dfunc);
 
     if (ret_idx > 0)
     {
@@ -1103,6 +1113,7 @@ fill_partial_and_closure(partial_T *pt, ufunc_T *ufunc, ectx_T *ectx)
     return OK;
 }
 
+
 /*
  * Call a "def" function from old Vim script.
  * Return OK or FAIL.
@@ -1135,11 +1146,6 @@ call_def_function(
     int		save_did_emsg_def = did_emsg_def;
     int		trylevel_at_start = trylevel;
     int		orig_funcdepth;
-#ifdef FEAT_PROFILE
-    int		profiling = do_profiling == PROF_YES && ufunc->uf_profiling;
-#else
-# define profiling FALSE
-#endif
 
 // Get pointer to item in the stack.
 #define STACK_TV(idx) (((typval_T *)ectx.ec_stack.ga_data) + idx)
@@ -1152,8 +1158,8 @@ call_def_function(
 #define STACK_TV_VAR(idx) (((typval_T *)ectx.ec_stack.ga_data) + ectx.ec_frame_idx + STACK_FRAME_SIZE + idx)
 
     if (ufunc->uf_def_status == UF_NOT_COMPILED
-	    || (func_needs_compiling(ufunc, profiling)
-			 && compile_def_function(ufunc, FALSE, profiling, NULL)
+	    || (func_needs_compiling(ufunc, PROFILING(ufunc))
+		&& compile_def_function(ufunc, FALSE, PROFILING(ufunc), NULL)
 								      == FAIL))
     {
 	if (did_emsg_cumul + did_emsg == did_emsg_before)
@@ -1166,11 +1172,7 @@ call_def_function(
 	// Check the function was really compiled.
 	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
 							 + ufunc->uf_dfunc_idx;
-	if ((
-#ifdef FEAT_PROFILE
-		    profiling ? dfunc->df_instr_prof :
-#endif
-		    dfunc->df_instr) == NULL)
+	if (INSTRUCTIONS(dfunc) == NULL)
 	{
 	    iemsg("using call_def_function() on not compiled function");
 	    return FAIL;
@@ -1309,11 +1311,7 @@ call_def_function(
 	    ++ectx.ec_stack.ga_len;
 	}
 
-#ifdef FEAT_PROFILE
-	ectx.ec_instr = profiling ? dfunc->df_instr_prof : dfunc->df_instr;
-#else
-	ectx.ec_instr = dfunc->df_instr;
-#endif
+	ectx.ec_instr = INSTRUCTIONS(dfunc);
     }
 
     // Following errors are in the function, not the caller.
