@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Jan 15
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Jan 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -403,9 +403,15 @@ Additionally, a lambda can contain statements in {}: >
 	    }
 NOT IMPLEMENTED YET
 
+							*vim9-curly*
 To avoid the "{" of a dictionary literal to be recognized as a statement block
 wrap it in parenthesis: >
 	var Lambda = (arg) => ({key: 42})
+
+Also when confused with the start of a command block: >
+	({
+	    key: value
+	 })->method()
 
 
 Automatic line continuation ~
@@ -840,6 +846,9 @@ prefix and they do not need to exist (they can be deleted any time).
 			This is for debugging and testing.
 			Note that for command line completion of {func} you
 			can prepend "s:" to find script-local functions.
+
+:disa[ssemble]! {func}	Like `:disassemble` but with the instructions used for
+			profiling.
 
 Limitations ~
 

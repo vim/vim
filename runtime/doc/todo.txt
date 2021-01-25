@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Jan 17
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Jan 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -41,6 +41,7 @@ browser use: https://github.com/vim/vim/issues/1234
 test_autocmd failure in Windows: Something wrong with system()?
 
 Vim9 - Make everything work:
+- Add a test for profiling with nested function calls and lambda.
 - Expand `=expr` in :next, :argedit, :argadd, :argdelete, :drop
 - Expand `=expr` in :vimgrep, :vimgrepadd, :lvimgrep, :lvimgrepadd
 - Expand `=expr` in :mkspell
@@ -50,7 +51,7 @@ Vim9 - Make everything work:
 - Using a script variable inside a :def function doesn't work if the variable
   is inside a block, see Test_nested_function().  Should it work?
 - give error for variable name:
-      let p = function('NoSuchFunc')
+      var p = function('NoSuchFunc')
 - Make closures work better:
   - Create closure in a loop.  Need to make a list of them.
 - If a :def function is called with a function reference, compile it to get
@@ -58,20 +59,16 @@ Vim9 - Make everything work:
 	def Filter(x: string, Cond: func(string): bool)
 	Filter(x, (v) => v =~ '^b')
 - Make inline function work, to be used as a funcref:
-       let Ref = (arg: type): type => {
+       var Ref = (arg: type): type => {
 	    statement
 	    return expr
 	}
-       let Ref = (arg: type) => {
+       var Ref = (arg: type) => {
 	    statement
 	    statement
 	}
-- Does this work already: can use func as reference:
-	def SomeFunc() ...
-	map(list, SomeFunc)
 - For builtin functions using tv_get_string*() use check_for_string() to be
   more strict about the argument type.
-- Possible memory leaks in test_vim9_func
 - Implement :lockvar and :unlockvar.  How about local variables?  Perhaps only
   allow this for global variables.  Use :final or :const otherwise.
 - Allow function names that will be script-local to start with lower case
@@ -86,10 +83,10 @@ Vim9 - Make everything work:
 - Need the equivalent of get_lval() and set_var_lval() to implement assignment
   to nested list and dict members.
     - Assignment to dict doesn't work:
-	  let ret: dict<string> = #{}
+	  var ret: dict<string> = #{}
 	  ret[i] = string(i)
     - Appending to dict item doesn't work:
-	let d[i] ..= value
+	var d[i] ..= value
 - Using ".." at script level doesn't convert arguments to a string.
 - Compile replacement of :s command: s/pat/\=expr/
 - Compile redir to local variable: var_redir_start().
@@ -144,7 +141,6 @@ Also for Vim9:
 - Make debugging work - at least per function.  Need to recompile a function
   to step through it line-by-line?  Evaluate the stack and variables on the
   stack?
-- Make profiling work - Add ISN_PROFILE instructions after every line?
 - List commands when 'verbose' is set or :verbose is used.
 
 Further Vim9 improvements, possibly after launch:
@@ -187,6 +183,10 @@ Popup windows:
 - Figure out the size and position better if wrapping inserts indent
 
 Text properties:
+- Popup attached to text property stays visible when text is no longer
+  visible. (#7736)
+- Popup attached to text property stays visible when text is deleted with
+  "cc". (#7737)  "C" works OK.
 - :goto does not go to the right place when text properties are present.
   (#5930)
 - "cc" does not call inserted_bytes(). (Axel Forsman, #5763)
@@ -282,7 +282,7 @@ Patch to implement the vimtutor with a plugin: #6414
 Was originally written by Felipe Morales.
 
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
-(#4087)
+(#4087)  Did patch 8.2.2379 help?
 
 Patch to find Python dll using registry key. (#7540)
 

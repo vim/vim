@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2021 Jan 21
+*eval.txt*	For Vim version 8.2.  Last change: 2021 Jan 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2085,7 +2085,7 @@ v:null		An empty String. Used to put "null" in JSON.  See
 					*v:numbermax* *numbermax-variable*
 v:numbermax	Maximum value of a number.
 
-					*v:numbermix* *numbermix-variable*
+					*v:numbermin* *numbermin-variable*
 v:numbermin	Minimum value of a number (negative)
 
 					*v:numbersize* *numbersize-variable*
