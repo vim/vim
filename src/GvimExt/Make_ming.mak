@@ -49,8 +49,8 @@ WINVER = 0x0501
 endif
 CXX := $(CROSS_COMPILE)g++
 WINDRES := $(CROSS_COMPILE)windres
-WINDRES_CXX = $(CXX)
-WINDRES_FLAGS = --preprocessor="$(WINDRES_CXX) -E -xc" -DRC_INVOKED
+# this used to have --preprocessor, but it's no longer supported
+WINDRES_FLAGS =
 LIBS :=  -luuid -lgdi32
 RES  := gvimext.res
 DEFFILE = gvimext_ming.def

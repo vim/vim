@@ -220,7 +220,6 @@ WINDRES := $(CROSS_COMPILE)windres
 else
 WINDRES := windres
 endif
-WINDRES_CC = $(CC)
 
 # Get the default ARCH.
 ifndef ARCH
@@ -514,7 +513,8 @@ endif
 
 CFLAGS = -I. -Iproto $(DEFINES) -pipe -march=$(ARCH) -Wall
 CXXFLAGS = -std=gnu++11
-WINDRES_FLAGS = --preprocessor="$(WINDRES_CC) -E -xc" -DRC_INVOKED
+# This used to have --preprocessor, but it's no longer supported
+WINDRES_FLAGS =
 EXTRA_LIBS =
 
 ifdef GETTEXT
