@@ -4395,10 +4395,15 @@ open_cmdwin(void)
 	// Avoid command-line window first character being concealed.
 	curwin->w_p_cole = 0;
 # endif
+	// First go back to the original window.
 	wp = curwin;
 	set_bufref(&bufref, curbuf);
 	win_goto(old_curwin);
-	win_close(wp, TRUE);
+
+	// win_goto() may trigger an autocommand that already closes the
+	// cmdline window.
+	if (win_valid(wp))
+	    win_close(wp, TRUE);
 
 	// win_close() may have already wiped the buffer when 'bh' is
 	// set to 'wipe'
