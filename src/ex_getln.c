@@ -4205,6 +4205,9 @@ open_cmdwin(void)
     // Don't let quitting the More prompt make this fail.
     got_int = FALSE;
 
+    // Set "cmdwin_type" before any autocommands may mess things up.
+    cmdwin_type = get_cmdline_type();
+
     // Create the command-line buffer empty.
     if (do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE, NULL) == FAIL)
     {
@@ -4213,7 +4216,6 @@ open_cmdwin(void)
 	ga_clear(&winsizes);
 	return Ctrl_C;
     }
-    cmdwin_type = get_cmdline_type();
 
     apply_autocmds(EVENT_BUFFILEPRE, NULL, NULL, FALSE, curbuf);
     (void)setfname(curbuf, (char_u *)"[Command Line]", NULL, TRUE);

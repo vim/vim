@@ -559,4 +559,12 @@ func Test_quit_with_arglist()
   call delete('.c.swp')
 endfunc
 
+" Test for ":all" not working when in the cmdline window
+func Test_all_not_allowed_from_cmdwin()
+  au BufEnter * all
+  next x
+  call assert_fails(":norm 7q?x\<CR>", 'E11:')
+  au! BufEnter
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

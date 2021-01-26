@@ -884,6 +884,13 @@ do_arg_all(
     win_T	*new_curwin = NULL;
     tabpage_T	*new_curtab = NULL;
 
+#ifdef FEAT_CMDWIN
+    if (cmdwin_type != 0)
+    {
+	emsg(_(e_cmdwin));
+	return;
+    }
+#endif
     if (ARGCOUNT <= 0)
     {
 	// Don't give an error message.  We don't want it when the ":all"
