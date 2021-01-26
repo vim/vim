@@ -129,7 +129,6 @@ func Test_wildmenu_screendump()
 endfunc
 
 func Test_map_completion()
-  CheckFeature cmdline_compl
   call feedkeys(":map <unique> <si\<Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"map <unique> <silent>', getreg(':'))
   call feedkeys(":map <script> <un\<Tab>\<Home>\"\<CR>", 'xt')
@@ -207,7 +206,6 @@ func Test_map_completion()
 endfunc
 
 func Test_match_completion()
-  CheckFeature cmdline_compl
   hi Aardig ctermfg=green
   call feedkeys(":match \<Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"match Aardig', getreg(':'))
@@ -216,7 +214,6 @@ func Test_match_completion()
 endfunc
 
 func Test_highlight_completion()
-  CheckFeature cmdline_compl
   hi Aardig ctermfg=green
   call feedkeys(":hi \<Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"hi Aardig', getreg(':'))
@@ -253,7 +250,6 @@ func Test_highlight_easter_egg()
 endfunc
 
 func Test_getcompletion()
-  CheckFeature cmdline_compl
   let groupcount = len(getcompletion('', 'event'))
   call assert_true(groupcount > 0)
   let matchcount = len('File'->getcompletion('event'))
@@ -980,6 +976,8 @@ func Test_getcmdtype()
 endfunc
 
 func Test_getcmdwintype()
+  CheckFeature cmdwin
+
   call feedkeys("q/:let a = getcmdwintype()\<CR>:q\<CR>", 'x!')
   call assert_equal('/', a)
 
@@ -996,6 +994,8 @@ func Test_getcmdwintype()
 endfunc
 
 func Test_getcmdwin_autocmd()
+  CheckFeature cmdwin
+
   let s:seq = []
   augroup CmdWin
   au WinEnter * call add(s:seq, 'WinEnter ' .. win_getid())
@@ -1108,6 +1108,8 @@ func Test_cmdline_overstrike()
 endfunc
 
 func Test_cmdwin_bug()
+  CheckFeature cmdwin
+
   let winid = win_getid()
   sp
   try
@@ -1118,6 +1120,7 @@ func Test_cmdwin_bug()
 endfunc
 
 func Test_cmdwin_restore()
+  CheckFeature cmdwin
   CheckScreendump
 
   let lines =<< trim [SCRIPT]
@@ -1193,6 +1196,8 @@ func Test_buffers_lastused()
 endfunc
 
 func Test_cmdwin_feedkeys()
+  CheckFeature cmdwin
+
   " This should not generate E488
   call feedkeys("q:\<CR>", 'x')
   " Using feedkeys with q: only should automatically close the cmd window
@@ -1204,6 +1209,8 @@ endfunc
 " Tests for the issues fixed in 7.4.441.
 " When 'cedit' is set to Ctrl-C, opening the command window hangs Vim
 func Test_cmdwin_cedit()
+  CheckFeature cmdwin
+
   exe "set cedit=\<C-c>"
   normal! :
   call assert_equal(1, winnr('$'))
@@ -1226,6 +1233,8 @@ endfunc
 
 " Test for CmdwinEnter autocmd
 func Test_cmdwin_autocmd()
+  CheckFeature cmdwin
+
   augroup CmdWin
     au!
     autocmd CmdwinEnter * startinsert
@@ -1268,6 +1277,8 @@ func Test_cmdline_expand_special()
 endfunc
 
 func Test_cmdwin_jump_to_win()
+  CheckFeature cmdwin
+
   call assert_fails('call feedkeys("q:\<C-W>\<C-W>\<CR>", "xt")', 'E11:')
   new
   set modified
@@ -1284,6 +1295,7 @@ func Test_cmdwin_jump_to_win()
 endfunc
 
 func Test_cmdwin_interrupted()
+  CheckFeature cmdwin
   CheckScreendump
 
   " aborting the :smile output caused the cmdline window to use the current
@@ -1570,6 +1582,8 @@ endfunc
 
 " Test for recursively getting multiple command line inputs
 func Test_cmdwin_multi_input()
+  CheckFeature cmdwin
+
   call feedkeys(":\<C-R>=input('P: ')\<CR>\"cyan\<CR>\<CR>", 'xt')
   call assert_equal('"cyan', @:)
 endfunc
@@ -1594,6 +1608,8 @@ endfunc
 
 " Test for normal mode commands not supported in the cmd window
 func Test_cmdwin_blocked_commands()
+  CheckFeature cmdwin
+
   call assert_fails('call feedkeys("q:\<C-T>\<CR>", "xt")', 'E11:')
   call assert_fails('call feedkeys("q:\<C-]>\<CR>", "xt")', 'E11:')
   call assert_fails('call feedkeys("q:\<C-^>\<CR>", "xt")', 'E11:')
@@ -1625,6 +1641,8 @@ endfunc
 
 " Close the Cmd-line window in insert mode using CTRL-C
 func Test_cmdwin_insert_mode_close()
+  CheckFeature cmdwin
+
   %bw!
   let s = ''
   exe "normal q:a\<C-C>let s='Hello'\<CR>"

@@ -2584,9 +2584,11 @@ func Test_normal40_ctrl_bsl()
   call assert_false(&insertmode)
   call assert_beeps("normal! \<C-\>\<C-A>", 'xt')
 
-  " Using CTRL-\ CTRL-N in cmd window should close the window
-  call feedkeys("q:\<C-\>\<C-N>", 'xt')
-  call assert_equal('', getcmdwintype())
+  if has('cmdwin')
+    " Using CTRL-\ CTRL-N in cmd window should close the window
+    call feedkeys("q:\<C-\>\<C-N>", 'xt')
+    call assert_equal('', getcmdwintype())
+  endif
 
   " clean up
   bw!

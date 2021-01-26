@@ -343,6 +343,8 @@ func Test_compl_feedkeys()
 endfunc
 
 func Test_compl_in_cmdwin()
+  CheckFeature cmdwin
+
   set wildmenu wildchar=<Tab>
   com! -nargs=1 -complete=command GetInput let input = <q-args>
   com! -buffer TestCommand echo 'TestCommand'

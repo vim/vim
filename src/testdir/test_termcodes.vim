@@ -367,6 +367,8 @@ endfunc
 
 " Test for using the mouse to increaes the height of the cmdline window
 func Test_mouse_cmdwin_resize()
+  CheckFeature cmdwin
+
   let save_mouse = &mouse
   let save_term = &term
   let save_ttymouse = &ttymouse

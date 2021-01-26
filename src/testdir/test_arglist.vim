@@ -527,6 +527,7 @@ endfunc
 " Test for quitting Vim with unedited files in the argument list
 func Test_quit_with_arglist()
   CheckRunVimInTerminal
+
   let buf = RunVimInTerminal('', {'rows': 6})
   call term_sendkeys(buf, ":set nomore\n")
   call term_sendkeys(buf, ":args a b c\n")
@@ -561,9 +562,13 @@ endfunc
 
 " Test for ":all" not working when in the cmdline window
 func Test_all_not_allowed_from_cmdwin()
+  CheckFeature cmdwin
+  " TODO: why does this hang on Windows?
+  CheckNotMSWindows
+
   au BufEnter * all
   next x
-  call assert_fails(":norm 7q?x\<CR>", 'E11:')
+  call assert_fails(":norm 7q?print\<CR>", 'E11:')
   au! BufEnter
 endfunc
 

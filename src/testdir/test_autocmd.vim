@@ -2397,10 +2397,8 @@ endfunc
 
 func Test_autocmd_CmdWinEnter()
   CheckRunVimInTerminal
-  " There is not cmdwin switch, so
-  " test for cmdline_hist
-  " (both are available with small builds)
-  CheckFeature cmdline_hist
+  CheckFeature cmdwin
+
   let lines =<< trim END
     let b:dummy_var = 'This is a dummy'
     autocmd CmdWinEnter * quit
