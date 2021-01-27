@@ -920,6 +920,13 @@ enter_block(cstack_T *cstack)
 	cstack->cs_block_id[cstack->cs_idx] = ++si->sn_last_block_id;
 	si->sn_current_block_id = si->sn_last_block_id;
     }
+    else
+    {
+	// Just in case in_vim9script() does not return the same value when the
+	// block ends.
+	cstack->cs_script_var_len[cstack->cs_idx] = 0;
+	cstack->cs_block_id[cstack->cs_idx] = 0;
+    }
 }
 
     static void
