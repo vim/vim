@@ -4214,6 +4214,7 @@ open_cmdwin(void)
 	// Some autocommand messed it up?
 	win_close(curwin, TRUE);
 	ga_clear(&winsizes);
+	cmdwin_type = 0;
 	return Ctrl_C;
     }
 

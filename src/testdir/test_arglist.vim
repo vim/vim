@@ -563,12 +563,18 @@ endfunc
 " Test for ":all" not working when in the cmdline window
 func Test_all_not_allowed_from_cmdwin()
   CheckFeature cmdwin
-  " TODO: why does this hang on Windows?
-  CheckNotMSWindows
 
   au BufEnter * all
   next x
-  call assert_fails(":norm 7q?print\<CR>", 'E11:')
+  " Use try/catch here, somehow assert_fails() doesn't work on MS-Windows
+  " console.
+  let caught = 'no'
+  try
+    exe ":norm! 7q?apat\<CR>"
+  catch /E11:/
+    let caught = 'yes'
+  endtry
+  call assert_equal('yes', caught)
   au! BufEnter
 endfunc
 
