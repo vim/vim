@@ -17,12 +17,29 @@
 #define AL_ADD	2
 #define AL_DEL	3
 
+// This flag is set whenever the argument list is being changed and calling a
+// function that might trigger an autocommand.
+static int arglist_locked = FALSE;
+
+    static int
+check_arglist_locked(void)
+{
+    if (arglist_locked)
+    {
+	emsg(_(e_cannot_change_arglist_recursively));
+	return FAIL;
+    }
+    return OK;
+}
+
 /*
  * Clear an argument list: free all file names and reset it to zero entries.
  */
     void
 alist_clear(alist_T *al)
 {
+    if (check_arglist_locked() == FAIL)
+	return;
     while (--al->al_ga.ga_len >= 0)
 	vim_free(AARGLIST(al)[al->al_ga.ga_len].ae_fname);
     ga_clear(&al->al_ga);
@@ -126,14 +143,9 @@ alist_set(
     int		fnum_len)
 {
     int		i;
-    static int  recursive = 0;
 
-    if (recursive)
-    {
-	emsg(_(e_au_recursive));
+    if (check_arglist_locked() == FAIL)
 	return;
-    }
-    ++recursive;
 
     alist_clear(al);
     if (ga_grow(&al->al_ga, count) == OK)
@@ -152,7 +164,11 @@ alist_set(
 	    // May set buffer name of a buffer previously used for the
 	    // argument list, so that it's re-used by alist_add.
 	    if (fnum_list != NULL && i < fnum_len)
+	    {
+		arglist_locked = TRUE;
 		buf_set_name(fnum_list[i], files[i]);
+		arglist_locked = FALSE;
+	    }
 
 	    alist_add(al, files[i], use_curbuf ? 2 : 1);
 	    ui_breakcheck();
@@ -163,8 +179,6 @@ alist_set(
 	FreeWild(count, files);
     if (al == &global_alist)
 	arg_had_last = FALSE;
-
-    --recursive;
 }
 
 /*
@@ -179,6 +193,10 @@ alist_add(
 {
     if (fname == NULL)		// don't add NULL file names
 	return;
+    if (check_arglist_locked() == FAIL)
+	return;
+    arglist_locked = TRUE;
+
 #ifdef BACKSLASH_IN_FILENAME
     slash_adjust(fname);
 #endif
@@ -187,6 +205,8 @@ alist_add(
 	AARGLIST(al)[al->al_ga.ga_len].ae_fnum =
 	    buflist_add(fname, BLN_LISTED | (set_fnum == 2 ? BLN_CURBUF : 0));
     ++al->al_ga.ga_len;
+
+    arglist_locked = FALSE;
 }
 
 #if defined(BACKSLASH_IN_FILENAME) || defined(PROTO)
@@ -334,7 +354,8 @@ alist_add_list(
     int		i;
     int		old_argcount = ARGCOUNT;
 
-    if (ga_grow(&ALIST(curwin)->al_ga, count) == OK)
+    if (check_arglist_locked() != FAIL
+	    && ga_grow(&ALIST(curwin)->al_ga, count) == OK)
     {
 	if (after < 0)
 	    after = 0;
@@ -343,6 +364,7 @@ alist_add_list(
 	if (after < ARGCOUNT)
 	    mch_memmove(&(ARGLIST[after + count]), &(ARGLIST[after]),
 				       (ARGCOUNT - after) * sizeof(aentry_T));
+	arglist_locked = TRUE;
 	for (i = 0; i < count; ++i)
 	{
 	    int flags = BLN_LISTED | (will_edit ? BLN_CURBUF : 0);
@@ -350,6 +372,7 @@ alist_add_list(
 	    ARGLIST[after + i].ae_fname = files[i];
 	    ARGLIST[after + i].ae_fnum = buflist_add(files[i], flags);
 	}
+	arglist_locked = FALSE;
 	ALIST(curwin)->al_ga.ga_len += count;
 	if (old_argcount > 0 && curwin->w_arg_idx >= after)
 	    curwin->w_arg_idx += count;
@@ -381,6 +404,9 @@ do_arglist(
     char_u	*p;
     int		match;
     int		arg_escaped = TRUE;
+
+    if (check_arglist_locked() == FAIL)
+	return FAIL;
 
     // Set default argument for ":argadd" command.
     if (what == AL_ADD && *str == NUL)
@@ -775,6 +801,9 @@ ex_argdelete(exarg_T *eap)
 {
     int		i;
     int		n;
+
+    if (check_arglist_locked() == FAIL)
+	return;
 
     if (eap->addr_count > 0 || *eap->arg == NUL)
     {
