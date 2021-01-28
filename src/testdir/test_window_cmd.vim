@@ -567,8 +567,8 @@ endfunc
 
 func Test_access_freed_mem()
   call assert_equal(&columns, winwidth(0))
-  " This was accessing freed memory
-  au * 0 vs xxx
+  " This was accessing freed memory (but with what events?)
+  au BufEnter,BufLeave,WinEnter,WinLeave 0 vs xxx
   arg 0
   argadd
   call assert_fails("all", "E242:")

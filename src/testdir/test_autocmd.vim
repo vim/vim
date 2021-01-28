@@ -1827,20 +1827,9 @@ func Test_TextYankPost()
   bwipe!
 endfunc
 
-func Test_nocatch_wipe_all_buffers()
-  " Real nasty autocommand: wipe all buffers on any event.
-  au * * bwipe *
-  call assert_fails('next x', ['E94:', 'E937:'])
-  bwipe
-  au!
-endfunc
-
-func Test_nocatch_wipe_dummy_buffer()
-  CheckFeature quickfix
-  " Nasty autocommand: wipe buffer on any event.
-  au * x bwipe
-  call assert_fails('lv½ /x', 'E937:')
-  au!
+func Test_autocommand_all_events()
+  call assert_fails('au * * bwipe', 'E1155:')
+  call assert_fails('au * x bwipe', 'E1155:')
 endfunc
 
 function s:Before_test_dirchanged()

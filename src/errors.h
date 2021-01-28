@@ -345,3 +345,5 @@ EXTERN char e_invalid_operation_for_bool[]
 	INIT(= N_("E1153: Invalid operation for bool"));
 EXTERN char e_divide_by_zero[]
 	INIT(= N_("E1154: Divide by zero"));
+EXTERN char e_cannot_define_autocommands_for_all_events[]
+	INIT(= N_("E1155: Cannot define autocommands for ALL events"));
