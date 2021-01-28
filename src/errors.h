@@ -347,3 +347,5 @@ EXTERN char e_divide_by_zero[]
 	INIT(= N_("E1154: Divide by zero"));
 EXTERN char e_cannot_define_autocommands_for_all_events[]
 	INIT(= N_("E1155: Cannot define autocommands for ALL events"));
+EXTERN char e_cannot_change_arglist_recursively[]
+	INIT(= N_("E1156: Cannot change the argument list recursively"));
