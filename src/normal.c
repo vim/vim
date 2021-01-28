@@ -630,7 +630,7 @@ getcount:
 	    }
 	    else
 		ca.count0 = ca.count0 * 10 + (c - '0');
-	    if (ca.count0 < 0)	    // got too large!
+	    if (ca.count0 < 0)	    // overflow
 		ca.count0 = 999999999L;
 #ifdef FEAT_EVAL
 	    // Set v:count here, when called from main() and not a stuffed
@@ -701,6 +701,8 @@ getcount:
 	    ca.count0 *= ca.opcount;
 	else
 	    ca.count0 = ca.opcount;
+	if (ca.count0 < 0)	    // overflow
+	    ca.count0 = 999999999L;
     }
 
     /*
@@ -4775,6 +4777,8 @@ nv_percent(cmdarg_T *cap)
 	    else
 		curwin->w_cursor.lnum = (curbuf->b_ml.ml_line_count *
 						    cap->count0 + 99L) / 100L;
+	    if (curwin->w_cursor.lnum < 1)
+		curwin->w_cursor.lnum = 1;
 	    if (curwin->w_cursor.lnum > curbuf->b_ml.ml_line_count)
 		curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
 	    beginline(BL_SOL | BL_FIX);

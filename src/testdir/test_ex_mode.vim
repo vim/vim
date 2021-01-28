@@ -206,4 +206,20 @@ func Test_ex_mode_with_global()
   call delete('Xexmodescript')
 endfunc
 
+func Test_ex_mode_count_overflow()
+  " this used to cause a crash
+  let lines =<< trim END
+    call feedkeys("\<Esc>Q\<CR>")
+    v9|9silent! vi|333333233333y32333333%O
+    call writefile(['done'], 'Xdidexmode')
+    qall!
+  END
+  call writefile(lines, 'Xexmodescript')
+  call assert_equal(1, RunVim([], [], '-e -s -S Xexmodescript -c qa'))
+  call assert_equal(['done'], readfile('Xdidexmode'))
+
+  call delete('Xdidexmode')
+  call delete('Xexmodescript')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
