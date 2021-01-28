@@ -183,4 +183,12 @@ func s:CheckIPv6Loopback()
   return v:false
 endfunc
 
+" Command to check for not running under ASAN
+command CheckNotAsan call CheckNotAsan()
+func CheckNotAsan()
+  if execute('version') =~# '-fsanitize=[a-z,]*\<address\>'
+    throw 'Skipped: does not work with ASAN'
+  endif
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

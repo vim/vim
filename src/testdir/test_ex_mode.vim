@@ -207,6 +207,9 @@ func Test_ex_mode_with_global()
 endfunc
 
 func Test_ex_mode_count_overflow()
+  " The multiplication causes an integer overflow
+  CheckNotAsan
+
   " this used to cause a crash
   let lines =<< trim END
     call feedkeys("\<Esc>Q\<CR>")

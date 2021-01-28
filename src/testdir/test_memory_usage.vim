@@ -4,11 +4,9 @@ source check.vim
 CheckFeature terminal
 CheckNotGui
 
-if execute('version') =~# '-fsanitize=[a-z,]*\<address\>'
-  " Skip tests on Travis CI ASAN build because it's difficult to estimate
-  " memory usage.
-  throw 'Skipped: does not work with ASAN'
-endif
+" Skip tests on Travis CI ASAN build because it's difficult to estimate memory
+" usage.
+CheckNotAsan
 
 source shared.vim
 
