@@ -2218,9 +2218,10 @@ expand_by_function(
     pos = curwin->w_cursor;
     curwin_save = curwin;
     curbuf_save = curbuf;
-    // Lock the text to avoid weird things from happening.  Do allow switching
-    // to another window temporarily.
-    ++textlock;
+    // Lock the text to avoid weird things from happening.  Also disallow
+    // switching to another window, it should not be needed and may end up in
+    // Insert mode in another buffer.
+    ++textwinlock;
 
     // Call a function, which returns a list or dict.
     if (call_vim_function(funcname, 2, args, &rettv) == OK)
@@ -2243,7 +2244,7 @@ expand_by_function(
 		break;
 	}
     }
-    --textlock;
+    --textwinlock;
 
     if (curwin_save != curwin || curbuf_save != curbuf)
     {
@@ -3226,7 +3227,7 @@ ins_compl_next(
 	return -1;
 
     if (compl_leader != NULL
-			&& (compl_shown_match->cp_flags & CP_ORIGINAL_TEXT) == 0)
+		      && (compl_shown_match->cp_flags & CP_ORIGINAL_TEXT) == 0)
     {
 	// Set "compl_shown_match" to the actually shown match, it may differ
 	// when "compl_leader" is used to omit some of the matches.
