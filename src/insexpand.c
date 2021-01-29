@@ -121,7 +121,6 @@ struct compl_S
 
 static char e_hitend[] = N_("Hit end of paragraph");
 # ifdef FEAT_COMPL_FUNC
-static char e_complwin[] = N_("E839: Completion function changed window");
 static char e_compldel[] = N_("E840: Completion function deleted text");
 # endif
 
@@ -2199,8 +2198,6 @@ expand_by_function(
     typval_T	args[3];
     char_u	*funcname;
     pos_T	pos;
-    win_T	*curwin_save;
-    buf_T	*curbuf_save;
     typval_T	rettv;
     int		save_State = State;
 
@@ -2216,8 +2213,6 @@ expand_by_function(
     args[2].v_type = VAR_UNKNOWN;
 
     pos = curwin->w_cursor;
-    curwin_save = curwin;
-    curbuf_save = curbuf;
     // Lock the text to avoid weird things from happening.  Also disallow
     // switching to another window, it should not be needed and may end up in
     // Insert mode in another buffer.
@@ -2246,11 +2241,6 @@ expand_by_function(
     }
     --textwinlock;
 
-    if (curwin_save != curwin || curbuf_save != curbuf)
-    {
-	emsg(_(e_complwin));
-	goto theend;
-    }
     curwin->w_cursor = pos;	// restore the cursor position
     validate_cursor();
     if (!EQUAL_POS(curwin->w_cursor, pos))
@@ -3843,8 +3833,6 @@ ins_complete(int c, int enable_pum)
 	    int		col;
 	    char_u	*funcname;
 	    pos_T	pos;
-	    win_T	*curwin_save;
-	    buf_T	*curbuf_save;
 	    int		save_State = State;
 
 	    // Call 'completefunc' or 'omnifunc' and get pattern length as a
@@ -3866,16 +3854,11 @@ ins_complete(int c, int enable_pum)
 	    args[1].vval.v_string = (char_u *)"";
 	    args[2].v_type = VAR_UNKNOWN;
 	    pos = curwin->w_cursor;
-	    curwin_save = curwin;
-	    curbuf_save = curbuf;
+	    ++textwinlock;
 	    col = call_func_retnr(funcname, 2, args);
+	    --textwinlock;
 
 	    State = save_State;
-	    if (curwin_save != curwin || curbuf_save != curbuf)
-	    {
-		emsg(_(e_complwin));
-		return FAIL;
-	    }
 	    curwin->w_cursor = pos;	// restore the cursor position
 	    validate_cursor();
 	    if (!EQUAL_POS(curwin->w_cursor, pos))
