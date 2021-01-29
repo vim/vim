@@ -3526,7 +3526,8 @@ put_folds(FILE *fd, win_T *wp)
     if (foldmethodIsManual(wp))
     {
 	if (put_line(fd, "silent! normal! zE") == FAIL
-		|| put_folds_recurse(fd, &wp->w_folds, (linenr_T)0) == FAIL)
+		|| put_folds_recurse(fd, &wp->w_folds, (linenr_T)0) == FAIL
+		|| put_line(fd, "let &fdl = &fdl") == FAIL)
 	    return FAIL;
     }
 
