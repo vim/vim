@@ -1237,6 +1237,7 @@ func Test_cmdwin_autocmd()
 
   augroup CmdWin
     au!
+    autocmd BufLeave * if &buftype == '' | update | endif
     autocmd CmdwinEnter * startinsert
   augroup END
 
