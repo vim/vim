@@ -127,8 +127,9 @@ if test x"$CLANG_VERSION_STRING" != x"" ; then
   dnl change the constant 500002075 below appropriately.  To get the
   dnl integer corresponding to a version number, refer to the
   dnl definition of CLANG_VERSION above.
+  dnl Clang 11 reports "11", assume Clang 10 and later work like this.
   AC_MSG_CHECKING(if clang supports -fno-strength-reduce)
-  if test "$CLANG_VERSION" -ge 500002075 ; then
+  if test "$CLANG_MAJOR" -ge 10 -o "$CLANG_VERSION" -ge 500002075 ; then
     AC_MSG_RESULT(no)
     CFLAGS=`echo "$CFLAGS" | sed -e 's/-fno-strength-reduce/ /'`
   else

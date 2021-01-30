@@ -4510,9 +4510,9 @@ if test x"$CLANG_VERSION_STRING" != x"" ; then
   CLANG_VERSION=`expr $CLANG_MAJOR '*' 1000000 '+' $CLANG_MINOR '*' 1000 '+' $CLANG_REVISION`
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $CLANG_VERSION" >&5
 $as_echo "$CLANG_VERSION" >&6; }
-          { $as_echo "$as_me:${as_lineno-$LINENO}: checking if clang supports -fno-strength-reduce" >&5
+            { $as_echo "$as_me:${as_lineno-$LINENO}: checking if clang supports -fno-strength-reduce" >&5
 $as_echo_n "checking if clang supports -fno-strength-reduce... " >&6; }
-  if test "$CLANG_VERSION" -ge 500002075 ; then
+  if test "$CLANG_MAJOR" -ge 10 -o "$CLANG_VERSION" -ge 500002075 ; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
     CFLAGS=`echo "$CFLAGS" | sed -e 's/-fno-strength-reduce/ /'`
