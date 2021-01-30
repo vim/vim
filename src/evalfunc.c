@@ -331,6 +331,18 @@ arg_string(type_T *type, argcontext_T *context)
 }
 
 /*
+ * Check "type" is a bool or number 0 or 1.
+ */
+    static int
+arg_bool(type_T *type, argcontext_T *context)
+{
+    if (type->tt_type == VAR_ANY
+		   || type->tt_type == VAR_NUMBER || type->tt_type == VAR_BOOL)
+	return OK;
+    return check_arg_type(&t_bool, type, context);
+}
+
+/*
  * Check "type" is a list or a blob.
  */
     static int
@@ -423,6 +435,7 @@ arg_extend3(type_T *type, argcontext_T *context)
 /*
  * Lists of functions that check the argument types of a builtin function.
  */
+argcheck_T arg3_string_nr_bool[] = {arg_string, arg_number, arg_bool};
 argcheck_T arg1_float_or_nr[] = {arg_float_or_nr};
 argcheck_T arg2_listblob_item[] = {arg_list_or_blob, arg_item_of_prev};
 argcheck_T arg23_extend[] = {arg_list_or_dict, arg_same_as_prev, arg_extend3};
@@ -1552,7 +1565,7 @@ static funcentry_T global_functions[] =
 			ret_float,	    FLOAT_FUNC(f_str2float)},
     {"str2list",	1, 2, FEARG_1,	    NULL,
 			ret_list_number,    f_str2list},
-    {"str2nr",		1, 3, FEARG_1,	    NULL,
+    {"str2nr",		1, 3, FEARG_1,	    arg3_string_nr_bool,
 			ret_number,	    f_str2nr},
     {"strcharpart",	2, 3, FEARG_1,	    NULL,
 			ret_string,	    f_strcharpart},
@@ -9076,7 +9089,7 @@ f_str2nr(typval_T *argvars, typval_T *rettv)
 	    what |= STR2NR_QUOTE;
     }
 
-    p = skipwhite(tv_get_string(&argvars[0]));
+    p = skipwhite(tv_get_string_strict(&argvars[0]));
     isneg = (*p == '-');
     if (*p == '+' || *p == '-')
 	p = skipwhite(p + 1);

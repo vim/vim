@@ -388,6 +388,19 @@ tv_get_string(typval_T *varp)
     return tv_get_string_buf(varp, mybuf);
 }
 
+/*
+ * Like tv_get_string() but don't allow number to string conversion for Vim9.
+ */
+    char_u *
+tv_get_string_strict(typval_T *varp)
+{
+    static char_u   mybuf[NUMBUFLEN];
+    char_u	    *res =  tv_get_string_buf_chk_strict(
+						 varp, mybuf, in_vim9script());
+
+    return res != NULL ? res : (char_u *)"";
+}
+
     char_u *
 tv_get_string_buf(typval_T *varp, char_u *buf)
 {
@@ -410,9 +423,20 @@ tv_get_string_chk(typval_T *varp)
     char_u *
 tv_get_string_buf_chk(typval_T *varp, char_u *buf)
 {
+    return tv_get_string_buf_chk_strict(varp, buf, FALSE);
+}
+
+    char_u *
+tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
+{
     switch (varp->v_type)
     {
 	case VAR_NUMBER:
+	    if (strict)
+	    {
+		emsg(_(e_using_number_as_string));
+		break;
+	    }
 	    vim_snprintf((char *)buf, NUMBUFLEN, "%lld",
 					    (varnumber_T)varp->vval.v_number);
 	    return buf;

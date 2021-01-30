@@ -867,6 +867,13 @@ enddef
 
 def Test_str2nr()
   str2nr("1'000'000", 10, true)->assert_equal(1000000)
+
+  CheckDefFailure(['echo str2nr(123)'], 'E1013:')
+  CheckScriptFailure(['vim9script', 'echo str2nr(123)'], 'E1024:')
+  CheckDefFailure(['echo str2nr("123", "x")'], 'E1013:')
+  CheckScriptFailure(['vim9script', 'echo str2nr("123", "x")'], 'E1030:')
+  CheckDefFailure(['echo str2nr("123", 10, "x")'], 'E1013:')
+  CheckScriptFailure(['vim9script', 'echo str2nr("123", 10, "x")'], 'E1135:')
 enddef
 
 def Test_strchars()
