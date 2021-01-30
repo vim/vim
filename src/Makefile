@@ -2294,9 +2294,12 @@ run_message_test: $(MESSAGE_TEST_TARGET)
 
 # Run the libvterm tests.
 # This works only on GNU make, not on BSD make.
+# Libtool requires "gcc".
 test_libvterm:
 	@if $(MAKE) --version 2>/dev/null | grep -qs "GNU Make"; then \
-		cd libvterm; $(MAKE) -f Makefile test CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"; \
+	  if test -x "/usr/bin/gcc"; then \
+	    cd libvterm; $(MAKE) -f Makefile test CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)"; \
+	  fi \
 	fi
 
 # Run individual OLD style test.
