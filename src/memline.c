@@ -5701,6 +5701,10 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 
     while ((lnum != 0 && curline < lnum) || (offset != 0 && size < offset))
     {
+#ifdef FEAT_PROP_POPUP
+	size_t textprop_total = 0;
+#endif
+
 	if (curline > buf->b_ml.ml_line_count
 		|| (hp = ml_find_line(buf, curline, ML_FIND)) == NULL)
 	    return -1;
@@ -5722,18 +5726,16 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 	}
 	else
 	{
-#ifdef FEAT_PROP_POPUP
-	    size_t textprop_total = 0;
-	    size_t textprop_size = 0;
-	    char_u *l1, *l2;
-#endif
-
 	    extra = 0;
 	    for (;;)
 	    {
 #ifdef FEAT_PROP_POPUP
+		size_t textprop_size = 0;
+
 		if (buf->b_has_textprop)
 		{
+		    char_u *l1, *l2;
+
 		    // compensate for the extra bytes taken by textprops
 		    l1 = (char_u *)dp + ((dp->db_index[idx]) & DB_INDEX_MASK);
 		    l2 = (char_u *)dp + (idx == 0 ? dp->db_txt_end
@@ -5763,7 +5765,7 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 	    }
 	}
 #ifdef FEAT_PROP_POPUP
-	if (buf->b_has_textprop)
+	if (buf->b_has_textprop && lnum != 0)
 	{
 	    int i;
 
@@ -5771,12 +5773,18 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 	    // lengths.
 	    len = 0;
 	    for (i = start_idx; i <= idx; ++i)
-		len += (int)STRLEN((char_u *)dp
-				    + ((dp->db_index[i]) & DB_INDEX_MASK)) + 1;
+	    {
+		char_u *p = (char_u *)dp + ((dp->db_index[i]) & DB_INDEX_MASK);
+		len += (int)STRLEN(p) + 1;
+	    }
 	}
 	else
 #endif
-	    len = text_end - ((dp->db_index[idx]) & DB_INDEX_MASK);
+	    len = text_end - ((dp->db_index[idx]) & DB_INDEX_MASK)
+#ifdef FEAT_PROP_POPUP
+				- (long)textprop_total
+#endif
+				;
 	size += len;
 	if (offset != 0 && size >= offset)
 	{
@@ -5786,7 +5794,11 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 		*offp = offset - size + len;
 	    else
 		*offp = offset - size + len
-		     - (text_end - ((dp->db_index[idx - 1]) & DB_INDEX_MASK));
+		     - (text_end - ((dp->db_index[idx - 1]) & DB_INDEX_MASK))
+#ifdef FEAT_PROP_POPUP
+		     + (long)textprop_total
+#endif
+		     ;
 	    curline += idx - start_idx + extra;
 	    if (curline > buf->b_ml.ml_line_count)
 		return -1;	// exactly one byte beyond the end

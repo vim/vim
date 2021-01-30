@@ -771,6 +771,36 @@ func Test_prop_byte2line()
   call prop_type_delete('prop')
 endfunc
 
+func Test_prop_goto_byte()
+  new
+  call setline(1, '')
+  call setline(2, 'two three')
+  call setline(3, '')
+  call setline(4, 'four five')
+
+  call prop_type_add('testprop', {'highlight': 'Directory'})
+  call search('^two')
+  call prop_add(line('.'), col('.'), {
+        \ 'length': len('two'),
+        \ 'type':   'testprop'
+        \ })
+
+  call search('two \zsthree')
+  let expected_pos = line2byte(line('.')) + col('.') - 1
+  exe expected_pos .. 'goto'
+  let actual_pos = line2byte(line('.')) + col('.') - 1
+  eval actual_pos->assert_equal(expected_pos)
+
+  call search('four \zsfive')
+  let expected_pos = line2byte(line('.')) + col('.') - 1
+  exe expected_pos .. 'goto'
+  let actual_pos = line2byte(line('.')) + col('.') - 1
+  eval actual_pos->assert_equal(expected_pos)
+
+  call prop_type_delete('testprop')
+  bwipe!
+endfunc
+
 func Test_prop_undo()
   new
   call prop_type_add('comment', {'highlight': 'Directory'})
