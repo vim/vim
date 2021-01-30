@@ -1868,6 +1868,34 @@ func Test_xx07_xterm_response()
   call test_override('term_props', 0)
 endfunc
 
+func Test_focus_events()
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  set term=xterm ttymouse=xterm2
+
+  au FocusGained * let g:focus_gained += 1
+  au FocusLost * let g:focus_lost += 1
+  let g:focus_gained = 0
+  let g:focus_lost = 0
+
+  call feedkeys("\<Esc>[O", "Lx!")
+  call assert_equal(1, g:focus_lost)
+  call feedkeys("\<Esc>[I", "Lx!")
+  call assert_equal(1, g:focus_gained)
+
+  " still works when 'ttymouse' is empty
+  set ttymouse=
+  call feedkeys("\<Esc>[O", "Lx!")
+  call assert_equal(2, g:focus_lost)
+  call feedkeys("\<Esc>[I", "Lx!")
+  call assert_equal(2, g:focus_gained)
+
+  au! FocusGained
+  au! FocusLost
+  let &term = save_term
+  let &ttymouse = save_ttymouse
+endfunc
+
 func Test_get_termcode()
   try
     let k1 = &t_k1
@@ -2261,7 +2289,7 @@ func Test_cmdline_literal()
 endfunc
 
 " Test for translation of special key codes (<xF1>, <xF2>, etc.)
-func Test_Keycode_Tranlsation()
+func Test_Keycode_Translation()
   let keycodes = [
         \ ["<xUp>", "<Up>"],
         \ ["<xDown>", "<Down>"],

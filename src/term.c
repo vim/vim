@@ -5339,6 +5339,8 @@ check_termcode(
 	else
 #endif // FEAT_GUI
 	{
+	    int  mouse_index_found = -1;
+
 	    for (idx = 0; idx < tc_len; ++idx)
 	    {
 		/*
@@ -5376,9 +5378,24 @@ check_termcode(
 			    }
 		    }
 
-		    key_name[0] = termcodes[idx].name[0];
-		    key_name[1] = termcodes[idx].name[1];
-		    break;
+		    // The mouse termcode "ESC [" is also the prefix of
+		    // "ESC [ I" (focus gained).  Only use it when there is
+		    // no other match.  Do use it when a digit is following to
+		    // avoid waiting for more bytes.
+		    if (slen == 2 && len > 2
+			    && termcodes[idx].code[0] == ESC
+			    && termcodes[idx].code[1] == '['
+			    && !isdigit(tp[2]))
+		    {
+			if (mouse_index_found < 0)
+			    mouse_index_found = idx;
+		    }
+		    else
+		    {
+			key_name[0] = termcodes[idx].name[0];
+			key_name[1] = termcodes[idx].name[1];
+			break;
+		    }
 		}
 
 		/*
@@ -5389,7 +5406,7 @@ check_termcode(
 		 * When there is a modifier the * matches a number.
 		 * When there is no modifier the ;* or * is omitted.
 		 */
-		if (termcodes[idx].modlen > 0)
+		if (termcodes[idx].modlen > 0 && mouse_index_found < 0)
 		{
 		    int at_code;
 
@@ -5441,6 +5458,11 @@ check_termcode(
 			break;
 		    }
 		}
+	    }
+	    if (idx == tc_len && mouse_index_found >= 0)
+	    {
+		key_name[0] = termcodes[mouse_index_found].name[0];
+		key_name[1] = termcodes[mouse_index_found].name[1];
 	    }
 	}
 
