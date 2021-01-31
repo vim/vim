@@ -9262,6 +9262,7 @@ $as_echo "no GUI support" >&6; } ;;
 $as_echo "yes/auto - automatic GUI support" >&6; }
 		gui_auto=yes
 		SKIP_GTK2=
+		SKIP_GTK3=
 		SKIP_GNOME=
 		SKIP_MOTIF=
 		SKIP_ATHENA=
@@ -9523,6 +9524,8 @@ $as_echo "gtk test disabled" >&6; }
   fi
 
   if test "x$PKG_CONFIG" != "xno"; then
+                    save_skip_gtk3=$SKIP_GTK3
+    SKIP_GTK3=YES
 
   if test "X$GTK_CONFIG" != "Xno" -o "X$PKG_CONFIG" != "Xno"; then
   {
@@ -9666,6 +9669,8 @@ $as_echo "no" >&6; }
       SKIP_MOTIF=YES
       GUITYPE=GTK
 
+    else
+      SKIP_GTK3=$save_skip_gtk3
     fi
   fi
   if test "x$GUITYPE" = "xGTK"; then
@@ -9778,6 +9783,8 @@ $as_echo "gtk test disabled" >&6; }
   fi
 
   if test "x$PKG_CONFIG" != "xno"; then
+    save_skip_gtk2=$SKIP_GTK2
+    SKIP_GTK2=YES
 
   if test "X$GTK_CONFIG" != "Xno" -o "X$PKG_CONFIG" != "Xno"; then
   {
@@ -9924,6 +9931,8 @@ $as_echo "no" >&6; }
 
       $as_echo "#define USE_GTK3 1" >>confdefs.h
 
+    else
+      SKIP_GTK2=$save_skip_gtk2
     fi
   fi
 fi

@@ -2448,6 +2448,7 @@ else
     yes|""|auto)	AC_MSG_RESULT(yes/auto - automatic GUI support)
 		gui_auto=yes
 		SKIP_GTK2=
+		SKIP_GTK3=
 		SKIP_GNOME=
 		SKIP_MOTIF=
 		SKIP_ATHENA=
@@ -2759,6 +2760,10 @@ if test -z "$SKIP_GTK2"; then
   if test "x$PKG_CONFIG" != "xno"; then
     dnl First try finding version 2.2.0 or later.  The 2.0.x series has
     dnl problems (bold fonts, --remote doesn't work).
+    dnl Disable checking for GTK3 here, otherwise it's found when GTK2 is not
+    dnl found.
+    save_skip_gtk3=$SKIP_GTK3
+    SKIP_GTK3=YES
     AM_PATH_GTK(2.2.0,
 		[GUI_LIB_LOC="$GTK_LIBDIR"
 		 GTK_LIBNAME="$GTK_LIBS"
@@ -2770,6 +2775,8 @@ if test -z "$SKIP_GTK2"; then
       SKIP_MOTIF=YES
       GUITYPE=GTK
       AC_SUBST(GTK_LIBNAME)
+    else
+      SKIP_GTK3=$save_skip_gtk3
     fi
   fi
   if test "x$GUITYPE" = "xGTK"; then
@@ -2805,6 +2812,8 @@ if test -z "$SKIP_GTK3"; then
   fi
 
   if test "x$PKG_CONFIG" != "xno"; then
+    save_skip_gtk2=$SKIP_GTK2
+    SKIP_GTK2=YES
     AM_PATH_GTK(3.0.0,
 		[GUI_LIB_LOC="$GTK_LIBDIR"
 		 GTK_LIBNAME="$GTK_LIBS"
@@ -2818,6 +2827,8 @@ if test -z "$SKIP_GTK3"; then
       GUITYPE=GTK
       AC_SUBST(GTK_LIBNAME)
       AC_DEFINE(USE_GTK3)
+    else
+      SKIP_GTK2=$save_skip_gtk2
     fi
   fi
 fi
