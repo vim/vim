@@ -16933,7 +16933,7 @@ Solution:   Add #ifdefs.
 Files:      src/screen.c
 
 Patch 8.0.0383 (after 8.0.0382)
-Problem:    Misplaced #ifdef. (Christ van Willigen)
+Problem:    Misplaced #ifdef. (Christ van Willegen)
 Solution:   Split assignment.
 Files:      src/screen.c
 
@@ -19612,7 +19612,7 @@ Files:      Filelist
 
 Patch 8.0.0815
 Problem:    Terminal window not correctly updated when 'statusline' invokes
-            ":sleep". (NIkolay Pavlov)
+            ":sleep". (Nikolay Pavlov)
 Solution:   Clear got_int.  Repeat redrawing when needed.
 Files:      src/terminal.c
 

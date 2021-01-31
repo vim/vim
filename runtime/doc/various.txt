@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.2.  Last change: 2021 Jan 16
+*various.txt*   For Vim version 8.2.  Last change: 2021 Jan 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -345,8 +345,9 @@ N  *+clientserver*	Unix and Win32: Remote invocation |clientserver|
    *+clipboard*		|clipboard| support compiled-in
    *+clipboard_working*	|clipboard| support compiled-in and working
 T  *+cmdline_compl*	command line completion |cmdline-completion|
-S  *+cmdline_hist*	command line history |cmdline-history|
+T  *+cmdline_hist*	command line history |cmdline-history|
 N  *+cmdline_info*	|'showcmd'| and |'ruler'|
+S  *+cmdwin*		|cmdline-window| support
 T  *+comments*		|'comments'| support
 B  *+conceal*		"conceal" support, see |conceal| |:syn-conceal| etc.
 N  *+cryptv*		encryption support |encryption|
