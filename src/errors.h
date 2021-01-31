@@ -349,3 +349,5 @@ EXTERN char e_cannot_define_autocommands_for_all_events[]
 	INIT(= N_("E1155: Cannot define autocommands for ALL events"));
 EXTERN char e_cannot_change_arglist_recursively[]
 	INIT(= N_("E1156: Cannot change the argument list recursively"));
+EXTERN char e_missing_return_type[]
+	INIT(= N_("E1157: Missing return type"));

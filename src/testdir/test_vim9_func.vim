@@ -687,6 +687,13 @@ def Test_call_lambda_args()
   CheckDefAndScriptFailure(lines, 'E1012:')
 enddef
 
+def Test_lambda_return_type()
+  var lines =<< trim END
+    var Ref = (): => 123
+  END
+  CheckDefAndScriptFailure(lines, 'E1157:', 1)
+enddef
+
 def Test_lambda_uses_assigned_var()
   CheckDefSuccess([
         'var x: any = "aaa"'

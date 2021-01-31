@@ -491,6 +491,11 @@ skip_arrow(
 	    s = skipwhite(s + 1);
 	    *ret_type = s;
 	    s = skip_type(s, TRUE);
+	    if (s == *ret_type)
+	    {
+		emsg(_(e_missing_return_type));
+		return NULL;
+	    }
 	}
 	bef = s;
 	s = skipwhite(s);
@@ -543,6 +548,7 @@ get_lambda_tv(
     char_u	*tofree2 = NULL;
     int		equal_arrow = **arg == '(';
     int		white_error = FALSE;
+    int		called_emsg_start = called_emsg;
 
     if (equal_arrow && !in_vim9script())
 	return NOTDONE;
@@ -560,7 +566,7 @@ get_lambda_tv(
     {
 	if (types_optional)
 	    ga_clear_strings(&argtypes);
-	return NOTDONE;
+	return called_emsg == called_emsg_start ? NOTDONE : FAIL;
     }
 
     // Parse the arguments for real.
