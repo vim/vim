@@ -1649,8 +1649,8 @@ typedef struct
 
     char_u	*uf_name_exp;	// if "uf_name[]" starts with SNR the name with
 				// "<SNR>" as a string, otherwise NULL
-    char_u	uf_name[1];	// name of function (actually longer); can
-				// start with <SNR>123_ (<SNR> is K_SPECIAL
+    char_u	uf_name[4];	// name of function (actual size equals name);
+				// can start with <SNR>123_ (<SNR> is K_SPECIAL
 				// KS_EXTRA KE_SNR)
 } ufunc_T;
 
