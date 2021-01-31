@@ -240,19 +240,24 @@ def Test_expand()
 enddef
 
 def Test_extend_arg_types()
-  assert_equal([1, 2, 3], extend([1, 2], [3]))
-  assert_equal([3, 1, 2], extend([1, 2], [3], 0))
-  assert_equal([1, 3, 2], extend([1, 2], [3], 1))
-  assert_equal([1, 3, 2], extend([1, 2], [3], s:number_one))
+  g:number_one = 1
+  g:string_keep = 'keep'
+  var lines =<< trim END
+      assert_equal([1, 2, 3], extend([1, 2], [3]))
+      assert_equal([3, 1, 2], extend([1, 2], [3], 0))
+      assert_equal([1, 3, 2], extend([1, 2], [3], 1))
+      assert_equal([1, 3, 2], extend([1, 2], [3], g:number_one))
 
-  assert_equal({a: 1, b: 2, c: 3}, extend({a: 1, b: 2}, {c: 3}))
-  assert_equal({a: 1, b: 4}, extend({a: 1, b: 2}, {b: 4}))
-  assert_equal({a: 1, b: 2}, extend({a: 1, b: 2}, {b: 4}, 'keep'))
-  assert_equal({a: 1, b: 2}, extend({a: 1, b: 2}, {b: 4}, s:string_keep))
+      assert_equal({a: 1, b: 2, c: 3}, extend({a: 1, b: 2}, {c: 3}))
+      assert_equal({a: 1, b: 4}, extend({a: 1, b: 2}, {b: 4}))
+      assert_equal({a: 1, b: 2}, extend({a: 1, b: 2}, {b: 4}, 'keep'))
+      assert_equal({a: 1, b: 2}, extend({a: 1, b: 2}, {b: 4}, g:string_keep))
 
-  var res: list<dict<any>>
-  extend(res, mapnew([1, 2], (_, v) => ({})))
-  assert_equal([{}, {}], res)
+      var res: list<dict<any>>
+      extend(res, mapnew([1, 2], (_, v) => ({})))
+      assert_equal([{}, {}], res)
+  END
+  CheckDefAndScriptSuccess(lines)
 
   CheckDefFailure(['extend([1, 2], 3)'], 'E1013: Argument 2: type mismatch, expected list<number> but got number')
   CheckDefFailure(['extend([1, 2], ["x"])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>')
@@ -300,8 +305,7 @@ def Test_extend_dict_item_type()
        var d: dict<number> = {a: 1}
        extend(d, {b: 'x'})
   END
-  CheckDefFailure(lines, 'E1013: Argument 2: type mismatch, expected dict<number> but got dict<string>', 2)
-  CheckScriptFailure(['vim9script'] + lines, 'E1012:', 3)
+  CheckDefAndScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected dict<number> but got dict<string>', 2)
 
   lines =<< trim END
        var d: dict<number> = {a: 1}
@@ -326,8 +330,7 @@ def Test_extend_list_item_type()
        var l: list<number> = [1]
        extend(l, ['x'])
   END
-  CheckDefFailure(lines, 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>', 2)
-  CheckScriptFailure(['vim9script'] + lines, 'E1012:', 3)
+  CheckDefAndScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>', 2)
 
   lines =<< trim END
        var l: list<number> = [1]
