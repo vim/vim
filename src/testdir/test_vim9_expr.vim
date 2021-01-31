@@ -1083,6 +1083,9 @@ def Test_expr5()
         assert_equal('a0.123', 'a' .. 0.123)
       endif
 
+      assert_equal(3, 1 + [2, 3, 4][0])
+      assert_equal(5, 2 + {key: 3}['key'])
+
       set digraph
       assert_equal('val: true', 'val: ' .. &digraph)
       set nodigraph

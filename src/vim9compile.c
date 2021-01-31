@@ -4121,13 +4121,17 @@ compile_expr7(
 	/*
 	 * List: [expr, expr]
 	 */
-	case '[':   ret = compile_list(arg, cctx, ppconst);
+	case '[':   if (generate_ppconst(cctx, ppconst) == FAIL)
+			return FAIL;
+		    ret = compile_list(arg, cctx, ppconst);
 		    break;
 
 	/*
 	 * Dictionary: {'key': val, 'key': val}
 	 */
-	case '{':   ret = compile_dict(arg, cctx, ppconst);
+	case '{':   if (generate_ppconst(cctx, ppconst) == FAIL)
+			return FAIL;
+		    ret = compile_dict(arg, cctx, ppconst);
 		    break;
 
 	/*
