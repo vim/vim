@@ -435,6 +435,7 @@ arg_extend3(type_T *type, argcontext_T *context)
 /*
  * Lists of functions that check the argument types of a builtin function.
  */
+argcheck_T arg1_string[] = {arg_string};
 argcheck_T arg3_string_nr_bool[] = {arg_string, arg_number, arg_bool};
 argcheck_T arg1_float_or_nr[] = {arg_float_or_nr};
 argcheck_T arg2_listblob_item[] = {arg_list_or_blob, arg_item_of_prev};
@@ -1561,7 +1562,7 @@ static funcentry_T global_functions[] =
 			ret_list_number,    f_srand},
     {"state",		0, 1, FEARG_1,	    NULL,
 			ret_string,	    f_state},
-    {"str2float",	1, 1, FEARG_1,	    NULL,
+    {"str2float",	1, 1, FEARG_1,	    arg1_string,
 			ret_float,	    FLOAT_FUNC(f_str2float)},
     {"str2list",	1, 2, FEARG_1,	    NULL,
 			ret_list_number,    f_str2list},

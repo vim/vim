@@ -916,6 +916,18 @@ def Test_split()
   split('  aa  bb  ', '\W\+', true)->assert_equal(['', 'aa', 'bb', ''])
 enddef
 
+def Run_str2float()
+  if !has('float')
+    MissingFeature 'float'
+  endif
+    str2float("1.00")->assert_equal(1.00)
+    str2float("2e-2")->assert_equal(0.02)
+
+    CheckDefFailure(['echo str2float(123)'], 'E1013:')
+    CheckScriptFailure(['vim9script', 'echo str2float(123)'], 'E1024:')
+  endif
+enddef
+
 def Test_str2nr()
   str2nr("1'000'000", 10, true)->assert_equal(1000000)
 
