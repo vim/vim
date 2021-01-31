@@ -940,9 +940,9 @@ debuggy_find(
 	    {
 		if (bp->dbg_val == NULL)
 		{
-		    debug_oldval = typval_tostring(NULL);
+		    debug_oldval = typval_tostring(NULL, TRUE);
 		    bp->dbg_val = tv;
-		    debug_newval = typval_tostring(bp->dbg_val);
+		    debug_newval = typval_tostring(bp->dbg_val, TRUE);
 		    line = TRUE;
 		}
 		else
@@ -953,11 +953,11 @@ debuggy_find(
 			typval_T *v;
 
 			line = TRUE;
-			debug_oldval = typval_tostring(bp->dbg_val);
+			debug_oldval = typval_tostring(bp->dbg_val, TRUE);
 			// Need to evaluate again, typval_compare() overwrites
 			// "tv".
 			v = eval_expr(bp->dbg_name, NULL);
-			debug_newval = typval_tostring(v);
+			debug_newval = typval_tostring(v, TRUE);
 			free_tv(bp->dbg_val);
 			bp->dbg_val = v;
 		    }
@@ -966,8 +966,8 @@ debuggy_find(
 	    }
 	    else if (bp->dbg_val != NULL)
 	    {
-		debug_oldval = typval_tostring(bp->dbg_val);
-		debug_newval = typval_tostring(NULL);
+		debug_oldval = typval_tostring(bp->dbg_val, TRUE);
+		debug_newval = typval_tostring(NULL, TRUE);
 		free_tv(bp->dbg_val);
 		bp->dbg_val = NULL;
 		line = TRUE;

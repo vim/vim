@@ -879,7 +879,7 @@ do_2string(typval_T *tv, int is_2string_any)
 				return FAIL;
 	    }
 	}
-	str = typval_tostring(tv);
+	str = typval_tostring(tv, TRUE);
 	clear_tv(tv);
 	tv->v_type = VAR_STRING;
 	tv->vval.v_string = str;

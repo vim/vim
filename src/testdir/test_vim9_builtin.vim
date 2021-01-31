@@ -767,6 +767,54 @@ def Test_searchcount()
   bwipe!
 enddef
 
+def Test_set_get_bufline()
+  # similar to Test_setbufline_getbufline()
+  var lines =<< trim END
+      new
+      var b = bufnr('%')
+      hide
+      assert_equal(0, setbufline(b, 1, ['foo', 'bar']))
+      assert_equal(['foo'], getbufline(b, 1))
+      assert_equal(['bar'], getbufline(b, '$'))
+      assert_equal(['foo', 'bar'], getbufline(b, 1, 2))
+      exe "bd!" b
+      assert_equal([], getbufline(b, 1, 2))
+
+      split Xtest
+      setline(1, ['a', 'b', 'c'])
+      b = bufnr('%')
+      wincmd w
+
+      assert_equal(1, setbufline(b, 5, 'x'))
+      assert_equal(1, setbufline(b, 5, ['x']))
+      assert_equal(1, setbufline(b, 5, []))
+      assert_equal(1, setbufline(b, 5, test_null_list()))
+
+      assert_equal(1, 'x'->setbufline(bufnr('$') + 1, 1))
+      assert_equal(1, ['x']->setbufline(bufnr('$') + 1, 1))
+      assert_equal(1, []->setbufline(bufnr('$') + 1, 1))
+      assert_equal(1, test_null_list()->setbufline(bufnr('$') + 1, 1))
+
+      assert_equal(['a', 'b', 'c'], getbufline(b, 1, '$'))
+
+      assert_equal(0, setbufline(b, 4, ['d', 'e']))
+      assert_equal(['c'], b->getbufline(3))
+      assert_equal(['d'], getbufline(b, 4))
+      assert_equal(['e'], getbufline(b, 5))
+      assert_equal([], getbufline(b, 6))
+      assert_equal([], getbufline(b, 2, 1))
+
+      setbufline(b, 2, [function('eval'), {key: 123}, test_null_job()])
+      assert_equal(["function('eval')",
+                      "{'key': 123}",
+                      "no process"],
+                      getbufline(b, 2, 4))
+
+      exe 'bwipe! ' .. b
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
 def Test_searchdecl()
   searchdecl('blah', true, true)->assert_equal(1)
 enddef
