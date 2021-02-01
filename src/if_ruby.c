@@ -524,7 +524,11 @@ static void (*dll_rb_gc_writebarrier_unprotect)(VALUE obj);
 # endif
 
 # if RUBY_VERSION >= 30
+#  ifdef _MSC_VER
 static void (*dll_ruby_malloc_size_overflow)(size_t, size_t);
+#  else
+NORETURN(static void (*dll_ruby_malloc_size_overflow)(size_t, size_t));
+#  endif
 # endif
 
 # if RUBY_VERSION >= 26
