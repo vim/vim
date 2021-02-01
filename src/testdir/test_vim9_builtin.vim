@@ -382,6 +382,23 @@ def Test_findfile()
   CheckDefExecFailure(['echo findfile("")'], 'E1142:')
 enddef
 
+def Test_flattennew()
+  var lines =<< trim END
+      var l = [1, [2, [3, 4]], 5]
+      call assert_equal([1, 2, 3, 4, 5], flattennew(l))
+      call assert_equal([1, [2, [3, 4]], 5], l)
+
+      call assert_equal([1, 2, [3, 4], 5], flattennew(l, 1))
+      call assert_equal([1, [2, [3, 4]], 5], l)
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      echo flatten([1, 2, 3])
+  END
+  CheckDefAndScriptFailure(lines, 'E1158:')
+enddef
+
 def Test_fnamemodify()
   CheckDefSuccess(['echo fnamemodify(test_null_string(), ":p")'])
   CheckDefSuccess(['echo fnamemodify("", ":p")'])

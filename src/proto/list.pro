@@ -31,6 +31,7 @@ int list_append_number(list_T *l, varnumber_T n);
 int list_insert_tv(list_T *l, typval_T *tv, listitem_T *item);
 void list_insert(list_T *l, listitem_T *ni, listitem_T *item);
 void f_flatten(typval_T *argvars, typval_T *rettv);
+void f_flattennew(typval_T *argvars, typval_T *rettv);
 int list_extend(list_T *l1, list_T *l2, listitem_T *bef);
 int list_concat(list_T *l1, list_T *l2, typval_T *tv);
 list_T *list_slice(list_T *ol, long n1, long n2);

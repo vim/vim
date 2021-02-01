@@ -954,6 +954,8 @@ static funcentry_T global_functions[] =
 			ret_string,	    f_findfile},
     {"flatten",		1, 2, FEARG_1,	    NULL,
 			ret_list_any,	    f_flatten},
+    {"flattennew",	1, 2, FEARG_1,	    NULL,
+			ret_list_any,	    f_flattennew},
     {"float2nr",	1, 1, FEARG_1,	    NULL,
 			ret_number,	    FLOAT_FUNC(f_float2nr)},
     {"floor",		1, 1, FEARG_1,	    NULL,

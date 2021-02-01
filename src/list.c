@@ -740,7 +740,7 @@ list_insert(list_T *l, listitem_T *ni, listitem_T *item)
  * It does nothing if "maxdepth" is 0.
  * Returns FAIL when out of memory.
  */
-    static int
+    static void
 list_flatten(list_T *list, long maxdepth)
 {
     listitem_T	*item;
@@ -748,7 +748,7 @@ list_flatten(list_T *list, long maxdepth)
     int		n;
 
     if (maxdepth == 0)
-	return OK;
+	return;
     CHECK_LIST_MATERIALIZE(list);
 
     n = 0;
@@ -757,7 +757,7 @@ list_flatten(list_T *list, long maxdepth)
     {
 	fast_breakcheck();
 	if (got_int)
-	    return FAIL;
+	    return;
 
 	if (item->li_tv.v_type == VAR_LIST)
 	{
@@ -765,7 +765,7 @@ list_flatten(list_T *list, long maxdepth)
 
 	    vimlist_remove(list, item, item);
 	    if (list_extend(list, item->li_tv.vval.v_list, next) == FAIL)
-		return FAIL;
+		return;
 	    clear_tv(&item->li_tv);
 	    tofree = item;
 
@@ -787,15 +787,13 @@ list_flatten(list_T *list, long maxdepth)
 	    item = item->li_next;
 	}
     }
-
-    return OK;
 }
 
 /*
- * "flatten(list[, {maxdepth}])" function
+ * "flatten()" and "flattennew()" functions
  */
-    void
-f_flatten(typval_T *argvars, typval_T *rettv)
+    static void
+flatten_common(typval_T *argvars, typval_T *rettv, int make_copy)
 {
     list_T  *l;
     long    maxdepth;
@@ -822,10 +820,48 @@ f_flatten(typval_T *argvars, typval_T *rettv)
     }
 
     l = argvars[0].vval.v_list;
-    if (l != NULL && !value_check_lock(l->lv_lock,
-				      (char_u *)N_("flatten() argument"), TRUE)
-		 && list_flatten(l, maxdepth) == OK)
-	copy_tv(&argvars[0], rettv);
+    rettv->v_type = VAR_LIST;
+    rettv->vval.v_list = l;
+    if (l == NULL)
+	return;
+
+    if (make_copy)
+    {
+	l = list_copy(l, TRUE, get_copyID());
+	rettv->vval.v_list = l;
+	if (l == NULL)
+	    return;
+    }
+    else
+    {
+	if (value_check_lock(l->lv_lock,
+				     (char_u *)N_("flatten() argument"), TRUE))
+	    return;
+	++l->lv_refcount;
+    }
+
+    list_flatten(l, maxdepth);
+}
+
+/*
+ * "flatten(list[, {maxdepth}])" function
+ */
+    void
+f_flatten(typval_T *argvars, typval_T *rettv)
+{
+    if (in_vim9script())
+	emsg(_(e_cannot_use_flatten_in_vim9_script));
+    else
+	flatten_common(argvars, rettv, FALSE);
+}
+
+/*
+ * "flattennew(list[, {maxdepth}])" function
+ */
+    void
+f_flattennew(typval_T *argvars, typval_T *rettv)
+{
+    flatten_common(argvars, rettv, TRUE);
 }
 
 /*

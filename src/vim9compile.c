@@ -2900,6 +2900,12 @@ compile_call(
 	idx = find_internal_func(name);
 	if (idx >= 0)
 	{
+	    if (STRCMP(name, "flatten") == 0)
+	    {
+		emsg(_(e_cannot_use_flatten_in_vim9_script));
+		goto theend;
+	    }
+
 	    if (STRCMP(name, "add") == 0 && argcount == 2)
 	    {
 		garray_T    *stack = &cctx->ctx_type_stack;
