@@ -3309,7 +3309,7 @@ foldlevelExpr(fline_T *flp)
     // KeyTyped may be reset to 0 when calling a function which invokes
     // do_cmdline().  To make 'foldopen' work correctly restore KeyTyped.
     save_keytyped = KeyTyped;
-    n = (int)eval_foldexpr(flp->wp->w_p_fde, &c);
+    n = eval_foldexpr(flp->wp->w_p_fde, &c);
     KeyTyped = save_keytyped;
 
     switch (c)
@@ -3526,7 +3526,8 @@ put_folds(FILE *fd, win_T *wp)
     if (foldmethodIsManual(wp))
     {
 	if (put_line(fd, "silent! normal! zE") == FAIL
-		|| put_folds_recurse(fd, &wp->w_folds, (linenr_T)0) == FAIL)
+		|| put_folds_recurse(fd, &wp->w_folds, (linenr_T)0) == FAIL
+		|| put_line(fd, "let &fdl = &fdl") == FAIL)
 	    return FAIL;
     }
 
