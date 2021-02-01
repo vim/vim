@@ -7262,17 +7262,17 @@ copy_infostreams(char_u *from, char_u *to)
 # define STATUS_SUCCESS	    ((NTSTATUS) 0x00000000L)
 #endif
 
-typedef struct _FILE_FULL_EA_INFORMATION {
+typedef struct _FILE_FULL_EA_INFORMATION_ {
     ULONG  NextEntryOffset;
     UCHAR  Flags;
     UCHAR  EaNameLength;
     USHORT EaValueLength;
     CHAR   EaName[1];
-} FILE_FULL_EA_INFORMATION, *PFILE_FULL_EA_INFORMATION;
+} FILE_FULL_EA_INFORMATION_, *PFILE_FULL_EA_INFORMATION_;
 
-typedef struct _FILE_EA_INFORMATION {
+typedef struct _FILE_EA_INFORMATION_ {
     ULONG EaSize;
-} FILE_EA_INFORMATION, *PFILE_EA_INFORMATION;
+} FILE_EA_INFORMATION_, *PFILE_EA_INFORMATION_;
 
 typedef NTSTATUS (NTAPI *PfnNtOpenFile)(
 	PHANDLE FileHandle,
@@ -7364,16 +7364,16 @@ load_ntdll(void)
     static void
 copy_extattr(char_u *from, char_u *to)
 {
-    char_u		*fromf = NULL;
-    char_u		*tof = NULL;
-    WCHAR		*fromw = NULL;
-    WCHAR		*tow = NULL;
-    UNICODE_STRING	u;
-    HANDLE		h;
-    OBJECT_ATTRIBUTES	oa;
-    IO_STATUS_BLOCK	iosb;
-    FILE_EA_INFORMATION	eainfo = {0};
-    void		*ea = NULL;
+    char_u		    *fromf = NULL;
+    char_u		    *tof = NULL;
+    WCHAR		    *fromw = NULL;
+    WCHAR		    *tow = NULL;
+    UNICODE_STRING	    u;
+    HANDLE		    h;
+    OBJECT_ATTRIBUTES	    oa;
+    IO_STATUS_BLOCK	    iosb;
+    FILE_EA_INFORMATION_    eainfo = {0};
+    void		    *ea = NULL;
 
     if (!load_ntdll())
 	return;
