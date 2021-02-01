@@ -687,7 +687,7 @@ did_set_string_option(
 	if (T_NAME[0] == NUL)
 	    errmsg = N_("E529: Cannot set 'term' to empty string");
 #ifdef FEAT_GUI
-	if (gui.in_use)
+	else if (gui.in_use)
 	    errmsg = N_("E530: Cannot change term in GUI");
 	else if (term_is_gui(T_NAME))
 	    errmsg = N_("E531: Use \":gui\" to start the GUI");
