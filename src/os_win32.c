@@ -33,6 +33,7 @@
 // cproto fails on missing include files
 #ifndef PROTO
 # include <process.h>
+# include <winternl.h>
 #endif
 
 #undef chdir
@@ -7254,6 +7255,184 @@ copy_infostreams(char_u *from, char_u *to)
 }
 
 /*
+ * ntdll.dll definitions
+ */
+#define FileEaInformation   7
+#ifndef STATUS_SUCCESS
+# define STATUS_SUCCESS	    ((NTSTATUS) 0x00000000L)
+#endif
+
+typedef struct _FILE_FULL_EA_INFORMATION_ {
+    ULONG  NextEntryOffset;
+    UCHAR  Flags;
+    UCHAR  EaNameLength;
+    USHORT EaValueLength;
+    CHAR   EaName[1];
+} FILE_FULL_EA_INFORMATION_, *PFILE_FULL_EA_INFORMATION_;
+
+typedef struct _FILE_EA_INFORMATION_ {
+    ULONG EaSize;
+} FILE_EA_INFORMATION_, *PFILE_EA_INFORMATION_;
+
+typedef NTSTATUS (NTAPI *PfnNtOpenFile)(
+	PHANDLE FileHandle,
+	ACCESS_MASK DesiredAccess,
+	POBJECT_ATTRIBUTES ObjectAttributes,
+	PIO_STATUS_BLOCK IoStatusBlock,
+	ULONG ShareAccess,
+	ULONG OpenOptions);
+typedef NTSTATUS (NTAPI *PfnNtClose)(
+	HANDLE Handle);
+typedef NTSTATUS (NTAPI *PfnNtSetEaFile)(
+	HANDLE           FileHandle,
+	PIO_STATUS_BLOCK IoStatusBlock,
+	PVOID            Buffer,
+	ULONG            Length);
+typedef NTSTATUS (NTAPI *PfnNtQueryEaFile)(
+	HANDLE FileHandle,
+	PIO_STATUS_BLOCK IoStatusBlock,
+	PVOID Buffer,
+	ULONG Length,
+	BOOLEAN ReturnSingleEntry,
+	PVOID EaList,
+	ULONG EaListLength,
+	PULONG EaIndex,
+	BOOLEAN RestartScan);
+typedef NTSTATUS (NTAPI *PfnNtQueryInformationFile)(
+	HANDLE                 FileHandle,
+	PIO_STATUS_BLOCK       IoStatusBlock,
+	PVOID                  FileInformation,
+	ULONG                  Length,
+	FILE_INFORMATION_CLASS FileInformationClass);
+typedef VOID (NTAPI *PfnRtlInitUnicodeString)(
+	PUNICODE_STRING DestinationString,
+	PCWSTR SourceString);
+
+PfnNtOpenFile pNtOpenFile = NULL;
+PfnNtClose pNtClose = NULL;
+PfnNtSetEaFile pNtSetEaFile = NULL;
+PfnNtQueryEaFile pNtQueryEaFile = NULL;
+PfnNtQueryInformationFile pNtQueryInformationFile = NULL;
+PfnRtlInitUnicodeString pRtlInitUnicodeString = NULL;
+
+/*
+ * Load ntdll.dll functions.
+ */
+    static BOOL
+load_ntdll(void)
+{
+    static int	loaded = -1;
+
+    if (loaded == -1)
+    {
+	HMODULE hNtdll = GetModuleHandle("ntdll.dll");
+	if (hNtdll != NULL)
+	{
+	    pNtOpenFile = (PfnNtOpenFile) GetProcAddress(hNtdll, "NtOpenFile");
+	    pNtClose = (PfnNtClose) GetProcAddress(hNtdll, "NtClose");
+	    pNtSetEaFile = (PfnNtSetEaFile)
+		GetProcAddress(hNtdll, "NtSetEaFile");
+	    pNtQueryEaFile = (PfnNtQueryEaFile)
+		GetProcAddress(hNtdll, "NtQueryEaFile");
+	    pNtQueryInformationFile = (PfnNtQueryInformationFile)
+		GetProcAddress(hNtdll, "NtQueryInformationFile");
+	    pRtlInitUnicodeString = (PfnRtlInitUnicodeString)
+		GetProcAddress(hNtdll, "RtlInitUnicodeString");
+	}
+	if (pNtOpenFile == NULL
+		|| pNtClose == NULL
+		|| pNtSetEaFile == NULL
+		|| pNtQueryEaFile == NULL
+		|| pNtQueryInformationFile == NULL
+		|| pRtlInitUnicodeString == NULL)
+	    loaded = FALSE;
+	else
+	    loaded = TRUE;
+    }
+    return (BOOL) loaded;
+}
+
+/*
+ * Copy extended attributes (EA) from file "from" to file "to".
+ */
+    static void
+copy_extattr(char_u *from, char_u *to)
+{
+    char_u		    *fromf = NULL;
+    char_u		    *tof = NULL;
+    WCHAR		    *fromw = NULL;
+    WCHAR		    *tow = NULL;
+    UNICODE_STRING	    u;
+    HANDLE		    h;
+    OBJECT_ATTRIBUTES	    oa;
+    IO_STATUS_BLOCK	    iosb;
+    FILE_EA_INFORMATION_    eainfo = {0};
+    void		    *ea = NULL;
+
+    if (!load_ntdll())
+	return;
+
+    // Convert the file names to the fully qualified object names.
+    fromf = alloc(STRLEN(from) + 5);
+    tof = alloc(STRLEN(to) + 5);
+    if (fromf == NULL || tof == NULL)
+	goto theend;
+    STRCPY(fromf, "\\??\\");
+    STRCAT(fromf, from);
+    STRCPY(tof, "\\??\\");
+    STRCAT(tof, to);
+
+    // Convert the names to wide characters.
+    fromw = enc_to_utf16(fromf, NULL);
+    tow = enc_to_utf16(tof, NULL);
+    if (fromw == NULL || tow == NULL)
+	goto theend;
+
+    // Get the EA.
+    pRtlInitUnicodeString(&u, fromw);
+    InitializeObjectAttributes(&oa, &u, 0, NULL, NULL);
+    if (pNtOpenFile(&h, FILE_READ_EA, &oa, &iosb, 0,
+		FILE_NON_DIRECTORY_FILE) != STATUS_SUCCESS)
+	goto theend;
+    pNtQueryInformationFile(h, &iosb, &eainfo, sizeof(eainfo),
+	    FileEaInformation);
+    if (eainfo.EaSize != 0)
+    {
+	ea = alloc(eainfo.EaSize);
+	if (ea != NULL)
+	{
+	    if (pNtQueryEaFile(h, &iosb, ea, eainfo.EaSize, FALSE,
+			NULL, 0, NULL, TRUE) != STATUS_SUCCESS)
+	    {
+		vim_free(ea);
+		ea = NULL;
+	    }
+	}
+    }
+    pNtClose(h);
+
+    // Set the EA.
+    if (ea != NULL)
+    {
+	pRtlInitUnicodeString(&u, tow);
+	InitializeObjectAttributes(&oa, &u, 0, NULL, NULL);
+	if (pNtOpenFile(&h, FILE_WRITE_EA, &oa, &iosb, 0,
+		    FILE_NON_DIRECTORY_FILE) != STATUS_SUCCESS)
+	    goto theend;
+
+	pNtSetEaFile(h, &iosb, ea, eainfo.EaSize);
+	pNtClose(h);
+    }
+
+theend:
+    vim_free(fromf);
+    vim_free(tof);
+    vim_free(fromw);
+    vim_free(tow);
+    vim_free(ea);
+}
+
+/*
  * Copy file attributes from file "from" to file "to".
  * For Windows NT and later we copy info streams.
  * Always returns zero, errors are ignored.
@@ -7263,6 +7442,7 @@ mch_copy_file_attribute(char_u *from, char_u *to)
 {
     // File streams only work on Windows NT and later.
     copy_infostreams(from, to);
+    copy_extattr(from, to);
     return 0;
 }
 
