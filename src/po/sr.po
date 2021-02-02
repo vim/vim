@@ -7605,7 +7605,7 @@ msgstr "E110: Недостаје ')'"
 
 #, c-format
 msgid "E720: Missing colon in Dictionary: %s"
-msgstr "E720: Недостаје тачка зарез у Речнику: %s"
+msgstr "E720: У Речнику недостаје двотачка: %s"
 
 #, c-format
 msgid "E721: Duplicate key in Dictionary: \"%s\""
