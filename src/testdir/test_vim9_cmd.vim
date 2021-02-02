@@ -328,6 +328,29 @@ def Test_method_call_linebreak()
       assert_equal([1, 2, 3], res)
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      new
+      var name = [1, 2]
+      name
+          ->copy()
+          ->setline(1)
+      assert_equal(['1', '2'], getline(1, 2))
+      bwipe!
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      new
+      g:shortlist
+          ->copy()
+          ->setline(1)
+      assert_equal(['1', '2'], getline(1, 2))
+      bwipe!
+  END
+  g:shortlist = [1, 2]
+  CheckDefAndScriptSuccess(lines)
+  unlet g:shortlist
 enddef
 
 def Test_method_call_whitespace()
