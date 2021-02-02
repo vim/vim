@@ -338,6 +338,22 @@ func Test_set_completion()
   call assert_equal('"set filetype=sshdconfig', @:)
   call feedkeys(":set filetype=a\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"set filetype=' .. getcompletion('a*', 'filetype')->join(), @:)
+
+  " Expand '*func' values.
+  let funcs = ['completefunc', 'imactivatefunc', 'imstatusfunc', 'omnifunc',
+			 \ 'operatorfunc', 'quickfixtextfunc', 'tagfunc']
+  for f in funcs
+    call feedkeys(printf(":set %s=Test_set_compl\<Tab>\<C-B>\"\<CR>", f), 'xt')
+    call assert_equal(printf('"set %s=Test_set_completion', f), @:)
+  endfor
+
+  " Expand '*expr' values.
+  let funcs = ['balloonexpr', 'charconvert', 'diffexpr', 'foldexpr', 'foldtext',
+			 \ 'formatexpr', 'includeexpr', 'indentexpr', 'patchexpr', 'printexpr']
+  for f in funcs
+    call feedkeys(printf(":set %s=Test_set_compl\<Tab>\<C-B>\"\<CR>", f), 'xt')
+    call assert_equal(printf('"set %s=Test_set_completion()', f), @:)
+  endfor
 endfunc
 
 func Test_set_errors()

@@ -2068,7 +2068,7 @@ ExpandFromContext(
 
     // When expanding a function name starting with s:, match the <SNR>nr_
     // prefix.
-    if (xp->xp_context == EXPAND_USER_FUNC && STRNCMP(pat, "^s:", 3) == 0)
+    if ((xp->xp_context == EXPAND_USER_FUNC || xp->xp_context == EXPAND_EXPRESSION_SET) && STRNCMP(pat, "^s:", 3) == 0)
     {
 	int len = (int)STRLEN(pat) + 20;
 
@@ -2118,6 +2118,7 @@ ExpandFromContext(
 	    {EXPAND_FUNCTIONS, get_function_name, FALSE, TRUE},
 	    {EXPAND_USER_FUNC, get_user_func_name, FALSE, TRUE},
 	    {EXPAND_EXPRESSION, get_expr_name, FALSE, TRUE},
+	    {EXPAND_EXPRESSION_SET, get_user_func_name, FALSE, TRUE},
 # endif
 # ifdef FEAT_MENU
 	    {EXPAND_MENUS, get_menu_name, FALSE, TRUE},
@@ -2258,7 +2259,8 @@ ExpandGeneric(
     {
 	if (xp->xp_context == EXPAND_EXPRESSION
 		|| xp->xp_context == EXPAND_FUNCTIONS
-		|| xp->xp_context == EXPAND_USER_FUNC)
+		|| xp->xp_context == EXPAND_USER_FUNC
+		|| xp->xp_context == EXPAND_EXPRESSION_SET)
 	    // <SNR> functions should be sorted to the end.
 	    qsort((void *)*file, (size_t)*num_file, sizeof(char_u *),
 							   sort_func_compare);

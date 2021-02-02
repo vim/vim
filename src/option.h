@@ -453,7 +453,7 @@ EXTERN int	p_beval;	// 'ballooneval'
 # endif
 EXTERN long	p_bdlay;	// 'balloondelay'
 # ifdef FEAT_EVAL
-EXTERN char_u	*p_bexpr;
+EXTERN char_u	*p_bexpr;	// 'balloonexpr'
 # endif
 # ifdef FEAT_BEVAL_TERM
 EXTERN int	p_bevalterm;	// 'balloonevalterm'

@@ -2275,8 +2275,12 @@ option_expand(int opt_idx, char_u *val)
     if (val != NULL && STRLEN(val) > MAXPATHL)
 	return NULL;
 
-    if (val == NULL)
-	val = *(char_u **)options[opt_idx].var;
+    if (val == NULL) {
+	if (is_window_local_option(opt_idx))
+	    val = get_varp(&options[opt_idx]);
+	else
+	    val = *(char_u **)options[opt_idx].var;
+    }
 
     /*
      * Expanding this with NameBuff, expand_env() must not be passed IObuff.
@@ -6187,7 +6191,10 @@ set_context_in_set_cmd(
 
     if (flags & P_EXPAND)
     {
-	p = options[opt_idx].var;
+	if (is_window_local_option(opt_idx))
+	    p = get_varp(&options[opt_idx]);
+	else
+	    p = options[opt_idx].var;
 	if (p == (char_u *)&p_bdir
 		|| p == (char_u *)&p_dir
 		|| p == (char_u *)&p_path
@@ -6211,6 +6218,50 @@ set_context_in_set_cmd(
 	    else
 		xp->xp_backslash = XP_BS_ONE;
 	}
+#if defined(FEAT_EVAL)
+	// Functions
+	else if (p == (char_u *)&p_imaf
+		|| p == (char_u *)&p_imsf
+		|| p == (char_u *)&p_opfunc
+		|| p == (char_u *)&p_tfu
+#ifdef FEAT_COMPL_FUNC
+		|| p == (char_u *)&p_cfu
+		|| p == (char_u *)&p_ofu
+#endif
+#if defined(FEAT_QUICKFIX)
+		|| p == (char_u *)&p_qftf
+#endif
+	) {
+	    xp->xp_context = EXPAND_USER_FUNC;
+	}
+	// Expressions
+	else if (p == (char_u *)&p_fex
+		|| p == (char_u *)&p_ccv
+#if defined(FEAT_FIND_ID)
+		|| p == (char_u *)&p_inex
+#endif
+#if defined(FEAT_BEVAL)
+		|| p == (char_u *)&p_bexpr
+#endif
+#if defined(FEAT_DIFF)
+		|| p == (char_u *)&p_dex
+		|| p == (char_u *)&p_pex
+#endif
+#ifdef FEAT_POSTSCRIPT
+		|| p == (char_u *)&p_pexpr
+#endif
+#if defined(FEAT_CINDENT)
+		|| p == (char_u *)&p_inde
+#endif
+#if defined(FEAT_FOLDING)
+		|| p == (char_u *)&(curwin->w_p_fde)
+		|| p == (char_u *)&(curwin->w_p_fdt)
+#endif
+	) {
+	    xp->xp_context = EXPAND_EXPRESSION_SET;
+	}
+#endif // FEAT_EVAL
+	// Filetype
 	else if (p == (char_u *)&p_ft)
 	{
 	    xp->xp_context = EXPAND_FILETYPE;

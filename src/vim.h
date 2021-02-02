@@ -777,6 +777,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define EXPAND_MAPCLEAR		47
 #define EXPAND_ARGLIST		48
 #define EXPAND_DIFF_BUFFERS	49
+#define EXPAND_EXPRESSION_SET	50
 
 // Values for exmode_active (0 is no exmode)
 #define EXMODE_NORMAL		1
