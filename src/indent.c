@@ -1662,7 +1662,9 @@ ex_retab(exarg_T *eap)
 			ptr = new_line + start_col;
 			for (col = 0; col < len; col++)
 			    ptr[col] = (col < num_tabs) ? '\t' : ' ';
-			ml_replace(lnum, new_line, FALSE);
+			if (ml_replace(lnum, new_line, FALSE) == OK)
+			    // "new_line" may have been copied
+			    new_line = curbuf->b_ml.ml_line_ptr;
 			if (first_line == 0)
 			    first_line = lnum;
 			last_line = lnum;
