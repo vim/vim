@@ -113,7 +113,7 @@ func Test_listchars()
   " Test lead and trail
   normal ggdG
   set listchars&
-  set listchars+=lead:>,trail:<
+  set listchars+=lead:>,trail:<,space:x
   set list
 
   call append(0, [
@@ -121,6 +121,7 @@ func Test_listchars()
 	      \ '          gg',
 	      \ 'h           ',
 	      \ '            ',
+	      \ '    0  0    ',
 	      \ ])
 
   let expected = [
@@ -128,6 +129,7 @@ func Test_listchars()
 	      \ '>>>>>>>>>>gg$',
 	      \ 'h<<<<<<<<<<<$',
 	      \ '<<<<<<<<<<<<$',
+	      \ '>>>>0xx0<<<<$',
               \ '$'
 	      \ ]
   redraw!

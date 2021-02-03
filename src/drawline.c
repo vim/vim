@@ -339,7 +339,7 @@ win_line(
     int		change_end = -1;	// last col of changed area
 #endif
     colnr_T	trailcol = MAXCOL;	// start of trailing spaces
-    colnr_T	leadcol = MAXCOL;	// start of leading spaces
+    colnr_T	leadcol = (colnr_T)0;	// start of leading spaces
 #ifdef FEAT_LINEBREAK
     int		need_showbreak = FALSE; // overlong line, skipping first x
 					// chars
@@ -752,11 +752,12 @@ win_line(
 	    leadcol = (colnr_T)0;
 	    while (VIM_ISWHITE(ptr[leadcol]))
 		++leadcol;
-	    // in a line full of spaces all of them are treated as trailing
 	    if (ptr[leadcol] == NUL)
-		leadcol = MAXCOL;
+		// in a line full of spaces all of them are treated as trailing
+		leadcol = (colnr_T)0;
 	    else
-		leadcol += (colnr_T) (ptr - line);
+		// keep track of the first column not filled with spaces
+		leadcol += (colnr_T) (ptr - line) + 1;
 	}
     }
 
@@ -2006,6 +2007,7 @@ win_line(
 			    || (c == ' '
 				&& mb_l == 1
 				&& lcs_space
+				&& ptr - line >= leadcol
 				&& ptr - line <= trailcol)))
 		{
 		    c = (c == ' ') ? lcs_space : lcs_nbsp;
@@ -2027,7 +2029,7 @@ win_line(
 		}
 
 		if ((trailcol != MAXCOL && ptr > line + trailcol && c == ' ') ||
-		    (leadcol != MAXCOL && ptr <= line + leadcol && c == ' '))
+		    (leadcol != (colnr_T)0 && ptr < line + leadcol && c == ' '))
 		{
 		    c = (ptr > line + trailcol) ? lcs_trail : lcs_lead;
 		    if (!attr_pri)
