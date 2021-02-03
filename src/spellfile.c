@@ -6277,7 +6277,11 @@ spell_add_word(
 							 len, word, NameBuff);
 			}
 		    }
-		    fseek(fd, fpos_next, SEEK_SET);
+		    if (fseek(fd, fpos_next, SEEK_SET) != 0)
+		    {
+			PERROR(_("Seek error in spellfile"));
+			break;
+		    }
 		}
 	    }
 	    if (fd != NULL)
