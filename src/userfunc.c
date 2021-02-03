@@ -403,7 +403,9 @@ register_closure(ufunc_T *fp)
     static void
 set_ufunc_name(ufunc_T *fp, char_u *name)
 {
-    STRCPY(fp->uf_name, name);
+    // Add a type cast to avoid a warning for an overflow, the uf_name[] array
+    // actually extends beyond the struct.
+    STRCPY((void *)fp->uf_name, name);
 
     if (name[0] == K_SPECIAL)
     {
