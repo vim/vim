@@ -1831,18 +1831,32 @@ msg_prt_line(char_u *s, int list)
     int		n;
     int		attr = 0;
     char_u	*trail = NULL;
+    char_u	*lead = NULL;
     int		l;
     char_u	buf[MB_MAXBYTES + 1];
 
     if (curwin->w_p_list)
 	list = TRUE;
 
-    // find start of trailing whitespace
-    if (list && lcs_trail)
+    if (list)
     {
-	trail = s + STRLEN(s);
-	while (trail > s && VIM_ISWHITE(trail[-1]))
-	    --trail;
+	// find start of trailing whitespace
+	if (lcs_trail)
+	{
+	    trail = s + STRLEN(s);
+	    while (trail > s && VIM_ISWHITE(trail[-1]))
+		--trail;
+	}
+	// find end of leading whitespace
+	if (lcs_lead)
+	{
+	    lead = s;
+	    while (VIM_ISWHITE(lead[0]))
+		lead++;
+	    // in a line full of spaces all of them are treated as trailing
+	    if (*lead == NUL)
+		lead = NULL;
+	}
     }
 
     // output a space for an empty line, otherwise the line will be
@@ -1936,6 +1950,11 @@ msg_prt_line(char_u *s, int list)
 		c = *p_extra++;
 		// Use special coloring to be able to distinguish <hex> from
 		// the same in plain text.
+		attr = HL_ATTR(HLF_8);
+	    }
+	    else if (c == ' ' && lead != NULL && s <= lead)
+	    {
+		c = lcs_lead;
 		attr = HL_ATTR(HLF_8);
 	    }
 	    else if (c == ' ' && trail != NULL && s > trail)
