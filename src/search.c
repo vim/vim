@@ -3864,6 +3864,8 @@ search_line:
 #if defined(FEAT_QUICKFIX)
 			if (g_do_tagpreview != 0)
 			{
+			    if (!win_valid(curwin_save))
+				break;
 			    if (!GETFILE_SUCCESS(getfile(
 					   curwin_save->w_buffer->b_fnum, NULL,
 						     NULL, TRUE, lnum, FALSE)))
