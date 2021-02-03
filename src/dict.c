@@ -953,11 +953,13 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	}
 	if (evaluate)
 	{
-	    if (vim9script && check_for_string(&tvkey) == FAIL)
+#ifdef FEAT_FLOAT
+	    if (tvkey.v_type == VAR_FLOAT)
 	    {
-		clear_tv(&tvkey);
-		goto failret;
+		tvkey.vval.v_string = typval_tostring(&tvkey, TRUE);
+		tvkey.v_type = VAR_STRING;
 	    }
+#endif
 	    key = tv_get_string_buf_chk(&tvkey, buf);
 	    if (key == NULL)
 	    {

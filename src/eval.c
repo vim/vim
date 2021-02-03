@@ -3849,11 +3849,23 @@ eval_index(
 	    clear_tv(&var1);
 	    return FAIL;
 	}
-	else if (evaluate && tv_get_string_chk(&var1) == NULL)
+	else if (evaluate)
 	{
-	    // not a number or string
-	    clear_tv(&var1);
-	    return FAIL;
+#ifdef FEAT_FLOAT
+	    // allow for indexing with float
+	    if (vim9 && rettv->v_type == VAR_DICT
+						   && var1.v_type == VAR_FLOAT)
+	    {
+		var1.vval.v_string = typval_tostring(&var1, TRUE);
+		var1.v_type = VAR_STRING;
+	    }
+#endif
+	    if (tv_get_string_chk(&var1) == NULL)
+	    {
+		// not a number or string
+		clear_tv(&var1);
+		return FAIL;
+	    }
 	}
 
 	/*

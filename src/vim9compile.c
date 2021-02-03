@@ -3145,7 +3145,6 @@ compile_lambda(char_u **arg, cctx_T *cctx)
 compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 {
     garray_T	*instr = &cctx->ctx_instr;
-    garray_T	*stack = &cctx->ctx_type_stack;
     int		count = 0;
     dict_T	*d = dict_alloc();
     dictitem_T	*item;
@@ -3180,16 +3179,19 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    if (compile_expr0(arg, cctx) == FAIL)
 		return FAIL;
 	    isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
+	    if (isn->isn_type == ISN_PUSHNR)
+	    {
+		char buf[NUMBUFLEN];
+
+		// Convert to string at compile time.
+		vim_snprintf(buf, NUMBUFLEN, "%lld", isn->isn_arg.number);
+		isn->isn_type = ISN_PUSHS;
+		isn->isn_arg.string = vim_strsave((char_u *)buf);
+	    }
 	    if (isn->isn_type == ISN_PUSHS)
 		key = isn->isn_arg.string;
-	    else
-	    {
-		type_T *keytype = ((type_T **)stack->ga_data)
-						       [stack->ga_len - 1];
-		if (need_type(keytype, &t_string, -1, 0, cctx,
-						     FALSE, FALSE) == FAIL)
-		    return FAIL;
-	    }
+	    else if (may_generate_2STRING(-1, cctx) == FAIL)
+		return FAIL;
 	    *arg = skipwhite(*arg);
 	    if (**arg != ']')
 	    {

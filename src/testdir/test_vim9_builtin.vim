@@ -350,10 +350,6 @@ def Test_job_info_return_type()
   endif
 enddef
 
-def Wrong_dict_key_type(items: list<number>): list<number>
-  return filter(items, (_, val) => get({[val]: 1}, 'x'))
-enddef
-
 def Test_filereadable()
   assert_false(filereadable(""))
   assert_false(filereadable(test_null_string()))
@@ -410,8 +406,12 @@ def Test_fnamemodify()
   CheckDefExecFailure(['echo fnamemodify("file", true)'], 'E928:')
 enddef
 
+def Wrong_dict_key_type(items: list<number>): list<number>
+  return filter(items, (_, val) => get({[val]: 1}, 'x'))
+enddef
+
 def Test_filter_wrong_dict_key_type()
-  assert_fails('Wrong_dict_key_type([1, 2, 3])', 'E1012:')
+  assert_fails('Wrong_dict_key_type([1, v:null, 3])', 'E1013:')
 enddef
 
 def Test_filter_return_type()

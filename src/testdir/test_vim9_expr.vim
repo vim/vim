@@ -1354,13 +1354,11 @@ def Test_expr5_list_add()
   endfor
 
   # concatenating two lists with different member types results in "any"
-  var lines =<< trim END
-      var d = {}
-      for i in ['a'] + [0]
-        d = {[i]: 0}
-      endfor
-  END
-  CheckDefExecFailure(lines, 'E1012:')
+  var dany = {}
+  for i in ['a'] + [12]
+    dany[i] = i
+  endfor
+  assert_equal({a: 'a', 12: 12}, dany)
 enddef
 
 " test multiply, divide, modulo
@@ -2116,6 +2114,25 @@ def Test_expr7_dict()
       var cd = { # comment
                 key: 'val' # comment
                }
+
+      # different types used for the key
+      var dkeys = {['key']: 'string',
+                   [12]: 'numberexpr',
+                   34: 'number',
+                   [true]: 'bool'} 
+      assert_equal('string', dkeys['key'])
+      assert_equal('numberexpr', dkeys[12])
+      assert_equal('number', dkeys[34])
+      assert_equal('bool', dkeys[true])
+      if has('float')
+        dkeys = {[1.2]: 'floatexpr', [3.4]: 'float'}
+        assert_equal('floatexpr', dkeys[1.2])
+        assert_equal('float', dkeys[3.4])
+      endif
+
+      # automatic conversion from number to string
+      var n = 123
+      var dictnr = {[n]: 1}
   END
   CheckDefAndScriptSuccess(lines)
  
@@ -2142,16 +2159,11 @@ def Test_expr7_dict()
   CheckDefExecFailure(['var x: dict<string> = {a: 234, b: "1"}'], 'E1012:', 1)
   CheckDefExecFailure(['var x: dict<string> = {a: "x", b: 134}'], 'E1012:', 1)
 
+  # invalid types for the key
+  CheckDefFailure(["var x = {[[1, 2]]: 0}"], 'E1105:', 1)
+
   CheckDefFailure(['var x = ({'], 'E723:', 2)
   CheckDefExecFailure(['{}[getftype("file")]'], 'E716: Key not present in Dictionary: ""', 1)
-
-  # no automatic conversion from number to string
-  lines =<< trim END
-      var n = 123
-      var d = {[n]: 1}
-  END
-  CheckDefFailure(lines, 'E1012:', 2)
-  CheckScriptFailure(['vim9script'] + lines, 'E928:', 3)
 enddef
 
 def Test_expr7_dict_vim9script()

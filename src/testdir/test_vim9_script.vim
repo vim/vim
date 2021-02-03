@@ -450,8 +450,8 @@ def Test_try_catch_throw()
 
   var nd: dict<any>
   try
-    nd = {[g:anumber]: 1}
-  catch /E1012:/
+    nd = {[g:alist]: 1}
+  catch /E1105:/
     n = 266
   endtry
   assert_equal(266, n)
