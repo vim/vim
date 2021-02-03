@@ -110,6 +110,33 @@ func Test_listchars()
 	      \ '.....h>-$',
 	      \ 'iii<<<<><<$', '$'], l)
 
+  " Test lead and trail
+  normal ggdG
+  set listchars&
+  set listchars+=lead:>,trail:<
+  set list
+
+  call append(0, [
+	      \ '    ffff    ',
+	      \ '          gg',
+	      \ 'h           ',
+	      \ '            ',
+	      \ ])
+
+  let expected = [
+	      \ '>>>>ffff<<<<$',
+	      \ '>>>>>>>>>>gg$',
+	      \ 'h<<<<<<<<<<<$',
+	      \ '<<<<<<<<<<<<$',
+              \ '$'
+	      \ ]
+  redraw!
+  for i in range(1, 5)
+    call cursor(i, 1)
+    call assert_equal([expected[i - 1]], ScreenLines(i, virtcol('$')))
+  endfor
+
+  call assert_equal(expected, split(execute("%list"), "\n"))
 
   " test nbsp
   normal ggdG
