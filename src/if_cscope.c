@@ -1813,7 +1813,10 @@ cs_file_results(FILE *f, int *nummatches_a)
 
 	   context = alloc(strlen(cntx)+5);
 	   if (context == NULL)
+	   {
+	       vim_free(fullname);
 	       continue;
+	   }
 
 	   if (strcmp(cntx, "<global>")==0)
 	       strcpy(context, "<<global>>");
