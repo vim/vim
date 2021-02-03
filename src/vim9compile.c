@@ -5147,7 +5147,6 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 	}
     }
     // TODO: warning for trailing text?
-    r = OK;
 
 theend:
     vim_free(lambda_name);
