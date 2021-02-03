@@ -2717,4 +2717,13 @@ func Test_close_autocmd_tab()
   %bwipe!
 endfunc
 
+" This was using freed memory.
+func Test_BufNew_arglocal()
+  arglocal
+  au BufNew * arglocal
+  call assert_fails('drop xx', 'E1156:')
+
+  au! BufNew
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

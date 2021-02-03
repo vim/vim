@@ -557,6 +557,8 @@ ex_args(exarg_T *eap)
 
     if (eap->cmdidx != CMD_args)
     {
+	if (check_arglist_locked() == FAIL)
+	    return;
 	alist_unlink(ALIST(curwin));
 	if (eap->cmdidx == CMD_argglobal)
 	    ALIST(curwin) = &global_alist;
@@ -566,6 +568,8 @@ ex_args(exarg_T *eap)
 
     if (*eap->arg != NUL)
     {
+	if (check_arglist_locked() == FAIL)
+	    return;
 	// ":args file ..": define new argument list, handle like ":next"
 	// Also for ":argslocal file .." and ":argsglobal file ..".
 	ex_next(eap);
