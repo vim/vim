@@ -531,7 +531,6 @@ func Test_mkview_open_folds()
 endfunc
 
 func Test_mkview_no_balt()
-  set viewoptions-=balt
   edit! Xtestfile1
   edit! Xtestfile2
 
@@ -541,7 +540,6 @@ func Test_mkview_no_balt()
   source Xtestview
   call assert_equal(0, buflisted('Xtestfile1'))
 
-  set viewoptions&
   call delete('Xtestview')
   %bwipe
 endfunc

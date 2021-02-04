@@ -37,7 +37,7 @@ static char *(p_fdo_values[]) = {"all", "block", "hor", "mark", "percent",
 // Also used for 'viewoptions'!
 static char *(p_ssop_values[]) = {"buffers", "winpos", "resize", "winsize",
     "localoptions", "options", "help", "blank", "globals", "slash", "unix",
-    "sesdir", "curdir", "folds", "cursor", "tabpages", "terminal", "balt", NULL};
+    "sesdir", "curdir", "folds", "cursor", "tabpages", "terminal", NULL};
 #endif
 // Keep in sync with SWB_ flags in option.h
 static char *(p_swb_values[]) = {"useopen", "usetab", "split", "newtab", "vsplit", "uselast", NULL};

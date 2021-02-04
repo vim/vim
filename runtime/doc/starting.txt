@@ -1417,8 +1417,6 @@ The output of ":mkview" contains these items:
    well when there are closed folds.
 6. The local current directory, if it is different from the global current
    directory and 'viewoptions' contains "curdir".
-7. The alternate file for the current window, if 'viewoptions' contains
-   "balt".
 
 Note that Views and Sessions are not perfect:
 - They don't restore everything.  For example, defined functions, autocommands

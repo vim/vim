@@ -2759,7 +2759,7 @@ static struct vimoption options[] =
     {"viewoptions", "vop",  P_STRING|P_VI_DEF|P_ONECOMMA|P_NODUP,
 #ifdef FEAT_SESSION
 			    (char_u *)&p_vop, PV_NONE,
-			    {(char_u *)"folds,options,cursor,curdir,balt",
+			    {(char_u *)"folds,options,cursor,curdir",
 								  (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
