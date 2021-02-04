@@ -6747,6 +6747,8 @@ max_min(typval_T *argvars, typval_T *rettv, int domax)
     varnumber_T	i;
     int		error = FALSE;
 
+    rettv->vval.v_number = 0;
+
     if (argvars[0].v_type == VAR_LIST)
     {
 	list_T		*l;
@@ -6763,21 +6765,19 @@ max_min(typval_T *argvars, typval_T *rettv, int domax)
 		    n = l->lv_u.nonmat.lv_start + (l->lv_len - 1)
 						    * l->lv_u.nonmat.lv_stride;
 	    }
-	    else
+	    else if (l->lv_first != NULL)
 	    {
 		li = l->lv_first;
-		if (li != NULL)
+		n = tv_get_number_chk(&li->li_tv, &error);
+		if (error)
+		    return; // type error; errmsg already given
+		FOR_ALL_LIST_ITEMS(l, li)
 		{
-		    n = tv_get_number_chk(&li->li_tv, &error);
-		    for (;;)
-		    {
-			li = li->li_next;
-			if (li == NULL)
-			    break;
-			i = tv_get_number_chk(&li->li_tv, &error);
-			if (domax ? i > n : i < n)
-			    n = i;
-		    }
+		    i = tv_get_number_chk(&li->li_tv, &error);
+		    if (error)
+			return; // type error; errmsg already given
+		    if (domax ? i > n : i < n)
+			n = i;
 		}
 	    }
 	}
@@ -6799,6 +6799,8 @@ max_min(typval_T *argvars, typval_T *rettv, int domax)
 		{
 		    --todo;
 		    i = tv_get_number_chk(&HI2DI(hi)->di_tv, &error);
+		    if (error)
+			return; // type error; errmsg already given
 		    if (first)
 		    {
 			n = i;
@@ -6812,7 +6814,8 @@ max_min(typval_T *argvars, typval_T *rettv, int domax)
     }
     else
 	semsg(_(e_listdictarg), domax ? "max()" : "min()");
-    rettv->vval.v_number = error ? 0 : n;
+
+    rettv->vval.v_number = n;
 }
 
 /*
