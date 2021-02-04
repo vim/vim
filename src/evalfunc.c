@@ -948,6 +948,8 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_filewritable},
     {"filter",		2, 2, FEARG_1,	    NULL,
 			ret_first_arg,	    f_filter},
+    {"findcommand",	1, 1, FEARG_1,	    arg1_string,
+			ret_string,	    f_findcommand},
     {"finddir",		1, 3, FEARG_1,	    NULL,
 			ret_string,	    f_finddir},
     {"findfile",	1, 3, FEARG_1,	    NULL,

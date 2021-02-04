@@ -3668,6 +3668,34 @@ cmd_exists(char_u *name)
 	return 0;	// trailing garbage
     return (ea.cmdidx == CMD_SIZE ? 0 : (full ? 2 : 1));
 }
+
+/*
+ * "findcommand" function
+ */
+    void
+f_findcommand(typval_T *argvars, typval_T *rettv)
+{
+    exarg_T  ea;
+    char_u   *name = argvars[0].vval.v_string;
+    char_u   *p;
+
+    while (name[0] != NUL && name[0] == ':')
+	name++;
+    name = skip_range(name, TRUE, NULL);
+
+    rettv->v_type = VAR_STRING;
+
+    ea.cmd = (*name == '2' || *name == '3') ? name + 1 : name;
+    ea.cmdidx = (cmdidx_T)0;
+    p = find_ex_command(&ea, NULL, NULL, NULL);
+    if (p == NULL || ea.cmdidx == CMD_SIZE) {
+	return;
+    }
+
+    rettv->vval.v_string = vim_strsave(IS_USER_CMDIDX(ea.cmdidx)
+	? get_user_commands(NULL, ea.useridx)
+	: cmdnames[ea.cmdidx].cmd_name);
+}
 #endif
 
     cmdidx_T
