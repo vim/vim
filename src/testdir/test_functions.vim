@@ -124,6 +124,10 @@ func Test_max()
 
   call assert_fails('call max(1)', 'E712:')
   call assert_fails('call max(v:none)', 'E712:')
+
+  " check we only get one error
+  call assert_fails('call max([#{}, [1]])', ['E728:', 'E728:'])
+  call assert_fails('call max(#{a: {}, b: [1]})', ['E728:', 'E728:'])
 endfunc
 
 func Test_min()
@@ -137,6 +141,10 @@ func Test_min()
 
   call assert_fails('call min(1)', 'E712:')
   call assert_fails('call min(v:none)', 'E712:')
+
+  " check we only get one error
+  call assert_fails('call min([[1], #{}])', ['E745:', 'E745:'])
+  call assert_fails('call min(#{a: [1], b: #{}})', ['E745:', 'E745:'])
 endfunc
 
 func Test_strwidth()
