@@ -8414,7 +8414,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	security reasons.
 
 						*'viewoptions'* *'vop'*
-'viewoptions' 'vop'	string	(default: "folds,options,cursor,curdir")
+'viewoptions' 'vop'	string	(default: "folds,options,cursor,curdir,balt")
 			global
 			{not available when compiled without the |+mksession|
 			feature}
@@ -8432,6 +8432,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   unix		with Unix end-of-line format (single <NL>), even when
 			on MS-Windows
 	   curdir	the window-local directory, if set with `:lcd`
+	   balt		the alternate file for the current window
 
 	"slash" and "unix" are useful on MS-Windows when sharing view files
 	with Unix.  The Unix version of Vim cannot source dos format scripts,
