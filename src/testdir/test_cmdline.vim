@@ -442,7 +442,7 @@ func Test_getcompletion()
   call assert_fails('call getcompletion("abc", [])', 'E475:')
 endfunc
 
-func Test_findcommand()
+func Test_fullcommand()
   let tests = {
         \ '':           '',
         \ ':':          '',
@@ -473,10 +473,10 @@ func Test_findcommand()
   \ }
 
   for [in, want] in items(tests)
-    call assert_equal(want, findcommand(in))
+    call assert_equal(want, fullcommand(in))
   endfor
 
-  call assert_equal('syntax', 'syn'->findcommand())
+  call assert_equal('syntax', 'syn'->fullcommand())
 endfunc
 
 func Test_shellcmd_completion()

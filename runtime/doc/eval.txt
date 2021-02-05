@@ -2544,7 +2544,6 @@ filereadable({file})		Number	|TRUE| if {file} is a readable file
 filewritable({file})		Number	|TRUE| if {file} is a writable file
 filter({expr1}, {expr2})	List/Dict  remove items from {expr1} where
 					{expr2} is 0
-findcommand({name})		String	find full command from shortcut {name}
 finddir({name} [, {path} [, {count}]])
 				String	find directory {name} in {path}
 findfile({name} [, {path} [, {count}]])
@@ -2563,6 +2562,7 @@ foldlevel({lnum})		Number	fold level at {lnum}
 foldtext()			String	line displayed for closed fold
 foldtextresult({lnum})		String	text for closed fold at {lnum}
 foreground()			Number	bring the Vim window to the foreground
+fullcommand({name})		String	get full command from {name}
 funcref({name} [, {arglist}] [, {dict}])
 				Funcref	reference to function {name}
 function({name} [, {arglist}] [, {dict}])
@@ -4682,17 +4682,6 @@ filter({expr1}, {expr2})				*filter()*
 		Can also be used as a |method|: >
 			mylist->filter(expr2)
 
-findcommand({name})						*findcommand()*
-		Find the full command name; for example `findcommand('sy')`
-		and `findcommand('syntax')` both return `syntax`.
-
-		{name} may start with a `:` and can include a [range]. Returns
-		an empty string if a command doesn't exist or if it's
-		ambiguous (for user-defined functions).
-
-		Can also be used as a |method|: >
-			GetName()->findcommand()
-<
 finddir({name} [, {path} [, {count}]])				*finddir()*
 		Find directory {name} in {path}.  Supports both downwards and
 		upwards recursive directory searches.  See |file-searching|
@@ -4914,6 +4903,20 @@ foreground()	Move the Vim window to the foreground.  Useful when sent from
 		{only in the Win32, Athena, Motif and GTK GUI versions and the
 		Win32 console version}
 
+fullcommand({name})						*fullcommand()*
+		Get the full command name from a short abbreviated command
+		name; see |20.2| for details on command abbreviations.
+
+		{name} may start with a `:` and can include a [range]. Returns
+		an empty string if a command doesn't exist or if it's
+		ambiguous (for user-defined functions).
+
+		For example `fullcommand('s')`, `fullcommand('sub')`,
+		`fullcommand(':%substitute')` all return `substitute`.
+
+		Can also be used as a |method|: >
+			GetName()->fullcommand()
+<
 						*funcref()*
 funcref({name} [, {arglist}] [, {dict}])
 		Just like |function()|, but the returned Funcref will lookup

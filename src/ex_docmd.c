@@ -3670,10 +3670,10 @@ cmd_exists(char_u *name)
 }
 
 /*
- * "findcommand" function
+ * "fullcommand" function
  */
     void
-f_findcommand(typval_T *argvars, typval_T *rettv)
+f_fullcommand(typval_T *argvars, typval_T *rettv)
 {
     exarg_T  ea;
     char_u   *name = argvars[0].vval.v_string;
