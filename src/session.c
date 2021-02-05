@@ -402,7 +402,8 @@ put_view(
 	buf_T *alt = buflist_findnr(wp->w_alt_fnum);
 
 	// Set the alternate file.
-	if (alt != NULL
+	if ((flagp == &ssop_flags)
+		&& alt != NULL
 		&& alt->b_fname != NULL
 		&& *alt->b_fname != NUL
 		&& (fputs("balt ", fd) < 0
