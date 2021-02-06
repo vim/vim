@@ -461,7 +461,7 @@ apply_move_options(win_T *wp, dict_T *d)
 	    if (di != NULL)
 	    {
 		wp->w_popup_prop_win = find_win_by_nr_or_id(&di->di_tv);
-		if (!win_valid(wp->w_popup_prop_win))
+		if (!win_valid_any_tab(wp->w_popup_prop_win))
 		    wp->w_popup_prop_win = curwin;
 	    }
 
