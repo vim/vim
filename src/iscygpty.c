@@ -111,6 +111,7 @@ int is_cygpty(int fd)
 	return 0;
 #else
 	HANDLE h;
+    DWORD mode;
 	int size = sizeof(FILE_NAME_INFO) + sizeof(WCHAR) * (MAX_PATH - 1);
 	FILE_NAME_INFO *nameinfo;
 	WCHAR *p = NULL;
@@ -125,6 +126,11 @@ int is_cygpty(int fd)
 	if (GetFileType(h) != FILE_TYPE_PIPE) {
 		return 0;
 	}
+    // For Cygin/msys's pty that supports ConPTY, vim will work. In that case,
+    // GetConsoleMode will succeed.
+    if (GetConsoleMode(h, &mode)) {
+        return 0;
+    }
 	nameinfo = malloc(size + sizeof(WCHAR));
 	if (nameinfo == NULL) {
 		return 0;
