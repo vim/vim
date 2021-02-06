@@ -59,7 +59,7 @@ In each of the edited files these options are set:
 	'scrollbind'	on
 	'cursorbind'	on
 	'scrollopt'	includes "hor"
-	'wrap'		off
+	'wrap'		off or leave as it is if 'diffopt' includes "wrapasis"
 	'foldmethod'	"diff"
 	'foldcolumn'	value from 'diffopt', default is 2
 
