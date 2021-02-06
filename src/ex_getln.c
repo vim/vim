@@ -4403,12 +4403,12 @@ open_cmdwin(void)
 
 	// win_goto() may trigger an autocommand that already closes the
 	// cmdline window.
-	if (win_valid(wp))
+	if (win_valid(wp) && wp != curwin)
 	    win_close(wp, TRUE);
 
 	// win_close() may have already wiped the buffer when 'bh' is
-	// set to 'wipe'
-	if (bufref_valid(&bufref))
+	// set to 'wipe', autocommands may have closed other windows
+	if (bufref_valid(&bufref) && bufref.br_buf != curbuf)
 	    close_buffer(NULL, bufref.br_buf, DOBUF_WIPE, FALSE, FALSE);
 
 	// Restore window sizes.
