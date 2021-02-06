@@ -1045,6 +1045,21 @@ func Test_diff_closeoff()
   enew!
 endfunc
 
+func Test_diff_wrapasis()
+  new
+  set diffopt+=wrapasis
+  set wrap
+  diffthis
+  call assert_equal(1, &wrap)
+  diffoff
+  set nowrap
+  diffthis
+  call assert_equal(0, &wrap)
+  diffoff
+  set diffopt&
+  bwipe!
+endfunc
+
 func Test_diff_maintains_change_mark()
   enew!
   call setline(1, ['a', 'b', 'c', 'd'])
