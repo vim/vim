@@ -2783,4 +2783,18 @@ func Test_autocmd_closing_cmdwin()
   only
 endfunc
 
+func Test_autocmd_vimgrep()
+  augroup aucmd_vimgrep
+    au QuickfixCmdPre,BufNew,BufDelete,BufReadCmd * sb
+    au QuickfixCmdPre,BufNew,BufDelete,BufReadCmd * q9 
+  augroup END
+  " TODO: if this is executed directly valgrind reports errors
+  call assert_fails('lv?a?', 'E926:')
+
+  augroup aucmd_vimgrep
+    au!
+  augroup END
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab
