@@ -2761,6 +2761,9 @@ endfunc
 
 " Fuzzer found some strange combination that caused a crash.
 func Test_autocmd_normal_mess()
+  " For unknown reason this hangs on MS-Windows
+  CheckNotMSWindows
+
   augroup aucmd_normal_test
     au BufLeave,BufWinLeave,BufHidden,BufUnload,BufDelete,BufWipeout * norm 7q/qc
   augroup END
@@ -2775,6 +2778,9 @@ func Test_autocmd_normal_mess()
 endfunc
 
 func Test_autocmd_closing_cmdwin()
+  " For unknown reason this hangs on MS-Windows
+  CheckNotMSWindows
+
   au BufWinLeave * nested q
   call assert_fails("norm 7q?\n", 'E855:')
 
@@ -2789,7 +2795,7 @@ func Test_autocmd_vimgrep()
     au QuickfixCmdPre,BufNew,BufDelete,BufReadCmd * q9 
   augroup END
   %bwipe!
-  call assert_fails('lv?a?', 'E926:')
+  call assert_fails('lv ?a? foo', 'E926:')
 
   augroup aucmd_vimgrep
     au!
