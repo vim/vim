@@ -175,8 +175,8 @@ EXTERN char e_separator_mismatch_str[]
 	INIT(= N_("E1067: Separator mismatch: %s"));
 EXTERN char e_no_white_space_allowed_before_str[]
 	INIT(= N_("E1068: No white space allowed before '%s'"));
-EXTERN char e_white_space_required_after_str[]
-	INIT(= N_("E1069: White space required after '%s'"));
+EXTERN char e_white_space_required_after_str_str[]
+	INIT(= N_("E1069: White space required after '%s': %s"));
 EXTERN char e_missing_from[]
 	INIT(= N_("E1070: Missing \"from\""));
 EXTERN char e_invalid_string_after_from[]

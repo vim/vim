@@ -970,7 +970,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	}
 	if (vim9script && (*arg)[1] != NUL && !VIM_ISWHITE((*arg)[1]))
 	{
-	    semsg(_(e_white_space_required_after_str), ":");
+	    semsg(_(e_white_space_required_after_str_str), ":", *arg);
 	    clear_tv(&tvkey);
 	    goto failret;
 	}
@@ -1012,7 +1012,7 @@ eval_dict(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int literal)
 	{
 	    if (vim9script && (*arg)[1] != NUL && !VIM_ISWHITE((*arg)[1]))
 	    {
-		semsg(_(e_white_space_required_after_str), ",");
+		semsg(_(e_white_space_required_after_str_str), ",", *arg);
 		goto failret;
 	    }
 	    *arg = skipwhite(*arg + 1);

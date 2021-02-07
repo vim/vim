@@ -629,7 +629,7 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
     }
     if (!VIM_ISWHITE(p[1]))
     {
-	semsg(_(e_white_space_required_after_str), ":");
+	semsg(_(e_white_space_required_after_str_str), ":", p);
 	return arg + STRLEN(arg);
     }
     name = vim_strnsave(arg, p - arg);
