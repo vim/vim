@@ -3360,7 +3360,10 @@ dos_expandpath(
 	if (p == NULL)
 	    break;  // out of memory
 
-	if (*wfb.cAlternateFileName == NUL)
+	// Do not use the alternate filename when the file name ends in '~',
+	// because it picks up backup files: short name for "foo.vim~" is
+	// "foo~1.vim", which matches "*.vim".
+	if (*wfb.cAlternateFileName == NUL || p[STRLEN(p) - 1] == '~')
 	    p_alt = NULL;
 	else
 	    p_alt = utf16_to_enc(wfb.cAlternateFileName, NULL);
