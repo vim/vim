@@ -1328,7 +1328,8 @@ eval_list(char_u **arg, typval_T *rettv, evalarg_T *evalarg, int do_error)
 	    if (do_error)
 	    {
 		if (**arg == ',')
-		    semsg(_(e_no_white_space_allowed_before_str), ",");
+		    semsg(_(e_no_white_space_allowed_before_str_str),
+								    ",", *arg);
 		else
 		    semsg(_("E696: Missing comma in List: %s"), *arg);
 	    }

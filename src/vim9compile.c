@@ -2800,7 +2800,7 @@ compile_arguments(char_u **arg, cctx_T *cctx, int *argcount)
 
 	if (*p != ',' && *skipwhite(p) == ',')
 	{
-	    semsg(_(e_no_white_space_allowed_before_str), ",");
+	    semsg(_(e_no_white_space_allowed_before_str_str), ",", p);
 	    p = skipwhite(p);
 	}
 	if (*p == ',')
@@ -3055,7 +3055,7 @@ compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	}
 	if (*p == ',')
 	{
-	    semsg(_(e_no_white_space_allowed_before_str), ",");
+	    semsg(_(e_no_white_space_allowed_before_str_str), ",", p);
 	    return FAIL;
 	}
 	if (*p == ']')
@@ -3234,7 +3234,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	if (**arg != ':')
 	{
 	    if (*skipwhite(*arg) == ':')
-		semsg(_(e_no_white_space_allowed_before_str), ":");
+		semsg(_(e_no_white_space_allowed_before_str_str), ":", *arg);
 	    else
 		semsg(_(e_missing_dict_colon), *arg);
 	    return FAIL;
@@ -3273,7 +3273,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	}
 	if (IS_WHITE_OR_NUL(*whitep))
 	{
-	    semsg(_(e_no_white_space_allowed_before_str), ",");
+	    semsg(_(e_no_white_space_allowed_before_str_str), ",", whitep);
 	    return FAIL;
 	}
 	whitep = *arg + 1;
@@ -4270,7 +4270,7 @@ compile_expr7t(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	if (**arg != '>')
 	{
 	    if (*skipwhite(*arg) == '>')
-		semsg(_(e_no_white_space_allowed_before_str), ">");
+		semsg(_(e_no_white_space_allowed_before_str_str), ">", *arg);
 	    else
 		emsg(_(e_missing_gt));
 	    return FAIL;

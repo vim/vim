@@ -638,7 +638,7 @@ parse_type_member(
 	if (give_error)
 	{
 	    if (*skipwhite(*arg) == '<')
-		semsg(_(e_no_white_space_allowed_before_str), "<");
+		semsg(_(e_no_white_space_allowed_before_str_str), "<", *arg);
 	    else
 		emsg(_(e_missing_type));
 	}
@@ -779,7 +779,8 @@ parse_type(char_u **arg, garray_T *type_gap, int give_error)
 			if (*p != ',' && *skipwhite(p) == ',')
 			{
 			    if (give_error)
-				semsg(_(e_no_white_space_allowed_before_str), ",");
+				semsg(_(e_no_white_space_allowed_before_str_str),
+								       ",", p);
 			    return NULL;
 			}
 			if (*p == ',')

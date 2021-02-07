@@ -878,7 +878,7 @@ get_func_tv(
 	{
 	    if (*argp != ',' && *skipwhite(argp) == ',')
 	    {
-		semsg(_(e_no_white_space_allowed_before_str), ",");
+		semsg(_(e_no_white_space_allowed_before_str_str), ",", argp);
 		ret = FAIL;
 		break;
 	    }
@@ -3214,7 +3214,7 @@ define_function(exarg_T *eap, char_u *name_arg)
 
     if ((vim9script || eap->cmdidx == CMD_def) && VIM_ISWHITE(p[-1]))
     {
-	semsg(_(e_no_white_space_allowed_before_str), "(");
+	semsg(_(e_no_white_space_allowed_before_str_str), "(", p - 1);
 	goto ret_free;
     }
 
