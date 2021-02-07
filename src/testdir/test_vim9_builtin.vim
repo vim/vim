@@ -824,11 +824,13 @@ def Test_set_get_bufline()
       assert_equal([], getbufline(b, 6))
       assert_equal([], getbufline(b, 2, 1))
 
-      setbufline(b, 2, [function('eval'), {key: 123}, test_null_job()])
-      assert_equal(["function('eval')",
-                      "{'key': 123}",
-                      "no process"],
-                      getbufline(b, 2, 4))
+      if has('job')
+        setbufline(b, 2, [function('eval'), {key: 123}, test_null_job()])
+        assert_equal(["function('eval')",
+                        "{'key': 123}",
+                        "no process"],
+                        getbufline(b, 2, 4))
+      endif
 
       exe 'bwipe! ' .. b
   END
