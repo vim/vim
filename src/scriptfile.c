@@ -1319,6 +1319,9 @@ do_source(
 	    }
 	// imports can be redefined once
 	mark_imports_for_reload(sid);
+
+	// reset version, "vim9script" may have been added or removed.
+	si->sn_version = 1;
     }
     else
     {
@@ -1457,7 +1460,7 @@ almosttheend:
     if (si->sn_save_cpo != NULL)
     {
 	set_option_value((char_u *)"cpo", 0L, si->sn_save_cpo, 0);
-	CLEAR_POINTER(si->sn_save_cpo);
+	VIM_CLEAR(si->sn_save_cpo);
     }
 
     restore_funccal();

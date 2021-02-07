@@ -2207,7 +2207,7 @@ def Test_while_loop()
   assert_equal('1_3_', result)
 
   var s = ''
-  while s == 'x' #{comment
+  while s == 'x' #{comment}
   endwhile
 enddef
 
@@ -3155,6 +3155,19 @@ def Test_restoring_cpo()
   delete('Xsourced')
   delete('Xclose')
   delete('Xdone')
+
+  writefile(['vim9script'], 'XanotherScript')
+  set cpo=aABceFsMny>
+  edit XanotherScript
+  so %
+  assert_equal('aABceFsMny>', &cpo)
+  :1del
+  w
+  so %
+  assert_equal('aABceFsMny>', &cpo)
+
+  delete('XanotherScript')
+  set cpo&vim
 enddef
 
 
