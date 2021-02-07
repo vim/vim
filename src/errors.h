@@ -355,3 +355,5 @@ EXTERN char e_cannot_use_flatten_in_vim9_script[]
 	INIT(= N_("E1158: Cannot use flatten() in Vim9 script"));
 EXTERN char e_cannot_split_window_when_closing_buffer[]
 	INIT(= N_("E1159: Cannot split a window when closing the buffer"));
+EXTERN char e_cannot_use_default_for_variable_arguments[]
+	INIT(= N_("E1160: Cannot use a default for variable arguments"));
