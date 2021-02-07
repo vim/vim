@@ -2205,6 +2205,10 @@ def Test_while_loop()
     result ..= cnt .. '_'
   endwhile
   assert_equal('1_3_', result)
+
+  var s = ''
+  while s == 'x' #{comment
+  endwhile
 enddef
 
 def Test_while_loop_fails()
