@@ -781,6 +781,16 @@ def Test_call_def_varargs()
       Func(1, 'a')
   END
   CheckScriptFailure(lines, 'E1013: Argument 1: type mismatch')
+
+  lines =<< trim END
+      vim9script
+      def Func(  # some comment
+                ...l = []
+                )
+        echo l
+      enddef
+  END
+  CheckScriptFailure(lines, 'E1160:')
 enddef
 
 let s:value = ''

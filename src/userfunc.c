@@ -241,6 +241,11 @@ get_function_args(
 									 skip);
 		if (p == arg)
 		    break;
+		if (*skipwhite(p) == '=')
+		{
+		    emsg(_(e_cannot_use_default_for_variable_arguments));
+		    break;
+		}
 	    }
 	}
 	else
