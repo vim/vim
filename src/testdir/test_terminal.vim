@@ -965,7 +965,7 @@ func Test_terminal_composing_unicode()
   call assert_equal("b", l[1].chars)
   call assert_equal("c", l[2].chars)
 
-  " multibyte + composing
+  " multibyte + composing: がぎぐげご
   let txt = "\u304b\u3099\u304e\u304f\u3099\u3052\u3053\u3099"
   call term_sendkeys(buf, "echo " . txt)
   call TermWait(buf, 25)
@@ -974,10 +974,15 @@ func Test_terminal_composing_unicode()
   call WaitForAssert({-> assert_equal(txt, term_getline(buf, lnum[1] + 1))}, 1000)
   let l = term_scrape(buf, lnum[1] + 1)
   call assert_equal("\u304b\u3099", l[0].chars)
-  call assert_equal("\u304e", l[2].chars)
-  call assert_equal("\u304f\u3099", l[3].chars)
-  call assert_equal("\u3052", l[5].chars)
-  call assert_equal("\u3053\u3099", l[6].chars)
+  call assert_equal(2, l[0].width)
+  call assert_equal("\u304e", l[1].chars)
+  call assert_equal(2, l[1].width)
+  call assert_equal("\u304f\u3099", l[2].chars)
+  call assert_equal(2, l[2].width)
+  call assert_equal("\u3052", l[3].chars)
+  call assert_equal(2, l[3].width)
+  call assert_equal("\u3053\u3099", l[4].chars)
+  call assert_equal(2, l[4].width)
 
   " \u00a0 + composing
   let txt = "abc\u00a0\u0308"
@@ -1242,6 +1247,26 @@ func Test_open_term_from_cmd()
 
   call StopVimInTerminal(buf)
   call delete('Xopenterm')
+endfunc
+
+func Test_combining_double_width()
+  CheckUnix
+  CheckRunVimInTerminal
+
+  call writefile(["\xe3\x83\x9b\xe3\x82\x9a"], 'Xonedouble')
+  let lines =<< trim END
+      call term_start(['/bin/sh', '-c', 'cat Xonedouble'])
+  END
+  call writefile(lines, 'Xcombining')
+  let buf = RunVimInTerminal('-S Xcombining', #{rows: 9})
+
+  " this opens a window, incsearch should not use the old cursor position
+  call VerifyScreenDump(buf, 'Test_terminal_combining', {})
+  call term_sendkeys(buf, ":q\<CR>")
+
+  call StopVimInTerminal(buf)
+  call delete('Xonedouble')
+  call delete('Xcombining')
 endfunc
 
 func Test_terminal_popup_with_cmd()

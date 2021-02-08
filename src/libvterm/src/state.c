@@ -384,7 +384,8 @@ static int on_text(const char bytes[], size_t len, void *user)
         abort();
       }
 #endif
-      width += this_width;
+      if (i == glyph_starts || this_width > width)
+	width = this_width;
     }
 
     chars[glyph_ends - glyph_starts] = 0;
