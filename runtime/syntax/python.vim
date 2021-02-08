@@ -94,7 +94,7 @@ endif
 "
 syn keyword pythonStatement	False None True
 syn keyword pythonStatement	as assert break continue del exec global
-syn keyword pythonStatement	lambda nonlocal pass print return with yield breakpoint
+syn keyword pythonStatement	breakpoint lambda nonlocal pass print return with yield
 syn keyword pythonStatement	class def nextgroup=pythonFunction skipwhite
 syn keyword pythonConditional	elif else if
 syn keyword pythonRepeat	for while
@@ -206,7 +206,7 @@ if !exists("python_no_builtin_highlight")
   syn keyword pythonBuiltin	help hex id input int isinstance
   syn keyword pythonBuiltin	issubclass iter len list locals map max
   syn keyword pythonBuiltin	memoryview min next object oct open ord pow
-  syn keyword pythonBuiltin	print property range repr reversed round set breakpoint
+  syn keyword pythonBuiltin	breakpoint print property range repr reversed round set
   syn keyword pythonBuiltin	setattr slice sorted staticmethod str
   syn keyword pythonBuiltin	sum super tuple type vars zip __import__
   " Python 2 only
