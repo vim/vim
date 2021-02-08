@@ -107,8 +107,8 @@ func Test_json_encode()
   call assert_equal('"café"', json_encode("caf\xe9"))
   let &encoding = save_encoding
 
-  call assert_fails('echo json_encode(function("tr"))', 'E474:')
-  call assert_fails('echo json_encode([function("tr")])', 'E474:')
+  call assert_fails('echo json_encode(function("tr"))', 'E1161: Cannot json encode a func')
+  call assert_fails('echo json_encode([function("tr")])', 'E1161: Cannot json encode a func')
 
   call assert_equal('{"a":""}', json_encode({'a': test_null_string()}))
   call assert_equal('{"a":[]}', json_encode({"a": test_null_list()}))
@@ -246,8 +246,8 @@ func Test_js_encode()
 
   call assert_equal(s:jsonvals, js_encode(s:varvals))
 
-  call assert_fails('echo js_encode(function("tr"))', 'E474:')
-  call assert_fails('echo js_encode([function("tr")])', 'E474:')
+  call assert_fails('echo js_encode(function("tr"))', 'E1161: Cannot json encode a func')
+  call assert_fails('echo js_encode([function("tr")])', 'E1161: Cannot json encode a func')
 
   silent! let res = js_encode(function("tr"))
   call assert_equal("", res)

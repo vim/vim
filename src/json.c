@@ -230,8 +230,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	case VAR_PARTIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:
-	    // no JSON equivalent TODO: better error
-	    emsg(_(e_invarg));
+	    semsg(_(e_cannot_json_encode_str), vartype_name(val->v_type));
 	    return FAIL;
 
 	case VAR_BLOB:

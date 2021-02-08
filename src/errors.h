@@ -357,3 +357,5 @@ EXTERN char e_cannot_split_window_when_closing_buffer[]
 	INIT(= N_("E1159: Cannot split a window when closing the buffer"));
 EXTERN char e_cannot_use_default_for_variable_arguments[]
 	INIT(= N_("E1160: Cannot use a default for variable arguments"));
+EXTERN char e_cannot_json_encode_str[]
+	INIT(= N_("E1161: Cannot json encode a %s"));
