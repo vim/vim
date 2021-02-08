@@ -180,7 +180,6 @@ function! phpcomplete#CompletePHP(findstart, base) " {{{
 				endif
 
 				if filereadable(classlocation)
-					let classfile = readfile(classlocation)
 					let classcontent = ''
 					let classcontent .= "\n".phpcomplete#GetClassContents(classlocation, classname)
 					let sccontent = split(classcontent, "\n")
@@ -2082,8 +2081,6 @@ function! phpcomplete#GetClassContentsStructure(file_path, file_lines, class_nam
 	let full_file_path = fnamemodify(a:file_path, ':p')
 	let result = []
 	let popup_id = popup_create(a:file_lines, {'hidden': v:true})
-    call win_execute(popup_id, 'syntax on')
-	call win_execute(popup_id, 'set ft=phpcompletetempbuffer')
 
 	call win_execute(popup_id, 'call search(''\c\(class\|interface\|trait\)\_s\+'.a:class_name.'\(\>\|$\)'')')
 	call win_execute(popup_id, "let cfline = line('.')")
@@ -2526,8 +2523,6 @@ endfunction
 
 function! phpcomplete#GetCurrentNameSpace(file_lines) " {{{
 	let popup_id = popup_create(a:file_lines, {'hidden': v:true})
-	call win_execute(popup_id, 'syntax on')
-	call win_execute(popup_id, 'set ft=phpcompletetempbuffer')
 	call win_execute(popup_id, 'normal! G')
 
 	" clear out classes, functions and other blocks
