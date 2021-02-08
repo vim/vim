@@ -2533,14 +2533,16 @@ function! phpcomplete#GetCurrentNameSpace(file_lines) " {{{
 		endif
 		call win_execute(popup_id, 'let block_end_pos = searchpairpos("{", "", ''}\|\%$'', "W", ''synIDattr(synID(line("."), col("."), 0), "name") =~? "string\\|comment"'')')
 
+		let popup_lines = winbufnr(popup_id)->getbufline(1, '$')
 		if block_end_pos != [0, 0]
 			" end of the block found, just delete it
-			call win_execute(popup_id, 'exec "'.block_start_pos[0].','.block_end_pos[0].'d _"')
+			call remove(popup_lines, block_start_pos[0] - 1, block_end_pos[0] - 1)
 		else
 			" block pair not found, use block start as beginning and the end
 			" of the buffer instead
-			call win_execute(popup_id, 'exec "'.block_start_pos[0].',$d _"')
+			call remove(popup_lines, block_start_pos[0] - 1, -1)
 		endif
+		call popup_settext(popup_id, popup_lines)
 	endwhile
 	call win_execute(popup_id, 'normal! G', 'silent!')
 
