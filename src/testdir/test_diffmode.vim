@@ -1045,9 +1045,9 @@ func Test_diff_closeoff()
   enew!
 endfunc
 
-func Test_diff_wrapasis()
+func Test_diff_followwrap()
   new
-  set diffopt+=wrapasis
+  set diffopt+=followwrap
   set wrap
   diffthis
   call assert_equal(1, &wrap)
