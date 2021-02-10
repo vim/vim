@@ -359,3 +359,5 @@ EXTERN char e_cannot_use_default_for_variable_arguments[]
 	INIT(= N_("E1160: Cannot use a default for variable arguments"));
 EXTERN char e_cannot_json_encode_str[]
 	INIT(= N_("E1161: Cannot json encode a %s"));
+EXTERN char e_register_name_must_be_one_char_str[]
+	INIT(= N_("E1162: Register name must be one character: %s"));

@@ -531,12 +531,27 @@ def Test_getreg()
   var lines = ['aaa', 'bbb', 'ccc']
   setreg('a', lines)
   getreg('a', true, true)->assert_equal(lines)
+  assert_fails('getreg("ab")', 'E1162:')
 enddef
 
 def Test_getreg_return_type()
   var s1: string = getreg('"')
   var s2: string = getreg('"', 1)
   var s3: list<string> = getreg('"', 1, 1)
+enddef
+
+def Test_getreginfo()
+  var text = 'abc'
+  setreg('a', text)
+  getreginfo('a')->assert_equal({regcontents: [text], regtype: 'v', isunnamed: false})
+  assert_fails('getreginfo("ab")', 'E1162:')
+enddef
+
+def Test_getregtype()
+  var lines = ['aaa', 'bbb', 'ccc']
+  setreg('a', lines)
+  getregtype('a')->assert_equal('V')
+  assert_fails('getregtype("ab")', 'E1162:')
 enddef
 
 def Test_glob()
@@ -878,6 +893,7 @@ def Test_setreg()
   var reginfo = getreginfo('a')
   setreg('a', reginfo)
   getreginfo('a')->assert_equal(reginfo)
+  assert_fails('setreg("ab", 0)', 'E1162:')
 enddef 
 
 def Test_slice()
