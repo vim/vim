@@ -1193,6 +1193,12 @@ popup_adjust_position(win_T *wp)
 	textpos2screenpos(prop_win, &pos, &screen_row,
 				     &screen_scol, &screen_ccol, &screen_ecol);
 
+	if (screen_scol == 0)
+	{
+	    // position is off screen, make the width zero to hide it.
+	    wp->w_width = 0;
+	    return;
+	}
 	if (wp->w_popup_pos == POPPOS_TOPLEFT
 		|| wp->w_popup_pos == POPPOS_TOPRIGHT)
 	    // below the text
