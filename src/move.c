@@ -1125,10 +1125,10 @@ curs_columns(
 	    n = curwin->w_wrow + so;
 	else
 	    n = p_lines;
-	if ((colnr_T)n >= curwin->w_height + curwin->w_skipcol / width)
+	if ((colnr_T)n >= curwin->w_height + curwin->w_skipcol / width - so)
 	    extra += 2;
 
-	if (extra == 3 || p_lines < so * 2)
+	if (extra == 3 || p_lines <= so * 2)
 	{
 	    // not enough room for 'scrolloff', put cursor in the middle
 	    n = curwin->w_virtcol / width;
