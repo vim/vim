@@ -1418,7 +1418,12 @@ win_line(
 		// Add any text property that starts in this column.
 		while (text_prop_next < text_prop_count
 			   && bcol >= text_props[text_prop_next].tp_col - 1)
-		    text_prop_idxs[text_props_active++] = text_prop_next++;
+		{
+		    if (bcol <= text_props[text_prop_next].tp_col - 1
+					   + text_props[text_prop_next].tp_len)
+			text_prop_idxs[text_props_active++] = text_prop_next;
+		    ++text_prop_next;
+		}
 
 		text_prop_attr = 0;
 		text_prop_combine = FALSE;

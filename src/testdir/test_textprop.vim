@@ -1049,6 +1049,30 @@ func Test_textprop_after_tab()
   call delete('XtestPropTab')
 endfunc
 
+func Test_textprop_nowrap_scrolled()
+  CheckScreendump
+
+  let lines =<< trim END
+       vim9script
+       set nowrap
+       setline(1, 'The number 123 is smaller than 4567.' .. repeat('X', &columns))
+       prop_type_add('number', {'highlight': 'ErrorMsg'})
+       prop_add(1, 12, {'length': 3, 'type': 'number'})
+       prop_add(1, 32, {'length': 4, 'type': 'number'})
+       feedkeys('gg20zl', 'nxt')
+  END
+  call writefile(lines, 'XtestNowrap')
+  let buf = RunVimInTerminal('-S XtestNowrap', {'rows': 6})
+  call VerifyScreenDump(buf, 'Test_textprop_nowrap_01', {})
+
+  call term_sendkeys(buf, "$")
+  call VerifyScreenDump(buf, 'Test_textprop_nowrap_02', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestNowrap')
+endfunc
+
 func Test_textprop_with_syntax()
   CheckScreendump
 
