@@ -4219,7 +4219,7 @@ open_cmdwin(void)
     }
 
     apply_autocmds(EVENT_BUFFILEPRE, NULL, NULL, FALSE, curbuf);
-    (void)setfname(curbuf, (char_u *)"[Command Line]", NULL, TRUE);
+    (void)setfname(curbuf, (char_u *)_("[Command Line]"), NULL, TRUE);
     apply_autocmds(EVENT_BUFFILEPOST, NULL, NULL, FALSE, curbuf);
     set_option_value((char_u *)"bt", 0L, (char_u *)"nofile", OPT_LOCAL);
     curbuf->b_p_ma = TRUE;
