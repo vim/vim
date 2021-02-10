@@ -36,6 +36,7 @@ static int diff_need_update = FALSE; // ex_diffupdate needs to be called
 #define DIFF_HIDDEN_OFF	0x100	// diffoff when hidden
 #define DIFF_INTERNAL	0x200	// use internal xdiff algorithm
 #define DIFF_CLOSE_OFF	0x400	// diffoff when closing window
+#define DIFF_FOLLOWWRAP	0x800	// follow the wrap option
 #define ALL_WHITE_DIFF (DIFF_IWHITE | DIFF_IWHITEALL | DIFF_IWHITEEOL)
 static int	diff_flags = DIFF_INTERNAL | DIFF_FILLER | DIFF_CLOSE_OFF;
 
@@ -1454,9 +1455,12 @@ diff_win_options(
     if (!wp->w_p_diff)
 	wp->w_p_crb_save = wp->w_p_crb;
     wp->w_p_crb = TRUE;
-    if (!wp->w_p_diff)
-	wp->w_p_wrap_save = wp->w_p_wrap;
-    wp->w_p_wrap = FALSE;
+    if (!(diff_flags & DIFF_FOLLOWWRAP))
+    {
+        if (!wp->w_p_diff)
+	    wp->w_p_wrap_save = wp->w_p_wrap;
+        wp->w_p_wrap = FALSE;
+    }
 # ifdef FEAT_FOLDING
     if (!wp->w_p_diff)
     {
@@ -1517,8 +1521,11 @@ ex_diffoff(exarg_T *eap)
 		    wp->w_p_scb = wp->w_p_scb_save;
 		if (wp->w_p_crb)
 		    wp->w_p_crb = wp->w_p_crb_save;
-		if (!wp->w_p_wrap)
-		    wp->w_p_wrap = wp->w_p_wrap_save;
+		if (!(diff_flags & DIFF_FOLLOWWRAP))
+		{
+		    if (!wp->w_p_wrap)
+		        wp->w_p_wrap = wp->w_p_wrap_save;
+		}
 #ifdef FEAT_FOLDING
 		free_string_option(wp->w_p_fdm);
 		wp->w_p_fdm = vim_strsave(
@@ -2244,6 +2251,11 @@ diffopt_changed(void)
 	{
 	    p += 8;
 	    diff_flags_new |= DIFF_CLOSE_OFF;
+	}
+	else if (STRNCMP(p, "followwrap", 10) == 0)
+	{
+	    p += 10;
+	    diff_flags_new |= DIFF_FOLLOWWRAP;
 	}
 	else if (STRNCMP(p, "indent-heuristic", 16) == 0)
 	{
