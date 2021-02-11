@@ -851,7 +851,7 @@ store_var(char_u *name, typval_T *tv)
     funccal_entry_T entry;
 
     save_funccal(&entry);
-    set_var_const(name, NULL, tv, FALSE, ASSIGN_DECL);
+    set_var_const(name, NULL, tv, FALSE, ASSIGN_DECL, 0);
     restore_funccal();
 }
 
@@ -1146,6 +1146,7 @@ call_def_function(
     int		save_did_emsg_def = did_emsg_def;
     int		trylevel_at_start = trylevel;
     int		orig_funcdepth;
+    where_T	where;
 
 // Get pointer to item in the stack.
 #define STACK_TV(idx) (((typval_T *)ectx.ec_stack.ga_data) + idx)
@@ -1202,7 +1203,7 @@ call_def_function(
 									 ++idx)
     {
 	if (ufunc->uf_arg_types != NULL && idx < ufunc->uf_args.ga_len
-		&& check_typval_type(ufunc->uf_arg_types[idx], &argv[idx],
+		&& check_typval_arg_type(ufunc->uf_arg_types[idx], &argv[idx],
 							      idx + 1) == FAIL)
 	    goto failed_early;
 	copy_tv(&argv[idx], STACK_TV_BOT(0));
@@ -1233,7 +1234,7 @@ call_def_function(
 
 	    for (idx = 0; idx < vararg_count; ++idx)
 	    {
-		if (check_typval_type(expected, &li->li_tv,
+		if (check_typval_arg_type(expected, &li->li_tv,
 						       argc + idx + 1) == FAIL)
 		    goto failed_early;
 		li = li->li_next;
@@ -1332,6 +1333,9 @@ call_def_function(
     // function.  If ":silent!" is used in the function then we don't.
     emsg_silent_def = emsg_silent;
     did_emsg_def = 0;
+
+    where.wt_index = 0;
+    where.wt_variable = FALSE;
 
     // Decide where to start execution, handles optional arguments.
     init_instr_idx(ufunc, argc, &ectx);
@@ -3170,6 +3174,11 @@ call_def_function(
 			goto failed;
 		    ++ectx.ec_stack.ga_len;
 		    copy_tv(&li->li_tv, STACK_TV_BOT(-1));
+
+		    // Useful when used in unpack assignment.  Reset at
+		    // ISN_DROP.
+		    where.wt_index = index + 1;
+		    where.wt_variable = TRUE;
 		}
 		break;
 
@@ -3288,9 +3297,12 @@ call_def_function(
 
 		    tv = STACK_TV_BOT((int)ct->ct_off);
 		    SOURCING_LNUM = iptr->isn_lnum;
-		    if (check_typval_type(ct->ct_type, tv, ct->ct_arg_idx)
-								       == FAIL)
+		    if (!where.wt_variable)
+			where.wt_index = ct->ct_arg_idx;
+		    if (check_typval_type(ct->ct_type, tv, where) == FAIL)
 			goto on_error;
+		    if (!where.wt_variable)
+			where.wt_index = 0;
 
 		    // number 0 is FALSE, number 1 is TRUE
 		    if (tv->v_type == VAR_NUMBER
@@ -3573,6 +3585,8 @@ call_def_function(
 	    case ISN_DROP:
 		--ectx.ec_stack.ga_len;
 		clear_tv(STACK_TV_BOT(0));
+		where.wt_index = 0;
+		where.wt_variable = FALSE;
 		break;
 	}
 	continue;

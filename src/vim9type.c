@@ -399,13 +399,22 @@ typval2type_vimvar(typval_T *tv, garray_T *type_gap)
     return typval2type(tv, type_gap);
 }
 
+    int
+check_typval_arg_type(type_T *expected, typval_T *actual_tv, int arg_idx)
+{
+    where_T	where;
+
+    where.wt_index = arg_idx;
+    where.wt_variable = FALSE;
+    return check_typval_type(expected, actual_tv, where);
+}
 
 /*
  * Return FAIL if "expected" and "actual" don't match.
  * When "argidx" > 0 it is included in the error message.
  */
     int
-check_typval_type(type_T *expected, typval_T *actual_tv, int argidx)
+check_typval_type(type_T *expected, typval_T *actual_tv, where_T where)
 {
     garray_T	type_list;
     type_T	*actual_type;
@@ -414,7 +423,7 @@ check_typval_type(type_T *expected, typval_T *actual_tv, int argidx)
     ga_init2(&type_list, sizeof(type_T *), 10);
     actual_type = typval2type(actual_tv, &type_list);
     if (actual_type != NULL)
-	res = check_type(expected, actual_type, TRUE, argidx);
+	res = check_type(expected, actual_type, TRUE, where);
     clear_type_list(&type_list);
     return res;
 }
@@ -426,15 +435,29 @@ type_mismatch(type_T *expected, type_T *actual)
 }
 
     void
-arg_type_mismatch(type_T *expected, type_T *actual, int argidx)
+arg_type_mismatch(type_T *expected, type_T *actual, int arg_idx)
+{
+    where_T	where;
+
+    where.wt_index = arg_idx;
+    where.wt_variable = FALSE;
+    type_mismatch_where(expected, actual, where);
+}
+
+    void
+type_mismatch_where(type_T *expected, type_T *actual, where_T where)
 {
     char *tofree1, *tofree2;
     char *typename1 = type_name(expected, &tofree1);
     char *typename2 = type_name(actual, &tofree2);
 
-    if (argidx > 0)
-	semsg(_(e_argument_nr_type_mismatch_expected_str_but_got_str),
-						 argidx, typename1, typename2);
+    if (where.wt_index > 0)
+    {
+	semsg(_(where.wt_variable
+			? e_variable_nr_type_mismatch_expected_str_but_got_str
+			: e_argument_nr_type_mismatch_expected_str_but_got_str),
+					 where.wt_index, typename1, typename2);
+    }
     else
 	semsg(_(e_type_mismatch_expected_str_but_got_str),
 							 typename1, typename2);
@@ -448,7 +471,7 @@ arg_type_mismatch(type_T *expected, type_T *actual, int argidx)
  * When "argidx" > 0 it is included in the error message.
  */
     int
-check_type(type_T *expected, type_T *actual, int give_msg, int argidx)
+check_type(type_T *expected, type_T *actual, int give_msg, where_T where)
 {
     int ret = OK;
 
@@ -469,7 +492,7 @@ check_type(type_T *expected, type_T *actual, int give_msg, int argidx)
 		// Using number 0 or 1 for bool is OK.
 		return OK;
 	    if (give_msg)
-		arg_type_mismatch(expected, actual, argidx);
+		type_mismatch_where(expected, actual, where);
 	    return FAIL;
 	}
 	if (expected->tt_type == VAR_DICT || expected->tt_type == VAR_LIST)
@@ -477,7 +500,7 @@ check_type(type_T *expected, type_T *actual, int give_msg, int argidx)
 	    // "unknown" is used for an empty list or dict
 	    if (actual->tt_member != &t_unknown)
 		ret = check_type(expected->tt_member, actual->tt_member,
-								     FALSE, 0);
+								 FALSE, where);
 	}
 	else if (expected->tt_type == VAR_FUNC)
 	{
@@ -486,7 +509,7 @@ check_type(type_T *expected, type_T *actual, int give_msg, int argidx)
 	    if (expected->tt_member != &t_unknown
 					    && actual->tt_member != &t_unknown)
 		ret = check_type(expected->tt_member, actual->tt_member,
-								     FALSE, 0);
+								 FALSE, where);
 	    if (ret == OK && expected->tt_argcount != -1
 		    && actual->tt_argcount != -1
 		    && (actual->tt_argcount < expected->tt_min_argcount
@@ -500,8 +523,8 @@ check_type(type_T *expected, type_T *actual, int give_msg, int argidx)
 		for (i = 0; i < expected->tt_argcount; ++i)
 		    // Allow for using "any" argument type, lambda's have them.
 		    if (actual->tt_args[i] != &t_any && check_type(
-			    expected->tt_args[i], actual->tt_args[i], FALSE, 0)
-								       == FAIL)
+			    expected->tt_args[i], actual->tt_args[i], FALSE,
+								where) == FAIL)
 		    {
 			ret = FAIL;
 			break;
@@ -509,7 +532,7 @@ check_type(type_T *expected, type_T *actual, int give_msg, int argidx)
 	    }
 	}
 	if (ret == FAIL && give_msg)
-	    arg_type_mismatch(expected, actual, argidx);
+	    type_mismatch_where(expected, actual, where);
     }
     return ret;
 }
@@ -552,7 +575,7 @@ check_argument_types(
 	    expected = type->tt_args[type->tt_argcount - 1]->tt_member;
 	else
 	    expected = type->tt_args[i];
-	if (check_typval_type(expected, &argvars[i], i + 1) == FAIL)
+	if (check_typval_arg_type(expected, &argvars[i], i + 1) == FAIL)
 	    return FAIL;
     }
     return OK;

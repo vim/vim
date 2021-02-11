@@ -14,5 +14,5 @@ void update_vim9_script_var(int create, dictitem_T *di, int flags, typval_T *tv,
 void hide_script_var(scriptitem_T *si, int idx, int func_defined);
 void free_all_script_vars(scriptitem_T *si);
 svar_T *find_typval_in_script(typval_T *dest);
-int check_script_var_type(typval_T *dest, typval_T *value, char_u *name);
+int check_script_var_type(typval_T *dest, typval_T *value, char_u *name, where_T where);
 /* vim: set ft=c : */

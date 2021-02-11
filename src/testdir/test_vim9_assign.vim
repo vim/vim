@@ -284,6 +284,14 @@ def Test_assign_unpack()
       [v1, v2] = ''
   END
   CheckDefFailure(lines, 'E1012: Type mismatch; expected list<any> but got string', 3)
+
+  lines =<< trim END
+    g:values = [false, 0]
+    var x: bool
+    var y: string
+    [x, y] = g:values
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1163: Variable 2: type mismatch, expected string but got number')
 enddef
 
 def Test_assign_linebreak()

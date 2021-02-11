@@ -1299,8 +1299,9 @@ set_var_lval(
     char_u	*endp,
     typval_T	*rettv,
     int		copy,
-    int		flags,    // ASSIGN_CONST, ASSIGN_NO_DECL
-    char_u	*op)
+    int		flags,	    // ASSIGN_CONST, ASSIGN_NO_DECL
+    char_u	*op,
+    int		var_idx)    // index for "let [a, b] = list"
 {
     int		cc;
     listitem_T	*ri;
@@ -1390,9 +1391,10 @@ set_var_lval(
 	else
 	{
 	    if (lp->ll_type != NULL
-			   && check_typval_type(lp->ll_type, rettv, 0) == FAIL)
+		       && check_typval_arg_type(lp->ll_type, rettv, 0) == FAIL)
 		return;
-	    set_var_const(lp->ll_name, lp->ll_type, rettv, copy, flags);
+	    set_var_const(lp->ll_name, lp->ll_type, rettv, copy,
+							       flags, var_idx);
 	}
 	*endp = cc;
     }
@@ -1471,7 +1473,7 @@ set_var_lval(
 	}
 
 	if (lp->ll_valtype != NULL
-			&& check_typval_type(lp->ll_valtype, rettv, 0) == FAIL)
+		    && check_typval_arg_type(lp->ll_valtype, rettv, 0) == FAIL)
 	    return;
 
 	if (lp->ll_newkey != NULL)

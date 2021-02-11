@@ -650,7 +650,7 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
 	init_tv.v_type = VAR_NUMBER;
     else
 	init_tv.v_type = type->tt_type;
-    set_var_const(name, type, &init_tv, FALSE, 0);
+    set_var_const(name, type, &init_tv, FALSE, 0, 0);
 
     vim_free(name);
     return p;
@@ -855,7 +855,7 @@ find_typval_in_script(typval_T *dest)
 	if (sv->sv_name != NULL && sv->sv_tv == dest)
 	    return sv;
     }
-    iemsg("check_script_var_type(): not found");
+    iemsg("find_typval_in_script(): not found");
     return NULL;
 }
 
@@ -864,7 +864,11 @@ find_typval_in_script(typval_T *dest)
  * If needed convert "value" to a bool.
  */
     int
-check_script_var_type(typval_T *dest, typval_T *value, char_u *name)
+check_script_var_type(
+	typval_T    *dest,
+	typval_T    *value,
+	char_u	    *name,
+	where_T	    where)
 {
     svar_T  *sv = find_typval_in_script(dest);
     int	    ret;
@@ -876,7 +880,7 @@ check_script_var_type(typval_T *dest, typval_T *value, char_u *name)
 	    semsg(_(e_readonlyvar), name);
 	    return FAIL;
 	}
-	ret = check_typval_type(sv->sv_type, value, 0);
+	ret = check_typval_type(sv->sv_type, value, where);
 	if (ret == OK && need_convert_to_bool(sv->sv_type, value))
 	{
 	    int	val = tv2bool(value);

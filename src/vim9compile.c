@@ -893,6 +893,8 @@ need_type(
 	int	silent,
 	int	actual_is_const)
 {
+    where_T where;
+
     if (expected == &t_bool && actual != &t_bool
 					&& (actual->tt_flags & TTFLAG_BOOL_OK))
     {
@@ -902,7 +904,9 @@ need_type(
 	return OK;
     }
 
-    if (check_type(expected, actual, FALSE, arg_idx) == OK)
+    where.wt_index = arg_idx;
+    where.wt_variable = FALSE;
+    if (check_type(expected, actual, FALSE, where) == OK)
 	return OK;
 
     // If the actual type can be the expected type add a runtime check.
@@ -4287,10 +4291,13 @@ compile_expr7t(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     {
 	garray_T    *stack = &cctx->ctx_type_stack;
 	type_T	    *actual;
+	where_T	    where;
 
 	generate_ppconst(cctx, ppconst);
 	actual = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-	if (check_type(want_type, actual, FALSE, 0) == FAIL)
+	where.wt_index = 0;
+	where.wt_variable = FALSE;
+	if (check_type(want_type, actual, FALSE, where) == FAIL)
 	{
 	    if (need_type(actual, want_type, -1, 0, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
@@ -8078,6 +8085,7 @@ compile_def_function(
 	    garray_T	*stack = &cctx.ctx_type_stack;
 	    type_T	*val_type;
 	    int		arg_idx = first_def_arg + i;
+	    where_T	where;
 
 	    ufunc->uf_def_arg_idx[i] = instr->ga_len;
 	    arg = ((char_u **)(ufunc->uf_def_args.ga_data))[i];
@@ -8088,13 +8096,15 @@ compile_def_function(
 	    // Otherwise check that the default value type matches the
 	    // specified type.
 	    val_type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	    where.wt_index = arg_idx + 1;
+	    where.wt_variable = FALSE;
 	    if (ufunc->uf_arg_types[arg_idx] == &t_unknown)
 	    {
 		did_set_arg_type = TRUE;
 		ufunc->uf_arg_types[arg_idx] = val_type;
 	    }
 	    else if (check_type(ufunc->uf_arg_types[arg_idx], val_type,
-						    TRUE, arg_idx + 1) == FAIL)
+							  TRUE, where) == FAIL)
 		goto erret;
 
 	    if (generate_STORE(&cctx, ISN_STORE, i - count - off, NULL) == FAIL)
