@@ -638,6 +638,7 @@ func Test_viminfo_oldfiles()
 	\ ]
   call writefile(lines, 'Xviminfo')
   delmark E
+  edit /tmp/file_two.txt
   rviminfo! Xviminfo
   call delete('Xviminfo')
 
