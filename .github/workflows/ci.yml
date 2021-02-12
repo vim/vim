@@ -207,7 +207,8 @@ jobs:
           COVERALLS_PARALLEL: true
           TRAVIS_JOB_ID: ${{ github.run_id }}
         run: |
-          sudo apt-get install -y python3-setuptools python3-wheel
+          sudo apt-get install -y python3-setuptools python3-wheel rustc
+          pip3 install --user setuptools-rust
           # needed for https support for coveralls building cffi only works with gcc, not with clang
           CC=gcc pip3 install --user cpp-coveralls pyopenssl ndg-httpsclient pyasn1
           ~/.local/bin/coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --encodings utf-8
