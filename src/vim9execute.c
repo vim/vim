@@ -24,7 +24,8 @@
 
 // Structure put on ec_trystack when ISN_TRY is encountered.
 typedef struct {
-    int	    tcd_frame_idx;	// ec_frame_idx when ISN_TRY was encountered
+    int	    tcd_frame_idx;	// ec_frame_idx at ISN_TRY
+    int	    tcd_stack_len;	// size of ectx.ec_stack at ISN_TRY
     int	    tcd_catch_idx;	// instruction of the first catch
     int	    tcd_finally_idx;	// instruction of the finally block
     int	    tcd_caught;		// catch block entered
@@ -2561,6 +2562,7 @@ call_def_function(
 		    ++ectx.ec_trystack.ga_len;
 		    ++trylevel;
 		    trycmd->tcd_frame_idx = ectx.ec_frame_idx;
+		    trycmd->tcd_stack_len = ectx.ec_stack.ga_len;
 		    trycmd->tcd_catch_idx = iptr->isn_arg.try.try_catch;
 		    trycmd->tcd_finally_idx = iptr->isn_arg.try.try_finally;
 		    trycmd->tcd_caught = FALSE;
@@ -2632,6 +2634,12 @@ call_def_function(
 
 			if (trycmd->tcd_return)
 			    goto func_return;
+
+			while (ectx.ec_stack.ga_len > trycmd->tcd_stack_len)
+			{
+			    --ectx.ec_stack.ga_len;
+			    clear_tv(STACK_TV_BOT(0));
+			}
 		    }
 		}
 		break;

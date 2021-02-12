@@ -556,6 +556,16 @@ def Test_try_catch_throw()
     n = 411
   endtry
   assert_equal(411, n)
+
+  var counter = 0
+  for i in range(4)
+    try
+      eval [][0]
+    catch
+    endtry
+    counter += 1
+  endfor
+  assert_equal(4, counter)
 enddef
 
 def Test_cnext_works_in_catch()
