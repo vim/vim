@@ -261,7 +261,8 @@ arg_exists(
 	if (arg_exists(name, len, idxp, type, gen_load_outer, cctx->ctx_outer)
 									 == OK)
 	{
-	    ++*gen_load_outer;
+	    if (gen_load_outer != NULL)
+		++*gen_load_outer;
 	    return OK;
 	}
     }
