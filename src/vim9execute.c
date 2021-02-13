@@ -2563,12 +2563,11 @@ call_def_function(
 						     + ectx.ec_trystack.ga_len;
 		    ++ectx.ec_trystack.ga_len;
 		    ++trylevel;
+		    CLEAR_POINTER(trycmd);
 		    trycmd->tcd_frame_idx = ectx.ec_frame_idx;
 		    trycmd->tcd_stack_len = ectx.ec_stack.ga_len;
 		    trycmd->tcd_catch_idx = iptr->isn_arg.try.try_catch;
 		    trycmd->tcd_finally_idx = iptr->isn_arg.try.try_finally;
-		    trycmd->tcd_caught = FALSE;
-		    trycmd->tcd_return = FALSE;
 		}
 		break;
 
@@ -2670,7 +2669,7 @@ call_def_function(
 			    --ectx.ec_stack.ga_len;
 			    clear_tv(STACK_TV_BOT(0));
 			}
-			if (trycmd->tcd_cont)
+			if (trycmd->tcd_cont != 0)
 			    // handling :continue: jump to outer try block or
 			    // start of the loop
 			    ectx.ec_iidx = trycmd->tcd_cont;
