@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 8.2.  Last change: 2019 Nov 10
+*diff.txt*      For Vim version 8.2.  Last change: 2021 Feb 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -59,7 +59,7 @@ In each of the edited files these options are set:
 	'scrollbind'	on
 	'cursorbind'	on
 	'scrollopt'	includes "hor"
-	'wrap'		off
+	'wrap'		off, or leave as-is if 'diffopt' includes "followwrap"
 	'foldmethod'	"diff"
 	'foldcolumn'	value from 'diffopt', default is 2
 
@@ -144,7 +144,7 @@ Otherwise they are set to their default value:
 	'scrollbind'	off
 	'cursorbind'	off
 	'scrollopt'	without "hor"
-	'wrap'		on
+	'wrap'		on, or leave as-is if 'diffopt' includes "followwrap"
 	'foldmethod'	"manual"
 	'foldcolumn'	0
 

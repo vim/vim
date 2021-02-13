@@ -2219,7 +2219,8 @@ buf_compare(const void *s1, const void *s2)
 /*
  * Handle marks in the viminfo file:
  * fp_out != NULL: copy marks, in time order with buffers in "buflist".
- * fp_out == NULL && (flags & VIF_WANT_MARKS): read marks for curbuf only
+ * fp_out == NULL && (flags & VIF_WANT_MARKS): read marks for curbuf
+ * fp_out == NULL && (flags & VIF_ONLY_CURBUF): bail out after curbuf marks
  * fp_out == NULL && (flags & VIF_GET_OLDFILES | VIF_FORCEIT): fill v:oldfiles
  */
     static void
@@ -2448,7 +2449,8 @@ copy_viminfo_marks(
 		    wp->w_changelistidx = curbuf->b_changelistlen;
 	    }
 #endif
-	    break;
+	    if (flags & VIF_ONLY_CURBUF)
+		break;
 	}
     }
 
@@ -2473,7 +2475,7 @@ check_marks_read(void)
 {
     if (!curbuf->b_marks_read && get_viminfo_parameter('\'') > 0
 						  && curbuf->b_ffname != NULL)
-	read_viminfo(NULL, VIF_WANT_MARKS);
+	read_viminfo(NULL, VIF_WANT_MARKS | VIF_ONLY_CURBUF);
 
     // Always set b_marks_read; needed when 'viminfo' is changed to include
     // the ' parameter after opening a buffer.
@@ -2953,8 +2955,8 @@ do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
 		    && vir.vir_line[0] != '>')
 		;
 
-	do_copy_marks = (flags &
-			   (VIF_WANT_MARKS | VIF_GET_OLDFILES | VIF_FORCEIT));
+	do_copy_marks = (flags & (VIF_WANT_MARKS | VIF_ONLY_CURBUF
+					    | VIF_GET_OLDFILES | VIF_FORCEIT));
     }
 
     if (fp_out != NULL)

@@ -1193,6 +1193,12 @@ popup_adjust_position(win_T *wp)
 	textpos2screenpos(prop_win, &pos, &screen_row,
 				     &screen_scol, &screen_ccol, &screen_ecol);
 
+	if (screen_scol == 0)
+	{
+	    // position is off screen, make the width zero to hide it.
+	    wp->w_width = 0;
+	    return;
+	}
 	if (wp->w_popup_pos == POPPOS_TOPLEFT
 		|| wp->w_popup_pos == POPPOS_TOPRIGHT)
 	    // below the text
@@ -3325,8 +3331,12 @@ popup_update_mask(win_T *wp, int width, int height)
     char_u	*cells;
     int		row, col;
 
-    if (wp->w_popup_mask == NULL)
+    if (wp->w_popup_mask == NULL || width == 0 || height == 0)
+    {
+	vim_free(wp->w_popup_mask_cells);
+	wp->w_popup_mask_cells = NULL;
 	return;
+    }
     if (wp->w_popup_mask_cells != NULL
 	    && wp->w_popup_mask_height == height
 	    && wp->w_popup_mask_width == width)

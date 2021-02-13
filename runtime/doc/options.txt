@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2021 Jan 08
+*options.txt*	For Vim version 8.2.  Last change: 2021 Feb 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1568,7 +1568,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{only in GUI versions or when the |+xterm_clipboard|
 			feature is included}
 	This option is a list of comma separated names.
-	These names are recognized:
+	Note: if one of the items is "exclude:", then you can't add an item
+	after that.  Therefore do append an item with += but use ^= to
+	prepend, e.g.: >
+		set clipboard^=unnamed
+<	These names are recognized:
 
 						*clipboard-unnamed*
 	unnamed		When included, Vim will use the clipboard register '*'
@@ -2677,6 +2681,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 		foldcolumn:{n}	Set the 'foldcolumn' option to {n} when
 				starting diff mode.  Without this 2 is used.
 
+		followwrap	Follow the 'wrap' option and leave as it is.
+
 		internal	Use the internal diff library.  This is
 				ignored when 'diffexpr' is set.  *E960*
 				When running out of memory when writing a
@@ -3229,7 +3235,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Only normal file name characters can be used, "/\*?[|<>" are illegal.
 
 						*'fillchars'* *'fcs'*
-'fillchars' 'fcs'	string	(default "vert:|,fold:-")
+'fillchars' 'fcs'	string	(default "vert:|,fold:-,eob:~")
 			global
 			{not available when compiled without the |+folding|
 			feature}
@@ -3242,6 +3248,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  vert:c	'|'		vertical separators |:vsplit|
 	  fold:c	'-'		filling 'foldtext'
 	  diff:c	'-'		deleted lines of the 'diff' option
+	  eob:c		'~'		empty lines below the end of a buffer
 
 	Any one that is omitted will fall back to the default.  For "stl" and
 	"stlnc" the space will be used when there is highlighting, '^' or '='
@@ -3261,6 +3268,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  vert:c	VertSplit		|hl-VertSplit|
 	  fold:c	Folded			|hl-Folded|
 	  diff:c	DiffDelete		|hl-DiffDelete|
+	  eob:c		EndOfBuffer		|hl-EndOfBuffer|
 
 		*'fixendofline'* *'fixeol'* *'nofixendofline'* *'nofixeol'*
 'fixendofline' 'fixeol'	boolean	(default on)
@@ -4880,8 +4888,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 							*lcs-lead*
 	  lead:c	Character to show for leading spaces.  When omitted,
 			leading spaces are blank.  Overrides the "space"
-			setting for leading spaces.
-							*lcs-trail*
+			setting for leading spaces.  You can combine it with
+			"tab:", for example: >
+				:set listchars+=tab:>-,lead:.
+<							*lcs-trail*
 	  trail:c	Character to show for trailing spaces.  When omitted,
 			trailing spaces are blank.  Overrides the "space"
 			setting for trailing spaces.
@@ -6230,7 +6240,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 <
 				*'runtimepath'* *'rtp'* *vimfiles*
 'runtimepath' 'rtp'	string	(default:
-					Unix: "$HOME/.vim,
+					Unix:  "$HOME/.vim,
 						$VIM/vimfiles,
 						$VIMRUNTIME,
 						$VIM/vimfiles/after,
@@ -6240,7 +6250,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						$VIMRUNTIME,
 						$VIM/vimfiles/after,
 						home:vimfiles/after"
-					PC:    "$HOME/vimfiles,
+					MS-Windows: "$HOME/vimfiles,
 						$VIM/vimfiles,
 						$VIMRUNTIME,
 						$VIM/vimfiles/after,
@@ -6252,8 +6262,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 						$VIM/vimfiles,
 						$VIMRUNTIME,
 						$VIM/vimfiles/after,
-						$BE_USER_SETTINGS/vim/after")
-					VMS: "sys$login:vimfiles,
+						$BE_USER_SETTINGS/vim/after"
+					VMS:   "sys$login:vimfiles,
 						$VIM/vimfiles,
 						$VIMRUNTIME,
 						$VIM/vimfiles/after,

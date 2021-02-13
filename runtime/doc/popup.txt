@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.2.  Last change: 2021 Jan 21
+*popup.txt*  For Vim version 8.2.  Last change: 2021 Feb 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -620,7 +620,8 @@ The second argument of |popup_create()| is a dictionary with options:
 			property moves.  Use an empty string to remove.  See
 			|popup-textprop-pos|.
 	textpropwin	What window to search for the text property.  When
-			omitted or invalid the current window is used.
+			omitted or invalid the current window is used.  Used
+			when "textprop" is present.
 	textpropid	Used to identify the text property when "textprop" is
 			present. Use zero to reset.
 	fixed		When FALSE (the default), and:

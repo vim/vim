@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 8.2.  Last change: 2020 Aug 17
+*version6.txt*  For Vim version 8.2.  Last change: 2021 Jan 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

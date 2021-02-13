@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Jan 31
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Feb 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,6 +39,7 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 Vim9 - Make everything work:
+- Use ":vim9cmd" as a command modifier?  Then make ":vim9" short for that.
 - Add a test for profiling with nested function calls and lambda.
 - Expand `=expr` in :next, :argedit, :argadd, :argdelete, :drop
 - Expand `=expr` in :vimgrep, :vimgrepadd, :lvimgrep, :lvimgrepadd
@@ -166,6 +167,7 @@ Popup windows:
   However, it may also cause trouble, changing the popup of another plugin.
 - Width is not computed correctly when minwidth and maxwidth are &columns
   and padding and a scrollbar are used.  (#6676)
+- Should popup_getoptions() also return the mask?  #7774
 - Add a way to use popup_menu() synchronously: instead of invoking the
   callback, return the choice. (Ben Jackson, #6534)
 - Use popup (or popup menu) for command line completion
@@ -774,8 +776,6 @@ Add something like 'fillchars' local to window, but allow for specifying a
 highlight name.  Esp. for the statusline.
 And "extends" and "precedes" are also useful without 'list' set.  Also in
 'fillchars' or another option?
-Related: #3820 - Support setting the character displayed below the last line?
-Neovim uses "eob:X" in 'fillchars'.
 
 Sourceforge Vim pages still have content, redirect from empty page.
 Check for PHP errors. (Wayne Davison, 2018 Oct 26)
@@ -1114,9 +1114,6 @@ Problem with using :cd when remotely editing a file. (Gerd Wachsmuth, 2017 May
 Using "wviminfo /tmp/viminfo" does not store file marks that Vim knows about,
 it only works when merging with an existing file.  (Shougo, 2017 Jun 19, #1781)
 
-Is it possible to keep the complete menu open when calling complete()?
-(Prabir Shrestha, 2017 May 19, #1713)
-
 Memory leak in test97?  The string is actually freed.  Weird.
 
 assert_fails() can only check for the first error.  Make it possible to have
@@ -1221,10 +1218,6 @@ Patch for wrong cursor position on wrapped line, involving breakindent.
 
 Patch for 'cursorlinenr' option. (Ozaki Kiichi, 2016 Nov 30)
 
-When 'completeopt' has "noselect" does not insert a newline. (Lifepillar, 2017
-Apr 23, #1653)
-Can 'completeopt' be made buffer-local? (#5487)
-
 Window resizing with 'winfixheight': With a vertical split the height changes
 anyway. (Tommy allen, 2017 Feb 21, #1502)
 
@@ -1238,9 +1231,6 @@ Patch to add Zstandard compressed file support. (Nick Terrell, 2016 Oct 24)
 
 On Windows buffer completion sees backslash as escape char instead of path
 separator. (Toffanim, 2016 Nov 24, #1274)
-
-min() and max() spawn lots of error messages if sorted list/dictionary
-contains invalid data (Nikolay Pavlov, 2016 Sep 4, #1039)
 
 Should :vmap in matchit.vim be :xmap?  (Tony Mechelynck)
 
@@ -1341,9 +1331,6 @@ Regexp problems:
   (Chris Paul, 2016 Nov 13)  New engine not greedy enough?
   Another one: echom matchstr(" sdfsfsf\n sfdsdfsdf",'[^\n]*')
   (2017 May 15, #1252)
-
-Feature request: Complete members of a dictionary. (Luc Hermitte, 2017 Jan 4,
-#1350)
 
 Undo message is not always properly displayed.  Patch by Ken Takata, 2013 oct
 3.  Doesn't work properly according to Yukihiro Nakadaira.
@@ -1519,9 +1506,6 @@ Build with Python on Mac does not always use the right library.
 
 To support Thai (and other languages) word boundaries, include the ICU
 library:  http://userguide.icu-project.org/boundaryanalysis
-
-When complete() first argument is before where insert started and 'backspace'
-is Vi compatible, the completion fails. (Hirohito Higashi, 2015 Feb 19)
 
 Patch to use two highlight groups for relative numbers. (Shaun Brady, 2016 Jan
 30)
@@ -1728,9 +1712,6 @@ Patch for XDG base directory support. (Jean François Bignolles, 2014 Mar 4)
 Remark on the docs.  Should not be a compile time feature.  But then what?
 Also see #2034.
 
-Completion of ":e" is ":earlier", should be ":edit".  Complete to the matching
-command instead of doing this alphabetically. (Mikel Jorgensen)
-
 Patch to define macros for hardcoded values. (Elias Diem, 2013 Dec 14)
 
 Several syntax file match "^\s*" which may get underlined if that's in the
@@ -1774,10 +1755,6 @@ Javascript file where indent gets stuck on: GalaxyMaster, 2012 May 3.
 The BufUnload event is triggered when re-using the empty buffer.
 (Pokey Rule, 2013 Jul 22)
 Patch by Marcin Szamotulski, 2013 Jul 22.
-
-The CompleteDone autocommand needs some info passed to it:
-- The word that was selected (empty if abandoned complete)
-- Type of completion: tag, omnifunc, user func.
 
 Patch to allow more types in remote_expr(). (Lech Lorens, 2014 Jan 5)
 Doesn't work for string in list.  Other way to pass all types of variables
@@ -2239,10 +2216,6 @@ Syntax priority problem. (Charles Campbell, 2011 Sep 15)
 When completion inserts the first match, it may trigger the line to be folded.
 Disable updating folds while completion is active? (Peter Odding, 2010 Jun 9)
 
-When a:base in 'completefunc' starts with a number it's passed as a number,
-not a string. (Sean Ma)  Need to add flag to call_func_retlist() to force a
-string value.
-
 For running gvim on a USB stick: avoid the OLE registration.  Use a command
 line argument -noregister.
 
@@ -2632,10 +2605,6 @@ More AmigaOS4 patches. (Peter Bengtsson, Nov 9)
 
 Amiga patches with vbcc. (Adrien Destugues, 2010 Aug 30)
 http://pulkomandy.ath.cx/drop/vim73_vbcc_amiga.diff
-
-Insert mode completion: When editing the text and pressing CTRL-N again goes
-back to originally completed text, edited text is gone. (Peng Yu, 2008 Jul 24)
-Suggestion by Ben Schmidt, 2008 Aug 6.
 
 Problem with compound words?  (Bert, 2008 May 6)
 No warning for when flags are defined after they are used in an affix.
@@ -4931,6 +4900,23 @@ Omni completion:
 
 
 Insert mode completion/expansion:
+-   Is it possible to keep the complete menu open when calling complete()?
+    (Prabir Shrestha, 2017 May 19, #1713)
+-   When 'completeopt' has "noselect" does not insert a newline.
+    (Lifepillar, 2017 Apr 23, #1653)
+-   Can 'completeopt' be made buffer-local? (#5487)
+-   When complete() first argument is before where insert started and
+    'backspace' is Vi compatible, the completion fails.
+    (Hirohito Higashi, 2015 Feb 19)
+-   The CompleteDone autocommand needs some info passed to it:
+    - The word that was selected (empty if abandoned complete)
+    - Type of completion: tag, omnifunc, user func.
+-   When a:base in 'completefunc' starts with a number it's passed as a
+    number, not a string. (Sean Ma)  Need to add flag to call_func_retlist()
+    to force a string value.
+-   When editing the text and pressing CTRL-N again goes back to originally
+    completed text, edited text is gone. (Peng Yu, 2008 Jul 24)
+    Suggestion by Ben Schmidt, 2008 Aug 6.
 -   GUI implementation of the popup menu.
 7   When searching in other files the name flash by, too fast to read.  Only
     display a name every second or so, like with ":vimgrep".
@@ -5028,6 +5014,10 @@ Command line editing:
 
 
 Command line completion:
+-   Feature request: Complete members of a dictionary.
+    (Luc Hermitte, 2017 Jan 4, #1350)
+-   Completion of ":e" is ":earlier", should be ":edit".  Complete to the
+    matching command instead of doing this alphabetically. (Mikel Jorgensen)
 8   Change expand_interactively into a flag that is passed as an argument.
 8   With command line completion after '%' and '#', expand current/alternate
     file name, so it can be edited.  Also with modifiers, such as "%:h".

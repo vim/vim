@@ -1363,6 +1363,7 @@ EXTERN int	fill_stlnc INIT(= ' ');
 EXTERN int	fill_vert INIT(= ' ');
 EXTERN int	fill_fold INIT(= '-');
 EXTERN int	fill_diff INIT(= '-');
+EXTERN int	fill_eob INIT(= '~');
 
 #ifdef FEAT_FOLDING
 EXTERN int	disable_fold_update INIT(= 0);

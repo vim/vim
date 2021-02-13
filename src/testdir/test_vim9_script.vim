@@ -556,6 +556,16 @@ def Test_try_catch_throw()
     n = 411
   endtry
   assert_equal(411, n)
+
+  var counter = 0
+  for i in range(4)
+    try
+      eval [][0]
+    catch
+    endtry
+    counter += 1
+  endfor
+  assert_equal(4, counter)
 enddef
 
 def Test_cnext_works_in_catch()
@@ -2189,6 +2199,23 @@ def Test_for_loop_unpack()
       endfor
   END
   CheckDefExecFailure(lines, 'E1017:', 1)
+enddef
+
+def Test_for_loop_with_try_continue()
+  var looped = 0
+  var cleanup = 0
+  for i in range(3)
+    looped += 1
+    try
+      eval [][0]
+    catch
+      continue
+    finally
+      cleanup += 1
+    endtry
+  endfor
+  assert_equal(3, looped)
+  assert_equal(3, cleanup)
 enddef
 
 def Test_while_loop()

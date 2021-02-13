@@ -254,6 +254,21 @@ def Test_return_invalid()
     defcompile
   END
   CheckScriptFailure(lines, 'E1010:', 2)
+
+  lines =<< trim END
+      vim9script
+      def Test(Fun: func(number): number): list<number>
+          return map([1, 2, 3], (_, i) => Fun(i))
+      enddef
+      defcompile
+      def Inc(nr: number): nr
+        return nr + 2
+      enddef
+      echo Test(Inc)
+  END
+  # doing this twice was leaking memory
+  CheckScriptFailure(lines, 'E1010:')
+  CheckScriptFailure(lines, 'E1010:')
 enddef
 
 func Increment()
@@ -1669,6 +1684,18 @@ def Test_closure_using_argument()
 
   unlet g:UseArg
   unlet g:UseVararg
+
+  var lines =<< trim END
+      vim9script
+      def Test(Fun: func(number): number): list<number>
+        return map([1, 2, 3], (_, i) => Fun(i))
+      enddef
+      def Inc(nr: number): number
+        return nr + 2
+      enddef
+      assert_equal([3, 4, 5], Test(Inc))
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def MakeGetAndAppendRefs()

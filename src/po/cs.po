@@ -2927,7 +2927,7 @@ msgid "[string too long]"
 msgstr "[pøíli¹ dlouhý øetìzec]"
 
 msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
-msgstr "Správce zpráv: Bram Moolenaar <Bram@vim.org>"
+msgstr "Správce zpráv: Jiøí Pavlovský <jpavlovsky@mbox.vol.cz>"
 
 msgid "Interrupt: "
 msgstr "Pøeru¹ení: "

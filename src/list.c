@@ -698,7 +698,7 @@ list_insert_tv(list_T *l, typval_T *tv, listitem_T *item)
     listitem_T	*ni;
 
     if (l->lv_type != NULL && l->lv_type->tt_member != NULL
-		    && check_typval_type(l->lv_type->tt_member, tv, 0) == FAIL)
+		&& check_typval_arg_type(l->lv_type->tt_member, tv, 0) == FAIL)
 	return FAIL;
     ni = listitem_alloc();
     if (ni == NULL)
@@ -2135,8 +2135,8 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 		    }
 		    if (filtermap == FILTERMAP_MAP)
 		    {
-			if (type != NULL && check_typval_type(type->tt_member,
-							    &newtv, 0) == FAIL)
+			if (type != NULL && check_typval_arg_type(
+					   type->tt_member, &newtv, 0) == FAIL)
 			{
 			    clear_tv(&newtv);
 			    break;
@@ -2270,8 +2270,8 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 		    if (filtermap != FILTERMAP_FILTER)
 		    {
 			if (filtermap == FILTERMAP_MAP && type != NULL
-					  && check_typval_type(type->tt_member,
-							    &newtv, 0) == FAIL)
+				      && check_typval_arg_type(
+					   type->tt_member, &newtv, 0) == FAIL)
 			{
 			    clear_tv(&newtv);
 			    break;
@@ -2314,8 +2314,8 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 		    }
 		    if (filtermap == FILTERMAP_MAP)
 		    {
-			if (type != NULL && check_typval_type(type->tt_member,
-							    &newtv, 0) == FAIL)
+			if (type != NULL && check_typval_arg_type(
+					   type->tt_member, &newtv, 0) == FAIL)
 			{
 			    clear_tv(&newtv);
 			    break;
@@ -2584,7 +2584,8 @@ extend(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg, int is_new)
 	    }
 	    else
 		item = NULL;
-	    if (type != NULL && check_typval_type(type, &argvars[1], 2) == FAIL)
+	    if (type != NULL && check_typval_arg_type(
+						 type, &argvars[1], 2) == FAIL)
 		goto theend;
 	    list_extend(l1, l2, item);
 
@@ -2641,7 +2642,8 @@ extend(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg, int is_new)
 	    else
 		action = (char_u *)"force";
 
-	    if (type != NULL && check_typval_type(type, &argvars[1], 2) == FAIL)
+	    if (type != NULL && check_typval_arg_type(
+						 type, &argvars[1], 2) == FAIL)
 		goto theend;
 	    dict_extend(d1, d2, action);
 

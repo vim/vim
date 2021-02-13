@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.2.  Last change: 2020 Dec 18
+*windows.txt*   For Vim version 8.2.  Last change: 2021 Feb 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -138,10 +138,12 @@ status line is inverted anyway; you will only see this problem on terminals
 that have termcap codes for italics.
 
 							*filler-lines*
-The lines after the last buffer line in a window are called filler lines.
-These lines start with a tilde (~) character. By default, these are
-highlighted as NonText (|hl-NonText|). The EndOfBuffer highlight group
-(|hl-EndOfBuffer|) can be used to change the highlighting of filler lines.
+The lines after the last buffer line in a window are called filler lines.  By
+default, these lines start with a tilde (~) character. The 'eob' item in the
+'fillchars' option can be used to change this character. By default, these
+characters are highlighted as NonText (|hl-NonText|). The EndOfBuffer
+highlight group (|hl-EndOfBuffer|) can be used to change the highlighting of
+the filler characters.
 
 ==============================================================================
 3. Opening and closing a window				*opening-window* *E36*
@@ -208,7 +210,9 @@ CTRL-W CTRL_N						*CTRL-W_CTRL-N*
 :[N]new [++opt] [+cmd] {file}
 :[N]sp[lit] [++opt] [+cmd] {file}			*:split_f*
 		Create a new window and start editing file {file} in it.  This
-		behaves like a ":split" first, and then an ":e" command.
+		behaves almost like a ":split" first, and then an ":edit"
+		command, but the alternate file name in the original window is
+		set to {file}.
 		If [+cmd] is given, execute the command when the file has been
 		loaded |+cmd|.
 		Also see |++opt|.

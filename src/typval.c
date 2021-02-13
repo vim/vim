@@ -1069,7 +1069,9 @@ tv_equal(
 	return r;
     }
 
-    if (tv1->v_type != tv2->v_type)
+    if (tv1->v_type != tv2->v_type
+	    && ((tv1->v_type != VAR_BOOL && tv1->v_type != VAR_SPECIAL)
+		|| (tv2->v_type != VAR_BOOL && tv2->v_type != VAR_SPECIAL)))
 	return FALSE;
 
     switch (tv1->v_type)

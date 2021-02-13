@@ -4387,3 +4387,10 @@ typedef enum {
     MAGIC_ON = 3,		// "\m" or 'magic'
     MAGIC_ALL = 4		// "\v" very magic
 } magic_T;
+
+// Struct used to pass to error messages about where the error happened.
+typedef struct {
+    char    wt_index;	    // argument or variable index, 0 means unknown
+    char    wt_variable;    // "variable" when TRUE, "argument" otherwise
+} where_T;
+

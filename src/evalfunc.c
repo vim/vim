@@ -4285,7 +4285,13 @@ f_getreg(typval_T *argvars, typval_T *rettv)
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
 	strregname = tv_get_string_chk(&argvars[0]);
-	error = strregname == NULL;
+	if (strregname == NULL)
+	    error = TRUE;
+	else if (in_vim9script() && STRLEN(strregname) > 1)
+	{
+	    semsg(_(e_register_name_must_be_one_char_str), strregname);
+	    error = TRUE;
+	}
 	if (argvars[1].v_type != VAR_UNKNOWN)
 	{
 	    arg2 = (int)tv_get_bool_chk(&argvars[1], &error);
@@ -4335,6 +4341,11 @@ f_getregtype(typval_T *argvars, typval_T *rettv)
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
 	strregname = tv_get_string_chk(&argvars[0]);
+	if (strregname != NULL && in_vim9script() && STRLEN(strregname) > 1)
+	{
+	    semsg(_(e_register_name_must_be_one_char_str), strregname);
+	    strregname = NULL;
+	}
 	if (strregname == NULL)	    // type error; errmsg already given
 	{
 	    rettv->v_type = VAR_STRING;
@@ -7368,6 +7379,11 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
 	strregname = tv_get_string_chk(&argvars[0]);
 	if (strregname == NULL)
 	    return;
+	if (in_vim9script() && STRLEN(strregname) > 1)
+	{
+	    semsg(_(e_register_name_must_be_one_char_str), strregname);
+	    return;
+	}
     }
     else
 	strregname = get_vim_var_str(VV_REG);
@@ -7410,7 +7426,7 @@ f_getreginfo(typval_T *argvars, typval_T *rettv)
 	{
 	    item->di_tv.v_type = VAR_SPECIAL;
 	    item->di_tv.vval.v_number = regname == buf[0]
-		? VVAL_TRUE : VVAL_FALSE;
+						      ? VVAL_TRUE : VVAL_FALSE;
 	    (void)dict_add(dict, item);
 	}
     }
@@ -8472,6 +8488,11 @@ f_setreg(typval_T *argvars, typval_T *rettv)
 
     if (strregname == NULL)
 	return;		// type error; errmsg already given
+    if (in_vim9script() && STRLEN(strregname) > 1)
+    {
+	semsg(_(e_register_name_must_be_one_char_str), strregname);
+	return;
+    }
     regname = *strregname;
     if (regname == 0 || regname == '@')
 	regname = '"';

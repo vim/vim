@@ -261,7 +261,8 @@ arg_exists(
 	if (arg_exists(name, len, idxp, type, gen_load_outer, cctx->ctx_outer)
 									 == OK)
 	{
-	    ++*gen_load_outer;
+	    if (gen_load_outer != NULL)
+		++*gen_load_outer;
 	    return OK;
 	}
     }
@@ -893,6 +894,8 @@ need_type(
 	int	silent,
 	int	actual_is_const)
 {
+    where_T where;
+
     if (expected == &t_bool && actual != &t_bool
 					&& (actual->tt_flags & TTFLAG_BOOL_OK))
     {
@@ -902,7 +905,9 @@ need_type(
 	return OK;
     }
 
-    if (check_type(expected, actual, FALSE, arg_idx) == OK)
+    where.wt_index = arg_idx;
+    where.wt_variable = FALSE;
+    if (check_type(expected, actual, FALSE, where) == OK)
 	return OK;
 
     // If the actual type can be the expected type add a runtime check.
@@ -1587,6 +1592,23 @@ generate_FOR(cctx_T *cctx, int loop_idx)
 
     return OK;
 }
+/*
+ * Generate an ISN_TRYCONT instruction.
+ */
+    static int
+generate_TRYCONT(cctx_T *cctx, int levels, int where)
+{
+    isn_T	*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_TRYCONT)) == NULL)
+	return FAIL;
+    isn->isn_arg.trycont.tct_levels = levels;
+    isn->isn_arg.trycont.tct_where = where;
+
+    return OK;
+}
+
 
 /*
  * Generate an ISN_BCALL instruction.
@@ -4287,10 +4309,13 @@ compile_expr7t(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
     {
 	garray_T    *stack = &cctx->ctx_type_stack;
 	type_T	    *actual;
+	where_T	    where;
 
 	generate_ppconst(cctx, ppconst);
 	actual = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-	if (check_type(want_type, actual, FALSE, 0) == FAIL)
+	where.wt_index = 0;
+	where.wt_variable = FALSE;
+	if (check_type(want_type, actual, FALSE, where) == FAIL)
 	{
 	    if (need_type(actual, want_type, -1, 0, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
@@ -7306,6 +7331,8 @@ compile_endwhile(char_u *arg, cctx_T *cctx)
 compile_continue(char_u *arg, cctx_T *cctx)
 {
     scope_T	*scope = cctx->ctx_scope;
+    int		try_scopes = 0;
+    int		loop_label;
 
     for (;;)
     {
@@ -7314,15 +7341,29 @@ compile_continue(char_u *arg, cctx_T *cctx)
 	    emsg(_(e_continue));
 	    return NULL;
 	}
-	if (scope->se_type == FOR_SCOPE || scope->se_type == WHILE_SCOPE)
+	if (scope->se_type == FOR_SCOPE)
+	{
+	    loop_label = scope->se_u.se_for.fs_top_label;
 	    break;
+	}
+	if (scope->se_type == WHILE_SCOPE)
+	{
+	    loop_label = scope->se_u.se_while.ws_top_label;
+	    break;
+	}
+	if (scope->se_type == TRY_SCOPE)
+	    ++try_scopes;
 	scope = scope->se_outer;
     }
 
-    // Jump back to the FOR or WHILE instruction.
-    generate_JUMP(cctx, JUMP_ALWAYS,
-	    scope->se_type == FOR_SCOPE ? scope->se_u.se_for.fs_top_label
-					  : scope->se_u.se_while.ws_top_label);
+    if (try_scopes > 0)
+	// Inside one or more try/catch blocks we first need to jump to the
+	// "finally" or "endtry" to cleanup.
+	generate_TRYCONT(cctx, try_scopes, loop_label);
+    else
+	// Jump back to the FOR or WHILE instruction.
+	generate_JUMP(cctx, JUMP_ALWAYS, loop_label);
+
     return arg;
 }
 
@@ -7617,7 +7658,7 @@ compile_endtry(char_u *arg, cctx_T *cctx)
 {
     scope_T	*scope = cctx->ctx_scope;
     garray_T	*instr = &cctx->ctx_instr;
-    isn_T	*isn;
+    isn_T	*try_isn;
 
     // end block scope from :catch or :finally
     if (scope != NULL && scope->se_type == BLOCK_SCOPE)
@@ -7638,11 +7679,11 @@ compile_endtry(char_u *arg, cctx_T *cctx)
 	return NULL;
     }
 
+    try_isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_try_label;
     if (cctx->ctx_skip != SKIP_YES)
     {
-	isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_try_label;
-	if (isn->isn_arg.try.try_catch == 0
-					  && isn->isn_arg.try.try_finally == 0)
+	if (try_isn->isn_arg.try.try_catch == 0
+				      && try_isn->isn_arg.try.try_finally == 0)
 	{
 	    emsg(_(e_missing_catch_or_finally));
 	    return NULL;
@@ -7662,20 +7703,26 @@ compile_endtry(char_u *arg, cctx_T *cctx)
 							  instr->ga_len, cctx);
 
 	// End :catch or :finally scope: set value in ISN_TRY instruction
-	if (isn->isn_arg.try.try_catch == 0)
-	    isn->isn_arg.try.try_catch = instr->ga_len;
-	if (isn->isn_arg.try.try_finally == 0)
-	    isn->isn_arg.try.try_finally = instr->ga_len;
+	if (try_isn->isn_arg.try.try_catch == 0)
+	    try_isn->isn_arg.try.try_catch = instr->ga_len;
+	if (try_isn->isn_arg.try.try_finally == 0)
+	    try_isn->isn_arg.try.try_finally = instr->ga_len;
 
 	if (scope->se_u.se_try.ts_catch_label != 0)
 	{
 	    // Last catch without match jumps here
-	    isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_catch_label;
+	    isn_T *isn = ((isn_T *)instr->ga_data)
+					   + scope->se_u.se_try.ts_catch_label;
 	    isn->isn_arg.jump.jump_where = instr->ga_len;
 	}
     }
 
     compile_endblock(cctx);
+
+    if (try_isn->isn_arg.try.try_finally == 0)
+	// No :finally encountered, use the try_finaly field to point to
+	// ENDTRY, so that TRYCONT can jump there.
+	try_isn->isn_arg.try.try_finally = cctx->ctx_instr.ga_len;
 
     if (cctx->ctx_skip != SKIP_YES && generate_instr(cctx, ISN_ENDTRY) == NULL)
 	return NULL;
@@ -8078,6 +8125,7 @@ compile_def_function(
 	    garray_T	*stack = &cctx.ctx_type_stack;
 	    type_T	*val_type;
 	    int		arg_idx = first_def_arg + i;
+	    where_T	where;
 
 	    ufunc->uf_def_arg_idx[i] = instr->ga_len;
 	    arg = ((char_u **)(ufunc->uf_def_args.ga_data))[i];
@@ -8088,13 +8136,15 @@ compile_def_function(
 	    // Otherwise check that the default value type matches the
 	    // specified type.
 	    val_type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	    where.wt_index = arg_idx + 1;
+	    where.wt_variable = FALSE;
 	    if (ufunc->uf_arg_types[arg_idx] == &t_unknown)
 	    {
 		did_set_arg_type = TRUE;
 		ufunc->uf_arg_types[arg_idx] = val_type;
 	    }
 	    else if (check_type(ufunc->uf_arg_types[arg_idx], val_type,
-						    TRUE, arg_idx + 1) == FAIL)
+							  TRUE, where) == FAIL)
 		goto erret;
 
 	    if (generate_STORE(&cctx, ISN_STORE, i - count - off, NULL) == FAIL)
@@ -8839,6 +8889,7 @@ delete_instr(isn_T *isn)
 	case ISN_STRSLICE:
 	case ISN_THROW:
 	case ISN_TRY:
+	case ISN_TRYCONT:
 	case ISN_UNLETINDEX:
 	case ISN_UNPACK:
 	    // nothing allocated

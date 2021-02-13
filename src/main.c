@@ -1979,6 +1979,9 @@ command_line_scan(mparm_T *parmp)
 		{
 		    Columns = 80;	// need to init Columns
 		    info_message = TRUE; // use mch_msg(), not mch_errmsg()
+#if defined(FEAT_GUI) && !defined(ALWAYS_USE_GUI)
+		    gui.starting = FALSE; // not starting GUI, will exit
+#endif
 		    list_version();
 		    msg_putchar('\n');
 		    msg_didout = FALSE;
