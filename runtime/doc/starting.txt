@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.2.  Last change: 2020 Dec 19
+*starting.txt*  For Vim version 8.2.  Last change: 2021 Feb 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1344,7 +1344,11 @@ resulting file, when executed with a ":source" command:
    "options".  Script-local mappings will not be written.
 2. Restores global variables that start with an uppercase letter and contain
    at least one lowercase letter, if 'sessionoptions' contains "globals".
-3. Unloads all currently loaded buffers.
+3. Closes all windows in the current tab page, except the current one; closes
+   all tab pages except the current one (this results in currently loaded
+   buffers to be unloaded, some may become hidden if 'hidden' is set or
+   otherwise specified); wipes out the current buffer, if it is empty
+   and unnamed.
 4. Restores the current directory if 'sessionoptions' contains "curdir", or
    sets the current directory to where the Session file is if 'sessionoptions'
    contains "sesdir".
@@ -1640,13 +1644,17 @@ either have to fix the error, or delete the file (while Vim is running, so
 most of the information will be restored).
 
 						   *:rv* *:rviminfo* *E195*
-:rv[iminfo][!] [file]	Read from viminfo file [file] (default: see above).
+:rv[iminfo][!] [file]	Read from viminfo file [file] (default: see
+			|viminfo-file-name| above).
 			If [!] is given, then any information that is
 			already set (registers, marks, |v:oldfiles|, etc.)
 			will be overwritten
 
 			*:wv* *:wviminfo* *E137* *E138* *E574* *E886* *E929*
-:wv[iminfo][!] [file]	Write to viminfo file [file] (default: see above).
+:wv[iminfo][!] [file]	Write to viminfo file [file] (default: see
+			|viminfo-file-name| above).
+			This command has no effect when 'viminfofile' has been
+			set to "NONE".
 			The information in the file is first read in to make
 			a merge between old and new info.  When [!] is used,
 			the old information is not read first, only the
