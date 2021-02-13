@@ -2552,11 +2552,11 @@ win_update(win_T *wp)
 	    wp->w_botline = lnum;
 
 	// Make sure the rest of the screen is blank
-	// put '~'s on rows that aren't part of the file.
+	// write the 'fill_eob' character to rows that aren't part of the file
 	if (WIN_IS_POPUP(wp))
 	    win_draw_end(wp, ' ', ' ', FALSE, row, wp->w_height, HLF_AT);
 	else
-	    win_draw_end(wp, '~', ' ', FALSE, row, wp->w_height, HLF_EOB);
+	    win_draw_end(wp, fill_eob, ' ', FALSE, row, wp->w_height, HLF_EOB);
     }
 
 #ifdef SYN_TIME_LIMIT
