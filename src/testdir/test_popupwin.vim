@@ -825,6 +825,25 @@ func Test_popup_with_mask()
   " this was causing a crash
   call popup_create('test', #{mask: [[0, 0, 0, 0]]})
   call popup_clear()
+
+  " this was causing an internal error
+  enew
+  set nowrap
+  call repeat('x', &columns)->setline(1)
+  call prop_type_add('textprop', {})
+  call prop_add(1, 1, #{length: &columns, type: 'textprop'})
+  vsplit
+  let opts = popup_create('', #{textprop: 'textprop'})
+	\ ->popup_getoptions()
+	\ ->extend(#{mask: [[1, 1, 1, 1]]})
+  call popup_create('', opts)
+  redraw
+
+  close!
+  bwipe!
+  call prop_type_delete('textprop')
+  call popup_clear()
+  set wrap&
 endfunc
 
 func Test_popup_select()
