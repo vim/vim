@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-02-14 00:50+0400\n"
-"PO-Revision-Date: 2021-02-14 01:18+0400\n"
+"POT-Creation-Date: 2021-02-14 01:49+0400\n"
+"PO-Revision-Date: 2021-02-14 01:54+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
@@ -1347,6 +1347,9 @@ msgstr "E788: Уређивање другог бафера тренутно ни
 
 msgid "E811: Not allowed to change buffer information now"
 msgstr "E811: Мењање информација о баферу тренутно није дозвољено"
+
+msgid "[Command Line]"
+msgstr "[Командна линија]"
 
 msgid "E199: Active window or buffer deleted"
 msgstr "E199: Active window or buffer deleted"
@@ -7205,7 +7208,8 @@ msgstr "E1148: %s не може да се индексира"
 
 #, c-format
 msgid "E1149: Script variable is invalid after reload in function %s"
-msgstr "E1149: Скрипт променљива више важи након поновног учитавања у функцији %s"
+msgstr ""
+"E1149: Скрипт променљива више важи након поновног учитавања у функцији %s"
 
 msgid "E1150: Script variable type changed"
 msgstr "E1150: Тип скрипт променљиве се променио"
@@ -7243,6 +7247,14 @@ msgstr "E1160: За аргументе променљиве не може да �
 #, c-format
 msgid "E1161: Cannot json encode a %s"
 msgstr "E1161: %s не може да се кодује у json"
+
+#, c-format
+msgid "E1162: Register name must be one character: %s"
+msgstr "E1162: Име регистра мора бити један карактер: %s"
+
+#, c-format
+msgid "E1163: Variable %d: type mismatch, expected %s but got %s"
+msgstr "E1163: Променљива %d: неодговарајући тип, очекује се %s али је наведено %s"
 
 msgid "--No lines in buffer--"
 msgstr "--У баферу нема линија--"
@@ -9554,5 +9566,3 @@ msgstr "име MzScheme динамичке библиотеке"
 
 msgid "name of the MzScheme GC dynamic library"
 msgstr "име MzScheme GC динамичке библиотеке"
-
-
