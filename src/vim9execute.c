@@ -27,8 +27,9 @@ typedef struct {
     int	    tcd_frame_idx;	// ec_frame_idx at ISN_TRY
     int	    tcd_stack_len;	// size of ectx.ec_stack at ISN_TRY
     int	    tcd_catch_idx;	// instruction of the first catch
-    int	    tcd_finally_idx;	// instruction of the finally block
+    int	    tcd_finally_idx;	// instruction of the finally block or :endtry
     int	    tcd_caught;		// catch block entered
+    int	    tcd_cont;		// :continue encountered, jump here
     int	    tcd_return;		// when TRUE return from end of :finally
 } trycmd_T;
 
@@ -2417,7 +2418,8 @@ call_def_function(
 							+ trystack->ga_len - 1;
 		    if (trycmd != NULL
 				  && trycmd->tcd_frame_idx == ectx.ec_frame_idx
-			    && trycmd->tcd_finally_idx != 0)
+				  && ectx.ec_instr[trycmd->tcd_finally_idx]
+						       .isn_type != ISN_ENDTRY)
 		    {
 			// jump to ":finally"
 			ectx.ec_iidx = trycmd->tcd_finally_idx;
@@ -2610,6 +2612,34 @@ call_def_function(
 		}
 		break;
 
+	    case ISN_TRYCONT:
+		{
+		    garray_T	*trystack = &ectx.ec_trystack;
+		    trycont_T	*trycont = &iptr->isn_arg.trycont;
+		    int		i;
+		    trycmd_T    *trycmd;
+		    int		iidx = trycont->tct_where;
+
+		    if (trystack->ga_len < trycont->tct_levels)
+		    {
+			siemsg("TRYCONT: expected %d levels, found %d",
+					trycont->tct_levels, trystack->ga_len);
+			goto failed;
+		    }
+		    // Make :endtry jump to any outer try block and the last
+		    // :endtry inside the loop to the loop start.
+		    for (i = trycont->tct_levels; i > 0; --i)
+		    {
+			trycmd = ((trycmd_T *)trystack->ga_data)
+							+ trystack->ga_len - i;
+			trycmd->tcd_cont = iidx;
+			iidx = trycmd->tcd_finally_idx;
+		    }
+		    // jump to :finally or :endtry of current try statement
+		    ectx.ec_iidx = iidx;
+		}
+		break;
+
 	    // end of ":try" block
 	    case ISN_ENDTRY:
 		{
@@ -2640,6 +2670,10 @@ call_def_function(
 			    --ectx.ec_stack.ga_len;
 			    clear_tv(STACK_TV_BOT(0));
 			}
+			if (trycmd->tcd_cont)
+			    // handling :continue: jump to outer try block or
+			    // start of the loop
+			    ectx.ec_iidx = trycmd->tcd_cont;
 		    }
 		}
 		break;
@@ -4213,13 +4247,26 @@ ex_disassemble(exarg_T *eap)
 		{
 		    try_T *try = &iptr->isn_arg.try;
 
-		    smsg("%4d TRY catch -> %d, finally -> %d", current,
-					     try->try_catch, try->try_finally);
+		    smsg("%4d TRY catch -> %d, %s -> %d", current,
+				 try->try_catch,
+				 instr[try->try_finally].isn_type == ISN_ENDTRY
+							   ? "end" : "finally",
+				 try->try_finally);
 		}
 		break;
 	    case ISN_CATCH:
 		// TODO
 		smsg("%4d CATCH", current);
+		break;
+	    case ISN_TRYCONT:
+		{
+		    trycont_T *trycont = &iptr->isn_arg.trycont;
+
+		    smsg("%4d TRY-CONTINUE %d level%s -> %d", current,
+				      trycont->tct_levels,
+				      trycont->tct_levels == 1 ? "" : "s",
+				      trycont->tct_where);
+		}
 		break;
 	    case ISN_ENDTRY:
 		smsg("%4d ENDTRY", current);

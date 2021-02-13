@@ -100,6 +100,7 @@ typedef enum {
     ISN_PUSHEXC,    // push v:exception
     ISN_CATCH,	    // drop v:exception
     ISN_ENDTRY,	    // take entry off from ec_trystack
+    ISN_TRYCONT,    // handle :continue inside a :try statement
 
     // more expression operations
     ISN_ADDLIST,    // add two lists
@@ -209,8 +210,14 @@ typedef struct {
 // arguments to ISN_TRY
 typedef struct {
     int	    try_catch;	    // position to jump to on throw
-    int	    try_finally;    // position to jump to for return
+    int	    try_finally;    // :finally or :endtry position to jump to
 } try_T;
+
+// arguments to ISN_TRYCONT
+typedef struct {
+    int	    tct_levels;	    // number of nested try statements
+    int	    tct_where;	    // position to jump to, WHILE or FOR
+} trycont_T;
 
 // arguments to ISN_ECHO
 typedef struct {
@@ -333,6 +340,7 @@ struct isn_S {
 	jump_T		    jump;
 	forloop_T	    forloop;
 	try_T		    try;
+	trycont_T	    trycont;
 	cbfunc_T	    bfunc;
 	cdfunc_T	    dfunc;
 	cpfunc_T	    pfunc;
