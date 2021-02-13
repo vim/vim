@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-23 22:13+0400\n"
-"PO-Revision-Date: 2021-01-10 09:26+0400\n"
+"POT-Creation-Date: 2021-02-14 00:50+0400\n"
+"PO-Revision-Date: 2021-02-14 01:18+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
@@ -1100,9 +1100,6 @@ msgstr "Крај изворишног фајла"
 
 msgid "End of function"
 msgstr "Крај функције"
-
-msgid "E464: Ambiguous use of user-defined command"
-msgstr "E464: Двосмислена употреба кориснички дефинисане команде"
 
 msgid "E492: Not an editor command"
 msgstr "E492: Није команда едитора"
@@ -2393,8 +2390,8 @@ msgstr "E265: $_ мора да буде инстанца Стринга"
 msgid ""
 "E266: Sorry, this command is disabled, the Ruby library could not be loaded."
 msgstr ""
-"E266: Жао нам је, ова команда је онемогућена јер Ruby библиотека није могла да "
-"се учита."
+"E266: Жао нам је, ова команда је онемогућена јер Ruby библиотека није могла "
+"да се учита."
 
 msgid "E267: unexpected return"
 msgstr "E267: неочекивано return"
@@ -2555,9 +2552,6 @@ msgstr " Довршавање локалне кључне речи (^N^P)"
 msgid "Hit end of paragraph"
 msgstr "Достигнут је крај пасуса"
 
-msgid "E839: Completion function changed window"
-msgstr "E839: Функција довршавања је променила прозор"
-
 msgid "E840: Completion function deleted text"
 msgstr "E840: Функција довршавања је обрисала текст"
 
@@ -2671,6 +2665,9 @@ msgstr "filter() аргумент"
 
 msgid "add() argument"
 msgstr "add() аргумент"
+
+msgid "extendnew() argument"
+msgstr "extendnew() аргумент"
 
 msgid "insert() argument"
 msgstr "insert() аргумент"
@@ -4796,6 +4793,9 @@ msgstr "променљиве окружења"
 msgid "error handler"
 msgstr "процедуре за обраду грешке"
 
+msgid "changed window size"
+msgstr "промењена величина прозора"
+
 msgid "W15: Warning: Wrong line separator, ^M may be missing"
 msgstr "W15: Упозорење: Погрешан сепаратор линије, можда недостаје ^M"
 
@@ -5278,6 +5278,9 @@ msgstr "E765: 'spellfile' не садржи %d ставке"
 #, c-format
 msgid "Word '%.*s' removed from %s"
 msgstr "Реч '%.*s' је уклоњена из %s"
+
+msgid "Seek error in spellfile"
+msgstr "Грешка постављања у правописном фајлу"
 
 #, c-format
 msgid "Word '%.*s' added to %s"
@@ -6667,6 +6670,9 @@ msgstr "E121: Недефинисана променљива: %s"
 msgid "E121: Undefined variable: %c:%s"
 msgstr "E121: Недефинисана променљива: %c:%s"
 
+msgid "E464: Ambiguous use of user-defined command"
+msgstr "E464: Двосмислена употреба кориснички дефинисане команде"
+
 msgid "E476: Invalid command"
 msgstr "E476: Неважећа команда"
 
@@ -6694,8 +6700,8 @@ msgid "E909: Cannot index a special variable"
 msgstr "E909: Специјална променљива не може да се индексира"
 
 #, c-format
-msgid "E1100: Missing :var: %s"
-msgstr "E1100: Недостаје :var: %s"
+msgid "E1100: Command not supported in Vim9 script (missing :var?): %s"
+msgstr "E1100: Команда се не подржава у Vim9 скрипту (недостаје :var?): %s"
 
 #, c-format
 msgid "E1001: Variable not found: %s"
@@ -6709,8 +6715,8 @@ msgid "E1003: Missing return value"
 msgstr "E1003: Недостаје повратна вредност"
 
 #, c-format
-msgid "E1004: White space required before and after '%s'"
-msgstr "E1004: Неопходан је празан простор испред и иза '%s'"
+msgid "E1004: White space required before and after '%s' at \"%s\""
+msgstr "E1004: Неопходан је празан простор испред и иза '%s' код \"%s\""
 
 msgid "E1005: Too many argument types"
 msgstr "E1005: Сувише типова аргумената"
@@ -6783,8 +6789,8 @@ msgid "E1022: Type or initialization required"
 msgstr "E1022: Потребан је тип или иницијализација"
 
 #, c-format
-msgid "E1023: Using a Number as a Bool: %d"
-msgstr "E1023: Број се користи као Логичка: %d"
+msgid "E1023: Using a Number as a Bool: %lld"
+msgstr "E1023: Број се користи као Логичка: %lld"
 
 msgid "E1024: Using a Number as a String"
 msgstr "E1024: Број се користи као Стринг"
@@ -6872,8 +6878,9 @@ msgstr "E1048: Ставка није пронађена у скрипти: %s"
 msgid "E1049: Item not exported in script: %s"
 msgstr "E1049: Ставка није извезена у скрипти: %s"
 
-msgid "E1050: Colon required before a range"
-msgstr "E1050: Испред опсега је неопходна двотачка"
+#, c-format
+msgid "E1050: Colon required before a range: %s"
+msgstr "E1050: Испред опсега је неопходна двотачка: %s"
 
 msgid "E1051: Wrong argument type for +"
 msgstr "E1051: Погрешан тип аргумента за +"
@@ -6931,12 +6938,12 @@ msgid "E1067: Separator mismatch: %s"
 msgstr "E1067: Граничници се не подударају: %s"
 
 #, c-format
-msgid "E1068: No white space allowed before '%s'"
-msgstr "E1068: Није дозвољен празан простор испред '%s'"
+msgid "E1068: No white space allowed before '%s': %s"
+msgstr "E1068: Није дозвољен празан простор испред '%s': %s"
 
 #, c-format
-msgid "E1069: White space required after '%s'"
-msgstr "E1069: Потребан је празан простор након '%s'"
+msgid "E1069: White space required after '%s': %s"
+msgstr "E1069: Потребан је празан простор након '%s': %s"
 
 msgid "E1070: Missing \"from\""
 msgstr "E1070: Недостаје \"from\""
@@ -7166,6 +7173,76 @@ msgstr "E1139: Недостаје одговарајућа заграда нак
 
 msgid "E1140: For argument must be a sequence of lists"
 msgstr "E1140: For аргумент мора бити низ листи"
+
+msgid "E1141: Indexable type required"
+msgstr "E1141: Потребан је тип који може да се индексира"
+
+msgid "E1142: Non-empty string required"
+msgstr "E1142: Потребан је стринг који није празан"
+
+#, c-format
+msgid "E1143: Empty expression: \"%s\""
+msgstr "E1143: Празан израз: \"%s\""
+
+#, c-format
+msgid "E1144: Command is not followed by white space: %s"
+msgstr "E1144: Иза команде се не налази празан простор: %s"
+
+#, c-format
+msgid "E1145: Missing heredoc end marker: %s"
+msgstr "E1145: Недостаје heredoc маркер краја: %s"
+
+#, c-format
+msgid "E1146: Command not recognized: %s"
+msgstr "E1146: Команда се не препознаје: %s"
+
+msgid "E1147: List not set"
+msgstr "E1147: Листа није постављена"
+
+#, c-format
+msgid "E1148: Cannot index a %s"
+msgstr "E1148: %s не може да се индексира"
+
+#, c-format
+msgid "E1149: Script variable is invalid after reload in function %s"
+msgstr "E1149: Скрипт променљива више важи након поновног учитавања у функцији %s"
+
+msgid "E1150: Script variable type changed"
+msgstr "E1150: Тип скрипт променљиве се променио"
+
+msgid "E1151: Mismatched endfunction"
+msgstr "E1151: Неупарено endfunction"
+
+msgid "E1152: Mismatched enddef"
+msgstr "E1152: Неупарено enddef"
+
+msgid "E1153: Invalid operation for bool"
+msgstr "E1153: Неважећа операција за логички"
+
+msgid "E1154: Divide by zero"
+msgstr "E1154: Дељење са нулом"
+
+msgid "E1155: Cannot define autocommands for ALL events"
+msgstr "E1155: Аутокоманде не могу да се дефинишу за СВЕ догађаје"
+
+msgid "E1156: Cannot change the argument list recursively"
+msgstr "E1156: Листа аргумената не може да се мења рекурзивно"
+
+msgid "E1157: Missing return type"
+msgstr "E1157: Недостаје тип резултата који се враћа"
+
+msgid "E1158: Cannot use flatten() in Vim9 script"
+msgstr "E1158: Функција flatten() не може да се користи у Vim9 скрипту"
+
+msgid "E1159: Cannot split a window when closing the buffer"
+msgstr "E1159: Прозор не може да се подели када се затвара бафер"
+
+msgid "E1160: Cannot use a default for variable arguments"
+msgstr "E1160: За аргументе променљиве не може да се користи подразумевана вредност"
+
+#, c-format
+msgid "E1161: Cannot json encode a %s"
+msgstr "E1161: %s не може да се кодује у json"
 
 msgid "--No lines in buffer--"
 msgstr "--У баферу нема линија--"
@@ -8058,7 +8135,8 @@ msgstr "(глобално или локално за бафер)"
 
 msgid ""
 "\" Each \"set\" line shows the current value of an option (on the left)."
-msgstr "\" Свака „set” линија приказује текућу вредност опције (са леве стране)."
+msgstr ""
+"\" Свака „set” линија приказује текућу вредност опције (са леве стране)."
 
 msgid "\" Hit <Enter> on a \"set\" line to execute it."
 msgstr "\" Притисните <Ентер> на „set” линији да је извршите."
@@ -8070,11 +8148,13 @@ msgid ""
 "\"            For other options you can edit the value before hitting "
 "<Enter>."
 msgstr ""
-"\"            Осталим опцијама можете променити вредност пре притиска "
-"на <Ентер>."
+"\"            Осталим опцијама можете променити вредност пре притиска на "
+"<Ентер>."
 
 msgid "\" Hit <Enter> on a help line to open a help window on this option."
-msgstr "\" Притисните <Ентер> на линији помоћи да се отвори прозор помоћи за ову опцију."
+msgstr ""
+"\" Притисните <Ентер> на линији помоћи да се отвори прозор помоћи за ову "
+"опцију."
 
 msgid "\" Hit <Enter> on an index line to jump there."
 msgstr "\" Притисните <Ентер> на линији индекса да скочите тамо."
@@ -9474,3 +9554,5 @@ msgstr "име MzScheme динамичке библиотеке"
 
 msgid "name of the MzScheme GC dynamic library"
 msgstr "име MzScheme GC динамичке библиотеке"
+
+
