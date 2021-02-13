@@ -5681,9 +5681,6 @@ msgstr "E968: Неопходан је бар један од 'id' или 'type'"
 msgid "E860: Need 'id' and 'type' with 'both'"
 msgstr "E860: 'id' и 'type' су потребни уз 'both'"
 
-msgid "E860: Need 'id' and 'type' with 'both'"
-msgstr "E860: 'id' и 'type' су потребни уз 'both'"
-
 #, c-format
 msgid "E969: Property type %s already defined"
 msgstr "E969: Тип особине %s је већ дефинисан"
@@ -6416,21 +6413,6 @@ msgstr "откуцајте  :help register<Ентер>   за информаци
 
 msgid "menu  Help->Sponsor/Register  for information    "
 msgstr "мени  Помоћ->Спонзор/Региструјте се  за информације    "
-
-msgid "[end of lines]"
-msgstr "[крај линија]"
-
-msgid "global"
-msgstr "глобална"
-
-msgid "buffer"
-msgstr "бафер"
-
-msgid "window"
-msgstr "прозор"
-
-msgid "tab"
-msgstr "картица"
 
 msgid "[end of lines]"
 msgstr "[крај линија]"
