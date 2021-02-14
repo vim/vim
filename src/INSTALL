@@ -128,6 +128,9 @@ Unix: COMPILING WITH/WITHOUT GUI
 
 NOTE: This is incomplete, look in Makefile for more info.
 
+This configure argument can be used to disable GUI:
+--disable-gui
+
 These configure arguments can be used to select which GUI to use:
 --enable-gui=gtk      or: gtk2, motif, athena or auto
 --disable-gtk-check
