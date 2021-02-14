@@ -31,18 +31,8 @@ def TestCompilingError()
   call writefile(lines, 'XTest_compile_error')
   var buf = RunVimInTerminal('-S XTest_compile_error',
               {rows: 10, wait_for_ruler: 0})
-  var text = ''
-  for loop in range(100)
-    text = ''
-    for i in range(1, 9)
-      text ..= term_getline(buf, i)
-    endfor
-    if text =~ 'Variable not found: nothing'
-      break
-    endif
-    sleep 20m
-  endfor
-  assert_match('Error detected while compiling command line.*Fails.*Variable not found: nothing', text)
+  call WaitForAssert(() => assert_match('Error detected while compiling command line.*Fails.*Variable not found: nothing',
+                     Term_getlines(buf, range(1, 9))))
 
   # clean up
   call StopVimInTerminal(buf)

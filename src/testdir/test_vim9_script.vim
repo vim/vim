@@ -755,7 +755,7 @@ def Test_throw_vimscript()
 enddef
 
 def Test_error_in_nested_function()
-  # an error in a nested :function aborts executin in the calling :def function
+  # an error in a nested :function aborts executing in the calling :def function
   var lines =<< trim END
       vim9script
       def Func()

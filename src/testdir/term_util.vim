@@ -179,5 +179,9 @@ func Run_shell_in_terminal(options)
   return buf
 endfunc
 
+" Return concatenated lines in terminal.
+func Term_getlines(buf, lines)
+  return join(map(a:lines, 'term_getline(a:buf, v:val)'), '')
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
