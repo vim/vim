@@ -234,4 +234,130 @@ func Test_listchars_composing()
   set listchars& ff&
 endfunction
 
+" Check for the value of the 'listchars' option
+func s:CheckListCharsValue(expected)
+  call assert_equal(a:expected, &listchars)
+  call assert_equal(a:expected, getwinvar(0, '&listchars'))
+endfunc
+
+" Test for using a window local value for 'listchars'
+func Test_listchars_window_local()
+  %bw!
+  set list listchars&
+  new
+  " set a local value for 'listchars'
+  setlocal listchars=tab:+-,eol:#
+  call s:CheckListCharsValue('tab:+-,eol:#')
+  " When local value is reset, global value should be used
+  setlocal listchars=
+  call s:CheckListCharsValue('eol:$')
+  " Use 'setlocal <' to copy global value
+  setlocal listchars=space:.,extends:>
+  setlocal listchars<
+  call s:CheckListCharsValue('eol:$')
+  " Use 'set <' to copy global value
+  setlocal listchars=space:.,extends:>
+  set listchars<
+  call s:CheckListCharsValue('eol:$')
+  " Changing global setting should not change the local setting
+  setlocal listchars=space:.,extends:>
+  setglobal listchars=tab:+-,eol:#
+  call s:CheckListCharsValue('space:.,extends:>')
+  " when split opening a new window, local value should be copied
+  split
+  call s:CheckListCharsValue('space:.,extends:>')
+  " clearing local value in one window should not change the other window
+  set listchars&
+  call s:CheckListCharsValue('eol:$')
+  close
+  call s:CheckListCharsValue('space:.,extends:>')
+
+  " use different values for 'listchars' items in two different windows
+  call setline(1, ["\t  one  two  "])
+  setlocal listchars=tab:<->,lead:_,space:.,trail:@,eol:#
+  split
+  setlocal listchars=tab:[.],lead:#,space:_,trail:.,eol:&
+  split
+  set listchars=tab:+-+,lead:^,space:>,trail:<,eol:%
+  call assert_equal(['+------+^^one>>two<<%'], ScreenLines(1, virtcol('$')))
+  close
+  call assert_equal(['[......]##one__two..&'], ScreenLines(1, virtcol('$')))
+  close
+  call assert_equal(['<------>__one..two@@#'], ScreenLines(1, virtcol('$')))
+  " changing the global setting should not change the local value
+  setglobal listchars=tab:[.],lead:#,space:_,trail:.,eol:&
+  call assert_equal(['<------>__one..two@@#'], ScreenLines(1, virtcol('$')))
+  set listchars<
+  call assert_equal(['[......]##one__two..&'], ScreenLines(1, virtcol('$')))
+
+  " Using setglobal in a window with local setting should not affect the
+  " window. But should impact other windows using the global setting.
+  enew! | only
+  call setline(1, ["\t  one  two  "])
+  set listchars=tab:[.],lead:#,space:_,trail:.,eol:&
+  split
+  setlocal listchars=tab:+-+,lead:^,space:>,trail:<,eol:%
+  split
+  setlocal listchars=tab:<->,lead:_,space:.,trail:@,eol:#
+  setglobal listchars=tab:{.},lead:-,space:=,trail:#,eol:$
+  call assert_equal(['<------>__one..two@@#'], ScreenLines(1, virtcol('$')))
+  close
+  call assert_equal(['+------+^^one>>two<<%'], ScreenLines(1, virtcol('$')))
+  close
+  call assert_equal(['{......}--one==two##$'], ScreenLines(1, virtcol('$')))
+
+  " Setting the global setting to the default value should not impact a window
+  " using a local setting
+  split
+  setlocal listchars=tab:<->,lead:_,space:.,trail:@,eol:#
+  setglobal listchars&vim
+  call assert_equal(['<------>__one..two@@#'], ScreenLines(1, virtcol('$')))
+  close
+  call assert_equal(['^I  one  two  $'], ScreenLines(1, virtcol('$')))
+
+  " Setting the local setting to the default value should not impact a window
+  " using a global setting
+  set listchars=tab:{.},lead:-,space:=,trail:#,eol:$
+  split
+  setlocal listchars=tab:<->,lead:_,space:.,trail:@,eol:#
+  call assert_equal(['<------>__one..two@@#'], ScreenLines(1, virtcol('$')))
+  setlocal listchars&vim
+  call assert_equal(['^I  one  two  $'], ScreenLines(1, virtcol('$')))
+  close
+  call assert_equal(['{......}--one==two##$'], ScreenLines(1, virtcol('$')))
+
+  " Using set in a window with a local setting should change it to use the
+  " global setting and also impact other windows using the global setting
+  split
+  setlocal listchars=tab:<->,lead:_,space:.,trail:@,eol:#
+  call assert_equal(['<------>__one..two@@#'], ScreenLines(1, virtcol('$')))
+  set listchars=tab:+-+,lead:^,space:>,trail:<,eol:%
+  call assert_equal(['+------+^^one>>two<<%'], ScreenLines(1, virtcol('$')))
+  close
+  call assert_equal(['+------+^^one>>two<<%'], ScreenLines(1, virtcol('$')))
+
+  " Setting invalid value for a local setting should not impact the local and
+  " global settings
+  split
+  setlocal listchars=tab:<->,lead:_,space:.,trail:@,eol:#
+  let cmd = 'setlocal listchars=tab:{.},lead:-,space:=,trail:#,eol:$,x'
+  call assert_fails(cmd, 'E474:')
+  call assert_equal(['<------>__one..two@@#'], ScreenLines(1, virtcol('$')))
+  close
+  call assert_equal(['+------+^^one>>two<<%'], ScreenLines(1, virtcol('$')))
+
+  " Setting invalid value for a global setting should not impact the local and
+  " global settings
+  split
+  setlocal listchars=tab:<->,lead:_,space:.,trail:@,eol:#
+  let cmd = 'setglobal listchars=tab:{.},lead:-,space:=,trail:#,eol:$,x'
+  call assert_fails(cmd, 'E474:')
+  call assert_equal(['<------>__one..two@@#'], ScreenLines(1, virtcol('$')))
+  close
+  call assert_equal(['+------+^^one>>two<<%'], ScreenLines(1, virtcol('$')))
+
+  %bw!
+  set list& listchars&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

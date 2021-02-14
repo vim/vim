@@ -753,7 +753,7 @@ vim_strnsize(char_u *s, int len)
 
 #ifdef FEAT_VARTABS
 # define RET_WIN_BUF_CHARTABSIZE(wp, buf, p, col) \
-    if (*(p) == TAB && (!(wp)->w_p_list || lcs_tab1)) \
+    if (*(p) == TAB && (!(wp)->w_p_list || wp->w_lcs_chars.tab1)) \
     { \
 	return tabstop_padding(col, (buf)->b_p_ts, (buf)->b_p_vts_array); \
     } \
@@ -761,7 +761,7 @@ vim_strnsize(char_u *s, int len)
 	return ptr2cells(p);
 #else
 # define RET_WIN_BUF_CHARTABSIZE(wp, buf, p, col) \
-    if (*(p) == TAB && (!(wp)->w_p_list || lcs_tab1)) \
+    if (*(p) == TAB && (!(wp)->w_p_list || wp->w_lcs_chars.tab1)) \
     { \
 	int ts; \
 	ts = (buf)->b_p_ts; \
@@ -1153,7 +1153,7 @@ win_nolbr_chartabsize(
 {
     int		n;
 
-    if (*s == TAB && (!wp->w_p_list || lcs_tab1))
+    if (*s == TAB && (!wp->w_p_list || wp->w_lcs_chars.tab1))
     {
 # ifdef FEAT_VARTABS
 	return tabstop_padding(col, wp->w_buffer->b_p_ts,
@@ -1248,7 +1248,7 @@ getvcol(
      * use a simple loop.
      * Also use this when 'list' is set but tabs take their normal size.
      */
-    if ((!wp->w_p_list || lcs_tab1 != NUL)
+    if ((!wp->w_p_list || wp->w_lcs_chars.tab1 != NUL)
 #ifdef FEAT_LINEBREAK
 	    && !wp->w_p_lbr && *get_showbreak_value(wp) == NUL && !wp->w_p_bri
 #endif

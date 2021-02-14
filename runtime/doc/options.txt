@@ -4854,7 +4854,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'listchars'* *'lcs'*
 'listchars' 'lcs'	string	(default "eol:$")
-			global
+			global or local to window |global-local|
 	Strings to use in 'list' mode and for the |:list| command.  It is a
 	comma separated list of string settings.
 							*lcs-eol*

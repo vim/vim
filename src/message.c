@@ -1848,14 +1848,14 @@ msg_prt_line(char_u *s, int list)
     if (list)
     {
 	// find start of trailing whitespace
-	if (lcs_trail)
+	if (curwin->w_lcs_chars.trail)
 	{
 	    trail = s + STRLEN(s);
 	    while (trail > s && VIM_ISWHITE(trail[-1]))
 		--trail;
 	}
 	// find end of leading whitespace
-	if (lcs_lead)
+	if (curwin->w_lcs_chars.lead)
 	{
 	    lead = s;
 	    while (VIM_ISWHITE(lead[0]))
@@ -1868,7 +1868,7 @@ msg_prt_line(char_u *s, int list)
 
     // output a space for an empty line, otherwise the line will be
     // overwritten
-    if (*s == NUL && !(list && lcs_eol != NUL))
+    if (*s == NUL && !(list && curwin->w_lcs_chars.eol != NUL))
 	msg_putchar(' ');
 
     while (!got_int)
@@ -1890,11 +1890,11 @@ msg_prt_line(char_u *s, int list)
 	    {
 		STRCPY(buf, "?");
 	    }
-	    else if (lcs_nbsp != NUL && list
+	    else if (curwin->w_lcs_chars.nbsp != NUL && list
 		    && (mb_ptr2char(s) == 160
 			|| mb_ptr2char(s) == 0x202f))
 	    {
-		mb_char2bytes(lcs_nbsp, buf);
+		mb_char2bytes(curwin->w_lcs_chars.nbsp, buf);
 		buf[(*mb_ptr2len)(buf)] = NUL;
 	    }
 	    else
@@ -1910,7 +1910,7 @@ msg_prt_line(char_u *s, int list)
 	{
 	    attr = 0;
 	    c = *s++;
-	    if (c == TAB && (!list || lcs_tab1))
+	    if (c == TAB && (!list || curwin->w_lcs_chars.tab1))
 	    {
 		// tab amount depends on current column
 #ifdef FEAT_VARTABS
@@ -1927,24 +1927,26 @@ msg_prt_line(char_u *s, int list)
 		}
 		else
 		{
-		    c = (n_extra == 0 && lcs_tab3) ? lcs_tab3 : lcs_tab1;
-		    c_extra = lcs_tab2;
-		    c_final = lcs_tab3;
+		    c = (n_extra == 0 && curwin->w_lcs_chars.tab3)
+						? curwin->w_lcs_chars.tab3
+						: curwin->w_lcs_chars.tab1;
+		    c_extra = curwin->w_lcs_chars.tab2;
+		    c_final = curwin->w_lcs_chars.tab3;
 		    attr = HL_ATTR(HLF_8);
 		}
 	    }
-	    else if (c == 160 && list && lcs_nbsp != NUL)
+	    else if (c == 160 && list && curwin->w_lcs_chars.nbsp != NUL)
 	    {
-		c = lcs_nbsp;
+		c = curwin->w_lcs_chars.nbsp;
 		attr = HL_ATTR(HLF_8);
 	    }
-	    else if (c == NUL && list && lcs_eol != NUL)
+	    else if (c == NUL && list && curwin->w_lcs_chars.eol != NUL)
 	    {
 		p_extra = (char_u *)"";
 		c_extra = NUL;
 		c_final = NUL;
 		n_extra = 1;
-		c = lcs_eol;
+		c = curwin->w_lcs_chars.eol;
 		attr = HL_ATTR(HLF_AT);
 		--s;
 	    }
@@ -1961,17 +1963,17 @@ msg_prt_line(char_u *s, int list)
 	    }
 	    else if (c == ' ' && lead != NULL && s <= lead)
 	    {
-		c = lcs_lead;
+		c = curwin->w_lcs_chars.lead;
 		attr = HL_ATTR(HLF_8);
 	    }
 	    else if (c == ' ' && trail != NULL && s > trail)
 	    {
-		c = lcs_trail;
+		c = curwin->w_lcs_chars.trail;
 		attr = HL_ATTR(HLF_8);
 	    }
-	    else if (c == ' ' && list && lcs_space != NUL)
+	    else if (c == ' ' && list && curwin->w_lcs_chars.space != NUL)
 	    {
-		c = lcs_space;
+		c = curwin->w_lcs_chars.space;
 		attr = HL_ATTR(HLF_8);
 	    }
 	}

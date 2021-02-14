@@ -1342,21 +1342,6 @@ EXTERN char_u	*homedir INIT(= NULL);
 // directory is not a local directory, globaldir is NULL.
 EXTERN char_u	*globaldir INIT(= NULL);
 
-// Characters from 'listchars' option
-EXTERN int	lcs_eol INIT(= '$');
-EXTERN int	lcs_ext INIT(= NUL);
-EXTERN int	lcs_prec INIT(= NUL);
-EXTERN int	lcs_nbsp INIT(= NUL);
-EXTERN int	lcs_space INIT(= NUL);
-EXTERN int	lcs_tab1 INIT(= NUL);
-EXTERN int	lcs_tab2 INIT(= NUL);
-EXTERN int	lcs_tab3 INIT(= NUL);
-EXTERN int	lcs_trail INIT(= NUL);
-EXTERN int	lcs_lead INIT(= NUL);
-#ifdef FEAT_CONCEAL
-EXTERN int	lcs_conceal INIT(= ' ');
-#endif
-
 // Characters from 'fillchars' option
 EXTERN int	fill_stl INIT(= ' ');
 EXTERN int	fill_stlnc INIT(= ' ');

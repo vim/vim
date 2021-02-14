@@ -432,7 +432,8 @@ get_indent_str(
     {
 	if (*ptr == TAB)
 	{
-	    if (!list || lcs_tab1)    // count a tab for what it is worth
+	    if (!list || curwin->w_lcs_chars.tab1)
+		// count a tab for what it is worth
 		count += ts - (count % ts);
 	    else
 		// In list mode, when tab is not set, count screen char width
@@ -462,7 +463,7 @@ get_indent_str_vtab(char_u *ptr, int ts, int *vts, int list)
     {
 	if (*ptr == TAB)    // count a tab for what it is worth
 	{
-	    if (!list || lcs_tab1)
+	    if (!list || curwin->w_lcs_chars.tab1)
 		count += tabstop_padding(count, ts, vts);
 	    else
 		// In list mode, when tab is not set, count screen char width

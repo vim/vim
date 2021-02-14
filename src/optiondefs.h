@@ -185,6 +185,7 @@
 #ifdef FEAT_LINEBREAK
 # define PV_LBR		OPT_WIN(WV_LBR)
 #endif
+#define PV_LCS		OPT_BOTH(OPT_WIN(WV_LCS))
 #define PV_NU		OPT_WIN(WV_NU)
 #define PV_RNU		OPT_WIN(WV_RNU)
 #ifdef FEAT_LINEBREAK
@@ -1598,7 +1599,7 @@ static struct vimoption options[] =
 			    (char_u *)VAR_WIN, PV_LIST,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"listchars",   "lcs",  P_STRING|P_VI_DEF|P_RALL|P_ONECOMMA|P_NODUP,
-			    (char_u *)&p_lcs, PV_NONE,
+			    (char_u *)&p_lcs, PV_LCS,
 			    {(char_u *)"eol:$", (char_u *)0L} SCTX_INIT},
     {"loadplugins", "lpl",  P_BOOL|P_VI_DEF,
 			    (char_u *)&p_lpl, PV_NONE,

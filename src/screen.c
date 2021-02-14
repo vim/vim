@@ -4745,10 +4745,11 @@ screen_screenrow(void)
 
 /*
  * Handle setting 'listchars' or 'fillchars'.
+ * Assume monocell characters.
  * Returns error message, NULL if it's OK.
  */
     char *
-set_chars_option(char_u **varp)
+set_chars_option(win_T *wp, char_u **varp)
 {
     int		round, i, len, entries;
     char_u	*p, *s;
@@ -4767,28 +4768,30 @@ set_chars_option(char_u **varp)
 	{&fill_diff,	"diff"},
 	{&fill_eob,	"eob"},
     };
-    static struct charstab lcstab[] =
+    struct charstab lcstab[] =
     {
-	{&lcs_eol,	"eol"},
-	{&lcs_ext,	"extends"},
-	{&lcs_nbsp,	"nbsp"},
-	{&lcs_prec,	"precedes"},
-	{&lcs_space,	"space"},
-	{&lcs_tab2,	"tab"},
-	{&lcs_trail,	"trail"},
-	{&lcs_lead,	"lead"},
+	{&wp->w_lcs_chars.eol,	"eol"},
+	{&wp->w_lcs_chars.ext,	"extends"},
+	{&wp->w_lcs_chars.nbsp,	"nbsp"},
+	{&wp->w_lcs_chars.prec,	"precedes"},
+	{&wp->w_lcs_chars.space,"space"},
+	{&wp->w_lcs_chars.tab2,	"tab"},
+	{&wp->w_lcs_chars.trail,"trail"},
+	{&wp->w_lcs_chars.lead,	"lead"},
 #ifdef FEAT_CONCEAL
-	{&lcs_conceal,	"conceal"},
+	{&wp->w_lcs_chars.conceal,	"conceal"},
 #else
 	{NULL,		"conceal"},
 #endif
     };
     struct charstab *tab;
 
-    if (varp == &p_lcs)
+    if (varp == &p_lcs || varp == &wp->w_p_lcs)
     {
 	tab = lcstab;
 	entries = sizeof(lcstab) / sizeof(struct charstab);
+	if (varp == &wp->w_p_lcs && wp->w_p_lcs[0] == NUL)
+	    varp = &p_lcs;
     }
     else
     {
@@ -4805,12 +4808,13 @@ set_chars_option(char_u **varp)
 	    // 'fillchars', NUL for 'listchars'
 	    for (i = 0; i < entries; ++i)
 		if (tab[i].cp != NULL)
-		    *(tab[i].cp) = (varp == &p_lcs ? NUL : ' ');
+		    *(tab[i].cp) =
+			((varp == &p_lcs || varp == &wp->w_p_lcs) ? NUL : ' ');
 
-	    if (varp == &p_lcs)
+	    if (varp == &p_lcs || varp == &wp->w_p_lcs)
 	    {
-		lcs_tab1 = NUL;
-		lcs_tab3 = NUL;
+		wp->w_lcs_chars.tab1 = NUL;
+		wp->w_lcs_chars.tab3 = NUL;
 	    }
 	    else
 	    {
@@ -4833,7 +4837,7 @@ set_chars_option(char_u **varp)
 		    c1 = mb_ptr2char_adv(&s);
 		    if (mb_char2cells(c1) > 1)
 			continue;
-		    if (tab[i].cp == &lcs_tab2)
+		    if (tab[i].cp == &wp->w_lcs_chars.tab2)
 		    {
 			if (*s == NUL)
 			    continue;
@@ -4852,11 +4856,11 @@ set_chars_option(char_u **varp)
 		    {
 			if (round)
 			{
-			    if (tab[i].cp == &lcs_tab2)
+			    if (tab[i].cp == &wp->w_lcs_chars.tab2)
 			    {
-				lcs_tab1 = c1;
-				lcs_tab2 = c2;
-				lcs_tab3 = c3;
+				wp->w_lcs_chars.tab1 = c1;
+				wp->w_lcs_chars.tab2 = c2;
+				wp->w_lcs_chars.tab3 = c3;
 			    }
 			    else if (tab[i].cp != NULL)
 				*(tab[i].cp) = c1;
