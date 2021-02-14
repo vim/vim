@@ -7719,17 +7719,21 @@ compile_endtry(char_u *arg, cctx_T *cctx)
 
     compile_endblock(cctx);
 
-    if (try_isn->isn_arg.try.try_finally == 0)
-	// No :finally encountered, use the try_finaly field to point to
-	// ENDTRY, so that TRYCONT can jump there.
-	try_isn->isn_arg.try.try_finally = cctx->ctx_instr.ga_len;
+    if (cctx->ctx_skip != SKIP_YES)
+    {
+	if (try_isn->isn_arg.try.try_finally == 0)
+	    // No :finally encountered, use the try_finaly field to point to
+	    // ENDTRY, so that TRYCONT can jump there.
+	    try_isn->isn_arg.try.try_finally = instr->ga_len;
 
-    if (cctx->ctx_skip != SKIP_YES && generate_instr(cctx, ISN_ENDTRY) == NULL)
-	return NULL;
+	if (cctx->ctx_skip != SKIP_YES
+				   && generate_instr(cctx, ISN_ENDTRY) == NULL)
+	    return NULL;
 #ifdef FEAT_PROFILE
 	if (cctx->ctx_profiling)
 	    generate_instr(cctx, ISN_PROF_START);
 #endif
+    }
     return arg;
 }
 
