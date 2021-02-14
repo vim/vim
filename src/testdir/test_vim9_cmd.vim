@@ -5,6 +5,16 @@ source vim9.vim
 source term_util.vim
 source view_util.vim
 
+def Test_vim9cmd()
+  var lines =<< trim END
+    vim9cmd var x = 123
+    let s:y = 'yes'
+    vim9c assert_equal(123, x)
+    vim9cm assert_equal('yes', y)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_edit_wildcards()
   var filename = 'Xtest'
   edit `=filename`
