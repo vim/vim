@@ -724,6 +724,27 @@ def Test_try_catch_fails()
   CheckDefFailure(['throw xxx'], 'E1001:')
 enddef
 
+def Try_catch_skipped()
+  var l = []
+  try
+  finally
+  endtry
+
+  if 1
+  else
+    try
+    endtry
+  endif
+enddef
+
+" The skipped try/endtry was updating the wrong instruction.
+def Test_try_catch_skipped()
+  var instr = execute('disassemble Try_catch_skipped')
+  assert_match("NEWLIST size 0\n", instr)
+enddef
+
+
+
 def Test_throw_vimscript()
   # only checks line continuation
   var lines =<< trim END
