@@ -1785,7 +1785,9 @@ do_one_cmd(
     if (parse_command_modifiers(&ea, &errormsg, &cmdmod, FALSE) == FAIL)
 	goto doend;
     apply_cmdmod(&cmdmod);
+#ifdef FEAT_EVAL
     vim9script = in_vim9script();
+#endif
     after_modifier = ea.cmd;
 
 #ifdef FEAT_EVAL
