@@ -354,13 +354,15 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			Vim version, or update Vim to a newer version.  See
 			|vimscript-version| for what changed between versions.
 
-:vim9[script] [noclear]				*:vim9* *:vim9script*
+:vim9s[cript] [noclear]				*:vim9s* *:vim9script*
 			Marks a script file as containing |Vim9-script|
 			commands.  Also see |vim9-namespace|.
 			Must be the first command in the file.
 			For [noclear] see |vim9-reload|.
 			Without the |+eval| feature this changes the syntax
 			for some commands.
+			See |:vim9cmd| for executing one command with Vim9
+			syntax and semantics.
 			 
 						*:scr* *:scriptnames*
 :scr[iptnames]		List all sourced script names, in the order they were

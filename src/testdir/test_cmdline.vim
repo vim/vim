@@ -119,7 +119,7 @@ func Test_wildmenu_screendump()
   call term_sendkeys(buf, "\<Tab>")
   call VerifyScreenDump(buf, 'Test_wildmenu_3', {})
 
-  call term_sendkeys(buf, "\<Tab>")
+  call term_sendkeys(buf, "\<Tab>\<Tab>")
   call VerifyScreenDump(buf, 'Test_wildmenu_4', {})
   call term_sendkeys(buf, "\<Esc>")
 

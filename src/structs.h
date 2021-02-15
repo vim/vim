@@ -642,6 +642,7 @@ typedef struct
 #define CMOD_LOCKMARKS	    0x0800	// ":lockmarks"
 #define CMOD_KEEPPATTERNS   0x1000	// ":keeppatterns"
 #define CMOD_NOSWAPFILE	    0x2000	// ":noswapfile"
+#define CMOD_VIM9CMD	    0x4000	// ":vim9cmd"
 
     int		cmod_split;		// flags for win_split()
     int		cmod_tab;		// > 0 when ":tab" was used

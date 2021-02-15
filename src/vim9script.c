@@ -23,7 +23,8 @@ in_vim9script(void)
     // Do not go up the stack, a ":function" inside vim9script uses legacy
     // syntax.  "sc_version" is also set when compiling a ":def" function in
     // legacy script.
-    return current_sctx.sc_version == SCRIPT_VERSION_VIM9;
+    return current_sctx.sc_version == SCRIPT_VERSION_VIM9
+		|| (cmdmod.cmod_flags & CMOD_VIM9CMD);
 }
 
 /*

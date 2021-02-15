@@ -709,7 +709,7 @@ def Test_helpgrep_vim9_restore_cpo()
   var dir = 'Xruntime/after'
   &rtp ..= ',' .. dir
   mkdir(dir .. '/ftplugin', 'p')
-  writefile(['vim9'], dir .. '/ftplugin/qf.vim')
+  writefile(['vim9script'], dir .. '/ftplugin/qf.vim')
   filetype plugin on
   silent helpgrep grail
   cwindow

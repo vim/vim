@@ -1737,7 +1737,7 @@ do_one_cmd(
     int		starts_with_colon = FALSE;
 #ifdef FEAT_EVAL
     int		may_have_range;
-    int		vim9script = in_vim9script();
+    int		vim9script;
     int		did_set_expr_line = FALSE;
 #endif
     int		sourcing = flags & DOCMD_VERBOSE;
@@ -1785,7 +1785,9 @@ do_one_cmd(
     if (parse_command_modifiers(&ea, &errormsg, &cmdmod, FALSE) == FAIL)
 	goto doend;
     apply_cmdmod(&cmdmod);
-
+#ifdef FEAT_EVAL
+    vim9script = in_vim9script();
+#endif
     after_modifier = ea.cmd;
 
 #ifdef FEAT_EVAL
@@ -2931,6 +2933,17 @@ parse_command_modifiers(
 	    case 'v':	if (checkforcmd(&eap->cmd, "vertical", 4))
 			{
 			    cmod->cmod_split |= WSP_VERT;
+			    continue;
+			}
+			if (checkforcmd(&eap->cmd, "vim9cmd", 4))
+			{
+			    if (ends_excmd2(p, eap->cmd))
+			    {
+				*errormsg =
+				      _(e_vim9cmd_must_be_followed_by_command);
+				return FAIL;
+			    }
+			    cmod->cmod_flags |= CMOD_VIM9CMD;
 			    continue;
 			}
 			if (!checkforcmd(&p, "verbose", 4))
