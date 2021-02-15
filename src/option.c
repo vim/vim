@@ -2337,9 +2337,11 @@ didset_options2(void)
     // Parse default for 'wildmode'
     check_opt_wim();
 
-    (void)set_chars_option(&p_lcs);
+    // Parse default for 'listchars'.
+    (void)set_chars_option(curwin, &curwin->w_p_lcs);
+
     // Parse default for 'fillchars'.
-    (void)set_chars_option(&p_fcs);
+    (void)set_chars_option(curwin, &p_fcs);
 
 #ifdef FEAT_CLIPBOARD
     // Parse default for 'clipboard'
@@ -5063,6 +5065,11 @@ unset_global_local_option(char_u *name, void *from)
 	case PV_MENC:
 	    clear_string_option(&buf->b_p_menc);
 	    break;
+	case PV_LCS:
+	    clear_string_option(&((win_T *)from)->w_p_lcs);
+	    set_chars_option((win_T *)from, &((win_T *)from)->w_p_lcs);
+	    redraw_later(NOT_VALID);
+	    break;
     }
 }
 #endif
@@ -5121,6 +5128,8 @@ get_varp_scope(struct vimoption *p, int opt_flags)
 #endif
 	    case PV_BKC:  return (char_u *)&(curbuf->b_p_bkc);
 	    case PV_MENC: return (char_u *)&(curbuf->b_p_menc);
+	    case PV_LCS: return (char_u *)&(curwin->w_p_lcs);
+
 	}
 	return NULL; // "cannot happen"
     }
@@ -5218,6 +5227,8 @@ get_varp(struct vimoption *p)
 	case PV_ARAB:	return (char_u *)&(curwin->w_p_arab);
 #endif
 	case PV_LIST:	return (char_u *)&(curwin->w_p_list);
+	case PV_LCS:	return *curwin->w_p_lcs != NUL
+				    ? (char_u *)&(curwin->w_p_lcs) : p->var;
 #ifdef FEAT_SPELL
 	case PV_SPELL:	return (char_u *)&(curwin->w_p_spell);
 #endif
@@ -5445,6 +5456,7 @@ after_copy_winopt(win_T *wp UNUSED)
     fill_culopt_flags(NULL, wp);
     check_colorcolumn(wp);
 #endif
+    set_chars_option(wp, &wp->w_p_lcs);
 }
 
 /*
@@ -5460,6 +5472,7 @@ copy_winopt(winopt_T *from, winopt_T *to)
     to->wo_arab = from->wo_arab;
 #endif
     to->wo_list = from->wo_list;
+    to->wo_lcs = vim_strsave(from->wo_lcs);
     to->wo_nu = from->wo_nu;
     to->wo_rnu = from->wo_rnu;
 #ifdef FEAT_LINEBREAK
@@ -5594,6 +5607,7 @@ check_winopt(winopt_T *wop UNUSED)
     check_string_option(&wop->wo_briopt);
 #endif
     check_string_option(&wop->wo_wcr);
+    check_string_option(&wop->wo_lcs);
 }
 
 /*
@@ -5639,6 +5653,7 @@ clear_winopt(winopt_T *wop UNUSED)
     clear_string_option(&wop->wo_twk);
     clear_string_option(&wop->wo_tws);
 #endif
+    clear_string_option(&wop->wo_lcs);
 }
 
 #ifdef FEAT_EVAL
