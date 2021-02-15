@@ -1957,12 +1957,16 @@ do_one_cmd(
 	/*
 	 * strange vi behaviour:
 	 * ":3"		jumps to line 3
-	 * ":3|..."	prints line 3
-	 * ":|"		prints current line
+	 * ":3|..."	prints line 3  (not in Vim9 script)
+	 * ":|"		prints current line  (not in Vim9 script)
 	 */
 	if (ea.skip)	    // skip this if inside :if
 	    goto doend;
-	if (*ea.cmd == '|' || (exmode_active && ea.line1 != ea.line2))
+	if ((*ea.cmd == '|' || (exmode_active && ea.line1 != ea.line2))
+#ifdef FEAT_EVAL
+		&& !vim9script
+#endif
+	   )
 	{
 	    ea.cmdidx = CMD_print;
 	    ea.argt = EX_RANGE+EX_COUNT+EX_TRLBAR;
