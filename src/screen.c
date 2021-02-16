@@ -4768,20 +4768,21 @@ set_chars_option(win_T *wp, char_u **varp)
 	{&fill_diff,	"diff"},
 	{&fill_eob,	"eob"},
     };
+    static lcs_chars_T lcs_chars;
     struct charstab lcstab[] =
     {
-	{&wp->w_lcs_chars.eol,	"eol"},
-	{&wp->w_lcs_chars.ext,	"extends"},
-	{&wp->w_lcs_chars.nbsp,	"nbsp"},
-	{&wp->w_lcs_chars.prec,	"precedes"},
-	{&wp->w_lcs_chars.space,"space"},
-	{&wp->w_lcs_chars.tab2,	"tab"},
-	{&wp->w_lcs_chars.trail,"trail"},
-	{&wp->w_lcs_chars.lead,	"lead"},
+	{&lcs_chars.eol,	"eol"},
+	{&lcs_chars.ext,	"extends"},
+	{&lcs_chars.nbsp,	"nbsp"},
+	{&lcs_chars.prec,	"precedes"},
+	{&lcs_chars.space,	"space"},
+	{&lcs_chars.tab2,	"tab"},
+	{&lcs_chars.trail,	"trail"},
+	{&lcs_chars.lead,	"lead"},
 #ifdef FEAT_CONCEAL
-	{&wp->w_lcs_chars.conceal,	"conceal"},
+	{&lcs_chars.conceal,	"conceal"},
 #else
-	{NULL,		"conceal"},
+	{NULL,			"conceal"},
 #endif
     };
     struct charstab *tab;
@@ -4789,6 +4790,7 @@ set_chars_option(win_T *wp, char_u **varp)
     if (varp == &p_lcs || varp == &wp->w_p_lcs)
     {
 	tab = lcstab;
+	CLEAR_FIELD(lcs_chars);
 	entries = sizeof(lcstab) / sizeof(struct charstab);
 	if (varp == &wp->w_p_lcs && wp->w_p_lcs[0] == NUL)
 	    varp = &p_lcs;
@@ -4813,8 +4815,8 @@ set_chars_option(win_T *wp, char_u **varp)
 
 	    if (varp == &p_lcs || varp == &wp->w_p_lcs)
 	    {
-		wp->w_lcs_chars.tab1 = NUL;
-		wp->w_lcs_chars.tab3 = NUL;
+		lcs_chars.tab1 = NUL;
+		lcs_chars.tab3 = NUL;
 	    }
 	    else
 	    {
@@ -4837,7 +4839,7 @@ set_chars_option(win_T *wp, char_u **varp)
 		    c1 = mb_ptr2char_adv(&s);
 		    if (mb_char2cells(c1) > 1)
 			continue;
-		    if (tab[i].cp == &wp->w_lcs_chars.tab2)
+		    if (tab[i].cp == &lcs_chars.tab2)
 		    {
 			if (*s == NUL)
 			    continue;
@@ -4856,11 +4858,11 @@ set_chars_option(win_T *wp, char_u **varp)
 		    {
 			if (round)
 			{
-			    if (tab[i].cp == &wp->w_lcs_chars.tab2)
+			    if (tab[i].cp == &lcs_chars.tab2)
 			    {
-				wp->w_lcs_chars.tab1 = c1;
-				wp->w_lcs_chars.tab2 = c2;
-				wp->w_lcs_chars.tab3 = c3;
+				lcs_chars.tab1 = c1;
+				lcs_chars.tab2 = c2;
+				lcs_chars.tab3 = c3;
 			    }
 			    else if (tab[i].cp != NULL)
 				*(tab[i].cp) = c1;
@@ -4878,6 +4880,8 @@ set_chars_option(win_T *wp, char_u **varp)
 		++p;
 	}
     }
+    if (tab == lcstab)
+	wp->w_lcs_chars = lcs_chars;
 
     return NULL;	// no error
 }
