@@ -1051,9 +1051,9 @@ that you don't do that.
 Namespace ~
 							*vim9-namespace*
 To recognize a file that can be imported the `vim9script` statement must
-appear as the first statement in the file.  It tells Vim to interpret the
-script in its own namespace, instead of the global namespace.  If a file
-starts with: >
+appear as the first statement in the file (see |vim9-mix| for an exception).
+It tells Vim to interpret the script in its own namespace, instead of the
+global namespace.  If a file starts with: >
 	vim9script
 	var myvar = 'yes'
 Then "myvar" will only exist in this file.  While without `vim9script` it would
@@ -1072,6 +1072,27 @@ Vim default value, like with: >
 	:set cpo&vim
 One of the effects is that |line-continuation| is always enabled.
 The original value of 'cpoptions' is restored at the end of the script.
+
+							*vim9-mix*
+There is one way to use both legacy and Vim9 syntax in one script file: >
+	" comments may go here
+	if !has('vim9script')
+	   " legacy script commands go here
+	   finish
+	endif
+	vim9script
+	# Vim9 script commands go here
+This allows for writing a script that takes advantage of the Vim9 script
+syntax if possible, but will also work on an Vim version without it.
+
+This can only work in two ways:
+1. The "if" statement evaluates to false, the commands up to `endif` are
+   skipped and `vim9script` is then the first command actually executed.
+2. The "if" statement evaluates to true, the commands up to `endif` are
+   executed and `finish` bails out before reaching `vim9script`.
+
+TODO: The "vim9script" feature does not exist yet, it will only be added once
+the Vim9 script syntax has been fully implemented.
 
 
 Export ~

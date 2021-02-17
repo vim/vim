@@ -1262,6 +1262,27 @@ def Test_use_import_in_mapping()
   nunmap <F3>
 enddef
 
+def Test_vim9script_mix()
+  var lines =<< trim END
+    if has(g:feature)
+      " legacy script
+      let g:legacy = 1
+      finish
+    endif
+    vim9script
+    g:legacy = 0
+  END
+  g:feature = 'eval'
+  g:legacy = -1
+  CheckScriptSuccess(lines)
+  assert_equal(1, g:legacy)
+
+  g:feature = 'noteval'
+  g:legacy = -1
+  CheckScriptSuccess(lines)
+  assert_equal(0, g:legacy)
+enddef
+
 def Test_vim9script_fails()
   CheckScriptFailure(['scriptversion 2', 'vim9script'], 'E1039:')
   CheckScriptFailure(['vim9script', 'scriptversion 2'], 'E1040:')
