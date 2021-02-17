@@ -3247,6 +3247,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  stlnc:c	' ' or '='	statusline of the non-current windows
 	  vert:c	'|'		vertical separators |:vsplit|
 	  fold:c	'-'		filling 'foldtext'
+	  foldopen:c	'-'		mark the beginning of a fold
+	  foldclose:c	'+'		show a closed fold
+	  foldsep:c	'|'		open fold middle character
 	  diff:c	'-'		deleted lines of the 'diff' option
 	  eob:c		'~'		empty lines below the end of a buffer
 
