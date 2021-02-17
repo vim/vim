@@ -427,6 +427,7 @@ let s:filename_checks = {
     \ 'sdc': ['file.sdc'],
     \ 'sdl': ['file.sdl', 'file.pr'],
     \ 'sed': ['file.sed'],
+    \ 'svelte': ['file.svelte'],
     \ 'sensors': ['/etc/sensors.conf', '/etc/sensors3.conf', 'any/etc/sensors.conf', 'any/etc/sensors3.conf'],
     \ 'services': ['/etc/services', 'any/etc/services'],
     \ 'setserial': ['/etc/serial.conf', 'any/etc/serial.conf'],
