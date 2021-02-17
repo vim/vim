@@ -3421,7 +3421,17 @@ eval7(
      */
     case '(':	ret = NOTDONE;
 		if (in_vim9script())
+		{
 		    ret = get_lambda_tv(arg, rettv, TRUE, evalarg);
+		    if (ret == OK && evaluate)
+		    {
+			ufunc_T *ufunc = rettv->vval.v_partial->pt_func;
+
+			// compile it here to get the return type
+			compile_def_function(ufunc,
+						 TRUE, PROFILING(ufunc), NULL);
+		    }
+		}
 		if (ret == NOTDONE)
 		{
 		    *arg = skipwhite_and_linebreak(*arg + 1, evalarg);

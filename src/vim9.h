@@ -418,11 +418,9 @@ extern garray_T def_functions;
 #define LNUM_VARIABLE_RANGE_ABOVE -888
 
 #ifdef FEAT_PROFILE
-# define PROFILING(ufunc) (do_profiling == PROF_YES && (ufunc)->uf_profiling)
 # define INSTRUCTIONS(dfunc) \
 	((do_profiling == PROF_YES && (dfunc->df_ufunc)->uf_profiling) \
 	? (dfunc)->df_instr_prof : (dfunc)->df_instr)
 #else
-# define PROFILING(ufunc) FALSE
 # define INSTRUCTIONS(dfunc) ((dfunc)->df_instr)
 #endif

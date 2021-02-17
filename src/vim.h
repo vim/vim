@@ -1787,6 +1787,12 @@ typedef struct timeval proftime_T;
 typedef int proftime_T;	    // dummy for function prototypes
 #endif
 
+#ifdef FEAT_PROFILE
+# define PROFILING(ufunc) (do_profiling == PROF_YES && (ufunc)->uf_profiling)
+#else
+# define PROFILING(ufunc) FALSE
+#endif
+
 /*
  * When compiling with 32 bit Perl time_t is 32 bits in the Perl code but 64
  * bits elsewhere.  That causes memory corruption.  Define time_T and use it
