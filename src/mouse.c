@@ -1989,7 +1989,7 @@ retnomove:
 	count |= CURSOR_MOVED;		// Cursor has moved
 
 # ifdef FEAT_FOLDING
-    if (mouse_char == '+')
+    if (mouse_char == fill_foldclosed)
 	count |= MOUSE_FOLD_OPEN;
     else if (mouse_char != ' ')
 	count |= MOUSE_FOLD_CLOSE;

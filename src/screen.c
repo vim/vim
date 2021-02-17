@@ -272,9 +272,9 @@ fill_foldcolumn(
 	{
 	    if (win_foldinfo.fi_lnum == lnum
 			      && first_level + i >= win_foldinfo.fi_low_level)
-		p[i] = '-';
+		p[i] = fill_foldopen;
 	    else if (first_level == 1)
-		p[i] = '|';
+		p[i] = fill_foldsep;
 	    else if (first_level + i <= 9)
 		p[i] = '0' + first_level + i;
 	    else
@@ -284,7 +284,7 @@ fill_foldcolumn(
 	}
     }
     if (closed)
-	p[i >= fdc ? i - 1 : i] = '+';
+	p[i >= fdc ? i - 1 : i] = fill_foldclosed;
 }
 #endif // FEAT_FOLDING
 
@@ -4761,12 +4761,15 @@ set_chars_option(win_T *wp, char_u **varp)
     };
     static struct charstab filltab[] =
     {
-	{&fill_stl,	"stl"},
-	{&fill_stlnc,	"stlnc"},
-	{&fill_vert,	"vert"},
-	{&fill_fold,	"fold"},
-	{&fill_diff,	"diff"},
-	{&fill_eob,	"eob"},
+	{&fill_stl,		"stl"},
+	{&fill_stlnc,		"stlnc"},
+	{&fill_vert,		"vert"},
+	{&fill_fold,		"fold"},
+	{&fill_foldopen,	"foldopen"},
+	{&fill_foldclosed,	"foldclose"},
+	{&fill_foldsep,		"foldsep"},
+	{&fill_diff,		"diff"},
+	{&fill_eob,		"eob"},
     };
     static lcs_chars_T lcs_chars;
     struct charstab lcstab[] =
@@ -4821,6 +4824,9 @@ set_chars_option(win_T *wp, char_u **varp)
 	    else
 	    {
 		fill_diff = '-';
+		fill_foldopen = '-';
+		fill_foldclosed = '+';
+		fill_foldsep = '|';
 		fill_eob = '~';
 	    }
 	}

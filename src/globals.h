@@ -1347,6 +1347,9 @@ EXTERN int	fill_stl INIT(= ' ');
 EXTERN int	fill_stlnc INIT(= ' ');
 EXTERN int	fill_vert INIT(= ' ');
 EXTERN int	fill_fold INIT(= '-');
+EXTERN int	fill_foldopen INIT(= '-');
+EXTERN int	fill_foldclosed INIT(= '+');
+EXTERN int	fill_foldsep INIT(= '|');
 EXTERN int	fill_diff INIT(= '-');
 EXTERN int	fill_eob INIT(= '~');
 
