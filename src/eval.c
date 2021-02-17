@@ -3428,8 +3428,12 @@ eval7(
 			ufunc_T *ufunc = rettv->vval.v_partial->pt_func;
 
 			// compile it here to get the return type
-			compile_def_function(ufunc,
-						 TRUE, PROFILING(ufunc), NULL);
+			if (compile_def_function(ufunc,
+					 TRUE, PROFILING(ufunc), NULL) == FAIL)
+			{
+			    clear_tv(rettv);
+			    ret = FAIL;
+			}
 		    }
 		}
 		if (ret == NOTDONE)

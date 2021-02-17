@@ -1118,6 +1118,11 @@ def Test_assign_lambda()
       Ref = (j) => !j
   END
   CheckDefAndScriptFailure(lines, 'E1012: Type mismatch; expected func(number) but got func(any): bool')
+
+  lines =<< trim END
+      echo filter([1, 2, 3], (_, v: string) => v + 1) 
+  END
+  CheckDefAndScriptFailure(lines, 'E1051:')
 enddef
 
 def Test_heredoc()
