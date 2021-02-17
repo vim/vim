@@ -2776,7 +2776,6 @@ get_script_local_ht(void)
 lookup_scriptvar(
 	char_u	*name,
 	size_t	len,
-	void	*lvar UNUSED,
 	cctx_T	*dummy UNUSED)
 {
     hashtab_T	*ht = get_script_local_ht();
