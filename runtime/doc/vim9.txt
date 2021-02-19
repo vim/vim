@@ -96,8 +96,8 @@ script and `:def` functions; details are below:
 	def CallMe(count: number, message: string): bool
 - Call functions without `:call`: >
 	writefile(['done'], 'file.txt')
-- You cannot use `:xit`, `:t`, `:append`, `:change`, `:insert` or curly-braces
-  names.
+- You cannot use `:xit`, `:t`, `:k`, `:append`, `:change`, `:insert` or
+  curly-braces names.
 - A range before a command must be prefixed with a colon: >
 	:%s/this/that
 - Unless mentioned specifically, the highest |scriptversion| is used.
@@ -562,11 +562,12 @@ error.  A number can be given with and without the []: >
 	{'456': 'with', '123': 'without'}
 
 
-No :xit, :t, :append, :change or :insert ~
+No :xit, :t, :k, :append, :change or :insert ~
 
 These commands are too easily confused with local variable names.
 Instead of `:x` or `:xit` you can use `:exit`.
 Instead of `:t` you can use `:copy`.
+Instead of `:k` you can use `:mark`.
 
 
 Comparators ~

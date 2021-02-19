@@ -3491,6 +3491,31 @@ def Test_import_gone_when_sourced_twice()
   unlet g:guard
 enddef
 
+def Test_unsupported_commands()
+  var lines =<< trim END
+      ka
+  END
+  CheckDefAndScriptFailure(lines, 'E1100:')
+
+  lines =<< trim END
+    t
+  END
+  CheckDefFailure(lines, 'E1100:')
+  CheckScriptFailure(['vim9script'] + lines, 'E1100:')
+
+  lines =<< trim END
+    x
+  END
+  CheckDefFailure(lines, 'E1100:')
+  CheckScriptFailure(['vim9script'] + lines, 'E1100:')
+
+  lines =<< trim END
+    xit
+  END
+  CheckDefFailure(lines, 'E1100:')
+  CheckScriptFailure(['vim9script'] + lines, 'E1100:')
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new

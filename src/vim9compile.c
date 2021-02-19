@@ -8520,6 +8520,7 @@ compile_def_function(
 	    case CMD_append:
 	    case CMD_change:
 	    case CMD_insert:
+	    case CMD_k:
 	    case CMD_t:
 	    case CMD_xit:
 		    not_in_vim9(&ea);

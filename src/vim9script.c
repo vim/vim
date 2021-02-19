@@ -95,6 +95,7 @@ not_in_vim9(exarg_T *eap)
 	    case CMD_append:
 	    case CMD_change:
 	    case CMD_insert:
+	    case CMD_k:
 	    case CMD_t:
 	    case CMD_xit:
 		semsg(_(e_command_not_supported_in_vim9_script_missing_var_str), eap->cmd);

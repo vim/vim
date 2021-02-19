@@ -3461,7 +3461,8 @@ find_ex_command(
     /*
      * Isolate the command and search for it in the command table.
      * Exceptions:
-     * - the 'k' command can directly be followed by any character.
+     * - The 'k' command can directly be followed by any character.
+     *   But it is not used in Vim9 script.
      * - the 's' command can be followed directly by 'c', 'g', 'i', 'I' or 'r'
      *	    but :sre[wind] is another command, as are :scr[iptnames],
      *	    :scs[cope], :sim[alt], :sig[ns] and :sil[ent].
@@ -8056,6 +8057,10 @@ ex_mark(exarg_T *eap)
 {
     pos_T	pos;
 
+#ifdef FEAT_EVAL
+    if (not_in_vim9(eap) == FAIL)
+	return;
+#endif
     if (*eap->arg == NUL)		// No argument?
 	emsg(_(e_argreq));
     else if (eap->arg[1] != NUL)	// more than one character?
