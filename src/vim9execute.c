@@ -72,6 +72,11 @@ struct ectx_S {
     garray_T	ec_funcrefs;	// partials that might be a closure
 };
 
+#ifdef FEAT_PROFILE
+// stack of profinfo_T used when profiling.
+static garray_T profile_info_ga = {0, 0, sizeof(profinfo_T), 20, NULL};
+#endif
+
 // Get pointer to item relative to the bottom of the stack, -1 is the last one.
 #define STACK_TV_BOT(idx) (((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_stack.ga_len + (idx))
 
@@ -184,13 +189,27 @@ call_dfunc(int cdf_idx, partial_T *pt, int argcount_arg, ectx_T *ectx)
     }
 
 #ifdef FEAT_PROFILE
-    // Profiling might be enabled/disabled along the way.  This should not
-    // fail, since the function was compiled before and toggling profiling
-    // doesn't change any errors.
-    if (func_needs_compiling(ufunc, PROFILING(ufunc))
-	    && compile_def_function(ufunc, FALSE, PROFILING(ufunc), NULL)
+    if (do_profiling == PROF_YES)
+    {
+	if (ga_grow(&profile_info_ga, 1) == OK)
+	{
+	    profinfo_T *info = ((profinfo_T *)profile_info_ga.ga_data)
+						      + profile_info_ga.ga_len;
+	    ++profile_info_ga.ga_len;
+	    CLEAR_POINTER(info);
+	    profile_may_start_func(info, ufunc,
+			(((dfunc_T *)def_functions.ga_data)
+					      + ectx->ec_dfunc_idx)->df_ufunc);
+	}
+
+	// Profiling might be enabled/disabled along the way.  This should not
+	// fail, since the function was compiled before and toggling profiling
+	// doesn't change any errors.
+	if (func_needs_compiling(ufunc, PROFILING(ufunc))
+		&& compile_def_function(ufunc, FALSE, PROFILING(ufunc), NULL)
 								       == FAIL)
-	return FAIL;
+	    return FAIL;
+    }
 #endif
 
     if (ufunc->uf_va_name != NULL)
@@ -517,7 +536,25 @@ func_return(ectx_T *ectx)
     int		argcount = ufunc_argcount(dfunc->df_ufunc);
     int		top = ectx->ec_frame_idx - argcount;
     estack_T	*entry;
+    int		prev_dfunc_idx = STACK_TV(ectx->ec_frame_idx
+					+ STACK_FRAME_FUNC_OFF)->vval.v_number;
+    dfunc_T	*prev_dfunc = ((dfunc_T *)def_functions.ga_data)
+							      + prev_dfunc_idx;
 
+#ifdef FEAT_PROFILE
+    if (do_profiling == PROF_YES)
+    {
+	ufunc_T *caller = prev_dfunc->df_ufunc;
+
+	if (dfunc->df_ufunc->uf_profiling
+				   || (caller != NULL && caller->uf_profiling))
+	{
+	    profile_may_end_func(((profinfo_T *)profile_info_ga.ga_data)
+			+ profile_info_ga.ga_len - 1, dfunc->df_ufunc, caller);
+	    --profile_info_ga.ga_len;
+	}
+    }
+#endif
     // execution context goes one level up
     entry = estack_pop();
     if (entry != NULL)
@@ -544,8 +581,7 @@ func_return(ectx_T *ectx)
     vim_free(ectx->ec_outer);
 
     // Restore the previous frame.
-    ectx->ec_dfunc_idx = STACK_TV(ectx->ec_frame_idx
-					+ STACK_FRAME_FUNC_OFF)->vval.v_number;
+    ectx->ec_dfunc_idx = prev_dfunc_idx;
     ectx->ec_iidx = STACK_TV(ectx->ec_frame_idx
 					+ STACK_FRAME_IIDX_OFF)->vval.v_number;
     ectx->ec_outer = (void *)STACK_TV(ectx->ec_frame_idx
@@ -553,8 +589,7 @@ func_return(ectx_T *ectx)
     // restoring ec_frame_idx must be last
     ectx->ec_frame_idx = STACK_TV(ectx->ec_frame_idx
 				       + STACK_FRAME_IDX_OFF)->vval.v_number;
-    dfunc = ((dfunc_T *)def_functions.ga_data) + ectx->ec_dfunc_idx;
-    ectx->ec_instr = INSTRUCTIONS(dfunc);
+    ectx->ec_instr = INSTRUCTIONS(prev_dfunc);
 
     if (ret_idx > 0)
     {

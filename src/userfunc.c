@@ -1649,16 +1649,20 @@ call_user_func(
 
     if (fp->uf_def_status != UF_NOT_COMPILED)
     {
+#ifdef FEAT_PROFILE
+	ufunc_T *caller = fc->caller == NULL ? NULL : fc->caller->func;
+#endif
 	// Execute the function, possibly compiling it first.
 #ifdef FEAT_PROFILE
-	profile_may_start_func(&profile_info, fp, fc);
+	if (do_profiling == PROF_YES)
+	    profile_may_start_func(&profile_info, fp, caller);
 #endif
 	call_def_function(fp, argcount, argvars, funcexe->partial, rettv);
 	funcdepth_decrement();
 #ifdef FEAT_PROFILE
 	if (do_profiling == PROF_YES && (fp->uf_profiling
-		    || (fc->caller != NULL && fc->caller->func->uf_profiling)))
-	    profile_may_end_func(&profile_info, fp, fc);
+				  || (caller != NULL && caller->uf_profiling)))
+	    profile_may_end_func(&profile_info, fp, caller);
 #endif
 	current_funccal = fc->caller;
 	free_funccal(fc);
@@ -1872,7 +1876,9 @@ call_user_func(
 	--no_wait_return;
     }
 #ifdef FEAT_PROFILE
-    profile_may_start_func(&profile_info, fp, fc);
+    if (do_profiling == PROF_YES)
+	profile_may_start_func(&profile_info, fp,
+				 fc->caller == NULL ? NULL : fc->caller->func);
 #endif
 
     save_current_sctx = current_sctx;
@@ -1908,9 +1914,13 @@ call_user_func(
     }
 
 #ifdef FEAT_PROFILE
-    if (do_profiling == PROF_YES && (fp->uf_profiling
-		    || (fc->caller != NULL && fc->caller->func->uf_profiling)))
-	profile_may_end_func(&profile_info, fp, fc);
+    if (do_profiling == PROF_YES)
+    {
+	ufunc_T *caller = fc->caller == NULL ? NULL : fc->caller->func;
+
+	if (fp->uf_profiling || (caller != NULL && caller->uf_profiling))
+	    profile_may_end_func(&profile_info, fp, caller);
+    }
 #endif
 
     // when being verbose, mention the return value

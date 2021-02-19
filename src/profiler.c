@@ -558,24 +558,20 @@ func_do_profile(ufunc_T *fp)
  * When calling a function: may initialize for profiling.
  */
     void
-profile_may_start_func(profinfo_T *info, ufunc_T *fp, funccall_T *fc)
+profile_may_start_func(profinfo_T *info, ufunc_T *fp, ufunc_T *caller)
 {
-    if (do_profiling == PROF_YES)
+    if (!fp->uf_profiling && has_profiling(FALSE, fp->uf_name, NULL))
     {
-	if (!fp->uf_profiling && has_profiling(FALSE, fp->uf_name, NULL))
-	{
-	    info->pi_started_profiling = TRUE;
-	    func_do_profile(fp);
-	}
-	if (fp->uf_profiling
-		    || (fc->caller != NULL && fc->caller->func->uf_profiling))
-	{
-	    ++fp->uf_tm_count;
-	    profile_start(&info->pi_call_start);
-	    profile_zero(&fp->uf_tm_children);
-	}
-	script_prof_save(&info->pi_wait_start);
+	info->pi_started_profiling = TRUE;
+	func_do_profile(fp);
     }
+    if (fp->uf_profiling || (caller != NULL && caller->uf_profiling))
+    {
+	++fp->uf_tm_count;
+	profile_start(&info->pi_call_start);
+	profile_zero(&fp->uf_tm_children);
+    }
+    script_prof_save(&info->pi_wait_start);
 }
 
 /*
@@ -583,16 +579,16 @@ profile_may_start_func(profinfo_T *info, ufunc_T *fp, funccall_T *fc)
  * must have been called previously.
  */
     void
-profile_may_end_func(profinfo_T *info, ufunc_T *fp, funccall_T *fc)
+profile_may_end_func(profinfo_T *info, ufunc_T *fp, ufunc_T *caller)
 {
     profile_end(&info->pi_call_start);
     profile_sub_wait(&info->pi_wait_start, &info->pi_call_start);
     profile_add(&fp->uf_tm_total, &info->pi_call_start);
     profile_self(&fp->uf_tm_self, &info->pi_call_start, &fp->uf_tm_children);
-    if (fc->caller != NULL && fc->caller->func->uf_profiling)
+    if (caller != NULL && caller->uf_profiling)
     {
-	profile_add(&fc->caller->func->uf_tm_children, &info->pi_call_start);
-	profile_add(&fc->caller->func->uf_tml_children, &info->pi_call_start);
+	profile_add(&caller->uf_tm_children, &info->pi_call_start);
+	profile_add(&caller->uf_tml_children, &info->pi_call_start);
     }
     if (info->pi_started_profiling)
 	// make a ":profdel func" stop profiling the function
