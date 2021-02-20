@@ -240,6 +240,8 @@ func Test_mapset()
   bwipe!
 
   call assert_fails('call mapset([], v:false, {})', 'E730:')
+  call assert_fails('call mapset("i", 0, "")', 'E716:')
+  call assert_fails('call mapset("i", 0, {})', 'E460:')
 endfunc
 
 func Check_ctrlb_map(d, check_alt)

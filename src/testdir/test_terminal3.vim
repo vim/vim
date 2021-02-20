@@ -301,6 +301,11 @@ func Test_term_func_invalid_arg()
     call assert_fails('let p = term_getansicolors([])', 'E745:')
     call assert_fails('call term_setansicolors([], [])', 'E745:')
   endif
+  let buf = term_start('echo')
+  call assert_fails('call term_setapi(' .. buf .. ', {})', 'E731:')
+  call assert_fails('call term_setkill(' .. buf .. ', {})', 'E731:')
+  call assert_fails('call term_setrestore(' .. buf .. ', {})', 'E731:')
+  exe buf . "bwipe!"
 endfunc
 
 " Test for sending various special keycodes to a terminal
