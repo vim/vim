@@ -3498,6 +3498,11 @@ def Test_unsupported_commands()
   CheckDefAndScriptFailure(lines, 'E1100:')
 
   lines =<< trim END
+      :1ka
+  END
+  CheckDefAndScriptFailure(lines, 'E481:')
+
+  lines =<< trim END
     t
   END
   CheckDefFailure(lines, 'E1100:')
