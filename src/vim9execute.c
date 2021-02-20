@@ -879,6 +879,21 @@ error_if_locked(int lock, char *error)
 }
 
 /*
+ * Give an error if "tv" is not a number and return FAIL.
+ */
+    static int
+check_for_number(typval_T *tv)
+{
+    if (tv->v_type != VAR_NUMBER)
+    {
+	semsg(_(e_expected_str_but_got_str),
+		vartype_name(VAR_NUMBER), vartype_name(tv->v_type));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Store "tv" in variable "name".
  * This is for s: and g: variables.
  */
@@ -2178,12 +2193,9 @@ call_def_function(
 		    else if (tv_dest->v_type == VAR_LIST)
 		    {
 			// unlet a List item, index must be a number
-			if (tv_idx->v_type != VAR_NUMBER)
+			SOURCING_LNUM = iptr->isn_lnum;
+			if (check_for_number(tv_idx) == FAIL)
 			{
-			    SOURCING_LNUM = iptr->isn_lnum;
-			    semsg(_(e_expected_str_but_got_str),
-					vartype_name(VAR_NUMBER),
-					vartype_name(tv_idx->v_type));
 			    status = FAIL;
 			}
 			else
@@ -2214,6 +2226,58 @@ call_def_function(
 		    clear_tv(tv_idx);
 		    clear_tv(tv_dest);
 		    ectx.ec_stack.ga_len -= 2;
+		    if (status == FAIL)
+			goto on_error;
+		}
+		break;
+
+	    // unlet range of items in list variable
+	    case ISN_UNLETRANGE:
+		{
+		    // Stack contains:
+		    // -3 index1
+		    // -2 index2
+		    // -1 dict or list
+		    typval_T	*tv_idx1 = STACK_TV_BOT(-3);
+		    typval_T	*tv_idx2 = STACK_TV_BOT(-2);
+		    typval_T	*tv_dest = STACK_TV_BOT(-1);
+		    int		status = OK;
+
+		    if (tv_dest->v_type == VAR_LIST)
+		    {
+			// indexes must be a number
+			SOURCING_LNUM = iptr->isn_lnum;
+			if (check_for_number(tv_idx1) == FAIL
+				|| check_for_number(tv_idx2) == FAIL)
+			{
+			    status = FAIL;
+			}
+			else
+			{
+			    list_T	*l = tv_dest->vval.v_list;
+			    long	n1 = (long)tv_idx1->vval.v_number;
+			    long	n2 = (long)tv_idx2->vval.v_number;
+			    listitem_T	*li;
+
+			    li = list_find_index(l, &n1);
+			    if (li == NULL
+				     || list_unlet_range(l, li, NULL, n1,
+							    TRUE, n2) == FAIL)
+				status = FAIL;
+			}
+		    }
+		    else
+		    {
+			status = FAIL;
+			SOURCING_LNUM = iptr->isn_lnum;
+			semsg(_(e_cannot_index_str),
+						vartype_name(tv_dest->v_type));
+		    }
+
+		    clear_tv(tv_idx1);
+		    clear_tv(tv_idx2);
+		    clear_tv(tv_dest);
+		    ectx.ec_stack.ga_len -= 3;
 		    if (status == FAIL)
 			goto on_error;
 		}
@@ -4150,6 +4214,9 @@ ex_disassemble(exarg_T *eap)
 		break;
 	    case ISN_UNLETINDEX:
 		smsg("%4d UNLETINDEX", current);
+		break;
+	    case ISN_UNLETRANGE:
+		smsg("%4d UNLETRANGE", current);
 		break;
 	    case ISN_LOCKCONST:
 		smsg("%4d LOCKCONST", current);

@@ -9,6 +9,7 @@ let g:existing = 'yes'
 let g:inc_counter = 1
 let $SOME_ENV_VAR = 'some'
 let g:alist = [7]
+let g:adict = #{a: 1}
 let g:astring = 'text'
 
 def Test_assignment_bool()
@@ -1413,6 +1414,51 @@ def Test_unlet()
   unlet ll[1]
   unlet ll[-1]
   assert_equal([1, 3], ll)
+
+  ll = [1, 2, 3, 4]
+  unlet ll[0 : 1]
+  assert_equal([3, 4], ll)
+
+  ll = [1, 2, 3, 4]
+  unlet ll[2 : 8]
+  assert_equal([1, 2], ll)
+
+  ll = [1, 2, 3, 4]
+  unlet ll[-2 : -1]
+  assert_equal([1, 2], ll)
+
+  CheckDefFailure([
+    'var ll = [1, 2]',
+    'll[1 : 2] = 7',
+    ], 'E1165:', 2)
+  CheckDefFailure([
+    'var dd = {a: 1}',
+    'unlet dd["a" : "a"]',
+    ], 'E1166:', 2)
+  CheckDefExecFailure([
+    'unlet g:adict[0 : 1]',
+    ], 'E1148:', 1)
+  CheckDefFailure([
+    'var ll = [1, 2]',
+    'unlet ll[0:1]',
+    ], 'E1004:', 2)
+  CheckDefFailure([
+    'var ll = [1, 2]',
+    'unlet ll[0 :1]',
+    ], 'E1004:', 2)
+  CheckDefFailure([
+    'var ll = [1, 2]',
+    'unlet ll[0: 1]',
+    ], 'E1004:', 2)
+
+  CheckDefFailure([
+    'var ll = [1, 2]',
+    'unlet ll["x" : 1]',
+    ], 'E1012:', 2)
+  CheckDefFailure([
+    'var ll = [1, 2]',
+    'unlet ll[0 : "x"]',
+    ], 'E1012:', 2)
 
   # list of dict unlet
   var dl = [{a: 1, b: 2}, {c: 3}]

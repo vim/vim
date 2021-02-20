@@ -5865,6 +5865,7 @@ compile_assign_unlet(
     vartype_T	dest_type;
     size_t	varlen = lhs->lhs_varlen;
     garray_T    *stack = &cctx->ctx_type_stack;
+    int		range = FALSE;
 
     // Compile the "idx" in "var[idx]" or "key" in "var.key".
     p = var_start + varlen;
@@ -5872,6 +5873,27 @@ compile_assign_unlet(
     {
 	p = skipwhite(p + 1);
 	r = compile_expr0(&p, cctx);
+
+	if (r == OK && *skipwhite(p) == ':')
+	{
+	    // unlet var[idx : idx]
+	    if (is_assign)
+	    {
+		semsg(_(e_cannot_use_range_with_assignment_str), p);
+		return FAIL;
+	    }
+	    range = TRUE;
+	    p = skipwhite(p);
+	    if (!IS_WHITE_OR_NUL(p[-1]) || !IS_WHITE_OR_NUL(p[1]))
+	    {
+		semsg(_(e_white_space_required_before_and_after_str_at_str),
+								      ":", p);
+		return FAIL;
+	    }
+	    p = skipwhite(p + 1);
+	    r = compile_expr0(&p, cctx);
+	}
+
 	if (r == OK && *skipwhite(p) != ']')
 	{
 	    // this should not happen
@@ -5897,17 +5919,29 @@ compile_assign_unlet(
     else
     {
 	dest_type = lhs->lhs_type->tt_type;
+	if (dest_type == VAR_DICT && range)
+	{
+	    emsg(e_cannot_use_range_with_dictionary);
+	    return FAIL;
+	}
 	if (dest_type == VAR_DICT && may_generate_2STRING(-1, cctx) == FAIL)
 	    return FAIL;
-	if (dest_type == VAR_LIST
-		&& need_type(((type_T **)stack->ga_data)[stack->ga_len - 1],
+	if (dest_type == VAR_LIST)
+	{
+	    if (range
+		  && need_type(((type_T **)stack->ga_data)[stack->ga_len - 2],
 				 &t_number, -1, 0, cctx, FALSE, FALSE) == FAIL)
-	    return FAIL;
+		return FAIL;
+	    if (need_type(((type_T **)stack->ga_data)[stack->ga_len - 1],
+				 &t_number, -1, 0, cctx, FALSE, FALSE) == FAIL)
+		return FAIL;
+	}
     }
 
     // Load the dict or list.  On the stack we then have:
     // - value (for assignment, not for :unlet)
     // - index
+    // - for [a : b] second index
     // - variable
     if (lhs->lhs_dest == dest_expr)
     {
@@ -5945,6 +5979,11 @@ compile_assign_unlet(
 	    if (isn == NULL)
 		return FAIL;
 	    isn->isn_arg.vartype = dest_type;
+	}
+	else if (range)
+	{
+	    if (generate_instr_drop(cctx, ISN_UNLETRANGE, 3) == NULL)
+		return FAIL;
 	}
 	else
 	{
@@ -8907,6 +8946,7 @@ delete_instr(isn_T *isn)
 	case ISN_TRY:
 	case ISN_TRYCONT:
 	case ISN_UNLETINDEX:
+	case ISN_UNLETRANGE:
 	case ISN_UNPACK:
 	    // nothing allocated
 	    break;

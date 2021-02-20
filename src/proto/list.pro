@@ -20,6 +20,7 @@ int list_equal(list_T *l1, list_T *l2, int ic, int recursive);
 listitem_T *list_find(list_T *l, long n);
 long list_find_nr(list_T *l, long idx, int *errorp);
 char_u *list_find_str(list_T *l, long idx);
+listitem_T *list_find_index(list_T *l, long *idx);
 long list_idx_of_item(list_T *l, listitem_T *item);
 void list_append(list_T *l, listitem_T *item);
 int list_append_tv(list_T *l, typval_T *tv);

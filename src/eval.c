@@ -1213,15 +1213,7 @@ get_lval(
 
 	    lp->ll_dict = NULL;
 	    lp->ll_list = lp->ll_tv->vval.v_list;
-	    lp->ll_li = list_find(lp->ll_list, lp->ll_n1);
-	    if (lp->ll_li == NULL)
-	    {
-		if (lp->ll_n1 < 0)
-		{
-		    lp->ll_n1 = 0;
-		    lp->ll_li = list_find(lp->ll_list, lp->ll_n1);
-		}
-	    }
+	    lp->ll_li = list_find_index(lp->ll_list, &lp->ll_n1);
 	    if (lp->ll_li == NULL)
 	    {
 		clear_tv(&var2);

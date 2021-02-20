@@ -1656,27 +1656,9 @@ do_unlet_var(
 	return FAIL;
     else if (lp->ll_range)
     {
-	listitem_T    *li;
-	listitem_T    *ll_li = lp->ll_li;
-	int	      ll_n1 = lp->ll_n1;
-
-	while (ll_li != NULL && (lp->ll_empty2 || lp->ll_n2 >= ll_n1))
-	{
-	    li = ll_li->li_next;
-	    if (value_check_lock(ll_li->li_tv.v_lock, lp->ll_name, FALSE))
-		return FAIL;
-	    ll_li = li;
-	    ++ll_n1;
-	}
-
-	// Delete a range of List items.
-	while (lp->ll_li != NULL && (lp->ll_empty2 || lp->ll_n2 >= lp->ll_n1))
-	{
-	    li = lp->ll_li->li_next;
-	    listitem_remove(lp->ll_list, lp->ll_li);
-	    lp->ll_li = li;
-	    ++lp->ll_n1;
-	}
+	if (list_unlet_range(lp->ll_list, lp->ll_li, lp->ll_name, lp->ll_n1,
+					   !lp->ll_empty2, lp->ll_n2) == FAIL)
+	    return FAIL;
     }
     else
     {
@@ -1691,6 +1673,43 @@ do_unlet_var(
     return ret;
 }
 
+/*
+ * Unlet one item or a range of items from a list.
+ * Return OK or FAIL.
+ */
+    int
+list_unlet_range(
+	list_T	    *l,
+	listitem_T  *li_first,
+	char_u	    *name,
+	long	    n1_arg,
+	int	    has_n2,
+	long	    n2)
+{
+    listitem_T  *li = li_first;
+    int		n1 = n1_arg;
+
+    while (li != NULL && (!has_n2 || n2 >= n1))
+    {
+	if (value_check_lock(li->li_tv.v_lock, name, FALSE))
+	    return FAIL;
+	li = li->li_next;
+	++n1;
+    }
+
+    // Delete a range of List items.
+    li = li_first;
+    n1 = n1_arg;
+    while (li != NULL && (!has_n2 || n2 >= n1))
+    {
+	listitem_T *next = li->li_next;
+
+	listitem_remove(l, li);
+	li = next;
+	++n1;
+    }
+    return OK;
+}
 /*
  * "unlet" a variable.  Return OK if it existed, FAIL if not.
  * When "forceit" is TRUE don't complain if the variable doesn't exist.
