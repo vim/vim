@@ -358,6 +358,7 @@ typedef enum {
 
 // flags for the 'wildoptions' option
 // each defined char should be unique over all values.
+#define WOP_FUZZY	'z'
 #define WOP_TAGFILE	't'
 #define WOP_PUM		'p'
 

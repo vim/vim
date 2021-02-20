@@ -152,7 +152,7 @@ let test_values = {
       \ 'virtualedit': [['', 'all', 'all,block'], ['xxx']],
       \ 'whichwrap': [['', 'b,s', 'bs'], ['xxx']],
       \ 'wildmode': [['', 'full', 'list:full', 'full,longest'], ['xxx', 'a4', 'full,full,full,full,full']],
-      \ 'wildoptions': [['', 'tagfile'], ['xxx']],
+      \ 'wildoptions': [['', 'tagfile', 'pum', 'fuzzy'], ['xxx']],
       \ 'winaltkeys': [['menu', 'no'], ['', 'xxx']],
       \
       \ 'luadll': [[], []],

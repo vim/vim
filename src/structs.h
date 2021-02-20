@@ -4516,3 +4516,11 @@ typedef struct {
     int		sw_same_win;	    // VIsual_active was not reset
     int		sw_visual_active;
 } switchwin_T;
+
+// Fuzzy matched string list item. Used for fuzzy match completion. Items are
+// usually sorted by 'score'. The 'idx' member is used for stable-sort.
+typedef struct {
+    int		idx;
+    char_u	*str;
+    int		score;
+} fuzmatch_str_T;
