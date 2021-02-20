@@ -1489,6 +1489,16 @@ $(NEW_TESTS):
 	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) report
 	cd ..
 
+# Run Vim9 tests.
+# These do not depend on the executable, compile it when needed.
+test_vim9:
+	cd testdir
+	-del test_vim9_*.res
+	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) nolog
+	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) $(TEST_VIM9_RES)
+	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) report
+	cd ..
+
 ###########################################################################
 
 # Create a default rule for transforming .c files to .obj files in $(OUTDIR)
