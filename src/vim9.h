@@ -100,6 +100,7 @@ typedef enum {
     ISN_THROW,	    // pop value of stack, store in v:exception
     ISN_PUSHEXC,    // push v:exception
     ISN_CATCH,	    // drop v:exception
+    ISN_FINALLY,    // start of :finally block
     ISN_ENDTRY,	    // take entry off from ec_trystack
     ISN_TRYCONT,    // handle :continue inside a :try statement
 
@@ -208,10 +209,16 @@ typedef struct {
     int	    for_end;	    // position to jump to after done
 } forloop_T;
 
-// arguments to ISN_TRY
+// indirect arguments to ISN_TRY
 typedef struct {
     int	    try_catch;	    // position to jump to on throw
     int	    try_finally;    // :finally or :endtry position to jump to
+    int	    try_endtry;	    // :endtry position to jump to
+} tryref_T;
+
+// arguments to ISN_TRY
+typedef struct {
+    tryref_T *try_ref;
 } try_T;
 
 // arguments to ISN_TRYCONT

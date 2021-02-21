@@ -26,8 +26,9 @@
 typedef struct {
     int	    tcd_frame_idx;	// ec_frame_idx at ISN_TRY
     int	    tcd_stack_len;	// size of ectx.ec_stack at ISN_TRY
-    int	    tcd_catch_idx;	// instruction of the first catch
-    int	    tcd_finally_idx;	// instruction of the finally block or :endtry
+    int	    tcd_catch_idx;	// instruction of the first :catch or :finally
+    int	    tcd_finally_idx;	// instruction of the :finally block or zero
+    int	    tcd_endtry_idx;	// instruction of the :endtry
     int	    tcd_caught;		// catch block entered
     int	    tcd_cont;		// :continue encountered, jump here
     int	    tcd_return;		// when TRUE return from end of :finally
@@ -2517,10 +2518,9 @@ call_def_function(
 							+ trystack->ga_len - 1;
 		    if (trycmd != NULL
 				  && trycmd->tcd_frame_idx == ectx.ec_frame_idx
-				  && ectx.ec_instr[trycmd->tcd_finally_idx]
-						       .isn_type != ISN_ENDTRY)
+				  && trycmd->tcd_finally_idx != 0)
 		    {
-			// jump to ":finally"
+			// jump to ":finally" once
 			ectx.ec_iidx = trycmd->tcd_finally_idx;
 			trycmd->tcd_return = TRUE;
 		    }
@@ -2665,8 +2665,9 @@ call_def_function(
 		    CLEAR_POINTER(trycmd);
 		    trycmd->tcd_frame_idx = ectx.ec_frame_idx;
 		    trycmd->tcd_stack_len = ectx.ec_stack.ga_len;
-		    trycmd->tcd_catch_idx = iptr->isn_arg.try.try_catch;
-		    trycmd->tcd_finally_idx = iptr->isn_arg.try.try_finally;
+		    trycmd->tcd_catch_idx = iptr->isn_arg.try.try_ref->try_catch;
+		    trycmd->tcd_finally_idx = iptr->isn_arg.try.try_ref->try_finally;
+		    trycmd->tcd_endtry_idx = iptr->isn_arg.try.try_ref->try_endtry;
 		}
 		break;
 
@@ -2731,12 +2732,25 @@ call_def_function(
 			trycmd = ((trycmd_T *)trystack->ga_data)
 							+ trystack->ga_len - i;
 			trycmd->tcd_cont = iidx;
-			iidx = trycmd->tcd_finally_idx;
+			iidx = trycmd->tcd_finally_idx == 0
+			    ? trycmd->tcd_endtry_idx : trycmd->tcd_finally_idx;
 		    }
 		    // jump to :finally or :endtry of current try statement
 		    ectx.ec_iidx = iidx;
 		}
 		break;
+
+	    case ISN_FINALLY:
+		{
+		    garray_T	*trystack = &ectx.ec_trystack;
+		    trycmd_T    *trycmd = ((trycmd_T *)trystack->ga_data)
+							+ trystack->ga_len - 1;
+
+		    // Reset the index to avoid a return statement jumps here
+		    // again.
+		    trycmd->tcd_finally_idx = 0;
+		    break;
+		}
 
 	    // end of ":try" block
 	    case ISN_ENDTRY:
@@ -4348,11 +4362,17 @@ ex_disassemble(exarg_T *eap)
 		{
 		    try_T *try = &iptr->isn_arg.try;
 
-		    smsg("%4d TRY catch -> %d, %s -> %d", current,
-				 try->try_catch,
-				 instr[try->try_finally].isn_type == ISN_ENDTRY
-							   ? "end" : "finally",
-				 try->try_finally);
+		    if (try->try_ref->try_finally == 0)
+			smsg("%4d TRY catch -> %d, endtry -> %d",
+				current,
+				try->try_ref->try_catch,
+				try->try_ref->try_endtry);
+		    else
+			smsg("%4d TRY catch -> %d, finally -> %d, endtry -> %d",
+				current,
+				try->try_ref->try_catch,
+				try->try_ref->try_finally,
+				try->try_ref->try_endtry);
 		}
 		break;
 	    case ISN_CATCH:
@@ -4368,6 +4388,9 @@ ex_disassemble(exarg_T *eap)
 				      trycont->tct_levels == 1 ? "" : "s",
 				      trycont->tct_where);
 		}
+		break;
+	    case ISN_FINALLY:
+		smsg("%4d FINALLY", current);
 		break;
 	    case ISN_ENDTRY:
 		smsg("%4d ENDTRY", current);

@@ -7518,10 +7518,17 @@ compile_try(char_u *arg, cctx_T *cctx)
 
     if (cctx->ctx_skip != SKIP_YES)
     {
-	// "catch" is set when the first ":catch" is found.
-	// "finally" is set when ":finally" or ":endtry" is found
+	isn_T	*isn;
+
+	// "try_catch" is set when the first ":catch" is found or when no catch
+	// is found and ":finally" is found.
+	// "try_finally" is set when ":finally" is found
+	// "try_endtry" is set when ":endtry" is found
 	try_scope->se_u.se_try.ts_try_label = instr->ga_len;
-	if (generate_instr(cctx, ISN_TRY) == NULL)
+	if ((isn = generate_instr(cctx, ISN_TRY)) == NULL)
+	    return NULL;
+	isn->isn_arg.try.try_ref = ALLOC_CLEAR_ONE(tryref_T);
+	if (isn->isn_arg.try.try_ref == NULL)
 	    return NULL;
     }
 
@@ -7577,8 +7584,8 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 
 	// End :try or :catch scope: set value in ISN_TRY instruction
 	isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_try_label;
-	if (isn->isn_arg.try.try_catch == 0)
-	    isn->isn_arg.try.try_catch = instr->ga_len;
+	if (isn->isn_arg.try.try_ref->try_catch == 0)
+	    isn->isn_arg.try.try_ref->try_catch = instr->ga_len;
 	if (scope->se_u.se_try.ts_catch_label != 0)
 	{
 	    // Previous catch without match jumps here
@@ -7670,7 +7677,7 @@ compile_finally(char_u *arg, cctx_T *cctx)
 
     // End :catch or :finally scope: set value in ISN_TRY instruction
     isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_try_label;
-    if (isn->isn_arg.try.try_finally != 0)
+    if (isn->isn_arg.try.try_ref->try_finally != 0)
     {
 	emsg(_(e_finally_dup));
 	return NULL;
@@ -7688,7 +7695,10 @@ compile_finally(char_u *arg, cctx_T *cctx)
     compile_fill_jump_to_end(&scope->se_u.se_try.ts_end_label,
 							     this_instr, cctx);
 
-    isn->isn_arg.try.try_finally = this_instr;
+    // If there is no :catch then an exception jumps to :finally.
+    if (isn->isn_arg.try.try_ref->try_catch == 0)
+	isn->isn_arg.try.try_ref->try_catch = this_instr;
+    isn->isn_arg.try.try_ref->try_finally = this_instr;
     if (scope->se_u.se_try.ts_catch_label != 0)
     {
 	// Previous catch without match jumps here
@@ -7696,6 +7706,8 @@ compile_finally(char_u *arg, cctx_T *cctx)
 	isn->isn_arg.jump.jump_where = this_instr;
 	scope->se_u.se_try.ts_catch_label = 0;
     }
+    if (generate_instr(cctx, ISN_FINALLY) == NULL)
+	return NULL;
 
     // TODO: set index in ts_finally_label jumps
 
@@ -7731,8 +7743,8 @@ compile_endtry(char_u *arg, cctx_T *cctx)
     try_isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_try_label;
     if (cctx->ctx_skip != SKIP_YES)
     {
-	if (try_isn->isn_arg.try.try_catch == 0
-				      && try_isn->isn_arg.try.try_finally == 0)
+	if (try_isn->isn_arg.try.try_ref->try_catch == 0
+				      && try_isn->isn_arg.try.try_ref->try_finally == 0)
 	{
 	    emsg(_(e_missing_catch_or_finally));
 	    return NULL;
@@ -7751,12 +7763,6 @@ compile_endtry(char_u *arg, cctx_T *cctx)
 	compile_fill_jump_to_end(&scope->se_u.se_try.ts_end_label,
 							  instr->ga_len, cctx);
 
-	// End :catch or :finally scope: set value in ISN_TRY instruction
-	if (try_isn->isn_arg.try.try_catch == 0)
-	    try_isn->isn_arg.try.try_catch = instr->ga_len;
-	if (try_isn->isn_arg.try.try_finally == 0)
-	    try_isn->isn_arg.try.try_finally = instr->ga_len;
-
 	if (scope->se_u.se_try.ts_catch_label != 0)
 	{
 	    // Last catch without match jumps here
@@ -7770,11 +7776,9 @@ compile_endtry(char_u *arg, cctx_T *cctx)
 
     if (cctx->ctx_skip != SKIP_YES)
     {
-	if (try_isn->isn_arg.try.try_finally == 0)
-	    // No :finally encountered, use the try_finaly field to point to
-	    // ENDTRY, so that TRYCONT can jump there.
-	    try_isn->isn_arg.try.try_finally = instr->ga_len;
-
+	// End :catch or :finally scope: set instruction index in ISN_TRY
+	// instruction
+	try_isn->isn_arg.try.try_ref->try_endtry = instr->ga_len;
 	if (cctx->ctx_skip != SKIP_YES
 				   && generate_instr(cctx, ISN_ENDTRY) == NULL)
 	    return NULL;
@@ -8867,6 +8871,10 @@ delete_instr(isn_T *isn)
 	    vim_free(isn->isn_arg.script.scriptref);
 	    break;
 
+	case ISN_TRY:
+	    vim_free(isn->isn_arg.try.try_ref);
+	    break;
+
 	case ISN_2BOOL:
 	case ISN_2STRING:
 	case ISN_2STRING_ANY:
@@ -8899,6 +8907,7 @@ delete_instr(isn_T *isn)
 	case ISN_ENDTRY:
 	case ISN_EXECCONCAT:
 	case ISN_EXECUTE:
+	case ISN_FINALLY:
 	case ISN_FOR:
 	case ISN_GETITEM:
 	case ISN_JUMP:
@@ -8943,7 +8952,6 @@ delete_instr(isn_T *isn)
 	case ISN_STRINDEX:
 	case ISN_STRSLICE:
 	case ISN_THROW:
-	case ISN_TRY:
 	case ISN_TRYCONT:
 	case ISN_UNLETINDEX:
 	case ISN_UNLETRANGE:
