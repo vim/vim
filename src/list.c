@@ -2145,6 +2145,7 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 							   arg_errmsg, TRUE)))
 			break;
 		    set_vim_var_string(VV_KEY, di->di_key, -1);
+		    newtv.v_type = VAR_UNKNOWN;
 		    r = filter_map_one(&di->di_tv, expr, filtermap,
 								 &newtv, &rem);
 		    clear_tv(get_vim_var_tv(VV_KEY));

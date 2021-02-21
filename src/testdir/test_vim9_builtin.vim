@@ -690,6 +690,27 @@ def Test_maparg_mapset()
   nunmap <F3>
 enddef
 
+def Test_map_failure()
+  CheckFeature job
+
+  var lines =<< trim END
+      vim9script
+      writefile([], 'Xtmpfile')
+      silent e Xtmpfile
+      var d = {[bufnr('%')]: {a: 0}}
+      au BufReadPost * Func()
+      def Func()
+          if d->has_key('')
+          endif
+          eval d[expand('<abuf>')]->mapnew((_, v: dict<job>) => 0)
+      enddef
+      e
+  END
+  CheckScriptFailure(lines, 'E1013:')
+  au! BufReadPost
+  delete('Xtmpfile')
+enddef
+
 def Test_max()
   g:flag = true
   var l1: list<number> = g:flag
