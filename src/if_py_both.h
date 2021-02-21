@@ -2815,6 +2815,7 @@ typedef struct
 ListIterDestruct(listiterinfo_T *lii)
 {
     list_rem_watch(lii->list, &lii->lw);
+    list_unref(lii->list);
     PyMem_Free(lii);
 }
 
@@ -2850,6 +2851,7 @@ ListIter(ListObject *self)
     list_add_watch(l, &lii->lw);
     lii->lw.lw_item = l->lv_first;
     lii->list = l;
+    ++l->lv_refcount;
 
     return IterNew(lii,
 	    (destructorfun) ListIterDestruct, (nextfun) ListIterNext,
