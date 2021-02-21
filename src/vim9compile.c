@@ -337,7 +337,7 @@ script_is_vim9()
  * "cctx" is NULL at the script level.
  * Returns OK or FAIL.
  */
-    static int
+    int
 script_var_exists(char_u *name, size_t len, int vim9script, cctx_T *cctx)
 {
     int		    is_vim9_script;
