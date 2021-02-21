@@ -873,18 +873,13 @@ apply_general_options(win_T *wp, dict_T *dict)
 	handle_moved_argument(wp, di, TRUE);
     }
 
-    di = dict_find(dict, (char_u *)"cursorline", -1);
-    if (di != NULL)
+    nr = dict_get_bool(dict, (char_u *)"cursorline", -1);
+    if (nr != -1)
     {
-	if (di->di_tv.v_type == VAR_NUMBER)
-	{
-	    if (di->di_tv.vval.v_number != 0)
-		wp->w_popup_flags |= POPF_CURSORLINE;
-	    else
-		wp->w_popup_flags &= ~POPF_CURSORLINE;
-	}
+	if (nr != 0)
+	    wp->w_popup_flags |= POPF_CURSORLINE;
 	else
-	    semsg(_(e_invargval), "cursorline");
+	    wp->w_popup_flags &= ~POPF_CURSORLINE;
     }
 
     di = dict_find(dict, (char_u *)"filter", -1);
