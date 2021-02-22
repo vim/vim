@@ -2517,11 +2517,13 @@ call_def_function(
 			trycmd = ((trycmd_T *)trystack->ga_data)
 							+ trystack->ga_len - 1;
 		    if (trycmd != NULL
-				  && trycmd->tcd_frame_idx == ectx.ec_frame_idx
-				  && trycmd->tcd_finally_idx != 0)
+				 && trycmd->tcd_frame_idx == ectx.ec_frame_idx)
 		    {
-			// jump to ":finally" once
-			ectx.ec_iidx = trycmd->tcd_finally_idx;
+			// jump to ":finally" or ":endtry"
+			if (trycmd->tcd_finally_idx != 0)
+			    ectx.ec_iidx = trycmd->tcd_finally_idx;
+			else
+			    ectx.ec_iidx = trycmd->tcd_endtry_idx;
 			trycmd->tcd_return = TRUE;
 		    }
 		    else

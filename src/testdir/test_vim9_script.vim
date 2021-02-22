@@ -589,6 +589,18 @@ def Test_try_catch_throw()
   assert_equal(4, ReturnInFinally())
 enddef
 
+def Test_nocatch_return_in_try()
+  # return in try block returns normally
+  def ReturnInTry(): string
+    try
+      return '"some message"'
+    catch
+    endtry
+    return 'not reached'
+  enddef
+  exe 'echoerr ' .. ReturnInTry()
+enddef
+
 def Test_cnext_works_in_catch()
   var lines =<< trim END
       vim9script
