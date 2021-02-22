@@ -591,6 +591,15 @@ def Test_call_wrong_args()
 
   lines =<< trim END
     vim9script
+    var name = 'piet'
+    def FuncOne(name: string)
+      echo nr
+    enddef
+  END
+  CheckScriptFailure(lines, 'E1054:')
+
+  lines =<< trim END
+    vim9script
     def FuncOne(nr: number)
       echo nr
     enddef

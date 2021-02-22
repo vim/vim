@@ -365,3 +365,7 @@ EXTERN char e_variable_nr_type_mismatch_expected_str_but_got_str[]
 	INIT(= N_("E1163: Variable %d: type mismatch, expected %s but got %s"));
 EXTERN char e_vim9cmd_must_be_followed_by_command[]
 	INIT(= N_("E1164: vim9cmd must be followed by a command"));
+EXTERN char e_cannot_use_range_with_assignment_str[]
+	INIT(= N_("E1165: Cannot use a range with an assignment: %s"));
+EXTERN char e_cannot_use_range_with_dictionary[]
+	INIT(= N_("E1166: Cannot use a range with a dictionary"));

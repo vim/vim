@@ -80,6 +80,14 @@ one_function_arg(
 	    semsg(_("E125: Illegal argument: %s"), arg);
 	return arg;
     }
+
+    // Vim9 script: cannot use script var name for argument.
+    if (argtypes != NULL && script_var_exists(arg, p - arg, FALSE, NULL) == OK)
+    {
+	semsg(_(e_variable_already_declared_in_script), arg);
+	return arg;
+    }
+
     if (newargs != NULL && ga_grow(newargs, 1) == FAIL)
 	return arg;
     if (newargs != NULL)
@@ -1649,16 +1657,20 @@ call_user_func(
 
     if (fp->uf_def_status != UF_NOT_COMPILED)
     {
+#ifdef FEAT_PROFILE
+	ufunc_T *caller = fc->caller == NULL ? NULL : fc->caller->func;
+#endif
 	// Execute the function, possibly compiling it first.
 #ifdef FEAT_PROFILE
-	profile_may_start_func(&profile_info, fp, fc);
+	if (do_profiling == PROF_YES)
+	    profile_may_start_func(&profile_info, fp, caller);
 #endif
 	call_def_function(fp, argcount, argvars, funcexe->partial, rettv);
 	funcdepth_decrement();
 #ifdef FEAT_PROFILE
 	if (do_profiling == PROF_YES && (fp->uf_profiling
-		    || (fc->caller != NULL && fc->caller->func->uf_profiling)))
-	    profile_may_end_func(&profile_info, fp, fc);
+				  || (caller != NULL && caller->uf_profiling)))
+	    profile_may_end_func(&profile_info, fp, caller);
 #endif
 	current_funccal = fc->caller;
 	free_funccal(fc);
@@ -1872,7 +1884,9 @@ call_user_func(
 	--no_wait_return;
     }
 #ifdef FEAT_PROFILE
-    profile_may_start_func(&profile_info, fp, fc);
+    if (do_profiling == PROF_YES)
+	profile_may_start_func(&profile_info, fp,
+				 fc->caller == NULL ? NULL : fc->caller->func);
 #endif
 
     save_current_sctx = current_sctx;
@@ -1908,9 +1922,13 @@ call_user_func(
     }
 
 #ifdef FEAT_PROFILE
-    if (do_profiling == PROF_YES && (fp->uf_profiling
-		    || (fc->caller != NULL && fc->caller->func->uf_profiling)))
-	profile_may_end_func(&profile_info, fp, fc);
+    if (do_profiling == PROF_YES)
+    {
+	ufunc_T *caller = fc->caller == NULL ? NULL : fc->caller->func;
+
+	if (fp->uf_profiling || (caller != NULL && caller->uf_profiling))
+	    profile_may_end_func(&profile_info, fp, caller);
+    }
 #endif
 
     // when being verbose, mention the return value
@@ -4010,7 +4028,7 @@ ex_defcompile(exarg_T *eap UNUSED)
 		    && ufunc->uf_def_status == UF_TO_BE_COMPILED
 		    && (ufunc->uf_flags & FC_DEAD) == 0)
 	    {
-		compile_def_function(ufunc, FALSE, FALSE, NULL);
+		(void)compile_def_function(ufunc, FALSE, FALSE, NULL);
 
 		if (func_hashtab.ht_changed != changed)
 		{

@@ -1213,15 +1213,7 @@ get_lval(
 
 	    lp->ll_dict = NULL;
 	    lp->ll_list = lp->ll_tv->vval.v_list;
-	    lp->ll_li = list_find(lp->ll_list, lp->ll_n1);
-	    if (lp->ll_li == NULL)
-	    {
-		if (lp->ll_n1 < 0)
-		{
-		    lp->ll_n1 = 0;
-		    lp->ll_li = list_find(lp->ll_list, lp->ll_n1);
-		}
-	    }
+	    lp->ll_li = list_find_index(lp->ll_list, &lp->ll_n1);
 	    if (lp->ll_li == NULL)
 	    {
 		clear_tv(&var2);
@@ -3421,7 +3413,21 @@ eval7(
      */
     case '(':	ret = NOTDONE;
 		if (in_vim9script())
+		{
 		    ret = get_lambda_tv(arg, rettv, TRUE, evalarg);
+		    if (ret == OK && evaluate)
+		    {
+			ufunc_T *ufunc = rettv->vval.v_partial->pt_func;
+
+			// compile it here to get the return type
+			if (compile_def_function(ufunc,
+					 TRUE, PROFILING(ufunc), NULL) == FAIL)
+			{
+			    clear_tv(rettv);
+			    ret = FAIL;
+			}
+		    }
+		}
 		if (ret == NOTDONE)
 		{
 		    *arg = skipwhite_and_linebreak(*arg + 1, evalarg);

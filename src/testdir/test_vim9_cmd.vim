@@ -323,6 +323,11 @@ def Test_for_linebreak()
   CheckScriptSuccess(lines)
 enddef
 
+def MethodAfterLinebreak(arg: string)
+  arg
+    ->setline(1)
+enddef
+
 def Test_method_call_linebreak()
   var lines =<< trim END
       vim9script
@@ -361,6 +366,11 @@ def Test_method_call_linebreak()
   g:shortlist = [1, 2]
   CheckDefAndScriptSuccess(lines)
   unlet g:shortlist
+
+  new
+  MethodAfterLinebreak('foobar')
+  assert_equal('foobar', getline(1))
+  bwipe!
 enddef
 
 def Test_method_call_whitespace()

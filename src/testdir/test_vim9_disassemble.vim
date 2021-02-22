@@ -422,7 +422,7 @@ def Test_disassemble_try()
   var res = execute('disass s:ScriptFuncTry')
   assert_match('<SNR>\d*_ScriptFuncTry\_s*' ..
         'try\_s*' ..
-        '\d TRY catch -> \d\+, finally -> \d\+\_s*' ..
+        '\d TRY catch -> \d\+, finally -> \d\+, endtry -> \d\+\_s*' ..
         'echo "yes"\_s*' ..
         '\d PUSHS "yes"\_s*' ..
         '\d ECHO 1\_s*' ..
@@ -437,6 +437,7 @@ def Test_disassemble_try()
         '\d\+ PUSHS "no"\_s*' ..
         '\d\+ ECHO 1\_s*' ..
         'finally\_s*' ..
+        '\d\+ FINALLY\_s*' ..
         'throw "end"\_s*' ..
         '\d\+ PUSHS "end"\_s*' ..
         '\d\+ THROW\_s*' ..
@@ -1137,12 +1138,12 @@ def Test_disassemble_for_loop_continue()
         '4 FOR $0 -> 22\_s*' ..
         '5 STORE $1\_s*' ..
         'try\_s*' ..
-        '6 TRY catch -> 17, end -> 20\_s*' ..
+        '6 TRY catch -> 17, endtry -> 20\_s*' ..
         'echo "ok"\_s*' ..
         '7 PUSHS "ok"\_s*' ..
         '8 ECHO 1\_s*' ..
         'try\_s*' ..
-        '9 TRY catch -> 13, end -> 15\_s*' ..
+        '9 TRY catch -> 13, endtry -> 15\_s*' ..
         'echo "deeper"\_s*' ..
         '10 PUSHS "deeper"\_s*' ..
         '11 ECHO 1\_s*' ..

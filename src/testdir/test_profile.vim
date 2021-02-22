@@ -605,5 +605,38 @@ func Test_vim9_profiling()
   call delete('Xprofile_crash.log')
 endfunc
 
+func Test_vim9_nested_call()
+  let lines =<< trim END
+    vim9script
+    var total = 0
+    def One(Ref: func(number))
+      for i in range(3)
+        Ref(i)
+      endfor
+    enddef
+    def Two(nr: number)
+      total += nr
+    enddef
+    prof start Xprofile_nested.log
+    prof func One
+    prof func Two
+    One((nr) => Two(nr))
+    assert_equal(3, total)
+  END
+  call writefile(lines, 'Xprofile_nested.vim')
+  call system(GetVimCommandClean() . ' -es -c "so Xprofile_nested.vim" -c q')
+  call assert_equal(0, v:shell_error)
+
+  let prof_lines = readfile('Xprofile_nested.log')->join('#')
+  call assert_match('FUNCTION  <SNR>\d\+_One().*'
+        \ .. '#Called 1 time.*'
+        \ .. '#    1 \s*[0-9.]\+   for i in range(3)'
+        \ .. '#    3 \s*[0-9.]\+ \s*[0-9.]\+     Ref(i)'
+        \ .. '#    3 \s*[0-9.]\+   endfor', prof_lines)
+  call assert_match('FUNCTION  <SNR>\d\+_Two().*'
+        \ .. '#Called 3 times.*'
+        \ .. '#    3 \s*[0-9.]\+   total += nr', prof_lines)
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

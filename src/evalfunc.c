@@ -9736,7 +9736,8 @@ f_synconcealed(typval_T *argvars UNUSED, typval_T *rettv)
 	    {
 		cchar = syn_get_sub_char();
 		if (cchar == NUL && curwin->w_p_cole == 1)
-		    cchar = (lcs_conceal == NUL) ? ' ' : lcs_conceal;
+		    cchar = (curwin->w_lcs_chars.conceal == NUL) ? ' '
+					: curwin->w_lcs_chars.conceal;
 		if (cchar != NUL)
 		{
 		    if (has_mbyte)

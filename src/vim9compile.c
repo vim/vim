@@ -337,7 +337,7 @@ script_is_vim9()
  * "cctx" is NULL at the script level.
  * Returns OK or FAIL.
  */
-    static int
+    int
 script_var_exists(char_u *name, size_t len, int vim9script, cctx_T *cctx)
 {
     int		    is_vim9_script;
@@ -370,6 +370,19 @@ script_var_exists(char_u *name, size_t len, int vim9script, cctx_T *cctx)
     }
 
     return FAIL;
+}
+
+/*
+ * Return TRUE if "name" is a local variable, argument, script variable or
+ * imported.
+ */
+    static int
+variable_exists(char_u *name, size_t len, cctx_T *cctx)
+{
+    return lookup_local(name, len, NULL, cctx) == OK
+	    || arg_exists(name, len, NULL, NULL, NULL, cctx) == OK
+	    || script_var_exists(name, len, FALSE, cctx) == OK
+	    || find_imported(name, len, cctx) != NULL;
 }
 
 /*
@@ -5852,6 +5865,7 @@ compile_assign_unlet(
     vartype_T	dest_type;
     size_t	varlen = lhs->lhs_varlen;
     garray_T    *stack = &cctx->ctx_type_stack;
+    int		range = FALSE;
 
     // Compile the "idx" in "var[idx]" or "key" in "var.key".
     p = var_start + varlen;
@@ -5859,6 +5873,27 @@ compile_assign_unlet(
     {
 	p = skipwhite(p + 1);
 	r = compile_expr0(&p, cctx);
+
+	if (r == OK && *skipwhite(p) == ':')
+	{
+	    // unlet var[idx : idx]
+	    if (is_assign)
+	    {
+		semsg(_(e_cannot_use_range_with_assignment_str), p);
+		return FAIL;
+	    }
+	    range = TRUE;
+	    p = skipwhite(p);
+	    if (!IS_WHITE_OR_NUL(p[-1]) || !IS_WHITE_OR_NUL(p[1]))
+	    {
+		semsg(_(e_white_space_required_before_and_after_str_at_str),
+								      ":", p);
+		return FAIL;
+	    }
+	    p = skipwhite(p + 1);
+	    r = compile_expr0(&p, cctx);
+	}
+
 	if (r == OK && *skipwhite(p) != ']')
 	{
 	    // this should not happen
@@ -5884,17 +5919,29 @@ compile_assign_unlet(
     else
     {
 	dest_type = lhs->lhs_type->tt_type;
+	if (dest_type == VAR_DICT && range)
+	{
+	    emsg(e_cannot_use_range_with_dictionary);
+	    return FAIL;
+	}
 	if (dest_type == VAR_DICT && may_generate_2STRING(-1, cctx) == FAIL)
 	    return FAIL;
-	if (dest_type == VAR_LIST
-		&& need_type(((type_T **)stack->ga_data)[stack->ga_len - 1],
+	if (dest_type == VAR_LIST)
+	{
+	    if (range
+		  && need_type(((type_T **)stack->ga_data)[stack->ga_len - 2],
 				 &t_number, -1, 0, cctx, FALSE, FALSE) == FAIL)
-	    return FAIL;
+		return FAIL;
+	    if (need_type(((type_T **)stack->ga_data)[stack->ga_len - 1],
+				 &t_number, -1, 0, cctx, FALSE, FALSE) == FAIL)
+		return FAIL;
+	}
     }
 
     // Load the dict or list.  On the stack we then have:
     // - value (for assignment, not for :unlet)
     // - index
+    // - for [a : b] second index
     // - variable
     if (lhs->lhs_dest == dest_expr)
     {
@@ -5932,6 +5979,11 @@ compile_assign_unlet(
 	    if (isn == NULL)
 		return FAIL;
 	    isn->isn_arg.vartype = dest_type;
+	}
+	else if (range)
+	{
+	    if (generate_instr_drop(cctx, ISN_UNLETRANGE, 3) == NULL)
+		return FAIL;
 	}
 	else
 	{
@@ -6444,10 +6496,7 @@ may_compile_assignment(exarg_T *eap, char_u **line, cctx_T *cctx)
 		    || *eap->cmd == '$'
 		    || *eap->cmd == '@'
 		    || ((len) > 2 && eap->cmd[1] == ':')
-		    || lookup_local(eap->cmd, len, NULL, cctx) == OK
-		    || arg_exists(eap->cmd, len, NULL, NULL, NULL, cctx) == OK
-		    || script_var_exists(eap->cmd, len, FALSE, cctx) == OK
-		    || find_imported(eap->cmd, len, cctx) != NULL)
+		    || variable_exists(eap->cmd, len, cctx))
 	    {
 		*line = compile_assignment(eap->cmd, eap, CMD_SIZE, cctx);
 		if (*line == NULL || *line == eap->cmd)
@@ -7469,10 +7518,17 @@ compile_try(char_u *arg, cctx_T *cctx)
 
     if (cctx->ctx_skip != SKIP_YES)
     {
-	// "catch" is set when the first ":catch" is found.
-	// "finally" is set when ":finally" or ":endtry" is found
+	isn_T	*isn;
+
+	// "try_catch" is set when the first ":catch" is found or when no catch
+	// is found and ":finally" is found.
+	// "try_finally" is set when ":finally" is found
+	// "try_endtry" is set when ":endtry" is found
 	try_scope->se_u.se_try.ts_try_label = instr->ga_len;
-	if (generate_instr(cctx, ISN_TRY) == NULL)
+	if ((isn = generate_instr(cctx, ISN_TRY)) == NULL)
+	    return NULL;
+	isn->isn_arg.try.try_ref = ALLOC_CLEAR_ONE(tryref_T);
+	if (isn->isn_arg.try.try_ref == NULL)
 	    return NULL;
     }
 
@@ -7528,8 +7584,8 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 
 	// End :try or :catch scope: set value in ISN_TRY instruction
 	isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_try_label;
-	if (isn->isn_arg.try.try_catch == 0)
-	    isn->isn_arg.try.try_catch = instr->ga_len;
+	if (isn->isn_arg.try.try_ref->try_catch == 0)
+	    isn->isn_arg.try.try_ref->try_catch = instr->ga_len;
 	if (scope->se_u.se_try.ts_catch_label != 0)
 	{
 	    // Previous catch without match jumps here
@@ -7621,7 +7677,7 @@ compile_finally(char_u *arg, cctx_T *cctx)
 
     // End :catch or :finally scope: set value in ISN_TRY instruction
     isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_try_label;
-    if (isn->isn_arg.try.try_finally != 0)
+    if (isn->isn_arg.try.try_ref->try_finally != 0)
     {
 	emsg(_(e_finally_dup));
 	return NULL;
@@ -7639,7 +7695,10 @@ compile_finally(char_u *arg, cctx_T *cctx)
     compile_fill_jump_to_end(&scope->se_u.se_try.ts_end_label,
 							     this_instr, cctx);
 
-    isn->isn_arg.try.try_finally = this_instr;
+    // If there is no :catch then an exception jumps to :finally.
+    if (isn->isn_arg.try.try_ref->try_catch == 0)
+	isn->isn_arg.try.try_ref->try_catch = this_instr;
+    isn->isn_arg.try.try_ref->try_finally = this_instr;
     if (scope->se_u.se_try.ts_catch_label != 0)
     {
 	// Previous catch without match jumps here
@@ -7647,6 +7706,8 @@ compile_finally(char_u *arg, cctx_T *cctx)
 	isn->isn_arg.jump.jump_where = this_instr;
 	scope->se_u.se_try.ts_catch_label = 0;
     }
+    if (generate_instr(cctx, ISN_FINALLY) == NULL)
+	return NULL;
 
     // TODO: set index in ts_finally_label jumps
 
@@ -7682,8 +7743,8 @@ compile_endtry(char_u *arg, cctx_T *cctx)
     try_isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_try_label;
     if (cctx->ctx_skip != SKIP_YES)
     {
-	if (try_isn->isn_arg.try.try_catch == 0
-				      && try_isn->isn_arg.try.try_finally == 0)
+	if (try_isn->isn_arg.try.try_ref->try_catch == 0
+				      && try_isn->isn_arg.try.try_ref->try_finally == 0)
 	{
 	    emsg(_(e_missing_catch_or_finally));
 	    return NULL;
@@ -7702,12 +7763,6 @@ compile_endtry(char_u *arg, cctx_T *cctx)
 	compile_fill_jump_to_end(&scope->se_u.se_try.ts_end_label,
 							  instr->ga_len, cctx);
 
-	// End :catch or :finally scope: set value in ISN_TRY instruction
-	if (try_isn->isn_arg.try.try_catch == 0)
-	    try_isn->isn_arg.try.try_catch = instr->ga_len;
-	if (try_isn->isn_arg.try.try_finally == 0)
-	    try_isn->isn_arg.try.try_finally = instr->ga_len;
-
 	if (scope->se_u.se_try.ts_catch_label != 0)
 	{
 	    // Last catch without match jumps here
@@ -7721,11 +7776,9 @@ compile_endtry(char_u *arg, cctx_T *cctx)
 
     if (cctx->ctx_skip != SKIP_YES)
     {
-	if (try_isn->isn_arg.try.try_finally == 0)
-	    // No :finally encountered, use the try_finaly field to point to
-	    // ENDTRY, so that TRYCONT can jump there.
-	    try_isn->isn_arg.try.try_finally = instr->ga_len;
-
+	// End :catch or :finally scope: set instruction index in ISN_TRY
+	// instruction
+	try_isn->isn_arg.try.try_ref->try_endtry = instr->ga_len;
 	if (cctx->ctx_skip != SKIP_YES
 				   && generate_instr(cctx, ISN_ENDTRY) == NULL)
 	    return NULL;
@@ -8320,6 +8373,7 @@ compile_def_function(
 		    semsg(_(e_colon_required_before_range_str), cmd);
 		    goto erret;
 		}
+		ea.addr_count = 1;
 		if (ends_excmd2(line, ea.cmd))
 		{
 		    // A range without a command: jump to the line.
@@ -8332,7 +8386,7 @@ compile_def_function(
 	    }
 	}
 	p = find_ex_command(&ea, NULL, starts_with_colon ? NULL
-		   : (int (*)(char_u *, size_t, void *, cctx_T *))lookup_local,
+		   : (int (*)(char_u *, size_t, cctx_T *))variable_exists,
 									&cctx);
 
 	if (p == NULL)
@@ -8510,6 +8564,7 @@ compile_def_function(
 	    case CMD_append:
 	    case CMD_change:
 	    case CMD_insert:
+	    case CMD_k:
 	    case CMD_t:
 	    case CMD_xit:
 		    not_in_vim9(&ea);
@@ -8816,6 +8871,10 @@ delete_instr(isn_T *isn)
 	    vim_free(isn->isn_arg.script.scriptref);
 	    break;
 
+	case ISN_TRY:
+	    vim_free(isn->isn_arg.try.try_ref);
+	    break;
+
 	case ISN_2BOOL:
 	case ISN_2STRING:
 	case ISN_2STRING_ANY:
@@ -8848,6 +8907,7 @@ delete_instr(isn_T *isn)
 	case ISN_ENDTRY:
 	case ISN_EXECCONCAT:
 	case ISN_EXECUTE:
+	case ISN_FINALLY:
 	case ISN_FOR:
 	case ISN_GETITEM:
 	case ISN_JUMP:
@@ -8892,9 +8952,9 @@ delete_instr(isn_T *isn)
 	case ISN_STRINDEX:
 	case ISN_STRSLICE:
 	case ISN_THROW:
-	case ISN_TRY:
 	case ISN_TRYCONT:
 	case ISN_UNLETINDEX:
+	case ISN_UNLETRANGE:
 	case ISN_UNPACK:
 	    // nothing allocated
 	    break;

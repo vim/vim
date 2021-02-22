@@ -61,6 +61,7 @@ typedef enum {
     ISN_UNLET,		// unlet variable isn_arg.unlet.ul_name
     ISN_UNLETENV,	// unlet environment variable isn_arg.unlet.ul_name
     ISN_UNLETINDEX,	// unlet item of list or dict
+    ISN_UNLETRANGE,	// unlet items of list
 
     ISN_LOCKCONST,	// lock constant value
 
@@ -99,6 +100,7 @@ typedef enum {
     ISN_THROW,	    // pop value of stack, store in v:exception
     ISN_PUSHEXC,    // push v:exception
     ISN_CATCH,	    // drop v:exception
+    ISN_FINALLY,    // start of :finally block
     ISN_ENDTRY,	    // take entry off from ec_trystack
     ISN_TRYCONT,    // handle :continue inside a :try statement
 
@@ -207,10 +209,16 @@ typedef struct {
     int	    for_end;	    // position to jump to after done
 } forloop_T;
 
-// arguments to ISN_TRY
+// indirect arguments to ISN_TRY
 typedef struct {
     int	    try_catch;	    // position to jump to on throw
     int	    try_finally;    // :finally or :endtry position to jump to
+    int	    try_endtry;	    // :endtry position to jump to
+} tryref_T;
+
+// arguments to ISN_TRY
+typedef struct {
+    tryref_T *try_ref;
 } try_T;
 
 // arguments to ISN_TRYCONT
@@ -418,11 +426,9 @@ extern garray_T def_functions;
 #define LNUM_VARIABLE_RANGE_ABOVE -888
 
 #ifdef FEAT_PROFILE
-# define PROFILING(ufunc) (do_profiling == PROF_YES && (ufunc)->uf_profiling)
 # define INSTRUCTIONS(dfunc) \
 	((do_profiling == PROF_YES && (dfunc->df_ufunc)->uf_profiling) \
 	? (dfunc)->df_instr_prof : (dfunc)->df_instr)
 #else
-# define PROFILING(ufunc) FALSE
 # define INSTRUCTIONS(dfunc) ((dfunc)->df_instr)
 #endif

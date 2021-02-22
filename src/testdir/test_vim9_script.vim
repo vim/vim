@@ -22,6 +22,17 @@ def Test_range_only()
   :3
   list
   assert_equal('three$', Screenline(&lines))
+
+  # missing command does not print the line
+  var lines =<< trim END
+    vim9script
+    :1|
+    assert_equal('three$', Screenline(&lines))
+    :|
+    assert_equal('three$', Screenline(&lines))
+  END
+  CheckScriptSuccess(lines)
+
   bwipe!
 
   # won't generate anything
@@ -566,6 +577,16 @@ def Test_try_catch_throw()
     counter += 1
   endfor
   assert_equal(4, counter)
+
+  # return in finally after empty catch
+  def ReturnInFinally(): number
+    try
+    finally
+      return 4
+    endtry
+    return 2
+  enddef
+  assert_equal(4, ReturnInFinally())
 enddef
 
 def Test_cnext_works_in_catch()
@@ -1249,6 +1270,27 @@ def Test_use_import_in_mapping()
   delete('XsomeExport.vim')
   delete('Xmapscript.vim')
   nunmap <F3>
+enddef
+
+def Test_vim9script_mix()
+  var lines =<< trim END
+    if has(g:feature)
+      " legacy script
+      let g:legacy = 1
+      finish
+    endif
+    vim9script
+    g:legacy = 0
+  END
+  g:feature = 'eval'
+  g:legacy = -1
+  CheckScriptSuccess(lines)
+  assert_equal(1, g:legacy)
+
+  g:feature = 'noteval'
+  g:legacy = -1
+  CheckScriptSuccess(lines)
+  assert_equal(0, g:legacy)
 enddef
 
 def Test_vim9script_fails()
@@ -3457,6 +3499,36 @@ def Test_import_gone_when_sourced_twice()
   delete('XexportScript.vim')
   delete('XscriptImport.vim')
   unlet g:guard
+enddef
+
+def Test_unsupported_commands()
+  var lines =<< trim END
+      ka
+  END
+  CheckDefAndScriptFailure(lines, 'E1100:')
+
+  lines =<< trim END
+      :1ka
+  END
+  CheckDefAndScriptFailure(lines, 'E481:')
+
+  lines =<< trim END
+    t
+  END
+  CheckDefFailure(lines, 'E1100:')
+  CheckScriptFailure(['vim9script'] + lines, 'E1100:')
+
+  lines =<< trim END
+    x
+  END
+  CheckDefFailure(lines, 'E1100:')
+  CheckScriptFailure(['vim9script'] + lines, 'E1100:')
+
+  lines =<< trim END
+    xit
+  END
+  CheckDefFailure(lines, 'E1100:')
+  CheckScriptFailure(['vim9script'] + lines, 'E1100:')
 enddef
 
 " Keep this last, it messes up highlighting.

@@ -574,6 +574,9 @@ func Test_python3_list()
   py3 ll[2] = 8
   call assert_equal([1, 2, 8], l)
 
+  " iterating over list from Python
+  py3 print([x for x in vim.Function("getline")(1, 2)])
+
   " Using dict as an index
   call AssertException(['py3 ll[{}] = 10'],
         \ 'Vim(py3):TypeError: index must be int or slice, not dict')

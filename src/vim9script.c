@@ -92,6 +92,13 @@ not_in_vim9(exarg_T *eap)
     if (in_vim9script())
 	switch (eap->cmdidx)
 	{
+	    case CMD_k:
+		if (eap->addr_count > 0)
+		{
+		    emsg(_(e_norange));
+		    return FAIL;
+		}
+		// FALLTHROUGH
 	    case CMD_append:
 	    case CMD_change:
 	    case CMD_insert:

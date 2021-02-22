@@ -26,8 +26,9 @@
 typedef struct {
     int	    tcd_frame_idx;	// ec_frame_idx at ISN_TRY
     int	    tcd_stack_len;	// size of ectx.ec_stack at ISN_TRY
-    int	    tcd_catch_idx;	// instruction of the first catch
-    int	    tcd_finally_idx;	// instruction of the finally block or :endtry
+    int	    tcd_catch_idx;	// instruction of the first :catch or :finally
+    int	    tcd_finally_idx;	// instruction of the :finally block or zero
+    int	    tcd_endtry_idx;	// instruction of the :endtry
     int	    tcd_caught;		// catch block entered
     int	    tcd_cont;		// :continue encountered, jump here
     int	    tcd_return;		// when TRUE return from end of :finally
@@ -71,6 +72,11 @@ struct ectx_S {
 
     garray_T	ec_funcrefs;	// partials that might be a closure
 };
+
+#ifdef FEAT_PROFILE
+// stack of profinfo_T used when profiling.
+static garray_T profile_info_ga = {0, 0, sizeof(profinfo_T), 20, NULL};
+#endif
 
 // Get pointer to item relative to the bottom of the stack, -1 is the last one.
 #define STACK_TV_BOT(idx) (((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_stack.ga_len + (idx))
@@ -184,13 +190,27 @@ call_dfunc(int cdf_idx, partial_T *pt, int argcount_arg, ectx_T *ectx)
     }
 
 #ifdef FEAT_PROFILE
-    // Profiling might be enabled/disabled along the way.  This should not
-    // fail, since the function was compiled before and toggling profiling
-    // doesn't change any errors.
-    if (func_needs_compiling(ufunc, PROFILING(ufunc))
-	    && compile_def_function(ufunc, FALSE, PROFILING(ufunc), NULL)
+    if (do_profiling == PROF_YES)
+    {
+	if (ga_grow(&profile_info_ga, 1) == OK)
+	{
+	    profinfo_T *info = ((profinfo_T *)profile_info_ga.ga_data)
+						      + profile_info_ga.ga_len;
+	    ++profile_info_ga.ga_len;
+	    CLEAR_POINTER(info);
+	    profile_may_start_func(info, ufunc,
+			(((dfunc_T *)def_functions.ga_data)
+					      + ectx->ec_dfunc_idx)->df_ufunc);
+	}
+
+	// Profiling might be enabled/disabled along the way.  This should not
+	// fail, since the function was compiled before and toggling profiling
+	// doesn't change any errors.
+	if (func_needs_compiling(ufunc, PROFILING(ufunc))
+		&& compile_def_function(ufunc, FALSE, PROFILING(ufunc), NULL)
 								       == FAIL)
-	return FAIL;
+	    return FAIL;
+    }
 #endif
 
     if (ufunc->uf_va_name != NULL)
@@ -517,7 +537,25 @@ func_return(ectx_T *ectx)
     int		argcount = ufunc_argcount(dfunc->df_ufunc);
     int		top = ectx->ec_frame_idx - argcount;
     estack_T	*entry;
+    int		prev_dfunc_idx = STACK_TV(ectx->ec_frame_idx
+					+ STACK_FRAME_FUNC_OFF)->vval.v_number;
+    dfunc_T	*prev_dfunc = ((dfunc_T *)def_functions.ga_data)
+							      + prev_dfunc_idx;
 
+#ifdef FEAT_PROFILE
+    if (do_profiling == PROF_YES)
+    {
+	ufunc_T *caller = prev_dfunc->df_ufunc;
+
+	if (dfunc->df_ufunc->uf_profiling
+				   || (caller != NULL && caller->uf_profiling))
+	{
+	    profile_may_end_func(((profinfo_T *)profile_info_ga.ga_data)
+			+ profile_info_ga.ga_len - 1, dfunc->df_ufunc, caller);
+	    --profile_info_ga.ga_len;
+	}
+    }
+#endif
     // execution context goes one level up
     entry = estack_pop();
     if (entry != NULL)
@@ -544,8 +582,7 @@ func_return(ectx_T *ectx)
     vim_free(ectx->ec_outer);
 
     // Restore the previous frame.
-    ectx->ec_dfunc_idx = STACK_TV(ectx->ec_frame_idx
-					+ STACK_FRAME_FUNC_OFF)->vval.v_number;
+    ectx->ec_dfunc_idx = prev_dfunc_idx;
     ectx->ec_iidx = STACK_TV(ectx->ec_frame_idx
 					+ STACK_FRAME_IIDX_OFF)->vval.v_number;
     ectx->ec_outer = (void *)STACK_TV(ectx->ec_frame_idx
@@ -553,8 +590,7 @@ func_return(ectx_T *ectx)
     // restoring ec_frame_idx must be last
     ectx->ec_frame_idx = STACK_TV(ectx->ec_frame_idx
 				       + STACK_FRAME_IDX_OFF)->vval.v_number;
-    dfunc = ((dfunc_T *)def_functions.ga_data) + ectx->ec_dfunc_idx;
-    ectx->ec_instr = INSTRUCTIONS(dfunc);
+    ectx->ec_instr = INSTRUCTIONS(prev_dfunc);
 
     if (ret_idx > 0)
     {
@@ -841,6 +877,21 @@ error_if_locked(int lock, char *error)
 	return TRUE;
     }
     return FALSE;
+}
+
+/*
+ * Give an error if "tv" is not a number and return FAIL.
+ */
+    static int
+check_for_number(typval_T *tv)
+{
+    if (tv->v_type != VAR_NUMBER)
+    {
+	semsg(_(e_expected_str_but_got_str),
+		vartype_name(VAR_NUMBER), vartype_name(tv->v_type));
+	return FAIL;
+    }
+    return OK;
 }
 
 /*
@@ -2143,12 +2194,9 @@ call_def_function(
 		    else if (tv_dest->v_type == VAR_LIST)
 		    {
 			// unlet a List item, index must be a number
-			if (tv_idx->v_type != VAR_NUMBER)
+			SOURCING_LNUM = iptr->isn_lnum;
+			if (check_for_number(tv_idx) == FAIL)
 			{
-			    SOURCING_LNUM = iptr->isn_lnum;
-			    semsg(_(e_expected_str_but_got_str),
-					vartype_name(VAR_NUMBER),
-					vartype_name(tv_idx->v_type));
 			    status = FAIL;
 			}
 			else
@@ -2179,6 +2227,58 @@ call_def_function(
 		    clear_tv(tv_idx);
 		    clear_tv(tv_dest);
 		    ectx.ec_stack.ga_len -= 2;
+		    if (status == FAIL)
+			goto on_error;
+		}
+		break;
+
+	    // unlet range of items in list variable
+	    case ISN_UNLETRANGE:
+		{
+		    // Stack contains:
+		    // -3 index1
+		    // -2 index2
+		    // -1 dict or list
+		    typval_T	*tv_idx1 = STACK_TV_BOT(-3);
+		    typval_T	*tv_idx2 = STACK_TV_BOT(-2);
+		    typval_T	*tv_dest = STACK_TV_BOT(-1);
+		    int		status = OK;
+
+		    if (tv_dest->v_type == VAR_LIST)
+		    {
+			// indexes must be a number
+			SOURCING_LNUM = iptr->isn_lnum;
+			if (check_for_number(tv_idx1) == FAIL
+				|| check_for_number(tv_idx2) == FAIL)
+			{
+			    status = FAIL;
+			}
+			else
+			{
+			    list_T	*l = tv_dest->vval.v_list;
+			    long	n1 = (long)tv_idx1->vval.v_number;
+			    long	n2 = (long)tv_idx2->vval.v_number;
+			    listitem_T	*li;
+
+			    li = list_find_index(l, &n1);
+			    if (li == NULL
+				     || list_unlet_range(l, li, NULL, n1,
+							    TRUE, n2) == FAIL)
+				status = FAIL;
+			}
+		    }
+		    else
+		    {
+			status = FAIL;
+			SOURCING_LNUM = iptr->isn_lnum;
+			semsg(_(e_cannot_index_str),
+						vartype_name(tv_dest->v_type));
+		    }
+
+		    clear_tv(tv_idx1);
+		    clear_tv(tv_idx2);
+		    clear_tv(tv_dest);
+		    ectx.ec_stack.ga_len -= 3;
 		    if (status == FAIL)
 			goto on_error;
 		}
@@ -2418,10 +2518,9 @@ call_def_function(
 							+ trystack->ga_len - 1;
 		    if (trycmd != NULL
 				  && trycmd->tcd_frame_idx == ectx.ec_frame_idx
-				  && ectx.ec_instr[trycmd->tcd_finally_idx]
-						       .isn_type != ISN_ENDTRY)
+				  && trycmd->tcd_finally_idx != 0)
 		    {
-			// jump to ":finally"
+			// jump to ":finally" once
 			ectx.ec_iidx = trycmd->tcd_finally_idx;
 			trycmd->tcd_return = TRUE;
 		    }
@@ -2566,8 +2665,9 @@ call_def_function(
 		    CLEAR_POINTER(trycmd);
 		    trycmd->tcd_frame_idx = ectx.ec_frame_idx;
 		    trycmd->tcd_stack_len = ectx.ec_stack.ga_len;
-		    trycmd->tcd_catch_idx = iptr->isn_arg.try.try_catch;
-		    trycmd->tcd_finally_idx = iptr->isn_arg.try.try_finally;
+		    trycmd->tcd_catch_idx = iptr->isn_arg.try.try_ref->try_catch;
+		    trycmd->tcd_finally_idx = iptr->isn_arg.try.try_ref->try_finally;
+		    trycmd->tcd_endtry_idx = iptr->isn_arg.try.try_ref->try_endtry;
 		}
 		break;
 
@@ -2632,12 +2732,25 @@ call_def_function(
 			trycmd = ((trycmd_T *)trystack->ga_data)
 							+ trystack->ga_len - i;
 			trycmd->tcd_cont = iidx;
-			iidx = trycmd->tcd_finally_idx;
+			iidx = trycmd->tcd_finally_idx == 0
+			    ? trycmd->tcd_endtry_idx : trycmd->tcd_finally_idx;
 		    }
 		    // jump to :finally or :endtry of current try statement
 		    ectx.ec_iidx = iidx;
 		}
 		break;
+
+	    case ISN_FINALLY:
+		{
+		    garray_T	*trystack = &ectx.ec_trystack;
+		    trycmd_T    *trycmd = ((trycmd_T *)trystack->ga_data)
+							+ trystack->ga_len - 1;
+
+		    // Reset the index to avoid a return statement jumps here
+		    // again.
+		    trycmd->tcd_finally_idx = 0;
+		    break;
+		}
 
 	    // end of ":try" block
 	    case ISN_ENDTRY:
@@ -4116,6 +4229,9 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_UNLETINDEX:
 		smsg("%4d UNLETINDEX", current);
 		break;
+	    case ISN_UNLETRANGE:
+		smsg("%4d UNLETRANGE", current);
+		break;
 	    case ISN_LOCKCONST:
 		smsg("%4d LOCKCONST", current);
 		break;
@@ -4246,11 +4362,17 @@ ex_disassemble(exarg_T *eap)
 		{
 		    try_T *try = &iptr->isn_arg.try;
 
-		    smsg("%4d TRY catch -> %d, %s -> %d", current,
-				 try->try_catch,
-				 instr[try->try_finally].isn_type == ISN_ENDTRY
-							   ? "end" : "finally",
-				 try->try_finally);
+		    if (try->try_ref->try_finally == 0)
+			smsg("%4d TRY catch -> %d, endtry -> %d",
+				current,
+				try->try_ref->try_catch,
+				try->try_ref->try_endtry);
+		    else
+			smsg("%4d TRY catch -> %d, finally -> %d, endtry -> %d",
+				current,
+				try->try_ref->try_catch,
+				try->try_ref->try_finally,
+				try->try_ref->try_endtry);
 		}
 		break;
 	    case ISN_CATCH:
@@ -4266,6 +4388,9 @@ ex_disassemble(exarg_T *eap)
 				      trycont->tct_levels == 1 ? "" : "s",
 				      trycont->tct_where);
 		}
+		break;
+	    case ISN_FINALLY:
+		smsg("%4d FINALLY", current);
 		break;
 	    case ISN_ENDTRY:
 		smsg("%4d ENDTRY", current);

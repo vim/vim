@@ -531,6 +531,26 @@ list_find_str(list_T *l, long idx)
 }
 
 /*
+ * Like list_find() but when a negative index is used that is not found use
+ * zero and set "idx" to zero.  Used for first index of a range.
+ */
+    listitem_T *
+list_find_index(list_T *l, long *idx)
+{
+    listitem_T *li = list_find(l, *idx);
+
+    if (li == NULL)
+    {
+	if (*idx < 0)
+	{
+	    *idx = 0;
+	    li = list_find(l, *idx);
+	}
+    }
+    return li;
+}
+
+/*
  * Locate "item" list "l" and return its index.
  * Returns -1 when "item" is not in the list.
  */
@@ -2125,6 +2145,7 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 							   arg_errmsg, TRUE)))
 			break;
 		    set_vim_var_string(VV_KEY, di->di_key, -1);
+		    newtv.v_type = VAR_UNKNOWN;
 		    r = filter_map_one(&di->di_tv, expr, filtermap,
 								 &newtv, &rem);
 		    clear_tv(get_vim_var_tv(VV_KEY));
