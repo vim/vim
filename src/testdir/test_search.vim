@@ -944,6 +944,26 @@ func Test_incsearch_search_dump()
   call delete('Xis_search_script')
 endfunc
 
+func Test_hlsearch_dump()
+  CheckOption hlsearch
+  CheckScreendump
+
+  call writefile([
+	\ 'set hlsearch cursorline',
+        \ 'call setline(1, ["xxx", "xxx", "xxx"])',
+	\ '/.*',
+	\ '2',
+	\ ], 'Xhlsearch_script')
+  let buf = RunVimInTerminal('-S Xhlsearch_script', {'rows': 6, 'cols': 50})
+  call VerifyScreenDump(buf, 'Test_hlsearch_1', {})
+
+  call term_sendkeys(buf, "/\\_.*\<CR>")
+  call VerifyScreenDump(buf, 'Test_hlsearch_2', {})
+
+  call StopVimInTerminal(buf)
+  call delete('Xhlsearch_script')
+endfunc
+
 func Test_incsearch_substitute()
   CheckOption incsearch
 

@@ -792,7 +792,15 @@ update_search_hl(
 			// highlight empty match, try again after
 			// it
 			if (has_mbyte)
-			    shl->endcol += (*mb_ptr2len)(*line + shl->endcol);
+			{
+			    char_u *p = *line + shl->endcol;
+
+			    if (*p == NUL)
+				// consistent with non-mbyte
+				++shl->endcol;
+			    else
+				shl->endcol += (*mb_ptr2len)(p);
+			}
 			else
 			    ++shl->endcol;
 		    }
@@ -842,18 +850,31 @@ get_prevcol_hl_flag(win_T *wp, match_T *search_hl, long curcol)
     int		prevcol_hl_flag = FALSE;
     matchitem_T *cur;			// points to the match list
 
+#if defined(FEAT_PROP_POPUP)
+    // don't do this in a popup window
+    if (popup_is_popup(wp))
+	return FALSE;
+#endif
+
     // we're not really at that column when skipping some text
     if ((long)(wp->w_p_wrap ? wp->w_skipcol : wp->w_leftcol) > prevcol)
 	++prevcol;
 
-    if (!search_hl->is_addpos && prevcol == (long)search_hl->startcol)
+    // Highlight a character after the end of the line if the match started
+    // at the end of the line or when the match continues in the next line
+    // (match includes the line break).
+    if (!search_hl->is_addpos && (prevcol == (long)search_hl->startcol
+		|| (prevcol > (long)search_hl->startcol
+					      && search_hl->endcol == MAXCOL)))
 	prevcol_hl_flag = TRUE;
     else
     {
 	cur = wp->w_match_head;
 	while (cur != NULL)
 	{
-	    if (!cur->hl.is_addpos && prevcol == (long)cur->hl.startcol)
+	    if (!cur->hl.is_addpos && (prevcol == (long)cur->hl.startcol
+			|| (prevcol > (long)cur->hl.startcol
+						 && cur->hl.endcol == MAXCOL)))
 	    {
 		prevcol_hl_flag = TRUE;
 		break;
