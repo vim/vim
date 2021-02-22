@@ -4769,9 +4769,11 @@ nv_percent(cmdarg_T *cap)
 	{
 	    cap->oap->motion_type = MLINE;
 	    setpcmark();
-	    // Round up, so CTRL-G will give same value.  Watch out for a
-	    // large line count, the line number must not go negative!
-	    if (curbuf->b_ml.ml_line_count > 1000000)
+	    // Round up, so 'normal 100%' always jumps at the line line.
+	    // Beyond 21474836 lines, (ml_line_count * 100 + 99) would
+	    // overflow on 32-bits, so use a formula with less accuracy
+	    // to avoid overflows.
+	    if (curbuf->b_ml.ml_line_count >= 21474836)
 		curwin->w_cursor.lnum = (curbuf->b_ml.ml_line_count + 99L)
 							 / 100L * cap->count0;
 	    else
