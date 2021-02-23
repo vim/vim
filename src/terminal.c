@@ -3800,6 +3800,11 @@ term_update_window(win_T *wp)
     newrows = rows == 0 ? newrows : minsize ? MAX(rows, newrows) : rows;
     newcols = cols == 0 ? newcols : minsize ? MAX(cols, newcols) : cols;
 
+    // If no cell is visible there is no point in resizing.  Also, vterm can't
+    // handle a zero height.
+    if (newrows == 0 || newcols == 0)
+	return;
+
     if (term->tl_rows != newrows || term->tl_cols != newcols)
     {
 	term->tl_vterm_size_changed = TRUE;

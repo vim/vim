@@ -470,6 +470,19 @@ func Test_terminal_size()
   call delete('Xtext')
 endfunc
 
+func Test_terminal_zero_height()
+  split
+  wincmd j
+  anoremenu 1.1 WinBar.test :
+  terminal ++curwin
+  wincmd k
+  wincmd _
+  redraw
+
+  call term_sendkeys(bufnr(), "exit\r")
+  bwipe!
+endfunc
+
 func Test_terminal_curwin()
   let cmd = Get_cat_123_cmd()
   call assert_equal(1, winnr('$'))
