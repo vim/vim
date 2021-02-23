@@ -1872,9 +1872,10 @@ vim_strnicmp(char *s1, char *s2, size_t len)
 #endif
 
 /*
- * Version of strchr() and strrchr() that handle unsigned char strings
- * with characters from 128 to 255 correctly.  It also doesn't return a
- * pointer to the NUL at the end of the string.
+ * Search for first occurrence of "c" in "string".
+ * Version of strchr() that handles unsigned char strings with characters from
+ * 128 to 255 correctly.  It also doesn't return a pointer to the NUL at the
+ * end of the string.
  */
     char_u  *
 vim_strchr(char_u *string, int c)
@@ -1949,6 +1950,9 @@ vim_strbyte(char_u *string, int c)
 
 /*
  * Search for last occurrence of "c" in "string".
+ * Version of strrchr() that handles unsigned char strings with characters from
+ * 128 to 255 correctly.  It also doesn't return a pointer to the NUL at the
+ * end of the string.
  * Return NULL if not found.
  * Does not handle multi-byte char for "c"!
  */
@@ -2497,7 +2501,7 @@ static struct key_name_entry
     {K_URXVT_MOUSE,	(char_u *)"UrxvtMouse"},
 #endif
     {K_SGR_MOUSE,	(char_u *)"SgrMouse"},
-    {K_SGR_MOUSERELEASE, (char_u *)"SgrMouseRelelase"},
+    {K_SGR_MOUSERELEASE, (char_u *)"SgrMouseRelease"},
     {K_LEFTMOUSE,	(char_u *)"LeftMouse"},
     {K_LEFTMOUSE_NM,	(char_u *)"LeftMouseNM"},
     {K_LEFTDRAG,	(char_u *)"LeftDrag"},
