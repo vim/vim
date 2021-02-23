@@ -82,7 +82,8 @@ one_function_arg(
     }
 
     // Vim9 script: cannot use script var name for argument.
-    if (argtypes != NULL && script_var_exists(arg, p - arg, FALSE, NULL) == OK)
+    if (!skip && argtypes != NULL && script_var_exists(arg, p - arg,
+							    FALSE, NULL) == OK)
     {
 	semsg(_(e_variable_already_declared_in_script), arg);
 	return arg;

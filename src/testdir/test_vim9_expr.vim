@@ -1922,6 +1922,14 @@ def Test_expr7_lambda()
 
   CheckDefSuccess(['var Fx = (a) => [0,', ' 1]'])
   CheckDefFailure(['var Fx = (a) => [0', ' 1]'], 'E696:', 2)
+
+  # no error for existing script variable when checking for lambda
+  lines =<< trim END
+    vim9script
+    var name = 0
+    eval (name + 2) / 3
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def NewLambdaWithComments(): func
