@@ -6944,6 +6944,16 @@ nv_esc(cmdarg_T *cap)
 	}
 #endif
     }
+#ifdef FEAT_CMDWIN
+    else if (cmdwin_type != 0 && ex_normal_busy)
+    {
+	// When :normal runs out of characters while in the command line window
+	// vgetorpeek() will return ESC.  Exit the cmdline window to break the
+	// loop.
+	cmdwin_result = K_IGNORE;
+	return;
+    }
+#endif
 
     if (VIsual_active)
     {
