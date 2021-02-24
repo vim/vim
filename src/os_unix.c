@@ -783,7 +783,7 @@ mch_stackcheck(char *p)
  * completely full.
  */
 
-#ifndef SIGSTKSZ
+#if !defined SIGSTKSZ && !defined(HAVE_SYSCONF_SIGSTKSZ)
 # define SIGSTKSZ 8000    // just a guess of how much stack is needed...
 #endif
 
@@ -806,13 +806,21 @@ init_signal_stack(void)
 #  else
 	sigstk.ss_sp = signal_stack;
 #  endif
+#  ifdef HAVE_SYSCONF_SIGSTKSZ
+	sigstk.ss_size = sysconf(_SC_SIGSTKSZ);
+#  else
 	sigstk.ss_size = SIGSTKSZ;
+#  endif
 	sigstk.ss_flags = 0;
 	(void)sigaltstack(&sigstk, NULL);
 # else
 	sigstk.ss_sp = signal_stack;
 	if (stack_grows_downwards)
+#  ifdef HAVE_SYSCONF_SIGSTKSZ
+	    sigstk.ss_sp += sysconf(_SC_SIGSTKSZ) - 1;
+#  else
 	    sigstk.ss_sp += SIGSTKSZ - 1;
+#  endif
 	sigstk.ss_onstack = 0;
 	(void)sigstack(&sigstk, NULL);
 # endif
@@ -3261,7 +3269,11 @@ mch_early_init(void)
      * Ignore any errors.
      */
 #if defined(HAVE_SIGALTSTACK) || defined(HAVE_SIGSTACK)
+# ifdef HAVE_SYSCONF_SIGSTKSZ
+    signal_stack = alloc(sysconf(_SC_SIGSTKSZ));
+# else
     signal_stack = alloc(SIGSTKSZ);
+# endif
     init_signal_stack();
 #endif
 }
