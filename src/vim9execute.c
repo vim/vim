@@ -1771,6 +1771,7 @@ call_def_function(
 		    tv->v_type = VAR_DICT;
 		    tv->v_lock = 0;
 		    tv->vval.v_dict = d;
+		    ++d->dv_refcount;
 		    ++ectx.ec_stack.ga_len;
 		}
 		break;

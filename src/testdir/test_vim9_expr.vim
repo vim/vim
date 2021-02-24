@@ -2545,6 +2545,12 @@ def Test_expr7_namespace()
   assert_equal('some', get(t:, 'some_var', 'xxx'))
   assert_equal('xxx', get(t:, 'no_var', 'xxx'))
   unlet t:some_var
+
+  # check using g: in a for loop more than DO_NOT_FREE_CNT times
+  for i in range(100000)
+    if has_key(g:, 'does-not-exist')
+    endif
+  endfor
 enddef
 
 def Test_expr7_parens()
