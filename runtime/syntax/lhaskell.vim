@@ -102,11 +102,11 @@ syntax include @haskellTop syntax/haskell.vim
 
 syntax region lhsHaskellBirdTrack start="^>" end="\%(^[^>]\)\@=" contains=@haskellTop,lhsBirdTrack containedin=@lhsTeXContainer
 syntax region lhsHaskellBeginEndBlock start="^\\begin{code}\s*$" matchgroup=NONE end="\%(^\\end{code}.*$\)\@=" contains=@haskellTop,beginCodeBegin containedin=@lhsTeXContainer
-syntax region lhsHaskellMDBlock start="^```haskell$" matchgroup=NONE end="\(^```$\)\@=" contains=@haskellTop,lhsMarkdownCode containedin=@lhsTeXContainer
+syntax region lhsHaskellMDBlock start="^```haskell$" matchgroup=NONE end="^```$" keepend contains=@haskellTop,lhsMarkdownCode containedin=@lhsTeXContainer
 
 syntax match lhsBirdTrack "^>" contained
 
-syntax match lhsMarkdownCode "^\(```haskell\|```\)" contained
+syntax match lhsMarkdownCode "^\(```haskell\|^```\)$" contained
 
 syntax match beginCodeBegin "^\\begin" nextgroup=beginCodeCode contained
 syntax region beginCodeCode  matchgroup=texDelimiter start="{" end="}"
