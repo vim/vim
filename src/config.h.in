@@ -496,3 +496,6 @@
 
 /* Define to inline symbol or empty */
 #undef inline
+
+/* Define if _SC_SIGSTKSZ is available via sysconf() */
+#undef HAVE_SYSCONF_SIGSTKSZ

@@ -4105,6 +4105,15 @@ AC_TRY_COMPILE(
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SYSCONF),
 	AC_MSG_RESULT(not usable))
 
+dnl check if we have _SC_SIGSTKSZ via sysconf()
+AC_MSG_CHECKING(for _SC_SIGSTKSZ via sysconf())
+AC_TRY_COMPILE(
+[#include <unistd.h>],
+[	(void)sysconf(_SC_SIGSTKSZ);
+	],
+	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SYSCONF_SIGSTKSZ),
+	AC_MSG_RESULT(not usable))
+
 AC_CHECK_SIZEOF([int])
 AC_CHECK_SIZEOF([long])
 AC_CHECK_SIZEOF([time_t])
