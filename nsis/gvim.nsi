@@ -359,6 +359,8 @@ Section "$(str_section_exe)" id_section_exe
 
 	SetOutPath $0\colors
 	File ${VIMRT}\colors\*.*
+	SetOutPath $0\colors\tools
+	File ${VIMRT}\colors\tools\*.*
 
 	SetOutPath $0\compiler
 	File ${VIMRT}\compiler\*.*
