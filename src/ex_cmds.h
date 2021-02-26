@@ -1820,7 +1820,7 @@ EXCMD(CMD_at,		"@",		ex_at,
 	EX_RANGE|EX_WHOLEFOLD|EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK|EX_NONWHITE_OK,
 	ADDR_LINES),
 EXCMD(CMD_block,	"{",		ex_block,  // not found normally
-	0,
+	EX_TRLBAR,
 	ADDR_NONE),
 EXCMD(CMD_endblock,	"}",		ex_endblock,
 	EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK,
