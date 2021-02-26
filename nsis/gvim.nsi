@@ -358,7 +358,7 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMTOOLS}\winpty-agent.exe
 
 	SetOutPath $0\colors
-	File ${VIMRT}\colors\*.*
+	File /r ${VIMRT}\colors\*.*
 
 	SetOutPath $0\compiler
 	File ${VIMRT}\compiler\*.*
