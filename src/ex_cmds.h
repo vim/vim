@@ -1819,7 +1819,7 @@ EXCMD(CMD_rshift,	">",		ex_operators,
 EXCMD(CMD_at,		"@",		ex_at,
 	EX_RANGE|EX_WHOLEFOLD|EX_EXTRA|EX_TRLBAR|EX_CMDWIN|EX_LOCK_OK|EX_NONWHITE_OK,
 	ADDR_LINES),
-EXCMD(CMD_block,	"{{{{{{{{",	ex_block,  // not found normally
+EXCMD(CMD_block,	"{",		ex_block,  // not found normally
 	0,
 	ADDR_NONE),
 EXCMD(CMD_endblock,	"}",		ex_endblock,
