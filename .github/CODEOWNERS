@@ -51,6 +51,7 @@ runtime/compiler/rubyunit.vim		@dkearns
 runtime/compiler/sass.vim		@tpope
 runtime/compiler/se.vim			@dkearns
 runtime/compiler/shellcheck.vim		@dkearns
+runtime/compiler/sml.vim		@dkearns
 runtime/compiler/stylelint.vim		@dkearns
 runtime/compiler/tcl.vim		@dkearns
 runtime/compiler/tidy.vim		@dkearns

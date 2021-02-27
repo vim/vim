@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Feb 10
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Feb 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,13 +39,8 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 Vim9 - Make everything work:
-- Use ":vim9cmd" as a command modifier?  Then make ":vim9" short for that.
-- Add a test for profiling with nested function calls and lambda.
-- Expand `=expr` in :next, :argedit, :argadd, :argdelete, :drop
-- Expand `=expr` in :vimgrep, :vimgrepadd, :lvimgrep, :lvimgrepadd
-- Expand `=expr` in :mkspell
-- Unlet with range: "unlet list[a : b]"
 - Implement "export {one, two three}".
+- Disallow :open ?
 - ISN_CHECKTYPE could use check_argtype()
 - Using a script variable inside a :def function doesn't work if the variable
   is inside a block, see Test_nested_function().  Should it work?
@@ -110,10 +105,11 @@ Vim9 - Make everything work:
 
 Once Vim9 is stable:
 - Change the help to prefer Vim9 syntax where appropriate
-- Use Vim9 for runtime files.
-    PR #7497 for autoload/ccomplete.vim
 - Add all the error numbers in a good place in documentation.
 - In the generic eval docs, point out the Vim9 syntax where it differs.
+- Add the "vim9script" feature, can use has('vim9script')
+- Use Vim9 for runtime files.
+    PR #7497 for autoload/ccomplete.vim
 
 Also for Vim9:
 - better implementation for partial and tests for that.
@@ -198,8 +194,6 @@ Text properties:
 'incsearch' with :s:
 - :s/foo  using CTRL-G moves to another line, should not happen, or use the
   correct line (it uses the last but one line) (Lifepillar, Aug 18, #3345)
-- :s@pat/tern@ doesn't include "/" in the pattern. (Takahiro Yoshihara, #3637)
-   pass delim to do_search() ?
 - Also support range: :/foo/,/bar/delete
 - Also support for user command, e.g. Cfilter
 - :%s/foo should take the first match below the cursor line, unless there
@@ -269,7 +263,7 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
-Valgind reports memory leaks in test_options
+Valgrind reports memory leaks in test_options
 
 test_arglist func Test_all_not_allowed_from_cmdwin() hangs on MS-Windows.
 
@@ -770,8 +764,6 @@ Memory leaks in test_channel? (or is it because of fork())
 matchaddpos() gets slow with many matches.  Proposal by Rick Howe, 2018 Jul
 19.
 
-Should make 'listchars' global-local.  Local to window or to buffer?
-Probably window.  #5206
 Add something like 'fillchars' local to window, but allow for specifying a
 highlight name.  Esp. for the statusline.
 And "extends" and "precedes" are also useful without 'list' set.  Also in
@@ -1240,6 +1232,8 @@ Undo problem: "g-" doesn't go back, gets stuck. (Björn Linse, 2016 Jul 18)
 
 Add "unicode true" to NSIS installer.  Doesn't work with Windows 95, which we
 no longer support.
+
+Suppoert sort(l, 'F'), convert strings to float. (#7857)
 
 sort() is not stable when using numeric/float sort (Nikolay Pavlov, 2016 Sep
 4#1038)

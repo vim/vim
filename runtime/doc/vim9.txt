@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Feb 03
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Feb 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -279,8 +279,8 @@ without any command.  The same for global, window, tab, buffer and Vim
 variables, because they are not really declared.  They can also be deleted
 with `:unlet`.
 
-Variables and functions cannot shadow previously defined or imported variables
-and functions.
+Variables, functions and function arguments cannot shadow previously defined
+or imported variables and functions in the same script file.
 Variables may shadow Ex commands, rename the variable if needed.
 
 Global variables and user defined functions must be prefixed with "g:", also
@@ -307,14 +307,14 @@ Example: >
 	const myList = [1, 2]
 	myList = [3, 4]		# Error!
 	myList[0] = 9		# Error!
-	muList->add(3)		# Error!
+	myList->add(3)		# Error!
 <							*:final*
 `:final` is used for making only the variable a constant, the value can be
 changed.  This is well known from Java.  Example: >
 	final myList = [1, 2]
 	myList = [3, 4]		# Error!
 	myList[0] = 9		# OK
-	muList->add(3)		# OK
+	myList->add(3)		# OK
 
 It is common to write constants as ALL_CAPS, but you don't have to.
 
@@ -412,7 +412,7 @@ NOT IMPLEMENTED YET
 
 							*vim9-curly*
 To avoid the "{" of a dictionary literal to be recognized as a statement block
-wrap it in parenthesis: >
+wrap it in parentheses: >
 	var Lambda = (arg) => ({key: 42})
 
 Also when confused with the start of a command block: >
@@ -1029,10 +1029,14 @@ an error, thus breaking backwards compatibility.  For example:
 - Using a number where a string is expected.   *E1024*
 
 One consequence is that the item type of a list or dict given to map() must
-not change.  This will give an error in compiled code: >
+not change.  This will give an error in Vim9 script: >
 	map([1, 2, 3], (i, v) => 'item ' .. i)
-	E1012: Type mismatch; expected list<number> but got list<string>
-Instead use |mapnew()|.
+	E1012: Type mismatch; expected number but got string
+Instead use |mapnew()|.  If the item type was determined to be "any" it can
+change to a more specific type.  E.g. when a list of mixed types gets changed
+to a list of numbers.
+Same for |extend()|, use |extendnew()| instead, and for |flatten()|, use
+|flattennew()| instead.
 
 ==============================================================================
 
@@ -1084,7 +1088,7 @@ There is one way to use both legacy and Vim9 syntax in one script file: >
 	vim9script
 	# Vim9 script commands go here
 This allows for writing a script that takes advantage of the Vim9 script
-syntax if possible, but will also work on an Vim version without it.
+syntax if possible, but will also work on a Vim version without it.
 
 This can only work in two ways:
 1. The "if" statement evaluates to false, the commands up to `endif` are

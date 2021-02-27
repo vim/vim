@@ -1,7 +1,7 @@
 " Vim filetype plugin
 " Language:	Vim
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2021 Feb 07
+" Last Change:	2021 Feb 20
 
 " Only do this when not done yet for this buffer
 if exists("b:did_ftplugin")
@@ -54,7 +54,7 @@ if "\n" .. getline(1, 10)->join("\n") =~# '\n\s*vim9\%[script]\>'
   " Comments starts with # in Vim9 script
   setlocal commentstring=#%s
 else
-  setlocal com=sO:\"\ -,mO:\"\ \ ,:\"
+  setlocal com=sO:\"\ -,mO:\"\ \ ,eO:\"\",:\"
   " Comments starts with a double quote in legacy script
   setlocal commentstring=\"%s
 endif

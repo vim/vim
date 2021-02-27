@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.2.  Last change: 2021 Feb 06
+*popup.txt*  For Vim version 8.2.  Last change: 2021 Feb 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -693,8 +693,8 @@ The second argument of |popup_create()| is a dictionary with options:
 			the left.
 	border		List with numbers, defining the border thickness
 			above/right/below/left of the popup (similar to CSS).
-			Only values of zero and non-zero are recognized.
-			An empty list uses a border all around.
+			Only values of zero and non-zero are currently
+			recognized.  An empty list uses a border all around.
 	borderhighlight	List of highlight group names to use for the border.
 			When one entry it is used for all borders, otherwise
 			the highlight for the top/right/bottom/left border.
@@ -742,10 +742,10 @@ The second argument of |popup_create()| is a dictionary with options:
 			line or to another window.
 	mousemoved	Like "moved" but referring to the mouse pointer
 			position
-	cursorline	non-zero: Highlight the cursor line. Also scrolls the
-				  text to show this line (only works properly
-				  when 'wrap' is off).
-			zero: 	  Do not highlight the cursor line.
+	cursorline	TRUE:	 Highlight the cursor line. Also scrolls the
+				 text to show this line (only works properly
+				 when 'wrap' is off).
+			zero: 	 Do not highlight the cursor line.
 			Default is zero, except for |popup_menu()|.
 	filter		A callback that can filter typed characters, see
 			|popup-filter|.

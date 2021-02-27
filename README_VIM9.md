@@ -70,6 +70,7 @@ the text.  For example, reindent all the lines:
 | Vim new | 0.190276 |
 
 The differences are smaller, but Vim 9 script is clearly the fastest.
+Using LuaJIT gives 0.25, only a little bit faster than plain Lua.
 
 How does Vim9 script work?  The function is first compiled into a sequence of
 instructions.  Each instruction has one or two parameters and a stack is

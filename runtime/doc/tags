@@ -3402,7 +3402,9 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :vie	editing.txt	/*:vie*
 :view	editing.txt	/*:view*
 :vim	quickfix.txt	/*:vim*
-:vim9	repeat.txt	/*:vim9*
+:vim9	vim9.txt	/*:vim9*
+:vim9cmd	vim9.txt	/*:vim9cmd*
+:vim9s	repeat.txt	/*:vim9s*
 :vim9script	repeat.txt	/*:vim9script*
 :vimgrep	quickfix.txt	/*:vimgrep*
 :vimgrepa	quickfix.txt	/*:vimgrepa*
@@ -10126,6 +10128,7 @@ vim9-export	vim9.txt	/*vim9-export*
 vim9-final	vim9.txt	/*vim9-final*
 vim9-gotchas	vim9.txt	/*vim9-gotchas*
 vim9-import	vim9.txt	/*vim9-import*
+vim9-mix	vim9.txt	/*vim9-mix*
 vim9-namespace	vim9.txt	/*vim9-namespace*
 vim9-rationale	vim9.txt	/*vim9-rationale*
 vim9-reload	vim9.txt	/*vim9-reload*
