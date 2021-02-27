@@ -258,6 +258,8 @@ def Test_block()
     assert_equal(2, inner)
   }
   assert_equal(1, outer)
+
+  {|echo 'yes'|}
 enddef
 
 def Test_block_failure()
