@@ -918,6 +918,7 @@ let s:export_script_lines =<< trim END
   export def Exported(): string
     return 'Exported'
   enddef
+  export final theList = [1]
 END
 
 def Undo_export_script_lines()
@@ -945,6 +946,10 @@ def Test_vim9_import_export()
     exp_name ..= ' Doe'
     g:imported_name_appended = exp_name
     g:imported_later = exported
+
+    import theList from './Xexport.vim'
+    theList->add(2)
+    assert_equal([1, 2], theList)
   END
 
   writefile(import_script_lines, 'Ximport.vim')
@@ -1142,6 +1147,18 @@ def Test_vim9_import_export()
     defcompile
   END
   writefile(import_assign_to_const, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E46:', '', 1, '_Assign')
+
+  # try changing an imported final
+  var import_assign_to_final =<< trim END
+    vim9script
+    import theList from './Xexport.vim'
+    def Assign()
+      theList = [2]
+    enddef
+    defcompile
+  END
+  writefile(import_assign_to_final, 'Ximport.vim')
   assert_fails('source Ximport.vim', 'E46:', '', 1, '_Assign')
 
   # import a very long name, requires making a copy
