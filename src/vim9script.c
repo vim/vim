@@ -364,8 +364,6 @@ handle_import(
 	arg = skipwhite_and_linebreak(arg, evalarg);
 	if (STRNCMP("as", arg, 2) == 0 && IS_WHITE_OR_NUL(arg[2]))
 	{
-	    char_u *p;
-
 	    // skip over "as Name "; no line break allowed after "as"
 	    arg = skipwhite(arg + 2);
 	    p = arg;
