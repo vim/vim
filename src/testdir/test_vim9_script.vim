@@ -1218,6 +1218,36 @@ def Test_vim9_import_export()
   delete('Xvim9_script')
 enddef
 
+def Test_import_as()
+  var export_lines =<< trim END
+    vim9script
+    export var one = 1
+    export var yes = 'yes'
+  END
+  writefile(export_lines, 'XexportAs')
+
+  var import_lines =<< trim END
+    vim9script
+    import one as thatOne from './XexportAs'
+    assert_equal(1, thatOne)
+    import yes as yesYes from './XexportAs'
+    assert_equal('yes', yesYes)
+  END
+  CheckScriptSuccess(import_lines)
+
+  import_lines =<< trim END
+    vim9script
+    import {one as thatOne, yes as yesYes} from './XexportAs'
+    assert_equal(1, thatOne)
+    assert_equal('yes', yesYes)
+    assert_fails('echo one', 'E121:')
+    assert_fails('echo yes', 'E121:')
+  END
+  CheckScriptSuccess(import_lines)
+
+  delete('XexportAs')
+enddef
+
 func g:Trigger()
   source Ximport.vim
   return "echo 'yes'\<CR>"
