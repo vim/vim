@@ -1340,6 +1340,8 @@ func Test_prop_func_invalid_args()
   call assert_fails("call prop_type_list([])", 'E715:')
   call assert_fails("call prop_type_add('yyy', 'not_a_dict')", 'E715:')
   call assert_fails("call prop_add(1, 5, {'type':'missing_type', 'length':1})", 'E971:')
+  call assert_fails("call prop_add(1, 5, {'type': ''})", 'E971:')
+  call assert_fails('call prop_add(1, 1, 0)', 'E715:')
 
   new
   call setline(1, ['first', 'second'])
