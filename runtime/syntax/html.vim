@@ -3,7 +3,7 @@
 " Previous Maintainer:  Jorge Maldonado Ventura <jorgesumle@freakspot.net>
 " Previous Maintainer:  Claudio Fleiner <claudio@fleiner.com>
 " Repository:           https://notabug.org/jorgesumle/vim-html-syntax
-" Last Change:          2021 Feb 25
+" Last Change:          2021 Feb 28
 "			Included patch #7900 to fix comments
 "
 
@@ -139,25 +139,19 @@ syn match htmlSpecialChar "&#\=[0-9A-Za-z]\{1,8};"
 
 " Comments (the real ones or the old netscape ones)
 if exists("html_wrong_comments")
-  syn region htmlComment                start=+<!--+    end=+--\s*>+ contains=@Spell
+  syn region htmlComment        start=+<!--+    end=+--\s*>+    contains=@Spell
 else
-  " The HTML 5.2 syntax 8.2.4.41-42: bogus comment is parser error; browser skips until next &gt;
-  " Note: must stand first to get lesser :syn-priority
-  syn region htmlComment                start=+<!+      end=+>+     contains=htmlCommentError
-  " Normal comment opening <!-- ...>
-  syn region htmlComment                start=+<!--+    end=+>+     contains=htmlCommentPart,@Spell
-  " Idem 8.2.4.43-44: <!--> and <!---> are parser errors; browser treats as comments
-  syn match htmlComment "<!---\?>" contains=htmlCommentError
-  " Idem 8.2.4.51: any number of consecutive dashes within comment is okay; --> closes comment
-  " Idem 8.2.4.52: closing comment by dash-dash-bang (--!>) is error ignored by parser(!); closes comment
-  syn region htmlCommentPart  contained start=+--+      end=+--!\?>+me=e-1  contains=htmlCommentNested,@htmlPreProc,@Spell
-  " Idem 8.2.4.49: opening nested comment <!-- is parser error, ignored by browser, except <!--> is all right
-  syn match htmlCommentNested contained "<!--[^>]"me=e-1
-  syn match htmlCommentNested contained "<!--->"me=e-3
-  syn match htmlCommentNested contained "<!---\?!>"me=e-4
-  syn match htmlCommentError contained "[^><!]"
+  " The HTML 5.2 syntax 8.2.4.41: bogus comment is parser error; browser skips until next &gt
+  syn region htmlComment        start=+<!+      end=+>+         contains=htmlCommentError keepend
+  " Idem 8.2.4.42,51: Comment starts with <!-- and ends with -->
+  " Idem 8.2.4.43,44: Except <!--> and <!---> are parser errors
+  " Idem 8.2.4.52: dash-dash-bang (--!>) is error ignored by parser, also closes comment
+  syn region htmlComment matchgroup=htmlComment start=+<!--\%(-\?>\)\@!+        end=+--!\?>+    contains=htmlCommentNested,@htmlPreProc,@Spell keepend
+  " Idem 8.2.4.49: nested comment is parser error, except <!--> is all right
+  syn match htmlCommentNested contained "<!-->\@!"
+  syn match htmlCommentError  contained "[^><!]"
 endif
-syn region htmlComment                  start=+<!DOCTYPE+ keepend end=+>+
+syn region htmlComment  start=+<!DOCTYPE+       end=+>+ keepend
 
 " server-parsed commands
 syn region htmlPreProc start=+<!--#+ end=+-->+ contains=htmlPreStmt,htmlPreError,htmlPreAttr
@@ -327,7 +321,6 @@ hi def link htmlSpecialChar        Special
 hi def link htmlString             String
 hi def link htmlStatement          Statement
 hi def link htmlComment            Comment
-hi def link htmlCommentPart        Comment
 hi def link htmlValue              String
 hi def link htmlCommentNested      htmlCommentError
 hi def link htmlCommentError       htmlError
