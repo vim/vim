@@ -370,7 +370,7 @@ handle_import(
 	    if (eval_isnamec1(*arg))
 		while (eval_isnamec(*arg))
 		    ++arg;
-	    if (check_defined(p, arg - p, cctx) == FAIL)
+	    if (check_defined(p, arg - p, cctx, FALSE) == FAIL)
 		goto erret;
 	    as_name = vim_strnsave(p, arg - p);
 	    arg = skipwhite_and_linebreak(arg, evalarg);
@@ -555,7 +555,7 @@ handle_import(
 	    }
 	    else
 	    {
-		if (check_defined(name, len, cctx) == FAIL)
+		if (check_defined(name, len, cctx, FALSE) == FAIL)
 		    goto erret;
 
 		imported = new_imported(gap != NULL ? gap
@@ -567,7 +567,7 @@ handle_import(
 		{
 		    imported->imp_name = name;
 		    ((char_u **)names.ga_data)[i] = NULL;
-		} 
+		}
 		else
 		{
 		    // "import This as That ..."

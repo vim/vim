@@ -2843,7 +2843,7 @@ def Test_expr7_trailing()
 
   # lambda method call
   l = [2, 5]
-  l->((l) => add(l, 8))()
+  l->((ll) => add(ll, 8))()
   assert_equal([2, 5, 8], l)
 
   # dict member
@@ -3034,8 +3034,8 @@ def Test_expr7_subscript_linebreak()
 enddef
 
 func Test_expr7_trailing_fails()
-  call CheckDefFailure(['var l = [2]', 'l->((l) => add(l, 8))'], 'E107:', 2)
-  call CheckDefFailure(['var l = [2]', 'l->((l) => add(l, 8)) ()'], 'E274:', 2)
+  call CheckDefFailure(['var l = [2]', 'l->((ll) => add(ll, 8))'], 'E107:', 2)
+  call CheckDefFailure(['var l = [2]', 'l->((ll) => add(ll, 8)) ()'], 'E274:', 2)
 endfunc
 
 func Test_expr_fails()

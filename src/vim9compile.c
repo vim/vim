@@ -379,8 +379,9 @@ script_var_exists(char_u *name, size_t len, int vim9script, cctx_T *cctx)
     static int
 variable_exists(char_u *name, size_t len, cctx_T *cctx)
 {
-    return lookup_local(name, len, NULL, cctx) == OK
-	    || arg_exists(name, len, NULL, NULL, NULL, cctx) == OK
+    return (cctx != NULL
+		&& (lookup_local(name, len, NULL, cctx) == OK
+		    || arg_exists(name, len, NULL, NULL, NULL, cctx) == OK))
 	    || script_var_exists(name, len, FALSE, cctx) == OK
 	    || find_imported(name, len, cctx) != NULL;
 }
@@ -389,17 +390,26 @@ variable_exists(char_u *name, size_t len, cctx_T *cctx)
  * Check if "p[len]" is already defined, either in script "import_sid" or in
  * compilation context "cctx".  "cctx" is NULL at the script level.
  * Does not check the global namespace.
+ * If "is_arg" is TRUE the error message is for an argument name.
  * Return FAIL and give an error if it defined.
  */
     int
-check_defined(char_u *p, size_t len, cctx_T *cctx)
+check_defined(char_u *p, size_t len, cctx_T *cctx, int is_arg)
 {
     int		c = p[len];
     ufunc_T	*ufunc = NULL;
 
+    if (script_var_exists(p, len, FALSE, cctx) == OK)
+    {
+	if (is_arg)
+	    semsg(_(e_argument_already_declared_in_script_str), p);
+	else
+	    semsg(_(e_variable_already_declared_in_script_str), p);
+	return FAIL;
+    }
+
     p[len] = NUL;
-    if (script_var_exists(p, len, FALSE, cctx) == OK
-	    || (cctx != NULL
+    if ((cctx != NULL
 		&& (lookup_local(p, len, NULL, cctx) == OK
 		    || arg_exists(p, len, NULL, NULL, NULL, cctx) == OK))
 	    || find_imported(p, len, cctx) != NULL
@@ -409,8 +419,11 @@ check_defined(char_u *p, size_t len, cctx_T *cctx)
 	if (ufunc == NULL || !func_is_global(ufunc)
 		|| (p[0] == 'g' && p[1] == ':'))
 	{
+	    if (is_arg)
+		semsg(_(e_argument_name_shadows_existing_variable_str), p);
+	    else
+		semsg(_(e_name_already_defined_str), p);
 	    p[len] = c;
-	    semsg(_(e_name_already_defined_str), p);
 	    return FAIL;
 	}
     }
@@ -5120,7 +5133,7 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 	semsg(_(e_namespace_not_supported_str), name_start);
 	return NULL;
     }
-    if (check_defined(name_start, name_end - name_start, cctx) == FAIL)
+    if (check_defined(name_start, name_end - name_start, cctx, FALSE) == FAIL)
 	return NULL;
 
     eap->arg = name_end;
@@ -5686,7 +5699,7 @@ compile_lhs(
 			    semsg(_(e_cannot_declare_script_variable_in_function),
 								lhs->lhs_name);
 			else
-			    semsg(_(e_variable_already_declared_in_script),
+			    semsg(_(e_variable_already_declared_in_script_str),
 								lhs->lhs_name);
 			return FAIL;
 		    }
@@ -5723,7 +5736,7 @@ compile_lhs(
 			}
 		    }
 		}
-		else if (check_defined(var_start, lhs->lhs_varlen, cctx)
+		else if (check_defined(var_start, lhs->lhs_varlen, cctx, FALSE)
 								       == FAIL)
 		    return FAIL;
 	    }

@@ -596,7 +596,7 @@ def Test_call_wrong_args()
       echo nr
     enddef
   END
-  CheckScriptFailure(lines, 'E1054:')
+  CheckScriptFailure(lines, 'E1168:')
 
   lines =<< trim END
     vim9script
@@ -699,6 +699,31 @@ def Test_call_lambda_args()
     Ref = (x, y, z) => 0
   END
   CheckDefAndScriptFailure(lines, 'E1012:')
+
+  lines =<< trim END
+      var one = 1
+      var l = [1, 2, 3]
+      echo map(l, (one) => one)
+  END
+  CheckDefFailure(lines, 'E1167:')
+  CheckScriptFailure(['vim9script'] + lines, 'E1168:')
+
+  lines =<< trim END
+      def ShadowLocal()
+        var one = 1
+        var l = [1, 2, 3]
+        echo map(l, (one) => one)
+      enddef
+  END
+  CheckDefFailure(lines, 'E1167:')
+
+  lines =<< trim END
+      def Shadowarg(one: number)
+        var l = [1, 2, 3]
+        echo map(l, (one) => one)
+      enddef
+  END
+  CheckDefFailure(lines, 'E1167:')
 enddef
 
 def Test_lambda_return_type()
