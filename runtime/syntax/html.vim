@@ -262,7 +262,7 @@ hi def link htmlEndTag                  Identifier
 hi def link htmlArg                     Type
 hi def link htmlTagName                 htmlStatement
 hi def link htmlSpecialTagName          Exception
-hi def link htmlValue                     String
+hi def link htmlValue                   String
 hi def link htmlSpecialChar             Special
 
 if !exists("html_no_rendering")
@@ -306,13 +306,10 @@ hi def link htmlPreProc            PreProc
 hi def link htmlPreAttr            String
 hi def link htmlPreProcAttrName    PreProc
 hi def link htmlPreProcAttrError   Error
-hi def link htmlSpecial            Special
-hi def link htmlSpecialChar        Special
 hi def link htmlString             String
 hi def link htmlStatement          Statement
 hi def link htmlComment            Comment
-hi def link htmlValue              String
-hi def link htmlCommentNested      htmlCommentError
+hi def link htmlCommentNested      htmlError
 hi def link htmlCommentError       htmlError
 hi def link htmlTagError           htmlError
 hi def link htmlEvent              javaScript
