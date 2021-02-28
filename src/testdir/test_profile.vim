@@ -636,6 +636,8 @@ func Test_vim9_nested_call()
   call assert_match('FUNCTION  <SNR>\d\+_Two().*'
         \ .. '#Called 3 times.*'
         \ .. '#    3 \s*[0-9.]\+   total += nr', prof_lines)
+  call delete('Xprofile_nested.vim')
+  call delete('Xprofile_nested.log')
 endfunc
 
 
