@@ -79,26 +79,16 @@ syn keyword htmlArg contained usemap ismap valign value vlink vspace width wrap
 syn match   htmlArg contained "\<\(http-equiv\|href\|title\)="me=e-1
 
 " aria attributes
-syn match htmlArg contained "\<\(aria-activedescendant\|aria-atomic\)\>"
-syn match htmlArg contained "\<\(aria-autocomplete\|aria-busy\|aria-checked\)\>"
-syn match htmlArg contained "\<\(aria-colcount\|aria-colindex\|aria-colspan\)\>"
-syn match htmlArg contained "\<\(aria-controls\|aria-current\)\>"
-syn match htmlArg contained "\<\(aria-describedby\|aria-details\)\>"
-syn match htmlArg contained "\<\(aria-disabled\|aria-dropeffect\)\>"
-syn match htmlArg contained "\<\(aria-errormessage\|aria-expanded\)\>"
-syn match htmlArg contained "\<\(aria-flowto\|aria-grabbed\|aria-haspopup\)\>"
-syn match htmlArg contained "\<\(aria-hidden\|aria-invalid\)\>"
-syn match htmlArg contained "\<\(aria-keyshortcuts\|aria-label\)\>"
-syn match htmlArg contained "\<\(aria-labelledby\|aria-level\|aria-live\)\>"
-syn match htmlArg contained "\<\(aria-modal\|aria-multiline\)\>"
-syn match htmlArg contained "\<\(aria-multiselectable\|aria-orientation\)\>"
-syn match htmlArg contained "\<\(aria-owns\|aria-placeholder\|aria-posinset\)\>"
-syn match htmlArg contained "\<\(aria-pressed\|aria-readonly\|aria-relevant\)\>"
-syn match htmlArg contained "\<\(aria-required\|aria-roledescription\)\>"
-syn match htmlArg contained "\<\(aria-rowcount\|aria-rowindex\|aria-rowspan\)\>"
-syn match htmlArg contained "\<\(aria-selected\|aria-setsize\|aria-sort\)\>"
-syn match htmlArg contained "\<\(aria-valuemax\|aria-valuemin\)\>"
-syn match htmlArg contained "\<\(aria-valuenow\|aria-valuetext\)\>"
+exe 'syn match htmlArg contained "\<aria-\%(' . join([
+    \ 'activedescendant', 'atomic', 'autocomplete', 'busy', 'checked', 'colcount',
+    \ 'colindex', 'colspan', 'controls', 'current', 'describedby', 'details',
+    \ 'disabled', 'dropeffect', 'errormessage', 'expanded', 'flowto', 'grabbed',
+    \ 'haspopup', 'hidden', 'invalid', 'keyshortcuts', 'label', 'labelledby', 'level',
+    \ 'live', 'modal', 'multiline', 'multiselectable', 'orientation', 'owns',
+    \ 'placeholder', 'posinset', 'pressed', 'readonly', 'relevant', 'required',
+    \ 'roledescription', 'rowcount', 'rowindex', 'rowspan', 'selected', 'setsize',
+    \ 'sort', 'valuemax', 'valuemin', 'valuenow', 'valuetext'
+    \ ], '\|') . '\)\>"'
 syn keyword htmlArg contained role
 
 " Netscape extensions
