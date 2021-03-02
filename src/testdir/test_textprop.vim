@@ -1338,6 +1338,25 @@ func Test_prop_func_invalid_args()
   call assert_fails("call prop_type_get([])", 'E730:')
   call assert_fails("call prop_type_get('', [])", 'E474:')
   call assert_fails("call prop_type_list([])", 'E715:')
+  call assert_fails("call prop_type_add('yyy', 'not_a_dict')", 'E715:')
+  call assert_fails("call prop_add(1, 5, {'type':'missing_type', 'length':1})", 'E971:')
+  call assert_fails("call prop_add(1, 5, {'type': ''})", 'E971:')
+  call assert_fails('call prop_add(1, 1, 0)', 'E715:')
+
+  new
+  call setline(1, ['first', 'second'])
+  call prop_type_add('xxx', {})
+
+  call assert_fails("call prop_type_add('xxx', {})", 'E969:')
+  call assert_fails("call prop_add(2, 0, {'type': 'xxx'})", 'E964:')
+  call assert_fails("call prop_add(2, 3, {'type': 'xxx', 'end_lnum':1})", 'E475:')
+  call assert_fails("call prop_add(2, 3, {'type': 'xxx', 'end_lnum':3})", 'E966:')
+  call assert_fails("call prop_add(2, 3, {'type': 'xxx', 'length':-1})", 'E475:')
+  call assert_fails("call prop_add(2, 3, {'type': 'xxx', 'end_col':0})", 'E475:')
+  call assert_fails("call prop_add(2, 3, {'length':1})", 'E965:')
+
+  call prop_type_delete('xxx')
+  bwipe!
 endfunc
 
 func Test_prop_split_join()
