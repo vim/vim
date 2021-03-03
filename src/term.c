@@ -2071,6 +2071,7 @@ set_termname(char_u *term)
 
 	focus_mode = TRUE;
 	focus_state = TRUE;
+	need_gather = TRUE;
     }
 #endif
 
@@ -3618,9 +3619,9 @@ starttermcap(void)
 	out_str(T_KS);			// start "keypad transmit" mode
 	out_str(T_BE);			// enable bracketed paste mode
 
-#if (defined(UNIX) || defined(VMS))
-	// enable xterm's focus reporting mode
-	if (focus_mode && *T_FE != NUL)
+#if defined(UNIX) || defined(VMS)
+	// Enable xterm's focus reporting mode when 'esckeys' is set.
+	if (focus_mode && p_ek && *T_FE != NUL)
 	    out_str(T_FE);
 #endif
 
@@ -3676,9 +3677,9 @@ stoptermcap(void)
 	ch_log_output = TRUE;
 #endif
 
-#if (defined(UNIX) || defined(VMS))
-	// disable xterm's focus reporting mode
-	if (focus_mode && *T_FD != NUL)
+#if defined(UNIX) || defined(VMS)
+	// Disable xterm's focus reporting mode if 'esckeys' is set.
+	if (focus_mode && p_ek && *T_FD != NUL)
 	    out_str(T_FD);
 #endif
 
