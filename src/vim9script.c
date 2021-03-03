@@ -138,7 +138,7 @@ ex_export(exarg_T *eap)
     }
 
     eap->cmd = eap->arg;
-    (void)find_ex_command(eap, NULL, lookup_scriptvar, NULL);
+    (void)find_ex_command(eap, NULL, lookup_scriptitem, NULL);
     switch (eap->cmdidx)
     {
 	case CMD_let:

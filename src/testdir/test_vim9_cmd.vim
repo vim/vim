@@ -371,6 +371,24 @@ def Test_method_call_linebreak()
   MethodAfterLinebreak('foobar')
   assert_equal('foobar', getline(1))
   bwipe!
+
+  lines =<< trim END
+      vim9script
+      def Foo(): string
+          return '# some text'
+      enddef
+
+      def Bar(F: func): string
+          return F()
+      enddef
+
+      Foo
+         ->Bar()
+         ->setline(1)
+  END
+  CheckScriptSuccess(lines)
+  assert_equal('# some text', getline(1))
+  bwipe!
 enddef
 
 def Test_method_call_whitespace()

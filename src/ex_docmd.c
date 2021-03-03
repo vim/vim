@@ -1829,7 +1829,7 @@ do_one_cmd(
 	if (ea.cmd == cmd + 1 && *cmd == '$')
 	    // should be "$VAR = val"
 	    --ea.cmd;
-	p = find_ex_command(&ea, NULL, lookup_scriptvar, NULL);
+	p = find_ex_command(&ea, NULL, lookup_scriptitem, NULL);
 	if (ea.cmdidx == CMD_SIZE)
 	{
 	    char_u *ar = skip_range(ea.cmd, TRUE, NULL);
