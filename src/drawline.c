@@ -1031,12 +1031,11 @@ win_line(
 		    // Draw the 'foldcolumn'.  Allocate a buffer, "extra" may
 		    // already be in use.
 		    vim_free(p_extra_free);
-		    p_extra_free = alloc(12 + 1);
-
+		    p_extra_free = alloc(MAX_MCO * fdc + 1);
 		    if (p_extra_free != NULL)
 		    {
-			fill_foldcolumn(p_extra_free, wp, FALSE, lnum);
-			n_extra = fdc;
+			n_extra = fill_foldcolumn(p_extra_free, wp,
+								  FALSE, lnum);
 			p_extra_free[n_extra] = NUL;
 			p_extra = p_extra_free;
 			c_extra = NUL;

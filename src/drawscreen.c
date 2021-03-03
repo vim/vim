@@ -1044,7 +1044,9 @@ fold_line(
     linenr_T	lnum,
     int		row)
 {
-    char_u	buf[FOLD_TEXT_LEN];
+    // Max value of 'foldcolumn' is 12 and maximum number of bytes in a
+    // multi-byte character is MAX_MCO.
+    char_u	buf[MAX_MCO * 12 + 1];
     pos_T	*top, *bot;
     linenr_T	lnume = lnum + fold_count - 1;
     int		len;
@@ -1077,29 +1079,6 @@ fold_line(
     }
 #endif
 
-    // 2. Add the 'foldcolumn'
-    //    Reduce the width when there is not enough space.
-    fdc = compute_foldcolumn(wp, col);
-    if (fdc > 0)
-    {
-	fill_foldcolumn(buf, wp, TRUE, lnum);
-#ifdef FEAT_RIGHTLEFT
-	if (wp->w_p_rl)
-	{
-	    int		i;
-
-	    copy_text_attr(off + wp->w_width - fdc - col, buf, fdc,
-							     HL_ATTR(HLF_FC));
-	    // reverse the fold column
-	    for (i = 0; i < fdc; ++i)
-		ScreenLines[off + wp->w_width - i - 1 - col] = buf[i];
-	}
-	else
-#endif
-	    copy_text_attr(off + col, buf, fdc, HL_ATTR(HLF_FC));
-	col += fdc;
-    }
-
 #ifdef FEAT_RIGHTLEFT
 # define RL_MEMSET(p, v, l) \
     do { \
@@ -1117,6 +1096,53 @@ fold_line(
 	    ScreenAttrs[off + (p) + ri] = v; \
     } while (0)
 #endif
+
+    // 2. Add the 'foldcolumn'
+    //    Reduce the width when there is not enough space.
+    fdc = compute_foldcolumn(wp, col);
+    if (fdc > 0)
+    {
+	char_u	*p;
+	int	i;
+	int	idx;
+
+	fill_foldcolumn(buf, wp, TRUE, lnum);
+	p = buf;
+	for (i = 0; i < fdc; i++)
+	{
+	    int		ch;
+
+	    if (has_mbyte)
+		ch = mb_ptr2char_adv(&p);
+	    else
+		ch = *p++;
+#ifdef FEAT_RIGHTLEFT
+	    if (wp->w_p_rl)
+		idx = off + wp->w_width - i - 1 - col;
+	    else
+#endif
+		idx = off + col + i;
+	    if (enc_utf8)
+	    {
+		if (ch >= 0x80)
+		{
+		    ScreenLinesUC[idx] = ch;
+		    ScreenLinesC[0][idx] = 0;
+		    ScreenLines[idx] = 0x80;
+		}
+		else
+		{
+		    ScreenLines[idx] = ch;
+		    ScreenLinesUC[idx] = 0;
+		}
+	    }
+	    else
+		ScreenLines[idx] = ch;
+	}
+
+	RL_MEMSET(col, HL_ATTR(HLF_FC), fdc);
+	col += fdc;
+    }
 
     // Set all attributes of the 'number' or 'relativenumber' column and the
     // text
