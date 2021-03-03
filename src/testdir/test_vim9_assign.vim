@@ -1099,6 +1099,44 @@ def Test_assign_dict_unknown_type()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_assign_dict_with_op()
+  var lines =<< trim END
+    vim9script
+    var ds: dict<string> = {a: 'x'}
+    ds['a'] ..= 'y'
+    ds.a ..= 'z'
+    assert_equal('xyz', ds.a)
+
+    var dn: dict<number> = {a: 9}
+    dn['a'] += 2
+    assert_equal(11, dn.a)
+    dn.a += 2
+    assert_equal(13, dn.a)
+
+    dn['a'] -= 3
+    assert_equal(10, dn.a)
+    dn.a -= 2
+    assert_equal(8, dn.a)
+
+    dn['a'] *= 2
+    assert_equal(16, dn.a)
+    dn.a *= 2
+    assert_equal(32, dn.a)
+
+    dn['a'] /= 3
+    assert_equal(10, dn.a)
+    dn.a /= 2
+    assert_equal(5, dn.a)
+
+    dn['a'] %= 3
+    assert_equal(2, dn.a)
+    dn.a %= 6
+    assert_equal(2, dn.a)
+  END
+  # TODO: this should also work with a :def function
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_assign_lambda()
   # check if assign a lambda to a variable which type is func or any.
   var lines =<< trim END
