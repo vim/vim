@@ -266,7 +266,7 @@ fill_foldcolumn(
     empty = (fdc == 1) ? 0 : 1;
 
     // If the column is too narrow, we start at the lowest level that
-    // fits and use numbers to indicated the depth.
+    // fits and use numbers to indicate the depth.
     first_level = level - fdc - closed + 1 + empty;
     if (first_level < 1)
 	first_level = 1;

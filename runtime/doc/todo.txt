@@ -1156,9 +1156,6 @@ timer expires.
 Rule to use "^" for statusline does not work if a space is defined with
 highlighting for both stl and stlnc.  Patch by Ken Hamada (itchyny, 2016 Dec 11)
 
-8   "stl" and "stlnc" in 'fillchars' don't work for multibyte characters.
-    Patch by Christian Wellenbrock, 2013 Jul 5.
-
 Using CTRL-G_U in InsertCharPre causes trouble for redo. (Israel Chauca
 Fuentes, 2017 Feb 12, #1470)
 

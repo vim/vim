@@ -4157,9 +4157,6 @@ build_stl_str_hl(
 
     if (fillchar == 0)
 	fillchar = ' ';
-    // Can't handle a multi-byte fill character yet.
-    else if (mb_char2len(fillchar) > 1)
-	fillchar = '-';
 
     // The cursor in windows other than the current one isn't always
     // up-to-date, esp. because of autocommands and timers.
@@ -4335,7 +4332,7 @@ build_stl_str_hl(
 
 		// Fill up space left over by half a double-wide char.
 		while (++l < stl_items[stl_groupitem[groupdepth]].stl_minwid)
-		    *p++ = fillchar;
+		    MB_CHAR2BYTES(fillchar, p);
 
 		// correct the start of the items for the truncation
 		for (l = stl_groupitem[groupdepth] + 1; l < curitem; l++)
@@ -4354,20 +4351,20 @@ build_stl_str_hl(
 		    // fill by appending characters
 		    n = 0 - n;
 		    while (l++ < n && p + 1 < out + outlen)
-			*p++ = fillchar;
+			MB_CHAR2BYTES(fillchar, p);
 		}
 		else
 		{
 		    // fill by inserting characters
-		    mch_memmove(t + n - l, t, (size_t)(p - t));
-		    l = n - l;
+		    l = (n - l) * MB_CHAR2LEN(fillchar);
+		    mch_memmove(t + l, t, (size_t)(p - t));
 		    if (p + l >= out + outlen)
 			l = (long)((out + outlen) - p - 1);
 		    p += l;
 		    for (n = stl_groupitem[groupdepth] + 1; n < curitem; n++)
 			stl_items[n].stl_start += l;
 		    for ( ; l > 0; l--)
-			*t++ = fillchar;
+			MB_CHAR2BYTES(fillchar, t);
 		}
 	    }
 	    continue;
@@ -4746,23 +4743,24 @@ build_stl_str_hl(
 		    if (l + 1 == minwid && fillchar == '-' && VIM_ISDIGIT(*t))
 			*p++ = ' ';
 		    else
-			*p++ = fillchar;
+			MB_CHAR2BYTES(fillchar, p);
 		}
 		minwid = 0;
 	    }
 	    else
 		minwid *= -1;
-	    while (*t && p + 1 < out + outlen)
+	    for (; *t && p + 1 < out + outlen; t++)
 	    {
-		*p++ = *t++;
 		// Change a space by fillchar, unless fillchar is '-' and a
 		// digit follows.
-		if (fillable && p[-1] == ' '
-				     && (!VIM_ISDIGIT(*t) || fillchar != '-'))
-		    p[-1] = fillchar;
+		if (fillable && *t == ' '
+				&& (!VIM_ISDIGIT(*(t + 1)) || fillchar != '-'))
+		    MB_CHAR2BYTES(fillchar, p);
+		else
+		    *p++ = *t;
 	    }
 	    for (; l < minwid && p + 1 < out + outlen; l++)
-		*p++ = fillchar;
+		MB_CHAR2BYTES(fillchar, p);
 	}
 	else if (num >= 0)
 	{
@@ -4865,7 +4863,7 @@ build_stl_str_hl(
 		}
 		// Fill up for half a double-wide character.
 		while (++width < maxwidth)
-		    *s++ = fillchar;
+		    MB_CHAR2BYTES(fillchar, s);
 	    }
 	    else
 		s = out + maxwidth - 1;
@@ -4897,7 +4895,7 @@ build_stl_str_hl(
 	    while (++width < maxwidth)
 	    {
 		s = s + STRLEN(s);
-		*s++ = fillchar;
+		MB_CHAR2BYTES(fillchar, s);
 		*s = NUL;
 	    }
 
@@ -4920,12 +4918,13 @@ build_stl_str_hl(
 		break;
 	if (l < itemcnt)
 	{
-	    p = stl_items[l].stl_start + maxwidth - width;
+	    int middlelength = (maxwidth - width) * MB_CHAR2LEN(fillchar);
+	    p = stl_items[l].stl_start + middlelength;
 	    STRMOVE(p, stl_items[l].stl_start);
-	    for (s = stl_items[l].stl_start; s < p; s++)
-		*s = fillchar;
+	    for (s = stl_items[l].stl_start; s < p;)
+		MB_CHAR2BYTES(fillchar, s);
 	    for (l++; l < itemcnt; l++)
-		stl_items[l].stl_start += maxwidth - width;
+		stl_items[l].stl_start += middlelength;
 	    width = maxwidth;
 	}
     }
