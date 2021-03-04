@@ -3159,6 +3159,7 @@ func Test_previewpopup()
 	      \ 'this is another word',
 	      \ 'very long line where the word is also another'])
         set previewpopup=height:4,width:40
+	hi OtherColor ctermbg=lightcyan guibg=lightcyan
 	set path=.
   END
   call writefile(lines, 'XtestPreviewPopup')
@@ -3168,6 +3169,7 @@ func Test_previewpopup()
   call term_sendkeys(buf, ":\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_1', {})
 
+  call term_sendkeys(buf, ":set previewpopup+=highlight:OtherColor\<CR>")
   call term_sendkeys(buf, "/another\<CR>\<C-W>}")
   call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_2', {})
 
@@ -3182,6 +3184,7 @@ func Test_previewpopup()
   call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_5', {})
   call term_sendkeys(buf, ":silent cd testdir\<CR>")
 
+  call term_sendkeys(buf, ":set previewpopup-=highlight:OtherColor\<CR>")
   call term_sendkeys(buf, ":pclose\<CR>")
   call term_sendkeys(buf, ":\<BS>")
   call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_6', {})

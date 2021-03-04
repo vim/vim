@@ -3510,6 +3510,11 @@ jumpto_tag(
 	// Save value of no_hlsearch, jumping to a tag is not a real search
 	save_no_hlsearch = no_hlsearch;
 #endif
+#ifdef FEAT_PROP_POPUP
+	// getfile() may have cleared options, apply 'previewpopup' again.
+	if (g_do_tagpreview != 0 && *p_pvp != NUL)
+	    parse_previewpopup(curwin);
+#endif
 
 	/*
 	 * If 'cpoptions' contains 't', store the search pattern for the "n"
