@@ -909,7 +909,7 @@ ex_let(exarg_T *eap)
 }
 
 /*
- * Assign the typevalue "tv" to the variable or variables at "arg_start".
+ * Assign the typeval "tv" to the variable or variables at "arg_start".
  * Handles both "var" with any type and "[var, var; var]" with a list type.
  * When "op" is not NULL it points to a string with characters that
  * must appear after the variable(s).  Use "+", "-" or "." for add, subtract
@@ -3179,6 +3179,7 @@ set_var_const(
 
     if (di != NULL)
     {
+	// Item already exists.  Allowed to replace when reloading.
 	if ((di->di_flags & DI_FLAGS_RELOAD) == 0)
 	{
 	    if (flags & (ASSIGN_CONST | ASSIGN_FINAL))
@@ -3269,6 +3270,14 @@ set_var_const(
     }
     else
     {
+	// Item not found, check if a function already exists.
+	if (is_script_local && (flags & (ASSIGN_NO_DECL | ASSIGN_DECL)) == 0
+			  && lookup_scriptitem(name, STRLEN(name), NULL) == OK)
+	{
+	    semsg(_(e_redefining_script_item_str), name);
+	    goto failed;
+	}
+
 	// add a new variable
 	if (vim9script && is_script_local && (flags & ASSIGN_NO_DECL))
 	{

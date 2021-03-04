@@ -1515,6 +1515,17 @@ def Test_script_reload_change_type()
   delete('Xreload.vim')
 enddef
 
+def Test_script_var_shadows_function()
+  var lines =<< trim END
+      vim9script
+      def Func(): number
+        return 123
+      enddef
+      var Func = 1
+  END
+  CheckScriptFailure(lines, 'E1041:', 5)
+enddef
+
 def s:RetSome(): string
   return 'some'
 enddef
