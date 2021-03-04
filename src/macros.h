@@ -252,6 +252,7 @@
 #define MB_CHARLEN(p)	    (has_mbyte ? mb_charlen(p) : (int)STRLEN(p))
 #define MB_CHAR2LEN(c)	    (has_mbyte ? mb_char2len(c) : 1)
 #define PTR2CHAR(p)	    (has_mbyte ? mb_ptr2char(p) : (int)*(p))
+#define MB_CHAR2BYTES(c, b) do { if (has_mbyte) (b) += (*mb_char2bytes)((c), (b)); else *(b)++ = (c); } while(0)
 
 #ifdef FEAT_AUTOCHDIR
 # define DO_AUTOCHDIR do { if (p_acd) do_autochdir(); } while (0)
