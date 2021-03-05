@@ -5362,4 +5362,14 @@ func Test_qfbuf_update()
   call Xqfbuf_update('l')
 endfunc
 
+func Test_vimgrep_noswapfile()
+  set noswapfile
+  call writefile(['one', 'two', 'three'], 'Xgreppie')
+  vimgrep two Xgreppie
+  call assert_equal('two', getline('.'))
+
+  call delete('Xgreppie')
+  set swapfile
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
