@@ -357,6 +357,25 @@ def Test_method_call_linebreak()
 
   lines =<< trim END
       new
+      def Foo(): string
+        return 'the text'
+      enddef
+      def Bar(F: func): string
+        return F()
+      enddef
+      def Test()
+        Foo
+          ->Bar()
+          ->setline(1)
+      enddef
+      Test()
+      assert_equal('the text', getline(1))
+      bwipe!
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      new
       g:shortlist
           ->copy()
           ->setline(1)

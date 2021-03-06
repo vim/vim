@@ -387,6 +387,26 @@ variable_exists(char_u *name, size_t len, cctx_T *cctx)
 }
 
 /*
+ * Return TRUE if "name" is a local variable, argument, script variable,
+ * imported or function.
+ */
+    static int
+item_exists(char_u *name, size_t len, cctx_T *cctx)
+{
+    int	    is_global;
+
+    if (variable_exists(name, len, cctx))
+	return TRUE;
+
+    // Find a function, so that a following "->" works.  Skip "g:" before a
+    // function name.
+    // Do not check for an internal function, since it might also be a
+    // valid command, such as ":split" versuse "split()".
+    is_global = (name[0] == 'g' && name[1] == ':');
+    return find_func(is_global ? name + 2 : name, is_global, cctx) != NULL;
+}
+
+/*
  * Check if "p[len]" is already defined, either in script "import_sid" or in
  * compilation context "cctx".  "cctx" is NULL at the script level.
  * Does not check the global namespace.
@@ -728,7 +748,7 @@ get_compare_isn(exprtype_T exprtype, vartype_T type1, vartype_T type2)
     }
     else if (type1 == VAR_ANY || type2 == VAR_ANY
 	    || ((type1 == VAR_NUMBER || type1 == VAR_FLOAT)
-	      && (type2 == VAR_NUMBER || type2 ==VAR_FLOAT)))
+	      && (type2 == VAR_NUMBER || type2 == VAR_FLOAT)))
 	isntype = ISN_COMPAREANY;
 
     if ((exprtype == EXPR_IS || exprtype == EXPR_ISNOT)
@@ -8399,8 +8419,7 @@ compile_def_function(
 	    }
 	}
 	p = find_ex_command(&ea, NULL, starts_with_colon ? NULL
-		   : (int (*)(char_u *, size_t, cctx_T *))variable_exists,
-									&cctx);
+		    : (int (*)(char_u *, size_t, cctx_T *))item_exists, &cctx);
 
 	if (p == NULL)
 	{
