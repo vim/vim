@@ -1136,6 +1136,23 @@ def Test_arg_type_wrong()
   CheckScriptFailure(['def Func5(items)', 'echo "a"'], 'E1077:')
 enddef
 
+def Test_white_space_after_comma()
+  var lines =<< trim END
+    vim9script
+    def Func(a: number,b: number)
+    enddef
+  END
+  CheckScriptFailure(lines, 'E1069:')
+
+  # OK in legacy function
+  lines =<< trim END
+    vim9script
+    func Func(a,b)
+    endfunc
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_vim9script_call()
   var lines =<< trim END
     vim9script

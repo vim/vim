@@ -310,7 +310,8 @@ get_function_args(
 		++p;
 		// Don't give this error when skipping, it makes the "->" not
 		// found in "{k,v -> x}" and give a confusing error.
-		if (!skip && in_vim9script()
+		// Allow missing space after comma in legacy functions.
+		if (!skip && argtypes != NULL
 				      && !IS_WHITE_OR_NUL(*p) && *p != endchar)
 		{
 		    semsg(_(e_white_space_required_after_str_str), ",", p - 1);
