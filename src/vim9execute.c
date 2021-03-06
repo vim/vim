@@ -797,7 +797,27 @@ call_by_name(char_u *name, int argcount, ectx_T *ectx, isn_T *iptr)
     }
 
     if (ufunc != NULL)
+    {
+	if (ufunc->uf_arg_types != NULL)
+	{
+	    int i;
+	    typval_T	*argv = STACK_TV_BOT(0) - argcount;
+
+	    // The function can change at runtime, check that the argument
+	    // types are correct.
+	    for (i = 0; i < argcount; ++i)
+	    {
+		type_T *type = i < ufunc->uf_args.ga_len
+				  ? ufunc->uf_arg_types[i] : ufunc->uf_va_type;
+
+		if (type != NULL && check_typval_arg_type(type,
+						      &argv[i], i + 1) == FAIL)
+		    return FAIL;
+	    }
+	}
+
 	return call_ufunc(ufunc, NULL, argcount, ectx, iptr);
+    }
 
     return FAIL;
 }
