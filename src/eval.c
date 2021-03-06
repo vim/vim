@@ -3130,7 +3130,7 @@ eval6(
 	 */
 	if (evaluate && in_vim9script() && !IS_WHITE_OR_NUL((*arg)[1]))
 	{
-	    error_white_both(p, 1);
+	    error_white_both(*arg, 1);
 	    clear_tv(rettv);
 	    return FAIL;
 	}

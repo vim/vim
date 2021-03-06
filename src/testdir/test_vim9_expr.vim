@@ -1254,6 +1254,17 @@ def Test_expr5_vim9script()
       echo 'a' .. function('len')
   END
   CheckScriptFailure(lines, 'E729:', 2)
+
+  lines =<< trim END
+      vim9script
+      new
+      ['']->setline(1)
+      /pattern
+
+      eval 0
+      bwipe!
+  END
+  CheckScriptFailure(lines, "E1004: White space required before and after '/' at \"/pattern")
 enddef
 
 def Test_expr5_vim9script_channel()
