@@ -1,7 +1,7 @@
 " Vim completion script
-" Language:	C
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2021 Mar 7
+" Language:     C
+" Maintainer:   Bram Moolenaar <Bram@vim.org>
+" Last Change:  2021 Mar 7
 
 vim9script
 
@@ -17,35 +17,35 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
     var lastword: number = -1
     while start > 0
       if line[start - 1] =~ '\w'
-	start -= 1
+        start -= 1
       elseif line[start - 1] =~ '\.'
-	if lastword == -1
-	  lastword = start
-	endif
-	start -= 1
+        if lastword == -1
+          lastword = start
+        endif
+        start -= 1
       elseif start > 1 && line[start - 2] == '-'
-	&& line[start - 1] == '>'
-	if lastword == -1
-	  lastword = start
-	endif
-	start -= 2
+        && line[start - 1] == '>'
+        if lastword == -1
+          lastword = start
+        endif
+        start -= 2
       elseif line[start - 1] == ']'
-	# Skip over [...].
-	var n: number = 0
-	start -= 1
-	while start > 0
-	  start -= 1
-	  if line[start] == '['
-	    if n == 0
-	      break
-	    endif
-	    n -= 1
-	  elseif line[start] == ']'  # nested []
-	    n += 1
-	  endif
-	endwhile
+        # Skip over [...].
+        var n: number = 0
+        start -= 1
+        while start > 0
+          start -= 1
+          if line[start] == '['
+            if n == 0
+              break
+            endif
+            n -= 1
+          elseif line[start] == ']'  # nested []
+            n += 1
+          endif
+        endwhile
       else
-	break
+        break
       endif
     endwhile
 
@@ -83,7 +83,7 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
     var e: number = base->charidx(match(base, '\.\|->\|\[', s))
     if e < 0
       if s == 0 || base[s - 1] != ']'
-	add(items, base[s :])
+        add(items, base[s :])
       endif
       break
     endif
@@ -102,15 +102,15 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
       s = e
       e += 1
       while e < strlen(base)
-	if base[e] == ']'
-	  if n == 0
-	    break
-	  endif
-	  n -= 1
-	elseif base[e] == '['  # nested [...]
-	  n += 1
-	endif
-	e += 1
+        if base[e] == ']'
+          if n == 0
+            break
+          endif
+          n -= 1
+        elseif base[e] == '['  # nested [...]
+          n += 1
+        endif
+        e += 1
       endwhile
       e += 1
       add(items, base[s : e - 1])
@@ -133,7 +133,7 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
       # Handle multiple declarations on the same line.
       var col2: number = col - 1
       while line[col2] != ';'
-	col2 -= 1
+        col2 -= 1
       endwhile
       line = line[col2 + 1 :]
       col -= col2
@@ -143,11 +143,11 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
       # declaration.
       var col2: number = col - 1
       while line[col2] != ','
-	col2 -= 1
+        col2 -= 1
       endwhile
       if line[col2 + 1 : col - 1] =~ ' *[^ ][^ ]*  *[^ ]'
-	line = line[col2 + 1 :]
-	col -= col2
+        line = line[col2 + 1 :]
+        col -= col2
       endif
     endif
     if len(items) == 1
@@ -156,17 +156,17 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
       var match: string = items[0]
       var kind: string = 'v'
       if match(line, '\<' .. match .. '\s*\[') > 0
-	match ..= '['
+        match ..= '['
       else
-	res = line[: col - 1]->Nextitem([''], 0, 1)
-	if len(res) > 0
-	  # There are members, thus add "." or "->".
-	  if match(line, '\*[ \t(]*' .. match .. '\>') > 0
-	    match ..= '->'
-	  else
-	    match ..= '.'
-	  endif
-	endif
+        res = line[: col - 1]->Nextitem([''], 0, 1)
+        if len(res) > 0
+          # There are members, thus add "." or "->".
+          if match(line, '\*[ \t(]*' .. match .. '\>') > 0
+            match ..= '->'
+          else
+            match ..= '.'
+          endif
+        endif
       endif
       res = [{match: match, tagline: '', kind: kind, info: line}]
     elseif len(items) == arrays + 1
@@ -215,19 +215,19 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
     for i in len(diclist)->range()
       # New ctags has the "typeref" field.  Patched version has "typename".
       if has_key(diclist[i], 'typename')
-	res = extendnew(res, StructMembers(diclist[i]['typename'], items[1 :], 1))
+        res = extendnew(res, StructMembers(diclist[i]['typename'], items[1 :], 1))
       elseif has_key(diclist[i], 'typeref')
-	res = extendnew(res, StructMembers(diclist[i]['typeref'], items[1 :], 1))
+        res = extendnew(res, StructMembers(diclist[i]['typeref'], items[1 :], 1))
       endif
 
       # For a variable use the command, which must be a search pattern that
       # shows the declaration of the variable.
       if diclist[i]['kind'] == 'v'
-	var line: string = diclist[i]['cmd']
-	if line[: 1] == '/^'
-	  var col: number = line->charidx(match(line, '\<' .. items[0] .. '\>'))
-	  res = extendnew(res, line[2 : col - 1]->Nextitem(items[1 :], 0, 1))
-	endif
+        var line: string = diclist[i]['cmd']
+        if line[: 1] == '/^'
+          var col: number = line->charidx(match(line, '\<' .. items[0] .. '\>'))
+          res = extendnew(res, line[2 : col - 1]->Nextitem(items[1 :], 0, 1))
+        endif
       endif
     endfor
   endif
@@ -313,13 +313,13 @@ def Dict2info(dict: dict<any>): string #{{{1
     info  ..= k .. repeat(' ', 10 - strlen(k))
     if k == 'cmd'
       info ..= matchstr(dict['cmd'], '/^\s*\zs.*\ze$/')
-	->substitute('\\\(.\)', '\1', 'g')
+        ->substitute('\\\(.\)', '\1', 'g')
     else
       var dictk: any = dict[k]
       if typename(dictk) != 'string'
-	info ..= string(dictk)
+        info ..= string(dictk)
       else
-	info ..= dictk
+        info ..= dictk
       endif
     endif
     info ..= "\n"
@@ -339,17 +339,17 @@ def ParseTagline(line: string): dict<any> #{{{1
     if l[2] =~ '^/'
       # Find end of cmd, it may contain Tabs.
       while n < len(l) && l[n] !~ '/;"$'
-	n += 1
-	d['cmd'] = d['cmd'] .. '  ' .. l[n]
+        n += 1
+        d['cmd'] = d['cmd'] .. '  ' .. l[n]
       endwhile
     endif
     for i in range(n + 1, len(l) - 1)
       if l[i] == 'file:'
-	d['static'] = 1
+        d['static'] = 1
       elseif l[i] !~ ':'
-	d['kind'] = l[i]
+        d['kind'] = l[i]
       else
-	d[matchstr(l[i], '[^:]*')] = matchstr(l[i], ':\zs.*')
+        d[matchstr(l[i], '[^:]*')] = matchstr(l[i], ':\zs.*')
       endif
     endfor
   endif
@@ -470,23 +470,23 @@ def Nextitem( #{{{1
 
       # New ctags has the "typeref" field.  Patched version has "typename".
       if has_key(item, 'typeref')
-	res = extendnew(res, StructMembers(item['typeref'], items, all))
-	continue
+        res = extendnew(res, StructMembers(item['typeref'], items, all))
+        continue
       endif
       if has_key(item, 'typename')
-	res = extendnew(res, StructMembers(item['typename'], items, all))
-	continue
+        res = extendnew(res, StructMembers(item['typename'], items, all))
+        continue
       endif
 
       # Only handle typedefs here.
       if item['kind'] != 't'
-	continue
+        continue
       endif
 
       # Skip matches local to another file.
       if has_key(item, 'static') && item['static']
-	&& bufnr('%') != bufnr(item['filename'])
-	continue
+        && bufnr('%') != bufnr(item['filename'])
+        continue
       endif
 
       # For old ctags we recognize "typedef struct aaa" and
@@ -494,27 +494,27 @@ def Nextitem( #{{{1
       var cmd: string = item['cmd']
       var ei: number = cmd->charidx(matchend(cmd, 'typedef\s\+'))
       if ei > 1
-	var cmdtokens: list<string> = cmd[ei :]->split('\s\+\|\<')
-	if len(cmdtokens) > 1
-	  if cmdtokens[0] == 'struct'
-	    || cmdtokens[0] == 'union'
-	    || cmdtokens[0] == 'class'
-	    var name: string = ''
-	    # Use the first identifier after the "struct" or "union"
-	    for ti in (len(cmdtokens) - 1)->range()
-	      if cmdtokens[ti] =~ '^\w'
-		name = cmdtokens[ti]
-		break
-	      endif
-	    endfor
-	    if name != ''
-	      res = extendnew(res, StructMembers(cmdtokens[0] .. ':' .. name, items, all))
-	    endif
-	  elseif depth < 10
-	    # Could be "typedef other_T some_T".
-	    res = extendnew(res, Nextitem(cmdtokens[0], items, depth + 1, all))
-	  endif
-	endif
+        var cmdtokens: list<string> = cmd[ei :]->split('\s\+\|\<')
+        if len(cmdtokens) > 1
+          if cmdtokens[0] == 'struct'
+            || cmdtokens[0] == 'union'
+            || cmdtokens[0] == 'class'
+            var name: string = ''
+            # Use the first identifier after the "struct" or "union"
+            for ti in (len(cmdtokens) - 1)->range()
+              if cmdtokens[ti] =~ '^\w'
+                name = cmdtokens[ti]
+                break
+              endif
+            endfor
+            if name != ''
+              res = extendnew(res, StructMembers(cmdtokens[0] .. ':' .. name, items, all))
+            endif
+          elseif depth < 10
+            # Could be "typedef other_T some_T".
+            res = extendnew(res, Nextitem(cmdtokens[0], items, depth + 1, all))
+          endif
+        endif
       endif
     endfor
     if len(res) > 0
@@ -561,11 +561,11 @@ def StructMembers( #{{{1
   if !cached
     while 1
       exe 'silent! keepj noautocmd ' .. n .. 'vimgrep '
-	.. '/\t' .. typename .. '\(\t\|$\)/j ' .. fnames
+        .. '/\t' .. typename .. '\(\t\|$\)/j ' .. fnames
 
       qflist = getqflist()
       if len(qflist) > 0 || match(typename, '::') < 0
-	break
+        break
       endif
       # No match for "struct:context::name", remove "context::" and try again.
       typename = typename->substitute(':[^:]*::', ':', '')
@@ -598,19 +598,19 @@ def StructMembers( #{{{1
     if memb =~ '^' .. target
       # Skip matches local to another file.
       if match(l['text'], "\tfile:") < 0
-	|| bufnr('%') == matchstr(l['text'], '\t\zs[^\t]*')->bufnr()
-	var item: dict<string> = {match: memb, tagline: l['text']}
+        || bufnr('%') == matchstr(l['text'], '\t\zs[^\t]*')->bufnr()
+        var item: dict<string> = {match: memb, tagline: l['text']}
 
-	# Add the kind of item.
-	var s: string = matchstr(l['text'], '\t\(kind:\)\=\zs\S\ze\(\t\|$\)')
-	if s != ''
-	  item['kind'] = s
-	  if s == 'f'
-	    item['match'] = memb .. '('
-	  endif
-	endif
+        # Add the kind of item.
+        var s: string = matchstr(l['text'], '\t\(kind:\)\=\zs\S\ze\(\t\|$\)')
+        if s != ''
+          item['kind'] = s
+          if s == 'f'
+            item['match'] = memb .. '('
+          endif
+        endif
 
-	add(matches, item)
+        add(matches, item)
       endif
     endif
   endfor
@@ -620,10 +620,10 @@ def StructMembers( #{{{1
     idx += 1
     while 1
       if idx >= len(items)
-	return matches  # No further items, return the result.
+        return matches  # No further items, return the result.
       endif
       if items[idx][0] != '['
-	break
+        break
       endif
       idx += 1
     endwhile
@@ -652,20 +652,20 @@ def SearchMembers( #{{{1
     var line: string
     if has_key(matches[i], 'dict')
       if has_key(matches[i]['dict'], 'typename')
-	typename = matches[i]['dict']['typename']
+        typename = matches[i]['dict']['typename']
       elseif has_key(matches[i]['dict'], 'typeref')
-	typename = matches[i]['dict']['typeref']
+        typename = matches[i]['dict']['typeref']
       endif
       line = "\t" .. matches[i]['dict']['cmd']
     else
       line = matches[i]['tagline']
       var e: number = line->charidx(matchend(line, '\ttypename:'))
       if e < 0
-	e = line->charidx(matchend(line, '\ttyperef:'))
+        e = line->charidx(matchend(line, '\ttyperef:'))
       endif
       if e > 0
-	# Use typename field
-	typename = matchstr(line, '[^\t]*', byteidx(line, e))
+        # Use typename field
+        typename = matchstr(line, '[^\t]*', byteidx(line, e))
       endif
     endif
 
@@ -675,11 +675,11 @@ def SearchMembers( #{{{1
       # Use the search command (the declaration itself).
       var s: number = line->charidx(match(line, '\t\zs/^'))
       if s > 0
-	var e: number = line
+        var e: number = line
           ->charidx(match(line, '\<' .. matches[i]['match'] .. '\>', byteidx(line, s)))
-	if e > 0
-	  res = extendnew(res, Nextitem(line[s : e - 1], items, 0, all))
-	endif
+        if e > 0
+          res = extendnew(res, Nextitem(line[s : e - 1], items, 0, all))
+        endif
       endif
     endif
     if all == 0 && len(res) > 0
