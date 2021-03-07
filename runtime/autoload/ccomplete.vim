@@ -659,13 +659,14 @@ def SearchMembers( #{{{1
       line = "\t" .. matches[i]['dict']['cmd']
     else
       line = matches[i]['tagline']
-      var e: number = line->charidx(matchend(line, '\ttypename:'))
+      var eb: number = matchend(line, '\ttypename:')
+      var e: number = charidx(line, eb)
       if e < 0
         e = line->charidx(matchend(line, '\ttyperef:'))
       endif
       if e > 0
         # Use typename field
-        typename = matchstr(line, '[^\t]*', byteidx(line, e))
+        typename = matchstr(line, '[^\t]*', eb)
       endif
     endif
 
@@ -673,10 +674,11 @@ def SearchMembers( #{{{1
       res = extendnew(res, StructMembers(typename, items, all))
     else
       # Use the search command (the declaration itself).
-      var s: number = line->charidx(match(line, '\t\zs/^'))
+      var sb: number = match(line, '\t\zs/^')
+      var s: number = charidx(line, sb)
       if s > 0
         var e: number = line
-          ->charidx(match(line, '\<' .. matches[i]['match'] .. '\>', byteidx(line, s)))
+          ->charidx(match(line, '\<' .. matches[i]['match'] .. '\>', sb))
         if e > 0
           res = extendnew(res, Nextitem(line[s : e - 1], items, 0, all))
         endif
