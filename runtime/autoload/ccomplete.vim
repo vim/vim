@@ -665,7 +665,7 @@ def SearchMembers( #{{{1
       endif
       if e > 0
 	# Use typename field
-	typename = matchstr(line, '[^\t]*', e)
+	typename = matchstr(line, '[^\t]*', byteidx(line, e))
       endif
     endif
 
@@ -675,7 +675,8 @@ def SearchMembers( #{{{1
       # Use the search command (the declaration itself).
       var s: number = line->charidx(match(line, '\t\zs/^'))
       if s > 0
-	var e: number = line->charidx(match(line, '\<' .. matches[i]['match'] .. '\>', s))
+	var e: number = line
+          ->charidx(match(line, '\<' .. matches[i]['match'] .. '\>', byteidx(line, s)))
 	if e > 0
 	  res = extendnew(res, Nextitem(line[s : e - 1], items, 0, all))
 	endif
