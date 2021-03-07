@@ -101,7 +101,7 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
       var n: number = 0
       s = e
       e += 1
-      while e < strlen(base)
+      while e < strchars(base, true)
         if base[e] == ']'
           if n == 0
             break
