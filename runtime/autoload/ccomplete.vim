@@ -662,7 +662,8 @@ def SearchMembers( #{{{1
       var eb: number = matchend(line, '\ttypename:')
       var e: number = charidx(line, eb)
       if e < 0
-        e = line->charidx(matchend(line, '\ttyperef:'))
+        eb = matchend(line, '\ttyperef:')
+        e = charidx(line, eb)
       endif
       if e > 0
         # Use typename field
