@@ -319,7 +319,8 @@ garbage_collect_scriptvars(int copyID)
 	{
 	    svar_T    *sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
 
-	    abort = abort || set_ref_in_item(sv->sv_tv, copyID, NULL, NULL);
+	    if (sv->sv_name != NULL)
+		abort = abort || set_ref_in_item(sv->sv_tv, copyID, NULL, NULL);
 	}
     }
 
