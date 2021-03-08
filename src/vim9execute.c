@@ -807,9 +807,12 @@ call_by_name(char_u *name, int argcount, ectx_T *ectx, isn_T *iptr)
 	    // types are correct.
 	    for (i = 0; i < argcount; ++i)
 	    {
-		type_T *type = i < ufunc->uf_args.ga_len
-				  ? ufunc->uf_arg_types[i] : ufunc->uf_va_type;
+		type_T *type = NULL;
 
+		if (i < ufunc->uf_args.ga_len)
+		    type = ufunc->uf_arg_types[i];
+		else if (ufunc->uf_va_type != NULL)
+		    type = ufunc->uf_va_type->tt_member;
 		if (type != NULL && check_typval_arg_type(type,
 						      &argv[i], i + 1) == FAIL)
 		    return FAIL;

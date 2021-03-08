@@ -3154,6 +3154,10 @@ def Test_vim9_autoload()
        return 'test'
      enddef
      g:some#name = 'name'
+
+     def some#varargs(a1: string, ...l: list<string>): string
+       return a1 .. l[0] .. l[1]
+     enddef
   END
 
   mkdir('Xdir/autoload', 'p')
@@ -3165,6 +3169,8 @@ def Test_vim9_autoload()
   assert_equal('name', g:some#name)
   g:some#other = 'other'
   assert_equal('other', g:some#other)
+
+  assert_equal('abc', some#varargs('a', 'b', 'c'))
 
   # upper case script name works
   lines =<< trim END
