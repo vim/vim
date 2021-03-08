@@ -1034,7 +1034,7 @@ win_line(
 		    p_extra_free = alloc(MAX_MCO * fdc + 1);
 		    if (p_extra_free != NULL)
 		    {
-			n_extra = fill_foldcolumn(p_extra_free, wp,
+			n_extra = (int)fill_foldcolumn(p_extra_free, wp,
 								  FALSE, lnum);
 			p_extra_free[n_extra] = NUL;
 			p_extra = p_extra_free;
