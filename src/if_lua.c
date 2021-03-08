@@ -568,6 +568,11 @@ luaV_pushtypval(lua_State *L, typval_T *tv)
 	case VAR_FUNC:
 	    luaV_pushfuncref(L, tv->vval.v_string);
 	    break;
+	case VAR_PARTIAL:
+	    // TODO: handle partial arguments
+	    luaV_pushfuncref(L, partial_name(tv->vval.v_partial));
+	    break;
+
 	case VAR_BLOB:
 	    luaV_pushblob(L, tv->vval.v_blob);
 	    break;

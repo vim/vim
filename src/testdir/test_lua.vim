@@ -121,6 +121,15 @@ func Test_lua_eval()
   lua v = nil
 endfunc
 
+" Test luaeval() with lambda
+func Test_luaeval_with_lambda()
+  lua function hello_luaeval_lambda(a, cb) return a .. cb() end
+  call assert_equal('helloworld',
+        \ luaeval('hello_luaeval_lambda(_A[1], _A[2])',
+        \         ['hello', {->'world'}]))
+  lua hello_luaeval_lambda = nil
+endfunc
+
 " Test vim.window()
 func Test_lua_window()
   e Xfoo2
