@@ -1459,7 +1459,7 @@ almosttheend:
     si = SCRIPT_ITEM(current_sctx.sc_sid);
     if (si->sn_save_cpo != NULL)
     {
-	set_option_value((char_u *)"cpo", 0L, si->sn_save_cpo, 0);
+	set_option_value((char_u *)"cpo", 0L, si->sn_save_cpo, OPT_NO_REDRAW);
 	VIM_CLEAR(si->sn_save_cpo);
     }
 

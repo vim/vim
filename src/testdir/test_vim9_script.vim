@@ -5,6 +5,7 @@ source term_util.vim
 source view_util.vim
 source vim9.vim
 source shared.vim
+source screendump.vim
 
 def Test_range_only()
   new
@@ -3336,6 +3337,36 @@ def Test_restoring_cpo()
 
   delete('XanotherScript')
   set cpo&vim
+enddef
+
+def Test_no_redraw_when_restoring_cpo()
+  CheckScreendump
+
+  var lines =<< trim END
+    vim9script
+    def script#func()
+    enddef
+  END
+  mkdir('Xdir/autoload', 'p')
+  writefile(lines, 'Xdir/autoload/script.vim')
+
+  lines =<< trim END
+      vim9script
+      set cpo+=M
+      exe 'set rtp^=' .. getcwd() .. '/Xdir'
+      au CmdlineEnter : ++once timer_start(0, () => script#func())
+      setline(1, 'some text')
+  END
+  writefile(lines, 'XTest_redraw_cpo')
+  var buf = RunVimInTerminal('-S XTest_redraw_cpo', {'rows': 6})
+  term_sendkeys(buf, "V:")
+  VerifyScreenDump(buf, 'Test_vim9_no_redraw', {})
+
+  # clean up
+  term_sendkeys(buf, "\<Esc>u")
+  StopVimInTerminal(buf)
+  delete('XTest_redraw_cpo')
+  delete('Xdir', 'rf')
 enddef
 
 
