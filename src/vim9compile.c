@@ -4450,7 +4450,7 @@ compile_expr6(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 }
 
 /*
- *      +	number addition
+ *      +	number addition or list/blobl concatenation
  *      -	number subtraction
  *      ..	string concatenation
  */
@@ -4532,6 +4532,7 @@ compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	else
 	{
 	    generate_ppconst(cctx, ppconst);
+	    ppconst->pp_is_const = FALSE;
 	    if (*op == '.')
 	    {
 		if (may_generate_2STRING(-2, cctx) == FAIL

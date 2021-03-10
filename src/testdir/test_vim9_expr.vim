@@ -1370,6 +1370,9 @@ def Test_expr5_list_add()
     dany[i] = i
   endfor
   assert_equal({a: 'a', 12: 12}, dany)
+
+  # result of glob() is "any", runtime type check
+  var sl: list<string> = glob('*.txt', false, true) + ['']
 enddef
 
 " test multiply, divide, modulo
