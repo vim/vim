@@ -1100,8 +1100,11 @@ swapfile_process_running(ZERO_BL *b0p, char_u *swap_fname UNUSED)
     // process can't be running now.
     if (mch_stat((char *)swap_fname, &st) != -1
 	    && sysinfo(&sinfo) == 0
-	    && st.st_mtime < time(NULL) - (override_sysinfo_uptime >= 0
-				     ? override_sysinfo_uptime : sinfo.uptime))
+	    && st.st_mtime < time(NULL) - (
+# ifdef FEAT_EVAL
+		override_sysinfo_uptime >= 0 ? override_sysinfo_uptime :
+# endif
+		sinfo.uptime))
 	return FALSE;
 #endif
     return mch_process_running(char_to_long(b0p->b0_pid));

@@ -459,6 +459,7 @@ NEW_TESTS_RES = \
 	test_quickfix.res \
 	test_quotestar.res \
 	test_random.res \
+	test_recover.res \
 	test_regex_char_classes.res \
 	test_registers.res \
 	test_rename.res \
