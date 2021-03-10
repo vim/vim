@@ -3339,35 +3339,37 @@ def Test_restoring_cpo()
   set cpo&vim
 enddef
 
-def Test_no_redraw_when_restoring_cpo()
+" Use :function so we can use Check commands
+func Test_no_redraw_when_restoring_cpo()
   CheckScreendump
+  CheckFeature timers
 
-  var lines =<< trim END
+  let lines =<< trim END
     vim9script
     def script#func()
     enddef
   END
-  mkdir('Xdir/autoload', 'p')
-  writefile(lines, 'Xdir/autoload/script.vim')
+  call mkdir('Xdir/autoload', 'p')
+  call writefile(lines, 'Xdir/autoload/script.vim')
 
-  lines =<< trim END
+  let lines =<< trim END
       vim9script
       set cpo+=M
       exe 'set rtp^=' .. getcwd() .. '/Xdir'
       au CmdlineEnter : ++once timer_start(0, () => script#func())
       setline(1, 'some text')
   END
-  writefile(lines, 'XTest_redraw_cpo')
-  var buf = RunVimInTerminal('-S XTest_redraw_cpo', {'rows': 6})
-  term_sendkeys(buf, "V:")
-  VerifyScreenDump(buf, 'Test_vim9_no_redraw', {})
+  call writefile(lines, 'XTest_redraw_cpo')
+  let buf = RunVimInTerminal('-S XTest_redraw_cpo', {'rows': 6})
+  call term_sendkeys(buf, "V:")
+  call VerifyScreenDump(buf, 'Test_vim9_no_redraw', {})
 
-  # clean up
-  term_sendkeys(buf, "\<Esc>u")
-  StopVimInTerminal(buf)
-  delete('XTest_redraw_cpo')
-  delete('Xdir', 'rf')
-enddef
+  " clean up
+  call term_sendkeys(buf, "\<Esc>u")
+  call StopVimInTerminal(buf)
+  call delete('XTest_redraw_cpo')
+  call delete('Xdir', 'rf')
+endfunc
 
 
 def Test_unset_any_variable()
