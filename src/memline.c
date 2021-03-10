@@ -1080,6 +1080,32 @@ add_b0_fenc(
     }
 }
 
+#if defined(HAVE_SYS_SYSINFO_H) && defined(HAVE_SYSINFO_UPTIME)
+# include <sys/sysinfo.h>
+#endif
+
+/*
+ * Return TRUE if the process with number "b0p->b0_pid" is still running.
+ * "swap_fname" is the name of the swap file, if it's from before a reboot then
+ * the result is FALSE;
+ */
+    static int
+swapfile_process_running(ZERO_BL *b0p, char_u *swap_fname UNUSED)
+{
+#ifdef HAVE_SYSINFO_UPTIME
+    stat_T	    st;
+    struct sysinfo  sinfo;
+
+    // If the system rebooted after when the swap file was written then the
+    // process can't be running now.
+    if (mch_stat((char *)swap_fname, &st) != -1
+	    && sysinfo(&sinfo) == 0
+	    && st.st_mtime < time(NULL) - (override_sysinfo_uptime >= 0
+				     ? override_sysinfo_uptime : sinfo.uptime))
+	return FALSE;
+#endif
+    return mch_process_running(char_to_long(b0p->b0_pid));
+}
 
 /*
  * Try to recover curbuf from the .swp file.
@@ -1692,7 +1718,7 @@ ml_recover(int checkext)
 	    msg(_("Recovery completed. Buffer contents equals file contents."));
 	msg_puts(_("\nYou may want to delete the .swp file now."));
 #if defined(UNIX) || defined(MSWIN)
-	if (mch_process_running(char_to_long(b0p->b0_pid)))
+	if (swapfile_process_running(b0p, fname_used))
 	{
 	    // Warn there could be an active Vim on the same file, the user may
 	    // want to kill it.
@@ -2170,7 +2196,7 @@ swapfile_info(char_u *fname)
 		    msg_puts(_("\n        process ID: "));
 		    msg_outnum(char_to_long(b0.b0_pid));
 #if defined(UNIX) || defined(MSWIN)
-		    if (mch_process_running(char_to_long(b0.b0_pid)))
+		    if (swapfile_process_running(&b0, fname))
 		    {
 			msg_puts(_(" (STILL RUNNING)"));
 # ifdef HAVE_PROCESS_STILL_RUNNING
@@ -2213,9 +2239,6 @@ swapfile_unchanged(char_u *fname)
     int		    fd;
     struct block0   b0;
     int		    ret = TRUE;
-#if defined(UNIX) || defined(MSWIN)
-    long	    pid;
-#endif
 
     // must be able to stat the swap file
     if (mch_stat((char *)fname, &st) == -1)
@@ -2258,8 +2281,7 @@ swapfile_unchanged(char_u *fname)
     }
 
     // process must be known and not be running
-    pid = char_to_long(b0.b0_pid);
-    if (pid == 0L || mch_process_running(pid))
+    if (char_to_long(b0.b0_pid) == 0L || swapfile_process_running(&b0, fname))
 	ret = FALSE;
 #endif
 

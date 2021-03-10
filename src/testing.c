@@ -970,6 +970,8 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	    ui_delay_for_testing = val;
 	else if (STRCMP(name, (char_u *)"term_props") == 0)
 	    reset_term_props_on_termresponse = val;
+	else if (STRCMP(name, (char_u *)"uptime") == 0)
+	    override_sysinfo_uptime = val;
 	else if (STRCMP(name, (char_u *)"ALL") == 0)
 	{
 	    disable_char_avail_for_testing = FALSE;
@@ -979,6 +981,7 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	    no_query_mouse_for_testing = FALSE;
 	    ui_delay_for_testing = 0;
 	    reset_term_props_on_termresponse = FALSE;
+	    override_sysinfo_uptime = -1;
 	    if (save_starting >= 0)
 	    {
 		starting = save_starting;

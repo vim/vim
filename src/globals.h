@@ -1860,6 +1860,7 @@ EXTERN int  nfa_fail_for_testing INIT(= FALSE);
 EXTERN int  no_query_mouse_for_testing INIT(= FALSE);
 EXTERN int  ui_delay_for_testing INIT(= 0);
 EXTERN int  reset_term_props_on_termresponse INIT(= FALSE);
+EXTERN long override_sysinfo_uptime INIT(= -1);
 
 EXTERN int  in_free_unref_items INIT(= FALSE);
 #endif

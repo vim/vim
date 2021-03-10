@@ -4095,6 +4095,20 @@ AC_TRY_COMPILE(
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SYSINFO_MEM_UNIT),
 	AC_MSG_RESULT(no))
 
+dnl struct sysinfo may have the uptime field or not
+AC_MSG_CHECKING(for sysinfo.uptime)
+AC_TRY_COMPILE(
+[#include <sys/types.h>
+#include <sys/sysinfo.h>],
+[	struct sysinfo sinfo;
+        long ut;
+
+	(void)sysinfo(&sinfo);
+	ut = sinfo.uptime;
+	],
+	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SYSINFO_UPTIME),
+	AC_MSG_RESULT(no))
+
 dnl sysconf() may exist but not support what we want to use
 AC_MSG_CHECKING(for sysconf)
 AC_TRY_COMPILE(
