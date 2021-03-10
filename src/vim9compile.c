@@ -4184,7 +4184,7 @@ compile_expr7(
 	 * "null" constant
 	 */
 	case 'n':   if (STRNCMP(*arg, "null", 4) == 0
-						   && !eval_isnamec((*arg)[5]))
+						   && !eval_isnamec((*arg)[4]))
 		    {
 			*arg += 4;
 			rettv->v_type = VAR_SPECIAL;
