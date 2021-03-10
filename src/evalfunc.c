@@ -1021,7 +1021,7 @@ static funcentry_T global_functions[] =
     {"getcwd",		0, 2, FEARG_1,	    NULL,
 			ret_string,	    f_getcwd},
     {"getenv",		1, 1, FEARG_1,	    NULL,
-			ret_string,	    f_getenv},
+			ret_any,	    f_getenv},
     {"getfontname",	0, 1, 0,	    NULL,
 			ret_string,	    f_getfontname},
     {"getfperm",	1, 1, FEARG_1,	    NULL,

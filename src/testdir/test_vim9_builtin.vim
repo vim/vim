@@ -472,6 +472,19 @@ def Test_getchar()
   getchar(true)->assert_equal(0)
 enddef
 
+def Test_getenv()
+  if getenv('does-not_exist') == ''
+    assert_report('getenv() should return null')
+  endif
+  if getenv('does-not_exist') == null
+  else
+    assert_report('getenv() should return null')
+  endif
+  $SOMEENVVAR = 'some'
+  assert_equal('some', getenv('SOMEENVVAR'))
+  unlet $SOMEENVVAR
+enddef
+
 def Test_getcompletion()
   set wildignore=*.vim,*~
   var l = getcompletion('run', 'file', true)
