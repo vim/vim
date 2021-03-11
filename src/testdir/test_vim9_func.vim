@@ -311,6 +311,14 @@ def Test_call_default_args()
   delfunc g:Func
   CheckScriptFailure(['def Func(arg: number = "text")', 'enddef', 'defcompile'], 'E1013: Argument 1: type mismatch, expected number but got string')
   delfunc g:Func
+
+  var lines =<< trim END
+      vim9script
+      def Func(a = b == 0 ? 1 : 2, b = 0)
+      enddef
+      defcompile
+  END
+  CheckScriptFailure(lines, 'E1001: Variable not found: b')
 enddef
 
 def FuncWithComment(  # comment

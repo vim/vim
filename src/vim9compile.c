@@ -8199,6 +8199,7 @@ compile_def_function(
     {
 	int	count = ufunc->uf_def_args.ga_len;
 	int	first_def_arg = ufunc->uf_args.ga_len - count;
+	int	uf_args_len = ufunc->uf_args.ga_len;
 	int	i;
 	char_u	*arg;
 	int	off = STACK_FRAME_SIZE + (ufunc->uf_va_name != NULL ? 1 : 0);
@@ -8211,16 +8212,24 @@ compile_def_function(
 	ufunc->uf_def_arg_idx = ALLOC_CLEAR_MULT(int, count + 1);
 	if (ufunc->uf_def_arg_idx == NULL)
 	    goto erret;
+	SOURCING_LNUM = 0;  // line number unknown
 	for (i = 0; i < count; ++i)
 	{
 	    garray_T	*stack = &cctx.ctx_type_stack;
 	    type_T	*val_type;
 	    int		arg_idx = first_def_arg + i;
 	    where_T	where;
+	    int		r;
+
+	    // Make sure later arguments are not found.
+	    ufunc->uf_args.ga_len = i;
 
 	    ufunc->uf_def_arg_idx[i] = instr->ga_len;
 	    arg = ((char_u **)(ufunc->uf_def_args.ga_data))[i];
-	    if (compile_expr0(&arg, &cctx) == FAIL)
+	    r = compile_expr0(&arg, &cctx);
+
+	    ufunc->uf_args.ga_len = uf_args_len;
+	    if (r == FAIL)
 		goto erret;
 
 	    // If no type specified use the type of the default value.
