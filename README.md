@@ -115,6 +115,9 @@ For the most recent information about sponsoring look on the Vim web site:
 If you would like to help making Vim better, see the [CONTRIBUTING.md](https://github.com/vim/vim/blob/master/CONTRIBUTING.md) file.
 
 
+## Code of Conduct ##
+Before making any contributions, see the [CODE_OF_CONDUCT.md](https://github.com/vim/vim/blob/master/CODE_OF_CONDUCT.md) file.
+
 ## Information ##
 
 The latest news about Vim can be found on the Vim home page:
