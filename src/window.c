@@ -5860,8 +5860,8 @@ win_setminheight(void)
     // loop until there is a 'winminheight' that is possible
     while (p_wmh > 0)
     {
-	room = Rows - p_ch - tabline_height();
-	needed = frame_minheight(topframe, NULL);
+	room = Rows - p_ch;
+	needed = min_rows() - 1;  // 1 was added for the cmdline
 	if (room >= needed)
 	    break;
 	--p_wmh;
