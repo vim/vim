@@ -1336,7 +1336,7 @@ do_doautocmd(
     void
 ex_doautoall(exarg_T *eap)
 {
-    int		retval;
+    int		retval = OK;
     aco_save_T	aco;
     buf_T	*buf;
     bufref_T	bufref;
@@ -1353,7 +1353,7 @@ ex_doautoall(exarg_T *eap)
      */
     FOR_ALL_BUFFERS(buf)
     {
-	if (buf->b_ml.ml_mfp != NULL)
+	if (buf->b_ml.ml_mfp != NULL && buf != curbuf)
 	{
 	    // find a window for this buffer and save some values
 	    aucmd_prepbuf(&aco, buf);
@@ -1374,9 +1374,18 @@ ex_doautoall(exarg_T *eap)
 	    aucmd_restbuf(&aco);
 
 	    // stop if there is some error or buffer was deleted
-	    if (retval == FAIL || !bufref_valid(&bufref))
+	    if (retval == FAIL || !bufref_valid(&bufref)) {
+		retval = FAIL;
 		break;
+	    }
 	}
+    }
+
+    // Execute autocommands for the current buffer at last.
+    if (retval == OK) {
+	do_doautocmd(arg, FALSE, &did_aucmd);
+	if (call_do_modelines && did_aucmd)
+	    do_modelines(0);
     }
 
     check_cursor();	    // just in case lines got deleted
