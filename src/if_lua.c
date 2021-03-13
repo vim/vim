@@ -2568,4 +2568,22 @@ luaV_call_lua_func_free(void *state)
     VIM_CLEAR(funcstate);
 }
 
+/*
+ * Get a typval_T item from a dictionary and copy it into "rettv".
+ * Returns FAIL if the entry doesn't exist or out of memory.
+ */
+    int
+lua_dict_get_tv(dict_T *d, char_u *key, typval_T *rettv)
+{
+    if (lua_init())
+    {
+	lua_getglobal(L, key);
+	if (luaV_totypval(L, -1, rettv) == FAIL)
+	    emsg("luaeval: cannot convert value");
+	else
+	    return OK;
+    }
+    return FAIL;
+}
+
 #endif

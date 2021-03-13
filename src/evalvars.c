@@ -149,6 +149,7 @@ static struct vimvar
     {VV_NAME("argv",		 VAR_LIST), VV_RO},
     {VV_NAME("collate",		 VAR_STRING), VV_RO},
     {VV_NAME("exiting",		 VAR_SPECIAL), VV_RO},
+    {VV_NAME("lua",		 VAR_DICT), VV_RO},
 };
 
 // shorthand
@@ -187,6 +188,9 @@ evalvars_init(void)
 {
     int		    i;
     struct vimvar   *p;
+#if defined(FEAT_LUA) || defined(PROTO)
+    dict_T	    *vlua;
+#endif
 
     init_var_dict(&globvardict, &globvars_var, VAR_DEF_SCOPE);
     init_var_dict(&vimvardict, &vimvars_var, VAR_SCOPE);
@@ -225,6 +229,14 @@ evalvars_init(void)
     set_vim_var_dict(VV_COMPLETED_ITEM, dict_alloc_lock(VAR_FIXED));
     set_vim_var_list(VV_ERRORS, list_alloc());
     set_vim_var_dict(VV_EVENT, dict_alloc_lock(VAR_FIXED));
+
+#if defined(FEAT_LUA) || defined(PROTO)
+    vlua = dict_alloc_lock(VAR_FIXED);
+    if (vlua != NULL) {
+	vlua->dv_flags |= DV_FLAGS_VLUA;
+	set_vim_var_dict(VV_LUA, vlua);
+    }
+#endif
 
     set_vim_var_nr(VV_FALSE, VVAL_FALSE);
     set_vim_var_nr(VV_TRUE, VVAL_TRUE);

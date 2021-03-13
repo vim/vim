@@ -44,6 +44,7 @@ dict_alloc(void)
 	d->dv_scope = 0;
 	d->dv_refcount = 0;
 	d->dv_copyID = 0;
+	d->dv_flags = 0;
     }
     return d;
 }
@@ -594,6 +595,21 @@ dict_len(dict_T *d)
     dictitem_T *
 dict_find(dict_T *d, char_u *key, int len)
 {
+#if defined(FEAT_LUA) || defined(PROTO)
+    dictitem_T	*item;
+    item = dictitem_alloc(key);
+    if (item == NULL)
+	return NULL;
+
+    if (d->dv_flags && d->dv_flags & DV_FLAGS_VLUA)
+    {
+	if (lua_dict_get_tv(d, key, &item->di_tv))
+	    return item;
+	else
+	    return NULL;
+    }
+#endif
+
 #define AKEYLEN 200
     char_u	buf[AKEYLEN];
     char_u	*akey;

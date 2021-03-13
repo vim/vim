@@ -9,4 +9,5 @@ void lua_window_free(win_T *o);
 void do_luaeval(char_u *str, typval_T *arg, typval_T *rettv);
 int set_ref_in_lua(int copyID);
 void update_package_paths_in_lua(void);
+int lua_dict_get_tv(dict_T *d, char_u *key, typval_T *rettv);
 /* vim: set ft=c : */

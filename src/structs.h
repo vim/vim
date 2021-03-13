@@ -1530,6 +1530,9 @@ struct dictitem16_S
 };
 typedef struct dictitem16_S dictitem16_T;
 
+// Flags for "dv_flags"
+#define DV_FLAGS_VLUA	   0x01	    // v:lua
+
 // Flags for "di_flags"
 #define DI_FLAGS_RO	   0x01	    // read-only variable
 #define DI_FLAGS_RO_SBX	   0x02	    // read-only in the sandbox
@@ -1552,6 +1555,7 @@ struct dictvar_S
     dict_T	*dv_copydict;	// copied dict used by deepcopy()
     dict_T	*dv_used_next;	// next dict in used dicts list
     dict_T	*dv_used_prev;	// previous dict in used dicts list
+    int		dv_flags;	// DV_FLAGS_ flags
 };
 
 /*
