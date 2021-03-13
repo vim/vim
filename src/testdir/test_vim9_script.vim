@@ -1031,13 +1031,17 @@ def Test_vim9_import_export()
     vim9script
     import * as Export from './Xexport.vim'
     def UseExport()
-      g:imported = Export.exported
+      g:imported_def = Export.exported
     enddef
+    g:imported_script = Export.exported
+    assert_equal(1, exists('Export.exported'))
+    assert_equal(0, exists('Export.notexported'))
     UseExport()
   END
   writefile(import_star_as_lines, 'Ximport.vim')
   source Ximport.vim
-  assert_equal(9883, g:imported)
+  assert_equal(9883, g:imported_def)
+  assert_equal(9883, g:imported_script)
 
   var import_star_as_lines_no_dot =<< trim END
     vim9script
@@ -1071,6 +1075,22 @@ def Test_vim9_import_export()
   END
   writefile(import_star_as_duplicated, 'Ximport.vim')
   assert_fails('source Ximport.vim', 'E1073:', '', 4, 'Ximport.vim')
+
+  var import_star_as_lines_script_no_dot =<< trim END
+    vim9script
+    import * as Export from './Xexport.vim'
+    g:imported_script = Export exported
+  END
+  writefile(import_star_as_lines_script_no_dot, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E1029:')
+
+  var import_star_as_lines_script_space_after_dot =<< trim END
+    vim9script
+    import * as Export from './Xexport.vim'
+    g:imported_script = Export. exported
+  END
+  writefile(import_star_as_lines_script_space_after_dot, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E1074:')
 
   var import_star_as_lines_missing_name =<< trim END
     vim9script

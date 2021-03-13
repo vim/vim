@@ -1370,7 +1370,7 @@ set_var_lval(
 	    // handle +=, -=, *=, /=, %= and .=
 	    di = NULL;
 	    if (eval_variable(lp->ll_name, (int)STRLEN(lp->ll_name),
-					     &tv, &di, TRUE, FALSE) == OK)
+					     &tv, &di, EVAL_VAR_VERBOSE) == OK)
 	    {
 		if ((di == NULL
 			 || (!var_check_ro(di->di_flags, lp->ll_name, FALSE)
@@ -3500,7 +3500,8 @@ eval7(
 		    ret = OK;
 		}
 		else
-		    ret = eval_variable(s, len, rettv, NULL, TRUE, FALSE);
+		    ret = eval_variable(s, len, rettv, NULL,
+					   EVAL_VAR_VERBOSE + EVAL_VAR_IMPORT);
 	    }
 	    else
 	    {
@@ -5758,6 +5759,63 @@ handle_subscript(
 	    *arg = eval_next_line(evalarg);
 	    p = *arg;
 	    check_white = FALSE;
+	}
+
+	if (rettv->v_type == VAR_ANY)
+	{
+	    char_u	*exp_name;
+	    int		cc;
+	    int		idx;
+	    ufunc_T	*ufunc;
+	    type_T	*type;
+
+	    // Found script from "import * as {name}", script item name must
+	    // follow.
+	    if (**arg != '.')
+	    {
+		if (verbose)
+		    semsg(_(e_expected_str_but_got_str), "'.'", *arg);
+		ret = FAIL;
+		break;
+	    }
+	    ++*arg;
+	    if (IS_WHITE_OR_NUL(**arg))
+	    {
+		if (verbose)
+		    emsg(_(e_no_white_space_allowed_after_dot));
+		ret = FAIL;
+		break;
+	    }
+
+	    // isolate the name
+	    exp_name = *arg;
+	    while (eval_isnamec(**arg))
+		++*arg;
+	    cc = **arg;
+	    **arg = NUL;
+
+	    idx = find_exported(rettv->vval.v_number, exp_name, &ufunc, &type,
+						  evalarg->eval_cctx, verbose);
+	    **arg = cc;
+	    *arg = skipwhite(*arg);
+
+	    if (idx < 0 && ufunc == NULL)
+	    {
+		ret = FAIL;
+		break;
+	    }
+	    if (idx >= 0)
+	    {
+		scriptitem_T    *si = SCRIPT_ITEM(rettv->vval.v_number);
+		svar_T		*sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
+
+		copy_tv(sv->sv_tv, rettv);
+	    }
+	    else
+	    {
+		rettv->v_type = VAR_FUNC;
+		rettv->vval.v_string = vim_strsave(ufunc->uf_name);
+	    }
 	}
 
 	if ((**arg == '(' && (!evaluate || rettv->v_type == VAR_FUNC

@@ -56,7 +56,7 @@ void set_reg_var(int c);
 char_u *v_exception(char_u *oldval);
 char_u *v_throwpoint(char_u *oldval);
 char_u *set_cmdarg(exarg_T *eap, char_u *oldarg);
-int eval_variable(char_u *name, int len, typval_T *rettv, dictitem_T **dip, int verbose, int no_autoload);
+int eval_variable(char_u *name, int len, typval_T *rettv, dictitem_T **dip, int flags);
 void check_vars(char_u *name, int len);
 dictitem_T *find_var(char_u *name, hashtab_T **htp, int no_autoload);
 dictitem_T *find_var_in_ht(hashtab_T *ht, int htname, char_u *varname, int no_autoload);

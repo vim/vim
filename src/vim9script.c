@@ -257,7 +257,8 @@ find_exported(
 	char_u	    *name,
 	ufunc_T	    **ufunc,
 	type_T	    **type,
-	cctx_T	    *cctx)
+	cctx_T	    *cctx,
+	int	    verbose)
 {
     int		idx = -1;
     svar_T	*sv;
@@ -271,7 +272,8 @@ find_exported(
 	sv = ((svar_T *)script->sn_var_vals.ga_data) + idx;
 	if (!sv->sv_export)
 	{
-	    semsg(_(e_item_not_exported_in_script_str), name);
+	    if (verbose)
+		semsg(_(e_item_not_exported_in_script_str), name);
 	    return -1;
 	}
 	*type = sv->sv_type;
@@ -301,7 +303,8 @@ find_exported(
 
 	if (*ufunc == NULL)
 	{
-	    semsg(_(e_item_not_found_in_script_str), name);
+	    if (verbose)
+		semsg(_(e_item_not_found_in_script_str), name);
 	    return -1;
 	}
     }
@@ -532,7 +535,7 @@ handle_import(
 	    ufunc_T	*ufunc = NULL;
 	    type_T	*type;
 
-	    idx = find_exported(sid, name, &ufunc, &type, cctx);
+	    idx = find_exported(sid, name, &ufunc, &type, cctx, TRUE);
 
 	    if (idx < 0 && ufunc == NULL)
 		goto erret;

@@ -2702,4 +2702,9 @@ long elapsed(DWORD start_tick);
 #define MCH_DELAY_IGNOREINPUT	1
 #define MCH_DELAY_SETTMODE	2
 
+// Flags for eval_variable().
+#define EVAL_VAR_VERBOSE	1   // may give error message
+#define EVAL_VAR_NOAUTOLOAD	2   // do not use script autoloading
+#define EVAL_VAR_IMPORT		4   // may return special variable for import
+
 #endif // VIM__H

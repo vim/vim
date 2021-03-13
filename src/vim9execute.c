@@ -1765,7 +1765,7 @@ call_def_function(
 			goto failed;
 		    SOURCING_LNUM = iptr->isn_lnum;
 		    if (eval_variable(name, (int)STRLEN(name),
-				  STACK_TV_BOT(0), NULL, TRUE, FALSE) == FAIL)
+			      STACK_TV_BOT(0), NULL, EVAL_VAR_VERBOSE) == FAIL)
 			goto on_error;
 		    ++ectx.ec_stack.ga_len;
 		}

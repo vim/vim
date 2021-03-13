@@ -1219,7 +1219,8 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 		arg = skipwhite(arg);
 		if (tofree != NULL)
 		    name = tofree;
-		if (eval_variable(name, len, &tv, NULL, TRUE, FALSE) == FAIL)
+		if (eval_variable(name, len, &tv, NULL,
+						     EVAL_VAR_VERBOSE) == FAIL)
 		    error = TRUE;
 		else
 		{
@@ -2539,6 +2540,8 @@ set_cmdarg(exarg_T *eap, char_u *oldarg)
 
 /*
  * Get the value of internal variable "name".
+ * If "flags" has EVAL_VAR_IMPORT may return a VAR_ANY with v_number set to the
+ * imported script ID.
  * Return OK or FAIL.  If OK is returned "rettv" must be cleared.
  */
     int
@@ -2547,12 +2550,11 @@ eval_variable(
     int		len,		// length of "name"
     typval_T	*rettv,		// NULL when only checking existence
     dictitem_T	**dip,		// non-NULL when typval's dict item is needed
-    int		verbose,	// may give error message
-    int		no_autoload)	// do not use script autoloading
+    int		flags)		// EVAL_VAR_ flags
 {
     int		ret = OK;
     typval_T	*tv = NULL;
-    int		foundFunc = FALSE;
+    int		found = FALSE;
     dictitem_T	*v;
     int		cc;
 
@@ -2561,7 +2563,7 @@ eval_variable(
     name[len] = NUL;
 
     // Check for user-defined variables.
-    v = find_var(name, NULL, no_autoload);
+    v = find_var(name, NULL, flags & EVAL_VAR_NOAUTOLOAD);
     if (v != NULL)
     {
 	tv = &v->di_tv;
@@ -2581,7 +2583,7 @@ eval_variable(
 	{
 	    if (import->imp_funcname != NULL)
 	    {
-		foundFunc = TRUE;
+		found = TRUE;
 		if (rettv != NULL)
 		{
 		    rettv->v_type = VAR_FUNC;
@@ -2590,8 +2592,21 @@ eval_variable(
 	    }
 	    else if (import->imp_flags & IMP_FLAGS_STAR)
 	    {
-		emsg("Sorry, 'import * as X' not implemented yet");
-		ret = FAIL;
+		if ((flags & EVAL_VAR_IMPORT) == 0)
+		{
+		    if (flags & EVAL_VAR_VERBOSE)
+			emsg(_(e_import_as_name_not_supported_here));
+		    ret = FAIL;
+		}
+		else
+		{
+		    if (rettv != NULL)
+		    {
+			rettv->v_type = VAR_ANY;
+			rettv->vval.v_number = import->imp_sid;
+		    }
+		    found = TRUE;
+		}
 	    }
 	    else
 	    {
@@ -2607,7 +2622,7 @@ eval_variable(
 
 	    if (ufunc != NULL)
 	    {
-		foundFunc = TRUE;
+		found = TRUE;
 		if (rettv != NULL)
 		{
 		    rettv->v_type = VAR_FUNC;
@@ -2617,11 +2632,11 @@ eval_variable(
 	}
     }
 
-    if (!foundFunc)
+    if (!found)
     {
 	if (tv == NULL)
 	{
-	    if (rettv != NULL && verbose)
+	    if (rettv != NULL && (flags & EVAL_VAR_VERBOSE))
 		semsg(_(e_undefined_variable_str), name);
 	    ret = FAIL;
 	}
@@ -3695,7 +3710,8 @@ var_exists(char_u *var)
     {
 	if (tofree != NULL)
 	    name = tofree;
-	n = (eval_variable(name, len, &tv, NULL, FALSE, TRUE) == OK);
+	n = (eval_variable(name, len, &tv, NULL,
+				 EVAL_VAR_NOAUTOLOAD + EVAL_VAR_IMPORT) == OK);
 	if (n)
 	{
 	    // handle d.key, l[idx], f(expr)

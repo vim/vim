@@ -7,7 +7,7 @@ void ex_export(exarg_T *eap);
 void free_imports_and_script_vars(int sid);
 void mark_imports_for_reload(int sid);
 void ex_import(exarg_T *eap);
-int find_exported(int sid, char_u *name, ufunc_T **ufunc, type_T **type, cctx_T *cctx);
+int find_exported(int sid, char_u *name, ufunc_T **ufunc, type_T **type, cctx_T *cctx, int verbose);
 char_u *handle_import(char_u *arg_start, garray_T *gap, int import_sid, evalarg_T *evalarg, void *cctx);
 char_u *vim9_declare_scriptvar(exarg_T *eap, char_u *arg);
 void update_vim9_script_var(int create, dictitem_T *di, int flags, typval_T *tv, type_T **type);
