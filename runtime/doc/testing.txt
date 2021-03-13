@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 8.2.  Last change: 2020 Dec 12
+*testing.txt*	For Vim version 8.2.  Last change: 2021 Mar 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -168,6 +168,7 @@ test_override({name}, {val})				*test_override()*
 			     wait time of up to 3 seconds for messages
 		term_props   reset all terminal properties when the version
 			     string is detected
+		uptime 	     overrules sysinfo.uptime
 		ALL	     clear all overrides ({val} is not used)
 
 		"starting" is to be used when a test should behave like

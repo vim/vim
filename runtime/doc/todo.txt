@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Feb 20
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Mar 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,13 +39,25 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 Vim9 - Make everything work:
-- Implement "export {one, two three}".
+- Does this work now: Implement using imported items at script level from
+  "import * as X" in
+- import of item that isn't exported: error should mention missing "export"?
+- no error for using :import in legacy script?
 - Disallow :open ?
+- Check: what if 'cpo' is intentionally changed in Vim9 script, does it get
+  restored at the end?
 - ISN_CHECKTYPE could use check_argtype()
 - Using a script variable inside a :def function doesn't work if the variable
   is inside a block, see Test_nested_function().  Should it work?
 - give error for variable name:
       var p = function('NoSuchFunc')
+- When indexing a string, should we include composing characters?  #6563
+	string[0] - first character including its composing characters.
+	string[0 : 0] - same
+    If you don't want that use strcharpart().
+    Also, add optional arg to strcharpart() to include composing chars, to
+    make it consistent with strchars().
+    Add strcharlen(), like strchars() but like skipcc is always set
 - Make closures work better:
   - Create closure in a loop.  Need to make a list of them.
 - If a :def function is called with a function reference, compile it to get
@@ -74,13 +86,11 @@ Vim9 - Make everything work:
 - make 0 == 'string' fail on the script level, like inside :def.
 - Check that when using a user function name without prefix, it does not find
   a global function.  Prefixing g: is required.
-- Need the equivalent of get_lval() and set_var_lval() to implement assignment
-  to nested list and dict members.
-    - Assignment to dict doesn't work:
-	  var ret: dict<string> = #{}
-	  ret[i] = string(i)
-    - Appending to dict item doesn't work:
-	var d[i] ..= value
+- Appending to dict item doesn't work in a :def function:
+      var d: dict<string> = {a: 'x'}
+      d['a'] ..= 'y'
+      d.a ..= 'y'
+   Test to be extended: Test_assign_dict_with_op()
 - Using ".." at script level doesn't convert arguments to a string.
 - Compile replacement of :s command: s/pat/\=expr/
 - Compile redir to local variable: var_redir_start().
@@ -89,8 +99,6 @@ Vim9 - Make everything work:
     islocked()
 - When evaluating constants for script variables, some functions could work:
     has('asdf'), len('string')
-- Implement "as Name" in "import Item as Name from ..."
-- Implement using imported items at script level from "import * as X" in
   eval_variable().  Should pass the ".xxx" that follows and return that.
 - Make "++nr" work.  "++g:count" doesn't work, thinks it is a range.
 - Reload: How to make sure type of script function hasn't changed?
@@ -102,6 +110,11 @@ Vim9 - Make everything work:
 - give an error for "echo Func()" if Func() does not return anything.
 - Using "windo echo expr" does not accept a line break inside "expr" (in a
   :def function and at script level in a not executed block). #7681
+- "assert_fails()" cannot access local variables.  Perhaps add this:
+	assertfails
+	   ... cmd ...
+	endassertfails /E99:.*cmd/
+  Similar to try/catch/endtry but without the boilerplate.
 
 Once Vim9 is stable:
 - Change the help to prefer Vim9 syntax where appropriate
@@ -184,6 +197,7 @@ Text properties:
 - Popup attached to text property stays visible when text is deleted with
   "cc". (#7737)  "C" works OK.  "dd" also files in a buffer with a single
   line.
+- Auto-indenting may cause highlighting to shift. (#7719)
 - "cc" does not call inserted_bytes(). (Axel Forsman, #5763)
 - Combining text property with 'cursorline' does not always work (Billie
   Cleek, #5533)
@@ -263,7 +277,9 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
-Valgrind reports memory leaks in test_options
+Include patch #6290: recognize shell directory change.
+
+Valgrind reports memory leaks in test_options.
 
 test_arglist func Test_all_not_allowed_from_cmdwin() hangs on MS-Windows.
 
@@ -277,6 +293,8 @@ Was originally written by Felipe Morales.
 
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)  Did patch 8.2.2379 help?
+Also, z= in German on a long word can take a very long time, but CTRL-C to
+interrupt does not work. Where to add ui_breakcheck()?
 
 Remove SPACE_IN_FILENAME ? It is only used for completion.
 
@@ -287,6 +305,8 @@ Add 'termguiattr' option, use "gui=" attributes in the terminal?  Would work
 with 'termguicolors'. #1740
 
 Patch for blockwise paste reporting changes: #6660.
+
+Patch to make fillchars global-local. (#5206)
 
 Missing filetype test for bashrc, PKGBUILD, etc.
 
@@ -305,6 +325,10 @@ Try setting a color then request the current color, like using t_u7.
 
 Regexp to search for duplicate lines does not work correctly:
 /\(^.*\n\)\1  (Chris Morgan, #6239)
+
+MS-Windows: when writing undo file the infostreams are copied in 
+mch_copy_file_attribute(), that seems unnecessary. (#7925)
+Add a flag to only copy attributes?
 
 Changing a capturing group to non-capturing changes the result: #7607
     :echo matchstr('aaa bbb', '\(.\{-1,}\>\)\|.*')
@@ -381,6 +405,10 @@ Running test_gui and test_gui_init with Motif sometimes kills the window
 manager.  Problem with Motif?
 
 Patch to add :argdedupe. (Nir Lichtman, #6235)
+
+When editing a file with ":edit" the output of :swapname is relative, while
+editing it with "vim file" it is absolute. (#355)
+Which one should it be?
 
 :map output does not clear the reset of the command line.
 (#5623, also see #5962)
@@ -1155,9 +1183,6 @@ timer expires.
 
 Rule to use "^" for statusline does not work if a space is defined with
 highlighting for both stl and stlnc.  Patch by Ken Hamada (itchyny, 2016 Dec 11)
-
-8   "stl" and "stlnc" in 'fillchars' don't work for multibyte characters.
-    Patch by Christian Wellenbrock, 2013 Jul 5.
 
 Using CTRL-G_U in InsertCharPre causes trouble for redo. (Israel Chauca
 Fuentes, 2017 Feb 12, #1470)

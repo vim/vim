@@ -60,8 +60,8 @@ To built Vim on Ubuntu from scratch on a clean system using git:
 	% sudo apt install libxt-dev
 	% make reconfig
 
-	Add GUI support (ignore compiler warnings):
-	% sudo apt install libgtk2.0-dev
+	Add GUI support:
+	% sudo apt install libgtk-3-dev
 	% make reconfig
 
 	Add Python 3 support:
@@ -134,8 +134,12 @@ These configure arguments can be used to select which GUI to use:
 --disable-motif-check
 --disable-athena-check
 
+This configure argument can be used to disable the GUI, even when the necessary
+files are found:
+--disable-gui
+
 --enable-gui defaults to "auto", so it will automatically look for a GUI (in
-the order of GTK, Motif, then Athena).  If one is found, then is uses it and
+the order of GTK, Motif, then Athena).  If one is found, then it is used and
 does not proceed to check any of the remaining ones.  Otherwise, it moves on
 to the next one.
 

@@ -3191,6 +3191,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :stselect	tagsrch.txt	/*:stselect*
 :su	change.txt	/*:su*
 :substitute	change.txt	/*:substitute*
+:substitute-repeat	change.txt	/*:substitute-repeat*
 :sun	windows.txt	/*:sun*
 :sunhide	windows.txt	/*:sunhide*
 :sunm	map.txt	/*:sunm*
@@ -6578,6 +6579,7 @@ ft-mail.vim	syntax.txt	/*ft-mail.vim*
 ft-make-syntax	syntax.txt	/*ft-make-syntax*
 ft-man-plugin	filetype.txt	/*ft-man-plugin*
 ft-maple-syntax	syntax.txt	/*ft-maple-syntax*
+ft-markdown-plugin	filetype.txt	/*ft-markdown-plugin*
 ft-masm-syntax	syntax.txt	/*ft-masm-syntax*
 ft-mathematica-syntax	syntax.txt	/*ft-mathematica-syntax*
 ft-matlab-indent	indent.txt	/*ft-matlab-indent*

@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Feb 23
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Mar 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -800,6 +800,8 @@ Patterns are used like 'magic' is set, unless explicitly overruled.
 The 'edcompatible' option value is not used.
 The 'gdefault' option value is not used.
 
+You may also find this wiki useful.  It was written by an early adoptor of
+Vim9 script: https://github.com/lacygoill/wiki/blob/master/vim/vim9.md
 
 ==============================================================================
 
@@ -1111,7 +1113,7 @@ Exporting an item can be written as: >
 	export class MyClass ...
 
 As this suggests, only constants, variables, `:def` functions and classes can
-be exported. {classes are not implemented yet}
+be exported. {not implemented yet: export class}
 
 							*E1042*
 `:export` can only be used in Vim9 script, at the script level.

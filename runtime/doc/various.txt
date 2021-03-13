@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.2.  Last change: 2021 Jan 26
+*various.txt*   For Vim version 8.2.  Last change: 2021 Mar 02
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -572,7 +572,7 @@ N  *+X11*		Unix only: can restore window title |X11|
 			it in / any non-ID character (see |'isident'|) can be
 			used, so long as it does not appear in {pat}.  Without
 			the enclosing character the pattern cannot include the
-			bar character.
+			bar character. 'ignorecase' is not used.
 
 			The pattern is matched against the relevant part of
 			the output, not necessarily the whole line. Only some
