@@ -1336,7 +1336,7 @@ do_doautocmd(
     void
 ex_doautoall(exarg_T *eap)
 {
-    int		retval;
+    int		retval = OK;
     aco_save_T	aco;
     buf_T	*buf;
     bufref_T	bufref;
@@ -1353,7 +1353,8 @@ ex_doautoall(exarg_T *eap)
      */
     FOR_ALL_BUFFERS(buf)
     {
-	if (buf->b_ml.ml_mfp != NULL)
+	// Only do loaded buffers and skip the current buffer, it's done last.
+	if (buf->b_ml.ml_mfp != NULL && buf != curbuf)
 	{
 	    // find a window for this buffer and save some values
 	    aucmd_prepbuf(&aco, buf);
@@ -1363,20 +1364,29 @@ ex_doautoall(exarg_T *eap)
 	    retval = do_doautocmd(arg, FALSE, &did_aucmd);
 
 	    if (call_do_modelines && did_aucmd)
-	    {
 		// Execute the modeline settings, but don't set window-local
 		// options if we are using the current window for another
 		// buffer.
 		do_modelines(curwin == aucmd_win ? OPT_NOWIN : 0);
-	    }
 
 	    // restore the current window
 	    aucmd_restbuf(&aco);
 
 	    // stop if there is some error or buffer was deleted
 	    if (retval == FAIL || !bufref_valid(&bufref))
+	    {
+		retval = FAIL;
 		break;
+	    }
 	}
+    }
+
+    // Execute autocommands for the current buffer last.
+    if (retval == OK)
+    {
+	do_doautocmd(arg, FALSE, &did_aucmd);
+	if (call_do_modelines && did_aucmd)
+	    do_modelines(0);
     }
 
     check_cursor();	    // just in case lines got deleted
@@ -2166,12 +2176,14 @@ apply_autocmds_group(
 	while (au_pending_free_buf != NULL)
 	{
 	    buf_T *b = au_pending_free_buf->b_next;
+
 	    vim_free(au_pending_free_buf);
 	    au_pending_free_buf = b;
 	}
 	while (au_pending_free_win != NULL)
 	{
 	    win_T *w = au_pending_free_win->w_next;
+
 	    vim_free(au_pending_free_win);
 	    au_pending_free_win = w;
 	}
