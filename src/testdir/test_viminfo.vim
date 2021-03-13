@@ -906,6 +906,10 @@ func Test_viminfo_oldfiles_newfile()
   call delete('Xviminfofile')
   call delete('Xviminfotest')
   call delete('Xnew-file.txt')
+
+  let v:oldfiles = test_null_list()
+  call assert_equal("\nNo old files", execute('oldfiles'))
+
   let &viminfo = save_viminfo
   let &viminfofile = save_viminfofile
 endfunc
