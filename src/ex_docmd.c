@@ -6609,6 +6609,10 @@ ex_open(exarg_T *eap)
     regmatch_T	regmatch;
     char_u	*p;
 
+#ifdef FEAT_EVAL
+    if (not_in_vim9(eap) == FAIL)
+	return;
+#endif
     curwin->w_cursor.lnum = eap->line2;
     beginline(BL_SOL | BL_FIX);
     if (*eap->arg == '/')
