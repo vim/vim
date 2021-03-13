@@ -13,7 +13,8 @@ SRC_ALL =	\
 		.hgignore \
 		.lgtm.yml \
 		.travis.yml \
-		appveyor.yml \
+		.appveyor.yml \
+		.codecov.yml \
 		ci/appveyor.bat \
 		ci/build-snd-dummy.sh \
 		ci/config.mk*.sed \
