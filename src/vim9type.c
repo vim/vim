@@ -919,6 +919,8 @@ equal_type(type_T *type1, type_T *type2)
 {
     int i;
 
+    if (type1 == NULL || type2 == NULL)
+	return FALSE;
     if (type1->tt_type != type2->tt_type)
 	return FALSE;
     switch (type1->tt_type)
@@ -969,12 +971,12 @@ common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap)
 
     // If either is VAR_UNKNOWN use the other type.  An empty list/dict has no
     // specific type.
-    if (type1->tt_type == VAR_UNKNOWN)
+    if (type1 == NULL || type1->tt_type == VAR_UNKNOWN)
     {
 	*dest = type2;
 	return;
     }
-    if (type2->tt_type == VAR_UNKNOWN)
+    if (type2 == NULL || type2->tt_type == VAR_UNKNOWN)
     {
 	*dest = type1;
 	return;
