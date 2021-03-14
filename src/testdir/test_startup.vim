@@ -410,6 +410,7 @@ endfunc
 
 " Test the --echo-wid argument (for GTK GUI only).
 func Test_echo_wid()
+  CheckCanRunGui
   CheckFeature gui_gtk
   CheckRunVimInTerminal
 
