@@ -1575,7 +1575,7 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_str2nr},
     {"strcharlen",	1, 1, FEARG_1,	    NULL,
 			ret_number,	    f_strcharlen},
-    {"strcharpart",	2, 3, FEARG_1,	    NULL,
+    {"strcharpart",	2, 4, FEARG_1,	    NULL,
 			ret_string,	    f_strcharpart},
     {"strchars",	1, 2, FEARG_1,	    NULL,
 			ret_number,	    f_strchars},
@@ -9316,6 +9316,7 @@ f_strcharpart(typval_T *argvars, typval_T *rettv)
     int		nchar;
     int		nbyte = 0;
     int		charlen;
+    int		skipcc = FALSE;
     int		len = 0;
     int		slen;
     int		error = FALSE;
@@ -9326,10 +9327,24 @@ f_strcharpart(typval_T *argvars, typval_T *rettv)
     nchar = (int)tv_get_number_chk(&argvars[1], &error);
     if (!error)
     {
+	if (argvars[2].v_type != VAR_UNKNOWN
+					   && argvars[3].v_type != VAR_UNKNOWN)
+	{
+	    skipcc = tv_get_bool(&argvars[3]);
+	    if (skipcc < 0 || skipcc > 1)
+	    {
+		semsg(_(e_using_number_as_bool_nr), skipcc);
+		return;
+	    }
+	}
+
 	if (nchar > 0)
 	    while (nchar > 0 && nbyte < slen)
 	    {
-		nbyte += MB_CPTR2LEN(p + nbyte);
+		if (skipcc)
+		    nbyte += mb_ptr2len(p + nbyte);
+		else
+		    nbyte += MB_CPTR2LEN(p + nbyte);
 		--nchar;
 	    }
 	else
@@ -9344,7 +9359,12 @@ f_strcharpart(typval_T *argvars, typval_T *rettv)
 		if (off < 0)
 		    len += 1;
 		else
-		    len += MB_CPTR2LEN(p + off);
+		{
+		    if (skipcc)
+			len += mb_ptr2len(p + off);
+		    else
+			len += MB_CPTR2LEN(p + off);
+		}
 		--charlen;
 	    }
 	}
