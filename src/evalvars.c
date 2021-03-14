@@ -2805,12 +2805,15 @@ get_script_local_ht(void)
 
 /*
  * Look for "name[len]" in script-local variables and functions.
+ * When "cmd" is TRUE it must look like a command, a function must be followed
+ * by "(" or "->".
  * Return OK when found, FAIL when not found.
  */
     int
 lookup_scriptitem(
 	char_u	*name,
 	size_t	len,
+	int	cmd,
 	cctx_T	*dummy UNUSED)
 {
     hashtab_T	*ht = get_script_local_ht();
@@ -2845,19 +2848,26 @@ lookup_scriptitem(
     if (p != buffer)
 	vim_free(p);
 
+    // Find a function, so that a following "->" works.
+    // When used as a command require "(" or "->" to follow, "Cmd" is a user
+    // command while "Cmd()" is a function call.
     if (res != OK)
     {
-	// Find a function, so that a following "->" works.  Skip "g:" before a
-	// function name.
-	// Do not check for an internal function, since it might also be a
-	// valid command, such as ":split" versuse "split()".
-	if (name[0] == 'g' && name[1] == ':')
+	p = skipwhite(name + len);
+
+	if (!cmd || name[len] == '(' || (p[0] == '-' && p[1] == '>'))
 	{
-	    is_global = TRUE;
-	    fname = name + 2;
+	    // Do not check for an internal function, since it might also be a
+	    // valid command, such as ":split" versus "split()".
+	    // Skip "g:" before a function name.
+	    if (name[0] == 'g' && name[1] == ':')
+	    {
+		is_global = TRUE;
+		fname = name + 2;
+	    }
+	    if (find_func(fname, is_global, NULL) != NULL)
+		res = OK;
 	}
-	if (find_func(fname, is_global, NULL) != NULL)
-	    res = OK;
     }
 
     return res;
@@ -3288,7 +3298,7 @@ set_var_const(
     {
 	// Item not found, check if a function already exists.
 	if (is_script_local && (flags & (ASSIGN_NO_DECL | ASSIGN_DECL)) == 0
-			  && lookup_scriptitem(name, STRLEN(name), NULL) == OK)
+		   && lookup_scriptitem(name, STRLEN(name), FALSE, NULL) == OK)
 	{
 	    semsg(_(e_redefining_script_item_str), name);
 	    goto failed;
