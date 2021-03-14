@@ -109,9 +109,8 @@ func Test_pack_in_rtp_when_plugins_run()
 endfunc
 
 func Test_help_arg()
-  if !has('unix') && has('gui_running')
-    throw 'Skipped: does not work with gvim on MS-Windows'
-  endif
+  CheckNotMSWindows
+
   if RunVim([], [], '--help >Xtestout')
     let lines = readfile('Xtestout')
     call assert_true(len(lines) > 20)
@@ -412,17 +411,20 @@ endfunc
 func Test_echo_wid()
   CheckCanRunGui
   CheckFeature gui_gtk
-  CheckRunVimInTerminal
 
-  let buf = RunVimInTerminal('-g --echo-wid -cq', #{rows: 10, wait_for_ruler: 0})
-  call WaitForAssert({-> assert_match('WID: \d\+', Term_getlines(buf, range(1, 10)))})
+  if RunVim([], [], '-g --echo-wid -cq >Xtest_echo_wid')
+    let lines = readfile('Xtest_echo_wid')
+    call assert_equal(1, len(lines))
+    call assert_match('^WID: \d\+$', lines[0])
+  endif
 
-  call StopVimInTerminal(buf)
+  call delete('Xtest_echo_wid')
 endfunction
 
 " Test the -reverse and +reverse arguments (for GUI only).
 func Test_reverse()
   CheckCanRunGui
+  CheckNotMSWindows
 
   let after =<< trim [CODE]
     call writefile([&background], "Xtest_reverse")
@@ -443,6 +445,7 @@ endfunc
 " Test the -background and -foreground arguments (for GUI only).
 func Test_background_foreground()
   CheckCanRunGui
+  CheckNotMSWindows
 
   " Is there a better way to check the effect of -background & -foreground
   " other than merely looking at &background (dark or light)?
@@ -465,6 +468,7 @@ endfunc
 " Test the -font argument (for GUI only).
 func Test_font()
   CheckCanRunGui
+  CheckNotMSWindows
 
   if has('gui_gtk')
     let font = 'Courier 14'
@@ -478,7 +482,8 @@ func Test_font()
     call writefile([&guifont], "Xtest_font")
     qall
   [CODE]
-  if RunVim([], after, '-f -g -font "' .. font .. '"')
+
+  if RunVim([], after, '--nofork -g -font "' .. font .. '"')
     let lines = readfile('Xtest_font')
     call assert_equal([font], lines)
   endif
@@ -489,6 +494,7 @@ endfunc
 " Test the -geometry argument (for GUI only).
 func Test_geometry()
   CheckCanRunGui
+  CheckNotMSWindows
 
   if has('gui_motif') || has('gui_athena')
     " FIXME: With GUI Athena or Motif, the value of getwinposx(),
@@ -520,6 +526,7 @@ endfunc
 " Test the -iconic argument (for GUI only).
 func Test_iconic()
   CheckCanRunGui
+  CheckNotMSWindows
 
   call RunVim([], [], '-f -g -iconic -cq')
 
