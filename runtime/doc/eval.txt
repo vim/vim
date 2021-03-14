@@ -2923,10 +2923,11 @@ str2list({expr} [, {utf8}])	List	convert each character of {expr} to
 					ASCII/UTF8 value
 str2nr({expr} [, {base} [, {quoted}]])
 				Number	convert String to Number
+strcharlen({expr})		Number	character length of the String {expr}
 strcharpart({str}, {start} [, {len}])
 				String	{len} characters of {str} at
 					character {start}
-strchars({expr} [, {skipcc}])	Number	character length of the String {expr}
+strchars({expr} [, {skipcc}])	Number	character count of the String {expr}
 strdisplaywidth({expr} [, {col}]) Number display length of the String {expr}
 strftime({format} [, {time}])	String	format time with a specified format
 strgetchar({str}, {index})	Number	get char {index} from {str}
@@ -10276,6 +10277,19 @@ str2nr({expr} [, {base} [, {quoted}]])				*str2nr()*
 		Can also be used as a |method|: >
 			GetText()->str2nr()
 
+
+strcharlen({expr})					*strcharlen()*
+		The result is a Number, which is the number of characters
+		in String {expr}.  Composing characters are ignored.
+		|strchars()| can count the number of characters, counting
+		composing characters separately.
+
+		Also see |strlen()|, |strdisplaywidth()| and |strwidth()|.
+
+		Can also be used as a |method|: >
+			GetText()->strcharlen()
+
+
 strcharpart({src}, {start} [, {len}])			*strcharpart()*
 		Like |strpart()| but using character index and length instead
 		of byte index and length.  Composing characters are counted
@@ -10288,12 +10302,15 @@ strcharpart({src}, {start} [, {len}])			*strcharpart()*
 		Can also be used as a |method|: >
 			GetText()->strcharpart(5)
 
+
 strchars({expr} [, {skipcc}])					*strchars()*
 		The result is a Number, which is the number of characters
 		in String {expr}.
 		When {skipcc} is omitted or zero, composing characters are
 		counted separately.
 		When {skipcc} set to 1, Composing characters are ignored.
+		|strcharlen()| does the same.
+
 		Also see |strlen()|, |strdisplaywidth()| and |strwidth()|.
 
 		{skipcc} is only available after 7.4.755.  For backward
