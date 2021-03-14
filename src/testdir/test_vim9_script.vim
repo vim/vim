@@ -592,6 +592,31 @@ def Test_try_catch_throw()
   assert_equal(4, ReturnInFinally())
 enddef
 
+" :while at the very start of a function that :continue jumps to
+def TryContinueFunc()
+ while g:Count < 2
+   g:sequence ..= 't'
+    try
+      echoerr 'Test'
+    catch
+      g:Count += 1
+      g:sequence ..= 'c'
+      continue
+    endtry
+    g:sequence ..= 'e'
+    g:Count += 1
+  endwhile
+enddef
+
+def Test_continue_in_try_in_while()
+  g:Count = 0
+  g:sequence = ''
+  TryContinueFunc()
+  assert_equal('tctc', g:sequence)
+  unlet g:Count
+  unlet g:sequence
+enddef
+
 def Test_nocatch_return_in_try()
   # return in try block returns normally
   def ReturnInTry(): string
