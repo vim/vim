@@ -2367,6 +2367,35 @@ def Test_expr7_any_index_slice()
     assert_equal('abcd', g:teststring[: -3])
     assert_equal('', g:teststring[: -9])
 
+    # composing characters are included
+    g:teststring = 'àéû'
+    assert_equal('à', g:teststring[0])
+    assert_equal('é', g:teststring[1])
+    assert_equal('û', g:teststring[2])
+    assert_equal('', g:teststring[3])
+    assert_equal('', g:teststring[4])
+
+    assert_equal('û', g:teststring[-1])
+    assert_equal('é', g:teststring[-2])
+    assert_equal('à', g:teststring[-3])
+    assert_equal('', g:teststring[-4])
+    assert_equal('', g:teststring[-5])
+
+    assert_equal('à', g:teststring[0 : 0])
+    assert_equal('é', g:teststring[1 : 1])
+    assert_equal('àé', g:teststring[0 : 1])
+    assert_equal('àéû', g:teststring[0 : -1])
+    assert_equal('àé', g:teststring[0 : -2])
+    assert_equal('à', g:teststring[0 : -3])
+    assert_equal('', g:teststring[0 : -4])
+    assert_equal('', g:teststring[0 : -5])
+    assert_equal('àéû', g:teststring[ : ])
+    assert_equal('àéû', g:teststring[0 : ])
+    assert_equal('éû', g:teststring[1 : ])
+    assert_equal('û', g:teststring[2 : ])
+    assert_equal('', g:teststring[3 : ])
+    assert_equal('', g:teststring[4 : ])
+
     # blob index cannot be out of range
     g:testblob = 0z01ab
     assert_equal(0x01, g:testblob[0])
