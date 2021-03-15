@@ -11849,6 +11849,8 @@ gui_haiku		Compiled with Haiku GUI.
 gui_mac			Compiled with Macintosh GUI.
 gui_motif		Compiled with Motif GUI.
 gui_photon		Compiled with Photon GUI.
+gui_x11			Compiled with X11 (currently for Athena GUI and Motif
+			GUI).
 gui_running		Vim is running in the GUI, or it will start soon.
 gui_win32		Compiled with MS Windows Win32 GUI.
 gui_win32s		idem, and Win32s system being used (Windows 3.1)
