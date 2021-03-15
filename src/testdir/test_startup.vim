@@ -426,7 +426,7 @@ endfunction
 " Test the -reverse and +reverse arguments (for GUI only).
 func Test_reverse()
   CheckCanRunGui
-  CheckNotMSWindows
+  CheckAnyOf Feature:gui_gtk Feature:gui_x11
 
   let after =<< trim [CODE]
     call writefile([&background], "Xtest_reverse")
@@ -447,7 +447,7 @@ endfunc
 " Test the -background and -foreground arguments (for GUI only).
 func Test_background_foreground()
   CheckCanRunGui
-  CheckNotMSWindows
+  CheckAnyOf Feature:gui_gtk Feature:gui_x11
 
   " Is there a better way to check the effect of -background & -foreground
   " other than merely looking at &background (dark or light)?
@@ -496,7 +496,7 @@ endfunc
 " Test the -geometry argument (for GUI only).
 func Test_geometry()
   CheckCanRunGui
-  CheckNotMSWindows
+  CheckAnyOf Feature:gui_gtk Feature:gui_x11
 
   if has('gui_motif') || has('gui_athena')
     " FIXME: With GUI Athena or Motif, the value of getwinposx(),
@@ -528,7 +528,7 @@ endfunc
 " Test the -iconic argument (for GUI only).
 func Test_iconic()
   CheckCanRunGui
-  CheckNotMSWindows
+  CheckAnyOf Feature:gui_gtk Feature:gui_x11
 
   call RunVim([], [], '-f -g -iconic -cq')
 
