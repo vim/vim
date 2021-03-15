@@ -4926,6 +4926,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"gui_x11",
+#ifdef FEAT_GUI_X11
+		1
+#else
+		0
+#endif
+		},
 	{"gui_win32",
 #ifdef FEAT_GUI_MSWIN
 		1
