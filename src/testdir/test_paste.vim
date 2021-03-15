@@ -149,4 +149,18 @@ func Test_xrestore()
   bwipe!
 endfunc
 
+" Test for 'pastetoggle'
+func Test_pastetoggle()
+  new
+  set pastetoggle=<F4>
+  set nopaste
+  call feedkeys("iHello\<F4>", 'xt')
+  call assert_true(&paste)
+  call feedkeys("i\<F4>", 'xt')
+  call assert_false(&paste)
+  call assert_equal('Hello', getline(1))
+  set pastetoggle&
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
