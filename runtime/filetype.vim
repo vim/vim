@@ -790,6 +790,10 @@ au BufNewFile,BufRead *.hb			setf hb
 " Httest
 au BufNewFile,BufRead *.htt,*.htb		setf httest
 
+" i3. The file is actually called 'config', these are just extension
+" suggestions for a dotfile repository.
+au BufNewFile,BufRead .i3.config,i3.config,*.i3config,*.i3.config setf i3config
+
 " Icon
 au BufNewFile,BufRead *.icn			setf icon
 
