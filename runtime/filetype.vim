@@ -790,14 +790,20 @@ au BufNewFile,BufRead *.hb			setf hb
 " Httest
 au BufNewFile,BufRead *.htt,*.htb		setf httest
 
-" i3
+" i3 (and sway)
 au BufNewFile,BufRead $HOME/.config/i3/config			setf i3config
+au BufNewFile,BufRead $HOME/.config/sway/config			setf i3config
 au BufNewFile,BufRead $HOME/.i3/config				setf i3config
+au BufNewFile,BufRead $HOME/.sway/config			setf i3config
 au BufNewFile,BufRead /etc/xdg/i3/config 			setf i3config
 au BufNewFile,BufRead /etc/i3/config				setf i3config
+au BufNewFile,BufRead /etc/sway/config				setf i3config
+
 if !empty($XDG_CONFIG_HOME)
   au BufNewFile,BufRead $XDG_CONFIG_HOME/i3/config		setf i3config
+  au BufNewFile,BufRead $XDG_CONFIG_HOME/sway/config		setf i3config
 endif
+
 if !empty($XDG_CONFIG_DIRS)
   au BufNewFile,BufRead $XDG_CONFIG_DIRS/i3/config		setf i3config
 endif
