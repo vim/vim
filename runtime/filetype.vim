@@ -790,9 +790,19 @@ au BufNewFile,BufRead *.hb			setf hb
 " Httest
 au BufNewFile,BufRead *.htt,*.htb		setf httest
 
-" i3. The file is actually called 'config', these are just extension
-" suggestions for a dotfile repository.
-au BufNewFile,BufRead .i3.config,i3.config,*.i3config,*.i3.config setf i3config
+" i3
+au BufNewFile,BufRead $HOME/.config/i3/config			setf i3config
+au BufNewFile,BufRead $HOME/.i3/config				setf i3config
+au BufNewFile,BufRead /etc/xdg/i3/config 			setf i3config
+au BufNewFile,BufRead /etc/i3/config				setf i3config
+if !empty($XDG_CONFIG_HOME)
+  au BufNewFile,BufRead $XDG_CONFIG_HOME/i3/config		setf i3config
+endif
+if !empty($XDG_CONFIG_DIRS)
+  au BufNewFile,BufRead $XDG_CONFIG_DIRS/i3/config		setf i3config
+endif
+
+
 
 " Icon
 au BufNewFile,BufRead *.icn			setf icon
