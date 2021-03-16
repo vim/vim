@@ -109,9 +109,7 @@ func Test_pack_in_rtp_when_plugins_run()
 endfunc
 
 func Test_help_arg()
-  if !has('unix') && has('gui_running')
-    throw 'Skipped: does not work with gvim on MS-Windows'
-  endif
+  CheckAnyOf Unix NotGui
 
   if RunVim([], [], '--help >Xtestout')
     let lines = readfile('Xtestout')
