@@ -5183,6 +5183,21 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 	r = eap->skip ? OK : FAIL;
 	goto theend;
     }
+
+    // copy over the block scope IDs before compiling
+    if (!is_global && cctx->ctx_ufunc->uf_block_depth > 0)
+    {
+	int block_depth = cctx->ctx_ufunc->uf_block_depth;
+
+	ufunc->uf_block_ids = ALLOC_MULT(int, block_depth);
+	if (ufunc->uf_block_ids != NULL)
+	{
+	    mch_memmove(ufunc->uf_block_ids, cctx->ctx_ufunc->uf_block_ids,
+						    sizeof(int) * block_depth);
+	    ufunc->uf_block_depth = block_depth;
+	}
+    }
+
     if (func_needs_compiling(ufunc, PROFILING(ufunc))
 	    && compile_def_function(ufunc, TRUE, PROFILING(ufunc), cctx)
 								       == FAIL)
@@ -5209,25 +5224,12 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 	// Define a local variable for the function reference.
 	lvar_T	*lvar = reserve_local(cctx, name_start, name_end - name_start,
 						    TRUE, ufunc->uf_func_type);
-	int block_depth = cctx->ctx_ufunc->uf_block_depth;
 
 	if (lvar == NULL)
 	    goto theend;
 	if (generate_FUNCREF(cctx, ufunc) == FAIL)
 	    goto theend;
 	r = generate_STORE(cctx, ISN_STORE, lvar->lv_idx, NULL);
-
-	// copy over the block scope IDs
-	if (block_depth > 0)
-	{
-	    ufunc->uf_block_ids = ALLOC_MULT(int, block_depth);
-	    if (ufunc->uf_block_ids != NULL)
-	    {
-		mch_memmove(ufunc->uf_block_ids, cctx->ctx_ufunc->uf_block_ids,
-						    sizeof(int) * block_depth);
-		ufunc->uf_block_depth = block_depth;
-	    }
-	}
     }
     // TODO: warning for trailing text?
 

@@ -393,11 +393,29 @@ def Test_nested_function()
   CheckDefFailure(lines, 'E1117:')
 
   # nested function inside conditional
-  # TODO: should it work when "thecount" is inside the "if"?
   lines =<< trim END
       vim9script
       var thecount = 0
       if true
+        def Test(): number
+          def TheFunc(): number
+            thecount += 1
+            return thecount
+          enddef
+          return TheFunc()
+        enddef
+      endif
+      defcompile
+      assert_equal(1, Test())
+      assert_equal(2, Test())
+  END
+  CheckScriptSuccess(lines)
+
+  # also works when "thecount" is inside the "if" block
+  lines =<< trim END
+      vim9script
+      if true
+        var thecount = 0
         def Test(): number
           def TheFunc(): number
             thecount += 1

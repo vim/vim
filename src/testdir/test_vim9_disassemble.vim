@@ -947,7 +947,7 @@ def NestedOuter()
   enddef
 enddef
 
-def Test_nested_func()
+def Test_disassemble_nested_func()
    var instr = execute('disassemble NestedOuter')
    assert_match('NestedOuter\_s*' ..
         'def g:Inner()\_s*' ..
@@ -965,7 +965,7 @@ def NestedDefList()
   def /Info/
 enddef
 
-def Test_nested_def_list()
+def Test_disassemble_nested_def_list()
    var instr = execute('disassemble NestedDefList')
    assert_match('NestedDefList\_s*' ..
         'def\_s*' ..
