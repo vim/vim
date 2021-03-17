@@ -1575,7 +1575,7 @@ def Test_script_reload_from_function()
       delcommand CallFunc
       command CallFunc Func()
       def Func()
-        so /tmp/test.vim
+        so XreloadFunc.vim
         g:didTheFunc = 1
       enddef
   END
