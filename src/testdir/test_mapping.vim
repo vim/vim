@@ -504,7 +504,7 @@ func Test_expr_map_gets_cursor()
   bwipe!
   unlet g:exprLine
   unlet g:exprCol
-  delfunc ExprMapped
+  delfunc StoreColumn
   nunmap x
   nunmap !
 endfunc
