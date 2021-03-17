@@ -1082,7 +1082,9 @@ A side effect of `:vim9script` is that the 'cpoptions' option is set to the
 Vim default value, like with: >
 	:set cpo&vim
 One of the effects is that |line-continuation| is always enabled.
-The original value of 'cpoptions' is restored at the end of the script.
+The original value of 'cpoptions' is restored at the end of the script, while
+flags added or removed in the script are also added to or removed from the
+original value to get the same effect.  The order of flags may change.
 
 							*vim9-mix*
 There is one way to use both legacy and Vim9 syntax in one script file: >

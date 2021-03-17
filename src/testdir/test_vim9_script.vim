@@ -1250,17 +1250,23 @@ def Test_vim9_import_export()
   delete('Xexport.vim')
 
   # Check that in a Vim9 script 'cpo' is set to the Vim default.
-  set cpo&vi
-  var cpo_before = &cpo
+  # Flags added or removed are also applied to the restored value.
+  set cpo=abcd
   var lines =<< trim END
     vim9script
     g:cpo_in_vim9script = &cpo
+    set cpo+=f
+    set cpo-=c
+    g:cpo_after_vim9script = &cpo
   END
   writefile(lines, 'Xvim9_script')
   source Xvim9_script
-  assert_equal(cpo_before, &cpo)
+  assert_equal('fabd', &cpo)
   set cpo&vim
   assert_equal(&cpo, g:cpo_in_vim9script)
+  var newcpo = substitute(&cpo, 'c', '', '') .. 'f'
+  assert_equal(newcpo, g:cpo_after_vim9script)
+
   delete('Xvim9_script')
 enddef
 
