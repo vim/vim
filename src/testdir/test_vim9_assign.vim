@@ -72,6 +72,13 @@ def Test_assignment()
   CheckDefFailure(['var lambda = () => "lambda"'], 'E704:')
   CheckScriptFailure(['var x = "x"'], 'E1124:')
 
+  # lower case name is OK for a list
+  var lambdaLines =<< trim END
+      var lambdaList: list<func> = [Test_syntax]
+      lambdaList[0] = () => "lambda"
+  END
+  CheckDefAndScriptSuccess(lambdaLines)
+
   var nr: number = 1234
   CheckDefFailure(['var nr: number = "asdf"'], 'E1012:')
 

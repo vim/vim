@@ -5832,11 +5832,13 @@ compile_lhs(
 	    return FAIL;
 	}
 
-	// new local variable
+	// Check the name is valid for a funcref.
 	if ((lhs->lhs_type->tt_type == VAR_FUNC
 				      || lhs->lhs_type->tt_type == VAR_PARTIAL)
-				   && var_wrong_func_name(lhs->lhs_name, TRUE))
+		&& var_wrong_func_name(lhs->lhs_name, TRUE))
 	    return FAIL;
+
+	// New local variable.
 	lhs->lhs_lvar = reserve_local(cctx, var_start, lhs->lhs_varlen,
 		    cmdidx == CMD_final || cmdidx == CMD_const, lhs->lhs_type);
 	if (lhs->lhs_lvar == NULL)
@@ -6275,6 +6277,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		{
 		    if ((rhs_type->tt_type == VAR_FUNC
 				|| rhs_type->tt_type == VAR_PARTIAL)
+			    && !lhs.lhs_has_index
 			    && var_wrong_func_name(lhs.lhs_name, TRUE))
 			goto theend;
 
