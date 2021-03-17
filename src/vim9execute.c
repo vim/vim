@@ -323,6 +323,8 @@ call_dfunc(int cdf_idx, partial_T *pt, int argcount_arg, ectx_T *ectx)
     else
 	ectx->ec_outer = NULL;
 
+    ++ufunc->uf_calls;
+
     // Set execution state to the start of the called function.
     ectx->ec_dfunc_idx = cdf_idx;
     ectx->ec_instr = INSTRUCTIONS(dfunc);
@@ -556,6 +558,9 @@ func_return(ectx_T *ectx)
 	}
     }
 #endif
+    // TODO: when is it safe to delete the function when it is no longer used?
+    --dfunc->df_ufunc->uf_calls;
+
     // execution context goes one level up
     entry = estack_pop();
     if (entry != NULL)
@@ -1334,7 +1339,7 @@ call_def_function(
 	    ++ectx.ec_stack.ga_len;
 	}
     if (ufunc->uf_va_name != NULL)
-	    ++ectx.ec_stack.ga_len;
+	++ectx.ec_stack.ga_len;
 
     // Frame pointer points to just after arguments.
     ectx.ec_frame_idx = ectx.ec_stack.ga_len;
@@ -1406,6 +1411,9 @@ call_def_function(
 
     // Do turn errors into exceptions.
     suppress_errthrow = FALSE;
+
+    // Do not delete the function while executing it.
+    ++ufunc->uf_calls;
 
     // When ":silent!" was used before calling then we still abort the
     // function.  If ":silent!" is used in the function then we don't.
@@ -3837,6 +3845,9 @@ failed:
 
     estack_pop();
     current_sctx = save_current_sctx;
+
+    // TODO: when is it safe to delete the function if it is no longer used?
+    --ufunc->uf_calls;
 
     if (*msg_list != NULL && saved_msg_list != NULL)
     {

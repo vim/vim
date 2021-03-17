@@ -1359,9 +1359,12 @@ func_remove(ufunc_T *fp)
 	// function, so we can find the index when defining the function again.
 	// Do remove it when it's a copy.
 	if (fp->uf_def_status == UF_COMPILED && (fp->uf_flags & FC_COPY) == 0)
+	{
 	    fp->uf_flags |= FC_DEAD;
-	else
-	    hash_remove(&func_hashtab, hi);
+	    return FALSE;
+	}
+	hash_remove(&func_hashtab, hi);
+	fp->uf_flags |= FC_DELETED;
 	return TRUE;
     }
     return FALSE;
@@ -2134,11 +2137,23 @@ delete_script_functions(int sid)
 		    int changed = func_hashtab.ht_changed;
 
 		    fp->uf_flags |= FC_DEAD;
-		    func_clear(fp, TRUE);
-		    // When clearing a function another function can be cleared
-		    // as a side effect.  When that happens start over.
-		    if (changed != func_hashtab.ht_changed)
-			break;
+
+		    if (fp->uf_calls > 0)
+		    {
+			// Function is executing, don't free it but do remove
+			// it from the hashtable.
+			if (func_remove(fp))
+			    fp->uf_refcount--;
+		    }
+		    else
+		    {
+			func_clear(fp, TRUE);
+			// When clearing a function another function can be
+			// cleared as a side effect.  When that happens start
+			// over.
+			if (changed != func_hashtab.ht_changed)
+			    break;
+		    }
 		}
 		--todo;
 	    }
@@ -4251,7 +4266,6 @@ ex_delfunction(exarg_T *eap)
 		// do remove it from the hashtable.
 		if (func_remove(fp))
 		    fp->uf_refcount--;
-		fp->uf_flags |= FC_DELETED;
 	    }
 	    else
 		func_clear_free(fp, FALSE);

@@ -1561,6 +1561,35 @@ def Test_script_reload_change_type()
   delete('Xreload.vim')
 enddef
 
+" Define CallFunc so that the test can be compiled
+command CallFunc echo 'nop'
+
+def Test_script_reload_from_function()
+  var lines =<< trim END
+      vim9script
+
+      if exists('g:loaded')
+        finish
+      endif
+      g:loaded = 1
+      delcommand CallFunc
+      command CallFunc Func()
+      def Func()
+        so /tmp/test.vim
+        g:didTheFunc = 1
+      enddef
+  END
+  writefile(lines, 'XreloadFunc.vim')
+  source XreloadFunc.vim
+  CallFunc
+  assert_equal(1, g:didTheFunc)
+
+  delete('XreloadFunc.vim')
+  delcommand CallFunc
+  unlet g:loaded
+  unlet g:didTheFunc
+enddef
+
 def Test_script_var_shadows_function()
   var lines =<< trim END
       vim9script
