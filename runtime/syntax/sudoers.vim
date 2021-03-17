@@ -26,7 +26,7 @@ syn cluster sudoersCmndSpecList       contains=sudoersUserRunasBegin,sudoersPASS
 syn keyword sudoersTodo               contained TODO FIXME XXX NOTE
 
 syn region  sudoersComment            display oneline start='#' end='$' contains=sudoersTodo
-syn region  sudoersInclude            display oneline start='#\(include\|includedir\)' end='$'
+syn region  sudoersInclude            display oneline start='[#@]\%(include\|includedir\)\>' end='$'
 
 syn keyword sudoersAlias              User_Alias Runas_Alias nextgroup=sudoersUserAlias skipwhite skipnl
 syn keyword sudoersAlias              Host_Alias nextgroup=sudoersHostAlias skipwhite skipnl
