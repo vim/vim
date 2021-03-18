@@ -4155,6 +4155,80 @@ mainwin_destroy_cb(GObject *object UNUSED, gpointer data UNUSED)
 #endif
 }
 
+    void
+gui_gtk_get_screen_geom_of_win(
+	GtkWidget *wid,
+	int point_x,	    // x position of window if not initialized
+	int point_y,	    // y position of window if not initialized
+	int *screen_x,
+	int *screen_y,
+	int *width,
+	int *height)
+{
+    GdkRectangle geometry;
+    GdkWindow *win = gtk_widget_get_window(wid);
+#if GTK_CHECK_VERSION(3,22,0)
+    GdkDisplay *dpy = gtk_widget_get_display(wid);
+    GdkMonitor *monitor = gdk_display_get_monitor_at_window(dpy, win);
+
+    gdk_monitor_get_geometry(monitor, &geometry);
+#else
+    GdkScreen* screen;
+    int monitor;
+
+    if (wid != NULL && gtk_widget_has_screen(wid))
+	screen = gtk_widget_get_screen(wid);
+    else
+	screen = gdk_screen_get_default();
+    if (win == NULL)
+	monitor = gdk_screen_get_monitor_at_point(screen, point_x, point_y);
+    else
+	monitor = gdk_screen_get_monitor_at_window(screen, win);
+    gdk_screen_get_monitor_geometry(screen, monitor, &geometry);
+#endif
+    *screen_x = geometry.x;
+    *screen_y = geometry.y;
+    *width = geometry.width;
+    *height = geometry.height;
+}
+
+/*
+ * The screen size is used to make sure the initial window doesn't get bigger
+ * than the screen.  This subtracts some room for menubar, toolbar and window
+ * decorations.
+ */
+    static void
+gui_gtk_get_screen_dimensions(
+	int point_x,
+	int point_y,
+	int *screen_w,
+	int *screen_h)
+{
+    int	    x, y;
+
+    gui_gtk_get_screen_geom_of_win(gui.mainwin, point_x, point_y,
+						   &x, &y, screen_w, screen_h);
+
+    // Subtract 'guiheadroom' from the height to allow some room for the
+    // window manager (task list and window title bar).
+    *screen_h -= p_ghr;
+
+    /*
+     * FIXME: dirty trick: Because the gui_get_base_height() doesn't include
+     * the toolbar and menubar for GTK, we subtract them from the screen
+     * height, so that the window size can be made to fit on the screen.
+     * This should be completely changed later.
+     */
+    *screen_w -= get_menu_tool_width();
+    *screen_h -= get_menu_tool_height();
+}
+
+    void
+gui_mch_get_screen_dimensions(int *screen_w, int *screen_h)
+{
+    gui_gtk_get_screen_dimensions(0, 0, screen_w, screen_h);
+}
+
 
 /*
  * Bit of a hack to ensure we start GtkPlug windows with the correct window
@@ -4250,7 +4324,12 @@ gui_mch_open(void)
 	if (mask & (XValue | YValue))
 	{
 	    int ww, hh;
+
+#ifdef FEAT_GUI_GTK
+	    gui_gtk_get_screen_dimensions(x, y, &ww, &hh);
+#else
 	    gui_mch_get_screen_dimensions(&ww, &hh);
+#endif
 	    hh += p_ghr + get_menu_tool_height();
 	    ww += get_menu_tool_width();
 	    if (mask & XNegative)
@@ -4536,64 +4615,6 @@ gui_mch_set_shellsize(int width, int height,
      * on top, while the GUI expects to be the boss.
      */
     gui_mch_update();
-}
-
-    void
-gui_gtk_get_screen_geom_of_win(
-	GtkWidget *wid,
-	int *screen_x,
-	int *screen_y,
-	int *width,
-	int *height)
-{
-    GdkRectangle geometry;
-    GdkWindow *win = gtk_widget_get_window(wid);
-#if GTK_CHECK_VERSION(3,22,0)
-    GdkDisplay *dpy = gtk_widget_get_display(wid);
-    GdkMonitor *monitor = gdk_display_get_monitor_at_window(dpy, win);
-
-    gdk_monitor_get_geometry(monitor, &geometry);
-#else
-    GdkScreen* screen;
-    int monitor;
-
-    if (wid != NULL && gtk_widget_has_screen(wid))
-	screen = gtk_widget_get_screen(wid);
-    else
-	screen = gdk_screen_get_default();
-    monitor = gdk_screen_get_monitor_at_window(screen, win);
-    gdk_screen_get_monitor_geometry(screen, monitor, &geometry);
-#endif
-    *screen_x = geometry.x;
-    *screen_y = geometry.y;
-    *width = geometry.width;
-    *height = geometry.height;
-}
-
-/*
- * The screen size is used to make sure the initial window doesn't get bigger
- * than the screen.  This subtracts some room for menubar, toolbar and window
- * decorations.
- */
-    void
-gui_mch_get_screen_dimensions(int *screen_w, int *screen_h)
-{
-    int	    x, y;
-
-    gui_gtk_get_screen_geom_of_win(gui.mainwin, &x, &y, screen_w, screen_h);
-
-    // Subtract 'guiheadroom' from the height to allow some room for the
-    // window manager (task list and window title bar).
-    *screen_h -= p_ghr;
-
-    /*
-     * FIXME: dirty trick: Because the gui_get_base_height() doesn't include
-     * the toolbar and menubar for GTK, we subtract them from the screen
-     * height, so that the window size can be made to fit on the screen.
-     * This should be completely changed later.
-     */
-    *screen_w -= get_menu_tool_width();
-    *screen_h -= get_menu_tool_height();
 }
 
 #if defined(FEAT_TITLE) || defined(PROTO)
