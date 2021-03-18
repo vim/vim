@@ -2159,8 +2159,10 @@ def Test_expr7_dict()
   CheckDefAndScriptSuccess(lines)
  
   # legacy syntax doesn't work
-  CheckDefFailure(["var x = #{key: 8}"], 'E1097:', 3)
-  CheckDefFailure(["var x = 'a' .. #{a: 1}"], 'E1097:', 3)
+  CheckDefFailure(["var x = #{key: 8}"], 'E1170:', 1)
+  CheckDefFailure(["var x = 'a' #{a: 1}"], 'E1170:', 1)
+  CheckDefFailure(["var x = 'a' .. #{a: 1}"], 'E1170:', 1)
+  CheckDefFailure(["var x = true ? #{a: 1}"], 'E1170:', 1)
 
   CheckDefFailure(["var x = {a:8}"], 'E1069:', 1)
   CheckDefFailure(["var x = {a : 8}"], 'E1068:', 1)

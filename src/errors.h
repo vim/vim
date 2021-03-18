@@ -375,3 +375,5 @@ EXTERN char e_argument_already_declared_in_script_str[]
 	INIT(= N_("E1168: Argument already declared in the script: %s"));
 EXTERN char e_import_as_name_not_supported_here[]
 	INIT(= N_("E1169: 'import * as {name}' not supported here"));
+EXTERN char e_cannot_use_hash_curly_to_start_comment[]
+	INIT(= N_("E1170: 'Cannot use #{ to start a comment"));

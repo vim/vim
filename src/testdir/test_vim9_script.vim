@@ -2452,7 +2452,7 @@ def Test_while_loop()
   assert_equal('1_3_', result)
 
   var s = ''
-  while s == 'x' #{comment}
+  while s == 'x' # {comment}
   endwhile
 enddef
 
