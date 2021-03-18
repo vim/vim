@@ -750,7 +750,7 @@ update_vim9_script_var(
     if (sv != NULL)
     {
 	if (*type == NULL)
-	    *type = typval2type(tv, &si->sn_type_list);
+	    *type = typval2type(tv, get_copyID(), &si->sn_type_list);
 	sv->sv_type = *type;
     }
 

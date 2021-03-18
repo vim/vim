@@ -6606,6 +6606,13 @@ func Test_typename()
   call assert_equal('list<number>', typename([123]))
   call assert_equal('dict<number>', typename(#{key: 123}))
   call assert_equal('list<dict<number>>', typename([#{key: 123}]))
+
+  let l = []
+  let d = #{a: 0}
+  let l = [d]
+  let l[0].e = #{b: l}
+  call assert_equal('list<dict<any>>', typename(l))
+  call assert_equal('dict<any>', typename(d))
 endfunc
 
 "-------------------------------------------------------------------------------
