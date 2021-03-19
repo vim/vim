@@ -364,7 +364,6 @@ endfunc
 
 func Test_redir_cmd_readonly()
   CheckNotRoot
-  CheckNotBSD
 
   " Redirecting to a read-only file
   call writefile([], 'Xfile')
