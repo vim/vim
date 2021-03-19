@@ -1,9 +1,9 @@
 " Vim completion script
 " Language:     C
 " Maintainer:   Bram Moolenaar <Bram@vim.org>
-" Last Change:  2021 Mar 7
+" Last Change:  2021 Mar 19
 
-vim9script
+vim9script noclear
 
 var prepended: string
 var grepCache: dict<list<dict<any>>>
@@ -101,7 +101,7 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
       var n: number = 0
       s = e
       e += 1
-      while e < strchars(base, true)
+      while e < strcharlen(base)
         if base[e] == ']'
           if n == 0
             break
@@ -395,7 +395,7 @@ def Tagline2item(val: dict<any>, brackets: string): dict<string> #{{{1
   # Isolate the command after the tag and filename.
   var s: string = matchstr(line, '[^\t]*\t[^\t]*\t\zs\(/^.*$/\|[^\t]*\)\ze\(;"\t\|\t\|$\)')
   if s != ''
-    res['menu'] = Tagcmd2extra(s, val['match'], matchstr(line, '[^\t]*\t\zs[^\t]*\ze\t'))
+    res['menu'] = s->Tagcmd2extra(val['match'], matchstr(line, '[^\t]*\t\zs[^\t]*\ze\t'))
   endif
   return res
 enddef
