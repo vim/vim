@@ -1704,9 +1704,10 @@ func Test_edit_charconvert()
 endfunc
 
 " Test for editing a file without read permission
-" NOTE: if you run tests as root this will fail.  Don't run tests as root!
 func Test_edit_file_no_read_perm()
   CheckUnix
+  CheckNotRoot
+
   call writefile(['one', 'two'], 'Xfile')
   call setfperm('Xfile', '-w-------')
   new
