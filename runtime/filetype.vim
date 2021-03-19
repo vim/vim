@@ -1425,6 +1425,9 @@ au BufNewFile,BufRead robots.txt		setf robots
 " Rpcgen
 au BufNewFile,BufRead *.x			setf rpcgen
 
+" RSS
+au BufNewFile,BufRead *.rss			setf xml
+
 " reStructuredText Documentation Format
 au BufNewFile,BufRead *.rst			setf rst
 
