@@ -2228,7 +2228,8 @@ eval0(
 	if (!aborting()
 		&& did_emsg == did_emsg_before
 		&& called_emsg == called_emsg_before
-		&& (flags & EVAL_CONSTANT) == 0)
+		&& (flags & EVAL_CONSTANT) == 0
+		&& (!in_vim9script() || !vim9_bad_comment(p)))
 	    semsg(_(e_invexpr2), arg);
 
 	// Some of the expression may not have been consumed.  Do not check for
@@ -3362,7 +3363,11 @@ eval7(
     /*
      * Dictionary: #{key: val, key: val}
      */
-    case '#':	if (!in_vim9script() && (*arg)[1] == '{')
+    case '#':	if (in_vim9script())
+		{
+		    ret = vim9_bad_comment(*arg) ? FAIL : NOTDONE;
+		}
+		else if ((*arg)[1] == '{')
 		{
 		    ++*arg;
 		    ret = eval_dict(arg, rettv, evalarg, TRUE);

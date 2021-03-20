@@ -5234,7 +5234,8 @@ ends_excmd2(char_u *cmd_start UNUSED, char_u *cmd)
 	return TRUE;
 #ifdef FEAT_EVAL
     if (in_vim9script())
-	return c == '#' && (cmd == cmd_start || VIM_ISWHITE(cmd[-1]));
+	return c == '#' && cmd[1] != '{'
+				 && (cmd == cmd_start || VIM_ISWHITE(cmd[-1]));
 #endif
     return c == '"';
 }
