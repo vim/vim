@@ -5234,7 +5234,8 @@ ends_excmd2(char_u *cmd_start UNUSED, char_u *cmd)
 	return TRUE;
 #ifdef FEAT_EVAL
     if (in_vim9script())
-	return c == '#' && cmd[1] != '{'
+	//  # starts a comment, #{ might be a mistake, #{{ can start a fold
+	return c == '#' && (cmd[1] != '{' || cmd[2] == '{')
 				 && (cmd == cmd_start || VIM_ISWHITE(cmd[-1]));
 #endif
     return c == '"';

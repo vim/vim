@@ -120,7 +120,7 @@ not_in_vim9(exarg_T *eap)
     int
 vim9_bad_comment(char_u *p)
 {
-    if (p[0] == '#' && p[1] == '{')
+    if (p[0] == '#' && p[1] == '{' && p[2] != '{')
     {
 	emsg(_(e_cannot_use_hash_curly_to_start_comment));
 	return TRUE;
@@ -129,13 +129,13 @@ vim9_bad_comment(char_u *p)
 }
 
 /*
- * Return TRUE if "p" points at a "#" not followed by '{'.
+ * Return TRUE if "p" points at a "#" not followed by one '{'.
  * Does not check for white space.
  */
     int
 vim9_comment_start(char_u *p)
 {
-    return p[0] == '#' && p[1] != '{';
+    return p[0] == '#' && (p[1] != '{' || p[2] == '{');
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)

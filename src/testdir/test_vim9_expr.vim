@@ -2155,6 +2155,10 @@ def Test_expr7_dict()
       # automatic conversion from number to string
       var n = 123
       var dictnr = {[n]: 1}
+
+      # comment to start fold is OK
+      var x1: number #{{ fold
+      var x2 = 9 #{{ fold
   END
   CheckDefAndScriptSuccess(lines)
  
