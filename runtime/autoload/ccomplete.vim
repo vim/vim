@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:     C
 " Maintainer:   Bram Moolenaar <Bram@vim.org>
-" Last Change:  2021 Mar 19
+" Last Change:  2021 Mar 20
 
 vim9script noclear
 
@@ -194,10 +194,10 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
     tags
       # Remove members, these can't appear without something in front.
       ->filter((_, v: dict<any>): bool =>
-                has_key(v, 'kind') ? v.kind != 'm' : true)
+                v->has_key('kind') ? v.kind != 'm' : true)
       # Remove static matches in other files.
       ->filter((_, v: dict<any>): bool =>
-                 !has_key(v, 'static')
+                 !v->has_key('static')
               || !v['static']
               || bufnr('%') == bufnr(v['filename']))
 
@@ -209,14 +209,14 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
     var diclist: list<dict<any>> = taglist('^' .. items[0] .. '$')
       # Remove members, these can't appear without something in front.
       ->filter((_, v: dict<string>): bool =>
-                has_key(v, 'kind') ? v.kind != 'm' : true)
+                v->has_key('kind') ? v.kind != 'm' : true)
 
     res = []
     for i in len(diclist)->range()
       # New ctags has the "typeref" field.  Patched version has "typename".
-      if has_key(diclist[i], 'typename')
+      if diclist[i]->has_key('typename')
         res = extendnew(res, StructMembers(diclist[i]['typename'], items[1 :], 1))
-      elseif has_key(diclist[i], 'typeref')
+      elseif diclist[i]->has_key('typeref')
         res = extendnew(res, StructMembers(diclist[i]['typeref'], items[1 :], 1))
       endif
 
@@ -292,7 +292,7 @@ def Tag2item(val: dict<any>): dict<any> #{{{1
   endif
 
   res['tagline'] = ''
-  if has_key(val, 'kind')
+  if val->has_key('kind')
     var kind: string = val['kind']
     res['kind'] = kind
     if kind == 'v'
@@ -365,7 +365,7 @@ def Tagline2item(val: dict<any>, brackets: string): dict<string> #{{{1
   var add: string = GetAddition(line, val['match'], [val], brackets == '')
   var res: dict<string> = {word: val['match'] .. brackets .. add}
 
-  if has_key(val, 'info')
+  if val->has_key('info')
     # Use info from Tag2item().
     res['info'] = val['info']
   else
@@ -376,7 +376,7 @@ def Tagline2item(val: dict<any>, brackets: string): dict<string> #{{{1
     endif
   endif
 
-  if has_key(val, 'kind')
+  if val->has_key('kind')
     res['kind'] = val['kind']
   elseif add == '('
     res['kind'] = 'f'
@@ -387,7 +387,7 @@ def Tagline2item(val: dict<any>, brackets: string): dict<string> #{{{1
     endif
   endif
 
-  if has_key(val, 'extra')
+  if val->has_key('extra')
     res['menu'] = val['extra']
     return res
   endif
@@ -469,11 +469,11 @@ def Nextitem( #{{{1
       var item: dict<any> = diclist[tagidx]
 
       # New ctags has the "typeref" field.  Patched version has "typename".
-      if has_key(item, 'typeref')
+      if item->has_key('typeref')
         res = extendnew(res, StructMembers(item['typeref'], items, all))
         continue
       endif
-      if has_key(item, 'typename')
+      if item->has_key('typename')
         res = extendnew(res, StructMembers(item['typename'], items, all))
         continue
       endif
@@ -484,7 +484,7 @@ def Nextitem( #{{{1
       endif
 
       # Skip matches local to another file.
-      if has_key(item, 'static') && item['static']
+      if item->has_key('static') && item['static']
         && bufnr('%') != bufnr(item['filename'])
         continue
       endif
@@ -551,7 +551,7 @@ def StructMembers( #{{{1
   var n: string
   if all == 0
     n = '1'  # stop at first found match
-    if has_key(grepCache, typename)
+    if grepCache->has_key(typename)
       qflist = grepCache[typename]
       cached = 1
     endif
@@ -650,10 +650,10 @@ def SearchMembers( #{{{1
   for i in len(matches)->range()
     var typename: string = ''
     var line: string
-    if has_key(matches[i], 'dict')
-      if has_key(matches[i]['dict'], 'typename')
+    if matches[i]->has_key('dict')
+      if matches[i]['dict']->has_key('typename')
         typename = matches[i]['dict']['typename']
-      elseif has_key(matches[i]['dict'], 'typeref')
+      elseif matches[i]['dict']->has_key('typeref')
         typename = matches[i]['dict']['typeref']
       endif
       line = "\t" .. matches[i]['dict']['cmd']
