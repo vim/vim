@@ -4168,9 +4168,17 @@ gui_gtk_get_screen_geom_of_win(
     GdkRectangle geometry;
     GdkWindow *win = gtk_widget_get_window(wid);
 #if GTK_CHECK_VERSION(3,22,0)
-    GdkDisplay *dpy = gtk_widget_get_display(wid);
-    GdkMonitor *monitor = gdk_display_get_monitor_at_window(dpy, win);
+    GdkDisplay *dpy;
+    GdkMonitor *monitor;
 
+    if (wid != NULL && gtk_widget_get_realized(wid))
+	dpy = gtk_widget_get_display(wid);
+    else
+	dpy = gdk_display_get_default();
+    if (win != NULL)
+	monitor = gdk_display_get_monitor_at_window(dpy, win);
+    else
+	monitor = gdk_display_get_monitor_at_point(dpy, point_x, point_y);
     gdk_monitor_get_geometry(monitor, &geometry);
 #else
     GdkScreen* screen;
@@ -4180,10 +4188,10 @@ gui_gtk_get_screen_geom_of_win(
 	screen = gtk_widget_get_screen(wid);
     else
 	screen = gdk_screen_get_default();
-    if (win == NULL)
-	monitor = gdk_screen_get_monitor_at_point(screen, point_x, point_y);
-    else
+    if (win != NULL)
 	monitor = gdk_screen_get_monitor_at_window(screen, win);
+    else
+	monitor = gdk_screen_get_monitor_at_point(screen, point_x, point_y);
     gdk_screen_get_monitor_geometry(screen, monitor, &geometry);
 #endif
     *screen_x = geometry.x;
