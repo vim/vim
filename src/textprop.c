@@ -920,7 +920,8 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 	    }
 	}
     }
-    redraw_buf_later(buf, NOT_VALID);
+    if (rettv->vval.v_number > 0)
+	redraw_buf_later(buf, NOT_VALID);
 }
 
 /*
