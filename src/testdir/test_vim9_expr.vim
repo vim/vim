@@ -1946,6 +1946,25 @@ def Test_expr7_lambda()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_expr7_lambda_block()
+  var lines =<< trim END
+      var Func = (s: string): string => {
+                      return 'hello ' .. s
+                    }
+      assert_equal('hello there', Func('there'))
+
+      var ll = range(3)
+      var dll = mapnew(ll, (k, v): string => {
+          if v % 2
+            return 'yes'
+          endif
+          return 'no'
+        })
+      assert_equal(['no', 'yes', 'no'], dll)
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
 def NewLambdaWithComments(): func
   return (x) =>
             # some comment

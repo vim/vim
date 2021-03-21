@@ -3171,7 +3171,7 @@ compile_list(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 
 /*
  * Parse a lambda: "(arg, arg) => expr"
- * "*arg" points to the '{'.
+ * "*arg" points to the '('.
  * Returns OK/FAIL when a lambda is recognized, NOTDONE if it's not a lambda.
  */
     static int
@@ -5126,6 +5126,13 @@ exarg_getline(
     }
 }
 
+    void
+fill_exarg_from_cctx(exarg_T *eap, cctx_T *cctx)
+{
+    eap->getline = exarg_getline;
+    eap->cookie = cctx;
+}
+
 /*
  * Compile a nested :def command.
  */
@@ -5176,9 +5183,8 @@ compile_nested_function(exarg_T *eap, cctx_T *cctx)
 	return NULL;
 
     eap->arg = name_end;
-    eap->getline = exarg_getline;
-    eap->cookie = cctx;
-    eap->skip = cctx->ctx_skip == SKIP_YES;
+    fill_exarg_from_cctx(eap, cctx);
+
     eap->forceit = FALSE;
     lambda_name = vim_strsave(get_lambda_name());
     if (lambda_name == NULL)

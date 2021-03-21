@@ -377,3 +377,7 @@ EXTERN char e_import_as_name_not_supported_here[]
 	INIT(= N_("E1169: 'import * as {name}' not supported here"));
 EXTERN char e_cannot_use_hash_curly_to_start_comment[]
 	INIT(= N_("E1170: Cannot use #{ to start a comment"));
+EXTERN char e_missing_end_block[]
+	INIT(= N_("E1171: Missing } after inline function"));
+EXTERN char e_cannot_use_default_values_in_lambda[]
+	INIT(= N_("E1172: Cannot use default values in a lambda"));

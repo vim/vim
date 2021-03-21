@@ -2026,8 +2026,9 @@ ga_clear_strings(garray_T *gap)
 {
     int		i;
 
-    for (i = 0; i < gap->ga_len; ++i)
-	vim_free(((char_u **)(gap->ga_data))[i]);
+    if (gap->ga_data != NULL)
+	for (i = 0; i < gap->ga_len; ++i)
+	    vim_free(((char_u **)(gap->ga_data))[i]);
     ga_clear(gap);
 }
 
