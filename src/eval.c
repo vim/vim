@@ -2179,8 +2179,8 @@ clear_evalarg(evalarg_T *evalarg, exarg_T *eap)
 	    evalarg->eval_tofree = NULL;
 	}
 
-	vim_free(evalarg->eval_tofree_lambda);
-	evalarg->eval_tofree_lambda = NULL;
+	VIM_CLEAR(evalarg->eval_tofree_cmdline);
+	VIM_CLEAR(evalarg->eval_tofree_lambda);
     }
 }
 

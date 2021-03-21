@@ -3202,6 +3202,16 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     // Compile the function into instructions.
     compile_def_function(ufunc, TRUE, PROFILING(ufunc), cctx);
 
+    // evalarg.eval_tofree_cmdline may have a copy of the last line and "*arg"
+    // points into it.  Point to the original line to avoid a dangling pointer.
+    if (evalarg.eval_tofree_cmdline != NULL)
+    {
+	size_t	off = *arg - evalarg.eval_tofree_cmdline;
+
+	*arg = ((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)[cctx->ctx_lnum]
+									 + off;
+    }
+
     clear_evalarg(&evalarg, NULL);
 
     if (ufunc->uf_def_status == UF_COMPILED)

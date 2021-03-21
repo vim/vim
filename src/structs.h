@@ -1882,6 +1882,9 @@ typedef struct {
     // pointer to the last line obtained with getsourceline()
     char_u	*eval_tofree;
 
+    // pointer to the last line of an inline function
+    char_u	*eval_tofree_cmdline;
+
     // pointer to the lines concatenated for a lambda.
     char_u	*eval_tofree_lambda;
 } evalarg_T;

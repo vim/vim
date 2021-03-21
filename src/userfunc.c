@@ -970,17 +970,18 @@ lambda_function_body(
 
     ga_init2(&newlines, (int)sizeof(char_u *), 10);
     if (get_function_body(&eap, &newlines, NULL, &line_to_free) == FAIL)
+    {
+	vim_free(cmdline);
 	goto erret;
+    }
     if (cmdline != NULL)
     {
 	// Something comes after the "}".
 	*arg = eap.nextcmd;
-	if (evalarg->eval_cctx == NULL)
-	{
-	    // Need to keep the line and free it/ later.
-	    vim_free(evalarg->eval_tofree_lambda);
-	    evalarg->eval_tofree_lambda = cmdline;
-	}
+
+	// "arg" points into cmdline, need to keep the line and free it later.
+	vim_free(evalarg->eval_tofree_cmdline);
+	evalarg->eval_tofree_cmdline = cmdline;
     }
     else
 	*arg = (char_u *)"";
