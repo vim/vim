@@ -1431,7 +1431,7 @@ func Test_input_func()
   call assert_equal('item1 item2 item3', c)
 
   " Test for using special characters as default input
-  call feedkeys(":let c = input('name? ', \"x\<BS>y\")\<CR>\<CR>", 'xt')
+  call feedkeys(":let c = input('name? ', \"x\\<BS>y\")\<CR>\<CR>", 'xt')
   call assert_equal('y', c)
 
   " Test for using <CR> as default input

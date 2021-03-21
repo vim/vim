@@ -1389,4 +1389,14 @@ func Test_map_cmdkey_redo()
   ounmap i-
 endfunc
 
+" Test for using <script> with a map to remap characters in rhs
+func Test_script_local_remap()
+  new
+  inoremap <buffer> <SID>xyz mno
+  inoremap <buffer> <script> abc st<SID>xyzre
+  normal iabc
+  call assert_equal('stmnore', getline(1))
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
