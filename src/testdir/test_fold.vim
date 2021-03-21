@@ -1061,6 +1061,12 @@ func Test_foldcolumn_multibyte_char()
   set fillchars+=foldopen:▾,foldsep:│,foldclose:▸
   call s:mbyte_fillchar_tests('▾', '▸', '│')
 
+  " Use a mix of multi-byte and single-byte characters
+  set fillchars+=foldopen:¬,foldsep:\|,foldclose:+
+  call s:mbyte_fillchar_tests('¬', '+', '|')
+  set fillchars+=foldopen:+,foldsep:\|,foldclose:¬
+  call s:mbyte_fillchar_tests('+', '¬', '|')
+
   bw!
   set foldenable& fdc& fdm& fillchars&
 endfunc
