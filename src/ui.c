@@ -50,8 +50,10 @@ ui_write(char_u *s, int len, int console UNUSED)
 # endif
 
 	mch_write(s, len);
+# if defined(HAVE_FSYNC)
 	if (console && s[len - 1] == '\n')
-	    fsync(1);
+	    vim_fsync(1);
+# endif
 
 # if !defined(MSWIN)
 	if (output_conv.vc_type != CONV_NONE)
