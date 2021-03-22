@@ -7902,7 +7902,7 @@ f_screenstring(typval_T *argvars, typval_T *rettv)
 	c = ScreenLines[off];
     buflen += mb_char2bytes(c, buf);
 
-    if (enc_utf8)
+    if (enc_utf8 && ScreenLinesUC[off] != 0)
 	for (i = 0; i < Screen_mco && ScreenLinesC[i][off] != 0; ++i)
 	    buflen += mb_char2bytes(ScreenLinesC[i][off], buf + buflen);
 
