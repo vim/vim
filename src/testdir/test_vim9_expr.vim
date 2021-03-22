@@ -1961,6 +1961,11 @@ def Test_expr7_lambda_block()
           return 'no'
         })
       assert_equal(['no', 'yes', 'no'], dll)
+
+      sandbox var Safe = (nr: number): number => {
+          return nr + 7
+        }
+      assert_equal(10, Safe(3))
   END
   CheckDefAndScriptSuccess(lines)
 
@@ -1968,6 +1973,34 @@ def Test_expr7_lambda_block()
       map([1, 2], (k, v) => { redrawt })
   END
   CheckDefAndScriptFailure(lines, 'E488')
+
+  lines =<< trim END
+      var Func = (nr: int) => {
+              echo nr
+            }
+  END
+  CheckDefAndScriptFailure(lines, 'E1010', 1)
+
+  lines =<< trim END
+      var Func = (nr: number): int => {
+              return nr
+            }
+  END
+  CheckDefAndScriptFailure(lines, 'E1010', 1)
+
+  lines =<< trim END
+      var Func = (nr: number): int => {
+              return nr
+  END
+  CheckDefAndScriptFailure(lines, 'E1171', 1)  # line nr is function start
+
+  lines =<< trim END
+      vim9script
+      var Func = (nr: number): int => {
+          var ll =<< ENDIT
+             nothing
+  END
+  CheckScriptFailure(lines, 'E1145: Missing heredoc end marker: ENDIT', 2)
 enddef
 
 def NewLambdaWithComments(): func

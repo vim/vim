@@ -381,3 +381,5 @@ EXTERN char e_missing_end_block[]
 	INIT(= N_("E1171: Missing } after inline function"));
 EXTERN char e_cannot_use_default_values_in_lambda[]
 	INIT(= N_("E1172: Cannot use default values in a lambda"));
+EXTERN char e_text_found_after_enddef_str[]
+	INIT(= N_("E1173: Text found after enddef: %s"));

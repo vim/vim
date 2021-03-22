@@ -86,6 +86,16 @@ def Test_endfunc_enddef()
     enddef
   END
   CheckScriptFailure(lines, 'E1152:', 4)
+
+  lines =<< trim END
+    def Ok()
+      echo 'hello'
+    enddef | echo 'there'
+    def Bad()
+      echo 'hello'
+    enddef there
+  END
+  CheckScriptFailure(lines, 'E1173: Text found after enddef: there', 6)
 enddef
 
 def Test_missing_endfunc_enddef()
