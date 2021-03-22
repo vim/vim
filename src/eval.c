@@ -6117,6 +6117,7 @@ get_echo_attr(void)
  * ":execute expr1 ..."	execute the result of an expression.
  * ":echomsg expr1 ..."	Print a message
  * ":echoerr expr1 ..."	Print an error
+ * ":echoconsole expr1 ..." Print a message on stdout
  * Each gets spaces around each argument and a newline at the end for
  * echo commands
  */
@@ -6193,6 +6194,11 @@ ex_execute(exarg_T *eap)
 	{
 	    msg_attr(ga.ga_data, echo_attr);
 	    out_flush();
+	}
+	else if (eap->cmdidx == CMD_echoconsole)
+	{
+	    ui_write(ga.ga_data, (int)STRLEN(ga.ga_data), TRUE);
+	    ui_write((char_u *)"\r\n", 2, TRUE);
 	}
 	else if (eap->cmdidx == CMD_echoerr)
 	{

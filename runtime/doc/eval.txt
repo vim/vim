@@ -13141,7 +13141,12 @@ text...
 <			If you just want a highlighted message use |:echohl|.
 			And to get a beep: >
 		:exe "normal \<Esc>"
-<
+
+:echoc[onsole] {expr1} ..				*:echoc* *:echoconsole*
+			Intended for testing: works like `:echomsg` but when
+			running in the GUI and started from a terminal write
+			the text to stdout.
+
 							*:eval*
 :eval {expr}		Evaluate {expr} and discard the result.  Example: >
 				:eval Getlist()->Filter()->append('$')

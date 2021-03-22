@@ -162,7 +162,7 @@ function GetAllocId(name)
 endfunc
 
 func RunTheTest(test)
-  echo 'Executing ' . a:test
+  echoconsole 'Executing ' . a:test
   if has('reltime')
     let func_start = reltime()
   endif

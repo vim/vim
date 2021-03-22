@@ -2545,7 +2545,7 @@ out_flush(void)
 	// set out_pos to 0 before ui_write, to avoid recursiveness
 	len = out_pos;
 	out_pos = 0;
-	ui_write(out_buf, len);
+	ui_write(out_buf, len, FALSE);
 #ifdef FEAT_JOB_CHANNEL
 	if (ch_log_output)
 	{
