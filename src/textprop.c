@@ -535,6 +535,7 @@ f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
     linenr_T end = start;
     linenr_T lnum;
     buf_T    *buf = curbuf;
+    int	    did_clear = FALSE;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
@@ -562,6 +563,7 @@ f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
 	len = STRLEN(text) + 1;
 	if ((size_t)buf->b_ml.ml_line_len > len)
 	{
+	    did_clear = TRUE;
 	    if (!(buf->b_ml.ml_flags & ML_LINE_DIRTY))
 	    {
 		char_u *newtext = vim_strsave(text);
@@ -575,7 +577,8 @@ f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
 	    buf->b_ml.ml_line_len = (int)len;
 	}
     }
-    redraw_buf_later(buf, NOT_VALID);
+    if (did_clear)
+	redraw_buf_later(buf, NOT_VALID);
 }
 
 /*
