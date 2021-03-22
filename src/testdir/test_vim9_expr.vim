@@ -1963,6 +1963,11 @@ def Test_expr7_lambda_block()
       assert_equal(['no', 'yes', 'no'], dll)
   END
   CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      map([1, 2], (k, v) => { redrawt })
+  END
+  CheckDefAndScriptFailure(lines, 'E488')
 enddef
 
 def NewLambdaWithComments(): func

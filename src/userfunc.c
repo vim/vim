@@ -954,10 +954,15 @@ lambda_function_body(
     int		lnum_save = -1;
     linenr_T	sourcing_lnum_top = SOURCING_LNUM;
 
+    if (!ends_excmd2(*arg, skipwhite(*arg + 1)))
+    {
+	semsg(_(e_trailing_arg), *arg + 1);
+	return FAIL;
+    }
+
     CLEAR_FIELD(eap);
     eap.cmdidx = CMD_block;
     eap.forceit = FALSE;
-    eap.arg = *arg + 1;
     eap.cmdlinep = &cmdline;
     eap.skip = !evaluate;
     if (evalarg->eval_cctx != NULL)
