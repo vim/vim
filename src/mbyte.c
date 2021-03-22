@@ -5551,7 +5551,7 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_charclass(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    if (check_for_string(&argvars[0]) == FAIL)
+    if (check_for_string(&argvars[0], 1) == FAIL)
 	return;
     rettv->vval.v_number = mb_get_class(argvars[0].vval.v_string);
 }

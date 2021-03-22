@@ -125,6 +125,23 @@ def Test_append()
   assert_equal(['0', 'one', '1', 'two', '2'], getline(1, 6))
 enddef
 
+def Test_browse()
+  CheckFeature browse
+
+  var lines =<< trim END
+      call browse(1, 2, 3, 4)
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1174: String required for argument 2')
+  lines =<< trim END
+      call browse(1, 'title', 3, 4)
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1174: String required for argument 3')
+  lines =<< trim END
+      call browse(1, 'title', 'dir', 4)
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1174: String required for argument 4')
+enddef
+
 def Test_buflisted()
   var res: bool = buflisted('asdf')
   assert_equal(false, res)
@@ -223,13 +240,13 @@ def Test_executable()
   assert_false(executable(""))
   assert_false(executable(test_null_string()))
 
-  CheckDefExecFailure(['echo executable(123)'], 'E928:')
-  CheckDefExecFailure(['echo executable(true)'], 'E928:')
+  CheckDefExecFailure(['echo executable(123)'], 'E1174:')
+  CheckDefExecFailure(['echo executable(true)'], 'E1174:')
 enddef
 
 def Test_exepath()
-  CheckDefExecFailure(['echo exepath(true)'], 'E928:')
-  CheckDefExecFailure(['echo exepath(v:null)'], 'E928:')
+  CheckDefExecFailure(['echo exepath(true)'], 'E1174:')
+  CheckDefExecFailure(['echo exepath(v:null)'], 'E1174:')
   CheckDefExecFailure(['echo exepath("")'], 'E1142:')
 enddef
 
@@ -374,27 +391,27 @@ def Test_filereadable()
   assert_false(filereadable(""))
   assert_false(filereadable(test_null_string()))
 
-  CheckDefExecFailure(['echo filereadable(123)'], 'E928:')
-  CheckDefExecFailure(['echo filereadable(true)'], 'E928:')
+  CheckDefExecFailure(['echo filereadable(123)'], 'E1174:')
+  CheckDefExecFailure(['echo filereadable(true)'], 'E1174:')
 enddef
 
 def Test_filewritable()
   assert_false(filewritable(""))
   assert_false(filewritable(test_null_string()))
 
-  CheckDefExecFailure(['echo filewritable(123)'], 'E928:')
-  CheckDefExecFailure(['echo filewritable(true)'], 'E928:')
+  CheckDefExecFailure(['echo filewritable(123)'], 'E1174:')
+  CheckDefExecFailure(['echo filewritable(true)'], 'E1174:')
 enddef
 
 def Test_finddir()
-  CheckDefExecFailure(['echo finddir(true)'], 'E928:')
-  CheckDefExecFailure(['echo finddir(v:null)'], 'E928:')
+  CheckDefExecFailure(['echo finddir(true)'], 'E1174:')
+  CheckDefExecFailure(['echo finddir(v:null)'], 'E1174:')
   CheckDefExecFailure(['echo finddir("")'], 'E1142:')
 enddef
 
 def Test_findfile()
-  CheckDefExecFailure(['echo findfile(true)'], 'E928:')
-  CheckDefExecFailure(['echo findfile(v:null)'], 'E928:')
+  CheckDefExecFailure(['echo findfile(true)'], 'E1174:')
+  CheckDefExecFailure(['echo findfile(v:null)'], 'E1174:')
   CheckDefExecFailure(['echo findfile("")'], 'E1142:')
 enddef
 
@@ -421,9 +438,9 @@ def Test_fnamemodify()
   CheckDefSuccess(['echo fnamemodify("file", test_null_string())'])
   CheckDefSuccess(['echo fnamemodify("file", "")'])
 
-  CheckDefExecFailure(['echo fnamemodify(true, ":p")'], 'E928:')
-  CheckDefExecFailure(['echo fnamemodify(v:null, ":p")'], 'E928:')
-  CheckDefExecFailure(['echo fnamemodify("file", true)'], 'E928:')
+  CheckDefExecFailure(['echo fnamemodify(true, ":p")'], 'E1174: String required for argument 1')
+  CheckDefExecFailure(['echo fnamemodify(v:null, ":p")'], 'E1174: String required for argument 1')
+  CheckDefExecFailure(['echo fnamemodify("file", true)'], 'E1174: String required for argument 2')
 enddef
 
 def Wrong_dict_key_type(items: list<number>): list<number>
@@ -524,32 +541,32 @@ def Test_getfperm()
   assert_equal('', getfperm(""))
   assert_equal('', getfperm(test_null_string()))
 
-  CheckDefExecFailure(['echo getfperm(true)'], 'E928:')
-  CheckDefExecFailure(['echo getfperm(v:null)'], 'E928:')
+  CheckDefExecFailure(['echo getfperm(true)'], 'E1174:')
+  CheckDefExecFailure(['echo getfperm(v:null)'], 'E1174:')
 enddef
 
 def Test_getfsize()
   assert_equal(-1, getfsize(""))
   assert_equal(-1, getfsize(test_null_string()))
 
-  CheckDefExecFailure(['echo getfsize(true)'], 'E928:')
-  CheckDefExecFailure(['echo getfsize(v:null)'], 'E928:')
+  CheckDefExecFailure(['echo getfsize(true)'], 'E1174:')
+  CheckDefExecFailure(['echo getfsize(v:null)'], 'E1174:')
 enddef
 
 def Test_getftime()
   assert_equal(-1, getftime(""))
   assert_equal(-1, getftime(test_null_string()))
 
-  CheckDefExecFailure(['echo getftime(true)'], 'E928:')
-  CheckDefExecFailure(['echo getftime(v:null)'], 'E928:')
+  CheckDefExecFailure(['echo getftime(true)'], 'E1174:')
+  CheckDefExecFailure(['echo getftime(v:null)'], 'E1174:')
 enddef
 
 def Test_getftype()
   assert_equal('', getftype(""))
   assert_equal('', getftype(test_null_string()))
 
-  CheckDefExecFailure(['echo getftype(true)'], 'E928:')
-  CheckDefExecFailure(['echo getftype(v:null)'], 'E928:')
+  CheckDefExecFailure(['echo getftype(true)'], 'E1174:')
+  CheckDefExecFailure(['echo getftype(v:null)'], 'E1174:')
 enddef
 
 def Test_getqflist_return_type()

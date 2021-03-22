@@ -344,11 +344,14 @@ tv_get_float(typval_T *varp)
  * Give an error and return FAIL unless "tv" is a string.
  */
     int
-check_for_string(typval_T *tv)
+check_for_string(typval_T *tv, int arg)
 {
     if (tv->v_type != VAR_STRING)
     {
-	emsg(_(e_stringreq));
+	if (arg > 0)
+	    semsg(_(e_string_required_for_argument_nr), arg);
+	else
+	    emsg(_(e_stringreq));
 	return FAIL;
     }
     return OK;
@@ -358,13 +361,16 @@ check_for_string(typval_T *tv)
  * Give an error and return FAIL unless "tv" is a non-empty string.
  */
     int
-check_for_nonempty_string(typval_T *tv)
+check_for_nonempty_string(typval_T *tv, int arg)
 {
-    if (check_for_string(tv) == FAIL)
+    if (check_for_string(tv, arg) == FAIL)
 	return FAIL;
     if (tv->vval.v_string == NULL || *tv->vval.v_string == NUL)
     {
-	emsg(_(e_non_empty_string_required));
+	if (arg > 0)
+	    semsg(_(e_non_empty_string_required_for_argument_nr), arg);
+	else
+	    emsg(_(e_non_empty_string_required));
 	return FAIL;
     }
     return OK;
