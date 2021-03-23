@@ -246,6 +246,10 @@ func Test_terminal_resize()
   set statusline=x
   terminal
   call assert_equal(2, winnr('$'))
+  let buf = bufnr()
+
+  " Wait for the shell to display a prompt
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
 
   " Fill the terminal with text.
   if has('win32')
@@ -253,6 +257,9 @@ func Test_terminal_resize()
   else
     call feedkeys("ls\<CR>", 'xt')
   endif
+  " Wait for some output
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 3))})
+
   " Go to Terminal-Normal mode for a moment.
   call feedkeys("\<C-W>N", 'xt')
   " Open a new window
@@ -263,6 +270,7 @@ func Test_terminal_resize()
   close
   call assert_equal(2, winnr('$'))
   call feedkeys("exit\<CR>", 'xt')
+  call TermWait(buf)
   set statusline&
 endfunc
 
