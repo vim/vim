@@ -889,6 +889,8 @@ endfunc
 
 func TerminalTmap(remap)
   let buf = Run_shell_in_terminal({})
+  " Wait for the shell to display a prompt
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
   call assert_equal('t', mode())
 
   if a:remap
