@@ -1056,6 +1056,27 @@ def Test_wincmd()
   endif
   assert_notequal(id1, win_getid())
   close
+
+  split
+  var id = win_getid()
+  split
+  :2wincmd o
+  assert_equal(id, win_getid())
+  only
+
+  split
+  split
+  assert_equal(3, winnr('$'))
+  :2wincmd c
+  assert_equal(2, winnr('$'))
+  only
+
+  split
+  split
+  assert_equal(3, winnr('$'))
+  :2wincmd q
+  assert_equal(2, winnr('$'))
+  only
 enddef
 
 def Test_windo_missing_endif()
