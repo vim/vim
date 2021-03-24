@@ -402,12 +402,14 @@ struct dfunc_S {
 // - ec_dfunc_idx:   function index
 // - ec_iidx:        instruction index
 // - ec_outer:	     stack used for closures
+// - funclocal:	     function-local data
 // - ec_frame_idx:   previous frame index
 #define STACK_FRAME_FUNC_OFF 0
 #define STACK_FRAME_IIDX_OFF 1
 #define STACK_FRAME_OUTER_OFF 2
-#define STACK_FRAME_IDX_OFF 3
-#define STACK_FRAME_SIZE 4
+#define STACK_FRAME_FUNCLOCAL_OFF 3
+#define STACK_FRAME_IDX_OFF 4
+#define STACK_FRAME_SIZE 5
 
 
 #ifdef DEFINE_VIM9_GLOBALS

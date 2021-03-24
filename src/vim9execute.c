@@ -154,6 +154,15 @@ exe_newlist(int count, ectx_T *ectx)
     return OK;
 }
 
+// Data local to a function.
+// On a function call, if not empty, is saved on the stack and restored when
+// returning.
+typedef struct {
+    int		floc_restore_cmdmod;
+    cmdmod_T	floc_save_cmdmod;
+    int		floc_restore_cmdmod_stacklen;
+} funclocal_T;
+
 /*
  * Call compiled function "cdf_idx" from compiled code.
  * This adds a stack frame and sets the instruction pointer to the start of the
@@ -170,16 +179,22 @@ exe_newlist(int count, ectx_T *ectx)
  * - reserved space for local variables
  */
     static int
-call_dfunc(int cdf_idx, partial_T *pt, int argcount_arg, ectx_T *ectx)
+call_dfunc(
+	int		cdf_idx,
+	partial_T	*pt,
+	int		argcount_arg,
+	funclocal_T	*funclocal,
+	ectx_T		*ectx)
 {
-    int	    argcount = argcount_arg;
-    dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data) + cdf_idx;
-    ufunc_T *ufunc = dfunc->df_ufunc;
-    int	    arg_to_add;
-    int	    vararg_count = 0;
-    int	    varcount;
-    int	    idx;
-    estack_T *entry;
+    int		argcount = argcount_arg;
+    dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data) + cdf_idx;
+    ufunc_T	*ufunc = dfunc->df_ufunc;
+    int		arg_to_add;
+    int		vararg_count = 0;
+    int		varcount;
+    int		idx;
+    estack_T	*entry;
+    funclocal_T	*floc = NULL;
 
     if (dfunc->df_deleted)
     {
@@ -267,6 +282,16 @@ call_dfunc(int cdf_idx, partial_T *pt, int argcount_arg, ectx_T *ectx)
     if (funcdepth_increment() == FAIL)
 	return FAIL;
 
+    // Only make a copy of funclocal if it contains something to restore.
+    if (funclocal->floc_restore_cmdmod)
+    {
+	floc = ALLOC_ONE(funclocal_T);
+	if (floc == NULL)
+	    return FAIL;
+	*floc = *funclocal;
+	funclocal->floc_restore_cmdmod = FALSE;
+    }
+
     // Move the vararg-list to below the missing optional arguments.
     if (vararg_count > 0 && arg_to_add > 0)
 	*STACK_TV_BOT(arg_to_add - 1) = *STACK_TV_BOT(-1);
@@ -280,6 +305,7 @@ call_dfunc(int cdf_idx, partial_T *pt, int argcount_arg, ectx_T *ectx)
     STACK_TV_BOT(STACK_FRAME_FUNC_OFF)->vval.v_number = ectx->ec_dfunc_idx;
     STACK_TV_BOT(STACK_FRAME_IIDX_OFF)->vval.v_number = ectx->ec_iidx;
     STACK_TV_BOT(STACK_FRAME_OUTER_OFF)->vval.v_string = (void *)ectx->ec_outer;
+    STACK_TV_BOT(STACK_FRAME_FUNCLOCAL_OFF)->vval.v_string = (void *)floc;
     STACK_TV_BOT(STACK_FRAME_IDX_OFF)->vval.v_number = ectx->ec_frame_idx;
     ectx->ec_frame_idx = ectx->ec_stack.ga_len;
 
@@ -530,7 +556,7 @@ funcstack_check_refcount(funcstack_T *funcstack)
  * Return from the current function.
  */
     static int
-func_return(ectx_T *ectx)
+func_return(funclocal_T *funclocal, ectx_T *ectx)
 {
     int		idx;
     int		ret_idx;
@@ -543,6 +569,7 @@ func_return(ectx_T *ectx)
 					+ STACK_FRAME_FUNC_OFF)->vval.v_number;
     dfunc_T	*prev_dfunc = ((dfunc_T *)def_functions.ga_data)
 							      + prev_dfunc_idx;
+    funclocal_T	*floc;
 
 #ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
@@ -592,10 +619,20 @@ func_return(ectx_T *ectx)
 					+ STACK_FRAME_IIDX_OFF)->vval.v_number;
     ectx->ec_outer = (void *)STACK_TV(ectx->ec_frame_idx
 				       + STACK_FRAME_OUTER_OFF)->vval.v_string;
+    floc = (void *)STACK_TV(ectx->ec_frame_idx
+				   + STACK_FRAME_FUNCLOCAL_OFF)->vval.v_string;
     // restoring ec_frame_idx must be last
     ectx->ec_frame_idx = STACK_TV(ectx->ec_frame_idx
 				       + STACK_FRAME_IDX_OFF)->vval.v_number;
     ectx->ec_instr = INSTRUCTIONS(prev_dfunc);
+
+    if (floc == NULL)
+	funclocal->floc_restore_cmdmod = FALSE;
+    else
+    {
+	*funclocal = *floc;
+	vim_free(floc);
+    }
 
     if (ret_idx > 0)
     {
@@ -690,6 +727,7 @@ call_ufunc(
 	ufunc_T	    *ufunc,
 	partial_T   *pt,
 	int	    argcount,
+	funclocal_T *funclocal,
 	ectx_T	    *ectx,
 	isn_T	    *iptr)
 {
@@ -729,7 +767,7 @@ call_ufunc(
 	    iptr->isn_arg.dfunc.cdf_idx = ufunc->uf_dfunc_idx;
 	    iptr->isn_arg.dfunc.cdf_argcount = argcount;
 	}
-	return call_dfunc(ufunc->uf_dfunc_idx, pt, argcount, ectx);
+	return call_dfunc(ufunc->uf_dfunc_idx, pt, argcount, funclocal, ectx);
     }
 
     if (call_prepare(argcount, argvars, ectx) == FAIL)
@@ -773,7 +811,12 @@ vim9_aborting(int prev_called_emsg)
  * Returns FAIL if not found without an error message.
  */
     static int
-call_by_name(char_u *name, int argcount, ectx_T *ectx, isn_T *iptr)
+call_by_name(
+	char_u	    *name,
+	int	    argcount,
+	funclocal_T *funclocal,
+	ectx_T	    *ectx,
+	isn_T	    *iptr)
 {
     ufunc_T *ufunc;
 
@@ -824,14 +867,18 @@ call_by_name(char_u *name, int argcount, ectx_T *ectx, isn_T *iptr)
 	    }
 	}
 
-	return call_ufunc(ufunc, NULL, argcount, ectx, iptr);
+	return call_ufunc(ufunc, NULL, argcount, funclocal, ectx, iptr);
     }
 
     return FAIL;
 }
 
     static int
-call_partial(typval_T *tv, int argcount_arg, ectx_T *ectx)
+call_partial(
+	typval_T    *tv,
+	int	    argcount_arg,
+	funclocal_T *funclocal,
+	ectx_T	    *ectx)
 {
     int		argcount = argcount_arg;
     char_u	*name = NULL;
@@ -860,7 +907,7 @@ call_partial(typval_T *tv, int argcount_arg, ectx_T *ectx)
 	}
 
 	if (pt->pt_func != NULL)
-	    return call_ufunc(pt->pt_func, pt, argcount, ectx, NULL);
+	    return call_ufunc(pt->pt_func, pt, argcount, funclocal, ectx, NULL);
 
 	name = pt->pt_name;
     }
@@ -878,7 +925,7 @@ call_partial(typval_T *tv, int argcount_arg, ectx_T *ectx)
 	if (error != FCERR_NONE)
 	    res = FAIL;
 	else
-	    res = call_by_name(fname, argcount, ectx, NULL);
+	    res = call_by_name(fname, argcount, funclocal, ectx, NULL);
 	vim_free(tofree);
     }
 
@@ -1125,12 +1172,17 @@ get_script_svar(scriptref_T *sref, ectx_T *ectx)
  * "iptr" can be used to replace the instruction with a more efficient one.
  */
     static int
-call_eval_func(char_u *name, int argcount, ectx_T *ectx, isn_T *iptr)
+call_eval_func(
+	char_u	    *name,
+	int	    argcount,
+	funclocal_T *funclocal,
+	ectx_T	    *ectx,
+	isn_T	    *iptr)
 {
     int	    called_emsg_before = called_emsg;
     int	    res;
 
-    res = call_by_name(name, argcount, ectx, iptr);
+    res = call_by_name(name, argcount, funclocal, ectx, iptr);
     if (res == FAIL && called_emsg == called_emsg_before)
     {
 	dictitem_T	*v;
@@ -1146,7 +1198,7 @@ call_eval_func(char_u *name, int argcount, ectx_T *ectx, isn_T *iptr)
 	    semsg(_(e_unknownfunc), name);
 	    return FAIL;
 	}
-	return call_partial(&v->di_tv, argcount, ectx);
+	return call_partial(&v->di_tv, argcount, funclocal, ectx);
     }
     return res;
 }
@@ -1222,9 +1274,7 @@ call_def_function(
     int		save_suppress_errthrow = suppress_errthrow;
     msglist_T	**saved_msg_list = NULL;
     msglist_T	*private_msg_list = NULL;
-    cmdmod_T	save_cmdmod;
-    int		restore_cmdmod = FALSE;
-    int		restore_cmdmod_stacklen = 0;
+    funclocal_T funclocal;
     int		save_emsg_silent_def = emsg_silent_def;
     int		save_did_emsg_def = did_emsg_def;
     int		trylevel_at_start = trylevel;
@@ -1268,6 +1318,7 @@ call_def_function(
     if (funcdepth_increment() == FAIL)
 	return FAIL;
 
+    CLEAR_FIELD(funclocal);
     CLEAR_FIELD(ectx);
     ectx.ec_dfunc_idx = ufunc->uf_dfunc_idx;
     ga_init2(&ectx.ec_stack, sizeof(typval_T), 500);
@@ -1488,7 +1539,7 @@ call_def_function(
 		    goto done;
 		}
 
-		if (func_return(&ectx) == FAIL)
+		if (func_return(&funclocal, &ectx) == FAIL)
 		    goto failed;
 	    }
 	    continue;
@@ -2467,9 +2518,11 @@ call_def_function(
 	    // call a :def function
 	    case ISN_DCALL:
 		SOURCING_LNUM = iptr->isn_lnum;
-		if (call_dfunc(iptr->isn_arg.dfunc.cdf_idx, NULL,
-			      iptr->isn_arg.dfunc.cdf_argcount,
-			      &ectx) == FAIL)
+		if (call_dfunc(iptr->isn_arg.dfunc.cdf_idx,
+				NULL,
+				iptr->isn_arg.dfunc.cdf_argcount,
+				&funclocal,
+				&ectx) == FAIL)
 		    goto on_error;
 		break;
 
@@ -2502,7 +2555,8 @@ call_def_function(
 			partial_tv = *STACK_TV_BOT(0);
 			tv = &partial_tv;
 		    }
-		    r = call_partial(tv, pfunc->cpf_argcount, &ectx);
+		    r = call_partial(tv, pfunc->cpf_argcount,
+							    &funclocal, &ectx);
 		    if (tv == &partial_tv)
 			clear_tv(&partial_tv);
 		    if (r == FAIL)
@@ -2525,8 +2579,8 @@ call_def_function(
 		    cufunc_T	*cufunc = &iptr->isn_arg.ufunc;
 
 		    SOURCING_LNUM = iptr->isn_lnum;
-		    if (call_eval_func(cufunc->cuf_name,
-				    cufunc->cuf_argcount, &ectx, iptr) == FAIL)
+		    if (call_eval_func(cufunc->cuf_name, cufunc->cuf_argcount,
+					      &funclocal, &ectx, iptr) == FAIL)
 			goto on_error;
 		}
 		break;
@@ -2728,12 +2782,12 @@ call_def_function(
 		{
 		    garray_T	*trystack = &ectx.ec_trystack;
 
-		    if (restore_cmdmod)
+		    if (funclocal.floc_restore_cmdmod)
 		    {
 			cmdmod.cmod_filter_regmatch.regprog = NULL;
 			undo_cmdmod(&cmdmod);
-			cmdmod = save_cmdmod;
-			restore_cmdmod = FALSE;
+			cmdmod = funclocal.floc_save_cmdmod;
+			funclocal.floc_restore_cmdmod = FALSE;
 		    }
 		    if (trystack->ga_len > 0)
 		    {
@@ -3649,9 +3703,9 @@ call_def_function(
 		break;
 
 	    case ISN_CMDMOD:
-		save_cmdmod = cmdmod;
-		restore_cmdmod = TRUE;
-		restore_cmdmod_stacklen = ectx.ec_stack.ga_len;
+		funclocal.floc_save_cmdmod = cmdmod;
+		funclocal.floc_restore_cmdmod = TRUE;
+		funclocal.floc_restore_cmdmod_stacklen = ectx.ec_stack.ga_len;
 		cmdmod = *iptr->isn_arg.cmdmod.cf_cmdmod;
 		apply_cmdmod(&cmdmod);
 		break;
@@ -3660,8 +3714,8 @@ call_def_function(
 		// filter regprog is owned by the instruction, don't free it
 		cmdmod.cmod_filter_regmatch.regprog = NULL;
 		undo_cmdmod(&cmdmod);
-		cmdmod = save_cmdmod;
-		restore_cmdmod = FALSE;
+		cmdmod = funclocal.floc_save_cmdmod;
+		funclocal.floc_restore_cmdmod = FALSE;
 		break;
 
 	    case ISN_UNPACK:
@@ -3790,7 +3844,7 @@ func_return:
 	if (ectx.ec_frame_idx == initial_frame_idx)
 	    goto done;
 
-	if (func_return(&ectx) == FAIL)
+	if (func_return(&funclocal, &ectx) == FAIL)
 	    // only fails when out of memory
 	    goto failed;
 	continue;
@@ -3805,9 +3859,10 @@ on_error:
 	    // If a sequence of instructions causes an error while ":silent!"
 	    // was used, restore the stack length and jump ahead to restoring
 	    // the cmdmod.
-	    if (restore_cmdmod)
+	    if (funclocal.floc_restore_cmdmod)
 	    {
-		while (ectx.ec_stack.ga_len > restore_cmdmod_stacklen)
+		while (ectx.ec_stack.ga_len
+				      > funclocal.floc_restore_cmdmod_stacklen)
 		{
 		    --ectx.ec_stack.ga_len;
 		    clear_tv(STACK_TV_BOT(0));
@@ -3834,7 +3889,7 @@ done:
 failed:
     // When failed need to unwind the call stack.
     while (ectx.ec_frame_idx != initial_frame_idx)
-	func_return(&ectx);
+	func_return(&funclocal, &ectx);
 
     // Deal with any remaining closures, they may be in use somewhere.
     if (ectx.ec_funcrefs.ga_len > 0)
@@ -3862,11 +3917,11 @@ failed:
     }
     msg_list = saved_msg_list;
 
-    if (restore_cmdmod)
+    if (funclocal.floc_restore_cmdmod)
     {
 	cmdmod.cmod_filter_regmatch.regprog = NULL;
 	undo_cmdmod(&cmdmod);
-	cmdmod = save_cmdmod;
+	cmdmod = funclocal.floc_save_cmdmod;
     }
     emsg_silent_def = save_emsg_silent_def;
     did_emsg_def += save_did_emsg_def;

@@ -2363,6 +2363,29 @@ def Test_cmdmod_silent_restored()
   delete(fname)
 enddef
 
+def Test_cmdmod_silent_nested()
+  var lines =<< trim END
+      vim9script
+      var result = ''
+
+      def Error()
+          result ..= 'Eb'
+          eval [][0]
+          result ..= 'Ea'
+      enddef
+
+      def Crash()
+          result ..= 'Cb'
+          sil! Error()
+          result ..= 'Ca'
+      enddef
+
+      Crash()
+      assert_equal('CbEbEaCa', result)
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_dict_member_with_silent()
   var lines =<< trim END
       vim9script
