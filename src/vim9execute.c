@@ -796,6 +796,21 @@ call_ufunc(
 }
 
 /*
+ * If command modifiers were applied restore them.
+ */
+    static void
+may_restore_cmdmod(funclocal_T *funclocal)
+{
+    if (funclocal->floc_restore_cmdmod)
+    {
+	cmdmod.cmod_filter_regmatch.regprog = NULL;
+	undo_cmdmod(&cmdmod);
+	cmdmod = funclocal->floc_save_cmdmod;
+	funclocal->floc_restore_cmdmod = FALSE;
+    }
+}
+
+/*
  * Return TRUE if an error was given or CTRL-C was pressed.
  */
     static int
@@ -2719,8 +2734,11 @@ call_def_function(
 			goto failed;
 		    ++idxtv->vval.v_number;
 		    if (list == NULL || idxtv->vval.v_number >= list->lv_len)
+		    {
 			// past the end of the list, jump to "endfor"
 			ectx.ec_iidx = iptr->isn_arg.forloop.for_end;
+			may_restore_cmdmod(&funclocal);
+		    }
 		    else if (list->lv_first == &range_list_item)
 		    {
 			// non-materialized range() list
@@ -2755,9 +2773,12 @@ call_def_function(
 		    CLEAR_POINTER(trycmd);
 		    trycmd->tcd_frame_idx = ectx.ec_frame_idx;
 		    trycmd->tcd_stack_len = ectx.ec_stack.ga_len;
-		    trycmd->tcd_catch_idx = iptr->isn_arg.try.try_ref->try_catch;
-		    trycmd->tcd_finally_idx = iptr->isn_arg.try.try_ref->try_finally;
-		    trycmd->tcd_endtry_idx = iptr->isn_arg.try.try_ref->try_endtry;
+		    trycmd->tcd_catch_idx =
+					  iptr->isn_arg.try.try_ref->try_catch;
+		    trycmd->tcd_finally_idx =
+					iptr->isn_arg.try.try_ref->try_finally;
+		    trycmd->tcd_endtry_idx =
+					 iptr->isn_arg.try.try_ref->try_endtry;
 		}
 		break;
 
@@ -2782,13 +2803,7 @@ call_def_function(
 		{
 		    garray_T	*trystack = &ectx.ec_trystack;
 
-		    if (funclocal.floc_restore_cmdmod)
-		    {
-			cmdmod.cmod_filter_regmatch.regprog = NULL;
-			undo_cmdmod(&cmdmod);
-			cmdmod = funclocal.floc_save_cmdmod;
-			funclocal.floc_restore_cmdmod = FALSE;
-		    }
+		    may_restore_cmdmod(&funclocal);
 		    if (trystack->ga_len > 0)
 		    {
 			trycmd_T    *trycmd = ((trycmd_T *)trystack->ga_data)

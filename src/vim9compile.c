@@ -2172,6 +2172,45 @@ generate_undo_cmdmods(cctx_T *cctx)
     return OK;
 }
 
+/*
+ * If an ISN_CMDMOD was just generated drop it.
+ */
+    static void
+drop_cmdmod(cctx_T *cctx)
+{
+    garray_T	*instr = &cctx->ctx_instr;
+
+    // Drop any CMDMOD instruction
+    if (cctx->ctx_has_cmdmod
+	    && ((isn_T *)instr->ga_data)[instr->ga_len - 1].isn_type
+								 == ISN_CMDMOD)
+    {
+	--instr->ga_len;
+	cctx->ctx_has_cmdmod = FALSE;
+    }
+}
+
+/*
+ * Get the index of the current instruction.
+ * This compenstates for a preceding ISN_CMDMOD and ISN_PROF_START.
+ */
+    static int
+current_instr_idx(cctx_T *cctx)
+{
+    garray_T	*instr = &cctx->ctx_instr;
+    int		idx = instr->ga_len;
+
+    if (cctx->ctx_has_cmdmod && ((isn_T *)instr->ga_data)[idx - 1]
+						       .isn_type == ISN_CMDMOD)
+	--idx;
+#ifdef FEAT_PROFILE
+    if (cctx->ctx_profiling && ((isn_T *)instr->ga_data)[idx - 1]
+						   .isn_type == ISN_PROF_START)
+	--idx;
+#endif
+    return idx;
+}
+
 #ifdef FEAT_PROFILE
     static void
 may_generate_prof_end(cctx_T *cctx, int prof_lnum)
@@ -6877,6 +6916,9 @@ compile_if(char_u *arg, cctx_T *cctx)
 	    return NULL;
     }
 
+    // CMDMOD_REV must come before the jump
+    generate_undo_cmdmods(cctx);
+
     scope = new_scope(cctx, IF_SCOPE);
     if (scope == NULL)
 	return NULL;
@@ -6937,24 +6979,36 @@ compile_elseif(char_u *arg, cctx_T *cctx)
     if (scope->se_u.se_if.is_seen_skip_not)
     {
 	// A previous block was executed, skip over expression and bail out.
-	// Do not count the "elseif" for profiling.
-#ifdef FEAT_PROFILE
-	if (cctx->ctx_profiling && ((isn_T *)instr->ga_data)[instr->ga_len - 1]
-						   .isn_type == ISN_PROF_START)
-	    --instr->ga_len;
-#endif
+	// Do not count the "elseif" for profiling and cmdmod
+	instr->ga_len = current_instr_idx(cctx);
+
 	skip_expr_cctx(&p, cctx);
 	return p;
     }
 
     if (cctx->ctx_skip == SKIP_UNKNOWN)
     {
+	int moved_cmdmod = FALSE;
+
+	// Move any CMDMOD instruction to after the jump
+	if (((isn_T *)instr->ga_data)[instr->ga_len - 1].isn_type == ISN_CMDMOD)
+	{
+	    if (ga_grow(instr, 1) == FAIL)
+		return NULL;
+	    ((isn_T *)instr->ga_data)[instr->ga_len] =
+				  ((isn_T *)instr->ga_data)[instr->ga_len - 1];
+	    --instr->ga_len;
+	    moved_cmdmod = TRUE;
+	}
+
 	if (compile_jump_to_end(&scope->se_u.se_if.is_end_label,
 						    JUMP_ALWAYS, cctx) == FAIL)
 	    return NULL;
 	// previous "if" or "elseif" jumps here
 	isn = ((isn_T *)instr->ga_data) + scope->se_u.se_if.is_if_label;
 	isn->isn_arg.jump.jump_where = instr->ga_len;
+	if (moved_cmdmod)
+	    ++instr->ga_len;
     }
 
     // compile "expr"; if we know it evaluates to FALSE skip the block
@@ -7006,6 +7060,9 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 	    return NULL;
 	if (bool_on_stack(cctx) == FAIL)
 	    return NULL;
+
+	// CMDMOD_REV must come before the jump
+	generate_undo_cmdmods(cctx);
 
 	// "where" is set when ":elseif", "else" or ":endif" is found
 	scope->se_u.se_if.is_if_label = instr->ga_len;
@@ -7090,6 +7147,7 @@ compile_endif(char_u *arg, cctx_T *cctx)
     garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
 
+    drop_cmdmod(cctx);
     if (scope == NULL || scope->se_type != IF_SCOPE)
     {
 	emsg(_(e_endif_without_if));
@@ -7160,7 +7218,6 @@ compile_for(char_u *arg_start, cctx_T *cctx)
     int		var_count = 0;
     int		semicolon = FALSE;
     size_t	varlen;
-    garray_T	*instr = &cctx->ctx_instr;
     garray_T	*stack = &cctx->ctx_type_stack;
     scope_T	*scope;
     lvar_T	*loop_lvar;	// loop iteration variable
@@ -7230,8 +7287,11 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	    item_type = vartype->tt_member->tt_member;
     }
 
+    // CMDMOD_REV must come before the FOR instruction
+    generate_undo_cmdmods(cctx);
+
     // "for_end" is set when ":endfor" is found
-    scope->se_u.se_for.fs_top_label = instr->ga_len;
+    scope->se_u.se_for.fs_top_label = current_instr_idx(cctx);
     generate_FOR(cctx, loop_lvar->lv_idx);
 
     arg = arg_start;
@@ -7333,6 +7393,8 @@ compile_endfor(char_u *arg, cctx_T *cctx)
     forscope_T	*forscope;
     isn_T	*isn;
 
+    drop_cmdmod(cctx);
+
     if (scope == NULL || scope->se_type != FOR_SCOPE)
     {
 	emsg(_(e_for));
@@ -7376,20 +7438,14 @@ compile_endfor(char_u *arg, cctx_T *cctx)
 compile_while(char_u *arg, cctx_T *cctx)
 {
     char_u	*p = arg;
-    garray_T	*instr = &cctx->ctx_instr;
     scope_T	*scope;
 
     scope = new_scope(cctx, WHILE_SCOPE);
     if (scope == NULL)
 	return NULL;
 
-    // "endwhile" jumps back here, one before when profiling
-    scope->se_u.se_while.ws_top_label = instr->ga_len;
-#ifdef FEAT_PROFILE
-    if (cctx->ctx_profiling && ((isn_T *)instr->ga_data)[instr->ga_len - 1]
-						   .isn_type == ISN_PROF_START)
-	--scope->se_u.se_while.ws_top_label;
-#endif
+    // "endwhile" jumps back here, one before when profiling or using cmdmods
+    scope->se_u.se_while.ws_top_label = current_instr_idx(cctx);
 
     // compile "expr"
     if (compile_expr0(&p, cctx) == FAIL)
@@ -7402,6 +7458,9 @@ compile_while(char_u *arg, cctx_T *cctx)
 
     if (bool_on_stack(cctx) == FAIL)
 	return FAIL;
+
+    // CMDMOD_REV must come before the jump
+    generate_undo_cmdmods(cctx);
 
     // "while_end" is set when ":endwhile" is found
     if (compile_jump_to_end(&scope->se_u.se_while.ws_end_label,
@@ -7420,6 +7479,7 @@ compile_endwhile(char_u *arg, cctx_T *cctx)
     scope_T	*scope = cctx->ctx_scope;
     garray_T	*instr = &cctx->ctx_instr;
 
+    drop_cmdmod(cctx);
     if (scope == NULL || scope->se_type != WHILE_SCOPE)
     {
 	emsg(_(e_while));
