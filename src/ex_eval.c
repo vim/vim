@@ -1011,6 +1011,8 @@ ex_endif(exarg_T *eap)
 {
     cstack_T	*cstack = eap->cstack;
 
+    if (cmdmod_error())
+	return;
     did_endif = TRUE;
     if (cstack->cs_idx < 0
 	    || (cstack->cs_flags[cstack->cs_idx]
@@ -1314,6 +1316,9 @@ ex_endwhile(exarg_T *eap)
     int		csf;
     int		fl;
 
+    if (cmdmod_error())
+	return;
+
     if (eap->cmdidx == CMD_endwhile)
     {
 	err = e_while;
@@ -1539,6 +1544,9 @@ ex_try(exarg_T *eap)
     int		skip;
     cstack_T	*cstack = eap->cstack;
 
+    if (cmdmod_error())
+	return;
+
     if (cstack->cs_idx == CSTACK_LEN - 1)
 	eap->errmsg = _("E601: :try nesting too deep");
     else
@@ -1616,6 +1624,9 @@ ex_catch(exarg_T *eap)
     int		prev_got_int;
     cstack_T	*cstack = eap->cstack;
     char_u	*pat;
+
+    if (cmdmod_error())
+	return;
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
     {
@@ -1777,6 +1788,9 @@ ex_finally(exarg_T *eap)
     int		pending = CSTP_NONE;
     cstack_T	*cstack = eap->cstack;
 
+    if (cmdmod_error())
+	return;
+
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
 	eap->errmsg = _(e_finally);
     else
@@ -1905,6 +1919,9 @@ ex_endtry(exarg_T *eap)
     int		pending = CSTP_NONE;
     void	*rettv = NULL;
     cstack_T	*cstack = eap->cstack;
+
+    if (cmdmod_error())
+	return;
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
 	eap->errmsg = _(e_no_endtry);

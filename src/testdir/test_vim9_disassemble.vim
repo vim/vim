@@ -1903,7 +1903,7 @@ enddef
 def s:SilentIf()
   silent if 4 == g:five
   silent elseif 4 == g:five
-  silent endif
+  endif
 enddef
 
 def Test_silent_if()
@@ -1924,14 +1924,14 @@ def Test_silent_if()
         '\d\+ COMPAREANY ==\_s*' ..
         '\d\+ CMDMOD_REV\_s*' ..
         '\d\+ JUMP_IF_FALSE -> \d\+\_s*' ..
-        'silent endif\_s*' ..
+        'endif\_s*' ..
         '\d\+ RETURN 0',
         res)
 enddef
 
 def s:SilentFor()
   silent for i in [0]
-  silent endfor
+  endfor
 enddef
 
 def Test_silent_for()
@@ -1945,7 +1945,7 @@ def Test_silent_for()
         '\d CMDMOD_REV\_s*' ..
         '5 FOR $0 -> 8\_s*' ..
         '\d STORE $1\_s*' ..
-        'silent endfor\_s*' ..
+        'endfor\_s*' ..
         '\d JUMP -> 5\_s*' ..
         '8 DROP\_s*' ..
         '\d RETURN 0\_s*',
@@ -1954,7 +1954,7 @@ enddef
 
 def s:SilentWhile()
   silent while g:not
-  silent endwhile
+  endwhile
 enddef
 
 def Test_silent_while()
@@ -1967,7 +1967,7 @@ def Test_silent_while()
         '\d CMDMOD_REV\_s*' ..
         '\d JUMP_IF_FALSE -> 6\_s*' ..
 
-        'silent endwhile\_s*' ..
+        'endwhile\_s*' ..
         '\d JUMP -> 0\_s*' ..
         '6 RETURN 0\_s*',
          res)

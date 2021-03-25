@@ -2142,11 +2142,7 @@ generate_cmdmods(cctx_T *cctx, cmdmod_T *cmod)
 {
     isn_T	*isn;
 
-    if (cmod->cmod_flags != 0
-	    || cmod->cmod_split != 0
-	    || cmod->cmod_verbose != 0
-	    || cmod->cmod_tab != 0
-	    || cmod->cmod_filter_regmatch.regprog != NULL)
+    if (has_cmdmod(cmod))
     {
 	cctx->ctx_has_cmdmod = TRUE;
 
@@ -2172,22 +2168,19 @@ generate_undo_cmdmods(cctx_T *cctx)
     return OK;
 }
 
-/*
- * If an ISN_CMDMOD was just generated drop it.
- */
-    static void
-drop_cmdmod(cctx_T *cctx)
+    static int
+misplaced_cmdmod(cctx_T *cctx)
 {
     garray_T	*instr = &cctx->ctx_instr;
 
-    // Drop any CMDMOD instruction
     if (cctx->ctx_has_cmdmod
 	    && ((isn_T *)instr->ga_data)[instr->ga_len - 1].isn_type
 								 == ISN_CMDMOD)
     {
-	--instr->ga_len;
-	cctx->ctx_has_cmdmod = FALSE;
+	emsg(_(e_misplaced_command_modifier));
+	return TRUE;
     }
+    return FALSE;
 }
 
 /*
@@ -7147,7 +7140,9 @@ compile_endif(char_u *arg, cctx_T *cctx)
     garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
 
-    drop_cmdmod(cctx);
+    if (misplaced_cmdmod(cctx))
+	return NULL;
+
     if (scope == NULL || scope->se_type != IF_SCOPE)
     {
 	emsg(_(e_endif_without_if));
@@ -7393,7 +7388,8 @@ compile_endfor(char_u *arg, cctx_T *cctx)
     forscope_T	*forscope;
     isn_T	*isn;
 
-    drop_cmdmod(cctx);
+    if (misplaced_cmdmod(cctx))
+	return NULL;
 
     if (scope == NULL || scope->se_type != FOR_SCOPE)
     {
@@ -7479,7 +7475,8 @@ compile_endwhile(char_u *arg, cctx_T *cctx)
     scope_T	*scope = cctx->ctx_scope;
     garray_T	*instr = &cctx->ctx_instr;
 
-    drop_cmdmod(cctx);
+    if (misplaced_cmdmod(cctx))
+	return NULL;
     if (scope == NULL || scope->se_type != WHILE_SCOPE)
     {
 	emsg(_(e_while));
@@ -7644,6 +7641,9 @@ compile_try(char_u *arg, cctx_T *cctx)
     scope_T	*try_scope;
     scope_T	*scope;
 
+    if (misplaced_cmdmod(cctx))
+	return NULL;
+
     // scope that holds the jumps that go to catch/finally/endtry
     try_scope = new_scope(cctx, TRY_SCOPE);
     if (try_scope == NULL)
@@ -7683,6 +7683,9 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
     garray_T	*instr = &cctx->ctx_instr;
     char_u	*p;
     isn_T	*isn;
+
+    if (misplaced_cmdmod(cctx))
+	return NULL;
 
     // end block scope from :try or :catch
     if (scope != NULL && scope->se_type == BLOCK_SCOPE)
@@ -7796,6 +7799,9 @@ compile_finally(char_u *arg, cctx_T *cctx)
     isn_T	*isn;
     int		this_instr;
 
+    if (misplaced_cmdmod(cctx))
+	return NULL;
+
     // end block scope from :try or :catch
     if (scope != NULL && scope->se_type == BLOCK_SCOPE)
 	compile_endblock(cctx);
@@ -7853,6 +7859,9 @@ compile_endtry(char_u *arg, cctx_T *cctx)
     scope_T	*scope = cctx->ctx_scope;
     garray_T	*instr = &cctx->ctx_instr;
     isn_T	*try_isn;
+
+    if (misplaced_cmdmod(cctx))
+	return NULL;
 
     // end block scope from :catch or :finally
     if (scope != NULL && scope->se_type == BLOCK_SCOPE)

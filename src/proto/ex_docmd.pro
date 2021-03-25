@@ -8,6 +8,8 @@ void *getline_cookie(char_u *(*fgetline)(int, void *, int, getline_opt_T), void 
 char_u *getline_peek(char_u *(*fgetline)(int, void *, int, getline_opt_T), void *cookie);
 char *ex_errmsg(char *msg, char_u *arg);
 int parse_command_modifiers(exarg_T *eap, char **errormsg, cmdmod_T *cmod, int skip_only);
+int has_cmdmod(cmdmod_T *cmod);
+int cmdmod_error(void);
 void apply_cmdmod(cmdmod_T *cmod);
 void undo_cmdmod(cmdmod_T *cmod);
 int parse_cmd_address(exarg_T *eap, char **errormsg, int silent);

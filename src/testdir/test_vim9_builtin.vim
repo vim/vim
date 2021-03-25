@@ -247,7 +247,7 @@ enddef
 def Test_exepath()
   CheckDefExecFailure(['echo exepath(true)'], 'E1174:')
   CheckDefExecFailure(['echo exepath(v:null)'], 'E1174:')
-  CheckDefExecFailure(['echo exepath("")'], 'E1142:')
+  CheckDefExecFailure(['echo exepath("")'], 'E1175:')
 enddef
 
 def Test_expand()
@@ -406,13 +406,13 @@ enddef
 def Test_finddir()
   CheckDefExecFailure(['echo finddir(true)'], 'E1174:')
   CheckDefExecFailure(['echo finddir(v:null)'], 'E1174:')
-  CheckDefExecFailure(['echo finddir("")'], 'E1142:')
+  CheckDefExecFailure(['echo finddir("")'], 'E1175:')
 enddef
 
 def Test_findfile()
   CheckDefExecFailure(['echo findfile(true)'], 'E1174:')
   CheckDefExecFailure(['echo findfile(v:null)'], 'E1174:')
-  CheckDefExecFailure(['echo findfile("")'], 'E1142:')
+  CheckDefExecFailure(['echo findfile("")'], 'E1175:')
 enddef
 
 def Test_flattennew()

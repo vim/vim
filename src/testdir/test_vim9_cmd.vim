@@ -797,6 +797,55 @@ def Test_silent_pattern()
   bwipe!
 enddef
 
+def Test_useless_command_modifier()
+  g:maybe = true
+  var lines =<< trim END
+      if g:maybe
+      silent endif
+  END
+  CheckDefAndScriptFailure(lines, 'E1176:', 2)
+
+  lines =<< trim END
+      for i in [0]
+      silent endfor
+  END
+  CheckDefAndScriptFailure(lines, 'E1176:', 2)
+
+  lines =<< trim END
+      while g:maybe
+      silent endwhile
+  END
+  CheckDefAndScriptFailure(lines, 'E1176:', 2)
+
+  lines =<< trim END
+      silent try
+      finally
+      endtry
+  END
+  CheckDefAndScriptFailure(lines, 'E1176:', 1)
+
+  lines =<< trim END
+      try
+      silent catch
+      endtry
+  END
+  CheckDefAndScriptFailure(lines, 'E1176:', 2)
+
+  lines =<< trim END
+      try
+      silent finally
+      endtry
+  END
+  CheckDefAndScriptFailure(lines, 'E1176:', 2)
+
+  lines =<< trim END
+      try
+      finally
+      silent endtry
+  END
+  CheckDefAndScriptFailure(lines, 'E1176:', 3)
+enddef
+
 def Test_eval_command()
   var from = 3
   var to = 5

@@ -2970,6 +2970,33 @@ parse_command_modifiers(
 }
 
 /*
+ * Return TRUE if "cmod" has anything set.
+ */
+    int
+has_cmdmod(cmdmod_T *cmod)
+{
+    return cmod->cmod_flags != 0
+	    || cmod->cmod_split != 0
+	    || cmod->cmod_verbose != 0
+	    || cmod->cmod_tab != 0
+	    || cmod->cmod_filter_regmatch.regprog != NULL;
+}
+
+/*
+ * If Vim9 script and "cmdmod" has anything set give an error and return TRUE.
+ */
+    int
+cmdmod_error(void)
+{
+    if (in_vim9script() && has_cmdmod(&cmdmod))
+    {
+	emsg(_(e_misplaced_command_modifier));
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
  * Apply the command modifiers.  Saves current state in "cmdmod", call
  * undo_cmdmod() later.
  */
