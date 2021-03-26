@@ -789,8 +789,11 @@ ex_let(exarg_T *eap)
 	{
 	    if (vim9script)
 	    {
-		// Vim9 declaration ":var name: type"
-		arg = vim9_declare_scriptvar(eap, arg);
+		if (!ends_excmd2(eap->cmd, skipwhite(argend)))
+		    semsg(_(e_trailing_arg), argend);
+		else
+		    // Vim9 declaration ":var name: type"
+		    arg = vim9_declare_scriptvar(eap, arg);
 	    }
 	    else
 	    {

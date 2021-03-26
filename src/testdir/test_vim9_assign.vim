@@ -1290,6 +1290,8 @@ def Test_var_declaration()
     other = 1234
     g:other_var = other
 
+    var xyz: string  # comment
+
     # type is inferred
     var s:dict = {['a']: 222}
     def GetDictVal(key: any)
@@ -1365,7 +1367,7 @@ def Test_var_declaration_fails()
     vim9script
     var 9var: string
   END
-  CheckScriptFailure(lines, 'E475:')
+  CheckScriptFailure(lines, 'E488:')
 
   CheckDefFailure(['var foo.bar = 2'], 'E1087:')
   CheckDefFailure(['var foo[3] = 2'], 'E1087:')
@@ -1617,6 +1619,11 @@ def Test_expr_error_no_assign()
       echo x
   END
   CheckScriptFailureList(lines, ['E1154:', 'E121:'])
+
+  lines =<< trim END
+      var x: string  'string'
+  END
+  CheckDefAndScriptFailure(lines, 'E488:')
 enddef
 
 
