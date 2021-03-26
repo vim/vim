@@ -1045,6 +1045,7 @@ endfunc
 func Test_w_arg()
   " Can't catch the output of gvim.
   CheckNotGui
+
   call writefile(["iVim Editor\<Esc>:q!\<CR>"], 'Xscriptin', 'b')
   if RunVim([], [], '-s Xscriptin -w Xscriptout')
     call assert_equal(["iVim Editor\e:q!\r"], readfile('Xscriptout'))
@@ -1060,6 +1061,14 @@ func Test_w_arg()
     call assert_equal("Cannot open for script output: \"Xdir\"\n", m)
     call delete("Xdir", 'rf')
   endif
+
+  " A number argument sets the 'window' option
+  call writefile(["iwindow \<C-R>=&window\<CR>\<Esc>:wq! Xresult\<CR>"], 'Xscriptin', 'b')
+  if RunVim([], [], '-s Xscriptin -w 17')
+    call assert_equal(["window 17"], readfile('Xresult'))
+    call delete('Xresult')
+  endif
+  call delete('Xscriptin')
 endfunc
 
 " Test for the "-s scriptin" argument
