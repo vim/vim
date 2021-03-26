@@ -7264,11 +7264,15 @@ compile_for(char_u *arg_start, cctx_T *cctx)
     }
     arg_end = arg;
 
-    // Now that we know the type of "var", check that it is a list, now or at
-    // runtime.
+    // If we know the type of "var" and it is a not a list or string we can
+    // give an error now.
     vartype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-    if (need_type(vartype, &t_list_any, -1, 0, cctx, FALSE, FALSE) == FAIL)
+    if (vartype->tt_type != VAR_LIST && vartype->tt_type != VAR_STRING
+						&& vartype->tt_type != VAR_ANY)
     {
+	// TODO: support Blob
+	semsg(_(e_for_loop_on_str_not_supported),
+					       vartype_name(vartype->tt_type));
 	drop_scope(cctx);
 	return NULL;
     }

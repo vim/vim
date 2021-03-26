@@ -2741,36 +2741,76 @@ call_def_function(
 	    // top of a for loop
 	    case ISN_FOR:
 		{
-		    list_T	*list = STACK_TV_BOT(-1)->vval.v_list;
+		    typval_T	*ltv = STACK_TV_BOT(-1);
 		    typval_T	*idxtv =
 				   STACK_TV_VAR(iptr->isn_arg.forloop.for_idx);
 
-		    // push the next item from the list
 		    if (GA_GROW(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
-		    ++idxtv->vval.v_number;
-		    if (list == NULL || idxtv->vval.v_number >= list->lv_len)
+		    if (ltv->v_type == VAR_LIST)
 		    {
-			// past the end of the list, jump to "endfor"
-			ectx.ec_iidx = iptr->isn_arg.forloop.for_end;
-			may_restore_cmdmod(&funclocal);
-		    }
-		    else if (list->lv_first == &range_list_item)
-		    {
-			// non-materialized range() list
-			tv = STACK_TV_BOT(0);
-			tv->v_type = VAR_NUMBER;
-			tv->v_lock = 0;
-			tv->vval.v_number = list_find_nr(
+			list_T *list = ltv->vval.v_list;
+
+			// push the next item from the list
+			++idxtv->vval.v_number;
+			if (list == NULL
+				       || idxtv->vval.v_number >= list->lv_len)
+			{
+			    // past the end of the list, jump to "endfor"
+			    ectx.ec_iidx = iptr->isn_arg.forloop.for_end;
+			    may_restore_cmdmod(&funclocal);
+			}
+			else if (list->lv_first == &range_list_item)
+			{
+			    // non-materialized range() list
+			    tv = STACK_TV_BOT(0);
+			    tv->v_type = VAR_NUMBER;
+			    tv->v_lock = 0;
+			    tv->vval.v_number = list_find_nr(
 					     list, idxtv->vval.v_number, NULL);
-			++ectx.ec_stack.ga_len;
+			    ++ectx.ec_stack.ga_len;
+			}
+			else
+			{
+			    listitem_T *li = list_find(list,
+							 idxtv->vval.v_number);
+
+			    copy_tv(&li->li_tv, STACK_TV_BOT(0));
+			    ++ectx.ec_stack.ga_len;
+			}
+		    }
+		    else if (ltv->v_type == VAR_STRING)
+		    {
+			char_u	*str = ltv->vval.v_string;
+			int	len = str == NULL ? 0 : (int)STRLEN(str);
+
+			// Push the next character from the string.  The index
+			// is for the last byte of the previous character.
+			++idxtv->vval.v_number;
+			if (idxtv->vval.v_number >= len)
+			{
+			    // past the end of the string, jump to "endfor"
+			    ectx.ec_iidx = iptr->isn_arg.forloop.for_end;
+			    may_restore_cmdmod(&funclocal);
+			}
+			else
+			{
+			    int	clen = mb_ptr2len(str + idxtv->vval.v_number);
+
+			    tv = STACK_TV_BOT(0);
+			    tv->v_type = VAR_STRING;
+			    tv->vval.v_string = vim_strnsave(
+					     str + idxtv->vval.v_number, clen);
+			    ++ectx.ec_stack.ga_len;
+			    idxtv->vval.v_number += clen - 1;
+			}
 		    }
 		    else
 		    {
-			listitem_T *li = list_find(list, idxtv->vval.v_number);
-
-			copy_tv(&li->li_tv, STACK_TV_BOT(0));
-			++ectx.ec_stack.ga_len;
+			// TODO: support Blob
+			semsg(_(e_for_loop_on_str_not_supported),
+						    vartype_name(ltv->v_type));
+			goto failed;
 		    }
 		}
 		break;

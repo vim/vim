@@ -1061,7 +1061,6 @@ def Test_disassemble_for_loop_eval()
         '\d STORE -1 in $1\_s*' ..
         '\d PUSHS "\["one", "two"\]"\_s*' ..
         '\d BCALL eval(argc 1)\_s*' ..
-        '\d CHECKTYPE list<any> stack\[-1\]\_s*' ..
         '\d FOR $1 -> \d\+\_s*' ..
         '\d STORE $2\_s*' ..
         'res ..= str\_s*' ..
@@ -1071,7 +1070,7 @@ def Test_disassemble_for_loop_eval()
         '\d\+ CONCAT\_s*' ..
         '\d\+ STORE $0\_s*' ..
         'endfor\_s*' ..
-        '\d\+ JUMP -> 6\_s*' ..
+        '\d\+ JUMP -> 5\_s*' ..
         '\d\+ DROP\_s*' ..
         'return res\_s*' ..
         '\d\+ LOAD $0\_s*' ..

@@ -2322,6 +2322,25 @@ def Test_for_loop()
     res ..= n .. s
   endfor
   assert_equal('1a2b', res)
+
+  # loop over string
+  res = ''
+  for c in 'aéc̀d'
+    res ..= c .. '-'
+  endfor
+  assert_equal('a-é-c̀-d-', res)
+
+  res = ''
+  for c in ''
+    res ..= c .. '-'
+  endfor
+  assert_equal('', res)
+
+  res = ''
+  for c in test_null_string()
+    res ..= c .. '-'
+  endfor
+  assert_equal('', res)
 enddef
 
 def Test_for_loop_fails()
@@ -2333,10 +2352,17 @@ def Test_for_loop_fails()
   CheckDefFailure(['var x = 5', 'for x in range(5)'], 'E1017:')
   CheckScriptFailure(['def Func(arg: any)', 'for arg in range(5)', 'enddef', 'defcompile'], 'E1006:')
   delfunc! g:Func
-  CheckDefFailure(['for i in "text"'], 'E1012:')
   CheckDefFailure(['for i in xxx'], 'E1001:')
   CheckDefFailure(['endfor'], 'E588:')
   CheckDefFailure(['for i in range(3)', 'echo 3'], 'E170:')
+
+  # wrong type detected at compile time
+  CheckDefFailure(['for i in {a: 1}', 'echo 3', 'endfor'], 'E1177: For loop on dict not supported')
+
+  # wrong type detected at runtime
+  g:adict = {a: 1}
+  CheckDefExecFailure(['for i in g:adict', 'echo 3', 'endfor'], 'E1177: For loop on dict not supported')
+  unlet g:adict
 enddef
 
 def Test_for_loop_script_var()

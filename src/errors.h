@@ -389,3 +389,5 @@ EXTERN char e_non_empty_string_required_for_argument_nr[]
 	INIT(= N_("E1175: Non-empty string required for argument %d"));
 EXTERN char e_misplaced_command_modifier[]
 	INIT(= N_("E1176: Misplaced command modifier"));
+EXTERN char e_for_loop_on_str_not_supported[]
+	INIT(= N_("E1177: For loop on %s not supported"));

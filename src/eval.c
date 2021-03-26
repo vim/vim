@@ -41,6 +41,8 @@ typedef struct
     list_T	*fi_list;	// list being used
     int		fi_bi;		// index of blob
     blob_T	*fi_blob;	// blob being used
+    char_u	*fi_string;	// copy of string being used
+    int		fi_byte_idx;	// byte index in fi_string
 } forinfo_T;
 
 static int tv_op(typval_T *tv1, typval_T *tv2, char_u  *op);
@@ -1738,6 +1740,14 @@ eval_for_line(
 		}
 		clear_tv(&tv);
 	    }
+	    else if (tv.v_type == VAR_STRING)
+	    {
+		fi->fi_byte_idx = 0;
+		fi->fi_string = tv.vval.v_string;
+		tv.vval.v_string = NULL;
+		if (fi->fi_string == NULL)
+		    fi->fi_string = vim_strsave((char_u *)"");
+	    }
 	    else
 	    {
 		emsg(_(e_listreq));
@@ -1790,7 +1800,23 @@ next_for_item(void *fi_void, char_u *arg)
 	tv.vval.v_number = blob_get(fi->fi_blob, fi->fi_bi);
 	++fi->fi_bi;
 	return ex_let_vars(arg, &tv, TRUE, fi->fi_semicolon,
-				       fi->fi_varcount, flag, NULL) == OK;
+					    fi->fi_varcount, flag, NULL) == OK;
+    }
+
+    if (fi->fi_string != NULL)
+    {
+	typval_T	tv;
+	int		len;
+
+	len = mb_ptr2len(fi->fi_string + fi->fi_byte_idx);
+	if (len == 0)
+	    return FALSE;
+	tv.v_type = VAR_STRING;
+	tv.v_lock = VAR_FIXED;
+	tv.vval.v_string = vim_strnsave(fi->fi_string + fi->fi_byte_idx, len);
+	fi->fi_byte_idx += len;
+	return ex_let_vars(arg, &tv, TRUE, fi->fi_semicolon,
+					    fi->fi_varcount, flag, NULL) == OK;
     }
 
     item = fi->fi_lw.lw_item;
@@ -1800,7 +1826,7 @@ next_for_item(void *fi_void, char_u *arg)
     {
 	fi->fi_lw.lw_item = item->li_next;
 	result = (ex_let_vars(arg, &item->li_tv, TRUE, fi->fi_semicolon,
-				      fi->fi_varcount, flag, NULL) == OK);
+					   fi->fi_varcount, flag, NULL) == OK);
     }
     return result;
 }
@@ -1813,13 +1839,17 @@ free_for_info(void *fi_void)
 {
     forinfo_T    *fi = (forinfo_T *)fi_void;
 
-    if (fi != NULL && fi->fi_list != NULL)
+    if (fi == NULL)
+	return;
+    if (fi->fi_list != NULL)
     {
 	list_rem_watch(fi->fi_list, &fi->fi_lw);
 	list_unref(fi->fi_list);
     }
-    if (fi != NULL && fi->fi_blob != NULL)
+    else if (fi->fi_blob != NULL)
 	blob_unref(fi->fi_blob);
+    else
+	vim_free(fi->fi_string);
     vim_free(fi);
 }
 
