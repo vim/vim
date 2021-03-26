@@ -48,7 +48,7 @@ endif
 "
 setlocal paragraphs+=XP
 "
-" {{{2 Activate navigation to preporcessor sections.
+" {{{2 Activate navigation to preprocessor sections.
 "
 if exists("b:preprocs_as_sections")
 	setlocal sections=EQTSPS[\ G1GS
@@ -198,7 +198,7 @@ syn keyword nroffTodo TODO XXX FIXME contained
 "
 
 hi def link nroffEscChar nroffSpecialChar
-hi def link nroffEscCharAr nroffSpecialChar
+hi def link nroffEscCharArg nroffSpecialChar
 hi def link nroffSpecialChar SpecialChar
 hi def link nroffSpace Delimiter
 
@@ -211,7 +211,7 @@ hi def link nroffEscPar nroffEscape
 hi def link nroffEscRegPar nroffEscape
 hi def link nroffEscArg nroffEscape
 hi def link nroffSize nroffEscape
-hi def link nroffEscape Preproc
+hi def link nroffEscape PreProc
 
 hi def link nroffIgnore Comment
 hi def link nroffComment Comment
