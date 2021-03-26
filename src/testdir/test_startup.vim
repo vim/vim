@@ -860,10 +860,12 @@ func Test_t_arg()
         \ 'Xtags')
   call writefile(['    first', '    second', '    third'], 'Xfile1')
 
-  if RunVim(before, after, '-t second')
-    call assert_equal(['Xfile1:L2C5'], readfile('Xtestout'))
-    call delete('Xtestout')
-  endif
+  for t_arg in ['-t second', '-tsecond']
+    if RunVim(before, after, '-t second')
+      call assert_equal(['Xfile1:L2C5'], readfile('Xtestout'), t_arg)
+      call delete('Xtestout')
+    endif
+  endfor
 
   call delete('Xtags')
   call delete('Xfile1')
@@ -1064,10 +1066,12 @@ func Test_w_arg()
 
   " A number argument sets the 'window' option
   call writefile(["iwindow \<C-R>=&window\<CR>\<Esc>:wq! Xresult\<CR>"], 'Xscriptin', 'b')
-  if RunVim([], [], '-s Xscriptin -w 17')
-    call assert_equal(["window 17"], readfile('Xresult'))
-    call delete('Xresult')
-  endif
+  for w_arg in ['-w 17', '-w17']
+    if RunVim([], [], '-s Xscriptin ' .. w_arg)
+      call assert_equal(["window 17"], readfile('Xresult'), w_arg)
+      call delete('Xresult')
+    endif
+  endfor
   call delete('Xscriptin')
 endfunc
 
