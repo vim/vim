@@ -31,6 +31,10 @@ endif
 let s:cpo_save = &cpo
 set cpo&vim
 
+if exists("nroff_is_groff")
+	let b:nroff_is_groff = 1
+endif
+
 "
 " {{{1 plugin settings...
 "
