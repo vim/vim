@@ -1154,6 +1154,32 @@ ex_while(exarg_T *eap)
 	    ++cstack->cs_looplevel;
 	    cstack->cs_line[cstack->cs_idx] = -1;
 	}
+	else
+	{
+	    if (in_vim9script() && SCRIPT_ID_VALID(current_sctx.sc_sid))
+	    {
+		scriptitem_T	*si = SCRIPT_ITEM(current_sctx.sc_sid);
+		int		i;
+
+		// Any variables defined in the previous round are no longer
+		// visible.
+		for (i = cstack->cs_script_var_len[cstack->cs_idx];
+					       i < si->sn_var_vals.ga_len; ++i)
+		{
+		    svar_T	*sv = ((svar_T *)si->sn_var_vals.ga_data) + i;
+
+		    // sv_name is set to NULL if it was already removed.  This
+		    // happens when it was defined in an inner block and no
+		    // functions were defined there.
+		    if (sv->sv_name != NULL)
+			// Remove a variable declared inside the block, if it
+			// still exists, from sn_vars.
+			hide_script_var(si, i, FALSE);
+		}
+		cstack->cs_script_var_len[cstack->cs_idx] =
+							si->sn_var_vals.ga_len;
+	    }
+	}
 	cstack->cs_flags[cstack->cs_idx] =
 			       eap->cmdidx == CMD_while ? CSF_WHILE : CSF_FOR;
 
@@ -1175,6 +1201,9 @@ ex_while(exarg_T *eap)
 	    void	*fi;
 	    evalarg_T	evalarg;
 
+	    /*
+	     * ":for var in list-expr"
+	     */
 	    CLEAR_FIELD(evalarg);
 	    evalarg.eval_flags = skip ? 0 : EVAL_EVALUATE;
 	    if (getline_equal(eap->getline, eap->cookie, getsourceline))
@@ -1183,9 +1212,6 @@ ex_while(exarg_T *eap)
 		evalarg.eval_cookie = eap->cookie;
 	    }
 
-	    /*
-	     * ":for var in list-expr"
-	     */
 	    if ((cstack->cs_lflags & CSL_HAD_LOOP) != 0)
 	    {
 		// Jumping here from a ":continue" or ":endfor": use the
@@ -1384,10 +1410,8 @@ ex_endwhile(exarg_T *eap)
 		&& dbg_check_skipped(eap))
 	    (void)do_intthrow(cstack);
 
-	/*
-	 * Set loop flag, so do_cmdline() will jump back to the matching
-	 * ":while" or ":for".
-	 */
+	// Set loop flag, so do_cmdline() will jump back to the matching
+	// ":while" or ":for".
 	cstack->cs_lflags |= CSL_HAD_ENDLOOP;
     }
 }

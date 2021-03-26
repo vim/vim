@@ -2263,6 +2263,13 @@ def Test_for_outside_of_function()
     endfor
     assert_equal(['', '0', '1', '2', '3'], getline(1, '$'))
     bwipe!
+
+    var result = ''
+    for i in [1, 2, 3]
+      var loop = ' loop ' .. i
+      result ..= loop
+    endfor
+    assert_equal(' loop 1 loop 2 loop 3', result)
   END
   writefile(lines, 'Xvim9for.vim')
   source Xvim9for.vim
