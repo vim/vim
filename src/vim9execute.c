@@ -1067,13 +1067,22 @@ char_from_string(char_u *str, varnumber_T index)
 	return NULL;
     slen = STRLEN(str);
 
-    // do the same as for a list: a negative index counts from the end
+    // Do the same as for a list: a negative index counts from the end.
+    // Optimization to check the first byte to be below 0x80 (and no composing
+    // character follows) makes this a lot faster.
     if (index < 0)
     {
 	int	clen = 0;
 
 	for (nbyte = 0; nbyte < slen; ++clen)
-	    nbyte += mb_ptr2len(str + nbyte);
+	{
+	    if (str[nbyte] < 0x80 && str[nbyte + 1] < 0x80)
+		++nbyte;
+	    else if (enc_utf8)
+		nbyte += utfc_ptr2len(str + nbyte);
+	    else
+		nbyte += mb_ptr2len(str + nbyte);
+	}
 	nchar = clen + index;
 	if (nchar < 0)
 	    // unlike list: index out of range results in empty string
@@ -1081,7 +1090,14 @@ char_from_string(char_u *str, varnumber_T index)
     }
 
     for (nbyte = 0; nchar > 0 && nbyte < slen; --nchar)
-	nbyte += mb_ptr2len(str + nbyte);
+    {
+	if (str[nbyte] < 0x80 && str[nbyte + 1] < 0x80)
+	    ++nbyte;
+	else if (enc_utf8)
+	    nbyte += utfc_ptr2len(str + nbyte);
+	else
+	    nbyte += mb_ptr2len(str + nbyte);
+    }
     if (nbyte >= slen)
 	return NULL;
     return vim_strnsave(str + nbyte, mb_ptr2len(str + nbyte));
