@@ -245,6 +245,25 @@ func Test_prop_find_smaller_len_than_match_col()
   call prop_type_delete('test')
 endfunc
 
+func Test_prop_find_with_both_option_enabled()
+  " Initialize
+  new
+  call AddPropTypes()
+  call SetupPropsInFirstLine()
+  let props = Get_expected_props()->map({_, v -> extend(v, {'lnum': 1})})
+  " Test
+  call assert_fails("call prop_find({'both': 1})", 'E968:')
+  call assert_fails("call prop_find({'id': 11, 'both': 1})", 'E860:')
+  call assert_fails("call prop_find({'type': 'three', 'both': 1})", 'E860:')
+  call assert_equal({}, prop_find({'id': 11, 'type': 'three', 'both': 1}))
+  call assert_equal({}, prop_find({'id': 130000, 'type': 'one', 'both': 1}))
+  call assert_equal(props[2], prop_find({'id': 12, 'type': 'two', 'both': 1}))
+  call assert_equal(props[0], prop_find({'id': 14, 'type': 'whole', 'both': 1}))
+  " Clean up
+  call DeletePropTypes()
+  bwipe!
+endfunc
+
 func Test_prop_add()
   new
   call AddPropTypes()
