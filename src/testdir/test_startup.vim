@@ -1043,6 +1043,32 @@ func Test_io_not_a_terminal()
         \ 'Vim: Warning: Input is not from a terminal'], l)
 endfunc
 
+" Test for --not-a-term avoiding escape codes.
+func Test_not_a_term()
+  CheckUnix
+  CheckNotGui
+
+  if &shellredir =~ '%s'
+    let redir = printf(&shellredir,  'Xvimout')
+  else
+    let redir = &shellredir .. ' Xvimout'
+  endif
+
+  " Without --not-a-term there are a few escape sequences.
+  " This will take 2 seconds because of the missing --not-a-term
+  let cmd = GetVimProg() .. ' --cmd quit ' .. redir
+  exe "silent !" . cmd
+  call assert_match("\<Esc>", readfile('Xvimout')->join())
+  call delete('Xvimout')
+
+  " With --not-a-term there are no escape sequences.
+  let cmd = GetVimProg() .. ' --not-a-term --cmd quit ' .. redir
+  exe "silent !" . cmd
+  call assert_notmatch("\<Esc>", readfile('Xvimout')->join())
+  call delete('Xvimout')
+endfunc
+
+
 " Test for the "-w scriptout" argument
 func Test_w_arg()
   " Can't catch the output of gvim.

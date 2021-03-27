@@ -995,6 +995,19 @@ is_not_a_term()
     return params.not_a_term;
 }
 
+/*
+ * Return TRUE when the --not-a-term argument was found or the GUI is in use.
+ */
+    static int
+is_not_a_term_or_gui()
+{
+    return params.not_a_term
+#ifdef FEAT_GUI
+			    || gui.in_use
+#endif
+	;
+}
+
 
 // When TRUE in a safe state when starting to wait for a character.
 static int	was_safe = FALSE;
@@ -1528,9 +1541,7 @@ getout(int exitval)
 #endif
 
     // Position the cursor on the last screen line, below all the text
-#ifdef FEAT_GUI
-    if (!gui.in_use)
-#endif
+    if (!is_not_a_term_or_gui())
 	windgoto((int)Rows - 1, 0);
 
 #if defined(FEAT_EVAL) || defined(FEAT_SYN_HL)
@@ -1640,9 +1651,7 @@ getout(int exitval)
     }
 
     // Position the cursor again, the autocommands may have moved it
-#ifdef FEAT_GUI
-    if (!gui.in_use)
-#endif
+    if (!is_not_a_term_or_gui())
 	windgoto((int)Rows - 1, 0);
 
 #ifdef FEAT_JOB_CHANNEL
