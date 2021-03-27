@@ -2323,8 +2323,12 @@ f_balloon_show(typval_T *argvars, typval_T *rettv UNUSED)
 	}
 	else
 	{
-	    char_u *mesg = tv_get_string_chk(&argvars[0]);
+	    char_u *mesg;
 
+	    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+		return;
+
+	    mesg = tv_get_string_chk(&argvars[0]);
 	    if (mesg != NULL)
 		// empty string removes the balloon
 		post_balloon(balloonEval, *mesg == NUL ? NULL : mesg, NULL);
@@ -2338,8 +2342,11 @@ f_balloon_split(typval_T *argvars, typval_T *rettv UNUSED)
 {
     if (rettv_list_alloc(rettv) == OK)
     {
-	char_u *msg = tv_get_string_chk(&argvars[0]);
+	char_u *msg;
 
+	if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
+	    return;
+	msg = tv_get_string_chk(&argvars[0]);
 	if (msg != NULL)
 	{
 	    pumitem_T	*array;

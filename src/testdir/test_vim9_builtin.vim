@@ -125,6 +125,19 @@ def Test_append()
   assert_equal(['0', 'one', '1', 'two', '2'], getline(1, 6))
 enddef
 
+def Test_balloon_show()
+  CheckGui
+  CheckFeature balloon_eval
+
+  assert_fails('balloon_show(true)', 'E1174:')
+enddef
+
+def Test_balloon_split()
+  CheckFeature balloon_eval
+
+  assert_fails('balloon_split(true)', 'E1174:')
+enddef
+
 def Test_browse()
   CheckFeature browse
 
@@ -142,9 +155,14 @@ def Test_browse()
   CheckDefExecAndScriptFailure(lines, 'E1174: String required for argument 4')
 enddef
 
+def Test_bufexists()
+  assert_fails('bufexists(true)', 'E1174')
+enddef
+
 def Test_buflisted()
   var res: bool = buflisted('asdf')
   assert_equal(false, res)
+  assert_fails('buflisted(true)', 'E1174')
 enddef
 
 def Test_bufname()
@@ -176,6 +194,8 @@ def Test_bufwinid()
   only
   bwipe SomeFile
   bwipe OtherFile
+
+  assert_fails('bufwinid(true)', 'E1138')
 enddef
 
 def Test_call_call()
