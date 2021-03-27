@@ -2685,6 +2685,58 @@ ex_errmsg(char *msg, char_u *arg)
 }
 
 /*
+ * Check for an Ex command with optional tail.
+ * If there is a match advance "pp" to the argument and return TRUE.
+ * If "noparen" is TRUE do not recognize the command followed by "(".
+ */
+    static int
+checkforcmd_opt(
+    char_u	**pp,		// start of command
+    char	*cmd,		// name of command
+    int		len,		// required length
+    int		noparen)
+{
+    int		i;
+
+    for (i = 0; cmd[i] != NUL; ++i)
+	if (((char_u *)cmd)[i] != (*pp)[i])
+	    break;
+    if (i >= len && !isalpha((*pp)[i])
+			   && (*pp)[i] != '_' && (!noparen || (*pp)[i] != '('))
+    {
+	*pp = skipwhite(*pp + i);
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * Check for an Ex command with optional tail.
+ * If there is a match advance "pp" to the argument and return TRUE.
+ */
+    int
+checkforcmd(
+    char_u	**pp,		// start of command
+    char	*cmd,		// name of command
+    int		len)		// required length
+{
+    return checkforcmd_opt(pp, cmd, len, FALSE);
+}
+
+/*
+ * Check for an Ex command with optional tail, not followed by "(".
+ * If there is a match advance "pp" to the argument and return TRUE.
+ */
+    static int
+checkforcmd_noparen(
+    char_u	**pp,		// start of command
+    char	*cmd,		// name of command
+    int		len)		// required length
+{
+    return checkforcmd_opt(pp, cmd, len, TRUE);
+}
+
+/*
  * Parse and skip over command modifiers:
  * - update eap->cmd
  * - store flags in "cmod".
@@ -2770,51 +2822,51 @@ parse_command_modifiers(
 	switch (*p)
 	{
 	    // When adding an entry, also modify cmd_exists().
-	    case 'a':	if (!checkforcmd(&eap->cmd, "aboveleft", 3))
+	    case 'a':	if (!checkforcmd_noparen(&eap->cmd, "aboveleft", 3))
 			    break;
 			cmod->cmod_split |= WSP_ABOVE;
 			continue;
 
-	    case 'b':	if (checkforcmd(&eap->cmd, "belowright", 3))
+	    case 'b':	if (checkforcmd_noparen(&eap->cmd, "belowright", 3))
 			{
 			    cmod->cmod_split |= WSP_BELOW;
 			    continue;
 			}
-			if (checkforcmd(&eap->cmd, "browse", 3))
+			if (checkforcmd_opt(&eap->cmd, "browse", 3, TRUE))
 			{
 #ifdef FEAT_BROWSE_CMD
 			    cmod->cmod_flags |= CMOD_BROWSE;
 #endif
 			    continue;
 			}
-			if (!checkforcmd(&eap->cmd, "botright", 2))
+			if (!checkforcmd_noparen(&eap->cmd, "botright", 2))
 			    break;
 			cmod->cmod_split |= WSP_BOT;
 			continue;
 
-	    case 'c':	if (!checkforcmd(&eap->cmd, "confirm", 4))
+	    case 'c':	if (!checkforcmd_opt(&eap->cmd, "confirm", 4, TRUE))
 			    break;
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 			cmod->cmod_flags |= CMOD_CONFIRM;
 #endif
 			continue;
 
-	    case 'k':	if (checkforcmd(&eap->cmd, "keepmarks", 3))
+	    case 'k':	if (checkforcmd_noparen(&eap->cmd, "keepmarks", 3))
 			{
 			    cmod->cmod_flags |= CMOD_KEEPMARKS;
 			    continue;
 			}
-			if (checkforcmd(&eap->cmd, "keepalt", 5))
+			if (checkforcmd_noparen(&eap->cmd, "keepalt", 5))
 			{
 			    cmod->cmod_flags |= CMOD_KEEPALT;
 			    continue;
 			}
-			if (checkforcmd(&eap->cmd, "keeppatterns", 5))
+			if (checkforcmd_noparen(&eap->cmd, "keeppatterns", 5))
 			{
 			    cmod->cmod_flags |= CMOD_KEEPPATTERNS;
 			    continue;
 			}
-			if (!checkforcmd(&eap->cmd, "keepjumps", 5))
+			if (!checkforcmd_noparen(&eap->cmd, "keepjumps", 5))
 			    break;
 			cmod->cmod_flags |= CMOD_KEEPJUMPS;
 			continue;
@@ -2823,7 +2875,7 @@ parse_command_modifiers(
 			{
 			    char_u *reg_pat;
 
-			    if (!checkforcmd(&p, "filter", 4)
+			    if (!checkforcmd_noparen(&p, "filter", 4)
 						|| *p == NUL || ends_excmd(*p))
 				break;
 			    if (*p == '!')
@@ -2857,45 +2909,45 @@ parse_command_modifiers(
 			}
 
 			// ":hide" and ":hide | cmd" are not modifiers
-	    case 'h':	if (p != eap->cmd || !checkforcmd(&p, "hide", 3)
+	    case 'h':	if (p != eap->cmd || !checkforcmd_noparen(&p, "hide", 3)
 					       || *p == NUL || ends_excmd(*p))
 			    break;
 			eap->cmd = p;
 			cmod->cmod_flags |= CMOD_HIDE;
 			continue;
 
-	    case 'l':	if (checkforcmd(&eap->cmd, "lockmarks", 3))
+	    case 'l':	if (checkforcmd_noparen(&eap->cmd, "lockmarks", 3))
 			{
 			    cmod->cmod_flags |= CMOD_LOCKMARKS;
 			    continue;
 			}
 
-			if (!checkforcmd(&eap->cmd, "leftabove", 5))
+			if (!checkforcmd_noparen(&eap->cmd, "leftabove", 5))
 			    break;
 			cmod->cmod_split |= WSP_ABOVE;
 			continue;
 
-	    case 'n':	if (checkforcmd(&eap->cmd, "noautocmd", 3))
+	    case 'n':	if (checkforcmd_noparen(&eap->cmd, "noautocmd", 3))
 			{
 			    cmod->cmod_flags |= CMOD_NOAUTOCMD;
 			    continue;
 			}
-			if (!checkforcmd(&eap->cmd, "noswapfile", 3))
+			if (!checkforcmd_noparen(&eap->cmd, "noswapfile", 3))
 			    break;
 			cmod->cmod_flags |= CMOD_NOSWAPFILE;
 			continue;
 
-	    case 'r':	if (!checkforcmd(&eap->cmd, "rightbelow", 6))
+	    case 'r':	if (!checkforcmd_noparen(&eap->cmd, "rightbelow", 6))
 			    break;
 			cmod->cmod_split |= WSP_BELOW;
 			continue;
 
-	    case 's':	if (checkforcmd(&eap->cmd, "sandbox", 3))
+	    case 's':	if (checkforcmd_noparen(&eap->cmd, "sandbox", 3))
 			{
 			    cmod->cmod_flags |= CMOD_SANDBOX;
 			    continue;
 			}
-			if (!checkforcmd(&eap->cmd, "silent", 3))
+			if (!checkforcmd_noparen(&eap->cmd, "silent", 3))
 			    break;
 			cmod->cmod_flags |= CMOD_SILENT;
 			if (*eap->cmd == '!' && !VIM_ISWHITE(eap->cmd[-1]))
@@ -2906,7 +2958,7 @@ parse_command_modifiers(
 			}
 			continue;
 
-	    case 't':	if (checkforcmd(&p, "tab", 3))
+	    case 't':	if (checkforcmd_noparen(&p, "tab", 3))
 			{
 			    if (!skip_only)
 			    {
@@ -2928,22 +2980,22 @@ parse_command_modifiers(
 			    eap->cmd = p;
 			    continue;
 			}
-			if (!checkforcmd(&eap->cmd, "topleft", 2))
+			if (!checkforcmd_noparen(&eap->cmd, "topleft", 2))
 			    break;
 			cmod->cmod_split |= WSP_TOP;
 			continue;
 
-	    case 'u':	if (!checkforcmd(&eap->cmd, "unsilent", 3))
+	    case 'u':	if (!checkforcmd_noparen(&eap->cmd, "unsilent", 3))
 			    break;
 			cmod->cmod_flags |= CMOD_UNSILENT;
 			continue;
 
-	    case 'v':	if (checkforcmd(&eap->cmd, "vertical", 4))
+	    case 'v':	if (checkforcmd_noparen(&eap->cmd, "vertical", 4))
 			{
 			    cmod->cmod_split |= WSP_VERT;
 			    continue;
 			}
-			if (checkforcmd(&eap->cmd, "vim9cmd", 4))
+			if (checkforcmd_noparen(&eap->cmd, "vim9cmd", 4))
 			{
 			    if (ends_excmd2(p, eap->cmd))
 			    {
@@ -2954,7 +3006,7 @@ parse_command_modifiers(
 			    cmod->cmod_flags |= CMOD_VIM9CMD;
 			    continue;
 			}
-			if (!checkforcmd(&p, "verbose", 4))
+			if (!checkforcmd_noparen(&p, "verbose", 4))
 			    break;
 			if (vim_isdigit(*eap->cmd))
 			    cmod->cmod_verbose = atoi((char *)eap->cmd);
@@ -3249,29 +3301,6 @@ parse_cmd_address(exarg_T *eap, char **errormsg, int silent)
 	    eap->addr_count = 0;
     }
     return OK;
-}
-
-/*
- * Check for an Ex command with optional tail.
- * If there is a match advance "pp" to the argument and return TRUE.
- */
-    int
-checkforcmd(
-    char_u	**pp,		// start of command
-    char	*cmd,		// name of command
-    int		len)		// required length
-{
-    int		i;
-
-    for (i = 0; cmd[i] != NUL; ++i)
-	if (((char_u *)cmd)[i] != (*pp)[i])
-	    break;
-    if (i >= len && !isalpha((*pp)[i]) && (*pp)[i] != '_')
-    {
-	*pp = skipwhite(*pp + i);
-	return TRUE;
-    }
-    return FALSE;
 }
 
 /*

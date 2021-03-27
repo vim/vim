@@ -142,15 +142,15 @@ def Test_browse()
   CheckFeature browse
 
   var lines =<< trim END
-      call browse(1, 2, 3, 4)
+      browse(1, 2, 3, 4)
   END
   CheckDefExecAndScriptFailure(lines, 'E1174: String required for argument 2')
   lines =<< trim END
-      call browse(1, 'title', 3, 4)
+      browse(1, 'title', 3, 4)
   END
   CheckDefExecAndScriptFailure(lines, 'E1174: String required for argument 3')
   lines =<< trim END
-      call browse(1, 'title', 'dir', 4)
+      browse(1, 'title', 'dir', 4)
   END
   CheckDefExecAndScriptFailure(lines, 'E1174: String required for argument 4')
 enddef
@@ -236,9 +236,9 @@ def Test_confirm()
     CheckFeature dialog_con
   endif
 
-  assert_fails('call confirm(true)', 'E1174')
-  assert_fails('call confirm("yes", true)', 'E1174')
-  assert_fails('call confirm("yes", "maybe", 2, true)', 'E1174')
+  assert_fails('confirm(true)', 'E1174')
+  assert_fails('confirm("yes", true)', 'E1174')
+  assert_fails('confirm("yes", "maybe", 2, true)', 'E1174')
 enddef
 
 def Test_copy_return_type()
