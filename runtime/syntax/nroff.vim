@@ -35,6 +35,9 @@ if exists("nroff_is_groff")
 	let b:nroff_is_groff = 1
 endif
 
+syn spell toplevel
+syn case match
+
 "
 " {{{1 plugin settings...
 "
@@ -173,9 +176,9 @@ endif
 " <jp />
 
 syn region nroffEquation start=/^\.\s*EQ\>/ end=/^\.\s*EN\>/
-syn region nroffTable start=/^\.\s*TS\>/ end=/^\.\s*TE\>/
+syn region nroffTable start=/^\.\s*TS\>/ end=/^\.\s*TE\>/ contains=@Spell
 syn region nroffPicture start=/^\.\s*PS\>/ end=/^\.\s*PE\>/
-syn region nroffRefer start=/^\.\s*\[\>/ end=/^\.\s*\]\>/
+syn region nroffRefer start=/^\.\s*\[\>/ end=/^\.\s*\]\>/ contains=@Spell
 syn region nroffGrap start=/^\.\s*G1\>/ end=/^\.\s*G2\>/
 syn region nroffGremlin start=/^\.\s*GS\>/ end=/^\.\s*GE|GF\>/
 
@@ -183,11 +186,11 @@ syn region nroffGremlin start=/^\.\s*GS\>/ end=/^\.\s*GE|GF\>/
 " ------------------------------------------------------------
 
 syn region nroffIgnore start=/^[.']\s*ig/ end=/^['.]\s*\./
-syn match nroffComment /\(^[.']\s*\)\=\\".*/ contains=nroffTodo
-syn match nroffComment /^'''.*/  contains=nroffTodo
+syn match nroffComment /\(^[.']\s*\)\=\\".*/ contains=nroffTodo,@Spell
+syn match nroffComment /^'''.*/  contains=nroffTodo,@Spell
 
 if exists("b:nroff_is_groff")
-	syn match nroffComment "\\#.*$" contains=nroffTodo
+	syn match nroffComment "\\#.*$" contains=nroffTodo,@Spell
 endif
 
 syn keyword nroffTodo TODO XXX FIXME contained
