@@ -35,6 +35,8 @@ static char *e_funcref = N_("E718: Funcref required");
 static char *e_nofunc = N_("E130: Unknown function: %s");
 
 static void funccal_unref(funccall_T *fc, ufunc_T *fp, int force);
+static void func_clear(ufunc_T *fp, int force);
+static int func_free(ufunc_T *fp, int force);
 
     void
 func_init()
@@ -946,7 +948,7 @@ lambda_function_body(
 {
     int		evaluate = evalarg != NULL
 				      && (evalarg->eval_flags & EVAL_EVALUATE);
-    ufunc_T	*ufunc;
+    ufunc_T	*ufunc = NULL;
     exarg_T	eap;
     garray_T	newlines;
     char_u	*cmdline = NULL;
@@ -1000,10 +1002,7 @@ lambda_function_body(
 	goto erret;
     set_ufunc_name(ufunc, name);
     if (hash_add(&func_hashtab, UF2HIKEY(ufunc)) == FAIL)
-    {
-	vim_free(ufunc);
 	goto erret;
-    }
     ufunc->uf_refcount = 1;
     ufunc->uf_args = *newargs;
     newargs->ga_data = NULL;
@@ -1045,6 +1044,7 @@ lambda_function_body(
 
     rettv->vval.v_partial = pt;
     rettv->v_type = VAR_PARTIAL;
+    ufunc = NULL;
     ret = OK;
 
 erret:
@@ -1054,6 +1054,11 @@ erret:
     ga_clear_strings(&newlines);
     ga_clear_strings(newargs);
     ga_clear_strings(default_args);
+    if (ufunc != NULL)
+    {
+	func_clear(ufunc, TRUE);
+	func_free(ufunc, TRUE);
+    }
     return ret;
 }
 
