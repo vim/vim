@@ -175,6 +175,7 @@ prop_find({props} [, {direction}])
 		Search for a text property as specified with {props}:
 		   id		property with this ID
 		   type		property with this type name
+		   both		"id" and "type" must both match
 		   bufnr	buffer to search in; when present a
 				start position with "lnum" and "col"
 				must be given; when omitted the
@@ -187,6 +188,7 @@ prop_find({props} [, {direction}])
 		   skipstart	do not look for a match at the start
 				position
 
+		A property matches when either "id" or "type" matches.
 		{direction} can be "f" for forward and "b" for backward.  When
 		omitted forward search is performed.
 
