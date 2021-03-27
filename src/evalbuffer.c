@@ -88,6 +88,8 @@ find_buffer(typval_T *avar)
 
     if (avar->v_type == VAR_NUMBER)
 	buf = buflist_findnr((int)avar->vval.v_number);
+    else if (in_vim9script() && check_for_string_arg(avar, 0) == FAIL)
+	return NULL;
     else if (avar->v_type == VAR_STRING && avar->vval.v_string != NULL)
     {
 	buf = buflist_findname_exp(avar->vval.v_string);

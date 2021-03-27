@@ -133,7 +133,7 @@ def Test_balloon_show()
 enddef
 
 def Test_balloon_split()
-  CheckFeature balloon_eval
+  CheckFeature balloon_eval_term
 
   assert_fails('balloon_split(true)', 'E1174:')
 enddef
