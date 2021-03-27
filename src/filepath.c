@@ -788,9 +788,13 @@ f_chdir(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_string = NULL;
 
     if (argvars[0].v_type != VAR_STRING)
+    {
 	// Returning an empty string means it failed.
 	// No error message, for historic reasons.
+	if (in_vim9script())
+	    (void) check_for_string_arg(argvars, 0);
 	return;
+    }
 
     // Return the current directory
     cwd = alloc(MAXPATHL);

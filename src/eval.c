@@ -5298,6 +5298,9 @@ var2fpos(
 	return &pos;
     }
 
+    if (in_vim9script() && check_for_string_arg(varp, 0) == FAIL)
+	return NULL;
+
     name = tv_get_string_chk(varp);
     if (name == NULL)
 	return NULL;
