@@ -156,18 +156,25 @@ syn match   pythonEscape	"\\$"
 "
 " and so on, as specified in the 'Python Language Reference'.
 " https://docs.python.org/reference/lexical_analysis.html#numeric-literals
+"
+" The union of Python2 and Python3 numbers are recognized.
+" Note that some numbers are only valid in Python2. E.g:
+" - numbers with l or L long suffix: 12l 12L
+" - octal numbers with 0 prefix: 012
+" And numbers with underscore digit separators are only valid in Python >= 3.6
 if !exists("python_no_number_highlight")
-  " numbers (including longs and complex)
-  syn match   pythonNumber	"\<0[oO]\=\o\+[Ll]\=\>"
-  syn match   pythonNumber	"\<0[xX]\x\+[Ll]\=\>"
-  syn match   pythonNumber	"\<0[bB][01]\+[Ll]\=\>"
-  syn match   pythonNumber	"\<\%([1-9]\d*\|0\)[Ll]\=\>"
-  syn match   pythonNumber	"\<\d\+[jJ]\>"
-  syn match   pythonNumber	"\<\d\+[eE][+-]\=\d\+[jJ]\=\>"
+  " Numbers (including longs and complex).
+  syn match   pythonNumber	"\<0\=\o\+[Ll]\=\>"
+  syn match   pythonNumber	"\<0[oO]\%(_\=\o\+\)*[Ll]\=\>"
+  syn match   pythonNumber	"\<0[xX]\%(_\=\x\+\)*[Ll]\=\>"
+  syn match   pythonNumber	"\<0[bB]\%(_\=[01]\+\)*[Ll]\=\>"
+  syn match   pythonNumber	"\<\%([1-9]\%(_\=\d\+\)*\|0\)[Ll]\=\>"
+  syn match   pythonNumber	"\<\%(_\=\d\+\)*[jJ]\>"
+  syn match   pythonNumber	"\<\d\%(_\=\d\+\)*[eE][+-]\=\d\%(_\=\d\+\)*[jJ]\=\>"
   syn match   pythonNumber
-	\ "\<\d\+\.\%([eE][+-]\=\d\+\)\=[jJ]\=\%(\W\|$\)\@="
+    \ "\<\d\%(_\=\d\+\)*\.\%([eE][+-]\=\d\%(_\=\d\+\)*\)\=[jJ]\=\%(\W\|$\)\@="
   syn match   pythonNumber
-	\ "\%(^\|\W\)\zs\d*\.\d\+\%([eE][+-]\=\d\+\)\=[jJ]\=\>"
+    \ "\%(^\|\W\)\zs\%(_\=\d\+\)*\.\d\%(_\=\d\+\)*\%([eE][+-]\=\d\%(_\=\d\+\)*\)\=[jJ]\=\>"
 endif
 
 " Group the built-ins in the order in the 'Python Library Reference' for
