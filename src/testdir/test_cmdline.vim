@@ -871,6 +871,10 @@ func Test_cmdline_complete_various()
   call feedkeys(":py3\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"py3 py3do py3file', @:)
 
+  " completion for the :vim9 commands
+  call feedkeys(":vim9\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"vim9cmd vim9script', @:)
+
   " redir @" is not the start of a comment. So complete after that
   call feedkeys(":redir @\" | cwin\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"redir @" | cwindow', @:)

@@ -3553,7 +3553,7 @@ find_ex_command(
 	}
 	else if (*p == '9' && STRNCMP("vim9", eap->cmd, 4) == 0)
 	{
-	    // include "9" for "vim9script"
+	    // include "9" for "vim9*" commands; "vim9cmd" and "vim9script".
 	    ++p;
 	    while (ASCII_ISALPHA(*p))
 		++p;
