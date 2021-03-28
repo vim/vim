@@ -159,9 +159,9 @@ syn match   pythonEscape	"\\$"
 if !exists("python_no_number_highlight")
   " numbers (including longs and complex)
   syn match   pythonNumber	"\<0[oO]\=\o\+[Ll]\=\>"
-  syn match   pythonNumber	"\<0[xX]\x\+[Ll]\=\>"
+  syn match   pythonNumber	"\<0[xX][0-9A-F_]\+[Ll]\=\>"
   syn match   pythonNumber	"\<0[bB][01]\+[Ll]\=\>"
-  syn match   pythonNumber	"\<\%([1-9]\d*\|0\)[Ll]\=\>"
+  syn match   pythonNumber	"\<\%([1-9][0-9_]*\|0\)[Ll]\=\>"
   syn match   pythonNumber	"\<\d\+[jJ]\>"
   syn match   pythonNumber	"\<\d\+[eE][+-]\=\d\+[jJ]\=\>"
   syn match   pythonNumber
