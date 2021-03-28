@@ -152,6 +152,7 @@ runtime/syntax/gitcommit.vim		@tpope
 runtime/syntax/gitconfig.vim		@tpope
 runtime/syntax/gitrebase.vim		@tpope
 runtime/syntax/gprof.vim		@dpelle
+runtime/syntax/groff.vim		@jmarshall
 runtime/syntax/haml.vim			@tpope
 runtime/syntax/haskell.vim		@coot
 runtime/syntax/hgcommit.vim		@k-takata
@@ -166,6 +167,7 @@ runtime/syntax/make.vim			@rohieb
 runtime/syntax/maple.vim		@cecamp
 runtime/syntax/markdown.vim		@tpope
 runtime/syntax/netrw.vim		@cecamp
+runtime/syntax/nroff.vim		@jmarshall
 runtime/syntax/nsis.vim			@k-takata
 runtime/syntax/pdf.vim			@tpope
 runtime/syntax/php.vim			@TysonAndre

@@ -1,16 +1,9 @@
 " VIM syntax file
 " Language:	nroff/groff
-" Maintainer:	Pedro Alejandro López-Valencia <palopezv@gmail.com>
-" URL:		http://vorbote.wordpress.com/
-" Last Change:	2012 Feb 2
-"
-" {{{1 Acknowledgements
-"
-" ACKNOWLEDGEMENTS:
-"
-" My thanks to Jérôme Plût <Jerome.Plut@ens.fr>, who was the
-" creator and maintainer of this syntax file for several years.
-" May I be as good at it as he has been.
+" Maintainer:	John Marshall <jmarshall@hey.com>
+" Previous Maintainer:	Pedro Alejandro López-Valencia <palopezv@gmail.com>
+" Previous Maintainer:	Jérôme Plût <Jerome.Plut@ens.fr>
+" Last Change:	2021 Mar 28
 "
 " {{{1 Todo
 "
