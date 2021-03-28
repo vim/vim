@@ -1621,11 +1621,12 @@ tv_get_lnum(typval_T *argvars)
 
     if (argvars[0].v_type != VAR_STRING || !in_vim9script())
 	lnum = (linenr_T)tv_get_number_chk(&argvars[0], NULL);
-    if (lnum < 0)  // no valid number, try using arg like line()
+    if (lnum <= 0 && argvars[0].v_type != VAR_NUMBER)
     {
 	int	fnum;
 	pos_T	*fp = var2fpos(&argvars[0], TRUE, &fnum, FALSE);
 
+	// no valid number, try using arg like line()
 	if (fp != NULL)
 	    lnum = fp->lnum;
     }
