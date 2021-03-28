@@ -1135,4 +1135,42 @@ def Test_windo_missing_endif()
   CheckDefExecFailure(lines, 'E171:', 1)
 enddef
 
+let s:theList = [1, 2, 3]
+
+def Test_lockvar()
+  s:theList[1] = 22
+  assert_equal([1, 22, 3], s:theList)
+  lockvar s:theList
+  assert_fails('theList[1] = 77', 'E741:')
+  unlockvar s:theList
+  s:theList[1] = 44
+  assert_equal([1, 44, 3], s:theList)
+
+  var lines =<< trim END
+      vim9script
+      var theList = [1, 2, 3]
+      def SetList()
+        theList[1] = 22
+        assert_equal([1, 22, 3], theList)
+        lockvar theList
+        theList[1] = 77
+      enddef
+      SetList()
+  END
+  CheckScriptFailure(lines, 'E1119', 4)
+
+  lines =<< trim END
+      var theList = [1, 2, 3]
+      lockvar theList
+  END
+  CheckDefFailure(lines, 'E1178', 2)
+
+  lines =<< trim END
+      var theList = [1, 2, 3]
+      unlockvar theList
+  END
+  CheckDefFailure(lines, 'E1178', 2)
+enddef
+
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

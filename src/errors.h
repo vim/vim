@@ -391,3 +391,5 @@ EXTERN char e_misplaced_command_modifier[]
 	INIT(= N_("E1176: Misplaced command modifier"));
 EXTERN char e_for_loop_on_str_not_supported[]
 	INIT(= N_("E1177: For loop on %s not supported"));
+EXTERN char e_cannot_lock_unlock_local_variable[]
+	INIT(= N_("E1178: Cannot lock or unlock a local variable"));

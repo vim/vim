@@ -6708,22 +6708,67 @@ compile_unlet(
 }
 
 /*
+ * Callback passed to ex_unletlock().
+ */
+    static int
+compile_lock_unlock(
+    lval_T  *lvp,
+    char_u  *name_end,
+    exarg_T *eap,
+    int	    deep UNUSED,
+    void    *coookie)
+{
+    cctx_T	*cctx = coookie;
+    int		cc = *name_end;
+    char_u	*p = lvp->ll_name;
+    int		ret = OK;
+    size_t	len;
+    char_u	*buf;
+
+    if (cctx->ctx_skip == SKIP_YES)
+	return OK;
+
+    // Cannot use :lockvar and :unlockvar on local variables.
+    if (p[1] != ':')
+    {
+	char_u *end = skip_var_one(p, FALSE);
+
+	if (lookup_local(p, end - p, NULL, cctx) == OK)
+	{
+	    emsg(_(e_cannot_lock_unlock_local_variable));
+	    return FAIL;
+	}
+    }
+
+    // Checking is done at runtime.
+    *name_end = NUL;
+    len = name_end - p + 20;
+    buf = alloc(len);
+    if (buf == NULL)
+	ret = FAIL;
+    else
+    {
+	vim_snprintf((char *)buf, len, "%s %s",
+		eap->cmdidx == CMD_lockvar ? "lockvar" : "unlockvar",
+		p);
+	ret = generate_EXEC(cctx, buf);
+
+	vim_free(buf);
+	*name_end = cc;
+    }
+    return ret;
+}
+
+/*
  * compile "unlet var", "lock var" and "unlock var"
  * "arg" points to "var".
  */
     static char_u *
 compile_unletlock(char_u *arg, exarg_T *eap, cctx_T *cctx)
 {
-    char_u *p = arg;
-
-    if (eap->cmdidx != CMD_unlet)
-    {
-	emsg("Sorry, :lock and unlock not implemented yet");
-	return NULL;
-    }
-
-    ex_unletlock(eap, p, 0, GLV_NO_AUTOLOAD | GLV_COMPILING,
-							  compile_unlet, cctx);
+    ex_unletlock(eap, arg, 0, GLV_NO_AUTOLOAD | GLV_COMPILING,
+	    eap->cmdidx == CMD_unlet ? compile_unlet : compile_lock_unlock,
+	    cctx);
     return eap->nextcmd == NULL ? (char_u *)"" : eap->nextcmd;
 }
 
