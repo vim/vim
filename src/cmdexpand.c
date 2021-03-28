@@ -1031,9 +1031,9 @@ set_one_cmd_context(
 	    while (ASCII_ISALPHA(*p) || *p == '*')
 		++p;
 	}
-	// "vim9*" commands completion
 	else if (*p == '9' && STRNCMP("vim9", cmd, 4) == 0)
 	{
+	    // include "9" for "vim9*" commands; "vim9cmd" and "vim9script".
 	    ++p;
 	    while (ASCII_ISALPHA(*p))
 		++p;
