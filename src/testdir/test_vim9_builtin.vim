@@ -123,6 +123,10 @@ def Test_append()
   var res2: bool = append(3, 'two')
   assert_equal(false, res2)
   assert_equal(['0', 'one', '1', 'two', '2'], getline(1, 6))
+
+  append(0, 'zero')
+  assert_equal('zero', getline(1))
+  bwipe!
 enddef
 
 def Test_balloon_show()
