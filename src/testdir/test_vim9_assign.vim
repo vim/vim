@@ -1654,5 +1654,31 @@ def Test_assign_command_modifier()
   CheckDefAndScriptSuccess(lines)
 enddef
 
+def Test_script_funcref_case()
+  var lines =<< trim END
+      var Len = (s: string): number => len(s) + 1
+      assert_equal(5, Len('asdf'))
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      var len = (s: string): number => len(s) + 1
+  END
+  CheckDefAndScriptFailure(lines, 'E704:')
+
+  lines =<< trim END
+      vim9script
+      var s:Len = (s: string): number => len(s) + 2
+      assert_equal(6, Len('asdf'))
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      var s:len = (s: string): number => len(s) + 1
+  END
+  CheckScriptFailure(lines, 'E704:')
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -3453,8 +3453,10 @@ var_wrong_func_name(
     char_u *name,    // points to start of variable name
     int    new_var)  // TRUE when creating the variable
 {
-    // Allow for w: b: s: and t:.
-    if (!(vim_strchr((char_u *)"wbst", name[0]) != NULL && name[1] == ':')
+    // Allow for w: b: s: and t:.  In Vim9 script s: is not allowed, because
+    // the name can be used without the s: prefix.
+    if (!((vim_strchr((char_u *)"wbt", name[0]) != NULL
+		    || (!in_vim9script() && name[0] == 's')) && name[1] == ':')
 	    && !ASCII_ISUPPER((name[0] != NUL && name[1] == ':')
 						     ? name[2] : name[0]))
     {
