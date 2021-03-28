@@ -1031,6 +1031,13 @@ set_one_cmd_context(
 	    while (ASCII_ISALPHA(*p) || *p == '*')
 		++p;
 	}
+	// "vim9*" commands completion
+	else if (*p == '9' && STRNCMP("vim9", cmd, 4) == 0)
+	{
+	    ++p;
+	    while (ASCII_ISALPHA(*p))
+		++p;
+	}
 	// check for non-alpha command
 	if (p == cmd && vim_strchr((char_u *)"@*!=><&~#", *p) != NULL)
 	    ++p;
