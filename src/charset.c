@@ -2005,7 +2005,8 @@ hex2nr(int c)
     return c - '0';
 }
 
-#if defined(FEAT_TERMRESPONSE) || defined(FEAT_GUI_GTK) || defined(PROTO)
+#if defined(FEAT_TERMRESPONSE) || defined(FEAT_GUI_GTK) \
+        || defined(PROTO) || defined(FEAT_AUTOSHELLDIR)
 /*
  * Convert two hex characters to a byte.
  * Return -1 if one of the characters is not hex.

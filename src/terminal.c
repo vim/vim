@@ -4293,6 +4293,73 @@ handle_call_command(term_T *term, channel_T *channel, listitem_T *item)
 }
 
 /*
+ * URL decoding (also know as Percent-encoding).
+ *
+ * Note this function currently is only used for decoding shell's
+ * OSC 7 escape sequence which we can assume all bytes are valid
+ * UTF-8 bytes. Thus we don't need to deal with invalid UTF-8
+ * encoding bytes like 0xfe, 0xff.
+ */
+    static size_t
+url_decode(const char *src, const size_t len, char_u *dst)
+{
+    size_t i = 0, j = 0;
+
+    while (i < len)
+    {
+	if (src[i] == '%' && i + 2 < len)
+	{
+	    dst[j] = hexhex2nr((char_u *)&src[i + 1]);
+	    j++;
+	    i += 3;
+	}
+	else
+	{
+	    dst[j] = src[i];
+	    i++;
+	    j++;
+	}
+    }
+    dst[j] = '\0';
+    return j;
+}
+
+/*
+ * Sync terminal buffer's cwd with shell's pwd with the help of OSC 7.
+ *
+ * The OSC 7 sequence has the format of
+ * "\033]7;file://HOSTNAME/CURRENT/DIR\033\\"
+ * and what VTerm provides via VTermStringFragment is
+ * "file://HOSTNAME/CURRENT/DIR"
+ */
+    static void
+sync_shell_dir(VTermStringFragment *frag)
+{
+    int       offset = 7; // len of "file://" is 7
+    char      *pos = (char *)frag->str + offset;
+    char_u    *new_dir;
+
+    // remove HOSTNAME to get PWD
+    while (*pos != '/' && offset < frag->len)
+    {
+        offset += 1;
+        pos += 1;
+    }
+
+    if (offset >= frag->len)
+    {
+        semsg(_(e_failed_to_extract_pwd_from_str_check_your_shell_config),
+								    frag->str);
+        return;
+    }
+
+    new_dir = alloc(frag->len - offset + 1);
+    url_decode(pos, frag->len-offset, new_dir);
+    changedir_func(new_dir, TRUE, CDSCOPE_WINDOW);
+    vim_free(new_dir);
+}
+
+/*
  * Called by libvterm when it cannot recognize an OSC sequence.
  * We recognize a terminal API command.
  */
@@ -4306,7 +4373,13 @@ parse_osc(int command, VTermStringFragment frag, void *user)
 						    : term->tl_job->jv_channel;
     garray_T	*gap = &term->tl_osc_buf;
 
-    // We recognize only OSC 5 1 ; {command}
+    // We recognize only OSC 5 1 ; {command} and OSC 7 ; {command}
+    if (p_asd && command == 7)
+    {
+	sync_shell_dir(&frag);
+	return 1;
+    }
+
     if (command != 51)
 	return 0;
 
