@@ -40,7 +40,7 @@ syn region  javaScriptStringT	       start=+`+  skip=+\\\\\|\\`+  end=+`+	contai
 syn region  javaScriptEmbed	       start=+${+  end=+}+	contains=@javaScriptEmbededExpr
 
 syn match   javaScriptSpecialCharacter "'\\.'"
-syn match   javaScriptNumber	       "-\=\<[0-9_]\+L\=\>\|0[xX][0-9a-fA-F_]\+\>"
+syn match   javaScriptNumber	       "-\=\<\d\(_\?\d\)*\>\|0[xX][0-9a-fA-F_]\+\>"
 syn region  javaScriptRegexpString     start=+[,(=+]\s*/[^/*]+ms=e-1,me=e-1 skip=+\\\\\|\\/+ end=+/[gimuys]\{0,2\}\s*$+ end=+/[gimuys]\{0,2\}\s*[+;.,)\]}]+me=e-1 end=+/[gimuys]\{0,2\}\s\+\/+me=e-1 contains=@htmlPreproc,javaScriptComment oneline
 
 syn keyword javaScriptConditional	if else switch
