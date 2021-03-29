@@ -641,18 +641,25 @@ def Test_disassemble_update_instr()
 enddef
 
 
-def FuncWithDefault(arg: string = 'default'): string
-  return arg
+def FuncWithDefault(arg: string = 'default', nr = 77): string
+  return arg .. nr
 enddef
 
 def Test_disassemble_call_default()
   var res = execute('disass FuncWithDefault')
   assert_match('FuncWithDefault\_s*' ..
+        '\d JUMP_IF_ARG_SET arg\[-2\] -> 3\_s*' ..
         '\d PUSHS "default"\_s*' ..
+        '\d STORE arg\[-2]\_s*' ..
+        '3 JUMP_IF_ARG_SET arg\[-1\] -> 6\_s*' ..
+        '\d PUSHNR 77\_s*' ..
         '\d STORE arg\[-1]\_s*' ..
-        'return arg\_s*' ..
+        'return arg .. nr\_s*' ..
+        '6 LOAD arg\[-2]\_s*' ..
         '\d LOAD arg\[-1]\_s*' ..
-        '\d RETURN',
+        '\d 2STRING stack\[-1]\_s*' ..
+        '\d\+ CONCAT\_s*' ..
+        '\d\+ RETURN',
         res)
 enddef
 

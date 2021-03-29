@@ -125,6 +125,10 @@ that starts a comment: >
 	var name = value # comment
 	var name = value# error!
 
+Do not start a comment with #{, it looks like the legacy dictionary literal
+and produces an error where this might be confusing.  #{{ or #{{{ are OK,
+these can be used to start a fold.
+
 In legacy Vim script # is also used for the alternate file name.  In Vim9
 script you need to use %% instead.  Instead of ## use %%% (stands for all
 arguments).
@@ -164,6 +168,15 @@ list type, similar to TypeScript.  For example, a list of numbers: >
 	   for item in itemlist
 	     ...
 
+When a function argument is optional (it has a default value) passing `v:none`
+as the argument results in using the default value.  This is useful when you
+want to specify a value for an argument that comes after an argument that
+should use its default value.  Example: >
+	def MyFunc(one = 'one', last = 'last)
+	  ...
+	enddef
+	MyFunc(v:none, 'LAST')  # first argument uses default value 'one'
+
 
 Functions and variables are script-local by default ~
 							*vim9-scopes*
@@ -189,6 +202,12 @@ search for the function:
 - in the list of global functions
 However, it is recommended to always use "g:" to refer to a global function
 for clarity.
+
+Since a script-local function reference can be used without "s:" the name must
+start with an upper case letter even when using the ":s" prefix.  In legacy
+script "s:funcref" could be used, because it could not be referred to with
+"funcref".  In Vim9 script it can, therefore "s:Funcref" must be used to avoid
+that the name interferes with builtin functions.
 
 In all cases the function must be defined before used.  That is when it is
 called, when `:defcompile` causes it to be compiled, or when code that calls
@@ -278,6 +297,9 @@ In Vim9 script `:let` cannot be used.  An existing variable is assigned to
 without any command.  The same for global, window, tab, buffer and Vim
 variables, because they are not really declared.  They can also be deleted
 with `:unlet`.
+
+`:lockvar` does not work on local variables.  Use `:const` and `:final`
+instead.
 
 Variables, functions and function arguments cannot shadow previously defined
 or imported variables and functions in the same script file.
@@ -409,7 +431,18 @@ Additionally, a lambda can contain statements in {}: >
 		g:was_called = 'yes'
 		return expression
 	    }
-NOT IMPLEMENTED YET
+
+The ending "}" must be at the start of a line.  It can be followed by other
+characters, e.g.: >
+	var d = mapnew(dict, (k, v): string => {
+	     return 'value'
+	   })
+No command can follow the "{", only a comment can be used there.
+
+Rationale: The "}" cannot be after a command because it would require parsing
+the commands to find it.  For consistency with that no command can follow the
+"{".  Unfortunately this means using "() => {  command  }" does not work, line
+breaks are always required.
 
 							*vim9-curly*
 To avoid the "{" of a dictionary literal to be recognized as a statement block
@@ -705,6 +738,7 @@ In legacy script this results in the character 0xc3 (an illegal byte), in Vim9
 script this results in the string 'á'.
 A negative index is counting from the end, "[-1]" is the last character.
 To exclude the last character use |slice()|.
+To count composing characters separately use |strcharpart()|.
 If the index is out of range then an empty string results.
 
 In legacy script "++var" and "--var" would be silently accepted and have no
@@ -972,6 +1006,8 @@ And classes and interfaces can be used as types: >
 	:var mine: MyInterface<string>
 {not implemented yet}
 
+You may also find this wiki useful.  It was written by an early adoptor of
+Vim9 script: https://github.com/lacygoill/wiki/blob/master/vim/vim9.md
 
 Variable types and type casting	~
 							*variable-types*
@@ -1043,6 +1079,27 @@ change to a more specific type.  E.g. when a list of mixed types gets changed
 to a list of numbers.
 Same for |extend()|, use |extendnew()| instead, and for |flatten()|, use
 |flattennew()| instead.
+
+Closures defined in a loop will share the same context.  For example: >
+	var flist: list<func>
+	for i in range(10)
+	  var inloop = i
+	  flist[i] = () => inloop
+	endfor
+
+The "inloop" variable will exist only once, all closures put in the list refer
+to the same instance, which in the end will have the value 9.  This is
+efficient.  If you do want a separate context for each closure call a function
+to define it: >
+	def GetFunc(i: number): func
+	  var inloop = i
+	  return () => inloop
+	enddef
+
+	var flist: list<func>
+	for i in range(10)
+	  flist[i] = GetFunc(i)
+	endfor
 
 ==============================================================================
 

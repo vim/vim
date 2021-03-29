@@ -92,6 +92,7 @@ typedef enum {
 
     // expression operations
     ISN_JUMP,	    // jump if condition is matched isn_arg.jump
+    ISN_JUMP_IF_ARG_SET, // jump if argument is already set, uses isn_arg.jumparg
 
     // loop
     ISN_FOR,	    // get next item from a list, uses isn_arg.forloop
@@ -202,6 +203,12 @@ typedef struct {
     jumpwhen_T	jump_when;
     int		jump_where;	    // position to jump to
 } jump_T;
+
+// arguments to ISN_JUMP_IF_ARG_SET
+typedef struct {
+    int		jump_arg_off;	    // argument index, negative
+    int		jump_where;	    // position to jump to
+} jumparg_T;
 
 // arguments to ISN_FOR
 typedef struct {
@@ -346,6 +353,7 @@ struct isn_S {
 	job_T		    *job;
 	partial_T	    *partial;
 	jump_T		    jump;
+	jumparg_T	    jumparg;
 	forloop_T	    forloop;
 	try_T		    try;
 	trycont_T	    trycont;

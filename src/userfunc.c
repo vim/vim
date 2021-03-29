@@ -1914,7 +1914,6 @@ func_clear_items(ufunc_T *fp)
     ga_clear_strings(&(fp->uf_def_args));
     ga_clear_strings(&(fp->uf_lines));
     VIM_CLEAR(fp->uf_arg_types);
-    VIM_CLEAR(fp->uf_def_arg_idx);
     VIM_CLEAR(fp->uf_block_ids);
     VIM_CLEAR(fp->uf_va_name);
     clear_type_list(&fp->uf_type_list);
@@ -2048,14 +2047,6 @@ copy_func(char_u *lambda, char_u *global, ectx_T *ectx)
 	    goto failed;
 	mch_memmove(fp->uf_arg_types, ufunc->uf_arg_types,
 				    sizeof(type_T *) * fp->uf_args.ga_len);
-    }
-    if (ufunc->uf_def_arg_idx != NULL)
-    {
-	fp->uf_def_arg_idx = ALLOC_MULT(int, fp->uf_def_args.ga_len + 1);
-	if (fp->uf_def_arg_idx == NULL)
-	    goto failed;
-	mch_memmove(fp->uf_def_arg_idx, ufunc->uf_def_arg_idx,
-				 sizeof(int) * fp->uf_def_args.ga_len + 1);
     }
     if (ufunc->uf_va_name != NULL)
     {

@@ -97,35 +97,6 @@ ufunc_argcount(ufunc_T *ufunc)
 }
 
 /*
- * Set the instruction index, depending on omitted arguments, where the default
- * values are to be computed.  If all optional arguments are present, start
- * with the function body.
- * The expression evaluation is at the start of the instructions:
- *  0 ->  EVAL default1
- *	       STORE arg[-2]
- *  1 ->  EVAL default2
- *	       STORE arg[-1]
- *  2 ->  function body
- */
-    static void
-init_instr_idx(ufunc_T *ufunc, int argcount, ectx_T *ectx)
-{
-    if (ufunc->uf_def_args.ga_len == 0)
-	ectx->ec_iidx = 0;
-    else
-    {
-	int	defcount = ufunc->uf_args.ga_len - argcount;
-
-	// If there is a varargs argument defcount can be negative, no defaults
-	// to evaluate then.
-	if (defcount < 0)
-	    defcount = 0;
-	ectx->ec_iidx = ufunc->uf_def_arg_idx[
-					 ufunc->uf_def_args.ga_len - defcount];
-    }
-}
-
-/*
  * Create a new list from "count" items at the bottom of the stack.
  * When "count" is zero an empty list is added to the stack.
  */
@@ -363,8 +334,8 @@ call_dfunc(
 	current_sctx.sc_sid = ufunc->uf_script_ctx.sc_sid;
     }
 
-    // Decide where to start execution, handles optional arguments.
-    init_instr_idx(ufunc, argcount, ectx);
+    // Start execution at the first instruction.
+    ectx->ec_iidx = 0;
 
     return OK;
 }
@@ -1367,11 +1338,21 @@ call_def_function(
 	    && (ufunc->uf_va_name != NULL || idx < ufunc->uf_args.ga_len);
 									 ++idx)
     {
-	if (ufunc->uf_arg_types != NULL && idx < ufunc->uf_args.ga_len
-		&& check_typval_arg_type(ufunc->uf_arg_types[idx], &argv[idx],
-							      idx + 1) == FAIL)
-	    goto failed_early;
-	copy_tv(&argv[idx], STACK_TV_BOT(0));
+	if (idx >= ufunc->uf_args.ga_len - ufunc->uf_def_args.ga_len
+		&& argv[idx].v_type == VAR_SPECIAL
+		&& argv[idx].vval.v_number == VVAL_NONE)
+	{
+	    // Use the default value.
+	    STACK_TV_BOT(0)->v_type = VAR_UNKNOWN;
+	}
+	else
+	{
+	    if (ufunc->uf_arg_types != NULL && idx < ufunc->uf_args.ga_len
+		    && check_typval_arg_type(
+			ufunc->uf_arg_types[idx], &argv[idx], idx + 1) == FAIL)
+		goto failed_early;
+	    copy_tv(&argv[idx], STACK_TV_BOT(0));
+	}
 	++ectx.ec_stack.ga_len;
     }
 
@@ -1505,8 +1486,8 @@ call_def_function(
     where.wt_index = 0;
     where.wt_variable = FALSE;
 
-    // Decide where to start execution, handles optional arguments.
-    init_instr_idx(ufunc, argc, &ectx);
+    // Start execution at the first instruction.
+    ectx.ec_iidx = 0;
 
     for (;;)
     {
@@ -2736,6 +2717,16 @@ call_def_function(
 		    if (jump)
 			ectx.ec_iidx = iptr->isn_arg.jump.jump_where;
 		}
+		break;
+
+	    // Jump if an argument with a default value was already set and not
+	    // v:none.
+	    case ISN_JUMP_IF_ARG_SET:
+		tv = STACK_TV_VAR(iptr->isn_arg.jumparg.jump_arg_off);
+		if (tv->v_type != VAR_UNKNOWN
+			&& !(tv->v_type == VAR_SPECIAL
+					    && tv->vval.v_number == VVAL_NONE))
+		    ectx.ec_iidx = iptr->isn_arg.jumparg.jump_where;
 		break;
 
 	    // top of a for loop
@@ -4515,6 +4506,12 @@ ex_disassemble(exarg_T *eap)
 		    smsg("%4d %s -> %d", current, when,
 						iptr->isn_arg.jump.jump_where);
 		}
+		break;
+
+	    case ISN_JUMP_IF_ARG_SET:
+		smsg("%4d JUMP_IF_ARG_SET arg[%d] -> %d", current,
+			 iptr->isn_arg.jumparg.jump_arg_off + STACK_FRAME_SIZE,
+						iptr->isn_arg.jump.jump_where);
 		break;
 
 	    case ISN_FOR:

@@ -1607,8 +1607,6 @@ typedef struct
     type_T	**uf_arg_types;	// argument types (count == uf_args.ga_len)
     type_T	*uf_ret_type;	// return type
     garray_T	uf_type_list;	// types used in arg and return types
-    int		*uf_def_arg_idx; // instruction indexes for evaluating
-				// uf_def_args; length: uf_def_args.ga_len + 1
     partial_T	*uf_partial;	// for closure created inside :def function:
 				// information about the context
 

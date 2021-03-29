@@ -1629,6 +1629,22 @@ generate_JUMP(cctx_T *cctx, jumpwhen_T when, int where)
     return OK;
 }
 
+/*
+ * Generate an ISN_JUMP_IF_ARG_SET instruction.
+ */
+    static int
+generate_JUMP_IF_ARG_SET(cctx_T *cctx, int arg_off)
+{
+    isn_T	*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_JUMP_IF_ARG_SET)) == NULL)
+	return FAIL;
+    isn->isn_arg.jumparg.jump_arg_off = arg_off;
+    // jump_where is set later
+    return OK;
+}
+
     static int
 generate_FOR(cctx_T *cctx, int loop_idx)
 {
@@ -1834,6 +1850,13 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 	    type_T *expected;
 	    type_T *actual;
 
+	    actual = ((type_T **)stack->ga_data)[stack->ga_len - argcount + i];
+	    if (actual == &t_special
+			      && i >= regular_args - ufunc->uf_def_args.ga_len)
+	    {
+		// assume v:none used for default argument value
+		continue;
+	    }
 	    if (i < regular_args)
 	    {
 		if (ufunc->uf_arg_types == NULL)
@@ -1845,7 +1868,6 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 		expected = &t_any;
 	    else
 		expected = ufunc->uf_va_type->tt_member;
-	    actual = ((type_T **)stack->ga_data)[stack->ga_len - argcount + i];
 	    if (need_type(actual, expected, -argcount + i, i + 1, cctx,
 							  TRUE, FALSE) == FAIL)
 	    {
@@ -1961,6 +1983,9 @@ generate_PCALL(
 		    if (varargs && i >= type->tt_argcount - 1)
 			expected = type->tt_args[
 					     type->tt_argcount - 1]->tt_member;
+		    else if (i >= type->tt_min_argcount
+						       && actual == &t_special)
+			expected = &t_any;
 		    else
 			expected = type->tt_args[i];
 		    if (need_type(actual, expected, offset, i + 1,
@@ -8363,12 +8388,6 @@ compile_def_function(
 	int	did_set_arg_type = FALSE;
 
 	// Produce instructions for the default values of optional arguments.
-	// Store the instruction index in uf_def_arg_idx[] so that we know
-	// where to start when the function is called, depending on the number
-	// of arguments.
-	ufunc->uf_def_arg_idx = ALLOC_CLEAR_MULT(int, count + 1);
-	if (ufunc->uf_def_arg_idx == NULL)
-	    goto erret;
 	SOURCING_LNUM = 0;  // line number unknown
 	for (i = 0; i < count; ++i)
 	{
@@ -8377,11 +8396,16 @@ compile_def_function(
 	    int		arg_idx = first_def_arg + i;
 	    where_T	where;
 	    int		r;
+	    int		jump_instr_idx = instr->ga_len;
+	    isn_T	*isn;
+
+	    // Use a JUMP_IF_ARG_SET instruction to skip if the value was given.
+	    if (generate_JUMP_IF_ARG_SET(&cctx, i - count - off) == FAIL)
+		goto erret;
 
 	    // Make sure later arguments are not found.
 	    ufunc->uf_args.ga_len = i;
 
-	    ufunc->uf_def_arg_idx[i] = instr->ga_len;
 	    arg = ((char_u **)(ufunc->uf_def_args.ga_data))[i];
 	    r = compile_expr0(&arg, &cctx);
 
@@ -8406,8 +8430,11 @@ compile_def_function(
 
 	    if (generate_STORE(&cctx, ISN_STORE, i - count - off, NULL) == FAIL)
 		goto erret;
+
+	    // set instruction index in JUMP_IF_ARG_SET to here
+	    isn = ((isn_T *)instr->ga_data) + jump_instr_idx;
+	    isn->isn_arg.jumparg.jump_where = instr->ga_len;
 	}
-	ufunc->uf_def_arg_idx[count] = instr->ga_len;
 
 	if (did_set_arg_type)
 	    set_function_type(ufunc);
@@ -9114,6 +9141,7 @@ delete_instr(isn_T *isn)
 	case ISN_FOR:
 	case ISN_GETITEM:
 	case ISN_JUMP:
+	case ISN_JUMP_IF_ARG_SET:
 	case ISN_LISTAPPEND:
 	case ISN_LISTINDEX:
 	case ISN_LISTSLICE:

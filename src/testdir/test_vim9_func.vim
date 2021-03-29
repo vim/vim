@@ -308,21 +308,38 @@ def MyDefaultSecond(name: string, second: bool  = true): string
   return second ? name : 'none'
 enddef
 
+
 def Test_call_default_args()
   MyDefaultArgs()->assert_equal('string')
+  MyDefaultArgs(v:none)->assert_equal('string')
   MyDefaultArgs('one')->assert_equal('one')
-  assert_fails('MyDefaultArgs("one", "two")', 'E118:', '', 3, 'Test_call_default_args')
+  assert_fails('MyDefaultArgs("one", "two")', 'E118:', '', 4, 'Test_call_default_args')
 
   MyDefaultSecond('test')->assert_equal('test')
   MyDefaultSecond('test', true)->assert_equal('test')
   MyDefaultSecond('test', false)->assert_equal('none')
+
+  var lines =<< trim END
+      def MyDefaultThird(name: string, aa = 'aa', bb = 'bb'): string
+        return name .. aa .. bb
+      enddef
+
+      MyDefaultThird('->')->assert_equal('->aabb')
+      MyDefaultThird('->', v:none)->assert_equal('->aabb')
+      MyDefaultThird('->', 'xx')->assert_equal('->xxbb')
+      MyDefaultThird('->', v:none, v:none)->assert_equal('->aabb')
+      MyDefaultThird('->', 'xx', v:none)->assert_equal('->xxbb')
+      MyDefaultThird('->', v:none, 'yy')->assert_equal('->aayy')
+      MyDefaultThird('->', 'xx', 'yy')->assert_equal('->xxyy')
+  END
+  CheckDefAndScriptSuccess(lines)
 
   CheckScriptFailure(['def Func(arg: number = asdf)', 'enddef', 'defcompile'], 'E1001:')
   delfunc g:Func
   CheckScriptFailure(['def Func(arg: number = "text")', 'enddef', 'defcompile'], 'E1013: Argument 1: type mismatch, expected number but got string')
   delfunc g:Func
 
-  var lines =<< trim END
+  lines =<< trim END
       vim9script
       def Func(a = b == 0 ? 1 : 2, b = 0)
       enddef
