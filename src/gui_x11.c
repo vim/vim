@@ -1753,7 +1753,13 @@ gui_mch_init_font(
     // A font name equal "*" is indicating, that we should activate the font
     // selection dialogue to get a new font name. So let us do it here.
     if (font_name != NULL && STRCMP(font_name, "*") == 0)
+    {
 	font_name = gui_xm_select_font(hl_get_font_name());
+
+	// Do not reset to default font except on GUI startup.
+	if (font_name == NULL && !gui.starting)
+	    return OK;
+    }
 #endif
 
 #ifdef FEAT_XFONTSET
