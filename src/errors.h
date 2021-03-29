@@ -393,3 +393,5 @@ EXTERN char e_for_loop_on_str_not_supported[]
 	INIT(= N_("E1177: For loop on %s not supported"));
 EXTERN char e_cannot_lock_unlock_local_variable[]
 	INIT(= N_("E1178: Cannot lock or unlock a local variable"));
+EXTERN char e_failed_to_extract_pwd_from_str_check_your_shell_config[]
+	INIT(= N_("E1179: Failed to extract PWD from %s, check your shell's config related to OSC 7"));
