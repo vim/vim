@@ -180,6 +180,7 @@ runtime/syntax/sh.vim			@cecamp
 runtime/syntax/sm.vim			@cecamp
 runtime/syntax/spec.vim			@ignatenkobrain
 runtime/syntax/sqloracle.vim		@chrisbra
+runtime/syntax/sshconfig.vim		@Jakuje
 runtime/syntax/sshdconfig.vim		@Jakuje
 runtime/syntax/tags.vim			@cecamp
 runtime/syntax/teraterm.vim		@k-takata
