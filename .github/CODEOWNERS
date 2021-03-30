@@ -142,6 +142,7 @@ runtime/syntax/csh.vim			@cecamp
 runtime/syntax/cucumber.vim		@tpope
 runtime/syntax/datascript.vim		@dpelle
 runtime/syntax/dcl.vim			@cecamp
+runtime/syntax/desktop.vim		@e-kwsm
 runtime/syntax/doxygen.vim		@frogonwheels
 runtime/syntax/dtd.vim			@chrisbra
 runtime/syntax/elmfilt.vim		@cecamp
@@ -162,7 +163,6 @@ runtime/syntax/lisp.vim			@cecamp
 runtime/syntax/lynx.vim			@dkearns
 runtime/syntax/mailcap.vim		@dkearns
 runtime/syntax/make.vim			@rohieb
-runtime/syntax/make.vim			@rohieb
 runtime/syntax/maple.vim		@cecamp
 runtime/syntax/markdown.vim		@tpope
 runtime/syntax/netrw.vim		@cecamp
@@ -181,6 +181,7 @@ runtime/syntax/sm.vim			@cecamp
 runtime/syntax/spec.vim			@ignatenkobrain
 runtime/syntax/sqloracle.vim		@chrisbra
 runtime/syntax/sshdconfig.vim		@Jakuje
+runtime/syntax/sudoers.vim		@e-kwsm
 runtime/syntax/tags.vim			@cecamp
 runtime/syntax/teraterm.vim		@k-takata
 runtime/syntax/tex.vim			@cecamp
