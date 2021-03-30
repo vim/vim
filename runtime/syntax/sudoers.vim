@@ -1,5 +1,6 @@
 " Vim syntax file
 " Language:             sudoers(5) configuration files
+" Maintainer:           Eisuke Kawashima ( e.kawaschima+vim AT gmail.com )
 " Previous Maintainer:  Nikolai Weibull <now@bitwi.se>
 " Latest Revision:      2018-08-18
 " Recent Changes:	Support for #include and #includedir.
