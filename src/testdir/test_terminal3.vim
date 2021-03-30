@@ -502,6 +502,8 @@ func Test_terminal_sync_shell_dir()
     let expected = tmpfolder
   endif
   call assert_equal(expected, getcwd(winnr()))
+
+  set noasd
 endfunc
 
 " Test for modeless selection in a terminal
