@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Mar 11
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Mar 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,48 +39,9 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 Vim9 - Make everything work:
-- Does this work now: Implement using imported items at script level from
-  "import * as X" in
-- import of item that isn't exported: error should mention missing "export"?
-- no error for using :import in legacy script?
-- Disallow :open ?
-- Check: what if 'cpo' is intentionally changed in Vim9 script, does it get
-  restored at the end?
-- ISN_CHECKTYPE could use check_argtype()
-- Using a script variable inside a :def function doesn't work if the variable
-  is inside a block, see Test_nested_function().  Should it work?
-- give error for variable name:
-      var p = function('NoSuchFunc')
-- When indexing a string, should we include composing characters?  #6563
-	string[0] - first character including its composing characters.
-	string[0 : 0] - same
-    If you don't want that use strcharpart().
-    Also, add optional arg to strcharpart() to include composing chars, to
-    make it consistent with strchars().
-    Add strcharlen(), like strchars() but like skipcc is always set
-- Make closures work better:
-  - Create closure in a loop.  Need to make a list of them.
-- If a :def function is called with a function reference, compile it to get
-  the function type.
-	def Filter(x: string, Cond: func(string): bool)
-	Filter(x, (v) => v =~ '^b')
-- Make inline function work, to be used as a funcref:
-       var Ref = (arg: type): type => {
-	    statement
-	    return expr
-	}
-       var Ref = (arg: type) => {
-	    statement
-	    statement
-	}
 - For builtin functions using tv_get_string*() use check_for_string() to be
-  more strict about the argument type.
-- Implement :lockvar and :unlockvar.  How about local variables?  Perhaps only
-  allow this for global variables.  Use :final or :const otherwise.
-- Allow function names that will be script-local to start with lower case
-  letter?  Or also require names with s: prefix to use upper case?
-  Also apply this function references "var ref = SomeFunc"
-- Support passing v:none to use the default argument value. (#6504)
+  more strict about the argument type (not a bool).
+    done: balloon_()
 - Run the same tests in :def and Vim9 script, like in Test_expr7_not()
 - Check many more builtin function arguments at compile time.
 - make 0 == 'string' fail on the script level, like inside :def.
@@ -280,6 +241,23 @@ Terminal emulator window:
 Include patch #6290: recognize shell directory change.
 
 Valgrind reports memory leaks in test_options.
+Valgrind reports overlapping memcpy in
+    test_conceal.3
+    test_edit.1
+    test_functions.4
+    test_ins_complete.3
+    test_method
+    test_normal
+    test_popupwin.35 et al.
+    test_search_stat
+Using uninitialized value in test_crypt (can't explain why).
+Memory leak in test_debugger
+Memory leak in test_paste, using XtOpenDisplay several times
+OLD:
+TODO: be able to run all parts of test_alot with valgrind separately
+Memory leak in test_alot with pyeval() (allocating partial)
+Memory leak in test_alot with expand()
+Memory leaks in test_channel? (or is it because of fork())
 
 test_arglist func Test_all_not_allowed_from_cmdwin() hangs on MS-Windows.
 
@@ -297,6 +275,11 @@ Also, z= in German on a long word can take a very long time, but CTRL-C to
 interrupt does not work. Where to add ui_breakcheck()?
 
 Remove SPACE_IN_FILENAME ? It is only used for completion.
+
+Add optional argument to virtcol() that specifies "start", "cursor" or "end"
+to tell which value from getvvcol() should be used. (#7964)
+Value returned by virtcol() changes depending on how lines wrap.  This is
+inconsistent with the documentation.
 
 Making breakat support multibyte characters (Yasuhiro Matsumoto, #6598)
 Scroll doesn't work correctly, why?
@@ -592,7 +575,7 @@ The quoting of the [command] argument of :terminal is not clearly documented.
 Give a few examples. (#4288)
 
 Opening a file with --remote-tab-silent that matches 'wildignore' does not
-work, results in (E479: No match". (#4610)
+work, results in "E479: No match". (#4610)
 
 7   Add an option to add one pixel column to the character width?  Lucida
     Console italic is wider than the normal font ("d" overlaps with next char).
@@ -780,14 +763,6 @@ Make ":interactive !cmd" stop termcap mode, also when used in an autocommand.
 (#3692)
 
 Add buffer argument to undotree(). (#4001)
-
-Memory leak in test_debugger
-Using uninitialized value in test_crypt (can't explain why).
-Memory leak in test_terminal_fail
-TODO: be able to run all parts of test_alot with valgrind separately
-Memory leak in test_alot with pyeval() (allocating partial)
-Memory leak in test_alot with expand()
-Memory leaks in test_channel? (or is it because of fork())
 
 matchaddpos() gets slow with many matches.  Proposal by Rick Howe, 2018 Jul
 19.
@@ -1508,9 +1483,6 @@ specifically?  First try with the parens, then without.
 
 Patch to add :mapgroup, put mappings in a group like augroup.
 (Yasuhiro Matsumoto, 2016 Feb 19)
-
-Value returned by virtcol() changes depending on how lines wrap.  This is
-inconsistent with the documentation.
 
 Can we cache the syntax attributes, so that updates for 'relativenumber' and
 'cursorline'/'cursorcolumn' are a lot faster?  Thus store the attributes
@@ -2465,9 +2437,6 @@ backslash? (Robert Vibrant, 2008 Jun 5)
 
 When 'rightleft' is set, cursorcolumn isn't highlighted after the end of a
 line.  It's also wrong in folds. (Dominique Pelle, 2010 Aug 21)
-
-Using an insert mode expression mapping, cursor is not in the expected
-position. (ZyX, 2010 Aug 29)
 
 After using <Tab> for command line completion after ":ta blah" and getting E33
 (no tags file), further editing the command to e.g., ":echo 'blah'", the

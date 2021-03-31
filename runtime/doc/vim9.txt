@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Mar 03
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Mar 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -204,7 +204,7 @@ However, it is recommended to always use "g:" to refer to a global function
 for clarity.
 
 Since a script-local function reference can be used without "s:" the name must
-start with an upper case letter even when using the ":s" prefix.  In legacy
+start with an upper case letter even when using the "s:" prefix.  In legacy
 script "s:funcref" could be used, because it could not be referred to with
 "funcref".  In Vim9 script it can, therefore "s:Funcref" must be used to avoid
 that the name interferes with builtin functions.
@@ -926,6 +926,27 @@ For these the backtick expansion can be used.  Example: >
 	  g/pattern/s/^/`=newText`/
 	enddef
 
+Closures defined in a loop will share the same context.  For example: >
+	var flist: list<func>
+	for i in range(10)
+	  var inloop = i
+	  flist[i] = () => inloop
+	endfor
+
+The "inloop" variable will exist only once, all closures put in the list refer
+to the same instance, which in the end will have the value 9.  This is
+efficient.  If you do want a separate context for each closure call a function
+to define it: >
+	def GetFunc(i: number): func
+	  var inloop = i
+	  return () => inloop
+	enddef
+
+	var flist: list<func>
+	for i in range(10)
+	  flist[i] = GetFunc(i)
+	endfor
+
 ==============================================================================
 
 4. Types					*vim9-types*
@@ -1006,8 +1027,6 @@ And classes and interfaces can be used as types: >
 	:var mine: MyInterface<string>
 {not implemented yet}
 
-You may also find this wiki useful.  It was written by an early adoptor of
-Vim9 script: https://github.com/lacygoill/wiki/blob/master/vim/vim9.md
 
 Variable types and type casting	~
 							*variable-types*
@@ -1079,27 +1098,6 @@ change to a more specific type.  E.g. when a list of mixed types gets changed
 to a list of numbers.
 Same for |extend()|, use |extendnew()| instead, and for |flatten()|, use
 |flattennew()| instead.
-
-Closures defined in a loop will share the same context.  For example: >
-	var flist: list<func>
-	for i in range(10)
-	  var inloop = i
-	  flist[i] = () => inloop
-	endfor
-
-The "inloop" variable will exist only once, all closures put in the list refer
-to the same instance, which in the end will have the value 9.  This is
-efficient.  If you do want a separate context for each closure call a function
-to define it: >
-	def GetFunc(i: number): func
-	  var inloop = i
-	  return () => inloop
-	enddef
-
-	var flist: list<func>
-	for i in range(10)
-	  flist[i] = GetFunc(i)
-	endfor
 
 ==============================================================================
 

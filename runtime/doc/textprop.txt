@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 8.2.  Last change: 2020 Oct 14
+*textprop.txt*  For Vim version 8.2.  Last change: 2021 Mar 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -260,8 +260,8 @@ prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
 				properties the one with the highest priority
 				will be used; negative values can be used, the
 				default priority is zero
-		   combine	when TRUE combine the highlight with any
-				syntax highlight; when omitted or FALSE syntax
+		   combine	when omitted or TRUE combine the highlight
+				with any syntax highlight; when FALSE syntax
 				highlight will not be used
 		   start_incl	when TRUE inserts at the start position will
 				be included in the text property

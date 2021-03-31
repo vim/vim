@@ -57,11 +57,13 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'ari'	options.txt	/*'ari'*
 'arshape'	options.txt	/*'arshape'*
 'as'	todo.txt	/*'as'*
+'asd'	options.txt	/*'asd'*
 'autochdir'	options.txt	/*'autochdir'*
 'autoindent'	options.txt	/*'autoindent'*
 'autoprint'	vi_diff.txt	/*'autoprint'*
 'autoread'	options.txt	/*'autoread'*
 'autosave'	todo.txt	/*'autosave'*
+'autoshelldir'	options.txt	/*'autoshelldir'*
 'autowrite'	options.txt	/*'autowrite'*
 'autowriteall'	options.txt	/*'autowriteall'*
 'aw'	options.txt	/*'aw'*
@@ -508,10 +510,12 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'noari'	options.txt	/*'noari'*
 'noarshape'	options.txt	/*'noarshape'*
 'noas'	todo.txt	/*'noas'*
+'noasd'	options.txt	/*'noasd'*
 'noautochdir'	options.txt	/*'noautochdir'*
 'noautoindent'	options.txt	/*'noautoindent'*
 'noautoread'	options.txt	/*'noautoread'*
 'noautosave'	todo.txt	/*'noautosave'*
+'noautoshelldir'	options.txt	/*'noautoshelldir'*
 'noautowrite'	options.txt	/*'noautowrite'*
 'noautowriteall'	options.txt	/*'noautowriteall'*
 'noaw'	options.txt	/*'noaw'*
@@ -2397,6 +2401,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :ec	eval.txt	/*:ec*
 :echo	eval.txt	/*:echo*
 :echo-redraw	eval.txt	/*:echo-redraw*
+:echoc	eval.txt	/*:echoc*
+:echoconsole	eval.txt	/*:echoconsole*
 :echoe	eval.txt	/*:echoe*
 :echoerr	eval.txt	/*:echoerr*
 :echoh	eval.txt	/*:echoh*
@@ -9164,6 +9170,7 @@ str2float()	eval.txt	/*str2float()*
 str2list()	eval.txt	/*str2list()*
 str2nr()	eval.txt	/*str2nr()*
 strcasestr()	eval.txt	/*strcasestr()*
+strcharlen()	eval.txt	/*strcharlen()*
 strcharpart()	eval.txt	/*strcharpart()*
 strchars()	eval.txt	/*strchars()*
 strchr()	eval.txt	/*strchr()*

@@ -142,6 +142,7 @@ runtime/syntax/csh.vim			@cecamp
 runtime/syntax/cucumber.vim		@tpope
 runtime/syntax/datascript.vim		@dpelle
 runtime/syntax/dcl.vim			@cecamp
+runtime/syntax/desktop.vim		@e-kwsm
 runtime/syntax/doxygen.vim		@frogonwheels
 runtime/syntax/dtd.vim			@chrisbra
 runtime/syntax/elmfilt.vim		@cecamp
@@ -152,6 +153,7 @@ runtime/syntax/gitcommit.vim		@tpope
 runtime/syntax/gitconfig.vim		@tpope
 runtime/syntax/gitrebase.vim		@tpope
 runtime/syntax/gprof.vim		@dpelle
+runtime/syntax/groff.vim		@jmarshall
 runtime/syntax/haml.vim			@tpope
 runtime/syntax/haskell.vim		@coot
 runtime/syntax/hgcommit.vim		@k-takata
@@ -162,10 +164,10 @@ runtime/syntax/lisp.vim			@cecamp
 runtime/syntax/lynx.vim			@dkearns
 runtime/syntax/mailcap.vim		@dkearns
 runtime/syntax/make.vim			@rohieb
-runtime/syntax/make.vim			@rohieb
 runtime/syntax/maple.vim		@cecamp
 runtime/syntax/markdown.vim		@tpope
 runtime/syntax/netrw.vim		@cecamp
+runtime/syntax/nroff.vim		@jmarshall
 runtime/syntax/nsis.vim			@k-takata
 runtime/syntax/pdf.vim			@tpope
 runtime/syntax/php.vim			@TysonAndre
@@ -180,7 +182,9 @@ runtime/syntax/sh.vim			@cecamp
 runtime/syntax/sm.vim			@cecamp
 runtime/syntax/spec.vim			@ignatenkobrain
 runtime/syntax/sqloracle.vim		@chrisbra
+runtime/syntax/sshconfig.vim		@Jakuje
 runtime/syntax/sshdconfig.vim		@Jakuje
+runtime/syntax/sudoers.vim		@e-kwsm
 runtime/syntax/tags.vim			@cecamp
 runtime/syntax/teraterm.vim		@k-takata
 runtime/syntax/tex.vim			@cecamp

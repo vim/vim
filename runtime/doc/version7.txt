@@ -2300,7 +2300,7 @@ value didn't fill the whole screen. (SungHyun Nam)
 Win32 installer: The generated _vimrc contained an absolute path to diff.exe.
 After upgrading it becomes invalid.  Now use $VIMRUNTIME instead.
 
-The command line was cleared to often when 'showmode' was set and ":silent
+The command line was cleared too often when 'showmode' was set and ":silent
 normal vy" was used.  Don't clear the command line unless the mode was
 actually displayed.  Added the "mode_displayed" variable.
 

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2021 Mar 10
+*eval.txt*	For Vim version 8.2.  Last change: 2021 Mar 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5107,6 +5107,13 @@ getbufinfo([{dict}])
 			listed		TRUE if the buffer is listed.
 			lnum		Line number used for the buffer when
 					opened in the current window.
+					Only valid if the buffer has been
+					displayed in the window in the past.
+					If you want the line number of the
+					last known cursor position in a given
+					window, use |line()|: >
+						:echo line('.', {winid})
+<
 			linecount	Number of lines in the buffer (only
 					valid when loaded)
 			loaded		TRUE if the buffer is loaded.
@@ -6095,12 +6102,12 @@ getwininfo([{winid}])					*getwininfo()*
 			width		window width
 			winbar		1 if the window has a toolbar, 0
 					otherwise
-			wincol		leftmost screen column of the window,
-					col from |win_screenpos()|
+			wincol		leftmost screen column of the window;
+					"col" from |win_screenpos()|
 			winid		|window-ID|
 			winnr		window number
-			winrow		topmost screen column of the window,
-					row from |win_screenpos()|
+			winrow		topmost screen line of the window;
+					"row" from |win_screenpos()|
 
 		Can also be used as a |method|: >
 			GetWinnr()->getwininfo()
@@ -12810,8 +12817,8 @@ text...
 			it can no longer be changed (until it is unlocked).
 			A locked variable can be deleted: >
 				:lockvar v
-				:let v = 'asdf'		" fails!
-				:unlet v
+				:let v = 'asdf'	  " fails!
+				:unlet v	  " works
 <							*E741* *E940*
 			If you try to change a locked variable you get an
 			error message: "E741: Value is locked: {name}".
