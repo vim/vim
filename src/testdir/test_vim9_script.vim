@@ -3220,6 +3220,35 @@ def Test_source_vim9_from_legacy()
   delete('Xvim9_script.vim')
 enddef
 
+def Test_declare_script_in_func()
+  var lines =<< trim END
+      vim9script
+      func Declare()
+        let s:local = 123
+      endfunc
+      Declare()
+      assert_equal(123, local)
+
+      var error: string
+      try
+        local = 'asdf'
+      catch
+        error = v:exception
+      endtry
+      assert_match('E1012: Type mismatch; expected number but got string', error)
+
+      lockvar local
+      try
+        local = 999
+      catch
+        error = v:exception
+      endtry
+      assert_match('E741: Value is locked: local', error)
+  END
+  CheckScriptSuccess(lines)
+enddef
+        
+
 func Test_vim9script_not_global()
   " check that items defined in Vim9 script are script-local, not global
   let vim9lines =<< trim END

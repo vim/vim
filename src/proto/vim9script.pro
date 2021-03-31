@@ -1,5 +1,6 @@
 /* vim9script.c */
 int in_vim9script(void);
+int current_script_is_vim9(void);
 void ex_vim9script(exarg_T *eap);
 int not_in_vim9(exarg_T *eap);
 int vim9_bad_comment(char_u *p);

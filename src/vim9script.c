@@ -17,14 +17,30 @@
 # include "vim9.h"
 #endif
 
+/*
+ * Return TRUE when currently using Vim9 script syntax.
+ * Does not go up the stack, a ":function" inside vim9script uses legacy
+ * syntax.
+ */
     int
 in_vim9script(void)
 {
-    // Do not go up the stack, a ":function" inside vim9script uses legacy
-    // syntax.  "sc_version" is also set when compiling a ":def" function in
-    // legacy script.
+    // "sc_version" is also set when compiling a ":def" function in legacy
+    // script.
     return current_sctx.sc_version == SCRIPT_VERSION_VIM9
 		|| (cmdmod.cmod_flags & CMOD_VIM9CMD);
+}
+
+/*
+ * Return TRUE if the current script is Vim9 script.
+ * This also returns TRUE in a legacy function in a Vim9 script.
+ */
+    int
+current_script_is_vim9(void)
+{
+    return SCRIPT_ID_VALID(current_sctx.sc_sid)
+	    && SCRIPT_ITEM(current_sctx.sc_sid)->sn_version
+						       == SCRIPT_VERSION_VIM9;
 }
 
 /*
