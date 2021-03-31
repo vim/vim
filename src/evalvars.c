@@ -3219,15 +3219,16 @@ set_var_const(
 		goto failed;
 	    }
 
+	    if (is_script_local && vim9script
+			      && (flags & (ASSIGN_NO_DECL | ASSIGN_DECL)) == 0)
+	    {
+		semsg(_(e_redefining_script_item_str), name);
+		goto failed;
+	    }
+
 	    if (var_in_vim9script)
 	    {
 		where_T where;
-
-		if ((flags & (ASSIGN_NO_DECL | ASSIGN_DECL)) == 0)
-		{
-		    semsg(_(e_redefining_script_item_str), name);
-		    goto failed;
-		}
 
 		// check the type and adjust to bool if needed
 		where.wt_index = var_idx;
