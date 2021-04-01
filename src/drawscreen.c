@@ -380,7 +380,7 @@ update_screen(int type_arg)
 /*
  * Return the row for drawing the statusline and the ruler of window "wp".
  */
-    static int
+    int
 statusline_row(win_T *wp)
 {
 #if defined(FEAT_PROP_POPUP)
