@@ -1644,9 +1644,10 @@ def Test_vim9script_funcref()
 
     # using the function from a compiled function
     def TestMore(): string
-      return anAlias.GetString('text')
+      var s = s:anAlias.GetString('foo')
+      return s .. anAlias.GetString('bar')
     enddef
-    assert_equal('text', TestMore())
+    assert_equal('foobar', TestMore())
 
     # error when using a function that isn't exported
     assert_fails('anAlias.Compare(1, 2)', 'E1049:')

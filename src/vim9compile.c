@@ -2822,7 +2822,7 @@ compile_load(
 		case 'v': res = generate_LOADV(cctx, name, error);
 			  break;
 		case 's': res = compile_load_scriptvar(cctx, name,
-							    NULL, NULL, error);
+							    NULL, &end, error);
 			  break;
 		case 'g': if (vim_strchr(name, AUTOLOAD_CHAR) == NULL)
 			      isn_type = ISN_LOADG;
