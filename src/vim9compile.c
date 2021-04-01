@@ -2720,11 +2720,17 @@ compile_load_scriptvar(
 								   cctx, TRUE);
 	    *p = cc;
 	    p = skipwhite(p);
-
-	    // TODO: what if it is a function?
-	    if (idx < 0)
-		return FAIL;
 	    *end = p;
+
+	    if (idx < 0)
+	    {
+		if (*p == '(' && ufunc != NULL)
+		{
+		    generate_PUSHFUNC(cctx, ufunc->uf_name, import->imp_type);
+		    return OK;
+		}
+		return FAIL;
+	    }
 
 	    generate_VIM9SCRIPT(cctx, ISN_LOADSCRIPT,
 		    import->imp_sid,

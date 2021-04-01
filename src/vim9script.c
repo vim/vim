@@ -298,8 +298,7 @@ find_exported(
     svar_T	*sv;
     scriptitem_T *script = SCRIPT_ITEM(sid);
 
-    // find name in "script"
-    // TODO: also find script-local user function
+    // Find name in "script".
     idx = get_script_item_idx(sid, name, 0, cctx);
     if (idx >= 0)
     {
@@ -339,6 +338,13 @@ find_exported(
 	{
 	    if (verbose)
 		semsg(_(e_item_not_found_in_script_str), name);
+	    return -1;
+	}
+	else if (((*ufunc)->uf_flags & FC_EXPORT) == 0)
+	{
+	    if (verbose)
+		semsg(_(e_item_not_exported_in_script_str), name);
+	    *ufunc = NULL;
 	    return -1;
 	}
     }

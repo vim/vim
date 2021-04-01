@@ -1623,6 +1623,10 @@ def Test_vim9script_funcref()
       export def FastSort(): list<number>
         return range(5)->sort(Compare)
       enddef
+
+      export def GetString(arg: string): string
+        return arg
+      enddef
   END
   writefile(sortlines, 'Xsort.vim')
 
@@ -1633,6 +1637,19 @@ def Test_vim9script_funcref()
       g:result = FastSort()
     enddef
     Test()
+
+    # using a function imported with "as"
+    import * as anAlias from './Xsort.vim'
+    assert_equal('yes', anAlias.GetString('yes'))
+
+    # using the function from a compiled function
+    def TestMore(): string
+      return anAlias.GetString('text')
+    enddef
+    assert_equal('text', TestMore())
+
+    # error when using a function that isn't exported
+    assert_fails('anAlias.Compare(1, 2)', 'E1049:')
   END
   writefile(lines, 'Xscript.vim')
 
