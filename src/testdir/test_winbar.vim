@@ -141,4 +141,24 @@ func Test_winbar_not_visible()
   call delete('XtestWinbarNotVisble')
 endfunction
 
+func Test_winbar_not_visible_custom_statusline()
+  CheckScreendump
+
+  let lines =<< trim END
+      split
+      nnoremenu WinBar.Test :test
+      set winminheight=0
+      set statusline=abcde
+      wincmd j
+      wincmd _
+  END
+  call writefile(lines, 'XtestWinbarNotVisble')
+  let buf = RunVimInTerminal('-S XtestWinbarNotVisble', #{rows: 10})
+  call VerifyScreenDump(buf, 'Test_winbar_not_visible_custom_statusline', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestWinbarNotVisble')
+endfunction
+
 " vim: shiftwidth=2 sts=2 expandtab

@@ -1248,7 +1248,7 @@ win_redr_custom(
     }
     else
     {
-	row = W_WINROW(wp) + wp->w_height;
+	row = statusline_row(wp);
 	fillchar = fillchar_status(&attr, wp);
 	maxwidth = wp->w_width;
 
