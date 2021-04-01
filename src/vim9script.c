@@ -31,6 +31,7 @@ in_vim9script(void)
 		|| (cmdmod.cmod_flags & CMOD_VIM9CMD);
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return TRUE if the current script is Vim9 script.
  * This also returns TRUE in a legacy function in a Vim9 script.
@@ -42,6 +43,7 @@ current_script_is_vim9(void)
 	    && SCRIPT_ITEM(current_sctx.sc_sid)->sn_version
 						       == SCRIPT_VERSION_VIM9;
 }
+#endif
 
 /*
  * ":vim9script".
