@@ -1348,6 +1348,17 @@ def Test_var_declaration_fails()
 
   lines =<< trim END
     vim9script
+    var name = 'one'
+    lockvar name
+    def SetLocked()
+      name = 'two'
+    enddef
+    SetLocked()
+  END
+  CheckScriptFailure(lines, 'E741: Value is locked: name')
+
+  lines =<< trim END
+    vim9script
     def SetGlobalConst()
       const g:globConst = 123
     enddef

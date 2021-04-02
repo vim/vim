@@ -1958,6 +1958,13 @@ call_def_function(
 		    if (sv == NULL)
 			goto failed;
 		    --ectx.ec_stack.ga_len;
+
+		    // "const" and "final" are checked at compile time, locking
+		    // the value needs to be checked here.
+		    SOURCING_LNUM = iptr->isn_lnum;
+		    if (value_check_lock(sv->sv_tv->v_lock, sv->sv_name, FALSE))
+			goto on_error;
+
 		    clear_tv(sv->sv_tv);
 		    *sv->sv_tv = *STACK_TV_BOT(0);
 		}
