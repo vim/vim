@@ -739,6 +739,8 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_assert_inrange},
     {"assert_match",	2, 3, FEARG_2,	    NULL,
 			ret_number_bool,    f_assert_match},
+    {"assert_nobeep",	1, 2, FEARG_1,	    NULL,
+			ret_number_bool,    f_assert_nobeep},
     {"assert_notequal",	2, 3, FEARG_2,	    NULL,
 			ret_number_bool,    f_assert_notequal},
     {"assert_notmatch",	2, 3, FEARG_2,	    NULL,

@@ -2440,6 +2440,7 @@ assert_inrange({lower}, {upper}, {actual} [, {msg}])
 				Number	assert {actual} is inside the range
 assert_match({pat}, {text} [, {msg}])
 				Number	assert {pat} matches {text}
+assert_nobeep({cmd})		Number	assert {cmd} does not cause a beep
 assert_notequal({exp}, {act} [, {msg}])
 				Number	assert {exp} is not equal {act}
 assert_notmatch({pat}, {text} [, {msg}])
