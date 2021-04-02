@@ -42,6 +42,7 @@ runtime/compiler/jshint.vim		@dkearns
 runtime/compiler/jsonlint.vim		@dkearns
 runtime/compiler/lazbuild.vim		@dkearns
 runtime/compiler/php.vim		@dkearns
+runtime/compiler/powershell.vim	@heaths
 runtime/compiler/rake.vim		@tpope @dkearns
 runtime/compiler/rhino.vim		@dkearns
 runtime/compiler/rspec.vim		@tpope @dkearns
@@ -67,6 +68,7 @@ runtime/doc/pi_netrw.txt		@cecamp
 runtime/doc/pi_tar.txt			@cecamp
 runtime/doc/pi_vimball.txt		@cecamp
 runtime/doc/pi_zip.txt			@cecamp
+runtime/doc/ps1.txt				@heaths
 runtime/ftplugin/awk.vim		@dkearns
 runtime/ftplugin/basic.vim		@dkearns
 runtime/ftplugin/bst.vim		@tpope
@@ -93,6 +95,8 @@ runtime/ftplugin/matlab.vim		@cecamp
 runtime/ftplugin/nroff.vim		@a-vrma
 runtime/ftplugin/nsis.vim		@k-takata
 runtime/ftplugin/pdf.vim		@tpope
+runtime/ftplugin/ps1.vim		@heaths
+runtime/ftplugin/ps1xml.vim		@heaths
 runtime/ftplugin/ruby.vim		@tpope @dkearns
 runtime/ftplugin/sass.vim		@tpope
 runtime/ftplugin/scss.vim		@tpope
@@ -111,6 +115,7 @@ runtime/indent/gitconfig.vim		@tpope
 runtime/indent/haml.vim			@tpope
 runtime/indent/liquid.vim		@tpope
 runtime/indent/nsis.vim			@k-takata
+runtime/indent/ps1.vim			@heaths
 runtime/indent/ruby.vim			@AndrewRadev @dkearns
 runtime/indent/sass.vim			@tpope
 runtime/indent/scss.vim			@tpope
@@ -173,6 +178,8 @@ runtime/syntax/pdf.vim			@tpope
 runtime/syntax/php.vim			@TysonAndre
 runtime/syntax/privoxy.vim		@dkearns
 runtime/syntax/prolog.vim		@XVilka
+runtime/syntax/ps1.vim			@heaths
+runtime/syntax/ps1xml.vim		@heaths
 runtime/syntax/rc.vim			@chrisbra
 runtime/syntax/rpcgen.vim		@cecamp
 runtime/syntax/ruby.vim			@dkearns

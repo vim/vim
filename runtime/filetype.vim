@@ -1279,6 +1279,11 @@ au BufNewFile,BufRead .povrayrc			setf povini
 " Povray, Pascal, PHP or assembly
 au BufNewFile,BufRead *.inc			call dist#ft#FTinc()
 
+" PowerShell
+au BufNewFile,BufRead	*.ps1,*.psd1,*.psm1,*.pssc	set ft=ps1
+au BufNewFile,BufRead	*.ps1xml		set ft=ps1xml
+au BufNewFile,BufRead	*.cdxml,*.psc1	set ft=xml
+
 " Printcap and Termcap
 au BufNewFile,BufRead *printcap
 	\ let b:ptcap_type = "print" | setf ptcap
