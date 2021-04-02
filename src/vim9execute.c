@@ -1942,6 +1942,9 @@ call_def_function(
 			store_var(name, STACK_TV_BOT(0));
 		    else
 		    {
+			SOURCING_LNUM = iptr->isn_lnum;
+			if (var_check_permission(di, name) == FAIL)
+			    goto on_error;
 			clear_tv(&di->di_tv);
 			di->di_tv = *STACK_TV_BOT(0);
 		    }
