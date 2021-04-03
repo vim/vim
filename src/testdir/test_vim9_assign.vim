@@ -315,6 +315,14 @@ def Test_assign_linebreak()
   assert_equal(34, n2)
 
   CheckDefFailure(["var x = #"], 'E1097:', 3)
+
+  var lines =<< trim END
+      var x: list<string> = ['a']
+      var y: list<number> = x
+          ->copy()
+          ->copy()
+  END
+  CheckDefFailure(lines, 'E1012:', 2)
 enddef
 
 def Test_assign_index()

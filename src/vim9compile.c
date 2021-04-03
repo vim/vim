@@ -6166,6 +6166,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     char_u	*sp;
     int		is_decl = is_decl_command(cmdidx);
     lhs_T	lhs;
+    long	start_lnum = SOURCING_LNUM;
 
     // Skip over the "var" or "[var, var]" to get to any "=".
     p = skip_var_list(arg, TRUE, &var_count, &semicolon, TRUE);
@@ -6393,7 +6394,9 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    {
 			type_T *use_type = lhs.lhs_lvar->lv_type;
 
-			// without operator check type here, otherwise below
+			// Without operator check type here, otherwise below.
+			// Use the line number of the assignment.
+			SOURCING_LNUM = start_lnum;
 			if (lhs.lhs_has_index)
 			    use_type = lhs.lhs_member_type;
 			if (need_type(rhs_type, use_type, -1, 0, cctx,
