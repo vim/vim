@@ -2002,5 +2002,32 @@ func Test_terminal_all_ansi_colors()
   call delete('Xcolorscript')
 endfunc
 
+function On_BufFilePost()
+    doautocmd <nomodeline> User UserEvent
+endfunction
+
+func Test_terminal_nested_autocmd()
+  new
+  call setline(1, range(500))
+  $
+  let lastline = line('.')
+
+  augroup TermTest
+    autocmd BufFilePost * call On_BufFilePost()
+    autocmd User UserEvent silent
+  augroup END
+
+  let cmd = Get_cat_123_cmd()
+  let buf = term_start(cmd, #{term_finish: 'close', hidden: 1})
+  call assert_equal(lastline, line('.'))
+
+  call TermWait(buf)
+  exe buf . 'bwipe'
+  call delete('Xtext')
+  augroup TermTest
+    au!
+  augroup END
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

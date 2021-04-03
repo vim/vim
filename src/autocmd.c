@@ -2116,14 +2116,16 @@ apply_autocmds_group(
 	    ap->last = FALSE;
 	ap->last = TRUE;
 
-	// make sure cursor and topline are valid
-	check_lnums(TRUE);
+	if (nesting == 1)
+	    // make sure cursor and topline are valid
+	    check_lnums(TRUE);
 
 	do_cmdline(NULL, getnextac, (void *)&patcmd,
 				     DOCMD_NOWAIT|DOCMD_VERBOSE|DOCMD_REPEAT);
 
-	// restore cursor and topline, unless they were changed
-	reset_lnums();
+	if (nesting == 1)
+	    // restore cursor and topline, unless they were changed
+	    reset_lnums();
 
 #ifdef FEAT_EVAL
 	if (eap != NULL)
