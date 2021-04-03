@@ -2021,8 +2021,8 @@ func Test_terminal_nested_autocmd()
   let buf = term_start(cmd, #{term_finish: 'close', hidden: 1})
   call assert_equal(lastline, line('.'))
 
-  call TermWait(buf)
-  exe buf . 'bwipe'
+  let job = term_getjob(buf)
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
   call delete('Xtext')
   augroup TermTest
     au!
