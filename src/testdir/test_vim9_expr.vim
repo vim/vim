@@ -467,16 +467,30 @@ def Test_expr3_vimscript()
   CheckScriptFailure(lines, 'E1004:', 2)
 enddef
 
-func Test_expr3_fails()
-  let msg = "White space required before and after '&&'"
-  call CheckDefFailure(["var x = 1&&2"], msg, 1)
-  call CheckDefFailure(["var x = 1 &&2"], msg, 1)
-  call CheckDefFailure(["var x = 1&& 2"], msg, 1)
+def Test_expr3_fails()
+  var msg = "White space required before and after '&&'"
+  CheckDefFailure(["var x = 1&&2"], msg, 1)
+  CheckDefFailure(["var x = 1 &&2"], msg, 1)
+  CheckDefFailure(["var x = 1&& 2"], msg, 1)
 
-  call CheckDefFailure(["if 'yes' && 0", 'echo 0', 'endif'], 'E1012: Type mismatch; expected bool but got string', 1)
+  CheckDefFailure(["if 'yes' && 0", 'echo 0', 'endif'], 'E1012: Type mismatch; expected bool but got string', 1)
 
-  call CheckDefExecFailure(['assert_equal(false, Record(1) && Record(4) && Record(0))'], 'E1023: Using a Number as a Bool: 4', 1)
-endfunc
+  CheckDefExecFailure(['assert_equal(false, Record(1) && Record(4) && Record(0))'], 'E1023: Using a Number as a Bool: 4', 1)
+
+  var lines =<< trim END
+      if 3
+          && true
+      endif
+  END
+  CheckDefExecFailure(lines, 'E1023:', 1)
+
+  lines =<< trim END
+      if 'yes'
+          && true
+      endif
+  END
+  CheckDefFailure(lines, 'E1012:', 1)
+enddef
 
 " global variables to use for tests with the "any" type
 let atrue = v:true

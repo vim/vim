@@ -4772,6 +4772,10 @@ compile_and_or(
 	ga_init2(&end_ga, sizeof(int), 10);
 	while (p[0] == opchar && p[1] == opchar)
 	{
+	    long	start_lnum = SOURCING_LNUM;
+	    int		start_ctx_lnum = cctx->ctx_lnum;
+	    int		save_lnum;
+
 	    if (next != NULL)
 	    {
 		*arg = next_line_from_context(cctx, TRUE);
@@ -4790,11 +4794,16 @@ compile_and_or(
 	    generate_ppconst(cctx, ppconst);
 
 	    // Every part must evaluate to a bool.
+	    SOURCING_LNUM = start_lnum;
+	    save_lnum = cctx->ctx_lnum;
+	    cctx->ctx_lnum = start_ctx_lnum;
 	    if (bool_on_stack(cctx) == FAIL)
 	    {
+		cctx->ctx_lnum = save_lnum;
 		ga_clear(&end_ga);
 		return FAIL;
 	    }
+	    cctx->ctx_lnum = save_lnum;
 
 	    if (ga_grow(&end_ga, 1) == FAIL)
 	    {
