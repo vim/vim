@@ -1944,7 +1944,10 @@ call_def_function(
 		    {
 			SOURCING_LNUM = iptr->isn_lnum;
 			if (var_check_permission(di, name) == FAIL)
+			{
+			    clear_tv(STACK_TV_BOT(0));
 			    goto on_error;
+			}
 			clear_tv(&di->di_tv);
 			di->di_tv = *STACK_TV_BOT(0);
 		    }
@@ -1966,7 +1969,10 @@ call_def_function(
 		    // the value needs to be checked here.
 		    SOURCING_LNUM = iptr->isn_lnum;
 		    if (value_check_lock(sv->sv_tv->v_lock, sv->sv_name, FALSE))
+		    {
+			clear_tv(STACK_TV_BOT(0));
 			goto on_error;
+		    }
 
 		    clear_tv(sv->sv_tv);
 		    *sv->sv_tv = *STACK_TV_BOT(0);
