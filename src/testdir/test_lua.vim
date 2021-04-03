@@ -20,7 +20,7 @@ if len(s:luaver) < 3
 endif
 let s:major = str2nr(s:luaver[0])
 let s:minor = str2nr(s:luaver[1])
-if len(s:luaver >= 3)
+if len(s:luaver) >= 3
   let s:patch = str2nr(s:luaver[2])
 else
   let s:patch = 0
