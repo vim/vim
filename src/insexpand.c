@@ -571,7 +571,7 @@ ins_compl_add_infercase(
  * maybe because alloc() returns NULL, then FAIL is returned.
  */
     static int
-ins_compl_add(
+do_ins_compl_add(
     char_u	*str,
     int		len,
     char_u	*fname,
@@ -585,7 +585,6 @@ ins_compl_add(
     int		dir = (cdir == 0 ? compl_direction : cdir);
     int		flags = flags_arg;
 
-    ui_breakcheck();
     if (got_int)
 	return FAIL;
     if (len < 0)
@@ -679,6 +678,51 @@ ins_compl_add(
 	ins_compl_longest_match(match);
 
     return OK;
+}
+
+/*
+ * Add a match to the list of matches.
+ * If the given string is already in the list of completions, then return
+ * NOTDONE, otherwise add it to the list and return OK.  If there is an error,
+ * maybe because alloc() returns NULL, then FAIL is returned.
+ */
+    static int
+ins_compl_add(
+    char_u	*str,
+    int		len,
+    char_u	*fname,
+    char_u	**cptext,	    // extra text for popup menu or NULL
+    typval_T	*user_data UNUSED,  // "user_data" entry or NULL
+    int		cdir,
+    int		flags_arg,
+    int		adup)		// accept duplicate match
+{
+    ui_breakcheck();
+    return do_ins_compl_add(
+	str, len, fname, cptext, user_data, cdir, flags_arg, adup);
+}
+
+/*
+ * Add a match to the list of matches, when adding them in a very fast tight
+ * loop, such as f_complete().
+ * If the given string is already in the list of completions, then return
+ * NOTDONE, otherwise add it to the list and return OK.  If there is an error,
+ * maybe because alloc() returns NULL, then FAIL is returned.
+ */
+    static int
+ins_compl_add_fast(
+    char_u	*str,
+    int		len,
+    char_u	*fname,
+    char_u	**cptext,	    // extra text for popup menu or NULL
+    typval_T	*user_data,	    // "user_data" entry or NULL
+    int		cdir,
+    int		flags_arg,
+    int		adup)		// accept duplicate match
+{
+    fast_breakcheck();
+    return do_ins_compl_add(
+	str, len, fname, cptext, user_data, cdir, flags_arg, adup);
 }
 
 /*
@@ -789,7 +833,7 @@ ins_compl_add_matches(
     int		dir = compl_direction;
 
     for (i = 0; i < num_matches && add_r != FAIL; i++)
-	if ((add_r = ins_compl_add(matches[i], -1, NULL, NULL, NULL, dir,
+	if ((add_r = ins_compl_add_fast(matches[i], -1, NULL, NULL, NULL, dir,
 					   icase ? CP_ICASE : 0, FALSE)) == OK)
 	    // if dir was BACKWARD then honor it just once
 	    dir = FORWARD;
@@ -2271,9 +2315,12 @@ theend:
  * If the given string is already in the list of completions, then return
  * NOTDONE, otherwise add it to the list and return OK.  If there is an error,
  * maybe because alloc() returns NULL, then FAIL is returned.
+ *
+ * when batch is true, use ins_compl_add_fast (set when adding in a fast loop,
+ * such as from a list)
  */
     static int
-ins_compl_add_tv(typval_T *tv, int dir)
+ins_compl_add_tv(typval_T *tv, int dir, int batch)
 {
     char_u	*word;
     int		dup = FALSE;
@@ -2313,7 +2360,13 @@ ins_compl_add_tv(typval_T *tv, int dir)
     }
     if (word == NULL || (!empty && *word == NUL))
 	return FAIL;
-    return ins_compl_add(word, -1, NULL, cptext, &user_data, dir, flags, dup);
+
+    if (batch)
+	return ins_compl_add_fast(
+	    word, -1, NULL, cptext, &user_data, dir, flags, dup);
+    else
+	return ins_compl_add(
+	    word, -1, NULL, cptext, &user_data, dir, flags, dup);
 }
 
 /*
@@ -2329,7 +2382,7 @@ ins_compl_add_list(list_T *list)
     CHECK_LIST_MATERIALIZE(list);
     FOR_ALL_LIST_ITEMS(list, li)
     {
-	if (ins_compl_add_tv(&li->li_tv, dir) == OK)
+	if (ins_compl_add_tv(&li->li_tv, dir, TRUE /* batch */) == OK)
 	    // if dir was BACKWARD then honor it just once
 	    dir = FORWARD;
 	else if (did_emsg)
@@ -2390,7 +2443,7 @@ set_completion(colnr_T startcol, list_T *list)
     compl_orig_text = vim_strnsave(ml_get_curline() + compl_col, compl_length);
     if (p_ic)
 	flags |= CP_ICASE;
-    if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
+    if (compl_orig_text == NULL || ins_compl_add_fast(compl_orig_text,
 				  -1, NULL, NULL, NULL, 0, flags, FALSE) != OK)
 	return;
 
@@ -2461,7 +2514,7 @@ f_complete(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_complete_add(typval_T *argvars, typval_T *rettv)
 {
-    rettv->vval.v_number = ins_compl_add_tv(&argvars[0], 0);
+    rettv->vval.v_number = ins_compl_add_tv(&argvars[0], 0, FALSE /* batch */);
 }
 
 /*
