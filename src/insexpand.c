@@ -586,7 +586,10 @@ ins_compl_add(
     int		dir = (cdir == 0 ? compl_direction : cdir);
     int		flags = flags_arg;
 
-    ui_breakcheck();
+    if (flags & CP_FAST)
+	fast_breakcheck();
+    else
+	ui_breakcheck();
     if (got_int)
 	return FAIL;
     if (len < 0)
