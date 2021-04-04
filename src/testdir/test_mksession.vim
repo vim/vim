@@ -392,7 +392,7 @@ endfunc
 func Test_mksession_terminal_no_restore_funcarg()
   CheckFeature terminal
 
-  call term_start(&shell, {'norestore': 1})
+  let buf = Run_shell_in_terminal({'norestore': 1})
   mksession! Xtest_mks.out
   let lines = readfile('Xtest_mks.out')
   let term_cmd = ''
@@ -402,7 +402,7 @@ func Test_mksession_terminal_no_restore_funcarg()
     endif
   endfor
 
-  call StopShellInTerminal(bufnr('%'))
+  call StopShellInTerminal(buf)
   call delete('Xtest_mks.out')
 endfunc
 

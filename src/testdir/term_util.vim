@@ -23,7 +23,7 @@ endif
 func StopShellInTerminal(buf)
   call term_sendkeys(a:buf, "exit\r")
   let job = term_getjob(a:buf)
-  call WaitFor({-> job_status(job) == "dead"})
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
 endfunc
 
 " Wrapper around term_wait() to allow more time for re-runs of flaky tests
@@ -160,7 +160,7 @@ endfunc
 " number.
 func Run_shell_in_terminal(options)
   if has('win32')
-    let buf = term_start([&shell,'/k'], a:options)
+    let buf = term_start([&shell, '/k'], a:options)
   else
     let buf = term_start(&shell, a:options)
   endif
