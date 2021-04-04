@@ -3008,10 +3008,12 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 		    n1 = tv_get_number_chk(rettv, &error);
 		    if (error)
 		    {
-			// This can only happen for "list + non-list".  For
-			// "non-list + ..." or "something - ...", we returned
-			// before evaluating the 2nd operand.
+			// This can only happen for "list + non-list" or
+			// "blob + non-blob".  For "non-list + ..." or
+			// "something - ...", we returned before evaluating the
+			// 2nd operand.
 			clear_tv(rettv);
+			clear_tv(&var2);
 			return FAIL;
 		    }
 #ifdef FEAT_FLOAT
