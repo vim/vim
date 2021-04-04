@@ -1011,17 +1011,29 @@ gui_mch_set_scrollbar_pos(scrollbar_T *sb, int x, int y, int w, int h)
     int
 gui_mch_get_scrollbar_xpadding(void)
 {
-    // TODO: Calculate the padding for adjust scrollbar position when the
-    // Window is maximized.
-    return 0;
+    int xpad;
+#if GTK_CHECK_VERSION(3,0,0)
+    xpad = gtk_widget_get_allocated_width(gui.formwin)
+	  - gtk_widget_get_allocated_width(gui.drawarea) - gui.scrollbar_width;
+#else
+    xpad = gui.formwin->allocation.width - gui.drawarea->allocation.width
+							 - gui.scrollbar_width;
+#endif
+    return (xpad < 0) ? 0 : xpad;
 }
 
     int
 gui_mch_get_scrollbar_ypadding(void)
 {
-    // TODO: Calculate the padding for adjust scrollbar position when the
-    // Window is maximized.
-    return 0;
+    int ypad;
+#if GTK_CHECK_VERSION(3,0,0)
+    ypad = gtk_widget_get_allocated_height(gui.formwin)
+	- gtk_widget_get_allocated_height(gui.drawarea) - gui.scrollbar_height;
+#else
+    ypad = gui.formwin->allocation.height - gui.drawarea->allocation.height
+							- gui.scrollbar_height;
+#endif
+    return (ypad < 0) ? 0 : ypad;
 }
 
 /*
