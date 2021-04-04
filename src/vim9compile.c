@@ -4106,7 +4106,7 @@ compile_subscript(
 	    ppconst->pp_is_const = FALSE;
 
 	    *arg = p + 1;
-	    if (may_get_next_line(*arg, arg, cctx) == FAIL)
+	    if (IS_WHITE_OR_NUL(**arg))
 	    {
 		emsg(_(e_missing_name_after_dot));
 		return FAIL;
@@ -4785,7 +4785,7 @@ compile_and_or(
 	    if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[2]))
 	    {
 		semsg(_(e_white_space_required_before_and_after_str_at_str),
-								     op, *arg);
+									op, p);
 		return FAIL;
 	    }
 

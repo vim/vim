@@ -3962,9 +3962,16 @@ on_fatal_error:
 
 done:
     // function finished, get result from the stack.
-    tv = STACK_TV_BOT(-1);
-    *rettv = *tv;
-    tv->v_type = VAR_UNKNOWN;
+    if (ufunc->uf_ret_type == &t_void)
+    {
+	rettv->v_type = VAR_VOID;
+    }
+    else
+    {
+	tv = STACK_TV_BOT(-1);
+	*rettv = *tv;
+	tv->v_type = VAR_UNKNOWN;
+    }
     ret = OK;
 
 failed:
