@@ -3975,23 +3975,25 @@ compile_subscript(
 	    if (**arg == '(')
 	    {
 		int	    argcount = 1;
-		char_u	    *expr;
-		garray_T    *stack;
+		garray_T    *stack = &cctx->ctx_type_stack;
+		int	    type_idx_start = stack->ga_len;
 		type_T	    *type;
+		int	    expr_isn_start = cctx->ctx_instr.ga_len;
+		int	    expr_isn_end;
+		int	    arg_isn_count;
 
 		// Funcref call:  list->(Refs[2])(arg)
 		// or lambda:	  list->((arg) => expr)(arg)
-		// Fist compile the arguments.
-		expr = *arg;
-		*arg = skipwhite(*arg + 1);
-		skip_expr_cctx(arg, cctx);
-		*arg = skipwhite(*arg);
-		if (**arg != ')')
-		{
-		    semsg(_(e_missing_paren), *arg);
+		//
+		// Fist compile the function expression.
+		if (compile_parenthesis(arg, cctx, ppconst) == FAIL)
 		    return FAIL;
-		}
-		++*arg;
+
+		// Remember the next instruction index, where the instructions
+		// for arguments are being written.
+		expr_isn_end = cctx->ctx_instr.ga_len;
+
+		// Compile the arguments.
 		if (**arg != '(')
 		{
 		    if (*skipwhite(*arg) == '(')
@@ -4000,16 +4002,43 @@ compile_subscript(
 			semsg(_(e_missing_paren), *arg);
 		    return FAIL;
 		}
-
 		*arg = skipwhite(*arg + 1);
 		if (compile_arguments(arg, cctx, &argcount) == FAIL)
 		    return FAIL;
 
-		// Compile the function expression.
-		if (compile_parenthesis(&expr, cctx, ppconst) == FAIL)
-		    return FAIL;
-
+		// Move the instructions for the arguments to before the
+		// instructions of the expression and move the type of the
+		// expression after the argument types.  This is what ISN_PCALL
+		// expects.
 		stack = &cctx->ctx_type_stack;
+		arg_isn_count = cctx->ctx_instr.ga_len - expr_isn_end;
+		if (arg_isn_count > 0)
+		{
+		    int	    expr_isn_count = expr_isn_end - expr_isn_start;
+		    isn_T   *isn = ALLOC_MULT(isn_T, expr_isn_count);
+
+		    if (isn == NULL)
+			return FAIL;
+		    mch_memmove(isn, ((isn_T *)cctx->ctx_instr.ga_data)
+							      + expr_isn_start,
+					       sizeof(isn_T) * expr_isn_count);
+		    mch_memmove(((isn_T *)cctx->ctx_instr.ga_data)
+							      + expr_isn_start,
+			     ((isn_T *)cctx->ctx_instr.ga_data) + expr_isn_end,
+						sizeof(isn_T) * arg_isn_count);
+		    mch_memmove(((isn_T *)cctx->ctx_instr.ga_data)
+					      + expr_isn_start + arg_isn_count,
+					  isn, sizeof(isn_T) * expr_isn_count);
+		    vim_free(isn);
+
+		    type = ((type_T **)stack->ga_data)[type_idx_start];
+		    mch_memmove(((type_T **)stack->ga_data) + type_idx_start,
+			      ((type_T **)stack->ga_data) + type_idx_start + 1,
+			      sizeof(type_T *)
+				       * (stack->ga_len - type_idx_start - 1));
+		    ((type_T **)stack->ga_data)[stack->ga_len - 1] = type;
+		}
+
 		type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
 		if (generate_PCALL(cctx, argcount,
 				(char_u *)"[expression]", type, FALSE) == FAIL)

@@ -2075,16 +2075,14 @@ def Test_expr7_new_lambda()
 enddef
 
 def Test_expr7_lambda_vim9script()
-  # TODO: make this work in a :def function
   var lines =<< trim END
-      vim9script
       var v = 10->((a) =>
 	    a
 	      + 2
             )()
       assert_equal(12, v)
   END
-  CheckScriptSuccess(lines)
+  CheckDefAndScriptSuccess(lines)
 
   # nested lambda with line breaks
   lines =<< trim END
