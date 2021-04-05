@@ -684,6 +684,28 @@ menu_item_activate(GtkWidget *widget UNUSED, gpointer data)
     gui_menu_cb((vimmenu_T *)data);
 }
 
+    static void
+menu_item_select(GtkWidget *widget UNUSED, gpointer data)
+{
+    vimmenu_T	*menu;
+    char_u	*tooltip;
+    static int	did_msg = FALSE;
+
+    menu = (vimmenu_T *)data;
+    tooltip = CONVERT_TO_UTF8(menu->strings[MENU_INDEX_TIP]);
+    if (tooltip != NULL && utf_valid_string(tooltip, NULL))
+    {
+	msg((char *)tooltip);
+	did_msg = TRUE;
+    }
+    else if (did_msg)
+    {
+	msg("");
+	did_msg = FALSE;
+    }
+    CONVERT_TO_UTF8_FREE(tooltip);
+}
+
     void
 gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 {
@@ -800,8 +822,12 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 		menu->id, idx);
 
 	if (menu->id != NULL)
+	{
 	    g_signal_connect(G_OBJECT(menu->id), "activate",
 			     G_CALLBACK(menu_item_activate), menu);
+	    g_signal_connect(G_OBJECT(menu->id), "select",
+			     G_CALLBACK(menu_item_select), menu);
+	}
     }
 }
 #endif // FEAT_MENU
@@ -892,8 +918,7 @@ get_menu_position(vimmenu_T *menu)
     void
 gui_mch_menu_set_tip(vimmenu_T *menu)
 {
-    if (menu->id != NULL && menu->parent != NULL
-	    && gui.toolbar != NULL && menu_is_toolbar(menu->parent->name))
+    if (menu->id != NULL && menu->parent != NULL && gui.toolbar != NULL)
     {
 	char_u *tooltip;
 
