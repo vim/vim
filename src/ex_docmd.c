@@ -1266,7 +1266,7 @@ do_cmdline(
 	if (did_throw)
 	{
 	    char	*p = NULL;
-	    msglist_T	*messages = NULL, *next;
+	    msglist_T	*messages = NULL;
 
 	    /*
 	     * If the uncaught exception is a user exception, report it as an
@@ -1303,12 +1303,16 @@ do_cmdline(
 	    {
 		do
 		{
-		    next = messages->next;
+		    msglist_T	*next = messages->next;
+		    int		save_compiling = estack_compiling;
+
+		    estack_compiling = messages->msg_compiling;
 		    emsg(messages->msg);
 		    vim_free(messages->msg);
 		    vim_free(messages->sfile);
 		    vim_free(messages);
 		    messages = next;
+		    estack_compiling = save_compiling;
 		}
 		while (messages != NULL);
 	    }

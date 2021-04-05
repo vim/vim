@@ -18,6 +18,7 @@ func Test_compiling_error()
   CheckRunVimInTerminal
 
   call TestCompilingError()
+  call TestCompilingErrorInTry()
 endfunc
 
 def TestCompilingError()
@@ -28,15 +29,49 @@ def TestCompilingError()
     enddef
     defcompile
   END
-  call writefile(lines, 'XTest_compile_error')
+  writefile(lines, 'XTest_compile_error')
   var buf = RunVimInTerminal('-S XTest_compile_error',
               {rows: 10, wait_for_ruler: 0})
-  call WaitForAssert(() => assert_match('Error detected while compiling command line.*Fails.*Variable not found: nothing',
+  WaitForAssert(() => assert_match('Error detected while compiling command line.*Fails.*Variable not found: nothing',
                      Term_getlines(buf, range(1, 9))))
 
   # clean up
-  call StopVimInTerminal(buf)
-  call delete('XTest_compile_error')
+  StopVimInTerminal(buf)
+  delete('XTest_compile_error')
+enddef
+
+def TestCompilingErrorInTry()
+  var dir = 'Xdir/autoload'
+  mkdir(dir, 'p')
+
+  var lines =<< trim END
+      vim9script
+      def script#OnlyCompiled()
+        g:runtime = 'yes'
+        invalid
+      enddef
+  END
+  writefile(lines, dir .. '/script.vim')
+
+  lines =<< trim END
+      vim9script
+      todo
+      try
+        script#OnlyCompiled()
+      catch /nothing/
+      endtry
+  END
+  lines[1] = 'set rtp=' .. getcwd() .. '/Xdir'
+  writefile(lines, 'XTest_compile_error')
+
+  var buf = RunVimInTerminal('-S XTest_compile_error', {rows: 10, wait_for_ruler: 0})
+  WaitForAssert(() => assert_match('Error detected while compiling command line.*function script#OnlyCompiled.*Invalid command: invalid',
+                     Term_getlines(buf, range(1, 9))))
+
+  # clean up
+  StopVimInTerminal(buf)
+  delete('XTest_compile_error')
+  delete('Xdir', 'rf')
 enddef
 
 def CallRecursive(n: number): number

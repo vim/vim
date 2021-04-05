@@ -971,11 +971,12 @@ typedef struct {
 typedef struct msglist msglist_T;
 struct msglist
 {
+    msglist_T	*next;		// next of several messages in a row
     char	*msg;		// original message, allocated
     char	*throw_msg;	// msg to throw: usually original one
     char_u	*sfile;		// value from estack_sfile(), allocated
     long	slnum;		// line number for "sfile"
-    msglist_T	*next;		// next of several messages in a row
+    int		msg_compiling;	// saved value of estack_compiling
 };
 
 /*
