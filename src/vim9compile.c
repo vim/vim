@@ -6094,6 +6094,48 @@ compile_assign_index(
 }
 
 /*
+ * For a LHS with an index, load the variable to be indexed.
+ */
+    static int
+compile_load_lhs(
+	lhs_T	*lhs,
+	char_u	*var_start,
+	type_T	*rhs_type,
+	cctx_T	*cctx)
+{
+    if (lhs->lhs_dest == dest_expr)
+    {
+	size_t	    varlen = lhs->lhs_varlen;
+	int	    c = var_start[varlen];
+	char_u	    *p = var_start;
+	garray_T    *stack = &cctx->ctx_type_stack;
+
+	// Evaluate "ll[expr]" of "ll[expr][idx]"
+	var_start[varlen] = NUL;
+	if (compile_expr0(&p, cctx) == OK && p != var_start + varlen)
+	{
+	    // this should not happen
+	    emsg(_(e_missbrac));
+	    return FAIL;
+	}
+	var_start[varlen] = c;
+
+	lhs->lhs_type = stack->ga_len == 0 ? &t_void
+			      : ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	// now we can properly check the type
+	if (rhs_type != NULL && lhs->lhs_type->tt_member != NULL
+		&& rhs_type != &t_void
+		&& need_type(rhs_type, lhs->lhs_type->tt_member, -2, 0, cctx,
+							 FALSE, FALSE) == FAIL)
+	    return FAIL;
+    }
+    else
+	generate_loadvar(cctx, lhs->lhs_dest, lhs->lhs_name,
+						 lhs->lhs_lvar, lhs->lhs_type);
+    return OK;
+}
+
+/*
  * Assignment to a list or dict member, or ":unlet" for the item, using the
  * information in "lhs".
  * Returns OK or FAIL.
@@ -6106,9 +6148,7 @@ compile_assign_unlet(
 	type_T	*rhs_type,
 	cctx_T	*cctx)
 {
-    char_u	*p;
     vartype_T	dest_type;
-    size_t	varlen = lhs->lhs_varlen;
     garray_T    *stack = &cctx->ctx_type_stack;
     int		range = FALSE;
 
@@ -6147,32 +6187,8 @@ compile_assign_unlet(
     // - index
     // - for [a : b] second index
     // - variable
-    if (lhs->lhs_dest == dest_expr)
-    {
-	int	    c = var_start[varlen];
-
-	// Evaluate "ll[expr]" of "ll[expr][idx]"
-	p = var_start;
-	var_start[varlen] = NUL;
-	if (compile_expr0(&p, cctx) == OK && p != var_start + varlen)
-	{
-	    // this should not happen
-	    emsg(_(e_missbrac));
-	    return FAIL;
-	}
-	var_start[varlen] = c;
-
-	lhs->lhs_type = stack->ga_len == 0 ? &t_void
-		  : ((type_T **)stack->ga_data)[stack->ga_len - 1];
-	// now we can properly check the type
-	if (lhs->lhs_type->tt_member != NULL && rhs_type != &t_void
-		&& need_type(rhs_type, lhs->lhs_type->tt_member, -2, 0, cctx,
-							 FALSE, FALSE) == FAIL)
-	    return FAIL;
-    }
-    else
-	generate_loadvar(cctx, lhs->lhs_dest, lhs->lhs_name,
-						 lhs->lhs_lvar, lhs->lhs_type);
+    if (compile_load_lhs(lhs, var_start, rhs_type, cctx) == FAIL)
+	return FAIL;
 
     if (dest_type == VAR_LIST || dest_type == VAR_DICT || dest_type == VAR_ANY)
     {
@@ -6384,8 +6400,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    // for "+=", "*=", "..=" etc. first load the current value
 		    if (*op != '=')
 		    {
-			generate_loadvar(cctx, lhs.lhs_dest, lhs.lhs_name,
-						   lhs.lhs_lvar, lhs.lhs_type);
+			compile_load_lhs(&lhs, var_start, NULL, cctx);
 
 			if (lhs.lhs_has_index)
 			{

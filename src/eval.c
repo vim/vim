@@ -1474,7 +1474,7 @@ set_var_lval(
 	{
 	    if (op != NULL && *op != '=')
 	    {
-		semsg(_(e_letwrong), op);
+		semsg(_(e_dictkey), lp->ll_newkey);
 		return;
 	    }
 

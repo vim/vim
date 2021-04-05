@@ -1146,6 +1146,12 @@ def Test_assign_dict_with_op()
     assert_equal(2, dn.a)
     dn.a %= 6
     assert_equal(2, dn.a)
+
+    var dd: dict<dict<list<any>>>
+    dd.a = {}
+    dd.a.b = [0]
+    dd.a.b += [1]
+    assert_equal({a: {b: [0, 1]}}, dd)
   END
   CheckDefAndScriptSuccess(lines)
 enddef
@@ -1187,6 +1193,13 @@ def Test_assign_with_op_fails()
       s[1] ..= 'x'
   END
   CheckDefAndScriptFailure2(lines, 'E1141:', 'E689:', 2)
+
+  lines =<< trim END
+      var dd: dict<dict<list<any>>>
+      dd.a = {}
+      dd.a.b += [1]
+  END
+  CheckDefExecAndScriptFailure(lines, 'E716:', 3)
 enddef
 
 def Test_assign_lambda()
