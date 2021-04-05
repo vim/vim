@@ -209,6 +209,9 @@ def Test_call_call()
 enddef
 
 def Test_ch_logfile()
+  if !has('channel')
+    CheckFeature channel
+  endif
   assert_fails('ch_logfile(true)', 'E1174')
   assert_fails('ch_logfile("foo", true)', 'E1174')
 enddef

@@ -2340,7 +2340,7 @@ def Test_expr7_dict_vim9script()
   if has('channel')
     CheckDefAndScriptFailure(lines, 'E119:', 0)
   else
-    CheckDefAndScriptFailure(lines, 'E117:', 1)
+    CheckDefAndScriptFailure(lines, 'E117:', 0)
   endif
 enddef
 
@@ -2590,6 +2590,7 @@ def Test_expr7_register()
   CheckDefAndScriptFailure2(["@. = 'yes'"], 'E354:', 'E488:', 1)
 enddef
 
+" This is slow when run under valgrind.
 def Test_expr7_namespace()
   var lines =<< trim END
       g:some_var = 'some'
