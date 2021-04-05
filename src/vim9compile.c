@@ -2650,6 +2650,112 @@ clear_ppconst(ppconst_T *ppconst)
 }
 
 /*
+ * Compile getting a member from a list/dict/string/blob.  Stack has the
+ * indexable value and the index.
+ */
+    static int
+compile_member(int is_slice, cctx_T *cctx)
+{
+    type_T	**typep;
+    garray_T	*stack = &cctx->ctx_type_stack;
+    vartype_T	vtype;
+    type_T	*valtype;
+
+    // We can index a list and a dict.  If we don't know the type
+    // we can use the index value type.
+    // TODO: If we don't know use an instruction to figure it out at
+    // runtime.
+    typep = ((type_T **)stack->ga_data) + stack->ga_len
+						  - (is_slice ? 3 : 2);
+    vtype = (*typep)->tt_type;
+    valtype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+    // If the index is a string, the variable must be a Dict.
+    if (*typep == &t_any && valtype == &t_string)
+	vtype = VAR_DICT;
+    if (vtype == VAR_STRING || vtype == VAR_LIST || vtype == VAR_BLOB)
+    {
+	if (need_type(valtype, &t_number, -1, 0, cctx, FALSE, FALSE) == FAIL)
+	    return FAIL;
+	if (is_slice)
+	{
+	    valtype = ((type_T **)stack->ga_data)[stack->ga_len - 2];
+	    if (need_type(valtype, &t_number, -2, 0, cctx,
+							 FALSE, FALSE) == FAIL)
+		return FAIL;
+	}
+    }
+
+    if (vtype == VAR_DICT)
+    {
+	if (is_slice)
+	{
+	    emsg(_(e_cannot_slice_dictionary));
+	    return FAIL;
+	}
+	if ((*typep)->tt_type == VAR_DICT)
+	{
+	    *typep = (*typep)->tt_member;
+	    if (*typep == &t_unknown)
+		// empty dict was used
+		*typep = &t_any;
+	}
+	else
+	{
+	    if (need_type(*typep, &t_dict_any, -2, 0, cctx,
+							 FALSE, FALSE) == FAIL)
+		return FAIL;
+	    *typep = &t_any;
+	}
+	if (may_generate_2STRING(-1, cctx) == FAIL)
+	    return FAIL;
+	if (generate_instr_drop(cctx, ISN_MEMBER, 1) == FAIL)
+	    return FAIL;
+    }
+    else if (vtype == VAR_STRING)
+    {
+	*typep = &t_string;
+	if ((is_slice
+		? generate_instr_drop(cctx, ISN_STRSLICE, 2)
+		: generate_instr_drop(cctx, ISN_STRINDEX, 1)) == FAIL)
+	    return FAIL;
+    }
+    else if (vtype == VAR_BLOB)
+    {
+	emsg("Sorry, blob index and slice not implemented yet");
+	return FAIL;
+    }
+    else if (vtype == VAR_LIST || *typep == &t_any)
+    {
+	if (is_slice)
+	{
+	    if (generate_instr_drop(cctx,
+		     vtype == VAR_LIST ?  ISN_LISTSLICE : ISN_ANYSLICE,
+							    2) == FAIL)
+		return FAIL;
+	}
+	else
+	{
+	    if ((*typep)->tt_type == VAR_LIST)
+	    {
+		*typep = (*typep)->tt_member;
+		if (*typep == &t_unknown)
+		    // empty list was used
+		    *typep = &t_any;
+	    }
+	    if (generate_instr_drop(cctx,
+		 vtype == VAR_LIST ?  ISN_LISTINDEX : ISN_ANYINDEX, 1) == FAIL)
+		return FAIL;
+	}
+    }
+    else
+    {
+	emsg(_(e_string_list_dict_or_blob_required));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Generate an instruction to load script-local variable "name", without the
  * leading "s:".
  * Also finds imported variables.
@@ -3934,10 +4040,6 @@ compile_subscript(
 	}
 	else if (**arg == '[')
 	{
-	    garray_T	*stack = &cctx->ctx_type_stack;
-	    type_T	**typep;
-	    type_T	*valtype;
-	    vartype_T	vtype;
 	    int		is_slice = FALSE;
 
 	    // list index: list[123]
@@ -4004,99 +4106,8 @@ compile_subscript(
 	    }
 	    *arg = *arg + 1;
 
-	    // We can index a list and a dict.  If we don't know the type
-	    // we can use the index value type.
-	    // TODO: If we don't know use an instruction to figure it out at
-	    // runtime.
-	    typep = ((type_T **)stack->ga_data) + stack->ga_len
-							  - (is_slice ? 3 : 2);
-	    vtype = (*typep)->tt_type;
-	    valtype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-	    // If the index is a string, the variable must be a Dict.
-	    if (*typep == &t_any && valtype == &t_string)
-		vtype = VAR_DICT;
-	    if (vtype == VAR_STRING || vtype == VAR_LIST || vtype == VAR_BLOB)
-	    {
-		if (need_type(valtype, &t_number, -1, 0, cctx,
-							 FALSE, FALSE) == FAIL)
-		    return FAIL;
-		if (is_slice)
-		{
-		    valtype = ((type_T **)stack->ga_data)[stack->ga_len - 2];
-		    if (need_type(valtype, &t_number, -2, 0, cctx,
-							 FALSE, FALSE) == FAIL)
-			return FAIL;
-		}
-	    }
-
-	    if (vtype == VAR_DICT)
-	    {
-		if (is_slice)
-		{
-		    emsg(_(e_cannot_slice_dictionary));
-		    return FAIL;
-		}
-		if ((*typep)->tt_type == VAR_DICT)
-		{
-		    *typep = (*typep)->tt_member;
-		    if (*typep == &t_unknown)
-			// empty dict was used
-			*typep = &t_any;
-		}
-		else
-		{
-		    if (need_type(*typep, &t_dict_any, -2, 0, cctx,
-							 FALSE, FALSE) == FAIL)
-			return FAIL;
-		    *typep = &t_any;
-		}
-		if (may_generate_2STRING(-1, cctx) == FAIL)
-		    return FAIL;
-		if (generate_instr_drop(cctx, ISN_MEMBER, 1) == FAIL)
-		    return FAIL;
-	    }
-	    else if (vtype == VAR_STRING)
-	    {
-		*typep = &t_string;
-		if ((is_slice
-			? generate_instr_drop(cctx, ISN_STRSLICE, 2)
-			: generate_instr_drop(cctx, ISN_STRINDEX, 1)) == FAIL)
-		    return FAIL;
-	    }
-	    else if (vtype == VAR_BLOB)
-	    {
-		emsg("Sorry, blob index and slice not implemented yet");
+	    if (compile_member(is_slice, cctx) == FAIL)
 		return FAIL;
-	    }
-	    else if (vtype == VAR_LIST || *typep == &t_any)
-	    {
-		if (is_slice)
-		{
-		    if (generate_instr_drop(cctx,
-			     vtype == VAR_LIST ?  ISN_LISTSLICE : ISN_ANYSLICE,
-								    2) == FAIL)
-			return FAIL;
-		}
-		else
-		{
-		    if ((*typep)->tt_type == VAR_LIST)
-		    {
-			*typep = (*typep)->tt_member;
-			if (*typep == &t_unknown)
-			    // empty list was used
-			    *typep = &t_any;
-		    }
-		    if (generate_instr_drop(cctx,
-			     vtype == VAR_LIST ?  ISN_LISTINDEX : ISN_ANYINDEX,
-								    1) == FAIL)
-			return FAIL;
-		}
-	    }
-	    else
-	    {
-		emsg(_(e_string_list_dict_or_blob_required));
-		return FAIL;
-	    }
 	}
 	else if (*p == '.' && p[1] != '.')
 	{
@@ -5905,9 +5916,11 @@ compile_lhs(
 	    lhs->lhs_type = lhs->lhs_lvar->lv_type;
     }
 
-    if (oplen == 3 && !heredoc && lhs->lhs_dest != dest_global
-		    && lhs->lhs_type->tt_type != VAR_STRING
-		    && lhs->lhs_type->tt_type != VAR_ANY)
+    if (oplen == 3 && !heredoc
+		   && lhs->lhs_dest != dest_global
+		   && !lhs->lhs_has_index
+		   && lhs->lhs_type->tt_type != VAR_STRING
+		   && lhs->lhs_type->tt_type != VAR_ANY)
     {
 	emsg(_(e_can_only_concatenate_to_string));
 	return FAIL;
@@ -5993,26 +6006,21 @@ compile_lhs(
 }
 
 /*
- * Assignment to a list or dict member, or ":unlet" for the item, using the
- * information in "lhs".
- * Returns OK or FAIL.
+ * For an assignment with an index, compile the "idx" in "var[idx]" or "key" in
+ * "var.key".
  */
     static int
-compile_assign_unlet(
+compile_assign_index(
 	char_u	*var_start,
 	lhs_T	*lhs,
 	int	is_assign,
-	type_T	*rhs_type,
+	int	*range,
 	cctx_T	*cctx)
 {
-    char_u	*p;
-    int		r;
-    vartype_T	dest_type;
     size_t	varlen = lhs->lhs_varlen;
-    garray_T    *stack = &cctx->ctx_type_stack;
-    int		range = FALSE;
+    char_u	*p;
+    int		r = OK;
 
-    // Compile the "idx" in "var[idx]" or "key" in "var.key".
     p = var_start + varlen;
     if (*p == '[')
     {
@@ -6027,7 +6035,7 @@ compile_assign_unlet(
 		semsg(_(e_cannot_use_range_with_assignment_str), p);
 		return FAIL;
 	    }
-	    range = TRUE;
+	    *range = TRUE;
 	    p = skipwhite(p);
 	    if (!IS_WHITE_OR_NUL(p[-1]) || !IS_WHITE_OR_NUL(p[1]))
 	    {
@@ -6053,7 +6061,29 @@ compile_assign_unlet(
 
 	r = generate_PUSHS(cctx, key);
     }
-    if (r == FAIL)
+    return r;
+}
+
+/*
+ * Assignment to a list or dict member, or ":unlet" for the item, using the
+ * information in "lhs".
+ * Returns OK or FAIL.
+ */
+    static int
+compile_assign_unlet(
+	char_u	*var_start,
+	lhs_T	*lhs,
+	int	is_assign,
+	type_T	*rhs_type,
+	cctx_T	*cctx)
+{
+    char_u	*p;
+    vartype_T	dest_type;
+    size_t	varlen = lhs->lhs_varlen;
+    garray_T    *stack = &cctx->ctx_type_stack;
+    int		range = FALSE;
+
+    if (compile_assign_index(var_start, lhs, is_assign, &range, cctx) == FAIL)
 	return FAIL;
 
     if (lhs->lhs_type == &t_any)
@@ -6330,9 +6360,17 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 
 			if (lhs.lhs_has_index)
 			{
-			    // TODO: get member from list or dict
-			    emsg("Index with operation not supported yet");
-			    goto theend;
+			    int range = FALSE;
+
+			    // Get member from list or dict.  First compile the
+			    // index value.
+			    if (compile_assign_index(var_start, &lhs,
+						   TRUE, &range, cctx) == FAIL)
+				goto theend;
+
+			    // Get the member.
+			    if (compile_member(FALSE, cctx) == FAIL)
+				goto theend;
 			}
 		    }
 

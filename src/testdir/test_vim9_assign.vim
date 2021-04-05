@@ -1116,7 +1116,6 @@ enddef
 
 def Test_assign_dict_with_op()
   var lines =<< trim END
-    vim9script
     var ds: dict<string> = {a: 'x'}
     ds['a'] ..= 'y'
     ds.a ..= 'z'
@@ -1148,8 +1147,46 @@ def Test_assign_dict_with_op()
     dn.a %= 6
     assert_equal(2, dn.a)
   END
-  # TODO: this should also work with a :def function
-  CheckScriptSuccess(lines)
+  CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_assign_list_with_op()
+  var lines =<< trim END
+    var ls: list<string> = ['x']
+    ls[0] ..= 'y'
+    assert_equal('xy', ls[0])
+
+    var ln: list<number> = [9]
+    ln[0] += 2
+    assert_equal(11, ln[0])
+
+    ln[0] -= 3
+    assert_equal(8, ln[0])
+
+    ln[0] *= 2
+    assert_equal(16, ln[0])
+
+    ln[0] /= 3
+    assert_equal(5, ln[0])
+
+    ln[0] %= 3
+    assert_equal(2, ln[0])
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_assign_with_op_fails()
+  var lines =<< trim END
+      var s = 'abc'
+      s[1] += 'x'
+  END
+  CheckDefAndScriptFailure2(lines, 'E1141:', 'E689:', 2)
+
+  lines =<< trim END
+      var s = 'abc'
+      s[1] ..= 'x'
+  END
+  CheckDefAndScriptFailure2(lines, 'E1141:', 'E689:', 2)
 enddef
 
 def Test_assign_lambda()
