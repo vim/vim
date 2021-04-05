@@ -1152,6 +1152,10 @@ def Test_assign_dict_with_op()
     dd.a.b = [0]
     dd.a.b += [1]
     assert_equal({a: {b: [0, 1]}}, dd)
+
+    var dab = {a: ['b']}
+    dab.a[0] ..= 'c'
+    assert_equal({a: ['bc']}, dab)
   END
   CheckDefAndScriptSuccess(lines)
 enddef
