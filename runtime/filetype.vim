@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2021 Mar 19
+" Last Change:	2021 Apr 05
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1557,10 +1557,9 @@ au BufNewFile,BufRead catalog			setf catalog
 " Gentoo ebuilds, Arch Linux PKGBUILDs and Alpine Linux APKBUILDs are actually
 " bash scripts.
 " NOTE: Patterns ending in a star are further down, these have lower priority.
-au BufNewFile,BufRead .bashrc,bashrc,bash.bashrc,.bash[_-]profile,.bash[_-]logout,.bash[_-]aliases,bash-fc[-.],*.bash,*/{,.}bash[_-]completion{,.d,.sh}{,/*},*.ebuild,*.eclass,PKGBUILD,APKBUILD call dist#ft#SetFileTypeSH("bash")
+au BufNewFile,BufRead .bashrc,bashrc,bash.bashrc,.bash[_-]profile,.bash[_-]logout,.bash[_-]aliases,bash-fc[-.],*.ebuild,*.bash,*.eclass,PKGBUILD,APKBUILD call dist#ft#SetFileTypeSH("bash")
 au BufNewFile,BufRead .kshrc,*.ksh call dist#ft#SetFileTypeSH("ksh")
 au BufNewFile,BufRead */etc/profile,.profile,*.sh,*.env call dist#ft#SetFileTypeSH(getline(1))
-
 
 " Shell script (Arch Linux) or PHP file (Drupal)
 au BufNewFile,BufRead *.install
@@ -2232,8 +2231,11 @@ au BufNewFile,BufRead .reminders*		call s:StarSetf('remind')
 " SGML catalog file
 au BufNewFile,BufRead sgml.catalog*		call s:StarSetf('catalog')
 
+" avoid doc files being recognized a shell files
+au BufNewFile,BufRead */doc/{,.}bash[_-]completion{,.d,.sh}{,/*} setf text
+
 " Shell scripts ending in a star
-au BufNewFile,BufRead .bashrc*,.bash[_-]profile*,.bash[_-]logout*,.bash[_-]aliases*,bash-fc[-.]*,PKGBUILD*,APKBUILD* call dist#ft#SetFileTypeSH("bash")
+au BufNewFile,BufRead .bashrc*,.bash[_-]profile*,.bash[_-]logout*,.bash[_-]aliases*,bash-fc[-.]*,PKGBUILD*,APKBUILD*,*/{,.}bash[_-]completion{,.d,.sh}{,/*} call dist#ft#SetFileTypeSH("bash")
 au BufNewFile,BufRead .kshrc* call dist#ft#SetFileTypeSH("ksh")
 au BufNewFile,BufRead .profile* call dist#ft#SetFileTypeSH(getline(1))
 
