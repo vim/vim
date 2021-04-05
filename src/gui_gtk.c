@@ -691,17 +691,23 @@ menu_item_select(GtkWidget *widget UNUSED, gpointer data)
     char_u	*tooltip;
     static int	did_msg = FALSE;
 
+    if (State & CMDLINE)
+	return;
     menu = (vimmenu_T *)data;
     tooltip = CONVERT_TO_UTF8(menu->strings[MENU_INDEX_TIP]);
     if (tooltip != NULL && utf_valid_string(tooltip, NULL))
     {
 	msg((char *)tooltip);
 	did_msg = TRUE;
+	setcursor();
+	out_flush_cursor(TRUE, FALSE);
     }
     else if (did_msg)
     {
 	msg("");
 	did_msg = FALSE;
+	setcursor();
+	out_flush_cursor(TRUE, FALSE);
     }
     CONVERT_TO_UTF8_FREE(tooltip);
 }
