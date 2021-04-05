@@ -621,6 +621,30 @@ def Test_local_function_shadows_global()
   END
   CheckScriptFailure(lines, 'E705:')
   delfunc g:Func
+
+  # global function is found without g: prefix
+  lines =<< trim END
+      vim9script
+      def g:Func(): string
+        return 'global'
+      enddef
+      def AnotherFunc(): string
+        return Func()
+      enddef
+      assert_equal('global', AnotherFunc())
+    delfunc g:Func
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      def g:Func(): string
+        return 'global'
+      enddef
+      assert_equal('global', Func())
+      delfunc g:Func
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 func TakesOneArg(arg)
