@@ -2826,7 +2826,7 @@ find_special_key(
 
     // Find end of modifier list
     last_dash = src;
-    for (bp = src + 1; *bp == '-' || vim_isIDc(*bp); bp++)
+    for (bp = src + 1; *bp == '-' || vim_isNormalIDc(*bp); bp++)
     {
 	if (*bp == '-')
 	{
@@ -3121,10 +3121,10 @@ get_special_key_code(char_u *name)
 	for (i = 0; key_names_table[i].name != NULL; i++)
 	{
 	    table_name = key_names_table[i].name;
-	    for (j = 0; vim_isIDc(name[j]) && table_name[j] != NUL; j++)
+	    for (j = 0; vim_isNormalIDc(name[j]) && table_name[j] != NUL; j++)
 		if (TOLOWER_ASC(table_name[j]) != TOLOWER_ASC(name[j]))
 		    break;
-	    if (!vim_isIDc(name[j]) && table_name[j] == NUL)
+	    if (!vim_isNormalIDc(name[j]) && table_name[j] == NUL)
 		return key_names_table[i].key;
 	}
     return 0;
