@@ -6108,6 +6108,7 @@ compile_load_lhs(
 	{
 	    // this should not happen
 	    emsg(_(e_missbrac));
+	    var_start[varlen] = c;
 	    return FAIL;
 	}
 	var_start[varlen] = c;
