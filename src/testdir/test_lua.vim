@@ -13,18 +13,7 @@ CheckFeature lua
 CheckFeature float
 
 " Depending on the lua version, the error messages are different.
-let s:luaver = split(split(systemlist('lua -v')[0], ' ')[1], '\.')
-if len(s:luaver) < 3
-  " Didn't get something that looks like a version, use _VERSION.
-  let s:luaver = split(split(luaeval('_VERSION'), ' ')[1], '\.')
-endif
-let s:major = str2nr(s:luaver[0])
-let s:minor = str2nr(s:luaver[1])
-if len(s:luaver) >= 3
-  let s:patch = str2nr(s:luaver[2])
-else
-  let s:patch = 0
-endif
+let [s:major, s:minor, s:patch] = luaeval('vim.lua_version')->split('\.')->map({-> str2nr(v:val)})
 let s:lua_53_or_later = 0
 let s:lua_543_or_later = 0
 if (s:major == 5 && s:minor >= 3) || s:major > 5
