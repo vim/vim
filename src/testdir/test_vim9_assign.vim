@@ -1476,6 +1476,41 @@ def Test_var_declaration_fails()
   CheckDefFailure(['const foo: number'], 'E1021:')
 enddef
 
+def Test_script_local_in_legacy()
+  # OK to define script-local later when prefixed with s:
+  var lines =<< trim END
+    def SetLater()
+      s:legacy = 'two'
+    enddef
+    defcompile
+    let s:legacy = 'one'
+    call SetLater()
+    call assert_equal('two', s:legacy)
+  END
+  CheckScriptSuccess(lines)
+
+  # OK to leave out s: prefix when script-local already defined
+  lines =<< trim END
+    let s:legacy = 'one'
+    def SetNoPrefix()
+      legacy = 'two'
+    enddef
+    call SetNoPrefix()
+    call assert_equal('two', s:legacy)
+  END
+  CheckScriptSuccess(lines)
+
+  # Not OK to leave out s: prefix when script-local defined later
+  lines =<< trim END
+    def SetLaterNoPrefix()
+      legacy = 'two'
+    enddef
+    defcompile
+    let s:legacy = 'one'
+  END
+  CheckScriptFailure(lines, 'E476:', 1)
+enddef
+
 def Test_var_type_check()
   var lines =<< trim END
     vim9script

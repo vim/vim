@@ -5708,17 +5708,9 @@ generate_store_var(
 	    return generate_STORE(cctx, ISN_STOREV, vimvaridx, NULL);
 	case dest_script:
 	    if (scriptvar_idx < 0)
-	    {
-		char_u  *name_s = name;
-		int	r;
-
-		// "s:" is included in the name.
-		r = generate_OLDSCRIPT(cctx, ISN_STORES, name_s,
+		// "s:" may be included in the name.
+		return generate_OLDSCRIPT(cctx, ISN_STORES, name,
 							  scriptvar_sid, type);
-		if (name_s != name)
-		    vim_free(name_s);
-		return r;
-	    }
 	    return generate_VIM9SCRIPT(cctx, ISN_STORESCRIPT,
 					   scriptvar_sid, scriptvar_idx, type);
 	case dest_local:
@@ -5854,7 +5846,7 @@ compile_lhs(
 			? script_var_exists(var_start + 2, lhs->lhs_varlen - 2,
 							       FALSE, cctx)
 			  : script_var_exists(var_start, lhs->lhs_varlen,
-							    TRUE, cctx)) == OK;
+							   FALSE, cctx)) == OK;
 		imported_T  *import =
 			       find_imported(var_start, lhs->lhs_varlen, cctx);
 
