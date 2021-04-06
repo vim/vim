@@ -307,6 +307,17 @@ get_function_args(
 		emsg(_("E989: Non-default argument follows default argument"));
 		goto err_ret;
 	    }
+
+	    if (VIM_ISWHITE(*p) && *skipwhite(p) == ',')
+	    {
+		// Be tolerant when skipping
+		if (!skip)
+		{
+		    semsg(_(e_no_white_space_allowed_before_str_str), ",", p);
+		    goto err_ret;
+		}
+		p = skipwhite(p);
+	    }
 	    if (*p == ',')
 	    {
 		++p;

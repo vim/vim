@@ -1263,6 +1263,15 @@ def Test_arg_type_wrong()
   CheckScriptFailure(['def Func5(items)', 'echo "a"'], 'E1077:')
 enddef
 
+def Test_white_space_before_comma()
+  var lines =<< trim END
+    vim9script
+    def Func(a: number , b: number)
+    enddef
+  END
+  CheckScriptFailure(lines, 'E1068:')
+enddef
+
 def Test_white_space_after_comma()
   var lines =<< trim END
     vim9script
