@@ -4153,6 +4153,7 @@ ex_substitute(exarg_T *eap)
 			    if (curwin->w_cursor.col < 0)
 				curwin->w_cursor.col = 0;
 			    getvcol(curwin, &curwin->w_cursor, NULL, NULL, &ec);
+			    curwin->w_cursor.col = regmatch.startpos[0].col;
 			    if (subflags.do_number || curwin->w_p_nu)
 			    {
 				int numw = number_width(curwin) + 1;
