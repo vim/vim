@@ -107,9 +107,10 @@ func s:Highlight_Matching_Pair()
     " Build an expression that detects whether the current cursor position is
     " in certain syntax types (string, comment, etc.), for use as
     " searchpairpos()'s skip argument.
-    " We match "escape" for special items, such as lispEscapeSpecial.
+    " We match "escape" and "symbol" for special items, such as
+    " lispEscapeSpecial or lispBarSymbol.
     let s_skip = '!empty(filter(map(synstack(line("."), col(".")), ''synIDattr(v:val, "name")''), ' .
-	\ '''v:val =~? "string\\|character\\|singlequote\\|escape\\|comment"''))'
+	\ '''v:val =~? "string\\|character\\|singlequote\\|escape\\|symbol\\|comment"''))'
     " If executing the expression determines that the cursor is currently in
     " one of the syntax types, then we want searchpairpos() to find the pair
     " within those syntax types (i.e., not skip).  Otherwise, the cursor is
