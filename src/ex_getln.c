@@ -1706,6 +1706,17 @@ getcmdline_int(
     // and execute commands. Display may be messed up a bit.
     if (did_emsg)
 	redrawcmd();
+
+#ifdef FEAT_STL_OPT
+    // Redraw the statusline in case it uses the current mode using the mode()
+    // function.
+    if (!cmd_silent && msg_scrolled == 0 && *p_stl != NUL)
+    {
+	curwin->w_redr_status = TRUE;
+	redraw_statuslines();
+    }
+#endif
+
     did_emsg = FALSE;
     got_int = FALSE;
 

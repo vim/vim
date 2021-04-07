@@ -118,6 +118,7 @@ struct compl_S
 # define CP_CONT_S_IPOS	    4	// use CONT_S_IPOS for compl_cont_status
 # define CP_EQUAL	    8	// ins_compl_equal() always returns TRUE
 # define CP_ICASE	    16	// ins_compl_equal() ignores case
+# define CP_FAST	    32	// use fast_breakcheck instead of ui_breakcheck
 
 static char e_hitend[] = N_("Hit end of paragraph");
 # ifdef FEAT_COMPL_FUNC
@@ -585,7 +586,10 @@ ins_compl_add(
     int		dir = (cdir == 0 ? compl_direction : cdir);
     int		flags = flags_arg;
 
-    ui_breakcheck();
+    if (flags & CP_FAST)
+	fast_breakcheck();
+    else
+	ui_breakcheck();
     if (got_int)
 	return FAIL;
     if (len < 0)
@@ -790,7 +794,7 @@ ins_compl_add_matches(
 
     for (i = 0; i < num_matches && add_r != FAIL; i++)
 	if ((add_r = ins_compl_add(matches[i], -1, NULL, NULL, NULL, dir,
-					   icase ? CP_ICASE : 0, FALSE)) == OK)
+			       CP_FAST | (icase ? CP_ICASE : 0), FALSE)) == OK)
 	    // if dir was BACKWARD then honor it just once
 	    dir = FORWARD;
     FreeWild(num_matches, matches);
@@ -1567,7 +1571,8 @@ ins_compl_bs(void)
     // Respect the 'backspace' option.
     if ((int)(p - line) - (int)compl_col < 0
 	    || ((int)(p - line) - (int)compl_col == 0
-		&& ctrl_x_mode != CTRL_X_OMNI) || ctrl_x_mode == CTRL_X_EVAL
+						 && ctrl_x_mode != CTRL_X_OMNI)
+	    || ctrl_x_mode == CTRL_X_EVAL
 	    || (!can_bs(BS_START) && (int)(p - line) - (int)compl_col
 							- compl_length < 0))
 	return K_BS;
@@ -2271,14 +2276,15 @@ theend:
  * If the given string is already in the list of completions, then return
  * NOTDONE, otherwise add it to the list and return OK.  If there is an error,
  * maybe because alloc() returns NULL, then FAIL is returned.
+ * When "fast" is TRUE use fast_breakcheck() instead of ui_breakcheck().
  */
     static int
-ins_compl_add_tv(typval_T *tv, int dir)
+ins_compl_add_tv(typval_T *tv, int dir, int fast)
 {
     char_u	*word;
     int		dup = FALSE;
     int		empty = FALSE;
-    int		flags = 0;
+    int		flags = fast ? CP_FAST : 0;
     char_u	*(cptext[CPT_COUNT]);
     typval_T	user_data;
 
@@ -2329,7 +2335,7 @@ ins_compl_add_list(list_T *list)
     CHECK_LIST_MATERIALIZE(list);
     FOR_ALL_LIST_ITEMS(list, li)
     {
-	if (ins_compl_add_tv(&li->li_tv, dir) == OK)
+	if (ins_compl_add_tv(&li->li_tv, dir, TRUE) == OK)
 	    // if dir was BACKWARD then honor it just once
 	    dir = FORWARD;
 	else if (did_emsg)
@@ -2391,7 +2397,8 @@ set_completion(colnr_T startcol, list_T *list)
     if (p_ic)
 	flags |= CP_ICASE;
     if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
-				  -1, NULL, NULL, NULL, 0, flags, FALSE) != OK)
+					      -1, NULL, NULL, NULL, 0,
+					      flags | CP_FAST, FALSE) != OK)
 	return;
 
     ctrl_x_mode = CTRL_X_EVAL;
@@ -2461,7 +2468,7 @@ f_complete(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_complete_add(typval_T *argvars, typval_T *rettv)
 {
-    rettv->vval.v_number = ins_compl_add_tv(&argvars[0], 0);
+    rettv->vval.v_number = ins_compl_add_tv(&argvars[0], 0, FALSE);
 }
 
 /*

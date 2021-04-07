@@ -18,10 +18,14 @@
 #include "vim.h"
 
     void
-ui_write(char_u *s, int len)
+ui_write(char_u *s, int len, int console UNUSED)
 {
 #ifdef FEAT_GUI
-    if (gui.in_use && !gui.dying && !gui.starting)
+    if (gui.in_use && !gui.dying && !gui.starting
+# ifndef NO_CONSOLE
+	    && !console
+# endif
+	    )
     {
 	gui_write(s, len);
 	if (p_wd)
@@ -33,7 +37,7 @@ ui_write(char_u *s, int len)
     // Don't output anything in silent mode ("ex -s") unless 'verbose' set
     if (!(silent_mode && p_verbose == 0))
     {
-#if !defined(MSWIN)
+# if !defined(MSWIN)
 	char_u	*tofree = NULL;
 
 	if (output_conv.vc_type != CONV_NONE)
@@ -43,9 +47,13 @@ ui_write(char_u *s, int len)
 	    if (tofree != NULL)
 		s = tofree;
 	}
-#endif
+# endif
 
 	mch_write(s, len);
+# if defined(HAVE_FSYNC)
+	if (console && s[len - 1] == '\n')
+	    vim_fsync(1);
+# endif
 
 # if !defined(MSWIN)
 	if (output_conv.vc_type != CONV_NONE)

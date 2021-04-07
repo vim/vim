@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Mar 03
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Apr 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -125,6 +125,10 @@ that starts a comment: >
 	var name = value # comment
 	var name = value# error!
 
+Do not start a comment with #{, it looks like the legacy dictionary literal
+and produces an error where this might be confusing.  #{{ or #{{{ are OK,
+these can be used to start a fold.
+
 In legacy Vim script # is also used for the alternate file name.  In Vim9
 script you need to use %% instead.  Instead of ## use %%% (stands for all
 arguments).
@@ -164,6 +168,15 @@ list type, similar to TypeScript.  For example, a list of numbers: >
 	   for item in itemlist
 	     ...
 
+When a function argument is optional (it has a default value) passing `v:none`
+as the argument results in using the default value.  This is useful when you
+want to specify a value for an argument that comes after an argument that
+should use its default value.  Example: >
+	def MyFunc(one = 'one', last = 'last)
+	  ...
+	enddef
+	MyFunc(v:none, 'LAST')  # first argument uses default value 'one'
+
 
 Functions and variables are script-local by default ~
 							*vim9-scopes*
@@ -189,6 +202,12 @@ search for the function:
 - in the list of global functions
 However, it is recommended to always use "g:" to refer to a global function
 for clarity.
+
+Since a script-local function reference can be used without "s:" the name must
+start with an upper case letter even when using the "s:" prefix.  In legacy
+script "s:funcref" could be used, because it could not be referred to with
+"funcref".  In Vim9 script it can, therefore "s:Funcref" must be used to avoid
+that the name interferes with builtin functions.
 
 In all cases the function must be defined before used.  That is when it is
 called, when `:defcompile` causes it to be compiled, or when code that calls
@@ -279,16 +298,27 @@ without any command.  The same for global, window, tab, buffer and Vim
 variables, because they are not really declared.  They can also be deleted
 with `:unlet`.
 
+`:lockvar` does not work on local variables.  Use `:const` and `:final`
+instead.
+
 Variables, functions and function arguments cannot shadow previously defined
 or imported variables and functions in the same script file.
 Variables may shadow Ex commands, rename the variable if needed.
 
-Global variables and user defined functions must be prefixed with "g:", also
-at the script level. >
+Global variables must be prefixed with "g:", also at the script level. >
 	vim9script
 	var script_local = 'text'
 	g:global = 'value'
 	var Funcref = g:ThatFunction
+
+Global functions must be prefixed with "g:" when defining them, but can be
+called without "g:". >
+	vim9script
+	def g:GlobalFunc(): string
+	  return 'text'
+	enddef
+	echo GlobalFunc()
+The "g:" prefix is not needed for auto-load functions.
 
 Since `&opt = value` is now assigning a value to option "opt", ":&" cannot be
 used to repeat a `:substitute` command.
@@ -379,7 +409,7 @@ number of arguments and any return type.  The function can be defined later.
 
 
 Lambda using => instead of -> ~
-
+							*vim9-lambda*
 In legacy script there can be confusion between using "->" for a method call
 and for a lambda.  Also, when a "{" is found the parser needs to figure out if
 it is the start of a lambda or a dictionary, which is now more complicated
@@ -403,13 +433,31 @@ But you can use a backslash to concatenate the lines before parsing: >
 	filter(list, (k,
 		\	v)
 		\	=> v > 0)
-
+<							*inline-function*
 Additionally, a lambda can contain statements in {}: >
 	var Lambda = (arg) => {
 		g:was_called = 'yes'
 		return expression
 	    }
-NOT IMPLEMENTED YET
+This can be useful for a timer, for example: >
+	var count = 0
+ 	var timer = timer_start(500, (_) => {
+		 count += 1
+		 echom 'Handler called ' .. count
+	     }, {repeat: 3})
+
+
+The ending "}" must be at the start of a line.  It can be followed by other
+characters, e.g.: >
+	var d = mapnew(dict, (k, v): string => {
+	     return 'value'
+	   })
+No command can follow the "{", only a comment can be used there.
+
+Rationale: The "}" cannot be after a command because it would require parsing
+the commands to find it.  For consistency with that no command can follow the
+"{".  Unfortunately this means using "() => {  command  }" does not work, line
+breaks are always required.
 
 							*vim9-curly*
 To avoid the "{" of a dictionary literal to be recognized as a statement block
@@ -705,6 +753,7 @@ In legacy script this results in the character 0xc3 (an illegal byte), in Vim9
 script this results in the string 'á'.
 A negative index is counting from the end, "[-1]" is the last character.
 To exclude the last character use |slice()|.
+To count composing characters separately use |strcharpart()|.
 If the index is out of range then an empty string results.
 
 In legacy script "++var" and "--var" would be silently accepted and have no
@@ -802,7 +851,7 @@ Patterns are used like 'magic' is set, unless explicitly overruled.
 The 'edcompatible' option value is not used.
 The 'gdefault' option value is not used.
 
-You may also find this wiki useful.  It was written by an early adoptor of
+You may also find this wiki useful.  It was written by an early adopter of
 Vim9 script: https://github.com/lacygoill/wiki/blob/master/vim/vim9.md
 
 ==============================================================================
@@ -847,14 +896,14 @@ THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 :enddef			End of a function defined with `:def`. It should be on
 			a line by its own.
 
-You may also find this wiki useful.  It was written by an early adoptor of
+You may also find this wiki useful.  It was written by an early adopter of
 Vim9 script: https://github.com/lacygoill/wiki/blob/master/vim/vim9.md
 
 If the script the function is defined in is Vim9 script, then script-local
 variables can be accessed without the "s:" prefix.  They must be defined
 before the function is compiled.  If the script the function is defined in is
 legacy script, then script-local variables must be accessed with the "s:"
-prefix and they do not need to exist (they can be deleted any time).
+prefix if they do not exist at the time of compiling.
 
 						*:defc* *:defcompile*
 :defc[ompile]		Compile functions defined in the current script that
@@ -891,6 +940,27 @@ For these the backtick expansion can be used.  Example: >
 	  var newText = 'blah'
 	  g/pattern/s/^/`=newText`/
 	enddef
+
+Closures defined in a loop will share the same context.  For example: >
+	var flist: list<func>
+	for i in range(10)
+	  var inloop = i
+	  flist[i] = () => inloop
+	endfor
+
+The "inloop" variable will exist only once, all closures put in the list refer
+to the same instance, which in the end will have the value 9.  This is
+efficient.  If you do want a separate context for each closure call a function
+to define it: >
+	def GetFunc(i: number): func
+	  var inloop = i
+	  return () => inloop
+	enddef
+
+	var flist: list<func>
+	for i in range(10)
+	  flist[i] = GetFunc(i)
+	endfor
 
 ==============================================================================
 
@@ -1018,12 +1088,15 @@ dictionary.  If there is a mix of types, the "any" type is used. >
 	['a', 'b', 'c']	list<string>
 	[1, 'x', 3]	list<any>
 
+For script-local variables in Vim9 script the type is checked, also when the
+variable was declared in a legacy function.
+
 
 Stricter type checking ~
 							*type-checking*
 In legacy Vim script, where a number was expected, a string would be
 automatically converted to a number.  This was convenient for an actual number
-such as "123", but leads to unexpected problems (but no error message) if the
+such as "123", but leads to unexpected problems (and no error message) if the
 string doesn't start with a number.  Quite often this leads to hard-to-find
 bugs.
 

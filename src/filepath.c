@@ -788,9 +788,13 @@ f_chdir(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_string = NULL;
 
     if (argvars[0].v_type != VAR_STRING)
+    {
 	// Returning an empty string means it failed.
 	// No error message, for historic reasons.
+	if (in_vim9script())
+	    (void) check_for_string_arg(argvars, 0);
 	return;
+    }
 
     // Return the current directory
     cwd = alloc(MAXPATHL);
@@ -861,7 +865,7 @@ f_delete(typval_T *argvars, typval_T *rettv)
     void
 f_executable(typval_T *argvars, typval_T *rettv)
 {
-    if (in_vim9script() && check_for_string(&argvars[0]) == FAIL)
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
 
     // Check in $PATH and also check directly if there is a directory name.
@@ -876,7 +880,7 @@ f_exepath(typval_T *argvars, typval_T *rettv)
 {
     char_u *p = NULL;
 
-    if (in_vim9script() && check_for_nonempty_string(&argvars[0]) == FAIL)
+    if (in_vim9script() && check_for_nonempty_string_arg(argvars, 0) == FAIL)
 	return;
     (void)mch_can_exe(tv_get_string(&argvars[0]), &p, TRUE);
     rettv->v_type = VAR_STRING;
@@ -893,7 +897,7 @@ f_filereadable(typval_T *argvars, typval_T *rettv)
     char_u	*p;
     int		n;
 
-    if (in_vim9script() && check_for_string(&argvars[0]) == FAIL)
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
 #ifndef O_NONBLOCK
 # define O_NONBLOCK 0
@@ -918,7 +922,7 @@ f_filereadable(typval_T *argvars, typval_T *rettv)
     void
 f_filewritable(typval_T *argvars, typval_T *rettv)
 {
-    if (in_vim9script() && check_for_string(&argvars[0]) == FAIL)
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
     rettv->vval.v_number = filewritable(tv_get_string(&argvars[0]));
 }
@@ -942,7 +946,7 @@ findfilendir(
 
     rettv->vval.v_string = NULL;
     rettv->v_type = VAR_STRING;
-    if (in_vim9script() && check_for_nonempty_string(&argvars[0]) == FAIL)
+    if (in_vim9script() && check_for_nonempty_string_arg(argvars, 0) == FAIL)
 	return;
 
 #ifdef FEAT_SEARCHPATH
@@ -1023,8 +1027,8 @@ f_fnamemodify(typval_T *argvars, typval_T *rettv)
     char_u	*fbuf = NULL;
     char_u	buf[NUMBUFLEN];
 
-    if (in_vim9script() && (check_for_string(&argvars[0]) == FAIL
-	    || check_for_string(&argvars[1]) == FAIL))
+    if (in_vim9script() && (check_for_string_arg(argvars, 0) == FAIL
+	    || check_for_string_arg(argvars, 1) == FAIL))
 	return;
     fname = tv_get_string_chk(&argvars[0]);
     mods = tv_get_string_buf_chk(&argvars[1], buf);
@@ -1135,7 +1139,7 @@ f_getfperm(typval_T *argvars, typval_T *rettv)
     char_u	*perm = NULL;
     char_u	permbuf[] = "---------";
 
-    if (in_vim9script() && check_for_string(&argvars[0]) == FAIL)
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
     fname = tv_get_string(&argvars[0]);
 
@@ -1154,7 +1158,7 @@ f_getfsize(typval_T *argvars, typval_T *rettv)
     char_u	*fname;
     stat_T	st;
 
-    if (in_vim9script() && check_for_string(&argvars[0]) == FAIL)
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
 
     fname = tv_get_string(&argvars[0]);
@@ -1184,7 +1188,7 @@ f_getftime(typval_T *argvars, typval_T *rettv)
     char_u	*fname;
     stat_T	st;
 
-    if (in_vim9script() && check_for_string(&argvars[0]) == FAIL)
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
     fname = tv_get_string(&argvars[0]);
     if (mch_stat((char *)fname, &st) >= 0)
@@ -1230,7 +1234,7 @@ f_getftype(typval_T *argvars, typval_T *rettv)
     stat_T	st;
     char_u	*type = NULL;
 
-    if (in_vim9script() && check_for_string(&argvars[0]) == FAIL)
+    if (in_vim9script() && check_for_string_arg(argvars, 0) == FAIL)
 	return;
     fname = tv_get_string(&argvars[0]);
 
@@ -2410,6 +2414,11 @@ f_browse(typval_T *argvars UNUSED, typval_T *rettv)
     char_u	buf2[NUMBUFLEN];
     int		error = FALSE;
 
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 1) == FAIL
+		|| check_for_string_arg(argvars, 2) == FAIL
+		|| check_for_string_arg(argvars, 3) == FAIL))
+	return;
     save = (int)tv_get_number_chk(&argvars[0], &error);
     title = tv_get_string_chk(&argvars[1]);
     initdir = tv_get_string_buf_chk(&argvars[2], buf);

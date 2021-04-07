@@ -6606,6 +6606,13 @@ func Test_typename()
   call assert_equal('list<number>', typename([123]))
   call assert_equal('dict<number>', typename(#{key: 123}))
   call assert_equal('list<dict<number>>', typename([#{key: 123}]))
+
+  let l = []
+  let d = #{a: 0}
+  let l = [d]
+  let l[0].e = #{b: l}
+  call assert_equal('list<dict<any>>', typename(l))
+  call assert_equal('dict<any>', typename(d))
 endfunc
 
 "-------------------------------------------------------------------------------
@@ -7476,6 +7483,26 @@ func Test_trinary_expression()
   " previous failure should not cause next expression to fail
   call assert_equal(v:false, eval(string(v:false)))
 endfunction
+
+func Test_for_over_string()
+  let res = ''
+  for c in 'aéc̀d'
+    let res ..= c .. '-'
+  endfor
+  call assert_equal('a-é-c̀-d-', res)
+
+  let res = ''
+  for c in ''
+    let res ..= c .. '-'
+  endfor
+  call assert_equal('', res)
+
+  let res = ''
+  for c in test_null_string()
+    let res ..= c .. '-'
+  endfor
+  call assert_equal('', res)
+endfunc
 
 "-------------------------------------------------------------------------------
 " Modelines								    {{{1

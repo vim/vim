@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.2.  Last change: 2021 Feb 06
+*windows.txt*   For Vim version 8.2.  Last change: 2021 Mar 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -790,7 +790,7 @@ can also get to them with the buffer list commands, like ":bnext".
 
 Examples: >
 
-	:windo set nolist nofoldcolumn | normal zn
+	:windo set nolist foldcolumn=0 | normal! zn
 
 This resets the 'list' option and disables folding in all windows. >
 
@@ -798,7 +798,7 @@ This resets the 'list' option and disables folding in all windows. >
 
 This resets the 'fileencoding' in each buffer and writes it if this changed
 the buffer.  The result is that all buffers will use the 'encoding' encoding
-(if conversion works properly).
+(if conversion succeeds).
 
 ==============================================================================
 9. Tag or file name under the cursor			*window-tag*

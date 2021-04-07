@@ -1,4 +1,4 @@
-*gui_w32.txt*   For Vim version 8.2.  Last change: 2020 Mar 25
+*gui_w32.txt*   For Vim version 8.2.  Last change: 2021 Apr 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -403,7 +403,7 @@ The "File/Print" menu prints the text with syntax highlighting, see
 printer installed this should also work: >
 	:w >>prn
 
-Vim supports a number of standard MS Windows features.  Some of these are
+Vim supports a number of standard MS-Windows features.  Some of these are
 detailed elsewhere: see |'mouse'|, |win32-hidden-menus|.
 
 							*drag-n-drop-win32*

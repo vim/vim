@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 8.2.  Last change: 2021 Feb 14
+*index.txt*     For Vim version 8.2.  Last change: 2021 Mar 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1294,6 +1294,7 @@ tag		command		action ~
 |:edit|		:e[dit]		edit a file
 |:earlier|	:ea[rlier]	go to older change, undo
 |:echo|		:ec[ho]		echoes the result of expressions
+|:echoconsole|	:echoc[onsole]	like :echomsg but write to stdout
 |:echoerr|	:echoe[rr]	like :echo, show like an error and use history
 |:echohl|	:echoh[l]	set highlighting for echo commands
 |:echomsg|	:echom[sg]	same as :echo, put message in history

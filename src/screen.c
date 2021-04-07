@@ -295,8 +295,13 @@ fill_foldcolumn(
     if (closed)
     {
 	if (symbol != 0)
-	    // rollback length
+	{
+	    // rollback length and the character
 	    byte_counter -= len;
+	    if (len > 1)
+		// for a multibyte character, erase all the bytes
+		vim_memset(p + byte_counter, ' ', len);
+	}
 	symbol = fill_foldclosed;
 	len = utf_char2bytes(symbol, &p[byte_counter]);
 	byte_counter += len;
@@ -1243,7 +1248,7 @@ win_redr_custom(
     }
     else
     {
-	row = W_WINROW(wp) + wp->w_height;
+	row = statusline_row(wp);
 	fillchar = fillchar_status(&attr, wp);
 	maxwidth = wp->w_width;
 

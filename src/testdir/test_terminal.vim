@@ -889,6 +889,8 @@ endfunc
 
 func TerminalTmap(remap)
   let buf = Run_shell_in_terminal({})
+  " Wait for the shell to display a prompt
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
   call assert_equal('t', mode())
 
   if a:remap
@@ -1998,6 +2000,33 @@ func Test_terminal_all_ansi_colors()
   call term_sendkeys(buf, ":q\<CR>")
   call StopVimInTerminal(buf)
   call delete('Xcolorscript')
+endfunc
+
+function On_BufFilePost()
+    doautocmd <nomodeline> User UserEvent
+endfunction
+
+func Test_terminal_nested_autocmd()
+  new
+  call setline(1, range(500))
+  $
+  let lastline = line('.')
+
+  augroup TermTest
+    autocmd BufFilePost * call On_BufFilePost()
+    autocmd User UserEvent silent
+  augroup END
+
+  let cmd = Get_cat_123_cmd()
+  let buf = term_start(cmd, #{term_finish: 'close', hidden: 1})
+  call assert_equal(lastline, line('.'))
+
+  let job = term_getjob(buf)
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  call delete('Xtext')
+  augroup TermTest
+    au!
+  augroup END
 endfunc
 
 

@@ -445,9 +445,12 @@ func Test_list_mappings()
   " Remove default mappings
   imapclear
 
-  inoremap <C-M> CtrlM
+  " reset 'isident' to check it isn't used
+  set isident=
+  inoremap <C-m> CtrlM
   inoremap <A-S> AltS
   inoremap <S-/> ShiftSlash
+  set isident&
   call assert_equal([
 	\ 'i  <S-/>       * ShiftSlash',
 	\ 'i  <M-S>       * AltS',
@@ -1387,6 +1390,16 @@ func Test_map_cmdkey_redo()
   call delete('Xcmdtext')
   delfunc SelectDash
   ounmap i-
+endfunc
+
+" Test for using <script> with a map to remap characters in rhs
+func Test_script_local_remap()
+  new
+  inoremap <buffer> <SID>xyz mno
+  inoremap <buffer> <script> abc st<SID>xyzre
+  normal iabc
+  call assert_equal('stmnore', getline(1))
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

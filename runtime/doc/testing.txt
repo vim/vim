@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 8.2.  Last change: 2021 Mar 10
+*testing.txt*	For Vim version 8.2.  Last change: 2021 Apr 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -243,7 +243,8 @@ test_srand_seed([seed])					*test_srand_seed()*
 assert_beeps({cmd})					*assert_beeps()*
 		Run {cmd} and add an error message to |v:errors| if it does
 		NOT produce a beep or visual bell.
-		Also see |assert_fails()| and |assert-return|.
+		Also see |assert_fails()|, |assert_nobeep()| and
+		|assert-return|.
 
 		Can also be used as a |method|: >
 			GetCmd()->assert_beeps()
@@ -376,6 +377,14 @@ assert_match({pattern}, {actual} [, {msg}])
 
 		Can also be used as a |method|: >
 			getFile()->assert_match('foo.*')
+<
+assert_nobeep({cmd})					*assert_nobeep()*
+		Run {cmd} and add an error message to |v:errors| if it
+		produces a beep or visual bell.
+		Also see |assert_beeps()|.
+
+		Can also be used as a |method|: >
+			GetCmd()->assert_nobeep()
 <
 							*assert_notequal()*
 assert_notequal({expected}, {actual} [, {msg}])

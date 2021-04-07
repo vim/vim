@@ -860,10 +860,12 @@ func Test_t_arg()
         \ 'Xtags')
   call writefile(['    first', '    second', '    third'], 'Xfile1')
 
-  if RunVim(before, after, '-t second')
-    call assert_equal(['Xfile1:L2C5'], readfile('Xtestout'))
-    call delete('Xtestout')
-  endif
+  for t_arg in ['-t second', '-tsecond']
+    if RunVim(before, after, '-t second')
+      call assert_equal(['Xfile1:L2C5'], readfile('Xtestout'), t_arg)
+      call delete('Xtestout')
+    endif
+  endfor
 
   call delete('Xtags')
   call delete('Xfile1')
@@ -1041,10 +1043,37 @@ func Test_io_not_a_terminal()
         \ 'Vim: Warning: Input is not from a terminal'], l)
 endfunc
 
+" Test for --not-a-term avoiding escape codes.
+func Test_not_a_term()
+  CheckUnix
+  CheckNotGui
+
+  if &shellredir =~ '%s'
+    let redir = printf(&shellredir,  'Xvimout')
+  else
+    let redir = &shellredir .. ' Xvimout'
+  endif
+
+  " Without --not-a-term there are a few escape sequences.
+  " This will take 2 seconds because of the missing --not-a-term
+  let cmd = GetVimProg() .. ' --cmd quit ' .. redir
+  exe "silent !" . cmd
+  call assert_match("\<Esc>", readfile('Xvimout')->join())
+  call delete('Xvimout')
+
+  " With --not-a-term there are no escape sequences.
+  let cmd = GetVimProg() .. ' --not-a-term --cmd quit ' .. redir
+  exe "silent !" . cmd
+  call assert_notmatch("\<Esc>", readfile('Xvimout')->join())
+  call delete('Xvimout')
+endfunc
+
+
 " Test for the "-w scriptout" argument
 func Test_w_arg()
   " Can't catch the output of gvim.
   CheckNotGui
+
   call writefile(["iVim Editor\<Esc>:q!\<CR>"], 'Xscriptin', 'b')
   if RunVim([], [], '-s Xscriptin -w Xscriptout')
     call assert_equal(["iVim Editor\e:q!\r"], readfile('Xscriptout'))
@@ -1060,6 +1089,16 @@ func Test_w_arg()
     call assert_equal("Cannot open for script output: \"Xdir\"\n", m)
     call delete("Xdir", 'rf')
   endif
+
+  " A number argument sets the 'window' option
+  call writefile(["iwindow \<C-R>=&window\<CR>\<Esc>:wq! Xresult\<CR>"], 'Xscriptin', 'b')
+  for w_arg in ['-w 17', '-w17']
+    if RunVim([], [], '-s Xscriptin ' .. w_arg)
+      call assert_equal(["window 17"], readfile('Xresult'), w_arg)
+      call delete('Xresult')
+    endif
+  endfor
+  call delete('Xscriptin')
 endfunc
 
 " Test for the "-s scriptin" argument
@@ -1119,6 +1158,21 @@ func Test_E_arg()
     call assert_equal([], readfile('Xtestout'))
     call delete('Xtestout')
   endif
+endfunc
+
+" Test for the "-D" (debugger) argument
+func Test_D_arg()
+  CheckRunVimInTerminal
+
+  let cmd = GetVimCommandCleanTerm() .. ' -D'
+  let buf = term_start(cmd, {'term_rows' : 10})
+  call WaitForAssert({-> assert_equal("running", term_getstatus(buf))})
+
+  call WaitForAssert({-> assert_equal('Entering Debug mode.  Type "cont" to continue.',
+  \                  term_getline(buf, 7))})
+  call WaitForAssert({-> assert_equal('>', term_getline(buf, 10))})
+
+  call StopVimInTerminal(buf)
 endfunc
 
 " Test for too many edit argument errors

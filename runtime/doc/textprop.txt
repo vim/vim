@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 8.2.  Last change: 2020 Oct 14
+*textprop.txt*  For Vim version 8.2.  Last change: 2021 Mar 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -175,6 +175,7 @@ prop_find({props} [, {direction}])
 		Search for a text property as specified with {props}:
 		   id		property with this ID
 		   type		property with this type name
+		   both		"id" and "type" must both match
 		   bufnr	buffer to search in; when present a
 				start position with "lnum" and "col"
 				must be given; when omitted the
@@ -187,6 +188,7 @@ prop_find({props} [, {direction}])
 		   skipstart	do not look for a match at the start
 				position
 
+		A property matches when either "id" or "type" matches.
 		{direction} can be "f" for forward and "b" for backward.  When
 		omitted forward search is performed.
 
@@ -258,8 +260,8 @@ prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
 				properties the one with the highest priority
 				will be used; negative values can be used, the
 				default priority is zero
-		   combine	when TRUE combine the highlight with any
-				syntax highlight; when omitted or FALSE syntax
+		   combine	when omitted or TRUE combine the highlight
+				with any syntax highlight; when FALSE syntax
 				highlight will not be used
 		   start_incl	when TRUE inserts at the start position will
 				be included in the text property

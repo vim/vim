@@ -835,6 +835,16 @@ vim_isIDc(int c)
 }
 
 /*
+ * Like vim_isIDc() but not using the 'isident' option: letters, numbers and
+ * underscore.
+ */
+    int
+vim_isNormalIDc(int c)
+{
+    return ASCII_ISALNUM(c) || c == '_';
+}
+
+/*
  * return TRUE if 'c' is a keyword character: Letters and characters from
  * 'iskeyword' option for the current buffer.
  * For multi-byte characters mb_get_class() is used (builtin rules).
@@ -2005,7 +2015,8 @@ hex2nr(int c)
     return c - '0';
 }
 
-#if defined(FEAT_TERMRESPONSE) || defined(FEAT_GUI_GTK) || defined(PROTO)
+#if defined(FEAT_TERMRESPONSE) || defined(FEAT_GUI_GTK) \
+        || defined(PROTO) || defined(FEAT_AUTOSHELLDIR)
 /*
  * Convert two hex characters to a byte.
  * Return -1 if one of the characters is not hex.

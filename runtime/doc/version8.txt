@@ -1776,7 +1776,7 @@ Files:	    runtime/doc/change.txt, runtime/doc/eval.txt,
 
 Patch 7.4.219
 Problem:    When 'relativenumber' or 'cursorline' are set the window is
-	    redrawn much to often. (Patrick Hemmer, Dominique Pelle)
+	    redrawn much too often. (Patrick Hemmer, Dominique Pelle)
 Solution:   Check the VALID_CROW flag instead of VALID_WROW.
 Files:	    src/move.c
 

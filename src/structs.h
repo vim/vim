@@ -971,11 +971,12 @@ typedef struct {
 typedef struct msglist msglist_T;
 struct msglist
 {
+    msglist_T	*next;		// next of several messages in a row
     char	*msg;		// original message, allocated
     char	*throw_msg;	// msg to throw: usually original one
     char_u	*sfile;		// value from estack_sfile(), allocated
     long	slnum;		// line number for "sfile"
-    msglist_T	*next;		// next of several messages in a row
+    int		msg_compiling;	// saved value of estack_compiling
 };
 
 /*
@@ -1607,8 +1608,6 @@ typedef struct
     type_T	**uf_arg_types;	// argument types (count == uf_args.ga_len)
     type_T	*uf_ret_type;	// return type
     garray_T	uf_type_list;	// types used in arg and return types
-    int		*uf_def_arg_idx; // instruction indexes for evaluating
-				// uf_def_args; length: uf_def_args.ga_len + 1
     partial_T	*uf_partial;	// for closure created inside :def function:
 				// information about the context
 
@@ -1881,6 +1880,9 @@ typedef struct {
 
     // pointer to the last line obtained with getsourceline()
     char_u	*eval_tofree;
+
+    // pointer to the last line of an inline function
+    char_u	*eval_tofree_cmdline;
 
     // pointer to the lines concatenated for a lambda.
     char_u	*eval_tofree_lambda;

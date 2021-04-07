@@ -41,6 +41,8 @@ typedef struct
     list_T	*fi_list;	// list being used
     int		fi_bi;		// index of blob
     blob_T	*fi_blob;	// blob being used
+    char_u	*fi_string;	// copy of string being used
+    int		fi_byte_idx;	// byte index in fi_string
 } forinfo_T;
 
 static int tv_op(typval_T *tv1, typval_T *tv2, char_u  *op);
@@ -1472,7 +1474,7 @@ set_var_lval(
 	{
 	    if (op != NULL && *op != '=')
 	    {
-		semsg(_(e_letwrong), op);
+		semsg(_(e_dictkey), lp->ll_newkey);
 		return;
 	    }
 
@@ -1738,6 +1740,14 @@ eval_for_line(
 		}
 		clear_tv(&tv);
 	    }
+	    else if (tv.v_type == VAR_STRING)
+	    {
+		fi->fi_byte_idx = 0;
+		fi->fi_string = tv.vval.v_string;
+		tv.vval.v_string = NULL;
+		if (fi->fi_string == NULL)
+		    fi->fi_string = vim_strsave((char_u *)"");
+	    }
 	    else
 	    {
 		emsg(_(e_listreq));
@@ -1790,7 +1800,25 @@ next_for_item(void *fi_void, char_u *arg)
 	tv.vval.v_number = blob_get(fi->fi_blob, fi->fi_bi);
 	++fi->fi_bi;
 	return ex_let_vars(arg, &tv, TRUE, fi->fi_semicolon,
-				       fi->fi_varcount, flag, NULL) == OK;
+					    fi->fi_varcount, flag, NULL) == OK;
+    }
+
+    if (fi->fi_string != NULL)
+    {
+	typval_T	tv;
+	int		len;
+
+	len = mb_ptr2len(fi->fi_string + fi->fi_byte_idx);
+	if (len == 0)
+	    return FALSE;
+	tv.v_type = VAR_STRING;
+	tv.v_lock = VAR_FIXED;
+	tv.vval.v_string = vim_strnsave(fi->fi_string + fi->fi_byte_idx, len);
+	fi->fi_byte_idx += len;
+	result = ex_let_vars(arg, &tv, TRUE, fi->fi_semicolon,
+					    fi->fi_varcount, flag, NULL) == OK;
+	vim_free(tv.vval.v_string);
+	return result;
     }
 
     item = fi->fi_lw.lw_item;
@@ -1800,7 +1828,7 @@ next_for_item(void *fi_void, char_u *arg)
     {
 	fi->fi_lw.lw_item = item->li_next;
 	result = (ex_let_vars(arg, &item->li_tv, TRUE, fi->fi_semicolon,
-				      fi->fi_varcount, flag, NULL) == OK);
+					   fi->fi_varcount, flag, NULL) == OK);
     }
     return result;
 }
@@ -1813,13 +1841,17 @@ free_for_info(void *fi_void)
 {
     forinfo_T    *fi = (forinfo_T *)fi_void;
 
-    if (fi != NULL && fi->fi_list != NULL)
+    if (fi == NULL)
+	return;
+    if (fi->fi_list != NULL)
     {
 	list_rem_watch(fi->fi_list, &fi->fi_lw);
 	list_unref(fi->fi_list);
     }
-    if (fi != NULL && fi->fi_blob != NULL)
+    else if (fi->fi_blob != NULL)
 	blob_unref(fi->fi_blob);
+    else
+	vim_free(fi->fi_string);
     vim_free(fi);
 }
 
@@ -2179,8 +2211,8 @@ clear_evalarg(evalarg_T *evalarg, exarg_T *eap)
 	    evalarg->eval_tofree = NULL;
 	}
 
-	vim_free(evalarg->eval_tofree_lambda);
-	evalarg->eval_tofree_lambda = NULL;
+	VIM_CLEAR(evalarg->eval_tofree_cmdline);
+	VIM_CLEAR(evalarg->eval_tofree_lambda);
     }
 }
 
@@ -2228,7 +2260,8 @@ eval0(
 	if (!aborting()
 		&& did_emsg == did_emsg_before
 		&& called_emsg == called_emsg_before
-		&& (flags & EVAL_CONSTANT) == 0)
+		&& (flags & EVAL_CONSTANT) == 0
+		&& (!in_vim9script() || !vim9_bad_comment(p)))
 	    semsg(_(e_invexpr2), arg);
 
 	// Some of the expression may not have been consumed.  Do not check for
@@ -2297,7 +2330,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	{
 	    if (evaluate && vim9script && !VIM_ISWHITE(p[-1]))
 	    {
-		error_white_both(p, 1);
+		error_white_both(p, op_falsy ? 2 : 1);
 		clear_tv(rettv);
 		return FAIL;
 	    }
@@ -2328,7 +2361,7 @@ eval1(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	    ++*arg;
 	if (evaluate && vim9script && !IS_WHITE_OR_NUL((*arg)[1]))
 	{
-	    error_white_both(p, 1);
+	    error_white_both(p, op_falsy ? 2 : 1);
 	    clear_tv(rettv);
 	    return FAIL;
 	}
@@ -2741,7 +2774,7 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	 */
 	if (evaluate && vim9script && !IS_WHITE_OR_NUL(p[len]))
 	{
-	    error_white_both(p, 1);
+	    error_white_both(p, len);
 	    clear_tv(rettv);
 	    return FAIL;
 	}
@@ -2975,10 +3008,12 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 		    n1 = tv_get_number_chk(rettv, &error);
 		    if (error)
 		    {
-			// This can only happen for "list + non-list".  For
-			// "non-list + ..." or "something - ...", we returned
-			// before evaluating the 2nd operand.
+			// This can only happen for "list + non-list" or
+			// "blob + non-blob".  For "non-list + ..." or
+			// "something - ...", we returned before evaluating the
+			// 2nd operand.
 			clear_tv(rettv);
+			clear_tv(&var2);
 			return FAIL;
 		    }
 #ifdef FEAT_FLOAT
@@ -3362,7 +3397,11 @@ eval7(
     /*
      * Dictionary: #{key: val, key: val}
      */
-    case '#':	if (!in_vim9script() && (*arg)[1] == '{')
+    case '#':	if (in_vim9script())
+		{
+		    ret = vim9_bad_comment(*arg) ? FAIL : NOTDONE;
+		}
+		else if ((*arg)[1] == '{')
 		{
 		    ++*arg;
 		    ret = eval_dict(arg, rettv, evalarg, TRUE);
@@ -3401,9 +3440,16 @@ eval7(
     case '@':	++*arg;
 		if (evaluate)
 		{
-		    rettv->v_type = VAR_STRING;
-		    rettv->vval.v_string = get_reg_contents(**arg,
-							    GREG_EXPR_SRC);
+		    if (in_vim9script() && IS_WHITE_OR_NUL(**arg))
+			semsg(_(e_syntax_error_at_str), *arg);
+		    else if (in_vim9script() && !valid_yank_reg(**arg, FALSE))
+			emsg_invreg(**arg);
+		    else
+		    {
+			rettv->v_type = VAR_STRING;
+			rettv->vval.v_string = get_reg_contents(**arg,
+								GREG_EXPR_SRC);
+		    }
 		}
 		if (**arg != NUL)
 		    ++*arg;
@@ -5261,6 +5307,9 @@ var2fpos(
 	return &pos;
     }
 
+    if (in_vim9script() && check_for_string_arg(varp, 0) == FAIL)
+	return NULL;
+
     name = tv_get_string_chk(varp);
     if (name == NULL)
 	return NULL;
@@ -6112,6 +6161,7 @@ get_echo_attr(void)
  * ":execute expr1 ..."	execute the result of an expression.
  * ":echomsg expr1 ..."	Print a message
  * ":echoerr expr1 ..."	Print an error
+ * ":echoconsole expr1 ..." Print a message on stdout
  * Each gets spaces around each argument and a newline at the end for
  * echo commands
  */
@@ -6188,6 +6238,11 @@ ex_execute(exarg_T *eap)
 	{
 	    msg_attr(ga.ga_data, echo_attr);
 	    out_flush();
+	}
+	else if (eap->cmdidx == CMD_echoconsole)
+	{
+	    ui_write(ga.ga_data, (int)STRLEN(ga.ga_data), TRUE);
+	    ui_write((char_u *)"\r\n", 2, TRUE);
 	}
 	else if (eap->cmdidx == CMD_echoerr)
 	{

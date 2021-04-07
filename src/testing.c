@@ -338,7 +338,7 @@ assert_append_cmd_or_arg(garray_T *gap, typval_T *argvars, char_u *cmd)
 }
 
     static int
-assert_beeps(typval_T *argvars)
+assert_beeps(typval_T *argvars, int no_beep)
 {
     char_u	*cmd = tv_get_string_chk(&argvars[0]);
     garray_T	ga;
@@ -348,10 +348,13 @@ assert_beeps(typval_T *argvars)
     suppress_errthrow = TRUE;
     emsg_silent = FALSE;
     do_cmdline_cmd(cmd);
-    if (!called_vim_beep)
+    if (no_beep ? called_vim_beep : !called_vim_beep)
     {
 	prepare_assert_error(&ga);
-	ga_concat(&ga, (char_u *)"command did not beep: ");
+	if (no_beep)
+	    ga_concat(&ga, (char_u *)"command did beep: ");
+	else
+	    ga_concat(&ga, (char_u *)"command did not beep: ");
 	ga_concat(&ga, cmd);
 	assert_error(&ga);
 	ga_clear(&ga);
@@ -369,7 +372,16 @@ assert_beeps(typval_T *argvars)
     void
 f_assert_beeps(typval_T *argvars, typval_T *rettv)
 {
-    rettv->vval.v_number = assert_beeps(argvars);
+    rettv->vval.v_number = assert_beeps(argvars, FALSE);
+}
+
+/*
+ * "assert_nobeep(cmd [, error])" function
+ */
+    void
+f_assert_nobeep(typval_T *argvars, typval_T *rettv)
+{
+    rettv->vval.v_number = assert_beeps(argvars, TRUE);
 }
 
 /*

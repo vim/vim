@@ -858,6 +858,14 @@ func Test_mps_latin1()
   close!
 endfunc
 
+func Test_empty_matchpairs()
+  split
+  set matchpairs= showmatch
+  call assert_nobeep('call feedkeys("ax\tx\t\<Esc>", "xt")')
+  set matchpairs& noshowmatch
+  bwipe!
+endfunc
+
 func Test_mps_error()
   let encoding_save = &encoding
 

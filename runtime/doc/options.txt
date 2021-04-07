@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2021 Feb 13
+*options.txt*	For Vim version 8.2.  Last change: 2021 Apr 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -748,6 +748,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	It will change to the directory containing the file which was opened
 	or selected.
 	Note: When this option is on some plugins may not work.
+
+			*'autoshelldir'* *'asd'* *'noautoshelldir'* *'noasd'*
+'autoshelldir' 'asd'	boolean (default off)
+			global
+	When on, Vim will change the current working directory whenever you
+	change the directory of the shell running in a terminal window. You
+	need proper setting-up, so whenever the shell's pwd changes an OSC 7
+	escape sequence will be emitted. For example, on Linux, you can source
+	/etc/profile.d/vte.sh in your shell profile if you use bash or zsh.
 
 				*'arabic'* *'arab'* *'noarabic'* *'noarab'*
 'arabic' 'arab'		boolean (default off)
@@ -3856,7 +3865,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 								*'go-v'*
 	  'v'	Use a vertical button layout for dialogs.  When not included,
 		a horizontal layout is preferred, but when it doesn't fit a
-		vertical layout is used anyway.
+		vertical layout is used anyway.  Not supported in GTK 3.
 								*'go-p'*
 	  'p'	Use Pointer callbacks for X11 GUI.  This is required for some
 		window managers.  If the cursor is not blinking or hollow at
@@ -4139,7 +4148,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	the window.  This happens only when the 'icon' option is on.
 	Only works if the terminal supports setting window icon text
 	(currently only X11 GUI and terminals with a non-empty 't_IS' option).
-	Does not work for MS Windows.
+	Does not work for MS-Windows.
 	When Vim was compiled with HAVE_X11 defined, the original icon will be
 	restored if possible |X11|.
 	When this option contains printf-style '%' items, they will be
@@ -5027,7 +5036,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	jump between two double quotes.
 	The characters must be separated by a colon.
 	The pairs must be separated by a comma.  Example for including '<' and
-	'>' (HTML): >
+	'>' (for HTML): >
 		:set mps+=<:>
 
 <	A more exotic example, to jump between the '=' and ';' in an
@@ -8781,23 +8790,31 @@ A jump table for the options with a short description can be found at |Q_op|.
 	part specifies what to do for each consecutive use of 'wildchar'.  The
 	first part specifies the behavior for the first use of 'wildchar',
 	The second part for the second use, etc.
-	These are the possible values for each part:
+
+	Each part consists of a colon separated list consisting of the
+	following possible values:
 	""		Complete only the first match.
 	"full"		Complete the next full match.  After the last match,
 			the original string is used and then the first match
-			again.
+			again.  Will also start 'wildmenu' if it is enabled.
 	"longest"	Complete till longest common string.  If this doesn't
 			result in a longer string, use the next part.
-	"longest:full"	Like "longest", but also start 'wildmenu' if it is
-			enabled.
 	"list"		When more than one match, list all matches.
+	"lastused"	When completing buffer names and more than one buffer
+			matches, sort buffers by time last used (other than
+			the current buffer).
+	When there is only a single match, it is fully completed in all cases.
+
+	Examples of useful colon-separated values:
+	"longest:full"	Like "longest", but also start 'wildmenu' if it is
+			enabled.  Will not complete to the next full match.
 	"list:full"	When more than one match, list all matches and
 			complete first match.
 	"list:longest"	When more than one match, list all matches and
 			complete till longest common string.
-	"list:lastused" When more than one buffer matches, sort buffers
-			by time last used (other than the current buffer).
-	When there is only a single match, it is fully completed in all cases.
+	"list:lastused" When more than one buffer matches, list all matches
+			and sort buffers by time last used (other than the
+			current buffer).
 
 	Examples: >
 		:set wildmode=full
@@ -8856,15 +8873,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'window'* *'wi'*
 'window' 'wi'		number  (default screen height - 1)
 			global
-	Window height.  Do not confuse this with the height of the Vim window,
-	use 'lines' for that.
-	Used for |CTRL-F| and |CTRL-B| when there is only one window and the
-	value is smaller than 'lines' minus one.  The screen will scroll
-	'window' minus two lines, with a minimum of one.
+	Window height used for |CTRL-F| and |CTRL-B| when there is only one
+	window and the value is smaller than 'lines' minus one.  The screen
+	will scroll 'window' minus two lines, with a minimum of one.
 	When 'window' is equal to 'lines' minus one CTRL-F and CTRL-B scroll
 	in a much smarter way, taking care of wrapping lines.
 	When resizing the Vim window, the value is smaller than 1 or more than
 	or equal to 'lines' it will be set to 'lines' minus 1.
+	Note: Do not confuse this with the height of the Vim window, use
+	'lines' for that.
 
 						*'winheight'* *'wh'* *E591*
 'winheight' 'wh'	number	(default 1)

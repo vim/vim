@@ -375,3 +375,23 @@ EXTERN char e_argument_already_declared_in_script_str[]
 	INIT(= N_("E1168: Argument already declared in the script: %s"));
 EXTERN char e_import_as_name_not_supported_here[]
 	INIT(= N_("E1169: 'import * as {name}' not supported here"));
+EXTERN char e_cannot_use_hash_curly_to_start_comment[]
+	INIT(= N_("E1170: Cannot use #{ to start a comment"));
+EXTERN char e_missing_end_block[]
+	INIT(= N_("E1171: Missing } after inline function"));
+EXTERN char e_cannot_use_default_values_in_lambda[]
+	INIT(= N_("E1172: Cannot use default values in a lambda"));
+EXTERN char e_text_found_after_enddef_str[]
+	INIT(= N_("E1173: Text found after enddef: %s"));
+EXTERN char e_string_required_for_argument_nr[]
+	INIT(= N_("E1174: String required for argument %d"));
+EXTERN char e_non_empty_string_required_for_argument_nr[]
+	INIT(= N_("E1175: Non-empty string required for argument %d"));
+EXTERN char e_misplaced_command_modifier[]
+	INIT(= N_("E1176: Misplaced command modifier"));
+EXTERN char e_for_loop_on_str_not_supported[]
+	INIT(= N_("E1177: For loop on %s not supported"));
+EXTERN char e_cannot_lock_unlock_local_variable[]
+	INIT(= N_("E1178: Cannot lock or unlock a local variable"));
+EXTERN char e_failed_to_extract_pwd_from_str_check_your_shell_config[]
+	INIT(= N_("E1179: Failed to extract PWD from %s, check your shell's config related to OSC 7"));

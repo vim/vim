@@ -1007,18 +1007,25 @@ f_winnr(typval_T *argvars UNUSED, typval_T *rettv)
 f_winrestcmd(typval_T *argvars UNUSED, typval_T *rettv)
 {
     win_T	*wp;
-    int		winnr = 1;
+    int		i;
+    int		winnr;
     garray_T	ga;
     char_u	buf[50];
 
     ga_init2(&ga, (int)sizeof(char), 70);
-    FOR_ALL_WINDOWS(wp)
+
+    // Do this twice to handle some window layouts properly.
+    for (i = 0; i < 2; ++i)
     {
-	sprintf((char *)buf, ":%dresize %d|", winnr, wp->w_height);
-	ga_concat(&ga, buf);
-	sprintf((char *)buf, "vert :%dresize %d|", winnr, wp->w_width);
-	ga_concat(&ga, buf);
-	++winnr;
+	winnr = 1;
+	FOR_ALL_WINDOWS(wp)
+	{
+	    sprintf((char *)buf, ":%dresize %d|", winnr, wp->w_height);
+	    ga_concat(&ga, buf);
+	    sprintf((char *)buf, "vert :%dresize %d|", winnr, wp->w_width);
+	    ga_concat(&ga, buf);
+	    ++winnr;
+	}
     }
     ga_append(&ga, NUL);
 

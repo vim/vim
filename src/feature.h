@@ -1148,6 +1148,12 @@
 #endif
 
 /*
+ * +autoshelldir	    'autoshelldir' option.
+ */
+#if defined(FEAT_TERMINAL)
+# define FEAT_AUTOSHELLDIR
+#endif
+/*
  * +textprop and +popupwin	Text PROPerties and POPUP windows
  */
 #if defined(FEAT_EVAL) && defined(FEAT_SYN_HL)

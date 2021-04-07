@@ -383,6 +383,9 @@ EXTERN char_u	*p_ambw;	// 'ambiwidth'
 #ifdef FEAT_AUTOCHDIR
 EXTERN int	p_acd;		// 'autochdir'
 #endif
+#ifdef FEAT_AUTOSHELLDIR
+EXTERN int	p_asd;		// 'autoshelldir'
+#endif
 EXTERN int	p_ai;		// 'autoindent'
 EXTERN int	p_bin;		// 'binary'
 EXTERN int	p_bomb;		// 'bomb'

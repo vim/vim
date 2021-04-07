@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 8.2.  Last change: 2020 Aug 15
+*mbyte.txt*     For Vim version 8.2.  Last change: 2021 Apr 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -770,7 +770,7 @@ is suitable for complex input, such as CJK.
   of the two ways: FrontEnd system and BackEnd system.  In the FrontEnd
   system, input events are snatched by the |IM-server| first, then |IM-server|
   give the application the result of input.  On the other hand, the BackEnd
-  system works reverse order.  MS Windows adopt BackEnd system.  In X, most of
+  system works reverse order.  MS-Windows adopt BackEnd system.  In X, most of
   |IM-server|s adopt FrontEnd system.  The demerit of BackEnd system is the
   large overhead in communication, but it provides safe synchronization with
   no restrictions on applications.

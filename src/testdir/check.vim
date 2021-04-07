@@ -93,7 +93,6 @@ func CheckLinux()
 endfunc
 
 " Command to check for not running on a BSD system.
-" TODO: using this check should not be needed
 command CheckNotBSD call CheckNotBSD()
 func CheckNotBSD()
   if has('bsd')

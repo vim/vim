@@ -18,6 +18,7 @@ func Test_compiling_error()
   CheckRunVimInTerminal
 
   call TestCompilingError()
+  call TestCompilingErrorInTry()
 endfunc
 
 def TestCompilingError()
@@ -28,15 +29,49 @@ def TestCompilingError()
     enddef
     defcompile
   END
-  call writefile(lines, 'XTest_compile_error')
+  writefile(lines, 'XTest_compile_error')
   var buf = RunVimInTerminal('-S XTest_compile_error',
               {rows: 10, wait_for_ruler: 0})
-  call WaitForAssert(() => assert_match('Error detected while compiling command line.*Fails.*Variable not found: nothing',
+  WaitForAssert(() => assert_match('Error detected while compiling command line.*Fails.*Variable not found: nothing',
                      Term_getlines(buf, range(1, 9))))
 
   # clean up
-  call StopVimInTerminal(buf)
-  call delete('XTest_compile_error')
+  StopVimInTerminal(buf)
+  delete('XTest_compile_error')
+enddef
+
+def TestCompilingErrorInTry()
+  var dir = 'Xdir/autoload'
+  mkdir(dir, 'p')
+
+  var lines =<< trim END
+      vim9script
+      def script#OnlyCompiled()
+        g:runtime = 'yes'
+        invalid
+      enddef
+  END
+  writefile(lines, dir .. '/script.vim')
+
+  lines =<< trim END
+      vim9script
+      todo
+      try
+        script#OnlyCompiled()
+      catch /nothing/
+      endtry
+  END
+  lines[1] = 'set rtp=' .. getcwd() .. '/Xdir'
+  writefile(lines, 'XTest_compile_error')
+
+  var buf = RunVimInTerminal('-S XTest_compile_error', {rows: 10, wait_for_ruler: 0})
+  WaitForAssert(() => assert_match('Error detected while compiling command line.*function script#OnlyCompiled.*Invalid command: invalid',
+                     Term_getlines(buf, range(1, 9))))
+
+  # clean up
+  StopVimInTerminal(buf)
+  delete('XTest_compile_error')
+  delete('Xdir', 'rf')
 enddef
 
 def CallRecursive(n: number): number
@@ -86,6 +121,16 @@ def Test_endfunc_enddef()
     enddef
   END
   CheckScriptFailure(lines, 'E1152:', 4)
+
+  lines =<< trim END
+    def Ok()
+      echo 'hello'
+    enddef | echo 'there'
+    def Bad()
+      echo 'hello'
+    enddef there
+  END
+  CheckScriptFailure(lines, 'E1173: Text found after enddef: there', 6)
 enddef
 
 def Test_missing_endfunc_enddef()
@@ -298,21 +343,38 @@ def MyDefaultSecond(name: string, second: bool  = true): string
   return second ? name : 'none'
 enddef
 
+
 def Test_call_default_args()
   MyDefaultArgs()->assert_equal('string')
+  MyDefaultArgs(v:none)->assert_equal('string')
   MyDefaultArgs('one')->assert_equal('one')
-  assert_fails('MyDefaultArgs("one", "two")', 'E118:', '', 3, 'Test_call_default_args')
+  assert_fails('MyDefaultArgs("one", "two")', 'E118:', '', 4, 'Test_call_default_args')
 
   MyDefaultSecond('test')->assert_equal('test')
   MyDefaultSecond('test', true)->assert_equal('test')
   MyDefaultSecond('test', false)->assert_equal('none')
+
+  var lines =<< trim END
+      def MyDefaultThird(name: string, aa = 'aa', bb = 'bb'): string
+        return name .. aa .. bb
+      enddef
+
+      MyDefaultThird('->')->assert_equal('->aabb')
+      MyDefaultThird('->', v:none)->assert_equal('->aabb')
+      MyDefaultThird('->', 'xx')->assert_equal('->xxbb')
+      MyDefaultThird('->', v:none, v:none)->assert_equal('->aabb')
+      MyDefaultThird('->', 'xx', v:none)->assert_equal('->xxbb')
+      MyDefaultThird('->', v:none, 'yy')->assert_equal('->aayy')
+      MyDefaultThird('->', 'xx', 'yy')->assert_equal('->xxyy')
+  END
+  CheckDefAndScriptSuccess(lines)
 
   CheckScriptFailure(['def Func(arg: number = asdf)', 'enddef', 'defcompile'], 'E1001:')
   delfunc g:Func
   CheckScriptFailure(['def Func(arg: number = "text")', 'enddef', 'defcompile'], 'E1013: Argument 1: type mismatch, expected number but got string')
   delfunc g:Func
 
-  var lines =<< trim END
+  lines =<< trim END
       vim9script
       def Func(a = b == 0 ? 1 : 2, b = 0)
       enddef
@@ -594,6 +656,30 @@ def Test_local_function_shadows_global()
   END
   CheckScriptFailure(lines, 'E705:')
   delfunc g:Func
+
+  # global function is found without g: prefix
+  lines =<< trim END
+      vim9script
+      def g:Func(): string
+        return 'global'
+      enddef
+      def AnotherFunc(): string
+        return Func()
+      enddef
+      assert_equal('global', AnotherFunc())
+    delfunc g:Func
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      def g:Func(): string
+        return 'global'
+      enddef
+      assert_equal('global', Func())
+      delfunc g:Func
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 func TakesOneArg(arg)
@@ -1175,6 +1261,15 @@ def Test_arg_type_wrong()
   CheckScriptFailure(['def Func4(...)', 'echo "a"', 'enddef'], 'E1055: Missing name after ...')
   CheckScriptFailure(['def Func5(items:string)', 'echo "a"'], 'E1069:')
   CheckScriptFailure(['def Func5(items)', 'echo "a"'], 'E1077:')
+enddef
+
+def Test_white_space_before_comma()
+  var lines =<< trim END
+    vim9script
+    def Func(a: number , b: number)
+    enddef
+  END
+  CheckScriptFailure(lines, 'E1068:')
 enddef
 
 def Test_white_space_after_comma()
@@ -2351,6 +2446,29 @@ def Test_cmdmod_silent_restored()
   endtry
   assert_equal('yes', caught)
   delete(fname)
+enddef
+
+def Test_cmdmod_silent_nested()
+  var lines =<< trim END
+      vim9script
+      var result = ''
+
+      def Error()
+          result ..= 'Eb'
+          eval [][0]
+          result ..= 'Ea'
+      enddef
+
+      def Crash()
+          result ..= 'Cb'
+          sil! Error()
+          result ..= 'Ca'
+      enddef
+
+      Crash()
+      assert_equal('CbEbEaCa', result)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_dict_member_with_silent()

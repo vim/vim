@@ -150,7 +150,7 @@ func Test_default_arg()
   call assert_equal(res['0'], 1)
 
   call assert_fails("call MakeBadFunc()", 'E989:')
-  call assert_fails("fu F(a=1 ,) | endf", 'E475:')
+  call assert_fails("fu F(a=1 ,) | endf", 'E1068:')
 
   let d = Args2(7, v:none, 9)
   call assert_equal([7, 2, 9], [d.a, d.b, d.c])

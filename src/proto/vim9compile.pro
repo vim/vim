@@ -1,5 +1,4 @@
 /* vim9compile.c */
-int script_var_exists(char_u *name, size_t len, int vim9script, cctx_T *cctx);
 int check_defined(char_u *p, size_t len, cctx_T *cctx, int is_arg);
 int check_compare_types(exprtype_T type, typval_T *tv1, typval_T *tv2);
 int use_typecheck(type_T *actual, type_T *expected);
@@ -14,6 +13,7 @@ char_u *to_name_end(char_u *arg, int use_namespace);
 char_u *to_name_const_end(char_u *arg);
 exprtype_T get_compare_type(char_u *p, int *len, int *type_is);
 void error_white_both(char_u *op, int len);
+void fill_exarg_from_cctx(exarg_T *eap, cctx_T *cctx);
 int assignment_len(char_u *p, int *heredoc);
 void vim9_declare_error(char_u *name);
 int check_vim9_unlet(char_u *name);

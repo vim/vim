@@ -4883,6 +4883,11 @@ f_ch_logfile(typval_T *argvars, typval_T *rettv UNUSED)
     // Don't open a file in restricted mode.
     if (check_restricted() || check_secure())
 	return;
+    if (in_vim9script()
+	    && (check_for_string_arg(argvars, 0) == FAIL
+		|| check_for_string_arg(argvars, 1) == FAIL))
+	return;
+
     fname = tv_get_string(&argvars[0]);
     if (argvars[1].v_type == VAR_STRING)
 	opt = tv_get_string_buf(&argvars[1], buf);

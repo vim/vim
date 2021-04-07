@@ -2817,6 +2817,8 @@ showmatch(
 	if (*p == NUL)
 	    return;
     }
+    if (*p == NUL)
+	return;
 
     if ((lpos = findmatch(NULL, NUL)) == NULL)	    // no match, so beep
 	vim_beep(BO_MATCH);

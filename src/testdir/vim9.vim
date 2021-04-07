@@ -107,9 +107,29 @@ def CheckDefAndScriptFailure(lines: list<string>, error: string, lnum = -3)
   CheckScriptFailure(['vim9script'] + lines, error, lnum + 1)
 enddef
 
+" As CheckDefAndScriptFailure() but with two different exepcted errors.
+def CheckDefAndScriptFailure2(
+  	lines: list<string>,
+	errorDef: string,
+	errorScript: string,
+	lnum = -3)
+  CheckDefFailure(lines, errorDef, lnum)
+  CheckScriptFailure(['vim9script'] + lines, errorScript, lnum + 1)
+enddef
+
 " Check that a command fails with the same error  when executed in a :def
 " function and when used in Vim9 script.
 def CheckDefExecAndScriptFailure(lines: list<string>, error: string, lnum = -3)
   CheckDefExecFailure(lines, error, lnum)
   CheckScriptFailure(['vim9script'] + lines, error, lnum + 1)
+enddef
+
+" As CheckDefExecAndScriptFailure() but with two different expected errors.
+def CheckDefExecAndScriptFailure2(
+  	lines: list<string>,
+	errorDef: string,
+	errorScript: string,
+	lnum = -3)
+  CheckDefExecFailure(lines, errorDef, lnum)
+  CheckScriptFailure(['vim9script'] + lines, errorScript, lnum + 1)
 enddef

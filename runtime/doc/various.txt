@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.2.  Last change: 2021 Mar 02
+*various.txt*   For Vim version 8.2.  Last change: 2021 Mar 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -724,7 +724,7 @@ K			Run a program to lookup the keyword under the
 			feature}
 
 							*:sl!* *:sleep!*
-:[N]sl[eep]! [N] [m]	Same as above, but hide the cursor
+:[N]sl[eep]! [N] [m]	Same as above, but hide the cursor.
 
 							*:xrestore* *:xr*
 :xr[estore] [display]	Reinitializes the connection to the X11 server. Useful

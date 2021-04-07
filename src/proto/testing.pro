@@ -1,5 +1,6 @@
 /* testing.c */
 void f_assert_beeps(typval_T *argvars, typval_T *rettv);
+void f_assert_nobeep(typval_T *argvars, typval_T *rettv);
 void f_assert_equal(typval_T *argvars, typval_T *rettv);
 void f_assert_equalfile(typval_T *argvars, typval_T *rettv);
 void f_assert_notequal(typval_T *argvars, typval_T *rettv);

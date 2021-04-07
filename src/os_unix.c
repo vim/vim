@@ -3343,7 +3343,7 @@ exit_scroll(void)
 	else
 	    out_char('\n');
     }
-    else
+    else if (!is_not_a_term())
     {
 	restore_cterm_colors();		// get original colors back
 	msg_clr_eos_force();		// clear the rest of the display
@@ -3370,9 +3370,12 @@ mch_exit(int r)
     {
 	settmode(TMODE_COOK);
 #ifdef FEAT_TITLE
-	// restore xterm title and icon name
-	mch_restore_title(SAVE_RESTORE_BOTH);
-	term_pop_title(SAVE_RESTORE_BOTH);
+	if (!is_not_a_term())
+	{
+	    // restore xterm title and icon name
+	    mch_restore_title(SAVE_RESTORE_BOTH);
+	    term_pop_title(SAVE_RESTORE_BOTH);
+	}
 #endif
 	/*
 	 * When t_ti is not empty but it doesn't cause swapping terminal

@@ -1623,6 +1623,10 @@ def Test_vim9script_funcref()
       export def FastSort(): list<number>
         return range(5)->sort(Compare)
       enddef
+
+      export def GetString(arg: string): string
+        return arg
+      enddef
   END
   writefile(sortlines, 'Xsort.vim')
 
@@ -1633,6 +1637,20 @@ def Test_vim9script_funcref()
       g:result = FastSort()
     enddef
     Test()
+
+    # using a function imported with "as"
+    import * as anAlias from './Xsort.vim'
+    assert_equal('yes', anAlias.GetString('yes'))
+
+    # using the function from a compiled function
+    def TestMore(): string
+      var s = s:anAlias.GetString('foo')
+      return s .. anAlias.GetString('bar')
+    enddef
+    assert_equal('foobar', TestMore())
+
+    # error when using a function that isn't exported
+    assert_fails('anAlias.Compare(1, 2)', 'E1049:')
   END
   writefile(lines, 'Xscript.vim')
 
@@ -2263,6 +2281,13 @@ def Test_for_outside_of_function()
     endfor
     assert_equal(['', '0', '1', '2', '3'], getline(1, '$'))
     bwipe!
+
+    var result = ''
+    for i in [1, 2, 3]
+      var loop = ' loop ' .. i
+      result ..= loop
+    endfor
+    assert_equal(' loop 1 loop 2 loop 3', result)
   END
   writefile(lines, 'Xvim9for.vim')
   source Xvim9for.vim
@@ -2315,6 +2340,25 @@ def Test_for_loop()
     res ..= n .. s
   endfor
   assert_equal('1a2b', res)
+
+  # loop over string
+  res = ''
+  for c in 'aéc̀d'
+    res ..= c .. '-'
+  endfor
+  assert_equal('a-é-c̀-d-', res)
+
+  res = ''
+  for c in ''
+    res ..= c .. '-'
+  endfor
+  assert_equal('', res)
+
+  res = ''
+  for c in test_null_string()
+    res ..= c .. '-'
+  endfor
+  assert_equal('', res)
 enddef
 
 def Test_for_loop_fails()
@@ -2326,10 +2370,17 @@ def Test_for_loop_fails()
   CheckDefFailure(['var x = 5', 'for x in range(5)'], 'E1017:')
   CheckScriptFailure(['def Func(arg: any)', 'for arg in range(5)', 'enddef', 'defcompile'], 'E1006:')
   delfunc! g:Func
-  CheckDefFailure(['for i in "text"'], 'E1012:')
   CheckDefFailure(['for i in xxx'], 'E1001:')
   CheckDefFailure(['endfor'], 'E588:')
   CheckDefFailure(['for i in range(3)', 'echo 3'], 'E170:')
+
+  # wrong type detected at compile time
+  CheckDefFailure(['for i in {a: 1}', 'echo 3', 'endfor'], 'E1177: For loop on dict not supported')
+
+  # wrong type detected at runtime
+  g:adict = {a: 1}
+  CheckDefExecFailure(['for i in g:adict', 'echo 3', 'endfor'], 'E1177: For loop on dict not supported')
+  unlet g:adict
 enddef
 
 def Test_for_loop_script_var()
@@ -2452,7 +2503,7 @@ def Test_while_loop()
   assert_equal('1_3_', result)
 
   var s = ''
-  while s == 'x' #{comment}
+  while s == 'x' # {comment}
   endwhile
 enddef
 
@@ -3186,6 +3237,35 @@ def Test_source_vim9_from_legacy()
   delete('Xlegacy_script.vim')
   delete('Xvim9_script.vim')
 enddef
+
+def Test_declare_script_in_func()
+  var lines =<< trim END
+      vim9script
+      func Declare()
+        let s:local = 123
+      endfunc
+      Declare()
+      assert_equal(123, local)
+
+      var error: string
+      try
+        local = 'asdf'
+      catch
+        error = v:exception
+      endtry
+      assert_match('E1012: Type mismatch; expected number but got string', error)
+
+      lockvar local
+      try
+        local = 999
+      catch
+        error = v:exception
+      endtry
+      assert_match('E741: Value is locked: local', error)
+  END
+  CheckScriptSuccess(lines)
+enddef
+        
 
 func Test_vim9script_not_global()
   " check that items defined in Vim9 script are script-local, not global

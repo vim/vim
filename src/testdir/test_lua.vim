@@ -12,13 +12,17 @@ endfunc
 CheckFeature lua
 CheckFeature float
 
-let s:luaver = split(split(luaeval('_VERSION'), ' ')[1], '\.')
-let s:major = str2nr(s:luaver[0])
-let s:minor = str2nr(s:luaver[1])
-if s:major < 5 || (s:major == 5 && s:minor < 3)
-  let s:lua_53_or_later = 0
-else
+" Depending on the lua version, the error messages are different.
+let [s:major, s:minor, s:patch] = luaeval('vim.lua_version')->split('\.')->map({-> str2nr(v:val)})
+let s:lua_53_or_later = 0
+let s:lua_543_or_later = 0
+if (s:major == 5 && s:minor >= 3) || s:major > 5
   let s:lua_53_or_later = 1
+  if (s:major == 5
+        \ && ((s:minor == 4 && s:patch >= 3) || s:minor > 4))
+        \ || s:major > 5
+    let s:lua_543_or_later = 1
+  endif
 endif
 
 func TearDown()
@@ -55,10 +59,14 @@ func Test_lua_luado()
   " Error cases
   call assert_fails('luado string.format()',
         \ "[string \"vim chunk\"]:1: bad argument #1 to 'format' (string expected, got no value)")
-  call assert_fails('luado func()',
-        \ s:lua_53_or_later
-        \ ? "[string \"vim chunk\"]:1: attempt to call a nil value (global 'func')"
-        \ : "[string \"vim chunk\"]:1: attempt to call global 'func' (a nil value)")
+  if s:lua_543_or_later
+    let msg = "[string \"vim chunk\"]:1: global 'func' is not callable (a nil value)"
+  elseif s:lua_53_or_later
+    let msg = "[string \"vim chunk\"]:1: attempt to call a nil value (global 'func')"
+  else
+    let msg = "[string \"vim chunk\"]:1: attempt to call global 'func' (a nil value)"
+  endif
+  call assert_fails('luado func()', msg)
   call assert_fails('luado error("failed")', "[string \"vim chunk\"]:1: failed")
 endfunc
 
@@ -143,10 +151,14 @@ func Test_lua_window()
   " Window 3 does not exist so vim.window(3) should return nil
   call assert_equal('nil', luaeval('tostring(vim.window(3))'))
 
-  call assert_fails("let n = luaeval('vim.window().xyz()')",
-        \ s:lua_53_or_later
-        \ ? "[string \"luaeval\"]:1: attempt to call a nil value (field 'xyz')"
-        \ : "[string \"luaeval\"]:1: attempt to call field 'xyz' (a nil value)")
+  if s:lua_543_or_later
+    let msg = "[string \"luaeval\"]:1: field 'xyz' is not callable (a nil value)"
+  elseif s:lua_53_or_later
+    let msg = "[string \"luaeval\"]:1: attempt to call a nil value (field 'xyz')"
+  else
+    let msg = "[string \"luaeval\"]:1: attempt to call field 'xyz' (a nil value)"
+  endif
+  call assert_fails("let n = luaeval('vim.window().xyz()')", msg)
   call assert_fails('lua vim.window().xyz = 1',
         \ "[string \"vim chunk\"]:1: invalid window property: `xyz'")
 
@@ -331,10 +343,14 @@ func Test_lua_buffer_insert()
   call assert_equal('4', luaeval('vim.buffer()[4]'))
   call assert_equal(v:null, luaeval('vim.buffer()[5]'))
   call assert_equal(v:null, luaeval('vim.buffer()[{}]'))
-  call assert_fails('lua vim.buffer():xyz()',
-        \ s:lua_53_or_later
-        \ ? "[string \"vim chunk\"]:1: attempt to call a nil value (method 'xyz')"
-        \ : "[string \"vim chunk\"]:1: attempt to call method 'xyz' (a nil value)")
+  if s:lua_543_or_later
+    let msg = "[string \"vim chunk\"]:1: method 'xyz' is not callable (a nil value)"
+  elseif s:lua_53_or_later
+    let msg = "[string \"vim chunk\"]:1: attempt to call a nil value (method 'xyz')"
+  else
+    let msg = "[string \"vim chunk\"]:1: attempt to call method 'xyz' (a nil value)"
+  endif
+  call assert_fails('lua vim.buffer():xyz()', msg)
   call assert_fails('lua vim.buffer()[1] = {}',
         \ '[string "vim chunk"]:1: wrong argument to change')
   bwipe!
@@ -438,10 +454,14 @@ func Test_lua_list()
   lua ll = vim.eval('l')
   let x = luaeval("ll[3]")
   call assert_equal(v:null, x)
-  call assert_fails('let x = luaeval("ll:xyz(3)")',
-        \ s:lua_53_or_later
-        \ ? "[string \"luaeval\"]:1: attempt to call a nil value (method 'xyz')"
-        \ : "[string \"luaeval\"]:1: attempt to call method 'xyz' (a nil value)")
+  if s:lua_543_or_later
+    let msg = "[string \"luaeval\"]:1: method 'xyz' is not callable (a nil value)"
+  elseif s:lua_53_or_later
+    let msg = "[string \"luaeval\"]:1: attempt to call a nil value (method 'xyz')"
+  else
+    let msg = "[string \"luaeval\"]:1: attempt to call method 'xyz' (a nil value)"
+  endif
+  call assert_fails('let x = luaeval("ll:xyz(3)")', msg)
   let y = luaeval("ll[{}]")
   call assert_equal(v:null, y)
 
@@ -467,7 +487,7 @@ func Test_lua_list_table_insert_remove()
     throw 'Skipped: Lua version < 5.3'
   endif
 
-  let l = [1, 2] 
+  let l = [1, 2]
   lua t = vim.eval('l')
   lua table.insert(t, 10)
   lua t[#t + 1] = 20
@@ -625,10 +645,14 @@ func Test_lua_blob()
   call assert_equal(2, n)
   let n = luaeval('lb[6]')
   call assert_equal(v:null, n)
-  call assert_fails('let x = luaeval("lb:xyz(3)")',
-        \ s:lua_53_or_later
-        \ ? "[string \"luaeval\"]:1: attempt to call a nil value (method 'xyz')"
-        \ : "[string \"luaeval\"]:1: attempt to call method 'xyz' (a nil value)")
+  if s:lua_543_or_later
+    let msg = "[string \"luaeval\"]:1: method 'xyz' is not callable (a nil value)"
+  elseif s:lua_53_or_later
+    let msg = "[string \"luaeval\"]:1: attempt to call a nil value (method 'xyz')"
+  else
+    let msg = "[string \"luaeval\"]:1: attempt to call method 'xyz' (a nil value)"
+  endif
+  call assert_fails('let x = luaeval("lb:xyz(3)")', msg)
   let y = luaeval("lb[{}]")
   call assert_equal(v:null, y)
 

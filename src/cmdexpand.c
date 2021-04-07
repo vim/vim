@@ -1020,8 +1020,9 @@ set_one_cmd_context(
 	p = cmd;
 	while (ASCII_ISALPHA(*p) || *p == '*')    // Allow * wild card
 	    ++p;
-	// a user command may contain digits
-	if (ASCII_ISUPPER(cmd[0]))
+	// A user command may contain digits.
+	// Include "9" for "vim9*" commands; "vim9cmd" and "vim9script".
+	if (ASCII_ISUPPER(cmd[0]) || STRNCMP("vim9", cmd, 4) == 0)
 	    while (ASCII_ISALNUM(*p) || *p == '*')
 		++p;
 	// for python 3.x: ":py3*" commands completion
