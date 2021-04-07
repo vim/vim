@@ -208,6 +208,8 @@ Vim evaluation and command execution, and others.
 				created on demand.  Example: >
 					:lua print(vim.fn.has('timers'))
 <
+	vim.lua_version		The Lua version Vim was compiled with, in the
+				form {major}.{minor}.{patch}, e.g. "5.1.4".
 
 ==============================================================================
 3. List userdata					*lua-list*

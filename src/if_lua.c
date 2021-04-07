@@ -24,6 +24,12 @@
 #define LUAVIM_EVALNAME "luaeval"
 #define LUAVIM_EVALHEADER "local _A=select(1,...) return "
 
+#ifdef LUA_RELEASE
+# define LUAVIM_VERSION LUA_RELEASE
+#else
+# define LUAVIM_VERSION LUA_VERSION
+#endif
+
 typedef buf_T *luaV_Buffer;
 typedef win_T *luaV_Window;
 typedef dict_T *luaV_Dict;
@@ -2087,6 +2093,7 @@ static const luaL_Reg luaV_module[] = {
     {"open", luaV_open},
     {"type", luaV_type},
     {"call", luaV_call},
+    {"lua_version", NULL},
     {NULL, NULL}
 };
 
@@ -2166,6 +2173,20 @@ luaV_setref(lua_State *L)
     }
     lua_pushinteger(L, abort);
     return 1;
+}
+
+    static int
+luaV_pushversion(lua_State *L)
+{
+    int major = 0;
+    int minor = 0;
+    int patch = 0;
+    char s[16];
+
+    sscanf(LUAVIM_VERSION, "Lua %d.%d.%d", &major, &minor, &patch);
+    vim_snprintf(s, sizeof(s), "%d.%d.%d", major, minor, patch);
+    lua_pushstring(L, s);
+    return 0;
 }
 
 #define LUA_VIM_FN_CODE \
@@ -2298,6 +2319,8 @@ luaopen_vim(lua_State *L)
     lua_newtable(L); // vim table
     lua_pushvalue(L, 1); // cache table
     luaV_openlib(L, luaV_module, 1);
+    luaV_pushversion(L);
+    lua_setfield(L, -2, "lua_version");
     lua_setglobal(L, LUAVIM_NAME);
     // custom code
     (void)luaL_dostring(L, LUA_VIM_FN_CODE);
