@@ -1,4 +1,4 @@
-*version5.txt*  For Vim version 8.2.  Last change: 2020 Dec 19
+*version5.txt*  For Vim version 8.2.  Last change: 2021 Apr 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -405,7 +405,7 @@ Both of these are only available when enabled at compile time.
 Win32 GUI version					*added-win32-GUI*
 -----------------
 
-The GUI has been ported to MS Windows 95 and NT.  All the features of the X11
+The GUI has been ported to MS-Windows 95 and NT.  All the features of the X11
 GUI are available to Windows users now.  |gui-w32|
 This also fixes problems with running the Win32 console version under Windows
 95, where console support has always been bad.
@@ -4403,7 +4403,7 @@ the last char of the line, "<<" moved an extra line.  Also for other operators
 that always work on lines.
 
 link.sh changed "-lnsl_s" to "_s" when looking for "nsl" to be removed.
-Now it only remove whole words.
+Now it only removes whole words.
 
 When jumped to a mark or using "fz", and there is an error, the current column
 was lost.  E.g. when using "$fzj".

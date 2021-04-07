@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Mar 29
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Apr 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -42,17 +42,12 @@ Vim9 - Make everything work:
 - For builtin functions using tv_get_string*() use check_for_string() to be
   more strict about the argument type (not a bool).
     done: balloon_()
-- Run the same tests in :def and Vim9 script, like in Test_expr7_not()
 - Check many more builtin function arguments at compile time.
-- make 0 == 'string' fail on the script level, like inside :def.
-- Check that when using a user function name without prefix, it does not find
-  a global function.  Prefixing g: is required.
-- Appending to dict item doesn't work in a :def function:
-      var d: dict<string> = {a: 'x'}
-      d['a'] ..= 'y'
-      d.a ..= 'y'
-   Test to be extended: Test_assign_dict_with_op()
 - Using ".." at script level doesn't convert arguments to a string.
+- This fails in a :def function but not at the script level:
+	  var s = 'asdf'->((a) => a)('x')
+  Disallow passing more arguments to lambda than expected?
+- Implement blob index and slice, also with assignment?
 - Compile replacement of :s command: s/pat/\=expr/
 - Compile redir to local variable: var_redir_start().
 - Implement type cast at the script level.

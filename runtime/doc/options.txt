@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2021 Mar 29
+*options.txt*	For Vim version 8.2.  Last change: 2021 Apr 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4148,7 +4148,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	the window.  This happens only when the 'icon' option is on.
 	Only works if the terminal supports setting window icon text
 	(currently only X11 GUI and terminals with a non-empty 't_IS' option).
-	Does not work for MS Windows.
+	Does not work for MS-Windows.
 	When Vim was compiled with HAVE_X11 defined, the original icon will be
 	restored if possible |X11|.
 	When this option contains printf-style '%' items, they will be
@@ -5036,7 +5036,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	jump between two double quotes.
 	The characters must be separated by a colon.
 	The pairs must be separated by a comma.  Example for including '<' and
-	'>' (HTML): >
+	'>' (for HTML): >
 		:set mps+=<:>
 
 <	A more exotic example, to jump between the '=' and ';' in an
@@ -8790,23 +8790,31 @@ A jump table for the options with a short description can be found at |Q_op|.
 	part specifies what to do for each consecutive use of 'wildchar'.  The
 	first part specifies the behavior for the first use of 'wildchar',
 	The second part for the second use, etc.
-	These are the possible values for each part:
+
+	Each part consists of a colon separated list consisting of the
+	following possible values:
 	""		Complete only the first match.
 	"full"		Complete the next full match.  After the last match,
 			the original string is used and then the first match
-			again.
+			again.  Will also start 'wildmenu' if it is enabled.
 	"longest"	Complete till longest common string.  If this doesn't
 			result in a longer string, use the next part.
-	"longest:full"	Like "longest", but also start 'wildmenu' if it is
-			enabled.
 	"list"		When more than one match, list all matches.
+	"lastused"	When completing buffer names and more than one buffer
+			matches, sort buffers by time last used (other than
+			the current buffer).
+	When there is only a single match, it is fully completed in all cases.
+
+	Examples of useful colon-separated values:
+	"longest:full"	Like "longest", but also start 'wildmenu' if it is
+			enabled.  Will not complete to the next full match.
 	"list:full"	When more than one match, list all matches and
 			complete first match.
 	"list:longest"	When more than one match, list all matches and
 			complete till longest common string.
-	"list:lastused" When more than one buffer matches, sort buffers
-			by time last used (other than the current buffer).
-	When there is only a single match, it is fully completed in all cases.
+	"list:lastused" When more than one buffer matches, list all matches
+			and sort buffers by time last used (other than the
+			current buffer).
 
 	Examples: >
 		:set wildmode=full

@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.2.  Last change: 2021 Jan 08
+*editing.txt*   For Vim version 8.2.  Last change: 2021 Apr 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1253,7 +1253,7 @@ For versions of Vim where browsing is not supported, the command is executed
 unmodified.
 
 							*browsefilter*
-For MS Windows and GTK, you can modify the filters that are used in the browse
+For MS-Windows and GTK, you can modify the filters that are used in the browse
 dialog.  By setting the g:browsefilter or b:browsefilter variables, you can
 change the filters globally or locally to the buffer.  The variable is set to
 a string in the format "{filter label}\t{pattern};{pattern}\n" where {filter

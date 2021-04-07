@@ -5434,6 +5434,7 @@ assert_fails()	testing.txt	/*assert_fails()*
 assert_false()	testing.txt	/*assert_false()*
 assert_inrange()	testing.txt	/*assert_inrange()*
 assert_match()	testing.txt	/*assert_match()*
+assert_nobeep()	testing.txt	/*assert_nobeep()*
 assert_notequal()	testing.txt	/*assert_notequal()*
 assert_notmatch()	testing.txt	/*assert_notmatch()*
 assert_report()	testing.txt	/*assert_report()*
@@ -7507,6 +7508,7 @@ info-message	starting.txt	/*info-message*
 inform.vim	syntax.txt	/*inform.vim*
 informix	ft_sql.txt	/*informix*
 initialization	starting.txt	/*initialization*
+inline-function	vim9.txt	/*inline-function*
 input()	eval.txt	/*input()*
 inputdialog()	eval.txt	/*inputdialog()*
 inputlist()	eval.txt	/*inputlist()*
@@ -8582,6 +8584,12 @@ prop_type_change()	textprop.txt	/*prop_type_change()*
 prop_type_delete()	textprop.txt	/*prop_type_delete()*
 prop_type_get()	textprop.txt	/*prop_type_get()*
 prop_type_list()	textprop.txt	/*prop_type_list()*
+ps1-about	ft_ps1.txt	/*ps1-about*
+ps1-compiler	ft_ps1.txt	/*ps1-compiler*
+ps1-folding	ft_ps1.txt	/*ps1-folding*
+ps1-keyword	ft_ps1.txt	/*ps1-keyword*
+ps1-syntax	ft_ps1.txt	/*ps1-syntax*
+ps1.txt	ft_ps1.txt	/*ps1.txt*
 psql	ft_sql.txt	/*psql*
 ptcap.vim	syntax.txt	/*ptcap.vim*
 pterm-mouse	options.txt	/*pterm-mouse*
@@ -10137,6 +10145,7 @@ vim9-export	vim9.txt	/*vim9-export*
 vim9-final	vim9.txt	/*vim9-final*
 vim9-gotchas	vim9.txt	/*vim9-gotchas*
 vim9-import	vim9.txt	/*vim9-import*
+vim9-lambda	vim9.txt	/*vim9-lambda*
 vim9-mix	vim9.txt	/*vim9-mix*
 vim9-namespace	vim9.txt	/*vim9-namespace*
 vim9-rationale	vim9.txt	/*vim9-rationale*

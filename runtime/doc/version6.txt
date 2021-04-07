@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 8.2.  Last change: 2021 Jan 17
+*version6.txt*  For Vim version 8.2.  Last change: 2021 Apr 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1025,7 +1025,7 @@ Port to OS/390 Unix (Ralf Schandl)
 Included jsbmouse support. (Darren Garth)
 Support for dec mouse in Unix. (Steve Wall)
 
-Port to 16-bit MS Windows (Windows 3.1x) (Vince Negri)
+Port to 16-bit MS-Windows (Windows 3.1x) (Vince Negri)
 
 Port to QNX.  Supports the Photon GUI, mouse, etc. (Julian Kinraid)
 

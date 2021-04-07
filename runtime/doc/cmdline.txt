@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.2.  Last change: 2021 Jan 26
+*cmdline.txt*   For Vim version 8.2.  Last change: 2021 Apr 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -597,9 +597,11 @@ followed by another Vim command:
     :global
     :help
     :helpfind
+    :helpgrep
     :lcscope
     :ldo
     :lfdo
+    :lhelpgrep
     :make
     :normal
     :perl
