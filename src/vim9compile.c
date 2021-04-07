@@ -332,22 +332,15 @@ script_is_vim9()
 
 /*
  * Lookup a variable (without s: prefix) in the current script.
- * If "vim9script" is TRUE the script must be Vim9 script.  Used for "var"
- * without "s:".
  * "cctx" is NULL at the script level.
  * Returns OK or FAIL.
  */
-    int
-script_var_exists(char_u *name, size_t len, int vim9script, cctx_T *cctx)
+    static int
+script_var_exists(char_u *name, size_t len, cctx_T *cctx)
 {
-    int		    is_vim9_script;
-
     if (current_sctx.sc_sid <= 0)
 	return FAIL;
-    is_vim9_script = script_is_vim9();
-    if (vim9script && !is_vim9_script)
-	return FAIL;
-    if (is_vim9_script)
+    if (script_is_vim9())
     {
 	// Check script variables that were visible where the function was
 	// defined.
@@ -382,7 +375,7 @@ variable_exists(char_u *name, size_t len, cctx_T *cctx)
     return (cctx != NULL
 		&& (lookup_local(name, len, NULL, cctx) == OK
 		    || arg_exists(name, len, NULL, NULL, NULL, cctx) == OK))
-	    || script_var_exists(name, len, FALSE, cctx) == OK
+	    || script_var_exists(name, len, cctx) == OK
 	    || find_imported(name, len, cctx) != NULL;
 }
 
@@ -429,7 +422,7 @@ check_defined(char_u *p, size_t len, cctx_T *cctx, int is_arg)
     int		c = p[len];
     ufunc_T	*ufunc = NULL;
 
-    if (script_var_exists(p, len, FALSE, cctx) == OK)
+    if (script_var_exists(p, len, cctx) == OK)
     {
 	if (is_arg)
 	    semsg(_(e_argument_already_declared_in_script_str), p);
@@ -2990,7 +2983,7 @@ compile_load(
 	    {
 		// "var" can be script-local even without using "s:" if it
 		// already exists in a Vim9 script or when it's imported.
-		if (script_var_exists(*arg, len, TRUE, cctx) == OK
+		if (script_var_exists(*arg, len, cctx) == OK
 			|| find_imported(name, 0, cctx) != NULL)
 		   res = compile_load_scriptvar(cctx, name, *arg, &end, FALSE);
 
@@ -5844,9 +5837,9 @@ compile_lhs(
 				       && STRNCMP(var_start, "s:", 2) == 0;
 		int script_var = (script_namespace
 			? script_var_exists(var_start + 2, lhs->lhs_varlen - 2,
-							       FALSE, cctx)
+									  cctx)
 			  : script_var_exists(var_start, lhs->lhs_varlen,
-							   FALSE, cctx)) == OK;
+								  cctx)) == OK;
 		imported_T  *import =
 			       find_imported(var_start, lhs->lhs_varlen, cctx);
 

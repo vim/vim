@@ -2714,6 +2714,21 @@ def Test_expr7_negate_add()
   CheckDefAndScriptFailure(lines, 'E1050:')
 enddef
 
+def Test_expr7_legacy_script()
+  var lines =<< trim END
+      let s:legacy = 'legacy'
+      def GetLocal(): string
+        return legacy
+      enddef
+      def GetLocalPrefix(): string
+        return s:legacy
+      enddef
+      call assert_equal('legacy', GetLocal())
+      call assert_equal('legacy', GetLocalPrefix())
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Echo(arg: any): string
   return arg
 enddef
