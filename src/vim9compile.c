@@ -2889,11 +2889,11 @@ compile_load(
 
     if (*(*arg + 1) == ':')
     {
-	// load namespaced variable
 	if (end <= *arg + 2)
 	{
 	    isntype_T  isn_type;
 
+	    // load dictionary of namespace
 	    switch (**arg)
 	    {
 		case 'g': isn_type = ISN_LOADGDICT; break;
@@ -2912,6 +2912,7 @@ compile_load(
 	{
 	    isntype_T  isn_type = ISN_DROP;
 
+	    // load namespaced variable
 	    name = vim_strnsave(*arg + 2, end - (*arg + 2));
 	    if (name == NULL)
 		return FAIL;
@@ -2920,11 +2921,21 @@ compile_load(
 	    {
 		case 'v': res = generate_LOADV(cctx, name, error);
 			  break;
-		case 's': res = compile_load_scriptvar(cctx, name,
+		case 's': if (is_expr && ASCII_ISUPPER(*name)
+				       && find_func(name, FALSE, cctx) != NULL)
+			      res = generate_funcref(cctx, name);
+			  else
+			      res = compile_load_scriptvar(cctx, name,
 							    NULL, &end, error);
 			  break;
 		case 'g': if (vim_strchr(name, AUTOLOAD_CHAR) == NULL)
-			      isn_type = ISN_LOADG;
+			  {
+			      if (is_expr && ASCII_ISUPPER(*name)
+				       && find_func(name, FALSE, cctx) != NULL)
+				  res = generate_funcref(cctx, name);
+			      else
+				  isn_type = ISN_LOADG;
+			  }
 			  else
 			  {
 			      isn_type = ISN_LOADAUTO;
@@ -2945,7 +2956,7 @@ compile_load(
 	    {
 		// Global, Buffer-local, Window-local and Tabpage-local
 		// variables can be defined later, thus we don't check if it
-		// exists, give error at runtime.
+		// exists, give an error at runtime.
 		res = generate_LOAD(cctx, isn_type, 0, name, &t_any);
 	    }
 	}
@@ -2988,10 +2999,9 @@ compile_load(
 		   res = compile_load_scriptvar(cctx, name, *arg, &end, FALSE);
 
 		// When evaluating an expression and the name starts with an
-		// uppercase letter or "x:" it can be a user defined function.
-		// TODO: this is just guessing
-		if (res == FAIL && is_expr
-				   && (ASCII_ISUPPER(*name) || name[1] == ':'))
+		// uppercase letter it can be a user defined function.
+		// generate_funcref() will fail if the function can't be found.
+		if (res == FAIL && is_expr && ASCII_ISUPPER(*name))
 		    res = generate_funcref(cctx, name);
 	    }
 	}
