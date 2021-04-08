@@ -894,6 +894,7 @@ list_extend(list_T *l1, list_T *l2, listitem_T *bef)
 {
     listitem_T	*item;
     int		todo;
+    listitem_T	*bef_prev;
 
     // NULL list is equivalent to an empty list: nothing to do.
     if (l2 == NULL || l2->lv_len == 0)
@@ -903,9 +904,15 @@ list_extend(list_T *l1, list_T *l2, listitem_T *bef)
     CHECK_LIST_MATERIALIZE(l1);
     CHECK_LIST_MATERIALIZE(l2);
 
+    // When exending a list with itself, at some point we run into the item
+    // that was before "bef" and need to skip over the already inserted items
+    // to "bef".
+    bef_prev = bef == NULL ? NULL : bef->li_prev;
+
     // We also quit the loop when we have inserted the original item count of
     // the list, avoid a hang when we extend a list with itself.
-    for (item = l2->lv_first; item != NULL && --todo >= 0; item = item->li_next)
+    for (item = l2->lv_first; item != NULL && --todo >= 0;
+				 item = item == bef_prev ? bef : item->li_next)
 	if (list_insert_tv(l1, &item->li_tv, bef) == FAIL)
 	    return FAIL;
     return OK;

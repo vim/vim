@@ -862,6 +862,20 @@ func Test_listdict_extend()
 
   " Extend g: dictionary with an invalid variable name
   call assert_fails("call extend(g:, {'-!' : 10})", 'E461:')
+
+  " Extend a list with itself.
+  let l = [1, 5, 7]
+  call extend(l, l, 0)
+  call assert_equal([1, 5, 7, 1, 5, 7], l)
+  let l = [1, 5, 7]
+  call extend(l, l, 1)
+  call assert_equal([1, 1, 5, 7, 5, 7], l)
+  let l = [1, 5, 7]
+  call extend(l, l, 2)
+  call assert_equal([1, 5, 1, 5, 7, 7], l)
+  let l = [1, 5, 7]
+  call extend(l, l, 3)
+  call assert_equal([1, 5, 7, 1, 5, 7], l)
 endfunc
 
 func Test_listdict_extendnew()
