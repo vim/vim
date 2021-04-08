@@ -2,7 +2,7 @@ vim9script noclear
 
 # Vim plugin for showing matching parens
 # Maintainer:  Bram Moolenaar <Bram@vim.org>
-# Last Change: 2021 Apr 7
+# Last Change: 2021 Apr 8
 
 # Exit quickly when:
 # - this plugin was already loaded (or disabled)
@@ -237,14 +237,17 @@ def Toggle(enable = !exists('#matchparen')) #{{{2
 enddef
 
 def InStringOrComment(): bool #{{{2
-  # Expression which detects whether the current cursor position is in certain
-  # syntax types (string, comment, etc.); evaluated inside lambda passed as
-  # skip argument to searchpairpos().
-  return synstack('.', col('.'))
-    ->mapnew((_, v: number): string => synIDattr(v, 'name'))
+  # Should return true when the current cursor position is in certain syntax
+  # types (string, comment, etc.); evaluated inside lambda passed as skip
+  # argument to searchpairpos().
+  for synID in synstack('.', col('.'))
     # We match "escape" and "symbol" for special items, such as
     # lispEscapeSpecial or lispBarSymbol.
-    ->match('\cstring\|character\|singlequote\|escape\|symbol\|comment') >= 0
+    if synIDattr(synID, 'name') =~ '\cstring\|character\|singlequote\|escape\|symbol\|comment'
+      return true
+    endif
+  endfor
+  return false
 enddef
 
 # GetSkip {{{2
