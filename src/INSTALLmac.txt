@@ -1,64 +1,43 @@
-INSTALLmac.txt - Installation of Vim on Macintosh
+INSTALLmac.txt - Installation of Vim on Mac
 
 This file contains instructions for compiling Vim. If you already have an
 executable version of Vim, you don't need this.
 
-First, make sure you've installed Xcode or CommandLineTools.  If not, open a
-terminal and do
-
-	$ make --version
-
-A window pops up instructing you to install the developer tools.
-
+Classic Mac OS is no longer supported. If you really want it, use Vim 6.4.
 
 ----------------------------------------------------------------------------
 Summary
 ----------------------------------------------------------------------------
 
-1 MacOS X
- 1.1. Terminal version
- 1.2. X (Athena, GTK, Motif) or plain text.
-
-MacOS Classic is no longer supported.  If you really want it use Vim 6.4.
+1 macOS
+1.1 MacVim
+1.2 Homebrew
+1.3 Source
 
 ----------------------------------------------------------------------------
-1 MacOS X
+1 macOS
 ----------------------------------------------------------------------------
 
-1.0 Considerations
+1.1 MacVim
 
- Only '/' is supported as path separator.
+  To install MacVim, see MacVim's website for instructions.
 
-1.1 Terminal version (default)
+1.2 Homebrew
 
- You can compile vim with the standard Unix routine:
-   cd .../src
-   make
-   make test
-   sudo make install
+  To install Vim with Homebrew, see Homebrew's website for instructions.
 
- You need at least Xcode 1.5.
+1.3 Source
 
- To overrule the architecture do this before running make:
+  To install Vim from source:
 
-	./configure --with-mac-arch=intel
- or
-	./configure --with-mac-arch=ppc
+    1. Install Xcode or Command Line Tools.
 
+    2. Use the standard Unix routine:
 
-1.2 X-Windows
+         cd .../src
+         make
+         sudo make install
 
- You must explicitly tell configure to use a GUI.
+  To run the tests, first install GNU Libtool with the program prefix "g".
 
-  cd .../src
-  ./configure --disable-darwin --enable-gui=gtk2
-  make; make install
-
- NOTE: The following GUI options are possible (but might not work):
-	no (for terminal only), motif, athena, nextaw
-	gtk, gtk2, gnome, gnome2,
-
- NOTE: You need to first install XFree86 and XDarwin.
-       Please visit http://www.XDarwin.org
-
-------------------------------------------------------
+----------------------------------------------------------------------------
