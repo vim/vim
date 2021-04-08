@@ -2792,12 +2792,11 @@ call_def_function(
 		    else if (ltv->v_type == VAR_STRING)
 		    {
 			char_u	*str = ltv->vval.v_string;
-			int	len = str == NULL ? 0 : (int)STRLEN(str);
 
 			// Push the next character from the string.  The index
 			// is for the last byte of the previous character.
 			++idxtv->vval.v_number;
-			if (idxtv->vval.v_number >= len)
+			if (str == NULL || str[idxtv->vval.v_number] == NUL)
 			{
 			    // past the end of the string, jump to "endfor"
 			    ectx.ec_iidx = iptr->isn_arg.forloop.for_end;
