@@ -796,6 +796,8 @@ def Test_call_lambda_args()
     assert_equal('anything', Callback())
     assert_equal('anything', Callback(1))
     assert_equal('anything', Callback('a', 2))
+
+    assert_equal('xyz', ((a: string): string => a)('xyz'))
   END
   CheckDefAndScriptSuccess(lines)
 

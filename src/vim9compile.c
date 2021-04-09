@@ -1969,7 +1969,7 @@ generate_PCALL(
 
 		for (i = 0; i < argcount; ++i)
 		{
-		    int	    offset = -argcount + i - 1;
+		    int	    offset = -argcount + i - (at_top ? 0 : 1);
 		    type_T *actual = ((type_T **)stack->ga_data)[
 						       stack->ga_len + offset];
 		    type_T *expected;
