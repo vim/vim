@@ -836,6 +836,11 @@ def Test_call_lambda_args()
       enddef
   END
   CheckDefFailure(lines, 'E1167:')
+
+  lines =<< trim END
+    echo ((a) => a)('aa', 'bb')
+  END
+  CheckDefAndScriptFailure(lines, 'E118:', 1)
 enddef
 
 def FilterWithCond(x: string, Cond: func(string): bool): bool
@@ -2114,7 +2119,7 @@ def Test_list_lambda()
          ->substitute("('", ' ', '')
          ->substitute("')", '', '')
          ->substitute('function\zs', ' ', ''))
-  assert_match('def <lambda>\d\+(_: any, ...): number\n1  return 0\n   enddef', body)
+  assert_match('def <lambda>\d\+(_: any): number\n1  return 0\n   enddef', body)
 enddef
 
 def DoFilterThis(a: string): list<string>
@@ -2363,7 +2368,7 @@ def Test_did_emsg_reset()
       vim9script
       au BufWinLeave * #
       def Func()
-          popup_menu('', {callback: () => popup_create('', {})->popup_close()})
+          popup_menu('', {callback: (a, b) => popup_create('', {})->popup_close()})
           eval [][0]
       enddef
       nno <F3> <cmd>call <sid>Func()<cr>

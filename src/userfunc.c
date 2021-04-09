@@ -1263,8 +1263,9 @@ get_lambda_tv(
 #endif
 	if (sandbox)
 	    flags |= FC_SANDBOX;
-	// can be called with more args than uf_args.ga_len
-	fp->uf_varargs = TRUE;
+	// In legacy script a lambda can be called with more args than
+	// uf_args.ga_len.
+	fp->uf_varargs = !in_vim9script();
 	fp->uf_flags = flags;
 	fp->uf_calls = 0;
 	fp->uf_script_ctx = current_sctx;

@@ -3518,7 +3518,7 @@ func Test_no_redraw_when_restoring_cpo()
       vim9script
       set cpo+=M
       exe 'set rtp^=' .. getcwd() .. '/Xdir'
-      au CmdlineEnter : ++once timer_start(0, () => script#func())
+      au CmdlineEnter : ++once timer_start(0, (_) => script#func())
       setline(1, 'some text')
   END
   call writefile(lines, 'XTest_redraw_cpo')
