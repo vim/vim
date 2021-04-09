@@ -395,3 +395,5 @@ EXTERN char e_cannot_lock_unlock_local_variable[]
 	INIT(= N_("E1178: Cannot lock or unlock a local variable"));
 EXTERN char e_failed_to_extract_pwd_from_str_check_your_shell_config[]
 	INIT(= N_("E1179: Failed to extract PWD from %s, check your shell's config related to OSC 7"));
+EXTERN char e_variable_arguments_type_must_be_list_str[]
+	INIT(= N_("E1180: Variable arguments type must be a list: %s"));

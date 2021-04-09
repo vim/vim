@@ -3644,7 +3644,7 @@ enddef
 def Test_catch_exception_in_callback()
   var lines =<< trim END
     vim9script
-    def Callback(...l: any)
+    def Callback(...l: list<any>)
       try
         var x: string
         var y: string
@@ -3669,10 +3669,10 @@ def Test_no_unknown_error_after_error()
   var lines =<< trim END
       vim9script
       var source: list<number>
-      def Out_cb(...l: any)
+      def Out_cb(...l: list<any>)
           eval [][0]
       enddef
-      def Exit_cb(...l: any)
+      def Exit_cb(...l: list<any>)
           sleep 1m
           source += l
       enddef

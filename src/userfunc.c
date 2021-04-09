@@ -68,6 +68,7 @@ one_function_arg(
 	garray_T    *argtypes,
 	int	    types_optional,
 	evalarg_T   *evalarg,
+	int	    is_vararg,
 	int	    skip)
 {
     char_u	*p = arg;
@@ -155,7 +156,8 @@ one_function_arg(
 	{
 	    if (type == NULL && types_optional)
 		// lambda arguments default to "any" type
-		type = vim_strsave((char_u *)"any");
+		type = vim_strsave((char_u *)
+					    (is_vararg ? "list<any>" : "any"));
 	    ((char_u **)argtypes->ga_data)[argtypes->ga_len++] = type;
 	}
     }
@@ -250,7 +252,7 @@ get_function_args(
 
 		arg = p;
 		p = one_function_arg(p, newargs, argtypes, types_optional,
-								evalarg, skip);
+							  evalarg, TRUE, skip);
 		if (p == arg)
 		    break;
 		if (*skipwhite(p) == '=')
@@ -264,7 +266,7 @@ get_function_args(
 	{
 	    arg = p;
 	    p = one_function_arg(p, newargs, argtypes, types_optional,
-								evalarg, skip);
+							 evalarg, FALSE, skip);
 	    if (p == arg)
 		break;
 
@@ -360,12 +362,14 @@ err_ret:
     static int
 parse_argument_types(ufunc_T *fp, garray_T *argtypes, int varargs)
 {
+    int len = 0;
+
     ga_init2(&fp->uf_type_list, sizeof(type_T *), 10);
     if (argtypes->ga_len > 0)
     {
 	// When "varargs" is set the last name/type goes into uf_va_name
 	// and uf_va_type.
-	int len = argtypes->ga_len - (varargs ? 1 : 0);
+	len = argtypes->ga_len - (varargs ? 1 : 0);
 
 	if (len > 0)
 	    fp->uf_arg_types = ALLOC_CLEAR_MULT(type_T *, len);
@@ -388,25 +392,35 @@ parse_argument_types(ufunc_T *fp, garray_T *argtypes, int varargs)
 		fp->uf_arg_types[i] = type;
 	    }
 	}
-	if (varargs)
-	{
-	    char_u *p;
-
-	    // Move the last argument "...name: type" to uf_va_name and
-	    // uf_va_type.
-	    fp->uf_va_name = ((char_u **)fp->uf_args.ga_data)
-						  [fp->uf_args.ga_len - 1];
-	    --fp->uf_args.ga_len;
-	    p = ((char_u **)argtypes->ga_data)[len];
-	    if (p == NULL)
-		// todo: get type from default value
-		fp->uf_va_type = &t_any;
-	    else
-		fp->uf_va_type = parse_type(&p, &fp->uf_type_list, TRUE);
-	    if (fp->uf_va_type == NULL)
-		return FAIL;
-	}
     }
+
+    if (varargs)
+    {
+	char_u *p;
+
+	// Move the last argument "...name: type" to uf_va_name and
+	// uf_va_type.
+	fp->uf_va_name = ((char_u **)fp->uf_args.ga_data)
+					      [fp->uf_args.ga_len - 1];
+	--fp->uf_args.ga_len;
+	p = ((char_u **)argtypes->ga_data)[len];
+	if (p == NULL)
+	    // TODO: get type from default value
+	    fp->uf_va_type = &t_list_any;
+	else
+	{
+	    fp->uf_va_type = parse_type(&p, &fp->uf_type_list, TRUE);
+	    if (fp->uf_va_type != NULL && fp->uf_va_type->tt_type != VAR_LIST)
+	    {
+		semsg(_(e_variable_arguments_type_must_be_list_str),
+					  ((char_u **)argtypes->ga_data)[len]);
+		return FAIL;
+	    }
+	}
+	if (fp->uf_va_type == NULL)
+	    return FAIL;
+    }
+
     return OK;
 }
 
@@ -1236,7 +1250,8 @@ get_lambda_tv(
 	ga_init(&fp->uf_def_args);
 	if (types_optional)
 	{
-	    if (parse_argument_types(fp, &argtypes, FALSE) == FAIL)
+	    if (parse_argument_types(fp, &argtypes,
+					   in_vim9script() && varargs) == FAIL)
 		goto errret;
 	    if (ret_type != NULL)
 	    {
@@ -1264,8 +1279,8 @@ get_lambda_tv(
 	if (sandbox)
 	    flags |= FC_SANDBOX;
 	// In legacy script a lambda can be called with more args than
-	// uf_args.ga_len.
-	fp->uf_varargs = !in_vim9script();
+	// uf_args.ga_len.  In Vim9 script "...name" has to be used.
+	fp->uf_varargs = !in_vim9script() || varargs;
 	fp->uf_flags = flags;
 	fp->uf_calls = 0;
 	fp->uf_script_ctx = current_sctx;
@@ -3190,7 +3205,7 @@ list_func_head(ufunc_T *fp, int indent)
 	    msg_puts(", ");
 	msg_puts("...");
 	msg_puts((char *)fp->uf_va_name);
-	if (fp->uf_va_type)
+	if (fp->uf_va_type != NULL)
 	{
 	    char *tofree;
 

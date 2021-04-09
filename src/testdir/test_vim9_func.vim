@@ -791,10 +791,18 @@ def Test_call_funcref_wrong_args()
 enddef
 
 def Test_call_lambda_args()
+  var lines =<< trim END
+    var Callback = (..._) => 'anything'
+    assert_equal('anything', Callback())
+    assert_equal('anything', Callback(1))
+    assert_equal('anything', Callback('a', 2))
+  END
+  CheckDefAndScriptSuccess(lines)
+
   CheckDefFailure(['echo ((i) => 0)()'],
                   'E119: Not enough arguments for function: ((i) => 0)()')
 
-  var lines =<< trim END
+  lines =<< trim END
       var Ref = (x: number, y: number) => x + y
       echo Ref(1, 'x')
   END
@@ -923,12 +931,21 @@ def Test_call_def_varargs()
 
   lines =<< trim END
       vim9script
-      def Func(...l: any)
+      def Func(...l: list<any>)
         echo l
       enddef
       Func(0)
   END
   CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      def Func(...l: any)
+        echo l
+      enddef
+      Func(0)
+  END
+  CheckScriptFailure(lines, 'E1180:', 2)
 
   lines =<< trim END
       vim9script

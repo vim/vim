@@ -1856,7 +1856,8 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 		    continue;
 		expected = ufunc->uf_arg_types[i];
 	    }
-	    else if (ufunc->uf_va_type == NULL || ufunc->uf_va_type == &t_any)
+	    else if (ufunc->uf_va_type == NULL
+					   || ufunc->uf_va_type == &t_list_any)
 		// possibly a lambda or "...: any"
 		expected = &t_any;
 	    else
@@ -9069,7 +9070,7 @@ set_function_type(ufunc_T *ufunc)
 	if (varargs)
 	{
 	    ufunc->uf_func_type->tt_args[argcount] =
-		    ufunc->uf_va_type == NULL ? &t_any : ufunc->uf_va_type;
+		   ufunc->uf_va_type == NULL ? &t_list_any : ufunc->uf_va_type;
 	    ufunc->uf_func_type->tt_flags = TTFLAG_VARARGS;
 	}
     }
