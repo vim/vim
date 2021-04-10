@@ -2603,6 +2603,20 @@ def Test_compile_error()
 
   # Second call won't try compiling again
   assert_fails('call g:Broken()', 'E1091: Function is not compiled: Broken')
+  delfunc g:Broken
+
+  # No error when compiling with :silent!
+  lines =<< trim END
+    def g:Broken()
+      echo 'a' + []
+    enddef
+    silent! defcompile
+  END
+  CheckScriptSuccess(lines)
+
+  # Calling the function won't try compiling again
+  assert_fails('call g:Broken()', 'E1091: Function is not compiled: Broken')
+  delfunc g:Broken
 enddef
 
 

@@ -230,6 +230,9 @@ EXTERN int	did_endif INIT(= FALSE);    // just had ":endif"
 EXTERN int	did_emsg;		    // set by emsg() when the message
 					    // is displayed or thrown
 #ifdef FEAT_EVAL
+EXTERN int	did_emsg_silent INIT(= 0);  // incremented by emsg() when
+					    // emsg_silent was set and did_emsg
+					    // is not incremented
 EXTERN int	did_emsg_def;		    // set by emsg() when emsg_silent
 					    // is set before calling a function
 EXTERN int	did_emsg_cumul;		    // cumulative did_emsg, increased

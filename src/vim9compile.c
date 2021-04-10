@@ -8429,6 +8429,7 @@ compile_def_function(
     cctx_T	cctx;
     garray_T	*instr;
     int		did_emsg_before = did_emsg;
+    int		did_emsg_silent_before = did_emsg_silent;
     int		ret = FAIL;
     sctx_T	save_current_sctx = current_sctx;
     int		save_estack_compiling = estack_compiling;
@@ -8967,6 +8968,9 @@ nextline:
 	generate_instr(&cctx, ISN_RETURN_ZERO);
     }
 
+    // When compiled with ":silent!" and there was an error don't consider the
+    // function compiled.
+    if (emsg_silent == 0 || did_emsg_silent == did_emsg_silent_before)
     {
 	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
 							 + ufunc->uf_dfunc_idx;
@@ -8994,7 +8998,7 @@ nextline:
     ret = OK;
 
 erret:
-    if (ret == FAIL)
+    if (ufunc->uf_def_status == UF_COMPILING)
     {
 	int idx;
 	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
