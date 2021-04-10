@@ -367,10 +367,7 @@ check_for_nonempty_string_arg(typval_T *args, int idx)
 	return FAIL;
     if (args[idx].vval.v_string == NULL || *args[idx].vval.v_string == NUL)
     {
-	if (idx >= 0)
-	    semsg(_(e_non_empty_string_required_for_argument_nr), idx + 1);
-	else
-	    emsg(_(e_non_empty_string_required));
+	semsg(_(e_non_empty_string_required_for_argument_nr), idx + 1);
 	return FAIL;
     }
     return OK;
