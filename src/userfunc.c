@@ -973,8 +973,7 @@ lambda_function_body(
 	garray_T    *default_args,
 	char_u	    *ret_type)
 {
-    int		evaluate = evalarg != NULL
-				      && (evalarg->eval_flags & EVAL_EVALUATE);
+    int		evaluate = (evalarg->eval_flags & EVAL_EVALUATE);
     ufunc_T	*ufunc = NULL;
     exarg_T	eap;
     garray_T	newlines;
@@ -1180,6 +1179,9 @@ get_lambda_tv(
     // Recognize "{" as the start of a function body.
     if (equal_arrow && **arg == '{')
     {
+	if (evalarg == NULL)
+	    // cannot happen?
+	    goto theend;
 	if (lambda_function_body(arg, rettv, evalarg, pnewargs,
 			   types_optional ? &argtypes : NULL, varargs,
 			   &default_args, ret_type) == FAIL)
