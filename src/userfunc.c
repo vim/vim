@@ -55,7 +55,7 @@ func_tbl_get(void)
 
 /*
  * Get one function argument.
- * If "argtypes" is not NULL also get the type: "arg: type".
+ * If "argtypes" is not NULL also get the type: "arg: type" (:def function).
  * If "types_optional" is TRUE a missing type is OK, use "any".
  * If "evalarg" is not NULL use it to check for an already declared name.
  * Return a pointer to after the type.
@@ -73,6 +73,7 @@ one_function_arg(
 {
     char_u	*p = arg;
     char_u	*arg_copy = NULL;
+    int		is_underscore = FALSE;
 
     while (ASCII_ISALNUM(*p) || *p == '_')
 	++p;
@@ -107,15 +108,16 @@ one_function_arg(
 	    *p = c;
 	    return arg;
 	}
-
-	// Check for duplicate argument name.
-	for (i = 0; i < newargs->ga_len; ++i)
-	    if (STRCMP(((char_u **)(newargs->ga_data))[i], arg_copy) == 0)
-	    {
-		semsg(_("E853: Duplicate argument name: %s"), arg_copy);
-		vim_free(arg_copy);
-		return arg;
-	    }
+	is_underscore = arg_copy[0] == '_' && arg_copy[1] == NUL;
+	if (argtypes != NULL && !is_underscore)
+	    // Check for duplicate argument name.
+	    for (i = 0; i < newargs->ga_len; ++i)
+		if (STRCMP(((char_u **)(newargs->ga_data))[i], arg_copy) == 0)
+		{
+		    semsg(_("E853: Duplicate argument name: %s"), arg_copy);
+		    vim_free(arg_copy);
+		    return arg;
+		}
 	((char_u **)(newargs->ga_data))[newargs->ga_len] = arg_copy;
 	newargs->ga_len++;
 
@@ -146,7 +148,7 @@ one_function_arg(
 	    if (!skip)
 		type = vim_strnsave(type, p - type);
 	}
-	else if (*skipwhite(p) != '=' && !types_optional)
+	else if (*skipwhite(p) != '=' && !types_optional && !is_underscore)
 	{
 	    semsg(_(e_missing_argument_type_for_str),
 					    arg_copy == NULL ? arg : arg_copy);
