@@ -6369,6 +6369,17 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     {
 	int		instr_count = -1;
 
+	if (var_start[0] == '_' && !eval_isnamec(var_start[1]))
+	{
+	    // Ignore underscore in "[a, _, b] = list".
+	    if (var_count > 0)
+	    {
+		var_start = skipwhite(var_start + 2);
+		continue;
+	    }
+	    emsg(_(e_cannot_use_underscore_here));
+	    goto theend;
+	}
 	vim_free(lhs.lhs_name);
 
 	/*
@@ -6386,11 +6397,6 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			       && lhs.lhs_lvar->lv_const && !lhs.lhs_has_index)
 	{
 	    semsg(_(e_cannot_assign_to_constant), lhs.lhs_name);
-	    goto theend;
-	}
-	if (is_decl && lhs.lhs_name[0] == '_' && lhs.lhs_name[1] == NUL)
-	{
-	    emsg(_(e_cannot_use_underscore_here));
 	    goto theend;
 	}
 

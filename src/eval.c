@@ -3514,7 +3514,7 @@ eval7(
 	{
 	    int	    flags = evalarg == NULL ? 0 : evalarg->eval_flags;
 
-	    if (in_vim9script() && len == 1 && *s == '_')
+	    if (evaluate && in_vim9script() && len == 1 && *s == '_')
 	    {
 		emsg(_(e_cannot_use_underscore_here));
 		ret = FAIL;

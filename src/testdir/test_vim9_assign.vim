@@ -256,6 +256,14 @@ def Test_assign_unpack()
     [v1, v2] = [1, 2]
     assert_equal(1, v1)
     assert_equal(2, v2)
+
+    [v1, _, v2, _] = [1, 99, 2, 77]
+    assert_equal(1, v1)
+    assert_equal(2, v2)
+
+    [v1, v2; _] = [1, 2, 3, 4, 5]
+    assert_equal(1, v1)
+    assert_equal(2, v2)
   END
   CheckDefAndScriptSuccess(lines)
 

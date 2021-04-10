@@ -970,8 +970,8 @@ ex_let_vars(
     {
 	arg = skipwhite(arg + 1);
 	++var_idx;
-	arg = ex_let_one(arg, &item->li_tv, TRUE, flags, (char_u *)",;]",
-								  op, var_idx);
+	arg = ex_let_one(arg, &item->li_tv, TRUE,
+			  flags | ASSIGN_UNPACK, (char_u *)",;]", op, var_idx);
 	item = item->li_next;
 	if (arg == NULL)
 	    return FAIL;
@@ -996,8 +996,8 @@ ex_let_vars(
 	    l->lv_refcount = 1;
 	    ++var_idx;
 
-	    arg = ex_let_one(skipwhite(arg + 1), &ltv, FALSE, flags,
-						   (char_u *)"]", op, var_idx);
+	    arg = ex_let_one(skipwhite(arg + 1), &ltv, FALSE,
+			    flags | ASSIGN_UNPACK, (char_u *)"]", op, var_idx);
 	    clear_tv(&ltv);
 	    if (arg == NULL)
 		return FAIL;
@@ -3190,7 +3190,9 @@ set_var_const(
     var_in_vim9script = is_script_local && current_script_is_vim9();
     if (var_in_vim9script && name[0] == '_' && name[1] == NUL)
     {
-	emsg(_(e_cannot_use_underscore_here));
+	// For "[a, _] = list" the underscore is ignored.
+	if ((flags & ASSIGN_UNPACK) == 0)
+	    emsg(_(e_cannot_use_underscore_here));
 	goto failed;
     }
 

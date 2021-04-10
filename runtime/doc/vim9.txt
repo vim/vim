@@ -335,6 +335,18 @@ The "g:" prefix is not needed for auto-load functions.
 Since `&opt = value` is now assigning a value to option "opt", ":&" cannot be
 used to repeat a `:substitute` command.
 
+For an unpack assignment the underscore can be used to ignore a list item,
+similar to how a function argument can be ignored: >
+	[a, _, c] = theList
+	[a, b; _] = longList
+
+<							*E1092*
+Declaring more than one variable at a time, using the unpack notation, is
+currently not supported: >
+	var [v1, v2] = GetValues()  # Error!
+That is because the type needs to be inferred from the list item type, which
+isn't that easy.
+
 
 Constants ~
 						*vim9-const* *vim9-final*
@@ -367,13 +379,6 @@ The constant only applies to the value itself, not what it refers to. >
 	NAMES[0][0] = "Jack"    # Error!
 	NAMES[1] = ["Emma"]     # Error!
 	NAMES[1][0] = "Emma"    # OK, now females[0] == "Emma"
-
-<							*E1092*
-Declaring more than one variable at a time, using the unpack notation, is
-currently not supported: >
-	var [v1, v2] = GetValues()  # Error!
-That is because the type needs to be inferred from the list item type, which
-isn't that easy.
 
 
 Omitting :call and :eval ~
