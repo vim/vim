@@ -3681,7 +3681,7 @@ def Test_no_unknown_error_after_error()
         sleep 10m
       endwhile
       # wait for Exit_cb() to be called
-      sleep 100m
+      sleep 200m
   END
   writefile(lines, 'Xdef')
   assert_fails('so Xdef', ['E684:', 'E1012:'])
