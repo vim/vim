@@ -109,7 +109,7 @@ one_function_arg(
 	    return arg;
 	}
 	is_underscore = arg_copy[0] == '_' && arg_copy[1] == NUL;
-	if (argtypes != NULL && !is_underscore)
+	if (argtypes == NULL || !is_underscore)
 	    // Check for duplicate argument name.
 	    for (i = 0; i < newargs->ga_len; ++i)
 		if (STRCMP(((char_u **)(newargs->ga_data))[i], arg_copy) == 0)
