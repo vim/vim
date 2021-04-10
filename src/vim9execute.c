@@ -1343,7 +1343,7 @@ call_def_function(
 	    emsg(_(e_one_argument_too_many));
 	else
 	    semsg(_(e_nr_arguments_too_many), idx);
-	return FAIL;
+	goto failed_early;
     }
 
     // Put arguments on the stack, but no more than what the function expects.
