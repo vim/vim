@@ -2619,6 +2619,41 @@ def Test_compile_error()
   delfunc g:Broken
 enddef
 
+def Test_ignored_argument()
+  var lines =<< trim END
+      vim9script
+      def Ignore(_, _): string
+        return 'yes'
+      enddef
+      assert_equal('yes', Ignore(1, 2))
+
+      func Ok(_)
+        return a:_
+      endfunc
+      assert_equal('ok', Ok('ok'))
+
+      func Oktoo()
+        let _ = 'too'
+        return _
+      endfunc
+      assert_equal('too', Oktoo())
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      def Ignore(_: string): string
+        return _
+      enddef
+      defcompile
+  END
+  CheckScriptFailure(lines, 'E1181:', 1)
+
+  lines =<< trim END
+      var _ = 1
+  END
+  CheckDefAndScriptFailure(lines, 'E1181:', 1)
+enddef
+
 
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

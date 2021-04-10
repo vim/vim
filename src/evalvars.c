@@ -3188,6 +3188,11 @@ set_var_const(
 	goto failed;
     }
     var_in_vim9script = is_script_local && current_script_is_vim9();
+    if (var_in_vim9script && name[0] == '_' && name[1] == NUL)
+    {
+	emsg(_(e_cannot_use_underscore_here));
+	goto failed;
+    }
 
     di = find_var_in_ht(ht, 0, varname, TRUE);
 

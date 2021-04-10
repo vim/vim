@@ -4416,6 +4416,12 @@ compile_expr7(
 
 	// "name" or "name()"
 	p = to_name_end(*arg, TRUE);
+	if (p - *arg == (size_t)1 && **arg == '_')
+	{
+	    emsg(_(e_cannot_use_underscore_here));
+	    return FAIL;
+	}
+
 	if (*p == '(')
 	{
 	    r = compile_call(arg, p - *arg, cctx, ppconst, 0);
@@ -6376,6 +6382,11 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			       && lhs.lhs_lvar->lv_const && !lhs.lhs_has_index)
 	{
 	    semsg(_(e_cannot_assign_to_constant), lhs.lhs_name);
+	    goto theend;
+	}
+	if (is_decl && lhs.lhs_name[0] == '_' && lhs.lhs_name[1] == NUL)
+	{
+	    emsg(_(e_cannot_use_underscore_here));
 	    goto theend;
 	}
 
