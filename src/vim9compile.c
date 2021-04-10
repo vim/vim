@@ -1791,8 +1791,9 @@ func_needs_compiling(ufunc_T *ufunc, int profile UNUSED)
 {
     switch (ufunc->uf_def_status)
     {
-	case UF_NOT_COMPILED: break;
-	case UF_TO_BE_COMPILED: return TRUE;
+	case UF_TO_BE_COMPILED:
+	    return TRUE;
+
 	case UF_COMPILED:
 	{
 #ifdef FEAT_PROFILE
@@ -1805,7 +1806,11 @@ func_needs_compiling(ufunc_T *ufunc, int profile UNUSED)
 	    break;
 #endif
 	}
-	case UF_COMPILING: break;
+
+	case UF_NOT_COMPILED:
+	case UF_COMPILE_ERROR:
+	case UF_COMPILING:
+	    break;
     }
     return FALSE;
 }
@@ -1834,7 +1839,8 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 	return FAIL;
     }
 
-    if (ufunc->uf_def_status != UF_NOT_COMPILED)
+    if (ufunc->uf_def_status != UF_NOT_COMPILED
+	    && ufunc->uf_def_status != UF_COMPILE_ERROR)
     {
 	int		i;
 
@@ -9007,13 +9013,10 @@ erret:
 	    --def_functions.ga_len;
 	    ufunc->uf_dfunc_idx = 0;
 	}
-	ufunc->uf_def_status = UF_NOT_COMPILED;
+	ufunc->uf_def_status = UF_COMPILE_ERROR;
 
 	while (cctx.ctx_scope != NULL)
 	    drop_scope(&cctx);
-
-	// Don't execute this function body.
-	ga_clear_strings(&ufunc->uf_lines);
 
 	if (errormsg != NULL)
 	    emsg(errormsg);

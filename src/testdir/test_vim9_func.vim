@@ -1498,7 +1498,7 @@ def Test_redef_failure()
   so Xdef
   delete('Xdef')
 
-  g:Func0()->assert_equal(0)
+  assert_fails('g:Func0()', 'E1091:')
   g:Func1()->assert_equal('Func1')
   g:Func2()->assert_equal('Func2')
 
@@ -2589,6 +2589,20 @@ def Test_check_func_arg_types()
 
   CheckScriptSuccess(lines + ['echo H(G(F1))'])
   CheckScriptFailure(lines + ['echo H(G(F2))'], 'E1013:')
+enddef
+
+def Test_compile_error()
+  var lines =<< trim END
+    def g:Broken()
+      echo 'a' + {}
+    enddef
+    call g:Broken()
+  END
+  # First call: compilation error
+  CheckScriptFailure(lines, 'E1051: Wrong argument type for +')
+
+  # Second call won't try compiling again
+  assert_fails('call g:Broken()', 'E1091: Function is not compiled: Broken')
 enddef
 
 
