@@ -2637,6 +2637,8 @@ def Test_ignored_argument()
         return _
       endfunc
       assert_equal('too', Oktoo())
+
+      assert_equal([[1], [2], [3]], range(3)->mapnew((_, v) => [v]->map((_, w) => w + 1)))
   END
   CheckScriptSuccess(lines)
 

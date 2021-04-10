@@ -422,6 +422,10 @@ check_defined(char_u *p, size_t len, cctx_T *cctx, int is_arg)
     int		c = p[len];
     ufunc_T	*ufunc = NULL;
 
+    // underscore argument is OK
+    if (len == 1 && *p == '_')
+	return OK;
+
     if (script_var_exists(p, len, cctx) == OK)
     {
 	if (is_arg)
