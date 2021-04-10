@@ -1336,6 +1336,16 @@ call_def_function(
     ga_init2(&ectx.ec_trystack, sizeof(trycmd_T), 10);
     ga_init2(&ectx.ec_funcrefs, sizeof(partial_T *), 10);
 
+    idx = argc - ufunc->uf_args.ga_len;
+    if (idx > 0 && ufunc->uf_va_name == NULL)
+    {
+	if (idx == 1)
+	    emsg(_(e_one_argument_too_many));
+	else
+	    semsg(_(e_nr_arguments_too_many), idx);
+	return FAIL;
+    }
+
     // Put arguments on the stack, but no more than what the function expects.
     // A lambda can be called with more arguments than it uses.
     for (idx = 0; idx < argc

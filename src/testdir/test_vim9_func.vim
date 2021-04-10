@@ -2102,7 +2102,7 @@ def Test_script_var_in_lambda()
   var lines =<< trim END
       vim9script
       var script = 'test'
-      assert_equal(['test'], map(['one'], () => script))
+      assert_equal(['test'], map(['one'], (_, _) => script))
   END
   CheckScriptSuccess(lines)
 enddef
@@ -2355,7 +2355,7 @@ def Test_block_scoped_var()
         var x = ['a', 'b', 'c']
         if 1
           var y = 'x'
-          map(x, () => y)
+          map(x, (_, _) => y)
         endif
         var z = x
         assert_equal(['x', 'x', 'x'], z)
@@ -2654,6 +2654,17 @@ def Test_ignored_argument()
   CheckDefAndScriptFailure(lines, 'E1181:', 1)
 enddef
 
+def Test_too_many_arguments()
+  var lines =<< trim END
+    echo [0, 1, 2]->map(() => 123)
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1106: 2 arguments too many', 1)
+
+  lines =<< trim END
+    echo [0, 1, 2]->map((_) => 123)
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1106: One argument too many', 1)
+enddef
 
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

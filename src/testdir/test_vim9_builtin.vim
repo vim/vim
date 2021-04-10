@@ -506,7 +506,7 @@ def Test_filter_wrong_dict_key_type()
 enddef
 
 def Test_filter_return_type()
-  var l = filter([1, 2, 3], () => 1)
+  var l = filter([1, 2, 3], (_, _) => 1)
   var res = 0
   for n in l
     res += n
@@ -516,7 +516,7 @@ enddef
 
 def Test_filter_missing_argument()
   var dict = {aa: [1], ab: [2], ac: [3], de: [4]}
-  var res = dict->filter((k) => k =~ 'a' && k !~ 'b')
+  var res = dict->filter((k, _) => k =~ 'a' && k !~ 'b')
   res->assert_equal({aa: [1], ac: [3]})
 enddef
 
