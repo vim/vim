@@ -282,6 +282,20 @@ def Test_expr2()
       g:vals = []
       assert_equal(false, Record(0) || Record(false) || Record(0))
       assert_equal([0, false, 0], g:vals)
+
+      g:vals = []
+      var x = 1
+      if x || true
+        g:vals = [1]
+      endif
+      assert_equal([1], g:vals)
+
+      g:vals = []
+      x = 3
+      if true || x
+        g:vals = [1]
+      endif
+      assert_equal([1], g:vals)
   END
   CheckDefAndScriptSuccess(lines)
 enddef
@@ -356,6 +370,9 @@ def Test_expr2_fails()
 
   # TODO: should fail at compile time
   call CheckDefExecAndScriptFailure(["var x = 3 || 7"], 'E1023:', 1)
+
+  call CheckDefAndScriptFailure(["if 3"], 'E1023:', 1)
+  call CheckDefExecAndScriptFailure(['var x = 3', 'if x', 'endif'], 'E1023:', 2)
 
   call CheckDefAndScriptFailure2(["var x = [] || false"], 'E1012: Type mismatch; expected bool but got list<unknown>', 'E745:', 1)
 

@@ -770,7 +770,7 @@ def Test_disassemble_const_expr()
             'if has("gui_running")\_s*' ..
             '\d PUSHS "gui_running"\_s*' ..
             '\d BCALL has(argc 1)\_s*' ..
-            '\d 2BOOL (!!val)\_s*' ..
+            '\d COND2BOOL\_s*' ..
             '\d JUMP_IF_FALSE -> \d\_s*' ..
             '  echo "yes"\_s*' ..
             '\d PUSHS "yes"\_s*' ..
@@ -1537,13 +1537,13 @@ def Test_disassemble_return_bool()
   assert_match('ReturnBool\_s*' ..
         'var name: bool = 1 && 0 || 1\_s*' ..
         '0 PUSHNR 1\_s*' ..
-        '1 2BOOL (!!val)\_s*' ..
+        '1 COND2BOOL\_s*' ..
         '2 JUMP_IF_COND_FALSE -> 5\_s*' ..
         '3 PUSHNR 0\_s*' ..
-        '4 2BOOL (!!val)\_s*' ..
+        '4 COND2BOOL\_s*' ..
         '5 JUMP_IF_COND_TRUE -> 8\_s*' ..
         '6 PUSHNR 1\_s*' ..
-        '7 2BOOL (!!val)\_s*' ..
+        '7 COND2BOOL\_s*' ..
         '\d STORE $0\_s*' ..
         'return name\_s*' ..
         '\d\+ LOAD $0\_s*' ..   
