@@ -2725,8 +2725,18 @@ compile_member(int is_slice, cctx_T *cctx)
     }
     else if (vtype == VAR_BLOB)
     {
-	emsg("Sorry, blob index and slice not implemented yet");
-	return FAIL;
+	if (is_slice)
+	{
+	    *typep = &t_blob;
+	    if (generate_instr_drop(cctx, ISN_BLOBSLICE, 2) == FAIL)
+		return FAIL;
+	}
+	else
+	{
+	    *typep = &t_number;
+	    if (generate_instr_drop(cctx, ISN_BLOBINDEX, 1) == FAIL)
+		return FAIL;
+	}
     }
     else if (vtype == VAR_LIST || *typep == &t_any)
     {
@@ -4088,7 +4098,7 @@ compile_subscript(
 	    // list index: list[123]
 	    // dict member: dict[key]
 	    // string index: text[123]
-	    // TODO: blob index
+	    // blob index: blob[123]
 	    // TODO: more arguments
 	    // TODO: recognize list or dict at runtime
 	    if (generate_ppconst(cctx, ppconst) == FAIL)
@@ -9241,6 +9251,8 @@ delete_instr(isn_T *isn)
 	case ISN_ANYSLICE:
 	case ISN_BCALL:
 	case ISN_BLOBAPPEND:
+	case ISN_BLOBINDEX:
+	case ISN_BLOBSLICE:
 	case ISN_CATCH:
 	case ISN_CHECKLEN:
 	case ISN_CHECKNR:

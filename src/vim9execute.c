@@ -3415,16 +3415,21 @@ call_def_function(
 
 	    case ISN_LISTINDEX:
 	    case ISN_LISTSLICE:
+	    case ISN_BLOBINDEX:
+	    case ISN_BLOBSLICE:
 		{
-		    int		is_slice = iptr->isn_type == ISN_LISTSLICE;
-		    list_T	*list;
+		    int		is_slice = iptr->isn_type == ISN_LISTSLICE
+					    || iptr->isn_type == ISN_BLOBSLICE;
+		    int		is_blob = iptr->isn_type == ISN_BLOBINDEX
+					    || iptr->isn_type == ISN_BLOBSLICE;
 		    varnumber_T	n1, n2;
+		    typval_T	*val_tv;
 
 		    // list index: list is at stack-2, index at stack-1
 		    // list slice: list is at stack-3, indexes at stack-2 and
 		    // stack-1
-		    tv = is_slice ? STACK_TV_BOT(-3) : STACK_TV_BOT(-2);
-		    list = tv->vval.v_list;
+		    // Same for blob.
+		    val_tv = is_slice ? STACK_TV_BOT(-3) : STACK_TV_BOT(-2);
 
 		    tv = STACK_TV_BOT(-1);
 		    n1 = n2 = tv->vval.v_number;
@@ -3440,9 +3445,18 @@ call_def_function(
 		    ectx.ec_stack.ga_len -= is_slice ? 2 : 1;
 		    tv = STACK_TV_BOT(-1);
 		    SOURCING_LNUM = iptr->isn_lnum;
-		    if (list_slice_or_index(list, is_slice, n1, n2, FALSE,
-							     tv, TRUE) == FAIL)
-			goto on_error;
+		    if (is_blob)
+		    {
+			if (blob_slice_or_index(val_tv->vval.v_blob, is_slice,
+						    n1, n2, FALSE, tv) == FAIL)
+			    goto on_error;
+		    }
+		    else
+		    {
+			if (list_slice_or_index(val_tv->vval.v_list, is_slice,
+					      n1, n2, FALSE, tv, TRUE) == FAIL)
+			    goto on_error;
+		    }
 		}
 		break;
 
@@ -4688,6 +4702,8 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_CONCAT: smsg("%4d CONCAT", current); break;
 	    case ISN_STRINDEX: smsg("%4d STRINDEX", current); break;
 	    case ISN_STRSLICE: smsg("%4d STRSLICE", current); break;
+	    case ISN_BLOBINDEX: smsg("%4d BLOBINDEX", current); break;
+	    case ISN_BLOBSLICE: smsg("%4d BLOBSLICE", current); break;
 	    case ISN_LISTAPPEND: smsg("%4d LISTAPPEND", current); break;
 	    case ISN_BLOBAPPEND: smsg("%4d BLOBAPPEND", current); break;
 	    case ISN_LISTINDEX: smsg("%4d LISTINDEX", current); break;

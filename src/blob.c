@@ -259,6 +259,83 @@ failed:
     return NULL;
 }
 
+    int
+blob_slice_or_index(
+	blob_T		*blob,
+	int		is_range,
+	varnumber_T	n1,
+	varnumber_T	n2,
+	int		exclusive,
+	typval_T	*rettv)
+{
+    long	    len = blob_len(blob);
+
+    if (is_range)
+    {
+	// The resulting variable is a sub-blob.  If the indexes
+	// are out of range the result is empty.
+	if (n1 < 0)
+	{
+	    n1 = len + n1;
+	    if (n1 < 0)
+		n1 = 0;
+	}
+	if (n2 < 0)
+	    n2 = len + n2;
+	else if (n2 >= len)
+	    n2 = len - (exclusive ? 0 : 1);
+	if (exclusive)
+	    --n2;
+	if (n1 >= len || n2 < 0 || n1 > n2)
+	{
+	    clear_tv(rettv);
+	    rettv->v_type = VAR_BLOB;
+	    rettv->vval.v_blob = NULL;
+	}
+	else
+	{
+	    blob_T  *new_blob = blob_alloc();
+	    long    i;
+
+	    if (new_blob != NULL)
+	    {
+		if (ga_grow(&new_blob->bv_ga, n2 - n1 + 1) == FAIL)
+		{
+		    blob_free(new_blob);
+		    return FAIL;
+		}
+		new_blob->bv_ga.ga_len = n2 - n1 + 1;
+		for (i = n1; i <= n2; i++)
+		    blob_set(new_blob, i - n1, blob_get(blob, i));
+
+		clear_tv(rettv);
+		rettv_blob_set(rettv, new_blob);
+	    }
+	}
+    }
+    else
+    {
+	// The resulting variable is a byte value.
+	// If the index is too big or negative that is an error.
+	if (n1 < 0)
+	    n1 = len + n1;
+	if (n1 < len && n1 >= 0)
+	{
+	    int v = blob_get(blob, n1);
+
+	    clear_tv(rettv);
+	    rettv->v_type = VAR_NUMBER;
+	    rettv->vval.v_number = v;
+	}
+	else
+	{
+	    semsg(_(e_blobidx), n1);
+	    return FAIL;
+	}
+    }
+    return OK;
+}
+
 /*
  * "remove({blob})" function
  */
