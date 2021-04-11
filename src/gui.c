@@ -1120,6 +1120,11 @@ gui_update_cursor(
 		    || gui.row != gui.cursor_row || gui.col != gui.cursor_col)
     {
 	gui_undraw_cursor();
+
+	// If a cursor-less sleep is ongoing, leave the cursor invisible
+	if (cursor_is_sleeping())
+	    return;
+
 	if (gui.row < 0)
 	    return;
 #ifdef HAVE_INPUT_METHOD

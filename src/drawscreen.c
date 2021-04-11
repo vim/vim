@@ -297,7 +297,9 @@ update_screen(int type_arg)
 		// Remove the cursor before starting to do anything, because
 		// scrolling may make it difficult to redraw the text under
 		// it.
-		if (gui.in_use && wp == curwin)
+		// Also remove the cursor if it needs to be hidden due to an
+		// ongoing cursor-less sleep.
+		if (gui.in_use && (wp == curwin || cursor_is_sleeping()))
 		{
 		    gui_cursor_col = gui.cursor_col;
 		    gui_cursor_row = gui.cursor_row;
@@ -306,7 +308,6 @@ update_screen(int type_arg)
 		}
 	    }
 #endif
-
 	    win_update(wp);
 	}
 
