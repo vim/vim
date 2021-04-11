@@ -3,38 +3,69 @@ INSTALLmac.txt - Installation of Vim on Mac
 This file contains instructions for compiling Vim. If you already have an
 executable version of Vim, you don't need this.
 
-First, install Xcode or Command Line Tools.
+Contents:
+1. Prerequisites
+2. Installation
+3. Other notes
 
-  You can download Xcode from the Mac App Store.
 
-  You can install Command Line Tools by opening Terminal and running:
+1. Prerequisites
+================
 
-    xcode-select --install
+1. Only macOS is supported. For Classic Mac OS support, use Vim 6.4.
+
+2. Make sure you've installed Xcode or Command Line Tools:
+
+   To install Xcode, get it from the Mac App Store.
+
+   To install Command Line Tools, open Terminal and run:
+
+       xcode-select --install
+
+
+2. Installation
+===============
 
 To install a terminal version of Vim, use the standard Unix routine:
 
-  cd .../src
-  make
-  sudo make install
+    cd .../src
+    make
+    sudo make install
 
 To install a GUI version of Vim:
 
-  First, install XQuartz, which you can download from xquartz.org.
+  1. Install XQuartz, which you can download from https://www.xquartz.org/.
 
-  Then, uncomment these lines in the Makefile:
+  2. Uncomment these lines in the Makefile:
 
-    CONF_OPT_GUI = --enable-gui=athena
-    CONF_OPT_DARWIN = --disable-darwin
+         CONF_OPT_GUI = --enable-gui=athena
+         CONF_OPT_DARWIN = --disable-darwin
 
-  Finally, use the standard Unix routine (above).
+  3. Use the standard Unix routine (above).
 
-Other notes
 
-  To run the tests, first install GNU Libtool with the program prefix "g".
+3. Other notes
+==============
 
-  These Mac-specific configure options are explained in the Makefile:
+These Mac-specific configure options are explained in the Makefile:
 
-    --disable-darwin
-    --with-mac-arch
+  --disable-darwin
+  --with-mac-arch
 
-  Only macOS is supported. For Classic Mac OS support, use Vim 6.4.
+Before running the tests, install GNU Libtool with the program prefix "g":
+
+  To do that with Homebrew, run:
+
+      brew install libtool
+
+  To do that from source:
+
+    1. Download the source code from https://www.gnu.org/software/libtool/.
+
+    2. Run these commands from the root of the source code directory:
+
+           ./configure --program-prefix=g
+           make
+           sudo make install
+
+For more details, see src/INSTALL.
