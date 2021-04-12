@@ -4058,7 +4058,11 @@ define_function(exarg_T *eap, char_u *name_arg)
 	    }
 	    if (j == FAIL)
 	    {
+		linenr_T save_lnum = SOURCING_LNUM;
+
+		SOURCING_LNUM = sourcing_lnum_top;
 		semsg(_("E746: Function name does not match script file name: %s"), name);
+		SOURCING_LNUM = save_lnum;
 		goto erret;
 	    }
 	}

@@ -74,6 +74,30 @@ def TestCompilingErrorInTry()
   delete('Xdir', 'rf')
 enddef
 
+def Test_autoload_name_mismatch()
+  var dir = 'Xdir/autoload'
+  mkdir(dir, 'p')
+
+  var lines =<< trim END
+      vim9script
+      def scriptX#Function()
+        # comment
+        g:runtime = 'yes'
+      enddef
+  END
+  writefile(lines, dir .. '/script.vim')
+
+  var save_rtp = &rtp
+  exe 'set rtp=' .. getcwd() .. '/Xdir'
+  lines =<< trim END
+      call script#Function()
+  END
+  CheckScriptFailure(lines, 'E746:', 2)
+
+  &rtp = save_rtp
+  delete(dir, 'rf')
+enddef
+
 def CallRecursive(n: number): number
   return CallRecursive(n + 1)
 enddef
