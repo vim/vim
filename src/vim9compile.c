@@ -6064,38 +6064,48 @@ compile_lhs(
 compile_assign_index(
 	char_u	*var_start,
 	lhs_T	*lhs,
-	int	is_assign,
 	int	*range,
 	cctx_T	*cctx)
 {
     size_t	varlen = lhs->lhs_varlen;
     char_u	*p;
     int		r = OK;
+    int		need_white_before = TRUE;
+    int		empty_second;
 
     p = var_start + varlen;
     if (*p == '[')
     {
 	p = skipwhite(p + 1);
-	r = compile_expr0(&p, cctx);
+	if (*p == ':')
+	{
+	    // empty first index, push zero
+	    r = generate_PUSHNR(cctx, 0);
+	    need_white_before = FALSE;
+	}
+	else
+	    r = compile_expr0(&p, cctx);
 
 	if (r == OK && *skipwhite(p) == ':')
 	{
 	    // unlet var[idx : idx]
-	    if (is_assign)
-	    {
-		semsg(_(e_cannot_use_range_with_assignment_str), p);
-		return FAIL;
-	    }
+	    // blob[idx : idx] = value
 	    *range = TRUE;
 	    p = skipwhite(p);
-	    if (!IS_WHITE_OR_NUL(p[-1]) || !IS_WHITE_OR_NUL(p[1]))
+	    empty_second = *skipwhite(p + 1) == ']';
+	    if ((need_white_before && !IS_WHITE_OR_NUL(p[-1]))
+		    || (!empty_second && !IS_WHITE_OR_NUL(p[1])))
 	    {
 		semsg(_(e_white_space_required_before_and_after_str_at_str),
 								      ":", p);
 		return FAIL;
 	    }
 	    p = skipwhite(p + 1);
-	    r = compile_expr0(&p, cctx);
+	    if (*p == ']')
+		// empty second index, push "none"
+		r = generate_PUSHSPEC(cctx, VVAL_NONE);
+	    else
+		r = compile_expr0(&p, cctx);
 	}
 
 	if (r == OK && *skipwhite(p) != ']')
@@ -6175,8 +6185,14 @@ compile_assign_unlet(
     garray_T    *stack = &cctx->ctx_type_stack;
     int		range = FALSE;
 
-    if (compile_assign_index(var_start, lhs, is_assign, &range, cctx) == FAIL)
+    if (compile_assign_index(var_start, lhs, &range, cctx) == FAIL)
 	return FAIL;
+    if (is_assign && range && lhs->lhs_type != &t_blob
+						    && lhs->lhs_type != &t_any)
+    {
+	semsg(_(e_cannot_use_range_with_assignment_str), var_start);
+	return FAIL;
+    }
 
     if (lhs->lhs_type == &t_any)
     {
@@ -6213,15 +6229,24 @@ compile_assign_unlet(
     if (compile_load_lhs(lhs, var_start, rhs_type, cctx) == FAIL)
 	return FAIL;
 
-    if (dest_type == VAR_LIST || dest_type == VAR_DICT || dest_type == VAR_ANY)
+    if (dest_type == VAR_LIST || dest_type == VAR_DICT
+			      || dest_type == VAR_BLOB || dest_type == VAR_ANY)
     {
 	if (is_assign)
 	{
-	    isn_T	*isn = generate_instr_drop(cctx, ISN_STOREINDEX, 3);
+	    if (range)
+	    {
+		if (generate_instr_drop(cctx, ISN_STORERANGE, 4) == NULL)
+		    return FAIL;
+	    }
+	    else
+	    {
+		isn_T	*isn = generate_instr_drop(cctx, ISN_STOREINDEX, 3);
 
-	    if (isn == NULL)
-		return FAIL;
-	    isn->isn_arg.vartype = dest_type;
+		if (isn == NULL)
+		    return FAIL;
+		isn->isn_arg.vartype = dest_type;
+	    }
 	}
 	else if (range)
 	{
@@ -6443,8 +6468,14 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			    // Get member from list or dict.  First compile the
 			    // index value.
 			    if (compile_assign_index(var_start, &lhs,
-						   TRUE, &range, cctx) == FAIL)
+							 &range, cctx) == FAIL)
 				goto theend;
+			    if (range)
+			    {
+				semsg(_(e_cannot_use_range_with_assignment_str),
+								    var_start);
+				return FAIL;
+			    }
 
 			    // Get the member.
 			    if (compile_member(FALSE, cctx) == FAIL)
@@ -9315,6 +9346,7 @@ delete_instr(isn_T *isn)
 	case ISN_SLICE:
 	case ISN_STORE:
 	case ISN_STOREINDEX:
+	case ISN_STORERANGE:
 	case ISN_STORENR:
 	case ISN_STOREOUTER:
 	case ISN_STOREREG:

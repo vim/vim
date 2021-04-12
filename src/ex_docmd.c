@@ -3429,22 +3429,25 @@ find_ex_command(
 			    // "varname.key" is an expression.
 			 || (*p == '.' && ASCII_ISALPHA(p[1]))))
 	    {
-		char_u	*after = p;
+		char_u	*after = eap->cmd;
 
 		// When followed by "=" or "+=" then it is an assignment.
+		// Skip over the whole thing, it can be:
+		//	name.member = val
+		//	name[a : b] = val
+		//	name[idx] = val
+		//	name[idx].member = val
+		//	etc.
+		eap->cmdidx = CMD_eval;
 		++emsg_silent;
-		if (*after == '.')
-		    after = skipwhite(after + 1);
 		if (skip_expr(&after, NULL) == OK)
+		{
 		    after = skipwhite(after);
-		else
-		    after = (char_u *)"";
-		if (*after == '=' || (*after != NUL && after[1] == '=')
+		    if (*after == '=' || (*after != NUL && after[1] == '=')
 					 || (after[0] == '.' && after[1] == '.'
 							   && after[2] == '='))
-		    eap->cmdidx = CMD_var;
-		else
-		    eap->cmdidx = CMD_eval;
+			eap->cmdidx = CMD_var;
+		}
 		--emsg_silent;
 		return eap->cmd;
 	    }

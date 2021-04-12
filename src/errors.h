@@ -399,3 +399,5 @@ EXTERN char e_variable_arguments_type_must_be_list_str[]
 	INIT(= N_("E1180: Variable arguments type must be a list: %s"));
 EXTERN char e_cannot_use_underscore_here[]
 	INIT(= N_("E1181: Cannot use an underscore here"));
+EXTERN char e_blob_required[]
+	INIT(= N_("E1182: Blob required"));

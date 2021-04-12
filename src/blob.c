@@ -337,6 +337,28 @@ blob_slice_or_index(
 }
 
 /*
+ * Set bytes "n1" to "n2" (inclusive) in "dest" to the value of "src".
+ * Caller must make sure "src" is a blob.
+ * Returns FAIL if the number of bytes does not match.
+ */
+    int
+blob_set_range(blob_T *dest, long n1, long n2, typval_T *src)
+{
+    int	il, ir;
+
+    if (n2 - n1 + 1 != blob_len(src->vval.v_blob))
+    {
+	emsg(_("E972: Blob value does not have the right number of bytes"));
+	return FAIL;
+    }
+
+    ir = 0;
+    for (il = n1; il <= n2; il++)
+	blob_set(dest, il, blob_get(src->vval.v_blob, ir++));
+    return OK;
+}
+
+/*
  * "remove({blob})" function
  */
     void

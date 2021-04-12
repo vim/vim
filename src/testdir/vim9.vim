@@ -133,3 +133,38 @@ def CheckDefExecAndScriptFailure2(
   CheckDefExecFailure(lines, errorDef, lnum)
   CheckScriptFailure(['vim9script'] + lines, errorScript, lnum + 1)
 enddef
+
+
+" Check that "lines" inside a legacy function has no error.
+func CheckLegacySuccess(lines)
+  let cwd = getcwd()
+  let fname = 'XlegacySuccess' .. s:sequence
+  let s:sequence += 1
+  call writefile(['func Func()'] + a:lines + ['endfunc'], fname)
+  try
+    exe 'so ' .. fname
+    call Func()
+    delfunc! Func
+  finally
+    call chdir(cwd)
+    call delete(fname)
+  endtry
+endfunc
+
+" Execute "lines" in a legacy function, :def function and Vim9 script.
+" Use 'VAR' for a declaration.
+" Use 'LET' for an assignment
+" Use ' #"' for a comment
+def CheckLegacyAndVim9Success(lines: list<string>)
+  var legacylines = lines->mapnew((_, v) =>
+  				v->substitute('\<VAR\>', 'let', 'g')
+		           	 ->substitute('\<LET\>', 'let', 'g')
+		           	 ->substitute('#"', ' "', 'g'))
+  CheckLegacySuccess(legacylines)
+
+  var vim9lines = lines->mapnew((_, v) =>
+  				v->substitute('\<VAR\>', 'var', 'g')
+		           	 ->substitute('\<LET ', '', 'g'))
+  CheckDefSuccess(vim9lines)
+  CheckScriptSuccess(['vim9script'] + vim9lines)
+enddef

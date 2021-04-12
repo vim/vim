@@ -2219,6 +2219,10 @@ call_def_function(
 			    clear_tv(tv);
 			}
 		    }
+		    else if (status == OK && dest_type == VAR_BLOB)
+		    {
+			// TODO
+		    }
 		    else
 		    {
 			status = FAIL;
@@ -2233,6 +2237,60 @@ call_def_function(
 			clear_tv(tv);
 			goto on_error;
 		    }
+		}
+		break;
+
+	    // store value in blob range
+	    case ISN_STORERANGE:
+		{
+		    typval_T	*tv_idx1 = STACK_TV_BOT(-3);
+		    typval_T	*tv_idx2 = STACK_TV_BOT(-2);
+		    typval_T	*tv_dest = STACK_TV_BOT(-1);
+		    int		status = OK;
+
+		    // Stack contains:
+		    // -4 value to be stored
+		    // -3 first index or "none"
+		    // -2 second index or "none"
+		    // -1 destination blob
+		    tv = STACK_TV_BOT(-4);
+		    if (tv_dest->v_type != VAR_BLOB)
+		    {
+			status = FAIL;
+			emsg(_(e_blob_required));
+		    }
+		    else
+		    {
+			varnumber_T n1;
+			varnumber_T n2;
+			int	    error = FALSE;
+
+			n1 = tv_get_number_chk(tv_idx1, &error);
+			if (error)
+			    status = FAIL;
+			else
+			{
+			    if (tv_idx2->v_type == VAR_SPECIAL
+					&& tv_idx2->vval.v_number == VVAL_NONE)
+				n2 = blob_len(tv_dest->vval.v_blob) - 1;
+			    else
+				n2 = tv_get_number_chk(tv_idx2, &error);
+			    if (error)
+				status = FAIL;
+			    else
+				status = blob_set_range(tv_dest->vval.v_blob,
+								   n1, n2, tv);
+			}
+		    }
+
+		    clear_tv(tv_idx1);
+		    clear_tv(tv_idx2);
+		    clear_tv(tv_dest);
+		    ectx.ec_stack.ga_len -= 4;
+		    clear_tv(tv);
+
+		    if (status == FAIL)
+			goto on_error;
 		}
 		break;
 
@@ -4360,6 +4418,10 @@ ex_disassemble(exarg_T *eap)
 			    break;
 		    default: break;
 		}
+		break;
+
+	    case ISN_STORERANGE:
+		smsg("%4d STORERANGE", current);
 		break;
 
 	    // constants

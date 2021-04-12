@@ -57,6 +57,8 @@ typedef enum {
     ISN_STORENR,    // store number into local variable isn_arg.storenr.stnr_idx
     ISN_STOREINDEX,	// store into list or dictionary, type isn_arg.vartype,
 			// value/index/variable on stack
+    ISN_STORERANGE,	// store into blob,
+			// value/index 1/index 2/variable on stack
 
     ISN_UNLET,		// unlet variable isn_arg.unlet.ul_name
     ISN_UNLETENV,	// unlet environment variable isn_arg.unlet.ul_name
