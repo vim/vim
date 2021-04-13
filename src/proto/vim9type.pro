@@ -9,7 +9,7 @@ type_T *alloc_func_type(type_T *ret_type, int argcount, garray_T *type_gap);
 type_T *get_func_type(type_T *ret_type, int argcount, garray_T *type_gap);
 int func_type_add_arg_types(type_T *functype, int argcount, garray_T *type_gap);
 int need_convert_to_bool(type_T *type, typval_T *tv);
-type_T *typval2type(typval_T *tv, int copyID, garray_T *type_gap);
+type_T *typval2type(typval_T *tv, int copyID, garray_T *type_gap, int do_member);
 type_T *typval2type_vimvar(typval_T *tv, garray_T *type_gap);
 int check_typval_arg_type(type_T *expected, typval_T *actual_tv, int arg_idx);
 int check_typval_type(type_T *expected, typval_T *actual_tv, where_T where);

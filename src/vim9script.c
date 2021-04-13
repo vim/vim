@@ -713,7 +713,8 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
  * When "create" is TRUE this is a new variable, otherwise find and update an
  * existing variable.
  * "flags" can have ASSIGN_FINAL or ASSIGN_CONST.
- * When "*type" is NULL use "tv" for the type and update "*type".
+ * When "*type" is NULL use "tv" for the type and update "*type".  If
+ * "do_member" is TRUE also use the member type, otherwise use "any".
  */
     void
 update_vim9_script_var(
@@ -721,7 +722,8 @@ update_vim9_script_var(
 	dictitem_T  *di,
 	int	    flags,
 	typval_T    *tv,
-	type_T	    **type)
+	type_T	    **type,
+	int	    do_member)
 {
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
     hashitem_T	    *hi;
@@ -774,7 +776,8 @@ update_vim9_script_var(
     if (sv != NULL)
     {
 	if (*type == NULL)
-	    *type = typval2type(tv, get_copyID(), &si->sn_type_list);
+	    *type = typval2type(tv, get_copyID(), &si->sn_type_list,
+								    do_member);
 	sv->sv_type = *type;
     }
 

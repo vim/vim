@@ -2059,7 +2059,7 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
     {
 	// Check that map() does not change the type of the dict.
 	ga_init2(&type_list, sizeof(type_T *), 10);
-	type = typval2type(argvars, get_copyID(), &type_list);
+	type = typval2type(argvars, get_copyID(), &type_list, TRUE);
     }
 
     if (argvars[0].v_type == VAR_BLOB)
@@ -2565,7 +2565,7 @@ extend(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg, int is_new)
     {
 	// Check that map() does not change the type of the dict.
 	ga_init2(&type_list, sizeof(type_T *), 10);
-	type = typval2type(argvars, get_copyID(), &type_list);
+	type = typval2type(argvars, get_copyID(), &type_list, TRUE);
     }
 
     if (argvars[0].v_type == VAR_LIST && argvars[1].v_type == VAR_LIST)
