@@ -2393,6 +2393,14 @@ def Test_for_loop_fails()
   g:adict = {a: 1}
   CheckDefExecFailure(['for i in g:adict', 'echo 3', 'endfor'], 'E1177: For loop on dict not supported')
   unlet g:adict
+
+  var lines =<< trim END
+      var d: list<dict<any>> = [{a: 0}]
+      for e in d
+        e = {a: 0, b: ''}
+      endfor
+  END
+  CheckDefAndScriptFailure2(lines, 'E1018:', 'E46:', 3)
 enddef
 
 def Test_for_loop_script_var()

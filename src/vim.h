@@ -2158,6 +2158,7 @@ typedef enum {
 #define ASSIGN_DECL	0x08  // may declare variable if it does not exist
 #define ASSIGN_UNPACK	0x10  // using [a, b] = list
 #define ASSIGN_NO_MEMBER_TYPE 0x20 // use "any" for list and dict member type
+#define ASSIGN_FOR_LOOP 0x40 // assigning to loop variable
 
 #include "ex_cmds.h"	    // Ex command defines
 #include "spell.h"	    // spell checking stuff

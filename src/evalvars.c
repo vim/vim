@@ -1315,7 +1315,8 @@ ex_let_one(
     // ":let $VAR = expr": Set environment variable.
     if (*arg == '$')
     {
-	if (flags & (ASSIGN_CONST | ASSIGN_FINAL))
+	if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
+					     && (flags & ASSIGN_FOR_LOOP) == 0)
 	{
 	    emsg(_("E996: Cannot lock an environment variable"));
 	    return NULL;
@@ -1365,9 +1366,11 @@ ex_let_one(
     // ":let &option = expr": Set option value.
     // ":let &l:option = expr": Set local option value.
     // ":let &g:option = expr": Set global option value.
+    // ":for &ts in range(8)": Set option value for for loop
     else if (*arg == '&')
     {
-	if (flags & (ASSIGN_CONST | ASSIGN_FINAL))
+	if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
+					     && (flags & ASSIGN_FOR_LOOP) == 0)
 	{
 	    emsg(_(e_const_option));
 	    return NULL;
@@ -1466,7 +1469,8 @@ ex_let_one(
     // ":let @r = expr": Set register contents.
     else if (*arg == '@')
     {
-	if (flags & (ASSIGN_CONST | ASSIGN_FINAL))
+	if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
+					     && (flags & ASSIGN_FOR_LOOP) == 0)
 	{
 	    emsg(_("E996: Cannot lock a register"));
 	    return NULL;
@@ -3158,7 +3162,7 @@ set_var_const(
     type_T	*type,
     typval_T	*tv_arg,
     int		copy,	    // make copy of value in "tv"
-    int		flags,	    // ASSIGN_CONST, ASSIGN_FINAL, etc.
+    int		flags_arg,  // ASSIGN_CONST, ASSIGN_FINAL, etc.
     int		var_idx)    // index for ":let [a, b] = list"
 {
     typval_T	*tv = tv_arg;
@@ -3169,6 +3173,7 @@ set_var_const(
     int		is_script_local;
     int		vim9script = in_vim9script();
     int		var_in_vim9script;
+    int		flags = flags_arg;
 
     ht = find_var_ht(name, &varname);
     if (ht == NULL || *varname == NUL)
@@ -3187,6 +3192,11 @@ set_var_const(
 	vim9_declare_error(name);
 	goto failed;
     }
+    if ((flags & ASSIGN_FOR_LOOP) && name[1] == ':'
+			      && vim_strchr((char_u *)"gwbt", name[0]) != NULL)
+	// Do not make g:var, w:var, b:var or t:var final.
+	flags &= ~ASSIGN_FINAL;
+
     var_in_vim9script = is_script_local && current_script_is_vim9();
     if (var_in_vim9script && name[0] == '_' && name[1] == NUL)
     {
@@ -3220,7 +3230,8 @@ set_var_const(
 	// Item already exists.  Allowed to replace when reloading.
 	if ((di->di_flags & DI_FLAGS_RELOAD) == 0)
 	{
-	    if (flags & (ASSIGN_CONST | ASSIGN_FINAL))
+	    if ((flags & (ASSIGN_CONST | ASSIGN_FINAL))
+					     && (flags & ASSIGN_FOR_LOOP) == 0)
 	    {
 		emsg(_(e_cannot_mod));
 		goto failed;
@@ -3255,7 +3266,8 @@ set_var_const(
 	    // A Vim9 script-local variable is also present in sn_all_vars and
 	    // sn_var_vals.  It may set "type" from "tv".
 	    if (var_in_vim9script)
-		update_vim9_script_var(FALSE, di, flags, tv, &type);
+		update_vim9_script_var(FALSE, di, flags, tv, &type,
+					 (flags & ASSIGN_NO_MEMBER_TYPE) == 0);
 	}
 
 	// existing variable, need to clear the value
@@ -3353,7 +3365,8 @@ set_var_const(
 	// A Vim9 script-local variable is also added to sn_all_vars and
 	// sn_var_vals. It may set "type" from "tv".
 	if (var_in_vim9script)
-	    update_vim9_script_var(TRUE, di, flags, tv, &type);
+	    update_vim9_script_var(TRUE, di, flags, tv, &type,
+					 (flags & ASSIGN_NO_MEMBER_TYPE) == 0);
     }
 
     if (copy || tv->v_type == VAR_NUMBER || tv->v_type == VAR_FLOAT)

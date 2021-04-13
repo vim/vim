@@ -7590,7 +7590,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 
 	    // Reserve a variable to store "var".
 	    // TODO: check for type
-	    var_lvar = reserve_local(cctx, arg, varlen, FALSE, &t_any);
+	    var_lvar = reserve_local(cctx, arg, varlen, TRUE, &t_any);
 	    if (var_lvar == NULL)
 		// out of memory or used as an argument
 		goto failed;
