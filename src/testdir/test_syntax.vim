@@ -920,4 +920,21 @@ func Test_syn_contained_transparent()
   bw!
 endfunc
 
+func Test_syn_include_contains_TOP()
+  let l:case = "TOP in included syntax means its group list name"
+  new
+  syntax include @INCLUDED syntax/c.vim
+  syntax region FencedCodeBlockC start=/```c/ end=/```/ contains=@INCLUDED
+
+  call setline(1,  ['```c', '#if 0', 'int', '#else', 'int', '#endif', '```' ])
+  let l:expected = ["cCppOutIf2"]
+  eval AssertHighlightGroups(3, 1, l:expected, 1)
+  " cCppOutElse has contains=TOP
+  let l:expected = ["cType"]
+  eval AssertHighlightGroups(5, 1, l:expected, 1, l:case)
+  syntax clear
+  bw!
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab
