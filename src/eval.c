@@ -1175,12 +1175,9 @@ get_lval(
 		lp->ll_n1 = (long)tv_get_number(&var1);
 	    clear_tv(&var1);
 
-	    if (lp->ll_n1 < 0
-		    || lp->ll_n1 > bloblen
-		    || (lp->ll_range && lp->ll_n1 == bloblen))
+	    if (check_blob_index(bloblen, lp->ll_n1, lp->ll_range, quiet)
+								       == FAIL)
 	    {
-		if (!quiet)
-		    semsg(_(e_blobidx), lp->ll_n1);
 		clear_tv(&var2);
 		return NULL;
 	    }
@@ -1188,14 +1185,9 @@ get_lval(
 	    {
 		lp->ll_n2 = (long)tv_get_number(&var2);
 		clear_tv(&var2);
-		if (lp->ll_n2 < 0
-			|| lp->ll_n2 >= bloblen
-			|| lp->ll_n2 < lp->ll_n1)
-		{
-		    if (!quiet)
-			semsg(_(e_blobidx), lp->ll_n2);
+		if (check_blob_range(bloblen, lp->ll_n1, lp->ll_n2, quiet)
+								       == FAIL)
 		    return NULL;
-		}
 	    }
 	    lp->ll_blob = lp->ll_tv->vval.v_blob;
 	    lp->ll_tv = NULL;

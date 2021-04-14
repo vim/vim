@@ -401,3 +401,5 @@ EXTERN char e_cannot_use_underscore_here[]
 	INIT(= N_("E1181: Cannot use an underscore here"));
 EXTERN char e_blob_required[]
 	INIT(= N_("E1182: Blob required"));
+EXTERN char e_cannot_use_range_with_assignment_operator_str[]
+	INIT(= N_("E1183: Cannot use a range with an assignment operator: %s"));

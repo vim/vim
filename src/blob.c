@@ -337,6 +337,36 @@ blob_slice_or_index(
 }
 
 /*
+ * Check if "n1"- is a valid index for a blobl with length "bloblen".
+ */
+    int
+check_blob_index(long bloblen, varnumber_T n1, int is_range, int quiet)
+{
+    if (n1 < 0 || n1 > bloblen)
+    {
+	if (!quiet)
+	    semsg(_(e_blobidx), n1);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Check if "n1"-"n2" is a valid range for a blob with length "bloblen".
+ */
+    int
+check_blob_range(long bloblen, varnumber_T n1, varnumber_T n2, int quiet)
+{
+    if (n2 < 0 || n2 >= bloblen || n2 < n1)
+    {
+	if (!quiet)
+	    semsg(_(e_blobidx), n2);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Set bytes "n1" to "n2" (inclusive) in "dest" to the value of "src".
  * Caller must make sure "src" is a blob.
  * Returns FAIL if the number of bytes does not match.

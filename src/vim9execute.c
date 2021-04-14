@@ -2278,8 +2278,18 @@ call_def_function(
 			    if (error)
 				status = FAIL;
 			    else
-				status = blob_set_range(tv_dest->vval.v_blob,
-								   n1, n2, tv);
+			    {
+				long	bloblen = blob_len(tv_dest->vval.v_blob);
+
+				if (check_blob_index(bloblen,
+						       n1, TRUE, FALSE) == FAIL
+					|| check_blob_range(bloblen,
+							n1, n2, FALSE) == FAIL)
+				    status = FAIL;
+				else
+				    status = blob_set_range(
+					     tv_dest->vval.v_blob, n1, n2, tv);
+			    }
 			}
 		    }
 
