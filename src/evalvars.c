@@ -1523,7 +1523,7 @@ ex_let_one(
 	    else
 	    {
 		set_var_lval(&lv, p, tv, copy, flags, op, var_idx);
-		arg_end = p;
+		arg_end = lv.ll_name_end;
 	    }
 	}
 	clear_lval(&lv);

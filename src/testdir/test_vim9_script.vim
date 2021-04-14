@@ -2336,8 +2336,22 @@ def Test_for_loop()
       endfor
       assert_equal(6, total)
 
-      # loop over string
+      # with type
+      total = 0
+      for n: number in [1, 2, 3]
+        total += n
+      endfor
+      assert_equal(6, total)
+
+      # unpack with type
       var res = ''
+      for [n: number, s: string] in [[1, 'a'], [2, 'b']]
+        res ..= n .. s
+      endfor
+      assert_equal('1a2b', res)
+
+      # loop over string
+      res = ''
       for c in 'aéc̀d'
         res ..= c .. '-'
       endfor
@@ -2364,13 +2378,6 @@ def Test_for_loop()
       assert_equal([{a: 'Cat', counter: 12}], foo)
   END
   CheckDefAndScriptSuccess(lines)
-
-  # TODO: should also work at script level
-  var res = ""
-  for [n: number, s: string] in [[1, 'a'], [2, 'b']]
-    res ..= n .. s
-  endfor
-  assert_equal('1a2b', res)
 enddef
 
 def Test_for_loop_fails()
