@@ -8486,6 +8486,7 @@ compile_def_function(
 	cctx_T	    *outer_cctx)
 {
     char_u	*line = NULL;
+    char_u	*line_to_free = NULL;
     char_u	*p;
     char	*errormsg = NULL;	// error message
     cctx_T	cctx;
@@ -8646,6 +8647,14 @@ compile_def_function(
 		    may_generate_prof_end(&cctx, prof_lnum);
 #endif
 		break;
+	    }
+	    // Make a copy, splitting off nextcmd and removing trailing spaces
+	    // may change it.
+	    if (line != NULL)
+	    {
+		line = vim_strsave(line);
+		vim_free(line_to_free);
+		line_to_free = line;
 	    }
 	}
 
@@ -9095,6 +9104,7 @@ erret:
     if (do_estack_push)
 	estack_pop();
 
+    vim_free(line_to_free);
     free_imported(&cctx);
     free_locals(&cctx);
     ga_clear(&cctx.ctx_type_stack);

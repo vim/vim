@@ -386,6 +386,33 @@ def Test_disassemble_blob_add()
         res)
 enddef
 
+def s:BlobIndexSlice()
+  var b: blob = 0z112233
+  echo b[1]
+  echo b[1 : 2]
+enddef
+
+def Test_disassemble_blob_index_slice()
+  var res = execute('disass s:BlobIndexSlice')
+  assert_match('<SNR>\d*_BlobIndexSlice\_s*' ..
+        'var b: blob = 0z112233\_s*' ..
+        '\d PUSHBLOB 0z112233\_s*' ..
+        '\d STORE $0\_s*' ..
+        'echo b\[1\]\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d BLOBINDEX\_s*' ..
+        '\d ECHO 1\_s*' ..
+        'echo b\[1 : 2\]\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d\+ PUSHNR 2\_s*' ..
+        '\d\+ BLOBSLICE\_s*' ..
+        '\d\+ ECHO 1\_s*' ..
+        '\d\+ RETURN 0',
+        res)
+enddef
+
 def s:ScriptFuncUnlet()
   g:somevar = "value"
   unlet g:somevar
@@ -2015,6 +2042,18 @@ def Test_profiled()
         '\d PUSHS "done"\_s*' ..
         '\d RETURN\_s*' ..
         '\d PROFILE END',
+        res)
+enddef
+
+def s:EchoMessages()
+  echohl ErrorMsg | echom v:exception | echohl NONE
+enddef
+
+def Test_disassemble_nextcmd()
+  # splitting commands and removing trailing blanks should not change the line
+  var res = execute('disass s:EchoMessages')
+  assert_match('<SNR>\d*_EchoMessages\_s*' ..
+        'echohl ErrorMsg | echom v:exception | echohl NONE',
         res)
 enddef
 
