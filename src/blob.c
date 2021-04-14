@@ -340,7 +340,7 @@ blob_slice_or_index(
  * Check if "n1"- is a valid index for a blobl with length "bloblen".
  */
     int
-check_blob_index(long bloblen, varnumber_T n1, int is_range, int quiet)
+check_blob_index(long bloblen, varnumber_T n1, int quiet)
 {
     if (n1 < 0 || n1 > bloblen)
     {

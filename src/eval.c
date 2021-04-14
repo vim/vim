@@ -1175,8 +1175,7 @@ get_lval(
 		lp->ll_n1 = (long)tv_get_number(&var1);
 	    clear_tv(&var1);
 
-	    if (check_blob_index(bloblen, lp->ll_n1, lp->ll_range, quiet)
-								       == FAIL)
+	    if (check_blob_index(bloblen, lp->ll_n1, quiet) == FAIL)
 	    {
 		clear_tv(&var2);
 		return NULL;

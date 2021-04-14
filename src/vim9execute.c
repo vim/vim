@@ -2282,7 +2282,7 @@ call_def_function(
 				long	bloblen = blob_len(tv_dest->vval.v_blob);
 
 				if (check_blob_index(bloblen,
-						       n1, TRUE, FALSE) == FAIL
+							     n1, FALSE) == FAIL
 					|| check_blob_range(bloblen,
 							n1, n2, FALSE) == FAIL)
 				    status = FAIL;
