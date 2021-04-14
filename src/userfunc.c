@@ -2188,6 +2188,8 @@ call_user_func(
     int		islambda = FALSE;
     char_u	numbuf[NUMBUFLEN];
     char_u	*name;
+    typval_T	*tv_to_free[MAX_FUNC_ARGS];
+    int		tv_to_free_len = 0;
 #ifdef FEAT_PROFILE
     profinfo_T	profile_info;
 #endif
@@ -2333,6 +2335,7 @@ call_user_func(
 	    if (isdefault)
 	    {
 		char_u	    *default_expr = NULL;
+
 		def_rettv.v_type = VAR_NUMBER;
 		def_rettv.vval.v_number = -1;
 
@@ -2373,6 +2376,10 @@ call_user_func(
 	// "argvars" must have VAR_FIXED for v_lock.
 	v->di_tv = isdefault ? def_rettv : argvars[i];
 	v->di_tv.v_lock = VAR_FIXED;
+
+	if (isdefault)
+	    // Need to free this later, no matter where it's stored.
+	    tv_to_free[tv_to_free_len++] = &v->di_tv;
 
 	if (addlocal)
 	{
@@ -2563,6 +2570,8 @@ call_user_func(
 
     did_emsg |= save_did_emsg;
     funcdepth_decrement();
+    for (i = 0; i < tv_to_free_len; ++i)
+	clear_tv(tv_to_free[i]);
     cleanup_function_call(fc);
 }
 
