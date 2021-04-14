@@ -6472,7 +6472,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 				goto theend;
 			    if (range)
 			    {
-				semsg(_(e_cannot_use_range_with_assignment_str),
+				semsg(_(e_cannot_use_range_with_assignment_operator_str),
 								    var_start);
 				return FAIL;
 			    }
