@@ -682,7 +682,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
  	 Ders 5.3'ün iki adet kopyası olduğunu görün, özgün sürümü ve kopyası.
 
   NOT: Bu komutu kullanarak bir dış komutun çıktısını da dosyanın içine
-       koyabilirsiniz. Örneğin :r :!ls yazmak ls komutunun vereceği çıktıyı
+       koyabilirsiniz. Örneğin :r !ls yazmak ls komutunun vereceği çıktıyı
        dosyanın içinde hemen imlecin altındaki satıra koyar.
 
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
