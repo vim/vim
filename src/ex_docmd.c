@@ -3483,7 +3483,8 @@ find_ex_command(
 
 	    // Recognize an assignment if we recognize the variable name:
 	    // "g:var = expr"
-	    // "var = expr"  where "var" is a variable name.
+	    // "var = expr"  where "var" is a variable name or we are skipping
+	    // (variable declaration might have been skipped).
 	    if (*eap->cmd == '@')
 		p = eap->cmd + 2;
 	    oplen = assignment_len(skipwhite(p), &heredoc);
@@ -3493,6 +3494,7 @@ find_ex_command(
 			|| *eap->cmd == '&'
 			|| *eap->cmd == '$'
 			|| *eap->cmd == '@'
+			|| eap->skip
 			|| lookup(eap->cmd, p - eap->cmd, TRUE, cctx) == OK)
 		{
 		    eap->cmdidx = CMD_var;

@@ -249,6 +249,18 @@ def Test_assignment()
   END
 enddef
 
+def Test_skipped_assignment()
+  var lines =<< trim END
+      for x in []
+        var i: number = 1
+        while false
+          i += 1
+        endwhile
+      endfor
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
 def Test_assign_unpack()
   var lines =<< trim END
     var v1: number
