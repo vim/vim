@@ -1,6 +1,6 @@
-[![Vim Logo](https://github.com/vim/vim/raw/master/runtime/vimlogo.gif)](https://www.vim.org)
+[![Vim Logo][vim-logo]][vim-official]
 
-[![Github Build status](https://github.com/vim/vim/workflows/GitHub%20CI/badge.svg)](https://github.com/vim/vim/actions?query=workflow%3A%22GitHub+CI%22) [![Travis Build Status](https://travis-ci.com/vim/vim.svg?branch=master)](https://travis-ci.com/github/vim/vim) [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/o2qht2kjm02sgghk?svg=true)](https://ci.appveyor.com/project/chrisbra/vim) [![Cirrus Build Status](https://api.cirrus-ci.com/github/vim/vim.svg)](https://cirrus-ci.com/github/vim/vim) [![Coverage Status](https://codecov.io/gh/vim/vim/coverage.svg?branch=master)](https://codecov.io/gh/vim/vim?branch=master) [![Coverity Scan](https://scan.coverity.com/projects/241/badge.svg)](https://scan.coverity.com/projects/vim) [![Language Grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/vim/vim.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/vim/vim/context:cpp) [![Debian CI](https://badges.debian.net/badges/debian/testing/vim/version.svg)](https://buildd.debian.org/vim) [![Packages](https://repology.org/badge/tiny-repos/vim.svg)](https://repology.org/metapackage/vim) [![Fossies codespell report](https://fossies.org/linux/test/vim-master.tar.gz/codespell.svg)](https://fossies.org/linux/test/vim-master.tar.gz/codespell.html)
+[![Github Build status][github-ci-badge]][github-ci-link] [![Travis Build Status][travis-badge]][travis-link] [![Appveyor Build status][appveyor-badge]][appveyor-link] [![Cirrus Build Status][cirrus-badge]][cirrus-link] [![Coverage Status][codecov-badge]][codecov-link] [![Coverity Scan][coverity-badge]][coverity-link] [![Language Grade: C/C++][grade-badge]][grade-link] [![Debian CI][debian-badge]][debian-link] [![Packages][repology-badge]][repology-link] [![Fossies codespell report][fossies-badge]][fossies-link]
 
 <sub>For translations of this README see the end.</sub>
 
@@ -42,10 +42,10 @@ want or must compile it yourself.  Check http://www.vim.org/download.php for
 an overview of currently available distributions.
 
 Some popular places to get the latest Vim:
-* Check out the git repository from [github](https://github.com/vim/vim).
-* Get the source code as an [archive](https://github.com/vim/vim/releases).
+* Check out the git repository from [github][vim-repos].
+* Get the source code as an [archive][vim-releases].
 * Get a Windows executable from the
-[vim-win32-installer](https://github.com/vim/vim-win32-installer/releases) repository.
+[vim-win32-installer][vim-win32-installer] repository.
 
 
 
@@ -112,7 +112,7 @@ For the most recent information about sponsoring look on the Vim web site:
 
 ## Contributing ##
 
-If you would like to help making Vim better, see the [CONTRIBUTING.md](https://github.com/vim/vim/blob/master/CONTRIBUTING.md) file.
+If you would like to help making Vim better, see the [CONTRIBUTING.md](CONTRIBUTING.md) file.
 
 
 ## Information ##
@@ -144,3 +144,30 @@ This is `README.md` for version 8.2 of Vim: Vi IMproved.
 ## Translations of this README ##
 
 [Korean](https://github.com/cjw1359/opensource/blob/master/Vim/README_ko.md)
+
+
+[vim-official]: https://www.vim.org
+[vim-logo]: runtime/vimlogo.gif
+[vim-repos]: https://github.com/vim/vim
+[vim-releases]: https://github.com/vim/vim/releases
+[vim-win32-installer]: https://github.com/vim/vim-win32-installer/releases
+[github-ci-badge]: https://github.com/vim/vim/workflows/GitHub%20CI/badge.svg
+[github-ci-link]: https://github.com/vim/vim/actions?query=workflow%3A%22GitHub+CI%22
+[travis-badge]: https://travis-ci.com/vim/vim.svg?branch=master
+[travis-link]: https://travis-ci.com/github/vim/vim
+[appveyor-badge]: https://ci.appveyor.com/api/projects/status/o2qht2kjm02sgghk?svg=true
+[appveyor-link]: https://ci.appveyor.com/project/chrisbra/vim
+[cirrus-badge]: https://api.cirrus-ci.com/github/vim/vim.svg
+[cirrus-link]: https://cirrus-ci.com/github/vim/vim
+[codecov-badge]: https://codecov.io/gh/vim/vim/coverage.svg?branch=master
+[codecov-link]: https://codecov.io/gh/vim/vim?branch=master
+[coverity-badge]: https://scan.coverity.com/projects/241/badge.svg
+[coverity-link]: https://scan.coverity.com/projects/vim
+[grade-badge]: https://img.shields.io/lgtm/grade/cpp/g/vim/vim.svg?logo=lgtm&logoWidth=18
+[grade-link]: https://lgtm.com/projects/g/vim/vim/context:cpp
+[debian-badge]: https://badges.debian.net/badges/debian/testing/vim/version.svg
+[debian-link]: https://buildd.debian.org/vim
+[repology-badge]: https://repology.org/badge/tiny-repos/vim.svg
+[repology-link]: https://repology.org/metapackage/vim
+[fossies-badge]: https://fossies.org/linux/test/vim-master.tar.gz/codespell.svg
+[fossies-link]: https://fossies.org/linux/test/vim-master.tar.gz/codespell.html
