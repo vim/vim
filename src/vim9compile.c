@@ -7514,12 +7514,16 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	return NULL;
     }
 
-    if (vartype->tt_type == VAR_LIST && vartype->tt_member->tt_type != VAR_ANY)
+    if (vartype->tt_type == VAR_STRING)
+	item_type = &t_string;
+    else if (vartype->tt_type == VAR_LIST
+				     && vartype->tt_member->tt_type != VAR_ANY)
     {
 	if (var_count == 1)
 	    item_type = vartype->tt_member;
 	else if (vartype->tt_member->tt_type == VAR_LIST
 		      && vartype->tt_member->tt_member->tt_type != VAR_ANY)
+	    // TODO: should get the type from 
 	    item_type = vartype->tt_member->tt_member;
     }
 
@@ -7557,12 +7561,19 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	int		opt_flags = 0;
 	int		vimvaridx = -1;
 	type_T		*type = &t_any;
+	type_T		*lhs_type = &t_any;
+	where_T		where;
 
 	p = skip_var_one(arg, FALSE);
 	varlen = p - arg;
 	name = vim_strnsave(arg, varlen);
 	if (name == NULL)
 	    goto failed;
+	if (*p == ':')
+	{
+	    p = skipwhite(p + 1);
+	    lhs_type = parse_type(&p, cctx->ctx_type_list, TRUE);
+	}
 
 	// TODO: script var not supported?
 	if (get_var_dest(name, &dest, CMD_for, &opt_flags,
@@ -7589,8 +7600,15 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	    }
 
 	    // Reserve a variable to store "var".
-	    // TODO: check for type
-	    var_lvar = reserve_local(cctx, arg, varlen, TRUE, &t_any);
+	    where.wt_index = var_count > 1 ? idx + 1 : 0;
+	    where.wt_variable = TRUE;
+	    if (lhs_type == &t_any)
+		lhs_type = item_type;
+	    else if (item_type != &t_unknown
+		       && !(var_count > 1 && item_type == &t_any)
+		       && check_type(lhs_type, item_type, TRUE, where) == FAIL)
+		goto failed;
+	    var_lvar = reserve_local(cctx, arg, varlen, TRUE, lhs_type);
 	    if (var_lvar == NULL)
 		// out of memory or used as an argument
 		goto failed;
@@ -7602,8 +7620,6 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	    generate_STORE(cctx, ISN_STORE, var_lvar->lv_idx, NULL);
 	}
 
-	if (*p == ':')
-	    p = skip_type(skipwhite(p + 1), FALSE);
 	if (*p == ',' || *p == ';')
 	    ++p;
 	arg = skipwhite(p);

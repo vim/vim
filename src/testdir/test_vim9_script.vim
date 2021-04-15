@@ -2343,6 +2343,12 @@ def Test_for_loop()
       endfor
       assert_equal(6, total)
 
+      var chars = ''
+      for s: string in 'foobar'
+        chars ..= s
+      endfor
+      assert_equal('foobar', chars)
+
       # unpack with type
       var res = ''
       for [n: number, s: string] in [[1, 'a'], [2, 'b']]
@@ -2408,6 +2414,12 @@ def Test_for_loop_fails()
       endfor
   END
   CheckDefAndScriptFailure2(lines, 'E1018:', 'E46:', 3)
+
+  lines =<< trim END
+      for nr: number in ['foo']
+      endfor
+  END
+  CheckDefAndScriptFailure(lines, 'E1012: Type mismatch; expected number but got string', 1)
 enddef
 
 def Test_for_loop_script_var()
