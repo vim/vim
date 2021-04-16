@@ -2,8 +2,8 @@ vim9script
 
 # Vim functions for file type detection
 #
-# Maintainer:	The Vim Project <https://github.com/vim/vim>
-# Last Change:	2023 Aug 10
+# Maintainer:		The Vim Project <https://github.com/vim/vim>
+# Last Change:		2024 Jan 05
 # Former Maintainer:	Bram Moolenaar <Bram@vim.org>
 
 # These functions are moved here from runtime/filetype.vim to make startup
@@ -279,6 +279,19 @@ export def DtraceCheck()
   endif
 enddef
 
+export def FTdef()
+  if get(g:, "filetype_def", "") == "modula2" || IsModula2()
+    SetFiletypeModula2()
+    return
+  endif
+
+  if exists("g:filetype_def")
+    exe "setf " .. g:filetype_def
+  else
+    setf def
+  endif
+enddef
+
 export def FTe()
   if exists('g:filetype_euphoria')
     exe 'setf ' .. g:filetype_euphoria
@@ -517,16 +530,53 @@ def IsLProlog(): bool
   return getline(lnum) =~ '\<module\s\+\w\+\s*\.\s*\(%\|$\)'
 enddef
 
+def IsModula2(): bool
+  return getline(nextnonblank(1)) =~ '\<MODULE\s\+\w\+\s*;\|^\s*(\*'
+enddef
+
+def SetFiletypeModula2()
+  const KNOWN_DIALECTS = ["iso", "pim", "r10"]
+  const KNOWN_EXTENSIONS = ["gm2"]
+  const LINE_COUNT = 200
+  const TAG = '(\*!m2\(\w\+\)\%(+\(\w\+\)\)\=\*)'
+
+  var dialect = get(g:, "modula2_default_dialect", "pim")
+  var extension = get(g:, "modula2_default_extension", "")
+
+  var matches = []
+
+  # ignore unknown dialects or badly formatted tags
+  for lnum in range(1, min([line("$"), LINE_COUNT]))
+    matches = matchlist(getline(lnum), TAG)
+    if !empty(matches)
+      if index(KNOWN_DIALECTS, matches[1]) >= 0
+         dialect = matches[1]
+      endif
+      if index(KNOWN_EXTENSIONS, matches[2]) >= 0
+         extension = matches[2]
+      endif
+      break
+    endif
+  endfor
+
+  modula2#SetDialect(dialect, extension)
+
+  setf modula2
+enddef
+
 # Determine if *.mod is ABB RAPID, LambdaProlog, Modula-2, Modsim III or go.mod
 export def FTmod()
+  if get(g:, "filetype_mod", "") == "modula2" || IsModula2()
+    SetFiletypeModula2()
+    return
+  endif
+
   if exists("g:filetype_mod")
     exe "setf " .. g:filetype_mod
   elseif expand("<afile>") =~ '\<go.mod$'
     setf gomod
   elseif IsLProlog()
     setf lprolog
-  elseif getline(nextnonblank(1)) =~ '\%(\<MODULE\s\+\w\+\s*;\|^\s*(\*\)'
-    setf modula2
   elseif IsRapid()
     setf rapid
   else
@@ -1243,4 +1293,4 @@ export def FTvba()
 enddef
 
 # Uncomment this line to check for compilation errors early
-# defcompile
+defcompile

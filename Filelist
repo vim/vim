@@ -818,6 +818,7 @@ RT_SCRIPTS =	\
 		runtime/plugin/README.txt \
 		runtime/syntax/*.vim \
 		runtime/syntax/README.txt \
+		runtime/syntax/modula2/opt/*.vim \
 		runtime/syntax/shared/*.vim \
 		runtime/syntax/shared/README.txt \
 		runtime/syntax/Makefile \
