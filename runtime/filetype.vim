@@ -521,8 +521,8 @@ au BufNewFile,BufRead *.intr			setf dylanintr
 " Dylan
 au BufNewFile,BufRead *.dylan			setf dylan
 
-" Microsoft Module Definition
-au BufNewFile,BufRead *.def			setf def
+" Microsoft Module Definition or Modula-2
+au BufNewFile,BufRead *.def			call dist#ft#FTdef()
 
 " Dracula
 au BufNewFile,BufRead *.drac,*.drc,*lvs,*lpe	setf dracula
@@ -1041,16 +1041,16 @@ au BufNewFile,BufRead *.mms			call dist#ft#FTmms()
 " Symbian meta-makefile definition (MMP)
 au BufNewFile,BufRead *.mmp			setf mmp
 
-" Modsim III (or LambdaProlog)
-au BufNewFile,BufRead *.mod
-	\ if getline(1) =~ '\<module\>' |
-	\   setf lprolog |
-	\ else |
-	\   setf modsim3 |
-	\ endif
+" LambdaProlog, Modsim III or Modula-2
+au BufNewFile,BufRead *.mod			call dist#ft#FTmod()
 
+" Classic Modula-2 (.DEF, .MOD)
+au BufNewFile,BufRead *.DEF,*.MOD               setf modula2pim
+
+" TODO: *.m2, *.mi, *.mod are mentioned in the Wikipedia page and elsewhere as
+"       extensions.  Do we need to continue to support them? --DJK
 " Modula-2  (.md removed in favor of Markdown)
-au BufNewFile,BufRead *.m2,*.DEF,*.MOD,*.mi	setf modula2
+" au BufNewFile,BufRead *.m2,*.mi			setf modula2
 
 " Modula-3 (.m3, .i3, .mg, .ig)
 au BufNewFile,BufRead *.[mi][3g]		setf modula3
