@@ -131,6 +131,32 @@ func Test_mksession()
   set sessionoptions&
 endfunc
 
+def Test_mksession_skiprtp()
+  mksession! Xtest_mks.out
+  var found = 0
+  for line in readfile('Xtest_mks.out')
+    if line =~ 'set runtimepath'
+      found = 1
+      break
+    endif
+  endfor
+  assert_equal(1, found)
+  delete('Xtest_mks.out')
+
+  set sessionoptions+=skiprtp
+  mksession! Xtest_mks.out
+  found = 0
+  for line in readfile('Xtest_mks.out')
+    if line =~ 'set runtimepath'
+      found = 1
+      break
+    endif
+  endfor
+  assert_equal(0, found)
+  delete('Xtest_mks.out')
+  set sessionoptions&
+enddef
+
 func Test_mksession_winheight()
   new
   set winheight=10

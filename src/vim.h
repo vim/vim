@@ -1201,6 +1201,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define OPT_NOWIN	0x20	// don't set window-local options
 #define OPT_ONECOLUMN	0x40	// list options one per line
 #define OPT_NO_REDRAW	0x80	// ignore redraw flags on option
+#define OPT_SKIPRTP	0x100	// "skiprtp" in 'sessionoptions'
 
 // Magic chars used in confirm dialog strings
 #define DLG_BUTTON_SEP	'\n'

@@ -1225,8 +1225,16 @@ ex_mkrc(exarg_T	*eap)
 		|| (eap->cmdidx == CMD_mksession
 		    && (*flagp & SSOP_OPTIONS)))
 #endif
+	{
+	    int flags = OPT_GLOBAL;
+
+#ifdef FEAT_SESSION
+	    if (eap->cmdidx == CMD_mksession && (*flagp & SSOP_SKIP_RTP))
+		flags |= OPT_SKIPRTP;
+#endif
 	    failed |= (makemap(fd, NULL) == FAIL
-				   || makeset(fd, OPT_GLOBAL, FALSE) == FAIL);
+					 || makeset(fd, flags, FALSE) == FAIL);
+	}
 
 #ifdef FEAT_SESSION
 	if (!failed && view_session)
