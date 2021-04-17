@@ -600,7 +600,8 @@ handle_import(
 	    }
 	    else
 	    {
-		if (check_defined(name, len, cctx, FALSE) == FAIL)
+		if (as_name == NULL
+			      && check_defined(name, len, cctx, FALSE) == FAIL)
 		    goto erret;
 
 		imported = new_imported(gap != NULL ? gap

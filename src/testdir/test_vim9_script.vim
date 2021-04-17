@@ -1280,6 +1280,8 @@ def Test_import_as()
 
   var import_lines =<< trim END
     vim9script
+    var one = 'notused'
+    var yes = 777
     import one as thatOne from './XexportAs'
     assert_equal(1, thatOne)
     import yes as yesYes from './XexportAs'
