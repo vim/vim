@@ -2045,7 +2045,7 @@ typedef struct {
 	except_T   *except; // exception info
     } es_info;
 #if defined(FEAT_EVAL)
-    scid_T	es_save_sid;	    // saved sc_sid when calling function
+    sctx_T	es_save_sctx;	    // saved current_sctx when calling function
 #endif
 } estack_T;
 

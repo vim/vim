@@ -8221,6 +8221,7 @@ compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
     char_u	*p = arg;
     char_u	*prev = arg;
     int		count = 0;
+    int		start_ctx_lnum = cctx->ctx_lnum;
 
     for (;;)
     {
@@ -8235,6 +8236,11 @@ compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
 
     if (count > 0)
     {
+	long save_lnum = cctx->ctx_lnum;
+
+	// Use the line number where the command started.
+	cctx->ctx_lnum = start_ctx_lnum;
+
 	if (cmdidx == CMD_echo || cmdidx == CMD_echon)
 	    generate_ECHO(cctx, cmdidx == CMD_echo, count);
 	else if (cmdidx == CMD_execute)
@@ -8243,6 +8249,8 @@ compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
 	    generate_MULT_EXPR(cctx, ISN_ECHOMSG, count);
 	else
 	    generate_MULT_EXPR(cctx, ISN_ECHOERR, count);
+
+	cctx->ctx_lnum = save_lnum;
     }
     return p;
 }

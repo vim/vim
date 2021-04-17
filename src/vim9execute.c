@@ -329,9 +329,9 @@ call_dfunc(
     if (entry != NULL)
     {
 	// Set the script context to the script where the function was defined.
-	// TODO: save more than the SID?
-	entry->es_save_sid = current_sctx.sc_sid;
-	current_sctx.sc_sid = ufunc->uf_script_ctx.sc_sid;
+	// Save the current context so it can be restored on return.
+	entry->es_save_sctx = current_sctx;
+	current_sctx = ufunc->uf_script_ctx;
     }
 
     // Start execution at the first instruction.
@@ -562,7 +562,7 @@ func_return(funclocal_T *funclocal, ectx_T *ectx)
     // execution context goes one level up
     entry = estack_pop();
     if (entry != NULL)
-	current_sctx.sc_sid = entry->es_save_sid;
+	current_sctx = entry->es_save_sctx;
 
     if (handle_closure_in_use(ectx, TRUE) == FAIL)
 	return FAIL;

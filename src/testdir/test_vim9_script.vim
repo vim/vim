@@ -3848,6 +3848,37 @@ def Test_unsupported_commands()
   CheckScriptFailure(['vim9script'] + lines, 'E1100:')
 enddef
 
+def Test_mapping_line_number()
+  var lines =<< trim END
+      vim9script
+      def g:FuncA()
+          # Some comment
+          FuncB(0)
+      enddef
+          # Some comment
+      def FuncB(
+          # Some comment
+          n: number
+      )
+          exe 'nno '
+              # Some comment
+              .. '<F3> a'
+              .. 'b'
+              .. 'c'
+      enddef
+  END
+  CheckScriptSuccess(lines)
+  var res = execute('verbose nmap <F3>')
+  assert_match('No mapping found', res)
+
+  g:FuncA()
+  res = execute('verbose nmap <F3>')
+  assert_match(' <F3> .* abc.*Last set from .*XScriptSuccess\d\+ line 11', res)
+
+  nunmap <F3>
+  delfunc g:FuncA
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new
