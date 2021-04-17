@@ -444,7 +444,7 @@ blob_remove(typval_T *argvars, typval_T *rettv)
 	{
 	    blob_T  *blob;
 
-	    // Remove range of items, return list with values.
+	    // Remove range of items, return blob with values.
 	    end = (long)tv_get_number_chk(&argvars[2], &error);
 	    if (error)
 		return;
@@ -472,7 +472,8 @@ blob_remove(typval_T *argvars, typval_T *rettv)
 	    rettv->v_type = VAR_BLOB;
 	    rettv->vval.v_blob = blob;
 
-	    mch_memmove(p + idx, p + end + 1, (size_t)(len - end));
+	    if (len - end - 1 > 0)
+		mch_memmove(p + idx, p + end + 1, (size_t)(len - end - 1));
 	    b->bv_ga.ga_len -= end - idx + 1;
 	}
     }
