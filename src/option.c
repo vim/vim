@@ -4615,7 +4615,8 @@ makeset(FILE *fd, int opt_flags, int local_only)
 	    if ((opt_flags & OPT_GLOBAL) && optval_default(p, varp, p_cp))
 		continue;
 
-	    if ((opt_flags & OPT_SKIPRTP) && p->var == (char_u *)&p_rtp)
+	    if ((opt_flags & OPT_SKIPRTP) && (p->var == (char_u *)&p_rtp
+						 || p->var == (char_u *)&p_pp))
 		continue;
 
 	    round = 2;

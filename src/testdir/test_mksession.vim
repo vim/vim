@@ -133,21 +133,25 @@ endfunc
 
 def Test_mksession_skiprtp()
   mksession! Xtest_mks.out
-  var found = 0
+  var found_rtp = 0
+  var found_pp = 0
   for line in readfile('Xtest_mks.out')
     if line =~ 'set runtimepath'
-      found = 1
-      break
+      found_rtp += 1
+    endif
+    if line =~ 'set packpath'
+      found_pp += 1
     endif
   endfor
-  assert_equal(1, found)
+  assert_equal(1, found_rtp)
+  assert_equal(1, found_pp)
   delete('Xtest_mks.out')
 
   set sessionoptions+=skiprtp
   mksession! Xtest_mks.out
-  found = 0
+  var found = 0
   for line in readfile('Xtest_mks.out')
-    if line =~ 'set runtimepath'
+    if line =~ 'set \(runtimepath\|packpath\)'
       found = 1
       break
     endif
