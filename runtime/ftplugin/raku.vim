@@ -32,7 +32,7 @@ setlocal define=[^A-Za-z_]
 
 " The following line changes a global variable but is necessary to make
 " gf and similar commands work. Thanks to Andrew Pimlott for pointing out
-" the problem. If this causes a " problem for you, add an
+" the problem. If this causes a problem for you, add an
 " after/ftplugin/raku.vim file that contains
 "       set isfname-=:
 set isfname+=:
