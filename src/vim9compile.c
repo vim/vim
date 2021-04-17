@@ -6209,14 +6209,21 @@ compile_assign_unlet(
 	}
 	if (dest_type == VAR_DICT && may_generate_2STRING(-1, cctx) == FAIL)
 	    return FAIL;
-	if (dest_type == VAR_LIST)
+	if (dest_type == VAR_LIST || dest_type == VAR_BLOB)
 	{
-	    if (range
-		  && need_type(((type_T **)stack->ga_data)[stack->ga_len - 2],
-				 &t_number, -1, 0, cctx, FALSE, FALSE) == FAIL)
+	    type_T *type;
+
+	    if (range)
+	    {
+		type = ((type_T **)stack->ga_data)[stack->ga_len - 2];
+		if (need_type(type, &t_number,
+					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
-	    if (need_type(((type_T **)stack->ga_data)[stack->ga_len - 1],
-				 &t_number, -1, 0, cctx, FALSE, FALSE) == FAIL)
+	    }
+	    type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	    if ((dest_type != VAR_BLOB || type != &t_special)
+		    && need_type(type, &t_number,
+					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 		return FAIL;
 	}
     }

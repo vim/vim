@@ -246,6 +246,8 @@ def s:ScriptFuncStoreMember()
   locallist[0] = 123
   var localdict: dict<number> = {}
   localdict["a"] = 456
+  var localblob: blob = 0z1122
+  localblob[1] = 33
 enddef
 
 def Test_disassemble_store_member()
@@ -259,7 +261,7 @@ def Test_disassemble_store_member()
         '\d PUSHNR 123\_s*' ..
         '\d PUSHNR 0\_s*' ..
         '\d LOAD $0\_s*' ..
-        '\d STORELIST\_s*' ..
+        '\d STOREINDEX list\_s*' ..
         'var localdict: dict<number> = {}\_s*' ..
         '\d NEWDICT size 0\_s*' ..
         '\d SETTYPE dict<number>\_s*' ..
@@ -268,7 +270,15 @@ def Test_disassemble_store_member()
         '\d\+ PUSHNR 456\_s*' ..
         '\d\+ PUSHS "a"\_s*' ..
         '\d\+ LOAD $1\_s*' ..
-        '\d\+ STOREDICT\_s*' ..
+        '\d\+ STOREINDEX dict\_s*' ..
+        'var localblob: blob = 0z1122\_s*' ..
+        '\d\+ PUSHBLOB 0z1122\_s*' ..
+        '\d\+ STORE $2\_s*' ..
+        'localblob\[1\] = 33\_s*' ..
+        '\d\+ PUSHNR 33\_s*' ..
+        '\d\+ PUSHNR 1\_s*' ..
+        '\d\+ LOAD $2\_s*' ..
+        '\d\+ STOREINDEX blob\_s*' ..
         '\d\+ RETURN 0',
         res)
 enddef
@@ -291,7 +301,7 @@ def Test_disassemble_store_index()
         '\d PUSHNR 0\_s*' ..
         '\d LOAD $0\_s*' ..
         '\d MEMBER dd\_s*' ..
-        '\d STOREINDEX\_s*' ..
+        '\d STOREINDEX any\_s*' ..
         '\d\+ RETURN 0',
         res)
 enddef

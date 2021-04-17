@@ -125,13 +125,33 @@ blob_get(blob_T *b, int idx)
 }
 
 /*
- * Store one byte "c" in blob "b" at "idx".
+ * Store one byte "byte" in blob "blob" at "idx".
  * Caller must make sure that "idx" is valid.
  */
     void
-blob_set(blob_T *b, int idx, char_u c)
+blob_set(blob_T *blob, int idx, int byte)
 {
-    ((char_u*)b->bv_ga.ga_data)[idx] = c;
+    ((char_u*)blob->bv_ga.ga_data)[idx] = byte;
+}
+
+/*
+ * Store one byte "byte" in blob "blob" at "idx".
+ * Append one byte if needed.
+ */
+    void
+blob_set_append(blob_T *blob, int idx, int byte)
+{
+    garray_T *gap = &blob->bv_ga;
+
+    // Allow for appending a byte.  Setting a byte beyond
+    // the end is an error otherwise.
+    if (idx < gap->ga_len
+	    || (idx == gap->ga_len && ga_grow(gap, 1) == OK))
+    {
+	blob_set(blob, idx, byte);
+	if (idx == gap->ga_len)
+	    ++gap->ga_len;
+    }
 }
 
 /*
