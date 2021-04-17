@@ -386,7 +386,7 @@ CClink = $(CC)
 # Select the architecture supported.  Default is to build for the current
 # platform.  Use "both" for a universal binary.  That probably doesn't work
 # when including Perl, Python, etc.
-#CONF_OPT_DARWIN = --with-mac-arch=i386
+#CONF_OPT_DARWIN = --with-mac-arch=intel
 #CONF_OPT_DARWIN = --with-mac-arch=ppc
 #CONF_OPT_DARWIN = --with-mac-arch=both
 

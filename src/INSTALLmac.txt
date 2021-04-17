@@ -1,64 +1,71 @@
-INSTALLmac.txt - Installation of Vim on Macintosh
+INSTALLmac.txt - Installation of Vim on Mac
 
 This file contains instructions for compiling Vim. If you already have an
 executable version of Vim, you don't need this.
 
-First, make sure you've installed Xcode or CommandLineTools.  If not, open a
-terminal and do
-
-	$ make --version
-
-A window pops up instructing you to install the developer tools.
+Contents:
+1. Prerequisites
+2. Installation
+3. Other notes
 
 
-----------------------------------------------------------------------------
-Summary
-----------------------------------------------------------------------------
+1. Prerequisites
+================
 
-1 MacOS X
- 1.1. Terminal version
- 1.2. X (Athena, GTK, Motif) or plain text.
+1. Only macOS is supported. For Classic Mac OS support, use Vim 6.4.
 
-MacOS Classic is no longer supported.  If you really want it use Vim 6.4.
+2. Make sure you've installed Xcode or Command Line Tools:
 
-----------------------------------------------------------------------------
-1 MacOS X
-----------------------------------------------------------------------------
+   To install Xcode, get it from the Mac App Store.
 
-1.0 Considerations
+   To install Command Line Tools, open Terminal and run:
 
- Only '/' is supported as path separator.
-
-1.1 Terminal version (default)
-
- You can compile vim with the standard Unix routine:
-   cd .../src
-   make
-   make test
-   sudo make install
-
- You need at least Xcode 1.5.
-
- To overrule the architecture do this before running make:
-
-	./configure --with-mac-arch=intel
- or
-	./configure --with-mac-arch=ppc
+       xcode-select --install
 
 
-1.2 X-Windows
+2. Installation
+===============
 
- You must explicitly tell configure to use a GUI.
+To install a terminal version of Vim, use the standard Unix routine:
 
-  cd .../src
-  ./configure --disable-darwin --enable-gui=gtk2
-  make; make install
+    cd .../src
+    make
+    sudo make install
 
- NOTE: The following GUI options are possible (but might not work):
-	no (for terminal only), motif, athena, nextaw
-	gtk, gtk2, gnome, gnome2,
+To install a GUI version of Vim:
 
- NOTE: You need to first install XFree86 and XDarwin.
-       Please visit http://www.XDarwin.org
+  1. Install XQuartz, which you can download from https://www.xquartz.org/.
 
-------------------------------------------------------
+  2. Uncomment these lines in the Makefile:
+
+         CONF_OPT_GUI = --enable-gui=athena
+         CONF_OPT_DARWIN = --disable-darwin
+
+  3. Use the standard Unix routine (above).
+
+
+3. Other notes
+==============
+
+These Mac-specific configure options are explained in the Makefile:
+
+  --disable-darwin
+  --with-mac-arch
+
+Before running the tests, install GNU Libtool with the program prefix "g":
+
+  To do that with Homebrew, run:
+
+      brew install libtool
+
+  To do that from source:
+
+    1. Download the source code from https://www.gnu.org/software/libtool/.
+
+    2. Run these commands from the root of the source code directory:
+
+           ./configure --program-prefix=g
+           make
+           sudo make install
+
+For more details, see src/INSTALL.
