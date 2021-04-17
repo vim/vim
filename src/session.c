@@ -779,15 +779,22 @@ makeopens(
 	if (need_tabnext && put_line(fd, "tabnext") == FAIL)
 	    goto fail;
 
-	// Save current window layout.
-	if (put_line(fd, "set splitbelow splitright") == FAIL)
-	    goto fail;
-	if (ses_win_rec(fd, tab_topframe) == FAIL)
-	    goto fail;
-	if (!p_sb && put_line(fd, "set nosplitbelow") == FAIL)
-	    goto fail;
-	if (!p_spr && put_line(fd, "set nosplitright") == FAIL)
-	    goto fail;
+	if (tab_topframe->fr_layout != FR_LEAF)
+	{
+	    // Save current window layout.
+	    if (put_line(fd, "let s:save_splitbelow = &splitbelow") == FAIL
+		    || put_line(fd, "let s:save_splitright = &splitright")
+								       == FAIL)
+		goto fail;
+	    if (put_line(fd, "set splitbelow splitright") == FAIL)
+		goto fail;
+	    if (ses_win_rec(fd, tab_topframe) == FAIL)
+		goto fail;
+	    if (put_line(fd, "let &splitbelow = s:save_splitbelow") == FAIL
+		    || put_line(fd, "let &splitright = s:save_splitright")
+								       == FAIL)
+		goto fail;
+	}
 
 	// Check if window sizes can be restored (no windows omitted).
 	// Remember the window number of the current window after restoring.
@@ -802,22 +809,29 @@ makeopens(
 		cnr = nr;
 	}
 
-	// Go to the first window.
-	if (put_line(fd, "wincmd t") == FAIL)
-	    goto fail;
+	if (tab_firstwin->w_next != NULL)
+	{
+	    // Go to the first window.
+	    if (put_line(fd, "wincmd t") == FAIL)
+		goto fail;
 
-	// If more than one window, see if sizes can be restored.
-	// First set 'winheight' and 'winwidth' to 1 to avoid the windows being
-	// resized when moving between windows.
-	// Do this before restoring the view, so that the topline and the
-	// cursor can be set.  This is done again below.
-	// winminheight and winminwidth need to be set to avoid an error if the
-	// user has set winheight or winwidth.
-	if (put_line(fd, "set winminheight=0") == FAIL
-		|| put_line(fd, "set winheight=1") == FAIL
-		|| put_line(fd, "set winminwidth=0") == FAIL
-		|| put_line(fd, "set winwidth=1") == FAIL)
-	    goto fail;
+	    // If more than one window, see if sizes can be restored.
+	    // First set 'winheight' and 'winwidth' to 1 to avoid the windows
+	    // being resized when moving between windows.
+	    // Do this before restoring the view, so that the topline and the
+	    // cursor can be set.  This is done again below.
+	    // winminheight and winminwidth need to be set to avoid an error if
+	    // the user has set winheight or winwidth.
+	    if (put_line(fd, "let s:save_winminheight = &winminheight") == FAIL
+		    || put_line(fd, "let s:save_winminwidth = &winminwidth")
+								       == FAIL)
+		goto fail;
+	    if (put_line(fd, "set winminheight=0") == FAIL
+		    || put_line(fd, "set winheight=1") == FAIL
+		    || put_line(fd, "set winminwidth=0") == FAIL
+		    || put_line(fd, "set winwidth=1") == FAIL)
+		goto fail;
+	}
 	if (nr > 1 && ses_winsizes(fd, restore_size, tab_firstwin) == FAIL)
 	    goto fail;
 
@@ -919,10 +933,13 @@ makeopens(
     if (fprintf(fd, "set winheight=%ld winwidth=%ld shortmess=%s",
 			       p_wh, p_wiw, p_shm) < 0 || put_eol(fd) == FAIL)
 	goto fail;
-    // Re-apply 'winminheight' and 'winminwidth'.
-    if (fprintf(fd, "set winminheight=%ld winminwidth=%ld",
-				      p_wmh, p_wmw) < 0 || put_eol(fd) == FAIL)
-	goto fail;
+    if (tab_firstwin->w_next != NULL)
+    {
+	// Restore 'winminheight' and 'winminwidth'.
+	if (put_line(fd, "let &winminheight = s:save_winminheight") == FAIL
+	      || put_line(fd, "let &winminwidth = s:save_winminwidth") == FAIL)
+	    goto fail;
+    }
 
     // Lastly, execute the x.vim file if it exists.
     if (put_line(fd, "let s:sx = expand(\"<sfile>:p:r\").\"x.vim\"") == FAIL
