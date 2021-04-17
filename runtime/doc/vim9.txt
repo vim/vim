@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Apr 06
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Apr 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -334,10 +334,11 @@ The "g:" prefix is not needed for auto-load functions.
 
 Since `&opt = value` is now assigning a value to option "opt", ":&" cannot be
 used to repeat a `:substitute` command.
-
+							*vim9-unpack-ignore*
 For an unpack assignment the underscore can be used to ignore a list item,
 similar to how a function argument can be ignored: >
 	[a, _, c] = theList
+To ignore any remaining items: >
 	[a, b; _] = longList
 
 <							*E1092*

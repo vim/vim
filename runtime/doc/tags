@@ -3936,6 +3936,7 @@ E1050	vim9.txt	/*E1050*
 E107	eval.txt	/*E107*
 E108	eval.txt	/*E108*
 E109	eval.txt	/*E109*
+E1091	vim9.txt	/*E1091*
 E1092	vim9.txt	/*E1092*
 E1094	vim9.txt	/*E1094*
 E11	cmdline.txt	/*E11*
@@ -10144,8 +10145,10 @@ vim9-differences	vim9.txt	/*vim9-differences*
 vim9-export	vim9.txt	/*vim9-export*
 vim9-final	vim9.txt	/*vim9-final*
 vim9-gotchas	vim9.txt	/*vim9-gotchas*
+vim9-ignored-argument	vim9.txt	/*vim9-ignored-argument*
 vim9-import	vim9.txt	/*vim9-import*
 vim9-lambda	vim9.txt	/*vim9-lambda*
+vim9-lambda-arguments	vim9.txt	/*vim9-lambda-arguments*
 vim9-mix	vim9.txt	/*vim9-mix*
 vim9-namespace	vim9.txt	/*vim9-namespace*
 vim9-rationale	vim9.txt	/*vim9-rationale*
@@ -10153,7 +10156,9 @@ vim9-reload	vim9.txt	/*vim9-reload*
 vim9-scopes	vim9.txt	/*vim9-scopes*
 vim9-script-intro	usr_46.txt	/*vim9-script-intro*
 vim9-types	vim9.txt	/*vim9-types*
+vim9-unpack-ignore	vim9.txt	/*vim9-unpack-ignore*
 vim9-user-command	vim9.txt	/*vim9-user-command*
+vim9-variable-arguments	vim9.txt	/*vim9-variable-arguments*
 vim9.txt	vim9.txt	/*vim9.txt*
 vim9script	vim9.txt	/*vim9script*
 vim:	options.txt	/*vim:*

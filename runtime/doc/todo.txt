@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Apr 05
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Apr 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,16 +38,19 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+make "skiprtp" also omit 'packpath'?
+
+- Implement blob index and slice assignment?
+  Make all of test_blob run in three ways
+
 Vim9 - Make everything work:
+- use CheckLegacyAndVim9Success(lines) in many more places
 - For builtin functions using tv_get_string*() use check_for_string() to be
   more strict about the argument type (not a bool).
     done: balloon_()
 - Check many more builtin function arguments at compile time.
-- Using ".." at script level doesn't convert arguments to a string.
-- This fails in a :def function but not at the script level:
-	  var s = 'asdf'->((a) => a)('x')
-  Disallow passing more arguments to lambda than expected?
-- Implement blob index and slice, also with assignment?
+    map() could check that the return type of the function argument matches
+    the type of the list or dict member. (#8092)
 - Compile replacement of :s command: s/pat/\=expr/
 - Compile redir to local variable: var_redir_start().
 - Implement type cast at the script level.
@@ -61,6 +64,7 @@ Vim9 - Make everything work:
 - expandcmd() with `=expr` in filename uses legacy expression.
 - eval_expr() in ex_cexpr()
 - eval_expr() call in dbg_parsearg() and debuggy_find()
+- compile_member() guesses the type, should figure out at runtime.
 - compile "skip" argument of searchpair()
 - compile "expr" and "call" expression of a channel in channel_exe_cmd()?
 - give an error for "echo Func()" if Func() does not return anything.
@@ -126,6 +130,8 @@ Popup windows:
 - Add a termcap entry for changing the cursor when it goes under the popup and
   back.  like t_SI and t_EI  (t_SU and t_EU, where "U" means under?)
 - With terminal in popup, allow for popup_hide() to temporarily hide it.?
+- Make it possible to scroll horizontally when 'wrap' is off.  Does this
+  require an ascii scrollbar, like with the vertical one?
 - Fire some autocommand event after a new popup window was created and
   positioned?  PopupNew?  Could be used to set some options or move it out of
   the way. (#5737)
@@ -494,6 +500,9 @@ Output from assert_equalfile() doesn't give a hint about what's different.
 Assuming the files are text, print the line with the difference.
 
 Result of synID() sometimes wrong in help files. (#5252)
+
+When a help file is opened that doesn't have "ft=help" in the modeline then
+the FileType is first set to "text" before it is set to "help". (#8099)
 
 Problem showing a line if the number column width changes when using "o".
 (Mateusz Morusiewicz, #4245)
@@ -1013,8 +1022,7 @@ for a path separator. (xtal8, #2201)
 Would be nice for Insert mode completion to highlight the text that was added
 (and may change when picking another completion).
 
-Test runtime files.
-Start with filetype detection: testdir/test_filetype.vim
+Test more runtime files.
 
 Window not closed when deleting buffer. (Harm te Hennepe, 2017 Aug 27, #2029)
 
@@ -1986,6 +1994,10 @@ Build problem with small features on Mac OS X 10.6. (Rainer, 2011 Jan 24)
 Patch for :tabrecently. (Hirokazu Yoshida, 2012 Jan 30)
 
 Problem with "syn sync grouphere". (Gustavo Niemeyer, 2011 Jan 27)
+
+Using "syn sync breaklines=2" works for when text is changed, but not when
+scrolling or redrawing.  Should start search for syntax patterns above the
+first drawn line. (#8103)
 
 Loading autoload script even when usage is inside "if 0". (Christian Brabandt,
 2010 Dec 18)
