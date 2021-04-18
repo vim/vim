@@ -1321,21 +1321,7 @@ set_var_lval(
 	    {
 		val = (int)tv_get_number_chk(rettv, &error);
 		if (!error)
-		{
-		    garray_T *gap = &lp->ll_blob->bv_ga;
-
-		    // Allow for appending a byte.  Setting a byte beyond
-		    // the end is an error otherwise.
-		    if (lp->ll_n1 < gap->ga_len
-			    || (lp->ll_n1 == gap->ga_len
-				&& ga_grow(&lp->ll_blob->bv_ga, 1) == OK))
-		    {
-			blob_set(lp->ll_blob, lp->ll_n1, val);
-			if (lp->ll_n1 == gap->ga_len)
-			    ++gap->ga_len;
-		    }
-		    // error for invalid range was already given in get_lval()
-		}
+		    blob_set_append(lp->ll_blob, lp->ll_n1, val);
 	    }
 	}
 	else if (op != NULL && *op != '=')
