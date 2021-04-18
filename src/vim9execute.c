@@ -2900,8 +2900,8 @@ call_def_function(
 		    {
 			char_u	*str = ltv->vval.v_string;
 
-			// Push the next character from the string.  The index
-			// is for the last byte of the previous character.
+			// The index is for the last byte of the previous
+			// character.
 			++idxtv->vval.v_number;
 			if (str == NULL || str[idxtv->vval.v_number] == NUL)
 			{
@@ -2913,6 +2913,7 @@ call_def_function(
 			{
 			    int	clen = mb_ptr2len(str + idxtv->vval.v_number);
 
+			    // Push the next character from the string.
 			    tv = STACK_TV_BOT(0);
 			    tv->v_type = VAR_STRING;
 			    tv->vval.v_string = vim_strnsave(
@@ -2921,9 +2922,41 @@ call_def_function(
 			    idxtv->vval.v_number += clen - 1;
 			}
 		    }
+		    else if (ltv->v_type == VAR_BLOB)
+		    {
+			blob_T	*blob = ltv->vval.v_blob;
+
+			// When we get here the first time make a copy of the
+			// blob, so that the iteration still works when it is
+			// changed.
+			if (idxtv->vval.v_number == -1 && blob != NULL)
+			{
+			    blob_copy(blob, ltv);
+			    blob_unref(blob);
+			    blob = ltv->vval.v_blob;
+			}
+
+			// The index is for the previous byte.
+			++idxtv->vval.v_number;
+			if (blob == NULL
+				     || idxtv->vval.v_number >= blob_len(blob))
+			{
+			    // past the end of the blob, jump to "endfor"
+			    ectx.ec_iidx = iptr->isn_arg.forloop.for_end;
+			    may_restore_cmdmod(&funclocal);
+			}
+			else
+			{
+			    // Push the next byte from the blob.
+			    tv = STACK_TV_BOT(0);
+			    tv->v_type = VAR_NUMBER;
+			    tv->vval.v_number = blob_get(blob,
+							 idxtv->vval.v_number);
+			    ++ectx.ec_stack.ga_len;
+			}
+		    }
 		    else
 		    {
-			// TODO: support Blob
 			semsg(_(e_for_loop_on_str_not_supported),
 						    vartype_name(ltv->v_type));
 			goto failed;

@@ -7508,13 +7508,12 @@ compile_for(char_u *arg_start, cctx_T *cctx)
     }
     arg_end = arg;
 
-    // If we know the type of "var" and it is a not a list or string we can
+    // If we know the type of "var" and it is a not a supported type we can
     // give an error now.
     vartype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
     if (vartype->tt_type != VAR_LIST && vartype->tt_type != VAR_STRING
-						&& vartype->tt_type != VAR_ANY)
+		&& vartype->tt_type != VAR_BLOB && vartype->tt_type != VAR_ANY)
     {
-	// TODO: support Blob
 	semsg(_(e_for_loop_on_str_not_supported),
 					       vartype_name(vartype->tt_type));
 	drop_scope(cctx);
@@ -7523,6 +7522,8 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 
     if (vartype->tt_type == VAR_STRING)
 	item_type = &t_string;
+    else if (vartype->tt_type == VAR_BLOB)
+	item_type = &t_number;
     else if (vartype->tt_type == VAR_LIST
 				     && vartype->tt_member->tt_type != VAR_ANY)
     {
@@ -7530,7 +7531,7 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 	    item_type = vartype->tt_member;
 	else if (vartype->tt_member->tt_type == VAR_LIST
 		      && vartype->tt_member->tt_member->tt_type != VAR_ANY)
-	    // TODO: should get the type from 
+	    // TODO: should get the type for each lhs
 	    item_type = vartype->tt_member->tt_member;
     }
 
