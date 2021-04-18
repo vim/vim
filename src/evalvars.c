@@ -2662,6 +2662,12 @@ eval_variable(
 		if (tv->vval.v_list != NULL)
 		    ++tv->vval.v_list->lv_refcount;
 	    }
+	    else if (tv->v_type == VAR_BLOB && tv->vval.v_blob == NULL)
+	    {
+		tv->vval.v_blob = blob_alloc();
+		if (tv->vval.v_blob != NULL)
+		    ++tv->vval.v_blob->bv_refcount;
+	    }
 	    copy_tv(tv, rettv);
 	}
     }

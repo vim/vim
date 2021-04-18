@@ -2412,22 +2412,33 @@ f_mapnew(typval_T *argvars, typval_T *rettv)
     void
 f_add(typval_T *argvars, typval_T *rettv)
 {
-    list_T	*l;
-    blob_T	*b;
-
     rettv->vval.v_number = 1; // Default: Failed
     if (argvars[0].v_type == VAR_LIST)
     {
-	if ((l = argvars[0].vval.v_list) != NULL
-		&& !value_check_lock(l->lv_lock,
-					 (char_u *)N_("add() argument"), TRUE)
+	list_T	*l = argvars[0].vval.v_list;
+
+	if (l == NULL)
+	{
+	    if (in_vim9script())
+		emsg(_(e_cannot_add_to_null_list));
+	}
+	else if (!value_check_lock(l->lv_lock,
+					  (char_u *)N_("add() argument"), TRUE)
 		&& list_append_tv(l, &argvars[1]) == OK)
+	{
 	    copy_tv(&argvars[0], rettv);
+	}
     }
     else if (argvars[0].v_type == VAR_BLOB)
     {
-	if ((b = argvars[0].vval.v_blob) != NULL
-		&& !value_check_lock(b->bv_lock,
+	blob_T	*b = argvars[0].vval.v_blob;
+
+	if (b == NULL)
+	{
+	    if (in_vim9script())
+		emsg(_(e_cannot_add_to_null_blob));
+	}
+	else if (!value_check_lock(b->bv_lock,
 					 (char_u *)N_("add() argument"), TRUE))
 	{
 	    int		error = FALSE;

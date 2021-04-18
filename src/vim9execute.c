@@ -1020,6 +1020,10 @@ allocate_if_null(typval_T *tv)
 	    if (tv->vval.v_dict == NULL)
 		(void)rettv_dict_alloc(tv);
 	    break;
+	case VAR_BLOB:
+	    if (tv->vval.v_blob == NULL)
+		(void)rettv_blob_alloc(tv);
+	    break;
 	default:
 	    break;
     }

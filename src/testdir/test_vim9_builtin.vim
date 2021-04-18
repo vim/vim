@@ -87,10 +87,23 @@ def Test_add_list()
   CheckDefFailure(lines, 'E1012:', 2)
 
   lines =<< trim END
+      add(test_null_list(), 123)
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1130:', 1)
+
+  lines =<< trim END
       var l: list<number> = test_null_list()
       add(l, 123)
   END
   CheckDefExecFailure(lines, 'E1130:', 2)
+
+  # Getting variable with NULL list allocates a new list at script level
+  lines =<< trim END
+      vim9script
+      var l: list<number> = test_null_list()
+      add(l, 123)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_add_blob()
@@ -109,10 +122,23 @@ def Test_add_blob()
   CheckDefFailure(lines, 'E1012:', 2)
 
   lines =<< trim END
+      add(test_null_blob(), 123)
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1131:', 1)
+
+  lines =<< trim END
       var b: blob = test_null_blob()
       add(b, 123)
   END
   CheckDefExecFailure(lines, 'E1131:', 2)
+
+  # Getting variable with NULL blob allocates a new blob at script level
+  lines =<< trim END
+      vim9script
+      var b: blob = test_null_blob()
+      add(b, 123)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_append()
