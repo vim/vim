@@ -719,6 +719,16 @@ def Test_insert()
   endfor
   res->assert_equal(6)
 
+  var lines =<< trim END
+      insert(test_null_list(), 123)
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1130:', 1)
+
+  lines =<< trim END
+      insert(test_null_blob(), 123)
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1131:', 1)
+
   assert_equal([1, 2, 3], insert([2, 3], 1))
   assert_equal([1, 2, 3], insert([2, 3], s:number_one))
   assert_equal([1, 2, 3], insert([1, 2], 3, 2))

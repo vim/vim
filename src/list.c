@@ -2223,7 +2223,7 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 		if (filter_map_one(&tv, expr, filtermap, &newtv, &rem) == FAIL
 								   || did_emsg)
 		    break;
-		if (newtv.v_type != VAR_NUMBER)
+		if (newtv.v_type != VAR_NUMBER && newtv.v_type != VAR_BOOL)
 		{
 		    clear_tv(&newtv);
 		    emsg(_(e_invalblob));
@@ -2736,7 +2736,6 @@ f_insert(typval_T *argvars, typval_T *rettv)
 {
     long	before = 0;
     listitem_T	*item;
-    list_T	*l;
     int		error = FALSE;
 
     if (argvars[0].v_type == VAR_BLOB)
@@ -2745,7 +2744,11 @@ f_insert(typval_T *argvars, typval_T *rettv)
 	char_u	    *p;
 
 	if (argvars[0].vval.v_blob == NULL)
+	{
+	    if (in_vim9script())
+		emsg(_(e_cannot_add_to_null_blob));
 	    return;
+	}
 
 	len = blob_len(argvars[0].vval.v_blob);
 	if (argvars[2].v_type != VAR_UNKNOWN)
@@ -2779,30 +2782,39 @@ f_insert(typval_T *argvars, typval_T *rettv)
     }
     else if (argvars[0].v_type != VAR_LIST)
 	semsg(_(e_listblobarg), "insert()");
-    else if ((l = argvars[0].vval.v_list) != NULL
-	    && !value_check_lock(l->lv_lock,
-				     (char_u *)N_("insert() argument"), TRUE))
+    else
     {
-	if (argvars[2].v_type != VAR_UNKNOWN)
-	    before = (long)tv_get_number_chk(&argvars[2], &error);
-	if (error)
-	    return;		// type error; errmsg already given
+	list_T	*l = argvars[0].vval.v_list;
 
-	if (before == l->lv_len)
-	    item = NULL;
-	else
+	if (l == NULL)
 	{
-	    item = list_find(l, before);
-	    if (item == NULL)
-	    {
-		semsg(_(e_listidx), before);
-		l = NULL;
-	    }
+	    if (in_vim9script())
+		emsg(_(e_cannot_add_to_null_list));
 	}
-	if (l != NULL)
+	else if (!value_check_lock(l->lv_lock,
+				     (char_u *)N_("insert() argument"), TRUE))
 	{
-	    (void)list_insert_tv(l, &argvars[1], item);
-	    copy_tv(&argvars[0], rettv);
+	    if (argvars[2].v_type != VAR_UNKNOWN)
+		before = (long)tv_get_number_chk(&argvars[2], &error);
+	    if (error)
+		return;		// type error; errmsg already given
+
+	    if (before == l->lv_len)
+		item = NULL;
+	    else
+	    {
+		item = list_find(l, before);
+		if (item == NULL)
+		{
+		    semsg(_(e_listidx), before);
+		    l = NULL;
+		}
+	    }
+	    if (l != NULL)
+	    {
+		(void)list_insert_tv(l, &argvars[1], item);
+		copy_tv(&argvars[0], rettv);
+	    }
 	}
     }
 }
