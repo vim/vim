@@ -9416,8 +9416,15 @@ delete_instr(isn_T *isn)
 	    break;
 
 	case ISN_SUBSTITUTE:
-	    vim_free(isn->isn_arg.subs.subs_cmd);
-	    vim_free(isn->isn_arg.subs.subs_instr);
+	    {
+		int	idx;
+		isn_T	*list = isn->isn_arg.subs.subs_instr;
+
+		vim_free(isn->isn_arg.subs.subs_cmd);
+		for (idx = 0; list[idx].isn_type != ISN_FINISH; ++idx)
+		    delete_instr(list + idx);
+		vim_free(list);
+	    }
 	    break;
 
 	case ISN_LOADS:
