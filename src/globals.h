@@ -1379,6 +1379,9 @@ EXTERN char_u no_lines_msg[]	INIT(= N_("--No lines in buffer--"));
 EXTERN long	sub_nsubs;	// total number of substitutions
 EXTERN linenr_T	sub_nlines;	// total number of lines changed
 
+// Used when a compiled :substitute has an expression.
+EXTERN struct subs_expr_S	*substitute_instr INIT(= NULL);
+
 // table to store parsed 'wildmode'
 EXTERN char_u	wim_flags[4];
 

@@ -19,6 +19,7 @@ typedef enum {
     ISN_ECHOMSG,    // echo Ex commands isn_arg.number items on top of stack
     ISN_ECHOERR,    // echo Ex commands isn_arg.number items on top of stack
     ISN_RANGE,	    // compute range from isn_arg.string, push to stack
+    ISN_SUBSTITUTE, // :s command with expression
 
     // get and set variables
     ISN_LOAD,	    // push local variable isn_arg.number
@@ -94,7 +95,8 @@ typedef enum {
 
     // expression operations
     ISN_JUMP,	    // jump if condition is matched isn_arg.jump
-    ISN_JUMP_IF_ARG_SET, // jump if argument is already set, uses isn_arg.jumparg
+    ISN_JUMP_IF_ARG_SET, // jump if argument is already set, uses
+			 // isn_arg.jumparg
 
     // loop
     ISN_FOR,	    // get next item from a list, uses isn_arg.forloop
@@ -165,7 +167,9 @@ typedef enum {
 
     ISN_UNPACK,	    // unpack list into items, uses isn_arg.unpack
     ISN_SHUFFLE,    // move item on stack up or down
-    ISN_DROP	    // pop stack and discard value
+    ISN_DROP,	    // pop stack and discard value
+
+    ISN_FINISH	    // end marker in list of instructions
 } isntype_T;
 
 
@@ -339,6 +343,12 @@ typedef struct {
     int		outer_depth;	// nesting level, stack frames to go up
 } isn_outer_T;
 
+// arguments to ISN_SUBSTITUTE
+typedef struct {
+    char_u	*subs_cmd;	// :s command
+    isn_T	*subs_instr;	// sequence of instructions
+} subs_T;
+
 /*
  * Instruction
  */
@@ -381,6 +391,7 @@ struct isn_S {
 	cmod_T		    cmdmod;
 	unpack_T	    unpack;
 	isn_outer_T	    outer;
+	subs_T		    subs;
     } isn_arg;
 };
 

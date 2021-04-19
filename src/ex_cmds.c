@@ -3604,6 +3604,29 @@ typedef struct {
 } subflags_T;
 
 /*
+ * Skip over the "sub" part in :s/pat/sub/ where "delimiter" is the separating
+ * character.
+ */
+    char_u *
+skip_substitute(char_u *start, int delimiter)
+{
+    char_u *p = start;
+
+    while (p[0])
+    {
+	if (p[0] == delimiter)		// end delimiter found
+	{
+	    *p++ = NUL;			// replace it with a NUL
+	    break;
+	}
+	if (p[0] == '\\' && p[1] != 0)	// skip escaped characters
+	    ++p;
+	MB_PTR_ADV(p);
+    }
+    return p;
+}
+
+/*
  * Perform a substitution from line eap->line1 to line eap->line2 using the
  * command pointed to by eap->arg which should be of the form:
  *
@@ -3704,18 +3727,7 @@ ex_substitute(exarg_T *eap)
 	 * Vim we want to use '\n' to find/substitute a NUL.
 	 */
 	sub = cmd;	    // remember the start of the substitution
-
-	while (cmd[0])
-	{
-	    if (cmd[0] == delimiter)		// end delimiter found
-	    {
-		*cmd++ = NUL;			// replace it with a NUL
-		break;
-	    }
-	    if (cmd[0] == '\\' && cmd[1] != 0)	// skip escaped characters
-		++cmd;
-	    MB_PTR_ADV(cmd);
-	}
+	cmd = skip_substitute(cmd, delimiter);
 
 	if (!eap->skip)
 	{

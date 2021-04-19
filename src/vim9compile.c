@@ -2130,6 +2130,33 @@ generate_EXECCONCAT(cctx_T *cctx, int count)
     return OK;
 }
 
+    static int
+generate_substitute(char_u *cmd, int instr_start, cctx_T *cctx)
+{
+    isn_T	*isn;
+    isn_T	*instr;
+    int		instr_count = cctx->ctx_instr.ga_len - instr_start;
+
+    instr = ALLOC_MULT(isn_T, instr_count + 1);
+    if (instr == NULL)
+	return FAIL;
+    // Move the generated instructions into the ISN_SUBSTITUTE instructions,
+    // then truncate the list of instructions, so they are used only once.
+    mch_memmove(instr, ((isn_T *)cctx->ctx_instr.ga_data) + instr_start,
+					      instr_count * sizeof(isn_T));
+    instr[instr_count].isn_type = ISN_FINISH;
+    cctx->ctx_instr.ga_len = instr_start;
+
+    if ((isn = generate_instr(cctx, ISN_SUBSTITUTE)) == NULL)
+    {
+	vim_free(instr);
+	return FAIL;
+    }
+    isn->isn_arg.subs.subs_cmd = vim_strsave(cmd);
+    isn->isn_arg.subs.subs_instr = instr;
+    return OK;
+}
+
 /*
  * Generate ISN_RANGE.  Consumes "range".  Return OK/FAIL.
  */
@@ -8466,6 +8493,55 @@ theend:
 }
 
 /*
+ * :s/pat/repl/
+ */
+    static char_u *
+compile_substitute(char_u *arg, exarg_T *eap, cctx_T *cctx)
+{
+    char_u  *cmd = eap->arg;
+    char_u  *expr = (char_u *)strstr((char *)cmd, "\\=");
+
+    if (expr != NULL)
+    {
+	int delimiter = *cmd++;
+
+	// There is a \=expr, find it in the substitute part.
+	cmd = skip_regexp_ex(cmd, delimiter, magic_isset(),
+							     NULL, NULL, NULL);
+	if (cmd[0] == delimiter && cmd[1] == '\\' && cmd[2] == '=')
+	{
+	    int	    instr_count = cctx->ctx_instr.ga_len;
+	    char_u  *end;
+
+	    cmd += 3;
+	    end = skip_substitute(cmd, delimiter);
+
+	    compile_expr0(&cmd, cctx);
+	    if (end[-1] == NUL)
+		end[-1] = delimiter;
+	    cmd = skipwhite(cmd);
+	    if (*cmd != delimiter && *cmd != NUL)
+	    {
+		semsg(_(e_trailing_arg), cmd);
+		return NULL;
+	    }
+
+	    if (generate_substitute(arg, instr_count, cctx) == FAIL)
+		return NULL;
+
+	    // skip over flags
+	    if (*end == '&')
+		++end;
+	    while (ASCII_ISALPHA(*end) || *end == '#')
+		++end;
+	    return end;
+	}
+    }
+
+    return compile_exec(arg, eap, cctx);
+}
+
+/*
  * Add a function to the list of :def functions.
  * This sets "ufunc->uf_dfunc_idx" but the function isn't compiled yet.
  */
@@ -8996,6 +9072,16 @@ compile_def_function(
 		    line = compile_put(p, &ea, &cctx);
 		    break;
 
+	    case CMD_substitute:
+		    if (cctx.ctx_skip == SKIP_YES)
+			line = (char_u *)"";
+		    else
+		    {
+			ea.arg = p;
+			line = compile_substitute(line, &ea, &cctx);
+		    }
+		    break;
+
 	    // TODO: any other commands with an expression argument?
 
 	    case CMD_append:
@@ -9223,6 +9309,11 @@ delete_instr(isn_T *isn)
 	    vim_free(isn->isn_arg.string);
 	    break;
 
+	case ISN_SUBSTITUTE:
+	    vim_free(isn->isn_arg.subs.subs_cmd);
+	    vim_free(isn->isn_arg.subs.subs_instr);
+	    break;
+
 	case ISN_LOADS:
 	case ISN_STORES:
 	    vim_free(isn->isn_arg.loadstore.ls_name);
@@ -9400,6 +9491,7 @@ delete_instr(isn_T *isn)
 	case ISN_UNLETINDEX:
 	case ISN_UNLETRANGE:
 	case ISN_UNPACK:
+	case ISN_FINISH:
 	    // nothing allocated
 	    break;
     }

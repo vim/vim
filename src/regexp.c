@@ -2069,6 +2069,9 @@ vim_regsub_both(
 		}
 		clear_tv(&rettv);
 	    }
+	    else if (substitute_instr != NULL)
+		// Execute instructions from ISN_SUBSTITUTE.
+		eval_result = exe_substitute_instr();
 	    else
 		eval_result = eval_to_string(source + 2, TRUE);
 

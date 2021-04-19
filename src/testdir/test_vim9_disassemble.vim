@@ -121,6 +121,25 @@ def Test_disassemble_exec_expr()
         res)
 enddef
 
+def s:Substitute()
+  var expr = "abc"
+  :%s/a/\=expr/&g#c
+enddef
+
+def Test_disassemble_substitute()
+  var res = execute('disass s:Substitute')
+  assert_match('<SNR>\d*_Substitute.*' ..
+        ' var expr = "abc"\_s*' ..
+        '\d PUSHS "abc"\_s*' ..
+        '\d STORE $0\_s*' ..
+        ' :%s/a/\\=expr/&g#c\_s*' ..
+        '\d SUBSTITUTE   :%s/a/\\=expr/&g#c\_s*' ..
+        '    0 LOAD $0\_s*' ..
+        '    -------------\_s*' ..
+        '\d RETURN 0',
+        res)
+enddef
+
 def s:YankRange()
   norm! m[jjm]
   :'[,']yank
