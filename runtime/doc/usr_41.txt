@@ -117,9 +117,12 @@ FOUR KINDS OF NUMBERS
 
 Numbers can be decimal, hexadecimal, octal or binary.  A hexadecimal number
 starts with "0x" or "0X".  For example "0x1f" is decimal 31.  An octal number
-starts with a zero.  "017" is decimal 15.  A binary number starts with "0b" or
-"0B".  For example "0b101" is decimal 5.  Careful: don't put a zero before a
-decimal number, it will be interpreted as an octal number!
+starts with "0o" or "0O".  For example "0o17" is decimal 15.  An octal number
+can also start with a zero. "017 is decimal 15".  Though the latter octal
+notation is supported, it is good practice to be explicit and use the former
+octal notation.  A binary number starts with "0b" or "0B".  For example
+"0b101" is decimal 5.  Careful: don't put a zero before a decimal number, it
+will be interpreted as an octal number!
    The ":echo" command always prints decimal numbers.  Example: >
 
 	:echo 0x7f 0o36
