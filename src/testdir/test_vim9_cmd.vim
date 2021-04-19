@@ -1194,5 +1194,23 @@ def Test_substitute_expr()
   bwipe!
 enddef
 
+def Test_redir_to_var()
+  var result: string
+  redir => result
+    echo 'something'
+  redir END
+  assert_equal("\nsomething", result)
+
+  redir =>> result
+    echo 'more'
+  redir END
+  assert_equal("\nsomething\nmore", result)
+
+  var lines =<< trim END
+    redir => notexist
+  END
+  CheckDefFailure(lines, 'E1089:')
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

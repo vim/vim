@@ -3778,6 +3778,27 @@ static garray_T redir_ga;	// only valid when redir_lval is not NULL
 static char_u	*redir_endp = NULL;
 static char_u	*redir_varname = NULL;
 
+    int
+alloc_redir_lval(void)
+{
+    redir_lval = ALLOC_CLEAR_ONE(lval_T);
+    if (redir_lval == NULL)
+	return FAIL;
+    return OK;
+}
+
+    void
+clear_redir_lval(void)
+{
+    VIM_CLEAR(redir_lval);
+}
+
+    void
+init_redir_ga(void)
+{
+    ga_init2(&redir_ga, (int)sizeof(char), 500);
+}
+
 /*
  * Start recording command output to a variable
  * When "append" is TRUE append to an existing variable.
@@ -3801,15 +3822,14 @@ var_redir_start(char_u *name, int append)
     if (redir_varname == NULL)
 	return FAIL;
 
-    redir_lval = ALLOC_CLEAR_ONE(lval_T);
-    if (redir_lval == NULL)
+    if (alloc_redir_lval() == FAIL)
     {
 	var_redir_stop();
 	return FAIL;
     }
 
     // The output is stored in growarray "redir_ga" until redirection ends.
-    ga_init2(&redir_ga, (int)sizeof(char), 500);
+    init_redir_ga();
 
     // Parse the variable name (can be a dict or list entry).
     redir_endp = get_lval(redir_varname, NULL, redir_lval, FALSE, FALSE, 0,
@@ -3919,6 +3939,20 @@ var_redir_stop(void)
 	VIM_CLEAR(redir_lval);
     }
     VIM_CLEAR(redir_varname);
+}
+
+/*
+ * Get the collected redirected text and clear redir_ga.
+ */
+    char_u *
+get_clear_redir_ga(void)
+{
+    char_u *res;
+
+    ga_append(&redir_ga, NUL);  // Append the trailing NUL.
+    res = redir_ga.ga_data;
+    redir_ga.ga_data = NULL;
+    return res;
 }
 
 /*

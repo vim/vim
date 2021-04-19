@@ -114,6 +114,52 @@ typedef struct {
     int		lv_arg;		// when TRUE this is an argument
 } lvar_T;
 
+// Destination for an assignment or ":unlet" with an index.
+typedef enum {
+    dest_local,
+    dest_option,
+    dest_env,
+    dest_global,
+    dest_buffer,
+    dest_window,
+    dest_tab,
+    dest_vimvar,
+    dest_script,
+    dest_reg,
+    dest_expr,
+} assign_dest_T;
+
+// Used by compile_lhs() to store information about the LHS of an assignment
+// and one argument of ":unlet" with an index.
+typedef struct {
+    assign_dest_T   lhs_dest;	    // type of destination
+
+    char_u	    *lhs_name;	    // allocated name including
+				    // "[expr]" or ".name".
+    size_t	    lhs_varlen;	    // length of the variable without
+				    // "[expr]" or ".name"
+    char_u	    *lhs_dest_end;  // end of the destination, including
+				    // "[expr]" or ".name".
+
+    int		    lhs_has_index;  // has "[expr]" or ".name"
+
+    int		    lhs_new_local;  // create new local variable
+    int		    lhs_opt_flags;  // for when destination is an option
+    int		    lhs_vimvaridx;  // for when destination is a v:var
+
+    lvar_T	    lhs_local_lvar; // used for existing local destination
+    lvar_T	    lhs_arg_lvar;   // used for argument destination
+    lvar_T	    *lhs_lvar;	    // points to destination lvar
+    int		    lhs_scriptvar_sid;
+    int		    lhs_scriptvar_idx;
+
+    int		    lhs_has_type;   // type was specified
+    type_T	    *lhs_type;
+    type_T	    *lhs_member_type;
+
+    int		    lhs_append;	    // used by ISN_REDIREND
+} lhs_T;
+
 /*
  * Context for compiling lines of Vim script.
  * Stores info about the local variables and condition stack.
@@ -146,6 +192,9 @@ struct cctx_S {
     garray_T	*ctx_type_list;	    // list of pointers to allocated types
 
     int		ctx_has_cmdmod;	    // ISN_CMDMOD was generated
+
+    lhs_T	ctx_redir_lhs;	    // LHS for ":redir => var", valid when
+				    // lhs_name is not NULL
 };
 
 static void delete_def_function_contents(dfunc_T *dfunc, int mark_deleted);
@@ -5460,50 +5509,6 @@ static char *reserved[] = {
     NULL
 };
 
-// Destination for an assignment or ":unlet" with an index.
-typedef enum {
-    dest_local,
-    dest_option,
-    dest_env,
-    dest_global,
-    dest_buffer,
-    dest_window,
-    dest_tab,
-    dest_vimvar,
-    dest_script,
-    dest_reg,
-    dest_expr,
-} assign_dest_T;
-
-// Used by compile_lhs() to store information about the LHS of an assignment
-// and one argument of ":unlet" with an index.
-typedef struct {
-    assign_dest_T   lhs_dest;	    // type of destination
-
-    char_u	    *lhs_name;	    // allocated name including
-				    // "[expr]" or ".name".
-    size_t	    lhs_varlen;	    // length of the variable without
-				    // "[expr]" or ".name"
-    char_u	    *lhs_dest_end;  // end of the destination, including
-				    // "[expr]" or ".name".
-
-    int		    lhs_has_index;  // has "[expr]" or ".name"
-
-    int		    lhs_new_local;  // create new local variable
-    int		    lhs_opt_flags;  // for when destination is an option
-    int		    lhs_vimvaridx;  // for when destination is a v:var
-
-    lvar_T	    lhs_local_lvar; // used for existing local destination
-    lvar_T	    lhs_arg_lvar;   // used for argument destination
-    lvar_T	    *lhs_lvar;	    // points to destination lvar
-    int		    lhs_scriptvar_sid;
-    int		    lhs_scriptvar_idx;
-
-    int		    lhs_has_type;   // type was specified
-    type_T	    *lhs_type;
-    type_T	    *lhs_member_type;
-} lhs_T;
-
 /*
  * Generate the load instruction for "name".
  */
@@ -5776,6 +5781,44 @@ generate_store_var(
 	    break;
     }
     return FAIL;
+}
+
+    static int
+generate_store_lhs(cctx_T *cctx, lhs_T *lhs, int instr_count)
+{
+    if (lhs->lhs_dest != dest_local)
+	return generate_store_var(cctx, lhs->lhs_dest,
+			    lhs->lhs_opt_flags, lhs->lhs_vimvaridx,
+			    lhs->lhs_scriptvar_idx, lhs->lhs_scriptvar_sid,
+			    lhs->lhs_type, lhs->lhs_name);
+
+    if (lhs->lhs_lvar != NULL)
+    {
+	garray_T	*instr = &cctx->ctx_instr;
+	isn_T		*isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
+
+	// optimization: turn "var = 123" from ISN_PUSHNR + ISN_STORE into
+	// ISN_STORENR
+	if (lhs->lhs_lvar->lv_from_outer == 0
+		&& instr->ga_len == instr_count + 1
+		&& isn->isn_type == ISN_PUSHNR)
+	{
+	    varnumber_T val = isn->isn_arg.number;
+	    garray_T    *stack = &cctx->ctx_type_stack;
+
+	    isn->isn_type = ISN_STORENR;
+	    isn->isn_arg.storenr.stnr_idx = lhs->lhs_lvar->lv_idx;
+	    isn->isn_arg.storenr.stnr_val = val;
+	    if (stack->ga_len > 0)
+		--stack->ga_len;
+	}
+	else if (lhs->lhs_lvar->lv_from_outer > 0)
+	    generate_STOREOUTER(cctx, lhs->lhs_lvar->lv_idx,
+						 lhs->lhs_lvar->lv_from_outer);
+	else
+	    generate_STORE(cctx, ISN_STORE, lhs->lhs_lvar->lv_idx, NULL);
+    }
+    return OK;
 }
 
     static int
@@ -6079,6 +6122,36 @@ compile_lhs(
 	    semsg("Not supported yet: %s", var_start);
 	    return FAIL;
 	}
+    }
+    return OK;
+}
+
+/*
+ * Figure out the LHS and check a few errors.
+ */
+    static int
+compile_assign_lhs(
+	char_u	*var_start,
+	lhs_T	*lhs,
+	int	cmdidx,
+	int	is_decl,
+	int	heredoc,
+	int	oplen,
+	cctx_T	*cctx)
+{
+    if (compile_lhs(var_start, lhs, cmdidx, heredoc, oplen, cctx) == FAIL)
+	return FAIL;
+
+    if (!lhs->lhs_has_index && lhs->lhs_lvar == &lhs->lhs_arg_lvar)
+    {
+	semsg(_(e_cannot_assign_to_argument), lhs->lhs_name);
+	return FAIL;
+    }
+    if (!is_decl && lhs->lhs_lvar != NULL
+			   && lhs->lhs_lvar->lv_const && !lhs->lhs_has_index)
+    {
+	semsg(_(e_cannot_assign_to_constant), lhs->lhs_name);
+	return FAIL;
     }
     return OK;
 }
@@ -6454,21 +6527,9 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	/*
 	 * Figure out the LHS type and other properties.
 	 */
-	if (compile_lhs(var_start, &lhs, cmdidx, heredoc, oplen, cctx) == FAIL)
+	if (compile_assign_lhs(var_start, &lhs, cmdidx,
+					is_decl, heredoc, oplen, cctx) == FAIL)
 	    goto theend;
-
-	if (!lhs.lhs_has_index && lhs.lhs_lvar == &lhs.lhs_arg_lvar)
-	{
-	    semsg(_(e_cannot_assign_to_argument), lhs.lhs_name);
-	    goto theend;
-	}
-	if (!is_decl && lhs.lhs_lvar != NULL
-			       && lhs.lhs_lvar->lv_const && !lhs.lhs_has_index)
-	{
-	    semsg(_(e_cannot_assign_to_constant), lhs.lhs_name);
-	    goto theend;
-	}
-
 	if (!heredoc)
 	{
 	    if (cctx->ctx_skip == SKIP_YES)
@@ -6728,39 +6789,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		// also in legacy script.
 		generate_SETTYPE(cctx, lhs.lhs_type);
 
-	    if (lhs.lhs_dest != dest_local)
-	    {
-		if (generate_store_var(cctx, lhs.lhs_dest,
-			    lhs.lhs_opt_flags, lhs.lhs_vimvaridx,
-			    lhs.lhs_scriptvar_idx, lhs.lhs_scriptvar_sid,
-					   lhs.lhs_type, lhs.lhs_name) == FAIL)
-		    goto theend;
-	    }
-	    else if (lhs.lhs_lvar != NULL)
-	    {
-		isn_T *isn = ((isn_T *)instr->ga_data)
-						   + instr->ga_len - 1;
-
-		// optimization: turn "var = 123" from ISN_PUSHNR +
-		// ISN_STORE into ISN_STORENR
-		if (lhs.lhs_lvar->lv_from_outer == 0
-				&& instr->ga_len == instr_count + 1
-				&& isn->isn_type == ISN_PUSHNR)
-		{
-		    varnumber_T val = isn->isn_arg.number;
-
-		    isn->isn_type = ISN_STORENR;
-		    isn->isn_arg.storenr.stnr_idx = lhs.lhs_lvar->lv_idx;
-		    isn->isn_arg.storenr.stnr_val = val;
-		    if (stack->ga_len > 0)
-			--stack->ga_len;
-		}
-		else if (lhs.lhs_lvar->lv_from_outer > 0)
-		    generate_STOREOUTER(cctx, lhs.lhs_lvar->lv_idx,
-						  lhs.lhs_lvar->lv_from_outer);
-		else
-		    generate_STORE(cctx, ISN_STORE, lhs.lhs_lvar->lv_idx, NULL);
-	    }
+	    if (generate_store_lhs(cctx, &lhs, instr_count) == FAIL)
+		goto theend;
 	}
 
 	if (var_idx + 1 < var_count)
@@ -8541,6 +8571,67 @@ compile_substitute(char_u *arg, exarg_T *eap, cctx_T *cctx)
     return compile_exec(arg, eap, cctx);
 }
 
+    static char_u *
+compile_redir(char_u *line, exarg_T *eap, cctx_T *cctx)
+{
+    char_u *arg = eap->arg;
+
+    if (cctx->ctx_redir_lhs.lhs_name != NULL)
+    {
+	if (STRNCMP(arg, "END", 3) == 0)
+	{
+	    if (cctx->ctx_redir_lhs.lhs_append)
+	    {
+		if (compile_load_lhs(&cctx->ctx_redir_lhs,
+			     cctx->ctx_redir_lhs.lhs_name, NULL, cctx) == FAIL)
+		    return NULL;
+		if (cctx->ctx_redir_lhs.lhs_has_index)
+		    emsg("redir with index not implemented yet");
+	    }
+
+	    // Gets the redirected text and put it on the stack, then store it
+	    // in the variable.
+	    generate_instr_type(cctx, ISN_REDIREND, &t_string);
+
+	    if (cctx->ctx_redir_lhs.lhs_append)
+		generate_instr_drop(cctx, ISN_CONCAT, 1);
+
+	    if (generate_store_lhs(cctx, &cctx->ctx_redir_lhs, -1) == FAIL)
+		return NULL;
+
+	    VIM_CLEAR(cctx->ctx_redir_lhs.lhs_name);
+	    return arg + 3;
+	}
+	emsg(_(e_cannot_nest_redir));
+	return NULL;
+    }
+
+    if (arg[0] == '=' && arg[1] == '>')
+    {
+	int append = FALSE;
+
+	// redirect to a variable is compiled
+	arg += 2;
+	if (*arg == '>')
+	{
+	    ++arg;
+	    append = TRUE;
+	}
+	arg = skipwhite(arg);
+
+	if (compile_assign_lhs(arg, &cctx->ctx_redir_lhs, CMD_redir,
+						FALSE, FALSE, 1, cctx) == FAIL)
+	    return NULL;
+	generate_instr(cctx, ISN_REDIRSTART);
+	cctx->ctx_redir_lhs.lhs_append = append;
+
+	return arg + cctx->ctx_redir_lhs.lhs_varlen;
+    }
+
+    // other redirects are handled like at script level
+    return compile_exec(line, eap, cctx);
+}
+
 /*
  * Add a function to the list of :def functions.
  * This sets "ufunc->uf_dfunc_idx" but the function isn't compiled yet.
@@ -9082,6 +9173,11 @@ compile_def_function(
 		    }
 		    break;
 
+	    case CMD_redir:
+		    ea.arg = p;
+		    line = compile_redir(line, &ea, &cctx);
+		    break;
+
 	    // TODO: any other commands with an expression argument?
 
 	    case CMD_append:
@@ -9215,6 +9311,16 @@ erret:
 	    emsg(errormsg);
 	else if (did_emsg == did_emsg_before)
 	    emsg(_(e_compiling_def_function_failed));
+    }
+
+    if (cctx.ctx_redir_lhs.lhs_name != NULL)
+    {
+	if (ret == OK)
+	{
+	    emsg(_(e_missing_redir_end));
+	    ret = FAIL;
+	}
+	vim_free(cctx.ctx_redir_lhs.lhs_name);
     }
 
     current_sctx = save_current_sctx;
@@ -9463,6 +9569,7 @@ delete_instr(isn_T *isn)
 	case ISN_NEWLIST:
 	case ISN_OPANY:
 	case ISN_OPFLOAT:
+	case ISN_FINISH:
 	case ISN_OPNR:
 	case ISN_PCALL:
 	case ISN_PCALL_END:
@@ -9473,15 +9580,17 @@ delete_instr(isn_T *isn)
 	case ISN_PUSHNR:
 	case ISN_PUSHSPEC:
 	case ISN_PUT:
+	case ISN_REDIREND:
+	case ISN_REDIRSTART:
 	case ISN_RETURN:
 	case ISN_RETURN_ZERO:
 	case ISN_SHUFFLE:
 	case ISN_SLICE:
 	case ISN_STORE:
 	case ISN_STOREINDEX:
-	case ISN_STORERANGE:
 	case ISN_STORENR:
 	case ISN_STOREOUTER:
+	case ISN_STORERANGE:
 	case ISN_STOREREG:
 	case ISN_STOREV:
 	case ISN_STRINDEX:
@@ -9491,7 +9600,6 @@ delete_instr(isn_T *isn)
 	case ISN_UNLETINDEX:
 	case ISN_UNLETRANGE:
 	case ISN_UNPACK:
-	case ISN_FINISH:
 	    // nothing allocated
 	    break;
     }

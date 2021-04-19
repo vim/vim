@@ -1409,6 +1409,37 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_FINISH:
 		goto done;
 
+	    case ISN_REDIRSTART:
+		// create a dummy entry for var_redir_str()
+		if (alloc_redir_lval() == FAIL)
+		    goto on_error;
+
+		// The output is stored in growarray "redir_ga" until
+		// redirection ends.
+		init_redir_ga();
+		redir_vname = 1;
+		break;
+
+	    case ISN_REDIREND:
+		{
+		    char_u *res = get_clear_redir_ga();
+
+		    // End redirection, put redirected text on the stack.
+		    clear_redir_lval();
+		    redir_vname = 0;
+
+		    if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
+		    {
+			vim_free(res);
+			return FAIL;
+		    }
+		    tv = STACK_TV_BOT(0);
+		    tv->v_type = VAR_STRING;
+		    tv->vval.v_string = res;
+		    ++ectx->ec_stack.ga_len;
+		}
+		break;
+
 	    // execute Ex command from pieces on the stack
 	    case ISN_EXECCONCAT:
 		{
@@ -4331,6 +4362,13 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	{
 	    case ISN_EXEC:
 		smsg("%s%4d EXEC %s", pfx, current, iptr->isn_arg.string);
+		break;
+	    case ISN_REDIRSTART:
+		smsg("%s%4d REDIR", pfx, current);
+		break;
+	    case ISN_REDIREND:
+		smsg("%s%4d REDIR END%s", pfx, current,
+					iptr->isn_arg.number ? " append" : "");
 		break;
 	    case ISN_SUBSTITUTE:
 		{

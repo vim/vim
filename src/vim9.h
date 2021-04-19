@@ -169,6 +169,9 @@ typedef enum {
     ISN_SHUFFLE,    // move item on stack up or down
     ISN_DROP,	    // pop stack and discard value
 
+    ISN_REDIRSTART, // :redir =>
+    ISN_REDIREND,   // :redir END, isn_arg.number == 1 for append
+
     ISN_FINISH	    // end marker in list of instructions
 } isntype_T;
 

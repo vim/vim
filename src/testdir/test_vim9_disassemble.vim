@@ -140,6 +140,33 @@ def Test_disassemble_substitute()
         res)
 enddef
 
+def s:RedirVar()
+  var result: string
+  redir =>> result
+    echo "text"
+  redir END
+enddef
+
+def Test_disassemble_redir_var()
+  var res = execute('disass s:RedirVar')
+  assert_match('<SNR>\d*_RedirVar.*' ..
+        ' var result: string\_s*' ..
+        '\d PUSHS "\[NULL\]"\_s*' ..
+        '\d STORE $0\_s*' ..
+        ' redir =>> result\_s*' ..
+        '\d REDIR\_s*' ..
+        ' echo "text"\_s*' ..
+        '\d PUSHS "text"\_s*' ..
+        '\d ECHO 1\_s*' ..
+        ' redir END\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d REDIR END\_s*' ..
+        '\d CONCAT\_s*' ..
+        '\d STORE $0\_s*' ..
+        '\d RETURN 0',
+        res)
+enddef
+
 def s:YankRange()
   norm! m[jjm]
   :'[,']yank

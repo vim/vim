@@ -405,3 +405,7 @@ EXTERN char e_cannot_use_range_with_assignment_operator_str[]
 	INIT(= N_("E1183: Cannot use a range with an assignment operator: %s"));
 EXTERN char e_blob_not_set[]
 	INIT(= N_("E1184: Blob not set"));
+EXTERN char e_cannot_nest_redir[]
+	INIT(= N_("E1185: Cannot nest :redir"));
+EXTERN char e_missing_redir_end[]
+	INIT(= N_("E1185: Missing :redir END"));
