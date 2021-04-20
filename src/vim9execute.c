@@ -4338,6 +4338,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
     int		line_idx = 0;
     int		prev_current = 0;
     int		current;
+    int		def_arg_idx = 0;
 
     for (current = 0; current < instr_count; ++current)
     {
@@ -4345,6 +4346,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	char	    *line;
 
 	if (ufunc != NULL)
+	{
 	    while (line_idx < iptr->isn_lnum
 					  && line_idx < ufunc->uf_lines.ga_len)
 	    {
@@ -4357,6 +4359,23 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		if (line != NULL)
 		    msg(line);
 	    }
+	    if (iptr->isn_type == ISN_JUMP_IF_ARG_SET)
+	    {
+		int	first_def_arg = ufunc->uf_args.ga_len
+						   - ufunc->uf_def_args.ga_len;
+
+		if (def_arg_idx > 0)
+		    msg_puts("\n\n");
+		msg_start();
+		msg_puts("  ");
+		msg_puts(((char **)(ufunc->uf_args.ga_data))[
+						 first_def_arg + def_arg_idx]);
+		msg_puts(" = ");
+		msg_puts(((char **)(ufunc->uf_def_args.ga_data))[def_arg_idx++]);
+		msg_clr_eos();
+		msg_end();
+	    }
+	}
 
 	switch (iptr->isn_type)
 	{
