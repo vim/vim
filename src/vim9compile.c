@@ -8544,9 +8544,7 @@ compile_substitute(char_u *arg, exarg_T *eap, cctx_T *cctx)
 	    cmd = skipwhite(cmd);
 	    trailing_error = *cmd != delimiter && *cmd != NUL;
 
-	    instr_count = cctx->ctx_instr.ga_len;
-	    instr = ALLOC_MULT(isn_T, instr_count + 1);
-	    if (trailing_error || instr == NULL)
+	    if (trailing_error || ga_grow(&cctx->ctx_instr, 1) == FAIL)
 	    {
 		if (trailing_error)
 		    semsg(_(e_trailing_arg), cmd);
@@ -8559,8 +8557,8 @@ compile_substitute(char_u *arg, exarg_T *eap, cctx_T *cctx)
 	    // Move the generated instructions into the ISN_SUBSTITUTE
 	    // instructions, then restore the list of instructions before
 	    // adding the ISN_SUBSTITUTE instruction.
-	    mch_memmove(instr, cctx->ctx_instr.ga_data,
-						  instr_count * sizeof(isn_T));
+	    instr_count = cctx->ctx_instr.ga_len;
+	    instr = cctx->ctx_instr.ga_data;
 	    instr[instr_count].isn_type = ISN_FINISH;
 
 	    cctx->ctx_instr = save_ga;
