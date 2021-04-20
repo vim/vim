@@ -2179,33 +2179,6 @@ generate_EXECCONCAT(cctx_T *cctx, int count)
     return OK;
 }
 
-    static int
-generate_substitute(char_u *cmd, int instr_start, cctx_T *cctx)
-{
-    isn_T	*isn;
-    isn_T	*instr;
-    int		instr_count = cctx->ctx_instr.ga_len - instr_start;
-
-    instr = ALLOC_MULT(isn_T, instr_count + 1);
-    if (instr == NULL)
-	return FAIL;
-    // Move the generated instructions into the ISN_SUBSTITUTE instructions,
-    // then truncate the list of instructions, so they are used only once.
-    mch_memmove(instr, ((isn_T *)cctx->ctx_instr.ga_data) + instr_start,
-					      instr_count * sizeof(isn_T));
-    instr[instr_count].isn_type = ISN_FINISH;
-    cctx->ctx_instr.ga_len = instr_start;
-
-    if ((isn = generate_instr(cctx, ISN_SUBSTITUTE)) == NULL)
-    {
-	vim_free(instr);
-	return FAIL;
-    }
-    isn->isn_arg.subs.subs_cmd = vim_strsave(cmd);
-    isn->isn_arg.subs.subs_instr = instr;
-    return OK;
-}
-
 /*
  * Generate ISN_RANGE.  Consumes "range".  Return OK/FAIL.
  */
@@ -8522,6 +8495,17 @@ theend:
     return nextcmd;
 }
 
+
+    static void
+clear_instr_ga(garray_T *gap)
+{
+    int idx;
+
+    for (idx = 0; idx < gap->ga_len; ++idx)
+	delete_instr(((isn_T *)gap->ga_data) + idx);
+    ga_clear(gap);
+}
+
 /*
  * :s/pat/repl/
  */
@@ -8536,28 +8520,61 @@ compile_substitute(char_u *arg, exarg_T *eap, cctx_T *cctx)
 	int delimiter = *cmd++;
 
 	// There is a \=expr, find it in the substitute part.
-	cmd = skip_regexp_ex(cmd, delimiter, magic_isset(),
-							     NULL, NULL, NULL);
+	cmd = skip_regexp_ex(cmd, delimiter, magic_isset(), NULL, NULL, NULL);
 	if (cmd[0] == delimiter && cmd[1] == '\\' && cmd[2] == '=')
 	{
-	    int	    instr_count = cctx->ctx_instr.ga_len;
-	    char_u  *end;
+	    garray_T	save_ga = cctx->ctx_instr;
+	    char_u	*end;
+	    int		trailing_error;
+	    int		instr_count;
+	    isn_T	*instr = NULL;
+	    isn_T	*isn;
 
 	    cmd += 3;
 	    end = skip_substitute(cmd, delimiter);
 
+	    // Temporarily reset the list of instructions so that the jumps
+	    // labels are correct.
+	    cctx->ctx_instr.ga_len = 0;
+	    cctx->ctx_instr.ga_maxlen = 0;
+	    cctx->ctx_instr.ga_data = NULL;
 	    compile_expr0(&cmd, cctx);
 	    if (end[-1] == NUL)
 		end[-1] = delimiter;
 	    cmd = skipwhite(cmd);
-	    if (*cmd != delimiter && *cmd != NUL)
+	    trailing_error = *cmd != delimiter && *cmd != NUL;
+
+	    instr_count = cctx->ctx_instr.ga_len;
+	    instr = ALLOC_MULT(isn_T, instr_count + 1);
+	    if (trailing_error || instr == NULL)
 	    {
-		semsg(_(e_trailing_arg), cmd);
+		if (trailing_error)
+		    semsg(_(e_trailing_arg), cmd);
+		clear_instr_ga(&cctx->ctx_instr);
+		cctx->ctx_instr = save_ga;
+		vim_free(instr);
 		return NULL;
 	    }
 
-	    if (generate_substitute(arg, instr_count, cctx) == FAIL)
+	    // Move the generated instructions into the ISN_SUBSTITUTE
+	    // instructions, then restore the list of instructions before
+	    // adding the ISN_SUBSTITUTE instruction.
+	    mch_memmove(instr, cctx->ctx_instr.ga_data,
+						  instr_count * sizeof(isn_T));
+	    instr[instr_count].isn_type = ISN_FINISH;
+
+	    cctx->ctx_instr = save_ga;
+	    if ((isn = generate_instr(cctx, ISN_SUBSTITUTE)) == NULL)
+	    {
+		int idx;
+
+		for (idx = 0; idx < instr_count; ++idx)
+		    delete_instr(instr + idx);
+		vim_free(instr);
 		return NULL;
+	    }
+	    isn->isn_arg.subs.subs_cmd = vim_strsave(arg);
+	    isn->isn_arg.subs.subs_instr = instr;
 
 	    // skip over flags
 	    if (*end == '&')
@@ -9285,13 +9302,10 @@ nextline:
 erret:
     if (ufunc->uf_def_status == UF_COMPILING)
     {
-	int idx;
 	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
 							 + ufunc->uf_dfunc_idx;
 
-	for (idx = 0; idx < instr->ga_len; ++idx)
-	    delete_instr(((isn_T *)instr->ga_data) + idx);
-	ga_clear(instr);
+	clear_instr_ga(instr);
 	VIM_CLEAR(dfunc->df_name);
 
 	// If using the last entry in the table and it was added above, we

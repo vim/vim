@@ -1188,6 +1188,12 @@ def Test_substitute_expr()
   s/from/\=to .. '_' .. also/g#e
   assert_equal('one repl_also two repl_also three', getline(1))
 
+  setline(1, 'abc abc abc')
+  for choice in [true, false]
+    :1s/abc/\=choice ? 'yes' : 'no'/
+  endfor
+  assert_equal('yes no abc', getline(1))
+
   CheckDefFailure(['s/from/\="x")/'], 'E488:')
   CheckDefFailure(['s/from/\="x"/9'], 'E488:')
 
