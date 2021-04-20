@@ -6411,7 +6411,9 @@ mch_write(
 	return;
 # endif
 
-    s[len] = NUL;
+    // Avoid writing to a string literal.
+    if (s[len] != NUL)
+	s[len] = NUL;
 
     if (!term_console)
     {
@@ -6433,7 +6435,7 @@ mch_write(
 	    return;
 	}
 
-	while((ch = s[++prefix]))
+	while ((ch = s[++prefix]))
 	    if (ch <= 0x1e && !(ch != '\n' && ch != '\r' && ch != '\b'
 						&& ch != '\a' && ch != '\033'))
 		break;
