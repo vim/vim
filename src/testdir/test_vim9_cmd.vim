@@ -1212,10 +1212,35 @@ def Test_redir_to_var()
   redir END
   assert_equal("\nsomething\nmore", result)
 
+  var d: dict<string>
+  redir => d.redir
+    echo 'dict'
+  redir END
+  assert_equal({redir: "\ndict"}, d)
+
+  var l = ['a', 'b', 'c']
+  redir => l[1]
+    echo 'list'
+  redir END
+  assert_equal(['a', "\nlist", 'c'], l)
+
+  var dl = {l: ['x']}
+  redir => dl.l[0]
+    echo 'dict-list'
+  redir END
+  assert_equal({l: ["\ndict-list"]}, dl)
+
   var lines =<< trim END
     redir => notexist
   END
   CheckDefFailure(lines, 'E1089:')
+
+  lines =<< trim END
+    var ls = 'asdf'
+    redir => ls[1]
+    redir END
+  END
+  CheckDefFailure(lines, 'E1141:')
 enddef
 
 

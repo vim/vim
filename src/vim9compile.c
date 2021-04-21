@@ -134,10 +134,14 @@ typedef enum {
 typedef struct {
     assign_dest_T   lhs_dest;	    // type of destination
 
-    char_u	    *lhs_name;	    // allocated name including
+    char_u	    *lhs_name;	    // allocated name excluding the last
 				    // "[expr]" or ".name".
     size_t	    lhs_varlen;	    // length of the variable without
 				    // "[expr]" or ".name"
+    char_u	    *lhs_whole;	    // allocated name including the last
+				    // "[expr]" or ".name" for :redir
+    size_t	    lhs_varlen_total; // length of the variable including
+				      // any "[expr]" or ".name"
     char_u	    *lhs_dest_end;  // end of the destination, including
 				    // "[expr]" or ".name".
 
@@ -5845,6 +5849,7 @@ compile_lhs(
 
     // compute the length of the destination without "[expr]" or ".name"
     lhs->lhs_varlen = var_end - var_start;
+    lhs->lhs_varlen_total = lhs->lhs_varlen;
     lhs->lhs_name = vim_strnsave(var_start, lhs->lhs_varlen);
     if (lhs->lhs_name == NULL)
 	return FAIL;
@@ -6073,7 +6078,10 @@ compile_lhs(
 	    {
 		p = skip_index(after);
 		if (*p != '[' && *p != '.')
+		{
+		    lhs->lhs_varlen_total = p - var_start;
 		    break;
+		}
 		after = p;
 	    }
 	    if (after > var_start + lhs->lhs_varlen)
@@ -8592,17 +8600,17 @@ compile_substitute(char_u *arg, exarg_T *eap, cctx_T *cctx)
 compile_redir(char_u *line, exarg_T *eap, cctx_T *cctx)
 {
     char_u *arg = eap->arg;
+    lhs_T	*lhs = &cctx->ctx_redir_lhs;
 
-    if (cctx->ctx_redir_lhs.lhs_name != NULL)
+    if (lhs->lhs_name != NULL)
     {
 	if (STRNCMP(arg, "END", 3) == 0)
 	{
-	    if (cctx->ctx_redir_lhs.lhs_append)
+	    if (lhs->lhs_append)
 	    {
-		if (compile_load_lhs(&cctx->ctx_redir_lhs,
-			     cctx->ctx_redir_lhs.lhs_name, NULL, cctx) == FAIL)
+		if (compile_load_lhs(lhs, lhs->lhs_name, NULL, cctx) == FAIL)
 		    return NULL;
-		if (cctx->ctx_redir_lhs.lhs_has_index)
+		if (lhs->lhs_has_index)
 		    emsg("redir with index not implemented yet");
 	    }
 
@@ -8610,13 +8618,22 @@ compile_redir(char_u *line, exarg_T *eap, cctx_T *cctx)
 	    // in the variable.
 	    generate_instr_type(cctx, ISN_REDIREND, &t_string);
 
-	    if (cctx->ctx_redir_lhs.lhs_append)
+	    if (lhs->lhs_append)
 		generate_instr_drop(cctx, ISN_CONCAT, 1);
 
-	    if (generate_store_lhs(cctx, &cctx->ctx_redir_lhs, -1) == FAIL)
+	    if (lhs->lhs_has_index)
+	    {
+		// Use the info in "lhs" to store the value at the index in the
+		// list or dict.
+		if (compile_assign_unlet(lhs->lhs_whole, lhs, TRUE,
+						      &t_string, cctx) == FAIL)
+		    return NULL;
+	    }
+	    else if (generate_store_lhs(cctx, lhs, -1) == FAIL)
 		return NULL;
 
-	    VIM_CLEAR(cctx->ctx_redir_lhs.lhs_name);
+	    VIM_CLEAR(lhs->lhs_name);
+	    VIM_CLEAR(lhs->lhs_whole);
 	    return arg + 3;
 	}
 	emsg(_(e_cannot_nest_redir));
@@ -8625,7 +8642,7 @@ compile_redir(char_u *line, exarg_T *eap, cctx_T *cctx)
 
     if (arg[0] == '=' && arg[1] == '>')
     {
-	int append = FALSE;
+	int	    append = FALSE;
 
 	// redirect to a variable is compiled
 	arg += 2;
@@ -8636,13 +8653,19 @@ compile_redir(char_u *line, exarg_T *eap, cctx_T *cctx)
 	}
 	arg = skipwhite(arg);
 
-	if (compile_assign_lhs(arg, &cctx->ctx_redir_lhs, CMD_redir,
+	if (compile_assign_lhs(arg, lhs, CMD_redir,
 						FALSE, FALSE, 1, cctx) == FAIL)
 	    return NULL;
 	generate_instr(cctx, ISN_REDIRSTART);
-	cctx->ctx_redir_lhs.lhs_append = append;
+	lhs->lhs_append = append;
+	if (lhs->lhs_has_index)
+	{
+	    lhs->lhs_whole = vim_strnsave(arg, lhs->lhs_varlen_total);
+	    if (lhs->lhs_whole == NULL)
+		return NULL;
+	}
 
-	return arg + cctx->ctx_redir_lhs.lhs_varlen;
+	return arg + lhs->lhs_varlen_total;
     }
 
     // other redirects are handled like at script level
@@ -9335,6 +9358,7 @@ erret:
 	    ret = FAIL;
 	}
 	vim_free(cctx.ctx_redir_lhs.lhs_name);
+	vim_free(cctx.ctx_redir_lhs.lhs_whole);
     }
 
     current_sctx = save_current_sctx;
