@@ -1230,6 +1230,11 @@ def Test_redir_to_var()
   redir END
   assert_equal({l: ["\ndict-list"]}, dl)
 
+  redir =>> d.redir
+    echo 'more'
+  redir END
+  assert_equal({redir: "\ndict\nmore"}, d)
+
   var lines =<< trim END
     redir => notexist
   END

@@ -6250,6 +6250,37 @@ compile_load_lhs(
 }
 
 /*
+ * Produce code for loading "lhs" and also take care of an index.
+ * Return OK/FAIL.
+ */
+    static int
+compile_load_lhs_with_index(lhs_T *lhs, char_u *var_start, cctx_T *cctx)
+{
+    compile_load_lhs(lhs, var_start, NULL, cctx);
+
+    if (lhs->lhs_has_index)
+    {
+	int range = FALSE;
+
+	// Get member from list or dict.  First compile the
+	// index value.
+	if (compile_assign_index(var_start, lhs, &range, cctx) == FAIL)
+	    return FAIL;
+	if (range)
+	{
+	    semsg(_(e_cannot_use_range_with_assignment_operator_str),
+								    var_start);
+	    return FAIL;
+	}
+
+	// Get the member.
+	if (compile_member(FALSE, cctx) == FAIL)
+	    return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Assignment to a list or dict member, or ":unlet" for the item, using the
  * information in "lhs".
  * Returns OK or FAIL.
@@ -6535,28 +6566,9 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    // for "+=", "*=", "..=" etc. first load the current value
 		    if (*op != '=')
 		    {
-			compile_load_lhs(&lhs, var_start, NULL, cctx);
-
-			if (lhs.lhs_has_index)
-			{
-			    int range = FALSE;
-
-			    // Get member from list or dict.  First compile the
-			    // index value.
-			    if (compile_assign_index(var_start, &lhs,
-							 &range, cctx) == FAIL)
-				goto theend;
-			    if (range)
-			    {
-				semsg(_(e_cannot_use_range_with_assignment_operator_str),
-								    var_start);
-				goto theend;
-			    }
-
-			    // Get the member.
-			    if (compile_member(FALSE, cctx) == FAIL)
-				goto theend;
-			}
+			if (compile_load_lhs_with_index(&lhs, var_start,
+								 cctx) == FAIL)
+			    goto theend;
 		    }
 
 		    // Compile the expression.  Temporarily hide the new local
@@ -8608,10 +8620,10 @@ compile_redir(char_u *line, exarg_T *eap, cctx_T *cctx)
 	{
 	    if (lhs->lhs_append)
 	    {
-		if (compile_load_lhs(lhs, lhs->lhs_name, NULL, cctx) == FAIL)
+		// First load the current variable value.
+		if (compile_load_lhs_with_index(lhs, lhs->lhs_whole,
+								 cctx) == FAIL)
 		    return NULL;
-		if (lhs->lhs_has_index)
-		    emsg("redir with index not implemented yet");
 	    }
 
 	    // Gets the redirected text and put it on the stack, then store it
