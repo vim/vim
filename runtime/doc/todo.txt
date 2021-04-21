@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Apr 17
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Apr 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,22 +38,7 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-make "skiprtp" also omit 'packpath'?
-
-- Implement blob index and slice assignment?
-  Make all of test_blob run in three ways
-
 Vim9 - Make everything work:
-- use CheckLegacyAndVim9Success(lines) in many more places
-- For builtin functions using tv_get_string*() use check_for_string() to be
-  more strict about the argument type (not a bool).
-    done: balloon_()
-- Check many more builtin function arguments at compile time.
-    map() could check that the return type of the function argument matches
-    the type of the list or dict member. (#8092)
-- Compile replacement of :s command: s/pat/\=expr/
-- Compile redir to local variable: var_redir_start().
-- Implement type cast at the script level.
 - Compile builtin functions that access local variables:
     islocked()
 - When evaluating constants for script variables, some functions could work:
@@ -70,11 +55,15 @@ Vim9 - Make everything work:
 - give an error for "echo Func()" if Func() does not return anything.
 - Using "windo echo expr" does not accept a line break inside "expr" (in a
   :def function and at script level in a not executed block). #7681
-- "assert_fails()" cannot access local variables.  Perhaps add this:
-	assertfails
-	   ... cmd ...
-	endassertfails /E99:.*cmd/
-  Similar to try/catch/endtry but without the boilerplate.
+- use CheckLegacyAndVim9Success(lines) in many more places
+- For builtin functions using tv_get_string*() use check_for_string() to be
+  more strict about the argument type (not a bool).
+    done: balloon_()
+- Check many more builtin function arguments at compile time.
+    map() could check that the return type of the function argument matches
+    the type of the list or dict member. (#8092)
+- Allow for using an autoload function name without quotes.  It is then loaded
+  (and compiled) right away.  #8124
 
 Once Vim9 is stable:
 - Change the help to prefer Vim9 syntax where appropriate

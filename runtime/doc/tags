@@ -8718,6 +8718,7 @@ quotestar	gui.txt	/*quotestar*
 quote~	change.txt	/*quote~*
 r	change.txt	/*r*
 r.vim	syntax.txt	/*r.vim*
+raku-unicode	ft_raku.txt	/*raku-unicode*
 rand()	eval.txt	/*rand()*
 random	eval.txt	/*random*
 range()	eval.txt	/*range()*
@@ -10129,6 +10130,8 @@ vim-dev	intro.txt	/*vim-dev*
 vim-mac	intro.txt	/*vim-mac*
 vim-modes	intro.txt	/*vim-modes*
 vim-modes-intro	intro.txt	/*vim-modes-intro*
+vim-raku	ft_raku.txt	/*vim-raku*
+vim-raku.txt	ft_raku.txt	/*vim-raku.txt*
 vim-script-intro	usr_41.txt	/*vim-script-intro*
 vim-use	intro.txt	/*vim-use*
 vim-variable	eval.txt	/*vim-variable*

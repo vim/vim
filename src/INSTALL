@@ -39,7 +39,7 @@ version of Vim that is small and starts up quickly, see the Makefile for how
 to disable the GUI and X11.  If you don't have GUI libraries and/or X11, these
 features will be disabled automatically.
 
-To built Vim on Ubuntu from scratch on a clean system using git:
+To build Vim on Ubuntu from scratch on a clean system using git:
 	Install tools required to be able to get and build Vim:
 	% sudo apt install git
 	% sudo apt install make
