@@ -6511,7 +6511,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		{
 		    // skip over the "=" and the expression
 		    p = skipwhite(op + oplen);
-		    compile_expr0(&p, cctx);
+		    (void)compile_expr0(&p, cctx);
 		}
 	    }
 	    else if (oplen > 0)
@@ -8525,6 +8525,7 @@ compile_substitute(char_u *arg, exarg_T *eap, cctx_T *cctx)
 	{
 	    garray_T	save_ga = cctx->ctx_instr;
 	    char_u	*end;
+	    int		expr_res;
 	    int		trailing_error;
 	    int		instr_count;
 	    isn_T	*instr = NULL;
@@ -8538,13 +8539,14 @@ compile_substitute(char_u *arg, exarg_T *eap, cctx_T *cctx)
 	    cctx->ctx_instr.ga_len = 0;
 	    cctx->ctx_instr.ga_maxlen = 0;
 	    cctx->ctx_instr.ga_data = NULL;
-	    compile_expr0(&cmd, cctx);
+	    expr_res = compile_expr0(&cmd, cctx);
 	    if (end[-1] == NUL)
 		end[-1] = delimiter;
 	    cmd = skipwhite(cmd);
 	    trailing_error = *cmd != delimiter && *cmd != NUL;
 
-	    if (trailing_error || ga_grow(&cctx->ctx_instr, 1) == FAIL)
+	    if (expr_res == FAIL || trailing_error
+				       || ga_grow(&cctx->ctx_instr, 1) == FAIL)
 	    {
 		if (trailing_error)
 		    semsg(_(e_trailing_arg), cmd);
