@@ -12071,6 +12071,7 @@ $as_echo "yes" >&6; }
 else
   as_fn_error $? "NOT FOUND!
       You need to install a terminal library; for example ncurses.
+      On Linux that would be the libncurses-dev package.
       Or specify the name of the library with --with-tlib." "$LINENO" 5
 fi
 rm -f core conftest.err conftest.$ac_objext \

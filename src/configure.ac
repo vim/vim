@@ -3482,6 +3482,7 @@ if test "x$olibs" = "x$LIBS"; then
 	AC_MSG_RESULT(yes),
 	AC_MSG_ERROR([NOT FOUND!
       You need to install a terminal library; for example ncurses.
+      On Linux that would be the libncurses-dev package.
       Or specify the name of the library with --with-tlib.]))
 fi
 
