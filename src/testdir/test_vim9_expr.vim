@@ -1575,16 +1575,25 @@ let $TESTVAR = 'testvar'
 
 " type casts
 def Test_expr7t()
-  var ls: list<string> = ['a', <string>g:string_empty]
-  var ln: list<number> = [<number>g:anint, <number>g:thefour]
-  var nr = <number>234
-  assert_equal(234, nr)
+  var lines =<< trim END
+      var ls: list<string> = ['a', <string>g:string_empty]
+      var ln: list<number> = [<number>g:anint, <number>g:thefour]
+      var nr = <number>234
+      assert_equal(234, nr)
+      var text =
+            <string>
+              'text'
+      if false
+        text = <number>'xxx'
+      endif
+  END
+  CheckDefAndScriptSuccess(lines)
 
-  CheckDefAndScriptFailure2(["var x = <nr>123"], 'E1010:', 'E15:', 1)
+  CheckDefAndScriptFailure(["var x = <nr>123"], 'E1010:', 1)
   CheckDefFailure(["var x = <number>"], 'E1097:', 3)
   CheckScriptFailure(['vim9script', "var x = <number>"], 'E15:', 2)
-  CheckDefAndScriptFailure2(["var x = <number >123"], 'E1068:', 'E15:', 1)
-  CheckDefAndScriptFailure2(["var x = <number 123"], 'E1104:', 'E15:', 1)
+  CheckDefAndScriptFailure(["var x = <number >123"], 'E1068:', 1)
+  CheckDefAndScriptFailure(["var x = <number 123"], 'E1104:', 1)
 enddef
 
 " test low level expression
