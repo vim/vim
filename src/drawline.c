@@ -1538,6 +1538,9 @@ win_line(
 	    if (area_attr != 0)
 	    {
 		char_attr = hl_combine_attr(line_attr, area_attr);
+		if (!highlight_match)
+		    // let search highlight show in Visual area if possible
+		    char_attr = hl_combine_attr(search_attr, char_attr);
 # ifdef FEAT_SYN_HL
 		char_attr = hl_combine_attr(syntax_attr, char_attr);
 # endif
