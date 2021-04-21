@@ -6406,14 +6406,12 @@ mch_write(
     char_u  *s,
     int	    len)
 {
+    char_u  *end = s + len;
+
 # ifdef VIMDLL
     if (gui.in_use)
 	return;
 # endif
-
-    // Avoid writing to a string literal.
-    if (s[len] != NUL)
-	s[len] = NUL;
 
     if (!term_console)
     {
@@ -6435,10 +6433,13 @@ mch_write(
 	    return;
 	}
 
-	while ((ch = s[++prefix]))
+	while (s + ++prefix < end)
+	{
+	    ch = s[prefix];
 	    if (ch <= 0x1e && !(ch != '\n' && ch != '\r' && ch != '\b'
 						&& ch != '\a' && ch != '\033'))
 		break;
+	}
 
 	if (p_wd)
 	{
