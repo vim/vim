@@ -449,4 +449,26 @@ func Test_timer_changing_function_list()
   call delete('XTest_timerchange')
 endfunc
 
+func Test_timer_outputting_message()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+    vim9script
+    setline(1, 'some text')
+    set showcmd ut=2000 cmdheight=1
+    timer_start(0, (_) => {
+            echon repeat('x', &columns - 11)
+        })
+  END
+  call writefile(lines, 'XTest_timermessage')
+  let buf = RunVimInTerminal('-S XTest_timermessage', #{rows: 6})
+  call term_sendkeys(buf, "l")
+  call term_wait(buf)
+  " should not get a hit-enter prompt
+  call WaitForAssert({-> assert_match('xxxxxxxxxxx', term_getline(buf, 6))})
+
+  call StopVimInTerminal(buf)
+  call delete('XTest_timermessage')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

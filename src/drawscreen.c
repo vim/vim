@@ -3002,6 +3002,13 @@ redraw_after_callback(int call_update_screen)
 	// keep the command line if possible
 	update_screen(VALID_NO_UPDATE);
 	setcursor();
+
+	if (msg_scrolled == 0)
+	{
+	    // don't want a hit-enter prompt when something else is displayed
+	    msg_didany = FALSE;
+	    need_wait_return = FALSE;
+	}
     }
     cursor_on();
 #ifdef FEAT_GUI
