@@ -1195,6 +1195,9 @@ au BufNewFile,BufRead *.pp			call dist#ft#FTpp()
 " Delphi or Lazarus program file
 au BufNewFile,BufRead *.dpr,*.lpr		setf pascal
 
+" Free Pascal makefile definition file
+au BufNewFile,BufRead *.fpc			setf fpcmake
+
 " PDF
 au BufNewFile,BufRead *.pdf			setf pdf
 
