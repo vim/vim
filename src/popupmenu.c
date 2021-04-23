@@ -40,10 +40,6 @@ static int pum_win_width;
 // makes pum_visible() return FALSE even when there is a popup menu.
 static int pum_pretend_not_visible = FALSE;
 
-// When set the popup menu will redraw soon using the pum_win_ values. Do not
-// draw over the poup menu area to avoid flicker.
-static int pum_will_redraw = FALSE;
-
 static int pum_set_selected(int n, int repeat);
 
 #define PUM_DEF_HEIGHT 10
@@ -392,7 +388,7 @@ pum_under_menu(int row, int col)
 	    && row >= pum_row
 	    && row < pum_row + pum_height
 	    && col >= pum_col - 1
-	    && col < pum_col + pum_width;
+	    && col < pum_col + pum_width + pum_scrollbar;
 }
 
 /*
@@ -1049,6 +1045,32 @@ pum_visible(void)
 }
 
 /*
+ * Return TRUE if the popup can be redrawn in the same position.
+ */
+    static int
+pum_in_same_position(void)
+{
+    return pum_window != curwin
+	    || (pum_win_row == curwin->w_wrow + W_WINROW(curwin)
+		&& pum_win_height == curwin->w_height
+		&& pum_win_col == curwin->w_wincol
+		&& pum_win_width == curwin->w_width);
+}
+
+/*
+ * Return TRUE when pum_may_redraw() will call pum_redraw().
+ * This means that the pum area should not be overwritten to avoid flicker.
+ */
+    int
+pum_redraw_in_same_position(void)
+{
+    if (!pum_visible() || pum_will_redraw)
+	return FALSE;  // nothing to do
+
+    return pum_in_same_position();
+}
+
+/*
  * Reposition the popup menu to adjust for window layout changes.
  */
     void
@@ -1061,11 +1083,7 @@ pum_may_redraw(void)
     if (!pum_visible() || pum_will_redraw)
 	return;  // nothing to do
 
-    if (pum_window != curwin
-	    || (pum_win_row == curwin->w_wrow + W_WINROW(curwin)
-		&& pum_win_height == curwin->w_height
-		&& pum_win_col == curwin->w_wincol
-		&& pum_win_width == curwin->w_width))
+    if (pum_in_same_position())
     {
 	// window position didn't change, redraw in the same position
 	pum_redraw();

@@ -741,6 +741,10 @@ EXTERN int	popup_visible INIT(= FALSE);
 EXTERN int	text_prop_frozen INIT(= 0);
 #endif
 
+// When set the popup menu will redraw soon using the pum_win_ values. Do not
+// draw over the poup menu area to avoid flicker.
+EXTERN int	pum_will_redraw INIT(= FALSE);
+
 /*
  * The window layout is kept in a tree of frames.  topframe points to the top
  * of the tree.

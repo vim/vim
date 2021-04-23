@@ -7,6 +7,7 @@ void pum_position_info_popup(win_T *wp);
 void pum_undisplay(void);
 void pum_clear(void);
 int pum_visible(void);
+int pum_redraw_in_same_position(void);
 void pum_may_redraw(void);
 int pum_get_height(void);
 void pum_set_event_info(dict_T *dict);
