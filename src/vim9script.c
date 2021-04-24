@@ -160,6 +160,28 @@ vim9_comment_start(char_u *p)
 #if defined(FEAT_EVAL) || defined(PROTO)
 
 /*
+ * "++nr" and "--nr" commands.
+ */
+    void
+ex_incdec(exarg_T *eap)
+{
+    char_u	*cmd = eap->cmd;
+    size_t	len = STRLEN(eap->cmd) + 6;
+
+    // This works like "nr += 1" or "nr -= 1".
+    eap->cmd = alloc(len);
+    if (eap->cmd == NULL)
+	return;
+    vim_snprintf((char *)eap->cmd, len, "%s %c= 1", cmd + 2,
+				     eap->cmdidx == CMD_increment ? '+' : '-');
+    eap->arg = eap->cmd;
+    eap->cmdidx = CMD_var;
+    ex_let(eap);
+    vim_free(eap->cmd);
+    eap->cmd = cmd;
+}
+
+/*
  * ":export let Name: type"
  * ":export const Name: type"
  * ":export def Name(..."

@@ -1837,5 +1837,21 @@ def Test_script_funcref_case()
   CheckScriptFailure(lines, 'E704:')
 enddef
 
+def Test_inc_dec()
+  var lines =<< trim END
+      var nr = 7
+      ++nr
+      echo nr
+      --nr
+      echo nr
+
+      var ll = [1, 2]
+      --ll[0]
+      ++ll[1]
+      echo ll
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

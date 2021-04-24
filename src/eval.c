@@ -2856,11 +2856,14 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 
 	// "." is only string concatenation when scriptversion is 1
 	// "+=", "-=" and "..=" are assignments
+	// "++" and "--" on the next line are a separate command.
 	p = eval_next_non_blank(*arg, evalarg, &getnext);
 	op = *p;
 	concat = op == '.' && (*(p + 1) == '.' || current_sctx.sc_version < 2);
 	if ((op != '+' && op != '-' && !concat) || p[1] == '='
 					       || (p[1] == '.' && p[2] == '='))
+	    break;
+	if (getnext && (op == '+' || op == '-') && p[0] == p[1])
 	    break;
 
 	evaluate = evalarg == NULL ? 0 : (evalarg->eval_flags & EVAL_EVALUATE);

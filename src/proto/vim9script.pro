@@ -5,6 +5,7 @@ void ex_vim9script(exarg_T *eap);
 int not_in_vim9(exarg_T *eap);
 int vim9_bad_comment(char_u *p);
 int vim9_comment_start(char_u *p);
+void ex_incdec(exarg_T *eap);
 void ex_export(exarg_T *eap);
 void free_imports_and_script_vars(int sid);
 void mark_imports_for_reload(int sid);

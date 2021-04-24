@@ -1846,6 +1846,14 @@ EXCMD(CMD_X,		"X",		ex_X,
 	EX_TRLBAR,
 	ADDR_NONE),
 
+// Commands that are recognized only in find_ex_command().
+EXCMD(CMD_increment,	"++",		ex_incdec,
+	EX_EXTRA|EX_NOTRLCOM|EX_SBOXOK|EX_CMDWIN|EX_LOCK_OK,
+	ADDR_NONE),
+EXCMD(CMD_decrement,	"--",		ex_incdec,
+	EX_EXTRA|EX_NOTRLCOM|EX_SBOXOK|EX_CMDWIN|EX_LOCK_OK,
+	ADDR_NONE),
+
 #undef EXCMD
 
 #ifndef DO_DECLARE_EXCMD

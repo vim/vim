@@ -3531,6 +3531,13 @@ find_ex_command(
 	    eap->cmdidx = CMD_eval;
 	    return eap->cmd;
 	}
+
+	// Check for "++nr" and "--nr".
+	if (p == eap->cmd && p[0] == p[1] && (*p == '+' || *p == '-'))
+	{
+	    eap->cmdidx = *p == '+' ? CMD_increment : CMD_decrement;
+	    return eap->cmd + 2;
+	}
     }
 #endif
 

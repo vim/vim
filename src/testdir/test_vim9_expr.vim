@@ -2768,19 +2768,6 @@ def Test_expr7_negate_add()
     echo + +n
   END
   CheckDefAndScriptFailure(lines, 'E15:')
-
-  lines =<< trim END
-    var n = 12
-    :1
-    ++n
-  END
-  CheckDefAndScriptFailure(lines, 'E1050:')
-  lines =<< trim END
-    var n = 12
-    :1
-    --n
-  END
-  CheckDefAndScriptFailure(lines, 'E1050:')
 enddef
 
 def Test_expr7_legacy_script()
