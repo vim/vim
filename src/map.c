@@ -2295,6 +2295,7 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
     int		noremap;
     int		expr;
     int		silent;
+    int		buffer;
     scid_T	sid;
     linenr_T	lnum;
     mapblock_T	**map_table = maphash;
@@ -2336,18 +2337,31 @@ f_mapset(typval_T *argvars, typval_T *rettv UNUSED)
     silent = dict_get_number(d, (char_u *)"silent") != 0;
     sid = dict_get_number(d, (char_u *)"sid");
     lnum = dict_get_number(d, (char_u *)"lnum");
-    if (dict_get_number(d, (char_u *)"buffer"))
+    buffer = dict_get_number(d, (char_u *)"buffer");
+    nowait = dict_get_number(d, (char_u *)"nowait") != 0;
+    // mode from the dict is not used
+
+    if (buffer)
     {
 	map_table = curbuf->b_maphash;
 	abbr_table = &curbuf->b_first_abbr;
     }
-    nowait = dict_get_number(d, (char_u *)"nowait") != 0;
-    // mode from the dict is not used
 
     // Delete any existing mapping for this lhs and mode.
-    arg = vim_strsave(lhs);
-    if (arg == NULL)
-	return;
+    if (buffer)
+    {
+	arg = alloc(STRLEN(lhs) + STRLEN("<buffer>") + 1);
+	if (arg == NULL)
+	    return;
+	STRCPY(arg, "<buffer>");
+	STRCPY(arg + 8, lhs);
+    }
+    else
+    {
+	arg = vim_strsave(lhs);
+	if (arg == NULL)
+	    return;
+    }
     do_map(1, arg, mode, is_abbr);
     vim_free(arg);
 
