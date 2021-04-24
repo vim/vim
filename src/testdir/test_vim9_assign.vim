@@ -1841,14 +1841,20 @@ def Test_inc_dec()
   var lines =<< trim END
       var nr = 7
       ++nr
-      echo nr
+      assert_equal(8, nr)
       --nr
-      echo nr
+      assert_equal(7, nr)
 
       var ll = [1, 2]
       --ll[0]
       ++ll[1]
-      echo ll
+      assert_equal([0, 3], ll)
+
+      g:count = 1
+      ++g:count
+      --g:count
+      assert_equal(1, g:count)
+      unlet g:count
   END
   CheckDefAndScriptSuccess(lines)
 enddef
