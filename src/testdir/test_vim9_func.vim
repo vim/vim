@@ -2165,6 +2165,14 @@ def Test_list_lambda()
   assert_match('def <lambda>\d\+(_: any): number\n1  return 0\n   enddef', body)
 enddef
 
+def Test_legacy_lambda()
+  legacy echo {x -> 'hello ' .. x}('foo')
+  var lines =<< trim END
+      echo {x -> 'hello ' .. x}('foo')
+  END
+  CheckDefAndScriptFailure(lines, 'E720:')
+enddef
+
 def DoFilterThis(a: string): list<string>
   # closure nested inside another closure using argument
   var Filter = (l) => filter(l, (_, v) => stridx(v, a) == 0)

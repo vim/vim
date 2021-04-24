@@ -2925,6 +2925,17 @@ parse_command_modifiers(
 			    cmod->cmod_flags |= CMOD_LOCKMARKS;
 			    continue;
 			}
+			if (checkforcmd_noparen(&eap->cmd, "legacy", 3))
+			{
+			    if (ends_excmd2(p, eap->cmd))
+			    {
+				*errormsg =
+				      _(e_vim9cmd_must_be_followed_by_command);
+				return FAIL;
+			    }
+			    cmod->cmod_flags |= CMOD_LEGACY;
+			    continue;
+			}
 
 			if (!checkforcmd_noparen(&eap->cmd, "leftabove", 5))
 			    break;

@@ -9052,6 +9052,10 @@ compile_def_function(
 	    goto erret;
 	}
 
+	// When using ":legacy cmd" always use compile_exec().
+	if (local_cmdmod.cmod_flags & CMOD_LEGACY)
+	    ea.cmdidx = CMD_legacy;
+
 	if (p == ea.cmd && ea.cmdidx != CMD_SIZE)
 	{
 	    if (cctx.ctx_skip == SKIP_YES)

@@ -1396,6 +1396,7 @@ tag		command		action ~
 |:lfdo|		:lfd[o]		execute command in each file in location list
 |:left|		:le[ft]		left align lines
 |:leftabove|	:lefta[bove]	make split window appear left or above
+|:legacy|	:leg[acy]	make following command use legacy script syntax
 |:let|		:let		assign a value to a variable or option
 |:lexpr|	:lex[pr]	read locations from expr and jump to first
 |:lfile|	:lf[ile]	read file with locations and jump to first

@@ -27,8 +27,9 @@ in_vim9script(void)
 {
     // "sc_version" is also set when compiling a ":def" function in legacy
     // script.
-    return current_sctx.sc_version == SCRIPT_VERSION_VIM9
-		|| (cmdmod.cmod_flags & CMOD_VIM9CMD);
+    return (current_sctx.sc_version == SCRIPT_VERSION_VIM9
+					 || (cmdmod.cmod_flags & CMOD_VIM9CMD))
+		&& !(cmdmod.cmod_flags & CMOD_LEGACY);
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
