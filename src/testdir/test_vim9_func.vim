@@ -2167,10 +2167,20 @@ enddef
 
 def Test_legacy_lambda()
   legacy echo {x -> 'hello ' .. x}('foo')
+
   var lines =<< trim END
       echo {x -> 'hello ' .. x}('foo')
   END
   CheckDefAndScriptFailure(lines, 'E720:')
+
+  lines =<< trim END
+      vim9script
+      def Func()
+        echo (() => 'no error')()
+      enddef
+      legacy call s:Func()
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def DoFilterThis(a: string): list<string>

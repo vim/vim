@@ -8767,6 +8767,7 @@ compile_def_function(
     int		ret = FAIL;
     sctx_T	save_current_sctx = current_sctx;
     int		save_estack_compiling = estack_compiling;
+    int		save_cmod_flags = cmdmod.cmod_flags;
     int		do_estack_push;
     int		new_def_function = FALSE;
 #ifdef FEAT_PROFILE
@@ -8810,6 +8811,9 @@ compile_def_function(
     // The line number will be set in next_line_from_context().
     current_sctx = ufunc->uf_script_ctx;
     current_sctx.sc_version = SCRIPT_VERSION_VIM9;
+
+    // Don't use the flag from ":legacy" here.
+    cmdmod.cmod_flags &= ~CMOD_LEGACY;
 
     // Make sure error messages are OK.
     do_estack_push = !estack_top_is_ufunc(ufunc, 1);
@@ -9403,6 +9407,7 @@ erret:
 
     current_sctx = save_current_sctx;
     estack_compiling = save_estack_compiling;
+    cmdmod.cmod_flags =	save_cmod_flags;
     if (do_estack_push)
 	estack_pop();
 
