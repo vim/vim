@@ -1,7 +1,7 @@
 " Vim completion script
 " Language:     C
 " Maintainer:   Bram Moolenaar <Bram@vim.org>
-" Last Change:  2021 Mar 20
+" Last Change:  2021 Apr 25
 
 vim9script noclear
 
@@ -9,7 +9,7 @@ var prepended: string
 var grepCache: dict<list<dict<any>>>
 
 # This function is used for the 'omnifunc' option.
-def ccomplete#Complete(findstart: number, abase: string): any #{{{1
+def ccomplete#Complete(findstart: bool, abase: string): any #{{{1
   if findstart
     # Locate the start of the item, including ".", "->" and "[...]".
     var line: string = getline('.')
@@ -17,12 +17,12 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
     var lastword: number = -1
     while start > 0
       if line[start - 1] =~ '\w'
-        start -= 1
+        --start
       elseif line[start - 1] =~ '\.'
         if lastword == -1
           lastword = start
         endif
-        start -= 1
+        --start
       elseif start > 1 && line[start - 2] == '-'
         && line[start - 1] == '>'
         if lastword == -1
@@ -32,16 +32,16 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
       elseif line[start - 1] == ']'
         # Skip over [...].
         var n: number = 0
-        start -= 1
+        --start
         while start > 0
-          start -= 1
+          --start
           if line[start] == '['
             if n == 0
               break
             endif
-            n -= 1
+            --n
           elseif line[start] == ']'  # nested []
-            n += 1
+            ++n
           endif
         endwhile
       else
@@ -100,21 +100,21 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
       # Skip over [...].
       var n: number = 0
       s = e
-      e += 1
+      ++e
       while e < strcharlen(base)
         if base[e] == ']'
           if n == 0
             break
           endif
-          n -= 1
+          --n
         elseif base[e] == '['  # nested [...]
-          n += 1
+          ++n
         endif
-        e += 1
+        ++e
       endwhile
-      e += 1
+      ++e
       add(items, base[s : e - 1])
-      arrays += 1
+      ++arrays
       s = e
     endif
   endwhile
@@ -133,7 +133,7 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
       # Handle multiple declarations on the same line.
       var col2: number = col - 1
       while line[col2] != ';'
-        col2 -= 1
+        --col2
       endwhile
       line = line[col2 + 1 :]
       col -= col2
@@ -143,7 +143,7 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
       # declaration.
       var col2: number = col - 1
       while line[col2] != ','
-        col2 -= 1
+        --col2
       endwhile
       if line[col2 + 1 : col - 1] =~ ' *[^ ][^ ]*  *[^ ]'
         line = line[col2 + 1 :]
@@ -248,7 +248,7 @@ def ccomplete#Complete(findstart: number, abase: string): any #{{{1
       break
     endif
     brackets = items[last] .. brackets
-    last -= 1
+    --last
   endwhile
 
   return res->map((_, v: dict<any>): dict<string> => Tagline2item(v, brackets))
@@ -259,7 +259,7 @@ def GetAddition( #{{{1
   match: string,
   memarg: list<dict<any>>,
   bracket: bool
-  ): string
+): string
   # Guess if the item is an array.
   if bracket && match(line, match .. '\s*\[') > 0
     return '['
@@ -339,8 +339,8 @@ def ParseTagline(line: string): dict<any> #{{{1
     if l[2] =~ '^/'
       # Find end of cmd, it may contain Tabs.
       while n < len(l) && l[n] !~ '/;"$'
-        n += 1
-        d['cmd'] = d['cmd'] .. '  ' .. l[n]
+        ++n
+        d['cmd'] ..= '  ' .. l[n]
       endwhile
     endif
     for i in range(n + 1, len(l) - 1)
@@ -404,7 +404,7 @@ def Tagcmd2extra( #{{{1
   cmd: string,
   name: string,
   fname: string
-  ): string
+): string
 # Turn a command from a tag line to something that is useful in the menu
   var x: string
   if cmd =~ '^/^'
@@ -428,7 +428,7 @@ def Nextitem( #{{{1
   items: list<string>,
   depth: number,
   all: number
-  ): list<dict<string>>
+): list<dict<string>>
 # Find composing type in "lead" and match items[0] with it.
 # Repeat this recursively for items[1], if it's there.
 # When resolving typedefs "depth" is used to avoid infinite recursion.
@@ -529,7 +529,7 @@ def StructMembers( #{{{1
   atypename: string,
   items: list<string>,
   all: number
-  ): list<dict<string>>
+): list<dict<string>>
 
 # Search for members of structure "typename" in tags files.
 # Return a list with resulting matches.
@@ -589,7 +589,7 @@ def StructMembers( #{{{1
       target = items[idx]
       break
     endif
-    idx += 1
+    ++idx
   endwhile
   # Put matching members in matches[].
   var matches: list<dict<string>>
@@ -617,7 +617,7 @@ def StructMembers( #{{{1
 
   if len(matches) > 0
     # Skip over next [...] items
-    idx += 1
+    ++idx
     while 1
       if idx >= len(items)
         return matches  # No further items, return the result.
@@ -625,7 +625,7 @@ def StructMembers( #{{{1
       if items[idx][0] != '['
         break
       endif
-      idx += 1
+      ++idx
     endwhile
 
     # More items following.  For each of the possible members find the
@@ -641,7 +641,7 @@ def SearchMembers( #{{{1
   matches: list<dict<any>>,
   items: list<string>,
   all: number
-  ): list<dict<string>>
+): list<dict<string>>
 
 # For matching members, find matches for following items.
 # When "all"  is non-zero  find all,  otherwise just  return 1  if there  is any
