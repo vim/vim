@@ -1194,10 +1194,31 @@ def Test_substitute_expr()
   endfor
   assert_equal('yes no abc', getline(1))
 
+  bwipe!
+
   CheckDefFailure(['s/from/\="x")/'], 'E488:')
   CheckDefFailure(['s/from/\="x"/9'], 'E488:')
 
-  bwipe!
+  # When calling a function the right instruction list needs to be restored.
+  var lines =<< trim END
+      vim9script
+      def Foo()
+          Bar([])
+      enddef
+      def Bar(l: list<number>)
+          s/^/\=Rep()/
+          for n in l[:]
+          endfor
+      enddef
+      def Rep(): string
+          return 'rep'
+      enddef
+      new
+      Foo()
+      assert_equal('rep', getline(1))
+      bwipe!
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_redir_to_var()

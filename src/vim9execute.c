@@ -601,6 +601,12 @@ func_return(ectx_T *ectx)
 				       + STACK_FRAME_IDX_OFF)->vval.v_number;
     ectx->ec_instr = INSTRUCTIONS(prev_dfunc);
 
+    // If the call was inside an ISN_SUBSTITUTE instruction need to use its
+    // list of instructions.
+    if (ectx->ec_instr[ectx->ec_iidx - 1].isn_type == ISN_SUBSTITUTE)
+	ectx->ec_instr = ectx->ec_instr[ectx->ec_iidx - 1]
+						      .isn_arg.subs.subs_instr;
+
     if (floc == NULL)
 	ectx->ec_funclocal.floc_restore_cmdmod = FALSE;
     else
