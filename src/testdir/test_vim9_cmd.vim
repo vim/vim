@@ -984,18 +984,26 @@ def Test_user_command_comment()
   command -nargs=1 Comd echom <q-args>
 
   var lines =<< trim END
-    vim9script
-    Comd # comment
+      vim9script
+      Comd # comment
   END
   CheckScriptSuccess(lines)
 
   lines =<< trim END
-    vim9script
-    Comd# comment
+      vim9script
+      Comd# comment
   END
   CheckScriptFailure(lines, 'E1144:')
-
   delcommand Comd
+
+  lines =<< trim END
+      vim9script
+      command Foo echo 'Foo'
+      Foo3Bar
+  END
+  CheckScriptFailure(lines, 'E1144: Command "Foo" is not followed by white space: Foo3Bar')
+
+  delcommand Foo
 enddef
 
 def Test_star_command()

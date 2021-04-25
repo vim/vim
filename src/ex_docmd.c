@@ -3673,8 +3673,11 @@ find_ex_command(
 	    && (eap->cmdidx < 0 ||
 		(cmdnames[eap->cmdidx].cmd_argt & EX_NONWHITE_OK) == 0))
     {
-	semsg(_(e_command_not_followed_by_white_space_str), eap->cmd);
+	char_u *cmd = vim_strnsave(eap->cmd, p - eap->cmd);
+
+	semsg(_(e_command_str_not_followed_by_white_space_str), cmd, eap->cmd);
 	eap->cmdidx = CMD_SIZE;
+	vim_free(cmd);
     }
 #endif
 
