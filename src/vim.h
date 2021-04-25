@@ -2457,6 +2457,7 @@ typedef enum {
 // flags for skip_vimgrep_pat()
 #define VGR_GLOBAL	1
 #define VGR_NOJUMP	2
+#define VGR_FUZZY	4
 
 // behavior for bad character, "++bad=" argument
 #define BAD_REPLACE	'?'	// replace it with '?' (default)
@@ -2710,5 +2711,8 @@ long elapsed(DWORD start_tick);
 #define EVAL_VAR_VERBOSE	1   // may give error message
 #define EVAL_VAR_NOAUTOLOAD	2   // do not use script autoloading
 #define EVAL_VAR_IMPORT		4   // may return special variable for import
+
+// Maximum number of characters that can be fuzzy matched
+#define MAX_FUZZY_MATCHES	256
 
 #endif // VIM__H
