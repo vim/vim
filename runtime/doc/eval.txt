@@ -7588,6 +7588,9 @@ matchfuzzy({list}, {str} [, {dict}])			*matchfuzzy()*
 		empty list is returned. If length of {str} is greater than
 		256, then returns an empty list.
 
+		Refer to |fuzzy-match| for more information about fuzzy
+		matching strings.
+
 		Example: >
 		   :echo matchfuzzy(["clay", "crow"], "cay")
 <		results in ["clay"]. >
