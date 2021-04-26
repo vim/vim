@@ -279,6 +279,7 @@ call_dfunc(
     // Store current execution state in stack frame for ISN_RETURN.
     STACK_TV_BOT(STACK_FRAME_FUNC_OFF)->vval.v_number = ectx->ec_dfunc_idx;
     STACK_TV_BOT(STACK_FRAME_IIDX_OFF)->vval.v_number = ectx->ec_iidx;
+    STACK_TV_BOT(STACK_FRAME_INSTR_OFF)->vval.v_string = (void *)ectx->ec_instr;
     STACK_TV_BOT(STACK_FRAME_OUTER_OFF)->vval.v_string = (void *)ectx->ec_outer;
     STACK_TV_BOT(STACK_FRAME_FUNCLOCAL_OFF)->vval.v_string = (void *)floc;
     STACK_TV_BOT(STACK_FRAME_IDX_OFF)->vval.v_number = ectx->ec_frame_idx;
@@ -592,6 +593,8 @@ func_return(ectx_T *ectx)
     ectx->ec_dfunc_idx = prev_dfunc_idx;
     ectx->ec_iidx = STACK_TV(ectx->ec_frame_idx
 					+ STACK_FRAME_IIDX_OFF)->vval.v_number;
+    ectx->ec_instr = (void *)STACK_TV(ectx->ec_frame_idx
+				       + STACK_FRAME_INSTR_OFF)->vval.v_string;
     ectx->ec_outer = (void *)STACK_TV(ectx->ec_frame_idx
 				       + STACK_FRAME_OUTER_OFF)->vval.v_string;
     floc = (void *)STACK_TV(ectx->ec_frame_idx
@@ -599,13 +602,6 @@ func_return(ectx_T *ectx)
     // restoring ec_frame_idx must be last
     ectx->ec_frame_idx = STACK_TV(ectx->ec_frame_idx
 				       + STACK_FRAME_IDX_OFF)->vval.v_number;
-    ectx->ec_instr = INSTRUCTIONS(prev_dfunc);
-
-    // If the call was inside an ISN_SUBSTITUTE instruction need to use its
-    // list of instructions.
-    if (ectx->ec_instr[ectx->ec_iidx - 1].isn_type == ISN_SUBSTITUTE)
-	ectx->ec_instr = ectx->ec_instr[ectx->ec_iidx - 1]
-						      .isn_arg.subs.subs_instr;
 
     if (floc == NULL)
 	ectx->ec_funclocal.floc_restore_cmdmod = FALSE;

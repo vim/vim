@@ -427,15 +427,17 @@ struct dfunc_S {
 // Number of entries used by stack frame for a function call.
 // - ec_dfunc_idx:   function index
 // - ec_iidx:        instruction index
+// - ec_instr:       instruction list pointer
 // - ec_outer:	     stack used for closures
 // - funclocal:	     function-local data
 // - ec_frame_idx:   previous frame index
 #define STACK_FRAME_FUNC_OFF 0
 #define STACK_FRAME_IIDX_OFF 1
-#define STACK_FRAME_OUTER_OFF 2
-#define STACK_FRAME_FUNCLOCAL_OFF 3
-#define STACK_FRAME_IDX_OFF 4
-#define STACK_FRAME_SIZE 5
+#define STACK_FRAME_INSTR_OFF 2
+#define STACK_FRAME_OUTER_OFF 3
+#define STACK_FRAME_FUNCLOCAL_OFF 4
+#define STACK_FRAME_IDX_OFF 5
+#define STACK_FRAME_SIZE 6
 
 
 #ifdef DEFINE_VIM9_GLOBALS
