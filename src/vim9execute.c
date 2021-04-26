@@ -543,11 +543,11 @@ func_return(ectx_T *ectx)
     estack_T	*entry;
     int		prev_dfunc_idx = STACK_TV(ectx->ec_frame_idx
 					+ STACK_FRAME_FUNC_OFF)->vval.v_number;
+    funclocal_T	*floc;
+#ifdef FEAT_PROFILE
     dfunc_T	*prev_dfunc = ((dfunc_T *)def_functions.ga_data)
 							      + prev_dfunc_idx;
-    funclocal_T	*floc;
 
-#ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
     {
 	ufunc_T *caller = prev_dfunc->df_ufunc;
