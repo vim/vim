@@ -925,6 +925,8 @@ pum_set_selected(int n, int repeat UNUSED)
 			    || (curtab != curtab_save
 						&& valid_tabpage(curtab_save)))
 		    {
+			int save_redr_status;
+
 			if (curtab != curtab_save && valid_tabpage(curtab_save))
 			    goto_tabpage_tp(curtab_save, FALSE, FALSE);
 
@@ -953,13 +955,20 @@ pum_set_selected(int n, int repeat UNUSED)
 			// Update the screen before drawing the popup menu.
 			// Enable updating the status lines.
 			pum_pretend_not_visible = TRUE;
+
 			// But don't draw text at the new popup menu position,
 			// it causes flicker.  When resizing we need to draw
 			// anyway, the position may change later.
+			// Also do not redraw the status line of the original
+			// current window here, to avoid it gets drawn with
+			// StatusLineNC for a moment and cause flicker.
 			pum_will_redraw = !resized;
+			save_redr_status = curwin_save->w_redr_status;
+			curwin_save->w_redr_status = FALSE;
 			update_screen(0);
 			pum_pretend_not_visible = FALSE;
 			pum_will_redraw = FALSE;
+			curwin_save->w_redr_status = save_redr_status;
 
 			if (!resized && win_valid(curwin_save))
 			{
