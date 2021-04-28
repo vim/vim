@@ -393,7 +393,7 @@ skip_expr(char_u **pp, evalarg_T *evalarg)
 }
 
 /*
- * Skip over an expression at "*pp".
+ * Skip over an expression at "*arg".
  * If in Vim9 script and line breaks are encountered, the lines are
  * concatenated.  "evalarg->eval_tofree" will be set accordingly.
  * "arg" is advanced to just after the expression.
@@ -451,7 +451,7 @@ skip_expr_concatenate(
 
 	    // Line breaks encountered, concatenate all the lines.
 	    *((char_u **)gap->ga_data) = *start;
-	    p = ga_concat_strings(gap, "");
+	    p = ga_concat_strings(gap, " ");
 
 	    // free the lines only when using getsourceline()
 	    if (evalarg->eval_cookie != NULL)
@@ -2059,6 +2059,7 @@ eval_func(
 /*
  * Get the next line source line without advancing.  But do skip over comment
  * lines.
+ * Only called for Vim9 script.
  */
     static char_u *
 getline_peek_skip_comments(evalarg_T *evalarg)
@@ -2116,6 +2117,7 @@ eval_next_non_blank(char_u *arg, evalarg_T *evalarg, int *getnext)
 
 /*
  * To be called after eval_next_non_blank() sets "getnext" to TRUE.
+ * Only called for Vim9 script.
  */
     char_u *
 eval_next_line(evalarg_T *evalarg)
@@ -2131,7 +2133,16 @@ eval_next_line(evalarg_T *evalarg)
     ++evalarg->eval_break_count;
     if (gap->ga_itemsize > 0 && ga_grow(gap, 1) == OK)
     {
-	// Going to concatenate the lines after parsing.
+	char_u *p = skipwhite(line);
+
+	// Going to concatenate the lines after parsing.  For an empty or
+	// comment line use an empty string.
+	if (*p == NUL || vim9_comment_start(p))
+	{
+	    vim_free(line);
+	    line = vim_strsave((char_u *)"");
+	}
+
 	((char_u **)gap->ga_data)[gap->ga_len] = line;
 	++gap->ga_len;
     }

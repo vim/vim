@@ -1887,6 +1887,7 @@ enddef
 def Test_expr7_lambda()
   var lines =<< trim END
       var La = () => 'result'
+      # comment
       assert_equal('result', La())
       assert_equal([1, 3, 5], [1, 2, 3]->map((key, val) => key + val))
 
@@ -1896,6 +1897,12 @@ def Test_expr7_lambda()
                 ['111']: 111 } : {}
             )
       assert_equal([{}, {111: 111}, {}], dll)
+
+      # comment halfway an expression
+      var Ref = () => 4
+      # comment
+      + 6
+      assert_equal(10, Ref())
 
       ll = range(3)
       map(ll, (k, v) => v == 8 || v
