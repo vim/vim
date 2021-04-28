@@ -2592,6 +2592,7 @@ enddef
 def Test_nested_lambda_in_closure()
   var lines =<< trim END
       vim9script
+      command WriteDone writefile(['Done'], 'XnestedDone')
       def Outer()
           def g:Inner()
               echo map([1, 2, 3], {_, v -> v + 1})
@@ -2599,10 +2600,9 @@ def Test_nested_lambda_in_closure()
           g:Inner()
       enddef
       defcompile
-      writefile(['Done'], 'XnestedDone')
-      quit
+      # not reached
   END
-  if !RunVim([], lines, '--clean')
+  if !RunVim([], lines, '--clean -c WriteDone -c quit')
     return
   endif
   assert_equal(['Done'], readfile('XnestedDone'))

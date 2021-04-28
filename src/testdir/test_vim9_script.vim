@@ -854,6 +854,20 @@ def Test_error_in_nested_function()
   assert_equal(0, g:test_var)
 enddef
 
+def Test_abort_after_error()
+  var lines =<< trim END
+      vim9script
+      while true
+        echo notfound
+      endwhile
+      g:gotthere = true
+  END
+  g:gotthere = false
+  CheckScriptFailure(lines, 'E121:')
+  assert_false(g:gotthere)
+  unlet g:gotthere
+enddef
+
 def Test_cexpr_vimscript()
   # only checks line continuation
   set errorformat=File\ %f\ line\ %l
@@ -3361,6 +3375,7 @@ def Test_vim9_autoload()
        return 'test'
      enddef
      g:some#name = 'name'
+     g:some#dict = {key: 'value'}
 
      def some#varargs(a1: string, ...l: list<string>): string
        return a1 .. l[0] .. l[1]
@@ -3374,6 +3389,7 @@ def Test_vim9_autoload()
 
   assert_equal('test', g:some#gettest())
   assert_equal('name', g:some#name)
+  assert_equal('value', g:some#dict.key)
   g:some#other = 'other'
   assert_equal('other', g:some#other)
 

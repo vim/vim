@@ -1768,14 +1768,14 @@ def Test_expr_error_no_assign()
       var x = 1 / 0
       echo x
   END
-  CheckScriptFailureList(lines, ['E1154:', 'E121:'])
+  CheckScriptFailure(lines, 'E1154:')
 
   lines =<< trim END
       vim9script
       var x = 1 % 0
       echo x
   END
-  CheckScriptFailureList(lines, ['E1154:', 'E121:'])
+  CheckScriptFailure(lines, 'E1154:')
 
   lines =<< trim END
       var x: string  'string'

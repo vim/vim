@@ -1175,7 +1175,8 @@ do_cmdline(
      */
     while (!((got_int
 #ifdef FEAT_EVAL
-		    || (did_emsg && force_abort) || did_throw
+		    || (did_emsg && (force_abort || in_vim9script()))
+		    || did_throw
 #endif
 	     )
 #ifdef FEAT_EVAL
@@ -1209,8 +1210,10 @@ do_cmdline(
 	/*
 	 * If a sourced file or executed function ran to its end, report the
 	 * unclosed conditional.
+	 * In Vim9 script do not give a second error, executing aborts after
+	 * the first one.
 	 */
-	if (!got_int && !did_throw
+	if (!got_int && !did_throw && !(did_emsg && in_vim9script())
 		&& ((getline_equal(fgetline, cookie, getsourceline)
 			&& !source_finished(fgetline, cookie))
 		    || (getline_equal(fgetline, cookie, get_func_line)
