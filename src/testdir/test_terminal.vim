@@ -2029,5 +2029,12 @@ func Test_terminal_nested_autocmd()
   augroup END
 endfunc
 
+func Test_terminal_adds_jump()
+  clearjumps
+  call term_start("ls", #{curwin: 1})
+  call assert_equal(1, getjumplist()[0]->len())
+  bwipe!
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab

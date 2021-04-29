@@ -473,6 +473,7 @@ term_start(
     ga_init2(&term->tl_scrollback_postponed, sizeof(sb_line_T), 300);
     ga_init2(&term->tl_osc_buf, sizeof(char), 300);
 
+    setpcmark();
     CLEAR_FIELD(split_ea);
     if (opt->jo_curwin)
     {
