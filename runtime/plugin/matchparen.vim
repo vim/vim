@@ -2,7 +2,7 @@ vim9script noclear
 
 # Vim plugin for showing matching parens
 # Maintainer:  Bram Moolenaar <Bram@vim.org>
-# Last Change: 2021 Apr 8
+# Last Change: 2021 Apr 29
 
 # Exit quickly when:
 # - this plugin was already loaded (or disabled)
@@ -29,7 +29,8 @@ var config: dict<any> = {
 config->extend(get(g:, 'matchparen_config', {}))
 
 if has('textprop')
-  prop_type_add('matchparen', {highlight: 'MatchParen'})
+  # `silent!` in case the property already exists
+  silent! prop_type_add('matchparen', {highlight: 'MatchParen'})
 endif
 
 # Commands {{{1
@@ -195,7 +196,7 @@ if has('textprop')
 else
 
   def RemoveHighlight()
-    if get(w:, 'matchparen')
+    if get(w:, 'matchparen') != 0
       silent! matchdelete(w:matchparen)
       w:matchparen = 0
     endif
