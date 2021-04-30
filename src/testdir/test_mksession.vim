@@ -179,6 +179,20 @@ func Test_mksession_large_winheight()
   call delete('Xtest_mks_winheight.out')
 endfunc
 
+func Test_mksession_zero_winheight()
+  set winminheight=0
+  edit SomeFile
+  split
+  wincmd _
+  mksession! Xtest_mks_zero
+  set winminheight&
+  let text = readfile('Xtest_mks_zero')->join()
+  "call delete('Xtest_mks_zero')
+  close
+  " check there is no devide by zero
+  call assert_notmatch('/ 0[^0-9]', text)
+endfunc
+
 func Test_mksession_rtp()
   " TODO: fix problem with backslashes on Win32
   CheckNotMSWindows

@@ -456,11 +456,19 @@ put_view(
 
 	// Restore the cursor line in the file and relatively in the
 	// window.  Don't use "G", it changes the jumplist.
-	if (fprintf(fd, "let s:l = %ld - ((%ld * winheight(0) + %ld) / %ld)",
+	if (wp->w_height <= 0)
+	{
+	    if (fprintf(fd, "let s:l = %ld", (long)wp->w_cursor.lnum) < 0)
+		return FAIL;
+	}
+	else if (fprintf(fd,
+		    "let s:l = %ld - ((%ld * winheight(0) + %ld) / %ld)",
 		    (long)wp->w_cursor.lnum,
 		    (long)(wp->w_cursor.lnum - wp->w_topline),
-		    (long)wp->w_height / 2, (long)wp->w_height) < 0
-		|| put_eol(fd) == FAIL
+		    (long)wp->w_height / 2, (long)wp->w_height) < 0)
+	    return FAIL;
+
+	if (put_eol(fd) == FAIL
 		|| put_line(fd, "if s:l < 1 | let s:l = 1 | endif") == FAIL
 		|| put_line(fd, "keepjumps exe s:l") == FAIL
 		|| put_line(fd, "normal! zt") == FAIL
