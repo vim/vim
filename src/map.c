@@ -1540,10 +1540,23 @@ check_abbr(
 			tb[j++] = Ctrl_V;	// special char needs CTRL-V
 		    if (has_mbyte)
 		    {
+			int	newlen;
+			char_u	*escaped;
+
 			// if ABBR_OFF has been added, remove it here
 			if (c >= ABBR_OFF)
 			    c -= ABBR_OFF;
-			j += (*mb_char2bytes)(c, tb + j);
+			newlen = (*mb_char2bytes)(c, tb + j);
+			tb[j + newlen] = NUL;
+			// Need to escape K_SPECIAL.
+			escaped = vim_strsave_escape_csi(tb + j);
+			if (escaped != NULL)
+			{
+			    newlen = STRLEN(escaped);
+			    mch_memmove(tb + j, escaped, newlen);
+			    j += newlen;
+			    vim_free(escaped);
+			}
 		    }
 		    else
 			tb[j++] = c;
