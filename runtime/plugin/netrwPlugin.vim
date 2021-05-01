@@ -151,10 +151,8 @@ endfun
 "             has already been called.
 fun! s:VimEnter(dirname)
 "  call Dfunc("s:VimEnter(dirname<".a:dirname.">) expand(%)<".expand("%").">")
-  let curwin       = winnr()
   let s:vimentered = 1
-  windo call s:LocalBrowse(expand("%:p"))
-  exe curwin."wincmd w"
+  call range(1, winnr('$'))->map({_, v -> win_execute(win_getid(v), 'call expand("%:p")->s:LocalBrowse()')})
 "  call Dret("s:VimEnter")
 endfun
 
