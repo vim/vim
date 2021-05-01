@@ -529,6 +529,10 @@ vimLoadLib(char *name)
 {
     HINSTANCE	dll = NULL;
 
+    // No need to load any library when registering OLE.
+    if (found_register_arg)
+	return dll;
+
     // NOTE: Do not use mch_dirname() and mch_chdir() here, they may call
     // vimLoadLib() recursively, which causes a stack overflow.
     if (exe_path == NULL)

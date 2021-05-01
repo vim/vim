@@ -161,6 +161,20 @@ main
 	    break;
 	}
 #endif
+#ifdef MSWIN
+    // Need to find "-register" before loading any libraries.
+    for (i = 1; i < argc; ++i)
+	if (STRICMP(argv[i] + 1, "register") == 0
+				   && (argv[i][0] == '-' || argv[i][0] == '/'))
+	{
+	    found_register_arg = TRUE;
+	    break;
+	}
+#endif
+
+    /*
+     * Various initialisations shared with tests.
+     */
     common_init(&params);
 
 #ifdef VIMDLL

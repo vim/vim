@@ -1311,6 +1311,7 @@ EXTERN int  wild_menu_showing INIT(= 0);
 #ifdef MSWIN
 EXTERN char_u	toupper_tab[256];	// table for toupper()
 EXTERN char_u	tolower_tab[256];	// table for tolower()
+EXTERN int	found_register_arg INIT(= FALSE);
 #endif
 
 #ifdef FEAT_LINEBREAK
