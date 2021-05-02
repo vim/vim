@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Apr 11
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Apr 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -157,6 +157,11 @@ Compilation is done when any of these is encountered:
 							*E1091*
 If compilation fails it is not tried again on the next call, instead this
 error is given: "E1091: Function is not compiled: {name}".
+Compilation will fail when encountering a user command that has not been
+created yet.  In this case you can call `execute()` to invoke it at runtime. >
+	def MyFunc()
+	  execute('DefinedLater')
+	enddef
 
 `:def` has no options like `:function` does: "range", "abort", "dict" or
 "closure".  A `:def` function always aborts on an error (unless `:silent!` was
@@ -605,6 +610,44 @@ Notes:
 	echo [1, 2]
 		[3, 4]
 
+
+White space ~
+
+Vim9 script enforces proper use of white space.  This is no longer allowed: >
+	var name=234	# Error!
+	var name= 234	# Error!
+	var name =234	# Error!
+There must be white space before and after the "=": >
+	var name = 234	# OK
+White space must also be put before the # that starts a comment after a
+command: >
+	var name = 234# Error!
+	var name = 234 # OK
+
+White space is required around most operators.
+
+White space is required in a sublist (list slice) around the ":", except at
+the start and end: >
+	otherlist = mylist[v : count]  	# v:count has a different meaning
+	otherlist = mylist[:]		# make a copy of the List
+	otherlist = mylist[v :]
+	otherlist = mylist[: v]
+
+White space is not allowed:
+- Between a function name and the "(": >
+	Func (arg)	   # Error!
+	Func
+	     \ (arg)	   # Error!
+	Func
+	      (arg)	   # Error!
+	Func(arg)	   # OK
+	Func(
+	      arg)	   # OK
+	Func(
+	      arg	   # OK
+	      )
+
+
 No curly braces expansion ~
 
 |curly-braces-names| cannot be used.
@@ -656,6 +699,17 @@ Comparators ~
 The 'ignorecase' option is not used for comparators that use strings.
 
 
+Abort after error ~
+
+In legacy script, when an error is encountered, Vim continues to execute
+following lines.  This can lead to a long sequence of errors and need to type
+CTRL-C to stop it.  In Vim9 script execution of commands stops at the first
+error.  Example: >
+	vim9script
+	var x = does-not-exist
+	echo 'not executed'
+
+
 For loop ~
 
 Legacy Vim script has some tricks to make a for loop over a list handle
@@ -677,43 +731,6 @@ In compiled Vim9 script you get:
 	3
 Generally, you should not change the list that is iterated over.  Make a copy
 first if needed.
-
-
-White space ~
-
-Vim9 script enforces proper use of white space.  This is no longer allowed: >
-	var name=234	# Error!
-	var name= 234	# Error!
-	var name =234	# Error!
-There must be white space before and after the "=": >
-	var name = 234	# OK
-White space must also be put before the # that starts a comment after a
-command: >
-	var name = 234# Error!
-	var name = 234 # OK
-
-White space is required around most operators.
-
-White space is required in a sublist (list slice) around the ":", except at
-the start and end: >
-	otherlist = mylist[v : count]  	# v:count has a different meaning
-	otherlist = mylist[:]		# make a copy of the List
-	otherlist = mylist[v :]
-	otherlist = mylist[: v]
-
-White space is not allowed:
-- Between a function name and the "(": >
-	Func (arg)	   # Error!
-	Func
-	     \ (arg)	   # Error!
-	Func
-	      (arg)	   # Error!
-	Func(arg)	   # OK
-	Func(
-	      arg)	   # OK
-	Func(
-	      arg	   # OK
-	      )
 
 
 Conditions and expressions ~

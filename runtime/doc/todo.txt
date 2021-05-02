@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Apr 21
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Apr 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,13 +39,6 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 Vim9 - Make everything work:
-- Compile builtin functions that access local variables:
-    islocked()
-- When evaluating constants for script variables, some functions could work:
-    has('asdf'), len('string')
-  eval_variable().  Should pass the ".xxx" that follows and return that.
-- Make "++nr" work.  "++g:count" doesn't work, thinks it is a range.
-- Reload: How to make sure type of script function hasn't changed?
 - expandcmd() with `=expr` in filename uses legacy expression.
 - eval_expr() in ex_cexpr()
 - eval_expr() call in dbg_parsearg() and debuggy_find()
@@ -64,6 +57,17 @@ Vim9 - Make everything work:
     the type of the list or dict member. (#8092)
 - Allow for using an autoload function name without quotes.  It is then loaded
   (and compiled) right away.  #8124
+- Test more expressions in legacy and Vim9 script, using
+  CheckLegacyAndVim9Success()
+- Test try/catch and throw better, also nested.
+  Test that return inside try/finally jumps to finally and then returns.
+- Test that a function defined inside a :def function is local to that
+  function, g: functions can be defined and script-local functions cannot be
+  defined.
+- Make debugging work - at least per function.  Need to recompile a function
+  to step through it line-by-line?  Evaluate the stack and variables on the
+  stack?
+- Reserve command for future use: :type, :class, :enum
 
 Once Vim9 is stable:
 - Change the help to prefer Vim9 syntax where appropriate
@@ -73,34 +77,17 @@ Once Vim9 is stable:
 - Use Vim9 for runtime files.
     PR #7497 for autoload/ccomplete.vim
 
-Also for Vim9:
+Further Vim9 improvements, possibly after launch:
 - better implementation for partial and tests for that.
-- Make "g:imported = Export.exported" work in Vim9 script.
-- Make Foo.Bar() work to call the dict function. (#5676)
-- Error in any command in "vim9script" aborts sourcing.
-- Find a way to test expressions in legacy and Vim9 script without duplication
-- Test try/catch and throw better, also nested.
-  Test that return inside try/finally jumps to finally and then returns.
-- Test that a function defined inside a :def function is local to that
-  function, g: functions can be defined and script-local functions cannot be
-  defined.
-- compile options that are an expression, e.g. "expr:" in 'spellsuggest',
+- Compile options that are an expression, e.g. "expr:" in 'spellsuggest',
   'foldexpr', 'foldtext', 'printexpr', 'diffexpr', 'patchexpr', 'charconvert',
   'balloonexpr', 'includeexpr', 'indentexpr', 'formatexpr'.
   Give an error if compilation fails. (#7625)
   Use the location where the option was set for deciding whether it's to be
   evaluated in Vim9 script context.
-- implement :type; import type declaration.
-- implement enum;  import enum.
+- implement :type, import type declaration.
+- implement enum,  import enum.
 - Future work: See |vim9-classes|
-	Define the keywords and commands to make sure it will be backwards
-	compatible.
-- Make debugging work - at least per function.  Need to recompile a function
-  to step through it line-by-line?  Evaluate the stack and variables on the
-  stack?
-- List commands when 'verbose' is set or :verbose is used.
-
-Further Vim9 improvements, possibly after launch:
 - For range: make table of first ASCII character with flag to quickly check if
   it can be a Vim9 command. E.g. "+" can, but "." can't.
 - compile get_lambda_tv() in popup_add_timeout()
@@ -108,6 +95,9 @@ Further Vim9 improvements, possibly after launch:
 - Make accessing varargs faster: arg[expr]
 	EVAL expr
 	LOADVARARG (varargs idx)
+- When evaluating constants for script variables, some functions could work:
+    has(featureName), len(someString)
+- Implement as part of an expression: ++expr, --expr, expr++, expr--.
 
 
 Popup windows:
@@ -1403,9 +1393,6 @@ Patch to make tests pass with EBCDIC. (Owen Leibman, 2016 Apr 10)
 
 Add ":read :command", to insert the output of an Ex command?
 Can already do it with ":$put =execute('command')".
-
-When repeating the 'confirm' dialog one needs to press Enter. (ds26gte, 2016
-Apr 17)  #762
 
 exists(":tearoff") does not tell you if the command is implemented. (Tony
 Mechelynck)  Perhaps use exists("::tearoff") to check?

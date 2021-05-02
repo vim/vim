@@ -2630,6 +2630,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :left	change.txt	/*:left*
 :lefta	windows.txt	/*:lefta*
 :leftabove	windows.txt	/*:leftabove*
+:leg	vim9.txt	/*:leg*
+:legacy	vim9.txt	/*:legacy*
 :let	eval.txt	/*:let*
 :let%=	eval.txt	/*:let%=*
 :let+=	eval.txt	/*:let+=*
@@ -6439,6 +6441,7 @@ floating-point-format	eval.txt	/*floating-point-format*
 floating-point-precision	eval.txt	/*floating-point-precision*
 floor()	eval.txt	/*floor()*
 fmod()	eval.txt	/*fmod()*
+fname-variable	eval.txt	/*fname-variable*
 fname_diff-variable	eval.txt	/*fname_diff-variable*
 fname_in-variable	eval.txt	/*fname_in-variable*
 fname_new-variable	eval.txt	/*fname_new-variable*
@@ -9875,6 +9878,7 @@ v:exiting	eval.txt	/*v:exiting*
 v:false	eval.txt	/*v:false*
 v:fcs_choice	eval.txt	/*v:fcs_choice*
 v:fcs_reason	eval.txt	/*v:fcs_reason*
+v:fname	eval.txt	/*v:fname*
 v:fname_diff	eval.txt	/*v:fname_diff*
 v:fname_in	eval.txt	/*v:fname_in*
 v:fname_new	eval.txt	/*v:fname_new*

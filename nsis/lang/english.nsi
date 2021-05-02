@@ -24,7 +24,7 @@ LangString ^UninstallCaption ${LANG_ENGLISH} \
 #    "Destination Folder (Must end with $\"vim$\")"
 
 LangString str_show_readme          ${LANG_ENGLISH} \
-    "Show README after installation finish"
+    "Show README after installation finished"
 
 # Install types:
 LangString str_type_typical         ${LANG_ENGLISH} \

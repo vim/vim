@@ -1,4 +1,4 @@
-*usr_02.txt*	For Vim version 8.2.  Last change: 2019 Nov 21
+*usr_02.txt*	For Vim version 8.2.  Last change: 2021 Apr 24
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -532,7 +532,7 @@ Summary: 					*help-summary*  >
 <   for the corresponding flag of the 'cpoptions' settings, substitute <letter>
    by a specific flag, e.g.: >
 	:help cpo-;
-<   And for the guioption flags: >
+<   And for the 'guioptions' flags: >
 	:help go-<letter>
 
 4) Normal mode commands do not have a prefix. To go to the help page for the

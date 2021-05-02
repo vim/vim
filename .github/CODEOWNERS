@@ -78,6 +78,7 @@ runtime/ftplugin/css.vim		@dkearns
 runtime/ftplugin/cucumber.vim		@tpope
 runtime/ftplugin/eiffel.vim		@dkearns
 runtime/ftplugin/eruby.vim		@tpope @dkearns
+runtime/ftplugin/fpcmake.vim		@dkearns
 runtime/ftplugin/freebasic.vim		@dkearns
 runtime/ftplugin/git.vim		@tpope
 runtime/ftplugin/gitcommit.vim		@tpope
@@ -98,6 +99,7 @@ runtime/ftplugin/matlab.vim		@cecamp
 runtime/ftplugin/modula3.vim		@dkearns
 runtime/ftplugin/nroff.vim		@a-vrma
 runtime/ftplugin/nsis.vim		@k-takata
+runtime/ftplugin/pascal.vim		@dkearns
 runtime/ftplugin/pdf.vim		@tpope
 runtime/ftplugin/ps1.vim		@heaths
 runtime/ftplugin/ps1xml.vim		@heaths
@@ -157,6 +159,7 @@ runtime/syntax/dtd.vim			@chrisbra
 runtime/syntax/elmfilt.vim		@cecamp
 runtime/syntax/eruby.vim		@tpope @dkearns
 runtime/syntax/exports.vim		@cecamp
+runtime/syntax/fpcmake.vim		@dkearns
 runtime/syntax/git.vim			@tpope
 runtime/syntax/gitcommit.vim		@tpope
 runtime/syntax/gitconfig.vim		@tpope
@@ -181,6 +184,7 @@ runtime/syntax/modula3.vim		@dkearns
 runtime/syntax/netrw.vim		@cecamp
 runtime/syntax/nroff.vim		@jmarshall
 runtime/syntax/nsis.vim			@k-takata
+runtime/syntax/pascal.vim		@dkearns
 runtime/syntax/pdf.vim			@tpope
 runtime/syntax/php.vim			@TysonAndre
 runtime/syntax/privoxy.vim		@dkearns
