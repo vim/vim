@@ -302,7 +302,7 @@ FunctionEnd
 
 Function LaunchApplication
    SetOutPath $0
-   ShellExecAsUser::ShellExecAsUser "" "$0\gvim.exe" "-R $"$0\README.txt$""
+   ShellExecAsUser::ShellExecAsUser "" "$0\gvim.exe" '-R "$0\README.txt"'
 FunctionEnd
 
 ##########################################################
