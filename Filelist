@@ -437,7 +437,6 @@ SRC_UNIX =	\
 		src/gui_gtk_x11.c \
 		src/gui_gtk_res.xml \
 		src/gui_motif.c \
-		src/gui_xim.c \
 		src/gui_xmdlg.c \
 		src/gui_xmebw.c \
 		src/gui_xmebw.h \
@@ -461,7 +460,6 @@ SRC_UNIX =	\
 		src/proto/gui_gtk_x11.pro \
 		src/proto/gui_gtk_gresources.pro \
 		src/proto/gui_motif.pro \
-		src/proto/gui_xim.pro \
 		src/proto/gui_xmdlg.pro \
 		src/proto/gui_x11.pro \
 		src/proto/if_xcmdsrv.pro \
@@ -481,6 +479,7 @@ SRC_UNIX =	\
 
 # source files for both DOS and Unix
 SRC_DOS_UNIX =	\
+		src/gui_xim.c \
 		src/if_cscope.c \
 		src/if_cscope.h \
 		src/if_lua.c \
@@ -493,6 +492,7 @@ SRC_DOS_UNIX =	\
 		src/if_py_both.h \
 		src/if_ruby.c \
 		src/if_tcl.c \
+		src/proto/gui_xim.pro \
 		src/proto/if_cscope.pro \
 		src/proto/if_lua.pro \
 		src/proto/if_mzsch.pro \
