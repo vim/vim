@@ -908,6 +908,9 @@ ambw_end:
 		init_highlight(FALSE, FALSE);
 	    }
 #endif
+#ifdef FEAT_TERMINAL
+	    term_update_colors_all();
+#endif
 	}
 	else
 	    errmsg = e_invarg;
@@ -2176,7 +2179,7 @@ ambw_end:
     else if (varp == &curwin->w_p_wcr)
     {
 	if (curwin->w_buffer->b_term != NULL)
-	    term_update_colors();
+	    term_update_colors(curwin->w_buffer->b_term);
     }
 # if defined(MSWIN)
     // 'termwintype'
