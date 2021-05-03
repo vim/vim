@@ -7287,7 +7287,7 @@ nfa_regtry(
 
 /*
  * Match a regexp against a string ("line" points to the string) or multiple
- * lines ("line" is NULL, use reg_getline()).
+ * lines (if "line" is NULL, use reg_getline()).
  *
  * Returns <= 0 for failure, number of lines contained in the match otherwise.
  */
