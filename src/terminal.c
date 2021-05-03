@@ -4589,10 +4589,8 @@ create_vterm(term_T *term, int rows, int cols)
  * Called when 'wincolor' was set.
  */
     void
-term_update_colors(void)
+term_update_colors(term_T *term)
 {
-    term_T *term = curwin->w_buffer->b_term;
-
     if (term->tl_vterm == NULL)
 	return;
     init_default_colors(term, curwin);
@@ -4602,6 +4600,18 @@ term_update_colors(void)
 	    &term->tl_default_color.bg);
 
     redraw_later(NOT_VALID);
+}
+
+/*
+ * Called when 'background' was set.
+ */
+    void
+terms_update_colors(void)
+{
+    term_T *tp;
+    FOR_ALL_TERMS(tp)
+	if (tp != NULL)
+	    term_update_colors(tp);
 }
 
 /*

@@ -911,6 +911,10 @@ ambw_end:
 	}
 	else
 	    errmsg = e_invarg;
+#ifdef FEAT_TERMINAL
+	terms_update_colors();
+
+#endif
     }
 
     // 'wildmode'
@@ -2176,7 +2180,7 @@ ambw_end:
     else if (varp == &curwin->w_p_wcr)
     {
 	if (curwin->w_buffer->b_term != NULL)
-	    term_update_colors();
+	    term_update_colors(curwin->w_buffer->b_term);
     }
 # if defined(MSWIN)
     // 'termwintype'
