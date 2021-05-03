@@ -5921,7 +5921,7 @@ vgr_match_buflines(
     int		found_match = FALSE;
     long	lnum;
     colnr_T	col;
-    int		pat_len = STRLEN(spat);
+    int		pat_len = (int)STRLEN(spat);
 
     for (lnum = 1; lnum <= buf->b_ml.ml_line_count && *tomatch > 0; ++lnum)
     {

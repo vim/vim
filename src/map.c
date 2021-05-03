@@ -1552,7 +1552,7 @@ check_abbr(
 			escaped = vim_strsave_escape_csi(tb + j);
 			if (escaped != NULL)
 			{
-			    newlen = STRLEN(escaped);
+			    newlen = (int)STRLEN(escaped);
 			    mch_memmove(tb + j, escaped, newlen);
 			    j += newlen;
 			    vim_free(escaped);
