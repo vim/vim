@@ -187,9 +187,9 @@ func Test_mksession_zero_winheight()
   mksession! Xtest_mks_zero
   set winminheight&
   let text = readfile('Xtest_mks_zero')->join()
-  "call delete('Xtest_mks_zero')
+  call delete('Xtest_mks_zero')
   close
-  " check there is no devide by zero
+  " check there is no divide by zero
   call assert_notmatch('/ 0[^0-9]', text)
 endfunc
 
