@@ -336,6 +336,13 @@ def Test_expand()
   close
 enddef
 
+def Test_expandcmd()
+  $FOO = "blue"
+  assert_equal("blue sky", expandcmd("`=$FOO .. ' sky'`"))
+
+  assert_equal("yes", expandcmd("`={a: 'yes'}['a']`"))
+enddef
+
 def Test_extend_arg_types()
   g:number_one = 1
   g:string_keep = 'keep'
