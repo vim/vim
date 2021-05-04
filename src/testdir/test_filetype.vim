@@ -536,6 +536,7 @@ let s:filename_checks = {
     \ 'wget': ['.wgetrc', 'wgetrc'],
     \ 'winbatch': ['file.wbt'],
     \ 'wml': ['file.wml'],
+    \ 'wrap': ['file.wrap'],
     \ 'wsh': ['file.wsf', 'file.wsc'],
     \ 'wsml': ['file.wsml'],
     \ 'wvdial': ['wvdial.conf', '.wvdialrc'],
