@@ -1443,11 +1443,14 @@ exec_instructions(ectx_T *ectx)
 		break;
 
 	    case ISN_CEXPR_AUCMD:
+#ifdef FEAT_QUICKFIX
 		if (trigger_cexpr_autocmd(iptr->isn_arg.number) == FAIL)
 		    goto on_error;
+#endif
 		break;
 
 	    case ISN_CEXPR_CORE:
+#ifdef FEAT_QUICKFIX
 		{
 		    exarg_T ea;
 		    int	    res;
@@ -1463,6 +1466,7 @@ exec_instructions(ectx_T *ectx)
 		    if (res == FAIL)
 			goto on_error;
 		}
+#endif
 		break;
 
 	    // execute Ex command from pieces on the stack
@@ -4415,10 +4419,13 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 					iptr->isn_arg.number ? " append" : "");
 		break;
 	    case ISN_CEXPR_AUCMD:
+#ifdef FEAT_QUICKFIX
 		smsg("%s%4d CEXPR pre %s", pfx, current,
 				       cexpr_get_auname(iptr->isn_arg.number));
+#endif
 		break;
 	    case ISN_CEXPR_CORE:
+#ifdef FEAT_QUICKFIX
 		{
 		    cexprref_T	    *cer = iptr->isn_arg.cexpr.cexpr_ref;
 
@@ -4427,6 +4434,7 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 				       cer->cer_forceit ? "!" : "",
 				       cer->cer_cmdline);
 		}
+#endif
 		break;
 	    case ISN_SUBSTITUTE:
 		{

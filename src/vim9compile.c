@@ -8704,6 +8704,7 @@ compile_redir(char_u *line, exarg_T *eap, cctx_T *cctx)
     return compile_exec(line, eap, cctx);
 }
 
+#ifdef FEAT_QUICKFIX
     static char_u *
 compile_cexpr(char_u *line, exarg_T *eap, cctx_T *cctx)
 {
@@ -8731,6 +8732,7 @@ compile_cexpr(char_u *line, exarg_T *eap, cctx_T *cctx)
 
     return p;
 }
+#endif
 
 /*
  * Add a function to the list of :def functions.
@@ -9296,8 +9298,13 @@ compile_def_function(
 	    case CMD_laddexpr:
 	    case CMD_cgetexpr:
 	    case CMD_lgetexpr:
+#ifdef FEAT_QUICKFIX
 		    ea.arg = p;
 		    line = compile_cexpr(line, &ea, &cctx);
+#else
+		    ex_ni(&ea);
+		    line = NULL;
+#endif
 		    break;
 
 	    // TODO: any other commands with an expression argument?
