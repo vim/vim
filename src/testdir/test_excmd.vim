@@ -591,4 +591,10 @@ func Test_sandbox()
   sandbox call Sandbox_tests()
 endfunc
 
+func Test_command_not_implemented_E319()
+  if !has('mzscheme')
+    call assert_fails('mzscheme', 'E319:')
+  endif
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

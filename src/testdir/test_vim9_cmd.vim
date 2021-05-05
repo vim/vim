@@ -13,6 +13,7 @@ def Test_vim9cmd()
     vim9cm assert_equal('yes', y)
   END
   CheckScriptSuccess(lines)
+  assert_fails('vim9cmd', 'E1164:')
 enddef
 
 def Test_edit_wildcards()
