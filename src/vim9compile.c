@@ -9641,6 +9641,7 @@ delete_instr(isn_T *isn)
 	    break;
 
 	case ISN_CEXPR_CORE:
+	    vim_free(isn->isn_arg.cexpr.cexpr_ref->cer_cmdline);
 	    vim_free(isn->isn_arg.cexpr.cexpr_ref);
 	    break;
 
