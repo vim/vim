@@ -1442,6 +1442,29 @@ exec_instructions(ectx_T *ectx)
 		}
 		break;
 
+	    case ISN_CEXPR_AUCMD:
+		if (trigger_cexpr_autocmd(iptr->isn_arg.number) == FAIL)
+		    goto on_error;
+		break;
+
+	    case ISN_CEXPR_CORE:
+		{
+		    exarg_T ea;
+		    int	    res;
+
+		    CLEAR_FIELD(ea);
+		    ea.cmdidx = iptr->isn_arg.cexpr.cexpr_ref->cer_cmdidx;
+		    ea.forceit = iptr->isn_arg.cexpr.cexpr_ref->cer_forceit;
+		    ea.cmdlinep = &iptr->isn_arg.cexpr.cexpr_ref->cer_cmdline;
+		    --ectx->ec_stack.ga_len;
+		    tv = STACK_TV_BOT(0);
+		    res = cexpr_core(&ea, tv);
+		    clear_tv(tv);
+		    if (res == FAIL)
+			goto on_error;
+		}
+		break;
+
 	    // execute Ex command from pieces on the stack
 	    case ISN_EXECCONCAT:
 		{
@@ -4390,6 +4413,20 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_REDIREND:
 		smsg("%s%4d REDIR END%s", pfx, current,
 					iptr->isn_arg.number ? " append" : "");
+		break;
+	    case ISN_CEXPR_AUCMD:
+		smsg("%s%4d CEXPR pre %s", pfx, current,
+				       cexpr_get_auname(iptr->isn_arg.number));
+		break;
+	    case ISN_CEXPR_CORE:
+		{
+		    cexprref_T	    *cer = iptr->isn_arg.cexpr.cexpr_ref;
+
+		    smsg("%s%4d CEXPR core %s%s \"%s\"", pfx, current,
+				       cexpr_get_auname(cer->cer_cmdidx),
+				       cer->cer_forceit ? "!" : "",
+				       cer->cer_cmdline);
+		}
 		break;
 	    case ISN_SUBSTITUTE:
 		{

@@ -7864,7 +7864,7 @@ ex_cbuffer(exarg_T *eap)
 /*
  * Return the autocmd name for the :cexpr Ex commands.
  */
-    static char_u *
+    char_u *
 cexpr_get_auname(cmdidx_T cmdidx)
 {
     switch (cmdidx)
@@ -7879,32 +7879,83 @@ cexpr_get_auname(cmdidx_T cmdidx)
     }
 }
 
+    int
+trigger_cexpr_autocmd(int cmdidx)
+{
+    char_u	*au_name = cexpr_get_auname(cmdidx);
+
+    if (au_name != NULL && apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
+					       curbuf->b_fname, TRUE, curbuf))
+    {
+	if (aborting())
+	    return FAIL;
+    }
+    return OK;
+}
+
+    int
+cexpr_core(exarg_T *eap, typval_T *tv)
+{
+    qf_info_T	*qi;
+    win_T	*wp = NULL;
+
+    qi = qf_cmd_get_or_alloc_stack(eap, &wp);
+    if (qi == NULL)
+	return FAIL;
+
+    if ((tv->v_type == VAR_STRING && tv->vval.v_string != NULL)
+	    || (tv->v_type == VAR_LIST && tv->vval.v_list != NULL))
+    {
+	int	res;
+	int_u	save_qfid;
+	char_u	*au_name = cexpr_get_auname(eap->cmdidx);
+
+	incr_quickfix_busy();
+	res = qf_init_ext(qi, qi->qf_curlist, NULL, NULL, tv, p_efm,
+			(eap->cmdidx != CMD_caddexpr
+			 && eap->cmdidx != CMD_laddexpr),
+			     (linenr_T)0, (linenr_T)0,
+			     qf_cmdtitle(*eap->cmdlinep), NULL);
+	if (qf_stack_empty(qi))
+	{
+	    decr_quickfix_busy();
+	    return FAIL;
+	}
+	if (res >= 0)
+	    qf_list_changed(qf_get_curlist(qi));
+
+	// Remember the current quickfix list identifier, so that we can
+	// check for autocommands changing the current quickfix list.
+	save_qfid = qf_get_curlist(qi)->qf_id;
+	if (au_name != NULL)
+	    apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
+					    curbuf->b_fname, TRUE, curbuf);
+
+	// Jump to the first error for a new list and if autocmds didn't
+	// free the list.
+	if (res > 0 && (eap->cmdidx == CMD_cexpr || eap->cmdidx == CMD_lexpr)
+		&& qflist_valid(wp, save_qfid))
+	    // display the first error
+	    qf_jump_first(qi, save_qfid, eap->forceit);
+	decr_quickfix_busy();
+	return OK;
+    }
+
+    emsg(_("E777: String or List expected"));
+    return FAIL;
+}
+
 /*
  * ":cexpr {expr}", ":cgetexpr {expr}", ":caddexpr {expr}" command.
  * ":lexpr {expr}", ":lgetexpr {expr}", ":laddexpr {expr}" command.
+ * Also: ":caddexpr", ":cgetexpr", "laddexpr" and "laddexpr".
  */
     void
 ex_cexpr(exarg_T *eap)
 {
     typval_T	*tv;
-    qf_info_T	*qi;
-    char_u	*au_name = NULL;
-    int		res;
-    int_u	save_qfid;
-    win_T	*wp = NULL;
 
-    au_name = cexpr_get_auname(eap->cmdidx);
-    if (au_name != NULL && apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
-					       curbuf->b_fname, TRUE, curbuf))
-    {
-#ifdef FEAT_EVAL
-	if (aborting())
-	    return;
-#endif
-    }
-
-    qi = qf_cmd_get_or_alloc_stack(eap, &wp);
-    if (qi == NULL)
+    if (trigger_cexpr_autocmd(eap->cmdidx) == FAIL)
 	return;
 
     // Evaluate the expression.  When the result is a string or a list we can
@@ -7912,42 +7963,7 @@ ex_cexpr(exarg_T *eap)
     tv = eval_expr(eap->arg, eap);
     if (tv != NULL)
     {
-	if ((tv->v_type == VAR_STRING && tv->vval.v_string != NULL)
-		|| (tv->v_type == VAR_LIST && tv->vval.v_list != NULL))
-	{
-	    incr_quickfix_busy();
-	    res = qf_init_ext(qi, qi->qf_curlist, NULL, NULL, tv, p_efm,
-			    (eap->cmdidx != CMD_caddexpr
-			     && eap->cmdidx != CMD_laddexpr),
-				 (linenr_T)0, (linenr_T)0,
-				 qf_cmdtitle(*eap->cmdlinep), NULL);
-	    if (qf_stack_empty(qi))
-	    {
-		decr_quickfix_busy();
-		goto cleanup;
-	    }
-	    if (res >= 0)
-		qf_list_changed(qf_get_curlist(qi));
-
-	    // Remember the current quickfix list identifier, so that we can
-	    // check for autocommands changing the current quickfix list.
-	    save_qfid = qf_get_curlist(qi)->qf_id;
-	    if (au_name != NULL)
-		apply_autocmds(EVENT_QUICKFIXCMDPOST, au_name,
-						curbuf->b_fname, TRUE, curbuf);
-
-	    // Jump to the first error for a new list and if autocmds didn't
-	    // free the list.
-	    if (res > 0 && (eap->cmdidx == CMD_cexpr
-						   || eap->cmdidx == CMD_lexpr)
-		    && qflist_valid(wp, save_qfid))
-		// display the first error
-		qf_jump_first(qi, save_qfid, eap->forceit);
-	    decr_quickfix_busy();
-	}
-	else
-	    emsg(_("E777: String or List expected"));
-cleanup:
+	(void)cexpr_core(eap, tv);
 	free_tv(tv);
     }
 }

@@ -722,6 +722,22 @@ def Test_helpgrep_vim9_restore_cpo()
   helpclose
 enddef
 
+def Test_vim9_cexpr()
+  var text = 'somefile:95:error'
+  cexpr text
+  var l = getqflist()
+  assert_equal(1, l->len())
+  assert_equal(95, l[0].lnum)
+  assert_equal('error', l[0].text)
+
+  text = 'somefile:77:warning'
+  caddexpr text
+  l = getqflist()
+  assert_equal(2, l->len())
+  assert_equal(77, l[1].lnum)
+  assert_equal('warning', l[1].text)
+enddef
+
 func Test_errortitle()
   augroup QfBufWinEnter
     au!

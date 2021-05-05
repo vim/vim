@@ -172,6 +172,9 @@ typedef enum {
     ISN_REDIRSTART, // :redir =>
     ISN_REDIREND,   // :redir END, isn_arg.number == 1 for append
 
+    ISN_CEXPR_AUCMD, // first part of :cexpr  isn_arg.number is cmdidx
+    ISN_CEXPR_CORE,  // second part of :cexpr, uses isn_arg.cexpr
+
     ISN_FINISH	    // end marker in list of instructions
 } isntype_T;
 
@@ -352,6 +355,18 @@ typedef struct {
     isn_T	*subs_instr;	// sequence of instructions
 } subs_T;
 
+// indirect arguments to ISN_TRY
+typedef struct {
+    int		cer_cmdidx;
+    char_u	*cer_cmdline;
+    int		cer_forceit;
+} cexprref_T;
+
+// arguments to ISN_CEXPR_CORE
+typedef struct {
+    cexprref_T *cexpr_ref;
+} cexpr_T;
+
 /*
  * Instruction
  */
@@ -395,6 +410,7 @@ struct isn_S {
 	unpack_T	    unpack;
 	isn_outer_T	    outer;
 	subs_T		    subs;
+	cexpr_T		    cexpr;
     } isn_arg;
 };
 

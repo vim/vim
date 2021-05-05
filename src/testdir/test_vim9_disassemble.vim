@@ -167,6 +167,25 @@ def Test_disassemble_redir_var()
         res)
 enddef
 
+def s:Cexpr()
+  var errors = "list of errors"
+  cexpr errors
+enddef
+
+def Test_disassemble_cexpr()
+  var res = execute('disass s:Cexpr')
+  assert_match('<SNR>\d*_Cexpr.*' ..
+        ' var errors = "list of errors"\_s*' ..
+        '\d PUSHS "list of errors"\_s*' ..
+        '\d STORE $0\_s*' ..
+        ' cexpr errors\_s*' ..
+        '\d CEXPR pre cexpr\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d CEXPR core cexpr "cexpr errors"\_s*' ..
+        '\d RETURN 0',
+        res)
+enddef
+
 def s:YankRange()
   norm! m[jjm]
   :'[,']yank
