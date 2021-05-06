@@ -910,7 +910,7 @@ set_init_3(void)
 	    }
 	}
 	else
-	    // Always use bourne shell style redirection if we reach this
+	    // Always use POSIX shell style redirection if we reach this
 	    if (       fnamecmp(p, "sh") == 0
 		    || fnamecmp(p, "ksh") == 0
 		    || fnamecmp(p, "mksh") == 0
@@ -919,6 +919,8 @@ set_init_3(void)
 		    || fnamecmp(p, "zsh-beta") == 0
 		    || fnamecmp(p, "bash") == 0
 		    || fnamecmp(p, "fish") == 0
+		    || fnamecmp(p, "ash") == 0
+		    || fnamecmp(p, "dash") == 0
 # ifdef MSWIN
 		    || fnamecmp(p, "cmd") == 0
 		    || fnamecmp(p, "sh.exe") == 0
@@ -929,6 +931,7 @@ set_init_3(void)
 		    || fnamecmp(p, "zsh-beta.exe") == 0
 		    || fnamecmp(p, "bash.exe") == 0
 		    || fnamecmp(p, "cmd.exe") == 0
+		    || fnamecmp(p, "dash.exe") == 0
 # endif
 		    )
 	    {
