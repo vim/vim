@@ -2708,41 +2708,40 @@ clear_ppconst(ppconst_T *ppconst)
 
 /*
  * Compile getting a member from a list/dict/string/blob.  Stack has the
- * indexable value and the index.
+ * indexable value and the index or the two indexes of a slice.
  */
     static int
 compile_member(int is_slice, cctx_T *cctx)
 {
     type_T	**typep;
     garray_T	*stack = &cctx->ctx_type_stack;
-    vartype_T	vtype;
-    type_T	*valtype;
+    vartype_T	vartype;
+    type_T	*idxtype;
 
-    // We can index a list and a dict.  If we don't know the type
-    // we can use the index value type.
-    // TODO: If we don't know use an instruction to figure it out at
-    // runtime.
+    // We can index a list, dict and blob.  If we don't know the type
+    // we can use the index value type.  If we still don't know use an "ANY"
+    // instruction.
     typep = ((type_T **)stack->ga_data) + stack->ga_len
 						  - (is_slice ? 3 : 2);
-    vtype = (*typep)->tt_type;
-    valtype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+    vartype = (*typep)->tt_type;
+    idxtype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
     // If the index is a string, the variable must be a Dict.
-    if (*typep == &t_any && valtype == &t_string)
-	vtype = VAR_DICT;
-    if (vtype == VAR_STRING || vtype == VAR_LIST || vtype == VAR_BLOB)
+    if (*typep == &t_any && idxtype == &t_string)
+	vartype = VAR_DICT;
+    if (vartype == VAR_STRING || vartype == VAR_LIST || vartype == VAR_BLOB)
     {
-	if (need_type(valtype, &t_number, -1, 0, cctx, FALSE, FALSE) == FAIL)
+	if (need_type(idxtype, &t_number, -1, 0, cctx, FALSE, FALSE) == FAIL)
 	    return FAIL;
 	if (is_slice)
 	{
-	    valtype = ((type_T **)stack->ga_data)[stack->ga_len - 2];
-	    if (need_type(valtype, &t_number, -2, 0, cctx,
+	    idxtype = ((type_T **)stack->ga_data)[stack->ga_len - 2];
+	    if (need_type(idxtype, &t_number, -2, 0, cctx,
 							 FALSE, FALSE) == FAIL)
 		return FAIL;
 	}
     }
 
-    if (vtype == VAR_DICT)
+    if (vartype == VAR_DICT)
     {
 	if (is_slice)
 	{
@@ -2768,7 +2767,7 @@ compile_member(int is_slice, cctx_T *cctx)
 	if (generate_instr_drop(cctx, ISN_MEMBER, 1) == FAIL)
 	    return FAIL;
     }
-    else if (vtype == VAR_STRING)
+    else if (vartype == VAR_STRING)
     {
 	*typep = &t_string;
 	if ((is_slice
@@ -2776,7 +2775,7 @@ compile_member(int is_slice, cctx_T *cctx)
 		: generate_instr_drop(cctx, ISN_STRINDEX, 1)) == FAIL)
 	    return FAIL;
     }
-    else if (vtype == VAR_BLOB)
+    else if (vartype == VAR_BLOB)
     {
 	if (is_slice)
 	{
@@ -2791,12 +2790,12 @@ compile_member(int is_slice, cctx_T *cctx)
 		return FAIL;
 	}
     }
-    else if (vtype == VAR_LIST || *typep == &t_any)
+    else if (vartype == VAR_LIST || *typep == &t_any)
     {
 	if (is_slice)
 	{
 	    if (generate_instr_drop(cctx,
-		     vtype == VAR_LIST ?  ISN_LISTSLICE : ISN_ANYSLICE,
+		     vartype == VAR_LIST ?  ISN_LISTSLICE : ISN_ANYSLICE,
 							    2) == FAIL)
 		return FAIL;
 	}
@@ -2810,7 +2809,8 @@ compile_member(int is_slice, cctx_T *cctx)
 		    *typep = &t_any;
 	    }
 	    if (generate_instr_drop(cctx,
-		 vtype == VAR_LIST ?  ISN_LISTINDEX : ISN_ANYINDEX, 1) == FAIL)
+			vartype == VAR_LIST ?  ISN_LISTINDEX : ISN_ANYINDEX, 1)
+								       == FAIL)
 		return FAIL;
 	}
     }
