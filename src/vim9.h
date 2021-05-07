@@ -20,6 +20,7 @@ typedef enum {
     ISN_ECHOERR,    // echo Ex commands isn_arg.number items on top of stack
     ISN_RANGE,	    // compute range from isn_arg.string, push to stack
     ISN_SUBSTITUTE, // :s command with expression
+    ISN_INSTR,	    // instructions compiled from expression
 
     // get and set variables
     ISN_LOAD,	    // push local variable isn_arg.number
@@ -411,6 +412,7 @@ struct isn_S {
 	isn_outer_T	    outer;
 	subs_T		    subs;
 	cexpr_T		    cexpr;
+	isn_T		    *instr;
     } isn_arg;
 };
 

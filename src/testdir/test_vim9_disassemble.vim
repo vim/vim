@@ -140,6 +140,35 @@ def Test_disassemble_substitute()
         res)
 enddef
 
+
+def s:SearchPair()
+  var col = 8
+  searchpair("{", "", "}", "", "col('.') > col")
+enddef
+
+def Test_disassemble_seachpair()
+  var res = execute('disass s:SearchPair')
+  assert_match('<SNR>\d*_SearchPair.*' ..
+        ' var col = 8\_s*' ..
+        '\d STORE 8 in $0\_s*' ..
+        ' searchpair("{", "", "}", "", "col(''.'') > col")\_s*' ..
+        '\d PUSHS "{"\_s*' ..
+        '\d PUSHS ""\_s*' ..
+        '\d PUSHS "}"\_s*' ..
+        '\d PUSHS ""\_s*' ..
+        '\d INSTR\_s*' ..
+        '  0 PUSHS "."\_s*' ..
+        '  1 BCALL col(argc 1)\_s*' ..
+        '  2 LOAD $0\_s*' ..
+        '  3 COMPARENR >\_s*' ..
+        ' -------------\_s*' ..
+        '\d BCALL searchpair(argc 5)\_s*' ..
+        '\d DROP\_s*' ..
+        '\d RETURN 0',
+        res)
+enddef
+
+
 def s:RedirVar()
   var result: string
   redir =>> result

@@ -1259,6 +1259,12 @@ fill_partial_and_closure(partial_T *pt, ufunc_T *ufunc, ectx_T *ectx)
     return OK;
 }
 
+// used for v_instr of typval of VAR_INSTR
+struct instr_S {
+    ectx_T	*instr_ectx;
+    isn_T	*instr_instr;
+};
+
 // used for substitute_instr
 typedef struct subs_expr_S {
     ectx_T	*subs_ectx;
@@ -1376,6 +1382,23 @@ exec_instructions(ectx_T *ectx)
 									== FAIL
 				|| did_emsg)
 			goto on_error;
+		}
+		break;
+
+	    // push typeval VAR_INSTR with instructions to be executed
+	    case ISN_INSTR:
+		{
+		    if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
+			return FAIL;
+		    tv = STACK_TV_BOT(0);
+		    tv->vval.v_instr = ALLOC_ONE(instr_T);
+		    if (tv->vval.v_instr == NULL)
+			goto on_error;
+		    ++ectx->ec_stack.ga_len;
+
+		    tv->v_type = VAR_INSTR;
+		    tv->vval.v_instr->instr_ectx = ectx;
+		    tv->vval.v_instr->instr_instr = iptr->isn_arg.instr;
 		}
 		break;
 
@@ -3997,6 +4020,33 @@ done:
 }
 
 /*
+ * Execute the instructions from a VAR_INSTR typeval and put the result in
+ * "rettv".
+ * Return OK or FAIL.
+ */
+    int
+exe_typval_instr(typval_T *tv, typval_T *rettv)
+{
+    ectx_T	*ectx = tv->vval.v_instr->instr_ectx;
+    isn_T	*save_instr = ectx->ec_instr;
+    int		save_iidx = ectx->ec_iidx;
+    int		res;
+
+    ectx->ec_instr = tv->vval.v_instr->instr_instr;
+    res = exec_instructions(ectx);
+    if (res == OK)
+    {
+	*rettv = *STACK_TV_BOT(-1);
+	--ectx->ec_stack.ga_len;
+    }
+
+    ectx->ec_instr = save_instr;
+    ectx->ec_iidx = save_iidx;
+
+    return res;
+}
+
+/*
  * Execute the instructions from an ISN_SUBSTITUTE command, which are in
  * "substitute_instr".
  */
@@ -4435,6 +4485,14 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 				       cer->cer_cmdline);
 		}
 #endif
+		break;
+	    case ISN_INSTR:
+		{
+		    smsg("%s%4d INSTR", pfx, current);
+		    list_instructions("    ", iptr->isn_arg.instr,
+								INT_MAX, NULL);
+		    msg("     -------------");
+		}
 		break;
 	    case ISN_SUBSTITUTE:
 		{
@@ -5225,6 +5283,7 @@ tv2bool(typval_T *tv)
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_VOID:
+	case VAR_INSTR:
 	    break;
     }
     return FALSE;

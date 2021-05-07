@@ -974,6 +974,20 @@ def Test_searchcount()
   bwipe!
 enddef
 
+def Test_searchpair()
+  new
+  setline(1, "here { and } there")
+  normal f{
+  var col = 15
+  assert_equal(1, searchpair('{', '', '}', '', 'col(".") > col'))
+  assert_equal(12, col('.'))
+  col = 8
+  normal 0f{
+  assert_equal(0, searchpair('{', '', '}', '', 'col(".") > col'))
+  assert_equal(6, col('.'))
+  bwipe!
+enddef
+
 def Test_set_get_bufline()
   # similar to Test_setbufline_getbufline()
   var lines =<< trim END

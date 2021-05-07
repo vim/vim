@@ -309,6 +309,10 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 		return FAIL;
 	}
     }
+    else if (expr->v_type == VAR_INSTR)
+    {
+	return exe_typval_instr(expr, rettv);
+    }
     else
     {
 	s = tv_get_string_buf_chk(expr, buf);
@@ -1510,6 +1514,7 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	    case VAR_SPECIAL:
 	    case VAR_JOB:
 	    case VAR_CHANNEL:
+	    case VAR_INSTR:
 		break;
 
 	    case VAR_BLOB:
@@ -4084,6 +4089,7 @@ check_can_index(typval_T *rettv, int evaluate, int verbose)
 	case VAR_SPECIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:
+	case VAR_INSTR:
 	    if (verbose)
 		emsg(_(e_cannot_index_special_variable));
 	    return FAIL;
@@ -4177,6 +4183,7 @@ eval_index_inner(
 	case VAR_SPECIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:
+	case VAR_INSTR:
 	    break; // not evaluating, skipping over subscript
 
 	case VAR_NUMBER:
@@ -5065,6 +5072,11 @@ echo_string_core(
 		*tofree = string_quote(r, FALSE);
 		r = *tofree;
 	    }
+	    break;
+
+	case VAR_INSTR:
+	    *tofree = NULL;
+	    r = (char_u *)"instructions";
 	    break;
 
 	case VAR_FLOAT:
@@ -5987,6 +5999,7 @@ item_copy(
 	case VAR_SPECIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:
+	case VAR_INSTR:
 	    copy_tv(from, to);
 	    break;
 	case VAR_LIST:

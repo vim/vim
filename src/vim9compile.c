@@ -615,6 +615,7 @@ may_generate_2STRING(int offset, cctx_T *cctx)
 	case VAR_DICT:
 	case VAR_JOB:
 	case VAR_CHANNEL:
+	case VAR_INSTR:
 			 to_string_error((*type)->tt_type);
 			 return FAIL;
     }
@@ -3097,16 +3098,72 @@ theend:
     return res;
 }
 
+    static void
+clear_instr_ga(garray_T *gap)
+{
+    int idx;
+
+    for (idx = 0; idx < gap->ga_len; ++idx)
+	delete_instr(((isn_T *)gap->ga_data) + idx);
+    ga_clear(gap);
+}
+
+/*
+ * Compile a string in a ISN_PUSHS instruction into an ISN_INSTR.
+ * Returns FAIL if compilation fails.
+ */
+    static int
+compile_string(isn_T *isn, cctx_T *cctx)
+{
+    char_u	*s = isn->isn_arg.string;
+    garray_T	save_ga = cctx->ctx_instr;
+    int		expr_res;
+    int		trailing_error;
+    int		instr_count;
+    isn_T	*instr = NULL;
+
+    // Temporarily reset the list of instructions so that the jump labels are
+    // correct.
+    cctx->ctx_instr.ga_len = 0;
+    cctx->ctx_instr.ga_maxlen = 0;
+    cctx->ctx_instr.ga_data = NULL;
+    expr_res = compile_expr0(&s, cctx);
+    s = skipwhite(s);
+    trailing_error = *s != NUL;
+
+    if (expr_res == FAIL || trailing_error)
+    {
+	if (trailing_error)
+	    semsg(_(e_trailing_arg), s);
+	clear_instr_ga(&cctx->ctx_instr);
+	cctx->ctx_instr = save_ga;
+	return FAIL;
+    }
+
+    // Move the generated instructions into the ISN_INSTR instruction, then
+    // restore the list of instructions.
+    instr_count = cctx->ctx_instr.ga_len;
+    instr = cctx->ctx_instr.ga_data;
+    instr[instr_count].isn_type = ISN_FINISH;
+
+    cctx->ctx_instr = save_ga;
+    vim_free(isn->isn_arg.string);
+    isn->isn_type = ISN_INSTR;
+    isn->isn_arg.instr = instr;
+    return OK;
+}
+
 /*
  * Compile the argument expressions.
  * "arg" points to just after the "(" and is advanced to after the ")"
  */
     static int
-compile_arguments(char_u **arg, cctx_T *cctx, int *argcount)
+compile_arguments(char_u **arg, cctx_T *cctx, int *argcount, int is_searchpair)
 {
     char_u  *p = *arg;
     char_u  *whitep = *arg;
     int	    must_end = FALSE;
+    int	    instr_count;
 
     for (;;)
     {
@@ -3123,9 +3180,20 @@ compile_arguments(char_u **arg, cctx_T *cctx, int *argcount)
 	    return FAIL;
 	}
 
+	instr_count = cctx->ctx_instr.ga_len;
 	if (compile_expr0(&p, cctx) == FAIL)
 	    return FAIL;
 	++*argcount;
+
+	if (is_searchpair && *argcount == 5
+		&& cctx->ctx_instr.ga_len == instr_count + 1)
+	{
+	    isn_T *isn = ((isn_T *)cctx->ctx_instr.ga_data) + instr_count;
+
+	    // {skip} argument of searchpair() can be compiled if not empty
+	    if (isn->isn_type == ISN_PUSHS && *isn->isn_arg.string != NUL)
+		compile_string(isn, cctx);
+	}
 
 	if (*p != ',' && *skipwhite(p) == ',')
 	{
@@ -3175,6 +3243,7 @@ compile_call(
     ufunc_T	*ufunc = NULL;
     int		res = FAIL;
     int		is_autoload;
+    int		is_searchpair;
 
     // we can evaluate "has('name')" at compile time
     if (varlen == 3 && STRNCMP(*arg, "has", 3) == 0)
@@ -3216,8 +3285,11 @@ compile_call(
     vim_strncpy(namebuf, *arg, varlen);
     name = fname_trans_sid(namebuf, fname_buf, &tofree, &error);
 
+    // we handle the "skip" argument of searchpair() differently
+    is_searchpair = (varlen == 10 && STRNCMP(*arg, "searchpair", 10) == 0);
+
     *arg = skipwhite(*arg + varlen + 1);
-    if (compile_arguments(arg, cctx, &argcount) == FAIL)
+    if (compile_arguments(arg, cctx, &argcount, is_searchpair) == FAIL)
 	goto theend;
 
     is_autoload = vim_strchr(name, AUTOLOAD_CHAR) != NULL;
@@ -4027,7 +4099,7 @@ compile_subscript(
 	    type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
 
 	    *arg = skipwhite(p + 1);
-	    if (compile_arguments(arg, cctx, &argcount) == FAIL)
+	    if (compile_arguments(arg, cctx, &argcount, FALSE) == FAIL)
 		return FAIL;
 	    if (generate_PCALL(cctx, argcount, name_start, type, TRUE) == FAIL)
 		return FAIL;
@@ -4080,7 +4152,7 @@ compile_subscript(
 		    return FAIL;
 		}
 		*arg = skipwhite(*arg + 1);
-		if (compile_arguments(arg, cctx, &argcount) == FAIL)
+		if (compile_arguments(arg, cctx, &argcount, FALSE) == FAIL)
 		    return FAIL;
 
 		// Move the instructions for the arguments to before the
@@ -6728,6 +6800,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    case VAR_ANY:
 		    case VAR_PARTIAL:
 		    case VAR_VOID:
+		    case VAR_INSTR:
 		    case VAR_SPECIAL:  // cannot happen
 			generate_PUSHNR(cctx, 0);
 			break;
@@ -8536,16 +8609,6 @@ theend:
 }
 
 
-    static void
-clear_instr_ga(garray_T *gap)
-{
-    int idx;
-
-    for (idx = 0; idx < gap->ga_len; ++idx)
-	delete_instr(((isn_T *)gap->ga_data) + idx);
-    ga_clear(gap);
-}
-
 /*
  * :s/pat/repl/
  */
@@ -8568,13 +8631,13 @@ compile_substitute(char_u *arg, exarg_T *eap, cctx_T *cctx)
 	    int		expr_res;
 	    int		trailing_error;
 	    int		instr_count;
-	    isn_T	*instr = NULL;
+	    isn_T	*instr;
 	    isn_T	*isn;
 
 	    cmd += 3;
 	    end = skip_substitute(cmd, delimiter);
 
-	    // Temporarily reset the list of instructions so that the jumps
+	    // Temporarily reset the list of instructions so that the jump
 	    // labels are correct.
 	    cctx->ctx_instr.ga_len = 0;
 	    cctx->ctx_instr.ga_maxlen = 0;
@@ -8592,7 +8655,6 @@ compile_substitute(char_u *arg, exarg_T *eap, cctx_T *cctx)
 		    semsg(_(e_trailing_arg), cmd);
 		clear_instr_ga(&cctx->ctx_instr);
 		cctx->ctx_instr = save_ga;
-		vim_free(instr);
 		return NULL;
 	    }
 
@@ -9549,6 +9611,17 @@ delete_instr(isn_T *isn)
 		isn_T	*list = isn->isn_arg.subs.subs_instr;
 
 		vim_free(isn->isn_arg.subs.subs_cmd);
+		for (idx = 0; list[idx].isn_type != ISN_FINISH; ++idx)
+		    delete_instr(list + idx);
+		vim_free(list);
+	    }
+	    break;
+
+	case ISN_INSTR:
+	    {
+		int	idx;
+		isn_T	*list = isn->isn_arg.instr;
+
 		for (idx = 0; list[idx].isn_type != ISN_FINISH; ++idx)
 		    delete_instr(list + idx);
 		vim_free(list);

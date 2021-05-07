@@ -1023,6 +1023,7 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
 	case VAR_FLOAT:
 	case VAR_SPECIAL:
 	case VAR_STRING:
+	case VAR_INSTR:
 	    break;
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL

@@ -91,6 +91,7 @@ free_tv(typval_T *varp)
 	    case VAR_VOID:
 	    case VAR_BOOL:
 	    case VAR_SPECIAL:
+	    case VAR_INSTR:
 		break;
 	}
 	vim_free(varp);
@@ -153,6 +154,7 @@ clear_tv(typval_T *varp)
 	    case VAR_UNKNOWN:
 	    case VAR_ANY:
 	    case VAR_VOID:
+	    case VAR_INSTR:
 		break;
 	}
 	varp->v_lock = 0;
@@ -236,6 +238,7 @@ tv_get_bool_or_number_chk(typval_T *varp, int *denote, int want_bool)
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_VOID:
+	case VAR_INSTR:
 	    internal_error_no_abort("tv_get_number(UNKNOWN)");
 	    break;
     }
@@ -333,6 +336,7 @@ tv_get_float(typval_T *varp)
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_VOID:
+	case VAR_INSTR:
 	    internal_error_no_abort("tv_get_float(UNKNOWN)");
 	    break;
     }
@@ -514,6 +518,7 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_VOID:
+	case VAR_INSTR:
 	    emsg(_(e_inval_string));
 	    break;
     }
@@ -614,6 +619,10 @@ copy_tv(typval_T *from, typval_T *to)
 		++to->vval.v_channel->ch_refcount;
 	    break;
 #endif
+	case VAR_INSTR:
+	    to->vval.v_instr = from->vval.v_instr;
+	    break;
+
 	case VAR_STRING:
 	case VAR_FUNC:
 	    if (from->vval.v_string == NULL)
@@ -1116,6 +1125,8 @@ tv_equal(
 #ifdef FEAT_JOB_CHANNEL
 	    return tv1->vval.v_channel == tv2->vval.v_channel;
 #endif
+	case VAR_INSTR:
+	    return tv1->vval.v_instr == tv2->vval.v_instr;
 
 	case VAR_PARTIAL:
 	    return tv1->vval.v_partial == tv2->vval.v_partial;
