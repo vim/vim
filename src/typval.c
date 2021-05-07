@@ -151,10 +151,13 @@ clear_tv(typval_T *varp)
 		channel_unref(varp->vval.v_channel);
 		varp->vval.v_channel = NULL;
 #endif
+		break;
+	    case VAR_INSTR:
+		VIM_CLEAR(varp->vval.v_instr);
+		break;
 	    case VAR_UNKNOWN:
 	    case VAR_ANY:
 	    case VAR_VOID:
-	    case VAR_INSTR:
 		break;
 	}
 	varp->v_lock = 0;
