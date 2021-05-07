@@ -1659,7 +1659,7 @@ WaitForChar(long msec, int ignore_input)
 		    // The screen is now messed up, must redraw the
 		    // command line and later all the windows.
 		    redraw_all_later(CLEAR);
-		    cmdline_row -= (msg_row - csbi.dwCursorPosition.Y);
+		    compute_cmdrow();
 		    redrawcmd();
 		}
 	    }
