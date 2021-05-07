@@ -3285,8 +3285,12 @@ compile_call(
     vim_strncpy(namebuf, *arg, varlen);
     name = fname_trans_sid(namebuf, fname_buf, &tofree, &error);
 
-    // we handle the "skip" argument of searchpair() differently
-    is_searchpair = (varlen == 10 && STRNCMP(*arg, "searchpair", 10) == 0);
+    // We handle the "skip" argument of searchpair() and searchpairpos()
+    // differently.
+    is_searchpair = (varlen == 6 && STRNCMP(*arg, "search", 6) == 0)
+	         || (varlen == 9 && STRNCMP(*arg, "searchpos", 9) == 0)
+	        || (varlen == 10 && STRNCMP(*arg, "searchpair", 10) == 0)
+	        || (varlen == 13 && STRNCMP(*arg, "searchpairpos", 13) == 0);
 
     *arg = skipwhite(*arg + varlen + 1);
     if (compile_arguments(arg, cctx, &argcount, is_searchpair) == FAIL)

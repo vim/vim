@@ -958,6 +958,20 @@ def Test_search()
   search('bar', 'W', 0, 0, () => 1)->assert_equal(0)
   assert_fails("search('bar', '', 0, 0, () => -1)", 'E1023:')
   assert_fails("search('bar', '', 0, 0, () => -1)", 'E1023:')
+
+  setline(1, "find this word")
+  normal gg
+  var col = 7
+  assert_equal(1, search('this', '', 0, 0, 'col(".") > col'))
+  normal 0
+  assert_equal([1, 6], searchpos('this', '', 0, 0, 'col(".") > col'))
+
+  col = 5
+  normal 0
+  assert_equal(0, search('this', '', 0, 0, 'col(".") > col'))
+  normal 0
+  assert_equal([0, 0], searchpos('this', '', 0, 0, 'col(".") > col'))
+  bwipe!
 enddef
 
 def Test_searchcount()
@@ -977,14 +991,21 @@ enddef
 def Test_searchpair()
   new
   setline(1, "here { and } there")
+
   normal f{
   var col = 15
   assert_equal(1, searchpair('{', '', '}', '', 'col(".") > col'))
   assert_equal(12, col('.'))
+  normal 0f{
+  assert_equal([1, 12], searchpairpos('{', '', '}', '', 'col(".") > col'))
+
   col = 8
   normal 0f{
   assert_equal(0, searchpair('{', '', '}', '', 'col(".") > col'))
   assert_equal(6, col('.'))
+  normal 0f{
+  assert_equal([0, 0], searchpairpos('{', '', '}', '', 'col(".") > col'))
+
   bwipe!
 enddef
 
