@@ -2384,8 +2384,19 @@ A jump table for the options with a short description can be found at |Q_op|.
 			you write the file the encrypted bytes will be
 			different.  The whole undo file is encrypted, not just
 			the pieces of text.
+			*E1193* *E1194* *E1195* *E1196* *E1197* *E1198* *E1199*
+			*E1200* *E1201*
+	   xchacha20	XChaCha20 Cipher with Poly1305 Message Authentication
+			Code.  Medium strong till strong encryption.
+			Encryption is provided by the libsodium library, so it
+			requires Vim to be built with |+sodium|
+			It adds a seed and a message authentication code (MAC)
+			to the file.  This needs at least a Vim 8.2.XXXX to read
+			such a file.  Encryption of swap- and undo files not
+			supported, therefore those will be disabled.
+			Currently experimental.
 
-	You should use "blowfish2", also to re-encrypt older files.
+	You should use "blowfish2" or "xchacha20", and re-encrypt older files.
 
 	When reading an encrypted file 'cryptmethod' will be set automatically
 	to the detected method of the file being read.  Thus if you write it

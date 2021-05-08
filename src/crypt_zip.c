@@ -114,7 +114,8 @@ crypt_zip_encode(
     cryptstate_T *state,
     char_u	*from,
     size_t	len,
-    char_u	*to)
+    char_u	*to,
+    int		last UNUSED)
 {
     zip_state_T *zs = state->method_state;
     size_t	i;
@@ -137,7 +138,8 @@ crypt_zip_decode(
     cryptstate_T *state,
     char_u	*from,
     size_t	len,
-    char_u	*to)
+    char_u	*to,
+    int		last UNUSED)
 {
     zip_state_T *zs = state->method_state;
     size_t	i;

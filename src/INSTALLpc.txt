@@ -322,6 +322,9 @@ MSYS2 has its own git package, and you can also install it via pacman:
 
     $ pacman -S git
 
+For enabling libsodium support, you also need to install the package
+
+    $ pacman -S mingw-w64-x86_64-libsodium
 
 2.3. Keep the build environment up-to-date
 

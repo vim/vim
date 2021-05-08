@@ -596,7 +596,8 @@ crypt_blowfish_encode(
     cryptstate_T *state,
     char_u	*from,
     size_t	len,
-    char_u	*to)
+    char_u	*to,
+    int		last UNUSED)
 {
     bf_state_T *bfs = state->method_state;
     size_t	i;
@@ -619,7 +620,8 @@ crypt_blowfish_decode(
     cryptstate_T *state,
     char_u	*from,
     size_t	len,
-    char_u	*to)
+    char_u	*to,
+    int		last UNUSED)
 {
     bf_state_T *bfs = state->method_state;
     size_t	i;
@@ -680,5 +682,4 @@ blowfish_self_test(void)
     }
     return OK;
 }
-
 #endif // FEAT_CRYPT

@@ -24,7 +24,11 @@ static char *(p_bo_values[]) = {"all", "backspace", "cursor", "complete",
 static char *(p_nf_values[]) = {"bin", "octal", "hex", "alpha", "unsigned", NULL};
 static char *(p_ff_values[]) = {FF_UNIX, FF_DOS, FF_MAC, NULL};
 #ifdef FEAT_CRYPT
-static char *(p_cm_values[]) = {"zip", "blowfish", "blowfish2", NULL};
+static char *(p_cm_values[]) = {"zip", "blowfish", "blowfish2",
+ # ifdef FEAT_SODIUM
+    "xchacha20",
+ # endif
+    NULL};
 #endif
 static char *(p_cmp_values[]) = {"internal", "keepascii", NULL};
 static char *(p_dy_values[]) = {"lastline", "truncate", "uhex", NULL};

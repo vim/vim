@@ -553,6 +553,11 @@ static char *(features[]) =
 #else
 	"-smartindent",
 #endif
+#ifdef FEAT_SODIUM
+	"+sodium",
+#else
+	"-sodium",
+#endif
 #ifdef FEAT_SOUND
 	"+sound",
 #else

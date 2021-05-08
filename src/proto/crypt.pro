@@ -11,12 +11,20 @@ cryptstate_T *crypt_create_from_header(int method_nr, char_u *key, char_u *heade
 cryptstate_T *crypt_create_from_file(FILE *fp, char_u *key);
 cryptstate_T *crypt_create_for_writing(int method_nr, char_u *key, char_u **header, int *header_len);
 void crypt_free_state(cryptstate_T *state);
-void crypt_encode(cryptstate_T *state, char_u *from, size_t len, char_u *to);
-void crypt_encode_inplace(cryptstate_T *state, char_u *buf, size_t len);
-void crypt_decode_inplace(cryptstate_T *state, char_u *buf, size_t len);
+void crypt_encode(cryptstate_T *state, char_u *from, size_t len, char_u *to, int last);
+void crypt_encode_inplace(cryptstate_T *state, char_u *buf, size_t len, int last);
+long crypt_encode_alloc(cryptstate_T *state, char_u *from, size_t len, char_u **to, int last);
+void crypt_decode_inplace(cryptstate_T *state, char_u *buf, size_t len, int last);
+long crypt_decode_alloc(cryptstate_T *state, char_u *from, long len, char_u **to, int last);
 void crypt_free_key(char_u *key);
 void crypt_check_method(int method);
 void crypt_check_current_method(void);
 char_u *crypt_get_key(int store, int twice);
 void crypt_append_msg(buf_T *buf);
+int crypt_works_inplace(cryptstate_T *state);
+int crypt_sodium_init(cryptstate_T *state, char_u *key, char_u *salt, int salt_len, char_u *seed, int seed_len);
+void crypt_sodium_encode(cryptstate_T *state, char_u *from, size_t len, char_u *to, int last);
+void crypt_sodium_decode(cryptstate_T *state, char_u *from, size_t len, char_u *to, int last);
+long crypt_sodium_buffer_encode(cryptstate_T *state, char_u *from, size_t len, char_u **to, int last);
+long crypt_sodium_buffer_decode(cryptstate_T *state, char_u *from, size_t len, char_u **to, int last);
 /* vim: set ft=c : */
