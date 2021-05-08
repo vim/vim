@@ -4484,6 +4484,7 @@ build_stl_str_hl(
 	case STL_VIM_EXPR: // '{'
 	    itemisflag = TRUE;
 	    t = p;
+	    char_u *block_start = s;
 	    while (*s != '}' && *s != NUL && p + 1 < out + outlen)
 		*p++ = *s++;
 	    if (*s != '}')	// missing '}' or out of space
@@ -4524,6 +4525,27 @@ build_stl_str_hl(
 		    VIM_CLEAR(str);
 		    itemisflag = FALSE;
 		}
+	    }
+
+	    // If the output of the expression needs to be evaluated
+	    // replace the %{} block with the result of evaluation
+	    if (str != NULL && *str != 0 && strchr((const char *)str, '%') != NULL) {
+		size_t parsed_usefmt = (size_t)(block_start - usefmt - 1);
+		size_t str_length = strlen((const char *)str);
+		size_t fmt_length = strlen((const char *)s);
+		size_t new_fmt_len = parsed_usefmt + str_length + fmt_length + 1;
+		char_u * new_fmt = (char_u *)alloc(new_fmt_len * sizeof(char_u));
+		memcpy(new_fmt, usefmt, parsed_usefmt);
+		memcpy(new_fmt + parsed_usefmt, str, str_length);
+		memcpy(new_fmt + parsed_usefmt + str_length, s, fmt_length);
+		new_fmt[new_fmt_len - 1] = 0;
+		if (usefmt != fmt) {
+		    vim_free(usefmt);
+		}
+		VIM_CLEAR(str);
+		usefmt = new_fmt;
+		s = usefmt + parsed_usefmt;
+		continue;
 	    }
 #endif
 	    break;
