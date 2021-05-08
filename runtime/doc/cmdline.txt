@@ -799,17 +799,17 @@ three lines: >
 <
 
 Visual Mode and Range					*v_:*
-							*:star-visual-range*
 {Visual}:	Starts a command-line with the Visual selected lines as a
 		range.  The code `:'<,'>` is used for this range, which makes
 		it possible to select a similar line from the command-line
 		history for repeating a command on different Visually selected
 		lines.
+
+:*						*:star* *:star-visual-range*
 		When Visual mode was already ended, a short way to use the
 		Visual area for a range is `:*`.  This requires that "*" does
 		not appear in 'cpo', see |cpo-star|.  Otherwise you will have
 		to type `:'<,'>`
-
 
 ==============================================================================
 5. Ex command-line flags				*ex-flags*

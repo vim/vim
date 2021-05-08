@@ -3184,7 +3184,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :st	starting.txt	/*:st*
 :sta	windows.txt	/*:sta*
 :stag	windows.txt	/*:stag*
-:star	repeat.txt	/*:star*
+:star	cmdline.txt	/*:star*
+:star-compatible	repeat.txt	/*:star-compatible*
 :star-visual-range	cmdline.txt	/*:star-visual-range*
 :start	insert.txt	/*:start*
 :startgreplace	insert.txt	/*:startgreplace*
@@ -7205,7 +7206,6 @@ help	helphelp.txt	/*help*
 help-context	help.txt	/*help-context*
 help-curwin	tips.txt	/*help-curwin*
 help-summary	usr_02.txt	/*help-summary*
-help-tags	tags	1
 help-translated	helphelp.txt	/*help-translated*
 help-writing	helphelp.txt	/*help-writing*
 help-xterm-window	helphelp.txt	/*help-xterm-window*
