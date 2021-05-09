@@ -4458,8 +4458,8 @@ build_stl_str_hl(
 	    continue;
 	}
 #ifdef FEAT_EVAL
-	// Denotes end of expanded %{} block
-	if (*s == '}' && evaldepth > 0) {
+	// Denotes end of expanded %[] block
+	if (*s == ']' && evaldepth > 0) {
 	    s++;
 	    evaldepth--;
 	    continue;
@@ -4500,14 +4500,16 @@ build_stl_str_hl(
 	    break;
 
 	case STL_VIM_EXPR: // '{'
+	case STL_VIM_EVAL_EXPR: // '['
 	    itemisflag = TRUE;
 	    t = p;
 #ifdef FEAT_EVAL
 	    char_u *block_start = s;
 #endif
-	    while (*s != '}' && *s != NUL && p + 1 < out + outlen)
+	    char_u end_symbol = (opt == STL_VIM_EXPR) ? '}' : ']' ;
+	    while (*s != end_symbol && *s != NUL && p + 1 < out + outlen)
 		*p++ = *s++;
-	    if (*s != '}')	// missing '}' or out of space
+	    if (*s != end_symbol)	// missing end_symbol or out of space
 		break;
 	    s++;
 	    *p = 0;
@@ -4549,8 +4551,9 @@ build_stl_str_hl(
 
 	    // If the output of the expression needs to be evaluated
 	    // replace the %{} block with the result of evaluation
-	    if (str != NULL && *str != 0 && strchr((const char *)str, '%') != NULL &&
-		    evaldepth < MAX_STL_EVAL_DEPTH) {
+	    if (opt == STL_VIM_EVAL_EXPR &&str != NULL && *str != 0 
+		&& strchr((const char *)str, '%') != NULL
+		&& evaldepth < MAX_STL_EVAL_DEPTH) {
 		size_t parsed_usefmt = (size_t)(block_start - usefmt - 1);
 		size_t str_length = strlen((const char *)str);
 		size_t fmt_length = strlen((const char *)s);
@@ -4560,7 +4563,7 @@ build_stl_str_hl(
 
 		memcpy(new_fmt, usefmt, parsed_usefmt);
 		memcpy(new_fmt + parsed_usefmt, str, str_length);
-		memcpy(new_fmt + parsed_usefmt + str_length, "%}", 2);
+		memcpy(new_fmt + parsed_usefmt + str_length, "%]", 2);
 		memcpy(new_fmt + parsed_usefmt + str_length + 2, s, fmt_length);
 		new_fmt[new_fmt_len - 1] = 0;
 

@@ -7339,6 +7339,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	      Note that there is no '%' before the closing '}'.  The
 	      expression cannot contain a '}' character, call a function to
 	      work around that.  See |stl-%{| below.
+	[ NF  Same as `%{expr}` except the result of expr is also evaluated
+	      as normal statusline string. So result of expr can contain
+	      % items. Even %[] blocks can be returned by exp which will then
+	      be evaluated . Though note they are only evaluated upto
+	      lavel 100 depth.
 	( -   Start of item group.  Can be used for setting the width and
 	      alignment of a section.  Must be followed by %) somewhere.
 	) -   End of item group.  No width fields allowed.

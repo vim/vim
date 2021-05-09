@@ -341,13 +341,14 @@ typedef enum {
 #define STL_ARGLISTSTAT	'a'		// argument list status as (x of y)
 #define STL_PAGENUM	'N'		// page number (when printing)
 #define STL_VIM_EXPR	'{'		// start of expression to substitute
+#define STL_VIM_EVAL_EXPR '['		// start of recursivly evaluated expression to substitute
 #define STL_MIDDLEMARK	'='		// separation between left and right
 #define STL_TRUNCMARK	'<'		// truncation mark if line is too long
 #define STL_USER_HL	'*'		// highlight from (User)1..9 or 0
 #define STL_HIGHLIGHT	'#'		// highlight name
 #define STL_TABPAGENR	'T'		// tab page label nr
 #define STL_TABCLOSENR	'X'		// tab page close nr
-#define STL_ALL		((char_u *) "fFtcvVlLknoObBrRhHmYyWwMqpPaN{#")
+#define STL_ALL		((char_u *) "fFtcvVlLknoObBrRhHmYyWwMqpPaN{[#")
 
 // flags used for parsed 'wildmode'
 #define WIM_FULL	0x01
