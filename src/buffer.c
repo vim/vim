@@ -4458,8 +4458,8 @@ build_stl_str_hl(
 	    continue;
 	}
 #ifdef FEAT_EVAL
-	// Denotes end of expanded %[] block
-	if (*s == ']' && evaldepth > 0) {
+	// Denotes end of expanded %{} block
+	if (*s == '}' && evaldepth > 0) {
 	    s++;
 	    evaldepth--;
 	    continue;
@@ -4500,22 +4500,25 @@ build_stl_str_hl(
 	    break;
 
 	case STL_VIM_EXPR: // '{'
-	case STL_VIM_EVAL_EXPR: // '['
 	    itemisflag = TRUE;
 	    t = p;
 #ifdef FEAT_EVAL
 	    char_u *block_start = s;
+	    int evaluate = FALSE;
 #endif
-	    char_u end_symbol = (opt == STL_VIM_EXPR) ? '}' : ']' ;
-	    while (*s != end_symbol && *s != NUL && p + 1 < out + outlen)
+	    while (*s != '}' && *s != NUL && p + 1 < out + outlen)
 		*p++ = *s++;
-	    if (*s != end_symbol)	// missing end_symbol or out of space
+	    if (*s != '}')	// missing '}' or out of space
 		break;
 	    s++;
 	    *p = 0;
 	    p = t;
 
 #ifdef FEAT_EVAL
+	    if (*p == ':') {
+		evaluate = TRUE;
+		p++;
+	    }
 	    vim_snprintf((char *)buf_tmp, sizeof(buf_tmp),
 							 "%d", curbuf->b_fnum);
 	    set_internal_string_var((char_u *)"g:actual_curbuf", buf_tmp);
@@ -4539,6 +4542,10 @@ build_stl_str_hl(
 	    do_unlet((char_u *)"g:actual_curbuf", TRUE);
 	    do_unlet((char_u *)"g:actual_curwin", TRUE);
 
+	    if (evaluate) {
+		p--;
+	    }
+
 	    if (str != NULL && *str != 0)
 	    {
 		if (*skipdigits(str) == NUL)
@@ -4550,8 +4557,8 @@ build_stl_str_hl(
 	    }
 
 	    // If the output of the expression needs to be evaluated
-	    // replace the %[] block with the result of evaluation
-	    if (opt == STL_VIM_EVAL_EXPR &&str != NULL && *str != 0 
+	    // replace the %{} block with the result of evaluation
+	    if (evaluate && str != NULL && *str != 0 
 		&& strchr((const char *)str, '%') != NULL
 		&& evaldepth < MAX_STL_EVAL_DEPTH) {
 		size_t parsed_usefmt = (size_t)(block_start - usefmt - 1);
@@ -4561,13 +4568,13 @@ build_stl_str_hl(
 		size_t new_fmt_len = parsed_usefmt + str_length + fmt_length + 3;
 		char_u *new_fmt = (char_u *)alloc(new_fmt_len * sizeof(char_u));
 
-		char_u *p = new_fmt;
-		p = memcpy(p, usefmt, parsed_usefmt) + parsed_usefmt;
-		p = memcpy(p , str, str_length) + str_length;
-		p = memcpy(p, "%]", 2) + 2;
-		p = memcpy(p , s, fmt_length) + fmt_length;
-		*p = 0;
-		p = NULL;
+		char_u *new_fmt_p = new_fmt;
+		new_fmt_p = memcpy(new_fmt_p, usefmt, parsed_usefmt) + parsed_usefmt;
+		new_fmt_p = memcpy(new_fmt_p , str, str_length) + str_length;
+		new_fmt_p = memcpy(new_fmt_p, "%}", 2) + 2;
+		new_fmt_p = memcpy(new_fmt_p , s, fmt_length) + fmt_length;
+		*new_fmt_p = 0;
+		new_fmt_p = NULL;
 
 		if (usefmt != fmt) {
 		    vim_free(usefmt);
