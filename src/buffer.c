@@ -27,6 +27,13 @@
 
 #include "vim.h"
 
+
+#ifdef FEAT_EVAL
+// Determines how deeply nested %{} blocks will be evaluated
+// in statusline.
+#define MAX_STL_EVAL_DEPTH 100
+#endif
+
 static void	enter_buffer(buf_T *buf);
 static void	buflist_getfpos(void);
 static char_u	*buflist_match(regmatch_T *rmp, buf_T *buf, int ignore_case);
@@ -4187,6 +4194,9 @@ build_stl_str_hl(
 	byteval = (*mb_ptr2char)(p + wp->w_cursor.col);
 
     groupdepth = 0;
+#ifdef FEAT_EVAL
+    int evaldepth = 0;
+#endif
     p = out;
     curitem = 0;
     prevchar_isflag = TRUE;
@@ -4447,6 +4457,14 @@ build_stl_str_hl(
 	    curitem++;
 	    continue;
 	}
+#ifdef FEAT_EVAL
+	// Denotes end of expanded %{} block
+	if (*s == '}' && evaldepth > 0) {
+	    s++;
+	    evaldepth--;
+	    continue;
+	}
+#endif
 	if (vim_strchr(STL_ALL, *s) == NULL)
 	{
 	    s++;
@@ -4484,7 +4502,9 @@ build_stl_str_hl(
 	case STL_VIM_EXPR: // '{'
 	    itemisflag = TRUE;
 	    t = p;
+#ifdef FEAT_EVAL
 	    char_u *block_start = s;
+#endif
 	    while (*s != '}' && *s != NUL && p + 1 < out + outlen)
 		*p++ = *s++;
 	    if (*s != '}')	// missing '}' or out of space
@@ -4529,22 +4549,28 @@ build_stl_str_hl(
 
 	    // If the output of the expression needs to be evaluated
 	    // replace the %{} block with the result of evaluation
-	    if (str != NULL && *str != 0 && strchr((const char *)str, '%') != NULL) {
+	    if (str != NULL && *str != 0 && strchr((const char *)str, '%') != NULL &&
+		    evaldepth < MAX_STL_EVAL_DEPTH) {
 		size_t parsed_usefmt = (size_t)(block_start - usefmt - 1);
 		size_t str_length = strlen((const char *)str);
 		size_t fmt_length = strlen((const char *)s);
-		size_t new_fmt_len = parsed_usefmt + str_length + fmt_length + 1;
+
+		size_t new_fmt_len = parsed_usefmt + str_length + fmt_length + 3;
 		char_u * new_fmt = (char_u *)alloc(new_fmt_len * sizeof(char_u));
+
 		memcpy(new_fmt, usefmt, parsed_usefmt);
 		memcpy(new_fmt + parsed_usefmt, str, str_length);
-		memcpy(new_fmt + parsed_usefmt + str_length, s, fmt_length);
+		memcpy(new_fmt + parsed_usefmt + str_length, "%}", 2);
+		memcpy(new_fmt + parsed_usefmt + str_length + 2, s, fmt_length);
 		new_fmt[new_fmt_len - 1] = 0;
+
 		if (usefmt != fmt) {
 		    vim_free(usefmt);
 		}
 		VIM_CLEAR(str);
 		usefmt = new_fmt;
 		s = usefmt + parsed_usefmt;
+		evaldepth++;
 		continue;
 	    }
 #endif
