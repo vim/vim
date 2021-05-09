@@ -1728,7 +1728,6 @@ EXTERN char e_list_end[]	INIT(= N_("E697: Missing end of List ']': %s"));
 EXTERN char e_listdictarg[]	INIT(= N_("E712: Argument of %s must be a List or Dictionary"));
 EXTERN char e_listdictblobarg[]	INIT(= N_("E896: Argument of %s must be a List, Dictionary or Blob"));
 EXTERN char e_modulus[]		INIT(= N_("E804: Cannot use '%' with Float"));
-EXTERN char e_inval_string[]	INIT(= N_("E908: using an invalid value as a String"));
 EXTERN char e_const_option[]	INIT(= N_("E996: Cannot lock an option"));
 EXTERN char e_unknown_option[]	INIT(= N_("E113: Unknown option: %s"));
 EXTERN char e_letunexp[]	INIT(= N_("E18: Unexpected characters in :let"));

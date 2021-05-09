@@ -31,6 +31,8 @@ EXTERN char e_cannot_slice_dictionary[]
 	INIT(= N_("E719: Cannot slice a Dictionary"));
 EXTERN char e_assert_fails_second_arg[]
 	INIT(= N_("E856: \"assert_fails()\" second argument must be a string or a list with one or two strings"));
+EXTERN char e_using_invalid_value_as_string_str[]
+	INIT(= N_("E908: using an invalid value as a String: %s"));
 EXTERN char e_cannot_index_special_variable[]
 	INIT(= N_("E909: Cannot index a special variable"));
 #endif
@@ -409,3 +411,5 @@ EXTERN char e_cannot_nest_redir[]
 	INIT(= N_("E1185: Cannot nest :redir"));
 EXTERN char e_missing_redir_end[]
 	INIT(= N_("E1185: Missing :redir END"));
+EXTERN char e_expression_does_not_result_in_value_str[]
+	INIT(= N_("E1186: Expression does not result in a value: %s"));

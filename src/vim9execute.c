@@ -1578,7 +1578,8 @@ exec_instructions(ectx_T *ectx)
 						      || tv->v_type == VAR_JOB)
 			    {
 				SOURCING_LNUM = iptr->isn_lnum;
-				emsg(_(e_inval_string));
+				semsg(_(e_using_invalid_value_as_string_str),
+						    vartype_name(tv->v_type));
 				break;
 			    }
 			    else

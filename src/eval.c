@@ -2951,7 +2951,8 @@ eval5(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 		if (vim9script && (var2.v_type == VAR_VOID
 			|| var2.v_type == VAR_CHANNEL
 			|| var2.v_type == VAR_JOB))
-		    emsg(_(e_inval_string));
+		    semsg(_(e_using_invalid_value_as_string_str),
+						   vartype_name(var2.v_type));
 #ifdef FEAT_FLOAT
 		else if (vim9script && var2.v_type == VAR_FLOAT)
 		{
@@ -6110,7 +6111,7 @@ ex_echo(exarg_T *eap)
 {
     char_u	*arg = eap->arg;
     typval_T	rettv;
-    char_u	*p;
+    char_u	*arg_start;
     int		needclr = TRUE;
     int		atstart = TRUE;
     int		did_emsg_before = did_emsg;
@@ -6127,7 +6128,7 @@ ex_echo(exarg_T *eap)
 	// still need to be cleared. E.g., "echo 22,44".
 	need_clr_eos = needclr;
 
-	p = arg;
+	arg_start = arg;
 	if (eval1(&arg, &rettv, &evalarg) == FAIL)
 	{
 	    /*
@@ -6137,14 +6138,21 @@ ex_echo(exarg_T *eap)
 	     */
 	    if (!aborting() && did_emsg == did_emsg_before
 					  && called_emsg == called_emsg_before)
-		semsg(_(e_invexpr2), p);
+		semsg(_(e_invexpr2), arg_start);
 	    need_clr_eos = FALSE;
 	    break;
 	}
 	need_clr_eos = FALSE;
 
 	if (!eap->skip)
+	{
+	    if (rettv.v_type == VAR_VOID)
+	    {
+		semsg(_(e_expression_does_not_result_in_value_str), arg_start);
+		break;
+	    }
 	    echo_one(&rettv, eap->cmdidx == CMD_echo, &atstart, &needclr);
+	}
 
 	clear_tv(&rettv);
 	arg = skipwhite(arg);
@@ -6218,7 +6226,8 @@ ex_execute(exarg_T *eap)
 	    {
 		if (rettv.v_type == VAR_CHANNEL || rettv.v_type == VAR_JOB)
 		{
-		    emsg(_(e_inval_string));
+		    semsg(_(e_using_invalid_value_as_string_str),
+						  vartype_name(rettv.v_type));
 		    p = NULL;
 		}
 		else

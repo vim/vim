@@ -3175,7 +3175,8 @@ execute_common(typval_T *argvars, typval_T *rettv, int arg_off)
     else if (argvars[arg_off].v_type == VAR_JOB
 	    || argvars[arg_off].v_type == VAR_CHANNEL)
     {
-	emsg(_(e_inval_string));
+	semsg(_(e_using_invalid_value_as_string_str),
+				       vartype_name(argvars[arg_off].v_type));
 	return;
     }
     else

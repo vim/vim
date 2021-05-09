@@ -1282,5 +1282,28 @@ def Test_redir_to_var()
   CheckDefFailure(lines, 'E1141:')
 enddef
 
+def Test_echo_void()
+  var lines =<< trim END
+      vim9script
+      def NoReturn()
+        echo 'nothing'
+      enddef
+      echo NoReturn()
+  END
+  CheckScriptFailure(lines, 'E1186:', 5)
+
+  lines =<< trim END
+      vim9script
+      def NoReturn()
+        echo 'nothing'
+      enddef
+      def Try()
+        echo NoReturn()
+      enddef
+      defcompile
+  END
+  CheckScriptFailure(lines, 'E1186:', 1)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -8375,15 +8375,31 @@ compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
 {
     char_u	*p = arg;
     char_u	*prev = arg;
+    char_u	*expr_start;
     int		count = 0;
     int		start_ctx_lnum = cctx->ctx_lnum;
+    garray_T	*stack = &cctx->ctx_type_stack;
+    type_T	*type;
 
     for (;;)
     {
 	if (ends_excmd2(prev, p))
 	    break;
+	expr_start = p;
 	if (compile_expr0(&p, cctx) == FAIL)
 	    return NULL;
+
+	if (cctx->ctx_skip != SKIP_YES)
+	{
+	    // check for non-void type
+	    type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	    if (type->tt_type == VAR_VOID)
+	    {
+		semsg(_(e_expression_does_not_result_in_value_str), expr_start);
+		return NULL;
+	    }
+	}
+
 	++count;
 	prev = p;
 	p = skipwhite(p);

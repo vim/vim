@@ -522,7 +522,8 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	case VAR_ANY:
 	case VAR_VOID:
 	case VAR_INSTR:
-	    emsg(_(e_inval_string));
+	    semsg(_(e_using_invalid_value_as_string_str),
+						  vartype_name(varp->v_type));
 	    break;
     }
     return NULL;
