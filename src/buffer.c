@@ -4550,7 +4550,7 @@ build_stl_str_hl(
 	    }
 
 	    // If the output of the expression needs to be evaluated
-	    // replace the %{} block with the result of evaluation
+	    // replace the %[] block with the result of evaluation
 	    if (opt == STL_VIM_EVAL_EXPR &&str != NULL && *str != 0 
 		&& strchr((const char *)str, '%') != NULL
 		&& evaldepth < MAX_STL_EVAL_DEPTH) {
@@ -4559,13 +4559,15 @@ build_stl_str_hl(
 		size_t fmt_length = strlen((const char *)s);
 
 		size_t new_fmt_len = parsed_usefmt + str_length + fmt_length + 3;
-		char_u * new_fmt = (char_u *)alloc(new_fmt_len * sizeof(char_u));
+		char_u *new_fmt = (char_u *)alloc(new_fmt_len * sizeof(char_u));
 
-		memcpy(new_fmt, usefmt, parsed_usefmt);
-		memcpy(new_fmt + parsed_usefmt, str, str_length);
-		memcpy(new_fmt + parsed_usefmt + str_length, "%]", 2);
-		memcpy(new_fmt + parsed_usefmt + str_length + 2, s, fmt_length);
-		new_fmt[new_fmt_len - 1] = 0;
+		char_u *p = new_fmt;
+		p = memcpy(p, usefmt, parsed_usefmt) + parsed_usefmt;
+		p = memcpy(p , str, str_length) + str_length;
+		p = memcpy(p, "%]", 2) + 2;
+		p = memcpy(p , s, fmt_length) + fmt_length;
+		*p = 0;
+		p = NULL;
 
 		if (usefmt != fmt) {
 		    vim_free(usefmt);
