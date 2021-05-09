@@ -585,9 +585,11 @@ func Test_arabic_chars_in_search_cmd()
 endfunc
 
 func Test_W17_arabic_requires_utf8()
-  set enc=latin1 arabic
+  let save_enc = &encoding
+  set encoding=latin1 arabic
   call assert_match('^W17:', GetMessages()[-1])
-  set enc& arabic&
+  set arabic&
+  let &encoding = save_enc
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
