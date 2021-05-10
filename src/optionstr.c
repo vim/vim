@@ -619,7 +619,8 @@ check_stl_option(char_u *s)
 	if (*s == '{')
 	{
 	    s++;
-	    while (*s != '}' && *s)
+	    int evaluate = (*(s) == '%');
+	    while ((*s != '}' || (evaluate && *(s-1) != '%')) && *s)
 		s++;
 	    if (*s != '}')
 		return N_("E540: Unclosed expression sequence");

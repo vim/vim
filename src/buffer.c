@@ -4503,22 +4503,25 @@ build_stl_str_hl(
 	    itemisflag = TRUE;
 	    t = p;
 #ifdef FEAT_EVAL
-	    char_u *block_start = s;
-	    int evaluate = FALSE;
+	    char_u *block_start = s - 1;
 #endif
-	    while (*s != '}' && *s != NUL && p + 1 < out + outlen)
+	    int evaluate = (*s == '%') ? TRUE : FALSE;
+	    if (evaluate) {
+		s++;
+	    }
+	    while ((*s != '}' || (evaluate && *(s-1) != '%'))
+		   && *s != NUL && p + 1 < out + outlen)
 		*p++ = *s++;
 	    if (*s != '}')	// missing '}' or out of space
 		break;
 	    s++;
-	    *p = 0;
-	    p = t;
-
-#ifdef FEAT_EVAL
-	    if (*p == '%') {
-		evaluate = TRUE;
-		p++;
+	    if (evaluate) {
+		*(p-1) = 0;
+	    } else {
+		*p = 0;
 	    }
+	    p = t;
+#ifdef FEAT_EVAL
 	    vim_snprintf((char *)buf_tmp, sizeof(buf_tmp),
 							 "%d", curbuf->b_fnum);
 	    set_internal_string_var((char_u *)"g:actual_curbuf", buf_tmp);
@@ -4542,10 +4545,6 @@ build_stl_str_hl(
 	    do_unlet((char_u *)"g:actual_curbuf", TRUE);
 	    do_unlet((char_u *)"g:actual_curwin", TRUE);
 
-	    if (evaluate) {
-		p--;
-	    }
-
 	    if (str != NULL && *str != 0)
 	    {
 		if (*skipdigits(str) == NUL)
@@ -4561,7 +4560,7 @@ build_stl_str_hl(
 	    if (evaluate && str != NULL && *str != 0 
 		&& strchr((const char *)str, '%') != NULL
 		&& evaldepth < MAX_STL_EVAL_DEPTH) {
-		size_t parsed_usefmt = (size_t)(block_start - usefmt - 1);
+		size_t parsed_usefmt = (size_t)(block_start - usefmt);
 		size_t str_length = strlen((const char *)str);
 		size_t fmt_length = strlen((const char *)s);
 

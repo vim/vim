@@ -7338,19 +7338,21 @@ A jump table for the options with a short description can be found at |Q_op|.
 	{ NF  Evaluate expression between '%{' and '}' and substitute result.
 	      Note that there is no '%' before the closing '}'.  The
 	      expression cannot contain a '}' character, call a function to
-	      work around that.  See |stl-%{| below. The result of expression
-	      doesn't get evaluated by default. But if the expression is 
-	      presided by '%' then the result of expression will be evaluated
-	      regular statusline format string. Means the return value of
-	      expr can contain % items. For example:
+	      work around that.  See |stl-%{| below.
+	{% -  This is almost same as { except the result of expression is
+	      evaluated as regular statusline format string. Means the 
+	      return value of expr can contain % items. Note in this case
+	      the expression can contain `}` as the end of expression is
+	      denoted by `%}`
+	      The For example:
 >
 		func! Stl_filename() abort
 		    return "%t"
 		endf
 <
-	      `stl=%{Stl_filename()}`  displayed as `"%t"`
-	      `stl=%{%Stl_filename()}` displayed as  `"Name of current file"`
-		  
+	      `stl=%{Stl_filename()}`   is displayed as `"%t"`
+	      `stl=%{%Stl_filename()%}` is displayed as  `"Name of current file"`
+	} -   End of `{%` expression
 	( -   Start of item group.  Can be used for setting the width and
 	      alignment of a section.  Must be followed by %) somewhere.
 	) -   End of item group.  No width fields allowed.

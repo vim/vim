@@ -256,9 +256,9 @@ func Test_statusline()
     return '%n some other text'
   endfunc
   func! Outer_eval()
-    return 'some text %{%Inner_eval()}'
+    return 'some text %{%Inner_eval()%}'
   endfunc
-  set statusline=%{%Outer_eval()}
+  set statusline=%{%Outer_eval()%}
   call assert_match('^some text ' . bufnr() . ' some other text\s*$', s:get_statusline())
   delfunc Inner_eval
   delfunc Outer_eval
