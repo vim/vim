@@ -1751,4 +1751,53 @@ func Test_wildmenu_dirstack()
   set wildmenu&
 endfunc
 
+" Test for recalling newer or older cmdline from history with <Up>, <Down>,
+" <S-Up>, <S-Down>, <PageUp>, <PageDown>, <C-p>, or <C-n>.
+func Test_recalling_cmdline()
+  CheckFeature cmdline_hist
+
+  let g:cmdlines = []
+  cnoremap <Plug>(save-cmdline) <Cmd>let g:cmdlines += [getcmdline()]<CR>
+
+  let histories = [
+  \  {'name': 'cmd',    'enter': ':',                    'exit': "\<Esc>"},
+  \  {'name': 'search', 'enter': '/',                    'exit': "\<Esc>"},
+  \  {'name': 'expr',   'enter': ":\<C-r>=",             'exit': "\<Esc>\<Esc>"},
+  \  {'name': 'input',  'enter': ":call input('')\<CR>", 'exit': "\<C-u>\<CR>"},
+  "\ TODO: {'name': 'debug', ...}
+  \]
+  let keypairs = [
+  \  {'older': "\<Up>",     'newer': "\<Down>",     'prefixmatch': v:true},
+  \  {'older': "\<S-Up>",   'newer': "\<S-Down>",   'prefixmatch': v:false},
+  \  {'older': "\<PageUp>", 'newer': "\<PageDown>", 'prefixmatch': v:false},
+  \  {'older': "\<C-p>",    'newer': "\<C-n>",      'prefixmatch': v:false},
+  \]
+  let prefix = 'vi'
+  for h in histories
+  for k in keypairs
+    call histdel(h.name)
+    call histadd(h.name, 'vim')
+    call histadd(h.name, 'Vietnam')
+    call histadd(h.name, 'victory')
+    call histadd(h.name, 'vogue')
+    call histadd(h.name, 'virtue')
+    call histadd(h.name, 'emacs')
+    let g:cmdlines = []
+    let keyseqs = h.enter
+    \          .. prefix
+    \          .. repeat(k.older .. "\<Plug>(save-cmdline)", 3)
+    \          .. repeat(k.newer .. "\<Plug>(save-cmdline)", 3)
+    \          .. h.exit
+    call feedkeys(keyseqs, 'xt')
+    let expect = k.prefixmatch
+    \ ? ['virtue', 'victory', 'vim',   'victory', 'virtue', prefix]
+    \ : ['emacs',  'virtue',  'vogue', 'virtue',  'emacs',  prefix]
+    call assert_equal(expect, g:cmdlines)
+  endfor
+  endfor
+
+  unlet g:cmdlines
+  cunmap <Plug>(save-cmdline)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
