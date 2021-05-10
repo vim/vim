@@ -618,8 +618,8 @@ check_stl_option(char_u *s)
 	}
 	if (*s == '{')
 	{
-	    s++;
 	    int evaluate = (*(s) == '%');
+	    s++;
 	    while ((*s != '}' || (evaluate && *(s-1) != '%')) && *s)
 		s++;
 	    if (*s != '}')

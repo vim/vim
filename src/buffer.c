@@ -4120,6 +4120,9 @@ build_stl_str_hl(
     int		group_end_userhl;
     int		group_start_userhl;
     int		groupdepth;
+#ifdef FEAT_EVAL
+    int		evaldepth;
+#endif
     int		minwid;
     int		maxwid;
     int		zeropad;
@@ -4195,7 +4198,7 @@ build_stl_str_hl(
 
     groupdepth = 0;
 #ifdef FEAT_EVAL
-    int evaldepth = 0;
+    evaldepth = 0;
 #endif
     p = out;
     curitem = 0;
@@ -4500,12 +4503,13 @@ build_stl_str_hl(
 	    break;
 
 	case STL_VIM_EXPR: // '{'
-	    itemisflag = TRUE;
-	    t = p;
+	{
 #ifdef FEAT_EVAL
 	    char_u *block_start = s - 1;
 #endif
 	    int evaluate = (*s == '%') ? TRUE : FALSE;
+	    itemisflag = TRUE;
+	    t = p;
 	    if (evaluate) {
 		s++;
 	    }
@@ -4589,7 +4593,7 @@ build_stl_str_hl(
 	    }
 #endif
 	    break;
-
+	}
 	case STL_LINE:
 	    num = (wp->w_buffer->b_ml.ml_flags & ML_EMPTY)
 		  ? 0L : (long)(wp->w_cursor.lnum);
