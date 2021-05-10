@@ -4568,10 +4568,13 @@ build_stl_str_hl(
 		char_u *new_fmt = (char_u *)alloc(new_fmt_len * sizeof(char_u));
 
 		char_u *new_fmt_p = new_fmt;
-		new_fmt_p = memcpy(new_fmt_p, usefmt, parsed_usefmt) + parsed_usefmt;
-		new_fmt_p = memcpy(new_fmt_p , str, str_length) + str_length;
-		new_fmt_p = memcpy(new_fmt_p, "%}", 2) + 2;
-		new_fmt_p = memcpy(new_fmt_p , s, fmt_length) + fmt_length;
+		new_fmt_p = (char_u *)memcpy(new_fmt_p, usefmt, parsed_usefmt)
+			      + parsed_usefmt;
+		new_fmt_p = (char_u *)memcpy(new_fmt_p , str, str_length)
+			      + str_length;
+		new_fmt_p = (char_u *)memcpy(new_fmt_p, "%}", 2) + 2;
+		new_fmt_p = (char_u *)memcpy(new_fmt_p , s, fmt_length)
+			      + fmt_length;
 		*new_fmt_p = 0;
 		new_fmt_p = NULL;
 
