@@ -4515,7 +4515,7 @@ build_stl_str_hl(
 	    p = t;
 
 #ifdef FEAT_EVAL
-	    if (*p == ':') {
+	    if (*p == '%') {
 		evaluate = TRUE;
 		p++;
 	    }

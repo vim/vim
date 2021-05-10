@@ -7340,7 +7340,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	      expression cannot contain a '}' character, call a function to
 	      work around that.  See |stl-%{| below. The result of expression
 	      doesn't get evaluated by default. But if the expression is 
-	      presided by ':' then the result of expression will be evaluated
+	      presided by '%' then the result of expression will be evaluated
 	      regular statusline format string. Means the return value of
 	      expr can contain % items. For example:
 >
@@ -7349,7 +7349,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		endf
 <
 	      `stl=%{Stl_filename()}`  displayed as `"%t"`
-	      `stl=%{:Stl_filename()}` displayed as  `"Name of current file"`
+	      `stl=%{%Stl_filename()}` displayed as  `"Name of current file"`
 		  
 	( -   Start of item group.  Can be used for setting the width and
 	      alignment of a section.  Must be followed by %) somewhere.
