@@ -23,7 +23,7 @@ if exists("loaded_matchit")
     \ '\<specify\>:\<endspecify\>,' .
     \ '\<config\>:\<endconfig\>,' .
     \ '\<generate\>:\<endgenerate\>,' .
-    \ '\<fork\>:\<join\>,' .
+    \ '\<fork\>:\<join\>\|\<join_any\>\|\<join_none\>,' .
     \ '\<primitive\>:\<endprimitive\>,' .
     \ '\<table\>:\<endtable\>,' .
     \ '\<checker\>:\<endchecker\>,' .
