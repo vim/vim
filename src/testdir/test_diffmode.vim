@@ -1196,4 +1196,24 @@ func Test_diff_filler_cursorcolumn()
   call delete('Xtest_diff_cuc')
 endfunc
 
+func Test_external_universal_diffs()
+  function Test_external_universal_diff()
+    silent execute '!diff  -u ' . v:fname_in . ' ' . v:fname_new . ' > ' . v:fname_out
+  endfunction
+  let l:diffexpr=&diffexpr
+  set diffexpr=Test_external_universal_diff()
+
+  call setline(1, 'a')
+  diffthis
+  vnew
+  call setline(2, 'a')
+  diffthis
+
+  call assert_equal(1, &diff)
+
+  execute('set diffexpr=' . l:diffexpr)
+  bwipe!
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
