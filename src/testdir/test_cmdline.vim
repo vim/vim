@@ -1763,7 +1763,7 @@ func Test_recalling_cmdline()
   \  {'name': 'cmd',    'enter': ':',                    'exit': "\<Esc>"},
   \  {'name': 'search', 'enter': '/',                    'exit': "\<Esc>"},
   \  {'name': 'expr',   'enter': ":\<C-r>=",             'exit': "\<Esc>\<Esc>"},
-  \  {'name': 'input',  'enter': ":call input('')\<CR>", 'exit': "\<C-u>\<CR>"},
+  \  {'name': 'input',  'enter': ":call input('')\<CR>", 'exit': "\<CR>"},
   "\ TODO: {'name': 'debug', ...}
   \]
   let keypairs = [
@@ -1774,26 +1774,25 @@ func Test_recalling_cmdline()
   \]
   let prefix = 'vi'
   for h in histories
-  for k in keypairs
-    call histdel(h.name)
     call histadd(h.name, 'vim')
-    call histadd(h.name, 'Vietnam')
-    call histadd(h.name, 'victory')
-    call histadd(h.name, 'vogue')
     call histadd(h.name, 'virtue')
+    call histadd(h.name, 'Virgo')
+    call histadd(h.name, 'vogue')
     call histadd(h.name, 'emacs')
-    let g:cmdlines = []
-    let keyseqs = h.enter
-    \          .. prefix
-    \          .. repeat(k.older .. "\<Plug>(save-cmdline)", 3)
-    \          .. repeat(k.newer .. "\<Plug>(save-cmdline)", 3)
-    \          .. h.exit
-    call feedkeys(keyseqs, 'xt')
-    let expect = k.prefixmatch
-    \ ? ['virtue', 'victory', 'vim',   'victory', 'virtue', prefix]
-    \ : ['emacs',  'virtue',  'vogue', 'virtue',  'emacs',  prefix]
-    call assert_equal(expect, g:cmdlines)
-  endfor
+    for k in keypairs
+      let g:cmdlines = []
+      let keyseqs = h.enter
+      \          .. prefix
+      \          .. repeat(k.older .. "\<Plug>(save-cmdline)", 2)
+      \          .. repeat(k.newer .. "\<Plug>(save-cmdline)", 2)
+      \          .. h.exit
+      call feedkeys(keyseqs, 'xt')
+      call histdel(h.name, -1) " delete the history added by feedkeys above
+      let expect = k.prefixmatch
+      \          ? ['virtue', 'vim',   'virtue', prefix]
+      \          : ['emacs',  'vogue', 'emacs',  prefix]
+      call assert_equal(expect, g:cmdlines)
+    endfor
   endfor
 
   unlet g:cmdlines
