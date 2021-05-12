@@ -2475,8 +2475,8 @@ f_call(typval_T *argvars, typval_T *rettv)
     }
     else
 	func = tv_get_string(&argvars[0]);
-    if (*func == NUL)
-	return;		// type error or empty name
+    if (func == NULL || *func == NUL)
+	return;		// type error, empty name or null function
 
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
