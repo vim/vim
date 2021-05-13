@@ -1971,7 +1971,7 @@ internal_func_name(int idx)
 }
 
 /*
- * Check the argument types for builting function "idx".
+ * Check the argument types for builtin function "idx".
  * Uses the list of types on the type stack: "types".
  * Return FAIL and gives an error message when a type is wrong.
  */
@@ -2475,8 +2475,8 @@ f_call(typval_T *argvars, typval_T *rettv)
     }
     else
 	func = tv_get_string(&argvars[0]);
-    if (*func == NUL)
-	return;		// type error or empty name
+    if (func == NULL || *func == NUL)
+	return;		// type error, empty name or null function
 
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
@@ -2779,7 +2779,7 @@ f_cosh(typval_T *argvars, typval_T *rettv)
 
 /*
  * Set the cursor position.
- * If 'charcol' is TRUE, then use the column number as a character offet.
+ * If 'charcol' is TRUE, then use the column number as a character offset.
  * Otherwise use the column number as a byte offset.
  */
     static void
