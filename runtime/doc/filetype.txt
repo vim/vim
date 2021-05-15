@@ -589,7 +589,6 @@ Global mapping:
 Local mappings:
 CTRL-]		Jump to the manual page for the word under the cursor.
 CTRL-T		Jump back to the previous manual page.
-q		Same as the |:quit| command.
 
 To use a vertical split instead of horizontal: >
 	let g:ft_man_open_mode = 'vert'

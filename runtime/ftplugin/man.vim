@@ -36,14 +36,12 @@ if &filetype == "man"
 
     nnoremap <buffer> <silent> <c-]> :call <SID>PreGetPage(v:count)<CR>
     nnoremap <buffer> <silent> <c-t> :call <SID>PopPage()<CR>
-    nnoremap <buffer> <silent> q :q<CR>
 
     " Add undo commands for the maps
     let b:undo_ftplugin = b:undo_ftplugin
 	  \ . '|silent! nunmap <buffer> <Plug>ManBS'
 	  \ . '|silent! nunmap <buffer> <c-]>'
 	  \ . '|silent! nunmap <buffer> <c-t>'
-	  \ . '|silent! nunmap <buffer> q'
   endif
 
   if exists('g:ft_man_folding_enable') && (g:ft_man_folding_enable == 1)
