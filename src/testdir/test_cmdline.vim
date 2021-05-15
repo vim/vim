@@ -1799,4 +1799,23 @@ func Test_recalling_cmdline()
   cunmap <Plug>(save-cmdline)
 endfunc
 
+func Test_cmd_map_cmdlineChanged()
+  let g:log = []
+  cnoremap <F1> l<Cmd><CR>s
+  augroup test
+    autocmd!
+    autocmd CmdlineChanged : let g:log += [getcmdline()]
+  augroup END
+
+  call feedkeys(":\<F1>\<CR>", 'xt')
+  call assert_equal(['l', 'ls'], g:log)
+
+  unlet g:log
+  cunmap <F1>
+  augroup test
+    autocmd!
+  augroup END
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab

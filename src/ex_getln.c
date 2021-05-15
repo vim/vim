@@ -1757,9 +1757,17 @@ getcmdline_int(
 	    c = safe_vgetc();
 	} while (c == K_IGNORE || c == K_NOP);
 
-	if (c == K_COMMAND
-		   && do_cmdline(NULL, getcmdkeycmd, NULL, DOCMD_NOWAIT) == OK)
-	    goto cmdline_changed;
+	if (c == K_COMMAND)
+	{
+	    int	    clen = ccline.cmdlen;
+
+	    if (do_cmdline(NULL, getcmdkeycmd, NULL, DOCMD_NOWAIT) == OK)
+	    {
+		if (clen == ccline.cmdlen)
+		    goto cmdline_not_changed;
+		goto cmdline_changed;
+	    }
+	}
 
 	if (KeyTyped)
 	{
