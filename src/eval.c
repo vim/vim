@@ -5916,10 +5916,18 @@ handle_subscript(
 	}
 	else if (p[0] == '-' && p[1] == '>')
 	{
-	    *arg = skipwhite(p + 2);
+	    if (in_vim9script())
+		*arg = skipwhite(p + 2);
+	    else
+		*arg = p + 2;
 	    if (ret == OK)
 	    {
-		if ((**arg == '{' && !in_vim9script()) || **arg == '(')
+		if (VIM_ISWHITE(**arg))
+		{
+		    emsg(_(e_nowhitespace));
+		    ret = FAIL;
+		}
+		else if ((**arg == '{' && !in_vim9script()) || **arg == '(')
 		    // expr->{lambda}() or expr->(lambda)()
 		    ret = eval_lambda(arg, rettv, evalarg, verbose);
 		else
