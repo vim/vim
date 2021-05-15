@@ -251,7 +251,7 @@ func Test_statusline()
   call assert_match('^vimLineComment\s*$', s:get_statusline())
   syntax off
 
-  "%{: evaluates enxpressions present in result of %{} expression
+  "%{%expr%}: evaluates enxpressions present in result of expr
   func! Inner_eval()
     return '%n some other text'
   endfunc
@@ -262,6 +262,14 @@ func Test_statusline()
   call assert_match('^some text ' . bufnr() . ' some other text\s*$', s:get_statusline())
   delfunc Inner_eval
   delfunc Outer_eval
+
+  "%{%expr%}: Doesn't get stuck for recursion
+  func! Recurse_eval()
+    return '%{%Recurse_eval()%}'
+  endfunc
+  set statusline=%{%Recurse_eval()%}
+  call assert_match('^%{%Recurse_eval()%}\s*$', s:get_statusline())
+  delfunc Recurse_eval
 
   "%(: Start of item group.
   set statusline=ab%(cd%q%)de
