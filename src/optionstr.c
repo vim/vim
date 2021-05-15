@@ -618,8 +618,10 @@ check_stl_option(char_u *s)
 	}
 	if (*s == '{')
 	{
+	    int reevaluate = (*s == '%');
+
 	    s++;
-	    while (*s != '}' && *s)
+	    while ((*s != '}' || (reevaluate && s[-1] != '%')) && *s)
 		s++;
 	    if (*s != '}')
 		return N_("E540: Unclosed expression sequence");
