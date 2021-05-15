@@ -1734,6 +1734,8 @@ getcmdline_int(
      */
     for (;;)
     {
+	int trigger_cmdlinechanged = TRUE;
+
 	redir_off = TRUE;	// Don't redirect the typed command.
 				// Repeated, because a ":redir" inside
 				// completion may switch it on.
@@ -1764,7 +1766,7 @@ getcmdline_int(
 	    if (do_cmdline(NULL, getcmdkeycmd, NULL, DOCMD_NOWAIT) == OK)
 	    {
 		if (clen == ccline.cmdlen)
-		    goto cmdline_not_changed;
+		    trigger_cmdlinechanged = FALSE;
 		goto cmdline_changed;
 	    }
 	}
@@ -2380,8 +2382,9 @@ cmdline_changed:
 	if (is_state.winid != curwin->w_id)
 	    init_incsearch_state(&is_state);
 #endif
-	// Trigger CmdlineChanged autocommands.
-	trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINECHANGED);
+	if (trigger_cmdlinechanged)
+	    // Trigger CmdlineChanged autocommands.
+	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINECHANGED);
 
 #ifdef FEAT_SEARCH_EXTRA
 	if (xpc.xp_context == EXPAND_NOTHING)
