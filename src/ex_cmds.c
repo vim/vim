@@ -1856,6 +1856,19 @@ ex_write(exarg_T *eap)
 	(void)do_write(eap);
 }
 
+#ifdef UNIX
+    static int
+check_writable(char_u *fname)
+{
+    if (mch_nodetype(fname) == NODE_OTHER)
+    {
+	semsg(_("E503: \"%s\" is not a file or writable device"), fname);
+	return FAIL;
+    }
+    return OK;
+}
+#endif
+
 /*
  * write current buffer to file 'eap->arg'
  * if 'eap->append' is TRUE, append to the file
@@ -1942,7 +1955,11 @@ do_write(exarg_T *eap)
 #ifdef FEAT_QUICKFIX
 		bt_dontwrite_msg(curbuf) ||
 #endif
-		check_fname() == FAIL || check_readonly(&eap->forceit, curbuf)))
+		check_fname() == FAIL
+#ifdef UNIX
+		|| check_writable(curbuf->b_ffname) == FAIL
+#endif
+		|| check_readonly(&eap->forceit, curbuf)))
 	goto theend;
 
     if (!other)
