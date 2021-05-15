@@ -4462,7 +4462,8 @@ build_stl_str_hl(
 	}
 #ifdef FEAT_EVAL
 	// Denotes end of expanded %{} block
-	if (*s == '}' && evaldepth > 0) {
+	if (*s == '}' && evaldepth > 0)
+	{
 	    s++;
 	    evaldepth--;
 	    continue;
@@ -4508,22 +4509,21 @@ build_stl_str_hl(
 	    char_u *block_start = s - 1;
 #endif
 	    int evaluate = (*s == '%') ? TRUE : FALSE;
+
 	    itemisflag = TRUE;
 	    t = p;
-	    if (evaluate) {
+	    if (evaluate)
 		s++;
-	    }
 	    while ((*s != '}' || (evaluate && *(s-1) != '%'))
 		   && *s != NUL && p + 1 < out + outlen)
 		*p++ = *s++;
 	    if (*s != '}')	// missing '}' or out of space
 		break;
 	    s++;
-	    if (evaluate) {
-		*(p-1) = 0;
-	    } else {
+	    if (evaluate) // When evaluate is true expr contains % at end.
+		*(p-1) = 0; // Remove that
+	    else
 		*p = 0;
-	    }
 	    p = t;
 #ifdef FEAT_EVAL
 	    vim_snprintf((char *)buf_tmp, sizeof(buf_tmp),
@@ -4563,15 +4563,15 @@ build_stl_str_hl(
 	    // replace the %{} block with the result of evaluation
 	    if (evaluate && str != NULL && *str != 0 
 		&& strchr((const char *)str, '%') != NULL
-		&& evaldepth < MAX_STL_EVAL_DEPTH) {
+		&& evaldepth < MAX_STL_EVAL_DEPTH)
+	    {
 		size_t parsed_usefmt = (size_t)(block_start - usefmt);
 		size_t str_length = strlen((const char *)str);
 		size_t fmt_length = strlen((const char *)s);
-
 		size_t new_fmt_len = parsed_usefmt + str_length + fmt_length + 3;
 		char_u *new_fmt = (char_u *)alloc(new_fmt_len * sizeof(char_u));
-
 		char_u *new_fmt_p = new_fmt;
+
 		new_fmt_p = (char_u *)memcpy(new_fmt_p, usefmt, parsed_usefmt)
 			      + parsed_usefmt;
 		new_fmt_p = (char_u *)memcpy(new_fmt_p , str, str_length)
@@ -4582,9 +4582,8 @@ build_stl_str_hl(
 		*new_fmt_p = 0;
 		new_fmt_p = NULL;
 
-		if (usefmt != fmt) {
+		if (usefmt != fmt)
 		    vim_free(usefmt);
-		}
 		VIM_CLEAR(str);
 		usefmt = new_fmt;
 		s = usefmt + parsed_usefmt;
