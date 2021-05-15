@@ -62,6 +62,20 @@ modes.
 			{rhs}, is then further scanned for mappings.  This
 			allows for nested and recursive use of mappings.
 
+							*:map-table*
+Command \ Mode | Norm | Ins | Cmd | Vis | Sel | Opr | Term | Lang | 
+[nore]map      |  @   |  -  |  -  |  @  |  @  |  @  |  -   |  -   | 
+n[nore]map     |  @   |  -  |  -  |  -  |  -  |  -  |  -   |  -   | 
+[nore]map!     |  -   |  @  |  @  |  -  |  -  |  -  |  -   |  -   | 
+i[nore]map     |  -   |  @  |  -  |  -  |  -  |  -  |  -   |  -   | 
+c[nore]map     |  -   |  -  |  @  |  -  |  -  |  -  |  -   |  -   | 
+v[nore]map     |  -   |  -  |  -  |  @  |  @  |  -  |  -   |  -   | 
+x[nore]map     |  -   |  -  |  -  |  @  |  -  |  -  |  -   |  -   | 
+s[nore]map     |  -   |  -  |  -  |  -  |  @  |  -  |  -   |  -   | 
+o[nore]map     |  -   |  -  |  -  |  -  |  -  |  @  |  -   |  -   | 
+t[nore]map     |  -   |  -  |  -  |  -  |  -  |  -  |  @   |  -   | 
+l[nore]map     |  -   |  @  |  @  |  -  |  -  |  -  |  -   |  @   | 
+
 						*:nore* *:norem*
 :no[remap]  {lhs} {rhs}		|mapmode-nvo|	*:no*  *:noremap* *:nor*
 :nn[oremap] {lhs} {rhs}		|mapmode-n|	*:nn*  *:nnoremap*
