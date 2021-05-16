@@ -815,6 +815,8 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     linenr_T	start = 1;
     linenr_T	end = 0;
     linenr_T	lnum;
+    linenr_T	first_changed = 0;
+    linenr_T	last_changed = 0;
     dict_T	*dict;
     buf_T	*buf = curbuf;
     int		do_all;
@@ -925,6 +927,9 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 		    buf->b_ml.ml_line_len -= sizeof(textprop_T);
 		    --idx;
 
+		    if (first_changed == 0)
+			first_changed = lnum;
+		    last_changed = lnum;
 		    ++rettv->vval.v_number;
 		    if (!do_all)
 			break;
@@ -932,15 +937,10 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 	    }
 	}
     }
-    if (rettv->vval.v_number > 0)
+    if (first_changed > 0)
     {
-	if (start == 1 && end == buf->b_ml.ml_line_count)
-	    redraw_buf_later(buf, NOT_VALID);
-	else
-	{
-	    changed_lines_buf(buf, start, end + 1, 0);
-	    redraw_buf_later(buf, VALID);
-	}
+	changed_lines_buf(buf, first_changed, last_changed + 1, 0);
+	redraw_buf_later(buf, VALID);
     }
 }
 
