@@ -2777,6 +2777,10 @@ def Test_expr7_negate_add()
   CheckDefAndScriptFailure(lines, 'E15:')
 enddef
 
+def LegacyReturn(): string
+  legacy return #{key: 'ok'}.key
+enddef
+
 def Test_expr7_legacy_script()
   var lines =<< trim END
       let s:legacy = 'legacy'
@@ -2790,6 +2794,17 @@ def Test_expr7_legacy_script()
       call assert_equal('legacy', GetLocalPrefix())
   END
   CheckScriptSuccess(lines)
+
+  assert_equal('ok', LegacyReturn())
+
+  lines =<< trim END
+      vim9script 
+      def GetNumber(): number   
+          legacy return range(3)->map('v:val + 1') 
+      enddef 
+      echo GetNumber()
+  END
+  CheckScriptFailure(lines, 'E1012: Type mismatch; expected number but got list<number>')
 enddef
 
 def Echo(arg: any): string

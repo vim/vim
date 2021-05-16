@@ -1388,6 +1388,27 @@ exec_instructions(ectx_T *ectx)
 		}
 		break;
 
+	    // Evaluate an expression with legacy syntax, push it onto the
+	    // stack.
+	    case ISN_LEGACY_EVAL:
+		{
+		    char_u  *arg = iptr->isn_arg.string;
+		    int	    res;
+		    int	    save_flags = cmdmod.cmod_flags;
+
+		    if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
+			return FAIL;
+		    tv = STACK_TV_BOT(0);
+		    init_tv(tv);
+		    cmdmod.cmod_flags |= CMOD_LEGACY;
+		    res = eval0(arg, tv, NULL, &EVALARG_EVALUATE);
+		    cmdmod.cmod_flags = save_flags;
+		    if (res == FAIL)
+			goto on_error;
+		    ++ectx->ec_stack.ga_len;
+		}
+		break;
+
 	    // push typeval VAR_INSTR with instructions to be executed
 	    case ISN_INSTR:
 		{
@@ -4463,6 +4484,10 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	{
 	    case ISN_EXEC:
 		smsg("%s%4d EXEC %s", pfx, current, iptr->isn_arg.string);
+		break;
+	    case ISN_LEGACY_EVAL:
+		smsg("%s%4d EVAL legacy %s", pfx, current,
+							 iptr->isn_arg.string);
 		break;
 	    case ISN_REDIRSTART:
 		smsg("%s%4d REDIR", pfx, current);

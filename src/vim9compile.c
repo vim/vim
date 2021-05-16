@@ -2174,6 +2174,25 @@ generate_EXEC(cctx_T *cctx, char_u *line)
 }
 
     static int
+generate_LEGACY_EVAL(cctx_T *cctx, char_u *line)
+{
+    isn_T	*isn;
+    garray_T	*stack = &cctx->ctx_type_stack;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_LEGACY_EVAL)) == NULL)
+	return FAIL;
+    isn->isn_arg.string = vim_strsave(line);
+
+    if (ga_grow(stack, 1) == FAIL)
+	return FAIL;
+    ((type_T **)stack->ga_data)[stack->ga_len] = &t_any;
+    ++stack->ga_len;
+
+    return OK;
+}
+
+    static int
 generate_EXECCONCAT(cctx_T *cctx, int count)
 {
     isn_T	*isn;
@@ -5321,10 +5340,11 @@ compile_expr0(char_u **arg,  cctx_T *cctx)
 }
 
 /*
- * compile "return [expr]"
+ * Compile "return [expr]".
+ * When "legacy" is TRUE evaluate [expr] with legacy syntax
  */
     static char_u *
-compile_return(char_u *arg, int check_return_type, cctx_T *cctx)
+compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 {
     char_u	*p = arg;
     garray_T	*stack = &cctx->ctx_type_stack;
@@ -5332,9 +5352,24 @@ compile_return(char_u *arg, int check_return_type, cctx_T *cctx)
 
     if (*p != NUL && *p != '|' && *p != '\n')
     {
-	// compile return argument into instructions
-	if (compile_expr0(&p, cctx) == FAIL)
-	    return NULL;
+	if (legacy)
+	{
+	    int save_flags = cmdmod.cmod_flags;
+
+	    generate_LEGACY_EVAL(cctx, p);
+	    if (need_type(&t_any, cctx->ctx_ufunc->uf_ret_type, -1,
+						0, cctx, FALSE, FALSE) == FAIL)
+		return NULL;
+	    cmdmod.cmod_flags |= CMOD_LEGACY;
+	    (void)skip_expr(&p, NULL);
+	    cmdmod.cmod_flags = save_flags;
+	}
+	else
+	{
+	    // compile return argument into instructions
+	    if (compile_expr0(&p, cctx) == FAIL)
+		return NULL;
+	}
 
 	if (cctx->ctx_skip != SKIP_YES)
 	{
@@ -9193,7 +9228,15 @@ compile_def_function(
 
 	// When using ":legacy cmd" always use compile_exec().
 	if (local_cmdmod.cmod_flags & CMOD_LEGACY)
-	    ea.cmdidx = CMD_legacy;
+	{
+	    char_u *start = ea.cmd;
+
+	    // ":legacy return expr" needs to be handled differently.
+	    if (checkforcmd(&start, "return", 4))
+		ea.cmdidx = CMD_return;
+	    else
+		ea.cmdidx = CMD_legacy;
+	}
 
 	if (p == ea.cmd && ea.cmdidx != CMD_SIZE)
 	{
@@ -9254,7 +9297,8 @@ compile_def_function(
 		    goto erret;
 
 	    case CMD_return:
-		    line = compile_return(p, check_return_type, &cctx);
+		    line = compile_return(p, check_return_type,
+				 local_cmdmod.cmod_flags & CMOD_LEGACY, &cctx);
 		    cctx.ctx_had_return = TRUE;
 		    break;
 
@@ -9605,6 +9649,7 @@ delete_instr(isn_T *isn)
     {
 	case ISN_DEF:
 	case ISN_EXEC:
+	case ISN_LEGACY_EVAL:
 	case ISN_LOADAUTO:
 	case ISN_LOADB:
 	case ISN_LOADENV:

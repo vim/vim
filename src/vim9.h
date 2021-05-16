@@ -14,6 +14,7 @@
 typedef enum {
     ISN_EXEC,	    // execute Ex command line isn_arg.string
     ISN_EXECCONCAT, // execute Ex command from isn_arg.number items on stack
+    ISN_LEGACY_EVAL, // evaluate expression isn_arg.string with legacy syntax.
     ISN_ECHO,	    // echo isn_arg.echo.echo_count items on top of stack
     ISN_EXECUTE,    // execute Ex commands isn_arg.number items on top of stack
     ISN_ECHOMSG,    // echo Ex commands isn_arg.number items on top of stack
