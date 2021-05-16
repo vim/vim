@@ -1616,7 +1616,7 @@ EXTERN char e_duparg2[]		INIT(= N_("E983: Duplicate argument: %s"));
 EXTERN char e_invargval[]	INIT(= N_("E475: Invalid value for argument %s"));
 EXTERN char e_invargNval[]	INIT(= N_("E475: Invalid value for argument %s: %s"));
 #ifdef FEAT_EVAL
-EXTERN char e_invexpr2[]	INIT(= N_("E15: Invalid expression: %s"));
+EXTERN char e_invexpr2[]	INIT(= N_("E15: Invalid expression: \"%s\""));
 #endif
 EXTERN char e_invrange[]	INIT(= N_("E16: Invalid range"));
 #if defined(UNIX) || defined(FEAT_SYN_HL) || defined(FEAT_SPELL)

@@ -3131,7 +3131,8 @@ compile_string(isn_T *isn, cctx_T *cctx)
     s = skipwhite(s);
     trailing_error = *s != NUL;
 
-    if (expr_res == FAIL || trailing_error)
+    if (expr_res == FAIL || trailing_error
+				       || ga_grow(&cctx->ctx_instr, 1) == FAIL)
     {
 	if (trailing_error)
 	    semsg(_(e_trailing_arg), s);
@@ -3185,7 +3186,7 @@ compile_arguments(char_u **arg, cctx_T *cctx, int *argcount, int is_searchpair)
 	    return FAIL;
 	++*argcount;
 
-	if (is_searchpair && *argcount == 5
+	if (is_searchpair && *argcount >= 5
 		&& cctx->ctx_instr.ga_len == instr_count + 1)
 	{
 	    isn_T *isn = ((isn_T *)cctx->ctx_instr.ga_data) + instr_count;

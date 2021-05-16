@@ -1006,6 +1006,20 @@ def Test_searchpair()
   normal 0f{
   assert_equal([0, 0], searchpairpos('{', '', '}', '', 'col(".") > col'))
 
+  var lines =<< trim END
+      vim9script
+      setline(1, '()')
+      normal gg
+      def Fail()
+        try
+          searchpairpos('(', '', ')', 'nW', '[0]->map("")')
+        catch
+        endtry
+      enddef
+      Fail()
+  END
+  CheckScriptFailure(lines, 'E15:')
+
   bwipe!
 enddef
 

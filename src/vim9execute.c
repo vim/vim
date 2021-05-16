@@ -1295,6 +1295,9 @@ exec_instructions(ectx_T *ectx)
     // Start execution at the first instruction.
     ectx->ec_iidx = 0;
 
+    // Only catch exceptions in this instruction list.
+    ectx->ec_trylevel_at_start = trylevel;
+
     for (;;)
     {
 	isn_T	    *iptr;
@@ -4158,7 +4161,6 @@ call_def_function(
     ga_init2(&ectx.ec_trystack, sizeof(trycmd_T), 10);
     ga_init2(&ectx.ec_funcrefs, sizeof(partial_T *), 10);
     ectx.ec_did_emsg_before = did_emsg_before;
-    ectx.ec_trylevel_at_start = trylevel;
 
     idx = argc - ufunc->uf_args.ga_len;
     if (idx > 0 && ufunc->uf_va_name == NULL)
