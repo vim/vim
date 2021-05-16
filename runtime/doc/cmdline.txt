@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.2.  Last change: 2021 Apr 05
+*cmdline.txt*   For Vim version 8.2.  Last change: 2021 May 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -798,18 +798,20 @@ three lines: >
 		3:d<CR>		is translated into: .,.+2d<CR>
 <
 
-Visual Mode and Range					*v_:*
-							*:star-visual-range*
+Visual Mode and Range					
+							*v_:*
 {Visual}:	Starts a command-line with the Visual selected lines as a
 		range.  The code `:'<,'>` is used for this range, which makes
 		it possible to select a similar line from the command-line
 		history for repeating a command on different Visually selected
 		lines.
+
+:*						*:star* *:star-visual-range*
 		When Visual mode was already ended, a short way to use the
 		Visual area for a range is `:*`.  This requires that "*" does
 		not appear in 'cpo', see |cpo-star|.  Otherwise you will have
 		to type `:'<,'>`
-
+		For when "*" is in 'cpo' see |:star-compatible|.
 
 ==============================================================================
 5. Ex command-line flags				*ex-flags*

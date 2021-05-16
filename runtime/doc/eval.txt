@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2021 Apr 24
+*eval.txt*	For Vim version 8.2.  Last change: 2021 May 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7591,6 +7591,9 @@ matchfuzzy({list}, {str} [, {dict}])			*matchfuzzy()*
 		empty list is returned. If length of {str} is greater than
 		256, then returns an empty list.
 
+		Refer to |fuzzy-match| for more information about fuzzy
+		matching strings.
+
 		Example: >
 		   :echo matchfuzzy(["clay", "crow"], "cay")
 <		results in ["clay"]. >
@@ -9188,6 +9191,8 @@ searchpair({start}, {middle}, {end} [, {flags} [, {skip}
 		and -1 returned.
 		{skip} can be a string, a lambda, a funcref or a partial.
 		Anything else makes the function fail.
+		In a `:def` function when the {skip} argument is a string
+		constant it is compiled into instructions.
 
 		For {stopline} and {timeout} see |search()|.
 

@@ -3184,7 +3184,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :st	starting.txt	/*:st*
 :sta	windows.txt	/*:sta*
 :stag	windows.txt	/*:stag*
-:star	repeat.txt	/*:star*
+:star	cmdline.txt	/*:star*
+:star-compatible	repeat.txt	/*:star-compatible*
 :star-visual-range	cmdline.txt	/*:star-visual-range*
 :start	insert.txt	/*:start*
 :startgreplace	insert.txt	/*:startgreplace*
@@ -6691,6 +6692,7 @@ function-range-example	eval.txt	/*function-range-example*
 function-search-undo	eval.txt	/*function-search-undo*
 function_key	intro.txt	/*function_key*
 functions	eval.txt	/*functions*
+fuzzy-match	pattern.txt	/*fuzzy-match*
 fvwm.vim	syntax.txt	/*fvwm.vim*
 fvwm2rc	syntax.txt	/*fvwm2rc*
 fvwmrc	syntax.txt	/*fvwmrc*
@@ -7790,6 +7792,7 @@ map-return	map.txt	/*map-return*
 map-self-destroy	tips.txt	/*map-self-destroy*
 map-space_in_lhs	map.txt	/*map-space_in_lhs*
 map-space_in_rhs	map.txt	/*map-space_in_rhs*
+map-table	map.txt	/*map-table*
 map-typing	map.txt	/*map-typing*
 map-which-keys	map.txt	/*map-which-keys*
 map.txt	map.txt	/*map.txt*

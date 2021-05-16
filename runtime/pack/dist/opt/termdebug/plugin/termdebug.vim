@@ -2,7 +2,7 @@
 "
 " Author: Bram Moolenaar
 " Copyright: Vim license applies, see ":help license"
-" Last Change: 2021 Jan 03
+" Last Change: 2021 May 16
 "
 " WORK IN PROGRESS - Only the basics work
 " Note: On MS-Windows you need a recent version of gdb.  The one included with
@@ -228,7 +228,9 @@ func s:StartDebug_term(dict)
   endif
   let s:gdbwin = win_getid(winnr())
 
-  " Set arguments to be run
+  " Set arguments to be run.  First wait a bit to make detecting gdb a bit
+  " more reliable.
+  sleep 200m
   if len(proc_args)
     call term_sendkeys(s:gdbbuf, 'set args ' . join(proc_args) . "\r")
   endif

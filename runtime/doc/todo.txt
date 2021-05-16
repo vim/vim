@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Apr 29
+*todo.txt*      For Vim version 8.2.  Last change: 2021 May 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,13 +39,14 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 Vim9 - Make everything work:
-- expandcmd() with `=expr` in filename uses legacy expression.
-- eval_expr() in ex_cexpr()
-- eval_expr() call in dbg_parsearg() and debuggy_find()
-- compile_member() guesses the type, should figure out at runtime.
-- compile "skip" argument of searchpair()
+- function returning nothing should return void instead of zero
 - compile "expr" and "call" expression of a channel in channel_exe_cmd()?
-- give an error for "echo Func()" if Func() does not return anything.
+- Need some solution for dict function.  Can we implement part of classes?
+- A lambda without {} does not require a return type, using { return x } does.
+  That's unexpected, since the arguments are not required to have a type.
+  alt 1: not require a return type, figure it out from the common type of all
+	  the return statements found
+  alt 2: also require argument types
 - Using "windo echo expr" does not accept a line break inside "expr" (in a
   :def function and at script level in a not executed block). #7681
 - use CheckLegacyAndVim9Success(lines) in many more places
@@ -239,6 +240,10 @@ Memory leak in test_alot with pyeval() (allocating partial)
 Memory leak in test_alot with expand()
 Memory leaks in test_channel? (or is it because of fork())
 
+":set &shellpipe" and ":set &shellredir" should use the logic from
+initialization to figure out the default value from 'shell'.  Add a test for
+this.
+
 test_arglist func Test_all_not_allowed_from_cmdwin() hangs on MS-Windows.
 
 Mapping with partial match not executed properly in GTK. (Ingo Karkat, #7082)
@@ -248,6 +253,9 @@ Have another look at the implementation.
 
 Patch to implement the vimtutor with a plugin: #6414
 Was originally written by Felipe Morales.
+
+Request to use "." for the cursor column in search pattern \%<.c and \%<.v.
+(#8179)
 
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)  Did patch 8.2.2379 help?
@@ -276,6 +284,9 @@ Missing filetype test for bashrc, PKGBUILD, etc.
 Add an option to not fetch terminal codes in xterm, to avoid flicker when t_Co
 changes.
 
+When using ":bwipe!" also get rid of references to be buffer, e.g. in the
+jumplist and alternate file.
+
 Add an option to start_timer() to return from the input loop with K_IGNORE.
 This is useful e.g. when a popup was created that disables mappings, we need
 to return from vgetc() to make this happen.  #7011
@@ -292,6 +303,9 @@ Regexp to search for duplicate lines does not work correctly:
 MS-Windows: when writing undo file the infostreams are copied in 
 mch_copy_file_attribute(), that seems unnecessary. (#7925)
 Add a flag to only copy attributes?
+
+Make the jumplist behave like a tag stack. (#7738)  Should there be a more
+time bound navigation, like with undo?
 
 Changing a capturing group to non-capturing changes the result: #7607
     :echo matchstr('aaa bbb', '\(.\{-1,}\>\)\|.*')
@@ -1215,7 +1229,7 @@ Undo problem: "g-" doesn't go back, gets stuck. (Björn Linse, 2016 Jul 18)
 Add "unicode true" to NSIS installer.  Doesn't work with Windows 95, which we
 no longer support.
 
-Suppoert sort(l, 'F'), convert strings to float. (#7857)
+Support sort(l, 'F'), convert strings to float. (#7857)
 
 sort() is not stable when using numeric/float sort (Nikolay Pavlov, 2016 Sep
 4#1038)
