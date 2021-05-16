@@ -345,7 +345,8 @@ prop_add_common(
     }
 
     buf->b_has_textprop = TRUE;  // this is never reset
-    redraw_buf_later(buf, NOT_VALID);
+    changed_lines_buf(buf, start_lnum, end_lnum + 1, 0);
+    redraw_buf_later(buf, VALID);
 }
 
 /*
