@@ -933,7 +933,15 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 	}
     }
     if (rettv->vval.v_number > 0)
-	redraw_buf_later(buf, NOT_VALID);
+    {
+	if (start == 1 && end == buf->b_ml.ml_line_count)
+	    redraw_buf_later(buf, NOT_VALID);
+	else
+	{
+	    changed_lines_buf(buf, start, end + 1, 0);
+	    redraw_buf_later(buf, VALID);
+	}
+    }
 }
 
 /*
