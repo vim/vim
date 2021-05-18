@@ -976,6 +976,7 @@ lambda_function_body(
 {
     int		evaluate = (evalarg->eval_flags & EVAL_EVALUATE);
     garray_T	*gap = &evalarg->eval_ga;
+    garray_T	*freegap = &evalarg->eval_freega;
     ufunc_T	*ufunc = NULL;
     exarg_T	eap;
     garray_T	newlines;
@@ -1026,7 +1027,7 @@ lambda_function_body(
 	{
 	    char_u  *p = skipwhite(((char_u **)newlines.ga_data)[idx]);
 
-	    if (ga_grow(gap, 1) == FAIL)
+	    if (ga_grow(gap, 1) == FAIL || ga_grow(freegap, 1) == FAIL)
 		goto erret;
 
 	    // Going to concatenate the lines after parsing.  For an empty or
@@ -1039,10 +1040,10 @@ lambda_function_body(
 	    pnl = vim_strnsave((char_u *)"\n", plen + 1);
 	    if (pnl != NULL)
 		mch_memmove(pnl + 1, p, plen + 1);
-	    ((char_u **)gap->ga_data)[gap->ga_len] = pnl;
-	    ++gap->ga_len;
+	    ((char_u **)gap->ga_data)[gap->ga_len++] = pnl;
+	    ((char_u **)freegap->ga_data)[freegap->ga_len++] = pnl;
 	}
-	if (ga_grow(gap, 1) == FAIL)
+	if (ga_grow(gap, 1) == FAIL || ga_grow(freegap, 1) == FAIL)
 	    goto erret;
 	if (cmdline != NULL)
 	    // more is following after the "}", which was skipped
@@ -1054,8 +1055,8 @@ lambda_function_body(
 	pnl = vim_strnsave((char_u *)"\n", plen + 1);
 	if (pnl != NULL)
 	    mch_memmove(pnl + 1, last, plen + 1);
-	((char_u **)gap->ga_data)[gap->ga_len] = pnl;
-	++gap->ga_len;
+	((char_u **)gap->ga_data)[gap->ga_len++] = pnl;
+	((char_u **)freegap->ga_data)[freegap->ga_len++] = pnl;
     }
 
     if (cmdline != NULL)

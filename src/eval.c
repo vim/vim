@@ -416,6 +416,7 @@ skip_expr_concatenate(
     int		res;
     int		vim9script = in_vim9script();
     garray_T    *gap = evalarg == NULL ? NULL : &evalarg->eval_ga;
+    garray_T    *freegap = evalarg == NULL ? NULL : &evalarg->eval_freega;
     int		save_flags = evalarg == NULL ? 0 : evalarg->eval_flags;
     int		evaluate = evalarg == NULL
 			       ? FALSE : (evalarg->eval_flags & EVAL_EVALUATE);
@@ -427,6 +428,7 @@ skip_expr_concatenate(
 	// leave room for "start"
 	if (ga_grow(gap, 1) == OK)
 	    ++gap->ga_len;
+	ga_init2(freegap, sizeof(char_u *), 10);
     }
     *start = *arg;
 
@@ -444,7 +446,7 @@ skip_expr_concatenate(
     {
 	if (evalarg->eval_ga.ga_len == 1)
 	{
-	    // just one line, no need to concatenate
+	    // just the one line, no need to concatenate
 	    ga_clear(gap);
 	    gap->ga_itemsize = 0;
 	}
@@ -471,7 +473,13 @@ skip_expr_concatenate(
 		ga_clear_strings(gap);
 	    }
 	    else
+	    {
 		ga_clear(gap);
+
+		// free lines that were explicitly marked for freeing
+		ga_clear_strings(freegap);
+	    }
+
 	    gap->ga_itemsize = 0;
 	    if (p == NULL)
 		return FAIL;
@@ -3530,7 +3538,7 @@ eval7(
 
     /*
      * nested expression: (expression).
-     * lambda: (arg) => expr
+     * or lambda: (arg) => expr
      */
     case '(':	ret = NOTDONE;
 		if (in_vim9script())

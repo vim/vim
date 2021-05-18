@@ -1881,7 +1881,9 @@ typedef struct {
     // Used to collect lines while parsing them, so that they can be
     // concatenated later.  Used when "eval_ga.ga_itemsize" is not zero.
     // "eval_ga.ga_data" is a list of pointers to lines.
+    // "eval_freega" list pointers that need to be freed after concatenating.
     garray_T	eval_ga;
+    garray_T	eval_freega;
 
     // pointer to the last line obtained with getsourceline()
     char_u	*eval_tofree;
