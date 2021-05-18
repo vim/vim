@@ -1014,12 +1014,15 @@ def Test_searchpair()
         try
           searchpairpos('(', '', ')', 'nW', '[0]->map("")')
         catch
+          g:caught = 'yes'
         endtry
       enddef
       Fail()
   END
-  CheckScriptFailure(lines, 'E15:')
+  CheckScriptSuccess(lines)
+  assert_equal('yes', g:caught)
 
+  unlet g:caught
   bwipe!
 enddef
 
