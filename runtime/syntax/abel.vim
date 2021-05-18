@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	ABEL
 " Maintainer:	John Cook <johncook3@gmail.com>
-" Last Change:	2011 Dec 27
+" Last Change:	2021 May 17
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -59,7 +59,7 @@ syn region abelSpecifier start='istype' end=';' contains=abelTypeIdChar,abelType
 syn match  abelTypeIdChar "[,']" contained
 syn match  abelTypeIdEnd  ";" contained
 
-" string contstants and special characters within them
+" string constants and special characters within them
 syn match  abelSpecial contained "\\['\\]"
 syn region abelString start=+'+ skip=+\\"+ end=+'+ contains=abelSpecial
 

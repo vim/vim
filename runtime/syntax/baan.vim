@@ -2,7 +2,7 @@
 " Language:	Baan
 " Maintainer:	Erik Remmelzwaal (erik.remmelzwaal 0x40 ssaglobal.com)
 " Originally owned by: Erwin Smit / Her van de Vliert
-" Last change:  v1.17 2006/04/26 10:40:18
+" Last change:  v1.17 Mon May 17 19:18:59 PDT 2021
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -65,7 +65,7 @@ endif
 
 "************************************* SQL ************************************"
 syn keyword baansql from selectbind 
-syn keyword baansql where wherebind whereused exsists  
+syn keyword baansql where wherebind whereused exists  
 syn keyword baansql between inrange having
 syn keyword baansql hint ordered asc desc
 syn match   baansql "\<as set with \d\+ rows\>"

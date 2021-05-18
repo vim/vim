@@ -2,7 +2,7 @@
 " Language:	LPC
 " Maintainer:	Shizhu Pan <poet@mudbuilder.net>
 " URL:		http://poet.tomud.com/pub/lpc.vim.bz2
-" Last Change:	2016 Aug 31
+" Last Change:  2021 May 17
 " Comments:	If you are using Vim 6.2 or later, see :h lpc.vim for
 "		file type recognizing, if not, you had to use modeline.
 
@@ -177,7 +177,7 @@ syn keyword     lpcConstant     MUD_NAME F__THIS_OBJECT
 " Copy : Some of the following seems to be copied from c.vim but not quite
 " the same in details because the syntax for C and LPC is different.
 "
-" Color scheme : this syntax file had been thouroughly tested to work well
+" Color scheme : this syntax file had been thoroughly tested to work well
 " for all of the dark-backgrounded color schemes Vim has provided officially,
 " and it should be quite Ok for all of the bright-backgrounded color schemes,
 " of course it works best for the color scheme that I am using, download it

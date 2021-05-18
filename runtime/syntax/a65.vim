@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	xa 6502 cross assembler
 " Maintainer:	Clemens Kirchgatterer <clemens@1541.org>
-" Last Change:	2016 Aug 31
+" Last Change:	2021 May 17
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -118,7 +118,7 @@ syn match a65Section	"\(^\|\s\)\.)\($\|\s\)"
 " Strings
 syn match a65String	"\".*\""
 
-" Programm Counter
+" Program Counter
 syn region a65PC	start="\*=" end="\>" keepend
 
 " HI/LO Byte

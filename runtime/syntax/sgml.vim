@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	SGML
 " Maintainer:	Johannes Zellner <johannes@zellner.org>
-" Last Change:	Tue, 27 Apr 2004 15:05:21 CEST
+" Last Change:	Mon May 17 19:22:57 PDT 2021
 " Filenames:	*.sgml,*.sgm
 " $Id: sgml.vim,v 1.1 2004/06/13 17:52:57 vimboss Exp $
 
@@ -174,7 +174,7 @@ syn match   sgmlAbbrEndTag +/+
 " SGML specific
 " abbreviated regions
 "
-" No highlighing, highlighing is done by contained elements.
+" No highlighting, highlighting is done by contained elements.
 "
 " PROVIDES: @sgmlRegionHook
 "
@@ -192,7 +192,7 @@ syn match   sgmlAbbrRegion
 " real (non-empty) elements. We cannot do syntax folding
 " as in xml, because end tags may be optional in sgml depending
 " on the dtd.
-" No highlighing, highlighing is done by contained elements.
+" No highlighting, highlighting is done by contained elements.
 "
 " PROVIDES: @sgmlRegionHook
 "
@@ -225,7 +225,7 @@ syn region   sgmlRegion
 "
 " <tag id="lola"/>
 "
-" TODO use sgmlEmptyTag intead of sgmlTag
+" TODO use sgmlEmptyTag instead of sgmlTag
 syn match    sgmlEmptyRegion
     \ +<[^ /!?>"']\(\_[^"'<>]\|"\_[^"]*"\|'\_[^']*'\)*/>+
     \ contains=sgmlEmptyTag

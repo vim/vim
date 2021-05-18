@@ -2,7 +2,7 @@
 " Informix Structured Query Language (SQL) and Stored Procedure Language (SPL)
 " Language:	SQL, SPL (Informix Dynamic Server 2000 v9.2)
 " Maintainer:	Dean Hill <dhill@hotmail.com>
-" Last Change:	2004 Aug 30
+" Last Change:	2021 May 17
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -162,7 +162,7 @@ hi def link sqlNumber	Number
 hi def link sqlBoolean	Boolean
 hi def link sqlString	String
 
-" === Statment syntax group ===
+" === Statement syntax group ===
 hi def link sqlStatement	Statement
 hi def link sqlConditional	Conditional
 hi def link sqlRepeat		Repeat

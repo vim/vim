@@ -8290,7 +8290,7 @@ f_searchpos(typval_T *argvars, typval_T *rettv)
 
 /*
  * Set the cursor or mark position.
- * If 'charpos' is TRUE, then use the column number as a character offet.
+ * If 'charpos' is TRUE, then use the column number as a character offset.
  * Otherwise use the column number as a byte offset.
  */
     static void

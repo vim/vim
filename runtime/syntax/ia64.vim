@@ -3,7 +3,7 @@
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
 " Previous Maintainer:	Parth Malwankar <pmalwankar@yahoo.com>
 " File Version:		0.8
-" Last Change:		2020 Sep 25
+" Last Change:		2021 May 17
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -48,7 +48,7 @@ syn keyword ia64opcode pshradd2 psub4 rfi rsm rum shl shladd shladdp4
 syn keyword ia64opcode shrp ssm sub sum sync.i tak thash
 syn keyword ia64opcode tpa ttag xor
 
-"put to override these being recognized as floats. They are orignally from masm.vim
+"put to override these being recognized as floats. They are originally from masm.vim
 "put here to avoid confusion with float
 syn match   ia64Directive       "\.186"
 syn match   ia64Directive       "\.286"

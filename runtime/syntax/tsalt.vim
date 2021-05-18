@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	Telix (Modem Comm Program) SALT Script
 " Maintainer:	Sean M. McKee <mckee@misslink.net>
-" Last Change:	2012 Feb 03 by Thilo Six
+" Last Change:	2021 May 17 by Shaun Case
 " Version Info: @(#)tsalt.vim	1.5	97/12/16 08:11:15
 
 " quit when a syntax file was already loaded
@@ -87,7 +87,7 @@ syn keyword tsaltFunction	DDEExecute DDEInitate DDEPoke DDERequest
 syn keyword tsaltFunction	DDETerminate DDETerminateAll
 "END FUNCTIONS
 
-"PREDEFINED VARAIABLES
+"PREDEFINED VARIABLES
 syn keyword tsaltSysVar	_add_lf _alarm_on _answerback_str _asc_rcrtrans
 syn keyword tsaltSysVar	_asc_remabort _asc_rlftrans _asc_scpacing
 syn keyword tsaltSysVar	_asc_scrtrans _asc_secho _asc_slpacing
@@ -106,7 +106,7 @@ syn keyword tsaltSysVar	_scr_chk_key _script_dir _sound_on
 syn keyword tsaltSysVar	_strip_high _swap_bs _telix_dir _up_dir
 syn keyword tsaltSysVar	_usage_fname _zmodauto _zmod_rcrash
 syn keyword tsaltSysVar	_zmod_scrash
-"END PREDEFINED VARAIABLES
+"END PREDEFINED VARIABLES
 
 "TYPE
 syn keyword tsaltType	str int

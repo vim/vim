@@ -1,7 +1,7 @@
 " Vim compiler file
 " Compiler:     TeX
 " Maintainer:   Artem Chuprina <ran@ran.pp.ru>
-" Last Change:  2012 Apr 30
+" Last Change:  2021 May 17
 
 if exists("current_compiler")
 	finish
@@ -18,7 +18,7 @@ endif
 if exists('b:tex_ignore_makefile') || exists('g:tex_ignore_makefile') ||
 			\(!filereadable('Makefile') && !filereadable('makefile'))
 	" If buffer-local variable 'tex_flavor' exists, it defines TeX flavor,
-	" otherwize the same for global variable with same name, else it will be
+	" otherwise the same for global variable with same name, else it will be
 	" LaTeX
 	if exists("b:tex_flavor")
 		let current_compiler = b:tex_flavor

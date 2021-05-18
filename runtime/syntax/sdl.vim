@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language:	SDL
 " Maintainer:	Michael Piefel <entwurf@piefel.de>
-" Last Change:	2 May 2001
+" Last Change:	17 May 2021
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -81,7 +81,7 @@ if exists("sdl_2000")
     syn keyword sdlException	CATCH NEW RAISE
 endif
 
-" String and Character contstants
+" String and Character constants
 " Highlight special characters (those which have a backslash) differently
 syn match   sdlSpecial		contained "\\\d\d\d\|\\."
 syn region  sdlString		start=+"+  skip=+\\\\\|\\"+  end=+"+  contains=cSpecial

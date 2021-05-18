@@ -3,7 +3,7 @@
 " Maintainer:	Mark Manning <markem@airmail.net>
 " Originator:	Allan Kelly <Allan.Kelly@ed.ac.uk>
 " Created:	10/1/2006
-" Updated:	10/21/2006
+" Updated:	5/17/2021
 " Description:  A vim file to handle the IBasic file format.
 " Notes:
 "	Updated by Mark Manning <markem@airmail.net>
@@ -110,7 +110,7 @@ syn match	ibasicFunction	"\<[a-zA-Z_][a-zA-Z0-9_]*\>\s*("me=e-1,he=e-1
 syn case match
 syn match	ibasicOctalError	"\<0\o*[89]"
 "
-" String and Character contstants
+" String and Character constants
 "
 syn region	ibasicString		start='"' end='"' contains=ibasicSpecial,ibasicTodo
 syn region	ibasicString		start="'" end="'" contains=ibasicSpecial,ibasicTodo

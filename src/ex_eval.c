@@ -208,7 +208,7 @@ cause_errthrow(
      * not skipped.  Errors in those commands may affect what of the subsequent
      * commands are regarded part of catch and finally clauses.  Catching the
      * exception would then cause execution of commands not intended by the
-     * user, who wouldn't even get aware of the problem.  Therefor, discard the
+     * user, who wouldn't even get aware of the problem.  Therefore, discard the
      * exception currently being thrown to prevent it from being caught.  Just
      * execute finally clauses and terminate.
      */
@@ -1282,7 +1282,7 @@ ex_continue(exarg_T *eap)
     {
 	// Try to find the matching ":while".  This might stop at a try
 	// conditional not in its finally clause (which is then to be executed
-	// next).  Therefor, inactivate all conditionals except the ":while"
+	// next).  Therefore, inactivate all conditionals except the ":while"
 	// itself (if reached).
 	idx = cleanup_conditionals(cstack, CSF_WHILE | CSF_FOR, FALSE);
 	if (idx >= 0 && (cstack->cs_flags[idx] & (CSF_WHILE | CSF_FOR)))

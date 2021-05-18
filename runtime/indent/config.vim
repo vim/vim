@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:             Autoconf configure.{ac,in} file
 " Previous Maintainer:  Nikolai Weibull <now@bitwi.se>
-" Latest Revision:      2006-12-20
+" Latest Revision:      2021 May 17
 " TODO:                 how about nested [()]'s in one line
 "                   what's wrong with '\\\@!'?
 
@@ -62,8 +62,8 @@ function GetConfigIndent()
     let ind = s:GetOffsetOf(line, '\[')
   endif
 
-  " if previous line had an unmatched closing parantheses,
-  " indent to the matching opening parantheses
+  " if previous line had an unmatched closing parenthesis,
+  " indent to the matching opening parenthesis
   if line =~ '[^(]\+\\\@<!)$'
     call search(')', 'bW')
     let lnum = searchpair('\\\@<!(', '', ')', 'bWn')

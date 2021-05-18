@@ -139,7 +139,7 @@ syn keyword plsqlException SUBSCRIPT_OUTSIDE_LIMIT SYS_INVALID_ROWID
 syn keyword plsqlException TIMEOUT_ON_RESOURCE TOO_MANY_ROWS VALUE_ERROR
 syn keyword plsqlException ZERO_DIVIDE
 
-" Oracle Pseudo Colums.
+" Oracle Pseudo Columns.
 syn keyword plsqlPseudo CURRVAL LEVEL NEXTVAL ROWID ROWNUM
 
 if exists("plsql_highlight_triggers")

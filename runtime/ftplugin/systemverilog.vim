@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:    SystemVerilog
 " Maintainer:  kocha <kocha.lsifrontend@gmail.com>
-" Last Change: 07-May-2021
+" Last Change: 2021 May 17
 
 if exists("b:did_ftplugin")
   finish
@@ -32,7 +32,7 @@ if exists("loaded_matchit")
     \ '\<checker\>:\<endchecker\>,' .
     \ '\<class\>:\<endclass\>,' .
     \ '\<clocking\>:\<endclocking\>,' .
-    \ '\<gruop\>:\<endgruop\>,' .
+    \ '\<group\>:\<endgroup\>,' .
     \ '\<interface\>:\<endinterface\>,' .
     \ '\<package\>:\<endpackage\>,' .
     \ '\<program\>:\<endprogram\>,' .

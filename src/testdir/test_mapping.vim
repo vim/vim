@@ -1150,7 +1150,7 @@ func Test_map_cmdkey_visual_mode()
   call feedkeys("v\<F4>", 'xt!')
   call assert_equal(['v', 1, 12], [mode(1), col('v'), col('.')])
 
-  " can invoke an opeartor, ending the visual mode
+  " can invoke an operator, ending the visual mode
   let @a = ''
   call feedkeys("\<F5>", 'xt!')
   call assert_equal('n', mode(1))

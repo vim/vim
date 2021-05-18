@@ -527,12 +527,12 @@ func Test_viminfo_file_marks()
   call test_settime(35)
   edit again
   call test_settime(40)
-  edit fourty
+  edit forty
   wviminfo Xviminfo
 
   sp Xviminfo
   1
-  for name in ['fourty', 'again', 'thirty', 'twenty', 'ten']
+  for name in ['forty', 'again', 'thirty', 'twenty', 'ten']
     /^>
     call assert_equal(name, substitute(getline('.'), '.*/', '', ''))
   endfor

@@ -1,8 +1,7 @@
 " Vim indent file
 " Language:    SystemVerilog
 " Maintainer:  kocha <kocha.lsifrontend@gmail.com>
-" Last Change: 05-Feb-2017 by Bilal Wasim
-
+" Last Change: 2021 May 17 by Shaun Case
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
   finish
@@ -64,7 +63,7 @@ function SystemVerilogIndent()
     let vverb = 0
   endif
 
-  " Indent accoding to last line
+  " Indent according to last line
   " End of multiple-line comment
   if last_line =~ '\*/\s*$' && last_line !~ '/\*.\{-}\*/'
     let ind = ind - offset_comment1
@@ -151,7 +150,7 @@ function SystemVerilogIndent()
 
     " Close statement
     "   De-indent for an optional close parenthesis and a semicolon, and only
-    "   if there exists precedent non-whitespace char
+    "   if there exists preceding non-whitespace char
     elseif last_line =~ ')*\s*;\s*' . sv_comment . '*$' &&
       \ last_line !~ '^\s*)*\s*;\s*' . sv_comment . '*$' &&
       \ last_line !~ '\(//\|/\*\).*\S)*\s*;\s*' . sv_comment . '*$' &&
@@ -220,7 +219,7 @@ function SystemVerilogIndent()
 
   endif
 
-  " Return the indention
+  " Return the indentation
   return ind
 endfunction
 
