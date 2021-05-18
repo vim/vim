@@ -3986,10 +3986,10 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	    else
 #endif
 		if (*p_fp != NUL || *curbuf->b_p_fp != NUL)
-		op_colon(oap);		// use external command
-	    else
-		op_format(oap, FALSE);	// use internal function
-	    break;
+		    op_colon(oap);		// use external command
+		else
+		    op_format(oap, FALSE);	// use internal function
+		break;
 
 	case OP_FORMAT2:
 	    op_format(oap, TRUE);	// use internal function

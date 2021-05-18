@@ -607,7 +607,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
     cur_item = res;
     init_tv(&item);
     if (res != NULL)
-    init_tv(res);
+    	init_tv(res);
 
     fill_numbuflen(reader);
     p = reader->js_buf + reader->js_used;

@@ -9674,9 +9674,9 @@ f_synIDattr(typval_T *argvars UNUSED, typval_T *rettv)
 	else
 #endif
 	    if (t_colors > 1)
-	    modec = 'c';
-	else
-	    modec = 't';
+		modec = 'c';
+	    else
+		modec = 't';
     }
 
     switch (TOLOWER_ASC(what[0]))
