@@ -1193,6 +1193,7 @@ cmdline_insert_reg(int *gotesc UNUSED)
 {
     int		i;
     int		c;
+    int		clen = ccline.cmdlen;
 
 #ifdef USE_ON_FLY_SCROLL
     dont_scroll = TRUE;	// disallow scrolling here
@@ -1254,7 +1255,7 @@ cmdline_insert_reg(int *gotesc UNUSED)
 #endif
     }
     redrawcmd();
-    return CMDLINE_CHANGED;
+    return (clen == ccline.cmdlen) ? CMDLINE_NOT_CHANGED : CMDLINE_CHANGED;
 }
 
 /*
