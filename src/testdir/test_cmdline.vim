@@ -1810,6 +1810,12 @@ func Test_cmd_map_cmdlineChanged()
   call feedkeys(":\<F1>\<CR>", 'xt')
   call assert_equal(['l', 'ls'], g:log)
 
+  let @b = 'b'
+  cnoremap <F1> a<C-R>b
+  let g:log = []
+  call feedkeys(":\<F1>\<CR>", 'xt')
+  call assert_equal(['a', 'ab'], g:log)
+
   unlet g:log
   cunmap <F1>
   augroup test
