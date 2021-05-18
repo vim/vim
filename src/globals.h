@@ -1909,7 +1909,7 @@ EXTERN listitem_T range_list_item;
 EXTERN evalarg_T EVALARG_EVALUATE
 # ifdef DO_INIT
 	= {EVAL_EVALUATE, 0, NULL, NULL, NULL, {0, 0, 0, 0, NULL},
-							      NULL, NULL, NULL}
+					  {0, 0, 0, 0, NULL}, NULL, NULL, NULL}
 # endif
 	;
 #endif
