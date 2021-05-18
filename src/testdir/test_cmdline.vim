@@ -1817,5 +1817,24 @@ func Test_cmd_map_cmdlineChanged()
   augroup END
 endfunc
 
+func Test_ctrl_r_cmdlineChanged()
+  let g:log = []
+  cnoremap <F1> a<C-r>b
+  augroup test
+    autocmd!
+    autocmd CmdlineChanged : let g:log += [getcmdline()]
+  augroup END
+
+  let @b = 'b'
+  call feedkeys(":\<F1>\<Esc>", 'xt')
+  call assert_equal(['a', 'ab'], g:log)
+
+  unlet g:log
+  cunmap <F1>
+  augroup test
+    autocmd!
+  augroup END
+endfunc
+
 
 " vim: shiftwidth=2 sts=2 expandtab
