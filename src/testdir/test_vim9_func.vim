@@ -2102,6 +2102,20 @@ def Test_nested_lambda()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_nested_inline_lambda()
+  # TODO: use the "text" argument
+  var lines =<< trim END
+      vim9script
+      def F(text: string): func(string): func(string): string
+        return (arg: string): func(string): string => ((sep: string): string => {
+            return sep .. arg
+          })
+      enddef
+      assert_equal('--there', F('unused')('there')('--'))
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Shadowed(): list<number>
   var FuncList: list<func: number> = [() => 42]
   return FuncList->mapnew((_, Shadowed) => Shadowed())

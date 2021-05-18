@@ -606,6 +606,7 @@ is_function_cmd(char_u **cmd)
 
 /*
  * Read the body of a function, put every line in "newlines".
+ * This stops at "}", "endfunction" or "enddef".
  * "newlines" must already have been initialized.
  * "eap->cmdidx" is CMD_function, CMD_def or CMD_block;
  */
@@ -945,9 +946,8 @@ get_function_body(
 	    line_arg = NULL;
     }
 
-    // Don't define the function when skipping commands or when an error was
-    // detected.
-    if (!eap->skip && !did_emsg)
+    // Return OK when no error was detected.
+    if (!did_emsg)
 	ret = OK;
 
 theend:
@@ -960,6 +960,7 @@ theend:
 /*
  * Handle the body of a lambda.  *arg points to the "{", process statements
  * until the matching "}".
+ * When not evaluating "newargs" is NULL.
  * When successful "rettv" is set to a funcref.
  */
     static int
@@ -974,6 +975,7 @@ lambda_function_body(
 	char_u	    *ret_type)
 {
     int		evaluate = (evalarg->eval_flags & EVAL_EVALUATE);
+    garray_T	*gap = &evalarg->eval_ga;
     ufunc_T	*ufunc = NULL;
     exarg_T	eap;
     garray_T	newlines;
@@ -1010,6 +1012,52 @@ lambda_function_body(
 	vim_free(cmdline);
 	goto erret;
     }
+
+    // When inside a lambda must add the function lines to evalarg.eval_ga.
+    evalarg->eval_break_count += newlines.ga_len;
+    if (gap->ga_itemsize > 0)
+    {
+	int	idx;
+	char_u	*last;
+	size_t  plen;
+	char_u  *pnl;
+
+	for (idx = 0; idx < newlines.ga_len; ++idx)
+	{
+	    char_u  *p = skipwhite(((char_u **)newlines.ga_data)[idx]);
+
+	    if (ga_grow(gap, 1) == FAIL)
+		goto erret;
+
+	    // Going to concatenate the lines after parsing.  For an empty or
+	    // comment line use an empty string.
+	    // Insert NL characters at the start of each line, the string will
+	    // be split again later in .get_lambda_tv().
+	    if (*p == NUL || vim9_comment_start(p))
+		p = (char_u *)"";
+	    plen = STRLEN(p);
+	    pnl = vim_strnsave((char_u *)"\n", plen + 1);
+	    if (pnl != NULL)
+		mch_memmove(pnl + 1, p, plen + 1);
+	    ((char_u **)gap->ga_data)[gap->ga_len] = pnl;
+	    ++gap->ga_len;
+	}
+	if (ga_grow(gap, 1) == FAIL)
+	    goto erret;
+	if (cmdline != NULL)
+	    // more is following after the "}", which was skipped
+	    last = cmdline;
+	else
+	    // nothing is following the "}"
+	    last = (char_u *)"}";
+	plen = STRLEN(last);
+	pnl = vim_strnsave((char_u *)"\n", plen + 1);
+	if (pnl != NULL)
+	    mch_memmove(pnl + 1, last, plen + 1);
+	((char_u **)gap->ga_data)[gap->ga_len] = pnl;
+	++gap->ga_len;
+    }
+
     if (cmdline != NULL)
     {
 	// Something comes after the "}".
@@ -1021,6 +1069,12 @@ lambda_function_body(
     }
     else
 	*arg = (char_u *)"";
+
+    if (!evaluate)
+    {
+	ret = OK;
+	goto erret;
+    }
 
     name = get_lambda_name();
     ufunc = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
@@ -1078,7 +1132,8 @@ erret:
 	SOURCING_LNUM = lnum_save;
     vim_free(line_to_free);
     ga_clear_strings(&newlines);
-    ga_clear_strings(newargs);
+    if (newargs != NULL)
+	ga_clear_strings(newargs);
     ga_clear_strings(default_args);
     if (ufunc != NULL)
     {
@@ -1222,6 +1277,7 @@ get_lambda_tv(
 	int	    len;
 	int	    flags = 0;
 	char_u	    *p;
+	char_u	    *line_end;
 	char_u	    *name = get_lambda_name();
 
 	fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
@@ -1236,14 +1292,37 @@ get_lambda_tv(
 	if (ga_grow(&newlines, 1) == FAIL)
 	    goto errret;
 
-	// Add "return " before the expression.
-	len = 7 + (int)(end - start) + 1;
+	// If there are line breaks, we need to split up the string.
+	line_end = vim_strchr(start, '\n');
+	if (line_end == NULL)
+	    line_end = end;
+
+	// Add "return " before the expression (or the first line).
+	len = 7 + (int)(line_end - start) + 1;
 	p = alloc(len);
 	if (p == NULL)
 	    goto errret;
 	((char_u **)(newlines.ga_data))[newlines.ga_len++] = p;
 	STRCPY(p, "return ");
-	vim_strncpy(p + 7, start, end - start);
+	vim_strncpy(p + 7, start, line_end - start);
+
+	if (line_end != end)
+	{
+	    // Add more lines, split by line breaks.  Thus is used when a
+	    // lambda with { cmds } is encountered.
+	    while (*line_end == '\n')
+	    {
+		if (ga_grow(&newlines, 1) == FAIL)
+		    goto errret;
+		start = line_end + 1;
+		line_end = vim_strchr(start, '\n');
+		if (line_end == NULL)
+		    line_end = end;
+		((char_u **)(newlines.ga_data))[newlines.ga_len++] =
+					 vim_strnsave(start, line_end - start);
+	    }
+	}
+
 	if (strstr((char *)p + 7, "a:") == NULL)
 	    // No a: variables are used for sure.
 	    flags |= FC_NOARGS;
