@@ -8341,11 +8341,11 @@ compile_endtry(char_u *arg, cctx_T *cctx)
 	}
 
 #ifdef FEAT_PROFILE
-    if (cctx->ctx_profiling && ((isn_T *)instr->ga_data)[instr->ga_len - 1]
-						   .isn_type == ISN_PROF_START)
-	// move the profile start after "endtry" so that it's not counted when
-	// the exception is rethrown.
-	--instr->ga_len;
+	if (cctx->ctx_profiling && ((isn_T *)instr->ga_data)[instr->ga_len - 1]
+						.isn_type == ISN_PROF_START)
+	    // move the profile start after "endtry" so that it's not counted when
+	    // the exception is rethrown.
+	    --instr->ga_len;
 #endif
 
 	// Fill in the "end" label in jumps at the end of the blocks, if not

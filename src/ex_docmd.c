@@ -2384,7 +2384,7 @@ do_one_cmd(
      * count, it's a buffer name.
      */
     if ((ea.argt & EX_COUNT) && VIM_ISDIGIT(*ea.arg)
-	    && (!(ea.argt & EX_BUFNAME) || *(p = skipdigits(ea.arg)) == NUL
+	    && (!(ea.argt & EX_BUFNAME) || *(p = skipdigits(ea.arg + 1)) == NUL
 							  || VIM_ISWHITE(*p)))
     {
 	n = getdigits(&ea.arg);
@@ -3730,7 +3730,7 @@ modifier_len(char_u *cmd)
     char_u	*p = cmd;
 
     if (VIM_ISDIGIT(*cmd))
-	p = skipwhite(skipdigits(cmd));
+	p = skipwhite(skipdigits(cmd + 1));
     for (i = 0; i < (int)(sizeof(cmdmods) / sizeof(struct cmdmod)); ++i)
     {
 	for (j = 0; p[j] != NUL; ++j)
