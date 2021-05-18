@@ -4014,7 +4014,10 @@ define_function(exarg_T *eap, char_u *name_arg)
     // Save the starting line number.
     sourcing_lnum_top = SOURCING_LNUM;
 
-    if (get_function_body(eap, &newlines, line_arg, &line_to_free) == FAIL)
+    // Do not define the function when getting the body fails and when
+    // skipping.
+    if (get_function_body(eap, &newlines, line_arg, &line_to_free) == FAIL
+	    || eap->skip)
 	goto erret;
 
     /*
