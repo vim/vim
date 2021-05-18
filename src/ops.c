@@ -3990,8 +3990,8 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		    op_colon(oap);		// use external command
 		else
 		    op_format(oap, FALSE);	// use internal function
-		break;
 	    }
+	    break;
 	case OP_FORMAT2:
 	    op_format(oap, TRUE);	// use internal function
 	    break;
