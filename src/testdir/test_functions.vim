@@ -2630,6 +2630,7 @@ endfunc
 func Test_glob()
   call assert_equal('', glob(test_null_string()))
   call assert_equal('', globpath(test_null_string(), test_null_string()))
+  call assert_fails("let x = globpath(&rtp, 'syntax/c.vim', [])", 'E745:')
 
   call writefile([], 'Xglob1')
   call writefile([], 'XGLOB2')
