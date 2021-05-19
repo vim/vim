@@ -1480,6 +1480,10 @@ func Test_inputlist()
   call feedkeys(":let c = inputlist(['Select color:', '1. red', '2. green', '3. blue'])\<cr>q", 'tx')
   call assert_equal(0, c)
 
+  " Cancel after inputting a number
+  call feedkeys(":let c = inputlist(['Select color:', '1. red', '2. green', '3. blue'])\<cr>5q", 'tx')
+  call assert_equal(0, c)
+
   " Use backspace to delete characters in the prompt
   call feedkeys(":let c = inputlist(['Select color:', '1. red', '2. green', '3. blue'])\<cr>1\<BS>3\<BS>2\<cr>", 'tx')
   call assert_equal(2, c)
