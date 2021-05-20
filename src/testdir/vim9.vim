@@ -133,3 +133,85 @@ def CheckDefExecAndScriptFailure2(
   CheckDefExecFailure(lines, errorDef, lnum)
   CheckScriptFailure(['vim9script'] + lines, errorScript, lnum + 1)
 enddef
+
+
+" Check that "lines" inside a legacy function has no error.
+func CheckLegacySuccess(lines)
+  let cwd = getcwd()
+  let fname = 'XlegacySuccess' .. s:sequence
+  let s:sequence += 1
+  call writefile(['func Func()'] + a:lines + ['endfunc'], fname)
+  try
+    exe 'so ' .. fname
+    call Func()
+  finally
+    delfunc! Func
+    call chdir(cwd)
+    call delete(fname)
+  endtry
+endfunc
+
+" Check that "lines" inside a legacy function results in the expected error
+func CheckLegacyFailure(lines, error)
+  let cwd = getcwd()
+  let fname = 'XlegacyFails' .. s:sequence
+  let s:sequence += 1
+  call writefile(['func Func()'] + a:lines + ['endfunc', 'call Func()'], fname)
+  try
+    call assert_fails('so ' .. fname, a:error)
+  finally
+    delfunc! Func
+    call chdir(cwd)
+    call delete(fname)
+  endtry
+endfunc
+
+" Execute "lines" in a legacy function, :def function and Vim9 script.
+" Use 'VAR' for a declaration.
+" Use 'LET' for an assignment
+" Use ' #"' for a comment
+def CheckLegacyAndVim9Success(lines: list<string>)
+  var legacylines = lines->mapnew((_, v) =>
+  				v->substitute('\<VAR\>', 'let', 'g')
+		           	 ->substitute('\<LET\>', 'let', 'g')
+		           	 ->substitute('#"', ' "', 'g'))
+  CheckLegacySuccess(legacylines)
+
+  var vim9lines = lines->mapnew((_, v) =>
+  				v->substitute('\<VAR\>', 'var', 'g')
+		           	 ->substitute('\<LET ', '', 'g'))
+  CheckDefSuccess(vim9lines)
+  CheckScriptSuccess(['vim9script'] + vim9lines)
+enddef
+
+" Execute "lines" in a legacy function, :def function and Vim9 script.
+" Use 'VAR' for a declaration.
+" Use 'LET' for an assignment
+" Use ' #"' for a comment
+def CheckLegacyAndVim9Failure(lines: list<string>, error: any)
+  var legacyError: string
+  var defError: string
+  var scriptError: string
+
+  if type(error) == type('string')
+    legacyError = error
+    defError = error
+    scriptError = error
+  else
+    legacyError = error[0]
+    defError = error[1]
+    scriptError = error[2]
+  endif
+
+  var legacylines = lines->mapnew((_, v) =>
+  				v->substitute('\<VAR\>', 'let', 'g')
+		           	 ->substitute('\<LET\>', 'let', 'g')
+		           	 ->substitute('#"', ' "', 'g'))
+  CheckLegacyFailure(legacylines, legacyError)
+
+  var vim9lines = lines->mapnew((_, v) =>
+  				v->substitute('\<VAR\>', 'var', 'g')
+		           	 ->substitute('\<LET ', '', 'g'))
+  CheckDefExecFailure(vim9lines, defError)
+  CheckScriptFailure(['vim9script'] + vim9lines, scriptError)
+enddef

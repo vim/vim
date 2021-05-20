@@ -6425,6 +6425,7 @@ ConvertToPyObject(typval_T *tv)
 	case VAR_VOID:
 	case VAR_CHANNEL:
 	case VAR_JOB:
+	case VAR_INSTR:
 	    Py_INCREF(Py_None);
 	    return Py_None;
 	case VAR_BOOL:

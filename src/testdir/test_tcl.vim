@@ -145,7 +145,7 @@ func Test_vim_expr()
 
   call assert_fails('tcl ::vim::expr x y',
         \           'wrong # args: should be "::vim::expr vimExpr"')
-  call assert_fails('tcl ::vim::expr 1-', 'E15: Invalid expression: 1-')
+  call assert_fails('tcl ::vim::expr 1-', 'E15: Invalid expression: "1-"')
 endfunc
 
 " Test ::vim::command

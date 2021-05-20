@@ -249,11 +249,31 @@ def Test_assignment()
   END
 enddef
 
+def Test_skipped_assignment()
+  var lines =<< trim END
+      for x in []
+        var i: number = 1
+        while false
+          i += 1
+        endwhile
+      endfor
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
 def Test_assign_unpack()
   var lines =<< trim END
     var v1: number
     var v2: number
     [v1, v2] = [1, 2]
+    assert_equal(1, v1)
+    assert_equal(2, v2)
+
+    [v1, _, v2, _] = [1, 99, 2, 77]
+    assert_equal(1, v1)
+    assert_equal(2, v2)
+
+    [v1, v2; _] = [1, 2, 3, 4, 5]
     assert_equal(1, v1)
     assert_equal(2, v2)
   END
@@ -1480,33 +1500,33 @@ def Test_script_local_in_legacy()
   # OK to define script-local later when prefixed with s:
   var lines =<< trim END
     def SetLater()
-      s:legacy = 'two'
+      s:legvar = 'two'
     enddef
     defcompile
-    let s:legacy = 'one'
+    let s:legvar = 'one'
     call SetLater()
-    call assert_equal('two', s:legacy)
+    call assert_equal('two', s:legvar)
   END
   CheckScriptSuccess(lines)
 
   # OK to leave out s: prefix when script-local already defined
   lines =<< trim END
-    let s:legacy = 'one'
+    let s:legvar = 'one'
     def SetNoPrefix()
-      legacy = 'two'
+      legvar = 'two'
     enddef
     call SetNoPrefix()
-    call assert_equal('two', s:legacy)
+    call assert_equal('two', s:legvar)
   END
   CheckScriptSuccess(lines)
 
   # Not OK to leave out s: prefix when script-local defined later
   lines =<< trim END
     def SetLaterNoPrefix()
-      legacy = 'two'
+      legvar = 'two'
     enddef
     defcompile
-    let s:legacy = 'one'
+    let s:legvar = 'one'
   END
   CheckScriptFailure(lines, 'E476:', 1)
 enddef
@@ -1748,14 +1768,14 @@ def Test_expr_error_no_assign()
       var x = 1 / 0
       echo x
   END
-  CheckScriptFailureList(lines, ['E1154:', 'E121:'])
+  CheckScriptFailure(lines, 'E1154:')
 
   lines =<< trim END
       vim9script
       var x = 1 % 0
       echo x
   END
-  CheckScriptFailureList(lines, ['E1154:', 'E121:'])
+  CheckScriptFailure(lines, 'E1154:')
 
   lines =<< trim END
       var x: string  'string'
@@ -1815,6 +1835,28 @@ def Test_script_funcref_case()
       var s:len = (s: string): number => len(s) + 1
   END
   CheckScriptFailure(lines, 'E704:')
+enddef
+
+def Test_inc_dec()
+  var lines =<< trim END
+      var nr = 7
+      ++nr
+      assert_equal(8, nr)
+      --nr
+      assert_equal(7, nr)
+
+      var ll = [1, 2]
+      --ll[0]
+      ++ll[1]
+      assert_equal([0, 3], ll)
+
+      g:count = 1
+      ++g:count
+      --g:count
+      assert_equal(1, g:count)
+      unlet g:count
+  END
+  CheckDefAndScriptSuccess(lines)
 enddef
 
 

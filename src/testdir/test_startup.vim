@@ -622,6 +622,12 @@ func Test_invalid_args()
   endfor
 
   if has('gui_gtk')
+    let out = split(system(GetVimCommand() .. ' --socketid'), "\n")
+    call assert_equal(1, v:shell_error)
+    call assert_match('^VIM - Vi IMproved .* (.*)$',          out[0])
+    call assert_equal('Argument missing after: "--socketid"', out[1])
+    call assert_equal('More info with: "vim -h"',             out[2])
+
     for opt in ['--socketid x', '--socketid 0xg']
       let out = split(system(GetVimCommand() .. ' ' .. opt), "\n")
       call assert_equal(1, v:shell_error)
@@ -629,6 +635,7 @@ func Test_invalid_args()
       call assert_equal('Invalid argument for: "--socketid"', out[1])
       call assert_equal('More info with: "vim -h"',           out[2])
     endfor
+
   endif
 endfunc
 
@@ -1261,6 +1268,21 @@ func Test_progname()
 
   call delete('Xprogname_after')
   call delete('Xprogname', 'd')
+endfunc
+
+" Test for doing a write from .vimrc
+func Test_write_in_vimrc()
+  call writefile(['silent! write'], 'Xvimrc')
+  let after =<< trim [CODE]
+    call assert_match('E32: ', v:errmsg)
+    call writefile(v:errors, 'Xtestout')
+    qall
+  [CODE]
+  if RunVim([], after, '-u Xvimrc')
+    call assert_equal([], readfile('Xtestout'))
+    call delete('Xtestout')
+  endif
+  call delete('Xvimrc')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

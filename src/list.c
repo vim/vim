@@ -894,6 +894,7 @@ list_extend(list_T *l1, list_T *l2, listitem_T *bef)
 {
     listitem_T	*item;
     int		todo;
+    listitem_T	*bef_prev;
 
     // NULL list is equivalent to an empty list: nothing to do.
     if (l2 == NULL || l2->lv_len == 0)
@@ -903,9 +904,15 @@ list_extend(list_T *l1, list_T *l2, listitem_T *bef)
     CHECK_LIST_MATERIALIZE(l1);
     CHECK_LIST_MATERIALIZE(l2);
 
+    // When exending a list with itself, at some point we run into the item
+    // that was before "bef" and need to skip over the already inserted items
+    // to "bef".
+    bef_prev = bef == NULL ? NULL : bef->li_prev;
+
     // We also quit the loop when we have inserted the original item count of
     // the list, avoid a hang when we extend a list with itself.
-    for (item = l2->lv_first; item != NULL && --todo >= 0; item = item->li_next)
+    for (item = l2->lv_first; item != NULL && --todo >= 0;
+				 item = item == bef_prev ? bef : item->li_next)
 	if (list_insert_tv(l1, &item->li_tv, bef) == FAIL)
 	    return FAIL;
     return OK;
@@ -2052,7 +2059,7 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
     {
 	// Check that map() does not change the type of the dict.
 	ga_init2(&type_list, sizeof(type_T *), 10);
-	type = typval2type(argvars, get_copyID(), &type_list);
+	type = typval2type(argvars, get_copyID(), &type_list, TRUE);
     }
 
     if (argvars[0].v_type == VAR_BLOB)
@@ -2216,7 +2223,7 @@ filter_map(typval_T *argvars, typval_T *rettv, filtermap_T filtermap)
 		if (filter_map_one(&tv, expr, filtermap, &newtv, &rem) == FAIL
 								   || did_emsg)
 		    break;
-		if (newtv.v_type != VAR_NUMBER)
+		if (newtv.v_type != VAR_NUMBER && newtv.v_type != VAR_BOOL)
 		{
 		    clear_tv(&newtv);
 		    emsg(_(e_invalblob));
@@ -2405,22 +2412,33 @@ f_mapnew(typval_T *argvars, typval_T *rettv)
     void
 f_add(typval_T *argvars, typval_T *rettv)
 {
-    list_T	*l;
-    blob_T	*b;
-
     rettv->vval.v_number = 1; // Default: Failed
     if (argvars[0].v_type == VAR_LIST)
     {
-	if ((l = argvars[0].vval.v_list) != NULL
-		&& !value_check_lock(l->lv_lock,
-					 (char_u *)N_("add() argument"), TRUE)
+	list_T	*l = argvars[0].vval.v_list;
+
+	if (l == NULL)
+	{
+	    if (in_vim9script())
+		emsg(_(e_cannot_add_to_null_list));
+	}
+	else if (!value_check_lock(l->lv_lock,
+					  (char_u *)N_("add() argument"), TRUE)
 		&& list_append_tv(l, &argvars[1]) == OK)
+	{
 	    copy_tv(&argvars[0], rettv);
+	}
     }
     else if (argvars[0].v_type == VAR_BLOB)
     {
-	if ((b = argvars[0].vval.v_blob) != NULL
-		&& !value_check_lock(b->bv_lock,
+	blob_T	*b = argvars[0].vval.v_blob;
+
+	if (b == NULL)
+	{
+	    if (in_vim9script())
+		emsg(_(e_cannot_add_to_null_blob));
+	}
+	else if (!value_check_lock(b->bv_lock,
 					 (char_u *)N_("add() argument"), TRUE))
 	{
 	    int		error = FALSE;
@@ -2558,7 +2576,7 @@ extend(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg, int is_new)
     {
 	// Check that map() does not change the type of the dict.
 	ga_init2(&type_list, sizeof(type_T *), 10);
-	type = typval2type(argvars, get_copyID(), &type_list);
+	type = typval2type(argvars, get_copyID(), &type_list, TRUE);
     }
 
     if (argvars[0].v_type == VAR_LIST && argvars[1].v_type == VAR_LIST)
@@ -2718,7 +2736,6 @@ f_insert(typval_T *argvars, typval_T *rettv)
 {
     long	before = 0;
     listitem_T	*item;
-    list_T	*l;
     int		error = FALSE;
 
     if (argvars[0].v_type == VAR_BLOB)
@@ -2727,7 +2744,11 @@ f_insert(typval_T *argvars, typval_T *rettv)
 	char_u	    *p;
 
 	if (argvars[0].vval.v_blob == NULL)
+	{
+	    if (in_vim9script())
+		emsg(_(e_cannot_add_to_null_blob));
 	    return;
+	}
 
 	len = blob_len(argvars[0].vval.v_blob);
 	if (argvars[2].v_type != VAR_UNKNOWN)
@@ -2761,30 +2782,39 @@ f_insert(typval_T *argvars, typval_T *rettv)
     }
     else if (argvars[0].v_type != VAR_LIST)
 	semsg(_(e_listblobarg), "insert()");
-    else if ((l = argvars[0].vval.v_list) != NULL
-	    && !value_check_lock(l->lv_lock,
-				     (char_u *)N_("insert() argument"), TRUE))
+    else
     {
-	if (argvars[2].v_type != VAR_UNKNOWN)
-	    before = (long)tv_get_number_chk(&argvars[2], &error);
-	if (error)
-	    return;		// type error; errmsg already given
+	list_T	*l = argvars[0].vval.v_list;
 
-	if (before == l->lv_len)
-	    item = NULL;
-	else
+	if (l == NULL)
 	{
-	    item = list_find(l, before);
-	    if (item == NULL)
-	    {
-		semsg(_(e_listidx), before);
-		l = NULL;
-	    }
+	    if (in_vim9script())
+		emsg(_(e_cannot_add_to_null_list));
 	}
-	if (l != NULL)
+	else if (!value_check_lock(l->lv_lock,
+				     (char_u *)N_("insert() argument"), TRUE))
 	{
-	    (void)list_insert_tv(l, &argvars[1], item);
-	    copy_tv(&argvars[0], rettv);
+	    if (argvars[2].v_type != VAR_UNKNOWN)
+		before = (long)tv_get_number_chk(&argvars[2], &error);
+	    if (error)
+		return;		// type error; errmsg already given
+
+	    if (before == l->lv_len)
+		item = NULL;
+	    else
+	    {
+		item = list_find(l, before);
+		if (item == NULL)
+		{
+		    semsg(_(e_listidx), before);
+		    l = NULL;
+		}
+	    }
+	    if (l != NULL)
+	    {
+		(void)list_insert_tv(l, &argvars[1], item);
+		copy_tv(&argvars[0], rettv);
+	    }
 	}
     }
 }

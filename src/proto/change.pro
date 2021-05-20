@@ -14,6 +14,7 @@ void appended_lines(linenr_T lnum, long count);
 void appended_lines_mark(linenr_T lnum, long count);
 void deleted_lines(linenr_T lnum, long count);
 void deleted_lines_mark(linenr_T lnum, long count);
+void changed_lines_buf(buf_T *buf, linenr_T lnum, linenr_T lnume, long xtra);
 void changed_lines(linenr_T lnum, colnr_T col, linenr_T lnume, long xtra);
 void unchanged(buf_T *buf, int ff, int always_inc_changedtick);
 void save_file_ff(buf_T *buf);

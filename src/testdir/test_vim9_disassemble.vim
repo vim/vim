@@ -121,6 +121,100 @@ def Test_disassemble_exec_expr()
         res)
 enddef
 
+def s:Substitute()
+  var expr = "abc"
+  :%s/a/\=expr/&g#c
+enddef
+
+def Test_disassemble_substitute()
+  var res = execute('disass s:Substitute')
+  assert_match('<SNR>\d*_Substitute.*' ..
+        ' var expr = "abc"\_s*' ..
+        '\d PUSHS "abc"\_s*' ..
+        '\d STORE $0\_s*' ..
+        ' :%s/a/\\=expr/&g#c\_s*' ..
+        '\d SUBSTITUTE   :%s/a/\\=expr/&g#c\_s*' ..
+        '    0 LOAD $0\_s*' ..
+        '    -------------\_s*' ..
+        '\d RETURN 0',
+        res)
+enddef
+
+
+def s:SearchPair()
+  var col = 8
+  searchpair("{", "", "}", "", "col('.') > col")
+enddef
+
+def Test_disassemble_seachpair()
+  var res = execute('disass s:SearchPair')
+  assert_match('<SNR>\d*_SearchPair.*' ..
+        ' var col = 8\_s*' ..
+        '\d STORE 8 in $0\_s*' ..
+        ' searchpair("{", "", "}", "", "col(''.'') > col")\_s*' ..
+        '\d PUSHS "{"\_s*' ..
+        '\d PUSHS ""\_s*' ..
+        '\d PUSHS "}"\_s*' ..
+        '\d PUSHS ""\_s*' ..
+        '\d INSTR\_s*' ..
+        '  0 PUSHS "."\_s*' ..
+        '  1 BCALL col(argc 1)\_s*' ..
+        '  2 LOAD $0\_s*' ..
+        '  3 COMPARENR >\_s*' ..
+        ' -------------\_s*' ..
+        '\d BCALL searchpair(argc 5)\_s*' ..
+        '\d DROP\_s*' ..
+        '\d RETURN 0',
+        res)
+enddef
+
+
+def s:RedirVar()
+  var result: string
+  redir =>> result
+    echo "text"
+  redir END
+enddef
+
+def Test_disassemble_redir_var()
+  var res = execute('disass s:RedirVar')
+  assert_match('<SNR>\d*_RedirVar.*' ..
+        ' var result: string\_s*' ..
+        '\d PUSHS "\[NULL\]"\_s*' ..
+        '\d STORE $0\_s*' ..
+        ' redir =>> result\_s*' ..
+        '\d REDIR\_s*' ..
+        ' echo "text"\_s*' ..
+        '\d PUSHS "text"\_s*' ..
+        '\d ECHO 1\_s*' ..
+        ' redir END\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d REDIR END\_s*' ..
+        '\d CONCAT\_s*' ..
+        '\d STORE $0\_s*' ..
+        '\d RETURN 0',
+        res)
+enddef
+
+def s:Cexpr()
+  var errors = "list of errors"
+  cexpr errors
+enddef
+
+def Test_disassemble_cexpr()
+  var res = execute('disass s:Cexpr')
+  assert_match('<SNR>\d*_Cexpr.*' ..
+        ' var errors = "list of errors"\_s*' ..
+        '\d PUSHS "list of errors"\_s*' ..
+        '\d STORE $0\_s*' ..
+        ' cexpr errors\_s*' ..
+        '\d CEXPR pre cexpr\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d CEXPR core cexpr "cexpr errors"\_s*' ..
+        '\d RETURN 0',
+        res)
+enddef
+
 def s:YankRange()
   norm! m[jjm]
   :'[,']yank
@@ -246,6 +340,8 @@ def s:ScriptFuncStoreMember()
   locallist[0] = 123
   var localdict: dict<number> = {}
   localdict["a"] = 456
+  var localblob: blob = 0z1122
+  localblob[1] = 33
 enddef
 
 def Test_disassemble_store_member()
@@ -259,7 +355,7 @@ def Test_disassemble_store_member()
         '\d PUSHNR 123\_s*' ..
         '\d PUSHNR 0\_s*' ..
         '\d LOAD $0\_s*' ..
-        '\d STORELIST\_s*' ..
+        '\d STOREINDEX list\_s*' ..
         'var localdict: dict<number> = {}\_s*' ..
         '\d NEWDICT size 0\_s*' ..
         '\d SETTYPE dict<number>\_s*' ..
@@ -268,7 +364,15 @@ def Test_disassemble_store_member()
         '\d\+ PUSHNR 456\_s*' ..
         '\d\+ PUSHS "a"\_s*' ..
         '\d\+ LOAD $1\_s*' ..
-        '\d\+ STOREDICT\_s*' ..
+        '\d\+ STOREINDEX dict\_s*' ..
+        'var localblob: blob = 0z1122\_s*' ..
+        '\d\+ PUSHBLOB 0z1122\_s*' ..
+        '\d\+ STORE $2\_s*' ..
+        'localblob\[1\] = 33\_s*' ..
+        '\d\+ PUSHNR 33\_s*' ..
+        '\d\+ PUSHNR 1\_s*' ..
+        '\d\+ LOAD $2\_s*' ..
+        '\d\+ STOREINDEX blob\_s*' ..
         '\d\+ RETURN 0',
         res)
 enddef
@@ -291,7 +395,7 @@ def Test_disassemble_store_index()
         '\d PUSHNR 0\_s*' ..
         '\d LOAD $0\_s*' ..
         '\d MEMBER dd\_s*' ..
-        '\d STOREINDEX\_s*' ..
+        '\d STOREINDEX any\_s*' ..
         '\d\+ RETURN 0',
         res)
 enddef
@@ -382,6 +486,33 @@ def Test_disassemble_blob_add()
         '\d\+ CHECKTYPE number stack\[-1\]\_s*' ..
         '\d\+ BLOBAPPEND\_s*' ..
         '\d\+ DROP\_s*' ..
+        '\d\+ RETURN 0',
+        res)
+enddef
+
+def s:BlobIndexSlice()
+  var b: blob = 0z112233
+  echo b[1]
+  echo b[1 : 2]
+enddef
+
+def Test_disassemble_blob_index_slice()
+  var res = execute('disass s:BlobIndexSlice')
+  assert_match('<SNR>\d*_BlobIndexSlice\_s*' ..
+        'var b: blob = 0z112233\_s*' ..
+        '\d PUSHBLOB 0z112233\_s*' ..
+        '\d STORE $0\_s*' ..
+        'echo b\[1\]\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d BLOBINDEX\_s*' ..
+        '\d ECHO 1\_s*' ..
+        'echo b\[1 : 2\]\_s*' ..
+        '\d LOAD $0\_s*' ..
+        '\d PUSHNR 1\_s*' ..
+        '\d\+ PUSHNR 2\_s*' ..
+        '\d\+ BLOBSLICE\_s*' ..
+        '\d\+ ECHO 1\_s*' ..
         '\d\+ RETURN 0',
         res)
 enddef
@@ -641,20 +772,22 @@ def Test_disassemble_update_instr()
 enddef
 
 
-def FuncWithDefault(arg: string = 'default', nr = 77): string
+def FuncWithDefault(l: number, arg: string = "default", nr = 77): string
   return arg .. nr
 enddef
 
 def Test_disassemble_call_default()
   var res = execute('disass FuncWithDefault')
   assert_match('FuncWithDefault\_s*' ..
+        '  arg = "default"\_s*' ..
         '\d JUMP_IF_ARG_SET arg\[-2\] -> 3\_s*' ..
         '\d PUSHS "default"\_s*' ..
         '\d STORE arg\[-2]\_s*' ..
+        '  nr = 77\_s*' ..
         '3 JUMP_IF_ARG_SET arg\[-1\] -> 6\_s*' ..
         '\d PUSHNR 77\_s*' ..
         '\d STORE arg\[-1]\_s*' ..
-        'return arg .. nr\_s*' ..
+        '  return arg .. nr\_s*' ..
         '6 LOAD arg\[-2]\_s*' ..
         '\d LOAD arg\[-1]\_s*' ..
         '\d 2STRING stack\[-1]\_s*' ..
@@ -770,7 +903,7 @@ def Test_disassemble_const_expr()
             'if has("gui_running")\_s*' ..
             '\d PUSHS "gui_running"\_s*' ..
             '\d BCALL has(argc 1)\_s*' ..
-            '\d 2BOOL (!!val)\_s*' ..
+            '\d COND2BOOL\_s*' ..
             '\d JUMP_IF_FALSE -> \d\_s*' ..
             '  echo "yes"\_s*' ..
             '\d PUSHS "yes"\_s*' ..
@@ -1537,13 +1670,13 @@ def Test_disassemble_return_bool()
   assert_match('ReturnBool\_s*' ..
         'var name: bool = 1 && 0 || 1\_s*' ..
         '0 PUSHNR 1\_s*' ..
-        '1 2BOOL (!!val)\_s*' ..
+        '1 COND2BOOL\_s*' ..
         '2 JUMP_IF_COND_FALSE -> 5\_s*' ..
         '3 PUSHNR 0\_s*' ..
-        '4 2BOOL (!!val)\_s*' ..
+        '4 COND2BOOL\_s*' ..
         '5 JUMP_IF_COND_TRUE -> 8\_s*' ..
         '6 PUSHNR 1\_s*' ..
-        '7 2BOOL (!!val)\_s*' ..
+        '7 COND2BOOL\_s*' ..
         '\d STORE $0\_s*' ..
         'return name\_s*' ..
         '\d\+ LOAD $0\_s*' ..   
@@ -2015,6 +2148,18 @@ def Test_profiled()
         '\d PUSHS "done"\_s*' ..
         '\d RETURN\_s*' ..
         '\d PROFILE END',
+        res)
+enddef
+
+def s:EchoMessages()
+  echohl ErrorMsg | echom v:exception | echohl NONE
+enddef
+
+def Test_disassemble_nextcmd()
+  # splitting commands and removing trailing blanks should not change the line
+  var res = execute('disass s:EchoMessages')
+  assert_match('<SNR>\d*_EchoMessages\_s*' ..
+        'echohl ErrorMsg | echom v:exception | echohl NONE',
         res)
 enddef
 

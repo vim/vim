@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 8.2.  Last change: 2020 Sep 28
+*gui.txt*       For Vim version 8.2.  Last change: 2021 May 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -619,6 +619,11 @@ the ":imenu" command.  For inserting text in any mode, you can use the
 expression register: >
 
    :amenu Insert.foobar   "='foobar'<CR>P
+
+The special text <Cmd> begins a "command menu", it executes the command
+directly without changing modes.  Where you might use ":...<CR>" you can
+instead use "<Cmd>...<CR>".  See |<Cmd>| for more info.  Example: >
+	anoremenu File.Next <Cmd>next<CR>
 
 Note that the '<' and 'k' flags in 'cpoptions' also apply here (when
 included they make the <> form and raw key codes not being recognized).

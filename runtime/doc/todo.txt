@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 Apr 05
+*todo.txt*      For Vim version 8.2.  Last change: 2021 May 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,38 +39,36 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 Vim9 - Make everything work:
+- function returning nothing should return void instead of zero
+- compile "expr" and "call" expression of a channel in channel_exe_cmd()?
+- Need some solution for dict function.  Can we implement part of classes?
+- A lambda without {} does not require a return type, using { return x } does.
+  That's unexpected, since the arguments are not required to have a type.
+  alt 1: not require a return type, figure it out from the common type of all
+	  the return statements found
+  alt 2: also require argument types
+- Using "windo echo expr" does not accept a line break inside "expr" (in a
+  :def function and at script level in a not executed block). #7681
+- use CheckLegacyAndVim9Success(lines) in many more places
 - For builtin functions using tv_get_string*() use check_for_string() to be
   more strict about the argument type (not a bool).
     done: balloon_()
 - Check many more builtin function arguments at compile time.
-- Using ".." at script level doesn't convert arguments to a string.
-- This fails in a :def function but not at the script level:
-	  var s = 'asdf'->((a) => a)('x')
-  Disallow passing more arguments to lambda than expected?
-- Implement blob index and slice, also with assignment?
-- Compile replacement of :s command: s/pat/\=expr/
-- Compile redir to local variable: var_redir_start().
-- Implement type cast at the script level.
-- Compile builtin functions that access local variables:
-    islocked()
-- When evaluating constants for script variables, some functions could work:
-    has('asdf'), len('string')
-  eval_variable().  Should pass the ".xxx" that follows and return that.
-- Make "++nr" work.  "++g:count" doesn't work, thinks it is a range.
-- Reload: How to make sure type of script function hasn't changed?
-- expandcmd() with `=expr` in filename uses legacy expression.
-- eval_expr() in ex_cexpr()
-- eval_expr() call in dbg_parsearg() and debuggy_find()
-- compile "skip" argument of searchpair()
-- compile "expr" and "call" expression of a channel in channel_exe_cmd()?
-- give an error for "echo Func()" if Func() does not return anything.
-- Using "windo echo expr" does not accept a line break inside "expr" (in a
-  :def function and at script level in a not executed block). #7681
-- "assert_fails()" cannot access local variables.  Perhaps add this:
-	assertfails
-	   ... cmd ...
-	endassertfails /E99:.*cmd/
-  Similar to try/catch/endtry but without the boilerplate.
+    map() could check that the return type of the function argument matches
+    the type of the list or dict member. (#8092)
+- Allow for using an autoload function name without quotes.  It is then loaded
+  (and compiled) right away.  #8124
+- Test more expressions in legacy and Vim9 script, using
+  CheckLegacyAndVim9Success()
+- Test try/catch and throw better, also nested.
+  Test that return inside try/finally jumps to finally and then returns.
+- Test that a function defined inside a :def function is local to that
+  function, g: functions can be defined and script-local functions cannot be
+  defined.
+- Make debugging work - at least per function.  Need to recompile a function
+  to step through it line-by-line?  Evaluate the stack and variables on the
+  stack?
+- Reserve command for future use: :type, :class, :enum
 
 Once Vim9 is stable:
 - Change the help to prefer Vim9 syntax where appropriate
@@ -80,34 +78,17 @@ Once Vim9 is stable:
 - Use Vim9 for runtime files.
     PR #7497 for autoload/ccomplete.vim
 
-Also for Vim9:
+Further Vim9 improvements, possibly after launch:
 - better implementation for partial and tests for that.
-- Make "g:imported = Export.exported" work in Vim9 script.
-- Make Foo.Bar() work to call the dict function. (#5676)
-- Error in any command in "vim9script" aborts sourcing.
-- Find a way to test expressions in legacy and Vim9 script without duplication
-- Test try/catch and throw better, also nested.
-  Test that return inside try/finally jumps to finally and then returns.
-- Test that a function defined inside a :def function is local to that
-  function, g: functions can be defined and script-local functions cannot be
-  defined.
-- compile options that are an expression, e.g. "expr:" in 'spellsuggest',
+- Compile options that are an expression, e.g. "expr:" in 'spellsuggest',
   'foldexpr', 'foldtext', 'printexpr', 'diffexpr', 'patchexpr', 'charconvert',
   'balloonexpr', 'includeexpr', 'indentexpr', 'formatexpr'.
   Give an error if compilation fails. (#7625)
   Use the location where the option was set for deciding whether it's to be
   evaluated in Vim9 script context.
-- implement :type; import type declaration.
-- implement enum;  import enum.
+- implement :type, import type declaration.
+- implement enum,  import enum.
 - Future work: See |vim9-classes|
-	Define the keywords and commands to make sure it will be backwards
-	compatible.
-- Make debugging work - at least per function.  Need to recompile a function
-  to step through it line-by-line?  Evaluate the stack and variables on the
-  stack?
-- List commands when 'verbose' is set or :verbose is used.
-
-Further Vim9 improvements, possibly after launch:
 - For range: make table of first ASCII character with flag to quickly check if
   it can be a Vim9 command. E.g. "+" can, but "." can't.
 - compile get_lambda_tv() in popup_add_timeout()
@@ -115,6 +96,9 @@ Further Vim9 improvements, possibly after launch:
 - Make accessing varargs faster: arg[expr]
 	EVAL expr
 	LOADVARARG (varargs idx)
+- When evaluating constants for script variables, some functions could work:
+    has(featureName), len(someString)
+- Implement as part of an expression: ++expr, --expr, expr++, expr--.
 
 
 Popup windows:
@@ -126,6 +110,8 @@ Popup windows:
 - Add a termcap entry for changing the cursor when it goes under the popup and
   back.  like t_SI and t_EI  (t_SU and t_EU, where "U" means under?)
 - With terminal in popup, allow for popup_hide() to temporarily hide it.?
+- Make it possible to scroll horizontally when 'wrap' is off.  Does this
+  require an ascii scrollbar, like with the vertical one?
 - Fire some autocommand event after a new popup window was created and
   positioned?  PopupNew?  Could be used to set some options or move it out of
   the way. (#5737)
@@ -254,6 +240,10 @@ Memory leak in test_alot with pyeval() (allocating partial)
 Memory leak in test_alot with expand()
 Memory leaks in test_channel? (or is it because of fork())
 
+":set &shellpipe" and ":set &shellredir" should use the logic from
+initialization to figure out the default value from 'shell'.  Add a test for
+this.
+
 test_arglist func Test_all_not_allowed_from_cmdwin() hangs on MS-Windows.
 
 Mapping with partial match not executed properly in GTK. (Ingo Karkat, #7082)
@@ -263,6 +253,9 @@ Have another look at the implementation.
 
 Patch to implement the vimtutor with a plugin: #6414
 Was originally written by Felipe Morales.
+
+Request to use "." for the cursor column in search pattern \%<.c and \%<.v.
+(#8179)
 
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)  Did patch 8.2.2379 help?
@@ -291,6 +284,9 @@ Missing filetype test for bashrc, PKGBUILD, etc.
 Add an option to not fetch terminal codes in xterm, to avoid flicker when t_Co
 changes.
 
+When using ":bwipe!" also get rid of references to be buffer, e.g. in the
+jumplist and alternate file.
+
 Add an option to start_timer() to return from the input loop with K_IGNORE.
 This is useful e.g. when a popup was created that disables mappings, we need
 to return from vgetc() to make this happen.  #7011
@@ -307,6 +303,9 @@ Regexp to search for duplicate lines does not work correctly:
 MS-Windows: when writing undo file the infostreams are copied in 
 mch_copy_file_attribute(), that seems unnecessary. (#7925)
 Add a flag to only copy attributes?
+
+Make the jumplist behave like a tag stack. (#7738)  Should there be a more
+time bound navigation, like with undo?
 
 Changing a capturing group to non-capturing changes the result: #7607
     :echo matchstr('aaa bbb', '\(.\{-1,}\>\)\|.*')
@@ -494,6 +493,9 @@ Output from assert_equalfile() doesn't give a hint about what's different.
 Assuming the files are text, print the line with the difference.
 
 Result of synID() sometimes wrong in help files. (#5252)
+
+When a help file is opened that doesn't have "ft=help" in the modeline then
+the FileType is first set to "text" before it is set to "help". (#8099)
 
 Problem showing a line if the number column width changes when using "o".
 (Mateusz Morusiewicz, #4245)
@@ -1013,8 +1015,7 @@ for a path separator. (xtal8, #2201)
 Would be nice for Insert mode completion to highlight the text that was added
 (and may change when picking another completion).
 
-Test runtime files.
-Start with filetype detection: testdir/test_filetype.vim
+Test more runtime files.
 
 Window not closed when deleting buffer. (Harm te Hennepe, 2017 Aug 27, #2029)
 
@@ -1228,7 +1229,7 @@ Undo problem: "g-" doesn't go back, gets stuck. (Björn Linse, 2016 Jul 18)
 Add "unicode true" to NSIS installer.  Doesn't work with Windows 95, which we
 no longer support.
 
-Suppoert sort(l, 'F'), convert strings to float. (#7857)
+Support sort(l, 'F'), convert strings to float. (#7857)
 
 sort() is not stable when using numeric/float sort (Nikolay Pavlov, 2016 Sep
 4#1038)
@@ -1406,9 +1407,6 @@ Patch to make tests pass with EBCDIC. (Owen Leibman, 2016 Apr 10)
 
 Add ":read :command", to insert the output of an Ex command?
 Can already do it with ":$put =execute('command')".
-
-When repeating the 'confirm' dialog one needs to press Enter. (ds26gte, 2016
-Apr 17)  #762
 
 exists(":tearoff") does not tell you if the command is implemented. (Tony
 Mechelynck)  Perhaps use exists("::tearoff") to check?
@@ -1986,6 +1984,10 @@ Build problem with small features on Mac OS X 10.6. (Rainer, 2011 Jan 24)
 Patch for :tabrecently. (Hirokazu Yoshida, 2012 Jan 30)
 
 Problem with "syn sync grouphere". (Gustavo Niemeyer, 2011 Jan 27)
+
+Using "syn sync breaklines=2" works for when text is changed, but not when
+scrolling or redrawing.  Should start search for syntax patterns above the
+first drawn line. (#8103)
 
 Loading autoload script even when usage is inside "if 0". (Christian Brabandt,
 2010 Dec 18)

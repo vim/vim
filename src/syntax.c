@@ -5990,12 +5990,17 @@ get_id_list(
 		    break;
 		}
 		if (name[1] == 'A')
-		    id = SYNID_ALLBUT;
+		    id = SYNID_ALLBUT + current_syn_inc_tag;
 		else if (name[1] == 'T')
-		    id = SYNID_TOP;
+		{
+		    if (curwin->w_s->b_syn_topgrp >= SYNID_CLUSTER)
+			id = curwin->w_s->b_syn_topgrp;
+		    else
+			id = SYNID_TOP + current_syn_inc_tag;
+		}
 		else
-		    id = SYNID_CONTAINED;
-		id += current_syn_inc_tag;
+		    id = SYNID_CONTAINED + current_syn_inc_tag;
+
 	    }
 	    else if (name[1] == '@')
 	    {

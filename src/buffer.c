@@ -27,6 +27,12 @@
 
 #include "vim.h"
 
+
+#ifdef FEAT_EVAL
+// Determines how deeply nested %{} blocks will be evaluated in statusline.
+# define MAX_STL_EVAL_DEPTH 100
+#endif
+
 static void	enter_buffer(buf_T *buf);
 static void	buflist_getfpos(void);
 static char_u	*buflist_match(regmatch_T *rmp, buf_T *buf, int ignore_case);
@@ -4113,6 +4119,9 @@ build_stl_str_hl(
     int		group_end_userhl;
     int		group_start_userhl;
     int		groupdepth;
+#ifdef FEAT_EVAL
+    int		evaldepth;
+#endif
     int		minwid;
     int		maxwid;
     int		zeropad;
@@ -4187,6 +4196,9 @@ build_stl_str_hl(
 	byteval = (*mb_ptr2char)(p + wp->w_cursor.col);
 
     groupdepth = 0;
+#ifdef FEAT_EVAL
+    evaldepth = 0;
+#endif
     p = out;
     curitem = 0;
     prevchar_isflag = TRUE;
@@ -4447,6 +4459,15 @@ build_stl_str_hl(
 	    curitem++;
 	    continue;
 	}
+#ifdef FEAT_EVAL
+	// Denotes end of expanded %{} block
+	if (*s == '}' && evaldepth > 0)
+	{
+	    s++;
+	    evaldepth--;
+	    continue;
+	}
+#endif
 	if (vim_strchr(STL_ALL, *s) == NULL)
 	{
 	    s++;
@@ -4482,16 +4503,27 @@ build_stl_str_hl(
 	    break;
 
 	case STL_VIM_EXPR: // '{'
+	{
+#ifdef FEAT_EVAL
+	    char_u *block_start = s - 1;
+#endif
+	    int reevaluate = (*s == '%');
+
+	    if (reevaluate)
+		s++;
 	    itemisflag = TRUE;
 	    t = p;
-	    while (*s != '}' && *s != NUL && p + 1 < out + outlen)
+	    while ((*s != '}' || (reevaluate && s[-1] != '%'))
+					  && *s != NUL && p + 1 < out + outlen)
 		*p++ = *s++;
 	    if (*s != '}')	// missing '}' or out of space
 		break;
 	    s++;
-	    *p = 0;
+	    if (reevaluate)
+		p[-1] = 0; // remove the % at the end of %{% expr %}
+	    else
+		*p = 0;
 	    p = t;
-
 #ifdef FEAT_EVAL
 	    vim_snprintf((char *)buf_tmp, sizeof(buf_tmp),
 							 "%d", curbuf->b_fnum);
@@ -4525,9 +4557,42 @@ build_stl_str_hl(
 		    itemisflag = FALSE;
 		}
 	    }
+
+	    // If the output of the expression needs to be evaluated
+	    // replace the %{} block with the result of evaluation
+	    if (reevaluate && str != NULL && *str != 0
+		    && strchr((const char *)str, '%') != NULL
+		    && evaldepth < MAX_STL_EVAL_DEPTH)
+	    {
+		size_t parsed_usefmt = (size_t)(block_start - usefmt);
+		size_t str_length = strlen((const char *)str);
+		size_t fmt_length = strlen((const char *)s);
+		size_t new_fmt_len = parsed_usefmt
+						 + str_length + fmt_length + 3;
+		char_u *new_fmt = (char_u *)alloc(new_fmt_len * sizeof(char_u));
+		char_u *new_fmt_p = new_fmt;
+
+		new_fmt_p = (char_u *)memcpy(new_fmt_p, usefmt, parsed_usefmt)
+							       + parsed_usefmt;
+		new_fmt_p = (char_u *)memcpy(new_fmt_p , str, str_length)
+								  + str_length;
+		new_fmt_p = (char_u *)memcpy(new_fmt_p, "%}", 2) + 2;
+		new_fmt_p = (char_u *)memcpy(new_fmt_p , s, fmt_length)
+								  + fmt_length;
+		*new_fmt_p = 0;
+		new_fmt_p = NULL;
+
+		if (usefmt != fmt)
+		    vim_free(usefmt);
+		VIM_CLEAR(str);
+		usefmt = new_fmt;
+		s = usefmt + parsed_usefmt;
+		evaldepth++;
+		continue;
+	    }
 #endif
 	    break;
-
+	}
 	case STL_LINE:
 	    num = (wp->w_buffer->b_ml.ml_flags & ML_EMPTY)
 		  ? 0L : (long)(wp->w_cursor.lnum);

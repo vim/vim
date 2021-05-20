@@ -55,7 +55,12 @@ func Test_function_lists()
   " Verify that the ":help functions" list is complete and in ASCII order.
 
   enew!
-  read ../../runtime/doc/eval.txt
+  if filereadable('../../doc/eval.txt')
+    " unpacked MS-Windows zip archive
+    read ../../doc/eval.txt
+  else
+    read ../../runtime/doc/eval.txt
+  endif
   call search('\*functions\*$')
   call search('^USAGE')
   1,.d
@@ -75,7 +80,12 @@ func Test_function_lists()
   " Verify that the ":help function-list" list is complete.
 
   enew!
-  read ../../runtime/doc/usr_41.txt
+  if filereadable('../../doc/usr_41.txt')
+    " unpacked MS-Windows zip archive
+    read ../../doc/usr_41.txt
+  else
+    read ../../runtime/doc/usr_41.txt
+  endif
   call search('\*function-list\*$')
   1,.d
   call search('^==*$')

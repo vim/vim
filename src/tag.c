@@ -3511,7 +3511,7 @@ jumpto_tag(
 	// Save value of no_hlsearch, jumping to a tag is not a real search
 	save_no_hlsearch = no_hlsearch;
 #endif
-#ifdef FEAT_PROP_POPUP
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)
 	// getfile() may have cleared options, apply 'previewpopup' again.
 	if (g_do_tagpreview != 0 && *p_pvp != NUL)
 	    parse_previewpopup(curwin);
@@ -3824,7 +3824,7 @@ find_extra(char_u **pp)
     for (;;)
     {
 	if (VIM_ISDIGIT(*str))
-	    str = skipdigits(str);
+	    str = skipdigits(str + 1);
 	else if (*str == '/' || *str == '?')
 	{
 	    str = skip_regexp(str + 1, *str, FALSE);

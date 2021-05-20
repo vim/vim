@@ -27,8 +27,9 @@ in_vim9script(void)
 {
     // "sc_version" is also set when compiling a ":def" function in legacy
     // script.
-    return current_sctx.sc_version == SCRIPT_VERSION_VIM9
-		|| (cmdmod.cmod_flags & CMOD_VIM9CMD);
+    return (current_sctx.sc_version == SCRIPT_VERSION_VIM9
+					 || (cmdmod.cmod_flags & CMOD_VIM9CMD))
+		&& !(cmdmod.cmod_flags & CMOD_LEGACY);
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
@@ -157,6 +158,28 @@ vim9_comment_start(char_u *p)
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
+
+/*
+ * "++nr" and "--nr" commands.
+ */
+    void
+ex_incdec(exarg_T *eap)
+{
+    char_u	*cmd = eap->cmd;
+    size_t	len = STRLEN(eap->cmd) + 6;
+
+    // This works like "nr += 1" or "nr -= 1".
+    eap->cmd = alloc(len);
+    if (eap->cmd == NULL)
+	return;
+    vim_snprintf((char *)eap->cmd, len, "%s %c= 1", cmd + 2,
+				     eap->cmdidx == CMD_increment ? '+' : '-');
+    eap->arg = eap->cmd;
+    eap->cmdidx = CMD_var;
+    ex_let(eap);
+    vim_free(eap->cmd);
+    eap->cmd = cmd;
+}
 
 /*
  * ":export let Name: type"
@@ -600,7 +623,8 @@ handle_import(
 	    }
 	    else
 	    {
-		if (check_defined(name, len, cctx, FALSE) == FAIL)
+		if (as_name == NULL
+			      && check_defined(name, len, cctx, FALSE) == FAIL)
 		    goto erret;
 
 		imported = new_imported(gap != NULL ? gap
@@ -713,7 +737,8 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
  * When "create" is TRUE this is a new variable, otherwise find and update an
  * existing variable.
  * "flags" can have ASSIGN_FINAL or ASSIGN_CONST.
- * When "*type" is NULL use "tv" for the type and update "*type".
+ * When "*type" is NULL use "tv" for the type and update "*type".  If
+ * "do_member" is TRUE also use the member type, otherwise use "any".
  */
     void
 update_vim9_script_var(
@@ -721,7 +746,8 @@ update_vim9_script_var(
 	dictitem_T  *di,
 	int	    flags,
 	typval_T    *tv,
-	type_T	    **type)
+	type_T	    **type,
+	int	    do_member)
 {
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
     hashitem_T	    *hi;
@@ -774,7 +800,8 @@ update_vim9_script_var(
     if (sv != NULL)
     {
 	if (*type == NULL)
-	    *type = typval2type(tv, get_copyID(), &si->sn_type_list);
+	    *type = typval2type(tv, get_copyID(), &si->sn_type_list,
+								    do_member);
 	sv->sv_type = *type;
     }
 

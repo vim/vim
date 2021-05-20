@@ -1148,7 +1148,9 @@ func Test_charidx()
   call assert_equal(2, charidx(a, 4))
   call assert_equal(3, charidx(a, 7))
   call assert_equal(-1, charidx(a, 8))
+  call assert_equal(-1, charidx(a, -1))
   call assert_equal(-1, charidx('', 0))
+  call assert_equal(-1, charidx(test_null_string(), 0))
 
   " count composing characters
   call assert_equal(0, charidx(a, 0, 1))
@@ -1497,6 +1499,7 @@ endfunc
 
 func Test_balloon_show()
   CheckFeature balloon_eval
+
   " This won't do anything but must not crash either.
   call balloon_show('hi!')
   if !has('gui_running')
@@ -2147,6 +2150,10 @@ func Test_call()
   eval mydict.len->call([], mydict)->assert_equal(4)
   call assert_fails("call call('Mylen', [], 0)", 'E715:')
   call assert_fails('call foo', 'E107:')
+
+  " This once caused a crash.
+  call call(test_null_function(), [])
+  call call(test_null_partial(), [])
 endfunc
 
 func Test_char2nr()
@@ -2623,6 +2630,7 @@ endfunc
 func Test_glob()
   call assert_equal('', glob(test_null_string()))
   call assert_equal('', globpath(test_null_string(), test_null_string()))
+  call assert_fails("let x = globpath(&rtp, 'syntax/c.vim', [])", 'E745:')
 
   call writefile([], 'Xglob1')
   call writefile([], 'XGLOB2')
@@ -2648,6 +2656,14 @@ endfunc
 func Test_browsedir()
   CheckFeature browse
   call assert_fails('call browsedir("open", [])', 'E730:')
+endfunc
+
+func HasDefault(msg = 'msg')
+  return a:msg
+endfunc
+
+func Test_default_arg_value()
+  call assert_equal('msg', HasDefault())
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -230,6 +230,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	case VAR_PARTIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:
+	case VAR_INSTR:
 	    semsg(_(e_cannot_json_encode_str), vartype_name(val->v_type));
 	    return FAIL;
 
@@ -606,7 +607,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
     cur_item = res;
     init_tv(&item);
     if (res != NULL)
-    init_tv(res);
+    	init_tv(res);
 
     fill_numbuflen(reader);
     p = reader->js_buf + reader->js_used;

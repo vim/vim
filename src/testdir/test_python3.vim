@@ -1007,8 +1007,12 @@ func Test_python3_vim_bindeval()
   call assert_equal(v:none, py3eval("vim.bindeval('v:none')"))
 
   " channel/job
-  call assert_equal(v:none, py3eval("vim.bindeval('test_null_channel()')"))
-  call assert_equal(v:none, py3eval("vim.bindeval('test_null_job()')"))
+  if has('channel')
+    call assert_equal(v:none, py3eval("vim.bindeval('test_null_channel()')"))
+  endif
+  if has('job')
+    call assert_equal(v:none, py3eval("vim.bindeval('test_null_job()')"))
+  endif
 endfunc
 
 " threading

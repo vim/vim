@@ -169,8 +169,7 @@ buf_init_chartab(
 	    }
 	    if (VIM_ISDIGIT(*p))
 		c = getdigits(&p);
-	    else
-		 if (has_mbyte)
+	    else if (has_mbyte)
 		c = mb_ptr2char_adv(&p);
 	    else
 		c = *p++;
@@ -180,8 +179,7 @@ buf_init_chartab(
 		++p;
 		if (VIM_ISDIGIT(*p))
 		    c2 = getdigits(&p);
-		else
-		     if (has_mbyte)
+		else if (has_mbyte)
 		    c2 = mb_ptr2char_adv(&p);
 		else
 		    c2 = *p++;

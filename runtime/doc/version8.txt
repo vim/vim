@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.2.  Last change: 2020 Dec 24
+*version8.txt*  For Vim version 8.2.  Last change: 2021 May 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -15341,7 +15341,7 @@ Solution:   Link winpthread statically. (jmmerz, closes #1255, closes #1256)
 Files:      src/Make_cyg_ming.mak
 
 Patch 8.0.0116
-Problem:    When reading English help and using CTRl-] the language from
+Problem:    When reading English help and using CTRL-] the language from
             'helplang' is used.
 Solution:   Make help tag jumps keep the language. (Tatsuki, test by Hirohito
             Higashi, closes #1249)

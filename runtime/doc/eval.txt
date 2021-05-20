@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2021 Apr 07
+*eval.txt*	For Vim version 8.2.  Last change: 2021 May 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1961,6 +1961,9 @@ v:fcs_choice	What should happen after a |FileChangedShell| event was
 					everything that needs to be done.
 		The default is empty.  If another (invalid) value is used then
 		Vim behaves like it is empty, there is no warning message.
+
+					*v:fname* *fname-variable*
+v:fname		The file name set by 'includeexpr'.  Empty otherwise.
 
 					*v:fname_in* *fname_in-variable*
 v:fname_in	The name of the input file.  Valid while evaluating:
@@ -5775,7 +5778,6 @@ getmousepos()						*getmousepos()*
 
 		If the mouse is over a popup window then that window is used.
 
-
 		When using |getchar()| the Vim variables |v:mouse_lnum|,
 		|v:mouse_col| and |v:mouse_winid| also provide these values.
 
@@ -6721,6 +6723,7 @@ islocked({expr})					*islocked()* *E786*
 
 <		When {expr} is a variable that does not exist you get an error
 		message.  Use |exists()| to check for existence.
+		In Vim9 script it does not work for local variables.
 
 		Can also be used as a |method|: >
 			GetName()->islocked()
@@ -7587,6 +7590,9 @@ matchfuzzy({list}, {str} [, {dict}])			*matchfuzzy()*
 		If there are no matching strings or there is an error, then an
 		empty list is returned. If length of {str} is greater than
 		256, then returns an empty list.
+
+		Refer to |fuzzy-match| for more information about fuzzy
+		matching strings.
 
 		Example: >
 		   :echo matchfuzzy(["clay", "crow"], "cay")
@@ -9185,6 +9191,8 @@ searchpair({start}, {middle}, {end} [, {flags} [, {skip}
 		and -1 returned.
 		{skip} can be a string, a lambda, a funcref or a partial.
 		Anything else makes the function fail.
+		In a `:def` function when the {skip} argument is a string
+		constant it is compiled into instructions.
 
 		For {stopline} and {timeout} see |search()|.
 

@@ -1402,4 +1402,13 @@ func Test_script_local_remap()
   bwipe!
 endfunc
 
+func Test_abbreviate_multi_byte()
+  new
+  iabbrev foo bar
+  call feedkeys("ifoo…\<Esc>", 'xt')
+  call assert_equal("bar…", getline(1))
+  iunabbrev foo
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

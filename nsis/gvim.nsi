@@ -119,9 +119,9 @@ RequestExecutionLevel highest
 
 !define MUI_COMPONENTSPAGE_SMALLDESC
 !define MUI_LICENSEPAGE_CHECKBOX
-!define MUI_FINISHPAGE_RUN                 "$0\gvim.exe"
+!define MUI_FINISHPAGE_RUN
+!define MUI_FINISHPAGE_RUN_FUNCTION        LaunchApplication
 !define MUI_FINISHPAGE_RUN_TEXT            $(str_show_readme)
-!define MUI_FINISHPAGE_RUN_PARAMETERS      "-R $\"$0\README.txt$\""
 
 # This adds '\Vim' to the user choice automagically.  The actual value is
 # obtained below with CheckOldVim.
@@ -298,6 +298,11 @@ Function CheckOldVim
   Pop $R1
   Pop $R0
   Exch $0  # put $0 on top of stack, restore $0 to original value
+FunctionEnd
+
+Function LaunchApplication
+   SetOutPath $0
+   ShellExecAsUser::ShellExecAsUser "" "$0\gvim.exe" '-R "$0\README.txt"'
 FunctionEnd
 
 ##########################################################

@@ -87,10 +87,23 @@ def Test_add_list()
   CheckDefFailure(lines, 'E1012:', 2)
 
   lines =<< trim END
+      add(test_null_list(), 123)
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1130:', 1)
+
+  lines =<< trim END
       var l: list<number> = test_null_list()
       add(l, 123)
   END
   CheckDefExecFailure(lines, 'E1130:', 2)
+
+  # Getting variable with NULL list allocates a new list at script level
+  lines =<< trim END
+      vim9script
+      var l: list<number> = test_null_list()
+      add(l, 123)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_add_blob()
@@ -109,10 +122,23 @@ def Test_add_blob()
   CheckDefFailure(lines, 'E1012:', 2)
 
   lines =<< trim END
+      add(test_null_blob(), 123)
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1131:', 1)
+
+  lines =<< trim END
       var b: blob = test_null_blob()
       add(b, 123)
   END
   CheckDefExecFailure(lines, 'E1131:', 2)
+
+  # Getting variable with NULL blob allocates a new blob at script level
+  lines =<< trim END
+      vim9script
+      var b: blob = test_null_blob()
+      add(b, 123)
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_append()
@@ -308,6 +334,13 @@ def Test_expand()
   split SomeFile
   expand('%', true, true)->assert_equal(['SomeFile'])
   close
+enddef
+
+def Test_expandcmd()
+  $FOO = "blue"
+  assert_equal("blue sky", expandcmd("`=$FOO .. ' sky'`"))
+
+  assert_equal("yes", expandcmd("`={a: 'yes'}['a']`"))
 enddef
 
 def Test_extend_arg_types()
@@ -506,7 +539,7 @@ def Test_filter_wrong_dict_key_type()
 enddef
 
 def Test_filter_return_type()
-  var l = filter([1, 2, 3], () => 1)
+  var l = filter([1, 2, 3], (_, _) => 1)
   var res = 0
   for n in l
     res += n
@@ -516,7 +549,7 @@ enddef
 
 def Test_filter_missing_argument()
   var dict = {aa: [1], ab: [2], ac: [3], de: [4]}
-  var res = dict->filter((k) => k =~ 'a' && k !~ 'b')
+  var res = dict->filter((k, _) => k =~ 'a' && k !~ 'b')
   res->assert_equal({aa: [1], ac: [3]})
 enddef
 
@@ -692,6 +725,16 @@ def Test_insert()
     res += n
   endfor
   res->assert_equal(6)
+
+  var lines =<< trim END
+      insert(test_null_list(), 123)
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1130:', 1)
+
+  lines =<< trim END
+      insert(test_null_blob(), 123)
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1131:', 1)
 
   assert_equal([1, 2, 3], insert([2, 3], 1))
   assert_equal([1, 2, 3], insert([2, 3], s:number_one))
@@ -915,6 +958,20 @@ def Test_search()
   search('bar', 'W', 0, 0, () => 1)->assert_equal(0)
   assert_fails("search('bar', '', 0, 0, () => -1)", 'E1023:')
   assert_fails("search('bar', '', 0, 0, () => -1)", 'E1023:')
+
+  setline(1, "find this word")
+  normal gg
+  var col = 7
+  assert_equal(1, search('this', '', 0, 0, 'col(".") > col'))
+  normal 0
+  assert_equal([1, 6], searchpos('this', '', 0, 0, 'col(".") > col'))
+
+  col = 5
+  normal 0
+  assert_equal(0, search('this', '', 0, 0, 'col(".") > col'))
+  normal 0
+  assert_equal([0, 0], searchpos('this', '', 0, 0, 'col(".") > col'))
+  bwipe!
 enddef
 
 def Test_searchcount()
@@ -928,6 +985,44 @@ def Test_searchcount()
           total: 1,
           maxcount: 99,
           incomplete: 0})
+  bwipe!
+enddef
+
+def Test_searchpair()
+  new
+  setline(1, "here { and } there")
+
+  normal f{
+  var col = 15
+  assert_equal(1, searchpair('{', '', '}', '', 'col(".") > col'))
+  assert_equal(12, col('.'))
+  normal 0f{
+  assert_equal([1, 12], searchpairpos('{', '', '}', '', 'col(".") > col'))
+
+  col = 8
+  normal 0f{
+  assert_equal(0, searchpair('{', '', '}', '', 'col(".") > col'))
+  assert_equal(6, col('.'))
+  normal 0f{
+  assert_equal([0, 0], searchpairpos('{', '', '}', '', 'col(".") > col'))
+
+  var lines =<< trim END
+      vim9script
+      setline(1, '()')
+      normal gg
+      def Fail()
+        try
+          searchpairpos('(', '', ')', 'nW', '[0]->map("")')
+        catch
+          g:caught = 'yes'
+        endtry
+      enddef
+      Fail()
+  END
+  CheckScriptSuccess(lines)
+  assert_equal('yes', g:caught)
+
+  unlet g:caught
   bwipe!
 enddef
 

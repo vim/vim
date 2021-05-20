@@ -4285,10 +4285,6 @@ typedef struct
 #define SCORE_NONE	-9999
 
 #define FUZZY_MATCH_RECURSION_LIMIT	10
-// Maximum number of characters that can be fuzzy matched
-#define MAXMATCHES			256
-
-typedef int_u		matchidx_T;
 
 /*
  * Compute a score for a fuzzy matched string. The matching character locations
@@ -4298,7 +4294,7 @@ typedef int_u		matchidx_T;
 fuzzy_match_compute_score(
 	char_u		*str,
 	int		strSz,
-	matchidx_T	*matches,
+	int_u		*matches,
 	int		numMatches)
 {
     int		score;
@@ -4306,7 +4302,7 @@ fuzzy_match_compute_score(
     int		unmatched;
     int		i;
     char_u	*p = str;
-    matchidx_T	sidx = 0;
+    int_u	sidx = 0;
 
     // Initialize score
     score = 100;
@@ -4324,11 +4320,11 @@ fuzzy_match_compute_score(
     // Apply ordering bonuses
     for (i = 0; i < numMatches; ++i)
     {
-	matchidx_T	currIdx = matches[i];
+	int_u	currIdx = matches[i];
 
 	if (i > 0)
 	{
-	    matchidx_T	prevIdx = matches[i - 1];
+	    int_u	prevIdx = matches[i - 1];
 
 	    // Sequential
 	    if (currIdx == (prevIdx + 1))
@@ -4386,19 +4382,19 @@ fuzzy_match_compute_score(
 fuzzy_match_recursive(
 	char_u		*fuzpat,
 	char_u		*str,
-	matchidx_T	strIdx,
+	int_u		strIdx,
 	int		*outScore,
 	char_u		*strBegin,
 	int		strLen,
-	matchidx_T	*srcMatches,
-	matchidx_T	*matches,
+	int_u		*srcMatches,
+	int_u		*matches,
 	int		maxMatches,
 	int		nextMatch,
 	int		*recursionCount)
 {
     // Recursion params
     int		recursiveMatch = FALSE;
-    matchidx_T	bestRecursiveMatches[MAXMATCHES];
+    int_u	bestRecursiveMatches[MAX_FUZZY_MATCHES];
     int		bestRecursiveScore = 0;
     int		first_match;
     int		matched;
@@ -4409,7 +4405,7 @@ fuzzy_match_recursive(
 	return 0;
 
     // Detect end of strings
-    if (*fuzpat == '\0' || *str == '\0')
+    if (*fuzpat == NUL || *str == NUL)
 	return 0;
 
     // Loop through fuzpat and str looking for a match
@@ -4425,7 +4421,7 @@ fuzzy_match_recursive(
 	// Found match
 	if (vim_tolower(c1) == vim_tolower(c2))
 	{
-	    matchidx_T	recursiveMatches[MAXMATCHES];
+	    int_u	recursiveMatches[MAX_FUZZY_MATCHES];
 	    int		recursiveScore = 0;
 	    char_u	*next_char;
 
@@ -4455,7 +4451,7 @@ fuzzy_match_recursive(
 		if (!recursiveMatch || recursiveScore > bestRecursiveScore)
 		{
 		    memcpy(bestRecursiveMatches, recursiveMatches,
-			    MAXMATCHES * sizeof(recursiveMatches[0]));
+			    MAX_FUZZY_MATCHES * sizeof(recursiveMatches[0]));
 		    bestRecursiveScore = recursiveScore;
 		}
 		recursiveMatch = TRUE;
@@ -4506,19 +4502,19 @@ fuzzy_match_recursive(
  * normalized and varies with pattern.
  * Recursion is limited internally (default=10) to prevent degenerate cases
  * (pat_arg="aaaaaa" str="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").
- * Uses char_u for match indices. Therefore patterns are limited to MAXMATCHES
- * characters.
+ * Uses char_u for match indices. Therefore patterns are limited to
+ * MAX_FUZZY_MATCHES characters.
  *
  * Returns TRUE if 'pat_arg' matches 'str'. Also returns the match score in
  * 'outScore' and the matching character positions in 'matches'.
  */
-    static int
+    int
 fuzzy_match(
 	char_u		*str,
 	char_u		*pat_arg,
 	int		matchseq,
 	int		*outScore,
-	matchidx_T	*matches,
+	int_u		*matches,
 	int		maxMatches)
 {
     int		recursionCount = 0;
@@ -4630,7 +4626,7 @@ fuzzy_match_in_list(
     listitem_T	*li;
     long	i = 0;
     int		found_match = FALSE;
-    matchidx_T	matches[MAXMATCHES];
+    int_u	matches[MAX_FUZZY_MATCHES];
 
     len = list_len(items);
     if (len == 0)
@@ -4847,7 +4843,7 @@ do_fuzzymatch(typval_T *argvars, typval_T *rettv, int retmatchpos)
 		return;
 	    }
 	}
-	if ((di = dict_find(d, (char_u *)"matchseq", -1)) != NULL)
+	if (dict_find(d, (char_u *)"matchseq", -1) != NULL)
 	    matchseq = TRUE;
     }
 

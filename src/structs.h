@@ -645,6 +645,7 @@ typedef struct
 #define CMOD_KEEPPATTERNS   0x1000	// ":keeppatterns"
 #define CMOD_NOSWAPFILE	    0x2000	// ":noswapfile"
 #define CMOD_VIM9CMD	    0x4000	// ":vim9cmd"
+#define CMOD_LEGACY	    0x8000	// ":legacy"
 
     int		cmod_split;		// flags for win_split()
     int		cmod_tab;		// > 0 when ":tab" was used
@@ -1370,6 +1371,7 @@ typedef struct cbq_S cbq_T;
 typedef struct channel_S channel_T;
 typedef struct cctx_S cctx_T;
 typedef struct ectx_S ectx_T;
+typedef struct instr_S instr_T;
 
 typedef enum
 {
@@ -1388,6 +1390,7 @@ typedef enum
     VAR_DICT,		// "v_dict" is used
     VAR_JOB,		// "v_job" is used
     VAR_CHANNEL,	// "v_channel" is used
+    VAR_INSTR,		// "v_instr" is used
 } vartype_T;
 
 // A type specification.
@@ -1428,6 +1431,7 @@ typedef struct
 	channel_T	*v_channel;	// channel value (can be NULL!)
 #endif
 	blob_T		*v_blob;	// blob value (can be NULL!)
+	instr_T		*v_instr;	// instructions to execute
     }		vval;
 } typval_T;
 
@@ -1583,10 +1587,11 @@ typedef struct funccall_S funccall_T;
 
 // values used for "uf_def_status"
 typedef enum {
-    UF_NOT_COMPILED,
-    UF_TO_BE_COMPILED,
-    UF_COMPILING,
-    UF_COMPILED
+    UF_NOT_COMPILED,	    // executed with interpreter
+    UF_TO_BE_COMPILED,	    // to be compiled before execution
+    UF_COMPILING,	    // in compile_def_function()
+    UF_COMPILED,	    // successfully compiled
+    UF_COMPILE_ERROR	    // compilation error, cannot execute
 } def_status_T;
 
 /*
@@ -1876,7 +1881,9 @@ typedef struct {
     // Used to collect lines while parsing them, so that they can be
     // concatenated later.  Used when "eval_ga.ga_itemsize" is not zero.
     // "eval_ga.ga_data" is a list of pointers to lines.
+    // "eval_freega" list pointers that need to be freed after concatenating.
     garray_T	eval_ga;
+    garray_T	eval_freega;
 
     // pointer to the last line obtained with getsourceline()
     char_u	*eval_tofree;
@@ -2044,7 +2051,7 @@ typedef struct {
 	except_T   *except; // exception info
     } es_info;
 #if defined(FEAT_EVAL)
-    scid_T	es_save_sid;	    // saved sc_sid when calling function
+    sctx_T	es_save_sctx;	    // saved current_sctx when calling function
 #endif
 } estack_T;
 

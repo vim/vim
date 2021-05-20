@@ -1971,7 +1971,7 @@ internal_func_name(int idx)
 }
 
 /*
- * Check the argument types for builting function "idx".
+ * Check the argument types for builtin function "idx".
  * Uses the list of types on the type stack: "types".
  * Return FAIL and gives an error message when a type is wrong.
  */
@@ -2475,8 +2475,8 @@ f_call(typval_T *argvars, typval_T *rettv)
     }
     else
 	func = tv_get_string(&argvars[0]);
-    if (*func == NUL)
-	return;		// type error or empty name
+    if (func == NULL || *func == NUL)
+	return;		// type error, empty name or null function
 
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
@@ -2779,7 +2779,7 @@ f_cosh(typval_T *argvars, typval_T *rettv)
 
 /*
  * Set the cursor position.
- * If 'charcol' is TRUE, then use the column number as a character offet.
+ * If 'charcol' is TRUE, then use the column number as a character offset.
  * Otherwise use the column number as a byte offset.
  */
     static void
@@ -2989,6 +2989,7 @@ f_empty(typval_T *argvars, typval_T *rettv)
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_VOID:
+	case VAR_INSTR:
 	    internal_error_no_abort("f_empty(UNKNOWN)");
 	    n = TRUE;
 	    break;
@@ -3174,7 +3175,8 @@ execute_common(typval_T *argvars, typval_T *rettv, int arg_off)
     else if (argvars[arg_off].v_type == VAR_JOB
 	    || argvars[arg_off].v_type == VAR_CHANNEL)
     {
-	emsg(_(e_inval_string));
+	semsg(_(e_using_invalid_value_as_string_str),
+				       vartype_name(argvars[arg_off].v_type));
 	return;
     }
     else
@@ -6303,6 +6305,7 @@ f_len(typval_T *argvars, typval_T *rettv)
 	case VAR_PARTIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:
+	case VAR_INSTR:
 	    emsg(_("E701: Invalid type for len()"));
 	    break;
     }
@@ -9671,9 +9674,9 @@ f_synIDattr(typval_T *argvars UNUSED, typval_T *rettv)
 	else
 #endif
 	    if (t_colors > 1)
-	    modec = 'c';
-	else
-	    modec = 't';
+		modec = 'c';
+	    else
+		modec = 't';
     }
 
     switch (TOLOWER_ASC(what[0]))
@@ -10215,6 +10218,7 @@ f_type(typval_T *argvars, typval_T *rettv)
 	case VAR_JOB:     n = VAR_TYPE_JOB; break;
 	case VAR_CHANNEL: n = VAR_TYPE_CHANNEL; break;
 	case VAR_BLOB:    n = VAR_TYPE_BLOB; break;
+	case VAR_INSTR:   n = VAR_TYPE_INSTR; break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
 	case VAR_VOID:

@@ -1119,9 +1119,10 @@ getcount:
 	old_mapped_len = typebuf_maplen();
 
     /*
-     * If an operation is pending, handle it.  But not for K_IGNORE.
+     * If an operation is pending, handle it.  But not for K_IGNORE or
+     * K_MOUSEMOVE.
      */
-    if (ca.cmdchar != K_IGNORE)
+    if (ca.cmdchar != K_IGNORE && ca.cmdchar != K_MOUSEMOVE)
 	do_pending_operator(&ca, old_col, FALSE);
 
     /*

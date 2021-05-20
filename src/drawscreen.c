@@ -93,6 +93,7 @@ update_screen(int type_arg)
     int		gui_cursor_row = 0;
 #endif
     int		no_update = FALSE;
+    int		save_pum_will_redraw = pum_will_redraw;
 
     // Don't do anything if the screen structures are (not yet) valid.
     if (!screen_valid(TRUE))
@@ -276,6 +277,11 @@ update_screen(int type_arg)
     }
 #endif
 
+    if (pum_redraw_in_same_position())
+	// Avoid flicker if the popup menu is going to be redrawn in the same
+	// position.
+	pum_will_redraw = TRUE;
+
     // Go from top to bottom through the windows, redrawing the ones that need
     // it.
 #if defined(FEAT_SEARCH_EXTRA) || defined(FEAT_CLIPBOARD)
@@ -297,7 +303,9 @@ update_screen(int type_arg)
 		// Remove the cursor before starting to do anything, because
 		// scrolling may make it difficult to redraw the text under
 		// it.
-		if (gui.in_use && wp == curwin)
+		// Also remove the cursor if it needs to be hidden due to an
+		// ongoing cursor-less sleep.
+		if (gui.in_use && (wp == curwin || cursor_is_sleeping()))
 		{
 		    gui_cursor_col = gui.cursor_col;
 		    gui_cursor_row = gui.cursor_row;
@@ -306,7 +314,6 @@ update_screen(int type_arg)
 		}
 	    }
 #endif
-
 	    win_update(wp);
 	}
 
@@ -320,7 +327,9 @@ update_screen(int type_arg)
 #if defined(FEAT_SEARCH_EXTRA)
     end_search_hl();
 #endif
+
     // May need to redraw the popup menu.
+    pum_will_redraw = save_pum_will_redraw;
     pum_may_redraw();
 
     // Reset b_mod_set flags.  Going through all windows is probably faster
@@ -3001,6 +3010,13 @@ redraw_after_callback(int call_update_screen)
 	// keep the command line if possible
 	update_screen(VALID_NO_UPDATE);
 	setcursor();
+
+	if (msg_scrolled == 0)
+	{
+	    // don't want a hit-enter prompt when something else is displayed
+	    msg_didany = FALSE;
+	    need_wait_return = FALSE;
+	}
     }
     cursor_on();
 #ifdef FEAT_GUI

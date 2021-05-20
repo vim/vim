@@ -1309,13 +1309,22 @@ func Test_cmdlineclear_tabenter()
   call delete('XtestCmdlineClearTabenter')
 endfunc
 
-" Test for failure in expanding special keywords in cmdline
+" Test for expanding special keywords in cmdline
 func Test_cmdline_expand_special()
   %bwipe!
   call assert_fails('e #', 'E499:')
   call assert_fails('e <afile>', 'E495:')
   call assert_fails('e <abuf>', 'E496:')
   call assert_fails('e <amatch>', 'E497:')
+
+  call writefile([], 'Xfile.cpp')
+  call writefile([], 'Xfile.java')
+  new Xfile.cpp
+  call feedkeys(":e %:r\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xfile.cpp Xfile.java', @:)
+  close
+  call delete('Xfile.cpp')
+  call delete('Xfile.java')
 endfunc
 
 func Test_cmdwin_jump_to_win()
@@ -1749,6 +1758,98 @@ func Test_wildmenu_dirstack()
   cd -
   call delete('Xdir1', 'rf')
   set wildmenu&
+endfunc
+
+" Test for recalling newer or older cmdline from history with <Up>, <Down>,
+" <S-Up>, <S-Down>, <PageUp>, <PageDown>, <C-p>, or <C-n>.
+func Test_recalling_cmdline()
+  CheckFeature cmdline_hist
+
+  let g:cmdlines = []
+  cnoremap <Plug>(save-cmdline) <Cmd>let g:cmdlines += [getcmdline()]<CR>
+
+  let histories = [
+  \  {'name': 'cmd',    'enter': ':',                    'exit': "\<Esc>"},
+  \  {'name': 'search', 'enter': '/',                    'exit': "\<Esc>"},
+  \  {'name': 'expr',   'enter': ":\<C-r>=",             'exit': "\<Esc>\<Esc>"},
+  \  {'name': 'input',  'enter': ":call input('')\<CR>", 'exit': "\<CR>"},
+  "\ TODO: {'name': 'debug', ...}
+  \]
+  let keypairs = [
+  \  {'older': "\<Up>",     'newer': "\<Down>",     'prefixmatch': v:true},
+  \  {'older': "\<S-Up>",   'newer': "\<S-Down>",   'prefixmatch': v:false},
+  \  {'older': "\<PageUp>", 'newer': "\<PageDown>", 'prefixmatch': v:false},
+  \  {'older': "\<C-p>",    'newer': "\<C-n>",      'prefixmatch': v:false},
+  \]
+  let prefix = 'vi'
+  for h in histories
+    call histadd(h.name, 'vim')
+    call histadd(h.name, 'virtue')
+    call histadd(h.name, 'Virgo')
+    call histadd(h.name, 'vogue')
+    call histadd(h.name, 'emacs')
+    for k in keypairs
+      let g:cmdlines = []
+      let keyseqs = h.enter
+      \          .. prefix
+      \          .. repeat(k.older .. "\<Plug>(save-cmdline)", 2)
+      \          .. repeat(k.newer .. "\<Plug>(save-cmdline)", 2)
+      \          .. h.exit
+      call feedkeys(keyseqs, 'xt')
+      call histdel(h.name, -1) " delete the history added by feedkeys above
+      let expect = k.prefixmatch
+      \          ? ['virtue', 'vim',   'virtue', prefix]
+      \          : ['emacs',  'vogue', 'emacs',  prefix]
+      call assert_equal(expect, g:cmdlines)
+    endfor
+  endfor
+
+  unlet g:cmdlines
+  cunmap <Plug>(save-cmdline)
+endfunc
+
+func Test_cmd_map_cmdlineChanged()
+  let g:log = []
+  cnoremap <F1> l<Cmd><CR>s
+  augroup test
+    autocmd!
+    autocmd CmdlineChanged : let g:log += [getcmdline()]
+  augroup END
+
+  call feedkeys(":\<F1>\<CR>", 'xt')
+  call assert_equal(['l', 'ls'], g:log)
+
+  let @b = 'b'
+  cnoremap <F1> a<C-R>b
+  let g:log = []
+  call feedkeys(":\<F1>\<CR>", 'xt')
+  call assert_equal(['a', 'ab'], g:log)
+
+  unlet g:log
+  cunmap <F1>
+  augroup test
+    autocmd!
+  augroup END
+endfunc
+
+" Test for the 'suffixes' option
+func Test_suffixes_opt()
+  call writefile([], 'Xfile')
+  call writefile([], 'Xfile.c')
+  call writefile([], 'Xfile.o')
+  set suffixes=
+  call feedkeys(":e Xfi*\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xfile Xfile.c Xfile.o', @:)
+  set suffixes=.c
+  call feedkeys(":e Xfi*\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xfile Xfile.o Xfile.c', @:)
+  set suffixes=,,
+  call feedkeys(":e Xfi*\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xfile.c Xfile.o Xfile', @:)
+  set suffixes&
+  call delete('Xfile')
+  call delete('Xfile.c')
+  call delete('Xfile.o')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

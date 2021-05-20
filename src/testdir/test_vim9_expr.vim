@@ -282,6 +282,20 @@ def Test_expr2()
       g:vals = []
       assert_equal(false, Record(0) || Record(false) || Record(0))
       assert_equal([0, false, 0], g:vals)
+
+      g:vals = []
+      var x = 1
+      if x || true
+        g:vals = [1]
+      endif
+      assert_equal([1], g:vals)
+
+      g:vals = []
+      x = 3
+      if true || x
+        g:vals = [1]
+      endif
+      assert_equal([1], g:vals)
   END
   CheckDefAndScriptSuccess(lines)
 enddef
@@ -356,6 +370,9 @@ def Test_expr2_fails()
 
   # TODO: should fail at compile time
   call CheckDefExecAndScriptFailure(["var x = 3 || 7"], 'E1023:', 1)
+
+  call CheckDefAndScriptFailure(["if 3"], 'E1023:', 1)
+  call CheckDefExecAndScriptFailure(['var x = 3', 'if x', 'endif'], 'E1023:', 2)
 
   call CheckDefAndScriptFailure2(["var x = [] || false"], 'E1012: Type mismatch; expected bool but got list<unknown>', 'E745:', 1)
 
@@ -1558,16 +1575,25 @@ let $TESTVAR = 'testvar'
 
 " type casts
 def Test_expr7t()
-  var ls: list<string> = ['a', <string>g:string_empty]
-  var ln: list<number> = [<number>g:anint, <number>g:thefour]
-  var nr = <number>234
-  assert_equal(234, nr)
+  var lines =<< trim END
+      var ls: list<string> = ['a', <string>g:string_empty]
+      var ln: list<number> = [<number>g:anint, <number>g:thefour]
+      var nr = <number>234
+      assert_equal(234, nr)
+      var text =
+            <string>
+              'text'
+      if false
+        text = <number>'xxx'
+      endif
+  END
+  CheckDefAndScriptSuccess(lines)
 
-  CheckDefAndScriptFailure2(["var x = <nr>123"], 'E1010:', 'E15:', 1)
+  CheckDefAndScriptFailure(["var x = <nr>123"], 'E1010:', 1)
   CheckDefFailure(["var x = <number>"], 'E1097:', 3)
   CheckScriptFailure(['vim9script', "var x = <number>"], 'E15:', 2)
-  CheckDefAndScriptFailure2(["var x = <number >123"], 'E1068:', 'E15:', 1)
-  CheckDefAndScriptFailure2(["var x = <number 123"], 'E1104:', 'E15:', 1)
+  CheckDefAndScriptFailure(["var x = <number >123"], 'E1068:', 1)
+  CheckDefAndScriptFailure(["var x = <number 123"], 'E1104:', 1)
 enddef
 
 " test low level expression
@@ -1605,6 +1631,26 @@ def Test_expr7_blob()
       assert_equal(g:blob_empty, 0z)
       assert_equal(g:blob_one, 0z01)
       assert_equal(g:blob_long, 0z0102.0304)
+
+      var testblob = 0z010203
+      assert_equal(0x01, testblob[0])
+      assert_equal(0x02, testblob[1])
+      assert_equal(0x03, testblob[-1])
+      assert_equal(0x02, testblob[-2])
+
+      assert_equal(0z01, testblob[0 : 0])
+      assert_equal(0z0102, testblob[0 : 1])
+      assert_equal(0z010203, testblob[0 : 2])
+      assert_equal(0z010203, testblob[0 : ])
+      assert_equal(0z0203, testblob[1 : ])
+      assert_equal(0z0203, testblob[1 : 2])
+      assert_equal(0z0203, testblob[1 : -1])
+      assert_equal(0z03, testblob[-1 : -1])
+      assert_equal(0z02, testblob[-2 : -2])
+
+      # blob slice accepts out of range
+      assert_equal(0z, testblob[3 : 3])
+      assert_equal(0z, testblob[0 : -4])
   END
   CheckDefAndScriptSuccess(lines)
 
@@ -1841,6 +1887,7 @@ enddef
 def Test_expr7_lambda()
   var lines =<< trim END
       var La = () => 'result'
+      # comment
       assert_equal('result', La())
       assert_equal([1, 3, 5], [1, 2, 3]->map((key, val) => key + val))
 
@@ -1850,6 +1897,12 @@ def Test_expr7_lambda()
                 ['111']: 111 } : {}
             )
       assert_equal([{}, {111: 111}, {}], dll)
+
+      # comment halfway an expression
+      var Ref = () => 4
+      # comment
+      + 6
+      assert_equal(10, Ref())
 
       ll = range(3)
       map(ll, (k, v) => v == 8 || v
@@ -2722,19 +2775,10 @@ def Test_expr7_negate_add()
     echo + +n
   END
   CheckDefAndScriptFailure(lines, 'E15:')
+enddef
 
-  lines =<< trim END
-    var n = 12
-    :1
-    ++n
-  END
-  CheckDefAndScriptFailure(lines, 'E1050:')
-  lines =<< trim END
-    var n = 12
-    :1
-    --n
-  END
-  CheckDefAndScriptFailure(lines, 'E1050:')
+def LegacyReturn(): string
+  legacy return #{key: 'ok'}.key
 enddef
 
 def Test_expr7_legacy_script()
@@ -2750,6 +2794,17 @@ def Test_expr7_legacy_script()
       call assert_equal('legacy', GetLocalPrefix())
   END
   CheckScriptSuccess(lines)
+
+  assert_equal('ok', LegacyReturn())
+
+  lines =<< trim END
+      vim9script 
+      def GetNumber(): number   
+          legacy return range(3)->map('v:val + 1') 
+      enddef 
+      echo GetNumber()
+  END
+  CheckScriptFailure(lines, 'E1012: Type mismatch; expected number but got list<number>')
 enddef
 
 def Echo(arg: any): string
@@ -3026,6 +3081,10 @@ def Test_expr7_string_subscript()
     assert_equal('ábçd', text[: 3])
     assert_equal('bçdëf', text[1 :])
     assert_equal('ábçdëf', text[:])
+
+    assert_equal('a', g:astring[0])
+    assert_equal('sd', g:astring[1 : 2])
+    assert_equal('asdf', g:astring[:])
   END
   CheckDefAndScriptSuccess(lines)
 
@@ -3095,6 +3154,9 @@ def Test_expr7_list_subscript()
       assert_equal([0], list[0 : -5])
       assert_equal([], list[0 : -6])
       assert_equal([], list[0 : -99])
+
+      assert_equal(2, g:alist[0])
+      assert_equal([2, 3, 4], g:alist[:])
   END
   CheckDefAndScriptSuccess(lines)
 
@@ -3117,6 +3179,9 @@ def Test_expr7_dict_subscript()
       var res = l[0].lnum > l[1].lnum
       assert_true(res)
 
+      assert_equal(2, g:adict['aaa'])
+      assert_equal(8, g:adict.bbb)
+
       var dd = {}
       def Func1()
         eval dd.key1.key2
@@ -3125,6 +3190,18 @@ def Test_expr7_dict_subscript()
         eval dd['key1'].key2
       enddef
       defcompile
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_expr7_blob_subscript()
+  var lines =<< trim END
+      var b = 0z112233
+      assert_equal(0x11, b[0])
+      assert_equal(0z112233, b[:])
+
+      assert_equal(0x01, g:ablob[0])
+      assert_equal(0z01ab, g:ablob[:])
   END
   CheckDefAndScriptSuccess(lines)
 enddef
