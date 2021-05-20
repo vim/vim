@@ -2,7 +2,7 @@ vim9script noclear
 
 # Vim plugin for showing matching parens
 # Maintainer:  Bram Moolenaar <Bram@vim.org>
-# Last Change: 2021 Apr 29
+# Last Change: 2021 May 20
 
 # Exit quickly when:
 # - this plugin was already loaded (or disabled)
@@ -64,6 +64,10 @@ def Autocmds(enable: bool)
       #    > Add a WindowScrolled event.  Trigger around the same time as CursorMoved.
       #    > Can be used to update highlighting. #3127  #5181
       autocmd CursorMoved,CursorMovedI,TextChanged,TextChangedI,WinEnter * UpdateHighlight()
+      # In case we reload the buffer while the cursor is on a paren.
+      # Need to delay with SafeState because when reloading, the cursor is
+      # temporarily on line 1 col 1, no matter its position before the reload.
+      autocmd BufReadPost * autocmd SafeState <buffer=abuf> ++once UpdateHighlight()
 
       # BufLeave is necessary when the cursor is on a parenthesis and we open
       # the quickfix window.
