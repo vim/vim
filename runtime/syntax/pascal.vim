@@ -3,7 +3,7 @@
 " Maintainer:		Doug Kearns <dougkearns@gmail.com>
 " Previous Maintainers:	Xavier Crégut <xavier.cregut@enseeiht.fr>
 "			Mario Eusebio <bio@dq.fct.unl.pt>
-"Last Change:		2021 May 17
+"Last Change:		2021 May 20
 
 " Contributors: Tim Chase <tchase@csc.com>,
 "		Stas Grabois <stsi@vtrails.com>,
@@ -144,10 +144,10 @@ if !exists("pascal_no_functions")
   endif
 
   " ordinal functions
-  syn keyword pascalFunction	Odd Pred Succ
+  syn keyword pascalFunction	Ord Chr Succ Pred
 
-  " conversion functions
-  syn keyword pascalFunction	Chr Ord Round Trunc
+  " transfer functions
+  syn keyword pascalFunction	Round Trunc
 endif
 
 
