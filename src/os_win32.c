@@ -1648,7 +1648,9 @@ WaitForChar(long msec, int ignore_input)
 	peek_console_input(g_hConIn, &ir, 1, &cRecords);
 
 # ifdef FEAT_MBYTE_IME
-	if (State & CMDLINE && msg_row == Rows - 1)
+	// May have to redraw if the cursor ends up in the wrong place.
+	// Only when not peeking.
+	if (State & CMDLINE && msg_row == Rows - 1 && msec != 0)
 	{
 	    CONSOLE_SCREEN_BUFFER_INFO csbi;
 
