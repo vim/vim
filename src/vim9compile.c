@@ -7776,6 +7776,12 @@ compile_for(char_u *arg_start, cctx_T *cctx)
 						     0, 0, type, name) == FAIL)
 		goto failed;
 	}
+	else if (varlen == 1 && *arg == '_')
+	{
+	    // Assigning to "_": drop the value.
+	    if (generate_instr_drop(cctx, ISN_DROP, 1) == NULL)
+		goto failed;
+	}
 	else
 	{
 	    if (lookup_local(arg, varlen, NULL, cctx) == OK)

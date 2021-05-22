@@ -2500,6 +2500,12 @@ def Test_for_loop_unpack()
       endfor
       assert_equal(['global', 'buf', 'win', 'tab', '1', '2', '3', '4'], slist)
       unlet! g:globalvar b:bufvar w:winvar t:tabvar
+
+      var res = []
+      for [_, n, _] in [[1, 2, 3], [4, 5, 6]]
+        res->add(n)
+      endfor
+      assert_equal([2, 5], res)
   END
   CheckDefAndScriptSuccess(lines)
 
