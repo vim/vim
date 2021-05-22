@@ -1149,20 +1149,20 @@ endfunc
 func Test_pum_rightleft()
   CheckScreendump
   let lines =<< trim END
-    vinegar
+    abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz
     vim
     victory
   END
   call writefile(lines, 'Xtest1')
   let buf = RunVimInTerminal('--cmd "set rightleft" Xtest1', {})
   call term_wait(buf)
-  call term_sendkeys(buf, "Gov\<C-P>")
+  call term_sendkeys(buf, "Go\<C-P>")
   call term_wait(buf)
-  call VerifyScreenDump(buf, 'Test_pum_rightleft_01', {'rows': 7})
+  call VerifyScreenDump(buf, 'Test_pum_rightleft_01', {'rows': 8})
   call term_sendkeys(buf, "\<C-P>\<C-Y>")
   call term_wait(buf)
   redraw!
-  call assert_match('\s*miv', Screenline(4))
+  call assert_match('\s*miv', Screenline(5))
 
   " Test for expanding tabs to spaces in the popup menu
   let lines =<< trim END
