@@ -191,7 +191,7 @@ function GetPythonIndent(lnum)
   if getline(a:lnum) =~ '^\s*\(elif\|else\)\>'
 
     " Unless the previous line was a one-liner
-    if getline(plnumstart) =~ '^\s*\(for\|if\|try\)\>'
+    if getline(plnumstart) =~ '^\s*\(for\|if\|elif\|try\)\>'
       return plindent
     endif
 
