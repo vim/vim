@@ -820,11 +820,11 @@ OBJ = \
 	$(OUTDIR)/window.o
 
 ifeq ($(VIMDLL),yes)
-OBJ += $(OUTDIR)/os_w32dll.o $(OUTDIR)/vimrcd.o
-EXEOBJC = $(OUTDIR)/os_w32exec.o $(OUTDIR)/vimrcc.o
-EXEOBJG = $(OUTDIR)/os_w32exeg.o $(OUTDIR)/vimrcg.o
+OBJ += $(OUTDIR)/os_w32dll.o $(OUTDIR)/vimresd.o
+EXEOBJC = $(OUTDIR)/os_w32exec.o $(OUTDIR)/vimresc.o
+EXEOBJG = $(OUTDIR)/os_w32exeg.o $(OUTDIR)/vimresg.o
 else
-OBJ += $(OUTDIR)/os_w32exe.o $(OUTDIR)/vimrc.o
+OBJ += $(OUTDIR)/os_w32exe.o $(OUTDIR)/vimres.o
 endif
 
 ifdef PERL
@@ -1145,21 +1145,21 @@ $(OUTDIR)/%.o : %.c $(INCL)
 	$(CC) -c $(CFLAGS) $< -o $@
 
 ifeq ($(VIMDLL),yes)
-$(OUTDIR)/vimrcc.o:	vim.rc gvim.exe.mnf version.h gui_w32_rc.h vim.ico
+$(OUTDIR)/vimresc.o:	vim.rc vim.manifest version.h gui_w32_rc.h vim.ico
 	$(WINDRES) $(WINDRES_FLAGS) $(DEFINES) -UFEAT_GUI_MSWIN \
 	    --input-format=rc --output-format=coff -i vim.rc -o $@
 
-$(OUTDIR)/vimrcg.o:	vim.rc gvim.exe.mnf version.h gui_w32_rc.h vim.ico
+$(OUTDIR)/vimresg.o:	vim.rc vim.manifest version.h gui_w32_rc.h vim.ico
 	$(WINDRES) $(WINDRES_FLAGS) $(DEFINES) \
 	    --input-format=rc --output-format=coff -i vim.rc -o $@
 
-$(OUTDIR)/vimrcd.o:	vim.rc version.h gui_w32_rc.h \
+$(OUTDIR)/vimresd.o:	vim.rc version.h gui_w32_rc.h \
 			tools.bmp tearoff.bmp vim.ico vim_error.ico \
 			vim_alert.ico vim_info.ico vim_quest.ico
 	$(WINDRES) $(WINDRES_FLAGS) $(DEFINES) -DRCDLL -DVIMDLLBASE=\\\"$(VIMDLLBASE)\\\" \
 	    --input-format=rc --output-format=coff -i vim.rc -o $@
 else
-$(OUTDIR)/vimrc.o:	vim.rc gvim.exe.mnf version.h gui_w32_rc.h \
+$(OUTDIR)/vimres.o:	vim.rc vim.manifest version.h gui_w32_rc.h \
 			tools.bmp tearoff.bmp vim.ico vim_error.ico \
 			vim_alert.ico vim_info.ico vim_quest.ico
 	$(WINDRES) $(WINDRES_FLAGS) $(DEFINES) \
