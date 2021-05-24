@@ -207,8 +207,8 @@ static char *(highlight_init_light[]) = {
     CENT("SignColumn term=standout ctermbg=Grey ctermfg=DarkBlue",
 	 "SignColumn term=standout ctermbg=Grey ctermfg=DarkBlue guibg=Grey guifg=DarkBlue"),
 #endif
-    CENT("Visual term=reverse",
-	 "Visual term=reverse guibg=LightGrey"),
+    CENT("Visual term=reverse cterm=reverse",
+	 "Visual term=reverse cterm=reverse guibg=LightGrey"),
 #ifdef FEAT_DIFF
     CENT("DiffAdd term=bold ctermbg=LightBlue",
 	 "DiffAdd term=bold ctermbg=LightBlue guibg=LightBlue"),
@@ -298,8 +298,8 @@ static char *(highlight_init_dark[]) = {
     CENT("SignColumn term=standout ctermbg=DarkGrey ctermfg=Cyan",
 	 "SignColumn term=standout ctermbg=DarkGrey ctermfg=Cyan guibg=Grey guifg=Cyan"),
 #endif
-    CENT("Visual term=reverse",
-	 "Visual term=reverse guibg=DarkGrey"),
+    CENT("Visual term=reverse cterm=reverse",
+	 "Visual term=reverse cterm=reverse guibg=DarkGrey"),
 #ifdef FEAT_DIFF
     CENT("DiffAdd term=bold ctermbg=DarkBlue",
 	 "DiffAdd term=bold ctermbg=DarkBlue guibg=DarkBlue"),
@@ -430,8 +430,8 @@ init_highlight(
     // Clear the attributes, needed when changing the t_Co value.
     if (t_colors > 8)
 	do_highlight((char_u *)(*p_bg == 'l'
-		    ? "Visual cterm=NONE ctermbg=LightGrey"
-		    : "Visual cterm=NONE ctermbg=DarkGrey"), FALSE, TRUE);
+		    ? "Visual cterm=NONE cterm=reverse ctermbg=LightGrey"
+		    : "Visual cterm=NONE cterm=reverse ctermbg=DarkGrey"), FALSE, TRUE);
     else
     {
 	do_highlight((char_u *)"Visual cterm=reverse ctermbg=NONE",
