@@ -94,7 +94,7 @@ MINOR = 2
 #   src/Makefile, README.txt, README.md, src/README.md, READMEdir/README*.txt,
 #   runtime/doc/*.txt and make nsis/gvim_version.nsh.
 #   For a minor/major version: src/GvimExt/GvimExt.reg, src/vim.def,
-#   src/gvim.exe.mnf.
+#   src/vim.manifest.
 # - Compile Vim with GTK, Perl, Python, Python3, TCL, Ruby, Lua, Cscope and
 #   "huge" features.  Add MZscheme if you can make it work.
 #   Use "make reconfig" after selecting the configure arguments.
@@ -152,7 +152,7 @@ MINOR = 2
 #   > cd src
 #   > msvc2015.bat
 # - Build the console binary:
-#   > nmake -f Make_mvc.mak
+#   > nmake -f Mae_mvc.mak
 # - Run the tests and check the output:
 #   > nmake -f Make_mvc.mak testclean
 #   > nmake -f Make_mvc.mak test
