@@ -1394,7 +1394,11 @@ errret:
     ga_clear_strings(&newlines);
     ga_clear_strings(&default_args);
     if (types_optional)
+    {
 	ga_clear_strings(&argtypes);
+	if (fp != NULL)
+	    vim_free(fp->uf_arg_types);
+    }
     vim_free(fp);
     vim_free(pt);
     if (evalarg != NULL && evalarg->eval_tofree == NULL)
