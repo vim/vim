@@ -1475,7 +1475,7 @@ do_buffer(
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	    if ((p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM)) && p_write)
 	    {
-		dialog_changed(buf, FALSE);
+		dialog_changed(buf, FALSE, NULL);
 		if (!bufref_valid(&bufref))
 		    // Autocommand deleted buffer, oops!  It's not changed
 		    // now.
@@ -1668,7 +1668,7 @@ do_buffer(
 	    bufref_T bufref;
 
 	    set_bufref(&bufref, buf);
-	    dialog_changed(curbuf, FALSE);
+	    dialog_changed(curbuf, FALSE, NULL);
 	    if (!bufref_valid(&bufref))
 		// Autocommand deleted buffer, oops!
 		return FAIL;

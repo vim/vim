@@ -708,7 +708,7 @@ do_argfile(exarg_T *eap, int argn)
 		  && check_changed(curbuf, CCGD_AW
 					 | (other ? 0 : CCGD_MULTWIN)
 					 | (eap->forceit ? CCGD_FORCEIT : 0)
-					 | CCGD_EXCMD))
+					 | CCGD_EXCMD, NULL))
 		return;
 	}
 
@@ -744,7 +744,7 @@ ex_next(exarg_T *eap)
 	    || eap->cmdidx == CMD_snext
 	    || !check_changed(curbuf, CCGD_AW
 				    | (eap->forceit ? CCGD_FORCEIT : 0)
-				    | CCGD_EXCMD))
+				    | CCGD_EXCMD, NULL))
     {
 	if (*eap->arg != NUL)		    // redefine file list
 	{

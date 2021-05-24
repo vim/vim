@@ -1,5 +1,7 @@
 " Tests for various Ex commands.
 
+source shared.vim
+source screendump.vim
 source check.vim
 
 func Test_ex_delete()
@@ -595,6 +597,47 @@ func Test_command_not_implemented_E319()
   if !has('mzscheme')
     call assert_fails('mzscheme', 'E319:')
   endif
+endfunc
+
+func Test_confirm_cmd2()
+  CheckNotGui
+  CheckRunVimInTerminal
+  CheckScreendump
+
+  call writefile(['foo1'], 'Xfoo')
+  call writefile(['bar1'], 'Xbar')
+
+  " Test for saving all the modified buffers
+  let lines =<< trim END
+    set hidden nomore
+    sil f Xfoo
+    call setline(1, 'foo2')
+    enew
+    sil f Xbar
+    call setline(1, 'bar2')
+  END
+  call writefile(lines, 'Xscript')
+  let buf = RunVimInTerminal('-S Xscript', {'rows': 20})
+  call term_sendkeys(buf, ":confirm qall\n")
+  call WaitForAssert({-> assert_match('\[Y\]es, (N)o, Save (A)ll, (D)iscard All, (C)ancel: ', term_getline(buf, 20))}, 1000)
+  call term_sendkeys(buf, "N")
+  call WaitForAssert({-> assert_match('\[Y\]es, (N)o, (C)ancel: ', term_getline(buf, 20))}, 1000)
+  call term_sendkeys(buf, "C")
+  "call term_sendkeys(buf, ":redraw!\n")
+  call term_wait(buf, 500)
+  call term_sendkeys(buf, ":ls\n")
+  call term_wait(buf, 500)
+  "sleep 500m
+  call VerifyScreenDump(buf, 'Test_excmd_confirm_1', {})
+
+  "call WaitForAssert({-> assert_match('\d\s*[%#][ah]\s*+\s*"X', term_getline(buf, 19))}, 1000)
+  "call WaitForAssert({-> assert_match('\d\s*%\?a\s*+\s*"Xfoo"', term_getline(buf, 18))}, 2000)
+  "call WaitForAssert({-> assert_match('\d\s*[%#][ah]\s*+\s*"X', term_getline(buf, 19))}, 1000)
+  "call WaitForAssert({-> assert_match('\d\s*#\?h\s*+\s*"Xbar"', term_getline(buf, 19))}, 2000)
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  call delete('Xfoo')
+  call delete('Xbar')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

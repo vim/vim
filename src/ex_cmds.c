@@ -2414,7 +2414,7 @@ getfile(
     {
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	if (p_confirm && p_write)
-	    dialog_changed(curbuf, FALSE);
+	    dialog_changed(curbuf, FALSE, NULL);
 	if (curbufIsChanged())
 #endif
 	{
@@ -2603,7 +2603,7 @@ do_ecmd(
 	&& check_changed(curbuf, (p_awa ? CCGD_AW : 0)
 			       | (other_file ? 0 : CCGD_MULTWIN)
 			       | ((flags & ECMD_FORCEIT) ? CCGD_FORCEIT : 0)
-			       | (eap == NULL ? 0 : CCGD_EXCMD)))
+			       | (eap == NULL ? 0 : CCGD_EXCMD), NULL))
     {
 	if (fnum == 0 && other_file && ffname != NULL)
 	    (void)setaltfname(ffname, sfname, newlnum < 0 ? 0 : newlnum);
@@ -5252,7 +5252,7 @@ ex_drop(exarg_T *eap)
 	if (!buf_hide(curbuf))
 	{
 	    ++emsg_off;
-	    split = check_changed(curbuf, CCGD_AW | CCGD_EXCMD);
+	    split = check_changed(curbuf, CCGD_AW | CCGD_EXCMD, NULL);
 	    --emsg_off;
 	}
 

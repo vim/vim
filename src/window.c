@@ -3608,7 +3608,7 @@ close_others(
 		if (message && (p_confirm
 			     || (cmdmod.cmod_flags & CMOD_CONFIRM)) && p_write)
 		{
-		    dialog_changed(wp->w_buffer, FALSE);
+		    dialog_changed(wp->w_buffer, FALSE, NULL);
 		    if (!win_valid(wp))		// autocommands messed wp up
 		    {
 			nextwp = firstwin;

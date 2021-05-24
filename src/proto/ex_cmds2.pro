@@ -1,9 +1,9 @@
 /* ex_cmds2.c */
 int autowrite(buf_T *buf, int forceit);
 void autowrite_all(void);
-int check_changed(buf_T *buf, int flags);
+int check_changed(buf_T *buf, int flags, int *buflist);
 void browse_save_fname(buf_T *buf);
-void dialog_changed(buf_T *buf, int checkall);
+void dialog_changed(buf_T *buf, int checkall, int *buflist);
 int can_abandon(buf_T *buf, int forceit);
 int check_changed_any(int hidden, int unload);
 int check_fname(void);

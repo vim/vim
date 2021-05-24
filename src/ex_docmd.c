@@ -5560,7 +5560,7 @@ ex_quit(exarg_T *eap)
     if ((!buf_hide(wp->w_buffer)
 		&& check_changed(wp->w_buffer, (p_awa ? CCGD_AW : 0)
 				       | (eap->forceit ? CCGD_FORCEIT : 0)
-				       | CCGD_EXCMD))
+				       | CCGD_EXCMD, NULL))
 	    || check_more(TRUE, eap->forceit) == FAIL
 	    || (only_one_window() && check_changed_any(eap->forceit, TRUE)))
     {
@@ -5712,7 +5712,7 @@ ex_win_close(
 	    bufref_T bufref;
 
 	    set_bufref(&bufref, buf);
-	    dialog_changed(buf, FALSE);
+	    dialog_changed(buf, FALSE, NULL);
 	    if (bufref_valid(&bufref) && bufIsChanged(buf))
 		return;
 	    need_hide = FALSE;
@@ -6194,7 +6194,7 @@ handle_drop_internal(void)
     if (!buf_hide(curbuf) && !drop_split)
     {
 	++emsg_off;
-	drop_split = check_changed(curbuf, CCGD_AW);
+	drop_split = check_changed(curbuf, CCGD_AW, NULL);
 	--emsg_off;
     }
     if (drop_split)
@@ -6326,7 +6326,7 @@ ex_recover(exarg_T *eap)
     if (!check_changed(curbuf, (p_awa ? CCGD_AW : 0)
 			     | CCGD_MULTWIN
 			     | (eap->forceit ? CCGD_FORCEIT : 0)
-			     | CCGD_EXCMD)
+			     | CCGD_EXCMD, NULL)
 
 	    && (*eap->arg == NUL
 			     || setfname(curbuf, eap->arg, NULL, TRUE) == OK))

@@ -73,7 +73,7 @@ autowrite_all(void)
  * For flags use the CCGD_ values.
  */
     int
-check_changed(buf_T *buf, int flags)
+check_changed(buf_T *buf, int flags, int *bufnr_changed)
 {
     int		forceit = (flags & CCGD_FORCEIT);
     bufref_T	bufref;
@@ -104,7 +104,7 @@ check_changed(buf_T *buf, int flags)
 		// Autocommand deleted buffer, oops!  It's not changed now.
 		return FALSE;
 
-	    dialog_changed(buf, count > 1);
+	    dialog_changed(buf, count > 1, bufnr_changed);
 
 	    if (!bufref_valid(&bufref))
 		// Autocommand deleted buffer, oops!  It's not changed now.
@@ -153,7 +153,8 @@ browse_save_fname(buf_T *buf)
     void
 dialog_changed(
     buf_T	*buf,
-    int		checkall)	// may abandon all changed buffers
+    int		checkall,	// may abandon all changed buffers
+    int*        bufnr_changed)  // revert setting changed when canceled
 {
     char_u	buff[DIALOG_MSG_SIZE];
     int		ret;
@@ -184,6 +185,37 @@ dialog_changed(
     else if (ret == VIM_NO)
     {
 	unchanged(buf, TRUE, FALSE);
+	if (bufnr_changed != NULL)
+	{
+	    int i = 0;
+	    while (bufnr_changed[i] != 0)
+		i++;
+	    bufnr_changed[i] = buf->b_fnum;
+	}
+    }
+    else if (ret == VIM_CANCEL)
+    {
+	if (bufnr_changed != NULL)
+	{
+	    int i = 0;
+	    bufref_T bufref;
+
+	    set_bufref(&bufref, curbuf);
+	    while (bufnr_changed[i])
+	    {
+
+		buf2 = buflist_findnr(bufnr_changed[i]);
+		if (buf2 == NULL)
+		    continue;
+		i++;
+		curbuf = buf2;
+		changed();
+	    }
+	    if (!bufref_valid(&bufref))
+		curbuf = firstbuf;
+	    else
+		curbuf = bufref.br_buf;
+	}
     }
     else if (ret == VIM_ALL)
     {
@@ -278,6 +310,8 @@ check_changed_any(
     int		bufnum = 0;
     int		bufcount = 0;
     int		*bufnrs;
+    // all buffers that have been changed and need to be reverted
+    int		*bufnrs_changed;
     tabpage_T   *tp;
     win_T	*wp;
 
@@ -289,7 +323,8 @@ check_changed_any(
 	return FALSE;
 
     bufnrs = ALLOC_MULT(int, bufcount);
-    if (bufnrs == NULL)
+    bufnrs_changed = ALLOC_CLEAR_MULT(int, bufcount);
+    if (bufnrs == NULL || bufnrs_changed == NULL)
 	return FALSE;
 
     // curbuf
@@ -332,7 +367,7 @@ check_changed_any(
 	    // longer exists it's not changed, that's OK.
 	    if (check_changed(buf, (p_awa ? CCGD_AW : 0)
 				 | CCGD_MULTWIN
-				 | CCGD_ALLBUF) && bufref_valid(&bufref))
+				 | CCGD_ALLBUF, bufnrs_changed) && bufref_valid(&bufref))
 		break;	    // didn't save - still changes
 	}
     }
@@ -401,6 +436,7 @@ buf_found:
 
 theend:
     vim_free(bufnrs);
+    vim_free(bufnrs_changed);
     return ret;
 }
 
@@ -491,7 +527,7 @@ ex_listdo(exarg_T *eap)
 	    || buf_hide(curbuf)
 	    || !check_changed(curbuf, CCGD_AW
 				    | (eap->forceit ? CCGD_FORCEIT : 0)
-				    | CCGD_EXCMD))
+				    | CCGD_EXCMD, NULL))
     {
 	i = 0;
 	// start at the eap->line1 argument/window/buffer
