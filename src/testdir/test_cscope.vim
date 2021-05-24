@@ -188,6 +188,12 @@ func Test_cscopeWithCscopeConnections()
     call assert_equal('#define index_to_key(i) ((i) ^ 15167)', getline('.'))
     call assert_fails('cstag DOES_NOT_EXIST', 'E257:')
     call assert_fails('cstag', 'E562:')
+    let save_tags = &tags
+    set tags=
+    call assert_fails('cstag DOES_NOT_EXIST', 'E257:')
+    let a = execute('cstag index_to_key')
+    call assert_match('(1 of 1): <<index_to_key>> #define index_to_key(i) ((i) ^ 15167)', a)
+    let &tags = save_tags
 
     " Test: 'cst' option
     set nocst
