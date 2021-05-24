@@ -1843,6 +1843,10 @@ func Test_func_exists_on_reload()
   call writefile(['func ExistingFunction()', 'echo "yes"', 'endfunc'], 'Xfuncexists2')
   call assert_fails('source Xfuncexists2', 'E122:')
 
+  " Defining a new function from the cmdline should fail if the function is
+  " already defined
+  call assert_fails('call feedkeys(":func ExistingFunction()\<CR>", "xt")', 'E122:')
+
   delfunc ExistingFunction
   call assert_equal(0, exists('*ExistingFunction'))
   call writefile([
