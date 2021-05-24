@@ -887,6 +887,12 @@ def Test_lambda_return_type()
   END
   CheckDefAndScriptFailure(lines, 'E1157:', 1)
 
+  # no space before the return type
+  lines =<< trim END
+    var Ref = (x):number => x + 1
+  END
+  CheckDefAndScriptFailure(lines, 'E1069:', 1)
+
   # this works
   for x in ['foo', 'boo']
     echo FilterWithCond(x, (v) => v =~ '^b')
@@ -1318,6 +1324,7 @@ def Test_white_space_before_comma()
     enddef
   END
   CheckScriptFailure(lines, 'E1068:')
+  call assert_fails('vim9cmd echo stridx("a" .. "b" , "a")', 'E1068:')
 enddef
 
 def Test_white_space_after_comma()

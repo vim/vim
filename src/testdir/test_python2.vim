@@ -314,6 +314,8 @@ func Test_python_window()
   10new
   py vim.current.window.height = 5
   call assert_equal(5, winheight(0))
+  py vim.current.window.height = 3.2
+  call assert_equal(3, winheight(0))
 
   " Test for setting the window width
   10vnew
