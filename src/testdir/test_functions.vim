@@ -141,6 +141,7 @@ func Test_min()
 
   call assert_fails('call min(1)', 'E712:')
   call assert_fails('call min(v:none)', 'E712:')
+  call assert_fails('call min([1, {}])', 'E728:')
 
   " check we only get one error
   call assert_fails('call min([[1], #{}])', ['E745:', 'E745:'])
@@ -715,6 +716,7 @@ func Test_tr()
   call assert_fails("let s=tr('abcd', 'abcd', 'def')", 'E475:')
   call assert_equal('hEllO', tr('hello', 'eo', 'EO'))
   call assert_equal('hello', tr('hello', 'xy', 'ab'))
+  call assert_fails('call tr("abc", "123", "₁₂")', 'E475:')
   set encoding=utf8
 endfunc
 
@@ -2672,6 +2674,11 @@ endfunc
 
 func Test_default_arg_value()
   call assert_equal('msg', HasDefault())
+endfunc
+
+" Test for gettext()
+func Test_gettext()
+  call assert_fails('call gettext(1)', 'E475:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

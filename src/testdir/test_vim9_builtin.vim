@@ -363,6 +363,7 @@ def Test_extend_arg_types()
   END
   CheckDefAndScriptSuccess(lines)
 
+  CheckDefFailure(['extend("a", 1)'], 'E1013: Argument 1: type mismatch, expected list<any> but got string')
   CheckDefFailure(['extend([1, 2], 3)'], 'E1013: Argument 2: type mismatch, expected list<number> but got number')
   CheckDefFailure(['extend([1, 2], ["x"])'], 'E1013: Argument 2: type mismatch, expected list<number> but got list<string>')
   CheckDefFailure(['extend([1, 2], [3], "x")'], 'E1013: Argument 3: type mismatch, expected number but got string')
@@ -726,6 +727,12 @@ def Test_insert()
   endfor
   res->assert_equal(6)
 
+  var m: any = []
+  insert(m, 4)
+  call assert_equal([4], m)
+  extend(m, [6], 0)
+  call assert_equal([6, 4], m)
+
   var lines =<< trim END
       insert(test_null_list(), 123)
   END
@@ -743,6 +750,7 @@ def Test_insert()
   assert_equal(['a', 'b', 'c'], insert(['b', 'c'], 'a'))
   assert_equal(0z1234, insert(0z34, 0x12))
 
+  CheckDefFailure(['insert("a", 1)'], 'E1013: Argument 1: type mismatch, expected list<any> but got string', 1)
   CheckDefFailure(['insert([2, 3], "a")'], 'E1013: Argument 2: type mismatch, expected number but got string', 1)
   CheckDefFailure(['insert([2, 3], 1, "x")'], 'E1013: Argument 3: type mismatch, expected number but got string', 1)
 enddef

@@ -281,6 +281,7 @@ endfunc
 
 func Test_set_register()
   call assert_fails("call setreg('#', 200)", 'E86:')
+  call assert_fails("call setreg('a', test_unknown())", 'E908:')
 
   edit Xfile_alt_1
   let b1 = bufnr('')
@@ -469,6 +470,14 @@ func Test_get_reginfo()
 
   let info = getreginfo('"')
   call assert_equal('z', info.points_to)
+
+  let @a="a1b2"
+  nnoremap <F2> <Cmd>let g:RegInfo = getreginfo()<CR>
+  exe "normal \"a\<F2>"
+  call assert_equal({'regcontents': ['a1b2'], 'isunnamed': v:false,
+        \ 'regtype': 'v'}, g:RegInfo)
+  nunmap <F2>
+  unlet g:RegInfo
 
   bwipe!
 endfunc
