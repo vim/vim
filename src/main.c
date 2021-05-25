@@ -3174,35 +3174,63 @@ source_startup_scripts(mparm_T *parmp)
 	 * - second user exrc file ($VIM/.exrc for Dos)
 	 * The first that exists is used, the rest is ignored.
 	 */
-	if (process_env((char_u *)"VIMINIT", TRUE) != OK)
-	{
-	    if (do_source((char_u *)USR_VIMRC_FILE, TRUE,
-						      DOSO_VIMRC, NULL) == FAIL
-#ifdef USR_VIMRC_FILE2
-		&& do_source((char_u *)USR_VIMRC_FILE2, TRUE,
-						      DOSO_VIMRC, NULL) == FAIL
-#endif
-#ifdef USR_VIMRC_FILE3
-		&& do_source((char_u *)USR_VIMRC_FILE3, TRUE,
-						      DOSO_VIMRC, NULL) == FAIL
-#endif
-#ifdef USR_VIMRC_FILE4
-		&& do_source((char_u *)USR_VIMRC_FILE4, TRUE,
-						      DOSO_VIMRC, NULL) == FAIL
-#endif
-		&& process_env((char_u *)"EXINIT", FALSE) == FAIL
-		&& do_source((char_u *)USR_EXRC_FILE, FALSE,
-						       DOSO_NONE, NULL) == FAIL
+
+    // New implementation
+    Bool foundFile = False;
+    if (process_env((char_u *)"VIMINIT", TRUE) != OK)
+    {
+        if ((getenv("XDG_CONFIG_HOME")) && do_source((char_u *)"$XDG_CONFIG_HOME/vim/vimrc", TRUE, DOSO_VIMRC, NULL) == OK)
+        {
+            //Everything is alright
+            foundFile = True;
+        }
+        else if (do_source((char_u *)"$HOME/.config/vim/vimrc", TRUE, DOSO_VIMRC, NULL) == OK)
+        {
+            foundFile = True;
+            // std::cout << "vimrc detected in ($HOME/.config/vim), but $XDG_CONFIG_HOME is not set. Set and move it to $XDG_CONFIG_HOME/vim/vimrc";
+        }
+        else if (do_source((char_u *)"$HOME/.config/.vimrc", TRUE, DOSO_VIMRC, NULL) == OK)
+        {
+            foundFile = True;
+            // std::cout << ".vimrc detected in legacy directory ($HOME/.config), but $XDG_CONFIG_HOME is not set. Set and move it to $XDG_CONFIG_HOME/vim/vimrc";
+        }
+        else if (do_source((char_u *)"$HOME/.vim/vimrc", TRUE, DOSO_VIMRC, NULL) == OK)
+        {
+            foundFile = True;
+            // std::cout << "vimrc detected in legacy directory ($HOME/.vim). Move it to $XDG_CONFIG_HOME/vim/vimrc";
+        }
+        else if (do_source((char_u *)"$HOME/.vimrc", TRUE, DOSO_VIMRC, NULL) == OK)
+        {
+            foundFile = True;
+            // std::cout << ".vimrc detected in legacy directory ($HOME). Move it to $XDG_CONFIG_HOME/vim/vimrc";
+        }
+        else if (getenv("XDG_CONFIG_DIRS"))
+        {
+            char *split_string = strtok(getenv("XDG_CONFIG_DIRS"), ":");
+            while (split_string != NULL)
+            {
+                char *rc_fullpath = strcat(split_string, 'vim/vimrc');
+                if (do_source((char_u *)rc_fullpath, TRUE, DOSO_VIMRC, NULL) == OK)
+                {
+                    foundFile = True;
+                    // Break out on first match since we prioritize order
+                    break;
+                }
+                split_string = strtok(NULL, ":");
+            }
+        }
+    }
+    if (process_env((char_u *)"EXINIT", FALSE) == FAIL
+        && do_source((char_u *)USR_EXRC_FILE, FALSE, DOSO_NONE, NULL) == FAIL
 #ifdef USR_EXRC_FILE2
-		&& do_source((char_u *)USR_EXRC_FILE2, FALSE,
-						       DOSO_NONE, NULL) == FAIL
+        && do_source((char_u *)USR_EXRC_FILE2, FALSE, DOSO_NONE, NULL) == FAIL
 #endif
-		&& !has_dash_c_arg)
-	    {
-		// When no .vimrc file was found: source defaults.vim.
-		do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE, NULL);
-	    }
-	}
+        && !has_dash_c_arg
+        && !foundFile)
+        {
+            // When no .vimrc file was found: source defaults.vim.
+            do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE, NULL);
+        }
 
 	/*
 	 * Read initialization commands from ".vimrc" or ".exrc" in current
