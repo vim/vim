@@ -1580,6 +1580,8 @@ def Test_expr7t()
       var ln: list<number> = [<number>g:anint, <number>g:thefour]
       var nr = <number>234
       assert_equal(234, nr)
+      var b: bool = <bool>1
+      assert_equal(true, b)
       var text =
             <string>
               'text'
@@ -1591,6 +1593,7 @@ def Test_expr7t()
 
   CheckDefAndScriptFailure(["var x = <nr>123"], 'E1010:', 1)
   CheckDefFailure(["var x = <number>"], 'E1097:', 3)
+  CheckDefFailure(["var x = <number>string(1)"], 'E1012:', 1)
   CheckScriptFailure(['vim9script', "var x = <number>"], 'E15:', 2)
   CheckDefAndScriptFailure(["var x = <number >123"], 'E1068:', 1)
   CheckDefAndScriptFailure(["var x = <number 123"], 'E1104:', 1)
