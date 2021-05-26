@@ -3823,11 +3823,13 @@ update_popups(void (*win_update)(win_T *wp))
 	if (wp->w_popup_title != NULL)
 	{
 	    char_u  *title_text;
+	    int      title_byte_len;
 
-	    title_len = (int)STRLEN(wp->w_popup_title);
-	    title_text = alloc(title_len + 1);
+	    title_len = (int)MB_CHARLEN(wp->w_popup_title);
+	    title_byte_len = (int)STRLEN(wp->w_popup_title);
+	    title_text = alloc(title_byte_len + 1);
 	    trunc_string(wp->w_popup_title, title_text,
-					       total_width - 2, title_len + 1);
+					       total_width - 2, title_byte_len + 1);
 	    screen_puts(title_text, wp->w_winrow, title_wincol,
 		      wp->w_popup_border[0] > 0 ? border_attr[0] : popup_attr);
 	    vim_free(title_text);
