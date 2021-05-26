@@ -2772,7 +2772,8 @@ ml_append_int(
 	len = (colnr_T)STRLEN(line) + 1;	// space needed for the text
 
 #ifdef FEAT_PROP_POPUP
-    if (curbuf->b_has_textprop && lnum > 0 && !(flags & ML_APPEND_UNDO))
+    if (curbuf->b_has_textprop && lnum > 0
+			     && !(flags & (ML_APPEND_UNDO | ML_APPEND_NOPROP)))
 	// Add text properties that continue from the previous line.
 	add_text_props_for_append(buf, lnum, &line, &len, &tofree);
 #endif
@@ -3992,7 +3993,11 @@ ml_flush_line(buf_T *buf)
 		 */
 		// How about handling errors???
 		(void)ml_append_int(buf, lnum, new_line, new_len,
-			 (dp->db_index[idx] & DB_MARKED) ? ML_APPEND_MARK : 0);
+			 ((dp->db_index[idx] & DB_MARKED) ? ML_APPEND_MARK : 0)
+#ifdef FEAT_PROP_POPUP
+			     | ML_APPEND_NOPROP
+#endif
+			 );
 		(void)ml_delete_int(buf, lnum, 0);
 	    }
 	}

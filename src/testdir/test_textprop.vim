@@ -1469,5 +1469,24 @@ func Test_prop_one_line_window()
   bwipe!
 endfunc
 
+" This was calling ml_append_int() and copy a text property from a previous
+" line at the wrong moment.  Exact text length matters.
+def Test_prop_splits_data_block()
+  new
+  var lines: list<string> = [repeat('x', 35)]->repeat(41)
+			+ [repeat('!', 35)]
+			+ [repeat('x', 35)]->repeat(56)
+  lines->setline(1)
+  prop_type_add('someprop', {highlight: 'ErrorMsg'})
+  prop_add(1, 27, {end_lnum: 1, end_col: 70, type: 'someprop'})
+  prop_remove({type: 'someprop'}, 1)
+  prop_add(35, 22, {end_lnum: 43, end_col: 43, type: 'someprop'})
+  prop_remove({type: 'someprop'}, 35, 43)
+  assert_equal([], prop_list(42))
+
+  bwipe!
+  prop_type_delete('someprop')
+enddef
+
 
 " vim: shiftwidth=2 sts=2 expandtab
