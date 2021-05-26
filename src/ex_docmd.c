@@ -3392,8 +3392,11 @@ find_ex_command(
     int		len;
     char_u	*p;
     int		i;
+#ifndef FEAT_EVAL
+    int		vim9 = FALSE;
+#else
+    int		vim9 = in_vim9script();
 
-#ifdef FEAT_EVAL
     /*
      * Recognize a Vim9 script function/method call and assignment:
      * "lvar = value", "lvar(arg)", "[1, 2 3]->Func()"
@@ -3556,12 +3559,13 @@ find_ex_command(
      * - the "d" command can directly be followed by 'l' or 'p' flag.
      */
     p = eap->cmd;
-    if (*p == 'k')
+    if (!vim9 && *p == 'k')
     {
 	eap->cmdidx = CMD_k;
 	++p;
     }
-    else if (p[0] == 's'
+    else if (!vim9
+	    && p[0] == 's'
 	    && ((p[1] == 'c' && (p[2] == NUL || (p[2] != 's' && p[2] != 'r'
 			&& (p[3] == NUL || (p[3] != 'i' && p[4] != 'p')))))
 		|| p[1] == 'g'
@@ -3594,7 +3598,7 @@ find_ex_command(
 	if (p == eap->cmd && vim_strchr((char_u *)"@*!=><&~#}", *p) != NULL)
 	    ++p;
 	len = (int)(p - eap->cmd);
-	if (*eap->cmd == 'd' && (p[-1] == 'l' || p[-1] == 'p'))
+	if (!vim9 && *eap->cmd == 'd' && (p[-1] == 'l' || p[-1] == 'p'))
 	{
 	    // Check for ":dl", ":dell", etc. to ":deletel": that's
 	    // :delete with the 'l' flag.  Same for 'p'.
@@ -3671,7 +3675,7 @@ find_ex_command(
 
 #ifdef FEAT_EVAL
     if (eap->cmdidx < CMD_SIZE
-	    && in_vim9script()
+	    && vim9
 	    && !IS_WHITE_OR_NUL(*p) && *p != '\n' && *p != '!'
 	    && (eap->cmdidx < 0 ||
 		(cmdnames[eap->cmdidx].cmd_argt & EX_NONWHITE_OK) == 0))
@@ -3802,9 +3806,21 @@ f_fullcommand(typval_T *argvars, typval_T *rettv)
 
     ea.cmd = (*name == '2' || *name == '3') ? name + 1 : name;
     ea.cmdidx = (cmdidx_T)0;
+    ea.addr_count = 0;
     p = find_ex_command(&ea, NULL, NULL, NULL);
     if (p == NULL || ea.cmdidx == CMD_SIZE)
 	return;
+    if (in_vim9script())
+    {
+	int	     res;
+
+	++emsg_silent;
+	res = not_in_vim9(&ea);
+	--emsg_silent;
+
+	if (res == FAIL)
+	    return;
+    }
 
     rettv->vval.v_string = vim_strsave(IS_USER_CMDIDX(ea.cmdidx)
 				    ? get_user_commands(NULL, ea.useridx)

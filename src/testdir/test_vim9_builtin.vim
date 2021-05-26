@@ -554,6 +554,29 @@ def Test_filter_missing_argument()
   res->assert_equal({aa: [1], ac: [3]})
 enddef
 
+def Test_fullcommand()
+  assert_equal('next', fullcommand('n'))
+  assert_equal('noremap', fullcommand('no'))
+  assert_equal('noremap', fullcommand('nor'))
+  assert_equal('normal', fullcommand('norm'))
+
+  assert_equal('', fullcommand('k'))
+  assert_equal('keepmarks', fullcommand('ke'))
+  assert_equal('keepmarks', fullcommand('kee'))
+  assert_equal('keepmarks', fullcommand('keep'))
+  assert_equal('keepjumps', fullcommand('keepj'))
+
+  assert_equal('dlist', fullcommand('dl'))
+  assert_equal('', fullcommand('dp'))
+  assert_equal('delete', fullcommand('del'))
+  assert_equal('', fullcommand('dell'))
+  assert_equal('', fullcommand('delp'))
+
+  assert_equal('srewind', fullcommand('sre'))
+  assert_equal('scriptnames', fullcommand('scr'))
+  assert_equal('', fullcommand('scg'))
+enddef
+
 def Test_garbagecollect()
   garbagecollect(true)
 enddef

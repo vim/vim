@@ -3844,12 +3844,14 @@ def Test_unsupported_commands()
   var lines =<< trim END
       ka
   END
-  CheckDefAndScriptFailure(lines, 'E1100:')
+  CheckDefFailure(lines, 'E476:')
+  CheckScriptFailure(['vim9script'] + lines, 'E492:')
 
   lines =<< trim END
       :1ka
   END
-  CheckDefAndScriptFailure(lines, 'E481:')
+  CheckDefFailure(lines, 'E476:')
+  CheckScriptFailure(['vim9script'] + lines, 'E492:')
 
   lines =<< trim END
     t
