@@ -152,7 +152,7 @@ MINOR = 2
 #   > cd src
 #   > msvc2015.bat
 # - Build the console binary:
-#   > nmake -f Mae_mvc.mak
+#   > nmake -f Make_mvc.mak
 # - Run the tests and check the output:
 #   > nmake -f Make_mvc.mak testclean
 #   > nmake -f Make_mvc.mak test
