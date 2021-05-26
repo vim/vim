@@ -475,6 +475,7 @@ func Test_fullcommand()
   for [in, want] in items(tests)
     call assert_equal(want, fullcommand(in))
   endfor
+  call assert_equal('', fullcommand(test_null_string()))
 
   call assert_equal('syntax', 'syn'->fullcommand())
 endfunc
