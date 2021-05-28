@@ -1222,6 +1222,14 @@ def Test_expr5_vim9script()
   END
   CheckDefAndScriptFailure(lines, 'E1004:', 1)
 
+  lines =<< trim END
+      vim9script
+      echo 'a'
+          ..'b'
+      # comment
+  END
+  CheckScriptFailure(lines, 'E1004: White space required before and after ''..'' at "..''b''"', 3)
+
   # check invalid string concatenation
   lines =<< trim END
       echo 'a' .. [1]
