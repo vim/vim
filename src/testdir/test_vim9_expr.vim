@@ -1603,7 +1603,7 @@ func Test_expr6_fails()
     call CheckDefAndScriptFailure2(["var x = 0.7[1]"], 'E1107:', 'E806:', 1)
   endif
 
-  for op in ['+', '-']
+  for op in ['*', '/', '%']
     let lines =<< trim END
       vim9script
       var x = 1
