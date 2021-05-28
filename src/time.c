@@ -252,7 +252,6 @@ f_reltimestr(typval_T *argvars UNUSED, typval_T *rettv)
     void
 f_strftime(typval_T *argvars, typval_T *rettv)
 {
-    char_u	result_buf[256];
     struct tm	tmval;
     struct tm	*curtime;
     time_t	seconds;
@@ -271,6 +270,20 @@ f_strftime(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_string = vim_strsave((char_u *)_("(Invalid)"));
     else
     {
+# ifdef MSWIN
+	WCHAR	    result_buf[256];
+	WCHAR	    *wp;
+
+	wp = enc_to_utf16(p, NULL);
+	if (wp != NULL)
+	    (void)wcsftime(result_buf, sizeof(result_buf) / sizeof(WCHAR),
+								wp, curtime);
+	else
+	    result_buf[0] = NUL;
+	rettv->vval.v_string = utf16_to_enc(result_buf, NULL);
+	vim_free(wp);
+# else
+	char_u	    result_buf[256];
 	vimconv_T   conv;
 	char_u	    *enc;
 
@@ -296,6 +309,7 @@ f_strftime(typval_T *argvars, typval_T *rettv)
 	// Release conversion descriptors
 	convert_setup(&conv, NULL, NULL);
 	vim_free(enc);
+# endif
     }
 }
 # endif
