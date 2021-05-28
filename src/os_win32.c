@@ -1180,6 +1180,8 @@ static int g_fMouseActive = FALSE;  // mouse enabled
 static int g_nMouseClick = -1;	    // mouse status
 static int g_xMouse;		    // mouse x coordinate
 static int g_yMouse;		    // mouse y coordinate
+static DWORD g_cmodein = 0;         // Original console input mode
+static DWORD g_cmodeout = 0;        // Original console output mode
 
 /*
  * Enable or disable mouse input
@@ -1200,11 +1202,17 @@ mch_setmouse(int on)
     GetConsoleMode(g_hConIn, &cmodein);
 
     if (g_fMouseActive)
+    {
 	cmodein |= ENABLE_MOUSE_INPUT;
+	cmodein &= ~ENABLE_QUICK_EDIT_MODE;
+    }
     else
+    {
 	cmodein &= ~ENABLE_MOUSE_INPUT;
+	cmodein |= g_cmodein & ENABLE_QUICK_EDIT_MODE;
+    }
 
-    SetConsoleMode(g_hConIn, cmodein);
+    SetConsoleMode(g_hConIn, cmodein | ENABLE_EXTENDED_FLAGS);
 }
 
 
@@ -2782,8 +2790,6 @@ SaveConsoleTitleAndIcon(void)
 static int g_fWindInitCalled = FALSE;
 static int g_fTermcapMode = FALSE;
 static CONSOLE_CURSOR_INFO g_cci;
-static DWORD g_cmodein = 0;
-static DWORD g_cmodeout = 0;
 
 /*
  * non-GUI version of mch_init().
@@ -2924,7 +2930,7 @@ mch_exit_c(int r)
     }
 
     SetConsoleCursorInfo(g_hConOut, &g_cci);
-    SetConsoleMode(g_hConIn,  g_cmodein);
+    SetConsoleMode(g_hConIn,  g_cmodein | ENABLE_EXTENDED_FLAGS);
     SetConsoleMode(g_hConOut, g_cmodeout);
 
 # ifdef DYNAMIC_GETTEXT
@@ -3747,7 +3753,14 @@ mch_settmode(tmode_T tmode)
 	cmodein &= ~(ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT |
 		     ENABLE_ECHO_INPUT);
 	if (g_fMouseActive)
+	{
 	    cmodein |= ENABLE_MOUSE_INPUT;
+	    cmodein &= ~ENABLE_QUICK_EDIT_MODE;
+	}
+	else
+	{
+	    cmodein |= g_cmodein & ENABLE_QUICK_EDIT_MODE;
+	}
 	cmodeout &= ~(
 # ifdef FEAT_TERMGUICOLORS
 	    // Do not turn off the ENABLE_PROCESSED_OUTPUT flag when using
@@ -3766,7 +3779,7 @@ mch_settmode(tmode_T tmode)
 	cmodeout |= (ENABLE_PROCESSED_OUTPUT | ENABLE_WRAP_AT_EOL_OUTPUT);
 	bEnableHandler = FALSE;
     }
-    SetConsoleMode(g_hConIn, cmodein);
+    SetConsoleMode(g_hConIn, cmodein | ENABLE_EXTENDED_FLAGS);
     SetConsoleMode(g_hConOut, cmodeout);
     SetConsoleCtrlHandler(handler_routine, bEnableHandler);
 
@@ -5621,11 +5634,17 @@ termcap_mode_start(void)
 
     GetConsoleMode(g_hConIn, &cmodein);
     if (g_fMouseActive)
+    {
 	cmodein |= ENABLE_MOUSE_INPUT;
+	cmodein &= ~ENABLE_QUICK_EDIT_MODE;
+    }
     else
+    {
 	cmodein &= ~ENABLE_MOUSE_INPUT;
+	cmodein |= g_cmodein & ENABLE_QUICK_EDIT_MODE;
+    }
     cmodein |= ENABLE_WINDOW_INPUT;
-    SetConsoleMode(g_hConIn, cmodein);
+    SetConsoleMode(g_hConIn, cmodein | ENABLE_EXTENDED_FLAGS);
 
     redraw_later_clear();
     g_fTermcapMode = TRUE;
@@ -5650,7 +5669,8 @@ termcap_mode_end(void)
 
     GetConsoleMode(g_hConIn, &cmodein);
     cmodein &= ~(ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT);
-    SetConsoleMode(g_hConIn, cmodein);
+    cmodein |= g_cmodein & ENABLE_QUICK_EDIT_MODE;
+    SetConsoleMode(g_hConIn, cmodein | ENABLE_EXTENDED_FLAGS);
 
 # ifdef FEAT_RESTORE_ORIG_SCREEN
     cb = exiting ? &g_cbOrig : &g_cbNonTermcap;
