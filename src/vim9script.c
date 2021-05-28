@@ -709,10 +709,10 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
     }
     name = vim_strnsave(arg, p - arg);
 
-    // parse type
+    // parse type, check for reserved name
     p = skipwhite(p + 1);
     type = parse_type(&p, &si->sn_type_list, TRUE);
-    if (type == NULL)
+    if (type == NULL || check_reserved_name(name) == FAIL)
     {
 	vim_free(name);
 	return p;
@@ -972,6 +972,28 @@ check_script_var_type(
     }
 
     return OK; // not really
+}
+
+// words that cannot be used as a variable
+static char *reserved[] = {
+    "true",
+    "false",
+    "null",
+    NULL
+};
+
+    int
+check_reserved_name(char_u *name)
+{
+    int idx;
+
+    for (idx = 0; reserved[idx] != NULL; ++idx)
+	if (STRCMP(reserved[idx], name) == 0)
+	{
+	    semsg(_(e_cannot_use_reserved_name), name);
+	    return FAIL;
+	}
+    return OK;
 }
 
 #endif // FEAT_EVAL

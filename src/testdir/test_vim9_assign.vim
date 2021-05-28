@@ -249,6 +249,13 @@ def Test_assignment()
   END
 enddef
 
+def Test_reserved_name()
+  for name in ['true', 'false', 'null']
+    CheckDefExecAndScriptFailure(['var ' .. name .. ' =  0'], 'E1034:')
+    CheckDefExecAndScriptFailure(['var ' .. name .. ': bool'], 'E1034:')
+  endfor
+enddef
+
 def Test_skipped_assignment()
   var lines =<< trim END
       for x in []

@@ -5594,14 +5594,6 @@ assignment_len(char_u *p, int *heredoc)
     return 0;
 }
 
-// words that cannot be used as a variable
-static char *reserved[] = {
-    "true",
-    "false",
-    "null",
-    NULL
-};
-
 /*
  * Generate the load instruction for "name".
  */
@@ -5995,16 +5987,9 @@ compile_lhs(
 	}
 	else
 	{
-	    int	    idx;
-
 	    // No specific kind of variable recognized, just a name.
-	    for (idx = 0; reserved[idx] != NULL; ++idx)
-		if (STRCMP(reserved[idx], lhs->lhs_name) == 0)
-		{
-		    semsg(_(e_cannot_use_reserved_name), lhs->lhs_name);
-		    return FAIL;
-		}
-
+	    if (check_reserved_name(lhs->lhs_name) == FAIL)
+		return FAIL;
 
 	    if (lookup_local(var_start, lhs->lhs_varlen,
 					     &lhs->lhs_local_lvar, cctx) == OK)
