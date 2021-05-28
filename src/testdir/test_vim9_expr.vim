@@ -172,11 +172,23 @@ func Test_expr1_trinary_fails()
   call CheckDefAndScriptFailure(["var x = 1? 'one' : 'two'"], msg, 1)
   call CheckDefAndScriptFailure(["var x = 1 ?'one' : 'two'"], msg, 1)
   call CheckDefAndScriptFailure(["var x = 1?'one' : 'two'"], msg, 1)
+  let lines =<< trim END
+    var x = 1
+     ?'one' : 'two'
+     # comment
+  END
+  call CheckDefAndScriptFailure(lines, 'E1004: White space required before and after ''?'' at "?''one'' : ''two''"', 2)
 
   let msg = "White space required before and after ':'"
   call CheckDefAndScriptFailure(["var x = 1 ? 'one': 'two'"], msg, 1)
   call CheckDefAndScriptFailure(["var x = 1 ? 'one' :'two'"], msg, 1)
   call CheckDefAndScriptFailure(["var x = 1 ? 'one':'two'"], msg, 1)
+  let lines =<< trim END
+    var x = 1 ? 'one'
+          :'two'
+          # Comment
+  END
+  call CheckDefAndScriptFailure(lines, 'E1004: White space required before and after '':'' at ":''two''"', 2)
 
   call CheckDefAndScriptFailure(["var x = 'x' ? 'one' : 'two'"], 'E1135:', 1)
   call CheckDefAndScriptFailure(["var x = 0z1234 ? 'one' : 'two'"], 'E974:', 1)
@@ -229,6 +241,12 @@ def Test_expr1_falsy()
   call CheckDefAndScriptFailure(["var x = 1?? 'one' : 'two'"], msg, 1)
   call CheckDefAndScriptFailure(["var x = 1 ??'one' : 'two'"], msg, 1)
   call CheckDefAndScriptFailure(["var x = 1??'one' : 'two'"], msg, 1)
+  lines =<< trim END
+    var x = 1
+      ??'one' : 'two'
+      #comment
+  END
+  CheckDefAndScriptFailure(lines, 'E1004: White space required before and after ''??'' at "??''one'' : ''two''"', 2)
 enddef
 
 def Record(val: any): any
@@ -376,6 +394,13 @@ def Test_expr2_fails()
 
   call CheckDefAndScriptFailure2(["var x = [] || false"], 'E1012: Type mismatch; expected bool but got list<unknown>', 'E745:', 1)
 
+  var lines =<< trim END
+    vim9script
+    echo false
+      ||true
+    # comment
+  END
+  CheckScriptFailure(lines, 'E1004: White space required before and after ''||'' at "||true"', 3)
 enddef
 
 " test &&
@@ -476,13 +501,19 @@ def Test_expr3_fails()
   CheckDefAndScriptFailure(["var x = 1&&2"], msg, 1)
   CheckDefAndScriptFailure(["var x = 1 &&2"], msg, 1)
   CheckDefAndScriptFailure(["var x = 1&& 2"], msg, 1)
+  var lines =<< trim END
+    var x = 1
+      &&2
+    # comment
+  END
+  CheckDefAndScriptFailure(lines, 'E1004: White space required before and after ''&&'' at "&&2"', 2)
 
   g:vals = []
   CheckDefAndScriptFailure2(["if 'yes' && 0", 'echo 0', 'endif'], 'E1012: Type mismatch; expected bool but got string', 'E1135: Using a String as a Bool', 1)
 
   CheckDefExecAndScriptFailure(['assert_equal(false, Record(1) && Record(4) && Record(0))'], 'E1023: Using a Number as a Bool: 4', 1)
 
-  var lines =<< trim END
+  lines =<< trim END
       if 3
           && true
       endif
@@ -976,6 +1007,12 @@ def Test_expr4_vim9script()
   END
   CheckDefAndScriptFailure(lines, 'E1004:', 1)
 
+  for op in ['==', '>', '>=', '<', '<=', '=~', '!~', 'is', 'isnot']
+    lines = ["echo 'aaa'", op .. "'bbb'", '# comment']
+    var msg = printf("E1004: White space required before and after '%s'", op)
+    CheckDefAndScriptFailure(lines, msg, 2)
+  endfor
+
   lines =<< trim END
     echo len('xxx') == 3
   END
@@ -1264,6 +1301,12 @@ def Test_expr5_vim9script()
       bwipe!
   END
   CheckDefAndScriptFailure(lines, "E1004: White space required before and after '/' at \"/pattern", 3)
+
+  for op in ['+', '-']
+    lines = ['var x = 1', op .. '2', '# comment']
+    var msg = printf("E1004: White space required before and after '%s' at \"%s2\"", op, op)
+    CheckDefAndScriptFailure(lines, msg, 2)
+  endfor
 enddef
 
 def Test_expr5_vim9script_channel()
@@ -1545,6 +1588,12 @@ func Test_expr6_fails()
   if has('float')
     call CheckDefAndScriptFailure2(["var x = 0.7[1]"], 'E1107:', 'E806:', 1)
   endif
+
+  for op in ['*', '/', '%']
+    let lines = ['var x = 1', op .. '2', '# comment']
+    let msg = printf("E1004: White space required before and after '%s' at \"%s2\"", op, op)
+    call CheckDefAndScriptFailure(lines, msg, 2)
+  endfor
 endfunc
 
 func Test_expr6_float_fails()

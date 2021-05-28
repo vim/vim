@@ -5187,7 +5187,7 @@ compile_expr1(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	if (!IS_WHITE_OR_NUL(**arg) || !IS_WHITE_OR_NUL(p[1 + op_falsy]))
 	{
 	    semsg(_(e_white_space_required_before_and_after_str_at_str),
-						  op_falsy ? "??" : "?", *arg);
+						     op_falsy ? "??" : "?", p);
 	    return FAIL;
 	}
 
