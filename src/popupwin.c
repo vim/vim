@@ -3822,17 +3822,29 @@ update_popups(void (*win_update)(win_T *wp))
 	title_wincol = wp->w_wincol + 1;
 	if (wp->w_popup_title != NULL)
 	{
-	    char_u  *title_text;
+	    title_len = (int)MB_CHARLEN(wp->w_popup_title);
 
-	    title_len = (int)STRLEN(wp->w_popup_title);
-	    title_text = alloc(title_len + 1);
-	    trunc_string(wp->w_popup_title, title_text,
-					       total_width - 2, title_len + 1);
-	    screen_puts(title_text, wp->w_winrow, title_wincol,
-		      wp->w_popup_border[0] > 0 ? border_attr[0] : popup_attr);
-	    vim_free(title_text);
+	    // truncate the title if too long
 	    if (title_len > total_width - 2)
+	    {
+		int	title_byte_len = (int)STRLEN(wp->w_popup_title);
+		char_u  *title_text = alloc(title_byte_len + 1);
+
+		if (title_text != NULL)
+		{
+		    trunc_string(wp->w_popup_title, title_text,
+					  total_width - 2, title_byte_len + 1);
+		    screen_puts(title_text, wp->w_winrow, title_wincol,
+				  wp->w_popup_border[0] > 0
+						? border_attr[0] : popup_attr);
+		    vim_free(title_text);
+		}
+
 		title_len = total_width - 2;
+	    }
+	    else
+		screen_puts(wp->w_popup_title, wp->w_winrow, title_wincol,
+		      wp->w_popup_border[0] > 0 ? border_attr[0] : popup_attr);
 	}
 
 	wincol = wp->w_wincol - wp->w_popup_leftoff;
