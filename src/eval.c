@@ -2734,8 +2734,10 @@ eval4(char_u **arg, typval_T *rettv, evalarg_T *evalarg)
 	int	    evaluate = evalarg == NULL
 				   ? 0 : (evalarg->eval_flags & EVAL_EVALUATE);
 
-	if (getnext)
+	if (getnext) {
 	    *arg = eval_next_line(evalarg);
+	    p = *arg;
+	}
 	else if (evaluate && vim9script && !VIM_ISWHITE(**arg))
 	{
 	    error_white_both(*arg, len);
