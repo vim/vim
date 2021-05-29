@@ -1981,6 +1981,12 @@ win_line(
 		    // TODO: is passing p for start of the line OK?
 		    n_extra = win_lbr_chartabsize(wp, line, p, (colnr_T)vcol,
 								    NULL) - 1;
+
+		    // We have just drawn the showbreak value, no need to add
+		    // space for it again
+		    if (vcol == vcol_sbr)
+			n_extra -= MB_CHARLEN(get_showbreak_value(wp));
+
 		    if (c == TAB && n_extra + col > wp->w_width)
 # ifdef FEAT_VARTABS
 			n_extra = tabstop_padding(vcol, wp->w_buffer->b_p_ts,
