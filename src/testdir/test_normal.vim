@@ -1987,7 +1987,7 @@ func Test_normal30_changecase()
   set whichwrap&
 
   " try changing the case with a double byte encoding (DBCS)
-  %d _
+  %bw!
   let enc = &enc
   set encoding=cp932
   call setline(1, "\u8470")
