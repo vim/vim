@@ -280,6 +280,7 @@ endfunc
 func Test_defaults_error()
   " Can't catch the output of gvim.
   CheckNotGui
+  CheckNotMSWindows
 
   let out = system('VIMRUNTIME=/tmp ' .. GetVimCommand() .. ' --clean -cq')
   call assert_match("E1187: Failed to source defaults.vim", out)
