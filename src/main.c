@@ -3127,9 +3127,11 @@ source_startup_scripts(mparm_T *parmp)
      */
     if (parmp->use_vimrc != NULL)
     {
-	if (STRCMP(parmp->use_vimrc, "DEFAULTS") == 0 &&
-	    do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE, NULL) != OK)
-	    semsg(_("EXXX: Failed to load defaults.vim"));
+	if (STRCMP(parmp->use_vimrc, "DEFAULTS") == 0)
+	{
+	    if (do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE, NULL) != OK)
+		emsg(e_failed_to_load_defaults);
+	}
 	else if (STRCMP(parmp->use_vimrc, "NONE") == 0
 				     || STRCMP(parmp->use_vimrc, "NORC") == 0)
 	{
@@ -3204,7 +3206,7 @@ source_startup_scripts(mparm_T *parmp)
 		// When no .vimrc file was found: source defaults.vim.
 		ret = do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE, NULL);
 		if (ret == FAIL)
-		    semsg(_("Failed to load defaults.vim"));
+		    emsg(e_failed_to_load_defaults);
 	    }
 	}
 

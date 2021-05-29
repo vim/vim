@@ -1036,7 +1036,7 @@ giving the mapping.
 
 
 Defaults without a .vimrc file ~
-							*defaults.vim*
+							*defaults.vim* *E1187*
 If Vim is started normally and no user vimrc file is found, the
 $VIMRUNTIME/defaults.vim script is loaded.  This will set 'compatible' off,
 switch on syntax highlighting and a few more things.  See the script for
