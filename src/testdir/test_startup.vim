@@ -276,6 +276,19 @@ func Test_V_arg()
    call assert_match("sourcing \"$VIMRUNTIME[\\/]defaults\.vim\"\r\nline 1: \" The default vimrc file\..*  verbose=15\n", out)
 endfunc
 
+" Test that an error is shown when the defaults.vim file could not be read
+func Test_defaults_error()
+  " Can't catch the output of gvim.
+  CheckNotGui
+  CheckNotMSWindows
+
+  let out = system('VIMRUNTIME=/tmp ' .. GetVimCommand() .. ' --clean -cq')
+  call assert_match("E1187: Failed to source defaults.vim", out)
+
+  let out = system('VIMRUNTIME=/tmp ' .. GetVimCommand() .. ' -u DEFAULTS -cq')
+  call assert_match("E1187: Failed to source defaults.vim", out)
+endfunc
+
 " Test the '-q [errorfile]' argument.
 func Test_q_arg()
   CheckFeature quickfix

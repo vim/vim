@@ -413,3 +413,5 @@ EXTERN char e_missing_redir_end[]
 	INIT(= N_("E1185: Missing :redir END"));
 EXTERN char e_expression_does_not_result_in_value_str[]
 	INIT(= N_("E1186: Expression does not result in a value: %s"));
+EXTERN char e_failed_to_source_defaults[]
+	INIT(= N_("E1187: Failed to source defaults.vim"));
