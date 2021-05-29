@@ -6144,6 +6144,17 @@ nv_g_cmd(cmdarg_T *cap)
 		i = curwin->w_leftcol + curwin->w_width - col_off - 1;
 		coladvance((colnr_T)i);
 
+		// if the character doesn't fit move one back
+		if (curwin->w_cursor.col > 0
+				       && (*mb_ptr2cells)(ml_get_cursor()) > 1)
+		{
+		    colnr_T vcol;
+
+		    getvvcol(curwin, &curwin->w_cursor, NULL, NULL, &vcol);
+		    if (vcol >= curwin->w_leftcol + curwin->w_width - col_off)
+			--curwin->w_cursor.col;
+		}
+
 		// Make sure we stick in this column.
 		validate_virtcol();
 		curwin->w_curswant = curwin->w_virtcol;
