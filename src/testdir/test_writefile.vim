@@ -501,7 +501,7 @@ func Test_write_file_encoding()
   CheckMSWindows
   let save_encoding = &encoding
   let save_fileencodings = &fileencodings
-  set encoding& fileencodings&
+  set encoding=latin1 fileencodings&
   let text =<< trim END
     1 utf-8 text: Ð”Ð»Ñ Vim version 6.2.  ÐŸÐ¾ÑÐ»ÐµÐ´Ð½ÐµÐµ Ð¸Ð·Ð¼ÐµÐ½ÐµÐ½Ð¸Ðµ: 1970 Jan 01
     2 cp1251 text: Äëÿ Vim version 6.2.  Ïîñëåäíåå èçìåíåíèå: 1970 Jan 01
