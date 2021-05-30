@@ -1279,6 +1279,7 @@ reg_match_visual(void)
     colnr_T	start, end;
     colnr_T	start2, end2;
     colnr_T	cols;
+    colnr_T	curswant;
 
     // Check if the buffer is the current buffer.
     if (rex.reg_buf != curbuf || VIsual.lnum == 0)
@@ -1297,6 +1298,7 @@ reg_match_visual(void)
 	    bot = VIsual;
 	}
 	mode = VIsual_mode;
+	curswant = wp->w_curswant;
     }
     else
     {
@@ -1311,6 +1313,7 @@ reg_match_visual(void)
 	    bot = curbuf->b_visual.vi_start;
 	}
 	mode = curbuf->b_visual.vi_mode;
+	curswant = curbuf->b_visual.vi_curswant;
     }
     lnum = rex.lnum + rex.reg_firstlnum;
     if (lnum < top.lnum || lnum > bot.lnum)
@@ -1331,7 +1334,7 @@ reg_match_visual(void)
 	    start = start2;
 	if (end2 > end)
 	    end = end2;
-	if (top.col == MAXCOL || bot.col == MAXCOL)
+	if (top.col == MAXCOL || bot.col == MAXCOL || curswant == MAXCOL)
 	    end = MAXCOL;
 	cols = win_linetabsize(wp, rex.line, (colnr_T)(rex.input - rex.line));
 	if (cols < start || cols > end - (*p_sel == 'e'))

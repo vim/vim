@@ -984,6 +984,26 @@ func Test_hlsearch_and_visual()
   call delete('Xhlvisual_script')
 endfunc
 
+func Test_hlsearch_block_visual_match()
+  CheckScreendump
+
+  let lines =<< trim END
+    set hlsearch
+    call setline(1, ['aa', 'bbbb', 'cccccc'])
+  END
+  call writefile(lines, 'Xhlsearch_block')
+  let buf = RunVimInTerminal('-S Xhlsearch_block', {'rows': 9, 'cols': 60})
+
+  call term_sendkeys(buf, "G\<C-V>$kk\<Esc>")
+  sleep 100m
+  call term_sendkeys(buf, "/\\%V\<CR>")
+  sleep 100m
+  call VerifyScreenDump(buf, 'Test_hlsearch_block_visual_match', {})
+
+  call StopVimInTerminal(buf)
+  call delete('Xhlsearch_block')
+endfunc
+
 func Test_incsearch_substitute()
   CheckOption incsearch
 
