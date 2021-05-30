@@ -595,7 +595,7 @@ endfunc
 " Test for errors with z command
 func Test_normal_z_error()
   call assert_beeps('normal! z2p')
-  call assert_beeps('normal! zp')
+  call assert_beeps('normal! zq')
 endfunc
 
 func Test_normal15_z_scroll_vert()
