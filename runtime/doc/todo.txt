@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 May 15
+*todo.txt*      For Vim version 8.2.  Last change: 2021 May 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,6 +37,20 @@ browser use: https://github.com/vim/vim/issues/1234
 (replace 1234 with the issue/pull number)
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Geen memory leak?
+
+Crash using outer var from nested lambda:
+	vim9script
+	def F(text: string): func(string): func(string): string
+	  return (arg: string): func(string): string => ((sep: string): string => {
+	      return text .. ' ' .. arg
+	    })
+	enddef
+
+	echo F('hello')(' ')('there')
+
+
 
 Vim9 - Make everything work:
 - function returning nothing should return void instead of zero
@@ -102,6 +116,9 @@ Further Vim9 improvements, possibly after launch:
 
 
 Popup windows:
+- Preview popup not properly updated when it overlaps with completion menu.
+    (Yegappan Lakshmanan, 2021 May 22
+- In some cases prop_remove() does not work correctly. (#8261)
 - Add a flag to make a popup window focusable?
     CTRL-W P cycle over any preview window or focusable popup, end up back in
 	     current window.
@@ -134,6 +151,11 @@ Popup windows:
 - Figure out the size and position better if wrapping inserts indent
 
 Text properties:
+- property is overruled by cursorline. (#8225).
+  Add better control over priority?  Make list of all highlighting, specify
+  where property fits in.
+  Or Should we let the textprop highlight overrule other (e.g. diff) highlight
+  if the priority is above a certain value?  (#7392)
 - Popup attached to text property stays visible when text is no longer
   visible. (#7736)
 - Popup attached to text property stays visible when text is deleted with
@@ -143,8 +165,6 @@ Text properties:
 - "cc" does not call inserted_bytes(). (Axel Forsman, #5763)
 - Combining text property with 'cursorline' does not always work (Billie
   Cleek, #5533)
-- Should we let the textprop highlight overrule other (e.g. diff) highlight if
-  the priority is above a certain value?  (#7392)
 - See remarks at top of src/textprop.c
 
 'incsearch' with :s:
@@ -221,6 +241,11 @@ Terminal emulator window:
 
 Include patch #6290: recognize shell directory change.
 
+MS-Windows GUI: default 'encoding' to "utf-8" ?  (#8221)
+    Add #ifdef MSWIN before enc_locale() in set_init_1().
+    Or just always for MS-Windows?  Conversion to 'termencoding' should always
+    work?
+
 Valgrind reports memory leaks in test_options.
 Valgrind reports overlapping memcpy in
     test_conceal.3
@@ -263,6 +288,9 @@ Also, z= in German on a long word can take a very long time, but CTRL-C to
 interrupt does not work. Where to add ui_breakcheck()?
 
 Remove SPACE_IN_FILENAME ? It is only used for completion.
+
+Searching for \%'> does not find anything when using line Visual selection.
+Probably because it's using MAXCOL.  #8238
 
 Add optional argument to virtcol() that specifies "start", "cursor" or "end"
 to tell which value from getvvcol() should be used. (#7964)
@@ -407,6 +435,8 @@ With bash ":make" does not set v:shell_error.  Possible solution: set
 Using mode() when "/pat" is used in Visual mode returns "v" instead of "c",
 which is not useful.  Return "c/v" instead.  And "c/o" when using "d/pat".
 #6127
+
+Add a cterm attribute for "dimmed" or "faint" text. (#8269)
 
 When 'fileignorecase' is set ":e testfile.c" works to edit TestFile.c, but
 ":find testfile.c" does not ignore case.
@@ -2985,7 +3015,7 @@ More patches:
     vimtutor.vim. (Jan Minar, 2008 Jul 20)
 -   When fsync() fails there is no hint about what went wrong.  Patch by Ben
     Schmidt, 2008 Jul 22.
--   testdir/Make_dos_sh.mak for running tests with MingW. (Bill Mccarthy, 2008
+-   testdir/Make_dos_sh.mak for running tests with MingW. (Bill McCarthy, 2008
     Sep 13)
 -   Replace ccomplete.vim by cppcomplete.vim from www.vim.org?  script 1520 by
     Vissale Neang.  (Martin Stubenschrott) Asked Vissale to make the scripts

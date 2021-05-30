@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 8.2.  Last change: 2021 Mar 22
+*textprop.txt*  For Vim version 8.2.  Last change: 2021 May 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -126,7 +126,7 @@ prop_add({lnum}, {col}, {props})
 		   length	length of text in bytes, can only be used
 				for a property that does not continue in
 				another line; can be zero
-		   end_lnum	line number for the end of text
+		   end_lnum	line number for the end of text (inclusive)
 		   end_col	column just after the text; not used when
 				"length" is present; when {col} and "end_col"
 				are equal, and "end_lnum" is omitted or equal
@@ -228,7 +228,8 @@ prop_remove({props} [, {lnum} [, {lnum-end}]])
 		{lnum-end} is given, remove matching text properties from line
 		{lnum} to {lnum-end} (inclusive).
 		When {lnum} is omitted remove matching text properties from
-		all lines.
+		all lines (this requires going over all lines, thus will be a
+		bit slow for a buffer with many lines).
 
 		{props} is a dictionary with these fields:
 		   id		remove text properties with this ID

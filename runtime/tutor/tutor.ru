@@ -916,7 +916,7 @@
   1. Отредактируйте новый файл `vimrc'. Его расположение зависит от
      используемой системы:
 	:e ~/.vimrc		для Unix
-	:e $VIM/_vimrc		для MS-Windows
+	:e ~/_vimrc		для MS-Windows
 
   2. Теперь прочитайте пример файла `vimrc':
 	:r $VIMRUNTIME/vimrc_example.vim

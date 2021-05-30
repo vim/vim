@@ -888,7 +888,7 @@ Uwaga: Aby ignorowaæ wielko¶æ liter dla jednego wyszukiwania: /ignore\c<ENTER>
 
   1. Pocz±tek edycji pliku "vimrc" zale¿y od Twojego systemu:
      :edit ~/.vimrc	     dla Uniksa
-     :edit $VIM/_vimrc       dla MS-Windows
+     :edit ~/_vimrc          dla MS-Windows
   2. Teraz wczytaj przyk³adowy plik "vimrc":
      :read $VIMRUNTIME/vimrc_example.vim
   3. Zapisz plik:

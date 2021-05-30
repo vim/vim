@@ -9649,7 +9649,7 @@ Files:	    src/Make_cyg.mak, src/Make_ming.mak
 
 Patch 6.2f.016
 Problem:    "vim --version > ff" on non-Unix systems results in a file with a
-	    missing line break at the end. (Bill McCArthy)
+	    missing line break at the end. (Bill McCarthy)
 Solution:   Add a line break.
 Files:	    src/main.c
 
@@ -12864,7 +12864,7 @@ Files:	    src/message.c
 Patch 6.2.444
 Problem:    When adding the 'c' flag to a ":substitute" command it may replace
 	    more times than without the 'c' flag.  Happens for a  match that
-	    starts with "\ze" (Marcel Svitalsk) and when using "\@<=" (Klaus
+	    starts with "\ze" (Marcel Svitalsky) and when using "\@<=" (Klaus
 	    Bosau).
 Solution:   Correct "prev_matchcol" when replacing the line.  Don't replace
 	    the line when the pattern uses look-behind matching.

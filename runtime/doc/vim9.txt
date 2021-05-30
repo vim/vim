@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 Apr 28
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 May 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -101,7 +101,8 @@ script and `:def` functions; details are below:
 	def CallMe(count: number, message: string): bool
 - Call functions without `:call`: >
 	writefile(['done'], 'file.txt')
-- You cannot use `:xit`, `:t`, `:k`, `:append`, `:change`, `:insert`, `:open`
+- You cannot use `:xit`, `:t`, `:k`, `:append`, `:change`, `:insert`, `:open`,
+  and `:s` or `:d` with only flags.
   or curly-braces names.
 - A range before a command must be prefixed with a colon: >
 	:%s/this/that
@@ -1550,7 +1551,7 @@ functions return these values.
 
 If you have any type of value and want to use it as a boolean, use the `!!`
 operator:
-	true: !`!'text'`, `!![99]`, `!!{'x': 1}`, `!!99`
+	true: `!!'text'`, `!![99]`, `!!{'x': 1}`, `!!99`
 	false: `!!''`, `!![]`, `!!{}`
 
 From a language like JavaScript we have this handy construct: >

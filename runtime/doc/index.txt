@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 8.2.  Last change: 2021 Apr 24
+*index.txt*     For Vim version 8.2.  Last change: 2021 May 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1657,9 +1657,9 @@ tag		command		action ~
 |:tab|		:tab		create new tab when opening new window
 |:tag|		:ta[g]		jump to tag
 |:tags|		:tags		show the contents of the tag stack
-|:tcd|		:tcd		change directory for tab page
+|:tcd|		:tc[d]		change directory for tab page
 |:tchdir|	:tch[dir]	change directory for tab page
-|:tcl|		:tc[l]		execute Tcl command
+|:tcl|		:tcl		execute Tcl command
 |:tcldo|	:tcld[o]	execute Tcl command for each line
 |:tclfile|	:tclf[ile]	execute Tcl script file
 |:tearoff|	:te[aroff]	tear-off a menu

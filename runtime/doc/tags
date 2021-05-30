@@ -3317,7 +3317,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :tabs	tabpage.txt	/*:tabs*
 :tag	tagsrch.txt	/*:tag*
 :tags	tagsrch.txt	/*:tags*
-:tc	if_tcl.txt	/*:tc*
+:tc	editing.txt	/*:tc*
 :tcd	editing.txt	/*:tcd*
 :tcd-	editing.txt	/*:tcd-*
 :tch	editing.txt	/*:tch*
@@ -3961,6 +3961,8 @@ E1155	autocmd.txt	/*E1155*
 E116	eval.txt	/*E116*
 E117	eval.txt	/*E117*
 E118	eval.txt	/*E118*
+E1187	starting.txt	/*E1187*
+E1188	cmdline.txt	/*E1188*
 E119	eval.txt	/*E119*
 E12	message.txt	/*E12*
 E120	eval.txt	/*E120*
@@ -9742,6 +9744,7 @@ timestamp	editing.txt	/*timestamp*
 timestamps	editing.txt	/*timestamps*
 tips	tips.txt	/*tips*
 tips.txt	tips.txt	/*tips.txt*
+tmux	syntax.txt	/*tmux*
 todo	todo.txt	/*todo*
 todo.txt	todo.txt	/*todo.txt*
 toggle	options.txt	/*toggle*

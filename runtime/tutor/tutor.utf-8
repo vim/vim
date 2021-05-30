@@ -881,11 +881,11 @@ NOTE:  If you want to ignore case for just one search command, use  \c
 			  ** Enable Vim features **
 
   Vim has many more features than Vi, but most of them are disabled by
-  default.  To start using more features you have to create a "vimrc" file.
+  default.  To start using more features you should create a "vimrc" file.
 
   1. Start editing the "vimrc" file.  This depends on your system:
 	:e ~/.vimrc		for Unix
-	:e $VIM/_vimrc		for Windows
+	:e ~/_vimrc		for Windows
 
   2. Now read the example "vimrc" file contents:
 	:r $VIMRUNTIME/vimrc_example.vim

@@ -778,7 +778,7 @@ Open up a line above this by typing Shift-O while the cursor is on this line.
   1. 開始編輯vimrc文件，這取決于您所使用的操作系統︰
 
      :edit ~/.vimrc		這是Unix系統所使用的命令
-     :edit $VIM/_vimrc		這是Windows系統所使用的命令
+     :edit ~/_vimrc		這是Windows系統所使用的命令
 
   2. 接著導入vimrc范例文件︰
 

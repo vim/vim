@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.2.  Last change: 2021 Apr 05
+*editing.txt*   For Vim version 8.2.  Last change: 2021 May 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1320,8 +1320,8 @@ present in 'cpoptions' and "!" is not used in the command.
 							*:chd* *:chdir*
 :chd[ir][!] [path]	Same as |:cd|.
 
-							*:tcd*
-:tcd[!] {path}		Like |:cd|, but only set the directory for the current
+							*:tc* *:tcd*
+:tc[d][!] {path}	Like |:cd|, but only set the directory for the current
 			tab.  The current window will also use this directory.
 			The current directory is not changed for windows in
 			other tabs and for windows in the current tab that
@@ -1331,7 +1331,7 @@ present in 'cpoptions' and "!" is not used in the command.
 :tch[dir][!]		Same as |:tcd|.
 
 							*:tcd-*
-:tcd[!] -		Change to the previous current directory, before the
+:tc[d][!] -		Change to the previous current directory, before the
 			last ":tcd {path}" command.
 
 							*:lc* *:lcd*

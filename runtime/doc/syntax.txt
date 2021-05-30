@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.2.  Last change: 2021 Apr 02
+*syntax.txt*	For Vim version 8.2.  Last change: 2021 May 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4967,6 +4967,14 @@ ctermul={color-nr}				*highlight-ctermul*
 	colors for a color-xterm can be changed from the .Xdefaults file.
 	Unfortunately this means that it's not possible to get the same colors
 	for each user.	See |xterm-color| for info about color xterms.
+							*tmux*
+	When using tmux you may want to use this in the tmux config: >
+	    # tmux colors
+	    set -g default-terminal "xterm-256color"
+	    set -ag terminal-overrides ",xterm-256color:Tc"
+<	More info at:
+	https://github.com/tmux/tmux/wiki/FAQ#how-do-i-use-a-256-colour-terminal
+	https://github.com/tmux/tmux/wiki/FAQ#how-do-i-use-rgb-colour
 
 	The MS-Windows standard colors are fixed (in a console window), so
 	these have been used for the names.  But the meaning of color names in

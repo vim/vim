@@ -916,7 +916,7 @@ POZNÁMKA: Ak chceš nerozlyšova ve¾kos písmen len pre jedno
 
   1. Zaèni editova "vimrc" súbor, to závisí na pouitom systéme:
 	:e ~/.vimrc      pre Unix
-	:e $VIM/_vimrc   pre MS-Windows
+	:e ~/_vimrc      pre MS-Windows
 
   2. Teraz si preèítaj text príkladu "vimrc" súboru:
 

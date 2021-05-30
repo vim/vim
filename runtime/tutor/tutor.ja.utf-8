@@ -884,8 +884,8 @@ NOTE: 1つの検索コマンドだけ大文字小文字の区別をやめたい�
   を作成します。
 
   1. "vimrc" ファイルの編集を開始する。これはシステムに依存します。
-	:edit ~/.vimrc			UNIX 向け
-	:edit $VIM/_vimrc		Windows 向け
+	:edit ~/.vimrc		    UNIX 向け
+	:edit ~/_vimrc		    Windows 向け
 
   2. ここでサンプルの "vimrc" を読み込みます。
 	:read $VIMRUNTIME/vimrc_example.vim

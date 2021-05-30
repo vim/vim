@@ -779,8 +779,8 @@ Megj: A Vimben a sor legvégére is lehet állni, azonban ez elõdjében
   kell egy "vimrc" fájlt.
 
   1. Kezdjük el szerkeszteni a "vimrc" fájlt, ennek módja:
-	:edit ~/.vimrc			Unixon, Linuxon
-	:edit $VIM/_vimrc		MS-Windowson
+	:edit ~/.vimrc		Unixon, Linuxon
+	:edit ~/_vimrc		MS-Windowson
 
   2. Most szúrjuk be a példa "vimrc" fájl szövegét:
 

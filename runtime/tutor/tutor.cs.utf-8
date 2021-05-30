@@ -765,8 +765,8 @@ Poznámka: Tímto se vyhneš stisknutí  i  , posledního znaku, textu na vlože
   nastavení. Pro zapnutí některých vytvoř soubor "vimrc".
 
   1. Začni upravovat soubor "vimrc". Toto závisí na použitém systému:
-	:edit ~/.vimrc			pro Unix
-	:edit $VIM/_vimrc		pro MS-Windows
+	:edit ~/.vimrc		pro Unix
+	:edit ~/_vimrc		pro MS-Windows
 
   2. Nyní čti ukázkový "vimrc" soubor:
 

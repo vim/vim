@@ -883,7 +883,7 @@
 
   1. 开始编辑 vimrc 文件，具体命令取决于您所使用的操作系统：
         :edit ~/.vimrc		这是 Unix 系统所使用的命令
-        :edit $VIM/_vimrc	这是 MS-Windows 系统所使用的命令
+        :edit ~/_vimrc		这是 MS-Windows 系统所使用的命令
 
   2. 接着读取 vimrc 示例文件的内容：
         :r $VIMRUNTIME/vimrc_example.vim

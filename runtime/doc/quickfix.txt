@@ -1,4 +1,4 @@
-*quickfix.txt*  For Vim version 8.2.  Last change: 2021 May 02
+*quickfix.txt*  For Vim version 8.2.  Last change: 2021 May 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1386,7 +1386,8 @@ Basic items
 	%o		module name (finds a string)
 	%l		line number (finds a number)
 	%c		column number (finds a number representing character
-			column of the error, (1 <tab> == 1 character column))
+			column of the error, byte index, a <tab> is 1
+			character column)
 	%v		virtual column number (finds a number representing
 			screen column of the error (1 <tab> == 8 screen
 			columns))

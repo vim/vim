@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.2.  Last change: 2021 Apr 25
+*autocmd.txt*   For Vim version 8.2.  Last change: 2021 May 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -985,9 +985,10 @@ QuickFixCmdPost			Like QuickFixCmdPre, but after a quickfix
 							*QuitPre*
 QuitPre				When using `:quit`, `:wq` or `:qall`, before
 				deciding whether it closes the current window
-				or quits Vim.  Can be used to close any
-				non-essential window if the current window is
-				the last ordinary window.
+				or quits Vim.  For `:wq` the buffer is written
+				before QuitPre is triggered.  Can be used to
+				close any non-essential window if the current
+				window is the last ordinary window.
 				Also see |ExitPre|.
 							*RemoteReply*
 RemoteReply			When a reply from a Vim that functions as

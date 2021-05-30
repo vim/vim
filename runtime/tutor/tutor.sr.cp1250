@@ -882,7 +882,7 @@ NAPOMENA:  Ako želite da ne razlikujete velièinu slova u samo jednoj komandi
 
   1. Otvorite "vimrc" fajl.  Ovo zavisi od vašeg sistema:
 	:e ~/.vimrc		za Unix
-	:e $VIM/_vimrc		za MS-Windows
+	:e ~/_vimrc		za MS-Windows
 
   2. Onda uèitajte primer sadržaja "vimrc" fajla:
 	:r $VIMRUNTIME/vimrc_example.vim
