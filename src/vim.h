@@ -1068,6 +1068,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define PUT_LINE	8	// put register as lines
 #define PUT_LINE_SPLIT	16	// split line for linewise register
 #define PUT_LINE_FORWARD 32	// put linewise register below Visual sel.
+#define PUT_BLOCK_INNER 64      // in block mode, do not add trailing spaces
 
 // flags for set_indent()
 #define SIN_CHANGED	1	// call changed_bytes() when line changed

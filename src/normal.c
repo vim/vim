@@ -2973,6 +2973,10 @@ dozet:
 		}
 		break;
 
+		// "zp", "zP" in block mode put without addind trailing spaces
+    case 'P':
+    case 'p':  nv_put(cap);
+	       break;
 #ifdef FEAT_FOLDING
 		// "zF": create fold command
 		// "zf": create fold operator
@@ -7418,11 +7422,13 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	}
 	else
 	    dir = (cap->cmdchar == 'P'
-				 || (cap->cmdchar == 'g' && cap->nchar == 'P'))
-							 ? BACKWARD : FORWARD;
+		    || ((cap->cmdchar == 'g' || cap->cmdchar == 'z')
+			&& cap->nchar == 'P')) ? BACKWARD : FORWARD;
 	prep_redo_cmd(cap);
 	if (cap->cmdchar == 'g')
 	    flags |= PUT_CURSEND;
+	else if (cap->cmdchar == 'z')
+	    flags |= PUT_BLOCK_INNER;
 
 	if (VIsual_active)
 	{
