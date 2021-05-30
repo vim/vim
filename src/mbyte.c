@@ -4456,7 +4456,7 @@ enc_canonize(char_u *enc)
 	// Use the default encoding as it's found by set_init_1().
 	r = get_encoding_default();
 	if (r == NULL)
-	    r = (char_u *)"latin1";
+	    r = (char_u *)ENC_DFLT;
 	return vim_strsave(r);
     }
 
