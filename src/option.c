@@ -430,8 +430,12 @@ set_init_1(int clean_arg)
 #  endif
 # endif
 
+# ifdef MSWIN
+    p = vim_strsave((char_u *)ENC_DFLT);
+# else
     // enc_locale() will try to find the encoding of the current locale.
     p = enc_locale();
+# endif
     if (p != NULL)
     {
 	char_u *save_enc;
