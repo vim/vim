@@ -749,6 +749,7 @@ OBJ = \
 	$(OUTDIR)/fileio.o \
 	$(OUTDIR)/filepath.o \
 	$(OUTDIR)/findfile.o \
+	$(OUTDIR)/float.o \
 	$(OUTDIR)/fold.o \
 	$(OUTDIR)/getchar.o \
 	$(OUTDIR)/gui_xim.o \

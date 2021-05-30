@@ -1621,6 +1621,7 @@ BASIC_SRC = \
 	fileio.c \
 	filepath.c \
 	findfile.c \
+	float.c \
 	fold.c \
 	getchar.c \
 	gui_xim.c \
@@ -1775,6 +1776,7 @@ OBJ_COMMON = \
 	objects/fileio.o \
 	objects/filepath.o \
 	objects/findfile.o \
+	objects/float.o \
 	objects/fold.o \
 	objects/getchar.o \
 	objects/gui_xim.o \
@@ -1945,6 +1947,7 @@ PRO_AUTO = \
 	fileio.pro \
 	filepath.pro \
 	findfile.pro \
+	float.pro \
 	fold.pro \
 	getchar.pro \
 	gui_xim.pro \
@@ -3247,6 +3250,9 @@ objects/filepath.o: filepath.c
 objects/findfile.o: findfile.c
 	$(CCC) -o $@ findfile.c
 
+objects/float.o: float.c
+	$(CCC) -o $@ float.c
+
 objects/fold.o: fold.c
 	$(CCC) -o $@ fold.c
 
@@ -3836,6 +3842,10 @@ objects/filepath.o: filepath.c vim.h protodef.h auto/config.h feature.h os_unix.
  proto.h errors.h globals.h
 objects/findfile.o: findfile.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h errors.h globals.h
+objects/float.o: float.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h errors.h globals.h
 objects/fold.o: fold.c vim.h protodef.h auto/config.h feature.h os_unix.h \

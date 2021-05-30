@@ -90,6 +90,7 @@ extern int _stricoll(char *a, char *b);
 # include "fileio.pro"
 # include "filepath.pro"
 # include "findfile.pro"
+# include "float.pro"
 # include "fold.pro"
 # include "getchar.pro"
 # include "gui_xim.pro"
