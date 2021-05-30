@@ -1042,6 +1042,9 @@ inside of strings can change!  Also see 'softtabstop' option. >
 			cursor to the end of line (which is more logical,
 			but not Vi-compatible) use ":map Y y$".
 
+["x]zy{motion}		Yank {motion} text [into register x].  Trailing
+			whitespace at the end of the motion won't be yanked.
+
 							*v_y*
 {Visual}["x]y		Yank the highlighted text [into register x] (for
 			{Visual} see |Visual-mode|).
