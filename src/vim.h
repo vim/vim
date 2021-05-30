@@ -46,9 +46,6 @@
 #  endif
 # endif
 
-// for INT_MAX, LONG_MAX et al.
-# include <limits.h>
-
 /*
  * Cygwin may have fchdir() in a newer release, but in most versions it
  * doesn't work well and avoiding it keeps the binary backward compatible.
@@ -61,6 +58,9 @@
 // identifier causes conflicts.  Therefore use UINT32_T.
 # define UINT32_TYPEDEF uint32_t
 #endif
+
+// for INT_MAX, LONG_MAX et al.
+#include <limits.h>
 
 #if !defined(UINT32_TYPEDEF)
 # if defined(uint32_t)  // this doesn't catch typedefs, unfortunately
