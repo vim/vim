@@ -415,3 +415,5 @@ EXTERN char e_expression_does_not_result_in_value_str[]
 	INIT(= N_("E1186: Expression does not result in a value: %s"));
 EXTERN char e_failed_to_source_defaults[]
 	INIT(= N_("E1187: Failed to source defaults.vim"));
+EXTERN char e_cannot_open_terminal_from_command_line_window[]
+	INIT(= N_("E1188: Cannot open a terminal from the command line window"));
