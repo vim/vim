@@ -4453,8 +4453,13 @@ enc_canonize(char_u *enc)
 
     if (STRCMP(enc, "default") == 0)
     {
+#ifdef MSWIN
+	// Use the system encoding, the default is always utf-8.
+	r = enc_locale();
+#else
 	// Use the default encoding as it's found by set_init_1().
 	r = get_encoding_default();
+#endif
 	if (r == NULL)
 	    r = (char_u *)ENC_DFLT;
 	return vim_strsave(r);
