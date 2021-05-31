@@ -1462,6 +1462,13 @@ set_var_lval(
 		semsg(_(e_dictkey), lp->ll_newkey);
 		return;
 	    }
+	    if ((lp->ll_tv->vval.v_dict == get_globvar_dict()
+		    || lp->ll_tv->vval.v_dict ==
+			   &SCRIPT_ITEM(current_sctx.sc_sid)->sn_vars->sv_dict)
+		    && (rettv->v_type == VAR_FUNC
+			|| rettv->v_type == VAR_PARTIAL)
+		    && var_wrong_func_name(lp->ll_newkey, TRUE))
+		return;
 
 	    // Need to add an item to the Dictionary.
 	    di = dictitem_alloc(lp->ll_newkey);
