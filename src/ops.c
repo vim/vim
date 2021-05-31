@@ -2383,9 +2383,10 @@ op_addsub(
 #ifdef FEAT_NETBEANS_INTG
 	    if (netbeans_active() && one_change)
 	    {
-		char_u *ptr = ml_get_buf(curbuf, pos.lnum, FALSE);
+		char_u *ptr;
 
 		netbeans_removed(curbuf, pos.lnum, pos.col, (long)length);
+		ptr = ml_get_buf(curbuf, pos.lnum, FALSE);
 		netbeans_inserted(curbuf, pos.lnum, pos.col,
 						&ptr[pos.col], length);
 	    }
