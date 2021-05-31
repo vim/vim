@@ -2625,7 +2625,6 @@ path_with_url(char_u *fname)
     p = fname;
 
     /* check first alpha */
-    /* if 0 char scheme accept, comment-out this block */
     if (!isalpha(*p))
         return 0;
     ++p;
