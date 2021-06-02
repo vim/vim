@@ -1855,6 +1855,33 @@ static funcentry_T global_functions[] =
 			ret_number,	    f_xor},
 };
 
+#if defined(EBCDIC) || defined(PROTO)
+/*
+ * Compare funcentry_T by function name.
+ */
+    static int
+compare_func_name(const void *s1, const void *s2)
+{
+    funcentry_T *p1 = (funcentry_T *)s1;
+    funcentry_T *p2 = (funcentry_T *)s2;
+
+    return STRCMP(p1->f_name, p2->f_name);
+}
+
+/*
+ * Sort the function table by function name.
+ * The sorting of the table above is ASCII dependent.
+ * On machines using EBCDIC we have to sort it.
+ */
+    void
+sortFunctions(void)
+{
+    size_t	funcCnt = ARRAY_LENGTH(global_functions);
+
+    qsort(global_functions, funcCnt, sizeof(funcentry_T), compare_func_name);
+}
+#endif
+
 /*
  * Function given to ExpandGeneric() to obtain the list of internal
  * or user defined function names.
