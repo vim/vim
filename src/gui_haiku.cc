@@ -638,7 +638,7 @@ static struct specialkey
     {0,		    0, 0}
 };
 
-#define NUM_SPECIAL_KEYS    (sizeof(special_keys)/sizeof(special_keys[0]))
+#define NUM_SPECIAL_KEYS    ARRAY_LENGTH(special_keys)
 
 // ---------------- VimApp ----------------
 

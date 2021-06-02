@@ -2542,7 +2542,7 @@ static struct key_name_entry
     // NOTE: When adding a long name update MAX_KEY_NAME_LEN.
 };
 
-#define KEY_NAMES_TABLE_LEN (sizeof(key_names_table) / sizeof(struct key_name_entry))
+#define KEY_NAMES_TABLE_LEN ARRAY_LENGTH(key_names_table)
 
 /*
  * Return the modifier mask bit (MOD_MASK_*) which corresponds to the given

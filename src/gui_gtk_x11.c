@@ -134,7 +134,7 @@ static const GtkTargetEntry selection_targets[] =
     {"TEXT",		0, TARGET_TEXT},
     {"STRING",		0, TARGET_STRING}
 };
-#define N_SELECTION_TARGETS (sizeof(selection_targets) / sizeof(selection_targets[0]))
+#define N_SELECTION_TARGETS ARRAY_LENGTH(selection_targets)
 
 #ifdef FEAT_DND
 /*
@@ -149,7 +149,7 @@ static const GtkTargetEntry dnd_targets[] =
     {"STRING",		0, TARGET_STRING},
     {"text/plain",	0, TARGET_TEXT_PLAIN}
 };
-# define N_DND_TARGETS (sizeof(dnd_targets) / sizeof(dnd_targets[0]))
+# define N_DND_TARGETS ARRAY_LENGTH(dnd_targets)
 #endif
 
 
@@ -6853,7 +6853,7 @@ mch_set_mouse_shape(int shape)
 	    else
 		id &= ~1;	// they are always even (why?)
 	}
-	else if (shape < (int)(sizeof(mshape_ids) / sizeof(int)))
+	else if (shape < (int)ARRAY_LENGTH(mshape_ids))
 	    id = mshape_ids[shape];
 	else
 	    return;

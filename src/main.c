@@ -3435,7 +3435,7 @@ usage(void)
     {
 	mch_msg(_(" vim [arguments] "));
 	mch_msg(_(use[i]));
-	if (i == (sizeof(use) / sizeof(char_u *)) - 1)
+	if (i == ARRAY_LENGTH(use) - 1)
 	    break;
 	mch_msg(_("\n   or:"));
     }

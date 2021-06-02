@@ -1877,7 +1877,7 @@ get_function_name(expand_T *xp, int idx)
 	    return name;
 	}
     }
-    if (++intidx < (int)(sizeof(global_functions) / sizeof(funcentry_T)))
+    if (++intidx < (int)ARRAY_LENGTH(global_functions))
     {
 	STRCPY(IObuff, global_functions[intidx].f_name);
 	STRCAT(IObuff, "(");
@@ -1923,7 +1923,7 @@ find_internal_func_opt(char_u *name, int implemented)
     int		cmp;
     int		x;
 
-    last = (int)(sizeof(global_functions) / sizeof(funcentry_T)) - 1;
+    last = (int)ARRAY_LENGTH(global_functions) - 1;
 
     // Find the function name in the table. Binary search.
     while (first <= last)

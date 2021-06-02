@@ -4573,7 +4573,7 @@ get_syn_options(
 	if (strchr(first_letters, *arg) == NULL)
 	    break;
 
-	for (fidx = sizeof(flagtab) / sizeof(struct flag); --fidx >= 0; )
+	for (fidx = ARRAY_LENGTH(flagtab); --fidx >= 0; )
 	{
 	    p = flagtab[fidx].name;
 	    for (i = 0, len = 0; p[i] != NUL; i += 2, ++len)

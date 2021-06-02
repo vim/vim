@@ -59,7 +59,7 @@ struct choice
 struct choice	choices[30];		// choices the user can make
 int		choice_count = 0;	// number of choices available
 
-#define TABLE_SIZE(s)	(int)(sizeof(s) / sizeof(*s))
+#define TABLE_SIZE(s)	(int)ARRAYSIZE(s)
 
 enum
 {
@@ -1527,8 +1527,7 @@ register_openwith(
 		"*\\OpenWithList\\gvim.exe",
 	};
 
-	for (i = 0; ERROR_SUCCESS == lRet
-			   && i < sizeof(openwith) / sizeof(openwith[0]); i++)
+	for (i = 0; ERROR_SUCCESS == lRet && i < ARRAYSIZE(openwith); i++)
 	    lRet = reg_create_key_and_value(hRootKey, openwith[i], NULL, "", flag);
     }
 

@@ -4444,7 +4444,7 @@ fuzzy_match_recursive(
 	    if (fuzzy_match_recursive(fuzpat, next_char, strIdx + 1,
 			&recursiveScore, strBegin, strLen, matches,
 			recursiveMatches,
-			sizeof(recursiveMatches)/sizeof(recursiveMatches[0]),
+			ARRAY_LENGTH(recursiveMatches),
 			nextMatch, recursionCount))
 	    {
 		// Pick best recursive score

@@ -6725,7 +6725,7 @@ gui_get_color_cmn(char_u *name)
     }
 
     // Check if the name is one of the colors we know
-    for (i = 0; i < (int)(sizeof(rgb_table) / sizeof(rgb_table[0])); i++)
+    for (i = 0; i < (int)ARRAY_LENGTH(rgb_table); i++)
 	if (STRICMP(name, rgb_table[i].color_name) == 0)
 	    return gui_adjust_rgb(rgb_table[i].color);
 

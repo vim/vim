@@ -1105,7 +1105,7 @@ decode_key_event(
 	return TRUE;
     }
 
-    for (i = sizeof(VirtKeyMap) / sizeof(VirtKeyMap[0]);  --i >= 0;  )
+    for (i = ARRAY_LENGTH(VirtKeyMap);  --i >= 0;  )
     {
 	if (VirtKeyMap[i].wVirtKey == pker->wVirtualKeyCode)
 	{
@@ -3045,7 +3045,7 @@ mch_get_user_name(
     int	    len)
 {
     WCHAR wszUserName[256 + 1];	// UNLEN is 256
-    DWORD wcch = sizeof(wszUserName) / sizeof(WCHAR);
+    DWORD wcch = ARRAY_LENGTH(wszUserName);
 
     if (GetUserNameW(wszUserName, &wcch))
     {
@@ -3072,7 +3072,7 @@ mch_get_host_name(
     int		len)
 {
     WCHAR wszHostName[256 + 1];
-    DWORD wcch = sizeof(wszHostName) / sizeof(WCHAR);
+    DWORD wcch = ARRAY_LENGTH(wszHostName);
 
     if (GetComputerNameW(wszHostName, &wcch))
     {
@@ -4757,8 +4757,7 @@ mch_call_shell(
     WCHAR	szShellTitle[512];
 
     // Change the title to reflect that we are in a subshell.
-    if (GetConsoleTitleW(szShellTitle,
-		sizeof(szShellTitle)/sizeof(WCHAR) - 4) > 0)
+    if (GetConsoleTitleW(szShellTitle, ARRAY_LENGTH(szShellTitle) - 4) > 0)
     {
 	if (cmd == NULL)
 	    wcscat(szShellTitle, L" :sh");
@@ -4770,7 +4769,7 @@ mch_call_shell(
 	    {
 		wcscat(szShellTitle, L" - !");
 		if ((wcslen(szShellTitle) + wcslen(wn) <
-			    sizeof(szShellTitle)/sizeof(WCHAR)))
+			    ARRAY_LENGTH(szShellTitle)))
 		    wcscat(szShellTitle, wn);
 		SetConsoleTitleW(szShellTitle);
 		vim_free(wn);

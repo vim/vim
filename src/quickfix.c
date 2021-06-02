@@ -5971,7 +5971,7 @@ vgr_match_buflines(
 	    char_u  *str = ml_get_buf(buf, lnum, FALSE);
 	    int	    score;
 	    int_u   matches[MAX_FUZZY_MATCHES];
-	    int_u   sz = sizeof(matches) / sizeof(matches[0]);
+	    int_u   sz = ARRAY_LENGTH(matches);
 
 	    // Fuzzy string match
 	    while (fuzzy_match(str + col, spat, FALSE, &score, matches, sz) > 0)

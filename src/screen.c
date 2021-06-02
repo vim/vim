@@ -4817,14 +4817,14 @@ set_chars_option(win_T *wp, char_u **varp)
     {
 	tab = lcstab;
 	CLEAR_FIELD(lcs_chars);
-	entries = sizeof(lcstab) / sizeof(struct charstab);
+	entries = ARRAY_LENGTH(lcstab);
 	if (varp == &wp->w_p_lcs && wp->w_p_lcs[0] == NUL)
 	    varp = &p_lcs;
     }
     else
     {
 	tab = filltab;
-	entries = sizeof(filltab) / sizeof(struct charstab);
+	entries = ARRAY_LENGTH(filltab);
     }
 
     // first round: check for valid value, second round: assign values
