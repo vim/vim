@@ -20,16 +20,7 @@
 # include <float.h>
 #endif
 
-#ifdef FEAT_FLOAT
-static void f_abs(typval_T *argvars, typval_T *rettv);
-static void f_acos(typval_T *argvars, typval_T *rettv);
-#endif
 static void f_and(typval_T *argvars, typval_T *rettv);
-#ifdef FEAT_FLOAT
-static void f_asin(typval_T *argvars, typval_T *rettv);
-static void f_atan(typval_T *argvars, typval_T *rettv);
-static void f_atan2(typval_T *argvars, typval_T *rettv);
-#endif
 #ifdef FEAT_BEVAL
 static void f_balloon_gettext(typval_T *argvars, typval_T *rettv);
 static void f_balloon_show(typval_T *argvars, typval_T *rettv);
@@ -42,9 +33,6 @@ static void byteidx(typval_T *argvars, typval_T *rettv, int comp);
 static void f_byteidx(typval_T *argvars, typval_T *rettv);
 static void f_byteidxcomp(typval_T *argvars, typval_T *rettv);
 static void f_call(typval_T *argvars, typval_T *rettv);
-#ifdef FEAT_FLOAT
-static void f_ceil(typval_T *argvars, typval_T *rettv);
-#endif
 static void f_changenr(typval_T *argvars, typval_T *rettv);
 static void f_char2nr(typval_T *argvars, typval_T *rettv);
 static void f_charcol(typval_T *argvars, typval_T *rettv);
@@ -52,10 +40,6 @@ static void f_charidx(typval_T *argvars, typval_T *rettv);
 static void f_col(typval_T *argvars, typval_T *rettv);
 static void f_confirm(typval_T *argvars, typval_T *rettv);
 static void f_copy(typval_T *argvars, typval_T *rettv);
-#ifdef FEAT_FLOAT
-static void f_cos(typval_T *argvars, typval_T *rettv);
-static void f_cosh(typval_T *argvars, typval_T *rettv);
-#endif
 static void f_cursor(typval_T *argsvars, typval_T *rettv);
 #ifdef MSWIN
 static void f_debugbreak(typval_T *argvars, typval_T *rettv);
@@ -70,17 +54,9 @@ static void f_eval(typval_T *argvars, typval_T *rettv);
 static void f_eventhandler(typval_T *argvars, typval_T *rettv);
 static void f_execute(typval_T *argvars, typval_T *rettv);
 static void f_exists(typval_T *argvars, typval_T *rettv);
-#ifdef FEAT_FLOAT
-static void f_exp(typval_T *argvars, typval_T *rettv);
-#endif
 static void f_expand(typval_T *argvars, typval_T *rettv);
 static void f_expandcmd(typval_T *argvars, typval_T *rettv);
 static void f_feedkeys(typval_T *argvars, typval_T *rettv);
-#ifdef FEAT_FLOAT
-static void f_float2nr(typval_T *argvars, typval_T *rettv);
-static void f_floor(typval_T *argvars, typval_T *rettv);
-static void f_fmod(typval_T *argvars, typval_T *rettv);
-#endif
 static void f_fnameescape(typval_T *argvars, typval_T *rettv);
 static void f_foreground(typval_T *argvars, typval_T *rettv);
 static void f_funcref(typval_T *argvars, typval_T *rettv);
@@ -118,20 +94,12 @@ static void f_inputsecret(typval_T *argvars, typval_T *rettv);
 static void f_interrupt(typval_T *argvars, typval_T *rettv);
 static void f_invert(typval_T *argvars, typval_T *rettv);
 static void f_islocked(typval_T *argvars, typval_T *rettv);
-#if defined(FEAT_FLOAT) && defined(HAVE_MATH_H)
-static void f_isinf(typval_T *argvars, typval_T *rettv);
-static void f_isnan(typval_T *argvars, typval_T *rettv);
-#endif
 static void f_last_buffer_nr(typval_T *argvars, typval_T *rettv);
 static void f_len(typval_T *argvars, typval_T *rettv);
 static void f_libcall(typval_T *argvars, typval_T *rettv);
 static void f_libcallnr(typval_T *argvars, typval_T *rettv);
 static void f_line(typval_T *argvars, typval_T *rettv);
 static void f_line2byte(typval_T *argvars, typval_T *rettv);
-#ifdef FEAT_FLOAT
-static void f_log(typval_T *argvars, typval_T *rettv);
-static void f_log10(typval_T *argvars, typval_T *rettv);
-#endif
 #ifdef FEAT_LUA
 static void f_luaeval(typval_T *argvars, typval_T *rettv);
 #endif
@@ -153,9 +121,6 @@ static void f_or(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_PERL
 static void f_perleval(typval_T *argvars, typval_T *rettv);
 #endif
-#ifdef FEAT_FLOAT
-static void f_pow(typval_T *argvars, typval_T *rettv);
-#endif
 static void f_prevnonblank(typval_T *argvars, typval_T *rettv);
 static void f_printf(typval_T *argvars, typval_T *rettv);
 static void f_pum_getpos(typval_T *argvars, typval_T *rettv);
@@ -176,9 +141,6 @@ static void f_reg_executing(typval_T *argvars, typval_T *rettv);
 static void f_reg_recording(typval_T *argvars, typval_T *rettv);
 static void f_rename(typval_T *argvars, typval_T *rettv);
 static void f_repeat(typval_T *argvars, typval_T *rettv);
-#ifdef FEAT_FLOAT
-static void f_round(typval_T *argvars, typval_T *rettv);
-#endif
 #ifdef FEAT_RUBY
 static void f_rubyeval(typval_T *argvars, typval_T *rettv);
 #endif
@@ -206,21 +168,11 @@ static void f_sha256(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_shellescape(typval_T *argvars, typval_T *rettv);
 static void f_shiftwidth(typval_T *argvars, typval_T *rettv);
-#ifdef FEAT_FLOAT
-static void f_sin(typval_T *argvars, typval_T *rettv);
-static void f_sinh(typval_T *argvars, typval_T *rettv);
-#endif
 static void f_soundfold(typval_T *argvars, typval_T *rettv);
 static void f_spellbadword(typval_T *argvars, typval_T *rettv);
 static void f_spellsuggest(typval_T *argvars, typval_T *rettv);
 static void f_split(typval_T *argvars, typval_T *rettv);
-#ifdef FEAT_FLOAT
-static void f_sqrt(typval_T *argvars, typval_T *rettv);
-#endif
 static void f_srand(typval_T *argvars, typval_T *rettv);
-#ifdef FEAT_FLOAT
-static void f_str2float(typval_T *argvars, typval_T *rettv);
-#endif
 static void f_str2list(typval_T *argvars, typval_T *rettv);
 static void f_str2nr(typval_T *argvars, typval_T *rettv);
 static void f_strcharlen(typval_T *argvars, typval_T *rettv);
@@ -246,17 +198,10 @@ static void f_synconcealed(typval_T *argvars, typval_T *rettv);
 static void f_tabpagebuflist(typval_T *argvars, typval_T *rettv);
 static void f_taglist(typval_T *argvars, typval_T *rettv);
 static void f_tagfiles(typval_T *argvars, typval_T *rettv);
-#ifdef FEAT_FLOAT
-static void f_tan(typval_T *argvars, typval_T *rettv);
-static void f_tanh(typval_T *argvars, typval_T *rettv);
-#endif
 static void f_tolower(typval_T *argvars, typval_T *rettv);
 static void f_toupper(typval_T *argvars, typval_T *rettv);
 static void f_tr(typval_T *argvars, typval_T *rettv);
 static void f_trim(typval_T *argvars, typval_T *rettv);
-#ifdef FEAT_FLOAT
-static void f_trunc(typval_T *argvars, typval_T *rettv);
-#endif
 static void f_type(typval_T *argvars, typval_T *rettv);
 static void f_virtcol(typval_T *argvars, typval_T *rettv);
 static void f_visualmode(typval_T *argvars, typval_T *rettv);
@@ -2194,70 +2139,6 @@ non_zero_arg(typval_T *argvars)
 		&& *argvars[0].vval.v_string != NUL));
 }
 
-#ifdef FEAT_FLOAT
-/*
- * Get the float value of "argvars[0]" into "f".
- * Returns FAIL when the argument is not a Number or Float.
- */
-    static int
-get_float_arg(typval_T *argvars, float_T *f)
-{
-    if (argvars[0].v_type == VAR_FLOAT)
-    {
-	*f = argvars[0].vval.v_float;
-	return OK;
-    }
-    if (argvars[0].v_type == VAR_NUMBER)
-    {
-	*f = (float_T)argvars[0].vval.v_number;
-	return OK;
-    }
-    emsg(_("E808: Number or Float required"));
-    return FAIL;
-}
-
-/*
- * "abs(expr)" function
- */
-    static void
-f_abs(typval_T *argvars, typval_T *rettv)
-{
-    if (argvars[0].v_type == VAR_FLOAT)
-    {
-	rettv->v_type = VAR_FLOAT;
-	rettv->vval.v_float = fabs(argvars[0].vval.v_float);
-    }
-    else
-    {
-	varnumber_T	n;
-	int		error = FALSE;
-
-	n = tv_get_number_chk(&argvars[0], &error);
-	if (error)
-	    rettv->vval.v_number = -1;
-	else if (n > 0)
-	    rettv->vval.v_number = n;
-	else
-	    rettv->vval.v_number = -n;
-    }
-}
-
-/*
- * "acos()" function
- */
-    static void
-f_acos(typval_T *argvars, typval_T *rettv)
-{
-    float_T	f = 0.0;
-
-    rettv->v_type = VAR_FLOAT;
-    if (get_float_arg(argvars, &f) == OK)
-	rettv->vval.v_float = acos(f);
-    else
-	rettv->vval.v_float = 0.0;
-}
-#endif
-
 /*
  * "and(expr, expr)" function
  */
@@ -2267,54 +2148,6 @@ f_and(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = tv_get_number_chk(&argvars[0], NULL)
 					& tv_get_number_chk(&argvars[1], NULL);
 }
-
-#ifdef FEAT_FLOAT
-/*
- * "asin()" function
- */
-    static void
-f_asin(typval_T *argvars, typval_T *rettv)
-{
-    float_T	f = 0.0;
-
-    rettv->v_type = VAR_FLOAT;
-    if (get_float_arg(argvars, &f) == OK)
-	rettv->vval.v_float = asin(f);
-    else
-	rettv->vval.v_float = 0.0;
-}
-
-/*
- * "atan()" function
- */
-    static void
-f_atan(typval_T *argvars, typval_T *rettv)
-{
-    float_T	f = 0.0;
-
-    rettv->v_type = VAR_FLOAT;
-    if (get_float_arg(argvars, &f) == OK)
-	rettv->vval.v_float = atan(f);
-    else
-	rettv->vval.v_float = 0.0;
-}
-
-/*
- * "atan2()" function
- */
-    static void
-f_atan2(typval_T *argvars, typval_T *rettv)
-{
-    float_T	fx = 0.0, fy = 0.0;
-
-    rettv->v_type = VAR_FLOAT;
-    if (get_float_arg(argvars, &fx) == OK
-				     && get_float_arg(&argvars[1], &fy) == OK)
-	rettv->vval.v_float = atan2(fx, fy);
-    else
-	rettv->vval.v_float = 0.0;
-}
-#endif
 
 /*
  * "balloon_show()" function
@@ -2517,23 +2350,6 @@ f_call(typval_T *argvars, typval_T *rettv)
 
     (void)func_call(func, &argvars[1], partial, selfdict, rettv);
 }
-
-#ifdef FEAT_FLOAT
-/*
- * "ceil({float})" function
- */
-    static void
-f_ceil(typval_T *argvars, typval_T *rettv)
-{
-    float_T	f = 0.0;
-
-    rettv->v_type = VAR_FLOAT;
-    if (get_float_arg(argvars, &f) == OK)
-	rettv->vval.v_float = ceil(f);
-    else
-	rettv->vval.v_float = 0.0;
-}
-#endif
 
 /*
  * "changenr()" function
@@ -2771,38 +2587,6 @@ f_copy(typval_T *argvars, typval_T *rettv)
 {
     item_copy(&argvars[0], rettv, FALSE, 0);
 }
-
-#ifdef FEAT_FLOAT
-/*
- * "cos()" function
- */
-    static void
-f_cos(typval_T *argvars, typval_T *rettv)
-{
-    float_T	f = 0.0;
-
-    rettv->v_type = VAR_FLOAT;
-    if (get_float_arg(argvars, &f) == OK)
-	rettv->vval.v_float = cos(f);
-    else
-	rettv->vval.v_float = 0.0;
-}
-
-/*
- * "cosh()" function
- */
-    static void
-f_cosh(typval_T *argvars, typval_T *rettv)
-{
-    float_T	f = 0.0;
-
-    rettv->v_type = VAR_FLOAT;
-    if (get_float_arg(argvars, &f) == OK)
-	rettv->vval.v_float = cosh(f);
-    else
-	rettv->vval.v_float = 0.0;
-}
-#endif
 
 /*
  * Set the cursor position.
@@ -3351,23 +3135,6 @@ f_exists(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = n;
 }
 
-#ifdef FEAT_FLOAT
-/*
- * "exp()" function
- */
-    static void
-f_exp(typval_T *argvars, typval_T *rettv)
-{
-    float_T	f = 0.0;
-
-    rettv->v_type = VAR_FLOAT;
-    if (get_float_arg(argvars, &f) == OK)
-	rettv->vval.v_float = exp(f);
-    else
-	rettv->vval.v_float = 0.0;
-}
-#endif
-
 /*
  * "expand()" function
  */
@@ -3577,58 +3344,6 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 	}
     }
 }
-
-#ifdef FEAT_FLOAT
-/*
- * "float2nr({float})" function
- */
-    static void
-f_float2nr(typval_T *argvars, typval_T *rettv)
-{
-    float_T	f = 0.0;
-
-    if (get_float_arg(argvars, &f) == OK)
-    {
-	if (f <= (float_T)-VARNUM_MAX + DBL_EPSILON)
-	    rettv->vval.v_number = -VARNUM_MAX;
-	else if (f >= (float_T)VARNUM_MAX - DBL_EPSILON)
-	    rettv->vval.v_number = VARNUM_MAX;
-	else
-	    rettv->vval.v_number = (varnumber_T)f;
-    }
-}
-
-/*
- * "floor({float})" function
- */
-    static void
-f_floor(typval_T *argvars, typval_T *rettv)
-{
-    float_T	f = 0.0;
-
-    rettv->v_type = VAR_FLOAT;
-    if (get_float_arg(argvars, &f) == OK)
-	rettv->vval.v_float = floor(f);
-    else
-	rettv->vval.v_float = 0.0;
-}
-
-/*
- * "fmod()" function
- */
-    static void
-f_fmod(typval_T *argvars, typval_T *rettv)
-{
-    float_T	fx = 0.0, fy = 0.0;
-
-    rettv->v_type = VAR_FLOAT;
-    if (get_float_arg(argvars, &fx) == OK
-				     && get_float_arg(&argvars[1], &fy) == OK)
-	rettv->vval.v_float = fmod(fx, fy);
-    else
-	rettv->vval.v_float = 0.0;
-}
-#endif
 
 /*
  * "fnameescape({string})" function
@@ -6262,28 +5977,6 @@ f_islocked(typval_T *argvars, typval_T *rettv)
     clear_lval(&lv);
 }
 
-#if defined(FEAT_FLOAT) && defined(HAVE_MATH_H)
-/*
- * "isinf()" function
- */
-    static void
-f_isinf(typval_T *argvars, typval_T *rettv)
-{
-    if (argvars[0].v_type == VAR_FLOAT && isinf(argvars[0].vval.v_float))
-	rettv->vval.v_number = argvars[0].vval.v_float > 0.0 ? 1 : -1;
-}
-
-/*
- * "isnan()" function
- */
-    static void
-f_isnan(typval_T *argvars, typval_T *rettv)
-{
-    rettv->vval.v_number = argvars[0].v_type == VAR_FLOAT
-					    && isnan(argvars[0].vval.v_float);
-}
-#endif
-
 /*
  * "last_buffer_nr()" function.
  */
@@ -6455,38 +6148,6 @@ f_line2byte(typval_T *argvars UNUSED, typval_T *rettv)
 	++rettv->vval.v_number;
 #endif
 }
-
-#ifdef FEAT_FLOAT
-/*
- * "log()" function
- */
-    static void
-f_log(typval_T *argvars, typval_T *rettv)
-{
-    float_T	f = 0.0;
-
-    rettv->v_type = VAR_FLOAT;
-    if (get_float_arg(argvars, &f) == OK)
-	rettv->vval.v_float = log(f);
-    else
-	rettv->vval.v_float = 0.0;
-}
-
-/*
- * "log10()" function
- */
-    static void
-f_log10(typval_T *argvars, typval_T *rettv)
-{
-    float_T	f = 0.0;
-
-    rettv->v_type = VAR_FLOAT;
-    if (get_float_arg(argvars, &f) == OK)
-	rettv->vval.v_float = log10(f);
-    else
-	rettv->vval.v_float = 0.0;
-}
-#endif
 
 #ifdef FEAT_LUA
 /*
@@ -7005,24 +6666,6 @@ f_perleval(typval_T *argvars, typval_T *rettv)
 
     str = tv_get_string_buf(&argvars[0], buf);
     do_perleval(str, rettv);
-}
-#endif
-
-#ifdef FEAT_FLOAT
-/*
- * "pow()" function
- */
-    static void
-f_pow(typval_T *argvars, typval_T *rettv)
-{
-    float_T	fx = 0.0, fy = 0.0;
-
-    rettv->v_type = VAR_FLOAT;
-    if (get_float_arg(argvars, &fx) == OK
-				     && get_float_arg(&argvars[1], &fy) == OK)
-	rettv->vval.v_float = pow(fx, fy);
-    else
-	rettv->vval.v_float = 0.0;
 }
 #endif
 
@@ -7779,33 +7422,6 @@ theend:
 
     return retval;
 }
-
-#ifdef FEAT_FLOAT
-
-/*
- * round() is not in C90, use ceil() or floor() instead.
- */
-    float_T
-vim_round(float_T f)
-{
-    return f > 0 ? floor(f + 0.5) : ceil(f - 0.5);
-}
-
-/*
- * "round({float})" function
- */
-    static void
-f_round(typval_T *argvars, typval_T *rettv)
-{
-    float_T	f = 0.0;
-
-    rettv->v_type = VAR_FLOAT;
-    if (get_float_arg(argvars, &f) == OK)
-	rettv->vval.v_float = vim_round(f);
-    else
-	rettv->vval.v_float = 0.0;
-}
-#endif
 
 #ifdef FEAT_RUBY
 /*
@@ -8790,38 +8406,6 @@ f_shiftwidth(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_number = get_sw_value(curbuf);
 }
 
-#ifdef FEAT_FLOAT
-/*
- * "sin()" function
- */
-    static void
-f_sin(typval_T *argvars, typval_T *rettv)
-{
-    float_T	f = 0.0;
-
-    rettv->v_type = VAR_FLOAT;
-    if (get_float_arg(argvars, &f) == OK)
-	rettv->vval.v_float = sin(f);
-    else
-	rettv->vval.v_float = 0.0;
-}
-
-/*
- * "sinh()" function
- */
-    static void
-f_sinh(typval_T *argvars, typval_T *rettv)
-{
-    float_T	f = 0.0;
-
-    rettv->v_type = VAR_FLOAT;
-    if (get_float_arg(argvars, &f) == OK)
-	rettv->vval.v_float = sinh(f);
-    else
-	rettv->vval.v_float = 0.0;
-}
-#endif
-
 /*
  * "soundfold({word})" function
  */
@@ -9071,42 +8655,6 @@ f_split(typval_T *argvars, typval_T *rettv)
 theend:
     p_cpo = save_cpo;
 }
-
-#ifdef FEAT_FLOAT
-/*
- * "sqrt()" function
- */
-    static void
-f_sqrt(typval_T *argvars, typval_T *rettv)
-{
-    float_T	f = 0.0;
-
-    rettv->v_type = VAR_FLOAT;
-    if (get_float_arg(argvars, &f) == OK)
-	rettv->vval.v_float = sqrt(f);
-    else
-	rettv->vval.v_float = 0.0;
-}
-#endif
-
-#ifdef FEAT_FLOAT
-/*
- * "str2float()" function
- */
-    static void
-f_str2float(typval_T *argvars, typval_T *rettv)
-{
-    char_u *p = skipwhite(tv_get_string(&argvars[0]));
-    int     isneg = (*p == '-');
-
-    if (*p == '+' || *p == '-')
-	p = skipwhite(p + 1);
-    (void)string2float(p, &rettv->vval.v_float);
-    if (isneg)
-	rettv->vval.v_float *= -1;
-    rettv->v_type = VAR_FLOAT;
-}
-#endif
 
 /*
  * "str2list()" function
@@ -9949,38 +9497,6 @@ f_taglist(typval_T *argvars, typval_T *rettv)
 	(void)get_tags(rettv->vval.v_list, tag_pattern, fname);
 }
 
-#ifdef FEAT_FLOAT
-/*
- * "tan()" function
- */
-    static void
-f_tan(typval_T *argvars, typval_T *rettv)
-{
-    float_T	f = 0.0;
-
-    rettv->v_type = VAR_FLOAT;
-    if (get_float_arg(argvars, &f) == OK)
-	rettv->vval.v_float = tan(f);
-    else
-	rettv->vval.v_float = 0.0;
-}
-
-/*
- * "tanh()" function
- */
-    static void
-f_tanh(typval_T *argvars, typval_T *rettv)
-{
-    float_T	f = 0.0;
-
-    rettv->v_type = VAR_FLOAT;
-    if (get_float_arg(argvars, &f) == OK)
-	rettv->vval.v_float = tanh(f);
-    else
-	rettv->vval.v_float = 0.0;
-}
-#endif
-
 /*
  * "tolower(string)" function
  */
@@ -10204,24 +9720,6 @@ f_trim(typval_T *argvars, typval_T *rettv)
     }
     rettv->vval.v_string = vim_strnsave(head, tail - head);
 }
-
-#ifdef FEAT_FLOAT
-/*
- * "trunc({float})" function
- */
-    static void
-f_trunc(typval_T *argvars, typval_T *rettv)
-{
-    float_T	f = 0.0;
-
-    rettv->v_type = VAR_FLOAT;
-    if (get_float_arg(argvars, &f) == OK)
-	// trunc() is not in C90, use floor() or ceil() instead.
-	rettv->vval.v_float = f > 0 ? floor(f) : ceil(f);
-    else
-	rettv->vval.v_float = 0.0;
-}
-#endif
 
 /*
  * "type(expr)" function

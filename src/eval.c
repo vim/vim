@@ -5155,43 +5155,6 @@ string_quote(char_u *str, int function)
     return s;
 }
 
-#if defined(FEAT_FLOAT) || defined(PROTO)
-/*
- * Convert the string "text" to a floating point number.
- * This uses strtod().  setlocale(LC_NUMERIC, "C") has been used to make sure
- * this always uses a decimal point.
- * Returns the length of the text that was consumed.
- */
-    int
-string2float(
-    char_u	*text,
-    float_T	*value)	    // result stored here
-{
-    char	*s = (char *)text;
-    float_T	f;
-
-    // MS-Windows does not deal with "inf" and "nan" properly.
-    if (STRNICMP(text, "inf", 3) == 0)
-    {
-	*value = INFINITY;
-	return 3;
-    }
-    if (STRNICMP(text, "-inf", 3) == 0)
-    {
-	*value = -INFINITY;
-	return 4;
-    }
-    if (STRNICMP(text, "nan", 3) == 0)
-    {
-	*value = NAN;
-	return 3;
-    }
-    f = strtod(s, &s);
-    *value = f;
-    return (int)((char_u *)s - text);
-}
-#endif
-
 /*
  * Convert the specified byte index of line 'lnum' in buffer 'buf' to a
  * character index.  Works only for loaded buffers. Returns -1 on failure.

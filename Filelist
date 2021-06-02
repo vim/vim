@@ -68,6 +68,7 @@ SRC_ALL =	\
 		src/fileio.c \
 		src/filepath.c \
 		src/findfile.c \
+		src/float.c \
 		src/fold.c \
 		src/getchar.c \
 		src/globals.h \
@@ -246,6 +247,7 @@ SRC_ALL =	\
 		src/proto/fileio.pro \
 		src/proto/filepath.pro \
 		src/proto/findfile.pro \
+		src/proto/float.pro \
 		src/proto/fold.pro \
 		src/proto/getchar.pro \
 		src/proto/gui.pro \
