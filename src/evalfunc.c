@@ -1857,7 +1857,7 @@ static funcentry_T global_functions[] =
 
 #if defined(EBCDIC) || defined(PROTO)
 /*
- * Compare struct fst by function name.
+ * Compare funcentry_T by function name.
  */
     static int
 compare_func_name(const void *s1, const void *s2)
