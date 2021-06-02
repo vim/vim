@@ -466,7 +466,7 @@ CClink = $(CC)
 # TCL
 # Uncomment this when you want to include the Tcl interface.
 # First one is for static linking, second one for dynamic loading.
-CONF_OPT_TCL = --enable-tclinterp
+#CONF_OPT_TCL = --enable-tclinterp
 #CONF_OPT_TCL = --enable-tclinterp=dynamic
 #CONF_OPT_TCL = --enable-tclinterp --with-tclsh=tclsh8.4
 
