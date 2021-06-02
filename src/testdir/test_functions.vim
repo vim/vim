@@ -4,6 +4,7 @@ source shared.vim
 source check.vim
 source term_util.vim
 source screendump.vim
+source vim9.vim
 
 " Must be done first, since the alternate buffer must be unset.
 func Test_00_bufexists()
@@ -2684,8 +2685,13 @@ endfunc
 func Test_builtin_check()
   call assert_fails('let g:["trim"] = {x -> " " .. x}', 'E704:')
   call assert_fails('let g:.trim = {x -> " " .. x}', 'E704:')
-  call assert_fails('let s:["trim"] = {x -> " " .. x}', 'E704:')
-  call assert_fails('let s:.trim = {x -> " " .. x}', 'E704:')
+  call assert_fails('let l:["trim"] = {x -> " " .. x}', 'E704:')
+  call assert_fails('let l:.trim = {x -> " " .. x}', 'E704:')
+  let lines =<< trim END
+    vim9script
+    var s:trim = (x) => " " .. x
+  END
+  call CheckScriptFailure(lines, 'E704:')
 
   call assert_fails('call extend(g:, #{foo: { -> "foo" }})', 'E704:')
   let g:bar = 123
