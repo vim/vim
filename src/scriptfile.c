@@ -1842,7 +1842,8 @@ getsourceline(
 			ga_concat(&ga, p);
 		    }
 		}
-		else if (!(p[0] == '"' && p[1] == '\\' && p[2] == ' ')
+		else if (!(p[0] == (in_vim9script() ? '#' : '"')
+						&& p[1] == '\\' && p[2] == ' ')
 		     && !(do_vim9_all && (*p == NUL || vim9_comment_start(p))))
 		    break;
 		/* drop a # comment or "\ comment line */

@@ -3074,6 +3074,24 @@ def Test_vim9_comment()
       'func Test() # comment',
       'endfunc',
       ], 'E488:')
+
+  var lines =<< trim END
+      vim9script
+      syn region Text
+      \ start='foo'
+      #\ comment
+      \ end='bar'
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      syn region Text
+      \ start='foo'
+      "\ comment
+      \ end='bar'
+  END
+  CheckScriptFailure(lines, 'E399:')
 enddef
 
 def Test_vim9_comment_gui()
