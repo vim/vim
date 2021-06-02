@@ -373,9 +373,9 @@ Added by Vim (there are no standard codes for these):
 	t_Ri	restore icon text from stack			*t_Ri* *'t_Ri'*
 	t_TE	end of "raw" mode				*t_TE* *'t_TE'*
 	t_TI	put terminal into "raw" mode 			*t_TI* *'t_TI'*
-	t_fd	disable focus-event tracking 			*t_fd* *'t_fd'*
-		|xterm-focus-event|
 	t_fe	enable focus-event tracking 			*t_fe* *'t_fe'*
+		|xterm-focus-event|
+	t_fd	disable focus-event tracking 			*t_fd* *'t_fd'*
 		|xterm-focus-event|
 
 Some codes have a start, middle and end part.  The start and end are defined

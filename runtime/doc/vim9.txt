@@ -445,7 +445,7 @@ it is the start of a lambda or a dictionary, which is now more complicated
 because of the use of argument types.
 
 To avoid these problems Vim9 script uses a different syntax for a lambda,
-which is similar to Javascript: >
+which is similar to JavaScript: >
 	var Lambda = (arg) => expression
 
 No line break is allowed in the arguments of a lambda up to and including the
