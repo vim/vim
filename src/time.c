@@ -276,8 +276,7 @@ f_strftime(typval_T *argvars, typval_T *rettv)
 
 	wp = enc_to_utf16(p, NULL);
 	if (wp != NULL)
-	    (void)wcsftime(result_buf, sizeof(result_buf) / sizeof(WCHAR),
-								wp, curtime);
+	    (void)wcsftime(result_buf, ARRAY_LENGTH(result_buf), wp, curtime);
 	else
 	    result_buf[0] = NUL;
 	rettv->vval.v_string = utf16_to_enc(result_buf, NULL);

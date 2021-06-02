@@ -751,6 +751,8 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    2922,
+/**/
     2921,
 /**/
     2920,
@@ -6627,7 +6629,7 @@ has_patch(int n)
 
     // Perform a binary search.
     l = 0;
-    h = (int)(sizeof(included_patches) / sizeof(included_patches[0])) - 1;
+    h = (int)ARRAY_LENGTH(included_patches) - 1;
     while (l < h)
     {
 	m = (l + h) / 2;
@@ -6854,7 +6856,7 @@ list_version(void)
     {
 	msg_puts(_("\nIncluded patches: "));
 	first = -1;
-	i = (int)(sizeof(included_patches) / sizeof(included_patches[0])) - 1;
+	i = (int)ARRAY_LENGTH(included_patches) - 1;
 	while (--i >= 0)
 	{
 	    if (first < 0)
@@ -7145,7 +7147,7 @@ intro_message(
 #endif
 
     // blanklines = screen height - # message lines
-    blanklines = (int)Rows - ((sizeof(lines) / sizeof(char *)) - 1);
+    blanklines = (int)Rows - (ARRAY_LENGTH(lines) - 1);
     if (!p_cp)
 	blanklines += 4;  // add 4 for not showing "Vi compatible" message
 
@@ -7164,7 +7166,7 @@ intro_message(
     row = blanklines / 2;
     if ((row >= 2 && Columns >= 50) || colon)
     {
-	for (i = 0; i < (int)(sizeof(lines) / sizeof(char *)); ++i)
+	for (i = 0; i < (int)ARRAY_LENGTH(lines); ++i)
 	{
 	    p = lines[i];
 #ifdef FEAT_GUI

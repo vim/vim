@@ -396,3 +396,6 @@
 #ifndef MAX
 # define MAX(a, b) ((a) > (b) ? (a) : (b))
 #endif
+
+// Length of the array.
+#define ARRAY_LENGTH(a) (sizeof(a) / sizeof((a)[0]))

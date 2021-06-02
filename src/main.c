@@ -645,7 +645,7 @@ vim_main2(void)
 #endif
 
     /*
-     * When done something that is not allowed or error message call
+     * When done something that is not allowed or given an error message call
      * wait_return.  This must be done before starttermcap(), because it may
      * switch to another screen. It must be done after settmode(TMODE_RAW),
      * because we want to react on a single key stroke.
@@ -1662,7 +1662,7 @@ getout(int exitval)
     {
 	// give the user a chance to read the (error) message
 	no_wait_return = FALSE;
-	wait_return(FALSE);
+//	wait_return(FALSE);
     }
 
     // Position the cursor again, the autocommands may have moved it
@@ -3435,7 +3435,7 @@ usage(void)
     {
 	mch_msg(_(" vim [arguments] "));
 	mch_msg(_(use[i]));
-	if (i == (sizeof(use) / sizeof(char_u *)) - 1)
+	if (i == ARRAY_LENGTH(use) - 1)
 	    break;
 	mch_msg(_("\n   or:"));
     }

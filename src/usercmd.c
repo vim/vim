@@ -339,7 +339,7 @@ get_user_cmd_flags(expand_T *xp UNUSED, int idx)
 	"count", "nargs", "range", "register"
     };
 
-    if (idx >= (int)(sizeof(user_cmd_flags) / sizeof(user_cmd_flags[0])))
+    if (idx >= (int)ARRAY_LENGTH(user_cmd_flags))
 	return NULL;
     return (char_u *)user_cmd_flags[idx];
 }
@@ -352,7 +352,7 @@ get_user_cmd_nargs(expand_T *xp UNUSED, int idx)
 {
     static char *user_cmd_nargs[] = {"0", "1", "*", "?", "+"};
 
-    if (idx >= (int)(sizeof(user_cmd_nargs) / sizeof(user_cmd_nargs[0])))
+    if (idx >= (int)ARRAY_LENGTH(user_cmd_nargs))
 	return NULL;
     return (char_u *)user_cmd_nargs[idx];
 }

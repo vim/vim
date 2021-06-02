@@ -2155,7 +2155,7 @@ ExpandFromContext(
 	// Find a context in the table and call the ExpandGeneric() with the
 	// right function to do the expansion.
 	ret = FAIL;
-	for (i = 0; i < (int)(sizeof(tab) / sizeof(struct expgen)); ++i)
+	for (i = 0; i < (int)ARRAY_LENGTH(tab); ++i)
 	    if (xp->xp_context == tab[i].context)
 	    {
 		if (tab[i].ic)

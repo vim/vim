@@ -5073,7 +5073,7 @@ vim_tempname(
 	/*
 	 * Try the entries in TEMPDIRNAMES to create the temp directory.
 	 */
-	for (i = 0; i < (int)(sizeof(tempdirs) / sizeof(char *)); ++i)
+	for (i = 0; i < (int)ARRAY_LENGTH(tempdirs); ++i)
 	{
 # ifndef HAVE_MKDTEMP
 	    size_t	itmplen;

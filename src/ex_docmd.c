@@ -3735,7 +3735,7 @@ modifier_len(char_u *cmd)
 
     if (VIM_ISDIGIT(*cmd))
 	p = skipwhite(skipdigits(cmd + 1));
-    for (i = 0; i < (int)(sizeof(cmdmods) / sizeof(struct cmdmod)); ++i)
+    for (i = 0; i < (int)ARRAY_LENGTH(cmdmods); ++i)
     {
 	for (j = 0; p[j] != NUL; ++j)
 	    if (p[j] != cmdmods[i].name[j])
@@ -3762,7 +3762,7 @@ cmd_exists(char_u *name)
     char_u	*p;
 
     // Check command modifiers.
-    for (i = 0; i < (int)(sizeof(cmdmods) / sizeof(struct cmdmod)); ++i)
+    for (i = 0; i < (int)ARRAY_LENGTH(cmdmods); ++i)
     {
 	for (j = 0; name[j] != NUL; ++j)
 	    if (name[j] != cmdmods[i].name[j])
@@ -8732,7 +8732,7 @@ find_cmdline_var(char_u *src, int *usedlen)
 #endif
     };
 
-    for (i = 0; i < (int)(sizeof(spec_str) / sizeof(char *)); ++i)
+    for (i = 0; i < (int)ARRAY_LENGTH(spec_str); ++i)
     {
 	len = (int)STRLEN(spec_str[i]);
 	if (STRNCMP(src, spec_str[i], len) == 0)

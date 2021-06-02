@@ -381,7 +381,7 @@ find_help_tags(
 	// When the string starting with "expr-" and containing '?' and matches
 	// the table, it is taken literally (but ~ is escaped).  Otherwise '?'
 	// is recognized as a wildcard.
-	for (i = (int)(sizeof(expr_table) / sizeof(char *)); --i >= 0; )
+	for (i = (int)ARRAY_LENGTH(expr_table); --i >= 0; )
 	    if (STRCMP(arg + 5, expr_table[i]) == 0)
 	    {
 		int si = 0, di = 0;

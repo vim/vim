@@ -402,8 +402,7 @@ get_pos_entry(dict_T *d, int give_error)
     if (str == NULL)
 	return POPPOS_NONE;
 
-    for (nr = 0; nr < (int)(sizeof(poppos_entries) / sizeof(poppos_entry_T));
-									  ++nr)
+    for (nr = 0; nr < (int)ARRAY_LENGTH(poppos_entries); ++nr)
 	if (STRCMP(str, poppos_entries[nr].pp_name) == 0)
 	    return poppos_entries[nr].pp_val;
 
@@ -3042,8 +3041,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	if (wp->w_close_cb.cb_name != NULL)
 	    dict_add_callback(dict, "callback", &wp->w_close_cb);
 
-	for (i = 0; i < (int)(sizeof(poppos_entries) / sizeof(poppos_entry_T));
-									   ++i)
+	for (i = 0; i < (int)ARRAY_LENGTH(poppos_entries); ++i)
 	    if (wp->w_popup_pos == poppos_entries[i].pp_val)
 	    {
 		dict_add_string(dict, "pos",

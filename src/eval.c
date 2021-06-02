@@ -125,7 +125,7 @@ compare_func_name(const void *s1, const void *s2)
     static void
 sortFunctions(void)
 {
-    int		funcCnt = (int)(sizeof(functions) / sizeof(struct fst)) - 1;
+    int		funcCnt = (int)ARRAY_LENGTH(functions) - 1;
 
     qsort(functions, (size_t)funcCnt, sizeof(struct fst), compare_func_name);
 }

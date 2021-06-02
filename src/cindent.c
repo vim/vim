@@ -718,7 +718,7 @@ cin_isinit(void)
     {
 	int i, l;
 
-	for (i = 0; i < (int)(sizeof(skip) / sizeof(char *)); ++i)
+	for (i = 0; i < (int)ARRAY_LENGTH(skip); ++i)
 	{
 	    l = (int)strlen(skip[i]);
 	    if (cin_starts_with(s, skip[i]))
