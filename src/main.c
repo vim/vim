@@ -260,8 +260,6 @@ main
 
 #ifdef MSWIN
     {
-	extern void set_alist_count(void);
-
 	// Remember the number of entries in the argument list.  If it changes
 	// we don't react on setting 'encoding'.
 	set_alist_count();
