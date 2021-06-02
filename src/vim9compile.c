@@ -9222,6 +9222,27 @@ compile_def_function(
 	{
 	    char_u *start = ea.cmd;
 
+	    switch (ea.cmdidx)
+	    {
+		case CMD_if:
+		case CMD_elseif:
+		case CMD_else:
+		case CMD_endif:
+		case CMD_for:
+		case CMD_endfor:
+		case CMD_continue:
+		case CMD_break:
+		case CMD_while:
+		case CMD_endwhile:
+		case CMD_try:
+		case CMD_catch:
+		case CMD_finally:
+		case CMD_endtry:
+			semsg(_(e_cannot_use_legacy_with_command_str), ea.cmd);
+			goto erret;
+		default: break;
+	    }
+
 	    // ":legacy return expr" needs to be handled differently.
 	    if (checkforcmd(&start, "return", 4))
 		ea.cmdidx = CMD_return;

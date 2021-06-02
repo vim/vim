@@ -2207,6 +2207,15 @@ def Test_legacy_lambda()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_legacy_errors()
+  for cmd in ['if', 'elseif', 'else', 'endif',
+              'for', 'endfor', 'continue', 'break',
+              'while', 'endwhile',
+              'try', 'catch', 'finally', 'endtry']
+    CheckDefFailure(['legacy ' .. cmd .. ' expr'], 'E1189:')
+  endfor
+enddef
+
 def DoFilterThis(a: string): list<string>
   # closure nested inside another closure using argument
   var Filter = (l) => filter(l, (_, v) => stridx(v, a) == 0)
