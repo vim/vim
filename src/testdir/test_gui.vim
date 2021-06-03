@@ -388,7 +388,9 @@ func Test_set_guifont()
     call assert_fails('set guifont=xa1bc23d7f', 'E596:')
   endif
 
-  if exists('+renderoptions')
+  " This only works if 'renderoptions' exists and does not work for Windows XP
+  " and older. 
+  if exists('+renderoptions') && windowsversion() !~ '^[345]\.'
     " doing this four times used to cause a crash
     set renderoptions=type:directx
     for i in range(5)

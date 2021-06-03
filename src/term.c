@@ -2071,6 +2071,7 @@ set_termname(char_u *term)
 
 	focus_mode = TRUE;
 	focus_state = TRUE;
+	need_gather = TRUE;
     }
 #endif
 
@@ -2544,7 +2545,7 @@ out_flush(void)
 	// set out_pos to 0 before ui_write, to avoid recursiveness
 	len = out_pos;
 	out_pos = 0;
-	ui_write(out_buf, len);
+	ui_write(out_buf, len, FALSE);
 #ifdef FEAT_JOB_CHANNEL
 	if (ch_log_output)
 	{
@@ -3364,8 +3365,9 @@ win_new_shellsize(void)
 	ui_new_shellsize();
     if (old_Rows != Rows)
     {
-	// if 'window' uses the whole screen, keep it using that
-	if (p_window == old_Rows - 1 || old_Rows == 0)
+	// If 'window' uses the whole screen, keep it using that.
+	// Don't change it when set with "-w size" on the command line.
+	if (p_window == old_Rows - 1 || (old_Rows == 0 && p_window == 0))
 	    p_window = Rows - 1;
 	old_Rows = Rows;
 	shell_new_rows();	// update window sizes
@@ -3618,9 +3620,9 @@ starttermcap(void)
 	out_str(T_KS);			// start "keypad transmit" mode
 	out_str(T_BE);			// enable bracketed paste mode
 
-#if (defined(UNIX) || defined(VMS))
-	// enable xterm's focus reporting mode
-	if (focus_mode && *T_FE != NUL)
+#if defined(UNIX) || defined(VMS)
+	// Enable xterm's focus reporting mode when 'esckeys' is set.
+	if (focus_mode && p_ek && *T_FE != NUL)
 	    out_str(T_FE);
 #endif
 
@@ -3676,9 +3678,9 @@ stoptermcap(void)
 	ch_log_output = TRUE;
 #endif
 
-#if (defined(UNIX) || defined(VMS))
-	// disable xterm's focus reporting mode
-	if (focus_mode && *T_FD != NUL)
+#if defined(UNIX) || defined(VMS)
+	// Disable xterm's focus reporting mode if 'esckeys' is set.
+	if (focus_mode && p_ek && *T_FD != NUL)
 	    out_str(T_FD);
 #endif
 
@@ -3930,7 +3932,11 @@ scroll_start(void)
     }
 }
 
+// True if cursor is not visible
 static int cursor_is_off = FALSE;
+
+// True if cursor is not visible due to an ongoing cursor-less sleep
+static int cursor_is_asleep = FALSE;
 
 /*
  * Enable the cursor without checking if it's already enabled.
@@ -3940,6 +3946,7 @@ cursor_on_force(void)
 {
     out_str(T_VE);
     cursor_is_off = FALSE;
+    cursor_is_asleep = FALSE;
 }
 
 /*
@@ -3948,7 +3955,7 @@ cursor_on_force(void)
     void
 cursor_on(void)
 {
-    if (cursor_is_off)
+    if (cursor_is_off && !cursor_is_asleep)
 	cursor_on_force();
 }
 
@@ -3963,6 +3970,35 @@ cursor_off(void)
 	out_str(T_VI);	    // disable cursor
 	cursor_is_off = TRUE;
     }
+}
+
+/*
+ * Check whether the cursor is invisible due to an ongoing cursor-less sleep
+ */
+    int
+cursor_is_sleeping(void)
+{
+    return cursor_is_asleep;
+}
+
+/*
+ * Disable the cursor and mark it disabled by cursor-less sleep
+ */
+    void
+cursor_sleep(void)
+{
+    cursor_is_asleep = TRUE;
+    cursor_off();
+}
+
+/*
+ * Enable the cursor and mark it not disabled by cursor-less sleep
+ */
+    void
+cursor_unsleep(void)
+{
+    cursor_is_asleep = FALSE;
+    cursor_on();
 }
 
 #if defined(CURSOR_SHAPE) || defined(PROTO)
@@ -4212,6 +4248,7 @@ add_termcode(char_u *name, char_u *string, int flags)
 	if (new_tc == NULL)
 	{
 	    tc_max_len -= 20;
+	    vim_free(s);
 	    return;
 	}
 	for (i = 0; i < tc_len; ++i)
@@ -6688,7 +6725,7 @@ gui_get_color_cmn(char_u *name)
     }
 
     // Check if the name is one of the colors we know
-    for (i = 0; i < (int)(sizeof(rgb_table) / sizeof(rgb_table[0])); i++)
+    for (i = 0; i < (int)ARRAY_LENGTH(rgb_table); i++)
 	if (STRICMP(name, rgb_table[i].color_name) == 0)
 	    return gui_adjust_rgb(rgb_table[i].color);
 

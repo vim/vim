@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2021 Feb 10
+*eval.txt*	For Vim version 8.2.  Last change: 2021 May 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -439,8 +439,8 @@ Changing the order of items in a list: >
 
 For loop ~
 
-The |:for| loop executes commands for each item in a list.  A variable is set
-to each item in the list in sequence.  Example: >
+The |:for| loop executes commands for each item in a List, String or Blob.
+A variable is set to each item in sequence.  Example with a List: >
 	:for item in mylist
 	:   call Doit(item)
 	:endfor
@@ -457,7 +457,7 @@ If all you want to do is modify each item in the list then the |map()|
 function will be a simpler method than a for loop.
 
 Just like the |:let| command, |:for| also accepts a list of variables.  This
-requires the argument to be a list of lists. >
+requires the argument to be a List of Lists. >
 	:for [lnum, col] in [[1, 3], [2, 8], [3, 0]]
 	:   call Doit(lnum, col)
 	:endfor
@@ -472,6 +472,14 @@ It is also possible to put remaining items in a List variable: >
 	:      echo "remainder: " . string(rest)
 	:   endif
 	:endfor
+
+For a Blob one byte at a time is used.
+
+For a String one character, including any composing characters, is used as a
+String.  Example: >
+	for c in text
+	  echo 'This character is ' .. c
+	endfor
 
 
 List functions ~
@@ -1187,7 +1195,8 @@ byte under the cursor: >
 
 In Vim9 script:
 If expr8 is a String this results in a String that contains the expr1'th
-single character from expr8.  To use byte indexes use |strpart()|.
+single character (including any composing characters) from expr8.  To use byte
+indexes use |strpart()|.
 
 Index zero gives the first byte or character.  Careful: text column numbers
 start with one!
@@ -1217,8 +1226,9 @@ In legacy Vim script the indexes are byte indexes.  This doesn't recognize
 multibyte encodings, see |byteidx()| for computing the indexes.  If expr8 is
 a Number it is first converted to a String.
 
-In Vim9 script the indexes are character indexes.  To use byte indexes use
-|strpart()|.
+In Vim9 script the indexes are character indexes and include composing
+characters.  To use byte indexes use |strpart()|.  To use character indexes
+without including composing characters use |strcharpart()|.
 
 The item at index expr1b is included, it is inclusive.  For an exclusive index
 use the |slice()| function.
@@ -1540,8 +1550,11 @@ the following ways:
 
 The arguments are optional.  Example: >
 	:let F = {-> 'error function'}
-	:echo F()
+	:echo F('ignored')
 <	error function
+
+Note that in Vim9 script another kind of lambda can be used: |vim9-lambda|.
+
 							*closure*
 Lambda expressions can access outer scope variables and arguments.  This is
 often called a closure.  Example where "i" and "a:arg" are used in a lambda
@@ -1576,7 +1589,7 @@ The lambda expression is also useful for Channel, Job and timer: >
 	Handler called
 
 Note how execute() is used to execute an Ex command.  That's ugly though.
-
+In Vim9 script you can use a command block, see |inline-function|.
 
 Lambda expressions have internal names like '<lambda>42'.  If you get an error
 for a lambda expression, you can find what it is with the following command: >
@@ -1948,6 +1961,9 @@ v:fcs_choice	What should happen after a |FileChangedShell| event was
 					everything that needs to be done.
 		The default is empty.  If another (invalid) value is used then
 		Vim behaves like it is empty, there is no warning message.
+
+					*v:fname* *fname-variable*
+v:fname		The file name set by 'includeexpr'.  Empty otherwise.
 
 					*v:fname_in* *fname_in-variable*
 v:fname_in	The name of the input file.  Valid while evaluating:
@@ -2430,6 +2446,7 @@ assert_inrange({lower}, {upper}, {actual} [, {msg}])
 				Number	assert {actual} is inside the range
 assert_match({pat}, {text} [, {msg}])
 				Number	assert {pat} matches {text}
+assert_nobeep({cmd})		Number	assert {cmd} does not cause a beep
 assert_notequal({exp}, {act} [, {msg}])
 				Number	assert {exp} is not equal {act}
 assert_notmatch({pat}, {text} [, {msg}])
@@ -2923,10 +2940,11 @@ str2list({expr} [, {utf8}])	List	convert each character of {expr} to
 					ASCII/UTF8 value
 str2nr({expr} [, {base} [, {quoted}]])
 				Number	convert String to Number
-strcharpart({str}, {start} [, {len}])
+strcharlen({expr})		Number	character length of the String {expr}
+strcharpart({str}, {start} [, {len} [, {skipcc}]])
 				String	{len} characters of {str} at
 					character {start}
-strchars({expr} [, {skipcc}])	Number	character length of the String {expr}
+strchars({expr} [, {skipcc}])	Number	character count of the String {expr}
 strdisplaywidth({expr} [, {col}]) Number display length of the String {expr}
 strftime({format} [, {time}])	String	format time with a specified format
 strgetchar({str}, {index})	Number	get char {index} from {str}
@@ -5096,6 +5114,13 @@ getbufinfo([{dict}])
 			listed		TRUE if the buffer is listed.
 			lnum		Line number used for the buffer when
 					opened in the current window.
+					Only valid if the buffer has been
+					displayed in the window in the past.
+					If you want the line number of the
+					last known cursor position in a given
+					window, use |line()|: >
+						:echo line('.', {winid})
+<
 			linecount	Number of lines in the buffer (only
 					valid when loaded)
 			loaded		TRUE if the buffer is loaded.
@@ -5300,6 +5325,9 @@ getcharpos({expr})
 		Get the position for {expr}. Same as |getpos()| but the column
 		number in the returned List is a character index instead of
 		a byte index.
+		If |getpos()| returns a very large column number, such as
+		2147483647, then getcharpos() will return the character index
+		of the last character.
 
 		Example:
 		With the cursor on '세' in line 5 with text "여보세요": >
@@ -5750,7 +5778,6 @@ getmousepos()						*getmousepos()*
 
 		If the mouse is over a popup window then that window is used.
 
-
 		When using |getchar()| the Vim variables |v:mouse_lnum|,
 		|v:mouse_col| and |v:mouse_winid| also provide these values.
 
@@ -5779,6 +5806,8 @@ getpos({expr})	Get the position for {expr}.  For possible values of {expr}
 		The column number in the returned List is the byte position
 		within the line. To get the character position in the line,
 		use |getcharpos()|
+		The column number can be very large, e.g. 2147483647, in which
+		case it means "after the end of the line".
 		This can be used to save and restore the position of a mark: >
 			let save_a_mark = getpos("'a")
 			...
@@ -6063,7 +6092,7 @@ getwininfo([{winid}])					*getwininfo()*
 		tab pages is returned.
 
 		Each List item is a |Dictionary| with the following entries:
-			botline		last displayed buffer line
+			botline		last complete displayed buffer line
 			bufnr		number of buffer in the window
 			height		window height (excluding winbar)
 			loclist		1 if showing a location list
@@ -6079,12 +6108,12 @@ getwininfo([{winid}])					*getwininfo()*
 			width		window width
 			winbar		1 if the window has a toolbar, 0
 					otherwise
-			wincol		leftmost screen column of the window,
-					col from |win_screenpos()|
+			wincol		leftmost screen column of the window;
+					"col" from |win_screenpos()|
 			winid		|window-ID|
 			winnr		window number
-			winrow		topmost screen column of the window,
-					row from |win_screenpos()|
+			winrow		topmost screen line of the window;
+					"row" from |win_screenpos()|
 
 		Can also be used as a |method|: >
 			GetWinnr()->getwininfo()
@@ -6694,6 +6723,7 @@ islocked({expr})					*islocked()* *E786*
 
 <		When {expr} is a variable that does not exist you get an error
 		message.  Use |exists()| to check for existence.
+		In Vim9 script it does not work for local variables.
 
 		Can also be used as a |method|: >
 			GetName()->islocked()
@@ -7450,7 +7480,8 @@ matchaddpos({group}, {pos} [, {priority} [, {id} [, {dict}]]])
 		to be used when fast match additions and deletions are
 		required, for example to highlight matching parentheses.
 
-		The list {pos} can contain one of these items:
+		{pos} is a list of positions.  Each position can be one of
+		these:
 		- A number.  This whole line will be highlighted.  The first
 		  line has number 1.
 		- A list with one number, e.g., [23]. The whole line with this
@@ -7463,7 +7494,7 @@ matchaddpos({group}, {pos} [, {priority} [, {id} [, {dict}]]])
 		- A list with three numbers, e.g., [23, 11, 3]. As above, but
 		  the third number gives the length of the highlight in bytes.
 
-		The maximum number of positions is 8.
+		The maximum number of positions in {pos} is 8.
 
 		Example: >
 			:highlight MyGroup ctermbg=green guibg=green
@@ -7472,8 +7503,7 @@ matchaddpos({group}, {pos} [, {priority} [, {id} [, {dict}]]])
 			:call matchdelete(m)
 
 <		Matches added by |matchaddpos()| are returned by
-		|getmatches()| with an entry "pos1", "pos2", etc., with the
-		value a list like the {pos} item.
+		|getmatches()|.
 
 		Can also be used as a |method|: >
 			GetGroup()->matchaddpos([23, 11])
@@ -7560,6 +7590,9 @@ matchfuzzy({list}, {str} [, {dict}])			*matchfuzzy()*
 		If there are no matching strings or there is an error, then an
 		empty list is returned. If length of {str} is greater than
 		256, then returns an empty list.
+
+		Refer to |fuzzy-match| for more information about fuzzy
+		matching strings.
 
 		Example: >
 		   :echo matchfuzzy(["clay", "crow"], "cay")
@@ -9158,6 +9191,8 @@ searchpair({start}, {middle}, {end} [, {flags} [, {skip}
 		and -1 returned.
 		{skip} can be a string, a lambda, a funcref or a partial.
 		Anything else makes the function fail.
+		In a `:def` function when the {skip} argument is a string
+		constant it is compiled into instructions.
 
 		For {stopline} and {timeout} see |search()|.
 
@@ -9913,7 +9948,7 @@ slice({expr}, {start} [, {end}])			*slice()*
 		Similar to using a |slice| "expr[start : end]", but "end" is
 		used exclusive.  And for a string the indexes are used as
 		character indexes instead of byte indexes, like in
-		|vim9script|.
+		|vim9script|.  Also, composing characters are not counted.
 		When {end} is omitted the slice continues to the last item.
 		When {end} is -1 the last item is omitted.
 
@@ -10271,16 +10306,35 @@ str2nr({expr} [, {base} [, {quoted}]])				*str2nr()*
 		Can also be used as a |method|: >
 			GetText()->str2nr()
 
-strcharpart({src}, {start} [, {len}])			*strcharpart()*
+
+strcharlen({expr})					*strcharlen()*
+		The result is a Number, which is the number of characters
+		in String {expr}.  Composing characters are ignored.
+		|strchars()| can count the number of characters, counting
+		composing characters separately.
+
+		Also see |strlen()|, |strdisplaywidth()| and |strwidth()|.
+
+		Can also be used as a |method|: >
+			GetText()->strcharlen()
+
+
+strcharpart({src}, {start} [, {len} [, {skipcc}]])		*strcharpart()*
 		Like |strpart()| but using character index and length instead
 		of byte index and length.
+		When {skipcc} is omitted or zero, composing characters are
+		counted separately.
+		When {skipcc} set to 1, Composing characters are ignored,
+		similar to  |slice()|.
 		When a character index is used where a character does not
-		exist it is assumed to be one character.  For example: >
+		exist it is omitted and counted as one character.  For
+		example: >
 			strcharpart('abc', -1, 2)
 <		results in 'a'.
 
 		Can also be used as a |method|: >
 			GetText()->strcharpart(5)
+
 
 strchars({expr} [, {skipcc}])					*strchars()*
 		The result is a Number, which is the number of characters
@@ -10288,6 +10342,8 @@ strchars({expr} [, {skipcc}])					*strchars()*
 		When {skipcc} is omitted or zero, composing characters are
 		counted separately.
 		When {skipcc} set to 1, Composing characters are ignored.
+		|strcharlen()| always does this.
+
 		Also see |strlen()|, |strdisplaywidth()| and |strwidth()|.
 
 		{skipcc} is only available after 7.4.755.  For backward
@@ -11821,7 +11877,7 @@ gui_mac			Compiled with Macintosh GUI.
 gui_motif		Compiled with Motif GUI.
 gui_photon		Compiled with Photon GUI.
 gui_running		Vim is running in the GUI, or it will start soon.
-gui_win32		Compiled with MS Windows Win32 GUI.
+gui_win32		Compiled with MS-Windows Win32 GUI.
 gui_win32s		idem, and Win32s system being used (Windows 3.1)
 haiku			Haiku version of Vim.
 hangul_input		Compiled with Hangul input support. |hangul|
@@ -12773,8 +12829,8 @@ text...
 			it can no longer be changed (until it is unlocked).
 			A locked variable can be deleted: >
 				:lockvar v
-				:let v = 'asdf'		" fails!
-				:unlet v
+				:let v = 'asdf'	  " fails!
+				:unlet v	  " works
 <							*E741* *E940*
 			If you try to change a locked variable you get an
 			error message: "E741: Value is locked: {name}".
@@ -13112,7 +13168,12 @@ text...
 <			If you just want a highlighted message use |:echohl|.
 			And to get a beep: >
 		:exe "normal \<Esc>"
-<
+
+:echoc[onsole] {expr1} ..				*:echoc* *:echoconsole*
+			Intended for testing: works like `:echomsg` but when
+			running in the GUI and started from a terminal write
+			the text to stdout.
+
 							*:eval*
 :eval {expr}		Evaluate {expr} and discard the result.  Example: >
 				:eval Getlist()->Filter()->append('$')
@@ -13142,7 +13203,7 @@ text...
 			Cannot be followed by a comment.
 			Examples: >
 		:execute "buffer" nextbuf
-		:execute "normal" count . "w"
+		:execute "normal" count .. "w"
 <
 			":execute" can be used to append a command to commands
 			that don't accept a '|'.  Example: >
@@ -13158,8 +13219,8 @@ text...
 			file names.  The |fnameescape()| function can be used
 			for Vim commands, |shellescape()| for |:!| commands.
 			Examples: >
-		:execute "e " . fnameescape(filename)
-		:execute "!ls " . shellescape(filename, 1)
+		:execute "e " .. fnameescape(filename)
+		:execute "!ls " .. shellescape(filename, 1)
 <
 			Note: The executed string may be any command-line, but
 			starting or ending "if", "while" and "for" does not

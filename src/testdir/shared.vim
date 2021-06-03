@@ -21,6 +21,8 @@ func PythonProg()
     let s:python = 'python'
   elseif has('win32')
     " Use Python Launcher for Windows (py.exe) if available.
+    " NOTE: if you get a "Python was not found" error, disable the Python
+    " shortcuts in "Windows menu / Settings / Manage App Execution Aliases".
     if executable('py.exe')
       let s:python = 'py.exe'
     elseif executable('python.exe')

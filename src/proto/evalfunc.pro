@@ -1,4 +1,5 @@
 /* evalfunc.c */
+void sortFunctions(void);
 char_u *get_function_name(expand_T *xp, int idx);
 char_u *get_expr_name(expand_T *xp, int idx);
 int find_internal_func(char_u *name);
@@ -23,5 +24,4 @@ void range_list_materialize(list_T *list);
 float_T vim_round(float_T f);
 long do_searchpair(char_u *spat, char_u *mpat, char_u *epat, int dir, typval_T *skip, int flags, pos_T *match_pos, linenr_T lnum_stop, long time_limit);
 void f_string(typval_T *argvars, typval_T *rettv);
-void f_fullcommand(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

@@ -245,6 +245,25 @@ func Test_prop_find_smaller_len_than_match_col()
   call prop_type_delete('test')
 endfunc
 
+func Test_prop_find_with_both_option_enabled()
+  " Initialize
+  new
+  call AddPropTypes()
+  call SetupPropsInFirstLine()
+  let props = Get_expected_props()->map({_, v -> extend(v, {'lnum': 1})})
+  " Test
+  call assert_fails("call prop_find({'both': 1})", 'E968:')
+  call assert_fails("call prop_find({'id': 11, 'both': 1})", 'E860:')
+  call assert_fails("call prop_find({'type': 'three', 'both': 1})", 'E860:')
+  call assert_equal({}, prop_find({'id': 11, 'type': 'three', 'both': 1}))
+  call assert_equal({}, prop_find({'id': 130000, 'type': 'one', 'both': 1}))
+  call assert_equal(props[2], prop_find({'id': 12, 'type': 'two', 'both': 1}))
+  call assert_equal(props[0], prop_find({'id': 14, 'type': 'whole', 'both': 1}))
+  " Clean up
+  call DeletePropTypes()
+  bwipe!
+endfunc
+
 func Test_prop_add()
   new
   call AddPropTypes()
@@ -1338,6 +1357,25 @@ func Test_prop_func_invalid_args()
   call assert_fails("call prop_type_get([])", 'E730:')
   call assert_fails("call prop_type_get('', [])", 'E474:')
   call assert_fails("call prop_type_list([])", 'E715:')
+  call assert_fails("call prop_type_add('yyy', 'not_a_dict')", 'E715:')
+  call assert_fails("call prop_add(1, 5, {'type':'missing_type', 'length':1})", 'E971:')
+  call assert_fails("call prop_add(1, 5, {'type': ''})", 'E971:')
+  call assert_fails('call prop_add(1, 1, 0)', 'E715:')
+
+  new
+  call setline(1, ['first', 'second'])
+  call prop_type_add('xxx', {})
+
+  call assert_fails("call prop_type_add('xxx', {})", 'E969:')
+  call assert_fails("call prop_add(2, 0, {'type': 'xxx'})", 'E964:')
+  call assert_fails("call prop_add(2, 3, {'type': 'xxx', 'end_lnum':1})", 'E475:')
+  call assert_fails("call prop_add(2, 3, {'type': 'xxx', 'end_lnum':3})", 'E966:')
+  call assert_fails("call prop_add(2, 3, {'type': 'xxx', 'length':-1})", 'E475:')
+  call assert_fails("call prop_add(2, 3, {'type': 'xxx', 'end_col':0})", 'E475:')
+  call assert_fails("call prop_add(2, 3, {'length':1})", 'E965:')
+
+  call prop_type_delete('xxx')
+  bwipe!
 endfunc
 
 func Test_prop_split_join()
@@ -1430,6 +1468,25 @@ func Test_prop_one_line_window()
   close
   bwipe!
 endfunc
+
+" This was calling ml_append_int() and copy a text property from a previous
+" line at the wrong moment.  Exact text length matters.
+def Test_prop_splits_data_block()
+  new
+  var lines: list<string> = [repeat('x', 35)]->repeat(41)
+			+ [repeat('!', 35)]
+			+ [repeat('x', 35)]->repeat(56)
+  lines->setline(1)
+  prop_type_add('someprop', {highlight: 'ErrorMsg'})
+  prop_add(1, 27, {end_lnum: 1, end_col: 70, type: 'someprop'})
+  prop_remove({type: 'someprop'}, 1)
+  prop_add(35, 22, {end_lnum: 43, end_col: 43, type: 'someprop'})
+  prop_remove({type: 'someprop'}, 35, 43)
+  assert_equal([], prop_list(42))
+
+  bwipe!
+  prop_type_delete('someprop')
+enddef
 
 
 " vim: shiftwidth=2 sts=2 expandtab

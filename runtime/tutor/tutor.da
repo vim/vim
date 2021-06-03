@@ -883,7 +883,7 @@ BEMÆRK: Hvis du vil ignorere case for en enkelt søg-kommando, så brug  \c
 
   1. Begynd at redigere "vimrc"-filen. Det afhænger af dit system:
 	:e ~/.vimrc		i Unix
-	:e $VIM/_vimrc		i MS-Windows
+	:e ~/_vimrc		i MS-Windows
 
   2. Læs nu indholdet af eksempel "vimrc"-filen:
 	:r $VIMRUNTIME/vimrc_example.vim

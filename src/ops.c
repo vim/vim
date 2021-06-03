@@ -82,7 +82,7 @@ get_op_type(int char1, int char2)
     {
 	if (opchars[i][0] == char1 && opchars[i][1] == char2)
 	    break;
-	if (i == (int)(sizeof(opchars) / sizeof(char [3]) - 1))
+	if (i == (int)ARRAY_LENGTH(opchars) - 1)
 	{
 	    internal_error("get_op_type()");
 	    break;
@@ -2383,9 +2383,10 @@ op_addsub(
 #ifdef FEAT_NETBEANS_INTG
 	    if (netbeans_active() && one_change)
 	    {
-		char_u *ptr = ml_get_buf(curbuf, pos.lnum, FALSE);
+		char_u *ptr;
 
 		netbeans_removed(curbuf, pos.lnum, pos.col, (long)length);
+		ptr = ml_get_buf(curbuf, pos.lnum, FALSE);
 		netbeans_inserted(curbuf, pos.lnum, pos.col,
 						&ptr[pos.col], length);
 	    }
@@ -3985,12 +3986,13 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 		op_formatexpr(oap);	// use expression
 	    else
 #endif
+	    {
 		if (*p_fp != NUL || *curbuf->b_p_fp != NUL)
-		op_colon(oap);		// use external command
-	    else
-		op_format(oap, FALSE);	// use internal function
+		    op_colon(oap);		// use external command
+		else
+		    op_format(oap, FALSE);	// use internal function
+	    }
 	    break;
-
 	case OP_FORMAT2:
 	    op_format(oap, TRUE);	// use internal function
 	    break;

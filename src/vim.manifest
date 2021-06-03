@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  VIM - Vi IMproved  by Bram Moolenaar et al.
+  MS-Windows WinSxS (aka Side-by-side assembly) manifest file
+  Do ":help uganda"  in Vim to read copying and usage conditions.
+  Do ":help credits" in Vim to see a list of people who contributed.
+-->
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0" xmlns:asmv3="urn:schemas-microsoft-com:asm.v3" >
   <assemblyIdentity
     processorArchitecture="*"

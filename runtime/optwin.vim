@@ -266,6 +266,8 @@ if exists("+autochdir")
   call <SID>AddOption("autochdir", gettext("change to directory of file in buffer"))
   call <SID>BinOptionG("acd", &acd)
 endif
+call <SID>AddOption("autoshelldir", gettext("change to pwd of shell in terminal buffer"))
+call <SID>BinOptionG("asd", &asd)
 call <SID>AddOption("wrapscan", gettext("search commands wrap around the end of the buffer"))
 call <SID>BinOptionG("ws", &ws)
 call <SID>AddOption("incsearch", gettext("show match for partly typed search command"))

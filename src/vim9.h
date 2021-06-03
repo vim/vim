@@ -14,11 +14,14 @@
 typedef enum {
     ISN_EXEC,	    // execute Ex command line isn_arg.string
     ISN_EXECCONCAT, // execute Ex command from isn_arg.number items on stack
+    ISN_LEGACY_EVAL, // evaluate expression isn_arg.string with legacy syntax.
     ISN_ECHO,	    // echo isn_arg.echo.echo_count items on top of stack
     ISN_EXECUTE,    // execute Ex commands isn_arg.number items on top of stack
     ISN_ECHOMSG,    // echo Ex commands isn_arg.number items on top of stack
     ISN_ECHOERR,    // echo Ex commands isn_arg.number items on top of stack
     ISN_RANGE,	    // compute range from isn_arg.string, push to stack
+    ISN_SUBSTITUTE, // :s command with expression
+    ISN_INSTR,	    // instructions compiled from expression
 
     // get and set variables
     ISN_LOAD,	    // push local variable isn_arg.number
@@ -57,6 +60,8 @@ typedef enum {
     ISN_STORENR,    // store number into local variable isn_arg.storenr.stnr_idx
     ISN_STOREINDEX,	// store into list or dictionary, type isn_arg.vartype,
 			// value/index/variable on stack
+    ISN_STORERANGE,	// store into blob,
+			// value/index 1/index 2/variable on stack
 
     ISN_UNLET,		// unlet variable isn_arg.unlet.ul_name
     ISN_UNLETENV,	// unlet environment variable isn_arg.unlet.ul_name
@@ -92,6 +97,8 @@ typedef enum {
 
     // expression operations
     ISN_JUMP,	    // jump if condition is matched isn_arg.jump
+    ISN_JUMP_IF_ARG_SET, // jump if argument is already set, uses
+			 // isn_arg.jumparg
 
     // loop
     ISN_FOR,	    // get next item from a list, uses isn_arg.forloop
@@ -132,6 +139,8 @@ typedef enum {
     ISN_LISTAPPEND, // append to a list, like add()
     ISN_LISTINDEX,  // [expr] list index
     ISN_LISTSLICE,  // [expr:expr] list slice
+    ISN_BLOBINDEX,  // [expr] blob index
+    ISN_BLOBSLICE,  // [expr:expr] blob slice
     ISN_ANYINDEX,   // [expr] runtime index
     ISN_ANYSLICE,   // [expr:expr] runtime slice
     ISN_SLICE,	    // drop isn_arg.number items from start of list
@@ -160,7 +169,15 @@ typedef enum {
 
     ISN_UNPACK,	    // unpack list into items, uses isn_arg.unpack
     ISN_SHUFFLE,    // move item on stack up or down
-    ISN_DROP	    // pop stack and discard value
+    ISN_DROP,	    // pop stack and discard value
+
+    ISN_REDIRSTART, // :redir =>
+    ISN_REDIREND,   // :redir END, isn_arg.number == 1 for append
+
+    ISN_CEXPR_AUCMD, // first part of :cexpr  isn_arg.number is cmdidx
+    ISN_CEXPR_CORE,  // second part of :cexpr, uses isn_arg.cexpr
+
+    ISN_FINISH	    // end marker in list of instructions
 } isntype_T;
 
 
@@ -202,6 +219,12 @@ typedef struct {
     jumpwhen_T	jump_when;
     int		jump_where;	    // position to jump to
 } jump_T;
+
+// arguments to ISN_JUMP_IF_ARG_SET
+typedef struct {
+    int		jump_arg_off;	    // argument index, negative
+    int		jump_where;	    // position to jump to
+} jumparg_T;
 
 // arguments to ISN_FOR
 typedef struct {
@@ -328,6 +351,24 @@ typedef struct {
     int		outer_depth;	// nesting level, stack frames to go up
 } isn_outer_T;
 
+// arguments to ISN_SUBSTITUTE
+typedef struct {
+    char_u	*subs_cmd;	// :s command
+    isn_T	*subs_instr;	// sequence of instructions
+} subs_T;
+
+// indirect arguments to ISN_TRY
+typedef struct {
+    int		cer_cmdidx;
+    char_u	*cer_cmdline;
+    int		cer_forceit;
+} cexprref_T;
+
+// arguments to ISN_CEXPR_CORE
+typedef struct {
+    cexprref_T *cexpr_ref;
+} cexpr_T;
+
 /*
  * Instruction
  */
@@ -346,6 +387,7 @@ struct isn_S {
 	job_T		    *job;
 	partial_T	    *partial;
 	jump_T		    jump;
+	jumparg_T	    jumparg;
 	forloop_T	    forloop;
 	try_T		    try;
 	trycont_T	    trycont;
@@ -369,6 +411,9 @@ struct isn_S {
 	cmod_T		    cmdmod;
 	unpack_T	    unpack;
 	isn_outer_T	    outer;
+	subs_T		    subs;
+	cexpr_T		    cexpr;
+	isn_T		    *instr;
     } isn_arg;
 };
 
@@ -401,13 +446,17 @@ struct dfunc_S {
 // Number of entries used by stack frame for a function call.
 // - ec_dfunc_idx:   function index
 // - ec_iidx:        instruction index
+// - ec_instr:       instruction list pointer
 // - ec_outer:	     stack used for closures
+// - funclocal:	     function-local data
 // - ec_frame_idx:   previous frame index
 #define STACK_FRAME_FUNC_OFF 0
 #define STACK_FRAME_IIDX_OFF 1
-#define STACK_FRAME_OUTER_OFF 2
-#define STACK_FRAME_IDX_OFF 3
-#define STACK_FRAME_SIZE 4
+#define STACK_FRAME_INSTR_OFF 2
+#define STACK_FRAME_OUTER_OFF 3
+#define STACK_FRAME_FUNCLOCAL_OFF 4
+#define STACK_FRAME_IDX_OFF 5
+#define STACK_FRAME_SIZE 6
 
 
 #ifdef DEFINE_VIM9_GLOBALS

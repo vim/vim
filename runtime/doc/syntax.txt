@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.2.  Last change: 2021 Jan 21
+*syntax.txt*	For Vim version 8.2.  Last change: 2021 May 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1741,8 +1741,8 @@ The coloring scheme for tags in the HTML file works as follows.
 
 The  <> of opening tags are colored differently than the </> of a closing tag.
 This is on purpose! For opening tags the 'Function' color is used, while for
-closing tags the 'Type' color is used (See syntax.vim to check how those are
-defined for you)
+closing tags the 'Identifier' color is used (See syntax.vim to check how those
+are defined for you)
 
 Known tag names are colored the same way as statements in C.  Unknown tag
 names are colored with the same color as the <> or </> respectively which
@@ -2236,9 +2236,10 @@ can use them.
 
 For example, Linux and BSD distributions use groff as their default text
 processing package.  In order to activate the extra syntax highlighting
-features for groff, add the following option to your start-up files: >
+features for groff, arrange for files to be recognized as groff (see
+|ft-groff-syntax|) or add the following option to your start-up files: >
 
-  :let b:nroff_is_groff = 1
+  :let nroff_is_groff = 1
 
 Groff is different from the old AT&T n/troff that you may still find in
 Solaris.  Groff macro and request names can be longer than 2 characters and
@@ -4676,7 +4677,7 @@ matches, nextgroup, etc.  But there are a few differences:
 - A line continuation pattern can be given.  It is used to decide which group
   of lines need to be searched like they were one line.  This means that the
   search for a match with the specified items starts in the first of the
-  consecutive that contain the continuation pattern.
+  consecutive lines that contain the continuation pattern.
 - When using "nextgroup" or "contains", this only works within one line (or
   group of continued lines).
 - When using a region, it must start and end in the same line (or group of
@@ -4966,6 +4967,14 @@ ctermul={color-nr}				*highlight-ctermul*
 	colors for a color-xterm can be changed from the .Xdefaults file.
 	Unfortunately this means that it's not possible to get the same colors
 	for each user.	See |xterm-color| for info about color xterms.
+							*tmux*
+	When using tmux you may want to use this in the tmux config: >
+	    # tmux colors
+	    set -g default-terminal "xterm-256color"
+	    set -ag terminal-overrides ",xterm-256color:Tc"
+<	More info at:
+	https://github.com/tmux/tmux/wiki/FAQ#how-do-i-use-a-256-colour-terminal
+	https://github.com/tmux/tmux/wiki/FAQ#how-do-i-use-rgb-colour
 
 	The MS-Windows standard colors are fixed (in a console window), so
 	these have been used for the names.  But the meaning of color names in

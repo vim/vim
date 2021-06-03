@@ -56,6 +56,7 @@ locale.c	| locale/language handling
 map.c		| mapping and abbreviations
 mark.c		| marks
 match.c		| highlight matching
+float.c		| floating point functions
 mbyte.c		| multi-byte character handling
 memfile.c	| storing lines for buffers in a swapfile
 memline.c	| storing lines for buffers in memory

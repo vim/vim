@@ -1,4 +1,4 @@
-*usr_08.txt*	For Vim version 8.2.  Last change: 2017 Aug 11
+*usr_08.txt*	For Vim version 8.2.  Last change: 2021 May 20
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -235,7 +235,7 @@ windows like this:
 	+----------------------------------+
 
 Clearly the last one should be at the top.  Go to that window (using CTRL-W w)
-and the type this command: >
+and then type this command: >
 
 	CTRL-W K
 

@@ -685,6 +685,9 @@ emsg_core(char_u *s)
 	 */
 	if (emsg_silent != 0)
 	{
+#ifdef FEAT_EVAL
+	    ++did_emsg_silent;
+#endif
 	    if (emsg_noredir == 0)
 	    {
 		msg_start();

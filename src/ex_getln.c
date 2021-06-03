@@ -1253,8 +1253,11 @@ cmdline_insert_reg(int *gotesc UNUSED)
 	}
 #endif
     }
+    // remove the double quote
     redrawcmd();
-    return CMDLINE_CHANGED;
+
+    // The text has been stuffed, the command line didn't change yet.
+    return CMDLINE_NOT_CHANGED;
 }
 
 /*
@@ -1706,6 +1709,26 @@ getcmdline_int(
     // and execute commands. Display may be messed up a bit.
     if (did_emsg)
 	redrawcmd();
+
+#ifdef FEAT_STL_OPT
+    // Redraw the statusline in case it uses the current mode using the mode()
+    // function.
+    if (!cmd_silent && msg_scrolled == 0)
+    {
+	int	found_one = FALSE;
+	win_T	*wp;
+
+	FOR_ALL_WINDOWS(wp)
+	    if (*p_stl != NUL || *wp->w_p_stl != NUL)
+	    {
+		wp->w_redr_status = TRUE;
+		found_one = TRUE;
+	    }
+	if (found_one)
+	    redraw_statuslines();
+    }
+#endif
+
     did_emsg = FALSE;
     got_int = FALSE;
 
@@ -1714,6 +1737,8 @@ getcmdline_int(
      */
     for (;;)
     {
+	int trigger_cmdlinechanged = TRUE;
+
 	redir_off = TRUE;	// Don't redirect the typed command.
 				// Repeated, because a ":redir" inside
 				// completion may switch it on.
@@ -1737,9 +1762,17 @@ getcmdline_int(
 	    c = safe_vgetc();
 	} while (c == K_IGNORE || c == K_NOP);
 
-	if (c == K_COMMAND
-		   && do_cmdline(NULL, getcmdkeycmd, NULL, DOCMD_NOWAIT) == OK)
-	    goto cmdline_changed;
+	if (c == K_COMMAND)
+	{
+	    int	    clen = ccline.cmdlen;
+
+	    if (do_cmdline(NULL, getcmdkeycmd, NULL, DOCMD_NOWAIT) == OK)
+	    {
+		if (clen == ccline.cmdlen)
+		    trigger_cmdlinechanged = FALSE;
+		goto cmdline_changed;
+	    }
+	}
 
 	if (KeyTyped)
 	{
@@ -2352,8 +2385,9 @@ cmdline_changed:
 	if (is_state.winid != curwin->w_id)
 	    init_incsearch_state(&is_state);
 #endif
-	// Trigger CmdlineChanged autocommands.
-	trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINECHANGED);
+	if (trigger_cmdlinechanged)
+	    // Trigger CmdlineChanged autocommands.
+	    trigger_cmd_autocmd(cmdline_type, EVENT_CMDLINECHANGED);
 
 #ifdef FEAT_SEARCH_EXTRA
 	if (xpc.xp_context == EXPAND_NOTHING)

@@ -13,6 +13,7 @@ def Test_vim9cmd()
     vim9cm assert_equal('yes', y)
   END
   CheckScriptSuccess(lines)
+  assert_fails('vim9cmd', 'E1164:')
 enddef
 
 def Test_edit_wildcards()
@@ -357,6 +358,24 @@ def Test_method_call_linebreak()
 
   lines =<< trim END
       new
+      def Foo(): string
+        return 'the text'
+      enddef
+      def Bar(F: func): string
+        return F()
+      enddef
+      def Test()
+        Foo  ->Bar()
+             ->setline(1)
+      enddef
+      Test()
+      assert_equal('the text', getline(1))
+      bwipe!
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      new
       g:shortlist
           ->copy()
           ->setline(1)
@@ -370,6 +389,23 @@ def Test_method_call_linebreak()
   new
   MethodAfterLinebreak('foobar')
   assert_equal('foobar', getline(1))
+  bwipe!
+
+  lines =<< trim END
+      vim9script
+      def Foo(): string
+          return '# some text'
+      enddef
+
+      def Bar(F: func): string
+          return F()
+      enddef
+
+      Foo->Bar()
+         ->setline(1)
+  END
+  CheckScriptSuccess(lines)
+  assert_equal('# some text', getline(1))
   bwipe!
 enddef
 
@@ -385,6 +421,33 @@ def Test_method_call_whitespace()
     bwipe!
   END
   CheckDefAndScriptSuccess(lines)
+enddef
+
+def Test_method_and_user_command()
+  var lines =<< trim END
+      vim9script
+      def Cmd()
+        g:didFunc = 1
+      enddef
+      command Cmd g:didCmd = 1
+      Cmd
+      assert_equal(1, g:didCmd)
+      Cmd()
+      assert_equal(1, g:didFunc)
+      unlet g:didFunc
+      unlet g:didCmd
+
+      def InDefFunc()
+        Cmd
+        assert_equal(1, g:didCmd)
+        Cmd()
+        assert_equal(1, g:didFunc)
+        unlet g:didFunc
+        unlet g:didCmd
+      enddef
+      InDefFunc()
+  END
+  CheckScriptSuccess(lines)
 enddef
 
 def Test_skipped_expr_linebreak()
@@ -735,6 +798,55 @@ def Test_silent_pattern()
   bwipe!
 enddef
 
+def Test_useless_command_modifier()
+  g:maybe = true
+  var lines =<< trim END
+      if g:maybe
+      silent endif
+  END
+  CheckDefAndScriptFailure(lines, 'E1176:', 2)
+
+  lines =<< trim END
+      for i in [0]
+      silent endfor
+  END
+  CheckDefAndScriptFailure(lines, 'E1176:', 2)
+
+  lines =<< trim END
+      while g:maybe
+      silent endwhile
+  END
+  CheckDefAndScriptFailure(lines, 'E1176:', 2)
+
+  lines =<< trim END
+      silent try
+      finally
+      endtry
+  END
+  CheckDefAndScriptFailure(lines, 'E1176:', 1)
+
+  lines =<< trim END
+      try
+      silent catch
+      endtry
+  END
+  CheckDefAndScriptFailure(lines, 'E1176:', 2)
+
+  lines =<< trim END
+      try
+      silent finally
+      endtry
+  END
+  CheckDefAndScriptFailure(lines, 'E1176:', 2)
+
+  lines =<< trim END
+      try
+      finally
+      silent endtry
+  END
+  CheckDefAndScriptFailure(lines, 'E1176:', 3)
+enddef
+
 def Test_eval_command()
   var from = 3
   var to = 5
@@ -873,18 +985,26 @@ def Test_user_command_comment()
   command -nargs=1 Comd echom <q-args>
 
   var lines =<< trim END
-    vim9script
-    Comd # comment
+      vim9script
+      Comd # comment
   END
   CheckScriptSuccess(lines)
 
   lines =<< trim END
-    vim9script
-    Comd# comment
+      vim9script
+      Comd# comment
   END
   CheckScriptFailure(lines, 'E1144:')
-
   delcommand Comd
+
+  lines =<< trim END
+      vim9script
+      command Foo echo 'Foo'
+      Foo3Bar
+  END
+  CheckScriptFailure(lines, 'E1144: Command "Foo" is not followed by white space: Foo3Bar')
+
+  delcommand Foo
 enddef
 
 def Test_star_command()
@@ -994,6 +1114,27 @@ def Test_wincmd()
   endif
   assert_notequal(id1, win_getid())
   close
+
+  split
+  var id = win_getid()
+  split
+  :2wincmd o
+  assert_equal(id, win_getid())
+  only
+
+  split
+  split
+  assert_equal(3, winnr('$'))
+  :2wincmd c
+  assert_equal(2, winnr('$'))
+  only
+
+  split
+  split
+  assert_equal(3, winnr('$'))
+  :2wincmd q
+  assert_equal(2, winnr('$'))
+  only
 enddef
 
 def Test_windo_missing_endif()
@@ -1002,5 +1143,167 @@ def Test_windo_missing_endif()
   END
   CheckDefExecFailure(lines, 'E171:', 1)
 enddef
+
+let s:theList = [1, 2, 3]
+
+def Test_lockvar()
+  s:theList[1] = 22
+  assert_equal([1, 22, 3], s:theList)
+  lockvar s:theList
+  assert_fails('theList[1] = 77', 'E741:')
+  unlockvar s:theList
+  s:theList[1] = 44
+  assert_equal([1, 44, 3], s:theList)
+
+  var lines =<< trim END
+      vim9script
+      var theList = [1, 2, 3]
+      def SetList()
+        theList[1] = 22
+        assert_equal([1, 22, 3], theList)
+        lockvar theList
+        theList[1] = 77
+      enddef
+      SetList()
+  END
+  CheckScriptFailure(lines, 'E1119', 4)
+
+  lines =<< trim END
+      var theList = [1, 2, 3]
+      lockvar theList
+  END
+  CheckDefFailure(lines, 'E1178', 2)
+
+  lines =<< trim END
+      var theList = [1, 2, 3]
+      unlockvar theList
+  END
+  CheckDefFailure(lines, 'E1178', 2)
+enddef
+
+def Test_substitute_expr()
+  var to = 'repl'
+  new
+  setline(1, 'one from two')
+  s/from/\=to
+  assert_equal('one repl two', getline(1))
+
+  setline(1, 'one from two')
+  s/from/\=to .. '_x'
+  assert_equal('one repl_x two', getline(1))
+
+  setline(1, 'one from two from three')
+  var also = 'also'
+  s/from/\=to .. '_' .. also/g#e
+  assert_equal('one repl_also two repl_also three', getline(1))
+
+  setline(1, 'abc abc abc')
+  for choice in [true, false]
+    :1s/abc/\=choice ? 'yes' : 'no'/
+  endfor
+  assert_equal('yes no abc', getline(1))
+
+  bwipe!
+
+  CheckDefFailure(['s/from/\="x")/'], 'E488:')
+  CheckDefFailure(['s/from/\="x"/9'], 'E488:')
+
+  # When calling a function the right instruction list needs to be restored.
+  g:cond = true
+  var lines =<< trim END
+      vim9script
+      def Foo()
+          Bar([])
+      enddef
+      def Bar(l: list<number>)
+        if g:cond
+          s/^/\=Rep()/
+          for n in l[:]
+          endfor
+        endif
+      enddef
+      def Rep(): string
+          return 'rep'
+      enddef
+      new
+      Foo()
+      assert_equal('rep', getline(1))
+      bwipe!
+  END
+  CheckScriptSuccess(lines)
+  unlet g:cond
+enddef
+
+def Test_redir_to_var()
+  var result: string
+  redir => result
+    echo 'something'
+  redir END
+  assert_equal("\nsomething", result)
+
+  redir =>> result
+    echo 'more'
+  redir END
+  assert_equal("\nsomething\nmore", result)
+
+  var d: dict<string>
+  redir => d.redir
+    echo 'dict'
+  redir END
+  assert_equal({redir: "\ndict"}, d)
+
+  var l = ['a', 'b', 'c']
+  redir => l[1]
+    echo 'list'
+  redir END
+  assert_equal(['a', "\nlist", 'c'], l)
+
+  var dl = {l: ['x']}
+  redir => dl.l[0]
+    echo 'dict-list'
+  redir END
+  assert_equal({l: ["\ndict-list"]}, dl)
+
+  redir =>> d.redir
+    echo 'more'
+  redir END
+  assert_equal({redir: "\ndict\nmore"}, d)
+
+  var lines =<< trim END
+    redir => notexist
+  END
+  CheckDefFailure(lines, 'E1089:')
+
+  lines =<< trim END
+    var ls = 'asdf'
+    redir => ls[1]
+    redir END
+  END
+  CheckDefFailure(lines, 'E1141:')
+enddef
+
+def Test_echo_void()
+  var lines =<< trim END
+      vim9script
+      def NoReturn()
+        echo 'nothing'
+      enddef
+      echo NoReturn()
+  END
+  CheckScriptFailure(lines, 'E1186:', 5)
+
+  lines =<< trim END
+      vim9script
+      def NoReturn()
+        echo 'nothing'
+      enddef
+      def Try()
+        echo NoReturn()
+      enddef
+      defcompile
+  END
+  CheckScriptFailure(lines, 'E1186:', 1)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

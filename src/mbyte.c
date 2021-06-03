@@ -1545,6 +1545,15 @@ utf_char2cells(int c)
 	{0x1f6e9, 0x1f6e9},
 	{0x1f6f0, 0x1f6f0},
 	{0x1f6f3, 0x1f6f3}
+
+#ifdef MACOS_X
+	// Include SF Symbols characters, which should be rendered as
+	// double-width. All of them are in the Supplementary Private Use
+	// Area-B range. The exact range was determined by downloading the "SF
+	// Symbols" app from Apple, and then selecting all symbols, copying
+	// them out, and inspecting the unicode values of them.
+	, {0x100000, 0x100d7f}
+#endif
     };
 
     if (c >= 0x100)
@@ -2841,7 +2850,7 @@ utf_class_buf(int c, buf_T *buf)
     };
 
     int bot = 0;
-    int top = sizeof(classes) / sizeof(struct clinterval) - 1;
+    int top = ARRAY_LENGTH(classes) - 1;
     int mid;
 
     // First quick check for Latin1 characters, use 'iskeyword'.
@@ -3939,7 +3948,7 @@ utf_allow_break_before(int cc)
     };
 
     int first = 0;
-    int last  = sizeof(BOL_prohibition_punct)/sizeof(int) - 1;
+    int last  = ARRAY_LENGTH(BOL_prohibition_punct) - 1;
     int mid   = 0;
 
     while (first < last)
@@ -3989,7 +3998,7 @@ utf_allow_break_after(int cc)
     };
 
     int first = 0;
-    int last  = sizeof(EOL_prohibition_punct)/sizeof(int) - 1;
+    int last  = ARRAY_LENGTH(EOL_prohibition_punct) - 1;
     int mid   = 0;
 
     while (first < last)
@@ -4444,10 +4453,15 @@ enc_canonize(char_u *enc)
 
     if (STRCMP(enc, "default") == 0)
     {
+#ifdef MSWIN
+	// Use the system encoding, the default is always utf-8.
+	r = enc_locale();
+#else
 	// Use the default encoding as it's found by set_init_1().
 	r = get_encoding_default();
+#endif
 	if (r == NULL)
-	    r = (char_u *)"latin1";
+	    r = (char_u *)ENC_DFLT;
 	return vim_strsave(r);
     }
 
@@ -5551,7 +5565,7 @@ f_setcellwidths(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_charclass(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    if (check_for_string(&argvars[0]) == FAIL)
+    if (check_for_string_arg(argvars, 0) == FAIL)
 	return;
     rettv->vval.v_number = mb_get_class(argvars[0].vval.v_string);
 }

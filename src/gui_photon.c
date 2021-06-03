@@ -34,7 +34,6 @@
 # define PhImage_t	int
 #endif
 
-#define ARRAY_LENGTH(a) (sizeof(a) / sizeof(a[0]))
 #define RGB(r, g, b) PgRGB(r, g, b)
 
 #define EVENT_BUFFER_SIZE sizeof(PhEvent_t) + 1000

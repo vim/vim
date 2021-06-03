@@ -944,8 +944,8 @@
   създадете файл, наречен "vimrc".
 
   1. Създайте вашия файл "vimrc". В зависимост от вашата операционна система:
-	:e ~/.vimrc		за всеки вид Unix
-	:e $VIM/_vimrc	за MS-Windows
+	:e ~/.vimrc	за всеки вид Unix
+	:e ~/_vimrc	за MS-Windows
 
   2. Сега прочетете съдържанието на примерния файл "vimrc":
 	:r $VIMRUNTIME/vimrc_example.vim

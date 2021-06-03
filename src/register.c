@@ -1402,12 +1402,13 @@ op_yank(oparg_T *oap, int deleting, int mess)
 
 # ifdef FEAT_X11
     // If we were yanking to the '+' register, send result to selection.
-    // Also copy to the '*' register, in case auto-select is off.
+    // Also copy to the '*' register, in case auto-select is off.  But not when
+    // 'clipboard' has "unnamedplus" and not "unnamed".
     if (clip_plus.available
 	    && (curr == &(y_regs[PLUS_REGISTER])
 		|| (!deleting && oap->regname == 0
 		  && ((clip_unnamed | clip_unnamed_saved) &
-		      CLIP_UNNAMED_PLUS))))
+							  CLIP_UNNAMED_PLUS))))
     {
 	if (curr != &(y_regs[PLUS_REGISTER]))
 	    // Copy the text from register 0 to the clipboard register.
@@ -1415,8 +1416,11 @@ op_yank(oparg_T *oap, int deleting, int mess)
 
 	clip_own_selection(&clip_plus);
 	clip_gen_set_selection(&clip_plus);
-	if (!clip_isautosel_star() && !clip_isautosel_plus()
-		&& !did_star && curr == &(y_regs[PLUS_REGISTER]))
+	if (!clip_isautosel_star()
+		&& !clip_isautosel_plus()
+		&& !((clip_unnamed | clip_unnamed_saved) == CLIP_UNNAMED_PLUS)
+		&& !did_star
+		&& curr == &(y_regs[PLUS_REGISTER]))
 	{
 	    copy_yank_reg(&(y_regs[STAR_REGISTER]));
 	    clip_own_selection(&clip_star);
@@ -1493,6 +1497,7 @@ copy_yank_reg(yankreg_T *reg)
  * "flags": PUT_FIXINDENT	make indent look nice
  *	    PUT_CURSEND		leave cursor after end of new text
  *	    PUT_LINE		force linewise put (":put")
+ *	    PUT_BLOCK_INNER     in block mode, do not add trailing spaces
  */
     void
 do_put(
@@ -1790,7 +1795,7 @@ do_put(
 	bd.textcol = 0;
 	for (i = 0; i < y_size; ++i)
 	{
-	    int spaces;
+	    int spaces = 0;
 	    char shortline;
 
 	    bd.startspaces = 0;
@@ -1841,12 +1846,16 @@ do_put(
 
 	    yanklen = (int)STRLEN(y_array[i]);
 
-	    // calculate number of spaces required to fill right side of block
-	    spaces = y_width + 1;
-	    for (j = 0; j < yanklen; j++)
-		spaces -= lbr_chartabsize(NULL, &y_array[i][j], 0);
-	    if (spaces < 0)
-		spaces = 0;
+	    if ((flags & PUT_BLOCK_INNER) == 0)
+	    {
+		// calculate number of spaces required to fill right side of
+		// block
+		spaces = y_width + 1;
+		for (j = 0; j < yanklen; j++)
+		    spaces -= lbr_chartabsize(NULL, &y_array[i][j], 0);
+		if (spaces < 0)
+		    spaces = 0;
+	    }
 
 	    // insert the new text
 	    totlen = count * (yanklen + spaces) + bd.startspaces + bd.endspaces;

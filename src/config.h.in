@@ -213,6 +213,7 @@
 #undef HAVE_SYSCTL
 #undef HAVE_SYSINFO
 #undef HAVE_SYSINFO_MEM_UNIT
+#undef HAVE_SYSINFO_UPTIME
 #undef HAVE_TGETENT
 #undef HAVE_TOWLOWER
 #undef HAVE_TOWUPPER
@@ -496,3 +497,6 @@
 
 /* Define to inline symbol or empty */
 #undef inline
+
+/* Define if _SC_SIGSTKSZ is available via sysconf() */
+#undef HAVE_SYSCONF_SIGSTKSZ

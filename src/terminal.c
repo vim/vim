@@ -445,6 +445,13 @@ term_start(
 
     if (check_restricted() || check_secure())
 	return NULL;
+#ifdef FEAT_CMDWIN
+    if (cmdwin_type != 0)
+    {
+	emsg(_(e_cannot_open_terminal_from_command_line_window));
+	return NULL;
+    }
+#endif
 
     if ((opt->jo_set & (JO_IN_IO + JO_OUT_IO + JO_ERR_IO))
 					 == (JO_IN_IO + JO_OUT_IO + JO_ERR_IO)
@@ -473,6 +480,7 @@ term_start(
     ga_init2(&term->tl_scrollback_postponed, sizeof(sb_line_T), 300);
     ga_init2(&term->tl_osc_buf, sizeof(char), 300);
 
+    setpcmark();
     CLEAR_FIELD(split_ea);
     if (opt->jo_curwin)
     {
@@ -3800,6 +3808,11 @@ term_update_window(win_T *wp)
     newrows = rows == 0 ? newrows : minsize ? MAX(rows, newrows) : rows;
     newcols = cols == 0 ? newcols : minsize ? MAX(cols, newcols) : cols;
 
+    // If no cell is visible there is no point in resizing.  Also, vterm can't
+    // handle a zero height.
+    if (newrows == 0 || newcols == 0)
+	return;
+
     if (term->tl_rows != newrows || term->tl_cols != newcols)
     {
 	term->tl_vterm_size_changed = TRUE;
@@ -4288,6 +4301,73 @@ handle_call_command(term_T *term, channel_T *channel, listitem_T *item)
 }
 
 /*
+ * URL decoding (also know as Percent-encoding).
+ *
+ * Note this function currently is only used for decoding shell's
+ * OSC 7 escape sequence which we can assume all bytes are valid
+ * UTF-8 bytes. Thus we don't need to deal with invalid UTF-8
+ * encoding bytes like 0xfe, 0xff.
+ */
+    static size_t
+url_decode(const char *src, const size_t len, char_u *dst)
+{
+    size_t i = 0, j = 0;
+
+    while (i < len)
+    {
+	if (src[i] == '%' && i + 2 < len)
+	{
+	    dst[j] = hexhex2nr((char_u *)&src[i + 1]);
+	    j++;
+	    i += 3;
+	}
+	else
+	{
+	    dst[j] = src[i];
+	    i++;
+	    j++;
+	}
+    }
+    dst[j] = '\0';
+    return j;
+}
+
+/*
+ * Sync terminal buffer's cwd with shell's pwd with the help of OSC 7.
+ *
+ * The OSC 7 sequence has the format of
+ * "\033]7;file://HOSTNAME/CURRENT/DIR\033\\"
+ * and what VTerm provides via VTermStringFragment is
+ * "file://HOSTNAME/CURRENT/DIR"
+ */
+    static void
+sync_shell_dir(VTermStringFragment *frag)
+{
+    int       offset = 7; // len of "file://" is 7
+    char      *pos = (char *)frag->str + offset;
+    char_u    *new_dir;
+
+    // remove HOSTNAME to get PWD
+    while (*pos != '/' && offset < (int)frag->len)
+    {
+        offset += 1;
+        pos += 1;
+    }
+
+    if (offset >= (int)frag->len)
+    {
+        semsg(_(e_failed_to_extract_pwd_from_str_check_your_shell_config),
+								    frag->str);
+        return;
+    }
+
+    new_dir = alloc(frag->len - offset + 1);
+    url_decode(pos, frag->len-offset, new_dir);
+    changedir_func(new_dir, TRUE, CDSCOPE_WINDOW);
+    vim_free(new_dir);
+}
+
+/*
  * Called by libvterm when it cannot recognize an OSC sequence.
  * We recognize a terminal API command.
  */
@@ -4301,7 +4381,13 @@ parse_osc(int command, VTermStringFragment frag, void *user)
 						    : term->tl_job->jv_channel;
     garray_T	*gap = &term->tl_osc_buf;
 
-    // We recognize only OSC 5 1 ; {command}
+    // We recognize only OSC 5 1 ; {command} and OSC 7 ; {command}
+    if (p_asd && command == 7)
+    {
+	sync_shell_dir(&frag);
+	return 1;
+    }
+
     if (command != 51)
 	return 0;
 
@@ -4511,9 +4597,9 @@ create_vterm(term_T *term, int rows, int cols)
  * Called when 'wincolor' was set.
  */
     void
-term_update_colors(void)
+term_update_colors(term_T *term)
 {
-    term_T *term = curwin->w_buffer->b_term;
+    win_T *wp;
 
     if (term->tl_vterm == NULL)
 	return;
@@ -4523,7 +4609,21 @@ term_update_colors(void)
 	    &term->tl_default_color.fg,
 	    &term->tl_default_color.bg);
 
-    redraw_later(NOT_VALID);
+    FOR_ALL_WINDOWS(wp)
+	if (wp->w_buffer == term->tl_buffer)
+	    redraw_win_later(wp, NOT_VALID);
+}
+
+/*
+ * Called when 'background' was set.
+ */
+    void
+term_update_colors_all(void)
+{
+    term_T *tp;
+
+    FOR_ALL_TERMS(tp)
+	term_update_colors(tp);
 }
 
 /*
@@ -5591,7 +5691,7 @@ f_term_getattr(typval_T *argvars, typval_T *rettv)
 
     if (attr > HL_ALL)
 	attr = syn_attr2attr(attr);
-    for (i = 0; i < sizeof(attrs)/sizeof(attrs[0]); ++i)
+    for (i = 0; i < ARRAY_LENGTH(attrs); ++i)
 	if (STRCMP(name, attrs[i].name) == 0)
 	{
 	    rettv->vval.v_number = (attr & attrs[i].attr) != 0 ? 1 : 0;
@@ -5860,7 +5960,7 @@ f_term_list(typval_T *argvars UNUSED, typval_T *rettv)
 
     l = rettv->vval.v_list;
     FOR_ALL_TERMS(tp)
-	if (tp != NULL && tp->tl_buffer != NULL)
+	if (tp->tl_buffer != NULL)
 	    if (list_append_number(l,
 				   (varnumber_T)tp->tl_buffer->b_fnum) == FAIL)
 		return;

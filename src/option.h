@@ -127,7 +127,11 @@ typedef enum {
 #define ENC_UCSBOM	"ucs-bom"	// check for BOM at start of file
 
 // default value for 'encoding'
-#define ENC_DFLT	"latin1"
+#ifdef MSWIN
+# define ENC_DFLT	"utf-8"
+#else
+# define ENC_DFLT	"latin1"
+#endif
 
 // end-of-line style
 #define EOL_UNKNOWN	-1	// not defined yet
@@ -382,6 +386,9 @@ EXTERN long	p_aleph;	// 'aleph'
 EXTERN char_u	*p_ambw;	// 'ambiwidth'
 #ifdef FEAT_AUTOCHDIR
 EXTERN int	p_acd;		// 'autochdir'
+#endif
+#ifdef FEAT_AUTOSHELLDIR
+EXTERN int	p_asd;		// 'autoshelldir'
 #endif
 EXTERN int	p_ai;		// 'autoindent'
 EXTERN int	p_bin;		// 'binary'
@@ -861,6 +868,7 @@ EXTERN unsigned	ssop_flags;
 # define SSOP_CURSOR		0x4000
 # define SSOP_TABPAGES		0x8000
 # define SSOP_TERMINAL		0x10000
+# define SSOP_SKIP_RTP		0x20000
 #endif
 EXTERN char_u	*p_sh;		// 'shell'
 EXTERN char_u	*p_shcf;	// 'shellcmdflag'

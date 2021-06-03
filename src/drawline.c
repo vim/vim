@@ -1031,12 +1031,11 @@ win_line(
 		    // Draw the 'foldcolumn'.  Allocate a buffer, "extra" may
 		    // already be in use.
 		    vim_free(p_extra_free);
-		    p_extra_free = alloc(12 + 1);
-
+		    p_extra_free = alloc(MAX_MCO * fdc + 1);
 		    if (p_extra_free != NULL)
 		    {
-			fill_foldcolumn(p_extra_free, wp, FALSE, lnum);
-			n_extra = fdc;
+			n_extra = (int)fill_foldcolumn(p_extra_free, wp,
+								  FALSE, lnum);
 			p_extra_free[n_extra] = NUL;
 			p_extra = p_extra_free;
 			c_extra = NUL;
@@ -1539,6 +1538,9 @@ win_line(
 	    if (area_attr != 0)
 	    {
 		char_attr = hl_combine_attr(line_attr, area_attr);
+		if (!highlight_match)
+		    // let search highlight show in Visual area if possible
+		    char_attr = hl_combine_attr(search_attr, char_attr);
 # ifdef FEAT_SYN_HL
 		char_attr = hl_combine_attr(syntax_attr, char_attr);
 # endif
@@ -1979,6 +1981,12 @@ win_line(
 		    // TODO: is passing p for start of the line OK?
 		    n_extra = win_lbr_chartabsize(wp, line, p, (colnr_T)vcol,
 								    NULL) - 1;
+
+		    // We have just drawn the showbreak value, no need to add
+		    // space for it again
+		    if (vcol == vcol_sbr)
+			n_extra -= MB_CHARLEN(get_showbreak_value(wp));
+
 		    if (c == TAB && n_extra + col > wp->w_width)
 # ifdef FEAT_VARTABS
 			n_extra = tabstop_padding(vcol, wp->w_buffer->b_p_ts,

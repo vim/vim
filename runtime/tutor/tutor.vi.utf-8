@@ -765,8 +765,8 @@ Chú ý: Lệnh này thay cho việc gõ  i , ký tự cuối cùng, văn bản 
   Để sử dụng các tính năng này bạn cần phải tạo một tập tin "vimrc".
 
   1. Soạn thảo tệp tin "vimrc", phụ thuộc vào hệ thống của bạn:
-	:edit ~/.vimrc			đối với Unix
-	:edit $VIM/_vimrc		đối với MS-Windows
+	:edit ~/.vimrc		đối với Unix
+	:edit ~/_vimrc		đối với MS-Windows
 
   2. Bây giờ đọc tập tin "vimrc" ví dụ:
 

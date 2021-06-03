@@ -4,7 +4,7 @@ void conceal_check_cursor_line(void);
 int get_wcr_attr(win_T *wp);
 void win_draw_end(win_T *wp, int c1, int c2, int draw_margin, int row, int endrow, hlf_T hl);
 int compute_foldcolumn(win_T *wp, int col);
-void fill_foldcolumn(char_u *p, win_T *wp, int closed, linenr_T lnum);
+size_t fill_foldcolumn(char_u *p, win_T *wp, int closed, linenr_T lnum);
 int screen_get_current_line_off(void);
 void reset_screen_attr(void);
 void screen_line(int row, int coloff, int endcol, int clear_width, int flags);

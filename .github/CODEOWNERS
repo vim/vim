@@ -9,9 +9,6 @@
 # So if a pull request only touches javascript files, only these owners
 # will be requested to review.
 
-src/iscygpty.*				@k-takata
-src/libvterm/				@leonerd
-
 runtime/autoload/getscript.vim		@cecamp
 runtime/autoload/netrw.vim		@cecamp
 runtime/autoload/netrwFileHandlers.vim	@cecamp
@@ -22,6 +19,7 @@ runtime/autoload/vimball.vim		@cecamp
 runtime/autoload/xmlformat.vim		@chrisbra
 runtime/autoload/zip.vim		@cecamp
 runtime/compiler/checkstyle.vim		@dkearns
+runtime/compiler/cm3.vim		@dkearns
 runtime/compiler/cucumber.vim		@tpope
 runtime/compiler/dart.vim		@dkearns
 runtime/compiler/dart2js.vim		@dkearns
@@ -42,6 +40,7 @@ runtime/compiler/jshint.vim		@dkearns
 runtime/compiler/jsonlint.vim		@dkearns
 runtime/compiler/lazbuild.vim		@dkearns
 runtime/compiler/php.vim		@dkearns
+runtime/compiler/powershell.vim		@heaths
 runtime/compiler/rake.vim		@tpope @dkearns
 runtime/compiler/rhino.vim		@dkearns
 runtime/compiler/rspec.vim		@tpope @dkearns
@@ -51,6 +50,7 @@ runtime/compiler/rubyunit.vim		@dkearns
 runtime/compiler/sass.vim		@tpope
 runtime/compiler/se.vim			@dkearns
 runtime/compiler/shellcheck.vim		@dkearns
+runtime/compiler/sml.vim		@dkearns
 runtime/compiler/stylelint.vim		@dkearns
 runtime/compiler/tcl.vim		@dkearns
 runtime/compiler/tidy.vim		@dkearns
@@ -66,6 +66,7 @@ runtime/doc/pi_netrw.txt		@cecamp
 runtime/doc/pi_tar.txt			@cecamp
 runtime/doc/pi_vimball.txt		@cecamp
 runtime/doc/pi_zip.txt			@cecamp
+runtime/doc/ps1.txt			@heaths
 runtime/ftplugin/awk.vim		@dkearns
 runtime/ftplugin/basic.vim		@dkearns
 runtime/ftplugin/bst.vim		@tpope
@@ -74,6 +75,7 @@ runtime/ftplugin/css.vim		@dkearns
 runtime/ftplugin/cucumber.vim		@tpope
 runtime/ftplugin/eiffel.vim		@dkearns
 runtime/ftplugin/eruby.vim		@tpope @dkearns
+runtime/ftplugin/fpcmake.vim		@dkearns
 runtime/ftplugin/freebasic.vim		@dkearns
 runtime/ftplugin/git.vim		@tpope
 runtime/ftplugin/gitcommit.vim		@tpope
@@ -87,15 +89,24 @@ runtime/ftplugin/javascript.vim		@dkearns
 runtime/ftplugin/javascriptreact.vim	@dkearns
 runtime/ftplugin/kconfig.vim		@chrisbra
 runtime/ftplugin/liquid.vim		@tpope
+runtime/ftplugin/m3build.vim		@dkearns
+runtime/ftplugin/m3quake.vim		@dkearns
 runtime/ftplugin/markdown.vim		@tpope
 runtime/ftplugin/matlab.vim		@cecamp
+runtime/ftplugin/meson.vim		@Liambeguin
+runtime/ftplugin/modula3.vim		@dkearns
 runtime/ftplugin/nroff.vim		@a-vrma
 runtime/ftplugin/nsis.vim		@k-takata
+runtime/ftplugin/pascal.vim		@dkearns
+runtime/ftplugin/pbtxt.vim		@lakshayg
 runtime/ftplugin/pdf.vim		@tpope
+runtime/ftplugin/ps1.vim		@heaths
+runtime/ftplugin/ps1xml.vim		@heaths
 runtime/ftplugin/ruby.vim		@tpope @dkearns
 runtime/ftplugin/sass.vim		@tpope
 runtime/ftplugin/scss.vim		@tpope
 runtime/ftplugin/spec.vim		@ignatenkobrain
+runtime/ftplugin/systemverilog.vim	@Kocha
 runtime/ftplugin/tidy.vim		@dkearns
 runtime/ftplugin/tmux.vim		@ericpruitt
 runtime/ftplugin/typescript.vim		@dkearns
@@ -109,11 +120,14 @@ runtime/indent/eruby.vim		@tpope @dkearns
 runtime/indent/gitconfig.vim		@tpope
 runtime/indent/haml.vim			@tpope
 runtime/indent/liquid.vim		@tpope
+runtime/indent/meson.vim		@Liambeguin
 runtime/indent/nsis.vim			@k-takata
+runtime/indent/ps1.vim			@heaths
 runtime/indent/ruby.vim			@AndrewRadev @dkearns
 runtime/indent/sass.vim			@tpope
 runtime/indent/scss.vim			@tpope
 runtime/indent/sh.vim			@chrisbra
+runtime/indent/systemverilog.vim	@Kocha
 runtime/indent/teraterm.vim		@k-takata
 runtime/indent/xml.vim			@chrisbra
 runtime/indent/zsh.vim			@chrisbra
@@ -130,6 +144,7 @@ runtime/syntax/aidl.vim			@dpelle
 runtime/syntax/amiga.vim		@cecamp
 runtime/syntax/asm.vim			@dkearns
 runtime/syntax/asmh8300.vim		@dkearns
+runtime/syntax/asterisk.vim		@jaunis
 runtime/syntax/awk.vim			@dkearns
 runtime/syntax/basic.vim		@dkearns
 runtime/syntax/bst.vim			@tpope
@@ -141,35 +156,50 @@ runtime/syntax/csh.vim			@cecamp
 runtime/syntax/cucumber.vim		@tpope
 runtime/syntax/datascript.vim		@dpelle
 runtime/syntax/dcl.vim			@cecamp
+runtime/syntax/desktop.vim		@e-kwsm
+runtime/syntax/dot.vim			@mmottl
 runtime/syntax/doxygen.vim		@frogonwheels
 runtime/syntax/dtd.vim			@chrisbra
+runtime/syntax/dts.vim			@zonque
 runtime/syntax/elmfilt.vim		@cecamp
 runtime/syntax/eruby.vim		@tpope @dkearns
 runtime/syntax/exports.vim		@cecamp
+runtime/syntax/fpcmake.vim		@dkearns
 runtime/syntax/git.vim			@tpope
 runtime/syntax/gitcommit.vim		@tpope
 runtime/syntax/gitconfig.vim		@tpope
 runtime/syntax/gitrebase.vim		@tpope
 runtime/syntax/gprof.vim		@dpelle
+runtime/syntax/groff.vim		@jmarshall
 runtime/syntax/haml.vim			@tpope
 runtime/syntax/haskell.vim		@coot
 runtime/syntax/hgcommit.vim		@k-takata
 runtime/syntax/kconfig.vim		@chrisbra
+runtime/syntax/less.vim			@genoma
 runtime/syntax/lex.vim			@cecamp
 runtime/syntax/liquid.vim		@tpope
 runtime/syntax/lisp.vim			@cecamp
 runtime/syntax/lynx.vim			@dkearns
+runtime/syntax/m3build.vim		@dkearns
+runtime/syntax/m3quake.vim		@dkearns
 runtime/syntax/mailcap.vim		@dkearns
-runtime/syntax/make.vim			@rohieb
 runtime/syntax/make.vim			@rohieb
 runtime/syntax/maple.vim		@cecamp
 runtime/syntax/markdown.vim		@tpope
+runtime/syntax/meson.vim		@Liambeguin
+runtime/syntax/modula3.vim		@dkearns
 runtime/syntax/netrw.vim		@cecamp
+runtime/syntax/nroff.vim		@jmarshall
 runtime/syntax/nsis.vim			@k-takata
+runtime/syntax/pascal.vim		@dkearns
+runtime/syntax/pbtxt.vim		@lakshayg
 runtime/syntax/pdf.vim			@tpope
 runtime/syntax/php.vim			@TysonAndre
 runtime/syntax/privoxy.vim		@dkearns
 runtime/syntax/prolog.vim		@XVilka
+runtime/syntax/ps1.vim			@heaths
+runtime/syntax/ps1xml.vim		@heaths
+runtime/syntax/psl.vim			@danielkho
 runtime/syntax/rc.vim			@chrisbra
 runtime/syntax/rpcgen.vim		@cecamp
 runtime/syntax/ruby.vim			@dkearns
@@ -179,7 +209,10 @@ runtime/syntax/sh.vim			@cecamp
 runtime/syntax/sm.vim			@cecamp
 runtime/syntax/spec.vim			@ignatenkobrain
 runtime/syntax/sqloracle.vim		@chrisbra
+runtime/syntax/sshconfig.vim		@Jakuje
 runtime/syntax/sshdconfig.vim		@Jakuje
+runtime/syntax/sudoers.vim		@e-kwsm
+runtime/syntax/systemverilog.vim	@Kocha
 runtime/syntax/tags.vim			@cecamp
 runtime/syntax/teraterm.vim		@k-takata
 runtime/syntax/tex.vim			@cecamp
@@ -198,6 +231,8 @@ runtime/tutor/tutor.eo			@dpelle
 runtime/tutor/tutor.eo.utf-8		@dpelle
 runtime/tutor/tutor.fr			@dpelle
 runtime/tutor/tutor.fr.utf-8		@dpelle
+src/iscygpty.*				@k-takata
+src/libvterm/				@leonerd
 src/po/de.po				@chrisbra
 src/po/eo.po				@dpelle
 src/po/fr.po				@dpelle

@@ -319,6 +319,61 @@ func Test_confirm_q_wq()
   call delete('Xfoo')
 endfunc
 
+func Test_confirm_write_ro()
+  CheckNotGui
+  CheckRunVimInTerminal
+
+  call writefile(['foo'], 'Xconfirm_write_ro')
+  let lines =<< trim END
+    set nobackup ff=unix cmdheight=2
+    edit Xconfirm_write_ro
+    norm Abar
+  END
+  call writefile(lines, 'Xscript')
+  let buf = RunVimInTerminal('-S Xscript', {'rows': 20})
+
+  " Try to write with 'ro' option.
+  call term_sendkeys(buf, ":set ro | confirm w\n")
+  call WaitForAssert({-> assert_match("^'readonly' option is set for \"Xconfirm_write_ro\"\. *$",
+        \            term_getline(buf, 18))}, 1000)
+  call WaitForAssert({-> assert_match('^Do you wish to write anyway? *$',
+        \            term_getline(buf, 19))}, 1000)
+  call WaitForAssert({-> assert_match('^(Y)es, \[N\]o: *$', term_getline(buf, 20))}, 1000)
+  call term_sendkeys(buf, 'N')
+  call WaitForAssert({-> assert_match('^ *$', term_getline(buf, 19))}, 1000)
+  call WaitForAssert({-> assert_match('.* All$', term_getline(buf, 20))}, 1000)
+  call assert_equal(['foo'], readfile('Xconfirm_write_ro'))
+
+  call term_sendkeys(buf, ":confirm w\n")
+  call WaitForAssert({-> assert_match("^'readonly' option is set for \"Xconfirm_write_ro\"\. *$",
+        \            term_getline(buf, 18))}, 1000)
+  call WaitForAssert({-> assert_match('^Do you wish to write anyway? *$',
+        \            term_getline(buf, 19))}, 1000)
+  call WaitForAssert({-> assert_match('^(Y)es, \[N\]o: *$', term_getline(buf, 20))}, 1000)
+  call term_sendkeys(buf, 'Y')
+  call WaitForAssert({-> assert_match('^"Xconfirm_write_ro" 1L, 7B written$',
+        \            term_getline(buf, 19))}, 1000)
+  call assert_equal(['foobar'], readfile('Xconfirm_write_ro'))
+
+  " Try to write with read-only file permissions.
+  call setfperm('Xconfirm_write_ro', 'r--r--r--')
+  call term_sendkeys(buf, ":set noro | undo | confirm w\n")
+  call WaitForAssert({-> assert_match("^File permissions of \"Xconfirm_write_ro\" are read-only\. *$",
+        \            term_getline(buf, 17))}, 1000)
+  call WaitForAssert({-> assert_match('^It may still be possible to write it\. *$',
+        \            term_getline(buf, 18))}, 1000)
+  call WaitForAssert({-> assert_match('^Do you wish to try? *$', term_getline(buf, 19))}, 1000)
+  call WaitForAssert({-> assert_match('^(Y)es, \[N\]o: *$', term_getline(buf, 20))}, 1000)
+  call term_sendkeys(buf, 'Y')
+  call WaitForAssert({-> assert_match('^"Xconfirm_write_ro" 1L, 4B written$',
+        \            term_getline(buf, 19))}, 1000)
+  call assert_equal(['foo'], readfile('Xconfirm_write_ro'))
+
+  call StopVimInTerminal(buf)
+  call delete('Xscript')
+  call delete('Xconfirm_write_ro')
+endfunc
+
 " Test for the :print command
 func Test_print_cmd()
   call assert_fails('print', 'E749:')
@@ -333,6 +388,7 @@ func Test_winsize_cmd()
 endfunc
 
 " Test for the :redir command
+" NOTE: if you run tests as root this will fail.  Don't run tests as root!
 func Test_redir_cmd()
   call assert_fails('redir @@', 'E475:')
   call assert_fails('redir abc', 'E475:')
@@ -349,13 +405,6 @@ func Test_redir_cmd()
     call assert_fails('redir > Xdir', 'E17:')
     call delete('Xdir', 'd')
   endif
-  if !has('bsd')
-    " Redirecting to a read-only file
-    call writefile([], 'Xfile')
-    call setfperm('Xfile', 'r--r--r--')
-    call assert_fails('redir! > Xfile', 'E190:')
-    call delete('Xfile')
-  endif
 
   " Test for redirecting to a register
   redir @q> | echon 'clean ' | redir END
@@ -366,6 +415,16 @@ func Test_redir_cmd()
   redir => color | echon 'blue ' | redir END
   redir =>> color | echon 'sky' | redir END
   call assert_equal('blue sky', color)
+endfunc
+
+func Test_redir_cmd_readonly()
+  CheckNotRoot
+
+  " Redirecting to a read-only file
+  call writefile([], 'Xfile')
+  call setfperm('Xfile', 'r--r--r--')
+  call assert_fails('redir! > Xfile', 'E190:')
+  call delete('Xfile')
 endfunc
 
 " Test for the :filetype command
@@ -530,6 +589,12 @@ endfunc
 
 func Test_sandbox()
   sandbox call Sandbox_tests()
+endfunc
+
+func Test_command_not_implemented_E319()
+  if !has('mzscheme')
+    call assert_fails('mzscheme', 'E319:')
+  endif
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

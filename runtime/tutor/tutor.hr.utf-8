@@ -883,7 +883,7 @@ NAPOMENA:  Bez razlikovanja velikih i malih slova u samo jednoj naredbi
 
   1. Uredite "vimrc" datoteku.  Ovo ovisi o vašem sistemu:
 	:e ~/.vimrc		za Unix
-	:e $VIM/_vimrc		za MS-Windows
+	:e ~/_vimrc		za MS-Windows
 
   2. Sada učitajte primjer sadržaja "vimrc" datoteke:
 	:r $VIMRUNTIME/vimrc_example.vim

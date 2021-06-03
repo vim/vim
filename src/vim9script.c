@@ -17,15 +17,34 @@
 # include "vim9.h"
 #endif
 
+/*
+ * Return TRUE when currently using Vim9 script syntax.
+ * Does not go up the stack, a ":function" inside vim9script uses legacy
+ * syntax.
+ */
     int
 in_vim9script(void)
 {
-    // Do not go up the stack, a ":function" inside vim9script uses legacy
-    // syntax.  "sc_version" is also set when compiling a ":def" function in
-    // legacy script.
-    return current_sctx.sc_version == SCRIPT_VERSION_VIM9
-		|| (cmdmod.cmod_flags & CMOD_VIM9CMD);
+    // "sc_version" is also set when compiling a ":def" function in legacy
+    // script.
+    return (current_sctx.sc_version == SCRIPT_VERSION_VIM9
+					 || (cmdmod.cmod_flags & CMOD_VIM9CMD))
+		&& !(cmdmod.cmod_flags & CMOD_LEGACY);
 }
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Return TRUE if the current script is Vim9 script.
+ * This also returns TRUE in a legacy function in a Vim9 script.
+ */
+    int
+current_script_is_vim9(void)
+{
+    return SCRIPT_ID_VALID(current_sctx.sc_sid)
+	    && SCRIPT_ITEM(current_sctx.sc_sid)->sn_version
+						       == SCRIPT_VERSION_VIM9;
+}
+#endif
 
 /*
  * ":vim9script".
@@ -75,7 +94,7 @@ ex_vim9script(exarg_T *eap UNUSED)
     if (STRCMP(p_cpo, CPO_VIM) != 0)
     {
 	si->sn_save_cpo = vim_strsave(p_cpo);
-	set_option_value((char_u *)"cpo", 0L, (char_u *)CPO_VIM, 0);
+	set_option_value((char_u *)"cpo", 0L, (char_u *)CPO_VIM, OPT_NO_REDRAW);
     }
 #else
     // No check for this being the first command, it doesn't matter.
@@ -102,6 +121,7 @@ not_in_vim9(exarg_T *eap)
 	    case CMD_append:
 	    case CMD_change:
 	    case CMD_insert:
+	    case CMD_open:
 	    case CMD_t:
 	    case CMD_xit:
 		semsg(_(e_command_not_supported_in_vim9_script_missing_var_str), eap->cmd);
@@ -112,15 +132,54 @@ not_in_vim9(exarg_T *eap)
 }
 
 /*
- * Return TRUE if "p" points at a "#".  Does not check for white space.
+ * Give an error message if "p" points at "#{" and return TRUE.
+ * This avoids that using a legacy style #{} dictionary leads to difficult to
+ * understand errors.
+ */
+    int
+vim9_bad_comment(char_u *p)
+{
+    if (p[0] == '#' && p[1] == '{' && p[2] != '{')
+    {
+	emsg(_(e_cannot_use_hash_curly_to_start_comment));
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * Return TRUE if "p" points at a "#" not followed by one '{'.
+ * Does not check for white space.
  */
     int
 vim9_comment_start(char_u *p)
 {
-    return p[0] == '#';
+    return p[0] == '#' && (p[1] != '{' || p[2] == '{');
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
+
+/*
+ * "++nr" and "--nr" commands.
+ */
+    void
+ex_incdec(exarg_T *eap)
+{
+    char_u	*cmd = eap->cmd;
+    size_t	len = STRLEN(eap->cmd) + 6;
+
+    // This works like "nr += 1" or "nr -= 1".
+    eap->cmd = alloc(len);
+    if (eap->cmd == NULL)
+	return;
+    vim_snprintf((char *)eap->cmd, len, "%s %c= 1", cmd + 2,
+				     eap->cmdidx == CMD_increment ? '+' : '-');
+    eap->arg = eap->cmd;
+    eap->cmdidx = CMD_var;
+    ex_let(eap);
+    vim_free(eap->cmd);
+    eap->cmd = cmd;
+}
 
 /*
  * ":export let Name: type"
@@ -138,7 +197,7 @@ ex_export(exarg_T *eap)
     }
 
     eap->cmd = eap->arg;
-    (void)find_ex_command(eap, NULL, lookup_scriptvar, NULL);
+    (void)find_ex_command(eap, NULL, lookup_scriptitem, NULL);
     switch (eap->cmdidx)
     {
 	case CMD_let:
@@ -257,21 +316,22 @@ find_exported(
 	char_u	    *name,
 	ufunc_T	    **ufunc,
 	type_T	    **type,
-	cctx_T	    *cctx)
+	cctx_T	    *cctx,
+	int	    verbose)
 {
     int		idx = -1;
     svar_T	*sv;
     scriptitem_T *script = SCRIPT_ITEM(sid);
 
-    // find name in "script"
-    // TODO: also find script-local user function
+    // Find name in "script".
     idx = get_script_item_idx(sid, name, 0, cctx);
     if (idx >= 0)
     {
 	sv = ((svar_T *)script->sn_var_vals.ga_data) + idx;
 	if (!sv->sv_export)
 	{
-	    semsg(_(e_item_not_exported_in_script_str), name);
+	    if (verbose)
+		semsg(_(e_item_not_exported_in_script_str), name);
 	    return -1;
 	}
 	*type = sv->sv_type;
@@ -301,7 +361,15 @@ find_exported(
 
 	if (*ufunc == NULL)
 	{
-	    semsg(_(e_item_not_found_in_script_str), name);
+	    if (verbose)
+		semsg(_(e_item_not_found_in_script_str), name);
+	    return -1;
+	}
+	else if (((*ufunc)->uf_flags & FC_EXPORT) == 0)
+	{
+	    if (verbose)
+		semsg(_(e_item_not_exported_in_script_str), name);
+	    *ufunc = NULL;
 	    return -1;
 	}
     }
@@ -325,93 +393,52 @@ handle_import(
 {
     char_u	*arg = arg_start;
     char_u	*cmd_end = NULL;
-    char_u	*as_name = NULL;
     int		ret = FAIL;
     typval_T	tv;
     int		sid = -1;
     int		res;
+    int		mult = FALSE;
     garray_T	names;
+    garray_T	as_names;
 
     ga_init2(&names, sizeof(char_u *), 10);
+    ga_init2(&as_names, sizeof(char_u *), 10);
     if (*arg == '{')
     {
 	// "import {item, item} from ..."
+	mult = TRUE;
 	arg = skipwhite_and_linebreak(arg + 1, evalarg);
-	for (;;)
-	{
-	    char_u  *p = arg;
-	    int	    had_comma = FALSE;
-
-	    while (eval_isnamec(*arg))
-		++arg;
-	    if (p == arg)
-		break;
-	    if (ga_grow(&names, 1) == FAIL)
-		goto erret;
-	    ((char_u **)names.ga_data)[names.ga_len] =
-						      vim_strnsave(p, arg - p);
-	    ++names.ga_len;
-	    if (*arg == ',')
-	    {
-		had_comma = TRUE;
-		++arg;
-	    }
-	    arg = skipwhite_and_linebreak(arg, evalarg);
-	    if (*arg == '}')
-	    {
-		arg = skipwhite_and_linebreak(arg + 1, evalarg);
-		break;
-	    }
-	    if (!had_comma)
-	    {
-		emsg(_(e_missing_comma_in_import));
-		goto erret;
-	    }
-	}
-	if (names.ga_len == 0)
-	{
-	    emsg(_(e_syntax_error_in_import));
-	    goto erret;
-	}
     }
-    else
-    {
-	// "import Name from ..."
-	// "import * as Name from ..."
-	// "import item [as Name] from ..."
-	arg = skipwhite_and_linebreak(arg, evalarg);
-	if (arg[0] == '*' && IS_WHITE_OR_NUL(arg[1]))
-	    arg = skipwhite_and_linebreak(arg + 1, evalarg);
-	else if (eval_isnamec1(*arg))
-	{
-	    char_u  *p = arg;
 
+    for (;;)
+    {
+	char_u	    *p = arg;
+	int	    had_comma = FALSE;
+	char_u	    *as_name = NULL;
+
+	// accept "*" or "Name"
+	if (!mult && arg[0] == '*' && IS_WHITE_OR_NUL(arg[1]))
+	    ++arg;
+	else
 	    while (eval_isnamec(*arg))
 		++arg;
-	    if (ga_grow(&names, 1) == FAIL)
-		goto erret;
-	    ((char_u **)names.ga_data)[names.ga_len] =
-						      vim_strnsave(p, arg - p);
-	    ++names.ga_len;
-	    arg = skipwhite_and_linebreak(arg, evalarg);
-	}
-	else
-	{
-	    emsg(_(e_syntax_error_in_import));
+	if (p == arg)
+	    break;
+	if (ga_grow(&names, 1) == FAIL || ga_grow(&as_names, 1) == FAIL)
 	    goto erret;
-	}
+	((char_u **)names.ga_data)[names.ga_len] = vim_strnsave(p, arg - p);
+	++names.ga_len;
 
+	arg = skipwhite_and_linebreak(arg, evalarg);
 	if (STRNCMP("as", arg, 2) == 0 && IS_WHITE_OR_NUL(arg[2]))
 	{
-	    char_u *p;
-
 	    // skip over "as Name "; no line break allowed after "as"
 	    arg = skipwhite(arg + 2);
 	    p = arg;
 	    if (eval_isnamec1(*arg))
 		while (eval_isnamec(*arg))
 		    ++arg;
-	    if (check_defined(p, arg - p, cctx) == FAIL)
+	    if (check_defined(p, arg - p, cctx, FALSE) == FAIL)
 		goto erret;
 	    as_name = vim_strnsave(p, arg - p);
 	    arg = skipwhite_and_linebreak(arg, evalarg);
@@ -421,6 +448,35 @@ handle_import(
 	    emsg(_(e_missing_as_after_star));
 	    goto erret;
 	}
+	// without "as Name" the as_names entry is NULL
+	((char_u **)as_names.ga_data)[as_names.ga_len] = as_name;
+	++as_names.ga_len;
+
+	if (!mult)
+	    break;
+	if (*arg == ',')
+	{
+	    had_comma = TRUE;
+	    ++arg;
+	}
+	arg = skipwhite_and_linebreak(arg, evalarg);
+	if (*arg == '}')
+	{
+	    ++arg;
+	    break;
+	}
+	if (!had_comma)
+	{
+	    emsg(_(e_missing_comma_in_import));
+	    goto erret;
+	}
+    }
+    arg = skipwhite_and_linebreak(arg, evalarg);
+
+    if (names.ga_len == 0)
+    {
+	emsg(_(e_syntax_error_in_import));
+	goto erret;
     }
 
     if (STRNCMP("from", arg, 4) != 0 || !IS_WHITE_OR_NUL(arg[4]))
@@ -501,8 +557,10 @@ handle_import(
 
     if (*arg_start == '*')
     {
-	imported_T *imported;
+	imported_T  *imported;
+	char_u	    *as_name = ((char_u **)as_names.ga_data)[0];
 
+	// "import * as That"
 	imported = find_imported(as_name, STRLEN(as_name), cctx);
 	if (imported != NULL && imported->imp_sid == sid)
 	{
@@ -521,7 +579,7 @@ handle_import(
 	if (imported == NULL)
 	    goto erret;
 	imported->imp_name = as_name;
-	as_name = NULL;
+	((char_u **)as_names.ga_data)[0] = NULL;
 	imported->imp_sid = sid;
 	imported->imp_flags = IMP_FLAGS_STAR;
     }
@@ -535,13 +593,14 @@ handle_import(
 	for (i = 0; i < names.ga_len; ++i)
 	{
 	    char_u	*name = ((char_u **)names.ga_data)[i];
+	    char_u	*as_name = ((char_u **)as_names.ga_data)[i];
 	    size_t	len = STRLEN(name);
 	    int		idx;
 	    imported_T	*imported;
 	    ufunc_T	*ufunc = NULL;
 	    type_T	*type;
 
-	    idx = find_exported(sid, name, &ufunc, &type, cctx);
+	    idx = find_exported(sid, name, &ufunc, &type, cctx, TRUE);
 
 	    if (idx < 0 && ufunc == NULL)
 		goto erret;
@@ -564,7 +623,8 @@ handle_import(
 	    }
 	    else
 	    {
-		if (check_defined(name, len, cctx) == FAIL)
+		if (as_name == NULL
+			      && check_defined(name, len, cctx, FALSE) == FAIL)
 		    goto erret;
 
 		imported = new_imported(gap != NULL ? gap
@@ -572,10 +632,17 @@ handle_import(
 		if (imported == NULL)
 		    goto erret;
 
-		// TODO: check for "as" following
-		// imported->imp_name = vim_strsave(as_name);
-		imported->imp_name = name;
-		((char_u **)names.ga_data)[i] = NULL;
+		if (as_name == NULL)
+		{
+		    imported->imp_name = name;
+		    ((char_u **)names.ga_data)[i] = NULL;
+		}
+		else
+		{
+		    // "import This as That ..."
+		    imported->imp_name = as_name;
+		    ((char_u **)as_names.ga_data)[i] = NULL;
+		}
 		imported->imp_sid = sid;
 		if (idx >= 0)
 		{
@@ -592,7 +659,7 @@ handle_import(
     }
 erret:
     ga_clear_strings(&names);
-    vim_free(as_name);
+    ga_clear_strings(&as_names);
     return cmd_end;
 }
 
@@ -642,10 +709,10 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
     }
     name = vim_strnsave(arg, p - arg);
 
-    // parse type
+    // parse type, check for reserved name
     p = skipwhite(p + 1);
     type = parse_type(&p, &si->sn_type_list, TRUE);
-    if (type == NULL)
+    if (type == NULL || check_reserved_name(name) == FAIL)
     {
 	vim_free(name);
 	return p;
@@ -670,7 +737,8 @@ vim9_declare_scriptvar(exarg_T *eap, char_u *arg)
  * When "create" is TRUE this is a new variable, otherwise find and update an
  * existing variable.
  * "flags" can have ASSIGN_FINAL or ASSIGN_CONST.
- * When "*type" is NULL use "tv" for the type and update "*type".
+ * When "*type" is NULL use "tv" for the type and update "*type".  If
+ * "do_member" is TRUE also use the member type, otherwise use "any".
  */
     void
 update_vim9_script_var(
@@ -678,7 +746,8 @@ update_vim9_script_var(
 	dictitem_T  *di,
 	int	    flags,
 	typval_T    *tv,
-	type_T	    **type)
+	type_T	    **type,
+	int	    do_member)
 {
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
     hashitem_T	    *hi;
@@ -731,7 +800,8 @@ update_vim9_script_var(
     if (sv != NULL)
     {
 	if (*type == NULL)
-	    *type = typval2type(tv, &si->sn_type_list);
+	    *type = typval2type(tv, get_copyID(), &si->sn_type_list,
+								    do_member);
 	sv->sv_type = *type;
     }
 
@@ -902,6 +972,28 @@ check_script_var_type(
     }
 
     return OK; // not really
+}
+
+// words that cannot be used as a variable
+static char *reserved[] = {
+    "true",
+    "false",
+    "null",
+    NULL
+};
+
+    int
+check_reserved_name(char_u *name)
+{
+    int idx;
+
+    for (idx = 0; reserved[idx] != NULL; ++idx)
+	if (STRCMP(reserved[idx], name) == 0)
+	{
+	    semsg(_(e_cannot_use_reserved_name), name);
+	    return FAIL;
+	}
+    return OK;
 }
 
 #endif // FEAT_EVAL

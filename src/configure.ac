@@ -1436,7 +1436,7 @@ if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; 
     dnl -- get its version number
     AC_CACHE_CHECK(Python version,vi_cv_var_python3_version,
     [[vi_cv_var_python3_version=`
-          ${vi_cv_path_python3} -c 'import sys; print(sys.version[:3])'`
+          ${vi_cv_path_python3} -c 'import sys; print("{}.{}".format(sys.version_info.major, sys.version_info.minor))'`
     ]])
 
     dnl -- it must be at least version 3
@@ -3482,6 +3482,7 @@ if test "x$olibs" = "x$LIBS"; then
 	AC_MSG_RESULT(yes),
 	AC_MSG_ERROR([NOT FOUND!
       You need to install a terminal library; for example ncurses.
+      On Linux that would be the libncurses-dev package.
       Or specify the name of the library with --with-tlib.]))
 fi
 
@@ -4095,6 +4096,20 @@ AC_TRY_COMPILE(
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SYSINFO_MEM_UNIT),
 	AC_MSG_RESULT(no))
 
+dnl struct sysinfo may have the uptime field or not
+AC_MSG_CHECKING(for sysinfo.uptime)
+AC_TRY_COMPILE(
+[#include <sys/types.h>
+#include <sys/sysinfo.h>],
+[	struct sysinfo sinfo;
+        long ut;
+
+	(void)sysinfo(&sinfo);
+	ut = sinfo.uptime;
+	],
+	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SYSINFO_UPTIME),
+	AC_MSG_RESULT(no))
+
 dnl sysconf() may exist but not support what we want to use
 AC_MSG_CHECKING(for sysconf)
 AC_TRY_COMPILE(
@@ -4103,6 +4118,15 @@ AC_TRY_COMPILE(
 	(void)sysconf(_SC_PHYS_PAGES);
 	],
 	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SYSCONF),
+	AC_MSG_RESULT(not usable))
+
+dnl check if we have _SC_SIGSTKSZ via sysconf()
+AC_MSG_CHECKING(for _SC_SIGSTKSZ via sysconf())
+AC_TRY_COMPILE(
+[#include <unistd.h>],
+[	(void)sysconf(_SC_SIGSTKSZ);
+	],
+	AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SYSCONF_SIGSTKSZ),
 	AC_MSG_RESULT(not usable))
 
 AC_CHECK_SIZEOF([int])
@@ -4461,8 +4485,8 @@ if test "$GCC" = yes; then
   dnl And undefine it first to avoid a warning.
   AC_MSG_CHECKING(whether we need -D_FORTIFY_SOURCE=1)
   if test "$gccmajor" -gt "3"; then
-    CFLAGS=`echo "$CFLAGS" | sed -e 's/ *-Wp,-D_FORTIFY_SOURCE=.//g' -e 's/ *-D_FORTIFY_SOURCE=.//g' -e 's/ *-U_FORTIFY_SOURCE//g' -e 's/$/ -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1/'`
-    CPPFLAGS=`echo "$CPPFLAGS" | sed -e 's/ *-Wp,-D_FORTIFY_SOURCE=.//g' -e 's/ *-D_FORTIFY_SOURCE=.//g' -e 's/ *-U_FORTIFY_SOURCE//g'`
+    CFLAGS=`echo "$CFLAGS" | sed -e 's/-D_FORTIFY_SOURCE=.,//g' -e 's/ *-Wp,-D_FORTIFY_SOURCE=. / /g' -e 's/,-D_FORTIFY_SOURCE=. //g' -e 's/ *-D_FORTIFY_SOURCE=.//g' -e 's/ *-U_FORTIFY_SOURCE//g' -e 's/$/ -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1/'`
+    CPPFLAGS=`echo "$CPPFLAGS" | sed -e 's/-D_FORTIFY_SOURCE=.,//g' -e 's/ *-Wp,-D_FORTIFY_SOURCE=. / /g' -e 's/,-D_FORTIFY_SOURCE=. //g' -e 's/ *-D_FORTIFY_SOURCE=.//g' -e 's/ *-U_FORTIFY_SOURCE//g'`
     AC_MSG_RESULT(yes)
   else
     AC_MSG_RESULT(no)
@@ -4495,7 +4519,9 @@ AC_MSG_CHECKING(linker --as-needed support)
 LINK_AS_NEEDED=
 # Check if linker supports --as-needed and --no-as-needed options
 if $CC -Wl,--help 2>/dev/null | grep as-needed > /dev/null; then
-  LDFLAGS=`echo "$LDFLAGS" | sed -e 's/ *-Wl,--as-needed//g' | sed -e 's/$/ -Wl,--as-needed/'`
+  if ! echo "$LDFLAGS" | grep -q -- '-Wl,[[^[:space:]]]*--as-needed'; then
+    LDFLAGS="$LDFLAGS -Wl,--as-needed"
+  fi
   LINK_AS_NEEDED=yes
 fi
 if test "$LINK_AS_NEEDED" = yes; then

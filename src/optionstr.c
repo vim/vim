@@ -34,10 +34,11 @@ static char *(p_fdo_values[]) = {"all", "block", "hor", "mark", "percent",
 				 "undo", "jump", NULL};
 #endif
 #ifdef FEAT_SESSION
-// Also used for 'viewoptions'!
+// Also used for 'viewoptions'!  Keep in sync with SSOP_ flags.
 static char *(p_ssop_values[]) = {"buffers", "winpos", "resize", "winsize",
     "localoptions", "options", "help", "blank", "globals", "slash", "unix",
-    "sesdir", "curdir", "folds", "cursor", "tabpages", "terminal", NULL};
+    "sesdir", "curdir", "folds", "cursor", "tabpages", "terminal", "skiprtp",
+    NULL};
 #endif
 // Keep in sync with SWB_ flags in option.h
 static char *(p_swb_values[]) = {"useopen", "usetab", "split", "newtab", "vsplit", "uselast", NULL};
@@ -617,8 +618,10 @@ check_stl_option(char_u *s)
 	}
 	if (*s == '{')
 	{
+	    int reevaluate = (*s == '%');
+
 	    s++;
-	    while (*s != '}' && *s)
+	    while ((*s != '}' || (reevaluate && s[-1] != '%')) && *s)
 		s++;
 	    if (*s != '}')
 		return N_("E540: Unclosed expression sequence");
@@ -906,6 +909,9 @@ ambw_end:
 		check_string_option(&p_bg);
 		init_highlight(FALSE, FALSE);
 	    }
+#endif
+#ifdef FEAT_TERMINAL
+	    term_update_colors_all();
 #endif
 	}
 	else
@@ -2175,7 +2181,7 @@ ambw_end:
     else if (varp == &curwin->w_p_wcr)
     {
 	if (curwin->w_buffer->b_term != NULL)
-	    term_update_colors();
+	    term_update_colors(curwin->w_buffer->b_term);
     }
 # if defined(MSWIN)
     // 'termwintype'
@@ -2461,11 +2467,14 @@ ambw_end:
 		   && (get_option_flags(opt_idx) & (P_CURSWANT | P_RALL)) != 0)
 	curwin->w_set_curswant = TRUE;
 
+    if ((opt_flags & OPT_NO_REDRAW) == 0)
+    {
 #ifdef FEAT_GUI
-    // check redraw when it's not a GUI option or the GUI is active.
-    if (!redraw_gui_only || gui.in_use)
+	// check redraw when it's not a GUI option or the GUI is active.
+	if (!redraw_gui_only || gui.in_use)
 #endif
-	check_redraw(get_option_flags(opt_idx));
+	    check_redraw(get_option_flags(opt_idx));
+    }
 
 #if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
     if (did_swaptcap)

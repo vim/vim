@@ -345,12 +345,29 @@ dict_copy(dict_T *orig, int deep, int copyID)
 }
 
 /*
+ * Check for adding a function to g: or s:.
+ * If the name is wrong give an error message and return TRUE.
+ */
+    int
+dict_wrong_func_name(dict_T *d, typval_T *tv, char_u *name)
+{
+    return (d == get_globvar_dict()
+		|| (in_vim9script() && SCRIPT_ID_VALID(current_sctx.sc_sid)
+		   && d == &SCRIPT_ITEM(current_sctx.sc_sid)->sn_vars->sv_dict)
+		|| &d->dv_hashtab == get_funccal_local_ht())
+	    && (tv->v_type == VAR_FUNC || tv->v_type == VAR_PARTIAL)
+	    && var_wrong_func_name(name, TRUE);
+}
+
+/*
  * Add item "item" to Dictionary "d".
  * Returns FAIL when out of memory and when key already exists.
  */
     int
 dict_add(dict_T *d, dictitem_T *item)
 {
+    if (dict_wrong_func_name(d, &item->di_tv, item->di_key))
+	return FAIL;
     return hash_add(&d->dv_hashtab, item->di_key);
 }
 
@@ -1108,6 +1125,8 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action)
 	    {
 		if (value_check_lock(di1->di_tv.v_lock, arg_errmsg, TRUE)
 			|| var_check_ro(di1->di_flags, arg_errmsg, TRUE))
+		    break;
+		if (dict_wrong_func_name(d1, &HI2DI(hi2)->di_tv, hi2->hi_key))
 		    break;
 		clear_tv(&di1->di_tv);
 		copy_tv(&HI2DI(hi2)->di_tv, &di1->di_tv);

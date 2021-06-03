@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2021 Feb 13
+*options.txt*	For Vim version 8.2.  Last change: 2021 May 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -748,6 +748,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	It will change to the directory containing the file which was opened
 	or selected.
 	Note: When this option is on some plugins may not work.
+
+			*'autoshelldir'* *'asd'* *'noautoshelldir'* *'noasd'*
+'autoshelldir' 'asd'	boolean (default off)
+			global
+	When on, Vim will change the current working directory whenever you
+	change the directory of the shell running in a terminal window. You
+	need proper setting-up, so whenever the shell's pwd changes an OSC 7
+	escape sequence will be emitted. For example, on Linux, you can source
+	/etc/profile.d/vte.sh in your shell profile if you use bash or zsh.
 
 				*'arabic'* *'arab'* *'noarabic'* *'noarab'*
 'arabic' 'arab'		boolean (default off)
@@ -2819,7 +2828,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|setcellwidths()| function to change the behavior.
 
 					*'encoding'* *'enc'* *E543*
-'encoding' 'enc'	string (default: "latin1" or value from $LANG)
+'encoding' 'enc'	string (default for MS-Windows: "utf-8",
+				otherwise: value from $LANG or "latin1")
 			global
 	Sets the character encoding used inside Vim.  It applies to text in
 	the buffers, registers, Strings in expressions, text stored in the
@@ -3106,9 +3116,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	because Vim cannot detect an error, thus the encoding is always
 	accepted.
 	The special value "default" can be used for the encoding from the
-	environment.  This is the default value for 'encoding'.  It is useful
-	when 'encoding' is set to "utf-8" and your environment uses a
-	non-latin1 encoding, such as Russian.
+	environment.  On MS-Windows this is the system encoding.  Otherwise
+	this is the default value for 'encoding'.  It is useful when
+	'encoding' is set to "utf-8" and your environment uses a non-latin1
+	encoding, such as Russian.
 	When 'encoding' is "utf-8" and a file contains an illegal byte
 	sequence it won't be recognized as UTF-8.  You can use the |8g8|
 	command to find the illegal byte sequence.
@@ -3262,7 +3273,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	This is similar to the default, except that these characters will also
 	be used when there is highlighting.
 
-	for "stl" and "stlnc" only single-byte values are supported.
+	For "stl" and "stlnc" single-byte and multibyte characters are
+	supported.  But double-width characters are not supported.
 
 	The highlighting used for these items:
 	  item		highlight group ~
@@ -3855,7 +3867,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 								*'go-v'*
 	  'v'	Use a vertical button layout for dialogs.  When not included,
 		a horizontal layout is preferred, but when it doesn't fit a
-		vertical layout is used anyway.
+		vertical layout is used anyway.  Not supported in GTK 3.
 								*'go-p'*
 	  'p'	Use Pointer callbacks for X11 GUI.  This is required for some
 		window managers.  If the cursor is not blinking or hollow at
@@ -4138,7 +4150,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	the window.  This happens only when the 'icon' option is on.
 	Only works if the terminal supports setting window icon text
 	(currently only X11 GUI and terminals with a non-empty 't_IS' option).
-	Does not work for MS Windows.
+	Does not work for MS-Windows.
 	When Vim was compiled with HAVE_X11 defined, the original icon will be
 	restored if possible |X11|.
 	When this option contains printf-style '%' items, they will be
@@ -4554,7 +4566,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Keywords are used in searching and recognizing with many commands:
 	"w", "*", "[i", etc.  It is also used for "\k" in a |pattern|.  See
 	'isfname' for a description of the format of this option.  For '@'
-	characters above 255 check the "word" character class.
+	characters above 255 check the "word" character class (any character
+	that is not white space or punctuation).
 	For C programs you could use "a-z,A-Z,48-57,_,.,-,>".
 	For a help file it is set to all non-blank printable characters except
 	'*', '"' and '|' (so that CTRL-] on a command finds the help for that
@@ -5026,7 +5039,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	jump between two double quotes.
 	The characters must be separated by a colon.
 	The pairs must be separated by a comma.  Example for including '<' and
-	'>' (HTML): >
+	'>' (for HTML): >
 		:set mps+=<:>
 
 <	A more exotic example, to jump between the '=' and ';' in an
@@ -6501,6 +6514,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global values for local options)
 	   options	all options and mappings (also global values for local
 			options)
+	   skiprtp	exclude 'runtimepath' and 'packpath' from the options
 	   resize	size of the Vim window: 'lines' and 'columns'
 	   sesdir	the directory in which the session file is located
 			will become the current directory (useful with
@@ -6594,9 +6608,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	in a file and echoed to the screen.  If the 'shell' option is "csh" or
 	"tcsh" after initializations, the default becomes "|& tee".  If the
 	'shell' option is "sh", "ksh", "mksh", "pdksh", "zsh", "zsh-beta",
-	"bash" or "fish" the default becomes "2>&1| tee".  This means that
-	stderr is also included.  Before using the 'shell' option a path is
-	removed, thus "/bin/sh" uses "sh".
+	"bash", "fish", "ash" or "dash" the default becomes "2>&1| tee".  This
+	means that stderr is also included.  Before using the 'shell' option a
+	path is removed, thus "/bin/sh" uses "sh".
 	The initialization of this option is done after reading the ".vimrc"
 	and the other initializations, so that when the 'shell' option is set
 	there, the 'shellpipe' option changes automatically, unless it was
@@ -7327,6 +7341,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 	      Note that there is no '%' before the closing '}'.  The
 	      expression cannot contain a '}' character, call a function to
 	      work around that.  See |stl-%{| below.
+	{% -  This is almost same as { except the result of the expression is
+	      re-evaluated as a statusline format string.  Thus if the
+	      return value of expr contains % items they will get expanded.
+	      The expression can contain the } character, the end of
+	      expression is denoted by %}.
+	      The For example: >
+		func! Stl_filename() abort
+		    return "%t"
+		endfunc
+<	        `stl=%{Stl_filename()}`   results in `"%t"`
+	        `stl=%{%Stl_filename()%}` results in `"Name of current file"`
+	} -   End of `{%` expression
 	( -   Start of item group.  Can be used for setting the width and
 	      alignment of a section.  Must be followed by %) somewhere.
 	) -   End of item group.  No width fields allowed.
@@ -7470,6 +7496,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 'switchbuf' 'swb'	string	(default "")
 			global
 	This option controls the behavior when switching between buffers.
+	Mostly for |quickfix| commands some values are also used for other
+	commands, as mentioned below.
 	Possible values (comma separated list):
 	   useopen	If included, jump to the first open window that
 			contains the specified buffer (if there is one).
@@ -8780,23 +8808,31 @@ A jump table for the options with a short description can be found at |Q_op|.
 	part specifies what to do for each consecutive use of 'wildchar'.  The
 	first part specifies the behavior for the first use of 'wildchar',
 	The second part for the second use, etc.
-	These are the possible values for each part:
+
+	Each part consists of a colon separated list consisting of the
+	following possible values:
 	""		Complete only the first match.
 	"full"		Complete the next full match.  After the last match,
 			the original string is used and then the first match
-			again.
+			again.  Will also start 'wildmenu' if it is enabled.
 	"longest"	Complete till longest common string.  If this doesn't
 			result in a longer string, use the next part.
-	"longest:full"	Like "longest", but also start 'wildmenu' if it is
-			enabled.
 	"list"		When more than one match, list all matches.
+	"lastused"	When completing buffer names and more than one buffer
+			matches, sort buffers by time last used (other than
+			the current buffer).
+	When there is only a single match, it is fully completed in all cases.
+
+	Examples of useful colon-separated values:
+	"longest:full"	Like "longest", but also start 'wildmenu' if it is
+			enabled.  Will not complete to the next full match.
 	"list:full"	When more than one match, list all matches and
 			complete first match.
 	"list:longest"	When more than one match, list all matches and
 			complete till longest common string.
-	"list:lastused" When more than one buffer matches, sort buffers
-			by time last used (other than the current buffer).
-	When there is only a single match, it is fully completed in all cases.
+	"list:lastused" When more than one buffer matches, list all matches
+			and sort buffers by time last used (other than the
+			current buffer).
 
 	Examples: >
 		:set wildmode=full
@@ -8855,15 +8891,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'window'* *'wi'*
 'window' 'wi'		number  (default screen height - 1)
 			global
-	Window height.  Do not confuse this with the height of the Vim window,
-	use 'lines' for that.
-	Used for |CTRL-F| and |CTRL-B| when there is only one window and the
-	value is smaller than 'lines' minus one.  The screen will scroll
-	'window' minus two lines, with a minimum of one.
+	Window height used for |CTRL-F| and |CTRL-B| when there is only one
+	window and the value is smaller than 'lines' minus one.  The screen
+	will scroll 'window' minus two lines, with a minimum of one.
 	When 'window' is equal to 'lines' minus one CTRL-F and CTRL-B scroll
 	in a much smarter way, taking care of wrapping lines.
 	When resizing the Vim window, the value is smaller than 1 or more than
 	or equal to 'lines' it will be set to 'lines' minus 1.
+	Note: Do not confuse this with the height of the Vim window, use
+	'lines' for that.
 
 						*'winheight'* *'wh'* *E591*
 'winheight' 'wh'	number	(default 1)

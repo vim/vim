@@ -513,6 +513,11 @@ func Test_list_locked_var_unlet()
       call assert_equal(expected[depth][u][1], ps)
     endfor
   endfor
+  " Deleting a list range should fail if the range is locked
+  let l = [1, 2, 3, 4]
+  lockvar l[1:2]
+  call assert_fails('unlet l[1:2]', 'E741:')
+  unlet l
 endfunc
 
 " Locked variables and :unlet or list / dict functions
@@ -743,6 +748,7 @@ func Test_reduce()
 
   " should not crash
   call assert_fails('echo reduce([1], test_null_function())', 'E1132:')
+  call assert_fails('echo reduce([1], test_null_partial())', 'E1132:')
 endfunc
 
 " splitting a string to a List using split()
@@ -862,6 +868,20 @@ func Test_listdict_extend()
 
   " Extend g: dictionary with an invalid variable name
   call assert_fails("call extend(g:, {'-!' : 10})", 'E461:')
+
+  " Extend a list with itself.
+  let l = [1, 5, 7]
+  call extend(l, l, 0)
+  call assert_equal([1, 5, 7, 1, 5, 7], l)
+  let l = [1, 5, 7]
+  call extend(l, l, 1)
+  call assert_equal([1, 1, 5, 7, 5, 7], l)
+  let l = [1, 5, 7]
+  call extend(l, l, 2)
+  call assert_equal([1, 5, 1, 5, 7, 7], l)
+  let l = [1, 5, 7]
+  call extend(l, l, 3)
+  call assert_equal([1, 5, 7, 1, 5, 7], l)
 endfunc
 
 func Test_listdict_extendnew()

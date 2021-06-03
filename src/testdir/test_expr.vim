@@ -127,6 +127,7 @@ func Test_getreg_empty_list()
   let y = x
   call add(x, 'foo')
   call assert_equal(['foo'], y)
+  call assert_fails('call getreg([])', 'E730:')
 endfunc
 
 func Test_loop_over_null_list()

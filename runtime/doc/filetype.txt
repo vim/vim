@@ -1,4 +1,4 @@
-*filetype.txt*  For Vim version 8.2.  Last change: 2021 Jan 21
+*filetype.txt*  For Vim version 8.2.  Last change: 2021 Mar 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -627,6 +627,13 @@ For (t)csh, add to the config file
 For fish, add to the config file
 
 	set -x MANPAGER "vim -M +MANPAGER -"
+
+
+MARKDOWN                                                *ft-markdown-plugin*
+
+To enable folding use this: >
+        let g:markdown_folding = 1
+<
 
 PDF							*ft-pdf-plugin*
 

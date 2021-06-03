@@ -131,6 +131,36 @@ func Test_mksession()
   set sessionoptions&
 endfunc
 
+def Test_mksession_skiprtp()
+  mksession! Xtest_mks.out
+  var found_rtp = 0
+  var found_pp = 0
+  for line in readfile('Xtest_mks.out')
+    if line =~ 'set runtimepath'
+      found_rtp += 1
+    endif
+    if line =~ 'set packpath'
+      found_pp += 1
+    endif
+  endfor
+  assert_equal(1, found_rtp)
+  assert_equal(1, found_pp)
+  delete('Xtest_mks.out')
+
+  set sessionoptions+=skiprtp
+  mksession! Xtest_mks.out
+  var found = 0
+  for line in readfile('Xtest_mks.out')
+    if line =~ 'set \(runtimepath\|packpath\)'
+      found = 1
+      break
+    endif
+  endfor
+  assert_equal(0, found)
+  delete('Xtest_mks.out')
+  set sessionoptions&
+enddef
+
 func Test_mksession_winheight()
   new
   set winheight=10
@@ -147,6 +177,20 @@ func Test_mksession_large_winheight()
   set winheight&
   source Xtest_mks_winheight.out
   call delete('Xtest_mks_winheight.out')
+endfunc
+
+func Test_mksession_zero_winheight()
+  set winminheight=0
+  edit SomeFile
+  split
+  wincmd _
+  mksession! Xtest_mks_zero
+  set winminheight&
+  let text = readfile('Xtest_mks_zero')->join()
+  call delete('Xtest_mks_zero')
+  close
+  " check there is no divide by zero
+  call assert_notmatch('/ 0[^0-9]', text)
 endfunc
 
 func Test_mksession_rtp()
@@ -392,7 +436,7 @@ endfunc
 func Test_mksession_terminal_no_restore_funcarg()
   CheckFeature terminal
 
-  call term_start(&shell, {'norestore': 1})
+  let buf = Run_shell_in_terminal({'norestore': 1})
   mksession! Xtest_mks.out
   let lines = readfile('Xtest_mks.out')
   let term_cmd = ''
@@ -402,7 +446,7 @@ func Test_mksession_terminal_no_restore_funcarg()
     endif
   endfor
 
-  call StopShellInTerminal(bufnr('%'))
+  call StopShellInTerminal(buf)
   call delete('Xtest_mks.out')
 endfunc
 
@@ -536,6 +580,20 @@ func Test_mkview_no_balt()
 
   mkview! Xtestview
   bdelete Xtestfile1
+
+  source Xtestview
+  call assert_equal(0, buflisted('Xtestfile1'))
+
+  call delete('Xtestview')
+  %bwipe
+endfunc
+
+func Test_mksession_no_balt()
+  edit Xtestfile1
+  edit Xtestfile2
+
+  bdelete Xtestfile1
+  mksession! Xtestview
 
   source Xtestview
   call assert_equal(0, buflisted('Xtestfile1'))
@@ -871,6 +929,24 @@ func Test_mksession_winpos()
   set sessionoptions&
 endfunc
 
+" Test for mksession without options restores winminheight
+func Test_mksession_winminheight()
+  set sessionoptions-=options
+  split
+  mksession! Xtest_mks.out
+  let found_restore = 0
+  let lines = readfile('Xtest_mks.out')
+  for line in lines
+    if line =~ '= s:save_winmin\(width\|height\)'
+      let found_restore += 1
+    endif
+  endfor
+  call assert_equal(2, found_restore)
+  call delete('Xtest_mks.out')
+  close
+  set sessionoptions&
+endfunc
+
 " Test for mksession with 'compatible' option
 func Test_mksession_compatible()
   mksession! Xtest_mks1.out
@@ -981,6 +1057,37 @@ func Test_altfile()
   only
   bwipe!
   call delete('Xtest_altfile')
+endfunc
+
+" Test for creating views with manual folds
+func Test_mkview_manual_fold()
+  call writefile(range(1,10), 'Xfile')
+  new Xfile
+  " create recursive folds
+  5,6fold
+  4,7fold
+  mkview Xview
+  normal zE
+  source Xview
+  call assert_equal([-1, 4, 4, 4, 4, -1], [foldclosed(3), foldclosed(4),
+        \ foldclosed(5), foldclosed(6), foldclosed(7), foldclosed(8)])
+  " open one level of fold
+  4foldopen
+  mkview! Xview
+  normal zE
+  source Xview
+  call assert_equal([-1, -1, 5, 5, -1, -1], [foldclosed(3), foldclosed(4),
+        \ foldclosed(5), foldclosed(6), foldclosed(7), foldclosed(8)])
+  " open all the folds
+  %foldopen!
+  mkview! Xview
+  normal zE
+  source Xview
+  call assert_equal([-1, -1, -1, -1, -1, -1], [foldclosed(3), foldclosed(4),
+        \ foldclosed(5), foldclosed(6), foldclosed(7), foldclosed(8)])
+  call delete('Xfile')
+  call delete('Xview')
+  bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

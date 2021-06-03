@@ -379,7 +379,7 @@ static const struct nv_cmd
 };
 
 // Number of commands in nv_cmds[].
-#define NV_CMDS_SIZE (sizeof(nv_cmds) / sizeof(struct nv_cmd))
+#define NV_CMDS_SIZE ARRAY_LENGTH(nv_cmds)
 
 // Sorted index of commands in nv_cmds[].
 static short nv_cmd_idx[NV_CMDS_SIZE];
@@ -1119,9 +1119,10 @@ getcount:
 	old_mapped_len = typebuf_maplen();
 
     /*
-     * If an operation is pending, handle it.  But not for K_IGNORE.
+     * If an operation is pending, handle it.  But not for K_IGNORE or
+     * K_MOUSEMOVE.
      */
-    if (ca.cmdchar != K_IGNORE)
+    if (ca.cmdchar != K_IGNORE && ca.cmdchar != K_MOUSEMOVE)
 	do_pending_operator(&ca, old_col, FALSE);
 
     /*
@@ -2564,7 +2565,11 @@ nv_screengo(oparg_T *oap, int dir, long dist)
       {
 	if (dir == BACKWARD)
 	{
-	    if ((long)curwin->w_curswant >= width1)
+	    if ((long)curwin->w_curswant >= width1
+#ifdef FEAT_FOLDING
+		    && !hasFolding(curwin->w_cursor.lnum, NULL, NULL)
+#endif
+	       )
 		// Move back within the line. This can give a negative value
 		// for w_curswant if width1 < width2 (with cpoptions+=n),
 		// which will get clipped to column 0.
@@ -2598,7 +2603,11 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 		n = ((linelen - width1 - 1) / width2 + 1) * width2 + width1;
 	    else
 		n = width1;
-	    if (curwin->w_curswant + width2 < (colnr_T)n)
+	    if (curwin->w_curswant + width2 < (colnr_T)n
+#ifdef FEAT_FOLDING
+		    && !hasFolding(curwin->w_cursor.lnum, NULL, NULL)
+#endif
+		    )
 		// move forward within line
 		curwin->w_curswant += width2;
 	    else
@@ -2964,6 +2973,10 @@ dozet:
 		}
 		break;
 
+		// "zp", "zP" in block mode put without addind trailing spaces
+    case 'P':
+    case 'p':  nv_put(cap);
+	       break;
 #ifdef FEAT_FOLDING
 		// "zF": create fold command
 		// "zf": create fold operator
@@ -4769,9 +4782,11 @@ nv_percent(cmdarg_T *cap)
 	{
 	    cap->oap->motion_type = MLINE;
 	    setpcmark();
-	    // Round up, so CTRL-G will give same value.  Watch out for a
-	    // large line count, the line number must not go negative!
-	    if (curbuf->b_ml.ml_line_count > 1000000)
+	    // Round up, so 'normal 100%' always jumps at the line line.
+	    // Beyond 21474836 lines, (ml_line_count * 100 + 99) would
+	    // overflow on 32-bits, so use a formula with less accuracy
+	    // to avoid overflows.
+	    if (curbuf->b_ml.ml_line_count >= 21474836)
 		curwin->w_cursor.lnum = (curbuf->b_ml.ml_line_count + 99L)
 							 / 100L * cap->count0;
 	    else
@@ -6133,6 +6148,17 @@ nv_g_cmd(cmdarg_T *cap)
 		i = curwin->w_leftcol + curwin->w_width - col_off - 1;
 		coladvance((colnr_T)i);
 
+		// if the character doesn't fit move one back
+		if (curwin->w_cursor.col > 0
+				       && (*mb_ptr2cells)(ml_get_cursor()) > 1)
+		{
+		    colnr_T vcol;
+
+		    getvvcol(curwin, &curwin->w_cursor, NULL, NULL, &vcol);
+		    if (vcol >= curwin->w_leftcol + curwin->w_width - col_off)
+			--curwin->w_cursor.col;
+		}
+
 		// Make sure we stick in this column.
 		validate_virtcol();
 		curwin->w_curswant = curwin->w_virtcol;
@@ -6942,6 +6968,16 @@ nv_esc(cmdarg_T *cap)
 	}
 #endif
     }
+#ifdef FEAT_CMDWIN
+    else if (cmdwin_type != 0 && ex_normal_busy)
+    {
+	// When :normal runs out of characters while in the command line window
+	// vgetorpeek() will return ESC.  Exit the cmdline window to break the
+	// loop.
+	cmdwin_result = K_IGNORE;
+	return;
+    }
+#endif
 
     if (VIsual_active)
     {
@@ -7386,11 +7422,13 @@ nv_put_opt(cmdarg_T *cap, int fix_indent)
 	}
 	else
 	    dir = (cap->cmdchar == 'P'
-				 || (cap->cmdchar == 'g' && cap->nchar == 'P'))
-							 ? BACKWARD : FORWARD;
+		    || ((cap->cmdchar == 'g' || cap->cmdchar == 'z')
+			&& cap->nchar == 'P')) ? BACKWARD : FORWARD;
 	prep_redo_cmd(cap);
 	if (cap->cmdchar == 'g')
 	    flags |= PUT_CURSEND;
+	else if (cap->cmdchar == 'z')
+	    flags |= PUT_BLOCK_INNER;
 
 	if (VIsual_active)
 	{

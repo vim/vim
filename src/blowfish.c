@@ -23,8 +23,6 @@
 
 #if defined(FEAT_CRYPT) || defined(PROTO)
 
-#define ARRAY_LENGTH(A)      (sizeof(A)/sizeof(A[0]))
-
 #define BF_BLOCK    8
 #define BF_BLOCK_MASK 7
 #define BF_MAX_CFB_LEN  (8 * BF_BLOCK)

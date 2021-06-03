@@ -12,7 +12,7 @@ SCRIPTSOURCE = ../../runtime
 # Comment out this line to see the verbose output of tests.
 #
 # Catches SwapExists to avoid hanging at the ATTENTION prompt.
-REDIR_TEST_TO_NULL = --cmd 'au SwapExists * let v:swapchoice = "e"' > /dev/null
+REDIR_TEST_TO_NULL = --cmd 'au SwapExists * let v:swapchoice = "e"' | LC_ALL=C LANG=C LANGUAGE=C awk '/Executing Test_/{match($$0, "Executing Test_[^\\)]*\\)"); print substr($$0, RSTART, RLENGTH) "\r"; fflush()}'
 
 # Uncomment this line to use valgrind for memory leaks and extra warnings.
 #   The output goes into a file "valgrind.testN"
@@ -40,7 +40,7 @@ tiny:	nolog tinytests report
 benchmark: $(SCRIPTS_BENCH)
 
 report:
-	# without the +eval feature test_result.log is a copy of test.log
+	@# without the +eval feature test_result.log is a copy of test.log
 	@/bin/sh -c "if test -f test.log; \
 		then cp test.log test_result.log; \
 		else echo No failures reported > test_result.log; \

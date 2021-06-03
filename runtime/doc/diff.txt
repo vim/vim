@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 8.2.  Last change: 2021 Feb 10
+*diff.txt*      For Vim version 8.2.  Last change: 2021 May 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -345,9 +345,11 @@ between file1 and file2: >
 
 The ">" is replaced with the value of 'shellredir'.
 
-The output of "diff" must be a normal "ed" style diff or a unified diff.  Do
-NOT use a context diff.  This example explains the format that Vim expects for
-the "ed" style diff: >
+The output of "diff" must be a normal "ed" style diff or a unified diff.  A
+context diff will NOT work.  For a unified diff no context lines can be used.
+Using "diff -u" will NOT work, use "diff -U0".
+
+This example explains the format that Vim expects for the "ed" style diff: >
 
 	1a2
 	> bbb

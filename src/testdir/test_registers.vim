@@ -281,6 +281,7 @@ endfunc
 
 func Test_set_register()
   call assert_fails("call setreg('#', 200)", 'E86:')
+  call assert_fails("call setreg('a', test_unknown())", 'E908:')
 
   edit Xfile_alt_1
   let b1 = bufnr('')
@@ -469,6 +470,14 @@ func Test_get_reginfo()
 
   let info = getreginfo('"')
   call assert_equal('z', info.points_to)
+
+  let @a="a1b2"
+  nnoremap <F2> <Cmd>let g:RegInfo = getreginfo()<CR>
+  exe "normal \"a\<F2>"
+  call assert_equal({'regcontents': ['a1b2'], 'isunnamed': v:false,
+        \ 'regtype': 'v'}, g:RegInfo)
+  nunmap <F2>
+  unlet g:RegInfo
 
   bwipe!
 endfunc
@@ -706,6 +715,16 @@ func Test_insert_small_delete()
   call assert_equal("'foo' foobar bar", getline(1))
   exe ":norm! w.w."
   call assert_equal("'foo' 'foobar' 'bar'", getline(1))
+  bwipe!
+endfunc
+
+" Record in insert mode using CTRL-O
+func Test_record_in_insert_mode()
+  new
+  let @r = ''
+  call setline(1, ['foo'])
+  call feedkeys("i\<C-O>qrbaz\<C-O>q", 'xt')
+  call assert_equal('baz', @r)
   bwipe!
 endfunc
 

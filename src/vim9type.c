@@ -252,9 +252,10 @@ func_type_add_arg_types(
 /*
  * Get a type_T for a typval_T.
  * "type_gap" is used to temporarily create types in.
+ * When "do_member" is TRUE also get the member type, otherwise use "any".
  */
     static type_T *
-typval2type_int(typval_T *tv, garray_T *type_gap)
+typval2type_int(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
 {
     type_T  *type;
     type_T  *member_type = &t_any;
@@ -274,13 +275,19 @@ typval2type_int(typval_T *tv, garray_T *type_gap)
 
 	if (l == NULL || l->lv_first == NULL)
 	    return &t_list_empty;
+	if (!do_member)
+	    return &t_list_any;
 	if (l->lv_first == &range_list_item)
 	    return &t_list_number;
+	if (l->lv_copyID == copyID)
+	    // avoid recursion
+	    return &t_list_any;
+	l->lv_copyID = copyID;
 
 	// Use the common type of all members.
-	member_type = typval2type(&l->lv_first->li_tv, type_gap);
+	member_type = typval2type(&l->lv_first->li_tv, copyID, type_gap, TRUE);
 	for (li = l->lv_first->li_next; li != NULL; li = li->li_next)
-	    common_type(typval2type(&li->li_tv, type_gap),
+	    common_type(typval2type(&li->li_tv, copyID, type_gap, TRUE),
 					  member_type, &member_type, type_gap);
 	return get_list_type(member_type, type_gap);
     }
@@ -289,17 +296,23 @@ typval2type_int(typval_T *tv, garray_T *type_gap)
     {
 	dict_iterator_T iter;
 	typval_T	*value;
+	dict_T		*d = tv->vval.v_dict;
 
-	if (tv->vval.v_dict == NULL
-				   || tv->vval.v_dict->dv_hashtab.ht_used == 0)
+	if (d == NULL || d->dv_hashtab.ht_used == 0)
 	    return &t_dict_empty;
+	if (!do_member)
+	    return &t_dict_any;
+	if (d->dv_copyID == copyID)
+	    // avoid recursion
+	    return &t_dict_any;
+	d->dv_copyID = copyID;
 
 	// Use the common type of all values.
 	dict_iterate_start(tv, &iter);
 	dict_iterate_next(&iter, &value);
-	member_type = typval2type(value, type_gap);
+	member_type = typval2type(value, copyID, type_gap, TRUE);
 	while (dict_iterate_next(&iter, &value) != NULL)
-	    common_type(typval2type(value, type_gap),
+	    common_type(typval2type(value, copyID, type_gap, TRUE),
 					  member_type, &member_type, type_gap);
 	return get_dict_type(member_type, type_gap);
     }
@@ -370,11 +383,12 @@ need_convert_to_bool(type_T *type, typval_T *tv)
 /*
  * Get a type_T for a typval_T.
  * "type_list" is used to temporarily create types in.
+ * When "do_member" is TRUE also get the member type, otherwise use "any".
  */
     type_T *
-typval2type(typval_T *tv, garray_T *type_gap)
+typval2type(typval_T *tv, int copyID, garray_T *type_gap, int do_member)
 {
-    type_T *type = typval2type_int(tv, type_gap);
+    type_T *type = typval2type_int(tv, copyID, type_gap, do_member);
 
     if (type != NULL && type != &t_bool
 	    && (tv->v_type == VAR_NUMBER
@@ -396,7 +410,7 @@ typval2type_vimvar(typval_T *tv, garray_T *type_gap)
 	return &t_list_string;
     if (tv->v_type == VAR_DICT)  // e.g. for v:completed_item
 	return &t_dict_any;
-    return typval2type(tv, type_gap);
+    return typval2type(tv, get_copyID(), type_gap, TRUE);
 }
 
     int
@@ -421,7 +435,7 @@ check_typval_type(type_T *expected, typval_T *actual_tv, where_T where)
     int		res = FAIL;
 
     ga_init2(&type_list, sizeof(type_T *), 10);
-    actual_type = typval2type(actual_tv, &type_list);
+    actual_type = typval2type(actual_tv, get_copyID(), &type_list, TRUE);
     if (actual_type != NULL)
 	res = check_type(expected, actual_type, TRUE, where);
     clear_type_list(&type_list);
@@ -919,6 +933,8 @@ equal_type(type_T *type1, type_T *type2)
 {
     int i;
 
+    if (type1 == NULL || type2 == NULL)
+	return FALSE;
     if (type1->tt_type != type2->tt_type)
 	return FALSE;
     switch (type1->tt_type)
@@ -934,6 +950,7 @@ equal_type(type_T *type1, type_T *type2)
 	case VAR_BLOB:
 	case VAR_JOB:
 	case VAR_CHANNEL:
+	case VAR_INSTR:
 	    break;  // not composite is always OK
 	case VAR_LIST:
 	case VAR_DICT:
@@ -969,12 +986,12 @@ common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap)
 
     // If either is VAR_UNKNOWN use the other type.  An empty list/dict has no
     // specific type.
-    if (type1->tt_type == VAR_UNKNOWN)
+    if (type1 == NULL || type1->tt_type == VAR_UNKNOWN)
     {
 	*dest = type2;
 	return;
     }
-    if (type2->tt_type == VAR_UNKNOWN)
+    if (type2 == NULL || type2->tt_type == VAR_UNKNOWN)
     {
 	*dest = type1;
 	return;
@@ -1081,6 +1098,7 @@ vartype_name(vartype_T type)
 	case VAR_CHANNEL: return "channel";
 	case VAR_LIST: return "list";
 	case VAR_DICT: return "dict";
+	case VAR_INSTR: return "instr";
 
 	case VAR_FUNC:
 	case VAR_PARTIAL: return "func";
@@ -1200,7 +1218,7 @@ f_typename(typval_T *argvars, typval_T *rettv)
 
     rettv->v_type = VAR_STRING;
     ga_init2(&type_list, sizeof(type_T *), 10);
-    type = typval2type(argvars, &type_list);
+    type = typval2type(argvars, get_copyID(), &type_list, TRUE);
     name = type_name(type, &tofree);
     if (tofree != NULL)
 	rettv->vval.v_string = (char_u *)tofree;

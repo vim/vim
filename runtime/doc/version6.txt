@@ -1,4 +1,4 @@
-*version6.txt*  For Vim version 8.2.  Last change: 2021 Jan 17
+*version6.txt*  For Vim version 8.2.  Last change: 2021 Apr 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1025,7 +1025,7 @@ Port to OS/390 Unix (Ralf Schandl)
 Included jsbmouse support. (Darren Garth)
 Support for dec mouse in Unix. (Steve Wall)
 
-Port to 16-bit MS Windows (Windows 3.1x) (Vince Negri)
+Port to 16-bit MS-Windows (Windows 3.1x) (Vince Negri)
 
 Port to QNX.  Supports the Photon GUI, mouse, etc. (Julian Kinraid)
 
@@ -9649,7 +9649,7 @@ Files:	    src/Make_cyg.mak, src/Make_ming.mak
 
 Patch 6.2f.016
 Problem:    "vim --version > ff" on non-Unix systems results in a file with a
-	    missing line break at the end. (Bill McCArthy)
+	    missing line break at the end. (Bill McCarthy)
 Solution:   Add a line break.
 Files:	    src/main.c
 
@@ -12864,7 +12864,7 @@ Files:	    src/message.c
 Patch 6.2.444
 Problem:    When adding the 'c' flag to a ":substitute" command it may replace
 	    more times than without the 'c' flag.  Happens for a  match that
-	    starts with "\ze" (Marcel Svitalsk) and when using "\@<=" (Klaus
+	    starts with "\ze" (Marcel Svitalsky) and when using "\@<=" (Klaus
 	    Bosau).
 Solution:   Correct "prev_matchcol" when replacing the line.  Don't replace
 	    the line when the pattern uses look-behind matching.

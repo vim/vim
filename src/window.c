@@ -750,11 +750,10 @@ cmd_with_count(
     size_t	bufsize,
     long	Prenum)
 {
-    size_t	len = STRLEN(cmd);
-
-    STRCPY(bufp, cmd);
     if (Prenum > 0)
-	vim_snprintf((char *)bufp + len, bufsize - len, "%ld", Prenum);
+	vim_snprintf((char *)bufp, bufsize, "%s %ld", cmd, Prenum);
+    else
+	STRCPY(bufp, cmd);
 }
 
 /*
@@ -5861,7 +5860,7 @@ win_setminheight(void)
     while (p_wmh > 0)
     {
 	room = Rows - p_ch;
-	needed = frame_minheight(topframe, NULL);
+	needed = min_rows() - 1;  // 1 was added for the cmdline
 	if (room >= needed)
 	    break;
 	--p_wmh;

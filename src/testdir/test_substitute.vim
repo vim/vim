@@ -926,4 +926,13 @@ func Test_substitute_multiline_submatch()
   close!
 endfunc
 
+func Test_substitute_skipped_range()
+  new
+  if 0
+    /1/5/2/2/\n
+  endif
+  call assert_equal([0, 1, 1, 0, 1], getcurpos())
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

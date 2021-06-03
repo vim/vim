@@ -251,6 +251,26 @@ func Test_statusline()
   call assert_match('^vimLineComment\s*$', s:get_statusline())
   syntax off
 
+  "%{%expr%}: evaluates enxpressions present in result of expr
+  func! Inner_eval()
+    return '%n some other text'
+  endfunc
+  func! Outer_eval()
+    return 'some text %{%Inner_eval()%}'
+  endfunc
+  set statusline=%{%Outer_eval()%}
+  call assert_match('^some text ' . bufnr() . ' some other text\s*$', s:get_statusline())
+  delfunc Inner_eval
+  delfunc Outer_eval
+
+  "%{%expr%}: Doesn't get stuck in recursion
+  func! Recurse_eval()
+    return '%{%Recurse_eval()%}'
+  endfunc
+  set statusline=%{%Recurse_eval()%}
+  call assert_match('^%{%Recurse_eval()%}\s*$', s:get_statusline())
+  delfunc Recurse_eval
+
   "%(: Start of item group.
   set statusline=ab%(cd%q%)de
   call assert_match('^abde\s*$', s:get_statusline())
@@ -448,6 +468,28 @@ func Test_statusline_removed_group()
   call delete('XTest_statusline')
 endfunc
 
+func Test_statusline_using_mode()
+  CheckScreendump
+
+  let lines =<< trim END
+    setlocal statusline=-%{mode()}-
+    split
+    setlocal statusline=+%{mode()}+
+  END
+  call writefile(lines, 'XTest_statusline')
+
+  let buf = RunVimInTerminal('-S XTest_statusline', {'rows': 7, 'cols': 50})
+  call VerifyScreenDump(buf, 'Test_statusline_mode_1', {})
+
+  call term_sendkeys(buf, ":")
+  call VerifyScreenDump(buf, 'Test_statusline_mode_2', {})
+
+  " clean up
+  call term_sendkeys(buf, "close\<CR>")
+  call StopVimInTerminal(buf)
+  call delete('XTest_statusline')
+endfunc
+
 func Test_statusline_after_split_vsplit()
   only
 
@@ -464,5 +506,20 @@ func Test_statusline_after_split_vsplit()
   set ls& stl&
 endfunc
 
+" Test using a multibyte character for 'stl' and 'stlnc' items in 'fillchars'
+" with a custom 'statusline'
+func Test_statusline_mbyte_fillchar()
+  only
+  set laststatus=2
+  set fillchars=vert:\|,fold:-,stl:━,stlnc:═
+  set statusline=a%=b
+  call assert_match('^a\+━\+b$', s:get_statusline())
+  vnew
+  call assert_match('^a\+━\+b━a\+═\+b$', s:get_statusline())
+  wincmd w
+  call assert_match('^a\+═\+b═a\+━\+b$', s:get_statusline())
+  set statusline& fillchars& laststatus&
+  %bw!
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

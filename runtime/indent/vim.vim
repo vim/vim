@@ -1,7 +1,7 @@
 " Vim indent file
 " Language:	Vim script
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2021 Feb 13
+" Last Change:	2021 Apr 18
 
 " Only load this indent file when no other was loaded.
 if exists("b:did_indent")
@@ -71,7 +71,8 @@ function GetVimIndentIntern()
       " End of heredoc: use indent of matching start line
       let lnum = v:lnum - 1
       while lnum > 0
-	if synIDattr(synID(lnum, 1, 1), "name") !~ 'vimLetHereDoc'
+	let attr = synIDattr(synID(lnum, 1, 1), "name")
+	if attr != '' && attr !~ 'vimLetHereDoc'
 	  return indent(lnum)
 	endif
 	let lnum -= 1
@@ -160,9 +161,9 @@ function GetVimIndentIntern()
   endif
 
   let ends_in_comment = has('syntax_items')
-	      \ && synIDattr(synID(lnum, col('$'), 1), "name") =~ '\(Comment\|String\)$'
+	\ && synIDattr(synID(lnum, len(getline(lnum)), 1), "name") =~ '\(Comment\|String\)$'
 
-  " A line ending in "{"/"[} is most likely the start of a dict/list literal,
+  " A line ending in "{" or "[" is most likely the start of a dict/list literal,
   " indent the next line more.  Not for a continuation line or {{{.
   if !ends_in_comment && prev_text_end =~ '\s[{[]\s*$' && !found_cont
     let ind = ind + shiftwidth()

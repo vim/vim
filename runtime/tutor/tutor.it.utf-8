@@ -882,7 +882,7 @@ NOTA: Per ignorare maiuscole/minuscole solo per una ricerca, usa \c
 
   1. Comincia a editare il file "vimrc".  Questo dipende dal tuo sistema:
 	:e ~/.vimrc		per Unix
-	:e $VIM/_vimrc		per MS-Windows
+	:e ~/_vimrc		per MS-Windows
 
   2. Ora leggi i contenuti del file "vimrc" distribuito come esempio:
 

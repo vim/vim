@@ -338,7 +338,7 @@ assert_append_cmd_or_arg(garray_T *gap, typval_T *argvars, char_u *cmd)
 }
 
     static int
-assert_beeps(typval_T *argvars)
+assert_beeps(typval_T *argvars, int no_beep)
 {
     char_u	*cmd = tv_get_string_chk(&argvars[0]);
     garray_T	ga;
@@ -348,10 +348,13 @@ assert_beeps(typval_T *argvars)
     suppress_errthrow = TRUE;
     emsg_silent = FALSE;
     do_cmdline_cmd(cmd);
-    if (!called_vim_beep)
+    if (no_beep ? called_vim_beep : !called_vim_beep)
     {
 	prepare_assert_error(&ga);
-	ga_concat(&ga, (char_u *)"command did not beep: ");
+	if (no_beep)
+	    ga_concat(&ga, (char_u *)"command did beep: ");
+	else
+	    ga_concat(&ga, (char_u *)"command did not beep: ");
 	ga_concat(&ga, cmd);
 	assert_error(&ga);
 	ga_clear(&ga);
@@ -369,7 +372,16 @@ assert_beeps(typval_T *argvars)
     void
 f_assert_beeps(typval_T *argvars, typval_T *rettv)
 {
-    rettv->vval.v_number = assert_beeps(argvars);
+    rettv->vval.v_number = assert_beeps(argvars, FALSE);
+}
+
+/*
+ * "assert_nobeep(cmd [, error])" function
+ */
+    void
+f_assert_nobeep(typval_T *argvars, typval_T *rettv)
+{
+    rettv->vval.v_number = assert_beeps(argvars, TRUE);
 }
 
 /*
@@ -970,6 +982,8 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	    ui_delay_for_testing = val;
 	else if (STRCMP(name, (char_u *)"term_props") == 0)
 	    reset_term_props_on_termresponse = val;
+	else if (STRCMP(name, (char_u *)"uptime") == 0)
+	    override_sysinfo_uptime = val;
 	else if (STRCMP(name, (char_u *)"ALL") == 0)
 	{
 	    disable_char_avail_for_testing = FALSE;
@@ -979,6 +993,7 @@ f_test_override(typval_T *argvars, typval_T *rettv UNUSED)
 	    no_query_mouse_for_testing = FALSE;
 	    ui_delay_for_testing = 0;
 	    reset_term_props_on_termresponse = FALSE;
+	    override_sysinfo_uptime = -1;
 	    if (save_starting >= 0)
 	    {
 		starting = save_starting;
@@ -1008,6 +1023,7 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
 	case VAR_FLOAT:
 	case VAR_SPECIAL:
 	case VAR_STRING:
+	case VAR_INSTR:
 	    break;
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL

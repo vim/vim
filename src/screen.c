@@ -239,8 +239,11 @@ compute_foldcolumn(win_T *wp, int col)
 /*
  * Fill the foldcolumn at "p" for window "wp".
  * Only to be called when 'foldcolumn' > 0.
+ * Returns the number of bytes stored in 'p'. When non-multibyte characters are
+ * used for the fold column markers, this is equal to 'fdc' setting. Otherwise,
+ * this will be greater than 'fdc'.
  */
-    void
+    size_t
 fill_foldcolumn(
     char_u	*p,
     win_T	*wp,
@@ -252,39 +255,59 @@ fill_foldcolumn(
     int		first_level;
     int		empty;
     int		fdc = compute_foldcolumn(wp, 0);
+    size_t	byte_counter = 0;
+    int		symbol = 0;
+    int		len = 0;
 
     // Init to all spaces.
-    vim_memset(p, ' ', (size_t)fdc);
+    vim_memset(p, ' ', MAX_MCO * fdc + 1);
 
     level = win_foldinfo.fi_level;
-    if (level > 0)
+    empty = (fdc == 1) ? 0 : 1;
+
+    // If the column is too narrow, we start at the lowest level that
+    // fits and use numbers to indicate the depth.
+    first_level = level - fdc - closed + 1 + empty;
+    if (first_level < 1)
+	first_level = 1;
+
+    for (i = 0; i < MIN(fdc, level); i++)
     {
-	// If there is only one column put more info in it.
-	empty = (fdc == 1) ? 0 : 1;
+	if (win_foldinfo.fi_lnum == lnum
+		&& first_level + i >= win_foldinfo.fi_low_level)
+	    symbol = fill_foldopen;
+	else if (first_level == 1)
+	    symbol = fill_foldsep;
+	else if (first_level + i <= 9)
+	    symbol = '0' + first_level + i;
+	else
+	    symbol = '>';
 
-	// If the column is too narrow, we start at the lowest level that
-	// fits and use numbers to indicated the depth.
-	first_level = level - fdc - closed + 1 + empty;
-	if (first_level < 1)
-	    first_level = 1;
-
-	for (i = 0; i + empty < fdc; ++i)
+	len = utf_char2bytes(symbol, &p[byte_counter]);
+	byte_counter += len;
+	if (first_level + i >= level)
 	{
-	    if (win_foldinfo.fi_lnum == lnum
-			      && first_level + i >= win_foldinfo.fi_low_level)
-		p[i] = fill_foldopen;
-	    else if (first_level == 1)
-		p[i] = fill_foldsep;
-	    else if (first_level + i <= 9)
-		p[i] = '0' + first_level + i;
-	    else
-		p[i] = '>';
-	    if (first_level + i == level)
-		break;
+	    i++;
+	    break;
 	}
     }
+
     if (closed)
-	p[i >= fdc ? i - 1 : i] = fill_foldclosed;
+    {
+	if (symbol != 0)
+	{
+	    // rollback length and the character
+	    byte_counter -= len;
+	    if (len > 1)
+		// for a multibyte character, erase all the bytes
+		vim_memset(p + byte_counter, ' ', len);
+	}
+	symbol = fill_foldclosed;
+	len = utf_char2bytes(symbol, &p[byte_counter]);
+	byte_counter += len;
+    }
+
+    return MAX(byte_counter + (fdc - i), (size_t)fdc);
 }
 #endif // FEAT_FOLDING
 
@@ -1225,7 +1248,7 @@ win_redr_custom(
     }
     else
     {
-	row = W_WINROW(wp) + wp->w_height;
+	row = statusline_row(wp);
 	fillchar = fillchar_status(&attr, wp);
 	maxwidth = wp->w_width;
 
@@ -4794,14 +4817,14 @@ set_chars_option(win_T *wp, char_u **varp)
     {
 	tab = lcstab;
 	CLEAR_FIELD(lcs_chars);
-	entries = sizeof(lcstab) / sizeof(struct charstab);
+	entries = ARRAY_LENGTH(lcstab);
 	if (varp == &wp->w_p_lcs && wp->w_p_lcs[0] == NUL)
 	    varp = &p_lcs;
     }
     else
     {
 	tab = filltab;
-	entries = sizeof(filltab) / sizeof(struct charstab);
+	entries = ARRAY_LENGTH(filltab);
     }
 
     // first round: check for valid value, second round: assign values

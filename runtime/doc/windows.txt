@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.2.  Last change: 2021 Feb 06
+*windows.txt*   For Vim version 8.2.  Last change: 2021 Apr 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -521,14 +521,14 @@ CTRL-W J	Move the current window to be at the very bottom, using the
 CTRL-W H	Move the current window to be at the far left, using the
 		full height of the screen.  This works like closing the
 		current window and then creating another one with
-		":vert topleft split", except that the current window contents
+		`:vert topleft split`, except that the current window contents
 		is used for the new window.
 
 						*CTRL-W_L*
 CTRL-W L	Move the current window to be at the far right, using the full
 		height of the screen.  This works like closing the
 		current window and then creating another one with
-		":vert botright split", except that the current window
+		`:vert botright split`, except that the current window
 		contents is used for the new window.
 
 						*CTRL-W_T*
@@ -571,7 +571,7 @@ CTRL-W <	Decrease current window width by N (default 1).
 						*CTRL-W_>*
 CTRL-W >	Increase current window width by N (default 1).
 
-:vertical res[ize] [N]			*:vertical-resize* *CTRL-W_bar*
+:vert[ical] res[ize] [N]			*:vertical-resize* *CTRL-W_bar*
 CTRL-W |	Set current window width to N (default: widest possible).
 
 You can also resize a window by dragging a status line up or down with the
@@ -790,7 +790,7 @@ can also get to them with the buffer list commands, like ":bnext".
 
 Examples: >
 
-	:windo set nolist nofoldcolumn | normal zn
+	:windo set nolist foldcolumn=0 | normal! zn
 
 This resets the 'list' option and disables folding in all windows. >
 
@@ -798,7 +798,7 @@ This resets the 'list' option and disables folding in all windows. >
 
 This resets the 'fileencoding' in each buffer and writes it if this changed
 the buffer.  The result is that all buffers will use the 'encoding' encoding
-(if conversion works properly).
+(if conversion succeeds).
 
 ==============================================================================
 9. Tag or file name under the cursor			*window-tag*

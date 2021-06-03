@@ -21,7 +21,6 @@ source test_jumps.vim
 source test_lispwords.vim
 source test_move.vim
 source test_put.vim
-source test_recover.vim
 source test_reltime.vim
 source test_scroll_opt.vim
 source test_searchpos.vim

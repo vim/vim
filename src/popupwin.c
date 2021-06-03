@@ -402,8 +402,7 @@ get_pos_entry(dict_T *d, int give_error)
     if (str == NULL)
 	return POPPOS_NONE;
 
-    for (nr = 0; nr < (int)(sizeof(poppos_entries) / sizeof(poppos_entry_T));
-									  ++nr)
+    for (nr = 0; nr < (int)ARRAY_LENGTH(poppos_entries); ++nr)
 	if (STRCMP(str, poppos_entries[nr].pp_name) == 0)
 	    return poppos_entries[nr].pp_val;
 
@@ -3042,8 +3041,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	if (wp->w_close_cb.cb_name != NULL)
 	    dict_add_callback(dict, "callback", &wp->w_close_cb);
 
-	for (i = 0; i < (int)(sizeof(poppos_entries) / sizeof(poppos_entry_T));
-									   ++i)
+	for (i = 0; i < (int)ARRAY_LENGTH(poppos_entries); ++i)
 	    if (wp->w_popup_pos == poppos_entries[i].pp_val)
 	    {
 		dict_add_string(dict, "pos",
@@ -3822,17 +3820,29 @@ update_popups(void (*win_update)(win_T *wp))
 	title_wincol = wp->w_wincol + 1;
 	if (wp->w_popup_title != NULL)
 	{
-	    char_u  *title_text;
+	    title_len = (int)MB_CHARLEN(wp->w_popup_title);
 
-	    title_len = (int)STRLEN(wp->w_popup_title);
-	    title_text = alloc(title_len + 1);
-	    trunc_string(wp->w_popup_title, title_text,
-					       total_width - 2, title_len + 1);
-	    screen_puts(title_text, wp->w_winrow, title_wincol,
-		      wp->w_popup_border[0] > 0 ? border_attr[0] : popup_attr);
-	    vim_free(title_text);
+	    // truncate the title if too long
 	    if (title_len > total_width - 2)
+	    {
+		int	title_byte_len = (int)STRLEN(wp->w_popup_title);
+		char_u  *title_text = alloc(title_byte_len + 1);
+
+		if (title_text != NULL)
+		{
+		    trunc_string(wp->w_popup_title, title_text,
+					  total_width - 2, title_byte_len + 1);
+		    screen_puts(title_text, wp->w_winrow, title_wincol,
+				  wp->w_popup_border[0] > 0
+						? border_attr[0] : popup_attr);
+		    vim_free(title_text);
+		}
+
 		title_len = total_width - 2;
+	    }
+	    else
+		screen_puts(wp->w_popup_title, wp->w_winrow, title_wincol,
+		      wp->w_popup_border[0] > 0 ? border_attr[0] : popup_attr);
 	}
 
 	wincol = wp->w_wincol - wp->w_popup_leftoff;

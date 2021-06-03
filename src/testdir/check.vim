@@ -84,8 +84,15 @@ func CheckUnix()
   endif
 endfunc
 
+" Command to check for running on Linix
+command CheckLinux call CheckLinux()
+func CheckLinux()
+  if !has('linux')
+    throw 'Skipped: only works on Linux'
+  endif
+endfunc
+
 " Command to check for not running on a BSD system.
-" TODO: using this checks should not be needed
 command CheckNotBSD call CheckNotBSD()
 func CheckNotBSD()
   if has('bsd')
@@ -189,6 +196,31 @@ func CheckNotAsan()
   if execute('version') =~# '-fsanitize=[a-z,]*\<address\>'
     throw 'Skipped: does not work with ASAN'
   endif
+endfunc
+
+" Command to check for satisfying any of the conditions.
+" e.g. CheckAnyOf Feature:bsd Feature:sun Linux
+command -nargs=+ CheckAnyOf call CheckAnyOf(<f-args>)
+func CheckAnyOf(...)
+  let excp = []
+  for arg in a:000
+    try
+      exe 'Check' .. substitute(arg, ':', ' ', '')
+      return
+    catch /^Skipped:/
+      let excp += [substitute(v:exception, '^Skipped:\s*', '', '')]
+    endtry
+  endfor
+  throw 'Skipped: ' .. join(excp, '; ')
+endfunc
+
+" Command to check for satisfying all of the conditions.
+" e.g. CheckAllOf Unix Gui Option:ballooneval
+command -nargs=+ CheckAllOf call CheckAllOf(<f-args>)
+func CheckAllOf(...)
+  for arg in a:000
+    exe 'Check' .. substitute(arg, ':', ' ', '')
+  endfor
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

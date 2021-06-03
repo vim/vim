@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 8.2.  Last change: 2021 Feb 11
+*index.txt*     For Vim version 8.2.  Last change: 2021 May 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -864,6 +864,8 @@ tag		char	      note action in Normal mode	~
 |zm|		zm		   subtract one from 'foldlevel'
 |zn|		zn		   reset 'foldenable'
 |zo|		zo		   open fold
+|zp|		zp		   paste in block-mode without trailing spaces
+|zP|		zP		   paste in block-mode without trailing spaces
 |zr|		zr		   add one to 'foldlevel'
 |zs|		zs		   when 'wrap' off scroll horizontally to
 				   position the cursor at the start (left
@@ -1294,6 +1296,7 @@ tag		command		action ~
 |:edit|		:e[dit]		edit a file
 |:earlier|	:ea[rlier]	go to older change, undo
 |:echo|		:ec[ho]		echoes the result of expressions
+|:echoconsole|	:echoc[onsole]	like :echomsg but write to stdout
 |:echoerr|	:echoe[rr]	like :echo, show like an error and use history
 |:echohl|	:echoh[l]	set highlighting for echo commands
 |:echomsg|	:echom[sg]	same as :echo, put message in history
@@ -1395,6 +1398,7 @@ tag		command		action ~
 |:lfdo|		:lfd[o]		execute command in each file in location list
 |:left|		:le[ft]		left align lines
 |:leftabove|	:lefta[bove]	make split window appear left or above
+|:legacy|	:leg[acy]	make following command use legacy script syntax
 |:let|		:let		assign a value to a variable or option
 |:lexpr|	:lex[pr]	read locations from expr and jump to first
 |:lfile|	:lf[ile]	read file with locations and jump to first
@@ -1655,9 +1659,9 @@ tag		command		action ~
 |:tab|		:tab		create new tab when opening new window
 |:tag|		:ta[g]		jump to tag
 |:tags|		:tags		show the contents of the tag stack
-|:tcd|		:tcd		change directory for tab page
+|:tcd|		:tc[d]		change directory for tab page
 |:tchdir|	:tch[dir]	change directory for tab page
-|:tcl|		:tc[l]		execute Tcl command
+|:tcl|		:tcl		execute Tcl command
 |:tcldo|	:tcld[o]	execute Tcl command for each line
 |:tclfile|	:tclf[ile]	execute Tcl script file
 |:tearoff|	:te[aroff]	tear-off a menu
@@ -1699,7 +1703,8 @@ tag		command		action ~
 |:version|	:ve[rsion]	print version number and other info
 |:verbose|	:verb[ose]	execute command with 'verbose' set
 |:vertical|	:vert[ical]	make following command split vertically
-|:vim9script|	:vim9[script]	indicates Vim9 script file
+|:vim9cmd|	:vim9[cmd]	make following command use Vim9 script syntax
+|:vim9script|	:vim9s[cript]	indicates Vim9 script file
 |:vimgrep|	:vim[grep]	search for pattern in files
 |:vimgrepadd|	:vimgrepa[dd]	like :vimgrep, but append to current list
 |:visual|	:vi[sual]	same as ":edit", but turns off "Ex" mode

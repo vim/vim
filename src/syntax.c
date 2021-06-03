@@ -4573,7 +4573,7 @@ get_syn_options(
 	if (strchr(first_letters, *arg) == NULL)
 	    break;
 
-	for (fidx = sizeof(flagtab) / sizeof(struct flag); --fidx >= 0; )
+	for (fidx = ARRAY_LENGTH(flagtab); --fidx >= 0; )
 	{
 	    p = flagtab[fidx].name;
 	    for (i = 0, len = 0; p[i] != NUL; i += 2, ++len)
@@ -5990,12 +5990,17 @@ get_id_list(
 		    break;
 		}
 		if (name[1] == 'A')
-		    id = SYNID_ALLBUT;
+		    id = SYNID_ALLBUT + current_syn_inc_tag;
 		else if (name[1] == 'T')
-		    id = SYNID_TOP;
+		{
+		    if (curwin->w_s->b_syn_topgrp >= SYNID_CLUSTER)
+			id = curwin->w_s->b_syn_topgrp;
+		    else
+			id = SYNID_TOP + current_syn_inc_tag;
+		}
 		else
-		    id = SYNID_CONTAINED;
-		id += current_syn_inc_tag;
+		    id = SYNID_CONTAINED + current_syn_inc_tag;
+
 	    }
 	    else if (name[1] == '@')
 	    {

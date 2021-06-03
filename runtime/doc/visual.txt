@@ -1,4 +1,4 @@
-*visual.txt*    For Vim version 8.2.  Last change: 2019 Nov 02
+*visual.txt*    For Vim version 8.2.  Last change: 2021 May 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -429,7 +429,7 @@ abcdefghijklmnopqrstuvwxyz
 
 abcdefghijklmnSTRINGopqrstuvwxyz
 abc	      STRING  defghijklmnopqrstuvwxyz
-abcdef  ghi   STRING	jklmnopqrstuvwxyz
+abcdef  ghi   STRING  	jklmnopqrstuvwxyz
 abcdefghijklmnSTRINGopqrstuvwxyz
 
 2. fo<C-v>3j$ASTRING<ESC>					*v_b_A_example*

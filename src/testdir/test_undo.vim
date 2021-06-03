@@ -733,4 +733,27 @@ func Test_undofile_cryptmethod_blowfish2()
   set undofile& undolevels& cryptmethod&
 endfunc
 
+" Test for redoing with incrementing numbered registers
+func Test_redo_repeat_numbered_register()
+  new
+  for [i, v] in [[1, 'one'], [2, 'two'], [3, 'three'],
+        \ [4, 'four'], [5, 'five'], [6, 'six'],
+        \ [7, 'seven'], [8, 'eight'], [9, 'nine']]
+    exe 'let @' .. i .. '="' .. v .. '\n"'
+  endfor
+  call feedkeys('"1p.........', 'xt')
+  call assert_equal(['', 'one', 'two', 'three', 'four', 'five', 'six',
+        \ 'seven', 'eight', 'nine', 'nine'], getline(1, '$'))
+  bwipe!
+endfunc
+
+" Test for redo in insert mode using CTRL-O with multibyte characters
+func Test_redo_multibyte_in_insert_mode()
+  new
+  call feedkeys("a\<C-K>ft", 'xt')
+  call feedkeys("uiHe\<C-O>.llo", 'xt')
+  call assert_equal("He\ufb05llo", getline(1))
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

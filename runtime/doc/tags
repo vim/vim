@@ -57,11 +57,13 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'ari'	options.txt	/*'ari'*
 'arshape'	options.txt	/*'arshape'*
 'as'	todo.txt	/*'as'*
+'asd'	options.txt	/*'asd'*
 'autochdir'	options.txt	/*'autochdir'*
 'autoindent'	options.txt	/*'autoindent'*
 'autoprint'	vi_diff.txt	/*'autoprint'*
 'autoread'	options.txt	/*'autoread'*
 'autosave'	todo.txt	/*'autosave'*
+'autoshelldir'	options.txt	/*'autoshelldir'*
 'autowrite'	options.txt	/*'autowrite'*
 'autowriteall'	options.txt	/*'autowriteall'*
 'aw'	options.txt	/*'aw'*
@@ -508,10 +510,12 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'noari'	options.txt	/*'noari'*
 'noarshape'	options.txt	/*'noarshape'*
 'noas'	todo.txt	/*'noas'*
+'noasd'	options.txt	/*'noasd'*
 'noautochdir'	options.txt	/*'noautochdir'*
 'noautoindent'	options.txt	/*'noautoindent'*
 'noautoread'	options.txt	/*'noautoread'*
 'noautosave'	todo.txt	/*'noautosave'*
+'noautoshelldir'	options.txt	/*'noautoshelldir'*
 'noautowrite'	options.txt	/*'noautowrite'*
 'noautowriteall'	options.txt	/*'noautowriteall'*
 'noaw'	options.txt	/*'noaw'*
@@ -2397,6 +2401,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :ec	eval.txt	/*:ec*
 :echo	eval.txt	/*:echo*
 :echo-redraw	eval.txt	/*:echo-redraw*
+:echoc	eval.txt	/*:echoc*
+:echoconsole	eval.txt	/*:echoconsole*
 :echoe	eval.txt	/*:echoe*
 :echoerr	eval.txt	/*:echoerr*
 :echoh	eval.txt	/*:echoh*
@@ -2624,6 +2630,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :left	change.txt	/*:left*
 :lefta	windows.txt	/*:lefta*
 :leftabove	windows.txt	/*:leftabove*
+:leg	vim9.txt	/*:leg*
+:legacy	vim9.txt	/*:legacy*
 :let	eval.txt	/*:let*
 :let%=	eval.txt	/*:let%=*
 :let+=	eval.txt	/*:let+=*
@@ -3176,7 +3184,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :st	starting.txt	/*:st*
 :sta	windows.txt	/*:sta*
 :stag	windows.txt	/*:stag*
-:star	repeat.txt	/*:star*
+:star	cmdline.txt	/*:star*
+:star-compatible	repeat.txt	/*:star-compatible*
 :star-visual-range	cmdline.txt	/*:star-visual-range*
 :start	insert.txt	/*:start*
 :startgreplace	insert.txt	/*:startgreplace*
@@ -3191,6 +3200,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :stselect	tagsrch.txt	/*:stselect*
 :su	change.txt	/*:su*
 :substitute	change.txt	/*:substitute*
+:substitute-repeat	change.txt	/*:substitute-repeat*
 :sun	windows.txt	/*:sun*
 :sunhide	windows.txt	/*:sunhide*
 :sunm	map.txt	/*:sunm*
@@ -3307,7 +3317,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :tabs	tabpage.txt	/*:tabs*
 :tag	tagsrch.txt	/*:tag*
 :tags	tagsrch.txt	/*:tags*
-:tc	if_tcl.txt	/*:tc*
+:tc	editing.txt	/*:tc*
 :tcd	editing.txt	/*:tcd*
 :tcd-	editing.txt	/*:tcd-*
 :tch	editing.txt	/*:tch*
@@ -3402,7 +3412,9 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :vie	editing.txt	/*:vie*
 :view	editing.txt	/*:view*
 :vim	quickfix.txt	/*:vim*
-:vim9	repeat.txt	/*:vim9*
+:vim9	vim9.txt	/*:vim9*
+:vim9cmd	vim9.txt	/*:vim9cmd*
+:vim9s	repeat.txt	/*:vim9s*
 :vim9script	repeat.txt	/*:vim9script*
 :vimgrep	quickfix.txt	/*:vimgrep*
 :vimgrepa	quickfix.txt	/*:vimgrepa*
@@ -3927,6 +3939,7 @@ E1050	vim9.txt	/*E1050*
 E107	eval.txt	/*E107*
 E108	eval.txt	/*E108*
 E109	eval.txt	/*E109*
+E1091	vim9.txt	/*E1091*
 E1092	vim9.txt	/*E1092*
 E1094	vim9.txt	/*E1094*
 E11	cmdline.txt	/*E11*
@@ -3948,6 +3961,8 @@ E1155	autocmd.txt	/*E1155*
 E116	eval.txt	/*E116*
 E117	eval.txt	/*E117*
 E118	eval.txt	/*E118*
+E1187	starting.txt	/*E1187*
+E1188	cmdline.txt	/*E1188*
 E119	eval.txt	/*E119*
 E12	message.txt	/*E12*
 E120	eval.txt	/*E120*
@@ -5425,6 +5440,7 @@ assert_fails()	testing.txt	/*assert_fails()*
 assert_false()	testing.txt	/*assert_false()*
 assert_inrange()	testing.txt	/*assert_inrange()*
 assert_match()	testing.txt	/*assert_match()*
+assert_nobeep()	testing.txt	/*assert_nobeep()*
 assert_notequal()	testing.txt	/*assert_notequal()*
 assert_notmatch()	testing.txt	/*assert_notmatch()*
 assert_report()	testing.txt	/*assert_report()*
@@ -6428,6 +6444,7 @@ floating-point-format	eval.txt	/*floating-point-format*
 floating-point-precision	eval.txt	/*floating-point-precision*
 floor()	eval.txt	/*floor()*
 fmod()	eval.txt	/*fmod()*
+fname-variable	eval.txt	/*fname-variable*
 fname_diff-variable	eval.txt	/*fname_diff-variable*
 fname_in-variable	eval.txt	/*fname_in-variable*
 fname_new-variable	eval.txt	/*fname_new-variable*
@@ -6576,6 +6593,7 @@ ft-mail.vim	syntax.txt	/*ft-mail.vim*
 ft-make-syntax	syntax.txt	/*ft-make-syntax*
 ft-man-plugin	filetype.txt	/*ft-man-plugin*
 ft-maple-syntax	syntax.txt	/*ft-maple-syntax*
+ft-markdown-plugin	filetype.txt	/*ft-markdown-plugin*
 ft-masm-syntax	syntax.txt	/*ft-masm-syntax*
 ft-mathematica-syntax	syntax.txt	/*ft-mathematica-syntax*
 ft-matlab-indent	indent.txt	/*ft-matlab-indent*
@@ -6676,6 +6694,7 @@ function-range-example	eval.txt	/*function-range-example*
 function-search-undo	eval.txt	/*function-search-undo*
 function_key	intro.txt	/*function_key*
 functions	eval.txt	/*functions*
+fuzzy-match	pattern.txt	/*fuzzy-match*
 fvwm.vim	syntax.txt	/*fvwm.vim*
 fvwm2rc	syntax.txt	/*fvwm2rc*
 fvwmrc	syntax.txt	/*fvwmrc*
@@ -7497,6 +7516,7 @@ info-message	starting.txt	/*info-message*
 inform.vim	syntax.txt	/*inform.vim*
 informix	ft_sql.txt	/*informix*
 initialization	starting.txt	/*initialization*
+inline-function	vim9.txt	/*inline-function*
 input()	eval.txt	/*input()*
 inputdialog()	eval.txt	/*inputdialog()*
 inputlist()	eval.txt	/*inputlist()*
@@ -7774,6 +7794,7 @@ map-return	map.txt	/*map-return*
 map-self-destroy	tips.txt	/*map-self-destroy*
 map-space_in_lhs	map.txt	/*map-space_in_lhs*
 map-space_in_rhs	map.txt	/*map-space_in_rhs*
+map-table	map.txt	/*map-table*
 map-typing	map.txt	/*map-typing*
 map-which-keys	map.txt	/*map-which-keys*
 map.txt	map.txt	/*map.txt*
@@ -8572,6 +8593,12 @@ prop_type_change()	textprop.txt	/*prop_type_change()*
 prop_type_delete()	textprop.txt	/*prop_type_delete()*
 prop_type_get()	textprop.txt	/*prop_type_get()*
 prop_type_list()	textprop.txt	/*prop_type_list()*
+ps1-about	ft_ps1.txt	/*ps1-about*
+ps1-compiler	ft_ps1.txt	/*ps1-compiler*
+ps1-folding	ft_ps1.txt	/*ps1-folding*
+ps1-keyword	ft_ps1.txt	/*ps1-keyword*
+ps1-syntax	ft_ps1.txt	/*ps1-syntax*
+ps1.txt	ft_ps1.txt	/*ps1.txt*
 psql	ft_sql.txt	/*psql*
 ptcap.vim	syntax.txt	/*ptcap.vim*
 pterm-mouse	options.txt	/*pterm-mouse*
@@ -8699,6 +8726,7 @@ quotestar	gui.txt	/*quotestar*
 quote~	change.txt	/*quote~*
 r	change.txt	/*r*
 r.vim	syntax.txt	/*r.vim*
+raku-unicode	ft_raku.txt	/*raku-unicode*
 rand()	eval.txt	/*rand()*
 random	eval.txt	/*random*
 range()	eval.txt	/*range()*
@@ -9160,6 +9188,7 @@ str2float()	eval.txt	/*str2float()*
 str2list()	eval.txt	/*str2list()*
 str2nr()	eval.txt	/*str2nr()*
 strcasestr()	eval.txt	/*strcasestr()*
+strcharlen()	eval.txt	/*strcharlen()*
 strcharpart()	eval.txt	/*strcharpart()*
 strchars()	eval.txt	/*strchars()*
 strchr()	eval.txt	/*strchr()*
@@ -9715,6 +9744,7 @@ timestamp	editing.txt	/*timestamp*
 timestamps	editing.txt	/*timestamps*
 tips	tips.txt	/*tips*
 tips.txt	tips.txt	/*tips.txt*
+tmux	syntax.txt	/*tmux*
 todo	todo.txt	/*todo*
 todo.txt	todo.txt	/*todo.txt*
 toggle	options.txt	/*toggle*
@@ -9854,6 +9884,7 @@ v:exiting	eval.txt	/*v:exiting*
 v:false	eval.txt	/*v:false*
 v:fcs_choice	eval.txt	/*v:fcs_choice*
 v:fcs_reason	eval.txt	/*v:fcs_reason*
+v:fname	eval.txt	/*v:fname*
 v:fname_diff	eval.txt	/*v:fname_diff*
 v:fname_in	eval.txt	/*v:fname_in*
 v:fname_new	eval.txt	/*v:fname_new*
@@ -10109,6 +10140,8 @@ vim-dev	intro.txt	/*vim-dev*
 vim-mac	intro.txt	/*vim-mac*
 vim-modes	intro.txt	/*vim-modes*
 vim-modes-intro	intro.txt	/*vim-modes-intro*
+vim-raku	ft_raku.txt	/*vim-raku*
+vim-raku.txt	ft_raku.txt	/*vim-raku.txt*
 vim-script-intro	usr_41.txt	/*vim-script-intro*
 vim-use	intro.txt	/*vim-use*
 vim-variable	eval.txt	/*vim-variable*
@@ -10125,14 +10158,20 @@ vim9-differences	vim9.txt	/*vim9-differences*
 vim9-export	vim9.txt	/*vim9-export*
 vim9-final	vim9.txt	/*vim9-final*
 vim9-gotchas	vim9.txt	/*vim9-gotchas*
+vim9-ignored-argument	vim9.txt	/*vim9-ignored-argument*
 vim9-import	vim9.txt	/*vim9-import*
+vim9-lambda	vim9.txt	/*vim9-lambda*
+vim9-lambda-arguments	vim9.txt	/*vim9-lambda-arguments*
+vim9-mix	vim9.txt	/*vim9-mix*
 vim9-namespace	vim9.txt	/*vim9-namespace*
 vim9-rationale	vim9.txt	/*vim9-rationale*
 vim9-reload	vim9.txt	/*vim9-reload*
 vim9-scopes	vim9.txt	/*vim9-scopes*
 vim9-script-intro	usr_46.txt	/*vim9-script-intro*
 vim9-types	vim9.txt	/*vim9-types*
+vim9-unpack-ignore	vim9.txt	/*vim9-unpack-ignore*
 vim9-user-command	vim9.txt	/*vim9-user-command*
+vim9-variable-arguments	vim9.txt	/*vim9-variable-arguments*
 vim9.txt	vim9.txt	/*vim9.txt*
 vim9script	vim9.txt	/*vim9script*
 vim:	options.txt	/*vim:*

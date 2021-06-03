@@ -886,7 +886,7 @@ Anmerkung: Um die Schreibweise für eine einzige Suche zu ignorieren, benutze \c
 
   1. Starte das Editieren der "vimrc"-Datei, abhängig von deinem System:
 	:e ~/.vimrc		für Unix
-	:e $VIM/_vimrc		für MS-Windows
+	:e ~/_vimrc		für MS-Windows
 
   2. Nun lies den Inhalt der Beispiel-"vimrc"-Datei ein:
 	:r $VIMRUNTIME/vimrc_example.vim

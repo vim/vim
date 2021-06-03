@@ -31,6 +31,8 @@ EXTERN char e_cannot_slice_dictionary[]
 	INIT(= N_("E719: Cannot slice a Dictionary"));
 EXTERN char e_assert_fails_second_arg[]
 	INIT(= N_("E856: \"assert_fails()\" second argument must be a string or a list with one or two strings"));
+EXTERN char e_using_invalid_value_as_string_str[]
+	INIT(= N_("E908: using an invalid value as a String: %s"));
 EXTERN char e_cannot_index_special_variable[]
 	INIT(= N_("E909: Cannot index a special variable"));
 #endif
@@ -147,7 +149,7 @@ EXTERN char e_cannot_declare_an_option[]
 	INIT(= N_("E1052: Cannot declare an option: %s"));
 EXTERN char e_could_not_import_str[]
 	INIT(= N_("E1053: Could not import \"%s\""));
-EXTERN char e_variable_already_declared_in_script[]
+EXTERN char e_variable_already_declared_in_script_str[]
 	INIT(= N_("E1054: Variable already declared in the script: %s"));
 EXTERN char e_missing_name_after_dots[]
 	INIT(= N_("E1055: Missing name after ..."));
@@ -323,8 +325,8 @@ EXTERN char e_non_empty_string_required[]
 	INIT(= N_("E1142: Non-empty string required"));
 EXTERN char e_empty_expression_str[]
 	INIT(= N_("E1143: Empty expression: \"%s\""));
-EXTERN char e_command_not_followed_by_white_space_str[]
-	INIT(= N_("E1144: Command is not followed by white space: %s"));
+EXTERN char e_command_str_not_followed_by_white_space_str[]
+	INIT(= N_("E1144: Command \"%s\" is not followed by white space: %s"));
 EXTERN char e_missing_heredoc_end_marker_str[]
 	INIT(= N_("E1145: Missing heredoc end marker: %s"));
 EXTERN char e_command_not_recognized_str[]
@@ -369,3 +371,51 @@ EXTERN char e_cannot_use_range_with_assignment_str[]
 	INIT(= N_("E1165: Cannot use a range with an assignment: %s"));
 EXTERN char e_cannot_use_range_with_dictionary[]
 	INIT(= N_("E1166: Cannot use a range with a dictionary"));
+EXTERN char e_argument_name_shadows_existing_variable_str[]
+	INIT(= N_("E1167: Argument name shadows existing variable: %s"));
+EXTERN char e_argument_already_declared_in_script_str[]
+	INIT(= N_("E1168: Argument already declared in the script: %s"));
+EXTERN char e_import_as_name_not_supported_here[]
+	INIT(= N_("E1169: 'import * as {name}' not supported here"));
+EXTERN char e_cannot_use_hash_curly_to_start_comment[]
+	INIT(= N_("E1170: Cannot use #{ to start a comment"));
+EXTERN char e_missing_end_block[]
+	INIT(= N_("E1171: Missing } after inline function"));
+EXTERN char e_cannot_use_default_values_in_lambda[]
+	INIT(= N_("E1172: Cannot use default values in a lambda"));
+EXTERN char e_text_found_after_enddef_str[]
+	INIT(= N_("E1173: Text found after enddef: %s"));
+EXTERN char e_string_required_for_argument_nr[]
+	INIT(= N_("E1174: String required for argument %d"));
+EXTERN char e_non_empty_string_required_for_argument_nr[]
+	INIT(= N_("E1175: Non-empty string required for argument %d"));
+EXTERN char e_misplaced_command_modifier[]
+	INIT(= N_("E1176: Misplaced command modifier"));
+EXTERN char e_for_loop_on_str_not_supported[]
+	INIT(= N_("E1177: For loop on %s not supported"));
+EXTERN char e_cannot_lock_unlock_local_variable[]
+	INIT(= N_("E1178: Cannot lock or unlock a local variable"));
+EXTERN char e_failed_to_extract_pwd_from_str_check_your_shell_config[]
+	INIT(= N_("E1179: Failed to extract PWD from %s, check your shell's config related to OSC 7"));
+EXTERN char e_variable_arguments_type_must_be_list_str[]
+	INIT(= N_("E1180: Variable arguments type must be a list: %s"));
+EXTERN char e_cannot_use_underscore_here[]
+	INIT(= N_("E1181: Cannot use an underscore here"));
+EXTERN char e_blob_required[]
+	INIT(= N_("E1182: Blob required"));
+EXTERN char e_cannot_use_range_with_assignment_operator_str[]
+	INIT(= N_("E1183: Cannot use a range with an assignment operator: %s"));
+EXTERN char e_blob_not_set[]
+	INIT(= N_("E1184: Blob not set"));
+EXTERN char e_cannot_nest_redir[]
+	INIT(= N_("E1185: Cannot nest :redir"));
+EXTERN char e_missing_redir_end[]
+	INIT(= N_("E1185: Missing :redir END"));
+EXTERN char e_expression_does_not_result_in_value_str[]
+	INIT(= N_("E1186: Expression does not result in a value: %s"));
+EXTERN char e_failed_to_source_defaults[]
+	INIT(= N_("E1187: Failed to source defaults.vim"));
+EXTERN char e_cannot_open_terminal_from_command_line_window[]
+	INIT(= N_("E1188: Cannot open a terminal from the command line window"));
+EXTERN char e_cannot_use_legacy_with_command_str[]
+	INIT(= N_("E1189: Cannot use :legacy with this command: %s"));

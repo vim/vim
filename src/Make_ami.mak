@@ -117,6 +117,7 @@ SRC += \
 	fileio.c \
 	filepath.c \
 	findfile.c \
+	float.c \
 	fold.c \
 	getchar.c \
 	hardcopy.c \

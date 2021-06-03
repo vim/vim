@@ -300,6 +300,10 @@ OPTIONS
                    be handled as a file name.  This can  be  used  to  edit  a
                    filename that starts with a '-'.
 
+       --clean     Do  not  use  any  personal  configuration (vimrc, plugins,
+                   etc.).  Useful to see if a problem reproduces with a  clean
+                   Vim setup.
+
        --echo-wid  GTK GUI only: Echo the Window ID on stdout.
 
        --help      Give a help message and exit, just like "-h".

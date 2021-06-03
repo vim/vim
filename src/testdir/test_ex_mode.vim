@@ -77,6 +77,9 @@ func Test_Ex_substitute()
   call WaitForAssert({-> assert_match('  1 foo foo', term_getline(buf, 5))},
         \ 1000)
   call WaitForAssert({-> assert_match('    ^^^', term_getline(buf, 6))}, 1000)
+  call term_sendkeys(buf, "N\<CR>")
+  call term_wait(buf)
+  call WaitForAssert({-> assert_match('    ^^^', term_getline(buf, 6))}, 1000)
   call term_sendkeys(buf, "n\<CR>")
   call WaitForAssert({-> assert_match('        ^^^', term_getline(buf, 6))},
         \ 1000)
@@ -151,9 +154,9 @@ func Test_Ex_echo_backslash()
   let bsl = '\\\\'
   let bsl2 = '\\\'
   call assert_fails('call feedkeys("Qecho " .. bsl .. "\nvisual\n", "xt")',
-        \ "E15: Invalid expression: \\\\")
+        \ 'E15: Invalid expression: "\\"')
   call assert_fails('call feedkeys("Qecho " .. bsl2 .. "\nm\nvisual\n", "xt")',
-        \ "E15: Invalid expression: \\\nm")
+        \ "E15: Invalid expression: \"\\\nm\"")
 endfunc
 
 func Test_ex_mode_errors()

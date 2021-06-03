@@ -998,7 +998,7 @@ do_highlight(
 	    off = 0;
 	    while (arg[off] != NUL)
 	    {
-		for (i = sizeof(hl_attr_table) / sizeof(int); --i >= 0; )
+		for (i = ARRAY_LENGTH(hl_attr_table); --i >= 0; )
 		{
 		    len = (int)STRLEN(hl_name_table[i]);
 		    if (STRNICMP(arg + off, hl_name_table[i], len) == 0)
@@ -1168,7 +1168,7 @@ do_highlight(
 
 		// reduce calls to STRICMP a bit, it can be slow
 		off = TOUPPER_ASC(*arg);
-		for (i = (sizeof(color_names) / sizeof(char *)); --i >= 0; )
+		for (i = ARRAY_LENGTH(color_names); --i >= 0; )
 		    if (off == color_names[i][0]
 				 && STRICMP(arg + 1, color_names[i] + 1) == 0)
 			break;

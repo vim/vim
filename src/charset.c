@@ -169,8 +169,7 @@ buf_init_chartab(
 	    }
 	    if (VIM_ISDIGIT(*p))
 		c = getdigits(&p);
-	    else
-		 if (has_mbyte)
+	    else if (has_mbyte)
 		c = mb_ptr2char_adv(&p);
 	    else
 		c = *p++;
@@ -180,8 +179,7 @@ buf_init_chartab(
 		++p;
 		if (VIM_ISDIGIT(*p))
 		    c2 = getdigits(&p);
-		else
-		     if (has_mbyte)
+		else if (has_mbyte)
 		    c2 = mb_ptr2char_adv(&p);
 		else
 		    c2 = *p++;
@@ -832,6 +830,16 @@ win_linetabsize(win_T *wp, char_u *line, colnr_T len)
 vim_isIDc(int c)
 {
     return (c > 0 && c < 0x100 && (g_chartab[c] & CT_ID_CHAR));
+}
+
+/*
+ * Like vim_isIDc() but not using the 'isident' option: letters, numbers and
+ * underscore.
+ */
+    int
+vim_isNormalIDc(int c)
+{
+    return ASCII_ISALNUM(c) || c == '_';
 }
 
 /*
@@ -2005,7 +2013,8 @@ hex2nr(int c)
     return c - '0';
 }
 
-#if defined(FEAT_TERMRESPONSE) || defined(FEAT_GUI_GTK) || defined(PROTO)
+#if defined(FEAT_TERMRESPONSE) || defined(FEAT_GUI_GTK) \
+        || defined(PROTO) || defined(FEAT_AUTOSHELLDIR)
 /*
  * Convert two hex characters to a byte.
  * Return -1 if one of the characters is not hex.

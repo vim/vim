@@ -93,6 +93,7 @@ update_screen(int type_arg)
     int		gui_cursor_row = 0;
 #endif
     int		no_update = FALSE;
+    int		save_pum_will_redraw = pum_will_redraw;
 
     // Don't do anything if the screen structures are (not yet) valid.
     if (!screen_valid(TRUE))
@@ -276,6 +277,11 @@ update_screen(int type_arg)
     }
 #endif
 
+    if (pum_redraw_in_same_position())
+	// Avoid flicker if the popup menu is going to be redrawn in the same
+	// position.
+	pum_will_redraw = TRUE;
+
     // Go from top to bottom through the windows, redrawing the ones that need
     // it.
 #if defined(FEAT_SEARCH_EXTRA) || defined(FEAT_CLIPBOARD)
@@ -297,7 +303,9 @@ update_screen(int type_arg)
 		// Remove the cursor before starting to do anything, because
 		// scrolling may make it difficult to redraw the text under
 		// it.
-		if (gui.in_use && wp == curwin)
+		// Also remove the cursor if it needs to be hidden due to an
+		// ongoing cursor-less sleep.
+		if (gui.in_use && (wp == curwin || cursor_is_sleeping()))
 		{
 		    gui_cursor_col = gui.cursor_col;
 		    gui_cursor_row = gui.cursor_row;
@@ -306,7 +314,6 @@ update_screen(int type_arg)
 		}
 	    }
 #endif
-
 	    win_update(wp);
 	}
 
@@ -320,7 +327,9 @@ update_screen(int type_arg)
 #if defined(FEAT_SEARCH_EXTRA)
     end_search_hl();
 #endif
+
     // May need to redraw the popup menu.
+    pum_will_redraw = save_pum_will_redraw;
     pum_may_redraw();
 
     // Reset b_mod_set flags.  Going through all windows is probably faster
@@ -378,6 +387,20 @@ update_screen(int type_arg)
 }
 
 /*
+ * Return the row for drawing the statusline and the ruler of window "wp".
+ */
+    int
+statusline_row(win_T *wp)
+{
+#if defined(FEAT_PROP_POPUP)
+    // If the window is really zero height the winbar isn't displayed.
+    if (wp->w_frame->fr_height == wp->w_status_height && !popup_is_popup(wp))
+	return wp->w_winrow;
+#endif
+    return W_WINROW(wp) + wp->w_height;
+}
+
+/*
  * Redraw the status line of window wp.
  *
  * If inversion is possible we use it. Else '=' characters are used.
@@ -400,6 +423,8 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
     if (busy)
 	return;
     busy = TRUE;
+
+    row = statusline_row(wp);
 
     wp->w_redr_status = FALSE;
     if (wp->w_status_height == 0)
@@ -500,7 +525,6 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	    len = this_ru_col - 1;
 	}
 
-	row = W_WINROW(wp) + wp->w_height;
 	screen_puts(p, row, wp->w_wincol, attr);
 	screen_fill(row, row + 1, len + wp->w_wincol,
 			this_ru_col + wp->w_wincol, fillchar, fillchar, attr);
@@ -524,8 +548,7 @@ win_redr_status(win_T *wp, int ignore_pum UNUSED)
 	    fillchar = fillchar_status(&attr, wp);
 	else
 	    fillchar = fillchar_vsep(&attr);
-	screen_putchar(fillchar, W_WINROW(wp) + wp->w_height, W_ENDCOL(wp),
-									attr);
+	screen_putchar(fillchar, row, W_ENDCOL(wp), attr);
     }
     busy = FALSE;
 }
@@ -680,7 +703,7 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 	cursor_off();
 	if (wp->w_status_height)
 	{
-	    row = W_WINROW(wp) + wp->w_height;
+	    row = statusline_row(wp);
 	    fillchar = fillchar_status(&attr, wp);
 	    off = wp->w_wincol;
 	    width = wp->w_width;
@@ -1044,7 +1067,9 @@ fold_line(
     linenr_T	lnum,
     int		row)
 {
-    char_u	buf[FOLD_TEXT_LEN];
+    // Max value of 'foldcolumn' is 12 and maximum number of bytes in a
+    // multi-byte character is MAX_MCO.
+    char_u	buf[MAX_MCO * 12 + 1];
     pos_T	*top, *bot;
     linenr_T	lnume = lnum + fold_count - 1;
     int		len;
@@ -1077,29 +1102,6 @@ fold_line(
     }
 #endif
 
-    // 2. Add the 'foldcolumn'
-    //    Reduce the width when there is not enough space.
-    fdc = compute_foldcolumn(wp, col);
-    if (fdc > 0)
-    {
-	fill_foldcolumn(buf, wp, TRUE, lnum);
-#ifdef FEAT_RIGHTLEFT
-	if (wp->w_p_rl)
-	{
-	    int		i;
-
-	    copy_text_attr(off + wp->w_width - fdc - col, buf, fdc,
-							     HL_ATTR(HLF_FC));
-	    // reverse the fold column
-	    for (i = 0; i < fdc; ++i)
-		ScreenLines[off + wp->w_width - i - 1 - col] = buf[i];
-	}
-	else
-#endif
-	    copy_text_attr(off + col, buf, fdc, HL_ATTR(HLF_FC));
-	col += fdc;
-    }
-
 #ifdef FEAT_RIGHTLEFT
 # define RL_MEMSET(p, v, l) \
     do { \
@@ -1117,6 +1119,53 @@ fold_line(
 	    ScreenAttrs[off + (p) + ri] = v; \
     } while (0)
 #endif
+
+    // 2. Add the 'foldcolumn'
+    //    Reduce the width when there is not enough space.
+    fdc = compute_foldcolumn(wp, col);
+    if (fdc > 0)
+    {
+	char_u	*p;
+	int	i;
+	int	idx;
+
+	fill_foldcolumn(buf, wp, TRUE, lnum);
+	p = buf;
+	for (i = 0; i < fdc; i++)
+	{
+	    int		ch;
+
+	    if (has_mbyte)
+		ch = mb_ptr2char_adv(&p);
+	    else
+		ch = *p++;
+#ifdef FEAT_RIGHTLEFT
+	    if (wp->w_p_rl)
+		idx = off + wp->w_width - i - 1 - col;
+	    else
+#endif
+		idx = off + col + i;
+	    if (enc_utf8)
+	    {
+		if (ch >= 0x80)
+		{
+		    ScreenLinesUC[idx] = ch;
+		    ScreenLinesC[0][idx] = 0;
+		    ScreenLines[idx] = 0x80;
+		}
+		else
+		{
+		    ScreenLines[idx] = ch;
+		    ScreenLinesUC[idx] = 0;
+		}
+	    }
+	    else
+		ScreenLines[idx] = ch;
+	}
+
+	RL_MEMSET(col, HL_ATTR(HLF_FC), fdc);
+	col += fdc;
+    }
 
     // Set all attributes of the 'number' or 'relativenumber' column and the
     // text
@@ -1442,8 +1491,13 @@ win_update(win_T *wp)
 	wp->w_lines_valid = 0;
     }
 
-    // Window is zero-height: nothing to draw.
-    if (wp->w_height + WINBAR_HEIGHT(wp) == 0)
+    // Window frame is zero-height: nothing to draw.
+    if (wp->w_height + WINBAR_HEIGHT(wp) == 0
+	    || (wp->w_frame->fr_height == wp->w_status_height
+#if defined(FEAT_PROP_POPUP)
+		&& !popup_is_popup(wp)
+#endif
+	       ))
     {
 	wp->w_redr_type = 0;
 	return;
@@ -2956,6 +3010,13 @@ redraw_after_callback(int call_update_screen)
 	// keep the command line if possible
 	update_screen(VALID_NO_UPDATE);
 	setcursor();
+
+	if (msg_scrolled == 0)
+	{
+	    // don't want a hit-enter prompt when something else is displayed
+	    msg_didany = FALSE;
+	    need_wait_return = FALSE;
+	}
     }
     cursor_on();
 #ifdef FEAT_GUI

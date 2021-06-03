@@ -27,6 +27,7 @@ void ex_change(exarg_T *eap);
 void ex_z(exarg_T *eap);
 int check_restricted(void);
 int check_secure(void);
+char_u *skip_substitute(char_u *start, int delimiter);
 void ex_substitute(exarg_T *eap);
 int do_sub_msg(int count_only);
 void ex_global(exarg_T *eap);

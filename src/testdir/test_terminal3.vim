@@ -475,6 +475,37 @@ func Test_term_mouse()
   call delete('Xbuf')
 endfunc
 
+" Test for sync buffer cwd with shell's pwd
+func Test_terminal_sync_shell_dir()
+  CheckUnix
+  " The test always use sh (see src/testdir/unix.vim).
+  " However, BSD's sh doesn't seem to play well with OSC 7 escape sequence.
+  CheckNotBSD
+
+  set asd
+  " , is
+  "  1. a valid character for directory names
+  "  2. a reserved character in url-encoding
+  let chars = ",a"
+  " "," is url-encoded as '%2C'
+  let chars_url = "%2Ca"
+  let tmpfolder = fnamemodify(tempname(),':h').'/'.chars
+  let tmpfolder_url = fnamemodify(tempname(),':h').'/'.chars_url
+  call mkdir(tmpfolder, "p")
+  let buf = Run_shell_in_terminal({})
+  call term_sendkeys(buf, "echo -ne $'\\e\]7;file://".tmpfolder_url."\\a'\<CR>")
+  "call term_sendkeys(buf, "cd ".tmpfolder."\<CR>")
+  call TermWait(buf)
+  if has("mac")
+    let expected = "/private".tmpfolder
+  else
+    let expected = tmpfolder
+  endif
+  call assert_equal(expected, getcwd(winnr()))
+
+  set noasd
+endfunc
+
 " Test for modeless selection in a terminal
 func Test_term_modeless_selection()
   CheckUnix

@@ -1856,6 +1856,19 @@ ex_write(exarg_T *eap)
 	(void)do_write(eap);
 }
 
+#ifdef UNIX
+    static int
+check_writable(char_u *fname)
+{
+    if (mch_nodetype(fname) == NODE_OTHER)
+    {
+	semsg(_("E503: \"%s\" is not a file or writable device"), fname);
+	return FAIL;
+    }
+    return OK;
+}
+#endif
+
 /*
  * write current buffer to file 'eap->arg'
  * if 'eap->append' is TRUE, append to the file
@@ -1942,7 +1955,11 @@ do_write(exarg_T *eap)
 #ifdef FEAT_QUICKFIX
 		bt_dontwrite_msg(curbuf) ||
 #endif
-		check_fname() == FAIL || check_readonly(&eap->forceit, curbuf)))
+		check_fname() == FAIL
+#ifdef UNIX
+		|| check_writable(curbuf->b_ffname) == FAIL
+#endif
+		|| check_readonly(&eap->forceit, curbuf)))
 	goto theend;
 
     if (!other)
@@ -3604,6 +3621,29 @@ typedef struct {
 } subflags_T;
 
 /*
+ * Skip over the "sub" part in :s/pat/sub/ where "delimiter" is the separating
+ * character.
+ */
+    char_u *
+skip_substitute(char_u *start, int delimiter)
+{
+    char_u *p = start;
+
+    while (p[0])
+    {
+	if (p[0] == delimiter)		// end delimiter found
+	{
+	    *p++ = NUL;			// replace it with a NUL
+	    break;
+	}
+	if (p[0] == '\\' && p[1] != 0)	// skip escaped characters
+	    ++p;
+	MB_PTR_ADV(p);
+    }
+    return p;
+}
+
+/*
  * Perform a substitution from line eap->line1 to line eap->line2 using the
  * command pointed to by eap->arg which should be of the form:
  *
@@ -3704,18 +3744,7 @@ ex_substitute(exarg_T *eap)
 	 * Vim we want to use '\n' to find/substitute a NUL.
 	 */
 	sub = cmd;	    // remember the start of the substitution
-
-	while (cmd[0])
-	{
-	    if (cmd[0] == delimiter)		// end delimiter found
-	    {
-		*cmd++ = NUL;			// replace it with a NUL
-		break;
-	    }
-	    if (cmd[0] == '\\' && cmd[1] != 0)	// skip escaped characters
-		++cmd;
-	    MB_PTR_ADV(cmd);
-	}
+	cmd = skip_substitute(cmd, delimiter);
 
 	if (!eap->skip)
 	{
@@ -4153,6 +4182,7 @@ ex_substitute(exarg_T *eap)
 			    if (curwin->w_cursor.col < 0)
 				curwin->w_cursor.col = 0;
 			    getvcol(curwin, &curwin->w_cursor, NULL, NULL, &ec);
+			    curwin->w_cursor.col = regmatch.startpos[0].col;
 			    if (subflags.do_number || curwin->w_p_nu)
 			    {
 				int numw = number_width(curwin) + 1;
@@ -5275,14 +5305,16 @@ skip_vimgrep_pat(char_u *p, char_u **s, int *flags)
 	++p;
 
 	// Find the flags
-	while (*p == 'g' || *p == 'j')
+	while (*p == 'g' || *p == 'j' || *p == 'f')
 	{
 	    if (flags != NULL)
 	    {
 		if (*p == 'g')
 		    *flags |= VGR_GLOBAL;
-		else
+		else if (*p == 'j')
 		    *flags |= VGR_NOJUMP;
+		else
+		    *flags |= VGR_FUZZY;
 	    }
 	    ++p;
 	}

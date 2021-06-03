@@ -768,8 +768,8 @@
   §œ¨ ©©æ«œ¨˜ ®˜¨˜¡«ž¨ ©« ¡á §¨â§œ  ¤˜ ­« á¥œ«œ â¤˜ ˜¨®œå¦ "vimrc".
 
   1. €¨®å©«œ › ¦¨Ÿé¤¦¤«˜ª «¦ ˜¨®œå¦ "vimrc", ˜¬«æ œ¥˜¨«á«˜  ˜§æ «¦ ©ç©«ž£á ©˜ª:
-	:edit ~/.vimrc               š ˜ Unix
-	:edit $VIM/_vimrc            š ˜ MS-Windows
+	:edit ~/.vimrc            š ˜ Unix
+	:edit ~/_vimrc            š ˜ MS-Windows
 
   2. ’é¨˜ œ ©ášœ«œ «¦ ¡œå£œ¤¦ §˜¨˜›œåš£˜«¦ª š ˜ ˜¨®œå¦ "vimrc":
 	:read $VIMRUNTIME/vimrc_example.vim

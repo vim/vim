@@ -857,9 +857,10 @@ gui_exit(int rc)
     void
 gui_shell_closed(void)
 {
-    cmdmod_T	    save_cmdmod;
+    cmdmod_T	    save_cmdmod = cmdmod;
 
-    save_cmdmod = cmdmod;
+    if (before_quit_autocmds(curwin, TRUE, FALSE))
+	return;
 
     // Only exit when there are no changed files
     exiting = TRUE;
@@ -1120,6 +1121,11 @@ gui_update_cursor(
 		    || gui.row != gui.cursor_row || gui.col != gui.cursor_col)
     {
 	gui_undraw_cursor();
+
+	// If a cursor-less sleep is ongoing, leave the cursor invisible
+	if (cursor_is_sleeping())
+	    return;
+
 	if (gui.row < 0)
 	    return;
 #ifdef HAVE_INPUT_METHOD

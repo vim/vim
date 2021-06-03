@@ -119,9 +119,9 @@ RequestExecutionLevel highest
 
 !define MUI_COMPONENTSPAGE_SMALLDESC
 !define MUI_LICENSEPAGE_CHECKBOX
-!define MUI_FINISHPAGE_RUN                 "$0\gvim.exe"
+!define MUI_FINISHPAGE_RUN
+!define MUI_FINISHPAGE_RUN_FUNCTION        LaunchApplication
 !define MUI_FINISHPAGE_RUN_TEXT            $(str_show_readme)
-!define MUI_FINISHPAGE_RUN_PARAMETERS      "-R $\"$0\README.txt$\""
 
 # This adds '\Vim' to the user choice automagically.  The actual value is
 # obtained below with CheckOldVim.
@@ -300,6 +300,11 @@ Function CheckOldVim
   Exch $0  # put $0 on top of stack, restore $0 to original value
 FunctionEnd
 
+Function LaunchApplication
+   SetOutPath $0
+   ShellExecAsUser::ShellExecAsUser "" "$0\gvim.exe" '-R "$0\README.txt"'
+FunctionEnd
+
 ##########################################################
 Section "$(str_section_old_ver)" id_section_old_ver
 	SectionIn 1 2 3 RO
@@ -359,6 +364,8 @@ Section "$(str_section_exe)" id_section_exe
 
 	SetOutPath $0\colors
 	File ${VIMRT}\colors\*.*
+	SetOutPath $0\colors\tools
+	File ${VIMRT}\colors\tools\*.*
 
 	SetOutPath $0\compiler
 	File ${VIMRT}\compiler\*.*

@@ -145,7 +145,7 @@ set_init_1(int clean_arg)
 	opt_idx = findoption((char_u *)"backupskip");
 
 	ga_init2(&ga, 1, 100);
-	for (n = 0; n < (long)(sizeof(names) / sizeof(char *)); ++n)
+	for (n = 0; n < (long)ARRAY_LENGTH(names); ++n)
 	{
 	    mustfree = FALSE;
 # ifdef UNIX
@@ -430,14 +430,21 @@ set_init_1(int clean_arg)
 #  endif
 # endif
 
+# ifdef MSWIN
+    // MS-Windows has builtin support for conversion to and from Unicode, using
+    // "utf-8" for 'encoding' should work best for most users.
+    p = vim_strsave((char_u *)ENC_DFLT);
+# else
     // enc_locale() will try to find the encoding of the current locale.
+    // This works best for properly configured systems, old and new.
     p = enc_locale();
+# endif
     if (p != NULL)
     {
 	char_u *save_enc;
 
 	// Try setting 'encoding' and check if the value is valid.
-	// If not, go back to the default "latin1".
+	// If not, go back to the default encoding.
 	save_enc = p_enc;
 	p_enc = p;
 	if (STRCMP(p_enc, "gb18030") == 0)
@@ -910,7 +917,7 @@ set_init_3(void)
 	    }
 	}
 	else
-	    // Always use bourne shell style redirection if we reach this
+	    // Always use POSIX shell style redirection if we reach this
 	    if (       fnamecmp(p, "sh") == 0
 		    || fnamecmp(p, "ksh") == 0
 		    || fnamecmp(p, "mksh") == 0
@@ -919,6 +926,8 @@ set_init_3(void)
 		    || fnamecmp(p, "zsh-beta") == 0
 		    || fnamecmp(p, "bash") == 0
 		    || fnamecmp(p, "fish") == 0
+		    || fnamecmp(p, "ash") == 0
+		    || fnamecmp(p, "dash") == 0
 # ifdef MSWIN
 		    || fnamecmp(p, "cmd") == 0
 		    || fnamecmp(p, "sh.exe") == 0
@@ -929,6 +938,7 @@ set_init_3(void)
 		    || fnamecmp(p, "zsh-beta.exe") == 0
 		    || fnamecmp(p, "bash.exe") == 0
 		    || fnamecmp(p, "cmd.exe") == 0
+		    || fnamecmp(p, "dash.exe") == 0
 # endif
 		    )
 	    {
@@ -3176,7 +3186,9 @@ set_bool_option(
     if (curwin->w_curswant != MAXCOL
 		     && (options[opt_idx].flags & (P_CURSWANT | P_RALL)) != 0)
 	curwin->w_set_curswant = TRUE;
-    check_redraw(options[opt_idx].flags);
+
+    if ((opt_flags & OPT_NO_REDRAW) == 0)
+	check_redraw(options[opt_idx].flags);
 
     return NULL;
 }
@@ -3192,8 +3204,8 @@ set_num_option(
     long	value,			// new value
     char	*errbuf,		// buffer for error messages
     size_t	errbuflen,		// length of "errbuf"
-    int		opt_flags)		// OPT_LOCAL, OPT_GLOBAL and
-					// OPT_MODELINE
+    int		opt_flags)		// OPT_LOCAL, OPT_GLOBAL,
+					// OPT_MODELINE, etc.
 {
     char	*errmsg = NULL;
     long	old_value = *(long *)varp;
@@ -3734,7 +3746,8 @@ set_num_option(
     if (curwin->w_curswant != MAXCOL
 		     && (options[opt_idx].flags & (P_CURSWANT | P_RALL)) != 0)
 	curwin->w_set_curswant = TRUE;
-    check_redraw(options[opt_idx].flags);
+    if ((opt_flags & OPT_NO_REDRAW) == 0)
+	check_redraw(options[opt_idx].flags);
 
     return errmsg;
 }
@@ -4610,6 +4623,10 @@ makeset(FILE *fd, int opt_flags, int local_only)
 	    // Global values are only written when not at the default value.
 	    varp = get_varp_scope(p, opt_flags);
 	    if ((opt_flags & OPT_GLOBAL) && optval_default(p, varp, p_cp))
+		continue;
+
+	    if ((opt_flags & OPT_SKIPRTP) && (p->var == (char_u *)&p_rtp
+						 || p->var == (char_u *)&p_pp))
 		continue;
 
 	    round = 2;
@@ -6300,8 +6317,7 @@ ExpandSettings(
 	regmatch->rm_ic = ic;
 	if (xp->xp_context != EXPAND_BOOL_SETTINGS)
 	{
-	    for (match = 0; match < (int)(sizeof(names) / sizeof(char *));
-								      ++match)
+	    for (match = 0; match < (int)ARRAY_LENGTH(names); ++match)
 		if (vim_regexec(regmatch, (char_u *)names[match], (colnr_T)0))
 		{
 		    if (loop == 0)

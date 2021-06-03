@@ -1015,6 +1015,47 @@ func Test_opt_winminheight()
   set winheight&
 endfunc
 
+func Test_opt_winminheight_term()
+  CheckRunVimInTerminal
+
+  " The tabline should be taken into account.
+  let lines =<< trim END
+    set wmh=0 stal=2
+    below sp | wincmd _
+    below sp | wincmd _
+    below sp | wincmd _
+    below sp
+  END
+  call writefile(lines, 'Xwinminheight')
+  let buf = RunVimInTerminal('-S Xwinminheight', #{rows: 11})
+  call term_sendkeys(buf, ":set wmh=1\n")
+  call WaitForAssert({-> assert_match('E36: Not enough room', term_getline(buf, 11))})
+
+  call StopVimInTerminal(buf)
+  call delete('Xwinminheight')
+endfunc
+
+func Test_opt_winminheight_term_tabs()
+  CheckRunVimInTerminal
+
+  " The tabline should be taken into account.
+  let lines =<< trim END
+    set wmh=0 stal=2
+    split
+    split
+    split
+    split
+    tabnew
+  END
+  call writefile(lines, 'Xwinminheight')
+  let buf = RunVimInTerminal('-S Xwinminheight', #{rows: 11})
+  call term_sendkeys(buf, ":set wmh=1\n")
+  call WaitForAssert({-> assert_match('E36: Not enough room', term_getline(buf, 11))})
+
+  call StopVimInTerminal(buf)
+  call delete('Xwinminheight')
+endfunc
+
 " Test for the 'winminwidth' option
 func Test_opt_winminwidth()
   only!
@@ -1050,6 +1091,34 @@ func Test_opt_reset_scroll()
 
   " clean up
   call delete('Xscroll')
+endfunc
+
+" Check that VIM_POSIX env variable influences default value of 'cpo' and 'shm'
+func Test_VIM_POSIX()
+  let saved_VIM_POSIX = getenv("VIM_POSIX")
+
+  call setenv('VIM_POSIX', "1")
+  let after =<< trim [CODE]
+    call writefile([&cpo, &shm], 'X_VIM_POSIX')
+    qall
+  [CODE]
+  if RunVim([], after, '')
+    call assert_equal(['aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZ$!%*-+<>#{|&/\.;',
+          \            'AS'], readfile('X_VIM_POSIX'))
+  endif
+
+  call setenv('VIM_POSIX', v:null)
+  let after =<< trim [CODE]
+    call writefile([&cpo, &shm], 'X_VIM_POSIX')
+    qall
+  [CODE]
+  if RunVim([], after, '')
+    call assert_equal(['aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZ$!%*-+<>;',
+          \            'S'], readfile('X_VIM_POSIX'))
+  endif
+
+  call delete('X_VIM_POSIX')
+  call setenv('VIM_POSIX', saved_VIM_POSIX)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
