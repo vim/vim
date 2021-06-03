@@ -2836,6 +2836,7 @@ str_to_reg(
     char_u	**ss;
     char_u	**pp;
     long	maxlen;
+    int	charlen;
 
     if (y_ptr->y_array == NULL)		// NULL means empty register
 	y_ptr->y_size = 0;
@@ -2894,22 +2895,25 @@ str_to_reg(
     {
 	for (ss = (char_u **) str; *ss != NULL; ++ss, ++lnum)
 	{
+	    charlen = MB_CHARLEN(*ss);
 	    i = (long)STRLEN(*ss);
 	    pp[lnum] = vim_strnsave(*ss, i);
-	    if (i > maxlen)
-		maxlen = i;
+	    if (charlen > maxlen)
+		maxlen = charlen;
 	}
     }
     else
     {
 	for (start = 0; start < len + extraline; start += i + 1)
 	{
+	    charlen = 0;
 	    for (i = start; i < len; ++i)	// find the end of the line
 		if (str[i] == '\n')
 		    break;
 	    i -= start;			// i is now length of line
-	    if (i > maxlen)
-		maxlen = i;
+	    charlen = mb_charlen_len(str + start, i);
+	    if (charlen > maxlen)
+		maxlen = charlen;
 	    if (append)
 	    {
 		--lnum;

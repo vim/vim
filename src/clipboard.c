@@ -2090,7 +2090,7 @@ clip_yank_selection(
 
     clip_free_selection(cbd);
 
-    str_to_reg(y_ptr, type, str, len, 0L, FALSE);
+    str_to_reg(y_ptr, type, str, len, -1, FALSE);
 }
 
 /*
