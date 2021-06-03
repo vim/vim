@@ -2098,6 +2098,14 @@ nv_mouse(cmdarg_T *cap)
     (void)do_mouse(cap->oap, cap->cmdchar, BACKWARD, cap->count1, 0);
 }
 
+static int	held_button = MOUSE_RELEASE;
+
+    void
+reset_held_button()
+{
+    held_button = MOUSE_RELEASE;
+}
+
 /*
  * Check if typebuf 'tp' contains a terminal mouse code and returns the
  * modifiers found in typebuf in 'modifiers'.
@@ -2123,7 +2131,6 @@ check_termcode_mouse(
     int		is_release, release_is_ambiguous;
     int		wheel_code = 0;
     int		current_button;
-    static int	held_button = MOUSE_RELEASE;
     static int	orig_num_clicks = 1;
     static int	orig_mouse_code = 0x0;
 # ifdef CHECK_DOUBLE_CLICK

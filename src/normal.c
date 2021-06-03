@@ -1380,6 +1380,7 @@ end_visual_mode(void)
 #endif
 
     VIsual_active = FALSE;
+    reset_held_button();
     setmouse();
     mouse_dragging = 0;
 
