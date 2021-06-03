@@ -1788,6 +1788,8 @@ getsourceline(
     if (line != NULL && options != GETLINE_NONE
 				      && vim_strchr(p_cpo, CPO_CONCAT) == NULL)
     {
+	int comment_char = in_vim9script() ? '#' : '"';
+
 	// compensate for the one line read-ahead
 	--sp->sourcing_lnum;
 
@@ -1800,7 +1802,8 @@ getsourceline(
 	sp->nextline = get_one_sourceline(sp);
 	if (sp->nextline != NULL
 		&& (*(p = skipwhite(sp->nextline)) == '\\'
-			      || (p[0] == '"' && p[1] == '\\' && p[2] == ' ')
+			      || (p[0] == comment_char
+						&& p[1] == '\\' && p[2] == ' ')
 			      || (do_vim9_all && (*p == NUL
 						     || vim9_comment_start(p)))
 			      || (do_bar_cont && p[0] == '|' && p[1] != '|')))
@@ -1842,7 +1845,7 @@ getsourceline(
 			ga_concat(&ga, p);
 		    }
 		}
-		else if (!(p[0] == (in_vim9script() ? '#' : '"')
+		else if (!(p[0] == (comment_char)
 						&& p[1] == '\\' && p[2] == ' ')
 		     && !(do_vim9_all && (*p == NUL || vim9_comment_start(p))))
 		    break;

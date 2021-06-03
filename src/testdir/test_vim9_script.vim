@@ -3081,6 +3081,9 @@ def Test_vim9_comment()
       \ start='foo'
       #\ comment
       \ end='bar'
+      syn region Text start='foo'
+      #\ comment
+      \ end='bar'
   END
   CheckScriptSuccess(lines)
 
