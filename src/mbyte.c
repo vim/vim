@@ -4308,7 +4308,6 @@ mb_charlen(char_u *str)
     return count;
 }
 
-#if (defined(FEAT_SPELL) || defined(FEAT_EVAL)) || defined(PROTO)
 /*
  * Like mb_charlen() but for a string with specified length.
  */
@@ -4323,7 +4322,6 @@ mb_charlen_len(char_u *str, int len)
 
     return count;
 }
-#endif
 
 /*
  * Try to un-escape a multi-byte character.
