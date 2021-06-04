@@ -2908,11 +2908,12 @@ str_to_reg(
 	{
 	    charlen = 0;
 	    for (i = start; i < len; ++i)	// find the end of the line
+	    {
 		if (str[i] == '\n')
 		    break;
+		charlen += mb_ptr2cells_len(str + i, len - i);
+	    }
 	    i -= start;			// i is now length of line
-	    if (start < len)
-		charlen = mb_charlen_len(str + start, i);
 	    if (charlen > maxlen)
 		maxlen = charlen;
 	    if (append)
@@ -2929,7 +2930,7 @@ str_to_reg(
 		mch_memmove(s, y_ptr->y_array[lnum], (size_t)extra);
 	    if (append)
 		vim_free(y_ptr->y_array[lnum]);
-	    if (i)
+	    if (i > 0)
 		mch_memmove(s + extra, str + start, (size_t)i);
 	    extra += i;
 	    s[extra] = NUL;
