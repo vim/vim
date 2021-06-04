@@ -2911,7 +2911,8 @@ str_to_reg(
 		if (str[i] == '\n')
 		    break;
 	    i -= start;			// i is now length of line
-	    charlen = mb_charlen_len(str + start, i);
+	    if (start < len)
+		charlen = mb_charlen_len(str + start, i);
 	    if (charlen > maxlen)
 		maxlen = charlen;
 	    if (append)
