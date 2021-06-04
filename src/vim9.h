@@ -148,9 +148,9 @@ typedef enum {
     ISN_GETITEM,    // push list item, isn_arg.number is the index
     ISN_MEMBER,	    // dict[member]
     ISN_STRINGMEMBER, // dict.member using isn_arg.string
-    ISN_2BOOL,	    // falsy/truthy to bool, invert if isn_arg.number != 0
+    ISN_2BOOL,	    // falsy/truthy to bool, uses isn_arg.tobool
     ISN_COND2BOOL,  // convert value to bool
-    ISN_2STRING,    // convert value to string at isn_arg.number on stack
+    ISN_2STRING,    // convert value to string at isn_arg.tostring on stack
     ISN_2STRING_ANY, // like ISN_2STRING but check type
     ISN_NEGATENR,   // apply "-" to number
 
@@ -369,6 +369,18 @@ typedef struct {
     cexprref_T *cexpr_ref;
 } cexpr_T;
 
+// arguments to ISN_2STRING and ISN_2STRING_ANY
+typedef struct {
+    int		offset;
+    int		tolerant;
+} tostring_T;
+
+// arguments to ISN_2BOOL
+typedef struct {
+    int		offset;
+    int		invert;
+} tobool_T;
+
 /*
  * Instruction
  */
@@ -414,6 +426,8 @@ struct isn_S {
 	subs_T		    subs;
 	cexpr_T		    cexpr;
 	isn_T		    *instr;
+	tostring_T	    tostring;
+	tobool_T	    tobool;
     } isn_arg;
 };
 

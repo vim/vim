@@ -980,7 +980,7 @@ store_var(char_u *name, typval_T *tv)
  * Return FAIL if not allowed.
  */
     static int
-do_2string(typval_T *tv, int is_2string_any)
+do_2string(typval_T *tv, int is_2string_any, int tolerant)
 {
     if (tv->v_type != VAR_STRING)
     {
@@ -995,6 +995,22 @@ do_2string(typval_T *tv, int is_2string_any)
 		case VAR_NUMBER:
 		case VAR_FLOAT:
 		case VAR_BLOB:	break;
+
+		case VAR_LIST:
+				if (tolerant)
+				{
+				    char_u *p;
+
+				    str = typval2string(tv, TRUE);
+				    clear_tv(tv);
+				    tv->v_type = VAR_STRING;
+				    tv->vval.v_string = str;
+				    // TODO: escaping
+				    while ((p = vim_strchr(str, '\n')) != NULL)
+					*p = ' ';
+				    return OK;
+				}
+				// FALLTHROUGH
 		default:	to_string_error(tv->v_type);
 				return FAIL;
 	    }
@@ -2055,7 +2071,7 @@ exec_instructions(ectx_T *ectx)
 		    {
 			dest_type = tv_dest->v_type;
 			if (dest_type == VAR_DICT)
-			    status = do_2string(tv_idx, TRUE);
+			    status = do_2string(tv_idx, TRUE, FALSE);
 			else if (dest_type == VAR_LIST
 					       && tv_idx->v_type != VAR_NUMBER)
 			{
@@ -3770,15 +3786,16 @@ exec_instructions(ectx_T *ectx)
 		    int n;
 		    int error = FALSE;
 
-		    tv = STACK_TV_BOT(-1);
 		    if (iptr->isn_type == ISN_2BOOL)
 		    {
+			tv = STACK_TV_BOT(iptr->isn_arg.tobool.offset);
 			n = tv2bool(tv);
-			if (iptr->isn_arg.number)  // invert
+			if (iptr->isn_arg.tobool.invert)
 			    n = !n;
 		    }
 		    else
 		    {
+			tv = STACK_TV_BOT(-1);
 			SOURCING_LNUM = iptr->isn_lnum;
 			n = tv_get_bool_chk(tv, &error);
 			if (error)
@@ -3793,8 +3810,9 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_2STRING:
 	    case ISN_2STRING_ANY:
 		SOURCING_LNUM = iptr->isn_lnum;
-		if (do_2string(STACK_TV_BOT(iptr->isn_arg.number),
-			iptr->isn_type == ISN_2STRING_ANY) == FAIL)
+		if (do_2string(STACK_TV_BOT(iptr->isn_arg.tostring.offset),
+				iptr->isn_type == ISN_2STRING_ANY,
+				      iptr->isn_arg.tostring.tolerant) == FAIL)
 			    goto on_error;
 		break;
 
@@ -5122,26 +5140,30 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		      break;
 		  }
 	    case ISN_COND2BOOL: smsg("%s%4d COND2BOOL", pfx, current); break;
-	    case ISN_2BOOL: if (iptr->isn_arg.number)
-				smsg("%s%4d INVERT (!val)", pfx, current);
+	    case ISN_2BOOL: if (iptr->isn_arg.tobool.invert)
+				smsg("%s%4d INVERT %d (!val)", pfx, current,
+					 iptr->isn_arg.tobool.offset);
 			    else
-				smsg("%s%4d 2BOOL (!!val)", pfx, current);
+				smsg("%s%4d 2BOOL %d (!!val)", pfx, current,
+					 iptr->isn_arg.tobool.offset);
 			    break;
 	    case ISN_2STRING: smsg("%s%4d 2STRING stack[%lld]", pfx, current,
-					 (varnumber_T)(iptr->isn_arg.number));
+				 (varnumber_T)(iptr->isn_arg.tostring.offset));
 			      break;
-	    case ISN_2STRING_ANY: smsg("%s%4d 2STRING_ANY stack[%lld]", pfx, current,
-					 (varnumber_T)(iptr->isn_arg.number));
+	    case ISN_2STRING_ANY: smsg("%s%4d 2STRING_ANY stack[%lld]",
+								  pfx, current,
+				 (varnumber_T)(iptr->isn_arg.tostring.offset));
 			      break;
-	    case ISN_RANGE: smsg("%s%4d RANGE %s", pfx, current, iptr->isn_arg.string);
+	    case ISN_RANGE: smsg("%s%4d RANGE %s", pfx, current,
+							 iptr->isn_arg.string);
 			    break;
 	    case ISN_PUT:
 	        if (iptr->isn_arg.put.put_lnum == LNUM_VARIABLE_RANGE_ABOVE)
 		    smsg("%s%4d PUT %c above range",
-				       pfx, current, iptr->isn_arg.put.put_regname);
+				  pfx, current, iptr->isn_arg.put.put_regname);
 		else if (iptr->isn_arg.put.put_lnum == LNUM_VARIABLE_RANGE)
 		    smsg("%s%4d PUT %c range",
-				       pfx, current, iptr->isn_arg.put.put_regname);
+				  pfx, current, iptr->isn_arg.put.put_regname);
 		else
 		    smsg("%s%4d PUT %c %ld", pfx, current,
 						 iptr->isn_arg.put.put_regname,

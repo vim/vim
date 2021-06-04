@@ -2480,6 +2480,25 @@ def Test_expr7_dict_vim9script()
   endif
 enddef
 
+def Test_expr7_call_2bool()
+  var lines =<< trim END
+      vim9script
+
+      def BrokenCall(nr: number, mode: bool, use: string): void
+        assert_equal(3, nr)
+        assert_equal(false, mode)
+        assert_equal('ab', use)
+      enddef
+
+      def TestBrokenCall(): void
+        BrokenCall(3, 0, 'ab')
+      enddef
+
+      TestBrokenCall()
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 let g:oneString = 'one'
 
 def Test_expr_member()

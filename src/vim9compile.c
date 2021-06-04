@@ -577,9 +577,10 @@ generate_instr_type(cctx_T *cctx, isntype_T isn_type, type_T *type)
 /*
  * If type at "offset" isn't already VAR_STRING then generate ISN_2STRING.
  * But only for simple types.
+ * When "tolerant" is TRUE convert most types to string, e.g. a List.
  */
     static int
-may_generate_2STRING(int offset, cctx_T *cctx)
+may_generate_2STRING(int offset, int tolerant, cctx_T *cctx)
 {
     isn_T	*isn;
     isntype_T	isntype = ISN_2STRING;
@@ -606,12 +607,20 @@ may_generate_2STRING(int offset, cctx_T *cctx)
 			 isntype = ISN_2STRING_ANY;
 			 break;
 
+	// conversion possible when tolerant
+	case VAR_LIST:
+			 if (tolerant)
+			 {
+			     isntype = ISN_2STRING_ANY;
+			     break;
+			 }
+			 // FALLTHROUGH
+
 	// conversion not possible
 	case VAR_VOID:
 	case VAR_BLOB:
 	case VAR_FUNC:
 	case VAR_PARTIAL:
-	case VAR_LIST:
 	case VAR_DICT:
 	case VAR_JOB:
 	case VAR_CHANNEL:
@@ -623,7 +632,8 @@ may_generate_2STRING(int offset, cctx_T *cctx)
     *type = &t_string;
     if ((isn = generate_instr(cctx, isntype)) == NULL)
 	return FAIL;
-    isn->isn_arg.number = offset;
+    isn->isn_arg.tostring.offset = offset;
+    isn->isn_arg.tostring.tolerant = tolerant;
 
     return OK;
 }
@@ -886,9 +896,10 @@ generate_COMPARE(cctx_T *cctx, exprtype_T exprtype, int ic)
 
 /*
  * Generate an ISN_2BOOL instruction.
+ * "offset" is the offset in the type stack.
  */
     static int
-generate_2BOOL(cctx_T *cctx, int invert)
+generate_2BOOL(cctx_T *cctx, int invert, int offset)
 {
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
@@ -896,10 +907,11 @@ generate_2BOOL(cctx_T *cctx, int invert)
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr(cctx, ISN_2BOOL)) == NULL)
 	return FAIL;
-    isn->isn_arg.number = invert;
+    isn->isn_arg.tobool.invert = invert;
+    isn->isn_arg.tobool.offset = offset;
 
     // type becomes bool
-    ((type_T **)stack->ga_data)[stack->ga_len - 1] = &t_bool;
+    ((type_T **)stack->ga_data)[stack->ga_len + offset] = &t_bool;
 
     return OK;
 }
@@ -1008,7 +1020,7 @@ need_type(
     {
 	// Using "0", "1" or the result of an expression with "&&" or "||" as a
 	// boolean is OK but requires a conversion.
-	generate_2BOOL(cctx, FALSE);
+	generate_2BOOL(cctx, FALSE, offset);
 	return OK;
     }
 
@@ -2782,7 +2794,7 @@ compile_member(int is_slice, cctx_T *cctx)
 		return FAIL;
 	    *typep = &t_any;
 	}
-	if (may_generate_2STRING(-1, cctx) == FAIL)
+	if (may_generate_2STRING(-1, FALSE, cctx) == FAIL)
 	    return FAIL;
 	if (generate_instr_drop(cctx, ISN_MEMBER, 1) == FAIL)
 	    return FAIL;
@@ -3625,7 +3637,7 @@ compile_dict(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    }
 	    if (isn->isn_type == ISN_PUSHS)
 		key = isn->isn_arg.string;
-	    else if (may_generate_2STRING(-1, cctx) == FAIL)
+	    else if (may_generate_2STRING(-1, FALSE, cctx) == FAIL)
 		return FAIL;
 	    *arg = skipwhite(*arg);
 	    if (**arg != ']')
@@ -4026,7 +4038,7 @@ compile_leader(cctx_T *cctx, int numeric_only, char_u *start, char_u **end)
 		    invert = !invert;
 		--p;
 	    }
-	    if (generate_2BOOL(cctx, invert) == FAIL)
+	    if (generate_2BOOL(cctx, invert, -1) == FAIL)
 		return FAIL;
 	}
     }
@@ -4849,8 +4861,8 @@ compile_expr5(char_u **arg, cctx_T *cctx, ppconst_T *ppconst)
 	    ppconst->pp_is_const = FALSE;
 	    if (*op == '.')
 	    {
-		if (may_generate_2STRING(-2, cctx) == FAIL
-			|| may_generate_2STRING(-1, cctx) == FAIL)
+		if (may_generate_2STRING(-2, FALSE, cctx) == FAIL
+			|| may_generate_2STRING(-1, FALSE, cctx) == FAIL)
 		    return FAIL;
 		generate_instr_drop(cctx, ISN_CONCAT, 1);
 	    }
@@ -6420,7 +6432,8 @@ compile_assign_unlet(
 	    emsg(e_cannot_use_range_with_dictionary);
 	    return FAIL;
 	}
-	if (dest_type == VAR_DICT && may_generate_2STRING(-1, cctx) == FAIL)
+	if (dest_type == VAR_DICT
+			      && may_generate_2STRING(-1, FALSE, cctx) == FAIL)
 	    return FAIL;
 	if (dest_type == VAR_LIST || dest_type == VAR_BLOB)
 	{
@@ -8383,7 +8396,7 @@ compile_throw(char_u *arg, cctx_T *cctx UNUSED)
 	return NULL;
     if (cctx->ctx_skip == SKIP_YES)
 	return p;
-    if (may_generate_2STRING(-1, cctx) == FAIL)
+    if (may_generate_2STRING(-1, FALSE, cctx) == FAIL)
 	return NULL;
     if (generate_instr_drop(cctx, ISN_THROW, 1) == NULL)
 	return NULL;
@@ -8618,7 +8631,7 @@ compile_exec(char_u *line, exarg_T *eap, cctx_T *cctx)
 	    p += 2;
 	    if (compile_expr0(&p, cctx) == FAIL)
 		return NULL;
-	    may_generate_2STRING(-1, cctx);
+	    may_generate_2STRING(-1, TRUE, cctx);
 	    ++count;
 	    p = skipwhite(p);
 	    if (*p != '`')
