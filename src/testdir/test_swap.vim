@@ -483,4 +483,24 @@ func Test_swap_auto_delete()
   augroup! test_swap_recover_ext
 endfunc
 
+" Test for renaming a buffer when the swap file is deleted out-of-band
+func Test_missing_swap_file()
+  CheckUnix
+  new Xfile1
+  call delete('.Xfile1.swp')
+  call assert_fails('file Xfile2', 'E301:')
+  call assert_equal('Xfile2', bufname())
+  call assert_true(bufexists('Xfile1'))
+  call assert_true(bufexists('Xfile2'))
+  %bw!
+endfunc
+
+" Test for :preserve command
+func Test_preserve()
+  new Xfile1
+  setlocal noswapfile
+  call assert_fails('preserve', 'E313:')
+  bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
