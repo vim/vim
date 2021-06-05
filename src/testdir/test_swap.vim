@@ -503,4 +503,59 @@ func Test_preserve()
   bw!
 endfunc
 
+" Test for the v:swapchoice variable
+func Test_swapchoice()
+  call writefile(['aaa', 'bbb'], 'Xfile1')
+  edit Xfile1
+  preserve
+  let swapfname = swapname('')
+  let b = readblob(swapfname)
+  bw!
+  call writefile(b, swapfname)
+
+  autocmd! SwapExists
+
+  " Test for v:swapchoice = 'o' (readonly)
+  augroup test_swapchoice
+    autocmd!
+    autocmd SwapExists * let v:swapchoice = 'o'
+  augroup END
+  edit Xfile1
+  call assert_true(&readonly)
+  call assert_equal(['aaa', 'bbb'], getline(1, '$'))
+  %bw!
+  call assert_true(filereadable(swapfname))
+
+  " Test for v:swapchoice = 'a' (abort)
+  augroup test_swapchoice
+    autocmd!
+    autocmd SwapExists * let v:swapchoice = 'a'
+  augroup END
+  try
+    edit Xfile1
+  catch /^Vim:Interrupt$/
+  endtry
+  call assert_equal('', @%)
+  call assert_true(bufexists('Xfile1'))
+  %bw!
+  call assert_true(filereadable(swapfname))
+
+  " Test for v:swapchoice = 'd' (delete)
+  augroup test_swapchoice
+    autocmd!
+    autocmd SwapExists * let v:swapchoice = 'd'
+  augroup END
+  edit Xfile1
+  call assert_equal('Xfile1', @%)
+  %bw!
+  call assert_false(filereadable(swapfname))
+
+  call delete('Xfile1')
+  call delete(swapfname)
+  augroup test_swapchoice
+    autocmd!
+  augroup END
+  augroup! test_swapchoice
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
