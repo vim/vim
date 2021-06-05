@@ -4831,10 +4831,11 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		{
 		    typval_T	tv;
 		    char_u	*name;
+		    char_u	buf[NUMBUFLEN];
 
 		    tv.v_type = VAR_JOB;
 		    tv.vval.v_job = iptr->isn_arg.job;
-		    name = tv_get_string(&tv);
+		    name = job_to_string_buf(&tv, buf);
 		    smsg("%s%4d PUSHJOB \"%s\"", pfx, current, name);
 		}
 #endif

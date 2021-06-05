@@ -5060,7 +5060,8 @@ echo_string_core(
 	case VAR_JOB:
 	case VAR_CHANNEL:
 	    *tofree = NULL;
-	    r = tv_get_string_buf(tv, numbuf);
+	    r = tv->v_type == VAR_JOB ? job_to_string_buf(tv, numbuf)
+					   : channel_to_string_buf(tv, numbuf);
 	    if (composite_val)
 	    {
 		*tofree = string_quote(r, FALSE);

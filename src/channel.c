@@ -5015,4 +5015,22 @@ f_ch_status(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_string = vim_strsave((char_u *)channel_status(channel, part));
 }
 
+/*
+ * Get a string with information about the channel in "varp" in "buf".
+ * "buf" must be at least NUMBUFLEN long.
+ */
+    char_u *
+channel_to_string_buf(typval_T *varp, char_u *buf)
+{
+    channel_T *channel = varp->vval.v_channel;
+    char      *status = channel_status(channel, -1);
+
+    if (channel == NULL)
+	vim_snprintf((char *)buf, NUMBUFLEN, "channel %s", status);
+    else
+	vim_snprintf((char *)buf, NUMBUFLEN,
+				      "channel %d %s", channel->ch_id, status);
+    return buf;
+}
+
 #endif // FEAT_JOB_CHANNEL

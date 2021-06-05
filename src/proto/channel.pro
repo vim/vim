@@ -58,4 +58,5 @@ void f_ch_evalraw(typval_T *argvars, typval_T *rettv);
 void f_ch_sendraw(typval_T *argvars, typval_T *rettv);
 void f_ch_setoptions(typval_T *argvars, typval_T *rettv);
 void f_ch_status(typval_T *argvars, typval_T *rettv);
+char_u *channel_to_string_buf(typval_T *varp, char_u *buf);
 /* vim: set ft=c : */
