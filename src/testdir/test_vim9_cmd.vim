@@ -34,6 +34,10 @@ def Test_edit_wildcards()
 
   CheckDefFailure(['edit `=xxx`'], 'E1001:')
   CheckDefFailure(['edit `="foo"'], 'E1083:')
+
+  var files = ['file 1', 'file%2', 'file# 3']
+  args `=files`
+  assert_equal(files, argv())
 enddef
 
 def Test_expand_alternate_file()

@@ -999,15 +999,34 @@ do_2string(typval_T *tv, int is_2string_any, int tolerant)
 		case VAR_LIST:
 				if (tolerant)
 				{
-				    char_u *p;
+				    char_u	*s, *e, *p;
+				    garray_T	ga;
 
+				    ga_init2(&ga, sizeof(char_u *), 1);
+
+				    // Convert to NL separated items, then
+				    // escape the items and replace the NL with
+				    // a space.
 				    str = typval2string(tv, TRUE);
+				    if (str == NULL)
+					return FAIL;
+				    s = str;
+				    while ((e = vim_strchr(s, '\n')) != NULL)
+				    {
+					*e = NUL;
+					p = vim_strsave_fnameescape(s, FALSE);
+					if (p != NULL)
+					{
+					    ga_concat(&ga, p);
+					    ga_concat(&ga, (char_u *)" ");
+					    vim_free(p);
+					}
+					s = e + 1;
+				    }
+				    vim_free(str);
 				    clear_tv(tv);
 				    tv->v_type = VAR_STRING;
-				    tv->vval.v_string = str;
-				    // TODO: escaping
-				    while ((p = vim_strchr(str, '\n')) != NULL)
-					*p = ' ';
+				    tv->vval.v_string = ga.ga_data;
 				    return OK;
 				}
 				// FALLTHROUGH
