@@ -4234,7 +4234,8 @@ call_def_function(
 	    semsg(_(e_nr_arguments_too_many), idx);
 	goto failed_early;
     }
-    else if (idx < 0)
+    idx = argc - ufunc->uf_args.ga_len + ufunc->uf_def_args.ga_len;
+    if (idx < 0)
     {
 	if (idx == -1)
 	    emsg(_(e_one_argument_too_few));
