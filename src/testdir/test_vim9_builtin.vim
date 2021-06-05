@@ -810,6 +810,15 @@ def Test_map_function_arg()
       assert_equal(['0:a', '1:b', '2:c'], l)
   END
   CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      range(3)->map((a, b, c) => a + b + c)
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1190: One argument too few')
+  lines =<< trim END
+      range(3)->map((a, b, c, d) => a + b + c + d)
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1190: 2 arguments too few')
 enddef
 
 def Test_map_item_type()

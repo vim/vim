@@ -4234,6 +4234,14 @@ call_def_function(
 	    semsg(_(e_nr_arguments_too_many), idx);
 	goto failed_early;
     }
+    else if (idx < 0)
+    {
+	if (idx == -1)
+	    emsg(_(e_one_argument_too_few));
+	else
+	    semsg(_(e_nr_arguments_too_few), -idx);
+	goto failed_early;
+    }
 
     // Put arguments on the stack, but no more than what the function expects.
     // A lambda can be called with more arguments than it uses.
