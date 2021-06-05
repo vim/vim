@@ -1236,6 +1236,13 @@ def Test_substitute_expr()
   END
   CheckScriptSuccess(lines)
   unlet g:cond
+
+  # List results in multiple lines
+  new
+  setline(1, 'some text here')
+  s/text/\=['aaa', 'bbb', 'ccc']/ 
+  assert_equal(['some aaa', 'bbb', 'ccc', ' here'], getline(1, '$'))
+  bwipe!
 enddef
 
 def Test_redir_to_var()

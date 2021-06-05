@@ -4130,7 +4130,7 @@ exe_substitute_instr(void)
     {
 	typval_T *tv = STACK_TV_BOT(-1);
 
-	res = vim_strsave(tv_get_string(tv));
+	res = typval2string(tv, TRUE);
 	--ectx->ec_stack.ga_len;
 	clear_tv(tv);
     }
