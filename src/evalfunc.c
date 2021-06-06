@@ -3000,7 +3000,8 @@ execute_common(typval_T *argvars, typval_T *rettv, int arg_off)
     if (argvars[arg_off + 1].v_type != VAR_UNKNOWN)
     {
 	char_u	buf[NUMBUFLEN];
-	char_u  *s = tv_get_string_buf_chk(&argvars[arg_off + 1], buf);
+	char_u  *s = tv_get_string_buf_chk_strict(&argvars[arg_off + 1], buf,
+							      in_vim9script());
 
 	if (s == NULL)
 	    return;
@@ -8897,7 +8898,7 @@ f_strdisplaywidth(typval_T *argvars, typval_T *rettv)
     static void
 f_strwidth(typval_T *argvars, typval_T *rettv)
 {
-    char_u	*s = tv_get_string(&argvars[0]);
+    char_u	*s = tv_get_string_strict(&argvars[0]);
 
     rettv->vval.v_number = (varnumber_T)(mb_string2cells(s, -1));
 }

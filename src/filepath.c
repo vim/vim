@@ -1301,7 +1301,9 @@ f_glob(typval_T *argvars, typval_T *rettv)
     void
 f_glob2regpat(typval_T *argvars, typval_T *rettv)
 {
-    char_u	*pat = tv_get_string_chk(&argvars[0]);
+    char_u	buf[NUMBUFLEN];
+    char_u	*pat = tv_get_string_buf_chk_strict(&argvars[0], buf,
+							      in_vim9script());
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = (pat == NULL)
