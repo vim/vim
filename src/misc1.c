@@ -2607,19 +2607,18 @@ path_is_url(char_u *p)
     int
 path_with_url(char_u *fname)
 {
-    char_u *p = fname;
+    char_u *p;
 
     // We accept alphabetic characters and a dash in scheme part.
     // RFC 3986 allows for more, but it increases the risk of matching
     // non-URL text.
 
-    /* check first alpha */
-    if (!isalpha(*p))
+    /* check first alpha only */
+    if (!isalpha(*fname))
 	return 0;
-    ++p;
 
     /* check body */
-    for (; isalpha(*p) || (*p == '-'); ++p)
+    for (p = fname; (isalpha(*p) || (*p == '-')); ++p)
 	;
 
     /* scheme last char is not '-' */
