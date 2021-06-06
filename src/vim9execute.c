@@ -1214,6 +1214,37 @@ get_script_svar(scriptref_T *sref, ectx_T *ectx)
 }
 
 /*
+ * Function passed to do_cmdline() for splitting a script joined by NL
+ * characters.
+ */
+    static char_u *
+get_split_sourceline(
+	int c UNUSED,
+	void *cookie,
+	int indent UNUSED,
+	getline_opt_T options UNUSED)
+{
+    source_cookie_T	*sp = (source_cookie_T *)cookie;
+    char_u		*p;
+    char_u		*line;
+
+    if (*sp->nextline == NUL)
+	return NULL;
+    p = vim_strchr(sp->nextline, '\n');
+    if (p == NULL)
+    {
+	line = vim_strsave(sp->nextline);
+	sp->nextline += STRLEN(sp->nextline);
+    }
+    else
+    {
+	line = vim_strnsave(sp->nextline, p - sp->nextline);
+	sp->nextline = p + 1;
+    }
+    return line;
+}
+
+/*
  * Execute a function by "name".
  * This can be a builtin function, user function or a funcref.
  * "iptr" can be used to replace the instruction with a more efficient one.
@@ -1418,6 +1449,24 @@ exec_instructions(ectx_T *ectx)
 		    cookie.sourcing_lnum = iptr->isn_lnum - 1;
 		    if (do_cmdline(iptr->isn_arg.string,
 				getsourceline, &cookie,
+				   DOCMD_VERBOSE|DOCMD_NOWAIT|DOCMD_KEYTYPED)
+									== FAIL
+				|| did_emsg)
+			goto on_error;
+		}
+		break;
+
+	    // execute Ex command line split at NL characters.
+	    case ISN_EXEC_SPLIT:
+		{
+		    source_cookie_T cookie;
+
+		    SOURCING_LNUM = iptr->isn_lnum;
+		    CLEAR_FIELD(cookie);
+		    cookie.sourcing_lnum = iptr->isn_lnum - 1;
+		    cookie.nextline = iptr->isn_arg.string;
+		    if (do_cmdline(get_split_sourceline(0, &cookie, 0, 0),
+				get_split_sourceline, &cookie,
 				   DOCMD_VERBOSE|DOCMD_NOWAIT|DOCMD_KEYTYPED)
 									== FAIL
 				|| did_emsg)
@@ -4535,6 +4584,9 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	{
 	    case ISN_EXEC:
 		smsg("%s%4d EXEC %s", pfx, current, iptr->isn_arg.string);
+		break;
+	    case ISN_EXEC_SPLIT:
+		smsg("%s%4d EXEC_SPLIT %s", pfx, current, iptr->isn_arg.string);
 		break;
 	    case ISN_LEGACY_EVAL:
 		smsg("%s%4d EVAL legacy %s", pfx, current,

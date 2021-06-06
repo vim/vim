@@ -121,6 +121,23 @@ def Test_disassemble_exec_expr()
         res)
 enddef
 
+if has('python3')
+  def s:PyHeredoc()
+    python3 << EOF
+      print('hello')
+EOF
+  enddef
+
+  def Test_disassemble_python_heredoc()
+    var res = execute('disass s:PyHeredoc')
+    assert_match('<SNR>\d*_PyHeredoc.*' ..
+          "    python3 << EOF^@      print('hello')^@EOF\\_s*" ..
+          '\d EXEC_SPLIT     python3 << EOF^@      print(''hello'')^@EOF\_s*' ..
+          '\d RETURN 0',
+          res)
+  enddef
+endif
+
 def s:Substitute()
   var expr = "abc"
   :%s/a/\=expr/&g#c
