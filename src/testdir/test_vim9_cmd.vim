@@ -534,6 +534,14 @@ def Test_command_modifier_filter()
     assert_equal(execute('filter /piyo/ registers abc'), expected)
   END
   CheckDefAndScriptSuccess(lines)
+
+  # also do this compiled
+  lines =<< trim END
+      @a = 'very specific z3d37dh234 string'
+      filter z3d37dh234 registers
+      assert_match('very specific z3d37dh234 string', Screenline(&lines))
+  END
+  CheckDefAndScriptSuccess(lines)
 enddef
 
 def Test_win_command_modifiers()

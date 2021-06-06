@@ -8536,12 +8536,29 @@ compile_put(char_u *arg, exarg_T *eap, cctx_T *cctx)
     static char_u *
 compile_exec(char_u *line, exarg_T *eap, cctx_T *cctx)
 {
-    char_u  *p;
-    int	    has_expr = FALSE;
-    char_u  *nextcmd = (char_u *)"";
+    char_u	*p;
+    int		has_expr = FALSE;
+    char_u	*nextcmd = (char_u *)"";
 
     if (cctx->ctx_skip == SKIP_YES)
 	goto theend;
+
+    // If there was a prececing command modifier, drop it and include it in the
+    // EXEC command.
+    if (cctx->ctx_has_cmdmod)
+    {
+	garray_T	*instr = &cctx->ctx_instr;
+	isn_T		*isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
+
+	if (isn->isn_type == ISN_CMDMOD)
+	{
+	    vim_regfree(isn->isn_arg.cmdmod.cf_cmdmod
+					       ->cmod_filter_regmatch.regprog);
+	    vim_free(isn->isn_arg.cmdmod.cf_cmdmod);
+	    --instr->ga_len;
+	    cctx->ctx_has_cmdmod = FALSE;
+	}
+    }
 
     if (eap->cmdidx >= 0 && eap->cmdidx < CMD_SIZE)
     {
