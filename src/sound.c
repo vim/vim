@@ -351,14 +351,13 @@ f_sound_playevent(typval_T *argvars, typval_T *rettv)
 {
     WCHAR	    *wp;
 
+    rettv->vval.v_number = 0;
     wp = enc_to_utf16(tv_get_string(&argvars[0]), NULL);
     if (wp == NULL)
 	return;
 
     if (PlaySoundW(wp, NULL, SND_ASYNC | SND_ALIAS))
 	rettv->vval.v_number = ++sound_id;
-    else
-	rettv->vval.v_number = 0;
     free(wp);
 
 }
@@ -374,6 +373,7 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
     char	buf[32];
     MCIERROR	err;
 
+    rettv->vval.v_number = 0;
     esc = vim_strsave_shellescape(tv_get_string(&argvars[0]), FALSE, FALSE);
 
     len = STRLEN(esc) + 5 + 18 + 1;
@@ -416,7 +416,6 @@ f_sound_playfile(typval_T *argvars, typval_T *rettv)
 failure:
     vim_snprintf(buf, sizeof(buf), "close sound%06ld", newid);
     mciSendString(buf, NULL, 0, NULL);
-    rettv->vval.v_number = 0;
 }
 
     void
