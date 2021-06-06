@@ -1460,17 +1460,23 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_EXEC_SPLIT:
 		{
 		    source_cookie_T cookie;
+		    char_u	    *line;
 
 		    SOURCING_LNUM = iptr->isn_lnum;
 		    CLEAR_FIELD(cookie);
 		    cookie.sourcing_lnum = iptr->isn_lnum - 1;
 		    cookie.nextline = iptr->isn_arg.string;
-		    if (do_cmdline(get_split_sourceline(0, &cookie, 0, 0),
+		    line = get_split_sourceline(0, &cookie, 0, 0);
+		    if (do_cmdline(line,
 				get_split_sourceline, &cookie,
 				   DOCMD_VERBOSE|DOCMD_NOWAIT|DOCMD_KEYTYPED)
 									== FAIL
 				|| did_emsg)
+		    {
+			vim_free(line);
 			goto on_error;
+		    }
+		    vim_free(line);
 		}
 		break;
 
