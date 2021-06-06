@@ -76,7 +76,7 @@ func Test_play_silent()
 endfunc
 
 func Test_play_event_error()
-  " sound_playevent/sound_playfile should return 0 if the sound cannot be played.
+  " sound_playevent()/sound_playfile() should return 0 if the sound cannot be played.
   call assert_equal(0, sound_playevent(''))
   call assert_equal(0, sound_playevent(test_null_string()))
   call assert_equal(0, sound_playevent('doesnotexist'))
@@ -84,7 +84,7 @@ func Test_play_event_error()
   call assert_equal(0, sound_playfile(test_null_string()))
   call assert_equal(0, sound_playfile('doesnotexist'))
 
-  " Playing event with callback is not supported on Windows'
+  " Playing event with callback is not supported on Windows.
   if !has('win32')
     call assert_equal(0, sound_playevent('doesnotexist', 'doesnotexist'))
     call assert_equal(0, sound_playevent(test_null_string(), test_null_string()))
