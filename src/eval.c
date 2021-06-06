@@ -5059,6 +5059,7 @@ echo_string_core(
 
 	case VAR_JOB:
 	case VAR_CHANNEL:
+#ifdef FEAT_JOB_CHANNEL
 	    *tofree = NULL;
 	    r = tv->v_type == VAR_JOB ? job_to_string_buf(tv, numbuf)
 					   : channel_to_string_buf(tv, numbuf);
@@ -5067,6 +5068,7 @@ echo_string_core(
 		*tofree = string_quote(r, FALSE);
 		r = *tofree;
 	    }
+#endif
 	    break;
 
 	case VAR_INSTR:
