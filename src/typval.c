@@ -462,8 +462,13 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	    break;
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
-	    emsg(_(e_float_as_string));
-	    break;
+	    if (strict)
+	    {
+		emsg(_(e_float_as_string));
+		break;
+	    }
+	    vim_snprintf((char *)buf, NUMBUFLEN, "%g", varp->vval.v_float);
+	    return buf;
 #endif
 	case VAR_STRING:
 	    if (varp->vval.v_string != NULL)
