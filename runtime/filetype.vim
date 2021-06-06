@@ -1497,6 +1497,7 @@ au BufNewFile,BufRead *.sa			setf sather
 
 " Scala
 au BufNewFile,BufRead *.scala			setf scala
+au BufNewFile,BufRead *.sc			setf scala
 
 " SBT - Scala Build Tool
 au BufNewFile,BufRead *.sbt			setf sbt
