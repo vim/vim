@@ -2600,19 +2600,6 @@ path_is_url(char_u *p)
 }
 
 /*
- * Check url scheme charactor.
- * return 1 is OK. non scheme char return 0.
- */
-    int
-is_url_scheme(char_u c)
-{
-    /* URL rule in RFC3986 (URI) */
-    /* scheme      = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." ) */
-    return isalnum(c)
-        || c == '+' || c == '-' || c == '.';
-}
-
-/*
  * Check if "fname" starts with "name://".  Return URL_SLASH if it does.
  * Return URL_BACKSLASH for "name:\\".
  * Return zero otherwise.
@@ -2620,17 +2607,21 @@ is_url_scheme(char_u c)
     int
 path_with_url(char_u *fname)
 {
-    char_u *p;
+    char_u *p = fname;
 
-    p = fname;
+    // We accept alphabetic characters and a dash in scheme part.
+    // RFC 3986 allows for more, but it increases the risk of matching
+    // non-URL text.
 
     /* check first alpha */
     if (!isalpha(*p))
-        return 0;
+	return 0;
     ++p;
 
     /* check body */
-    for(; is_url_scheme(*p); ++p)
-        ;
-    return path_is_url(p);
+    for (; isalpha(*p) || (*p == '-'); ++p)
+	;
+
+    /* scheme last char is not '-' */
+    return (p[-1] == '-') ? 0 : path_is_url(p);
 }
