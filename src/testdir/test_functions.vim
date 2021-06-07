@@ -1729,6 +1729,13 @@ endfunc
 func Test_getchar()
   call feedkeys('a', '')
   call assert_equal(char2nr('a'), getchar())
+  call assert_equal(0, getchar(0))
+  call assert_equal(0, getchar(1))
+
+  call feedkeys('a', '')
+  call assert_equal('a', getcharstr())
+  call assert_equal('', getcharstr(0))
+  call assert_equal('', getcharstr(1))
 
   call setline(1, 'xxxx')
   call test_setmouse(1, 3)

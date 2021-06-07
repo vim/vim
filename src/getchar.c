@@ -2016,10 +2016,10 @@ char_avail(void)
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
- * "getchar()" function
+ * "getchar()" and "getcharstr()" functions
  */
-    void
-f_getchar(typval_T *argvars, typval_T *rettv)
+    static void
+getchar_common(typval_T *argvars, typval_T *rettv)
 {
     varnumber_T		n;
     int			error = FALSE;
@@ -2123,6 +2123,42 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 		set_vim_var_nr(VV_MOUSE_COL, col + 1);
 	    }
 	}
+    }
+}
+
+/*
+ * "getchar()" function
+ */
+    void
+f_getchar(typval_T *argvars, typval_T *rettv)
+{
+    getchar_common(argvars, rettv);
+}
+
+/*
+ * "getcharstr()" function
+ */
+    void
+f_getcharstr(typval_T *argvars, typval_T *rettv)
+{
+    getchar_common(argvars, rettv);
+
+    if (rettv->v_type == VAR_NUMBER)
+    {
+	char_u		temp[7];   // mbyte-char: 6, NUL: 1
+	varnumber_T	n = rettv->vval.v_number;
+	int		i = 0;
+
+	if (n != 0)
+	{
+	    if (has_mbyte)
+		i += (*mb_char2bytes)(n, temp + i);
+	    else
+		temp[i++] = n;
+	}
+	temp[i++] = NUL;
+	rettv->v_type = VAR_STRING;
+	rettv->vval.v_string = vim_strsave(temp);
     }
 }
 
