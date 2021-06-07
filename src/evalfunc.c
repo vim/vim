@@ -5873,7 +5873,7 @@ f_inputrestore(typval_T *argvars UNUSED, typval_T *rettv)
     {
 	--ga_userinput.ga_len;
 	restore_typeahead((tasave_T *)(ga_userinput.ga_data)
-						       + ga_userinput.ga_len);
+						  + ga_userinput.ga_len, TRUE);
 	// default return is zero == OK
     }
     else if (p_verbose > 1)

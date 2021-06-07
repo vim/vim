@@ -810,9 +810,10 @@ get_input_buf(void)
 /*
  * Restore the input buffer with a pointer returned from get_input_buf().
  * The allocated memory is freed, this only works once!
+ * When "overwrite" is FALSE input typed later is kept.
  */
     void
-set_input_buf(char_u *p)
+set_input_buf(char_u *p, int overwrite)
 {
     garray_T	*gap = (garray_T *)p;
 
@@ -820,8 +821,17 @@ set_input_buf(char_u *p)
     {
 	if (gap->ga_data != NULL)
 	{
-	    mch_memmove(inbuf, gap->ga_data, gap->ga_len);
-	    inbufcount = gap->ga_len;
+	    if (overwrite || inbufcount + gap->ga_len >= INBUFLEN)
+	    {
+		mch_memmove(inbuf, gap->ga_data, gap->ga_len);
+		inbufcount = gap->ga_len;
+	    }
+	    else
+	    {
+		mch_memmove(inbuf + gap->ga_len, inbuf, inbufcount);
+		mch_memmove(inbuf, gap->ga_data, gap->ga_len);
+		inbufcount += gap->ga_len;
+	    }
 	    vim_free(gap->ga_data);
 	}
 	vim_free(gap);

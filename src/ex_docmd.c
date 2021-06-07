@@ -8249,7 +8249,7 @@ save_current_state(save_state_T *sst)
 restore_current_state(save_state_T *sst)
 {
     // Restore the previous typeahead.
-    restore_typeahead(&sst->tabuf);
+    restore_typeahead(&sst->tabuf, FALSE);
 
     msg_scroll = sst->save_msg_scroll;
     restart_edit = sst->save_restart_edit;

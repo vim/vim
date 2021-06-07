@@ -1414,9 +1414,10 @@ save_typeahead(tasave_T *tp)
 /*
  * Restore the typeahead to what it was before calling save_typeahead().
  * The allocated memory is freed, can only be called once!
+ * When "overwrite" is FALSE input typed later is kept.
  */
     void
-restore_typeahead(tasave_T *tp)
+restore_typeahead(tasave_T *tp, int overwrite UNUSED)
 {
     if (tp->typebuf_valid)
     {
@@ -1432,7 +1433,7 @@ restore_typeahead(tasave_T *tp)
     free_buff(&readbuf2);
     readbuf2 = tp->save_readbuf2;
 # ifdef USE_INPUT_BUF
-    set_input_buf(tp->save_inputbuf);
+    set_input_buf(tp->save_inputbuf, overwrite);
 # endif
 }
 

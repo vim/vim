@@ -140,7 +140,7 @@ do_debug(char_u *cmd)
 
 	if (typeahead_saved)
 	{
-	    restore_typeahead(&typeaheadbuf);
+	    restore_typeahead(&typeaheadbuf, TRUE);
 	    ignore_script = save_ignore_script;
 	}
 	ex_normal_busy = save_ex_normal_busy;

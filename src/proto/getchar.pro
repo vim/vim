@@ -32,7 +32,7 @@ int typebuf_maplen(void);
 void del_typebuf(int len, int offset);
 int save_typebuf(void);
 void save_typeahead(tasave_T *tp);
-void restore_typeahead(tasave_T *tp);
+void restore_typeahead(tasave_T *tp, int overwrite);
 void openscript(char_u *name, int directly);
 void close_all_scripts(void);
 int using_script(void);
