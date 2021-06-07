@@ -96,7 +96,7 @@ func Test_function_lists()
   sort u
   w! ++ff=unix Xfunction-list
   let l:unequal = assert_equalfile("Xsorted_current_global_functions", "Xfunction-list",
-      \ "\":help functions-list\" incomplete")
+      \ "\":help function-list\" incomplete")
   if l:unequal && executable("diff")
     call system("diff -u Xsorted_current_global_functions Xfunction-list > Xfunction-list.diff")
   endif

@@ -952,6 +952,7 @@ Interactive:					*interactive-functions*
 	browsedir()		put up a directory requester
 	confirm()		let the user make a choice
 	getchar()		get a character from the user
+	getcharstr()		get a character from the user as a string
 	getcharmod()		get modifiers for the last typed character
 	getmousepos()		get last known mouse position
 	echoraw()		output characters as-is
