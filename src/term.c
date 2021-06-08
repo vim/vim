@@ -5588,6 +5588,7 @@ check_termcode(
 		&& key_name[0] == (int)KS_EXTRA
 		&& (key_name[1] == (int)KE_X1MOUSE
 		    || key_name[1] == (int)KE_X2MOUSE
+		    || key_name[1] == (int)KE_MOUSEMOVE_XY
 		    || key_name[1] == (int)KE_MOUSELEFT
 		    || key_name[1] == (int)KE_MOUSERIGHT
 		    || key_name[1] == (int)KE_MOUSEDOWN
@@ -5601,6 +5602,9 @@ check_termcode(
 	    mouse_col = 128 * (bytes[0] - ' ' - 1) + bytes[1] - ' ' - 1;
 	    mouse_row = 128 * (bytes[2] - ' ' - 1) + bytes[3] - ' ' - 1;
 	    slen += num_bytes;
+	    // equal to K_MOUSEMOVE
+	    if (key_name[1] == (int)KE_MOUSEMOVE_XY)
+		key_name[1] = (int)KE_MOUSEMOVE;
 	}
 	else
 #endif

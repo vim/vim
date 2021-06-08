@@ -1859,6 +1859,8 @@ typedef int sock_T;
 #define MOUSE_6	0x500	// scroll wheel left
 #define MOUSE_7	0x600	// scroll wheel right
 
+#define MOUSE_MOVE 0x700    // report mouse moved
+
 // 0x20 is reserved by xterm
 #define MOUSE_DRAG_XTERM   0x40
 
