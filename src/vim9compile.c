@@ -4108,7 +4108,8 @@ compile_subscript(
 	    // Also if a following line starts with ".x".
 	    if (next != NULL &&
 		    ((next[0] == '-' && next[1] == '>'
-				 && (next[2] == '{' || ASCII_ISALPHA(next[2])))
+				 && (next[2] == '{'
+				       || ASCII_ISALPHA(*skipwhite(next + 2))))
 		    || (next[0] == '.' && eval_isdictc(next[1]))))
 	    {
 		next = next_line_from_context(cctx, TRUE);

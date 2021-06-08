@@ -2961,6 +2961,10 @@ def Test_expr7_method_call()
 
       var Join = (l) => join(l, 'x')
       assert_equal('axb', ['a', 'b']->(Join)())
+      
+      var sorted = [3, 1, 2]
+                    -> sort()
+      assert_equal([1, 2, 3], sorted)
   END
   CheckDefAndScriptSuccess(lines)
 enddef
