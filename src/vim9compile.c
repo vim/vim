@@ -1950,6 +1950,12 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 					       PROFILING(ufunc), NULL) == FAIL)
 	    return FAIL;
     }
+    if (ufunc->uf_def_status == UF_COMPILE_ERROR)
+    {
+	emsg_funcname(_(e_call_to_function_that_failed_to_compile_str),
+							       ufunc->uf_name);
+	return FAIL;
+    }
 
     if ((isn = generate_instr(cctx,
 		    ufunc->uf_def_status != UF_NOT_COMPILED ? ISN_DCALL
