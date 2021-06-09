@@ -9,7 +9,7 @@ vim9script noclear
 # - 'compatible' is set
 # - there are no colors (looks like the cursor jumps)
 if exists('g:loaded_matchparen')
-    || &cp
+    || &compatible
     || &t_Co->str2nr() < 8 && !has('gui_running')
   finish
 endif
@@ -242,6 +242,11 @@ def Toggle(enable = !exists('#matchparen')) #{{{2
 enddef
 
 def InStringOrComment(): bool #{{{2
+  # can improve the performance when inserting characters in front of a paren
+  # while there are closed folds in the buffer
+  if foldclosed('.') != -1
+    return false
+  endif
   # Should return true when the current cursor position is in certain syntax
   # types (string, comment, etc.); evaluated inside lambda passed as skip
   # argument to searchpairpos().
