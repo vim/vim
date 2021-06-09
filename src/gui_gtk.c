@@ -1050,6 +1050,9 @@ gui_mch_get_scrollbar_xpadding(void)
     xpad = gui.formwin->allocation.width - gui.drawarea->allocation.width
 							 - gui.scrollbar_width;
 #endif
+    if (gui.which_scrollbars[SBAR_LEFT] && gui.which_scrollbars[SBAR_RIGHT])
+	xpad -= gui.scrollbar_width;
+
     return (xpad < 0) ? 0 : xpad;
 }
 

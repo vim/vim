@@ -34,6 +34,10 @@ def Test_edit_wildcards()
 
   CheckDefFailure(['edit `=xxx`'], 'E1001:')
   CheckDefFailure(['edit `="foo"'], 'E1083:')
+
+  var files = ['file 1', 'file%2', 'file# 3']
+  args `=files`
+  assert_equal(files, argv())
 enddef
 
 def Test_expand_alternate_file()
@@ -528,6 +532,14 @@ def Test_command_modifier_filter()
     @c = 'piyo'
 
     assert_equal(execute('filter /piyo/ registers abc'), expected)
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  # also do this compiled
+  lines =<< trim END
+      @a = 'very specific z3d37dh234 string'
+      filter z3d37dh234 registers
+      assert_match('very specific z3d37dh234 string', Screenline(&lines))
   END
   CheckDefAndScriptSuccess(lines)
 enddef
@@ -1232,6 +1244,13 @@ def Test_substitute_expr()
   END
   CheckScriptSuccess(lines)
   unlet g:cond
+
+  # List results in multiple lines
+  new
+  setline(1, 'some text here')
+  s/text/\=['aaa', 'bbb', 'ccc']/ 
+  assert_equal(['some aaa', 'bbb', 'ccc', ' here'], getline(1, '$'))
+  bwipe!
 enddef
 
 def Test_redir_to_var()

@@ -165,10 +165,12 @@ func Test_strwidth()
     call assert_fails('call strwidth({->0})', 'E729:')
     call assert_fails('call strwidth([])', 'E730:')
     call assert_fails('call strwidth({})', 'E731:')
-    if has('float')
-      call assert_fails('call strwidth(1.2)', 'E806:')
-    endif
   endfor
+
+  if has('float')
+    call assert_equal(3, strwidth(1.2))
+    call CheckDefExecAndScriptFailure(['echo strwidth(1.2)'], 'E806:')
+  endif
 
   set ambiwidth&
 endfunc
@@ -233,7 +235,9 @@ func Test_str2nr()
   call assert_fails('call str2nr([])', 'E730:')
   call assert_fails('call str2nr({->2})', 'E729:')
   if has('float')
-    call assert_fails('call str2nr(1.2)', 'E806:')
+    call assert_equal(1, str2nr(1.2))
+    call CheckDefExecFailure(['echo str2nr(1.2)'], 'E1013:')
+    call CheckScriptFailure(['vim9script', 'echo str2nr(1.2)'], 'E806:')
   endif
   call assert_fails('call str2nr(10, [])', 'E745:')
 endfunc
@@ -494,7 +498,8 @@ func Test_simplify()
   call assert_fails('call simplify([])', 'E730:')
   call assert_fails('call simplify({})', 'E731:')
   if has('float')
-    call assert_fails('call simplify(1.2)', 'E806:')
+    call assert_equal('1.2', simplify(1.2))
+    call CheckDefExecAndScriptFailure(['echo simplify(1.2)'], 'E806:')
   endif
 endfunc
 
@@ -1724,6 +1729,13 @@ endfunc
 func Test_getchar()
   call feedkeys('a', '')
   call assert_equal(char2nr('a'), getchar())
+  call assert_equal(0, getchar(0))
+  call assert_equal(0, getchar(1))
+
+  call feedkeys('a', '')
+  call assert_equal('a', getcharstr())
+  call assert_equal('', getcharstr(0))
+  call assert_equal('', getcharstr(1))
 
   call setline(1, 'xxxx')
   call test_setmouse(1, 3)

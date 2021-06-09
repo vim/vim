@@ -631,7 +631,11 @@ get_function_body(
     char_u	*skip_until = NULL;
     int		ret = FAIL;
     int		is_heredoc = FALSE;
+    int		heredoc_concat_len = 0;
+    garray_T	heredoc_ga;
     char_u	*heredoc_trimmed = NULL;
+
+    ga_init2(&heredoc_ga, 1, 500);
 
     // Detect having skipped over comment lines to find the return
     // type.  Add NULL lines to keep the line count correct.
@@ -733,6 +737,20 @@ get_function_body(
 		    getline_options = vim9_function
 				? GETLINE_CONCAT_CONTBAR : GETLINE_CONCAT_CONT;
 		    is_heredoc = FALSE;
+
+		    if (heredoc_concat_len > 0)
+		    {
+			// Replace the starting line with all the concatenated
+			// lines.
+			ga_concat(&heredoc_ga, theline);
+			vim_free(((char_u **)(newlines->ga_data))[
+						      heredoc_concat_len - 1]);
+			((char_u **)(newlines->ga_data))[
+				  heredoc_concat_len - 1] = heredoc_ga.ga_data;
+			ga_init(&heredoc_ga);
+			heredoc_concat_len = 0;
+			theline += STRLEN(theline);  // skip the "EOF"
+		    }
 		}
 	    }
 	}
@@ -886,6 +904,8 @@ get_function_body(
 		    skip_until = vim_strnsave(p, skiptowhite(p) - p);
 		getline_options = GETLINE_NONE;
 		is_heredoc = TRUE;
+		if (eap->cmdidx == CMD_def)
+		    heredoc_concat_len = newlines->ga_len + 1;
 	    }
 
 	    // Check for ":cmd v =<< [trim] EOF"
@@ -928,10 +948,21 @@ get_function_body(
 	if (ga_grow(newlines, 1 + sourcing_lnum_off) == FAIL)
 	    goto theend;
 
-	// Copy the line to newly allocated memory.  get_one_sourceline()
-	// allocates 250 bytes per line, this saves 80% on average.  The cost
-	// is an extra alloc/free.
-	p = vim_strsave(theline);
+	if (heredoc_concat_len > 0)
+	{
+	    // For a :def function "python << EOF" concatenats all the lines,
+	    // to be used for the instruction later.
+	    ga_concat(&heredoc_ga, theline);
+	    ga_concat(&heredoc_ga, (char_u *)"\n");
+	    p = vim_strsave((char_u *)"");
+	}
+	else
+	{
+	    // Copy the line to newly allocated memory.  get_one_sourceline()
+	    // allocates 250 bytes per line, this saves 80% on average.  The
+	    // cost is an extra alloc/free.
+	    p = vim_strsave(theline);
+	}
 	if (p == NULL)
 	    goto theend;
 	((char_u **)(newlines->ga_data))[newlines->ga_len++] = p;
@@ -953,6 +984,7 @@ get_function_body(
 theend:
     vim_free(skip_until);
     vim_free(heredoc_trimmed);
+    vim_free(heredoc_ga.ga_data);
     need_wait_return |= saved_wait_return;
     return ret;
 }
@@ -1436,6 +1468,7 @@ deref_func_name(
 
     cc = name[*lenp];
     name[*lenp] = NUL;
+
     v = find_var(name, &ht, no_autoload);
     name[*lenp] = cc;
     if (v != NULL)

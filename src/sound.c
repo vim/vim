@@ -355,10 +355,9 @@ f_sound_playevent(typval_T *argvars, typval_T *rettv)
     if (wp == NULL)
 	return;
 
-    PlaySoundW(wp, NULL, SND_ASYNC | SND_ALIAS);
+    if (PlaySoundW(wp, NULL, SND_ASYNC | SND_ALIAS))
+	rettv->vval.v_number = ++sound_id;
     free(wp);
-
-    rettv->vval.v_number = ++sound_id;
 }
 
     void

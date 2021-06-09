@@ -2881,7 +2881,9 @@ parse_command_modifiers(
 
 	    case 'f':	// only accept ":filter {pat} cmd"
 			{
-			    char_u *reg_pat;
+			    char_u  *reg_pat;
+			    char_u  *nulp = NULL;
+			    int	    c = 0;
 
 			    if (!checkforcmd_noparen(&p, "filter", 4)
 						|| *p == NUL || ends_excmd(*p))
@@ -2902,7 +2904,8 @@ parse_command_modifiers(
 				p = skip_vimgrep_pat(p, NULL, NULL);
 			    else
 				// NOTE: This puts a NUL after the pattern.
-				p = skip_vimgrep_pat(p, &reg_pat, NULL);
+				p = skip_vimgrep_pat_ext(p, &reg_pat, NULL,
+								    &nulp, &c);
 			    if (p == NULL || *p == NUL)
 				break;
 			    if (!skip_only)
@@ -2911,6 +2914,9 @@ parse_command_modifiers(
 						vim_regcomp(reg_pat, RE_MAGIC);
 				if (cmod->cmod_filter_regmatch.regprog == NULL)
 				    break;
+				// restore the character overwritten by NUL
+				if (nulp != NULL)
+				    *nulp = c;
 			    }
 			    eap->cmd = p;
 			    continue;
@@ -8243,7 +8249,7 @@ save_current_state(save_state_T *sst)
 restore_current_state(save_state_T *sst)
 {
     // Restore the previous typeahead.
-    restore_typeahead(&sst->tabuf);
+    restore_typeahead(&sst->tabuf, FALSE);
 
     msg_scroll = sst->save_msg_scroll;
     restart_edit = sst->save_restart_edit;

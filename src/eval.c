@@ -5059,13 +5059,16 @@ echo_string_core(
 
 	case VAR_JOB:
 	case VAR_CHANNEL:
+#ifdef FEAT_JOB_CHANNEL
 	    *tofree = NULL;
-	    r = tv_get_string_buf(tv, numbuf);
+	    r = tv->v_type == VAR_JOB ? job_to_string_buf(tv, numbuf)
+					   : channel_to_string_buf(tv, numbuf);
 	    if (composite_val)
 	    {
 		*tofree = string_quote(r, FALSE);
 		r = *tofree;
 	    }
+#endif
 	    break;
 
 	case VAR_INSTR:
@@ -5783,8 +5786,9 @@ handle_subscript(
 	p = eval_next_non_blank(*arg, evalarg, &getnext);
 	if (getnext
 	    && ((rettv->v_type == VAR_DICT && *p == '.' && eval_isdictc(p[1]))
-		|| (p[0] == '-' && p[1] == '>'
-				     && (p[2] == '{' || ASCII_ISALPHA(p[2])))))
+		|| (p[0] == '-' && p[1] == '>' && (p[2] == '{'
+			|| ASCII_ISALPHA(in_vim9script() ? *skipwhite(p + 2)
+								    : p[2])))))
 	{
 	    *arg = eval_next_line(evalarg);
 	    p = *arg;

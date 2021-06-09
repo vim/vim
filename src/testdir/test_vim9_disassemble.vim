@@ -121,6 +121,23 @@ def Test_disassemble_exec_expr()
         res)
 enddef
 
+if has('python3')
+  def s:PyHeredoc()
+    python3 << EOF
+      print('hello')
+EOF
+  enddef
+
+  def Test_disassemble_python_heredoc()
+    var res = execute('disass s:PyHeredoc')
+    assert_match('<SNR>\d*_PyHeredoc.*' ..
+          "    python3 << EOF^@      print('hello')^@EOF\\_s*" ..
+          '\d EXEC_SPLIT     python3 << EOF^@      print(''hello'')^@EOF\_s*' ..
+          '\d RETURN 0',
+          res)
+  enddef
+endif
+
 def s:Substitute()
   var expr = "abc"
   :%s/a/\=expr/&g#c
@@ -1650,11 +1667,11 @@ def Test_disassemble_invert_bool()
         '\d STORE $0\_s*' ..
         'var invert = !flag\_s*' ..
         '\d LOAD $0\_s*' ..
-        '\d INVERT (!val)\_s*' ..
+        '\d INVERT -1 (!val)\_s*' ..
         '\d STORE $1\_s*' ..
         'var res = !!flag\_s*' ..
         '\d LOAD $0\_s*' ..
-        '\d 2BOOL (!!val)\_s*' ..
+        '\d 2BOOL -1 (!!val)\_s*' ..
         '\d STORE $2\_s*',
         instr)
   assert_equal(true, InvertBool())

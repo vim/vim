@@ -2894,22 +2894,32 @@ str_to_reg(
     {
 	for (ss = (char_u **) str; *ss != NULL; ++ss, ++lnum)
 	{
-	    i = (long)STRLEN(*ss);
-	    pp[lnum] = vim_strnsave(*ss, i);
-	    if (i > maxlen)
-		maxlen = i;
+	    pp[lnum] = vim_strsave(*ss);
+	    if (type == MBLOCK)
+	    {
+		int charlen = mb_string2cells(*ss, -1);
+
+		if (charlen > maxlen)
+		    maxlen = charlen;
+	    }
 	}
     }
     else
     {
 	for (start = 0; start < len + extraline; start += i + 1)
 	{
+	    int charlen = 0;
+
 	    for (i = start; i < len; ++i)	// find the end of the line
+	    {
 		if (str[i] == '\n')
 		    break;
+		if (type == MBLOCK)
+		    charlen += mb_ptr2cells_len(str + i, len - i);
+	    }
 	    i -= start;			// i is now length of line
-	    if (i > maxlen)
-		maxlen = i;
+	    if (charlen > maxlen)
+		maxlen = charlen;
 	    if (append)
 	    {
 		--lnum;
@@ -2924,7 +2934,7 @@ str_to_reg(
 		mch_memmove(s, y_ptr->y_array[lnum], (size_t)extra);
 	    if (append)
 		vim_free(y_ptr->y_array[lnum]);
-	    if (i)
+	    if (i > 0)
 		mch_memmove(s + extra, str + start, (size_t)i);
 	    extra += i;
 	    s[extra] = NUL;

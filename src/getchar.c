@@ -1414,9 +1414,10 @@ save_typeahead(tasave_T *tp)
 /*
  * Restore the typeahead to what it was before calling save_typeahead().
  * The allocated memory is freed, can only be called once!
+ * When "overwrite" is FALSE input typed later is kept.
  */
     void
-restore_typeahead(tasave_T *tp)
+restore_typeahead(tasave_T *tp, int overwrite UNUSED)
 {
     if (tp->typebuf_valid)
     {
@@ -1432,7 +1433,7 @@ restore_typeahead(tasave_T *tp)
     free_buff(&readbuf2);
     readbuf2 = tp->save_readbuf2;
 # ifdef USE_INPUT_BUF
-    set_input_buf(tp->save_inputbuf);
+    set_input_buf(tp->save_inputbuf, overwrite);
 # endif
 }
 
@@ -2016,10 +2017,10 @@ char_avail(void)
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
- * "getchar()" function
+ * "getchar()" and "getcharstr()" functions
  */
-    void
-f_getchar(typval_T *argvars, typval_T *rettv)
+    static void
+getchar_common(typval_T *argvars, typval_T *rettv)
 {
     varnumber_T		n;
     int			error = FALSE;
@@ -2123,6 +2124,42 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 		set_vim_var_nr(VV_MOUSE_COL, col + 1);
 	    }
 	}
+    }
+}
+
+/*
+ * "getchar()" function
+ */
+    void
+f_getchar(typval_T *argvars, typval_T *rettv)
+{
+    getchar_common(argvars, rettv);
+}
+
+/*
+ * "getcharstr()" function
+ */
+    void
+f_getcharstr(typval_T *argvars, typval_T *rettv)
+{
+    getchar_common(argvars, rettv);
+
+    if (rettv->v_type == VAR_NUMBER)
+    {
+	char_u		temp[7];   // mbyte-char: 6, NUL: 1
+	varnumber_T	n = rettv->vval.v_number;
+	int		i = 0;
+
+	if (n != 0)
+	{
+	    if (has_mbyte)
+		i += (*mb_char2bytes)(n, temp + i);
+	    else
+		temp[i++] = n;
+	}
+	temp[i++] = NUL;
+	rettv->v_type = VAR_STRING;
+	rettv->vval.v_string = vim_strsave(temp);
     }
 }
 

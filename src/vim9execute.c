@@ -980,7 +980,7 @@ store_var(char_u *name, typval_T *tv)
  * Return FAIL if not allowed.
  */
     static int
-do_2string(typval_T *tv, int is_2string_any)
+do_2string(typval_T *tv, int is_2string_any, int tolerant)
 {
     if (tv->v_type != VAR_STRING)
     {
@@ -995,6 +995,41 @@ do_2string(typval_T *tv, int is_2string_any)
 		case VAR_NUMBER:
 		case VAR_FLOAT:
 		case VAR_BLOB:	break;
+
+		case VAR_LIST:
+				if (tolerant)
+				{
+				    char_u	*s, *e, *p;
+				    garray_T	ga;
+
+				    ga_init2(&ga, sizeof(char_u *), 1);
+
+				    // Convert to NL separated items, then
+				    // escape the items and replace the NL with
+				    // a space.
+				    str = typval2string(tv, TRUE);
+				    if (str == NULL)
+					return FAIL;
+				    s = str;
+				    while ((e = vim_strchr(s, '\n')) != NULL)
+				    {
+					*e = NUL;
+					p = vim_strsave_fnameescape(s, FALSE);
+					if (p != NULL)
+					{
+					    ga_concat(&ga, p);
+					    ga_concat(&ga, (char_u *)" ");
+					    vim_free(p);
+					}
+					s = e + 1;
+				    }
+				    vim_free(str);
+				    clear_tv(tv);
+				    tv->v_type = VAR_STRING;
+				    tv->vval.v_string = ga.ga_data;
+				    return OK;
+				}
+				// FALLTHROUGH
 		default:	to_string_error(tv->v_type);
 				return FAIL;
 	    }
@@ -1176,6 +1211,37 @@ get_script_svar(scriptref_T *sref, ectx_T *ectx)
 	return NULL;
     }
     return sv;
+}
+
+/*
+ * Function passed to do_cmdline() for splitting a script joined by NL
+ * characters.
+ */
+    static char_u *
+get_split_sourceline(
+	int c UNUSED,
+	void *cookie,
+	int indent UNUSED,
+	getline_opt_T options UNUSED)
+{
+    source_cookie_T	*sp = (source_cookie_T *)cookie;
+    char_u		*p;
+    char_u		*line;
+
+    if (*sp->nextline == NUL)
+	return NULL;
+    p = vim_strchr(sp->nextline, '\n');
+    if (p == NULL)
+    {
+	line = vim_strsave(sp->nextline);
+	sp->nextline += STRLEN(sp->nextline);
+    }
+    else
+    {
+	line = vim_strnsave(sp->nextline, p - sp->nextline);
+	sp->nextline = p + 1;
+    }
+    return line;
 }
 
 /*
@@ -1387,6 +1453,30 @@ exec_instructions(ectx_T *ectx)
 									== FAIL
 				|| did_emsg)
 			goto on_error;
+		}
+		break;
+
+	    // execute Ex command line split at NL characters.
+	    case ISN_EXEC_SPLIT:
+		{
+		    source_cookie_T cookie;
+		    char_u	    *line;
+
+		    SOURCING_LNUM = iptr->isn_lnum;
+		    CLEAR_FIELD(cookie);
+		    cookie.sourcing_lnum = iptr->isn_lnum - 1;
+		    cookie.nextline = iptr->isn_arg.string;
+		    line = get_split_sourceline(0, &cookie, 0, 0);
+		    if (do_cmdline(line,
+				get_split_sourceline, &cookie,
+				   DOCMD_VERBOSE|DOCMD_NOWAIT|DOCMD_KEYTYPED)
+									== FAIL
+				|| did_emsg)
+		    {
+			vim_free(line);
+			goto on_error;
+		    }
+		    vim_free(line);
 		}
 		break;
 
@@ -2055,7 +2145,7 @@ exec_instructions(ectx_T *ectx)
 		    {
 			dest_type = tv_dest->v_type;
 			if (dest_type == VAR_DICT)
-			    status = do_2string(tv_idx, TRUE);
+			    status = do_2string(tv_idx, TRUE, FALSE);
 			else if (dest_type == VAR_LIST
 					       && tv_idx->v_type != VAR_NUMBER)
 			{
@@ -3770,15 +3860,16 @@ exec_instructions(ectx_T *ectx)
 		    int n;
 		    int error = FALSE;
 
-		    tv = STACK_TV_BOT(-1);
 		    if (iptr->isn_type == ISN_2BOOL)
 		    {
+			tv = STACK_TV_BOT(iptr->isn_arg.tobool.offset);
 			n = tv2bool(tv);
-			if (iptr->isn_arg.number)  // invert
+			if (iptr->isn_arg.tobool.invert)
 			    n = !n;
 		    }
 		    else
 		    {
+			tv = STACK_TV_BOT(-1);
 			SOURCING_LNUM = iptr->isn_lnum;
 			n = tv_get_bool_chk(tv, &error);
 			if (error)
@@ -3793,8 +3884,9 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_2STRING:
 	    case ISN_2STRING_ANY:
 		SOURCING_LNUM = iptr->isn_lnum;
-		if (do_2string(STACK_TV_BOT(iptr->isn_arg.number),
-			iptr->isn_type == ISN_2STRING_ANY) == FAIL)
+		if (do_2string(STACK_TV_BOT(iptr->isn_arg.tostring.offset),
+				iptr->isn_type == ISN_2STRING_ANY,
+				      iptr->isn_arg.tostring.tolerant) == FAIL)
 			    goto on_error;
 		break;
 
@@ -4093,7 +4185,7 @@ exe_substitute_instr(void)
     {
 	typval_T *tv = STACK_TV_BOT(-1);
 
-	res = vim_strsave(tv_get_string(tv));
+	res = typval2string(tv, TRUE);
 	--ectx->ec_stack.ga_len;
 	clear_tv(tv);
     }
@@ -4195,6 +4287,15 @@ call_def_function(
 	    emsg(_(e_one_argument_too_many));
 	else
 	    semsg(_(e_nr_arguments_too_many), idx);
+	goto failed_early;
+    }
+    idx = argc - ufunc->uf_args.ga_len + ufunc->uf_def_args.ga_len;
+    if (idx < 0)
+    {
+	if (idx == -1)
+	    emsg(_(e_one_argument_too_few));
+	else
+	    semsg(_(e_nr_arguments_too_few), -idx);
 	goto failed_early;
     }
 
@@ -4489,6 +4590,9 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	{
 	    case ISN_EXEC:
 		smsg("%s%4d EXEC %s", pfx, current, iptr->isn_arg.string);
+		break;
+	    case ISN_EXEC_SPLIT:
+		smsg("%s%4d EXEC_SPLIT %s", pfx, current, iptr->isn_arg.string);
 		break;
 	    case ISN_LEGACY_EVAL:
 		smsg("%s%4d EVAL legacy %s", pfx, current,
@@ -4785,10 +4889,11 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		{
 		    typval_T	tv;
 		    char_u	*name;
+		    char_u	buf[NUMBUFLEN];
 
 		    tv.v_type = VAR_JOB;
 		    tv.vval.v_job = iptr->isn_arg.job;
-		    name = tv_get_string(&tv);
+		    name = job_to_string_buf(&tv, buf);
 		    smsg("%s%4d PUSHJOB \"%s\"", pfx, current, name);
 		}
 #endif
@@ -5122,26 +5227,30 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		      break;
 		  }
 	    case ISN_COND2BOOL: smsg("%s%4d COND2BOOL", pfx, current); break;
-	    case ISN_2BOOL: if (iptr->isn_arg.number)
-				smsg("%s%4d INVERT (!val)", pfx, current);
+	    case ISN_2BOOL: if (iptr->isn_arg.tobool.invert)
+				smsg("%s%4d INVERT %d (!val)", pfx, current,
+					 iptr->isn_arg.tobool.offset);
 			    else
-				smsg("%s%4d 2BOOL (!!val)", pfx, current);
+				smsg("%s%4d 2BOOL %d (!!val)", pfx, current,
+					 iptr->isn_arg.tobool.offset);
 			    break;
 	    case ISN_2STRING: smsg("%s%4d 2STRING stack[%lld]", pfx, current,
-					 (varnumber_T)(iptr->isn_arg.number));
+				 (varnumber_T)(iptr->isn_arg.tostring.offset));
 			      break;
-	    case ISN_2STRING_ANY: smsg("%s%4d 2STRING_ANY stack[%lld]", pfx, current,
-					 (varnumber_T)(iptr->isn_arg.number));
+	    case ISN_2STRING_ANY: smsg("%s%4d 2STRING_ANY stack[%lld]",
+								  pfx, current,
+				 (varnumber_T)(iptr->isn_arg.tostring.offset));
 			      break;
-	    case ISN_RANGE: smsg("%s%4d RANGE %s", pfx, current, iptr->isn_arg.string);
+	    case ISN_RANGE: smsg("%s%4d RANGE %s", pfx, current,
+							 iptr->isn_arg.string);
 			    break;
 	    case ISN_PUT:
 	        if (iptr->isn_arg.put.put_lnum == LNUM_VARIABLE_RANGE_ABOVE)
 		    smsg("%s%4d PUT %c above range",
-				       pfx, current, iptr->isn_arg.put.put_regname);
+				  pfx, current, iptr->isn_arg.put.put_regname);
 		else if (iptr->isn_arg.put.put_lnum == LNUM_VARIABLE_RANGE)
 		    smsg("%s%4d PUT %c range",
-				       pfx, current, iptr->isn_arg.put.put_regname);
+				  pfx, current, iptr->isn_arg.put.put_regname);
 		else
 		    smsg("%s%4d PUT %c %ld", pfx, current,
 						 iptr->isn_arg.put.put_regname,

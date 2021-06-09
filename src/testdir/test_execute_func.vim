@@ -2,6 +2,7 @@
 
 source view_util.vim
 source check.vim
+source vim9.vim
 
 func NestedEval()
   let nested = execute('echo "nested\nlines"')
@@ -37,8 +38,9 @@ func Test_execute_string()
   call assert_equal("\nsomething", execute('echo "something"', 'silent!'))
   call assert_equal("", execute('burp', 'silent!'))
   if has('float')
-    call assert_fails('call execute(3.4)', 'E806:')
-    call assert_fails('call execute("echo \"x\"", 3.4)', 'E806:')
+    call assert_fails('call execute(3.4)', 'E492:')
+    call assert_equal("\nx", execute("echo \"x\"", 3.4))
+    call CheckDefExecAndScriptFailure(['execute("echo \"x\"", 3.4)'], 'E806:')
   endif
 endfunc
 

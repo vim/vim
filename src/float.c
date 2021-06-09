@@ -417,7 +417,7 @@ f_sqrt(typval_T *argvars, typval_T *rettv)
     void
 f_str2float(typval_T *argvars, typval_T *rettv)
 {
-    char_u *p = skipwhite(tv_get_string(&argvars[0]));
+    char_u *p = skipwhite(tv_get_string_strict(&argvars[0]));
     int     isneg = (*p == '-');
 
     if (*p == '+' || *p == '-')

@@ -811,6 +811,10 @@ func Test_visual_block_mode()
   " reproducible if this operation is performed manually.
   "call assert_equal(['aaxa', 'bbxb', 'ccxc'], getline(1, '$'))
   call assert_equal(['aaxa', 'bbba', 'ccca'], getline(1, '$'))
+  " Repeat the previous test but use 'l' to move the cursor instead of '$'
+  call setline(1, ['aaa', 'bbb', 'ccc'])
+  exe "normal! gg2l\<C-V>2jA\<Left>x"
+  call assert_equal(['aaxa', 'bbxb', 'ccxc'], getline(1, '$'))
 
   " Change a characterwise motion to a blockwise motion using CTRL-V
   %d _
@@ -911,6 +915,15 @@ func Test_visual_block_mode()
 
   bwipe!
   set tabstop& shiftwidth&
+endfunc
+
+func Test_visual_force_motion_feedkeys()
+    onoremap <expr> i- execute('let g:mode = mode(1)')->slice(0, 0)
+    call feedkeys('dvi-', 'x')
+    call assert_equal('nov', g:mode)
+    call feedkeys('di-', 'x')
+    call assert_equal('no', g:mode)
+    ounmap i-
 endfunc
 
 " Test block-insert using cursor keys for movement

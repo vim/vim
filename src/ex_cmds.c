@@ -5278,6 +5278,16 @@ ex_drop(exarg_T *eap)
     char_u *
 skip_vimgrep_pat(char_u *p, char_u **s, int *flags)
 {
+    return skip_vimgrep_pat_ext(p, s, flags, NULL, NULL);
+}
+
+/*
+ * As skip_vimgrep_pat() and store the character overwritten by NUL in "cp"
+ * and the pointer to it in "nulp".
+ */
+    char_u *
+skip_vimgrep_pat_ext(char_u *p, char_u **s, int *flags, char_u **nulp, int *cp)
+{
     int		c;
 
     if (vim_isIDc(*p))
@@ -5287,7 +5297,14 @@ skip_vimgrep_pat(char_u *p, char_u **s, int *flags)
 	    *s = p;
 	p = skiptowhite(p);
 	if (s != NULL && *p != NUL)
+	{
+	    if (nulp != NULL)
+	    {
+		*nulp = p;
+		*cp = *p;
+	    }
 	    *p++ = NUL;
+	}
     }
     else
     {
@@ -5301,7 +5318,14 @@ skip_vimgrep_pat(char_u *p, char_u **s, int *flags)
 
 	// Truncate the pattern.
 	if (s != NULL)
+	{
+	    if (nulp != NULL)
+	    {
+		*nulp = p;
+		*cp = *p;
+	    }
 	    *p = NUL;
+	}
 	++p;
 
 	// Find the flags

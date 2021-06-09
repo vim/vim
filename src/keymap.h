@@ -273,8 +273,9 @@ enum key_extra
     , KE_FOCUSGAINED = 98	// focus gained
     , KE_FOCUSLOST = 99		// focus lost
     , KE_MOUSEMOVE = 100	// mouse moved with no button down
-    , KE_CANCEL = 101		// return from vgetc()
-    , KE_COMMAND = 102		// <Cmd> special key
+    , KE_MOUSEMOVE_XY = 101	// KE_MOUSEMOVE with coordinates
+    , KE_CANCEL = 102		// return from vgetc()
+    , KE_COMMAND = 103		// <Cmd> special key
 };
 
 /*

@@ -7558,7 +7558,7 @@ myresetstkoflw(void)
 
 
 /*
- * The command line arguments in UCS2
+ * The command line arguments in UTF-16
  */
 static int	nArgsW = 0;
 static LPWSTR	*ArglistW = NULL;
@@ -7601,8 +7601,8 @@ get_cmd_argsW(char ***argvp)
 	    {
 		int	len;
 
-		// Convert each Unicode argument to the current codepage.
-		WideCharToMultiByte_alloc(GetACP(), 0,
+		// Convert each Unicode argument to UTF-8.
+		WideCharToMultiByte_alloc(CP_UTF8, 0,
 				ArglistW[i], (int)wcslen(ArglistW[i]) + 1,
 				(LPSTR *)&argv[i], &len, 0, 0);
 		if (argv[i] == NULL)
@@ -7678,7 +7678,7 @@ set_alist_count(void)
 
 /*
  * Fix the encoding of the command line arguments.  Invoked when 'encoding'
- * has been changed while starting up.  Use the UCS-2 command line arguments
+ * has been changed while starting up.  Use the UTF-16 command line arguments
  * and convert them to 'encoding'.
  */
     void

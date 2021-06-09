@@ -945,13 +945,15 @@ static funcentry_T global_functions[] =
     {"getchangelist",	0, 1, FEARG_1,	    NULL,
 			ret_list_any,	    f_getchangelist},
     {"getchar",		0, 1, 0,	    NULL,
-			ret_number,	    f_getchar},
+			ret_any,	    f_getchar},
     {"getcharmod",	0, 0, 0,	    NULL,
 			ret_number,	    f_getcharmod},
     {"getcharpos",	1, 1, FEARG_1,	    NULL,
 			ret_list_number,    f_getcharpos},
     {"getcharsearch",	0, 0, 0,	    NULL,
 			ret_dict_any,	    f_getcharsearch},
+    {"getcharstr",	0, 1, 0,	    NULL,
+			ret_string,	    f_getcharstr},
     {"getcmdline",	0, 0, 0,	    NULL,
 			ret_string,	    f_getcmdline},
     {"getcmdpos",	0, 0, 0,	    NULL,
@@ -3000,7 +3002,8 @@ execute_common(typval_T *argvars, typval_T *rettv, int arg_off)
     if (argvars[arg_off + 1].v_type != VAR_UNKNOWN)
     {
 	char_u	buf[NUMBUFLEN];
-	char_u  *s = tv_get_string_buf_chk(&argvars[arg_off + 1], buf);
+	char_u  *s = tv_get_string_buf_chk_strict(&argvars[arg_off + 1], buf,
+							      in_vim9script());
 
 	if (s == NULL)
 	    return;
@@ -5870,7 +5873,7 @@ f_inputrestore(typval_T *argvars UNUSED, typval_T *rettv)
     {
 	--ga_userinput.ga_len;
 	restore_typeahead((tasave_T *)(ga_userinput.ga_data)
-						       + ga_userinput.ga_len);
+						  + ga_userinput.ga_len, TRUE);
 	// default return is zero == OK
     }
     else if (p_verbose > 1)
@@ -8897,7 +8900,7 @@ f_strdisplaywidth(typval_T *argvars, typval_T *rettv)
     static void
 f_strwidth(typval_T *argvars, typval_T *rettv)
 {
-    char_u	*s = tv_get_string(&argvars[0]);
+    char_u	*s = tv_get_string_strict(&argvars[0]);
 
     rettv->vval.v_number = (varnumber_T)(mb_string2cells(s, -1));
 }

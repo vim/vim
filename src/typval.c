@@ -414,7 +414,7 @@ tv_get_string_strict(typval_T *varp)
     char_u *
 tv_get_string_buf(typval_T *varp, char_u *buf)
 {
-    char_u	*res =  tv_get_string_buf_chk(varp, buf);
+    char_u	*res = tv_get_string_buf_chk(varp, buf);
 
     return res != NULL ? res : (char_u *)"";
 }
@@ -462,8 +462,13 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	    break;
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
-	    emsg(_(e_float_as_string));
-	    break;
+	    if (strict)
+	    {
+		emsg(_(e_float_as_string));
+		break;
+	    }
+	    vim_snprintf((char *)buf, NUMBUFLEN, "%g", varp->vval.v_float);
+	    return buf;
 #endif
 	case VAR_STRING:
 	    if (varp->vval.v_string != NULL)
@@ -478,44 +483,22 @@ tv_get_string_buf_chk_strict(typval_T *varp, char_u *buf, int strict)
 	    break;
 	case VAR_JOB:
 #ifdef FEAT_JOB_CHANNEL
+	    if (in_vim9script())
 	    {
-		job_T *job = varp->vval.v_job;
-		char  *status;
-
-		if (job == NULL)
-		    return (char_u *)"no process";
-		status = job->jv_status == JOB_FAILED ? "fail"
-				: job->jv_status >= JOB_ENDED ? "dead"
-				: "run";
-# ifdef UNIX
-		vim_snprintf((char *)buf, NUMBUFLEN,
-			    "process %ld %s", (long)job->jv_pid, status);
-# elif defined(MSWIN)
-		vim_snprintf((char *)buf, NUMBUFLEN,
-			    "process %ld %s",
-			    (long)job->jv_proc_info.dwProcessId,
-			    status);
-# else
-		// fall-back
-		vim_snprintf((char *)buf, NUMBUFLEN, "process ? %s", status);
-# endif
-		return buf;
+		semsg(_(e_using_invalid_value_as_string_str), "job");
+		break;
 	    }
+	    return job_to_string_buf(varp, buf);
 #endif
 	    break;
 	case VAR_CHANNEL:
 #ifdef FEAT_JOB_CHANNEL
+	    if (in_vim9script())
 	    {
-		channel_T *channel = varp->vval.v_channel;
-		char      *status = channel_status(channel, -1);
-
-		if (channel == NULL)
-		    vim_snprintf((char *)buf, NUMBUFLEN, "channel %s", status);
-		else
-		    vim_snprintf((char *)buf, NUMBUFLEN,
-				     "channel %d %s", channel->ch_id, status);
-		return buf;
+		semsg(_(e_using_invalid_value_as_string_str), "channel");
+		break;
 	    }
+	    return channel_to_string_buf(varp, buf);
 #endif
 	    break;
 	case VAR_UNKNOWN:

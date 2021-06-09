@@ -14,6 +14,7 @@
 typedef enum {
     ISN_EXEC,	    // execute Ex command line isn_arg.string
     ISN_EXECCONCAT, // execute Ex command from isn_arg.number items on stack
+    ISN_EXEC_SPLIT, // execute Ex command from isn_arg.string split at NL
     ISN_LEGACY_EVAL, // evaluate expression isn_arg.string with legacy syntax.
     ISN_ECHO,	    // echo isn_arg.echo.echo_count items on top of stack
     ISN_EXECUTE,    // execute Ex commands isn_arg.number items on top of stack
@@ -148,9 +149,9 @@ typedef enum {
     ISN_GETITEM,    // push list item, isn_arg.number is the index
     ISN_MEMBER,	    // dict[member]
     ISN_STRINGMEMBER, // dict.member using isn_arg.string
-    ISN_2BOOL,	    // falsy/truthy to bool, invert if isn_arg.number != 0
+    ISN_2BOOL,	    // falsy/truthy to bool, uses isn_arg.tobool
     ISN_COND2BOOL,  // convert value to bool
-    ISN_2STRING,    // convert value to string at isn_arg.number on stack
+    ISN_2STRING,    // convert value to string at isn_arg.tostring on stack
     ISN_2STRING_ANY, // like ISN_2STRING but check type
     ISN_NEGATENR,   // apply "-" to number
 
@@ -369,6 +370,18 @@ typedef struct {
     cexprref_T *cexpr_ref;
 } cexpr_T;
 
+// arguments to ISN_2STRING and ISN_2STRING_ANY
+typedef struct {
+    int		offset;
+    int		tolerant;
+} tostring_T;
+
+// arguments to ISN_2BOOL
+typedef struct {
+    int		offset;
+    int		invert;
+} tobool_T;
+
 /*
  * Instruction
  */
@@ -414,6 +427,8 @@ struct isn_S {
 	subs_T		    subs;
 	cexpr_T		    cexpr;
 	isn_T		    *instr;
+	tostring_T	    tostring;
+	tobool_T	    tobool;
     } isn_arg;
 };
 

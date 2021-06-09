@@ -34,4 +34,5 @@ void f_job_setoptions(typval_T *argvars, typval_T *rettv);
 void f_job_start(typval_T *argvars, typval_T *rettv);
 void f_job_status(typval_T *argvars, typval_T *rettv);
 void f_job_stop(typval_T *argvars, typval_T *rettv);
+char_u *job_to_string_buf(typval_T *varp, char_u *buf);
 /* vim: set ft=c : */
