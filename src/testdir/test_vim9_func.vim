@@ -2128,6 +2128,19 @@ def Test_nested_lambda()
   CheckScriptSuccess(lines)
 enddef
 
+def Test_double_nested_lambda()
+  var lines =<< trim END
+      vim9script
+      def F(head: string): func(string): func(string): string
+        return (sep: string): func(string): string => ((tail: string): string => {
+            return head .. sep .. tail
+          })
+      enddef
+      assert_equal('hello-there', F('hello')('-')('there'))
+  END
+  CheckScriptSuccess(lines)
+enddef
+
 def Test_nested_inline_lambda()
   # TODO: use the "text" argument
   var lines =<< trim END

@@ -43,6 +43,14 @@ typedef struct {
     int		floc_restore_cmdmod_stacklen;
 } funclocal_T;
 
+// Structure to hold a reference to an outer_T, with information of whether it
+// was allocated.
+typedef struct {
+    outer_T	*or_outer;
+    partial_T	*or_partial;	// decrement "or_partial->pt_refcount" later
+    int		or_outer_allocated;  // free "or_outer" later
+} outer_ref_T;
+
 // A stack is used to store:
 // - arguments passed to a :def function
 // - info about the calling function, to use when returning
@@ -70,7 +78,7 @@ struct ectx_S {
     int		ec_frame_idx;	// index in ec_stack: context of ec_dfunc_idx
     int		ec_initial_frame_idx;	// frame index when called
 
-    outer_T	*ec_outer;	// outer scope used for closures, allocated
+    outer_ref_T	*ec_outer_ref;	// outer scope used for closures, allocated
     funclocal_T ec_funclocal;
 
     garray_T	ec_trystack;	// stack of trycmd_T values
@@ -143,7 +151,7 @@ exe_newlist(int count, ectx_T *ectx)
  * Call compiled function "cdf_idx" from compiled code.
  * This adds a stack frame and sets the instruction pointer to the start of the
  * called function.
- * If "pt" is not null use "pt->pt_outer" for ec_outer.
+ * If "pt" is not null use "pt->pt_outer" for ec_outer_ref->or_outer.
  *
  * Stack has:
  * - current arguments (already there)
@@ -280,7 +288,8 @@ call_dfunc(
     STACK_TV_BOT(STACK_FRAME_FUNC_OFF)->vval.v_number = ectx->ec_dfunc_idx;
     STACK_TV_BOT(STACK_FRAME_IIDX_OFF)->vval.v_number = ectx->ec_iidx;
     STACK_TV_BOT(STACK_FRAME_INSTR_OFF)->vval.v_string = (void *)ectx->ec_instr;
-    STACK_TV_BOT(STACK_FRAME_OUTER_OFF)->vval.v_string = (void *)ectx->ec_outer;
+    STACK_TV_BOT(STACK_FRAME_OUTER_OFF)->vval.v_string =
+						    (void *)ectx->ec_outer_ref;
     STACK_TV_BOT(STACK_FRAME_FUNCLOCAL_OFF)->vval.v_string = (void *)floc;
     STACK_TV_BOT(STACK_FRAME_IDX_OFF)->vval.v_number = ectx->ec_frame_idx;
     ectx->ec_frame_idx = ectx->ec_stack.ga_len;
@@ -300,30 +309,40 @@ call_dfunc(
     if (pt != NULL || ufunc->uf_partial != NULL
 					     || (ufunc->uf_flags & FC_CLOSURE))
     {
-	outer_T *outer = ALLOC_CLEAR_ONE(outer_T);
+	outer_ref_T *ref = ALLOC_CLEAR_ONE(outer_ref_T);
 
-	if (outer == NULL)
+	if (ref == NULL)
 	    return FAIL;
 	if (pt != NULL)
 	{
-	    *outer = pt->pt_outer;
-	    outer->out_up_is_copy = TRUE;
+	    ref->or_outer = &pt->pt_outer;
+	    ++pt->pt_refcount;
+	    ref->or_partial = pt;
 	}
 	else if (ufunc->uf_partial != NULL)
 	{
-	    *outer = ufunc->uf_partial->pt_outer;
-	    outer->out_up_is_copy = TRUE;
+	    ref->or_outer = &ufunc->uf_partial->pt_outer;
+	    ++ufunc->uf_partial->pt_refcount;
+	    ref->or_partial = ufunc->uf_partial;
 	}
 	else
 	{
-	    outer->out_stack = &ectx->ec_stack;
-	    outer->out_frame_idx = ectx->ec_frame_idx;
-	    outer->out_up = ectx->ec_outer;
+	    ref->or_outer = ALLOC_CLEAR_ONE(outer_T);
+	    if (ref->or_outer == NULL)
+	    {
+		vim_free(ref);
+		return FAIL;
+	    }
+	    ref->or_outer_allocated = TRUE;
+	    ref->or_outer->out_stack = &ectx->ec_stack;
+	    ref->or_outer->out_frame_idx = ectx->ec_frame_idx;
+	    if (ectx->ec_outer_ref != NULL)
+		ref->or_outer->out_up = ectx->ec_outer_ref->or_outer;
 	}
-	ectx->ec_outer = outer;
+	ectx->ec_outer_ref = ref;
     }
     else
-	ectx->ec_outer = NULL;
+	ectx->ec_outer_ref = NULL;
 
     ++ufunc->uf_calls;
 
@@ -476,7 +495,6 @@ handle_closure_in_use(ectx_T *ectx, int free_arguments)
 		pt->pt_funcstack = funcstack;
 		pt->pt_outer.out_stack = &funcstack->fs_ga;
 		pt->pt_outer.out_frame_idx = ectx->ec_frame_idx - top;
-		pt->pt_outer.out_up = ectx->ec_outer;
 	    }
 	}
     }
@@ -587,7 +605,13 @@ func_return(ectx_T *ectx)
     if (ret_idx == ectx->ec_frame_idx + STACK_FRAME_IDX_OFF)
 	ret_idx = 0;
 
-    vim_free(ectx->ec_outer);
+    if (ectx->ec_outer_ref != NULL)
+    {
+	if (ectx->ec_outer_ref->or_outer_allocated)
+	    vim_free(ectx->ec_outer_ref->or_outer);
+	partial_unref(ectx->ec_outer_ref->or_partial);
+	vim_free(ectx->ec_outer_ref);
+    }
 
     // Restore the previous frame.
     ectx->ec_dfunc_idx = prev_dfunc_idx;
@@ -595,7 +619,7 @@ func_return(ectx_T *ectx)
 					+ STACK_FRAME_IIDX_OFF)->vval.v_number;
     ectx->ec_instr = (void *)STACK_TV(ectx->ec_frame_idx
 				       + STACK_FRAME_INSTR_OFF)->vval.v_string;
-    ectx->ec_outer = (void *)STACK_TV(ectx->ec_frame_idx
+    ectx->ec_outer_ref = (void *)STACK_TV(ectx->ec_frame_idx
 				       + STACK_FRAME_OUTER_OFF)->vval.v_string;
     floc = (void *)STACK_TV(ectx->ec_frame_idx
 				   + STACK_FRAME_FUNCLOCAL_OFF)->vval.v_string;
@@ -696,7 +720,7 @@ call_bfunc(int func_idx, int argcount, ectx_T *ectx)
  * If the function is compiled this will add a stack frame and set the
  * instruction pointer at the start of the function.
  * Otherwise the function is called here.
- * If "pt" is not null use "pt->pt_outer" for ec_outer.
+ * If "pt" is not null use "pt->pt_outer" for ec_outer_ref->or_outer.
  * "iptr" can be used to replace the instruction with a more efficient one.
  */
     static int
@@ -1295,24 +1319,31 @@ fill_partial_and_closure(partial_T *pt, ufunc_T *ufunc, ectx_T *ectx)
 	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
 							  + ectx->ec_dfunc_idx;
 
-	// The closure needs to find arguments and local
-	// variables in the current stack.
+	// The closure may need to find arguments and local variables in the
+	// current stack.
 	pt->pt_outer.out_stack = &ectx->ec_stack;
 	pt->pt_outer.out_frame_idx = ectx->ec_frame_idx;
-	pt->pt_outer.out_up = ectx->ec_outer;
-	pt->pt_outer.out_up_is_copy = TRUE;
+	if (ectx->ec_outer_ref != NULL)
+	{
+	    // The current context already has a context, link to that one.
+	    pt->pt_outer.out_up = ectx->ec_outer_ref->or_outer;
+	    if (ectx->ec_outer_ref->or_partial != NULL)
+	    {
+		pt->pt_outer.out_up_partial = ectx->ec_outer_ref->or_partial;
+		++pt->pt_outer.out_up_partial->pt_refcount;
+	    }
+	}
 
-	// If this function returns and the closure is still
-	// being used, we need to make a copy of the context
-	// (arguments and local variables). Store a reference
-	// to the partial so we can handle that.
+	// If this function returns and the closure is still being used, we
+	// need to make a copy of the context (arguments and local variables).
+	// Store a reference to the partial so we can handle that.
 	if (ga_grow(&ectx->ec_funcrefs, 1) == FAIL)
 	{
 	    vim_free(pt);
 	    return FAIL;
 	}
-	// Extra variable keeps the count of closures created
-	// in the current function call.
+	// Extra variable keeps the count of closures created in the current
+	// function call.
 	++(((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_frame_idx
 		       + STACK_FRAME_SIZE + dfunc->df_varcount)->vval.v_number;
 
@@ -2355,7 +2386,8 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_STOREOUTER:
 		{
 		    int		depth = iptr->isn_arg.outer.outer_depth;
-		    outer_T	*outer = ectx->ec_outer;
+		    outer_T	*outer = ectx->ec_outer_ref == NULL ? NULL
+						: ectx->ec_outer_ref->or_outer;
 
 		    while (depth > 1 && outer != NULL)
 		    {
@@ -2774,7 +2806,7 @@ exec_instructions(ectx_T *ectx)
 		}
 		break;
 
-	    // push a function reference to a compiled function
+	    // push a partial, a reference to a compiled function
 	    case ISN_FUNCREF:
 		{
 		    partial_T   *pt = ALLOC_CLEAR_ONE(partial_T);
@@ -2791,7 +2823,6 @@ exec_instructions(ectx_T *ectx)
 		    if (fill_partial_and_closure(pt, pt_dfunc->df_ufunc,
 								 ectx) == FAIL)
 			goto theend;
-
 		    tv = STACK_TV_BOT(0);
 		    ++ectx->ec_stack.ga_len;
 		    tv->vval.v_partial = pt;
@@ -4384,22 +4415,31 @@ call_def_function(
 	// by copy_func().
 	if (partial != NULL || base_ufunc->uf_partial != NULL)
 	{
-	    ectx.ec_outer = ALLOC_CLEAR_ONE(outer_T);
-	    if (ectx.ec_outer == NULL)
+	    ectx.ec_outer_ref = ALLOC_CLEAR_ONE(outer_ref_T);
+	    if (ectx.ec_outer_ref == NULL)
 		goto failed_early;
 	    if (partial != NULL)
 	    {
 		if (partial->pt_outer.out_stack == NULL && current_ectx != NULL)
 		{
-		    if (current_ectx->ec_outer != NULL)
-			*ectx.ec_outer = *current_ectx->ec_outer;
+		    if (current_ectx->ec_outer_ref != NULL
+			    && current_ectx->ec_outer_ref->or_outer != NULL)
+			ectx.ec_outer_ref->or_outer =
+					  current_ectx->ec_outer_ref->or_outer;
 		}
 		else
-		    *ectx.ec_outer = partial->pt_outer;
+		{
+		    ectx.ec_outer_ref->or_outer = &partial->pt_outer;
+		    ++partial->pt_refcount;
+		    ectx.ec_outer_ref->or_partial = partial;
+		}
 	    }
 	    else
-		*ectx.ec_outer = base_ufunc->uf_partial->pt_outer;
-	    ectx.ec_outer->out_up_is_copy = TRUE;
+	    {
+		ectx.ec_outer_ref->or_outer = &base_ufunc->uf_partial->pt_outer;
+		++base_ufunc->uf_partial->pt_refcount;
+		ectx.ec_outer_ref->or_partial = base_ufunc->uf_partial;
+	    }
 	}
     }
 
@@ -4516,14 +4556,12 @@ failed_early:
 
     vim_free(ectx.ec_stack.ga_data);
     vim_free(ectx.ec_trystack.ga_data);
-
-    while (ectx.ec_outer != NULL)
+    if (ectx.ec_outer_ref != NULL)
     {
-	outer_T	    *up = ectx.ec_outer->out_up_is_copy
-						? NULL : ectx.ec_outer->out_up;
-
-	vim_free(ectx.ec_outer);
-	ectx.ec_outer = up;
+	if (ectx.ec_outer_ref->or_outer_allocated)
+	    vim_free(ectx.ec_outer_ref->or_outer);
+	partial_unref(ectx.ec_outer_ref->or_partial);
+	vim_free(ectx.ec_outer_ref);
     }
 
     // Not sure if this is necessary.

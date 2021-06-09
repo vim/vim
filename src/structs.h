@@ -1995,7 +1995,7 @@ struct outer_S {
     garray_T	*out_stack;	    // stack from outer scope
     int		out_frame_idx;	    // index of stack frame in out_stack
     outer_T	*out_up;	    // outer scope of outer scope or NULL
-    int		out_up_is_copy;	    // don't free out_up
+    partial_T	*out_up_partial;    // partial owning out_up or NULL
 };
 
 struct partial_S
