@@ -1487,7 +1487,10 @@ if test "$enable_python3interp" = "yes" -o "$enable_python3interp" = "dynamic"; 
       [
        vi_cv_path_python3_conf=
        config_dir="config-${vi_cv_var_python3_version}${vi_cv_var_python3_abiflags}"
-       d=`${vi_cv_path_python3} -c "import distutils.sysconfig; print(distutils.sysconfig.get_config_var('LIBPL'))"`
+       d=`${vi_cv_path_python3} -c "import sysconfig; print(sysconfig.get_config_var('LIBPL'))" 2> /dev/null`
+       if test "x$d" = "x"; then
+         d=`${vi_cv_path_python3} -c "import distutils.sysconfig; print(distutils.sysconfig.get_config_var('LIBPL'))"`
+       fi
        if test -d "$d" && test -f "$d/config.c"; then
          vi_cv_path_python3_conf="$d"
        else
