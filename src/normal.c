@@ -2977,6 +2977,9 @@ dozet:
     case 'P':
     case 'p':  nv_put(cap);
 	       break;
+		// "zy" Yank without trailing spaces
+    case 'y':  nv_operator(cap);
+	       break;
 #ifdef FEAT_FOLDING
 		// "zF": create fold command
 		// "zf": create fold operator
