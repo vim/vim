@@ -1181,122 +1181,6 @@ handle_swap_exists(bufref_T *old_curbuf)
 }
 
 /*
- * do_bufdel() - delete or unload buffer(s)
- *
- * addr_count == 0: ":bdel" - delete current buffer
- * addr_count == 1: ":N bdel" or ":bdel N [N ..]" - first delete
- *		    buffer "end_bnr", then any other arguments.
- * addr_count == 2: ":N,N bdel" - delete buffers in range
- *
- * command can be DOBUF_UNLOAD (":bunload"), DOBUF_WIPE (":bwipeout") or
- * DOBUF_DEL (":bdel")
- *
- * Returns error message or NULL
- */
-    char *
-do_bufdel(
-    int		command,
-    char_u	*arg,		// pointer to extra arguments
-    int		addr_count,
-    int		start_bnr,	// first buffer number in a range
-    int		end_bnr,	// buffer nr or last buffer nr in a range
-    int		forceit)
-{
-    int		do_current = 0;	// delete current buffer?
-    int		deleted = 0;	// number of buffers deleted
-    char	*errormsg = NULL; // return value
-    int		bnr;		// buffer number
-    char_u	*p;
-
-    if (addr_count == 0)
-    {
-	(void)do_buffer(command, DOBUF_CURRENT, FORWARD, 0, forceit);
-    }
-    else
-    {
-	if (addr_count == 2)
-	{
-	    if (*arg)		// both range and argument is not allowed
-		return ex_errmsg(e_trailing_arg, arg);
-	    bnr = start_bnr;
-	}
-	else	// addr_count == 1
-	    bnr = end_bnr;
-
-	for ( ;!got_int; ui_breakcheck())
-	{
-	    /*
-	     * delete the current buffer last, otherwise when the
-	     * current buffer is deleted, the next buffer becomes
-	     * the current one and will be loaded, which may then
-	     * also be deleted, etc.
-	     */
-	    if (bnr == curbuf->b_fnum)
-		do_current = bnr;
-	    else if (do_buffer(command, DOBUF_FIRST, FORWARD, (int)bnr,
-							       forceit) == OK)
-		++deleted;
-
-	    /*
-	     * find next buffer number to delete/unload
-	     */
-	    if (addr_count == 2)
-	    {
-		if (++bnr > end_bnr)
-		    break;
-	    }
-	    else    // addr_count == 1
-	    {
-		arg = skipwhite(arg);
-		if (*arg == NUL)
-		    break;
-		if (!VIM_ISDIGIT(*arg))
-		{
-		    p = skiptowhite_esc(arg);
-		    bnr = buflist_findpat(arg, p,
-			  command == DOBUF_WIPE || command == DOBUF_WIPE_REUSE,
-								FALSE, FALSE);
-		    if (bnr < 0)	    // failed
-			break;
-		    arg = p;
-		}
-		else
-		    bnr = getdigits(&arg);
-	    }
-	}
-	if (!got_int && do_current && do_buffer(command, DOBUF_FIRST,
-					  FORWARD, do_current, forceit) == OK)
-	    ++deleted;
-
-	if (deleted == 0)
-	{
-	    if (command == DOBUF_UNLOAD)
-		STRCPY(IObuff, _("E515: No buffers were unloaded"));
-	    else if (command == DOBUF_DEL)
-		STRCPY(IObuff, _("E516: No buffers were deleted"));
-	    else
-		STRCPY(IObuff, _("E517: No buffers were wiped out"));
-	    errormsg = (char *)IObuff;
-	}
-	else if (deleted >= p_report)
-	{
-	    if (command == DOBUF_UNLOAD)
-		smsg(NGETTEXT("%d buffer unloaded",
-			    "%d buffers unloaded", deleted), deleted);
-	    else if (command == DOBUF_DEL)
-		smsg(NGETTEXT("%d buffer deleted",
-			    "%d buffers deleted", deleted), deleted);
-	    else
-		smsg(NGETTEXT("%d buffer wiped out",
-			    "%d buffers wiped out", deleted), deleted);
-	}
-    }
-
-
-    return errormsg;
-}
-
-/*
  * Make the current buffer empty.
  * Used when it is wiped out and it's the last buffer.
  */
@@ -1354,13 +1238,13 @@ empty_curbuf(
  *
  * Return FAIL or OK.
  */
-    int
-do_buffer(
+    static int
+do_buffer_ext(
     int		action,
     int		start,
     int		dir,		// FORWARD or BACKWARD
     int		count,		// buffer number or number of buffers
-    int		forceit)	// TRUE for :...!
+    int		flags)		// DOBUF_FORCEIT etc.
 {
     buf_T	*buf;
     buf_T	*bp;
@@ -1446,6 +1330,14 @@ do_buffer(
 	    emsg(_("E88: Cannot go before first buffer"));
 	return FAIL;
     }
+#ifdef FEAT_PROP_POPUP
+    if ((flags & DOBUF_NOPOPUP) && bt_popup(buf)
+# ifdef FEAT_TERMINAL
+				&& !bt_terminal(buf)
+#endif
+       )
+	return OK;
+#endif
 
 #ifdef FEAT_GUI
     need_mouse_correct = TRUE;
@@ -1470,7 +1362,7 @@ do_buffer(
 				   && buf->b_ml.ml_mfp == NULL && !buf->b_p_bl)
 	    return FAIL;
 
-	if (!forceit && bufIsChanged(buf))
+	if ((flags & DOBUF_FORCEIT) == 0 && bufIsChanged(buf))
 	{
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	    if ((p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM)) && p_write)
@@ -1506,7 +1398,7 @@ do_buffer(
 	    if (bp->b_p_bl && bp != buf)
 		break;
 	if (bp == NULL && buf == curbuf)
-	    return empty_curbuf(TRUE, forceit, action);
+	    return empty_curbuf(TRUE, (flags & DOBUF_FORCEIT), action);
 
 	/*
 	 * If the deleted buffer is the current one, close the current window
@@ -1633,7 +1525,7 @@ do_buffer(
     {
 	// Autocommands must have wiped out all other buffers.  Only option
 	// now is to make the current buffer empty.
-	return empty_curbuf(FALSE, forceit, action);
+	return empty_curbuf(FALSE, (flags & DOBUF_FORCEIT), action);
     }
 
     /*
@@ -1660,7 +1552,7 @@ do_buffer(
     /*
      * Check if the current buffer may be abandoned.
      */
-    if (action == DOBUF_GOTO && !can_abandon(curbuf, forceit))
+    if (action == DOBUF_GOTO && !can_abandon(curbuf, (flags & DOBUF_FORCEIT)))
     {
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
 	if ((p_confirm || (cmdmod.cmod_flags & CMOD_CONFIRM)) && p_write)
@@ -1693,6 +1585,134 @@ do_buffer(
 #endif
 
     return OK;
+}
+
+    int
+do_buffer(
+    int		action,
+    int		start,
+    int		dir,		// FORWARD or BACKWARD
+    int		count,		// buffer number or number of buffers
+    int		forceit)	// TRUE when using !
+{
+    return do_buffer_ext(action, start, dir, count,
+						  forceit ? DOBUF_FORCEIT : 0);
+}
+
+/*
+ * do_bufdel() - delete or unload buffer(s)
+ *
+ * addr_count == 0: ":bdel" - delete current buffer
+ * addr_count == 1: ":N bdel" or ":bdel N [N ..]" - first delete
+ *		    buffer "end_bnr", then any other arguments.
+ * addr_count == 2: ":N,N bdel" - delete buffers in range
+ *
+ * command can be DOBUF_UNLOAD (":bunload"), DOBUF_WIPE (":bwipeout") or
+ * DOBUF_DEL (":bdel")
+ *
+ * Returns error message or NULL
+ */
+    char *
+do_bufdel(
+    int		command,
+    char_u	*arg,		// pointer to extra arguments
+    int		addr_count,
+    int		start_bnr,	// first buffer number in a range
+    int		end_bnr,	// buffer nr or last buffer nr in a range
+    int		forceit)
+{
+    int		do_current = 0;	// delete current buffer?
+    int		deleted = 0;	// number of buffers deleted
+    char	*errormsg = NULL; // return value
+    int		bnr;		// buffer number
+    char_u	*p;
+
+    if (addr_count == 0)
+    {
+	(void)do_buffer(command, DOBUF_CURRENT, FORWARD, 0, forceit);
+    }
+    else
+    {
+	if (addr_count == 2)
+	{
+	    if (*arg)		// both range and argument is not allowed
+		return ex_errmsg(e_trailing_arg, arg);
+	    bnr = start_bnr;
+	}
+	else	// addr_count == 1
+	    bnr = end_bnr;
+
+	for ( ;!got_int; ui_breakcheck())
+	{
+	    /*
+	     * Delete the current buffer last, otherwise when the
+	     * current buffer is deleted, the next buffer becomes
+	     * the current one and will be loaded, which may then
+	     * also be deleted, etc.
+	     */
+	    if (bnr == curbuf->b_fnum)
+		do_current = bnr;
+	    else if (do_buffer_ext(command, DOBUF_FIRST, FORWARD, (int)bnr,
+			  DOBUF_NOPOPUP | (forceit ? DOBUF_FORCEIT : 0)) == OK)
+		++deleted;
+
+	    /*
+	     * find next buffer number to delete/unload
+	     */
+	    if (addr_count == 2)
+	    {
+		if (++bnr > end_bnr)
+		    break;
+	    }
+	    else    // addr_count == 1
+	    {
+		arg = skipwhite(arg);
+		if (*arg == NUL)
+		    break;
+		if (!VIM_ISDIGIT(*arg))
+		{
+		    p = skiptowhite_esc(arg);
+		    bnr = buflist_findpat(arg, p,
+			  command == DOBUF_WIPE || command == DOBUF_WIPE_REUSE,
+								FALSE, FALSE);
+		    if (bnr < 0)	    // failed
+			break;
+		    arg = p;
+		}
+		else
+		    bnr = getdigits(&arg);
+	    }
+	}
+	if (!got_int && do_current && do_buffer(command, DOBUF_FIRST,
+					  FORWARD, do_current, forceit) == OK)
+	    ++deleted;
+
+	if (deleted == 0)
+	{
+	    if (command == DOBUF_UNLOAD)
+		STRCPY(IObuff, _("E515: No buffers were unloaded"));
+	    else if (command == DOBUF_DEL)
+		STRCPY(IObuff, _("E516: No buffers were deleted"));
+	    else
+		STRCPY(IObuff, _("E517: No buffers were wiped out"));
+	    errormsg = (char *)IObuff;
+	}
+	else if (deleted >= p_report)
+	{
+	    if (command == DOBUF_UNLOAD)
+		smsg(NGETTEXT("%d buffer unloaded",
+			    "%d buffers unloaded", deleted), deleted);
+	    else if (command == DOBUF_DEL)
+		smsg(NGETTEXT("%d buffer deleted",
+			    "%d buffers deleted", deleted), deleted);
+	    else
+		smsg(NGETTEXT("%d buffer wiped out",
+			    "%d buffers wiped out", deleted), deleted);
+	}
+    }
+
+
+    return errormsg;
 }
 
 /*

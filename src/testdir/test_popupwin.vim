@@ -3918,5 +3918,11 @@ func Test_popup_prop_not_visible()
   call delete('XtestPropNotVisble')
 endfunction
 
+func Test_bufdel_skips_popupwin_buffer()
+    let id = popup_create("Some text", {})
+    %bd
+    call popup_close(id)
+endfunc
+
 
 " vim: shiftwidth=2 sts=2

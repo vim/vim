@@ -994,6 +994,10 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define DOBUF_LAST	2	// "count" buffer from last buffer
 #define DOBUF_MOD	3	// "count" mod. buffer from current buffer
 
+// Values for flags argument of do_buffer()
+#define DOBUF_FORCEIT	1	// :cmd!
+#define DOBUF_NOPOPUP	2	// skip popup window buffers
+
 // Values for sub_cmd and which_pat argument for search_regcomp()
 // Also used for which_pat argument for searchit()
 #define RE_SEARCH	0	// save/use pat in/from search_pattern
