@@ -1042,6 +1042,10 @@ inside of strings can change!  Also see 'softtabstop' option. >
 			cursor to the end of line (which is more logical,
 			but not Vi-compatible) use ":map Y y$".
 
+							*zy*
+["x]zy{motion}		Yank {motion} text [into register x].  Only differs
+			from `y` when selecting a block of text, see |v_zy|.
+
 							*v_y*
 {Visual}["x]y		Yank the highlighted text [into register x] (for
 			{Visual} see |Visual-mode|).
@@ -1049,6 +1053,12 @@ inside of strings can change!  Also see 'softtabstop' option. >
 							*v_Y*
 {Visual}["x]Y		Yank the highlighted lines [into register x] (for
 			{Visual} see |Visual-mode|).
+
+							*v_zy*
+{Visual}["x]zy		Yank the highlighted text [into register x].  Trailing
+			whitespace at the end of each line of a selected block
+			won't be yanked.  Especially useful in combination
+			with `zp`.  (for {Visual} see |Visual-mode|)
 
 							*:y* *:yank* *E850*
 :[range]y[ank] [x]	Yank [range] lines [into register x]. Yanking to the
@@ -1129,7 +1139,8 @@ inside of strings can change!  Also see 'softtabstop' option. >
 ["x]zp		    or					*zp* *zP*
 ["x]zP			Like "p" and "P", except without adding trailing spaces
 			when pasting a block.  Thus the inserted text will not
-			always be a rectangle.
+			always be a rectangle.  Especially useful in
+			combination with |v_zy|.
 
 You can use these commands to copy text from one place to another.  Do this
 by first getting the text into a register with a yank, delete or change

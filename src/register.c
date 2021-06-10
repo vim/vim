@@ -32,7 +32,7 @@ static int	stuff_yank(int, char_u *);
 static void	put_reedit_in_typebuf(int silent);
 static int	put_in_typebuf(char_u *s, int esc, int colon,
 								 int silent);
-static int	yank_copy_line(struct block_def *bd, long y_idx);
+static int	yank_copy_line(struct block_def *bd, long y_idx, int exclude_trailing_space);
 #ifdef FEAT_CLIPBOARD
 static void	copy_yank_reg(yankreg_T *reg);
 #endif
@@ -1208,20 +1208,20 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	{
 	    case MBLOCK:
 		block_prep(oap, &bd, lnum, FALSE);
-		if (yank_copy_line(&bd, y_idx) == FAIL)
+		if (yank_copy_line(&bd, y_idx, oap->excl_tr_ws) == FAIL)
 		    goto fail;
 		break;
 
 	    case MLINE:
 		if ((y_current->y_array[y_idx] =
-			    vim_strsave(ml_get(lnum))) == NULL)
+					    vim_strsave(ml_get(lnum))) == NULL)
 		    goto fail;
 		break;
 
 	    case MCHAR:
 		{
 		    colnr_T startcol = 0, endcol = MAXCOL;
-		    int is_oneChar = FALSE;
+		    int	    is_oneChar = FALSE;
 		    colnr_T cs, ce;
 
 		    p = ml_get(lnum);
@@ -1282,7 +1282,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
 		    else
 			bd.textlen = endcol - startcol + oap->inclusive;
 		    bd.textstart = p + startcol;
-		    if (yank_copy_line(&bd, y_idx) == FAIL)
+		    if (yank_copy_line(&bd, y_idx, FALSE) == FAIL)
 			goto fail;
 		    break;
 		}
@@ -1443,8 +1443,12 @@ fail:		// free the allocated lines
     return FAIL;
 }
 
+/*
+ * Copy a block range into a register.
+ * If "exclude_trailing_space" is set, do not copy trailing whitespaces.
+ */
     static int
-yank_copy_line(struct block_def *bd, long y_idx)
+yank_copy_line(struct block_def *bd, long y_idx, int exclude_trailing_space)
 {
     char_u	*pnew;
 
@@ -1458,6 +1462,16 @@ yank_copy_line(struct block_def *bd, long y_idx)
     pnew += bd->textlen;
     vim_memset(pnew, ' ', (size_t)bd->endspaces);
     pnew += bd->endspaces;
+    if (exclude_trailing_space)
+    {
+	int s = bd->textlen + bd->endspaces;
+
+	while (VIM_ISWHITE(*(bd->textstart + s - 1)) && s > 0)
+	{
+	    s = s - (*mb_head_off)(bd->textstart, bd->textstart + s - 1) - 1;
+	    pnew--;
+	}
+    }
     *pnew = NUL;
     return OK;
 }

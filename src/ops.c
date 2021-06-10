@@ -78,6 +78,8 @@ get_op_type(int char1, int char2)
 	return OP_NR_ADD;
     if (char1 == 'g' && char2 == Ctrl_X)	// subtract
 	return OP_NR_SUB;
+    if (char1 == 'z' && char2 == 'y')	// OP_YANK
+	return OP_YANK;
     for (i = 0; ; ++i)
     {
 	if (opchars[i][0] == char1 && opchars[i][1] == char2)
@@ -3894,6 +3896,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 #ifdef FEAT_LINEBREAK
 		curwin->w_p_lbr = lbr_saved;
 #endif
+		oap->excl_tr_ws = cap->cmdchar == 'z';
 		(void)op_yank(oap, FALSE, !gui_yank);
 	    }
 	    check_cursor_col();

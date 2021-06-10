@@ -3772,7 +3772,7 @@ typedef struct oparg_S
     int		use_reg_one;	// TRUE if delete uses reg 1 even when not
 				// linewise
     int		inclusive;	// TRUE if char motion is inclusive (only
-				// valid when motion_type is MCHAR
+				// valid when motion_type is MCHAR)
     int		end_adjusted;	// backuped b_op_end one char (only used by
 				// do_format())
     pos_T	start;		// start of the operator
@@ -3789,6 +3789,8 @@ typedef struct oparg_S
     colnr_T	end_vcol;	// end col for block mode operator
     long	prev_opcount;	// ca.opcount saved for K_CURSORHOLD
     long	prev_count0;	// ca.count0 saved for K_CURSORHOLD
+    int		excl_tr_ws;	// exclude trailing whitespace for yank of a
+				// block
 } oparg_T;
 
 /*
