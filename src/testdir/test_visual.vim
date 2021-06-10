@@ -1104,6 +1104,15 @@ func Test_visual_put_in_block_using_zy_and_zp()
   exe "normal! 5G0f/\<c-v>2jezy"
   norm! 1G0f;P
   call assert_equal(['/path/subdir        ;text', '/path/longsubdir    ;text', '/path/longlongsubdir;text'], getline(1, 3))
+  " 5) Yank with spaces inside the block
+  %d
+  call setline(1, ['/path;text', '/path;text', '/path;text', '', 
+    \ 'texttext  /sub    dir/           columntext',
+    \ 'texttext  /lon    gsubdir/       columntext',
+    \ 'texttext  /lon    glongsubdir/   columntext'])
+  exe "normal! 5G0f/\<c-v>2jf/zy"
+  norm! 1G0f;zP
+  call assert_equal(['/path/sub    dir/;text', '/path/lon    gsubdir/;text', '/path/lon    glongsubdir/;text'], getline(1, 3))
   bwipe!
 endfunc
 
