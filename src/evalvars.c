@@ -1439,6 +1439,7 @@ ex_let_one(
 			    case '%': n = (long)num_modulus(numval, n,
 							       &failed); break;
 			}
+			s = NULL;
 		    }
 		    else if (opt_type == gov_string
 					     && stringval != NULL && s != NULL)
