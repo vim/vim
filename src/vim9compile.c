@@ -3084,7 +3084,13 @@ compile_load(
 	if (name == NULL)
 	    return FAIL;
 
-	if (arg_exists(*arg, len, &idx, &type, &gen_load_outer, cctx) == OK)
+	if (vim_strchr(name, AUTOLOAD_CHAR) != NULL)
+	{
+	    script_autoload(name, FALSE);
+	    res = generate_LOAD(cctx, ISN_LOADAUTO, 0, name, &t_any);
+	}
+	else if (arg_exists(*arg, len, &idx, &type, &gen_load_outer, cctx)
+									 == OK)
 	{
 	    if (gen_load_outer == 0)
 		gen_load = TRUE;

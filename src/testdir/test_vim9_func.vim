@@ -114,6 +114,34 @@ def Test_autoload_name_mismatch()
   delete(dir, 'rf')
 enddef
 
+def Test_autoload_names()
+  var dir = 'Xdir/autoload'
+  mkdir(dir, 'p')
+
+  var lines =<< trim END
+      func foobar#function()
+        return 'yes'
+      endfunc
+      let foobar#var = 'no'
+  END
+  writefile(lines, dir .. '/foobar.vim')
+
+  var save_rtp = &rtp
+  exe 'set rtp=' .. getcwd() .. '/Xdir'
+
+  lines =<< trim END
+      assert_equal('yes', foobar#function())
+      var Function = foobar#function
+      assert_equal('yes', Function())
+
+      assert_equal('no', foobar#var)
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  &rtp = save_rtp
+  delete(dir, 'rf')
+enddef
+
 def CallRecursive(n: number): number
   return CallRecursive(n + 1)
 enddef

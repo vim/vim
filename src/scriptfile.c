@@ -1128,6 +1128,7 @@ do_source(
     proftime_T		    wait_start;
 #endif
     int			    trigger_source_post = FALSE;
+    int			    save_estack_compiling = estack_compiling;
     ESTACK_CHECK_DECLARATION
 
     p = expand_env_save(fname);
@@ -1142,6 +1143,7 @@ do_source(
 	smsg(_("Cannot source a directory: \"%s\""), fname);
 	goto theend;
     }
+    estack_compiling = FALSE;
 
 #ifdef FEAT_EVAL
     // See if we loaded this script before.
@@ -1508,6 +1510,7 @@ almosttheend:
 
 theend:
     vim_free(fname_exp);
+    estack_compiling = save_estack_compiling;
     return retval;
 }
 

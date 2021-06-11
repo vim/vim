@@ -2921,8 +2921,9 @@ find_var_ht(char_u *name, char_u **varname)
 	if (ht != NULL)
 	    return ht;				// local variable
 
-	// in Vim9 script items at the script level are script-local
-	if (in_vim9script())
+	// In Vim9 script items at the script level are script-local, except
+	// for autoload names.
+	if (in_vim9script() && vim_strchr(name, AUTOLOAD_CHAR) == NULL)
 	{
 	    ht = get_script_local_ht();
 	    if (ht != NULL)
