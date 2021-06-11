@@ -3429,9 +3429,9 @@ add_fromto(
     if (ga_grow(gap, 1) == OK)
     {
 	ftp = ((fromto_T *)gap->ga_data) + gap->ga_len;
-	(void)spell_casefold(from, (int)STRLEN(from), word, MAXWLEN);
+	(void)spell_casefold(curwin, from, (int)STRLEN(from), word, MAXWLEN);
 	ftp->ft_from = getroom_save(spin, word);
-	(void)spell_casefold(to, (int)STRLEN(to), word, MAXWLEN);
+	(void)spell_casefold(curwin, to, (int)STRLEN(to), word, MAXWLEN);
 	ftp->ft_to = getroom_save(spin, word);
 	++gap->ga_len;
     }
@@ -4391,7 +4391,7 @@ store_word(
     int		res = OK;
     char_u	*p;
 
-    (void)spell_casefold(word, len, foldword, MAXWLEN);
+    (void)spell_casefold(curwin, word, len, foldword, MAXWLEN);
     for (p = pfxlist; res == OK; ++p)
     {
 	if (!need_affix || (p != NULL && *p != NUL))

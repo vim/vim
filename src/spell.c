@@ -249,7 +249,7 @@ spell_check(
     if (*mi.mi_fend != NUL)
 	MB_PTR_ADV(mi.mi_fend);
 
-    (void)spell_casefold(ptr, (int)(mi.mi_fend - ptr), mi.mi_fword,
+    (void)spell_casefold(wp, ptr, (int)(mi.mi_fend - ptr), mi.mi_fword,
 							     MAXWLEN + 1);
     mi.mi_fwordlen = (int)STRLEN(mi.mi_fword);
 
@@ -736,7 +736,8 @@ find_word(matchinf_T *mip, int mode)
 		    {
 			// "fword" is only needed for checking syllables.
 			if (ptr == mip->mi_word)
-			    (void)spell_casefold(ptr, wlen, fword, MAXWLEN);
+			    (void)spell_casefold(mip->mi_win,
+						    ptr, wlen, fword, MAXWLEN);
 			else
 			    vim_strncpy(fword, ptr, endlen[endidxcnt]);
 		    }
@@ -1213,7 +1214,7 @@ fold_more(matchinf_T *mip)
     if (*mip->mi_fend != NUL)
 	MB_PTR_ADV(mip->mi_fend);
 
-    (void)spell_casefold(p, (int)(mip->mi_fend - p),
+    (void)spell_casefold(mip->mi_win, p, (int)(mip->mi_fend - p),
 			     mip->mi_fword + mip->mi_fwordlen,
 			     MAXWLEN - mip->mi_fwordlen);
     flen = (int)STRLEN(mip->mi_fword + mip->mi_fwordlen);
@@ -2737,6 +2738,7 @@ spell_iswordp_w(int *p, win_T *wp)
  */
     int
 spell_casefold(
+    win_T	*wp,
     char_u	*str,
     int		len,
     char_u	*buf,
@@ -2765,7 +2767,21 @@ spell_casefold(
 		return FAIL;
 	    }
 	    c = mb_cptr2char_adv(&p);
-	    outi += mb_char2bytes(SPELL_TOFOLD(c), buf + outi);
+
+	    // Exception: greek capital sigma 0x03A3 folds to 0x03C3, except
+	    // when it is the last character in a word, then it folds to
+	    // 0x03C2.
+	    if (c == 0x03a3 || c == 0x03c2)
+	    {
+		if (p == str + len || !spell_iswordp(p, wp))
+		    c = 0x03c2;
+		else
+		    c = 0x03c3;
+	    }
+	    else
+		c = SPELL_TOFOLD(c);
+
+	    outi += mb_char2bytes(c, buf + outi);
 	}
 	buf[outi] = NUL;
     }
@@ -3097,7 +3113,8 @@ spell_soundfold(
 	    word = inword;
 	else
 	{
-	    (void)spell_casefold(inword, (int)STRLEN(inword), fword, MAXWLEN);
+	    (void)spell_casefold(curwin,
+				  inword, (int)STRLEN(inword), fword, MAXWLEN);
 	    word = fword;
 	}
 
