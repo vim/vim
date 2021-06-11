@@ -64,6 +64,7 @@ typedef struct sb_line_S {
     cellattr_T	*sb_cells;	// allocated
     cellattr_T	sb_fill_attr;	// for short line
     char_u	*sb_text;	// for tl_scrollback_postponed
+    char_u	continuation;
 } sb_line_T;
 
 #ifdef MSWIN
@@ -1836,8 +1837,11 @@ update_snapshot(term_T *term)
 	    {
 		garray_T    ga;
 		int	    width;
+		const VTermLineInfo *lineinfo;
 		sb_line_T   *line = (sb_line_T *)term->tl_scrollback.ga_data
 						  + term->tl_scrollback.ga_len;
+
+		lineinfo = vterm_state_get_lineinfo(state, pos.row);
 
 		ga_init2(&ga, 1, 100);
 		for (pos.col = 0; pos.col < len; pos.col += width)
@@ -1875,6 +1879,7 @@ update_snapshot(term_T *term)
 		line->sb_cols = len;
 		line->sb_cells = p;
 		line->sb_fill_attr = new_fill_attr;
+		line->continuation = lineinfo->continuation;
 		fill_attr = new_fill_attr;
 		++term->tl_scrollback.ga_len;
 
@@ -1883,10 +1888,8 @@ update_snapshot(term_T *term)
 		else
 		{
 		    *((char_u *)ga.ga_data + ga.ga_len) = NUL;
-		    VTermLineInfo lineinfo;
-		    vterm_state_get_line_info(state, &lineinfo, pos.row);
 		    add_scrollback_line_to_buffer(term, ga.ga_data, ga.ga_len,
-						  lineinfo.continuation);
+						  lineinfo->continuation);
 		}
 		ga_clear(&ga);
 	    }
@@ -3339,6 +3342,7 @@ handle_pushline(int cols, const VTermScreenCell *cells, const VTermLineInfo *inf
 	line->sb_cols = len;
 	line->sb_cells = p;
 	line->sb_fill_attr = fill_attr;
+	line->continuation = info->continuation;
 	if (update_buffer)
 	{
 	    line->sb_text = NULL;
