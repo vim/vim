@@ -3389,7 +3389,7 @@ handle_postponed_scrollback(term_T *term)
 	text = pp_line->sb_text;
 	if (text == NULL)
 	    text = (char_u *)"";
-	add_scrollback_line_to_buffer(term, text, (int)STRLEN(text), 0);
+	add_scrollback_line_to_buffer(term, text, (int)STRLEN(text), pp_line->continuation);
 	vim_free(pp_line->sb_text);
 
 	line = (sb_line_T *)term->tl_scrollback.ga_data
