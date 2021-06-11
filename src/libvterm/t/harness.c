@@ -468,7 +468,7 @@ static int screen_damage(VTermRect rect, void *user UNUSED)
 }
 
 static int want_screen_scrollback = 0;
-static int screen_sb_pushline(int cols, const VTermScreenCell *cells, void *user UNUSED)
+static int screen_sb_pushline(int cols, const VTermScreenCell *cells, const VTermLineInfo *lineinfo UNUSED, void *user UNUSED)
 {
   int eol;
   int c;
