@@ -1648,7 +1648,7 @@ term_try_stop_job(buf_T *buf)
  * Add the last line of the scrollback buffer to the buffer in the window.
  */
     static void
-add_scrollback_line_to_buffer(term_T *term, char_u *text, int len)
+add_scrollback_line_to_buffer(term_T *term, char_u *text, int len, int append)
 {
     buf_T	*buf = term->tl_buffer;
     int		empty = (buf->b_ml.ml_flags & ML_EMPTY);
@@ -1673,7 +1673,21 @@ add_scrollback_line_to_buffer(term_T *term, char_u *text, int len)
     }
     else
 #endif
-	ml_append_buf(term->tl_buffer, lnum, text, len + 1, FALSE);
+    if (append)
+    {
+	char_u *prev_text = ml_get_buf(buf, lnum, FALSE);
+	int prev_len = STRLEN(prev_text);
+
+	char_u *both = alloc(len + prev_len + 2);
+	vim_strncpy(both, prev_text, prev_len + 1);
+	vim_strncpy(both + prev_len, text, len + 1);
+
+	curbuf = buf;
+	ml_replace(lnum, both, FALSE);
+	curbuf = curwin->w_buffer;
+    }
+    else
+	ml_append_buf(buf, lnum, text, len + 1, FALSE);
     if (empty)
     {
 	// Delete the empty line that was in the empty buffer.
@@ -1769,6 +1783,7 @@ cleanup_scrollback(term_T *term)
 update_snapshot(term_T *term)
 {
     VTermScreen	    *screen;
+    VTermState	    *state;
     int		    len;
     int		    lines_skipped = 0;
     VTermPos	    pos;
@@ -1784,6 +1799,7 @@ update_snapshot(term_T *term)
     cleanup_scrollback(term);
 
     screen = vterm_obtain_screen(term->tl_vterm);
+    state = vterm_obtain_state(term->tl_vterm);
     fill_attr = new_fill_attr = term->tl_default_color;
     for (pos.row = 0; pos.row < term->tl_rows; ++pos.row)
     {
@@ -1808,7 +1824,7 @@ update_snapshot(term_T *term)
 		// Line was skipped, add an empty line.
 		--lines_skipped;
 		if (add_empty_scrollback(term, &fill_attr, 0) == OK)
-		    add_scrollback_line_to_buffer(term, (char_u *)"", 0);
+		    add_scrollback_line_to_buffer(term, (char_u *)"", 0, 0);
 	    }
 
 	    if (len == 0)
@@ -1863,11 +1879,14 @@ update_snapshot(term_T *term)
 		++term->tl_scrollback.ga_len;
 
 		if (ga_grow(&ga, 1) == FAIL)
-		    add_scrollback_line_to_buffer(term, (char_u *)"", 0);
+		    add_scrollback_line_to_buffer(term, (char_u *)"", 0, 0);
 		else
 		{
 		    *((char_u *)ga.ga_data + ga.ga_len) = NUL;
-		    add_scrollback_line_to_buffer(term, ga.ga_data, ga.ga_len);
+		    VTermLineInfo lineinfo;
+		    vterm_state_get_line_info(state, &lineinfo, pos.row);
+		    add_scrollback_line_to_buffer(term, ga.ga_data, ga.ga_len,
+						  lineinfo.continuation);
 		}
 		ga_clear(&ga);
 	    }
@@ -1882,7 +1901,7 @@ update_snapshot(term_T *term)
 	    ++pos.row)
     {
 	if (add_empty_scrollback(term, &fill_attr, 0) == OK)
-	    add_scrollback_line_to_buffer(term, (char_u *)"", 0);
+	    add_scrollback_line_to_buffer(term, (char_u *)"", 0, 0);
     }
 
     term->tl_dirty_snapshot = FALSE;
@@ -3314,7 +3333,7 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 	    *(text + text_len) = NUL;
 	}
 	if (update_buffer)
-	    add_scrollback_line_to_buffer(term, text, text_len);
+	    add_scrollback_line_to_buffer(term, text, text_len, 0);
 
 	line = (sb_line_T *)gap->ga_data + gap->ga_len;
 	line->sb_cols = len;
@@ -3366,7 +3385,7 @@ handle_postponed_scrollback(term_T *term)
 	text = pp_line->sb_text;
 	if (text == NULL)
 	    text = (char_u *)"";
-	add_scrollback_line_to_buffer(term, text, (int)STRLEN(text));
+	add_scrollback_line_to_buffer(term, text, (int)STRLEN(text), 0);
 	vim_free(pp_line->sb_text);
 
 	line = (sb_line_T *)term->tl_scrollback.ga_data
