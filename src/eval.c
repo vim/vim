@@ -3530,9 +3530,13 @@ eval7(
 		    {
 			ufunc_T *ufunc = rettv->vval.v_partial->pt_func;
 
-			// compile it here to get the return type
+			// Compile it here to get the return type.  The return
+			// type is optional, when it's missing use t_unknown.
+			// This is recognized in compile_return().
+			if (ufunc->uf_ret_type->tt_type == VAR_VOID)
+			    ufunc->uf_ret_type = &t_unknown;
 			if (compile_def_function(ufunc,
-					 TRUE, PROFILING(ufunc), NULL) == FAIL)
+					 FALSE, PROFILING(ufunc), NULL) == FAIL)
 			{
 			    clear_tv(rettv);
 			    ret = FAIL;

@@ -948,6 +948,26 @@ def Test_lambda_return_type()
       echo FilterWithCond('foo', (v) => v .. '^b')
   END
   CheckDefAndScriptFailure(lines, 'E1013: Argument 2: type mismatch, expected func(string): bool but got func(any): string', 1)
+
+  lines =<< trim END
+      var Lambda1 = (x) => {
+              return x
+              }
+      assert_equal('asdf', Lambda1('asdf'))
+      var Lambda2 = (x): string => {
+              return x
+              }
+      assert_equal('foo', Lambda2('foo'))
+  END
+  CheckDefAndScriptSuccess(lines)
+
+  lines =<< trim END
+      var Lambda = (x): string => {
+              return x
+              }
+      echo Lambda(['foo'])
+  END
+  CheckDefExecAndScriptFailure(lines, 'E1012:')
 enddef
 
 def Test_lambda_uses_assigned_var()

@@ -3565,8 +3565,12 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     ++ufunc->uf_refcount;
     clear_tv(&rettv);
 
-    // Compile the function into instructions.
-    compile_def_function(ufunc, TRUE, PROFILING(ufunc), cctx);
+    // Compile it here to get the return type.  The return type is optional,
+    // when it's missing use t_unknown.  This is recognized in
+    // compile_return().
+    if (ufunc->uf_ret_type->tt_type == VAR_VOID)
+	ufunc->uf_ret_type = &t_unknown;
+    compile_def_function(ufunc, FALSE, PROFILING(ufunc), cctx);
 
     // evalarg.eval_tofree_cmdline may have a copy of the last line and "*arg"
     // points into it.  Point to the original line to avoid a dangling pointer.
@@ -5398,10 +5402,15 @@ compile_return(char_u *arg, int check_return_type, int legacy, cctx_T *cctx)
 
 	if (cctx->ctx_skip != SKIP_YES)
 	{
+	    // "check_return_type" with uf_ret_type set to &t_unknown is used
+	    // for an inline function without a specified return type.  Set the
+	    // return type here.
 	    stack_type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-	    if (check_return_type && (cctx->ctx_ufunc->uf_ret_type == NULL
+	    if ((check_return_type && (cctx->ctx_ufunc->uf_ret_type == NULL
 				|| cctx->ctx_ufunc->uf_ret_type == &t_unknown
 				|| cctx->ctx_ufunc->uf_ret_type == &t_any))
+		    || (!check_return_type
+				&& cctx->ctx_ufunc->uf_ret_type == &t_unknown))
 	    {
 		cctx->ctx_ufunc->uf_ret_type = stack_type;
 	    }
