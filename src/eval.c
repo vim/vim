@@ -3777,6 +3777,7 @@ call_func_rettv(
 	    if (s == NULL || *s == NUL)
 	    {
 		emsg(_(e_empty_function_name));
+		ret = FAIL;
 		goto theend;
 	    }
 	}
