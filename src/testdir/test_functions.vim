@@ -2174,9 +2174,11 @@ func Test_call()
   call assert_fails("call call('Mylen', [], 0)", 'E715:')
   call assert_fails('call foo', 'E107:')
 
-  " This once caused a crash.
+  " These once caused a crash.
   call call(test_null_function(), [])
   call call(test_null_partial(), [])
+  call assert_fails('call test_null_function()()', 'E1192:')
+  call assert_fails('call test_null_partial()()', 'E117:')
 endfunc
 
 func Test_char2nr()

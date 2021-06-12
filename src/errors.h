@@ -425,3 +425,5 @@ EXTERN char e_nr_arguments_too_few[]
 	INIT(= N_("E1190: %d arguments too few"));
 EXTERN char e_call_to_function_that_failed_to_compile_str[]
 	INIT(= N_("E1191: Call to function that failed to compile: %s"));
+EXTERN char e_empty_function_name[]
+	INIT(= N_("E1192: Empty function name"));
