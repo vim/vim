@@ -123,5 +123,15 @@ func Test_helptag_cmd_readonly()
   call delete('Xdir', 'rf')
 endfunc
 
+" Test for setting the 'helpheight' option in the help window
+func Test_help_window_height()
+  let &cmdheight = &lines - 24
+  set helpheight=10
+  help
+  set helpheight=14
+  call assert_equal(14, winheight(0))
+  set helpheight& cmdheight=1
+  close
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
