@@ -1552,6 +1552,7 @@ func Test_popup_filter()
   call assert_equal(9, getcurpos()[2])
   call feedkeys('0', 'xt')
   call assert_equal('0', g:ignored)
+  redraw
   call assert_equal(1, getcurpos()[2])
 
   " x closes the popup
