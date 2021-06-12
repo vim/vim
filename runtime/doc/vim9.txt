@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2021 May 26
+*vim9.txt*	For Vim version 8.2.  Last change: 2021 Jun 12
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -168,6 +168,14 @@ created yet.  In this case you can call `execute()` to invoke it at runtime. >
 "closure".  A `:def` function always aborts on an error (unless `:silent!` was
 used for the command or inside a `:try` block), does not get a range passed
 cannot be a "dict" function, and can always be a closure.
+
+Later classes will be added, which replaces the "dict function" mechanism.
+For now you will need to pass the dictionary explicitly: >
+	def DictFunc(d: dict<any>, arg: string)
+	   echo d[arg]
+	enddef
+	var d = {item: 'value', func: DictFunc}
+	d.func(d, 'item')
 
 The argument types and return type need to be specified.  The "any" type can
 be used, type checking will then be done at runtime, like with legacy
@@ -445,7 +453,7 @@ it is the start of a lambda or a dictionary, which is now more complicated
 because of the use of argument types.
 
 To avoid these problems Vim9 script uses a different syntax for a lambda,
-which is similar to Javascript: >
+which is similar to JavaScript: >
 	var Lambda = (arg) => expression
 
 No line break is allowed in the arguments of a lambda up to and including the
@@ -522,7 +530,7 @@ And when a dict spans multiple lines: >
 		one: 1,
 		two: 2,
 		}
-Function call: >
+With a function call: >
 	var result = Func(
 			arg1,
 			arg2
@@ -555,10 +563,31 @@ at the start of the line indicates line continuation: >
 		|   echo 'match'
 		| endif
 
+Note that this means that in heredoc the first line cannot be a bar: >
+	var lines =<< trim END
+	   | this doesn't work
+	END
+Either use an empty line at the start or do not use heredoc.  Or temporarily
+add the "C" flag to 'cpoptions': >
+	set cpo+=C
+	var lines =<< trim END
+	   | this doesn't work
+	END
+	set cpo-=C
+If the heredoc is inside a function 'cpoptions' must be set before :def and
+restored after the :enddef.
+
+In places where line continuation with a backslash is still needed, such as
+splitting up a long Ex command, comments can start with #\ instead of "\: >
+      syn region Text
+	      \ start='foo'
+	      #\ comment
+	      \ end='bar'
+
 <							*E1050*
 To make it possible for the operator at the start of the line to be
-recognized, it is required to put a colon before a range.  This will add
-"start" and print: >
+recognized, it is required to put a colon before a range.  This example will
+add "start" and print: >
 	var result = start
 	+ print
 Like this: >
@@ -610,6 +639,9 @@ Notes:
 <  This does not work: >
 	echo [1, 2]
 		[3, 4]
+- In some cases it is difficult for Vim to parse a command, especially when
+  commands are used as an argument to another command, such as `windo`.  In
+  those cases the line continuation with a backslash has to be used.
 
 
 White space ~
@@ -1240,9 +1272,10 @@ Exporting an item can be written as: >
 	export const someValue = ...
 	export def MyFunc() ...
 	export class MyClass ...
+	export interface MyClass ...
 
 As this suggests, only constants, variables, `:def` functions and classes can
-be exported. {not implemented yet: export class}
+be exported. {not implemented yet: class, interface}
 
 							*E1042*
 `:export` can only be used in Vim9 script, at the script level.
@@ -1342,26 +1375,45 @@ implementing classes is going to be a lot of work, it is left for the future.
 For now we'll just make sure classes can be added later.
 
 Thoughts:
-- `class` / `endclass`, everything in one file
-- Class names are always CamelCase
-- Single constructor
+- `class` / `endclass`, the whole class must be in one file
+- Class names are always CamelCase (to avoid a name clash with builtin types)
+- A single constructor called "constructor"
 - Single inheritance with `class ThisClass extends BaseClass`
-- `abstract class`
-- `interface` (Abstract class without any implementation)
+- `abstract class` (class with incomplete implementation)
+- `interface` / `endinterface` (abstract class without any implementation)
 - `class SomeClass implements SomeInterface`
 - Generics for class: `class <Tkey, Tentry>`
 - Generics for function: `def <Tkey> GetLast(key: Tkey)`
 
-Again, much of this is from TypeScript.
+Again, much of this is from TypeScript with a slightly different syntax.
 
 Some things that look like good additions:
 - Use a class as an interface (like Dart)
 - Extend a class with methods, using an import (like Dart)
+- Mixins
+- For testing: Mock mechanism
 
 An important class that will be provided is "Promise".  Since Vim is single
 threaded, connecting asynchronous operations is a natural way of allowing
 plugins to do their work without blocking the user.  It's a uniform way to
 invoke callbacks and handle timeouts and errors.
+
+Some examples: >
+
+	abstract class Person 
+	    static const prefix = 'xxx'
+	    var name: string
+	    
+	    def constructor(name: string)
+		this.name = name;
+	    enddef
+
+	    def display(): void
+		echo name
+	    enddef
+
+	    abstract def find(string): Person
+	endclass
 
 ==============================================================================
 

@@ -982,6 +982,8 @@ def Test_assignment_failure()
 
   CheckDefFailure(['var true = 1'], 'E1034:')
   CheckDefFailure(['var false = 1'], 'E1034:')
+  CheckDefFailure(['var null = 1'], 'E1034:')
+  CheckDefFailure(['var this = 1'], 'E1034:')
 
   CheckDefFailure(['[a; b; c] = g:list'], 'E452:')
   CheckDefExecFailure(['var a: number',

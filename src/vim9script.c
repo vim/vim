@@ -979,6 +979,7 @@ static char *reserved[] = {
     "true",
     "false",
     "null",
+    "this",
     NULL
 };
 
