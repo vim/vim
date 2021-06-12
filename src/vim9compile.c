@@ -9596,7 +9596,9 @@ nextline:
 
     if (!cctx.ctx_had_return)
     {
-	if (ufunc->uf_ret_type->tt_type != VAR_VOID)
+	if (ufunc->uf_ret_type->tt_type == VAR_UNKNOWN)
+	    ufunc->uf_ret_type = &t_void;
+	else if (ufunc->uf_ret_type->tt_type != VAR_VOID)
 	{
 	    emsg(_(e_missing_return_statement));
 	    goto erret;
