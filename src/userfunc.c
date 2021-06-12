@@ -3099,6 +3099,9 @@ call_func(
     // even when call_func() returns FAIL.
     rettv->v_type = VAR_UNKNOWN;
 
+    if (funcname == NULL)
+	return ret;
+
     if (partial != NULL)
 	fp = partial->pt_func;
     if (fp == NULL)

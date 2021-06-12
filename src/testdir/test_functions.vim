@@ -2179,6 +2179,11 @@ func Test_call()
   call call(test_null_partial(), [])
 endfunc
 
+func Test_test_null_function()
+  " This once caused a crash.
+  call test_null_function()()
+endfunc
+
 func Test_char2nr()
   call assert_equal(12354, char2nr('あ', 1))
   call assert_equal(120, 'x'->char2nr())
