@@ -1871,10 +1871,12 @@ func_needs_compiling(ufunc_T *ufunc, compiletype_T compile_type)
 
 	    switch (compile_type)
 	    {
+		case CT_PROFILE:
+#ifdef FEAT_PROFILE
+		    return dfunc->df_instr_prof == NULL;
+#endif
 		case CT_NONE:
 		    return dfunc->df_instr == NULL;
-		case CT_PROFILE:
-		    return dfunc->df_instr_prof == NULL;
 		case CT_DEBUG:
 		    return dfunc->df_instr_debug == NULL;
 	    }
