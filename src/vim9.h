@@ -168,6 +168,8 @@ typedef enum {
     ISN_PROF_START, // start a line for profiling
     ISN_PROF_END,   // end a line for profiling
 
+    ISN_DEBUG,	    // check for debug breakpoint
+
     ISN_UNPACK,	    // unpack list into items, uses isn_arg.unpack
     ISN_SHUFFLE,    // move item on stack up or down
     ISN_DROP,	    // pop stack and discard value
@@ -453,6 +455,8 @@ struct dfunc_S {
     isn_T	*df_instr_prof;	     // like "df_instr" with profiling
     int		df_instr_prof_count; // size of "df_instr_prof"
 #endif
+    isn_T	*df_instr_debug;      // like "df_instr" with debugging
+    int		df_instr_debug_count; // size of "df_instr_debug"
 
     int		df_varcount;	    // number of local variables
     int		df_has_closure;	    // one if a closure was created

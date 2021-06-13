@@ -2153,7 +2153,7 @@ def Test_profiled()
   if !has('profile')
     MissingFeature 'profile'
   endif
-  var res = execute('disass! s:Profiled')
+  var res = execute('disass profile s:Profiled')
   assert_match('<SNR>\d*_Profiled\_s*' ..
         'echo "profiled"\_s*' ..
         '\d PROFILE START line 1\_s*' ..
@@ -2165,6 +2165,20 @@ def Test_profiled()
         '\d PUSHS "done"\_s*' ..
         '\d RETURN\_s*' ..
         '\d PROFILE END',
+        res)
+enddef
+
+def Test_debugged()
+  var res = execute('disass debug s:Profiled')
+  assert_match('<SNR>\d*_Profiled\_s*' ..
+        'echo "profiled"\_s*' ..
+        '\d DEBUG line 1\_s*' ..
+        '\d PUSHS "profiled"\_s*' ..
+        '\d ECHO 1\_s*' ..
+        'return "done"\_s*' ..
+        '\d DEBUG line 2\_s*' ..
+        '\d PUSHS "done"\_s*' ..
+        '\d RETURN\_s*',
         res)
 enddef
 

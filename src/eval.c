@@ -3536,7 +3536,7 @@ eval7(
 			if (ufunc->uf_ret_type->tt_type == VAR_VOID)
 			    ufunc->uf_ret_type = &t_unknown;
 			if (compile_def_function(ufunc,
-					 FALSE, PROFILING(ufunc), NULL) == FAIL)
+				     FALSE, COMPILE_TYPE(ufunc), NULL) == FAIL)
 			{
 			    clear_tv(rettv);
 			    ret = FAIL;
