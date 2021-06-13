@@ -10045,6 +10045,13 @@ delete_def_function_contents(dfunc_T *dfunc, int mark_deleted)
 	VIM_CLEAR(dfunc->df_instr);
 	dfunc->df_instr = NULL;
     }
+    if (dfunc->df_instr_debug != NULL)
+    {
+	for (idx = 0; idx < dfunc->df_instr_debug_count; ++idx)
+	    delete_instr(dfunc->df_instr_debug + idx);
+	VIM_CLEAR(dfunc->df_instr_debug);
+	dfunc->df_instr_debug = NULL;
+    }
 #ifdef FEAT_PROFILE
     if (dfunc->df_instr_prof != NULL)
     {
