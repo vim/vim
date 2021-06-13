@@ -5371,6 +5371,40 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 }
 
 /*
+ * Handle command line completion for the :disassemble command.
+ */
+    void
+set_context_in_disassemble_cmd(expand_T *xp, char_u *arg)
+{
+    char_u	*p;
+
+    // Default: expand user functions, "debug" and "profile"
+    xp->xp_context = EXPAND_DISASSEMBLE;
+    xp->xp_pattern = arg;
+
+    // first argument already typed: only user function names
+    if (*arg != NUL && *(p = skiptowhite(arg)) != NUL)
+    {
+	xp->xp_context = EXPAND_USER_FUNC;
+	xp->xp_pattern = skipwhite(p);
+    }
+}
+
+/*
+ * Function given to ExpandGeneric() to obtain the list of :disassemble
+ * arguments.
+ */
+    char_u *
+get_disassemble_argument(expand_T *xp, int idx)
+{
+    if (idx == 0)
+	return (char_u *)"debug";
+    if (idx == 1)
+	return (char_u *)"profile";
+    return get_user_func_name(xp, idx - 2);
+}
+
+/*
  * ":disassemble".
  * We don't really need this at runtime, but we do have tests that require it,
  * so always include this.
