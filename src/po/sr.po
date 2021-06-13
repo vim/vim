@@ -2,7 +2,7 @@
 #
 # Do ":help uganda"  in Vim to read copying and usage conditions.
 # Do ":help credits" in Vim to see a list of people who contributed.
-# Copyright (C) 2017
+# Copyright (C) 2021
 # This file is distributed under the same license as the Vim package.
 # FIRST AUTHOR Ivan Pešić <ivan.pesic@gmail.com>, 2017.
 #
@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim(Serbian)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-02-14 01:49+0400\n"
-"PO-Revision-Date: 2021-02-14 01:54+0400\n"
+"POT-Creation-Date: 2021-06-13 13:16+0400\n"
+"PO-Revision-Date: 2021-06-13 13:50+0400\n"
 "Last-Translator: Ivan Pešić <ivan.pesic@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
@@ -96,6 +96,9 @@ msgstr "Извршавање %s"
 #, c-format
 msgid "autocommand %s"
 msgstr "аутокоманда %s"
+
+msgid "E972: Blob value does not have the right number of bytes"
+msgstr "E972: Блоб вредност нема одговарајући број бајтова"
 
 msgid "E831: bf_key_init() called with empty password"
 msgstr "E831: bf_key_init() је позвана са празном лозинком"
@@ -731,9 +734,6 @@ msgstr "E708: [:] мора да буде последња"
 msgid "E709: [:] requires a List or Blob value"
 msgstr "E709: [:] захтева вредност типа Листа или Блоб"
 
-msgid "E972: Blob value does not have the right number of bytes"
-msgstr "E972: Блоб вредност нема одговарајући број бајтова"
-
 msgid "E996: Cannot lock a range"
 msgstr "E996: Опсег не може да се закључа"
 
@@ -762,9 +762,6 @@ msgid ""
 msgstr ""
 "\n"
 "\tПоследње постављено из "
-
-msgid "E808: Number or Float required"
-msgstr "E808: Захтева се Број или Покретни"
 
 #, c-format
 msgid "E158: Invalid buffer name: %s"
@@ -931,6 +928,10 @@ msgstr "E135: *Филтер* Аутокоманде не смеју да мењ�
 
 msgid "[No write since last change]\n"
 msgstr "[Нема уписа од последње промене]\n"
+
+#, c-format
+msgid "E503: \"%s\" is not a file or writable device"
+msgstr "E503: „%s” није фајл или уређај на који може да се уписује"
 
 msgid "Save As"
 msgstr "Сачувај као"
@@ -1593,6 +1594,9 @@ msgstr "E446: Под курсором се не налази име фајла"
 #, c-format
 msgid "E447: Can't find file \"%s\" in path"
 msgstr "E447: Фајл \"%s\" не може да се пронађе у путањи"
+
+msgid "E808: Number or Float required"
+msgstr "E808: Захтева се Број или Покретни"
 
 msgid "E490: No fold found"
 msgstr "E490: Није пронађен ниједан свијутак"
@@ -4069,11 +4073,11 @@ msgstr "E531: Користите \":gui\" да покренете ГКИ"
 msgid "E589: 'backupext' and 'patchmode' are equal"
 msgstr "E589: 'backupext' и 'patchmode' су истоветни"
 
-msgid "E834: Conflicts with value of 'listchars'"
-msgstr "E834: У конфликту са вредношћу 'listchars'"
-
 msgid "E835: Conflicts with value of 'fillchars'"
 msgstr "E835: У конфликту са вредношћу 'fillchars'"
+
+msgid "E834: Conflicts with value of 'listchars'"
+msgstr "E834: У конфликту са вредношћу 'listchars'"
 
 msgid "E617: Cannot be changed in the GTK+ 2 GUI"
 msgstr "E617: Не може да се промени у GTK+ 2 ГКИ"
@@ -4513,7 +4517,7 @@ msgstr "E554: Синтаксна грешка у %s{...}"
 
 #, c-format
 msgid "E888: (NFA regexp) cannot repeat %s"
-msgstr "E888: (НКА регизраз) не може да се понови %s"
+msgstr "E888: (НКА регуларни израз) не може да се понови %s"
 
 msgid ""
 "E864: \\%#= can only be followed by 0, 1, or 2. The automatic engine will be "
@@ -4579,15 +4583,15 @@ msgid "External submatches:\n"
 msgstr "Спољна подподударања:\n"
 
 msgid "E865: (NFA) Regexp end encountered prematurely"
-msgstr "E865: (НКА) прерано је достигнут крај регизраза"
+msgstr "E865: (НКА) прерано је достигнут крај регуларног израза"
 
 #, c-format
 msgid "E866: (NFA regexp) Misplaced %c"
-msgstr "E866: (НКА регизраз) %c је на погрешном месту"
+msgstr "E866: (НКА регуларни израз) %c је на погрешном месту"
 
 #, c-format
 msgid "E877: (NFA regexp) Invalid character class: %d"
-msgstr "E877: (НКА регизраз) Неважећа карактер класа: %d"
+msgstr "E877: (НКА регуларни израз) Неважећа карактер класа: %d"
 
 msgid "E951: \\% value too large"
 msgstr "E951: Вредност \\% је предугачка"
@@ -4608,19 +4612,19 @@ msgid "E869: (NFA) Unknown operator '\\@%c'"
 msgstr "E869: (НКА) Непознати оператор '\\@%c'"
 
 msgid "E870: (NFA regexp) Error reading repetition limits"
-msgstr "E870: (НКА регизраз) Грешка при читању граница понављања"
+msgstr "E870: (НКА регуларни израз) Грешка при читању граница понављања"
 
 msgid "E871: (NFA regexp) Can't have a multi follow a multi"
-msgstr "E871: (НКА регизраз) Мулти не може следи иза мулти"
+msgstr "E871: (НКА регуларни израз) Мулти не може следи иза мулти"
 
 msgid "E872: (NFA regexp) Too many '('"
-msgstr "E872: (НКА регизраз) Превише '('"
+msgstr "E872: (НКА регуларни израз) Превише '('"
 
 msgid "E879: (NFA regexp) Too many \\z("
-msgstr "E879: (НКА регизраз) Превише \\z("
+msgstr "E879: (НКА регуларни израз) Превише \\z("
 
 msgid "E873: (NFA regexp) proper termination error"
-msgstr "E873: (НКА регизраз) грешка правилне терминације"
+msgstr "E873: (НКА регуларни израз) грешка правилне терминације"
 
 msgid "Could not open temporary log file for writing, displaying on stderr... "
 msgstr ""
@@ -4634,12 +4638,12 @@ msgid ""
 "E875: (NFA regexp) (While converting from postfix to NFA), too many states "
 "left on stack"
 msgstr ""
-"E875: (НКА регизраз) (Док је вршена конверзија из постфикног облика у НКА), "
+"E875: (НКА регуларни израз) (Док је вршена конверзија из постфикног облика у НКА), "
 "превише стања је остало на стеку"
 
 msgid "E876: (NFA regexp) Not enough space to store the whole NFA "
 msgstr ""
-"E876: (НКА регизраз) Нема довољно простора да се ускладишти комплетан НКА "
+"E876: (НКА регуларни израз) Нема довољно простора да се ускладишти комплетан НКА "
 
 msgid "E878: (NFA) Could not allocate memory for branch traversal!"
 msgstr "E878: (НКА) Није могла да се алоцира меморија за обилазак грана!"
@@ -6027,6 +6031,13 @@ msgstr "E853: Име аргумента је дуплирано: %s"
 msgid "E989: Non-default argument follows default argument"
 msgstr "E989: Неподразумевани аргумент следи иза подразумеваног аргумента"
 
+msgid "E126: Missing :endfunction"
+msgstr "E126: Недостаје :endfunction"
+
+#, c-format
+msgid "W22: Text found after :endfunction: %s"
+msgstr "W22: Пронађен текст након :endfunction: %s"
+
 #, c-format
 msgid "E451: Expected }: %s"
 msgstr "E451: Очекује се }: %s"
@@ -6101,17 +6112,6 @@ msgstr "E862: Овде не може да се користи g:"
 #, c-format
 msgid "E932: Closure function should not be at top level: %s"
 msgstr "E932: Затварајућа функција не би требало да буде на највишем нивоу: %s"
-
-msgid "E126: Missing :endfunction"
-msgstr "E126: Недостаје :endfunction"
-
-#, c-format
-msgid "W1001: Text found after :enddef: %s"
-msgstr "W1001: Пронађен је текст након :enddef: %s"
-
-#, c-format
-msgid "W22: Text found after :endfunction: %s"
-msgstr "W22: Пронађен текст након :endfunction: %s"
 
 #, c-format
 msgid "E707: Function name conflicts with variable: %s"
@@ -6635,25 +6635,25 @@ msgid "E366: Not allowed to enter a popup window"
 msgstr "E366: Није дозвољено да се уђе у искачући прозор"
 
 msgid "Edit with &multiple Vims"
-msgstr "Уређуј са &више Vim-ова"
+msgstr "Уређуј са &више Vim програма"
 
 msgid "Edit with single &Vim"
-msgstr "Уређуј са једним &Vim-ом"
+msgstr "Уређуј са једним програмом &Vim"
 
 msgid "Diff with Vim"
-msgstr "Diff са Vim"
+msgstr "Diff са програмом Vim"
 
 msgid "Edit with &Vim"
-msgstr "Уређуј са &Vim-ом"
+msgstr "Уређуј са програмом &Vim"
 
 msgid "Edit with existing Vim"
-msgstr "Уређуј са постојећим Vim-ом"
+msgstr "Уређуј са постојећим програмом Vim"
 
 msgid "Edit with existing Vim - "
-msgstr "Уређуј са постојећим Vim - "
+msgstr "Уређуј са постојећим програмом Vim - "
 
 msgid "Edits the selected file(s) with Vim"
-msgstr "Уређује селектован(е) фајл(ове) са Vim-ом"
+msgstr "Уређује селектован(е) фајл(ове) програмом Vim"
 
 msgid "Error creating process: Check if gvim is in your path!"
 msgstr ""
@@ -6698,6 +6698,10 @@ msgid ""
 msgstr ""
 "E856: \"assert_fails()\" други аргумент мора бити стринг или листа са једним "
 "или два стринга"
+
+#, c-format
+msgid "E908: using an invalid value as a String: %s"
+msgstr "E908: Користи се неважећа вредност као Стринг: %s"
 
 msgid "E909: Cannot index a special variable"
 msgstr "E909: Специјална променљива не може да се индексира"
@@ -7188,8 +7192,8 @@ msgid "E1143: Empty expression: \"%s\""
 msgstr "E1143: Празан израз: \"%s\""
 
 #, c-format
-msgid "E1144: Command is not followed by white space: %s"
-msgstr "E1144: Иза команде се не налази празан простор: %s"
+msgid "E1144: Command \"%s\" is not followed by white space: %s"
+msgstr "E1144: Иза команде „%s” се не налази празан простор: %s"
 
 #, c-format
 msgid "E1145: Missing heredoc end marker: %s"
@@ -7242,7 +7246,8 @@ msgid "E1159: Cannot split a window when closing the buffer"
 msgstr "E1159: Прозор не може да се подели када се затвара бафер"
 
 msgid "E1160: Cannot use a default for variable arguments"
-msgstr "E1160: За аргументе променљиве не може да се користи подразумевана вредност"
+msgstr ""
+"E1160: За аргументе променљиве не може да се користи подразумевана вредност"
 
 #, c-format
 msgid "E1161: Cannot json encode a %s"
@@ -7254,7 +7259,116 @@ msgstr "E1162: Име регистра мора бити један каракт
 
 #, c-format
 msgid "E1163: Variable %d: type mismatch, expected %s but got %s"
-msgstr "E1163: Променљива %d: неодговарајући тип, очекује се %s али је наведено %s"
+msgstr ""
+"E1163: Променљива %d: неодговарајући тип, очекује се %s али је наведено %s"
+
+msgid "E1164: vim9cmd must be followed by a command"
+msgstr "E1164: Иза vim9cmd мора да следи команда"
+
+#, c-format
+msgid "E1165: Cannot use a range with an assignment: %s"
+msgstr "E1165: Опсег не може да се користи са доделом: %s"
+
+msgid "E1166: Cannot use a range with a dictionary"
+msgstr "E1166: Опсег не може да се користи са речником"
+
+#, c-format
+msgid "E1167: Argument name shadows existing variable: %s"
+msgstr "E1167: Име аргумента заклања постојећу променљиву: %s"
+
+#, c-format
+msgid "E1168: Argument already declared in the script: %s"
+msgstr "E1168: Аргумент је већ декларисан у скрипти: %s"
+
+msgid "E1169: 'import * as {name}' not supported here"
+msgstr "E1169: Овде се не подржава 'import * as {име}'"
+
+msgid "E1170: Cannot use #{ to start a comment"
+msgstr "E1170: #{ не може да се користи за почетак коментара"
+
+msgid "E1171: Missing } after inline function"
+msgstr "E1171: Након inline функције недостаје }"
+
+msgid "E1172: Cannot use default values in a lambda"
+msgstr "E1172: Није могућа употреба подразумеваних вредности у ламбди"
+
+#, c-format
+msgid "E1173: Text found after enddef: %s"
+msgstr "E1173: Пронађен је текст након enddef: %s"
+
+#, c-format
+msgid "E1174: String required for argument %d"
+msgstr "E1174: Неопходан је стринг за аргумент %d"
+
+#, c-format
+msgid "E1175: Non-empty string required for argument %d"
+msgstr "E1175: Неопходан је непразни стринг за аргумент %d"
+
+msgid "E1176: Misplaced command modifier"
+msgstr "E1176: Модификатор команде није на одговарајућем месту"
+
+#, c-format
+msgid "E1177: For loop on %s not supported"
+msgstr "E1177: Не подржава се for петља над %s"
+
+msgid "E1178: Cannot lock or unlock a local variable"
+msgstr "E1178: Локална променљива не може да се закључа или откључа"
+
+#, c-format
+msgid ""
+"E1179: Failed to extract PWD from %s, check your shell's config related to "
+"OSC 7"
+msgstr ""
+"E1179: Није успело издвајање PWD из %s, проверите подешавање командног окружења "
+"које се тиче OSC 7"
+
+#, c-format
+msgid "E1180: Variable arguments type must be a list: %s"
+msgstr "E1180: Тип променљивих аргумената мора бити листа: %s"
+
+msgid "E1181: Cannot use an underscore here"
+msgstr "E1181: Овде не може да се користи доња црта"
+
+msgid "E1182: Blob required"
+msgstr "E1182: Потребан је Блоб"
+
+#, c-format
+msgid "E1183: Cannot use a range with an assignment operator: %s"
+msgstr "E1183: Опсег не може да се користи са оператором доделе: %s"
+
+msgid "E1184: Blob not set"
+msgstr "E1184: Blob није постављен"
+
+msgid "E1185: Cannot nest :redir"
+msgstr "E1185: :redir не може да се угњеждава"
+
+msgid "E1185: Missing :redir END"
+msgstr "E1185: Недостаје :redir END"
+
+#, c-format
+msgid "E1186: Expression does not result in a value: %s"
+msgstr "E1186: Резултат израза није вредност: %s"
+
+msgid "E1187: Failed to source defaults.vim"
+msgstr "E1187: Није успело учитавање defaults.vim"
+
+msgid "E1188: Cannot open a terminal from the command line window"
+msgstr "E1188: Из прозора командне линије не може да се отвори терминал"
+
+#, c-format
+msgid "E1189: Cannot use :legacy with this command: %s"
+msgstr "E1189: :legacy не може да се користи са овом командом: %s"
+
+msgid "E1190: One argument too few"
+msgstr "E1190: Фали један аргумент"
+
+#, c-format
+msgid "E1190: %d arguments too few"
+msgstr "E1190: фали %d аргумената"
+
+#, c-format
+msgid "E1191: Call to function that failed to compile: %s"
+msgstr "E1191: Позив функције која није успела да се компајлира: %s"
 
 msgid "--No lines in buffer--"
 msgstr "--У баферу нема линија--"
@@ -7355,8 +7469,8 @@ msgid "E475: Invalid value for argument %s: %s"
 msgstr "E475: Неважећа вредност за аргумент %s: %s"
 
 #, c-format
-msgid "E15: Invalid expression: %s"
-msgstr "E15: Неважећи израз: %s"
+msgid "E15: Invalid expression: \"%s\""
+msgstr "E15: Неважећи израз: „%s”"
 
 msgid "E16: Invalid range"
 msgstr "E16: Неважећи опсег"
@@ -7590,9 +7704,6 @@ msgstr "E896: Аргумент за %s мора бити Листа, Речни�
 
 msgid "E804: Cannot use '%' with Float"
 msgstr "E804: '%' не може да се користи са Покретни"
-
-msgid "E908: using an invalid value as a String"
-msgstr "E908: Користи се недозвољена вредност као Стринг"
 
 msgid "E996: Cannot lock an option"
 msgstr "E996: Опција не може да се закључа"
@@ -8133,6 +8244,9 @@ msgstr "Уређујте текст фајлове"
 msgid "Text;editor;"
 msgstr "Текст;едитор;"
 
+msgid "gvim"
+msgstr "gvim"
+
 msgid "Vim"
 msgstr "Vim"
 
@@ -8233,6 +8347,9 @@ msgstr "листа имена директоријума који се кори�
 msgid "change to directory of file in buffer"
 msgstr "мења на директоријум фајла у баферу"
 
+msgid "change to pwd of shell in terminal buffer"
+msgstr "мења на pwd командног окружења терминал баферу"
+
 msgid "search commands wrap around the end of the buffer"
 msgstr "команде претраге се обавијају око краја бафера"
 
@@ -8245,7 +8362,7 @@ msgstr ""
 "претраге"
 
 msgid "select the default regexp engine used"
-msgstr "бира подразумевани регизраз механизам"
+msgstr "бира подразумевани механизам регуларних израза"
 
 msgid "ignore case when using a search pattern"
 msgstr "не прави разлику у величини слова када се користи шаблон претраге"
@@ -8837,7 +8954,7 @@ msgid ""
 "\"autoselect\" to always put selected text on the clipboard"
 msgstr ""
 "„unnamed” да се користи * регистар као неименовани регистар\n"
-"„autoselect” да се изабрани текст увек ставља у клипборд"
+"„autoselect” да се изабрани текст увек ставља у системску оставу"
 
 msgid "\"startsel\" and/or \"stopsel\"; what special keys can do"
 msgstr "„startsel” и/или „stopsel”; шта могу да ураде специјални тастери"

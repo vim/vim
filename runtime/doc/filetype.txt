@@ -632,7 +632,7 @@ For fish, add to the config file
 MARKDOWN                                                *ft-markdown-plugin*
 
 To enable folding use this: >
-        let g:markdown_folding = 1
+	let g:markdown_folding = 1
 <
 
 PDF							*ft-pdf-plugin*

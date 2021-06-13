@@ -284,7 +284,8 @@ open the window from the start menu, MSYS2 64 bit / MSYS2 MSYS.
 Execute:
     $ pacman -Syu
 
-And restart MSYS2 console (select "MSYS2 MSYS" icon from the Start Menu).
+And restart MSYS2 console (select "MSYS2 MSYS 32-Bit" icon from the Start
+Menu for building 32 bit Vim, otherwise select "MSYS2 MinGW 64-Bit").
 Then execute:
     $ pacman -Su
 

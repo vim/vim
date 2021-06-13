@@ -112,6 +112,7 @@ Icon[de]=gvim
 Icon[eo]=gvim
 Icon[fr]=gvim
 Icon[ru]=gvim
+Icon[sr]=gvim
 Icon=gvim
 Categories=Utility;TextEditor;
 StartupNotify=true

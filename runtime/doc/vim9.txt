@@ -457,7 +457,8 @@ which is similar to JavaScript: >
 	var Lambda = (arg) => expression
 
 No line break is allowed in the arguments of a lambda up to and including the
-"=>".  This is OK: >
+"=>" (so that Vim can tell the difference between an expression in parenthesis
+and lambda arguments).  This is OK: >
 	filter(list, (k, v) =>
 			v > 0)
 This does not work: >
@@ -998,8 +999,13 @@ prefix if they do not exist at the time of compiling.
 			Note that for command line completion of {func} you
 			can prepend "s:" to find script-local functions.
 
-:disa[ssemble]! {func}	Like `:disassemble` but with the instructions used for
+:disa[ssemble] profile {func}
+			Like `:disassemble` but with the instructions used for
 			profiling.
+
+:disa[ssemble] debug {func}
+			Like `:disassemble` but with the instructions used for
+			debugging.
 
 Limitations ~
 

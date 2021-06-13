@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2021 May 28
+*todo.txt*      For Vim version 8.2.  Last change: 2021 Jun 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,57 +38,30 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Geen memory leak?
-
-Crash using outer var from nested lambda:
-	vim9script
-	def F(text: string): func(string): func(string): string
-	  return (arg: string): func(string): string => ((sep: string): string => {
-	      return text .. ' ' .. arg
-	    })
-	enddef
-
-	echo F('hello')(' ')('there')
-
-
-
 Vim9 - Make everything work:
-- function returning nothing should return void instead of zero
-- compile "expr" and "call" expression of a channel in channel_exe_cmd()?
-- Need some solution for dict function.  Can we implement part of classes?
-- A lambda without {} does not require a return type, using { return x } does.
-  That's unexpected, since the arguments are not required to have a type.
-  alt 1: not require a return type, figure it out from the common type of all
-	  the return statements found
-  alt 2: also require argument types
-- Using "windo echo expr" does not accept a line break inside "expr" (in a
-  :def function and at script level in a not executed block). #7681
-- use CheckLegacyAndVim9Success(lines) in many more places
+- Make debugging work - at least per function.  
+  - How to evaluate the stack and variables on the stack?
+  - FIXME in test_debugger.vim
 - For builtin functions using tv_get_string*() use check_for_string() to be
   more strict about the argument type (not a bool).
     done: balloon_()
 - Check many more builtin function arguments at compile time.
     map() could check that the return type of the function argument matches
     the type of the list or dict member. (#8092)
-- Allow for using an autoload function name without quotes.  It is then loaded
-  (and compiled) right away.  #8124
-- Test more expressions in legacy and Vim9 script, using
-  CheckLegacyAndVim9Success()
+    Same for other functions, such as searchpair().
+- use CheckLegacyAndVim9Success(lines) in many more places
 - Test try/catch and throw better, also nested.
   Test that return inside try/finally jumps to finally and then returns.
 - Test that a function defined inside a :def function is local to that
   function, g: functions can be defined and script-local functions cannot be
   defined.
-- Make debugging work - at least per function.  Need to recompile a function
-  to step through it line-by-line?  Evaluate the stack and variables on the
-  stack?
-- Reserve command for future use: :type, :class, :enum
+- compile get_lambda_tv() in popup_add_timeout()
 
 Once Vim9 is stable:
+- Add the "vim9script" feature, can use has('vim9script')
 - Change the help to prefer Vim9 syntax where appropriate
 - Add all the error numbers in a good place in documentation.
 - In the generic eval docs, point out the Vim9 syntax where it differs.
-- Add the "vim9script" feature, can use has('vim9script')
 - Use Vim9 for runtime files.
     PR #7497 for autoload/ccomplete.vim
 
@@ -100,13 +73,12 @@ Further Vim9 improvements, possibly after launch:
   Give an error if compilation fails. (#7625)
   Use the location where the option was set for deciding whether it's to be
   evaluated in Vim9 script context.
-- implement :type, import type declaration.
-- implement enum,  import enum.
-- Future work: See |vim9-classes|
+- implement :type, "import type"
+- implement enum,  "import enum".
+- implement class and interface: See |vim9-classes|
 - For range: make table of first ASCII character with flag to quickly check if
   it can be a Vim9 command. E.g. "+" can, but "." can't.
-- compile get_lambda_tv() in popup_add_timeout()
-- inline call to map() and filter()
+- Inline call to map() and filter(), better type checking.
 - Make accessing varargs faster: arg[expr]
 	EVAL expr
 	LOADVARARG (varargs idx)
@@ -300,6 +272,9 @@ inconsistent with the documentation.
 Making breakat support multibyte characters (Yasuhiro Matsumoto, #6598)
 Scroll doesn't work correctly, why?
 
+glob() and globfile() do not always honor 'wildignorecase'. #8350
+globpath() does not use 'wildignorecase' at all?
+
 Add 'termguiattr' option, use "gui=" attributes in the terminal?  Would work
 with 'termguicolors'. #1740
 
@@ -344,6 +319,9 @@ Should also work without any group:
     :echo matchstr('aaa bbb', '.\{-1,}\>\|.*')
     aaa bbb  (should be aaa)
 
+Should add a match/str/list/pos method that also returns the test and position
+of submatches.  #8355
+
 Check out PR #543 (Roland Puntaier).
 Patch for multibyte characters in langmap and applying a mapping on them.
 (Christian Brabandt, 2015 Jun 12, update July 25)
@@ -379,6 +357,10 @@ work.
 
 Using "au!" after "filetype on" is a bit slow.  Can the matching of
 autocommands be made faster?  (#7056)
+
+Append in Visual block mode inserts the wrong character.
+Test_visual_block_mode() already has the proper check, which is commented out.
+(#8288)
 
 Add the <=> (spaceship) operator and "cond ?< expr ?= expr ?> expr"
     replace this:
@@ -2262,9 +2244,6 @@ Are they all OK?  Update Jul 22.
 Win32: Improved Makefile for MSVC. (Leonardo Valeri Manera, 2010 Aug 18)
 
 Win32: Expanding 'path' runs into a maximum size limit. (bgold12, 2009 Nov 15)
-
-Win32: Patch for enabling quick edit mode in console. (Craig Barkhouse, 2010
-Sep 1)
 
 Win32: Patch for using .png files for icons. (Charles Peacech, 2012 Feb 5)
 

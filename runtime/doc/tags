@@ -7000,6 +7000,7 @@ getchar()	eval.txt	/*getchar()*
 getcharmod()	eval.txt	/*getcharmod()*
 getcharpos()	eval.txt	/*getcharpos()*
 getcharsearch()	eval.txt	/*getcharsearch()*
+getcharstr()	eval.txt	/*getcharstr()*
 getcmdline()	eval.txt	/*getcmdline()*
 getcmdpos()	eval.txt	/*getcmdpos()*
 getcmdtype()	eval.txt	/*getcmdtype()*
@@ -7901,6 +7902,7 @@ moo.vim	syntax.txt	/*moo.vim*
 more-compatible	version5.txt	/*more-compatible*
 more-prompt	message.txt	/*more-prompt*
 more-variables	eval.txt	/*more-variables*
+motion-count-multiplied	motion.txt	/*motion-count-multiplied*
 motion.txt	motion.txt	/*motion.txt*
 mouse-mode-table	term.txt	/*mouse-mode-table*
 mouse-overview	term.txt	/*mouse-overview*
@@ -8348,6 +8350,7 @@ omni-sql-completion	ft_sql.txt	/*omni-sql-completion*
 online-help	helphelp.txt	/*online-help*
 opening-window	windows.txt	/*opening-window*
 operator	motion.txt	/*operator*
+operator-doubled	motion.txt	/*operator-doubled*
 operator-pending-index	index.txt	/*operator-pending-index*
 operator-variable	eval.txt	/*operator-variable*
 option-backslash	options.txt	/*option-backslash*
@@ -8401,6 +8404,7 @@ page_up	intro.txt	/*page_up*
 pager	message.txt	/*pager*
 papp.vim	syntax.txt	/*papp.vim*
 paragraph	motion.txt	/*paragraph*
+partial	eval.txt	/*partial*
 pascal.vim	syntax.txt	/*pascal.vim*
 patches-8	version8.txt	/*patches-8*
 patches-8.1	version8.txt	/*patches-8.1*
@@ -10066,6 +10070,7 @@ v_u	change.txt	/*v_u*
 v_v	visual.txt	/*v_v*
 v_x	change.txt	/*v_x*
 v_y	change.txt	/*v_y*
+v_zy	change.txt	/*v_zy*
 v_~	change.txt	/*v_~*
 vab	motion.txt	/*vab*
 val-variable	eval.txt	/*val-variable*
@@ -10435,6 +10440,7 @@ zOS-PuTTY	os_390.txt	/*zOS-PuTTY*
 zOS-has-ebcdic	os_390.txt	/*zOS-has-ebcdic*
 zOS-limitations	os_390.txt	/*zOS-limitations*
 zOS-open-source	os_390.txt	/*zOS-open-source*
+zP	change.txt	/*zP*
 zR	fold.txt	/*zR*
 zW	spell.txt	/*zW*
 zX	fold.txt	/*zX*
@@ -10462,6 +10468,7 @@ zl	scroll.txt	/*zl*
 zm	fold.txt	/*zm*
 zn	fold.txt	/*zn*
 zo	fold.txt	/*zo*
+zp	change.txt	/*zp*
 zr	fold.txt	/*zr*
 zs	scroll.txt	/*zs*
 zsh.vim	syntax.txt	/*zsh.vim*
@@ -10473,6 +10480,7 @@ zuw	spell.txt	/*zuw*
 zv	fold.txt	/*zv*
 zw	spell.txt	/*zw*
 zx	fold.txt	/*zx*
+zy	change.txt	/*zy*
 zz	scroll.txt	/*zz*
 {	motion.txt	/*{*
 {Visual}	intro.txt	/*{Visual}*

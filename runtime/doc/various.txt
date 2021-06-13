@@ -724,7 +724,7 @@ K			Run a program to lookup the keyword under the
 			feature}
 
 							*:sl!* *:sleep!*
-:[N]sl[eep]! [N] [m]	Same as above, but hide the cursor.
+:[N]sl[eep]! [N][m]	Same as above, but hide the cursor.
 
 							*:xrestore* *:xr*
 :xr[estore] [display]	Reinitializes the connection to the X11 server. Useful

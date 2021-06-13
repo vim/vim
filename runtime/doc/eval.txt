@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2021 May 07
+*eval.txt*	For Vim version 8.2.  Last change: 2021 Jun 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2102,7 +2102,7 @@ v:null		An empty String. Used to put "null" in JSON.  See
 v:numbermax	Maximum value of a number.
 
 					*v:numbermin* *numbermin-variable*
-v:numbermin	Minimum value of a number (negative)
+v:numbermin	Minimum value of a number (negative).
 
 					*v:numbersize* *numbersize-variable*
 v:numbersize	Number of bits in a Number.  This is normally 64, but on some
@@ -2508,7 +2508,7 @@ char2nr({expr} [, {utf8}])	Number	ASCII/UTF8 value of first char in {expr}
 charclass({string})		Number	character class of {string}
 charcol({expr})			Number	column number of cursor or mark
 charidx({string}, {idx} [, {countcc}])
-				Number  char index of byte {idx} in {string}
+				Number	char index of byte {idx} in {string}
 chdir({dir})			String	change current working directory
 cindent({lnum})			Number	C indent for line {lnum}
 clearmatches([{win}])		none	clear all matches
@@ -2529,7 +2529,7 @@ cscope_connection([{num}, {dbpath} [, {prepend}]])
 cursor({lnum}, {col} [, {off}])
 				Number	move cursor to {lnum}, {col}, {off}
 cursor({list})			Number	move cursor to position in {list}
-debugbreak({pid})		Number  interrupt process being debugged
+debugbreak({pid})		Number	interrupt process being debugged
 deepcopy({expr} [, {noref}])	any	make a full copy of {expr}
 delete({fname} [, {flags}])	Number	delete the file or directory {fname}
 deletebufline({expr}, {first} [, {last}])
@@ -4951,7 +4951,7 @@ funcref({name} [, {arglist}] [, {dict}])
 		Can also be used as a |method|: >
 			GetFuncname()->funcref([arg])
 <
-					*function()* *E700* *E922* *E923*
+				*function()* *partial* *E700* *E922* *E923*
 function({name} [, {arglist}] [, {dict}])
 		Return a |Funcref| variable that refers to function {name}.
 		{name} can be the name of a user defined function or an
@@ -5500,8 +5500,8 @@ getcurpos([{winid}])
 
 		Can also be used as a |method|: >
 			GetWinid()->getcurpos()
-
-<							*getcursorcharpos()*
+<
+							*getcursorcharpos()*
 getcursorcharpos([{winid}])
 		Same as |getcurpos()| but the column number in the returned
 		List is a character index instead of a byte index.
@@ -5510,8 +5510,8 @@ getcursorcharpos([{winid}])
 		With the cursor on '보' in line 3 with text "여보세요": >
 			getcursorcharpos()	returns [0, 3, 2, 0, 3]
 			getcurpos()		returns [0, 3, 4, 0, 3]
-
-<		Can also be used as a |method|: >
+<
+		Can also be used as a |method|: >
 			GetWinid()->getcursorcharpos()
 
 <							*getcwd()*
@@ -5736,11 +5736,11 @@ getmarklist([{expr}])					*getmarklist()*
 		see |bufname()|.
 
 		Each item in the returned List is a |Dict| with the following:
-		    name - name of the mark prefixed by "'"
-		    pos - a |List| with the position of the mark:
+		    mark   name of the mark prefixed by "'"
+		    pos	   a |List| with the position of the mark:
 				[bufnum, lnum, col, off]
-			  Refer to |getpos()| for more information.
-		    file - file name
+			   Refer to |getpos()| for more information.
+		    file   file name
 
 		Refer to |getpos()| for getting information about a specific
 		mark.
@@ -5822,7 +5822,7 @@ getpos({expr})	Get the position for {expr}.  For possible values of {expr}
 		'> is a large number.
 		The column number in the returned List is the byte position
 		within the line. To get the character position in the line,
-		use |getcharpos()|
+		use |getcharpos()|.
 		The column number can be very large, e.g. 2147483647, in which
 		case it means "after the end of the line".
 		This can be used to save and restore the position of a mark: >
@@ -7637,7 +7637,7 @@ matchfuzzypos({list}, {str} [, {dict}])			*matchfuzzypos()*
 		Same as |matchfuzzy()|, but returns the list of matched
 		strings, the list of character positions where characters
 		in {str} matches and a list of matching scores.  You can
-		use |byteidx()|to convert a character position to a byte
+		use |byteidx()| to convert a character position to a byte
 		position.
 
 		If {str} matches multiple times in a string, then only the
@@ -9961,7 +9961,7 @@ sinh({expr})						*sinh()*
 		{only available when compiled with the |+float| feature}
 
 
-slice({expr}, {start} [, {end}])			*slice()* 
+slice({expr}, {start} [, {end}])			*slice()*
 		Similar to using a |slice| "expr[start : end]", but "end" is
 		used exclusive.  And for a string the indexes are used as
 		character indexes instead of byte indexes, like in
