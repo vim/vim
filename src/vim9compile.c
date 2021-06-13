@@ -454,7 +454,7 @@ item_exists(char_u *name, size_t len, int cmd UNUSED, cctx_T *cctx)
     if (name[len] == '(' || (p[0] == '-' && p[1] == '>'))
     {
 	// Do not check for an internal function, since it might also be a
-	// valid command, such as ":split" versuse "split()".
+	// valid command, such as ":split" versus "split()".
 	// Skip "g:" before a function name.
 	is_global = (name[0] == 'g' && name[1] == ':');
 	return find_func(is_global ? name + 2 : name, is_global, cctx) != NULL;
