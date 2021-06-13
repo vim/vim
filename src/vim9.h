@@ -493,10 +493,17 @@ extern garray_T def_functions;
 // Used for "lnum" when a range is to be taken from the stack and "!" is used.
 #define LNUM_VARIABLE_RANGE_ABOVE -888
 
+// Keep in sync with COMPILE_TYPE()
 #ifdef FEAT_PROFILE
 # define INSTRUCTIONS(dfunc) \
-	((do_profiling == PROF_YES && (dfunc->df_ufunc)->uf_profiling) \
-	? (dfunc)->df_instr_prof : (dfunc)->df_instr)
+	(debug_break_level > 0 \
+	    ? (dfunc)->df_instr_debug \
+	    : ((do_profiling == PROF_YES && (dfunc->df_ufunc)->uf_profiling) \
+		? (dfunc)->df_instr_prof \
+		: (dfunc)->df_instr))
 #else
-# define INSTRUCTIONS(dfunc) ((dfunc)->df_instr)
+# define INSTRUCTIONS(dfunc) \
+	(debug_break_level > 0 \
+		? (dfunc)->df_instr_debug \
+		: (dfunc)->df_instr)
 #endif

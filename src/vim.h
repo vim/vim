@@ -1801,6 +1801,7 @@ typedef enum {
     CT_DEBUG	    // use df_instr_debug, overrules CT_PROFILE
 } compiletype_T;
 
+// Keep in sync with INSTRUCTIONS().
 #ifdef FEAT_PROFILE
 # define COMPILE_TYPE(ufunc) (debug_break_level > 0 ? CT_DEBUG : do_profiling == PROF_YES && (ufunc)->uf_profiling ? CT_PROFILE : CT_NONE)
 #else
