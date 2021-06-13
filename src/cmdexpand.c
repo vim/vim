@@ -1370,6 +1370,8 @@ set_one_cmd_context(
 	case CMD_verbose:
 	case CMD_vertical:
 	case CMD_windo:
+	case CMD_vim9cmd:
+	case CMD_legacy:
 	    return arg;
 
 	case CMD_filter:
