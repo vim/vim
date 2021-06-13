@@ -535,6 +535,19 @@ set_init_1(int clean_arg)
 #endif
 }
 
+static char_u *fencs_utf8_default = (char_u *)"ucs-bom,utf-8,default,latin1";
+
+/*
+ * Set the "fileencodings" option to the default value for when 'encoding' is
+ * utf-8.
+ */
+    void
+set_fencs_unicode()
+{
+    set_string_option_direct((char_u *)"fencs", -1, fencs_utf8_default,
+								  OPT_FREE, 0);
+}
+
 /*
  * Set an option to its default value.
  * This does not take care of side effects!
@@ -558,9 +571,12 @@ set_option_default(
 	dvi = ((flags & P_VI_DEF) || compatible) ? VI_DEFAULT : VIM_DEFAULT;
 	if (flags & P_STRING)
 	{
+	    // 'fencs' default value depends on 'encoding'
+	    if (options[opt_idx].var == (char_u *)&p_fencs && enc_utf8)
+		set_fencs_unicode();
 	    // Use set_string_option_direct() for local options to handle
 	    // freeing and allocating the value.
-	    if (options[opt_idx].indir != PV_NONE)
+	    else if (options[opt_idx].indir != PV_NONE)
 		set_string_option_direct(NULL, opt_idx,
 				 options[opt_idx].def_val[dvi], opt_flags, 0);
 	    else
@@ -1684,6 +1700,8 @@ do_set(
 #endif
 				    newval = term_bg_default();
 			    }
+			    else if ((char_u **)varp == &p_fencs && enc_utf8)
+				newval = fencs_utf8_default;
 
 			    // expand environment variables and ~ (since the
 			    // default value was already expanded, only

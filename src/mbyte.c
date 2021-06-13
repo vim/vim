@@ -733,8 +733,7 @@ codepage_invalid:
 
     // When using Unicode, set default for 'fileencodings'.
     if (enc_utf8 && !option_was_set((char_u *)"fencs"))
-	set_string_option_direct((char_u *)"fencs", -1,
-		       (char_u *)"ucs-bom,utf-8,default,latin1", OPT_FREE, 0);
+	set_fencs_unicode();
 
 #if defined(HAVE_BIND_TEXTDOMAIN_CODESET) && defined(FEAT_GETTEXT)
     // GNU gettext 0.10.37 supports this feature: set the codeset used for
