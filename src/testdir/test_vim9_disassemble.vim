@@ -2146,6 +2146,7 @@ enddef
 
 def s:Profiled(): string
   echo "profiled"
+  var some = "some text"
   return "done"
 enddef
 
@@ -2159,12 +2160,17 @@ def Test_profiled()
         '\d PROFILE START line 1\_s*' ..
         '\d PUSHS "profiled"\_s*' ..
         '\d ECHO 1\_s*' ..
-        'return "done"\_s*' ..
+        'var some = "some text"\_s*' ..
         '\d PROFILE END\_s*' ..
         '\d PROFILE START line 2\_s*' ..
+        '\d PUSHS "some text"\_s*' ..
+        '\d STORE $0\_s*' ..
+        'return "done"\_s*' ..
+        '\d PROFILE END\_s*' ..
+        '\d PROFILE START line 3\_s*' ..
         '\d PUSHS "done"\_s*' ..
-        '\d RETURN\_s*' ..
-        '\d PROFILE END',
+        '\d\+ RETURN\_s*' ..
+        '\d\+ PROFILE END',
         res)
 enddef
 
@@ -2172,11 +2178,15 @@ def Test_debugged()
   var res = execute('disass debug s:Profiled')
   assert_match('<SNR>\d*_Profiled\_s*' ..
         'echo "profiled"\_s*' ..
-        '\d DEBUG line 1\_s*' ..
+        '\d DEBUG line 1 varcount 0\_s*' ..
         '\d PUSHS "profiled"\_s*' ..
         '\d ECHO 1\_s*' ..
+        'var some = "some text"\_s*' ..
+        '\d DEBUG line 2 varcount 0\_s*' ..
+        '\d PUSHS "some text"\_s*' ..
+        '\d STORE $0\_s*' ..
         'return "done"\_s*' ..
-        '\d DEBUG line 2\_s*' ..
+        '\d DEBUG line 3 varcount 1\_s*' ..
         '\d PUSHS "done"\_s*' ..
         '\d RETURN\_s*',
         res)
