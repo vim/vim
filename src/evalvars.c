@@ -2571,13 +2571,17 @@ eval_variable(
     cc = name[len];
     name[len] = NUL;
 
-    // Check for user-defined variables.
-    v = find_var(name, NULL, flags & EVAL_VAR_NOAUTOLOAD);
-    if (v != NULL)
+    // Check for local variable when debugging.
+    if ((tv = lookup_debug_var(name)) == NULL)
     {
-	tv = &v->di_tv;
-	if (dip != NULL)
-	    *dip = v;
+	// Check for user-defined variables.
+	v = find_var(name, NULL, flags & EVAL_VAR_NOAUTOLOAD);
+	if (v != NULL)
+	{
+	    tv = &v->di_tv;
+	    if (dip != NULL)
+		*dip = v;
+	}
     }
 
     if (tv == NULL && (in_vim9script() || STRNCMP(name, "s:", 2) == 0))
