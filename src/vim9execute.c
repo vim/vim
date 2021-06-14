@@ -172,6 +172,7 @@ call_dfunc(
     int		argcount = argcount_arg;
     dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data) + cdf_idx;
     ufunc_T	*ufunc = dfunc->df_ufunc;
+    int		did_emsg_before = did_emsg_cumul + did_emsg;
     int		arg_to_add;
     int		vararg_count = 0;
     int		varcount;
@@ -210,6 +211,19 @@ call_dfunc(
 	    return FAIL;
     }
 #endif
+
+    // When debugging and using "cont" switches to the not-debugged
+    // instructions, may need to still compile them.
+    if ((func_needs_compiling(ufunc, COMPILE_TYPE(ufunc))
+	       && compile_def_function(ufunc, FALSE, COMPILE_TYPE(ufunc), NULL)
+								      == FAIL)
+	    || INSTRUCTIONS(dfunc) == NULL)
+    {
+	if (did_emsg_cumul + did_emsg == did_emsg_before)
+	    semsg(_(e_function_is_not_compiled_str),
+						   printable_func_name(ufunc));
+	return FAIL;
+    }
 
     if (ufunc->uf_va_name != NULL)
     {
@@ -1381,6 +1395,36 @@ typedef struct subs_expr_S {
 
 // Get pointer to a local variable on the stack.  Negative for arguments.
 #define STACK_TV_VAR(idx) (((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_frame_idx + STACK_FRAME_SIZE + idx)
+
+// Set when calling do_debug().
+static ectx_T	*debug_context = NULL;
+static int	debug_arg_count;
+
+/*
+ * When debugging lookup "name" and return the typeval.
+ * When not found return NULL.
+ */
+    typval_T *
+lookup_debug_var(char_u *name)
+{
+    int		    idx;
+    dfunc_T	    *dfunc;
+    ectx_T	    *ectx = debug_context;
+
+    if (ectx == NULL)
+	return NULL;
+    dfunc = ((dfunc_T *)def_functions.ga_data) + ectx->ec_dfunc_idx;
+
+    // Go through the local variable names, from last to first.
+    for (idx = debug_arg_count - 1; idx >= 0; --idx)
+    {
+	char_u *s = ((char_u **)dfunc->df_var_names.ga_data)[idx];
+	if (STRCMP(s, name) == 0)
+	    return STACK_TV_VAR(idx);
+    }
+
+    return NULL;
+}
 
 /*
  * Execute instructions in execution context "ectx".
@@ -4087,7 +4131,7 @@ exec_instructions(ectx_T *ectx)
 		    funccall_T cookie;
 		    ufunc_T	    *cur_ufunc =
 				    (((dfunc_T *)def_functions.ga_data)
-						 + ectx->ec_dfunc_idx)->df_ufunc;
+					       + ectx->ec_dfunc_idx)->df_ufunc;
 
 		    cookie.func = cur_ufunc;
 		    if (iptr->isn_type == ISN_PROF_START)
@@ -4110,11 +4154,14 @@ exec_instructions(ectx_T *ectx)
 					       + ectx->ec_dfunc_idx)->df_ufunc;
 
 		    SOURCING_LNUM = iptr->isn_lnum;
+		    debug_context = ectx;
+		    debug_arg_count = iptr->isn_arg.number;
 		    line = ((char_u **)ufunc->uf_lines.ga_data)[
 							   iptr->isn_lnum - 1];
 		    if (line == NULL)
 			line = (char_u *)"[empty]";
 		    do_debug(line);
+		    debug_context = NULL;
 		}
 		break;
 
@@ -5346,7 +5393,8 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 		break;
 
 	    case ISN_DEBUG:
-		smsg("%s%4d DEBUG line %d", pfx, current, iptr->isn_lnum);
+		smsg("%s%4d DEBUG line %d varcount %lld", pfx, current,
+					 iptr->isn_lnum, iptr->isn_arg.number);
 		break;
 
 	    case ISN_UNPACK: smsg("%s%4d UNPACK %d%s", pfx, current,

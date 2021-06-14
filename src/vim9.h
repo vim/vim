@@ -168,7 +168,8 @@ typedef enum {
     ISN_PROF_START, // start a line for profiling
     ISN_PROF_END,   // end a line for profiling
 
-    ISN_DEBUG,	    // check for debug breakpoint
+    ISN_DEBUG,	    // check for debug breakpoint, isn_arg.number is current
+		    // number of local variables
 
     ISN_UNPACK,	    // unpack list into items, uses isn_arg.unpack
     ISN_SHUFFLE,    // move item on stack up or down
@@ -447,6 +448,7 @@ struct dfunc_S {
 				    // was compiled.
 
     garray_T	df_def_args_isn;    // default argument instructions
+    garray_T	df_var_names;	    // names of local vars
 
     // After compiling "df_instr" and/or "df_instr_prof" is not NULL.
     isn_T	*df_instr;	    // function body to be executed

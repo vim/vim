@@ -218,7 +218,7 @@ do_debug(char_u *cmd)
 
 	    if (last_cmd != 0)
 	    {
-		// Execute debug command: decided where to break next and
+		// Execute debug command: decide where to break next and
 		// return.
 		switch (last_cmd)
 		{

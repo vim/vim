@@ -177,7 +177,6 @@ struct cctx_S {
     compiletype_T ctx_compile_type;
 
     garray_T	ctx_locals;	    // currently visible local variables
-    int		ctx_locals_count;   // total number of local variables
 
     int		ctx_has_closure;    // set to one if a closures was created in
 				    // the function
@@ -571,6 +570,22 @@ generate_instr_type(cctx_T *cctx, isntype_T isn_type, type_T *type)
     ((type_T **)stack->ga_data)[stack->ga_len] = type == NULL ? &t_any : type;
     ++stack->ga_len;
 
+    return isn;
+}
+
+/*
+ * Generate an ISN_DEBUG instruction.
+ */
+    static isn_T *
+generate_instr_debug(cctx_T *cctx)
+{
+    isn_T	*isn;
+    dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
+					       + cctx->ctx_ufunc->uf_dfunc_idx;
+
+    if ((isn = generate_instr(cctx, ISN_DEBUG)) == NULL)
+	return NULL;
+    isn->isn_arg.number = dfunc->df_var_names.ga_len;
     return isn;
 }
 
@@ -2365,6 +2380,7 @@ reserve_local(
 	type_T	*type)
 {
     lvar_T  *lvar;
+    dfunc_T *dfunc;
 
     if (arg_exists(name, len, NULL, NULL, NULL, cctx) == OK)
     {
@@ -2381,11 +2397,19 @@ reserve_local(
     // the last ones when leaving a scope, but then variables used in a closure
     // might get overwritten.  To keep things simple do not re-use stack
     // entries.  This is less efficient, but memory is cheap these days.
-    lvar->lv_idx = cctx->ctx_locals_count++;
+    dfunc = ((dfunc_T *)def_functions.ga_data) + cctx->ctx_ufunc->uf_dfunc_idx;
+    lvar->lv_idx = dfunc->df_var_names.ga_len;
 
     lvar->lv_name = vim_strnsave(name, len == 0 ? STRLEN(name) : len);
     lvar->lv_const = isConst;
     lvar->lv_type = type;
+
+    // Remember the name for debugging.
+    if (ga_grow(&dfunc->df_var_names, 1) == FAIL)
+	return NULL;
+    ((char_u **)dfunc->df_var_names.ga_data)[lvar->lv_idx] =
+						    vim_strsave(lvar->lv_name);
+    ++dfunc->df_var_names.ga_len;
 
     return lvar;
 }
@@ -7486,7 +7510,7 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 	if (cctx->ctx_compile_type == CT_DEBUG)
 	{
 	    // the previous block was skipped, may want to debug this line
-	    generate_instr(cctx, ISN_DEBUG);
+	    generate_instr_debug(cctx);
 	    instr_count = instr->ga_len;
 	}
     }
@@ -8239,7 +8263,7 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 	}
 #endif
 	if (cctx->ctx_compile_type == CT_DEBUG)
-	    generate_instr(cctx, ISN_DEBUG);
+	    generate_instr_debug(cctx);
     }
 
     p = skipwhite(arg);
@@ -8976,6 +9000,7 @@ add_def_function(ufunc_T *ufunc)
     ufunc->uf_dfunc_idx = dfunc->df_idx;
     dfunc->df_ufunc = ufunc;
     dfunc->df_name = vim_strsave(ufunc->uf_name);
+    ga_init2(&dfunc->df_var_names, sizeof(char_u *), 10);
     ++dfunc->df_refcount;
     ++def_functions.ga_len;
     return OK;
@@ -9026,7 +9051,21 @@ compile_def_function(
     {
 	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
 							 + ufunc->uf_dfunc_idx;
-	delete_def_function_contents(dfunc, FALSE);
+	isn_T	*instr_dest;
+
+	switch (compile_type)
+	{
+	    case CT_PROFILE:
+#ifdef FEAT_PROFILE
+			    instr_dest = dfunc->df_instr_prof; break;
+#endif
+	    case CT_NONE:   instr_dest = dfunc->df_instr; break;
+	    case CT_DEBUG:  instr_dest = dfunc->df_instr_debug; break;
+	}
+	if (instr_dest != NULL)
+	    // Was compiled in this mode before: Free old instructions.
+	    delete_def_function_contents(dfunc, FALSE);
+	ga_clear_strings(&dfunc->df_var_names);
     }
     else
     {
@@ -9202,7 +9241,7 @@ compile_def_function(
 						  && cctx.ctx_skip != SKIP_YES)
 	{
 	    debug_lnum = cctx.ctx_lnum;
-	    generate_instr(&cctx, ISN_DEBUG);
+	    generate_instr_debug(&cctx);
 	}
 
 	// Some things can be recognized by the first character.
@@ -9670,7 +9709,7 @@ nextline:
 	    dfunc->df_instr = instr->ga_data;
 	    dfunc->df_instr_count = instr->ga_len;
 	}
-	dfunc->df_varcount = cctx.ctx_locals_count;
+	dfunc->df_varcount = dfunc->df_var_names.ga_len;
 	dfunc->df_has_closure = cctx.ctx_has_closure;
 	if (cctx.ctx_outer_used)
 	    ufunc->uf_flags |= FC_CLOSURE;
@@ -10037,6 +10076,7 @@ delete_def_function_contents(dfunc_T *dfunc, int mark_deleted)
     int idx;
 
     ga_clear(&dfunc->df_def_args_isn);
+    ga_clear_strings(&dfunc->df_var_names);
 
     if (dfunc->df_instr != NULL)
     {
