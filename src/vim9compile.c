@@ -9679,8 +9679,8 @@ nextline:
 	    goto erret;
 	}
 
-	// Return zero if there is no return at the end.
-	generate_instr(&cctx, ISN_RETURN_ZERO);
+	// Return void if there is no return at the end.
+	generate_instr(&cctx, ISN_RETURN_VOID);
     }
 
     // When compiled with ":silent!" and there was an error don't consider the
@@ -10047,7 +10047,7 @@ delete_instr(isn_T *isn)
 	case ISN_REDIREND:
 	case ISN_REDIRSTART:
 	case ISN_RETURN:
-	case ISN_RETURN_ZERO:
+	case ISN_RETURN_VOID:
 	case ISN_SHUFFLE:
 	case ISN_SLICE:
 	case ISN_STORE:

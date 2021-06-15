@@ -2815,17 +2815,18 @@ exec_instructions(ectx_T *ectx)
 		}
 		break;
 
-	    // return from a :def function call
-	    case ISN_RETURN_ZERO:
+	    // return from a :def function call without a value
+	    case ISN_RETURN_VOID:
 		if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
 		    goto theend;
 		tv = STACK_TV_BOT(0);
 		++ectx->ec_stack.ga_len;
-		tv->v_type = VAR_NUMBER;
+		tv->v_type = VAR_VOID;
 		tv->vval.v_number = 0;
 		tv->v_lock = 0;
 		// FALLTHROUGH
 
+	    // return from a :def function call with what is on the stack
 	    case ISN_RETURN:
 		{
 		    garray_T	*trystack = &ectx->ec_trystack;
@@ -5076,8 +5077,8 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_RETURN:
 		smsg("%s%4d RETURN", pfx, current);
 		break;
-	    case ISN_RETURN_ZERO:
-		smsg("%s%4d RETURN 0", pfx, current);
+	    case ISN_RETURN_VOID:
+		smsg("%s%4d RETURN void", pfx, current);
 		break;
 	    case ISN_FUNCREF:
 		{

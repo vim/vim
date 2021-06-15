@@ -91,7 +91,7 @@ typedef enum {
     ISN_PCALL,	    // call partial, use isn_arg.pfunc
     ISN_PCALL_END,  // cleanup after ISN_PCALL with cpf_top set
     ISN_RETURN,	    // return, result is on top of stack
-    ISN_RETURN_ZERO, // Push zero, then return
+    ISN_RETURN_VOID, // Push void, then return
     ISN_FUNCREF,    // push a function ref to dfunc isn_arg.funcref
     ISN_NEWFUNC,    // create a global function from a lambda function
     ISN_DEF,	    // list functions
