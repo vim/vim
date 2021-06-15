@@ -9724,8 +9724,10 @@ erret:
 	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
 							 + ufunc->uf_dfunc_idx;
 
+	// Compiling aborted, free the generated instructions.
 	clear_instr_ga(instr);
 	VIM_CLEAR(dfunc->df_name);
+	ga_clear_strings(&dfunc->df_var_names);
 
 	// If using the last entry in the table and it was added above, we
 	// might as well remove it.
