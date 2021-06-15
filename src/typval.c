@@ -591,7 +591,6 @@ copy_tv(typval_T *from, typval_T *to)
 	case VAR_NUMBER:
 	case VAR_BOOL:
 	case VAR_SPECIAL:
-	case VAR_VOID:
 	    to->vval.v_number = from->vval.v_number;
 	    break;
 	case VAR_FLOAT:
@@ -663,6 +662,9 @@ copy_tv(typval_T *from, typval_T *to)
 		to->vval.v_dict = from->vval.v_dict;
 		++to->vval.v_dict->dv_refcount;
 	    }
+	    break;
+	case VAR_VOID:
+	    emsg(_(e_cannot_use_void_value));
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_ANY:
