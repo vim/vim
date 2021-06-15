@@ -9051,7 +9051,7 @@ compile_def_function(
     {
 	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
 							 + ufunc->uf_dfunc_idx;
-	isn_T	*instr_dest;
+	isn_T	*instr_dest = NULL;
 
 	switch (compile_type)
 	{
