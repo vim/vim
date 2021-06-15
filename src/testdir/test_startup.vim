@@ -1305,9 +1305,10 @@ func Test_echo_true_in_cmd()
   let lines =<< trim END
       echo v:true
       call writefile(['done'], 'Xresult')
+      quit
   END
   call writefile(lines, 'Xscript')
-  if RunVim([], [], '--cmd "source Xscript" --c q')
+  if RunVim([], [], '--cmd "source Xscript"')
     call assert_equal(['done'], readfile('Xresult'))
   endif
   call delete('Xscript')
