@@ -1531,7 +1531,7 @@ tclsetdelcmd(
 	reflist = reflist->next;
     }
     // This should never happen.  Famous last word?
-    emsg(_("E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim.org"));
+    iemsg(_("E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim.org"));
     Tcl_SetResult(interp, _("cannot register callback command: buffer/window reference not found"), TCL_STATIC);
     return TCL_ERROR;
 }
