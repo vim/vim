@@ -590,6 +590,19 @@ def Test_try_catch_throw()
     return 2
   enddef
   assert_equal(4, ReturnInFinally())
+
+  var lines =<< trim END
+      vim9script
+      try
+        acos('0.5')
+          ->setline(1)
+      catch
+        g:caught = v:exception
+      endtry
+  END
+  CheckScriptSuccess(lines)
+  assert_match('E808: Number or Float required', g:caught)
+  unlet g:caught
 enddef
 
 " :while at the very start of a function that :continue jumps to

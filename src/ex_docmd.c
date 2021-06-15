@@ -1844,7 +1844,7 @@ do_one_cmd(
 
 	    // If a ':' before the range is missing, give a clearer error
 	    // message.
-	    if (ar > ea.cmd)
+	    if (ar > ea.cmd && !ea.skip)
 	    {
 		semsg(_(e_colon_required_before_range_str), ea.cmd);
 		goto doend;
