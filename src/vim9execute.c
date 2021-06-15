@@ -752,12 +752,8 @@ call_ufunc(
     int		error;
     int		idx;
     int		did_emsg_before = did_emsg;
-    compiletype_T compile_type = CT_NONE;
+    compiletype_T compile_type = COMPILE_TYPE(ufunc);
 
-#ifdef FEAT_PROFILE
-    if (do_profiling == PROF_YES && ufunc->uf_profiling)
-	compile_type = CT_PROFILE;
-#endif
     if (func_needs_compiling(ufunc, compile_type)
 		&& compile_def_function(ufunc, FALSE, compile_type, NULL)
 								       == FAIL)
