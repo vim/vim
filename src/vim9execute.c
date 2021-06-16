@@ -1433,6 +1433,52 @@ lookup_debug_var(char_u *name)
     return NULL;
 }
 
+    static void
+handle_debug(isn_T *iptr, ectx_T *ectx)
+{
+    char_u	*line;
+    ufunc_T	*ufunc = (((dfunc_T *)def_functions.ga_data)
+					       + ectx->ec_dfunc_idx)->df_ufunc;
+    isn_T	*ni;
+    int		end_lnum = iptr->isn_lnum;
+    garray_T	ga;
+    int		lnum;
+
+    SOURCING_LNUM = iptr->isn_lnum;
+    debug_context = ectx;
+    debug_var_count = iptr->isn_arg.number;
+
+    for (ni = iptr + 1; ni->isn_type != ISN_FINISH; ++ni)
+	if (ni->isn_type == ISN_DEBUG
+		  || ni->isn_type == ISN_RETURN
+		  || ni->isn_type == ISN_RETURN_VOID)
+	{
+	    end_lnum = ni->isn_lnum;
+	    break;
+	}
+
+    if (end_lnum > iptr->isn_lnum)
+    {
+	ga_init2(&ga, sizeof(char_u *), 10);
+	for (lnum = iptr->isn_lnum; lnum < end_lnum; ++lnum)
+	    if (ga_grow(&ga, 1) == OK)
+		((char_u **)(ga.ga_data))[ga.ga_len++] =
+		     skipwhite(((char_u **)ufunc->uf_lines.ga_data)[lnum - 1]);
+	line = ga_concat_strings(&ga, "  ");
+	vim_free(ga.ga_data);
+    }
+    else
+	line = ((char_u **)ufunc->uf_lines.ga_data)[iptr->isn_lnum - 1];
+    if (line == NULL)
+	line = (char_u *)"[empty]";
+
+    do_debug(line);
+    debug_context = NULL;
+
+    if (end_lnum > iptr->isn_lnum)
+	vim_free(line);
+}
+
 /*
  * Execute instructions in execution context "ectx".
  * Return OK or FAIL;
@@ -4156,21 +4202,7 @@ exec_instructions(ectx_T *ectx)
 
 	    case ISN_DEBUG:
 		if (ex_nesting_level <= debug_break_level)
-		{
-		    char_u	*line;
-		    ufunc_T	*ufunc = (((dfunc_T *)def_functions.ga_data)
-					       + ectx->ec_dfunc_idx)->df_ufunc;
-
-		    SOURCING_LNUM = iptr->isn_lnum;
-		    debug_context = ectx;
-		    debug_var_count = iptr->isn_arg.number;
-		    line = ((char_u **)ufunc->uf_lines.ga_data)[
-							   iptr->isn_lnum - 1];
-		    if (line == NULL)
-			line = (char_u *)"[empty]";
-		    do_debug(line);
-		    debug_context = NULL;
-		}
+		    handle_debug(iptr, ectx);
 		break;
 
 	    case ISN_SHUFFLE:
