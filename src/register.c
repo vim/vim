@@ -462,6 +462,9 @@ stuff_yank(int regname, char_u *p)
     return OK;
 }
 
+/*
+ * Last executed register (@ command)
+ */
 static int execreg_lastc = NUL;
 
     int

@@ -1302,6 +1302,7 @@ func Test_write_in_vimrc()
 endfunc
 
 func Test_echo_true_in_cmd()
+  CheckNotGui
   let lines =<< trim END
       echo v:true
       call writefile(['done'], 'Xresult')
