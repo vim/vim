@@ -1656,6 +1656,7 @@ add_scrollback_line_to_buffer(term_T *term, char_u *text, int len, int append)
     linenr_T	lnum = buf->b_ml.ml_line_count;
 
 #ifdef MSWIN
+    char_u *tmp = text;
     if (!enc_utf8 && enc_codepage > 0)
     {
 	WCHAR   *ret = NULL;
@@ -1668,12 +1669,10 @@ add_scrollback_line_to_buffer(term_T *term, char_u *text, int len, int append)
 	    WideCharToMultiByte_alloc(enc_codepage, 0,
 				      ret, length, (char **)&text, &len, 0, 0);
 	    vim_free(ret);
-	    ml_append_buf(term->tl_buffer, lnum, text, len, FALSE);
-	    vim_free(text);
 	}
     }
-    else
 #endif
+
     if (append)
     {
 	char_u *prev_text = ml_get_buf(buf, lnum, FALSE);
@@ -1689,6 +1688,11 @@ add_scrollback_line_to_buffer(term_T *term, char_u *text, int len, int append)
     }
     else
 	ml_append_buf(buf, lnum, text, len + 1, FALSE);
+
+#ifdef MSWIN
+    if (tmp != text)
+	vim_free(text);
+#endif
     if (empty)
     {
 	// Delete the empty line that was in the empty buffer.
