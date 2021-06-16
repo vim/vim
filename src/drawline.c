@@ -1121,8 +1121,9 @@ win_line(
 			    int		t;
 
 			    // like rl_mirror(), but keep the space at the end
-			    p2 = skiptowhite(extra) - 1;
-			    for (p1 = extra; p1 < p2; ++p1, --p2)
+			    p2 = skipwhite(extra);
+			    p2 = skiptowhite(p2) - 1;
+			    for (p1 = skipwhite(extra); p1 < p2; ++p1, --p2)
 			    {
 				t = *p1;
 				*p1 = *p2;
