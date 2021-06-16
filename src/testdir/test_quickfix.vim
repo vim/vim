@@ -5281,7 +5281,7 @@ func Test_add_invalid_entry_with_qf_window()
   call setqflist(['bb'], 'a')
   call assert_equal(1, line('$'))
   call assert_equal(['Xfile1|10| aa'], getline(1, '$'))
-  call assert_equal([{'lnum': 10, 'bufnr': bufnr('Xfile1'), 'col': 0, 'pattern': '', 'valid': 1, 'vcol': 0, 'nr': -1, 'type': '', 'module': '', 'text': 'aa'}], getqflist())
+  call assert_equal([{'lnum': 10, 'end_lnum': 0, 'bufnr': bufnr('Xfile1'), 'col': 0, 'end_col': 0, 'pattern': '', 'valid': 1, 'vcol': 0, 'nr': -1, 'type': '', 'module': '', 'text': 'aa'}], getqflist())
   cclose
 endfunc
 
