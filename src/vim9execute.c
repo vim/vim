@@ -1394,7 +1394,7 @@ typedef struct subs_expr_S {
 
 // Set when calling do_debug().
 static ectx_T	*debug_context = NULL;
-static int	debug_arg_count;
+static int	debug_var_count;
 
 /*
  * When debugging lookup "name" and return the typeval.
@@ -1405,19 +1405,30 @@ lookup_debug_var(char_u *name)
 {
     int		    idx;
     dfunc_T	    *dfunc;
+    ufunc_T	    *ufunc;
     ectx_T	    *ectx = debug_context;
+    int		    varargs_off;
 
     if (ectx == NULL)
 	return NULL;
     dfunc = ((dfunc_T *)def_functions.ga_data) + ectx->ec_dfunc_idx;
 
     // Go through the local variable names, from last to first.
-    for (idx = debug_arg_count - 1; idx >= 0; --idx)
+    for (idx = debug_var_count - 1; idx >= 0; --idx)
     {
-	char_u *s = ((char_u **)dfunc->df_var_names.ga_data)[idx];
-	if (STRCMP(s, name) == 0)
+	if (STRCMP(((char_u **)dfunc->df_var_names.ga_data)[idx], name) == 0)
 	    return STACK_TV_VAR(idx);
     }
+
+    // Go through argument names.
+    ufunc = dfunc->df_ufunc;
+    varargs_off = ufunc->uf_va_name == NULL ? 0 : 1;
+    for (idx = 0; idx < ufunc->uf_args.ga_len; ++idx)
+	if (STRCMP(((char_u **)(ufunc->uf_args.ga_data))[idx], name) == 0)
+	    return STACK_TV(ectx->ec_frame_idx - ufunc->uf_args.ga_len
+							  - varargs_off + idx);
+    if (ufunc->uf_va_name != NULL && STRCMP(ufunc->uf_va_name, name) == 0)
+	return STACK_TV(ectx->ec_frame_idx - 1);
 
     return NULL;
 }
@@ -4152,7 +4163,7 @@ exec_instructions(ectx_T *ectx)
 
 		    SOURCING_LNUM = iptr->isn_lnum;
 		    debug_context = ectx;
-		    debug_arg_count = iptr->isn_arg.number;
+		    debug_var_count = iptr->isn_arg.number;
 		    line = ((char_u **)ufunc->uf_lines.ga_data)[
 							   iptr->isn_lnum - 1];
 		    if (line == NULL)
