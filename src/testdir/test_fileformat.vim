@@ -1,5 +1,7 @@
 " Test for 'fileformat'
 
+source shared.vim
+
 " Test behavior of fileformat after bwipeout of last buffer
 func Test_fileformat_after_bw()
   bwipeout
@@ -306,6 +308,20 @@ func Test_fileformat_plusplus_read()
   call assert_fails('e ++fileformat Xfile1', 'E474:')
   call assert_fails('e ++ff=abc Xfile1', 'E474:')
   call assert_fails('e ++abc1 Xfile1', 'E474:')
+endfunc
+
+" When Vim starts up with an empty buffer the first item in 'fileformats' is
+" used as the 'fileformat'.
+func Test_fileformat_on_startup()
+  let after =<< trim END
+    call writefile([&fileformat], 'Xfile', 'a')
+    quit
+  END
+  call RunVim(["set ffs=dos,unix,mac"], after, '')
+  call RunVim(["set ffs=mac,dos,unix"], after, '')
+  call RunVim(["set ffs=unix,mac,dos"], after, '')
+  call assert_equal(['dos', 'mac', 'unix'], readfile('Xfile'))
+  call delete('Xfile')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
