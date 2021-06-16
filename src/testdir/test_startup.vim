@@ -1302,6 +1302,8 @@ func Test_write_in_vimrc()
 endfunc
 
 func Test_echo_true_in_cmd()
+  CheckNotGui
+
   let lines =<< trim END
       echo v:true
       call writefile(['done'], 'Xresult')
@@ -1313,7 +1315,6 @@ func Test_echo_true_in_cmd()
   endif
   call delete('Xscript')
   call delete('Xresult')
-
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
