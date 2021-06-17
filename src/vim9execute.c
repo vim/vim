@@ -1469,10 +1469,8 @@ handle_debug(isn_T *iptr, ectx_T *ectx)
     }
     else
 	line = ((char_u **)ufunc->uf_lines.ga_data)[iptr->isn_lnum - 1];
-    if (line == NULL)
-	line = (char_u *)"[empty]";
 
-    do_debug(line);
+    do_debug(line == NULL ? (char_u *)"[empty]" : line);
     debug_context = NULL;
 
     if (end_lnum > iptr->isn_lnum)
