@@ -1820,6 +1820,19 @@ def Test_assign_command_modifier()
   CheckDefAndScriptSuccess(lines)
 enddef
 
+def Test_assign_alt_buf_register()
+  var lines =<< trim END
+      edit 'file_b1'
+      var b1 = bufnr()
+      edit 'file_b2'
+      var b2 = bufnr()
+      assert_equal(b1, bufnr('#'))
+      @# = b2
+      assert_equal(b2, bufnr('#'))
+  END
+  CheckDefAndScriptSuccess(lines)
+enddef
+
 def Test_script_funcref_case()
   var lines =<< trim END
       var Len = (s: string): number => len(s) + 1

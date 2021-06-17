@@ -5852,7 +5852,7 @@ get_var_dest(
 	    return FAIL;
 	}
 	*dest = dest_reg;
-	*type = &t_string;
+	*type = name[1] == '#' ? &t_number_or_string : &t_string;
     }
     else if (STRNCMP(name, "g:", 2) == 0)
     {
@@ -5927,7 +5927,8 @@ generate_store_var(
 	case dest_env:
 	    return generate_STORE(cctx, ISN_STOREENV, 0, name + 1);
 	case dest_reg:
-	    return generate_STORE(cctx, ISN_STOREREG, name[1], NULL);
+	    return generate_STORE(cctx, ISN_STOREREG,
+					 name[1] == '@' ? '"' : name[1], NULL);
 	case dest_vimvar:
 	    return generate_STORE(cctx, ISN_STOREV, vimvaridx, NULL);
 	case dest_script:
@@ -6843,9 +6844,19 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			    goto theend;
 		    }
 		}
-		else if (*p != '=' && need_type(rhs_type, lhs.lhs_member_type,
+		else
+		{
+		    type_T *lhs_type = lhs.lhs_member_type;
+
+		    // Special case: assigning to @# can use a number or a
+		    // string.
+		    if (lhs_type == &t_number_or_string
+					    && rhs_type->tt_type == VAR_NUMBER)
+			lhs_type = &t_number;
+		    if (*p != '=' && need_type(rhs_type, lhs_type,
 					    -1, 0, cctx, FALSE, FALSE) == FAIL)
 		    goto theend;
+		}
 	    }
 	    else if (cmdidx == CMD_final)
 	    {
