@@ -177,6 +177,7 @@ static char_u	*qf_pop_dir(struct dir_stack_T **);
 static char_u	*qf_guess_filepath(qf_list_T *qfl, char_u *);
 static void	qf_jump_newwin(qf_info_T *qi, int dir, int errornr, int forceit, int newwin);
 static void	qf_fmt_text(char_u *text, char_u *buf, int bufsize);
+static void	qf_range_text(qfline_T *qfp, char_u *buf, int bufsize);
 static int	qf_win_pos_update(qf_info_T *qi, int old_qf_index);
 static win_T	*qf_find_win(qf_info_T *qi);
 static buf_T	*qf_find_buf(qf_info_T *qi);
@@ -3570,17 +3571,8 @@ qf_list_entry(qfline_T *qfp, int qf_idx, int cursel)
 	msg_puts_attr(":", qfSepAttr);
     if (qfp->qf_lnum == 0)
 	IObuff[0] = NUL;
-    else if (qfp->qf_col == 0)
-	sprintf((char *)IObuff, "%ld", qfp->qf_lnum);
-    else if (qfp->qf_end_col == 0)
-	sprintf((char *)IObuff, "%ld col %d",
-		qfp->qf_lnum, qfp->qf_col);
-    else if (qfp->qf_end_lnum == 0 || qfp->qf_lnum == qfp->qf_end_lnum)
-	sprintf((char *)IObuff, "%ld col %d-%d",
-		qfp->qf_lnum, qfp->qf_col, qfp->qf_end_col);
     else
-	sprintf((char *)IObuff, "%ld,%d - %ld,%d",
-		qfp->qf_lnum, qfp->qf_col, qfp->qf_end_lnum, qfp->qf_end_col);
+	qf_range_text(qfp, IObuff, IOSIZE);
     sprintf((char *)IObuff + STRLEN(IObuff), "%s",
 	    (char *)qf_types(qfp->qf_type, qfp->qf_nr));
     msg_puts_attr((char *)IObuff, qfLineAttr);
@@ -3704,6 +3696,37 @@ qf_fmt_text(char_u *text, char_u *buf, int bufsize)
 	    buf[i] = *p++;
     }
     buf[i] = NUL;
+}
+
+/*
+ * Range information from lnum, col, end_lnum, and end_col.
+ * Put the result in "buf[bufsize]".
+ */
+    static void
+qf_range_text(qfline_T *qfp, char_u *buf, int bufsize)
+{
+    int len;
+    vim_snprintf((char *)buf, bufsize, "%ld", qfp->qf_lnum);
+    len = (int)STRLEN(buf);
+
+    if (qfp->qf_end_lnum > 0 && qfp->qf_lnum != qfp->qf_end_lnum)
+    {
+	vim_snprintf((char *)buf + len, bufsize - len,
+		"-%ld", qfp->qf_end_lnum);
+	len += (int)STRLEN(buf + len);
+    }
+    if (qfp->qf_col > 0)
+    {
+	vim_snprintf((char *)buf + len, bufsize - len, " col %d", qfp->qf_col);
+	len += (int)STRLEN(buf + len);
+	if (qfp->qf_end_col > 0 && qfp->qf_col != qfp->qf_end_col)
+	{
+	    vim_snprintf((char *)buf + len, bufsize - len,
+		    "-%d", qfp->qf_end_col);
+	    len += (int)STRLEN(buf + len);
+	}
+    }
+    buf[len] = NUL;
 }
 
 /*
@@ -4576,31 +4599,8 @@ qf_buf_add_line(
 
 	if (qfp->qf_lnum > 0)
 	{
-	    vim_snprintf((char *)IObuff + len, IOSIZE - len, "%ld",
-		    qfp->qf_lnum);
+	    qf_range_text(qfp, IObuff + len, IOSIZE - len);
 	    len += (int)STRLEN(IObuff + len);
-
-	    if (qfp->qf_col > 0)
-	    {
-		if (qfp->qf_end_lnum == 0 || qfp->qf_lnum == qfp->qf_end_lnum)
-		{
-		    if (qfp->qf_end_col > 0)
-			vim_snprintf((char *)IObuff + len, IOSIZE - len,
-				" col %d-%d", qfp->qf_col, qfp->qf_end_col);
-		    else
-			vim_snprintf((char *)IObuff + len, IOSIZE - len,
-				" col %d", qfp->qf_col);
-		}
-		else
-		    if (qfp->qf_end_col > 0)
-			vim_snprintf((char *)IObuff + len, IOSIZE - len,
-				",%d - %ld,%d", qfp->qf_col,
-				qfp->qf_end_lnum, qfp->qf_end_col);
-		    else
-			vim_snprintf((char *)IObuff + len, IOSIZE - len,
-				",%d - %ld", qfp->qf_col, qfp->qf_end_lnum);
-		len += (int)STRLEN(IObuff + len);
-	    }
 
 	    vim_snprintf((char *)IObuff + len, IOSIZE - len, "%s",
 		    (char *)qf_types(qfp->qf_type, qfp->qf_nr));
