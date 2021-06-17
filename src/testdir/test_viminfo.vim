@@ -128,7 +128,7 @@ func Test_global_vars()
         \ "!GLOB_BLOB_4\tBLO\t0z12 ab",
         \ "!GLOB_LIST_1\tLIS\t1 2",
         \ "!GLOB_DICT_1\tDIC\t1 2"], 'Xviminfo')
-  call assert_fails('rv! Xviminfo', 'E15:')
+  call assert_fails('rv! Xviminfo', 'E488:')
   call assert_equal('123', g:GLOB_BLOB_1)
   call assert_equal(1, type(g:GLOB_BLOB_1))
   call assert_equal('012', g:GLOB_BLOB_2)

@@ -2218,12 +2218,15 @@ eval0(
     int		did_emsg_before = did_emsg;
     int		called_emsg_before = called_emsg;
     int		flags = evalarg == NULL ? 0 : evalarg->eval_flags;
+    int		end_error = FALSE;
 
     p = skipwhite(arg);
     ret = eval1(&p, rettv, evalarg);
     p = skipwhite(p);
 
-    if (ret == FAIL || !ends_excmd2(arg, p))
+    if (ret != FAIL)
+	end_error = !ends_excmd2(arg, p);
+    if (ret == FAIL || end_error)
     {
 	if (ret != FAIL)
 	    clear_tv(rettv);
@@ -2238,7 +2241,12 @@ eval0(
 		&& called_emsg == called_emsg_before
 		&& (flags & EVAL_CONSTANT) == 0
 		&& (!in_vim9script() || !vim9_bad_comment(p)))
-	    semsg(_(e_invexpr2), arg);
+	{
+	    if (end_error)
+		semsg(_(e_trailing_arg), p);
+	    else
+		semsg(_(e_invexpr2), arg);
+	}
 
 	// Some of the expression may not have been consumed.  Do not check for
 	// a next command to avoid more errors, unless "|" is following, which

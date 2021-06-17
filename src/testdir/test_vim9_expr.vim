@@ -2340,7 +2340,7 @@ def Test_expr7_dict()
   CheckScriptFailure(['vim9script', "var x = {xxx: 1,"], 'E723:', 2)
   CheckDefAndScriptFailure2(["var x = {['a']: xxx}"], 'E1001:', 'E121:', 1)
   CheckDefAndScriptFailure(["var x = {a: 1, a: 2}"], 'E721:', 1)
-  CheckDefExecAndScriptFailure2(["var x = g:anint.member"], 'E715:', 'E15:', 1)
+  CheckDefExecAndScriptFailure2(["var x = g:anint.member"], 'E715:', 'E488:', 1)
   CheckDefExecAndScriptFailure(["var x = g:dict_empty.member"], 'E716:', 1)
 
   CheckDefExecAndScriptFailure(['var x: dict<number> = {a: 234, b: "1"}'], 'E1012:', 1)
@@ -3052,7 +3052,7 @@ func Test_expr7_fails()
 
   call CheckDefAndScriptFailure2(["var x = [notfound]"], "E1001:", 'E121:', 1)
 
-  call CheckDefAndScriptFailure2(["var X = () => 123)"], "E488:", 'E15:', 1)
+  call CheckDefAndScriptFailure(["var X = () => 123)"], 'E488:', 1)
   call CheckDefAndScriptFailure(["var x = 123->((x) => x + 5)"], "E107:", 1)
 
   call CheckDefAndScriptFailure(["var x = &notexist"], 'E113:', 1)
@@ -3070,7 +3070,7 @@ func Test_expr7_fails()
   call CheckDefExecAndScriptFailure(["var x = +g:alist"], 'E745:', 1)
   call CheckDefExecAndScriptFailure(["var x = +g:adict"], 'E728:', 1)
 
-  call CheckDefAndScriptFailure2(["var x = ''", "var y = x.memb"], 'E715:', 'E15:', 2)
+  call CheckDefAndScriptFailure2(["var x = ''", "var y = x.memb"], 'E715:', 'E488:', 2)
 
   call CheckDefAndScriptFailure2(["'yes'->", "Echo()"], 'E488: Trailing characters: ->', 'E260: Missing name after ->', 1)
 
@@ -3354,8 +3354,8 @@ func Test_expr7_trailing_fails()
 endfunc
 
 func Test_expr_fails()
-  call CheckDefAndScriptFailure2(["var x = '1'is2"], 'E488:', 'E15:', 1)
-  call CheckDefAndScriptFailure2(["var x = '1'isnot2"], 'E488:', 'E15:', 1)
+  call CheckDefAndScriptFailure(["var x = '1'is2"], 'E488:', 1)
+  call CheckDefAndScriptFailure(["var x = '1'isnot2"], 'E488:', 1)
 
   call CheckDefAndScriptFailure2(["CallMe ('yes')"], 'E476:', 'E492:', 1)
 
