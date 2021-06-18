@@ -1312,6 +1312,7 @@ tag		command		action ~
 |:endtry|	:endt[ry]	end previous :try
 |:endwhile|	:endw[hile]	end previous :while
 |:enew|		:ene[w]		edit a new, unnamed buffer
+|:eval|		:ev[al]		evaluate an expression and discard the result
 |:ex|		:ex		same as ":edit"
 |:execute|	:exe[cute]	execute result of expressions
 |:exit|		:exi[t]		same as ":xit"
