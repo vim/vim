@@ -86,6 +86,7 @@ static char_u	*replace_makeprg(exarg_T *eap, char_u *p, char_u **cmdlinep);
 #endif
 static char_u	*repl_cmdline(exarg_T *eap, char_u *src, int srclen, char_u *repl, char_u **cmdlinep);
 static void	ex_highlight(exarg_T *eap);
+static void	ex_namecolor(exarg_T *eap);
 static void	ex_colorscheme(exarg_T *eap);
 static void	ex_cquit(exarg_T *eap);
 static void	ex_quit_all(exarg_T *eap);
@@ -5448,6 +5449,125 @@ get_command_name(expand_T *xp UNUSED, int idx)
     if (idx >= (int)CMD_SIZE)
 	return get_user_command_name(idx);
     return cmdnames[idx].cmd_name;
+}
+
+/*
+ * Handle ":namecolor rgb={hex-rgb} name={color-name}
+ * Example ":namecolor rgb=#ffdab9 name='peach puff'"
+ * Example ":namecolor name=PeachPuff rgb=#ffdab9"
+ */
+    static void
+ex_namecolor(exarg_T *eap)
+{
+    guicolor_T color = INVALCOLOR;
+
+    char_u *alias = NULL;
+    char_u *rgb = NULL;
+
+    char_u *mark = eap->arg;
+    char_u *mark_end = eap->arg;
+
+    while (!ends_excmd(*mark))
+    {
+	mark = mark_end = skipwhite(mark_end);
+	if (*mark == NUL)
+	{
+	    break;
+	}
+
+	mark_end = vim_strchr(mark, '=');
+	if (mark_end == NULL)
+	{
+	    emsg(_("Syntax error in namecolor. Expected 'rgb=' or 'name='"));
+	    return;
+	}
+
+	if (STRNCMP(mark, "rgb=", mark_end - mark) == 0)
+	{
+	    if (*++mark_end == NUL)
+	    {
+		emsg(_("Syntax error in namecolor. Expected 'rgb=' value."));
+		return;
+	    }
+
+	    if (*mark_end == '#')
+	    {
+		mark = mark_end;
+		mark_end = skiphex(mark + 1);
+		if (mark_end - mark != 7)
+		{
+		    semsg(_("Invalid color: %s"), mark);
+		    return;
+		}
+		rgb = vim_strnsave(mark, mark_end - mark);
+		color = decode_hex_color(rgb);
+		if (color == INVALCOLOR)
+		{
+		    semsg(_("Invalid color: %s"), rgb);
+		    return;
+		}
+	    }
+	    else
+	    {
+		emsg(_("Syntax error in namecolor. All 'rgb=' values must start with '#'."));
+		return;
+	    }
+
+	}
+	else if (STRNCMP(mark, "name=", mark_end - mark) == 0)
+	{
+	    if (*++mark_end == NUL)
+	    {
+		emsg(_("Syntax error in namecolor. The 'name=' argument requires a value. Found end of input."));
+		return;
+	    }
+
+	    if (*mark_end == '\'')
+	    {
+		mark = mark_end + 1;
+		mark_end = vim_strchr(mark, '\'');
+		if (mark_end == NULL)
+		{
+		    emsg(_("Broken quotes for name="));
+		    return;
+		}
+	    }
+	    else
+	    {
+		mark = mark_end;
+		mark_end = skiptowhite(mark);
+	    }
+
+	    if (mark_end == mark)
+	    {
+		semsg(_("Syntax error in namecolor. The 'name=' argument requires a value. Found: %s"), mark);
+		return;
+	    }
+
+	    alias = vim_strnsave(mark, mark_end - mark);
+	    mark_end = skiptowhite(mark_end); // Just to skip over the trailing quote
+	}
+	else
+	{
+	    msg(_("Syntax error in namecolor. Expected 'rgb=' or 'name='"));
+	    return;
+	}
+    }
+
+    if (rgb == NULL)
+    {
+	emsg(_("Missing 'rgb=' argument."));
+	return;
+    }
+
+    if (alias == NULL)
+    {
+	emsg(_("Missing 'name=' argument."));
+	return;
+    }
+
+    vim_free(rgb);
+    save_colorname(color, alias);
 }
 
     static void

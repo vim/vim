@@ -5119,8 +5119,29 @@ guisp={color-name}					*highlight-guisp*
 		"gg"	is the Green value
 		"bb"	is the Blue value
 	All values are hexadecimal, range from "00" to "ff".  Examples: >
-  :highlight Comment guifg=#11f0c3 guibg=#ff00ff
+            :highlight Comment guifg=#11f0c3 guibg=#ff00ff
 <
+
+                                                                 *:namecolor*
+:namecolor     rgb={hex-color} name={color-name}
+	Provide a new name for a given GUI color.
+
+	You can create a custom name for any RGB value. This can make it
+	easier to author color schemes. For example: >
+	    :namecolor name=fuscia color=#cf3ab4
+	    :namecolor name=mauve color=#915f6d
+	    :hi Normal guifg=mauve
+	    :hi Comment guifg=mauve
+	    :hi String guifg=fuscia
+<
+	These color names can conflict. This allows a user to override a
+	particular common color name to account for their own visual
+	preferences. If your color scheme requires precise color control you
+	should prefix the color names it introduces: >
+	    :namecolor name=redscheme_fuscia color=#cf3ab4
+	    :namecolor name=redscheme_mauve color=#915f6d
+<
+
 					*highlight-groups* *highlight-default*
 These are the default highlighting groups.  These groups are used by the
 'highlight' option default.  Note that the highlighting depends on the value

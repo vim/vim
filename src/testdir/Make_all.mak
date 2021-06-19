@@ -199,6 +199,7 @@ NEW_TESTS = \
 	test_modeline \
 	test_move \
 	test_mzscheme \
+	test_namecolor \
 	test_nested_function \
 	test_netbeans \
 	test_normal \
@@ -436,6 +437,7 @@ NEW_TESTS_RES = \
 	test_modeless.res \
 	test_modeline.res \
 	test_mzscheme.res \
+	test_namecolor.res \
 	test_nested_function.res \
 	test_netbeans.res \
 	test_normal.res \

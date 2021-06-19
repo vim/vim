@@ -6654,29 +6654,216 @@ gui_adjust_rgb(guicolor_T c)
 #  define gui_adjust_rgb(c) (c)
 # endif
 
-    guicolor_T
-gui_get_color_cmn(char_u *name)
-{
-    // On MS-Windows an RGB macro is available and it produces 0x00bbggrr color
-    // values as used by the MS-Windows GDI api.  It should be used only for
-    // MS-Windows GDI builds.
+// On MS-Windows an RGB macro is available and it produces 0x00bbggrr color
+// values as used by the MS-Windows GDI api.  It should be used only for
+// MS-Windows GDI builds.
 # if defined(RGB) && defined(MSWIN) && !defined(FEAT_GUI)
 #  undef RGB
 # endif
 # ifndef RGB
 #  define RGB(r, g, b)	((r<<16) | (g<<8) | (b))
 # endif
+
+struct rgbcolor_table_S {
+    char_u	    *color_name;
+    guicolor_T  color;
+};
+struct rgbcolor_table_S *colornames_table;
+int colornames_table_size;
+int colornames_table_capacity;
+
+// Tuned for minimal excess capacity. Theoretically would reach max capacity in
+// 20 generations. In practice COLORNAMES_CAPACITY_INIT is effectively ~700 due
+// to rgb.txt loading.
+#define COLORNAMES_CAPACITY_MULT 2
+#define COLORNAMES_CAPACITY_MAX 10000
+#define COLORNAMES_CAPACITY_INIT 50
+#define COLORNAMES_CAPACITY_NAT_GROWTH 1.32
+
+// Allocates additional memory to store a larger colorname table. Returns the
+// new capacity of the table or -1 if the capacity request cannot be fulfilled.
+    int
+ensure_colornames_capacity(int additional) {
+    int required = colornames_table_size + additional;
+    if (required <= colornames_table_capacity)
+	return colornames_table_capacity;
+
+    if (required <= COLORNAMES_CAPACITY_INIT)
+	required = COLORNAMES_CAPACITY_INIT;
+
+    if (required >= COLORNAMES_CAPACITY_MAX)
+	return -1;
+
+    double natural_growth = ceil((double)colornames_table_capacity * COLORNAMES_CAPACITY_NAT_GROWTH);
+    int natural_growth_i = ((int)natural_growth / COLORNAMES_CAPACITY_MULT + 1) * COLORNAMES_CAPACITY_MULT;
+    int new_capacity = colornames_table_capacity + additional;
+    if (natural_growth_i > new_capacity)
+	new_capacity = natural_growth_i;
+
+    if (new_capacity > COLORNAMES_CAPACITY_MAX)
+	new_capacity = COLORNAMES_CAPACITY_MAX;
+
+    struct rgbcolor_table_S *new_table = vim_realloc(colornames_table, new_capacity * sizeof(struct rgbcolor_table_S));
+    if (new_table == NULL)
+	return -1;
+
+    colornames_table = new_table;
+    colornames_table_capacity = new_capacity;
+    return new_capacity;
+}
+
+// Returns the color currently mapped to the given name or INVALCOLOR if no
+// such name exists in the color table.
+    guicolor_T
+colorname2rgb(char_u *name)
+{
+    if (colornames_table == NULL)
+	return INVALCOLOR;
+
+    for (int i = 0; i < colornames_table_size; i++)
+	if (STRICMP(name, colornames_table[i].color_name) == 0)
+	    return gui_adjust_rgb(colornames_table[i].color);
+
+    return INVALCOLOR;
+}
+
+
+    guicolor_T
+decode_hex_color(char_u *hex)
+{
+    guicolor_T color;
+
+    if (hex[0] != '#' || STRLEN(hex) != 7)
+	return INVALCOLOR;
+
+    // Name is in "#rrggbb" format
+    color = RGB(((hex_digit(hex[1]) << 4) + hex_digit(hex[2])),
+		((hex_digit(hex[3]) << 4) + hex_digit(hex[4])),
+		((hex_digit(hex[5]) << 4) + hex_digit(hex[6])));
+    if (color > 0xffffff)
+	return INVALCOLOR;
+    return gui_adjust_rgb(color);
+}
+
+// Maps the given name to the given color value, overwriting any current
+// mapping, and allocating additional color table capacity when needed. If
+// allocation fails the table will remain unchanged and the user will receive
+// an error message.
+    void
+save_colorname(guicolor_T col, char_u *name)
+{
+    for (int i = 0; i < colornames_table_size; i++)
+	if (STRICMP(name, colornames_table[i].color_name) == 0)
+	{
+	    colornames_table[i].color = col;
+	    return;
+	}
+
+    if (ensure_colornames_capacity(1) == -1)
+    {
+	semsg(_("Color ('%s') could not be saved because the color table is full."), name);
+	return;
+    }
+
+    colornames_table[colornames_table_size].color_name = name;
+    colornames_table[colornames_table_size].color = col;
+    colornames_table_size++;
+}
+
+// Establishes a color alias for each entry in rgb.txt. Repeated invocations
+// will only load the color data once.
+    void
+load_rgb_txt() {
 # define LINE_LEN 100
     FILE	*fd;
     char	line[LINE_LEN];
     char_u	*fname;
     int		r, g, b, i;
-    guicolor_T  color;
+    static char already_loaded = 0;
 
-    struct rgbcolor_table_S {
-	char_u	    *color_name;
-	guicolor_T  color;
-    };
+    if (already_loaded == 1)
+	return;
+
+    int counting;
+    int rgb_lines = 0; // To achieve precise table growth
+
+    fname = expand_env_save((char_u *)"$VIMRUNTIME/rgb.txt");
+    if (fname == NULL)
+    {
+	// Not really loaded but don't try again.
+	already_loaded = 1;
+	return;
+    }
+
+    fd = fopen((char *)fname, "rt");
+    vim_free(fname);
+    if (fd == NULL)
+    {
+	if (p_verbose > 1)
+	    verb_msg(_("Cannot open $VIMRUNTIME/rgb.txt"));
+	already_loaded = 1;
+	return;
+    }
+
+    for (counting = 1; counting >= 0; --counting)
+    {
+	if (!counting)
+	{
+	    if (ensure_colornames_capacity(rgb_lines) == -1)
+	    {
+		emsg(_("Cannot load rgb.txt because it is larger than the remaining color table capacity."));
+		return;
+	    }
+	    rewind(fd);
+	}
+
+	while (!feof(fd))
+	{
+	    size_t	len;
+	    int	pos;
+
+	    vim_ignoredp = fgets(line, LINE_LEN, fd);
+	    len = strlen(line);
+
+	    if (len <= 1 || line[len - 1] != '\n')
+		continue;
+
+	    line[len - 1] = '\0';
+
+	    i = sscanf(line, "%d %d %d %n", &r, &g, &b, &pos);
+	    if (i != 3)
+		continue;
+
+	    if (!counting)
+	    {
+		char_u *s = vim_strsave((char_u *)line + pos);
+
+		if (s == NULL)
+		{
+		    emsg("Allocation failure while loading rgb.txt");
+		    fclose(fd);
+		    return;
+		}
+		save_colorname((guicolor_T)RGB(r, g, b), s);
+	    }
+	    rgb_lines++;
+
+	    // The distributed rgb.txt has less than 1000 entries. Limit to
+	    // 10000, just in case the file was messed up.
+	    if (rgb_lines == 10000)
+		break;
+	}
+    }
+
+    already_loaded = 1;
+    fclose(fd);
+}
+
+    guicolor_T
+gui_get_color_cmn(char_u *name)
+{
+    int         i;
+    guicolor_T  color;
 
     // Only non X11 colors (not present in rgb.txt) and colors in
     // color_names[], useful when $VIMRUNTIME is not found,.
@@ -6714,19 +6901,9 @@ gui_get_color_cmn(char_u *name)
 	    {(char_u *)"yellow",	RGB(0xFF, 0xFF, 0x00)},
     };
 
-    static struct rgbcolor_table_S *colornames_table;
-    static int size = 0;
-
-    if (name[0] == '#' && STRLEN(name) == 7)
-    {
-	// Name is in "#rrggbb" format
-	color = RGB(((hex_digit(name[1]) << 4) + hex_digit(name[2])),
-		    ((hex_digit(name[3]) << 4) + hex_digit(name[4])),
-		    ((hex_digit(name[5]) << 4) + hex_digit(name[6])));
-	if (color > 0xffffff)
-	    return INVALCOLOR;
-	return gui_adjust_rgb(color);
-    }
+    color = decode_hex_color(name);
+    if (color != INVALCOLOR)
+	return color;
 
     // Check if the name is one of the colors we know
     for (i = 0; i < (int)ARRAY_LENGTH(rgb_table); i++)
@@ -6734,86 +6911,11 @@ gui_get_color_cmn(char_u *name)
 	    return gui_adjust_rgb(rgb_table[i].color);
 
     /*
-     * Last attempt. Look in the file "$VIMRUNTIME/rgb.txt".
+     * Not a traditional color. Load rgb.txt color aliases and then consult the alias table.
      */
-    if (size == 0)
-    {
-	int counting;
+    load_rgb_txt();
 
-	// colornames_table not yet initialized
-	fname = expand_env_save((char_u *)"$VIMRUNTIME/rgb.txt");
-	if (fname == NULL)
-	    return INVALCOLOR;
-
-	fd = fopen((char *)fname, "rt");
-	vim_free(fname);
-	if (fd == NULL)
-	{
-	    if (p_verbose > 1)
-		verb_msg(_("Cannot open $VIMRUNTIME/rgb.txt"));
-	    size = -1;  // don't try again
-	    return INVALCOLOR;
-	}
-
-	for (counting = 1; counting >= 0; --counting)
-	{
-	    if (!counting)
-	    {
-		colornames_table = ALLOC_MULT(struct rgbcolor_table_S, size);
-		if (colornames_table == NULL)
-		{
-		    fclose(fd);
-		    return INVALCOLOR;
-		}
-		rewind(fd);
-	    }
-	    size = 0;
-
-	    while (!feof(fd))
-	    {
-		size_t	len;
-		int	pos;
-
-		vim_ignoredp = fgets(line, LINE_LEN, fd);
-		len = strlen(line);
-
-		if (len <= 1 || line[len - 1] != '\n')
-		    continue;
-
-		line[len - 1] = '\0';
-
-		i = sscanf(line, "%d %d %d %n", &r, &g, &b, &pos);
-		if (i != 3)
-		    continue;
-
-		if (!counting)
-		{
-		    char_u *s = vim_strsave((char_u *)line + pos);
-
-		    if (s == NULL)
-		    {
-			fclose(fd);
-			return INVALCOLOR;
-		    }
-		    colornames_table[size].color_name = s;
-		    colornames_table[size].color = (guicolor_T)RGB(r, g, b);
-		}
-		size++;
-
-		// The distributed rgb.txt has less than 1000 entries. Limit to
-		// 10000, just in case the file was messed up.
-		if (size == 10000)
-		    break;
-	    }
-	}
-	fclose(fd);
-    }
-
-    for (i = 0; i < size; i++)
-	if (STRICMP(name, colornames_table[i].color_name) == 0)
-	    return gui_adjust_rgb(colornames_table[i].color);
-
-    return INVALCOLOR;
+    return colorname2rgb(name);
 }
 
     guicolor_T

@@ -19,7 +19,7 @@ syn keyword vimTodo contained	COMBAK	FIXME	TODO	XXX
 syn cluster vimCommentGroup	contains=vimTodo,@Spell
 
 " regular vim commands {{{2
-syn keyword vimCommand contained	a ar[gs] argl[ocal] ba[ll] bl[ast] brea[k] buffers ca caf[ter] cbo[ttom] cex[pr] cgete[xpr] cl[ist] cn[ext] colo[rscheme] cons[t] cs d[elete] delel delf[unction] dif[fupdate] difft[his] dli[st] ds[earch] echoc[onsole] em[enu] endw[hile] export filt[er] fo[ld] fu[nction] gvim helpt[ags] iabc[lear] import isp[lit] keepa l[ist] laf[ter] lbel[ow] lcscope lf[ile] lgr[ep] lli[st] lnf[ile] lol[der] lt[ag] lw[indow] menut[ranslate] mkvie[w] nbc[lose] noh[lsearch] ol[dfiles] pa[ckadd] po[p] prof[ile] pta[g] ptr[ewind] py3f[ile] pythonx quita[ll] redraws[tatus] rew[ind] rubyf[ile] sIg sa[rgument] sba[ll] sbr[ewind] scl scscope sfir[st] sgl sic sin sm[ap] snoreme spelld[ump] spellw[rong] srg sta[g] sts[elect] sus[pend] syncbind tabN[ext] tabl[ast] tabr[ewind] tcld[o] tj[ump] tlu tno[remap] tu[nmenu] undol[ist] v vie[w] vmapc[lear] wa[ll] winp[os] wundo xme xr[estore]
+syn keyword vimCommand contained	a ar[gs] argl[ocal] ba[ll] bl[ast] brea[k] buffers ca caf[ter] cbo[ttom] cex[pr] cgete[xpr] cl[ist] cn[ext] colo[rscheme] cons[t] cs d[elete] delel delf[unction] dif[fupdate] difft[his] dli[st] ds[earch] echoc[onsole] em[enu] endw[hile] export filt[er] fo[ld] fu[nction] gvim helpt[ags] iabc[lear] import isp[lit] keepa l[ist] laf[ter] lbel[ow] lcscope lf[ile] lgr[ep] lli[st] lnf[ile] lol[der] lt[ag] lw[indow] menut[ranslate] mkvie[w] namecolor nbc[lose] noh[lsearch] ol[dfiles] pa[ckadd] po[p] prof[ile] pta[g] ptr[ewind] py3f[ile] pythonx quita[ll] redraws[tatus] rew[ind] rubyf[ile] sIg sa[rgument] sba[ll] sbr[ewind] scl scscope sfir[st] sgl sic sin sm[ap] snoreme spelld[ump] spellw[rong] srg sta[g] sts[elect] sus[pend] syncbind tabN[ext] tabl[ast] tabr[ewind] tcld[o] tj[ump] tlu tno[remap] tu[nmenu] undol[ist] v vie[w] vmapc[lear] wa[ll] winp[os] wundo xme xr[estore]
 syn keyword vimCommand contained	ab arga[dd] argu[ment] bad[d] bm[odified] breaka[dd] bun[load] cabc[lear] cal[l] cc cf[ile] changes cla[st] cnew[er] com cope[n] cscope debug delep dell diffg[et] dig[raphs] do dsp[lit] echoe[rr] en[dif] ene[w] exu[sage] fin[d] foldc[lose] g h[elp] hi if in iuna[bbrev] keepalt la[st] lan[guage] lbo[ttom] ld[o] lfdo lgrepa[dd] lma lo[adview] lop[en] lua m[ove] mes[sages] mod[e] nbs[tart] nor omapc[lear] packl[oadall] popu[p] profd[el] ptf[irst] pts[elect] py3f[ile] pyx r[ead] redrawt[abline] ri[ght] rundo sIl sal[l] sbf[irst] sc scp se[t] sg sgn sie sip sme snoremenu spelli[nfo] spr[evious] sri star[tinsert] substitutepattern sv[iew] syntime tabc[lose] tabm[ove] tabs tclf[ile] tl[ast] tlunmenu to[pleft] tunma[p] unh[ide] var vim9[cmd] vne[w] wh[ile] wn[ext] wv[iminfo] xmenu xunme
 syn keyword vimCommand contained	abc[lear] argd[elete] as[cii] balt bn[ext] breakd[el] bw[ipeout] cabo[ve] cat[ch] ccl[ose] cfdo chd[ir] class cnf[ile] comc[lear] cp[revious] cstag debugg[reedy] deletel delm[arks] diffo[ff] dir doau e[dit] echom[sg] enddef eval f[ile] fina[lly] foldd[oopen] go[to] ha[rdcopy] hid[e] ij[ump] inor j[oin] keepj[umps] lab[ove] lat lc[d] le[ft] lfir[st] lh[elpgrep] lmak[e] loadk lp[revious] luado ma[rk] mk[exrc] mz[scheme] new nore on[ly] pc[lose] pp[op] promptf[ind] ptj[ump] pu[t] py[thon] pyxdo rec[over] reg[isters] rightb[elow] rv[iminfo] sIn san[dbox] sbl[ast] scI scr[iptnames] setf[iletype] sgI sgp sig sir smenu so[urce] spellr[are] sr srl startg[replace] substituterepeat sw[apname] t tabd[o] tabn[ext] tags te[aroff] tlm tm[enu] tp[revious] type unl ve[rsion] vim9s[cript] vs[plit] win[size] wp[revious] x[it] xnoreme xunmenu
 syn keyword vimCommand contained	abo[veleft] argdo au bd[elete] bo[tright] breakl[ist] cN[ext] cad[dbuffer] cb[uffer] cd cfir[st] che[ckpath] cle[arjumps] cnor comp[iler] cpf[ile] cun def deletep delp diffp[atch] disa[ssemble] doaut ea echon endf[unction] ex files fini[sh] folddoc[losed] gr[ep] helpc[lose] his[tory] il[ist] interface ju[mps] keepp[atterns] lad[dexpr] later lch[dir] lefta[bove] lg[etfile] lhi[story] lmapc[lear] loadkeymap lpf[ile] luafile mak[e] mks[ession] mzf[ile] nmapc[lear] nos[wapfile] opt[ions] pe[rl] pre[serve] promptr[epl] ptl[ast] pw[d] pydo pyxfile red[o] res[ize] ru[ntime] sI sIp sav[eas] sbm[odified] sce scripte[ncoding] setg[lobal] sgc sgr sign sl[eep] smile sor[t] spellr[epall] srI srn startr[eplace] sun[hide] sy tN[ext] tabe[dit] tabnew tc[l] ter[minal] tlmenu tma[p] tr[ewind] u[ndo] unlo[ckvar] verb[ose] vim[grep] wN[ext] winc[md] wq xa[ll] xnoremenu xwininfo
@@ -285,7 +285,7 @@ if !exists("g:vimsyn_noerror") && !exists("g:vimsyn_nousercmderror")
 endif
 syn case ignore
 syn keyword	vimUserAttrbKey   contained	bar	ban[g]	cou[nt]	ra[nge] com[plete]	n[args]	re[gister]
-syn keyword	vimUserAttrbCmplt contained	augroup buffer behave color command compiler cscope dir environment event expression file file_in_path filetype function help highlight history locale mapping menu option packadd shellcmd sign syntax syntime tag tag_listfiles user var
+syn keyword	vimUserAttrbCmplt contained	augroup buffer behave color command compiler cscope dir environment event expression file file_in_path filetype function help highlight history locale mapping menu namecolor option packadd shellcmd sign syntax syntime tag tag_listfiles user var
 syn keyword	vimUserAttrbCmplt contained	custom customlist nextgroup=vimUserAttrbCmpltFunc,vimUserCmdError
 syn match	vimUserAttrbCmpltFunc contained	",\%([sS]:\|<[sS][iI][dD]>\)\=\%(\h\w*\%(#\h\w*\)\+\|\h\w*\)"hs=s+1 nextgroup=vimUserCmdError
 
@@ -626,6 +626,13 @@ syn match	vimHiGuiFgBg	contained	"\cgui\%([fb]g\|sp\)="he=e-1	nextgroup=vimHiGro
 syn match	vimHiTermcap	contained	"\S\+"		contains=vimNotation
 syn match	vimHiNmbr	contained	'\d\+'
 
+
+syn match         vimNamec          "namecolor"                         skipwhite nextgroup=vimNamecParam
+syn match         vimNamecParam     "\(name\|rgb\)\+="he=e-1            contained nextgroup=vimNamecRgbValue,vimNamecStrValue
+syn match         vimNamecRgbValue  "\c#[a-f0-9 ]\{6\}"                 skipwhite contained nextgroup=vimNamecParam
+syn match         vimNamecStrValue  "\c[-_a-z0-9]\+"                      skipwhite contained nextgroup=vimNamecParam
+syn match         vimNamecStrValue  "\c'[-_ a-z0-9]\+'"                   skipwhite contained nextgroup=vimNamecParam
+
 " Highlight: clear {{{2
 syn keyword	vimHiClear	contained	clear	nextgroup=vimHiGroup
 
@@ -939,6 +946,10 @@ if !exists("skip_vim_syntax_inits")
  hi def link vimMenuNameMore	vimMenuName
  hi def link vimMenuName	PreProc
  hi def link vimMtchComment	vimComment
+ hi def link vimNamec               vimCommand
+ hi def link vimNamecParam          vimHiTerm
+ hi def link vimNamecRgbValue       Number
+ hi def link vimNamecStrValue       String
  hi def link vimNorm	vimCommand
  hi def link vimNotation	Special
  hi def link vimNotFunc	vimCommand

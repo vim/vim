@@ -1330,7 +1330,7 @@ do_highlight(
 		    HL_TABLE()[idx].sg_set |= SG_GUI;
 
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
-		// In GUI guifg colors are only used when recognized
+		// In GUI guibg colors are only used when recognized
 		i = color_name2handle(arg);
 		if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !USE_24BIT)
 		{
