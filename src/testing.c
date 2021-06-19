@@ -1216,6 +1216,20 @@ f_test_setmouse(typval_T *argvars, typval_T *rettv UNUSED)
 }
 
     void
+f_test_gui_mouse_event(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+#ifdef FEAT_GUI
+    int		button = tv_get_number(&argvars[0]);
+    int		row = tv_get_number(&argvars[1]);
+    int		col = tv_get_number(&argvars[2]);
+    int		repeated_click = tv_get_number(&argvars[3]);
+    int_u	mods = tv_get_number(&argvars[4]);
+
+    gui_send_mouse_event(button, TEXT_X(col - 1), TEXT_Y(row - 1), repeated_click, mods);
+#endif
+}
+
+    void
 f_test_settime(typval_T *argvars, typval_T *rettv UNUSED)
 {
     time_for_testing = (time_t)tv_get_number(&argvars[0]);
