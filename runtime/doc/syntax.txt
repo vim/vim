@@ -1673,16 +1673,6 @@ as Fvwm2 configuration files, add the following: >
   :au! BufNewFile,BufRead /etc/X11/fvwm2/*  let b:fvwm_version = 2 |
 					 \ set filetype=fvwm
 
-If you'd like Vim to highlight all valid color names, tell it where to
-find the color database (rgb.txt) on your system.  Do this by setting
-"rgb_file" to its location.  Assuming your color database is located
-in /usr/X11/lib/X11/, you should add the line >
-
-	:let rgb_file = "/usr/X11/lib/X11/rgb.txt"
-
-to your .vimrc file.
-
-
 GSP						*gsp.vim* *ft-gsp-syntax*
 
 The default coloring style for GSP pages is defined by |html.vim|, and
@@ -4830,16 +4820,28 @@ in their own color.
 			Doesn't work recursively, thus you can't use
 			":colorscheme" in a color scheme script.
 
-			To customize a color scheme use another name, e.g.
+			You have two options for customizing a color scheme.
+			For changing the appearance of specific colors, you
+			can redefine a color name before loading the scheme.
+			The desert scheme uses the khaki color for the cursor.
+			To use a darker variation of the same color: >
+
+				let v:colornames['khaki'] = '#bdb76b'
+				colorscheme desert
+<
+			For further customization, such as changing
+			|:highlight-link| associations, use another name, e.g.
 			"~/.vim/colors/mine.vim", and use `:runtime` to load
 			the original color scheme: >
 				runtime colors/evening.vim
 				hi Statement ctermfg=Blue guifg=Blue
 
-<			Before the color scheme will be loaded the
-			|ColorSchemePre| autocommand event is triggered.
-			After the color scheme has been loaded the
-			|ColorScheme| autocommand event is triggered.
+<			Before the color scheme will be loaded all default
+			color list scripts (`colors/lists/default.vim`) will
+			be executed and then the |ColorSchemePre| autocommand
+			event is triggered.  After the color scheme has been
+			loaded the |ColorScheme| autocommand event is
+			triggered.
 			For info about writing a color scheme file: >
 				:edit $VIMRUNTIME/colors/README.txt
 
@@ -4862,7 +4864,9 @@ in their own color.
 
 :hi[ghlight] [default] {group-name} {key}={arg} ..
 			Add a highlight group, or change the highlighting for
-			an existing group.
+			an existing group. If a given color name is not
+			receognized, each `colors/lists/default.vim` found on
+			|runtimepath| will be loaded.
 			See |highlight-args| for the {key}={arg} arguments.
 			See |:highlight-default| for the optional [default]
 			argument.
@@ -5143,8 +5147,35 @@ guisp={color-name}					*highlight-guisp*
 		"gg"	is the Green value
 		"bb"	is the Blue value
 	All values are hexadecimal, range from "00" to "ff".  Examples: >
-  :highlight Comment guifg=#11f0c3 guibg=#ff00ff
+            :highlight Comment guifg=#11f0c3 guibg=#ff00ff
 <
+	If you are authoring a color scheme and use the same hexademical value
+	repeatedly, you can define a name for it in |v:colornames|. For
+	example: >
+
+	    # provide a default value for this color but allow the user to
+	    # override it.
+	    :call extend(v:colornames, {'alt_turquoise': '#11f0c3'}, 'keep')
+	    :highlight Comment guifg=alt_turquoise guibg=magenta
+<
+	If you are using a color scheme that relies on named colors and you
+	would like to adjust the precise appearance of those colors, you can
+	do so by overriding the values in |v:colornames| prior to loading the
+	scheme: >
+
+	    let v:colornames['alt_turquoise'] = '#22f0d3'
+	    colorscheme alt
+<
+	If you want to develop a color list that can be relied on by others,
+	it is best to prefix your color names. By convention these color lists
+	are placed in the colors/lists directory. You can see an example in
+	'$VIMRUNTIME/colors/lists/csscolors.vim'. This list would be sourced
+	by a color scheme using: >
+
+	    :runtime colors/lists/csscolors.vim
+	    :highlight Comment guifg=css_turquoise
+<
+
 					*highlight-groups* *highlight-default*
 These are the default highlighting groups.  These groups are used by the
 'highlight' option default.  Note that the highlighting depends on the value

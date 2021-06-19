@@ -934,4 +934,40 @@ func Test_highlight_default_colorscheme_restores_links()
   hi clear
 endfunc
 
+func Test_colornames_assignment_and_lookup()
+  " Ensure highlight command can find custom color.
+  let v:colornames['a redish white'] = '#ffeedd'
+  highlight Normal guifg='a redish white'
+  highlight clear
+endfunc
+
+func Test_colornames_default_list()
+  " Ensure default lists are loaded automatically and can be used for all gui fields.
+  highlight Normal guifg='rebecca purple' guibg='rebecca purple' guisp='rebecca purple'
+  highlight clear
+endfunc
+
+func Test_colornames_overwrite_default()
+  " Ensure entries in v:colornames can be overwritten.
+  " Load default color scheme to trigger default color list loading.
+  colorscheme default
+  let old_rebecca_purple = v:colornames['rebecca purple']
+  highlight Normal guifg='rebecca purple' guibg='rebecca purple'
+  let v:colornames['rebecca purple'] = '#550099'
+  highlight Normal guifg='rebecca purple' guibg='rebecca purple'
+  let v:colornames['rebecca purple'] = old_rebecca_purple
+  highlight clear
+endfunc
+
+func Test_colornames_assignment_and_unassignment()
+  " Ensure we cannot overwrite the v:colornames dict.
+  call assert_fails("let v:colornames = {}", 'E46:')
+
+  " Ensure we can delete entries from the v:colornames dict.
+  let v:colornames['x1'] = '#111111'
+  call assert_equal(v:colornames['x1'], '#111111')
+  unlet v:colornames['x1']
+  call assert_fails("echo v:colornames['x1']")
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

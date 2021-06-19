@@ -5781,9 +5781,6 @@ msgstr ""
 "\n"
 "--- Кнопки терминала ---"
 
-msgid "Cannot open $VIMRUNTIME/rgb.txt"
-msgstr "Невозможно открыть $VIMRUNTIME/rgb.txt"
-
 #, c-format
 msgid "E181: Invalid attribute: %s"
 msgstr "E181: Неправильный атрибут: %s"

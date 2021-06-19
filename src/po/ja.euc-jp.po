@@ -5665,9 +5665,6 @@ msgstr ""
 "\n"
 "--- 端末キー ---"
 
-msgid "Cannot open $VIMRUNTIME/rgb.txt"
-msgstr "$VIMRUNTIME/rgb.txtを開けません"
-
 #, c-format
 msgid "E181: Invalid attribute: %s"
 msgstr "E181: 無効な属性です: %s"

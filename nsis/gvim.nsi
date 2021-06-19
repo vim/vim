@@ -357,7 +357,6 @@ Section "$(str_section_exe)" id_section_exe
 	File ..\README.txt
 	File ..\uninstall.txt
 	File ${VIMRT}\*.vim
-	File ${VIMRT}\rgb.txt
 
 	File ${VIMTOOLS}\diff.exe
 	File ${VIMTOOLS}\winpty${BIT}.dll
@@ -367,6 +366,8 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMRT}\colors\*.*
 	SetOutPath $0\colors\tools
 	File ${VIMRT}\colors\tools\*.*
+	SetOutPath $0\colors\lists
+	File ${VIMRT}\colors\lists\*.*
 
 	SetOutPath $0\compiler
 	File ${VIMRT}\compiler\*.*

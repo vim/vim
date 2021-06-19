@@ -5687,9 +5687,6 @@ msgstr ""
 "\n"
 "--- Terminaalinäppäimet ---"
 
-msgid "Cannot open $VIMRUNTIME/rgb.txt"
-msgstr "Ei voida avata tiedostoa $VIMRUNTIME/rgb.txt"
-
 msgid "Terminal"
 msgstr "Terminaali"
 

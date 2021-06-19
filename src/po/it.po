@@ -5207,9 +5207,6 @@ msgstr ""
 "\n"
 "--- Tasti Terminale ---"
 
-msgid "Cannot open $VIMRUNTIME/rgb.txt"
-msgstr "Non riesco ad aprire $VIMRUNTIME/rgb.txt"
-
 msgid "E181: Invalid attribute: %s"
 msgstr "E181: Attributo non valido: %s"
 

@@ -798,6 +798,7 @@ RT_SCRIPTS =	\
 		runtime/autoload/xml/*.vim \
 		runtime/colors/*.vim \
 		runtime/colors/README.txt \
+		runtime/colors/lists/*.vim \
 		runtime/colors/tools/*.vim \
 		runtime/compiler/*.vim \
 		runtime/compiler/README.txt \
@@ -850,7 +851,6 @@ RT_AMI_DOS =	\
 # DOS runtime (also in the extra archive)
 RT_DOS =	\
 		README_dos.txt \
-		runtime/rgb.txt \
 		vimtutor.bat \
 
 # DOS runtime without CR-LF translation (also in the extra archive)
