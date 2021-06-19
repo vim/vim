@@ -1830,6 +1830,22 @@ v:collate	The current locale setting for collation order of the runtime
 		command.
 		See |multi-lang|.
 
+                                                                *v:colornames*
+v:colornames    A dictionary that maps color names to hex color strings. These
+                color names can be used with the |highlight-guifg| and
+		|highlight-guibg| parameters. The dictionary is provided only
+		to make color recall more convenient. Updating an entry in
+		v:colornames has no immediate effect on the syntax
+		highlighting. The colorscheme script needs to be re-evaluated
+		in order to use the updated color values. For example: >
+
+		    :let v:colornames['fuscia'] = '#cf3ab4'
+		    :let v:colornames['mauve'] = '#915f6d'
+		    :highlight Normal guifg=fuscia guibg=mauve
+<
+		This cannot be used to override the |cterm-colors| but it can
+		be used to override the values defined in |rgb.txt|.
+
 				*v:completed_item* *completed_item-variable*
 v:completed_item
 		|Dictionary| containing the |complete-items| for the most

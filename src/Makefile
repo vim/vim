@@ -1604,6 +1604,7 @@ BASIC_SRC = \
 	clipboard.c \
 	cmdexpand.c \
 	cmdhist.c \
+	colornames.c \
 	crypt.c \
 	crypt_zip.c \
 	debugger.c \
@@ -1757,6 +1758,7 @@ OBJ_COMMON = \
 	objects/cindent.o \
 	objects/clientserver.o \
 	objects/clipboard.o \
+	objects/colornames.o \
 	objects/cmdexpand.o \
 	objects/cmdhist.o \
 	objects/crypt.o \
@@ -1930,6 +1932,7 @@ PRO_AUTO = \
 	clipboard.pro \
 	cmdexpand.pro \
 	cmdhist.pro \
+	colornames.pro \
 	crypt.pro \
 	crypt_zip.pro \
 	debugger.pro \
@@ -3189,6 +3192,9 @@ objects/cmdexpand.o: cmdexpand.c
 objects/cmdhist.o: cmdhist.c
 	$(CCC) -o $@ cmdhist.c
 
+objects/colornames.o: colornames.c
+	$(CCC) -o $@ colornames.c
+
 objects/crypt.o: crypt.c
 	$(CCC) -o $@ crypt.c
 
@@ -3761,6 +3767,10 @@ objects/cmdhist.o: cmdhist.c vim.h protodef.h auto/config.h feature.h os_unix.h 
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h errors.h globals.h
+objects/colornames.o: colornames.c vim.h protodef.h auto/config.h feature.h \
+  os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h \
+  beval.h proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h \
+  spell.h proto.h globals.h errors.h
 objects/crypt.o: crypt.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
