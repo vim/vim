@@ -2943,7 +2943,9 @@ def Test_expr7_method_call()
       loclist->setloclist(0)
       assert_equal([{bufnr: bufnr,
                     lnum: 42,
+                    end_lnum: 0,
                     col: 17,
+                    end_col: 0,
                     text: 'wrong',
                     pattern: '',
                     valid: 1,
