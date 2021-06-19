@@ -2142,7 +2142,8 @@ executable_exists(char *name, char_u **path, int use_path, int use_pathext)
 	return FALSE;
 
     // Using the name directly when a Unix-shell like 'shell'.
-    if (strstr((char *)gettail(p_sh), "sh") != NULL)
+    if (strstr((char *)gettail(p_sh), "powershell") == NULL
+				&& strstr((char *)gettail(p_sh), "sh") != NULL)
 	noext = TRUE;
 
     if (use_pathext)
