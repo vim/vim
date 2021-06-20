@@ -229,6 +229,9 @@ call_dfunc(
     }
 #endif
 
+    // Update uf_has_breakpoint if needed.
+    update_has_breakpoint(ufunc);
+
     // When debugging and using "cont" switches to the not-debugged
     // instructions, may need to still compile them.
     if ((func_needs_compiling(ufunc, COMPILE_TYPE(ufunc))
