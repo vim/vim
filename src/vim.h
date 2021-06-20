@@ -1804,9 +1804,9 @@ typedef enum {
 
 // Keep in sync with INSTRUCTIONS().
 #ifdef FEAT_PROFILE
-# define COMPILE_TYPE(ufunc) (debug_break_level > 0 ? CT_DEBUG : do_profiling == PROF_YES && (ufunc)->uf_profiling ? CT_PROFILE : CT_NONE)
+# define COMPILE_TYPE(ufunc) (debug_break_level > 0 || ufunc->uf_has_breakpoint ? CT_DEBUG : do_profiling == PROF_YES && (ufunc)->uf_profiling ? CT_PROFILE : CT_NONE)
 #else
-# define COMPILE_TYPE(ufunc) debug_break_level > 0 ? CT_DEBUG : CT_NONE
+# define COMPILE_TYPE(ufunc) debug_break_level > 0 || ufunc->uf_has_breakpoint ? CT_DEBUG : CT_NONE
 #endif
 
 /*

@@ -148,6 +148,23 @@ exe_newlist(int count, ectx_T *ectx)
 }
 
 /*
+ * If debug_tick changed check if "ufunc" has a breakpoint and update
+ * "uf_has_breakpoint".
+ */
+    static void
+update_has_breakpoint(ufunc_T *ufunc)
+{
+    if (ufunc->uf_debug_tick != debug_tick)
+    {
+	linenr_T breakpoint;
+
+	ufunc->uf_debug_tick = debug_tick;
+	breakpoint = dbg_find_breakpoint(FALSE, ufunc->uf_name, 0);
+	ufunc->uf_has_breakpoint = breakpoint > 0;
+    }
+}
+
+/*
  * Call compiled function "cdf_idx" from compiled code.
  * This adds a stack frame and sets the instruction pointer to the start of the
  * called function.
@@ -1443,6 +1460,20 @@ handle_debug(isn_T *iptr, ectx_T *ectx)
     int		end_lnum = iptr->isn_lnum;
     garray_T	ga;
     int		lnum;
+
+    if (ex_nesting_level > debug_break_level)
+    {
+	linenr_T breakpoint;
+
+	if (!ufunc->uf_has_breakpoint)
+	    return;
+
+	// check for the next breakpoint if needed
+	breakpoint = dbg_find_breakpoint(FALSE, ufunc->uf_name,
+							   iptr->isn_lnum - 1);
+	if (breakpoint <= 0 || breakpoint > iptr->isn_lnum)
+	    return;
+    }
 
     SOURCING_LNUM = iptr->isn_lnum;
     debug_context = ectx;
@@ -4206,8 +4237,7 @@ exec_instructions(ectx_T *ectx)
 		break;
 
 	    case ISN_DEBUG:
-		if (ex_nesting_level <= debug_break_level)
-		    handle_debug(iptr, ectx);
+		handle_debug(iptr, ectx);
 		break;
 
 	    case ISN_SHUFFLE:
@@ -4382,6 +4412,9 @@ call_def_function(
 // Get pointer to a local variable on the stack.  Negative for arguments.
 #undef STACK_TV_VAR
 #define STACK_TV_VAR(idx) (((typval_T *)ectx.ec_stack.ga_data) + ectx.ec_frame_idx + STACK_FRAME_SIZE + idx)
+
+    // Update uf_has_breakpoint if needed.
+    update_has_breakpoint(ufunc);
 
     if (ufunc->uf_def_status == UF_NOT_COMPILED
 	    || ufunc->uf_def_status == UF_COMPILE_ERROR

@@ -1629,6 +1629,11 @@ typedef struct
 # endif
 
     garray_T	uf_lines;	// function lines
+
+    int		uf_debug_tick;	// when last checked for a breakpoint in this
+				// function.
+    int		uf_has_breakpoint;  // TRUE when a breakpoint has been set in
+				    // this function.
 # ifdef FEAT_PROFILE
     int		uf_profiling;	// TRUE when func is being profiled
     int		uf_prof_initialized;
