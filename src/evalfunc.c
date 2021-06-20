@@ -302,6 +302,27 @@ arg_list_or_blob(type_T *type, argcontext_T *context)
 }
 
 /*
+ * Check "type" is a string or a list of strings.
+ */
+    static int
+arg_string_or_list(type_T *type, argcontext_T *context)
+{
+    if (type->tt_type == VAR_ANY || type->tt_type == VAR_STRING)
+	return OK;
+    if (type->tt_type != VAR_LIST)
+    {
+	arg_type_mismatch(&t_string, type, context->arg_idx + 1);
+	return FAIL;
+    }
+    if (type->tt_member->tt_type == VAR_ANY
+		    || type->tt_member->tt_type == VAR_STRING)
+	return OK;
+
+    arg_type_mismatch(&t_list_string, type, context->arg_idx + 1);
+    return FAIL;
+}
+
+/*
  * Check "type" is a list or a dict.
  */
     static int
@@ -385,6 +406,7 @@ argcheck_T arg1_string[] = {arg_string};
 argcheck_T arg3_string_nr_bool[] = {arg_string, arg_number, arg_bool};
 argcheck_T arg1_float_or_nr[] = {arg_float_or_nr};
 argcheck_T arg2_listblob_item[] = {arg_list_or_blob, arg_item_of_prev};
+argcheck_T arg2_execute[] = {arg_string_or_list, arg_string};
 argcheck_T arg23_extend[] = {arg_list_or_dict, arg_same_as_prev, arg_extend3};
 argcheck_T arg23_extendnew[] = {arg_list_or_dict, arg_same_struct_as_prev, arg_extend3};
 argcheck_T arg3_insert[] = {arg_list_or_blob, arg_item_of_prev, arg_number};
@@ -870,7 +892,7 @@ static funcentry_T global_functions[] =
 			ret_number_bool,    f_eventhandler},
     {"executable",	1, 1, FEARG_1,	    NULL,
 			ret_number,	    f_executable},
-    {"execute",		1, 2, FEARG_1,	    NULL,
+    {"execute",		1, 2, FEARG_1,	    arg2_execute,
 			ret_string,	    f_execute},
     {"exepath",		1, 1, FEARG_1,	    NULL,
 			ret_string,	    f_exepath},

@@ -324,6 +324,18 @@ def Test_executable()
   CheckDefExecFailure(['echo executable(true)'], 'E1174:')
 enddef
 
+def Test_execute()
+  var res = execute("echo 'hello'")
+  assert_equal("\nhello", res)
+  res = execute(["echo 'here'", "echo 'there'"])
+  assert_equal("\nhere\nthere", res)
+
+  CheckDefFailure(['echo execute(123)'], 'E1013: Argument 1: type mismatch, expected string but got number')
+  CheckDefFailure(['echo execute([123])'], 'E1013: Argument 1: type mismatch, expected list<string> but got list<number>')
+  CheckDefExecFailure(['echo execute(["xx", 123])'], 'E492')
+  CheckDefFailure(['echo execute("xx", 123)'], 'E1013: Argument 2: type mismatch, expected string but got number')
+enddef
+
 def Test_exepath()
   CheckDefExecFailure(['echo exepath(true)'], 'E1174:')
   CheckDefExecFailure(['echo exepath(v:null)'], 'E1174:')
