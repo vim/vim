@@ -553,6 +553,11 @@ static char *(features[]) =
 #else
 	"-smartindent",
 #endif
+#ifdef FEAT_SODIUM
+	"+sodium",
+#else
+	"-sodium",
+#endif
 #ifdef FEAT_SOUND
 	"+sound",
 #else
@@ -750,6 +755,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    3022,
 /**/
     3021,
 /**/

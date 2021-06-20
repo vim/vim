@@ -41,6 +41,9 @@ DEBUG=no
 # set to yes to measure code coverage
 COVERAGE=no
 
+# better encryption support using libsodium
+#SODIUM=yes
+
 # set to SIZE for size, SPEED for speed, MAXSPEED for maximum optimization
 OPTIMIZE=MAXSPEED
 
@@ -517,6 +520,10 @@ CXXFLAGS = -std=gnu++11
 WINDRES_FLAGS =
 EXTRA_LIBS =
 
+ifdef SODIUM
+DEFINES += -DHAVE_SODIUM
+endif
+
 ifdef GETTEXT
 DEFINES += -DHAVE_GETTEXT -DHAVE_LOCALE_H
 GETTEXTINCLUDE = $(GETTEXT)/include
@@ -658,6 +665,10 @@ DEFINES += -DFEAT_DIRECTX -DDYNAMIC_DIRECTX
 DEFINES += -DFEAT_DIRECTX_COLOR_EMOJI
   endif
  endif
+endif
+
+ifeq ($(SODIUM),yes)
+SODIUMLIB = -lsodium
 endif
 
 # Only allow XPM for a GUI build.
@@ -1064,7 +1075,7 @@ $(EXEOBJC): | $(OUTDIR)
 
 ifeq ($(VIMDLL),yes)
 $(TARGET): $(OBJ)
-	$(LINK) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid -lgdi32 $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)
+	$(LINK) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid -lgdi32 $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB) $(SODIUMLIB)
 
 $(GVIMEXE): $(EXEOBJG) $(VIMDLLBASE).dll
 	$(CC) -L. $(EXELFLAGS) -mwindows -o $@ $(EXEOBJG) -l$(VIMDLLBASE)
@@ -1073,7 +1084,7 @@ $(VIMEXE): $(EXEOBJC) $(VIMDLLBASE).dll
 	$(CC) -L. $(EXELFLAGS) -o $@ $(EXEOBJC) -l$(VIMDLLBASE)
 else
 $(TARGET): $(OBJ)
-	$(LINK) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB)
+	$(LINK) $(CFLAGS) $(LFLAGS) -o $@ $(OBJ) $(LIB) -lole32 -luuid $(LUA_LIB) $(MZSCHEME_LIBDIR) $(MZSCHEME_LIB) $(PYTHONLIB) $(PYTHON3LIB) $(RUBYLIB) $(SODIUMLIB)
 endif
 
 upx: exes

@@ -48,6 +48,11 @@
 # include <time.h>
 #endif
 
+// for randombytes_buf
+#ifdef FEAT_SODIUM
+# include <sodium.h>
+#endif
+
 #if defined(SASC) || defined(__amigaos4__)
 # include <proto/dos.h>	    // for Open() and Close()
 #endif
@@ -64,12 +69,14 @@ typedef struct pointer_entry	PTR_EN;	    // block/line-count pair
 #define BLOCK0_ID1_C0  'c'		    // block 0 id 1 'cm' 0
 #define BLOCK0_ID1_C1  'C'		    // block 0 id 1 'cm' 1
 #define BLOCK0_ID1_C2  'd'		    // block 0 id 1 'cm' 2
+#define BLOCK0_ID1_C3  'S'		    // block 0 id 1 'cm' 3 - but not actually used
 
 #if defined(FEAT_CRYPT)
 static int id1_codes[] = {
     BLOCK0_ID1_C0,  // CRYPT_M_ZIP
     BLOCK0_ID1_C1,  // CRYPT_M_BF
     BLOCK0_ID1_C2,  // CRYPT_M_BF2
+    BLOCK0_ID1_C3,  // CRYPT_M_SOD  - Unused!
 };
 #endif
 
@@ -426,11 +433,15 @@ ml_set_mfp_crypt(buf_T *buf)
     {
 	int method_nr = crypt_get_method_nr(buf);
 
-	if (method_nr > CRYPT_M_ZIP)
+	if (method_nr > CRYPT_M_ZIP && method_nr < CRYPT_M_SOD)
 	{
 	    // Generate a seed and store it in the memfile.
 	    sha2_seed(buf->b_ml.ml_mfp->mf_seed, MF_SEED_LEN, NULL, 0);
 	}
+#ifdef FEAT_SODIUM
+	else if (method_nr == CRYPT_M_SOD)
+	    randombytes_buf(buf->b_ml.ml_mfp->mf_seed, MF_SEED_LEN);
+ #endif
     }
 }
 
@@ -447,7 +458,7 @@ ml_set_b0_crypt(buf_T *buf, ZERO_BL *b0p)
 	int method_nr = crypt_get_method_nr(buf);
 
 	b0p->b0_id[1] = id1_codes[method_nr];
-	if (method_nr > CRYPT_M_ZIP)
+	if (method_nr > CRYPT_M_ZIP && method_nr < CRYPT_M_SOD)
 	{
 	    // Generate a seed and store it in block 0 and in the memfile.
 	    sha2_seed(&b0p->b0_seed, MF_SEED_LEN, NULL, 0);
@@ -482,10 +493,17 @@ ml_set_crypt_key(
     int		top;
     int		old_method;
 
-    if (mfp == NULL)
+    if (mfp == NULL || mfp->mf_fd < 0)
 	return;  // no memfile yet, nothing to do
     old_method = crypt_method_nr_from_name(old_cm);
 
+    if (old_method == CRYPT_M_SOD || crypt_get_method_nr(buf) == CRYPT_M_SOD)
+    {
+	// close the swapfile
+	mf_close_file(buf, TRUE);
+	buf->b_p_swf = FALSE;
+	return;
+    }
     // First make sure the swapfile is in a consistent state, using the old
     // key and method.
     {
@@ -911,7 +929,8 @@ ml_check_b0_id(ZERO_BL *b0p)
 	    || (b0p->b0_id[1] != BLOCK0_ID1
 		&& b0p->b0_id[1] != BLOCK0_ID1_C0
 		&& b0p->b0_id[1] != BLOCK0_ID1_C1
-		&& b0p->b0_id[1] != BLOCK0_ID1_C2)
+		&& b0p->b0_id[1] != BLOCK0_ID1_C2
+		&& b0p->b0_id[1] != BLOCK0_ID1_C3)
 	    )
 	return FAIL;
     return OK;
@@ -2402,7 +2421,9 @@ ml_sync_all(int check_file, int check_char)
 
     FOR_ALL_BUFFERS(buf)
     {
-	if (buf->b_ml.ml_mfp == NULL || buf->b_ml.ml_mfp->mf_fname == NULL)
+	if (buf->b_ml.ml_mfp == NULL
+		|| buf->b_ml.ml_mfp->mf_fname == NULL
+		|| buf->b_ml.ml_mfp->mf_fd < 0)
 	    continue;			    // no file
 
 	ml_flush_line(buf);		    // flush buffered line
@@ -5320,7 +5341,8 @@ ml_encrypt_data(
     mch_memmove(new_data, dp, head_end - (char_u *)dp);
 
     // Encrypt the text.
-    crypt_encode(state, text_start, text_len, new_data + dp->db_txt_start);
+    crypt_encode(state, text_start, text_len, new_data + dp->db_txt_start,
+									FALSE);
     crypt_free_state(state);
 
     // Clear the gap.
@@ -5360,7 +5382,7 @@ ml_decrypt_data(
 	if (state != NULL)
 	{
 	    // Decrypt the text in place.
-	    crypt_decode_inplace(state, text_start, text_len);
+	    crypt_decode_inplace(state, text_start, text_len, FALSE);
 	    crypt_free_state(state);
 	}
     }
@@ -5407,7 +5429,7 @@ ml_crypt_prepare(memfile_T *mfp, off_T offset, int reading)
     // of the block for the salt.
     vim_snprintf((char *)salt, sizeof(salt), "%ld", (long)offset);
     return crypt_create(method_nr, key, salt, (int)STRLEN(salt),
-							   seed, MF_SEED_LEN);
+							seed, MF_SEED_LEN);
 }
 
 #endif

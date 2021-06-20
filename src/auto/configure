@@ -839,6 +839,7 @@ with_motif_lib
 with_tlib
 enable_largefile
 enable_canberra
+enable_libsodium
 enable_acl
 enable_gpm
 enable_sysmouse
@@ -1513,6 +1514,7 @@ Optional Features:
   --disable-desktop-database-update  update disabled
   --disable-largefile     omit support for large files
   --disable-canberra      Do not use libcanberra.
+  --disable-libsodium      Do not use libsodium.
   --disable-acl           No check for ACL support.
   --disable-gpm           Don't use gpm (Linux mouse daemon).
   --disable-sysmouse      Don't use sysmouse (mouse in *BSD console).
@@ -13005,6 +13007,70 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-libsodium argument" >&5
+$as_echo_n "checking --enable-libsodium argument... " >&6; }
+# Check whether --enable-libsodium was given.
+if test "${enable_libsodium+set}" = set; then :
+  enableval=$enable_libsodium;
+else
+  enable_libsodium="maybe"
+fi
+
+
+if test "$enable_libsodium" = "maybe"; then
+  if test "$features" = "big" -o "$features" = "huge"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: Defaulting to yes" >&5
+$as_echo "Defaulting to yes" >&6; }
+    enable_libsodium="yes"
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: Defaulting to no" >&5
+$as_echo "Defaulting to no" >&6; }
+    enable_libsodium="no"
+  fi
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_libsodium" >&5
+$as_echo "$enable_libsodium" >&6; }
+fi
+if test "$enable_libsodium" = "yes"; then
+  if test "x$PKG_CONFIG" != "xno"; then
+    libsodium_lib=`$PKG_CONFIG --libs libsodium 2>/dev/null`
+    libsodium_cflags=`$PKG_CONFIG --cflags libsodium 2>/dev/null`
+  fi
+  if test "x$libsodium_lib" = "x"; then
+    libsodium_lib=-lsodium
+    libsodium_cflags=
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libcanberra" >&5
+$as_echo_n "checking for libcanberra... " >&6; }
+  ac_save_CFLAGS="$CFLAGS"
+  ac_save_LIBS="$LIBS"
+  CFLAGS="$CFLAGS $libsodium_cflags"
+  LIBS="$LIBS $libsodium_lib"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+  # include <sodium.h>
+
+int
+main ()
+{
+
+     printf("%d", sodium_init());
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }; $as_echo "#define HAVE_SODIUM 1" >>confdefs.h
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no; try installing libsodium-dev" >&5
+$as_echo "no; try installing libsodium-dev" >&6; }; CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for st_blksize" >&5
 $as_echo_n "checking for st_blksize... " >&6; }

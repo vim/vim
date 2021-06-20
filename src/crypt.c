@@ -12,6 +12,10 @@
  */
 #include "vim.h"
 
+#ifdef FEAT_SODIUM
+# include <sodium.h>
+#endif
+
 #if defined(FEAT_CRYPT) || defined(PROTO)
 /*
  * Optional encryption support.
@@ -33,7 +37,7 @@ typedef struct {
     char    *name;	// encryption name as used in 'cryptmethod'
     char    *magic;	// magic bytes stored in file header
     int	    salt_len;	// length of salt, or 0 when not using salt
-    int	    seed_len;	// length of seed, or 0 when not using salt
+    int	    seed_len;	// length of seed, or 0 when not using seed
 #ifdef CRYPT_NOT_INPLACE
     int	    works_inplace; // encryption/decryption can be done in-place
 #endif
@@ -49,16 +53,16 @@ typedef struct {
     // Function pointers for encoding/decoding from one buffer into another.
     // Optional, however, these or the _buffer ones should be configured.
     void (*encode_fn)(cryptstate_T *state, char_u *from, size_t len,
-								  char_u *to);
+							char_u *to, int last);
     void (*decode_fn)(cryptstate_T *state, char_u *from, size_t len,
-								  char_u *to);
+							char_u *to, int last);
 
     // Function pointers for encoding and decoding, can buffer data if needed.
     // Optional (however, these or the above should be configured).
     long (*encode_buffer_fn)(cryptstate_T *state, char_u *from, size_t len,
-							     char_u **newptr);
+						    char_u **newptr, int last);
     long (*decode_buffer_fn)(cryptstate_T *state, char_u *from, size_t len,
-							     char_u **newptr);
+						    char_u **newptr, int last);
 
     // Function pointers for in-place encoding and decoding, used for
     // crypt_*_inplace(). "from" and "to" arguments will be equal.
@@ -68,9 +72,9 @@ typedef struct {
     // padding to files).
     // This method is used for swap and undo files which have a rigid format.
     void (*encode_inplace_fn)(cryptstate_T *state, char_u *p1, size_t len,
-								  char_u *p2);
+							char_u *p2, int last);
     void (*decode_inplace_fn)(cryptstate_T *state, char_u *p1, size_t len,
-								  char_u *p2);
+							char_u *p2, int last);
 } cryptmethod_T;
 
 // index is method_nr of cryptstate_T, CRYPT_M_*
@@ -126,9 +130,40 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	crypt_blowfish_encode, crypt_blowfish_decode,
     },
 
+    // XChaCha20 using libsodium
+    {
+	"xchacha20",
+	"VimCrypt~04!",
+#ifdef FEAT_SODIUM
+	crypto_pwhash_argon2id_SALTBYTES, // 16
+#else
+	16,
+#endif
+	8,
+#ifdef CRYPT_NOT_INPLACE
+	FALSE,
+#endif
+	FALSE,
+	NULL,
+	crypt_sodium_init,
+	crypt_sodium_encode, crypt_sodium_decode,
+	crypt_sodium_buffer_encode, crypt_sodium_buffer_decode,
+	crypt_sodium_encode, crypt_sodium_decode,
+    },
+
     // NOTE: when adding a new method, use some random bytes for the magic key,
     // to avoid that a text file is recognized as encrypted.
 };
+
+#ifdef FEAT_SODIUM
+typedef struct {
+    size_t	    count;
+    unsigned char   key[crypto_box_SEEDBYTES];
+		  // 32, same as crypto_secretstream_xchacha20poly1305_KEYBYTES
+    crypto_secretstream_xchacha20poly1305_state
+		    state;
+} sodium_state_T;
+#endif
 
 #define CRYPT_MAGIC_LEN	12	// cannot change
 static char	crypt_magic_head[] = "VimCrypt~";
@@ -260,7 +295,7 @@ crypt_create(
 
     state->method_nr = method_nr;
     if (cryptmethods[method_nr].init_fn(
-			   state, key, salt, salt_len, seed, seed_len) == FAIL)
+	state, key, salt, salt_len, seed, seed_len) == FAIL)
     {
         vim_free(state);
         return NULL;
@@ -365,9 +400,16 @@ crypt_create_for_writing(
 	// TODO: Should this be crypt method specific? (Probably not worth
 	// it).  sha2_seed is pretty bad for large amounts of entropy, so make
 	// that into something which is suitable for anything.
-	sha2_seed(salt, salt_len, seed, seed_len);
+#ifdef FEAT_SODIUM
+	if (sodium_init() >= 0)
+	{
+	    randombytes_buf(salt, salt_len);
+	    randombytes_buf(seed, seed_len);
+	}
+	else
+#endif
+	    sha2_seed(salt, salt_len, seed, seed_len);
     }
-
     state = crypt_create(method_nr, key, salt, salt_len, seed, seed_len);
     if (state == NULL)
 	VIM_CLEAR(*header);
@@ -380,7 +422,15 @@ crypt_create_for_writing(
     void
 crypt_free_state(cryptstate_T *state)
 {
-    vim_free(state->method_state);
+#ifdef FEAT_SODIUM
+    if (state->method_nr == CRYPT_M_SOD)
+    {
+	sodium_memzero(state->method_state, sizeof(sodium_state_T));
+	sodium_free(state->method_state);
+    }
+    else
+#endif
+	vim_free(state->method_state);
     vim_free(state);
 }
 
@@ -395,21 +445,22 @@ crypt_encode_alloc(
     cryptstate_T *state,
     char_u	*from,
     size_t	len,
-    char_u	**newptr)
+    char_u	**newptr,
+    int		last)
 {
     cryptmethod_T *method = &cryptmethods[state->method_nr];
 
     if (method->encode_buffer_fn != NULL)
 	// Has buffer function, pass through.
-	return method->encode_buffer_fn(state, from, len, newptr);
+	return method->encode_buffer_fn(state, from, len, newptr, last);
     if (len == 0)
 	// Not buffering, just return EOF.
 	return (long)len;
 
-    *newptr = alloc(len);
+    *newptr = alloc(len + 50);
     if (*newptr == NULL)
 	return -1;
-    method->encode_fn(state, from, len, *newptr);
+    method->encode_fn(state, from, len, *newptr, last);
     return (long)len;
 }
 
@@ -423,13 +474,14 @@ crypt_decode_alloc(
     cryptstate_T *state,
     char_u	*ptr,
     long	len,
-    char_u      **newptr)
+    char_u      **newptr,
+    int		last)
 {
     cryptmethod_T *method = &cryptmethods[state->method_nr];
 
     if (method->decode_buffer_fn != NULL)
 	// Has buffer function, pass through.
-	return method->decode_buffer_fn(state, ptr, len, newptr);
+	return method->decode_buffer_fn(state, ptr, len, newptr, last);
 
     if (len == 0)
 	// Not buffering, just return EOF.
@@ -438,7 +490,7 @@ crypt_decode_alloc(
     *newptr = alloc(len);
     if (*newptr == NULL)
 	return -1;
-    method->decode_fn(state, ptr, len, *newptr);
+    method->decode_fn(state, ptr, len, *newptr, last);
     return len;
 }
 #endif
@@ -451,9 +503,10 @@ crypt_encode(
     cryptstate_T *state,
     char_u	*from,
     size_t	len,
-    char_u	*to)
+    char_u	*to,
+    int		last)
 {
-    cryptmethods[state->method_nr].encode_fn(state, from, len, to);
+    cryptmethods[state->method_nr].encode_fn(state, from, len, to, last);
 }
 
 #if 0  // unused
@@ -465,9 +518,10 @@ crypt_decode(
     cryptstate_T *state,
     char_u	*from,
     size_t	len,
-    char_u	*to)
+    char_u	*to,
+    int		last)
 {
-    cryptmethods[state->method_nr].decode_fn(state, from, len, to);
+    cryptmethods[state->method_nr].decode_fn(state, from, len, to, last);
 }
 #endif
 
@@ -478,9 +532,11 @@ crypt_decode(
 crypt_encode_inplace(
     cryptstate_T *state,
     char_u	*buf,
-    size_t	len)
+    size_t	len,
+    int         last)
 {
-    cryptmethods[state->method_nr].encode_inplace_fn(state, buf, len, buf);
+    cryptmethods[state->method_nr].encode_inplace_fn(state, buf, len,
+								    buf, last);
 }
 
 /*
@@ -490,9 +546,11 @@ crypt_encode_inplace(
 crypt_decode_inplace(
     cryptstate_T *state,
     char_u	*buf,
-    size_t	len)
+    size_t	len,
+    int		last)
 {
-    cryptmethods[state->method_nr].decode_inplace_fn(state, buf, len, buf);
+    cryptmethods[state->method_nr].decode_inplace_fn(state, buf, len,
+								    buf, last);
 }
 
 /*
@@ -522,6 +580,19 @@ crypt_check_method(int method)
     {
 	msg_scroll = TRUE;
 	msg(_("Warning: Using a weak encryption method; see :help 'cm'"));
+    }
+    if (method == CRYPT_M_SOD)
+    {
+	// encryption uses padding and MAC, that does not work very well with
+	// swap and undo files, so disable them
+	mf_close_file(curbuf, TRUE);	// remove the swap file
+	set_option_value((char_u *)"swf", 0, NULL, OPT_LOCAL);
+#ifdef FEAT_PERSISTENT_UNDO
+	set_option_value((char_u *)"udf", 0, NULL, OPT_LOCAL);
+#endif
+
+	msg_scroll = TRUE;
+	msg(_("Note: Encryption of swapfile not supported, disabling swap- and undofile"));
     }
 }
 
@@ -608,6 +679,268 @@ crypt_append_msg(
 	STRCAT(IObuff, *buf->b_p_cm == NUL ? p_cm : buf->b_p_cm);
 	STRCAT(IObuff, "]");
     }
+}
+
+    int
+crypt_sodium_init(
+    cryptstate_T	*state UNUSED,
+    char_u		*key UNUSED,
+    char_u		*salt UNUSED,
+    int			salt_len UNUSED,
+    char_u		*seed UNUSED,
+    int			seed_len UNUSED)
+{
+# ifdef FEAT_SODIUM
+    // crypto_box_SEEDBYTES ==  crypto_secretstream_xchacha20poly1305_KEYBYTES
+    unsigned char	dkey[crypto_box_SEEDBYTES]; // 32
+    sodium_state_T	*sd_state;
+
+    if (sodium_init() < 0)
+	return FAIL;
+
+    sd_state = (sodium_state_T *)sodium_malloc(sizeof(sodium_state_T));
+    sodium_memzero(sd_state, sizeof(sodium_state_T));
+
+    // derive a key from the password
+    if (crypto_pwhash(dkey, sizeof(dkey), (const char *)key, STRLEN(key), salt,
+	crypto_pwhash_OPSLIMIT_INTERACTIVE, crypto_pwhash_MEMLIMIT_INTERACTIVE,
+	crypto_pwhash_ALG_DEFAULT) != 0)
+    {
+	// out of memory
+	sodium_free(sd_state);
+	return FAIL;
+    }
+    memcpy(sd_state->key, dkey, crypto_box_SEEDBYTES);
+    sd_state->count = 0;
+    state->method_state = sd_state;
+
+    return OK;
+# else
+    emsg(e_libsodium_not_built_in);
+    return FAIL;
+# endif
+}
+
+/*
+ * Encrypt "from[len]" into "to[len]".
+ * "from" and "to" can be equal to encrypt in place.
+ * Call needs to ensure that there is enough space in to (for the header)
+ */
+    void
+crypt_sodium_encode(
+    cryptstate_T *state UNUSED,
+    char_u	*from UNUSED,
+    size_t	len UNUSED,
+    char_u	*to UNUSED,
+    int		last UNUSED)
+{
+# ifdef FEAT_SODIUM
+    // crypto_box_SEEDBYTES == crypto_secretstream_xchacha20poly1305_KEYBYTES
+    sodium_state_T *sod_st = state->method_state;
+    unsigned char  tag = last
+			? crypto_secretstream_xchacha20poly1305_TAG_FINAL  : 0;
+
+    if (sod_st->count == 0)
+    {
+	if (len <= crypto_secretstream_xchacha20poly1305_HEADERBYTES)
+	{
+	    emsg(e_libsodium_cannot_encrypt_header);
+	    return;
+	}
+	crypto_secretstream_xchacha20poly1305_init_push(&sod_st->state,
+							      to, sod_st->key);
+	to += crypto_secretstream_xchacha20poly1305_HEADERBYTES;
+    }
+
+    if (sod_st->count && len <= crypto_secretstream_xchacha20poly1305_ABYTES)
+    {
+	emsg(e_libsodium_cannot_encrypt_buffer);
+	return;
+    }
+
+    crypto_secretstream_xchacha20poly1305_push(&sod_st->state, to, NULL,
+						      from, len, NULL, 0, tag);
+
+    sod_st->count++;
+# endif
+}
+
+/* TODO: Unused
+ * Decrypt "from[len]" into "to[len]".
+ * "from" and "to" can be equal to encrypt in place.
+ */
+    void
+crypt_sodium_decode(
+    cryptstate_T *state UNUSED,
+    char_u	*from UNUSED,
+    size_t	len UNUSED,
+    char_u	*to UNUSED,
+    int		last UNUSED)
+{
+# ifdef FEAT_SODIUM
+    // crypto_box_SEEDBYTES ==  crypto_secretstream_xchacha20poly1305_KEYBYTES
+    sodium_state_T *sod_st = state->method_state;
+    unsigned char  tag;
+    unsigned long long buf_len;
+    char_u *p1 = from;
+    char_u *p2 = to;
+    char_u *buf_out;
+
+    if (sod_st->count == 0
+		   && len <= crypto_secretstream_xchacha20poly1305_HEADERBYTES)
+    {
+	emsg(e_libsodium_cannot_decrypt_header);
+	return;
+    }
+
+    buf_out = (char_u *)alloc(len);
+
+    if (buf_out == NULL)
+    {
+	emsg(e_libsodium_cannot_allocate_buffer);
+	return;
+    }
+    if (sod_st->count == 0)
+    {
+	if (crypto_secretstream_xchacha20poly1305_init_pull(
+				       &sod_st->state, from, sod_st->key) != 0)
+	{
+	    emsg(e_libsodium_decryption_failed_header_incomplete);
+	    goto fail;
+	}
+
+	from += crypto_secretstream_xchacha20poly1305_HEADERBYTES;
+	len -= crypto_secretstream_xchacha20poly1305_HEADERBYTES;
+
+	if (p1 == p2)
+	    to += crypto_secretstream_xchacha20poly1305_HEADERBYTES;
+    }
+
+    if (sod_st->count && len <= crypto_secretstream_xchacha20poly1305_ABYTES)
+    {
+	emsg(e_libsodium_cannot_decrypt_buffer);
+	return;
+    }
+    if (crypto_secretstream_xchacha20poly1305_pull(&sod_st->state,
+			     buf_out, &buf_len, &tag, from, len, NULL, 0) != 0)
+    {
+	emsg(e_libsodium_decription_failed);
+	goto fail;
+    }
+    sod_st->count++;
+
+    if (tag == crypto_secretstream_xchacha20poly1305_TAG_FINAL && !last)
+    {
+	emsg(e_libsodium_decyption_failed_premature);
+	goto fail;
+    }
+    if (p1 == p2)
+	mch_memmove(p2, buf_out, buf_len);
+
+fail:
+    vim_free(buf_out);
+# endif
+}
+
+/*
+ * Encrypt "from[len]" into "to[len]".
+ * "from" and "to" can be equal to encrypt in place.
+ */
+    long
+crypt_sodium_buffer_encode(
+    cryptstate_T *state UNUSED,
+    char_u	*from UNUSED,
+    size_t	len UNUSED,
+    char_u	**buf_out UNUSED,
+    int		last UNUSED)
+{
+# ifdef FEAT_SODIUM
+    // crypto_box_SEEDBYTES ==  crypto_secretstream_xchacha20poly1305_KEYBYTES
+    unsigned long long	out_len;
+    char_u		*ptr;
+    unsigned char	tag = last
+			? crypto_secretstream_xchacha20poly1305_TAG_FINAL  : 0;
+    int			length;
+    sodium_state_T	*sod_st = state->method_state;
+    int			first = (sod_st->count == 0);
+
+    length = len + crypto_secretstream_xchacha20poly1305_ABYTES
+	     + (first ? crypto_secretstream_xchacha20poly1305_HEADERBYTES : 0);
+    *buf_out = alloc_clear(length);
+    if (*buf_out == NULL)
+    {
+	emsg(e_libsodium_cannot_allocate_buffer);
+	return -1;
+    }
+    ptr = *buf_out;
+
+    if (first)
+    {
+	crypto_secretstream_xchacha20poly1305_init_push(&sod_st->state,
+		ptr, sod_st->key);
+	ptr += crypto_secretstream_xchacha20poly1305_HEADERBYTES;
+    }
+
+    crypto_secretstream_xchacha20poly1305_push(&sod_st->state, ptr,
+	    &out_len, from, len, NULL, 0, tag);
+
+    sod_st->count++;
+    return out_len + (first
+		      ? crypto_secretstream_xchacha20poly1305_HEADERBYTES : 0);
+# else
+    return -1;
+# endif
+}
+
+/*
+ * Decrypt "from[len]" into "to[len]".
+ * "from" and "to" can be equal to encrypt in place.
+ */
+    long
+crypt_sodium_buffer_decode(
+    cryptstate_T *state UNUSED,
+    char_u	*from UNUSED,
+    size_t	len UNUSED,
+    char_u	**buf_out UNUSED,
+    int		last UNUSED)
+{
+# ifdef FEAT_SODIUM
+    // crypto_box_SEEDBYTES ==  crypto_secretstream_xchacha20poly1305_KEYBYTES
+    sodium_state_T *sod_st = state->method_state;
+    unsigned char  tag;
+    unsigned long long out_len;
+    *buf_out = alloc_clear(len);
+    if (*buf_out == NULL)
+    {
+	emsg(e_libsodium_cannot_allocate_buffer);
+	return -1;
+    }
+
+    if (sod_st->count == 0)
+    {
+	if (crypto_secretstream_xchacha20poly1305_init_pull(&sod_st->state,
+						       from, sod_st->key) != 0)
+	{
+	    emsg(e_libsodium_decryption_failed_header_incomplete);
+	    return -1;
+	}
+	from += crypto_secretstream_xchacha20poly1305_HEADERBYTES;
+	len -= crypto_secretstream_xchacha20poly1305_HEADERBYTES;
+	sod_st->count++;
+    }
+    if (crypto_secretstream_xchacha20poly1305_pull(&sod_st->state,
+			    *buf_out, &out_len, &tag, from, len, NULL, 0) != 0)
+    {
+	emsg(e_libsodium_decription_failed);
+	return -1;
+    }
+
+    if (tag == crypto_secretstream_xchacha20poly1305_TAG_FINAL && !last)
+	emsg(e_libsodium_decyption_failed_premature);
+    return (long) out_len;
+# else
+    return -1;
+# endif
 }
 
 #endif // FEAT_CRYPT

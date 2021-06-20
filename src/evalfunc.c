@@ -5072,6 +5072,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 		0
 #endif
 		},
+	{"sodium",
+#ifdef FEAT_SODIUM
+		1
+#else
+		0
+#endif
+		},
 	{"sound",
 #ifdef FEAT_SOUND
 		1

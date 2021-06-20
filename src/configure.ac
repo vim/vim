@@ -3767,6 +3767,43 @@ if test "$enable_canberra" = "yes"; then
        AC_MSG_RESULT(no; try installing libcanberra-dev); CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS")
 fi
 
+AC_MSG_CHECKING(--enable-libsodium argument)
+AC_ARG_ENABLE(libsodium,
+	[  --disable-libsodium      Do not use libsodium.],
+	, [enable_libsodium="maybe"])
+
+if test "$enable_libsodium" = "maybe"; then
+  if test "$features" = "big" -o "$features" = "huge"; then
+    AC_MSG_RESULT(Defaulting to yes)
+    enable_libsodium="yes"
+  else
+    AC_MSG_RESULT(Defaulting to no)
+    enable_libsodium="no"
+  fi
+else
+  AC_MSG_RESULT($enable_libsodium)
+fi
+if test "$enable_libsodium" = "yes"; then
+  if test "x$PKG_CONFIG" != "xno"; then
+    libsodium_lib=`$PKG_CONFIG --libs libsodium 2>/dev/null`
+    libsodium_cflags=`$PKG_CONFIG --cflags libsodium 2>/dev/null`
+  fi
+  if test "x$libsodium_lib" = "x"; then
+    libsodium_lib=-lsodium
+    libsodium_cflags=
+  fi
+  AC_MSG_CHECKING(for libcanberra)
+  ac_save_CFLAGS="$CFLAGS"
+  ac_save_LIBS="$LIBS"
+  CFLAGS="$CFLAGS $libsodium_cflags"
+  LIBS="$LIBS $libsodium_lib"
+  AC_TRY_LINK([
+  # include <sodium.h>
+      ], [
+     printf("%d", sodium_init()); ],
+       AC_MSG_RESULT(yes); AC_DEFINE(HAVE_SODIUM),
+       AC_MSG_RESULT(no; try installing libsodium-dev); CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS")
+fi
 
 dnl fstatfs() can take 2 to 4 arguments, try to use st_blksize if possible
 AC_MSG_CHECKING(for st_blksize)

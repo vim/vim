@@ -427,3 +427,22 @@ EXTERN char e_call_to_function_that_failed_to_compile_str[]
 	INIT(= N_("E1191: Call to function that failed to compile: %s"));
 EXTERN char e_empty_function_name[]
 	INIT(= N_("E1192: Empty function name"));
+// libsodium
+EXTERN char e_libsodium_not_built_in[]
+	INIT(= N_("E1193: cryptmethod xchacha20 not built into this Vim"));
+EXTERN char e_libsodium_cannot_encrypt_header[]
+	INIT(= N_("E1194: Cannot encrypt header, not enough space"));
+EXTERN char e_libsodium_cannot_encrypt_buffer[]
+	INIT(= N_("E1195: Cannot encrypt buffer, not enough space"));
+EXTERN char e_libsodium_cannot_decrypt_header[]
+	INIT(= N_("E1196: Cannot decrypt header, not enough space"));
+EXTERN char e_libsodium_cannot_allocate_buffer[]
+	INIT(= N_("E1197: Cannot allocate_buffer for encryption"));
+EXTERN char e_libsodium_decryption_failed_header_incomplete[]
+	INIT(= N_("E1198: Decryption failed: Header incomplete!"));
+EXTERN char e_libsodium_cannot_decrypt_buffer[]
+	INIT(= N_("E1199: Cannot decrypt buffer, not enough space"));
+EXTERN char e_libsodium_decription_failed[]
+	INIT(= N_("E1200: Decryption failed: corrupted chunk!"));
+EXTERN char e_libsodium_decyption_failed_premature[]
+	INIT(= N_("E1201: Decryption failed: pre-mature end of file!"));
