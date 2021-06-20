@@ -3937,6 +3937,26 @@ def Test_mapping_line_number()
   delfunc g:FuncA
 enddef
 
+def Test_option_modifier()
+  var lines =<< trim END
+      set hlsearch &  hlsearch  !
+      call assert_equal(1, &hlsearch)
+  END
+  CheckScriptSuccess(lines)
+
+  lines =<< trim END
+      vim9script
+      set hlsearch &
+  END
+  CheckScriptFailure(lines, 'E518:')
+
+  lines =<< trim END
+      vim9script
+      set hlsearch &  hlsearch  !
+  END
+  CheckScriptFailure(lines, 'E518:')
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new
