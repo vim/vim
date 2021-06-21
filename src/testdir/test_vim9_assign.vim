@@ -283,6 +283,29 @@ def Test_assign_unpack()
     [v1, v2; _] = [1, 2, 3, 4, 5]
     assert_equal(1, v1)
     assert_equal(2, v2)
+
+    var a = 1
+    var b = 3
+    [a, b] += [2, 4]
+    assert_equal(3, a)
+    assert_equal(7, b)
+
+    [a, b] -= [1, 2]
+    assert_equal(2, a)
+    assert_equal(5, b)
+
+    [a, b] *= [3, 2]
+    assert_equal(6, a)
+    assert_equal(10, b)
+
+    [a, b] /= [2, 4]
+    assert_equal(3, a)
+    assert_equal(2, b)
+
+    [a, b] = [17, 15]
+    [a, b] %= [5, 3]
+    assert_equal(2, a)
+    assert_equal(0, b)
   END
   CheckDefAndScriptSuccess(lines)
 

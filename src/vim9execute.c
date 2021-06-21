@@ -3832,12 +3832,12 @@ exec_instructions(ectx_T *ectx)
 	    case ISN_GETITEM:
 		{
 		    listitem_T	*li;
-		    int		index = iptr->isn_arg.number;
+		    getitem_T	*gi = &iptr->isn_arg.getitem;
 
 		    // Get list item: list is at stack-1, push item.
 		    // List type and length is checked for when compiling.
-		    tv = STACK_TV_BOT(-1);
-		    li = list_find(tv->vval.v_list, index);
+		    tv = STACK_TV_BOT(-1 - gi->gi_with_op);
+		    li = list_find(tv->vval.v_list, gi->gi_index);
 
 		    if (GA_GROW(&ectx->ec_stack, 1) == FAIL)
 			goto theend;
@@ -3846,7 +3846,7 @@ exec_instructions(ectx_T *ectx)
 
 		    // Useful when used in unpack assignment.  Reset at
 		    // ISN_DROP.
-		    ectx->ec_where.wt_index = index + 1;
+		    ectx->ec_where.wt_index = gi->gi_index + 1;
 		    ectx->ec_where.wt_variable = TRUE;
 		}
 		break;
@@ -5376,8 +5376,10 @@ list_instructions(char *pfx, isn_T *instr, int instr_count, ufunc_T *ufunc)
 	    case ISN_ANYSLICE: smsg("%s%4d ANYSLICE", pfx, current); break;
 	    case ISN_SLICE: smsg("%s%4d SLICE %lld",
 					 pfx, current, iptr->isn_arg.number); break;
-	    case ISN_GETITEM: smsg("%s%4d ITEM %lld",
-					 pfx, current, iptr->isn_arg.number); break;
+	    case ISN_GETITEM: smsg("%s%4d ITEM %lld%s", pfx, current,
+					 iptr->isn_arg.getitem.gi_index,
+					 iptr->isn_arg.getitem.gi_with_op ?
+						       " with op" : ""); break;
 	    case ISN_MEMBER: smsg("%s%4d MEMBER", pfx, current); break;
 	    case ISN_STRINGMEMBER: smsg("%s%4d MEMBER %s", pfx, current,
 						  iptr->isn_arg.string); break;

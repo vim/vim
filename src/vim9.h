@@ -209,6 +209,12 @@ typedef struct {
     int	    cuf_argcount;   // number of arguments on top of stack
 } cufunc_T;
 
+// arguments to ISN_GETITEM
+typedef struct {
+    varnumber_T	gi_index;
+    int		gi_with_op;
+} getitem_T;
+
 typedef enum {
     JUMP_ALWAYS,
     JUMP_IF_FALSE,		// pop and jump if false
@@ -432,6 +438,7 @@ struct isn_S {
 	isn_T		    *instr;
 	tostring_T	    tostring;
 	tobool_T	    tobool;
+	getitem_T	    getitem;
     } isn_arg;
 };
 

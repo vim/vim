@@ -3485,6 +3485,8 @@ find_ex_command(
 	    // can't be an assignment.
 	    if (*eap->cmd == '[')
 	    {
+		char_u	    *eq;
+
 		p = to_name_const_end(eap->cmd);
 		if (p == eap->cmd && *p == '[')
 		{
@@ -3493,12 +3495,19 @@ find_ex_command(
 
 		    p = skip_var_list(eap->cmd, TRUE, &count, &semicolon, TRUE);
 		}
-		if (p == NULL || p == eap->cmd || *skipwhite(p) != '=')
+		eq = p;
+		if (eq != NULL)
+		{
+		    eq = skipwhite(eq);
+		    if (vim_strchr((char_u *)"+-*/%", *eq) != NULL)
+			++eq;
+		}
+		if (p == NULL || p == eap->cmd || *eq != '=')
 		{
 		    eap->cmdidx = CMD_eval;
 		    return eap->cmd;
 		}
-		if (p > eap->cmd && *skipwhite(p) == '=')
+		if (p > eap->cmd && *eq == '=')
 		{
 		    eap->cmdidx = CMD_var;
 		    return eap->cmd;

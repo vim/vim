@@ -452,6 +452,37 @@ def Test_disassemble_list_assign()
         res)
 enddef
 
+def s:ListAssignWithOp()
+  var a = 2
+  var b = 3
+  [a, b] += [4, 5]
+enddef
+
+def Test_disassemble_list_assign_with_op()
+  var res = execute('disass s:ListAssignWithOp')
+  assert_match('<SNR>\d*_ListAssignWithOp\_s*' ..
+        'var a = 2\_s*' ..
+        '\d STORE 2 in $0\_s*' ..
+        'var b = 3\_s*' ..
+        '\d STORE 3 in $1\_s*' ..
+        '\[a, b\] += \[4, 5\]\_s*' ..
+        '\d\+ PUSHNR 4\_s*' ..
+        '\d\+ PUSHNR 5\_s*' ..
+        '\d\+ NEWLIST size 2\_s*' ..
+        '\d\+ CHECKLEN 2\_s*' ..
+        '\d\+ LOAD $0\_s*' ..
+        '\d\+ ITEM 0 with op\_s*' ..
+        '\d\+ OPNR +\_s*' ..
+        '\d\+ STORE $0\_s*' ..
+        '\d\+ LOAD $1\_s*' ..
+        '\d\+ ITEM 1 with op\_s*' ..
+        '\d\+ OPNR +\_s*' ..
+        '\d\+ STORE $1\_s*' ..
+        '\d\+ DROP\_s*' ..
+        '\d\+ RETURN void',
+        res)
+enddef
+
 def s:ListAdd()
   var l: list<number> = []
   add(l, 123)
