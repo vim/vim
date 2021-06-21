@@ -1213,6 +1213,7 @@ retry:
 		     * Read bytes from curbuf.  Used for converting text read
 		     * from stdin.
 		     */
+		    eof = FALSE;
 		    if (read_buf_lnum > from)
 			size = 0;
 		    else
@@ -1261,6 +1262,7 @@ retry:
 				    if (!curbuf->b_p_eol)
 					--tlen;
 				    size = tlen;
+				    eof = TRUE;
 				    break;
 				}
 			    }
