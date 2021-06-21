@@ -442,7 +442,7 @@ EXTERN char e_libsodium_decryption_failed_header_incomplete[]
 	INIT(= N_("E1198: Decryption failed: Header incomplete!"));
 EXTERN char e_libsodium_cannot_decrypt_buffer[]
 	INIT(= N_("E1199: Cannot decrypt buffer, not enough space"));
-EXTERN char e_libsodium_decription_failed[]
+EXTERN char e_libsodium_decryption_failed[]
 	INIT(= N_("E1200: Decryption failed: corrupted chunk!"));
-EXTERN char e_libsodium_decyption_failed_premature[]
+EXTERN char e_libsodium_decryption_failed_premature[]
 	INIT(= N_("E1201: Decryption failed: pre-mature end of file!"));
