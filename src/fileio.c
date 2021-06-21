@@ -1276,7 +1276,7 @@ retry:
 		    // Let the crypt layer work with a buffer size of 8192
 		    if (filesize == 0)
 			// set size to 8K + Sodium Crypt Metadata
-			size = WRITEBUFSIZE + 36
+			size = WRITEBUFSIZE + crypt_get_max_header_len()
 		     + crypto_secretstream_xchacha20poly1305_HEADERBYTES
 		     + crypto_secretstream_xchacha20poly1305_ABYTES;
 

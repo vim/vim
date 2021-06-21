@@ -250,6 +250,26 @@ crypt_get_header_len(int method_nr)
 	+ cryptmethods[method_nr].seed_len;
 }
 
+
+/*
+ * Get maximum crypt method specific length of the file header in bytes.
+ */
+    int
+crypt_get_max_header_len()
+{
+    int i;
+    int max = 0;
+    int temp = 0;
+
+    for (i = 0; i < CRYPT_M_COUNT; ++i)
+    {
+	temp = crypt_get_header_len(i);
+	if (temp > max)
+	    max = temp;
+    }
+    return max;
+}
+
 /*
  * Set the crypt method for buffer "buf" to "method_nr" using the int value as
  * returned by crypt_method_nr_from_name().

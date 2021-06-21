@@ -5,6 +5,7 @@ int crypt_works_inplace(cryptstate_T *state);
 int crypt_get_method_nr(buf_T *buf);
 int crypt_whole_undofile(int method_nr);
 int crypt_get_header_len(int method_nr);
+int crypt_get_max_header_len(void);
 void crypt_set_cm_option(buf_T *buf, int method_nr);
 int crypt_self_test(void);
 cryptstate_T *crypt_create(int method_nr, char_u *key, char_u *salt, int salt_len, char_u *seed, int seed_len);
