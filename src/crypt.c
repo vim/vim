@@ -14,6 +14,8 @@
 
 #ifdef FEAT_SODIUM
 # include <sodium.h>
+
+static void crypt_check_swapfile_curbuf(void);
 #endif
 
 #if defined(FEAT_CRYPT) || defined(PROTO)
@@ -603,6 +605,13 @@ crypt_check_method(int method)
 	msg_scroll = TRUE;
 	msg(_("Warning: Using a weak encryption method; see :help 'cm'"));
     }
+}
+
+#ifdef FEAT_SODIUM
+    static void
+crypt_check_swapfile_curbuf(void)
+{
+    int method = crypt_get_method_nr(curbuf);
     if (method == CRYPT_M_SOD)
     {
 	// encryption uses padding and MAC, that does not work very well with
@@ -612,11 +621,11 @@ crypt_check_method(int method)
 #ifdef FEAT_PERSISTENT_UNDO
 	set_option_value((char_u *)"udf", 0, NULL, OPT_LOCAL);
 #endif
-
 	msg_scroll = TRUE;
 	msg(_("Note: Encryption of swapfile not supported, disabling swap- and undofile"));
     }
 }
+#endif
 
     void
 crypt_check_current_method(void)
@@ -669,6 +678,9 @@ crypt_get_key(
 		set_option_value((char_u *)"key", 0L, p1, OPT_LOCAL);
 		crypt_free_key(p1);
 		p1 = curbuf->b_p_key;
+#ifdef FEAT_SODIUM
+		crypt_check_swapfile_curbuf();
+#endif
 	    }
 	    break;
 	}
@@ -676,10 +688,13 @@ crypt_get_key(
     }
 
     // since the user typed this, no need to wait for return
-    if (msg_didout)
-	msg_putchar('\n');
-    need_wait_return = FALSE;
-    msg_didout = FALSE;
+    if (crypt_get_method_nr(curbuf) != CRYPT_M_SOD)
+    {
+	if (msg_didout)
+	    msg_putchar('\n');
+	need_wait_return = FALSE;
+	msg_didout = FALSE;
+    }
 
     crypt_free_key(p2);
     return p1;
