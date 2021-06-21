@@ -146,9 +146,9 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	FALSE,
 	NULL,
 	crypt_sodium_init,
-	crypt_sodium_encode, crypt_sodium_decode,
+	NULL, NULL,
 	crypt_sodium_buffer_encode, crypt_sodium_buffer_decode,
-	crypt_sodium_encode, crypt_sodium_decode,
+	NULL, NULL,
     },
 
     // NOTE: when adding a new method, use some random bytes for the magic key,
@@ -248,6 +248,26 @@ crypt_get_header_len(int method_nr)
     return CRYPT_MAGIC_LEN
 	+ cryptmethods[method_nr].salt_len
 	+ cryptmethods[method_nr].seed_len;
+}
+
+
+/*
+ * Get maximum crypt method specific length of the file header in bytes.
+ */
+    int
+crypt_get_max_header_len()
+{
+    int i;
+    int max = 0;
+    int temp = 0;
+
+    for (i = 0; i < CRYPT_M_COUNT; ++i)
+    {
+	temp = crypt_get_header_len(i);
+	if (temp > max)
+	    max = temp;
+    }
+    return max;
 }
 
 /*
@@ -403,8 +423,10 @@ crypt_create_for_writing(
 #ifdef FEAT_SODIUM
 	if (sodium_init() >= 0)
 	{
-	    randombytes_buf(salt, salt_len);
-	    randombytes_buf(seed, seed_len);
+	    if (salt_len > 0)
+		randombytes_buf(salt, salt_len);
+	    if (seed_len > 0)
+		randombytes_buf(seed, seed_len);
 	}
 	else
 #endif
@@ -581,6 +603,13 @@ crypt_check_method(int method)
 	msg_scroll = TRUE;
 	msg(_("Warning: Using a weak encryption method; see :help 'cm'"));
     }
+}
+
+#ifdef FEAT_SODIUM
+    static void
+crypt_check_swapfile_curbuf(void)
+{
+    int method = crypt_get_method_nr(curbuf);
     if (method == CRYPT_M_SOD)
     {
 	// encryption uses padding and MAC, that does not work very well with
@@ -590,11 +619,11 @@ crypt_check_method(int method)
 #ifdef FEAT_PERSISTENT_UNDO
 	set_option_value((char_u *)"udf", 0, NULL, OPT_LOCAL);
 #endif
-
 	msg_scroll = TRUE;
 	msg(_("Note: Encryption of swapfile not supported, disabling swap- and undofile"));
     }
 }
+#endif
 
     void
 crypt_check_current_method(void)
@@ -647,6 +676,9 @@ crypt_get_key(
 		set_option_value((char_u *)"key", 0L, p1, OPT_LOCAL);
 		crypt_free_key(p1);
 		p1 = curbuf->b_p_key;
+#ifdef FEAT_SODIUM
+		crypt_check_swapfile_curbuf();
+#endif
 	    }
 	    break;
 	}
@@ -654,10 +686,13 @@ crypt_get_key(
     }
 
     // since the user typed this, no need to wait for return
-    if (msg_didout)
-	msg_putchar('\n');
-    need_wait_return = FALSE;
-    msg_didout = FALSE;
+    if (crypt_get_method_nr(curbuf) != CRYPT_M_SOD)
+    {
+	if (msg_didout)
+	    msg_putchar('\n');
+	need_wait_return = FALSE;
+	msg_didout = FALSE;
+    }
 
     crypt_free_key(p2);
     return p1;
@@ -726,6 +761,7 @@ crypt_sodium_init(
  * "from" and "to" can be equal to encrypt in place.
  * Call needs to ensure that there is enough space in to (for the header)
  */
+#if 0  // Currently unused
     void
 crypt_sodium_encode(
     cryptstate_T *state UNUSED,
@@ -764,11 +800,13 @@ crypt_sodium_encode(
     sod_st->count++;
 # endif
 }
+#endif
 
-/* TODO: Unused
+/*
  * Decrypt "from[len]" into "to[len]".
  * "from" and "to" can be equal to encrypt in place.
  */
+#if 0  // Currently unused
     void
 crypt_sodium_decode(
     cryptstate_T *state UNUSED,
@@ -841,6 +879,7 @@ fail:
     vim_free(buf_out);
 # endif
 }
+#endif
 
 /*
  * Encrypt "from[len]" into "to[len]".
@@ -864,7 +903,7 @@ crypt_sodium_buffer_encode(
     sodium_state_T	*sod_st = state->method_state;
     int			first = (sod_st->count == 0);
 
-    length = len + crypto_secretstream_xchacha20poly1305_ABYTES
+    length = (int)len + crypto_secretstream_xchacha20poly1305_ABYTES
 	     + (first ? crypto_secretstream_xchacha20poly1305_HEADERBYTES : 0);
     *buf_out = alloc_clear(length);
     if (*buf_out == NULL)

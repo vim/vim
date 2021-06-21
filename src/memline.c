@@ -497,7 +497,8 @@ ml_set_crypt_key(
 	return;  // no memfile yet, nothing to do
     old_method = crypt_method_nr_from_name(old_cm);
 
-    if (old_method == CRYPT_M_SOD || crypt_get_method_nr(buf) == CRYPT_M_SOD)
+    // Swapfile encryption not supported by XChaCha20
+    if (crypt_get_method_nr(buf) == CRYPT_M_SOD && *buf->b_p_key != NUL)
     {
 	// close the swapfile
 	mf_close_file(buf, TRUE);
