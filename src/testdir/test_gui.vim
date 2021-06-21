@@ -389,7 +389,7 @@ func Test_set_guifont()
   endif
 
   " This only works if 'renderoptions' exists and does not work for Windows XP
-  " and older. 
+  " and older.
   if exists('+renderoptions') && windowsversion() !~ '^[345]\.'
     " doing this four times used to cause a crash
     set renderoptions=type:directx
@@ -873,6 +873,228 @@ func Test_gui_recursive_mapping()
 
   nunmap '
   nunmap <C-W>a
+endfunc
+
+" Test GUI mouse events
+func Test_gui_mouse_event()
+  set mousemodel=extend
+  call test_override('no_query_mouse', 1)
+  new
+  call setline(1, ['one two three', 'four five six'])
+
+  " place the cursor using left click
+  call cursor(1, 1)
+  call test_gui_mouse_event(0, 2, 4, 0, 0)
+  call test_gui_mouse_event(3, 2, 4, 0, 0)
+  call feedkeys("\<Esc>", 'Lx!')
+  call assert_equal([0, 2, 4, 0], getpos('.'))
+
+  " select and yank a word
+  let @" = ''
+  call test_gui_mouse_event(0, 1, 9, 0, 0)
+  call test_gui_mouse_event(0, 1, 9, 1, 0)
+  call test_gui_mouse_event(3, 1, 9, 0, 0)
+  call feedkeys("y", 'Lx!')
+  call assert_equal('three', @")
+
+  " create visual selection using right click
+  let @" = ''
+  call test_gui_mouse_event(0, 2, 6, 0, 0)
+  call test_gui_mouse_event(3, 2, 6, 0, 0)
+  call test_gui_mouse_event(2, 2, 13, 0, 0)
+  call test_gui_mouse_event(3, 2, 13, 0, 0)
+  call feedkeys("y", 'Lx!')
+  call assert_equal('five six', @")
+
+  " paste using middle mouse button
+  let @* = 'abc '
+  call feedkeys('""', 'Lx!')
+  call test_gui_mouse_event(1, 1, 9, 0, 0)
+  call test_gui_mouse_event(3, 1, 9, 0, 0)
+  call feedkeys("\<Esc>", 'Lx!')
+  call assert_equal(['one two abc three', 'four five six'], getline(1, '$'))
+
+  " extend visual selection using right click in visual mode
+  let @" = ''
+  call cursor(1, 1)
+  call feedkeys('v', 'Lx!')
+  call test_gui_mouse_event(2, 1, 17, 0, 0)
+  call test_gui_mouse_event(3, 1, 17, 0, 0)
+  call feedkeys("y", 'Lx!')
+  call assert_equal('one two abc three', @")
+
+  " extend visual selection using mouse drag
+  let @" = ''
+  call cursor(1, 1)
+  call test_gui_mouse_event(0, 2, 1, 0, 0)
+  call test_gui_mouse_event(0x43, 2, 9, 0, 0)
+  call test_gui_mouse_event(0x3, 2, 9, 0, 0)
+  call feedkeys("y", 'Lx!')
+  call assert_equal('four five', @")
+
+  " select text by moving the mouse
+  let @" = ''
+  call cursor(1, 1)
+  redraw!
+  call test_gui_mouse_event(0, 1, 4, 0, 0)
+  call test_gui_mouse_event(0x700, 1, 9, 0, 0)
+  call test_gui_mouse_event(0x700, 1, 13, 0, 0)
+  call test_gui_mouse_event(0x3, 1, 13, 0, 0)
+  call feedkeys("y", 'Lx!')
+  call assert_equal(' two abc t', @")
+
+  " Using mouse in insert mode
+  call cursor(1, 1)
+  call feedkeys('i', 't')
+  call test_gui_mouse_event(0, 2, 11, 0, 0)
+  call test_gui_mouse_event(3, 2, 11, 0, 0)
+  call feedkeys("po\<Esc>", 'Lx!')
+  call assert_equal(['one two abc three', 'four five posix'], getline(1, '$'))
+
+  %d _
+  call setline(1, range(1, 100))
+  " scroll up
+  call test_gui_mouse_event(0x200, 2, 1, 0, 0)
+  call test_gui_mouse_event(0x200, 2, 1, 0, 0)
+  call test_gui_mouse_event(0x200, 2, 1, 0, 0)
+  call feedkeys("H", 'Lx!')
+  call assert_equal(10, line('.'))
+
+  " scroll down
+  call test_gui_mouse_event(0x100, 2, 1, 0, 0)
+  call test_gui_mouse_event(0x100, 2, 1, 0, 0)
+  call feedkeys("H", 'Lx!')
+  call assert_equal(4, line('.'))
+
+  %d _
+  set nowrap
+  call setline(1, range(10)->join('')->repeat(10))
+  " scroll left
+  call test_gui_mouse_event(0x500, 1, 5, 0, 0)
+  call test_gui_mouse_event(0x500, 1, 10, 0, 0)
+  call test_gui_mouse_event(0x500, 1, 15, 0, 0)
+  call feedkeys('g0', 'Lx!')
+  call assert_equal(19, col('.'))
+
+  " scroll right
+  call test_gui_mouse_event(0x600, 1, 15, 0, 0)
+  call test_gui_mouse_event(0x600, 1, 10, 0, 0)
+  call feedkeys('g0', 'Lx!')
+  call assert_equal(7, col('.'))
+  set wrap&
+
+  %d _
+  call setline(1, repeat([repeat('a', 60)], 10))
+
+  " record various mouse events
+  let mouseEventNames = [
+        \ 'LeftMouse', 'LeftRelease', '2-LeftMouse', '3-LeftMouse',
+        \ 'S-LeftMouse', 'A-LeftMouse', 'C-LeftMouse', 'MiddleMouse',
+        \ 'MiddleRelease', '2-MiddleMouse', '3-MiddleMouse',
+        \ 'S-MiddleMouse', 'A-MiddleMouse', 'C-MiddleMouse',
+        \ 'RightMouse', 'RightRelease', '2-RightMouse',
+        \ '3-RightMouse', 'S-RightMouse', 'A-RightMouse', 'C-RightMouse',
+        \ 'X1Mouse', 'S-X1Mouse', 'A-X1Mouse', 'C-X1Mouse', 'X2Mouse',
+        \ 'S-X2Mouse', 'A-X2Mouse', 'C-X2Mouse'
+        \ ]
+  let mouseEventCodes = map(copy(mouseEventNames), "'<' .. v:val .. '>'")
+  let g:events = []
+  for e in mouseEventCodes
+    exe 'nnoremap ' .. e .. ' <Cmd>call add(g:events, "' ..
+          \ substitute(e, '[<>]', '', 'g') .. '")<CR>'
+  endfor
+
+  " Test various mouse buttons (0 - Left, 1 - Middle, 2 - Right, 0x300 - X1,
+  " 0x300- X2)
+  for button in [0, 1, 2, 0x300, 0x400]
+    " Single click
+    call test_gui_mouse_event(button, 2, 5, 0, 0)
+    call test_gui_mouse_event(3, 2, 5, 0, 0)
+
+    " Double/Triple click is supported by only the Left/Middle/Right mouse
+    " buttons
+    if button <= 2
+      " Double Click
+      call test_gui_mouse_event(button, 2, 5, 0, 0)
+      call test_gui_mouse_event(button, 2, 5, 1, 0)
+      call test_gui_mouse_event(3, 2, 5, 0, 0)
+
+      " Triple Click
+      call test_gui_mouse_event(button, 2, 5, 0, 0)
+      call test_gui_mouse_event(button, 2, 5, 1, 0)
+      call test_gui_mouse_event(button, 2, 5, 1, 0)
+      call test_gui_mouse_event(3, 2, 5, 0, 0)
+    endif
+
+    " Shift click
+    call test_gui_mouse_event(button, 3, 7, 0, 4)
+    call test_gui_mouse_event(3, 3, 7, 0, 4)
+
+    " Alt click
+    call test_gui_mouse_event(button, 3, 7, 0, 8)
+    call test_gui_mouse_event(3, 3, 7, 0, 8)
+
+    " Ctrl click
+    call test_gui_mouse_event(button, 3, 7, 0, 16)
+    call test_gui_mouse_event(3, 3, 7, 0, 16)
+
+    call feedkeys("\<Esc>", 'Lx!')
+  endfor
+
+  call assert_equal(['LeftMouse', 'LeftRelease', 'LeftMouse', '2-LeftMouse',
+        \ 'LeftMouse', '2-LeftMouse', '3-LeftMouse', 'S-LeftMouse',
+        \ 'A-LeftMouse', 'C-LeftMouse', 'MiddleMouse', 'MiddleRelease',
+        \ 'MiddleMouse', '2-MiddleMouse', 'MiddleMouse', '2-MiddleMouse',
+        \ '3-MiddleMouse', 'S-MiddleMouse', 'A-MiddleMouse', 'C-MiddleMouse',
+        \ 'RightMouse', 'RightRelease', 'RightMouse', '2-RightMouse',
+        \ 'RightMouse', '2-RightMouse', '3-RightMouse', 'S-RightMouse',
+        \ 'A-RightMouse', 'C-RightMouse', 'X1Mouse', 'S-X1Mouse', 'A-X1Mouse',
+        \ 'C-X1Mouse', 'X2Mouse', 'S-X2Mouse', 'A-X2Mouse', 'C-X2Mouse'],
+        \ g:events)
+
+  for e in mouseEventCodes
+    exe 'nunmap ' .. e
+  endfor
+
+  " modeless selection
+  set mouse=
+  let save_guioptions = &guioptions
+  set guioptions+=A
+  %d _
+  call setline(1, ['one two three', 'four five sixteen'])
+  call cursor(1, 1)
+  redraw!
+  " Double click should select the word and copy it to clipboard
+  let @* = ''
+  call test_gui_mouse_event(0, 2, 11, 0, 0)
+  call test_gui_mouse_event(0, 2, 11, 1, 0)
+  call test_gui_mouse_event(3, 2, 11, 0, 0)
+  call feedkeys("\<Esc>", 'Lx!')
+  call assert_equal([0, 1, 1, 0], getpos('.'))
+  call assert_equal('sixteen', @*)
+  " Right click should extend the selection from cursor
+  call cursor(1, 6)
+  redraw!
+  let @* = ''
+  call test_gui_mouse_event(2, 1, 11, 0, 0)
+  call test_gui_mouse_event(3, 1, 11, 0, 0)
+  call feedkeys("\<Esc>", 'Lx!')
+  call assert_equal([0, 1, 6, 0], getpos('.'))
+  call assert_equal('wo thr', @*)
+  " Middle click should paste the clipboard contents
+  call cursor(2, 1)
+  redraw!
+  call test_gui_mouse_event(1, 1, 11, 0, 0)
+  call test_gui_mouse_event(3, 1, 11, 0, 0)
+  call feedkeys("\<Esc>", 'Lx!')
+  call assert_equal([0, 2, 7, 0], getpos('.'))
+  call assert_equal('wo thrfour five sixteen', getline(2))
+  set mouse&
+  let &guioptions = save_guioptions
+
+  bw!
+  call test_override('no_query_mouse', 0)
+  set mousemodel&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -63,6 +63,7 @@ func Test_global_vars()
   let g:MY_GLOBAL_NULL = test_null
   let test_none = v:none
   let g:MY_GLOBAL_NONE = test_none
+  let g:MY_GLOBAL_FUNCREF = function('min')
 
   set viminfo='100,<50,s10,h,!,nviminfo
   wv! Xviminfo
@@ -77,6 +78,7 @@ func Test_global_vars()
   unlet g:MY_GLOBAL_TRUE
   unlet g:MY_GLOBAL_NULL
   unlet g:MY_GLOBAL_NONE
+  unlet g:MY_GLOBAL_FUNCREF
 
   rv! Xviminfo
   call assert_equal("Vim Editor", g:MY_GLOBAL_STRING)
@@ -89,6 +91,7 @@ func Test_global_vars()
   call assert_equal(test_true, g:MY_GLOBAL_TRUE)
   call assert_equal(test_null, g:MY_GLOBAL_NULL)
   call assert_equal(test_none, g:MY_GLOBAL_NONE)
+  call assert_false(exists("g:MY_GLOBAL_FUNCREF"))
 
   " When reading global variables from viminfo, if a variable cannot be
   " modified, then the value should not be changed.
@@ -230,7 +233,26 @@ func Test_cmdline_history()
   call assert_equal("echo " . long800, histget(':', -2))
   call assert_equal("echo 'one'", histget(':', -3))
 
+  " If the value for the '/' or ':' or '@' field in 'viminfo' is zero, then
+  " the corresponding history entries are not saved.
+  set viminfo='100,/0,:0,@0,<50,s10,h,!,nviminfo
+  call histdel('/')
+  call histdel(':')
+  call histdel('@')
+  call histadd('/', 'foo')
+  call histadd(':', 'bar')
+  call histadd('@', 'baz')
+  wviminfo! Xviminfo
+  call histdel('/')
+  call histdel(':')
+  call histdel('@')
+  rviminfo! Xviminfo
+  call assert_equal('', histget('/'))
+  call assert_equal('', histget(':'))
+  call assert_equal('', histget('@'))
+
   call delete('Xviminfo')
+  set viminfo&vim
 endfunc
 
 func Test_cmdline_history_order()
@@ -346,7 +368,33 @@ func Test_viminfo_registers()
     let len += 1
   endwhile
 
+  " If the maximum number of lines saved for a register ('<' in 'viminfo') is
+  " zero, then register values should not be saved.
+  let @a = 'abc'
+  set viminfo='100,<0,s10,h,!,nviminfo
+  wviminfo Xviminfo
+  let @a = 'xyz'
+  rviminfo! Xviminfo
+  call assert_equal('xyz', @a)
+  " repeat the test with '"' instead of '<'
+  let @b = 'def'
+  set viminfo='100,\"0,s10,h,!,nviminfo
+  wviminfo Xviminfo
+  let @b = 'rst'
+  rviminfo! Xviminfo
+  call assert_equal('rst', @b)
+
+  " If the maximum size of an item ('s' in 'viminfo') is zero, then register
+  " values should not be saved.
+  let @c = '123'
+  set viminfo='100,<20,s0,h,!,nviminfo
+  wviminfo Xviminfo
+  let @c = '456'
+  rviminfo! Xviminfo
+  call assert_equal('456', @c)
+
   call delete('Xviminfo')
+  set viminfo&vim
 endfunc
 
 func Test_viminfo_marks()
@@ -541,15 +589,30 @@ func Test_viminfo_bad_syntax()
   call delete('Xviminfo')
 endfunc
 
-func Test_viminfo_bad_register_syntax()
+func Test_viminfo_bad_syntax2()
   let lines = []
   call add(lines, '|1,4')
-  call add(lines, '|3') " invalid number of fields for a register type
-  call add(lines, '|3,1,1,1,1,,1,"x"') " invalid value for the width field
+
+  " bad viminfo syntax for history barline
+  call add(lines, '|2') " invalid number of fields in a history barline
+  call add(lines, '|2,9,1,1,"x"') " invalid value for the history type
+  call add(lines, '|2,0,,1,"x"') " no timestamp
+  call add(lines, '|2,0,1,1,10') " non-string text
+
+  " bad viminfo syntax for register barline
+  call add(lines, '|3') " invalid number of fields in a register barline
+  call add(lines, '|3,1,1,1,1,,1,"x"') " missing width field
   call add(lines, '|3,0,80,1,1,1,1,"x"') " invalid register number
   call add(lines, '|3,0,10,5,1,1,1,"x"') " invalid register type
   call add(lines, '|3,0,10,1,20,1,1,"x"') " invalid line count
   call add(lines, '|3,0,10,1,0,1,1') " zero line count
+
+  " bad viminfo syntax for mark barline
+  call add(lines, '|4') " invalid number of fields in a mark barline
+  call add(lines, '|4,1,1,1,1,1') " invalid value for file name
+  call add(lines, '|4,20,1,1,1,"x"') " invalid value for file name
+  call add(lines, '|4,49,0,1,1,"x"') " invalid value for line number
+
   call writefile(lines, 'Xviminfo')
   rviminfo Xviminfo
   call delete('Xviminfo')
@@ -901,6 +964,7 @@ func Test_viminfo_perm()
   " Try to write the viminfo to a directory
   call mkdir('Xdir')
   call assert_fails('wviminfo Xdir', 'E137:')
+  call assert_fails('rviminfo Xdir', 'E195:')
   call delete('Xdir', 'rf')
 endfunc
 
