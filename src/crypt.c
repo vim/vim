@@ -423,8 +423,10 @@ crypt_create_for_writing(
 #ifdef FEAT_SODIUM
 	if (sodium_init() >= 0)
 	{
-	    randombytes_buf(salt, salt_len);
-	    randombytes_buf(seed, seed_len);
+	    if (salt_len > 0)
+		randombytes_buf(salt, salt_len);
+	    if (seed_len > 0)
+		randombytes_buf(seed, seed_len);
 	}
 	else
 #endif
