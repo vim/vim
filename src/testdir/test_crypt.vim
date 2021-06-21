@@ -159,7 +159,7 @@ func Test_uncrypt_xchacha20_2()
   " successfully decrypted
   call assert_equal(range(1, 4000)->map( {_, v -> string(v)}), getline(1,'$'))
   set key=
-  w!
+  w! ++ff=unix
   " enryption removed
   call assert_match('"Xcrypt_sodium.txt" 4000L, 18893B written', execute(':message'))
   bw!
@@ -191,7 +191,7 @@ func Test_uncrypt_xchacha20_3_persistent_undo()
   " should fail
   norm! u
   call assert_match('Already at oldest change', execute(':1mess'))
-  call assert_fails('verbose rundo' .. fnameescape(ufile), 'E822')
+  call assert_fails('verbose rundo ' .. fnameescape(ufile), 'E822')
   bw!
   set undolevels& cryptmethod& undofile&
   call delete('Xcrypt_sodium_undo.txt')
