@@ -90,6 +90,24 @@ def Test_compile_error_in_called_function()
   CheckScriptFailureList(lines, ['E1012:', 'E1191:'])
 enddef
 
+def Test_wrong_function_name()
+  var lines =<< trim END
+      vim9script
+      func _Foo()
+        echo 'foo'
+      endfunc
+  END
+  CheckScriptFailure(lines, 'E128:')
+
+  lines =<< trim END
+      vim9script
+      def _Foo()
+        echo 'foo'
+      enddef
+  END
+  CheckScriptFailure(lines, 'E128:')
+enddef
+
 def Test_autoload_name_mismatch()
   var dir = 'Xdir/autoload'
   mkdir(dir, 'p')

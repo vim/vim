@@ -3595,7 +3595,8 @@ trans_function_name(
 		lead += (int)STRLEN(sid_buf);
 	}
     }
-    else if (!(flags & TFN_INT) && builtin_function(lv.ll_name, len))
+    else if (!(flags & TFN_INT) && (builtin_function(lv.ll_name, len)
+				   || (in_vim9script() && *lv.ll_name == '_')))
     {
 	semsg(_("E128: Function name must start with a capital or \"s:\": %s"),
 								       start);
