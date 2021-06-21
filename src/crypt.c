@@ -909,7 +909,7 @@ crypt_sodium_buffer_encode(
     sodium_state_T	*sod_st = state->method_state;
     int			first = (sod_st->count == 0);
 
-    length = len + crypto_secretstream_xchacha20poly1305_ABYTES
+    length = (int)len + crypto_secretstream_xchacha20poly1305_ABYTES
 	     + (first ? crypto_secretstream_xchacha20poly1305_HEADERBYTES : 0);
     *buf_out = alloc_clear(length);
     if (*buf_out == NULL)
