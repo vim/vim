@@ -146,9 +146,9 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	FALSE,
 	NULL,
 	crypt_sodium_init,
-	crypt_sodium_encode, crypt_sodium_decode,
+	NULL, NULL,
 	crypt_sodium_buffer_encode, crypt_sodium_buffer_decode,
-	crypt_sodium_encode, crypt_sodium_decode,
+	NULL, NULL,
     },
 
     // NOTE: when adding a new method, use some random bytes for the magic key,
@@ -725,6 +725,8 @@ crypt_sodium_init(
  * Encrypt "from[len]" into "to[len]".
  * "from" and "to" can be equal to encrypt in place.
  * Call needs to ensure that there is enough space in to (for the header)
+ *
+ * Currently unused, therefore commented out
  */
     void
 crypt_sodium_encode(
@@ -734,6 +736,7 @@ crypt_sodium_encode(
     char_u	*to UNUSED,
     int		last UNUSED)
 {
+#if 0
 # ifdef FEAT_SODIUM
     // crypto_box_SEEDBYTES == crypto_secretstream_xchacha20poly1305_KEYBYTES
     sodium_state_T *sod_st = state->method_state;
@@ -763,11 +766,14 @@ crypt_sodium_encode(
 
     sod_st->count++;
 # endif
+#endif
 }
 
 /* TODO: Unused
  * Decrypt "from[len]" into "to[len]".
  * "from" and "to" can be equal to encrypt in place.
+ *
+ * Currently unused, therefore commented out
  */
     void
 crypt_sodium_decode(
@@ -777,6 +783,7 @@ crypt_sodium_decode(
     char_u	*to UNUSED,
     int		last UNUSED)
 {
+#if 0
 # ifdef FEAT_SODIUM
     // crypto_box_SEEDBYTES ==  crypto_secretstream_xchacha20poly1305_KEYBYTES
     sodium_state_T *sod_st = state->method_state;
@@ -840,6 +847,7 @@ crypt_sodium_decode(
 fail:
     vim_free(buf_out);
 # endif
+#endif
 }
 
 /*
